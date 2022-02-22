@@ -20,7 +20,6 @@ import { MetadataUtils } from './element-metadata-utils'
 import { getOriginalFrames } from '../../components/canvas/canvas-utils'
 import * as EP from '../shared/element-path'
 import { EditorModes } from '../../components/editor/editor-modes'
-import { setFeatureEnabled } from '../../utils/feature-switches'
 
 const NumberOfIterations = 100
 
@@ -31,7 +30,6 @@ export function useTriggerScrollPerformanceTest(): () => void {
   )
   const allPaths = useRefEditorState((store) => store.derived.navigatorTargets)
   const trigger = React.useCallback(async () => {
-    setFeatureEnabled('Canvas Absolute Resize Controls', true)
     if (allPaths.current.length === 0) {
       console.info('SELECT_TEST_ERROR')
       return
@@ -74,7 +72,6 @@ export function useTriggerResizePerformanceTest(): () => void {
   const metadata = useRefEditorState((store) => store.editor.jsxMetadata)
   const selectedViews = useRefEditorState((store) => store.editor.selectedViews)
   const trigger = React.useCallback(async () => {
-    setFeatureEnabled('Canvas Absolute Resize Controls', true)
     if (selectedViews.current.length === 0) {
       console.info('RESIZE_TEST_MISSING_SELECTEDVIEW')
       return
@@ -141,7 +138,6 @@ export function useTriggerSelectionPerformanceTest(): () => void {
   )
   const allPaths = useRefEditorState((store) => store.derived.navigatorTargets)
   const trigger = React.useCallback(async () => {
-    setFeatureEnabled('Canvas Absolute Resize Controls', true)
     if (allPaths.current.length === 0) {
       console.info('SELECT_TEST_ERROR')
       return
@@ -189,7 +185,6 @@ export function useTriggerBaselinePerformanceTest(): () => void {
   )
 
   const trigger = React.useCallback(async () => {
-    setFeatureEnabled('Canvas Absolute Resize Controls', true)
     let framesPassed = 0
     async function step() {
       performance.mark(`baseline_step_${framesPassed}`)
