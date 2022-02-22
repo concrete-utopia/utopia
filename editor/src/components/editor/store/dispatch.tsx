@@ -92,7 +92,6 @@ import {
 } from './vscode-changes'
 import { isFeatureEnabled } from '../../../utils/feature-switches'
 import { isJsOrTsFile, isCssFile } from '../../../core/shared/file-utils'
-import { applyStatePatches } from '../../canvas/commands/commands'
 import { emptySet } from '../../../core/shared/set-utils'
 
 type DispatchResultFields = {

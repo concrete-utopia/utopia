@@ -7,7 +7,6 @@ import type {
   TransientFilesState,
 } from '../../editor/store/editor-state'
 import type { EdgePosition } from '../canvas-types'
-import { CanvasCommand } from '../commands/commands'
 
 interface BoundingArea {
   type: 'BOUNDING_AREA'
@@ -30,14 +29,12 @@ export interface CanvasStrategy {
   fitnessFn: CanvasStrategyFitnessFn
 }
 
-export type CanvasStrategyUpdateFnResult = Array<CanvasCommand> | CanvasCommand
-
 export type CanvasStrategyUpdateFn = (
   lifecycle: 'transient' | 'final',
   editorState: EditorState,
   sessionProps: SelectModeCanvasSessionProps,
   sessionState: SelectModeCanvasSessionState,
-) => CanvasStrategyUpdateFnResult
+) => any
 
 export type CanvasStrategyFitnessFn = (
   editorState: EditorState,

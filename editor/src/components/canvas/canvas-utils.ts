@@ -211,7 +211,6 @@ import { stylePropPathMappingFn } from '../inspector/common/property-path-hooks'
 import { SelectModeCanvasSessionState } from './canvas-strategies/canvas-strategy-types'
 import { EditorDispatch } from '../editor/action-types'
 import CanvasActions from './canvas-actions'
-import { applyStatePatches } from './commands/commands'
 
 export function getOriginalFrames(
   selectedViews: Array<ElementPath>,
