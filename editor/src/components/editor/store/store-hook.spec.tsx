@@ -40,7 +40,7 @@ const ContextProvider: React.FunctionComponent<{
 }
 
 describe('useSelectorWithCallback', () => {
-  it('The callback is not fired on first call if callOnSubscribe is false', () => {
+  it('The callback is not fired on first call', () => {
     const storeHook = createEmptyEditorStoreHook()
 
     let hookRenders = 0
@@ -54,7 +54,6 @@ describe('useSelectorWithCallback', () => {
           (newSelectedViews) => {
             callCount++
           },
-          false,
         )
       },
       {
@@ -67,35 +66,6 @@ describe('useSelectorWithCallback', () => {
 
     expect(hookRenders).toEqual(1)
     expect(callCount).toEqual(0)
-  })
-
-  it('The callback _is_  fired on first call if callOnSubscribe is true', () => {
-    const storeHook = createEmptyEditorStoreHook()
-
-    let hookRenders = 0
-    let callCount = 0
-
-    const { result } = renderHook<{ storeHook: UseStore<EditorStore> }, void>(
-      (props) => {
-        hookRenders++
-        return useSelectorWithCallback(
-          (store) => store.editor.selectedViews,
-          (newSelectedViews) => {
-            callCount++
-          },
-          true,
-        )
-      },
-      {
-        wrapper: ContextProvider,
-        initialProps: {
-          storeHook: storeHook,
-        },
-      },
-    )
-
-    expect(hookRenders).toEqual(1)
-    expect(callCount).toEqual(1)
   })
 
   it('The callback is fired if the store changes', () => {
@@ -112,7 +82,6 @@ describe('useSelectorWithCallback', () => {
           (newSelectedViews) => {
             callCount++
           },
-          false,
         )
       },
       {
@@ -161,7 +130,6 @@ describe('useSelectorWithCallback', () => {
           (newSelectedViews) => {
             callCount++
           },
-          false,
         )
       },
       {

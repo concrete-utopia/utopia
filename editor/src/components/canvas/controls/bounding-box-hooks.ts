@@ -52,7 +52,6 @@ function useBoundingBoxFromMetadataRef(
     (newMetadata) => {
       innerCallback()
     },
-    true,
   )
 
   React.useEffect(innerCallback, [innerCallback, selectedElements])
