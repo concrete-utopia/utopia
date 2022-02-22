@@ -156,7 +156,6 @@ import { v4 as UUID } from 'uuid'
 import { PersistenceMachine } from '../persistence/persistence'
 import type { BuiltInDependencies } from '../../../core/es-modules/package-manager/built-in-dependencies-list'
 import { DefaultThirdPartyControlDefinitions } from '../../../core/third-party/third-party-controls'
-import type { SelectModeCanvasSessionState } from '../../canvas/canvas-strategies/canvas-strategy-types'
 import { Spec } from 'immutability-helper'
 
 const ObjectPathImmutable: any = OPI
@@ -1022,18 +1021,6 @@ export function transientCanvasState(
     highlightedViews: highlightedViews,
     filesState: fileState,
     toastsToApply: toastsToApply,
-  }
-}
-
-export function transientCanvasStateForSession(
-  canvasSessionState: SelectModeCanvasSessionState | null,
-  editorStatePatch: Array<EditorStatePatch>,
-): TransientCanvasState {
-  return {
-    selectedViews: null,
-    highlightedViews: null,
-    toastsToApply: [],
-    filesState: {},
   }
 }
 

@@ -24,7 +24,6 @@ import {
   LayoutFlexElementProp,
   LayoutTargetableProp,
 } from '../../core/layout/layout-helpers-new'
-import { SelectModeCanvasSessionProps } from './canvas-strategies/canvas-strategy-types'
 
 export const CanvasContainerID = 'canvas-container'
 

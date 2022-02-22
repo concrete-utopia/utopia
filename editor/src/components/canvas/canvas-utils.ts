@@ -208,7 +208,6 @@ import { createStylePostActionToast } from '../../core/layout/layout-notice'
 import { uniqToasts } from '../editor/actions/toast-helpers'
 import { LayoutTargetablePropArrayKeepDeepEquality } from '../../utils/deep-equality-instances'
 import { stylePropPathMappingFn } from '../inspector/common/property-path-hooks'
-import { SelectModeCanvasSessionState } from './canvas-strategies/canvas-strategy-types'
 import { EditorDispatch } from '../editor/action-types'
 import CanvasActions from './canvas-actions'
 

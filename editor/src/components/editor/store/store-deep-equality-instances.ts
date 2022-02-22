@@ -119,7 +119,6 @@ import {
   JSXElementNameKeepDeepEqualityCall,
 } from '../../../utils/deep-equality-instances'
 import { createCallFromIntrospectiveKeepDeep } from '../../../utils/react-performance'
-import { SelectModeCanvasSessionState } from '../../canvas/canvas-strategies/canvas-strategy-types'
 import {
   TransientCanvasState,
   TransientFilesState,
