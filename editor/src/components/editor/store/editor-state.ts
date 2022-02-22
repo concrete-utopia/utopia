@@ -1004,15 +1004,15 @@ export type TransientFilesState = { [filepath: string]: TransientFileState }
 export type EditorStatePatch = Spec<EditorState>
 
 export interface TransientCanvasState {
-  selectedViews: Array<ElementPath> | null
-  highlightedViews: Array<ElementPath> | null
+  selectedViews: Array<ElementPath>
+  highlightedViews: Array<ElementPath>
   filesState: TransientFilesState | null
   toastsToApply: ReadonlyArray<Notice>
 }
 
 export function transientCanvasState(
-  selectedViews: Array<ElementPath> | null,
-  highlightedViews: Array<ElementPath> | null,
+  selectedViews: Array<ElementPath>,
+  highlightedViews: Array<ElementPath>,
   fileState: TransientFilesState | null,
   toastsToApply: ReadonlyArray<Notice>,
 ): TransientCanvasState {

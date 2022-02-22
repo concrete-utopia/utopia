@@ -192,7 +192,7 @@ import {
 } from '../../canvas/canvas-types'
 import {
   canvasFrameToNormalisedFrame,
-  clearDragStateAndInteractionSession,
+  clearDragState,
   duplicate,
   editorMultiselectReparentNoStyleChange,
   getFrameChange,
@@ -1876,18 +1876,18 @@ export const UPDATE_FNS = {
     derived: DerivedState,
   ): EditorModel => {
     // same as UPDATE_EDITOR_MODE, but clears the drag state
-    return clearDragStateAndInteractionSession(setModeState(action.mode, editor), derived, false)
+    return clearDragState(setModeState(action.mode, editor), derived, false)
   },
   TOGGLE_CANVAS_IS_LIVE: (editor: EditorModel, derived: DerivedState): EditorModel => {
     // same as UPDATE_EDITOR_MODE, but clears the drag state
     if (isLiveMode(editor.mode)) {
-      return clearDragStateAndInteractionSession(
+      return clearDragState(
         setModeState(EditorModes.selectMode(editor.mode.controlId), editor),
         derived,
         false,
       )
     } else {
-      return clearDragStateAndInteractionSession(
+      return clearDragState(
         setModeState(
           EditorModes.liveMode(isSelectMode(editor.mode) ? editor.mode.controlId : null),
           editor,

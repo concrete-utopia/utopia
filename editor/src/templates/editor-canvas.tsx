@@ -21,7 +21,7 @@ import {
 } from '../components/canvas/canvas-types'
 import {
   anyDragStarted,
-  clearDragStateAndInteractionSession,
+  clearDragState,
   createDuplicationNewUIDsFromEditorState,
   createOrUpdateDragState,
   dragExceededThreshold,
@@ -299,7 +299,7 @@ export function runLocalCanvasAction(
       }
     }
     case 'CLEAR_DRAG_STATE':
-      return clearDragStateAndInteractionSession(model, derivedState, action.applyChanges)
+      return clearDragState(model, derivedState, action.applyChanges)
     case 'CREATE_DRAG_STATE':
       return createOrUpdateDragState(dispatch, model, action)
     case 'SET_SELECTION_CONTROLS_VISIBILITY':

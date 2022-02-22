@@ -332,7 +332,7 @@ export function createOrUpdateDragState(
   }
 }
 
-export function clearDragStateAndInteractionSession(
+export function clearDragState(
   model: EditorState,
   derived: DerivedState,
   applyChanges: boolean,
@@ -363,10 +363,9 @@ export function clearDragStateAndInteractionSession(
       ...result.canvas,
       dragState: null,
     },
-    selectedViews:
-      applyChanges && derived.canvas.transientState.selectedViews != null
-        ? derived.canvas.transientState.selectedViews
-        : result.selectedViews,
+    selectedViews: applyChanges
+      ? derived.canvas.transientState.selectedViews
+      : result.selectedViews,
   }
 }
 

@@ -130,9 +130,9 @@ import {
 export function TransientCanvasStateKeepDeepEquality(): KeepDeepEqualityCall<TransientCanvasState> {
   return combine4EqualityCalls(
     (state) => state.selectedViews,
-    nullableDeepEquality(ElementPathArrayKeepDeepEquality),
+    ElementPathArrayKeepDeepEquality,
     (state) => state.highlightedViews,
-    nullableDeepEquality(ElementPathArrayKeepDeepEquality),
+    ElementPathArrayKeepDeepEquality,
     (state) => state.filesState,
     createCallFromIntrospectiveKeepDeep<TransientFilesState | null>(),
     (state) => state.toastsToApply,
