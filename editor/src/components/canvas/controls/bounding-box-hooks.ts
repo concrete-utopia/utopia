@@ -6,15 +6,19 @@ import { useRefEditorState, useSelectorWithCallback } from '../../editor/store/s
 import { MetadataUtils } from '../../../core/model/element-metadata-utils'
 import { getMetadata } from '../../editor/store/editor-state'
 
-export function useBoundingBox(
+interface NotNullRefObject<T> {
+  readonly current: T
+}
+
+export function useBoundingBox<T = HTMLDivElement>(
   selectedElements: Array<ElementPath>,
-  onChangeCallback: (ref: any, boundingBox: any) => void,
-): React.RefObject<HTMLDivElement> {
-  const controlRef = React.useRef<HTMLDivElement>(null)
+  onChangeCallback: (ref: NotNullRefObject<T>, boundingBox: CanvasRectangle) => void,
+): React.RefObject<T> {
+  const controlRef = React.useRef<T>(null)
   const boundingBoxCallback = React.useCallback(
     (boundingBox: CanvasRectangle | null) => {
-      if (boundingBox != null) {
-        onChangeCallback(controlRef, boundingBox)
+      if (boundingBox != null && controlRef.current != null) {
+        onChangeCallback(controlRef as NotNullRefObject<T>, boundingBox)
       }
     },
     [onChangeCallback],
