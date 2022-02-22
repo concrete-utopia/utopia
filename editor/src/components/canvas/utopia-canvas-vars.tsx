@@ -20,6 +20,7 @@ export const UtopiaCanvasVarStyleTag = React.memo(() => {
   .utopia-canvas-var-container {
     --utopia-canvas-offset-x: ${roundedCanvasOffset.x}px;
     --utopia-canvas-offset-y: ${roundedCanvasOffset.y}px;
+    --utopia-canvas-scale: ${canvasScale};
   }
 `}</style>
   )
