@@ -13,9 +13,6 @@ export const OutlineControl = React.memo<OutlineControlProps>((props) => {
   const colorTheme = useColorTheme()
   const localSelectedElements = props.localSelectedElements
 
-  // const outlineOffset = 0.5 / scale
-  // const outlineWidthHeightOffset = -outlineOffset * 3
-
   const colors = useEditorState((store) => {
     return localSelectedElements.map((path) =>
       getSelectionColor(
