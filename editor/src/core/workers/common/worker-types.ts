@@ -8,7 +8,6 @@ import {
   ParsedTextFile,
   ProjectFile,
 } from '../../shared/project-file-types'
-import { emptySet } from '../../shared/set-utils'
 import { RawSourceMap } from '../ts/ts-typings/RawSourceMap'
 
 export type FileContent = string | TextFile
