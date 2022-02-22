@@ -19,7 +19,7 @@ import {
   domWalkerMetadataToSimplifiedMetadataMap,
 } from '../../../utils/utils.test-utils'
 import { addFileToProjectContents } from '../../assets'
-import type { EditorStorePatched } from '../../editor/store/editor-state'
+import type { EditorStoreFull } from '../../editor/store/editor-state'
 import { StoryboardFilePath } from '../../editor/store/editor-state'
 import { applyUIDMonkeyPatch } from '../../../utils/canvas-react-utils'
 import { matchInlineSnapshotBrowser } from '../../../../test/karma-snapshots'
@@ -138,7 +138,7 @@ function renderTestProject() {
   return renderTestEditorWithModel(updatedProject, 'await-first-dom-report', builtInDependencies)
 }
 
-async function waitForFullMetadata(getEditorState: () => EditorStorePatched): Promise<true> {
+async function waitForFullMetadata(getEditorState: () => EditorStoreFull): Promise<true> {
   let foundMetadata = false
   let totalWaitTime = 0
   do {
@@ -147,7 +147,7 @@ async function waitForFullMetadata(getEditorState: () => EditorStorePatched): Pr
     await wait(WaitTime)
     totalWaitTime += WaitTime
     foundMetadata =
-      getEditorState().editor.spyMetadata[
+      getEditorState().unpatchedEditor.spyMetadata[
         'storyboard/scene-1/canvas-app:canvas-app-div/test-mesh/test-meshStandardMaterial'
       ] != null
     if (foundMetadata) {
@@ -174,7 +174,7 @@ describe('Spy Wrapper Tests For React Three Fiber', () => {
     // React Three Fiber seems to have some second pass render that appears to run
     // after the regular React render and this appears to give it a chance to be triggered.
     await waitForFullMetadata(getEditorState)
-    const spiedMetadata = getEditorState().editor.spyMetadata
+    const spiedMetadata = getEditorState().unpatchedEditor.spyMetadata
     const sanitizedSpyData = simplifiedMetadataMap(spiedMetadata)
     matchInlineSnapshotBrowser(
       sanitizedSpyData,
@@ -225,7 +225,7 @@ describe('Spy Wrapper Tests For React Three Fiber', () => {
       }
     `,
     )
-    const domMetadata = getEditorState().editor.domMetadata
+    const domMetadata = getEditorState().unpatchedEditor.domMetadata
     const sanitizedDomMetadata = domWalkerMetadataToSimplifiedMetadataMap(domMetadata)
     matchInlineSnapshotBrowser(
       sanitizedDomMetadata,
@@ -258,7 +258,7 @@ describe('Spy Wrapper Tests For React Three Fiber', () => {
       }
     `,
     )
-    const jsxMetadata = getEditorState().editor.jsxMetadata
+    const jsxMetadata = getEditorState().unpatchedEditor.jsxMetadata
     const sanitizedJsxMetadata = simplifiedMetadataMap(jsxMetadata)
     matchInlineSnapshotBrowser(
       sanitizedJsxMetadata,

@@ -35,7 +35,7 @@ describe('Layout Section', () => {
 
     const { getByText } = render(
       <TestInspectorContextProvider
-        selectedViews={storeHookForTest.api.getState().editor.selectedViews}
+        selectedViews={storeHookForTest.api.getState().unpatchedEditor.selectedViews}
         editorStoreData={storeHookForTest}
       >
         <LayoutSection
@@ -52,7 +52,7 @@ describe('Layout Section', () => {
     act(() => {
       storeHookForTest.updateStoreWithImmer((store) => {
         // irrelevant state change, we expect zero rerenders
-        store.editor.canvas.roundedCanvasOffset = { x: 30, y: 50 } as CanvasVector
+        store.unpatchedEditor.canvas.roundedCanvasOffset = { x: 30, y: 50 } as CanvasVector
       })
     })
 

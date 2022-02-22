@@ -64,7 +64,7 @@ describe('registered property controls', () => {
     )
 
     const renderResult = await renderTestEditorWithCode(testCode, 'dont-await-first-dom-report')
-    const editorState = renderResult.getEditorState().editor
+    const editorState = renderResult.getEditorState().unpatchedEditor
 
     expect(editorState.propertyControlsInfo['/src/card']).toMatchInlineSnapshot(`
       Object {

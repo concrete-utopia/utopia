@@ -13,10 +13,10 @@ import { createEditorStates } from '../../../utils/utils.test-utils'
 import utils from '../../../utils/utils'
 import { EditorDispatch } from '../../editor/action-types'
 import {
-  EditorStorePatched,
   modifyOpenJsxElementAtStaticPath,
   defaultUserState,
   StoryboardFilePath,
+  EditorStoreFull,
 } from '../../editor/store/editor-state'
 import { EditorStateContext, EditorStateContextData } from '../../editor/store/store-hook'
 import * as EP from '../../../core/shared/element-path'
@@ -34,8 +34,8 @@ import { createBuiltInDependenciesList } from '../../../core/es-modules/package-
 import { NO_OP } from '../../../core/shared/utils'
 
 type UpdateFunctionHelpers = {
-  updateStoreWithImmer: (fn: (store: EditorStorePatched) => void) => void
-  updateStore: (fn: (store: EditorStorePatched) => EditorStorePatched) => void
+  updateStoreWithImmer: (fn: (store: EditorStoreFull) => void) => void
+  updateStore: (fn: (store: EditorStoreFull) => EditorStoreFull) => void
 }
 
 export function getStoreHook(
@@ -44,8 +44,9 @@ export function getStoreHook(
   const editor = createEditorStates([
     EP.appendNewElementPath(ScenePathForTestUiJsFile, ['aaa', 'bbb']),
   ])
-  const defaultState: EditorStorePatched = {
-    editor: editor.editor,
+  const defaultState: EditorStoreFull = {
+    unpatchedEditor: editor.editor,
+    patchedEditor: editor.editor,
     derived: editor.derivedState,
     history: {
       previous: [],
@@ -60,10 +61,10 @@ export function getStoreHook(
     builtInDependencies: createBuiltInDependenciesList(null),
   }
 
-  const storeHook = create<EditorStorePatched & UpdateFunctionHelpers>((set) => ({
+  const storeHook = create<EditorStoreFull & UpdateFunctionHelpers>((set) => ({
     ...defaultState,
-    updateStoreWithImmer: (fn: (store: EditorStorePatched) => void) => set(produce(fn)),
-    updateStore: (fn: (store: EditorStorePatched) => EditorStorePatched) => set(fn),
+    updateStoreWithImmer: (fn: (store: EditorStoreFull) => void) => set(produce(fn)),
+    updateStore: (fn: (store: EditorStoreFull) => EditorStoreFull) => set(fn),
   }))
   return {
     api: storeHook,
@@ -87,31 +88,33 @@ export const TestInspectorContextProvider: React.FunctionComponent<{
 }
 
 export function editPropOfSelectedView(
-  store: EditorStorePatched,
+  store: EditorStoreFull,
   path: PropertyPath,
   newValue: number | string,
-): EditorStorePatched {
+): EditorStoreFull {
+  const updatedEditor = modifyOpenJsxElementAtStaticPath(
+    store.unpatchedEditor.selectedViews[0] as StaticElementPath,
+    (element): JSXElement => {
+      const updatedAttributes = setJSXValueAtPath(
+        element.props,
+        path,
+        jsxAttributeValue(newValue, emptyComments),
+      )
+      if (isRight(updatedAttributes)) {
+        return {
+          ...element,
+          props: updatedAttributes.value,
+        }
+      } else {
+        throw new Error(`Couldn't set property in test`)
+      }
+    },
+    store.unpatchedEditor,
+  )
   return {
     ...store,
-    editor: modifyOpenJsxElementAtStaticPath(
-      store.editor.selectedViews[0] as StaticElementPath,
-      (element): JSXElement => {
-        const updatedAttributes = setJSXValueAtPath(
-          element.props,
-          path,
-          jsxAttributeValue(newValue, emptyComments),
-        )
-        if (isRight(updatedAttributes)) {
-          return {
-            ...element,
-            props: updatedAttributes.value,
-          }
-        } else {
-          throw new Error(`Couldn't set property in test`)
-        }
-      },
-      store.editor,
-    ),
+    unpatchedEditor: updatedEditor,
+    patchedEditor: updatedEditor,
   }
 }
 

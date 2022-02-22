@@ -41,7 +41,7 @@ describe('runMoveElementCommand', () => {
     }
 
     const result = runMoveElementCommand(
-      renderResult.getEditorState().editor,
+      renderResult.getEditorState().unpatchedEditor,
       sessionState,
       [],
       moveCommand,

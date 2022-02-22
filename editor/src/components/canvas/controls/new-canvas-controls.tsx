@@ -127,7 +127,6 @@ export const NewCanvasControls = React.memo((props: NewCanvasControlsProps) => {
       editor: store.editor,
       derived: store.derived,
       canvasOffset: store.editor.canvas.roundedCanvasOffset,
-
       controls: store.derived.canvas.controls,
       scale: store.editor.canvas.scale,
       focusedPanel: store.editor.focusedPanel,

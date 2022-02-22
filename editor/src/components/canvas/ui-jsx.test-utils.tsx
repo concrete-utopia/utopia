@@ -62,8 +62,6 @@ import {
   deriveState,
   EditorState,
   EditorStoreFull,
-  EditorStorePatched,
-  patchedStoreFromFullStore,
   PersistentModel,
   persistentModelForProjectContents,
   StoryboardFilePath,
@@ -88,6 +86,7 @@ import {
   createBuiltInDependenciesList,
 } from '../../core/es-modules/package-manager/built-in-dependencies-list'
 import { clearAllRegisteredControls } from './canvas-globals'
+import { patchedStoreFromFullStore } from '../editor/store/store-hook'
 
 // eslint-disable-next-line no-unused-expressions
 typeof process !== 'undefined' &&
@@ -145,7 +144,7 @@ export async function renderTestEditorWithModel(
   dispatch: (actions: ReadonlyArray<EditorAction>, waitForDOMReport: boolean) => Promise<void>
   getDomReportDispatched: () => Promise<void>
   getDispatchFollowUpactionsFinished: () => Promise<void>
-  getEditorState: () => EditorStorePatched
+  getEditorState: () => EditorStoreFull
   renderedDOM: RenderResult
   getNumberOfCommits: () => number
   getNumberOfRenders: () => number
@@ -236,9 +235,7 @@ export async function renderTestEditorWithModel(
     builtInDependencies: builtInDependencies,
   }
 
-  const storeHook = create<EditorStorePatched>((set) =>
-    patchedStoreFromFullStore(initialEditorStore),
-  )
+  const storeHook = create<EditorStoreFull>((set) => initialEditorStore)
 
   // initializing the local editor state
   workingEditorState = initialEditorStore
@@ -311,10 +308,10 @@ export async function renderTestEditorWithModel(
 }
 
 export function getPrintedUiJsCode(
-  store: EditorStorePatched,
+  store: EditorStoreFull,
   filePath: string = StoryboardFilePath,
 ): string {
-  const file = getContentsTreeFileFromString(store.editor.projectContents, filePath)
+  const file = getContentsTreeFileFromString(store.unpatchedEditor.projectContents, filePath)
   if (isTextFile(file)) {
     return file.fileContents.code
   } else {
@@ -322,8 +319,11 @@ export function getPrintedUiJsCode(
   }
 }
 
-export function getPrintedUiJsCodeWithoutUIDs(store: EditorStorePatched): string {
-  const file = getContentsTreeFileFromString(store.editor.projectContents, StoryboardFilePath)
+export function getPrintedUiJsCodeWithoutUIDs(store: EditorStoreFull): string {
+  const file = getContentsTreeFileFromString(
+    store.unpatchedEditor.projectContents,
+    StoryboardFilePath,
+  )
   if (isTextFile(file) && isParseSuccess(file.fileContents.parsed)) {
     return printCode(
       StoryboardFilePath,
