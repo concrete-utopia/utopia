@@ -5,7 +5,6 @@ import { point, windowPoint } from '../../../../core/shared/math-utils'
 import { when } from '../../../../utils/react-conditionals'
 import { useEditorState } from '../../../editor/store/store-hook'
 import CanvasActions from '../../canvas-actions'
-import { startNewSelectModeCanvasSession } from '../../canvas-strategies/canvas-strategy-types'
 import { windowToCanvasCoordinates } from '../../dom-lookup'
 
 export const FlexGapControls = React.memo(() => {
@@ -42,9 +41,7 @@ export const FlexGapControls = React.memo(() => {
       ).canvasPositionRounded
       dispatch(
         [
-          CanvasActions.createDragState(
-            startNewSelectModeCanvasSession(startPoint, { type: 'FLEX_GAP_HANDLE' }),
-          ),
+          // TODO actually dispatch a canvas interaction session
         ],
         'canvas',
       )

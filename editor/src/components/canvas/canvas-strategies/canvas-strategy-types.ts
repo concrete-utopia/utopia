@@ -46,8 +46,6 @@ export interface CanvasStrategy {
   fitnessFn: CanvasStrategyFitnessFn
 }
 
-export type CanvasSessionPatch = Spec<SelectModeCanvasSession>
-
 export type CanvasStrategyUpdateFnResult = Array<CanvasCommand> | CanvasCommand
 
 export type CanvasStrategyUpdateFn = (
@@ -62,13 +60,6 @@ export type CanvasStrategyFitnessFn = (
   sessionProps: SelectModeCanvasSessionProps,
   sessionState: SelectModeCanvasSessionState,
 ) => number
-
-export type CanvasInteractionSession = SelectModeCanvasSession
-
-export interface SelectModeCanvasSession {
-  type: 'SELECT_MODE_CANVAS_SESSION'
-  sessionProps: SelectModeCanvasSessionProps
-}
 
 export interface SelectModeCanvasSessionProps {
   start: CanvasPoint
@@ -87,37 +78,4 @@ export interface SelectModeCanvasSessionState {
 export const emptySelectModeCanvasSessionState: SelectModeCanvasSessionState = {
   activeStrategy: null,
   dragDeltaMinimumPassed: false,
-}
-
-export function startNewSelectModeCanvasSession(
-  start: CanvasPoint,
-  activeControl: CanvasControlType,
-): SelectModeCanvasSession {
-  return {
-    type: 'SELECT_MODE_CANVAS_SESSION',
-    sessionProps: {
-      start: start,
-      mousePosition: start,
-      activeControl: activeControl,
-      drag: null,
-      globalTime: Date.now(),
-      lastTimeMouseMoved: Date.now(),
-    },
-  }
-}
-
-export function updateSelectModeCanvasSessionDragVector(
-  current: SelectModeCanvasSession,
-  mousePosition: CanvasPoint,
-  drag: CanvasVector | null,
-): SelectModeCanvasSession {
-  return {
-    ...current,
-    sessionProps: {
-      ...current.sessionProps,
-      mousePosition: mousePosition,
-      drag: drag,
-      lastTimeMouseMoved: Date.now(),
-    },
-  }
 }

@@ -24,10 +24,7 @@ import {
   LayoutFlexElementProp,
   LayoutTargetableProp,
 } from '../../core/layout/layout-helpers-new'
-import {
-  CanvasInteractionSession,
-  SelectModeCanvasSessionProps,
-} from './canvas-strategies/canvas-strategy-types'
+import { SelectModeCanvasSessionProps } from './canvas-strategies/canvas-strategy-types'
 
 export const CanvasContainerID = 'canvas-container'
 
@@ -549,7 +546,7 @@ export function updateResizeDragState(
   })
 }
 
-export type DragState = InsertDragState | MoveDragState | ResizeDragState | CanvasInteractionSession
+export type DragState = InsertDragState | MoveDragState | ResizeDragState
 
 export interface CanvasPositions {
   windowPosition: WindowPoint
@@ -637,11 +634,6 @@ export interface CreateDragState {
   dragState: DragState
 }
 
-export interface UpdateCanvasSessionProps {
-  action: 'UPDATE_CANVAS_SESSION_PROPS'
-  newCanvasSessionProps: Partial<SelectModeCanvasSessionProps>
-}
-
 type SetSelectionControlsVisibility = {
   action: 'SET_SELECTION_CONTROLS_VISIBILITY'
   selectionControlsVisible: boolean
@@ -665,7 +657,6 @@ export type CanvasAction =
   | Zoom
   | ZoomUI
   | SetSelectionControlsVisibility
-  | UpdateCanvasSessionProps
 
 export type CanvasModel = {
   controls: Array<HigherOrderControl>

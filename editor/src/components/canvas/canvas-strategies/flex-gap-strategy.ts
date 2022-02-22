@@ -34,8 +34,6 @@ import {
 import {
   CanvasStrategy,
   CanvasStrategyUpdateFnResult,
-  FlexAlignControlRectProps,
-  SelectModeCanvasSession,
   SelectModeCanvasSessionProps,
   SelectModeCanvasSessionState,
 } from './canvas-strategy-types'

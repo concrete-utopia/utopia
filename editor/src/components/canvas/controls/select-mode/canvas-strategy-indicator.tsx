@@ -5,10 +5,7 @@ import { useEditorState } from '../../../editor/store/store-hook'
 
 export const CanvasStrategyIndicator = React.memo(() => {
   const colorTheme = useColorTheme()
-  const activeStrategy = useEditorState(
-    (store) => store.derived.canvas.transientState.canvasSessionState?.activeStrategy?.name,
-    'CanvasStrategyIndicator activeStrategy.name',
-  )
+  const activeStrategy = null // TODO actually use an active strategy here
 
   return (
     <>

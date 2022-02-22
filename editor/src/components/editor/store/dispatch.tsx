@@ -458,11 +458,7 @@ export function editorDispatch(
     (!transientOrNoChange || anyUndoOrRedo || (anyWorkerUpdates && alreadySaved)) &&
     isBrowserEnvironment
 
-  const patchedEditorState = applyStatePatches(
-    frozenEditorState,
-    storedState.patchedEditor,
-    frozenDerivedState.canvas.transientState.editorStatePatch,
-  )
+  const patchedEditorState = frozenEditorState // TODO actually patch the state using the EditorStatePatch produced by the Commands
 
   const finalStore: DispatchResult = {
     unpatchedEditor: frozenEditorState,
@@ -610,10 +606,7 @@ function editorDispatchInner(
     // Tested quickly and it broke selection, but I'm mostly certain
     // it should only merge when both have changed.
     if (metadataChanged) {
-      if (
-        result.unpatchedEditor.canvas.dragState != null &&
-        'metadata' in result.unpatchedEditor.canvas.dragState
-      ) {
+      if (result.unpatchedEditor.canvas.dragState != null) {
         result = {
           ...result,
           unpatchedEditor: {

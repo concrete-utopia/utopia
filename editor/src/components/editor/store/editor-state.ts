@@ -157,7 +157,6 @@ import { PersistenceMachine } from '../persistence/persistence'
 import type { BuiltInDependencies } from '../../../core/es-modules/package-manager/built-in-dependencies-list'
 import { DefaultThirdPartyControlDefinitions } from '../../../core/third-party/third-party-controls'
 import type {
-  CanvasInteractionSession,
   FlexAlignControlRectProps,
   SelectModeCanvasSessionState,
   FlexGapControlRectProps,
@@ -1018,8 +1017,6 @@ export interface TransientCanvasState {
   highlightedViews: Array<ElementPath> | null
   filesState: TransientFilesState | null
   toastsToApply: ReadonlyArray<Notice>
-  editorStatePatch: Array<EditorStatePatch>
-  canvasSessionState: SelectModeCanvasSessionState | null
 }
 
 export function transientCanvasState(
@@ -1027,16 +1024,12 @@ export function transientCanvasState(
   highlightedViews: Array<ElementPath> | null,
   fileState: TransientFilesState | null,
   toastsToApply: ReadonlyArray<Notice>,
-  editorStatePatch: Array<EditorStatePatch>,
-  canvasSessionState: SelectModeCanvasSessionState | null = null,
 ): TransientCanvasState {
   return {
     selectedViews: selectedViews,
     highlightedViews: highlightedViews,
     filesState: fileState,
     toastsToApply: toastsToApply,
-    editorStatePatch: editorStatePatch,
-    canvasSessionState: canvasSessionState,
   }
 }
 
@@ -1049,16 +1042,11 @@ export function transientCanvasStateForSession(
     highlightedViews: null,
     toastsToApply: [],
     filesState: {},
-    editorStatePatch: editorStatePatch,
-    canvasSessionState: canvasSessionState,
   }
 }
 
 export function getMetadata(editor: EditorState): ElementInstanceMetadataMap {
-  if (
-    editor.canvas.dragState == null ||
-    editor.canvas.dragState.type === 'SELECT_MODE_CANVAS_SESSION'
-  ) {
+  if (editor.canvas.dragState == null) {
     return editor.jsxMetadata
   } else {
     return editor.canvas.dragState.metadata
@@ -1095,13 +1083,7 @@ function emptyDerivedState(editorState: EditorState): DerivedState {
     canvas: {
       descendantsOfHiddenInstances: [],
       controls: [],
-      transientState: produceCanvasTransientState(
-        editorState.selectedViews,
-        null,
-        editorState,
-        false,
-        'transient',
-      ),
+      transientState: produceCanvasTransientState(editorState.selectedViews, editorState, false),
     },
     elementWarnings: emptyComplexMap(),
   }
@@ -1406,10 +1388,8 @@ export function deriveState(
       controls: derivedState.canvas.controls,
       transientState: produceCanvasTransientState(
         oldDerivedState?.canvas.transientState.selectedViews ?? editor.selectedViews,
-        oldDerivedState?.canvas.transientState.canvasSessionState ?? null,
         editor,
         true,
-        'transient',
       ),
     },
     elementWarnings: getElementWarnings(getMetadata(editor)),
