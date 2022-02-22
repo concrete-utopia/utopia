@@ -1,5 +1,5 @@
 import type { EditorAction } from '../../components/editor/action-types'
-import type { EditorStore } from '../../components/editor/store/editor-state'
+import type { EditorStoreFull } from '../../components/editor/store/editor-state'
 import { isFeatureEnabled } from '../../utils/feature-switches'
 import { pluck } from './array-utils'
 import { ElementInstanceMetadata, ElementInstanceMetadataMap } from './element-template'
@@ -79,17 +79,17 @@ function simplifiedMetadataMap(metadata: ElementInstanceMetadataMap) {
 }
 
 type SanitizedState = ReturnType<typeof sanitizeLoggedState>
-function sanitizeLoggedState(store: EditorStore) {
+function sanitizeLoggedState(store: EditorStoreFull) {
   return {
     ...store,
-    editor: {
-      ...store.editor,
-      spyMetadata: simplifiedMetadataMap(store.editor.jsxMetadata),
-      domMetadata: store.editor.domMetadata.map(simplifiedMetadata),
-      jsxMetadata: simplifiedMetadataMap(store.editor.jsxMetadata),
+    unpatchedEditor: {
+      ...store.unpatchedEditor,
+      spyMetadata: simplifiedMetadataMap(store.unpatchedEditor.jsxMetadata),
+      domMetadata: store.unpatchedEditor.domMetadata.map(simplifiedMetadata),
+      jsxMetadata: simplifiedMetadataMap(store.unpatchedEditor.jsxMetadata),
       codeResultCache: PlaceholderMessage,
       nodeModules: {
-        packageStatus: store.editor.nodeModules.packageStatus,
+        packageStatus: store.unpatchedEditor.nodeModules.packageStatus,
       },
       canvas: PlaceholderMessage,
     },
@@ -101,7 +101,7 @@ function sanitizeLoggedState(store: EditorStore) {
 
 export function reduxDevtoolsSendActions(
   actions: Array<Array<EditorAction>>,
-  newStore: EditorStore,
+  newStore: EditorStoreFull,
 ): void {
   if (
     maybeDevTools != null &&
@@ -124,7 +124,7 @@ export function reduxDevtoolsSendActions(
   }
 }
 
-export function reduxDevtoolsSendInitialState(newStore: EditorStore): void {
+export function reduxDevtoolsSendInitialState(newStore: EditorStoreFull): void {
   if (maybeDevTools != null) {
     maybeDevTools.init(newStore)
   }
@@ -150,7 +150,7 @@ export function reduxDevtoolsLogError(message: string, optionalPayload?: any): v
   }
 }
 
-export function reduxDevtoolsUpdateState(message: string, newStore: EditorStore): void {
+export function reduxDevtoolsUpdateState(message: string, newStore: EditorStoreFull): void {
   if (
     maybeDevTools != null &&
     sendActionUpdates &&

@@ -43,7 +43,7 @@ import {
   deriveState,
   EditorState,
   EditorStatePatch,
-  EditorStore,
+  EditorStoreFull,
   getAllBuildErrors,
   getAllErrorsFromFiles,
   getAllLintErrors,
@@ -52,7 +52,7 @@ import {
   storedEditorStateFromEditorState,
 } from './editor-state'
 import { runLocalEditorAction } from './editor-update'
-import { arrayEquals, isBrowserEnvironment } from '../../../core/shared/utils'
+import { arrayEquals, fastForEach, isBrowserEnvironment } from '../../../core/shared/utils'
 import {
   EvaluationCache,
   getDependencyTypeDefinitions,
@@ -93,11 +93,17 @@ import {
 import { isFeatureEnabled } from '../../../utils/feature-switches'
 import { isJsOrTsFile, isCssFile } from '../../../core/shared/file-utils'
 import { applyStatePatches } from '../../canvas/commands/commands'
+import { emptySet } from '../../../core/shared/set-utils'
 
-export interface DispatchResult extends EditorStore {
+type DispatchResultFields = {
   nothingChanged: boolean
   entireUpdateFinished: Promise<any>
 }
+
+type EditorStoreUnpatched = Omit<EditorStoreFull, 'patchedEditor'>
+
+type InnerDispatchResult = EditorStoreUnpatched & DispatchResultFields
+export type DispatchResult = EditorStoreFull & DispatchResultFields
 
 function simpleStringifyAction(action: EditorAction): string {
   switch (action.action) {
@@ -116,10 +122,10 @@ export function simpleStringifyActions(actions: ReadonlyArray<EditorAction>): st
 
 function processAction(
   dispatchEvent: EditorDispatch,
-  working: EditorStore,
+  working: EditorStoreUnpatched,
   action: EditorAction,
   spyCollector: UiJsxCanvasContextData,
-): EditorStore {
+): EditorStoreUnpatched {
   const workingHistory = working.history
   // Sidestep around the local actions so that we definitely run them locally.
   if (action.action === 'TRANSIENT_ACTIONS') {
@@ -189,7 +195,6 @@ function processAction(
 
     return {
       unpatchedEditor: editorAfterNavigator,
-      editor: editorAfterNavigator,
       derived: working.derived,
       history: newStateHistory,
       userState: working.userState,
@@ -204,11 +209,11 @@ function processAction(
 
 function processActions(
   dispatchEvent: EditorDispatch,
-  working: EditorStore,
+  working: EditorStoreUnpatched,
   actions: Array<EditorAction>,
   spyCollector: UiJsxCanvasContextData,
-): EditorStore {
-  return actions.reduce((workingFuture: EditorStore, action: EditorAction) => {
+): EditorStoreUnpatched {
+  return actions.reduce((workingFuture: EditorStoreUnpatched, action: EditorAction) => {
     return processAction(dispatchEvent, workingFuture, action, spyCollector)
   }, working)
 }
@@ -246,6 +251,7 @@ function maybeRequestModelUpdate(
   // Walk the project contents to see if anything needs to be sent across.
   let filesToUpdate: Array<ParseOrPrint> = []
   let forciblyParsedFiles: Array<string> = []
+  let existingUIDs: Set<string> = emptySet()
   walkContentsTree(projectContents, (fullPath, file) => {
     if (isTextFile(file)) {
       if (codeNeedsParsing(file.fileContents.revisionsState)) {
@@ -262,6 +268,8 @@ function maybeRequestModelUpdate(
         filesToUpdate.push(
           createPrintCode(fullPath, file.fileContents.parsed, PRODUCTION_ENV, file.lastRevisedTime),
         )
+        const uidsFromFile = Object.keys(file.fileContents.parsed.highlightBounds)
+        fastForEach(uidsFromFile, (uid) => existingUIDs.add(uid))
       } else if (forceParseFiles.includes(fullPath)) {
         forciblyParsedFiles.push(fullPath)
         const lastParseSuccess = isParseSuccess(file.fileContents.parsed)
@@ -270,13 +278,16 @@ function maybeRequestModelUpdate(
         filesToUpdate.push(
           createParseFile(fullPath, file.fileContents.code, lastParseSuccess, file.lastRevisedTime),
         )
+      } else if (isParseSuccess(file.fileContents.parsed)) {
+        const uidsFromFile = Object.keys(file.fileContents.parsed.highlightBounds)
+        fastForEach(uidsFromFile, (uid) => existingUIDs.add(uid))
       }
     }
   })
 
   // Should anything need to be sent across, do so here.
   if (filesToUpdate.length > 0) {
-    const parseFinished = getParseResult(workers, filesToUpdate)
+    const parseFinished = getParseResult(workers, filesToUpdate, existingUIDs)
       .then((parseResult) => {
         const updates = parseResult.map((fileResult) => {
           switch (fileResult.type) {
@@ -356,7 +367,7 @@ let applyProjectChangesCoordinator: Promise<void> = Promise.resolve()
 export function editorDispatch(
   boundDispatch: EditorDispatch,
   dispatchedActions: readonly EditorAction[],
-  storedState: EditorStore,
+  storedState: EditorStoreFull,
   spyCollector: UiJsxCanvasContextData,
 ): DispatchResult {
   const isLoadAction = dispatchedActions.some((a) => a.action === 'LOAD')
@@ -405,15 +416,9 @@ export function editorDispatch(
   }
   const actionGroupsToProcess = dispatchedActions.reduce(reducerToSplitToActionGroups, [[]])
 
-  const result: DispatchResult = actionGroupsToProcess.reduce(
-    (working: DispatchResult, actions) => {
-      const newStore = editorDispatchInner(
-        boundDispatch,
-        actions,
-        working,
-        allTransient,
-        spyCollector,
-      )
+  const result: InnerDispatchResult = actionGroupsToProcess.reduce(
+    (working: InnerDispatchResult, actions) => {
+      const newStore = editorDispatchInner(boundDispatch, actions, working, spyCollector)
       return newStore
     },
     { ...storedState, entireUpdateFinished: Promise.resolve(true), nothingChanged: true },
@@ -429,8 +434,8 @@ export function editorDispatch(
 
   const editorWithModelChecked =
     !anyUndoOrRedo && transientOrNoChange && !workerUpdatedModel
-      ? { editorState: result.editor, modelUpdateFinished: Promise.resolve(true) }
-      : maybeRequestModelUpdateOnEditor(result.editor, storedState.workers, boundDispatch)
+      ? { editorState: result.unpatchedEditor, modelUpdateFinished: Promise.resolve(true) }
+      : maybeRequestModelUpdateOnEditor(result.unpatchedEditor, storedState.workers, boundDispatch)
 
   const editorFilteredForFiles = filterEditorForFiles(editorWithModelChecked.editorState)
 
@@ -455,13 +460,13 @@ export function editorDispatch(
 
   const patchedEditorState = applyStatePatches(
     frozenEditorState,
-    storedState.editor,
+    storedState.patchedEditor,
     frozenDerivedState.canvas.transientState.editorStatePatch,
   )
 
   const finalStore: DispatchResult = {
     unpatchedEditor: frozenEditorState,
-    editor: patchedEditorState,
+    patchedEditor: patchedEditorState,
     derived: frozenDerivedState,
     history: newHistory,
     userState: result.userState,
@@ -500,8 +505,8 @@ export function editorDispatch(
       persistentModelFromEditorModel(frozenEditorState),
       forceSave ? 'force' : 'throttle',
     )
-    const stateToStore = storedEditorStateFromEditorState(storedState.editor)
-    saveStoredState(storedState.editor.id, stateToStore)
+    const stateToStore = storedEditorStateFromEditorState(frozenEditorState)
+    saveStoredState(frozenEditorState.id, stateToStore)
     reduxDevtoolsUpdateState('Save Editor', finalStore)
   }
 
@@ -513,16 +518,17 @@ export function editorDispatch(
     )
   }
 
-  const projectChanges = getProjectChanges(storedState.editor, frozenEditorState)
+  const projectChanges = getProjectChanges(storedState.unpatchedEditor, frozenEditorState)
   applyProjectChanges(frozenEditorState, projectChanges, updatedFromVSCode)
 
   const shouldUpdatePreview =
-    anySendPreviewModel || frozenEditorState.projectContents !== storedState.editor.projectContents
+    anySendPreviewModel ||
+    frozenEditorState.projectContents !== storedState.unpatchedEditor.projectContents
   if (shouldUpdatePreview) {
     updateEmbeddedPreview(frozenEditorState.id, frozenEditorState.projectContents)
   }
 
-  if (frozenEditorState.id != null && frozenEditorState.id != storedState.editor.id) {
+  if (frozenEditorState.id != null && frozenEditorState.id != storedState.unpatchedEditor.id) {
     storedState.workers.initWatchdogWorker(frozenEditorState.id)
   }
 
@@ -566,10 +572,9 @@ function applyProjectChanges(
 function editorDispatchInner(
   boundDispatch: EditorDispatch,
   dispatchedActions: EditorAction[],
-  storedState: DispatchResult,
-  transient: boolean,
+  storedState: InnerDispatchResult,
   spyCollector: UiJsxCanvasContextData,
-): DispatchResult {
+): InnerDispatchResult {
   // console.log('DISPATCH', simpleStringifyActions(dispatchedActions))
 
   const MeasureDispatchTime =
@@ -590,28 +595,34 @@ function editorDispatchInner(
 
     const editorStayedTheSame =
       storedState.nothingChanged &&
-      storedState.editor === result.editor &&
+      storedState.unpatchedEditor === result.unpatchedEditor &&
       storedState.userState === result.userState
 
-    const domMetadataChanged = storedState.editor.domMetadata !== result.editor.domMetadata
-    const spyMetadataChanged = storedState.editor.spyMetadata !== result.editor.spyMetadata
+    const domMetadataChanged =
+      storedState.unpatchedEditor.domMetadata !== result.unpatchedEditor.domMetadata
+    const spyMetadataChanged =
+      storedState.unpatchedEditor.spyMetadata !== result.unpatchedEditor.spyMetadata
     const dragStateLost =
-      storedState.editor.canvas.dragState != null && result.editor.canvas.dragState == null
+      storedState.unpatchedEditor.canvas.dragState != null &&
+      result.unpatchedEditor.canvas.dragState == null
     const metadataChanged = domMetadataChanged || spyMetadataChanged || dragStateLost
     // TODO: Should this condition actually be `&&`?
     // Tested quickly and it broke selection, but I'm mostly certain
     // it should only merge when both have changed.
     if (metadataChanged) {
-      if (result.editor.canvas.dragState != null && 'metadata' in result.editor.canvas.dragState) {
+      if (
+        result.unpatchedEditor.canvas.dragState != null &&
+        'metadata' in result.unpatchedEditor.canvas.dragState
+      ) {
         result = {
           ...result,
-          editor: {
-            ...result.editor,
+          unpatchedEditor: {
+            ...result.unpatchedEditor,
             canvas: {
-              ...result.editor.canvas,
+              ...result.unpatchedEditor.canvas,
               dragState: {
-                ...result.editor.canvas.dragState,
-                metadata: reconstructJSXMetadata(result.editor),
+                ...result.unpatchedEditor.canvas.dragState,
+                metadata: reconstructJSXMetadata(result.unpatchedEditor),
               },
             },
           },
@@ -619,15 +630,15 @@ function editorDispatchInner(
       } else {
         result = {
           ...result,
-          editor: {
-            ...result.editor,
-            jsxMetadata: reconstructJSXMetadata(result.editor),
+          unpatchedEditor: {
+            ...result.unpatchedEditor,
+            jsxMetadata: reconstructJSXMetadata(result.unpatchedEditor),
           },
         }
       }
     }
 
-    let frozenEditorState: EditorState = optionalDeepFreeze(result.editor)
+    let frozenEditorState: EditorState = optionalDeepFreeze(result.unpatchedEditor)
 
     let frozenDerivedState: DerivedState
     if (anyUndoOrRedo) {
@@ -665,7 +676,6 @@ function editorDispatchInner(
 
     return {
       unpatchedEditor: frozenEditorState,
-      editor: frozenEditorState,
       derived: frozenDerivedState,
       history: result.history,
       userState: result.userState,

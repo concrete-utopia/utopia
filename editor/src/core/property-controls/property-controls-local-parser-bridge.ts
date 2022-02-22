@@ -7,6 +7,7 @@ import {
   UtopiaJSXComponent,
 } from '../shared/element-template'
 import { Imports, isParseFailure, isParseSuccess } from '../shared/project-file-types'
+import { emptySet } from '../shared/set-utils'
 import { createParseFile, getParseResult, UtopiaTsWorkers } from '../workers/common/worker-types'
 
 type ProcessedParseResult = Either<
@@ -36,20 +37,24 @@ async function getParseResultForUserStrings(
   imports: string,
   toInsert: string,
 ): Promise<ProcessedParseResult> {
-  const parseResult = await getParseResult(workers, [
-    createParseFile(
-      'code.tsx',
-      `${imports};
+  const parseResult = await getParseResult(
+    workers,
+    [
+      createParseFile(
+        'code.tsx',
+        `${imports};
 
        function Utopia$$$Component(props) {
           return (
             ${toInsert}
           )
          }`,
-      null,
-      Date.now(),
-    ),
-  ])
+        null,
+        Date.now(),
+      ),
+    ],
+    emptySet(),
+  )
 
   if (parseResult[0].type === 'parsefileresult') {
     const parseFileResult = parseResult[0]

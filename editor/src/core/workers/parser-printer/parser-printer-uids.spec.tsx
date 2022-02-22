@@ -14,6 +14,7 @@ import {
   utopiaJSXComponent,
 } from '../../shared/element-template'
 import {
+  codeFile,
   foldParsedTextFile,
   isParseSuccess,
   ProjectContents,
@@ -38,6 +39,7 @@ import {
 import { emptySet } from '../../shared/set-utils'
 import { createCodeFile } from '../../../components/custom-code/code-file.test-utils'
 import { renderTestEditorWithProjectContent } from '../../../components/canvas/ui-jsx.test-utils'
+import { updateFile } from '../../../components/editor/actions/action-creators'
 
 function addCodeFileToProjectContents(
   projectContents: ProjectContentTreeRoot,
@@ -203,7 +205,7 @@ describe('parseCode', () => {
         `,
       ),
       '/src/card.js': createCodeFile(
-        '/src/app.js',
+        '/src/card.js',
         `import * as React from 'react'
 
         export const Card = (props) => {
@@ -226,6 +228,99 @@ describe('parseCode', () => {
       'Unique IDs failure.',
     )
     expect(uniq(uniqueIDs).length).toEqual(9)
+  })
+
+  it('can successfully handle a multifile project with duplicated UIDs added later', async () => {
+    let projectContents: ProjectContents = {
+      '/package.json': textFile(
+        textFileContents(
+          JSON.stringify(DefaultPackageJson, null, 2),
+          unparsed,
+          RevisionsState.CodeAhead,
+        ),
+        null,
+        null,
+        0,
+      ),
+      '/src': directory(),
+      '/utopia': directory(),
+      [StoryboardFilePath]: createCodeFile(
+        StoryboardFilePath,
+        `
+  import * as React from 'react'
+  import Utopia, {
+    Scene,
+    Storyboard,
+    registerModule,
+  } from 'utopia-api'
+  import { App } from '/src/app.js'
+
+  export var storyboard = (
+    <Storyboard data-uid='storyboard'>
+      <Scene
+        data-uid='scene'
+        style={{ position: 'absolute', left: 0, top: 0, width: 375, height: 812 }}
+      >
+        <App data-uid='duplicated1' />
+      </Scene>
+    </Storyboard>
+  )`,
+      ),
+      '/src/app.js': createCodeFile(
+        '/src/app.js',
+        `import * as React from 'react'
+
+        export const App = (props) => {
+          return (
+            <div data-uid='duplicated2'>
+              <div data-uid='duplicated3'>Hello World!</div>
+            </div>
+          )
+        }
+        `,
+      ),
+    }
+    const renderResult = await renderTestEditorWithProjectContent(
+      contentsToTree(projectContents),
+      'dont-await-first-dom-report',
+    )
+
+    const uniqueIDsBefore = getAllUniqueUids(
+      renderResult.getEditorState().editor.projectContents,
+      'Unique IDs failure.',
+    )
+    expect(uniq(uniqueIDsBefore).length).toEqual(5)
+
+    await renderResult.dispatch(
+      [
+        updateFile(
+          '/src/card.js',
+          codeFile(
+            `
+          import * as React from 'react'
+
+          export const Card = (props) => {
+            return (
+              <div data-uid='duplicated1'>
+                <div data-uid='duplicated2'>Hello World!</div>
+                <div data-uid='duplicated3'>Hello World!</div>
+              </div>
+            )
+          }
+          `,
+            null,
+          ),
+          true,
+        ),
+      ],
+      false,
+    )
+
+    const uniqueIDsAfter = getAllUniqueUids(
+      renderResult.getEditorState().editor.projectContents,
+      'Unique IDs failure.',
+    )
+    expect(uniq(uniqueIDsAfter).length).toEqual(8)
   })
 })
 
