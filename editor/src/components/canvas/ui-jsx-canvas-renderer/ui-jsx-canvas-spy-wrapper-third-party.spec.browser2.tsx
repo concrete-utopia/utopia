@@ -19,7 +19,7 @@ import {
   domWalkerMetadataToSimplifiedMetadataMap,
 } from '../../../utils/utils.test-utils'
 import { addFileToProjectContents } from '../../assets'
-import type { EditorStore } from '../../editor/store/editor-state'
+import type { EditorStorePatched } from '../../editor/store/editor-state'
 import { StoryboardFilePath } from '../../editor/store/editor-state'
 import { applyUIDMonkeyPatch } from '../../../utils/canvas-react-utils'
 import { matchInlineSnapshotBrowser } from '../../../../test/karma-snapshots'
@@ -138,7 +138,7 @@ function renderTestProject() {
   return renderTestEditorWithModel(updatedProject, 'await-first-dom-report', builtInDependencies)
 }
 
-async function waitForFullMetadata(getEditorState: () => EditorStore): Promise<true> {
+async function waitForFullMetadata(getEditorState: () => EditorStorePatched): Promise<true> {
   let foundMetadata = false
   let totalWaitTime = 0
   do {

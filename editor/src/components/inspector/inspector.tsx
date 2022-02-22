@@ -37,7 +37,7 @@ import {
 } from '../editor/actions/action-creators'
 
 import {
-  EditorStore,
+  EditorStorePatched,
   getJSXComponentsAndImportsForPathFromState,
   getOpenUtopiaJSXComponentsFromStateMultifile,
   isOpenFileUiJs,
@@ -544,9 +544,9 @@ export const SingleInspectorEntryPoint: React.FunctionComponent<{
 })
 
 const rootComponentsSelector = createSelector(
-  (store: EditorStore) => store.editor.projectContents,
-  (store: EditorStore) => store.editor.codeResultCache.curriedResolveFn,
-  (store: EditorStore) => store.editor.canvas.openFile?.filename ?? null,
+  (store: EditorStorePatched) => store.editor.projectContents,
+  (store: EditorStorePatched) => store.editor.codeResultCache.curriedResolveFn,
+  (store: EditorStorePatched) => store.editor.canvas.openFile?.filename ?? null,
   (projectContents, curriedResolveFn, openFilePath) => {
     const resolveFn = curriedResolveFn(projectContents)
     return getOpenUtopiaJSXComponentsFromStateMultifile(projectContents, resolveFn, openFilePath)
