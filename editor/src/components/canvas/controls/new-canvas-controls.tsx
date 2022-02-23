@@ -59,6 +59,7 @@ import { LayoutTargetableProp } from '../../../core/layout/layout-helpers-new'
 import { getDragStateStart } from '../canvas-utils'
 import { AbsoluteResizeControl } from './select-mode/absolute-resize-control'
 import { OutlineControl } from './select-mode/simple-outline-control'
+import { FlexResizeControl } from './select-mode/flex-resize-control'
 
 export const CanvasControlsContainerID = 'new-canvas-controls-container'
 
@@ -411,6 +412,10 @@ const NewCanvasControlsInner = (props: NewCanvasControlsInnerProps) => {
       {when(
         isFeatureEnabled('Canvas Absolute Resize Controls'),
         <AbsoluteResizeControl localSelectedElements={localSelectedViews} />,
+      )}
+      {when(
+        isFeatureEnabled('Canvas Absolute Resize Controls'),
+        <FlexResizeControl localSelectedElements={localSelectedViews} />,
       )}
     </div>
   )
