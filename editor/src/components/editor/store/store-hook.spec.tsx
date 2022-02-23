@@ -2,7 +2,7 @@ import React from 'react'
 import create, { UseStore } from 'zustand'
 import { renderHook } from '@testing-library/react-hooks'
 import { EditorStateContext, useSelectorWithCallback } from './store-hook'
-import { createEditorState, EditorState, EditorStore } from './editor-state'
+import { createEditorState, EditorState, EditorStorePatched } from './editor-state'
 import { NO_OP } from '../../../core/shared/utils'
 import * as EP from '../../../core/shared/element-path'
 import { shallowEqual } from '../../../core/shared/equality-utils'
@@ -11,8 +11,7 @@ import { createBuiltInDependenciesList } from '../../../core/es-modules/package-
 function createEmptyEditorStoreHook() {
   let emptyEditorState = createEditorState(NO_OP)
 
-  const initialEditorStore: EditorStore = {
-    unpatchedEditor: emptyEditorState,
+  const initialEditorStore: EditorStorePatched = {
     editor: emptyEditorState,
     derived: null as any,
     history: null as any,
@@ -24,13 +23,13 @@ function createEmptyEditorStoreHook() {
     builtInDependencies: createBuiltInDependenciesList(null),
   }
 
-  const storeHook = create<EditorStore>((set) => initialEditorStore)
+  const storeHook = create<EditorStorePatched>((set) => initialEditorStore)
 
   return storeHook
 }
 
 const ContextProvider: React.FunctionComponent<{
-  storeHook: UseStore<EditorStore>
+  storeHook: UseStore<EditorStorePatched>
 }> = ({ storeHook, children }) => {
   return (
     <EditorStateContext.Provider value={{ api: storeHook, useStore: storeHook }}>
@@ -46,7 +45,7 @@ describe('useSelectorWithCallback', () => {
     let hookRenders = 0
     let callCount = 0
 
-    const { result } = renderHook<{ storeHook: UseStore<EditorStore> }, void>(
+    const { result } = renderHook<{ storeHook: UseStore<EditorStorePatched> }, void>(
       (props) => {
         hookRenders++
         return useSelectorWithCallback(
@@ -74,7 +73,7 @@ describe('useSelectorWithCallback', () => {
     let hookRenders = 0
     let callCount = 0
 
-    const { result } = renderHook<{ storeHook: UseStore<EditorStore> }, void>(
+    const { result } = renderHook<{ storeHook: UseStore<EditorStorePatched> }, void>(
       (props) => {
         hookRenders++
         return useSelectorWithCallback(
@@ -122,7 +121,7 @@ describe('useSelectorWithCallback', () => {
       (store) => store.editor.selectedViews,
     )
 
-    const { result, rerender } = renderHook<{ storeHook: UseStore<EditorStore> }, void>(
+    const { result, rerender } = renderHook<{ storeHook: UseStore<EditorStorePatched> }, void>(
       (props) => {
         hookRenders++
         return useSelectorWithCallback(

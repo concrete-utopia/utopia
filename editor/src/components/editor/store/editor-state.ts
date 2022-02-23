@@ -242,9 +242,7 @@ export const defaultUserState: UserState = {
   shortcutConfig: {},
 }
 
-export type EditorStore = {
-  unpatchedEditor: EditorState
-  editor: EditorState
+type EditorStoreShared = {
   derived: DerivedState
   history: StateHistory
   userState: UserState
@@ -253,6 +251,22 @@ export type EditorStore = {
   dispatch: EditorDispatch
   builtInDependencies: BuiltInDependencies
   alreadySaved: boolean
+}
+
+export type EditorStoreFull = EditorStoreShared & {
+  unpatchedEditor: EditorState
+  patchedEditor: EditorState
+}
+
+export type EditorStorePatched = EditorStoreShared & {
+  editor: EditorState
+}
+
+export function patchedStoreFromFullStore(store: EditorStoreFull): EditorStorePatched {
+  return {
+    ...store,
+    editor: store.patchedEditor,
+  }
 }
 
 export interface FileDeleteModal {

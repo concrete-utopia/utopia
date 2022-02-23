@@ -1,5 +1,5 @@
 import React from 'react'
-import type { EditorStore } from './editor-state'
+import type { EditorStorePatched } from './editor-state'
 import { UseStore, StoreApi, EqualityChecker } from 'zustand'
 import { shallowEqual } from '../../../core/shared/equality-utils'
 import { isFeatureEnabled } from '../../../utils/feature-switches'
@@ -18,7 +18,7 @@ type StateSelector<T, U> = (state: T) => U
  * It is a good practice to use object destructure to consume the return value.
  */
 export const useEditorState = <U>(
-  selector: StateSelector<EditorStore, U>,
+  selector: StateSelector<EditorStorePatched, U>,
   selectorName: string,
   equalityFn: (oldSlice: U, newSlice: U) => boolean = shallowEqual,
 ): U => {
@@ -33,18 +33,18 @@ export const useEditorState = <U>(
 }
 
 function useWrapSelectorInPerformanceMeasureBlock<U>(
-  selector: StateSelector<EditorStore, U>,
+  selector: StateSelector<EditorStorePatched, U>,
   selectorName: string,
-): StateSelector<EditorStore, U> {
-  const previousSelectorRef = React.useRef<StateSelector<EditorStore, U>>()
-  const previousWrappedSelectorRef = React.useRef<StateSelector<EditorStore, U>>()
+): StateSelector<EditorStorePatched, U> {
+  const previousSelectorRef = React.useRef<StateSelector<EditorStorePatched, U>>()
+  const previousWrappedSelectorRef = React.useRef<StateSelector<EditorStorePatched, U>>()
 
   if (selector === previousSelectorRef.current && previousWrappedSelectorRef.current != null) {
     // we alreaedy wrapped this selector
     return previousWrappedSelectorRef.current
   } else {
     // let's create a new wrapped selector
-    const wrappedSelector = (state: EditorStore) => {
+    const wrappedSelector = (state: EditorStorePatched) => {
       const LogSelectorPerformance =
         isFeatureEnabled('Debug mode – Performance Marks') && PERFORMANCE_MARKS_ALLOWED
 
@@ -74,7 +74,7 @@ function useWrapSelectorInPerformanceMeasureBlock<U>(
  * ONLY USE IT IF YOU ARE SURE ABOUT WHAT YOU ARE DOING
  */
 export const useRefEditorState = <U>(
-  selector: StateSelector<EditorStore, U>,
+  selector: StateSelector<EditorStorePatched, U>,
   explainMe = false,
 ): { readonly current: U } => {
   const context = React.useContext(EditorStateContext)
@@ -113,7 +113,7 @@ export const useRefEditorState = <U>(
           sliceRef.current = newSlice
         }
       },
-      (store: EditorStore) => selectorRef.current(store),
+      (store: EditorStorePatched) => selectorRef.current(store),
       shallowEqual,
     )
     return function cleanup() {
@@ -126,8 +126,8 @@ export const useRefEditorState = <U>(
   return sliceRef
 }
 
-export type UtopiaStoreHook = UseStore<EditorStore>
-export type UtopiaStoreAPI = StoreApi<EditorStore>
+export type UtopiaStoreHook = UseStore<EditorStorePatched>
+export type UtopiaStoreAPI = StoreApi<EditorStorePatched>
 
 export type EditorStateContextData = {
   api: UtopiaStoreAPI
@@ -138,7 +138,7 @@ export const EditorStateContext = React.createContext<EditorStateContextData | n
 EditorStateContext.displayName = 'EditorStateContext'
 
 export function useSelectorWithCallback<U>(
-  selector: StateSelector<EditorStore, U>,
+  selector: StateSelector<EditorStorePatched, U>,
   callback: (newValue: U) => void,
   equalityFn: (oldSlice: U, newSlice: U) => boolean = shallowEqual,
   explainMe: boolean = false,
@@ -180,7 +180,7 @@ export function useSelectorWithCallback<U>(
   )
 
   /**
-   * When the EditorStore is updated, the api.subscribers are called in order. There's a chance one of our parents will be called sooner than us.
+   * When the EditorStorePatched is updated, the api.subscribers are called in order. There's a chance one of our parents will be called sooner than us.
    * To make sure the callback is fired when useSelectorWithCallback is called, we manually run the equality check and call the callback if needed.
    * But then to avoid double-calling the callback, we need to prevent it from running again once zustand gets here
    */
@@ -201,7 +201,7 @@ export function useSelectorWithCallback<U>(
         }
         innerCallback(newSlice)
       },
-      (store: EditorStore) => selectorRef.current(store),
+      (store: EditorStorePatched) => selectorRef.current(store),
       (oldValue: any, newValue: any) => equalityFnRef.current(oldValue, newValue),
     )
     return function cleanup() {
