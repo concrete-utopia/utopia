@@ -63,7 +63,13 @@ async function renderTestEditorWithCode(appUiJsFileCode: string) {
     const result = editorDispatch(
       dispatch,
       actions,
-      { ...storedState, unpatchedEditor: storedState.editor, patchedEditor: storedState.editor },
+      {
+        ...storedState,
+        unpatchedEditor: storedState.editor,
+        patchedEditor: storedState.editor,
+        unpatchedDerived: storedState.derived,
+        patchedDerived: storedState.derived,
+      },
       spyCollector,
     )
     storeHook.setState(patchedStoreFromFullStore(result))
