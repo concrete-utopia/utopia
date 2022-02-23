@@ -160,7 +160,7 @@ function startResizeInteraction(
     )
     const start: CanvasPoint = canvasPositions.canvasPositionRaw
     const originalFrames = getOriginalFrames(selectedViews, metadata)
-    const isMultiSelect = selectedViews.length !== 1
+    const isMultiSelect = selectedViews.length > 1
 
     const originalSize = boundingRectangleArray(
       selectedViews.map((path) => MetadataUtils.getFrameInCanvasCoords(path, metadata)),
