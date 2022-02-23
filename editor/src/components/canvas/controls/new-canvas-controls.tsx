@@ -57,9 +57,6 @@ import { KeysPressed } from '../../../utils/keyboard'
 import { usePrevious } from '../../editor/hook-utils'
 import { LayoutTargetableProp } from '../../../core/layout/layout-helpers-new'
 import { getDragStateStart } from '../canvas-utils'
-import { AnimatedPlaceholderBoxes } from './select-mode/animated-placeholder-boxes'
-import { FlexAlignControls } from './select-mode/flex-align-controls'
-import { FlexGapControls } from './select-mode/flex-gap-controls'
 import { AbsoluteResizeControl } from './select-mode/absolute-resize-control'
 import { OutlineControl } from './select-mode/simple-outline-control'
 
@@ -404,17 +401,9 @@ const NewCanvasControlsInner = (props: NewCanvasControlsInnerProps) => {
       onMouseDown={onMouseDown}
       onMouseMove={onMouseMove}
     >
-      {when(isFeatureEnabled('Canvas Strategies'), <AnimatedPlaceholderBoxes />)}
       {renderModeControlContainer()}
       {renderHighlightControls()}
       <LayoutParentControl />
-      {when(
-        isFeatureEnabled('Canvas Strategies'),
-        <>
-          <FlexAlignControls />
-          <FlexGapControls />
-        </>,
-      )}
       {when(
         isFeatureEnabled('Canvas Absolute Resize Controls'),
         <OutlineControl localSelectedElements={localSelectedViews} />,
