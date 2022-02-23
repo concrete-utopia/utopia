@@ -19,9 +19,9 @@ import {
   isClearInteractionState,
 } from '../actions/action-utils'
 import { DispatchResult, InnerDispatchResult } from './dispatch'
-import { DerivedState, EditorState, EditorStoreFull } from './editor-state'
+import { DerivedState, deriveState, EditorState, EditorStoreFull } from './editor-state'
 
-export interface HandleStrategiesResult {
+interface HandleStrategiesResult {
   unpatchedEditorState: EditorState
   patchedEditorState: EditorState
   newSessionStateState: SessionStateState
@@ -537,7 +537,34 @@ function interactionStrategyChangeStacked(
 }
 
 export function handleStrategies(
-  frozenDerivedState: DerivedState,
+  dispatchedActions: readonly EditorAction[],
+  storedState: EditorStoreFull,
+  result: InnerDispatchResult,
+  oldDerivedState: DerivedState,
+): HandleStrategiesResult & { patchedDerivedState: DerivedState } {
+  const { unpatchedEditorState, patchedEditorState, newSessionStateState } = handleStrategiesInner(
+    dispatchedActions,
+    storedState,
+    result,
+  )
+
+  const patchedEditorWithMetadata: EditorState = {
+    ...patchedEditorState,
+    jsxMetadata:
+      patchedEditorState.canvas.interactionState?.metadata ?? patchedEditorState.jsxMetadata, // TODO
+  }
+
+  const patchedDerivedState = deriveState(patchedEditorWithMetadata, oldDerivedState)
+
+  return {
+    unpatchedEditorState,
+    patchedEditorState: patchedEditorWithMetadata,
+    patchedDerivedState,
+    newSessionStateState,
+  }
+}
+
+function handleStrategiesInner(
   dispatchedActions: readonly EditorAction[],
   storedState: EditorStoreFull,
   result: InnerDispatchResult,
