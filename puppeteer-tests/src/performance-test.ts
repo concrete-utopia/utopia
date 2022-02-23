@@ -8,7 +8,7 @@ const path = require('path')
 const moveFile = require('move-file')
 
 const BRANCH_NAME = process.env.BRANCH_NAME ? `?branch_name=${process.env.BRANCH_NAME}` : ''
-const PROJECT_ID = '4addab7b'
+const PROJECT_ID = 'e46ccdca'
 const STAGING_EDITOR_URL =
   process.env.EDITOR_URL ?? `https://utopia.pizza/project/${PROJECT_ID}/${BRANCH_NAME}`
 const MASTER_EDITOR_URL =
