@@ -654,11 +654,6 @@ export interface UpdateInteractionState {
   newInteractionStateProps: Partial<InteractionState>
 }
 
-export interface UpdateCanvasSessionProps {
-  action: 'UPDATE_CANVAS_SESSION_PROPS'
-  newCanvasSessionProps: Partial<SelectModeCanvasSessionProps>
-}
-
 type SetSelectionControlsVisibility = {
   action: 'SET_SELECTION_CONTROLS_VISIBILITY'
   selectionControlsVisible: boolean
@@ -690,7 +685,6 @@ export type CanvasAction =
   | Zoom
   | ZoomUI
   | SetSelectionControlsVisibility
-  | UpdateCanvasSessionProps
   | SetUsersPreferredStrategy
 
 export type CanvasModel = {

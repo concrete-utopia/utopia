@@ -349,7 +349,6 @@ export function clearDragState(
       derived.canvas.transientState.selectedViews,
       result,
       false,
-      'permanent',
     )
 
     const producedTransientFilesState = producedTransientCanvasState.filesState
@@ -1701,7 +1700,6 @@ export function produceCanvasTransientState(
   previousCanvasTransientSelectedViews: Array<ElementPath> | null,
   editorState: EditorState,
   preventAnimations: boolean,
-  lifecycle: TransientOrNot,
 ): TransientCanvasState {
   const currentOpenFile = editorState.canvas.openFile?.filename
   let transientState: TransientCanvasState | null = null
@@ -1766,9 +1764,6 @@ export function produceCanvasTransientState(
         ) {
           const dragState = editorState.canvas.dragState
           switch (dragState.type) {
-            case 'SELECT_MODE_CANVAS_SESSION':
-              // FIXME: Remove case.
-              throw new Error('Should not be triggered.')
             case 'MOVE_DRAG_STATE':
               transientState = produceMoveTransientCanvasState(
                 previousCanvasTransientSelectedViews,
@@ -1808,7 +1803,7 @@ export function produceCanvasTransientState(
   }
 
   if (transientState == null) {
-    return transientCanvasState(null, null, null, [], [])
+    return transientCanvasState(editorState.selectedViews, editorState.highlightedViews, null, [])
   } else {
     return transientState
   }

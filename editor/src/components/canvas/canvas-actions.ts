@@ -40,14 +40,6 @@ const CanvasActions = {
       newInteractionStateProps: newInteractionStateProps,
     }
   },
-  updateCanvasSessionProps: function (
-    newCanvasSessionProps: Partial<SelectModeCanvasSessionProps>,
-  ): CanvasAction {
-    return {
-      action: 'UPDATE_CANVAS_SESSION_PROPS',
-      newCanvasSessionProps: newCanvasSessionProps,
-    }
-  },
   setSelectionControlsVisibility: function (selectionControlsVisible: boolean): CanvasAction {
     return {
       action: 'SET_SELECTION_CONTROLS_VISIBILITY',

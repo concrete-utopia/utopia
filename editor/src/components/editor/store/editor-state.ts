@@ -158,6 +158,7 @@ import type { BuiltInDependencies } from '../../../core/es-modules/package-manag
 import { DefaultThirdPartyControlDefinitions } from '../../../core/third-party/third-party-controls'
 import { Spec } from 'immutability-helper'
 import { InteractionState, SessionStateState } from '../../../interactions_proposal'
+import { FlexAlignControlRectProps } from '../../canvas/canvas-strategies/canvas-strategy-types'
 
 const ObjectPathImmutable: any = OPI
 
@@ -464,6 +465,10 @@ export interface EditorState {
     }> | null
     resizeOptions: ResizeOptions
     domWalkerAdditionalElementsToUpdate: Array<ElementPath>
+    controls: {
+      animatedPlaceholderTargetUids: Array<string>
+      flexAlignDropTargets: Array<FlexAlignControlRectProps>
+    }
   }
   floatingInsertMenu: FloatingInsertMenuState
   inspector: {
@@ -1229,6 +1234,10 @@ export function createEditorState(dispatch: EditorDispatch): EditorState {
         propertyTargetSelectedIndex: 0,
       },
       domWalkerAdditionalElementsToUpdate: [],
+      controls: {
+        animatedPlaceholderTargetUids: [],
+        flexAlignDropTargets: [],
+      },
     },
     floatingInsertMenu: {
       insertMenuMode: 'closed',
@@ -1484,6 +1493,10 @@ export function editorModelFromPersistentModel(
         propertyTargetSelectedIndex: 0,
       },
       domWalkerAdditionalElementsToUpdate: [],
+      controls: {
+        animatedPlaceholderTargetUids: [],
+        flexAlignDropTargets: [],
+      },
     },
     floatingInsertMenu: {
       insertMenuMode: 'closed',

@@ -974,6 +974,7 @@ function restoreEditorState(currentEditor: EditorModel, history: StateHistory): 
       transientProperties: null,
       resizeOptions: currentEditor.canvas.resizeOptions,
       domWalkerAdditionalElementsToUpdate: currentEditor.canvas.domWalkerAdditionalElementsToUpdate,
+      controls: currentEditor.canvas.controls,
     },
     floatingInsertMenu: currentEditor.floatingInsertMenu,
     inspector: {
