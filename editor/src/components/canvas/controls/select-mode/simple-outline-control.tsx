@@ -13,10 +13,6 @@ export const OutlineControl = React.memo<OutlineControlProps>((props) => {
   const colorTheme = useColorTheme()
   const localSelectedElements = props.localSelectedElements
 
-  const scale = useEditorState((store) => store.editor.canvas.scale, 'OutlineControl')
-  const outlineOffset = 0.5 / scale
-  const outlineWidthHeightOffset = -outlineOffset * 3
-
   const colors = useEditorState((store) => {
     return localSelectedElements.map((path) =>
       getSelectionColor(
@@ -29,10 +25,10 @@ export const OutlineControl = React.memo<OutlineControlProps>((props) => {
   }, 'OutlineControl colors')
 
   const outlineRef = useBoundingBox(localSelectedElements, (ref, boundingBox) => {
-    ref.current.style.left = boundingBox.x + outlineOffset + 'px'
-    ref.current.style.top = boundingBox.y + outlineOffset + 'px'
-    ref.current.style.width = boundingBox.width + outlineWidthHeightOffset + 'px'
-    ref.current.style.height = boundingBox.height + outlineWidthHeightOffset + 'px'
+    ref.current.style.left = `calc(${boundingBox.x}px + 0.5px / var(--utopia-canvas-scale))`
+    ref.current.style.top = `calc(${boundingBox.y}px + 0.5px / var(--utopia-canvas-scale))`
+    ref.current.style.width = `calc(${boundingBox.width}px - 0.5px / var(--utopia-canvas-scale) * 3)`
+    ref.current.style.height = `calc(${boundingBox.height}px - 0.5px / var(--utopia-canvas-scale) * 3)`
   })
 
   if (localSelectedElements.length > 0) {
@@ -43,7 +39,7 @@ export const OutlineControl = React.memo<OutlineControlProps>((props) => {
         style={{
           position: 'absolute',
           boxSizing: 'border-box',
-          boxShadow: `0px 0px 0px ${1 / scale}px ${colors[0]}`,
+          boxShadow: `0px 0px 0px calc(1px / var(--utopia-canvas-scale)) ${colors[0]}`,
           pointerEvents: 'none',
           transform: `translate(var(--utopia-canvas-offset-x), var(--utopia-canvas-offset-y))`,
         }}
