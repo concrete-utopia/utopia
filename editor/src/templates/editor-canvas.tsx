@@ -21,7 +21,7 @@ import {
 } from '../components/canvas/canvas-types'
 import {
   anyDragStarted,
-  clearDragStateAndInteractionSession,
+  clearDragState,
   createDuplicationNewUIDsFromEditorState,
   createOrUpdateDragState,
   dragExceededThreshold,
@@ -91,7 +91,6 @@ import {
   updateGlobalPositions,
 } from '../utils/global-positions'
 import { last, reverse } from '../core/shared/array-utils'
-import { updateSelectModeCanvasSessionDragVector } from '../components/canvas/canvas-strategies/canvas-strategy-types'
 
 const webFrame = PROBABLY_ELECTRON ? requireElectron().webFrame : null
 
@@ -300,27 +299,9 @@ export function runLocalCanvasAction(
       }
     }
     case 'CLEAR_DRAG_STATE':
-      return clearDragStateAndInteractionSession(model, derivedState, action.applyChanges)
+      return clearDragState(model, derivedState, action.applyChanges)
     case 'CREATE_DRAG_STATE':
       return createOrUpdateDragState(dispatch, model, action)
-    case 'UPDATE_CANVAS_SESSION_PROPS':
-      if (model.canvas.dragState?.type === 'SELECT_MODE_CANVAS_SESSION') {
-        return {
-          ...model,
-          canvas: {
-            ...model.canvas,
-            dragState: {
-              ...model.canvas.dragState,
-              sessionProps: {
-                ...model.canvas.dragState.sessionProps,
-                ...action.newCanvasSessionProps,
-              },
-            },
-          },
-        }
-      } else {
-        throw new Error('trying to update a nonexistent CanvasInteractionSession')
-      }
     case 'SET_SELECTION_CONTROLS_VISIBILITY':
       return update(model, {
         canvas: {
@@ -950,9 +931,6 @@ export class EditorCanvas extends React.Component<EditorCanvasProps> {
         }
         case 'INSERT_DRAG_STATE':
           break
-        case 'SELECT_MODE_CANVAS_SESSION':
-          // TODO add keyboard stuff to canvas session!
-          break
         default:
           const _exhaustiveCheck: never = dragState
           break
@@ -1099,14 +1077,6 @@ export class EditorCanvas extends React.Component<EditorCanvasProps> {
               enableSnapping,
               centerBasedResize,
               keepAspectRatio,
-            )
-            break
-          }
-          case 'SELECT_MODE_CANVAS_SESSION': {
-            newDragState = updateSelectModeCanvasSessionDragVector(
-              dragState,
-              canvasPositions.canvasPositionRounded,
-              newDrag,
             )
             break
           }
