@@ -64,6 +64,8 @@ import {
   useGetApplicableStrategiesOrderedByFitness,
   useGetApplicableStrategyControls,
 } from '../canvas-strategies/canvas-strategies'
+import { AbsoluteResizeControl } from './select-mode/absolute-resize-control'
+import { OutlineControl } from './select-mode/simple-outline-control'
 
 export const CanvasControlsContainerID = 'new-canvas-controls-container'
 
@@ -317,29 +319,33 @@ const NewCanvasControlsInner = (props: NewCanvasControlsInnerProps) => {
       case 'select':
       case 'select-lite':
       case 'live': {
-        return (
-          <SelectModeControlContainer
-            {...controlProps}
-            startDragStateAfterDragExceedsThreshold={startDragStateAfterDragExceedsThreshold}
-            setSelectedViewsLocally={setLocalSelectedViews}
-            keysPressed={props.editor.keysPressed}
-            windowToCanvasPosition={props.windowToCanvasPosition}
-            isDragging={dragging}
-            isResizing={resizing}
-            selectionEnabled={selectionEnabled}
-            draggingEnabled={draggingEnabled}
-            contextMenuEnabled={contextMenuEnabled}
-            maybeHighlightOnHover={maybeHighlightOnHover}
-            maybeClearHighlightsOnHoverEnd={maybeClearHighlightsOnHoverEnd}
-            duplicationState={props.editor.canvas.duplicationState}
-            dragState={
-              dragState?.type === 'MOVE_DRAG_STATE' || dragState?.type === 'RESIZE_DRAG_STATE'
-                ? dragState
-                : null
-            }
-            showAdditionalControls={props.editor.interfaceDesigner.additionalControls}
-          />
-        )
+        if (isFeatureEnabled('Canvas Absolute Resize Controls')) {
+          return null
+        } else {
+          return (
+            <SelectModeControlContainer
+              {...controlProps}
+              startDragStateAfterDragExceedsThreshold={startDragStateAfterDragExceedsThreshold}
+              setSelectedViewsLocally={setLocalSelectedViews}
+              keysPressed={props.editor.keysPressed}
+              windowToCanvasPosition={props.windowToCanvasPosition}
+              isDragging={dragging}
+              isResizing={resizing}
+              selectionEnabled={selectionEnabled}
+              draggingEnabled={draggingEnabled}
+              contextMenuEnabled={contextMenuEnabled}
+              maybeHighlightOnHover={maybeHighlightOnHover}
+              maybeClearHighlightsOnHoverEnd={maybeClearHighlightsOnHoverEnd}
+              duplicationState={props.editor.canvas.duplicationState}
+              dragState={
+                dragState?.type === 'MOVE_DRAG_STATE' || dragState?.type === 'RESIZE_DRAG_STATE'
+                  ? dragState
+                  : null
+              }
+              showAdditionalControls={props.editor.interfaceDesigner.additionalControls}
+            />
+          )
+        }
       }
       case 'insert': {
         return (
@@ -410,6 +416,14 @@ const NewCanvasControlsInner = (props: NewCanvasControlsInnerProps) => {
       {when(
         isFeatureEnabled('Canvas Strategies'),
         <>{strategyControls.map((c) => React.createElement(c.control, { key: c.key }))}</>,
+      )}
+      {when(
+        isFeatureEnabled('Canvas Absolute Resize Controls'),
+        <OutlineControl localSelectedElements={localSelectedViews} />,
+      )}
+      {when(
+        isFeatureEnabled('Canvas Absolute Resize Controls'),
+        <AbsoluteResizeControl localSelectedElements={localSelectedViews} />,
       )}
     </div>
   )

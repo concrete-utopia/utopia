@@ -140,15 +140,18 @@ export type ParsePrintResultMessage = ParsePrintFilesResult | ParsePrintFailedMe
 export interface ParsePrintFilesRequest extends ParsePrintBase {
   type: 'parseprintfiles'
   files: Array<ParseOrPrint>
+  alreadyExistingUIDs: Set<string>
 }
 
 export function createParsePrintFilesRequest(
   files: Array<ParseOrPrint>,
+  alreadyExistingUIDs: Set<string>,
   messageID: number,
 ): ParsePrintFilesRequest {
   return {
     type: 'parseprintfiles',
     files: files,
+    alreadyExistingUIDs: alreadyExistingUIDs,
     messageID: messageID,
   }
 }
@@ -158,6 +161,7 @@ let PARSE_PRINT_MESSAGE_COUNTER: number = 0
 export function getParseResult(
   workers: UtopiaTsWorkers,
   files: Array<ParseOrPrint>,
+  alreadyExistingUIDs: Set<string>,
 ): Promise<Array<ParseOrPrintResult>> {
   const messageIDForThisRequest = PARSE_PRINT_MESSAGE_COUNTER++
   return new Promise((resolve, reject) => {
@@ -181,7 +185,9 @@ export function getParseResult(
     }
 
     workers.addParserPrinterEventListener(handleMessage)
-    workers.sendParsePrintMessage(createParsePrintFilesRequest(files, messageIDForThisRequest))
+    workers.sendParsePrintMessage(
+      createParsePrintFilesRequest(files, alreadyExistingUIDs, messageIDForThisRequest),
+    )
   })
 }
 

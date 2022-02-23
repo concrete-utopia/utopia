@@ -56,7 +56,7 @@ import {
   storedEditorStateFromEditorState,
 } from './editor-state'
 import { runLocalEditorAction } from './editor-update'
-import { arrayEquals, isBrowserEnvironment } from '../../../core/shared/utils'
+import { arrayEquals, fastForEach, isBrowserEnvironment } from '../../../core/shared/utils'
 import {
   EvaluationCache,
   getDependencyTypeDefinitions,
@@ -120,6 +120,9 @@ import {
 } from '../../../interactions_proposal'
 import { forceNotNull } from '../../../core/shared/optional-utils'
 import { handleStrategies } from './dispatch-strategies'
+
+import { applyStatePatches } from '../../canvas/commands/commands'
+import { emptySet } from '../../../core/shared/set-utils'
 
 type DispatchResultFields = {
   nothingChanged: boolean
@@ -278,6 +281,7 @@ function maybeRequestModelUpdate(
   // Walk the project contents to see if anything needs to be sent across.
   let filesToUpdate: Array<ParseOrPrint> = []
   let forciblyParsedFiles: Array<string> = []
+  let existingUIDs: Set<string> = emptySet()
   walkContentsTree(projectContents, (fullPath, file) => {
     if (isTextFile(file)) {
       if (codeNeedsParsing(file.fileContents.revisionsState)) {
@@ -294,6 +298,8 @@ function maybeRequestModelUpdate(
         filesToUpdate.push(
           createPrintCode(fullPath, file.fileContents.parsed, PRODUCTION_ENV, file.lastRevisedTime),
         )
+        const uidsFromFile = Object.keys(file.fileContents.parsed.highlightBounds)
+        fastForEach(uidsFromFile, (uid) => existingUIDs.add(uid))
       } else if (forceParseFiles.includes(fullPath)) {
         forciblyParsedFiles.push(fullPath)
         const lastParseSuccess = isParseSuccess(file.fileContents.parsed)
@@ -302,13 +308,16 @@ function maybeRequestModelUpdate(
         filesToUpdate.push(
           createParseFile(fullPath, file.fileContents.code, lastParseSuccess, file.lastRevisedTime),
         )
+      } else if (isParseSuccess(file.fileContents.parsed)) {
+        const uidsFromFile = Object.keys(file.fileContents.parsed.highlightBounds)
+        fastForEach(uidsFromFile, (uid) => existingUIDs.add(uid))
       }
     }
   })
 
   // Should anything need to be sent across, do so here.
   if (filesToUpdate.length > 0) {
-    const parseFinished = getParseResult(workers, filesToUpdate)
+    const parseFinished = getParseResult(workers, filesToUpdate, existingUIDs)
       .then((parseResult) => {
         const updates = parseResult.map((fileResult) => {
           switch (fileResult.type) {

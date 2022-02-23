@@ -1,12 +1,6 @@
 import React from 'react'
-import { useContext } from 'use-context-selector'
-import { UTOPIA_PATHS_KEY, UTOPIA_UIDS_KEY } from '../../../../core/model/utopia-constants'
-import { eitherToMaybe } from '../../../../core/shared/either'
-import { getJSXAttribute } from '../../../../core/shared/element-template'
-import { jsxSimpleAttributeToValue } from '../../../../core/shared/jsx-attributes'
 import { ElementPath } from '../../../../core/shared/project-file-types'
-import { InspectorPropsContext, InspectorPropsContextData } from '../../common/property-path-hooks'
-import * as EP from '../../../../core/shared/element-path'
+import { PropertyControls } from 'utopia-api/core'
 import { useEditorState } from '../../../editor/store/store-hook'
 import { setCursorOverlay } from '../../../editor/actions/action-creators'
 import { useKeepReferenceEqualityIfPossible } from '../../../../utils/react-performance'
@@ -16,30 +10,6 @@ import { CSSCursor } from '../../../canvas/canvas-types'
 import { UIGridRow } from '../../widgets/ui-grid-row'
 import { VerySubdued } from '../../../../uuiui'
 import { specialPropertiesToIgnore } from '../../../../core/property-controls/property-controls-utils'
-import { PropertyControls } from 'utopia-api/core'
-
-function useFilterPropsContext(paths: ElementPath[]): InspectorPropsContextData {
-  const currentContext = useContext(InspectorPropsContext)
-  const spiedProps = currentContext.spiedProps.filter((props) =>
-    paths.some((path) => EP.toString(path) === props[UTOPIA_PATHS_KEY]),
-  )
-  const editedMultiSelectedProps = currentContext.editedMultiSelectedProps.filter((attributes) => {
-    const dataUidAttribute = getJSXAttribute(attributes, UTOPIA_UIDS_KEY)
-    if (dataUidAttribute != null) {
-      const uid = eitherToMaybe(jsxSimpleAttributeToValue(dataUidAttribute))
-      return paths.some((path) => EP.toUid(path) === uid)
-    } else {
-      return false
-    }
-  })
-
-  return {
-    ...currentContext,
-    spiedProps,
-    editedMultiSelectedProps,
-    selectedViews: paths,
-  }
-}
 
 interface PropertyControlsSectionProps {
   targets: ElementPath[]
@@ -52,7 +22,6 @@ interface PropertyControlsSectionProps {
 
 export const PropertyControlsSection = React.memo((props: PropertyControlsSectionProps) => {
   const {
-    targets,
     propertyControls,
     detectedPropsWithNoValue,
     detectedPropsAndValuesWithoutControls,
@@ -74,7 +43,6 @@ export const PropertyControlsSection = React.memo((props: PropertyControlsSectio
     [dispatch],
   )
 
-  const updatedContext = useKeepReferenceEqualityIfPossible(useFilterPropsContext(targets))
   const [visibleEmptyControls, showHiddenControl] = useHiddenElements()
 
   const rootFolder = (
@@ -91,7 +59,7 @@ export const PropertyControlsSection = React.memo((props: PropertyControlsSectio
   )
 
   return (
-    <InspectorPropsContext.Provider value={updatedContext}>
+    <>
       {rootFolder}
       {/** props set on the component instance and props used inside the component code */}
       {filteredDetectedPropsWithNoValue.length > 0 ? (
@@ -103,6 +71,6 @@ export const PropertyControlsSection = React.memo((props: PropertyControlsSectio
           </div>
         </UIGridRow>
       ) : null}
-    </InspectorPropsContext.Provider>
+    </>
   )
 })
