@@ -28,7 +28,7 @@ import {
   CanvasInteractionSession,
   SelectModeCanvasSessionProps,
 } from './canvas-strategies/canvas-strategy-types'
-import { InteractionState } from '../../interactions_proposal'
+import { InteractionState, InteractionStateWithoutMetadata } from '../../interactions_proposal'
 
 export const CanvasContainerID = 'canvas-container'
 
@@ -579,7 +579,7 @@ type Drag = IMouseEvent & {
 
 type Move = IMouseEvent & {
   event: 'MOVE'
-  interactionState: InteractionState | null
+  interactionState: InteractionStateWithoutMetadata | null
 }
 
 type Click = IMouseEvent & {
@@ -641,7 +641,7 @@ export interface CreateDragState {
 
 export interface CreateInteractionState {
   action: 'CREATE_INTERACTION_STATE'
-  interactionState: InteractionState
+  interactionState: InteractionStateWithoutMetadata
 }
 
 export interface ClearInteractionState {

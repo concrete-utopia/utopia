@@ -108,6 +108,7 @@ export interface InteractionState {
   activeControl: CanvasControlType // Do we need to guard against multiple controls trying to trigger or update an interaction session?
   sourceOfUpdate: CanvasControlType
   lastInteractionTime: number
+  metadata: ElementInstanceMetadataMap
 
   // To track if the user selected a strategy
   userPreferredStrategy: string | null
@@ -135,6 +136,8 @@ export interface InteractionState {
   // Sean:
   // The above is predicated on the commands setting discrete values and/or not changing something on another element at the same time.
 }
+
+export type InteractionStateWithoutMetadata = Omit<InteractionState, 'metadata'>
 
 export interface StrategyState {
   type: 'STRATEGY_STATE'
@@ -196,7 +199,7 @@ export function createInteractionViaMouse(
   mouseDownPoint: CanvasPoint,
   modifiers: Modifiers,
   activeControl: CanvasControlType,
-): InteractionState {
+): InteractionStateWithoutMetadata {
   return {
     interactionData: {
       type: 'DRAG',
@@ -227,7 +230,7 @@ export function updateInteractionViaMouse(
   drag: CanvasVector,
   modifiers: Modifiers,
   sourceOfUpdate: CanvasControlType | null, // If null it means the active control is the source
-): InteractionState {
+): InteractionStateWithoutMetadata {
   if (currentState.interactionData.type === 'DRAG') {
     const dragThresholdPassed =
       currentState.interactionData.dragThresholdPassed || dragExceededThreshold(drag)
@@ -260,7 +263,7 @@ export function createInteractionViaKeyboard(
   keysPressed: Array<KeyCharacter>,
   modifiers: Modifiers,
   activeControl: CanvasControlType,
-): InteractionState {
+): InteractionStateWithoutMetadata {
   return {
     interactionData: {
       type: 'KEYBOARD',
@@ -282,7 +285,7 @@ export function updateInteractionViaKeyboard(
   keysReleased: Array<KeyCharacter>,
   modifiers: Modifiers,
   sourceOfUpdate: CanvasControlType,
-): InteractionState {
+): InteractionStateWithoutMetadata {
   if (currentState.interactionData.type === 'KEYBOARD') {
     const withRemovedKeys = currentState.interactionData.keysPressed.filter(
       (k) => !keysReleased.includes(k),

@@ -368,7 +368,10 @@ export function runLocalCanvasAction(
         ...model,
         canvas: {
           ...model.canvas,
-          interactionState: action.interactionState,
+          interactionState: {
+            ...action.interactionState,
+            metadata: model.jsxMetadata,
+          },
         },
       }
     case 'CLEAR_INTERACTION_STATE':

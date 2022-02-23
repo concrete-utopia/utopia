@@ -51,6 +51,7 @@ import {
   getAllBuildErrors,
   getAllErrorsFromFiles,
   getAllLintErrors,
+  getMetadata,
   persistentModelFromEditorModel,
   reconstructJSXMetadata,
   storedEditorStateFromEditorState,
@@ -489,6 +490,12 @@ export function editorDispatch(
     result,
   )
 
+  const patchedEditorWithMetadata: EditorState = {
+    ...patchedEditorState,
+    jsxMetadata:
+      patchedEditorState.canvas.interactionState?.metadata ?? patchedEditorState.jsxMetadata,
+  }
+
   const editorWithModelChecked =
     !anyUndoOrRedo && transientOrNoChange && !workerUpdatedModel
       ? { editorState: unpatchedEditorState, modelUpdateFinished: Promise.resolve(true) }
@@ -498,7 +505,7 @@ export function editorDispatch(
 
   const finalStore: DispatchResult = {
     unpatchedEditor: frozenEditorState,
-    patchedEditor: patchedEditorState,
+    patchedEditor: patchedEditorWithMetadata,
     derived: frozenDerivedState,
     sessionStateState: optionalDeepFreeze(newSessionStateState),
     history: newHistory,
@@ -652,6 +659,20 @@ function editorDispatchInner(
               ...result.unpatchedEditor.canvas,
               dragState: {
                 ...result.unpatchedEditor.canvas.dragState,
+                metadata: reconstructJSXMetadata(result.unpatchedEditor),
+              },
+            },
+          },
+        }
+      } else if (result.unpatchedEditor.canvas.interactionState != null) {
+        result = {
+          ...result,
+          unpatchedEditor: {
+            ...result.unpatchedEditor,
+            canvas: {
+              ...result.unpatchedEditor.canvas,
+              interactionState: {
+                ...result.unpatchedEditor.canvas.interactionState,
                 metadata: reconstructJSXMetadata(result.unpatchedEditor),
               },
             },

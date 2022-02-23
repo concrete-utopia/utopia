@@ -32,7 +32,9 @@ export function interactionFinished(
   result: InnerDispatchResult,
 ): HandleStrategiesResult {
   const newEditorState = result.unpatchedEditor
-  const withClearedSession = createEmptySessionStateState(newEditorState.jsxMetadata)
+  const withClearedSession = createEmptySessionStateState(
+    newEditorState.canvas.interactionState?.metadata ?? newEditorState.jsxMetadata,
+  )
   const canvasState: InteractionCanvasState = {
     selectedElements: newEditorState.selectedViews,
     // metadata: store.editor.jsxMetadata, // We can add metadata back if live metadata is necessary
@@ -242,7 +244,9 @@ export function interactionStart(
   result: InnerDispatchResult,
 ): HandleStrategiesResult {
   const newEditorState = result.unpatchedEditor
-  const withClearedSession = createEmptySessionStateState(newEditorState.jsxMetadata)
+  const withClearedSession = createEmptySessionStateState(
+    newEditorState.canvas.interactionState?.metadata ?? newEditorState.jsxMetadata,
+  )
   const canvasState: InteractionCanvasState = {
     selectedElements: newEditorState.selectedViews,
     // metadata: store.editor.jsxMetadata, // We can add metadata back if live metadata is necessary
@@ -282,6 +286,7 @@ export function interactionStart(
         commands,
         'transient',
       )
+
       const newSessionStateState: SessionStateState = {
         currentStrategy: strategy.strategy.name,
         currentStrategyFitness: strategy.fitness,
@@ -289,8 +294,8 @@ export function interactionStart(
         accumulatedCommands: [],
         commandDescriptions: commandResult.commandDescriptions,
         strategyState: createEmptyStrategyState(),
-        startingMetadata: newEditorState.jsxMetadata,
-        originalMetadata: newEditorState.jsxMetadata,
+        startingMetadata: newEditorState.canvas.interactionState.metadata,
+        originalMetadata: newEditorState.canvas.interactionState.metadata,
       }
 
       return {
@@ -323,7 +328,7 @@ export function interactionCancel(
   return {
     unpatchedEditorState: updatedEditorState,
     patchedEditorState: updatedEditorState,
-    newSessionStateState: createEmptySessionStateState(updatedEditorState.jsxMetadata),
+    newSessionStateState: createEmptySessionStateState(),
   }
 }
 

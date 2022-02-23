@@ -323,6 +323,7 @@ export const NavigatorItem: React.FunctionComponent<NavigatorItemInnerProps> = R
       }
     }, [isElementVisible])
 
+    console.log('EP', EP.toString(elementPath), getElementPadding(elementPath))
     const rowStyle = useKeepReferenceEqualityIfPossible({
       paddingLeft: getElementPadding(elementPath),
       height: UtopiaTheme.layout.rowHeight.smaller,

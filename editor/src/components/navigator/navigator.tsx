@@ -51,6 +51,8 @@ export const NavigatorComponent = React.memo(() => {
     }
   }, 'NavigatorComponent')
 
+  console.log('NAVIGATOR COMPONENT TARGETS', visibleNavigatorTargets)
+
   const onFocus = React.useCallback(
     (e: React.FocusEvent<HTMLElement>) => {
       dispatch([setFocus('navigator')])
