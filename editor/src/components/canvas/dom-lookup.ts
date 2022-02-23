@@ -31,35 +31,45 @@ export function findParentSceneValidPaths(target: Element): Array<ElementPath> |
   }
 }
 
+// Take a DOM element, and try to find the nearest selectable path for it
 export function findFirstParentWithValidElementPath(
-  validDynamicElementPathsForLookup: Array<ElementPath> | 'no-filter',
+  validDynamicElementPathsForLookup: Set<string> | 'no-filter',
   target: Element,
 ): ElementPath | null {
   const dynamicElementPaths = getPathsOnDomElement(target)
-  const validStaticElementPathsForScene = findParentSceneValidPaths(target) ?? []
+  const staticTargetElementPaths = dynamicElementPaths.map((p) =>
+    EP.toString(EP.makeLastPartOfPathStatic(p)),
+  )
+  const validStaticElementPathsForSceneArray =
+    findParentSceneValidPaths(target)?.map(EP.toString) ?? []
+  const validStaticElementPathsForScene = new Set(validStaticElementPathsForSceneArray)
+
   const validStaticElementPaths =
     validDynamicElementPathsForLookup === 'no-filter'
       ? validStaticElementPathsForScene
-      : intersection(
-          validDynamicElementPathsForLookup.map(EP.makeLastPartOfPathStatic),
-          validStaticElementPathsForScene,
-          EP.pathsEqual,
+      : new Set(
+          [...validDynamicElementPathsForLookup].filter((p) =>
+            validStaticElementPathsForScene.has(p),
+          ),
         )
 
-  const filteredValidPathsMappedToDynamic = mapDropNulls((validPath: ElementPath) => {
-    return dynamicElementPaths.find((tp) => {
-      const elementPathWithStaticElementPart = EP.makeLastPartOfPathStatic(tp)
-      return EP.pathsEqual(validPath, elementPathWithStaticElementPart)
-    })
-  }, validStaticElementPaths)
+  const filteredValidPathsMappedToDynamic = mapDropNulls(
+    (validPath: string) => {
+      return staticTargetElementPaths.find((targetAsString) => targetAsString === validPath)
+    },
+    [...validStaticElementPaths],
+  )
 
   if (filteredValidPathsMappedToDynamic.length > 0) {
-    return last(filteredValidPathsMappedToDynamic) ?? null
+    return EP.fromString(last(filteredValidPathsMappedToDynamic)!)
   } else {
     if (target.parentElement == null) {
       return null
     } else {
-      return findFirstParentWithValidElementPath(validStaticElementPaths, target.parentElement)
+      return findFirstParentWithValidElementPath(
+        validDynamicElementPathsForLookup,
+        target.parentElement,
+      )
     }
   }
 }
@@ -112,12 +122,15 @@ export function getAllTargetsAtPoint(
     'loose',
   )
   const elementsUnderPoint = document.elementsFromPoint(point.x, point.y)
+  const validPathsSet =
+    validElementPathsForLookup == 'no-filter'
+      ? 'no-filter'
+      : new Set(
+          validElementPathsForLookup.map((path) => EP.toString(EP.makeLastPartOfPathStatic(path))),
+        )
   const elementsFromDOM = stripNulls(
     elementsUnderPoint.map((element) => {
-      const foundValidelementPath = findFirstParentWithValidElementPath(
-        validElementPathsForLookup,
-        element,
-      )
+      const foundValidelementPath = findFirstParentWithValidElementPath(validPathsSet, element)
       if (foundValidelementPath != null) {
         return foundValidelementPath
       } else {
