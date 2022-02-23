@@ -550,7 +550,7 @@ export function updateResizeDragState(
   })
 }
 
-export type DragState = InsertDragState | MoveDragState | ResizeDragState | CanvasInteractionSession
+export type DragState = InsertDragState | MoveDragState | ResizeDragState
 
 export interface CanvasPositions {
   windowPosition: WindowPoint

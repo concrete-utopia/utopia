@@ -409,7 +409,6 @@ const NewCanvasControlsInner = (props: NewCanvasControlsInnerProps) => {
       onMouseDown={onMouseDown}
       onMouseMove={onMouseMove}
     >
-      {when(isFeatureEnabled('Canvas Strategies'), <AnimatedPlaceholderBoxes />)}
       {renderModeControlContainer()}
       {renderHighlightControls()}
       <LayoutParentControl />

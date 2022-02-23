@@ -643,10 +643,7 @@ function editorDispatchInner(
     // Tested quickly and it broke selection, but I'm mostly certain
     // it should only merge when both have changed.
     if (metadataChanged) {
-      if (
-        result.unpatchedEditor.canvas.dragState != null &&
-        'metadata' in result.unpatchedEditor.canvas.dragState
-      ) {
+      if (result.unpatchedEditor.canvas.dragState != null) {
         result = {
           ...result,
           unpatchedEditor: {

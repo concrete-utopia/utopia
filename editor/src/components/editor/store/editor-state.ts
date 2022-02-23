@@ -156,12 +156,6 @@ import { v4 as UUID } from 'uuid'
 import { PersistenceMachine } from '../persistence/persistence'
 import type { BuiltInDependencies } from '../../../core/es-modules/package-manager/built-in-dependencies-list'
 import { DefaultThirdPartyControlDefinitions } from '../../../core/third-party/third-party-controls'
-import type {
-  CanvasInteractionSession,
-  FlexAlignControlRectProps,
-  SelectModeCanvasSessionState,
-  FlexGapControlRectProps,
-} from '../../canvas/canvas-strategies/canvas-strategy-types'
 import { Spec } from 'immutability-helper'
 import { InteractionState, SessionStateState } from '../../../interactions_proposal'
 
@@ -469,10 +463,6 @@ export interface EditorState {
       attributesToUpdate: MapLike<JSXAttribute>
     }> | null
     resizeOptions: ResizeOptions
-    controls: {
-      animatedPlaceholderTargetUids: Array<string>
-      flexAlignDropTargets: Array<FlexAlignControlRectProps>
-    }
     domWalkerAdditionalElementsToUpdate: Array<ElementPath>
   }
   floatingInsertMenu: FloatingInsertMenuState
@@ -1017,51 +1007,28 @@ export type TransientFilesState = { [filepath: string]: TransientFileState }
 export type EditorStatePatch = Spec<EditorState>
 
 export interface TransientCanvasState {
-  selectedViews: Array<ElementPath> | null
-  highlightedViews: Array<ElementPath> | null
+  selectedViews: Array<ElementPath>
+  highlightedViews: Array<ElementPath>
   filesState: TransientFilesState | null
   toastsToApply: ReadonlyArray<Notice>
-  editorStatePatch: Array<EditorStatePatch>
-  canvasSessionState: SelectModeCanvasSessionState | null
 }
 
 export function transientCanvasState(
-  selectedViews: Array<ElementPath> | null,
-  highlightedViews: Array<ElementPath> | null,
+  selectedViews: Array<ElementPath>,
+  highlightedViews: Array<ElementPath>,
   fileState: TransientFilesState | null,
   toastsToApply: ReadonlyArray<Notice>,
-  editorStatePatch: Array<EditorStatePatch>,
-  canvasSessionState: SelectModeCanvasSessionState | null = null,
 ): TransientCanvasState {
   return {
     selectedViews: selectedViews,
     highlightedViews: highlightedViews,
     filesState: fileState,
     toastsToApply: toastsToApply,
-    editorStatePatch: editorStatePatch,
-    canvasSessionState: canvasSessionState,
-  }
-}
-
-export function transientCanvasStateForSession(
-  canvasSessionState: SelectModeCanvasSessionState | null,
-  editorStatePatch: Array<EditorStatePatch>,
-): TransientCanvasState {
-  return {
-    selectedViews: null,
-    highlightedViews: null,
-    toastsToApply: [],
-    filesState: {},
-    editorStatePatch: editorStatePatch,
-    canvasSessionState: canvasSessionState,
   }
 }
 
 export function getMetadata(editor: EditorState): ElementInstanceMetadataMap {
-  if (
-    editor.canvas.dragState == null ||
-    editor.canvas.dragState.type === 'SELECT_MODE_CANVAS_SESSION'
-  ) {
+  if (editor.canvas.dragState == null) {
     return editor.jsxMetadata
   } else {
     return editor.canvas.dragState.metadata
@@ -1098,13 +1065,7 @@ function emptyDerivedState(editorState: EditorState): DerivedState {
     canvas: {
       descendantsOfHiddenInstances: [],
       controls: [],
-      transientState: produceCanvasTransientState(
-        editorState.selectedViews,
-        null,
-        editorState,
-        false,
-        'transient',
-      ),
+      transientState: produceCanvasTransientState(editorState.selectedViews, editorState, false),
     },
     elementWarnings: emptyComplexMap(),
   }
@@ -1267,10 +1228,6 @@ export function createEditorState(dispatch: EditorDispatch): EditorState {
         propertyTargetOptions: ['width', 'height'],
         propertyTargetSelectedIndex: 0,
       },
-      controls: {
-        animatedPlaceholderTargetUids: [],
-        flexAlignDropTargets: [],
-      },
       domWalkerAdditionalElementsToUpdate: [],
     },
     floatingInsertMenu: {
@@ -1410,10 +1367,8 @@ export function deriveState(
       controls: derivedState.canvas.controls,
       transientState: produceCanvasTransientState(
         oldDerivedState?.canvas.transientState.selectedViews ?? editor.selectedViews,
-        oldDerivedState?.canvas.transientState.canvasSessionState ?? null,
         editor,
         true,
-        'transient',
       ),
     },
     elementWarnings: getElementWarnings(getMetadata(editor)),
@@ -1527,10 +1482,6 @@ export function editorModelFromPersistentModel(
       resizeOptions: {
         propertyTargetOptions: ['width', 'height'],
         propertyTargetSelectedIndex: 0,
-      },
-      controls: {
-        animatedPlaceholderTargetUids: [],
-        flexAlignDropTargets: [],
       },
       domWalkerAdditionalElementsToUpdate: [],
     },
