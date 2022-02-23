@@ -165,11 +165,16 @@ function startResizeInteraction(
     const originalSize = boundingRectangleArray(
       selectedViews.map((path) => MetadataUtils.getFrameInCanvasCoords(path, metadata)),
     )
+    const flexDirection = MetadataUtils.getFlexDirection(
+      MetadataUtils.getParent(metadata, selectedViews[0]),
+    )
     let possibleTargetProperty: LayoutTargetableProp | undefined = undefined
     if (position.x === 0.5) {
-      possibleTargetProperty = 'height'
+      possibleTargetProperty =
+        flexDirection === 'column' || flexDirection === 'column-reverse' ? 'flexBasis' : 'height'
     } else if (position.y === 0.5) {
-      possibleTargetProperty = 'width'
+      possibleTargetProperty =
+        flexDirection === 'row' || flexDirection === 'row-reverse' ? 'flexBasis' : 'width'
     }
 
     if (originalSize != null) {
