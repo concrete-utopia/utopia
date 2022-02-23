@@ -17,8 +17,6 @@ Utopia is an integrated design and development environment for React. It uses Re
 
 Utopia is browser-based. To run it locally, clone the repo, and then set up the server and webpack by following these instructions.
 
-⚠️ We're looking into M1 related issues for some folks, but have it running successfully on three machine
-
 ## Prerequisites
 
 - **If using Windows** you'll first need to set up the [Windows Subsystem for Linux (wsl)](https://docs.microsoft.com/en-us/windows/wsl/install-win10). All following steps and commands will assume you are using the wsl.
