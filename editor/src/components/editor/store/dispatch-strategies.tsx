@@ -190,7 +190,7 @@ export function interactionUpdate(
     }
   } else {
     // Determine the new canvas strategy to run this time around.
-    const { strategy, previousStrategy } = findCanvasStrategy(
+    const { strategy } = findCanvasStrategy(
       canvasState,
       interactionState,
       result.sessionStateState,
