@@ -139,16 +139,8 @@ export const EditorComponentInner = React.memo((props: EditorProps) => {
     (event: KeyboardEvent) => {
       if (isFeatureEnabled('Canvas Strategies')) {
         const existingInteractionState = editorStoreRef.current.editor.canvas.interactionState
-        if (existingInteractionState == null) {
-          const action = CanvasActions.createInteractionState(
-            createInteractionViaKeyboard(
-              [Keyboard.keyCharacterForCode(event.keyCode)],
-              Modifier.modifiersForKeyboardEvent(event),
-              { type: 'KEYBOARD_CATCHER_CONTROL' },
-            ),
-          )
-          editorStoreRef.current.dispatch([action], 'everyone')
-        } else {
+        // TODO: we don't handle new interaction started with keyboard now
+        if (existingInteractionState != null) {
           const action = CanvasActions.createInteractionState(
             updateInteractionViaKeyboard(
               existingInteractionState,
@@ -177,7 +169,7 @@ export const EditorComponentInner = React.memo((props: EditorProps) => {
     (event) => {
       if (isFeatureEnabled('Canvas Strategies')) {
         const existingInteractionState = editorStoreRef.current.editor.canvas.interactionState
-        if (existingInteractionState !== null) {
+        if (existingInteractionState != null) {
           const action = CanvasActions.createInteractionState(
             updateInteractionViaKeyboard(
               existingInteractionState,
