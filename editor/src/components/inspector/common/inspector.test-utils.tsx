@@ -93,7 +93,7 @@ export function editPropOfSelectedView(
   newValue: number | string,
 ): EditorStoreFull {
   const updatedEditor = modifyOpenJsxElementAtStaticPath(
-    store.unpatchedEditor.selectedViews[0] as StaticElementPath,
+    store.patchedEditor.selectedViews[0] as StaticElementPath,
     (element): JSXElement => {
       const updatedAttributes = setJSXValueAtPath(
         element.props,
@@ -109,7 +109,7 @@ export function editPropOfSelectedView(
         throw new Error(`Couldn't set property in test`)
       }
     },
-    store.unpatchedEditor,
+    store.patchedEditor,
   )
   return {
     ...store,

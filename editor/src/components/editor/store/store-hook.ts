@@ -11,7 +11,7 @@ export type PatchedSelector<U> = StateSelector<EditorStorePatched, U>
 
 export type FullSelector<U> = StateSelector<EditorStoreFull, U>
 
-export function patchedStoreFromFullStore(store: EditorStoreFull): EditorStorePatched {
+function patchedStoreFromFullStore(store: EditorStoreFull): EditorStorePatched {
   return {
     derived: store.derived,
     history: store.history,

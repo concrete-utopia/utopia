@@ -86,7 +86,6 @@ import {
   createBuiltInDependenciesList,
 } from '../../core/es-modules/package-manager/built-in-dependencies-list'
 import { clearAllRegisteredControls } from './canvas-globals'
-import { patchedStoreFromFullStore } from '../editor/store/store-hook'
 
 // eslint-disable-next-line no-unused-expressions
 typeof process !== 'undefined' &&
@@ -311,7 +310,7 @@ export function getPrintedUiJsCode(
   store: EditorStoreFull,
   filePath: string = StoryboardFilePath,
 ): string {
-  const file = getContentsTreeFileFromString(store.unpatchedEditor.projectContents, filePath)
+  const file = getContentsTreeFileFromString(store.patchedEditor.projectContents, filePath)
   if (isTextFile(file)) {
     return file.fileContents.code
   } else {
@@ -321,7 +320,7 @@ export function getPrintedUiJsCode(
 
 export function getPrintedUiJsCodeWithoutUIDs(store: EditorStoreFull): string {
   const file = getContentsTreeFileFromString(
-    store.unpatchedEditor.projectContents,
+    store.patchedEditor.projectContents,
     StoryboardFilePath,
   )
   if (isTextFile(file) && isParseSuccess(file.fileContents.parsed)) {

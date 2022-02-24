@@ -30,7 +30,7 @@ import { DummyPersistenceMachine } from '../editor/persistence/persistence.test-
 import { disableStoredStateforTests } from '../editor/stored-state'
 import { matchInlineSnapshotBrowser } from '../../../test/karma-snapshots'
 import { createBuiltInDependenciesList } from '../../core/es-modules/package-manager/built-in-dependencies-list'
-import { patchedStoreFromFullStore } from '../editor/store/store-hook'
+import { wait } from '../../utils/utils.test-utils'
 
 disableStoredStateforTests()
 
@@ -55,17 +55,8 @@ async function renderTestEditorWithCode(appUiJsFileCode: string) {
 
   const dispatch: EditorDispatch = (actions) => {
     const storedState = storeHook.getState()
-    const result = editorDispatch(
-      dispatch,
-      actions,
-      {
-        ...storedState,
-        unpatchedEditor: storedState.unpatchedEditor,
-        patchedEditor: storedState.unpatchedEditor,
-      },
-      spyCollector,
-    )
-    storeHook.setState(patchedStoreFromFullStore(result))
+    const result = editorDispatch(dispatch, actions, storedState, spyCollector)
+    storeHook.setState(result)
   }
 
   const initialEditorStore: EditorStoreFull = {
@@ -102,7 +93,7 @@ async function renderTestEditorWithCode(appUiJsFileCode: string) {
       false,
     )
   })
-  const sanitizedMetadata = sanitizeJsxMetadata(storeHook.getState().unpatchedEditor.jsxMetadata)
+  const sanitizedMetadata = sanitizeJsxMetadata(storeHook.getState().patchedEditor.jsxMetadata)
   return sanitizedMetadata
 }
 
@@ -2446,6 +2437,7 @@ describe('DOM Walker tests', () => {
       }
       `,
     )
+
     matchInlineSnapshotBrowser(
       sanitizedMetadata,
       `

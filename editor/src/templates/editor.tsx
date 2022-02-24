@@ -52,7 +52,6 @@ import {
 } from '../components/editor/store/editor-state'
 import {
   EditorStateContext,
-  patchedStoreFromFullStore,
   UtopiaStoreAPI,
   UtopiaStoreHook,
 } from '../components/editor/store/store-hook'
