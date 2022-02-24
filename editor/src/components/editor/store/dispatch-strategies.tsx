@@ -18,7 +18,7 @@ import {
   shouldApplyClearInteractionStateResult,
   isClearInteractionState,
 } from '../actions/action-utils'
-import { DispatchResult, InnerDispatchResult } from './dispatch'
+import { InnerDispatchResult } from './dispatch'
 import { DerivedState, deriveState, EditorState, EditorStoreFull } from './editor-state'
 
 interface HandleStrategiesResult {
@@ -97,7 +97,7 @@ export function interactionHardReset(
   const newEditorState = result.unpatchedEditor
   const withClearedSession = {
     ...storedState.sessionStateState,
-    startingMetadata: storedState.sessionStateState.originalMetadata,
+    startingMetadata: storedState.unpatchedEditor.jsxMetadata,
   }
   const canvasState: InteractionCanvasState = {
     selectedElements: newEditorState.selectedViews,
@@ -118,7 +118,7 @@ export function interactionHardReset(
     const resetInteractionState = interactionStateHardReset(interactionState)
     const resetSessionState = {
       ...result.sessionStateState,
-      startingMetadata: result.sessionStateState.originalMetadata,
+      startingMetadata: storedState.unpatchedEditor.jsxMetadata,
     }
     // Determine the new canvas strategy to run this time around.
     const { strategy, previousStrategy } = findCanvasStrategy(
@@ -151,7 +151,6 @@ export function interactionHardReset(
         commandDescriptions: commandResult.commandDescriptions,
         strategyState: createEmptyStrategyState(),
         startingMetadata: resetSessionState.startingMetadata,
-        originalMetadata: resetSessionState.originalMetadata,
       }
 
       return {
@@ -221,7 +220,6 @@ export function interactionUpdate(
         commandDescriptions: commandResult.commandDescriptions,
         strategyState: createEmptyStrategyState(),
         startingMetadata: result.sessionStateState.startingMetadata,
-        originalMetadata: result.sessionStateState.originalMetadata,
       }
 
       return {
@@ -295,7 +293,6 @@ export function interactionStart(
         commandDescriptions: commandResult.commandDescriptions,
         strategyState: createEmptyStrategyState(),
         startingMetadata: newEditorState.canvas.interactionState.metadata,
-        originalMetadata: newEditorState.canvas.interactionState.metadata,
       }
 
       return {
@@ -410,7 +407,6 @@ export function interactionUserChangedStrategy(
         commandDescriptions: commandResult.commandDescriptions,
         strategyState: createEmptyStrategyState(),
         startingMetadata: result.sessionStateState.startingMetadata,
-        originalMetadata: result.sessionStateState.originalMetadata,
       }
 
       return {
@@ -508,7 +504,6 @@ function interactionStrategyChangeStacked(
         commandDescriptions: commandResult.commandDescriptions,
         strategyState: createEmptyStrategyState(),
         startingMetadata: result.sessionStateState.startingMetadata,
-        originalMetadata: result.sessionStateState.originalMetadata,
       }
 
       const patchedEditorState = {
@@ -551,7 +546,7 @@ export function handleStrategies(
   const patchedEditorWithMetadata: EditorState = {
     ...patchedEditorState,
     jsxMetadata:
-      patchedEditorState.canvas.interactionState?.metadata ?? patchedEditorState.jsxMetadata, // TODO
+      patchedEditorState.canvas.interactionState?.metadata ?? patchedEditorState.jsxMetadata,
   }
 
   const patchedDerivedState = deriveState(patchedEditorWithMetadata, oldDerivedState)

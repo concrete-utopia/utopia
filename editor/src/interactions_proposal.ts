@@ -173,9 +173,6 @@ export interface SessionStateState {
 
   // Checkpointed metadata at the point at which a strategy change has occurred.
   startingMetadata: ElementInstanceMetadataMap
-
-  // Checkpointed metadata at the point at which the interaction has started.
-  originalMetadata: ElementInstanceMetadataMap
 }
 
 export function createEmptySessionStateState(
@@ -189,7 +186,6 @@ export function createEmptySessionStateState(
     commandDescriptions: [],
     strategyState: createEmptyStrategyState(),
     startingMetadata: metadata ?? {},
-    originalMetadata: metadata ?? {},
   }
 }
 
