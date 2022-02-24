@@ -78,7 +78,6 @@ describe('TransientCanvasStateKeepDeepEquality', () => {
       ),
     },
     [],
-    [],
   )
   const newSameValue: TransientCanvasState = transientCanvasState(
     [EP.elementPath([['scene'], ['aaa', 'bbb']])],
@@ -103,7 +102,6 @@ describe('TransientCanvasStateKeepDeepEquality', () => {
       ),
     },
     [],
-    [],
   )
   const newDifferentValue: TransientCanvasState = transientCanvasState(
     [EP.elementPath([['scene'], ['aaa', 'ddd']])],
@@ -127,7 +125,6 @@ describe('TransientCanvasStateKeepDeepEquality', () => {
         emptyImports(),
       ),
     },
-    [],
     [],
   )
 
@@ -181,7 +178,6 @@ describe('DerivedStateKeepDeepEquality', () => {
           ),
         },
         [],
-        [],
       ),
     },
     elementWarnings: addToComplexMap(
@@ -220,7 +216,6 @@ describe('DerivedStateKeepDeepEquality', () => {
           ),
         },
         [],
-        [],
       ),
     },
     elementWarnings: addToComplexMap(
@@ -258,7 +253,6 @@ describe('DerivedStateKeepDeepEquality', () => {
             emptyImports(),
           ),
         },
-        [],
         [],
       ),
     },

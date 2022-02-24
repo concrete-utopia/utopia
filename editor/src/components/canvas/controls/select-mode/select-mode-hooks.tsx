@@ -41,7 +41,6 @@ import { useWindowToCanvasCoordinates } from '../../dom-lookup-hooks'
 import { useInsertModeSelectAndHover } from './insert-mode-hooks'
 import { WindowMousePositionRaw } from '../../../../utils/global-positions'
 import { isFeatureEnabled } from '../../../../utils/feature-switches'
-import { startNewSelectModeCanvasSession } from '../../canvas-strategies/canvas-strategy-types'
 
 const DRAG_START_TRESHOLD = 2
 
@@ -299,28 +298,6 @@ function useStartDragState(): (
   )
 }
 
-function useStartCanvasSession(): (
-  target: ElementPath,
-  start: CanvasPoint | null,
-) => (event: MouseEvent) => void {
-  const dispatch = useEditorState((store) => store.dispatch, 'useStartDragState dispatch')
-
-  return React.useCallback(
-    (target: ElementPath, start: CanvasPoint | null) => (event: MouseEvent) => {
-      if (start == null) {
-        return
-      }
-
-      dispatch([
-        CanvasActions.createDragState(
-          startNewSelectModeCanvasSession(start, { type: 'BOUNDING_AREA' }),
-        ),
-      ])
-    },
-    [dispatch],
-  )
-}
-
 function callbackAfterDragExceedsThreshold(
   startEvent: MouseEvent,
   threshold: number,
@@ -352,7 +329,6 @@ export function useStartDragStateAfterDragExceedsThreshold(): (
   foundTarget: ElementPath,
 ) => void {
   const startDragState = useStartDragState()
-  const startCanvasModeSession = useStartCanvasSession()
   const windowToCanvasCoordinates = useWindowToCanvasCoordinates()
 
   const startDragStateAfterDragExceedsThreshold = React.useCallback(
@@ -361,21 +337,13 @@ export function useStartDragStateAfterDragExceedsThreshold(): (
         windowPoint(point(nativeEvent.clientX, nativeEvent.clientY)),
       ).canvasPositionRounded
 
-      if (isFeatureEnabled('Canvas Strategies')) {
-        callbackAfterDragExceedsThreshold(
-          nativeEvent,
-          DRAG_START_TRESHOLD,
-          startCanvasModeSession(foundTarget, startPoint),
-        )
-      } else {
-        callbackAfterDragExceedsThreshold(
-          nativeEvent,
-          DRAG_START_TRESHOLD,
-          startDragState(foundTarget, startPoint),
-        )
-      }
+      callbackAfterDragExceedsThreshold(
+        nativeEvent,
+        DRAG_START_TRESHOLD,
+        startDragState(foundTarget, startPoint),
+      )
     },
-    [startDragState, startCanvasModeSession, windowToCanvasCoordinates],
+    [startDragState, windowToCanvasCoordinates],
   )
 
   return startDragStateAfterDragExceedsThreshold
