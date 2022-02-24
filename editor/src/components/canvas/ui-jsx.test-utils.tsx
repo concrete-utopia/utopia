@@ -172,7 +172,7 @@ export async function renderTestEditorWithModel(
   let workingEditorState: EditorStoreFull
 
   function updateEditor() {
-    storeHook.setState(patchedStoreFromFullStore(workingEditorState))
+    storeHook.setState(workingEditorState)
   }
 
   const spyCollector = emptyUiJsxCanvasContextData()
