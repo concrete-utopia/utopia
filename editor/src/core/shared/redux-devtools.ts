@@ -60,7 +60,10 @@ maybeDevTools?.subscribe((message) => {
 })
 
 const ActionsToOmit: Array<EditorAction['action']> = ['UPDATE_PREVIEW_CONNECTED', 'LOAD']
-const ActionsWithPayload: Array<EditorAction['action']> = []
+const ActionsWithPayload: Array<EditorAction['action']> = [
+  'CREATE_INTERACTION_STATE',
+  'UPDATE_INTERACTION_STATE',
+]
 
 let lastDispatchedStore: SanitizedState
 
