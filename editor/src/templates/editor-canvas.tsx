@@ -370,7 +370,7 @@ export function runLocalCanvasAction(
           ...model.canvas,
           interactionState: {
             ...action.interactionState,
-            metadata: model.jsxMetadata,
+            metadata: model.canvas.interactionState?.metadata ?? model.jsxMetadata,
           },
         },
       }
