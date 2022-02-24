@@ -18,12 +18,7 @@ import { EditorDispatch } from '../editor/action-types'
 import { load } from '../editor/actions/actions'
 import * as History from '../editor/history'
 import { editorDispatch } from '../editor/store/dispatch'
-import {
-  createEditorState,
-  deriveState,
-  EditorStorePatched,
-  patchedStoreFromFullStore,
-} from '../editor/store/editor-state'
+import { createEditorState, deriveState, EditorStoreFull } from '../editor/store/editor-state'
 import Utils from '../../utils/utils'
 import { BakedInStoryboardUID } from '../../core/model/scene-utils'
 import { NO_OP } from '../../core/shared/utils'
@@ -60,17 +55,13 @@ async function renderTestEditorWithCode(appUiJsFileCode: string) {
 
   const dispatch: EditorDispatch = (actions) => {
     const storedState = storeHook.getState()
-    const result = editorDispatch(
-      dispatch,
-      actions,
-      { ...storedState, unpatchedEditor: storedState.editor, patchedEditor: storedState.editor },
-      spyCollector,
-    )
-    storeHook.setState(patchedStoreFromFullStore(result))
+    const result = editorDispatch(dispatch, actions, storedState, spyCollector)
+    storeHook.setState(result)
   }
 
-  const initialEditorStore: EditorStorePatched = {
-    editor: emptyEditorState,
+  const initialEditorStore: EditorStoreFull = {
+    unpatchedEditor: emptyEditorState,
+    patchedEditor: emptyEditorState,
     derived: derivedState,
     sessionStateState: createEmptySessionStateState(),
     history: history,
@@ -89,7 +80,7 @@ async function renderTestEditorWithCode(appUiJsFileCode: string) {
     builtInDependencies: createBuiltInDependenciesList(null),
   }
 
-  const storeHook = create<EditorStorePatched>((set) => initialEditorStore)
+  const storeHook = create<EditorStoreFull>((set) => initialEditorStore)
 
   render(<EditorRoot api={storeHook} useStore={storeHook} spyCollector={spyCollector} />)
 
@@ -103,7 +94,7 @@ async function renderTestEditorWithCode(appUiJsFileCode: string) {
       false,
     )
   })
-  const sanitizedMetadata = sanitizeJsxMetadata(storeHook.getState().editor.jsxMetadata)
+  const sanitizedMetadata = sanitizeJsxMetadata(storeHook.getState().patchedEditor.jsxMetadata)
   return sanitizedMetadata
 }
 
@@ -2447,6 +2438,7 @@ describe('DOM Walker tests', () => {
       }
       `,
     )
+
     matchInlineSnapshotBrowser(
       sanitizedMetadata,
       `

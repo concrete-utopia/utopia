@@ -7,6 +7,7 @@ import create from 'zustand'
 import {
   editorModelFromPersistentModel,
   EditorState,
+  EditorStoreFull,
   EditorStorePatched,
 } from '../../editor/store/editor-state'
 import { NO_OP } from '../../../core/shared/utils'
@@ -174,8 +175,9 @@ function callPropertyControlsHook(selectedViews: ElementPath[]) {
     jsxMetadata: metadata,
   }
 
-  const initialEditorStore: EditorStorePatched = {
-    editor: editorState,
+  const initialEditorStore: EditorStoreFull = {
+    unpatchedEditor: editorState,
+    patchedEditor: editorState,
     derived: null as any,
     sessionStateState: null as any,
     history: null as any,
@@ -187,7 +189,7 @@ function callPropertyControlsHook(selectedViews: ElementPath[]) {
     builtInDependencies: [],
   }
 
-  const storeHook = create<EditorStorePatched>((set) => initialEditorStore)
+  const storeHook = create<EditorStoreFull>((set) => initialEditorStore)
 
   const inspectorCallbackContext: InspectorCallbackContextData = {
     selectedViewsRef: { current: selectedViews },

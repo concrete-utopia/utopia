@@ -66,6 +66,7 @@ import {
 } from '../canvas-strategies/canvas-strategies'
 import { AbsoluteResizeControl } from './select-mode/absolute-resize-control'
 import { OutlineControl } from './select-mode/simple-outline-control'
+import { FlexResizeControl } from './select-mode/flex-resize-control'
 
 export const CanvasControlsContainerID = 'new-canvas-controls-container'
 
@@ -133,7 +134,6 @@ export const NewCanvasControls = React.memo((props: NewCanvasControlsProps) => {
       editor: store.editor,
       derived: store.derived,
       canvasOffset: store.editor.canvas.roundedCanvasOffset,
-
       controls: store.derived.canvas.controls,
       scale: store.editor.canvas.scale,
       focusedPanel: store.editor.focusedPanel,
@@ -423,6 +423,10 @@ const NewCanvasControlsInner = (props: NewCanvasControlsInnerProps) => {
       {when(
         isFeatureEnabled('Canvas Absolute Resize Controls'),
         <AbsoluteResizeControl localSelectedElements={localSelectedViews} />,
+      )}
+      {when(
+        isFeatureEnabled('Canvas Absolute Resize Controls'),
+        <FlexResizeControl localSelectedElements={localSelectedViews} />,
       )}
     </div>
   )

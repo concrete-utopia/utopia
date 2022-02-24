@@ -224,7 +224,7 @@ describe('parseCode', () => {
     )
 
     const uniqueIDs = getAllUniqueUids(
-      renderResult.getEditorState().editor.projectContents,
+      renderResult.getEditorState().patchedEditor.projectContents,
       'Unique IDs failure.',
     )
     expect(uniq(uniqueIDs).length).toEqual(9)
@@ -286,7 +286,7 @@ describe('parseCode', () => {
     )
 
     const uniqueIDsBefore = getAllUniqueUids(
-      renderResult.getEditorState().editor.projectContents,
+      renderResult.getEditorState().patchedEditor.projectContents,
       'Unique IDs failure.',
     )
     expect(uniq(uniqueIDsBefore).length).toEqual(5)
@@ -317,7 +317,7 @@ describe('parseCode', () => {
     )
 
     const uniqueIDsAfter = getAllUniqueUids(
-      renderResult.getEditorState().editor.projectContents,
+      renderResult.getEditorState().patchedEditor.projectContents,
       'Unique IDs failure.',
     )
     expect(uniq(uniqueIDsAfter).length).toEqual(8)
