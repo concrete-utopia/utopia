@@ -37,9 +37,12 @@ export function findFirstParentWithValidElementPath(
   target: Element,
 ): ElementPath | null {
   const dynamicElementPaths = getPathsOnDomElement(target)
-  const staticTargetElementPaths = dynamicElementPaths.map((p) =>
-    EP.toString(EP.makeLastPartOfPathStatic(p)),
-  )
+  const staticAndDynamicTargetElementPaths = dynamicElementPaths.map((p) => {
+    return {
+      static: EP.toString(EP.makeLastPartOfPathStatic(p)),
+      dynamic: p,
+    }
+  })
   const validStaticElementPathsForSceneArray =
     findParentSceneValidPaths(target)?.map(EP.toString) ?? []
   const validStaticElementPathsForScene = new Set(validStaticElementPathsForSceneArray)
@@ -55,13 +58,16 @@ export function findFirstParentWithValidElementPath(
 
   const filteredValidPathsMappedToDynamic = mapDropNulls(
     (validPath: string) => {
-      return staticTargetElementPaths.find((targetAsString) => targetAsString === validPath)
+      return staticAndDynamicTargetElementPaths.find(
+        (staticAndDynamic) => staticAndDynamic.static === validPath,
+      )?.dynamic
     },
     [...validStaticElementPaths],
   )
 
   if (filteredValidPathsMappedToDynamic.length > 0) {
-    return EP.fromString(last(filteredValidPathsMappedToDynamic)!)
+    const asPaths = filteredValidPathsMappedToDynamic.sort((l, r) => EP.depth(l) - EP.depth(r))
+    return last(asPaths) ?? null
   } else {
     if (target.parentElement == null) {
       return null

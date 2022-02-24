@@ -417,7 +417,7 @@ export const Button = styled.button({
 });
 
 export const CardList = (props) => {
-  cards = [1, 2, 3, 4, 5];
+  const cards = [1, 2, 3, 4, 5];
 
   return (
     <div data-uid="CardList-Root">
