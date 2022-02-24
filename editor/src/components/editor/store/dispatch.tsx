@@ -1,14 +1,6 @@
 import { PERFORMANCE_MARKS_ALLOWED, PRODUCTION_ENV } from '../../../common/env-vars'
-import { MetadataUtils } from '../../../core/model/element-metadata-utils'
-import { ElementInstanceMetadataMap } from '../../../core/shared/element-template'
 import { getAllUniqueUids } from '../../../core/model/element-template-utils'
-import {
-  ElementPath,
-  isParseSuccess,
-  isTextFile,
-  ParseSuccess,
-  ProjectFile,
-} from '../../../core/shared/project-file-types'
+import { isParseSuccess, isTextFile } from '../../../core/shared/project-file-types'
 import {
   codeNeedsParsing,
   codeNeedsPrinting,
@@ -28,16 +20,7 @@ import { CanvasAction } from '../../canvas/canvas-types'
 import { LocalNavigatorAction } from '../../navigator/actions'
 import { PreviewIframeId, projectContentsUpdateMessage } from '../../preview/preview-pane'
 import { EditorAction, EditorDispatch, isLoggedIn, LoginState } from '../action-types'
-import {
-  isTransientAction,
-  isUndoOrRedo,
-  isParsedModelUpdate,
-  isFromVSCode,
-  isClearInteractionState,
-  shouldApplyClearInteractionStateResult,
-  strategyWasOverridden,
-  isCreateInteractionState,
-} from '../actions/action-utils'
+import { isTransientAction, isUndoOrRedo, isFromVSCode } from '../actions/action-utils'
 import * as EditorActions from '../actions/action-creators'
 import * as History from '../history'
 import { StateHistory } from '../history'
@@ -46,42 +29,18 @@ import {
   DerivedState,
   deriveState,
   EditorState,
-  EditorStatePatch,
   EditorStoreFull,
-  getAllBuildErrors,
-  getAllErrorsFromFiles,
-  getAllLintErrors,
-  getMetadata,
   persistentModelFromEditorModel,
   reconstructJSXMetadata,
   storedEditorStateFromEditorState,
 } from './editor-state'
 import { runLocalEditorAction } from './editor-update'
-import { arrayEquals, fastForEach, isBrowserEnvironment } from '../../../core/shared/utils'
-import {
-  EvaluationCache,
-  getDependencyTypeDefinitions,
-} from '../../../core/es-modules/package-manager/package-manager'
+import { fastForEach, isBrowserEnvironment } from '../../../core/shared/utils'
 import { UiJsxCanvasContextData } from '../../canvas/ui-jsx-canvas'
-import {
-  getContentsTreeFileFromString,
-  getProjectFileFromTree,
-  isProjectContentFile,
-  ProjectContentsTree,
-  ProjectContentTreeRoot,
-  treeToContents,
-  walkContentsTree,
-  zipContentsTree,
-} from '../../assets'
+import { ProjectContentTreeRoot, treeToContents, walkContentsTree } from '../../assets'
 import { isSendPreviewModel, restoreDerivedState, UPDATE_FNS } from '../actions/actions'
-import { ElementPathArrayKeepDeepEquality } from '../../../utils/deep-equality-instances'
-import { mapDropNulls } from '../../../core/shared/array-utils'
+import { getTransitiveReverseDependencies } from '../../../core/shared/project-contents-dependencies'
 import {
-  getTransitiveReverseDependencies,
-  identifyFilesThatHaveChanged,
-} from '../../../core/shared/project-contents-dependencies'
-import {
-  reduxDevtoolsLogMessage,
   reduxDevtoolsSendActions,
   reduxDevtoolsUpdateState,
 } from '../../../core/shared/redux-devtools'
@@ -92,37 +51,10 @@ import {
   combineProjectChanges,
   getProjectChanges,
   sendVSCodeChanges,
-  WriteProjectFileChange,
-  ProjectFileChange,
 } from './vscode-changes'
 import { isFeatureEnabled } from '../../../utils/feature-switches'
-import { isJsOrTsFile, isCssFile } from '../../../core/shared/file-utils'
-import {
-  CanvasCommand,
-  foldAndApplyCommands,
-  strategySwitched,
-} from '../../canvas/commands/commands'
-import {
-  applyCanvasStrategy,
-  findCanvasStrategy,
-  findCanvasStrategyFromDispatchResult,
-  getStrategyByName,
-  hasModifiersChanged,
-  interactionStateHardReset,
-  strategiesPartOfSameGroup,
-  strategySwitchInteractionStateReset,
-} from '../../canvas/canvas-strategies/canvas-strategies'
-import {
-  InteractionCanvasState,
-  createEmptySessionStateState,
-  createEmptyStrategyState,
-  SessionStateState,
-  StrategyAndAccumulatedCommands,
-} from '../../../interactions_proposal'
-import { forceNotNull } from '../../../core/shared/optional-utils'
 import { handleStrategies } from './dispatch-strategies'
 
-import { applyStatePatches } from '../../canvas/commands/commands'
 import { emptySet } from '../../../core/shared/set-utils'
 
 type DispatchResultFields = {
