@@ -37,7 +37,7 @@ describe('runMoveElementCommand', () => {
     const moveCommand = moveElement('permanent', innerRectanglePath, 200, 120)
 
     const result = runMoveElementCommand(
-      renderResult.getEditorState().editor,
+      renderResult.getEditorState().patchedEditor,
       createEmptyStrategyState(),
       [],
       moveCommand,

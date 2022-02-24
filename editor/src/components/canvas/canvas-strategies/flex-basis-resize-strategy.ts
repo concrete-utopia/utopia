@@ -11,7 +11,7 @@ import { ElementPath } from '../../../core/shared/project-file-types'
 import * as PP from '../../../core/shared/property-path'
 import { CanvasStrategy } from '../../../interactions_proposal'
 import { deleteProperty, setProperty, wildcardPatch } from '../commands/commands'
-import { FlexResizeControls } from '../controls/select-mode/flex-resize-control'
+import { FlexResizeControls } from '../controls/select-mode/flex-resize-controls-prototype'
 
 function getSiblingSpacingFromEdge(
   metadata: ElementInstanceMetadataMap,

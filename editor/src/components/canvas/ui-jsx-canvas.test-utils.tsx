@@ -178,9 +178,9 @@ export function renderCanvasReturnResultAndError(
 
   storeHookForTest.updateStore((store) => {
     const updatedEditor = {
-      ...store.editor,
+      ...store.patchedEditor,
       canvas: {
-        ...store.editor.canvas,
+        ...store.patchedEditor.canvas,
         openFile: {
           filename: UiFilePath,
         },
@@ -189,8 +189,10 @@ export function renderCanvasReturnResultAndError(
     }
     return {
       ...store,
-      editor: updatedEditor,
-      derived: deriveState(updatedEditor, store.derived),
+      unpatchedEditor: updatedEditor,
+      patchedEditor: updatedEditor,
+      unpatchedDerived: deriveState(updatedEditor, store.patchedDerived),
+      patchedDerived: deriveState(updatedEditor, store.patchedDerived),
     }
   })
 
@@ -221,8 +223,9 @@ export function renderCanvasReturnResultAndError(
       addToConsoleLogs: addToConsoleLogs,
       linkTags: '',
       focusedElementPath: null,
-      projectContents: storeHookForTest.api.getState().editor.projectContents,
-      transientFilesState: storeHookForTest.api.getState().derived.canvas.transientState.filesState,
+      projectContents: storeHookForTest.api.getState().patchedEditor.projectContents,
+      transientFilesState: storeHookForTest.api.getState().unpatchedDerived.canvas.transientState
+        .filesState,
       scrollAnimation: false,
       propertyControlsInfo: {},
       dispatch: NO_OP,
@@ -246,8 +249,9 @@ export function renderCanvasReturnResultAndError(
       addToConsoleLogs: addToConsoleLogs,
       linkTags: '',
       focusedElementPath: null,
-      projectContents: storeHookForTest.api.getState().editor.projectContents,
-      transientFilesState: storeHookForTest.api.getState().derived.canvas.transientState.filesState,
+      projectContents: storeHookForTest.api.getState().patchedEditor.projectContents,
+      transientFilesState: storeHookForTest.api.getState().patchedDerived.canvas.transientState
+        .filesState,
       scrollAnimation: false,
       propertyControlsInfo: {},
       dispatch: NO_OP,

@@ -159,6 +159,7 @@ import { DefaultThirdPartyControlDefinitions } from '../../../core/third-party/t
 import { Spec } from 'immutability-helper'
 import { InteractionState, SessionStateState } from '../../../interactions_proposal'
 import { FlexAlignControlRectProps } from '../../canvas/canvas-strategies/canvas-strategy-types'
+import { memoize } from '../../../core/shared/memoize'
 
 const ObjectPathImmutable: any = OPI
 
@@ -259,14 +260,6 @@ export type EditorStoreFull = EditorStoreShared & {
 export type EditorStorePatched = EditorStoreShared & {
   editor: EditorState
   derived: DerivedState
-}
-
-export function patchedStoreFromFullStore(store: EditorStoreFull): EditorStorePatched {
-  return {
-    ...store,
-    editor: store.patchedEditor,
-    derived: store.patchedDerived,
-  }
 }
 
 export interface FileDeleteModal {
@@ -1321,7 +1314,7 @@ export interface OriginalCanvasAndLocalFrame {
   canvasFrame?: CanvasRectangle
 }
 
-export function getElementWarnings(
+function getElementWarningsInner(
   rootMetadata: ElementInstanceMetadataMap,
 ): ComplexMap<ElementPath, ElementWarnings> {
   let result: ComplexMap<ElementPath, ElementWarnings> = emptyComplexMap()
@@ -1356,6 +1349,8 @@ export function getElementWarnings(
   )
   return result
 }
+
+const getElementWarnings = memoize(getElementWarningsInner, { maxSize: 1 })
 
 export function deriveState(
   editor: EditorState,

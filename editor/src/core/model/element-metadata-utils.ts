@@ -104,6 +104,7 @@ import { omit } from '../shared/object-utils'
 import { UTOPIA_LABEL_KEY } from './utopia-constants'
 import { withUnderlyingTarget } from '../../components/editor/store/editor-state'
 import { ProjectContentTreeRoot } from '../../components/assets'
+import { memoize } from '../shared/memoize'
 const ObjectPathImmutable: any = OPI
 
 export const getChildrenOfCollapsedViews = (
@@ -486,20 +487,23 @@ export const MetadataUtils = {
       }
     }, rootScenesAndElements)
   },
-  getAllPaths(metadata: ElementInstanceMetadataMap): ElementPath[] {
-    // This function needs to explicitly return the paths in a depth first manner
-    let result: Array<ElementPath> = []
-    function recurseElement(elementPath: ElementPath): void {
-      result.push(elementPath)
-      const descendants = MetadataUtils.getImmediateChildrenPaths(metadata, elementPath)
-      fastForEach(descendants, recurseElement)
-    }
+  getAllPaths: memoize(
+    (metadata: ElementInstanceMetadataMap): ElementPath[] => {
+      // This function needs to explicitly return the paths in a depth first manner
+      let result: Array<ElementPath> = []
+      function recurseElement(elementPath: ElementPath): void {
+        result.push(elementPath)
+        const descendants = MetadataUtils.getImmediateChildrenPaths(metadata, elementPath)
+        fastForEach(descendants, recurseElement)
+      }
 
-    const storyboardChildren = this.getAllStoryboardChildrenPaths(metadata)
-    fastForEach(storyboardChildren, recurseElement)
+      const storyboardChildren = MetadataUtils.getAllStoryboardChildrenPaths(metadata)
+      fastForEach(storyboardChildren, recurseElement)
 
-    return uniqBy<ElementPath>(result, EP.pathsEqual)
-  },
+      return uniqBy<ElementPath>(result, EP.pathsEqual)
+    },
+    { maxSize: 1 },
+  ),
   getAllPathsIncludingUnfurledFocusedComponents(
     metadata: ElementInstanceMetadataMap,
   ): ElementPath[] {
@@ -670,45 +674,50 @@ export const MetadataUtils = {
       unfurledComponents: MetadataUtils.getRootViews(metadata, path),
     }
   },
-  createOrderedElementPathsFromElements(
-    metadata: ElementInstanceMetadataMap,
-    collapsedViews: Array<ElementPath>,
-  ): {
-    navigatorTargets: Array<ElementPath>
-    visibleNavigatorTargets: Array<ElementPath>
-  } {
-    // This function exists separately from getAllPaths because the Navigator handles collapsed views
-    let navigatorTargets: Array<ElementPath> = []
-    let visibleNavigatorTargets: Array<ElementPath> = []
+  createOrderedElementPathsFromElements: memoize(
+    (
+      metadata: ElementInstanceMetadataMap,
+      collapsedViews: Array<ElementPath>,
+    ): {
+      navigatorTargets: Array<ElementPath>
+      visibleNavigatorTargets: Array<ElementPath>
+    } => {
+      // This function exists separately from getAllPaths because the Navigator handles collapsed views
+      let navigatorTargets: Array<ElementPath> = []
+      let visibleNavigatorTargets: Array<ElementPath> = []
 
-    function walkAndAddKeys(path: ElementPath, collapsedAncestor: boolean): void {
-      navigatorTargets.push(path)
-      if (!collapsedAncestor) {
-        visibleNavigatorTargets.push(path)
+      function walkAndAddKeys(path: ElementPath, collapsedAncestor: boolean): void {
+        navigatorTargets.push(path)
+        if (!collapsedAncestor) {
+          visibleNavigatorTargets.push(path)
+        }
+
+        const {
+          children,
+          unfurledComponents,
+        } = MetadataUtils.getAllChildrenIncludingUnfurledFocusedComponents(path, metadata)
+        const childrenIncludingFocusedElements = [...children, ...unfurledComponents]
+
+        const isCollapsed = EP.containsPath(path, collapsedViews)
+        fastForEach(childrenIncludingFocusedElements, (childElement) => {
+          walkAndAddKeys(childElement, collapsedAncestor || isCollapsed)
+        })
       }
 
-      const {
-        children,
-        unfurledComponents,
-      } = MetadataUtils.getAllChildrenIncludingUnfurledFocusedComponents(path, metadata)
-      const childrenIncludingFocusedElements = [...children, ...unfurledComponents]
-
-      const isCollapsed = EP.containsPath(path, collapsedViews)
-      fastForEach(childrenIncludingFocusedElements, (childElement) => {
-        walkAndAddKeys(childElement, collapsedAncestor || isCollapsed)
+      const canvasRoots = MetadataUtils.getAllStoryboardChildrenPaths(metadata)
+      fastForEach(canvasRoots, (childElement) => {
+        walkAndAddKeys(childElement, false)
       })
-    }
 
-    const canvasRoots = MetadataUtils.getAllStoryboardChildrenPaths(metadata)
-    fastForEach(canvasRoots, (childElement) => {
-      walkAndAddKeys(childElement, false)
-    })
-
-    return {
-      navigatorTargets: navigatorTargets,
-      visibleNavigatorTargets: visibleNavigatorTargets,
-    }
-  },
+      return {
+        navigatorTargets: navigatorTargets,
+        visibleNavigatorTargets: visibleNavigatorTargets,
+      }
+    },
+    {
+      maxSize: 1,
+    },
+  ),
   transformAtPathOptionally(
     elementMap: ElementInstanceMetadataMap,
     path: ElementPath,

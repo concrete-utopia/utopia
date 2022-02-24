@@ -444,7 +444,9 @@ describe('moveTemplate', () => {
         PrettierConfig,
       ),
     )
-    expect(renderResult.getEditorState().editor.selectedViews).toEqual([selectionAfterUnwrap])
+    expect(renderResult.getEditorState().patchedEditor.selectedViews).toEqual([
+      selectionAfterUnwrap,
+    ])
   })
   it('reparents multiselected elements', async () => {
     const renderResult = await renderTestEditorWithCode(
@@ -1173,7 +1175,7 @@ describe('moveTemplate', () => {
         </div>
       `),
     )
-    expect(renderResult.getEditorState().editor.selectedViews).toEqual([
+    expect(renderResult.getEditorState().patchedEditor.selectedViews).toEqual([
       EP.appendNewElementPath(TestScenePath, ['aaa', 'bbb', NewUID]),
     ])
   })
@@ -1314,7 +1316,7 @@ describe('moveTemplate', () => {
         PrettierConfig,
       ),
     )
-    expect(renderResult.getEditorState().editor.selectedViews).toEqual([
+    expect(renderResult.getEditorState().patchedEditor.selectedViews).toEqual([
       EP.elementPath([['storyboard', NewUID]]),
     ])
   })
