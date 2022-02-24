@@ -2,6 +2,7 @@ import type { EditorAction } from '../../components/editor/action-types'
 import type { EditorStoreFull } from '../../components/editor/store/editor-state'
 import { isFeatureEnabled } from '../../utils/feature-switches'
 import { pluck } from './array-utils'
+import * as EP from './element-path'
 import { ElementInstanceMetadata, ElementInstanceMetadataMap } from './element-template'
 import { objectMap } from './object-utils'
 
@@ -58,16 +59,23 @@ maybeDevTools?.subscribe((message) => {
 })
 
 const ActionsToOmit: Array<EditorAction['action']> = ['UPDATE_PREVIEW_CONNECTED', 'LOAD']
-const ActionsWithoutPayload: Array<EditorAction['action']> = ['LOAD', 'UPDATE_CODE_RESULT_CACHE']
+const ActionsWithPayload: Array<EditorAction['action']> = []
 
 let lastDispatchedStore: SanitizedState
 
 const PlaceholderMessage = '<<SANITIZED_FROM_DEVTOOLS>>'
 
-function simplifiedMetadata(elementMetadata: ElementInstanceMetadata) {
+type RecursivePartial<T> = {
+  [P in keyof T]?: T[P] extends (infer U)[]
+    ? RecursivePartial<U>[]
+    : T[P] extends object
+    ? RecursivePartial<T[P]>
+    : T[P]
+}
+
+function simplifiedMetadata(elementMetadata: Partial<ElementInstanceMetadata>) {
   return {
-    ...elementMetadata,
-    props: PlaceholderMessage,
+    globalFrame: elementMetadata.globalFrame,
   }
 }
 
@@ -79,23 +87,11 @@ function simplifiedMetadataMap(metadata: ElementInstanceMetadataMap) {
 }
 
 type SanitizedState = ReturnType<typeof sanitizeLoggedState>
-function sanitizeLoggedState(store: EditorStoreFull) {
+function sanitizeLoggedState(store: EditorStoreFull): RecursivePartial<EditorStoreFull> {
   return {
-    ...store,
     patchedEditor: {
-      ...store.patchedEditor,
-      spyMetadata: simplifiedMetadataMap(store.patchedEditor.jsxMetadata),
-      domMetadata: store.patchedEditor.domMetadata.map(simplifiedMetadata),
-      jsxMetadata: simplifiedMetadataMap(store.patchedEditor.jsxMetadata),
-      codeResultCache: PlaceholderMessage,
-      nodeModules: {
-        packageStatus: store.patchedEditor.nodeModules.packageStatus,
-      },
-      canvas: PlaceholderMessage,
+      jsxMetadata: simplifiedMetadataMap(store.patchedEditor.jsxMetadata) as any,
     },
-    history: PlaceholderMessage,
-    workers: PlaceholderMessage,
-    dispatch: PlaceholderMessage,
   }
 }
 
@@ -113,7 +109,7 @@ export function reduxDevtoolsSendActions(
       .flat()
       .filter((action) => !ActionsToOmit.includes(action.action))
       .map((action) =>
-        ActionsWithoutPayload.includes(action.action) ? { action: action.action } : action,
+        ActionsWithPayload.includes(action.action) ? action : { action: action.action },
       )
     if (filteredActions.length > 0) {
       const sanitizedStore = sanitizeLoggedState(newStore)
