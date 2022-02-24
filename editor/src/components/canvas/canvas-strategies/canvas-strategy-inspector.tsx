@@ -13,8 +13,8 @@ export const CanvasStrategyInspector = React.memo(() => {
     'CanvasStrategyInspector accumulatedCommands',
   )
 
+  return null
   if (!activeInteractionState) {
-    return null
   } else {
     return (
       <div

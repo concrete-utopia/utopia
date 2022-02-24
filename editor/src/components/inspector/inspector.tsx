@@ -37,12 +37,13 @@ import {
 } from '../editor/actions/action-creators'
 
 import {
+  EditorStoreFull,
   EditorStorePatched,
   getJSXComponentsAndImportsForPathFromState,
   getOpenUtopiaJSXComponentsFromStateMultifile,
   isOpenFileUiJs,
 } from '../editor/store/editor-state'
-import { useEditorState } from '../editor/store/store-hook'
+import { EditorStateContext, useEditorState } from '../editor/store/store-hook'
 import {
   InspectorCallbackContext,
   InspectorPropsContext,
@@ -85,6 +86,8 @@ import { when } from '../../utils/react-conditionals'
 import { createSelector } from 'reselect'
 import { isTwindEnabled } from '../../core/tailwind/tailwind'
 import { getControlStyles } from './common/control-status'
+import create from 'zustand'
+import { UnpatchedEditorStoreProvider } from '../editor/store/store-hook-unpatched'
 
 export interface ElementPathElement {
   name?: string
@@ -372,6 +375,14 @@ Inspector.displayName = 'Inspector'
 const DefaultStyleTargets: Array<CSSTarget> = [cssTarget(['style'], 0), cssTarget(['css'], 0)]
 
 export const InspectorEntryPoint: React.FunctionComponent = React.memo(() => {
+  return (
+    <UnpatchedEditorStoreProvider>
+      <InspectorEntryPointInner />
+    </UnpatchedEditorStoreProvider>
+  )
+})
+
+const InspectorEntryPointInner: React.FunctionComponent = React.memo(() => {
   const selectedViews = useEditorState(
     (store) => store.editor.selectedViews,
     'InspectorEntryPoint selectedViews',
