@@ -1,5 +1,5 @@
 import type { CanvasPoint, CanvasVector } from '../../core/shared/math-utils'
-import { InteractionState } from '../../interactions_proposal'
+import { InteractionState, InteractionStateWithoutMetadata } from '../../interactions_proposal'
 import {
   CanvasInteractionSession,
   SelectModeCanvasSessionProps,
@@ -20,7 +20,7 @@ const CanvasActions = {
       dragState: dragState,
     }
   },
-  createInteractionState: function (session: InteractionState): CanvasAction {
+  createInteractionState: function (session: InteractionStateWithoutMetadata): CanvasAction {
     return {
       action: 'CREATE_INTERACTION_STATE',
       interactionState: session,

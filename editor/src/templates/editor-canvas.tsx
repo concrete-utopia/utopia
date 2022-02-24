@@ -368,17 +368,25 @@ export function runLocalCanvasAction(
         ...model,
         canvas: {
           ...model.canvas,
-          interactionState: action.interactionState,
+          interactionState: {
+            ...action.interactionState,
+            metadata: model.canvas.interactionState?.metadata ?? model.jsxMetadata,
+          },
         },
       }
     case 'CLEAR_INTERACTION_STATE':
       clearInterval(interactionStateTimerHandle)
+      const metadataToKeep =
+        action.applyChanges && model.canvas.interactionState != null
+          ? model.canvas.interactionState.metadata
+          : model.jsxMetadata
       return {
         ...model,
         canvas: {
           ...model.canvas,
           interactionState: null,
         },
+        jsxMetadata: metadataToKeep,
       }
     case 'UPDATE_INTERACTION_STATE':
       if (model.canvas.interactionState == null) {

@@ -13,7 +13,6 @@ export type FullSelector<U> = StateSelector<EditorStoreFull, U>
 
 function patchedStoreFromFullStore(store: EditorStoreFull): EditorStorePatched {
   return {
-    derived: store.derived,
     history: store.history,
     userState: store.userState,
     workers: store.workers,
@@ -21,8 +20,9 @@ function patchedStoreFromFullStore(store: EditorStoreFull): EditorStorePatched {
     dispatch: store.dispatch,
     builtInDependencies: store.builtInDependencies,
     alreadySaved: store.alreadySaved,
-    editor: store.patchedEditor,
     sessionStateState: store.sessionStateState,
+    editor: store.patchedEditor,
+    derived: store.patchedDerived,
   }
 }
 

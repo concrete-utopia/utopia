@@ -62,7 +62,8 @@ async function renderTestEditorWithCode(appUiJsFileCode: string) {
   const initialEditorStore: EditorStoreFull = {
     unpatchedEditor: emptyEditorState,
     patchedEditor: emptyEditorState,
-    derived: derivedState,
+    unpatchedDerived: derivedState,
+    patchedDerived: derivedState,
     sessionStateState: createEmptySessionStateState(),
     history: history,
     userState: {

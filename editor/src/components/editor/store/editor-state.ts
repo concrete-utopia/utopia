@@ -240,7 +240,6 @@ export const defaultUserState: UserState = {
 }
 
 type EditorStoreShared = {
-  derived: DerivedState
   sessionStateState: SessionStateState
   history: StateHistory
   userState: UserState
@@ -254,10 +253,13 @@ type EditorStoreShared = {
 export type EditorStoreFull = EditorStoreShared & {
   unpatchedEditor: EditorState
   patchedEditor: EditorState
+  unpatchedDerived: DerivedState
+  patchedDerived: DerivedState
 }
 
 export type EditorStorePatched = EditorStoreShared & {
   editor: EditorState
+  derived: DerivedState
 }
 
 export interface FileDeleteModal {

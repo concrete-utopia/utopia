@@ -35,7 +35,8 @@ function createEditorStore(): EditorStoreFull {
   const initialEditorStore: EditorStoreFull = {
     unpatchedEditor: emptyEditorState,
     patchedEditor: emptyEditorState,
-    derived: derivedState,
+    unpatchedDerived: derivedState,
+    patchedDerived: derivedState,
     sessionStateState: createEmptySessionStateState(),
     history: history,
     userState: {

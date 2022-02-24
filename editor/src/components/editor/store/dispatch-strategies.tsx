@@ -18,10 +18,10 @@ import {
   shouldApplyClearInteractionStateResult,
   isClearInteractionState,
 } from '../actions/action-utils'
-import { DispatchResult, InnerDispatchResult } from './dispatch'
-import { DerivedState, EditorState, EditorStoreFull } from './editor-state'
+import { InnerDispatchResult } from './dispatch'
+import { DerivedState, deriveState, EditorState, EditorStoreFull } from './editor-state'
 
-export interface HandleStrategiesResult {
+interface HandleStrategiesResult {
   unpatchedEditorState: EditorState
   patchedEditorState: EditorState
   newSessionStateState: SessionStateState
@@ -32,7 +32,9 @@ export function interactionFinished(
   result: InnerDispatchResult,
 ): HandleStrategiesResult {
   const newEditorState = result.unpatchedEditor
-  const withClearedSession = createEmptySessionStateState(newEditorState.jsxMetadata)
+  const withClearedSession = createEmptySessionStateState(
+    newEditorState.canvas.interactionState?.metadata ?? newEditorState.jsxMetadata,
+  )
   const canvasState: InteractionCanvasState = {
     selectedElements: newEditorState.selectedViews,
     // metadata: store.editor.jsxMetadata, // We can add metadata back if live metadata is necessary
@@ -95,7 +97,7 @@ export function interactionHardReset(
   const newEditorState = result.unpatchedEditor
   const withClearedSession = {
     ...storedState.sessionStateState,
-    startingMetadata: storedState.sessionStateState.originalMetadata,
+    startingMetadata: storedState.unpatchedEditor.jsxMetadata,
   }
   const canvasState: InteractionCanvasState = {
     selectedElements: newEditorState.selectedViews,
@@ -116,7 +118,7 @@ export function interactionHardReset(
     const resetInteractionState = interactionStateHardReset(interactionState)
     const resetSessionState = {
       ...result.sessionStateState,
-      startingMetadata: result.sessionStateState.originalMetadata,
+      startingMetadata: storedState.unpatchedEditor.jsxMetadata,
     }
     // Determine the new canvas strategy to run this time around.
     const { strategy, previousStrategy } = findCanvasStrategy(
@@ -149,7 +151,6 @@ export function interactionHardReset(
         commandDescriptions: commandResult.commandDescriptions,
         strategyState: createEmptyStrategyState(),
         startingMetadata: resetSessionState.startingMetadata,
-        originalMetadata: resetSessionState.originalMetadata,
       }
 
       return {
@@ -219,7 +220,6 @@ export function interactionUpdate(
         commandDescriptions: commandResult.commandDescriptions,
         strategyState: createEmptyStrategyState(),
         startingMetadata: result.sessionStateState.startingMetadata,
-        originalMetadata: result.sessionStateState.originalMetadata,
       }
 
       return {
@@ -242,7 +242,9 @@ export function interactionStart(
   result: InnerDispatchResult,
 ): HandleStrategiesResult {
   const newEditorState = result.unpatchedEditor
-  const withClearedSession = createEmptySessionStateState(newEditorState.jsxMetadata)
+  const withClearedSession = createEmptySessionStateState(
+    newEditorState.canvas.interactionState?.metadata ?? newEditorState.jsxMetadata,
+  )
   const canvasState: InteractionCanvasState = {
     selectedElements: newEditorState.selectedViews,
     // metadata: store.editor.jsxMetadata, // We can add metadata back if live metadata is necessary
@@ -282,6 +284,7 @@ export function interactionStart(
         commands,
         'transient',
       )
+
       const newSessionStateState: SessionStateState = {
         currentStrategy: strategy.strategy.name,
         currentStrategyFitness: strategy.fitness,
@@ -289,8 +292,7 @@ export function interactionStart(
         accumulatedCommands: [],
         commandDescriptions: commandResult.commandDescriptions,
         strategyState: createEmptyStrategyState(),
-        startingMetadata: newEditorState.jsxMetadata,
-        originalMetadata: newEditorState.jsxMetadata,
+        startingMetadata: newEditorState.canvas.interactionState.metadata,
       }
 
       return {
@@ -323,7 +325,7 @@ export function interactionCancel(
   return {
     unpatchedEditorState: updatedEditorState,
     patchedEditorState: updatedEditorState,
-    newSessionStateState: createEmptySessionStateState(updatedEditorState.jsxMetadata),
+    newSessionStateState: createEmptySessionStateState(),
   }
 }
 
@@ -405,7 +407,6 @@ export function interactionUserChangedStrategy(
         commandDescriptions: commandResult.commandDescriptions,
         strategyState: createEmptyStrategyState(),
         startingMetadata: result.sessionStateState.startingMetadata,
-        originalMetadata: result.sessionStateState.originalMetadata,
       }
 
       return {
@@ -503,7 +504,6 @@ function interactionStrategyChangeStacked(
         commandDescriptions: commandResult.commandDescriptions,
         strategyState: createEmptyStrategyState(),
         startingMetadata: result.sessionStateState.startingMetadata,
-        originalMetadata: result.sessionStateState.originalMetadata,
       }
 
       const patchedEditorState = {
@@ -532,7 +532,34 @@ function interactionStrategyChangeStacked(
 }
 
 export function handleStrategies(
-  frozenDerivedState: DerivedState,
+  dispatchedActions: readonly EditorAction[],
+  storedState: EditorStoreFull,
+  result: InnerDispatchResult,
+  oldDerivedState: DerivedState,
+): HandleStrategiesResult & { patchedDerivedState: DerivedState } {
+  const { unpatchedEditorState, patchedEditorState, newSessionStateState } = handleStrategiesInner(
+    dispatchedActions,
+    storedState,
+    result,
+  )
+
+  const patchedEditorWithMetadata: EditorState = {
+    ...patchedEditorState,
+    jsxMetadata:
+      patchedEditorState.canvas.interactionState?.metadata ?? patchedEditorState.jsxMetadata,
+  }
+
+  const patchedDerivedState = deriveState(patchedEditorWithMetadata, oldDerivedState)
+
+  return {
+    unpatchedEditorState,
+    patchedEditorState: patchedEditorWithMetadata,
+    patchedDerivedState,
+    newSessionStateState,
+  }
+}
+
+function handleStrategiesInner(
   dispatchedActions: readonly EditorAction[],
   storedState: EditorStoreFull,
   result: InnerDispatchResult,

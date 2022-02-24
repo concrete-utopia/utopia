@@ -51,6 +51,7 @@ import {
   getAllBuildErrors,
   getAllErrorsFromFiles,
   getAllLintErrors,
+  getMetadata,
   persistentModelFromEditorModel,
   reconstructJSXMetadata,
   storedEditorStateFromEditorState,
@@ -129,7 +130,7 @@ type DispatchResultFields = {
   entireUpdateFinished: Promise<any>
 }
 
-type EditorStoreUnpatched = Omit<EditorStoreFull, 'patchedEditor'>
+type EditorStoreUnpatched = Omit<EditorStoreFull, 'patchedEditor' | 'patchedDerived'>
 
 export type InnerDispatchResult = EditorStoreUnpatched & DispatchResultFields
 export type DispatchResult = EditorStoreFull & DispatchResultFields
@@ -183,7 +184,7 @@ function processAction(
     // Process action on the JS side.
     const editorAfterUpdateFunction = runLocalEditorAction(
       working.unpatchedEditor,
-      working.derived,
+      working.unpatchedDerived,
       working.userState,
       working.workers,
       action as EditorAction,
@@ -195,12 +196,12 @@ function processAction(
     const editorAfterCanvas = runLocalCanvasAction(
       dispatchEvent,
       editorAfterUpdateFunction,
-      working.derived,
+      working.unpatchedDerived,
       action as CanvasAction,
     )
     let editorAfterNavigator = runLocalNavigatorAction(
       editorAfterCanvas,
-      working.derived,
+      working.unpatchedDerived,
       action as LocalNavigatorAction,
     )
 
@@ -224,7 +225,7 @@ function processAction(
 
     return {
       unpatchedEditor: editorAfterNavigator,
-      derived: working.derived,
+      unpatchedDerived: working.unpatchedDerived,
       sessionStateState: working.sessionStateState, // this means the actions cannot update sessionStateState – this piece of state lives outside our "redux" state
       history: newStateHistory,
       userState: working.userState,
@@ -464,7 +465,7 @@ export function editorDispatch(
 
   const editorFilteredForFiles = filterEditorForFiles(result.unpatchedEditor)
 
-  const frozenDerivedState = result.derived
+  const frozenDerivedState = result.unpatchedDerived
 
   let newHistory: StateHistory
   if (transientOrNoChange) {
@@ -482,12 +483,12 @@ export function editorDispatch(
     (!transientOrNoChange || anyUndoOrRedo || (anyWorkerUpdates && alreadySaved)) &&
     isBrowserEnvironment
 
-  const { unpatchedEditorState, patchedEditorState, newSessionStateState } = handleStrategies(
-    frozenDerivedState,
-    dispatchedActions,
-    storedState,
-    result,
-  )
+  const {
+    unpatchedEditorState,
+    patchedEditorState,
+    newSessionStateState,
+    patchedDerivedState,
+  } = handleStrategies(dispatchedActions, storedState, result, storedState.patchedDerived)
 
   const editorWithModelChecked =
     !anyUndoOrRedo && transientOrNoChange && !workerUpdatedModel
@@ -499,7 +500,8 @@ export function editorDispatch(
   const finalStore: DispatchResult = {
     unpatchedEditor: frozenEditorState,
     patchedEditor: patchedEditorState,
-    derived: frozenDerivedState,
+    unpatchedDerived: frozenDerivedState,
+    patchedDerived: patchedDerivedState,
     sessionStateState: optionalDeepFreeze(newSessionStateState),
     history: newHistory,
     userState: result.userState,
@@ -657,6 +659,20 @@ function editorDispatchInner(
             },
           },
         }
+      } else if (result.unpatchedEditor.canvas.interactionState != null) {
+        result = {
+          ...result,
+          unpatchedEditor: {
+            ...result.unpatchedEditor,
+            canvas: {
+              ...result.unpatchedEditor.canvas,
+              interactionState: {
+                ...result.unpatchedEditor.canvas.interactionState,
+                metadata: reconstructJSXMetadata(result.unpatchedEditor),
+              },
+            },
+          },
+        }
       } else {
         result = {
           ...result,
@@ -676,9 +692,9 @@ function editorDispatchInner(
       // TODO BB put inspector and navigator back to history
     } else if (editorStayedTheSame) {
       // !! We completely skip creating a new derived state, since the editor state stayed the exact same
-      frozenDerivedState = storedState.derived
+      frozenDerivedState = storedState.unpatchedDerived
     } else {
-      const derivedState = deriveState(frozenEditorState, storedState.derived)
+      const derivedState = deriveState(frozenEditorState, storedState.unpatchedDerived)
       frozenDerivedState = optionalDeepFreeze(derivedState)
     }
 
@@ -706,7 +722,7 @@ function editorDispatchInner(
 
     return {
       unpatchedEditor: frozenEditorState,
-      derived: frozenDerivedState,
+      unpatchedDerived: frozenDerivedState,
       sessionStateState: result.sessionStateState,
       history: result.history,
       userState: result.userState,
