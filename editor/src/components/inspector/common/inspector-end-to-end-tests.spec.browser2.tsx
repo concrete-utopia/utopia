@@ -68,7 +68,7 @@ describe('inspector tests with real metadata', () => {
       await dispatchDone
     })
 
-    const metadata = renderResult.getEditorState().unpatchedEditor.jsxMetadata[
+    const metadata = renderResult.getEditorState().patchedEditor.jsxMetadata[
       EP.toString(targetPath)
     ]
 
@@ -128,7 +128,7 @@ describe('inspector tests with real metadata', () => {
       await dispatchDone
     })
 
-    const metadata = renderResult.getEditorState().unpatchedEditor.jsxMetadata[
+    const metadata = renderResult.getEditorState().patchedEditor.jsxMetadata[
       EP.toString(targetPath)
     ]
 
@@ -224,7 +224,7 @@ describe('inspector tests with real metadata', () => {
       await dispatchDone
     })
 
-    const metadata = renderResult.getEditorState().unpatchedEditor.jsxMetadata[
+    const metadata = renderResult.getEditorState().patchedEditor.jsxMetadata[
       EP.toString(targetPath)
     ]
 
@@ -320,7 +320,7 @@ describe('inspector tests with real metadata', () => {
       await dispatchDone
     })
 
-    const metadata = renderResult.getEditorState().unpatchedEditor.jsxMetadata[
+    const metadata = renderResult.getEditorState().patchedEditor.jsxMetadata[
       EP.toString(targetPath)
     ]
 
@@ -488,7 +488,7 @@ describe('inspector tests with real metadata', () => {
       await dispatchDone
     })
 
-    const metadata = renderResult.getEditorState().unpatchedEditor.jsxMetadata[
+    const metadata = renderResult.getEditorState().patchedEditor.jsxMetadata[
       EP.toString(targetPath)
     ]
 
@@ -578,7 +578,7 @@ describe('inspector tests with real metadata', () => {
       await domFinished
       await dispatchDone
     })
-    const metadata = renderResult.getEditorState().unpatchedEditor.jsxMetadata[
+    const metadata = renderResult.getEditorState().patchedEditor.jsxMetadata[
       EP.toString(targetPath)
     ]
 
@@ -1147,7 +1147,7 @@ describe('inspector tests with real metadata', () => {
       await dispatchDone
     })
 
-    const metadata = renderResult.getEditorState().unpatchedEditor.jsxMetadata[
+    const metadata = renderResult.getEditorState().patchedEditor.jsxMetadata[
       EP.toString(targetPath)
     ]
 
@@ -1260,7 +1260,7 @@ describe('inspector tests with real metadata', () => {
       await dispatchDone
     })
 
-    const earlyMetadata = renderResult.getEditorState().unpatchedEditor.jsxMetadata[
+    const earlyMetadata = renderResult.getEditorState().patchedEditor.jsxMetadata[
       EP.toString(targetPath)
     ]
 
@@ -1320,7 +1320,7 @@ describe('inspector tests with real metadata', () => {
       await screen.findByTestId('target-selector-css')
     })
 
-    const laterMetadata = renderResult.getEditorState().unpatchedEditor.jsxMetadata[
+    const laterMetadata = renderResult.getEditorState().patchedEditor.jsxMetadata[
       EP.toString(targetPath)
     ]
 
@@ -1534,7 +1534,7 @@ describe('inspector tests with real metadata', () => {
       await dispatchDone
     })
 
-    const metadata = renderResult.getEditorState().unpatchedEditor.jsxMetadata[
+    const metadata = renderResult.getEditorState().patchedEditor.jsxMetadata[
       EP.toString(targetPath)
     ]
 
@@ -1658,7 +1658,7 @@ describe('inspector tests with real metadata', () => {
       await screen.findByTestId('padding-L')
     })
 
-    const metadata = renderResult.getEditorState().unpatchedEditor.jsxMetadata[
+    const metadata = renderResult.getEditorState().patchedEditor.jsxMetadata[
       EP.toString(targetPath)
     ]
 
@@ -1771,7 +1771,7 @@ describe('inspector tests with real metadata', () => {
       await screen.findByTestId('padding-L')
     })
 
-    const metadata = renderResult.getEditorState().unpatchedEditor.jsxMetadata[
+    const metadata = renderResult.getEditorState().patchedEditor.jsxMetadata[
       EP.toString(targetPath)
     ]
 
@@ -1855,7 +1855,7 @@ describe('inspector tests with real metadata', () => {
       await dispatchDone
     })
 
-    const metadata = renderResult.getEditorState().unpatchedEditor.jsxMetadata[
+    const metadata = renderResult.getEditorState().patchedEditor.jsxMetadata[
       EP.toString(targetPath)
     ]
 
@@ -1895,7 +1895,7 @@ describe('inspector tests with real metadata', () => {
       await dispatchDone
     })
 
-    const metadata = renderResult.getEditorState().unpatchedEditor.jsxMetadata[
+    const metadata = renderResult.getEditorState().patchedEditor.jsxMetadata[
       EP.toString(targetPath)
     ]
 
@@ -1965,7 +1965,7 @@ describe('inspector tests with real metadata', () => {
       await dispatchDone
     })
 
-    const metadata = renderResult.getEditorState().unpatchedEditor.jsxMetadata[
+    const metadata = renderResult.getEditorState().patchedEditor.jsxMetadata[
       EP.toString(targetPath)
     ]
 
@@ -2061,7 +2061,7 @@ describe('inspector tests with real metadata', () => {
       await dispatchDone
     })
 
-    const metadata = renderResult.getEditorState().unpatchedEditor.jsxMetadata[
+    const metadata = renderResult.getEditorState().patchedEditor.jsxMetadata[
       EP.toString(targetPath)
     ]
 

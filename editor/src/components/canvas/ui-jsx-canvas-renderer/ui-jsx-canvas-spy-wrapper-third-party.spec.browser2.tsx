@@ -147,7 +147,7 @@ async function waitForFullMetadata(getEditorState: () => EditorStoreFull): Promi
     await wait(WaitTime)
     totalWaitTime += WaitTime
     foundMetadata =
-      getEditorState().unpatchedEditor.spyMetadata[
+      getEditorState().patchedEditor.spyMetadata[
         'storyboard/scene-1/canvas-app:canvas-app-div/test-mesh/test-meshStandardMaterial'
       ] != null
     if (foundMetadata) {
@@ -174,7 +174,7 @@ describe('Spy Wrapper Tests For React Three Fiber', () => {
     // React Three Fiber seems to have some second pass render that appears to run
     // after the regular React render and this appears to give it a chance to be triggered.
     await waitForFullMetadata(getEditorState)
-    const spiedMetadata = getEditorState().unpatchedEditor.spyMetadata
+    const spiedMetadata = getEditorState().patchedEditor.spyMetadata
     const sanitizedSpyData = simplifiedMetadataMap(spiedMetadata)
     matchInlineSnapshotBrowser(
       sanitizedSpyData,
@@ -225,7 +225,7 @@ describe('Spy Wrapper Tests For React Three Fiber', () => {
       }
     `,
     )
-    const domMetadata = getEditorState().unpatchedEditor.domMetadata
+    const domMetadata = getEditorState().patchedEditor.domMetadata
     const sanitizedDomMetadata = domWalkerMetadataToSimplifiedMetadataMap(domMetadata)
     matchInlineSnapshotBrowser(
       sanitizedDomMetadata,
@@ -258,7 +258,7 @@ describe('Spy Wrapper Tests For React Three Fiber', () => {
       }
     `,
     )
-    const jsxMetadata = getEditorState().unpatchedEditor.jsxMetadata
+    const jsxMetadata = getEditorState().patchedEditor.jsxMetadata
     const sanitizedJsxMetadata = simplifiedMetadataMap(jsxMetadata)
     matchInlineSnapshotBrowser(
       sanitizedJsxMetadata,

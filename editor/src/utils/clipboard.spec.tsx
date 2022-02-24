@@ -79,7 +79,7 @@ export var App = (props) => {
 
     await renderResult.dispatch([selectComponents([targetPath1], false)], false)
     const clipboardData = createClipboardDataFromSelection(
-      renderResult.getEditorState().unpatchedEditor,
+      renderResult.getEditorState().patchedEditor,
     )
 
     expect(clipboardData?.data.length).toEqual(1)

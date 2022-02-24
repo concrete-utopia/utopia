@@ -444,7 +444,7 @@ describe('moveTemplate', () => {
         PrettierConfig,
       ),
     )
-    expect(renderResult.getEditorState().unpatchedEditor.selectedViews).toEqual([
+    expect(renderResult.getEditorState().patchedEditor.selectedViews).toEqual([
       selectionAfterUnwrap,
     ])
   })
@@ -1175,7 +1175,7 @@ describe('moveTemplate', () => {
         </div>
       `),
     )
-    expect(renderResult.getEditorState().unpatchedEditor.selectedViews).toEqual([
+    expect(renderResult.getEditorState().patchedEditor.selectedViews).toEqual([
       EP.appendNewElementPath(TestScenePath, ['aaa', 'bbb', NewUID]),
     ])
   })
@@ -1316,7 +1316,7 @@ describe('moveTemplate', () => {
         PrettierConfig,
       ),
     )
-    expect(renderResult.getEditorState().unpatchedEditor.selectedViews).toEqual([
+    expect(renderResult.getEditorState().patchedEditor.selectedViews).toEqual([
       EP.elementPath([['storyboard', NewUID]]),
     ])
   })

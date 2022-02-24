@@ -178,9 +178,9 @@ export function renderCanvasReturnResultAndError(
 
   storeHookForTest.updateStore((store) => {
     const updatedEditor = {
-      ...store.unpatchedEditor,
+      ...store.patchedEditor,
       canvas: {
-        ...store.unpatchedEditor.canvas,
+        ...store.patchedEditor.canvas,
         openFile: {
           filename: UiFilePath,
         },
@@ -222,7 +222,7 @@ export function renderCanvasReturnResultAndError(
       addToConsoleLogs: addToConsoleLogs,
       linkTags: '',
       focusedElementPath: null,
-      projectContents: storeHookForTest.api.getState().unpatchedEditor.projectContents,
+      projectContents: storeHookForTest.api.getState().patchedEditor.projectContents,
       transientFilesState: storeHookForTest.api.getState().derived.canvas.transientState.filesState,
       scrollAnimation: false,
       propertyControlsInfo: {},
@@ -247,7 +247,7 @@ export function renderCanvasReturnResultAndError(
       addToConsoleLogs: addToConsoleLogs,
       linkTags: '',
       focusedElementPath: null,
-      projectContents: storeHookForTest.api.getState().unpatchedEditor.projectContents,
+      projectContents: storeHookForTest.api.getState().patchedEditor.projectContents,
       transientFilesState: storeHookForTest.api.getState().derived.canvas.transientState.filesState,
       scrollAnimation: false,
       propertyControlsInfo: {},
