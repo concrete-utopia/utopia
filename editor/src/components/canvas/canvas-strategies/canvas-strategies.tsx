@@ -373,3 +373,9 @@ export function findCanvasStrategyFromDispatchResult(result: InnerDispatchResult
     return strategy
   }
 }
+
+export function isStrategyActive(sessionState: SessionStateState) {
+  return (
+    sessionState.accumulatedCommands.length > 0 || sessionState.currentStrategyCommands.length > 0
+  )
+}

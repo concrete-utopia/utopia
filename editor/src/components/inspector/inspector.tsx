@@ -85,6 +85,7 @@ import { when } from '../../utils/react-conditionals'
 import { createSelector } from 'reselect'
 import { isTwindEnabled } from '../../core/tailwind/tailwind'
 import { getControlStyles } from './common/control-status'
+import { isStrategyActive } from '../canvas/canvas-strategies/canvas-strategies'
 
 export interface ElementPathElement {
   name?: string
@@ -237,6 +238,7 @@ export const Inspector = React.memo<InspectorProps>((props: InspectorProps) => {
     anyUnknownElements,
     hasNonDefaultPositionAttributes,
     aspectRatioLocked,
+    isInteractionActive,
   } = useEditorState((store) => {
     const rootMetadata = store.editor.jsxMetadata
     let anyComponentsInner: boolean = false
@@ -283,6 +285,7 @@ export const Inspector = React.memo<InspectorProps>((props: InspectorProps) => {
       anyUnknownElements: anyUnknownElementsInner,
       hasNonDefaultPositionAttributes: hasNonDefaultPositionAttributesInner,
       aspectRatioLocked: aspectRatioLockedInner,
+      isInteractionActive: isStrategyActive(store.sessionStateState),
     }
   }, 'Inspector')
 
@@ -333,39 +336,43 @@ export const Inspector = React.memo<InspectorProps>((props: InspectorProps) => {
     }
   }
 
-  return (
-    <div
-      id='inspector'
-      style={{
-        width: '100%',
-        position: 'relative',
-        color: colorTheme.neutralForeground.value,
-      }}
-      css={{
-        '--control-styles-interactive-unset-main-color': UtopiaTheme.color.fg7.value,
-        '--control-styles-interactive-unset-secondary-color': UtopiaTheme.color.fg7.value,
-        '--control-styles-interactive-unset-track-color': UtopiaTheme.color.bg5.value,
-        '--control-styles-interactive-unset-rail-color': UtopiaTheme.color.bg3.value,
-        '&:hover': {
-          '--control-styles-interactive-unset-main-color': getControlStyles('simple').mainColor,
-          '--control-styles-interactive-unset-secondary-color': getControlStyles('simple')
-            .secondaryColor,
-          '--control-styles-interactive-unset-track-color': getControlStyles('simple').trackColor,
-          '--control-styles-interactive-unset-rail-color': getControlStyles('simple').railColor,
-        },
-        '&:focus-within': {
-          '--control-styles-interactive-unset-main-color': getControlStyles('simple').mainColor,
-          '--control-styles-interactive-unset-secondary-color': getControlStyles('simple')
-            .secondaryColor,
-          '--control-styles-interactive-unset-track-color': getControlStyles('simple').trackColor,
-          '--control-styles-interactive-unset-rail-color': getControlStyles('simple').railColor,
-        },
-      }}
-      onFocus={onFocus}
-    >
-      {renderInspectorContents()}
-    </div>
-  )
+  if (isInteractionActive) {
+    return null
+  } else {
+    return (
+      <div
+        id='inspector'
+        style={{
+          width: '100%',
+          position: 'relative',
+          color: colorTheme.neutralForeground.value,
+        }}
+        css={{
+          '--control-styles-interactive-unset-main-color': UtopiaTheme.color.fg7.value,
+          '--control-styles-interactive-unset-secondary-color': UtopiaTheme.color.fg7.value,
+          '--control-styles-interactive-unset-track-color': UtopiaTheme.color.bg5.value,
+          '--control-styles-interactive-unset-rail-color': UtopiaTheme.color.bg3.value,
+          '&:hover': {
+            '--control-styles-interactive-unset-main-color': getControlStyles('simple').mainColor,
+            '--control-styles-interactive-unset-secondary-color': getControlStyles('simple')
+              .secondaryColor,
+            '--control-styles-interactive-unset-track-color': getControlStyles('simple').trackColor,
+            '--control-styles-interactive-unset-rail-color': getControlStyles('simple').railColor,
+          },
+          '&:focus-within': {
+            '--control-styles-interactive-unset-main-color': getControlStyles('simple').mainColor,
+            '--control-styles-interactive-unset-secondary-color': getControlStyles('simple')
+              .secondaryColor,
+            '--control-styles-interactive-unset-track-color': getControlStyles('simple').trackColor,
+            '--control-styles-interactive-unset-rail-color': getControlStyles('simple').railColor,
+          },
+        }}
+        onFocus={onFocus}
+      >
+        {renderInspectorContents()}
+      </div>
+    )
+  }
 })
 Inspector.displayName = 'Inspector'
 

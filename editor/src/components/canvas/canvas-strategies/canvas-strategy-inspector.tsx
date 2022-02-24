@@ -1,11 +1,12 @@
 import React from 'react'
 import { useColorTheme } from '../../../uuiui'
 import { useEditorState } from '../../editor/store/store-hook'
+import { isStrategyActive } from './canvas-strategies'
 
 export const CanvasStrategyInspector = React.memo(() => {
   const colorTheme = useColorTheme()
   const activeInteractionState = useEditorState(
-    (store) => store.editor.canvas.interactionState != null,
+    (store) => isStrategyActive(store.sessionStateState),
     'CanvasStrategyInspector activeInteractionState',
   )
   const commandsToList = useEditorState(
