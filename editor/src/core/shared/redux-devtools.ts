@@ -1,3 +1,4 @@
+import { EditorState } from 'draft-js'
 import type { EditorAction } from '../../components/editor/action-types'
 import type { EditorStoreFull } from '../../components/editor/store/editor-state'
 import { isFeatureEnabled } from '../../utils/feature-switches'
@@ -65,14 +66,6 @@ let lastDispatchedStore: SanitizedState
 
 const PlaceholderMessage = '<<SANITIZED_FROM_DEVTOOLS>>'
 
-type RecursivePartial<T> = {
-  [P in keyof T]?: T[P] extends (infer U)[]
-    ? RecursivePartial<U>[]
-    : T[P] extends object
-    ? RecursivePartial<T[P]>
-    : T[P]
-}
-
 function simplifiedMetadata(elementMetadata: Partial<ElementInstanceMetadata>) {
   return {
     globalFrame: elementMetadata.globalFrame,
@@ -87,11 +80,11 @@ function simplifiedMetadataMap(metadata: ElementInstanceMetadataMap) {
 }
 
 type SanitizedState = ReturnType<typeof sanitizeLoggedState>
-function sanitizeLoggedState(store: EditorStoreFull): RecursivePartial<EditorStoreFull> {
+function sanitizeLoggedState(store: EditorStoreFull) {
   return {
     patchedEditor: {
       jsxMetadata: simplifiedMetadataMap(store.patchedEditor.jsxMetadata) as any,
-    },
+    } as Partial<EditorState>,
   }
 }
 
