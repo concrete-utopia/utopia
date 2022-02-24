@@ -49,16 +49,18 @@ const DRAG_START_TRESHOLD = 2
 export function isResizing(editorState: EditorState): boolean {
   const dragState = editorState.canvas.dragState
   return (
-    dragState?.type === 'RESIZE_DRAG_STATE' &&
-    getDragStateDrag(dragState, editorState.canvas.resizeOptions) != null
+    (dragState?.type === 'RESIZE_DRAG_STATE' &&
+      getDragStateDrag(dragState, editorState.canvas.resizeOptions) != null) ||
+    editorState.canvas.interactionState != null
   )
 }
 
 export function isDragging(editorState: EditorState): boolean {
   const dragState = editorState.canvas.dragState
   return (
-    dragState?.type === 'MOVE_DRAG_STATE' &&
-    getDragStateDrag(dragState, editorState.canvas.resizeOptions) != null
+    (dragState?.type === 'MOVE_DRAG_STATE' &&
+      getDragStateDrag(dragState, editorState.canvas.resizeOptions) != null) ||
+    editorState.canvas.interactionState != null
   )
 }
 
