@@ -68,7 +68,9 @@ describe('inspector tests with real metadata', () => {
       await dispatchDone
     })
 
-    const metadata = renderResult.getEditorState().editor.jsxMetadata[EP.toString(targetPath)]
+    const metadata = renderResult.getEditorState().patchedEditor.jsxMetadata[
+      EP.toString(targetPath)
+    ]
 
     const paddingTopControl = (await renderResult.renderedDOM.findByTestId(
       'padding-T',
@@ -126,7 +128,9 @@ describe('inspector tests with real metadata', () => {
       await dispatchDone
     })
 
-    const metadata = renderResult.getEditorState().editor.jsxMetadata[EP.toString(targetPath)]
+    const metadata = renderResult.getEditorState().patchedEditor.jsxMetadata[
+      EP.toString(targetPath)
+    ]
 
     const widthControl = (await renderResult.renderedDOM.findByTestId(
       'position-width-number-input',
@@ -220,7 +224,9 @@ describe('inspector tests with real metadata', () => {
       await dispatchDone
     })
 
-    const metadata = renderResult.getEditorState().editor.jsxMetadata[EP.toString(targetPath)]
+    const metadata = renderResult.getEditorState().patchedEditor.jsxMetadata[
+      EP.toString(targetPath)
+    ]
 
     const widthControl = (await renderResult.renderedDOM.findByTestId(
       'position-width-number-input',
@@ -314,7 +320,9 @@ describe('inspector tests with real metadata', () => {
       await dispatchDone
     })
 
-    const metadata = renderResult.getEditorState().editor.jsxMetadata[EP.toString(targetPath)]
+    const metadata = renderResult.getEditorState().patchedEditor.jsxMetadata[
+      EP.toString(targetPath)
+    ]
 
     const widthControl = (await renderResult.renderedDOM.findByTestId(
       'position-width-number-input',
@@ -480,7 +488,9 @@ describe('inspector tests with real metadata', () => {
       await dispatchDone
     })
 
-    const metadata = renderResult.getEditorState().editor.jsxMetadata[EP.toString(targetPath)]
+    const metadata = renderResult.getEditorState().patchedEditor.jsxMetadata[
+      EP.toString(targetPath)
+    ]
 
     const widthControl = (await renderResult.renderedDOM.findByTestId(
       'position-width-number-input',
@@ -568,7 +578,9 @@ describe('inspector tests with real metadata', () => {
       await domFinished
       await dispatchDone
     })
-    const metadata = renderResult.getEditorState().editor.jsxMetadata[EP.toString(targetPath)]
+    const metadata = renderResult.getEditorState().patchedEditor.jsxMetadata[
+      EP.toString(targetPath)
+    ]
 
     const widthControl = (await renderResult.renderedDOM.findByTestId(
       'position-width-number-input',
@@ -1135,7 +1147,9 @@ describe('inspector tests with real metadata', () => {
       await dispatchDone
     })
 
-    const metadata = renderResult.getEditorState().editor.jsxMetadata[EP.toString(targetPath)]
+    const metadata = renderResult.getEditorState().patchedEditor.jsxMetadata[
+      EP.toString(targetPath)
+    ]
 
     const widthControl = (await renderResult.renderedDOM.findByTestId(
       'position-width-number-input',
@@ -1246,7 +1260,9 @@ describe('inspector tests with real metadata', () => {
       await dispatchDone
     })
 
-    const earlyMetadata = renderResult.getEditorState().editor.jsxMetadata[EP.toString(targetPath)]
+    const earlyMetadata = renderResult.getEditorState().patchedEditor.jsxMetadata[
+      EP.toString(targetPath)
+    ]
 
     const earlyWidthControl = (await renderResult.renderedDOM.findByTestId(
       'position-width-number-input',
@@ -1304,7 +1320,9 @@ describe('inspector tests with real metadata', () => {
       await screen.findByTestId('target-selector-css')
     })
 
-    const laterMetadata = renderResult.getEditorState().editor.jsxMetadata[EP.toString(targetPath)]
+    const laterMetadata = renderResult.getEditorState().patchedEditor.jsxMetadata[
+      EP.toString(targetPath)
+    ]
 
     const laterWidthControl = (await renderResult.renderedDOM.findByTestId(
       'position-width-number-input',
@@ -1516,7 +1534,9 @@ describe('inspector tests with real metadata', () => {
       await dispatchDone
     })
 
-    const metadata = renderResult.getEditorState().editor.jsxMetadata[EP.toString(targetPath)]
+    const metadata = renderResult.getEditorState().patchedEditor.jsxMetadata[
+      EP.toString(targetPath)
+    ]
 
     const widthControl = (await renderResult.renderedDOM.findByTestId(
       'position-width-number-input',
@@ -1638,7 +1658,9 @@ describe('inspector tests with real metadata', () => {
       await screen.findByTestId('padding-L')
     })
 
-    const metadata = renderResult.getEditorState().editor.jsxMetadata[EP.toString(targetPath)]
+    const metadata = renderResult.getEditorState().patchedEditor.jsxMetadata[
+      EP.toString(targetPath)
+    ]
 
     const minWidthControl = (await renderResult.renderedDOM.findByTestId(
       'position-minWidth-number-input',
@@ -1749,7 +1771,9 @@ describe('inspector tests with real metadata', () => {
       await screen.findByTestId('padding-L')
     })
 
-    const metadata = renderResult.getEditorState().editor.jsxMetadata[EP.toString(targetPath)]
+    const metadata = renderResult.getEditorState().patchedEditor.jsxMetadata[
+      EP.toString(targetPath)
+    ]
 
     const minWidthControl = (await renderResult.renderedDOM.findByTestId(
       'position-minWidth-number-input',
@@ -1831,7 +1855,9 @@ describe('inspector tests with real metadata', () => {
       await dispatchDone
     })
 
-    const metadata = renderResult.getEditorState().editor.jsxMetadata[EP.toString(targetPath)]
+    const metadata = renderResult.getEditorState().patchedEditor.jsxMetadata[
+      EP.toString(targetPath)
+    ]
 
     const fontSizeControl = (await renderResult.renderedDOM.findByTestId(
       'fontSize',
@@ -1869,7 +1895,9 @@ describe('inspector tests with real metadata', () => {
       await dispatchDone
     })
 
-    const metadata = renderResult.getEditorState().editor.jsxMetadata[EP.toString(targetPath)]
+    const metadata = renderResult.getEditorState().patchedEditor.jsxMetadata[
+      EP.toString(targetPath)
+    ]
 
     await act(async () => {
       await screen.findByTestId('layout-system-expand')
@@ -1937,7 +1965,9 @@ describe('inspector tests with real metadata', () => {
       await dispatchDone
     })
 
-    const metadata = renderResult.getEditorState().editor.jsxMetadata[EP.toString(targetPath)]
+    const metadata = renderResult.getEditorState().patchedEditor.jsxMetadata[
+      EP.toString(targetPath)
+    ]
 
     const flexBasis = (await renderResult.renderedDOM.findByTestId(
       'position-flexBasis-number-input',
@@ -2031,7 +2061,9 @@ describe('inspector tests with real metadata', () => {
       await dispatchDone
     })
 
-    const metadata = renderResult.getEditorState().editor.jsxMetadata[EP.toString(targetPath)]
+    const metadata = renderResult.getEditorState().patchedEditor.jsxMetadata[
+      EP.toString(targetPath)
+    ]
 
     const paddingTopControl = (await renderResult.renderedDOM.findByTestId(
       'padding-T',

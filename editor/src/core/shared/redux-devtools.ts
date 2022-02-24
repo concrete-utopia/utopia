@@ -82,14 +82,14 @@ type SanitizedState = ReturnType<typeof sanitizeLoggedState>
 function sanitizeLoggedState(store: EditorStoreFull) {
   return {
     ...store,
-    unpatchedEditor: {
-      ...store.unpatchedEditor,
-      spyMetadata: simplifiedMetadataMap(store.unpatchedEditor.jsxMetadata),
-      domMetadata: store.unpatchedEditor.domMetadata.map(simplifiedMetadata),
-      jsxMetadata: simplifiedMetadataMap(store.unpatchedEditor.jsxMetadata),
+    patchedEditor: {
+      ...store.patchedEditor,
+      spyMetadata: simplifiedMetadataMap(store.patchedEditor.jsxMetadata),
+      domMetadata: store.patchedEditor.domMetadata.map(simplifiedMetadata),
+      jsxMetadata: simplifiedMetadataMap(store.patchedEditor.jsxMetadata),
       codeResultCache: PlaceholderMessage,
       nodeModules: {
-        packageStatus: store.unpatchedEditor.nodeModules.packageStatus,
+        packageStatus: store.patchedEditor.nodeModules.packageStatus,
       },
       canvas: PlaceholderMessage,
     },

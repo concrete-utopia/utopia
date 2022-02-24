@@ -22,10 +22,10 @@ describe('Component Section', () => {
   xit('doesnt rerender on irrelevant changes', () => {
     const storeHookForTest = getStoreHook(utils.NO_OP)
     storeHookForTest.updateStoreWithImmer((store) => {
-      store.editor.selectedViews = [
+      store.patchedEditor.selectedViews = [
         EP.appendNewElementPath(ScenePathForTestUiJsFile, ['aaa', 'mycomponent']),
       ] // TODO add a Component instance to the test file and select that!
-      store.editor.codeResultCache = {
+      store.patchedEditor.codeResultCache = {
         propertyControlsInfo: {
           '/src/app': {
             MyComponent: {
@@ -44,7 +44,7 @@ describe('Component Section', () => {
 
     const { getByText } = render(
       <TestInspectorContextProvider
-        selectedViews={storeHookForTest.api.getState().editor.selectedViews}
+        selectedViews={storeHookForTest.api.getState().patchedEditor.selectedViews}
         editorStoreData={storeHookForTest}
       >
         <ComponentSection isScene={false} />
@@ -57,7 +57,7 @@ describe('Component Section', () => {
     act(() => {
       storeHookForTest.updateStoreWithImmer((store) => {
         // irrelevant state change, we expect zero rerenders
-        store.editor.canvas.roundedCanvasOffset = { x: 30, y: 50 } as CanvasVector
+        store.patchedEditor.canvas.roundedCanvasOffset = { x: 30, y: 50 } as CanvasVector
       })
     })
 

@@ -108,13 +108,13 @@ describe('Spy Wrapper Template Path Tests', () => {
   it('a simple component in a regular scene', async () => {
     const { getEditorState } = await createExampleProject()
 
-    const spiedMetadata = getEditorState().editor.spyMetadata
+    const spiedMetadata = getEditorState().patchedEditor.spyMetadata
     const sanitizedSpyData = simplifiedMetadataMap(spiedMetadata)
 
-    const domMetadata = getEditorState().editor.domMetadata
+    const domMetadata = getEditorState().patchedEditor.domMetadata
     const sanitizedDomMetadata = domWalkerMetadataToSimplifiedMetadataMap(domMetadata)
 
-    const finalMetadata = getEditorState().editor.jsxMetadata
+    const finalMetadata = getEditorState().patchedEditor.jsxMetadata
     const sanitizedFinalMetadata = simplifiedMetadataMap(finalMetadata)
 
     matchInlineSnapshotBrowser(
@@ -248,13 +248,13 @@ describe('Spy Wrapper Template Path Tests', () => {
 
     await dispatch([CanvasActions.scrollCanvas(canvasPoint(point(0, 1)))], true) // TODO fix the dom walker so it runs _after_ rendering the canvas so we can avoid this horrible hack here
 
-    const spiedMetadata = getEditorState().editor.spyMetadata
+    const spiedMetadata = getEditorState().patchedEditor.spyMetadata
     const sanitizedSpyData = simplifiedMetadataMap(spiedMetadata)
 
-    const domMetadata = getEditorState().editor.domMetadata
+    const domMetadata = getEditorState().patchedEditor.domMetadata
     const sanitizedDomMetadata = domWalkerMetadataToSimplifiedMetadataMap(domMetadata)
 
-    const finalMetadata = getEditorState().editor.jsxMetadata
+    const finalMetadata = getEditorState().patchedEditor.jsxMetadata
     const sanitizedFinalMetadata = simplifiedMetadataMap(finalMetadata)
 
     matchInlineSnapshotBrowser(
@@ -437,13 +437,13 @@ describe('Spy Wrapper Template Path Tests', () => {
 
     await dispatch([CanvasActions.scrollCanvas(canvasPoint(point(0, 1)))], true) // TODO fix the dom walker so it runs _after_ rendering the canvas so we can avoid this horrible hack here
 
-    const spiedMetadata = getEditorState().editor.spyMetadata
+    const spiedMetadata = getEditorState().patchedEditor.spyMetadata
     const sanitizedSpyData = simplifiedMetadataMap(spiedMetadata)
 
-    const domMetadata = getEditorState().editor.domMetadata
+    const domMetadata = getEditorState().patchedEditor.domMetadata
     const sanitizedDomMetadata = domWalkerMetadataToSimplifiedMetadataMap(domMetadata)
 
-    const finalMetadata = getEditorState().editor.jsxMetadata
+    const finalMetadata = getEditorState().patchedEditor.jsxMetadata
     const sanitizedFinalMetadata = simplifiedMetadataMap(finalMetadata)
 
     matchInlineSnapshotBrowser(
@@ -635,13 +635,13 @@ describe('Spy Wrapper Template Path Tests', () => {
 
     await dispatch([CanvasActions.scrollCanvas(canvasPoint(point(0, 1)))], true) // TODO fix the dom walker so it runs _after_ rendering the canvas so we can avoid this horrible hack here
 
-    const spiedMetadata = getEditorState().editor.spyMetadata
+    const spiedMetadata = getEditorState().patchedEditor.spyMetadata
     const sanitizedSpyData = simplifiedMetadataMap(spiedMetadata)
 
-    const domMetadata = getEditorState().editor.domMetadata
+    const domMetadata = getEditorState().patchedEditor.domMetadata
     const sanitizedDomMetadata = domWalkerMetadataToSimplifiedMetadataMap(domMetadata)
 
-    const finalMetadata = getEditorState().editor.jsxMetadata
+    const finalMetadata = getEditorState().patchedEditor.jsxMetadata
     const sanitizedFinalMetadata = simplifiedMetadataMap(finalMetadata)
 
     matchInlineSnapshotBrowser(
@@ -831,13 +831,13 @@ describe('Spy Wrapper Multifile Template Path Tests', () => {
 
     await dispatch([CanvasActions.scrollCanvas(canvasPoint(point(0, 1)))], true) // TODO fix the dom walker so it runs _after_ rendering the canvas so we can avoid this horrible hack here
 
-    const spiedMetadata = getEditorState().editor.spyMetadata
+    const spiedMetadata = getEditorState().patchedEditor.spyMetadata
     const sanitizedSpyData = simplifiedMetadataMap(spiedMetadata)
 
-    const domMetadata = getEditorState().editor.domMetadata
+    const domMetadata = getEditorState().patchedEditor.domMetadata
     const sanitizedDomMetadata = domWalkerMetadataToSimplifiedMetadataMap(domMetadata)
 
-    const finalMetadata = getEditorState().editor.jsxMetadata
+    const finalMetadata = getEditorState().patchedEditor.jsxMetadata
     const sanitizedFinalMetadata = simplifiedMetadataMap(finalMetadata)
 
     matchInlineSnapshotBrowser(
@@ -1020,13 +1020,13 @@ describe('Spy Wrapper Multifile Template Path Tests', () => {
 
     await dispatch([CanvasActions.scrollCanvas(canvasPoint(point(0, 1)))], true) // TODO fix the dom walker so it runs _after_ rendering the canvas so we can avoid this horrible hack here
 
-    const spiedMetadata = getEditorState().editor.spyMetadata
+    const spiedMetadata = getEditorState().patchedEditor.spyMetadata
     const sanitizedSpyData = simplifiedMetadataMap(spiedMetadata)
 
-    const domMetadata = getEditorState().editor.domMetadata
+    const domMetadata = getEditorState().patchedEditor.domMetadata
     const sanitizedDomMetadata = domWalkerMetadataToSimplifiedMetadataMap(domMetadata)
 
-    const finalMetadata = getEditorState().editor.jsxMetadata
+    const finalMetadata = getEditorState().patchedEditor.jsxMetadata
     const sanitizedFinalMetadata = simplifiedMetadataMap(finalMetadata)
 
     matchInlineSnapshotBrowser(
@@ -1218,13 +1218,13 @@ describe('Spy Wrapper Multifile Template Path Tests', () => {
 
     await dispatch([CanvasActions.scrollCanvas(canvasPoint(point(0, 1)))], true) // TODO fix the dom walker so it runs _after_ rendering the canvas so we can avoid this horrible hack here
 
-    const spiedMetadata = getEditorState().editor.spyMetadata
+    const spiedMetadata = getEditorState().patchedEditor.spyMetadata
     const sanitizedSpyData = simplifiedMetadataMap(spiedMetadata)
 
-    const domMetadata = getEditorState().editor.domMetadata
+    const domMetadata = getEditorState().patchedEditor.domMetadata
     const sanitizedDomMetadata = domWalkerMetadataToSimplifiedMetadataMap(domMetadata)
 
-    const finalMetadata = getEditorState().editor.jsxMetadata
+    const finalMetadata = getEditorState().patchedEditor.jsxMetadata
     const sanitizedFinalMetadata = simplifiedMetadataMap(finalMetadata)
 
     matchInlineSnapshotBrowser(
@@ -1446,13 +1446,13 @@ describe('Spy Wrapper Multifile With Cyclic Dependencies', () => {
 
     await dispatch([CanvasActions.scrollCanvas(canvasPoint(point(0, 1)))], true) // TODO fix the dom walker so it runs _after_ rendering the canvas so we can avoid this horrible hack here
 
-    const spiedMetadata = getEditorState().editor.spyMetadata
+    const spiedMetadata = getEditorState().patchedEditor.spyMetadata
     const sanitizedSpyData = simplifiedMetadataMap(spiedMetadata)
 
-    const domMetadata = getEditorState().editor.domMetadata
+    const domMetadata = getEditorState().patchedEditor.domMetadata
     const sanitizedDomMetadata = domWalkerMetadataToSimplifiedMetadataMap(domMetadata)
 
-    const finalMetadata = getEditorState().editor.jsxMetadata
+    const finalMetadata = getEditorState().patchedEditor.jsxMetadata
     const sanitizedFinalMetadata = simplifiedMetadataMap(finalMetadata)
 
     matchInlineSnapshotBrowser(
@@ -1693,13 +1693,13 @@ describe('Spy Wrapper Multifile With Cyclic Dependencies', () => {
 
     await dispatch([CanvasActions.scrollCanvas(canvasPoint(point(0, 1)))], true) // TODO fix the dom walker so it runs _after_ rendering the canvas so we can avoid this horrible hack here
 
-    const spiedMetadata = getEditorState().editor.spyMetadata
+    const spiedMetadata = getEditorState().patchedEditor.spyMetadata
     const sanitizedSpyData = simplifiedMetadataMap(spiedMetadata)
 
-    const domMetadata = getEditorState().editor.domMetadata
+    const domMetadata = getEditorState().patchedEditor.domMetadata
     const sanitizedDomMetadata = domWalkerMetadataToSimplifiedMetadataMap(domMetadata)
 
-    const finalMetadata = getEditorState().editor.jsxMetadata
+    const finalMetadata = getEditorState().patchedEditor.jsxMetadata
     const sanitizedFinalMetadata = simplifiedMetadataMap(finalMetadata)
 
     matchInlineSnapshotBrowser(

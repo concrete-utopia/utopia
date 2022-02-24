@@ -1,11 +1,29 @@
 import React from 'react'
-import type { EditorStorePatched } from './editor-state'
+import type { EditorState, EditorStoreFull, EditorStorePatched } from './editor-state'
 import { UseStore, StoreApi, EqualityChecker } from 'zustand'
 import { shallowEqual } from '../../../core/shared/equality-utils'
 import { isFeatureEnabled } from '../../../utils/feature-switches'
 import { PERFORMANCE_MARKS_ALLOWED } from '../../../common/env-vars'
 
 type StateSelector<T, U> = (state: T) => U
+
+export type PatchedSelector<U> = StateSelector<EditorStorePatched, U>
+
+export type FullSelector<U> = StateSelector<EditorStoreFull, U>
+
+function patchedStoreFromFullStore(store: EditorStoreFull): EditorStorePatched {
+  return {
+    derived: store.derived,
+    history: store.history,
+    userState: store.userState,
+    workers: store.workers,
+    persistence: store.persistence,
+    dispatch: store.dispatch,
+    builtInDependencies: store.builtInDependencies,
+    alreadySaved: store.alreadySaved,
+    editor: store.patchedEditor,
+  }
+}
 
 /**
  * React hooks can only be used in Function Components. useEditorState lets you access the most up to date editor state.
@@ -24,7 +42,24 @@ export const useEditorState = <U>(
 ): U => {
   const context = React.useContext(EditorStateContext)
 
-  const wrappedSelector = useWrapSelectorInPerformanceMeasureBlock(selector, selectorName)
+  const fullSelector: FullSelector<U> = (store) => selector(patchedStoreFromFullStore(store))
+  const wrappedSelector = useWrapSelectorInPerformanceMeasureBlock(fullSelector, selectorName)
+
+  if (context == null) {
+    throw new Error('useStore is missing from editor context')
+  }
+  return context.useStore(wrappedSelector, equalityFn as EqualityChecker<U>)
+}
+
+export const useUnpatchedEditorState = <U>(
+  selector: StateSelector<EditorState, U>,
+  selectorName: string,
+  equalityFn: (oldSlice: U, newSlice: U) => boolean = shallowEqual,
+): U => {
+  const context = React.useContext(EditorStateContext)
+
+  const fullSelector: FullSelector<U> = (store) => selector(store.unpatchedEditor)
+  const wrappedSelector = useWrapSelectorInPerformanceMeasureBlock(fullSelector, selectorName)
 
   if (context == null) {
     throw new Error('useStore is missing from editor context')
@@ -33,18 +68,18 @@ export const useEditorState = <U>(
 }
 
 function useWrapSelectorInPerformanceMeasureBlock<U>(
-  selector: StateSelector<EditorStorePatched, U>,
+  selector: StateSelector<EditorStoreFull, U>,
   selectorName: string,
-): StateSelector<EditorStorePatched, U> {
-  const previousSelectorRef = React.useRef<StateSelector<EditorStorePatched, U>>()
-  const previousWrappedSelectorRef = React.useRef<StateSelector<EditorStorePatched, U>>()
+): StateSelector<EditorStoreFull, U> {
+  const previousSelectorRef = React.useRef<StateSelector<EditorStoreFull, U>>()
+  const previousWrappedSelectorRef = React.useRef<StateSelector<EditorStoreFull, U>>()
 
   if (selector === previousSelectorRef.current && previousWrappedSelectorRef.current != null) {
     // we alreaedy wrapped this selector
     return previousWrappedSelectorRef.current
   } else {
     // let's create a new wrapped selector
-    const wrappedSelector = (state: EditorStorePatched) => {
+    const wrappedSelector = (state: EditorStoreFull) => {
       const LogSelectorPerformance =
         isFeatureEnabled('Debug mode – Performance Marks') && PERFORMANCE_MARKS_ALLOWED
 
@@ -83,13 +118,14 @@ export const useRefEditorState = <U>(
   }
   const api = context.api
 
-  const selectorRef = React.useRef(selector)
-  selectorRef.current = selector // the selector is possibly a new function instance every time this hook is called
+  const fullSelector: FullSelector<U> = (store) => selector(patchedStoreFromFullStore(store))
+  const selectorRef = React.useRef(fullSelector)
+  selectorRef.current = fullSelector // the selector is possibly a new function instance every time this hook is called
 
-  const sliceRef = React.useRef(selector(api.getState()))
+  const sliceRef = React.useRef(fullSelector(api.getState()))
   // TODO CONCURRENT MODE: We should avoid mutation during the render phase and follow a pattern similar to
   // https://github.com/pmndrs/zustand/blob/d82e103cc6702ed10a404a587163e42fc3ac1338/src/index.ts#L161
-  sliceRef.current = selector(api.getState()) // ensure that callers of this always have the latest data
+  sliceRef.current = fullSelector(api.getState()) // ensure that callers of this always have the latest data
   if (explainMe) {
     console.info('useRefEditorState: reading editor state', sliceRef.current)
   }
@@ -113,7 +149,7 @@ export const useRefEditorState = <U>(
           sliceRef.current = newSlice
         }
       },
-      (store: EditorStorePatched) => selectorRef.current(store),
+      (store: EditorStoreFull) => selectorRef.current(store),
       shallowEqual,
     )
     return function cleanup() {
@@ -126,8 +162,8 @@ export const useRefEditorState = <U>(
   return sliceRef
 }
 
-export type UtopiaStoreHook = UseStore<EditorStorePatched>
-export type UtopiaStoreAPI = StoreApi<EditorStorePatched>
+export type UtopiaStoreHook = UseStore<EditorStoreFull>
+export type UtopiaStoreAPI = StoreApi<EditorStoreFull>
 
 export type EditorStateContextData = {
   api: UtopiaStoreAPI
@@ -149,8 +185,9 @@ export function useSelectorWithCallback<U>(
   }
   const api = context.api
 
-  const selectorRef = React.useRef(selector)
-  selectorRef.current = selector // the selector is possibly a new function instance every time this hook is called
+  const fullSelector: FullSelector<U> = (store) => selector(patchedStoreFromFullStore(store))
+  const selectorRef = React.useRef(fullSelector)
+  selectorRef.current = fullSelector // the selector is possibly a new function instance every time this hook is called
 
   const equalityFnRef = React.useRef(equalityFn)
   equalityFnRef.current = equalityFn // the equality function is possibly a new function instance every time this hook is called, but we don't want to re-subscribe because of that
@@ -201,7 +238,7 @@ export function useSelectorWithCallback<U>(
         }
         innerCallback(newSlice)
       },
-      (store: EditorStorePatched) => selectorRef.current(store),
+      (store: EditorStoreFull) => selectorRef.current(store),
       (oldValue: any, newValue: any) => equalityFnRef.current(oldValue, newValue),
     )
     return function cleanup() {
