@@ -157,6 +157,7 @@ import { PersistenceMachine } from '../persistence/persistence'
 import type { BuiltInDependencies } from '../../../core/es-modules/package-manager/built-in-dependencies-list'
 import { DefaultThirdPartyControlDefinitions } from '../../../core/third-party/third-party-controls'
 import { Spec } from 'immutability-helper'
+import { memoize } from '../../../core/shared/memoize'
 
 const ObjectPathImmutable: any = OPI
 
@@ -1305,7 +1306,7 @@ export interface OriginalCanvasAndLocalFrame {
   canvasFrame?: CanvasRectangle
 }
 
-export function getElementWarnings(
+function getElementWarningsInner(
   rootMetadata: ElementInstanceMetadataMap,
 ): ComplexMap<ElementPath, ElementWarnings> {
   let result: ComplexMap<ElementPath, ElementWarnings> = emptyComplexMap()
@@ -1340,6 +1341,8 @@ export function getElementWarnings(
   )
   return result
 }
+
+const getElementWarnings = memoize(getElementWarningsInner, { maxSize: 1 })
 
 export function deriveState(
   editor: EditorState,
