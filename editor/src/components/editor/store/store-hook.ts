@@ -22,6 +22,7 @@ function patchedStoreFromFullStore(store: EditorStoreFull): EditorStorePatched {
     builtInDependencies: store.builtInDependencies,
     alreadySaved: store.alreadySaved,
     editor: store.patchedEditor,
+    sessionStateState: store.sessionStateState,
   }
 }
 
