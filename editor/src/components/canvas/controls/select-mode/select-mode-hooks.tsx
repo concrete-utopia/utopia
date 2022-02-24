@@ -576,6 +576,10 @@ export function useSelectAndHover(
   onMouseDown: (event: React.MouseEvent<HTMLDivElement, MouseEvent>) => void
 } {
   const modeType = useEditorState((store) => store.editor.mode.type, 'useSelectAndHover mode')
+  const hasInteractionState = useEditorState(
+    (store) => store.editor.canvas.interactionState != null,
+    'useSelectAndHover hasInteractionState',
+  )
   const selectModeCallbacks = useSelectOrLiveModeSelectAndHover(
     modeType === 'select' || modeType === 'select-lite' || modeType === 'live',
     modeType === 'select' || modeType === 'live',
@@ -584,17 +588,24 @@ export function useSelectAndHover(
   )
   const insertModeCallbacks = useInsertModeSelectAndHover(modeType === 'insert', cmdPressed)
 
-  switch (modeType) {
-    case 'select':
-      return selectModeCallbacks
-    case 'select-lite':
-      return selectModeCallbacks
-    case 'insert':
-      return insertModeCallbacks
-    case 'live':
-      return selectModeCallbacks
-    default:
-      const _exhaustiveCheck: never = modeType
-      throw new Error(`Unhandled editor mode ${JSON.stringify(modeType)}`)
+  if (hasInteractionState) {
+    return {
+      onMouseMove: Utils.NO_OP,
+      onMouseDown: Utils.NO_OP,
+    }
+  } else {
+    switch (modeType) {
+      case 'select':
+        return selectModeCallbacks
+      case 'select-lite':
+        return selectModeCallbacks
+      case 'insert':
+        return insertModeCallbacks
+      case 'live':
+        return selectModeCallbacks
+      default:
+        const _exhaustiveCheck: never = modeType
+        throw new Error(`Unhandled editor mode ${JSON.stringify(modeType)}`)
+    }
   }
 }
