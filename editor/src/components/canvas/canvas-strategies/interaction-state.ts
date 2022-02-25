@@ -242,10 +242,3 @@ export function updateInteractionViaKeyboard(
     }
   }
 }
-
-export function updateInteractionViaTimeStep(currentState: InteractionState): InteractionState {
-  return {
-    ...currentState,
-    globalTime: Date.now(),
-  }
-}
