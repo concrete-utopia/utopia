@@ -1,6 +1,5 @@
 import React from 'react'
 import { createSelector } from 'reselect'
-import { intersects } from 'semver'
 import { addAllUniquelyBy, mapDropNulls, sortBy } from '../../../core/shared/array-utils'
 import { ElementInstanceMetadataMap } from '../../../core/shared/element-template'
 import { offsetPoint, pointDifference, zeroCanvasPoint } from '../../../core/shared/math-utils'
