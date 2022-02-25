@@ -11,8 +11,6 @@ export const UtopiaCanvasVarStyleTag = React.memo(() => {
     (store) => store.editor.canvas.scale,
     'DesignPanelRoot roundedCanvasOffset',
   )
-  const zoom = Math.max(1, canvasScale)
-  const transformScale = Math.min(1, canvasScale)
 
   CanvasScrollOffset.x = roundedCanvasOffset.x
   CanvasScrollOffset.y = roundedCanvasOffset.y
@@ -23,8 +21,6 @@ export const UtopiaCanvasVarStyleTag = React.memo(() => {
     --utopia-canvas-offset-x: ${roundedCanvasOffset.x}px;
     --utopia-canvas-offset-y: ${roundedCanvasOffset.y}px;
     --utopia-canvas-scale: ${canvasScale};
-    --utopia-canvas-zoom: ${zoom};
-    --utopia-canvas-transform-scale: ${transformScale};
   }
 `}</style>
   )
