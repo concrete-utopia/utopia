@@ -420,7 +420,14 @@ export function editorDispatch(
     patchedEditorState,
     newSessionStateState,
     patchedDerivedState,
-  } = handleStrategies(dispatchedActions, storedState, result, storedState.patchedDerived)
+  } = isFeatureEnabled('Canvas Strategies')
+    ? handleStrategies(dispatchedActions, storedState, result, storedState.patchedDerived)
+    : {
+        unpatchedEditorState: result.unpatchedEditor,
+        patchedEditorState: result.unpatchedEditor,
+        newSessionStateState: result.sessionStateState,
+        patchedDerivedState: result.unpatchedDerived,
+      }
 
   const editorWithModelChecked =
     !anyUndoOrRedo && transientOrNoChange && !workerUpdatedModel
