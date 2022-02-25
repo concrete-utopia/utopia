@@ -236,7 +236,7 @@ interface NewCanvasControlsInnerProps {
 const NewCanvasControlsInner = (props: NewCanvasControlsInnerProps) => {
   const colorTheme = useColorTheme()
   const startDragStateAfterDragExceedsThreshold = useStartDragStateAfterDragExceedsThreshold()
-  const strategyControls = useGetApplicableStrategyControls() // TODO Wrap in feature flag?
+  const strategyControls = useGetApplicableStrategyControls()
 
   const { localSelectedViews, localHighlightedViews, setLocalSelectedViews } = props
   const cmdKeyPressed = props.editor.keysPressed['cmd'] ?? false
