@@ -17,8 +17,6 @@ export interface ControlWithKey {
 export interface CanvasStrategy {
   name: string // We'd need to do something to guarantee uniqueness here if using this for the commands' reason
 
-  strategyGroups: Set<string>
-
   // Determines if we should show the controls that this strategy renders
   isApplicable: (
     canvasState: InteractionCanvasState,

@@ -18,36 +18,6 @@ import { CanvasStrategy, ControlWithKey } from './canvas-strategy-types'
 
 const RegisteredCanvasStrategies: Array<CanvasStrategy> = []
 
-export function getStrategyByName(name: string): CanvasStrategy | null {
-  return (
-    RegisteredCanvasStrategies.find((s) => {
-      return s.name === name
-    }) ?? null
-  )
-}
-
-export function strategiesPartOfSameGroup(
-  oldStrategyName: string | null,
-  newStrategyName: string | null,
-): boolean {
-  if (oldStrategyName == null || newStrategyName == null || oldStrategyName === newStrategyName) {
-    return false
-  } else {
-    const oldStrategy = getStrategyByName(oldStrategyName)
-    const newStrategy = getStrategyByName(newStrategyName)
-    if (oldStrategy == null || newStrategy == null) {
-      return false
-    } else {
-      for (const key of oldStrategy.strategyGroups) {
-        if (newStrategy.strategyGroups.has(key)) {
-          return true
-        }
-      }
-      return false
-    }
-  }
-}
-
 function getApplicableStrategies(
   canvasState: InteractionCanvasState,
   interactionState: InteractionState | null,
