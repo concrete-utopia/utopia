@@ -140,7 +140,8 @@ export class Editor {
     this.storedState = {
       unpatchedEditor: emptyEditorState,
       patchedEditor: emptyEditorState,
-      derived: derivedState,
+      unpatchedDerived: derivedState,
+      patchedDerived: derivedState,
       history: history,
       userState: defaultUserState,
       workers: workers,
