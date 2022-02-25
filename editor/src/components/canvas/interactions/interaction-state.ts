@@ -40,50 +40,10 @@ interface KeyboardInteractionData {
 
 export type InteractionData = KeyboardInteractionData | DragInteractionData
 
-// Should we be limiting the scope here to only interactions that can update the project itself?
-// If yes, what are the implications of the model? Do we need to maintain InputState?
-// - Yes
-
-// Does something have to have a lifecycle for it to be considered an interaction
-// - no consensus here, but it doesn't block us
-
-// Should we be separating keyboard and mouse interactions?
-// What would separting them mean?
-// What would be the benefit of this vs 1 combined interaction state?
-// 1. An interaction can be started be either a key press or a mouse down
-//   - keyboard interactions don't use the mouse in any way
-//   - mouse interactions don't use the keyboard in any way other than modifier keys present on mouse events
-
-// Do we desire interactions that are tweaked by a keyboard modifier that isn't cmd, shift, alt, ctrl?
-// - likely not inside strategies (we could want them for making changes to the editor "mode", or chosen strategy)
-
-// TODO
-// - [X] Update accumulatedCommands
-// - [X] Check fitness functions and apply chosen strategy in the dispatch function
-//       removing the editorStatePatch from the TransientCanvasState
-// - [X] Apply the strategies to the patched editor to get the new patch
-// - [X] Implement shouldKeepCommands
-// - [ ] Support natural handovers when a specific strategy was chosen (e.g. move then reparent)
-
-// - [X] Check available strategies on each render(?) and render their controls in the canvas controls layer
-// - [X] Make sure it actually works once applyCanvasStrategy is fixed
-
-// - [X] Use patched editor for rendering the canvas, rather than the transient canvas state
-//       Transient state being null results in some optimisations that we need to check for here (or possibly the drag state)
-
-// - [X] Track the strategy being applied
-// - [ ] Need to store some state to bridge across changes in a strategy - e.g. individual segments in a drag (which prop you are changing)
-//       We already have a solution for this in SelectModeCanvasSessionState
-
-// - [X] Need to actually end the sessions (we create and update the sessions but don't ever close them out)
-// - [X] When closing the session we either apply the non-transient updates only, OR cancel the session which bins the commands
-
-// - [ ] Insertion lives in the drag state
-
 export interface InteractionState {
   // This represents an actual interaction that has started as the result of a key press or a drag
   interactionData: InteractionData
-  activeControl: CanvasControlType // Do we need to guard against multiple controls trying to trigger or update an interaction session?
+  activeControl: CanvasControlType
   sourceOfUpdate: CanvasControlType
   lastInteractionTime: number
   metadata: ElementInstanceMetadataMap
@@ -93,26 +53,6 @@ export interface InteractionState {
 
   startedAt: number
   globalTime: number
-
-  // Need to store some state to bridge across changes in a strategy - e.g. individual segments in a drag (which prop you are changing)
-
-  // The latest strategy might want to replace the last commands based on the reason
-  // e.g. a continuous drag would be continuously updating the commands that it is generating
-
-  // Alternatively, the InteractionSession could include the currently active strategy, which the apply function could check
-  // _or_ the current active strategy is used to determine if the strategy has changed - the strategy switch itself then can determine
-  // if it wants to maintain what was being changed previously or do something else
-
-  // Perhaps a better alternative here is to have the session maintain the modelStatePatch, i.e. the patch that applies to the project
-  // model, and is therefore non-transient
-
-  // Another alternative - strategy pickers live outside of this (but as part of the interaction / strategy process), and that is the
-  // part that determines if the next strategy should replace or append commands
-
-  // Major benefit of maintaining either the accumulated commands or model patch is that we can present the final result to the user
-  // and give them the option to cancel some parts of that without undoing the entire interaction
-  // Sean:
-  // The above is predicated on the commands setting discrete values and/or not changing something on another element at the same time.
 }
 
 export type InteractionStateWithoutMetadata = Omit<InteractionState, 'metadata'>
@@ -167,8 +107,6 @@ export function createEmptySessionStateState(
   }
 }
 
-// Does this need to be split into a default mouse interaction state and a separate drag interaction state?
-// Thinking here in terms of highlight and selection
 export function createInteractionViaMouse(
   mouseDownPoint: CanvasPoint,
   modifiers: Modifiers,
