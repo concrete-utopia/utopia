@@ -1,7 +1,7 @@
 import type { CanvasPoint, CanvasVector } from '../../core/shared/math-utils'
 import {
   InteractionSession,
-  InteractionStateWithoutMetadata,
+  InteractionSessionWithoutMetadata,
 } from './canvas-strategies/interaction-state'
 import type { CanvasAction, DragState } from './canvas-types'
 
@@ -18,10 +18,10 @@ const CanvasActions = {
       dragState: dragState,
     }
   },
-  createInteractionSession: function (session: InteractionStateWithoutMetadata): CanvasAction {
+  createInteractionSession: function (session: InteractionSessionWithoutMetadata): CanvasAction {
     return {
       action: 'CREATE_INTERACTION_SESSION',
-      interactionState: session,
+      interactionSession: session,
     }
   },
   clearInteractionSession: function (applyChanges: boolean): CanvasAction {
@@ -31,11 +31,11 @@ const CanvasActions = {
     }
   },
   updateInteractionSession: function (
-    newInteractionStateProps: Partial<InteractionSession>,
+    interactionSessionUpdate: Partial<InteractionSession>,
   ): CanvasAction {
     return {
       action: 'UPDATE_INTERACTION_SESSION',
-      newInteractionStateProps: newInteractionStateProps,
+      interactionSessionUpdate: interactionSessionUpdate,
     }
   },
   setSelectionControlsVisibility: function (selectionControlsVisible: boolean): CanvasAction {

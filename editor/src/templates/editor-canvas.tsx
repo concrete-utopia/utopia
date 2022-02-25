@@ -153,11 +153,11 @@ function handleCanvasEvent(model: CanvasModel, event: CanvasMouseEvent): Array<E
   }
 
   let optionalDragStateAction: Array<EditorAction> = []
-  if ('interactionState' in event && event.interactionState != null) {
+  if ('interactionSession' in event && event.interactionSession != null) {
     optionalDragStateAction = [
       model.editorState.canvas.interactionSession != null
-        ? CanvasActions.updateInteractionSession(event.interactionState)
-        : CanvasActions.createInteractionSession(event.interactionState),
+        ? CanvasActions.updateInteractionSession(event.interactionSession)
+        : CanvasActions.createInteractionSession(event.interactionSession),
     ]
   }
 
@@ -293,7 +293,7 @@ function on(
   return additionalEvents
 }
 
-let interactionStateTimerHandle: any = undefined
+let interactionSessionTimerHandle: any = undefined
 
 export function runLocalCanvasAction(
   dispatch: EditorDispatch,
@@ -359,8 +359,8 @@ export function runLocalCanvasAction(
       }
     }
     case 'CREATE_INTERACTION_SESSION':
-      clearInterval(interactionStateTimerHandle)
-      interactionStateTimerHandle = setInterval(() => {
+      clearInterval(interactionSessionTimerHandle)
+      interactionSessionTimerHandle = setInterval(() => {
         dispatch([CanvasActions.updateInteractionSession({ globalTime: Date.now() })])
       }, 200)
       return {
@@ -368,13 +368,13 @@ export function runLocalCanvasAction(
         canvas: {
           ...model.canvas,
           interactionSession: {
-            ...action.interactionState,
+            ...action.interactionSession,
             metadata: model.canvas.interactionSession?.metadata ?? model.jsxMetadata,
           },
         },
       }
     case 'CLEAR_INTERACTION_SESSION':
-      clearInterval(interactionStateTimerHandle)
+      clearInterval(interactionSessionTimerHandle)
       const metadataToKeep =
         action.applyChanges && model.canvas.interactionSession != null
           ? model.canvas.interactionSession.metadata
@@ -397,7 +397,7 @@ export function runLocalCanvasAction(
             ...model.canvas,
             interactionSession: {
               ...model.canvas.interactionSession,
-              ...action.newInteractionStateProps,
+              ...action.interactionSessionUpdate,
             },
           },
         }
@@ -1105,7 +1105,7 @@ export class EditorCanvas extends React.Component<EditorCanvasProps> {
           modifiers: Modifier.modifiersForEvent(event),
           cursor: null,
           nativeEvent: event,
-          interactionState: updateInteractionViaMouse(
+          interactionSession: updateInteractionViaMouse(
             this.props.editor.canvas.interactionSession,
             newDrag,
             Modifier.modifiersForEvent(event),
@@ -1119,7 +1119,7 @@ export class EditorCanvas extends React.Component<EditorCanvasProps> {
           modifiers: Modifier.modifiersForEvent(event),
           cursor: null,
           nativeEvent: event,
-          interactionState: null,
+          interactionSession: null,
         })
       } else {
         const newDrag = roundPointForScale(

@@ -26,7 +26,7 @@ import {
 } from '../../core/layout/layout-helpers-new'
 import {
   InteractionSession,
-  InteractionStateWithoutMetadata,
+  InteractionSessionWithoutMetadata,
 } from './canvas-strategies/interaction-state'
 
 export const CanvasContainerID = 'canvas-container'
@@ -578,7 +578,7 @@ type Drag = IMouseEvent & {
 
 type Move = IMouseEvent & {
   event: 'MOVE'
-  interactionState: InteractionStateWithoutMetadata | null
+  interactionSession: InteractionSessionWithoutMetadata | null
 }
 
 type Click = IMouseEvent & {
@@ -640,7 +640,7 @@ export interface CreateDragState {
 
 export interface CreateInteractionSession {
   action: 'CREATE_INTERACTION_SESSION'
-  interactionState: InteractionStateWithoutMetadata
+  interactionSession: InteractionSessionWithoutMetadata
 }
 
 export interface ClearInteractionSession {
@@ -650,7 +650,7 @@ export interface ClearInteractionSession {
 
 export interface UpdateInteractionSession {
   action: 'UPDATE_INTERACTION_SESSION'
-  newInteractionStateProps: Partial<InteractionSession>
+  interactionSessionUpdate: Partial<InteractionSession>
 }
 
 type SetSelectionControlsVisibility = {

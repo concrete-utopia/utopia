@@ -578,9 +578,9 @@ export function useSelectAndHover(
   onMouseDown: (event: React.MouseEvent<HTMLDivElement, MouseEvent>) => void
 } {
   const modeType = useEditorState((store) => store.editor.mode.type, 'useSelectAndHover mode')
-  const hasInteractionState = useEditorState(
+  const hasInteractionSession = useEditorState(
     (store) => store.editor.canvas.interactionSession != null,
-    'useSelectAndHover hasInteractionState',
+    'useSelectAndHover hasInteractionSession',
   )
   const selectModeCallbacks = useSelectOrLiveModeSelectAndHover(
     modeType === 'select' || modeType === 'select-lite' || modeType === 'live',
@@ -590,7 +590,7 @@ export function useSelectAndHover(
   )
   const insertModeCallbacks = useInsertModeSelectAndHover(modeType === 'insert', cmdPressed)
 
-  if (hasInteractionState) {
+  if (hasInteractionSession) {
     return {
       onMouseMove: Utils.NO_OP,
       onMouseDown: Utils.NO_OP,

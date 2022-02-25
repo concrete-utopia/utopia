@@ -5,16 +5,16 @@ import { isStrategyActive } from './canvas-strategies'
 
 export const CanvasStrategyInspector = React.memo(() => {
   const colorTheme = useColorTheme()
-  const activeInteractionState = useEditorState(
+  const activeStrategy = useEditorState(
     (store) => isStrategyActive(store.sessionStateState),
-    'CanvasStrategyInspector activeInteractionState',
+    'CanvasStrategyInspector activeStrategy',
   )
   const commandsToList = useEditorState(
     (store) => store.sessionStateState.commandDescriptions,
     'CanvasStrategyInspector accumulatedCommands',
   )
 
-  if (!activeInteractionState) {
+  if (!activeStrategy) {
     return null
   } else {
     return (

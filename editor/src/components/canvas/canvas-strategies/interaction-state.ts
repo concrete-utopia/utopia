@@ -50,7 +50,7 @@ export interface InteractionSession {
   globalTime: number
 }
 
-export type InteractionStateWithoutMetadata = Omit<InteractionSession, 'metadata'>
+export type InteractionSessionWithoutMetadata = Omit<InteractionSession, 'metadata'>
 
 export interface StrategyState {
   type: 'STRATEGY_STATE'
@@ -106,7 +106,7 @@ export function createInteractionViaMouse(
   mouseDownPoint: CanvasPoint,
   modifiers: Modifiers,
   activeControl: CanvasControlType,
-): InteractionStateWithoutMetadata {
+): InteractionSessionWithoutMetadata {
   return {
     interactionData: {
       type: 'DRAG',
@@ -137,7 +137,7 @@ export function updateInteractionViaMouse(
   drag: CanvasVector,
   modifiers: Modifiers,
   sourceOfUpdate: CanvasControlType | null, // If null it means the active control is the source
-): InteractionStateWithoutMetadata {
+): InteractionSessionWithoutMetadata {
   if (currentState.interactionData.type === 'DRAG') {
     const dragThresholdPassed =
       currentState.interactionData.dragThresholdPassed || dragExceededThreshold(drag)
@@ -170,7 +170,7 @@ export function createInteractionViaKeyboard(
   keysPressed: Array<KeyCharacter>,
   modifiers: Modifiers,
   activeControl: CanvasControlType,
-): InteractionStateWithoutMetadata {
+): InteractionSessionWithoutMetadata {
   return {
     interactionData: {
       type: 'KEYBOARD',
@@ -192,7 +192,7 @@ export function updateInteractionViaKeyboard(
   keysReleased: Array<KeyCharacter>,
   modifiers: Modifiers,
   sourceOfUpdate: CanvasControlType,
-): InteractionStateWithoutMetadata {
+): InteractionSessionWithoutMetadata {
   if (currentState.interactionData.type === 'KEYBOARD') {
     const withRemovedKeys = currentState.interactionData.keysPressed.filter(
       (k) => !keysReleased.includes(k),
@@ -284,22 +284,22 @@ export function interactionDataHardReset(interactionData: InputData): InputData 
   }
 }
 
-export function strategySwitchInteractionStateReset(
-  interactionState: InteractionSession,
+export function strategySwitchInteractionSessionReset(
+  interactionSession: InteractionSession,
 ): InteractionSession {
   return {
-    ...interactionState,
-    interactionData: strategySwitchInteractionDataReset(interactionState.interactionData),
+    ...interactionSession,
+    interactionData: strategySwitchInteractionDataReset(interactionSession.interactionData),
   }
 }
 
 // Hard reset means we need to ignore everything happening in the interaction until now, and replay all the dragging
-export function interactionStateHardReset(
-  interactionState: InteractionSession,
+export function interactionSessionHardReset(
+  interactionSession: InteractionSession,
 ): InteractionSession {
   return {
-    ...interactionState,
-    interactionData: interactionDataHardReset(interactionState.interactionData),
+    ...interactionSession,
+    interactionData: interactionDataHardReset(interactionSession.interactionData),
   }
 }
 

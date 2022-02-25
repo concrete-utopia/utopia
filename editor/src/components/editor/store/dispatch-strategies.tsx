@@ -2,9 +2,9 @@ import {
   SessionStateState,
   createEmptySessionStateState,
   createEmptyStrategyState,
-  strategySwitchInteractionStateReset,
+  strategySwitchInteractionSessionReset,
   hasModifiersChanged,
-  interactionStateHardReset,
+  interactionSessionHardReset,
 } from '../../canvas/canvas-strategies/interaction-state'
 import {
   findCanvasStrategy,
@@ -43,8 +43,8 @@ export function interactionFinished(
     scale: newEditorState.canvas.scale,
     canvasOffset: newEditorState.canvas.roundedCanvasOffset,
   }
-  const interactionState = storedState.unpatchedEditor.canvas.interactionSession
-  if (interactionState == null) {
+  const interactionSession = storedState.unpatchedEditor.canvas.interactionSession
+  if (interactionSession == null) {
     return {
       unpatchedEditorState: newEditorState,
       patchedEditorState: newEditorState,
@@ -54,7 +54,7 @@ export function interactionFinished(
     // Determine the new canvas strategy to run this time around.
     const { strategy } = findCanvasStrategy(
       canvasState,
-      interactionState,
+      interactionSession,
       result.sessionStateState,
       result.sessionStateState.currentStrategy,
     )
@@ -70,7 +70,7 @@ export function interactionFinished(
       const commands = applyCanvasStrategy(
         strategy.strategy,
         canvasState,
-        interactionState,
+        interactionSession,
         result.sessionStateState,
       )
       const commandResult = foldAndApplyCommands(
@@ -107,15 +107,15 @@ export function interactionHardReset(
     scale: newEditorState.canvas.scale,
     canvasOffset: newEditorState.canvas.roundedCanvasOffset,
   }
-  const interactionState = newEditorState.canvas.interactionSession
-  if (interactionState == null) {
+  const interactionSession = newEditorState.canvas.interactionSession
+  if (interactionSession == null) {
     return {
       unpatchedEditorState: newEditorState,
       patchedEditorState: newEditorState,
       newSessionStateState: withClearedSession,
     }
   } else {
-    const resetInteractionState = interactionStateHardReset(interactionState)
+    const resetInteractionSession = interactionSessionHardReset(interactionSession)
     const resetSessionState = {
       ...result.sessionStateState,
       startingMetadata: storedState.unpatchedEditor.jsxMetadata,
@@ -123,7 +123,7 @@ export function interactionHardReset(
     // Determine the new canvas strategy to run this time around.
     const { strategy, previousStrategy } = findCanvasStrategy(
       canvasState,
-      resetInteractionState,
+      resetInteractionSession,
       resetSessionState,
       resetSessionState.currentStrategy,
     )
@@ -181,8 +181,8 @@ export function interactionUpdate(
     scale: newEditorState.canvas.scale,
     canvasOffset: newEditorState.canvas.roundedCanvasOffset,
   }
-  const interactionState = newEditorState.canvas.interactionSession
-  if (interactionState == null) {
+  const interactionSession = newEditorState.canvas.interactionSession
+  if (interactionSession == null) {
     return {
       unpatchedEditorState: newEditorState,
       patchedEditorState: newEditorState,
@@ -192,7 +192,7 @@ export function interactionUpdate(
     // Determine the new canvas strategy to run this time around.
     const { strategy } = findCanvasStrategy(
       canvasState,
-      interactionState,
+      interactionSession,
       result.sessionStateState,
       result.sessionStateState.currentStrategy,
     )
@@ -253,8 +253,8 @@ export function interactionStart(
     scale: newEditorState.canvas.scale,
     canvasOffset: newEditorState.canvas.roundedCanvasOffset,
   }
-  const interactionState = newEditorState.canvas.interactionSession
-  if (interactionState == null) {
+  const interactionSession = newEditorState.canvas.interactionSession
+  if (interactionSession == null) {
     return {
       unpatchedEditorState: newEditorState,
       patchedEditorState: newEditorState,
@@ -264,7 +264,7 @@ export function interactionStart(
     // Determine the new canvas strategy to run this time around.
     const { strategy, previousStrategy } = findCanvasStrategy(
       canvasState,
-      interactionState,
+      interactionSession,
       withClearedSession,
       result.sessionStateState.currentStrategy,
     )
@@ -342,8 +342,8 @@ export function interactionUserChangedStrategy(
     scale: newEditorState.canvas.scale,
     canvasOffset: newEditorState.canvas.roundedCanvasOffset,
   }
-  const interactionState = newEditorState.canvas.interactionSession
-  if (interactionState == null) {
+  const interactionSession = newEditorState.canvas.interactionSession
+  if (interactionSession == null) {
     return {
       unpatchedEditorState: newEditorState,
       patchedEditorState: newEditorState,
@@ -353,7 +353,7 @@ export function interactionUserChangedStrategy(
     // Determine the new canvas strategy to run this time around.
     const { strategy, previousStrategy } = findCanvasStrategy(
       canvasState,
-      interactionState,
+      interactionSession,
       result.sessionStateState,
       result.sessionStateState.currentStrategy,
     )
@@ -437,8 +437,8 @@ function interactionStrategyChangeStacked(
     scale: newEditorState.canvas.scale,
     canvasOffset: newEditorState.canvas.roundedCanvasOffset,
   }
-  const interactionState = newEditorState.canvas.interactionSession
-  if (interactionState == null) {
+  const interactionSession = newEditorState.canvas.interactionSession
+  if (interactionSession == null) {
     return {
       unpatchedEditorState: newEditorState,
       patchedEditorState: newEditorState,
@@ -448,7 +448,7 @@ function interactionStrategyChangeStacked(
     // Determine the new canvas strategy to run this time around.
     const { strategy, previousStrategy } = findCanvasStrategy(
       canvasState,
-      interactionState,
+      interactionSession,
       result.sessionStateState,
       result.sessionStateState.currentStrategy,
     )
@@ -510,7 +510,7 @@ function interactionStrategyChangeStacked(
         ...newEditorState,
         canvas: {
           ...newEditorState.canvas,
-          interactionState: strategySwitchInteractionStateReset(
+          interactionSession: strategySwitchInteractionSessionReset(
             newEditorState.canvas.interactionSession,
           ),
         },
