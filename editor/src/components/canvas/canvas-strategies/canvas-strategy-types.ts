@@ -1,5 +1,5 @@
 import { ElementInstanceMetadataMap } from '../../../core/shared/element-template'
-import { InteractionState } from './interaction-state'
+import { InteractionSession } from './interaction-state'
 import { CanvasCommand } from '../commands/commands'
 import { SessionStateState } from './interaction-state'
 import { ElementPath } from '../../../core/shared/project-file-types'
@@ -31,7 +31,7 @@ export interface CanvasStrategy {
   // Determines if we should show the controls that this strategy renders
   isApplicable: (
     canvasState: InteractionCanvasState,
-    interactionState: InteractionState | null,
+    interactionState: InteractionSession | null,
     metadata: ElementInstanceMetadataMap,
   ) => boolean
 
@@ -41,14 +41,14 @@ export interface CanvasStrategy {
   // As before, for determining the relative ordering of applicable strategies during an interaction, and therefore which one to apply
   fitness: (
     canvasState: InteractionCanvasState,
-    interactionState: InteractionState,
+    interactionState: InteractionSession,
     sessionState: SessionStateState,
   ) => number
 
   // Returns the commands that inform how the model and the editor should be updated
   apply: (
     canvasState: InteractionCanvasState,
-    interactionState: InteractionState,
+    interactionState: InteractionSession,
     sessionState: SessionStateState,
   ) => StrategyApplicationResult
 }

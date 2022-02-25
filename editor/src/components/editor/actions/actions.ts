@@ -956,7 +956,7 @@ function restoreEditorState(currentEditor: EditorModel, history: StateHistory): 
     canvas: {
       visible: currentEditor.canvas.visible,
       dragState: null,
-      interactionState: null,
+      interactionSession: null,
       scale: currentEditor.canvas.scale,
       snappingThreshold: currentEditor.canvas.snappingThreshold,
       realCanvasOffset: currentEditor.canvas.realCanvasOffset,

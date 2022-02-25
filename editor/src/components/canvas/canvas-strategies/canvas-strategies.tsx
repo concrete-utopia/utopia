@@ -3,7 +3,7 @@ import { createSelector } from 'reselect'
 import { addAllUniquelyBy, mapDropNulls, sortBy } from '../../../core/shared/array-utils'
 import { ElementInstanceMetadataMap } from '../../../core/shared/element-template'
 import { arrayEquals } from '../../../core/shared/utils'
-import { InteractionState, SessionStateState } from './interaction-state'
+import { InteractionSession, SessionStateState } from './interaction-state'
 import { InnerDispatchResult } from '../../editor/store/dispatch'
 import { EditorStorePatched } from '../../editor/store/editor-state'
 import { useEditorState } from '../../editor/store/store-hook'
@@ -14,7 +14,7 @@ const RegisteredCanvasStrategies: Array<CanvasStrategy> = []
 
 function getApplicableStrategies(
   canvasState: InteractionCanvasState,
-  interactionState: InteractionState | null,
+  interactionState: InteractionSession | null,
   metadata: ElementInstanceMetadataMap,
 ): Array<CanvasStrategy> {
   return RegisteredCanvasStrategies.filter((strategy) => {
@@ -33,11 +33,11 @@ const getApplicableStrategiesSelector = createSelector(
       canvasOffset: store.editor.canvas.roundedCanvasOffset,
     }
   },
-  (store: EditorStorePatched) => store.editor.canvas.interactionState,
+  (store: EditorStorePatched) => store.editor.canvas.interactionSession,
   (store: EditorStorePatched) => store.editor.jsxMetadata,
   (
     canvasState: InteractionCanvasState,
-    interactionState: InteractionState | null,
+    interactionState: InteractionSession | null,
     metadata: ElementInstanceMetadataMap,
   ): Array<CanvasStrategy> => {
     return getApplicableStrategies(canvasState, interactionState, metadata)
@@ -55,7 +55,7 @@ interface StrategyWithFitness {
 
 function getApplicableStrategiesOrderedByFitness(
   canvasState: InteractionCanvasState,
-  interactionState: InteractionState,
+  interactionState: InteractionSession,
   sessionState: SessionStateState,
 ): Array<StrategyWithFitness> {
   const applicableStrategies = getApplicableStrategies(
@@ -96,11 +96,11 @@ const getApplicableStrategiesOrderedByFitnessSelector = createSelector(
       canvasOffset: store.editor.canvas.roundedCanvasOffset,
     }
   },
-  (store: EditorStorePatched) => store.editor.canvas.interactionState,
+  (store: EditorStorePatched) => store.editor.canvas.interactionSession,
   (store: EditorStorePatched) => store.sessionStateState,
   (
     canvasState: InteractionCanvasState,
-    interactionState: InteractionState | null,
+    interactionState: InteractionSession | null,
     sessionState: SessionStateState,
   ): Array<string> => {
     if (interactionState == null) {
@@ -135,7 +135,7 @@ function pickDefaultCanvasStrategy(
 
 function pickStrategy(
   sortedApplicableStrategies: Array<StrategyWithFitness>,
-  interactionState: InteractionState,
+  interactionState: InteractionSession,
   previousStrategyName: string | null,
 ): { strategy: StrategyWithFitness | null; previousStrategy: StrategyWithFitness | null } {
   // FIXME Explicitly picking a strategy will prevent natural handovers that otherwise should occur
@@ -157,7 +157,7 @@ function pickStrategy(
 
 export function findCanvasStrategy(
   canvasState: InteractionCanvasState,
-  interactionState: InteractionState,
+  interactionState: InteractionSession,
   sessionState: SessionStateState,
   previousStrategyName: string | null,
 ): { strategy: StrategyWithFitness | null; previousStrategy: StrategyWithFitness | null } {
@@ -172,7 +172,7 @@ export function findCanvasStrategy(
 export function applyCanvasStrategy(
   strategy: CanvasStrategy,
   canvasState: InteractionCanvasState,
-  interactionState: InteractionState,
+  interactionState: InteractionSession,
   sessionState: SessionStateState,
 ): Array<CanvasCommand> {
   return strategy.apply(canvasState, interactionState, sessionState)
@@ -208,7 +208,7 @@ export function findCanvasStrategyFromDispatchResult(
     scale: newEditorState.canvas.scale,
     canvasOffset: newEditorState.canvas.roundedCanvasOffset,
   }
-  const interactionState = newEditorState.canvas.interactionState
+  const interactionState = newEditorState.canvas.interactionSession
   if (interactionState == null) {
     return null
   } else {

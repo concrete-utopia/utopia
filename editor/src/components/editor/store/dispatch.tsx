@@ -598,15 +598,15 @@ function editorDispatchInner(
             },
           },
         }
-      } else if (result.unpatchedEditor.canvas.interactionState != null) {
+      } else if (result.unpatchedEditor.canvas.interactionSession != null) {
         result = {
           ...result,
           unpatchedEditor: {
             ...result.unpatchedEditor,
             canvas: {
               ...result.unpatchedEditor.canvas,
-              interactionState: {
-                ...result.unpatchedEditor.canvas.interactionState,
+              interactionSession: {
+                ...result.unpatchedEditor.canvas.interactionSession,
                 metadata: reconstructJSXMetadata(result.unpatchedEditor),
               },
             },

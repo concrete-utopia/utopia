@@ -159,7 +159,7 @@ import { DefaultThirdPartyControlDefinitions } from '../../../core/third-party/t
 import { Spec } from 'immutability-helper'
 import { memoize } from '../../../core/shared/memoize'
 import {
-  InteractionState,
+  InteractionSession,
   SessionStateState,
 } from '../../canvas/canvas-strategies/interaction-state'
 
@@ -439,7 +439,7 @@ export interface EditorState {
   canvas: {
     visible: boolean
     dragState: DragState | null
-    interactionState: InteractionState | null
+    interactionSession: InteractionSession | null
     scale: number
     snappingThreshold: number
     realCanvasOffset: CanvasVector
@@ -1207,7 +1207,7 @@ export function createEditorState(dispatch: EditorDispatch): EditorState {
     },
     canvas: {
       dragState: null, // TODO change dragState if editorMode changes
-      interactionState: null,
+      interactionSession: null,
       visible: true,
       scale: 1,
       snappingThreshold: BaseSnappingThreshold,
@@ -1465,7 +1465,7 @@ export function editorModelFromPersistentModel(
     },
     canvas: {
       dragState: null, // TODO change dragState if editorMode changes
-      interactionState: null,
+      interactionSession: null,
       visible: true,
       scale: 1,
       snappingThreshold: BaseSnappingThreshold,

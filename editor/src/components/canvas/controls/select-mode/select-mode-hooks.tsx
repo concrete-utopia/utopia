@@ -51,7 +51,7 @@ export function isResizing(editorState: EditorState): boolean {
   return (
     (dragState?.type === 'RESIZE_DRAG_STATE' &&
       getDragStateDrag(dragState, editorState.canvas.resizeOptions) != null) ||
-    editorState.canvas.interactionState != null
+    editorState.canvas.interactionSession != null
   )
 }
 
@@ -60,7 +60,7 @@ export function isDragging(editorState: EditorState): boolean {
   return (
     (dragState?.type === 'MOVE_DRAG_STATE' &&
       getDragStateDrag(dragState, editorState.canvas.resizeOptions) != null) ||
-    editorState.canvas.interactionState != null
+    editorState.canvas.interactionSession != null
   )
 }
 
@@ -312,7 +312,7 @@ function useStartCanvasSession(): (event: MouseEvent, target: ElementPath) => vo
         .canvasPositionRounded
 
       dispatch([
-        CanvasActions.createInteractionState(
+        CanvasActions.createInteractionSession(
           createInteractionViaMouse(start, Modifier.modifiersForEvent(event), {
             type: 'BOUNDING_AREA',
             target: target,
@@ -579,7 +579,7 @@ export function useSelectAndHover(
 } {
   const modeType = useEditorState((store) => store.editor.mode.type, 'useSelectAndHover mode')
   const hasInteractionState = useEditorState(
-    (store) => store.editor.canvas.interactionState != null,
+    (store) => store.editor.canvas.interactionSession != null,
     'useSelectAndHover hasInteractionState',
   )
   const selectModeCallbacks = useSelectOrLiveModeSelectAndHover(

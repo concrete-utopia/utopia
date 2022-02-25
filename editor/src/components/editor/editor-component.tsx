@@ -135,10 +135,10 @@ export const EditorComponentInner = React.memo((props: EditorProps) => {
   const onWindowKeyDown = React.useCallback(
     (event: KeyboardEvent) => {
       if (isFeatureEnabled('Canvas Strategies')) {
-        const existingInteractionState = editorStoreRef.current.editor.canvas.interactionState
+        const existingInteractionState = editorStoreRef.current.editor.canvas.interactionSession
         // TODO: we don't handle new interaction started with keyboard now
         if (existingInteractionState != null) {
-          const action = CanvasActions.createInteractionState(
+          const action = CanvasActions.createInteractionSession(
             updateInteractionViaKeyboard(
               existingInteractionState,
               [Keyboard.keyCharacterForCode(event.keyCode)],
@@ -165,9 +165,9 @@ export const EditorComponentInner = React.memo((props: EditorProps) => {
   const onWindowKeyUp = React.useCallback(
     (event) => {
       if (isFeatureEnabled('Canvas Strategies')) {
-        const existingInteractionState = editorStoreRef.current.editor.canvas.interactionState
+        const existingInteractionState = editorStoreRef.current.editor.canvas.interactionSession
         if (existingInteractionState != null) {
-          const action = CanvasActions.createInteractionState(
+          const action = CanvasActions.createInteractionSession(
             updateInteractionViaKeyboard(
               existingInteractionState,
               [],

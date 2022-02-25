@@ -25,7 +25,7 @@ import {
   LayoutTargetableProp,
 } from '../../core/layout/layout-helpers-new'
 import {
-  InteractionState,
+  InteractionSession,
   InteractionStateWithoutMetadata,
 } from './canvas-strategies/interaction-state'
 
@@ -638,19 +638,19 @@ export interface CreateDragState {
   dragState: DragState
 }
 
-export interface CreateInteractionState {
-  action: 'CREATE_INTERACTION_STATE'
+export interface CreateInteractionSession {
+  action: 'CREATE_INTERACTION_SESSION'
   interactionState: InteractionStateWithoutMetadata
 }
 
-export interface ClearInteractionState {
-  action: 'CLEAR_INTERACTION_STATE'
+export interface ClearInteractionSession {
+  action: 'CLEAR_INTERACTION_SESSION'
   applyChanges: boolean
 }
 
-export interface UpdateInteractionState {
-  action: 'UPDATE_INTERACTION_STATE'
-  newInteractionStateProps: Partial<InteractionState>
+export interface UpdateInteractionSession {
+  action: 'UPDATE_INTERACTION_SESSION'
+  newInteractionStateProps: Partial<InteractionSession>
 }
 
 type SetSelectionControlsVisibility = {
@@ -678,9 +678,9 @@ export type CanvasAction =
   | ScrollCanvas
   | ClearDragState
   | CreateDragState
-  | CreateInteractionState
-  | ClearInteractionState
-  | UpdateInteractionState
+  | CreateInteractionSession
+  | ClearInteractionSession
+  | UpdateInteractionSession
   | Zoom
   | ZoomUI
   | SetSelectionControlsVisibility

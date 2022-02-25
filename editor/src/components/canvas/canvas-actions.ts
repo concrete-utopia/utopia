@@ -1,6 +1,6 @@
 import type { CanvasPoint, CanvasVector } from '../../core/shared/math-utils'
 import {
-  InteractionState,
+  InteractionSession,
   InteractionStateWithoutMetadata,
 } from './canvas-strategies/interaction-state'
 import type { CanvasAction, DragState } from './canvas-types'
@@ -18,23 +18,23 @@ const CanvasActions = {
       dragState: dragState,
     }
   },
-  createInteractionState: function (session: InteractionStateWithoutMetadata): CanvasAction {
+  createInteractionSession: function (session: InteractionStateWithoutMetadata): CanvasAction {
     return {
-      action: 'CREATE_INTERACTION_STATE',
+      action: 'CREATE_INTERACTION_SESSION',
       interactionState: session,
     }
   },
-  clearInteractionState: function (applyChanges: boolean): CanvasAction {
+  clearInteractionSession: function (applyChanges: boolean): CanvasAction {
     return {
-      action: 'CLEAR_INTERACTION_STATE',
+      action: 'CLEAR_INTERACTION_SESSION',
       applyChanges: applyChanges,
     }
   },
-  updateInteractionState: function (
-    newInteractionStateProps: Partial<InteractionState>,
+  updateInteractionSession: function (
+    newInteractionStateProps: Partial<InteractionSession>,
   ): CanvasAction {
     return {
-      action: 'UPDATE_INTERACTION_STATE',
+      action: 'UPDATE_INTERACTION_SESSION',
       newInteractionStateProps: newInteractionStateProps,
     }
   },

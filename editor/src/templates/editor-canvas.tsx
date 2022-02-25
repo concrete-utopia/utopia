@@ -155,9 +155,9 @@ function handleCanvasEvent(model: CanvasModel, event: CanvasMouseEvent): Array<E
   let optionalDragStateAction: Array<EditorAction> = []
   if ('interactionState' in event && event.interactionState != null) {
     optionalDragStateAction = [
-      model.editorState.canvas.interactionState != null
-        ? CanvasActions.updateInteractionState(event.interactionState)
-        : CanvasActions.createInteractionState(event.interactionState),
+      model.editorState.canvas.interactionSession != null
+        ? CanvasActions.updateInteractionSession(event.interactionState)
+        : CanvasActions.createInteractionSession(event.interactionState),
     ]
   }
 
@@ -181,10 +181,10 @@ function handleCanvasEvent(model: CanvasModel, event: CanvasMouseEvent): Array<E
             ),
           ]
         }
-        if (model.editorState.canvas.interactionState?.interactionData.type === 'DRAG') {
+        if (model.editorState.canvas.interactionSession?.interactionData.type === 'DRAG') {
           const applyChanges =
-            model.editorState.canvas.interactionState?.interactionData.dragThresholdPassed
-          optionalDragStateAction = [CanvasActions.clearInteractionState(applyChanges)]
+            model.editorState.canvas.interactionSession?.interactionData.dragThresholdPassed
+          optionalDragStateAction = [CanvasActions.clearInteractionSession(applyChanges)]
         }
         break
 
@@ -358,58 +358,58 @@ export function runLocalCanvasAction(
         },
       }
     }
-    case 'CREATE_INTERACTION_STATE':
+    case 'CREATE_INTERACTION_SESSION':
       clearInterval(interactionStateTimerHandle)
       interactionStateTimerHandle = setInterval(() => {
-        dispatch([CanvasActions.updateInteractionState({ globalTime: Date.now() })])
+        dispatch([CanvasActions.updateInteractionSession({ globalTime: Date.now() })])
       }, 200)
       return {
         ...model,
         canvas: {
           ...model.canvas,
-          interactionState: {
+          interactionSession: {
             ...action.interactionState,
-            metadata: model.canvas.interactionState?.metadata ?? model.jsxMetadata,
+            metadata: model.canvas.interactionSession?.metadata ?? model.jsxMetadata,
           },
         },
       }
-    case 'CLEAR_INTERACTION_STATE':
+    case 'CLEAR_INTERACTION_SESSION':
       clearInterval(interactionStateTimerHandle)
       const metadataToKeep =
-        action.applyChanges && model.canvas.interactionState != null
-          ? model.canvas.interactionState.metadata
+        action.applyChanges && model.canvas.interactionSession != null
+          ? model.canvas.interactionSession.metadata
           : model.jsxMetadata
       return {
         ...model,
         canvas: {
           ...model.canvas,
-          interactionState: null,
+          interactionSession: null,
         },
         jsxMetadata: metadataToKeep,
       }
-    case 'UPDATE_INTERACTION_STATE':
-      if (model.canvas.interactionState == null) {
+    case 'UPDATE_INTERACTION_SESSION':
+      if (model.canvas.interactionSession == null) {
         return model
       } else {
         return {
           ...model,
           canvas: {
             ...model.canvas,
-            interactionState: {
-              ...model.canvas.interactionState,
+            interactionSession: {
+              ...model.canvas.interactionSession,
               ...action.newInteractionStateProps,
             },
           },
         }
       }
     case 'SET_USERS_PREFERRED_STRATEGY': {
-      if (model.canvas.interactionState != null) {
+      if (model.canvas.interactionSession != null) {
         return {
           ...model,
           canvas: {
             ...model.canvas,
-            interactionState: {
-              ...model.canvas.interactionState,
+            interactionSession: {
+              ...model.canvas.interactionSession,
               userPreferredStrategy: action.strategyName,
             },
           },
@@ -1090,10 +1090,10 @@ export class EditorCanvas extends React.Component<EditorCanvasProps> {
       mouseMoveHandled()
       const dragStarted = anyDragStarted(dragState)
       if (
-        this.props.editor.canvas.interactionState != null &&
-        this.props.editor.canvas.interactionState.interactionData.type === 'DRAG'
+        this.props.editor.canvas.interactionSession != null &&
+        this.props.editor.canvas.interactionSession.interactionData.type === 'DRAG'
       ) {
-        const dragStart = this.props.editor.canvas.interactionState.interactionData.dragStart
+        const dragStart = this.props.editor.canvas.interactionSession.interactionData.dragStart
 
         const newDrag = roundPointForScale(
           Utils.offsetPoint(canvasPositions.canvasPositionRounded, Utils.negate(dragStart)),
@@ -1106,7 +1106,7 @@ export class EditorCanvas extends React.Component<EditorCanvasProps> {
           cursor: null,
           nativeEvent: event,
           interactionState: updateInteractionViaMouse(
-            this.props.editor.canvas.interactionState,
+            this.props.editor.canvas.interactionSession,
             newDrag,
             Modifier.modifiersForEvent(event),
             null,
