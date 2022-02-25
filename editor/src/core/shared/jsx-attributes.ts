@@ -926,16 +926,3 @@ export function getAllPathsFromAttributes(attributes: JSXAttributes): Array<Prop
   })
   return uniqBy(paths, PP.pathsEqual)
 }
-
-export function getNumberPropertyFromProps(
-  props: JSXAttributes,
-  property: PropertyPath,
-): number | null {
-  const possibleProperty = getJSXAttributeAtPath(props, property)
-  const currentValue = optionalMap(jsxSimpleAttributeToValue, possibleProperty?.attribute)
-  if (currentValue !== null && isRight(currentValue) && typeof currentValue.value === 'number') {
-    return currentValue.value
-  } else {
-    return null
-  }
-}
