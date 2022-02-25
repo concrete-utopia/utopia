@@ -141,7 +141,6 @@ import {
   withUnderlyingTarget,
   transformElementAtPath,
   ResizeOptions,
-  DesignerFile,
 } from '../editor/store/editor-state'
 import * as Frame from '../frame'
 import { getImageSizeFromMetadata, MultipliersForImages, scaleImageDimensions } from '../images'
@@ -186,7 +185,7 @@ import {
 } from './guideline'
 import { addImport, mergeImports } from '../../core/workers/common/project-file-utils'
 import { getLayoutProperty } from '../../core/layout/getLayoutProperty'
-import { getStoryboardElementPath, getStoryboardUID } from '../../core/model/scene-utils'
+import { getStoryboardUID } from '../../core/model/scene-utils'
 import { forceNotNull, optionalMap } from '../../core/shared/optional-utils'
 import { fastForEach } from '../../core/shared/utils'
 import { UiJsxCanvasContextData } from './ui-jsx-canvas'
@@ -211,7 +210,6 @@ import { LayoutTargetablePropArrayKeepDeepEquality } from '../../utils/deep-equa
 import { stylePropPathMappingFn } from '../inspector/common/property-path-hooks'
 import { EditorDispatch } from '../editor/action-types'
 import CanvasActions from './canvas-actions'
-import { applyStatePatches, TransientOrNot } from './commands/commands'
 
 export function getOriginalFrames(
   selectedViews: Array<ElementPath>,
@@ -945,7 +943,7 @@ export function getPropsToSetToMoveElement(
   return propsToSet
 }
 
-export function getPropsToSetToResizeElement(
+function getPropsToSetToResizeElement(
   edgePosition: EdgePosition,
   widthDelta: number,
   heightDelta: number,
@@ -1012,7 +1010,7 @@ export function getPropsToSetToResizeElement(
   return propsToSet
 }
 
-export function extendPartialFramePointsForResize(
+function extendPartialFramePointsForResize(
   frameProps: Array<LayoutPinnedProp>,
   edgePosition: EdgePosition,
 ): Array<LayoutPinnedProp> {
@@ -1328,12 +1326,12 @@ function getTargetableProp(resizeOptions: ResizeOptions): LayoutTargetableProp |
   return resizeOptions.propertyTargetOptions[resizeOptions.propertyTargetSelectedIndex]
 }
 
-export function findResizePropertyChange(
-  properties: Array<ResizeDragStatePropertyChange>,
+function findResizePropertyChange(
+  dragState: ResizeDragState,
   resizeOptions: ResizeOptions,
 ): ResizeDragStatePropertyChange | undefined {
   const resizeProp: LayoutTargetableProp | undefined = getTargetableProp(resizeOptions)
-  return properties.find((prop) => prop.targetProperty === resizeProp)
+  return dragState.properties.find((prop) => prop.targetProperty === resizeProp)
 }
 
 function calculateDraggedRectangle(
@@ -1343,7 +1341,7 @@ function calculateDraggedRectangle(
   const originalSize = dragState.originalSize
   const resizeOptions = editor.canvas.resizeOptions
 
-  const propertyChange = findResizePropertyChange(dragState.properties, resizeOptions)
+  const propertyChange = findResizePropertyChange(dragState, resizeOptions)
   if (propertyChange == null) {
     return originalSize
   } else {
@@ -1397,7 +1395,7 @@ export function calculateNewBounds(
   const newRectangle = calculateDraggedRectangle(editor, dragState)
   const resizeOptions = editor.canvas.resizeOptions
 
-  const propertyChange = findResizePropertyChange(dragState.properties, resizeOptions)
+  const propertyChange = findResizePropertyChange(dragState, resizeOptions)
   if (propertyChange == null) {
     return originalSize
   } else {
@@ -1868,7 +1866,7 @@ function getReparentTargetAtPosition(
   return allTargets.find((target) => selectedViews.every((view) => !EP.pathsEqual(view, target)))
 }
 
-export function getReparentTargetFromState(
+export function getReparentTarget(
   selectedViews: Array<ElementPath>,
   editorState: EditorState,
   toReparent: Array<ElementPath>,
@@ -1877,48 +1875,26 @@ export function getReparentTargetFromState(
   shouldReparent: boolean
   newParent: ElementPath | null
 } {
-  return getReparentTarget(
-    selectedViews,
-    toReparent,
+  const result = getReparentTargetAtPosition(
     editorState.jsxMetadata,
+    selectedViews,
     editorState.hiddenInstances,
     editorState.canvas.scale,
     editorState.canvas.realCanvasOffset,
-    editorState.projectContents,
-    editorState.canvas.openFile?.filename,
-  )
-}
-
-export function getReparentTarget(
-  selectedViews: Array<ElementPath>,
-  toReparent: Array<ElementPath>,
-  componentMeta: ElementInstanceMetadataMap,
-  hiddenInstances: Array<ElementPath>,
-  canvasScale: number,
-  canvasOffset: CanvasVector,
-  projectContents: ProjectContentTreeRoot,
-  openFile: string | null | undefined,
-): {
-  shouldReparent: boolean
-  newParent: ElementPath | null
-} {
-  const result = getReparentTargetAtPosition(
-    componentMeta,
-    selectedViews,
-    hiddenInstances,
-    canvasScale,
-    canvasOffset,
   )
   const possibleNewParent = result == undefined ? null : result
   const currentParents = Utils.stripNulls(
-    toReparent.map((view) => MetadataUtils.getParent(componentMeta, view)),
+    toReparent.map((view) => MetadataUtils.getParent(editorState.jsxMetadata, view)),
   )
   let parentSupportsChild = true
   if (possibleNewParent != null) {
-    parentSupportsChild = MetadataUtils.targetSupportsChildren(componentMeta, possibleNewParent)
+    parentSupportsChild = MetadataUtils.targetSupportsChildren(
+      editorState.jsxMetadata,
+      possibleNewParent,
+    )
   } else {
     // a null template path means Canvas, let's translate that to the storyboard component
-    const storyboardComponent = getStoryboardElementPath(projectContents, openFile ?? null)
+    const storyboardComponent = getStoryboardElementPathFromEditorState(editorState)
     return {
       shouldReparent: storyboardComponent != null,
       newParent: storyboardComponent,
@@ -2297,7 +2273,7 @@ function produceMoveTransientCanvasState(
   }
 
   if (dragState.reparent) {
-    const reparentTarget = getReparentTargetFromState(
+    const reparentTarget = getReparentTarget(
       previousCanvasTransientSelectedViews ?? editorState.selectedViews,
       workingEditorState,
       elementsToTarget,
@@ -2976,7 +2952,7 @@ export function getDragStatePositions(
       case 'INSERT_DRAG_STATE':
         return dragState
       case 'RESIZE_DRAG_STATE':
-        return findResizePropertyChange(dragState.properties, resizeOptions) ?? null
+        return findResizePropertyChange(dragState, resizeOptions) ?? null
       default:
         const _exhaustiveCheck: never = dragState
         throw new Error(`Unhandled drag state type ${JSON.stringify(dragState)}`)
