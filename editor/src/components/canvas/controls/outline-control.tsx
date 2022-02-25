@@ -332,7 +332,13 @@ export const OutlineControls = (props: OutlineControlsProps) => {
       )
       const padding = MetadataUtils.getElementPadding(selectedView, props.componentMetadata)
       selectionOutlines.push(
-        <PaddingControls key={`${keyPrefix}-padding-controls`} padding={padding} frame={rect} />,
+        <PaddingControls
+          key={`${keyPrefix}-padding-controls`}
+          canvasOffset={props.canvasOffset}
+          scale={props.scale}
+          padding={padding}
+          frame={rect}
+        />,
       )
     }
 
