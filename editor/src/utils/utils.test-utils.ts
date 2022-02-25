@@ -66,6 +66,10 @@ import { MapLike } from 'typescript'
 import { contentsToTree } from '../components/assets'
 import { defaultSceneElement } from '../components/editor/defaults'
 import { objectMap } from '../core/shared/object-utils'
+import {
+  createEmptySessionStateState,
+  SessionStateState,
+} from '../components/canvas/interactions/interaction-state'
 
 export function delay(time: number): Promise<void> {
   return new Promise((resolve) => setTimeout(resolve, time))
@@ -104,6 +108,7 @@ export function createEditorStates(
   editor: EditorState
   derivedState: DerivedState
   dispatch: EditorDispatch
+  sessionStateState: SessionStateState
 } {
   const editor: EditorState = {
     ...createEditorState(NO_OP),
@@ -146,6 +151,7 @@ export function createEditorStates(
       jsxMetadata: componentMetadata,
     },
     derivedState: derivedState,
+    sessionStateState: createEmptySessionStateState(),
     dispatch: Utils.NO_OP,
   }
 }

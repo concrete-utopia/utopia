@@ -178,7 +178,9 @@ function callPropertyControlsHook(selectedViews: ElementPath[]) {
   const initialEditorStore: EditorStoreFull = {
     unpatchedEditor: editorState,
     patchedEditor: editorState,
-    derived: null as any,
+    unpatchedDerived: null as any,
+    patchedDerived: null as any,
+    sessionStateState: null as any,
     history: null as any,
     userState: null as any,
     workers: null as any,

@@ -41,22 +41,26 @@ import { useWindowToCanvasCoordinates } from '../../dom-lookup-hooks'
 import { useInsertModeSelectAndHover } from './insert-mode-hooks'
 import { WindowMousePositionRaw } from '../../../../utils/global-positions'
 import { isFeatureEnabled } from '../../../../utils/feature-switches'
+import { createInteractionViaMouse } from '../../interactions/interaction-state'
+import { Modifier } from '../../../../utils/modifiers'
 
 const DRAG_START_TRESHOLD = 2
 
 export function isResizing(editorState: EditorState): boolean {
   const dragState = editorState.canvas.dragState
   return (
-    dragState?.type === 'RESIZE_DRAG_STATE' &&
-    getDragStateDrag(dragState, editorState.canvas.resizeOptions) != null
+    (dragState?.type === 'RESIZE_DRAG_STATE' &&
+      getDragStateDrag(dragState, editorState.canvas.resizeOptions) != null) ||
+    editorState.canvas.interactionState != null
   )
 }
 
 export function isDragging(editorState: EditorState): boolean {
   const dragState = editorState.canvas.dragState
   return (
-    dragState?.type === 'MOVE_DRAG_STATE' &&
-    getDragStateDrag(dragState, editorState.canvas.resizeOptions) != null
+    (dragState?.type === 'MOVE_DRAG_STATE' &&
+      getDragStateDrag(dragState, editorState.canvas.resizeOptions) != null) ||
+    editorState.canvas.interactionState != null
   )
 }
 
@@ -298,6 +302,28 @@ function useStartDragState(): (
   )
 }
 
+function useStartCanvasSession(): (event: MouseEvent, target: ElementPath) => void {
+  const dispatch = useEditorState((store) => store.dispatch, 'useStartDragState dispatch')
+  const windowToCanvasCoordinates = useWindowToCanvasCoordinates()
+
+  return React.useCallback(
+    (event: MouseEvent, target: ElementPath) => {
+      const start = windowToCanvasCoordinates(windowPoint(point(event.clientX, event.clientY)))
+        .canvasPositionRounded
+
+      dispatch([
+        CanvasActions.createInteractionState(
+          createInteractionViaMouse(start, Modifier.modifiersForEvent(event), {
+            type: 'BOUNDING_AREA',
+            target: target,
+          }),
+        ),
+      ])
+    },
+    [dispatch, windowToCanvasCoordinates],
+  )
+}
+
 function callbackAfterDragExceedsThreshold(
   startEvent: MouseEvent,
   threshold: number,
@@ -329,6 +355,7 @@ export function useStartDragStateAfterDragExceedsThreshold(): (
   foundTarget: ElementPath,
 ) => void {
   const startDragState = useStartDragState()
+
   const windowToCanvasCoordinates = useWindowToCanvasCoordinates()
 
   const startDragStateAfterDragExceedsThreshold = React.useCallback(
@@ -446,6 +473,7 @@ function useSelectOrLiveModeSelectAndHover(
   const findValidTarget = useFindValidTarget()
   const getSelectableViewsForSelectMode = useGetSelectableViewsForSelectMode()
   const startDragStateAfterDragExceedsThreshold = useStartDragStateAfterDragExceedsThreshold()
+  const startCanvasModeSession = useStartCanvasSession()
 
   const { onMouseMove } = useHighlightCallbacks(
     active,
@@ -475,7 +503,11 @@ function useSelectOrLiveModeSelectAndHover(
 
       if (foundTarget != null || isDeselect) {
         if (foundTarget != null && draggingAllowed) {
-          startDragStateAfterDragExceedsThreshold(event.nativeEvent, foundTarget.elementPath)
+          if (isFeatureEnabled('Canvas Strategies')) {
+            startCanvasModeSession(event.nativeEvent, foundTarget.elementPath)
+          } else {
+            startDragStateAfterDragExceedsThreshold(event.nativeEvent, foundTarget.elementPath)
+          }
         }
 
         let updatedSelection: Array<ElementPath>
@@ -531,6 +563,7 @@ function useSelectOrLiveModeSelectAndHover(
       getSelectableViewsForSelectMode,
       editorStoreRef,
       draggingAllowed,
+      startCanvasModeSession,
     ],
   )
 
@@ -545,6 +578,10 @@ export function useSelectAndHover(
   onMouseDown: (event: React.MouseEvent<HTMLDivElement, MouseEvent>) => void
 } {
   const modeType = useEditorState((store) => store.editor.mode.type, 'useSelectAndHover mode')
+  const hasInteractionState = useEditorState(
+    (store) => store.editor.canvas.interactionState != null,
+    'useSelectAndHover hasInteractionState',
+  )
   const selectModeCallbacks = useSelectOrLiveModeSelectAndHover(
     modeType === 'select' || modeType === 'select-lite' || modeType === 'live',
     modeType === 'select' || modeType === 'live',
@@ -553,17 +590,24 @@ export function useSelectAndHover(
   )
   const insertModeCallbacks = useInsertModeSelectAndHover(modeType === 'insert', cmdPressed)
 
-  switch (modeType) {
-    case 'select':
-      return selectModeCallbacks
-    case 'select-lite':
-      return selectModeCallbacks
-    case 'insert':
-      return insertModeCallbacks
-    case 'live':
-      return selectModeCallbacks
-    default:
-      const _exhaustiveCheck: never = modeType
-      throw new Error(`Unhandled editor mode ${JSON.stringify(modeType)}`)
+  if (hasInteractionState) {
+    return {
+      onMouseMove: Utils.NO_OP,
+      onMouseDown: Utils.NO_OP,
+    }
+  } else {
+    switch (modeType) {
+      case 'select':
+        return selectModeCallbacks
+      case 'select-lite':
+        return selectModeCallbacks
+      case 'insert':
+        return insertModeCallbacks
+      case 'live':
+        return selectModeCallbacks
+      default:
+        const _exhaustiveCheck: never = modeType
+        throw new Error(`Unhandled editor mode ${JSON.stringify(modeType)}`)
+    }
   }
 }

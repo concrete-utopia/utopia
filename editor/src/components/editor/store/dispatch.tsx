@@ -1,14 +1,6 @@
 import { PERFORMANCE_MARKS_ALLOWED, PRODUCTION_ENV } from '../../../common/env-vars'
-import { MetadataUtils } from '../../../core/model/element-metadata-utils'
-import { ElementInstanceMetadataMap } from '../../../core/shared/element-template'
 import { getAllUniqueUids } from '../../../core/model/element-template-utils'
-import {
-  ElementPath,
-  isParseSuccess,
-  isTextFile,
-  ParseSuccess,
-  ProjectFile,
-} from '../../../core/shared/project-file-types'
+import { isParseSuccess, isTextFile } from '../../../core/shared/project-file-types'
 import {
   codeNeedsParsing,
   codeNeedsPrinting,
@@ -28,12 +20,7 @@ import { CanvasAction } from '../../canvas/canvas-types'
 import { LocalNavigatorAction } from '../../navigator/actions'
 import { PreviewIframeId, projectContentsUpdateMessage } from '../../preview/preview-pane'
 import { EditorAction, EditorDispatch, isLoggedIn, LoginState } from '../action-types'
-import {
-  isTransientAction,
-  isUndoOrRedo,
-  isParsedModelUpdate,
-  isFromVSCode,
-} from '../actions/action-utils'
+import { isTransientAction, isUndoOrRedo, isFromVSCode } from '../actions/action-utils'
 import * as EditorActions from '../actions/action-creators'
 import * as History from '../history'
 import { StateHistory } from '../history'
@@ -42,41 +29,18 @@ import {
   DerivedState,
   deriveState,
   EditorState,
-  EditorStatePatch,
   EditorStoreFull,
-  getAllBuildErrors,
-  getAllErrorsFromFiles,
-  getAllLintErrors,
   persistentModelFromEditorModel,
   reconstructJSXMetadata,
   storedEditorStateFromEditorState,
 } from './editor-state'
 import { runLocalEditorAction } from './editor-update'
-import { arrayEquals, fastForEach, isBrowserEnvironment } from '../../../core/shared/utils'
-import {
-  EvaluationCache,
-  getDependencyTypeDefinitions,
-} from '../../../core/es-modules/package-manager/package-manager'
+import { fastForEach, isBrowserEnvironment } from '../../../core/shared/utils'
 import { UiJsxCanvasContextData } from '../../canvas/ui-jsx-canvas'
-import {
-  getContentsTreeFileFromString,
-  getProjectFileFromTree,
-  isProjectContentFile,
-  ProjectContentsTree,
-  ProjectContentTreeRoot,
-  treeToContents,
-  walkContentsTree,
-  zipContentsTree,
-} from '../../assets'
+import { ProjectContentTreeRoot, treeToContents, walkContentsTree } from '../../assets'
 import { isSendPreviewModel, restoreDerivedState, UPDATE_FNS } from '../actions/actions'
-import { ElementPathArrayKeepDeepEquality } from '../../../utils/deep-equality-instances'
-import { mapDropNulls } from '../../../core/shared/array-utils'
+import { getTransitiveReverseDependencies } from '../../../core/shared/project-contents-dependencies'
 import {
-  getTransitiveReverseDependencies,
-  identifyFilesThatHaveChanged,
-} from '../../../core/shared/project-contents-dependencies'
-import {
-  reduxDevtoolsLogMessage,
   reduxDevtoolsSendActions,
   reduxDevtoolsUpdateState,
 } from '../../../core/shared/redux-devtools'
@@ -87,11 +51,10 @@ import {
   combineProjectChanges,
   getProjectChanges,
   sendVSCodeChanges,
-  WriteProjectFileChange,
-  ProjectFileChange,
 } from './vscode-changes'
 import { isFeatureEnabled } from '../../../utils/feature-switches'
-import { isJsOrTsFile, isCssFile } from '../../../core/shared/file-utils'
+import { handleStrategies } from './dispatch-strategies'
+
 import { emptySet } from '../../../core/shared/set-utils'
 
 type DispatchResultFields = {
@@ -99,9 +62,9 @@ type DispatchResultFields = {
   entireUpdateFinished: Promise<any>
 }
 
-type EditorStoreUnpatched = Omit<EditorStoreFull, 'patchedEditor'>
+type EditorStoreUnpatched = Omit<EditorStoreFull, 'patchedEditor' | 'patchedDerived'>
 
-type InnerDispatchResult = EditorStoreUnpatched & DispatchResultFields
+export type InnerDispatchResult = EditorStoreUnpatched & DispatchResultFields
 export type DispatchResult = EditorStoreFull & DispatchResultFields
 
 function simpleStringifyAction(action: EditorAction): string {
@@ -153,7 +116,7 @@ function processAction(
     // Process action on the JS side.
     const editorAfterUpdateFunction = runLocalEditorAction(
       working.unpatchedEditor,
-      working.derived,
+      working.unpatchedDerived,
       working.userState,
       working.workers,
       action as EditorAction,
@@ -165,12 +128,12 @@ function processAction(
     const editorAfterCanvas = runLocalCanvasAction(
       dispatchEvent,
       editorAfterUpdateFunction,
-      working.derived,
+      working.unpatchedDerived,
       action as CanvasAction,
     )
     let editorAfterNavigator = runLocalNavigatorAction(
       editorAfterCanvas,
-      working.derived,
+      working.unpatchedDerived,
       action as LocalNavigatorAction,
     )
 
@@ -194,7 +157,8 @@ function processAction(
 
     return {
       unpatchedEditor: editorAfterNavigator,
-      derived: working.derived,
+      unpatchedDerived: working.unpatchedDerived,
+      sessionStateState: working.sessionStateState, // this means the actions cannot update sessionStateState – this piece of state lives outside our "redux" state
       history: newStateHistory,
       userState: working.userState,
       workers: working.workers,
@@ -431,38 +395,53 @@ export function editorDispatch(
     (action) => action.action === 'UPDATE_FROM_WORKER',
   )
 
-  const editorWithModelChecked =
-    !anyUndoOrRedo && transientOrNoChange && !workerUpdatedModel
-      ? { editorState: result.unpatchedEditor, modelUpdateFinished: Promise.resolve(true) }
-      : maybeRequestModelUpdateOnEditor(result.unpatchedEditor, storedState.workers, boundDispatch)
+  const editorFilteredForFiles = filterEditorForFiles(result.unpatchedEditor)
 
-  const editorFilteredForFiles = filterEditorForFiles(editorWithModelChecked.editorState)
-
-  const frozenEditorState = editorFilteredForFiles
-  const frozenDerivedState = result.derived
+  const frozenDerivedState = result.unpatchedDerived
 
   let newHistory: StateHistory
   if (transientOrNoChange) {
     newHistory = result.history
   } else {
-    newHistory = History.add(result.history, frozenEditorState, frozenDerivedState)
+    newHistory = History.add(result.history, editorFilteredForFiles, frozenDerivedState)
   }
 
   const alreadySaved = result.alreadySaved
 
-  const isLoaded = frozenEditorState.isLoaded
+  const isLoaded = editorFilteredForFiles.isLoaded
   const shouldSave =
     isLoaded &&
     !isLoadAction &&
     (!transientOrNoChange || anyUndoOrRedo || (anyWorkerUpdates && alreadySaved)) &&
     isBrowserEnvironment
 
-  const patchedEditorState = frozenEditorState // TODO actually patch the state using the EditorStatePatch produced by the Commands
+  const {
+    unpatchedEditorState,
+    patchedEditorState,
+    newSessionStateState,
+    patchedDerivedState,
+  } = isFeatureEnabled('Canvas Strategies')
+    ? handleStrategies(dispatchedActions, storedState, result, storedState.patchedDerived)
+    : {
+        unpatchedEditorState: result.unpatchedEditor,
+        patchedEditorState: result.unpatchedEditor,
+        newSessionStateState: result.sessionStateState,
+        patchedDerivedState: result.unpatchedDerived,
+      }
+
+  const editorWithModelChecked =
+    !anyUndoOrRedo && transientOrNoChange && !workerUpdatedModel
+      ? { editorState: unpatchedEditorState, modelUpdateFinished: Promise.resolve(true) }
+      : maybeRequestModelUpdateOnEditor(unpatchedEditorState, storedState.workers, boundDispatch)
+
+  const frozenEditorState = editorWithModelChecked.editorState
 
   const finalStore: DispatchResult = {
     unpatchedEditor: frozenEditorState,
     patchedEditor: patchedEditorState,
-    derived: frozenDerivedState,
+    unpatchedDerived: frozenDerivedState,
+    patchedDerived: patchedDerivedState,
+    sessionStateState: optionalDeepFreeze(newSessionStateState),
     history: newHistory,
     userState: result.userState,
     workers: storedState.workers,
@@ -619,6 +598,20 @@ function editorDispatchInner(
             },
           },
         }
+      } else if (result.unpatchedEditor.canvas.interactionState != null) {
+        result = {
+          ...result,
+          unpatchedEditor: {
+            ...result.unpatchedEditor,
+            canvas: {
+              ...result.unpatchedEditor.canvas,
+              interactionState: {
+                ...result.unpatchedEditor.canvas.interactionState,
+                metadata: reconstructJSXMetadata(result.unpatchedEditor),
+              },
+            },
+          },
+        }
       } else {
         result = {
           ...result,
@@ -638,9 +631,9 @@ function editorDispatchInner(
       // TODO BB put inspector and navigator back to history
     } else if (editorStayedTheSame) {
       // !! We completely skip creating a new derived state, since the editor state stayed the exact same
-      frozenDerivedState = storedState.derived
+      frozenDerivedState = storedState.unpatchedDerived
     } else {
-      const derivedState = deriveState(frozenEditorState, storedState.derived)
+      const derivedState = deriveState(frozenEditorState, storedState.unpatchedDerived)
       frozenDerivedState = optionalDeepFreeze(derivedState)
     }
 
@@ -668,7 +661,8 @@ function editorDispatchInner(
 
     return {
       unpatchedEditor: frozenEditorState,
-      derived: frozenDerivedState,
+      unpatchedDerived: frozenDerivedState,
+      sessionStateState: result.sessionStateState,
       history: result.history,
       userState: result.userState,
       workers: storedState.workers,

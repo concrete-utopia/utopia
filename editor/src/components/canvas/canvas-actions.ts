@@ -1,4 +1,10 @@
 import type { CanvasPoint, CanvasVector } from '../../core/shared/math-utils'
+import { InteractionState, InteractionStateWithoutMetadata } from './interactions/interaction-state'
+import {
+  CanvasInteractionSession,
+  SelectModeCanvasSessionProps,
+  SelectModeCanvasSessionState,
+} from './canvas-strategies/canvas-strategy-types'
 import type { CanvasAction, DragState } from './canvas-types'
 
 const CanvasActions = {
@@ -12,6 +18,26 @@ const CanvasActions = {
     return {
       action: 'CREATE_DRAG_STATE',
       dragState: dragState,
+    }
+  },
+  createInteractionState: function (session: InteractionStateWithoutMetadata): CanvasAction {
+    return {
+      action: 'CREATE_INTERACTION_STATE',
+      interactionState: session,
+    }
+  },
+  clearInteractionState: function (applyChanges: boolean): CanvasAction {
+    return {
+      action: 'CLEAR_INTERACTION_STATE',
+      applyChanges: applyChanges,
+    }
+  },
+  updateInteractionState: function (
+    newInteractionStateProps: Partial<InteractionState>,
+  ): CanvasAction {
+    return {
+      action: 'UPDATE_INTERACTION_STATE',
+      newInteractionStateProps: newInteractionStateProps,
     }
   },
   setSelectionControlsVisibility: function (selectionControlsVisible: boolean): CanvasAction {
@@ -37,6 +63,12 @@ const CanvasActions = {
     return {
       action: 'CLEAR_DRAG_STATE',
       applyChanges: applyChanges,
+    }
+  },
+  setUsersPreferredStrategy: function (strategyName: string): CanvasAction {
+    return {
+      action: 'SET_USERS_PREFERRED_STRATEGY',
+      strategyName: strategyName,
     }
   },
 }

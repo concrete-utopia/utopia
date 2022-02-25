@@ -191,7 +191,8 @@ export function renderCanvasReturnResultAndError(
       ...store,
       unpatchedEditor: updatedEditor,
       patchedEditor: updatedEditor,
-      derived: deriveState(updatedEditor, store.derived),
+      unpatchedDerived: deriveState(updatedEditor, store.patchedDerived),
+      patchedDerived: deriveState(updatedEditor, store.patchedDerived),
     }
   })
 
@@ -223,7 +224,8 @@ export function renderCanvasReturnResultAndError(
       linkTags: '',
       focusedElementPath: null,
       projectContents: storeHookForTest.api.getState().patchedEditor.projectContents,
-      transientFilesState: storeHookForTest.api.getState().derived.canvas.transientState.filesState,
+      transientFilesState: storeHookForTest.api.getState().unpatchedDerived.canvas.transientState
+        .filesState,
       scrollAnimation: false,
       propertyControlsInfo: {},
       dispatch: NO_OP,
@@ -248,7 +250,8 @@ export function renderCanvasReturnResultAndError(
       linkTags: '',
       focusedElementPath: null,
       projectContents: storeHookForTest.api.getState().patchedEditor.projectContents,
-      transientFilesState: storeHookForTest.api.getState().derived.canvas.transientState.filesState,
+      transientFilesState: storeHookForTest.api.getState().patchedDerived.canvas.transientState
+        .filesState,
       scrollAnimation: false,
       propertyControlsInfo: {},
       dispatch: NO_OP,

@@ -84,6 +84,7 @@ import { PersistenceMachine } from '../components/editor/persistence/persistence
 import { PersistenceBackend } from '../components/editor/persistence/persistence-backend'
 import { defaultProject } from '../sample-projects/sample-project-utils'
 import { createBuiltInDependenciesList } from '../core/es-modules/package-manager/built-in-dependencies-list'
+import { createEmptySessionStateState } from '../components/canvas/interactions/interaction-state'
 
 if (PROBABLY_ELECTRON) {
   let { webFrame } = requireElectron()
@@ -112,6 +113,8 @@ export class Editor {
     let emptyEditorState = createEditorState(this.boundDispatch)
     const derivedState = deriveState(emptyEditorState, null)
 
+    const sessionStateState = createEmptySessionStateState()
+
     const history = History.init(emptyEditorState, derivedState)
 
     window.addEventListener('blur', this.resetStateOnBlur)
@@ -139,7 +142,9 @@ export class Editor {
     this.storedState = {
       unpatchedEditor: emptyEditorState,
       patchedEditor: emptyEditorState,
-      derived: derivedState,
+      unpatchedDerived: derivedState,
+      patchedDerived: derivedState,
+      sessionStateState: sessionStateState,
       history: history,
       userState: defaultUserState,
       workers: workers,
@@ -267,6 +272,7 @@ export class Editor {
       [
         EditorActions.clearHighlightedViews(),
         CanvasActions.clearDragState(false),
+        CanvasActions.clearInteractionState(false),
         EditorActions.updateKeys({}),
         EditorActions.closePopup(),
       ],

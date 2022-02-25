@@ -157,7 +157,9 @@ import { PersistenceMachine } from '../persistence/persistence'
 import type { BuiltInDependencies } from '../../../core/es-modules/package-manager/built-in-dependencies-list'
 import { DefaultThirdPartyControlDefinitions } from '../../../core/third-party/third-party-controls'
 import { Spec } from 'immutability-helper'
+import { FlexAlignControlRectProps } from '../../canvas/canvas-strategies/canvas-strategy-types'
 import { memoize } from '../../../core/shared/memoize'
+import { InteractionState, SessionStateState } from '../../canvas/interactions/interaction-state'
 
 const ObjectPathImmutable: any = OPI
 
@@ -238,7 +240,7 @@ export const defaultUserState: UserState = {
 }
 
 type EditorStoreShared = {
-  derived: DerivedState
+  sessionStateState: SessionStateState
   history: StateHistory
   userState: UserState
   workers: UtopiaTsWorkers
@@ -251,10 +253,13 @@ type EditorStoreShared = {
 export type EditorStoreFull = EditorStoreShared & {
   unpatchedEditor: EditorState
   patchedEditor: EditorState
+  unpatchedDerived: DerivedState
+  patchedDerived: DerivedState
 }
 
 export type EditorStorePatched = EditorStoreShared & {
   editor: EditorState
+  derived: DerivedState
 }
 
 export interface FileDeleteModal {
@@ -432,6 +437,7 @@ export interface EditorState {
   canvas: {
     visible: boolean
     dragState: DragState | null
+    interactionState: InteractionState | null
     scale: number
     snappingThreshold: number
     realCanvasOffset: CanvasVector
@@ -455,6 +461,10 @@ export interface EditorState {
     }> | null
     resizeOptions: ResizeOptions
     domWalkerAdditionalElementsToUpdate: Array<ElementPath>
+    controls: {
+      animatedPlaceholderTargetUids: Array<string>
+      flexAlignDropTargets: Array<FlexAlignControlRectProps>
+    }
   }
   floatingInsertMenu: FloatingInsertMenuState
   inspector: {
@@ -1196,6 +1206,7 @@ export function createEditorState(dispatch: EditorDispatch): EditorState {
     },
     canvas: {
       dragState: null, // TODO change dragState if editorMode changes
+      interactionState: null,
       visible: true,
       scale: 1,
       snappingThreshold: BaseSnappingThreshold,
@@ -1219,6 +1230,10 @@ export function createEditorState(dispatch: EditorDispatch): EditorState {
         propertyTargetSelectedIndex: 0,
       },
       domWalkerAdditionalElementsToUpdate: [],
+      controls: {
+        animatedPlaceholderTargetUids: [],
+        flexAlignDropTargets: [],
+      },
     },
     floatingInsertMenu: {
       insertMenuMode: 'closed',
@@ -1452,6 +1467,7 @@ export function editorModelFromPersistentModel(
     },
     canvas: {
       dragState: null, // TODO change dragState if editorMode changes
+      interactionState: null,
       visible: true,
       scale: 1,
       snappingThreshold: BaseSnappingThreshold,
@@ -1475,6 +1491,10 @@ export function editorModelFromPersistentModel(
         propertyTargetSelectedIndex: 0,
       },
       domWalkerAdditionalElementsToUpdate: [],
+      controls: {
+        animatedPlaceholderTargetUids: [],
+        flexAlignDropTargets: [],
+      },
     },
     floatingInsertMenu: {
       insertMenuMode: 'closed',

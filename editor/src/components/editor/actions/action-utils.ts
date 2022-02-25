@@ -1,8 +1,10 @@
+import { ClearInteractionState, CreateInteractionState } from '../../canvas/canvas-types'
 import { EditorAction } from '../action-types'
 
 export function isTransientAction(action: EditorAction): boolean {
   switch (action.action) {
     case 'CLEAR_DRAG_STATE':
+    case 'CLEAR_INTERACTION_STATE':
       return !action.applyChanges
 
     case 'DROP_TARGET_HINT':
@@ -105,6 +107,9 @@ export function isTransientAction(action: EditorAction): boolean {
     case 'HIDE_VSCODE_LOADING_SCREEN':
     case 'SET_INDEXED_DB_FAILED':
     case 'FORCE_PARSE_FILE':
+    case 'CREATE_INTERACTION_STATE':
+    case 'SET_USERS_PREFERRED_STRATEGY':
+    case 'UPDATE_INTERACTION_STATE':
       return true
 
     case 'NEW':
@@ -209,6 +214,60 @@ export function isFromVSCode(action: EditorAction): boolean {
     case 'UPDATE_FROM_CODE_EDITOR':
     case 'SEND_LINTER_REQUEST_MESSAGE':
       return true
+    default:
+      return false
+  }
+}
+
+export function strategyWasOverridden(action: EditorAction): boolean {
+  switch (action.action) {
+    case 'TRANSIENT_ACTIONS':
+      return action.transientActions.some(strategyWasOverridden)
+    case 'ATOMIC':
+      return action.actions.some(strategyWasOverridden)
+    case 'SET_USERS_PREFERRED_STRATEGY':
+      return true
+    default:
+      return false
+  }
+}
+
+export function isClearInteractionState(action: EditorAction): action is ClearInteractionState {
+  switch (action.action) {
+    case 'TRANSIENT_ACTIONS':
+      return action.transientActions.some(isClearInteractionState)
+    case 'ATOMIC':
+      return action.actions.some(isClearInteractionState)
+    case 'CLEAR_INTERACTION_STATE':
+      return true
+    default:
+      return false
+  }
+}
+
+export function isCreateInteractionState(action: EditorAction): action is CreateInteractionState {
+  switch (action.action) {
+    case 'TRANSIENT_ACTIONS':
+      return action.transientActions.some(isCreateInteractionState)
+    case 'ATOMIC':
+      return action.actions.some(isCreateInteractionState)
+    case 'CREATE_INTERACTION_STATE':
+      return true
+    default:
+      return false
+  }
+}
+
+export function shouldApplyClearInteractionStateResult(
+  action: EditorAction,
+): action is ClearInteractionState {
+  switch (action.action) {
+    case 'TRANSIENT_ACTIONS':
+      return action.transientActions.some(shouldApplyClearInteractionStateResult)
+    case 'ATOMIC':
+      return action.actions.some(shouldApplyClearInteractionStateResult)
+    case 'CLEAR_INTERACTION_STATE':
+      return action.applyChanges
     default:
       return false
   }
