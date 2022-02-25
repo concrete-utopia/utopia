@@ -1,7 +1,7 @@
 import { MetadataUtils } from '../../../core/model/element-metadata-utils'
 import { flatMapArray, safeIndex } from '../../../core/shared/array-utils'
 import { emptyComments, jsxAttributeValue } from '../../../core/shared/element-template'
-import { CanvasStrategy } from '../../../interactions_proposal'
+import { CanvasStrategy } from './canvas-strategy-types'
 import { stylePropPathMappingFn } from '../../inspector/common/property-path-hooks'
 import { deleteProperty, setProperty } from '../commands/commands'
 import { ApplyOnMouseUp } from '../controls/select-mode/apply-on-mouse-up'

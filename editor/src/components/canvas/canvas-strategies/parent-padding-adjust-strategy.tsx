@@ -9,13 +9,13 @@ import {
 import { getNumberPropertyFromProps } from '../../../core/shared/jsx-attributes'
 import { forceNotNull } from '../../../core/shared/optional-utils'
 import { ElementPath } from '../../../core/shared/project-file-types'
-import { CanvasStrategy } from '../../../interactions_proposal'
 import { ProjectContentTreeRoot } from '../../assets'
 import { withUnderlyingTarget } from '../../editor/store/editor-state'
 import { stylePropPathMappingFn } from '../../inspector/common/property-path-hooks'
 import { setProperty, wildcardPatch } from '../commands/commands'
 import { ParentPaddingControl } from '../controls/parent-padding-controls'
 import * as EP from '../../../core/shared/element-path'
+import { CanvasStrategy } from './canvas-strategy-types'
 
 function getElementPadding(
   target: ElementPath,

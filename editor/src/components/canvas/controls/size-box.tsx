@@ -46,7 +46,7 @@ import {
 import { safeIndex } from '../../../core/shared/array-utils'
 import { CSSPosition } from '../../inspector/common/css-utils'
 import * as EP from '../../../core/shared/element-path'
-import { createInteractionViaMouse } from '../../../interactions_proposal'
+import { createInteractionViaMouse } from '../interactions/interaction-state'
 import { Modifier } from '../../../utils/modifiers'
 import { windowToCanvasCoordinates } from '../dom-lookup'
 

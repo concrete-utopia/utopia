@@ -15,7 +15,7 @@ import {
   rectContainsPoint,
 } from '../../../core/shared/math-utils'
 import * as PP from '../../../core/shared/property-path'
-import { CanvasStrategy } from '../../../interactions_proposal'
+import { CanvasStrategy } from './canvas-strategy-types'
 import { setProperty, SetProperty, wildcardPatch } from '../commands/commands'
 import { FlexAlignControls } from '../controls/select-mode/flex-align-controls'
 import { FlexAlignControlRectProps } from './canvas-strategy-types'

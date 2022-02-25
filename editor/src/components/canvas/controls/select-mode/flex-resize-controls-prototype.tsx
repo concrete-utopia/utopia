@@ -8,7 +8,7 @@ import {
   point,
   windowPoint,
 } from '../../../../core/shared/math-utils'
-import { createInteractionViaMouse } from '../../../../interactions_proposal'
+import { createInteractionViaMouse } from '../../interactions/interaction-state'
 import { Modifier } from '../../../../utils/modifiers'
 import { when } from '../../../../utils/react-conditionals'
 import { useEditorState } from '../../../editor/store/store-hook'

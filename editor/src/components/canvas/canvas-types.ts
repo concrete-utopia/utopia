@@ -28,7 +28,7 @@ import {
   CanvasInteractionSession,
   SelectModeCanvasSessionProps,
 } from './canvas-strategies/canvas-strategy-types'
-import { InteractionState, InteractionStateWithoutMetadata } from '../../interactions_proposal'
+import { InteractionState, InteractionStateWithoutMetadata } from './interactions/interaction-state'
 
 export const CanvasContainerID = 'canvas-container'
 

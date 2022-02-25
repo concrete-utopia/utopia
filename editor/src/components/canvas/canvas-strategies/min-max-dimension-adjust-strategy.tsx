@@ -7,11 +7,11 @@ import {
   AdjustNumberInequalityCondition,
   adjustNumberProperty,
 } from '../commands/commands'
-import { CanvasStrategy } from '../../../interactions_proposal'
 import { MetadataUtils } from '../../../core/model/element-metadata-utils'
 import { MinMaxDimensionControls } from '../controls/select-mode/min-max-dimension-controls'
 import { PropertyPath } from '../../../core/shared/project-file-types'
 import { EdgePosition } from '../canvas-types'
+import { CanvasStrategy } from './canvas-strategy-types'
 
 function isHorizontalResize(position: EdgePosition): boolean {
   return position.y === 0.5

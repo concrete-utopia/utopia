@@ -53,14 +53,11 @@ import { createIframeUrl, projectURLForProject } from '../../core/shared/utils'
 import { setBranchNameFromURL } from '../../utils/branches'
 import { FatalIndexedDBErrorComponent } from './fatal-indexeddb-error-component'
 import { isFeatureEnabled } from '../../utils/feature-switches'
-import {
-  createInteractionViaKeyboard,
-  updateInteractionViaKeyboard,
-} from '../../interactions_proposal'
 import Keyboard from '../../utils/keyboard'
 import { Modifier } from '../../utils/modifiers'
 import CanvasActions from '../canvas/canvas-actions'
 import { UtopiaCanvasVarStyleTag } from '../canvas/utopia-canvas-vars'
+import { updateInteractionViaKeyboard } from '../canvas/interactions/interaction-state'
 
 function pushProjectURLToBrowserHistory(projectId: string, projectName: string): void {
   // Make sure we don't replace the query params

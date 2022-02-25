@@ -2,7 +2,7 @@ import { safeIndex } from '../../../core/shared/array-utils'
 import { stylePropPathMappingFn } from '../../inspector/common/property-path-hooks'
 import { forceNotNull } from '../../../core/shared/optional-utils'
 import { adjustNumberProperty, wildcardPatch } from '../commands/commands'
-import { CanvasStrategy } from '../../../interactions_proposal'
+import { CanvasStrategy } from './canvas-strategy-types'
 import { MetadataUtils } from '../../../core/model/element-metadata-utils'
 import { FlexGapControls } from '../controls/select-mode/flex-gap-controls'
 

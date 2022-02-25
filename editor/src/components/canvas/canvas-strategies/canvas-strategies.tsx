@@ -6,13 +6,11 @@ import { ElementInstanceMetadataMap } from '../../../core/shared/element-templat
 import { offsetPoint, pointDifference, zeroCanvasPoint } from '../../../core/shared/math-utils'
 import { arrayEquals } from '../../../core/shared/utils'
 import {
-  CanvasStrategy,
-  ControlWithKey,
   InteractionCanvasState,
   InteractionData,
   InteractionState,
   SessionStateState,
-} from '../../../interactions_proposal'
+} from '../interactions/interaction-state'
 import { DispatchResult, InnerDispatchResult } from '../../editor/store/dispatch'
 import { EditorStorePatched } from '../../editor/store/editor-state'
 import { useEditorState } from '../../editor/store/store-hook'
@@ -28,6 +26,7 @@ import { flexReOrderStrategy } from './flex-reorder-strategy'
 import { flowReOrderStrategy } from './flow-reorder-strategy'
 import { adjustMinMaxDimensionStrategy } from './min-max-dimension-adjust-strategy'
 import { parentPaddingAdjustStrategy } from './parent-padding-adjust-strategy'
+import { CanvasStrategy, ControlWithKey } from './canvas-strategy-types'
 
 const RegisteredCanvasStrategies: Array<CanvasStrategy> = [
   alignToParentStrategy,

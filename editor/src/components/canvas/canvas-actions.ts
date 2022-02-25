@@ -1,5 +1,5 @@
 import type { CanvasPoint, CanvasVector } from '../../core/shared/math-utils'
-import { InteractionState, InteractionStateWithoutMetadata } from '../../interactions_proposal'
+import { InteractionState, InteractionStateWithoutMetadata } from './interactions/interaction-state'
 import {
   CanvasInteractionSession,
   SelectModeCanvasSessionProps,

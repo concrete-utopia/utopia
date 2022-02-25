@@ -157,9 +157,9 @@ import { PersistenceMachine } from '../persistence/persistence'
 import type { BuiltInDependencies } from '../../../core/es-modules/package-manager/built-in-dependencies-list'
 import { DefaultThirdPartyControlDefinitions } from '../../../core/third-party/third-party-controls'
 import { Spec } from 'immutability-helper'
-import { InteractionState, SessionStateState } from '../../../interactions_proposal'
 import { FlexAlignControlRectProps } from '../../canvas/canvas-strategies/canvas-strategy-types'
 import { memoize } from '../../../core/shared/memoize'
+import { InteractionState, SessionStateState } from '../../canvas/interactions/interaction-state'
 
 const ObjectPathImmutable: any = OPI
 

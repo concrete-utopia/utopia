@@ -2,7 +2,6 @@ import { safeIndex } from '../../../core/shared/array-utils'
 import { stylePropPathMappingFn } from '../../inspector/common/property-path-hooks'
 import { forceNotNull } from '../../../core/shared/optional-utils'
 import { adjustNumberProperty, updateElementIndex, wildcardPatch } from '../commands/commands'
-import { CanvasStrategy } from '../../../interactions_proposal'
 import { MetadataUtils } from '../../../core/model/element-metadata-utils'
 import { getUtopiaID } from '../../../core/model/element-template-utils'
 import * as EP from '../../../core/shared/element-path'
@@ -10,6 +9,7 @@ import { ElementInstanceMetadata } from '../../../core/shared/element-template'
 import { isRight } from '../../../core/shared/either'
 import { withUnderlyingTarget } from '../../editor/store/editor-state'
 import { ElementPath } from '../../../core/shared/project-file-types'
+import { CanvasStrategy } from './canvas-strategy-types'
 
 function xCenter(target: ElementInstanceMetadata): number {
   return (target.globalFrame?.x ?? 0) + (target.globalFrame?.width ?? 0) / 2

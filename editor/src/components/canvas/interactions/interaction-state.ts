@@ -1,14 +1,13 @@
-import { MoveIntoDragThreshold } from './components/canvas/canvas-utils'
-import { ElementInstanceMetadataMap } from './core/shared/element-template'
-import { CanvasPoint, CanvasVector } from './core/shared/math-utils'
-import { ElementPath } from './core/shared/project-file-types'
-import { KeyCharacter } from './utils/keyboard'
-import { CanvasControlType } from './components/canvas/canvas-strategies/canvas-strategy-types'
-import { addAllUniquely } from './core/shared/array-utils'
-import { Modifiers } from './utils/modifiers'
-import { ProjectContentTreeRoot } from './components/assets'
-import { CanvasCommand } from './components/canvas/commands/commands'
-import React from 'react'
+import { addAllUniquely } from '../../../core/shared/array-utils'
+import { ElementInstanceMetadataMap } from '../../../core/shared/element-template'
+import { CanvasPoint, CanvasVector } from '../../../core/shared/math-utils'
+import { ElementPath } from '../../../core/shared/project-file-types'
+import { KeyCharacter } from '../../../utils/keyboard'
+import { Modifiers } from '../../../utils/modifiers'
+import { ProjectContentTreeRoot } from '../../assets'
+import { CanvasControlType } from '../canvas-strategies/canvas-strategy-types'
+import { MoveIntoDragThreshold } from '../canvas-utils'
+import { CanvasCommand } from '../commands/commands'
 
 export interface InteractionCanvasState {
   // The idea here being that we should be restricting the model we're supplying to the interactions system,
@@ -311,45 +310,4 @@ export function updateInteractionViaTimeStep(currentState: InteractionState): In
     ...currentState,
     globalTime: Date.now(),
   }
-}
-
-export type StrategyApplicationResult = Array<CanvasCommand>
-
-export interface ControlWithKey {
-  control: React.FC
-  key: string
-  show:
-    | 'always-visible'
-    | 'visible-only-while-active'
-    | 'visible-except-when-other-strategy-is-active'
-}
-export interface CanvasStrategy {
-  name: string // We'd need to do something to guarantee uniqueness here if using this for the commands' reason
-
-  strategyGroups: Set<string>
-
-  isApplicable: (
-    canvasState: InteractionCanvasState,
-    interactionState: InteractionState | null,
-    metadata: ElementInstanceMetadataMap,
-  ) => boolean
-  // Determines if we should show the controls that this strategy renders
-  // Maybe this can just be rolled into controlsToRender?
-
-  controlsToRender: Array<ControlWithKey>
-  // The controls to render when this strategy is applicable, regardless of if it is currently active
-
-  fitness: (
-    canvasState: InteractionCanvasState,
-    interactionState: InteractionState,
-    sessionState: SessionStateState,
-  ) => number
-  // As before, for determining the relative ordering of applicable strategies during an interaction, and therefore which one to apply
-
-  apply: (
-    canvasState: InteractionCanvasState,
-    interactionState: InteractionState,
-    sessionState: SessionStateState,
-  ) => StrategyApplicationResult
-  // Returns the commands that inform how the model and the editor should be updated
 }

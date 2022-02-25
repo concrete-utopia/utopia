@@ -13,7 +13,7 @@ import {
 } from '../../../core/shared/element-template'
 import { forceNotNull } from '../../../core/shared/optional-utils'
 import { getJSXAttributeAtPath } from '../../../core/shared/jsx-attributes'
-import { createEmptyStrategyState } from '../../../interactions_proposal'
+import { createEmptyStrategyState } from '../interactions/interaction-state'
 
 describe('runMoveElementCommand', () => {
   it('works for a basic pinned element', async () => {

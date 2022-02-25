@@ -1,5 +1,5 @@
 import { MetadataUtils } from '../../../core/model/element-metadata-utils'
-import { CanvasStrategy } from '../../../interactions_proposal'
+import { CanvasStrategy } from './canvas-strategy-types'
 import { getReparentTarget } from '../canvas-utils'
 import { adjustNumberProperty, reparentElement, updateSelectedViews } from '../commands/commands'
 import * as EP from '../../../core/shared/element-path'

@@ -93,7 +93,7 @@ import {
 } from '../utils/global-positions'
 import { last, reverse } from '../core/shared/array-utils'
 import { updateSelectModeCanvasSessionDragVector } from '../components/canvas/canvas-strategies/canvas-strategy-types'
-import { updateInteractionViaMouse } from '../interactions_proposal'
+import { updateInteractionViaMouse } from '../components/canvas/interactions/interaction-state'
 
 const webFrame = PROBABLY_ELECTRON ? requireElectron().webFrame : null
 

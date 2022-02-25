@@ -1,8 +1,8 @@
 import { MetadataUtils } from '../../../core/model/element-metadata-utils'
-import { CanvasStrategy } from '../../../interactions_proposal'
 import { stylePropPathMappingFn } from '../../inspector/common/property-path-hooks'
 import { adjustNumberProperty, setProperty, wildcardPatch } from '../commands/commands'
 import * as EP from '../../../core/shared/element-path'
+import { CanvasStrategy } from './canvas-strategy-types'
 
 export const absoluteMoveStrategy: CanvasStrategy = {
   name: 'Absolute Move',

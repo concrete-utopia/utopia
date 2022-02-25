@@ -7,7 +7,6 @@ import {
   FakeWatchdogWorker,
 } from '../../../core/workers/test-workers'
 import { UtopiaTsWorkersImplementation } from '../../../core/workers/workers'
-import { createEmptySessionStateState } from '../../../interactions_proposal'
 import { setProperty } from '../../canvas/commands/commands'
 import { emptyUiJsxCanvasContextData } from '../../canvas/ui-jsx-canvas'
 import { EditorDispatch, notLoggedIn } from '../action-types'
@@ -19,6 +18,7 @@ import { createEditorState, deriveState, EditorStoreFull } from './editor-state'
 import * as EP from '../../../core/shared/element-path'
 import * as PP from '../../../core/shared/property-path'
 import { emptyComments, jsxAttributeValue } from '../../../core/shared/element-template'
+import { createEmptySessionStateState } from '../../canvas/interactions/interaction-state'
 
 function createEditorStore(): EditorStoreFull {
   let emptyEditorState = createEditorState(NO_OP)

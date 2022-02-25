@@ -9,7 +9,7 @@ import {
 import { forceNotNull } from '../../../core/shared/optional-utils'
 import { ElementPath } from '../../../core/shared/project-file-types'
 import * as PP from '../../../core/shared/property-path'
-import { CanvasStrategy } from '../../../interactions_proposal'
+import { CanvasStrategy } from './canvas-strategy-types'
 import { deleteProperty, setProperty, wildcardPatch } from '../commands/commands'
 import { FlexResizeControls } from '../controls/select-mode/flex-resize-controls-prototype'
 

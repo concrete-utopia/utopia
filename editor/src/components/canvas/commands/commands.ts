@@ -44,7 +44,7 @@ import {
 } from '../../assets'
 import { drop } from '../../../core/shared/array-utils'
 import { keepDeepReferenceEqualityIfPossible } from '../../../utils/react-performance'
-import { CommandDescription, StrategyState } from '../../../interactions_proposal'
+import { CommandDescription, StrategyState } from '../interactions/interaction-state'
 import {
   applyUtopiaJSXComponentsChanges,
   getUtopiaJSXComponentsFromSuccess,
