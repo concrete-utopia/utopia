@@ -1,7 +1,6 @@
 import {
   SessionStateState,
   createEmptySessionStateState,
-  createEmptyStrategyState,
   strategySwitchInteractionSessionReset,
   hasModifiersChanged,
   interactionSessionHardReset,
@@ -76,7 +75,6 @@ export function interactionFinished(
       const commandResult = foldAndApplyCommands(
         newEditorState,
         storedState.patchedEditor,
-        storedState.sessionStateState.strategyState,
         [...result.sessionStateState.accumulatedCommands.flatMap((c) => c.commands), ...commands],
         'permanent',
       )
@@ -139,7 +137,6 @@ export function interactionHardReset(
       const commandResult = foldAndApplyCommands(
         newEditorState,
         storedState.patchedEditor,
-        storedState.sessionStateState.strategyState,
         commands,
         'transient',
       )
@@ -149,7 +146,6 @@ export function interactionHardReset(
         currentStrategyCommands: commands,
         accumulatedCommands: [],
         commandDescriptions: commandResult.commandDescriptions,
-        strategyState: createEmptyStrategyState(),
         startingMetadata: resetSessionState.startingMetadata,
       }
 
@@ -208,7 +204,6 @@ export function interactionUpdate(
       const commandResult = foldAndApplyCommands(
         newEditorState,
         storedState.patchedEditor,
-        storedState.sessionStateState.strategyState,
         [...result.sessionStateState.accumulatedCommands.flatMap((c) => c.commands), ...commands],
         'transient',
       )
@@ -218,7 +213,6 @@ export function interactionUpdate(
         currentStrategyCommands: commands,
         accumulatedCommands: result.sessionStateState.accumulatedCommands,
         commandDescriptions: commandResult.commandDescriptions,
-        strategyState: createEmptyStrategyState(),
         startingMetadata: result.sessionStateState.startingMetadata,
       }
 
@@ -280,7 +274,6 @@ export function interactionStart(
       const commandResult = foldAndApplyCommands(
         newEditorState,
         storedState.patchedEditor,
-        storedState.sessionStateState.strategyState,
         commands,
         'transient',
       )
@@ -291,7 +284,6 @@ export function interactionStart(
         currentStrategyCommands: commands,
         accumulatedCommands: [],
         commandDescriptions: commandResult.commandDescriptions,
-        strategyState: createEmptyStrategyState(),
         startingMetadata: newEditorState.canvas.interactionSession.metadata,
       }
 
@@ -395,7 +387,6 @@ export function interactionUserChangedStrategy(
       const commandResult = foldAndApplyCommands(
         newEditorState,
         storedState.patchedEditor,
-        storedState.sessionStateState.strategyState,
         [...newAccumulatedCommands.flatMap((c) => c.commands), ...commands],
         'transient',
       )
@@ -405,7 +396,6 @@ export function interactionUserChangedStrategy(
         currentStrategyCommands: commands,
         accumulatedCommands: newAccumulatedCommands,
         commandDescriptions: commandResult.commandDescriptions,
-        strategyState: createEmptyStrategyState(),
         startingMetadata: result.sessionStateState.startingMetadata,
       }
 
@@ -492,7 +482,6 @@ function interactionStrategyChangeStacked(
       const commandResult = foldAndApplyCommands(
         newEditorState,
         storedState.patchedEditor,
-        storedState.sessionStateState.strategyState,
         [...newAccumulatedCommands.flatMap((c) => c.commands), ...commands],
         'transient',
       )
@@ -502,7 +491,6 @@ function interactionStrategyChangeStacked(
         currentStrategyCommands: commands,
         accumulatedCommands: newAccumulatedCommands,
         commandDescriptions: commandResult.commandDescriptions,
-        strategyState: createEmptyStrategyState(),
         startingMetadata: result.sessionStateState.startingMetadata,
       }
 

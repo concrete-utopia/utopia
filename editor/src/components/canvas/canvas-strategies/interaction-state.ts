@@ -52,16 +52,6 @@ export interface InteractionSession {
 
 export type InteractionSessionWithoutMetadata = Omit<InteractionSession, 'metadata'>
 
-export interface StrategyState {
-  type: 'STRATEGY_STATE'
-}
-
-export function createEmptyStrategyState(): StrategyState {
-  return {
-    type: 'STRATEGY_STATE',
-  }
-}
-
 export interface CommandDescription {
   description: string
   transient: boolean
@@ -81,9 +71,6 @@ export interface SessionStateState {
   accumulatedCommands: Array<StrategyAndAccumulatedCommands>
   commandDescriptions: Array<CommandDescription>
 
-  // this is the inner state of the Strategies, can be changed via commands
-  strategyState: StrategyState
-
   // Checkpointed metadata at the point at which a strategy change has occurred.
   startingMetadata: ElementInstanceMetadataMap
 }
@@ -97,7 +84,6 @@ export function createEmptySessionStateState(
     currentStrategyCommands: [],
     accumulatedCommands: [],
     commandDescriptions: [],
-    strategyState: createEmptyStrategyState(),
     startingMetadata: metadata ?? {},
   }
 }

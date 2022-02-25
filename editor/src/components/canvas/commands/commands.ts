@@ -2,7 +2,7 @@ import update from 'immutability-helper'
 import { ElementPath } from '../../../core/shared/project-file-types'
 import { keepDeepReferenceEqualityIfPossible } from '../../../utils/react-performance'
 import { EditorState, EditorStatePatch } from '../../editor/store/editor-state'
-import { CommandDescription, StrategyState } from '../canvas-strategies/interaction-state'
+import { CommandDescription } from '../canvas-strategies/interaction-state'
 
 export interface PathMapping {
   from: ElementPath
@@ -14,13 +14,11 @@ export type PathMappings = Array<PathMapping>
 export interface CommandFunctionResult {
   editorStatePatch: EditorStatePatch
   pathMappings: PathMappings
-  strategyState: StrategyState
   commandDescription: string
 }
 
 export type CommandFunction<T> = (
   editorState: EditorState,
-  strategyState: StrategyState,
   pathMappings: PathMappings,
   command: T,
 ) => CommandFunctionResult
@@ -78,20 +76,17 @@ export type CanvasCommand = WildcardPatch | StrategySwitched
 
 export const runWildcardPatch: CommandFunction<WildcardPatch> = (
   editorState: EditorState,
-  strategyState: StrategyState,
   pathMappings: PathMappings,
   command: WildcardPatch,
 ) => {
   return {
     editorStatePatch: command.patch,
-    strategyState: strategyState,
     pathMappings: pathMappings,
     commandDescription: `Wildcard Patch: ${JSON.stringify(command.patch, null, 2)}`,
   }
 }
 
 function runStrategySwitchedCommand(
-  strategyState: StrategyState,
   pathMappings: PathMappings,
   command: StrategySwitched,
 ): CommandFunctionResult {
@@ -103,7 +98,6 @@ function runStrategySwitchedCommand(
 
   return {
     editorStatePatch: {},
-    strategyState: strategyState,
     pathMappings: pathMappings,
     commandDescription: commandDescription,
   }
@@ -111,15 +105,14 @@ function runStrategySwitchedCommand(
 
 export const runCanvasCommand: CommandFunction<CanvasCommand> = (
   editorState: EditorState,
-  strategyState: StrategyState,
   pathMappings: PathMappings,
   command: CanvasCommand,
 ) => {
   switch (command.type) {
     case 'WILDCARD_PATCH':
-      return runWildcardPatch(editorState, strategyState, pathMappings, command)
+      return runWildcardPatch(editorState, pathMappings, command)
     case 'STRATEGY_SWITCHED':
-      return runStrategySwitchedCommand(strategyState, pathMappings, command)
+      return runStrategySwitchedCommand(pathMappings, command)
     default:
       const _exhaustiveCheck: never = command
       throw new Error(`Unhandled canvas command ${JSON.stringify(command)}`)
@@ -129,16 +122,14 @@ export const runCanvasCommand: CommandFunction<CanvasCommand> = (
 export function foldAndApplyCommands(
   editorState: EditorState,
   priorPatchedState: EditorState,
-  strategyState: StrategyState,
   commands: Array<CanvasCommand>,
   transient: TransientOrNot,
 ): {
   editorState: EditorState
   editorStatePatches: Array<EditorStatePatch>
-  newStrategyState: StrategyState
   commandDescriptions: Array<CommandDescription>
 } {
-  const commandResult = foldCommands(editorState, strategyState, commands, transient)
+  const commandResult = foldCommands(editorState, commands, transient)
   const updatedEditorState = applyStatePatches(
     editorState,
     priorPatchedState,
@@ -147,36 +138,27 @@ export function foldAndApplyCommands(
   return {
     editorState: updatedEditorState,
     editorStatePatches: commandResult.editorStatePatches,
-    newStrategyState: commandResult.newStrategyState,
     commandDescriptions: commandResult.commandDescriptions,
   }
 }
 
 function foldCommands(
   editorState: EditorState,
-  strategyState: StrategyState,
   commands: Array<CanvasCommand>,
   transient: TransientOrNot,
 ): {
   editorStatePatches: Array<EditorStatePatch>
-  newStrategyState: StrategyState
   commandDescriptions: Array<CommandDescription>
 } {
   let statePatches: Array<EditorStatePatch> = []
   let workingEditorState: EditorState = editorState
-  let workingStrategyState: StrategyState = strategyState
   let workingPathMappings: PathMappings = []
   let workingCommandDescriptions: Array<CommandDescription> = []
   for (const command of commands) {
     // Allow every command if this is a transient fold, otherwise only allow commands that are not transient.
     if (transient === 'transient' || command.transient === 'permanent') {
       // Run the command with our current states.
-      const commandResult = runCanvasCommand(
-        workingEditorState,
-        workingStrategyState,
-        workingPathMappings,
-        command,
-      )
+      const commandResult = runCanvasCommand(workingEditorState, workingPathMappings, command)
       // Capture values from the result.
       const statePatch = commandResult.editorStatePatch
       workingPathMappings = commandResult.pathMappings
@@ -193,7 +175,6 @@ function foldCommands(
 
   return {
     editorStatePatches: statePatches,
-    newStrategyState: workingStrategyState,
     commandDescriptions: workingCommandDescriptions,
   }
 }
