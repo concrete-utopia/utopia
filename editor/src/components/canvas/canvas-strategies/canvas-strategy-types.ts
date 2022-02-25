@@ -1,7 +1,10 @@
 import { ElementInstanceMetadataMap } from '../../../core/shared/element-template'
-import { InteractionCanvasState, InteractionState } from './interaction-state'
+import { InteractionState } from './interaction-state'
 import { CanvasCommand } from '../commands/commands'
 import { SessionStateState } from './interaction-state'
+import { ElementPath } from '../../../core/shared/project-file-types'
+import { ProjectContentTreeRoot } from '../../assets'
+import { CanvasVector } from '../../../core/shared/math-utils'
 
 export type StrategyApplicationResult = Array<CanvasCommand>
 
@@ -12,6 +15,14 @@ export interface ControlWithKey {
     | 'always-visible'
     | 'visible-only-while-active'
     | 'visible-except-when-other-strategy-is-active'
+}
+
+export interface InteractionCanvasState {
+  selectedElements: Array<ElementPath>
+  projectContents: ProjectContentTreeRoot
+  openFile: string | null | undefined
+  scale: number
+  canvasOffset: CanvasVector
 }
 
 export interface CanvasStrategy {

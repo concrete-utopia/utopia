@@ -2,19 +2,13 @@ import React from 'react'
 import { createSelector } from 'reselect'
 import { addAllUniquelyBy, mapDropNulls, sortBy } from '../../../core/shared/array-utils'
 import { ElementInstanceMetadataMap } from '../../../core/shared/element-template'
-import { offsetPoint, pointDifference, zeroCanvasPoint } from '../../../core/shared/math-utils'
 import { arrayEquals } from '../../../core/shared/utils'
-import {
-  InteractionCanvasState,
-  InteractionData,
-  InteractionState,
-  SessionStateState,
-} from './interaction-state'
+import { InteractionState, SessionStateState } from './interaction-state'
 import { InnerDispatchResult } from '../../editor/store/dispatch'
 import { EditorStorePatched } from '../../editor/store/editor-state'
 import { useEditorState } from '../../editor/store/store-hook'
 import { CanvasCommand } from '../commands/commands'
-import { CanvasStrategy, ControlWithKey } from './canvas-strategy-types'
+import { CanvasStrategy, ControlWithKey, InteractionCanvasState } from './canvas-strategy-types'
 
 const RegisteredCanvasStrategies: Array<CanvasStrategy> = []
 
@@ -200,85 +194,6 @@ export function useGetApplicableStrategyControls(): Array<ControlWithKey> {
       return addAllUniquelyBy(working, filteredControls, (l, r) => l.control === r.control)
     }, [])
   }, [applicableStrategies, currentStrategy])
-}
-
-export function strategySwitchInteractionDataReset(
-  interactionData: InteractionData,
-): InteractionData {
-  switch (interactionData.type) {
-    case 'DRAG':
-      if (interactionData.drag == null || interactionData.prevDrag == null) {
-        return interactionData
-      } else {
-        return {
-          ...interactionData,
-          dragStart: offsetPoint(interactionData.dragStart, interactionData.prevDrag),
-          drag: pointDifference(interactionData.prevDrag, interactionData.drag),
-          prevDrag: null,
-        }
-      }
-    case 'KEYBOARD':
-      return interactionData
-    default:
-      const _exhaustiveCheck: never = interactionData
-      throw new Error(`Unhandled interaction type ${JSON.stringify(interactionData)}`)
-  }
-}
-
-// Hard reset means we need to ignore everything happening in the interaction until now, and replay all the dragging
-export function interactionDataHardReset(interactionData: InteractionData): InteractionData {
-  switch (interactionData.type) {
-    case 'DRAG':
-      if (interactionData.drag == null) {
-        return interactionData
-      } else {
-        const currentDrag = interactionData.drag ?? zeroCanvasPoint
-        return {
-          ...interactionData,
-          dragStart: interactionData.originalDragStart,
-          drag: pointDifference(
-            interactionData.originalDragStart,
-            offsetPoint(interactionData.dragStart, currentDrag),
-          ),
-        }
-      }
-    case 'KEYBOARD':
-      return interactionData
-    default:
-      const _exhaustiveCheck: never = interactionData
-      throw new Error(`Unhandled interaction type ${JSON.stringify(interactionData)}`)
-  }
-}
-
-export function strategySwitchInteractionStateReset(
-  interactionState: InteractionState,
-): InteractionState {
-  return {
-    ...interactionState,
-    interactionData: strategySwitchInteractionDataReset(interactionState.interactionData),
-  }
-}
-
-// Hard reset means we need to ignore everything happening in the interaction until now, and replay all the dragging
-export function interactionStateHardReset(interactionState: InteractionState): InteractionState {
-  return {
-    ...interactionState,
-    interactionData: interactionDataHardReset(interactionState.interactionData),
-  }
-}
-
-export function hasModifiersChanged(
-  prevInteractionData: InteractionData | null,
-  interactionData: InteractionData | null,
-): boolean {
-  return (
-    interactionData?.type === 'DRAG' &&
-    prevInteractionData?.type === 'DRAG' &&
-    (interactionData.modifiers.alt !== prevInteractionData.modifiers.alt ||
-      interactionData.modifiers.cmd !== prevInteractionData.modifiers.cmd ||
-      interactionData.modifiers.ctrl !== prevInteractionData.modifiers.ctrl ||
-      interactionData.modifiers.shift !== prevInteractionData.modifiers.shift)
-  )
 }
 
 export function findCanvasStrategyFromDispatchResult(

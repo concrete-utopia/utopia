@@ -2,14 +2,13 @@ import {
   SessionStateState,
   createEmptySessionStateState,
   createEmptyStrategyState,
-  InteractionCanvasState,
+  strategySwitchInteractionStateReset,
+  hasModifiersChanged,
+  interactionStateHardReset,
 } from '../../canvas/canvas-strategies/interaction-state'
 import {
   findCanvasStrategy,
   applyCanvasStrategy,
-  interactionStateHardReset,
-  strategySwitchInteractionStateReset,
-  hasModifiersChanged,
   findCanvasStrategyFromDispatchResult,
 } from '../../canvas/canvas-strategies/canvas-strategies'
 import { foldAndApplyCommands, strategySwitched } from '../../canvas/commands/commands'
@@ -20,6 +19,7 @@ import {
 } from '../actions/action-utils'
 import { InnerDispatchResult } from './dispatch'
 import { DerivedState, deriveState, EditorState, EditorStoreFull } from './editor-state'
+import { InteractionCanvasState } from '../../canvas/canvas-strategies/canvas-strategy-types'
 
 interface HandleStrategiesResult {
   unpatchedEditorState: EditorState

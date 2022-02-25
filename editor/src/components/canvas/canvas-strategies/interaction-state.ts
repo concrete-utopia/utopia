@@ -1,6 +1,12 @@
 import { addAllUniquely } from '../../../core/shared/array-utils'
 import { ElementInstanceMetadataMap } from '../../../core/shared/element-template'
-import { CanvasPoint, CanvasVector } from '../../../core/shared/math-utils'
+import {
+  CanvasPoint,
+  CanvasVector,
+  offsetPoint,
+  pointDifference,
+  zeroCanvasPoint,
+} from '../../../core/shared/math-utils'
 import { ElementPath } from '../../../core/shared/project-file-types'
 import { KeyCharacter } from '../../../utils/keyboard'
 import { Modifiers } from '../../../utils/modifiers'
@@ -8,17 +14,6 @@ import { ProjectContentTreeRoot } from '../../assets'
 import { EdgePosition } from '../canvas-types'
 import { MoveIntoDragThreshold } from '../canvas-utils'
 import { CanvasCommand } from '../commands/commands'
-
-export interface InteractionCanvasState {
-  // The idea here being that we should be restricting the model we're supplying to the interactions system,
-  // but that's not a requirement of this proposal
-  selectedElements: Array<ElementPath>
-  // metadata: ElementInstanceMetadataMap // We can add metadata back if live metadata is necessary
-  projectContents: ProjectContentTreeRoot
-  openFile: string | null | undefined
-  scale: number
-  canvasOffset: CanvasVector
-}
 
 export interface DragInteractionData {
   type: 'DRAG'
@@ -241,6 +236,85 @@ export function updateInteractionViaKeyboard(
       globalTime: Date.now(),
     }
   }
+}
+
+export function strategySwitchInteractionDataReset(
+  interactionData: InteractionData,
+): InteractionData {
+  switch (interactionData.type) {
+    case 'DRAG':
+      if (interactionData.drag == null || interactionData.prevDrag == null) {
+        return interactionData
+      } else {
+        return {
+          ...interactionData,
+          dragStart: offsetPoint(interactionData.dragStart, interactionData.prevDrag),
+          drag: pointDifference(interactionData.prevDrag, interactionData.drag),
+          prevDrag: null,
+        }
+      }
+    case 'KEYBOARD':
+      return interactionData
+    default:
+      const _exhaustiveCheck: never = interactionData
+      throw new Error(`Unhandled interaction type ${JSON.stringify(interactionData)}`)
+  }
+}
+
+// Hard reset means we need to ignore everything happening in the interaction until now, and replay all the dragging
+export function interactionDataHardReset(interactionData: InteractionData): InteractionData {
+  switch (interactionData.type) {
+    case 'DRAG':
+      if (interactionData.drag == null) {
+        return interactionData
+      } else {
+        const currentDrag = interactionData.drag ?? zeroCanvasPoint
+        return {
+          ...interactionData,
+          dragStart: interactionData.originalDragStart,
+          drag: pointDifference(
+            interactionData.originalDragStart,
+            offsetPoint(interactionData.dragStart, currentDrag),
+          ),
+        }
+      }
+    case 'KEYBOARD':
+      return interactionData
+    default:
+      const _exhaustiveCheck: never = interactionData
+      throw new Error(`Unhandled interaction type ${JSON.stringify(interactionData)}`)
+  }
+}
+
+export function strategySwitchInteractionStateReset(
+  interactionState: InteractionState,
+): InteractionState {
+  return {
+    ...interactionState,
+    interactionData: strategySwitchInteractionDataReset(interactionState.interactionData),
+  }
+}
+
+// Hard reset means we need to ignore everything happening in the interaction until now, and replay all the dragging
+export function interactionStateHardReset(interactionState: InteractionState): InteractionState {
+  return {
+    ...interactionState,
+    interactionData: interactionDataHardReset(interactionState.interactionData),
+  }
+}
+
+export function hasModifiersChanged(
+  prevInteractionData: InteractionData | null,
+  interactionData: InteractionData | null,
+): boolean {
+  return (
+    interactionData?.type === 'DRAG' &&
+    prevInteractionData?.type === 'DRAG' &&
+    (interactionData.modifiers.alt !== prevInteractionData.modifiers.alt ||
+      interactionData.modifiers.cmd !== prevInteractionData.modifiers.cmd ||
+      interactionData.modifiers.ctrl !== prevInteractionData.modifiers.ctrl ||
+      interactionData.modifiers.shift !== prevInteractionData.modifiers.shift)
+  )
 }
 
 interface BoundingArea {
