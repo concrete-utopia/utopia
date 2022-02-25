@@ -158,7 +158,10 @@ import type { BuiltInDependencies } from '../../../core/es-modules/package-manag
 import { DefaultThirdPartyControlDefinitions } from '../../../core/third-party/third-party-controls'
 import { Spec } from 'immutability-helper'
 import { memoize } from '../../../core/shared/memoize'
-import { InteractionState, SessionStateState } from '../../canvas/interactions/interaction-state'
+import {
+  InteractionState,
+  SessionStateState,
+} from '../../canvas/canvas-strategies/interaction-state'
 
 const ObjectPathImmutable: any = OPI
 

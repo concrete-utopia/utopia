@@ -41,7 +41,7 @@ import { useWindowToCanvasCoordinates } from '../../dom-lookup-hooks'
 import { useInsertModeSelectAndHover } from './insert-mode-hooks'
 import { WindowMousePositionRaw } from '../../../../utils/global-positions'
 import { isFeatureEnabled } from '../../../../utils/feature-switches'
-import { createInteractionViaMouse } from '../../interactions/interaction-state'
+import { createInteractionViaMouse } from '../../canvas-strategies/interaction-state'
 import { Modifier } from '../../../../utils/modifiers'
 
 const DRAG_START_TRESHOLD = 2

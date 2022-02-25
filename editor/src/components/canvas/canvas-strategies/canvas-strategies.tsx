@@ -9,7 +9,7 @@ import {
   InteractionData,
   InteractionState,
   SessionStateState,
-} from '../interactions/interaction-state'
+} from './interaction-state'
 import { InnerDispatchResult } from '../../editor/store/dispatch'
 import { EditorStorePatched } from '../../editor/store/editor-state'
 import { useEditorState } from '../../editor/store/store-hook'

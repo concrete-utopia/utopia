@@ -17,7 +17,7 @@ import { createEditorState, deriveState, EditorStoreFull } from './editor-state'
 import * as EP from '../../../core/shared/element-path'
 import * as PP from '../../../core/shared/property-path'
 import { emptyComments, jsxAttributeValue } from '../../../core/shared/element-template'
-import { createEmptySessionStateState } from '../../canvas/interactions/interaction-state'
+import { createEmptySessionStateState } from '../../canvas/canvas-strategies/interaction-state'
 import { wildcardPatch } from '../../canvas/commands/commands'
 
 function createEditorStore(): EditorStoreFull {

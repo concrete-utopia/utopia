@@ -2,7 +2,7 @@ import { createBuiltInDependenciesList } from '../../../core/es-modules/package-
 import * as EP from '../../../core/shared/element-path'
 import { complexDefaultProjectPreParsed } from '../../../sample-projects/sample-project-utils.test-utils'
 import { selectComponents, setFocusedElement } from '../../editor/actions/action-creators'
-import { createEmptyStrategyState } from '../interactions/interaction-state'
+import { createEmptyStrategyState } from '../canvas-strategies/interaction-state'
 import { renderTestEditorWithModel } from '../ui-jsx.test-utils'
 import { applyStatePatches, runWildcardPatch, wildcardPatch } from './commands'
 

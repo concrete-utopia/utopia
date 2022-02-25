@@ -3,7 +3,7 @@ import {
   createEmptySessionStateState,
   createEmptyStrategyState,
   InteractionCanvasState,
-} from '../../canvas/interactions/interaction-state'
+} from '../../canvas/canvas-strategies/interaction-state'
 import {
   findCanvasStrategy,
   applyCanvasStrategy,

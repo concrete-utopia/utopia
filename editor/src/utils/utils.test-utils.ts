@@ -69,7 +69,7 @@ import { objectMap } from '../core/shared/object-utils'
 import {
   createEmptySessionStateState,
   SessionStateState,
-} from '../components/canvas/interactions/interaction-state'
+} from '../components/canvas/canvas-strategies/interaction-state'
 
 export function delay(time: number): Promise<void> {
   return new Promise((resolve) => setTimeout(resolve, time))

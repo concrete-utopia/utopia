@@ -57,7 +57,7 @@ import Keyboard from '../../utils/keyboard'
 import { Modifier } from '../../utils/modifiers'
 import CanvasActions from '../canvas/canvas-actions'
 import { UtopiaCanvasVarStyleTag } from '../canvas/utopia-canvas-vars'
-import { updateInteractionViaKeyboard } from '../canvas/interactions/interaction-state'
+import { updateInteractionViaKeyboard } from '../canvas/canvas-strategies/interaction-state'
 
 function pushProjectURLToBrowserHistory(projectId: string, projectName: string): void {
   // Make sure we don't replace the query params

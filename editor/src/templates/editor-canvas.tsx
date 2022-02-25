@@ -92,7 +92,7 @@ import {
   updateGlobalPositions,
 } from '../utils/global-positions'
 import { last, reverse } from '../core/shared/array-utils'
-import { updateInteractionViaMouse } from '../components/canvas/interactions/interaction-state'
+import { updateInteractionViaMouse } from '../components/canvas/canvas-strategies/interaction-state'
 
 const webFrame = PROBABLY_ELECTRON ? requireElectron().webFrame : null
 

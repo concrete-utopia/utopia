@@ -1,5 +1,8 @@
 import type { CanvasPoint, CanvasVector } from '../../core/shared/math-utils'
-import { InteractionState, InteractionStateWithoutMetadata } from './interactions/interaction-state'
+import {
+  InteractionState,
+  InteractionStateWithoutMetadata,
+} from './canvas-strategies/interaction-state'
 import type { CanvasAction, DragState } from './canvas-types'
 
 const CanvasActions = {

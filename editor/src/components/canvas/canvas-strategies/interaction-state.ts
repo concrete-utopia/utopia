@@ -5,7 +5,7 @@ import { ElementPath } from '../../../core/shared/project-file-types'
 import { KeyCharacter } from '../../../utils/keyboard'
 import { Modifiers } from '../../../utils/modifiers'
 import { ProjectContentTreeRoot } from '../../assets'
-import { CanvasControlType } from '../canvas-strategies/canvas-strategy-types'
+import { CanvasControlType } from './canvas-strategy-types'
 import { MoveIntoDragThreshold } from '../canvas-utils'
 import { CanvasCommand } from '../commands/commands'
 

@@ -30,7 +30,7 @@ import { DummyPersistenceMachine } from '../editor/persistence/persistence.test-
 import { disableStoredStateforTests } from '../editor/stored-state'
 import { matchInlineSnapshotBrowser } from '../../../test/karma-snapshots'
 import { createBuiltInDependenciesList } from '../../core/es-modules/package-manager/built-in-dependencies-list'
-import { createEmptySessionStateState } from './interactions/interaction-state'
+import { createEmptySessionStateState } from './canvas-strategies/interaction-state'
 
 disableStoredStateforTests()
 

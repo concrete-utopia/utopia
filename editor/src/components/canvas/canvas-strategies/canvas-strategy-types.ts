@@ -1,10 +1,10 @@
 import { ElementInstanceMetadataMap } from '../../../core/shared/element-template'
 import type { CanvasPoint, CanvasVector } from '../../../core/shared/math-utils'
 import { ElementPath } from '../../../core/shared/project-file-types'
-import { InteractionCanvasState, InteractionState } from '../interactions/interaction-state'
+import { InteractionCanvasState, InteractionState } from './interaction-state'
 import type { EdgePosition } from '../canvas-types'
 import { CanvasCommand } from '../commands/commands'
-import { SessionStateState } from '../interactions/interaction-state'
+import { SessionStateState } from './interaction-state'
 
 export type StrategyApplicationResult = Array<CanvasCommand>
 

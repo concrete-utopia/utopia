@@ -24,7 +24,10 @@ import {
   LayoutFlexElementProp,
   LayoutTargetableProp,
 } from '../../core/layout/layout-helpers-new'
-import { InteractionState, InteractionStateWithoutMetadata } from './interactions/interaction-state'
+import {
+  InteractionState,
+  InteractionStateWithoutMetadata,
+} from './canvas-strategies/interaction-state'
 
 export const CanvasContainerID = 'canvas-container'
 

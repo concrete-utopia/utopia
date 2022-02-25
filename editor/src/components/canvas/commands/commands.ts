@@ -2,7 +2,7 @@ import update from 'immutability-helper'
 import { ElementPath } from '../../../core/shared/project-file-types'
 import { keepDeepReferenceEqualityIfPossible } from '../../../utils/react-performance'
 import { EditorState, EditorStatePatch } from '../../editor/store/editor-state'
-import { CommandDescription, StrategyState } from '../interactions/interaction-state'
+import { CommandDescription, StrategyState } from '../canvas-strategies/interaction-state'
 
 export interface PathMapping {
   from: ElementPath
