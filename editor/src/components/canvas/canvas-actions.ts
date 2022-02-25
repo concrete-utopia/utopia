@@ -1,10 +1,5 @@
 import type { CanvasPoint, CanvasVector } from '../../core/shared/math-utils'
 import { InteractionState, InteractionStateWithoutMetadata } from './interactions/interaction-state'
-import {
-  CanvasInteractionSession,
-  SelectModeCanvasSessionProps,
-  SelectModeCanvasSessionState,
-} from './canvas-strategies/canvas-strategy-types'
 import type { CanvasAction, DragState } from './canvas-types'
 
 const CanvasActions = {

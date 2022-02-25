@@ -7,7 +7,6 @@ import {
   FakeWatchdogWorker,
 } from '../../../core/workers/test-workers'
 import { UtopiaTsWorkersImplementation } from '../../../core/workers/workers'
-import { setProperty } from '../../canvas/commands/commands'
 import { emptyUiJsxCanvasContextData } from '../../canvas/ui-jsx-canvas'
 import { EditorDispatch, notLoggedIn } from '../action-types'
 import * as History from '../history'
@@ -19,6 +18,7 @@ import * as EP from '../../../core/shared/element-path'
 import * as PP from '../../../core/shared/property-path'
 import { emptyComments, jsxAttributeValue } from '../../../core/shared/element-template'
 import { createEmptySessionStateState } from '../../canvas/interactions/interaction-state'
+import { wildcardPatch } from '../../canvas/commands/commands'
 
 function createEditorStore(): EditorStoreFull {
   let emptyEditorState = createEditorState(NO_OP)
@@ -72,14 +72,7 @@ describe('interactionCancel', () => {
     let editorStore = createEditorStore()
     editorStore.sessionStateState.accumulatedCommands = [
       {
-        commands: [
-          setProperty(
-            'permanent',
-            EP.fromString('aaa/bbb'),
-            PP.create(['style', 'left']),
-            jsxAttributeValue(100, emptyComments),
-          ),
-        ],
+        commands: [wildcardPatch('permanent', { selectedViews: { $set: [] } })],
         strategy: null,
       },
     ]

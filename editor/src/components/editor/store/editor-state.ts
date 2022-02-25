@@ -157,7 +157,6 @@ import { PersistenceMachine } from '../persistence/persistence'
 import type { BuiltInDependencies } from '../../../core/es-modules/package-manager/built-in-dependencies-list'
 import { DefaultThirdPartyControlDefinitions } from '../../../core/third-party/third-party-controls'
 import { Spec } from 'immutability-helper'
-import { FlexAlignControlRectProps } from '../../canvas/canvas-strategies/canvas-strategy-types'
 import { memoize } from '../../../core/shared/memoize'
 import { InteractionState, SessionStateState } from '../../canvas/interactions/interaction-state'
 
@@ -462,8 +461,7 @@ export interface EditorState {
     resizeOptions: ResizeOptions
     domWalkerAdditionalElementsToUpdate: Array<ElementPath>
     controls: {
-      animatedPlaceholderTargetUids: Array<string>
-      flexAlignDropTargets: Array<FlexAlignControlRectProps>
+      // this is where we can put props for the strategy controls
     }
   }
   floatingInsertMenu: FloatingInsertMenuState
@@ -1230,10 +1228,7 @@ export function createEditorState(dispatch: EditorDispatch): EditorState {
         propertyTargetSelectedIndex: 0,
       },
       domWalkerAdditionalElementsToUpdate: [],
-      controls: {
-        animatedPlaceholderTargetUids: [],
-        flexAlignDropTargets: [],
-      },
+      controls: {},
     },
     floatingInsertMenu: {
       insertMenuMode: 'closed',

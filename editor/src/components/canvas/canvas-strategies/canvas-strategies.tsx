@@ -11,37 +11,13 @@ import {
   InteractionState,
   SessionStateState,
 } from '../interactions/interaction-state'
-import { DispatchResult, InnerDispatchResult } from '../../editor/store/dispatch'
+import { InnerDispatchResult } from '../../editor/store/dispatch'
 import { EditorStorePatched } from '../../editor/store/editor-state'
 import { useEditorState } from '../../editor/store/store-hook'
 import { CanvasCommand } from '../commands/commands'
-import { absoluteMoveStrategy } from './absolute-move-strategy'
-import { absoluteReparentStrategy } from './absolute-reparent-strategy'
-import { alignToParentStrategy } from './align-to-parent-strategy'
-import { ancestorAbsoluteMoveStrategy } from './ancestor-absolute-move-strategy'
-import { flexAlignParentStrategy } from './flex-align-parent-strategy'
-import { flexBasisResizeStrategy, flexGrowResizeStrategy } from './flex-basis-resize-strategy'
-import { flexGapStrategy } from './flex-gap-strategy'
-import { flexReOrderStrategy } from './flex-reorder-strategy'
-import { flowReOrderStrategy } from './flow-reorder-strategy'
-import { adjustMinMaxDimensionStrategy } from './min-max-dimension-adjust-strategy'
-import { parentPaddingAdjustStrategy } from './parent-padding-adjust-strategy'
 import { CanvasStrategy, ControlWithKey } from './canvas-strategy-types'
 
-const RegisteredCanvasStrategies: Array<CanvasStrategy> = [
-  alignToParentStrategy,
-  adjustMinMaxDimensionStrategy,
-  flexBasisResizeStrategy,
-  flexGrowResizeStrategy,
-  flexGapStrategy,
-  flexReOrderStrategy,
-  flexAlignParentStrategy,
-  parentPaddingAdjustStrategy,
-  ancestorAbsoluteMoveStrategy,
-  absoluteMoveStrategy,
-  absoluteReparentStrategy,
-  flowReOrderStrategy,
-]
+const RegisteredCanvasStrategies: Array<CanvasStrategy> = []
 
 export function getStrategyByName(name: string): CanvasStrategy | null {
   return (

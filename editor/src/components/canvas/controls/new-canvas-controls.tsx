@@ -57,9 +57,6 @@ import { KeysPressed } from '../../../utils/keyboard'
 import { usePrevious } from '../../editor/hook-utils'
 import { LayoutTargetableProp } from '../../../core/layout/layout-helpers-new'
 import { getDragStateStart } from '../canvas-utils'
-import { AnimatedPlaceholderBoxes } from './select-mode/animated-placeholder-boxes'
-import { FlexAlignControls } from './select-mode/flex-align-controls'
-import { FlexGapControls } from './select-mode/flex-gap-controls'
 import {
   useGetApplicableStrategiesOrderedByFitness,
   useGetApplicableStrategyControls,

@@ -1,0 +1,14 @@
+{
+  "0 debug pnpm:scope": {
+    "selected": 1
+  },
+  "1 error pnpm": {
+    "code": "ERR_PNPM_NO_SCRIPT",
+    "err": {
+      "name": "pnpm",
+      "message": "Missing script: test",
+      "code": "ERR_PNPM_NO_SCRIPT",
+      "stack": "pnpm: Missing script: test\n    at Object.handler (/System/Volumes/Data/opt/nix/store/40qj5wzq2wslkvd5122lnf8g5nq6rfax-pnpm-6.20.4/lib/node_modules/pnpm/dist/pnpm.cjs:129764:15)\n    at async /System/Volumes/Data/opt/nix/store/40qj5wzq2wslkvd5122lnf8g5nq6rfax-pnpm-6.20.4/lib/node_modules/pnpm/dist/pnpm.cjs:133938:20\n    at async run (/System/Volumes/Data/opt/nix/store/40qj5wzq2wslkvd5122lnf8g5nq6rfax-pnpm-6.20.4/lib/node_modules/pnpm/dist/pnpm.cjs:133913:34)\n    at async runPnpm (/System/Volumes/Data/opt/nix/store/40qj5wzq2wslkvd5122lnf8g5nq6rfax-pnpm-6.20.4/lib/node_modules/pnpm/dist/pnpm.cjs:134124:5)\n    at async /System/Volumes/Data/opt/nix/store/40qj5wzq2wslkvd5122lnf8g5nq6rfax-pnpm-6.20.4/lib/node_modules/pnpm/dist/pnpm.cjs:134116:7"
+    }
+  }
+}
