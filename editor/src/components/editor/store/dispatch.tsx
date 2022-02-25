@@ -99,7 +99,7 @@ type DispatchResultFields = {
   entireUpdateFinished: Promise<any>
 }
 
-type EditorStoreUnpatched = Omit<EditorStoreFull, 'patchedEditor'>
+type EditorStoreUnpatched = Omit<EditorStoreFull, 'patchedEditor' | 'patchedDerived'>
 
 type InnerDispatchResult = EditorStoreUnpatched & DispatchResultFields
 export type DispatchResult = EditorStoreFull & DispatchResultFields
@@ -153,7 +153,7 @@ function processAction(
     // Process action on the JS side.
     const editorAfterUpdateFunction = runLocalEditorAction(
       working.unpatchedEditor,
-      working.derived,
+      working.unpatchedDerived,
       working.userState,
       working.workers,
       action as EditorAction,
@@ -165,12 +165,12 @@ function processAction(
     const editorAfterCanvas = runLocalCanvasAction(
       dispatchEvent,
       editorAfterUpdateFunction,
-      working.derived,
+      working.unpatchedDerived,
       action as CanvasAction,
     )
     let editorAfterNavigator = runLocalNavigatorAction(
       editorAfterCanvas,
-      working.derived,
+      working.unpatchedDerived,
       action as LocalNavigatorAction,
     )
 
@@ -194,7 +194,7 @@ function processAction(
 
     return {
       unpatchedEditor: editorAfterNavigator,
-      derived: working.derived,
+      unpatchedDerived: working.unpatchedDerived,
       history: newStateHistory,
       userState: working.userState,
       workers: working.workers,
@@ -439,7 +439,7 @@ export function editorDispatch(
   const editorFilteredForFiles = filterEditorForFiles(editorWithModelChecked.editorState)
 
   const frozenEditorState = editorFilteredForFiles
-  const frozenDerivedState = result.derived
+  const frozenDerivedState = result.unpatchedDerived
 
   let newHistory: StateHistory
   if (transientOrNoChange) {
@@ -458,11 +458,13 @@ export function editorDispatch(
     isBrowserEnvironment
 
   const patchedEditorState = frozenEditorState // TODO actually patch the state using the EditorStatePatch produced by the Commands
+  const patchedDerivedState = frozenDerivedState // TODO replace from strategy result
 
   const finalStore: DispatchResult = {
     unpatchedEditor: frozenEditorState,
     patchedEditor: patchedEditorState,
-    derived: frozenDerivedState,
+    unpatchedDerived: frozenDerivedState,
+    patchedDerived: patchedDerivedState,
     history: newHistory,
     userState: result.userState,
     workers: storedState.workers,
@@ -638,9 +640,9 @@ function editorDispatchInner(
       // TODO BB put inspector and navigator back to history
     } else if (editorStayedTheSame) {
       // !! We completely skip creating a new derived state, since the editor state stayed the exact same
-      frozenDerivedState = storedState.derived
+      frozenDerivedState = storedState.unpatchedDerived
     } else {
-      const derivedState = deriveState(frozenEditorState, storedState.derived)
+      const derivedState = deriveState(frozenEditorState, storedState.unpatchedDerived)
       frozenDerivedState = optionalDeepFreeze(derivedState)
     }
 
@@ -668,7 +670,7 @@ function editorDispatchInner(
 
     return {
       unpatchedEditor: frozenEditorState,
-      derived: frozenDerivedState,
+      unpatchedDerived: frozenDerivedState,
       history: result.history,
       userState: result.userState,
       workers: storedState.workers,

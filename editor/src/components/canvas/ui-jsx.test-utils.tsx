@@ -223,7 +223,8 @@ export async function renderTestEditorWithModel(
   const initialEditorStore: EditorStoreFull = {
     unpatchedEditor: emptyEditorState,
     patchedEditor: emptyEditorState,
-    derived: derivedState,
+    unpatchedDerived: derivedState,
+    patchedDerived: derivedState,
     history: history,
     userState: {
       loginState: notLoggedIn,
