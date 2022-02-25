@@ -49,6 +49,7 @@ import {
   createNewProjectName,
   persistentModelForProjectContents,
   EditorStorePatched,
+  patchedStoreFromFullStore,
 } from '../components/editor/store/editor-state'
 import {
   EditorStateContext,
@@ -103,7 +104,7 @@ export class Editor {
   storedState: EditorStoreFull
   utopiaStoreHook: UtopiaStoreHook
   utopiaStoreApi: UtopiaStoreAPI
-  updateStore: (partialState: EditorStoreFull) => void
+  updateStore: (partialState: EditorStorePatched) => void
   spyCollector: UiJsxCanvasContextData = emptyUiJsxCanvasContextData()
 
   constructor() {
@@ -159,7 +160,9 @@ export class Editor {
       alreadySaved: false,
     }
 
-    const storeHook = create<EditorStoreFull>((set) => this.storedState)
+    const storeHook = create<EditorStorePatched>((set) =>
+      patchedStoreFromFullStore(this.storedState),
+    )
 
     this.utopiaStoreHook = storeHook
     this.updateStore = storeHook.setState
@@ -297,7 +300,7 @@ export class Editor {
 
       if (!result.nothingChanged) {
         // we update the zustand store with the new editor state. this will trigger a re-render in the EditorComponent
-        this.updateStore(result)
+        this.updateStore(patchedStoreFromFullStore(result))
       }
       return { entireUpdateFinished: result.entireUpdateFinished }
     }

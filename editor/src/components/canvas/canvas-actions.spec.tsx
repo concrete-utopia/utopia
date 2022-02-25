@@ -36,7 +36,7 @@ describe('createDragState', () => {
     const selectedViews = [EP.appendNewElementPath(TestScenePath, ['aaa', 'bbb'])]
     await renderResult.dispatch([selectComponents(selectedViews, false)], true)
 
-    const editorState = renderResult.getEditorState().patchedEditor
+    const editorState = renderResult.getEditorState().editor
 
     const duplicateNewUIDs = createDuplicationNewUIDsFromEditorState(editorState)
     const dragStateAction = CanvasActions.createDragState(

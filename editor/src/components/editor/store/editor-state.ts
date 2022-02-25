@@ -261,6 +261,14 @@ export type EditorStorePatched = EditorStoreShared & {
   derived: DerivedState
 }
 
+export function patchedStoreFromFullStore(store: EditorStoreFull): EditorStorePatched {
+  return {
+    ...store,
+    editor: store.patchedEditor,
+    derived: store.patchedDerived,
+  }
+}
+
 export interface FileDeleteModal {
   type: 'file-delete'
   filePath: string

@@ -2,7 +2,7 @@ import React from 'react'
 import create, { UseStore } from 'zustand'
 import { renderHook } from '@testing-library/react-hooks'
 import { EditorStateContext, useSelectorWithCallback } from './store-hook'
-import { createEditorState, EditorState, EditorStoreFull } from './editor-state'
+import { createEditorState, EditorState, EditorStorePatched } from './editor-state'
 import { NO_OP } from '../../../core/shared/utils'
 import * as EP from '../../../core/shared/element-path'
 import { shallowEqual } from '../../../core/shared/equality-utils'
@@ -11,11 +11,9 @@ import { createBuiltInDependenciesList } from '../../../core/es-modules/package-
 function createEmptyEditorStoreHook() {
   let emptyEditorState = createEditorState(NO_OP)
 
-  const initialEditorStore: EditorStoreFull = {
-    unpatchedEditor: emptyEditorState,
-    patchedEditor: emptyEditorState,
-    unpatchedDerived: null as any,
-    patchedDerived: null as any,
+  const initialEditorStore: EditorStorePatched = {
+    editor: emptyEditorState,
+    derived: null as any,
     strategyState: null as any,
     history: null as any,
     userState: null as any,
@@ -26,13 +24,13 @@ function createEmptyEditorStoreHook() {
     builtInDependencies: createBuiltInDependenciesList(null),
   }
 
-  const storeHook = create<EditorStoreFull>((set) => initialEditorStore)
+  const storeHook = create<EditorStorePatched>((set) => initialEditorStore)
 
   return storeHook
 }
 
 const ContextProvider: React.FunctionComponent<{
-  storeHook: UseStore<EditorStoreFull>
+  storeHook: UseStore<EditorStorePatched>
 }> = ({ storeHook, children }) => {
   return (
     <EditorStateContext.Provider value={{ api: storeHook, useStore: storeHook }}>
@@ -48,7 +46,7 @@ describe('useSelectorWithCallback', () => {
     let hookRenders = 0
     let callCount = 0
 
-    const { result } = renderHook<{ storeHook: UseStore<EditorStoreFull> }, void>(
+    const { result } = renderHook<{ storeHook: UseStore<EditorStorePatched> }, void>(
       (props) => {
         hookRenders++
         return useSelectorWithCallback(
@@ -76,7 +74,7 @@ describe('useSelectorWithCallback', () => {
     let hookRenders = 0
     let callCount = 0
 
-    const { result } = renderHook<{ storeHook: UseStore<EditorStoreFull> }, void>(
+    const { result } = renderHook<{ storeHook: UseStore<EditorStorePatched> }, void>(
       (props) => {
         hookRenders++
         return useSelectorWithCallback(
@@ -94,10 +92,8 @@ describe('useSelectorWithCallback', () => {
       },
     )
 
-    const updatedEditor = { selectedViews: [EP.fromString('sb/scene:aaa')] } as EditorState
     storeHook.setState({
-      unpatchedEditor: updatedEditor,
-      patchedEditor: updatedEditor,
+      editor: { selectedViews: [EP.fromString('sb/scene:aaa')] } as EditorState,
     })
 
     expect(hookRenders).toEqual(1)
@@ -123,10 +119,10 @@ describe('useSelectorWithCallback', () => {
           // TODO this is super-baffling. turning this test async and putting done() here and expect()-ing values did not work for some reason
         }
       },
-      (store) => store.patchedEditor.selectedViews,
+      (store) => store.editor.selectedViews,
     )
 
-    const { result, rerender } = renderHook<{ storeHook: UseStore<EditorStoreFull> }, void>(
+    const { result, rerender } = renderHook<{ storeHook: UseStore<EditorStorePatched> }, void>(
       (props) => {
         hookRenders++
         return useSelectorWithCallback(
@@ -148,10 +144,8 @@ describe('useSelectorWithCallback', () => {
       rerender({ storeHook: storeHook })
     }
 
-    const updatedEditor = { selectedViews: [EP.fromString('sb/scene:aaa')] } as EditorState
     storeHook.setState({
-      unpatchedEditor: updatedEditor,
-      patchedEditor: updatedEditor,
+      editor: { selectedViews: [EP.fromString('sb/scene:aaa')] } as EditorState,
     })
 
     storeHook.destroy()

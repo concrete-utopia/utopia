@@ -129,39 +129,39 @@ describe('Select Mode Selection', () => {
 
     await doubleClick()
 
-    const selectedViews1 = renderResult.getEditorState().patchedEditor.selectedViews
+    const selectedViews1 = renderResult.getEditorState().editor.selectedViews
     expect(selectedViews1).toEqual([EP.elementPath([[BakedInStoryboardUID, TestSceneUID]])])
 
     await doubleClick()
 
-    const selectedViews2 = renderResult.getEditorState().patchedEditor.selectedViews
+    const selectedViews2 = renderResult.getEditorState().editor.selectedViews
     expect(selectedViews2).toEqual([
       EP.elementPath([[BakedInStoryboardUID, TestSceneUID, TestAppUID]]),
     ])
 
     await doubleClick()
 
-    const selectedViews3 = renderResult.getEditorState().patchedEditor.selectedViews
+    const selectedViews3 = renderResult.getEditorState().editor.selectedViews
     expect(selectedViews3).toEqual([EP.appendNewElementPath(TestScenePath, ['a'])])
 
     await doubleClick()
 
-    const selectedViews4 = renderResult.getEditorState().patchedEditor.selectedViews
+    const selectedViews4 = renderResult.getEditorState().editor.selectedViews
     expect(selectedViews4).toEqual([EP.appendNewElementPath(TestScenePath, ['a', 'b'])])
 
     await doubleClick()
 
-    const selectedViews5 = renderResult.getEditorState().patchedEditor.selectedViews
+    const selectedViews5 = renderResult.getEditorState().editor.selectedViews
     expect(selectedViews5).toEqual([EP.appendNewElementPath(TestScenePath, ['a', 'b', 'c'])])
 
     await doubleClick()
 
-    const selectedViews6 = renderResult.getEditorState().patchedEditor.selectedViews
+    const selectedViews6 = renderResult.getEditorState().editor.selectedViews
     expect(selectedViews6).toEqual([EP.appendNewElementPath(TestScenePath, ['a', 'b', 'c', 'd'])])
 
     await doubleClick()
 
-    const selectedViews7 = renderResult.getEditorState().patchedEditor.selectedViews
+    const selectedViews7 = renderResult.getEditorState().editor.selectedViews
     expect(selectedViews7).toEqual([
       EP.appendNewElementPath(TestScenePath, ['a', 'b', 'c', 'd', 'e']),
     ])
@@ -169,7 +169,7 @@ describe('Select Mode Selection', () => {
     await doubleClick()
 
     // after 8 "double clicks", the `targetdiv` div should be selected
-    const selectedViews8 = renderResult.getEditorState().patchedEditor.selectedViews
+    const selectedViews8 = renderResult.getEditorState().editor.selectedViews
     expect(selectedViews8).toEqual([
       EP.appendNewElementPath(TestScenePath, ['a', 'b', 'c', 'd', 'e', 'targetdiv']),
     ])
@@ -212,7 +212,7 @@ describe('Select Mode Advanced Cases', () => {
     })
     await waitForAnimationFrame()
 
-    expect(renderResult.getEditorState().patchedEditor.selectedViews).toEqual([
+    expect(renderResult.getEditorState().editor.selectedViews).toEqual([
       EP.fromString('sb/scene-2/Card-instance:Card-Root/Card-Row-Buttons/Card-Button-3'),
     ])
   })
@@ -268,7 +268,7 @@ describe('Select Mode Advanced Cases', () => {
     await doubleClick()
     await doubleClick()
 
-    expect(renderResult.getEditorState().patchedEditor.selectedViews).toEqual([
+    expect(renderResult.getEditorState().editor.selectedViews).toEqual([
       EP.fromString('sb/scene-2/Card-instance:Card-Root/Card-Row-Buttons/Card-Button-3'),
     ])
   })
@@ -342,7 +342,7 @@ describe('Select Mode Advanced Cases', () => {
     await doubleClick()
     await doubleClick()
 
-    expect(renderResult.getEditorState().patchedEditor.selectedViews).toEqual([
+    expect(renderResult.getEditorState().editor.selectedViews).toEqual([
       EP.fromString(
         'sb/scene-CardList/CardList-instance:CardList-Root/CardList-Col/CardList-Card~~~1:Card-Root/Card-Row-Buttons/Card-Button-3',
       ),
