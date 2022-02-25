@@ -192,19 +192,6 @@ function pickStrategy(
   return pickDefaultCanvasStrategy(sortedApplicableStrategies, previousStrategyName)
 }
 
-function isStrategyApplicable(
-  strategyName: string,
-  canvasState: InteractionCanvasState,
-  interactionState: InteractionState,
-  sessionState: SessionStateState,
-): boolean {
-  const strategy = RegisteredCanvasStrategies.find((s) => s.name === strategyName)
-  if (strategy == null) {
-    return false
-  }
-  return strategy.fitness(canvasState, interactionState, sessionState) > 0
-}
-
 export function findCanvasStrategy(
   canvasState: InteractionCanvasState,
   interactionState: InteractionState,
@@ -325,7 +312,9 @@ export function hasModifiersChanged(
   )
 }
 
-export function findCanvasStrategyFromDispatchResult(result: InnerDispatchResult) {
+export function findCanvasStrategyFromDispatchResult(
+  result: InnerDispatchResult,
+): StrategyWithFitness | null {
   const newEditorState = result.unpatchedEditor
   const canvasState: InteractionCanvasState = {
     selectedElements: newEditorState.selectedViews,
@@ -349,7 +338,7 @@ export function findCanvasStrategyFromDispatchResult(result: InnerDispatchResult
   }
 }
 
-export function isStrategyActive(sessionState: SessionStateState) {
+export function isStrategyActive(sessionState: SessionStateState): boolean {
   return (
     sessionState.accumulatedCommands.length > 0 || sessionState.currentStrategyCommands.length > 0
   )
