@@ -1,9 +1,8 @@
-import { EdgePosition } from './components/canvas/canvas-types'
 import { MoveIntoDragThreshold } from './components/canvas/canvas-utils'
-import { ElementInstanceMetadata, ElementInstanceMetadataMap } from './core/shared/element-template'
+import { ElementInstanceMetadataMap } from './core/shared/element-template'
 import { CanvasPoint, CanvasVector } from './core/shared/math-utils'
 import { ElementPath } from './core/shared/project-file-types'
-import { KeyCharacter, Modifier } from './utils/keyboard'
+import { KeyCharacter } from './utils/keyboard'
 import { CanvasControlType } from './components/canvas/canvas-strategies/canvas-strategy-types'
 import { addAllUniquely } from './core/shared/array-utils'
 import { Modifiers } from './utils/modifiers'
@@ -20,26 +19,6 @@ export interface InteractionCanvasState {
   openFile: string | null | undefined
   scale: number
   canvasOffset: CanvasVector
-}
-
-interface MouseInteraction {
-  mousePosition: CanvasPoint
-  dragStart: CanvasPoint | null
-  drag: CanvasVector | null
-  dragThresholdPassed: boolean
-  // Should dragging be moved more into the strategy somehow?
-}
-
-// Are interaction sessions created from a mouse move? This is required if we want to pull highlighting and selection into this
-// If the answer is yes, how does a dragging session start? Do we then require strategies to end the current session and create
-// a new session?
-
-// Separate InteractionSession into "state of the universe" (which includes current keys pressed, mouse position, which mouse
-// buttons are pressed), and "session specific data" (which includes dragging, active control etc.)
-
-interface MouseState {
-  mousePosition: CanvasPoint
-  primaryButtonDown: boolean
 }
 
 export interface DragInteractionData {
@@ -374,23 +353,3 @@ export interface CanvasStrategy {
   ) => StrategyApplicationResult
   // Returns the commands that inform how the model and the editor should be updated
 }
-
-function movementForKeys(keysPressed: Array<KeyCharacter>): CanvasVector | null {
-  if (keysPressed.includes('left')) {
-    return { x: -5, y: 0 } as CanvasVector
-  } else {
-    return null
-  }
-}
-
-/*
-export const SomeCanvasStrategyMeta: CanvasStrategyMeta = {
-  shouldKeepCommands: (
-    previousStrategy: string,
-    nextStrategy: string | null,
-    interactionState: InteractionState,
-  ) => {
-    return nextStrategy !== AbsoluteMoveStrategy.name
-  },
-}
-*/
