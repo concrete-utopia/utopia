@@ -6,6 +6,8 @@ import { useColorTheme } from '../../../uuiui'
 interface PaddingControlsProps {
   padding: Partial<Sides> | null
   frame: CanvasRectangle
+  canvasOffset: CanvasPoint
+  scale: number
 }
 
 export const PaddingControls = React.memo((props: PaddingControlsProps) => {
@@ -21,27 +23,19 @@ export const PaddingControls = React.memo((props: PaddingControlsProps) => {
           style={{
             fontSize: 10,
             fontWeight: 5,
+            textAlign: 'center',
             overflow: 'visible',
             background: colorTheme.paddingFillTranslucent.value,
             color: colorTheme.paddingForeground.value,
             position: 'absolute',
-            left: `calc(${props.frame.x}px + var(--utopia-canvas-offset-x))`,
-            top: `calc(${props.frame.y}px + var(--utopia-canvas-offset-y))`,
+            left: props.frame.x + props.canvasOffset.x,
+            top: props.frame.y + props.canvasOffset.y,
             width: props.padding.left,
             height: props.frame.height,
-            textAlign: 'center',
             lineHeight: props.frame.height + 'px',
           }}
         >
-          <span
-            style={{
-              display: 'inline-block',
-              zoom: 'calc(1/var(--utopia-canvas-zoom))',
-              transform: 'scale(calc(1/(var(--utopia-canvas-transform-scale))))',
-            }}
-          >
-            {props.padding.left}
-          </span>
+          {props.padding.left}
         </div>
       ) : null
     const topElement =
@@ -56,24 +50,14 @@ export const PaddingControls = React.memo((props: PaddingControlsProps) => {
             background: colorTheme.paddingFillTranslucent.value,
             color: colorTheme.paddingForeground.value,
             position: 'absolute',
-            left: `calc(${
-              props.frame.x + (props.padding.left ?? 0)
-            }px + var(--utopia-canvas-offset-x))`,
-            top: `calc(${props.frame.y}px + var(--utopia-canvas-offset-y))`,
+            left: props.frame.x + props.canvasOffset.x + (props.padding.left ?? 0),
+            top: props.frame.y + props.canvasOffset.y,
             width: props.frame.width - (props.padding.left ?? 0) - (props.padding.right ?? 0),
             height: props.padding.top,
             lineHeight: props.padding.top + 'px',
           }}
         >
-          <span
-            style={{
-              display: 'inline-block',
-              zoom: 'calc(1/var(--utopia-canvas-zoom))',
-              transform: 'scale(calc(1/(var(--utopia-canvas-transform-scale))))',
-            }}
-          >
-            {props.padding.top}
-          </span>
+          {props.padding.top}
         </div>
       ) : null
     const rightElement =
@@ -88,24 +72,14 @@ export const PaddingControls = React.memo((props: PaddingControlsProps) => {
             background: colorTheme.paddingFillTranslucent.value,
             color: colorTheme.paddingForeground.value,
             position: 'absolute',
-            left: `calc(${
-              props.frame.x + props.frame.width - props.padding.right
-            }px + var(--utopia-canvas-offset-x))`,
-            top: `calc(${props.frame.y}px + var(--utopia-canvas-offset-y))`,
+            left: props.frame.x + props.canvasOffset.x + props.frame.width - props.padding.right,
+            top: props.frame.y + props.canvasOffset.y,
             width: props.padding.right,
             height: props.frame.height,
             lineHeight: props.frame.height + 'px',
           }}
         >
-          <span
-            style={{
-              display: 'inline-block',
-              zoom: 'calc(1/var(--utopia-canvas-zoom))',
-              transform: 'scale(calc(1/(var(--utopia-canvas-transform-scale))))',
-            }}
-          >
-            {props.padding.right}
-          </span>
+          {props.padding.right}
         </div>
       ) : null
     const bottomElement =
@@ -120,26 +94,14 @@ export const PaddingControls = React.memo((props: PaddingControlsProps) => {
             background: colorTheme.paddingFillTranslucent.value,
             color: colorTheme.paddingForeground.value,
             position: 'absolute',
-            left: `calc(${
-              props.frame.x + (props.padding.left ?? 0)
-            }px + var(--utopia-canvas-offset-x))`,
-            top: `calc(${
-              props.frame.y + props.frame.height - props.padding.bottom
-            }px + var(--utopia-canvas-offset-y))`,
+            left: props.frame.x + props.canvasOffset.x + (props.padding.left ?? 0),
+            top: props.frame.y + props.canvasOffset.y + props.frame.height - props.padding.bottom,
             width: props.frame.width - (props.padding.left ?? 0) - (props.padding.right ?? 0),
             height: props.padding.bottom,
             lineHeight: props.padding.bottom + 'px',
           }}
         >
-          <span
-            style={{
-              display: 'inline-block',
-              zoom: 'calc(1/var(--utopia-canvas-zoom))',
-              transform: 'scale(calc(1/(var(--utopia-canvas-transform-scale))))',
-            }}
-          >
-            {props.padding.bottom}
-          </span>
+          {props.padding.bottom}
         </div>
       ) : null
     const innerDiv =
@@ -153,12 +115,8 @@ export const PaddingControls = React.memo((props: PaddingControlsProps) => {
             background: 'transparent',
             position: 'absolute',
             pointerEvents: 'none',
-            left: `calc(${
-              props.frame.x + (props.padding.left ?? 0)
-            }px + var(--utopia-canvas-offset-x))`,
-            top: `calc(${
-              props.frame.y + (props.padding.top ?? 0)
-            }px + var(--utopia-canvas-offset-y))`,
+            left: props.frame.x + props.canvasOffset.x + (props.padding.left ?? 0),
+            top: props.frame.y + props.canvasOffset.y + (props.padding.top ?? 0),
             width: props.frame.width - (props.padding.left ?? 0) - (props.padding.right ?? 0),
             height: props.frame.height - (props.padding.top ?? 0) - (props.padding.bottom ?? 0),
           }}
