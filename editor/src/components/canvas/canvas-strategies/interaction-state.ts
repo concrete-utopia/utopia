@@ -62,8 +62,7 @@ export interface StrategyAndAccumulatedCommands {
   commands: Array<CanvasCommand>
 }
 
-export interface SessionStateState {
-  // PLEASE RENAME ME
+export interface StrategyState {
   // Need to track here which strategy is being applied.
   currentStrategy: string | null
   currentStrategyFitness: number
@@ -75,9 +74,7 @@ export interface SessionStateState {
   startingMetadata: ElementInstanceMetadataMap
 }
 
-export function createEmptySessionStateState(
-  metadata?: ElementInstanceMetadataMap,
-): SessionStateState {
+export function createEmptyStrategyState(metadata?: ElementInstanceMetadataMap): StrategyState {
   return {
     currentStrategy: null,
     currentStrategyFitness: 0,

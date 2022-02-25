@@ -9,8 +9,8 @@ export const CanvasStrategyIndicator = React.memo(() => {
   const colorTheme = useColorTheme()
   const dispatch = useEditorState((store) => store.dispatch, 'CanvasStrategyIndicator dispatch')
   const activeStrategy = useEditorState(
-    (store) => store.sessionStateState.currentStrategy,
-    'CanvasStrategyIndicator sessionStateState.currentStrategy',
+    (store) => store.strategyState.currentStrategy,
+    'CanvasStrategyIndicator strategyState.currentStrategy',
   )
   const otherPossibleStrategies = useGetApplicableStrategiesOrderedByFitness()
 

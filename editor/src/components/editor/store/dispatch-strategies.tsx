@@ -1,6 +1,6 @@
 import {
-  SessionStateState,
-  createEmptySessionStateState,
+  StrategyState,
+  createEmptyStrategyState,
   strategySwitchInteractionSessionReset,
   hasModifiersChanged,
   interactionSessionHardReset,
@@ -23,7 +23,7 @@ import { InteractionCanvasState } from '../../canvas/canvas-strategies/canvas-st
 interface HandleStrategiesResult {
   unpatchedEditorState: EditorState
   patchedEditorState: EditorState
-  newSessionStateState: SessionStateState
+  newStrategyState: StrategyState
 }
 
 export function interactionFinished(
@@ -31,7 +31,7 @@ export function interactionFinished(
   result: InnerDispatchResult,
 ): HandleStrategiesResult {
   const newEditorState = result.unpatchedEditor
-  const withClearedSession = createEmptySessionStateState(
+  const withClearedSession = createEmptyStrategyState(
     newEditorState.canvas.interactionSession?.metadata ?? newEditorState.jsxMetadata,
   )
   const canvasState: InteractionCanvasState = {
@@ -47,15 +47,15 @@ export function interactionFinished(
     return {
       unpatchedEditorState: newEditorState,
       patchedEditorState: newEditorState,
-      newSessionStateState: withClearedSession,
+      newStrategyState: withClearedSession,
     }
   } else {
     // Determine the new canvas strategy to run this time around.
     const { strategy } = findCanvasStrategy(
       canvasState,
       interactionSession,
-      result.sessionStateState,
-      result.sessionStateState.currentStrategy,
+      result.strategyState,
+      result.strategyState.currentStrategy,
     )
 
     // If there is a current strategy, produce the commands from it.
@@ -63,26 +63,26 @@ export function interactionFinished(
       return {
         unpatchedEditorState: newEditorState,
         patchedEditorState: newEditorState,
-        newSessionStateState: withClearedSession,
+        newStrategyState: withClearedSession,
       }
     } else {
       const commands = applyCanvasStrategy(
         strategy.strategy,
         canvasState,
         interactionSession,
-        result.sessionStateState,
+        result.strategyState,
       )
       const commandResult = foldAndApplyCommands(
         newEditorState,
         storedState.patchedEditor,
-        [...result.sessionStateState.accumulatedCommands.flatMap((c) => c.commands), ...commands],
+        [...result.strategyState.accumulatedCommands.flatMap((c) => c.commands), ...commands],
         'permanent',
       )
 
       return {
         unpatchedEditorState: commandResult.editorState,
         patchedEditorState: commandResult.editorState,
-        newSessionStateState: withClearedSession,
+        newStrategyState: withClearedSession,
       }
     }
   }
@@ -94,7 +94,7 @@ export function interactionHardReset(
 ): HandleStrategiesResult {
   const newEditorState = result.unpatchedEditor
   const withClearedSession = {
-    ...storedState.sessionStateState,
+    ...storedState.strategyState,
     startingMetadata: storedState.unpatchedEditor.jsxMetadata,
   }
   const canvasState: InteractionCanvasState = {
@@ -110,20 +110,20 @@ export function interactionHardReset(
     return {
       unpatchedEditorState: newEditorState,
       patchedEditorState: newEditorState,
-      newSessionStateState: withClearedSession,
+      newStrategyState: withClearedSession,
     }
   } else {
     const resetInteractionSession = interactionSessionHardReset(interactionSession)
-    const resetSessionState = {
-      ...result.sessionStateState,
+    const resetStrategyState = {
+      ...result.strategyState,
       startingMetadata: storedState.unpatchedEditor.jsxMetadata,
     }
     // Determine the new canvas strategy to run this time around.
     const { strategy, previousStrategy } = findCanvasStrategy(
       canvasState,
       resetInteractionSession,
-      resetSessionState,
-      resetSessionState.currentStrategy,
+      resetStrategyState,
+      resetStrategyState.currentStrategy,
     )
 
     // If there is a current strategy, produce the commands from it.
@@ -132,7 +132,7 @@ export function interactionHardReset(
         strategy.strategy,
         canvasState,
         newEditorState.canvas.interactionSession,
-        resetSessionState,
+        resetStrategyState,
       )
       const commandResult = foldAndApplyCommands(
         newEditorState,
@@ -140,25 +140,25 @@ export function interactionHardReset(
         commands,
         'transient',
       )
-      const newSessionStateState: SessionStateState = {
+      const newStrategyState: StrategyState = {
         currentStrategy: strategy.strategy.name,
         currentStrategyFitness: strategy.fitness,
         currentStrategyCommands: commands,
         accumulatedCommands: [],
         commandDescriptions: commandResult.commandDescriptions,
-        startingMetadata: resetSessionState.startingMetadata,
+        startingMetadata: resetStrategyState.startingMetadata,
       }
 
       return {
         unpatchedEditorState: newEditorState,
         patchedEditorState: commandResult.editorState,
-        newSessionStateState: newSessionStateState,
+        newStrategyState: newStrategyState,
       }
     } else {
       return {
         unpatchedEditorState: newEditorState,
         patchedEditorState: newEditorState,
-        newSessionStateState: withClearedSession,
+        newStrategyState: withClearedSession,
       }
     }
   }
@@ -182,15 +182,15 @@ export function interactionUpdate(
     return {
       unpatchedEditorState: newEditorState,
       patchedEditorState: newEditorState,
-      newSessionStateState: result.sessionStateState,
+      newStrategyState: result.strategyState,
     }
   } else {
     // Determine the new canvas strategy to run this time around.
     const { strategy } = findCanvasStrategy(
       canvasState,
       interactionSession,
-      result.sessionStateState,
-      result.sessionStateState.currentStrategy,
+      result.strategyState,
+      result.strategyState.currentStrategy,
     )
 
     // If there is a current strategy, produce the commands from it.
@@ -199,33 +199,33 @@ export function interactionUpdate(
         strategy.strategy,
         canvasState,
         newEditorState.canvas.interactionSession,
-        result.sessionStateState,
+        result.strategyState,
       )
       const commandResult = foldAndApplyCommands(
         newEditorState,
         storedState.patchedEditor,
-        [...result.sessionStateState.accumulatedCommands.flatMap((c) => c.commands), ...commands],
+        [...result.strategyState.accumulatedCommands.flatMap((c) => c.commands), ...commands],
         'transient',
       )
-      const newSessionStateState: SessionStateState = {
+      const newStrategyState: StrategyState = {
         currentStrategy: strategy.strategy.name,
         currentStrategyFitness: strategy.fitness,
         currentStrategyCommands: commands,
-        accumulatedCommands: result.sessionStateState.accumulatedCommands,
+        accumulatedCommands: result.strategyState.accumulatedCommands,
         commandDescriptions: commandResult.commandDescriptions,
-        startingMetadata: result.sessionStateState.startingMetadata,
+        startingMetadata: result.strategyState.startingMetadata,
       }
 
       return {
         unpatchedEditorState: newEditorState,
         patchedEditorState: commandResult.editorState,
-        newSessionStateState: newSessionStateState,
+        newStrategyState: newStrategyState,
       }
     } else {
       return {
         unpatchedEditorState: newEditorState,
         patchedEditorState: newEditorState,
-        newSessionStateState: result.sessionStateState,
+        newStrategyState: result.strategyState,
       }
     }
   }
@@ -236,7 +236,7 @@ export function interactionStart(
   result: InnerDispatchResult,
 ): HandleStrategiesResult {
   const newEditorState = result.unpatchedEditor
-  const withClearedSession = createEmptySessionStateState(
+  const withClearedSession = createEmptyStrategyState(
     newEditorState.canvas.interactionSession?.metadata ?? newEditorState.jsxMetadata,
   )
   const canvasState: InteractionCanvasState = {
@@ -252,7 +252,7 @@ export function interactionStart(
     return {
       unpatchedEditorState: newEditorState,
       patchedEditorState: newEditorState,
-      newSessionStateState: withClearedSession,
+      newStrategyState: withClearedSession,
     }
   } else {
     // Determine the new canvas strategy to run this time around.
@@ -260,7 +260,7 @@ export function interactionStart(
       canvasState,
       interactionSession,
       withClearedSession,
-      result.sessionStateState.currentStrategy,
+      result.strategyState.currentStrategy,
     )
 
     // If there is a current strategy, produce the commands from it.
@@ -269,7 +269,7 @@ export function interactionStart(
         strategy.strategy,
         canvasState,
         newEditorState.canvas.interactionSession,
-        result.sessionStateState,
+        result.strategyState,
       )
       const commandResult = foldAndApplyCommands(
         newEditorState,
@@ -278,7 +278,7 @@ export function interactionStart(
         'transient',
       )
 
-      const newSessionStateState: SessionStateState = {
+      const newStrategyState: StrategyState = {
         currentStrategy: strategy.strategy.name,
         currentStrategyFitness: strategy.fitness,
         currentStrategyCommands: commands,
@@ -290,13 +290,13 @@ export function interactionStart(
       return {
         unpatchedEditorState: newEditorState,
         patchedEditorState: commandResult.editorState,
-        newSessionStateState: newSessionStateState,
+        newStrategyState: newStrategyState,
       }
     } else {
       return {
         unpatchedEditorState: newEditorState,
         patchedEditorState: newEditorState,
-        newSessionStateState: withClearedSession,
+        newStrategyState: withClearedSession,
       }
     }
   }
@@ -317,7 +317,7 @@ export function interactionCancel(
   return {
     unpatchedEditorState: updatedEditorState,
     patchedEditorState: updatedEditorState,
-    newSessionStateState: createEmptySessionStateState(),
+    newStrategyState: createEmptyStrategyState(),
   }
 }
 
@@ -339,15 +339,15 @@ export function interactionUserChangedStrategy(
     return {
       unpatchedEditorState: newEditorState,
       patchedEditorState: newEditorState,
-      newSessionStateState: result.sessionStateState,
+      newStrategyState: result.strategyState,
     }
   } else {
     // Determine the new canvas strategy to run this time around.
     const { strategy, previousStrategy } = findCanvasStrategy(
       canvasState,
       interactionSession,
-      result.sessionStateState,
-      result.sessionStateState.currentStrategy,
+      result.strategyState,
+      result.strategyState.currentStrategy,
     )
     const strategyName = strategy?.strategy.name
     if (strategyName != result.unpatchedEditor.canvas.interactionSession?.userPreferredStrategy) {
@@ -378,10 +378,10 @@ export function interactionUserChangedStrategy(
         strategy.strategy,
         canvasState,
         newEditorState.canvas.interactionSession,
-        result.sessionStateState,
+        result.strategyState,
       )
       const newAccumulatedCommands = [
-        ...result.sessionStateState.accumulatedCommands,
+        ...result.strategyState.accumulatedCommands,
         ...strategyChangedLogCommands,
       ]
       const commandResult = foldAndApplyCommands(
@@ -390,25 +390,25 @@ export function interactionUserChangedStrategy(
         [...newAccumulatedCommands.flatMap((c) => c.commands), ...commands],
         'transient',
       )
-      const newSessionStateState: SessionStateState = {
+      const newStrategyState: StrategyState = {
         currentStrategy: strategy.strategy.name,
         currentStrategyFitness: strategy.fitness,
         currentStrategyCommands: commands,
         accumulatedCommands: newAccumulatedCommands,
         commandDescriptions: commandResult.commandDescriptions,
-        startingMetadata: result.sessionStateState.startingMetadata,
+        startingMetadata: result.strategyState.startingMetadata,
       }
 
       return {
         unpatchedEditorState: newEditorState,
         patchedEditorState: commandResult.editorState,
-        newSessionStateState: newSessionStateState,
+        newStrategyState: newStrategyState,
       }
     } else {
       return {
         unpatchedEditorState: newEditorState,
         patchedEditorState: newEditorState,
-        newSessionStateState: result.sessionStateState,
+        newStrategyState: result.strategyState,
       }
     }
   }
@@ -432,18 +432,18 @@ function interactionStrategyChangeStacked(
     return {
       unpatchedEditorState: newEditorState,
       patchedEditorState: newEditorState,
-      newSessionStateState: result.sessionStateState,
+      newStrategyState: result.strategyState,
     }
   } else {
     // Determine the new canvas strategy to run this time around.
     const { strategy, previousStrategy } = findCanvasStrategy(
       canvasState,
       interactionSession,
-      result.sessionStateState,
-      result.sessionStateState.currentStrategy,
+      result.strategyState,
+      result.strategyState.currentStrategy,
     )
     const strategyName = strategy?.strategy.name
-    if (strategyName === result.sessionStateState.currentStrategy) {
+    if (strategyName === result.strategyState.currentStrategy) {
       console.warn("Entered interactionStrategyChangeStacked but the strategy haven't changed")
     }
 
@@ -469,13 +469,13 @@ function interactionStrategyChangeStacked(
         strategy.strategy,
         canvasState,
         newEditorState.canvas.interactionSession,
-        result.sessionStateState,
+        result.strategyState,
       )
       const newAccumulatedCommands = [
-        ...result.sessionStateState.accumulatedCommands,
+        ...result.strategyState.accumulatedCommands,
         {
-          strategy: result.sessionStateState.currentStrategy,
-          commands: result.sessionStateState.currentStrategyCommands,
+          strategy: result.strategyState.currentStrategy,
+          commands: result.strategyState.currentStrategyCommands,
         },
         ...strategyChangedLogCommands,
       ]
@@ -485,13 +485,13 @@ function interactionStrategyChangeStacked(
         [...newAccumulatedCommands.flatMap((c) => c.commands), ...commands],
         'transient',
       )
-      const newSessionStateState: SessionStateState = {
+      const newStrategyState: StrategyState = {
         currentStrategy: strategy.strategy.name,
         currentStrategyFitness: strategy.fitness,
         currentStrategyCommands: commands,
         accumulatedCommands: newAccumulatedCommands,
         commandDescriptions: commandResult.commandDescriptions,
-        startingMetadata: result.sessionStateState.startingMetadata,
+        startingMetadata: result.strategyState.startingMetadata,
       }
 
       const patchedEditorState = {
@@ -507,13 +507,13 @@ function interactionStrategyChangeStacked(
       return {
         unpatchedEditorState: newEditorState,
         patchedEditorState: patchedEditorState,
-        newSessionStateState: newSessionStateState,
+        newStrategyState: newStrategyState,
       }
     } else {
       return {
         unpatchedEditorState: newEditorState,
         patchedEditorState: newEditorState,
-        newSessionStateState: result.sessionStateState,
+        newStrategyState: result.strategyState,
       }
     }
   }
@@ -525,7 +525,7 @@ export function handleStrategies(
   result: InnerDispatchResult,
   oldDerivedState: DerivedState,
 ): HandleStrategiesResult & { patchedDerivedState: DerivedState } {
-  const { unpatchedEditorState, patchedEditorState, newSessionStateState } = handleStrategiesInner(
+  const { unpatchedEditorState, patchedEditorState, newStrategyState } = handleStrategiesInner(
     dispatchedActions,
     storedState,
     result,
@@ -543,7 +543,7 @@ export function handleStrategies(
     unpatchedEditorState,
     patchedEditorState: patchedEditorWithMetadata,
     patchedDerivedState,
-    newSessionStateState,
+    newStrategyState: newStrategyState,
   }
 }
 
@@ -560,7 +560,7 @@ function handleStrategiesInner(
       return {
         unpatchedEditorState: result.unpatchedEditor,
         patchedEditorState: result.unpatchedEditor,
-        newSessionStateState: result.sessionStateState,
+        newStrategyState: result.strategyState,
       }
     } else {
       return interactionStart(storedState, result)
@@ -575,7 +575,7 @@ function handleStrategiesInner(
         hasModifiersChanged(
           storedState.unpatchedEditor.canvas.interactionSession?.interactionData ?? null,
           result.unpatchedEditor.canvas.interactionSession?.interactionData ?? null,
-        ) || result.sessionStateState.currentStrategy == null // TODO: do we really need the currentStrategy == null part?
+        ) || result.strategyState.currentStrategy == null // TODO: do we really need the currentStrategy == null part?
       if (interactionHardResetNeeded) {
         return interactionHardReset(storedState, result)
       } else {
@@ -589,7 +589,7 @@ function handleStrategiesInner(
         }
 
         const strategy = findCanvasStrategyFromDispatchResult(result)
-        if (strategy?.strategy.name !== result.sessionStateState.currentStrategy) {
+        if (strategy?.strategy.name !== result.strategyState.currentStrategy) {
           return interactionStrategyChangeStacked(storedState, result)
         }
 

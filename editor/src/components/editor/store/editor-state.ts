@@ -158,10 +158,7 @@ import type { BuiltInDependencies } from '../../../core/es-modules/package-manag
 import { DefaultThirdPartyControlDefinitions } from '../../../core/third-party/third-party-controls'
 import { Spec } from 'immutability-helper'
 import { memoize } from '../../../core/shared/memoize'
-import {
-  InteractionSession,
-  SessionStateState,
-} from '../../canvas/canvas-strategies/interaction-state'
+import { InteractionSession, StrategyState } from '../../canvas/canvas-strategies/interaction-state'
 
 const ObjectPathImmutable: any = OPI
 
@@ -242,7 +239,7 @@ export const defaultUserState: UserState = {
 }
 
 type EditorStoreShared = {
-  sessionStateState: SessionStateState
+  strategyState: StrategyState
   history: StateHistory
   userState: UserState
   workers: UtopiaTsWorkers

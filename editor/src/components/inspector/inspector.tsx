@@ -285,7 +285,7 @@ export const Inspector = React.memo<InspectorProps>((props: InspectorProps) => {
       anyUnknownElements: anyUnknownElementsInner,
       hasNonDefaultPositionAttributes: hasNonDefaultPositionAttributesInner,
       aspectRatioLocked: aspectRatioLockedInner,
-      isInteractionActive: isStrategyActive(store.sessionStateState),
+      isInteractionActive: isStrategyActive(store.strategyState),
     }
   }, 'Inspector')
 

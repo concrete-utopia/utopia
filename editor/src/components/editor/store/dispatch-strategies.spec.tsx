@@ -17,7 +17,7 @@ import { createEditorState, deriveState, EditorStoreFull } from './editor-state'
 import * as EP from '../../../core/shared/element-path'
 import * as PP from '../../../core/shared/property-path'
 import { emptyComments, jsxAttributeValue } from '../../../core/shared/element-template'
-import { createEmptySessionStateState } from '../../canvas/canvas-strategies/interaction-state'
+import { createEmptyStrategyState } from '../../canvas/canvas-strategies/interaction-state'
 import { wildcardPatch } from '../../canvas/commands/commands'
 
 function createEditorStore(): EditorStoreFull {
@@ -37,7 +37,7 @@ function createEditorStore(): EditorStoreFull {
     patchedEditor: emptyEditorState,
     unpatchedDerived: derivedState,
     patchedDerived: derivedState,
-    sessionStateState: createEmptySessionStateState(),
+    strategyState: createEmptyStrategyState(),
     history: history,
     userState: {
       loginState: notLoggedIn,
@@ -70,16 +70,16 @@ function dispatchResultFromEditorStore(editorStore: EditorStoreFull): DispatchRe
 describe('interactionCancel', () => {
   it('returns a clean state', () => {
     let editorStore = createEditorStore()
-    editorStore.sessionStateState.accumulatedCommands = [
+    editorStore.strategyState.accumulatedCommands = [
       {
         commands: [wildcardPatch('permanent', { selectedViews: { $set: [] } })],
         strategy: null,
       },
     ]
     const actualResult = interactionCancel(editorStore, dispatchResultFromEditorStore(editorStore))
-    expect(actualResult.newSessionStateState.accumulatedCommands).toHaveLength(0)
-    expect(actualResult.newSessionStateState.commandDescriptions).toHaveLength(0)
-    expect(actualResult.newSessionStateState.currentStrategyCommands).toHaveLength(0)
-    expect(actualResult.newSessionStateState.currentStrategy).toBeNull()
+    expect(actualResult.newStrategyState.accumulatedCommands).toHaveLength(0)
+    expect(actualResult.newStrategyState.commandDescriptions).toHaveLength(0)
+    expect(actualResult.newStrategyState.currentStrategyCommands).toHaveLength(0)
+    expect(actualResult.newStrategyState.currentStrategy).toBeNull()
   })
 })

@@ -3,7 +3,7 @@ import { createSelector } from 'reselect'
 import { addAllUniquelyBy, mapDropNulls, sortBy } from '../../../core/shared/array-utils'
 import { ElementInstanceMetadataMap } from '../../../core/shared/element-template'
 import { arrayEquals } from '../../../core/shared/utils'
-import { InteractionSession, SessionStateState } from './interaction-state'
+import { InteractionSession, StrategyState } from './interaction-state'
 import { InnerDispatchResult } from '../../editor/store/dispatch'
 import { EditorStorePatched } from '../../editor/store/editor-state'
 import { useEditorState } from '../../editor/store/store-hook'
@@ -56,17 +56,17 @@ interface StrategyWithFitness {
 function getApplicableStrategiesOrderedByFitness(
   canvasState: InteractionCanvasState,
   interactionSession: InteractionSession,
-  sessionState: SessionStateState,
+  strategyState: StrategyState,
 ): Array<StrategyWithFitness> {
   const applicableStrategies = getApplicableStrategies(
     canvasState,
     interactionSession,
-    sessionState.startingMetadata,
+    strategyState.startingMetadata,
   )
 
   // Compute the fitness results upfront.
   const strategiesWithFitness = mapDropNulls((strategy) => {
-    const fitness = strategy.fitness(canvasState, interactionSession, sessionState)
+    const fitness = strategy.fitness(canvasState, interactionSession, strategyState)
     if (fitness <= 0) {
       return null
     } else {
@@ -97,11 +97,11 @@ const getApplicableStrategiesOrderedByFitnessSelector = createSelector(
     }
   },
   (store: EditorStorePatched) => store.editor.canvas.interactionSession,
-  (store: EditorStorePatched) => store.sessionStateState,
+  (store: EditorStorePatched) => store.strategyState,
   (
     canvasState: InteractionCanvasState,
     interactionSession: InteractionSession | null,
-    sessionState: SessionStateState,
+    strategyState: StrategyState,
   ): Array<string> => {
     if (interactionSession == null) {
       return []
@@ -109,7 +109,7 @@ const getApplicableStrategiesOrderedByFitnessSelector = createSelector(
     return getApplicableStrategiesOrderedByFitness(
       canvasState,
       interactionSession,
-      sessionState,
+      strategyState,
     ).map((s) => s.strategy.name)
   },
 )
@@ -160,13 +160,13 @@ function pickStrategy(
 export function findCanvasStrategy(
   canvasState: InteractionCanvasState,
   interactionSession: InteractionSession,
-  sessionState: SessionStateState,
+  strategyState: StrategyState,
   previousStrategyName: string | null,
 ): { strategy: StrategyWithFitness | null; previousStrategy: StrategyWithFitness | null } {
   const sortedApplicableStrategies = getApplicableStrategiesOrderedByFitness(
     canvasState,
     interactionSession,
-    sessionState,
+    strategyState,
   )
   return pickStrategy(sortedApplicableStrategies, interactionSession, previousStrategyName)
 }
@@ -175,15 +175,15 @@ export function applyCanvasStrategy(
   strategy: CanvasStrategy,
   canvasState: InteractionCanvasState,
   interactionSession: InteractionSession,
-  sessionState: SessionStateState,
+  strategyState: StrategyState,
 ): Array<CanvasCommand> {
-  return strategy.apply(canvasState, interactionSession, sessionState)
+  return strategy.apply(canvasState, interactionSession, strategyState)
 }
 
 export function useGetApplicableStrategyControls(): Array<ControlWithKey> {
   const applicableStrategies = useGetApplicableStrategies()
   const currentStrategy = useEditorState(
-    (store) => store.sessionStateState.currentStrategy,
+    (store) => store.strategyState.currentStrategy,
     'currentStrategy',
   )
   return React.useMemo(() => {
@@ -217,15 +217,15 @@ export function findCanvasStrategyFromDispatchResult(
     const { strategy } = findCanvasStrategy(
       canvasState,
       interactionSession,
-      result.sessionStateState,
-      result.sessionStateState.currentStrategy,
+      result.strategyState,
+      result.strategyState.currentStrategy,
     )
     return strategy
   }
 }
 
-export function isStrategyActive(sessionState: SessionStateState): boolean {
+export function isStrategyActive(strategyState: StrategyState): boolean {
   return (
-    sessionState.accumulatedCommands.length > 0 || sessionState.currentStrategyCommands.length > 0
+    strategyState.accumulatedCommands.length > 0 || strategyState.currentStrategyCommands.length > 0
   )
 }

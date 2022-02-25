@@ -49,7 +49,7 @@ export function getStoreHook(
     patchedEditor: editor.editor,
     unpatchedDerived: editor.derivedState,
     patchedDerived: editor.derivedState,
-    sessionStateState: editor.sessionStateState,
+    strategyState: editor.strategyState,
     history: {
       previous: [],
       next: [],

@@ -1,7 +1,7 @@
 import { ElementInstanceMetadataMap } from '../../../core/shared/element-template'
 import { InteractionSession } from './interaction-state'
 import { CanvasCommand } from '../commands/commands'
-import { SessionStateState } from './interaction-state'
+import { StrategyState } from './interaction-state'
 import { ElementPath } from '../../../core/shared/project-file-types'
 import { ProjectContentTreeRoot } from '../../assets'
 import { CanvasVector } from '../../../core/shared/math-utils'
@@ -42,13 +42,13 @@ export interface CanvasStrategy {
   fitness: (
     canvasState: InteractionCanvasState,
     interactionSession: InteractionSession,
-    sessionState: SessionStateState,
+    strategyState: StrategyState,
   ) => number
 
   // Returns the commands that inform how the model and the editor should be updated
   apply: (
     canvasState: InteractionCanvasState,
     interactionSession: InteractionSession,
-    sessionState: SessionStateState,
+    strategyState: StrategyState,
   ) => StrategyApplicationResult
 }

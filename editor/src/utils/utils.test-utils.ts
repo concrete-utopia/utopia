@@ -67,8 +67,8 @@ import { contentsToTree } from '../components/assets'
 import { defaultSceneElement } from '../components/editor/defaults'
 import { objectMap } from '../core/shared/object-utils'
 import {
-  createEmptySessionStateState,
-  SessionStateState,
+  createEmptyStrategyState,
+  StrategyState,
 } from '../components/canvas/canvas-strategies/interaction-state'
 
 export function delay(time: number): Promise<void> {
@@ -108,7 +108,7 @@ export function createEditorStates(
   editor: EditorState
   derivedState: DerivedState
   dispatch: EditorDispatch
-  sessionStateState: SessionStateState
+  strategyState: StrategyState
 } {
   const editor: EditorState = {
     ...createEditorState(NO_OP),
@@ -151,7 +151,7 @@ export function createEditorStates(
       jsxMetadata: componentMetadata,
     },
     derivedState: derivedState,
-    sessionStateState: createEmptySessionStateState(),
+    strategyState: createEmptyStrategyState(),
     dispatch: Utils.NO_OP,
   }
 }

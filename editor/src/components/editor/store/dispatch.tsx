@@ -158,7 +158,7 @@ function processAction(
     return {
       unpatchedEditor: editorAfterNavigator,
       unpatchedDerived: working.unpatchedDerived,
-      sessionStateState: working.sessionStateState, // this means the actions cannot update sessionStateState – this piece of state lives outside our "redux" state
+      strategyState: working.strategyState, // this means the actions cannot update strategyState – this piece of state lives outside our "redux" state
       history: newStateHistory,
       userState: working.userState,
       workers: working.workers,
@@ -418,14 +418,14 @@ export function editorDispatch(
   const {
     unpatchedEditorState,
     patchedEditorState,
-    newSessionStateState,
+    newStrategyState,
     patchedDerivedState,
   } = isFeatureEnabled('Canvas Strategies')
     ? handleStrategies(dispatchedActions, storedState, result, storedState.patchedDerived)
     : {
         unpatchedEditorState: result.unpatchedEditor,
         patchedEditorState: result.unpatchedEditor,
-        newSessionStateState: result.sessionStateState,
+        newStrategyState: result.strategyState,
         patchedDerivedState: result.unpatchedDerived,
       }
 
@@ -441,7 +441,7 @@ export function editorDispatch(
     patchedEditor: patchedEditorState,
     unpatchedDerived: frozenDerivedState,
     patchedDerived: patchedDerivedState,
-    sessionStateState: optionalDeepFreeze(newSessionStateState),
+    strategyState: optionalDeepFreeze(newStrategyState),
     history: newHistory,
     userState: result.userState,
     workers: storedState.workers,
@@ -662,7 +662,7 @@ function editorDispatchInner(
     return {
       unpatchedEditor: frozenEditorState,
       unpatchedDerived: frozenDerivedState,
-      sessionStateState: result.sessionStateState,
+      strategyState: result.strategyState,
       history: result.history,
       userState: result.userState,
       workers: storedState.workers,
