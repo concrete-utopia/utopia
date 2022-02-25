@@ -13,7 +13,7 @@ import {
   getPropsForStyleProp,
   makeInspectorHookContextProvider,
 } from './property-path-hooks.test-utils'
-import { EditorStoreFull, EditorStorePatched } from '../../editor/store/editor-state'
+import { EditorStorePatched } from '../../editor/store/editor-state'
 import create from 'zustand'
 import { EditorStateContext } from '../../editor/store/store-hook'
 import * as EP from '../../../core/shared/element-path'
@@ -47,9 +47,8 @@ function getPaddingHookResult<P extends ParsedPropertiesKeys, S extends ParsedPr
       attributeMetadatas,
     )
 
-    const initialEditorStore: EditorStoreFull = {
-      unpatchedEditor: null as any,
-      patchedEditor: null as any,
+    const initialEditorStore: EditorStorePatched = {
+      editor: null as any,
       derived: null as any,
       history: null as any,
       userState: null as any,
@@ -60,7 +59,7 @@ function getPaddingHookResult<P extends ParsedPropertiesKeys, S extends ParsedPr
       builtInDependencies: [],
     }
 
-    const storeHook = create<EditorStoreFull>(() => initialEditorStore)
+    const storeHook = create<EditorStorePatched>(() => initialEditorStore)
 
     return (
       <EditorStateContext.Provider value={{ api: storeHook, useStore: storeHook }}>

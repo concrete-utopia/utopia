@@ -83,7 +83,7 @@ type SanitizedState = ReturnType<typeof sanitizeLoggedState>
 function sanitizeLoggedState(store: EditorStoreFull) {
   return {
     patchedEditor: {
-      jsxMetadata: simplifiedMetadataMap(store.patchedEditor.jsxMetadata) as any,
+      jsxMetadata: simplifiedMetadataMap(store..jsxMetadata) as any,
     } as Partial<EditorState>,
   }
 }

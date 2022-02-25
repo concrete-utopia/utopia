@@ -257,6 +257,13 @@ export type EditorStorePatched = EditorStoreShared & {
   editor: EditorState
 }
 
+export function patchedStoreFromFullStore(store: EditorStoreFull): EditorStorePatched {
+  return {
+    ...store,
+    editor: store.patchedEditor,
+  }
+}
+
 export interface FileDeleteModal {
   type: 'file-delete'
   filePath: string
