@@ -1,8 +1,5 @@
 import { ElementInstanceMetadataMap } from '../../../core/shared/element-template'
-import type { CanvasPoint, CanvasVector } from '../../../core/shared/math-utils'
-import { ElementPath } from '../../../core/shared/project-file-types'
 import { InteractionCanvasState, InteractionState } from './interaction-state'
-import type { EdgePosition } from '../canvas-types'
 import { CanvasCommand } from '../commands/commands'
 import { SessionStateState } from './interaction-state'
 
@@ -22,48 +19,27 @@ export interface CanvasStrategy {
 
   strategyGroups: Set<string>
 
+  // Determines if we should show the controls that this strategy renders
   isApplicable: (
     canvasState: InteractionCanvasState,
     interactionState: InteractionState | null,
     metadata: ElementInstanceMetadataMap,
   ) => boolean
-  // Determines if we should show the controls that this strategy renders
-  // Maybe this can just be rolled into controlsToRender?
 
-  controlsToRender: Array<ControlWithKey>
   // The controls to render when this strategy is applicable, regardless of if it is currently active
+  controlsToRender: Array<ControlWithKey>
 
+  // As before, for determining the relative ordering of applicable strategies during an interaction, and therefore which one to apply
   fitness: (
     canvasState: InteractionCanvasState,
     interactionState: InteractionState,
     sessionState: SessionStateState,
   ) => number
-  // As before, for determining the relative ordering of applicable strategies during an interaction, and therefore which one to apply
 
+  // Returns the commands that inform how the model and the editor should be updated
   apply: (
     canvasState: InteractionCanvasState,
     interactionState: InteractionState,
     sessionState: SessionStateState,
   ) => StrategyApplicationResult
-  // Returns the commands that inform how the model and the editor should be updated
 }
-
-interface BoundingArea {
-  type: 'BOUNDING_AREA'
-  target: ElementPath
-}
-
-interface ResizeHandle {
-  type: 'RESIZE_HANDLE'
-  edgePosition: EdgePosition
-}
-
-interface FlexGapHandle {
-  type: 'FLEX_GAP_HANDLE'
-}
-
-interface KeyboardCatcherControl {
-  type: 'KEYBOARD_CATCHER_CONTROL'
-}
-
-export type CanvasControlType = BoundingArea | ResizeHandle | FlexGapHandle | KeyboardCatcherControl

@@ -5,7 +5,7 @@ import { ElementPath } from '../../../core/shared/project-file-types'
 import { KeyCharacter } from '../../../utils/keyboard'
 import { Modifiers } from '../../../utils/modifiers'
 import { ProjectContentTreeRoot } from '../../assets'
-import { CanvasControlType } from './canvas-strategy-types'
+import { EdgePosition } from '../canvas-types'
 import { MoveIntoDragThreshold } from '../canvas-utils'
 import { CanvasCommand } from '../commands/commands'
 
@@ -242,3 +242,23 @@ export function updateInteractionViaKeyboard(
     }
   }
 }
+
+interface BoundingArea {
+  type: 'BOUNDING_AREA'
+  target: ElementPath
+}
+
+interface ResizeHandle {
+  type: 'RESIZE_HANDLE'
+  edgePosition: EdgePosition
+}
+
+interface FlexGapHandle {
+  type: 'FLEX_GAP_HANDLE'
+}
+
+interface KeyboardCatcherControl {
+  type: 'KEYBOARD_CATCHER_CONTROL'
+}
+
+export type CanvasControlType = BoundingArea | ResizeHandle | FlexGapHandle | KeyboardCatcherControl
