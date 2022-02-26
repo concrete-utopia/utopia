@@ -1,6 +1,8 @@
 import * as Chai from 'chai'
 import * as EP from './element-path'
 import { BakedInStoryboardUID } from '../model/scene-utils'
+import { ElementPath } from './project-file-types'
+import { TestSceneUID, TestAppUID } from '../../components/canvas/ui-jsx.test-utils'
 const chaiExpect = Chai.expect
 
 describe('serialization', () => {
@@ -616,5 +618,45 @@ describe('getCommonParent', () => {
     ])
     const expectedResult = EP.elementPath([[BakedInStoryboardUID, 'scene-aaa'], ['a']])
     expect(actualResult).toEqual(expectedResult)
+  })
+})
+
+describe('isParentOf', () => {
+  it('returns true for a child with a single array element lower down.', () => {
+    const parentPath: ElementPath = EP.elementPath([
+      [BakedInStoryboardUID, TestSceneUID, TestAppUID],
+      ['aaa', 'eee'],
+    ])
+    const childPath: ElementPath = EP.elementPath([
+      [BakedInStoryboardUID, TestSceneUID, TestAppUID],
+      ['aaa', 'eee'],
+      ['zzz'],
+    ])
+    expect(EP.isParentOf(parentPath, childPath)).toBe(true)
+  })
+  it('returns true for a child with a final array element with one less path part.', () => {
+    const parentPath: ElementPath = EP.elementPath([
+      [BakedInStoryboardUID, TestSceneUID, TestAppUID],
+      ['aaa', 'eee'],
+      ['zzz'],
+    ])
+    const childPath: ElementPath = EP.elementPath([
+      [BakedInStoryboardUID, TestSceneUID, TestAppUID],
+      ['aaa', 'eee'],
+      ['zzz', 'yyy'],
+    ])
+    expect(EP.isParentOf(parentPath, childPath)).toBe(true)
+  })
+  it('returns false for paths that differ by a full array element.', () => {
+    const parentPath: ElementPath = EP.elementPath([
+      [BakedInStoryboardUID, TestSceneUID, TestAppUID],
+      ['aaa', 'eee'],
+    ])
+    const childPath: ElementPath = EP.elementPath([
+      [BakedInStoryboardUID, TestSceneUID, TestAppUID],
+      ['aaa', 'eee'],
+      ['zzz', 'yyy'],
+    ])
+    expect(EP.isParentOf(parentPath, childPath)).toBe(false)
   })
 })
