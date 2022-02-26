@@ -1048,6 +1048,18 @@ export interface ElementWarnings {
   dynamicSceneChildWidthHeightPercentage: boolean
 }
 
+export function elementWarnings(
+  widthOrHeightZero: boolean,
+  absoluteWithUnpositionedParent: boolean,
+  dynamicSceneChildWidthHeightPercentage: boolean,
+): ElementWarnings {
+  return {
+    widthOrHeightZero: widthOrHeightZero,
+    absoluteWithUnpositionedParent: absoluteWithUnpositionedParent,
+    dynamicSceneChildWidthHeightPercentage: dynamicSceneChildWidthHeightPercentage,
+  }
+}
+
 export const defaultElementWarnings: ElementWarnings = {
   widthOrHeightZero: false,
   absoluteWithUnpositionedParent: false,
