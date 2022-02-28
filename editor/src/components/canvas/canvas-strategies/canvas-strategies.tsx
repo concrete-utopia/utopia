@@ -26,7 +26,6 @@ const getApplicableStrategiesSelector = createSelector(
   (store: EditorStorePatched): InteractionCanvasState => {
     return {
       selectedElements: store.editor.selectedViews,
-      // metadata: store.editor.jsxMetadata, // We can add metadata back if live metadata is necessary
       projectContents: store.editor.projectContents,
       openFile: store.editor.canvas.openFile?.filename,
       scale: store.editor.canvas.scale,
