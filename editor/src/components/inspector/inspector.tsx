@@ -96,6 +96,7 @@ export interface InspectorPartProps<T> {
   onSubmitValue: (output: T, paths: Array<PropertyPath>) => void
 }
 export interface InspectorProps extends TargetSelectorSectionProps {
+  setSelectedTarget: React.Dispatch<React.SetStateAction<string[]>>
   selectedViews: Array<ElementPath>
   elementPath: Array<ElementPathElement>
 }
@@ -229,7 +230,11 @@ function buildNonDefaultPositionPaths(propertyTarget: Array<string>): Array<Prop
 
 export const Inspector = React.memo<InspectorProps>((props: InspectorProps) => {
   const colorTheme = useColorTheme()
-  const { selectedViews } = props
+  const { selectedViews, setSelectedTarget, targets } = props
+  React.useEffect(() => {
+    setSelectedTarget(targets[0].path)
+  }, [selectedViews, targets, setSelectedTarget])
+
   const {
     dispatch,
     focusedPanel,
@@ -243,6 +248,7 @@ export const Inspector = React.memo<InspectorProps>((props: InspectorProps) => {
     let anyUnknownElementsInner: boolean = false
     let hasNonDefaultPositionAttributesInner: boolean = false
     let aspectRatioLockedInner: boolean = false
+
     Utils.fastForEach(selectedViews, (view) => {
       const { components: rootComponents } = getJSXComponentsAndImportsForPathFromState(
         view,
@@ -531,6 +537,7 @@ export const SingleInspectorEntryPoint: React.FunctionComponent<{
         selectedViews={selectedViews}
         targets={targetsReferentiallyStable}
         selectedTargetPath={selectedTarget}
+        setSelectedTarget={setSelectedTarget}
         elementPath={elementPath}
         onSelectTarget={onSelectTarget}
         onStyleSelectorRename={onStyleSelectorRename}
