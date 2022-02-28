@@ -1352,16 +1352,44 @@ function getElementWarningsInner(
 
 const getElementWarnings = memoize(getElementWarningsInner, { maxSize: 1 })
 
-export function deriveState(
-  editor: EditorState,
-  oldDerivedState: DerivedState | null,
-): DerivedState {
-  const derivedState = oldDerivedState == null ? emptyDerivedState(editor) : oldDerivedState
+type CacheableDerivedState = {
+  navigatorTargets: ElementPath[]
+  visibleNavigatorTargets: ElementPath[]
+  elementWarnings: ComplexMap<ElementPath, ElementWarnings>
+}
 
+function deriveCacheableStateInner(
+  jsxMetadata: ElementInstanceMetadataMap,
+  collapsedViews: ElementPath[],
+): CacheableDerivedState {
   const {
     navigatorTargets,
     visibleNavigatorTargets,
-  } = MetadataUtils.createOrderedElementPathsFromElements(
+  } = MetadataUtils.createOrderedElementPathsFromElements(jsxMetadata, collapsedViews)
+
+  const elementWarnings = getElementWarnings(jsxMetadata)
+
+  return {
+    navigatorTargets: navigatorTargets,
+    visibleNavigatorTargets: visibleNavigatorTargets,
+    elementWarnings: elementWarnings,
+  }
+}
+
+const patchedDeriveCacheableState = memoize(deriveCacheableStateInner, { maxSize: 1 })
+const unpatchedDeriveCacheableState = memoize(deriveCacheableStateInner, { maxSize: 1 })
+
+export function deriveState(
+  editor: EditorState,
+  oldDerivedState: DerivedState | null,
+  cacheKey: 'patched' | 'unpatched' = 'unpatched',
+): DerivedState {
+  const derivedState = oldDerivedState == null ? emptyDerivedState(editor) : oldDerivedState
+
+  const deriveCacheableState =
+    cacheKey === 'patched' ? patchedDeriveCacheableState : unpatchedDeriveCacheableState
+
+  const { navigatorTargets, visibleNavigatorTargets, elementWarnings } = deriveCacheableState(
     editor.jsxMetadata,
     editor.navigator.collapsedViews,
   )
@@ -1378,7 +1406,7 @@ export function deriveState(
         true,
       ),
     },
-    elementWarnings: getElementWarnings(getMetadata(editor)),
+    elementWarnings: elementWarnings,
   }
 
   const sanitizedDerivedState = DerivedStateKeepDeepEquality()(derivedState, derived).value

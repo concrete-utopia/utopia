@@ -549,7 +549,7 @@ export function handleStrategies(
       patchedEditorState.canvas.interactionState?.metadata ?? patchedEditorState.jsxMetadata,
   }
 
-  const patchedDerivedState = deriveState(patchedEditorWithMetadata, oldDerivedState)
+  const patchedDerivedState = deriveState(patchedEditorWithMetadata, oldDerivedState, 'patched')
 
   return {
     unpatchedEditorState,
