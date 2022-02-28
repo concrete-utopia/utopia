@@ -176,48 +176,49 @@ export function updateInteractionViaKeyboard(
   modifiers: Modifiers,
   sourceOfUpdate: CanvasControlType,
 ): InteractionSessionWithoutMetadata {
-  if (currentState.interactionData.type === 'KEYBOARD') {
-    const withRemovedKeys = currentState.interactionData.keysPressed.filter(
-      (k) => !keysReleased.includes(k),
-    )
-    const newKeysPressed = addAllUniquely(withRemovedKeys, addedKeysPressed)
+  switch (currentState.interactionData.type) {
+    case 'KEYBOARD': {
+      const withRemovedKeys = currentState.interactionData.keysPressed.filter(
+        (k) => !keysReleased.includes(k),
+      )
+      const newKeysPressed = addAllUniquely(withRemovedKeys, addedKeysPressed)
 
-    return {
-      interactionData: {
-        type: 'KEYBOARD',
-        keysPressed: newKeysPressed,
-        modifiers: modifiers,
-      },
-      activeControl: currentState.activeControl,
-      sourceOfUpdate: sourceOfUpdate,
-      lastInteractionTime: Date.now(),
-      userPreferredStrategy: currentState.userPreferredStrategy,
-      startedAt: currentState.startedAt,
-      globalTime: Date.now(),
+      return {
+        interactionData: {
+          type: 'KEYBOARD',
+          keysPressed: newKeysPressed,
+          modifiers: modifiers,
+        },
+        activeControl: currentState.activeControl,
+        sourceOfUpdate: sourceOfUpdate,
+        lastInteractionTime: Date.now(),
+        userPreferredStrategy: currentState.userPreferredStrategy,
+        startedAt: currentState.startedAt,
+        globalTime: Date.now(),
+      }
     }
-  } else if (currentState.interactionData.type === 'DRAG') {
-    return {
-      interactionData: {
-        type: 'DRAG',
-        dragStart: currentState.interactionData.dragStart,
-        drag: currentState.interactionData.drag,
-        prevDrag: currentState.interactionData.prevDrag,
-        dragThresholdPassed: currentState.interactionData.dragThresholdPassed,
-        originalDragStart: currentState.interactionData.originalDragStart,
-        modifiers: modifiers,
-      },
-      activeControl: currentState.activeControl,
-      sourceOfUpdate: currentState.activeControl,
-      lastInteractionTime: Date.now(),
-      userPreferredStrategy: currentState.userPreferredStrategy,
-      startedAt: currentState.startedAt,
-      globalTime: Date.now(),
+    case 'DRAG': {
+      return {
+        interactionData: {
+          type: 'DRAG',
+          dragStart: currentState.interactionData.dragStart,
+          drag: currentState.interactionData.drag,
+          prevDrag: currentState.interactionData.prevDrag,
+          dragThresholdPassed: currentState.interactionData.dragThresholdPassed,
+          originalDragStart: currentState.interactionData.originalDragStart,
+          modifiers: modifiers,
+        },
+        activeControl: currentState.activeControl,
+        sourceOfUpdate: currentState.activeControl,
+        lastInteractionTime: Date.now(),
+        userPreferredStrategy: currentState.userPreferredStrategy,
+        startedAt: currentState.startedAt,
+        globalTime: Date.now(),
+      }
     }
-  } else {
-    return {
-      ...currentState,
-      globalTime: Date.now(),
-    }
+    default:
+      const _exhaustiveCheck: never = currentState.interactionData
+      throw new Error(`Unhandled interaction type ${JSON.stringify(currentState.interactionData)}`)
   }
 }
 
