@@ -1382,12 +1382,12 @@ function deriveCacheableStateInner(
     visibleNavigatorTargets,
   } = MetadataUtils.createOrderedElementPathsFromElements(jsxMetadata, collapsedViews)
 
-  const elementWarnings = getElementWarnings(jsxMetadata)
+  const warnings = getElementWarnings(jsxMetadata)
 
   return {
     navigatorTargets: navigatorTargets,
     visibleNavigatorTargets: visibleNavigatorTargets,
-    elementWarnings: elementWarnings,
+    elementWarnings: warnings,
   }
 }
 
@@ -1404,10 +1404,11 @@ export function deriveState(
   const deriveCacheableState =
     cacheKey === 'patched' ? patchedDeriveCacheableState : unpatchedDeriveCacheableState
 
-  const { navigatorTargets, visibleNavigatorTargets, elementWarnings } = deriveCacheableState(
-    editor.jsxMetadata,
-    editor.navigator.collapsedViews,
-  )
+  const {
+    navigatorTargets,
+    visibleNavigatorTargets,
+    elementWarnings: warnings,
+  } = deriveCacheableState(editor.jsxMetadata, editor.navigator.collapsedViews)
 
   const derived: DerivedState = {
     navigatorTargets: navigatorTargets,
@@ -1421,7 +1422,7 @@ export function deriveState(
         true,
       ),
     },
-    elementWarnings: elementWarnings,
+    elementWarnings: warnings,
   }
 
   const sanitizedDerivedState = DerivedStateKeepDeepEquality()(derivedState, derived).value
