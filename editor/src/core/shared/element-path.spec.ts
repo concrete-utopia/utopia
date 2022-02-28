@@ -2,8 +2,10 @@ import * as Chai from 'chai'
 import * as EP from './element-path'
 import { BakedInStoryboardUID } from '../model/scene-utils'
 import { ElementPath } from './project-file-types'
-import { TestSceneUID, TestAppUID } from '../../components/canvas/ui-jsx.test-utils'
 const chaiExpect = Chai.expect
+
+const TestSceneUID = 'scene-aaa'
+const TestAppUID = 'app-entity'
 
 describe('serialization', () => {
   it('path survives serialization', () => {
