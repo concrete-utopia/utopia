@@ -219,7 +219,7 @@ export function isFromVSCode(action: EditorAction): boolean {
   }
 }
 
-export function isClearInteractionSession(action: EditorAction): action is ClearInteractionSession {
+export function isClearInteractionSession(action: EditorAction): boolean {
   switch (action.action) {
     case 'TRANSIENT_ACTIONS':
       return action.transientActions.some(isClearInteractionSession)
@@ -232,9 +232,7 @@ export function isClearInteractionSession(action: EditorAction): action is Clear
   }
 }
 
-export function shouldApplyClearInteractionSessionResult(
-  action: EditorAction,
-): action is ClearInteractionSession {
+export function shouldApplyClearInteractionSessionResult(action: EditorAction): boolean {
   switch (action.action) {
     case 'TRANSIENT_ACTIONS':
       return action.transientActions.some(shouldApplyClearInteractionSessionResult)
