@@ -31,6 +31,8 @@ import { ErrorMessage } from '../../core/shared/error-messages'
 import CanvasActions from './canvas-actions'
 import { EditorModes } from '../editor/editor-modes'
 import { CanvasStrategyIndicator } from './controls/select-mode/canvas-strategy-indicator'
+import { when } from '../../utils/react-conditionals'
+import { isFeatureEnabled } from '../../utils/feature-switches'
 
 export function filterOldPasses(errorMessages: Array<ErrorMessage>): Array<ErrorMessage> {
   let passTimes: { [key: string]: number } = {}
@@ -123,7 +125,7 @@ export const CanvasWrapperComponent = React.memo(() => {
         >
           {safeMode ? <SafeModeErrorOverlay /> : <ErrorOverlayComponent />}
           <ModeSelectButtons />
-          <CanvasStrategyIndicator />
+          {when(isFeatureEnabled('Canvas Strategies'), <CanvasStrategyIndicator />)}
         </FlexColumn>
       </FlexRow>
     </FlexColumn>
