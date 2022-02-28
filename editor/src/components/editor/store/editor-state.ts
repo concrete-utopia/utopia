@@ -158,6 +158,7 @@ import type { BuiltInDependencies } from '../../../core/es-modules/package-manag
 import { DefaultThirdPartyControlDefinitions } from '../../../core/third-party/third-party-controls'
 import { Spec } from 'immutability-helper'
 import { memoize } from '../../../core/shared/memoize'
+import { InteractionSession, StrategyState } from '../../canvas/canvas-strategies/interaction-state'
 
 const ObjectPathImmutable: any = OPI
 
@@ -238,6 +239,7 @@ export const defaultUserState: UserState = {
 }
 
 type EditorStoreShared = {
+  strategyState: StrategyState
   history: StateHistory
   userState: UserState
   workers: UtopiaTsWorkers
@@ -442,6 +444,7 @@ export interface EditorState {
   canvas: {
     visible: boolean
     dragState: DragState | null
+    interactionSession: InteractionSession | null
     scale: number
     snappingThreshold: number
     realCanvasOffset: CanvasVector
@@ -465,6 +468,9 @@ export interface EditorState {
     }> | null
     resizeOptions: ResizeOptions
     domWalkerAdditionalElementsToUpdate: Array<ElementPath>
+    controls: {
+      // this is where we can put props for the strategy controls
+    }
   }
   floatingInsertMenu: FloatingInsertMenuState
   inspector: {
@@ -1206,6 +1212,7 @@ export function createEditorState(dispatch: EditorDispatch): EditorState {
     },
     canvas: {
       dragState: null, // TODO change dragState if editorMode changes
+      interactionSession: null,
       visible: true,
       scale: 1,
       snappingThreshold: BaseSnappingThreshold,
@@ -1229,6 +1236,7 @@ export function createEditorState(dispatch: EditorDispatch): EditorState {
         propertyTargetSelectedIndex: 0,
       },
       domWalkerAdditionalElementsToUpdate: [],
+      controls: {},
     },
     floatingInsertMenu: {
       insertMenuMode: 'closed',
@@ -1347,16 +1355,44 @@ function getElementWarningsInner(
 
 const getElementWarnings = memoize(getElementWarningsInner, { maxSize: 1 })
 
-export function deriveState(
-  editor: EditorState,
-  oldDerivedState: DerivedState | null,
-): DerivedState {
-  const derivedState = oldDerivedState == null ? emptyDerivedState(editor) : oldDerivedState
+type CacheableDerivedState = {
+  navigatorTargets: ElementPath[]
+  visibleNavigatorTargets: ElementPath[]
+  elementWarnings: ComplexMap<ElementPath, ElementWarnings>
+}
 
+function deriveCacheableStateInner(
+  jsxMetadata: ElementInstanceMetadataMap,
+  collapsedViews: ElementPath[],
+): CacheableDerivedState {
   const {
     navigatorTargets,
     visibleNavigatorTargets,
-  } = MetadataUtils.createOrderedElementPathsFromElements(
+  } = MetadataUtils.createOrderedElementPathsFromElements(jsxMetadata, collapsedViews)
+
+  const elementWarnings = getElementWarnings(jsxMetadata)
+
+  return {
+    navigatorTargets: navigatorTargets,
+    visibleNavigatorTargets: visibleNavigatorTargets,
+    elementWarnings: elementWarnings,
+  }
+}
+
+const patchedDeriveCacheableState = memoize(deriveCacheableStateInner, { maxSize: 1 })
+const unpatchedDeriveCacheableState = memoize(deriveCacheableStateInner, { maxSize: 1 })
+
+export function deriveState(
+  editor: EditorState,
+  oldDerivedState: DerivedState | null,
+  cacheKey: 'patched' | 'unpatched' = 'unpatched',
+): DerivedState {
+  const derivedState = oldDerivedState == null ? emptyDerivedState(editor) : oldDerivedState
+
+  const deriveCacheableState =
+    cacheKey === 'patched' ? patchedDeriveCacheableState : unpatchedDeriveCacheableState
+
+  const { navigatorTargets, visibleNavigatorTargets, elementWarnings } = deriveCacheableState(
     editor.jsxMetadata,
     editor.navigator.collapsedViews,
   )
@@ -1373,7 +1409,7 @@ export function deriveState(
         true,
       ),
     },
-    elementWarnings: getElementWarnings(getMetadata(editor)),
+    elementWarnings: elementWarnings,
   }
 
   const sanitizedDerivedState = DerivedStateKeepDeepEquality()(derivedState, derived).value
@@ -1462,6 +1498,7 @@ export function editorModelFromPersistentModel(
     },
     canvas: {
       dragState: null, // TODO change dragState if editorMode changes
+      interactionSession: null,
       visible: true,
       scale: 1,
       snappingThreshold: BaseSnappingThreshold,
@@ -1485,6 +1522,10 @@ export function editorModelFromPersistentModel(
         propertyTargetSelectedIndex: 0,
       },
       domWalkerAdditionalElementsToUpdate: [],
+      controls: {
+        animatedPlaceholderTargetUids: [],
+        flexAlignDropTargets: [],
+      },
     },
     floatingInsertMenu: {
       insertMenuMode: 'closed',

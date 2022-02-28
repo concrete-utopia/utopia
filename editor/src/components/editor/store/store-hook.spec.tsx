@@ -14,6 +14,7 @@ function createEmptyEditorStoreHook() {
   const initialEditorStore: EditorStorePatched = {
     editor: emptyEditorState,
     derived: null as any,
+    strategyState: null as any,
     history: null as any,
     userState: null as any,
     workers: null as any,

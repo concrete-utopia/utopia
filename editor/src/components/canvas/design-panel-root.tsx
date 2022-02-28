@@ -36,6 +36,7 @@ import CanvasActions from './canvas-actions'
 import { canvasPoint } from '../../core/shared/math-utils'
 import { InspectorWidthAtom } from '../inspector/common/inspector-atoms'
 import { useAtom } from 'jotai'
+import { CanvasStrategyInspector } from './canvas-strategies/canvas-strategy-inspector'
 
 interface NumberSize {
   width: number
@@ -406,6 +407,7 @@ const ResizableInspectorPane = React.memo<ResizableInspectorPaneProps>((props) =
       >
         {props.isInsertMenuSelected ? <InsertMenuPane /> : <InspectorEntryPoint />}
       </SimpleFlexRow>
+      <CanvasStrategyInspector />
     </Resizable>
   )
 })

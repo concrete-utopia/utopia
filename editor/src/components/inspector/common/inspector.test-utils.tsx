@@ -47,6 +47,7 @@ export function getStoreHook(
   const defaultState: EditorStorePatched = {
     editor: editor.editor,
     derived: editor.derivedState,
+    strategyState: editor.strategyState,
     history: {
       previous: [],
       next: [],

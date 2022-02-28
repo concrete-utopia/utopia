@@ -24,6 +24,10 @@ import {
   LayoutFlexElementProp,
   LayoutTargetableProp,
 } from '../../core/layout/layout-helpers-new'
+import {
+  InteractionSession,
+  InteractionSessionWithoutMetadata,
+} from './canvas-strategies/interaction-state'
 
 export const CanvasContainerID = 'canvas-container'
 
@@ -574,6 +578,7 @@ type Drag = IMouseEvent & {
 
 type Move = IMouseEvent & {
   event: 'MOVE'
+  interactionSession: InteractionSessionWithoutMetadata | null
 }
 
 type Click = IMouseEvent & {
@@ -633,6 +638,21 @@ export interface CreateDragState {
   dragState: DragState
 }
 
+export interface CreateInteractionSession {
+  action: 'CREATE_INTERACTION_SESSION'
+  interactionSession: InteractionSessionWithoutMetadata
+}
+
+export interface ClearInteractionSession {
+  action: 'CLEAR_INTERACTION_SESSION'
+  applyChanges: boolean
+}
+
+export interface UpdateInteractionSession {
+  action: 'UPDATE_INTERACTION_SESSION'
+  interactionSessionUpdate: Partial<InteractionSession>
+}
+
 type SetSelectionControlsVisibility = {
   action: 'SET_SELECTION_CONTROLS_VISIBILITY'
   selectionControlsVisible: boolean
@@ -649,13 +669,22 @@ type ZoomUI = {
   zoomIn: boolean
 }
 
+type SetUsersPreferredStrategy = {
+  action: 'SET_USERS_PREFERRED_STRATEGY'
+  strategyName: string // TODO limit it to string literal union of registered strategy names?
+}
+
 export type CanvasAction =
   | ScrollCanvas
   | ClearDragState
   | CreateDragState
+  | CreateInteractionSession
+  | ClearInteractionSession
+  | UpdateInteractionSession
   | Zoom
   | ZoomUI
   | SetSelectionControlsVisibility
+  | SetUsersPreferredStrategy
 
 export type CanvasModel = {
   controls: Array<HigherOrderControl>

@@ -57,6 +57,10 @@ import { KeysPressed } from '../../../utils/keyboard'
 import { usePrevious } from '../../editor/hook-utils'
 import { LayoutTargetableProp } from '../../../core/layout/layout-helpers-new'
 import { getDragStateStart } from '../canvas-utils'
+import {
+  useGetApplicableStrategiesOrderedByFitness,
+  useGetApplicableStrategyControls,
+} from '../canvas-strategies/canvas-strategies'
 import { AbsoluteResizeControl } from './select-mode/absolute-resize-control'
 import { FlexResizeControl } from './select-mode/flex-resize-control'
 import { MultiSelectOutlineControl } from './select-mode/simple-outline-control'
@@ -233,6 +237,7 @@ interface NewCanvasControlsInnerProps {
 const NewCanvasControlsInner = (props: NewCanvasControlsInnerProps) => {
   const colorTheme = useColorTheme()
   const startDragStateAfterDragExceedsThreshold = useStartDragStateAfterDragExceedsThreshold()
+  const strategyControls = useGetApplicableStrategyControls()
 
   const { localSelectedViews, localHighlightedViews, setLocalSelectedViews } = props
   const cmdKeyPressed = props.editor.keysPressed['cmd'] ?? false
@@ -405,6 +410,10 @@ const NewCanvasControlsInner = (props: NewCanvasControlsInnerProps) => {
       {renderModeControlContainer()}
       {renderHighlightControls()}
       <LayoutParentControl />
+      {when(
+        isFeatureEnabled('Canvas Strategies'),
+        <>{strategyControls.map((c) => React.createElement(c.control, { key: c.key }))}</>,
+      )}
       {when(
         isFeatureEnabled('Canvas Absolute Resize Controls'),
         <MultiSelectOutlineControl localSelectedElements={localSelectedViews} />,
