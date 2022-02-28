@@ -1,4 +1,5 @@
 import React from 'react'
+import { when } from '../../../utils/react-conditionals'
 import { useColorTheme } from '../../../uuiui'
 import { useEditorState } from '../../editor/store/store-hook'
 import { isStrategyActive } from './canvas-strategies'
@@ -14,9 +15,7 @@ export const CanvasStrategyInspector = React.memo(() => {
     'CanvasStrategyInspector accumulatedCommands',
   )
 
-  if (!activeStrategy) {
-    return null
-  } else {
+  if (activeStrategy) {
     return (
       <div
         style={{
@@ -46,5 +45,7 @@ export const CanvasStrategyInspector = React.memo(() => {
         ))}
       </div>
     )
+  } else {
+    return null
   }
 })
