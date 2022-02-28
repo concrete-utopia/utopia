@@ -47,6 +47,7 @@ import { Modifier } from '../../../../utils/modifiers'
 const DRAG_START_TRESHOLD = 2
 
 export function isResizing(editorState: EditorState): boolean {
+  // TODO retire isResizing and replace with isInteractionActive once we have the strategies turned on, and the old controls removed
   const dragState = editorState.canvas.dragState
   return (
     (dragState?.type === 'RESIZE_DRAG_STATE' &&
@@ -56,6 +57,7 @@ export function isResizing(editorState: EditorState): boolean {
 }
 
 export function isDragging(editorState: EditorState): boolean {
+  // TODO retire isDragging and replace with isInteractionActive once we have the strategies turned on, and the old controls removed
   const dragState = editorState.canvas.dragState
   return (
     (dragState?.type === 'MOVE_DRAG_STATE' &&
