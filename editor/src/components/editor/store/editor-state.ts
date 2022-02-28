@@ -1354,12 +1354,12 @@ function getElementWarningsInner(
       }
 
       // Build the warnings object and add it to the map.
-      const warnings: ElementWarnings = {
+      const elementWarnings: ElementWarnings = {
         widthOrHeightZero: widthOrHeightZero,
         absoluteWithUnpositionedParent: absoluteWithUnpositionedParent,
         dynamicSceneChildWidthHeightPercentage: false,
       }
-      result = addToComplexMap(toString, result, elementMetadata.elementPath, warnings)
+      result = addToComplexMap(toString, result, elementMetadata.elementPath, elementWarnings)
     },
   )
   return result
