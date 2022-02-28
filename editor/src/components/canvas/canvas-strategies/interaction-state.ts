@@ -286,7 +286,7 @@ export function interactionSessionHardReset(
   }
 }
 
-export function hasModifiersChanged(
+export function hasDragModifiersChanged(
   prevInteractionData: InputData | null,
   interactionData: InputData | null,
 ): boolean {

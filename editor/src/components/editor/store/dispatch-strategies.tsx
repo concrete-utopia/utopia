@@ -2,7 +2,7 @@ import {
   StrategyState,
   createEmptyStrategyState,
   strategySwitchInteractionSessionReset,
-  hasModifiersChanged,
+  hasDragModifiersChanged,
   interactionSessionHardReset,
 } from '../../canvas/canvas-strategies/interaction-state'
 import {
@@ -570,7 +570,7 @@ function handleStrategiesInner(
       return interactionFinished(storedState, result)
     } else {
       const interactionHardResetNeeded =
-        hasModifiersChanged(
+        hasDragModifiersChanged(
           storedState.unpatchedEditor.canvas.interactionSession?.interactionData ?? null,
           result.unpatchedEditor.canvas.interactionSession?.interactionData ?? null,
         ) || result.strategyState.currentStrategy == null // TODO: do we really need the currentStrategy == null part?
