@@ -110,7 +110,6 @@ import {
   combine14EqualityCalls,
   createCallWithShallowEquals,
   combine10EqualityCalls,
-  ComplexMapKeepDeepEquality,
 } from '../../../utils/deep-equality'
 import {
   ElementPathArrayKeepDeepEquality,
@@ -118,7 +117,6 @@ import {
   ElementPathKeepDeepEquality,
   EitherKeepDeepEquality,
   JSXElementNameKeepDeepEqualityCall,
-  ElementWarningsKeepDeepEquality,
 } from '../../../utils/deep-equality-instances'
 import { createCallFromIntrospectiveKeepDeep } from '../../../utils/react-performance'
 import {
@@ -156,7 +154,7 @@ export function DerivedStateKeepDeepEquality(): KeepDeepEqualityCall<DerivedStat
     (state) => state.canvas.transientState,
     TransientCanvasStateKeepDeepEquality(),
     (state) => state.elementWarnings,
-    ComplexMapKeepDeepEquality(ElementPathKeepDeepEquality, ElementWarningsKeepDeepEquality),
+    createCallFromIntrospectiveKeepDeep(),
     (
       navigatorTargets,
       visibleNavigatorTargets,

@@ -116,7 +116,7 @@ function timeBasicCalc(): FrameResult {
 
 async function testBaselinePerformance(page: puppeteer.Page): Promise<FrameResult> {
   console.log('Test Baseline Performance')
-  await page.tracing.start({ categories: ['blink.user_timing'], path: 'trace.json' })
+  await page.tracing.start({ path: 'trace.json' })
   await clickOnce(page, "//a[contains(., 'B L')]", 'BASELINE_TEST_FINISHED')
   await page.tracing.stop()
 
@@ -237,7 +237,7 @@ export const testScrollingPerformance = async function (
   await clickOnce(page, "//a[contains(., 'P S')]", 'SCROLL_TEST_FINISHED')
 
   // and then we run the test for a third time, this time running tracing
-  await page.tracing.start({ categories: ['blink.user_timing'], path: 'trace.json' })
+  await page.tracing.start({ path: 'trace.json' })
   await clickOnce(page, "//a[contains(., 'P S')]", 'SCROLL_TEST_FINISHED')
   await page.tracing.stop()
   let traceData = fs.readFileSync('trace.json').toString()
@@ -268,7 +268,7 @@ export const testResizePerformance = async function (page: puppeteer.Page): Prom
   )
 
   // and then we run the test for a third time, this time running tracing
-  await page.tracing.start({ categories: ['blink.user_timing'], path: 'trace.json' })
+  await page.tracing.start({ path: 'trace.json' })
   await clickOnce(
     page,
     ResizeButtonXPath,
@@ -291,7 +291,7 @@ export const testSelectionPerformance = async function (
   await clickOnce(page, "//a[contains(., 'P E')]", 'SELECT_TEST_FINISHED', 'SELECT_TEST_ERROR')
 
   // and then we run the test for a third time, this time running tracing
-  await page.tracing.start({ categories: ['blink.user_timing'], path: 'trace.json' })
+  await page.tracing.start({ path: 'trace.json' })
   await clickOnce(page, "//a[contains(., 'P E')]", 'SELECT_TEST_FINISHED', 'SELECT_TEST_ERROR')
   await page.tracing.stop()
   let traceData = fs.readFileSync('trace.json').toString()
