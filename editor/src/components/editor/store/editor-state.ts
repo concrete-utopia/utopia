@@ -238,7 +238,6 @@ export const defaultUserState: UserState = {
 }
 
 type EditorStoreShared = {
-  derived: DerivedState
   history: StateHistory
   userState: UserState
   workers: UtopiaTsWorkers
@@ -251,16 +250,20 @@ type EditorStoreShared = {
 export type EditorStoreFull = EditorStoreShared & {
   unpatchedEditor: EditorState
   patchedEditor: EditorState
+  unpatchedDerived: DerivedState
+  patchedDerived: DerivedState
 }
 
 export type EditorStorePatched = EditorStoreShared & {
   editor: EditorState
+  derived: DerivedState
 }
 
 export function patchedStoreFromFullStore(store: EditorStoreFull): EditorStorePatched {
   return {
     ...store,
     editor: store.patchedEditor,
+    derived: store.patchedDerived,
   }
 }
 
