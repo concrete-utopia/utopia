@@ -365,7 +365,6 @@ export function interactionUserChangedStrategy(
             strategySwitched(
               'user-input',
               strategyName!,
-              false,
               true,
               previousStrategy?.fitness ?? NaN,
               strategy.fitness,
@@ -456,7 +455,6 @@ function interactionStrategyChangeStacked(
             strategySwitched(
               'user-input',
               strategyName!,
-              false,
               true,
               previousStrategy?.fitness ?? NaN,
               strategy.fitness,

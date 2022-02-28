@@ -46,7 +46,6 @@ export interface StrategySwitched extends BaseCommand {
   type: 'STRATEGY_SWITCHED'
   reason: 'automatic' | 'user-input'
   newStrategy: string
-  accumulatedCommands: boolean
   dataReset: boolean
   previousFitness: number
   newFitness: number
@@ -55,7 +54,6 @@ export interface StrategySwitched extends BaseCommand {
 export function strategySwitched(
   reason: 'automatic' | 'user-input',
   newStrategy: string,
-  accumulatedCommands: boolean,
   dataReset: boolean,
   previousFitness: number,
   newFitness: number,
@@ -65,7 +63,6 @@ export function strategySwitched(
     transient: 'transient',
     reason,
     newStrategy,
-    accumulatedCommands,
     dataReset,
     previousFitness,
     newFitness,
