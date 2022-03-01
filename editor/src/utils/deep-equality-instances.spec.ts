@@ -79,17 +79,17 @@ describe('PropertyPathKeepDeepEquality', () => {
   }
 
   it('same reference returns the same reference', () => {
-    const result = PropertyPathKeepDeepEquality(oldValue, oldValue)
+    const result = PropertyPathKeepDeepEquality()(oldValue, oldValue)
     expect(result.value).toBe(oldValue)
     expect(result.areEqual).toEqual(true)
   })
   it('same value returns the same reference', () => {
-    const result = PropertyPathKeepDeepEquality(oldValue, newSameValue)
+    const result = PropertyPathKeepDeepEquality()(oldValue, newSameValue)
     expect(result.value).toBe(oldValue)
     expect(result.areEqual).toEqual(true)
   })
   it('different but similar value handled appropriately', () => {
-    const result = PropertyPathKeepDeepEquality(oldValue, newDifferentValue)
+    const result = PropertyPathKeepDeepEquality()(oldValue, newDifferentValue)
     expect(result.value).toBe(newDifferentValue)
     expect(result.areEqual).toEqual(false)
   })

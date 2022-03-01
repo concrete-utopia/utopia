@@ -30,6 +30,9 @@ import { usePubSubAtomReadOnly } from '../../core/shared/atom-with-pub-sub'
 import { ErrorMessage } from '../../core/shared/error-messages'
 import CanvasActions from './canvas-actions'
 import { EditorModes } from '../editor/editor-modes'
+import { CanvasStrategyIndicator } from './controls/select-mode/canvas-strategy-indicator'
+import { when } from '../../utils/react-conditionals'
+import { isFeatureEnabled } from '../../utils/feature-switches'
 
 export function filterOldPasses(errorMessages: Array<ErrorMessage>): Array<ErrorMessage> {
   let passTimes: { [key: string]: number } = {}
@@ -122,6 +125,7 @@ export const CanvasWrapperComponent = React.memo(() => {
         >
           {safeMode ? <SafeModeErrorOverlay /> : <ErrorOverlayComponent />}
           <ModeSelectButtons />
+          {when(isFeatureEnabled('Canvas Strategies'), <CanvasStrategyIndicator />)}
         </FlexColumn>
       </FlexRow>
     </FlexColumn>
@@ -192,6 +196,7 @@ const ErrorOverlayComponent = React.memo((props: ErrorOverlayComponentProps) => 
       // since that might have been the cause of the error being thrown, as well as switching back to select mode
       dispatch([
         CanvasActions.clearDragState(true),
+        CanvasActions.clearInteractionSession(true),
         switchEditorMode(EditorModes.selectMode()),
         clearHighlightedViews(),
       ])

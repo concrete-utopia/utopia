@@ -1,5 +1,6 @@
 import { shallowEqual } from '../core/shared/equality-utils'
 import { fastForEach } from '../core/shared/utils'
+import { ComplexMap, complexMapValue, ComplexMapValue } from './map'
 
 export interface KeepDeepEqualityResult<T> {
   value: T
@@ -880,4 +881,19 @@ export function undefinableDeepEquality<T>(
       }
     }
   }
+}
+
+// Makes the assumption that the key value stored is consistent with the key value string used to key into the dictionary.
+export function ComplexMapKeepDeepEquality<K, V>(
+  keyDeepEquality: KeepDeepEqualityCall<K>,
+  valueDeepEquality: KeepDeepEqualityCall<V>,
+): KeepDeepEqualityCall<ComplexMap<K, V>> {
+  const mapValueDeepEquality: KeepDeepEqualityCall<ComplexMapValue<K, V>> = combine2EqualityCalls(
+    (value) => value.key,
+    keyDeepEquality,
+    (value) => value.value,
+    valueDeepEquality,
+    complexMapValue,
+  )
+  return objectDeepEquality(mapValueDeepEquality)
 }

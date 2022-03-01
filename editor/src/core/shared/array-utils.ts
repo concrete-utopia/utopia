@@ -243,6 +243,20 @@ export function addAllUniquely<T extends string | number | boolean | null | unde
   return values.reduce(addUniquely, array)
 }
 
+export function addAllUniquelyBy<T>(
+  array: Array<T>,
+  values: Array<T>,
+  eq: (l: T, r: T) => boolean,
+): Array<T> {
+  let workingArray = [...array]
+  fastForEach(values, (value) => {
+    if (array.findIndex((a) => eq(a, value)) === -1) {
+      workingArray.push(value)
+    }
+  })
+  return workingArray
+}
+
 export function findLastIndex<T>(predicate: (t: T) => boolean, array: ReadonlyArray<T>): number {
   // Assumes non-sparse arrays starting at zero.
   for (let index: number = array.length - 1; index >= 0; index--) {

@@ -21,6 +21,7 @@ import { editorDispatch } from '../editor/store/dispatch'
 import {
   createEditorState,
   deriveState,
+  EditorStoreFull,
   EditorStorePatched,
   patchedStoreFromFullStore,
 } from '../editor/store/editor-state'
@@ -35,6 +36,7 @@ import { DummyPersistenceMachine } from '../editor/persistence/persistence.test-
 import { disableStoredStateforTests } from '../editor/stored-state'
 import { matchInlineSnapshotBrowser } from '../../../test/karma-snapshots'
 import { createBuiltInDependenciesList } from '../../core/es-modules/package-manager/built-in-dependencies-list'
+import { createEmptyStrategyState } from './canvas-strategies/interaction-state'
 
 disableStoredStateforTests()
 
@@ -58,25 +60,17 @@ async function renderTestEditorWithCode(appUiJsFileCode: string) {
   const spyCollector = emptyUiJsxCanvasContextData()
 
   const dispatch: EditorDispatch = (actions) => {
-    const storedState = storeHook.getState()
-    const result = editorDispatch(
-      dispatch,
-      actions,
-      {
-        ...storedState,
-        unpatchedEditor: storedState.editor,
-        patchedEditor: storedState.editor,
-        unpatchedDerived: storedState.derived,
-        patchedDerived: storedState.derived,
-      },
-      spyCollector,
-    )
+    const result = editorDispatch(dispatch, actions, editorStore, spyCollector)
+    editorStore = result
     storeHook.setState(patchedStoreFromFullStore(result))
   }
 
-  const initialEditorStore: EditorStorePatched = {
-    editor: emptyEditorState,
-    derived: derivedState,
+  let editorStore: EditorStoreFull = {
+    strategyState: createEmptyStrategyState(),
+    unpatchedEditor: emptyEditorState,
+    patchedEditor: emptyEditorState,
+    unpatchedDerived: derivedState,
+    patchedDerived: derivedState,
     history: history,
     userState: {
       loginState: notLoggedIn,
@@ -93,7 +87,7 @@ async function renderTestEditorWithCode(appUiJsFileCode: string) {
     builtInDependencies: createBuiltInDependenciesList(null),
   }
 
-  const storeHook = create<EditorStorePatched>((set) => initialEditorStore)
+  const storeHook = create<EditorStorePatched>((set) => patchedStoreFromFullStore(editorStore))
 
   render(<EditorRoot api={storeHook} useStore={storeHook} spyCollector={spyCollector} />)
 
@@ -103,7 +97,7 @@ async function renderTestEditorWithCode(appUiJsFileCode: string) {
       createTestProjectWithCode(appUiJsFileCode),
       'Test',
       '0',
-      initialEditorStore.builtInDependencies,
+      editorStore.builtInDependencies,
       false,
     )
   })
