@@ -103,6 +103,12 @@ let
       cd $(${pkgs.git}/bin/git rev-parse --show-toplevel)/editor
       ${pnpm} run check-ci
     '')
+    (pkgs.writeScriptBin "test-editor-browser-debug" ''
+      #!/usr/bin/env bash
+      set -e
+      cd $(${pkgs.git}/bin/git rev-parse --show-toplevel)/editor
+      ${pnpm} run test-browser-debug
+    '')
     (pkgs.writeScriptBin "check-editor-all-ci" ''
       #!/usr/bin/env bash
       set -e
