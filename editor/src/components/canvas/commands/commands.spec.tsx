@@ -100,7 +100,7 @@ describe('adjustNumberProperty', () => {
 })
 
 describe('runReparentElement', () => {
-  it('works for left style prop', async () => {
+  it('reparent works', async () => {
     const renderResult = await renderTestEditorWithModel(
       complexDefaultProjectPreParsed(),
       'dont-await-first-dom-report',
