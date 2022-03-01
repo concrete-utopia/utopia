@@ -378,7 +378,7 @@ export function useStartDragStateAfterDragExceedsThreshold(): (
   return startDragStateAfterDragExceedsThreshold
 }
 
-function useGetSelectableViewsForSelectMode() {
+export function useGetSelectableViewsForSelectMode() {
   const storeRef = useRefEditorState((store) => {
     return {
       componentMetadata: store.editor.jsxMetadata,
@@ -404,6 +404,29 @@ function useGetSelectableViewsForSelectMode() {
   )
 }
 
+export function useCalculateHighlightedViews(
+  allowHoverOnSelectedView: boolean,
+  getHighlightableViews: (
+    allElementsDirectlySelectable: boolean,
+    childrenSelectable: boolean,
+  ) => ElementPath[],
+): (targetPoint: WindowPoint, eventCmdPressed: boolean) => void {
+  const { maybeHighlightOnHover, maybeClearHighlightsOnHoverEnd } = useMaybeHighlightElement()
+  const findValidTarget = useFindValidTarget()
+  return (targetPoint: WindowPoint, eventCmdPressed: boolean) => {
+    const selectableViews: Array<ElementPath> = getHighlightableViews(eventCmdPressed, false)
+    const validElementPath = findValidTarget(selectableViews, targetPoint)
+    if (
+      validElementPath == null ||
+      (!allowHoverOnSelectedView && validElementPath.isSelected) // we remove highlights if the hovered element is selected
+    ) {
+      maybeClearHighlightsOnHoverEnd()
+    } else {
+      maybeHighlightOnHover(validElementPath.elementPath)
+    }
+  }
+}
+
 export function useHighlightCallbacks(
   active: boolean,
   cmdPressed: boolean,
@@ -415,29 +438,9 @@ export function useHighlightCallbacks(
 ): {
   onMouseMove: (event: React.MouseEvent<HTMLDivElement, MouseEvent>) => void
 } {
-  const { maybeHighlightOnHover, maybeClearHighlightsOnHoverEnd } = useMaybeHighlightElement()
-  const findValidTarget = useFindValidTarget()
-
-  const calculateHighlightedViews = React.useCallback(
-    (targetPoint: WindowPoint, eventCmdPressed: boolean) => {
-      const selectableViews: Array<ElementPath> = getHighlightableViews(eventCmdPressed, false)
-      const validElementPath = findValidTarget(selectableViews, targetPoint)
-      if (
-        validElementPath == null ||
-        (!allowHoverOnSelectedView && validElementPath.isSelected) // we remove highlights if the hovered element is selected
-      ) {
-        maybeClearHighlightsOnHoverEnd()
-      } else {
-        maybeHighlightOnHover(validElementPath.elementPath)
-      }
-    },
-    [
-      allowHoverOnSelectedView,
-      maybeClearHighlightsOnHoverEnd,
-      maybeHighlightOnHover,
-      getHighlightableViews,
-      findValidTarget,
-    ],
+  const calculateHighlightedViews = useCalculateHighlightedViews(
+    allowHoverOnSelectedView,
+    getHighlightableViews,
   )
 
   const onMouseMove = React.useCallback(
