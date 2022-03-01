@@ -73,6 +73,12 @@ let
       cd $(${pkgs.git}/bin/git rev-parse --show-toplevel)/editor
       ${pnpm} test
     '')
+    (pkgs.writeScriptBin "test-editor-watch" ''
+      #!/usr/bin/env bash
+      set -e
+      cd $(${pkgs.git}/bin/git rev-parse --show-toplevel)/editor
+      ${pnpm} test-watch
+    '')
     (pkgs.writeScriptBin "test-utopia-api" ''
       #!/usr/bin/env bash
       set -e
@@ -102,6 +108,18 @@ let
       set -e
       cd $(${pkgs.git}/bin/git rev-parse --show-toplevel)/editor
       ${pnpm} run check-ci
+    '')
+    (pkgs.writeScriptBin "test-editor-browser" ''
+      #!/usr/bin/env bash
+      set -e
+      cd $(${pkgs.git}/bin/git rev-parse --show-toplevel)/editor
+      ${pnpm} run test-browser
+    '')
+    (pkgs.writeScriptBin "test-editor-browser-debug" ''
+      #!/usr/bin/env bash
+      set -e
+      cd $(${pkgs.git}/bin/git rev-parse --show-toplevel)/editor
+      ${pnpm} run test-browser-debug
     '')
     (pkgs.writeScriptBin "check-editor-all-ci" ''
       #!/usr/bin/env bash
