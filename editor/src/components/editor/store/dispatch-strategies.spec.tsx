@@ -12,16 +12,50 @@ import { EditorDispatch, notLoggedIn } from '../action-types'
 import * as History from '../history'
 import { DummyPersistenceMachine } from '../persistence/persistence.test-utils'
 import { DispatchResult, editorDispatch } from './dispatch'
-import { interactionCancel } from './dispatch-strategies'
+import {
+  interactionCancel,
+  interactionHardReset,
+  interactionStart,
+  interactionStrategyChangeStacked,
+  interactionUpdate,
+  interactionUserChangedStrategy,
+} from './dispatch-strategies'
 import { createEditorState, deriveState, EditorStoreFull } from './editor-state'
 import * as EP from '../../../core/shared/element-path'
 import * as PP from '../../../core/shared/property-path'
-import { emptyComments, jsxAttributeValue } from '../../../core/shared/element-template'
-import { createEmptyStrategyState } from '../../canvas/canvas-strategies/interaction-state'
+import {
+  ElementInstanceMetadataMap,
+  emptyComments,
+  jsxAttributeValue,
+} from '../../../core/shared/element-template'
+import {
+  createEmptyStrategyState,
+  createInteractionViaMouse,
+  InteractionSession,
+  InteractionSessionWithoutMetadata,
+  StrategyState,
+} from '../../canvas/canvas-strategies/interaction-state'
 import { wildcardPatch } from '../../canvas/commands/commands'
+import {
+  CanvasStrategy,
+  InteractionCanvasState,
+  StrategyApplicationResult,
+} from '../../canvas/canvas-strategies/canvas-strategy-types'
+import { canvasPoint } from '../../../core/shared/math-utils'
 
-function createEditorStore(): EditorStoreFull {
+function createEditorStore(
+  interactionSession: InteractionSessionWithoutMetadata | null,
+): EditorStoreFull {
   let emptyEditorState = createEditorState(NO_OP)
+  let interactionSessionWithMetadata: InteractionSession | null = null
+  if (interactionSession != null) {
+    interactionSessionWithMetadata = {
+      ...interactionSession,
+      metadata: {},
+    }
+  }
+
+  emptyEditorState.canvas.interactionSession = interactionSessionWithMetadata
   const derivedState = deriveState(emptyEditorState, null)
 
   const history = History.init(emptyEditorState, derivedState)
@@ -69,7 +103,13 @@ function dispatchResultFromEditorStore(editorStore: EditorStoreFull): DispatchRe
 
 describe('interactionCancel', () => {
   it('returns a clean state', () => {
-    let editorStore = createEditorStore()
+    let editorStore = createEditorStore(
+      createInteractionViaMouse(
+        canvasPoint({ x: 100, y: 200 }),
+        { alt: false, shift: false, ctrl: false, cmd: false },
+        { type: 'BOUNDING_AREA', target: EP.elementPath([['aaa']]) },
+      ),
+    )
     editorStore.strategyState.accumulatedCommands = [
       {
         commands: [wildcardPatch('permanent', { selectedViews: { $set: [] } })],
@@ -81,5 +121,591 @@ describe('interactionCancel', () => {
     expect(actualResult.newStrategyState.commandDescriptions).toHaveLength(0)
     expect(actualResult.newStrategyState.currentStrategyCommands).toHaveLength(0)
     expect(actualResult.newStrategyState.currentStrategy).toBeNull()
+  })
+})
+
+const testStrategy: CanvasStrategy = {
+  name: 'Test Strategy',
+  isApplicable: function (
+    canvasState: InteractionCanvasState,
+    interactionSession: InteractionSession | null,
+    metadata: ElementInstanceMetadataMap,
+  ): boolean {
+    return true
+  },
+  controlsToRender: [],
+  fitness: function (
+    canvasState: InteractionCanvasState,
+    interactionSession: InteractionSession,
+    strategyState: StrategyState,
+  ): number {
+    return 10
+  },
+  apply: function (
+    canvasState: InteractionCanvasState,
+    interactionSession: InteractionSession,
+    strategyState: StrategyState,
+  ): StrategyApplicationResult {
+    return [wildcardPatch('permanent', { canvas: { scale: { $set: 100 } } })]
+  },
+}
+
+describe('interactionStart', () => {
+  it('creates the initial state with a simple test strategy', () => {
+    const editorStore = createEditorStore(
+      createInteractionViaMouse(
+        canvasPoint({ x: 100, y: 200 }),
+        { alt: false, shift: false, ctrl: false, cmd: false },
+        { type: 'BOUNDING_AREA', target: EP.elementPath([['aaa']]) },
+      ),
+    )
+    const actualResult = interactionStart(
+      [testStrategy],
+      editorStore,
+      dispatchResultFromEditorStore(editorStore),
+    )
+    expect(actualResult.newStrategyState).toMatchInlineSnapshot(`
+      Object {
+        "accumulatedCommands": Array [],
+        "commandDescriptions": Array [
+          Object {
+            "description": "Wildcard Patch: {
+        \\"canvas\\": {
+          \\"scale\\": {
+            \\"$set\\": 100
+          }
+        }
+      }",
+            "transient": false,
+          },
+        ],
+        "currentStrategy": "Test Strategy",
+        "currentStrategyCommands": Array [
+          Object {
+            "patch": Object {
+              "canvas": Object {
+                "scale": Object {
+                  "$set": 100,
+                },
+              },
+            },
+            "transient": "permanent",
+            "type": "WILDCARD_PATCH",
+          },
+        ],
+        "currentStrategyFitness": 10,
+        "startingMetadata": Object {},
+      }
+    `)
+    expect(actualResult.patchedEditorState.canvas.scale).toEqual(100)
+    expect(actualResult.unpatchedEditorState.canvas.scale).toEqual(1)
+    expect(actualResult.patchedEditorState.canvas.interactionSession?.interactionData)
+      .toMatchInlineSnapshot(`
+      Object {
+        "drag": null,
+        "dragStart": Object {
+          "x": 100,
+          "y": 200,
+        },
+        "dragThresholdPassed": false,
+        "modifiers": Object {
+          "alt": false,
+          "cmd": false,
+          "ctrl": false,
+          "shift": false,
+        },
+        "originalDragStart": Object {
+          "x": 100,
+          "y": 200,
+        },
+        "prevDrag": null,
+        "type": "DRAG",
+      }
+    `)
+  })
+  it('potentially process a start with no interaction session', () => {
+    const editorStore = createEditorStore(null)
+    const actualResult = interactionStart(
+      [testStrategy],
+      editorStore,
+      dispatchResultFromEditorStore(editorStore),
+    )
+    expect(actualResult.newStrategyState).toMatchInlineSnapshot(`
+      Object {
+        "accumulatedCommands": Array [],
+        "commandDescriptions": Array [],
+        "currentStrategy": null,
+        "currentStrategyCommands": Array [],
+        "currentStrategyFitness": 0,
+        "startingMetadata": Object {},
+      }
+    `)
+    expect(actualResult.patchedEditorState.canvas.scale).toEqual(1)
+    expect(actualResult.unpatchedEditorState.canvas.scale).toEqual(1)
+    expect(
+      actualResult.patchedEditorState.canvas.interactionSession?.interactionData,
+    ).toMatchInlineSnapshot(`undefined`)
+  })
+})
+
+describe('interactionUpdate', () => {
+  it('steps an interaction session correctly', () => {
+    const editorStore = createEditorStore(
+      createInteractionViaMouse(
+        canvasPoint({ x: 100, y: 200 }),
+        { alt: false, shift: false, ctrl: false, cmd: false },
+        { type: 'BOUNDING_AREA', target: EP.elementPath([['aaa']]) },
+      ),
+    )
+    const actualResult = interactionUpdate(
+      [testStrategy],
+      editorStore,
+      dispatchResultFromEditorStore(editorStore),
+    )
+    expect(actualResult.newStrategyState).toMatchInlineSnapshot(`
+      Object {
+        "accumulatedCommands": Array [],
+        "commandDescriptions": Array [
+          Object {
+            "description": "Wildcard Patch: {
+        \\"canvas\\": {
+          \\"scale\\": {
+            \\"$set\\": 100
+          }
+        }
+      }",
+            "transient": false,
+          },
+        ],
+        "currentStrategy": "Test Strategy",
+        "currentStrategyCommands": Array [
+          Object {
+            "patch": Object {
+              "canvas": Object {
+                "scale": Object {
+                  "$set": 100,
+                },
+              },
+            },
+            "transient": "permanent",
+            "type": "WILDCARD_PATCH",
+          },
+        ],
+        "currentStrategyFitness": 10,
+        "startingMetadata": Object {},
+      }
+    `)
+    expect(actualResult.patchedEditorState.canvas.scale).toEqual(100)
+    expect(actualResult.unpatchedEditorState.canvas.scale).toEqual(1)
+    expect(actualResult.patchedEditorState.canvas.interactionSession?.interactionData)
+      .toMatchInlineSnapshot(`
+      Object {
+        "drag": null,
+        "dragStart": Object {
+          "x": 100,
+          "y": 200,
+        },
+        "dragThresholdPassed": false,
+        "modifiers": Object {
+          "alt": false,
+          "cmd": false,
+          "ctrl": false,
+          "shift": false,
+        },
+        "originalDragStart": Object {
+          "x": 100,
+          "y": 200,
+        },
+        "prevDrag": null,
+        "type": "DRAG",
+      }
+    `)
+  })
+  it('potentially process an update with no interaction session', () => {
+    const editorStore = createEditorStore(null)
+    const actualResult = interactionUpdate(
+      [testStrategy],
+      editorStore,
+      dispatchResultFromEditorStore(editorStore),
+    )
+    expect(actualResult.newStrategyState).toMatchInlineSnapshot(`
+      Object {
+        "accumulatedCommands": Array [],
+        "commandDescriptions": Array [],
+        "currentStrategy": null,
+        "currentStrategyCommands": Array [],
+        "currentStrategyFitness": 0,
+        "startingMetadata": Object {},
+      }
+    `)
+    expect(actualResult.patchedEditorState.canvas.scale).toEqual(1)
+    expect(actualResult.unpatchedEditorState.canvas.scale).toEqual(1)
+    expect(
+      actualResult.patchedEditorState.canvas.interactionSession?.interactionData,
+    ).toMatchInlineSnapshot(`undefined`)
+  })
+})
+
+describe('interactionHardReset', () => {
+  it('steps an interaction session correctly', () => {
+    let interactionSession = createInteractionViaMouse(
+      canvasPoint({ x: 100, y: 200 }),
+      { alt: false, shift: false, ctrl: false, cmd: false },
+      { type: 'BOUNDING_AREA', target: EP.elementPath([['aaa']]) },
+    )
+    if (interactionSession.interactionData.type === 'DRAG') {
+      interactionSession.interactionData.dragStart = canvasPoint({ x: 110, y: 210 })
+      interactionSession.interactionData.drag = canvasPoint({ x: 50, y: 140 })
+      interactionSession.interactionData.prevDrag = canvasPoint({ x: 30, y: 120 })
+    }
+    const editorStore = createEditorStore(interactionSession)
+    const actualResult = interactionHardReset(
+      [testStrategy],
+      editorStore,
+      dispatchResultFromEditorStore(editorStore),
+    )
+    expect(actualResult.newStrategyState).toMatchInlineSnapshot(`
+      Object {
+        "accumulatedCommands": Array [],
+        "commandDescriptions": Array [
+          Object {
+            "description": "Wildcard Patch: {
+        \\"canvas\\": {
+          \\"scale\\": {
+            \\"$set\\": 100
+          }
+        }
+      }",
+            "transient": false,
+          },
+        ],
+        "currentStrategy": "Test Strategy",
+        "currentStrategyCommands": Array [
+          Object {
+            "patch": Object {
+              "canvas": Object {
+                "scale": Object {
+                  "$set": 100,
+                },
+              },
+            },
+            "transient": "permanent",
+            "type": "WILDCARD_PATCH",
+          },
+        ],
+        "currentStrategyFitness": 10,
+        "startingMetadata": Object {},
+      }
+    `)
+    expect(actualResult.patchedEditorState.canvas.scale).toEqual(100)
+    expect(actualResult.unpatchedEditorState.canvas.scale).toEqual(1)
+    expect(actualResult.patchedEditorState.canvas.interactionSession?.interactionData)
+      .toMatchInlineSnapshot(`
+      Object {
+        "drag": Object {
+          "x": 50,
+          "y": 140,
+        },
+        "dragStart": Object {
+          "x": 110,
+          "y": 210,
+        },
+        "dragThresholdPassed": false,
+        "modifiers": Object {
+          "alt": false,
+          "cmd": false,
+          "ctrl": false,
+          "shift": false,
+        },
+        "originalDragStart": Object {
+          "x": 100,
+          "y": 200,
+        },
+        "prevDrag": Object {
+          "x": 30,
+          "y": 120,
+        },
+        "type": "DRAG",
+      }
+    `)
+  })
+  it('potentially process an update with no interaction session', () => {
+    const editorStore = createEditorStore(null)
+    const actualResult = interactionHardReset(
+      [testStrategy],
+      editorStore,
+      dispatchResultFromEditorStore(editorStore),
+    )
+    expect(actualResult.newStrategyState).toMatchInlineSnapshot(`
+      Object {
+        "accumulatedCommands": Array [],
+        "commandDescriptions": Array [],
+        "currentStrategy": null,
+        "currentStrategyCommands": Array [],
+        "currentStrategyFitness": 0,
+        "startingMetadata": Object {},
+      }
+    `)
+    expect(actualResult.patchedEditorState.canvas.scale).toEqual(1)
+    expect(actualResult.unpatchedEditorState.canvas.scale).toEqual(1)
+    expect(
+      actualResult.patchedEditorState.canvas.interactionSession?.interactionData,
+    ).toMatchInlineSnapshot(`undefined`)
+  })
+})
+
+describe('interactionStrategyChangeStacked', () => {
+  it('steps an interaction session correctly', () => {
+    let interactionSession = createInteractionViaMouse(
+      canvasPoint({ x: 100, y: 200 }),
+      { alt: false, shift: false, ctrl: false, cmd: false },
+      { type: 'BOUNDING_AREA', target: EP.elementPath([['aaa']]) },
+    )
+    if (interactionSession.interactionData.type === 'DRAG') {
+      interactionSession.interactionData.dragStart = canvasPoint({ x: 110, y: 210 })
+      interactionSession.interactionData.drag = canvasPoint({ x: 50, y: 140 })
+      interactionSession.interactionData.prevDrag = canvasPoint({ x: 30, y: 120 })
+    }
+    const editorStore = createEditorStore(interactionSession)
+    const actualResult = interactionStrategyChangeStacked(
+      [testStrategy],
+      editorStore,
+      dispatchResultFromEditorStore(editorStore),
+    )
+    expect(actualResult.newStrategyState).toMatchInlineSnapshot(`
+      Object {
+        "accumulatedCommands": Array [
+          Object {
+            "commands": Array [],
+            "strategy": null,
+          },
+          Object {
+            "commands": Array [
+              Object {
+                "dataReset": true,
+                "newFitness": 10,
+                "newStrategy": "Test Strategy",
+                "previousFitness": NaN,
+                "reason": "user-input",
+                "transient": "transient",
+                "type": "STRATEGY_SWITCHED",
+              },
+            ],
+            "strategy": null,
+          },
+        ],
+        "commandDescriptions": Array [
+          Object {
+            "description": "Strategy switched to Test Strategy by user input. Interaction data reset.",
+            "transient": true,
+          },
+          Object {
+            "description": "Wildcard Patch: {
+        \\"canvas\\": {
+          \\"scale\\": {
+            \\"$set\\": 100
+          }
+        }
+      }",
+            "transient": false,
+          },
+        ],
+        "currentStrategy": "Test Strategy",
+        "currentStrategyCommands": Array [
+          Object {
+            "patch": Object {
+              "canvas": Object {
+                "scale": Object {
+                  "$set": 100,
+                },
+              },
+            },
+            "transient": "permanent",
+            "type": "WILDCARD_PATCH",
+          },
+        ],
+        "currentStrategyFitness": 10,
+        "startingMetadata": Object {},
+      }
+    `)
+    expect(actualResult.patchedEditorState.canvas.scale).toEqual(1)
+    expect(actualResult.unpatchedEditorState.canvas.scale).toEqual(1)
+    expect(actualResult.patchedEditorState.canvas.interactionSession?.interactionData)
+      .toMatchInlineSnapshot(`
+      Object {
+        "drag": Object {
+          "x": 20,
+          "y": 20,
+        },
+        "dragStart": Object {
+          "x": 140,
+          "y": 330,
+        },
+        "dragThresholdPassed": false,
+        "modifiers": Object {
+          "alt": false,
+          "cmd": false,
+          "ctrl": false,
+          "shift": false,
+        },
+        "originalDragStart": Object {
+          "x": 100,
+          "y": 200,
+        },
+        "prevDrag": null,
+        "type": "DRAG",
+      }
+    `)
+  })
+  it('potentially process an update with no interaction session', () => {
+    const editorStore = createEditorStore(null)
+    const actualResult = interactionStrategyChangeStacked(
+      [testStrategy],
+      editorStore,
+      dispatchResultFromEditorStore(editorStore),
+    )
+    expect(actualResult.newStrategyState).toMatchInlineSnapshot(`
+      Object {
+        "accumulatedCommands": Array [],
+        "commandDescriptions": Array [],
+        "currentStrategy": null,
+        "currentStrategyCommands": Array [],
+        "currentStrategyFitness": 0,
+        "startingMetadata": Object {},
+      }
+    `)
+    expect(actualResult.patchedEditorState.canvas.scale).toEqual(1)
+    expect(actualResult.unpatchedEditorState.canvas.scale).toEqual(1)
+    expect(
+      actualResult.patchedEditorState.canvas.interactionSession?.interactionData,
+    ).toMatchInlineSnapshot(`undefined`)
+  })
+})
+
+describe('interactionUserChangedStrategy', () => {
+  it('steps an interaction session correctly', () => {
+    let interactionSession = createInteractionViaMouse(
+      canvasPoint({ x: 100, y: 200 }),
+      { alt: false, shift: false, ctrl: false, cmd: false },
+      { type: 'BOUNDING_AREA', target: EP.elementPath([['aaa']]) },
+    )
+    if (interactionSession.interactionData.type === 'DRAG') {
+      interactionSession.interactionData.dragStart = canvasPoint({ x: 110, y: 210 })
+      interactionSession.interactionData.drag = canvasPoint({ x: 50, y: 140 })
+      interactionSession.interactionData.prevDrag = canvasPoint({ x: 30, y: 120 })
+      interactionSession.userPreferredStrategy = 'Test Strategy'
+    }
+    const editorStore = createEditorStore(interactionSession)
+    const actualResult = interactionUserChangedStrategy(
+      [testStrategy],
+      editorStore,
+      dispatchResultFromEditorStore(editorStore),
+    )
+    expect(actualResult.newStrategyState).toMatchInlineSnapshot(`
+      Object {
+        "accumulatedCommands": Array [
+          Object {
+            "commands": Array [
+              Object {
+                "dataReset": true,
+                "newFitness": 10,
+                "newStrategy": "Test Strategy",
+                "previousFitness": NaN,
+                "reason": "user-input",
+                "transient": "transient",
+                "type": "STRATEGY_SWITCHED",
+              },
+            ],
+            "strategy": null,
+          },
+        ],
+        "commandDescriptions": Array [
+          Object {
+            "description": "Strategy switched to Test Strategy by user input. Interaction data reset.",
+            "transient": true,
+          },
+          Object {
+            "description": "Wildcard Patch: {
+        \\"canvas\\": {
+          \\"scale\\": {
+            \\"$set\\": 100
+          }
+        }
+      }",
+            "transient": false,
+          },
+        ],
+        "currentStrategy": "Test Strategy",
+        "currentStrategyCommands": Array [
+          Object {
+            "patch": Object {
+              "canvas": Object {
+                "scale": Object {
+                  "$set": 100,
+                },
+              },
+            },
+            "transient": "permanent",
+            "type": "WILDCARD_PATCH",
+          },
+        ],
+        "currentStrategyFitness": 10,
+        "startingMetadata": Object {},
+      }
+    `)
+    expect(actualResult.patchedEditorState.canvas.scale).toEqual(100)
+    expect(actualResult.unpatchedEditorState.canvas.scale).toEqual(1)
+    expect(actualResult.patchedEditorState.canvas.interactionSession?.interactionData)
+      .toMatchInlineSnapshot(`
+      Object {
+        "drag": Object {
+          "x": 50,
+          "y": 140,
+        },
+        "dragStart": Object {
+          "x": 110,
+          "y": 210,
+        },
+        "dragThresholdPassed": false,
+        "modifiers": Object {
+          "alt": false,
+          "cmd": false,
+          "ctrl": false,
+          "shift": false,
+        },
+        "originalDragStart": Object {
+          "x": 100,
+          "y": 200,
+        },
+        "prevDrag": Object {
+          "x": 30,
+          "y": 120,
+        },
+        "type": "DRAG",
+      }
+    `)
+  })
+  it('potentially process an update with no interaction session', () => {
+    const editorStore = createEditorStore(null)
+    const actualResult = interactionUserChangedStrategy(
+      [testStrategy],
+      editorStore,
+      dispatchResultFromEditorStore(editorStore),
+    )
+    expect(actualResult.newStrategyState).toMatchInlineSnapshot(`
+      Object {
+        "accumulatedCommands": Array [],
+        "commandDescriptions": Array [],
+        "currentStrategy": null,
+        "currentStrategyCommands": Array [],
+        "currentStrategyFitness": 0,
+        "startingMetadata": Object {},
+      }
+    `)
+    expect(actualResult.patchedEditorState.canvas.scale).toEqual(1)
+    expect(actualResult.unpatchedEditorState.canvas.scale).toEqual(1)
+    expect(
+      actualResult.patchedEditorState.canvas.interactionSession?.interactionData,
+    ).toMatchInlineSnapshot(`undefined`)
   })
 })
