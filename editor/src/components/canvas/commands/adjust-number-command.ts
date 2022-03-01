@@ -1,4 +1,7 @@
+import { Spec } from 'immutability-helper'
+import { drop } from '../../../core/shared/array-utils'
 import { foldEither } from '../../../core/shared/either'
+import * as EP from '../../../core/shared/element-path'
 import {
   emptyComments,
   isJSXElement,
@@ -7,22 +10,10 @@ import {
 } from '../../../core/shared/element-template'
 import {
   getNumberPropertyFromProps,
-  jsxSimpleAttributeToValue,
   setJSXValuesAtPaths,
   ValueAtPath,
 } from '../../../core/shared/jsx-attributes'
-import { ElementPath, RevisionsState } from '../../../core/shared/project-file-types'
-import {
-  EditorStatePatch,
-  EditorState,
-  modifyUnderlyingForOpenFile,
-  forUnderlyingTargetFromEditorState,
-  withUnderlyingTargetFromEditorState,
-  removeElementAtPath,
-  insertElementAtPath,
-} from '../../editor/store/editor-state'
-import { Spec } from 'immutability-helper'
-import * as EP from '../../../core/shared/element-path'
+import { ElementPath, PropertyPath, RevisionsState } from '../../../core/shared/project-file-types'
 import * as PP from '../../../core/shared/property-path'
 import {
   getProjectContentKeyPathElements,
@@ -30,49 +21,54 @@ import {
   ProjectContentsTree,
   ProjectContentTreeRoot,
 } from '../../assets'
-import { drop } from '../../../core/shared/array-utils'
-import { StrategyState } from '../canvas-strategies/interaction-state'
 import {
-  applyUtopiaJSXComponentsChanges,
-  getUtopiaJSXComponentsFromSuccess,
-} from '../../../core/model/project-file-utils'
-import {
-  AdjustNumberProperty,
-  CommandFunction,
-  CommandFunctionResult,
-  PathMappings,
-  ReparentElement,
-  StrategySwitched,
-  UpdateSelectedViews,
-  WildcardPatch,
-} from './commands'
+  EditorState,
+  EditorStatePatch,
+  forUnderlyingTargetFromEditorState,
+  modifyUnderlyingForOpenFile,
+  withUnderlyingTargetFromEditorState,
+} from '../../editor/store/editor-state'
+import type { BaseCommand, CommandFunction, PathMappings, TransientOrNot } from './commands'
 
-export const runWildcardPatch: CommandFunction<WildcardPatch> = (
-  editorState: EditorState,
-  pathMappings: PathMappings,
-  command: WildcardPatch,
-) => {
+export interface AdjustNumberProperty extends BaseCommand {
+  type: 'ADJUST_NUMBER_PROPERTY'
+  target: ElementPath
+  property: PropertyPath
+  value: number | AdjustNumberInequalityCondition
+  createIfNonExistant: boolean
+}
+
+export function adjustNumberProperty(
+  transient: TransientOrNot,
+  target: ElementPath,
+  property: PropertyPath,
+  value: number | AdjustNumberInequalityCondition,
+  createIfNonExistant: boolean,
+): AdjustNumberProperty {
   return {
-    editorStatePatch: command.patch,
-    pathMappings: pathMappings,
-    commandDescription: `Wildcard Patch: ${JSON.stringify(command.patch, null, 2)}`,
+    type: 'ADJUST_NUMBER_PROPERTY',
+    transient: transient,
+    target: target,
+    property: property,
+    value: value,
+    createIfNonExistant: createIfNonExistant,
   }
 }
 
-export function runStrategySwitchedCommand(
-  pathMappings: PathMappings,
-  command: StrategySwitched,
-): CommandFunctionResult {
-  let commandDescription: string = `Strategy switched to ${command.newStrategy} ${
-    command.reason === 'automatic'
-      ? `automatically (fitness ${command.previousFitness} -> ${command.newFitness})`
-      : 'by user input'
-  }. ${command.dataReset ? 'Interaction data reset.' : ''}`
+export type AdjustNumberCondition = 'less-than' | 'greater-than'
 
+export interface AdjustNumberInequalityCondition {
+  property: PropertyPath
+  condition: AdjustNumberCondition
+}
+
+export function adjustNumberInequalityCondition(
+  property: PropertyPath,
+  condition: AdjustNumberCondition,
+): AdjustNumberInequalityCondition {
   return {
-    editorStatePatch: {},
-    pathMappings: pathMappings,
-    commandDescription: commandDescription,
+    property: property,
+    condition: condition,
   }
 }
 
@@ -264,101 +260,5 @@ export function applyValuesAtPath(
   return {
     editorStateWithChanges: workingEditorState,
     editorStatePatch: editorStatePatch,
-  }
-}
-
-export const runReparentElement: CommandFunction<ReparentElement> = (
-  editorState: EditorState,
-  pathMappings: PathMappings,
-  command: ReparentElement,
-) => {
-  let editorStatePatch: EditorStatePatch = {}
-  forUnderlyingTargetFromEditorState(
-    command.target,
-    editorState,
-    (success, underlyingElement, underlyingTarget, underlyingFilePath) => {
-      const components = getUtopiaJSXComponentsFromSuccess(success)
-      const withElementRemoved = removeElementAtPath(command.target, components)
-      const withElementInserted = insertElementAtPath(
-        editorState.projectContents,
-        editorState.canvas.openFile?.filename ?? null,
-        command.newParent,
-        underlyingElement,
-        withElementRemoved,
-        null,
-      )
-
-      const updatedTopLevelElements = applyUtopiaJSXComponentsChanges(
-        success.topLevelElements,
-        withElementInserted,
-      )
-      const projectContentFilePatch: Spec<ProjectContentFile> = {
-        content: {
-          fileContents: {
-            revisionsState: {
-              $set: RevisionsState.ParsedAhead,
-            },
-            parsed: {
-              topLevelElements: {
-                $set: updatedTopLevelElements,
-              },
-              imports: {
-                $set: success.imports,
-              },
-            },
-          },
-        },
-      }
-      // ProjectContentTreeRoot is a bit awkward to patch.
-      const pathElements = getProjectContentKeyPathElements(underlyingFilePath)
-      if (pathElements.length === 0) {
-        throw new Error('Invalid path length.')
-      }
-      const remainderPath = drop(1, pathElements)
-      const projectContentsTreePatch: Spec<ProjectContentsTree> = remainderPath.reduceRight(
-        (working: Spec<ProjectContentsTree>, pathPart: string) => {
-          return {
-            children: {
-              [pathPart]: working,
-            },
-          }
-        },
-        projectContentFilePatch,
-      )
-
-      // Finally patch the last part of the path in.
-      const projectContentTreeRootPatch: Spec<ProjectContentTreeRoot> = {
-        [pathElements[0]]: projectContentsTreePatch,
-      }
-
-      editorStatePatch = {
-        projectContents: projectContentTreeRootPatch,
-      }
-    },
-  )
-
-  return {
-    editorStatePatch: editorStatePatch,
-    pathMappings: pathMappings,
-    commandDescription: `Reparent Element ${EP.toUid(command.target)} to new parent ${EP.toUid(
-      command.newParent,
-    )}`,
-  }
-}
-
-export const runUpdateSelectedViews: CommandFunction<UpdateSelectedViews> = (
-  _: EditorState,
-  pathMappings: PathMappings,
-  command: UpdateSelectedViews,
-) => {
-  const editorStatePatch = {
-    selectedViews: {
-      $set: command.value,
-    },
-  }
-  return {
-    editorStatePatch: editorStatePatch,
-    pathMappings: pathMappings,
-    commandDescription: `Update Selected Views: ${command.value.map(EP.toString).join(', ')}`,
   }
 }

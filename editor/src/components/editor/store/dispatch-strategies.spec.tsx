@@ -7,6 +7,8 @@ import {
   FakeWatchdogWorker,
 } from '../../../core/workers/test-workers'
 import { UtopiaTsWorkersImplementation } from '../../../core/workers/workers'
+import { createEmptyStrategyState } from '../../canvas/canvas-strategies/interaction-state'
+import { wildcardPatch } from '../../canvas/commands/wildcard-patch-command'
 import { emptyUiJsxCanvasContextData } from '../../canvas/ui-jsx-canvas'
 import { EditorDispatch, notLoggedIn } from '../action-types'
 import * as History from '../history'
@@ -14,11 +16,6 @@ import { DummyPersistenceMachine } from '../persistence/persistence.test-utils'
 import { DispatchResult, editorDispatch } from './dispatch'
 import { interactionCancel } from './dispatch-strategies'
 import { createEditorState, deriveState, EditorStoreFull } from './editor-state'
-import * as EP from '../../../core/shared/element-path'
-import * as PP from '../../../core/shared/property-path'
-import { emptyComments, jsxAttributeValue } from '../../../core/shared/element-template'
-import { createEmptyStrategyState } from '../../canvas/canvas-strategies/interaction-state'
-import { wildcardPatch } from '../../canvas/commands/commands'
 
 function createEditorStore(): EditorStoreFull {
   let emptyEditorState = createEditorState(NO_OP)

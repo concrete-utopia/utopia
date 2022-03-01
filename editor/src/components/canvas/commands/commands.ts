@@ -1,19 +1,13 @@
 import update from 'immutability-helper'
-import { ElementPath, PropertyPath } from '../../../core/shared/project-file-types'
+import { ElementPath } from '../../../core/shared/project-file-types'
 import { keepDeepReferenceEqualityIfPossible } from '../../../utils/react-performance'
-import {
-  EditorState,
-  EditorStatePatch,
-  withUnderlyingTargetFromEditorState,
-} from '../../editor/store/editor-state'
-import { CommandDescription, StrategyState } from '../canvas-strategies/interaction-state'
-import {
-  runAdjustNumberProperty,
-  runReparentElement,
-  runStrategySwitchedCommand,
-  runUpdateSelectedViews,
-  runWildcardPatch,
-} from './command-runners'
+import { EditorState, EditorStatePatch } from '../../editor/store/editor-state'
+import { CommandDescription } from '../canvas-strategies/interaction-state'
+import { AdjustNumberProperty, runAdjustNumberProperty } from './adjust-number-command'
+import { ReparentElement, runReparentElement } from './reparent-element-command'
+import { runStrategySwitchedCommand, StrategySwitched } from './strategy-switched-command'
+import { runUpdateSelectedViews, UpdateSelectedViews } from './update-selected-views-command'
+import { runWildcardPatch, WildcardPatch } from './wildcard-patch-command'
 
 export interface PathMapping {
   from: ElementPath
@@ -38,46 +32,6 @@ export type TransientOrNot = 'transient' | 'permanent'
 
 export interface BaseCommand {
   transient: TransientOrNot
-}
-
-export interface WildcardPatch extends BaseCommand {
-  type: 'WILDCARD_PATCH'
-  patch: EditorStatePatch
-}
-
-export function wildcardPatch(transient: TransientOrNot, patch: EditorStatePatch): WildcardPatch {
-  return {
-    type: 'WILDCARD_PATCH',
-    transient: transient,
-    patch: patch,
-  }
-}
-
-export interface StrategySwitched extends BaseCommand {
-  type: 'STRATEGY_SWITCHED'
-  reason: 'automatic' | 'user-input'
-  newStrategy: string
-  dataReset: boolean
-  previousFitness: number
-  newFitness: number
-}
-
-export function strategySwitched(
-  reason: 'automatic' | 'user-input',
-  newStrategy: string,
-  dataReset: boolean,
-  previousFitness: number,
-  newFitness: number,
-): StrategySwitched {
-  return {
-    type: 'STRATEGY_SWITCHED',
-    transient: 'transient',
-    reason,
-    newStrategy,
-    dataReset,
-    previousFitness,
-    newFitness,
-  }
 }
 
 export type CanvasCommand =
@@ -183,82 +137,5 @@ export function applyStatePatches(
         return update(workingState, patch)
       }, editorState),
     )
-  }
-}
-
-export interface ReparentElement extends BaseCommand {
-  type: 'REPARENT_ELEMENT'
-  target: ElementPath
-  newParent: ElementPath
-}
-
-export function reparentElement(
-  transient: TransientOrNot,
-  target: ElementPath,
-  newParent: ElementPath,
-): ReparentElement {
-  return {
-    type: 'REPARENT_ELEMENT',
-    transient: transient,
-    target: target,
-    newParent: newParent,
-  }
-}
-
-export type AdjustNumberCondition = 'less-than' | 'greater-than'
-
-export interface AdjustNumberInequalityCondition {
-  property: PropertyPath
-  condition: AdjustNumberCondition
-}
-
-export function adjustNumberInequalityCondition(
-  property: PropertyPath,
-  condition: AdjustNumberCondition,
-): AdjustNumberInequalityCondition {
-  return {
-    property: property,
-    condition: condition,
-  }
-}
-
-export interface AdjustNumberProperty extends BaseCommand {
-  type: 'ADJUST_NUMBER_PROPERTY'
-  target: ElementPath
-  property: PropertyPath
-  value: number | AdjustNumberInequalityCondition
-  createIfNonExistant: boolean
-}
-
-export function adjustNumberProperty(
-  transient: TransientOrNot,
-  target: ElementPath,
-  property: PropertyPath,
-  value: number | AdjustNumberInequalityCondition,
-  createIfNonExistant: boolean,
-): AdjustNumberProperty {
-  return {
-    type: 'ADJUST_NUMBER_PROPERTY',
-    transient: transient,
-    target: target,
-    property: property,
-    value: value,
-    createIfNonExistant: createIfNonExistant,
-  }
-}
-
-export interface UpdateSelectedViews extends BaseCommand {
-  type: 'UPDATE_SELECTED_VIEWS'
-  value: Array<ElementPath>
-}
-
-export function updateSelectedViews(
-  transient: TransientOrNot,
-  value: Array<ElementPath>,
-): UpdateSelectedViews {
-  return {
-    type: 'UPDATE_SELECTED_VIEWS',
-    transient: transient,
-    value: value,
   }
 }

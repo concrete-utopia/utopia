@@ -6,19 +6,11 @@ import { selectComponents, setFocusedElement } from '../../editor/actions/action
 import { withUnderlyingTargetFromEditorState } from '../../editor/store/editor-state'
 import { stylePropPathMappingFn } from '../../inspector/common/property-path-hooks'
 import { renderTestEditorWithModel } from '../ui-jsx.test-utils'
-import {
-  runAdjustNumberProperty,
-  runReparentElement,
-  runUpdateSelectedViews,
-  runWildcardPatch,
-} from './command-runners'
-import {
-  adjustNumberProperty,
-  applyStatePatches,
-  reparentElement,
-  updateSelectedViews,
-  wildcardPatch,
-} from './commands'
+import { adjustNumberProperty, runAdjustNumberProperty } from './adjust-number-command'
+import { applyStatePatches } from './commands'
+import { reparentElement, runReparentElement } from './reparent-element-command'
+import { runUpdateSelectedViews, updateSelectedViews } from './update-selected-views-command'
+import { runWildcardPatch, wildcardPatch } from './wildcard-patch-command'
 
 describe('wildcardPatch', () => {
   it('works for a basic pinned element', async () => {
