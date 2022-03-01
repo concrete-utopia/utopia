@@ -1,11 +1,13 @@
+import { stylePropPathMappingFn } from '../../../components/inspector/common/property-path-hooks'
 import { MetadataUtils } from '../../../core/model/element-metadata-utils'
-import { CanvasStrategy, StrategyApplicationResult } from './canvas-strategy-types'
-import { getReparentTarget } from '../canvas-utils'
-import { adjustNumberProperty, reparentElement, updateSelectedViews } from '../commands/commands'
 import * as EP from '../../../core/shared/element-path'
 import { pointDifference, zeroCanvasRect } from '../../../core/shared/math-utils'
-import { stylePropPathMappingFn } from '../../../components/inspector/common/property-path-hooks'
+import { getReparentTarget } from '../canvas-utils'
+import { adjustNumberProperty } from '../commands/adjust-number-command'
+import { reparentElement } from '../commands/reparent-element-command'
+import { updateSelectedViews } from '../commands/update-selected-views-command'
 import { absoluteMoveStrategy } from './absolute-move-strategy'
+import { CanvasStrategy } from './canvas-strategy-types'
 
 export const absoluteReparentStrategy: CanvasStrategy = {
   name: 'Reparent Absolute Elements',
