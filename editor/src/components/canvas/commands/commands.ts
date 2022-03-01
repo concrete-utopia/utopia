@@ -1,8 +1,23 @@
 import update from 'immutability-helper'
-import { ElementPath } from '../../../core/shared/project-file-types'
+import {
+  emptyComments,
+  isJSXElement,
+  JSXAttribute,
+  jsxAttributeValue,
+} from '../../../core/shared/element-template'
+import { ElementPath, PropertyPath } from '../../../core/shared/project-file-types'
 import { keepDeepReferenceEqualityIfPossible } from '../../../utils/react-performance'
-import { EditorState, EditorStatePatch } from '../../editor/store/editor-state'
-import { CommandDescription } from '../canvas-strategies/interaction-state'
+import {
+  EditorState,
+  EditorStatePatch,
+  withUnderlyingTargetFromEditorState,
+} from '../../editor/store/editor-state'
+import { CommandDescription, StrategyState } from '../canvas-strategies/interaction-state'
+import {
+  runAdjustNumberProperty,
+  runReparentElement,
+  runUpdateSelectedViews,
+} from './command-runners'
 
 export interface PathMapping {
   from: ElementPath
@@ -69,7 +84,12 @@ export function strategySwitched(
   }
 }
 
-export type CanvasCommand = WildcardPatch | StrategySwitched
+export type CanvasCommand =
+  | WildcardPatch
+  | StrategySwitched
+  | AdjustNumberProperty
+  | ReparentElement
+  | UpdateSelectedViews
 
 export const runWildcardPatch: CommandFunction<WildcardPatch> = (
   editorState: EditorState,
@@ -110,6 +130,12 @@ export const runCanvasCommand: CommandFunction<CanvasCommand> = (
       return runWildcardPatch(editorState, pathMappings, command)
     case 'STRATEGY_SWITCHED':
       return runStrategySwitchedCommand(pathMappings, command)
+    case 'ADJUST_NUMBER_PROPERTY':
+      return runAdjustNumberProperty(editorState, pathMappings, command)
+    case 'REPARENT_ELEMENT':
+      return runReparentElement(editorState, pathMappings, command)
+    case 'UPDATE_SELECTED_VIEWS':
+      return runUpdateSelectedViews(editorState, pathMappings, command)
     default:
       const _exhaustiveCheck: never = command
       throw new Error(`Unhandled canvas command ${JSON.stringify(command)}`)
@@ -190,5 +216,104 @@ export function applyStatePatches(
         return update(workingState, patch)
       }, editorState),
     )
+  }
+}
+
+export interface ReparentElement extends BaseCommand {
+  type: 'REPARENT_ELEMENT'
+  target: ElementPath
+  newParent: ElementPath
+}
+
+export function reparentElement(
+  transient: TransientOrNot,
+  target: ElementPath,
+  newParent: ElementPath,
+): ReparentElement {
+  return {
+    type: 'REPARENT_ELEMENT',
+    transient: transient,
+    target: target,
+    newParent: newParent,
+  }
+}
+
+export type AdjustNumberCondition = 'less-than' | 'greater-than'
+
+export interface AdjustNumberInequalityCondition {
+  property: PropertyPath
+  condition: AdjustNumberCondition
+}
+
+export function adjustNumberInequalityCondition(
+  property: PropertyPath,
+  condition: AdjustNumberCondition,
+): AdjustNumberInequalityCondition {
+  return {
+    property: property,
+    condition: condition,
+  }
+}
+
+export interface AdjustNumberProperty extends BaseCommand {
+  type: 'ADJUST_NUMBER_PROPERTY'
+  target: ElementPath
+  property: PropertyPath
+  value: number | AdjustNumberInequalityCondition
+  createIfNonExistant: boolean
+}
+
+export function adjustNumberProperty(
+  transient: TransientOrNot,
+  target: ElementPath,
+  property: PropertyPath,
+  value: number | AdjustNumberInequalityCondition,
+  createIfNonExistant: boolean,
+): AdjustNumberProperty {
+  return {
+    type: 'ADJUST_NUMBER_PROPERTY',
+    transient: transient,
+    target: target,
+    property: property,
+    value: value,
+    createIfNonExistant: createIfNonExistant,
+  }
+}
+
+export interface UpdateSelectedViews extends BaseCommand {
+  type: 'UPDATE_SELECTED_VIEWS'
+  value: Array<ElementPath>
+}
+
+export function updateSelectedViews(
+  transient: TransientOrNot,
+  value: Array<ElementPath>,
+): UpdateSelectedViews {
+  return {
+    type: 'UPDATE_SELECTED_VIEWS',
+    transient: transient,
+    value: value,
+  }
+}
+
+export interface SetProperty extends BaseCommand {
+  type: 'SET_PROPERTY'
+  target: ElementPath
+  property: PropertyPath
+  value: JSXAttribute
+}
+
+export function setProperty(
+  transient: TransientOrNot,
+  target: ElementPath,
+  property: PropertyPath,
+  value: JSXAttribute,
+): SetProperty {
+  return {
+    type: 'SET_PROPERTY',
+    transient: transient,
+    target: target,
+    property: property,
+    value: value,
   }
 }

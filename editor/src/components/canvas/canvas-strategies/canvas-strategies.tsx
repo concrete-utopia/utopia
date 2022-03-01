@@ -9,8 +9,13 @@ import { EditorStorePatched } from '../../editor/store/editor-state'
 import { useEditorState } from '../../editor/store/store-hook'
 import { CanvasCommand } from '../commands/commands'
 import { CanvasStrategy, ControlWithKey, InteractionCanvasState } from './canvas-strategy-types'
+import { absoluteMoveStrategy } from './absolute-move-strategy'
+import { absoluteReparentStrategy } from './absolute-reparent-strategy'
 
-const RegisteredCanvasStrategies: Array<CanvasStrategy> = []
+const RegisteredCanvasStrategies: Array<CanvasStrategy> = [
+  absoluteMoveStrategy,
+  absoluteReparentStrategy,
+]
 
 function getApplicableStrategies(
   canvasState: InteractionCanvasState,
