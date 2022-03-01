@@ -6,8 +6,8 @@ import { selectComponents, setFocusedElement } from '../../editor/actions/action
 import { withUnderlyingTargetFromEditorState } from '../../editor/store/editor-state'
 import { stylePropPathMappingFn } from '../../inspector/common/property-path-hooks'
 import { renderTestEditorWithModel } from '../ui-jsx.test-utils'
-import { runAdjustNumberProperty, runWildcardPatch } from './command-runners'
-import { adjustNumberProperty, applyStatePatches, wildcardPatch } from './commands'
+import { runAdjustNumberProperty, runReparentElement, runWildcardPatch } from './command-runners'
+import { adjustNumberProperty, applyStatePatches, reparentElement, wildcardPatch } from './commands'
 
 describe('wildcardPatch', () => {
   it('works for a basic pinned element', async () => {
@@ -96,5 +96,58 @@ describe('adjustNumberProperty', () => {
     )
 
     expect(updatedLeftStyleProp).toEqual(originalLeftStyleProp + delta)
+  })
+})
+
+describe('runReparentElement', () => {
+  it('works for left style prop', async () => {
+    const renderResult = await renderTestEditorWithModel(
+      complexDefaultProjectPreParsed(),
+      'dont-await-first-dom-report',
+      createBuiltInDependenciesList(null),
+    )
+
+    const targetPath = EP.elementPath([
+      ['storyboard-entity', 'scene-1-entity', 'app-entity'],
+      ['app-outer-div', 'card-instance'],
+      ['card-outer-div', 'card-inner-rectangle'],
+    ])
+
+    const newParentPath = EP.elementPath([
+      ['storyboard-entity', 'scene-1-entity', 'app-entity'],
+      ['app-outer-div', 'card-instance'],
+      ['card-outer-div', 'card-inner-div'],
+    ])
+    const originalEditorState = renderResult.getEditorState().editor
+
+    const reparentCommand = reparentElement('permanent', targetPath, newParentPath)
+
+    const result = runReparentElement(originalEditorState, [], reparentCommand)
+
+    const patchedEditor = applyStatePatches(originalEditorState, originalEditorState, [
+      result.editorStatePatch,
+    ])
+    const newPath = EP.appendToPath(newParentPath, EP.toUid(targetPath))
+
+    const newElement = withUnderlyingTargetFromEditorState(
+      newPath,
+      patchedEditor,
+      null,
+      (success, element, underlyingTarget, underlyingFilePath) => {
+        return element
+      },
+    )
+
+    const oldElement = withUnderlyingTargetFromEditorState(
+      targetPath,
+      patchedEditor,
+      null,
+      (success, element, underlyingTarget, underlyingFilePath) => {
+        return element
+      },
+    )
+
+    expect(newElement).not.toBeNull()
+    expect(oldElement).toBeNull()
   })
 })
