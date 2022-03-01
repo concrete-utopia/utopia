@@ -14,6 +14,7 @@ declare module 'babel-plugin-syntax-jsx'
 declare module '@babel/standalone'
 declare module '@babel/plugin-transform-modules-commonjs'
 declare module '@babel/plugin-proposal-export-namespace-from'
+declare module '@babel/plugin-proposal-class-properties'
 
 declare module 'lodash.clamp' {
   export default clamp = (number: number, lower: number, upper: number) => number
