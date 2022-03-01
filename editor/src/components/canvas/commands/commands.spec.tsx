@@ -6,8 +6,19 @@ import { selectComponents, setFocusedElement } from '../../editor/actions/action
 import { withUnderlyingTargetFromEditorState } from '../../editor/store/editor-state'
 import { stylePropPathMappingFn } from '../../inspector/common/property-path-hooks'
 import { renderTestEditorWithModel } from '../ui-jsx.test-utils'
-import { runAdjustNumberProperty, runReparentElement, runWildcardPatch } from './command-runners'
-import { adjustNumberProperty, applyStatePatches, reparentElement, wildcardPatch } from './commands'
+import {
+  runAdjustNumberProperty,
+  runReparentElement,
+  runUpdateSelectedViews,
+  runWildcardPatch,
+} from './command-runners'
+import {
+  adjustNumberProperty,
+  applyStatePatches,
+  reparentElement,
+  updateSelectedViews,
+  wildcardPatch,
+} from './commands'
 
 describe('wildcardPatch', () => {
   it('works for a basic pinned element', async () => {
@@ -149,5 +160,33 @@ describe('runReparentElement', () => {
 
     expect(newElement).not.toBeNull()
     expect(oldElement).toBeNull()
+  })
+})
+
+describe('updateSelectedViews', () => {
+  it('updating selected views work', async () => {
+    const renderResult = await renderTestEditorWithModel(
+      complexDefaultProjectPreParsed(),
+      'dont-await-first-dom-report',
+      createBuiltInDependenciesList(null),
+    )
+
+    const targetPath = EP.elementPath([
+      ['storyboard-entity', 'scene-1-entity', 'app-entity'],
+      ['app-outer-div', 'card-instance'],
+      ['card-outer-div', 'card-inner-rectangle'],
+    ])
+
+    const originalEditorState = renderResult.getEditorState().editor
+
+    const updateSelectedViewsCommand = updateSelectedViews('permanent', [targetPath])
+
+    const result = runUpdateSelectedViews(originalEditorState, [], updateSelectedViewsCommand)
+
+    const patchedEditor = applyStatePatches(originalEditorState, originalEditorState, [
+      result.editorStatePatch,
+    ])
+
+    expect(patchedEditor.selectedViews).toEqual([targetPath])
   })
 })
