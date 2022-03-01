@@ -3,7 +3,8 @@ import * as EP from '../../../core/shared/element-path'
 import { complexDefaultProjectPreParsed } from '../../../sample-projects/sample-project-utils.test-utils'
 import { selectComponents, setFocusedElement } from '../../editor/actions/action-creators'
 import { renderTestEditorWithModel } from '../ui-jsx.test-utils'
-import { applyStatePatches, runWildcardPatch, wildcardPatch } from './commands'
+import { runWildcardPatch } from './command-runners'
+import { applyStatePatches, wildcardPatch } from './commands'
 
 describe('wildcardPatch', () => {
   it('works for a basic pinned element', async () => {

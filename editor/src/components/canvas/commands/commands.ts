@@ -1,10 +1,4 @@
 import update from 'immutability-helper'
-import {
-  emptyComments,
-  isJSXElement,
-  JSXAttribute,
-  jsxAttributeValue,
-} from '../../../core/shared/element-template'
 import { ElementPath, PropertyPath } from '../../../core/shared/project-file-types'
 import { keepDeepReferenceEqualityIfPossible } from '../../../utils/react-performance'
 import {
@@ -16,7 +10,9 @@ import { CommandDescription, StrategyState } from '../canvas-strategies/interact
 import {
   runAdjustNumberProperty,
   runReparentElement,
+  runStrategySwitchedCommand,
   runUpdateSelectedViews,
+  runWildcardPatch,
 } from './command-runners'
 
 export interface PathMapping {
@@ -90,35 +86,6 @@ export type CanvasCommand =
   | AdjustNumberProperty
   | ReparentElement
   | UpdateSelectedViews
-
-export const runWildcardPatch: CommandFunction<WildcardPatch> = (
-  editorState: EditorState,
-  pathMappings: PathMappings,
-  command: WildcardPatch,
-) => {
-  return {
-    editorStatePatch: command.patch,
-    pathMappings: pathMappings,
-    commandDescription: `Wildcard Patch: ${JSON.stringify(command.patch, null, 2)}`,
-  }
-}
-
-function runStrategySwitchedCommand(
-  pathMappings: PathMappings,
-  command: StrategySwitched,
-): CommandFunctionResult {
-  let commandDescription: string = `Strategy switched to ${command.newStrategy} ${
-    command.reason === 'automatic'
-      ? `automatically (fitness ${command.previousFitness} -> ${command.newFitness})`
-      : 'by user input'
-  }. ${command.dataReset ? 'Interaction data reset.' : ''}`
-
-  return {
-    editorStatePatch: {},
-    pathMappings: pathMappings,
-    commandDescription: commandDescription,
-  }
-}
 
 export const runCanvasCommand: CommandFunction<CanvasCommand> = (
   editorState: EditorState,
@@ -292,28 +259,6 @@ export function updateSelectedViews(
   return {
     type: 'UPDATE_SELECTED_VIEWS',
     transient: transient,
-    value: value,
-  }
-}
-
-export interface SetProperty extends BaseCommand {
-  type: 'SET_PROPERTY'
-  target: ElementPath
-  property: PropertyPath
-  value: JSXAttribute
-}
-
-export function setProperty(
-  transient: TransientOrNot,
-  target: ElementPath,
-  property: PropertyPath,
-  value: JSXAttribute,
-): SetProperty {
-  return {
-    type: 'SET_PROPERTY',
-    transient: transient,
-    target: target,
-    property: property,
     value: value,
   }
 }

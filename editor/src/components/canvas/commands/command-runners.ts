@@ -39,11 +39,42 @@ import {
 import {
   AdjustNumberProperty,
   CommandFunction,
+  CommandFunctionResult,
   PathMappings,
   ReparentElement,
-  SetProperty,
+  StrategySwitched,
   UpdateSelectedViews,
+  WildcardPatch,
 } from './commands'
+
+export const runWildcardPatch: CommandFunction<WildcardPatch> = (
+  editorState: EditorState,
+  pathMappings: PathMappings,
+  command: WildcardPatch,
+) => {
+  return {
+    editorStatePatch: command.patch,
+    pathMappings: pathMappings,
+    commandDescription: `Wildcard Patch: ${JSON.stringify(command.patch, null, 2)}`,
+  }
+}
+
+export function runStrategySwitchedCommand(
+  pathMappings: PathMappings,
+  command: StrategySwitched,
+): CommandFunctionResult {
+  let commandDescription: string = `Strategy switched to ${command.newStrategy} ${
+    command.reason === 'automatic'
+      ? `automatically (fitness ${command.previousFitness} -> ${command.newFitness})`
+      : 'by user input'
+  }. ${command.dataReset ? 'Interaction data reset.' : ''}`
+
+  return {
+    editorStatePatch: {},
+    pathMappings: pathMappings,
+    commandDescription: commandDescription,
+  }
+}
 
 export const runAdjustNumberProperty: CommandFunction<AdjustNumberProperty> = (
   editorState: EditorState,
@@ -329,33 +360,5 @@ export const runUpdateSelectedViews: CommandFunction<UpdateSelectedViews> = (
     editorStatePatch: editorStatePatch,
     pathMappings: pathMappings,
     commandDescription: `Update Selected Views: ${command.value.map(EP.toString).join(', ')}`,
-  }
-}
-
-export const runSetProperty: CommandFunction<SetProperty> = (
-  editorState: EditorState,
-  pathMappings: PathMappings,
-  command: SetProperty,
-) => {
-  const propsToUpdate: Array<ValueAtPath> = [
-    {
-      path: command.property,
-      value: command.value,
-    },
-  ]
-
-  // Apply the update to the properties.
-  const { editorStatePatch: propertyUpdatePatch } = applyValuesAtPath(
-    editorState,
-    command.target,
-    propsToUpdate,
-  )
-
-  return {
-    editorStatePatch: propertyUpdatePatch,
-    pathMappings: pathMappings,
-    commandDescription: `Set Property ${EP.toUid(command.target)}/${PP.toString(
-      command.property,
-    )} to ${jsxSimpleAttributeToValue(command.value).value}`,
   }
 }

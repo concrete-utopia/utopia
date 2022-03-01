@@ -1,6 +1,6 @@
 import { MetadataUtils } from '../../../core/model/element-metadata-utils'
 import { stylePropPathMappingFn } from '../../inspector/common/property-path-hooks'
-import { adjustNumberProperty, setProperty, wildcardPatch } from '../commands/commands'
+import { adjustNumberProperty, wildcardPatch } from '../commands/commands'
 import * as EP from '../../../core/shared/element-path'
 import { CanvasStrategy } from './canvas-strategy-types'
 
