@@ -60,6 +60,7 @@ import { getDragStateStart } from '../canvas-utils'
 import { AbsoluteResizeControl } from './select-mode/absolute-resize-control'
 import { FlexResizeControl } from './select-mode/flex-resize-control'
 import { MultiSelectOutlineControl } from './select-mode/simple-outline-control'
+import { DistanceGuideline } from './distance-guideline2'
 
 export const CanvasControlsContainerID = 'new-canvas-controls-container'
 
@@ -408,6 +409,10 @@ const NewCanvasControlsInner = (props: NewCanvasControlsInnerProps) => {
       {when(
         isFeatureEnabled('Canvas Absolute Resize Controls'),
         <MultiSelectOutlineControl localSelectedElements={localSelectedViews} />,
+      )}
+      {when(
+        isFeatureEnabled('Canvas Absolute Resize Controls'),
+        <DistanceGuideline localSelectedElements={localSelectedViews} />,
       )}
       {when(
         isFeatureEnabled('Canvas Absolute Resize Controls'),
