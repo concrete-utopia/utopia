@@ -21,150 +21,172 @@ export const DistanceGuideline = React.memo<DistanceGuidelineProps>((props) => {
 
   const guidelineHorizontal = useDistanceGuidelineX(
     props.localSelectedElements,
-    (ref, boundingBox, distance) => {
-      ref.current.style.left = `calc(${boundingBox.x}px + 0.5px / var(--utopia-canvas-scale))`
-      ref.current.style.top = `calc(${boundingBox.y}px + 0.5px / var(--utopia-canvas-scale))`
-      ref.current.style.width = `calc(${boundingBox.width}px - 0.5px / var(--utopia-canvas-scale) * 3)`
+    (ref, boundingBox) => {
+      ref.current.style.setProperty(`--utopia-canvas-guideline-x`, `${boundingBox.x}px`)
+      ref.current.style.setProperty(`--utopia-canvas-guideline-y`, `${boundingBox.y}px`)
+      ref.current.style.setProperty(`--utopia-canvas-guideline-width`, `${boundingBox.width}px`)
     },
   )
   const guidelineHorizontalText = useDistanceGuidelineX(
     props.localSelectedElements,
     (ref, boundingBox, distance) => {
-      ref.current.style.left = `calc(${boundingBox.x}px + 0.5px / var(--utopia-canvas-scale))`
-      ref.current.style.top = `calc(${boundingBox.y}px + 11px / var(--utopia-canvas-scale))`
-      ref.current.style.width = `calc(${boundingBox.width}px - 0.5px / var(--utopia-canvas-scale) * 3)`
+      ref.current.style.setProperty(`--utopia-canvas-guideline-x`, `${boundingBox.x}px`)
+      ref.current.style.setProperty(`--utopia-canvas-guideline-y`, `${boundingBox.y}px`)
+      ref.current.style.setProperty(`--utopia-canvas-guideline-width`, `${boundingBox.width}px`)
       ref.current.innerHTML = `${distance}`
     },
   )
   const guidelineVertical = useDistanceGuidelineY(
     props.localSelectedElements,
     (ref, boundingBox) => {
-      ref.current.style.left = `calc(${boundingBox.x}px + 0.5px / var(--utopia-canvas-scale))`
-      ref.current.style.top = `calc(${boundingBox.y}px + 0.5px / var(--utopia-canvas-scale))`
-      ref.current.style.height = `calc(${boundingBox.height}px - 0.5px / var(--utopia-canvas-scale) * 3)`
+      ref.current.style.setProperty(`--utopia-canvas-guideline-x`, `${boundingBox.x}px`)
+      ref.current.style.setProperty(`--utopia-canvas-guideline-y`, `${boundingBox.y}px`)
+      ref.current.style.setProperty(`--utopia-canvas-guideline-height`, `${boundingBox.height}px`)
     },
   )
   const guidelineVerticalText = useDistanceGuidelineY(
     props.localSelectedElements,
     (ref, boundingBox, distance) => {
-      ref.current.style.left = `calc(${boundingBox.x}px + 11px / var(--utopia-canvas-scale))`
-      ref.current.style.top = `calc(${boundingBox.y}px + 0.5px / var(--utopia-canvas-scale))`
-      ref.current.style.height = `calc(${boundingBox.height}px - 0.5px / var(--utopia-canvas-scale) * 3)`
-      ref.current.style.lineHeight = `calc(${boundingBox.height}px - 0.5px / var(--utopia-canvas-scale) * 3)`
+      ref.current.style.setProperty(`--utopia-canvas-guideline-x`, `${boundingBox.x}px`)
+      ref.current.style.setProperty(`--utopia-canvas-guideline-y`, `${boundingBox.y}px`)
+      ref.current.style.setProperty(`--utopia-canvas-guideline-height`, `${boundingBox.height}px`)
       ref.current.innerHTML = `${distance}`
     },
   )
 
   if (props.localSelectedElements.length > 0) {
     return (
-      <div
-        className='role-distance-guideline'
-        style={{
-          position: 'absolute',
-          transform: `translate(var(--utopia-canvas-offset-x), var(--utopia-canvas-offset-y))`,
-        }}
-      >
+      <>
+        <style>{`
+          .utopia-canvas-guideline: {
+            --utopia-canvas-guideline-x: 0px;
+            --utopia-canvas-guideline-y: 0px;
+            --utopia-canvas-guideline-width: 0px;
+            --utopia-canvas-guideline-height: 0px;
+          }
+        `}</style>
         <div
           ref={guidelineHorizontal}
+          className='role-distance-guideline'
           style={{
             position: 'absolute',
-            pointerEvents: 'none',
-            // display: isAltPressed && !isInteraction ? 'block' : 'none',
-            display: 'block',
+            transform: `translate(var(--utopia-canvas-offset-x), var(--utopia-canvas-offset-y))`,
           }}
         >
           <div
             style={{
-              position: 'relative',
-              display: 'inline-block',
-              top: -7 / 2,
-              height: 7,
-              width: `calc(1px / var(--utopia-canvas-scale))`,
-              backgroundColor: colorTheme.canvasLayoutStroke.value,
+              position: 'absolute',
+              pointerEvents: 'none',
+              // display: isAltPressed && !isInteraction ? 'block' : 'none',
+              display: 'block',
+              left: `calc(var(--utopia-canvas-guideline-x) + 0.5px / var(--utopia-canvas-scale))`,
+              top: `calc(var(--utopia-canvas-guideline-y) + 0.5px / var(--utopia-canvas-scale))`,
+              width: `calc(var(--utopia-canvas-guideline-width) - 0.5px / var(--utopia-canvas-scale) * 3)`,
+            }}
+          >
+            <div
+              style={{
+                position: 'relative',
+                display: 'inline-block',
+                top: -7 / 2,
+                height: 7,
+                width: `calc(1px / var(--utopia-canvas-scale))`,
+                backgroundColor: colorTheme.canvasLayoutStroke.value,
+              }}
+            />
+            <div
+              style={{
+                position: 'relative',
+                top: -7,
+                display: 'inline-block',
+                backgroundColor: colorTheme.canvasLayoutStroke.value,
+                width: '100%',
+                height: `calc(1px / var(--utopia-canvas-scale))`,
+              }}
+            />
+            <div
+              style={{
+                display: 'inline-block',
+                position: 'relative',
+                top: -7 / 2,
+                height: 7,
+                width: `calc(1px / var(--utopia-canvas-scale))`,
+                backgroundColor: colorTheme.canvasLayoutStroke.value,
+              }}
+            />
+          </div>
+          <div
+            ref={guidelineHorizontalText}
+            style={{
+              position: 'absolute',
+              pointerEvents: 'none',
+              textAlign: 'center',
+              fontSize: `calc(11px / var(--utopia-canvas-scale))`,
+              color: colorTheme.canvasLayoutStroke.value,
+              // display: isAltPressed && !isInteraction ? 'block' : 'none',
+              display: 'block',
+              left: `calc(var(--utopia-canvas-guideline-x) + 0.5px / var(--utopia-canvas-scale))`,
+              top: `calc(var(--utopia-canvas-guideline-y) + 5.5px / var(--utopia-canvas-scale))`,
+              width: `calc(var(--utopia-canvas-guideline-width) - 0.5px / var(--utopia-canvas-scale) * 3)`,
             }}
           />
           <div
+            ref={guidelineVertical}
             style={{
-              position: 'relative',
-              top: -7,
-              display: 'inline-block',
-              backgroundColor: colorTheme.canvasLayoutStroke.value,
-              width: '100%',
-              height: `calc(1px / var(--utopia-canvas-scale))`,
+              position: 'absolute',
+              pointerEvents: 'none',
+              // display: isAltPressed && !isInteraction ? 'block' : 'none',
+              display: 'block',
+              left: `calc(var(--utopia-canvas-guideline-x) + 0.5px / var(--utopia-canvas-scale))`,
+              top: `calc(var(--utopia-canvas-guideline-y) + 0.5px / var(--utopia-canvas-scale))`,
+              height: `calc(var(--utopia-canvas-guideline-height) - 0.5px / var(--utopia-canvas-scale) * 3)`,
             }}
-          />
+          >
+            <div
+              style={{
+                position: 'relative',
+                left: -7 / 2,
+                width: 7,
+                height: `calc(1px / var(--utopia-canvas-scale))`,
+                backgroundColor: colorTheme.canvasLayoutStroke.value,
+              }}
+            />
+            <div
+              style={{
+                position: 'relative',
+                backgroundColor: colorTheme.canvasLayoutStroke.value,
+                height: '100%',
+                width: `calc(1px / var(--utopia-canvas-scale))`,
+              }}
+            />
+            <div
+              style={{
+                position: 'relative',
+                left: -7 / 2,
+                width: 7,
+                height: `calc(1px / var(--utopia-canvas-scale))`,
+                backgroundColor: colorTheme.canvasLayoutStroke.value,
+              }}
+            />
+          </div>
           <div
+            ref={guidelineVerticalText}
             style={{
-              display: 'inline-block',
-              position: 'relative',
-              top: -7 / 2,
-              height: 7,
-              width: `calc(1px / var(--utopia-canvas-scale))`,
-              backgroundColor: colorTheme.canvasLayoutStroke.value,
+              position: 'absolute',
+              pointerEvents: 'none',
+              textAlign: 'center',
+              fontSize: `calc(11px / var(--utopia-canvas-scale))`,
+              color: colorTheme.canvasLayoutStroke.value,
+              // display: isAltPressed && !isInteraction ? 'block' : 'none',
+              display: 'block',
+              left: `calc(var(--utopia-canvas-guideline-x) + 5.5px / var(--utopia-canvas-scale))`,
+              top: `calc(var(--utopia-canvas-guideline-y) + 0.5px / var(--utopia-canvas-scale))`,
+              height: `calc(var(--utopia-canvas-guideline-height) - 0.5px / var(--utopia-canvas-scale) * 3)`,
+              lineHeight: `calc(var(--utopia-canvas-guideline-height) - 0.5px / var(--utopia-canvas-scale) * 3)`,
             }}
           />
         </div>
-        <div
-          ref={guidelineHorizontalText}
-          style={{
-            position: 'absolute',
-            pointerEvents: 'none',
-            textAlign: 'center',
-            fontSize: `calc(11px / var(--utopia-canvas-scale))`,
-            color: colorTheme.canvasLayoutStroke.value,
-            // display: isAltPressed && !isInteraction ? 'block' : 'none',
-            display: 'block',
-          }}
-        />
-        <div
-          ref={guidelineVertical}
-          style={{
-            position: 'absolute',
-            pointerEvents: 'none',
-            // display: isAltPressed && !isInteraction ? 'block' : 'none',
-            display: 'block',
-          }}
-        >
-          <div
-            style={{
-              position: 'relative',
-              left: -7 / 2,
-              width: 7,
-              height: `calc(1px / var(--utopia-canvas-scale))`,
-              backgroundColor: colorTheme.canvasLayoutStroke.value,
-            }}
-          />
-          <div
-            style={{
-              position: 'relative',
-              backgroundColor: colorTheme.canvasLayoutStroke.value,
-              height: '100%',
-              width: `calc(1px / var(--utopia-canvas-scale))`,
-            }}
-          />
-          <div
-            style={{
-              position: 'relative',
-              left: -7 / 2,
-              width: 7,
-              height: `calc(1px / var(--utopia-canvas-scale))`,
-              backgroundColor: colorTheme.canvasLayoutStroke.value,
-            }}
-          />
-        </div>
-        <div
-          ref={guidelineVerticalText}
-          style={{
-            position: 'absolute',
-            pointerEvents: 'none',
-            textAlign: 'center',
-            fontSize: `calc(11px / var(--utopia-canvas-scale))`,
-            color: colorTheme.canvasLayoutStroke.value,
-            // display: isAltPressed && !isInteraction ? 'block' : 'none',
-            display: 'block',
-          }}
-        />
-      </div>
+      </>
     )
   } else {
     return null
