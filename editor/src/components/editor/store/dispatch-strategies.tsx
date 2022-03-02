@@ -1,24 +1,28 @@
 import {
-  StrategyState,
-  createEmptyStrategyState,
-  strategySwitchInteractionSessionReset,
-  hasDragModifiersChanged,
-  interactionSessionHardReset,
-} from '../../canvas/canvas-strategies/interaction-state'
-import {
-  findCanvasStrategy,
   applyCanvasStrategy,
+  findCanvasStrategy,
   findCanvasStrategyFromDispatchResult,
 } from '../../canvas/canvas-strategies/canvas-strategies'
-import { foldAndApplyCommands, strategySwitched } from '../../canvas/commands/commands'
+import {
+  createEmptyStrategyState,
+  hasDragModifiersChanged,
+  interactionSessionHardReset,
+  StrategyState,
+  strategySwitchInteractionSessionReset,
+} from '../../canvas/canvas-strategies/interaction-state'
+import { foldAndApplyCommands } from '../../canvas/commands/commands'
+import { strategySwitched } from '../../canvas/commands/strategy-switched-command'
 import { EditorAction } from '../action-types'
 import {
-  shouldApplyClearInteractionSessionResult,
   isClearInteractionSession,
+  shouldApplyClearInteractionSessionResult,
 } from '../actions/action-utils'
 import { InnerDispatchResult } from './dispatch'
 import { DerivedState, deriveState, EditorState, EditorStoreFull } from './editor-state'
-import { InteractionCanvasState } from '../../canvas/canvas-strategies/canvas-strategy-types'
+import {
+  CanvasStrategy,
+  InteractionCanvasState,
+} from '../../canvas/canvas-strategies/canvas-strategy-types'
 
 interface HandleStrategiesResult {
   unpatchedEditorState: EditorState
@@ -27,6 +31,7 @@ interface HandleStrategiesResult {
 }
 
 export function interactionFinished(
+  strategies: Array<CanvasStrategy>,
   storedState: EditorStoreFull,
   result: InnerDispatchResult,
 ): HandleStrategiesResult {
@@ -52,6 +57,7 @@ export function interactionFinished(
   } else {
     // Determine the new canvas strategy to run this time around.
     const { strategy } = findCanvasStrategy(
+      strategies,
       canvasState,
       interactionSession,
       result.strategyState,
@@ -89,6 +95,7 @@ export function interactionFinished(
 }
 
 export function interactionHardReset(
+  strategies: Array<CanvasStrategy>,
   storedState: EditorStoreFull,
   result: InnerDispatchResult,
 ): HandleStrategiesResult {
@@ -120,6 +127,7 @@ export function interactionHardReset(
     }
     // Determine the new canvas strategy to run this time around.
     const { strategy, previousStrategy } = findCanvasStrategy(
+      strategies,
       canvasState,
       resetInteractionSession,
       resetStrategyState,
@@ -165,6 +173,7 @@ export function interactionHardReset(
 }
 
 export function interactionUpdate(
+  strategies: Array<CanvasStrategy>,
   storedState: EditorStoreFull,
   result: InnerDispatchResult,
 ): HandleStrategiesResult {
@@ -187,6 +196,7 @@ export function interactionUpdate(
   } else {
     // Determine the new canvas strategy to run this time around.
     const { strategy } = findCanvasStrategy(
+      strategies,
       canvasState,
       interactionSession,
       result.strategyState,
@@ -232,6 +242,7 @@ export function interactionUpdate(
 }
 
 export function interactionStart(
+  strategies: Array<CanvasStrategy>,
   storedState: EditorStoreFull,
   result: InnerDispatchResult,
 ): HandleStrategiesResult {
@@ -257,6 +268,7 @@ export function interactionStart(
   } else {
     // Determine the new canvas strategy to run this time around.
     const { strategy, previousStrategy } = findCanvasStrategy(
+      strategies,
       canvasState,
       interactionSession,
       withClearedSession,
@@ -322,6 +334,7 @@ export function interactionCancel(
 }
 
 export function interactionUserChangedStrategy(
+  strategies: Array<CanvasStrategy>,
   storedState: EditorStoreFull,
   result: InnerDispatchResult,
 ): HandleStrategiesResult {
@@ -344,6 +357,7 @@ export function interactionUserChangedStrategy(
   } else {
     // Determine the new canvas strategy to run this time around.
     const { strategy, previousStrategy } = findCanvasStrategy(
+      strategies,
       canvasState,
       interactionSession,
       result.strategyState,
@@ -413,7 +427,8 @@ export function interactionUserChangedStrategy(
   }
 }
 
-function interactionStrategyChangeStacked(
+export function interactionStrategyChangeStacked(
+  strategies: Array<CanvasStrategy>,
   storedState: EditorStoreFull,
   result: InnerDispatchResult,
 ): HandleStrategiesResult {
@@ -436,6 +451,7 @@ function interactionStrategyChangeStacked(
   } else {
     // Determine the new canvas strategy to run this time around.
     const { strategy, previousStrategy } = findCanvasStrategy(
+      strategies,
       canvasState,
       interactionSession,
       result.strategyState,
@@ -518,12 +534,14 @@ function interactionStrategyChangeStacked(
 }
 
 export function handleStrategies(
+  strategies: Array<CanvasStrategy>,
   dispatchedActions: readonly EditorAction[],
   storedState: EditorStoreFull,
   result: InnerDispatchResult,
   oldDerivedState: DerivedState,
 ): HandleStrategiesResult & { patchedDerivedState: DerivedState } {
   const { unpatchedEditorState, patchedEditorState, newStrategyState } = handleStrategiesInner(
+    strategies,
     dispatchedActions,
     storedState,
     result,
@@ -546,6 +564,7 @@ export function handleStrategies(
 }
 
 function handleStrategiesInner(
+  strategies: Array<CanvasStrategy>,
   dispatchedActions: readonly EditorAction[],
   storedState: EditorStoreFull,
   result: InnerDispatchResult,
@@ -561,13 +580,13 @@ function handleStrategiesInner(
         newStrategyState: result.strategyState,
       }
     } else {
-      return interactionStart(storedState, result)
+      return interactionStart(strategies, storedState, result)
     }
   } else {
     if (cancelInteraction) {
       return interactionCancel(storedState, result)
     } else if (makeChangesPermanent) {
-      return interactionFinished(storedState, result)
+      return interactionFinished(strategies, storedState, result)
     } else {
       const interactionHardResetNeeded =
         hasDragModifiersChanged(
@@ -575,23 +594,23 @@ function handleStrategiesInner(
           result.unpatchedEditor.canvas.interactionSession?.interactionData ?? null,
         ) || result.strategyState.currentStrategy == null // TODO: do we really need the currentStrategy == null part?
       if (interactionHardResetNeeded) {
-        return interactionHardReset(storedState, result)
+        return interactionHardReset(strategies, storedState, result)
       } else {
         if (result.unpatchedEditor.canvas.interactionSession?.userPreferredStrategy != null) {
           const userChangedStrategy =
             result.unpatchedEditor.canvas.interactionSession?.userPreferredStrategy !=
             storedState.unpatchedEditor.canvas.interactionSession?.userPreferredStrategy
           if (userChangedStrategy) {
-            return interactionUserChangedStrategy(storedState, result)
+            return interactionUserChangedStrategy(strategies, storedState, result)
           }
         }
 
-        const strategy = findCanvasStrategyFromDispatchResult(result)
+        const strategy = findCanvasStrategyFromDispatchResult(strategies, result)
         if (strategy?.strategy.name !== result.strategyState.currentStrategy) {
-          return interactionStrategyChangeStacked(storedState, result)
+          return interactionStrategyChangeStacked(strategies, storedState, result)
         }
 
-        return interactionUpdate(storedState, result)
+        return interactionUpdate(strategies, storedState, result)
       }
     }
   }

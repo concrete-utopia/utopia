@@ -384,6 +384,7 @@ export function runLocalCanvasAction(
         canvas: {
           ...model.canvas,
           interactionSession: null,
+          domWalkerInvalidateCount: model.canvas.domWalkerInvalidateCount + 1,
         },
         jsxMetadata: metadataToKeep,
       }

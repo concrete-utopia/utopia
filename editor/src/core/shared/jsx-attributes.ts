@@ -2,7 +2,16 @@ import * as ObjectPath from 'object-path'
 import { MapLike } from 'typescript'
 import { UtopiaUtils } from 'utopia-api/core'
 import { findLastIndex, uniqBy } from './array-utils'
-import { Either, isLeft, left, mapEither, reduceWithEither, right, sequenceEither } from './either'
+import {
+  Either,
+  isLeft,
+  isRight,
+  left,
+  mapEither,
+  reduceWithEither,
+  right,
+  sequenceEither,
+} from './either'
 import {
   isArraySpread,
   isPropertyAssignment,
@@ -916,4 +925,17 @@ export function getAllPathsFromAttributes(attributes: JSXAttributes): Array<Prop
     }
   })
   return uniqBy(paths, PP.pathsEqual)
+}
+
+export function getNumberPropertyFromProps(
+  props: JSXAttributes,
+  property: PropertyPath,
+): number | null {
+  const possibleProperty = getJSXAttributeAtPath(props, property)
+  const currentValue = optionalMap(jsxSimpleAttributeToValue, possibleProperty?.attribute)
+  if (currentValue !== null && isRight(currentValue) && typeof currentValue.value === 'number') {
+    return currentValue.value
+  } else {
+    return null
+  }
 }
