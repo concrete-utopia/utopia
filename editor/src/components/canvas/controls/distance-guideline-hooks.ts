@@ -102,7 +102,7 @@ export function useDistanceGuidelineX<T = HTMLDivElement>(
         } as CanvasPoint
         const width = Math.abs(result.to.x - result.from.x)
 
-        const frame = canvasRectangle({ x: topLeft.x - 1, y: topLeft.y, width: width, height: 0 })
+        const frame = canvasRectangle({ x: topLeft.x, y: topLeft.y, width: width, height: 0 })
 
         boundingBoxCallbackRef.current(frame, result.distance)
       }
@@ -187,7 +187,7 @@ export function useDistanceGuidelineY<T = HTMLDivElement>(
         } as CanvasPoint
         const height = Math.abs(result.to.y - result.from.y)
 
-        const frame = canvasRectangle({ x: topLeft.x, y: topLeft.y - 1, width: 0, height: height })
+        const frame = canvasRectangle({ x: topLeft.x, y: topLeft.y, width: 0, height: height })
         boundingBoxCallbackRef.current(frame, result.distance)
       }
     }
