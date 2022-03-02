@@ -1,10 +1,9 @@
 import { ElementInstanceMetadataMap } from '../../../core/shared/element-template'
-import { InteractionSession } from './interaction-state'
-import { CanvasCommand } from '../commands/commands'
-import { StrategyState } from './interaction-state'
+import { CanvasVector } from '../../../core/shared/math-utils'
 import { ElementPath } from '../../../core/shared/project-file-types'
 import { ProjectContentTreeRoot } from '../../assets'
-import { CanvasVector } from '../../../core/shared/math-utils'
+import { CanvasCommand } from '../commands/commands'
+import { InteractionSession, StrategyState } from './interaction-state'
 
 export type StrategyApplicationResult = Array<CanvasCommand>
 

@@ -2,6 +2,7 @@ import {
   applyCanvasStrategy,
   findCanvasStrategy,
   findCanvasStrategyFromDispatchResult,
+  pickCanvasStateFromEditorState,
 } from '../../canvas/canvas-strategies/canvas-strategies'
 import {
   createEmptyStrategyState,
@@ -39,14 +40,7 @@ export function interactionFinished(
   const withClearedSession = createEmptyStrategyState(
     newEditorState.canvas.interactionSession?.metadata ?? newEditorState.jsxMetadata,
   )
-  const canvasState: InteractionCanvasState = {
-    selectedElements: newEditorState.selectedViews,
-    // metadata: store.editor.jsxMetadata, // We can add metadata back if live metadata is necessary
-    projectContents: newEditorState.projectContents,
-    openFile: newEditorState.canvas.openFile?.filename,
-    scale: newEditorState.canvas.scale,
-    canvasOffset: newEditorState.canvas.roundedCanvasOffset,
-  }
+  const canvasState: InteractionCanvasState = pickCanvasStateFromEditorState(newEditorState)
   const interactionSession = storedState.unpatchedEditor.canvas.interactionSession
   if (interactionSession == null) {
     return {
@@ -104,14 +98,7 @@ export function interactionHardReset(
     ...storedState.strategyState,
     startingMetadata: storedState.unpatchedEditor.jsxMetadata,
   }
-  const canvasState: InteractionCanvasState = {
-    selectedElements: newEditorState.selectedViews,
-    // metadata: store.editor.jsxMetadata, // We can add metadata back if live metadata is necessary
-    projectContents: newEditorState.projectContents,
-    openFile: newEditorState.canvas.openFile?.filename,
-    scale: newEditorState.canvas.scale,
-    canvasOffset: newEditorState.canvas.roundedCanvasOffset,
-  }
+  const canvasState: InteractionCanvasState = pickCanvasStateFromEditorState(newEditorState)
   const interactionSession = newEditorState.canvas.interactionSession
   if (interactionSession == null) {
     return {
@@ -178,14 +165,7 @@ export function interactionUpdate(
   result: InnerDispatchResult,
 ): HandleStrategiesResult {
   const newEditorState = result.unpatchedEditor
-  const canvasState: InteractionCanvasState = {
-    selectedElements: newEditorState.selectedViews,
-    // metadata: store.editor.jsxMetadata, // We can add metadata back if live metadata is necessary
-    projectContents: newEditorState.projectContents,
-    openFile: newEditorState.canvas.openFile?.filename,
-    scale: newEditorState.canvas.scale,
-    canvasOffset: newEditorState.canvas.roundedCanvasOffset,
-  }
+  const canvasState: InteractionCanvasState = pickCanvasStateFromEditorState(newEditorState)
   const interactionSession = newEditorState.canvas.interactionSession
   if (interactionSession == null) {
     return {
@@ -250,14 +230,7 @@ export function interactionStart(
   const withClearedSession = createEmptyStrategyState(
     newEditorState.canvas.interactionSession?.metadata ?? newEditorState.jsxMetadata,
   )
-  const canvasState: InteractionCanvasState = {
-    selectedElements: newEditorState.selectedViews,
-    // metadata: store.editor.jsxMetadata, // We can add metadata back if live metadata is necessary
-    projectContents: newEditorState.projectContents,
-    openFile: newEditorState.canvas.openFile?.filename,
-    scale: newEditorState.canvas.scale,
-    canvasOffset: newEditorState.canvas.roundedCanvasOffset,
-  }
+  const canvasState: InteractionCanvasState = pickCanvasStateFromEditorState(newEditorState)
   const interactionSession = newEditorState.canvas.interactionSession
   if (interactionSession == null) {
     return {
@@ -339,14 +312,7 @@ export function interactionUserChangedStrategy(
   result: InnerDispatchResult,
 ): HandleStrategiesResult {
   const newEditorState = result.unpatchedEditor
-  const canvasState: InteractionCanvasState = {
-    selectedElements: newEditorState.selectedViews,
-    // metadata: store.editor.jsxMetadata, // We can add metadata back if live metadata is necessary
-    projectContents: newEditorState.projectContents,
-    openFile: newEditorState.canvas.openFile?.filename,
-    scale: newEditorState.canvas.scale,
-    canvasOffset: newEditorState.canvas.roundedCanvasOffset,
-  }
+  const canvasState: InteractionCanvasState = pickCanvasStateFromEditorState(newEditorState)
   const interactionSession = newEditorState.canvas.interactionSession
   if (interactionSession == null) {
     return {
@@ -433,14 +399,7 @@ export function interactionStrategyChangeStacked(
   result: InnerDispatchResult,
 ): HandleStrategiesResult {
   const newEditorState = result.unpatchedEditor
-  const canvasState: InteractionCanvasState = {
-    selectedElements: newEditorState.selectedViews,
-    // metadata: store.editor.jsxMetadata, // We can add metadata back if live metadata is necessary
-    projectContents: newEditorState.projectContents,
-    openFile: newEditorState.canvas.openFile?.filename,
-    scale: newEditorState.canvas.scale,
-    canvasOffset: newEditorState.canvas.roundedCanvasOffset,
-  }
+  const canvasState: InteractionCanvasState = pickCanvasStateFromEditorState(newEditorState)
   const interactionSession = newEditorState.canvas.interactionSession
   if (interactionSession == null) {
     return {
