@@ -2,7 +2,7 @@ import React from 'react'
 import { ElementPath } from '../../../core/shared/project-file-types'
 import { useColorTheme } from '../../../uuiui'
 import { useEditorState } from '../../editor/store/store-hook'
-import { useDistanceGuidelineX, useDistanceGuidelineY } from './distance-guideline-hooks'
+import { useClosestDistanceGuideline } from './distance-guideline-hooks'
 
 interface DistanceGuidelineProps {
   localSelectedElements: Array<ElementPath>
@@ -54,16 +54,18 @@ export const DistanceGuideline = React.memo<DistanceGuidelineProps>((props) => {
 
 const GuidelineHorizontal = React.memo<DistanceGuidelineProps>((props) => {
   const colorTheme = useColorTheme()
-  const guidelineHorizontal = useDistanceGuidelineX(
+  const guidelineHorizontal = useClosestDistanceGuideline(
     props.localSelectedElements,
+    'XAxisGuideline',
     (ref, guidelineRect) => {
       ref.current.style.setProperty(`--utopia-canvas-guideline-x`, `${guidelineRect.x}px`)
       ref.current.style.setProperty(`--utopia-canvas-guideline-y`, `${guidelineRect.y}px`)
       ref.current.style.setProperty(`--utopia-canvas-guideline-width`, `${guidelineRect.width}px`)
     },
   )
-  const guidelineHorizontalText = useDistanceGuidelineX(
+  const guidelineHorizontalText = useClosestDistanceGuideline(
     props.localSelectedElements,
+    'XAxisGuideline',
     (ref, guidelineRect, distance) => {
       ref.current.style.setProperty(`--utopia-canvas-guideline-x`, `${guidelineRect.x}px`)
       ref.current.style.setProperty(`--utopia-canvas-guideline-y`, `${guidelineRect.y}px`)
@@ -94,8 +96,8 @@ const GuidelineHorizontal = React.memo<DistanceGuidelineProps>((props) => {
           style={{
             position: 'relative',
             display: 'inline-block',
-            top: `${-LineEndSegmentSize}px / var(--utopia-canvas-scale))`,
-            height: `${LineEndSegmentSize * 2}px / var(--utopia-canvas-scale))`,
+            top: `calc(${-LineEndSegmentSize}px / var(--utopia-canvas-scale))`,
+            height: `calc(${LineEndSegmentSize * 2}px / var(--utopia-canvas-scale))`,
             width: `calc(${StrokeWidth}px / var(--utopia-canvas-scale))`,
             backgroundColor: colorTheme.canvasLayoutStroke.value,
           }}
@@ -103,7 +105,7 @@ const GuidelineHorizontal = React.memo<DistanceGuidelineProps>((props) => {
         <div
           style={{
             position: 'relative',
-            top: `${-LineEndSegmentSize * 2}px / var(--utopia-canvas-scale))`,
+            top: `calc(${-LineEndSegmentSize * 2}px / var(--utopia-canvas-scale))`,
             display: 'inline-block',
             backgroundColor: colorTheme.canvasLayoutStroke.value,
             width: '100%',
@@ -114,8 +116,8 @@ const GuidelineHorizontal = React.memo<DistanceGuidelineProps>((props) => {
           style={{
             display: 'inline-block',
             position: 'relative',
-            top: `${-LineEndSegmentSize}px / var(--utopia-canvas-scale))`,
-            height: `${LineEndSegmentSize * 2}px / var(--utopia-canvas-scale))`,
+            top: `calc(${-LineEndSegmentSize}px / var(--utopia-canvas-scale))`,
+            height: `calc(${LineEndSegmentSize * 2}px / var(--utopia-canvas-scale))`,
             width: `calc(${StrokeWidth}px / var(--utopia-canvas-scale))`,
             backgroundColor: colorTheme.canvasLayoutStroke.value,
           }}
@@ -135,7 +137,7 @@ const GuidelineHorizontal = React.memo<DistanceGuidelineProps>((props) => {
           top: `calc(var(--utopia-canvas-guideline-y) + ${
             FontSize / 2
           }px / var(--utopia-canvas-scale))`,
-          width: `calc(var(--utopia-canvas-guideline-width) -${
+          width: `calc(var(--utopia-canvas-guideline-width) - ${
             StrokeWidth / 2
           }px / var(--utopia-canvas-scale) * 3)`,
         }}
@@ -147,16 +149,18 @@ const GuidelineHorizontal = React.memo<DistanceGuidelineProps>((props) => {
 const GuidelineVertical = React.memo<DistanceGuidelineProps>((props) => {
   const colorTheme = useColorTheme()
 
-  const guidelineVertical = useDistanceGuidelineY(
+  const guidelineVertical = useClosestDistanceGuideline(
     props.localSelectedElements,
+    'YAxisGuideline',
     (ref, guidelineRect) => {
       ref.current.style.setProperty(`--utopia-canvas-guideline-x`, `${guidelineRect.x}px`)
       ref.current.style.setProperty(`--utopia-canvas-guideline-y`, `${guidelineRect.y}px`)
       ref.current.style.setProperty(`--utopia-canvas-guideline-height`, `${guidelineRect.height}px`)
     },
   )
-  const guidelineVerticalText = useDistanceGuidelineY(
+  const guidelineVerticalText = useClosestDistanceGuideline(
     props.localSelectedElements,
+    'YAxisGuideline',
     (ref, guidelineRect, distance) => {
       ref.current.style.setProperty(`--utopia-canvas-guideline-x`, `${guidelineRect.x}px`)
       ref.current.style.setProperty(`--utopia-canvas-guideline-y`, `${guidelineRect.y}px`)
@@ -186,8 +190,8 @@ const GuidelineVertical = React.memo<DistanceGuidelineProps>((props) => {
         <div
           style={{
             position: 'relative',
-            left: `${-LineEndSegmentSize}px / var(--utopia-canvas-scale))`,
-            width: `${LineEndSegmentSize * 2}px / var(--utopia-canvas-scale))`,
+            left: `calc(${-LineEndSegmentSize}px / var(--utopia-canvas-scale))`,
+            width: `calc(${LineEndSegmentSize * 2}px / var(--utopia-canvas-scale))`,
             height: `calc(${StrokeWidth}px / var(--utopia-canvas-scale))`,
             backgroundColor: colorTheme.canvasLayoutStroke.value,
           }}
@@ -203,8 +207,8 @@ const GuidelineVertical = React.memo<DistanceGuidelineProps>((props) => {
         <div
           style={{
             position: 'relative',
-            left: `${-LineEndSegmentSize}px / var(--utopia-canvas-scale))`,
-            width: `${LineEndSegmentSize * 2}px / var(--utopia-canvas-scale))`,
+            left: `calc(${-LineEndSegmentSize}px / var(--utopia-canvas-scale))`,
+            width: `calc(${LineEndSegmentSize * 2}px / var(--utopia-canvas-scale))`,
             height: `calc(${StrokeWidth}px / var(--utopia-canvas-scale))`,
             backgroundColor: colorTheme.canvasLayoutStroke.value,
           }}
