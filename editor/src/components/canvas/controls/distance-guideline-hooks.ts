@@ -24,10 +24,10 @@ interface NotNullRefObject<T> {
 }
 
 function getDistanceGuidelines(
-  highlightedView: ElementPath,
+  target: ElementPath,
   componentMetadata: ElementInstanceMetadataMap,
 ): Array<Guideline> {
-  const frame = MetadataUtils.getFrameInCanvasCoords(highlightedView, componentMetadata)
+  const frame = MetadataUtils.getFrameInCanvasCoords(target, componentMetadata)
   if (frame == null) {
     return []
   } else {
@@ -35,8 +35,24 @@ function getDistanceGuidelines(
   }
 }
 
-export function useDistanceGuidelineX<T = HTMLDivElement>(
+function boundingBoxFromSelection(
   selectedElements: Array<ElementPath>,
+  metadata: ElementInstanceMetadataMap,
+): CanvasRectangle | null {
+  let frames: Array<CanvasRectangle> = []
+  fastForEach(selectedElements, (view) => {
+    const frame = MetadataUtils.getFrameInCanvasCoords(view, metadata)
+    if (frame != null) {
+      frames.push(frame)
+    }
+  })
+
+  return boundingRectangleArray(frames)
+}
+
+export function useClosestDistanceGuideline<T = HTMLDivElement>(
+  selectedElements: Array<ElementPath>,
+  type: Guideline['type'],
   onChangeCallback: (
     ref: NotNullRefObject<T>,
     boundingBox: CanvasRectangle,
@@ -44,10 +60,10 @@ export function useDistanceGuidelineX<T = HTMLDivElement>(
   ) => void,
 ): React.RefObject<T> {
   const controlRef = React.useRef<T>(null)
-  const boundingBoxCallback = React.useCallback(
-    (boundingBox: CanvasRectangle | null, distance: number) => {
-      if (boundingBox != null && controlRef.current != null) {
-        onChangeCallback(controlRef as NotNullRefObject<T>, boundingBox, distance)
+  const guidelineCallback = React.useCallback(
+    (guidelineFrame: CanvasRectangle | null, distance: number) => {
+      if (guidelineFrame != null && controlRef.current != null) {
+        onChangeCallback(controlRef as NotNullRefObject<T>, guidelineFrame, distance)
       }
     },
     [onChangeCallback],
@@ -59,19 +75,11 @@ export function useDistanceGuidelineX<T = HTMLDivElement>(
     'guideline highlighted view',
   )
 
-  const boundingBoxCallbackRef = React.useRef(boundingBoxCallback)
-  boundingBoxCallbackRef.current = boundingBoxCallback
+  const guidelineCallbackRef = React.useRef(guidelineCallback)
+  guidelineCallbackRef.current = guidelineCallback
 
   const innerCallback = React.useCallback(() => {
-    let frames: Array<CanvasRectangle> = []
-    fastForEach(selectedElements, (view) => {
-      const frame = MetadataUtils.getFrameInCanvasCoords(view, metadataRef.current)
-      if (frame != null) {
-        frames.push(frame)
-      }
-    })
-
-    const boundingBox = boundingRectangleArray(frames)
+    const boundingBox = boundingBoxFromSelection(selectedElements, metadataRef.current)
     if (boundingBox != null) {
       let distanceGuidelines: Array<Guideline> = []
       if (highlightedViews.length !== 0) {
@@ -85,12 +93,12 @@ export function useDistanceGuidelineX<T = HTMLDivElement>(
         }
       }
 
-      const xAxisGuidelines = distanceGuidelines.filter(
-        (guideline) => guideline.type === 'XAxisGuideline',
+      const selectedAxisGuidelines = distanceGuidelines.filter(
+        (guideline) => guideline.type === type,
       )
 
-      if (xAxisGuidelines.length > 0) {
-        const distanceResults = xAxisGuidelines
+      if (selectedAxisGuidelines.length > 0) {
+        const distanceResults = selectedAxisGuidelines
           .map((guideline) =>
             Guidelines.distanceFromFrameToGuideline(boundingBox, guideline, false),
           )
@@ -101,97 +109,13 @@ export function useDistanceGuidelineX<T = HTMLDivElement>(
           y: Math.min(result.from.y, result.to.y),
         } as CanvasPoint
         const width = Math.abs(result.to.x - result.from.x)
-
-        const frame = canvasRectangle({ x: topLeft.x, y: topLeft.y, width: width, height: 0 })
-
-        boundingBoxCallbackRef.current(frame, result.distance)
-      }
-    }
-  }, [selectedElements, metadataRef, highlightedViews])
-
-  useSelectorWithCallback(
-    (store) => getMetadata(store.editor),
-    (newMetadata) => {
-      innerCallback()
-    },
-  )
-
-  React.useEffect(innerCallback, [innerCallback, selectedElements])
-
-  return controlRef
-}
-
-export function useDistanceGuidelineY<T = HTMLDivElement>(
-  selectedElements: Array<ElementPath>,
-  onChangeCallback: (
-    ref: NotNullRefObject<T>,
-    boundingBox: CanvasRectangle,
-    distance: number,
-  ) => void,
-): React.RefObject<T> {
-  const controlRef = React.useRef<T>(null)
-  const boundingBoxCallback = React.useCallback(
-    (boundingBox: CanvasRectangle | null, distance: number) => {
-      if (boundingBox != null && controlRef.current != null) {
-        onChangeCallback(controlRef as NotNullRefObject<T>, boundingBox, distance)
-      }
-    },
-    [onChangeCallback],
-  )
-
-  const metadataRef = useRefEditorState((store) => getMetadata(store.editor))
-  const highlightedViews = useEditorState(
-    (store) => store.editor.highlightedViews,
-    'guideline highlighted view',
-  )
-
-  const boundingBoxCallbackRef = React.useRef(boundingBoxCallback)
-  boundingBoxCallbackRef.current = boundingBoxCallback
-
-  const innerCallback = React.useCallback(() => {
-    let frames: Array<CanvasRectangle> = []
-    fastForEach(selectedElements, (view) => {
-      const frame = MetadataUtils.getFrameInCanvasCoords(view, metadataRef.current)
-      if (frame != null) {
-        frames.push(frame)
-      }
-    })
-
-    const boundingBox = boundingRectangleArray(frames)
-    if (boundingBox != null) {
-      let distanceGuidelines: Array<Guideline> = []
-      if (highlightedViews.length !== 0) {
-        distanceGuidelines = flatMapArray((highlightedView) => {
-          return getDistanceGuidelines(highlightedView, metadataRef.current)
-        }, highlightedViews)
-      } else if (selectedElements.length > 0) {
-        const parentPath = EP.parentPath(selectedElements[0])
-        if (parentPath != null) {
-          distanceGuidelines = getDistanceGuidelines(parentPath, metadataRef.current)
-        }
-      }
-      const yAxisGuidelines = distanceGuidelines.filter(
-        (guideline) => guideline.type === 'YAxisGuideline',
-      )
-
-      if (yAxisGuidelines.length > 0) {
-        const distanceResults = yAxisGuidelines
-          .map((guideline) =>
-            Guidelines.distanceFromFrameToGuideline(boundingBox, guideline, false),
-          )
-          .sort((a, b) => a.distance - b.distance)
-        const result = distanceResults[0]
-        const topLeft = {
-          x: Math.min(result.from.x, result.to.x),
-          y: Math.min(result.from.y, result.to.y),
-        } as CanvasPoint
         const height = Math.abs(result.to.y - result.from.y)
 
-        const frame = canvasRectangle({ x: topLeft.x, y: topLeft.y, width: 0, height: height })
-        boundingBoxCallbackRef.current(frame, result.distance)
+        const frame = canvasRectangle({ x: topLeft.x, y: topLeft.y, width: width, height: height })
+        guidelineCallbackRef.current(frame, result.distance)
       }
     }
-  }, [selectedElements, metadataRef, highlightedViews])
+  }, [selectedElements, metadataRef, highlightedViews, type])
 
   useSelectorWithCallback(
     (store) => getMetadata(store.editor),
