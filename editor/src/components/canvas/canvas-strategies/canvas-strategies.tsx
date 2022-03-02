@@ -4,7 +4,7 @@ import { addAllUniquelyBy, mapDropNulls, sortBy } from '../../../core/shared/arr
 import { ElementInstanceMetadataMap } from '../../../core/shared/element-template'
 import { arrayEquals } from '../../../core/shared/utils'
 import { InnerDispatchResult } from '../../editor/store/dispatch'
-import { EditorStorePatched } from '../../editor/store/editor-state'
+import { EditorState, EditorStorePatched } from '../../editor/store/editor-state'
 import { useEditorState } from '../../editor/store/store-hook'
 import { CanvasCommand } from '../commands/commands'
 import { absoluteMoveStrategy } from './absolute-move-strategy'
@@ -16,6 +16,16 @@ export const RegisteredCanvasStrategies: Array<CanvasStrategy> = [
   absoluteMoveStrategy,
   absoluteReparentStrategy,
 ]
+
+export function pickCanvasStateFromEditorState(editorState: EditorState): InteractionCanvasState {
+  return {
+    selectedElements: editorState.selectedViews,
+    projectContents: editorState.projectContents,
+    openFile: editorState.canvas.openFile?.filename,
+    scale: editorState.canvas.scale,
+    canvasOffset: editorState.canvas.roundedCanvasOffset,
+  }
+}
 
 function getApplicableStrategies(
   strategies: Array<CanvasStrategy>,
@@ -99,14 +109,7 @@ function getApplicableStrategiesOrderedByFitness(
 
 const getApplicableStrategiesOrderedByFitnessSelector = createSelector(
   (store: EditorStorePatched): InteractionCanvasState => {
-    return {
-      selectedElements: store.editor.selectedViews,
-      // metadata: store.editor.jsxMetadata, // We can add metadata back if live metadata is necessary
-      projectContents: store.editor.projectContents,
-      openFile: store.editor.canvas.openFile?.filename,
-      scale: store.editor.canvas.scale,
-      canvasOffset: store.editor.canvas.roundedCanvasOffset,
-    }
+    return pickCanvasStateFromEditorState(store.editor)
   },
   (store: EditorStorePatched) => store.editor.canvas.interactionSession,
   (store: EditorStorePatched) => store.strategyState,
@@ -218,14 +221,7 @@ export function findCanvasStrategyFromDispatchResult(
   result: InnerDispatchResult,
 ): StrategyWithFitness | null {
   const newEditorState = result.unpatchedEditor
-  const canvasState: InteractionCanvasState = {
-    selectedElements: newEditorState.selectedViews,
-    // metadata: store.editor.jsxMetadata, // We can add metadata back if live metadata is necessary
-    projectContents: newEditorState.projectContents,
-    openFile: newEditorState.canvas.openFile?.filename,
-    scale: newEditorState.canvas.scale,
-    canvasOffset: newEditorState.canvas.roundedCanvasOffset,
-  }
+  const canvasState: InteractionCanvasState = pickCanvasStateFromEditorState(newEditorState)
   const interactionSession = newEditorState.canvas.interactionSession
   if (interactionSession == null) {
     return null
