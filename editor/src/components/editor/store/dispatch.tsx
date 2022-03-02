@@ -56,6 +56,7 @@ import { isFeatureEnabled } from '../../../utils/feature-switches'
 import { handleStrategies } from './dispatch-strategies'
 
 import { emptySet } from '../../../core/shared/set-utils'
+import { RegisteredCanvasStrategies } from '../../canvas/canvas-strategies/canvas-strategies'
 
 type DispatchResultFields = {
   nothingChanged: boolean
@@ -421,7 +422,13 @@ export function editorDispatch(
     newStrategyState,
     patchedDerivedState,
   } = isFeatureEnabled('Canvas Strategies')
-    ? handleStrategies(dispatchedActions, storedState, result, storedState.patchedDerived)
+    ? handleStrategies(
+        RegisteredCanvasStrategies,
+        dispatchedActions,
+        storedState,
+        result,
+        storedState.patchedDerived,
+      )
     : {
         unpatchedEditorState: result.unpatchedEditor,
         patchedEditorState: result.unpatchedEditor,
