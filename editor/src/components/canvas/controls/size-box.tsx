@@ -3,7 +3,7 @@
 import { jsx } from '@emotion/react'
 import React from 'react'
 import Utils from '../../../utils/utils'
-import { CanvasPoint, CanvasRectangle } from '../../../core/shared/math-utils'
+import { CanvasPoint, CanvasRectangle, point, windowPoint } from '../../../core/shared/math-utils'
 import { EditorDispatch } from '../../editor/action-types'
 import { setResizeOptionsTargetOptions } from '../../editor/actions/action-creators'
 import { ControlFontSize } from '../canvas-controls-frame'
@@ -46,6 +46,9 @@ import {
 import { safeIndex } from '../../../core/shared/array-utils'
 import { CSSPosition } from '../../inspector/common/css-utils'
 import * as EP from '../../../core/shared/element-path'
+import { createInteractionViaMouse } from '../canvas-strategies/interaction-state'
+import { Modifier } from '../../../utils/modifiers'
+import { windowToCanvasCoordinates } from '../dom-lookup'
 
 interface ResizeControlProps extends ResizeRectangleProps {
   cursor: CSSCursor
@@ -109,35 +112,55 @@ class ResizeControl extends React.Component<ResizeControlProps> {
         propertyTargetOptions,
         this.props.propertyTargetSelectedIndex,
       )
-      const newDragState = updateResizeDragState(
-        resizeDragState(
-          this.props.measureSize,
-          originalFrames,
-          this.props.position,
-          this.props.enabledDirection,
-          this.props.metadata,
-          this.props.selectedViews,
-          isMultiSelect,
-          [],
-        ),
-        start,
-        null,
-        targetProperty,
-        enableSnapping,
-        centerBasedResize,
-        keepAspectRatio,
-      )
+      if (isFeatureEnabled('Canvas Strategies')) {
+        const startPoint = windowToCanvasCoordinates(
+          this.props.scale,
+          this.props.canvasOffset,
+          windowPoint(point(event.clientX, event.clientY)),
+        ).canvasPositionRounded
 
-      this.props.dispatch(
-        [
-          CanvasActions.createDragState(newDragState),
-          setResizeOptionsTargetOptions(
-            propertyTargetOptions,
-            this.props.propertyTargetSelectedIndex,
+        this.props.dispatch(
+          [
+            CanvasActions.createInteractionSession(
+              createInteractionViaMouse(startPoint, Modifier.modifiersForEvent(event), {
+                type: 'RESIZE_HANDLE',
+                edgePosition: this.props.position,
+              }),
+            ),
+          ],
+          'everyone',
+        )
+      } else {
+        const newDragState = updateResizeDragState(
+          resizeDragState(
+            this.props.measureSize,
+            originalFrames,
+            this.props.position,
+            this.props.enabledDirection,
+            this.props.metadata,
+            this.props.selectedViews,
+            isMultiSelect,
+            [],
           ),
-        ],
-        'canvas',
-      )
+          start,
+          null,
+          targetProperty,
+          enableSnapping,
+          centerBasedResize,
+          keepAspectRatio,
+        )
+
+        this.props.dispatch(
+          [
+            CanvasActions.createDragState(newDragState),
+            setResizeOptionsTargetOptions(
+              propertyTargetOptions,
+              this.props.propertyTargetSelectedIndex,
+            ),
+          ],
+          'canvas',
+        )
+      }
       this.props.onResizeStart(this.props.measureSize, this.props.position)
     }
   }

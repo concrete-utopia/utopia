@@ -180,6 +180,8 @@ export const testPerformance = async function () {
 export const testPerformanceInner = async function (url: string): Promise<PerformanceResult> {
   let scrollResult = EmptyResult
   let resizeResult = EmptyResult
+  let highlightRegularResult = EmptyResult
+  let highlightAllElementsResult = EmptyResult
   let selectionResult = EmptyResult
   let basicCalc = EmptyResult
   let simpleDispatch = EmptyResult
@@ -188,6 +190,8 @@ export const testPerformanceInner = async function (url: string): Promise<Perfor
     const baselines = await initialiseTestsReturnScale(page)
     basicCalc = baselines.basicCalc
     simpleDispatch = baselines.simpleDispatch
+    highlightRegularResult = await testHighlightRegularPerformance(page)
+    highlightAllElementsResult = await testHighlightAllElementsPerformance(page)
     selectionResult = await testSelectionPerformance(page)
     resizeResult = await testResizePerformance(page)
     scrollResult = await testScrollingPerformance(page)
@@ -197,6 +201,8 @@ export const testPerformanceInner = async function (url: string): Promise<Perfor
     browser.close()
   }
   const summaryImage = await uploadSummaryImage([
+    highlightRegularResult,
+    highlightAllElementsResult,
     selectionResult,
     scrollResult,
     resizeResult,
@@ -206,6 +212,8 @@ export const testPerformanceInner = async function (url: string): Promise<Perfor
 
   const message = `${consoleMessageForResult(scrollResult)} | ${consoleMessageForResult(
     resizeResult,
+  )} | ${consoleMessageForResult(highlightRegularResult)} | ${consoleMessageForResult(
+    highlightAllElementsResult,
   )} | ${consoleMessageForResult(selectionResult)} | ${consoleMessageForResult(
     basicCalc,
   )} | ${consoleMessageForResult(simpleDispatch)}`
@@ -279,6 +287,72 @@ export const testResizePerformance = async function (page: puppeteer.Page): Prom
   let traceData = fs.readFileSync('trace.json').toString()
   const traceJson = JSON.parse(traceData)
   return getFrameData(traceJson, 'resize_step_', 'Resize')
+}
+
+export const testHighlightRegularPerformance = async function (
+  page: puppeteer.Page,
+): Promise<FrameResult> {
+  console.log(`Test Regular Highlight Performance`)
+  await page.waitForXPath("//a[contains(., 'PRH')]")
+  // we run it twice without measurements to warm up the environment
+  await clickOnce(
+    page,
+    "//a[contains(., 'PRH')]",
+    'HIGHLIGHT_REGULAR_TEST_FINISHED',
+    'HIGHLIGHT_REGULAR_TEST_ERROR',
+  )
+  await clickOnce(
+    page,
+    "//a[contains(., 'PRH')]",
+    'HIGHLIGHT_REGULAR_TEST_FINISHED',
+    'HIGHLIGHT_REGULAR_TEST_ERROR',
+  )
+
+  // and then we run the test for a third time, this time running tracing
+  await page.tracing.start({ categories: ['blink.user_timing'], path: 'trace.json' })
+  await clickOnce(
+    page,
+    "//a[contains(., 'PRH')]",
+    'HIGHLIGHT_REGULAR_TEST_FINISHED',
+    'HIGHLIGHT_REGULAR_TEST_ERROR',
+  )
+  await page.tracing.stop()
+  let traceData = fs.readFileSync('trace.json').toString()
+  const traceJson = JSON.parse(traceData)
+  return getFrameData(traceJson, 'highlight_regular_step_', 'Highlight Regular')
+}
+
+export const testHighlightAllElementsPerformance = async function (
+  page: puppeteer.Page,
+): Promise<FrameResult> {
+  console.log(`Test All Elements Highlight Performance`)
+  await page.waitForXPath("//a[contains(., 'PAH')]")
+  // we run it twice without measurements to warm up the environment
+  await clickOnce(
+    page,
+    "//a[contains(., 'PAH')]",
+    'HIGHLIGHT_ALL-ELEMENTS_TEST_FINISHED',
+    'HIGHLIGHT_ALL-ELEMENTS_TEST_ERROR',
+  )
+  await clickOnce(
+    page,
+    "//a[contains(., 'PAH')]",
+    'HIGHLIGHT_ALL-ELEMENTS_TEST_FINISHED',
+    'HIGHLIGHT_ALL-ELEMENTS_TEST_ERROR',
+  )
+
+  // and then we run the test for a third time, this time running tracing
+  await page.tracing.start({ categories: ['blink.user_timing'], path: 'trace.json' })
+  await clickOnce(
+    page,
+    "//a[contains(., 'PAH')]",
+    'HIGHLIGHT_ALL-ELEMENTS_TEST_FINISHED',
+    'HIGHLIGHT_ALL-ELEMENTS_TEST_ERROR',
+  )
+  await page.tracing.stop()
+  let traceData = fs.readFileSync('trace.json').toString()
+  const traceJson = JSON.parse(traceData)
+  return getFrameData(traceJson, 'highlight_all-elements_step_', 'Highlight All Elements')
 }
 
 export const testSelectionPerformance = async function (

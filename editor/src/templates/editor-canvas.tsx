@@ -70,6 +70,7 @@ import { Modifier } from '../utils/modifiers'
 import RU from '../utils/react-utils'
 import Utils from '../utils/utils'
 import {
+  canvasPoint,
   CanvasPoint,
   CanvasRectangle,
   CanvasVector,
@@ -91,6 +92,7 @@ import {
   updateGlobalPositions,
 } from '../utils/global-positions'
 import { last, reverse } from '../core/shared/array-utils'
+import { updateInteractionViaMouse } from '../components/canvas/canvas-strategies/interaction-state'
 
 const webFrame = PROBABLY_ELECTRON ? requireElectron().webFrame : null
 
@@ -151,6 +153,14 @@ function handleCanvasEvent(model: CanvasModel, event: CanvasMouseEvent): Array<E
   }
 
   let optionalDragStateAction: Array<EditorAction> = []
+  if ('interactionSession' in event && event.interactionSession != null) {
+    optionalDragStateAction = [
+      model.editorState.canvas.interactionSession != null
+        ? CanvasActions.updateInteractionSession(event.interactionSession)
+        : CanvasActions.createInteractionSession(event.interactionSession),
+    ]
+  }
+
   const insertMode = model.mode.type === 'insert'
   if (!(insertMode && isOpenFileUiJs(model.editorState))) {
     switch (event.event) {
@@ -171,12 +181,19 @@ function handleCanvasEvent(model: CanvasModel, event: CanvasMouseEvent): Array<E
             ),
           ]
         }
+        if (model.editorState.canvas.interactionSession?.interactionData.type === 'DRAG') {
+          const applyChanges =
+            model.editorState.canvas.interactionSession?.interactionData.dragThresholdPassed
+          optionalDragStateAction = [CanvasActions.clearInteractionSession(applyChanges)]
+        }
         break
 
-      case 'MOUSE_LEFT_WINDOW':
       case 'MOVE':
         break
+      case 'MOUSE_LEFT_WINDOW':
+        break
 
+      // TODO This will prevent strategies that rely on these events
       case 'DRAG_END':
       case 'CLICK':
       case 'DOUBLE_CLICK':
@@ -276,6 +293,8 @@ function on(
   return additionalEvents
 }
 
+let interactionSessionTimerHandle: any = undefined
+
 export function runLocalCanvasAction(
   dispatch: EditorDispatch,
   model: EditorState,
@@ -337,6 +356,67 @@ export function runLocalCanvasAction(
           realCanvasOffset: newCanvasOffset,
           roundedCanvasOffset: Utils.roundPointTo(newCanvasOffset, 0),
         },
+      }
+    }
+    case 'CREATE_INTERACTION_SESSION':
+      clearInterval(interactionSessionTimerHandle)
+      interactionSessionTimerHandle = setInterval(() => {
+        dispatch([CanvasActions.updateInteractionSession({ globalTime: Date.now() })])
+      }, 200)
+      return {
+        ...model,
+        canvas: {
+          ...model.canvas,
+          interactionSession: {
+            ...action.interactionSession,
+            metadata: model.canvas.interactionSession?.metadata ?? model.jsxMetadata,
+          },
+        },
+      }
+    case 'CLEAR_INTERACTION_SESSION':
+      clearInterval(interactionSessionTimerHandle)
+      const metadataToKeep =
+        action.applyChanges && model.canvas.interactionSession != null
+          ? model.canvas.interactionSession.metadata
+          : model.jsxMetadata
+      return {
+        ...model,
+        canvas: {
+          ...model.canvas,
+          interactionSession: null,
+          domWalkerInvalidateCount: model.canvas.domWalkerInvalidateCount + 1,
+        },
+        jsxMetadata: metadataToKeep,
+      }
+    case 'UPDATE_INTERACTION_SESSION':
+      if (model.canvas.interactionSession == null) {
+        return model
+      } else {
+        return {
+          ...model,
+          canvas: {
+            ...model.canvas,
+            interactionSession: {
+              ...model.canvas.interactionSession,
+              ...action.interactionSessionUpdate,
+            },
+          },
+        }
+      }
+    case 'SET_USERS_PREFERRED_STRATEGY': {
+      if (model.canvas.interactionSession != null) {
+        return {
+          ...model,
+          canvas: {
+            ...model.canvas,
+            interactionSession: {
+              ...model.canvas.interactionSession,
+              userPreferredStrategy: action.strategyId,
+            },
+          },
+        }
+      } else {
+        return model
       }
     }
     default:
@@ -1010,13 +1090,37 @@ export class EditorCanvas extends React.Component<EditorCanvasProps> {
       }
       mouseMoveHandled()
       const dragStarted = anyDragStarted(dragState)
-      if (dragState == null || !dragStarted) {
+      if (
+        this.props.editor.canvas.interactionSession != null &&
+        this.props.editor.canvas.interactionSession.interactionData.type === 'DRAG'
+      ) {
+        const dragStart = this.props.editor.canvas.interactionSession.interactionData.dragStart
+
+        const newDrag = roundPointForScale(
+          Utils.offsetPoint(canvasPositions.canvasPositionRounded, Utils.negate(dragStart)),
+          this.props.model.scale,
+        )
         this.handleEvent({
           ...canvasPositions,
           event: 'MOVE',
           modifiers: Modifier.modifiersForEvent(event),
           cursor: null,
           nativeEvent: event,
+          interactionSession: updateInteractionViaMouse(
+            this.props.editor.canvas.interactionSession,
+            newDrag,
+            Modifier.modifiersForEvent(event),
+            null,
+          ),
+        })
+      } else if (dragState == null || !dragStarted) {
+        this.handleEvent({
+          ...canvasPositions,
+          event: 'MOVE',
+          modifiers: Modifier.modifiersForEvent(event),
+          cursor: null,
+          nativeEvent: event,
+          interactionSession: null,
         })
       } else {
         const newDrag = roundPointForScale(

@@ -178,16 +178,16 @@ After this step open a new shell window and enter the utopia directory. Direnv s
 
 ## Unit Tests with Jest
 
-One-off test run:
+Use the following nix scripts:
 
 ```
-npm run test
+test-editor
 ```
 
 Continuous mode:
 
 ```
-npm run test-watch
+test-editor-watch
 ```
 
 On macOS, when trying to watch, you might run into an error message about number of open files. In that case, install watchman:
@@ -195,6 +195,37 @@ On macOS, when trying to watch, you might run into an error message about number
 ```
 brew install watchman
 ```
+
+## Browser tests with Karma
+
+_Tip: If you want to focus on a specific test suite you can change `describe(...` to `describe.only(...` and if you want to run a specific test case, you can do the same with `it.only(...` ._
+
+Use the following nix scripts:
+
+One-off run with a headless Chrome (same as on the CI):
+
+```
+test-editor-browser
+```
+
+Debugging (bring your own Chrome):
+
+```
+test-editor-browser-debug
+```
+
+In debugging mode, Karma will be run in watch mode, and will not use a managed browser. Once the Karma webpack server is ready, it will print something like this to the terminal:
+
+```
+01 03 2022 11:20:17.412:WARN [karma]: No captured browser, open http://localhost:9876/
+```
+
+Use your own Chrome browser to navigate to the printed http address. The website will have a Debug button, or you can just append `/debug.html` to the url like so: `http://localhost:9876/debug.html` (your port may vary).
+
+In debug mode, you can see all console logs in Chrome's own DevTools, you can use `debugger;` statements, etc.
+Behind the scenes, Karma runs a webpack dev server in watch mode, which means if you change the source code, webpack will recompile and karma will attempt to re-run the tests. If the tests do not rerun for some reason, just navigate to `http://localhost:9876/debug.html` again.
+
+(I recommend opening DevTools before navigating to `/debug.html` to make sure you don't miss `debugger;` statements and see the console output even if a test hangs the browser or enters an infinite loop.)
 
 ## VSCode linting, formatting with prettier etc
 

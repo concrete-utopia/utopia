@@ -956,6 +956,7 @@ function restoreEditorState(currentEditor: EditorModel, history: StateHistory): 
     canvas: {
       visible: currentEditor.canvas.visible,
       dragState: null,
+      interactionSession: null,
       scale: currentEditor.canvas.scale,
       snappingThreshold: currentEditor.canvas.snappingThreshold,
       realCanvasOffset: currentEditor.canvas.realCanvasOffset,
@@ -973,6 +974,7 @@ function restoreEditorState(currentEditor: EditorModel, history: StateHistory): 
       transientProperties: null,
       resizeOptions: currentEditor.canvas.resizeOptions,
       domWalkerAdditionalElementsToUpdate: currentEditor.canvas.domWalkerAdditionalElementsToUpdate,
+      controls: currentEditor.canvas.controls,
     },
     floatingInsertMenu: currentEditor.floatingInsertMenu,
     inspector: {

@@ -1,6 +1,7 @@
 import {
   arrayDeepEquality,
   combine2EqualityCalls,
+  combine3EqualityCalls,
   combine4EqualityCalls,
   combine5EqualityCalls,
   createCallFromEqualsFunction,
@@ -20,7 +21,12 @@ import { ElementPath, PropertyPath } from '../core/shared/project-file-types'
 import { createCallFromIntrospectiveKeepDeep } from './react-performance'
 import { Either, foldEither, isLeft, left, right } from '../core/shared/either'
 import { NameAndIconResult } from '../components/inspector/common/name-and-icon-hook'
-import { DropTargetHint, NavigatorState } from '../components/editor/store/editor-state'
+import {
+  DropTargetHint,
+  elementWarnings,
+  ElementWarnings,
+  NavigatorState,
+} from '../components/editor/store/editor-state'
 import { LayoutTargetableProp } from '../core/layout/layout-helpers-new'
 
 export const ElementPathKeepDeepEquality: KeepDeepEqualityCall<ElementPath> = createCallFromEqualsFunction(
@@ -33,11 +39,11 @@ export const ElementPathArrayKeepDeepEquality: KeepDeepEqualityCall<Array<
   ElementPath
 >> = arrayDeepEquality(ElementPathKeepDeepEquality)
 
-export const PropertyPathKeepDeepEquality: KeepDeepEqualityCall<PropertyPath> = createCallFromEqualsFunction(
-  (oldPath: PropertyPath, newPath: PropertyPath) => {
+export function PropertyPathKeepDeepEquality(): KeepDeepEqualityCall<PropertyPath> {
+  return createCallFromEqualsFunction((oldPath: PropertyPath, newPath: PropertyPath) => {
     return PP.pathsEqual(oldPath, newPath)
-  },
-)
+  })
+}
 
 export const HigherOrderControlArrayKeepDeepEquality: KeepDeepEqualityCall<Array<
   HigherOrderControl
@@ -48,7 +54,7 @@ export function JSXElementNameKeepDeepEqualityCall(): KeepDeepEqualityCall<JSXEl
     (name) => name.baseVariable,
     createCallWithTripleEquals(),
     (name) => name.propertyPath,
-    PropertyPathKeepDeepEquality,
+    PropertyPathKeepDeepEquality(),
     (baseVariable, propertyPath) => {
       return {
         baseVariable: baseVariable,
@@ -154,3 +160,13 @@ export const NavigatorStateKeepDeepEquality: KeepDeepEqualityCall<NavigatorState
 export const LayoutTargetablePropArrayKeepDeepEquality: KeepDeepEqualityCall<Array<
   LayoutTargetableProp
 >> = arrayDeepEquality(createCallWithTripleEquals())
+
+export const ElementWarningsKeepDeepEquality: KeepDeepEqualityCall<ElementWarnings> = combine3EqualityCalls(
+  (warnings) => warnings.widthOrHeightZero,
+  createCallWithTripleEquals(),
+  (warnings) => warnings.absoluteWithUnpositionedParent,
+  createCallWithTripleEquals(),
+  (warnings) => warnings.dynamicSceneChildWidthHeightPercentage,
+  createCallWithTripleEquals(),
+  elementWarnings,
+)

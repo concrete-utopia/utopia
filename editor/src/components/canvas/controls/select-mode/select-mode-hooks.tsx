@@ -41,22 +41,28 @@ import { useWindowToCanvasCoordinates } from '../../dom-lookup-hooks'
 import { useInsertModeSelectAndHover } from './insert-mode-hooks'
 import { WindowMousePositionRaw } from '../../../../utils/global-positions'
 import { isFeatureEnabled } from '../../../../utils/feature-switches'
+import { createInteractionViaMouse } from '../../canvas-strategies/interaction-state'
+import { Modifier } from '../../../../utils/modifiers'
 
 const DRAG_START_TRESHOLD = 2
 
 export function isResizing(editorState: EditorState): boolean {
+  // TODO retire isResizing and replace with isInteractionActive once we have the strategies turned on, and the old controls removed
   const dragState = editorState.canvas.dragState
   return (
-    dragState?.type === 'RESIZE_DRAG_STATE' &&
-    getDragStateDrag(dragState, editorState.canvas.resizeOptions) != null
+    (dragState?.type === 'RESIZE_DRAG_STATE' &&
+      getDragStateDrag(dragState, editorState.canvas.resizeOptions) != null) ||
+    editorState.canvas.interactionSession != null
   )
 }
 
 export function isDragging(editorState: EditorState): boolean {
+  // TODO retire isDragging and replace with isInteractionActive once we have the strategies turned on, and the old controls removed
   const dragState = editorState.canvas.dragState
   return (
-    dragState?.type === 'MOVE_DRAG_STATE' &&
-    getDragStateDrag(dragState, editorState.canvas.resizeOptions) != null
+    (dragState?.type === 'MOVE_DRAG_STATE' &&
+      getDragStateDrag(dragState, editorState.canvas.resizeOptions) != null) ||
+    editorState.canvas.interactionSession != null
   )
 }
 
@@ -298,6 +304,28 @@ function useStartDragState(): (
   )
 }
 
+function useStartCanvasSession(): (event: MouseEvent, target: ElementPath) => void {
+  const dispatch = useEditorState((store) => store.dispatch, 'useStartDragState dispatch')
+  const windowToCanvasCoordinates = useWindowToCanvasCoordinates()
+
+  return React.useCallback(
+    (event: MouseEvent, target: ElementPath) => {
+      const start = windowToCanvasCoordinates(windowPoint(point(event.clientX, event.clientY)))
+        .canvasPositionRounded
+
+      dispatch([
+        CanvasActions.createInteractionSession(
+          createInteractionViaMouse(start, Modifier.modifiersForEvent(event), {
+            type: 'BOUNDING_AREA',
+            target: target,
+          }),
+        ),
+      ])
+    },
+    [dispatch, windowToCanvasCoordinates],
+  )
+}
+
 function callbackAfterDragExceedsThreshold(
   startEvent: MouseEvent,
   threshold: number,
@@ -329,6 +357,7 @@ export function useStartDragStateAfterDragExceedsThreshold(): (
   foundTarget: ElementPath,
 ) => void {
   const startDragState = useStartDragState()
+
   const windowToCanvasCoordinates = useWindowToCanvasCoordinates()
 
   const startDragStateAfterDragExceedsThreshold = React.useCallback(
@@ -349,7 +378,7 @@ export function useStartDragStateAfterDragExceedsThreshold(): (
   return startDragStateAfterDragExceedsThreshold
 }
 
-function useGetSelectableViewsForSelectMode() {
+export function useGetSelectableViewsForSelectMode() {
   const storeRef = useRefEditorState((store) => {
     return {
       componentMetadata: store.editor.jsxMetadata,
@@ -375,21 +404,16 @@ function useGetSelectableViewsForSelectMode() {
   )
 }
 
-export function useHighlightCallbacks(
-  active: boolean,
-  cmdPressed: boolean,
+export function useCalculateHighlightedViews(
   allowHoverOnSelectedView: boolean,
   getHighlightableViews: (
     allElementsDirectlySelectable: boolean,
     childrenSelectable: boolean,
   ) => ElementPath[],
-): {
-  onMouseMove: (event: React.MouseEvent<HTMLDivElement, MouseEvent>) => void
-} {
+): (targetPoint: WindowPoint, eventCmdPressed: boolean) => void {
   const { maybeHighlightOnHover, maybeClearHighlightsOnHoverEnd } = useMaybeHighlightElement()
   const findValidTarget = useFindValidTarget()
-
-  const calculateHighlightedViews = React.useCallback(
+  return React.useCallback(
     (targetPoint: WindowPoint, eventCmdPressed: boolean) => {
       const selectableViews: Array<ElementPath> = getHighlightableViews(eventCmdPressed, false)
       const validElementPath = findValidTarget(selectableViews, targetPoint)
@@ -409,6 +433,23 @@ export function useHighlightCallbacks(
       getHighlightableViews,
       findValidTarget,
     ],
+  )
+}
+
+export function useHighlightCallbacks(
+  active: boolean,
+  cmdPressed: boolean,
+  allowHoverOnSelectedView: boolean,
+  getHighlightableViews: (
+    allElementsDirectlySelectable: boolean,
+    childrenSelectable: boolean,
+  ) => ElementPath[],
+): {
+  onMouseMove: (event: React.MouseEvent<HTMLDivElement, MouseEvent>) => void
+} {
+  const calculateHighlightedViews = useCalculateHighlightedViews(
+    allowHoverOnSelectedView,
+    getHighlightableViews,
   )
 
   const onMouseMove = React.useCallback(
@@ -446,6 +487,7 @@ function useSelectOrLiveModeSelectAndHover(
   const findValidTarget = useFindValidTarget()
   const getSelectableViewsForSelectMode = useGetSelectableViewsForSelectMode()
   const startDragStateAfterDragExceedsThreshold = useStartDragStateAfterDragExceedsThreshold()
+  const startCanvasModeSession = useStartCanvasSession()
 
   const { onMouseMove } = useHighlightCallbacks(
     active,
@@ -475,7 +517,11 @@ function useSelectOrLiveModeSelectAndHover(
 
       if (foundTarget != null || isDeselect) {
         if (foundTarget != null && draggingAllowed) {
-          startDragStateAfterDragExceedsThreshold(event.nativeEvent, foundTarget.elementPath)
+          if (isFeatureEnabled('Canvas Strategies')) {
+            startCanvasModeSession(event.nativeEvent, foundTarget.elementPath)
+          } else {
+            startDragStateAfterDragExceedsThreshold(event.nativeEvent, foundTarget.elementPath)
+          }
         }
 
         let updatedSelection: Array<ElementPath>
@@ -531,6 +577,7 @@ function useSelectOrLiveModeSelectAndHover(
       getSelectableViewsForSelectMode,
       editorStoreRef,
       draggingAllowed,
+      startCanvasModeSession,
     ],
   )
 
@@ -545,6 +592,10 @@ export function useSelectAndHover(
   onMouseDown: (event: React.MouseEvent<HTMLDivElement, MouseEvent>) => void
 } {
   const modeType = useEditorState((store) => store.editor.mode.type, 'useSelectAndHover mode')
+  const hasInteractionSession = useEditorState(
+    (store) => store.editor.canvas.interactionSession != null,
+    'useSelectAndHover hasInteractionSession',
+  )
   const selectModeCallbacks = useSelectOrLiveModeSelectAndHover(
     modeType === 'select' || modeType === 'select-lite' || modeType === 'live',
     modeType === 'select' || modeType === 'live',
@@ -553,17 +604,24 @@ export function useSelectAndHover(
   )
   const insertModeCallbacks = useInsertModeSelectAndHover(modeType === 'insert', cmdPressed)
 
-  switch (modeType) {
-    case 'select':
-      return selectModeCallbacks
-    case 'select-lite':
-      return selectModeCallbacks
-    case 'insert':
-      return insertModeCallbacks
-    case 'live':
-      return selectModeCallbacks
-    default:
-      const _exhaustiveCheck: never = modeType
-      throw new Error(`Unhandled editor mode ${JSON.stringify(modeType)}`)
+  if (hasInteractionSession) {
+    return {
+      onMouseMove: Utils.NO_OP,
+      onMouseDown: Utils.NO_OP,
+    }
+  } else {
+    switch (modeType) {
+      case 'select':
+        return selectModeCallbacks
+      case 'select-lite':
+        return selectModeCallbacks
+      case 'insert':
+        return insertModeCallbacks
+      case 'live':
+        return selectModeCallbacks
+      default:
+        const _exhaustiveCheck: never = modeType
+        throw new Error(`Unhandled editor mode ${JSON.stringify(modeType)}`)
+    }
   }
 }

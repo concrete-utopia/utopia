@@ -1,14 +1,6 @@
 import { PERFORMANCE_MARKS_ALLOWED, PRODUCTION_ENV } from '../../../common/env-vars'
-import { MetadataUtils } from '../../../core/model/element-metadata-utils'
-import { ElementInstanceMetadataMap } from '../../../core/shared/element-template'
 import { getAllUniqueUids } from '../../../core/model/element-template-utils'
-import {
-  ElementPath,
-  isParseSuccess,
-  isTextFile,
-  ParseSuccess,
-  ProjectFile,
-} from '../../../core/shared/project-file-types'
+import { isParseSuccess, isTextFile } from '../../../core/shared/project-file-types'
 import {
   codeNeedsParsing,
   codeNeedsPrinting,
@@ -28,12 +20,7 @@ import { CanvasAction } from '../../canvas/canvas-types'
 import { LocalNavigatorAction } from '../../navigator/actions'
 import { PreviewIframeId, projectContentsUpdateMessage } from '../../preview/preview-pane'
 import { EditorAction, EditorDispatch, isLoggedIn, LoginState } from '../action-types'
-import {
-  isTransientAction,
-  isUndoOrRedo,
-  isParsedModelUpdate,
-  isFromVSCode,
-} from '../actions/action-utils'
+import { isTransientAction, isUndoOrRedo, isFromVSCode } from '../actions/action-utils'
 import * as EditorActions from '../actions/action-creators'
 import * as History from '../history'
 import { StateHistory } from '../history'
@@ -42,41 +29,18 @@ import {
   DerivedState,
   deriveState,
   EditorState,
-  EditorStatePatch,
   EditorStoreFull,
-  getAllBuildErrors,
-  getAllErrorsFromFiles,
-  getAllLintErrors,
   persistentModelFromEditorModel,
   reconstructJSXMetadata,
   storedEditorStateFromEditorState,
 } from './editor-state'
 import { runLocalEditorAction } from './editor-update'
-import { arrayEquals, fastForEach, isBrowserEnvironment } from '../../../core/shared/utils'
-import {
-  EvaluationCache,
-  getDependencyTypeDefinitions,
-} from '../../../core/es-modules/package-manager/package-manager'
+import { fastForEach, isBrowserEnvironment } from '../../../core/shared/utils'
 import { UiJsxCanvasContextData } from '../../canvas/ui-jsx-canvas'
-import {
-  getContentsTreeFileFromString,
-  getProjectFileFromTree,
-  isProjectContentFile,
-  ProjectContentsTree,
-  ProjectContentTreeRoot,
-  treeToContents,
-  walkContentsTree,
-  zipContentsTree,
-} from '../../assets'
+import { ProjectContentTreeRoot, treeToContents, walkContentsTree } from '../../assets'
 import { isSendPreviewModel, restoreDerivedState, UPDATE_FNS } from '../actions/actions'
-import { ElementPathArrayKeepDeepEquality } from '../../../utils/deep-equality-instances'
-import { mapDropNulls } from '../../../core/shared/array-utils'
+import { getTransitiveReverseDependencies } from '../../../core/shared/project-contents-dependencies'
 import {
-  getTransitiveReverseDependencies,
-  identifyFilesThatHaveChanged,
-} from '../../../core/shared/project-contents-dependencies'
-import {
-  reduxDevtoolsLogMessage,
   reduxDevtoolsSendActions,
   reduxDevtoolsUpdateState,
 } from '../../../core/shared/redux-devtools'
@@ -87,12 +51,12 @@ import {
   combineProjectChanges,
   getProjectChanges,
   sendVSCodeChanges,
-  WriteProjectFileChange,
-  ProjectFileChange,
 } from './vscode-changes'
 import { isFeatureEnabled } from '../../../utils/feature-switches'
-import { isJsOrTsFile, isCssFile } from '../../../core/shared/file-utils'
+import { handleStrategies } from './dispatch-strategies'
+
 import { emptySet } from '../../../core/shared/set-utils'
+import { RegisteredCanvasStrategies } from '../../canvas/canvas-strategies/canvas-strategies'
 
 type DispatchResultFields = {
   nothingChanged: boolean
@@ -101,7 +65,7 @@ type DispatchResultFields = {
 
 type EditorStoreUnpatched = Omit<EditorStoreFull, 'patchedEditor' | 'patchedDerived'>
 
-type InnerDispatchResult = EditorStoreUnpatched & DispatchResultFields
+export type InnerDispatchResult = EditorStoreUnpatched & DispatchResultFields
 export type DispatchResult = EditorStoreFull & DispatchResultFields
 
 function simpleStringifyAction(action: EditorAction): string {
@@ -195,6 +159,7 @@ function processAction(
     return {
       unpatchedEditor: editorAfterNavigator,
       unpatchedDerived: working.unpatchedDerived,
+      strategyState: working.strategyState, // this means the actions cannot update strategyState – this piece of state lives outside our "redux" state
       history: newStateHistory,
       userState: working.userState,
       workers: working.workers,
@@ -431,40 +396,59 @@ export function editorDispatch(
     (action) => action.action === 'UPDATE_FROM_WORKER',
   )
 
-  const editorWithModelChecked =
-    !anyUndoOrRedo && transientOrNoChange && !workerUpdatedModel
-      ? { editorState: result.unpatchedEditor, modelUpdateFinished: Promise.resolve(true) }
-      : maybeRequestModelUpdateOnEditor(result.unpatchedEditor, storedState.workers, boundDispatch)
+  const editorFilteredForFiles = filterEditorForFiles(result.unpatchedEditor)
 
-  const editorFilteredForFiles = filterEditorForFiles(editorWithModelChecked.editorState)
-
-  const frozenEditorState = editorFilteredForFiles
   const frozenDerivedState = result.unpatchedDerived
 
   let newHistory: StateHistory
   if (transientOrNoChange) {
     newHistory = result.history
   } else {
-    newHistory = History.add(result.history, frozenEditorState, frozenDerivedState)
+    newHistory = History.add(result.history, editorFilteredForFiles, frozenDerivedState)
   }
 
   const alreadySaved = result.alreadySaved
 
-  const isLoaded = frozenEditorState.isLoaded
+  const isLoaded = editorFilteredForFiles.isLoaded
   const shouldSave =
     isLoaded &&
     !isLoadAction &&
     (!transientOrNoChange || anyUndoOrRedo || (anyWorkerUpdates && alreadySaved)) &&
     isBrowserEnvironment
 
-  const patchedEditorState = frozenEditorState // TODO actually patch the state using the EditorStatePatch produced by the Commands
-  const patchedDerivedState = frozenDerivedState // TODO replace from strategy result
+  const {
+    unpatchedEditorState,
+    patchedEditorState,
+    newStrategyState,
+    patchedDerivedState,
+  } = isFeatureEnabled('Canvas Strategies')
+    ? handleStrategies(
+        RegisteredCanvasStrategies,
+        dispatchedActions,
+        storedState,
+        result,
+        storedState.patchedDerived,
+      )
+    : {
+        unpatchedEditorState: result.unpatchedEditor,
+        patchedEditorState: result.unpatchedEditor,
+        newStrategyState: result.strategyState,
+        patchedDerivedState: result.unpatchedDerived,
+      }
+
+  const editorWithModelChecked =
+    !anyUndoOrRedo && transientOrNoChange && !workerUpdatedModel
+      ? { editorState: unpatchedEditorState, modelUpdateFinished: Promise.resolve(true) }
+      : maybeRequestModelUpdateOnEditor(unpatchedEditorState, storedState.workers, boundDispatch)
+
+  const frozenEditorState = editorWithModelChecked.editorState
 
   const finalStore: DispatchResult = {
     unpatchedEditor: frozenEditorState,
     patchedEditor: patchedEditorState,
     unpatchedDerived: frozenDerivedState,
     patchedDerived: patchedDerivedState,
+    strategyState: optionalDeepFreeze(newStrategyState),
     history: newHistory,
     userState: result.userState,
     workers: storedState.workers,
@@ -621,6 +605,20 @@ function editorDispatchInner(
             },
           },
         }
+      } else if (result.unpatchedEditor.canvas.interactionSession != null) {
+        result = {
+          ...result,
+          unpatchedEditor: {
+            ...result.unpatchedEditor,
+            canvas: {
+              ...result.unpatchedEditor.canvas,
+              interactionSession: {
+                ...result.unpatchedEditor.canvas.interactionSession,
+                metadata: reconstructJSXMetadata(result.unpatchedEditor),
+              },
+            },
+          },
+        }
       } else {
         result = {
           ...result,
@@ -671,6 +669,7 @@ function editorDispatchInner(
     return {
       unpatchedEditor: frozenEditorState,
       unpatchedDerived: frozenDerivedState,
+      strategyState: result.strategyState,
       history: result.history,
       userState: result.userState,
       workers: storedState.workers,

@@ -1,8 +1,10 @@
+import { ClearInteractionSession, CreateInteractionSession } from '../../canvas/canvas-types'
 import { EditorAction } from '../action-types'
 
 export function isTransientAction(action: EditorAction): boolean {
   switch (action.action) {
     case 'CLEAR_DRAG_STATE':
+    case 'CLEAR_INTERACTION_SESSION':
       return !action.applyChanges
 
     case 'DROP_TARGET_HINT':
@@ -105,6 +107,9 @@ export function isTransientAction(action: EditorAction): boolean {
     case 'HIDE_VSCODE_LOADING_SCREEN':
     case 'SET_INDEXED_DB_FAILED':
     case 'FORCE_PARSE_FILE':
+    case 'CREATE_INTERACTION_SESSION':
+    case 'UPDATE_INTERACTION_SESSION':
+    case 'SET_USERS_PREFERRED_STRATEGY':
       return true
 
     case 'NEW':
@@ -209,6 +214,32 @@ export function isFromVSCode(action: EditorAction): boolean {
     case 'UPDATE_FROM_CODE_EDITOR':
     case 'SEND_LINTER_REQUEST_MESSAGE':
       return true
+    default:
+      return false
+  }
+}
+
+export function isClearInteractionSession(action: EditorAction): boolean {
+  switch (action.action) {
+    case 'TRANSIENT_ACTIONS':
+      return action.transientActions.some(isClearInteractionSession)
+    case 'ATOMIC':
+      return action.actions.some(isClearInteractionSession)
+    case 'CLEAR_INTERACTION_SESSION':
+      return true
+    default:
+      return false
+  }
+}
+
+export function shouldApplyClearInteractionSessionResult(action: EditorAction): boolean {
+  switch (action.action) {
+    case 'TRANSIENT_ACTIONS':
+      return action.transientActions.some(shouldApplyClearInteractionSessionResult)
+    case 'ATOMIC':
+      return action.actions.some(shouldApplyClearInteractionSessionResult)
+    case 'CLEAR_INTERACTION_SESSION':
+      return action.applyChanges
     default:
       return false
   }

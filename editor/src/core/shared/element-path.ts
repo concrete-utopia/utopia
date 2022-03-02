@@ -263,7 +263,56 @@ export function parentPath(path: ElementPath): ElementPath {
 }
 
 export function isParentOf(maybeParent: ElementPath, maybeChild: ElementPath): boolean {
-  return pathsEqual(parentPath(maybeChild), maybeParent)
+  const childLength = maybeChild.parts.length
+  const parentLength = maybeParent.parts.length
+  if (childLength === parentLength + 1) {
+    const lastChildPart = last(maybeChild.parts)
+    if (lastChildPart != null && lastChildPart.length === 1) {
+      for (let index = 0; index < parentLength; index++) {
+        const childParts = maybeChild.parts[index]
+        const parentParts = maybeParent.parts[index]
+        if (!elementPathPartsEqual(childParts, parentParts)) {
+          return false
+        }
+      }
+
+      // Otherwise this is a parent.
+      return true
+    } else {
+      return false
+    }
+  } else if (childLength === parentLength) {
+    const lastChildPart = last(maybeChild.parts)
+    const lastParentPart = last(maybeParent.parts)
+    if (
+      lastChildPart != null &&
+      lastParentPart != null &&
+      lastChildPart.length === lastParentPart.length + 1
+    ) {
+      // Check the main bulk of the parts to ensure those are the same.
+      for (let index = 0; index < parentLength - 1; index++) {
+        const childParts = maybeChild.parts[index]
+        const parentParts = maybeParent.parts[index]
+        if (!elementPathPartsEqual(childParts, parentParts)) {
+          return false
+        }
+      }
+
+      // Check the last array part.
+      for (let index = 0; index < lastChildPart.length - 1; index++) {
+        if (lastChildPart[index] !== lastParentPart[index]) {
+          return false
+        }
+      }
+
+      // Otherwise this is a parent.
+      return true
+    } else {
+      return false
+    }
+  } else {
+    return false
+  }
 }
 
 export function elementPathPartToUID(path: ElementPathPart): id {

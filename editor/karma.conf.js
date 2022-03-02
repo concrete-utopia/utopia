@@ -51,7 +51,7 @@ module.exports = function (config) {
       '/editor/avatars': '/base/resources/editor/avatars',
     },
 
-    browsers: ['ChromeHeadless'],
+    browsers: config.debug ? [] : ['ChromeHeadless'],
     // browsers: ['Chrome'],
 
     // preprocess matching files before serving them to the browser

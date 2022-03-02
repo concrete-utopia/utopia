@@ -12,6 +12,7 @@ export type FeatureName =
   | 'Performance Test Triggers'
   | 'Click on empty canvas unfocuses'
   | 'Insertion Plus Button'
+  | 'Canvas Strategies'
   | 'Canvas Absolute Resize Controls'
 
 export const AllFeatureNames: FeatureName[] = [
@@ -24,6 +25,7 @@ export const AllFeatureNames: FeatureName[] = [
   'Performance Test Triggers',
   'Click on empty canvas unfocuses',
   'Insertion Plus Button',
+  'Canvas Strategies',
   'Canvas Absolute Resize Controls',
 ]
 
@@ -37,6 +39,7 @@ let FeatureSwitches: { [feature in FeatureName]: boolean } = {
   'Performance Test Triggers': !(PRODUCTION_CONFIG as boolean),
   'Click on empty canvas unfocuses': true,
   'Insertion Plus Button': true,
+  'Canvas Strategies': false,
   'Canvas Absolute Resize Controls': false,
 }
 
