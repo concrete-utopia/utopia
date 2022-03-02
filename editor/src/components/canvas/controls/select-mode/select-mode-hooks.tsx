@@ -378,7 +378,7 @@ export function useStartDragStateAfterDragExceedsThreshold(): (
   return startDragStateAfterDragExceedsThreshold
 }
 
-function useGetSelectableViewsForSelectMode() {
+export function useGetSelectableViewsForSelectMode() {
   const storeRef = useRefEditorState((store) => {
     return {
       componentMetadata: store.editor.jsxMetadata,
@@ -404,21 +404,16 @@ function useGetSelectableViewsForSelectMode() {
   )
 }
 
-export function useHighlightCallbacks(
-  active: boolean,
-  cmdPressed: boolean,
+export function useCalculateHighlightedViews(
   allowHoverOnSelectedView: boolean,
   getHighlightableViews: (
     allElementsDirectlySelectable: boolean,
     childrenSelectable: boolean,
   ) => ElementPath[],
-): {
-  onMouseMove: (event: React.MouseEvent<HTMLDivElement, MouseEvent>) => void
-} {
+): (targetPoint: WindowPoint, eventCmdPressed: boolean) => void {
   const { maybeHighlightOnHover, maybeClearHighlightsOnHoverEnd } = useMaybeHighlightElement()
   const findValidTarget = useFindValidTarget()
-
-  const calculateHighlightedViews = React.useCallback(
+  return React.useCallback(
     (targetPoint: WindowPoint, eventCmdPressed: boolean) => {
       const selectableViews: Array<ElementPath> = getHighlightableViews(eventCmdPressed, false)
       const validElementPath = findValidTarget(selectableViews, targetPoint)
@@ -438,6 +433,23 @@ export function useHighlightCallbacks(
       getHighlightableViews,
       findValidTarget,
     ],
+  )
+}
+
+export function useHighlightCallbacks(
+  active: boolean,
+  cmdPressed: boolean,
+  allowHoverOnSelectedView: boolean,
+  getHighlightableViews: (
+    allElementsDirectlySelectable: boolean,
+    childrenSelectable: boolean,
+  ) => ElementPath[],
+): {
+  onMouseMove: (event: React.MouseEvent<HTMLDivElement, MouseEvent>) => void
+} {
+  const calculateHighlightedViews = useCalculateHighlightedViews(
+    allowHoverOnSelectedView,
+    getHighlightableViews,
   )
 
   const onMouseMove = React.useCallback(

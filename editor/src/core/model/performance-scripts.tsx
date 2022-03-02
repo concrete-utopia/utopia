@@ -1,7 +1,7 @@
 import React from 'react'
 import * as ReactDOM from 'react-dom'
 import CanvasActions from '../../components/canvas/canvas-actions'
-import { DebugDispatch } from '../../components/editor/action-types'
+import { DebugDispatch, DispatchPriority, EditorAction } from '../../components/editor/action-types'
 import {
   clearSelection,
   selectComponents,
@@ -12,6 +12,7 @@ import {
   canvasPoint,
   CanvasRectangle,
   CanvasVector,
+  windowPoint,
   zeroPoint,
   zeroRectangle,
 } from '../shared/math-utils'
@@ -20,6 +21,10 @@ import { MetadataUtils } from './element-metadata-utils'
 import { getOriginalFrames } from '../../components/canvas/canvas-utils'
 import * as EP from '../shared/element-path'
 import { EditorModes } from '../../components/editor/editor-modes'
+import {
+  useCalculateHighlightedViews,
+  useGetSelectableViewsForSelectMode,
+} from '../../components/canvas/controls/select-mode/select-mode-hooks'
 
 const NumberOfIterations = 100
 
@@ -130,6 +135,62 @@ export function useTriggerResizePerformanceTest(): () => void {
   }, [dispatch, metadata, selectedViews])
   return trigger
 }
+
+function useTriggerHighlightPerformanceTest(key: 'regular' | 'all-elements'): () => void {
+  const allPaths = useRefEditorState((store) => store.derived.navigatorTargets)
+  const getHighlightableViews = useGetSelectableViewsForSelectMode()
+  const calculateHighlightedViews = useCalculateHighlightedViews(true, getHighlightableViews)
+  const trigger = React.useCallback(async () => {
+    const allCapsKey = key.toLocaleUpperCase()
+    if (allPaths.current.length === 0) {
+      console.info(`HIGHLIGHT_${allCapsKey}_TEST_ERROR_NO_PATHS`)
+      return
+    }
+
+    const targetPath = allPaths.current[0]
+
+    const htmlElement = document.querySelector(`*[data-paths~="${EP.toString(targetPath)}"]`)
+    if (htmlElement == null) {
+      console.info(`HIGHLIGHT_${allCapsKey}_TEST_ERROR_NO_ELEMENT`)
+      return
+    }
+
+    const elementBounds = htmlElement.getBoundingClientRect()
+
+    let framesPassed = 0
+    async function step() {
+      performance.mark(`highlight_${key}_step_${framesPassed}`)
+
+      calculateHighlightedViews(
+        windowPoint({ x: elementBounds.left + 10, y: elementBounds.top + 10 }),
+        key === 'all-elements',
+      )
+
+      performance.mark(`highlight_${key}_dispatch_finished_${framesPassed}`)
+      performance.measure(
+        `highlight_${key}_frame_${framesPassed}`,
+        `highlight_${key}_step_${framesPassed}`,
+        `highlight_${key}_dispatch_finished_${framesPassed}`,
+      )
+
+      if (framesPassed < NumberOfIterations) {
+        framesPassed++
+        requestAnimationFrame(step)
+      } else {
+        console.info(`HIGHLIGHT_${allCapsKey}_TEST_FINISHED`)
+      }
+    }
+    requestAnimationFrame(step)
+  }, [allPaths, calculateHighlightedViews, key])
+
+  return trigger
+}
+
+export const useTriggerRegularHighlightPerformanceTest = () =>
+  useTriggerHighlightPerformanceTest('regular')
+
+export const useTriggerAllElementsHighlightPerformanceTest = () =>
+  useTriggerHighlightPerformanceTest('all-elements')
 
 export function useTriggerSelectionPerformanceTest(): () => void {
   const dispatch = useEditorState(
