@@ -196,6 +196,16 @@ describe('interactionStart', () => {
           },
         ],
         "currentStrategyFitness": 10,
+        "sortedApplicableStrategies": Array [
+          Object {
+            "apply": [Function],
+            "controlsToRender": Array [],
+            "fitness": [Function],
+            "id": "TEST_STRATEGY",
+            "isApplicable": [Function],
+            "name": "Test Strategy",
+          },
+        ],
         "startingMetadata": Object {},
       }
     `)
@@ -239,6 +249,7 @@ describe('interactionStart', () => {
         "currentStrategy": null,
         "currentStrategyCommands": Array [],
         "currentStrategyFitness": 0,
+        "sortedApplicableStrategies": Array [],
         "startingMetadata": Object {},
       }
     `)
@@ -294,6 +305,16 @@ describe('interactionUpdate', () => {
           },
         ],
         "currentStrategyFitness": 10,
+        "sortedApplicableStrategies": Array [
+          Object {
+            "apply": [Function],
+            "controlsToRender": Array [],
+            "fitness": [Function],
+            "id": "TEST_STRATEGY",
+            "isApplicable": [Function],
+            "name": "Test Strategy",
+          },
+        ],
         "startingMetadata": Object {},
       }
     `)
@@ -337,6 +358,7 @@ describe('interactionUpdate', () => {
         "currentStrategy": null,
         "currentStrategyCommands": Array [],
         "currentStrategyFitness": 0,
+        "sortedApplicableStrategies": Array [],
         "startingMetadata": Object {},
       }
     `)
@@ -396,6 +418,16 @@ describe('interactionHardReset', () => {
           },
         ],
         "currentStrategyFitness": 10,
+        "sortedApplicableStrategies": Array [
+          Object {
+            "apply": [Function],
+            "controlsToRender": Array [],
+            "fitness": [Function],
+            "id": "TEST_STRATEGY",
+            "isApplicable": [Function],
+            "name": "Test Strategy",
+          },
+        ],
         "startingMetadata": Object {},
       }
     `)
@@ -445,6 +477,7 @@ describe('interactionHardReset', () => {
         "currentStrategy": null,
         "currentStrategyCommands": Array [],
         "currentStrategyFitness": 0,
+        "sortedApplicableStrategies": Array [],
         "startingMetadata": Object {},
       }
     `)
@@ -527,6 +560,16 @@ describe('interactionStrategyChangeStacked', () => {
           },
         ],
         "currentStrategyFitness": 10,
+        "sortedApplicableStrategies": Array [
+          Object {
+            "apply": [Function],
+            "controlsToRender": Array [],
+            "fitness": [Function],
+            "id": "TEST_STRATEGY",
+            "isApplicable": [Function],
+            "name": "Test Strategy",
+          },
+        ],
         "startingMetadata": Object {},
       }
     `)
@@ -573,6 +616,7 @@ describe('interactionStrategyChangeStacked', () => {
         "currentStrategy": null,
         "currentStrategyCommands": Array [],
         "currentStrategyFitness": 0,
+        "sortedApplicableStrategies": Array [],
         "startingMetadata": Object {},
       }
     `)
@@ -652,6 +696,16 @@ describe('interactionUserChangedStrategy', () => {
           },
         ],
         "currentStrategyFitness": 10,
+        "sortedApplicableStrategies": Array [
+          Object {
+            "apply": [Function],
+            "controlsToRender": Array [],
+            "fitness": [Function],
+            "id": "TEST_STRATEGY",
+            "isApplicable": [Function],
+            "name": "Test Strategy",
+          },
+        ],
         "startingMetadata": Object {},
       }
     `)
@@ -701,6 +755,7 @@ describe('interactionUserChangedStrategy', () => {
         "currentStrategy": null,
         "currentStrategyCommands": Array [],
         "currentStrategyFitness": 0,
+        "sortedApplicableStrategies": Array [],
         "startingMetadata": Object {},
       }
     `)

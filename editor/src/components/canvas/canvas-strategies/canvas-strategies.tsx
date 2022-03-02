@@ -184,14 +184,21 @@ export function findCanvasStrategy(
   interactionSession: InteractionSession,
   strategyState: StrategyState,
   previousStrategyId: CanvasStrategyId | null,
-): { strategy: StrategyWithFitness | null; previousStrategy: StrategyWithFitness | null } {
+): {
+  strategy: StrategyWithFitness | null
+  previousStrategy: StrategyWithFitness | null
+  sortedApplicableStrategies: Array<CanvasStrategy>
+} {
   const sortedApplicableStrategies = getApplicableStrategiesOrderedByFitness(
     strategies,
     canvasState,
     interactionSession,
     strategyState,
   )
-  return pickStrategy(sortedApplicableStrategies, interactionSession, previousStrategyId)
+  return {
+    ...pickStrategy(sortedApplicableStrategies, interactionSession, previousStrategyId),
+    sortedApplicableStrategies: sortedApplicableStrategies.map((s) => s.strategy),
+  }
 }
 
 export function applyCanvasStrategy(
