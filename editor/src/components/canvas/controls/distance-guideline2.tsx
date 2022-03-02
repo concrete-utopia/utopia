@@ -2,7 +2,7 @@ import React from 'react'
 import { ElementPath } from '../../../core/shared/project-file-types'
 import { useColorTheme } from '../../../uuiui'
 import { useEditorState } from '../../editor/store/store-hook'
-import { useBoundingBox, useDistanceGuidelineX, useDistanceGuidelineY } from './bounding-box-hooks'
+import { useDistanceGuidelineX, useDistanceGuidelineY } from './distance-guideline-hooks'
 
 interface DistanceGuidelineProps {
   localSelectedElements: Array<ElementPath>
