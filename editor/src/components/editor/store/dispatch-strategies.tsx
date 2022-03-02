@@ -149,7 +149,7 @@ export function interactionHardReset(
         'transient',
       )
       const newStrategyState: StrategyState = {
-        currentStrategy: strategy.strategy.name,
+        currentStrategy: strategy.strategy.id,
         currentStrategyFitness: strategy.fitness,
         currentStrategyCommands: commands,
         accumulatedCommands: [],
@@ -218,7 +218,7 @@ export function interactionUpdate(
         'transient',
       )
       const newStrategyState: StrategyState = {
-        currentStrategy: strategy.strategy.name,
+        currentStrategy: strategy.strategy.id,
         currentStrategyFitness: strategy.fitness,
         currentStrategyCommands: commands,
         accumulatedCommands: result.strategyState.accumulatedCommands,
@@ -291,7 +291,7 @@ export function interactionStart(
       )
 
       const newStrategyState: StrategyState = {
-        currentStrategy: strategy.strategy.name,
+        currentStrategy: strategy.strategy.id,
         currentStrategyFitness: strategy.fitness,
         currentStrategyCommands: commands,
         accumulatedCommands: [],
@@ -363,8 +363,8 @@ export function interactionUserChangedStrategy(
       result.strategyState,
       result.strategyState.currentStrategy,
     )
-    const strategyName = strategy?.strategy.name
-    if (strategyName != result.unpatchedEditor.canvas.interactionSession?.userPreferredStrategy) {
+    const strategyId = strategy?.strategy.id
+    if (strategyId != result.unpatchedEditor.canvas.interactionSession?.userPreferredStrategy) {
       console.warn(
         'Entered interactionUserChangedStrategy but the user preferred strategy is not applied',
       )
@@ -378,7 +378,7 @@ export function interactionUserChangedStrategy(
           commands: [
             strategySwitched(
               'user-input',
-              strategyName!,
+              strategy.strategy.name,
               true,
               previousStrategy?.fitness ?? NaN,
               strategy.fitness,
@@ -404,7 +404,7 @@ export function interactionUserChangedStrategy(
         'transient',
       )
       const newStrategyState: StrategyState = {
-        currentStrategy: strategy.strategy.name,
+        currentStrategy: strategy.strategy.id,
         currentStrategyFitness: strategy.fitness,
         currentStrategyCommands: commands,
         accumulatedCommands: newAccumulatedCommands,
@@ -457,8 +457,8 @@ export function interactionStrategyChangeStacked(
       result.strategyState,
       result.strategyState.currentStrategy,
     )
-    const strategyName = strategy?.strategy.name
-    if (strategyName === result.strategyState.currentStrategy) {
+    const strategyId = strategy?.strategy.id
+    if (strategyId === result.strategyState.currentStrategy) {
       console.warn("Entered interactionStrategyChangeStacked but the strategy haven't changed")
     }
 
@@ -470,7 +470,7 @@ export function interactionStrategyChangeStacked(
           commands: [
             strategySwitched(
               'user-input',
-              strategyName!,
+              strategy.strategy.name,
               true,
               previousStrategy?.fitness ?? NaN,
               strategy.fitness,
@@ -500,7 +500,7 @@ export function interactionStrategyChangeStacked(
         'transient',
       )
       const newStrategyState: StrategyState = {
-        currentStrategy: strategy.strategy.name,
+        currentStrategy: strategy.strategy.id,
         currentStrategyFitness: strategy.fitness,
         currentStrategyCommands: commands,
         accumulatedCommands: newAccumulatedCommands,
@@ -606,7 +606,7 @@ function handleStrategiesInner(
         }
 
         const strategy = findCanvasStrategyFromDispatchResult(strategies, result)
-        if (strategy?.strategy.name !== result.strategyState.currentStrategy) {
+        if (strategy?.strategy.id !== result.strategyState.currentStrategy) {
           return interactionStrategyChangeStacked(strategies, storedState, result)
         }
 

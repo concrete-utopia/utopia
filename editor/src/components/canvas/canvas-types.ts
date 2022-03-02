@@ -28,6 +28,7 @@ import {
   InteractionSession,
   InteractionSessionWithoutMetadata,
 } from './canvas-strategies/interaction-state'
+import { CanvasStrategyId } from './canvas-strategies/canvas-strategy-types'
 
 export const CanvasContainerID = 'canvas-container'
 
@@ -671,7 +672,7 @@ type ZoomUI = {
 
 type SetUsersPreferredStrategy = {
   action: 'SET_USERS_PREFERRED_STRATEGY'
-  strategyName: string // TODO limit it to string literal union of registered strategy names?
+  strategyId: CanvasStrategyId
 }
 
 export type CanvasAction =
