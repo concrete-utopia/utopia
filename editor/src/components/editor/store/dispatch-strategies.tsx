@@ -1,20 +1,21 @@
 import {
-  StrategyState,
-  createEmptyStrategyState,
-  strategySwitchInteractionSessionReset,
-  hasDragModifiersChanged,
-  interactionSessionHardReset,
-} from '../../canvas/canvas-strategies/interaction-state'
-import {
-  findCanvasStrategy,
   applyCanvasStrategy,
+  findCanvasStrategy,
   findCanvasStrategyFromDispatchResult,
 } from '../../canvas/canvas-strategies/canvas-strategies'
-import { foldAndApplyCommands, strategySwitched } from '../../canvas/commands/commands'
+import {
+  createEmptyStrategyState,
+  hasDragModifiersChanged,
+  interactionSessionHardReset,
+  StrategyState,
+  strategySwitchInteractionSessionReset,
+} from '../../canvas/canvas-strategies/interaction-state'
+import { foldAndApplyCommands } from '../../canvas/commands/commands'
+import { strategySwitched } from '../../canvas/commands/strategy-switched-command'
 import { EditorAction } from '../action-types'
 import {
-  shouldApplyClearInteractionSessionResult,
   isClearInteractionSession,
+  shouldApplyClearInteractionSessionResult,
 } from '../actions/action-utils'
 import { InnerDispatchResult } from './dispatch'
 import { DerivedState, deriveState, EditorState, EditorStoreFull } from './editor-state'

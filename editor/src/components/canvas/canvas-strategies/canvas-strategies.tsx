@@ -3,14 +3,19 @@ import { createSelector } from 'reselect'
 import { addAllUniquelyBy, mapDropNulls, sortBy } from '../../../core/shared/array-utils'
 import { ElementInstanceMetadataMap } from '../../../core/shared/element-template'
 import { arrayEquals } from '../../../core/shared/utils'
-import { InteractionSession, StrategyState } from './interaction-state'
 import { InnerDispatchResult } from '../../editor/store/dispatch'
 import { EditorStorePatched } from '../../editor/store/editor-state'
 import { useEditorState } from '../../editor/store/store-hook'
 import { CanvasCommand } from '../commands/commands'
+import { absoluteMoveStrategy } from './absolute-move-strategy'
+import { absoluteReparentStrategy } from './absolute-reparent-strategy'
 import { CanvasStrategy, ControlWithKey, InteractionCanvasState } from './canvas-strategy-types'
+import { InteractionSession, StrategyState } from './interaction-state'
 
-export const RegisteredCanvasStrategies: Array<CanvasStrategy> = []
+export const RegisteredCanvasStrategies: Array<CanvasStrategy> = [
+  absoluteMoveStrategy,
+  absoluteReparentStrategy,
+]
 
 function getApplicableStrategies(
   strategies: Array<CanvasStrategy>,

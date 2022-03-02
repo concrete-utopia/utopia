@@ -3,6 +3,11 @@ import { ElementPath } from '../../../core/shared/project-file-types'
 import { keepDeepReferenceEqualityIfPossible } from '../../../utils/react-performance'
 import { EditorState, EditorStatePatch } from '../../editor/store/editor-state'
 import { CommandDescription } from '../canvas-strategies/interaction-state'
+import { AdjustNumberProperty, runAdjustNumberProperty } from './adjust-number-command'
+import { ReparentElement, runReparentElement } from './reparent-element-command'
+import { runStrategySwitchedCommand, StrategySwitched } from './strategy-switched-command'
+import { runUpdateSelectedViews, UpdateSelectedViews } from './update-selected-views-command'
+import { runWildcardPatch, WildcardPatch } from './wildcard-patch-command'
 
 export interface PathMapping {
   from: ElementPath
@@ -29,76 +34,12 @@ export interface BaseCommand {
   transient: TransientOrNot
 }
 
-export interface WildcardPatch extends BaseCommand {
-  type: 'WILDCARD_PATCH'
-  patch: EditorStatePatch
-}
-
-export function wildcardPatch(transient: TransientOrNot, patch: EditorStatePatch): WildcardPatch {
-  return {
-    type: 'WILDCARD_PATCH',
-    transient: transient,
-    patch: patch,
-  }
-}
-
-export interface StrategySwitched extends BaseCommand {
-  type: 'STRATEGY_SWITCHED'
-  reason: 'automatic' | 'user-input'
-  newStrategy: string
-  dataReset: boolean
-  previousFitness: number
-  newFitness: number
-}
-
-export function strategySwitched(
-  reason: 'automatic' | 'user-input',
-  newStrategy: string,
-  dataReset: boolean,
-  previousFitness: number,
-  newFitness: number,
-): StrategySwitched {
-  return {
-    type: 'STRATEGY_SWITCHED',
-    transient: 'transient',
-    reason,
-    newStrategy,
-    dataReset,
-    previousFitness,
-    newFitness,
-  }
-}
-
-export type CanvasCommand = WildcardPatch | StrategySwitched
-
-export const runWildcardPatch: CommandFunction<WildcardPatch> = (
-  editorState: EditorState,
-  pathMappings: PathMappings,
-  command: WildcardPatch,
-) => {
-  return {
-    editorStatePatch: command.patch,
-    pathMappings: pathMappings,
-    commandDescription: `Wildcard Patch: ${JSON.stringify(command.patch, null, 2)}`,
-  }
-}
-
-function runStrategySwitchedCommand(
-  pathMappings: PathMappings,
-  command: StrategySwitched,
-): CommandFunctionResult {
-  let commandDescription: string = `Strategy switched to ${command.newStrategy} ${
-    command.reason === 'automatic'
-      ? `automatically (fitness ${command.previousFitness} -> ${command.newFitness})`
-      : 'by user input'
-  }. ${command.dataReset ? 'Interaction data reset.' : ''}`
-
-  return {
-    editorStatePatch: {},
-    pathMappings: pathMappings,
-    commandDescription: commandDescription,
-  }
-}
+export type CanvasCommand =
+  | WildcardPatch
+  | StrategySwitched
+  | AdjustNumberProperty
+  | ReparentElement
+  | UpdateSelectedViews
 
 export const runCanvasCommand: CommandFunction<CanvasCommand> = (
   editorState: EditorState,
@@ -110,6 +51,12 @@ export const runCanvasCommand: CommandFunction<CanvasCommand> = (
       return runWildcardPatch(editorState, pathMappings, command)
     case 'STRATEGY_SWITCHED':
       return runStrategySwitchedCommand(pathMappings, command)
+    case 'ADJUST_NUMBER_PROPERTY':
+      return runAdjustNumberProperty(editorState, pathMappings, command)
+    case 'REPARENT_ELEMENT':
+      return runReparentElement(editorState, pathMappings, command)
+    case 'UPDATE_SELECTED_VIEWS':
+      return runUpdateSelectedViews(editorState, pathMappings, command)
     default:
       const _exhaustiveCheck: never = command
       throw new Error(`Unhandled canvas command ${JSON.stringify(command)}`)

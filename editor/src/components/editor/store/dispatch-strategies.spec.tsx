@@ -35,13 +35,13 @@ import {
   InteractionSessionWithoutMetadata,
   StrategyState,
 } from '../../canvas/canvas-strategies/interaction-state'
-import { wildcardPatch } from '../../canvas/commands/commands'
 import {
   CanvasStrategy,
   InteractionCanvasState,
   StrategyApplicationResult,
 } from '../../canvas/canvas-strategies/canvas-strategy-types'
 import { canvasPoint } from '../../../core/shared/math-utils'
+import { wildcardPatch } from '../../canvas/commands/wildcard-patch-command'
 
 function createEditorStore(
   interactionSession: InteractionSessionWithoutMetadata | null,
