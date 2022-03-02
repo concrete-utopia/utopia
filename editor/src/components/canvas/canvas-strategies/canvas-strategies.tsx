@@ -12,17 +12,18 @@ import { absoluteReparentStrategy } from './absolute-reparent-strategy'
 import { CanvasStrategy, ControlWithKey, InteractionCanvasState } from './canvas-strategy-types'
 import { InteractionSession, StrategyState } from './interaction-state'
 
-const RegisteredCanvasStrategies: Array<CanvasStrategy> = [
+export const RegisteredCanvasStrategies: Array<CanvasStrategy> = [
   absoluteMoveStrategy,
   absoluteReparentStrategy,
 ]
 
 function getApplicableStrategies(
+  strategies: Array<CanvasStrategy>,
   canvasState: InteractionCanvasState,
   interactionSession: InteractionSession | null,
   metadata: ElementInstanceMetadataMap,
 ): Array<CanvasStrategy> {
-  return RegisteredCanvasStrategies.filter((strategy) => {
+  return strategies.filter((strategy) => {
     return strategy.isApplicable(canvasState, interactionSession, metadata)
   })
 }
@@ -44,7 +45,12 @@ const getApplicableStrategiesSelector = createSelector(
     interactionSession: InteractionSession | null,
     metadata: ElementInstanceMetadataMap,
   ): Array<CanvasStrategy> => {
-    return getApplicableStrategies(canvasState, interactionSession, metadata)
+    return getApplicableStrategies(
+      RegisteredCanvasStrategies,
+      canvasState,
+      interactionSession,
+      metadata,
+    )
   },
 )
 
@@ -58,11 +64,13 @@ interface StrategyWithFitness {
 }
 
 function getApplicableStrategiesOrderedByFitness(
+  strategies: Array<CanvasStrategy>,
   canvasState: InteractionCanvasState,
   interactionSession: InteractionSession,
   strategyState: StrategyState,
 ): Array<StrategyWithFitness> {
   const applicableStrategies = getApplicableStrategies(
+    strategies,
     canvasState,
     interactionSession,
     strategyState.startingMetadata,
@@ -111,6 +119,7 @@ const getApplicableStrategiesOrderedByFitnessSelector = createSelector(
       return []
     }
     return getApplicableStrategiesOrderedByFitness(
+      RegisteredCanvasStrategies,
       canvasState,
       interactionSession,
       strategyState,
@@ -162,12 +171,14 @@ function pickStrategy(
 }
 
 export function findCanvasStrategy(
+  strategies: Array<CanvasStrategy>,
   canvasState: InteractionCanvasState,
   interactionSession: InteractionSession,
   strategyState: StrategyState,
   previousStrategyName: string | null,
 ): { strategy: StrategyWithFitness | null; previousStrategy: StrategyWithFitness | null } {
   const sortedApplicableStrategies = getApplicableStrategiesOrderedByFitness(
+    strategies,
     canvasState,
     interactionSession,
     strategyState,
@@ -203,6 +214,7 @@ export function useGetApplicableStrategyControls(): Array<ControlWithKey> {
 }
 
 export function findCanvasStrategyFromDispatchResult(
+  strategies: Array<CanvasStrategy>,
   result: InnerDispatchResult,
 ): StrategyWithFitness | null {
   const newEditorState = result.unpatchedEditor
@@ -219,6 +231,7 @@ export function findCanvasStrategyFromDispatchResult(
     return null
   } else {
     const { strategy } = findCanvasStrategy(
+      strategies,
       canvasState,
       interactionSession,
       result.strategyState,
