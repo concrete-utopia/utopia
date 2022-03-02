@@ -2,6 +2,7 @@ import {
   applyCanvasStrategy,
   findCanvasStrategy,
   findCanvasStrategyFromDispatchResult,
+  pickCanvasStateFromEditorState,
 } from '../../canvas/canvas-strategies/canvas-strategies'
 import {
   createEmptyStrategyState,
@@ -39,14 +40,7 @@ export function interactionFinished(
   const withClearedSession = createEmptyStrategyState(
     newEditorState.canvas.interactionSession?.metadata ?? newEditorState.jsxMetadata,
   )
-  const canvasState: InteractionCanvasState = {
-    selectedElements: newEditorState.selectedViews,
-    // metadata: store.editor.jsxMetadata, // We can add metadata back if live metadata is necessary
-    projectContents: newEditorState.projectContents,
-    openFile: newEditorState.canvas.openFile?.filename,
-    scale: newEditorState.canvas.scale,
-    canvasOffset: newEditorState.canvas.roundedCanvasOffset,
-  }
+  const canvasState: InteractionCanvasState = pickCanvasStateFromEditorState(newEditorState)
   const interactionSession = storedState.unpatchedEditor.canvas.interactionSession
   if (interactionSession == null) {
     return {
@@ -104,14 +98,7 @@ export function interactionHardReset(
     ...storedState.strategyState,
     startingMetadata: storedState.unpatchedEditor.jsxMetadata,
   }
-  const canvasState: InteractionCanvasState = {
-    selectedElements: newEditorState.selectedViews,
-    // metadata: store.editor.jsxMetadata, // We can add metadata back if live metadata is necessary
-    projectContents: newEditorState.projectContents,
-    openFile: newEditorState.canvas.openFile?.filename,
-    scale: newEditorState.canvas.scale,
-    canvasOffset: newEditorState.canvas.roundedCanvasOffset,
-  }
+  const canvasState: InteractionCanvasState = pickCanvasStateFromEditorState(newEditorState)
   const interactionSession = newEditorState.canvas.interactionSession
   if (interactionSession == null) {
     return {
@@ -149,7 +136,7 @@ export function interactionHardReset(
         'transient',
       )
       const newStrategyState: StrategyState = {
-        currentStrategy: strategy.strategy.name,
+        currentStrategy: strategy.strategy.id,
         currentStrategyFitness: strategy.fitness,
         currentStrategyCommands: commands,
         accumulatedCommands: [],
@@ -178,14 +165,7 @@ export function interactionUpdate(
   result: InnerDispatchResult,
 ): HandleStrategiesResult {
   const newEditorState = result.unpatchedEditor
-  const canvasState: InteractionCanvasState = {
-    selectedElements: newEditorState.selectedViews,
-    // metadata: store.editor.jsxMetadata, // We can add metadata back if live metadata is necessary
-    projectContents: newEditorState.projectContents,
-    openFile: newEditorState.canvas.openFile?.filename,
-    scale: newEditorState.canvas.scale,
-    canvasOffset: newEditorState.canvas.roundedCanvasOffset,
-  }
+  const canvasState: InteractionCanvasState = pickCanvasStateFromEditorState(newEditorState)
   const interactionSession = newEditorState.canvas.interactionSession
   if (interactionSession == null) {
     return {
@@ -218,7 +198,7 @@ export function interactionUpdate(
         'transient',
       )
       const newStrategyState: StrategyState = {
-        currentStrategy: strategy.strategy.name,
+        currentStrategy: strategy.strategy.id,
         currentStrategyFitness: strategy.fitness,
         currentStrategyCommands: commands,
         accumulatedCommands: result.strategyState.accumulatedCommands,
@@ -250,14 +230,7 @@ export function interactionStart(
   const withClearedSession = createEmptyStrategyState(
     newEditorState.canvas.interactionSession?.metadata ?? newEditorState.jsxMetadata,
   )
-  const canvasState: InteractionCanvasState = {
-    selectedElements: newEditorState.selectedViews,
-    // metadata: store.editor.jsxMetadata, // We can add metadata back if live metadata is necessary
-    projectContents: newEditorState.projectContents,
-    openFile: newEditorState.canvas.openFile?.filename,
-    scale: newEditorState.canvas.scale,
-    canvasOffset: newEditorState.canvas.roundedCanvasOffset,
-  }
+  const canvasState: InteractionCanvasState = pickCanvasStateFromEditorState(newEditorState)
   const interactionSession = newEditorState.canvas.interactionSession
   if (interactionSession == null) {
     return {
@@ -291,7 +264,7 @@ export function interactionStart(
       )
 
       const newStrategyState: StrategyState = {
-        currentStrategy: strategy.strategy.name,
+        currentStrategy: strategy.strategy.id,
         currentStrategyFitness: strategy.fitness,
         currentStrategyCommands: commands,
         accumulatedCommands: [],
@@ -339,14 +312,7 @@ export function interactionUserChangedStrategy(
   result: InnerDispatchResult,
 ): HandleStrategiesResult {
   const newEditorState = result.unpatchedEditor
-  const canvasState: InteractionCanvasState = {
-    selectedElements: newEditorState.selectedViews,
-    // metadata: store.editor.jsxMetadata, // We can add metadata back if live metadata is necessary
-    projectContents: newEditorState.projectContents,
-    openFile: newEditorState.canvas.openFile?.filename,
-    scale: newEditorState.canvas.scale,
-    canvasOffset: newEditorState.canvas.roundedCanvasOffset,
-  }
+  const canvasState: InteractionCanvasState = pickCanvasStateFromEditorState(newEditorState)
   const interactionSession = newEditorState.canvas.interactionSession
   if (interactionSession == null) {
     return {
@@ -363,8 +329,8 @@ export function interactionUserChangedStrategy(
       result.strategyState,
       result.strategyState.currentStrategy,
     )
-    const strategyName = strategy?.strategy.name
-    if (strategyName != result.unpatchedEditor.canvas.interactionSession?.userPreferredStrategy) {
+    const strategyId = strategy?.strategy.id
+    if (strategyId != result.unpatchedEditor.canvas.interactionSession?.userPreferredStrategy) {
       console.warn(
         'Entered interactionUserChangedStrategy but the user preferred strategy is not applied',
       )
@@ -378,7 +344,7 @@ export function interactionUserChangedStrategy(
           commands: [
             strategySwitched(
               'user-input',
-              strategyName!,
+              strategy.strategy.name,
               true,
               previousStrategy?.fitness ?? NaN,
               strategy.fitness,
@@ -404,7 +370,7 @@ export function interactionUserChangedStrategy(
         'transient',
       )
       const newStrategyState: StrategyState = {
-        currentStrategy: strategy.strategy.name,
+        currentStrategy: strategy.strategy.id,
         currentStrategyFitness: strategy.fitness,
         currentStrategyCommands: commands,
         accumulatedCommands: newAccumulatedCommands,
@@ -433,14 +399,7 @@ export function interactionStrategyChangeStacked(
   result: InnerDispatchResult,
 ): HandleStrategiesResult {
   const newEditorState = result.unpatchedEditor
-  const canvasState: InteractionCanvasState = {
-    selectedElements: newEditorState.selectedViews,
-    // metadata: store.editor.jsxMetadata, // We can add metadata back if live metadata is necessary
-    projectContents: newEditorState.projectContents,
-    openFile: newEditorState.canvas.openFile?.filename,
-    scale: newEditorState.canvas.scale,
-    canvasOffset: newEditorState.canvas.roundedCanvasOffset,
-  }
+  const canvasState: InteractionCanvasState = pickCanvasStateFromEditorState(newEditorState)
   const interactionSession = newEditorState.canvas.interactionSession
   if (interactionSession == null) {
     return {
@@ -457,8 +416,8 @@ export function interactionStrategyChangeStacked(
       result.strategyState,
       result.strategyState.currentStrategy,
     )
-    const strategyName = strategy?.strategy.name
-    if (strategyName === result.strategyState.currentStrategy) {
+    const strategyId = strategy?.strategy.id
+    if (strategyId === result.strategyState.currentStrategy) {
       console.warn("Entered interactionStrategyChangeStacked but the strategy haven't changed")
     }
 
@@ -470,7 +429,7 @@ export function interactionStrategyChangeStacked(
           commands: [
             strategySwitched(
               'user-input',
-              strategyName!,
+              strategy.strategy.name,
               true,
               previousStrategy?.fitness ?? NaN,
               strategy.fitness,
@@ -500,7 +459,7 @@ export function interactionStrategyChangeStacked(
         'transient',
       )
       const newStrategyState: StrategyState = {
-        currentStrategy: strategy.strategy.name,
+        currentStrategy: strategy.strategy.id,
         currentStrategyFitness: strategy.fitness,
         currentStrategyCommands: commands,
         accumulatedCommands: newAccumulatedCommands,
@@ -606,7 +565,7 @@ function handleStrategiesInner(
         }
 
         const strategy = findCanvasStrategyFromDispatchResult(strategies, result)
-        if (strategy?.strategy.name !== result.strategyState.currentStrategy) {
+        if (strategy?.strategy.id !== result.strategyState.currentStrategy) {
           return interactionStrategyChangeStacked(strategies, storedState, result)
         }
 

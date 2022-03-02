@@ -37,6 +37,7 @@ import {
 } from '../../canvas/canvas-strategies/interaction-state'
 import {
   CanvasStrategy,
+  CanvasStrategyId,
   InteractionCanvasState,
   StrategyApplicationResult,
 } from '../../canvas/canvas-strategies/canvas-strategy-types'
@@ -125,6 +126,7 @@ describe('interactionCancel', () => {
 })
 
 const testStrategy: CanvasStrategy = {
+  id: 'TEST_STRATEGY' as CanvasStrategyId,
   name: 'Test Strategy',
   isApplicable: function (
     canvasState: InteractionCanvasState,
@@ -179,7 +181,7 @@ describe('interactionStart', () => {
             "transient": false,
           },
         ],
-        "currentStrategy": "Test Strategy",
+        "currentStrategy": "TEST_STRATEGY",
         "currentStrategyCommands": Array [
           Object {
             "patch": Object {
@@ -277,7 +279,7 @@ describe('interactionUpdate', () => {
             "transient": false,
           },
         ],
-        "currentStrategy": "Test Strategy",
+        "currentStrategy": "TEST_STRATEGY",
         "currentStrategyCommands": Array [
           Object {
             "patch": Object {
@@ -379,7 +381,7 @@ describe('interactionHardReset', () => {
             "transient": false,
           },
         ],
-        "currentStrategy": "Test Strategy",
+        "currentStrategy": "TEST_STRATEGY",
         "currentStrategyCommands": Array [
           Object {
             "patch": Object {
@@ -510,7 +512,7 @@ describe('interactionStrategyChangeStacked', () => {
             "transient": false,
           },
         ],
-        "currentStrategy": "Test Strategy",
+        "currentStrategy": "TEST_STRATEGY",
         "currentStrategyCommands": Array [
           Object {
             "patch": Object {
@@ -635,7 +637,7 @@ describe('interactionUserChangedStrategy', () => {
             "transient": false,
           },
         ],
-        "currentStrategy": "Test Strategy",
+        "currentStrategy": "TEST_STRATEGY",
         "currentStrategyCommands": Array [
           Object {
             "patch": Object {

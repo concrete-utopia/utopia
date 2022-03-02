@@ -10,6 +10,7 @@ import { absoluteMoveStrategy } from './absolute-move-strategy'
 import { CanvasStrategy } from './canvas-strategy-types'
 
 export const absoluteReparentStrategy: CanvasStrategy = {
+  id: 'ABSOLUTE_REPARENT',
   name: 'Reparent Absolute Elements',
   isApplicable: (canvasState, interactionState, metadata) => {
     if (

@@ -1,10 +1,9 @@
 import { ElementInstanceMetadataMap } from '../../../core/shared/element-template'
-import { InteractionSession } from './interaction-state'
-import { CanvasCommand } from '../commands/commands'
-import { StrategyState } from './interaction-state'
+import { CanvasVector } from '../../../core/shared/math-utils'
 import { ElementPath } from '../../../core/shared/project-file-types'
 import { ProjectContentTreeRoot } from '../../assets'
-import { CanvasVector } from '../../../core/shared/math-utils'
+import { CanvasCommand } from '../commands/commands'
+import { InteractionSession, StrategyState } from './interaction-state'
 
 export type StrategyApplicationResult = Array<CanvasCommand>
 
@@ -25,8 +24,11 @@ export interface InteractionCanvasState {
   canvasOffset: CanvasVector
 }
 
+export type CanvasStrategyId = 'ABSOLUTE_MOVE' | 'ABSOLUTE_REPARENT'
+
 export interface CanvasStrategy {
-  name: string // We'd need to do something to guarantee uniqueness here if using this for the commands' reason
+  id: CanvasStrategyId // We'd need to do something to guarantee uniqueness here if using this for the commands' reason
+  name: string
 
   // Determines if we should show the controls that this strategy renders
   isApplicable: (

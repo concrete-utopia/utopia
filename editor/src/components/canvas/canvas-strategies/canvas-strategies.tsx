@@ -4,18 +4,33 @@ import { addAllUniquelyBy, mapDropNulls, sortBy } from '../../../core/shared/arr
 import { ElementInstanceMetadataMap } from '../../../core/shared/element-template'
 import { arrayEquals } from '../../../core/shared/utils'
 import { InnerDispatchResult } from '../../editor/store/dispatch'
-import { EditorStorePatched } from '../../editor/store/editor-state'
+import { EditorState, EditorStorePatched } from '../../editor/store/editor-state'
 import { useEditorState } from '../../editor/store/store-hook'
 import { CanvasCommand } from '../commands/commands'
 import { absoluteMoveStrategy } from './absolute-move-strategy'
 import { absoluteReparentStrategy } from './absolute-reparent-strategy'
-import { CanvasStrategy, ControlWithKey, InteractionCanvasState } from './canvas-strategy-types'
+import {
+  CanvasStrategy,
+  CanvasStrategyId,
+  ControlWithKey,
+  InteractionCanvasState,
+} from './canvas-strategy-types'
 import { InteractionSession, StrategyState } from './interaction-state'
 
 export const RegisteredCanvasStrategies: Array<CanvasStrategy> = [
   absoluteMoveStrategy,
   absoluteReparentStrategy,
 ]
+
+export function pickCanvasStateFromEditorState(editorState: EditorState): InteractionCanvasState {
+  return {
+    selectedElements: editorState.selectedViews,
+    projectContents: editorState.projectContents,
+    openFile: editorState.canvas.openFile?.filename,
+    scale: editorState.canvas.scale,
+    canvasOffset: editorState.canvas.roundedCanvasOffset,
+  }
+}
 
 function getApplicableStrategies(
   strategies: Array<CanvasStrategy>,
@@ -99,14 +114,7 @@ function getApplicableStrategiesOrderedByFitness(
 
 const getApplicableStrategiesOrderedByFitnessSelector = createSelector(
   (store: EditorStorePatched): InteractionCanvasState => {
-    return {
-      selectedElements: store.editor.selectedViews,
-      // metadata: store.editor.jsxMetadata, // We can add metadata back if live metadata is necessary
-      projectContents: store.editor.projectContents,
-      openFile: store.editor.canvas.openFile?.filename,
-      scale: store.editor.canvas.scale,
-      canvasOffset: store.editor.canvas.roundedCanvasOffset,
-    }
+    return pickCanvasStateFromEditorState(store.editor)
   },
   (store: EditorStorePatched) => store.editor.canvas.interactionSession,
   (store: EditorStorePatched) => store.strategyState,
@@ -114,7 +122,7 @@ const getApplicableStrategiesOrderedByFitnessSelector = createSelector(
     canvasState: InteractionCanvasState,
     interactionSession: InteractionSession | null,
     strategyState: StrategyState,
-  ): Array<string> => {
+  ): Array<CanvasStrategy> => {
     if (interactionSession == null) {
       return []
     }
@@ -123,11 +131,11 @@ const getApplicableStrategiesOrderedByFitnessSelector = createSelector(
       canvasState,
       interactionSession,
       strategyState,
-    ).map((s) => s.strategy.name)
+    ).map((s) => s.strategy)
   },
 )
 
-export function useGetApplicableStrategiesOrderedByFitness(): Array<string> {
+export function useGetApplicableStrategiesOrderedByFitness(): Array<CanvasStrategy> {
   return useEditorState(
     getApplicableStrategiesOrderedByFitnessSelector,
     'useGetApplicableStrategiesOrderedByFitness',
@@ -136,11 +144,11 @@ export function useGetApplicableStrategiesOrderedByFitness(): Array<string> {
 
 function pickDefaultCanvasStrategy(
   sortedApplicableStrategies: Array<StrategyWithFitness>,
-  previousStrategyName: string | null,
+  previousStrategyId: string | null,
 ): { strategy: StrategyWithFitness | null; previousStrategy: StrategyWithFitness | null } {
   const currentBestStrategy = sortedApplicableStrategies[0] ?? null
   const previousStrategy =
-    sortedApplicableStrategies.find((s) => s.strategy.name === previousStrategyName) ?? null
+    sortedApplicableStrategies.find((s) => s.strategy.id === previousStrategyId) ?? null
   if (previousStrategy != null && previousStrategy.fitness === currentBestStrategy.fitness) {
     return { strategy: previousStrategy, previousStrategy: previousStrategy }
   } else {
@@ -151,23 +159,23 @@ function pickDefaultCanvasStrategy(
 function pickStrategy(
   sortedApplicableStrategies: Array<StrategyWithFitness>,
   interactionSession: InteractionSession,
-  previousStrategyName: string | null,
+  previousStrategyId: CanvasStrategyId | null,
 ): { strategy: StrategyWithFitness | null; previousStrategy: StrategyWithFitness | null } {
   // FIXME Explicitly picking a strategy will prevent natural handovers that otherwise should occur
 
   if (interactionSession.userPreferredStrategy != null) {
     const foundStrategyByName = sortedApplicableStrategies.find(
-      (s) => s.strategy.name === interactionSession.userPreferredStrategy,
+      (s) => s.strategy.id === interactionSession.userPreferredStrategy,
     )
     const foundPreviousStrategy =
-      sortedApplicableStrategies.find((s) => s.strategy.name === previousStrategyName) ?? null
+      sortedApplicableStrategies.find((s) => s.strategy.id === previousStrategyId) ?? null
 
     if (foundStrategyByName != null) {
       return { strategy: foundStrategyByName, previousStrategy: foundPreviousStrategy }
     }
   }
   // fall back to default strategy
-  return pickDefaultCanvasStrategy(sortedApplicableStrategies, previousStrategyName)
+  return pickDefaultCanvasStrategy(sortedApplicableStrategies, previousStrategyId)
 }
 
 export function findCanvasStrategy(
@@ -175,7 +183,7 @@ export function findCanvasStrategy(
   canvasState: InteractionCanvasState,
   interactionSession: InteractionSession,
   strategyState: StrategyState,
-  previousStrategyName: string | null,
+  previousStrategyId: CanvasStrategyId | null,
 ): { strategy: StrategyWithFitness | null; previousStrategy: StrategyWithFitness | null } {
   const sortedApplicableStrategies = getApplicableStrategiesOrderedByFitness(
     strategies,
@@ -183,7 +191,7 @@ export function findCanvasStrategy(
     interactionSession,
     strategyState,
   )
-  return pickStrategy(sortedApplicableStrategies, interactionSession, previousStrategyName)
+  return pickStrategy(sortedApplicableStrategies, interactionSession, previousStrategyId)
 }
 
 export function applyCanvasStrategy(
@@ -206,7 +214,7 @@ export function useGetApplicableStrategyControls(): Array<ControlWithKey> {
       const filteredControls = s.controlsToRender.filter(
         (control) =>
           control.show === 'always-visible' ||
-          (control.show === 'visible-only-while-active' && s.name === currentStrategy),
+          (control.show === 'visible-only-while-active' && s.id === currentStrategy),
       )
       return addAllUniquelyBy(working, filteredControls, (l, r) => l.control === r.control)
     }, [])
@@ -218,14 +226,7 @@ export function findCanvasStrategyFromDispatchResult(
   result: InnerDispatchResult,
 ): StrategyWithFitness | null {
   const newEditorState = result.unpatchedEditor
-  const canvasState: InteractionCanvasState = {
-    selectedElements: newEditorState.selectedViews,
-    // metadata: store.editor.jsxMetadata, // We can add metadata back if live metadata is necessary
-    projectContents: newEditorState.projectContents,
-    openFile: newEditorState.canvas.openFile?.filename,
-    scale: newEditorState.canvas.scale,
-    canvasOffset: newEditorState.canvas.roundedCanvasOffset,
-  }
+  const canvasState: InteractionCanvasState = pickCanvasStateFromEditorState(newEditorState)
   const interactionSession = newEditorState.canvas.interactionSession
   if (interactionSession == null) {
     return null
