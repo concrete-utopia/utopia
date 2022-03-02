@@ -10,7 +10,8 @@ interface DistanceGuidelineProps {
 
 export const DistanceGuideline = React.memo<DistanceGuidelineProps>((props) => {
   const isInteraction = useEditorState(
-    (store) => store.editor.canvas.dragState != null,
+    (store) =>
+      store.editor.canvas.dragState != null || store.editor.canvas.interactionSession != null,
     'DistanceGuideline isInteraction',
   )
   const isAltPressed = useEditorState(
