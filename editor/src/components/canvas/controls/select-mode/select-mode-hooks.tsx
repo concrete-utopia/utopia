@@ -413,18 +413,27 @@ export function useCalculateHighlightedViews(
 ): (targetPoint: WindowPoint, eventCmdPressed: boolean) => void {
   const { maybeHighlightOnHover, maybeClearHighlightsOnHoverEnd } = useMaybeHighlightElement()
   const findValidTarget = useFindValidTarget()
-  return (targetPoint: WindowPoint, eventCmdPressed: boolean) => {
-    const selectableViews: Array<ElementPath> = getHighlightableViews(eventCmdPressed, false)
-    const validElementPath = findValidTarget(selectableViews, targetPoint)
-    if (
-      validElementPath == null ||
-      (!allowHoverOnSelectedView && validElementPath.isSelected) // we remove highlights if the hovered element is selected
-    ) {
-      maybeClearHighlightsOnHoverEnd()
-    } else {
-      maybeHighlightOnHover(validElementPath.elementPath)
-    }
-  }
+  return React.useCallback(
+    (targetPoint: WindowPoint, eventCmdPressed: boolean) => {
+      const selectableViews: Array<ElementPath> = getHighlightableViews(eventCmdPressed, false)
+      const validElementPath = findValidTarget(selectableViews, targetPoint)
+      if (
+        validElementPath == null ||
+        (!allowHoverOnSelectedView && validElementPath.isSelected) // we remove highlights if the hovered element is selected
+      ) {
+        maybeClearHighlightsOnHoverEnd()
+      } else {
+        maybeHighlightOnHover(validElementPath.elementPath)
+      }
+    },
+    [
+      allowHoverOnSelectedView,
+      maybeClearHighlightsOnHoverEnd,
+      maybeHighlightOnHover,
+      getHighlightableViews,
+      findValidTarget,
+    ],
+  )
 }
 
 export function useHighlightCallbacks(
