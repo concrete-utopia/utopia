@@ -3,17 +3,18 @@ import { when } from '../../../../utils/react-conditionals'
 import { FlexRow, FlexColumn, useColorTheme, UtopiaStyles } from '../../../../uuiui'
 import { useEditorState } from '../../../editor/store/store-hook'
 import CanvasActions from '../../canvas-actions'
-import { useGetApplicableStrategiesOrderedByFitness } from '../../canvas-strategies/canvas-strategies'
-import { CanvasStrategy, CanvasStrategyId } from '../../canvas-strategies/canvas-strategy-types'
+import { CanvasStrategy } from '../../canvas-strategies/canvas-strategy-types'
 
 export const CanvasStrategyIndicator = React.memo(() => {
   const colorTheme = useColorTheme()
   const dispatch = useEditorState((store) => store.dispatch, 'CanvasStrategyIndicator dispatch')
-  const activeStrategy = useEditorState(
-    (store) => store.strategyState.currentStrategy,
+  const { activeStrategy, otherPossibleStrategies } = useEditorState(
+    (store) => ({
+      activeStrategy: store.strategyState.currentStrategy,
+      otherPossibleStrategies: store.strategyState.sortedApplicableStrategies,
+    }),
     'CanvasStrategyIndicator strategyState.currentStrategy',
   )
-  const otherPossibleStrategies = useGetApplicableStrategiesOrderedByFitness()
 
   const onTabPressed = React.useCallback(
     (newStrategy: CanvasStrategy) => {

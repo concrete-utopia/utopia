@@ -10,11 +10,10 @@ import {
 import { ElementPath } from '../../../core/shared/project-file-types'
 import { KeyCharacter } from '../../../utils/keyboard'
 import { Modifiers } from '../../../utils/modifiers'
-import { ProjectContentTreeRoot } from '../../assets'
 import { EdgePosition } from '../canvas-types'
 import { MoveIntoDragThreshold } from '../canvas-utils'
 import { CanvasCommand } from '../commands/commands'
-import { CanvasStrategyId } from './canvas-strategy-types'
+import { CanvasStrategy, CanvasStrategyId } from './canvas-strategy-types'
 
 export interface DragInteractionData {
   type: 'DRAG'
@@ -70,6 +69,7 @@ export interface StrategyState {
   currentStrategyCommands: Array<CanvasCommand>
   accumulatedCommands: Array<StrategyAndAccumulatedCommands>
   commandDescriptions: Array<CommandDescription>
+  sortedApplicableStrategies: Array<CanvasStrategy>
 
   // Checkpointed metadata at the point at which a strategy change has occurred.
   startingMetadata: ElementInstanceMetadataMap
@@ -82,6 +82,7 @@ export function createEmptyStrategyState(metadata?: ElementInstanceMetadataMap):
     currentStrategyCommands: [],
     accumulatedCommands: [],
     commandDescriptions: [],
+    sortedApplicableStrategies: [],
     startingMetadata: metadata ?? {},
   }
 }

@@ -56,7 +56,7 @@ export function interactionFinished(
     }
   } else {
     // Determine the new canvas strategy to run this time around.
-    const { strategy } = findCanvasStrategy(
+    const { strategy, sortedApplicableStrategies } = findCanvasStrategy(
       strategies,
       canvasState,
       interactionSession,
@@ -64,12 +64,17 @@ export function interactionFinished(
       result.strategyState.currentStrategy,
     )
 
+    const newStrategyState = {
+      ...withClearedSession,
+      sortedApplicableStrategies: sortedApplicableStrategies,
+    }
+
     // If there is a current strategy, produce the commands from it.
     if (strategy == null) {
       return {
         unpatchedEditorState: newEditorState,
         patchedEditorState: newEditorState,
-        newStrategyState: withClearedSession,
+        newStrategyState: newStrategyState,
       }
     } else {
       const commands = applyCanvasStrategy(
@@ -88,7 +93,7 @@ export function interactionFinished(
       return {
         unpatchedEditorState: commandResult.editorState,
         patchedEditorState: commandResult.editorState,
-        newStrategyState: withClearedSession,
+        newStrategyState: newStrategyState,
       }
     }
   }
@@ -126,7 +131,7 @@ export function interactionHardReset(
       startingMetadata: storedState.unpatchedEditor.jsxMetadata,
     }
     // Determine the new canvas strategy to run this time around.
-    const { strategy, previousStrategy } = findCanvasStrategy(
+    const { strategy, sortedApplicableStrategies } = findCanvasStrategy(
       strategies,
       canvasState,
       resetInteractionSession,
@@ -154,6 +159,7 @@ export function interactionHardReset(
         currentStrategyCommands: commands,
         accumulatedCommands: [],
         commandDescriptions: commandResult.commandDescriptions,
+        sortedApplicableStrategies: sortedApplicableStrategies,
         startingMetadata: resetStrategyState.startingMetadata,
       }
 
@@ -195,7 +201,7 @@ export function interactionUpdate(
     }
   } else {
     // Determine the new canvas strategy to run this time around.
-    const { strategy } = findCanvasStrategy(
+    const { strategy, sortedApplicableStrategies } = findCanvasStrategy(
       strategies,
       canvasState,
       interactionSession,
@@ -223,6 +229,7 @@ export function interactionUpdate(
         currentStrategyCommands: commands,
         accumulatedCommands: result.strategyState.accumulatedCommands,
         commandDescriptions: commandResult.commandDescriptions,
+        sortedApplicableStrategies: sortedApplicableStrategies,
         startingMetadata: result.strategyState.startingMetadata,
       }
 
@@ -267,7 +274,7 @@ export function interactionStart(
     }
   } else {
     // Determine the new canvas strategy to run this time around.
-    const { strategy, previousStrategy } = findCanvasStrategy(
+    const { strategy, sortedApplicableStrategies } = findCanvasStrategy(
       strategies,
       canvasState,
       interactionSession,
@@ -296,6 +303,7 @@ export function interactionStart(
         currentStrategyCommands: commands,
         accumulatedCommands: [],
         commandDescriptions: commandResult.commandDescriptions,
+        sortedApplicableStrategies: sortedApplicableStrategies,
         startingMetadata: newEditorState.canvas.interactionSession.metadata,
       }
 
@@ -356,7 +364,7 @@ export function interactionUserChangedStrategy(
     }
   } else {
     // Determine the new canvas strategy to run this time around.
-    const { strategy, previousStrategy } = findCanvasStrategy(
+    const { strategy, previousStrategy, sortedApplicableStrategies } = findCanvasStrategy(
       strategies,
       canvasState,
       interactionSession,
@@ -409,6 +417,7 @@ export function interactionUserChangedStrategy(
         currentStrategyCommands: commands,
         accumulatedCommands: newAccumulatedCommands,
         commandDescriptions: commandResult.commandDescriptions,
+        sortedApplicableStrategies: sortedApplicableStrategies,
         startingMetadata: result.strategyState.startingMetadata,
       }
 
@@ -450,7 +459,7 @@ export function interactionStrategyChangeStacked(
     }
   } else {
     // Determine the new canvas strategy to run this time around.
-    const { strategy, previousStrategy } = findCanvasStrategy(
+    const { strategy, previousStrategy, sortedApplicableStrategies } = findCanvasStrategy(
       strategies,
       canvasState,
       interactionSession,
@@ -505,6 +514,7 @@ export function interactionStrategyChangeStacked(
         currentStrategyCommands: commands,
         accumulatedCommands: newAccumulatedCommands,
         commandDescriptions: commandResult.commandDescriptions,
+        sortedApplicableStrategies: sortedApplicableStrategies,
         startingMetadata: result.strategyState.startingMetadata,
       }
 
