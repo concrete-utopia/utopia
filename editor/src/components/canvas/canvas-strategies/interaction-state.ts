@@ -14,6 +14,7 @@ import { ProjectContentTreeRoot } from '../../assets'
 import { EdgePosition } from '../canvas-types'
 import { MoveIntoDragThreshold } from '../canvas-utils'
 import { CanvasCommand } from '../commands/commands'
+import { CanvasStrategyId } from './canvas-strategy-types'
 
 export interface DragInteractionData {
   type: 'DRAG'
@@ -64,7 +65,7 @@ export interface StrategyAndAccumulatedCommands {
 
 export interface StrategyState {
   // Need to track here which strategy is being applied.
-  currentStrategy: string | null
+  currentStrategy: CanvasStrategyId | null
   currentStrategyFitness: number
   currentStrategyCommands: Array<CanvasCommand>
   accumulatedCommands: Array<StrategyAndAccumulatedCommands>

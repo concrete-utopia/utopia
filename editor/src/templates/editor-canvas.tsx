@@ -410,7 +410,7 @@ export function runLocalCanvasAction(
             ...model.canvas,
             interactionSession: {
               ...model.canvas.interactionSession,
-              userPreferredStrategy: action.strategyName,
+              userPreferredStrategy: action.strategyId,
             },
           },
         }
