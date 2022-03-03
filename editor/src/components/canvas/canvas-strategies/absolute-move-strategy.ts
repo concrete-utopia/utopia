@@ -1,8 +1,14 @@
+import { isHorizontalPoint } from 'utopia-api/core'
+import { getLayoutProperty } from '../../../core/layout/getLayoutProperty'
+import { framePointForPinnedProp } from '../../../core/layout/layout-helpers-new'
 import { MetadataUtils } from '../../../core/model/element-metadata-utils'
+import { mapDropNulls } from '../../../core/shared/array-utils'
+import { isRight, right } from '../../../core/shared/either'
+import { JSXElement } from '../../../core/shared/element-template'
+import { withUnderlyingTarget } from '../../editor/store/editor-state'
 import { stylePropPathMappingFn } from '../../inspector/common/property-path-hooks'
 import { adjustNumberProperty } from '../commands/adjust-number-command'
 import { wildcardPatch } from '../commands/wildcard-patch-command'
-import * as EP from '../../../core/shared/element-path'
 import { CanvasStrategy } from './canvas-strategy-types'
 
 export const absoluteMoveStrategy: CanvasStrategy = {
@@ -37,27 +43,51 @@ export const absoluteMoveStrategy: CanvasStrategy = {
       interactionState.interactionData.drag != null
     ) {
       const drag = interactionState.interactionData.drag
-      return canvasState.selectedElements.flatMap((selectedElement) => [
-        adjustNumberProperty(
-          'permanent',
-          selectedElement,
-          stylePropPathMappingFn('left', ['style']),
-          drag.x,
-          true,
-        ),
-        adjustNumberProperty(
-          'permanent',
-          selectedElement,
-          stylePropPathMappingFn('top', ['style']),
-          drag.y,
-          true,
-        ),
+      return [
+        ...canvasState.selectedElements.flatMap((selectedElement) => {
+          const element: JSXElement | null = withUnderlyingTarget(
+            selectedElement,
+            canvasState.projectContents,
+            {},
+            canvasState.openFile,
+            null,
+            (_, e) => e,
+          )
+          if (element == null) {
+            return []
+          }
+
+          return mapDropNulls(
+            (pin) => {
+              const horizontal = isHorizontalPoint(
+                // TODO avoid using the loaded FramePoint enum
+                framePointForPinnedProp(pin),
+              )
+              const negative = pin === 'right' || pin === 'bottom'
+              const value = getLayoutProperty(pin, right(element.props), ['style'])
+              if (isRight(value) && value.value != null) {
+                // TODO what to do about missing properties?
+
+                return adjustNumberProperty(
+                  'permanent',
+                  selectedElement,
+                  stylePropPathMappingFn(pin, ['style']),
+                  (horizontal ? drag.x : drag.y) * (negative ? -1 : 1),
+                  true,
+                )
+              } else {
+                return null
+              }
+            },
+            ['top', 'bottom', 'left', 'right'] as const,
+          )
+        }),
         wildcardPatch('transient', {
           highlightedViews: {
             $set: [],
           },
         }),
-      ])
+      ]
     }
     // Fallback for when the checks above are not satisfied.
     return []
