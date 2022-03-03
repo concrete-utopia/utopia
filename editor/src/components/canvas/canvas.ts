@@ -49,6 +49,8 @@ const Canvas = {
     metadata: ElementInstanceMetadataMap,
     useBoundingFrames: boolean,
   ): Array<FrameWithPath> {
+    // Note: This will not necessarily be representative of the structured ordering in
+    // the code that produced these elements.
     const projectTree = buildTree(objectValues(metadata).map((m) => m.elementPath))
 
     function recurseChildren(
