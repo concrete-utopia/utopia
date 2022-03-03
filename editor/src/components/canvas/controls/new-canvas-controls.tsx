@@ -425,6 +425,46 @@ const NewCanvasControlsInner = (props: NewCanvasControlsInnerProps) => {
       )}
       {when(
         isFeatureEnabled('Canvas Absolute Resize Controls'),
+        <DistanceGuideline localSelectedElements={localSelectedViews} />,
+      )}
+      {when(
+        isFeatureEnabled('Canvas Absolute Resize Controls'),
+        <DistanceGuideline localSelectedElements={localSelectedViews} />,
+      )}
+      {when(
+        isFeatureEnabled('Canvas Absolute Resize Controls'),
+        <DistanceGuideline localSelectedElements={localSelectedViews} />,
+      )}
+      {when(
+        isFeatureEnabled('Canvas Absolute Resize Controls'),
+        <DistanceGuideline localSelectedElements={localSelectedViews} />,
+      )}
+      {when(
+        isFeatureEnabled('Canvas Absolute Resize Controls'),
+        <DistanceGuideline localSelectedElements={localSelectedViews} />,
+      )}
+      {when(
+        isFeatureEnabled('Canvas Absolute Resize Controls'),
+        <DistanceGuideline localSelectedElements={localSelectedViews} />,
+      )}
+      {when(
+        isFeatureEnabled('Canvas Absolute Resize Controls'),
+        <DistanceGuideline localSelectedElements={localSelectedViews} />,
+      )}
+      {when(
+        isFeatureEnabled('Canvas Absolute Resize Controls'),
+        <DistanceGuideline localSelectedElements={localSelectedViews} />,
+      )}
+      {when(
+        isFeatureEnabled('Canvas Absolute Resize Controls'),
+        <DistanceGuideline localSelectedElements={localSelectedViews} />,
+      )}
+      {when(
+        isFeatureEnabled('Canvas Absolute Resize Controls'),
+        <DistanceGuideline localSelectedElements={localSelectedViews} />,
+      )}
+      {when(
+        isFeatureEnabled('Canvas Absolute Resize Controls'),
         <AbsoluteResizeControl localSelectedElements={localSelectedViews} />,
       )}
       {when(
