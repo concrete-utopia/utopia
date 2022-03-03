@@ -4566,6 +4566,13 @@ export const DOMEventHandlerEmptyValues = DOMEventHandlerNames.reduce((current, 
   return current
 }, {} as DOMEventAttributeProperties)
 
+const elementPropertiesEmptyValuesExcludingEvents: UtopianElementProperties &
+  DOMIMGAttributeProperties = {
+  alt: '',
+  src: '/',
+  className: '',
+}
+
 const elementPropertiesEmptyValues: ParsedElementProperties = {
   alt: '',
   src: '/',
@@ -4728,6 +4735,12 @@ export const emptyValues: ParsedProperties = {
   ...layoutEmptyValues,
   ...layoutEmptyValuesNew,
 }
+
+export const computedStyleKeys: Array<string> = Object.keys({
+  ...elementPropertiesEmptyValuesExcludingEvents,
+  ...cssEmptyValues,
+  ...layoutEmptyValuesNew,
+})
 
 type Parser<T> = (simpleValue: unknown, rawValue: ModifiableAttribute | null) => Either<string, T>
 

@@ -37,6 +37,7 @@ import {
   parseCSSLength,
   CSSPosition,
   positionValues,
+  computedStyleKeys,
 } from '../inspector/common/css-utils'
 import { CanvasContainerProps } from './ui-jsx-canvas'
 import { camelCaseToDashed } from '../../core/shared/string-utils'
@@ -603,7 +604,6 @@ function collectMetadata(
       element,
       pathsForElement,
       invalidatedPathsForStylesheetCacheRef,
-      selectedViews,
     )
 
     const collectedMetadata = pathsForElement.map((path) => {
@@ -669,18 +669,7 @@ function getComputedStyle(
   element: HTMLElement,
   paths: Array<ElementPath>,
   invalidatedPathsForStylesheetCacheRef: React.MutableRefObject<Set<string>>,
-  selectedViews: Array<ElementPath>,
 ): { computedStyle: ComputedStyle | null; attributeMetadata: StyleAttributeMetadata | null } {
-  const isSelectedOnAnyPaths = selectedViews.some((sv) =>
-    paths.some((path) => EP.pathsEqual(sv, path)),
-  )
-  if (!isSelectedOnAnyPaths) {
-    // the element is not among the selected views, skip computing the style
-    return {
-      computedStyle: null,
-      attributeMetadata: null,
-    }
-  }
   const elementStyle = window.getComputedStyle(element)
   const attributesSetByStylesheet = getCachedAttributesComingFromStyleSheets(
     invalidatedPathsForStylesheetCacheRef,
@@ -690,7 +679,7 @@ function getComputedStyle(
   let computedStyle: ComputedStyle = {}
   let attributeMetadata: StyleAttributeMetadata = {}
   if (elementStyle != null) {
-    Object.keys(elementStyle).forEach((key) => {
+    computedStyleKeys.forEach((key) => {
       // Accessing the value directly often doesn't work, and using `getPropertyValue` requires
       // using dashed case rather than camel case
       const caseCorrectedKey = camelCaseToDashed(key)
