@@ -175,4 +175,29 @@ describe('Absolute Move Strategy', () => {
       ),
     )
   })
+
+  // TODO needs design review
+  it('keeps expressions intact', async () => {
+    const targetElement = elementPath([
+      ['scene-aaa', 'app-entity'],
+      ['aaa', 'bbb'],
+    ])
+
+    const initialEditor: EditorState = prepareEditorState(
+      `
+    <View style={{ ...(props.style || {}) }} data-uid='aaa'>
+      <View
+        style={{ backgroundColor: '#0091FFAA', position: 'absolute', left: 50 + 5, top: 50 + props.top, width: 250, height: 300 }}
+        data-uid='bbb'
+      />
+    </View>
+    `,
+      [targetElement],
+    )
+
+    const finalEditor = dragBy15Pixels(initialEditor)
+
+    expect(testPrintCodeFromEditorState(finalEditor)).toEqual(initialEditor)
+  })
+
 })
