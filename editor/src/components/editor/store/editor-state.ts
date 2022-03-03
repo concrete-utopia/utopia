@@ -1501,7 +1501,7 @@ export function editorModelFromPersistentModel(
     },
     rightMenu: {
       selectedTab: RightMenuTab.Inspector,
-      expanded: true,
+      expanded: false,
     },
     interfaceDesigner: {
       codePaneWidth: 500,
