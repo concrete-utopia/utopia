@@ -26,7 +26,7 @@ import {
   useGetSelectableViewsForSelectMode,
 } from '../../components/canvas/controls/select-mode/select-mode-hooks'
 
-const NumberOfIterations = 100
+const NumberOfIterations = 5
 
 export function useTriggerScrollPerformanceTest(): () => void {
   const dispatch = useEditorState(
