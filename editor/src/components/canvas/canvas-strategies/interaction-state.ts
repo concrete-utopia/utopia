@@ -44,7 +44,7 @@ export interface InteractionSession {
   metadata: ElementInstanceMetadataMap
 
   // To track if the user selected a strategy
-  userPreferredStrategy: string | null
+  userPreferredStrategy: CanvasStrategyId | null
 
   startedAt: number
   globalTime: number
