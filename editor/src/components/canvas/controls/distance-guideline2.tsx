@@ -1,10 +1,11 @@
+import styled from '@emotion/styled'
+import { jsx, ThemeProvider } from '@emotion/react'
+
 import React from 'react'
 import { ElementPath } from '../../../core/shared/project-file-types'
 import { useColorTheme } from '../../../uuiui'
 import { useEditorState } from '../../editor/store/store-hook'
 import { useClosestDistanceGuideline } from './distance-guideline-hooks'
-
-import styled from '@emotion/styled'
 
 interface DistanceGuidelineProps {
   localSelectedElements: Array<ElementPath>
@@ -24,9 +25,11 @@ export const DistanceGuideline = React.memo<DistanceGuidelineProps>((props) => {
     'DistanceGuideline isAltPressed',
   )
 
+  const colorTheme = useColorTheme()
+
   if (props.localSelectedElements.length > 0) {
     return (
-      <>
+      <ThemeProvider theme={colorTheme}>
         <style>{`
           .utopia-canvas-guideline: {
             --utopia-canvas-guideline-x: 0px;
@@ -42,13 +45,14 @@ export const DistanceGuideline = React.memo<DistanceGuidelineProps>((props) => {
             position: 'absolute',
             transform: `translate(var(--utopia-canvas-offset-x), var(--utopia-canvas-offset-y))`,
             display:
-              isAltPressed && !isInteraction ? `var(--utopia-canvas-guideline-display)` : 'none',
+              // isAltPressed && !isInteraction ? `var(--utopia-canvas-guideline-display)` : 'none',
+              `var(--utopia-canvas-guideline-display)`,
           }}
         >
           <GuidelineHorizontal localSelectedElements={props.localSelectedElements} />
           <GuidelineVertical localSelectedElements={props.localSelectedElements} />
         </div>
-      </>
+      </ThemeProvider>
     )
   } else {
     return null
@@ -56,7 +60,6 @@ export const DistanceGuideline = React.memo<DistanceGuidelineProps>((props) => {
 })
 
 const GuidelineHorizontal = React.memo<DistanceGuidelineProps>((props) => {
-  const colorTheme = useColorTheme()
   const guidelineHorizontal = useClosestDistanceGuideline(
     props.localSelectedElements,
     'XAxisGuideline',
@@ -93,77 +96,69 @@ const GuidelineHorizontal = React.memo<DistanceGuidelineProps>((props) => {
     },
   )
 
-  const GuidelineHorizontalOuter = styled.div`
-    position: absolute;
-    pointer-events: none;
-    background-color: calc(var(--utopia-canvas-guideline-display));
-    display: var(--utopia-canvas-guideline-display);
-    left: calc(
-      var(--utopia-canvas-guideline-x) - ${StrokeWidth / 2}px / var(--utopia-canvas-scale)
-    );
-    top: calc(var(--utopia-canvas-guideline-y) + ${StrokeWidth / 2}px / var(--utopia-canvas-scale));
-    width: calc(
-      var(--utopia-canvas-guideline-width) - ${StrokeWidth / 2}px / var(--utopia-canvas-scale) * 3
-    );
-  `
-  const GuidelineHorizontalText = styled.div`
-    position: absolute;
-    pointer-events: none;
-    text-align: center;
-    color: ${colorTheme.canvasLayoutStroke.value};
-    display: var(--utopia-canvas-guideline-display);
-    font-size: calc(${FontSize}px / var(--utopia-canvas-scale));
-    left: calc(
-      var(--utopia-canvas-guideline-x) + ${StrokeWidth / 2}px / var(--utopia-canvas-scale)
-    );
-    top: calc(var(--utopia-canvas-guideline-y) + ${FontSize / 2}px / var(--utopia-canvas-scale));
-    width: calc(
-      var(--utopia-canvas-guideline-width) - ${StrokeWidth / 2}px / var(--utopia-canvas-scale) * 3
-    );
-  `
-
   return (
     <>
-      <GuidelineHorizontalOuter ref={guidelineHorizontal}>
-        <div
-          style={{
-            position: 'relative',
-            display: 'inline-block',
-            top: `calc(${-LineEndSegmentSize}px / var(--utopia-canvas-scale))`,
-            height: `calc(${LineEndSegmentSize * 2}px / var(--utopia-canvas-scale))`,
-            width: `calc(${StrokeWidth}px / var(--utopia-canvas-scale))`,
-            backgroundColor: colorTheme.canvasLayoutStroke.value,
-          }}
-        />
-        <div
-          style={{
-            position: 'relative',
-            top: `calc(${-LineEndSegmentSize * 2}px / var(--utopia-canvas-scale))`,
-            display: 'inline-block',
-            backgroundColor: colorTheme.canvasLayoutStroke.value,
-            width: '100%',
-            height: `calc(${StrokeWidth}px / var(--utopia-canvas-scale))`,
-          }}
-        />
-        <div
-          style={{
-            display: 'inline-block',
-            position: 'relative',
-            top: `calc(${-LineEndSegmentSize}px / var(--utopia-canvas-scale))`,
-            height: `calc(${LineEndSegmentSize * 2}px / var(--utopia-canvas-scale))`,
-            width: `calc(${StrokeWidth}px / var(--utopia-canvas-scale))`,
-            backgroundColor: colorTheme.canvasLayoutStroke.value,
-          }}
-        />
-      </GuidelineHorizontalOuter>
+      <GuidelineHorizontalBase ref={guidelineHorizontal}>
+        <GuidelineHorizontalStart />
+        <GuidelineHorizontalLine />
+        <GuidelineHorizontalEnd />
+      </GuidelineHorizontalBase>
       <GuidelineHorizontalText ref={guidelineHorizontalText} />
     </>
   )
 })
 
-const GuidelineVertical = React.memo<DistanceGuidelineProps>((props) => {
-  const colorTheme = useColorTheme()
+const GuidelineHorizontalBase = styled.div`
+  position: absolute;
+  pointer-events: none;
+  background-color: calc(var(--utopia-canvas-guideline-display));
+  display: var(--utopia-canvas-guideline-display);
+  left: calc(var(--utopia-canvas-guideline-x) - ${StrokeWidth / 2}px / var(--utopia-canvas-scale));
+  top: calc(var(--utopia-canvas-guideline-y) + ${StrokeWidth / 2}px / var(--utopia-canvas-scale));
+  width: calc(
+    var(--utopia-canvas-guideline-width) - ${StrokeWidth / 2}px / var(--utopia-canvas-scale) * 3
+  );
+`
+const GuidelineHorizontalStart = styled.div`
+  position: relative;
+  display: inline-block;
+  background-color: ${(props) => props.theme.canvasLayoutStroke.value};
+  top: calc(${-LineEndSegmentSize}px / var(--utopia-canvas-scale));
+  height: calc(${LineEndSegmentSize * 2}px / var(--utopia-canvas-scale));
+  width: calc(${StrokeWidth}px / var(--utopia-canvas-scale));
+`
+const GuidelineHorizontalLine = styled.div`
+  position: relative;
+  display: inline-block;
+  background-color: ${(props) => props.theme.canvasLayoutStroke.value};
+  width: 100%;
+  top: calc(${-LineEndSegmentSize * 2}px / var(--utopia-canvas-scale));
+  height: calc(${StrokeWidth}px / var(--utopia-canvas-scale));
+`
+const GuidelineHorizontalEnd = styled.div`
+  position: relative;
+  display: inline-block;
+  background-color: ${(props) => props.theme.canvasLayoutStroke.value};
+  top: calc(${-LineEndSegmentSize}px / var(--utopia-canvas-scale));
+  height: calc(${LineEndSegmentSize * 2}px / var(--utopia-canvas-scale));
+  width: calc(${StrokeWidth}px / var(--utopia-canvas-scale));
+`
 
+const GuidelineHorizontalText = styled.div`
+  position: absolute;
+  pointer-events: none;
+  text-align: center;
+  color: ${(props) => props.theme.canvasLayoutStroke.value};
+  display: var(--utopia-canvas-guideline-display);
+  font-size: calc(${FontSize}px / var(--utopia-canvas-scale));
+  left: calc(var(--utopia-canvas-guideline-x) + ${StrokeWidth / 2}px / var(--utopia-canvas-scale));
+  top: calc(var(--utopia-canvas-guideline-y) + ${FontSize / 2}px / var(--utopia-canvas-scale));
+  width: calc(
+    var(--utopia-canvas-guideline-width) - ${StrokeWidth / 2}px / var(--utopia-canvas-scale) * 3
+  );
+`
+
+const GuidelineVertical = React.memo<DistanceGuidelineProps>((props) => {
   const guidelineVertical = useClosestDistanceGuideline(
     props.localSelectedElements,
     'YAxisGuideline',
@@ -208,74 +203,61 @@ const GuidelineVertical = React.memo<DistanceGuidelineProps>((props) => {
 
   return (
     <>
-      <div
-        ref={guidelineVertical}
-        style={{
-          position: 'absolute',
-          pointerEvents: 'none',
-          display: `var(--utopia-canvas-guideline-display)`,
-          left: `calc(var(--utopia-canvas-guideline-x) + ${
-            StrokeWidth / 2
-          }px / var(--utopia-canvas-scale))`,
-          top: `calc(var(--utopia-canvas-guideline-y) - ${
-            StrokeWidth / 2
-          }px / var(--utopia-canvas-scale))`,
-          height: `calc(var(--utopia-canvas-guideline-height) - ${
-            StrokeWidth / 2
-          }px / var(--utopia-canvas-scale) * 3)`,
-        }}
-      >
-        <div
-          style={{
-            position: 'relative',
-            left: `calc(${-LineEndSegmentSize}px / var(--utopia-canvas-scale))`,
-            width: `calc(${LineEndSegmentSize * 2}px / var(--utopia-canvas-scale))`,
-            height: `calc(${StrokeWidth}px / var(--utopia-canvas-scale))`,
-            backgroundColor: colorTheme.canvasLayoutStroke.value,
-          }}
-        />
-        <div
-          style={{
-            position: 'relative',
-            backgroundColor: colorTheme.canvasLayoutStroke.value,
-            height: '100%',
-            left: `calc(${-StrokeWidth / 2}px / var(--utopia-canvas-scale))`,
-            width: `calc(${StrokeWidth}px / var(--utopia-canvas-scale))`,
-          }}
-        />
-        <div
-          style={{
-            position: 'relative',
-            left: `calc(${-LineEndSegmentSize}px / var(--utopia-canvas-scale))`,
-            width: `calc(${LineEndSegmentSize * 2}px / var(--utopia-canvas-scale))`,
-            height: `calc(${StrokeWidth}px / var(--utopia-canvas-scale))`,
-            backgroundColor: colorTheme.canvasLayoutStroke.value,
-          }}
-        />
-      </div>
-      <div
-        ref={guidelineVerticalText}
-        style={{
-          position: 'absolute',
-          pointerEvents: 'none',
-          textAlign: 'center',
-          display: `var(--utopia-canvas-guideline-display)`,
-          fontSize: `calc(${FontSize}px / var(--utopia-canvas-scale))`,
-          color: colorTheme.canvasLayoutStroke.value,
-          left: `calc(var(--utopia-canvas-guideline-x) + ${
-            FontSize / 2
-          }px / var(--utopia-canvas-scale))`,
-          top: `calc(var(--utopia-canvas-guideline-y) + ${
-            StrokeWidth / 2
-          }px / var(--utopia-canvas-scale))`,
-          height: `calc(var(--utopia-canvas-guideline-height) - ${
-            StrokeWidth / 2
-          }px / var(--utopia-canvas-scale) * 3)`,
-          lineHeight: `calc(var(--utopia-canvas-guideline-height) - ${
-            StrokeWidth / 2
-          }px / var(--utopia-canvas-scale) * 3)`,
-        }}
-      />
+      <GuidelineVerticalBase ref={guidelineVertical}>
+        <GuidelineVerticalStart />
+        <GuidelineVerticalLine />
+        <GuidelineVerticalEnd />
+      </GuidelineVerticalBase>
+      <GuidelineVerticalText ref={guidelineVerticalText} />
     </>
   )
 })
+
+const GuidelineVerticalBase = styled.div`
+  position: absolute;
+  pointer-events: none;
+  display: var(--utopia-canvas-guideline-display);
+  left: calc(var(--utopia-canvas-guideline-x) + ${StrokeWidth / 2}px / var(--utopia-canvas-scale));
+  top: calc(var(--utopia-canvas-guideline-y) - ${StrokeWidth / 2}px / var(--utopia-canvas-scale));
+  height: calc(
+    var(--utopia-canvas-guideline-height) - ${StrokeWidth / 2}px / var(--utopia-canvas-scale) * 3
+  );
+`
+const GuidelineVerticalStart = styled.div`
+  position: relative;
+  background-color: ${(props) => props.theme.canvasLayoutStroke.value};
+  left: calc(${-LineEndSegmentSize}px / var(--utopia-canvas-scale));
+  width: calc(${LineEndSegmentSize * 2}px / var(--utopia-canvas-scale));
+  height: calc(${StrokeWidth}px / var(--utopia-canvas-scale));
+`
+const GuidelineVerticalLine = styled.div`
+  position: relative;
+  background-color: ${(props) => props.theme.canvasLayoutStroke.value};
+  height: 100%;
+  left: calc(${-StrokeWidth / 2}px / var(--utopia-canvas-scale));
+  width: calc(${StrokeWidth}px / var(--utopia-canvas-scale));
+`
+const GuidelineVerticalEnd = styled.div`
+  position: relative;
+  background-color: ${(props) => props.theme.canvasLayoutStroke.value};
+  left: calc(${-LineEndSegmentSize}px / var(--utopia-canvas-scale));
+  width: calc(${LineEndSegmentSize * 2}px / var(--utopia-canvas-scale));
+  height: calc(${StrokeWidth}px / var(--utopia-canvas-scale));
+`
+
+const GuidelineVerticalText = styled.div`
+  position: absolute;
+  pointer-events: none;
+  text-align: center;
+  color: ${(props) => props.theme.canvasLayoutStroke.value};
+  display: var(--utopia-canvas-guideline-display);
+  font-size: calc(${FontSize}px / var(--utopia-canvas-scale));
+  left: calc(var(--utopia-canvas-guideline-x) + ${FontSize / 2}px / var(--utopia-canvas-scale));
+  top: calc(var(--utopia-canvas-guideline-y) + ${StrokeWidth / 2}px / var(--utopia-canvas-scale));
+  height: calc(
+    var(--utopia-canvas-guideline-height) - ${StrokeWidth / 2}px / var(--utopia-canvas-scale) * 3
+  );
+  line-height: calc(
+    var(--utopia-canvas-guideline-height) - ${StrokeWidth / 2}px / var(--utopia-canvas-scale) * 3
+  );
+`
