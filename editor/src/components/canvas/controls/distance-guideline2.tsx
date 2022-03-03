@@ -81,7 +81,7 @@ const GuidelineHorizontal = React.memo<DistanceGuidelineProps>((props) => {
         style={{
           position: 'absolute',
           pointerEvents: 'none',
-          left: `calc(var(--utopia-canvas-guideline-x) + ${
+          left: `calc(var(--utopia-canvas-guideline-x) - ${
             StrokeWidth / 2
           }px / var(--utopia-canvas-scale))`,
           top: `calc(var(--utopia-canvas-guideline-y) + ${
@@ -179,7 +179,7 @@ const GuidelineVertical = React.memo<DistanceGuidelineProps>((props) => {
           left: `calc(var(--utopia-canvas-guideline-x) + ${
             StrokeWidth / 2
           }px / var(--utopia-canvas-scale))`,
-          top: `calc(var(--utopia-canvas-guideline-y) + ${
+          top: `calc(var(--utopia-canvas-guideline-y) - ${
             StrokeWidth / 2
           }px / var(--utopia-canvas-scale))`,
           height: `calc(var(--utopia-canvas-guideline-height) - ${
@@ -201,6 +201,7 @@ const GuidelineVertical = React.memo<DistanceGuidelineProps>((props) => {
             position: 'relative',
             backgroundColor: colorTheme.canvasLayoutStroke.value,
             height: '100%',
+            left: `calc(${-StrokeWidth / 2}px / var(--utopia-canvas-scale))`,
             width: `calc(${StrokeWidth}px / var(--utopia-canvas-scale))`,
           }}
         />
