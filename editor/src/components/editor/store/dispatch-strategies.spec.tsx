@@ -153,33 +153,6 @@ const testStrategy: CanvasStrategy = {
   },
 }
 
-const emptyTestStrategy: CanvasStrategy = {
-  id: 'EMPTY_TEST_STRATEGY' as CanvasStrategyId,
-  name: 'Empty test strategy',
-  isApplicable: function (
-    canvasState: InteractionCanvasState,
-    interactionSession: InteractionSession | null,
-    metadata: ElementInstanceMetadataMap,
-  ): boolean {
-    return true
-  },
-  controlsToRender: [],
-  fitness: function (
-    canvasState: InteractionCanvasState,
-    interactionSession: InteractionSession,
-    strategyState: StrategyState,
-  ): number {
-    return 10
-  },
-  apply: function (
-    canvasState: InteractionCanvasState,
-    interactionSession: InteractionSession,
-    strategyState: StrategyState,
-  ): StrategyApplicationResult {
-    return [wildcardPatch('permanent', { canvas: { scale: { $set: 100 } } })]
-  },
-}
-
 describe('interactionStart', () => {
   it('creates the initial state with a simple test strategy', () => {
     const editorStore = createEditorStore(
