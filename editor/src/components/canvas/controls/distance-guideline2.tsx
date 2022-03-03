@@ -39,8 +39,8 @@ export const DistanceGuideline = React.memo<DistanceGuidelineProps>((props) => {
           style={{
             position: 'absolute',
             transform: `translate(var(--utopia-canvas-offset-x), var(--utopia-canvas-offset-y))`,
-            // display: isAltPressed && !isInteraction ? 'block' : 'none',
-            display: `var(--utopia-canvas-guideline-display)`,
+            display:
+              isAltPressed && !isInteraction ? `var(--utopia-canvas-guideline-display)` : 'none',
           }}
         >
           <GuidelineHorizontal localSelectedElements={props.localSelectedElements} />
