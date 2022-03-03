@@ -90,7 +90,7 @@ describe('Absolute Move Strategy', () => {
       `
     <View style={{ ...(props.style || {}) }} data-uid='aaa'>
       <View
-        style={{ backgroundColor: '#0091FFAA', position: 'absolute', left: '50px', top: '50px', width: 250, height: 300 }}
+        style={{ backgroundColor: '#0091FFAA', position: 'absolute', left: '50px', top: 50, width: 250, height: 300 }}
         data-uid='bbb'
       />
     </View>
@@ -104,7 +104,7 @@ describe('Absolute Move Strategy', () => {
       makeTestProjectCodeWithSnippet(
         `<View style={{ ...(props.style || {}) }} data-uid='aaa'>
         <View
-          style={{ backgroundColor: '#0091FFAA', position: 'absolute', left: 65, top: 65, width: 250, height: 300 }}
+          style={{ backgroundColor: '#0091FFAA', position: 'absolute', left: '65px', top: 65, width: 250, height: 300 }}
           data-uid='bbb'
         />
       </View>`,
