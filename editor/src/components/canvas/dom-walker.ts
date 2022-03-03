@@ -187,9 +187,9 @@ function getCachedAttributesComingFromStyleSheets(
 function useResizeObserver(
   updateInvalidatedPaths: SetValueCallback<Set<string>>,
   updateInvalidatedScenes: SetValueCallback<Set<string>>,
-  selectedViews: React.MutableRefObject<Array<ElementPath>>,
   canvasInteractionHappening: React.MutableRefObject<boolean>,
 ) {
+  const selectedViews = useRefEditorState((state) => state.editor.selectedViews)
   const resizeObserver = React.useMemo((): typeof ResizeObserver | null => {
     if (ObserversAvailable) {
       return new ResizeObserver((entries: any) => {
@@ -225,9 +225,9 @@ function useResizeObserver(
 function useMutationObserver(
   updateInvalidatedPaths: SetValueCallback<Set<string>>,
   updateInvalidatedScenes: SetValueCallback<Set<string>>,
-  selectedViews: React.MutableRefObject<Array<ElementPath>>,
   canvasInteractionHappening: React.MutableRefObject<boolean>,
 ) {
+  const selectedViews = useRefEditorState((state) => state.editor.selectedViews)
   const mutationObserver = React.useMemo((): MutationObserver | null => {
     if (ObserversAvailable) {
       return new (window as any).MutationObserver((mutations: MutationRecord[]) => {
@@ -375,7 +375,6 @@ function useThrottledCallback(
 }
 
 export interface DomWalkerProps {
-  selectedViews: Array<ElementPath>
   scale: number
   onDomReport: (
     elementMetadata: ReadonlyArray<ElementInstanceMetadata>,
@@ -467,11 +466,10 @@ export function useDomWalker(
         invalidatedScenes as ReadonlySet<string>,
         updateInvalidatedScenes,
         invalidatedPathsForStylesheetCacheRef,
-        props.selectedViews,
         !initComplete,
         props.scale,
         containerRect,
-        [...props.additionalElementsToUpdate, ...props.selectedViews],
+        props.additionalElementsToUpdate,
       )
       if (LogDomWalkerPerformance) {
         performance.mark('DOM_WALKER_END')
@@ -502,12 +500,8 @@ export function useDomWalker(
     props.mountCount,
     props.domWalkerInvalidateCount,
   )
-  const selectedViewsRef = React.useRef(props.selectedViews)
   const canvasInteractionHappeningRef = React.useRef(props.canvasInteractionHappening)
 
-  if (selectedViewsRef.current !== props.selectedViews) {
-    selectedViewsRef.current = props.selectedViews
-  }
   if (canvasInteractionHappeningRef.current !== props.canvasInteractionHappening) {
     canvasInteractionHappeningRef.current = props.canvasInteractionHappening
   }
@@ -515,13 +509,11 @@ export function useDomWalker(
   const resizeObserver = useResizeObserver(
     updateInvalidatedPaths,
     updateInvalidatedScenes,
-    selectedViewsRef,
     canvasInteractionHappeningRef,
   )
   const mutationObserver = useMutationObserver(
     updateInvalidatedPaths,
     updateInvalidatedScenes,
-    selectedViewsRef,
     canvasInteractionHappeningRef,
   )
   useInvalidateScenesWhenSelectedViewChanges(
@@ -581,7 +573,6 @@ function collectMetadata(
   invalidatedPathsForStylesheetCacheRef: React.MutableRefObject<Set<string>>,
   rootMetadataInStateRef: React.MutableRefObject<ReadonlyArray<ElementInstanceMetadata>>,
   invalidated: boolean,
-  selectedViews: Array<ElementPath>,
   additionalElementsToUpdate: Array<ElementPath>,
 ): { collectedMetadata: Array<ElementInstanceMetadata>; cachedPaths: Array<ElementPath> } {
   const shouldCollect =
@@ -658,7 +649,6 @@ function collectMetadata(
         invalidatedPathsForStylesheetCacheRef,
         rootMetadataInStateRef,
         true,
-        selectedViews,
         additionalElementsToUpdate,
       )
     }
@@ -804,7 +794,6 @@ function walkCanvasRootFragment(
   invalidatedScenes: ReadonlySet<string>,
   updateInvalidatedScenes: SetValueCallback<Set<string>>,
   invalidatedPathsForStylesheetCacheRef: React.MutableRefObject<Set<string>>,
-  selectedViews: Array<ElementPath>,
   invalidated: boolean,
   scale: number,
   containerRectLazy: () => CanvasRectangle,
@@ -849,7 +838,6 @@ function walkCanvasRootFragment(
       invalidatedScenes,
       updateInvalidatedScenes,
       invalidatedPathsForStylesheetCacheRef,
-      selectedViews,
       invalidated,
       scale,
       containerRectLazy,
@@ -886,7 +874,6 @@ function walkScene(
   invalidatedScenes: ReadonlySet<string>,
   updateInvalidatedScenes: SetValueCallback<Set<string>>,
   invalidatedPathsForStylesheetCacheRef: React.MutableRefObject<Set<string>>,
-  selectedViews: Array<ElementPath>,
   invalidated: boolean,
   scale: number,
   containerRectLazy: () => CanvasRectangle,
@@ -923,7 +910,6 @@ function walkScene(
         invalidatedScenes,
         updateInvalidatedScenes,
         invalidatedPathsForStylesheetCacheRef,
-        selectedViews,
         invalidatedScene,
         scale,
         containerRectLazy,
@@ -943,7 +929,6 @@ function walkScene(
         invalidatedPathsForStylesheetCacheRef,
         rootMetadataInStateRef,
         invalidatedScene,
-        selectedViews,
         additionalElementsToUpdate,
       )
       return {
@@ -965,7 +950,6 @@ function walkSceneInner(
   invalidatedScenes: ReadonlySet<string>,
   updateInvalidatedScenes: SetValueCallback<Set<string>>,
   invalidatedPathsForStylesheetCacheRef: React.MutableRefObject<Set<string>>,
-  selectedViews: Array<ElementPath>,
   invalidated: boolean,
   scale: number,
   containerRectLazy: () => CanvasRectangle,
@@ -994,7 +978,6 @@ function walkSceneInner(
       invalidatedScenes,
       updateInvalidatedScenes,
       invalidatedPathsForStylesheetCacheRef,
-      selectedViews,
       invalidated,
       scale,
       containerRectLazy,
@@ -1026,7 +1009,6 @@ function walkElements(
   invalidatedScenes: ReadonlySet<string>,
   updateInvalidatedScenes: SetValueCallback<Set<string>>,
   invalidatedPathsForStylesheetCacheRef: React.MutableRefObject<Set<string>>,
-  selectedViews: Array<ElementPath>,
   invalidated: boolean,
   scale: number,
   containerRectLazy: () => CanvasRectangle,
@@ -1048,7 +1030,6 @@ function walkElements(
       invalidatedScenes,
       updateInvalidatedScenes,
       invalidatedPathsForStylesheetCacheRef,
-      selectedViews,
       invalidated,
       scale,
       containerRectLazy,
@@ -1101,7 +1082,6 @@ function walkElements(
           invalidatedScenes,
           updateInvalidatedScenes,
           invalidatedPathsForStylesheetCacheRef,
-          selectedViews,
           invalidated,
           scale,
           containerRectLazy,
@@ -1128,7 +1108,6 @@ function walkElements(
       invalidatedPathsForStylesheetCacheRef,
       rootMetadataInStateRef,
       invalidated,
-      selectedViews,
       additionalElementsToUpdate,
     )
 
