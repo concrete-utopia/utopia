@@ -491,7 +491,7 @@ describe('interactionHardReset', () => {
   })
 })
 
-describe('interactionUpdate with strategy change', () => {
+describe('interactionUpdate with stacked strategy change', () => {
   it('steps an interaction session correctly', () => {
     let interactionSession = createInteractionViaMouse(
       canvasPoint({ x: 100, y: 200 }),
