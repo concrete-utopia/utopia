@@ -491,7 +491,7 @@ describe('interactionHardReset', () => {
   })
 })
 
-describe('interactionStrategyChangeStacked', () => {
+describe('interactionUpdate with strategy change', () => {
   it('steps an interaction session correctly', () => {
     let interactionSession = createInteractionViaMouse(
       canvasPoint({ x: 100, y: 200 }),
@@ -631,7 +631,7 @@ describe('interactionStrategyChangeStacked', () => {
   })
 })
 
-describe('interactionUserChangedStrategy', () => {
+describe('interactionUpdate with user changed strategy', () => {
   it('steps an interaction session correctly', () => {
     let interactionSession = createInteractionViaMouse(
       canvasPoint({ x: 100, y: 200 }),
