@@ -1,5 +1,9 @@
 import { elementPath } from '../../../core/shared/element-path'
-import { canvasPoint } from '../../../core/shared/math-utils'
+import {
+  ElementInstanceMetadata,
+  SpecialSizeMeasurements,
+} from '../../../core/shared/element-template'
+import { canvasPoint, canvasRectangle } from '../../../core/shared/math-utils'
 import { ElementPath } from '../../../core/shared/project-file-types'
 import { emptyModifiers } from '../../../utils/modifiers'
 import { EditorState } from '../../editor/store/editor-state'
@@ -15,6 +19,7 @@ import {
   createInteractionViaMouse,
   DragInteractionData,
   InteractionSession,
+  StrategyState,
 } from './interaction-state'
 
 function prepareEditorState(codeSnippet: string, selectedViews: Array<ElementPath>): EditorState {
@@ -38,7 +43,20 @@ function dragBy15Pixels(editorState: EditorState): EditorState {
   const strategyResult = absoluteMoveStrategy.apply(
     pickCanvasStateFromEditorState(editorState),
     interactionSession,
-    null as any, // the strategy does not use this
+    {
+      currentStrategy: null as any, // the strategy does not use this
+      currentStrategyFitness: null as any, // the strategy does not use this
+      currentStrategyCommands: null as any, // the strategy does not use this
+      accumulatedCommands: null as any, // the strategy does not use this
+      commandDescriptions: null as any, // the strategy does not use this
+      startingMetadata: {
+        'scene-aaa/app-entity:aaa/bbb': {
+          specialSizeMeasurements: {
+            immediateParentBounds: canvasRectangle({ x: 0, y: 0, width: 400, height: 400 }),
+          } as SpecialSizeMeasurements,
+        } as ElementInstanceMetadata,
+      },
+    } as StrategyState,
   )
 
   const finalEditor = foldAndApplyCommands(editorState, editorState, strategyResult, 'permanent')

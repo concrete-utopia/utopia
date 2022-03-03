@@ -54,6 +54,12 @@ export const absoluteMoveStrategy: CanvasStrategy = {
             null,
             (_, e) => e,
           )
+          const elementParentBounds =
+            MetadataUtils.findElementByElementPath(
+              sessionState.startingMetadata, // TODO should this be using the current metadata?
+              selectedElement,
+            )?.specialSizeMeasurements.immediateParentBounds ?? null
+
           if (element == null) {
             return []
           }
@@ -74,6 +80,7 @@ export const absoluteMoveStrategy: CanvasStrategy = {
                   selectedElement,
                   stylePropPathMappingFn(pin, ['style']),
                   (horizontal ? drag.x : drag.y) * (negative ? -1 : 1),
+                  horizontal ? elementParentBounds?.width : elementParentBounds?.height,
                   true,
                 )
               } else {

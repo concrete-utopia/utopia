@@ -1,4 +1,5 @@
-import { isLeft, left } from '../../../core/shared/either'
+import { number } from 'prop-types'
+import { isLeft, isRight, left } from '../../../core/shared/either'
 import * as EP from '../../../core/shared/element-path'
 import { emptyComments, jsxAttributeValue } from '../../../core/shared/element-template'
 import {
@@ -10,15 +11,27 @@ import {
 import { ElementPath, PropertyPath } from '../../../core/shared/project-file-types'
 import * as PP from '../../../core/shared/property-path'
 import { EditorState, withUnderlyingTargetFromEditorState } from '../../editor/store/editor-state'
-import { CSSNumber, parseCSSPx, printCSSNumber } from '../../inspector/common/css-utils'
+import {
+  CSSNumber,
+  parseCSSPercent,
+  parseCSSPx,
+  printCSSNumber,
+} from '../../inspector/common/css-utils'
 import { applyValuesAtPath } from './adjust-number-command'
-import { BaseCommand, CommandFunction, PathMappings, TransientOrNot } from './commands'
+import {
+  BaseCommand,
+  CommandFunction,
+  CommandFunctionResult,
+  PathMappings,
+  TransientOrNot,
+} from './commands'
 
 export interface AdjustPxNumberProperty extends BaseCommand {
   type: 'ADJUST_PX_NUMBER_PROPERTY'
   target: ElementPath
   property: PropertyPath
   valuePx: number
+  parentDimensionPx: number | undefined
   createIfNonExistant: boolean
 }
 
@@ -27,6 +40,7 @@ export function adjustPxNumberProperty(
   target: ElementPath,
   property: PropertyPath,
   valuePx: number,
+  parentDimensionPx: number | undefined,
   createIfNonExistant: boolean,
 ): AdjustPxNumberProperty {
   return {
@@ -35,6 +49,7 @@ export function adjustPxNumberProperty(
     target: target,
     property: property,
     valuePx: valuePx,
+    parentDimensionPx: parentDimensionPx,
     createIfNonExistant: createIfNonExistant,
   }
 }
@@ -88,9 +103,29 @@ export const runAdjustPxNumberProperty: CommandFunction<AdjustPxNumberProperty> 
     }
   }
 
-  const parseCssResult = parseCSSPx(simpleValueResult.value)
+  const parsePxResult = parseCSSPx(simpleValueResult.value) // TODO make type contain px
+  const parsePercentResult = parseCSSPercent(simpleValueResult.value) // TODO make type contain %
 
-  if (isLeft(parseCssResult)) {
+  if (isRight(parsePxResult)) {
+    return updatePixelValueByPixel(
+      editorState,
+      pathMappings,
+      command.target,
+      command.property,
+      parsePxResult.value,
+      command.valuePx,
+    )
+  } else if (isRight(parsePercentResult)) {
+    return updatePercentageValueByPixel(
+      editorState,
+      pathMappings,
+      command.target,
+      command.property,
+      command.parentDimensionPx,
+      parsePercentResult.value,
+      command.valuePx,
+    )
+  } else {
     return {
       editorStatePatch: {},
       pathMappings: pathMappings,
@@ -101,17 +136,29 @@ export const runAdjustPxNumberProperty: CommandFunction<AdjustPxNumberProperty> 
       })`,
     }
   }
+}
 
-  const currentValuePx = parseCssResult.value.value
+function updatePixelValueByPixel(
+  editorState: EditorState,
+  pathMappings: PathMappings,
+  targetElement: ElementPath,
+  targetProperty: PropertyPath,
+  currentValue: CSSNumber,
+  byValue: number,
+): CommandFunctionResult {
+  if (currentValue.unit != null && currentValue.unit !== 'px') {
+    throw new Error('updatePixelValueByPixel called with a non-pixel cssnumber')
+  }
+  const currentValuePx = currentValue.value
   const newValueCssNumber: CSSNumber = {
-    value: currentValuePx + command.valuePx,
-    unit: parseCssResult.value.unit,
+    value: currentValuePx + byValue,
+    unit: currentValue.unit,
   }
   const newValue = printCSSNumber(newValueCssNumber, null)
 
   const propsToUpdate: Array<ValueAtPath> = [
     {
-      path: command.property,
+      path: targetProperty,
       value: jsxAttributeValue(newValue, emptyComments),
     },
   ]
@@ -119,15 +166,67 @@ export const runAdjustPxNumberProperty: CommandFunction<AdjustPxNumberProperty> 
   // Apply the update to the properties.
   const { editorStatePatch: propertyUpdatePatch } = applyValuesAtPath(
     editorState,
-    command.target,
+    targetElement,
     propsToUpdate,
   )
 
   return {
     editorStatePatch: propertyUpdatePatch,
     pathMappings: pathMappings,
-    commandDescription: `Adjust Px Number Prop: ${EP.toUid(command.target)}/${PP.toString(
-      command.property,
-    )} by ${command.valuePx}`,
+    commandDescription: `Adjust Px Number Prop: ${EP.toUid(targetElement)}/${PP.toString(
+      targetProperty,
+    )} by ${byValue}`,
+  }
+}
+
+function updatePercentageValueByPixel(
+  editorState: EditorState,
+  pathMappings: PathMappings,
+  targetElement: ElementPath,
+  targetProperty: PropertyPath,
+  parentDimensionPx: number | undefined,
+  currentValue: CSSNumber, // TODO restrict to percentage numbers
+  byValue: number,
+): CommandFunctionResult {
+  if (currentValue.unit == null || currentValue.unit !== '%') {
+    throw new Error('updatePercentageValueByPixel called with a non-percentage cssnumber')
+  }
+  if (parentDimensionPx == null) {
+    return {
+      editorStatePatch: {},
+      pathMappings: pathMappings,
+      commandDescription: `Adjust Px Number Prop: ${EP.toUid(targetElement)}/${PP.toString(
+        targetProperty,
+      )} not applied because the parent dimensions are unknown for some reason.`,
+    }
+  }
+  const currentValuePercent = currentValue.value
+  const offsetInPercent = (byValue / parentDimensionPx) * 100
+  const newValueCssNumber: CSSNumber = {
+    value: currentValuePercent + offsetInPercent,
+    unit: currentValue.unit,
+  }
+  const newValue = printCSSNumber(newValueCssNumber, null)
+
+  const propsToUpdate: Array<ValueAtPath> = [
+    {
+      path: targetProperty,
+      value: jsxAttributeValue(newValue, emptyComments),
+    },
+  ]
+
+  // Apply the update to the properties.
+  const { editorStatePatch: propertyUpdatePatch } = applyValuesAtPath(
+    editorState,
+    targetElement,
+    propsToUpdate,
+  )
+
+  return {
+    editorStatePatch: propertyUpdatePatch,
+    pathMappings: pathMappings,
+    commandDescription: `Adjust Px Number Prop: ${EP.toUid(targetElement)}/${PP.toString(
+      targetProperty,
+    )} by ${byValue}`,
   }
 }
