@@ -16,6 +16,8 @@ import { EditorAction } from '../editor/action-types'
 import * as EditorActions from '../editor/actions/action-creators'
 import { DerivedState, EditorState } from '../editor/store/editor-state'
 import * as EP from '../../core/shared/element-path'
+import { buildTree, forEachChildOfTarget } from '../../core/shared/element-path-tree'
+import { objectValues } from '../../core/shared/object-utils'
 
 export enum TargetSearchType {
   ParentsOfSelected = 'ParentsOfSelected',
@@ -47,6 +49,8 @@ const Canvas = {
     metadata: ElementInstanceMetadataMap,
     useBoundingFrames: boolean,
   ): Array<FrameWithPath> {
+    const projectTree = buildTree(objectValues(metadata).map((m) => m.elementPath))
+
     function recurseChildren(
       component: ElementInstanceMetadata,
     ): { boundingRect: CanvasRectangle | null; frames: Array<FrameWithPath> } {
@@ -60,13 +64,20 @@ const Canvas = {
 
       const overflows = MetadataUtils.overflows(component)
       const includeClippedNext = useBoundingFrames && overflows
-      const {
-        children,
-        unfurledComponents,
-      } = MetadataUtils.getAllChildrenElementsIncludingUnfurledFocusedComponents(
-        component.elementPath,
-        metadata,
-      )
+
+      let children: Array<ElementInstanceMetadata> = []
+      let unfurledComponents: Array<ElementInstanceMetadata> = []
+      forEachChildOfTarget(projectTree, component.elementPath, (childPath) => {
+        const childMetadata = MetadataUtils.findElementByElementPath(metadata, childPath)
+        if (childMetadata != null) {
+          if (EP.isRootElementOfInstance(childPath)) {
+            unfurledComponents.push(childMetadata)
+          } else {
+            children.push(childMetadata)
+          }
+        }
+      })
+
       const childFrames = children.map((child) => {
         const recurseResults = recurseChildren(child)
         const rectToBoundWith = includeClippedNext ? recurseResults.boundingRect : globalFrame
