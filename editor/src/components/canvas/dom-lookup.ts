@@ -66,8 +66,10 @@ export function findFirstParentWithValidElementPath(
   )
 
   if (filteredValidPathsMappedToDynamic.length > 0) {
-    const asPaths = filteredValidPathsMappedToDynamic.sort((l, r) => EP.depth(l) - EP.depth(r))
-    return last(asPaths) ?? null
+    const sortedFilteredPaths = filteredValidPathsMappedToDynamic.sort(
+      (l, r) => EP.depth(l) - EP.depth(r),
+    )
+    return last(sortedFilteredPaths) ?? null
   } else {
     if (target.parentElement == null) {
       return null
