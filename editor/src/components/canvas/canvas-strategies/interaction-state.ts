@@ -89,12 +89,13 @@ export function createInteractionViaMouse(
   mouseDownPoint: CanvasPoint,
   modifiers: Modifiers,
   activeControl: CanvasControlType,
+  drag?: CanvasVector,
 ): InteractionSessionWithoutMetadata {
   return {
     interactionData: {
       type: 'DRAG',
       dragStart: mouseDownPoint,
-      drag: null,
+      drag: drag ?? null,
       prevDrag: null,
       dragThresholdPassed: false,
       originalDragStart: mouseDownPoint,
