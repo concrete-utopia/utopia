@@ -197,7 +197,9 @@ describe('Absolute Move Strategy', () => {
 
     const finalEditor = dragBy15Pixels(initialEditor)
 
-    expect(testPrintCodeFromEditorState(finalEditor)).toEqual(initialEditor)
+    expect(testPrintCodeFromEditorState(finalEditor)).toEqual(
+      testPrintCodeFromEditorState(initialEditor),
+    )
   })
 
   it('works with percentages', async () => {
