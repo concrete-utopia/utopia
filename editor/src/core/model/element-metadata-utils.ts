@@ -424,8 +424,14 @@ export const MetadataUtils = {
     elements: ElementInstanceMetadataMap,
     target: ElementPath,
   ): Array<ElementInstanceMetadata> {
-    const rootPaths = MetadataUtils.getRootViewPaths(elements, target)
-    return MetadataUtils.findElementsByElementPath(elements, rootPaths ?? [])
+    return mapDropNulls((element) => {
+      const elementPath = element.elementPath
+      if (EP.isRootElementOf(elementPath, target)) {
+        return element
+      } else {
+        return null
+      }
+    }, Object.values(elements))
   },
   getChildrenPaths(elements: ElementInstanceMetadataMap, target: ElementPath): Array<ElementPath> {
     const possibleChildren = mapDropNulls((elementPathString) => {
@@ -442,8 +448,14 @@ export const MetadataUtils = {
     elements: ElementInstanceMetadataMap,
     target: ElementPath,
   ): Array<ElementInstanceMetadata> {
-    const childrenPaths = MetadataUtils.getChildrenPaths(elements, target)
-    return MetadataUtils.findElementsByElementPath(elements, childrenPaths ?? [])
+    return mapDropNulls((element) => {
+      const elementPath = element.elementPath
+      if (EP.isChildOf(elementPath, target) && !EP.isRootElementOfInstance(elementPath)) {
+        return element
+      } else {
+        return null
+      }
+    }, Object.values(elements))
   },
   getImmediateChildrenPaths(
     elements: ElementInstanceMetadataMap,
@@ -458,8 +470,9 @@ export const MetadataUtils = {
     metadata: ElementInstanceMetadataMap,
     target: ElementPath,
   ): Array<ElementInstanceMetadata> {
-    const childrenPaths = MetadataUtils.getImmediateChildrenPaths(metadata, target)
-    return MetadataUtils.findElementsByElementPath(metadata, childrenPaths ?? [])
+    const roots = MetadataUtils.getRootViews(metadata, target)
+    const children = MetadataUtils.getChildren(metadata, target)
+    return [...roots, ...children]
   },
   getStoryboardMetadata(metadata: ElementInstanceMetadataMap): ElementInstanceMetadata | null {
     return Object.values(metadata).find((e) => EP.isStoryboardPath(e.elementPath)) ?? null
