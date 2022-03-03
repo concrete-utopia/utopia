@@ -31,6 +31,7 @@ export const DistanceGuideline = React.memo<DistanceGuidelineProps>((props) => {
             --utopia-canvas-guideline-y: 0px;
             --utopia-canvas-guideline-width: 0px;
             --utopia-canvas-guideline-height: 0px;
+            --utopia-canvas-guideline-display: 'none';
           }
         `}</style>
         <div
@@ -39,7 +40,7 @@ export const DistanceGuideline = React.memo<DistanceGuidelineProps>((props) => {
             position: 'absolute',
             transform: `translate(var(--utopia-canvas-offset-x), var(--utopia-canvas-offset-y))`,
             // display: isAltPressed && !isInteraction ? 'block' : 'none',
-            display: 'block',
+            display: `var(--utopia-canvas-guideline-display)`,
           }}
         >
           <GuidelineHorizontal localSelectedElements={props.localSelectedElements} />
@@ -57,20 +58,36 @@ const GuidelineHorizontal = React.memo<DistanceGuidelineProps>((props) => {
   const guidelineHorizontal = useClosestDistanceGuideline(
     props.localSelectedElements,
     'XAxisGuideline',
-    (ref, guidelineRect) => {
-      ref.current.style.setProperty(`--utopia-canvas-guideline-x`, `${guidelineRect.x}px`)
-      ref.current.style.setProperty(`--utopia-canvas-guideline-y`, `${guidelineRect.y}px`)
-      ref.current.style.setProperty(`--utopia-canvas-guideline-width`, `${guidelineRect.width}px`)
+    (ref, guidelineRect, distance) => {
+      if (guidelineRect == null || distance == null) {
+        ref.current.style.setProperty(`--utopia-canvas-guideline-display`, 'none')
+      } else {
+        ref.current.style.setProperty(`--utopia-canvas-guideline-x`, `${guidelineRect.x}px`)
+        ref.current.style.setProperty(`--utopia-canvas-guideline-y`, `${guidelineRect.y}px`)
+        ref.current.style.setProperty(`--utopia-canvas-guideline-width`, `${guidelineRect.width}px`)
+        ref.current.style.setProperty(
+          `--utopia-canvas-guideline-display`,
+          distance > 0 ? 'block' : 'none',
+        )
+      }
     },
   )
   const guidelineHorizontalText = useClosestDistanceGuideline(
     props.localSelectedElements,
     'XAxisGuideline',
     (ref, guidelineRect, distance) => {
-      ref.current.style.setProperty(`--utopia-canvas-guideline-x`, `${guidelineRect.x}px`)
-      ref.current.style.setProperty(`--utopia-canvas-guideline-y`, `${guidelineRect.y}px`)
-      ref.current.style.setProperty(`--utopia-canvas-guideline-width`, `${guidelineRect.width}px`)
-      ref.current.innerHTML = `${distance}`
+      if (guidelineRect == null || distance == null) {
+        ref.current.style.setProperty(`--utopia-canvas-guideline-display`, 'none')
+      } else {
+        ref.current.style.setProperty(`--utopia-canvas-guideline-x`, `${guidelineRect.x}px`)
+        ref.current.style.setProperty(`--utopia-canvas-guideline-y`, `${guidelineRect.y}px`)
+        ref.current.style.setProperty(`--utopia-canvas-guideline-width`, `${guidelineRect.width}px`)
+        ref.current.style.setProperty(
+          `--utopia-canvas-guideline-display`,
+          distance > 0 ? 'block' : 'none',
+        )
+        ref.current.innerHTML = `${distance}`
+      }
     },
   )
 
@@ -81,6 +98,7 @@ const GuidelineHorizontal = React.memo<DistanceGuidelineProps>((props) => {
         style={{
           position: 'absolute',
           pointerEvents: 'none',
+          display: `var(--utopia-canvas-guideline-display)`,
           left: `calc(var(--utopia-canvas-guideline-x) - ${
             StrokeWidth / 2
           }px / var(--utopia-canvas-scale))`,
@@ -129,6 +147,7 @@ const GuidelineHorizontal = React.memo<DistanceGuidelineProps>((props) => {
           position: 'absolute',
           pointerEvents: 'none',
           textAlign: 'center',
+          display: `var(--utopia-canvas-guideline-display)`,
           fontSize: `calc(${FontSize}px / var(--utopia-canvas-scale))`,
           color: colorTheme.canvasLayoutStroke.value,
           left: `calc(var(--utopia-canvas-guideline-x) + ${
@@ -152,20 +171,42 @@ const GuidelineVertical = React.memo<DistanceGuidelineProps>((props) => {
   const guidelineVertical = useClosestDistanceGuideline(
     props.localSelectedElements,
     'YAxisGuideline',
-    (ref, guidelineRect) => {
-      ref.current.style.setProperty(`--utopia-canvas-guideline-x`, `${guidelineRect.x}px`)
-      ref.current.style.setProperty(`--utopia-canvas-guideline-y`, `${guidelineRect.y}px`)
-      ref.current.style.setProperty(`--utopia-canvas-guideline-height`, `${guidelineRect.height}px`)
+    (ref, guidelineRect, distance) => {
+      if (guidelineRect == null || distance == null) {
+        ref.current.style.setProperty(`--utopia-canvas-guideline-display`, 'none')
+      } else {
+        ref.current.style.setProperty(`--utopia-canvas-guideline-x`, `${guidelineRect.x}px`)
+        ref.current.style.setProperty(`--utopia-canvas-guideline-y`, `${guidelineRect.y}px`)
+        ref.current.style.setProperty(
+          `--utopia-canvas-guideline-height`,
+          `${guidelineRect.height}px`,
+        )
+        ref.current.style.setProperty(
+          `--utopia-canvas-guideline-display`,
+          distance > 0 ? 'block' : 'none',
+        )
+      }
     },
   )
   const guidelineVerticalText = useClosestDistanceGuideline(
     props.localSelectedElements,
     'YAxisGuideline',
     (ref, guidelineRect, distance) => {
-      ref.current.style.setProperty(`--utopia-canvas-guideline-x`, `${guidelineRect.x}px`)
-      ref.current.style.setProperty(`--utopia-canvas-guideline-y`, `${guidelineRect.y}px`)
-      ref.current.style.setProperty(`--utopia-canvas-guideline-height`, `${guidelineRect.height}px`)
-      ref.current.innerHTML = `${distance}`
+      if (guidelineRect == null || distance == null) {
+        ref.current.style.setProperty(`--utopia-canvas-guideline-display`, 'none')
+      } else {
+        ref.current.style.setProperty(`--utopia-canvas-guideline-x`, `${guidelineRect.x}px`)
+        ref.current.style.setProperty(`--utopia-canvas-guideline-y`, `${guidelineRect.y}px`)
+        ref.current.style.setProperty(
+          `--utopia-canvas-guideline-height`,
+          `${guidelineRect.height}px`,
+        )
+        ref.current.style.setProperty(
+          `--utopia-canvas-guideline-display`,
+          distance > 0 ? 'block' : 'none',
+        )
+        ref.current.innerHTML = `${distance}`
+      }
     },
   )
 
@@ -176,6 +217,7 @@ const GuidelineVertical = React.memo<DistanceGuidelineProps>((props) => {
         style={{
           position: 'absolute',
           pointerEvents: 'none',
+          display: `var(--utopia-canvas-guideline-display)`,
           left: `calc(var(--utopia-canvas-guideline-x) + ${
             StrokeWidth / 2
           }px / var(--utopia-canvas-scale))`,
@@ -221,6 +263,7 @@ const GuidelineVertical = React.memo<DistanceGuidelineProps>((props) => {
           position: 'absolute',
           pointerEvents: 'none',
           textAlign: 'center',
+          display: `var(--utopia-canvas-guideline-display)`,
           fontSize: `calc(${FontSize}px / var(--utopia-canvas-scale))`,
           color: colorTheme.canvasLayoutStroke.value,
           left: `calc(var(--utopia-canvas-guideline-x) + ${

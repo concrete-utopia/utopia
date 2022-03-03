@@ -6,6 +6,7 @@ import {
   CanvasPoint,
   canvasRectangle,
   CanvasRectangle,
+  zeroCanvasRect,
 } from '../../../core/shared/math-utils'
 import {
   useEditorState,
@@ -55,14 +56,14 @@ export function useClosestDistanceGuideline<T = HTMLDivElement>(
   type: Guideline['type'],
   onChangeCallback: (
     ref: NotNullRefObject<T>,
-    boundingBox: CanvasRectangle,
-    distance: number,
+    boundingBox: CanvasRectangle | null,
+    distance: number | null,
   ) => void,
 ): React.RefObject<T> {
   const controlRef = React.useRef<T>(null)
   const guidelineCallback = React.useCallback(
-    (guidelineFrame: CanvasRectangle | null, distance: number) => {
-      if (guidelineFrame != null && controlRef.current != null) {
+    (guidelineFrame: CanvasRectangle | null, distance: number | null) => {
+      if (controlRef.current != null) {
         onChangeCallback(controlRef as NotNullRefObject<T>, guidelineFrame, distance)
       }
     },
@@ -84,7 +85,13 @@ export function useClosestDistanceGuideline<T = HTMLDivElement>(
       let distanceGuidelines: Array<Guideline> = []
       if (highlightedViews.length !== 0) {
         distanceGuidelines = flatMapArray((highlightedView) => {
-          return getDistanceGuidelines(highlightedView, metadataRef.current)
+          if (
+            selectedElements.every((target) => EP.isFromSameInstanceAs(highlightedView, target))
+          ) {
+            return getDistanceGuidelines(highlightedView, metadataRef.current)
+          } else {
+            return []
+          }
         }, highlightedViews)
       } else if (selectedElements.length > 0) {
         const parentPath = EP.parentPath(selectedElements[0])
@@ -113,6 +120,8 @@ export function useClosestDistanceGuideline<T = HTMLDivElement>(
 
         const frame = canvasRectangle({ x: topLeft.x, y: topLeft.y, width: width, height: height })
         guidelineCallbackRef.current(frame, result.distance)
+      } else {
+        guidelineCallbackRef.current(null, null)
       }
     }
   }, [selectedElements, metadataRef, highlightedViews, type])
