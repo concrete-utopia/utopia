@@ -110,12 +110,7 @@ export const CanvasComponentEntry = React.memo((props: CanvasComponentEntryProps
 })
 
 function DomWalkerWrapper(props: UiJsxCanvasPropsWithErrorCallback) {
-  const selectedViews = useEditorState(
-    (store) => store.editor.selectedViews,
-    'DomWalkerWrapper selectedViews',
-  )
   let [updateInvalidatedPaths, updateInvalidatedScenes, containerRef] = useDomWalker({
-    selectedViews: selectedViews,
     canvasInteractionHappening: props.transientFilesState != null,
     mountCount: props.mountCount,
     domWalkerInvalidateCount: props.domWalkerInvalidateCount,
