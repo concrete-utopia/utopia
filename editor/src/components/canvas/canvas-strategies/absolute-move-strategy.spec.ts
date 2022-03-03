@@ -200,4 +200,37 @@ describe('Absolute Move Strategy', () => {
     expect(testPrintCodeFromEditorState(finalEditor)).toEqual(initialEditor)
   })
 
+  it('works with percentages', async () => {
+    const targetElement = elementPath([
+      ['scene-aaa', 'app-entity'],
+      ['aaa', 'bbb'],
+    ])
+
+    const initialEditor: EditorState = prepareEditorState(
+      `
+    <View style={{ ...(props.style || {}) }} data-uid='aaa'>
+      <View
+        style={{ backgroundColor: '#0091FFAA', position: 'absolute', left: '25%', top: '0%', width: 250, height: 300 }}
+        data-uid='bbb'
+      />
+    </View>
+    `,
+      [targetElement],
+    )
+
+    const finalEditor = dragBy15Pixels(initialEditor)
+
+    expect(testPrintCodeFromEditorState(finalEditor)).not.toEqual(
+      expect(testPrintCodeFromEditorState(finalEditor)).toEqual(
+        makeTestProjectCodeWithSnippet(
+          `<View style={{ ...(props.style || {}) }} data-uid='aaa'>
+        <View
+          style={{ backgroundColor: '#0091FFAA', position: 'absolute', left: '28.75%', top: '3.75%', width: 250, height: 300 }}
+          data-uid='bbb'
+        />
+      </View>`,
+        ),
+      ),
+    )
+  })
 })
