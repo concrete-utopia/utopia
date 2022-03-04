@@ -29,7 +29,7 @@ describe('runReparentElement', () => {
 
     const reparentCommand = reparentElement('permanent', targetPath, newParentPath)
 
-    const result = runReparentElement(originalEditorState, [], reparentCommand)
+    const result = runReparentElement(originalEditorState, reparentCommand)
 
     const patchedEditor = applyStatePatches(originalEditorState, originalEditorState, [
       result.editorStatePatch,
