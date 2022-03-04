@@ -18,13 +18,7 @@ import {
   printCSSNumber,
 } from '../../inspector/common/css-utils'
 import { applyValuesAtPath } from './adjust-number-command'
-import {
-  BaseCommand,
-  CommandFunction,
-  CommandFunctionResult,
-  PathMappings,
-  TransientOrNot,
-} from './commands'
+import { BaseCommand, CommandFunction, CommandFunctionResult, TransientOrNot } from './commands'
 
 export interface AdjustCssLengthProperty extends BaseCommand {
   type: 'ADJUST_CSS_LENGTH_PROPERTY'
@@ -56,7 +50,6 @@ export function adjustCssLengthProperty(
 
 export const runAdjustCssLengthProperty: CommandFunction<AdjustCssLengthProperty> = (
   editorState: EditorState,
-  pathMappings: PathMappings,
   command: AdjustCssLengthProperty,
 ) => {
   // Identify the current value, whatever that may be.
@@ -71,7 +64,6 @@ export const runAdjustCssLengthProperty: CommandFunction<AdjustCssLengthProperty
   if (isLeft(currentValue)) {
     return {
       editorStatePatch: {},
-      pathMappings: pathMappings,
       commandDescription: `Adjust Css Length Prop: ${EP.toUid(command.target)}/${PP.toString(
         command.property,
       )} not applied as value is not writeable.`,
@@ -85,7 +77,6 @@ export const runAdjustCssLengthProperty: CommandFunction<AdjustCssLengthProperty
   if (targetPropertyNonExistant && !command.createIfNonExistant) {
     return {
       editorStatePatch: {},
-      pathMappings: pathMappings,
       commandDescription: `Adjust Css Length Prop: ${EP.toUid(command.target)}/${PP.toString(
         command.property,
       )} not applied as the property does not exist.`,
@@ -96,7 +87,6 @@ export const runAdjustCssLengthProperty: CommandFunction<AdjustCssLengthProperty
     // TODO add option to override expressions!!!
     return {
       editorStatePatch: {},
-      pathMappings: pathMappings,
       commandDescription: `Adjust Css Length Prop: ${EP.toUid(command.target)}/${PP.toString(
         command.property,
       )} not applied as the property is an expression we did not want to override.`,
@@ -108,7 +98,6 @@ export const runAdjustCssLengthProperty: CommandFunction<AdjustCssLengthProperty
   if (isRight(parsePxResult)) {
     return updatePixelValueByPixel(
       editorState,
-      pathMappings,
       command.target,
       command.property,
       parsePxResult.value,
@@ -120,7 +109,6 @@ export const runAdjustCssLengthProperty: CommandFunction<AdjustCssLengthProperty
   if (isRight(parsePercentResult)) {
     return updatePercentageValueByPixel(
       editorState,
-      pathMappings,
       command.target,
       command.property,
       command.parentDimensionPx,
@@ -132,7 +120,6 @@ export const runAdjustCssLengthProperty: CommandFunction<AdjustCssLengthProperty
   // fallback return
   return {
     editorStatePatch: {},
-    pathMappings: pathMappings,
     commandDescription: `Adjust Css Length Prop: ${EP.toUid(command.target)}/${PP.toString(
       command.property,
     )} not applied as the property is in a CSS unit we do not support. (${
@@ -143,7 +130,6 @@ export const runAdjustCssLengthProperty: CommandFunction<AdjustCssLengthProperty
 
 function updatePixelValueByPixel(
   editorState: EditorState,
-  pathMappings: PathMappings,
   targetElement: ElementPath,
   targetProperty: PropertyPath,
   currentValue: CSSNumber,
@@ -175,7 +161,6 @@ function updatePixelValueByPixel(
 
   return {
     editorStatePatch: propertyUpdatePatch,
-    pathMappings: pathMappings,
     commandDescription: `Adjust Css Length Prop: ${EP.toUid(targetElement)}/${PP.toString(
       targetProperty,
     )} by ${byValue}`,
@@ -184,7 +169,6 @@ function updatePixelValueByPixel(
 
 function updatePercentageValueByPixel(
   editorState: EditorState,
-  pathMappings: PathMappings,
   targetElement: ElementPath,
   targetProperty: PropertyPath,
   parentDimensionPx: number | undefined,
@@ -197,7 +181,6 @@ function updatePercentageValueByPixel(
   if (parentDimensionPx == null) {
     return {
       editorStatePatch: {},
-      pathMappings: pathMappings,
       commandDescription: `Adjust Css Length Prop: ${EP.toUid(targetElement)}/${PP.toString(
         targetProperty,
       )} not applied because the parent dimensions are unknown for some reason.`,
@@ -206,7 +189,6 @@ function updatePercentageValueByPixel(
   if (parentDimensionPx === 0) {
     return {
       editorStatePatch: {},
-      pathMappings: pathMappings,
       commandDescription: `Adjust Css Length Prop: ${EP.toUid(targetElement)}/${PP.toString(
         targetProperty,
       )} not applied because the parent dimension is 0.`,
@@ -236,7 +218,6 @@ function updatePercentageValueByPixel(
 
   return {
     editorStatePatch: propertyUpdatePatch,
-    pathMappings: pathMappings,
     commandDescription: `Adjust Css Length Prop: ${EP.toUid(targetElement)}/${PP.toString(
       targetProperty,
     )} by ${byValue}`,
