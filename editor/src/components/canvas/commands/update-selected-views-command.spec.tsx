@@ -23,7 +23,7 @@ describe('updateSelectedViews', () => {
 
     const updateSelectedViewsCommand = updateSelectedViews('permanent', [targetPath])
 
-    const result = runUpdateSelectedViews(originalEditorState, [], updateSelectedViewsCommand)
+    const result = runUpdateSelectedViews(originalEditorState, updateSelectedViewsCommand)
 
     const patchedEditor = applyStatePatches(originalEditorState, originalEditorState, [
       result.editorStatePatch,

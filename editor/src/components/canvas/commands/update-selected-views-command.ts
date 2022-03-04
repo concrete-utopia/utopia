@@ -1,7 +1,7 @@
 import * as EP from '../../../core/shared/element-path'
 import type { ElementPath } from '../../../core/shared/project-file-types'
 import type { EditorState } from '../../editor/store/editor-state'
-import type { BaseCommand, CommandFunction, PathMappings, TransientOrNot } from './commands'
+import type { BaseCommand, CommandFunction, TransientOrNot } from './commands'
 
 export interface UpdateSelectedViews extends BaseCommand {
   type: 'UPDATE_SELECTED_VIEWS'
@@ -21,7 +21,6 @@ export function updateSelectedViews(
 
 export const runUpdateSelectedViews: CommandFunction<UpdateSelectedViews> = (
   _: EditorState,
-  pathMappings: PathMappings,
   command: UpdateSelectedViews,
 ) => {
   const editorStatePatch = {
@@ -31,7 +30,6 @@ export const runUpdateSelectedViews: CommandFunction<UpdateSelectedViews> = (
   }
   return {
     editorStatePatch: editorStatePatch,
-    pathMappings: pathMappings,
     commandDescription: `Update Selected Views: ${command.value.map(EP.toString).join(', ')}`,
   }
 }
