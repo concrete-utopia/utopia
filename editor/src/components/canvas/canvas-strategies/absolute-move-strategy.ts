@@ -7,7 +7,7 @@ import { isRight, right } from '../../../core/shared/either'
 import { JSXElement } from '../../../core/shared/element-template'
 import { withUnderlyingTarget } from '../../editor/store/editor-state'
 import { stylePropPathMappingFn } from '../../inspector/common/property-path-hooks'
-import { adjustPxNumberProperty } from '../commands/adjust-css-number-command'
+import { adjustCssLengthProperty } from '../commands/adjust-css-length-command'
 import { adjustNumberProperty } from '../commands/adjust-number-command'
 import { wildcardPatch } from '../commands/wildcard-patch-command'
 import { CanvasStrategy } from './canvas-strategy-types'
@@ -75,7 +75,7 @@ export const absoluteMoveStrategy: CanvasStrategy = {
               if (isRight(value) && value.value != null) {
                 // TODO what to do about missing properties?
 
-                return adjustPxNumberProperty(
+                return adjustCssLengthProperty(
                   'permanent',
                   selectedElement,
                   stylePropPathMappingFn(pin, ['style']),

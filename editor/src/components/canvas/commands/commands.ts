@@ -3,7 +3,7 @@ import { ElementPath } from '../../../core/shared/project-file-types'
 import { keepDeepReferenceEqualityIfPossible } from '../../../utils/react-performance'
 import { EditorState, EditorStatePatch } from '../../editor/store/editor-state'
 import { CommandDescription } from '../canvas-strategies/interaction-state'
-import { AdjustPxNumberProperty, runAdjustPxNumberProperty } from './adjust-css-number-command'
+import { AdjustCssLengthProperty, runAdjustCssLengthProperty } from './adjust-css-length-command'
 import { AdjustNumberProperty, runAdjustNumberProperty } from './adjust-number-command'
 import { ReparentElement, runReparentElement } from './reparent-element-command'
 import { runStrategySwitchedCommand, StrategySwitched } from './strategy-switched-command'
@@ -39,7 +39,7 @@ export type CanvasCommand =
   | WildcardPatch
   | StrategySwitched
   | AdjustNumberProperty
-  | AdjustPxNumberProperty
+  | AdjustCssLengthProperty
   | ReparentElement
   | UpdateSelectedViews
 
@@ -55,8 +55,8 @@ export const runCanvasCommand: CommandFunction<CanvasCommand> = (
       return runStrategySwitchedCommand(pathMappings, command)
     case 'ADJUST_NUMBER_PROPERTY':
       return runAdjustNumberProperty(editorState, pathMappings, command)
-    case 'ADJUST_PX_NUMBER_PROPERTY':
-      return runAdjustPxNumberProperty(editorState, pathMappings, command)
+    case 'ADJUST_CSS_LENGTH_PROPERTY':
+      return runAdjustCssLengthProperty(editorState, pathMappings, command)
     case 'REPARENT_ELEMENT':
       return runReparentElement(editorState, pathMappings, command)
     case 'UPDATE_SELECTED_VIEWS':
