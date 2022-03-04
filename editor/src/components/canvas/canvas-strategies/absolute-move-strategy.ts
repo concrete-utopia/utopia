@@ -5,9 +5,14 @@ import { MetadataUtils } from '../../../core/model/element-metadata-utils'
 import { mapDropNulls } from '../../../core/shared/array-utils'
 import { isRight, right } from '../../../core/shared/either'
 import { JSXElement } from '../../../core/shared/element-template'
+import { CanvasRectangle, CanvasVector } from '../../../core/shared/math-utils'
+import { ElementPath } from '../../../core/shared/project-file-types'
 import { withUnderlyingTarget } from '../../editor/store/editor-state'
 import { stylePropPathMappingFn } from '../../inspector/common/property-path-hooks'
-import { adjustCssLengthProperty } from '../commands/adjust-css-length-command'
+import {
+  AdjustCssLengthProperty,
+  adjustCssLengthProperty,
+} from '../commands/adjust-css-length-command'
 import { adjustNumberProperty } from '../commands/adjust-number-command'
 import { wildcardPatch } from '../commands/wildcard-patch-command'
 import { CanvasStrategy } from './canvas-strategy-types'
@@ -45,8 +50,8 @@ export const absoluteMoveStrategy: CanvasStrategy = {
       interactionState.interactionData.drag != null
     ) {
       const drag = interactionState.interactionData.drag
-      return [
-        ...canvasState.selectedElements.flatMap((selectedElement) => {
+      const commandsForSelectedElements = canvasState.selectedElements.flatMap(
+        (selectedElement) => {
           const element: JSXElement | null = withUnderlyingTarget(
             selectedElement,
             canvasState.projectContents,
@@ -65,32 +70,11 @@ export const absoluteMoveStrategy: CanvasStrategy = {
             return []
           }
 
-          return mapDropNulls(
-            (pin) => {
-              const horizontal = isHorizontalPoint(
-                // TODO avoid using the loaded FramePoint enum
-                framePointForPinnedProp(pin),
-              )
-              const negative = pin === 'right' || pin === 'bottom'
-              const value = getLayoutProperty(pin, right(element.props), ['style'])
-              if (isRight(value) && value.value != null) {
-                // TODO what to do about missing properties?
-
-                return adjustCssLengthProperty(
-                  'permanent',
-                  selectedElement,
-                  stylePropPathMappingFn(pin, ['style']),
-                  (horizontal ? drag.x : drag.y) * (negative ? -1 : 1),
-                  horizontal ? elementParentBounds?.width : elementParentBounds?.height,
-                  true,
-                )
-              } else {
-                return null
-              }
-            },
-            ['top', 'bottom', 'left', 'right'] as const,
-          )
-        }),
+          return createMoveCommandsForElement(element, selectedElement, drag, elementParentBounds)
+        },
+      )
+      return [
+        ...commandsForSelectedElements,
         wildcardPatch('transient', {
           highlightedViews: {
             $set: [],
@@ -101,4 +85,36 @@ export const absoluteMoveStrategy: CanvasStrategy = {
     // Fallback for when the checks above are not satisfied.
     return []
   },
+}
+
+function createMoveCommandsForElement(
+  element: JSXElement,
+  selectedElement: ElementPath,
+  drag: CanvasVector,
+  elementParentBounds: CanvasRectangle | null,
+): AdjustCssLengthProperty[] {
+  return mapDropNulls(
+    (pin) => {
+      const horizontal = isHorizontalPoint(
+        // TODO avoid using the loaded FramePoint enum
+        framePointForPinnedProp(pin),
+      )
+      const negative = pin === 'right' || pin === 'bottom'
+      const value = getLayoutProperty(pin, right(element.props), ['style'])
+      if (isRight(value) && value.value != null) {
+        // TODO what to do about missing properties?
+        return adjustCssLengthProperty(
+          'permanent',
+          selectedElement,
+          stylePropPathMappingFn(pin, ['style']),
+          (horizontal ? drag.x : drag.y) * (negative ? -1 : 1),
+          horizontal ? elementParentBounds?.width : elementParentBounds?.height,
+          true,
+        )
+      } else {
+        return null
+      }
+    },
+    ['top', 'bottom', 'left', 'right'] as const,
+  )
 }
