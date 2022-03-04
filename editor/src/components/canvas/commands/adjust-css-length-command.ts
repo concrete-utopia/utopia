@@ -104,7 +104,6 @@ export const runAdjustCssLengthProperty: CommandFunction<AdjustCssLengthProperty
   }
 
   const parsePxResult = parseCSSPx(simpleValueResult.value) // TODO make type contain px
-  const parsePercentResult = parseCSSPercent(simpleValueResult.value) // TODO make type contain %
 
   if (isRight(parsePxResult)) {
     return updatePixelValueByPixel(
@@ -115,7 +114,10 @@ export const runAdjustCssLengthProperty: CommandFunction<AdjustCssLengthProperty
       parsePxResult.value,
       command.valuePx,
     )
-  } else if (isRight(parsePercentResult)) {
+  }
+
+  const parsePercentResult = parseCSSPercent(simpleValueResult.value) // TODO make type contain %
+  if (isRight(parsePercentResult)) {
     return updatePercentageValueByPixel(
       editorState,
       pathMappings,
@@ -125,16 +127,17 @@ export const runAdjustCssLengthProperty: CommandFunction<AdjustCssLengthProperty
       parsePercentResult.value,
       command.valuePx,
     )
-  } else {
-    return {
-      editorStatePatch: {},
-      pathMappings: pathMappings,
-      commandDescription: `Adjust Css Length Prop: ${EP.toUid(command.target)}/${PP.toString(
-        command.property,
-      )} not applied as the property is in a CSS unit we do not support. (${
-        simpleValueResult.value
-      })`,
-    }
+  }
+
+  // fallback return
+  return {
+    editorStatePatch: {},
+    pathMappings: pathMappings,
+    commandDescription: `Adjust Css Length Prop: ${EP.toUid(command.target)}/${PP.toString(
+      command.property,
+    )} not applied as the property is in a CSS unit we do not support. (${
+      simpleValueResult.value
+    })`,
   }
 }
 
