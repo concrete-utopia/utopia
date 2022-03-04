@@ -19,8 +19,10 @@ export const ControlsContainer = React.memo<ControlsContainerProps>((props) => {
     >
       <MultiSelectOutlineControl localSelectedElements={props.localSelectedElements} />
       <DistanceGuideline localSelectedElements={props.localSelectedElements} />
+      {Array.from(Array(10).keys()).map((v, i) => {
+        return <AbsoluteResizeControl key={i} localSelectedElements={props.localSelectedElements} />
+      })}
       <FlexResizeControl localSelectedElements={props.localSelectedElements} />
-      <AbsoluteResizeControl localSelectedElements={props.localSelectedElements} />
     </div>
   )
 })
