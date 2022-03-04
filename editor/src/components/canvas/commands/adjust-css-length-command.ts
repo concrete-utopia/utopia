@@ -200,6 +200,15 @@ function updatePercentageValueByPixel(
       )} not applied because the parent dimensions are unknown for some reason.`,
     }
   }
+  if (parentDimensionPx === 0) {
+    return {
+      editorStatePatch: {},
+      pathMappings: pathMappings,
+      commandDescription: `Adjust Css Length Prop: ${EP.toUid(targetElement)}/${PP.toString(
+        targetProperty,
+      )} not applied because the parent dimension is 0.`,
+    }
+  }
   const currentValuePercent = currentValue.value
   const offsetInPercent = (byValue / parentDimensionPx) * 100
   const newValueCssNumber: CSSNumber = {
