@@ -34,7 +34,7 @@ export class Tooltip extends React.Component<React.PropsWithChildren<TooltipProp
   // }
 
   render() {
-    return null
+    return this.props.children
     // return (
     //   <Tippy
     //     css={{
