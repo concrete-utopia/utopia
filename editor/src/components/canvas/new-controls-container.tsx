@@ -17,12 +17,14 @@ export const ControlsContainer = React.memo<ControlsContainerProps>((props) => {
         transform: `translate(var(--utopia-canvas-offset-x), var(--utopia-canvas-offset-y))`,
       }}
     >
-      <MultiSelectOutlineControl localSelectedElements={props.localSelectedElements} />
-      <DistanceGuideline localSelectedElements={props.localSelectedElements} />
-      {Array.from(Array(10).keys()).map((v, i) => {
+      {Array.from(Array(20).keys()).map((v, i) => {
+        return <DistanceGuideline key={i} localSelectedElements={props.localSelectedElements} />
+      })}
+      {Array.from(Array(20).keys()).map((v, i) => {
         return <AbsoluteResizeControl key={i} localSelectedElements={props.localSelectedElements} />
       })}
-      <FlexResizeControl localSelectedElements={props.localSelectedElements} />
+      {/* <MultiSelectOutlineControl localSelectedElements={props.localSelectedElements} /> */}
+      {/* <FlexResizeControl localSelectedElements={props.localSelectedElements} /> */}
     </div>
   )
 })
