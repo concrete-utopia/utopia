@@ -3,20 +3,22 @@ import { when } from '../../../../utils/react-conditionals'
 import { FlexRow, FlexColumn, useColorTheme, UtopiaStyles } from '../../../../uuiui'
 import { useEditorState } from '../../../editor/store/store-hook'
 import CanvasActions from '../../canvas-actions'
-import { useGetApplicableStrategiesOrderedByFitness } from '../../canvas-strategies/canvas-strategies'
+import { CanvasStrategy } from '../../canvas-strategies/canvas-strategy-types'
 
 export const CanvasStrategyIndicator = React.memo(() => {
   const colorTheme = useColorTheme()
   const dispatch = useEditorState((store) => store.dispatch, 'CanvasStrategyIndicator dispatch')
-  const activeStrategy = useEditorState(
-    (store) => store.strategyState.currentStrategy,
+  const { activeStrategy, otherPossibleStrategies } = useEditorState(
+    (store) => ({
+      activeStrategy: store.strategyState.currentStrategy,
+      otherPossibleStrategies: store.strategyState.sortedApplicableStrategies,
+    }),
     'CanvasStrategyIndicator strategyState.currentStrategy',
   )
-  const otherPossibleStrategies = useGetApplicableStrategiesOrderedByFitness()
 
   const onTabPressed = React.useCallback(
-    (newStrategyName: string) => {
-      dispatch([CanvasActions.setUsersPreferredStrategy(newStrategyName)])
+    (newStrategy: CanvasStrategy) => {
+      dispatch([CanvasActions.setUsersPreferredStrategy(newStrategy.id)])
     },
     [dispatch],
   )
@@ -34,12 +36,12 @@ export const CanvasStrategyIndicator = React.memo(() => {
         event.stopImmediatePropagation()
 
         const activeStrategyIndex = otherPossibleStrategies.findIndex(
-          (strategyName: string) => strategyName === activeStrategy,
+          (strategy: CanvasStrategy) => strategy.id === activeStrategy,
         )
         const nextStrategyIndex = (activeStrategyIndex + 1) % otherPossibleStrategies.length
-        const nextStrategyName = otherPossibleStrategies[nextStrategyIndex]
+        const nextStrategy = otherPossibleStrategies[nextStrategyIndex]
 
-        onTabPressed(nextStrategyName)
+        onTabPressed(nextStrategy)
       }
     }
     window.addEventListener('keydown', handleTabKey, true)
@@ -75,20 +77,20 @@ export const CanvasStrategyIndicator = React.memo(() => {
             {otherPossibleStrategies?.map((strategy) => {
               return (
                 <FlexRow
-                  key={strategy}
+                  key={strategy.id}
                   style={{
                     height: 29,
                     paddingLeft: 4,
                     paddingRight: 4,
                     backgroundColor:
-                      strategy === activeStrategy ? colorTheme.primary.value : undefined,
+                      strategy.id === activeStrategy ? colorTheme.primary.value : undefined,
                     color:
-                      strategy === activeStrategy
+                      strategy.id === activeStrategy
                         ? colorTheme.white.value
                         : colorTheme.textColor.value,
                   }}
                 >
-                  {strategy}
+                  {strategy.name}
                 </FlexRow>
               )
             })}

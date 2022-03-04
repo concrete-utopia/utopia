@@ -10,10 +10,10 @@ import {
 import { ElementPath } from '../../../core/shared/project-file-types'
 import { KeyCharacter } from '../../../utils/keyboard'
 import { Modifiers } from '../../../utils/modifiers'
-import { ProjectContentTreeRoot } from '../../assets'
 import { EdgePosition } from '../canvas-types'
 import { MoveIntoDragThreshold } from '../canvas-utils'
 import { CanvasCommand } from '../commands/commands'
+import { CanvasStrategy, CanvasStrategyId } from './canvas-strategy-types'
 
 export interface DragInteractionData {
   type: 'DRAG'
@@ -44,7 +44,7 @@ export interface InteractionSession {
   metadata: ElementInstanceMetadataMap
 
   // To track if the user selected a strategy
-  userPreferredStrategy: string | null
+  userPreferredStrategy: CanvasStrategyId | null
 
   startedAt: number
   globalTime: number
@@ -64,11 +64,12 @@ export interface StrategyAndAccumulatedCommands {
 
 export interface StrategyState {
   // Need to track here which strategy is being applied.
-  currentStrategy: string | null
+  currentStrategy: CanvasStrategyId | null
   currentStrategyFitness: number
   currentStrategyCommands: Array<CanvasCommand>
   accumulatedCommands: Array<StrategyAndAccumulatedCommands>
   commandDescriptions: Array<CommandDescription>
+  sortedApplicableStrategies: Array<CanvasStrategy>
 
   // Checkpointed metadata at the point at which a strategy change has occurred.
   startingMetadata: ElementInstanceMetadataMap
@@ -81,6 +82,7 @@ export function createEmptyStrategyState(metadata?: ElementInstanceMetadataMap):
     currentStrategyCommands: [],
     accumulatedCommands: [],
     commandDescriptions: [],
+    sortedApplicableStrategies: [],
     startingMetadata: metadata ?? {},
   }
 }

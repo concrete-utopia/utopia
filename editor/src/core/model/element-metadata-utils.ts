@@ -100,11 +100,12 @@ import {
 } from './project-file-utils'
 import { ResizesContentProp } from './scene-utils'
 import { fastForEach } from '../shared/utils'
-import { omit } from '../shared/object-utils'
+import { objectValues, omit } from '../shared/object-utils'
 import { UTOPIA_LABEL_KEY } from './utopia-constants'
 import { withUnderlyingTarget } from '../../components/editor/store/editor-state'
 import { ProjectContentTreeRoot } from '../../components/assets'
 import { memoize } from '../shared/memoize'
+import { buildTree, forEachChildOfTarget } from '../shared/element-path-tree'
 const ObjectPathImmutable: any = OPI
 
 export const getChildrenOfCollapsedViews = (
@@ -424,8 +425,15 @@ export const MetadataUtils = {
     elements: ElementInstanceMetadataMap,
     target: ElementPath,
   ): Array<ElementInstanceMetadata> {
-    const rootPaths = MetadataUtils.getRootViewPaths(elements, target)
-    return MetadataUtils.findElementsByElementPath(elements, rootPaths ?? [])
+    let result: Array<ElementInstanceMetadata> = []
+    for (const elementKey in elements) {
+      const element = elements[elementKey]
+      const elementPath = element.elementPath
+      if (EP.isRootElementOf(elementPath, target)) {
+        result.push(element)
+      }
+    }
+    return result
   },
   getChildrenPaths(elements: ElementInstanceMetadataMap, target: ElementPath): Array<ElementPath> {
     const possibleChildren = mapDropNulls((elementPathString) => {
@@ -442,27 +450,45 @@ export const MetadataUtils = {
     elements: ElementInstanceMetadataMap,
     target: ElementPath,
   ): Array<ElementInstanceMetadata> {
-    const childrenPaths = MetadataUtils.getChildrenPaths(elements, target)
-    return MetadataUtils.findElementsByElementPath(elements, childrenPaths ?? [])
+    let result: Array<ElementInstanceMetadata> = []
+    for (const elementKey in elements) {
+      const element = elements[elementKey]
+      const elementPath = element.elementPath
+      if (EP.isChildOf(elementPath, target) && !EP.isRootElementOfInstance(elementPath)) {
+        result.push(element)
+      }
+    }
+    return result
   },
   getImmediateChildrenPaths(
     elements: ElementInstanceMetadataMap,
     target: ElementPath,
   ): Array<ElementPath> {
     const element = MetadataUtils.findElementByElementPath(elements, target)
-    const rootPaths = MetadataUtils.getRootViewPaths(elements, target)
-    const childrenPaths = MetadataUtils.getChildrenPaths(elements, target)
-    return element == null ? [] : [...rootPaths, ...childrenPaths]
+    if (element == null) {
+      return []
+    } else {
+      const rootPaths = MetadataUtils.getRootViewPaths(elements, target)
+      const childrenPaths = MetadataUtils.getChildrenPaths(elements, target)
+      return [...rootPaths, ...childrenPaths]
+    }
   },
   getImmediateChildren(
     metadata: ElementInstanceMetadataMap,
     target: ElementPath,
   ): Array<ElementInstanceMetadata> {
-    const childrenPaths = MetadataUtils.getImmediateChildrenPaths(metadata, target)
-    return MetadataUtils.findElementsByElementPath(metadata, childrenPaths ?? [])
+    const roots = MetadataUtils.getRootViews(metadata, target)
+    const children = MetadataUtils.getChildren(metadata, target)
+    return [...roots, ...children]
   },
   getStoryboardMetadata(metadata: ElementInstanceMetadataMap): ElementInstanceMetadata | null {
-    return Object.values(metadata).find((e) => EP.isStoryboardPath(e.elementPath)) ?? null
+    for (const metadataKey in metadata) {
+      const metadataEntry = metadata[metadataKey]
+      if (EP.isStoryboardPath(metadataEntry.elementPath)) {
+        return metadataEntry
+      }
+    }
+    return null
   },
   getAllStoryboardChildren(metadata: ElementInstanceMetadataMap): ElementInstanceMetadata[] {
     const storyboardMetadata = MetadataUtils.getStoryboardMetadata(metadata)
@@ -507,16 +533,20 @@ export const MetadataUtils = {
   getAllPathsIncludingUnfurledFocusedComponents(
     metadata: ElementInstanceMetadataMap,
   ): ElementPath[] {
+    // Note: This will not necessarily be representative of the structured ordering in
+    // the code that produced these elements.
+    const projectTree = buildTree(objectValues(metadata).map((m) => m.elementPath))
     // This function needs to explicitly return the paths in a depth first manner
     let result: Array<ElementPath> = []
     function recurseElement(elementPath: ElementPath): void {
       result.push(elementPath)
-      const {
-        children,
-        unfurledComponents,
-      } = MetadataUtils.getAllChildrenIncludingUnfurledFocusedComponents(elementPath, metadata)
-      const childrenIncludingUnfurledComponents = [...children, ...unfurledComponents]
-      fastForEach(childrenIncludingUnfurledComponents, recurseElement)
+
+      forEachChildOfTarget(projectTree, elementPath, (childPath) => {
+        const childMetadata = MetadataUtils.findElementByElementPath(metadata, childPath)
+        if (childMetadata != null) {
+          recurseElement(childMetadata.elementPath)
+        }
+      })
     }
 
     const rootInstances = this.getAllStoryboardChildrenPaths(metadata)

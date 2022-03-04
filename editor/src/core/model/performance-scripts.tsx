@@ -166,6 +166,12 @@ function useTriggerHighlightPerformanceTest(key: 'regular' | 'all-elements'): ()
         key === 'all-elements',
       )
 
+      // Clear the highlight before the next run
+      calculateHighlightedViews(
+        windowPoint({ x: elementBounds.left - 10, y: elementBounds.top - 10 }),
+        key === 'all-elements',
+      )
+
       performance.mark(`highlight_${key}_dispatch_finished_${framesPassed}`)
       performance.measure(
         `highlight_${key}_frame_${framesPassed}`,

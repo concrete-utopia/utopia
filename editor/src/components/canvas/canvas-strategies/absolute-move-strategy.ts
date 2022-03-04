@@ -13,6 +13,7 @@ import { wildcardPatch } from '../commands/wildcard-patch-command'
 import { CanvasStrategy } from './canvas-strategy-types'
 
 export const absoluteMoveStrategy: CanvasStrategy = {
+  id: 'ABSOLUTE_MOVE',
   name: 'Absolute Move',
   isApplicable: (canvasState, _interactionState, metadata) => {
     if (canvasState.selectedElements.length === 1) {

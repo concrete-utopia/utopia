@@ -9,7 +9,12 @@ import { useEditorState } from '../../editor/store/store-hook'
 import { CanvasCommand } from '../commands/commands'
 import { absoluteMoveStrategy } from './absolute-move-strategy'
 import { absoluteReparentStrategy } from './absolute-reparent-strategy'
-import { CanvasStrategy, ControlWithKey, InteractionCanvasState } from './canvas-strategy-types'
+import {
+  CanvasStrategy,
+  CanvasStrategyId,
+  ControlWithKey,
+  InteractionCanvasState,
+} from './canvas-strategy-types'
 import { InteractionSession, StrategyState } from './interaction-state'
 
 export const RegisteredCanvasStrategies: Array<CanvasStrategy> = [
@@ -68,7 +73,7 @@ function useGetApplicableStrategies(): Array<CanvasStrategy> {
   return useEditorState(getApplicableStrategiesSelector, 'useGetApplicableStrategies', arrayEquals)
 }
 
-interface StrategyWithFitness {
+export interface StrategyWithFitness {
   fitness: number
   strategy: CanvasStrategy
 }
@@ -117,7 +122,7 @@ const getApplicableStrategiesOrderedByFitnessSelector = createSelector(
     canvasState: InteractionCanvasState,
     interactionSession: InteractionSession | null,
     strategyState: StrategyState,
-  ): Array<string> => {
+  ): Array<CanvasStrategy> => {
     if (interactionSession == null) {
       return []
     }
@@ -126,11 +131,11 @@ const getApplicableStrategiesOrderedByFitnessSelector = createSelector(
       canvasState,
       interactionSession,
       strategyState,
-    ).map((s) => s.strategy.name)
+    ).map((s) => s.strategy)
   },
 )
 
-export function useGetApplicableStrategiesOrderedByFitness(): Array<string> {
+export function useGetApplicableStrategiesOrderedByFitness(): Array<CanvasStrategy> {
   return useEditorState(
     getApplicableStrategiesOrderedByFitnessSelector,
     'useGetApplicableStrategiesOrderedByFitness',
@@ -139,11 +144,11 @@ export function useGetApplicableStrategiesOrderedByFitness(): Array<string> {
 
 function pickDefaultCanvasStrategy(
   sortedApplicableStrategies: Array<StrategyWithFitness>,
-  previousStrategyName: string | null,
+  previousStrategyId: string | null,
 ): { strategy: StrategyWithFitness | null; previousStrategy: StrategyWithFitness | null } {
   const currentBestStrategy = sortedApplicableStrategies[0] ?? null
   const previousStrategy =
-    sortedApplicableStrategies.find((s) => s.strategy.name === previousStrategyName) ?? null
+    sortedApplicableStrategies.find((s) => s.strategy.id === previousStrategyId) ?? null
   if (previousStrategy != null && previousStrategy.fitness === currentBestStrategy.fitness) {
     return { strategy: previousStrategy, previousStrategy: previousStrategy }
   } else {
@@ -154,23 +159,23 @@ function pickDefaultCanvasStrategy(
 function pickStrategy(
   sortedApplicableStrategies: Array<StrategyWithFitness>,
   interactionSession: InteractionSession,
-  previousStrategyName: string | null,
+  previousStrategyId: CanvasStrategyId | null,
 ): { strategy: StrategyWithFitness | null; previousStrategy: StrategyWithFitness | null } {
   // FIXME Explicitly picking a strategy will prevent natural handovers that otherwise should occur
 
   if (interactionSession.userPreferredStrategy != null) {
     const foundStrategyByName = sortedApplicableStrategies.find(
-      (s) => s.strategy.name === interactionSession.userPreferredStrategy,
+      (s) => s.strategy.id === interactionSession.userPreferredStrategy,
     )
     const foundPreviousStrategy =
-      sortedApplicableStrategies.find((s) => s.strategy.name === previousStrategyName) ?? null
+      sortedApplicableStrategies.find((s) => s.strategy.id === previousStrategyId) ?? null
 
     if (foundStrategyByName != null) {
       return { strategy: foundStrategyByName, previousStrategy: foundPreviousStrategy }
     }
   }
   // fall back to default strategy
-  return pickDefaultCanvasStrategy(sortedApplicableStrategies, previousStrategyName)
+  return pickDefaultCanvasStrategy(sortedApplicableStrategies, previousStrategyId)
 }
 
 export function findCanvasStrategy(
@@ -178,15 +183,22 @@ export function findCanvasStrategy(
   canvasState: InteractionCanvasState,
   interactionSession: InteractionSession,
   strategyState: StrategyState,
-  previousStrategyName: string | null,
-): { strategy: StrategyWithFitness | null; previousStrategy: StrategyWithFitness | null } {
+  previousStrategyId: CanvasStrategyId | null,
+): {
+  strategy: StrategyWithFitness | null
+  previousStrategy: StrategyWithFitness | null
+  sortedApplicableStrategies: Array<CanvasStrategy>
+} {
   const sortedApplicableStrategies = getApplicableStrategiesOrderedByFitness(
     strategies,
     canvasState,
     interactionSession,
     strategyState,
   )
-  return pickStrategy(sortedApplicableStrategies, interactionSession, previousStrategyName)
+  return {
+    ...pickStrategy(sortedApplicableStrategies, interactionSession, previousStrategyId),
+    sortedApplicableStrategies: sortedApplicableStrategies.map((s) => s.strategy),
+  }
 }
 
 export function applyCanvasStrategy(
@@ -209,7 +221,7 @@ export function useGetApplicableStrategyControls(): Array<ControlWithKey> {
       const filteredControls = s.controlsToRender.filter(
         (control) =>
           control.show === 'always-visible' ||
-          (control.show === 'visible-only-while-active' && s.name === currentStrategy),
+          (control.show === 'visible-only-while-active' && s.id === currentStrategy),
       )
       return addAllUniquelyBy(working, filteredControls, (l, r) => l.control === r.control)
     }, [])

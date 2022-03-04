@@ -398,6 +398,39 @@ export const InspectorEntryPoint: React.FunctionComponent = React.memo(() => {
   )
 })
 
+function updateTargets(localJSXElement: JSXElement): Array<CSSTarget> {
+  let localTargets: Array<CSSTarget> = []
+  function recursivelyDiscoverStyleTargets(styleObject: any, localPath: Array<string>): void {
+    if (typeof styleObject === 'object' && styleObject != null) {
+      let selectorLength: TargetSelectorLength = 0
+      const keys = Object.keys(styleObject)
+      keys.forEach((key) => {
+        if (typeof styleObject[key] === 'object') {
+          recursivelyDiscoverStyleTargets((styleObject as any)[key], [...localPath, key])
+        } else if (typeof selectorLength === 'number') {
+          selectorLength = selectorLength + 1
+        }
+      })
+      localTargets.push(cssTarget(localPath, selectorLength))
+    }
+  }
+  let defaults = [...DefaultStyleTargets]
+  defaults.reverse().forEach((defaultTarget) => {
+    const styleObject = getSimpleAttributeAtPath(
+      right(localJSXElement.props),
+      PP.create(defaultTarget.path),
+    )
+    if (isRight(styleObject) && styleObject.value instanceof Object) {
+      recursivelyDiscoverStyleTargets(styleObject.value, defaultTarget.path)
+    } else {
+      // todo count keys
+      localTargets.push(defaultTarget)
+    }
+  })
+  localTargets.reverse()
+  return localTargets
+}
+
 export const SingleInspectorEntryPoint: React.FunctionComponent<{
   selectedViews: Array<ElementPath>
 }> = React.memo((props) => {
@@ -417,41 +450,6 @@ export const SingleInspectorEntryPoint: React.FunctionComponent<{
     if (elementMetadata != null) {
       if (isRight(elementMetadata.element) && isJSXElement(elementMetadata.element.value)) {
         const jsxElement = elementMetadata.element.value
-        function updateTargets(localJSXElement: JSXElement): Array<CSSTarget> {
-          let localTargets: Array<CSSTarget> = []
-          function recursivelyDiscoverStyleTargets(
-            styleObject: any,
-            localPath: Array<string>,
-          ): void {
-            if (typeof styleObject === 'object' && styleObject != null) {
-              let selectorLength: TargetSelectorLength = 0
-              const keys = Object.keys(styleObject)
-              keys.forEach((key) => {
-                if (typeof styleObject[key] === 'object') {
-                  recursivelyDiscoverStyleTargets((styleObject as any)[key], [...localPath, key])
-                } else if (typeof selectorLength === 'number') {
-                  selectorLength = selectorLength + 1
-                }
-              })
-              localTargets.push(cssTarget(localPath, selectorLength))
-            }
-          }
-          let defaults = [...DefaultStyleTargets]
-          defaults.reverse().forEach((defaultTarget) => {
-            const styleObject = getSimpleAttributeAtPath(
-              right(localJSXElement.props),
-              PP.create(defaultTarget.path),
-            )
-            if (isRight(styleObject) && styleObject.value instanceof Object) {
-              recursivelyDiscoverStyleTargets(styleObject.value, defaultTarget.path)
-            } else {
-              // todo count keys
-              localTargets.push(defaultTarget)
-            }
-          })
-          localTargets.reverse()
-          return localTargets
-        }
         targets = updateTargets(jsxElement)
       }
     }
