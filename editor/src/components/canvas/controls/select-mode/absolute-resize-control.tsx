@@ -5,10 +5,11 @@ import { ElementInstanceMetadataMap } from '../../../../core/shared/element-temp
 import {
   boundingRectangleArray,
   CanvasPoint,
+  CanvasRectangle,
   windowPoint,
 } from '../../../../core/shared/math-utils'
 import { ElementPath } from '../../../../core/shared/project-file-types'
-import { NO_OP } from '../../../../core/shared/utils'
+import { fastForEach, NO_OP } from '../../../../core/shared/utils'
 import { useColorTheme } from '../../../../uuiui'
 import { EditorDispatch } from '../../../editor/action-types'
 import { setResizeOptionsTargetOptions } from '../../../editor/actions/action-creators'
@@ -54,32 +55,44 @@ export const AbsoluteResizeControl = React.memo<AbsoluteResizeControlProps>((pro
     ref.current.style.height = boundingBox.height + 'px'
   })
 
+  const boundingBoxResult = useEditorState((store) => {
+    let frames: Array<CanvasRectangle> = []
+    fastForEach(props.localSelectedElements, (view) => {
+      const frame = MetadataUtils.getFrameInCanvasCoords(view, store.editor.jsxMetadata)
+      if (frame != null) {
+        frames.push(frame)
+      }
+    })
+
+    return boundingRectangleArray(frames)
+  }, 'absolute resize control')
+
   const leftRef = useBoundingBox(absoluteElements, (ref, boundingBox) => {
-    ref.current.style.height = boundingBox.height + 'px'
+    // ref.current.style.height = boundingBox.height + 'px'
   })
   const topRef = useBoundingBox(absoluteElements, (ref, boundingBox) => {
-    ref.current.style.width = boundingBox.width + 'px'
+    // ref.current.style.width = boundingBox.width + 'px'
   })
   const rightRef = useBoundingBox(absoluteElements, (ref, boundingBox) => {
-    ref.current.style.left = boundingBox.width + 'px'
-    ref.current.style.height = boundingBox.height + 'px'
+    // ref.current.style.left = boundingBox.width + 'px'
+    // ref.current.style.height = boundingBox.height + 'px'
   })
 
   const bottomRef = useBoundingBox(absoluteElements, (ref, boundingBox) => {
-    ref.current.style.top = boundingBox.height + 'px'
-    ref.current.style.width = boundingBox.width + 'px'
+    // ref.current.style.top = boundingBox.height + 'px'
+    // ref.current.style.width = boundingBox.width + 'px'
   })
 
   const topLeftRef = useBoundingBox(absoluteElements, NO_OP)
   const topRightRef = useBoundingBox(absoluteElements, (ref, boundingBox) => {
-    ref.current.style.left = boundingBox.width + 'px'
+    // ref.current.style.left = boundingBox.width + 'px'
   })
   const bottomLeftRef = useBoundingBox(absoluteElements, (ref, boundingBox) => {
-    ref.current.style.top = boundingBox.height + 'px'
+    // ref.current.style.top = boundingBox.height + 'px'
   })
   const bottomRightRef = useBoundingBox(absoluteElements, (ref, boundingBox) => {
-    ref.current.style.left = boundingBox.width + 'px'
-    ref.current.style.top = boundingBox.height + 'px'
+    // ref.current.style.left = boundingBox.width + 'px'
+    // ref.current.style.top = boundingBox.height + 'px'
   })
 
   if (allSelectedElementsAbsolute) {
@@ -96,6 +109,10 @@ export const AbsoluteResizeControl = React.memo<AbsoluteResizeControlProps>((pro
           cursor={CSSCursor.ResizeEW}
           direction='vertical'
           enabledDirection={DirectionHorizontal}
+          style={{
+            left: boundingBoxResult?.width,
+            height: boundingBoxResult?.height,
+          }}
         />
         <ResizeEdge
           ref={bottomRef}
@@ -103,6 +120,10 @@ export const AbsoluteResizeControl = React.memo<AbsoluteResizeControlProps>((pro
           cursor={CSSCursor.ResizeNS}
           direction='horizontal'
           enabledDirection={DirectionVertical}
+          style={{
+            top: boundingBoxResult?.height,
+            width: boundingBoxResult?.width,
+          }}
         />
         <ResizeEdge
           ref={leftRef}
@@ -110,6 +131,9 @@ export const AbsoluteResizeControl = React.memo<AbsoluteResizeControlProps>((pro
           cursor={CSSCursor.ResizeEW}
           direction='vertical'
           enabledDirection={DirectionHorizontal}
+          style={{
+            height: boundingBoxResult?.height,
+          }}
         />
         <ResizeEdge
           ref={topRef}
@@ -117,11 +141,41 @@ export const AbsoluteResizeControl = React.memo<AbsoluteResizeControlProps>((pro
           cursor={CSSCursor.ResizeNS}
           direction='horizontal'
           enabledDirection={DirectionVertical}
+          style={{
+            width: boundingBoxResult?.width,
+          }}
         />
-        <ResizePoint ref={topLeftRef} position={{ x: 0, y: 0 }} cursor={CSSCursor.ResizeNWSE} />
-        <ResizePoint ref={topRightRef} position={{ x: 1, y: 0 }} cursor={CSSCursor.ResizeNESW} />
-        <ResizePoint ref={bottomLeftRef} position={{ x: 0, y: 1 }} cursor={CSSCursor.ResizeNESW} />
-        <ResizePoint ref={bottomRightRef} position={{ x: 1, y: 1 }} cursor={CSSCursor.ResizeNWSE} />
+        <ResizePoint
+          ref={topLeftRef}
+          position={{ x: 0, y: 0 }}
+          cursor={CSSCursor.ResizeNWSE}
+          style={{}}
+        />
+        <ResizePoint
+          ref={topRightRef}
+          position={{ x: 1, y: 0 }}
+          cursor={CSSCursor.ResizeNESW}
+          style={{
+            left: boundingBoxResult?.width,
+          }}
+        />
+        <ResizePoint
+          ref={bottomLeftRef}
+          position={{ x: 0, y: 1 }}
+          cursor={CSSCursor.ResizeNESW}
+          style={{
+            top: boundingBoxResult?.height,
+          }}
+        />
+        <ResizePoint
+          ref={bottomRightRef}
+          position={{ x: 1, y: 1 }}
+          cursor={CSSCursor.ResizeNWSE}
+          style={{
+            left: boundingBoxResult?.width,
+            top: boundingBoxResult?.height,
+          }}
+        />
       </div>
     )
   }
@@ -131,6 +185,7 @@ export const AbsoluteResizeControl = React.memo<AbsoluteResizeControlProps>((pro
 interface ResizePointProps {
   cursor: CSSCursor
   position: EdgePosition
+  style: React.CSSProperties
 }
 
 const ResizePointMouseAreaSize = 12
@@ -163,6 +218,7 @@ const ResizePoint = React.memo(
           position: 'absolute',
           width: `calc(${ResizePointSize}px / var(--utopia-canvas-scale))`,
           height: `calc(${ResizePointSize}px / var(--utopia-canvas-scale))`,
+          ...props.style,
         }}
         onMouseDown={onPointMouseDown}
       >
@@ -207,6 +263,7 @@ interface ResizeEdgeProps {
   direction: 'horizontal' | 'vertical'
   position: EdgePosition
   enabledDirection: EdgePosition
+  style: React.CSSProperties
 }
 
 const ResizeMouseAreaSize = 10
@@ -252,6 +309,7 @@ const ResizeEdge = React.memo(
           cursor: props.cursor,
           pointerEvents: 'initial',
           transform: `translate(${offsetLeft}, ${offsetTop})`,
+          ...props.style,
         }}
         onMouseDown={onEdgeMouseDown}
       />
