@@ -10,24 +10,12 @@ import { runStrategySwitchedCommand, StrategySwitched } from './strategy-switche
 import { runUpdateSelectedViews, UpdateSelectedViews } from './update-selected-views-command'
 import { runWildcardPatch, WildcardPatch } from './wildcard-patch-command'
 
-export interface PathMapping {
-  from: ElementPath
-  to: ElementPath
-}
-
-export type PathMappings = Array<PathMapping>
-
 export interface CommandFunctionResult {
   editorStatePatch: EditorStatePatch
-  pathMappings: PathMappings
   commandDescription: string
 }
 
-export type CommandFunction<T> = (
-  editorState: EditorState,
-  pathMappings: PathMappings,
-  command: T,
-) => CommandFunctionResult
+export type CommandFunction<T> = (editorState: EditorState, command: T) => CommandFunctionResult
 
 export type TransientOrNot = 'transient' | 'permanent'
 
@@ -45,22 +33,21 @@ export type CanvasCommand =
 
 export const runCanvasCommand: CommandFunction<CanvasCommand> = (
   editorState: EditorState,
-  pathMappings: PathMappings,
   command: CanvasCommand,
 ) => {
   switch (command.type) {
     case 'WILDCARD_PATCH':
-      return runWildcardPatch(editorState, pathMappings, command)
+      return runWildcardPatch(editorState, command)
     case 'STRATEGY_SWITCHED':
-      return runStrategySwitchedCommand(pathMappings, command)
+      return runStrategySwitchedCommand(command)
     case 'ADJUST_NUMBER_PROPERTY':
-      return runAdjustNumberProperty(editorState, pathMappings, command)
+      return runAdjustNumberProperty(editorState, command)
     case 'ADJUST_CSS_LENGTH_PROPERTY':
-      return runAdjustCssLengthProperty(editorState, pathMappings, command)
+      return runAdjustCssLengthProperty(editorState, command)
     case 'REPARENT_ELEMENT':
-      return runReparentElement(editorState, pathMappings, command)
+      return runReparentElement(editorState, command)
     case 'UPDATE_SELECTED_VIEWS':
-      return runUpdateSelectedViews(editorState, pathMappings, command)
+      return runUpdateSelectedViews(editorState, command)
     default:
       const _exhaustiveCheck: never = command
       throw new Error(`Unhandled canvas command ${JSON.stringify(command)}`)
@@ -100,16 +87,14 @@ function foldCommands(
 } {
   let statePatches: Array<EditorStatePatch> = []
   let workingEditorState: EditorState = editorState
-  let workingPathMappings: PathMappings = []
   let workingCommandDescriptions: Array<CommandDescription> = []
   for (const command of commands) {
     // Allow every command if this is a transient fold, otherwise only allow commands that are not transient.
     if (transient === 'transient' || command.transient === 'permanent') {
       // Run the command with our current states.
-      const commandResult = runCanvasCommand(workingEditorState, workingPathMappings, command)
+      const commandResult = runCanvasCommand(workingEditorState, command)
       // Capture values from the result.
       const statePatch = commandResult.editorStatePatch
-      workingPathMappings = commandResult.pathMappings
       // Apply the update to the editor state.
       workingEditorState = update(workingEditorState, statePatch)
       // Collate the patches.

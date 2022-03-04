@@ -44,7 +44,6 @@ describe('adjustNumberProperty', () => {
 
     const result = runAdjustNumberProperty(
       renderResult.getEditorState().editor,
-      [],
       adjustNumberPropertyCommand,
     )
 

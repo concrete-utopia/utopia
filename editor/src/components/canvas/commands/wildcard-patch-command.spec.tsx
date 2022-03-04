@@ -26,7 +26,7 @@ describe('wildcardPatch', () => {
 
     const wildcardCommand = wildcardPatch('permanent', { selectedViews: { $set: [] } })
 
-    const result = runWildcardPatch(renderResult.getEditorState().editor, [], wildcardCommand)
+    const result = runWildcardPatch(renderResult.getEditorState().editor, wildcardCommand)
 
     const patchedEditor = applyStatePatches(
       renderResult.getEditorState().editor,
