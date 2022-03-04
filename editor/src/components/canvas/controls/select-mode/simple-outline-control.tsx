@@ -69,7 +69,6 @@ const OutlineControl = React.memo<OutlineControlProps>((props) => {
           boxSizing: 'border-box',
           boxShadow: `0px 0px 0px calc(1px / var(--utopia-canvas-scale)) ${color}`,
           pointerEvents: 'none',
-          transform: `translate(var(--utopia-canvas-offset-x), var(--utopia-canvas-offset-y))`,
         }}
       />
     )

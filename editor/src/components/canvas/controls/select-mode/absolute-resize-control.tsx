@@ -88,7 +88,6 @@ export const AbsoluteResizeControl = React.memo<AbsoluteResizeControlProps>((pro
         ref={controlRef}
         style={{
           position: 'absolute',
-          transform: `translate(var(--utopia-canvas-offset-x), var(--utopia-canvas-offset-y))`,
         }}
       >
         <ResizeEdge

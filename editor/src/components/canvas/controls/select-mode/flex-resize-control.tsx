@@ -68,7 +68,6 @@ export const FlexResizeControl = React.memo<FlexResizeControlProps>((props) => {
         ref={controlRef}
         style={{
           position: 'absolute',
-          transform: `translate(var(--utopia-canvas-offset-x), var(--utopia-canvas-offset-y))`,
         }}
       >
         <ResizeEdge

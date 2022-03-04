@@ -43,7 +43,6 @@ export const DistanceGuideline = React.memo<DistanceGuidelineProps>((props) => {
           className='role-distance-guideline'
           style={{
             position: 'absolute',
-            transform: `translate(var(--utopia-canvas-offset-x), var(--utopia-canvas-offset-y))`,
             display:
               // isAltPressed && !isInteraction ? `var(--utopia-canvas-guideline-display)` : 'none',
               `var(--utopia-canvas-guideline-display)`,
