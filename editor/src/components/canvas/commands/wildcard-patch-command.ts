@@ -1,5 +1,5 @@
 import type { EditorState, EditorStatePatch } from '../../editor/store/editor-state'
-import type { BaseCommand, CommandFunction, PathMappings, TransientOrNot } from './commands'
+import type { BaseCommand, CommandFunction, TransientOrNot } from './commands'
 
 export interface WildcardPatch extends BaseCommand {
   type: 'WILDCARD_PATCH'
@@ -16,12 +16,10 @@ export function wildcardPatch(transient: TransientOrNot, patch: EditorStatePatch
 
 export const runWildcardPatch: CommandFunction<WildcardPatch> = (
   editorState: EditorState,
-  pathMappings: PathMappings,
   command: WildcardPatch,
 ) => {
   return {
     editorStatePatch: command.patch,
-    pathMappings: pathMappings,
     commandDescription: `Wildcard Patch: ${JSON.stringify(command.patch, null, 2)}`,
   }
 }

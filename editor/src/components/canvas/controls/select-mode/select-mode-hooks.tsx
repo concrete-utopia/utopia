@@ -43,6 +43,7 @@ import { WindowMousePositionRaw } from '../../../../utils/global-positions'
 import { isFeatureEnabled } from '../../../../utils/feature-switches'
 import { createInteractionViaMouse } from '../../canvas-strategies/interaction-state'
 import { Modifier } from '../../../../utils/modifiers'
+import { pathsEqual } from '../../../../core/shared/element-path'
 
 const DRAG_START_TRESHOLD = 2
 
@@ -95,13 +96,25 @@ export function useMaybeHighlightElement(): {
       dragging: isDragging(store.editor),
       selectionEnabled: pickSelectionEnabled(store.editor.canvas, store.editor.keysPressed),
       inserting: isInserting(store.editor),
+      highlightedViews: store.editor.highlightedViews,
     }
   })
 
   const maybeHighlightOnHover = React.useCallback(
     (target: ElementPath): void => {
-      const { dispatch, dragging, resizing, selectionEnabled, inserting } = stateRef.current
-      if (selectionEnabled && !dragging && !resizing && !inserting) {
+      /// target, parts, array, 0 contains [0: "0cd" 1: "478]
+      const {
+        dispatch,
+        dragging,
+        resizing,
+        selectionEnabled,
+        inserting,
+        highlightedViews,
+      } = stateRef.current
+
+      const alreadyHighlighted = pathsEqual(target, highlightedViews?.[0])
+
+      if (selectionEnabled && !dragging && !resizing && !inserting && !alreadyHighlighted) {
         dispatch([setHighlightedView(target)], 'canvas')
       }
     },

@@ -73,7 +73,7 @@ function useGetApplicableStrategies(): Array<CanvasStrategy> {
   return useEditorState(getApplicableStrategiesSelector, 'useGetApplicableStrategies', arrayEquals)
 }
 
-interface StrategyWithFitness {
+export interface StrategyWithFitness {
   fitness: number
   strategy: CanvasStrategy
 }

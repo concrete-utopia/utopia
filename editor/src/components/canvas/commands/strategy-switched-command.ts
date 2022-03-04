@@ -1,4 +1,4 @@
-import type { BaseCommand, CommandFunctionResult, PathMappings } from './commands'
+import type { BaseCommand, CommandFunctionResult } from './commands'
 
 export interface StrategySwitched extends BaseCommand {
   type: 'STRATEGY_SWITCHED'
@@ -27,10 +27,7 @@ export function strategySwitched(
   }
 }
 
-export function runStrategySwitchedCommand(
-  pathMappings: PathMappings,
-  command: StrategySwitched,
-): CommandFunctionResult {
+export function runStrategySwitchedCommand(command: StrategySwitched): CommandFunctionResult {
   let commandDescription: string = `Strategy switched to ${command.newStrategy} ${
     command.reason === 'automatic'
       ? `automatically (fitness ${command.previousFitness} -> ${command.newFitness})`
@@ -39,7 +36,6 @@ export function runStrategySwitchedCommand(
 
   return {
     editorStatePatch: {},
-    pathMappings: pathMappings,
     commandDescription: commandDescription,
   }
 }

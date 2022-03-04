@@ -19,7 +19,7 @@ import {
   insertElementAtPath,
   removeElementAtPath,
 } from '../../editor/store/editor-state'
-import type { BaseCommand, CommandFunction, PathMappings, TransientOrNot } from './commands'
+import type { BaseCommand, CommandFunction, TransientOrNot } from './commands'
 
 export interface ReparentElement extends BaseCommand {
   type: 'REPARENT_ELEMENT'
@@ -42,7 +42,6 @@ export function reparentElement(
 
 export const runReparentElement: CommandFunction<ReparentElement> = (
   editorState: EditorState,
-  pathMappings: PathMappings,
   command: ReparentElement,
 ) => {
   let editorStatePatch: EditorStatePatch = {}
@@ -112,7 +111,6 @@ export const runReparentElement: CommandFunction<ReparentElement> = (
 
   return {
     editorStatePatch: editorStatePatch,
-    pathMappings: pathMappings,
     commandDescription: `Reparent Element ${EP.toUid(command.target)} to new parent ${EP.toUid(
       command.newParent,
     )}`,

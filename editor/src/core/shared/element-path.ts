@@ -185,17 +185,6 @@ export function fromString(path: string): ElementPath {
   }
 }
 
-function allElementPaths(fullPath: ElementPathPart[]): Array<ElementPathPart[]> {
-  let paths: Array<ElementPathPart[]> = []
-  for (var index = 1; index < fullPath.length; index++) {
-    const prefix: ElementPathPart[] = fullPath.slice(0, index)
-    const suffixes = allElementPathsForPart(fullPath[index])
-    fastForEach(suffixes, (suffix) => paths.push(prefix.concat(suffix)))
-  }
-
-  return paths
-}
-
 function allElementPathsForPart(path: ElementPathPart): Array<ElementPathPart> {
   let paths: Array<ElementPathPart> = []
   for (var size = 1; size <= path.length; size++) {
@@ -387,7 +376,7 @@ function elementPathPartsEqual(l: ElementPathPart, r: ElementPathPart): boolean 
   }
 }
 
-function fullElementPathsEqual(l: ElementPathPart[], r: ElementPathPart[]): boolean {
+export function fullElementPathsEqual(l: ElementPathPart[], r: ElementPathPart[]): boolean {
   return l === r || arrayEquals(l, r, elementPathPartsEqual)
 }
 

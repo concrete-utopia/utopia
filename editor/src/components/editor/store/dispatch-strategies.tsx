@@ -3,6 +3,7 @@ import {
   findCanvasStrategy,
   findCanvasStrategyFromDispatchResult,
   pickCanvasStateFromEditorState,
+  StrategyWithFitness,
 } from '../../canvas/canvas-strategies/canvas-strategies'
 import {
   createEmptyStrategyState,
@@ -181,7 +182,7 @@ export function interactionUpdate(
     }
   } else {
     // Determine the new canvas strategy to run this time around.
-    const { strategy, sortedApplicableStrategies } = findCanvasStrategy(
+    const { strategy, previousStrategy, sortedApplicableStrategies } = findCanvasStrategy(
       strategies,
       canvasState,
       interactionSession,
@@ -189,42 +190,41 @@ export function interactionUpdate(
       result.strategyState.currentStrategy,
     )
 
-    // If there is a current strategy, produce the commands from it.
-    if (strategy != null && newEditorState.canvas.interactionSession != null) {
-      const commands = applyCanvasStrategy(
-        strategy.strategy,
-        canvasState,
-        newEditorState.canvas.interactionSession,
-        result.strategyState,
-      )
-      const commandResult = foldAndApplyCommands(
-        newEditorState,
-        storedState.patchedEditor,
-        [...result.strategyState.accumulatedCommands.flatMap((c) => c.commands), ...commands],
-        'transient',
-      )
-      const newStrategyState: StrategyState = {
-        currentStrategy: strategy.strategy.id,
-        currentStrategyFitness: strategy.fitness,
-        currentStrategyCommands: commands,
-        accumulatedCommands: result.strategyState.accumulatedCommands,
-        commandDescriptions: commandResult.commandDescriptions,
-        sortedApplicableStrategies: sortedApplicableStrategies,
-        startingMetadata: result.strategyState.startingMetadata,
-      }
-
-      return {
-        unpatchedEditorState: newEditorState,
-        patchedEditorState: commandResult.editorState,
-        newStrategyState: newStrategyState,
-      }
-    } else {
-      return {
-        unpatchedEditorState: newEditorState,
-        patchedEditorState: newEditorState,
-        newStrategyState: result.strategyState,
+    if (interactionSession.userPreferredStrategy != null) {
+      const userChangedStrategy =
+        interactionSession.userPreferredStrategy !=
+        storedState.unpatchedEditor.canvas.interactionSession?.userPreferredStrategy
+      if (userChangedStrategy) {
+        return handleUserChangedStrategy(
+          newEditorState,
+          storedState.patchedEditor,
+          result.strategyState,
+          strategy,
+          previousStrategy,
+          sortedApplicableStrategies,
+        )
       }
     }
+
+    if (strategy?.strategy.id !== previousStrategy?.strategy.id) {
+      return handleStrategyChangeStacked(
+        newEditorState,
+        storedState.patchedEditor,
+        result.strategyState,
+        strategy,
+        previousStrategy,
+        sortedApplicableStrategies,
+      )
+    }
+
+    return handleUpdate(
+      newEditorState,
+      storedState.patchedEditor,
+      result.strategyState,
+      strategy,
+      previousStrategy,
+      sortedApplicableStrategies,
+    )
   }
 }
 
@@ -314,190 +314,196 @@ export function interactionCancel(
   }
 }
 
-export function interactionUserChangedStrategy(
-  strategies: Array<CanvasStrategy>,
-  storedState: EditorStoreFull,
-  result: InnerDispatchResult,
+function handleUserChangedStrategy(
+  newEditorState: EditorState,
+  storedEditorState: EditorState,
+  strategyState: StrategyState,
+  strategy: StrategyWithFitness | null,
+  previousStrategy: StrategyWithFitness | null,
+  sortedApplicableStrategies: Array<CanvasStrategy>,
 ): HandleStrategiesResult {
-  const newEditorState = result.unpatchedEditor
   const canvasState: InteractionCanvasState = pickCanvasStateFromEditorState(newEditorState)
-  const interactionSession = newEditorState.canvas.interactionSession
-  if (interactionSession == null) {
+
+  // If there is a current strategy, produce the commands from it.
+  if (strategy != null && newEditorState.canvas.interactionSession != null) {
+    const strategyChangedLogCommands = [
+      {
+        strategy: null,
+        commands: [
+          strategySwitched(
+            'user-input',
+            strategy.strategy.name,
+            true,
+            previousStrategy?.fitness ?? NaN,
+            strategy.fitness,
+          ),
+        ],
+      },
+    ]
+
+    const commands = applyCanvasStrategy(
+      strategy.strategy,
+      canvasState,
+      newEditorState.canvas.interactionSession,
+      strategyState,
+    )
+    const newAccumulatedCommands = [
+      ...strategyState.accumulatedCommands,
+      ...strategyChangedLogCommands,
+    ]
+    const commandResult = foldAndApplyCommands(
+      newEditorState,
+      storedEditorState,
+      [...newAccumulatedCommands.flatMap((c) => c.commands), ...commands],
+      'transient',
+    )
+    const newStrategyState: StrategyState = {
+      currentStrategy: strategy.strategy.id,
+      currentStrategyFitness: strategy.fitness,
+      currentStrategyCommands: commands,
+      accumulatedCommands: newAccumulatedCommands,
+      commandDescriptions: commandResult.commandDescriptions,
+      sortedApplicableStrategies: sortedApplicableStrategies,
+      startingMetadata: strategyState.startingMetadata,
+    }
+
+    return {
+      unpatchedEditorState: newEditorState,
+      patchedEditorState: commandResult.editorState,
+      newStrategyState: newStrategyState,
+    }
+  } else {
     return {
       unpatchedEditorState: newEditorState,
       patchedEditorState: newEditorState,
-      newStrategyState: result.strategyState,
-    }
-  } else {
-    // Determine the new canvas strategy to run this time around.
-    const { strategy, previousStrategy, sortedApplicableStrategies } = findCanvasStrategy(
-      strategies,
-      canvasState,
-      interactionSession,
-      result.strategyState,
-      result.strategyState.currentStrategy,
-    )
-    const strategyId = strategy?.strategy.id
-    if (strategyId != result.unpatchedEditor.canvas.interactionSession?.userPreferredStrategy) {
-      console.warn(
-        'Entered interactionUserChangedStrategy but the user preferred strategy is not applied',
-      )
-    }
-
-    // If there is a current strategy, produce the commands from it.
-    if (strategy != null && newEditorState.canvas.interactionSession != null) {
-      const strategyChangedLogCommands = [
-        {
-          strategy: null,
-          commands: [
-            strategySwitched(
-              'user-input',
-              strategy.strategy.name,
-              true,
-              previousStrategy?.fitness ?? NaN,
-              strategy.fitness,
-            ),
-          ],
-        },
-      ]
-
-      const commands = applyCanvasStrategy(
-        strategy.strategy,
-        canvasState,
-        newEditorState.canvas.interactionSession,
-        result.strategyState,
-      )
-      const newAccumulatedCommands = [
-        ...result.strategyState.accumulatedCommands,
-        ...strategyChangedLogCommands,
-      ]
-      const commandResult = foldAndApplyCommands(
-        newEditorState,
-        storedState.patchedEditor,
-        [...newAccumulatedCommands.flatMap((c) => c.commands), ...commands],
-        'transient',
-      )
-      const newStrategyState: StrategyState = {
-        currentStrategy: strategy.strategy.id,
-        currentStrategyFitness: strategy.fitness,
-        currentStrategyCommands: commands,
-        accumulatedCommands: newAccumulatedCommands,
-        commandDescriptions: commandResult.commandDescriptions,
-        sortedApplicableStrategies: sortedApplicableStrategies,
-        startingMetadata: result.strategyState.startingMetadata,
-      }
-
-      return {
-        unpatchedEditorState: newEditorState,
-        patchedEditorState: commandResult.editorState,
-        newStrategyState: newStrategyState,
-      }
-    } else {
-      return {
-        unpatchedEditorState: newEditorState,
-        patchedEditorState: newEditorState,
-        newStrategyState: result.strategyState,
-      }
+      newStrategyState: strategyState,
     }
   }
 }
 
-export function interactionStrategyChangeStacked(
-  strategies: Array<CanvasStrategy>,
-  storedState: EditorStoreFull,
-  result: InnerDispatchResult,
+function handleUpdate(
+  newEditorState: EditorState,
+  storedEditorState: EditorState,
+  strategyState: StrategyState,
+  strategy: StrategyWithFitness | null,
+  previousStrategy: StrategyWithFitness | null,
+  sortedApplicableStrategies: Array<CanvasStrategy>,
 ): HandleStrategiesResult {
-  const newEditorState = result.unpatchedEditor
   const canvasState: InteractionCanvasState = pickCanvasStateFromEditorState(newEditorState)
-  const interactionSession = newEditorState.canvas.interactionSession
-  if (interactionSession == null) {
+  // If there is a current strategy, produce the commands from it.
+  if (strategy != null && newEditorState.canvas.interactionSession != null) {
+    const commands = applyCanvasStrategy(
+      strategy.strategy,
+      canvasState,
+      newEditorState.canvas.interactionSession,
+      strategyState,
+    )
+    const commandResult = foldAndApplyCommands(
+      newEditorState,
+      storedEditorState,
+      [...strategyState.accumulatedCommands.flatMap((c) => c.commands), ...commands],
+      'transient',
+    )
+    const newStrategyState: StrategyState = {
+      currentStrategy: strategy.strategy.id,
+      currentStrategyFitness: strategy.fitness,
+      currentStrategyCommands: commands,
+      accumulatedCommands: strategyState.accumulatedCommands,
+      commandDescriptions: commandResult.commandDescriptions,
+      sortedApplicableStrategies: sortedApplicableStrategies,
+      startingMetadata: strategyState.startingMetadata,
+    }
+
+    return {
+      unpatchedEditorState: newEditorState,
+      patchedEditorState: commandResult.editorState,
+      newStrategyState: newStrategyState,
+    }
+  } else {
     return {
       unpatchedEditorState: newEditorState,
       patchedEditorState: newEditorState,
-      newStrategyState: result.strategyState,
+      newStrategyState: strategyState,
+    }
+  }
+}
+
+function handleStrategyChangeStacked(
+  newEditorState: EditorState,
+  storedEditorState: EditorState,
+  strategyState: StrategyState,
+  strategy: StrategyWithFitness | null,
+  previousStrategy: StrategyWithFitness | null,
+  sortedApplicableStrategies: Array<CanvasStrategy>,
+): HandleStrategiesResult {
+  const canvasState: InteractionCanvasState = pickCanvasStateFromEditorState(newEditorState)
+  // If there is a current strategy, produce the commands from it.
+  if (strategy != null && newEditorState.canvas.interactionSession != null) {
+    const strategyChangedLogCommands = [
+      {
+        strategy: null,
+        commands: [
+          strategySwitched(
+            'user-input',
+            strategy.strategy.name,
+            true,
+            previousStrategy?.fitness ?? NaN,
+            strategy.fitness,
+          ),
+        ],
+      },
+    ]
+
+    const commands = applyCanvasStrategy(
+      strategy.strategy,
+      canvasState,
+      newEditorState.canvas.interactionSession,
+      strategyState,
+    )
+    const newAccumulatedCommands = [
+      ...strategyState.accumulatedCommands,
+      {
+        strategy: strategyState.currentStrategy,
+        commands: strategyState.currentStrategyCommands,
+      },
+      ...strategyChangedLogCommands,
+    ]
+    const commandResult = foldAndApplyCommands(
+      newEditorState,
+      storedEditorState,
+      [...newAccumulatedCommands.flatMap((c) => c.commands), ...commands],
+      'transient',
+    )
+    const newStrategyState: StrategyState = {
+      currentStrategy: strategy.strategy.id,
+      currentStrategyFitness: strategy.fitness,
+      currentStrategyCommands: commands,
+      accumulatedCommands: newAccumulatedCommands,
+      commandDescriptions: commandResult.commandDescriptions,
+      sortedApplicableStrategies: sortedApplicableStrategies,
+      startingMetadata: strategyState.startingMetadata,
+    }
+
+    const patchedEditorState = {
+      ...newEditorState,
+      canvas: {
+        ...newEditorState.canvas,
+        interactionSession: strategySwitchInteractionSessionReset(
+          newEditorState.canvas.interactionSession,
+        ),
+      },
+    }
+
+    return {
+      unpatchedEditorState: newEditorState,
+      patchedEditorState: patchedEditorState,
+      newStrategyState: newStrategyState,
     }
   } else {
-    // Determine the new canvas strategy to run this time around.
-    const { strategy, previousStrategy, sortedApplicableStrategies } = findCanvasStrategy(
-      strategies,
-      canvasState,
-      interactionSession,
-      result.strategyState,
-      result.strategyState.currentStrategy,
-    )
-    const strategyId = strategy?.strategy.id
-    if (strategyId === result.strategyState.currentStrategy) {
-      console.warn("Entered interactionStrategyChangeStacked but the strategy haven't changed")
-    }
-
-    // If there is a current strategy, produce the commands from it.
-    if (strategy != null && newEditorState.canvas.interactionSession != null) {
-      const strategyChangedLogCommands = [
-        {
-          strategy: null,
-          commands: [
-            strategySwitched(
-              'user-input',
-              strategy.strategy.name,
-              true,
-              previousStrategy?.fitness ?? NaN,
-              strategy.fitness,
-            ),
-          ],
-        },
-      ]
-
-      const commands = applyCanvasStrategy(
-        strategy.strategy,
-        canvasState,
-        newEditorState.canvas.interactionSession,
-        result.strategyState,
-      )
-      const newAccumulatedCommands = [
-        ...result.strategyState.accumulatedCommands,
-        {
-          strategy: result.strategyState.currentStrategy,
-          commands: result.strategyState.currentStrategyCommands,
-        },
-        ...strategyChangedLogCommands,
-      ]
-      const commandResult = foldAndApplyCommands(
-        newEditorState,
-        storedState.patchedEditor,
-        [...newAccumulatedCommands.flatMap((c) => c.commands), ...commands],
-        'transient',
-      )
-      const newStrategyState: StrategyState = {
-        currentStrategy: strategy.strategy.id,
-        currentStrategyFitness: strategy.fitness,
-        currentStrategyCommands: commands,
-        accumulatedCommands: newAccumulatedCommands,
-        commandDescriptions: commandResult.commandDescriptions,
-        sortedApplicableStrategies: sortedApplicableStrategies,
-        startingMetadata: result.strategyState.startingMetadata,
-      }
-
-      const patchedEditorState = {
-        ...newEditorState,
-        canvas: {
-          ...newEditorState.canvas,
-          interactionSession: strategySwitchInteractionSessionReset(
-            newEditorState.canvas.interactionSession,
-          ),
-        },
-      }
-
-      return {
-        unpatchedEditorState: newEditorState,
-        patchedEditorState: patchedEditorState,
-        newStrategyState: newStrategyState,
-      }
-    } else {
-      return {
-        unpatchedEditorState: newEditorState,
-        patchedEditorState: newEditorState,
-        newStrategyState: result.strategyState,
-      }
+    return {
+      unpatchedEditorState: newEditorState,
+      patchedEditorState: newEditorState,
+      newStrategyState: strategyState,
     }
   }
 }
@@ -565,20 +571,6 @@ function handleStrategiesInner(
       if (interactionHardResetNeeded) {
         return interactionHardReset(strategies, storedState, result)
       } else {
-        if (result.unpatchedEditor.canvas.interactionSession?.userPreferredStrategy != null) {
-          const userChangedStrategy =
-            result.unpatchedEditor.canvas.interactionSession?.userPreferredStrategy !=
-            storedState.unpatchedEditor.canvas.interactionSession?.userPreferredStrategy
-          if (userChangedStrategy) {
-            return interactionUserChangedStrategy(strategies, storedState, result)
-          }
-        }
-
-        const strategy = findCanvasStrategyFromDispatchResult(strategies, result)
-        if (strategy?.strategy.id !== result.strategyState.currentStrategy) {
-          return interactionStrategyChangeStacked(strategies, storedState, result)
-        }
-
         return interactionUpdate(strategies, storedState, result)
       }
     }
