@@ -161,8 +161,10 @@ const ResizePoint = React.memo(
         ref={ref}
         style={{
           position: 'absolute',
-          width: `calc(${ResizePointSize}px / var(--utopia-canvas-scale))`,
-          height: `calc(${ResizePointSize}px / var(--utopia-canvas-scale))`,
+          // width: `calc(${ResizePointSize}px / var(--utopia-canvas-scale))`,
+          width: ResizePointSize,
+          // height: `calc(${ResizePointSize}px / var(--utopia-canvas-scale))`,
+          height: ResizePointSize,
         }}
         onMouseDown={onPointMouseDown}
       >
@@ -172,27 +174,36 @@ const ResizePoint = React.memo(
             pointerEvents: 'initial',
             width: '100%',
             height: '100%',
-            top: `calc(${-ResizePointSize / 2}px / var(--utopia-canvas-scale))`,
-            left: `calc(${-ResizePointSize / 2}px / var(--utopia-canvas-scale))`,
+            // top: `calc(${-ResizePointSize / 2}px / var(--utopia-canvas-scale))`,
+            top: -ResizePointSize / 2,
+            // left: `calc(${-ResizePointSize / 2}px / var(--utopia-canvas-scale))`,
+            left: -ResizePointSize / 2,
             boxSizing: 'border-box',
-            borderWidth: `calc(1 / var(--utopia-canvas-scale))`,
+            // borderWidth: `calc(1 / var(--utopia-canvas-scale))`,
+            borderWidth: 1,
             backgroundColor: colorTheme.canvasControlsSizeBoxBackground.value,
             borderRadius: '10%',
             borderStyle: 'none',
             borderColor: 'transparent',
             boxShadow: `${colorTheme.canvasControlsSizeBoxShadowColor.o(50).value} 0px 0px
-              calc(1px / var(--utopia-canvas-scale)), ${
-                colorTheme.canvasControlsSizeBoxShadowColor.o(21).value
-              } 0px calc(1px / var(--utopia-canvas-scale)) calc(2px / var(--utopia-canvas-scale)) calc(1px / var(--utopia-canvas-scale))`,
+              1px, ${colorTheme.canvasControlsSizeBoxShadowColor.o(21).value} 0px 1px 2px 1px`,
+            // boxShadow: `${colorTheme.canvasControlsSizeBoxShadowColor.o(50).value} 0px 0px
+            //   calc(1px / var(--utopia-canvas-scale)), ${
+            //     colorTheme.canvasControlsSizeBoxShadowColor.o(21).value
+            //   } 0px calc(1px / var(--utopia-canvas-scale)) calc(2px / var(--utopia-canvas-scale)) calc(1px / var(--utopia-canvas-scale))`,
           }}
         />
         <div
           style={{
             position: 'relative',
-            width: `calc(${ResizePointMouseAreaSize}px / var(--utopia-canvas-scale))`,
-            height: `calc(${ResizePointMouseAreaSize}px / var(--utopia-canvas-scale))`,
-            top: `calc(${-ResizePointMouseAreaSize / 2}px / var(--utopia-canvas-scale))`,
-            left: `calc(${-ResizePointMouseAreaSize / 2}px / var(--utopia-canvas-scale))`,
+            // width: `calc(${ResizePointMouseAreaSize}px / var(--utopia-canvas-scale))`,
+            // height: `calc(${ResizePointMouseAreaSize}px / var(--utopia-canvas-scale))`,
+            // top: `calc(${-ResizePointMouseAreaSize / 2}px / var(--utopia-canvas-scale))`,
+            // left: `calc(${-ResizePointMouseAreaSize / 2}px / var(--utopia-canvas-scale))`,
+            top: -ResizePointMouseAreaSize / 2,
+            left: -ResizePointMouseAreaSize / 2,
+            width: ResizePointMouseAreaSize,
+            height: ResizePointMouseAreaSize,
             backgroundColor: 'transparent',
             cursor: props.cursor,
           }}
@@ -230,17 +241,19 @@ const ResizeEdge = React.memo(
       [dispatch, props.position, props.enabledDirection, jsxMetadataRef, selectedViewsRef],
     )
 
-    const lineSize = `calc(${ResizeMouseAreaSize}px / var(--utopia-canvas-scale))`
+    const lineSize = ResizeMouseAreaSize
     const width = props.direction === 'horizontal' ? undefined : lineSize
     const height = props.direction === 'vertical' ? undefined : lineSize
     const offsetLeft =
       props.direction === 'horizontal'
         ? `0px`
-        : `calc(${-ResizeMouseAreaSize / 2}px / var(--utopia-canvas-scale))`
+        : // : `calc(${-ResizeMouseAreaSize / 2}px / var(--utopia-canvas-scale))`
+          -ResizeMouseAreaSize / 2
     const offsetTop =
       props.direction === 'vertical'
         ? `0px`
-        : `calc(${-ResizeMouseAreaSize / 2}px / var(--utopia-canvas-scale))`
+        : // : `calc(${-ResizeMouseAreaSize / 2}px / var(--utopia-canvas-scale))`
+          -ResizeMouseAreaSize / 2
     return (
       <div
         ref={ref}
