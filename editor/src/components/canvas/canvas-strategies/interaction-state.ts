@@ -91,13 +91,12 @@ export function createInteractionViaMouse(
   mouseDownPoint: CanvasPoint,
   modifiers: Modifiers,
   activeControl: CanvasControlType,
-  drag?: CanvasVector,
 ): InteractionSessionWithoutMetadata {
   return {
     interactionData: {
       type: 'DRAG',
       dragStart: mouseDownPoint,
-      drag: drag ?? null,
+      drag: null,
       prevDrag: null,
       dragThresholdPassed: false,
       originalDragStart: mouseDownPoint,
@@ -119,7 +118,7 @@ function dragExceededThreshold(drag: CanvasVector): boolean {
 }
 
 export function updateInteractionViaMouse(
-  currentState: InteractionSession,
+  currentState: InteractionSessionWithoutMetadata,
   drag: CanvasVector,
   modifiers: Modifiers,
   sourceOfUpdate: CanvasControlType | null, // If null it means the active control is the source

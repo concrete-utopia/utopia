@@ -15,12 +15,8 @@ import {
 } from '../ui-jsx.test-utils'
 import { absoluteMoveStrategy } from './absolute-move-strategy'
 import { pickCanvasStateFromEditorState } from './canvas-strategies'
-import {
-  createInteractionViaMouse,
-  DragInteractionData,
-  InteractionSession,
-  StrategyState,
-} from './interaction-state'
+import { InteractionSession, StrategyState } from './interaction-state'
+import { createMouseInteractionForTests } from './interaction-state.test-utils'
 
 function prepareEditorState(codeSnippet: string, selectedViews: Array<ElementPath>): EditorState {
   return {
@@ -31,8 +27,8 @@ function prepareEditorState(codeSnippet: string, selectedViews: Array<ElementPat
 
 function dragBy15Pixels(editorState: EditorState): EditorState {
   const interactionSession: InteractionSession = {
-    ...createInteractionViaMouse(
-      null as any,
+    ...createMouseInteractionForTests(
+      null as any, // the strategy does not use this
       emptyModifiers,
       null as any, // the strategy does not use this
       canvasPoint({ x: 15, y: 15 }),
