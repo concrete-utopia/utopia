@@ -16,9 +16,7 @@ import {
   interactionCancel,
   interactionHardReset,
   interactionStart,
-  interactionStrategyChangeStacked,
   interactionUpdate,
-  interactionUserChangedStrategy,
 } from './dispatch-strategies'
 import { createEditorState, deriveState, EditorStoreFull } from './editor-state'
 import * as EP from '../../../core/shared/element-path'
@@ -46,6 +44,7 @@ import { wildcardPatch } from '../../canvas/commands/wildcard-patch-command'
 
 function createEditorStore(
   interactionSession: InteractionSessionWithoutMetadata | null,
+  strategyState?: StrategyState,
 ): EditorStoreFull {
   let emptyEditorState = createEditorState(NO_OP)
   let interactionSessionWithMetadata: InteractionSession | null = null
@@ -72,7 +71,7 @@ function createEditorStore(
     patchedEditor: emptyEditorState,
     unpatchedDerived: derivedState,
     patchedDerived: derivedState,
-    strategyState: createEmptyStrategyState(),
+    strategyState: strategyState ?? createEmptyStrategyState(),
     history: history,
     userState: {
       loginState: notLoggedIn,
@@ -270,6 +269,7 @@ describe('interactionUpdate', () => {
         { type: 'BOUNDING_AREA', target: EP.elementPath([['aaa']]) },
       ),
     )
+    editorStore.strategyState.currentStrategy = 'TEST_STRATEGY' as CanvasStrategyId
     const actualResult = interactionUpdate(
       [testStrategy],
       editorStore,
@@ -489,7 +489,7 @@ describe('interactionHardReset', () => {
   })
 })
 
-describe('interactionStrategyChangeStacked', () => {
+describe('interactionUpdate with stacked strategy change', () => {
   it('steps an interaction session correctly', () => {
     let interactionSession = createInteractionViaMouse(
       canvasPoint({ x: 100, y: 200 }),
@@ -502,7 +502,8 @@ describe('interactionStrategyChangeStacked', () => {
       interactionSession.interactionData.prevDrag = canvasPoint({ x: 30, y: 120 })
     }
     const editorStore = createEditorStore(interactionSession)
-    const actualResult = interactionStrategyChangeStacked(
+    editorStore.strategyState.currentStrategy = 'EMPTY_TEST_STRATEGY' as CanvasStrategyId
+    const actualResult = interactionUpdate(
       [testStrategy],
       editorStore,
       dispatchResultFromEditorStore(editorStore),
@@ -512,7 +513,7 @@ describe('interactionStrategyChangeStacked', () => {
         "accumulatedCommands": Array [
           Object {
             "commands": Array [],
-            "strategy": null,
+            "strategy": "EMPTY_TEST_STRATEGY",
           },
           Object {
             "commands": Array [
@@ -604,7 +605,7 @@ describe('interactionStrategyChangeStacked', () => {
   })
   it('potentially process an update with no interaction session', () => {
     const editorStore = createEditorStore(null)
-    const actualResult = interactionStrategyChangeStacked(
+    const actualResult = interactionUpdate(
       [testStrategy],
       editorStore,
       dispatchResultFromEditorStore(editorStore),
@@ -628,7 +629,7 @@ describe('interactionStrategyChangeStacked', () => {
   })
 })
 
-describe('interactionUserChangedStrategy', () => {
+describe('interactionUpdate with user changed strategy', () => {
   it('steps an interaction session correctly', () => {
     let interactionSession = createInteractionViaMouse(
       canvasPoint({ x: 100, y: 200 }),
@@ -639,14 +640,23 @@ describe('interactionUserChangedStrategy', () => {
       interactionSession.interactionData.dragStart = canvasPoint({ x: 110, y: 210 })
       interactionSession.interactionData.drag = canvasPoint({ x: 50, y: 140 })
       interactionSession.interactionData.prevDrag = canvasPoint({ x: 30, y: 120 })
-      interactionSession.userPreferredStrategy = 'Test Strategy'
+      interactionSession.userPreferredStrategy = 'EMPTY_TEST_STRATEGY' as CanvasStrategyId
     }
     const editorStore = createEditorStore(interactionSession)
-    const actualResult = interactionUserChangedStrategy(
-      [testStrategy],
-      editorStore,
-      dispatchResultFromEditorStore(editorStore),
-    )
+
+    const result = dispatchResultFromEditorStore(editorStore)
+    result.unpatchedEditor = {
+      ...result.unpatchedEditor,
+      canvas: {
+        ...result.unpatchedEditor.canvas,
+        interactionSession: {
+          ...result.unpatchedEditor.canvas.interactionSession!,
+          userPreferredStrategy: 'TEST_STRATEGY' as CanvasStrategyId,
+        },
+      },
+    }
+
+    const actualResult = interactionUpdate([testStrategy], editorStore, result)
     expect(actualResult.newStrategyState).toMatchInlineSnapshot(`
       Object {
         "accumulatedCommands": Array [
@@ -743,7 +753,7 @@ describe('interactionUserChangedStrategy', () => {
   })
   it('potentially process an update with no interaction session', () => {
     const editorStore = createEditorStore(null)
-    const actualResult = interactionUserChangedStrategy(
+    const actualResult = interactionUpdate(
       [testStrategy],
       editorStore,
       dispatchResultFromEditorStore(editorStore),
