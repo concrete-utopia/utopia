@@ -314,7 +314,7 @@ export function interactionCancel(
   }
 }
 
-export function handleUserChangedStrategy(
+function handleUserChangedStrategy(
   newEditorState: EditorState,
   storedEditorState: EditorState,
   strategyState: StrategyState,
@@ -381,7 +381,7 @@ export function handleUserChangedStrategy(
   }
 }
 
-export function handleUpdate(
+function handleUpdate(
   newEditorState: EditorState,
   storedEditorState: EditorState,
   strategyState: StrategyState,
@@ -428,7 +428,7 @@ export function handleUpdate(
   }
 }
 
-export function handleStrategyChangeStacked(
+function handleStrategyChangeStacked(
   newEditorState: EditorState,
   storedEditorState: EditorState,
   strategyState: StrategyState,

@@ -16,9 +16,7 @@ import {
   interactionCancel,
   interactionHardReset,
   interactionStart,
-  handleStrategyChangeStacked,
   interactionUpdate,
-  handleUserChangedStrategy,
 } from './dispatch-strategies'
 import { createEditorState, deriveState, EditorStoreFull } from './editor-state'
 import * as EP from '../../../core/shared/element-path'
