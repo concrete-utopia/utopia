@@ -49,6 +49,7 @@ function dragBy15Pixels(editorState: EditorState): EditorState {
       currentStrategyCommands: null as any, // the strategy does not use this
       accumulatedCommands: null as any, // the strategy does not use this
       commandDescriptions: null as any, // the strategy does not use this
+      sortedApplicableStrategies: null as any, // the strategy does not use this
       startingMetadata: {
         'scene-aaa/app-entity:aaa/bbb': {
           specialSizeMeasurements: {
