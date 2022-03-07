@@ -515,12 +515,17 @@ export const MetadataUtils = {
   },
   getAllPaths: memoize(
     (metadata: ElementInstanceMetadataMap): ElementPath[] => {
+      // Note: This will not necessarily be representative of the structured ordering in
+      // the code that produced these elements.
+      const projectTree = buildTree(objectValues(metadata).map((m) => m.elementPath))
+
       // This function needs to explicitly return the paths in a depth first manner
       let result: Array<ElementPath> = []
       function recurseElement(elementPath: ElementPath): void {
         result.push(elementPath)
-        const descendants = MetadataUtils.getImmediateChildrenPaths(metadata, elementPath)
-        fastForEach(descendants, recurseElement)
+        forEachChildOfTarget(projectTree, elementPath, (childPath) => {
+          recurseElement(childPath)
+        })
       }
 
       const storyboardChildren = MetadataUtils.getAllStoryboardChildrenPaths(metadata)
@@ -712,6 +717,10 @@ export const MetadataUtils = {
       navigatorTargets: Array<ElementPath>
       visibleNavigatorTargets: Array<ElementPath>
     } => {
+      // Note: This will not necessarily be representative of the structured ordering in
+      // the code that produced these elements.
+      const projectTree = buildTree(objectValues(metadata).map((m) => m.elementPath))
+
       // This function exists separately from getAllPaths because the Navigator handles collapsed views
       let navigatorTargets: Array<ElementPath> = []
       let visibleNavigatorTargets: Array<ElementPath> = []
@@ -722,15 +731,23 @@ export const MetadataUtils = {
           visibleNavigatorTargets.push(path)
         }
 
-        const {
-          children,
-          unfurledComponents,
-        } = MetadataUtils.getAllChildrenIncludingUnfurledFocusedComponents(path, metadata)
-        const childrenIncludingFocusedElements = [...children, ...unfurledComponents]
-
         const isCollapsed = EP.containsPath(path, collapsedViews)
-        fastForEach(childrenIncludingFocusedElements, (childElement) => {
-          walkAndAddKeys(childElement, collapsedAncestor || isCollapsed)
+
+        let children: Array<ElementPath> = []
+        let unfurledComponents: Array<ElementPath> = []
+        forEachChildOfTarget(projectTree, path, (childPath) => {
+          if (EP.isRootElementOfInstance(childPath)) {
+            unfurledComponents.push(childPath)
+          } else {
+            children.push(childPath)
+          }
+        })
+
+        fastForEach(children, (childPath) => {
+          walkAndAddKeys(childPath, collapsedAncestor || isCollapsed)
+        })
+        fastForEach(unfurledComponents, (childPath) => {
+          walkAndAddKeys(childPath, collapsedAncestor || isCollapsed)
         })
       }
 
