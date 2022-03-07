@@ -1,5 +1,9 @@
 import React from 'react'
-import { useEditorState } from '../editor/store/store-hook'
+import {
+  useEditorState,
+  useRefEditorState,
+  useSelectorWithCallback,
+} from '../editor/store/store-hook'
 import {
   UiJsxCanvas,
   pickUiJsxCanvasProps,
@@ -25,10 +29,13 @@ import { DomWalkerProps, useDomWalker } from './dom-walker'
 import { ResolvingRemoteDependencyErrorName } from '../../core/es-modules/package-manager/package-manager'
 import { CanvasLoadingScreen } from './canvas-loading-screen'
 import { isHooksErrorMessage } from '../../utils/canvas-react-utils'
+import { CanvasVector } from '../../core/shared/math-utils'
+import { useApplyCanvasOffsetToComponentEntry } from './controls/canvas-offset-wrapper'
 
 interface CanvasComponentEntryProps {}
 
 export const CanvasComponentEntry = React.memo((props: CanvasComponentEntryProps) => {
+  const containerRef = React.useRef<HTMLDivElement>(null)
   const dispatch = useEditorState((store) => store.dispatch, 'CanvasComponentEntry dispatch')
   const onDomReport = React.useCallback(
     (elementMetadata: ReadonlyArray<ElementInstanceMetadata>, cachedPaths: Array<ElementPath>) => {
@@ -75,18 +82,18 @@ export const CanvasComponentEntry = React.memo((props: CanvasComponentEntryProps
     clearRuntimeErrors()
   }, [clearRuntimeErrors])
 
+  useApplyCanvasOffsetToComponentEntry(containerRef, canvasProps?.scale ?? null)
+
   if (canvasProps == null) {
     return <CanvasLoadingScreen />
   } else {
     return (
       <div
         id='canvas-container-outer'
+        ref={containerRef}
         style={{
           position: 'absolute',
           zoom: canvasProps.scale >= 1 ? `${canvasProps.scale * 100}%` : 1,
-          transform:
-            (canvasProps.scale < 1 ? `scale(${canvasProps.scale})` : '') +
-            ` translate3d(var(--utopia-canvas-offset-x), var(--utopia-canvas-offset-y), 0)`,
           transition: canvasProps.scrollAnimation ? 'transform 0.3s ease-in-out' : 'initial',
         }}
       >
