@@ -14,6 +14,7 @@ import { EditorDispatch } from '../../../editor/action-types'
 import { setResizeOptionsTargetOptions } from '../../../editor/actions/action-creators'
 import { useEditorState, useRefEditorState } from '../../../editor/store/store-hook'
 import CanvasActions from '../../canvas-actions'
+import { useCanvasOffset } from '../../canvas-offset-hooks'
 import {
   CSSCursor,
   DirectionAll,
@@ -82,13 +83,14 @@ export const AbsoluteResizeControl = React.memo<AbsoluteResizeControlProps>((pro
     ref.current.style.top = boundingBox.height + 'px'
   })
 
+  useCanvasOffset(controlRef)
+
   if (allSelectedElementsAbsolute) {
     return (
       <div
         ref={controlRef}
         style={{
           position: 'absolute',
-          transform: `translate(var(--utopia-canvas-offset-x), var(--utopia-canvas-offset-y))`,
         }}
       >
         <ResizeEdge

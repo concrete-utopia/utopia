@@ -13,6 +13,7 @@ import { EditorDispatch } from '../../../editor/action-types'
 import { setResizeOptionsTargetOptions } from '../../../editor/actions/action-creators'
 import { useEditorState, useRefEditorState } from '../../../editor/store/store-hook'
 import CanvasActions from '../../canvas-actions'
+import { useCanvasOffset } from '../../canvas-offset-hooks'
 import {
   CSSCursor,
   DirectionHorizontal,
@@ -62,13 +63,14 @@ export const FlexResizeControl = React.memo<FlexResizeControlProps>((props) => {
     ref.current.style.top = boundingBox.height + 'px'
   })
 
+  useCanvasOffset(controlRef)
+
   if (allSelectedElementsFlex) {
     return (
       <div
         ref={controlRef}
         style={{
           position: 'absolute',
-          transform: `translate(var(--utopia-canvas-offset-x), var(--utopia-canvas-offset-y))`,
         }}
       >
         <ResizeEdge

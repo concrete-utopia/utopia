@@ -4,6 +4,7 @@ import { ElementPath } from '../../../../core/shared/project-file-types'
 import { when } from '../../../../utils/react-conditionals'
 import { useColorTheme } from '../../../../uuiui'
 import { useEditorState } from '../../../editor/store/store-hook'
+import { useCanvasOffset } from '../../canvas-offset-hooks'
 import { useBoundingBox } from '../bounding-box-hooks'
 import { getSelectionColor } from '../outline-control'
 
@@ -56,6 +57,8 @@ const OutlineControl = React.memo<OutlineControlProps>((props) => {
     ref.current.style.height = `calc(${boundingBox.height}px - 0.5px / var(--utopia-canvas-scale) * 3)`
   })
 
+  useCanvasOffset(outlineRef)
+
   const color =
     props.color === 'primary' ? colors[0] : colorTheme.canvasSelectionSecondaryOutline.value
 
@@ -69,7 +72,6 @@ const OutlineControl = React.memo<OutlineControlProps>((props) => {
           boxSizing: 'border-box',
           boxShadow: `0px 0px 0px calc(1px / var(--utopia-canvas-scale)) ${color}`,
           pointerEvents: 'none',
-          transform: `translate(var(--utopia-canvas-offset-x), var(--utopia-canvas-offset-y))`,
         }}
       />
     )
