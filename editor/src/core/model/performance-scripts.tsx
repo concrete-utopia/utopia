@@ -29,10 +29,11 @@ import {
   useCalculateHighlightedViews,
   useGetSelectableViewsForSelectMode,
 } from '../../components/canvas/controls/select-mode/select-mode-hooks'
-import { fireEvent, act } from '@testing-library/react'
+import { fireEvent } from '@testing-library/react'
 import { CanvasControlsContainerID } from '../../components/canvas/controls/new-canvas-controls'
 import { forceNotNull } from '../shared/optional-utils'
-import { last } from '../shared/array-utils'
+import { ElementPathArrayKeepDeepEquality } from '../../utils/deep-equality-instances'
+import { wait } from '../../utils/utils.test-utils'
 
 const NumberOfIterations = 100
 
@@ -212,6 +213,7 @@ export function useTriggerSelectionPerformanceTest(): () => void {
     'useTriggerSelectionPerformanceTest dispatch',
   )
   const allPaths = useRefEditorState((store) => store.derived.navigatorTargets)
+  const selectedViews = useRefEditorState((store) => store.editor.selectedViews)
   const trigger = React.useCallback(async () => {
     if (allPaths.current.length === 0) {
       console.info('SELECT_TEST_ERROR')
@@ -228,18 +230,24 @@ export function useTriggerSelectionPerformanceTest(): () => void {
         'Container controls element should exist.',
         document.getElementById(CanvasControlsContainerID),
       )
-      const dataUIDToLookFor = forceNotNull(
-        'Should have inner parts.',
-        last(forceNotNull('Should have parts.', last(targetPath.parts))),
-      )
 
       const targetElement = forceNotNull(
         'Target element should exist.',
-        document.querySelector(`div[data-uid$=" ${dataUIDToLookFor}"]`),
+        document.querySelector(`*[data-paths~="${EP.toString(targetPath)}"]`),
       )
 
       performance.mark(`select_step_${framesPassed}`)
       fireEvent.mouseDown(targetElement, {})
+      function isTargetSelected(): boolean {
+        return ElementPathArrayKeepDeepEquality([targetPath], selectedViews.current).areEqual
+      }
+      const startingTime = Date.now()
+      while (!isTargetSelected() && Date.now() < startingTime + 3000) {
+        await wait(50)
+      }
+      if (!isTargetSelected()) {
+        throw new Error(`Element never ended up being selected.`)
+      }
       fireEvent.pointerUp(targetElement, {})
       fireEvent.mouseUp(targetElement, {})
       await dispatch([selectComponents([targetPath!], false)]).entireUpdateFinished
@@ -267,7 +275,7 @@ export function useTriggerSelectionPerformanceTest(): () => void {
       }
     }
     requestAnimationFrame(step)
-  }, [dispatch, allPaths])
+  }, [dispatch, allPaths, selectedViews])
   return trigger
 }
 
