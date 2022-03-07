@@ -17,10 +17,10 @@ export function useApplyCanvasOffset(scale: number | null): React.RefObject<HTML
   const canvasOffsetRef = useRefEditorState((store) => store.editor.canvas.roundedCanvasOffset)
   const applyCanvasOffset = React.useCallback(
     (roundedCanvasOffset: CanvasVector) => {
-      if (elementRef.current != null && scale != null) {
+      if (elementRef.current != null) {
         elementRef.current.style.setProperty(
           'transform',
-          (scale < 1 ? `scale(${scale})` : '') +
+          (scale != null && scale < 1 ? `scale(${scale})` : '') +
             ` translate3d(${roundedCanvasOffset.x}px, ${roundedCanvasOffset.y}px, 0)`,
         )
       }
