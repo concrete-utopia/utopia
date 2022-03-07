@@ -1,9 +1,5 @@
 import React from 'react'
-import {
-  useEditorState,
-  useRefEditorState,
-  useSelectorWithCallback,
-} from '../editor/store/store-hook'
+import { useEditorState } from '../editor/store/store-hook'
 import {
   UiJsxCanvas,
   pickUiJsxCanvasProps,
@@ -29,7 +25,6 @@ import { DomWalkerProps, useDomWalker } from './dom-walker'
 import { ResolvingRemoteDependencyErrorName } from '../../core/es-modules/package-manager/package-manager'
 import { CanvasLoadingScreen } from './canvas-loading-screen'
 import { isHooksErrorMessage } from '../../utils/canvas-react-utils'
-import { CanvasVector } from '../../core/shared/math-utils'
 import { useApplyCanvasOffsetToComponentEntry } from './controls/canvas-offset-wrapper'
 
 interface CanvasComponentEntryProps {}
