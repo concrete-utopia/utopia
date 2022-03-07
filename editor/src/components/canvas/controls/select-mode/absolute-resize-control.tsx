@@ -27,6 +27,7 @@ import {
 import { getOriginalFrames } from '../../canvas-utils'
 import { windowToCanvasCoordinatesGlobal } from '../../dom-lookup'
 import { useBoundingBox } from '../bounding-box-hooks'
+import { CanvasOffsetWrapper } from '../canvas-offset-wrapper'
 
 interface AbsoluteResizeControlProps {
   localSelectedElements: Array<ElementPath>
@@ -83,49 +84,57 @@ export const AbsoluteResizeControl = React.memo<AbsoluteResizeControlProps>((pro
     ref.current.style.top = boundingBox.height + 'px'
   })
 
-  useCanvasOffset(controlRef)
-
   if (allSelectedElementsAbsolute) {
     return (
-      <div
-        ref={controlRef}
-        style={{
-          position: 'absolute',
-        }}
-      >
-        <ResizeEdge
-          ref={rightRef}
-          position={{ x: 1, y: 0.5 }}
-          cursor={CSSCursor.ResizeEW}
-          direction='vertical'
-          enabledDirection={DirectionHorizontal}
-        />
-        <ResizeEdge
-          ref={bottomRef}
-          position={{ x: 0.5, y: 1 }}
-          cursor={CSSCursor.ResizeNS}
-          direction='horizontal'
-          enabledDirection={DirectionVertical}
-        />
-        <ResizeEdge
-          ref={leftRef}
-          position={{ x: 0, y: 0.5 }}
-          cursor={CSSCursor.ResizeEW}
-          direction='vertical'
-          enabledDirection={DirectionHorizontal}
-        />
-        <ResizeEdge
-          ref={topRef}
-          position={{ x: 0.5, y: 0 }}
-          cursor={CSSCursor.ResizeNS}
-          direction='horizontal'
-          enabledDirection={DirectionVertical}
-        />
-        <ResizePoint ref={topLeftRef} position={{ x: 0, y: 0 }} cursor={CSSCursor.ResizeNWSE} />
-        <ResizePoint ref={topRightRef} position={{ x: 1, y: 0 }} cursor={CSSCursor.ResizeNESW} />
-        <ResizePoint ref={bottomLeftRef} position={{ x: 0, y: 1 }} cursor={CSSCursor.ResizeNESW} />
-        <ResizePoint ref={bottomRightRef} position={{ x: 1, y: 1 }} cursor={CSSCursor.ResizeNWSE} />
-      </div>
+      <CanvasOffsetWrapper>
+        <div
+          ref={controlRef}
+          style={{
+            position: 'absolute',
+          }}
+        >
+          <ResizeEdge
+            ref={rightRef}
+            position={{ x: 1, y: 0.5 }}
+            cursor={CSSCursor.ResizeEW}
+            direction='vertical'
+            enabledDirection={DirectionHorizontal}
+          />
+          <ResizeEdge
+            ref={bottomRef}
+            position={{ x: 0.5, y: 1 }}
+            cursor={CSSCursor.ResizeNS}
+            direction='horizontal'
+            enabledDirection={DirectionVertical}
+          />
+          <ResizeEdge
+            ref={leftRef}
+            position={{ x: 0, y: 0.5 }}
+            cursor={CSSCursor.ResizeEW}
+            direction='vertical'
+            enabledDirection={DirectionHorizontal}
+          />
+          <ResizeEdge
+            ref={topRef}
+            position={{ x: 0.5, y: 0 }}
+            cursor={CSSCursor.ResizeNS}
+            direction='horizontal'
+            enabledDirection={DirectionVertical}
+          />
+          <ResizePoint ref={topLeftRef} position={{ x: 0, y: 0 }} cursor={CSSCursor.ResizeNWSE} />
+          <ResizePoint ref={topRightRef} position={{ x: 1, y: 0 }} cursor={CSSCursor.ResizeNESW} />
+          <ResizePoint
+            ref={bottomLeftRef}
+            position={{ x: 0, y: 1 }}
+            cursor={CSSCursor.ResizeNESW}
+          />
+          <ResizePoint
+            ref={bottomRightRef}
+            position={{ x: 1, y: 1 }}
+            cursor={CSSCursor.ResizeNWSE}
+          />
+        </div>
+      </CanvasOffsetWrapper>
     )
   }
   return null

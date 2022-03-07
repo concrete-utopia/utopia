@@ -25,6 +25,7 @@ import {
 import { getOriginalFrames } from '../../canvas-utils'
 import { windowToCanvasCoordinatesGlobal } from '../../dom-lookup'
 import { useBoundingBox } from '../bounding-box-hooks'
+import { CanvasOffsetWrapper } from '../canvas-offset-wrapper'
 
 interface FlexResizeControlProps {
   localSelectedElements: Array<ElementPath>
@@ -63,31 +64,31 @@ export const FlexResizeControl = React.memo<FlexResizeControlProps>((props) => {
     ref.current.style.top = boundingBox.height + 'px'
   })
 
-  useCanvasOffset(controlRef)
-
   if (allSelectedElementsFlex) {
     return (
-      <div
-        ref={controlRef}
-        style={{
-          position: 'absolute',
-        }}
-      >
-        <ResizeEdge
-          ref={rightRef}
-          position={{ x: 1, y: 0.5 }}
-          cursor={CSSCursor.ResizeEW}
-          direction='vertical'
-          enabledDirection={DirectionHorizontal}
-        />
-        <ResizeEdge
-          ref={bottomRef}
-          position={{ x: 0.5, y: 1 }}
-          cursor={CSSCursor.ResizeNS}
-          direction='horizontal'
-          enabledDirection={DirectionVertical}
-        />
-      </div>
+      <CanvasOffsetWrapper>
+        <div
+          ref={controlRef}
+          style={{
+            position: 'absolute',
+          }}
+        >
+          <ResizeEdge
+            ref={rightRef}
+            position={{ x: 1, y: 0.5 }}
+            cursor={CSSCursor.ResizeEW}
+            direction='vertical'
+            enabledDirection={DirectionHorizontal}
+          />
+          <ResizeEdge
+            ref={bottomRef}
+            position={{ x: 0.5, y: 1 }}
+            cursor={CSSCursor.ResizeNS}
+            direction='horizontal'
+            enabledDirection={DirectionVertical}
+          />
+        </div>
+      </CanvasOffsetWrapper>
     )
   }
   return null

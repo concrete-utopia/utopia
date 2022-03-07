@@ -6,6 +6,7 @@ import { useColorTheme } from '../../../../uuiui'
 import { useEditorState } from '../../../editor/store/store-hook'
 import { useCanvasOffset } from '../../canvas-offset-hooks'
 import { useBoundingBox } from '../bounding-box-hooks'
+import { CanvasOffsetWrapper } from '../canvas-offset-wrapper'
 import { getSelectionColor } from '../outline-control'
 
 interface MultiSelectOutlineControlProps {
@@ -15,7 +16,7 @@ interface MultiSelectOutlineControlProps {
 export const MultiSelectOutlineControl = React.memo<MultiSelectOutlineControlProps>((props) => {
   const localSelectedElements = props.localSelectedElements
   return (
-    <>
+    <CanvasOffsetWrapper>
       {[
         <OutlineControl
           key='multiselect-outline'
@@ -26,7 +27,7 @@ export const MultiSelectOutlineControl = React.memo<MultiSelectOutlineControlPro
           <OutlineControl key={EP.toString(path)} targets={[path]} color='primary' />
         )),
       ]}
-    </>
+    </CanvasOffsetWrapper>
   )
 })
 
@@ -56,8 +57,6 @@ const OutlineControl = React.memo<OutlineControlProps>((props) => {
     ref.current.style.width = `calc(${boundingBox.width}px - 0.5px / var(--utopia-canvas-scale) * 3)`
     ref.current.style.height = `calc(${boundingBox.height}px - 0.5px / var(--utopia-canvas-scale) * 3)`
   })
-
-  useCanvasOffset(outlineRef)
 
   const color =
     props.color === 'primary' ? colors[0] : colorTheme.canvasSelectionSecondaryOutline.value
