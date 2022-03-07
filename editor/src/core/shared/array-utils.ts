@@ -36,7 +36,7 @@ export function flatMapArray<T, U>(
 
 export function mapDropNulls<T, U>(
   fn: (t: T, i: number) => U | null | undefined,
-  a: Array<T>,
+  a: ReadonlyArray<T>,
 ): Array<U> {
   let result: Array<U> = []
   fastForEach(a, (t, i) => {

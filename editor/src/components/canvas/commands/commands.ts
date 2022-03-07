@@ -3,6 +3,7 @@ import { ElementPath } from '../../../core/shared/project-file-types'
 import { keepDeepReferenceEqualityIfPossible } from '../../../utils/react-performance'
 import { EditorState, EditorStatePatch } from '../../editor/store/editor-state'
 import { CommandDescription } from '../canvas-strategies/interaction-state'
+import { AdjustCssLengthProperty, runAdjustCssLengthProperty } from './adjust-css-length-command'
 import { AdjustNumberProperty, runAdjustNumberProperty } from './adjust-number-command'
 import { ReparentElement, runReparentElement } from './reparent-element-command'
 import { runStrategySwitchedCommand, StrategySwitched } from './strategy-switched-command'
@@ -26,6 +27,7 @@ export type CanvasCommand =
   | WildcardPatch
   | StrategySwitched
   | AdjustNumberProperty
+  | AdjustCssLengthProperty
   | ReparentElement
   | UpdateSelectedViews
 
@@ -40,6 +42,8 @@ export const runCanvasCommand: CommandFunction<CanvasCommand> = (
       return runStrategySwitchedCommand(command)
     case 'ADJUST_NUMBER_PROPERTY':
       return runAdjustNumberProperty(editorState, command)
+    case 'ADJUST_CSS_LENGTH_PROPERTY':
+      return runAdjustCssLengthProperty(editorState, command)
     case 'REPARENT_ELEMENT':
       return runReparentElement(editorState, command)
     case 'UPDATE_SELECTED_VIEWS':
