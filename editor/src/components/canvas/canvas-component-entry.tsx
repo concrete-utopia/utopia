@@ -25,12 +25,11 @@ import { DomWalkerProps, useDomWalker } from './dom-walker'
 import { ResolvingRemoteDependencyErrorName } from '../../core/es-modules/package-manager/package-manager'
 import { CanvasLoadingScreen } from './canvas-loading-screen'
 import { isHooksErrorMessage } from '../../utils/canvas-react-utils'
-import { useApplyCanvasOffsetToComponentEntry } from './controls/canvas-offset-wrapper'
+import { useApplyCanvasOffset } from './controls/canvas-offset-wrapper'
 
 interface CanvasComponentEntryProps {}
 
 export const CanvasComponentEntry = React.memo((props: CanvasComponentEntryProps) => {
-  const containerRef = React.useRef<HTMLDivElement>(null)
   const dispatch = useEditorState((store) => store.dispatch, 'CanvasComponentEntry dispatch')
   const onDomReport = React.useCallback(
     (elementMetadata: ReadonlyArray<ElementInstanceMetadata>, cachedPaths: Array<ElementPath>) => {
@@ -77,7 +76,7 @@ export const CanvasComponentEntry = React.memo((props: CanvasComponentEntryProps
     clearRuntimeErrors()
   }, [clearRuntimeErrors])
 
-  useApplyCanvasOffsetToComponentEntry(containerRef, canvasProps?.scale ?? null)
+  const containerRef = useApplyCanvasOffset(canvasProps?.scale ?? null)
 
   if (canvasProps == null) {
     return <CanvasLoadingScreen />
