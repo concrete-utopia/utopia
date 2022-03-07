@@ -16,7 +16,11 @@ import {
   zeroPoint,
   zeroRectangle,
 } from '../shared/math-utils'
-import { resizeDragState, updateResizeDragState } from '../../components/canvas/canvas-types'
+import {
+  CanvasContainerID,
+  resizeDragState,
+  updateResizeDragState,
+} from '../../components/canvas/canvas-types'
 import { MetadataUtils } from './element-metadata-utils'
 import { getOriginalFrames } from '../../components/canvas/canvas-utils'
 import * as EP from '../shared/element-path'
@@ -25,6 +29,10 @@ import {
   useCalculateHighlightedViews,
   useGetSelectableViewsForSelectMode,
 } from '../../components/canvas/controls/select-mode/select-mode-hooks'
+import { fireEvent, act } from '@testing-library/react'
+import { CanvasControlsContainerID } from '../../components/canvas/controls/new-canvas-controls'
+import { forceNotNull } from '../shared/optional-utils'
+import { last } from '../shared/array-utils'
 
 const NumberOfIterations = 100
 
@@ -215,7 +223,25 @@ export function useTriggerSelectionPerformanceTest(): () => void {
     )[0]
     let framesPassed = 0
     async function step() {
+      // Determine where the events should be fired.
+      const controlsContainerElement = forceNotNull(
+        'Container controls element should exist.',
+        document.getElementById(CanvasControlsContainerID),
+      )
+      const dataUIDToLookFor = forceNotNull(
+        'Should have inner parts.',
+        last(forceNotNull('Should have parts.', last(targetPath.parts))),
+      )
+
+      const targetElement = forceNotNull(
+        'Target element should exist.',
+        document.querySelector(`div[data-uid$=" ${dataUIDToLookFor}"]`),
+      )
+
       performance.mark(`select_step_${framesPassed}`)
+      fireEvent.mouseDown(targetElement, {})
+      fireEvent.pointerUp(targetElement, {})
+      fireEvent.mouseUp(targetElement, {})
       await dispatch([selectComponents([targetPath!], false)]).entireUpdateFinished
       performance.mark(`select_dispatch_finished_${framesPassed}`)
       performance.measure(
