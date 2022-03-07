@@ -56,7 +56,7 @@ import { isFeatureEnabled } from '../../utils/feature-switches'
 import Keyboard from '../../utils/keyboard'
 import { Modifier } from '../../utils/modifiers'
 import CanvasActions from '../canvas/canvas-actions'
-import { UtopiaCanvasVarStyleTag } from '../canvas/utopia-canvas-vars'
+import { UtopiaCanvasVars } from '../canvas/utopia-canvas-vars'
 import { updateInteractionViaKeyboard } from '../canvas/canvas-strategies/interaction-state'
 
 function pushProjectURLToBrowserHistory(projectId: string, projectName: string): void {
@@ -256,7 +256,7 @@ export const EditorComponentInner = React.memo((props: EditorProps) => {
 
   return (
     <>
-      <UtopiaCanvasVarStyleTag />
+      <UtopiaCanvasVars />
       <SimpleFlexRow
         className='editor-main-vertical-and-modals'
         style={{
