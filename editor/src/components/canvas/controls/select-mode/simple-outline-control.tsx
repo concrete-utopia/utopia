@@ -4,7 +4,6 @@ import { ElementPath } from '../../../../core/shared/project-file-types'
 import { when } from '../../../../utils/react-conditionals'
 import { useColorTheme } from '../../../../uuiui'
 import { useEditorState } from '../../../editor/store/store-hook'
-import { useCanvasOffset } from '../../canvas-offset-hooks'
 import { useBoundingBox } from '../bounding-box-hooks'
 import { CanvasOffsetWrapper } from '../canvas-offset-wrapper'
 import { getSelectionColor } from '../outline-control'
@@ -39,6 +38,7 @@ interface OutlineControlProps {
 const OutlineControl = React.memo<OutlineControlProps>((props) => {
   const colorTheme = useColorTheme()
   const targets = props.targets
+  const scale = useEditorState((store) => store.editor.canvas.scale, 'OutlineControl scale')
 
   const colors = useEditorState((store) => {
     return targets.map((path) =>
@@ -52,10 +52,10 @@ const OutlineControl = React.memo<OutlineControlProps>((props) => {
   }, 'OutlineControl colors')
 
   const outlineRef = useBoundingBox(targets, (ref, boundingBox) => {
-    ref.current.style.left = `calc(${boundingBox.x}px + 0.5px / var(--utopia-canvas-scale))`
-    ref.current.style.top = `calc(${boundingBox.y}px + 0.5px / var(--utopia-canvas-scale))`
-    ref.current.style.width = `calc(${boundingBox.width}px - 0.5px / var(--utopia-canvas-scale) * 3)`
-    ref.current.style.height = `calc(${boundingBox.height}px - 0.5px / var(--utopia-canvas-scale) * 3)`
+    ref.current.style.left = `${boundingBox.x + 0.5 / scale}px`
+    ref.current.style.top = `${boundingBox.y + 0.5 / scale}px`
+    ref.current.style.width = `${boundingBox.width - (0.5 / scale) * 3}px`
+    ref.current.style.height = `${boundingBox.height - (0.5 / scale) * 3}px`
   })
 
   const color =
@@ -69,7 +69,7 @@ const OutlineControl = React.memo<OutlineControlProps>((props) => {
         style={{
           position: 'absolute',
           boxSizing: 'border-box',
-          boxShadow: `0px 0px 0px calc(1px / var(--utopia-canvas-scale)) ${color}`,
+          boxShadow: `0px 0px 0px ${1 / scale}px ${color}`,
           pointerEvents: 'none',
         }}
       />
