@@ -250,7 +250,6 @@ export function useTriggerSelectionPerformanceTest(): () => void {
       }
       fireEvent.pointerUp(targetElement, {})
       fireEvent.mouseUp(targetElement, {})
-      await dispatch([selectComponents([targetPath!], false)]).entireUpdateFinished
       performance.mark(`select_dispatch_finished_${framesPassed}`)
       performance.measure(
         `select_frame_${framesPassed}`,
