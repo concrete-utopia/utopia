@@ -29,7 +29,6 @@ import {
   useCalculateHighlightedViews,
   useGetSelectableViewsForSelectMode,
 } from '../../components/canvas/controls/select-mode/select-mode-hooks'
-import { fireEvent } from '@testing-library/react'
 import { CanvasControlsContainerID } from '../../components/canvas/controls/new-canvas-controls'
 import { forceNotNull } from '../shared/optional-utils'
 import { ElementPathArrayKeepDeepEquality } from '../../utils/deep-equality-instances'
@@ -215,6 +214,8 @@ export function useTriggerSelectionPerformanceTest(): () => void {
   const allPaths = useRefEditorState((store) => store.derived.navigatorTargets)
   const selectedViews = useRefEditorState((store) => store.editor.selectedViews)
   const trigger = React.useCallback(async () => {
+    await dispatch([CanvasActions.positionCanvas(canvasPoint({ x: -1900, y: -1100 }))], 'everyone')
+      .entireUpdateFinished
     if (allPaths.current.length === 0) {
       console.info('SELECT_TEST_ERROR')
       return
@@ -235,9 +236,20 @@ export function useTriggerSelectionPerformanceTest(): () => void {
         'Target element should exist.',
         document.querySelector(`*[data-paths~="${EP.toString(targetPath)}"]`),
       )
+      const targetBounds = targetElement.getBoundingClientRect()
 
       performance.mark(`select_step_${framesPassed}`)
-      fireEvent.mouseDown(targetElement, {})
+      controlsContainerElement.dispatchEvent(
+        new MouseEvent('mousedown', {
+          detail: 1,
+          bubbles: true,
+          cancelable: true,
+          metaKey: true,
+          clientX: targetBounds.left + 5,
+          clientY: targetBounds.top + 5,
+          buttons: 1,
+        }),
+      )
       function isTargetSelected(): boolean {
         return ElementPathArrayKeepDeepEquality([targetPath], selectedViews.current).areEqual
       }
@@ -248,8 +260,28 @@ export function useTriggerSelectionPerformanceTest(): () => void {
       if (!isTargetSelected()) {
         throw new Error(`Element never ended up being selected.`)
       }
-      fireEvent.pointerUp(targetElement, {})
-      fireEvent.mouseUp(targetElement, {})
+      controlsContainerElement.dispatchEvent(
+        new MouseEvent('pointerup', {
+          detail: 1,
+          bubbles: true,
+          cancelable: true,
+          metaKey: true,
+          clientX: targetBounds.left + 5,
+          clientY: targetBounds.top + 5,
+          buttons: 1,
+        }),
+      )
+      controlsContainerElement.dispatchEvent(
+        new MouseEvent('mouseup', {
+          detail: 1,
+          bubbles: true,
+          cancelable: true,
+          metaKey: true,
+          clientX: targetBounds.left + 5,
+          clientY: targetBounds.top + 5,
+          buttons: 1,
+        }),
+      )
       performance.mark(`select_dispatch_finished_${framesPassed}`)
       performance.measure(
         `select_frame_${framesPassed}`,

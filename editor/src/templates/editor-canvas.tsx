@@ -317,6 +317,15 @@ export function runLocalCanvasAction(
         },
       }
     }
+    case 'POSITION_CANVAS':
+      return {
+        ...model,
+        canvas: {
+          ...model.canvas,
+          realCanvasOffset: action.position,
+          roundedCanvasOffset: Utils.roundPointTo(action.position, 0),
+        },
+      }
     case 'CLEAR_DRAG_STATE':
       return clearDragState(model, derivedState, action.applyChanges)
     case 'CREATE_DRAG_STATE':
