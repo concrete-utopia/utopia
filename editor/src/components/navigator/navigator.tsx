@@ -28,7 +28,7 @@ import {
 } from '../../uuiui'
 import { last } from '../../core/shared/array-utils'
 
-const NavigatorContainerId = 'navigator'
+export const NavigatorContainerId = 'navigator'
 
 export const NavigatorComponent = React.memo(() => {
   const editorSliceRef = useRefEditorState((store) => {

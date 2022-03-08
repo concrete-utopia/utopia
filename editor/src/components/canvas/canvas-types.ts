@@ -629,6 +629,11 @@ type ScrollCanvas = {
   delta: CanvasVector
 }
 
+interface PositionCanvas {
+  action: 'POSITION_CANVAS'
+  position: CanvasVector
+}
+
 interface ClearDragState {
   action: 'CLEAR_DRAG_STATE'
   applyChanges: boolean
@@ -677,6 +682,7 @@ type SetUsersPreferredStrategy = {
 
 export type CanvasAction =
   | ScrollCanvas
+  | PositionCanvas
   | ClearDragState
   | CreateDragState
   | CreateInteractionSession
