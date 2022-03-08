@@ -97,6 +97,7 @@ export function useMaybeHighlightElement(): {
       selectionEnabled: pickSelectionEnabled(store.editor.canvas, store.editor.keysPressed),
       inserting: isInserting(store.editor),
       highlightedViews: store.editor.highlightedViews,
+      selectedViews: store.editor.selectedViews,
     }
   })
 
@@ -122,8 +123,9 @@ export function useMaybeHighlightElement(): {
   )
 
   const maybeClearHighlightsOnHoverEnd = React.useCallback((): void => {
-    const { dispatch, dragging, resizing, selectionEnabled } = stateRef.current
-    if (selectionEnabled && !dragging && !resizing) {
+    const { dispatch, dragging, resizing, selectionEnabled, selectedViews } = stateRef.current
+
+    if (selectionEnabled && !dragging && !resizing && selectedViews.length > 0) {
       dispatch([clearHighlightedViews()], 'canvas')
     }
   }, [stateRef])
