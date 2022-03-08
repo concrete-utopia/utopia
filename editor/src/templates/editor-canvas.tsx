@@ -757,7 +757,6 @@ export class EditorCanvas extends React.Component<EditorCanvasProps> {
         id: 'canvas-root',
         key: 'canvas-root',
         'data-testid': 'canvas-root',
-        className: 'utopia-canvas-var-container',
         style: {
           ...canvasLiveEditingStyle,
           transition: 'all .2s linear',

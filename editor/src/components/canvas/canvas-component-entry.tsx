@@ -25,6 +25,7 @@ import { DomWalkerProps, useDomWalker } from './dom-walker'
 import { ResolvingRemoteDependencyErrorName } from '../../core/es-modules/package-manager/package-manager'
 import { CanvasLoadingScreen } from './canvas-loading-screen'
 import { isHooksErrorMessage } from '../../utils/canvas-react-utils'
+import { useApplyCanvasOffsetToStyle } from './controls/canvas-offset-wrapper'
 
 interface CanvasComponentEntryProps {}
 
@@ -75,19 +76,19 @@ export const CanvasComponentEntry = React.memo((props: CanvasComponentEntryProps
     clearRuntimeErrors()
   }, [clearRuntimeErrors])
 
+  const containerRef = useApplyCanvasOffsetToStyle(canvasProps?.scale ?? null)
+
   if (canvasProps == null) {
     return <CanvasLoadingScreen />
   } else {
     return (
       <div
         id='canvas-container-outer'
+        ref={containerRef}
         style={{
           position: 'absolute',
-          zoom: canvasProps.scale >= 1 ? `${canvasProps.scale * 100}%` : 1,
-          transform:
-            (canvasProps.scale < 1 ? `scale(${canvasProps.scale})` : '') +
-            ` translate3d(var(--utopia-canvas-offset-x), var(--utopia-canvas-offset-y), 0)`,
           transition: canvasProps.scrollAnimation ? 'transform 0.3s ease-in-out' : 'initial',
+          transform: 'translate3d(0px, 0px, 0px)',
         }}
       >
         <CanvasErrorBoundary

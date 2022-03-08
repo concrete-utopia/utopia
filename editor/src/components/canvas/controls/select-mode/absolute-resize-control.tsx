@@ -26,6 +26,7 @@ import {
 import { getOriginalFrames } from '../../canvas-utils'
 import { windowToCanvasCoordinatesGlobal } from '../../dom-lookup'
 import { useBoundingBox } from '../bounding-box-hooks'
+import { CanvasOffsetWrapper } from '../canvas-offset-wrapper'
 
 interface AbsoluteResizeControlProps {
   localSelectedElements: Array<ElementPath>
@@ -84,46 +85,55 @@ export const AbsoluteResizeControl = React.memo<AbsoluteResizeControlProps>((pro
 
   if (allSelectedElementsAbsolute) {
     return (
-      <div
-        ref={controlRef}
-        style={{
-          position: 'absolute',
-          transform: `translate(var(--utopia-canvas-offset-x), var(--utopia-canvas-offset-y))`,
-        }}
-      >
-        <ResizeEdge
-          ref={rightRef}
-          position={{ x: 1, y: 0.5 }}
-          cursor={CSSCursor.ResizeEW}
-          direction='vertical'
-          enabledDirection={DirectionHorizontal}
-        />
-        <ResizeEdge
-          ref={bottomRef}
-          position={{ x: 0.5, y: 1 }}
-          cursor={CSSCursor.ResizeNS}
-          direction='horizontal'
-          enabledDirection={DirectionVertical}
-        />
-        <ResizeEdge
-          ref={leftRef}
-          position={{ x: 0, y: 0.5 }}
-          cursor={CSSCursor.ResizeEW}
-          direction='vertical'
-          enabledDirection={DirectionHorizontal}
-        />
-        <ResizeEdge
-          ref={topRef}
-          position={{ x: 0.5, y: 0 }}
-          cursor={CSSCursor.ResizeNS}
-          direction='horizontal'
-          enabledDirection={DirectionVertical}
-        />
-        <ResizePoint ref={topLeftRef} position={{ x: 0, y: 0 }} cursor={CSSCursor.ResizeNWSE} />
-        <ResizePoint ref={topRightRef} position={{ x: 1, y: 0 }} cursor={CSSCursor.ResizeNESW} />
-        <ResizePoint ref={bottomLeftRef} position={{ x: 0, y: 1 }} cursor={CSSCursor.ResizeNESW} />
-        <ResizePoint ref={bottomRightRef} position={{ x: 1, y: 1 }} cursor={CSSCursor.ResizeNWSE} />
-      </div>
+      <CanvasOffsetWrapper>
+        <div
+          ref={controlRef}
+          style={{
+            position: 'absolute',
+          }}
+        >
+          <ResizeEdge
+            ref={rightRef}
+            position={{ x: 1, y: 0.5 }}
+            cursor={CSSCursor.ResizeEW}
+            direction='vertical'
+            enabledDirection={DirectionHorizontal}
+          />
+          <ResizeEdge
+            ref={bottomRef}
+            position={{ x: 0.5, y: 1 }}
+            cursor={CSSCursor.ResizeNS}
+            direction='horizontal'
+            enabledDirection={DirectionVertical}
+          />
+          <ResizeEdge
+            ref={leftRef}
+            position={{ x: 0, y: 0.5 }}
+            cursor={CSSCursor.ResizeEW}
+            direction='vertical'
+            enabledDirection={DirectionHorizontal}
+          />
+          <ResizeEdge
+            ref={topRef}
+            position={{ x: 0.5, y: 0 }}
+            cursor={CSSCursor.ResizeNS}
+            direction='horizontal'
+            enabledDirection={DirectionVertical}
+          />
+          <ResizePoint ref={topLeftRef} position={{ x: 0, y: 0 }} cursor={CSSCursor.ResizeNWSE} />
+          <ResizePoint ref={topRightRef} position={{ x: 1, y: 0 }} cursor={CSSCursor.ResizeNESW} />
+          <ResizePoint
+            ref={bottomLeftRef}
+            position={{ x: 0, y: 1 }}
+            cursor={CSSCursor.ResizeNESW}
+          />
+          <ResizePoint
+            ref={bottomRightRef}
+            position={{ x: 1, y: 1 }}
+            cursor={CSSCursor.ResizeNWSE}
+          />
+        </div>
+      </CanvasOffsetWrapper>
     )
   }
   return null
@@ -135,10 +145,13 @@ interface ResizePointProps {
 }
 
 const ResizePointMouseAreaSize = 12
+const ResizePointMouseAreaOffset = ResizePointMouseAreaSize / 2
 const ResizePointSize = 6
+const ResizePointOffset = ResizePointSize / 2
 const ResizePoint = React.memo(
   React.forwardRef<HTMLDivElement, ResizePointProps>((props, ref) => {
     const colorTheme = useColorTheme()
+    const scale = useEditorState((store) => store.editor.canvas.scale, 'ResizeEdge scale')
     const dispatch = useEditorState((store) => store.dispatch, 'ResizeEdge dispatch')
     const jsxMetadataRef = useRefEditorState((store) => store.editor.jsxMetadata)
     const selectedViewsRef = useRefEditorState((store) => store.editor.selectedViews)
@@ -162,8 +175,8 @@ const ResizePoint = React.memo(
         ref={ref}
         style={{
           position: 'absolute',
-          width: `calc(${ResizePointSize}px / var(--utopia-canvas-scale))`,
-          height: `calc(${ResizePointSize}px / var(--utopia-canvas-scale))`,
+          width: ResizePointSize / scale,
+          height: ResizePointSize / scale,
         }}
         onMouseDown={onPointMouseDown}
       >
@@ -173,27 +186,27 @@ const ResizePoint = React.memo(
             pointerEvents: 'initial',
             width: '100%',
             height: '100%',
-            top: `calc(${-ResizePointSize / 2}px / var(--utopia-canvas-scale))`,
-            left: `calc(${-ResizePointSize / 2}px / var(--utopia-canvas-scale))`,
+            top: -ResizePointOffset / scale,
+            left: -ResizePointOffset / scale,
             boxSizing: 'border-box',
-            borderWidth: `calc(1 / var(--utopia-canvas-scale))`,
+            borderWidth: 1 / scale,
             backgroundColor: colorTheme.canvasControlsSizeBoxBackground.value,
             borderRadius: '10%',
             borderStyle: 'none',
             borderColor: 'transparent',
             boxShadow: `${colorTheme.canvasControlsSizeBoxShadowColor.o(50).value} 0px 0px
-              calc(1px / var(--utopia-canvas-scale)), ${
-                colorTheme.canvasControlsSizeBoxShadowColor.o(21).value
-              } 0px calc(1px / var(--utopia-canvas-scale)) calc(2px / var(--utopia-canvas-scale)) calc(1px / var(--utopia-canvas-scale))`,
+              ${1 / scale}px, ${colorTheme.canvasControlsSizeBoxShadowColor.o(21).value} 0px ${
+              1 / scale
+            }px ${2 / scale}px ${1 / scale}px`,
           }}
         />
         <div
           style={{
             position: 'relative',
-            width: `calc(${ResizePointMouseAreaSize}px / var(--utopia-canvas-scale))`,
-            height: `calc(${ResizePointMouseAreaSize}px / var(--utopia-canvas-scale))`,
-            top: `calc(${-ResizePointMouseAreaSize / 2}px / var(--utopia-canvas-scale))`,
-            left: `calc(${-ResizePointMouseAreaSize / 2}px / var(--utopia-canvas-scale))`,
+            width: ResizePointMouseAreaSize / scale,
+            height: ResizePointMouseAreaSize / scale,
+            top: -ResizePointMouseAreaOffset / scale,
+            left: -ResizePointMouseAreaOffset / scale,
             backgroundColor: 'transparent',
             cursor: props.cursor,
           }}
@@ -213,6 +226,7 @@ interface ResizeEdgeProps {
 const ResizeMouseAreaSize = 10
 const ResizeEdge = React.memo(
   React.forwardRef<HTMLDivElement, ResizeEdgeProps>((props, ref) => {
+    const scale = useEditorState((store) => store.editor.canvas.scale, 'ResizeEdge scale')
     const dispatch = useEditorState((store) => store.dispatch, 'ResizeEdge dispatch')
     const jsxMetadataRef = useRefEditorState((store) => store.editor.jsxMetadata)
     const selectedViewsRef = useRefEditorState((store) => store.editor.selectedViews)
@@ -231,17 +245,11 @@ const ResizeEdge = React.memo(
       [dispatch, props.position, props.enabledDirection, jsxMetadataRef, selectedViewsRef],
     )
 
-    const lineSize = `calc(${ResizeMouseAreaSize}px / var(--utopia-canvas-scale))`
+    const lineSize = ResizeMouseAreaSize / scale
     const width = props.direction === 'horizontal' ? undefined : lineSize
     const height = props.direction === 'vertical' ? undefined : lineSize
-    const offsetLeft =
-      props.direction === 'horizontal'
-        ? `0px`
-        : `calc(${-ResizeMouseAreaSize / 2}px / var(--utopia-canvas-scale))`
-    const offsetTop =
-      props.direction === 'vertical'
-        ? `0px`
-        : `calc(${-ResizeMouseAreaSize / 2}px / var(--utopia-canvas-scale))`
+    const offsetLeft = props.direction === 'horizontal' ? `0px` : `${-lineSize / 2}px`
+    const offsetTop = props.direction === 'vertical' ? `0px` : `${-lineSize / 2}px`
     return (
       <div
         ref={ref}

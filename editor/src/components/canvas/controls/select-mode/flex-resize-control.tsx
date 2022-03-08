@@ -24,6 +24,7 @@ import {
 import { getOriginalFrames } from '../../canvas-utils'
 import { windowToCanvasCoordinatesGlobal } from '../../dom-lookup'
 import { useBoundingBox } from '../bounding-box-hooks'
+import { CanvasOffsetWrapper } from '../canvas-offset-wrapper'
 
 interface FlexResizeControlProps {
   localSelectedElements: Array<ElementPath>
@@ -64,28 +65,29 @@ export const FlexResizeControl = React.memo<FlexResizeControlProps>((props) => {
 
   if (allSelectedElementsFlex) {
     return (
-      <div
-        ref={controlRef}
-        style={{
-          position: 'absolute',
-          transform: `translate(var(--utopia-canvas-offset-x), var(--utopia-canvas-offset-y))`,
-        }}
-      >
-        <ResizeEdge
-          ref={rightRef}
-          position={{ x: 1, y: 0.5 }}
-          cursor={CSSCursor.ResizeEW}
-          direction='vertical'
-          enabledDirection={DirectionHorizontal}
-        />
-        <ResizeEdge
-          ref={bottomRef}
-          position={{ x: 0.5, y: 1 }}
-          cursor={CSSCursor.ResizeNS}
-          direction='horizontal'
-          enabledDirection={DirectionVertical}
-        />
-      </div>
+      <CanvasOffsetWrapper>
+        <div
+          ref={controlRef}
+          style={{
+            position: 'absolute',
+          }}
+        >
+          <ResizeEdge
+            ref={rightRef}
+            position={{ x: 1, y: 0.5 }}
+            cursor={CSSCursor.ResizeEW}
+            direction='vertical'
+            enabledDirection={DirectionHorizontal}
+          />
+          <ResizeEdge
+            ref={bottomRef}
+            position={{ x: 0.5, y: 1 }}
+            cursor={CSSCursor.ResizeNS}
+            direction='horizontal'
+            enabledDirection={DirectionVertical}
+          />
+        </div>
+      </CanvasOffsetWrapper>
     )
   }
   return null
@@ -99,11 +101,13 @@ interface ResizeEdgeProps {
 }
 
 const ResizeEdgeMouseAreaSize = 12
+const ResizeEdgeMouseAreaOffset = ResizeEdgeMouseAreaSize / 2
 const ResizeEdge = React.memo(
   React.forwardRef<HTMLDivElement, ResizeEdgeProps>((props, ref) => {
     const LineSVGComponent =
       props.position.y === 0.5 ? DimensionableControlVertical : DimensionableControlHorizontal
     const dispatch = useEditorState((store) => store.dispatch, 'ResizeEdge dispatch')
+    const scale = useEditorState((store) => store.editor.canvas.scale, 'ResizeEdge scale')
     const jsxMetadataRef = useRefEditorState((store) => store.editor.jsxMetadata)
     const selectedViewsRef = useRefEditorState((store) => store.editor.selectedViews)
 
@@ -128,10 +132,10 @@ const ResizeEdge = React.memo(
           style={{
             position: 'absolute',
             pointerEvents: 'initial',
-            width: `calc(${ResizeEdgeMouseAreaSize}px / var(--utopia-canvas-scale))`,
-            height: `calc(${ResizeEdgeMouseAreaSize}px / var(--utopia-canvas-scale))`,
-            top: `calc(${-ResizeEdgeMouseAreaSize / 2}px / var(--utopia-canvas-scale))`,
-            left: `calc(${-ResizeEdgeMouseAreaSize / 2}px / var(--utopia-canvas-scale))`,
+            width: ResizeEdgeMouseAreaSize / scale,
+            height: ResizeEdgeMouseAreaSize / scale,
+            top: -ResizeEdgeMouseAreaOffset / scale,
+            left: -ResizeEdgeMouseAreaOffset / scale,
             backgroundColor: 'transparent',
             cursor: props.cursor,
           }}
@@ -214,9 +218,14 @@ function startResizeInteraction(
 const ControlSideShort = 3
 const ControlSideLong = 15
 const DimensionableControlVertical = React.memo(() => {
+  const scale = useEditorState(
+    (store) => store.editor.canvas.scale,
+    'DimensionableControlVertical scale',
+  )
   const colorTheme = useColorTheme()
   const controlLength = ControlSideLong
   const controlWidth = ControlSideShort
+  const controlOffset = controlLength / 2
 
   return (
     <div
@@ -224,21 +233,28 @@ const DimensionableControlVertical = React.memo(() => {
       style={{
         position: 'relative',
         backgroundColor: colorTheme.primary.shade(10).value,
-        borderRadius: `calc(5px / var(--utopia-canvas-scale))`,
-        boxShadow: `0px 0px 0px calc(0.3px / var(--utopia-canvas-scale)) ${colorTheme.primary.value}, 0px calc(1px / var(--utopia-canvas-scale)) calc(3px / var(--utopia-canvas-scale)) rgba(140,140,140,.9)`,
-        height: `calc(${controlLength}px / var(--utopia-canvas-scale))`,
-        width: `calc(${controlWidth}px / var(--utopia-canvas-scale))`,
-        left: -1,
-        top: `calc(${-controlLength / 2}px / var(--utopia-canvas-scale))`,
+        borderRadius: 5 / scale,
+        boxShadow: `0px 0px 0px ${0.3 / scale}px ${colorTheme.primary.value}, 0px ${1 / scale}px ${
+          3 / scale
+        }px rgba(140,140,140,.9)`,
+        height: controlLength / scale,
+        width: controlWidth / scale,
+        left: -1 / scale,
+        top: -controlOffset / scale,
       }}
     />
   )
 })
 
 const DimensionableControlHorizontal = React.memo(() => {
+  const scale = useEditorState(
+    (store) => store.editor.canvas.scale,
+    'DimensionableControlHorizontal scale',
+  )
   const colorTheme = useColorTheme()
   const controlLength = ControlSideShort
   const controlWidth = ControlSideLong
+  const controlOffset = controlWidth / 2
 
   return (
     <div
@@ -246,12 +262,14 @@ const DimensionableControlHorizontal = React.memo(() => {
       style={{
         position: 'relative',
         backgroundColor: colorTheme.primary.shade(10).value,
-        borderRadius: `calc(5px / var(--utopia-canvas-scale))`,
-        boxShadow: `0px 0px 0px calc(0.3px / var(--utopia-canvas-scale)) ${colorTheme.primary.value}, 0px calc(1px / var(--utopia-canvas-scale)) calc(3px / var(--utopia-canvas-scale)) rgba(140,140,140,.9)`,
-        height: `calc(${controlLength}px / var(--utopia-canvas-scale))`,
-        width: `calc(${controlWidth}px / var(--utopia-canvas-scale))`,
-        left: `calc(${-controlWidth / 2}px / var(--utopia-canvas-scale))`,
-        top: -1,
+        borderRadius: 5 / scale,
+        boxShadow: `0px 0px 0px ${0.3 / scale}px ${colorTheme.primary.value}, 0px ${1 / scale}px ${
+          3 / scale
+        }px rgba(140,140,140,.9)`,
+        height: controlLength / scale,
+        width: controlWidth / scale,
+        left: -controlOffset / scale,
+        top: -1 / scale,
       }}
     />
   )
