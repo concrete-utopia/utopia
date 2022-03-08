@@ -11,6 +11,7 @@ import {
 import { ElementInstanceMetadataMap } from '../../../core/shared/element-template'
 import { MetadataUtils } from '../../../core/model/element-metadata-utils'
 import { EdgePosition } from '../canvas-types'
+import { pluck } from '../../../core/shared/array-utils'
 
 export const SnappingThreshold = 5
 
@@ -139,21 +140,22 @@ export function getSnapDelta(
   constrainedDragAxis: ConstrainedDragAxis | null,
   draggedFrame: CanvasRectangle,
   scale: number,
-): CanvasPoint {
+): { delta: CanvasPoint; guidelines: Array<Guideline> } {
   const closestGuideLines = getSnappedGuidelines(
     guidelines,
     constrainedDragAxis,
     draggedFrame,
     scale,
   )
-  const delta = oneGuidelinePerDimension(closestGuideLines).reduce((working, guideline) => {
+  const winningGuidelines = oneGuidelinePerDimension(closestGuideLines)
+  const delta = winningGuidelines.reduce((working, guideline) => {
     if (guideline.activateSnap) {
       return Utils.offsetPoint(working, guideline.snappingVector)
     } else {
       return working
     }
   }, Utils.zeroPoint as CanvasPoint)
-  return Utils.roundPointTo(delta, 0)
+  return { delta: Utils.roundPointTo(delta, 0), guidelines: pluck(winningGuidelines, 'guideline') }
 }
 
 export function filterGuidelinesStaticAxis(

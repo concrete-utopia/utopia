@@ -27,7 +27,7 @@ import { adjustNumberProperty } from '../commands/adjust-number-command'
 import { wildcardPatch } from '../commands/wildcard-patch-command'
 import { useBoundingBox } from '../controls/bounding-box-hooks'
 import { collectParentAndSiblingGuidelines, getSnapDelta } from '../controls/guideline-helpers'
-import { ConstrainedDragAxis } from '../guideline'
+import { ConstrainedDragAxis, Guideline } from '../guideline'
 import { CanvasStrategy } from './canvas-strategy-types'
 
 export const absoluteMoveStrategy: CanvasStrategy = {
@@ -63,7 +63,7 @@ export const absoluteMoveStrategy: CanvasStrategy = {
       interactionState.interactionData.drag != null
     ) {
       const drag = interactionState.interactionData.drag
-      const snappedDrag = snapDrag(
+      const { snappedDragVector, guidelines } = snapDrag(
         drag,
         null, // TODO constrain drag axis!
         sessionState.startingMetadata,
@@ -90,7 +90,7 @@ export const absoluteMoveStrategy: CanvasStrategy = {
           return createMoveCommandsForElement(
             element,
             selectedElement,
-            snappedDrag,
+            snappedDragVector,
             elementParentBounds,
           )
         },
@@ -100,6 +100,13 @@ export const absoluteMoveStrategy: CanvasStrategy = {
         wildcardPatch('transient', {
           highlightedViews: {
             $set: [],
+          },
+          canvas: {
+            controls: {
+              snappingGuidelines: {
+                $set: guidelines, // these will be used by the guideline controls
+              },
+            },
           },
         }),
       ]
@@ -147,16 +154,16 @@ function snapDrag(
   jsxMetadata: ElementInstanceMetadataMap,
   selectedElements: Array<ElementPath>,
   canvasScale: number,
-): CanvasPoint {
+): { snappedDragVector: CanvasPoint; guidelines: Array<Guideline> } {
   const moveGuidelines = collectParentAndSiblingGuidelines(jsxMetadata, selectedElements)
   const multiselectBounds = getMultiselectBounds(jsxMetadata, selectedElements)
-  const snapDelta = getSnapDelta(
+  const { delta, guidelines } = getSnapDelta(
     moveGuidelines,
     constrainedDragAxis,
     offsetRect(defaultIfNull(zeroRectangle as CanvasRectangle, multiselectBounds), drag),
     canvasScale,
   )
-  return offsetPoint(drag, snapDelta)
+  return { snappedDragVector: offsetPoint(drag, delta), guidelines: guidelines }
 }
 
 function getMultiselectBounds(
