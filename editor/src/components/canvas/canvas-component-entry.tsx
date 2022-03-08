@@ -76,7 +76,7 @@ export const CanvasComponentEntry = React.memo((props: CanvasComponentEntryProps
     clearRuntimeErrors()
   }, [clearRuntimeErrors])
 
-  const containerRef = useApplyCanvasOffsetToStyle(true)
+  const containerRef = useApplyCanvasOffsetToStyle(true, canvasProps != null)
 
   if (canvasProps == null) {
     return <CanvasLoadingScreen />
