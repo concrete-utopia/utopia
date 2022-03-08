@@ -88,6 +88,7 @@ export const CanvasComponentEntry = React.memo((props: CanvasComponentEntryProps
         style={{
           position: 'absolute',
           transition: canvasProps.scrollAnimation ? 'transform 0.3s ease-in-out' : 'initial',
+          transform: 'translate3d(0px, 0px, 0px)',
         }}
       >
         <CanvasErrorBoundary

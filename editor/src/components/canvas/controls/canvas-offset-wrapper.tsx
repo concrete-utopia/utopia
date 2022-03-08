@@ -38,6 +38,6 @@ export function useApplyCanvasOffsetToStyle(scale: number | null): React.RefObje
     () => applyCanvasOffset(canvasOffsetRef.current),
     [applyCanvasOffset, canvasOffsetRef],
   )
-  React.useEffect(applyCanvasOffsetEffect, [applyCanvasOffsetEffect])
+  React.useLayoutEffect(applyCanvasOffsetEffect, [applyCanvasOffsetEffect])
   return elementRef
 }
