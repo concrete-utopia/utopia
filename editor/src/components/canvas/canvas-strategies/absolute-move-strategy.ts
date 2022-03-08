@@ -7,15 +7,11 @@ import { isRight, right } from '../../../core/shared/either'
 import { ElementInstanceMetadataMap, JSXElement } from '../../../core/shared/element-template'
 import {
   boundingRectangleArray,
-  canvasPoint,
   CanvasPoint,
   CanvasRectangle,
   CanvasVector,
   offsetPoint,
-  offsetRect,
-  zeroRectangle,
 } from '../../../core/shared/math-utils'
-import { defaultIfNull } from '../../../core/shared/optional-utils'
 import { ElementPath } from '../../../core/shared/project-file-types'
 import { getElementFromProjectContents } from '../../editor/store/editor-state'
 import { stylePropPathMappingFn } from '../../inspector/common/property-path-hooks'
@@ -23,10 +19,8 @@ import {
   AdjustCssLengthProperty,
   adjustCssLengthProperty,
 } from '../commands/adjust-css-length-command'
-import { adjustNumberProperty } from '../commands/adjust-number-command'
 import { wildcardPatch } from '../commands/wildcard-patch-command'
-import { useBoundingBox } from '../controls/bounding-box-hooks'
-import { collectParentAndSiblingGuidelines, getSnapDelta } from '../controls/guideline-helpers'
+import { runLegacySnapping } from '../controls/guideline-helpers'
 import { ConstrainedDragAxis, Guideline } from '../guideline'
 import { CanvasStrategy } from './canvas-strategy-types'
 
@@ -155,14 +149,19 @@ function snapDrag(
   selectedElements: Array<ElementPath>,
   canvasScale: number,
 ): { snappedDragVector: CanvasPoint; guidelines: Array<Guideline> } {
-  const moveGuidelines = collectParentAndSiblingGuidelines(jsxMetadata, selectedElements)
   const multiselectBounds = getMultiselectBounds(jsxMetadata, selectedElements)
-  const { delta, guidelines } = getSnapDelta(
-    moveGuidelines,
+
+  // This is the entry point to extend the list of snapping strategies, if we want to add more
+
+  const { delta, guidelines } = runLegacySnapping(
+    drag,
     constrainedDragAxis,
-    offsetRect(defaultIfNull(zeroRectangle as CanvasRectangle, multiselectBounds), drag),
+    jsxMetadata,
+    selectedElements,
     canvasScale,
+    multiselectBounds,
   )
+
   return { snappedDragVector: offsetPoint(drag, delta), guidelines: guidelines }
 }
 

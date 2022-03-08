@@ -1,5 +1,10 @@
 import Utils from '../../../utils/utils'
-import { CanvasPoint, CanvasRectangle } from '../../../core/shared/math-utils'
+import {
+  CanvasPoint,
+  CanvasRectangle,
+  offsetRect,
+  zeroRectangle,
+} from '../../../core/shared/math-utils'
 import { ElementPath } from '../../../core/shared/project-file-types'
 import * as EP from '../../../core/shared/element-path'
 import {
@@ -12,6 +17,7 @@ import { ElementInstanceMetadataMap } from '../../../core/shared/element-templat
 import { MetadataUtils } from '../../../core/model/element-metadata-utils'
 import { EdgePosition } from '../canvas-types'
 import { pluck } from '../../../core/shared/array-utils'
+import { defaultIfNull } from '../../../core/shared/optional-utils'
 
 export const SnappingThreshold = 5
 
@@ -156,6 +162,23 @@ export function getSnapDelta(
     }
   }, Utils.zeroPoint as CanvasPoint)
   return { delta: Utils.roundPointTo(delta, 0), guidelines: pluck(winningGuidelines, 'guideline') }
+}
+
+export function runLegacySnapping(
+  drag: CanvasPoint,
+  constrainedDragAxis: ConstrainedDragAxis | null,
+  jsxMetadata: ElementInstanceMetadataMap,
+  selectedElements: Array<ElementPath>,
+  canvasScale: number,
+  multiselectBounds: CanvasRectangle | null,
+): { delta: CanvasPoint; guidelines: Array<Guideline> } {
+  const moveGuidelines = collectParentAndSiblingGuidelines(jsxMetadata, selectedElements)
+  return getSnapDelta(
+    moveGuidelines,
+    constrainedDragAxis,
+    offsetRect(defaultIfNull(zeroRectangle as CanvasRectangle, multiselectBounds), drag),
+    canvasScale,
+  )
 }
 
 export function filterGuidelinesStaticAxis(
