@@ -33,6 +33,11 @@ export function useApplyCanvasOffsetToStyle(scale: number | null): React.RefObje
   )
 
   useSelectorWithCallback((store) => store.editor.canvas.roundedCanvasOffset, applyCanvasOffset)
-  applyCanvasOffset(canvasOffsetRef.current)
+
+  const applyCanvasOffsetEffect = React.useCallback(
+    () => applyCanvasOffset(canvasOffsetRef.current),
+    [applyCanvasOffset, canvasOffsetRef],
+  )
+  React.useEffect(applyCanvasOffsetEffect, [applyCanvasOffsetEffect])
   return elementRef
 }
