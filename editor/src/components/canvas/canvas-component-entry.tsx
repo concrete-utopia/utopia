@@ -25,7 +25,7 @@ import { DomWalkerProps, useDomWalker } from './dom-walker'
 import { ResolvingRemoteDependencyErrorName } from '../../core/es-modules/package-manager/package-manager'
 import { CanvasLoadingScreen } from './canvas-loading-screen'
 import { isHooksErrorMessage } from '../../utils/canvas-react-utils'
-import { useApplyCanvasOffset } from './controls/canvas-offset-wrapper'
+import { useApplyCanvasOffsetToStyle } from './controls/canvas-offset-wrapper'
 
 interface CanvasComponentEntryProps {}
 
@@ -76,7 +76,7 @@ export const CanvasComponentEntry = React.memo((props: CanvasComponentEntryProps
     clearRuntimeErrors()
   }, [clearRuntimeErrors])
 
-  const containerRef = useApplyCanvasOffset(canvasProps?.scale ?? null)
+  const containerRef = useApplyCanvasOffsetToStyle(canvasProps?.scale ?? null)
 
   if (canvasProps == null) {
     return <CanvasLoadingScreen />
@@ -87,7 +87,6 @@ export const CanvasComponentEntry = React.memo((props: CanvasComponentEntryProps
         ref={containerRef}
         style={{
           position: 'absolute',
-          zoom: canvasProps.scale >= 1 ? `${canvasProps.scale * 100}%` : 1,
           transition: canvasProps.scrollAnimation ? 'transform 0.3s ease-in-out' : 'initial',
         }}
       >
