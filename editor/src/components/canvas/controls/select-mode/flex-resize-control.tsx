@@ -239,7 +239,7 @@ const DimensionableControlVertical = React.memo(() => {
         }px rgba(140,140,140,.9)`,
         height: controlLength / scale,
         width: controlWidth / scale,
-        left: -1,
+        left: -1 / scale,
         top: -controlOffset / scale,
       }}
     />
@@ -269,7 +269,7 @@ const DimensionableControlHorizontal = React.memo(() => {
         height: controlLength / scale,
         width: controlWidth / scale,
         left: -controlOffset / scale,
-        top: -1,
+        top: -1 / scale,
       }}
     />
   )
