@@ -259,7 +259,7 @@ export function useTriggerSelectionPerformanceTest(): () => void {
       }
       const startingTime = Date.now()
       while (!isTargetSelected() && Date.now() < startingTime + 3000) {
-        await wait(50)
+        await wait(5)
       }
       if (!isTargetSelected()) {
         throw new Error(`Element never ended up being selected.`)
