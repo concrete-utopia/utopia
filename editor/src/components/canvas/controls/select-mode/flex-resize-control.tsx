@@ -5,6 +5,7 @@ import { ElementInstanceMetadataMap } from '../../../../core/shared/element-temp
 import {
   boundingRectangleArray,
   CanvasPoint,
+  CanvasVector,
   windowPoint,
 } from '../../../../core/shared/math-utils'
 import { ElementPath } from '../../../../core/shared/project-file-types'
@@ -22,7 +23,7 @@ import {
   updateResizeDragState,
 } from '../../canvas-types'
 import { getOriginalFrames } from '../../canvas-utils'
-import { windowToCanvasCoordinatesGlobal } from '../../dom-lookup'
+import { windowToCanvasCoordinates } from '../../dom-lookup'
 import { useBoundingBox } from '../bounding-box-hooks'
 import { CanvasOffsetWrapper } from '../canvas-offset-wrapper'
 
@@ -110,6 +111,7 @@ const ResizeEdge = React.memo(
     const scale = useEditorState((store) => store.editor.canvas.scale, 'ResizeEdge scale')
     const jsxMetadataRef = useRefEditorState((store) => store.editor.jsxMetadata)
     const selectedViewsRef = useRefEditorState((store) => store.editor.selectedViews)
+    const canvasOffsetRef = useRefEditorState((store) => store.editor.canvas.roundedCanvasOffset)
 
     const onEdgeMouseDown = React.useCallback(
       (event: React.MouseEvent<HTMLDivElement>) => {
@@ -120,9 +122,19 @@ const ResizeEdge = React.memo(
           props.enabledDirection,
           jsxMetadataRef.current,
           selectedViewsRef.current,
+          canvasOffsetRef.current,
+          scale,
         )
       },
-      [dispatch, props.position, props.enabledDirection, jsxMetadataRef, selectedViewsRef],
+      [
+        dispatch,
+        props.position,
+        props.enabledDirection,
+        jsxMetadataRef,
+        selectedViewsRef,
+        canvasOffsetRef,
+        scale,
+      ],
     )
 
     return (
@@ -152,6 +164,8 @@ function startResizeInteraction(
   enabledDirection: EdgePosition,
   metadata: ElementInstanceMetadataMap,
   selectedViews: Array<ElementPath>,
+  canvasOffset: CanvasVector,
+  scale: number,
 ) {
   event.stopPropagation()
   if (event.buttons === 1) {
@@ -159,7 +173,9 @@ function startResizeInteraction(
     const centerBasedResize = event.altKey
     const keepAspectRatio = event.shiftKey // || props.elementAspectRatioLocked ???
     const enableSnapping = !event.metaKey
-    const canvasPositions = windowToCanvasCoordinatesGlobal(
+    const canvasPositions = windowToCanvasCoordinates(
+      scale,
+      canvasOffset,
       windowPoint({ x: event.nativeEvent.x, y: event.nativeEvent.y }),
     )
     const start: CanvasPoint = canvasPositions.canvasPositionRaw

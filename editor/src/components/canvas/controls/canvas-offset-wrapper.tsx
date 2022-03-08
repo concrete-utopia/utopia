@@ -3,7 +3,7 @@ import { CanvasVector } from '../../../core/shared/math-utils'
 import { useRefEditorState, useSelectorWithCallback } from '../../editor/store/store-hook'
 
 export const CanvasOffsetWrapper = React.memo((props) => {
-  const elementRef = useApplyCanvasOffsetToStyle(null)
+  const elementRef = useApplyCanvasOffsetToStyle(false)
 
   return (
     <div ref={elementRef} style={{ position: 'absolute' }}>
@@ -12,32 +12,35 @@ export const CanvasOffsetWrapper = React.memo((props) => {
   )
 })
 
-export function useApplyCanvasOffsetToStyle(scale: number | null): React.RefObject<HTMLDivElement> {
+export function useApplyCanvasOffsetToStyle(
+  setScaleToo: boolean,
+  forceOffset?: boolean, // this is not so nice, but the element is optionally rendered in canvas-component-entry
+): React.RefObject<HTMLDivElement> {
   const elementRef = React.useRef<HTMLDivElement>(null)
   const canvasOffsetRef = useRefEditorState((store) => store.editor.canvas.roundedCanvasOffset)
+  const scaleRef = useRefEditorState((store) => store.editor.canvas.scale)
   const applyCanvasOffset = React.useCallback(
-    (roundedCanvasOffset: CanvasVector) => {
+    (roundedCanvasOffset: CanvasVector, _?: any) => {
       if (elementRef.current != null) {
         elementRef.current.style.setProperty(
           'transform',
-          (scale != null && scale < 1 ? `scale(${scale})` : '') +
+          (setScaleToo && scaleRef.current < 1 ? `scale(${scaleRef.current})` : '') +
             ` translate3d(${roundedCanvasOffset.x}px, ${roundedCanvasOffset.y}px, 0)`,
         )
         elementRef.current.style.setProperty(
           'zoom',
-          scale != null && scale >= 1 ? `${scale * 100}%` : '1',
+          setScaleToo && scaleRef.current >= 1 ? `${scaleRef.current * 100}%` : '1',
         )
       }
     },
-    [elementRef, scale],
+    [elementRef, setScaleToo, scaleRef],
   )
 
   useSelectorWithCallback((store) => store.editor.canvas.roundedCanvasOffset, applyCanvasOffset)
 
-  const applyCanvasOffsetEffect = React.useCallback(
-    () => applyCanvasOffset(canvasOffsetRef.current),
-    [applyCanvasOffset, canvasOffsetRef],
-  )
+  const applyCanvasOffsetEffect = React.useCallback(() => {
+    applyCanvasOffset(canvasOffsetRef.current, forceOffset)
+  }, [applyCanvasOffset, canvasOffsetRef, forceOffset])
   React.useLayoutEffect(applyCanvasOffsetEffect, [applyCanvasOffsetEffect])
   return elementRef
 }
