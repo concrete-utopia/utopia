@@ -4,8 +4,18 @@ import { framePointForPinnedProp } from '../../../core/layout/layout-helpers-new
 import { MetadataUtils } from '../../../core/model/element-metadata-utils'
 import { mapDropNulls } from '../../../core/shared/array-utils'
 import { isRight, right } from '../../../core/shared/either'
-import { JSXElement } from '../../../core/shared/element-template'
-import { CanvasRectangle, CanvasVector } from '../../../core/shared/math-utils'
+import { ElementInstanceMetadataMap, JSXElement } from '../../../core/shared/element-template'
+import {
+  boundingRectangleArray,
+  canvasPoint,
+  CanvasPoint,
+  CanvasRectangle,
+  CanvasVector,
+  offsetPoint,
+  offsetRect,
+  zeroRectangle,
+} from '../../../core/shared/math-utils'
+import { defaultIfNull } from '../../../core/shared/optional-utils'
 import { ElementPath } from '../../../core/shared/project-file-types'
 import { withUnderlyingTarget } from '../../editor/store/editor-state'
 import { stylePropPathMappingFn } from '../../inspector/common/property-path-hooks'
@@ -15,6 +25,9 @@ import {
 } from '../commands/adjust-css-length-command'
 import { adjustNumberProperty } from '../commands/adjust-number-command'
 import { wildcardPatch } from '../commands/wildcard-patch-command'
+import { useBoundingBox } from '../controls/bounding-box-hooks'
+import { collectParentAndSiblingGuidelines, getSnapDelta } from '../controls/guideline-helpers'
+import { ConstrainedDragAxis } from '../guideline'
 import { CanvasStrategy } from './canvas-strategy-types'
 
 export const absoluteMoveStrategy: CanvasStrategy = {
@@ -50,6 +63,13 @@ export const absoluteMoveStrategy: CanvasStrategy = {
       interactionState.interactionData.drag != null
     ) {
       const drag = interactionState.interactionData.drag
+      const snappedDrag = snapDrag(
+        drag,
+        null, // TODO constrain drag axis!
+        sessionState.startingMetadata,
+        canvasState.selectedElements,
+        canvasState.scale,
+      )
       const commandsForSelectedElements = canvasState.selectedElements.flatMap(
         (selectedElement) => {
           const element: JSXElement | null = withUnderlyingTarget(
@@ -70,7 +90,12 @@ export const absoluteMoveStrategy: CanvasStrategy = {
             return []
           }
 
-          return createMoveCommandsForElement(element, selectedElement, drag, elementParentBounds)
+          return createMoveCommandsForElement(
+            element,
+            selectedElement,
+            snappedDrag,
+            elementParentBounds,
+          )
         },
       )
       return [
@@ -117,4 +142,33 @@ function createMoveCommandsForElement(
     },
     ['top', 'bottom', 'left', 'right'] as const,
   )
+}
+
+function snapDrag(
+  drag: CanvasPoint,
+  constrainedDragAxis: ConstrainedDragAxis | null,
+  jsxMetadata: ElementInstanceMetadataMap,
+  selectedElements: Array<ElementPath>,
+  canvasScale: number,
+): CanvasPoint {
+  const moveGuidelines = collectParentAndSiblingGuidelines(jsxMetadata, selectedElements)
+  const multiselectBounds = getMultiselectBounds(jsxMetadata, selectedElements)
+  const snapDelta = getSnapDelta(
+    moveGuidelines,
+    constrainedDragAxis,
+    offsetRect(defaultIfNull(zeroRectangle as CanvasRectangle, multiselectBounds), drag),
+    canvasScale,
+  )
+  return offsetPoint(drag, snapDelta)
+}
+
+function getMultiselectBounds(
+  jsxMetadata: ElementInstanceMetadataMap,
+  selectedElements: Array<ElementPath>,
+): CanvasRectangle | null {
+  const frames = mapDropNulls((element) => {
+    return MetadataUtils.getFrameInCanvasCoords(element, jsxMetadata)
+  }, selectedElements)
+
+  return boundingRectangleArray(frames)
 }
