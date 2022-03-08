@@ -232,9 +232,9 @@ export function useTriggerSelectionPerformanceTest(): () => void {
       'Target element should exist.',
       document.querySelector(`*[data-paths~="${EP.toString(targetPath)}"]`),
     )
-    const targetBounds = targetElement.getBoundingClientRect()
     await dispatch([CanvasActions.positionCanvas(canvasPoint({ x: -1900, y: -1100 }))], 'everyone')
       .entireUpdateFinished
+    const targetBounds = targetElement.getBoundingClientRect()
     if (allPaths.current.length === 0) {
       console.info('SELECT_TEST_ERROR')
       return
