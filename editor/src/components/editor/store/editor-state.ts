@@ -2231,6 +2231,14 @@ export function forUnderlyingTarget(
   withUnderlyingTarget<any>(target, projectContents, nodeModules, openFile, {}, withTarget)
 }
 
+export function getElementFromProjectContents(
+  target: ElementPath | null,
+  projectContents: ProjectContentTreeRoot,
+  openFile: string | null | undefined,
+): JSXElement | null {
+  return withUnderlyingTarget(target, projectContents, {}, openFile, null, (_, element) => element)
+}
+
 export function getCurrentTheme(editor: EditorState): Theme {
   return editor.theme
 }

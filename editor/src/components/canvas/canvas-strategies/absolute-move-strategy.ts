@@ -17,7 +17,7 @@ import {
 } from '../../../core/shared/math-utils'
 import { defaultIfNull } from '../../../core/shared/optional-utils'
 import { ElementPath } from '../../../core/shared/project-file-types'
-import { withUnderlyingTarget } from '../../editor/store/editor-state'
+import { getElementFromProjectContents } from '../../editor/store/editor-state'
 import { stylePropPathMappingFn } from '../../inspector/common/property-path-hooks'
 import {
   AdjustCssLengthProperty,
@@ -72,13 +72,10 @@ export const absoluteMoveStrategy: CanvasStrategy = {
       )
       const commandsForSelectedElements = canvasState.selectedElements.flatMap(
         (selectedElement) => {
-          const element: JSXElement | null = withUnderlyingTarget(
+          const element: JSXElement | null = getElementFromProjectContents(
             selectedElement,
             canvasState.projectContents,
-            {},
             canvasState.openFile,
-            null,
-            (_, e) => e,
           )
           const elementParentBounds =
             MetadataUtils.findElementByElementPath(
