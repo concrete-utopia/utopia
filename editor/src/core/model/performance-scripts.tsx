@@ -32,6 +32,7 @@ import {
 import { CanvasControlsContainerID } from '../../components/canvas/controls/new-canvas-controls'
 import { forceNotNull } from '../shared/optional-utils'
 import { ElementPathArrayKeepDeepEquality } from '../../utils/deep-equality-instances'
+import { NavigatorContainerId } from '../../components/navigator/navigator'
 
 export function wait(timeout: number): Promise<void> {
   return new Promise((resolve) => {
@@ -227,13 +228,29 @@ export function useTriggerSelectionPerformanceTest(): () => void {
       'Container controls element should exist.',
       document.getElementById(CanvasControlsContainerID),
     )
+    const canvasContainerElement = forceNotNull(
+      'Canvas container element should exist.',
+      document.getElementById(CanvasContainerID),
+    )
+    const canvasContainerBounds = canvasContainerElement.getBoundingClientRect()
+    const navigatorElement = forceNotNull(
+      'Navigator element should exist.',
+      document.getElementById(NavigatorContainerId),
+    )
+    const navigatorBounds = navigatorElement.getBoundingClientRect()
 
     const targetElement = forceNotNull(
       'Target element should exist.',
       document.querySelector(`*[data-paths~="${EP.toString(targetPath)}"]`),
     )
-    await dispatch([CanvasActions.positionCanvas(canvasPoint({ x: -1900, y: -1100 }))], 'everyone')
-      .entireUpdateFinished
+    const originalTargetBounds = targetElement.getBoundingClientRect()
+    const leftToTarget =
+      canvasContainerBounds.left + navigatorBounds.width - originalTargetBounds.left + 100
+    const topToTarget = canvasContainerBounds.top - originalTargetBounds.top + 100
+    await dispatch(
+      [CanvasActions.positionCanvas(canvasPoint({ x: leftToTarget, y: topToTarget }))],
+      'everyone',
+    ).entireUpdateFinished
     const targetBounds = targetElement.getBoundingClientRect()
     if (allPaths.current.length === 0) {
       console.info('SELECT_TEST_ERROR')
