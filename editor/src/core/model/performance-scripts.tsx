@@ -32,7 +32,12 @@ import {
 import { CanvasControlsContainerID } from '../../components/canvas/controls/new-canvas-controls'
 import { forceNotNull } from '../shared/optional-utils'
 import { ElementPathArrayKeepDeepEquality } from '../../utils/deep-equality-instances'
-import { wait } from '../../utils/utils.test-utils'
+
+export function wait(timeout: number): Promise<void> {
+  return new Promise((resolve) => {
+    setTimeout(resolve, timeout)
+  })
+}
 
 const NumberOfIterations = 100
 
@@ -214,6 +219,20 @@ export function useTriggerSelectionPerformanceTest(): () => void {
   const allPaths = useRefEditorState((store) => store.derived.navigatorTargets)
   const selectedViews = useRefEditorState((store) => store.editor.selectedViews)
   const trigger = React.useCallback(async () => {
+    const targetPath = [...allPaths.current].sort(
+      (a, b) => EP.toString(b).length - EP.toString(a).length,
+    )[0]
+    // Determine where the events should be fired.
+    const controlsContainerElement = forceNotNull(
+      'Container controls element should exist.',
+      document.getElementById(CanvasControlsContainerID),
+    )
+
+    const targetElement = forceNotNull(
+      'Target element should exist.',
+      document.querySelector(`*[data-paths~="${EP.toString(targetPath)}"]`),
+    )
+    const targetBounds = targetElement.getBoundingClientRect()
     await dispatch([CanvasActions.positionCanvas(canvasPoint({ x: -1900, y: -1100 }))], 'everyone')
       .entireUpdateFinished
     if (allPaths.current.length === 0) {
@@ -221,23 +240,8 @@ export function useTriggerSelectionPerformanceTest(): () => void {
       return
     }
 
-    const targetPath = [...allPaths.current].sort(
-      (a, b) => EP.toString(b).length - EP.toString(a).length,
-    )[0]
     let framesPassed = 0
     async function step() {
-      // Determine where the events should be fired.
-      const controlsContainerElement = forceNotNull(
-        'Container controls element should exist.',
-        document.getElementById(CanvasControlsContainerID),
-      )
-
-      const targetElement = forceNotNull(
-        'Target element should exist.',
-        document.querySelector(`*[data-paths~="${EP.toString(targetPath)}"]`),
-      )
-      const targetBounds = targetElement.getBoundingClientRect()
-
       performance.mark(`select_step_${framesPassed}`)
       controlsContainerElement.dispatchEvent(
         new MouseEvent('mousedown', {
