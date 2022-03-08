@@ -1,9 +1,18 @@
+import { optionalDeepFreeze } from './deep-freeze'
+
 export type Modifiers = {
   alt: boolean
   cmd: boolean
   ctrl: boolean
   shift: boolean
 }
+
+export const emptyModifiers: Modifiers = optionalDeepFreeze({
+  alt: false,
+  cmd: false,
+  ctrl: false,
+  shift: false,
+})
 
 export const Modifier = {
   modifiersForKeyboardEvent: function (event: KeyboardEvent): Modifiers {

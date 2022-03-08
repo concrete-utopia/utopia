@@ -464,6 +464,7 @@ export const RegExpLibrary = (function GenerateRegExpLib() {
 export type PercentUnit = '%'
 
 export type CSSNumberType =
+  | 'Px'
   | 'Angle'
   | 'AnglePercent'
   | 'Length'
@@ -581,6 +582,7 @@ const parseCSSLengthUnit = (input: string) => parseCSSNumberUnit(input, LengthUn
 const parseCSSLengthPercentUnit = (input: string) => parseCSSNumberUnit(input, LengthPercentUnits)
 const parseCSSAngleUnit = (input: string) => parseCSSNumberUnit(input, AngleUnits)
 const parseCSSAnglePercentUnit = (input: string) => parseCSSNumberUnit(input, AnglePercentUnits)
+const parseCSSPxUnit = (input: string) => parseCSSNumberUnit(input, ['px'])
 const parseCSSPercentUnit = (input: string) => parseCSSNumberUnit(input, ['%'])
 const parseCSSTimeUnit = (input: string) => parseCSSNumberUnit(input, TimeUnits)
 const parseCSSTimePercentUnit = (input: string) => parseCSSNumberUnit(input, TimePercentUnits)
@@ -601,6 +603,8 @@ function unitParseFnForType(
       return parseCSSLengthUnit
     case 'LengthPercent':
       return parseCSSLengthPercentUnit
+    case 'Px':
+      return parseCSSPxUnit
     case 'Percent':
       return parseCSSPercentUnit
     case 'Resolution':
@@ -693,6 +697,7 @@ export const parseCSSLengthPercentNone = (
 }
 export const parseCSSAngle = (input: unknown) => parseCSSNumber(input, 'Angle')
 export const parseCSSAnglePercent = (input: unknown) => parseCSSNumber(input, 'AnglePercent')
+export const parseCSSPx = (input: unknown) => parseCSSNumber(input, 'Px')
 export const parseCSSPercent = (input: unknown) => parseCSSNumber(input, 'Percent', '%')
 export const parseCSSResolution = (input: unknown) => parseCSSNumber(input, 'Resolution')
 export const parseCSSTime = (input: unknown) => parseCSSNumber(input, 'Time')

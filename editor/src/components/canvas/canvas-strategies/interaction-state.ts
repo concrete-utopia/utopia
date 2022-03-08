@@ -118,7 +118,7 @@ function dragExceededThreshold(drag: CanvasVector): boolean {
 }
 
 export function updateInteractionViaMouse(
-  currentState: InteractionSession,
+  currentState: InteractionSessionWithoutMetadata,
   drag: CanvasVector,
   modifiers: Modifiers,
   sourceOfUpdate: CanvasControlType | null, // If null it means the active control is the source

@@ -168,7 +168,7 @@ function useTriggerHighlightPerformanceTest(key: 'regular' | 'all-elements'): ()
 
       // Clear the highlight before the next run
       calculateHighlightedViews(
-        windowPoint({ x: elementBounds.left - 10, y: elementBounds.top - 10 }),
+        windowPoint({ x: elementBounds.left - 100, y: elementBounds.top - 100 }),
         key === 'all-elements',
       )
 
