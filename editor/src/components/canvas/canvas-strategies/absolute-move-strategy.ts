@@ -28,7 +28,7 @@ export const absoluteMoveStrategy: CanvasStrategy = {
   id: 'ABSOLUTE_MOVE',
   name: 'Absolute Move',
   isApplicable: (canvasState, _interactionState, metadata) => {
-    if (canvasState.selectedElements.length === 1) {
+    if (canvasState.selectedElements.length > 0) {
       const elementMetadata = MetadataUtils.findElementByElementPath(
         metadata,
         canvasState.selectedElements[0],
