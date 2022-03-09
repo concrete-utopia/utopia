@@ -152,7 +152,7 @@ function snapDrag(
 
   // This is the entry point to extend the list of snapping strategies, if we want to add more
 
-  const { delta, guidelines } = runLegacySnapping(
+  const { snappedDragVector, guidelines } = runLegacySnapping(
     drag,
     constrainedDragAxis,
     jsxMetadata,
@@ -161,7 +161,7 @@ function snapDrag(
     multiselectBounds,
   )
 
-  return { snappedDragVector: offsetPoint(drag, delta), guidelines: guidelines }
+  return { snappedDragVector, guidelines: guidelines }
 }
 
 function getMultiselectBounds(
