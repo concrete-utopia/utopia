@@ -9,12 +9,8 @@ import {
 } from '../../editor/store/store-hook'
 import { CanvasOffsetWrapper } from './canvas-offset-wrapper'
 
-interface GuidelineControlProps {
-  localSelectedElements: Array<ElementPath>
-}
-
 // STRATEGY GUIDELINE CONTROLS
-export const GuidelineControls = React.memo<GuidelineControlProps>((props) => {
+export const GuidelineControls = React.memo(() => {
   return (
     <CanvasOffsetWrapper>
       <GuidelineControl index={0} />
@@ -33,42 +29,51 @@ const LineWidth = 1
 const GuidelineControl = React.memo<GuidelineProps>((props) => {
   const colorTheme = useColorTheme()
   const scale = useEditorState((store) => store.editor.canvas.scale, 'Guideline scale')
-  const controlRef = useGuideline(props.index, (guidelineFrame: CanvasRectangle | null) => {
-    if (controlRef.current != null) {
-      if (guidelineFrame == null) {
-        controlRef.current.style.setProperty('display', 'none')
-      } else {
-        const width = guidelineFrame.width === 0 ? LineWidth / scale : guidelineFrame.width
-        const height = guidelineFrame.height === 0 ? LineWidth / scale : guidelineFrame.height
-        controlRef.current.style.setProperty('display', 'block')
-        controlRef.current.style.setProperty('left', `${guidelineFrame.x}px`)
-        controlRef.current.style.setProperty('top', `${guidelineFrame.y}px`)
-        controlRef.current.style.setProperty('width', `${width}px`)
-        controlRef.current.style.setProperty('height', `${height}px`)
+  const controlRef = useGuideline(
+    props.index,
+    (result: { frame: CanvasRectangle; activateSnap: boolean } | null) => {
+      if (controlRef.current != null) {
+        if (result == null) {
+          controlRef.current.style.setProperty('display', 'none')
+        } else {
+          controlRef.current.style.setProperty('display', 'block')
+          controlRef.current.style.setProperty('left', `${result.frame.x}px`)
+          controlRef.current.style.setProperty('top', `${result.frame.y}px`)
+          controlRef.current.style.setProperty('width', `${result.frame.width}px`)
+          controlRef.current.style.setProperty('height', `${result.frame.height}px`)
+          controlRef.current.style.setProperty(
+            'border-style',
+            `${result.activateSnap ? 'solid' : 'dashed'}`,
+          )
+        }
       }
-    }
-  })
+    },
+  )
   return (
     <div
       ref={controlRef}
       style={{
         position: 'absolute',
-        backgroundColor: colorTheme.canvasLayoutStroke.value,
+        pointerEvents: 'none',
+        borderWidth: 0,
+        borderLeftWidth: LineWidth / scale,
+        borderTopWidth: LineWidth / scale,
+        borderColor: colorTheme.canvasLayoutStroke.value,
       }}
-    ></div>
+    />
   )
 })
 
 function useGuideline<T = HTMLDivElement>(
   index: number,
-  onChangeCallback: (frame: CanvasRectangle | null) => void,
+  onChangeCallback: (result: { frame: CanvasRectangle; activateSnap: boolean } | null) => void,
 ): React.RefObject<T> {
   const controlRef = React.useRef<T>(null)
 
   const guidelineCallback = React.useCallback(
-    (guidelineFrame: CanvasRectangle | null) => {
+    (result: { frame: CanvasRectangle; activateSnap: boolean } | null) => {
       if (controlRef.current != null) {
-        onChangeCallback(guidelineFrame)
+        onChangeCallback(result)
       }
     },
     [onChangeCallback],
@@ -81,7 +86,8 @@ function useGuideline<T = HTMLDivElement>(
 
   const innerCallback = React.useCallback(() => {
     if (guidelineRef.current[index] != null) {
-      const guideline = guidelineRef.current[index]
+      const guidelineWithSnapping = guidelineRef.current[index]
+      const guideline = guidelineWithSnapping.guideline
       switch (guideline.type) {
         case 'XAxisGuideline': {
           const frame = canvasRectangle({
@@ -90,7 +96,10 @@ function useGuideline<T = HTMLDivElement>(
             width: 0,
             height: guideline.yBottom - guideline.yTop,
           })
-          guidelineCallbackRef.current(frame)
+          guidelineCallbackRef.current({
+            frame: frame,
+            activateSnap: guidelineWithSnapping.activateSnap,
+          })
           break
         }
         case 'YAxisGuideline': {
@@ -100,7 +109,10 @@ function useGuideline<T = HTMLDivElement>(
             width: guideline.xRight - guideline.xLeft,
             height: 0,
           })
-          guidelineCallbackRef.current(frame)
+          guidelineCallbackRef.current({
+            frame: frame,
+            activateSnap: guidelineWithSnapping.activateSnap,
+          })
           break
         }
         case 'CornerGuideline':

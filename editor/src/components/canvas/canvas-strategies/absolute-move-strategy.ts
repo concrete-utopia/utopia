@@ -21,7 +21,7 @@ import {
 } from '../commands/adjust-css-length-command'
 import { wildcardPatch } from '../commands/wildcard-patch-command'
 import { runLegacySnapping } from '../controls/guideline-helpers'
-import { ConstrainedDragAxis, Guideline } from '../guideline'
+import { ConstrainedDragAxis, Guideline, GuidelineWithSnappingVector } from '../guideline'
 import { CanvasStrategy } from './canvas-strategy-types'
 
 export const absoluteMoveStrategy: CanvasStrategy = {
@@ -56,7 +56,7 @@ export const absoluteMoveStrategy: CanvasStrategy = {
       interactionState.interactionData.drag != null
     ) {
       const drag = interactionState.interactionData.drag
-      const { snappedDragVector, guidelines } = snapDrag(
+      const { snappedDragVector, guidelinesWithSnappingVector } = snapDrag(
         drag,
         null, // TODO constrain drag axis!
         sessionState.startingMetadata,
@@ -97,7 +97,7 @@ export const absoluteMoveStrategy: CanvasStrategy = {
           canvas: {
             controls: {
               snappingGuidelines: {
-                $set: guidelines, // these will be used by the guideline controls
+                $set: guidelinesWithSnappingVector, // these will be used by the guideline controls
               },
             },
           },
@@ -147,12 +147,15 @@ function snapDrag(
   jsxMetadata: ElementInstanceMetadataMap,
   selectedElements: Array<ElementPath>,
   canvasScale: number,
-): { snappedDragVector: CanvasPoint; guidelines: Array<Guideline> } {
+): {
+  snappedDragVector: CanvasPoint
+  guidelinesWithSnappingVector: Array<GuidelineWithSnappingVector>
+} {
   const multiselectBounds = getMultiselectBounds(jsxMetadata, selectedElements)
 
   // This is the entry point to extend the list of snapping strategies, if we want to add more
 
-  const { snappedDragVector, guidelines } = runLegacySnapping(
+  const { snappedDragVector, guidelinesWithSnappingVector } = runLegacySnapping(
     drag,
     constrainedDragAxis,
     jsxMetadata,
@@ -161,7 +164,7 @@ function snapDrag(
     multiselectBounds,
   )
 
-  return { snappedDragVector, guidelines: guidelines }
+  return { snappedDragVector, guidelinesWithSnappingVector }
 }
 
 function getMultiselectBounds(

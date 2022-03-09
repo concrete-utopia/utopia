@@ -159,7 +159,7 @@ import { DefaultThirdPartyControlDefinitions } from '../../../core/third-party/t
 import { Spec } from 'immutability-helper'
 import { memoize } from '../../../core/shared/memoize'
 import { InteractionSession, StrategyState } from '../../canvas/canvas-strategies/interaction-state'
-import { Guideline } from '../../canvas/guideline'
+import { Guideline, GuidelineWithSnappingVector } from '../../canvas/guideline'
 
 const ObjectPathImmutable: any = OPI
 
@@ -471,7 +471,7 @@ export interface EditorState {
     domWalkerAdditionalElementsToUpdate: Array<ElementPath>
     controls: {
       // this is where we can put props for the strategy controls
-      snappingGuidelines: Array<Guideline>
+      snappingGuidelines: Array<GuidelineWithSnappingVector>
     }
   }
   floatingInsertMenu: FloatingInsertMenuState

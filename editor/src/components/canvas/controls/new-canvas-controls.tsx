@@ -419,10 +419,7 @@ const NewCanvasControlsInner = (props: NewCanvasControlsInnerProps) => {
         isFeatureEnabled('Canvas Absolute Resize Controls'),
         <MultiSelectOutlineControl localSelectedElements={localSelectedViews} />,
       )}
-      {when(
-        isFeatureEnabled('Canvas Absolute Resize Controls'),
-        <GuidelineControls localSelectedElements={localSelectedViews} />,
-      )}
+      {when(isFeatureEnabled('Canvas Absolute Resize Controls'), <GuidelineControls />)}
       {when(
         isFeatureEnabled('Canvas Absolute Resize Controls'),
         <AbsoluteResizeControl localSelectedElements={localSelectedViews} />,

@@ -147,7 +147,7 @@ export function getSnapDelta(
   constrainedDragAxis: ConstrainedDragAxis | null,
   draggedFrame: CanvasRectangle,
   scale: number,
-): { delta: CanvasPoint; guidelines: Array<Guideline> } {
+): { delta: CanvasPoint; guidelinesWithSnappingVector: Array<GuidelineWithSnappingVector> } {
   const closestGuideLines = getSnappedGuidelines(
     guidelines,
     constrainedDragAxis,
@@ -162,29 +162,35 @@ export function getSnapDelta(
       return working
     }
   }, Utils.zeroPoint as CanvasPoint)
-  return { delta: Utils.roundPointTo(delta, 0), guidelines: pluck(winningGuidelines, 'guideline') }
+  return { delta: Utils.roundPointTo(delta, 0), guidelinesWithSnappingVector: winningGuidelines }
 }
 
 function pointGuidelineToBoundsEdge(
-  guidelines: Array<Guideline>,
+  guidelinesWithSnappingVector: Array<GuidelineWithSnappingVector>,
   multiselectBounds: CanvasRectangle,
-): Array<Guideline> {
-  return guidelines.map((guideline) => {
+): Array<GuidelineWithSnappingVector> {
+  return guidelinesWithSnappingVector.map((guidelineWithSnappingVector) => {
+    const guideline = guidelineWithSnappingVector.guideline
     switch (guideline.type) {
       case 'XAxisGuideline':
         return {
-          ...guideline,
-          yTop: Math.min(guideline.yTop, multiselectBounds.y),
-          yBottom: Math.max(guideline.yBottom, multiselectBounds.y + multiselectBounds.height),
+          ...guidelineWithSnappingVector,
+          guideline: {
+            ...guideline,
+            yTop: Math.min(guideline.yTop, multiselectBounds.y),
+          },
         }
       case 'YAxisGuideline':
         return {
-          ...guideline,
-          xLeft: Math.min(guideline.xLeft, multiselectBounds.x),
-          xRight: Math.max(guideline.xRight, multiselectBounds.x + multiselectBounds.width),
+          ...guidelineWithSnappingVector,
+          guideline: {
+            ...guideline,
+            xLeft: Math.min(guideline.xLeft, multiselectBounds.x),
+            xRight: Math.max(guideline.xRight, multiselectBounds.x + multiselectBounds.width),
+          },
         }
       case 'CornerGuideline':
-        return guideline // TODO we should probably throw an error here, because this code isn't handling CornerGuideline correctly
+        return guidelineWithSnappingVector // TODO we should probably throw an error here, because this code isn't handling CornerGuideline correctly
       default:
         const _exhaustiveCheck: never = guideline
         throw 'Unexpected value for guideline: ' + guideline
@@ -199,10 +205,13 @@ export function runLegacySnapping(
   selectedElements: Array<ElementPath>,
   canvasScale: number,
   multiselectBounds: CanvasRectangle | null,
-): { snappedDragVector: CanvasPoint; guidelines: Array<Guideline> } {
+): {
+  snappedDragVector: CanvasPoint
+  guidelinesWithSnappingVector: Array<GuidelineWithSnappingVector>
+} {
   const moveGuidelines = collectParentAndSiblingGuidelines(jsxMetadata, selectedElements)
 
-  const { delta, guidelines } = getSnapDelta(
+  const { delta, guidelinesWithSnappingVector } = getSnapDelta(
     moveGuidelines,
     constrainedDragAxis,
     offsetRect(defaultIfNull(zeroRectangle as CanvasRectangle, multiselectBounds), drag),
@@ -213,10 +222,13 @@ export function runLegacySnapping(
 
   if (multiselectBounds != null) {
     const draggedBounds = offsetRect(multiselectBounds, snappedDragVector)
-    const updatedGuidelines = pointGuidelineToBoundsEdge(guidelines, draggedBounds)
-    return { snappedDragVector, guidelines: updatedGuidelines }
+    const updatedGuidelinesWithSnapping = pointGuidelineToBoundsEdge(
+      guidelinesWithSnappingVector,
+      draggedBounds,
+    )
+    return { snappedDragVector, guidelinesWithSnappingVector: updatedGuidelinesWithSnapping }
   } else {
-    return { snappedDragVector, guidelines }
+    return { snappedDragVector, guidelinesWithSnappingVector }
   }
 }
 
