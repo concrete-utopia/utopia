@@ -2,6 +2,7 @@ import Utils from '../../../utils/utils'
 import {
   CanvasPoint,
   CanvasRectangle,
+  offsetPoint,
   offsetRect,
   zeroRectangle,
 } from '../../../core/shared/math-utils'
@@ -186,21 +187,19 @@ export function runLegacySnapping(
     multiselectBounds == null
       ? guidelines
       : guidelines.map((guideline) => {
+          const updatedBounds = offsetRect(multiselectBounds, offsetPoint(drag, delta))
           switch (guideline.type) {
             case 'XAxisGuideline':
               return {
                 ...guideline,
-                yTop: Math.min(guideline.yTop, multiselectBounds.y),
-                yBottom: Math.max(
-                  guideline.yBottom,
-                  multiselectBounds.y + multiselectBounds.height,
-                ),
+                yTop: Math.min(guideline.yTop, updatedBounds.y),
+                yBottom: Math.max(guideline.yBottom, updatedBounds.y + updatedBounds.height),
               }
             case 'YAxisGuideline':
               return {
                 ...guideline,
-                xLeft: Math.min(guideline.xLeft, multiselectBounds.x),
-                xRight: Math.max(guideline.xRight, multiselectBounds.x + multiselectBounds.width),
+                xLeft: Math.min(guideline.xLeft, updatedBounds.x),
+                xRight: Math.max(guideline.xRight, updatedBounds.x + updatedBounds.width),
               }
             case 'CornerGuideline':
               return guideline
