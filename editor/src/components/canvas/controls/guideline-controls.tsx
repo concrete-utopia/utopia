@@ -88,7 +88,7 @@ function useGuideline<T = HTMLDivElement>(
             x: guideline.x,
             y: guideline.yTop,
             width: 0,
-            height: guideline.yBottom,
+            height: guideline.yBottom - guideline.yTop,
           })
           guidelineCallbackRef.current(frame)
           break
@@ -97,7 +97,7 @@ function useGuideline<T = HTMLDivElement>(
           const frame = canvasRectangle({
             x: guideline.xLeft,
             y: guideline.y,
-            width: guideline.xRight,
+            width: guideline.xRight - guideline.xLeft,
             height: 0,
           })
           guidelineCallbackRef.current(frame)
