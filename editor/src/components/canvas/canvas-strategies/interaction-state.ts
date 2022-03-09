@@ -25,7 +25,7 @@ export interface DragInteractionData {
   modifiers: Modifiers
 }
 
-interface KeyboardInteractionData {
+interface KeyboardArrowInteractionData {
   type: 'KEYBOARD_ARROW'
   keysPressed: Array<KeyCharacter>
   // keysPressed also includes modifiers, but we want the separate modifiers array since they are captured and mapped to a specific
@@ -33,7 +33,7 @@ interface KeyboardInteractionData {
   modifiers: Modifiers
 }
 
-export type InputData = KeyboardInteractionData | DragInteractionData
+export type InputData = KeyboardArrowInteractionData | DragInteractionData
 
 export interface InteractionSession {
   // This represents an actual interaction that has started as the result of a key press or a drag
