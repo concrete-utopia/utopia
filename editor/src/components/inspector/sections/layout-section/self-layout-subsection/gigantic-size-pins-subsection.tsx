@@ -159,9 +159,6 @@ interface FlexShorthandNumberControlProps {
 }
 
 export const FlexShorthandNumberControl = React.memo((props: FlexShorthandNumberControlProps) => {
-  const propertyTarget = useContextSelector(InspectorPropsContext, (contextData) => {
-    return contextData.targetPath
-  })
   const layoutPropInfo = useInspectorInfoLonghandShorthand(
     ['flexGrow', 'flexShrink', 'flexBasis'],
     'flex',
@@ -203,9 +200,6 @@ interface FlexShorthandCSSNumberControlProps {
 }
 export const FlexBasisShorthandCSSNumberControl = React.memo(
   (props: FlexShorthandCSSNumberControlProps) => {
-    const propertyTarget = useContextSelector(InspectorPropsContext, (contextData) => {
-      return contextData.targetPath
-    })
     const layoutPropInfo = useInspectorInfoLonghandShorthand(
       ['flexGrow', 'flexShrink', 'flexBasis'],
       'flex',

@@ -39,7 +39,6 @@ import {
 } from '../../../core/shared/project-file-types'
 import { defaultIfNull, optionalFlatMap } from '../../../core/shared/optional-utils'
 import { getParseSuccessOrTransientForFilePath } from '../canvas-utils'
-import { useContextSelector } from 'use-context-selector'
 import { shallowEqual } from '../../../core/shared/equality-utils'
 import { usePubSubAtomReadOnly } from '../../../core/shared/atom-with-pub-sub'
 import { JSX_CANVAS_LOOKUP_FUNCTION_NAME } from '../../../core/shared/dom-utils'

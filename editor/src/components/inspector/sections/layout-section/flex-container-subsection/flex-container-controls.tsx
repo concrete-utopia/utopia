@@ -103,9 +103,12 @@ interface FlexAlignItemsControlProps extends FlexFieldControlProps<FlexAlignment
 }
 
 export const FlexAlignItemsControl = React.memo((props: FlexAlignItemsControlProps) => {
-  const targetPath = useContextSelector(InspectorPropsContext, (contextData) => {
-    return contextData.targetPath
-  })
+  const targetPath = useContextSelector(
+    InspectorPropsContext,
+    React.useCallback((contextData) => {
+      return contextData.targetPath
+    }, []),
+  )
   const alignItemsProp = React.useMemo(() => {
     return [stylePropPathMappingFn('alignItems', targetPath)]
   }, [targetPath])
@@ -243,9 +246,12 @@ export const FlexGapControl = React.memo((props: FlexGapControlProps) => {
     props.onTransientSubmitValue,
     props.onUnset,
   )
-  const targetPath = useContextSelector(InspectorPropsContext, (contextData) => {
-    return contextData.targetPath
-  })
+  const targetPath = useContextSelector(
+    InspectorPropsContext,
+    React.useCallback((contextData) => {
+      return contextData.targetPath
+    }, []),
+  )
   const flexGapProp = React.useMemo(() => {
     return [stylePropPathMappingFn('gap', targetPath)]
   }, [targetPath])

@@ -72,9 +72,12 @@ interface AlignSelfControlProps {
 
 export const AlignSelfControl = React.memo((props: AlignSelfControlProps) => {
   const alignSelf = useInspectorLayoutInfo('alignSelf')
-  const targetPath = useContextSelector(InspectorPropsContext, (contextData) => {
-    return contextData.targetPath
-  })
+  const targetPath = useContextSelector(
+    InspectorPropsContext,
+    React.useCallback((contextData) => {
+      return contextData.targetPath
+    }, []),
+  )
   const alignSelfProp = React.useMemo(() => {
     return [stylePropPathMappingFn('alignSelf', targetPath)]
   }, [targetPath])

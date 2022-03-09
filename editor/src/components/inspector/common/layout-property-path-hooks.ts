@@ -276,9 +276,12 @@ export function usePinToggling(): UsePinTogglingResult {
       [selectedViewsRef],
     ),
   )
-  const propertyTarget = useContextSelector(InspectorPropsContext, (contextData) => {
-    return contextData.targetPath
-  })
+  const propertyTarget = useContextSelector(
+    InspectorPropsContext,
+    React.useCallback((contextData) => {
+      return contextData.targetPath
+    }, []),
+  )
 
   const elementFrames = useEditorState(
     React.useCallback(

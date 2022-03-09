@@ -28,7 +28,6 @@ import {
   renderCoreElement,
   utopiaCanvasJSXLookup,
 } from './ui-jsx-canvas-element-renderer-utils'
-import { useContextSelector } from 'use-context-selector'
 import { ElementPath } from '../../../core/shared/project-file-types'
 import { UTOPIA_INSTANCE_PATH, UTOPIA_PATHS_KEY } from '../../../core/model/utopia-constants'
 import { getPathsFromString } from '../../../core/shared/uid-utils'

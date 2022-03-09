@@ -73,9 +73,12 @@ export function useLayoutSystemData() {
     React.useCallback((store) => store.dispatch, []),
     'useLayoutSystemData dispatch',
   )
-  const targetPath = useContextSelector(InspectorPropsContext, (contextData) => {
-    return contextData.targetPath
-  })
+  const targetPath = useContextSelector(
+    InspectorPropsContext,
+    React.useCallback((contextData) => {
+      return contextData.targetPath
+    }, []),
+  )
   const onLayoutSystemChange = React.useCallback(
     (layoutSystem: SettableLayoutSystem) => {
       switch (layoutSystem) {
@@ -272,9 +275,12 @@ function layoutSystemConfigPropertyPaths(
 
 function useDeleteAllLayoutConfig() {
   const { onUnsetValue } = React.useContext(InspectorCallbackContext)
-  const targetPath = useContextSelector(InspectorPropsContext, (contextData) => {
-    return contextData.targetPath
-  })
+  const targetPath = useContextSelector(
+    InspectorPropsContext,
+    React.useCallback((contextData) => {
+      return contextData.targetPath
+    }, []),
+  )
   return React.useCallback(() => {
     onUnsetValue(layoutSystemConfigPropertyPaths(targetPath), false)
   }, [onUnsetValue, targetPath])

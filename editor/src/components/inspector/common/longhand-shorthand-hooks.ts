@@ -114,7 +114,11 @@ export function useInspectorInfoLonghandShorthand<
     'useInspectorInfoLonghandShorthand dispatch',
   )
   const inspectorTargetPath = useKeepReferenceEqualityIfPossible(
-    useContextSelector(InspectorPropsContext, (contextData) => contextData.targetPath, deepEqual),
+    useContextSelector(
+      InspectorPropsContext,
+      useCallback((contextData) => contextData.targetPath, []),
+      deepEqual,
+    ),
   )
   const { selectedViewsRef } = useInspectorContext()
 

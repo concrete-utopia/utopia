@@ -1,5 +1,4 @@
 import React from 'react'
-import { useContextSelector } from 'use-context-selector'
 import { LayoutTargetableProp, StyleLayoutProp } from '../../../core/layout/layout-helpers-new'
 import { getSimpleAttributeAtPath } from '../../../core/model/element-metadata-utils'
 import { eitherToMaybe, left } from '../../../core/shared/either'

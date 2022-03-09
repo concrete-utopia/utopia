@@ -40,9 +40,12 @@ function buildMarginProps(propertyTarget: ReadonlyArray<string>): Array<Property
 }
 
 export const FlexElementSubsection = React.memo(() => {
-  const targetPath = useContextSelector(InspectorPropsContext, (contextData) => {
-    return contextData.targetPath
-  })
+  const targetPath = useContextSelector(
+    InspectorPropsContext,
+    React.useCallback((contextData) => {
+      return contextData.targetPath
+    }, []),
+  )
   const marginProps = React.useMemo(() => {
     return buildMarginProps(targetPath)
   }, [targetPath])
@@ -191,9 +194,12 @@ function buildMainAxisAdvancedProps(propertyTarget: ReadonlyArray<string>): Prop
 }
 
 const FixedSubsectionControls = React.memo((props: FlexElementSubsectionProps) => {
-  const targetPath = useContextSelector(InspectorPropsContext, (contextData) => {
-    return contextData.targetPath
-  })
+  const targetPath = useContextSelector(
+    InspectorPropsContext,
+    React.useCallback((contextData) => {
+      return contextData.targetPath
+    }, []),
+  )
   const mainAxisFixedProps = React.useMemo(() => {
     return buildMainAxisFixedProps(targetPath, props.parentFlexDirection)
   }, [targetPath, props.parentFlexDirection])
@@ -224,9 +230,12 @@ const FixedSubsectionControls = React.memo((props: FlexElementSubsectionProps) =
 })
 
 const AdvancedSubsectionControls = React.memo((props: FlexElementSubsectionProps) => {
-  const targetPath = useContextSelector(InspectorPropsContext, (contextData) => {
-    return contextData.targetPath
-  })
+  const targetPath = useContextSelector(
+    InspectorPropsContext,
+    React.useCallback((contextData) => {
+      return contextData.targetPath
+    }, []),
+  )
   const mainAxisAdvancedProps = React.useMemo(() => {
     return buildMainAxisAdvancedProps(targetPath)
   }, [targetPath])

@@ -186,9 +186,12 @@ function selfLayoutConfigPropertyPaths(propertyTarget: ReadonlyArray<string>): A
 }
 
 function useDeleteAllSelfLayoutConfig() {
-  const propertyTarget = useContextSelector(InspectorPropsContext, (contextData) => {
-    return contextData.targetPath
-  })
+  const propertyTarget = useContextSelector(
+    InspectorPropsContext,
+    React.useCallback((contextData) => {
+      return contextData.targetPath
+    }, []),
+  )
   const { onUnsetValue } = React.useContext(InspectorCallbackContext)
   return React.useCallback(() => {
     onUnsetValue(selfLayoutConfigPropertyPaths(propertyTarget), false)
@@ -196,9 +199,12 @@ function useDeleteAllSelfLayoutConfig() {
 }
 
 function useAddPositionAbsolute() {
-  const propertyTarget = useContextSelector(InspectorPropsContext, (contextData) => {
-    return contextData.targetPath
-  })
+  const propertyTarget = useContextSelector(
+    InspectorPropsContext,
+    React.useCallback((contextData) => {
+      return contextData.targetPath
+    }, []),
+  )
   const { onSubmitValue } = React.useContext(InspectorCallbackContext)
   return React.useCallback(() => {
     onSubmitValue(

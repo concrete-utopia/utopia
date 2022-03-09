@@ -23,9 +23,12 @@ import { RadiusRow } from './radius-row'
 
 export const ContainerSubsection = React.memo(() => {
   const [seeMoreVisible, toggleSeeMoreVisible] = useToggle(false)
-  const targetPath = useContextSelector(InspectorPropsContext, (contextData) => {
-    return contextData.targetPath
-  })
+  const targetPath = useContextSelector(
+    InspectorPropsContext,
+    React.useCallback((contextData) => {
+      return contextData.targetPath
+    }, []),
+  )
   const paddingPropsToUnset = React.useMemo(() => {
     return buildPaddingPropsToUnset(targetPath)
   }, [targetPath])
