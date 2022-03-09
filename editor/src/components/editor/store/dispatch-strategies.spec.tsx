@@ -274,6 +274,7 @@ describe('interactionUpdate', () => {
       [testStrategy],
       editorStore,
       dispatchResultFromEditorStore(editorStore),
+      false,
     )
     expect(actualResult.newStrategyState).toMatchInlineSnapshot(`
       Object {
@@ -350,6 +351,7 @@ describe('interactionUpdate', () => {
       [testStrategy],
       editorStore,
       dispatchResultFromEditorStore(editorStore),
+      false,
     )
     expect(actualResult.newStrategyState).toMatchInlineSnapshot(`
       Object {
@@ -390,6 +392,7 @@ describe('interactionUpdate without strategy', () => {
       [],
       editorStore,
       dispatchResultFromEditorStore(editorStore),
+      false,
     )
     expect(actualResult.patchedEditorState.canvas.scale).toEqual(100)
     expect(actualResult.unpatchedEditorState.canvas.scale).toEqual(1)
@@ -533,6 +536,7 @@ describe('interactionUpdate with stacked strategy change', () => {
       [testStrategy],
       editorStore,
       dispatchResultFromEditorStore(editorStore),
+      false,
     )
     expect(actualResult.newStrategyState).toMatchInlineSnapshot(`
       Object {
@@ -635,6 +639,7 @@ describe('interactionUpdate with stacked strategy change', () => {
       [testStrategy],
       editorStore,
       dispatchResultFromEditorStore(editorStore),
+      false,
     )
     expect(actualResult.newStrategyState).toMatchInlineSnapshot(`
       Object {
@@ -682,7 +687,7 @@ describe('interactionUpdate with user changed strategy', () => {
       },
     }
 
-    const actualResult = interactionUpdate([testStrategy], editorStore, result)
+    const actualResult = interactionUpdate([testStrategy], editorStore, result, false)
     expect(actualResult.newStrategyState).toMatchInlineSnapshot(`
       Object {
         "accumulatedCommands": Array [
@@ -783,6 +788,7 @@ describe('interactionUpdate with user changed strategy', () => {
       [testStrategy],
       editorStore,
       dispatchResultFromEditorStore(editorStore),
+      false,
     )
     expect(actualResult.newStrategyState).toMatchInlineSnapshot(`
       Object {

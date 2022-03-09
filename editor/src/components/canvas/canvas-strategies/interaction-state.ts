@@ -26,7 +26,7 @@ export interface DragInteractionData {
 }
 
 interface KeyboardInteractionData {
-  type: 'KEYBOARD'
+  type: 'KEYBOARD_ARROW'
   keysPressed: Array<KeyCharacter>
   // keysPressed also includes modifiers, but we want the separate modifiers array since they are captured and mapped to a specific
   // set via modifiersForEvent in keyboard.ts
@@ -152,7 +152,7 @@ export function createInteractionViaKeyboard(
 ): InteractionSessionWithoutMetadata {
   return {
     interactionData: {
-      type: 'KEYBOARD',
+      type: 'KEYBOARD_ARROW',
       keysPressed: keysPressed,
       modifiers: modifiers,
     },
@@ -172,7 +172,7 @@ export function updateInteractionViaKeyboard(
   sourceOfUpdate: CanvasControlType,
 ): InteractionSessionWithoutMetadata {
   switch (currentState.interactionData.type) {
-    case 'KEYBOARD': {
+    case 'KEYBOARD_ARROW': {
       const withRemovedKeys = currentState.interactionData.keysPressed.filter(
         (k) => !keysReleased.includes(k),
       )
@@ -180,7 +180,7 @@ export function updateInteractionViaKeyboard(
 
       return {
         interactionData: {
-          type: 'KEYBOARD',
+          type: 'KEYBOARD_ARROW',
           keysPressed: newKeysPressed,
           modifiers: modifiers,
         },
@@ -228,7 +228,7 @@ export function strategySwitchInteractionDataReset(interactionData: InputData): 
           prevDrag: null,
         }
       }
-    case 'KEYBOARD':
+    case 'KEYBOARD_ARROW':
       return interactionData
     default:
       const _exhaustiveCheck: never = interactionData
@@ -253,7 +253,7 @@ export function interactionDataHardReset(interactionData: InputData): InputData 
           ),
         }
       }
-    case 'KEYBOARD':
+    case 'KEYBOARD_ARROW':
       return interactionData
     default:
       const _exhaustiveCheck: never = interactionData
@@ -279,6 +279,8 @@ export function interactionSessionHardReset(
     interactionData: interactionDataHardReset(interactionSession.interactionData),
   }
 }
+
+export const KEYBOARD_INTERACTION_TIMEOUT = 3000
 
 export function hasDragModifiersChanged(
   prevInteractionData: InputData | null,

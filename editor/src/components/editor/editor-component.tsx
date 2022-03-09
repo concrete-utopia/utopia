@@ -56,7 +56,11 @@ import { isFeatureEnabled } from '../../utils/feature-switches'
 import Keyboard from '../../utils/keyboard'
 import { Modifier } from '../../utils/modifiers'
 import CanvasActions from '../canvas/canvas-actions'
-import { updateInteractionViaKeyboard } from '../canvas/canvas-strategies/interaction-state'
+import {
+  createInteractionViaKeyboard,
+  KEYBOARD_INTERACTION_TIMEOUT,
+  updateInteractionViaKeyboard,
+} from '../canvas/canvas-strategies/interaction-state'
 
 function pushProjectURLToBrowserHistory(projectId: string, projectName: string): void {
   // Make sure we don't replace the query params
@@ -131,22 +135,51 @@ export const EditorComponentInner = React.memo((props: EditorProps) => {
     return applyShortcutConfigurationToDefaults(editorStoreRef.current.userState.shortcutConfig)
   }, [editorStoreRef])
 
+  const keyboardTimeoutHandler = React.useRef<NodeJS.Timeout | null>(null)
+
   const onWindowKeyDown = React.useCallback(
     (event: KeyboardEvent) => {
       if (isFeatureEnabled('Canvas Strategies')) {
-        const existingInteractionSession = editorStoreRef.current.editor.canvas.interactionSession
-        // TODO: we don't handle new interaction started with keyboard now
-        if (existingInteractionSession != null) {
-          const action = CanvasActions.createInteractionSession(
-            updateInteractionViaKeyboard(
-              existingInteractionSession,
-              [Keyboard.keyCharacterForCode(event.keyCode)],
-              [],
-              Modifier.modifiersForKeyboardEvent(event),
-              { type: 'KEYBOARD_CATCHER_CONTROL' },
-            ),
-          )
+        const key = Keyboard.keyCharacterForCode(event.keyCode)
+
+        // TODO: maybe we should not whitelist keys, just check if Keyboard.keyIsModifer(key) is false
+        if (Keyboard.keyIsInteraction(key)) {
+          const existingInteractionSession = editorStoreRef.current.editor.canvas.interactionSession
+          const action =
+            existingInteractionSession == null
+              ? CanvasActions.createInteractionSession(
+                  createInteractionViaKeyboard(
+                    [Keyboard.keyCharacterForCode(event.keyCode)],
+                    Modifier.modifiersForKeyboardEvent(event),
+                    { type: 'KEYBOARD_CATCHER_CONTROL' },
+                  ),
+                )
+              : CanvasActions.createInteractionSession(
+                  updateInteractionViaKeyboard(
+                    existingInteractionSession,
+                    [Keyboard.keyCharacterForCode(event.keyCode)],
+                    [],
+                    Modifier.modifiersForKeyboardEvent(event),
+                    { type: 'KEYBOARD_CATCHER_CONTROL' },
+                  ),
+                )
+
           editorStoreRef.current.dispatch([action], 'everyone')
+          if (keyboardTimeoutHandler.current != null) {
+            clearTimeout(keyboardTimeoutHandler.current)
+          }
+
+          keyboardTimeoutHandler.current = setTimeout(() => {
+            if (
+              editorStoreRef.current.editor.canvas.interactionSession?.interactionData.type ===
+              'KEYBOARD_ARROW'
+            ) {
+              editorStoreRef.current.dispatch(
+                [CanvasActions.clearInteractionSession(true)],
+                'everyone',
+              )
+            }
+          }, KEYBOARD_INTERACTION_TIMEOUT)
         }
       }
 

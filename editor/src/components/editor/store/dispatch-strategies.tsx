@@ -17,6 +17,7 @@ import { strategySwitched } from '../../canvas/commands/strategy-switched-comman
 import { EditorAction } from '../action-types'
 import {
   isClearInteractionSession,
+  isCreateOrUpdateInteractionSession,
   shouldApplyClearInteractionSessionResult,
 } from '../actions/action-utils'
 import { InnerDispatchResult } from './dispatch'
@@ -164,6 +165,7 @@ export function interactionUpdate(
   strategies: Array<CanvasStrategy>,
   storedState: EditorStoreFull,
   result: InnerDispatchResult,
+  isInteractionAction: boolean,
 ): HandleStrategiesResult {
   const newEditorState = result.unpatchedEditor
   const canvasState: InteractionCanvasState = pickCanvasStateFromEditorState(newEditorState)
@@ -211,6 +213,19 @@ export function interactionUpdate(
       )
     }
 
+    if (
+      result.unpatchedEditor.canvas.interactionSession?.interactionData.type === 'KEYBOARD_ARROW' &&
+      isInteractionAction
+    ) {
+      return handleAccumulatingKeypresses(
+        newEditorState,
+        storedState.patchedEditor,
+        result.strategyState,
+        strategy,
+        previousStrategy,
+        sortedApplicableStrategies,
+      )
+    }
     return handleUpdate(
       newEditorState,
       storedState.patchedEditor,
@@ -375,6 +390,63 @@ function handleUserChangedStrategy(
   }
 }
 
+function handleAccumulatingKeypresses(
+  newEditorState: EditorState,
+  storedEditorState: EditorState,
+  strategyState: StrategyState,
+  strategy: StrategyWithFitness | null,
+  previousStrategy: StrategyWithFitness | null,
+  sortedApplicableStrategies: Array<CanvasStrategy>,
+): HandleStrategiesResult {
+  const canvasState: InteractionCanvasState = pickCanvasStateFromEditorState(newEditorState)
+  // If there is a current strategy, produce the commands from it.
+  if (newEditorState.canvas.interactionSession != null) {
+    const commands =
+      strategy != null
+        ? applyCanvasStrategy(
+            strategy.strategy,
+            canvasState,
+            newEditorState.canvas.interactionSession,
+            strategyState,
+          )
+        : []
+    const newAccumulatedCommands = [
+      ...strategyState.accumulatedCommands,
+      {
+        strategy: strategyState.currentStrategy,
+        commands: strategyState.currentStrategyCommands,
+      },
+    ]
+    const commandResult = foldAndApplyCommands(
+      newEditorState,
+      storedEditorState,
+      [...newAccumulatedCommands.flatMap((c) => c.commands), ...commands],
+      'transient',
+    )
+    const newStrategyState: StrategyState = {
+      currentStrategy: strategy?.strategy.id ?? null,
+      currentStrategyFitness: strategy?.fitness ?? 0,
+      currentStrategyCommands: commands,
+      accumulatedCommands: newAccumulatedCommands,
+      commandDescriptions: commandResult.commandDescriptions,
+      sortedApplicableStrategies: sortedApplicableStrategies,
+      startingMetadata: strategyState.startingMetadata,
+    }
+
+    return {
+      unpatchedEditorState: newEditorState,
+      patchedEditorState: commandResult.editorState,
+      newStrategyState: newStrategyState,
+    }
+  } else {
+    return {
+      unpatchedEditorState: newEditorState,
+      patchedEditorState: newEditorState,
+      newStrategyState: strategyState,
+    }
+  }
+}
+
 function handleUpdate(
   newEditorState: EditorState,
   storedEditorState: EditorState,
@@ -410,7 +482,6 @@ function handleUpdate(
       sortedApplicableStrategies: sortedApplicableStrategies,
       startingMetadata: strategyState.startingMetadata,
     }
-
     return {
       unpatchedEditorState: newEditorState,
       patchedEditorState: commandResult.editorState,
@@ -547,6 +618,7 @@ function handleStrategiesInner(
   const makeChangesPermanent = dispatchedActions.some(shouldApplyClearInteractionSessionResult)
   const cancelInteraction =
     dispatchedActions.some(isClearInteractionSession) && !makeChangesPermanent
+  const isInteractionAction = dispatchedActions.some(isCreateOrUpdateInteractionSession)
   if (storedState.unpatchedEditor.canvas.interactionSession == null) {
     if (result.unpatchedEditor.canvas.interactionSession == null) {
       return {
@@ -563,15 +635,14 @@ function handleStrategiesInner(
     } else if (makeChangesPermanent) {
       return interactionFinished(strategies, storedState, result)
     } else {
-      const interactionHardResetNeeded =
-        hasDragModifiersChanged(
-          storedState.unpatchedEditor.canvas.interactionSession?.interactionData ?? null,
-          result.unpatchedEditor.canvas.interactionSession?.interactionData ?? null,
-        ) || result.strategyState.currentStrategy == null // TODO: do we really need the currentStrategy == null part?
+      const interactionHardResetNeeded = hasDragModifiersChanged(
+        storedState.unpatchedEditor.canvas.interactionSession?.interactionData ?? null,
+        result.unpatchedEditor.canvas.interactionSession?.interactionData ?? null,
+      )
       if (interactionHardResetNeeded) {
         return interactionHardReset(strategies, storedState, result)
       } else {
-        return interactionUpdate(strategies, storedState, result)
+        return interactionUpdate(strategies, storedState, result, isInteractionAction)
       }
     }
   }

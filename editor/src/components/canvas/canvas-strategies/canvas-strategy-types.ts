@@ -24,7 +24,7 @@ export interface InteractionCanvasState {
   canvasOffset: CanvasVector
 }
 
-export type CanvasStrategyId = 'ABSOLUTE_MOVE' | 'ABSOLUTE_REPARENT'
+export type CanvasStrategyId = 'ABSOLUTE_MOVE' | 'ABSOLUTE_REPARENT' | 'KEYBOARD_ABSOLUTE_MOVE'
 
 export interface CanvasStrategy {
   id: CanvasStrategyId // We'd need to do something to guarantee uniqueness here if using this for the commands' reason
