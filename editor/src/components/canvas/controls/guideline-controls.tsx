@@ -1,6 +1,7 @@
 import React from 'react'
 import { canvasRectangle, CanvasRectangle } from '../../../core/shared/math-utils'
 import { useColorTheme } from '../../../uuiui'
+import { EditorStorePatched } from '../../editor/store/editor-state'
 import {
   useEditorState,
   useRefEditorState,
@@ -25,9 +26,10 @@ interface GuidelineProps {
 }
 
 const LineWidth = 1
+const scaleSelector = (store: EditorStorePatched) => store.editor.canvas.scale
 const GuidelineControl = React.memo<GuidelineProps>((props) => {
   const colorTheme = useColorTheme()
-  const scale = useEditorState((store) => store.editor.canvas.scale, 'Guideline scale')
+  const scale = useEditorState(scaleSelector, 'Guideline scale')
   const controlRef = useGuideline(
     props.index,
     (result: { frame: CanvasRectangle; activateSnap: boolean } | null) => {
