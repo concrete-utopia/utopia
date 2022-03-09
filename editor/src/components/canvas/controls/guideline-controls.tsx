@@ -115,7 +115,7 @@ function useGuideline<T = HTMLDivElement>(
           })
           break
         }
-        case 'CornerGuideline':
+        case 'CornerGuideline': // TODO missing corner guideline
         default:
           break
       }
