@@ -154,22 +154,28 @@ export const NavigatorItemWrapper: React.FunctionComponent<NavigatorItemWrapperP
       collapsedViews,
       appropriateDropTargetHint,
       dispatch,
-    } = useEditorState((store) => {
-      // Only capture this if it relates to the current navigator item, as it may change while
-      // dragging around the navigator but we don't want the entire navigator to re-render each time.
-      let possiblyAppropriateDropTargetHint: DropTargetHint | null = null
-      if (EP.pathsEqual(store.editor.navigator.dropTargetHint.target, props.elementPath)) {
-        possiblyAppropriateDropTargetHint = store.editor.navigator.dropTargetHint
-      }
-      return {
-        dispatch: store.dispatch,
-        selectedViews: store.editor.selectedViews,
-        collapsedViews: store.editor.navigator.collapsedViews,
-        appropriateDropTargetHint: possiblyAppropriateDropTargetHint,
-        renamingTarget: store.editor.navigator.renamingTarget,
-        isElementVisible: !EP.containsPath(props.elementPath, store.editor.hiddenInstances),
-      }
-    }, 'NavigatorItemWrapper')
+    } = useEditorState(
+      React.useCallback(
+        (store) => {
+          // Only capture this if it relates to the current navigator item, as it may change while
+          // dragging around the navigator but we don't want the entire navigator to re-render each time.
+          let possiblyAppropriateDropTargetHint: DropTargetHint | null = null
+          if (EP.pathsEqual(store.editor.navigator.dropTargetHint.target, props.elementPath)) {
+            possiblyAppropriateDropTargetHint = store.editor.navigator.dropTargetHint
+          }
+          return {
+            dispatch: store.dispatch,
+            selectedViews: store.editor.selectedViews,
+            collapsedViews: store.editor.navigator.collapsedViews,
+            appropriateDropTargetHint: possiblyAppropriateDropTargetHint,
+            renamingTarget: store.editor.navigator.renamingTarget,
+            isElementVisible: !EP.containsPath(props.elementPath, store.editor.hiddenInstances),
+          }
+        },
+        [props.elementPath],
+      ),
+      'NavigatorItemWrapper',
+    )
 
     const isCollapsed = EP.containsPath(props.elementPath, collapsedViews)
 

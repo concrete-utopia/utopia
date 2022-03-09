@@ -127,7 +127,10 @@ const AlignDistributeButton = React.memo<AlignDistributeButtonProps>(
 AlignDistributeButton.displayName = 'AlignDistributeButton'
 
 const AlignmentButtons = React.memo((props: { numberOfTargets: number }) => {
-  const dispatch = useEditorState((store) => store.dispatch, 'AlignmentButtons dispatch')
+  const dispatch = useEditorState(
+    React.useCallback((store) => store.dispatch, []),
+    'AlignmentButtons dispatch',
+  )
   const alignSelected = React.useCallback(
     (alignment: Alignment) => {
       dispatch([alignSelectedViews(alignment)], 'everyone')
@@ -244,56 +247,66 @@ export const Inspector = React.memo<InspectorProps>((props: InspectorProps) => {
     hasNonDefaultPositionAttributes,
     aspectRatioLocked,
     isInteractionActive,
-  } = useEditorState((store) => {
-    const rootMetadata = store.editor.jsxMetadata
-    let anyComponentsInner: boolean = false
-    let anyUnknownElementsInner: boolean = false
-    let hasNonDefaultPositionAttributesInner: boolean = false
-    let aspectRatioLockedInner: boolean = false
+  } = useEditorState(
+    React.useCallback(
+      (store) => {
+        const rootMetadata = store.editor.jsxMetadata
+        let anyComponentsInner: boolean = false
+        let anyUnknownElementsInner: boolean = false
+        let hasNonDefaultPositionAttributesInner: boolean = false
+        let aspectRatioLockedInner: boolean = false
 
-    Utils.fastForEach(selectedViews, (view) => {
-      const { components: rootComponents } = getJSXComponentsAndImportsForPathFromState(
-        view,
-        store.editor,
-        store.derived,
-      )
-      anyComponentsInner =
-        anyComponentsInner || MetadataUtils.isComponentInstance(view, rootComponents)
-      const possibleElement = MetadataUtils.findElementByElementPath(rootMetadata, view)
-      if (possibleElement != null) {
-        // Slightly coarse in definition, but element metadata is in a weird little world of
-        // its own compared to the props.
-        aspectRatioLockedInner = aspectRatioLockedInner || isAspectRatioLockedNew(possibleElement)
+        Utils.fastForEach(selectedViews, (view) => {
+          const { components: rootComponents } = getJSXComponentsAndImportsForPathFromState(
+            view,
+            store.editor,
+            store.derived,
+          )
+          anyComponentsInner =
+            anyComponentsInner || MetadataUtils.isComponentInstance(view, rootComponents)
+          const possibleElement = MetadataUtils.findElementByElementPath(rootMetadata, view)
+          if (possibleElement != null) {
+            // Slightly coarse in definition, but element metadata is in a weird little world of
+            // its own compared to the props.
+            aspectRatioLockedInner =
+              aspectRatioLockedInner || isAspectRatioLockedNew(possibleElement)
 
-        const elementOriginType = MetadataUtils.getElementOriginType(rootComponents, view)
-        if (elementOriginType === 'unknown-element') {
-          anyUnknownElementsInner = true
-        }
-        if (isRight(possibleElement.element)) {
-          const elem = possibleElement.element.value
-          if (isJSXElement(elem)) {
-            if (!hasNonDefaultPositionAttributesInner) {
-              for (const nonDefaultPositionPath of buildNonDefaultPositionPaths(['style'])) {
-                const attributeAtPath = getJSXAttributeAtPath(elem.props, nonDefaultPositionPath)
-                if (attributeAtPath.attribute.type !== 'ATTRIBUTE_NOT_FOUND') {
-                  hasNonDefaultPositionAttributesInner = true
+            const elementOriginType = MetadataUtils.getElementOriginType(rootComponents, view)
+            if (elementOriginType === 'unknown-element') {
+              anyUnknownElementsInner = true
+            }
+            if (isRight(possibleElement.element)) {
+              const elem = possibleElement.element.value
+              if (isJSXElement(elem)) {
+                if (!hasNonDefaultPositionAttributesInner) {
+                  for (const nonDefaultPositionPath of buildNonDefaultPositionPaths(['style'])) {
+                    const attributeAtPath = getJSXAttributeAtPath(
+                      elem.props,
+                      nonDefaultPositionPath,
+                    )
+                    if (attributeAtPath.attribute.type !== 'ATTRIBUTE_NOT_FOUND') {
+                      hasNonDefaultPositionAttributesInner = true
+                    }
+                  }
                 }
               }
             }
           }
+        })
+        return {
+          dispatch: store.dispatch,
+          focusedPanel: store.editor.focusedPanel,
+          anyComponents: anyComponentsInner,
+          anyUnknownElements: anyUnknownElementsInner,
+          hasNonDefaultPositionAttributes: hasNonDefaultPositionAttributesInner,
+          aspectRatioLocked: aspectRatioLockedInner,
+          isInteractionActive: isStrategyActive(store.strategyState),
         }
-      }
-    })
-    return {
-      dispatch: store.dispatch,
-      focusedPanel: store.editor.focusedPanel,
-      anyComponents: anyComponentsInner,
-      anyUnknownElements: anyUnknownElementsInner,
-      hasNonDefaultPositionAttributes: hasNonDefaultPositionAttributesInner,
-      aspectRatioLocked: aspectRatioLockedInner,
-      isInteractionActive: isStrategyActive(store.strategyState),
-    }
-  }, 'Inspector')
+      },
+      [selectedViews],
+    ),
+    'Inspector',
+  )
 
   const onFocus = React.useCallback(
     (event: React.FocusEvent<HTMLElement>) => {
@@ -386,7 +399,7 @@ const DefaultStyleTargets: Array<CSSTarget> = [cssTarget(['style'], 0), cssTarge
 
 export const InspectorEntryPoint: React.FunctionComponent = React.memo(() => {
   const selectedViews = useEditorState(
-    (store) => store.editor.selectedViews,
+    React.useCallback((store) => store.editor.selectedViews, []),
     'InspectorEntryPoint selectedViews',
   )
 
@@ -435,13 +448,16 @@ export const SingleInspectorEntryPoint: React.FunctionComponent<{
   selectedViews: Array<ElementPath>
 }> = React.memo((props) => {
   const { selectedViews } = props
-  const { dispatch, jsxMetadata, isUIJSFile } = useEditorState((store) => {
-    return {
-      dispatch: store.dispatch,
-      jsxMetadata: store.editor.jsxMetadata,
-      isUIJSFile: isOpenFileUiJs(store.editor),
-    }
-  }, 'SingleInspectorEntryPoint')
+  const { dispatch, jsxMetadata, isUIJSFile } = useEditorState(
+    React.useCallback((store) => {
+      return {
+        dispatch: store.dispatch,
+        jsxMetadata: store.editor.jsxMetadata,
+        isUIJSFile: isOpenFileUiJs(store.editor),
+      }
+    }, []),
+    'SingleInspectorEntryPoint',
+  )
 
   let targets: Array<CSSTarget> = [...DefaultStyleTargets]
 
@@ -571,12 +587,15 @@ export const InspectorContextProvider = React.memo<{
   children: React.ReactNode
 }>((props) => {
   const { selectedViews } = props
-  const { dispatch, jsxMetadata } = useEditorState((store) => {
-    return {
-      dispatch: store.dispatch,
-      jsxMetadata: store.editor.jsxMetadata,
-    }
-  }, 'InspectorContextProvider')
+  const { dispatch, jsxMetadata } = useEditorState(
+    React.useCallback((store) => {
+      return {
+        dispatch: store.dispatch,
+        jsxMetadata: store.editor.jsxMetadata,
+      }
+    }, []),
+    'InspectorContextProvider',
+  )
 
   const rootComponents = useKeepReferenceEqualityIfPossible(
     useEditorState(rootComponentsSelector, 'InspectorContextProvider rootComponents'),

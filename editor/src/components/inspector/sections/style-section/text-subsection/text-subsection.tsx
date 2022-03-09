@@ -21,7 +21,6 @@ import {
 import { InspectorContextMenuWrapper } from '../../../../context-menu-wrapper'
 import { EditorAction } from '../../../../editor/action-types'
 import * as EditorActions from '../../../../editor/actions/action-creators'
-import { useRefEditorState } from '../../../../editor/store/store-hook'
 import { addOnUnsetValues } from '../../../common/context-menu-items'
 import { CSSFontStyle, cssNumber, CSSTextDecorationLine } from '../../../common/css-utils'
 import { usePropControlledRef_DANGEROUS } from '../../../common/inspector-utils'

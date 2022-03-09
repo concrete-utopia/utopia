@@ -216,34 +216,37 @@ export function useGetPropertyControlsForSelectedComponents(): Array<
   const selectedViews = useRefSelectedViews()
 
   const selectedPropertyControls = useEditorState(
-    (store) => {
-      let propertyControlsAndTargets: Array<PropertyControlsAndTargets> = []
-      fastForEach(selectedViews.current, (path) => {
-        const propertyControls = getPropertyControlsForTargetFromEditor(path, store.editor)
-        if (propertyControls == null) {
-          propertyControlsAndTargets.push({
-            controls: emptyControls,
-            targets: [path],
-          })
-        } else {
-          const withFilteredProps = omit(propsToOmit, propertyControls)
-
-          const foundMatch = propertyControlsAndTargets.findIndex((existing) =>
-            areMatchingPropertyControls(existing.controls, withFilteredProps),
-          )
-          if (foundMatch > -1) {
-            propertyControlsAndTargets[foundMatch].targets.push(path)
-          } else {
+    React.useCallback(
+      (store) => {
+        let propertyControlsAndTargets: Array<PropertyControlsAndTargets> = []
+        fastForEach(selectedViews.current, (path) => {
+          const propertyControls = getPropertyControlsForTargetFromEditor(path, store.editor)
+          if (propertyControls == null) {
             propertyControlsAndTargets.push({
-              controls: withFilteredProps,
+              controls: emptyControls,
               targets: [path],
             })
-          }
-        }
-      })
+          } else {
+            const withFilteredProps = omit(propsToOmit, propertyControls)
 
-      return propertyControlsAndTargets
-    },
+            const foundMatch = propertyControlsAndTargets.findIndex((existing) =>
+              areMatchingPropertyControls(existing.controls, withFilteredProps),
+            )
+            if (foundMatch > -1) {
+              propertyControlsAndTargets[foundMatch].targets.push(path)
+            } else {
+              propertyControlsAndTargets.push({
+                controls: withFilteredProps,
+                targets: [path],
+              })
+            }
+          }
+        })
+
+        return propertyControlsAndTargets
+      },
+      [selectedViews],
+    ),
     'useSelectedPropertyControls',
     (oldResult, newResult) => {
       return deepEqual(oldResult, newResult) // TODO better equality
@@ -251,14 +254,17 @@ export function useGetPropertyControlsForSelectedComponents(): Array<
   )
 
   const selectedElementsFIXME = useEditorState(
-    (store) => {
-      return selectedPropertyControls.map(({ targets }) =>
-        mapDropNulls(
-          (path) => MetadataUtils.findElementByElementPath(store.editor.jsxMetadata, path),
-          targets,
-        ),
-      )
-    },
+    React.useCallback(
+      (store) => {
+        return selectedPropertyControls.map(({ targets }) =>
+          mapDropNulls(
+            (path) => MetadataUtils.findElementByElementPath(store.editor.jsxMetadata, path),
+            targets,
+          ),
+        )
+      },
+      [selectedPropertyControls],
+    ),
     'useGetPropertyControlsForSelectedComponents selectedElements',
     (a, b) =>
       arrayDeepEquality(arrayDeepEquality(ElementInstanceMetadataKeepDeepEquality()))(a, b)
@@ -266,27 +272,30 @@ export function useGetPropertyControlsForSelectedComponents(): Array<
   )
 
   const selectedComponentsFIXME = useEditorState(
-    (store) => {
-      return selectedPropertyControls.map(({ targets }) => {
-        // TODO mapDropNulls
-        let components: Array<UtopiaJSXComponent> = []
-        fastForEach(targets, (path) => {
-          const openStoryboardFile = store.editor.canvas.openFile?.filename ?? null
-          if (openStoryboardFile != null) {
-            const component = findUnderlyingTargetComponentImplementation(
-              store.editor.projectContents,
-              store.editor.nodeModules.files,
-              openStoryboardFile,
-              path,
-            )
-            if (component != null) {
-              components.push(component)
+    React.useCallback(
+      (store) => {
+        return selectedPropertyControls.map(({ targets }) => {
+          // TODO mapDropNulls
+          let components: Array<UtopiaJSXComponent> = []
+          fastForEach(targets, (path) => {
+            const openStoryboardFile = store.editor.canvas.openFile?.filename ?? null
+            if (openStoryboardFile != null) {
+              const component = findUnderlyingTargetComponentImplementation(
+                store.editor.projectContents,
+                store.editor.nodeModules.files,
+                openStoryboardFile,
+                path,
+              )
+              if (component != null) {
+                components.push(component)
+              }
             }
-          }
+          })
+          return components
         })
-        return components
-      })
-    },
+      },
+      [selectedPropertyControls],
+    ),
     'useUsedPropsWithoutControls',
     (a, b) =>
       arrayDeepEquality(arrayDeepEquality(UtopiaJSXComponentKeepDeepEquality))(a, b).areEqual,

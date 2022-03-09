@@ -76,21 +76,28 @@ const FeatureSwitchRow = React.memo((props: { name: FeatureName }) => {
 
 export const SettingsPanel = React.memo(() => {
   const colorTheme = useColorTheme()
-  const dispatch = useEditorState((store) => store.dispatch, 'SettingsPanel dispatch')
+  const dispatch = useEditorState(
+    React.useCallback((store) => store.dispatch, []),
+    'SettingsPanel dispatch',
+  )
   const interfaceDesigner = useEditorState(
-    (store) => store.editor.interfaceDesigner,
+    React.useCallback((store) => store.editor.interfaceDesigner, []),
     'SettingsPanel interfaceDesigner',
   )
 
-  const entireStateRef = useRefEditorState((store) => store)
+  const entireStateRef = useRefEditorState(React.useCallback((store) => store, []))
 
-  const openUiJsFile = useRefEditorState((store) => {
-    return getOpenUIJSFile(store.editor)
-  })
+  const openUiJsFile = useRefEditorState(
+    React.useCallback((store) => {
+      return getOpenUIJSFile(store.editor)
+    }, []),
+  )
 
-  const jsxMetadata = useRefEditorState((store) => {
-    return store.editor.jsxMetadata
-  })
+  const jsxMetadata = useRefEditorState(
+    React.useCallback((store) => {
+      return store.editor.jsxMetadata
+    }, []),
+  )
 
   const toggleCodeEditorVisible = React.useCallback(() => {
     dispatch([EditorActions.toggleInterfaceDesignerCodeEditor()])

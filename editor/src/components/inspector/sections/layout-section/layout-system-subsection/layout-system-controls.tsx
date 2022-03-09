@@ -70,7 +70,10 @@ function useDefaultedLayoutSystemInfo(): {
 }
 
 export function useLayoutSystemData() {
-  const dispatch = useEditorState((store) => store.dispatch, 'useLayoutSystemData dispatch')
+  const dispatch = useEditorState(
+    React.useCallback((store) => store.dispatch, []),
+    'useLayoutSystemData dispatch',
+  )
   const targetPath = useContextSelector(InspectorPropsContext, (contextData) => {
     return contextData.targetPath
   })

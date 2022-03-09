@@ -5,8 +5,11 @@ import { useEditorState, useRefEditorState } from '../../components/editor/store
 import { RevisionsState, textFile, textFileContents } from '../shared/project-file-types'
 
 export function useReParseOpenProjectFile(): () => void {
-  const dispatch = useEditorState((s) => s.dispatch, 'useReParseOpenProjectFile dispatch')
-  const refEditorState = useRefEditorState((store) => store.editor)
+  const dispatch = useEditorState(
+    React.useCallback((s) => s.dispatch, []),
+    'useReParseOpenProjectFile dispatch',
+  )
+  const refEditorState = useRefEditorState(React.useCallback((store) => store.editor, []))
   return React.useCallback(() => {
     const openFile = getOpenUIJSFile(refEditorState.current)
     const openFilePath = getOpenUIJSFileKey(refEditorState.current)

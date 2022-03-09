@@ -12,18 +12,20 @@ import { useRefEditorState } from '../../../editor/store/store-hook'
 import { useHighlightCallbacks } from './select-mode-hooks'
 
 function useGetHighlightableViewsForInsertMode() {
-  const storeRef = useRefEditorState((store) => {
-    const resolveFn = store.editor.codeResultCache.curriedResolveFn(store.editor.projectContents)
-    return {
-      componentMetadata: store.editor.jsxMetadata,
-      mode: store.editor.mode,
-      openFile: store.editor.canvas.openFile?.filename ?? null,
-      projectContents: store.editor.projectContents,
-      nodeModules: store.editor.nodeModules.files,
-      transientState: store.derived.canvas.transientState,
-      resolve: resolveFn,
-    }
-  })
+  const storeRef = useRefEditorState(
+    React.useCallback((store) => {
+      const resolveFn = store.editor.codeResultCache.curriedResolveFn(store.editor.projectContents)
+      return {
+        componentMetadata: store.editor.jsxMetadata,
+        mode: store.editor.mode,
+        openFile: store.editor.canvas.openFile?.filename ?? null,
+        projectContents: store.editor.projectContents,
+        nodeModules: store.editor.nodeModules.files,
+        transientState: store.derived.canvas.transientState,
+        resolve: resolveFn,
+      }
+    }, []),
+  )
   return React.useCallback(() => {
     const { componentMetadata, mode } = storeRef.current
     if (!isInsertMode(mode)) {

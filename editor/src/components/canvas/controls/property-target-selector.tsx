@@ -25,12 +25,15 @@ interface PropertyTargetSelectorProps {
 export const PropertyTargetSelector = React.memo(
   (props: PropertyTargetSelectorProps): JSX.Element => {
     const colorTheme = useColorTheme()
-    const { resizeOptions, dispatch } = useEditorState((editorState) => {
-      return {
-        resizeOptions: editorState.editor.canvas.resizeOptions,
-        dispatch: editorState.dispatch,
-      }
-    }, 'PropertyTargetSelector resizeOptions')
+    const { resizeOptions, dispatch } = useEditorState(
+      React.useCallback((editorState) => {
+        return {
+          resizeOptions: editorState.editor.canvas.resizeOptions,
+          dispatch: editorState.dispatch,
+        }
+      }, []),
+      'PropertyTargetSelector resizeOptions',
+    )
 
     const onKeyDown = React.useCallback(
       (event: KeyboardEvent) => {

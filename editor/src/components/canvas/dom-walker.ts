@@ -40,11 +40,7 @@ import {
 } from '../inspector/common/css-utils'
 import { CanvasContainerProps } from './ui-jsx-canvas'
 import { camelCaseToDashed } from '../../core/shared/string-utils'
-import {
-  useEditorState,
-  useRefEditorState,
-  useSelectorWithCallback,
-} from '../editor/store/store-hook'
+import { useRefEditorState, useSelectorWithCallback } from '../editor/store/store-hook'
 import {
   UTOPIA_DO_NOT_TRAVERSE_KEY,
   UTOPIA_PATHS_KEY,
@@ -486,7 +482,10 @@ export function useDomWalker(
   })
 
   const rootMetadataInStateRef = useRefEditorState(
-    (store) => store.editor.domMetadata as ReadonlyArray<ElementInstanceMetadata>,
+    React.useCallback(
+      (store) => store.editor.domMetadata as ReadonlyArray<ElementInstanceMetadata>,
+      [],
+    ),
   )
   const [invalidatedPaths, updateInvalidatedPaths] = useStateAsyncInvalidate<Set<string>>(
     fireThrottledCallback,

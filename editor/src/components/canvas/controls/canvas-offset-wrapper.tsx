@@ -17,8 +17,10 @@ export function useApplyCanvasOffsetToStyle(
   forceOffset?: boolean, // this is not so nice, but the element is optionally rendered in canvas-component-entry
 ): React.RefObject<HTMLDivElement> {
   const elementRef = React.useRef<HTMLDivElement>(null)
-  const canvasOffsetRef = useRefEditorState((store) => store.editor.canvas.roundedCanvasOffset)
-  const scaleRef = useRefEditorState((store) => store.editor.canvas.scale)
+  const canvasOffsetRef = useRefEditorState(
+    React.useCallback((store) => store.editor.canvas.roundedCanvasOffset, []),
+  )
+  const scaleRef = useRefEditorState(React.useCallback((store) => store.editor.canvas.scale, []))
   const applyCanvasOffset = React.useCallback(
     (roundedCanvasOffset: CanvasVector, _?: any) => {
       if (elementRef.current != null) {

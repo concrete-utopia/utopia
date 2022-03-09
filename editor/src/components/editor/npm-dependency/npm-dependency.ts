@@ -437,9 +437,12 @@ export function immediatelyResolvableDependenciesWithEditorRequirements(
 }
 
 export function usePackageDependencies(): Array<RequestedNpmDependency> {
-  const packageJsonFile = useEditorState((store) => {
-    return packageJsonFileFromProjectContents(store.editor.projectContents)
-  }, 'usePackageDependencies')
+  const packageJsonFile = useEditorState(
+    React.useCallback((store) => {
+      return packageJsonFileFromProjectContents(store.editor.projectContents)
+    }, []),
+    'usePackageDependencies',
+  )
 
   return React.useMemo(() => {
     if (isTextFile(packageJsonFile)) {
@@ -452,9 +455,15 @@ export function usePackageDependencies(): Array<RequestedNpmDependency> {
 
 export function usePossiblyResolvedPackageDependencies(): Array<PossiblyUnversionedNpmDependency> {
   const basePackageDependencies = usePackageDependencies()
-  const { files, builtInDependencies } = useEditorState((store) => {
-    return { files: store.editor.nodeModules.files, builtInDependencies: store.builtInDependencies }
-  }, 'usePossiblyResolvedPackageDependencies')
+  const { files, builtInDependencies } = useEditorState(
+    React.useCallback((store) => {
+      return {
+        files: store.editor.nodeModules.files,
+        builtInDependencies: store.builtInDependencies,
+      }
+    }, []),
+    'usePossiblyResolvedPackageDependencies',
+  )
   return React.useMemo(() => {
     return resolvedDependencyVersions(basePackageDependencies, files, builtInDependencies)
   }, [basePackageDependencies, files, builtInDependencies])

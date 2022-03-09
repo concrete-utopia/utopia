@@ -17,20 +17,28 @@ import { usePossiblyResolvedPackageDependencies } from '../../../components/edit
 import { MetadataUtils } from '../../../core/model/element-metadata-utils'
 
 export const RenderAsRow = React.memo(() => {
-  const dispatch = useEditorState((store) => {
-    return store.dispatch
-  }, 'RenderAsRow dispatch')
+  const dispatch = useEditorState(
+    React.useCallback((store) => {
+      return store.dispatch
+    }, []),
+    'RenderAsRow dispatch',
+  )
 
-  const selectedElementName = useEditorState((store) => {
-    return MetadataUtils.getJSXElementNameFromMetadata(
-      store.editor.jsxMetadata,
-      store.editor.selectedViews[0],
-    )
-  }, 'RenderAsRow selectedElementName')
+  const selectedElementName = useEditorState(
+    React.useCallback((store) => {
+      return MetadataUtils.getJSXElementNameFromMetadata(
+        store.editor.jsxMetadata,
+        store.editor.selectedViews[0],
+      )
+    }, []),
+    'RenderAsRow selectedElementName',
+  )
 
-  const refElementsToTargetForUpdates = useRefEditorState((store) => {
-    return getElementsToTarget(store.editor.selectedViews)
-  })
+  const refElementsToTargetForUpdates = useRefEditorState(
+    React.useCallback((store) => {
+      return getElementsToTarget(store.editor.selectedViews)
+    }, []),
+  )
 
   const onElementTypeChange = React.useCallback(
     (newElementName: JSXElementName, importsToAdd: Imports) => {
@@ -53,14 +61,14 @@ export const RenderAsRow = React.memo(() => {
   const dependencies = usePossiblyResolvedPackageDependencies()
 
   const { packageStatus, propertyControlsInfo, projectContents, fullPath } = useEditorState(
-    (store) => {
+    React.useCallback((store) => {
       return {
         packageStatus: store.editor.nodeModules.packageStatus,
         propertyControlsInfo: store.editor.propertyControlsInfo,
         projectContents: store.editor.projectContents,
         fullPath: store.editor.canvas.openFile?.filename ?? null,
       }
-    },
+    }, []),
     'RenderAsRow',
   )
 

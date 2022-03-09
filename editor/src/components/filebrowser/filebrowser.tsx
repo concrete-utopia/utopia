@@ -133,13 +133,16 @@ function collectFileBrowserItems(
 }
 
 export const FileBrowser = React.memo(() => {
-  const { dispatch, minimised, focusedPanel } = useEditorState((store) => {
-    return {
-      dispatch: store.dispatch,
-      minimised: store.editor.fileBrowser.minimised,
-      focusedPanel: store.editor.focusedPanel,
-    }
-  }, 'FileBrowser')
+  const { dispatch, minimised, focusedPanel } = useEditorState(
+    React.useCallback((store) => {
+      return {
+        dispatch: store.dispatch,
+        minimised: store.editor.fileBrowser.minimised,
+        focusedPanel: store.editor.focusedPanel,
+      }
+    }, []),
+    'FileBrowser',
+  )
 
   const toggleMinimised = React.useCallback(() => {
     dispatch([EditorActions.togglePanel('filebrowser')], 'leftpane')
@@ -240,18 +243,21 @@ const FileBrowserItems = React.memo(() => {
     codeResultCache,
     renamingTarget,
     dropTarget,
-  } = useEditorState((store) => {
-    return {
-      dispatch: store.dispatch,
-      projectContents: store.editor.projectContents,
-      editorSelectedFile: getOpenFilename(store.editor),
-      errorMessages: getAllCodeEditorErrors(store.editor, 'warning', true),
-      codeResultCache: store.editor.codeResultCache,
-      propertyControlsInfo: store.editor.propertyControlsInfo,
-      renamingTarget: store.editor.fileBrowser.renamingTarget,
-      dropTarget: store.editor.fileBrowser.dropTarget,
-    }
-  }, 'FileBrowserItems')
+  } = useEditorState(
+    React.useCallback((store) => {
+      return {
+        dispatch: store.dispatch,
+        projectContents: store.editor.projectContents,
+        editorSelectedFile: getOpenFilename(store.editor),
+        errorMessages: getAllCodeEditorErrors(store.editor, 'warning', true),
+        codeResultCache: store.editor.codeResultCache,
+        propertyControlsInfo: store.editor.propertyControlsInfo,
+        renamingTarget: store.editor.fileBrowser.renamingTarget,
+        dropTarget: store.editor.fileBrowser.dropTarget,
+      }
+    }, []),
+    'FileBrowserItems',
+  )
 
   const [selectedPath, setSelectedPath] = React.useState(editorSelectedFile)
 
@@ -315,10 +321,6 @@ const FileBrowserItems = React.memo(() => {
 })
 
 const FileBrowserActionSheet = React.memo((props: FileBrowserActionSheetProps) => {
-  const { dispatch } = useEditorState(
-    (store) => ({ dispatch: store.dispatch }),
-    'FileBrowserActionSheet dispatch',
-  )
   const addFolderClick = React.useCallback(() => props.setAddingFileOrFolder('folder'), [props])
   const addTextFileClick = React.useCallback(() => props.setAddingFileOrFolder('file'), [props])
   if (props.visible) {

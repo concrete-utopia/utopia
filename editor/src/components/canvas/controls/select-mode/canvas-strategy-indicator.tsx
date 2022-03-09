@@ -7,12 +7,18 @@ import { CanvasStrategy } from '../../canvas-strategies/canvas-strategy-types'
 
 export const CanvasStrategyIndicator = React.memo(() => {
   const colorTheme = useColorTheme()
-  const dispatch = useEditorState((store) => store.dispatch, 'CanvasStrategyIndicator dispatch')
+  const dispatch = useEditorState(
+    React.useCallback((store) => store.dispatch, []),
+    'CanvasStrategyIndicator dispatch',
+  )
   const { activeStrategy, otherPossibleStrategies } = useEditorState(
-    (store) => ({
-      activeStrategy: store.strategyState.currentStrategy,
-      otherPossibleStrategies: store.strategyState.sortedApplicableStrategies,
-    }),
+    React.useCallback(
+      (store) => ({
+        activeStrategy: store.strategyState.currentStrategy,
+        otherPossibleStrategies: store.strategyState.sortedApplicableStrategies,
+      }),
+      [],
+    ),
     'CanvasStrategyIndicator strategyState.currentStrategy',
   )
 

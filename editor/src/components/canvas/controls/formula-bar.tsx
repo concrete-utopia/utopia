@@ -29,24 +29,30 @@ interface FormulaBarProps {
 
 export const FormulaBar = React.memo<FormulaBarProps>((props) => {
   const saveTimerRef = React.useRef<any>(null)
-  const dispatch = useEditorState((store) => store.dispatch, 'FormulaBar dispatch')
+  const dispatch = useEditorState(
+    React.useCallback((store) => store.dispatch, []),
+    'FormulaBar dispatch',
+  )
 
   const selectedMode = useEditorState(
-    (store) => store.editor.topmenu.formulaBarMode,
+    React.useCallback((store) => store.editor.topmenu.formulaBarMode, []),
     'FormulaBar selectedMode',
   )
 
-  const selectedElement = useEditorState((store) => {
-    const metadata = store.editor.jsxMetadata
-    if (store.editor.selectedViews.length === 1) {
-      return MetadataUtils.findElementByElementPath(metadata, store.editor.selectedViews[0])
-    } else {
-      return null
-    }
-  }, 'FormulaBar selectedElement')
+  const selectedElement = useEditorState(
+    React.useCallback((store) => {
+      const metadata = store.editor.jsxMetadata
+      if (store.editor.selectedViews.length === 1) {
+        return MetadataUtils.findElementByElementPath(metadata, store.editor.selectedViews[0])
+      } else {
+        return null
+      }
+    }, []),
+    'FormulaBar selectedElement',
+  )
 
   const focusTriggerCount = useEditorState(
-    (store) => store.editor.topmenu.formulaBarFocusCounter,
+    React.useCallback((store) => store.editor.topmenu.formulaBarFocusCounter, []),
     'FormulaBar formulaBarFocusCounter',
   )
 
@@ -104,7 +110,7 @@ export const FormulaBar = React.memo<FormulaBarProps>((props) => {
   const classNameFieldVisible = selectedElement != null && selectedMode === 'css'
   const inputFieldVisible = !classNameFieldVisible
 
-  const editorStoreRef = useRefEditorState((store) => store)
+  const editorStoreRef = useRefEditorState(React.useCallback((store) => store, []))
   const onKeyDown = React.useCallback(
     (event: React.KeyboardEvent<HTMLElement>) => {
       const namesByKey = applyShortcutConfigurationToDefaults(

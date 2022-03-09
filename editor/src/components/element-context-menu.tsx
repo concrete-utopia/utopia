@@ -139,7 +139,10 @@ const SelectableElementItem = (props: SelectableElementItemProps) => {
   const rawRef = React.useRef<HTMLDivElement>(null)
   const { dispatch, path, iconProps, label } = props
   const isHighlighted = useEditorState(
-    (store) => store.editor.highlightedViews.some((view) => EP.pathsEqual(path, view)),
+    React.useCallback(
+      (store) => store.editor.highlightedViews.some((view) => EP.pathsEqual(path, view)),
+      [path],
+    ),
     'SelectableElementItem isHighlighted',
   )
   const highlightElement = React.useCallback(() => dispatch([setHighlightedView(path)]), [
@@ -172,26 +175,29 @@ const SelectableElementItem = (props: SelectableElementItemProps) => {
 }
 
 export const ElementContextMenu = React.memo(({ contextMenuInstance }: ElementContextMenuProps) => {
-  const { dispatch } = useEditorState((store) => {
-    return { dispatch: store.dispatch }
-  }, 'ElementContextMenu dispatch')
+  const dispatch = useEditorState(
+    React.useCallback((store) => store.dispatch, []),
+    'ElementContextMenu dispatch',
+  )
 
-  const editorSliceRef = useRefEditorState((store) => {
-    const resolveFn = store.editor.codeResultCache.curriedResolveFn(store.editor.projectContents)
-    return {
-      canvasOffset: store.editor.canvas.roundedCanvasOffset,
-      selectedViews: store.editor.selectedViews,
-      jsxMetadata: store.editor.jsxMetadata,
-      editorDispatch: store.dispatch,
-      projectContents: store.editor.projectContents,
-      nodeModules: store.editor.nodeModules.files,
-      transientFilesState: store.derived.canvas.transientState.filesState,
-      resolve: resolveFn,
-      hiddenInstances: store.editor.hiddenInstances,
-      scale: store.editor.canvas.scale,
-      focusedElementPath: store.editor.focusedElementPath,
-    }
-  })
+  const editorSliceRef = useRefEditorState(
+    React.useCallback((store) => {
+      const resolveFn = store.editor.codeResultCache.curriedResolveFn(store.editor.projectContents)
+      return {
+        canvasOffset: store.editor.canvas.roundedCanvasOffset,
+        selectedViews: store.editor.selectedViews,
+        jsxMetadata: store.editor.jsxMetadata,
+        editorDispatch: store.dispatch,
+        projectContents: store.editor.projectContents,
+        nodeModules: store.editor.nodeModules.files,
+        transientFilesState: store.derived.canvas.transientState.filesState,
+        resolve: resolveFn,
+        hiddenInstances: store.editor.hiddenInstances,
+        scale: store.editor.canvas.scale,
+        focusedElementPath: store.editor.focusedElementPath,
+      }
+    }, []),
+  )
 
   const getData: () => CanvasData = React.useCallback(() => {
     const currentEditor = editorSliceRef.current

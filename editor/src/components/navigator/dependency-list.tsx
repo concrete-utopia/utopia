@@ -91,16 +91,19 @@ function packageDetailsFromDependencies(
 }
 
 export const DependencyList = React.memo(() => {
-  const props = useEditorState((store) => {
-    return {
-      editorDispatch: store.dispatch,
-      minimised: store.editor.dependencyList.minimised,
-      focusedPanel: store.editor.focusedPanel,
-      packageJsonFile: packageJsonFileFromProjectContents(store.editor.projectContents),
-      packageStatus: store.editor.nodeModules.packageStatus,
-      builtInDependencies: store.builtInDependencies,
-    }
-  }, 'DependencyList')
+  const props = useEditorState(
+    React.useCallback((store) => {
+      return {
+        editorDispatch: store.dispatch,
+        minimised: store.editor.dependencyList.minimised,
+        focusedPanel: store.editor.focusedPanel,
+        packageJsonFile: packageJsonFileFromProjectContents(store.editor.projectContents),
+        packageStatus: store.editor.nodeModules.packageStatus,
+        builtInDependencies: store.builtInDependencies,
+      }
+    }, []),
+    'DependencyList',
+  )
 
   const dispatch = props.editorDispatch
 
@@ -458,7 +461,10 @@ interface AddTailwindButtonProps {
 }
 
 const AddTailwindButton = (props: AddTailwindButtonProps) => {
-  const dispatch = useEditorState((store) => store.dispatch, 'AddTailwindButton')
+  const dispatch = useEditorState(
+    React.useCallback((store) => store.dispatch, []),
+    'AddTailwindButton',
+  )
   const onButtonClicked = React.useCallback(() => {
     dispatch([EditorActions.addTailwindConfig()])
   }, [dispatch])

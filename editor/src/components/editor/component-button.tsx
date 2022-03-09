@@ -21,15 +21,21 @@ import { MetadataUtils } from '../../core/model/element-metadata-utils'
 import { setFocusedElement } from './actions/action-creators'
 
 export const ComponentOrInstanceIndicator = React.memo(() => {
-  const { metadata, focusedElementPath, selectedViews } = useEditorState((store) => {
-    return {
-      metadata: store.editor.jsxMetadata,
-      focusedElementPath: store.editor.focusedElementPath,
-      selectedViews: store.editor.selectedViews,
-    }
-  }, 'Component-button')
+  const { metadata, focusedElementPath, selectedViews } = useEditorState(
+    React.useCallback((store) => {
+      return {
+        metadata: store.editor.jsxMetadata,
+        focusedElementPath: store.editor.focusedElementPath,
+        selectedViews: store.editor.selectedViews,
+      }
+    }, []),
+    'Component-button',
+  )
 
-  const dispatch = useEditorState((state) => state.dispatch, 'ComponentOrInstanceIndicator')
+  const dispatch = useEditorState(
+    React.useCallback((state) => state.dispatch, []),
+    'ComponentOrInstanceIndicator',
+  )
   const colorTheme = useColorTheme()
   const popupEnabled = selectedViews.length > 0
 

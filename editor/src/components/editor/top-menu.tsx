@@ -34,9 +34,12 @@ function useShouldResetCanvas(invalidateCount: number): [boolean, (value: boolea
 }
 
 const TopMenuLeftControls = React.memo(() => {
-  const dispatch = useEditorState((store) => store.dispatch, 'TopMenuLeftControls dispatch')
+  const dispatch = useEditorState(
+    React.useCallback((store) => store.dispatch, []),
+    'TopMenuLeftControls dispatch',
+  )
   const navigatorVisible = useEditorState(
-    (store) => !store.editor.navigator.minimised,
+    React.useCallback((store) => !store.editor.navigator.minimised, []),
     'TopMenuLeftControls navigatorVisible',
   )
 
@@ -53,7 +56,7 @@ const TopMenuLeftControls = React.memo(() => {
   }, [dispatch, navigatorVisible, navigatorWidth])
 
   const followSelection = useEditorState(
-    (store) => store.editor.config.followSelection,
+    React.useCallback((store) => store.editor.config.followSelection, []),
     'TopMenu followSelection',
   )
   const onToggleFollow = React.useCallback(() => {
@@ -81,13 +84,19 @@ const TopMenuLeftControls = React.memo(() => {
 })
 
 const TopMenuRightControls = React.memo(() => {
-  const dispatch = useEditorState((store) => store.dispatch, 'TopMenuRightControls dispatch')
+  const dispatch = useEditorState(
+    React.useCallback((store) => store.dispatch, []),
+    'TopMenuRightControls dispatch',
+  )
   const canvasContentInvalidateCount = useEditorState(
-    (store) => store.editor.canvas.canvasContentInvalidateCount,
+    React.useCallback((store) => store.editor.canvas.canvasContentInvalidateCount, []),
     'RightMenu canvasContentInvalidateCount',
   )
 
-  const zoomLevel = useEditorState((store) => store.editor.canvas.scale, 'RightMenu zoomLevel')
+  const zoomLevel = useEditorState(
+    React.useCallback((store) => store.editor.canvas.scale, []),
+    'RightMenu zoomLevel',
+  )
   const zoomIn = React.useCallback(
     () => dispatch([CanvasActions.zoom(Utils.increaseScale(zoomLevel))]),
     [dispatch, zoomLevel],
@@ -107,7 +116,7 @@ const TopMenuRightControls = React.memo(() => {
   const zoom100pct = React.useCallback(() => dispatch([CanvasActions.zoom(1)]), [dispatch])
 
   const rightMenuSelectedTab = useEditorState(
-    (store) => store.editor.rightMenu.selectedTab,
+    React.useCallback((store) => store.editor.rightMenu.selectedTab, []),
     'RightMenu rightMenuSelectedTab',
   )
 

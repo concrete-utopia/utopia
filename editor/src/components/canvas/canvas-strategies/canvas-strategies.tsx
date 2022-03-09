@@ -213,7 +213,7 @@ export function applyCanvasStrategy(
 export function useGetApplicableStrategyControls(): Array<ControlWithKey> {
   const applicableStrategies = useGetApplicableStrategies()
   const currentStrategy = useEditorState(
-    (store) => store.strategyState.currentStrategy,
+    React.useCallback((store) => store.strategyState.currentStrategy, []),
     'currentStrategy',
   )
   return React.useMemo(() => {

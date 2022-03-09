@@ -187,55 +187,66 @@ const computeResultingStyle = (
 }
 
 function useStyleFullyVisible(path: ElementPath): boolean {
-  return useEditorState((store) => {
-    const metadata = store.editor.jsxMetadata
-    const selectedViews = store.editor.selectedViews
-    const isSelected = selectedViews.some((selected) => EP.pathsEqual(path, selected))
-    const isParentOfSelected = selectedViews.some((selected) => EP.isParentOf(path, selected))
+  return useEditorState(
+    React.useCallback(
+      (store) => {
+        const metadata = store.editor.jsxMetadata
+        const selectedViews = store.editor.selectedViews
+        const isSelected = selectedViews.some((selected) => EP.pathsEqual(path, selected))
+        const isParentOfSelected = selectedViews.some((selected) => EP.isParentOf(path, selected))
 
-    const isStoryboardChild = EP.isStoryboardChild(path)
+        const isStoryboardChild = EP.isStoryboardChild(path)
 
-    const isContainingBlockAncestor = selectedViews.some((selected) => {
-      return EP.pathsEqual(MetadataUtils.findContainingBlock(metadata, selected), path)
-    })
+        const isContainingBlockAncestor = selectedViews.some((selected) => {
+          return EP.pathsEqual(MetadataUtils.findContainingBlock(metadata, selected), path)
+        })
 
-    const isFlexAncestorDirectionChange = selectedViews.some((selected) => {
-      const selectedSizeMeasurements = MetadataUtils.findElementByElementPath(metadata, selected)
-        ?.specialSizeMeasurements
-      const parentPath = EP.parentPath(selected)
-      if (
-        selectedSizeMeasurements?.parentLayoutSystem === 'flex' &&
-        !isParentOfSelected &&
-        EP.isDescendantOfOrEqualTo(selected, path) &&
-        parentPath != null
-      ) {
-        const flexDirectionChange = MetadataUtils.findNearestAncestorFlexDirectionChange(
-          metadata,
-          parentPath,
+        const isFlexAncestorDirectionChange = selectedViews.some((selected) => {
+          const selectedSizeMeasurements = MetadataUtils.findElementByElementPath(
+            metadata,
+            selected,
+          )?.specialSizeMeasurements
+          const parentPath = EP.parentPath(selected)
+          if (
+            selectedSizeMeasurements?.parentLayoutSystem === 'flex' &&
+            !isParentOfSelected &&
+            EP.isDescendantOfOrEqualTo(selected, path) &&
+            parentPath != null
+          ) {
+            const flexDirectionChange = MetadataUtils.findNearestAncestorFlexDirectionChange(
+              metadata,
+              parentPath,
+            )
+            return EP.pathsEqual(flexDirectionChange, path)
+          } else {
+            return false
+          }
+        })
+
+        let isInsideFocusedComponent =
+          EP.isFocused(store.editor.focusedElementPath, path) || EP.isInsideFocusedComponent(path)
+
+        return (
+          isStoryboardChild ||
+          isSelected ||
+          isParentOfSelected ||
+          isContainingBlockAncestor ||
+          isFlexAncestorDirectionChange ||
+          isInsideFocusedComponent
         )
-        return EP.pathsEqual(flexDirectionChange, path)
-      } else {
-        return false
-      }
-    })
-
-    let isInsideFocusedComponent =
-      EP.isFocused(store.editor.focusedElementPath, path) || EP.isInsideFocusedComponent(path)
-
-    return (
-      isStoryboardChild ||
-      isSelected ||
-      isParentOfSelected ||
-      isContainingBlockAncestor ||
-      isFlexAncestorDirectionChange ||
-      isInsideFocusedComponent
-    )
-  }, 'NavigatorItem useStyleFullyVisible')
+      },
+      [path],
+    ),
+    'NavigatorItem useStyleFullyVisible',
+  )
 }
 
 function useIsProbablyScene(path: ElementPath): boolean {
   return useEditorState(
-    (store) => MetadataUtils.isProbablySceneFromMetadata(store.editor.jsxMetadata, path),
+    React.useCallback(
+      (store) => MetadataUtils.isProbablySceneFromMetadata(store.editor.jsxMetadata, path),
+      [path],
+    ),
     'NavigatorItem useIsProbablyScene',
   )
 }
@@ -257,13 +268,21 @@ export const NavigatorItem: React.FunctionComponent<NavigatorItemInnerProps> = R
 
     const colorTheme = useColorTheme()
     const isFocusedComponent = useEditorState(
-      (store) => EP.isFocused(store.editor.focusedElementPath, elementPath),
+      React.useCallback((store) => EP.isFocused(store.editor.focusedElementPath, elementPath), [
+        elementPath,
+      ]),
       'NavigatorItem isFocusedComponent',
     )
 
-    const isFocusableComponent = useEditorState((store) => {
-      return MetadataUtils.isFocusableComponent(elementPath, store.editor.jsxMetadata)
-    }, 'NavigatorItem isFocusable')
+    const isFocusableComponent = useEditorState(
+      React.useCallback(
+        (store) => {
+          return MetadataUtils.isFocusableComponent(elementPath, store.editor.jsxMetadata)
+        },
+        [elementPath],
+      ),
+      'NavigatorItem isFocusable',
+    )
 
     const childComponentCount = props.noOfChildren
 

@@ -1,4 +1,5 @@
 import deepEqual from 'fast-deep-equal'
+import { useCallback } from 'react'
 import { useContextSelector } from 'use-context-selector'
 import { flatMapArray, last, mapArrayToDictionary } from '../../../core/shared/array-utils'
 import { emptyComments, jsxAttributeValue } from '../../../core/shared/element-template'
@@ -109,7 +110,7 @@ export function useInspectorInfoLonghandShorthand<
   [longhand in LonghandKey]: InspectorInfoWithPropKeys<LonghandKey, ShorthandKey>
 } {
   const dispatch = useEditorState(
-    (store) => store.dispatch,
+    useCallback((store) => store.dispatch, []),
     'useInspectorInfoLonghandShorthand dispatch',
   )
   const inspectorTargetPath = useKeepReferenceEqualityIfPossible(

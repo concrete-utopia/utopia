@@ -170,10 +170,10 @@ const Input = (props: InputProps) => {
 }
 
 const ClassNameControl = React.memo(() => {
-  const editorStoreRef = useRefEditorState((store) => store)
+  const editorStoreRef = useRefEditorState(React.useCallback((store) => store, []))
   const theme = useColorTheme()
   const targets = useEditorState(
-    (store) => store.editor.selectedViews,
+    React.useCallback((store) => store.editor.selectedViews, []),
     'ClassNameSubsection targets',
   )
   const dispatch = useEditorState((store) => store.dispatch, 'ClassNameSubsection dispatch')
@@ -185,7 +185,7 @@ const ClassNameControl = React.memo(() => {
   const focusedValueRef = React.useRef<string | null>(null)
 
   const focusTriggerCount = useEditorState(
-    (store) => store.editor.inspector.classnameFocusCounter,
+    React.useCallback((store) => store.editor.inspector.classnameFocusCounter, []),
     'ClassNameSubsection classnameFocusCounter',
   )
   const inputRef = useInputFocusOnCountIncrease<CreatableSelect<TailWindOption>>(focusTriggerCount)

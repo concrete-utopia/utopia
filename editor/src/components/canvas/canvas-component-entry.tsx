@@ -30,7 +30,10 @@ import { useApplyCanvasOffsetToStyle } from './controls/canvas-offset-wrapper'
 interface CanvasComponentEntryProps {}
 
 export const CanvasComponentEntry = React.memo((props: CanvasComponentEntryProps) => {
-  const dispatch = useEditorState((store) => store.dispatch, 'CanvasComponentEntry dispatch')
+  const dispatch = useEditorState(
+    React.useCallback((store) => store.dispatch, []),
+    'CanvasComponentEntry dispatch',
+  )
   const onDomReport = React.useCallback(
     (elementMetadata: ReadonlyArray<ElementInstanceMetadata>, cachedPaths: Array<ElementPath>) => {
       dispatch([saveDOMReport(elementMetadata, cachedPaths)])
@@ -40,17 +43,23 @@ export const CanvasComponentEntry = React.memo((props: CanvasComponentEntryProps
   const { addToRuntimeErrors, clearRuntimeErrors } = useWriteOnlyRuntimeErrors()
   const { addToConsoleLogs, clearConsoleLogs } = useWriteOnlyConsoleLogs()
 
-  const canvasProps = useEditorState((store) => {
-    return pickUiJsxCanvasProps(
-      store.editor,
-      store.derived,
-      store.dispatch,
-      true,
-      onDomReport,
-      clearConsoleLogs,
-      addToConsoleLogs,
-    )
-  }, 'CanvasComponentEntry canvasProps')
+  const canvasProps = useEditorState(
+    React.useCallback(
+      (store) => {
+        return pickUiJsxCanvasProps(
+          store.editor,
+          store.derived,
+          store.dispatch,
+          true,
+          onDomReport,
+          clearConsoleLogs,
+          addToConsoleLogs,
+        )
+      },
+      [addToConsoleLogs, clearConsoleLogs, onDomReport],
+    ),
+    'CanvasComponentEntry canvasProps',
+  )
 
   const canvasEditOrSelect = React.useMemo(() => {
     // Explicitly target the case where the canvas is not live, needs to handle `undefined`.
@@ -112,7 +121,7 @@ export const CanvasComponentEntry = React.memo((props: CanvasComponentEntryProps
 
 function DomWalkerWrapper(props: UiJsxCanvasPropsWithErrorCallback) {
   const selectedViews = useEditorState(
-    (store) => store.editor.selectedViews,
+    React.useCallback((store) => store.editor.selectedViews, []),
     'DomWalkerWrapper selectedViews',
   )
   let [updateInvalidatedPaths, updateInvalidatedScenes, containerRef] = useDomWalker({

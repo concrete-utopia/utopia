@@ -20,7 +20,10 @@ export interface NameAndIconResult {
 }
 
 export function useMetadata(): ElementInstanceMetadataMap {
-  return useEditorState((store) => store.editor.jsxMetadata, 'useMetadata')
+  return useEditorState(
+    React.useCallback((store) => store.editor.jsxMetadata, []),
+    'useMetadata',
+  )
 }
 
 const namesAndIconsAllPathsResultSelector = createSelector(

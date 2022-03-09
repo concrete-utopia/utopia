@@ -49,7 +49,10 @@ const TopMenuHeight = 35
 
 const NothingOpenCard = React.memo(() => {
   const colorTheme = useColorTheme()
-  const dispatch = useEditorState((store) => store.dispatch, 'NothingOpenCard dispatch')
+  const dispatch = useEditorState(
+    React.useCallback((store) => store.dispatch, []),
+    'NothingOpenCard dispatch',
+  )
   const handleOpenCanvasClick = React.useCallback(() => {
     dispatch([EditorActions.setPanelVisibility('canvas', true)])
   }, [dispatch])
@@ -118,9 +121,12 @@ const NothingOpenCard = React.memo(() => {
 })
 
 const DesignPanelRootInner = React.memo(() => {
-  const dispatch = useEditorState((store) => store.dispatch, 'DesignPanelRoot dispatch')
+  const dispatch = useEditorState(
+    React.useCallback((store) => store.dispatch, []),
+    'DesignPanelRoot dispatch',
+  )
   const interfaceDesigner = useEditorState(
-    (store) => store.editor.interfaceDesigner,
+    React.useCallback((store) => store.editor.interfaceDesigner, []),
     'DesignPanelRoot interfaceDesigner',
   )
 
@@ -129,27 +135,22 @@ const DesignPanelRootInner = React.memo(() => {
     interfaceDesigner.codePaneWidth,
   )
   const navigatorVisible = useEditorState(
-    (store) => !store.editor.navigator.minimised,
+    React.useCallback((store) => !store.editor.navigator.minimised, []),
     'DesignPanelRoot navigatorVisible',
   )
 
   const isRightMenuExpanded = useEditorState(
-    (store) => store.editor.rightMenu.expanded,
+    React.useCallback((store) => store.editor.rightMenu.expanded, []),
     'DesignPanelRoot isRightMenuExpanded',
   )
 
   const rightMenuSelectedTab = useEditorState(
-    (store) => store.editor.rightMenu.selectedTab,
+    React.useCallback((store) => store.editor.rightMenu.selectedTab, []),
     'DesignPanelRoot rightMenuSelectedTab',
   )
 
-  const leftMenuExpanded = useEditorState(
-    (store) => store.editor.leftMenu.expanded,
-    'EditorComponentInner leftMenuExpanded',
-  )
-
   const isCanvasVisible = useEditorState(
-    (store) => store.editor.canvas.visible,
+    React.useCallback((store) => store.editor.canvas.visible, []),
     'design panel root',
   )
 

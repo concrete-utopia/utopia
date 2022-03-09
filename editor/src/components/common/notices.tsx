@@ -36,7 +36,10 @@ const ToastTimeout = 5500
  * **Level**: see NoticeLevel jsdoc
  */
 export const Toast: React.FunctionComponent<NoticeProps> = (props) => {
-  const dispatch = useEditorState((store) => store.dispatch, 'Toast dispatch')
+  const dispatch = useEditorState(
+    React.useCallback((store) => store.dispatch, []),
+    'Toast dispatch',
+  )
   const deleteToast = React.useCallback(() => {
     dispatch([EditorActions.removeToast(props.id)])
   }, [dispatch, props.id])

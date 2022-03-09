@@ -59,13 +59,16 @@ export const GenericExternalResourcesList = React.memo(() => {
     setEditingIndexOrInserting(null)
   }, [])
 
-  const { dispatch, minimised, focusedPanel } = useEditorState((store) => {
-    return {
-      dispatch: store.dispatch,
-      minimised: store.editor.genericExternalResources.minimised,
-      focusedPanel: store.editor.focusedPanel,
-    }
-  }, 'GenericExternalResourcesList')
+  const { dispatch, minimised, focusedPanel } = useEditorState(
+    React.useCallback((store) => {
+      return {
+        dispatch: store.dispatch,
+        minimised: store.editor.genericExternalResources.minimised,
+        focusedPanel: store.editor.focusedPanel,
+      }
+    }, []),
+    'GenericExternalResourcesList',
+  )
 
   const toggleMinimised = React.useCallback(() => {
     dispatch([togglePanel('genericExternalResources')], 'leftpane')

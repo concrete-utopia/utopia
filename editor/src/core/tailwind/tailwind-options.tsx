@@ -275,25 +275,28 @@ export function useGetSelectedClasses(): {
   elementPaths: Array<ElementPath>
   isSettable: boolean
 } {
-  const metadataRef = useRefEditorState((store) => store.editor.jsxMetadata)
-  const elements = useEditorState((store) => {
-    const openUIJSFileKey = getOpenUIJSFileKey(store.editor)
-    if (openUIJSFileKey == null) {
-      return []
-    } else {
-      return store.editor.selectedViews.map((elementPath) =>
-        getJSXElementForTarget(
-          elementPath,
-          openUIJSFileKey,
-          store.editor.projectContents,
-          store.editor.nodeModules.files,
-        ),
-      )
-    }
-  }, 'ClassNameSelect elements')
+  const metadataRef = useRefEditorState(React.useCallback((store) => store.editor.jsxMetadata, []))
+  const elements = useEditorState(
+    React.useCallback((store) => {
+      const openUIJSFileKey = getOpenUIJSFileKey(store.editor)
+      if (openUIJSFileKey == null) {
+        return []
+      } else {
+        return store.editor.selectedViews.map((elementPath) =>
+          getJSXElementForTarget(
+            elementPath,
+            openUIJSFileKey,
+            store.editor.projectContents,
+            store.editor.nodeModules.files,
+          ),
+        )
+      }
+    }, []),
+    'ClassNameSelect elements',
+  )
 
   const elementPaths = useEditorState(
-    (store) => store.editor.selectedViews,
+    React.useCallback((store) => store.editor.selectedViews, []),
     'ClassNameSelect elementPaths',
   )
 

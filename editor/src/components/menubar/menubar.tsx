@@ -116,19 +116,22 @@ export const Menubar = React.memo(() => {
     isPreviewPaneVisible,
     isCanvasVisible,
     isCodeEditorVisible,
-  } = useEditorState((store) => {
-    return {
-      dispatch: store.dispatch,
-      selectedTab: store.editor.leftMenu.selectedTab,
-      userState: store.userState,
-      leftMenuExpanded: store.editor.leftMenu.expanded,
-      projectId: store.editor.id,
-      projectName: store.editor.projectName,
-      isPreviewPaneVisible: store.editor.preview.visible,
-      isCanvasVisible: store.editor.canvas.visible,
-      isCodeEditorVisible: store.editor.interfaceDesigner.codePaneVisible,
-    }
-  }, 'Menubar')
+  } = useEditorState(
+    React.useCallback((store) => {
+      return {
+        dispatch: store.dispatch,
+        selectedTab: store.editor.leftMenu.selectedTab,
+        userState: store.userState,
+        leftMenuExpanded: store.editor.leftMenu.expanded,
+        projectId: store.editor.id,
+        projectName: store.editor.projectName,
+        isPreviewPaneVisible: store.editor.preview.visible,
+        isCanvasVisible: store.editor.canvas.visible,
+        isCodeEditorVisible: store.editor.interfaceDesigner.codePaneVisible,
+      }
+    }, []),
+    'Menubar',
+  )
 
   const colorTheme = useColorTheme()
 
@@ -197,11 +200,13 @@ export const Menubar = React.memo(() => {
   const previewURL =
     projectId == null ? '' : shareURLForProject(FLOATING_PREVIEW_BASE_URL, projectId, projectName)
 
-  const entireStateRef = useRefEditorState((store) => store)
+  const entireStateRef = useRefEditorState(React.useCallback((store) => store, []))
 
-  const jsxMetadata = useRefEditorState((store) => {
-    return store.editor.jsxMetadata
-  })
+  const jsxMetadata = useRefEditorState(
+    React.useCallback((store) => {
+      return store.editor.jsxMetadata
+    }, []),
+  )
 
   const printEditorState = React.useCallback(() => {
     console.info('Current Editor State:', entireStateRef.current)

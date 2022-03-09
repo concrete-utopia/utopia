@@ -38,18 +38,27 @@ interface OutlineControlProps {
 const OutlineControl = React.memo<OutlineControlProps>((props) => {
   const colorTheme = useColorTheme()
   const targets = props.targets
-  const scale = useEditorState((store) => store.editor.canvas.scale, 'OutlineControl scale')
+  const scale = useEditorState(
+    React.useCallback((store) => store.editor.canvas.scale, []),
+    'OutlineControl scale',
+  )
 
-  const colors = useEditorState((store) => {
-    return targets.map((path) =>
-      getSelectionColor(
-        path,
-        store.editor.jsxMetadata,
-        store.editor.focusedElementPath,
-        colorTheme,
-      ),
-    )
-  }, 'OutlineControl colors')
+  const colors = useEditorState(
+    React.useCallback(
+      (store) => {
+        return targets.map((path) =>
+          getSelectionColor(
+            path,
+            store.editor.jsxMetadata,
+            store.editor.focusedElementPath,
+            colorTheme,
+          ),
+        )
+      },
+      [colorTheme, targets],
+    ),
+    'OutlineControl colors',
+  )
 
   const outlineRef = useBoundingBox(targets, (ref, boundingBox) => {
     ref.current.style.left = `${boundingBox.x + 0.5 / scale}px`

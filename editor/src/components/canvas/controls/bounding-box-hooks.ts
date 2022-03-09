@@ -32,7 +32,7 @@ function useBoundingBoxFromMetadataRef(
   selectedElements: Array<ElementPath>,
   boundingBoxCallback: (boundingRectangle: CanvasRectangle | null) => void,
 ): void {
-  const metadataRef = useRefEditorState((store) => getMetadata(store.editor))
+  const metadataRef = useRefEditorState(React.useCallback((store) => getMetadata(store.editor), []))
 
   const boundingBoxCallbackRef = React.useRef(boundingBoxCallback)
   boundingBoxCallbackRef.current = boundingBoxCallback

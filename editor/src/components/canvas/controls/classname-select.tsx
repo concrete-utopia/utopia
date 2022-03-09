@@ -150,8 +150,14 @@ let queuedDispatchTimeout: number | undefined = undefined
 export const ClassNameSelect = React.memo(
   React.forwardRef<HTMLInputElement>((_, ref) => {
     const theme = useColorTheme()
-    const targets = useEditorState((store) => store.editor.selectedViews, 'ClassNameSelect targets')
-    const dispatch = useEditorState((store) => store.dispatch, 'ClassNameSelect dispatch')
+    const targets = useEditorState(
+      React.useCallback((store) => store.editor.selectedViews, []),
+      'ClassNameSelect targets',
+    )
+    const dispatch = useEditorState(
+      React.useCallback((store) => store.dispatch, []),
+      'ClassNameSelect dispatch',
+    )
     const [input, setInput] = React.useState('')
     const focusedValueRef = React.useRef<string | null>(null)
     const updateFocusedOption = usePubSubAtomWriteOnly(focusedOptionAtom)

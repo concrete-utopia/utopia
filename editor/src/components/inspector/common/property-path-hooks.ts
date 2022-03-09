@@ -940,52 +940,58 @@ export function useInspectorLayoutInfo<P extends StyleLayoutProp>(
 export function useIsSubSectionVisible(sectionName: string): boolean {
   const selectedViews = useRefSelectedViews()
 
-  return useEditorState((store) => {
-    const types = selectedViews.current.map((view) => {
-      return withUnderlyingTarget(
-        view,
-        store.editor.projectContents,
-        store.editor.nodeModules.files,
-        store.editor.canvas.openFile?.filename ?? null,
-        null,
-        (underlyingSuccess, underlyingElement) => {
-          if (isJSXElement(underlyingElement)) {
-            if (isUtopiaAPIComponent(underlyingElement.name, underlyingSuccess.imports)) {
-              return getJSXElementNameLastPart(underlyingElement.name).toString().toLowerCase()
-            } else if (isHTMLComponent(underlyingElement.name, underlyingSuccess.imports)) {
-              return underlyingElement.name.baseVariable
-            } else {
-              return null
-            }
+  return useEditorState(
+    React.useCallback(
+      (store) => {
+        const types = selectedViews.current.map((view) => {
+          return withUnderlyingTarget(
+            view,
+            store.editor.projectContents,
+            store.editor.nodeModules.files,
+            store.editor.canvas.openFile?.filename ?? null,
+            null,
+            (underlyingSuccess, underlyingElement) => {
+              if (isJSXElement(underlyingElement)) {
+                if (isUtopiaAPIComponent(underlyingElement.name, underlyingSuccess.imports)) {
+                  return getJSXElementNameLastPart(underlyingElement.name).toString().toLowerCase()
+                } else if (isHTMLComponent(underlyingElement.name, underlyingSuccess.imports)) {
+                  return underlyingElement.name.baseVariable
+                } else {
+                  return null
+                }
+              } else {
+                return null
+              }
+            },
+          )
+        })
+        return types.every((type) => {
+          const subSectionAvailable = StyleSubSectionForType[sectionName]
+          if (subSectionAvailable == null) {
+            return false
           } else {
-            return null
-          }
-        },
-      )
-    })
-    return types.every((type) => {
-      const subSectionAvailable = StyleSubSectionForType[sectionName]
-      if (subSectionAvailable == null) {
-        return false
-      } else {
-        if (type == null) {
-          return true
-        } else {
-          switch (subSectionAvailable.type) {
-            case 'permit':
-              return subSectionAvailable.allowedElementTypes.includes(type)
-            case 'deny':
-              return !subSectionAvailable.deniedElementTypes.includes(type)
-            case 'allowall':
+            if (type == null) {
               return true
-            default:
-              const _exhaustiveCheck: never = subSectionAvailable
-              throw new Error(`Unhandled type ${JSON.stringify(subSectionAvailable)}`)
+            } else {
+              switch (subSectionAvailable.type) {
+                case 'permit':
+                  return subSectionAvailable.allowedElementTypes.includes(type)
+                case 'deny':
+                  return !subSectionAvailable.deniedElementTypes.includes(type)
+                case 'allowall':
+                  return true
+                default:
+                  const _exhaustiveCheck: never = subSectionAvailable
+                  throw new Error(`Unhandled type ${JSON.stringify(subSectionAvailable)}`)
+              }
+            }
           }
-        }
-      }
-    })
-  }, 'useIsSubSectionVisible')
+        })
+      },
+      [sectionName, selectedViews],
+    ),
+    'useIsSubSectionVisible',
+  )
 }
 
 interface SubSectionPermitList {
@@ -1041,32 +1047,38 @@ export function filterUtopiaSpecificProps(props: MapLike<any>) {
 export function useInspectorWarningStatus(): boolean {
   const selectedViews = useSelectedViews()
 
-  return useEditorState((store) => {
-    let hasLayoutInCSSProp = false
-    Utils.fastForEach(selectedViews, (view) => {
-      if (hasLayoutInCSSProp) {
-        return
-      }
-
-      forUnderlyingTargetFromEditorState(
-        view,
-        store.editor,
-        (underlyingSuccess, underlyingElement) => {
-          if (isJSXElement(underlyingElement)) {
-            const cssAttribute = getJSXAttribute(underlyingElement.props, 'css')
-            if (cssAttribute != null) {
-              const cssProps = Utils.defaultIfNull(
-                {},
-                eitherToMaybe(jsxSimpleAttributeToValue(cssAttribute)),
-              )
-              hasLayoutInCSSProp = isLayoutPropDetectedInCSS(cssProps)
-            }
+  return useEditorState(
+    React.useCallback(
+      (store) => {
+        let hasLayoutInCSSProp = false
+        Utils.fastForEach(selectedViews, (view) => {
+          if (hasLayoutInCSSProp) {
+            return
           }
-        },
-      )
-    })
-    return hasLayoutInCSSProp
-  }, 'useInspectorWarningStatus')
+
+          forUnderlyingTargetFromEditorState(
+            view,
+            store.editor,
+            (underlyingSuccess, underlyingElement) => {
+              if (isJSXElement(underlyingElement)) {
+                const cssAttribute = getJSXAttribute(underlyingElement.props, 'css')
+                if (cssAttribute != null) {
+                  const cssProps = Utils.defaultIfNull(
+                    {},
+                    eitherToMaybe(jsxSimpleAttributeToValue(cssAttribute)),
+                  )
+                  hasLayoutInCSSProp = isLayoutPropDetectedInCSS(cssProps)
+                }
+              }
+            },
+          )
+        })
+        return hasLayoutInCSSProp
+      },
+      [selectedViews],
+    ),
+    'useInspectorWarningStatus',
+  )
 }
 
 export function useSelectedViews() {

@@ -35,17 +35,23 @@ interface AbsoluteResizeControlProps {
 
 export const AbsoluteResizeControl = React.memo<AbsoluteResizeControlProps>((props) => {
   const localSelectedElements = props.localSelectedElements
-  const allSelectedElementsAbsolute = useEditorState((store) => {
-    return (
-      localSelectedElements.length > 0 &&
-      localSelectedElements.every((path) => {
+  const allSelectedElementsAbsolute = useEditorState(
+    React.useCallback(
+      (store) => {
         return (
-          MetadataUtils.findElementByElementPath(store.editor.jsxMetadata, path)
-            ?.specialSizeMeasurements.position === 'absolute'
+          localSelectedElements.length > 0 &&
+          localSelectedElements.every((path) => {
+            return (
+              MetadataUtils.findElementByElementPath(store.editor.jsxMetadata, path)
+                ?.specialSizeMeasurements.position === 'absolute'
+            )
+          })
         )
-      })
-    )
-  }, 'AbsoluteResizeControl allSelectedElementsAbsolute')
+      },
+      [localSelectedElements],
+    ),
+    'AbsoluteResizeControl allSelectedElementsAbsolute',
+  )
 
   const absoluteElements = allSelectedElementsAbsolute ? localSelectedElements : []
 
@@ -152,11 +158,23 @@ const ResizePointOffset = ResizePointSize / 2
 const ResizePoint = React.memo(
   React.forwardRef<HTMLDivElement, ResizePointProps>((props, ref) => {
     const colorTheme = useColorTheme()
-    const scale = useEditorState((store) => store.editor.canvas.scale, 'ResizeEdge scale')
-    const dispatch = useEditorState((store) => store.dispatch, 'ResizeEdge dispatch')
-    const jsxMetadataRef = useRefEditorState((store) => store.editor.jsxMetadata)
-    const selectedViewsRef = useRefEditorState((store) => store.editor.selectedViews)
-    const canvasOffsetRef = useRefEditorState((store) => store.editor.canvas.roundedCanvasOffset)
+    const scale = useEditorState(
+      React.useCallback((store) => store.editor.canvas.scale, []),
+      'ResizeEdge scale',
+    )
+    const dispatch = useEditorState(
+      React.useCallback((store) => store.dispatch, []),
+      'ResizeEdge dispatch',
+    )
+    const jsxMetadataRef = useRefEditorState(
+      React.useCallback((store) => store.editor.jsxMetadata, []),
+    )
+    const selectedViewsRef = useRefEditorState(
+      React.useCallback((store) => store.editor.selectedViews, []),
+    )
+    const canvasOffsetRef = useRefEditorState(
+      React.useCallback((store) => store.editor.canvas.roundedCanvasOffset, []),
+    )
 
     const onPointMouseDown = React.useCallback(
       (event: React.MouseEvent<HTMLDivElement>) => {
@@ -230,11 +248,23 @@ interface ResizeEdgeProps {
 const ResizeMouseAreaSize = 10
 const ResizeEdge = React.memo(
   React.forwardRef<HTMLDivElement, ResizeEdgeProps>((props, ref) => {
-    const scale = useEditorState((store) => store.editor.canvas.scale, 'ResizeEdge scale')
-    const dispatch = useEditorState((store) => store.dispatch, 'ResizeEdge dispatch')
-    const jsxMetadataRef = useRefEditorState((store) => store.editor.jsxMetadata)
-    const selectedViewsRef = useRefEditorState((store) => store.editor.selectedViews)
-    const canvasOffsetRef = useRefEditorState((store) => store.editor.canvas.roundedCanvasOffset)
+    const scale = useEditorState(
+      React.useCallback((store) => store.editor.canvas.scale, []),
+      'ResizeEdge scale',
+    )
+    const dispatch = useEditorState(
+      React.useCallback((store) => store.dispatch, []),
+      'ResizeEdge dispatch',
+    )
+    const jsxMetadataRef = useRefEditorState(
+      React.useCallback((store) => store.editor.jsxMetadata, []),
+    )
+    const selectedViewsRef = useRefEditorState(
+      React.useCallback((store) => store.editor.selectedViews, []),
+    )
+    const canvasOffsetRef = useRefEditorState(
+      React.useCallback((store) => store.editor.canvas.roundedCanvasOffset, []),
+    )
 
     const onEdgeMouseDown = React.useCallback(
       (event: React.MouseEvent<HTMLDivElement>) => {

@@ -12,6 +12,7 @@ import { useEditorState } from '../editor/store/store-hook'
 import { isRight, maybeEitherToMaybe } from '../../core/shared/either'
 import { IcnPropsBase } from '../../uuiui'
 import { shallowEqual } from '../../core/shared/equality-utils'
+import { useCallback } from 'react'
 
 interface LayoutIconResult {
   iconProps: IcnPropsBase
@@ -20,10 +21,13 @@ interface LayoutIconResult {
 
 export function useLayoutOrElementIcon(path: ElementPath): LayoutIconResult {
   return useEditorState(
-    (store) => {
-      const metadata = store.editor.jsxMetadata
-      return createLayoutOrElementIconResult(path, metadata)
-    },
+    useCallback(
+      (store) => {
+        const metadata = store.editor.jsxMetadata
+        return createLayoutOrElementIconResult(path, metadata)
+      },
+      [path],
+    ),
     'useLayoutOrElementIcon',
     (oldResult: LayoutIconResult, newResult: LayoutIconResult) => {
       return (
@@ -35,10 +39,16 @@ export function useLayoutOrElementIcon(path: ElementPath): LayoutIconResult {
 }
 
 export function useComponentIcon(path: ElementPath): IcnPropsBase | null {
-  return useEditorState((store) => {
-    const metadata = store.editor.jsxMetadata
-    return createComponentIconProps(path, metadata)
-  }, 'useComponentIcon') // TODO Memoize Icon Result
+  return useEditorState(
+    useCallback(
+      (store) => {
+        const metadata = store.editor.jsxMetadata
+        return createComponentIconProps(path, metadata)
+      },
+      [path],
+    ),
+    'useComponentIcon',
+  ) // TODO Memoize Icon Result
 }
 
 export function createComponentOrElementIconProps(

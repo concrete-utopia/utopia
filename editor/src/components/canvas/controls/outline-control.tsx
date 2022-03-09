@@ -104,7 +104,7 @@ export const OutlineControls = (props: OutlineControlsProps) => {
   const colorTheme = useColorTheme()
   const { dragState } = props
   const layoutInspectorSectionHovered = useEditorState(
-    (store) => store.editor.inspector.layoutSectionHovered,
+    React.useCallback((store) => store.editor.inspector.layoutSectionHovered, []),
     'OutlineControls layoutInspectorSectionHovered',
   )
   const getDragStateFrame = React.useCallback(
@@ -296,16 +296,22 @@ export const OutlineControls = (props: OutlineControlsProps) => {
   const targetPaths =
     props.dragState != null ? props.dragState.draggedElements : props.selectedViews
 
-  const selectionColors = useEditorState((store) => {
-    return targetPaths.map((path) => {
-      return getSelectionColor(
-        path,
-        store.editor.jsxMetadata,
-        store.editor.focusedElementPath,
-        colorTheme,
-      )
-    })
-  }, 'OutlineControls')
+  const selectionColors = useEditorState(
+    React.useCallback(
+      (store) => {
+        return targetPaths.map((path) => {
+          return getSelectionColor(
+            path,
+            store.editor.jsxMetadata,
+            store.editor.focusedElementPath,
+            colorTheme,
+          )
+        })
+      },
+      [colorTheme, targetPaths],
+    ),
+    'OutlineControls',
+  )
 
   fastForEach(targetPaths, (selectedView, index) => {
     const rect = getTargetFrame(selectedView)

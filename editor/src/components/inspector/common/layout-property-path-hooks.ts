@@ -256,15 +256,24 @@ export interface UsePinTogglingResult {
 }
 
 export function usePinToggling(): UsePinTogglingResult {
-  const dispatch = useEditorState((store) => store.dispatch, 'usePinToggling dispatch')
+  const dispatch = useEditorState(
+    React.useCallback((store) => store.dispatch, []),
+    'usePinToggling dispatch',
+  )
   const selectedViewsRef = useRefSelectedViews()
-  const jsxMetadataRef = useRefEditorState((store) => {
-    return store.editor.jsxMetadata
-  })
+  const jsxMetadataRef = useRefEditorState(
+    React.useCallback((store) => {
+      return store.editor.jsxMetadata
+    }, []),
+  )
 
-  const elementsRef = useRefEditorState((store) =>
-    selectedViewsRef.current.map((e) =>
-      MetadataUtils.findElementByElementPath(store.editor.jsxMetadata, e),
+  const elementsRef = useRefEditorState(
+    React.useCallback(
+      (store) =>
+        selectedViewsRef.current.map((e) =>
+          MetadataUtils.findElementByElementPath(store.editor.jsxMetadata, e),
+        ),
+      [selectedViewsRef],
     ),
   )
   const propertyTarget = useContextSelector(InspectorPropsContext, (contextData) => {
@@ -272,34 +281,37 @@ export function usePinToggling(): UsePinTogglingResult {
   })
 
   const elementFrames = useEditorState(
-    (store): ReadonlyArray<Frame> => {
-      const jsxElements = selectedViewsRef.current.map((path) => {
-        const rootComponents = getJSXComponentsAndImportsForPathFromState(
-          path,
-          store.editor,
-          store.derived,
-        ).components
-        return findElementAtPath(path, rootComponents)
-      })
+    React.useCallback(
+      (store): ReadonlyArray<Frame> => {
+        const jsxElements = selectedViewsRef.current.map((path) => {
+          const rootComponents = getJSXComponentsAndImportsForPathFromState(
+            path,
+            store.editor,
+            store.derived,
+          ).components
+          return findElementAtPath(path, rootComponents)
+        })
 
-      return jsxElements.map((elem) => {
-        if (elem != null && isJSXElement(elem)) {
-          return LayoutPinnedProps.reduce<Frame>((working, point) => {
-            const value = getLayoutProperty(point, eitherRight(elem.props), propertyTarget)
-            if (isLeft(value)) {
-              return working
-            } else {
-              return {
-                ...working,
-                [point]: value.value,
+        return jsxElements.map((elem) => {
+          if (elem != null && isJSXElement(elem)) {
+            return LayoutPinnedProps.reduce<Frame>((working, point) => {
+              const value = getLayoutProperty(point, eitherRight(elem.props), propertyTarget)
+              if (isLeft(value)) {
+                return working
+              } else {
+                return {
+                  ...working,
+                  [point]: value.value,
+                }
               }
-            }
-          }, {})
-        } else {
-          return {}
-        }
-      })
-    },
+            }, {})
+          } else {
+            return {}
+          }
+        })
+      },
+      [propertyTarget, selectedViewsRef],
+    ),
     'usePinToggling elementFrames',
     fastDeepEqual,
   )

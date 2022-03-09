@@ -27,12 +27,15 @@ interface DataSourceEntry {
 }
 
 export function UserConfiguration() {
-  const { dispatch, shortcutConfig } = useEditorState((store) => {
-    return {
-      dispatch: store.dispatch,
-      shortcutConfig: store.userState.shortcutConfig,
-    }
-  }, 'UserConfiguration')
+  const { dispatch, shortcutConfig } = useEditorState(
+    React.useCallback((store) => {
+      return {
+        dispatch: store.dispatch,
+        shortcutConfig: store.userState.shortcutConfig,
+      }
+    }, []),
+    'UserConfiguration',
+  )
 
   const [editingIndex, setEditingIndex] = React.useState<number | null>(null)
 

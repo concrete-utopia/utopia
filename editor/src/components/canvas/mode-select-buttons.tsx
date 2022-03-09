@@ -53,8 +53,14 @@ const ModeSelectButton = React.memo((props: ModeSelectButtonProps) => {
 
 export const ModeSelectButtons = React.memo(() => {
   const colorTheme = useColorTheme()
-  const currentMode = useEditorState((store) => store.editor.mode, 'ModeSelectButtons editor.mode')
-  const dispatch = useEditorState((store) => store.dispatch, 'ModeSelectButtons dispatch')
+  const currentMode = useEditorState(
+    React.useCallback((store) => store.editor.mode, []),
+    'ModeSelectButtons editor.mode',
+  )
+  const dispatch = useEditorState(
+    React.useCallback((store) => store.dispatch, []),
+    'ModeSelectButtons dispatch',
+  )
 
   const switchToSelectMode = React.useCallback(
     () => dispatch([switchEditorMode(EditorModes.selectMode())]),

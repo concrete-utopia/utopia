@@ -249,7 +249,10 @@ const BlueDot = React.memo((props: ButtonControlProps) => {
 })
 
 const PlusButton = React.memo((props: ButtonControlProps) => {
-  const dispatch = useEditorState((store) => store.dispatch, 'PlusButton dispatch')
+  const dispatch = useEditorState(
+    React.useCallback((store) => store.dispatch, []),
+    'PlusButton dispatch',
+  )
   const colorTheme = useColorTheme()
   const { parentPath, indexPosition } = props
   const insertElement = React.useCallback(

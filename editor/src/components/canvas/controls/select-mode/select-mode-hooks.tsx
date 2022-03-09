@@ -89,16 +89,18 @@ export function useMaybeHighlightElement(): {
   maybeHighlightOnHover: (target: ElementPath) => void
   maybeClearHighlightsOnHoverEnd: () => void
 } {
-  const stateRef = useRefEditorState((store) => {
-    return {
-      dispatch: store.dispatch,
-      resizing: isResizing(store.editor),
-      dragging: isDragging(store.editor),
-      selectionEnabled: pickSelectionEnabled(store.editor.canvas, store.editor.keysPressed),
-      inserting: isInserting(store.editor),
-      highlightedViews: store.editor.highlightedViews,
-    }
-  })
+  const stateRef = useRefEditorState(
+    React.useCallback((store) => {
+      return {
+        dispatch: store.dispatch,
+        resizing: isResizing(store.editor),
+        dragging: isDragging(store.editor),
+        selectionEnabled: pickSelectionEnabled(store.editor.canvas, store.editor.keysPressed),
+        inserting: isInserting(store.editor),
+        highlightedViews: store.editor.highlightedViews,
+      }
+    }, []),
+  )
 
   const maybeHighlightOnHover = React.useCallback(
     (target: ElementPath): void => {
@@ -205,16 +207,18 @@ function useFindValidTarget(): (
   elementPath: ElementPath
   isSelected: boolean
 } | null {
-  const storeRef = useRefEditorState((store) => {
-    return {
-      componentMetadata: store.editor.jsxMetadata,
-      selectedViews: store.editor.selectedViews,
-      hiddenInstances: store.editor.hiddenInstances,
-      canvasScale: store.editor.canvas.scale,
-      canvasOffset: store.editor.canvas.realCanvasOffset,
-      focusedElementPath: store.editor.focusedElementPath,
-    }
-  })
+  const storeRef = useRefEditorState(
+    React.useCallback((store) => {
+      return {
+        componentMetadata: store.editor.jsxMetadata,
+        selectedViews: store.editor.selectedViews,
+        hiddenInstances: store.editor.hiddenInstances,
+        canvasScale: store.editor.canvas.scale,
+        canvasOffset: store.editor.canvas.realCanvasOffset,
+        focusedElementPath: store.editor.focusedElementPath,
+      }
+    }, []),
+  )
 
   return React.useCallback(
     (selectableViews: Array<ElementPath>, mousePoint: WindowPoint | null) => {
@@ -256,8 +260,11 @@ function useStartDragState(): (
   target: ElementPath,
   start: CanvasPoint | null,
 ) => (event: MouseEvent) => void {
-  const dispatch = useEditorState((store) => store.dispatch, 'useStartDragState dispatch')
-  const entireEditorStoreRef = useRefEditorState((store) => store)
+  const dispatch = useEditorState(
+    React.useCallback((store) => store.dispatch, []),
+    'useStartDragState dispatch',
+  )
+  const entireEditorStoreRef = useRefEditorState(React.useCallback((store) => store, []))
 
   return React.useCallback(
     (target: ElementPath, start: CanvasPoint | null) => (event: MouseEvent) => {
@@ -318,7 +325,10 @@ function useStartDragState(): (
 }
 
 function useStartCanvasSession(): (event: MouseEvent, target: ElementPath) => void {
-  const dispatch = useEditorState((store) => store.dispatch, 'useStartDragState dispatch')
+  const dispatch = useEditorState(
+    React.useCallback((store) => store.dispatch, []),
+    'useStartDragState dispatch',
+  )
   const windowToCanvasCoordinates = useWindowToCanvasCoordinates()
 
   return React.useCallback(
@@ -392,14 +402,16 @@ export function useStartDragStateAfterDragExceedsThreshold(): (
 }
 
 export function useGetSelectableViewsForSelectMode() {
-  const storeRef = useRefEditorState((store) => {
-    return {
-      componentMetadata: store.editor.jsxMetadata,
-      selectedViews: store.editor.selectedViews,
-      hiddenInstances: store.editor.hiddenInstances,
-      focusedElementPath: store.editor.focusedElementPath,
-    }
-  })
+  const storeRef = useRefEditorState(
+    React.useCallback((store) => {
+      return {
+        componentMetadata: store.editor.jsxMetadata,
+        selectedViews: store.editor.selectedViews,
+        hiddenInstances: store.editor.hiddenInstances,
+        focusedElementPath: store.editor.focusedElementPath,
+      }
+    }, []),
+  )
 
   return React.useCallback(
     (allElementsDirectlySelectable: boolean, childrenSelectable: boolean) => {
@@ -495,8 +507,13 @@ function useSelectOrLiveModeSelectAndHover(
   onMouseMove: (event: React.MouseEvent<HTMLDivElement, MouseEvent>) => void
   onMouseDown: (event: React.MouseEvent<HTMLDivElement, MouseEvent>) => void
 } {
-  const dispatch = useEditorState((store) => store.dispatch, 'useSelectAndHover dispatch')
-  const selectedViewsRef = useRefEditorState((store) => store.editor.selectedViews)
+  const dispatch = useEditorState(
+    React.useCallback((store) => store.dispatch, []),
+    'useSelectAndHover dispatch',
+  )
+  const selectedViewsRef = useRefEditorState(
+    React.useCallback((store) => store.editor.selectedViews, []),
+  )
   const findValidTarget = useFindValidTarget()
   const getSelectableViewsForSelectMode = useGetSelectableViewsForSelectMode()
   const startDragStateAfterDragExceedsThreshold = useStartDragStateAfterDragExceedsThreshold()
@@ -509,10 +526,15 @@ function useSelectOrLiveModeSelectAndHover(
     getSelectableViewsForSelectMode,
   )
 
-  const editorStoreRef = useRefEditorState((store) => ({
-    editor: store.editor,
-    derived: store.derived,
-  }))
+  const editorStoreRef = useRefEditorState(
+    React.useCallback(
+      (store) => ({
+        editor: store.editor,
+        derived: store.derived,
+      }),
+      [],
+    ),
+  )
 
   const innerAnimationFrameRef = React.useRef<number | null>(null)
 
@@ -604,7 +626,10 @@ export function useSelectAndHover(
   onMouseMove: (event: React.MouseEvent<HTMLDivElement, MouseEvent>) => void
   onMouseDown: (event: React.MouseEvent<HTMLDivElement, MouseEvent>) => void
 } {
-  const modeType = useEditorState((store) => store.editor.mode.type, 'useSelectAndHover mode')
+  const modeType = useEditorState(
+    React.useCallback((store) => store.editor.mode.type, []),
+    'useSelectAndHover mode',
+  )
   const hasInteractionSession = useEditorState(
     (store) => store.editor.canvas.interactionSession != null,
     'useSelectAndHover hasInteractionSession',

@@ -245,10 +245,8 @@ const TargetListItem = React.memo((props: TargetListItemProps) => {
   const [itemBeingRenamedId, setItemBeingRenamedId] = React.useState<number | null>(null)
   const [renameValue, setRenameValue] = React.useState<string | null>(null)
 
-  const { dispatch } = useEditorState(
-    (store) => ({
-      dispatch: store.dispatch,
-    }),
+  const dispatch = useEditorState(
+    React.useCallback((store) => store.dispatch, []),
     'TargetListItem',
   )
 

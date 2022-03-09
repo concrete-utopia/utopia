@@ -91,20 +91,23 @@ interface InsertMenuProps {
 }
 
 export const InsertMenu = React.memo(() => {
-  const props = useEditorState((store) => {
-    const openFileFullPath = getOpenFilename(store.editor)
+  const props = useEditorState(
+    React.useCallback((store) => {
+      const openFileFullPath = getOpenFilename(store.editor)
 
-    return {
-      lastFontSettings: store.editor.lastUsedFont,
-      editorDispatch: store.dispatch,
-      selectedViews: store.editor.selectedViews,
-      mode: store.editor.mode,
-      currentlyOpenFilename: openFileFullPath,
-      packageStatus: store.editor.nodeModules.packageStatus,
-      propertyControlsInfo: store.editor.propertyControlsInfo,
-      projectContents: store.editor.projectContents,
-    }
-  }, 'InsertMenu')
+      return {
+        lastFontSettings: store.editor.lastUsedFont,
+        editorDispatch: store.dispatch,
+        selectedViews: store.editor.selectedViews,
+        mode: store.editor.mode,
+        currentlyOpenFilename: openFileFullPath,
+        packageStatus: store.editor.nodeModules.packageStatus,
+        propertyControlsInfo: store.editor.propertyControlsInfo,
+        projectContents: store.editor.projectContents,
+      }
+    }, []),
+    'InsertMenu',
+  )
 
   const dependencies = usePossiblyResolvedPackageDependencies()
 

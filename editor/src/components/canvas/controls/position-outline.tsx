@@ -40,25 +40,40 @@ export const PositionOutline = React.memo((props: PositionOutlineProps) => {
 })
 
 const usePropsOrJSXAttributes = (path: ElementPath): PropsOrJSXAttributes => {
-  return useEditorState((store) => {
-    const element = MetadataUtils.findElementByElementPath(store.editor.jsxMetadata, path)
-    if (element != null && isRight(element.element) && isJSXElement(element.element.value)) {
-      return right(element.element.value.props)
-    } else {
-      return left(element?.props ?? {})
-    }
-  }, 'usePropsOrJSXAttributes')
+  return useEditorState(
+    React.useCallback(
+      (store) => {
+        const element = MetadataUtils.findElementByElementPath(store.editor.jsxMetadata, path)
+        if (element != null && isRight(element.element) && isJSXElement(element.element.value)) {
+          return right(element.element.value.props)
+        } else {
+          return left(element?.props ?? {})
+        }
+      },
+      [path],
+    ),
+    'usePropsOrJSXAttributes',
+  )
 }
 
 const useContainingFrameForElement = (path: ElementPath): CanvasRectangle | null => {
-  return useEditorState((store) => {
-    const containingBlockPath = MetadataUtils.findContainingBlock(store.editor.jsxMetadata, path)
-    if (containingBlockPath != null && !EP.isStoryboardPath(containingBlockPath)) {
-      return MetadataUtils.getFrameInCanvasCoords(containingBlockPath, store.editor.jsxMetadata)
-    } else {
-      return null
-    }
-  }, 'useContainingFrameForElement')
+  return useEditorState(
+    React.useCallback(
+      (store) => {
+        const containingBlockPath = MetadataUtils.findContainingBlock(
+          store.editor.jsxMetadata,
+          path,
+        )
+        if (containingBlockPath != null && !EP.isStoryboardPath(containingBlockPath)) {
+          return MetadataUtils.getFrameInCanvasCoords(containingBlockPath, store.editor.jsxMetadata)
+        } else {
+          return null
+        }
+      },
+      [path],
+    ),
+    'useContainingFrameForElement',
+  )
 }
 
 const collectPinOutlines = (

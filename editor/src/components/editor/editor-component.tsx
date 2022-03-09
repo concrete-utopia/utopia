@@ -93,7 +93,7 @@ function useDelayedValueHook(inputValue: boolean, delayMs: number): boolean {
 }
 
 export const EditorComponentInner = React.memo((props: EditorProps) => {
-  const editorStoreRef = useRefEditorState((store) => store)
+  const editorStoreRef = useRefEditorState(React.useCallback((store) => store, []))
   const colorTheme = useColorTheme()
   const onWindowMouseDown = React.useCallback(
     (event: MouseEvent) => {
@@ -201,18 +201,24 @@ export const EditorComponentInner = React.memo((props: EditorProps) => {
     }
   }, [onWindowMouseDown, onWindowKeyDown, onWindowKeyUp, preventDefault])
 
-  const dispatch = useEditorState((store) => store.dispatch, 'EditorComponentInner dispatch')
+  const dispatch = useEditorState(
+    React.useCallback((store) => store.dispatch, []),
+    'EditorComponentInner dispatch',
+  )
   const projectName = useEditorState(
-    (store) => store.editor.projectName,
+    React.useCallback((store) => store.editor.projectName, []),
     'EditorComponentInner projectName',
   )
-  const projectId = useEditorState((store) => store.editor.id, 'EditorComponentInner projectId')
+  const projectId = useEditorState(
+    React.useCallback((store) => store.editor.id, []),
+    'EditorComponentInner projectId',
+  )
   const previewVisible = useEditorState(
-    (store) => store.editor.preview.visible,
+    React.useCallback((store) => store.editor.preview.visible, []),
     'EditorComponentInner previewVisible',
   )
   const leftMenuExpanded = useEditorState(
-    (store) => store.editor.leftMenu.expanded,
+    React.useCallback((store) => store.editor.leftMenu.expanded, []),
     'EditorComponentInner leftMenuExpanded',
   )
 
@@ -248,10 +254,6 @@ export const EditorComponentInner = React.memo((props: EditorProps) => {
     },
     [dispatch],
   )
-
-  const vscodeBridgeReady = useEditorState((store) => {
-    return store.editor.vscodeBridgeReady
-  }, 'EditorComponentInner vscodeBridgeReady')
 
   return (
     <>
@@ -369,12 +371,15 @@ export const EditorComponentInner = React.memo((props: EditorProps) => {
 })
 
 const ModalComponent = React.memo((): React.ReactElement<any> | null => {
-  const { modal, dispatch } = useEditorState((store) => {
-    return {
-      dispatch: store.dispatch,
-      modal: store.editor.modal,
-    }
-  }, 'ModalComponent')
+  const { modal, dispatch } = useEditorState(
+    React.useCallback((store) => {
+      return {
+        dispatch: store.dispatch,
+        modal: store.editor.modal,
+      }
+    }, []),
+    'ModalComponent',
+  )
   if (modal != null) {
     if (modal.type === 'file-delete') {
       return <ConfirmDeleteDialog dispatch={dispatch} filePath={modal.filePath} />
@@ -385,7 +390,7 @@ const ModalComponent = React.memo((): React.ReactElement<any> | null => {
 
 export function EditorComponent(props: EditorProps) {
   const indexedDBFailed = useEditorState(
-    (store) => store.editor.indexedDBFailed,
+    React.useCallback((store) => store.editor.indexedDBFailed, []),
     'EditorComponent indexedDBFailed',
   )
 
@@ -399,9 +404,12 @@ export function EditorComponent(props: EditorProps) {
 }
 
 const EditorCursorComponent = React.memo(() => {
-  const cursor = useEditorState((store) => {
-    return Utils.defaultIfNull(store.editor.canvas.cursor, getCursorFromDragState(store.editor))
-  }, 'EditorCursorComponent cursor')
+  const cursor = useEditorState(
+    React.useCallback((store) => {
+      return Utils.defaultIfNull(store.editor.canvas.cursor, getCursorFromDragState(store.editor))
+    }, []),
+    'EditorCursorComponent cursor',
+  )
 
   const styleProps = React.useMemo(() => {
     let workingStyleProps: React.CSSProperties = {
@@ -424,7 +432,10 @@ const EditorCursorComponent = React.memo(() => {
 })
 
 const ToastRenderer = React.memo(() => {
-  const toasts = useEditorState((store) => store.editor.toasts, 'ToastRenderer')
+  const toasts = useEditorState(
+    React.useCallback((store) => store.editor.toasts, []),
+    'ToastRenderer',
+  )
 
   return (
     <FlexColumn

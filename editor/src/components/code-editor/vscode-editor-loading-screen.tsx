@@ -84,7 +84,7 @@ const JSIcon = () => (
 
 export const VSCodeLoadingScreen = React.memo((): React.ReactElement | null => {
   const vscodeLoadingScreenVisible = useEditorState(
-    (store) => store.editor.vscodeLoadingScreenVisible,
+    React.useCallback((store) => store.editor.vscodeLoadingScreenVisible, []),
     'VSCodeIframeContainer',
   )
   if (!vscodeLoadingScreenVisible) {

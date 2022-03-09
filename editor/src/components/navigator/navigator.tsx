@@ -31,25 +31,30 @@ import { last } from '../../core/shared/array-utils'
 export const NavigatorContainerId = 'navigator'
 
 export const NavigatorComponent = React.memo(() => {
-  const editorSliceRef = useRefEditorState((store) => {
-    const dragSelections = createDragSelections(
-      store.derived.navigatorTargets,
-      store.editor.selectedViews,
-    )
-    return {
-      selectedViews: store.editor.selectedViews,
-      navigatorTargets: store.derived.navigatorTargets,
-      dragSelections: dragSelections,
-    }
-  })
+  const editorSliceRef = useRefEditorState(
+    React.useCallback((store) => {
+      const dragSelections = createDragSelections(
+        store.derived.navigatorTargets,
+        store.editor.selectedViews,
+      )
+      return {
+        selectedViews: store.editor.selectedViews,
+        navigatorTargets: store.derived.navigatorTargets,
+        dragSelections: dragSelections,
+      }
+    }, []),
+  )
   const colorTheme = useColorTheme()
-  const { dispatch, minimised, visibleNavigatorTargets } = useEditorState((store) => {
-    return {
-      dispatch: store.dispatch,
-      minimised: store.editor.navigator.minimised,
-      visibleNavigatorTargets: store.derived.visibleNavigatorTargets,
-    }
-  }, 'NavigatorComponent')
+  const { dispatch, minimised, visibleNavigatorTargets } = useEditorState(
+    React.useCallback((store) => {
+      return {
+        dispatch: store.dispatch,
+        minimised: store.editor.navigator.minimised,
+        visibleNavigatorTargets: store.derived.visibleNavigatorTargets,
+      }
+    }, []),
+    'NavigatorComponent',
+  )
 
   const onFocus = React.useCallback(
     (e: React.FocusEvent<HTMLElement>) => {

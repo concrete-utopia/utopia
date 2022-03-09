@@ -21,7 +21,7 @@ import { CanvasPositions, CSSCursor } from '../canvas-types'
 import { SelectModeControlContainer } from './select-mode-control-container'
 import { InsertModeControlContainer } from './insert-mode-control-container'
 import { HighlightControl } from './highlight-control'
-import { useEditorState, useRefEditorState } from '../../editor/store/store-hook'
+import { useEditorState } from '../../editor/store/store-hook'
 import {
   ElementInstanceMetadataMap,
   UtopiaJSXComponent,
@@ -126,17 +126,20 @@ interface NewCanvasControlsProps {
 
 export const NewCanvasControls = React.memo((props: NewCanvasControlsProps) => {
   const canvasControlProps = useEditorState(
-    (store) => ({
-      dispatch: store.dispatch,
-      editor: store.editor,
-      derived: store.derived,
-      canvasOffset: store.editor.canvas.roundedCanvasOffset,
+    React.useCallback(
+      (store) => ({
+        dispatch: store.dispatch,
+        editor: store.editor,
+        derived: store.derived,
+        canvasOffset: store.editor.canvas.roundedCanvasOffset,
 
-      controls: store.derived.canvas.controls,
-      scale: store.editor.canvas.scale,
-      focusedPanel: store.editor.focusedPanel,
-      transientCanvasState: store.derived.canvas.transientState,
-    }),
+        controls: store.derived.canvas.controls,
+        scale: store.editor.canvas.scale,
+        focusedPanel: store.editor.focusedPanel,
+        transientCanvasState: store.derived.canvas.transientState,
+      }),
+      [],
+    ),
     'NewCanvasControls',
   )
 
@@ -151,7 +154,7 @@ export const NewCanvasControls = React.memo((props: NewCanvasControlsProps) => {
   )
 
   const canvasScrollAnimation = useEditorState(
-    (store) => store.editor.canvas.scrollAnimation,
+    React.useCallback((store) => store.editor.canvas.scrollAnimation, []),
     'NewCanvasControls scrollAnimation',
   )
 

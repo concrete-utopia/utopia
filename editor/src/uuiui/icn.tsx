@@ -29,7 +29,10 @@ export type IcnResultingColor =
   | 'colourful'
 
 function useIconColor(intent: IcnColor): IcnResultingColor {
-  const currentTheme: Theme = useEditorState((store) => store.editor.theme, 'currentTheme')
+  const currentTheme: Theme = useEditorState(
+    React.useCallback((store) => store.editor.theme, []),
+    'currentTheme',
+  )
   if (currentTheme === 'light') {
     switch (intent) {
       case 'main':

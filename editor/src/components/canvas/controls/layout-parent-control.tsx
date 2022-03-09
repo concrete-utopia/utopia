@@ -31,14 +31,20 @@ const getFlexDirectionIcon = (
 export const LayoutParentControl = React.memo((): JSX.Element | null => {
   const colorTheme = useColorTheme()
 
-  const dispatch = useEditorState((store) => store.dispatch, 'LayoutParentControl dispatch')
+  const dispatch = useEditorState(
+    React.useCallback((store) => store.dispatch, []),
+    'LayoutParentControl dispatch',
+  )
 
-  const { canvasOffset, scale } = useEditorState((store) => {
-    return {
-      canvasOffset: store.editor.canvas.roundedCanvasOffset,
-      scale: store.editor.canvas.scale,
-    }
-  }, 'LayoutParentControl canvas')
+  const { canvasOffset, scale } = useEditorState(
+    React.useCallback((store) => {
+      return {
+        canvasOffset: store.editor.canvas.roundedCanvasOffset,
+        scale: store.editor.canvas.scale,
+      }
+    }, []),
+    'LayoutParentControl canvas',
+  )
   const {
     parentTarget,
     parentLayout,
@@ -46,27 +52,33 @@ export const LayoutParentControl = React.memo((): JSX.Element | null => {
     flexWrap,
     flexDirection,
     alignItems,
-  } = useEditorState((store) => {
-    if (store.editor.selectedViews.length !== 1) {
-      return {
-        parentTarget: null,
-        parentLayout: null,
-        parentFrame: null,
-        flexWrap: null,
-        flexDirection: null,
-        alignItems: null,
+  } = useEditorState(
+    React.useCallback((store) => {
+      if (store.editor.selectedViews.length !== 1) {
+        return {
+          parentTarget: null,
+          parentLayout: null,
+          parentFrame: null,
+          flexWrap: null,
+          flexDirection: null,
+          alignItems: null,
+        }
       }
-    }
-    const element = MetadataUtils.getParent(store.editor.jsxMetadata, store.editor.selectedViews[0])
-    return {
-      parentTarget: element?.elementPath,
-      parentLayout: element?.specialSizeMeasurements.layoutSystemForChildren,
-      parentFrame: element?.globalFrame,
-      flexWrap: element?.props?.style?.flexWrap ?? 'nowrap',
-      flexDirection: element?.props?.style?.flexDirection ?? 'row',
-      alignItems: element?.props?.style?.alignItems ?? 'flex-start',
-    }
-  }, 'LayoutParentControl')
+      const element = MetadataUtils.getParent(
+        store.editor.jsxMetadata,
+        store.editor.selectedViews[0],
+      )
+      return {
+        parentTarget: element?.elementPath,
+        parentLayout: element?.specialSizeMeasurements.layoutSystemForChildren,
+        parentFrame: element?.globalFrame,
+        flexWrap: element?.props?.style?.flexWrap ?? 'nowrap',
+        flexDirection: element?.props?.style?.flexDirection ?? 'row',
+        alignItems: element?.props?.style?.alignItems ?? 'flex-start',
+      }
+    }, []),
+    'LayoutParentControl',
+  )
 
   const {
     justifyFlexStart,

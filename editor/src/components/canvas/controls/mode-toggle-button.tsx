@@ -9,10 +9,13 @@ import { useColorTheme } from '../../../uuiui'
 export const ModeToggleButton = React.memo(() => {
   const colorTheme = useColorTheme()
   const selectedMode = useEditorState(
-    (store) => store.editor.topmenu.formulaBarMode,
+    React.useCallback((store) => store.editor.topmenu.formulaBarMode, []),
     'ModeToggleButton selectedMode',
   )
-  const dispatch = useEditorState((store) => store.dispatch, 'ModeToggleButton dispatch')
+  const dispatch = useEditorState(
+    React.useCallback((store) => store.dispatch, []),
+    'ModeToggleButton dispatch',
+  )
   const toggleMode = React.useCallback(
     (mode: 'css' | 'content') => {
       dispatch([updateFormulaBarMode(mode)], 'everyone')

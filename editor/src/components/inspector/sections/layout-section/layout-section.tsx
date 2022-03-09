@@ -18,7 +18,7 @@ interface LayoutSectionProps {
 
 export const LayoutSection = React.memo((props: LayoutSectionProps) => {
   const specialSizeMeasurements = useEditorState(
-    (state) => {
+    React.useCallback((state) => {
       let foundSpecialSizeMeasurements = emptySpecialSizeMeasurements
       fastForEach(state.editor.selectedViews, (path) => {
         // TODO multiselect
@@ -29,12 +29,15 @@ export const LayoutSection = React.memo((props: LayoutSectionProps) => {
         }
       })
       return foundSpecialSizeMeasurements
-    },
+    }, []),
     'LayoutSection specialSizeMeasurements',
     (old, next) => SpecialSizeMeasurementsKeepDeepEquality()(old, next).areEqual,
   )
 
-  const dispatch = useEditorState((store) => store.dispatch, 'LayoutSection dispatch')
+  const dispatch = useEditorState(
+    React.useCallback((store) => store.dispatch, []),
+    'LayoutSection dispatch',
+  )
 
   return (
     <div

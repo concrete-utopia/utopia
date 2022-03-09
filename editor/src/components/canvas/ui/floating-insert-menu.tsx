@@ -104,14 +104,14 @@ function useGetInsertableComponents(): InsertableComponentFlatList {
   const dependencies = usePossiblyResolvedPackageDependencies()
 
   const { packageStatus, propertyControlsInfo, projectContents, fullPath } = useEditorState(
-    (store) => {
+    React.useCallback((store) => {
       return {
         packageStatus: store.editor.nodeModules.packageStatus,
         propertyControlsInfo: store.editor.propertyControlsInfo,
         projectContents: store.editor.projectContents,
         fullPath: store.editor.canvas.openFile?.filename ?? null,
       }
-    },
+    }, []),
     'RenderAsRow',
   )
 
@@ -390,7 +390,7 @@ export var FloatingMenu = React.memo(() => {
   }, [])
 
   const floatingMenuState = useEditorState(
-    (store) => store.editor.floatingInsertMenu,
+    React.useCallback((store) => store.editor.floatingInsertMenu, []),
     'FloatingMenu floatingMenuState',
   )
 
@@ -400,24 +400,33 @@ export var FloatingMenu = React.memo(() => {
   const menuTitle: string = getMenuTitle(floatingMenuState.insertMenuMode)
 
   const componentSelectorStyles = useComponentSelectorStyles()
-  const dispatch = useEditorState((store) => store.dispatch, 'FloatingMenu dispatch')
+  const dispatch = useEditorState(
+    React.useCallback((store) => store.dispatch, []),
+    'FloatingMenu dispatch',
+  )
 
-  const projectContentsRef = useRefEditorState((store) => store.editor.projectContents)
-  const selectedViewsref = useRefEditorState((store) => store.editor.selectedViews)
+  const projectContentsRef = useRefEditorState(
+    React.useCallback((store) => store.editor.projectContents, []),
+  )
+  const selectedViewsref = useRefEditorState(
+    React.useCallback((store) => store.editor.selectedViews, []),
+  )
   const insertableComponents = useGetInsertableComponents()
-  const shouldWrapContentsByDefault = useRefEditorState((store) => {
-    // We only care about this when the menu is first opened
-    const firstSelectedView = store.editor.selectedViews[0]
-    if (firstSelectedView != null) {
-      const selectedJSXElement = MetadataUtils.getJSXElementFromMetadata(
-        store.editor.jsxMetadata,
-        firstSelectedView,
-      )
-      return selectedJSXElement != null && elementOnlyHasSingleTextChild(selectedJSXElement)
-    }
+  const shouldWrapContentsByDefault = useRefEditorState(
+    React.useCallback((store) => {
+      // We only care about this when the menu is first opened
+      const firstSelectedView = store.editor.selectedViews[0]
+      if (firstSelectedView != null) {
+        const selectedJSXElement = MetadataUtils.getJSXElementFromMetadata(
+          store.editor.jsxMetadata,
+          firstSelectedView,
+        )
+        return selectedJSXElement != null && elementOnlyHasSingleTextChild(selectedJSXElement)
+      }
 
-    return false
-  })
+      return false
+    }, []),
+  )
 
   const [addContentForInsertion, setAddContentForInsertion] = React.useState(false)
   const [wrapContentForInsertion, setWrapContentForInsertion] = React.useState(
@@ -658,9 +667,12 @@ export var FloatingMenu = React.memo(() => {
 interface FloatingInsertMenuProps {}
 
 export const FloatingInsertMenu = React.memo((props: FloatingInsertMenuProps) => {
-  const dispatch = useEditorState((store) => store.dispatch, 'FloatingInsertMenu dispatch')
+  const dispatch = useEditorState(
+    React.useCallback((store) => store.dispatch, []),
+    'FloatingInsertMenu dispatch',
+  )
   const isVisible = useEditorState(
-    (store) => store.editor.floatingInsertMenu.insertMenuMode !== 'closed',
+    React.useCallback((store) => store.editor.floatingInsertMenu.insertMenuMode !== 'closed', []),
     'FloatingInsertMenu insertMenuOpen',
   )
   const onClickOutside = React.useCallback(() => {

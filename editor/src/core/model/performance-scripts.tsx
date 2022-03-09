@@ -44,10 +44,12 @@ const NumberOfIterations = 100
 
 export function useTriggerScrollPerformanceTest(): () => void {
   const dispatch = useEditorState(
-    (store) => store.dispatch as DebugDispatch,
+    React.useCallback((store) => store.dispatch as DebugDispatch, []),
     'useTriggerScrollPerformanceTest dispatch',
   )
-  const allPaths = useRefEditorState((store) => store.derived.navigatorTargets)
+  const allPaths = useRefEditorState(
+    React.useCallback((store) => store.derived.navigatorTargets, []),
+  )
   const trigger = React.useCallback(async () => {
     if (allPaths.current.length === 0) {
       console.info('SELECT_TEST_ERROR')
@@ -85,11 +87,13 @@ export function useTriggerScrollPerformanceTest(): () => void {
 
 export function useTriggerResizePerformanceTest(): () => void {
   const dispatch = useEditorState(
-    (store) => store.dispatch as DebugDispatch,
+    React.useCallback((store) => store.dispatch as DebugDispatch, []),
     'useTriggerResizePerformanceTest dispatch',
   )
-  const metadata = useRefEditorState((store) => store.editor.jsxMetadata)
-  const selectedViews = useRefEditorState((store) => store.editor.selectedViews)
+  const metadata = useRefEditorState(React.useCallback((store) => store.editor.jsxMetadata, []))
+  const selectedViews = useRefEditorState(
+    React.useCallback((store) => store.editor.selectedViews, []),
+  )
   const trigger = React.useCallback(async () => {
     if (selectedViews.current.length === 0) {
       console.info('RESIZE_TEST_MISSING_SELECTEDVIEW')
@@ -151,7 +155,9 @@ export function useTriggerResizePerformanceTest(): () => void {
 }
 
 function useTriggerHighlightPerformanceTest(key: 'regular' | 'all-elements'): () => void {
-  const allPaths = useRefEditorState((store) => store.derived.navigatorTargets)
+  const allPaths = useRefEditorState(
+    React.useCallback((store) => store.derived.navigatorTargets, []),
+  )
   const getHighlightableViews = useGetSelectableViewsForSelectMode()
   const calculateHighlightedViews = useCalculateHighlightedViews(true, getHighlightableViews)
   const trigger = React.useCallback(async () => {
@@ -214,11 +220,15 @@ export const useTriggerAllElementsHighlightPerformanceTest = () =>
 
 export function useTriggerSelectionPerformanceTest(): () => void {
   const dispatch = useEditorState(
-    (store) => store.dispatch as DebugDispatch,
+    React.useCallback((store) => store.dispatch as DebugDispatch, []),
     'useTriggerSelectionPerformanceTest dispatch',
   )
-  const allPaths = useRefEditorState((store) => store.derived.navigatorTargets)
-  const selectedViews = useRefEditorState((store) => store.editor.selectedViews)
+  const allPaths = useRefEditorState(
+    React.useCallback((store) => store.derived.navigatorTargets, []),
+  )
+  const selectedViews = useRefEditorState(
+    React.useCallback((store) => store.editor.selectedViews, []),
+  )
   const trigger = React.useCallback(async () => {
     const targetPath = [...allPaths.current].sort(
       (a, b) => EP.toString(b).length - EP.toString(a).length,
@@ -333,7 +343,7 @@ export function useTriggerSelectionPerformanceTest(): () => void {
 
 export function useTriggerBaselinePerformanceTest(): () => void {
   const dispatch = useEditorState(
-    (store) => store.dispatch as DebugDispatch,
+    React.useCallback((store) => store.dispatch as DebugDispatch, []),
     'useTriggerSelectionPerformanceTest dispatch',
   )
 
