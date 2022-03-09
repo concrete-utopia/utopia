@@ -29,12 +29,11 @@ export const absoluteMoveStrategy: CanvasStrategy = {
   name: 'Absolute Move',
   isApplicable: (canvasState, _interactionState, metadata) => {
     if (canvasState.selectedElements.length > 0) {
-      const elementMetadata = MetadataUtils.findElementByElementPath(
-        metadata,
-        canvasState.selectedElements[0],
-      )
+      return canvasState.selectedElements.every((element) => {
+        const elementMetadata = MetadataUtils.findElementByElementPath(metadata, element)
 
-      return elementMetadata?.specialSizeMeasurements.position === 'absolute'
+        return elementMetadata?.specialSizeMeasurements.position === 'absolute'
+      })
     } else {
       return false
     }
