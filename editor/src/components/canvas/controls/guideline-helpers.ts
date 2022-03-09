@@ -181,9 +181,36 @@ export function runLegacySnapping(
     canvasScale,
   )
 
-  // TODO before returning guidelines, change them so that they point to the nearest edge of the multiselectBounds
+  // guideline points to the nearest edge of the multiselectBounds
+  const updatedGuidelines =
+    multiselectBounds == null
+      ? guidelines
+      : guidelines.map((guideline) => {
+          switch (guideline.type) {
+            case 'XAxisGuideline':
+              return {
+                ...guideline,
+                yTop: Math.min(guideline.yTop, multiselectBounds.y),
+                yBottom: Math.max(
+                  guideline.yBottom,
+                  multiselectBounds.y + multiselectBounds.height,
+                ),
+              }
+            case 'YAxisGuideline':
+              return {
+                ...guideline,
+                xLeft: Math.min(guideline.xLeft, multiselectBounds.x),
+                xRight: Math.max(guideline.xRight, multiselectBounds.x + multiselectBounds.width),
+              }
+            case 'CornerGuideline':
+              return guideline
+            default:
+              const _exhaustiveCheck: never = guideline
+              throw 'Unexpected value for guideline: ' + guideline
+          }
+        })
 
-  return { delta, guidelines }
+  return { delta, guidelines: updatedGuidelines }
 }
 
 export function filterGuidelinesStaticAxis(
