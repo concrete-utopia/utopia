@@ -190,7 +190,7 @@ function pointGuidelineToBoundsEdge(
           },
         }
       case 'CornerGuideline':
-        return guidelineWithSnappingVector // TODO we should probably throw an error here, because this code isn't handling CornerGuideline correctly
+        throw new Error('CornerGuidelines are not updated to frame length')
       default:
         const _exhaustiveCheck: never = guideline
         throw 'Unexpected value for guideline: ' + guideline
