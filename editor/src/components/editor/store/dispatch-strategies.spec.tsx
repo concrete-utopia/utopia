@@ -370,6 +370,32 @@ describe('interactionUpdate', () => {
   })
 })
 
+describe('interactionUpdate without strategy', () => {
+  it('processes the accumulated commands', () => {
+    const editorStore = createEditorStore(
+      createInteractionViaMouse(
+        canvasPoint({ x: 100, y: 200 }),
+        { alt: false, shift: false, ctrl: false, cmd: false },
+        { type: 'BOUNDING_AREA', target: EP.elementPath([['aaa']]) },
+      ),
+    )
+    editorStore.strategyState.currentStrategy = null
+    editorStore.strategyState.accumulatedCommands = [
+      {
+        commands: [wildcardPatch('permanent', { canvas: { scale: { $set: 100 } } })],
+        strategy: null,
+      },
+    ]
+    const actualResult = interactionUpdate(
+      [],
+      editorStore,
+      dispatchResultFromEditorStore(editorStore),
+    )
+    expect(actualResult.patchedEditorState.canvas.scale).toEqual(100)
+    expect(actualResult.unpatchedEditorState.canvas.scale).toEqual(1)
+  })
+})
+
 describe('interactionHardReset', () => {
   it('steps an interaction session correctly', () => {
     let interactionSession = createInteractionViaMouse(
