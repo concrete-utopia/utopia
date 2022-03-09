@@ -213,6 +213,8 @@ export function runLegacySnapping(
           }
         })
 
+  // TODO we should return  Array<GuidelineWithSnappingVector> instead of Array<Guideline> so we can use the GuidelineWithSnappingVector.activateSnap to change the controls design to dotted
+
   return { snappedDragVector, guidelines: updatedGuidelines }
 }
 
