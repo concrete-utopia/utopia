@@ -120,10 +120,10 @@ export function useInspectorInfoLonghandShorthand<
 
   const shorthandInfo = useInspectorInfo(
     [shorthand],
-    (v) => v[shorthand],
-    () => {
+    useCallback((v) => v[shorthand], [shorthand]),
+    useCallback(() => {
       throw new Error(`do not use useInspectorInfo's built-in onSubmitValue!`)
-    },
+    }, []),
     pathMappingFn,
   )
 
@@ -134,10 +134,12 @@ export function useInspectorInfoLonghandShorthand<
     // eslint-disable-next-line react-hooks/rules-of-hooks
     const longhandInfo = useInspectorInfo(
       [longhand],
-      (v) => v[longhand],
-      () => {
+      // eslint-disable-next-line react-hooks/rules-of-hooks
+      useCallback((v) => v[longhand], [longhand]),
+      // eslint-disable-next-line react-hooks/rules-of-hooks
+      useCallback(() => {
         throw new Error(`do not use useInspectorInfo's built-in onSubmitValue!`)
-      },
+      }, []),
       pathMappingFn,
     )
 

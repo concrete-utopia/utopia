@@ -7,6 +7,7 @@ import * as PP from '../../../core/shared/property-path'
 import { optionalAddOnUnsetValues } from '../common/context-menu-items'
 import { useInspectorInfoSimpleUntyped } from '../common/property-path-hooks'
 import { ControlStyles } from '../common/control-status'
+import { identity } from '../../../core/shared/utils'
 
 type PropertyLabelProps = {
   target: ReadonlyArray<PropertyPath>
@@ -17,11 +18,7 @@ type PropertyLabelProps = {
 }
 
 function useMetadataInfoForDomain(target: ReadonlyArray<PropertyPath>) {
-  return useInspectorInfoSimpleUntyped(
-    target,
-    (v) => v,
-    (v) => v,
-  )
+  return useInspectorInfoSimpleUntyped(target, identity, identity)
 }
 
 export const PropertyLabel = React.memo((props: PropertyLabelProps) => {

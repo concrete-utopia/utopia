@@ -5,7 +5,6 @@ import { OptionChainControl } from '../../../controls/option-chain-control'
 import {
   useInspectorLayoutInfo,
   InspectorCallbackContext,
-  useInspectorInfo,
   useInspectorStyleInfo,
   InspectorInfo,
   stylePropPathMappingFn,
