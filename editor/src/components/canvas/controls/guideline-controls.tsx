@@ -17,10 +17,10 @@ interface GuidelineControlProps {
 export const GuidelineControls = React.memo<GuidelineControlProps>((props) => {
   return (
     <CanvasOffsetWrapper>
-      <Guideline index={0} />
-      <Guideline index={1} />
-      <Guideline index={2} />
-      <Guideline index={3} />
+      <GuidelineControl index={0} />
+      <GuidelineControl index={1} />
+      <GuidelineControl index={2} />
+      <GuidelineControl index={3} />
     </CanvasOffsetWrapper>
   )
 })
@@ -30,7 +30,7 @@ interface GuidelineProps {
 }
 
 const LineWidth = 1
-const Guideline = React.memo<GuidelineProps>((props) => {
+const GuidelineControl = React.memo<GuidelineProps>((props) => {
   const colorTheme = useColorTheme()
   const scale = useEditorState((store) => store.editor.canvas.scale, 'Guideline scale')
   const controlRef = useGuideline(props.index, (guidelineFrame: CanvasRectangle | null) => {
@@ -77,28 +77,27 @@ function useGuideline<T = HTMLDivElement>(
   const guidelineCallbackRef = React.useRef(guidelineCallback)
   guidelineCallbackRef.current = guidelineCallback
 
-  const guidelineRef = useRefEditorState(
-    (store) => store.editor.canvas.controls.snappingGuidelines[index],
-  )
+  const guidelineRef = useRefEditorState((store) => store.editor.canvas.controls.snappingGuidelines)
 
   const innerCallback = React.useCallback(() => {
-    if (guidelineRef.current != null) {
-      switch (guidelineRef.current.type) {
+    if (guidelineRef.current[index] != null) {
+      const guideline = guidelineRef.current[index]
+      switch (guideline.type) {
         case 'XAxisGuideline': {
           const frame = canvasRectangle({
-            x: guidelineRef.current.x,
-            y: guidelineRef.current.yTop,
+            x: guideline.x,
+            y: guideline.yTop,
             width: 0,
-            height: guidelineRef.current.yBottom,
+            height: guideline.yBottom,
           })
           guidelineCallbackRef.current(frame)
           break
         }
         case 'YAxisGuideline': {
           const frame = canvasRectangle({
-            x: guidelineRef.current.xLeft,
-            y: guidelineRef.current.y,
-            width: guidelineRef.current.xRight,
+            x: guideline.xLeft,
+            y: guideline.y,
+            width: guideline.xRight,
             height: 0,
           })
           guidelineCallbackRef.current(frame)
@@ -111,9 +110,13 @@ function useGuideline<T = HTMLDivElement>(
     } else {
       guidelineCallbackRef.current(null)
     }
-  }, [guidelineRef, guidelineCallbackRef])
+  }, [guidelineRef, guidelineCallbackRef, index])
   useSelectorWithCallback(
     (store) => store.editor.canvas.controls.snappingGuidelines[index],
+    innerCallback,
+  )
+  useSelectorWithCallback(
+    (store) => store.editor.canvas.controls.snappingGuidelines.length,
     innerCallback,
   )
   return controlRef
