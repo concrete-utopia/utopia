@@ -173,12 +173,17 @@ export function runLegacySnapping(
   multiselectBounds: CanvasRectangle | null,
 ): { delta: CanvasPoint; guidelines: Array<Guideline> } {
   const moveGuidelines = collectParentAndSiblingGuidelines(jsxMetadata, selectedElements)
-  return getSnapDelta(
+
+  const { delta, guidelines } = getSnapDelta(
     moveGuidelines,
     constrainedDragAxis,
     offsetRect(defaultIfNull(zeroRectangle as CanvasRectangle, multiselectBounds), drag),
     canvasScale,
   )
+
+  // TODO before returning guidelines, change them so that they point to the nearest edge of the multiselectBounds
+
+  return { delta, guidelines }
 }
 
 export function filterGuidelinesStaticAxis(
