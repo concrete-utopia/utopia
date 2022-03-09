@@ -185,11 +185,13 @@ export function runLegacySnapping(
   const snappedDragVector = offsetPoint(drag, delta)
 
   // guideline points to the nearest edge of the multiselectBounds
+
+  // TODO move this to a function
   const updatedGuidelines =
     multiselectBounds == null
       ? guidelines
       : guidelines.map((guideline) => {
-          const updatedBounds = offsetRect(multiselectBounds, snappedDragVector)
+          const updatedBounds = offsetRect(multiselectBounds, snappedDragVector) // TODO do not calculate this inside the map
           switch (guideline.type) {
             case 'XAxisGuideline':
               return {
@@ -204,7 +206,7 @@ export function runLegacySnapping(
                 xRight: Math.max(guideline.xRight, updatedBounds.x + updatedBounds.width),
               }
             case 'CornerGuideline':
-              return guideline
+              return guideline // TODO we should probably throw an error here, because this code isn't handling CornerGuideline correctly
             default:
               const _exhaustiveCheck: never = guideline
               throw 'Unexpected value for guideline: ' + guideline
