@@ -165,6 +165,33 @@ export function getSnapDelta(
   return { delta: Utils.roundPointTo(delta, 0), guidelines: pluck(winningGuidelines, 'guideline') }
 }
 
+function pointGuidelineToBoundsEdge(
+  guidelines: Array<Guideline>,
+  multiselectBounds: CanvasRectangle,
+): Array<Guideline> {
+  return guidelines.map((guideline) => {
+    switch (guideline.type) {
+      case 'XAxisGuideline':
+        return {
+          ...guideline,
+          yTop: Math.min(guideline.yTop, multiselectBounds.y),
+          yBottom: Math.max(guideline.yBottom, multiselectBounds.y + multiselectBounds.height),
+        }
+      case 'YAxisGuideline':
+        return {
+          ...guideline,
+          xLeft: Math.min(guideline.xLeft, multiselectBounds.x),
+          xRight: Math.max(guideline.xRight, multiselectBounds.x + multiselectBounds.width),
+        }
+      case 'CornerGuideline':
+        return guideline // TODO we should probably throw an error here, because this code isn't handling CornerGuideline correctly
+      default:
+        const _exhaustiveCheck: never = guideline
+        throw 'Unexpected value for guideline: ' + guideline
+    }
+  })
+}
+
 export function runLegacySnapping(
   drag: CanvasPoint,
   constrainedDragAxis: ConstrainedDragAxis | null,
@@ -184,38 +211,13 @@ export function runLegacySnapping(
 
   const snappedDragVector = offsetPoint(drag, delta)
 
-  // guideline points to the nearest edge of the multiselectBounds
-
-  // TODO move this to a function
-  const updatedGuidelines =
-    multiselectBounds == null
-      ? guidelines
-      : guidelines.map((guideline) => {
-          const updatedBounds = offsetRect(multiselectBounds, snappedDragVector) // TODO do not calculate this inside the map
-          switch (guideline.type) {
-            case 'XAxisGuideline':
-              return {
-                ...guideline,
-                yTop: Math.min(guideline.yTop, updatedBounds.y),
-                yBottom: Math.max(guideline.yBottom, updatedBounds.y + updatedBounds.height),
-              }
-            case 'YAxisGuideline':
-              return {
-                ...guideline,
-                xLeft: Math.min(guideline.xLeft, updatedBounds.x),
-                xRight: Math.max(guideline.xRight, updatedBounds.x + updatedBounds.width),
-              }
-            case 'CornerGuideline':
-              return guideline // TODO we should probably throw an error here, because this code isn't handling CornerGuideline correctly
-            default:
-              const _exhaustiveCheck: never = guideline
-              throw 'Unexpected value for guideline: ' + guideline
-          }
-        })
-
-  // TODO we should return  Array<GuidelineWithSnappingVector> instead of Array<Guideline> so we can use the GuidelineWithSnappingVector.activateSnap to change the controls design to dotted
-
-  return { snappedDragVector, guidelines: updatedGuidelines }
+  if (multiselectBounds != null) {
+    const draggedBounds = offsetRect(multiselectBounds, snappedDragVector)
+    const updatedGuidelines = pointGuidelineToBoundsEdge(guidelines, draggedBounds)
+    return { snappedDragVector, guidelines: updatedGuidelines }
+  } else {
+    return { snappedDragVector, guidelines }
+  }
 }
 
 export function filterGuidelinesStaticAxis(
