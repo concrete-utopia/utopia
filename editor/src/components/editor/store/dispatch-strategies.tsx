@@ -402,8 +402,8 @@ function handleUpdate(
       'transient',
     )
     const newStrategyState: StrategyState = {
-      currentStrategy: strategy != null ? strategy.strategy.id : null,
-      currentStrategyFitness: strategy != null ? strategy.fitness : 0,
+      currentStrategy: strategy?.strategy.id ?? null,
+      currentStrategyFitness: strategy?.fitness ?? 0,
       currentStrategyCommands: commands,
       accumulatedCommands: strategyState.accumulatedCommands,
       commandDescriptions: commandResult.commandDescriptions,
