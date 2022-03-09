@@ -1,6 +1,5 @@
 import React from 'react'
 import { canvasRectangle, CanvasRectangle } from '../../../core/shared/math-utils'
-import { ElementPath } from '../../../core/shared/project-file-types'
 import { useColorTheme } from '../../../uuiui'
 import {
   useEditorState,
