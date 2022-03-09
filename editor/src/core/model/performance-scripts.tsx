@@ -16,7 +16,11 @@ import {
   zeroPoint,
   zeroRectangle,
 } from '../shared/math-utils'
-import { resizeDragState, updateResizeDragState } from '../../components/canvas/canvas-types'
+import {
+  CanvasContainerID,
+  resizeDragState,
+  updateResizeDragState,
+} from '../../components/canvas/canvas-types'
 import { MetadataUtils } from './element-metadata-utils'
 import { getOriginalFrames } from '../../components/canvas/canvas-utils'
 import * as EP from '../shared/element-path'
@@ -25,6 +29,16 @@ import {
   useCalculateHighlightedViews,
   useGetSelectableViewsForSelectMode,
 } from '../../components/canvas/controls/select-mode/select-mode-hooks'
+import { CanvasControlsContainerID } from '../../components/canvas/controls/new-canvas-controls'
+import { forceNotNull } from '../shared/optional-utils'
+import { ElementPathArrayKeepDeepEquality } from '../../utils/deep-equality-instances'
+import { NavigatorContainerId } from '../../components/navigator/navigator'
+
+export function wait(timeout: number): Promise<void> {
+  return new Promise((resolve) => {
+    setTimeout(resolve, timeout)
+  })
+}
 
 const NumberOfIterations = 100
 
@@ -204,19 +218,91 @@ export function useTriggerSelectionPerformanceTest(): () => void {
     'useTriggerSelectionPerformanceTest dispatch',
   )
   const allPaths = useRefEditorState((store) => store.derived.navigatorTargets)
+  const selectedViews = useRefEditorState((store) => store.editor.selectedViews)
   const trigger = React.useCallback(async () => {
+    const targetPath = [...allPaths.current].sort(
+      (a, b) => EP.toString(b).length - EP.toString(a).length,
+    )[0]
+    // Determine where the events should be fired.
+    const controlsContainerElement = forceNotNull(
+      'Container controls element should exist.',
+      document.getElementById(CanvasControlsContainerID),
+    )
+    const canvasContainerElement = forceNotNull(
+      'Canvas container element should exist.',
+      document.getElementById(CanvasContainerID),
+    )
+    const canvasContainerBounds = canvasContainerElement.getBoundingClientRect()
+    const navigatorElement = forceNotNull(
+      'Navigator element should exist.',
+      document.getElementById(NavigatorContainerId),
+    )
+    const navigatorBounds = navigatorElement.getBoundingClientRect()
+
+    const targetElement = forceNotNull(
+      'Target element should exist.',
+      document.querySelector(`*[data-paths~="${EP.toString(targetPath)}"]`),
+    )
+    const originalTargetBounds = targetElement.getBoundingClientRect()
+    const leftToTarget =
+      canvasContainerBounds.left + navigatorBounds.width - originalTargetBounds.left + 100
+    const topToTarget = canvasContainerBounds.top - originalTargetBounds.top + 100
+    await dispatch(
+      [CanvasActions.positionCanvas(canvasPoint({ x: leftToTarget, y: topToTarget }))],
+      'everyone',
+    ).entireUpdateFinished
+    const targetBounds = targetElement.getBoundingClientRect()
     if (allPaths.current.length === 0) {
       console.info('SELECT_TEST_ERROR')
       return
     }
 
-    const targetPath = [...allPaths.current].sort(
-      (a, b) => EP.toString(b).length - EP.toString(a).length,
-    )[0]
     let framesPassed = 0
     async function step() {
       performance.mark(`select_step_${framesPassed}`)
-      await dispatch([selectComponents([targetPath!], false)]).entireUpdateFinished
+      controlsContainerElement.dispatchEvent(
+        new MouseEvent('mousedown', {
+          detail: 1,
+          bubbles: true,
+          cancelable: true,
+          metaKey: true,
+          clientX: targetBounds.left + 5,
+          clientY: targetBounds.top + 5,
+          buttons: 1,
+        }),
+      )
+      function isTargetSelected(): boolean {
+        return ElementPathArrayKeepDeepEquality([targetPath], selectedViews.current).areEqual
+      }
+      const startingTime = Date.now()
+      while (!isTargetSelected() && Date.now() < startingTime + 3000) {
+        await wait(5)
+      }
+      if (!isTargetSelected()) {
+        throw new Error(`Element never ended up being selected.`)
+      }
+      controlsContainerElement.dispatchEvent(
+        new MouseEvent('pointerup', {
+          detail: 1,
+          bubbles: true,
+          cancelable: true,
+          metaKey: true,
+          clientX: targetBounds.left + 5,
+          clientY: targetBounds.top + 5,
+          buttons: 1,
+        }),
+      )
+      controlsContainerElement.dispatchEvent(
+        new MouseEvent('mouseup', {
+          detail: 1,
+          bubbles: true,
+          cancelable: true,
+          metaKey: true,
+          clientX: targetBounds.left + 5,
+          clientY: targetBounds.top + 5,
+          buttons: 1,
+        }),
+      )
       performance.mark(`select_dispatch_finished_${framesPassed}`)
       performance.measure(
         `select_frame_${framesPassed}`,
@@ -241,7 +327,7 @@ export function useTriggerSelectionPerformanceTest(): () => void {
       }
     }
     requestAnimationFrame(step)
-  }, [dispatch, allPaths])
+  }, [dispatch, allPaths, selectedViews])
   return trigger
 }
 

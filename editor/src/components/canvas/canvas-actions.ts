@@ -13,6 +13,12 @@ const CanvasActions = {
       delta: delta,
     }
   },
+  positionCanvas: function (position: CanvasVector): CanvasAction {
+    return {
+      action: 'POSITION_CANVAS',
+      position: position,
+    }
+  },
   createDragState: function (dragState: DragState): CanvasAction {
     return {
       action: 'CREATE_DRAG_STATE',
