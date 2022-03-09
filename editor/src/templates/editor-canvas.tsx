@@ -293,8 +293,6 @@ function on(
   return additionalEvents
 }
 
-let interactionSessionTimerHandle: any = undefined
-
 export function runLocalCanvasAction(
   dispatch: EditorDispatch,
   model: EditorState,
@@ -368,10 +366,6 @@ export function runLocalCanvasAction(
       }
     }
     case 'CREATE_INTERACTION_SESSION':
-      clearInterval(interactionSessionTimerHandle)
-      interactionSessionTimerHandle = setInterval(() => {
-        dispatch([CanvasActions.updateInteractionSession({ globalTime: Date.now() })])
-      }, 200)
       return {
         ...model,
         canvas: {
@@ -383,7 +377,6 @@ export function runLocalCanvasAction(
         },
       }
     case 'CLEAR_INTERACTION_SESSION':
-      clearInterval(interactionSessionTimerHandle)
       const metadataToKeep =
         action.applyChanges && model.canvas.interactionSession != null
           ? model.canvas.interactionSession.metadata
