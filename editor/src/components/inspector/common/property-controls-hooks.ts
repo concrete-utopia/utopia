@@ -248,9 +248,9 @@ export function useGetPropertyControlsForSelectedComponents(): Array<
       [selectedViews],
     ),
     'useSelectedPropertyControls',
-    (oldResult, newResult) => {
+    React.useCallback((oldResult, newResult) => {
       return deepEqual(oldResult, newResult) // TODO better equality
-    },
+    }, []),
   )
 
   const selectedElementsFIXME = useEditorState(
@@ -266,9 +266,12 @@ export function useGetPropertyControlsForSelectedComponents(): Array<
       [selectedPropertyControls],
     ),
     'useGetPropertyControlsForSelectedComponents selectedElements',
-    (a, b) =>
-      arrayDeepEquality(arrayDeepEquality(ElementInstanceMetadataKeepDeepEquality()))(a, b)
-        .areEqual,
+    React.useCallback(
+      (a, b) =>
+        arrayDeepEquality(arrayDeepEquality(ElementInstanceMetadataKeepDeepEquality()))(a, b)
+          .areEqual,
+      [],
+    ),
   )
 
   const selectedComponentsFIXME = useEditorState(
@@ -297,8 +300,11 @@ export function useGetPropertyControlsForSelectedComponents(): Array<
       [selectedPropertyControls],
     ),
     'useUsedPropsWithoutControls',
-    (a, b) =>
-      arrayDeepEquality(arrayDeepEquality(UtopiaJSXComponentKeepDeepEquality))(a, b).areEqual,
+    React.useCallback(
+      (a, b) =>
+        arrayDeepEquality(arrayDeepEquality(UtopiaJSXComponentKeepDeepEquality))(a, b).areEqual,
+      [],
+    ),
   )
 
   return selectedPropertyControls.map(({ controls, targets }, index) => {

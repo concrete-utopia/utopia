@@ -50,10 +50,10 @@ describe('useSelectorWithCallback', () => {
       (props) => {
         hookRenders++
         return useSelectorWithCallback(
-          (store) => store.editor.selectedViews,
-          (newSelectedViews) => {
+          React.useCallback((store) => store.editor.selectedViews, []),
+          React.useCallback((newSelectedViews) => {
             callCount++
-          },
+          }, []),
         )
       },
       {
@@ -78,10 +78,10 @@ describe('useSelectorWithCallback', () => {
       (props) => {
         hookRenders++
         return useSelectorWithCallback(
-          (store) => store.editor.selectedViews,
-          (newSelectedViews) => {
+          React.useCallback((store) => store.editor.selectedViews, []),
+          React.useCallback((newSelectedViews) => {
             callCount++
-          },
+          }, []),
         )
       },
       {
@@ -126,10 +126,10 @@ describe('useSelectorWithCallback', () => {
       (props) => {
         hookRenders++
         return useSelectorWithCallback(
-          (store) => store.editor.selectedViews,
-          (newSelectedViews) => {
+          React.useCallback((store) => store.editor.selectedViews, []),
+          React.useCallback((newSelectedViews) => {
             callCount++
-          },
+          }, []),
         )
       },
       {

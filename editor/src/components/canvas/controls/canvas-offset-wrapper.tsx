@@ -38,7 +38,10 @@ export function useApplyCanvasOffsetToStyle(
     [elementRef, setScaleToo, scaleRef],
   )
 
-  useSelectorWithCallback((store) => store.editor.canvas.roundedCanvasOffset, applyCanvasOffset)
+  useSelectorWithCallback(
+    React.useCallback((store) => store.editor.canvas.roundedCanvasOffset, []),
+    applyCanvasOffset,
+  )
 
   const applyCanvasOffsetEffect = React.useCallback(() => {
     applyCanvasOffset(canvasOffsetRef.current, forceOffset)

@@ -37,9 +37,13 @@ const namesAndIconsAllPathsResultSelector = createSelector(
 
 export function useNamesAndIconsAllPaths(): NameAndIconResult[] {
   const selector = React.useMemo(() => namesAndIconsAllPathsResultSelector, [])
-  return useEditorState(selector, 'useNamesAndIconsAllPaths', (oldResult, newResult) => {
-    return NameAndIconResultArrayKeepDeepEquality(oldResult, newResult).areEqual
-  })
+  return useEditorState(
+    selector,
+    'useNamesAndIconsAllPaths',
+    React.useCallback((oldResult, newResult) => {
+      return NameAndIconResultArrayKeepDeepEquality(oldResult, newResult).areEqual
+    }, []),
+  )
 }
 
 function getNameAndIconResult(

@@ -268,17 +268,20 @@ function useInvalidateScenesWhenSelectedViewChanges(
   invalidatedPathsForStylesheetCacheRef: React.MutableRefObject<Set<string>>,
 ): void {
   return useSelectorWithCallback(
-    (store) => store.editor.selectedViews,
-    (newSelectedViews) => {
-      newSelectedViews.forEach((sv) => {
-        const scenePath = EP.createBackwardsCompatibleScenePath(sv)
-        if (scenePath != null) {
-          const sceneID = EP.toString(scenePath)
-          updateInvalidatedScenes((current) => current.add(sceneID), 'invalidate')
-          invalidatedPathsForStylesheetCacheRef.current.add(EP.toString(sv))
-        }
-      })
-    },
+    React.useCallback((store) => store.editor.selectedViews, []),
+    React.useCallback(
+      (newSelectedViews) => {
+        newSelectedViews.forEach((sv) => {
+          const scenePath = EP.createBackwardsCompatibleScenePath(sv)
+          if (scenePath != null) {
+            const sceneID = EP.toString(scenePath)
+            updateInvalidatedScenes((current) => current.add(sceneID), 'invalidate')
+            invalidatedPathsForStylesheetCacheRef.current.add(EP.toString(sv))
+          }
+        })
+      },
+      [invalidatedPathsForStylesheetCacheRef, updateInvalidatedScenes],
+    ),
   )
 }
 

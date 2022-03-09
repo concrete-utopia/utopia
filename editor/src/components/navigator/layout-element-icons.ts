@@ -29,12 +29,12 @@ export function useLayoutOrElementIcon(path: ElementPath): LayoutIconResult {
       [path],
     ),
     'useLayoutOrElementIcon',
-    (oldResult: LayoutIconResult, newResult: LayoutIconResult) => {
+    useCallback((oldResult: LayoutIconResult, newResult: LayoutIconResult) => {
       return (
         oldResult.isPositionAbsolute === newResult.isPositionAbsolute &&
         shallowEqual(oldResult.iconProps, newResult.iconProps)
       )
-    },
+    }, []),
   )
 }
 

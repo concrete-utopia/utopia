@@ -31,7 +31,10 @@ export const LayoutSection = React.memo((props: LayoutSectionProps) => {
       return foundSpecialSizeMeasurements
     }, []),
     'LayoutSection specialSizeMeasurements',
-    (old, next) => SpecialSizeMeasurementsKeepDeepEquality()(old, next).areEqual,
+    React.useCallback(
+      (old, next) => SpecialSizeMeasurementsKeepDeepEquality()(old, next).areEqual,
+      [],
+    ),
   )
 
   const dispatch = useEditorState(

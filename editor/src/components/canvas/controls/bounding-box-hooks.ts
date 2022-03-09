@@ -52,10 +52,13 @@ function useBoundingBoxFromMetadataRef(
   }, [selectedElements, metadataRef])
 
   useSelectorWithCallback(
-    (store) => getMetadata(store.editor),
-    (newMetadata) => {
-      innerCallback()
-    },
+    React.useCallback((store) => getMetadata(store.editor), []),
+    React.useCallback(
+      (newMetadata) => {
+        innerCallback()
+      },
+      [innerCallback],
+    ),
   )
 
   React.useEffect(innerCallback, [innerCallback, selectedElements])
