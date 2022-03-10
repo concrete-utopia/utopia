@@ -7,6 +7,10 @@ import { AdjustCssLengthProperty, runAdjustCssLengthProperty } from './adjust-cs
 import { AdjustNumberProperty, runAdjustNumberProperty } from './adjust-number-command'
 import { ReparentElement, runReparentElement } from './reparent-element-command'
 import { runStrategySwitchedCommand, StrategySwitched } from './strategy-switched-command'
+import {
+  runUpdateHighlightedViews,
+  UpdateHighlightedViews,
+} from './update-highlighted-views-command'
 import { runUpdateSelectedViews, UpdateSelectedViews } from './update-selected-views-command'
 import { runWildcardPatch, WildcardPatch } from './wildcard-patch-command'
 
@@ -30,6 +34,7 @@ export type CanvasCommand =
   | AdjustCssLengthProperty
   | ReparentElement
   | UpdateSelectedViews
+  | UpdateHighlightedViews
 
 export const runCanvasCommand: CommandFunction<CanvasCommand> = (
   editorState: EditorState,
@@ -48,6 +53,8 @@ export const runCanvasCommand: CommandFunction<CanvasCommand> = (
       return runReparentElement(editorState, command)
     case 'UPDATE_SELECTED_VIEWS':
       return runUpdateSelectedViews(editorState, command)
+    case 'UPDATE_HIGHLIGHTED_VIEWS':
+      return runUpdateHighlightedViews(editorState, command)
     default:
       const _exhaustiveCheck: never = command
       throw new Error(`Unhandled canvas command ${JSON.stringify(command)}`)
