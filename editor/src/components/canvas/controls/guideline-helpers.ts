@@ -178,6 +178,7 @@ function pointGuidelineToBoundsEdge(
           guideline: {
             ...guideline,
             yTop: Math.min(guideline.yTop, multiselectBounds.y),
+            yBottom: Math.max(guideline.yBottom, multiselectBounds.y + multiselectBounds.height),
           },
         }
       case 'YAxisGuideline':
