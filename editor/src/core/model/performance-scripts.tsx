@@ -47,7 +47,7 @@ export function wait(timeout: number): Promise<void> {
   })
 }
 
-const NumberOfIterations = 100
+const NumberOfIterations = 5
 
 export function useTriggerScrollPerformanceTest(): () => void {
   const dispatch = useEditorState(
@@ -457,17 +457,19 @@ export function useTriggerAbsoluteMovePerformanceTest(): () => void {
           buttons: 1,
         }),
       )
-      controlsContainerElement.dispatchEvent(
-        new MouseEvent('mousemove', {
-          detail: 1,
-          bubbles: true,
-          cancelable: true,
-          metaKey: false,
-          clientX: targetBounds.left + 35,
-          clientY: targetBounds.top + 45,
-          buttons: 1,
-        }),
-      )
+      for (let moveCount = 1; moveCount <= 10; moveCount++) {
+        controlsContainerElement.dispatchEvent(
+          new MouseEvent('mousemove', {
+            detail: 1,
+            bubbles: true,
+            cancelable: true,
+            metaKey: false,
+            clientX: targetBounds.left + (5 + moveCount * 3),
+            clientY: targetBounds.top + (5 + moveCount * 4),
+            buttons: 1,
+          }),
+        )
+      }
       controlsContainerElement.dispatchEvent(
         new MouseEvent('mouseup', {
           detail: 1,
