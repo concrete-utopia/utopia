@@ -10,11 +10,14 @@ import {
 } from '../../../../core/shared/math-utils'
 import { ElementPath } from '../../../../core/shared/project-file-types'
 import { NO_OP } from '../../../../core/shared/utils'
+import { isFeatureEnabled } from '../../../../utils/feature-switches'
+import { Modifier } from '../../../../utils/modifiers'
 import { useColorTheme } from '../../../../uuiui'
 import { EditorDispatch } from '../../../editor/action-types'
 import { setResizeOptionsTargetOptions } from '../../../editor/actions/action-creators'
 import { useEditorState, useRefEditorState } from '../../../editor/store/store-hook'
 import CanvasActions from '../../canvas-actions'
+import { createInteractionViaMouse } from '../../canvas-strategies/interaction-state'
 import {
   CSSCursor,
   DirectionAll,
@@ -295,59 +298,73 @@ function startResizeInteraction(
 ) {
   event.stopPropagation()
   if (event.buttons === 1) {
-    // TODO update this to call createInteractionSession to use canvas strategies
-    const centerBasedResize = event.altKey
-    const keepAspectRatio = event.shiftKey // || props.elementAspectRatioLocked ???
-    const enableSnapping = !event.metaKey
     const canvasPositions = windowToCanvasCoordinates(
       scale,
       canvasOffset,
       windowPoint({ x: event.nativeEvent.x, y: event.nativeEvent.y }),
     )
-    const start: CanvasPoint = canvasPositions.canvasPositionRaw
-    const originalFrames = getOriginalFrames(selectedViews, metadata)
-    const isMultiSelect = selectedViews.length !== 1
-
-    const originalSize = boundingRectangleArray(
-      selectedViews.map((path) => MetadataUtils.getFrameInCanvasCoords(path, metadata)),
-    )
-    let possibleTargetProperty: LayoutTargetableProp | undefined = undefined
-    if (position.x === 0.5) {
-      possibleTargetProperty = 'height'
-    } else if (position.y === 0.5) {
-      possibleTargetProperty = 'width'
-    }
-
-    if (originalSize != null) {
-      const newDragState = updateResizeDragState(
-        resizeDragState(
-          originalSize,
-          originalFrames,
-          position,
-          enabledDirection,
-          metadata,
-          selectedViews,
-          isMultiSelect,
-          [],
-        ),
-        start,
-        null,
-        possibleTargetProperty,
-        enableSnapping,
-        centerBasedResize,
-        keepAspectRatio,
-      )
-
-      dispatch(
-        [
-          CanvasActions.createDragState(newDragState),
-          setResizeOptionsTargetOptions(
-            possibleTargetProperty != null ? [possibleTargetProperty] : [],
-            0,
+    if (isFeatureEnabled('Canvas Strategies')) {
+      dispatch([
+        CanvasActions.createInteractionSession(
+          createInteractionViaMouse(
+            canvasPositions.canvasPositionRaw,
+            Modifier.modifiersForEvent(event),
+            {
+              type: 'RESIZE_HANDLE',
+              edgePosition: position,
+            },
           ),
-        ],
-        'canvas',
+        ),
+      ])
+    } else {
+      const centerBasedResize = event.altKey
+      const keepAspectRatio = event.shiftKey // || props.elementAspectRatioLocked ???
+      const enableSnapping = !event.metaKey
+      const start: CanvasPoint = canvasPositions.canvasPositionRaw
+      const originalFrames = getOriginalFrames(selectedViews, metadata)
+      const isMultiSelect = selectedViews.length !== 1
+
+      const originalSize = boundingRectangleArray(
+        selectedViews.map((path) => MetadataUtils.getFrameInCanvasCoords(path, metadata)),
       )
+      let possibleTargetProperty: LayoutTargetableProp | undefined = undefined
+      if (position.x === 0.5) {
+        possibleTargetProperty = 'height'
+      } else if (position.y === 0.5) {
+        possibleTargetProperty = 'width'
+      }
+
+      if (originalSize != null) {
+        const newDragState = updateResizeDragState(
+          resizeDragState(
+            originalSize,
+            originalFrames,
+            position,
+            enabledDirection,
+            metadata,
+            selectedViews,
+            isMultiSelect,
+            [],
+          ),
+          start,
+          null,
+          possibleTargetProperty,
+          enableSnapping,
+          centerBasedResize,
+          keepAspectRatio,
+        )
+
+        dispatch(
+          [
+            CanvasActions.createDragState(newDragState),
+            setResizeOptionsTargetOptions(
+              possibleTargetProperty != null ? [possibleTargetProperty] : [],
+              0,
+            ),
+          ],
+          'canvas',
+        )
+      }
     }
   }
 }
