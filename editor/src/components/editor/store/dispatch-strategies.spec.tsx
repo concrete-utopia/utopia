@@ -151,6 +151,33 @@ const testStrategy: CanvasStrategy = {
   },
 }
 
+const emptyTestStrategy: CanvasStrategy = {
+  id: 'EMPTY TEST_STRATEGY' as CanvasStrategyId,
+  name: 'Empty test Strategy',
+  isApplicable: function (
+    canvasState: InteractionCanvasState,
+    interactionSession: InteractionSession | null,
+    metadata: ElementInstanceMetadataMap,
+  ): boolean {
+    return interactionSession?.interactionData.type === 'KEYBOARD_ARROW'
+  },
+  controlsToRender: [],
+  fitness: function (
+    canvasState: InteractionCanvasState,
+    interactionSession: InteractionSession,
+    strategyState: StrategyState,
+  ): number {
+    return 10
+  },
+  apply: function (
+    canvasState: InteractionCanvasState,
+    interactionSession: InteractionSession,
+    strategyState: StrategyState,
+  ): StrategyApplicationResult {
+    return []
+  },
+}
+
 describe('interactionStart', () => {
   it('creates the initial state with a simple test strategy', () => {
     const editorStore = createEditorStore(
@@ -260,7 +287,7 @@ describe('interactionStart', () => {
   })
 })
 
-describe('interactionUpdate', () => {
+describe('interactionUpdatex', () => {
   it('steps an interaction session correctly', () => {
     const editorStore = createEditorStore(
       createInteractionViaMouse(
@@ -657,6 +684,97 @@ describe('interactionUpdate with stacked strategy change', () => {
     expect(
       actualResult.patchedEditorState.canvas.interactionSession?.interactionData,
     ).toMatchInlineSnapshot(`undefined`)
+  })
+})
+
+describe('interactionUpdate with accumulating keypresses', () => {
+  it('steps an interaction session correctly', () => {
+    let interactionSession = createInteractionViaMouse(
+      canvasPoint({ x: 100, y: 200 }),
+      { alt: false, shift: false, ctrl: false, cmd: false },
+      { type: 'BOUNDING_AREA', target: EP.elementPath([['aaa']]) },
+    )
+    if (interactionSession.interactionData.type === 'KEYBOARD_ARROW') {
+      interactionSession.interactionData.keysPressed = ['left']
+    }
+    const editorStore = createEditorStore(interactionSession)
+    editorStore.strategyState.currentStrategy = 'EMPTY_TEST_STRATEGY' as CanvasStrategyId
+    editorStore.strategyState.accumulatedCommands = [
+      {
+        strategy: 'TEST_STRATEGY',
+        commands: [wildcardPatch('permanent', { canvas: { scale: { $set: 100 } } })],
+      },
+    ]
+    const actualResult = interactionUpdate(
+      [emptyTestStrategy],
+      editorStore,
+      dispatchResultFromEditorStore(editorStore),
+      false,
+    )
+    expect(actualResult.newStrategyState).toMatchInlineSnapshot(`
+      Object {
+        "accumulatedCommands": Array [
+          Object {
+            "commands": Array [
+              Object {
+                "patch": Object {
+                  "canvas": Object {
+                    "scale": Object {
+                      "$set": 100,
+                    },
+                  },
+                },
+                "transient": "permanent",
+                "type": "WILDCARD_PATCH",
+              },
+            ],
+            "strategy": "TEST_STRATEGY",
+          },
+        ],
+        "commandDescriptions": Array [
+          Object {
+            "description": "Wildcard Patch: {
+        \\"canvas\\": {
+          \\"scale\\": {
+            \\"$set\\": 100
+          }
+        }
+      }",
+            "transient": false,
+          },
+        ],
+        "currentStrategy": null,
+        "currentStrategyCommands": Array [],
+        "currentStrategyFitness": 0,
+        "sortedApplicableStrategies": Array [],
+        "startingMetadata": Object {},
+      }
+    `)
+    expect(actualResult.patchedEditorState.canvas.scale).toEqual(100)
+    expect(actualResult.unpatchedEditorState.canvas.scale).toEqual(1)
+    expect(actualResult.patchedEditorState.canvas.interactionSession?.interactionData)
+      .toMatchInlineSnapshot(`
+      Object {
+        "drag": null,
+        "dragStart": Object {
+          "x": 100,
+          "y": 200,
+        },
+        "dragThresholdPassed": false,
+        "modifiers": Object {
+          "alt": false,
+          "cmd": false,
+          "ctrl": false,
+          "shift": false,
+        },
+        "originalDragStart": Object {
+          "x": 100,
+          "y": 200,
+        },
+        "prevDrag": null,
+        "type": "DRAG",
+      }
+    `)
   })
 })
 
