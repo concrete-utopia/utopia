@@ -35,6 +35,14 @@ const SceneComponent = () => {
   return <div data-uid='cica'>Hello!</div>
 }
 
+const MemoizedComponent = React.memo(() => {
+  return (
+    <div data-uid='memoized-component-inner' data-paths='memoized-component-inner'>
+      Hi!
+    </div>
+  )
+})
+
 describe('Monkey Function', () => {
   it('works for simple class components', () => {
     class TestClass extends React.Component {
@@ -661,6 +669,22 @@ describe('Monkey Function', () => {
 
     expect(renderToFormattedString(<Component data-uid={'test1'} />)).toMatchInlineSnapshot(`
       "<mesh></mesh>
+      "
+    `)
+  })
+
+  it('Handle a component wrapped in React.memo', () => {
+    const Component = () => {
+      return <MemoizedComponent data-uid='memoized-component' data-paths='memoized-component' />
+    }
+    expect(renderToFormattedString(<Component data-uid={'test1'} data-paths={'test1'} />))
+      .toMatchInlineSnapshot(`
+      "<div
+        data-uid=\\"memoized-component-inner memoized-component test1\\"
+        data-paths=\\"memoized-component-inner memoized-component test1\\"
+      >
+        Hi!
+      </div>
       "
     `)
   })
