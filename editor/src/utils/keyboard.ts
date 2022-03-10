@@ -255,7 +255,15 @@ export const Keyboard = {
     })
   },
   keyIsArrow: function (keyChar: KeyCharacter): boolean {
-    return ['left', 'right', 'up', 'down'].some((char) => char === keyChar)
+    switch (keyChar) {
+      case 'left':
+      case 'right':
+      case 'up':
+      case 'down':
+        return true
+      default:
+        return false
+    }
   },
   // This needs to be extended when we introduce new keys in canvas strategies
   keyIsInteraction: function (keyChar: KeyCharacter): boolean {
