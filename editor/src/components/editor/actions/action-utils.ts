@@ -233,20 +233,6 @@ export function isClearInteractionSession(action: EditorAction): boolean {
   }
 }
 
-export function isCreateOrUpdateInteractionSession(action: EditorAction): boolean {
-  switch (action.action) {
-    case 'TRANSIENT_ACTIONS':
-      return action.transientActions.some(isCreateOrUpdateInteractionSession)
-    case 'ATOMIC':
-      return action.actions.some(isCreateOrUpdateInteractionSession)
-    case 'CREATE_INTERACTION_SESSION':
-    case 'UPDATE_INTERACTION_SESSION':
-      return true
-    default:
-      return false
-  }
-}
-
 export function shouldApplyClearInteractionSessionResult(action: EditorAction): boolean {
   switch (action.action) {
     case 'TRANSIENT_ACTIONS':
