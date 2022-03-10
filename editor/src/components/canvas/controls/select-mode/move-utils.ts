@@ -132,7 +132,7 @@ export function dragComponent(
               roundedDragDelta,
             ),
             scale,
-          )
+          ).delta
         : (Utils.zeroPoint as CanvasPoint)
 
       const dragDeltaToApply = Guidelines.applyDirectionConstraint(

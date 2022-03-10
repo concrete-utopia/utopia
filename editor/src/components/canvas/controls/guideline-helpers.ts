@@ -1,5 +1,11 @@
 import Utils from '../../../utils/utils'
-import { CanvasPoint, CanvasRectangle } from '../../../core/shared/math-utils'
+import {
+  CanvasPoint,
+  CanvasRectangle,
+  offsetPoint,
+  offsetRect,
+  zeroRectangle,
+} from '../../../core/shared/math-utils'
 import { ElementPath } from '../../../core/shared/project-file-types'
 import * as EP from '../../../core/shared/element-path'
 import {
@@ -11,6 +17,8 @@ import {
 import { ElementInstanceMetadataMap } from '../../../core/shared/element-template'
 import { MetadataUtils } from '../../../core/model/element-metadata-utils'
 import { EdgePosition } from '../canvas-types'
+import { pluck } from '../../../core/shared/array-utils'
+import { defaultIfNull } from '../../../core/shared/optional-utils'
 
 export const SnappingThreshold = 5
 
@@ -139,21 +147,90 @@ export function getSnapDelta(
   constrainedDragAxis: ConstrainedDragAxis | null,
   draggedFrame: CanvasRectangle,
   scale: number,
-): CanvasPoint {
+): { delta: CanvasPoint; guidelinesWithSnappingVector: Array<GuidelineWithSnappingVector> } {
   const closestGuideLines = getSnappedGuidelines(
     guidelines,
     constrainedDragAxis,
     draggedFrame,
     scale,
   )
-  const delta = oneGuidelinePerDimension(closestGuideLines).reduce((working, guideline) => {
+  const winningGuidelines = oneGuidelinePerDimension(closestGuideLines)
+  const delta = winningGuidelines.reduce((working, guideline) => {
     if (guideline.activateSnap) {
       return Utils.offsetPoint(working, guideline.snappingVector)
     } else {
       return working
     }
   }, Utils.zeroPoint as CanvasPoint)
-  return Utils.roundPointTo(delta, 0)
+  return { delta: Utils.roundPointTo(delta, 0), guidelinesWithSnappingVector: winningGuidelines }
+}
+
+function pointGuidelineToBoundsEdge(
+  guidelinesWithSnappingVector: Array<GuidelineWithSnappingVector>,
+  multiselectBounds: CanvasRectangle,
+): Array<GuidelineWithSnappingVector> {
+  return guidelinesWithSnappingVector.map((guidelineWithSnappingVector) => {
+    const guideline = guidelineWithSnappingVector.guideline
+    switch (guideline.type) {
+      case 'XAxisGuideline':
+        return {
+          ...guidelineWithSnappingVector,
+          guideline: {
+            ...guideline,
+            yTop: Math.min(guideline.yTop, multiselectBounds.y),
+            yBottom: Math.max(guideline.yBottom, multiselectBounds.y + multiselectBounds.height),
+          },
+        }
+      case 'YAxisGuideline':
+        return {
+          ...guidelineWithSnappingVector,
+          guideline: {
+            ...guideline,
+            xLeft: Math.min(guideline.xLeft, multiselectBounds.x),
+            xRight: Math.max(guideline.xRight, multiselectBounds.x + multiselectBounds.width),
+          },
+        }
+      case 'CornerGuideline':
+        throw new Error('CornerGuidelines are not updated to frame length')
+      default:
+        const _exhaustiveCheck: never = guideline
+        throw 'Unexpected value for guideline: ' + guideline
+    }
+  })
+}
+
+export function runLegacySnapping(
+  drag: CanvasPoint,
+  constrainedDragAxis: ConstrainedDragAxis | null,
+  jsxMetadata: ElementInstanceMetadataMap,
+  selectedElements: Array<ElementPath>,
+  canvasScale: number,
+  multiselectBounds: CanvasRectangle | null,
+): {
+  snappedDragVector: CanvasPoint
+  guidelinesWithSnappingVector: Array<GuidelineWithSnappingVector>
+} {
+  const moveGuidelines = collectParentAndSiblingGuidelines(jsxMetadata, selectedElements)
+
+  const { delta, guidelinesWithSnappingVector } = getSnapDelta(
+    moveGuidelines,
+    constrainedDragAxis,
+    offsetRect(defaultIfNull(zeroRectangle as CanvasRectangle, multiselectBounds), drag),
+    canvasScale,
+  )
+
+  const snappedDragVector = offsetPoint(drag, delta)
+
+  if (multiselectBounds != null) {
+    const draggedBounds = offsetRect(multiselectBounds, snappedDragVector)
+    const updatedGuidelinesWithSnapping = pointGuidelineToBoundsEdge(
+      guidelinesWithSnappingVector,
+      draggedBounds,
+    )
+    return { snappedDragVector, guidelinesWithSnappingVector: updatedGuidelinesWithSnapping }
+  } else {
+    return { snappedDragVector, guidelinesWithSnappingVector }
+  }
 }
 
 export function filterGuidelinesStaticAxis(
