@@ -351,13 +351,13 @@ export function useTriggerAbsoluteMovePerformanceTest(): () => void {
     React.useCallback((store) => store.editor.selectedViews, []),
   )
   const trigger = React.useCallback(async () => {
-    if (allPaths.current.length === 0) {
-      console.info('ABSOLUTE_MOVE_TEST_ERROR')
-      return
-    }
-    const targetPath = [...allPaths.current].sort(
-      (a, b) => EP.toString(b).length - EP.toString(a).length,
-    )[0]
+    // This is very particularly tied to the test project, we _really_ need to pick the
+    // right element because our changes can cause other elements to end up on top of the
+    // target we want.
+    const targetPath = EP.elementPath([
+      ['same-file-app-div', '967', '194', '70b'],
+      ['20b', '887', '016', 'aar'],
+    ])
 
     // Switch Canvas Strategies on.
     const strategiesCurrentlyEnabled = isFeatureEnabled('Canvas Strategies')
@@ -387,7 +387,7 @@ export function useTriggerAbsoluteMovePerformanceTest(): () => void {
       console.info('ABSOLUTE_MOVE_TEST_ERROR')
       return
     }
-    const styleValue = {
+    const childStyleValue = {
       position: 'absolute',
       left:
         childMetadata.globalFrame.x -
@@ -438,7 +438,7 @@ export function useTriggerAbsoluteMovePerformanceTest(): () => void {
           setProp_UNSAFE(
             childTargetPath!,
             PP.create(['style']),
-            jsxAttributeValue(styleValue, emptyComments),
+            jsxAttributeValue(childStyleValue, emptyComments),
           ),
         ],
         'everyone',
@@ -452,11 +452,12 @@ export function useTriggerAbsoluteMovePerformanceTest(): () => void {
           bubbles: true,
           cancelable: true,
           metaKey: false,
-          clientX: targetBounds.left + 5,
-          clientY: targetBounds.top + 5,
+          clientX: targetBounds.left + 20,
+          clientY: targetBounds.top + 20,
           buttons: 1,
         }),
       )
+      await wait(0)
 
       // Mouse move and performance marks for that.
       performance.mark(`absolute_move_move_step_${framesPassed}`)
@@ -467,11 +468,12 @@ export function useTriggerAbsoluteMovePerformanceTest(): () => void {
             bubbles: true,
             cancelable: true,
             metaKey: false,
-            clientX: targetBounds.left + (5 + moveCount * 3),
-            clientY: targetBounds.top + (5 + moveCount * 4),
+            clientX: targetBounds.left + (20 + moveCount * 3),
+            clientY: targetBounds.top + (20 + moveCount * 4),
             buttons: 1,
           }),
         )
+        await wait(0)
       }
       performance.mark(`absolute_move_move_finished_${framesPassed}`)
 
@@ -481,11 +483,12 @@ export function useTriggerAbsoluteMovePerformanceTest(): () => void {
           bubbles: true,
           cancelable: true,
           metaKey: false,
-          clientX: targetBounds.left + 35,
-          clientY: targetBounds.top + 45,
+          clientX: targetBounds.left + 50,
+          clientY: targetBounds.top + 60,
           buttons: 1,
         }),
       )
+      await wait(0)
       performance.mark(`absolute_move_interaction_finished_${framesPassed}`)
       performance.measure(
         `absolute_move_interaction_frame_${framesPassed}`,
