@@ -58,9 +58,9 @@ import { Modifier } from '../../utils/modifiers'
 import CanvasActions from '../canvas/canvas-actions'
 import {
   createInteractionViaKeyboard,
-  KEYBOARD_INTERACTION_TIMEOUT,
   updateInteractionViaKeyboard,
 } from '../canvas/canvas-strategies/interaction-state'
+import { setupClearKeyboardInteraction } from '../canvas/controls/select-mode/select-mode-hooks'
 
 function pushProjectURLToBrowserHistory(projectId: string, projectName: string): void {
   // Make sure we don't replace the query params
@@ -165,24 +165,7 @@ export const EditorComponentInner = React.memo((props: EditorProps) => {
                 )
 
           editorStoreRef.current.dispatch([action], 'everyone')
-
-          if (!isFeatureEnabled('Keyboard up clears interaction')) {
-            if (keyboardTimeoutHandler.current != null) {
-              clearTimeout(keyboardTimeoutHandler.current)
-            }
-
-            keyboardTimeoutHandler.current = setTimeout(() => {
-              if (
-                editorStoreRef.current.editor.canvas.interactionSession?.interactionData.type ===
-                'KEYBOARD_ARROW'
-              ) {
-                editorStoreRef.current.dispatch(
-                  [CanvasActions.clearInteractionSession(true)],
-                  'everyone',
-                )
-              }
-            }, KEYBOARD_INTERACTION_TIMEOUT)
-          }
+          setupClearKeyboardInteraction(editorStoreRef, keyboardTimeoutHandler)
         }
       }
 
