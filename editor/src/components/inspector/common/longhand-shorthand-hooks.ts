@@ -12,7 +12,7 @@ import {
   transientActions,
   unsetProperty,
 } from '../../editor/actions/action-creators'
-import { useEditorState } from '../../editor/store/store-hook'
+import { useEditorDispatch, useEditorState } from '../../editor/store/store-hook'
 import {
   getControlStatusFromPropertyStatus,
   getControlStyles,
@@ -23,6 +23,7 @@ import { ReadonlyRef } from './inspector-utils'
 import {
   InspectorInfo,
   InspectorPropsContext,
+  InspectorPropsContextTargetPathSelector,
   ParsedValues,
   PathMappingFn,
   useGetOrderedPropertyKeys,
@@ -109,16 +110,9 @@ export function useInspectorInfoLonghandShorthand<
 ): {
   [longhand in LonghandKey]: InspectorInfoWithPropKeys<LonghandKey, ShorthandKey>
 } {
-  const dispatch = useEditorState(
-    useCallback((store) => store.dispatch, []),
-    'useInspectorInfoLonghandShorthand dispatch',
-  )
+  const dispatch = useEditorDispatch('useInspectorInfoLonghandShorthand dispatch')
   const inspectorTargetPath = useKeepReferenceEqualityIfPossible(
-    useContextSelector(
-      InspectorPropsContext,
-      useCallback((contextData) => contextData.targetPath, []),
-      deepEqual,
-    ),
+    useContextSelector(InspectorPropsContext, InspectorPropsContextTargetPathSelector, deepEqual),
   )
   const { selectedViewsRef } = useInspectorContext()
 

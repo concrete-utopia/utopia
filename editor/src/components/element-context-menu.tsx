@@ -27,7 +27,7 @@ import {
   removeAsFocusedElement,
 } from './context-menu-items'
 import { MomentumContextMenu } from './context-menu-wrapper'
-import { useRefEditorState, useEditorState } from './editor/store/store-hook'
+import { useRefEditorState, useEditorState, useEditorDispatch } from './editor/store/store-hook'
 import { CanvasContextMenuPortalTargetID } from '../core/shared/utils'
 import { EditorDispatch } from './editor/action-types'
 import { selectComponents, setHighlightedView } from './editor/actions/action-creators'
@@ -37,6 +37,7 @@ import { useNamesAndIconsAllPaths } from './inspector/common/name-and-icon-hook'
 import { FlexRow, Icn, IcnProps, useColorTheme } from '../uuiui'
 import { getAllTargetsAtPoint } from './canvas/dom-lookup'
 import { WindowMousePositionRaw } from '../utils/global-positions'
+import { EditorStorePatched } from './editor/store/editor-state'
 
 export type ElementContextMenuInstance =
   | 'context-menu-navigator'
@@ -174,30 +175,27 @@ const SelectableElementItem = (props: SelectableElementItemProps) => {
   )
 }
 
-export const ElementContextMenu = React.memo(({ contextMenuInstance }: ElementContextMenuProps) => {
-  const dispatch = useEditorState(
-    React.useCallback((store) => store.dispatch, []),
-    'ElementContextMenu dispatch',
-  )
+const editorSliceSelector = (store: EditorStorePatched) => {
+  const resolveFn = store.editor.codeResultCache.curriedResolveFn(store.editor.projectContents)
+  return {
+    canvasOffset: store.editor.canvas.roundedCanvasOffset,
+    selectedViews: store.editor.selectedViews,
+    jsxMetadata: store.editor.jsxMetadata,
+    editorDispatch: store.dispatch,
+    projectContents: store.editor.projectContents,
+    nodeModules: store.editor.nodeModules.files,
+    transientFilesState: store.derived.canvas.transientState.filesState,
+    resolve: resolveFn,
+    hiddenInstances: store.editor.hiddenInstances,
+    scale: store.editor.canvas.scale,
+    focusedElementPath: store.editor.focusedElementPath,
+  }
+}
 
-  const editorSliceRef = useRefEditorState(
-    React.useCallback((store) => {
-      const resolveFn = store.editor.codeResultCache.curriedResolveFn(store.editor.projectContents)
-      return {
-        canvasOffset: store.editor.canvas.roundedCanvasOffset,
-        selectedViews: store.editor.selectedViews,
-        jsxMetadata: store.editor.jsxMetadata,
-        editorDispatch: store.dispatch,
-        projectContents: store.editor.projectContents,
-        nodeModules: store.editor.nodeModules.files,
-        transientFilesState: store.derived.canvas.transientState.filesState,
-        resolve: resolveFn,
-        hiddenInstances: store.editor.hiddenInstances,
-        scale: store.editor.canvas.scale,
-        focusedElementPath: store.editor.focusedElementPath,
-      }
-    }, []),
-  )
+export const ElementContextMenu = React.memo(({ contextMenuInstance }: ElementContextMenuProps) => {
+  const dispatch = useEditorDispatch('ElementContextMenu dispatch')
+
+  const editorSliceRef = useRefEditorState(editorSliceSelector)
 
   const getData: () => CanvasData = React.useCallback(() => {
     const currentEditor = editorSliceRef.current

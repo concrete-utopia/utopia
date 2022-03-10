@@ -11,7 +11,8 @@ import {
   setResizeOptionsTargetOptions,
 } from '../../editor/actions/action-creators'
 import { usePrevious } from '../../editor/hook-utils'
-import { useEditorState } from '../../editor/store/store-hook'
+import { EditorStorePatched } from '../../editor/store/editor-state'
+import { useEditorDispatch, useEditorState } from '../../editor/store/store-hook'
 import { stylePropPathMappingFn } from '../../inspector/common/property-path-hooks'
 
 interface PropertyTargetSelectorProps {
@@ -21,16 +22,14 @@ interface PropertyTargetSelectorProps {
   options: Array<LayoutTargetableProp>
 }
 
+const resizeOptionsSelector = (store: EditorStorePatched) => store.editor.canvas.resizeOptions
+
 export const PropertyTargetSelector = React.memo(
   (props: PropertyTargetSelectorProps): JSX.Element => {
     const colorTheme = useColorTheme()
-    const { resizeOptions, dispatch } = useEditorState(
-      React.useCallback((editorState) => {
-        return {
-          resizeOptions: editorState.editor.canvas.resizeOptions,
-          dispatch: editorState.dispatch,
-        }
-      }, []),
+    const dispatch = useEditorDispatch('PropertyTargetSelector dispatch')
+    const resizeOptions = useEditorState(
+      resizeOptionsSelector,
       'PropertyTargetSelector resizeOptions',
     )
 

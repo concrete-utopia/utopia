@@ -13,7 +13,12 @@ import { NO_OP } from '../../../../core/shared/utils'
 import { useColorTheme } from '../../../../uuiui'
 import { EditorDispatch } from '../../../editor/action-types'
 import { setResizeOptionsTargetOptions } from '../../../editor/actions/action-creators'
-import { useEditorState, useRefEditorState } from '../../../editor/store/store-hook'
+import { EditorStorePatched } from '../../../editor/store/editor-state'
+import {
+  useEditorDispatch,
+  useEditorState,
+  useRefEditorState,
+} from '../../../editor/store/store-hook'
 import CanvasActions from '../../canvas-actions'
 import {
   CSSCursor,
@@ -151,6 +156,12 @@ interface ResizePointProps {
   position: EdgePosition
 }
 
+const scaleSelector = (store: EditorStorePatched) => store.editor.canvas.scale
+const metadataSelector = (store: EditorStorePatched) => store.editor.jsxMetadata
+const selectedViewsSelector = (store: EditorStorePatched) => store.editor.selectedViews
+const roundedCanvasOffsetSelector = (store: EditorStorePatched) =>
+  store.editor.canvas.roundedCanvasOffset
+
 const ResizePointMouseAreaSize = 12
 const ResizePointMouseAreaOffset = ResizePointMouseAreaSize / 2
 const ResizePointSize = 6
@@ -158,23 +169,11 @@ const ResizePointOffset = ResizePointSize / 2
 const ResizePoint = React.memo(
   React.forwardRef<HTMLDivElement, ResizePointProps>((props, ref) => {
     const colorTheme = useColorTheme()
-    const scale = useEditorState(
-      React.useCallback((store) => store.editor.canvas.scale, []),
-      'ResizeEdge scale',
-    )
-    const dispatch = useEditorState(
-      React.useCallback((store) => store.dispatch, []),
-      'ResizeEdge dispatch',
-    )
-    const jsxMetadataRef = useRefEditorState(
-      React.useCallback((store) => store.editor.jsxMetadata, []),
-    )
-    const selectedViewsRef = useRefEditorState(
-      React.useCallback((store) => store.editor.selectedViews, []),
-    )
-    const canvasOffsetRef = useRefEditorState(
-      React.useCallback((store) => store.editor.canvas.roundedCanvasOffset, []),
-    )
+    const scale = useEditorState(scaleSelector, 'ResizeEdge scale')
+    const dispatch = useEditorDispatch('ResizeEdge dispatch')
+    const jsxMetadataRef = useRefEditorState(metadataSelector)
+    const selectedViewsRef = useRefEditorState(selectedViewsSelector)
+    const canvasOffsetRef = useRefEditorState(roundedCanvasOffsetSelector)
 
     const onPointMouseDown = React.useCallback(
       (event: React.MouseEvent<HTMLDivElement>) => {
@@ -248,23 +247,11 @@ interface ResizeEdgeProps {
 const ResizeMouseAreaSize = 10
 const ResizeEdge = React.memo(
   React.forwardRef<HTMLDivElement, ResizeEdgeProps>((props, ref) => {
-    const scale = useEditorState(
-      React.useCallback((store) => store.editor.canvas.scale, []),
-      'ResizeEdge scale',
-    )
-    const dispatch = useEditorState(
-      React.useCallback((store) => store.dispatch, []),
-      'ResizeEdge dispatch',
-    )
-    const jsxMetadataRef = useRefEditorState(
-      React.useCallback((store) => store.editor.jsxMetadata, []),
-    )
-    const selectedViewsRef = useRefEditorState(
-      React.useCallback((store) => store.editor.selectedViews, []),
-    )
-    const canvasOffsetRef = useRefEditorState(
-      React.useCallback((store) => store.editor.canvas.roundedCanvasOffset, []),
-    )
+    const scale = useEditorState(scaleSelector, 'ResizeEdge scale')
+    const dispatch = useEditorDispatch('ResizeEdge dispatch')
+    const jsxMetadataRef = useRefEditorState(metadataSelector)
+    const selectedViewsRef = useRefEditorState(selectedViewsSelector)
+    const canvasOffsetRef = useRefEditorState(roundedCanvasOffsetSelector)
 
     const onEdgeMouseDown = React.useCallback(
       (event: React.MouseEvent<HTMLDivElement>) => {

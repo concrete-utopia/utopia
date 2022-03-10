@@ -13,7 +13,7 @@ import {
   useTriggerAllElementsHighlightPerformanceTest,
 } from '../../core/model/performance-scripts'
 import { useReParseOpenProjectFile } from '../../core/model/project-file-helper-hooks'
-import { shareURLForProject } from '../../core/shared/utils'
+import { identity, shareURLForProject } from '../../core/shared/utils'
 import { isFeatureEnabled } from '../../utils/feature-switches'
 import {
   IcnProps,
@@ -28,8 +28,8 @@ import {
 import { User } from '../../uuiui-deps'
 import { EditorAction } from '../editor/action-types'
 import { setLeftMenuTab, setPanelVisibility, togglePanel } from '../editor/actions/action-creators'
-import { LeftMenuTab } from '../editor/store/editor-state'
-import { useEditorState, useRefEditorState } from '../editor/store/store-hook'
+import { EditorStorePatched, LeftMenuTab } from '../editor/store/editor-state'
+import { useEditorState, useRefEditorMetadata, useRefEditorState } from '../editor/store/store-hook'
 
 interface TileProps {
   size: keyof typeof UtopiaTheme.layout.rowHeight
@@ -105,6 +105,20 @@ export const MenuTile: React.FunctionComponent<MenuTileProps> = (props) => {
   )
 }
 
+const menuBarPropsSelector = (store: EditorStorePatched) => {
+  return {
+    dispatch: store.dispatch,
+    selectedTab: store.editor.leftMenu.selectedTab,
+    userState: store.userState,
+    leftMenuExpanded: store.editor.leftMenu.expanded,
+    projectId: store.editor.id,
+    projectName: store.editor.projectName,
+    isPreviewPaneVisible: store.editor.preview.visible,
+    isCanvasVisible: store.editor.canvas.visible,
+    isCodeEditorVisible: store.editor.interfaceDesigner.codePaneVisible,
+  }
+}
+
 export const Menubar = React.memo(() => {
   const {
     dispatch,
@@ -116,22 +130,7 @@ export const Menubar = React.memo(() => {
     isPreviewPaneVisible,
     isCanvasVisible,
     isCodeEditorVisible,
-  } = useEditorState(
-    React.useCallback((store) => {
-      return {
-        dispatch: store.dispatch,
-        selectedTab: store.editor.leftMenu.selectedTab,
-        userState: store.userState,
-        leftMenuExpanded: store.editor.leftMenu.expanded,
-        projectId: store.editor.id,
-        projectName: store.editor.projectName,
-        isPreviewPaneVisible: store.editor.preview.visible,
-        isCanvasVisible: store.editor.canvas.visible,
-        isCodeEditorVisible: store.editor.interfaceDesigner.codePaneVisible,
-      }
-    }, []),
-    'Menubar',
-  )
+  } = useEditorState(menuBarPropsSelector, 'Menubar')
 
   const colorTheme = useColorTheme()
 
@@ -200,13 +199,9 @@ export const Menubar = React.memo(() => {
   const previewURL =
     projectId == null ? '' : shareURLForProject(FLOATING_PREVIEW_BASE_URL, projectId, projectName)
 
-  const entireStateRef = useRefEditorState(React.useCallback((store) => store, []))
+  const entireStateRef = useRefEditorState(identity)
 
-  const jsxMetadata = useRefEditorState(
-    React.useCallback((store) => {
-      return store.editor.jsxMetadata
-    }, []),
-  )
+  const jsxMetadata = useRefEditorMetadata()
 
   const printEditorState = React.useCallback(() => {
     console.info('Current Editor State:', entireStateRef.current)

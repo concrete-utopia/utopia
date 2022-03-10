@@ -19,6 +19,13 @@ interface LayoutIconResult {
   isPositionAbsolute: boolean
 }
 
+const layoutIconResultEquality = (oldResult: LayoutIconResult, newResult: LayoutIconResult) => {
+  return (
+    oldResult.isPositionAbsolute === newResult.isPositionAbsolute &&
+    shallowEqual(oldResult.iconProps, newResult.iconProps)
+  )
+}
+
 export function useLayoutOrElementIcon(path: ElementPath): LayoutIconResult {
   return useEditorState(
     useCallback(
@@ -29,12 +36,7 @@ export function useLayoutOrElementIcon(path: ElementPath): LayoutIconResult {
       [path],
     ),
     'useLayoutOrElementIcon',
-    useCallback((oldResult: LayoutIconResult, newResult: LayoutIconResult) => {
-      return (
-        oldResult.isPositionAbsolute === newResult.isPositionAbsolute &&
-        shallowEqual(oldResult.iconProps, newResult.iconProps)
-      )
-    }, []),
+    layoutIconResultEquality,
   )
 }
 

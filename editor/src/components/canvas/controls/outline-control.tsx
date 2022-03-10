@@ -21,6 +21,7 @@ import { useEditorState } from '../../editor/store/store-hook'
 import { KeysPressed } from '../../../utils/keyboard'
 import { PositionOutline } from './position-outline'
 import { stripNulls, uniqBy } from '../../../core/shared/array-utils'
+import { EditorStorePatched } from '../../editor/store/editor-state'
 
 export function getSelectionColor(
   path: ElementPath,
@@ -100,11 +101,14 @@ const CenteredCrossSVG = React.memo(({ id, centerX, centerY, scale }: CenteredCr
   )
 })
 
+const layoutSectionHoveredSelector = (store: EditorStorePatched) =>
+  store.editor.inspector.layoutSectionHovered
+
 export const OutlineControls = (props: OutlineControlsProps) => {
   const colorTheme = useColorTheme()
   const { dragState } = props
   const layoutInspectorSectionHovered = useEditorState(
-    React.useCallback((store) => store.editor.inspector.layoutSectionHovered, []),
+    layoutSectionHoveredSelector,
     'OutlineControls layoutInspectorSectionHovered',
   )
   const getDragStateFrame = React.useCallback(

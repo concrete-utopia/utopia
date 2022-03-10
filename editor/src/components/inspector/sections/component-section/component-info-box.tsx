@@ -12,11 +12,16 @@ import { IconToggleButton } from '../../../../uuiui/icon-toggle-button'
 import { InlineButton, InlineLink } from '../../../../uuiui/inline-button'
 import { normalisePathToUnderlyingTarget } from '../../../custom-code/code-file'
 import { openCodeEditorFile, setFocusedElement } from '../../../editor/actions/action-creators'
-import { useEditorState } from '../../../editor/store/store-hook'
+import {
+  useEditorDispatch,
+  useEditorSelectedViews,
+  useEditorState,
+} from '../../../editor/store/store-hook'
 import { UIGridRow } from '../../widgets/ui-grid-row'
 import * as EP from '../../../../core/shared/element-path'
 import { when } from '../../../../utils/react-conditionals'
 import { safeIndex } from '../../../../core/shared/array-utils'
+import { EditorStorePatched } from '../../../editor/store/editor-state'
 
 function useComponentType(path: ElementPath | null): string | null {
   return useEditorState(
@@ -47,18 +52,14 @@ function useComponentType(path: ElementPath | null): string | null {
   )
 }
 
+const focusedElementPathSelector = (store: EditorStorePatched) => store.editor.focusedElementPath
+
 export const ComponentInfoBox = () => {
-  const dispatch = useEditorState(
-    React.useCallback((state) => state.dispatch, []),
-    'ComponentInfoBox dispatch',
-  )
-  const selectedViews = useEditorState(
-    React.useCallback((store) => store.editor.selectedViews, []),
-    'ComponentInfoBox selectedViews',
-  )
+  const dispatch = useEditorDispatch('ComponentInfoBox dispatch')
+  const selectedViews = useEditorSelectedViews('ComponentInfoBox selectedViews')
 
   const focusedElementPath = useEditorState(
-    React.useCallback((store) => store.editor.focusedElementPath, []),
+    focusedElementPathSelector,
     'ComponentInfoBox focusedElementPath',
   )
 

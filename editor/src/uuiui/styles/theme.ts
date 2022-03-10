@@ -1,8 +1,7 @@
 import { useEditorState } from './../../components/editor/store/store-hook'
 import { Interpolation } from '@emotion/react'
-import { Theme } from './../../components/editor/store/editor-state'
+import { EditorStorePatched, Theme } from './../../components/editor/store/editor-state'
 import { createUtopiColor } from './utopi-color-helpers'
-import { useCallback } from 'react'
 
 const base = {
   blue: createUtopiColor('#007AFF'),
@@ -306,11 +305,9 @@ export const darkColorTheme = { ...dark, inverted: light }
 
 // TODO: don't export colorTheme anymore and just export useUtopiaTheme() hook
 // prerequisites: no class components and usage of UtopiaTheme.color instead of colorTheme
+const themeSelector = (store: EditorStorePatched) => store.editor.theme
 export const useColorTheme = () => {
-  const currentTheme: Theme = useEditorState(
-    useCallback((store) => store.editor.theme, []),
-    'currentTheme',
-  )
+  const currentTheme: Theme = useEditorState(themeSelector, 'currentTheme')
   return currentTheme === 'dark' ? darkColorTheme : colorTheme
 }
 

@@ -46,7 +46,11 @@ import {
   Imports,
   PropertyPath,
 } from '../../../../core/shared/project-file-types'
-import { useEditorState } from '../../../editor/store/store-hook'
+import {
+  useEditorDispatch,
+  useEditorSelectedViews,
+  useEditorState,
+} from '../../../editor/store/store-hook'
 import { addImports, forceParseFile, setProp_UNSAFE } from '../../../editor/actions/action-creators'
 import { jsxAttributeOtherJavaScript } from '../../../../core/shared/element-template'
 import { EditorAction } from '../../../editor/action-types'
@@ -56,6 +60,7 @@ import {
   normalisePathSuccessOrThrowError,
   normalisePathToUnderlyingTarget,
 } from '../../../custom-code/code-file'
+import { EditorStorePatched } from '../../../editor/store/editor-state'
 
 export interface ControlForPropProps<T extends BaseControlDescription> {
   propPath: PropertyPath
@@ -113,30 +118,26 @@ export const ColorPropertyControl = React.memo(
   },
 )
 
+const targetFilePathsSelector = (store: EditorStorePatched) => {
+  const currentFilePath = forceNotNull('Missing open file', store.editor.canvas.openFile?.filename)
+  return store.editor.selectedViews.map((selectedView) => {
+    const normalisedPath = normalisePathToUnderlyingTarget(
+      store.editor.projectContents,
+      store.editor.nodeModules.files,
+      currentFilePath,
+      selectedView,
+    )
+    return normalisePathSuccessOrThrowError(normalisedPath).filePath
+  })
+}
+
 export const ExpressionInputPropertyControl = React.memo(
   (props: ControlForPropProps<ExpressionInputControlDescription>) => {
     const { propName, propMetadata, controlDescription } = props
-    const dispatch = useEditorState(
-      React.useCallback((store) => store.dispatch, []),
-      'ExpressionInputPropertyControl dispatch',
-    )
+    const dispatch = useEditorDispatch('ExpressionInputPropertyControl dispatch')
 
     const targetFilePaths = useEditorState(
-      React.useCallback((store) => {
-        const currentFilePath = forceNotNull(
-          'Missing open file',
-          store.editor.canvas.openFile?.filename,
-        )
-        return store.editor.selectedViews.map((selectedView) => {
-          const normalisedPath = normalisePathToUnderlyingTarget(
-            store.editor.projectContents,
-            store.editor.nodeModules.files,
-            currentFilePath,
-            selectedView,
-          )
-          return normalisePathSuccessOrThrowError(normalisedPath).filePath
-        })
-      }, []),
+      targetFilePathsSelector,
       'ExpressionInputPropertyControl targetFilePaths',
     )
 
@@ -230,34 +231,11 @@ export const PopUpListPropertyControl = React.memo(
 
 export const ExpressionPopUpListPropertyControl = React.memo(
   (props: ControlForPropProps<ExpressionPopUpListControlDescription>) => {
-    const dispatch = useEditorState(
-      React.useCallback((store) => store.dispatch, []),
-      'ExpressionPopUpListPropertyControl dispatch',
-    )
-    const selectedViews = useEditorState(
-      React.useCallback((store) => store.editor.selectedViews, []),
-      'ExpressionPopUpListPropertyControl selectedViews',
-    )
+    const dispatch = useEditorDispatch('ExpressionPopUpListPropertyControl dispatch')
+    const selectedViews = useEditorSelectedViews('ExpressionPopUpListPropertyControl selectedViews')
 
     const targetFilePaths = useEditorState(
-      React.useCallback(
-        (store) => {
-          const currentFilePath = forceNotNull(
-            'Missing open file',
-            store.editor.canvas.openFile?.filename,
-          )
-          return selectedViews.map((selectedView) => {
-            const normalisedPath = normalisePathToUnderlyingTarget(
-              store.editor.projectContents,
-              store.editor.nodeModules.files,
-              currentFilePath,
-              selectedView,
-            )
-            return normalisePathSuccessOrThrowError(normalisedPath).filePath
-          })
-        },
-        [selectedViews],
-      ),
+      targetFilePathsSelector,
       'ExpressionPopUpListPropertyControl targetFilePaths',
     )
 

@@ -1,5 +1,6 @@
 import React from 'react'
 import { CanvasVector } from '../../../core/shared/math-utils'
+import { EditorStorePatched } from '../../editor/store/editor-state'
 import { useRefEditorState, useSelectorWithCallback } from '../../editor/store/store-hook'
 
 export const CanvasOffsetWrapper = React.memo((props) => {
@@ -12,15 +13,17 @@ export const CanvasOffsetWrapper = React.memo((props) => {
   )
 })
 
+const roundedCanvasOffsetSelector = (store: EditorStorePatched) =>
+  store.editor.canvas.roundedCanvasOffset
+const scaleSelector = (store: EditorStorePatched) => store.editor.canvas.scale
+
 export function useApplyCanvasOffsetToStyle(
   setScaleToo: boolean,
   forceOffset?: boolean, // this is not so nice, but the element is optionally rendered in canvas-component-entry
 ): React.RefObject<HTMLDivElement> {
   const elementRef = React.useRef<HTMLDivElement>(null)
-  const canvasOffsetRef = useRefEditorState(
-    React.useCallback((store) => store.editor.canvas.roundedCanvasOffset, []),
-  )
-  const scaleRef = useRefEditorState(React.useCallback((store) => store.editor.canvas.scale, []))
+  const canvasOffsetRef = useRefEditorState(roundedCanvasOffsetSelector)
+  const scaleRef = useRefEditorState(scaleSelector)
   const applyCanvasOffset = React.useCallback(
     (roundedCanvasOffset: CanvasVector, _?: any) => {
       if (elementRef.current != null) {
@@ -38,10 +41,7 @@ export function useApplyCanvasOffsetToStyle(
     [elementRef, setScaleToo, scaleRef],
   )
 
-  useSelectorWithCallback(
-    React.useCallback((store) => store.editor.canvas.roundedCanvasOffset, []),
-    applyCanvasOffset,
-  )
+  useSelectorWithCallback(roundedCanvasOffsetSelector, applyCanvasOffset)
 
   const applyCanvasOffsetEffect = React.useCallback(() => {
     applyCanvasOffset(canvasOffsetRef.current, forceOffset)

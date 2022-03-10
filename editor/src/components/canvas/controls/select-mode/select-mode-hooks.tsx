@@ -12,7 +12,7 @@ import {
 } from '../../../../core/shared/math-utils'
 import { ElementPath } from '../../../../core/shared/project-file-types'
 import * as EP from '../../../../core/shared/element-path'
-import { fastForEach, NO_OP } from '../../../../core/shared/utils'
+import { fastForEach, identity, NO_OP } from '../../../../core/shared/utils'
 import { KeysPressed } from '../../../../utils/keyboard'
 import { useKeepShallowReferenceEquality } from '../../../../utils/react-performance'
 import Utils from '../../../../utils/utils'
@@ -23,8 +23,13 @@ import {
   setFocusedElement,
   setHighlightedView,
 } from '../../../editor/actions/action-creators'
-import { EditorState } from '../../../editor/store/editor-state'
-import { useEditorState, useRefEditorState } from '../../../editor/store/store-hook'
+import { EditorState, EditorStorePatched } from '../../../editor/store/editor-state'
+import {
+  useEditorDispatch,
+  useEditorState,
+  useRefEditorSelectedViews,
+  useRefEditorState,
+} from '../../../editor/store/store-hook'
 import CanvasActions from '../../canvas-actions'
 import { DragState, moveDragState } from '../../canvas-types'
 import {
@@ -82,6 +87,17 @@ export function pickSelectionEnabled(
   return canvas.selectionControlsVisible && !keysPressed['z'] && canvas.textEditor == null
 }
 
+const maybeHighlightElementPropsSelector = (store: EditorStorePatched) => {
+  return {
+    dispatch: store.dispatch,
+    resizing: isResizing(store.editor),
+    dragging: isDragging(store.editor),
+    selectionEnabled: pickSelectionEnabled(store.editor.canvas, store.editor.keysPressed),
+    inserting: isInserting(store.editor),
+    highlightedViews: store.editor.highlightedViews,
+  }
+}
+
 /**
  * maybeHighlightOnHover and maybeClearHighlightsOnHoverEnd are moved here from new-canvas-controls, kept as-is for continuity
  */
@@ -89,18 +105,7 @@ export function useMaybeHighlightElement(): {
   maybeHighlightOnHover: (target: ElementPath) => void
   maybeClearHighlightsOnHoverEnd: () => void
 } {
-  const stateRef = useRefEditorState(
-    React.useCallback((store) => {
-      return {
-        dispatch: store.dispatch,
-        resizing: isResizing(store.editor),
-        dragging: isDragging(store.editor),
-        selectionEnabled: pickSelectionEnabled(store.editor.canvas, store.editor.keysPressed),
-        inserting: isInserting(store.editor),
-        highlightedViews: store.editor.highlightedViews,
-      }
-    }, []),
-  )
+  const stateRef = useRefEditorState(maybeHighlightElementPropsSelector)
 
   const maybeHighlightOnHover = React.useCallback(
     (target: ElementPath): void => {
@@ -200,6 +205,17 @@ export function getSelectableViews(
   return filterHiddenInstances(hiddenInstances, candidateViews)
 }
 
+const findValidTargetPropsSelector = (store: EditorStorePatched) => {
+  return {
+    componentMetadata: store.editor.jsxMetadata,
+    selectedViews: store.editor.selectedViews,
+    hiddenInstances: store.editor.hiddenInstances,
+    canvasScale: store.editor.canvas.scale,
+    canvasOffset: store.editor.canvas.realCanvasOffset,
+    focusedElementPath: store.editor.focusedElementPath,
+  }
+}
+
 function useFindValidTarget(): (
   selectableViews: Array<ElementPath>,
   mousePoint: WindowPoint | null,
@@ -207,18 +223,7 @@ function useFindValidTarget(): (
   elementPath: ElementPath
   isSelected: boolean
 } | null {
-  const storeRef = useRefEditorState(
-    React.useCallback((store) => {
-      return {
-        componentMetadata: store.editor.jsxMetadata,
-        selectedViews: store.editor.selectedViews,
-        hiddenInstances: store.editor.hiddenInstances,
-        canvasScale: store.editor.canvas.scale,
-        canvasOffset: store.editor.canvas.realCanvasOffset,
-        focusedElementPath: store.editor.focusedElementPath,
-      }
-    }, []),
-  )
+  const storeRef = useRefEditorState(findValidTargetPropsSelector)
 
   return React.useCallback(
     (selectableViews: Array<ElementPath>, mousePoint: WindowPoint | null) => {
@@ -260,11 +265,8 @@ function useStartDragState(): (
   target: ElementPath,
   start: CanvasPoint | null,
 ) => (event: MouseEvent) => void {
-  const dispatch = useEditorState(
-    React.useCallback((store) => store.dispatch, []),
-    'useStartDragState dispatch',
-  )
-  const entireEditorStoreRef = useRefEditorState(React.useCallback((store) => store, []))
+  const dispatch = useEditorDispatch('useStartDragState dispatch')
+  const entireEditorStoreRef = useRefEditorState(identity)
 
   return React.useCallback(
     (target: ElementPath, start: CanvasPoint | null) => (event: MouseEvent) => {
@@ -325,10 +327,7 @@ function useStartDragState(): (
 }
 
 function useStartCanvasSession(): (event: MouseEvent, target: ElementPath) => void {
-  const dispatch = useEditorState(
-    React.useCallback((store) => store.dispatch, []),
-    'useStartDragState dispatch',
-  )
+  const dispatch = useEditorDispatch('useStartDragState dispatch')
   const windowToCanvasCoordinates = useWindowToCanvasCoordinates()
 
   return React.useCallback(
@@ -401,17 +400,17 @@ export function useStartDragStateAfterDragExceedsThreshold(): (
   return startDragStateAfterDragExceedsThreshold
 }
 
+const getSelectableViewsForSelectModePropsSelector = (store: EditorStorePatched) => {
+  return {
+    componentMetadata: store.editor.jsxMetadata,
+    selectedViews: store.editor.selectedViews,
+    hiddenInstances: store.editor.hiddenInstances,
+    focusedElementPath: store.editor.focusedElementPath,
+  }
+}
+
 export function useGetSelectableViewsForSelectMode() {
-  const storeRef = useRefEditorState(
-    React.useCallback((store) => {
-      return {
-        componentMetadata: store.editor.jsxMetadata,
-        selectedViews: store.editor.selectedViews,
-        hiddenInstances: store.editor.hiddenInstances,
-        focusedElementPath: store.editor.focusedElementPath,
-      }
-    }, []),
-  )
+  const storeRef = useRefEditorState(getSelectableViewsForSelectModePropsSelector)
 
   return React.useCallback(
     (allElementsDirectlySelectable: boolean, childrenSelectable: boolean) => {
@@ -507,13 +506,8 @@ function useSelectOrLiveModeSelectAndHover(
   onMouseMove: (event: React.MouseEvent<HTMLDivElement, MouseEvent>) => void
   onMouseDown: (event: React.MouseEvent<HTMLDivElement, MouseEvent>) => void
 } {
-  const dispatch = useEditorState(
-    React.useCallback((store) => store.dispatch, []),
-    'useSelectAndHover dispatch',
-  )
-  const selectedViewsRef = useRefEditorState(
-    React.useCallback((store) => store.editor.selectedViews, []),
-  )
+  const dispatch = useEditorDispatch('useSelectAndHover dispatch')
+  const selectedViewsRef = useRefEditorSelectedViews()
   const findValidTarget = useFindValidTarget()
   const getSelectableViewsForSelectMode = useGetSelectableViewsForSelectMode()
   const startDragStateAfterDragExceedsThreshold = useStartDragStateAfterDragExceedsThreshold()
@@ -526,15 +520,7 @@ function useSelectOrLiveModeSelectAndHover(
     getSelectableViewsForSelectMode,
   )
 
-  const editorStoreRef = useRefEditorState(
-    React.useCallback(
-      (store) => ({
-        editor: store.editor,
-        derived: store.derived,
-      }),
-      [],
-    ),
-  )
+  const editorStoreRef = useRefEditorState(identity)
 
   const innerAnimationFrameRef = React.useRef<number | null>(null)
 
@@ -619,6 +605,10 @@ function useSelectOrLiveModeSelectAndHover(
   return { onMouseMove, onMouseDown }
 }
 
+const modeTypeSelector = (store: EditorStorePatched) => store.editor.mode.type
+const hasInteractionSessionSelector = (store: EditorStorePatched) =>
+  store.editor.canvas.interactionSession != null
+
 export function useSelectAndHover(
   cmdPressed: boolean,
   setSelectedViewsForCanvasControlsOnly: (newSelectedViews: ElementPath[]) => void,
@@ -626,12 +616,9 @@ export function useSelectAndHover(
   onMouseMove: (event: React.MouseEvent<HTMLDivElement, MouseEvent>) => void
   onMouseDown: (event: React.MouseEvent<HTMLDivElement, MouseEvent>) => void
 } {
-  const modeType = useEditorState(
-    React.useCallback((store) => store.editor.mode.type, []),
-    'useSelectAndHover mode',
-  )
+  const modeType = useEditorState(modeTypeSelector, 'useSelectAndHover mode')
   const hasInteractionSession = useEditorState(
-    (store) => store.editor.canvas.interactionSession != null,
+    hasInteractionSessionSelector,
     'useSelectAndHover hasInteractionSession',
   )
   const selectModeCallbacks = useSelectOrLiveModeSelectAndHover(

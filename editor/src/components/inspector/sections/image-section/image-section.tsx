@@ -4,7 +4,7 @@ import { emptySpecialSizeMeasurements } from '../../../../core/shared/element-te
 import * as PP from '../../../../core/shared/property-path'
 import utils from '../../../../utils/utils'
 import { InspectorContextMenuWrapper } from '../../../context-menu-wrapper'
-import { useEditorState } from '../../../editor/store/store-hook'
+import { useEditorDispatch, useEditorState } from '../../../editor/store/store-hook'
 import { StringControl } from '../../controls/string-control'
 import { addOnUnsetValues } from '../../common/context-menu-items'
 import {
@@ -22,31 +22,25 @@ import {
   FunctionIcons,
   InspectorSectionIcons,
 } from '../../../../uuiui'
+import { EditorStorePatched } from '../../../editor/store/editor-state'
 
 const imgSrcProp = [PP.create(['src'])]
 const imgAltProp = [PP.create(['alt'])]
 
+const firstElementInstanceMetadataSelector = (store: EditorStorePatched) =>
+  MetadataUtils.findElementByElementPath(store.editor.jsxMetadata, store.editor.selectedViews[0])
+
 export const ImgSection = React.memo(() => {
   const colorTheme = useColorTheme()
   const selectedViews = useSelectedViews()
+  const dispatch = useEditorDispatch('ImgSection dispatch')
 
-  const { dispatch, zerothElementInstanceMetadata } = useEditorState(
-    React.useCallback(
-      (store) => {
-        return {
-          dispatch: store.dispatch,
-          zerothElementInstanceMetadata: MetadataUtils.findElementByElementPath(
-            store.editor.jsxMetadata,
-            selectedViews[0],
-          ),
-        }
-      },
-      [selectedViews],
-    ),
-    'ImgSection',
+  const firstElementInstanceMetadata = useEditorState(
+    firstElementInstanceMetadataSelector,
+    'ImgSection firstElementInstanceMetadata',
   )
   const { naturalWidth, naturalHeight, clientWidth, clientHeight } =
-    zerothElementInstanceMetadata?.specialSizeMeasurements ?? emptySpecialSizeMeasurements
+    firstElementInstanceMetadata?.specialSizeMeasurements ?? emptySpecialSizeMeasurements
   const {
     value: srcValue,
     controlStyles: srcControlStyles,

@@ -12,7 +12,12 @@ import { ElementPath } from '../../../../core/shared/project-file-types'
 import { useColorTheme } from '../../../../uuiui'
 import { EditorDispatch } from '../../../editor/action-types'
 import { setResizeOptionsTargetOptions } from '../../../editor/actions/action-creators'
-import { useEditorState, useRefEditorState } from '../../../editor/store/store-hook'
+import { EditorStorePatched } from '../../../editor/store/editor-state'
+import {
+  useEditorDispatch,
+  useEditorState,
+  useRefEditorState,
+} from '../../../editor/store/store-hook'
 import CanvasActions from '../../canvas-actions'
 import {
   CSSCursor,
@@ -107,29 +112,23 @@ interface ResizeEdgeProps {
   enabledDirection: EdgePosition
 }
 
+const scaleSelector = (store: EditorStorePatched) => store.editor.canvas.scale
+const metadataSelector = (store: EditorStorePatched) => store.editor.jsxMetadata
+const selectedViewsSelector = (store: EditorStorePatched) => store.editor.selectedViews
+const roundedCanvasOffsetSelector = (store: EditorStorePatched) =>
+  store.editor.canvas.roundedCanvasOffset
+
 const ResizeEdgeMouseAreaSize = 12
 const ResizeEdgeMouseAreaOffset = ResizeEdgeMouseAreaSize / 2
 const ResizeEdge = React.memo(
   React.forwardRef<HTMLDivElement, ResizeEdgeProps>((props, ref) => {
     const LineSVGComponent =
       props.position.y === 0.5 ? DimensionableControlVertical : DimensionableControlHorizontal
-    const dispatch = useEditorState(
-      React.useCallback((store) => store.dispatch, []),
-      'ResizeEdge dispatch',
-    )
-    const scale = useEditorState(
-      React.useCallback((store) => store.editor.canvas.scale, []),
-      'ResizeEdge scale',
-    )
-    const jsxMetadataRef = useRefEditorState(
-      React.useCallback((store) => store.editor.jsxMetadata, []),
-    )
-    const selectedViewsRef = useRefEditorState(
-      React.useCallback((store) => store.editor.selectedViews, []),
-    )
-    const canvasOffsetRef = useRefEditorState(
-      React.useCallback((store) => store.editor.canvas.roundedCanvasOffset, []),
-    )
+    const dispatch = useEditorDispatch('ResizeEdge dispatch')
+    const scale = useEditorState(scaleSelector, 'ResizeEdge scale')
+    const jsxMetadataRef = useRefEditorState(metadataSelector)
+    const selectedViewsRef = useRefEditorState(selectedViewsSelector)
+    const canvasOffsetRef = useRefEditorState(roundedCanvasOffsetSelector)
 
     const onEdgeMouseDown = React.useCallback(
       (event: React.MouseEvent<HTMLDivElement>) => {
@@ -252,10 +251,7 @@ function startResizeInteraction(
 const ControlSideShort = 3
 const ControlSideLong = 15
 const DimensionableControlVertical = React.memo(() => {
-  const scale = useEditorState(
-    React.useCallback((store) => store.editor.canvas.scale, []),
-    'DimensionableControlVertical scale',
-  )
+  const scale = useEditorState(scaleSelector, 'DimensionableControlVertical scale')
   const colorTheme = useColorTheme()
   const controlLength = ControlSideLong
   const controlWidth = ControlSideShort
@@ -281,10 +277,7 @@ const DimensionableControlVertical = React.memo(() => {
 })
 
 const DimensionableControlHorizontal = React.memo(() => {
-  const scale = useEditorState(
-    React.useCallback((store) => store.editor.canvas.scale, []),
-    'DimensionableControlHorizontal scale',
-  )
+  const scale = useEditorState(scaleSelector, 'DimensionableControlHorizontal scale')
   const colorTheme = useColorTheme()
   const controlLength = ControlSideShort
   const controlWidth = ControlSideLong

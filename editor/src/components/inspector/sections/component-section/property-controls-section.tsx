@@ -1,7 +1,7 @@
 import React from 'react'
 import { ElementPath } from '../../../../core/shared/project-file-types'
 import { PropertyControls } from 'utopia-api/core'
-import { useEditorState } from '../../../editor/store/store-hook'
+import { useEditorDispatch } from '../../../editor/store/store-hook'
 import { setCursorOverlay } from '../../../editor/actions/action-creators'
 import { useKeepReferenceEqualityIfPossible } from '../../../../utils/react-performance'
 import { useHiddenElements } from './hidden-controls-section'
@@ -35,10 +35,7 @@ export const PropertyControlsSection = React.memo((props: PropertyControlsSectio
     }),
   )
 
-  const dispatch = useEditorState(
-    React.useCallback((state) => state.dispatch, []),
-    'ComponentSectionInner',
-  )
+  const dispatch = useEditorDispatch('ComponentSectionInner')
   const setGlobalCursor = React.useCallback(
     (cursor: CSSCursor | null) => {
       dispatch([setCursorOverlay(cursor)], 'everyone')

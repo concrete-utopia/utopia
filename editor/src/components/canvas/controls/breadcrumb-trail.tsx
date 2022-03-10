@@ -7,21 +7,22 @@ import { MetadataUtils } from '../../../core/model/element-metadata-utils'
 import { selectComponents } from '../../../components/editor/actions/action-creators'
 import { Icons, UIRow, UtopiaTheme } from '../../../uuiui'
 import { ElementPath } from '../../../core/shared/project-file-types'
+import { EditorStorePatched } from '../../editor/store/editor-state'
 
 interface ElementPathElement {
   name?: string
   path: ElementPath
 }
 
+const breadcrumbSelector = (store: EditorStorePatched) => ({
+  dispatch: store.dispatch,
+  jsxMetadata: store.editor.jsxMetadata,
+  selectedViews: store.editor.selectedViews,
+})
+
 export const BreadcrumbTrail = React.memo(() => {
   const { dispatch, jsxMetadata, selectedViews } = useEditorState(
-    React.useCallback((store) => {
-      return {
-        dispatch: store.dispatch,
-        jsxMetadata: store.editor.jsxMetadata,
-        selectedViews: store.editor.selectedViews,
-      }
-    }, []),
+    breadcrumbSelector,
     'TopMenuContextProvider',
   )
 

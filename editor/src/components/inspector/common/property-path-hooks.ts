@@ -118,6 +118,9 @@ export const InspectorPropsContext = createContext<InspectorPropsContextData>({
   selectedAttributeMetadatas: [],
 })
 
+export const InspectorPropsContextTargetPathSelector = (contextData: InspectorPropsContextData) =>
+  contextData.targetPath
+
 export const InspectorCallbackContext = React.createContext<InspectorCallbackContextData>({
   selectedViewsRef: { current: [] },
   onSubmitValue: Utils.NO_OP,
@@ -181,6 +184,9 @@ function getAttributeMetadatas(
   return selectedAttributeMetadatas[key] ?? []
 }
 
+const multiselectLengthSelector = (contextData: InspectorPropsContextData) =>
+  contextData.editedMultiSelectedProps.length
+
 // TODO also memoize me!
 export function useInspectorInfoFromMultiselectMultiStyleAttribute<
   PropertiesToControl extends ParsedPropertiesKeys
@@ -200,12 +206,7 @@ export function useInspectorInfoFromMultiselectMultiStyleAttribute<
     attributeMetadatas: ReadonlyArray<StyleAttributeMetadataEntry>
   }
 } {
-  const multiselectLength = useContextSelector(
-    InspectorPropsContext,
-    React.useCallback((c) => {
-      return c.editedMultiSelectedProps.length
-    }, []),
-  )
+  const multiselectLength = useContextSelector(InspectorPropsContext, multiselectLengthSelector)
 
   return React.useMemo(() => {
     const multiselectAtPropsKeys = Object.keys(multiselectAtProps)
@@ -260,12 +261,7 @@ export function useInspectorInfoFromMultiselectMultiPropAttribute(
     spiedValues: ReadonlyArray<any>
   }
 } {
-  const multiselectLength = useContextSelector(
-    InspectorPropsContext,
-    React.useCallback((c) => {
-      return c.editedMultiSelectedProps.length
-    }, []),
-  )
+  const multiselectLength = useContextSelector(InspectorPropsContext, multiselectLengthSelector)
 
   return React.useMemo(() => {
     const multiselectAtPropsKeys = Object.keys(multiselectAtProps)
@@ -542,11 +538,7 @@ export function useInspectorInfo<P extends ParsedPropertiesKeys, T = ParsedPrope
   } = useInspectorContext()
 
   const target = useKeepReferenceEqualityIfPossible(
-    useContextSelector(
-      InspectorPropsContext,
-      React.useCallback((contextData) => contextData.targetPath, []),
-      deepEqual,
-    ),
+    useContextSelector(InspectorPropsContext, InspectorPropsContextTargetPathSelector, deepEqual),
   )
   const onUnsetValues = React.useCallback(() => {
     onUnsetValue(
@@ -1149,11 +1141,10 @@ export function useInspectorWarningStatus(): boolean {
   )
 }
 
+const selectedViewsSelector = (contextData: InspectorPropsContextData) => contextData.selectedViews
+
 export function useSelectedViews() {
-  const selectedViews = useContextSelector(
-    InspectorPropsContext,
-    React.useCallback((context) => context.selectedViews, []),
-  )
+  const selectedViews = useContextSelector(InspectorPropsContext, selectedViewsSelector)
   return selectedViews
 }
 

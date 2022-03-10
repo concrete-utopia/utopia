@@ -3,6 +3,7 @@ import * as EP from '../../../../core/shared/element-path'
 import { ElementPath } from '../../../../core/shared/project-file-types'
 import { when } from '../../../../utils/react-conditionals'
 import { useColorTheme } from '../../../../uuiui'
+import { EditorStorePatched } from '../../../editor/store/editor-state'
 import { useEditorState } from '../../../editor/store/store-hook'
 import { useBoundingBox } from '../bounding-box-hooks'
 import { CanvasOffsetWrapper } from '../canvas-offset-wrapper'
@@ -35,13 +36,12 @@ interface OutlineControlProps {
   color: 'primary' | 'multiselect-bounds'
 }
 
+const scaleSelector = (store: EditorStorePatched) => store.editor.canvas.scale
+
 const OutlineControl = React.memo<OutlineControlProps>((props) => {
   const colorTheme = useColorTheme()
   const targets = props.targets
-  const scale = useEditorState(
-    React.useCallback((store) => store.editor.canvas.scale, []),
-    'OutlineControl scale',
-  )
+  const scale = useEditorState(scaleSelector, 'OutlineControl scale')
 
   const colors = useEditorState(
     React.useCallback(

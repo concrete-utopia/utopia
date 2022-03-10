@@ -30,7 +30,11 @@ import {
 } from '../../../core/tailwind/tailwind-options'
 import { colorTheme, FlexColumn, FlexRow, useColorTheme, UtopiaTheme } from '../../../uuiui'
 import * as EditorActions from '../../editor/actions/action-creators'
-import { useEditorState } from '../../editor/store/store-hook'
+import {
+  useEditorDispatch,
+  useEditorSelectedViews,
+  useEditorState,
+} from '../../editor/store/store-hook'
 
 const DropdownIndicator = React.memo((props: IndicatorProps<TailWindOption, true>) => (
   <components.DropdownIndicator {...props}>
@@ -150,14 +154,8 @@ let queuedDispatchTimeout: number | undefined = undefined
 export const ClassNameSelect = React.memo(
   React.forwardRef<HTMLInputElement>((_, ref) => {
     const theme = useColorTheme()
-    const targets = useEditorState(
-      React.useCallback((store) => store.editor.selectedViews, []),
-      'ClassNameSelect targets',
-    )
-    const dispatch = useEditorState(
-      React.useCallback((store) => store.dispatch, []),
-      'ClassNameSelect dispatch',
-    )
+    const targets = useEditorSelectedViews('ClassNameSelect targets')
+    const dispatch = useEditorDispatch('ClassNameSelect dispatch')
     const [input, setInput] = React.useState('')
     const focusedValueRef = React.useRef<string | null>(null)
     const updateFocusedOption = usePubSubAtomWriteOnly(focusedOptionAtom)

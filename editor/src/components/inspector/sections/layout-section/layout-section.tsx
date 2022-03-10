@@ -1,7 +1,10 @@
 import React from 'react'
 import { LayoutSystemSubsection } from './layout-system-subsection/layout-system-subsection'
-import { emptySpecialSizeMeasurements } from '../../../../core/shared/element-template'
-import { useEditorState } from '../../../editor/store/store-hook'
+import {
+  emptySpecialSizeMeasurements,
+  SpecialSizeMeasurements,
+} from '../../../../core/shared/element-template'
+import { useEditorDispatch, useEditorState } from '../../../editor/store/store-hook'
 import { fastForEach } from '../../../../core/shared/utils'
 import * as EP from '../../../../core/shared/element-path'
 import { MetadataUtils } from '../../../../core/model/element-metadata-utils'
@@ -9,6 +12,7 @@ import { SpecialSizeMeasurementsKeepDeepEquality } from '../../../editor/store/s
 import { isFeatureEnabled } from '../../../../utils/feature-switches'
 import { LayoutSubsection } from './self-layout-subsection/self-layout-subsection'
 import { setInspectorLayoutSectionHovered } from '../../../editor/actions/action-creators'
+import { EditorStorePatched } from '../../../editor/store/editor-state'
 
 interface LayoutSectionProps {
   hasNonDefaultPositionAttributes: boolean
@@ -16,31 +20,32 @@ interface LayoutSectionProps {
   toggleAspectRatioLock: () => void
 }
 
+const specialSizeMeasurementsSelector = (store: EditorStorePatched) => {
+  let foundSpecialSizeMeasurements = emptySpecialSizeMeasurements
+  fastForEach(store.editor.selectedViews, (path) => {
+    // TODO multiselect
+    const jsxMetadata = store.editor.jsxMetadata
+    const elementMetadata = MetadataUtils.findElementByElementPath(jsxMetadata, path)
+    if (elementMetadata != null) {
+      foundSpecialSizeMeasurements = elementMetadata.specialSizeMeasurements
+    }
+  })
+  return foundSpecialSizeMeasurements
+}
+
+const SpecialSizeMeasurementsEquality = (
+  old: SpecialSizeMeasurements,
+  next: SpecialSizeMeasurements,
+) => SpecialSizeMeasurementsKeepDeepEquality()(old, next).areEqual
+
 export const LayoutSection = React.memo((props: LayoutSectionProps) => {
   const specialSizeMeasurements = useEditorState(
-    React.useCallback((state) => {
-      let foundSpecialSizeMeasurements = emptySpecialSizeMeasurements
-      fastForEach(state.editor.selectedViews, (path) => {
-        // TODO multiselect
-        const jsxMetadata = state.editor.jsxMetadata
-        const elementMetadata = MetadataUtils.findElementByElementPath(jsxMetadata, path)
-        if (elementMetadata != null) {
-          foundSpecialSizeMeasurements = elementMetadata.specialSizeMeasurements
-        }
-      })
-      return foundSpecialSizeMeasurements
-    }, []),
+    specialSizeMeasurementsSelector,
     'LayoutSection specialSizeMeasurements',
-    React.useCallback(
-      (old, next) => SpecialSizeMeasurementsKeepDeepEquality()(old, next).areEqual,
-      [],
-    ),
+    SpecialSizeMeasurementsEquality,
   )
 
-  const dispatch = useEditorState(
-    React.useCallback((store) => store.dispatch, []),
-    'LayoutSection dispatch',
-  )
+  const dispatch = useEditorDispatch('LayoutSection dispatch')
 
   return (
     <div

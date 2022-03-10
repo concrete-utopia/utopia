@@ -1,15 +1,18 @@
 import React from 'react'
 import { updateFile } from '../../components/editor/actions/action-creators'
-import { getOpenUIJSFile, getOpenUIJSFileKey } from '../../components/editor/store/editor-state'
-import { useEditorState, useRefEditorState } from '../../components/editor/store/store-hook'
+import {
+  EditorStorePatched,
+  getOpenUIJSFile,
+  getOpenUIJSFileKey,
+} from '../../components/editor/store/editor-state'
+import { useEditorDispatch, useRefEditorState } from '../../components/editor/store/store-hook'
 import { RevisionsState, textFile, textFileContents } from '../shared/project-file-types'
 
+const editorSelector = (store: EditorStorePatched) => store.editor
+
 export function useReParseOpenProjectFile(): () => void {
-  const dispatch = useEditorState(
-    React.useCallback((s) => s.dispatch, []),
-    'useReParseOpenProjectFile dispatch',
-  )
-  const refEditorState = useRefEditorState(React.useCallback((store) => store.editor, []))
+  const dispatch = useEditorDispatch('useReParseOpenProjectFile dispatch')
+  const refEditorState = useRefEditorState(editorSelector)
   return React.useCallback(() => {
     const openFile = getOpenUIJSFile(refEditorState.current)
     const openFilePath = getOpenUIJSFileKey(refEditorState.current)

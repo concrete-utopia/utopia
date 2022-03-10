@@ -8,24 +8,25 @@ import {
   insertionSubjectIsJSXElement,
   isInsertMode,
 } from '../../../editor/editor-modes'
+import { EditorStorePatched } from '../../../editor/store/editor-state'
 import { useRefEditorState } from '../../../editor/store/store-hook'
 import { useHighlightCallbacks } from './select-mode-hooks'
 
+const getHighlightableViewsForInsertModePropsSelector = (store: EditorStorePatched) => {
+  const resolveFn = store.editor.codeResultCache.curriedResolveFn(store.editor.projectContents)
+  return {
+    componentMetadata: store.editor.jsxMetadata,
+    mode: store.editor.mode,
+    openFile: store.editor.canvas.openFile?.filename ?? null,
+    projectContents: store.editor.projectContents,
+    nodeModules: store.editor.nodeModules.files,
+    transientState: store.derived.canvas.transientState,
+    resolve: resolveFn,
+  }
+}
+
 function useGetHighlightableViewsForInsertMode() {
-  const storeRef = useRefEditorState(
-    React.useCallback((store) => {
-      const resolveFn = store.editor.codeResultCache.curriedResolveFn(store.editor.projectContents)
-      return {
-        componentMetadata: store.editor.jsxMetadata,
-        mode: store.editor.mode,
-        openFile: store.editor.canvas.openFile?.filename ?? null,
-        projectContents: store.editor.projectContents,
-        nodeModules: store.editor.nodeModules.files,
-        transientState: store.derived.canvas.transientState,
-        resolve: resolveFn,
-      }
-    }, []),
-  )
+  const storeRef = useRefEditorState(getHighlightableViewsForInsertModePropsSelector)
   return React.useCallback(() => {
     const { componentMetadata, mode } = storeRef.current
     if (!isInsertMode(mode)) {

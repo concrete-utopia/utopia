@@ -10,7 +10,7 @@ import * as EditorActions from '../editor/actions/action-creators'
 import { clearHighlightedViews, showContextMenu } from '../editor/actions/action-creators'
 import { DragSelection } from './navigator-item/navigator-item-dnd-container'
 import { NavigatorItemWrapper } from './navigator-item/navigator-item-wrapper'
-import { useEditorState, useRefEditorState } from '../editor/store/store-hook'
+import { useEditorDispatch, useEditorState, useRefEditorState } from '../editor/store/store-hook'
 import { ElementContextMenu } from '../element-context-menu'
 import { createDragSelections } from '../../templates/editor-navigator'
 import { FixedSizeList, ListChildComponentProps } from 'react-window'
@@ -27,32 +27,34 @@ import {
   InspectorSectionHeader,
 } from '../../uuiui'
 import { last } from '../../core/shared/array-utils'
+import { EditorStorePatched } from '../editor/store/editor-state'
 
 export const NavigatorContainerId = 'navigator'
 
-export const NavigatorComponent = React.memo(() => {
-  const editorSliceRef = useRefEditorState(
-    React.useCallback((store) => {
-      const dragSelections = createDragSelections(
-        store.derived.navigatorTargets,
-        store.editor.selectedViews,
-      )
-      return {
-        selectedViews: store.editor.selectedViews,
-        navigatorTargets: store.derived.navigatorTargets,
-        dragSelections: dragSelections,
-      }
-    }, []),
+const navigatorComponentPropsSelector = (store: EditorStorePatched) => {
+  return {
+    minimised: store.editor.navigator.minimised,
+    visibleNavigatorTargets: store.derived.visibleNavigatorTargets,
+  }
+}
+
+const editorSliceSelector = (store: EditorStorePatched) => {
+  const dragSelections = createDragSelections(
+    store.derived.navigatorTargets,
+    store.editor.selectedViews,
   )
-  const colorTheme = useColorTheme()
-  const { dispatch, minimised, visibleNavigatorTargets } = useEditorState(
-    React.useCallback((store) => {
-      return {
-        dispatch: store.dispatch,
-        minimised: store.editor.navigator.minimised,
-        visibleNavigatorTargets: store.derived.visibleNavigatorTargets,
-      }
-    }, []),
+  return {
+    selectedViews: store.editor.selectedViews,
+    navigatorTargets: store.derived.navigatorTargets,
+    dragSelections: dragSelections,
+  }
+}
+
+export const NavigatorComponent = React.memo(() => {
+  const editorSliceRef = useRefEditorState(editorSliceSelector)
+  const dispatch = useEditorDispatch('NavigatorComponent dispatch')
+  const { minimised, visibleNavigatorTargets } = useEditorState(
+    navigatorComponentPropsSelector,
     'NavigatorComponent',
   )
 

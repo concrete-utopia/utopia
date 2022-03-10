@@ -27,6 +27,7 @@ import {
   UIRow,
 } from '../../uuiui'
 import { setBranchNameFromURL } from '../../utils/branches'
+import { EditorStorePatched } from '../editor/store/editor-state'
 
 export const PreviewIframeId = 'preview-column-container'
 
@@ -82,16 +83,18 @@ export interface PreviewColumnState {
   height: number
 }
 
+const previewColumnPropsSelector = (store: EditorStorePatched) => {
+  return {
+    id: store.editor.id,
+    projectName: store.editor.projectName,
+    connected: store.editor.preview.connected,
+    mainJSFilename: getMainJSFilename(store.editor.projectContents),
+  }
+}
+
 export const PreviewColumn = React.memo(() => {
   const { id, projectName, connected, mainJSFilename } = useEditorState(
-    React.useCallback((store) => {
-      return {
-        id: store.editor.id,
-        projectName: store.editor.projectName,
-        connected: store.editor.preview.connected,
-        mainJSFilename: getMainJSFilename(store.editor.projectContents),
-      }
-    }, []),
+    previewColumnPropsSelector,
     'PreviewColumn',
   )
   return (

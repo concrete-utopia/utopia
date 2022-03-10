@@ -23,9 +23,10 @@ import {
 import {
   DefaultPackagesList,
   DependencyPackageDetails,
+  EditorStorePatched,
   packageJsonFileFromProjectContents,
 } from '../editor/store/editor-state'
-import { useEditorState } from '../editor/store/store-hook'
+import { useEditorDispatch, useEditorState } from '../editor/store/store-hook'
 import { DependencyListItems } from './dependency-list-items'
 import { fetchNodeModules } from '../../core/es-modules/package-manager/fetch-packages'
 import {
@@ -90,20 +91,19 @@ function packageDetailsFromDependencies(
   return userAddedPackages
 }
 
+const dependencyListPropsSelector = (store: EditorStorePatched) => {
+  return {
+    editorDispatch: store.dispatch,
+    minimised: store.editor.dependencyList.minimised,
+    focusedPanel: store.editor.focusedPanel,
+    packageJsonFile: packageJsonFileFromProjectContents(store.editor.projectContents),
+    packageStatus: store.editor.nodeModules.packageStatus,
+    builtInDependencies: store.builtInDependencies,
+  }
+}
+
 export const DependencyList = React.memo(() => {
-  const props = useEditorState(
-    React.useCallback((store) => {
-      return {
-        editorDispatch: store.dispatch,
-        minimised: store.editor.dependencyList.minimised,
-        focusedPanel: store.editor.focusedPanel,
-        packageJsonFile: packageJsonFileFromProjectContents(store.editor.projectContents),
-        packageStatus: store.editor.nodeModules.packageStatus,
-        builtInDependencies: store.builtInDependencies,
-      }
-    }, []),
-    'DependencyList',
-  )
+  const props = useEditorState(dependencyListPropsSelector, 'DependencyList')
 
   const dispatch = props.editorDispatch
 
@@ -461,10 +461,7 @@ interface AddTailwindButtonProps {
 }
 
 const AddTailwindButton = (props: AddTailwindButtonProps) => {
-  const dispatch = useEditorState(
-    React.useCallback((store) => store.dispatch, []),
-    'AddTailwindButton',
-  )
+  const dispatch = useEditorDispatch('AddTailwindButton')
   const onButtonClicked = React.useCallback(() => {
     dispatch([EditorActions.addTailwindConfig()])
   }, [dispatch])

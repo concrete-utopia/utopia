@@ -1,5 +1,5 @@
 import React from 'react'
-import { useEditorState, useRefEditorState } from '../../editor/store/store-hook'
+import { useEditorDispatch, useEditorState, useRefEditorState } from '../../editor/store/store-hook'
 import { usePropControlledRef_DANGEROUS } from '../../inspector/common/inspector-utils'
 import { getControlStyles, SelectOption, Utils } from '../../../uuiui-deps'
 import * as EP from '../../../core/shared/element-path'
@@ -15,30 +15,35 @@ import {
 } from '../../../components/shared/project-components'
 import { usePossiblyResolvedPackageDependencies } from '../../../components/editor/npm-dependency/npm-dependency'
 import { MetadataUtils } from '../../../core/model/element-metadata-utils'
+import { EditorStorePatched } from '../../editor/store/editor-state'
 
-export const RenderAsRow = React.memo(() => {
-  const dispatch = useEditorState(
-    React.useCallback((store) => {
-      return store.dispatch
-    }, []),
-    'RenderAsRow dispatch',
+const selectedElementNameSelector = (store: EditorStorePatched) =>
+  MetadataUtils.getJSXElementNameFromMetadata(
+    store.editor.jsxMetadata,
+    store.editor.selectedViews[0],
   )
 
+const combinedSelector = (store: EditorStorePatched) => {
+  return {
+    packageStatus: store.editor.nodeModules.packageStatus,
+    propertyControlsInfo: store.editor.propertyControlsInfo,
+    projectContents: store.editor.projectContents,
+    fullPath: store.editor.canvas.openFile?.filename ?? null,
+  }
+}
+
+const targetsToTargetSelector = (store: EditorStorePatched) =>
+  getElementsToTarget(store.editor.selectedViews)
+
+export const RenderAsRow = React.memo(() => {
+  const dispatch = useEditorDispatch('RenderAsRow dispatch')
+
   const selectedElementName = useEditorState(
-    React.useCallback((store) => {
-      return MetadataUtils.getJSXElementNameFromMetadata(
-        store.editor.jsxMetadata,
-        store.editor.selectedViews[0],
-      )
-    }, []),
+    selectedElementNameSelector,
     'RenderAsRow selectedElementName',
   )
 
-  const refElementsToTargetForUpdates = useRefEditorState(
-    React.useCallback((store) => {
-      return getElementsToTarget(store.editor.selectedViews)
-    }, []),
-  )
+  const refElementsToTargetForUpdates = useRefEditorState(targetsToTargetSelector)
 
   const onElementTypeChange = React.useCallback(
     (newElementName: JSXElementName, importsToAdd: Imports) => {
@@ -61,14 +66,7 @@ export const RenderAsRow = React.memo(() => {
   const dependencies = usePossiblyResolvedPackageDependencies()
 
   const { packageStatus, propertyControlsInfo, projectContents, fullPath } = useEditorState(
-    React.useCallback((store) => {
-      return {
-        packageStatus: store.editor.nodeModules.packageStatus,
-        propertyControlsInfo: store.editor.propertyControlsInfo,
-        projectContents: store.editor.projectContents,
-        fullPath: store.editor.canvas.openFile?.filename ?? null,
-      }
-    }, []),
+    combinedSelector,
     'RenderAsRow',
   )
 

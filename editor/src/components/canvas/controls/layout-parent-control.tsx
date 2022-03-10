@@ -8,7 +8,8 @@ import { Icn, IcnProps, PopupList, useColorTheme } from '../../../uuiui'
 import { SelectOption } from '../../../uuiui-deps'
 import { InlineLink } from '../../../uuiui/inline-button'
 import { setProp_UNSAFE } from '../../editor/actions/action-creators'
-import { useEditorState } from '../../editor/store/store-hook'
+import { EditorStorePatched } from '../../editor/store/editor-state'
+import { useEditorDispatch, useEditorState } from '../../editor/store/store-hook'
 import { stylePropPathMappingFn } from '../../inspector/common/property-path-hooks'
 import {
   alignItemsOptions,
@@ -28,57 +29,29 @@ const getFlexDirectionIcon = (
   )
 }
 
+const canvasOffsetSelector = (store: EditorStorePatched) => store.editor.canvas.roundedCanvasOffset
+const scaleSelector = (store: EditorStorePatched) => store.editor.canvas.scale
+const parentSelector = (store: EditorStorePatched) => {
+  if (store.editor.selectedViews.length !== 1) {
+    return null
+  }
+  return MetadataUtils.getParent(store.editor.jsxMetadata, store.editor.selectedViews[0])
+}
+
 export const LayoutParentControl = React.memo((): JSX.Element | null => {
   const colorTheme = useColorTheme()
 
-  const dispatch = useEditorState(
-    React.useCallback((store) => store.dispatch, []),
-    'LayoutParentControl dispatch',
-  )
+  const dispatch = useEditorDispatch('LayoutParentControl dispatch')
+  const canvasOffset = useEditorState(canvasOffsetSelector, 'LayoutParentControl canvasOffset')
+  const scale = useEditorState(scaleSelector, 'LayoutParentControl scale')
+  const parent = useEditorState(parentSelector, 'LayoutParentControl parent')
 
-  const { canvasOffset, scale } = useEditorState(
-    React.useCallback((store) => {
-      return {
-        canvasOffset: store.editor.canvas.roundedCanvasOffset,
-        scale: store.editor.canvas.scale,
-      }
-    }, []),
-    'LayoutParentControl canvas',
-  )
-  const {
-    parentTarget,
-    parentLayout,
-    parentFrame,
-    flexWrap,
-    flexDirection,
-    alignItems,
-  } = useEditorState(
-    React.useCallback((store) => {
-      if (store.editor.selectedViews.length !== 1) {
-        return {
-          parentTarget: null,
-          parentLayout: null,
-          parentFrame: null,
-          flexWrap: null,
-          flexDirection: null,
-          alignItems: null,
-        }
-      }
-      const element = MetadataUtils.getParent(
-        store.editor.jsxMetadata,
-        store.editor.selectedViews[0],
-      )
-      return {
-        parentTarget: element?.elementPath,
-        parentLayout: element?.specialSizeMeasurements.layoutSystemForChildren,
-        parentFrame: element?.globalFrame,
-        flexWrap: element?.props?.style?.flexWrap ?? 'nowrap',
-        flexDirection: element?.props?.style?.flexDirection ?? 'row',
-        alignItems: element?.props?.style?.alignItems ?? 'flex-start',
-      }
-    }, []),
-    'LayoutParentControl',
-  )
+  const parentTarget = parent?.elementPath
+  const parentLayout = parent?.specialSizeMeasurements.layoutSystemForChildren
+  const parentFrame = parent?.globalFrame
+  const flexWrap = parent?.props?.style?.flexWrap ?? 'nowrap'
+  const flexDirection = parent?.props?.style?.flexDirection ?? 'row'
+  const alignItems = parent?.props?.style?.alignItems ?? 'flex-start'
 
   const {
     justifyFlexStart,

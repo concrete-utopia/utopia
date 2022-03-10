@@ -6,6 +6,7 @@ import { InspectorContextMenuWrapper } from '../../../../context-menu-wrapper'
 import { addSetProperty, unsetPropertyMenuItem } from '../../../common/context-menu-items'
 import {
   InspectorPropsContext,
+  InspectorPropsContextTargetPathSelector,
   stylePropPathMappingFn,
   useInspectorLayoutInfo,
 } from '../../../common/property-path-hooks'
@@ -74,9 +75,7 @@ export const AlignSelfControl = React.memo((props: AlignSelfControlProps) => {
   const alignSelf = useInspectorLayoutInfo('alignSelf')
   const targetPath = useContextSelector(
     InspectorPropsContext,
-    React.useCallback((contextData) => {
-      return contextData.targetPath
-    }, []),
+    InspectorPropsContextTargetPathSelector,
   )
   const alignSelfProp = React.useMemo(() => {
     return [stylePropPathMappingFn('alignSelf', targetPath)]

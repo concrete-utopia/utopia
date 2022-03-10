@@ -9,7 +9,7 @@ import {
   UNSAFE_getIconURL,
   UtopiaTheme,
 } from '../../uuiui'
-import { useEditorState } from './store/store-hook'
+import { useEditorDispatch, useEditorState } from './store/store-hook'
 import * as EditorActions from '../editor/actions/action-creators'
 import { Utils } from '../../uuiui-deps'
 import { FormulaBar } from '../canvas/controls/formula-bar'
@@ -17,7 +17,12 @@ import CanvasActions from '../canvas/canvas-actions'
 import { EditorAction } from './action-types'
 import { ComponentOrInstanceIndicator } from '../editor/component-button'
 import { IconToggleButton } from '../../uuiui/icon-toggle-button'
-import { LeftPaneDefaultWidth, RightMenuTab, NavigatorWidthAtom } from './store/editor-state'
+import {
+  LeftPaneDefaultWidth,
+  RightMenuTab,
+  NavigatorWidthAtom,
+  EditorStorePatched,
+} from './store/editor-state'
 import { CanvasVector } from '../../core/shared/math-utils'
 import { usePubSubAtomReadOnly } from '../../core/shared/atom-with-pub-sub'
 
@@ -33,13 +38,13 @@ function useShouldResetCanvas(invalidateCount: number): [boolean, (value: boolea
   return [shouldResetCanvas, setShouldResetCanvas]
 }
 
+const isNavigatorVisibleSelector = (store: EditorStorePatched) => !store.editor.navigator.minimised
+const followSelectionSelector = (store: EditorStorePatched) => store.editor.config.followSelection
+
 const TopMenuLeftControls = React.memo(() => {
-  const dispatch = useEditorState(
-    React.useCallback((store) => store.dispatch, []),
-    'TopMenuLeftControls dispatch',
-  )
+  const dispatch = useEditorDispatch('TopMenuLeftControls dispatch')
   const navigatorVisible = useEditorState(
-    React.useCallback((store) => !store.editor.navigator.minimised, []),
+    isNavigatorVisibleSelector,
     'TopMenuLeftControls navigatorVisible',
   )
 
@@ -55,10 +60,7 @@ const TopMenuLeftControls = React.memo(() => {
     dispatch(actions)
   }, [dispatch, navigatorVisible, navigatorWidth])
 
-  const followSelection = useEditorState(
-    React.useCallback((store) => store.editor.config.followSelection, []),
-    'TopMenu followSelection',
-  )
+  const followSelection = useEditorState(followSelectionSelector, 'TopMenu followSelection')
   const onToggleFollow = React.useCallback(() => {
     dispatch([EditorActions.setFollowSelectionEnabled(!followSelection.enabled)])
   }, [dispatch, followSelection])
@@ -83,20 +85,20 @@ const TopMenuLeftControls = React.memo(() => {
   )
 })
 
+const canvasContentInvalidateCountSelector = (store: EditorStorePatched) =>
+  store.editor.canvas.canvasContentInvalidateCount
+const zoomLevelSelector = (store: EditorStorePatched) => store.editor.canvas.scale
+const rightMenuSelectedTabSelector = (store: EditorStorePatched) =>
+  store.editor.rightMenu.selectedTab
+
 const TopMenuRightControls = React.memo(() => {
-  const dispatch = useEditorState(
-    React.useCallback((store) => store.dispatch, []),
-    'TopMenuRightControls dispatch',
-  )
+  const dispatch = useEditorDispatch('TopMenuRightControls dispatch')
   const canvasContentInvalidateCount = useEditorState(
-    React.useCallback((store) => store.editor.canvas.canvasContentInvalidateCount, []),
+    canvasContentInvalidateCountSelector,
     'RightMenu canvasContentInvalidateCount',
   )
 
-  const zoomLevel = useEditorState(
-    React.useCallback((store) => store.editor.canvas.scale, []),
-    'RightMenu zoomLevel',
-  )
+  const zoomLevel = useEditorState(zoomLevelSelector, 'RightMenu zoomLevel')
   const zoomIn = React.useCallback(
     () => dispatch([CanvasActions.zoom(Utils.increaseScale(zoomLevel))]),
     [dispatch, zoomLevel],
@@ -116,7 +118,7 @@ const TopMenuRightControls = React.memo(() => {
   const zoom100pct = React.useCallback(() => dispatch([CanvasActions.zoom(1)]), [dispatch])
 
   const rightMenuSelectedTab = useEditorState(
-    React.useCallback((store) => store.editor.rightMenu.selectedTab, []),
+    rightMenuSelectedTabSelector,
     'RightMenu rightMenuSelectedTab',
   )
 

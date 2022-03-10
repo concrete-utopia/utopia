@@ -1,24 +1,21 @@
 import * as React from 'react'
 import { when } from '../../../../utils/react-conditionals'
 import { FlexRow, FlexColumn, useColorTheme, UtopiaStyles } from '../../../../uuiui'
-import { useEditorState } from '../../../editor/store/store-hook'
+import { EditorStorePatched } from '../../../editor/store/editor-state'
+import { useEditorDispatch, useEditorState } from '../../../editor/store/store-hook'
 import CanvasActions from '../../canvas-actions'
 import { CanvasStrategy } from '../../canvas-strategies/canvas-strategy-types'
 
+const strategiesSelector = (store: EditorStorePatched) => ({
+  activeStrategy: store.strategyState.currentStrategy,
+  otherPossibleStrategies: store.strategyState.sortedApplicableStrategies,
+})
+
 export const CanvasStrategyIndicator = React.memo(() => {
   const colorTheme = useColorTheme()
-  const dispatch = useEditorState(
-    React.useCallback((store) => store.dispatch, []),
-    'CanvasStrategyIndicator dispatch',
-  )
+  const dispatch = useEditorDispatch('CanvasStrategyIndicator dispatch')
   const { activeStrategy, otherPossibleStrategies } = useEditorState(
-    React.useCallback(
-      (store) => ({
-        activeStrategy: store.strategyState.currentStrategy,
-        otherPossibleStrategies: store.strategyState.sortedApplicableStrategies,
-      }),
-      [],
-    ),
+    strategiesSelector,
     'CanvasStrategyIndicator strategyState.currentStrategy',
   )
 

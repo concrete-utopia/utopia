@@ -31,7 +31,12 @@ import { ElementPath } from '../../../core/shared/project-file-types'
 import * as EP from '../../../core/shared/element-path'
 import Utils from '../../../utils/utils'
 import { resetPins, setProp_UNSAFE, unsetProperty } from '../../editor/actions/action-creators'
-import { useEditorState, useRefEditorState } from '../../editor/store/store-hook'
+import {
+  useEditorDispatch,
+  useEditorState,
+  useRefEditorMetadata,
+  useRefEditorState,
+} from '../../editor/store/store-hook'
 import { getFullFrame } from '../../frame'
 import {
   InspectorInfo,
@@ -40,11 +45,15 @@ import {
   useRefSelectedViews,
   InspectorPropsContext,
   stylePropPathMappingFn,
+  InspectorPropsContextTargetPathSelector,
 } from './property-path-hooks'
 
 import React from 'react'
 import { CSSNumber, cssNumberToString } from './css-utils'
-import { getJSXComponentsAndImportsForPathFromState } from '../../editor/store/editor-state'
+import {
+  EditorStorePatched,
+  getJSXComponentsAndImportsForPathFromState,
+} from '../../editor/store/editor-state'
 import { useContextSelector } from 'use-context-selector'
 
 const HorizontalPropPreference: Array<LayoutPinnedProp> = ['left', 'width', 'right']
@@ -255,32 +264,20 @@ export interface UsePinTogglingResult {
   resetAllPins: () => void
 }
 
-export function usePinToggling(): UsePinTogglingResult {
-  const dispatch = useEditorState(
-    React.useCallback((store) => store.dispatch, []),
-    'usePinToggling dispatch',
-  )
-  const selectedViewsRef = useRefSelectedViews()
-  const jsxMetadataRef = useRefEditorState(
-    React.useCallback((store) => {
-      return store.editor.jsxMetadata
-    }, []),
+const elementsSelector = (store: EditorStorePatched) =>
+  store.editor.selectedViews.map((e) =>
+    MetadataUtils.findElementByElementPath(store.editor.jsxMetadata, e),
   )
 
-  const elementsRef = useRefEditorState(
-    React.useCallback(
-      (store) =>
-        selectedViewsRef.current.map((e) =>
-          MetadataUtils.findElementByElementPath(store.editor.jsxMetadata, e),
-        ),
-      [selectedViewsRef],
-    ),
-  )
+export function usePinToggling(): UsePinTogglingResult {
+  const dispatch = useEditorDispatch('usePinToggling dispatch')
+  const selectedViewsRef = useRefSelectedViews()
+  const jsxMetadataRef = useRefEditorMetadata()
+
+  const elementsRef = useRefEditorState(elementsSelector)
   const propertyTarget = useContextSelector(
     InspectorPropsContext,
-    React.useCallback((contextData) => {
-      return contextData.targetPath
-    }, []),
+    InspectorPropsContextTargetPathSelector,
   )
 
   const elementFrames = useEditorState(

@@ -6,6 +6,7 @@ import { useEditorState } from './store/store-hook'
 
 import { NotificationBar } from '../common/notices'
 import { NoticeLevel } from '../common/notice'
+import { EditorStorePatched } from './store/editor-state'
 
 export const BrowserInfoBar = React.memo(() => {
   return (
@@ -22,15 +23,12 @@ const EditorOfflineBar = React.memo(() => {
   )
 })
 
+const loginStateSelector = (store: EditorStorePatched) => store.userState.loginState
+const saveErrorSelector = (store: EditorStorePatched) => store.editor.saveError
+
 export const LoginStatusBar = React.memo(() => {
-  const loginState = useEditorState(
-    React.useCallback((store) => store.userState.loginState, []),
-    'LoginStatusBar',
-  )
-  const saveError = useEditorState(
-    React.useCallback((store) => store.editor.saveError, []),
-    'EditorComponentInner saveError',
-  )
+  const loginState = useEditorState(loginStateSelector, 'LoginStatusBar')
+  const saveError = useEditorState(saveErrorSelector, 'EditorComponentInner saveError')
 
   const onClickLoginNewTab = React.useCallback(() => {
     window.open(auth0Url('auto-close'), '_blank')

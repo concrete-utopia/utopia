@@ -4,7 +4,7 @@ import React from 'react'
 import { jsx } from '@emotion/react'
 import * as EditorActions from '../../editor/actions/action-creators'
 import { useColorTheme, SimpleFlexRow, UtopiaTheme, HeadlessStringInput } from '../../../uuiui'
-import { useEditorState, useRefEditorState } from '../../editor/store/store-hook'
+import { useEditorDispatch, useEditorState, useRefEditorState } from '../../editor/store/store-hook'
 import { MetadataUtils } from '../../../core/model/element-metadata-utils'
 import { isRight } from '../../../core/shared/either'
 import {
@@ -22,37 +22,35 @@ import {
   TOGGLE_FOCUSED_OMNIBOX_TAB,
 } from '../../editor/shortcut-definitions'
 import { useInputFocusOnCountIncrease } from '../../editor/hook-utils'
+import { EditorStorePatched } from '../../editor/store/editor-state'
+import { identity } from '../../../core/shared/utils'
 
 interface FormulaBarProps {
   style: React.CSSProperties
 }
 
+const formulaBarModeSelector = (store: EditorStorePatched) => store.editor.topmenu.formulaBarMode
+const selectedElementSelector = (store: EditorStorePatched) => {
+  const metadata = store.editor.jsxMetadata
+  if (store.editor.selectedViews.length === 1) {
+    return MetadataUtils.findElementByElementPath(metadata, store.editor.selectedViews[0])
+  } else {
+    return null
+  }
+}
+const formulaBarFocusCounterSelector = (store: EditorStorePatched) =>
+  store.editor.topmenu.formulaBarFocusCounter
+
 export const FormulaBar = React.memo<FormulaBarProps>((props) => {
   const saveTimerRef = React.useRef<any>(null)
-  const dispatch = useEditorState(
-    React.useCallback((store) => store.dispatch, []),
-    'FormulaBar dispatch',
-  )
+  const dispatch = useEditorDispatch('FormulaBar dispatch')
 
-  const selectedMode = useEditorState(
-    React.useCallback((store) => store.editor.topmenu.formulaBarMode, []),
-    'FormulaBar selectedMode',
-  )
+  const selectedMode = useEditorState(formulaBarModeSelector, 'FormulaBar selectedMode')
 
-  const selectedElement = useEditorState(
-    React.useCallback((store) => {
-      const metadata = store.editor.jsxMetadata
-      if (store.editor.selectedViews.length === 1) {
-        return MetadataUtils.findElementByElementPath(metadata, store.editor.selectedViews[0])
-      } else {
-        return null
-      }
-    }, []),
-    'FormulaBar selectedElement',
-  )
+  const selectedElement = useEditorState(selectedElementSelector, 'FormulaBar selectedElement')
 
   const focusTriggerCount = useEditorState(
-    React.useCallback((store) => store.editor.topmenu.formulaBarFocusCounter, []),
+    formulaBarFocusCounterSelector,
     'FormulaBar formulaBarFocusCounter',
   )
 
@@ -110,7 +108,7 @@ export const FormulaBar = React.memo<FormulaBarProps>((props) => {
   const classNameFieldVisible = selectedElement != null && selectedMode === 'css'
   const inputFieldVisible = !classNameFieldVisible
 
-  const editorStoreRef = useRefEditorState(React.useCallback((store) => store, []))
+  const editorStoreRef = useRefEditorState(identity)
   const onKeyDown = React.useCallback(
     (event: React.KeyboardEvent<HTMLElement>) => {
       const namesByKey = applyShortcutConfigurationToDefaults(

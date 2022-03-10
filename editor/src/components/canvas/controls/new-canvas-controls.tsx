@@ -15,6 +15,7 @@ import {
   TransientCanvasState,
   TransientFilesState,
   ResizeOptions,
+  EditorStorePatched,
 } from '../../editor/store/editor-state'
 import { ElementPath, NodeModules } from '../../../core/shared/project-file-types'
 import { CanvasPositions, CSSCursor } from '../canvas-types'
@@ -124,24 +125,22 @@ interface NewCanvasControlsProps {
   cursor: CSSCursor
 }
 
-export const NewCanvasControls = React.memo((props: NewCanvasControlsProps) => {
-  const canvasControlProps = useEditorState(
-    React.useCallback(
-      (store) => ({
-        dispatch: store.dispatch,
-        editor: store.editor,
-        derived: store.derived,
-        canvasOffset: store.editor.canvas.roundedCanvasOffset,
+const canvasControlPropsSelector = (store: EditorStorePatched) => ({
+  dispatch: store.dispatch,
+  editor: store.editor,
+  derived: store.derived,
+  canvasOffset: store.editor.canvas.roundedCanvasOffset,
 
-        controls: store.derived.canvas.controls,
-        scale: store.editor.canvas.scale,
-        focusedPanel: store.editor.focusedPanel,
-        transientCanvasState: store.derived.canvas.transientState,
-      }),
-      [],
-    ),
-    'NewCanvasControls',
-  )
+  controls: store.derived.canvas.controls,
+  scale: store.editor.canvas.scale,
+  focusedPanel: store.editor.focusedPanel,
+  transientCanvasState: store.derived.canvas.transientState,
+})
+
+const scrollAnimationSelector = (store: EditorStorePatched) => store.editor.canvas.scrollAnimation
+
+export const NewCanvasControls = React.memo((props: NewCanvasControlsProps) => {
+  const canvasControlProps = useEditorState(canvasControlPropsSelector, 'NewCanvasControls')
 
   const {
     localSelectedViews,
@@ -154,7 +153,7 @@ export const NewCanvasControls = React.memo((props: NewCanvasControlsProps) => {
   )
 
   const canvasScrollAnimation = useEditorState(
-    React.useCallback((store) => store.editor.canvas.scrollAnimation, []),
+    scrollAnimationSelector,
     'NewCanvasControls scrollAnimation',
   )
 

@@ -15,7 +15,8 @@ import {
   SectionBodyArea,
 } from '../../../uuiui'
 import { clearSelection, togglePanel } from '../../editor/actions/action-creators'
-import { useEditorState } from '../../editor/store/store-hook'
+import { EditorStorePatched } from '../../editor/store/editor-state'
+import { useEditorDispatch, useEditorState } from '../../editor/store/store-hook'
 import { GridRowProps } from '../../inspector/widgets/ui-grid-row'
 import { GenericExternalResourcesInput } from './generic-external-resources-input'
 import { GenericExternalResourcesListItem } from './generic-external-resources-list-item'
@@ -48,6 +49,13 @@ function getIndexedUpdateGenericResource(index: number) {
   }
 }
 
+const genericExternalResourcesListPropsSelector = (store: EditorStorePatched) => {
+  return {
+    minimised: store.editor.genericExternalResources.minimised,
+    focusedPanel: store.editor.focusedPanel,
+  }
+}
+
 export const GenericExternalResourcesList = React.memo(() => {
   const { values, useSubmitValueFactory } = useExternalResources()
 
@@ -59,14 +67,10 @@ export const GenericExternalResourcesList = React.memo(() => {
     setEditingIndexOrInserting(null)
   }, [])
 
-  const { dispatch, minimised, focusedPanel } = useEditorState(
-    React.useCallback((store) => {
-      return {
-        dispatch: store.dispatch,
-        minimised: store.editor.genericExternalResources.minimised,
-        focusedPanel: store.editor.focusedPanel,
-      }
-    }, []),
+  const dispatch = useEditorDispatch('GenericExternalResourcesList dispatch')
+
+  const { minimised, focusedPanel } = useEditorState(
+    genericExternalResourcesListPropsSelector,
     'GenericExternalResourcesList',
   )
 

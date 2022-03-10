@@ -15,27 +15,27 @@ import {
   UtopiaTheme,
 } from '../../uuiui'
 import { RenderAsRow } from '../canvas/controls/render-as'
-import { useEditorState } from './store/store-hook'
+import { useEditorDispatch, useEditorState } from './store/store-hook'
 import * as EP from '../../core/shared/element-path'
 import { MetadataUtils } from '../../core/model/element-metadata-utils'
 import { setFocusedElement } from './actions/action-creators'
+import { EditorStorePatched } from './store/editor-state'
+
+const combinedSelector = (store: EditorStorePatched) => {
+  return {
+    metadata: store.editor.jsxMetadata,
+    focusedElementPath: store.editor.focusedElementPath,
+    selectedViews: store.editor.selectedViews,
+  }
+}
 
 export const ComponentOrInstanceIndicator = React.memo(() => {
   const { metadata, focusedElementPath, selectedViews } = useEditorState(
-    React.useCallback((store) => {
-      return {
-        metadata: store.editor.jsxMetadata,
-        focusedElementPath: store.editor.focusedElementPath,
-        selectedViews: store.editor.selectedViews,
-      }
-    }, []),
+    combinedSelector,
     'Component-button',
   )
 
-  const dispatch = useEditorState(
-    React.useCallback((state) => state.dispatch, []),
-    'ComponentOrInstanceIndicator',
-  )
+  const dispatch = useEditorDispatch('ComponentOrInstanceIndicator')
   const colorTheme = useColorTheme()
   const popupEnabled = selectedViews.length > 0
 

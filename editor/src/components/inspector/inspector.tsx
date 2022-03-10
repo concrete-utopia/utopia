@@ -42,7 +42,12 @@ import {
   getOpenUtopiaJSXComponentsFromStateMultifile,
   isOpenFileUiJs,
 } from '../editor/store/editor-state'
-import { useEditorState } from '../editor/store/store-hook'
+import {
+  useEditorDispatch,
+  useEditorMetadata,
+  useEditorSelectedViews,
+  useEditorState,
+} from '../editor/store/store-hook'
 import {
   InspectorCallbackContext,
   InspectorPropsContext,
@@ -127,10 +132,7 @@ const AlignDistributeButton = React.memo<AlignDistributeButtonProps>(
 AlignDistributeButton.displayName = 'AlignDistributeButton'
 
 const AlignmentButtons = React.memo((props: { numberOfTargets: number }) => {
-  const dispatch = useEditorState(
-    React.useCallback((store) => store.dispatch, []),
-    'AlignmentButtons dispatch',
-  )
+  const dispatch = useEditorDispatch('AlignmentButtons dispatch')
   const alignSelected = React.useCallback(
     (alignment: Alignment) => {
       dispatch([alignSelectedViews(alignment)], 'everyone')
@@ -398,10 +400,7 @@ Inspector.displayName = 'Inspector'
 const DefaultStyleTargets: Array<CSSTarget> = [cssTarget(['style'], 0), cssTarget(['css'], 0)]
 
 export const InspectorEntryPoint: React.FunctionComponent = React.memo(() => {
-  const selectedViews = useEditorState(
-    React.useCallback((store) => store.editor.selectedViews, []),
-    'InspectorEntryPoint selectedViews',
-  )
+  const selectedViews = useEditorSelectedViews('InspectorEntryPoint selectedViews')
 
   return (
     <SingleInspectorEntryPoint
@@ -444,20 +443,15 @@ function updateTargets(localJSXElement: JSXElement): Array<CSSTarget> {
   return localTargets
 }
 
+const isUIJSFileSelector = (store: EditorStorePatched) => isOpenFileUiJs(store.editor)
+
 export const SingleInspectorEntryPoint: React.FunctionComponent<{
   selectedViews: Array<ElementPath>
 }> = React.memo((props) => {
   const { selectedViews } = props
-  const { dispatch, jsxMetadata, isUIJSFile } = useEditorState(
-    React.useCallback((store) => {
-      return {
-        dispatch: store.dispatch,
-        jsxMetadata: store.editor.jsxMetadata,
-        isUIJSFile: isOpenFileUiJs(store.editor),
-      }
-    }, []),
-    'SingleInspectorEntryPoint',
-  )
+  const dispatch = useEditorDispatch('SingleInspectorEntryPoint dispatch')
+  const jsxMetadata = useEditorMetadata('SingleInspectorEntryPoint metadata')
+  const isUIJSFile = useEditorState(isUIJSFileSelector, 'SingleInspectorEntryPoint isUIJSFile')
 
   let targets: Array<CSSTarget> = [...DefaultStyleTargets]
 
@@ -587,15 +581,8 @@ export const InspectorContextProvider = React.memo<{
   children: React.ReactNode
 }>((props) => {
   const { selectedViews } = props
-  const { dispatch, jsxMetadata } = useEditorState(
-    React.useCallback((store) => {
-      return {
-        dispatch: store.dispatch,
-        jsxMetadata: store.editor.jsxMetadata,
-      }
-    }, []),
-    'InspectorContextProvider',
-  )
+  const dispatch = useEditorDispatch('InspectorContextProvider dispatch')
+  const jsxMetadata = useEditorMetadata('InspectorContextProvider metadata')
 
   const rootComponents = useKeepReferenceEqualityIfPossible(
     useEditorState(rootComponentsSelector, 'InspectorContextProvider rootComponents'),

@@ -5,7 +5,8 @@ import React from 'react'
 import { useColorTheme, FlexRow, UtopiaStyles } from '../../uuiui'
 import { switchEditorMode } from '../editor/actions/action-creators'
 import { EditorModes, isLiveMode, isSelectLiteMode, isSelectMode } from '../editor/editor-modes'
-import { useEditorState } from '../editor/store/store-hook'
+import { EditorStorePatched } from '../editor/store/editor-state'
+import { useEditorDispatch, useEditorState } from '../editor/store/store-hook'
 
 interface ModeSelectButtonProps {
   selected: boolean
@@ -51,16 +52,12 @@ const ModeSelectButton = React.memo((props: ModeSelectButtonProps) => {
   )
 })
 
+const currentModeSelector = (store: EditorStorePatched) => store.editor.mode
+
 export const ModeSelectButtons = React.memo(() => {
   const colorTheme = useColorTheme()
-  const currentMode = useEditorState(
-    React.useCallback((store) => store.editor.mode, []),
-    'ModeSelectButtons editor.mode',
-  )
-  const dispatch = useEditorState(
-    React.useCallback((store) => store.dispatch, []),
-    'ModeSelectButtons dispatch',
-  )
+  const currentMode = useEditorState(currentModeSelector, 'ModeSelectButtons editor.mode')
+  const dispatch = useEditorDispatch('ModeSelectButtons dispatch')
 
   const switchToSelectMode = React.useCallback(
     () => dispatch([switchEditorMode(EditorModes.selectMode())]),

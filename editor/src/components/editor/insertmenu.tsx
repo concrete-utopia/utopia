@@ -42,7 +42,7 @@ import {
   insertionSubjectIsJSXElement,
 } from './editor-modes'
 import { insertImage } from './image-insert'
-import { getOpenFilename, getOpenUIJSFile } from './store/editor-state'
+import { EditorStorePatched, getOpenFilename, getOpenUIJSFile } from './store/editor-state'
 import { useEditorState } from './store/store-hook'
 import { last } from '../../core/shared/array-utils'
 import { defaultIfNull } from '../../core/shared/optional-utils'
@@ -90,24 +90,23 @@ interface InsertMenuProps {
   projectContents: ProjectContentTreeRoot
 }
 
-export const InsertMenu = React.memo(() => {
-  const props = useEditorState(
-    React.useCallback((store) => {
-      const openFileFullPath = getOpenFilename(store.editor)
+const insertMenuPropsSelector = (store: EditorStorePatched) => {
+  const openFileFullPath = getOpenFilename(store.editor)
 
-      return {
-        lastFontSettings: store.editor.lastUsedFont,
-        editorDispatch: store.dispatch,
-        selectedViews: store.editor.selectedViews,
-        mode: store.editor.mode,
-        currentlyOpenFilename: openFileFullPath,
-        packageStatus: store.editor.nodeModules.packageStatus,
-        propertyControlsInfo: store.editor.propertyControlsInfo,
-        projectContents: store.editor.projectContents,
-      }
-    }, []),
-    'InsertMenu',
-  )
+  return {
+    lastFontSettings: store.editor.lastUsedFont,
+    editorDispatch: store.dispatch,
+    selectedViews: store.editor.selectedViews,
+    mode: store.editor.mode,
+    currentlyOpenFilename: openFileFullPath,
+    packageStatus: store.editor.nodeModules.packageStatus,
+    propertyControlsInfo: store.editor.propertyControlsInfo,
+    projectContents: store.editor.projectContents,
+  }
+}
+
+export const InsertMenu = React.memo(() => {
+  const props = useEditorState(insertMenuPropsSelector, 'InsertMenu')
 
   const dependencies = usePossiblyResolvedPackageDependencies()
 

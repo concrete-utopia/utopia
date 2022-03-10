@@ -15,8 +15,9 @@ import {
   getOpenUIJSFileKey,
   parseFailureAsErrorMessages,
   NavigatorWidthAtom,
+  EditorStorePatched,
 } from '../editor/store/editor-state'
-import { useEditorState } from '../editor/store/store-hook'
+import { useEditorDispatch, useEditorState } from '../editor/store/store-hook'
 import ErrorOverlay from '../../third-party/react-error-overlay/components/ErrorOverlay'
 import CloseButton from '../../third-party/react-error-overlay/components/CloseButton'
 import { fastForEach, NO_OP } from '../../core/shared/utils'
@@ -57,16 +58,19 @@ export function filterOldPasses(errorMessages: Array<ErrorMessage>): Array<Error
   })
 }
 
+const canvasWrapperSelector = (store: EditorStorePatched) => ({
+  dispatch: store.dispatch,
+  editorState: store.editor,
+  derivedState: store.derived,
+})
+
+const safeModeSelector = (store: EditorStorePatched) => store.editor.safeMode
+const isNavigatorOverCanvasSelector = (store: EditorStorePatched) =>
+  !store.editor.navigator.minimised
+
 export const CanvasWrapperComponent = React.memo(() => {
   const { dispatch, editorState, derivedState } = useEditorState(
-    React.useCallback(
-      (store) => ({
-        dispatch: store.dispatch,
-        editorState: store.editor,
-        derivedState: store.derived,
-      }),
-      [],
-    ),
+    canvasWrapperSelector,
     'CanvasWrapperComponent',
   )
 
@@ -74,15 +78,10 @@ export const CanvasWrapperComponent = React.memo(() => {
     return getAllCodeEditorErrors(editorState, 'fatal', true)
   }, [editorState])
 
-  const safeMode = useEditorState(
-    React.useCallback((store) => {
-      return store.editor.safeMode
-    }, []),
-    'CanvasWrapperComponent safeMode',
-  )
+  const safeMode = useEditorState(safeModeSelector, 'CanvasWrapperComponent safeMode')
 
   const isNavigatorOverCanvas = useEditorState(
-    React.useCallback((store) => !store.editor.navigator.minimised, []),
+    isNavigatorOverCanvasSelector,
     'ErrorOverlayComponent isOverlappingWithNavigator',
   )
 
@@ -140,24 +139,20 @@ export const CanvasWrapperComponent = React.memo(() => {
 
 interface ErrorOverlayComponentProps {}
 
+const parseFailuresSelector = (store: EditorStorePatched) =>
+  parseFailureAsErrorMessages(getOpenUIJSFileKey(store.editor), getOpenUIJSFile(store.editor))
+
+const fatalCodeEditorErrorsSelector = (store: EditorStorePatched) =>
+  getAllCodeEditorErrors(store.editor, 'error', true)
+
 const ErrorOverlayComponent = React.memo((props: ErrorOverlayComponentProps) => {
-  const dispatch = useEditorState(
-    React.useCallback((store) => store.dispatch, []),
-    'ErrorOverlayComponent dispatch',
-  )
+  const dispatch = useEditorDispatch('ErrorOverlayComponent dispatch')
   const utopiaParserErrors = useEditorState(
-    React.useCallback((store) => {
-      return parseFailureAsErrorMessages(
-        getOpenUIJSFileKey(store.editor),
-        getOpenUIJSFile(store.editor),
-      )
-    }, []),
+    parseFailuresSelector,
     'ErrorOverlayComponent utopiaParserErrors',
   )
   const fatalCodeEditorErrors = useEditorState(
-    React.useCallback((store) => {
-      return getAllCodeEditorErrors(store.editor, 'error', true)
-    }, []),
+    fatalCodeEditorErrorsSelector,
     'ErrorOverlayComponent fatalCodeEditorErrors',
   )
 
@@ -222,10 +217,7 @@ const ErrorOverlayComponent = React.memo((props: ErrorOverlayComponentProps) => 
 })
 
 export const SafeModeErrorOverlay = React.memo(() => {
-  const dispatch = useEditorState(
-    React.useCallback((store) => store.dispatch, []),
-    'SafeModeErrorOverlay dispatch',
-  )
+  const dispatch = useEditorDispatch('SafeModeErrorOverlay dispatch')
   const onTryAgain = React.useCallback(() => {
     dispatch([setSafeMode(false)], 'everyone')
   }, [dispatch])

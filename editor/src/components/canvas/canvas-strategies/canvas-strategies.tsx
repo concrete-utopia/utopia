@@ -210,12 +210,11 @@ export function applyCanvasStrategy(
   return strategy.apply(canvasState, interactionSession, strategyState)
 }
 
+const currentStrategySelector = (store: EditorStorePatched) => store.strategyState.currentStrategy
+
 export function useGetApplicableStrategyControls(): Array<ControlWithKey> {
   const applicableStrategies = useGetApplicableStrategies()
-  const currentStrategy = useEditorState(
-    React.useCallback((store) => store.strategyState.currentStrategy, []),
-    'currentStrategy',
-  )
+  const currentStrategy = useEditorState(currentStrategySelector, 'currentStrategy')
   return React.useMemo(() => {
     return applicableStrategies.reduce<ControlWithKey[]>((working, s) => {
       const filteredControls = s.controlsToRender.filter(

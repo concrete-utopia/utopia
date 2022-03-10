@@ -8,9 +8,10 @@ import {
   LeftPaneDefaultWidth,
   RightMenuTab,
   NavigatorWidthAtom,
+  EditorStorePatched,
 } from '../editor/store/editor-state'
 
-import { useEditorState } from '../editor/store/store-hook'
+import { useEditorDispatch, useEditorState } from '../editor/store/store-hook'
 import { InspectorEntryPoint } from '../inspector/inspector'
 import { CanvasWrapperComponent } from './canvas-wrapper-component'
 import { InsertMenuPane } from '../navigator/left-pane'
@@ -49,10 +50,7 @@ const TopMenuHeight = 35
 
 const NothingOpenCard = React.memo(() => {
   const colorTheme = useColorTheme()
-  const dispatch = useEditorState(
-    React.useCallback((store) => store.dispatch, []),
-    'NothingOpenCard dispatch',
-  )
+  const dispatch = useEditorDispatch('NothingOpenCard dispatch')
   const handleOpenCanvasClick = React.useCallback(() => {
     dispatch([EditorActions.setPanelVisibility('canvas', true)])
   }, [dispatch])
@@ -120,13 +118,17 @@ const NothingOpenCard = React.memo(() => {
   )
 })
 
+const interfaceDesignerSelector = (store: EditorStorePatched) => store.editor.interfaceDesigner
+const isNavigatorVisibleSelector = (store: EditorStorePatched) => !store.editor.navigator.minimised
+const isRightMenuExpandedSelector = (store: EditorStorePatched) => store.editor.rightMenu.expanded
+const rightMenuSelectedTabSelector = (store: EditorStorePatched) =>
+  store.editor.rightMenu.selectedTab
+const isCanvasVisibleSelector = (store: EditorStorePatched) => store.editor.canvas.visible
+
 const DesignPanelRootInner = React.memo(() => {
-  const dispatch = useEditorState(
-    React.useCallback((store) => store.dispatch, []),
-    'DesignPanelRoot dispatch',
-  )
+  const dispatch = useEditorDispatch('DesignPanelRoot dispatch')
   const interfaceDesigner = useEditorState(
-    React.useCallback((store) => store.editor.interfaceDesigner, []),
+    interfaceDesignerSelector,
     'DesignPanelRoot interfaceDesigner',
   )
 
@@ -135,24 +137,21 @@ const DesignPanelRootInner = React.memo(() => {
     interfaceDesigner.codePaneWidth,
   )
   const navigatorVisible = useEditorState(
-    React.useCallback((store) => !store.editor.navigator.minimised, []),
+    isNavigatorVisibleSelector,
     'DesignPanelRoot navigatorVisible',
   )
 
   const isRightMenuExpanded = useEditorState(
-    React.useCallback((store) => store.editor.rightMenu.expanded, []),
+    isRightMenuExpandedSelector,
     'DesignPanelRoot isRightMenuExpanded',
   )
 
   const rightMenuSelectedTab = useEditorState(
-    React.useCallback((store) => store.editor.rightMenu.selectedTab, []),
+    rightMenuSelectedTabSelector,
     'DesignPanelRoot rightMenuSelectedTab',
   )
 
-  const isCanvasVisible = useEditorState(
-    React.useCallback((store) => store.editor.canvas.visible, []),
-    'design panel root',
-  )
+  const isCanvasVisible = useEditorState(isCanvasVisibleSelector, 'design panel root')
 
   const isInsertMenuSelected = rightMenuSelectedTab === RightMenuTab.Insert
 

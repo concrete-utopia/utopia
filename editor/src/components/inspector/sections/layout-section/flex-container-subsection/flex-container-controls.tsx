@@ -5,7 +5,11 @@ import { FlexDirection } from 'utopia-api/core'
 import { InspectorContextMenuWrapper } from '../../../../context-menu-wrapper'
 import { OptionChainControl, OptionChainOption } from '../../../controls/option-chain-control'
 import { SliderControl, DEPRECATEDSliderControlOptions } from '../../../controls/slider-control'
-import { InspectorPropsContext, stylePropPathMappingFn } from '../../../common/property-path-hooks'
+import {
+  InspectorPropsContext,
+  InspectorPropsContextTargetPathSelector,
+  stylePropPathMappingFn,
+} from '../../../common/property-path-hooks'
 import { SelectOption } from '../../../controls/select-control'
 import { OptionsType } from 'react-select'
 import { unsetPropertyMenuItem } from '../../../common/context-menu-items'
@@ -105,9 +109,7 @@ interface FlexAlignItemsControlProps extends FlexFieldControlProps<FlexAlignment
 export const FlexAlignItemsControl = React.memo((props: FlexAlignItemsControlProps) => {
   const targetPath = useContextSelector(
     InspectorPropsContext,
-    React.useCallback((contextData) => {
-      return contextData.targetPath
-    }, []),
+    InspectorPropsContextTargetPathSelector,
   )
   const alignItemsProp = React.useMemo(() => {
     return [stylePropPathMappingFn('alignItems', targetPath)]
@@ -248,9 +250,7 @@ export const FlexGapControl = React.memo((props: FlexGapControlProps) => {
   )
   const targetPath = useContextSelector(
     InspectorPropsContext,
-    React.useCallback((contextData) => {
-      return contextData.targetPath
-    }, []),
+    InspectorPropsContextTargetPathSelector,
   )
   const flexGapProp = React.useMemo(() => {
     return [stylePropPathMappingFn('gap', targetPath)]

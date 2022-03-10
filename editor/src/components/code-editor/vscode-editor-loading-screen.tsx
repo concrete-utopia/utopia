@@ -1,6 +1,7 @@
 import React from 'react'
 import { Global, css } from '@emotion/react'
 import { useEditorState } from '../editor/store/store-hook'
+import { EditorStorePatched } from '../editor/store/editor-state'
 
 const SampleCode = [
   {
@@ -82,9 +83,12 @@ const JSIcon = () => (
   </svg>
 )
 
+const vscodeLoadingScreenVisibleSelector = (store: EditorStorePatched) =>
+  store.editor.vscodeLoadingScreenVisible
+
 export const VSCodeLoadingScreen = React.memo((): React.ReactElement | null => {
   const vscodeLoadingScreenVisible = useEditorState(
-    React.useCallback((store) => store.editor.vscodeLoadingScreenVisible, []),
+    vscodeLoadingScreenVisibleSelector,
     'VSCodeIframeContainer',
   )
   if (!vscodeLoadingScreenVisible) {

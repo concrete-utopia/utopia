@@ -1,17 +1,23 @@
 import React from 'react'
 import { when } from '../../../utils/react-conditionals'
 import { useColorTheme } from '../../../uuiui'
+import { EditorStorePatched } from '../../editor/store/editor-state'
 import { useEditorState } from '../../editor/store/store-hook'
 import { isStrategyActive } from './canvas-strategies'
+
+const isStrategyActiveSelector = (store: EditorStorePatched) =>
+  isStrategyActive(store.strategyState)
+const commandDescriptionsSelector = (store: EditorStorePatched) =>
+  store.strategyState.commandDescriptions
 
 export const CanvasStrategyInspector = React.memo(() => {
   const colorTheme = useColorTheme()
   const activeStrategy = useEditorState(
-    React.useCallback((store) => isStrategyActive(store.strategyState), []),
+    isStrategyActiveSelector,
     'CanvasStrategyInspector activeStrategy',
   )
   const commandsToList = useEditorState(
-    React.useCallback((store) => store.strategyState.commandDescriptions, []),
+    commandDescriptionsSelector,
     'CanvasStrategyInspector accumulatedCommands',
   )
 

@@ -9,8 +9,9 @@ import {
   InspectorInfo,
   stylePropPathMappingFn,
   InspectorPropsContext,
+  InspectorPropsContextTargetPathSelector,
 } from '../../../common/property-path-hooks'
-import { useEditorState } from '../../../../editor/store/store-hook'
+import { useEditorDispatch } from '../../../../editor/store/store-hook'
 import { switchLayoutSystem } from '../../../../editor/actions/action-creators'
 import {
   getControlStatusFromPropertyStatus,
@@ -69,15 +70,10 @@ function useDefaultedLayoutSystemInfo(): {
 }
 
 export function useLayoutSystemData() {
-  const dispatch = useEditorState(
-    React.useCallback((store) => store.dispatch, []),
-    'useLayoutSystemData dispatch',
-  )
+  const dispatch = useEditorDispatch('useLayoutSystemData dispatch')
   const targetPath = useContextSelector(
     InspectorPropsContext,
-    React.useCallback((contextData) => {
-      return contextData.targetPath
-    }, []),
+    InspectorPropsContextTargetPathSelector,
   )
   const onLayoutSystemChange = React.useCallback(
     (layoutSystem: SettableLayoutSystem) => {
@@ -277,9 +273,7 @@ function useDeleteAllLayoutConfig() {
   const { onUnsetValue } = React.useContext(InspectorCallbackContext)
   const targetPath = useContextSelector(
     InspectorPropsContext,
-    React.useCallback((contextData) => {
-      return contextData.targetPath
-    }, []),
+    InspectorPropsContextTargetPathSelector,
   )
   return React.useCallback(() => {
     onUnsetValue(layoutSystemConfigPropertyPaths(targetPath), false)

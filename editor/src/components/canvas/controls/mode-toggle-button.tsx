@@ -2,20 +2,16 @@
 /** @jsx jsx */
 import React from 'react'
 import { css, jsx } from '@emotion/react'
-import { useEditorState } from '../../editor/store/store-hook'
+import { useEditorDispatch, useEditorState } from '../../editor/store/store-hook'
 import { updateFormulaBarMode } from '../../editor/actions/action-creators'
 import { useColorTheme } from '../../../uuiui'
+import { EditorStorePatched } from '../../editor/store/editor-state'
 
+const formulaBarModeSelector = (store: EditorStorePatched) => store.editor.topmenu.formulaBarMode
 export const ModeToggleButton = React.memo(() => {
   const colorTheme = useColorTheme()
-  const selectedMode = useEditorState(
-    React.useCallback((store) => store.editor.topmenu.formulaBarMode, []),
-    'ModeToggleButton selectedMode',
-  )
-  const dispatch = useEditorState(
-    React.useCallback((store) => store.dispatch, []),
-    'ModeToggleButton dispatch',
-  )
+  const selectedMode = useEditorState(formulaBarModeSelector, 'ModeToggleButton selectedMode')
+  const dispatch = useEditorDispatch('ModeToggleButton dispatch')
   const toggleMode = React.useCallback(
     (mode: 'css' | 'content') => {
       dispatch([updateFormulaBarMode(mode)], 'everyone')

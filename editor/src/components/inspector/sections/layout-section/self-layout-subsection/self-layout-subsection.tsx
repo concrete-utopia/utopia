@@ -19,7 +19,7 @@ import {
 } from '../../../../../uuiui'
 import { usePropControlledState } from '../../../../../uuiui-deps'
 import { InlineIndicator, InlineLink } from '../../../../../uuiui/inline-button'
-import { useEditorState } from '../../../../editor/store/store-hook'
+import { useEditorDispatch, useEditorState } from '../../../../editor/store/store-hook'
 import { ExpandableIndicator } from '../../../../navigator/navigator-item/expandable-indicator'
 import { CSSPosition } from '../../../common/css-utils'
 import * as EP from '../../../../../core/shared/element-path'
@@ -37,12 +37,14 @@ import { unless, when } from '../../../../../utils/react-conditionals'
 import {
   InspectorCallbackContext,
   InspectorPropsContext,
+  InspectorPropsContextTargetPathSelector,
   stylePropPathMappingFn,
 } from '../../../common/property-path-hooks'
 import { StyleLayoutProp } from '../../../../../core/layout/layout-helpers-new'
 import { usePropControlledStateV2 } from '../../../common/inspector-utils'
 import { useContextSelector } from 'use-context-selector'
 import { PropertyPath } from '../../../../../core/shared/project-file-types'
+import { EditorStorePatched } from '../../../../editor/store/editor-state'
 
 export type SelfLayoutTab = 'absolute' | 'flex' | 'flow' | 'sticky'
 
@@ -188,9 +190,7 @@ function selfLayoutConfigPropertyPaths(propertyTarget: ReadonlyArray<string>): A
 function useDeleteAllSelfLayoutConfig() {
   const propertyTarget = useContextSelector(
     InspectorPropsContext,
-    React.useCallback((contextData) => {
-      return contextData.targetPath
-    }, []),
+    InspectorPropsContextTargetPathSelector,
   )
   const { onUnsetValue } = React.useContext(InspectorCallbackContext)
   return React.useCallback(() => {
@@ -201,9 +201,7 @@ function useDeleteAllSelfLayoutConfig() {
 function useAddPositionAbsolute() {
   const propertyTarget = useContextSelector(
     InspectorPropsContext,
-    React.useCallback((contextData) => {
-      return contextData.targetPath
-    }, []),
+    InspectorPropsContextTargetPathSelector,
   )
   const { onSubmitValue } = React.useContext(InspectorCallbackContext)
   return React.useCallback(() => {
@@ -268,23 +266,20 @@ const LayoutSectionHeader = React.memo((props: LayoutSectionHeaderProps) => {
 interface ParentIndicatorAndLinkProps {
   style?: React.CSSProperties
 }
-const ParentIndicatorAndLink = (props: ParentIndicatorAndLinkProps) => {
-  const parentPath = useEditorState(
-    React.useCallback((store) => {
-      if (store.editor.selectedViews.length !== 1) {
-        return null
-      }
-      const target = store.editor.selectedViews[0]
-      const parent = EP.parentPath(target)
-      return EP.isStoryboardPath(parent) ? null : parent
-    }, []),
-    'ParentIndicatorAndLink parentPath',
-  )
 
-  const dispatch = useEditorState(
-    React.useCallback((store) => store.dispatch, []),
-    'ParentIndicatorAndLink dispatch',
-  )
+const parentPathSelector = (store: EditorStorePatched) => {
+  if (store.editor.selectedViews.length !== 1) {
+    return null
+  }
+  const target = store.editor.selectedViews[0]
+  const parent = EP.parentPath(target)
+  return EP.isStoryboardPath(parent) ? null : parent
+}
+
+const ParentIndicatorAndLink = (props: ParentIndicatorAndLinkProps) => {
+  const parentPath = useEditorState(parentPathSelector, 'ParentIndicatorAndLink parentPath')
+
+  const dispatch = useEditorDispatch('ParentIndicatorAndLink dispatch')
 
   const handleClick = React.useCallback(() => {
     if (parentPath != null) {
@@ -313,27 +308,26 @@ const ParentIndicatorAndLink = (props: ParentIndicatorAndLinkProps) => {
   )
 }
 
-function useElementHasChildrenOrContent() {
-  return useEditorState(
-    React.useCallback((store) => {
-      if (store.editor.selectedViews.length !== 1) {
-        return {
-          hasChildren: false,
-          hasContent: false,
-        }
-      }
-      const element = MetadataUtils.findElementByElementPath(
-        store.editor.jsxMetadata,
-        store.editor.selectedViews[0],
-      )
-      const textContent = element != null ? MetadataUtils.getTextContentOfElement(element) : null
-      return {
-        hasChildren: (element?.specialSizeMeasurements.renderedChildrenCount ?? 0) > 0,
-        hasContent: textContent != null && textContent.length > 0,
-      }
-    }, []),
-    'ChildrenLink children',
+const elementHasChildrenOrContentSelector = (store: EditorStorePatched) => {
+  if (store.editor.selectedViews.length !== 1) {
+    return {
+      hasChildren: false,
+      hasContent: false,
+    }
+  }
+  const element = MetadataUtils.findElementByElementPath(
+    store.editor.jsxMetadata,
+    store.editor.selectedViews[0],
   )
+  const textContent = element != null ? MetadataUtils.getTextContentOfElement(element) : null
+  return {
+    hasChildren: (element?.specialSizeMeasurements.renderedChildrenCount ?? 0) > 0,
+    hasContent: textContent != null && textContent.length > 0,
+  }
+}
+
+function useElementHasChildrenOrContent() {
+  return useEditorState(elementHasChildrenOrContentSelector, 'ChildrenLink children')
 }
 
 const ChildrenOrContentIndicator = () => {

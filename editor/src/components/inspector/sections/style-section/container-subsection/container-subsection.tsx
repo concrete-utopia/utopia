@@ -8,7 +8,10 @@ import {
   InspectorSectionIcons,
   InspectorSubsectionHeader,
 } from '../../../../../uuiui'
-import { InspectorPropsContext } from '../../../common/property-path-hooks'
+import {
+  InspectorPropsContext,
+  InspectorPropsContextTargetPathSelector,
+} from '../../../common/property-path-hooks'
 import { PropertyLabel } from '../../../widgets/property-label'
 import { SeeMoreButton, SeeMoreHOC, useToggle } from '../../../widgets/see-more'
 import { UIGridRow } from '../../../widgets/ui-grid-row'
@@ -25,9 +28,7 @@ export const ContainerSubsection = React.memo(() => {
   const [seeMoreVisible, toggleSeeMoreVisible] = useToggle(false)
   const targetPath = useContextSelector(
     InspectorPropsContext,
-    React.useCallback((contextData) => {
-      return contextData.targetPath
-    }, []),
+    InspectorPropsContextTargetPathSelector,
   )
   const paddingPropsToUnset = React.useMemo(() => {
     return buildPaddingPropsToUnset(targetPath)

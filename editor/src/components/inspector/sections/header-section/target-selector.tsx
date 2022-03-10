@@ -18,7 +18,7 @@ import {
   UIRow,
 } from '../../../../uuiui'
 import { ContextMenuWrapper } from '../../../../uuiui-deps'
-import { useEditorState } from '../../../editor/store/store-hook'
+import { useEditorDispatch } from '../../../editor/store/store-hook'
 import { ExpandableIndicator } from '../../../navigator/navigator-item/expandable-indicator'
 
 export type TargetSelectorLength = number | 'mixed'
@@ -245,10 +245,7 @@ const TargetListItem = React.memo((props: TargetListItemProps) => {
   const [itemBeingRenamedId, setItemBeingRenamedId] = React.useState<number | null>(null)
   const [renameValue, setRenameValue] = React.useState<string | null>(null)
 
-  const dispatch = useEditorState(
-    React.useCallback((store) => store.dispatch, []),
-    'TargetListItem',
-  )
+  const dispatch = useEditorDispatch('TargetListItem')
 
   const startRename = React.useCallback(() => {
     setItemBeingRenamedId(fixedItemIndex)

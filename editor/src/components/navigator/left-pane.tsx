@@ -47,8 +47,13 @@ import {
   setProjectDescription,
 } from '../editor/actions/action-creators'
 import { InsertMenu } from '../editor/insertmenu'
-import { DerivedState, EditorState, LeftMenuTab } from '../editor/store/editor-state'
-import { useEditorState } from '../editor/store/store-hook'
+import {
+  DerivedState,
+  EditorState,
+  EditorStorePatched,
+  LeftMenuTab,
+} from '../editor/store/editor-state'
+import { useEditorDispatch, useEditorState } from '../editor/store/store-hook'
 import { FileBrowser } from '../filebrowser/filebrowser'
 import { UIGridRow } from '../inspector/widgets/ui-grid-row'
 import { DependencyList } from './dependency-list'
@@ -72,26 +77,19 @@ export const LeftPaneComponentId = 'left-pane'
 
 export const LeftPaneOverflowScrollId = 'left-pane-overflow-scroll'
 
+const selectedTabSelector = (store: EditorStorePatched) => store.editor.leftMenu.selectedTab
+const projectIdSelector = (store: EditorStorePatched) => store.editor.id
+const isLoggedInSelector = (store: EditorStorePatched) =>
+  User.isLoggedIn(store.userState.loginState)
+
 export const LeftPaneComponent = React.memo(() => {
-  const selectedTab = useEditorState(
-    React.useCallback((store) => store.editor.leftMenu.selectedTab, []),
-    'LeftPaneComponent selectedTab',
-  )
-  const projectId = useEditorState(
-    React.useCallback((store) => store.editor.id, []),
-    'LeftPaneComponent projectId',
-  )
-  const dispatch = useEditorState(
-    React.useCallback((store) => store.dispatch, []),
-    'LeftPaneComponent dispatch',
-  )
+  const selectedTab = useEditorState(selectedTabSelector, 'LeftPaneComponent selectedTab')
+  const projectId = useEditorState(projectIdSelector, 'LeftPaneComponent projectId')
+  const dispatch = useEditorDispatch('LeftPaneComponent dispatch')
 
   const isMyProject = useIsMyProject(projectId)
 
-  const loggedIn = useEditorState(
-    React.useCallback((store) => User.isLoggedIn(store.userState.loginState), []),
-    'LeftPaneComponent loggedIn',
-  )
+  const loggedIn = useEditorState(isLoggedInSelector, 'LeftPaneComponent loggedIn')
 
   const colorTheme = useColorTheme()
 
@@ -134,20 +132,22 @@ export const LeftPaneComponent = React.memo(() => {
   )
 })
 
+const forksGivenPropsSelector = (store: EditorStorePatched) => {
+  return {
+    dispatch: store.dispatch,
+    id: store.editor.id,
+    projectName: store.editor.projectName,
+    description: store.editor.projectDescription,
+    isLoggedIn: User.isLoggedIn(store.userState.loginState),
+    forkedFrom: store.editor.forkedFromProjectId,
+  }
+}
+
 const ForksGiven = React.memo(() => {
   const colorTheme = useColorTheme()
 
   const { id, projectName, description, isLoggedIn, forkedFrom } = useEditorState(
-    React.useCallback((store) => {
-      return {
-        dispatch: store.dispatch,
-        id: store.editor.id,
-        projectName: store.editor.projectName,
-        description: store.editor.projectDescription,
-        isLoggedIn: User.isLoggedIn(store.userState.loginState),
-        forkedFrom: store.editor.forkedFromProjectId,
-      }
-    }, []),
+    forksGivenPropsSelector,
     'ForkPanel',
   )
 
@@ -347,16 +347,18 @@ const StoryboardListItem = styled.div<StoryboardListItemProps>((props) => ({
   },
 }))
 
+const storyboardsPanePropsSelector = (store: EditorStorePatched) => {
+  return {
+    dispatch: store.dispatch,
+    openFile: store.editor.canvas.openFile?.filename,
+    projectContents: store.editor.projectContents,
+    isCanvasVisible: store.editor.canvas.visible,
+  }
+}
+
 const StoryboardsPane = React.memo(() => {
   const { dispatch, openFile, projectContents, isCanvasVisible } = useEditorState(
-    React.useCallback((store) => {
-      return {
-        dispatch: store.dispatch,
-        openFile: store.editor.canvas.openFile?.filename,
-        projectContents: store.editor.projectContents,
-        isCanvasVisible: store.editor.canvas.visible,
-      }
-    }, []),
+    storyboardsPanePropsSelector,
     'StoryboardsPane',
   )
 
@@ -482,10 +484,7 @@ const ContentsPane = React.memo(() => {
 })
 
 const SettingsPane = React.memo(() => {
-  const dispatch = useEditorState(
-    React.useCallback((store) => store.dispatch, []),
-    'ProjectPane',
-  )
+  const dispatch = useEditorDispatch('ProjectPane')
   const [theme, setTheme] = React.useState<SelectOption>({
     label: 'Light',
     value: 'light',
@@ -563,17 +562,16 @@ const SettingsPane = React.memo(() => {
   )
 })
 
+const sharingPanePropsSelector = (store: EditorStorePatched) => {
+  return {
+    projectId: store.editor.id,
+    projectName: store.editor.projectName,
+  }
+}
+
 const SharingPane = React.memo(() => {
   const [temporaryCopySuccess, setTemporaryCopySuccess] = React.useState(false)
-  const { projectId, projectName } = useEditorState(
-    React.useCallback((store) => {
-      return {
-        projectId: store.editor.id,
-        projectName: store.editor.projectName,
-      }
-    }, []),
-    'Menubar',
-  )
+  const { projectId, projectName } = useEditorState(sharingPanePropsSelector, 'Menubar')
   const previewURL =
     projectId == null ? '' : shareURLForProject(FLOATING_PREVIEW_BASE_URL, projectId, projectName)
 
@@ -781,16 +779,11 @@ const GithubPane = React.memo(() => {
   )
 })
 
+const focusedPanelSelector = (store: EditorStorePatched) => store.editor.focusedPanel
+
 export const InsertMenuPane = React.memo(() => {
-  const { dispatch, focusedPanel } = useEditorState(
-    React.useCallback((store) => {
-      return {
-        dispatch: store.dispatch,
-        focusedPanel: store.editor.focusedPanel,
-      }
-    }, []),
-    'InsertMenuPane',
-  )
+  const dispatch = useEditorDispatch('InsertMenuPane dispatch')
+  const focusedPanel = useEditorState(focusedPanelSelector, 'InsertMenuPane')
 
   const onFocus = React.useCallback(
     (event: React.FocusEvent<HTMLElement>) => {
@@ -829,6 +822,20 @@ const themeOptions = [
   },
 ]
 
+const projectPanePropsSelector = (store: EditorStorePatched) => {
+  return {
+    dispatch: store.dispatch,
+    projectName: store.editor.projectName,
+    projectDescription: store.editor.projectDescription,
+    projectId: store.editor.id,
+    thumbnailLastGenerated: store.editor.thumbnailLastGenerated,
+    userState: store.userState,
+    focusedPanel: store.editor.focusedPanel,
+    minimised: store.editor.projectSettings.minimised,
+    forkedFrom: store.editor.forkedFromProjectId,
+  }
+}
+
 const ProjectPane = React.memo(() => {
   const colorTheme = useColorTheme()
   const {
@@ -841,22 +848,7 @@ const ProjectPane = React.memo(() => {
     focusedPanel,
     minimised,
     forkedFrom,
-  } = useEditorState(
-    React.useCallback((store) => {
-      return {
-        dispatch: store.dispatch,
-        projectName: store.editor.projectName,
-        projectDescription: store.editor.projectDescription,
-        projectId: store.editor.id,
-        thumbnailLastGenerated: store.editor.thumbnailLastGenerated,
-        userState: store.userState,
-        focusedPanel: store.editor.focusedPanel,
-        minimised: store.editor.projectSettings.minimised,
-        forkedFrom: store.editor.forkedFromProjectId,
-      }
-    }, []),
-    'ProjectPane',
-  )
+  } = useEditorState(projectPanePropsSelector, 'ProjectPane')
 
   const [name, changeProjectName] = React.useState(projectName)
   const [description, changeProjectDescription] = React.useState(projectDescription)

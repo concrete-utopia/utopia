@@ -19,11 +19,10 @@ export interface NameAndIconResult {
   iconProps: IcnProps
 }
 
+const metadataSelector = (store: EditorStorePatched) => store.editor.jsxMetadata
+
 export function useMetadata(): ElementInstanceMetadataMap {
-  return useEditorState(
-    React.useCallback((store) => store.editor.jsxMetadata, []),
-    'useMetadata',
-  )
+  return useEditorState(metadataSelector, 'useMetadata')
 }
 
 const namesAndIconsAllPathsResultSelector = createSelector(
@@ -35,15 +34,14 @@ const namesAndIconsAllPathsResultSelector = createSelector(
   },
 )
 
+const NameAndIconResultArrayEquality = (
+  oldResult: Array<NameAndIconResult>,
+  newResult: Array<NameAndIconResult>,
+) => NameAndIconResultArrayKeepDeepEquality(oldResult, newResult).areEqual
+
 export function useNamesAndIconsAllPaths(): NameAndIconResult[] {
   const selector = React.useMemo(() => namesAndIconsAllPathsResultSelector, [])
-  return useEditorState(
-    selector,
-    'useNamesAndIconsAllPaths',
-    React.useCallback((oldResult, newResult) => {
-      return NameAndIconResultArrayKeepDeepEquality(oldResult, newResult).areEqual
-    }, []),
-  )
+  return useEditorState(selector, 'useNamesAndIconsAllPaths', NameAndIconResultArrayEquality)
 }
 
 function getNameAndIconResult(

@@ -6,7 +6,7 @@ import { Table, Checkbox } from 'antd'
 import Column from 'antd/lib/table/Column'
 import 'antd/dist/antd.css'
 import { RenderedCell, GetComponentProps } from 'rc-table/lib/interface'
-import { useEditorState } from './editor/store/store-hook'
+import { useEditorDispatch, useEditorState } from './editor/store/store-hook'
 import { getShortcutDetails, Shortcut } from './editor/shortcut-definitions'
 import { comparePrimitive } from '../utils/compare'
 import { mapToArray } from '../core/shared/object-utils'
@@ -14,6 +14,7 @@ import { Key } from '../utils/keyboard'
 import { capitalize } from '../core/shared/string-utils'
 import Keyboard from '../utils/keyboard'
 import { setShortcut } from './editor/actions/action-creators'
+import { EditorStorePatched } from './editor/store/editor-state'
 
 interface ShortcutWithName extends Shortcut {
   name: string
@@ -26,16 +27,11 @@ interface DataSourceEntry {
   name: string
 }
 
+const shortcutConfigSelector = (store: EditorStorePatched) => store.userState.shortcutConfig
+
 export function UserConfiguration() {
-  const { dispatch, shortcutConfig } = useEditorState(
-    React.useCallback((store) => {
-      return {
-        dispatch: store.dispatch,
-        shortcutConfig: store.userState.shortcutConfig,
-      }
-    }, []),
-    'UserConfiguration',
-  )
+  const dispatch = useEditorDispatch('UserConfiguration dispatch')
+  const shortcutConfig = useEditorState(shortcutConfigSelector, 'UserConfiguration')
 
   const [editingIndex, setEditingIndex] = React.useState<number | null>(null)
 

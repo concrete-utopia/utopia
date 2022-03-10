@@ -24,13 +24,14 @@ import { StateHistory } from './history'
 import { LoginStatusBar, BrowserInfoBar } from './notification-bar'
 import {
   ConsoleLog,
+  EditorStorePatched,
   getOpenFile,
   getOpenTextFileKey,
   LeftMenuTab,
   LeftPaneDefaultWidth,
   StoryboardFilePath,
 } from './store/editor-state'
-import { useEditorState, useRefEditorState } from './store/store-hook'
+import { useEditorDispatch, useEditorState, useRefEditorState } from './store/store-hook'
 import { isParsedTextFile } from '../../core/shared/project-file-types'
 import { isLiveMode, dragAndDropInsertionSubject, EditorModes, isSelectMode } from './editor-modes'
 import { Toast } from '../common/notices'
@@ -49,7 +50,7 @@ import {
   Subdued,
   FlexColumn,
 } from '../../uuiui'
-import { createIframeUrl, projectURLForProject } from '../../core/shared/utils'
+import { createIframeUrl, identity, projectURLForProject } from '../../core/shared/utils'
 import { setBranchNameFromURL } from '../../utils/branches'
 import { FatalIndexedDBErrorComponent } from './fatal-indexeddb-error-component'
 import { isFeatureEnabled } from '../../utils/feature-switches'
@@ -92,8 +93,13 @@ function useDelayedValueHook(inputValue: boolean, delayMs: number): boolean {
   return returnValue
 }
 
+const projectNameSelector = (store: EditorStorePatched) => store.editor.projectName
+const projectIdSelector = (store: EditorStorePatched) => store.editor.id
+const previewVisibleSelector = (store: EditorStorePatched) => store.editor.preview.visible
+const leftMenuExpandedSelector = (store: EditorStorePatched) => store.editor.leftMenu.expanded
+
 export const EditorComponentInner = React.memo((props: EditorProps) => {
-  const editorStoreRef = useRefEditorState(React.useCallback((store) => store, []))
+  const editorStoreRef = useRefEditorState(identity)
   const colorTheme = useColorTheme()
   const onWindowMouseDown = React.useCallback(
     (event: MouseEvent) => {
@@ -201,24 +207,15 @@ export const EditorComponentInner = React.memo((props: EditorProps) => {
     }
   }, [onWindowMouseDown, onWindowKeyDown, onWindowKeyUp, preventDefault])
 
-  const dispatch = useEditorState(
-    React.useCallback((store) => store.dispatch, []),
-    'EditorComponentInner dispatch',
-  )
-  const projectName = useEditorState(
-    React.useCallback((store) => store.editor.projectName, []),
-    'EditorComponentInner projectName',
-  )
-  const projectId = useEditorState(
-    React.useCallback((store) => store.editor.id, []),
-    'EditorComponentInner projectId',
-  )
+  const dispatch = useEditorDispatch('EditorComponentInner dispatch')
+  const projectName = useEditorState(projectNameSelector, 'EditorComponentInner projectName')
+  const projectId = useEditorState(projectIdSelector, 'EditorComponentInner projectId')
   const previewVisible = useEditorState(
-    React.useCallback((store) => store.editor.preview.visible, []),
+    previewVisibleSelector,
     'EditorComponentInner previewVisible',
   )
   const leftMenuExpanded = useEditorState(
-    React.useCallback((store) => store.editor.leftMenu.expanded, []),
+    leftMenuExpandedSelector,
     'EditorComponentInner leftMenuExpanded',
   )
 
@@ -370,16 +367,11 @@ export const EditorComponentInner = React.memo((props: EditorProps) => {
   )
 })
 
+const modalSelector = (store: EditorStorePatched) => store.editor.modal
+
 const ModalComponent = React.memo((): React.ReactElement<any> | null => {
-  const { modal, dispatch } = useEditorState(
-    React.useCallback((store) => {
-      return {
-        dispatch: store.dispatch,
-        modal: store.editor.modal,
-      }
-    }, []),
-    'ModalComponent',
-  )
+  const dispatch = useEditorDispatch('ModalComponent dispatch')
+  const modal = useEditorState(modalSelector, 'ModalComponent modal')
   if (modal != null) {
     if (modal.type === 'file-delete') {
       return <ConfirmDeleteDialog dispatch={dispatch} filePath={modal.filePath} />
@@ -388,11 +380,10 @@ const ModalComponent = React.memo((): React.ReactElement<any> | null => {
   return null
 })
 
+const indexedDBFailedSelector = (store: EditorStorePatched) => store.editor.indexedDBFailed
+
 export function EditorComponent(props: EditorProps) {
-  const indexedDBFailed = useEditorState(
-    React.useCallback((store) => store.editor.indexedDBFailed, []),
-    'EditorComponent indexedDBFailed',
-  )
+  const indexedDBFailed = useEditorState(indexedDBFailedSelector, 'EditorComponent indexedDBFailed')
 
   return indexedDBFailed ? (
     <FatalIndexedDBErrorComponent />
@@ -403,13 +394,11 @@ export function EditorComponent(props: EditorProps) {
   )
 }
 
+const cursorSelector = (store: EditorStorePatched) =>
+  Utils.defaultIfNull(store.editor.canvas.cursor, getCursorFromDragState(store.editor))
+
 const EditorCursorComponent = React.memo(() => {
-  const cursor = useEditorState(
-    React.useCallback((store) => {
-      return Utils.defaultIfNull(store.editor.canvas.cursor, getCursorFromDragState(store.editor))
-    }, []),
-    'EditorCursorComponent cursor',
-  )
+  const cursor = useEditorState(cursorSelector, 'EditorCursorComponent cursor')
 
   const styleProps = React.useMemo(() => {
     let workingStyleProps: React.CSSProperties = {
@@ -431,11 +420,10 @@ const EditorCursorComponent = React.memo(() => {
   return <div key='cursor-area' id='cursor-overlay' style={styleProps} />
 })
 
+const toastsSelector = (store: EditorStorePatched) => store.editor.toasts
+
 const ToastRenderer = React.memo(() => {
-  const toasts = useEditorState(
-    React.useCallback((store) => store.editor.toasts, []),
-    'ToastRenderer',
-  )
+  const toasts = useEditorState(toastsSelector, 'ToastRenderer')
 
   return (
     <FlexColumn

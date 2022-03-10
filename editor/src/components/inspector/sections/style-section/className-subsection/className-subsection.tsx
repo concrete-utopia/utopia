@@ -16,6 +16,7 @@ import {
 } from '../../../../../core/shared/atom-with-pub-sub'
 import { emptyComments, jsxAttributeValue } from '../../../../../core/shared/element-template'
 import * as PP from '../../../../../core/shared/property-path'
+import { identity } from '../../../../../core/shared/utils'
 import {
   getTailwindOptionForClassName,
   LabelWithStripes,
@@ -42,7 +43,13 @@ import {
   REDO_CHANGES_SHORTCUT,
   UNDO_CHANGES_SHORTCUT,
 } from '../../../../editor/shortcut-definitions'
-import { useEditorState, useRefEditorState } from '../../../../editor/store/store-hook'
+import { EditorStorePatched } from '../../../../editor/store/editor-state'
+import {
+  useEditorDispatch,
+  useEditorSelectedViews,
+  useEditorState,
+  useRefEditorState,
+} from '../../../../editor/store/store-hook'
 import { ExpandableIndicator } from '../../../../navigator/navigator-item/expandable-indicator'
 import { UIGridRow } from '../../../widgets/ui-grid-row'
 
@@ -169,14 +176,14 @@ const Input = (props: InputProps) => {
   return <components.Input {...props} isHidden={isHidden} />
 }
 
+const classnameFocusCounterSelector = (store: EditorStorePatched) =>
+  store.editor.inspector.classnameFocusCounter
+
 const ClassNameControl = React.memo(() => {
-  const editorStoreRef = useRefEditorState(React.useCallback((store) => store, []))
+  const editorStoreRef = useRefEditorState(identity)
   const theme = useColorTheme()
-  const targets = useEditorState(
-    React.useCallback((store) => store.editor.selectedViews, []),
-    'ClassNameSubsection targets',
-  )
-  const dispatch = useEditorState((store) => store.dispatch, 'ClassNameSubsection dispatch')
+  const targets = useEditorSelectedViews('ClassNameSubsection targets')
+  const dispatch = useEditorDispatch('ClassNameSubsection dispatch')
 
   const [filter, setFilter] = React.useState('')
   const isFocusedRef = React.useRef(false)
@@ -185,7 +192,7 @@ const ClassNameControl = React.memo(() => {
   const focusedValueRef = React.useRef<string | null>(null)
 
   const focusTriggerCount = useEditorState(
-    React.useCallback((store) => store.editor.inspector.classnameFocusCounter, []),
+    classnameFocusCounterSelector,
     'ClassNameSubsection classnameFocusCounter',
   )
   const inputRef = useInputFocusOnCountIncrease<CreatableSelect<TailWindOption>>(focusTriggerCount)

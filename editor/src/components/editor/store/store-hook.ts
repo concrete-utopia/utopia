@@ -68,6 +68,18 @@ function useWrapSelectorInPerformanceMeasureBlock<U>(
   }
 }
 
+const dispatchSelector = (store: EditorStorePatched) => store.dispatch
+export const useEditorDispatch = (selectorName: string) =>
+  useEditorState(dispatchSelector, selectorName)
+
+const selectedViewsSelector = (store: EditorStorePatched) => store.editor.selectedViews
+export const useEditorSelectedViews = (selectorName: string) =>
+  useEditorState(selectedViewsSelector, selectorName)
+
+const metadataSelector = (store: EditorStorePatched) => store.editor.jsxMetadata
+export const useEditorMetadata = (selectorName: string) =>
+  useEditorState(metadataSelector, selectorName)
+
 /**
  * Like useEditorState, but DOES NOT TRIGGER A RE-RENDER
  *
@@ -125,6 +137,9 @@ export const useRefEditorState = <U>(
   }, [api, explainMe])
   return sliceRef
 }
+
+export const useRefEditorSelectedViews = () => useRefEditorState(selectedViewsSelector)
+export const useRefEditorMetadata = () => useRefEditorState(metadataSelector)
 
 export type UtopiaStoreHook = UseStore<EditorStorePatched>
 export type UtopiaStoreAPI = StoreApi<EditorStorePatched>

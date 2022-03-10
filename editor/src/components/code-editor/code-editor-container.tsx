@@ -2,7 +2,7 @@ import React from 'react'
 import { useEditorState } from '../editor/store/store-hook'
 import { MONACO_EDITOR_IFRAME_BASE_URL } from '../../common/env-vars'
 import { createIframeUrl } from '../../core/shared/utils'
-import { getUnderlyingVSCodeBridgeID } from '../editor/store/editor-state'
+import { EditorStorePatched, getUnderlyingVSCodeBridgeID } from '../editor/store/editor-state'
 import { VSCodeLoadingScreen } from './vscode-editor-loading-screen'
 import { getEditorBranchNameFromURL, setBranchNameFromURL } from '../../utils/branches'
 
@@ -43,15 +43,11 @@ const VSCodeIframeContainer = React.memo((props: { projectID: string }) => {
   )
 })
 
-export const CodeEditorWrapper = React.memo(() => {
-  const selectedProps = useEditorState(
-    React.useCallback((store) => {
-      return {
-        vscodeBridgeId: getUnderlyingVSCodeBridgeID(store.editor.vscodeBridgeId),
-      }
-    }, []),
-    'CodeEditorWrapper',
-  )
+const vscodeBridgeIdSelector = (store: EditorStorePatched) =>
+  getUnderlyingVSCodeBridgeID(store.editor.vscodeBridgeId)
 
-  return <VSCodeIframeContainer projectID={selectedProps.vscodeBridgeId} />
+export const CodeEditorWrapper = React.memo(() => {
+  const vscodeBridgeId = useEditorState(vscodeBridgeIdSelector, 'CodeEditorWrapper')
+
+  return <VSCodeIframeContainer projectID={vscodeBridgeId} />
 })

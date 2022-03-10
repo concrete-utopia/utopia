@@ -21,6 +21,7 @@ import { FramePinsInfo, usePinToggling } from '../../../common/layout-property-p
 import {
   InspectorInfo,
   InspectorPropsContext,
+  InspectorPropsContextData,
   stylePropPathMappingFn,
   useInspectorLayoutInfo,
 } from '../../../common/property-path-hooks'
@@ -408,13 +409,15 @@ const WidthHeightRow = React.memo((props: WidthHeightRowProps) => {
   )
 })
 
+const minimumsPropsSelector = (contextData: InspectorPropsContextData) => {
+  return [
+    stylePropPathMappingFn('minWidth', contextData.targetPath),
+    stylePropPathMappingFn('minHeight', contextData.targetPath),
+  ]
+}
+
 const MinimumsRow = React.memo(() => {
-  const minimumsProps = useContextSelector(InspectorPropsContext, (contextData) => {
-    return [
-      stylePropPathMappingFn('minWidth', contextData.targetPath),
-      stylePropPathMappingFn('minHeight', contextData.targetPath),
-    ]
-  })
+  const minimumsProps = useContextSelector(InspectorPropsContext, minimumsPropsSelector)
 
   return (
     <UIGridRow padded={true} variant='<---1fr--->|------172px-------|'>
@@ -429,13 +432,15 @@ const MinimumsRow = React.memo(() => {
   )
 })
 
+const maximumsPropsSelector = (contextData: InspectorPropsContextData) => {
+  return [
+    stylePropPathMappingFn('maxWidth', contextData.targetPath),
+    stylePropPathMappingFn('maxHeight', contextData.targetPath),
+  ]
+}
+
 const MaximumsRow = React.memo(() => {
-  const maximumsProps = useContextSelector(InspectorPropsContext, (contextData) => {
-    return [
-      stylePropPathMappingFn('maxWidth', contextData.targetPath),
-      stylePropPathMappingFn('maxHeight', contextData.targetPath),
-    ]
-  })
+  const maximumsProps = useContextSelector(InspectorPropsContext, maximumsPropsSelector)
 
   return (
     <UIGridRow padded={true} variant='<---1fr--->|------172px-------|'>
@@ -450,13 +455,18 @@ const MaximumsRow = React.memo(() => {
   )
 })
 
+const flexWidthHeightPropsSelector = (contextData: InspectorPropsContextData) => {
+  return [
+    stylePropPathMappingFn('maxWidth', contextData.targetPath),
+    stylePropPathMappingFn('maxHeight', contextData.targetPath),
+  ]
+}
+
 const FlexWidthHeightRow = React.memo(() => {
-  const flexWidthHeightProps = useContextSelector(InspectorPropsContext, (contextData) => {
-    return [
-      stylePropPathMappingFn('maxWidth', contextData.targetPath),
-      stylePropPathMappingFn('maxHeight', contextData.targetPath),
-    ]
-  })
+  const flexWidthHeightProps = useContextSelector(
+    InspectorPropsContext,
+    flexWidthHeightPropsSelector,
+  )
 
   return (
     <UIGridRow padded={true} variant='<---1fr--->|------172px-------|'>
@@ -471,13 +481,15 @@ const FlexWidthHeightRow = React.memo(() => {
   )
 })
 
+const flexGrowShrinkPropsSelector = (contextData: InspectorPropsContextData) => {
+  return [
+    stylePropPathMappingFn('flexGrow', contextData.targetPath),
+    stylePropPathMappingFn('flexShrink', contextData.targetPath),
+  ]
+}
+
 const FlexGrowShrinkRow = React.memo(() => {
-  const flexGrowShrinkProps = useContextSelector(InspectorPropsContext, (contextData) => {
-    return [
-      stylePropPathMappingFn('flexGrow', contextData.targetPath),
-      stylePropPathMappingFn('flexShrink', contextData.targetPath),
-    ]
-  })
+  const flexGrowShrinkProps = useContextSelector(InspectorPropsContext, flexGrowShrinkPropsSelector)
 
   return (
     <UIGridRow padded={true} variant='<---1fr--->|------172px-------|'>

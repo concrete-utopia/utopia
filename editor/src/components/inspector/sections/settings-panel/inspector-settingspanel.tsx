@@ -4,14 +4,19 @@ import React from 'react'
 import { jsx } from '@emotion/react'
 import * as EditorActions from '../../../editor/actions/action-creators'
 import styled from '@emotion/styled'
-import { useEditorState, useRefEditorState } from '../../../editor/store/store-hook'
+import {
+  useEditorDispatch,
+  useEditorState,
+  useRefEditorMetadata,
+  useRefEditorState,
+} from '../../../editor/store/store-hook'
 import {
   FeatureName,
   toggleFeatureEnabled,
   isFeatureEnabled,
   AllFeatureNames,
 } from '../../../../utils/feature-switches'
-import { getOpenUIJSFile } from '../../../editor/store/editor-state'
+import { EditorStorePatched, getOpenUIJSFile } from '../../../editor/store/editor-state'
 import {
   FlexRow,
   UtopiaTheme,
@@ -26,7 +31,7 @@ import {
 import { getControlStyles } from '../../../../uuiui-deps'
 import { load } from '../../../editor/actions/actions'
 import json5 from 'json5'
-import { NO_OP } from '../../../../core/shared/utils'
+import { identity, NO_OP } from '../../../../core/shared/utils'
 import { InspectorInputEmotionStyle } from '../../../../uuiui/inputs/base-input'
 
 const StyledFlexRow = styled(FlexRow)({
@@ -74,30 +79,22 @@ const FeatureSwitchRow = React.memo((props: { name: FeatureName }) => {
   )
 })
 
+const interfaceDesignerSelector = (store: EditorStorePatched) => store.editor.interfaceDesigner
+const openUiJsFileSelector = (store: EditorStorePatched) => getOpenUIJSFile(store.editor)
+
 export const SettingsPanel = React.memo(() => {
   const colorTheme = useColorTheme()
-  const dispatch = useEditorState(
-    React.useCallback((store) => store.dispatch, []),
-    'SettingsPanel dispatch',
-  )
+  const dispatch = useEditorDispatch('SettingsPanel dispatch')
   const interfaceDesigner = useEditorState(
-    React.useCallback((store) => store.editor.interfaceDesigner, []),
+    interfaceDesignerSelector,
     'SettingsPanel interfaceDesigner',
   )
 
-  const entireStateRef = useRefEditorState(React.useCallback((store) => store, []))
+  const entireStateRef = useRefEditorState(identity)
 
-  const openUiJsFile = useRefEditorState(
-    React.useCallback((store) => {
-      return getOpenUIJSFile(store.editor)
-    }, []),
-  )
+  const openUiJsFile = useRefEditorState(openUiJsFileSelector)
 
-  const jsxMetadata = useRefEditorState(
-    React.useCallback((store) => {
-      return store.editor.jsxMetadata
-    }, []),
-  )
+  const jsxMetadata = useRefEditorMetadata()
 
   const toggleCodeEditorVisible = React.useCallback(() => {
     dispatch([EditorActions.toggleInterfaceDesignerCodeEditor()])

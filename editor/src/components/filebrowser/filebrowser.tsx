@@ -30,6 +30,7 @@ import { setFocus } from '../common/actions'
 import { CodeResultCache, isJavascriptOrTypescript } from '../custom-code/code-file'
 import * as EditorActions from '../editor/actions/action-creators'
 import {
+  EditorStorePatched,
   getAllCodeEditorErrors,
   getOpenFilename,
   getOpenUIJSFile,
@@ -132,15 +133,17 @@ function collectFileBrowserItems(
   return fileBrowserItems
 }
 
+const fileBrowserPropsSelector = (store: EditorStorePatched) => {
+  return {
+    dispatch: store.dispatch,
+    minimised: store.editor.fileBrowser.minimised,
+    focusedPanel: store.editor.focusedPanel,
+  }
+}
+
 export const FileBrowser = React.memo(() => {
   const { dispatch, minimised, focusedPanel } = useEditorState(
-    React.useCallback((store) => {
-      return {
-        dispatch: store.dispatch,
-        minimised: store.editor.fileBrowser.minimised,
-        focusedPanel: store.editor.focusedPanel,
-      }
-    }, []),
+    fileBrowserPropsSelector,
     'FileBrowser',
   )
 
@@ -234,6 +237,19 @@ interface FileBrowserActionSheetProps {
   setAddingFileOrFolder: (fileOrFolder: 'file' | 'folder') => void
 }
 
+const fileBrowserItemsPropsSelector = (store: EditorStorePatched) => {
+  return {
+    dispatch: store.dispatch,
+    projectContents: store.editor.projectContents,
+    editorSelectedFile: getOpenFilename(store.editor),
+    errorMessages: getAllCodeEditorErrors(store.editor, 'warning', true),
+    codeResultCache: store.editor.codeResultCache,
+    propertyControlsInfo: store.editor.propertyControlsInfo,
+    renamingTarget: store.editor.fileBrowser.renamingTarget,
+    dropTarget: store.editor.fileBrowser.dropTarget,
+  }
+}
+
 const FileBrowserItems = React.memo(() => {
   const {
     dispatch,
@@ -243,21 +259,7 @@ const FileBrowserItems = React.memo(() => {
     codeResultCache,
     renamingTarget,
     dropTarget,
-  } = useEditorState(
-    React.useCallback((store) => {
-      return {
-        dispatch: store.dispatch,
-        projectContents: store.editor.projectContents,
-        editorSelectedFile: getOpenFilename(store.editor),
-        errorMessages: getAllCodeEditorErrors(store.editor, 'warning', true),
-        codeResultCache: store.editor.codeResultCache,
-        propertyControlsInfo: store.editor.propertyControlsInfo,
-        renamingTarget: store.editor.fileBrowser.renamingTarget,
-        dropTarget: store.editor.fileBrowser.dropTarget,
-      }
-    }, []),
-    'FileBrowserItems',
-  )
+  } = useEditorState(fileBrowserItemsPropsSelector, 'FileBrowserItems')
 
   const [selectedPath, setSelectedPath] = React.useState(editorSelectedFile)
 

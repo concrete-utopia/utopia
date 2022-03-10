@@ -7,7 +7,12 @@ import {
   selectComponents,
   switchEditorMode,
 } from '../../components/editor/actions/action-creators'
-import { useEditorState, useRefEditorState } from '../../components/editor/store/store-hook'
+import {
+  useEditorDispatch,
+  useRefEditorMetadata,
+  useRefEditorSelectedViews,
+  useRefEditorState,
+} from '../../components/editor/store/store-hook'
 import {
   canvasPoint,
   CanvasRectangle,
@@ -33,6 +38,7 @@ import { CanvasControlsContainerID } from '../../components/canvas/controls/new-
 import { forceNotNull } from '../shared/optional-utils'
 import { ElementPathArrayKeepDeepEquality } from '../../utils/deep-equality-instances'
 import { NavigatorContainerId } from '../../components/navigator/navigator'
+import { EditorStorePatched } from '../../components/editor/store/editor-state'
 
 export function wait(timeout: number): Promise<void> {
   return new Promise((resolve) => {
@@ -40,16 +46,13 @@ export function wait(timeout: number): Promise<void> {
   })
 }
 
-const NumberOfIterations = 100
+const NumberOfIterations = 5
+
+const navigatorTargetsSelector = (store: EditorStorePatched) => store.derived.navigatorTargets
 
 export function useTriggerScrollPerformanceTest(): () => void {
-  const dispatch = useEditorState(
-    React.useCallback((store) => store.dispatch as DebugDispatch, []),
-    'useTriggerScrollPerformanceTest dispatch',
-  )
-  const allPaths = useRefEditorState(
-    React.useCallback((store) => store.derived.navigatorTargets, []),
-  )
+  const dispatch = useEditorDispatch('useTriggerScrollPerformanceTest dispatch') as DebugDispatch
+  const allPaths = useRefEditorState(navigatorTargetsSelector)
   const trigger = React.useCallback(async () => {
     if (allPaths.current.length === 0) {
       console.info('SELECT_TEST_ERROR')
@@ -86,14 +89,9 @@ export function useTriggerScrollPerformanceTest(): () => void {
 }
 
 export function useTriggerResizePerformanceTest(): () => void {
-  const dispatch = useEditorState(
-    React.useCallback((store) => store.dispatch as DebugDispatch, []),
-    'useTriggerResizePerformanceTest dispatch',
-  )
-  const metadata = useRefEditorState(React.useCallback((store) => store.editor.jsxMetadata, []))
-  const selectedViews = useRefEditorState(
-    React.useCallback((store) => store.editor.selectedViews, []),
-  )
+  const dispatch = useEditorDispatch('useTriggerResizePerformanceTest dispatch') as DebugDispatch
+  const metadata = useRefEditorMetadata()
+  const selectedViews = useRefEditorSelectedViews()
   const trigger = React.useCallback(async () => {
     if (selectedViews.current.length === 0) {
       console.info('RESIZE_TEST_MISSING_SELECTEDVIEW')
@@ -155,9 +153,7 @@ export function useTriggerResizePerformanceTest(): () => void {
 }
 
 function useTriggerHighlightPerformanceTest(key: 'regular' | 'all-elements'): () => void {
-  const allPaths = useRefEditorState(
-    React.useCallback((store) => store.derived.navigatorTargets, []),
-  )
+  const allPaths = useRefEditorState(navigatorTargetsSelector)
   const getHighlightableViews = useGetSelectableViewsForSelectMode()
   const calculateHighlightedViews = useCalculateHighlightedViews(true, getHighlightableViews)
   const trigger = React.useCallback(async () => {
@@ -219,16 +215,9 @@ export const useTriggerAllElementsHighlightPerformanceTest = () =>
   useTriggerHighlightPerformanceTest('all-elements')
 
 export function useTriggerSelectionPerformanceTest(): () => void {
-  const dispatch = useEditorState(
-    React.useCallback((store) => store.dispatch as DebugDispatch, []),
-    'useTriggerSelectionPerformanceTest dispatch',
-  )
-  const allPaths = useRefEditorState(
-    React.useCallback((store) => store.derived.navigatorTargets, []),
-  )
-  const selectedViews = useRefEditorState(
-    React.useCallback((store) => store.editor.selectedViews, []),
-  )
+  const dispatch = useEditorDispatch('useTriggerSelectionPerformanceTest dispatch') as DebugDispatch
+  const allPaths = useRefEditorState(navigatorTargetsSelector)
+  const selectedViews = useRefEditorSelectedViews()
   const trigger = React.useCallback(async () => {
     const targetPath = [...allPaths.current].sort(
       (a, b) => EP.toString(b).length - EP.toString(a).length,
@@ -342,10 +331,7 @@ export function useTriggerSelectionPerformanceTest(): () => void {
 }
 
 export function useTriggerBaselinePerformanceTest(): () => void {
-  const dispatch = useEditorState(
-    React.useCallback((store) => store.dispatch as DebugDispatch, []),
-    'useTriggerSelectionPerformanceTest dispatch',
-  )
+  const dispatch = useEditorDispatch('useTriggerSelectionPerformanceTest dispatch') as DebugDispatch
 
   const trigger = React.useCallback(async () => {
     let framesPassed = 0

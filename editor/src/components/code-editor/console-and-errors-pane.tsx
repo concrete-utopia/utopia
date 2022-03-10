@@ -2,24 +2,19 @@ import React from 'react'
 import { useReadOnlyConsoleLogs } from '../../core/shared/runtime-report-logs'
 import { setFocus } from '../common/actions'
 import { openCodeEditorFile } from '../editor/actions/action-creators'
-import { getAllCodeEditorErrors } from '../editor/store/editor-state'
-import { useEditorState } from '../editor/store/store-hook'
+import { EditorStorePatched, getAllCodeEditorErrors } from '../editor/store/editor-state'
+import { useEditorDispatch, useEditorState } from '../editor/store/store-hook'
 import { CodeEditorTabPane } from './code-problems'
 
+const errorMessagesSelector = (store: EditorStorePatched) =>
+  getAllCodeEditorErrors(store.editor, 'warning', false)
+
 export const ConsoleAndErrorsPane = React.memo(() => {
-  const dispatch = useEditorState(
-    React.useCallback((store) => store.dispatch, []),
-    'ConsoleAndErrorsPane dispatch',
-  )
+  const dispatch = useEditorDispatch('ConsoleAndErrorsPane dispatch')
 
   const canvasConsoleLogs = useReadOnlyConsoleLogs()
 
-  const errorMessages = useEditorState(
-    React.useCallback((store) => {
-      return getAllCodeEditorErrors(store.editor, 'warning', false)
-    }, []),
-    'ConsoleAndErrorsPane errorMessages',
-  )
+  const errorMessages = useEditorState(errorMessagesSelector, 'ConsoleAndErrorsPane errorMessages')
 
   const onOpenFile = React.useCallback(
     (path: string) => {

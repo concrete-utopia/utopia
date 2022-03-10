@@ -4,19 +4,22 @@ import { isRight } from '../../../core/shared/either'
 import { useExternalResources } from '../../../printer-parsers/html/external-resources-parser'
 import { SectionTitleRow, FlexRow, Title, SectionBodyArea } from '../../../uuiui'
 import { clearSelection, togglePanel } from '../../editor/actions/action-creators'
-import { useEditorState } from '../../editor/store/store-hook'
+import { EditorStorePatched } from '../../editor/store/editor-state'
+import { useEditorDispatch, useEditorState } from '../../editor/store/store-hook'
 import { GoogleFontsResourcesListSearch } from './google-fonts-resources-list-search'
+
+const googleFontsResourcesListPropsSelector = (store: EditorStorePatched) => {
+  return {
+    minimised: store.editor.genericExternalResources.minimised,
+    focusedPanel: store.editor.focusedPanel,
+  }
+}
 
 export const GoogleFontsResourcesList = React.memo(() => {
   const { values, useSubmitValueFactory } = useExternalResources()
-  const { dispatch, minimised, focusedPanel } = useEditorState(
-    React.useCallback((store) => {
-      return {
-        dispatch: store.dispatch,
-        minimised: store.editor.googleFontsResources.minimised,
-        focusedPanel: store.editor.focusedPanel,
-      }
-    }, []),
+  const dispatch = useEditorDispatch('GoogleFontsResourcesList dispatch')
+  const { minimised, focusedPanel } = useEditorState(
+    googleFontsResourcesListPropsSelector,
     'GoogleFontsResourcesList',
   )
 

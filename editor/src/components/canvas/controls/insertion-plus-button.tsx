@@ -1,7 +1,7 @@
 import { ControlProps } from './new-canvas-controls'
 import React from 'react'
 import { MetadataUtils } from '../../../core/model/element-metadata-utils'
-import { useEditorState } from '../../editor/store/store-hook'
+import { useEditorDispatch, useEditorState } from '../../editor/store/store-hook'
 import uuid from 'uuid'
 import { IndexPosition } from '../../../utils/utils'
 import { ElementPath } from '../../../core/shared/project-file-types'
@@ -249,10 +249,7 @@ const BlueDot = React.memo((props: ButtonControlProps) => {
 })
 
 const PlusButton = React.memo((props: ButtonControlProps) => {
-  const dispatch = useEditorState(
-    React.useCallback((store) => store.dispatch, []),
-    'PlusButton dispatch',
-  )
+  const dispatch = useEditorDispatch('PlusButton dispatch')
   const colorTheme = useColorTheme()
   const { parentPath, indexPosition } = props
   const insertElement = React.useCallback(

@@ -57,6 +57,7 @@ import { optionalMap } from '../../core/shared/optional-utils'
 import { fastForEach } from '../../core/shared/utils'
 import { MapLike } from 'typescript'
 import { isFeatureEnabled } from '../../utils/feature-switches'
+import { EditorStorePatched } from '../editor/store/editor-state'
 
 const MutationObserverConfig = { attributes: true, childList: true, subtree: true }
 const ObserversAvailable = (window as any).MutationObserver != null && ResizeObserver != null
@@ -426,6 +427,9 @@ function mergeFragmentMetadata(
   return Object.values(working)
 }
 
+const domMetadataSelector = (store: EditorStorePatched) =>
+  store.editor.domMetadata as ReadonlyArray<ElementInstanceMetadata>
+
 export function useDomWalker(
   props: DomWalkerProps,
 ): [SetValueCallback<Set<string>>, SetValueCallback<Set<string>>, React.Ref<HTMLDivElement>] {
@@ -484,12 +488,7 @@ export function useDomWalker(
     }
   })
 
-  const rootMetadataInStateRef = useRefEditorState(
-    React.useCallback(
-      (store) => store.editor.domMetadata as ReadonlyArray<ElementInstanceMetadata>,
-      [],
-    ),
-  )
+  const rootMetadataInStateRef = useRefEditorState(domMetadataSelector)
   const [invalidatedPaths, updateInvalidatedPaths] = useStateAsyncInvalidate<Set<string>>(
     fireThrottledCallback,
     emptySet(),
