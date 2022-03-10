@@ -1,3 +1,4 @@
+/* eslint-disable jest/expect-expect */
 import { BakedInStoryboardUID, BakedInStoryboardVariableName } from '../../core/model/scene-utils'
 import { AwkwardFragmentsCode } from '../../core/workers/parser-printer/parser-printer-fragments.test-utils'
 import {
@@ -2298,5 +2299,78 @@ describe('UiJsxCanvas render multifile projects', () => {
         }`,
       },
     )
+  })
+
+  it('Renders a React.memo wrapped component', () => {
+    const result = testCanvasRenderInline(
+      null,
+      `
+      import * as React from 'react'
+      import { View, Storyboard, Scene } from 'utopia-api'
+
+      const MemoizedComponent = React.memo(() => {
+        return (
+          <div data-uid='memoized-component-inner'>
+            Hi!
+          </div>
+        )
+      })
+      
+      export var App = (props) => {
+        return (
+          <MemoizedComponent data-uid='aaa' />
+        )
+      }
+      export var ${BakedInStoryboardVariableName} = (props) => {
+        return (
+          <Storyboard data-uid={'${BakedInStoryboardUID}'}>
+            <Scene
+              style={{ position: 'absolute', height: 200, left: 59, width: 200, top: 79 }}
+              data-uid={'${TestSceneUID}'}
+            >
+              <App
+                data-uid='${TestAppUID}'
+                style={{ position: 'absolute', height: '100%', width: '100%' }}
+                title={'Hi there!'}
+              />
+            </Scene>
+          </Storyboard>
+        )
+      }
+      `,
+    )
+    expect(result).toMatchInlineSnapshot(`
+      "<div style=\\"all: initial;\\">
+        <div
+          id=\\"canvas-container\\"
+          style=\\"position: absolute;\\"
+          data-utopia-valid-paths=\\"utopia-storyboard-uid utopia-storyboard-uid/scene-aaa utopia-storyboard-uid/scene-aaa/app-entity utopia-storyboard-uid/scene-aaa/app-entity:aaa\\"
+          data-utopia-root-element-path=\\"utopia-storyboard-uid\\"
+        >
+          <div
+            data-utopia-scene-id=\\"utopia-storyboard-uid/scene-aaa\\"
+            data-paths=\\"utopia-storyboard-uid/scene-aaa utopia-storyboard-uid\\"
+            style=\\"
+              position: absolute;
+              background-color: rgba(255, 255, 255, 1);
+              box-shadow: 0px 0px 1px 0px rgba(26, 26, 26, 0.3);
+              height: 200px;
+              left: 59px;
+              width: 200px;
+              top: 79px;
+            \\"
+            data-uid=\\"scene-aaa utopia-storyboard-uid\\"
+          >
+            <div
+              data-uid=\\"memoized-component-inner aaa app-entity\\"
+              data-paths=\\"utopia-storyboard-uid/scene-aaa/app-entity:aaa:memoized-component-inner utopia-storyboard-uid/scene-aaa/app-entity:aaa utopia-storyboard-uid/scene-aaa/app-entity\\"
+            >
+              Hi!
+            </div>
+          </div>
+        </div>
+      </div>
+      "
+    `)
   })
 })
