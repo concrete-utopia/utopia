@@ -19,6 +19,7 @@ import {
   AdjustCssLengthProperty,
   adjustCssLengthProperty,
 } from '../commands/adjust-css-length-command'
+import { setSnappingGuidelines } from '../commands/set-snapping-guidelines-command'
 import { updateHighlightedViews } from '../commands/update-highlighted-views-command'
 import { wildcardPatch } from '../commands/wildcard-patch-command'
 import { runLegacySnapping } from '../controls/guideline-helpers'
@@ -92,15 +93,7 @@ export const absoluteMoveStrategy: CanvasStrategy = {
       return [
         ...commandsForSelectedElements,
         updateHighlightedViews('transient', []),
-        wildcardPatch('transient', {
-          canvas: {
-            controls: {
-              snappingGuidelines: {
-                $set: guidelinesWithSnappingVector, // these will be used by the guideline controls
-              },
-            },
-          },
-        }),
+        setSnappingGuidelines('transient', guidelinesWithSnappingVector),
       ]
     }
     // Fallback for when the checks above are not satisfied.

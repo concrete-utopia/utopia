@@ -6,6 +6,7 @@ import { CommandDescription } from '../canvas-strategies/interaction-state'
 import { AdjustCssLengthProperty, runAdjustCssLengthProperty } from './adjust-css-length-command'
 import { AdjustNumberProperty, runAdjustNumberProperty } from './adjust-number-command'
 import { ReparentElement, runReparentElement } from './reparent-element-command'
+import { runSetSnappingGuidelines, SetSnappingGuidelines } from './set-snapping-guidelines-command'
 import { runStrategySwitchedCommand, StrategySwitched } from './strategy-switched-command'
 import {
   runUpdateHighlightedViews,
@@ -35,6 +36,7 @@ export type CanvasCommand =
   | ReparentElement
   | UpdateSelectedViews
   | UpdateHighlightedViews
+  | SetSnappingGuidelines
 
 export const runCanvasCommand: CommandFunction<CanvasCommand> = (
   editorState: EditorState,
@@ -55,6 +57,8 @@ export const runCanvasCommand: CommandFunction<CanvasCommand> = (
       return runUpdateSelectedViews(editorState, command)
     case 'UPDATE_HIGHLIGHTED_VIEWS':
       return runUpdateHighlightedViews(editorState, command)
+    case 'SET_SNAPPING_GUIDELINES':
+      return runSetSnappingGuidelines(editorState, command)
     default:
       const _exhaustiveCheck: never = command
       throw new Error(`Unhandled canvas command ${JSON.stringify(command)}`)
