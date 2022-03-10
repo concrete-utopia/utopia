@@ -185,6 +185,7 @@ export const testPerformanceInner = async function (url: string): Promise<Perfor
   let selectionResult = EmptyResult
   let basicCalc = EmptyResult
   let simpleDispatch = EmptyResult
+  let absoluteMoveResult = EmptyResult
   const { page, browser } = await setupBrowser(url, 120000)
   try {
     const baselines = await initialiseTestsReturnScale(page)
@@ -195,6 +196,7 @@ export const testPerformanceInner = async function (url: string): Promise<Perfor
     selectionResult = await testSelectionPerformance(page)
     resizeResult = await testResizePerformance(page)
     scrollResult = await testScrollingPerformance(page)
+    absoluteMoveResult = await testAbsoluteMovePerformance(page)
   } catch (e) {
     throw new Error(`Error during measurements ${e}`)
   } finally {
@@ -206,6 +208,7 @@ export const testPerformanceInner = async function (url: string): Promise<Perfor
     selectionResult,
     scrollResult,
     resizeResult,
+    absoluteMoveResult,
     basicCalc,
     simpleDispatch,
   ])
@@ -215,8 +218,8 @@ export const testPerformanceInner = async function (url: string): Promise<Perfor
   )} | ${consoleMessageForResult(highlightRegularResult)} | ${consoleMessageForResult(
     highlightAllElementsResult,
   )} | ${consoleMessageForResult(selectionResult)} | ${consoleMessageForResult(
-    basicCalc,
-  )} | ${consoleMessageForResult(simpleDispatch)}`
+    absoluteMoveResult,
+  )} | ${consoleMessageForResult(basicCalc)} | ${consoleMessageForResult(simpleDispatch)}`
 
   return {
     message: message,
