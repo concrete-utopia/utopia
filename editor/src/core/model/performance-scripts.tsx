@@ -443,7 +443,7 @@ export function useTriggerAbsoluteMovePerformanceTest(): () => void {
         ],
         'everyone',
       ).entireUpdateFinished
-      performance.mark(`absolute_move_step_${framesPassed}`)
+      performance.mark(`absolute_move_interaction_step_${framesPassed}`)
 
       // Move it down and to the right.
       controlsContainerElement.dispatchEvent(
@@ -457,6 +457,9 @@ export function useTriggerAbsoluteMovePerformanceTest(): () => void {
           buttons: 1,
         }),
       )
+
+      // Mouse move and performance marks for that.
+      performance.mark(`absolute_move_move_step_${framesPassed}`)
       for (let moveCount = 1; moveCount <= 10; moveCount++) {
         controlsContainerElement.dispatchEvent(
           new MouseEvent('mousemove', {
@@ -470,6 +473,8 @@ export function useTriggerAbsoluteMovePerformanceTest(): () => void {
           }),
         )
       }
+      performance.mark(`absolute_move_move_finished_${framesPassed}`)
+
       controlsContainerElement.dispatchEvent(
         new MouseEvent('mouseup', {
           detail: 1,
@@ -481,11 +486,16 @@ export function useTriggerAbsoluteMovePerformanceTest(): () => void {
           buttons: 1,
         }),
       )
-      performance.mark(`absolute_move_finished_${framesPassed}`)
+      performance.mark(`absolute_move_interaction_finished_${framesPassed}`)
       performance.measure(
-        `absolute_move_frame_${framesPassed}`,
-        `absolute_move_step_${framesPassed}`,
-        `absolute_move_finished_${framesPassed}`,
+        `absolute_move_interaction_frame_${framesPassed}`,
+        `absolute_move_interaction_step_${framesPassed}`,
+        `absolute_move_interaction_finished_${framesPassed}`,
+      )
+      performance.measure(
+        `absolute_move_move_frame_${framesPassed}`,
+        `absolute_move_move_step_${framesPassed}`,
+        `absolute_move_move_finished_${framesPassed}`,
       )
 
       if (framesPassed < NumberOfIterations) {

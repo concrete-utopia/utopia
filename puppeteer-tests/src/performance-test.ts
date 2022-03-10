@@ -185,7 +185,7 @@ export const testPerformanceInner = async function (url: string): Promise<Perfor
   let selectionResult = EmptyResult
   let basicCalc = EmptyResult
   let simpleDispatch = EmptyResult
-  let absoluteMoveResult = EmptyResult
+  let absoluteMoveResult: Array<FrameResult> = []
   const { page, browser } = await setupBrowser(url, 120000)
   try {
     const baselines = await initialiseTestsReturnScale(page)
@@ -208,7 +208,7 @@ export const testPerformanceInner = async function (url: string): Promise<Perfor
     selectionResult,
     scrollResult,
     resizeResult,
-    absoluteMoveResult,
+    ...absoluteMoveResult,
     basicCalc,
     simpleDispatch,
   ])
@@ -217,9 +217,11 @@ export const testPerformanceInner = async function (url: string): Promise<Perfor
     resizeResult,
   )} | ${consoleMessageForResult(highlightRegularResult)} | ${consoleMessageForResult(
     highlightAllElementsResult,
-  )} | ${consoleMessageForResult(selectionResult)} | ${consoleMessageForResult(
-    absoluteMoveResult,
-  )} | ${consoleMessageForResult(basicCalc)} | ${consoleMessageForResult(simpleDispatch)}`
+  )} | ${consoleMessageForResult(selectionResult)} | ${absoluteMoveResult
+    .map(consoleMessageForResult)
+    .join(' | ')} | ${consoleMessageForResult(basicCalc)} | ${consoleMessageForResult(
+    simpleDispatch,
+  )}`
 
   return {
     message: message,
@@ -355,7 +357,7 @@ export const testHighlightAllElementsPerformance = async function (
   await page.tracing.stop()
   let traceData = fs.readFileSync('trace.json').toString()
   const traceJson = JSON.parse(traceData)
-  return getFrameData(traceJson, 'highlight_all-elements_step_', 'Highlight All Elements')
+  return getFrameData(traceJson, 'highlight_all-elements_frame_', 'Highlight All Elements')
 }
 
 export const testSelectionPerformance = async function (
@@ -373,12 +375,12 @@ export const testSelectionPerformance = async function (
   await page.tracing.stop()
   let traceData = fs.readFileSync('trace.json').toString()
   const traceJson = JSON.parse(traceData)
-  return getFrameData(traceJson, 'select_step_', 'Selection')
+  return getFrameData(traceJson, 'select_frame_', 'Selection')
 }
 
 export const testAbsoluteMovePerformance = async function (
   page: puppeteer.Page,
-): Promise<FrameResult> {
+): Promise<Array<FrameResult>> {
   console.log('Test Absolute Move Performance')
   await page.waitForXPath("//a[contains(., 'PAM')]")
   // we run it twice without measurements to warm up the environment
@@ -406,7 +408,10 @@ export const testAbsoluteMovePerformance = async function (
   await page.tracing.stop()
   let traceData = fs.readFileSync('trace.json').toString()
   const traceJson = JSON.parse(traceData)
-  return getFrameData(traceJson, 'absolute_move_step_', 'Absolute Move')
+  return [
+    getFrameData(traceJson, 'absolute_move_interaction_frame_', 'Absolute Move (Interaction)'),
+    getFrameData(traceJson, 'absolute_move_move_frame_', 'Absolute Move (Just Move)'),
+  ]
 }
 
 const getFrameData = (traceJson: any, markNamePrefix: string, title: string): FrameResult => {
