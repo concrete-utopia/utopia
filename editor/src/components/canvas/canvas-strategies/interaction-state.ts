@@ -1,4 +1,4 @@
-import { addAllUniquely } from '../../../core/shared/array-utils'
+import { addAllUniquely, last } from '../../../core/shared/array-utils'
 import { ElementInstanceMetadataMap } from '../../../core/shared/element-template'
 import {
   CanvasPoint,
@@ -25,12 +25,16 @@ export interface DragInteractionData {
   modifiers: Modifiers
 }
 
-interface KeyboardArrowInteractionData {
-  type: 'KEYBOARD_ARROW'
+interface KeyPress {
   keysPressed: Array<KeyCharacter>
   // keysPressed also includes modifiers, but we want the separate modifiers array since they are captured and mapped to a specific
   // set via modifiersForEvent in keyboard.ts
   modifiers: Modifiers
+}
+
+interface KeyboardArrowInteractionData {
+  type: 'KEYBOARD_ARROW'
+  keyPresses: Array<KeyPress>
 }
 
 export type InputData = KeyboardArrowInteractionData | DragInteractionData
@@ -153,8 +157,12 @@ export function createInteractionViaKeyboard(
   return {
     interactionData: {
       type: 'KEYBOARD_ARROW',
-      keysPressed: keysPressed,
-      modifiers: modifiers,
+      keyPresses: [
+        {
+          keysPressed: keysPressed,
+          modifiers: modifiers,
+        },
+      ],
     },
     activeControl: activeControl,
     sourceOfUpdate: activeControl,
@@ -173,16 +181,23 @@ export function updateInteractionViaKeyboard(
 ): InteractionSessionWithoutMetadata {
   switch (currentState.interactionData.type) {
     case 'KEYBOARD_ARROW': {
-      const withRemovedKeys = currentState.interactionData.keysPressed.filter(
-        (k) => !keysReleased.includes(k),
-      )
+      const prevKeyPresses = last(currentState.interactionData.keyPresses) ?? {
+        keysPressed: [],
+        modifiers: [],
+      }
+      const withRemovedKeys = prevKeyPresses.keysPressed.filter((k) => !keysReleased.includes(k))
       const newKeysPressed = addAllUniquely(withRemovedKeys, addedKeysPressed)
 
       return {
         interactionData: {
           type: 'KEYBOARD_ARROW',
-          keysPressed: newKeysPressed,
-          modifiers: modifiers,
+          keyPresses: [
+            ...currentState.interactionData.keyPresses,
+            {
+              keysPressed: newKeysPressed,
+              modifiers: modifiers,
+            },
+          ],
         },
         activeControl: currentState.activeControl,
         sourceOfUpdate: sourceOfUpdate,

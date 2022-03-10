@@ -213,19 +213,6 @@ export function interactionUpdate(
       )
     }
 
-    if (
-      result.unpatchedEditor.canvas.interactionSession?.interactionData.type === 'KEYBOARD_ARROW' &&
-      isInteractionAction
-    ) {
-      return handleAccumulatingKeypresses(
-        newEditorState,
-        storedState.patchedEditor,
-        result.strategyState,
-        strategy,
-        previousStrategy,
-        sortedApplicableStrategies,
-      )
-    }
     return handleUpdate(
       newEditorState,
       storedState.patchedEditor,

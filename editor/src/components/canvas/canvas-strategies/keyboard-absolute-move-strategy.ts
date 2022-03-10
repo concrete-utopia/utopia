@@ -1,9 +1,9 @@
 import { MetadataUtils } from '../../../core/model/element-metadata-utils'
 import { stylePropPathMappingFn } from '../../inspector/common/property-path-hooks'
 import { adjustNumberProperty } from '../commands/adjust-number-command'
-import { wildcardPatch } from '../commands/wildcard-patch-command'
 import { Keyboard } from '../../../utils/keyboard'
 import { CanvasStrategy } from './canvas-strategy-types'
+import { last } from '../../../core/shared/array-utils'
 
 export const keyboardAbsoluteMoveStrategy: CanvasStrategy = {
   id: 'KEYBOARD_ABSOLUTE_MOVE',
@@ -32,14 +32,16 @@ export const keyboardAbsoluteMoveStrategy: CanvasStrategy = {
     ) {
       const { interactionData } = interactionState
 
-      const singleKeyPressed = interactionData.keysPressed.length === 1
-      const arrowKeyPressed = Keyboard.keyIsArrow(interactionData.keysPressed[0])
-      const shiftOrNoModifier =
-        !interactionState.interactionData.modifiers.alt &&
-        !interactionState.interactionData.modifiers.cmd &&
-        !interactionState.interactionData.modifiers.ctrl
+      const validKeyPress = interactionData.keyPresses.some((keyPress) => {
+        const singleKeyPressed = keyPress.keysPressed.length === 1
+        const arrowKeyPressed = Keyboard.keyIsArrow(keyPress.keysPressed[0])
+        const shiftOrNoModifier =
+          !keyPress.modifiers.alt && !keyPress.modifiers.cmd && !keyPress.modifiers.ctrl
 
-      if (singleKeyPressed && arrowKeyPressed && shiftOrNoModifier) {
+        return singleKeyPressed && arrowKeyPressed && shiftOrNoModifier
+      })
+
+      if (validKeyPress) {
         return 1
       }
     }
@@ -48,54 +50,57 @@ export const keyboardAbsoluteMoveStrategy: CanvasStrategy = {
   apply: (canvasState, interactionState, sessionState) => {
     // TODO: absolutely minimal implementation
     if (interactionState.interactionData.type === 'KEYBOARD_ARROW') {
-      const key = interactionState.interactionData.keysPressed[0]
-      if (key == null) {
+      const commands = interactionState.interactionData.keyPresses.flatMap((keyPress) => {
+        const key = keyPress.keysPressed[0]
+        if (key == null) {
+          return []
+        }
+        switch (key) {
+          case 'left':
+            return canvasState.selectedElements.flatMap((selectedElement) => [
+              adjustNumberProperty(
+                'permanent',
+                selectedElement,
+                stylePropPathMappingFn('left', ['style']),
+                -10,
+                true,
+              ),
+            ])
+          case 'right':
+            return canvasState.selectedElements.flatMap((selectedElement) => [
+              adjustNumberProperty(
+                'permanent',
+                selectedElement,
+                stylePropPathMappingFn('left', ['style']),
+                10,
+                true,
+              ),
+            ])
+          case 'up':
+            return canvasState.selectedElements.flatMap((selectedElement) => [
+              adjustNumberProperty(
+                'permanent',
+                selectedElement,
+                stylePropPathMappingFn('top', ['style']),
+                -10,
+                true,
+              ),
+            ])
+          case 'down':
+            return canvasState.selectedElements.flatMap((selectedElement) => [
+              adjustNumberProperty(
+                'permanent',
+                selectedElement,
+                stylePropPathMappingFn('top', ['style']),
+                10,
+                true,
+              ),
+            ])
+        }
         return []
-      }
-      switch (key) {
-        case 'left':
-          return canvasState.selectedElements.flatMap((selectedElement) => [
-            adjustNumberProperty(
-              'permanent',
-              selectedElement,
-              stylePropPathMappingFn('left', ['style']),
-              -10,
-              true,
-            ),
-          ])
-        case 'right':
-          return canvasState.selectedElements.flatMap((selectedElement) => [
-            adjustNumberProperty(
-              'permanent',
-              selectedElement,
-              stylePropPathMappingFn('left', ['style']),
-              10,
-              true,
-            ),
-          ])
-        case 'up':
-          return canvasState.selectedElements.flatMap((selectedElement) => [
-            adjustNumberProperty(
-              'permanent',
-              selectedElement,
-              stylePropPathMappingFn('top', ['style']),
-              -10,
-              true,
-            ),
-          ])
-        case 'down':
-          return canvasState.selectedElements.flatMap((selectedElement) => [
-            adjustNumberProperty(
-              'permanent',
-              selectedElement,
-              stylePropPathMappingFn('top', ['style']),
-              10,
-              true,
-            ),
-          ])
-      }
+      })
+      return commands
     }
-    // Fallback for when the checks above are not satisfied.
     return []
   },
 }

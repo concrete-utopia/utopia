@@ -16,6 +16,7 @@ export const absoluteReparentStrategy: CanvasStrategy = {
     if (
       canvasState.selectedElements.length === 1 &&
       interactionState != null &&
+      interactionState.interactionData.type === 'DRAG' &&
       interactionState.interactionData.modifiers.cmd
     ) {
       const selectedMetadata = MetadataUtils.findElementByElementPath(
@@ -30,8 +31,8 @@ export const absoluteReparentStrategy: CanvasStrategy = {
   fitness: (canvasState, interactionState) => {
     if (
       canvasState.selectedElements.length === 1 &&
-      interactionState.interactionData.modifiers.cmd &&
       interactionState.interactionData.type === 'DRAG' &&
+      interactionState.interactionData.modifiers.cmd &&
       interactionState.interactionData.dragThresholdPassed
     ) {
       return 999
