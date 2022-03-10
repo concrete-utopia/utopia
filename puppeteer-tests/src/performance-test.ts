@@ -373,6 +373,39 @@ export const testSelectionPerformance = async function (
   return getFrameData(traceJson, 'select_step_', 'Selection')
 }
 
+export const testAbsoluteMovePerformance = async function (
+  page: puppeteer.Page,
+): Promise<FrameResult> {
+  console.log('Test Absolute Move Performance')
+  await page.waitForXPath("//a[contains(., 'PAM')]")
+  // we run it twice without measurements to warm up the environment
+  await clickOnce(
+    page,
+    "//a[contains(., 'PAM')]",
+    'ABSOLUTE_MOVE_TEST_FINISHED',
+    'ABSOLUTE_MOVE_TEST_ERROR',
+  )
+  await clickOnce(
+    page,
+    "//a[contains(., 'PAM')]",
+    'ABSOLUTE_MOVE_TEST_FINISHED',
+    'ABSOLUTE_MOVE_TEST_ERROR',
+  )
+
+  // and then we run the test for a third time, this time running tracing
+  await page.tracing.start({ categories: ['blink.user_timing'], path: 'trace.json' })
+  await clickOnce(
+    page,
+    "//a[contains(., 'PAM')]",
+    'ABSOLUTE_MOVE_TEST_FINISHED',
+    'ABSOLUTE_MOVE_TEST_ERROR',
+  )
+  await page.tracing.stop()
+  let traceData = fs.readFileSync('trace.json').toString()
+  const traceJson = JSON.parse(traceData)
+  return getFrameData(traceJson, 'absolute_move_step_', 'Absolute Move')
+}
+
 const getFrameData = (traceJson: any, markNamePrefix: string, title: string): FrameResult => {
   const frameTimeEvents: any[] = traceJson.traceEvents.filter((e: any) =>
     e.name.startsWith(markNamePrefix),
