@@ -47,7 +47,7 @@ export function wait(timeout: number): Promise<void> {
   })
 }
 
-const NumberOfIterations = 5
+const NumberOfIterations = 100
 
 export function useTriggerScrollPerformanceTest(): () => void {
   const dispatch = useEditorState(
