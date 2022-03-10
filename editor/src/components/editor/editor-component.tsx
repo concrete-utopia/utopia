@@ -165,21 +165,24 @@ export const EditorComponentInner = React.memo((props: EditorProps) => {
                 )
 
           editorStoreRef.current.dispatch([action], 'everyone')
-          if (keyboardTimeoutHandler.current != null) {
-            clearTimeout(keyboardTimeoutHandler.current)
-          }
 
-          keyboardTimeoutHandler.current = setTimeout(() => {
-            if (
-              editorStoreRef.current.editor.canvas.interactionSession?.interactionData.type ===
-              'KEYBOARD_ARROW'
-            ) {
-              editorStoreRef.current.dispatch(
-                [CanvasActions.clearInteractionSession(true)],
-                'everyone',
-              )
+          if (!isFeatureEnabled('Keyboard up clears interaction')) {
+            if (keyboardTimeoutHandler.current != null) {
+              clearTimeout(keyboardTimeoutHandler.current)
             }
-          }, KEYBOARD_INTERACTION_TIMEOUT)
+
+            keyboardTimeoutHandler.current = setTimeout(() => {
+              if (
+                editorStoreRef.current.editor.canvas.interactionSession?.interactionData.type ===
+                'KEYBOARD_ARROW'
+              ) {
+                editorStoreRef.current.dispatch(
+                  [CanvasActions.clearInteractionSession(true)],
+                  'everyone',
+                )
+              }
+            }, KEYBOARD_INTERACTION_TIMEOUT)
+          }
         }
       }
 
@@ -199,16 +202,21 @@ export const EditorComponentInner = React.memo((props: EditorProps) => {
       if (isFeatureEnabled('Canvas Strategies')) {
         const existingInteractionSession = editorStoreRef.current.editor.canvas.interactionSession
         if (existingInteractionSession != null) {
-          const action = CanvasActions.createInteractionSession(
-            updateInteractionViaKeyboard(
-              existingInteractionSession,
-              [],
-              [Keyboard.keyCharacterForCode(event.keyCode)],
-              Modifier.modifiersForKeyboardEvent(event),
-              { type: 'KEYBOARD_CATCHER_CONTROL' },
-            ),
-          )
-          editorStoreRef.current.dispatch([action], 'everyone')
+          if (isFeatureEnabled('Keyboard up clears interaction')) {
+            const action = CanvasActions.clearInteractionSession(true)
+            editorStoreRef.current.dispatch([action], 'everyone')
+          } else {
+            const action = CanvasActions.createInteractionSession(
+              updateInteractionViaKeyboard(
+                existingInteractionSession,
+                [],
+                [Keyboard.keyCharacterForCode(event.keyCode)],
+                Modifier.modifiersForKeyboardEvent(event),
+                { type: 'KEYBOARD_CATCHER_CONTROL' },
+              ),
+            )
+            editorStoreRef.current.dispatch([action], 'everyone')
+          }
         }
       }
 
