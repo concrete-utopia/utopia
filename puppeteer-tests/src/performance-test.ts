@@ -357,7 +357,7 @@ export const testHighlightAllElementsPerformance = async function (
   await page.tracing.stop()
   let traceData = fs.readFileSync('trace.json').toString()
   const traceJson = JSON.parse(traceData)
-  return getFrameData(traceJson, 'highlight_all-elements_frame_', 'Highlight All Elements')
+  return getFrameData(traceJson, 'highlight_all-elements_step_', 'Highlight All Elements')
 }
 
 export const testSelectionPerformance = async function (
@@ -375,7 +375,7 @@ export const testSelectionPerformance = async function (
   await page.tracing.stop()
   let traceData = fs.readFileSync('trace.json').toString()
   const traceJson = JSON.parse(traceData)
-  return getFrameData(traceJson, 'select_frame_', 'Selection')
+  return getFrameData(traceJson, 'select_step_', 'Selection')
 }
 
 export const testAbsoluteMovePerformance = async function (
