@@ -40,6 +40,7 @@ import { ElementPathArrayKeepDeepEquality } from '../../utils/deep-equality-inst
 import { NavigatorContainerId } from '../../components/navigator/navigator'
 import { emptyComments, jsxAttributeValue } from '../shared/element-template'
 import { isFeatureEnabled, setFeatureEnabled } from '../../utils/feature-switches'
+import { last } from '../shared/array-utils'
 
 export function wait(timeout: number): Promise<void> {
   return new Promise((resolve) => {
@@ -351,13 +352,21 @@ export function useTriggerAbsoluteMovePerformanceTest(): () => void {
     React.useCallback((store) => store.editor.selectedViews, []),
   )
   const trigger = React.useCallback(async () => {
+    const initialTargetPath = [...allPaths.current].sort(
+      (a, b) => EP.toString(b).length - EP.toString(a).length,
+    )[0]
     // This is very particularly tied to the test project, we _really_ need to pick the
     // right element because our changes can cause other elements to end up on top of the
     // target we want.
-    const targetPath = EP.elementPath([
-      ['same-file-app-div', '967', '194', '70b'],
-      ['20b', '887', '016', 'aar'],
-    ])
+    const parentParentPath = EP.parentPath(EP.parentPath(initialTargetPath))
+    const grandChildrenPaths = allPaths.current.filter((path) => {
+      return EP.pathsEqual(parentParentPath, EP.parentPath(EP.parentPath(path)))
+    })
+    if (grandChildrenPaths.length === 0) {
+      console.info('ABSOLUTE_MOVE_TEST_ERROR')
+      return
+    }
+    const targetPath = forceNotNull('Invalid array.', last(grandChildrenPaths))
 
     // Switch Canvas Strategies on.
     const strategiesCurrentlyEnabled = isFeatureEnabled('Canvas Strategies')
