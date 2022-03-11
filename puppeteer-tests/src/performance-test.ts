@@ -185,6 +185,7 @@ export const testPerformanceInner = async function (url: string): Promise<Perfor
   let selectionResult = EmptyResult
   let basicCalc = EmptyResult
   let simpleDispatch = EmptyResult
+  let absoluteMoveResult: Array<FrameResult> = []
   const { page, browser } = await setupBrowser(url, 120000)
   try {
     const baselines = await initialiseTestsReturnScale(page)
@@ -195,6 +196,7 @@ export const testPerformanceInner = async function (url: string): Promise<Perfor
     selectionResult = await testSelectionPerformance(page)
     resizeResult = await testResizePerformance(page)
     scrollResult = await testScrollingPerformance(page)
+    absoluteMoveResult = await testAbsoluteMovePerformance(page)
   } catch (e) {
     throw new Error(`Error during measurements ${e}`)
   } finally {
@@ -206,6 +208,7 @@ export const testPerformanceInner = async function (url: string): Promise<Perfor
     selectionResult,
     scrollResult,
     resizeResult,
+    ...absoluteMoveResult,
     basicCalc,
     simpleDispatch,
   ])
@@ -214,9 +217,11 @@ export const testPerformanceInner = async function (url: string): Promise<Perfor
     resizeResult,
   )} | ${consoleMessageForResult(highlightRegularResult)} | ${consoleMessageForResult(
     highlightAllElementsResult,
-  )} | ${consoleMessageForResult(selectionResult)} | ${consoleMessageForResult(
-    basicCalc,
-  )} | ${consoleMessageForResult(simpleDispatch)}`
+  )} | ${consoleMessageForResult(selectionResult)} | ${absoluteMoveResult
+    .map(consoleMessageForResult)
+    .join(' | ')} | ${consoleMessageForResult(basicCalc)} | ${consoleMessageForResult(
+    simpleDispatch,
+  )}`
 
   return {
     message: message,
@@ -371,6 +376,42 @@ export const testSelectionPerformance = async function (
   let traceData = fs.readFileSync('trace.json').toString()
   const traceJson = JSON.parse(traceData)
   return getFrameData(traceJson, 'select_step_', 'Selection')
+}
+
+export const testAbsoluteMovePerformance = async function (
+  page: puppeteer.Page,
+): Promise<Array<FrameResult>> {
+  console.log('Test Absolute Move Performance')
+  await page.waitForXPath("//a[contains(., 'PAM')]")
+  // we run it twice without measurements to warm up the environment
+  await clickOnce(
+    page,
+    "//a[contains(., 'PAM')]",
+    'ABSOLUTE_MOVE_TEST_FINISHED',
+    'ABSOLUTE_MOVE_TEST_ERROR',
+  )
+  await clickOnce(
+    page,
+    "//a[contains(., 'PAM')]",
+    'ABSOLUTE_MOVE_TEST_FINISHED',
+    'ABSOLUTE_MOVE_TEST_ERROR',
+  )
+
+  // and then we run the test for a third time, this time running tracing
+  await page.tracing.start({ categories: ['blink.user_timing'], path: 'trace.json' })
+  await clickOnce(
+    page,
+    "//a[contains(., 'PAM')]",
+    'ABSOLUTE_MOVE_TEST_FINISHED',
+    'ABSOLUTE_MOVE_TEST_ERROR',
+  )
+  await page.tracing.stop()
+  let traceData = fs.readFileSync('trace.json').toString()
+  const traceJson = JSON.parse(traceData)
+  return [
+    getFrameData(traceJson, 'absolute_move_interaction_frame_', 'Absolute Move (Interaction)'),
+    getFrameData(traceJson, 'absolute_move_move_frame_', 'Absolute Move (Just Move)'),
+  ]
 }
 
 const getFrameData = (traceJson: any, markNamePrefix: string, title: string): FrameResult => {

@@ -18,8 +18,8 @@ export const setupBrowser = async (
     executablePath: process.env.BROWSER,
   })
   const page = await browser.newPage()
-  await page.setDefaultNavigationTimeout(120000)
-  await page.setDefaultTimeout(defaultTimeout)
+  page.setDefaultNavigationTimeout(120000)
+  page.setDefaultTimeout(defaultTimeout)
   await page.setViewport({ width: 1500, height: 768 })
   console.info('loading editor at URL:', url)
   await page.goto(url)
@@ -29,18 +29,30 @@ export const setupBrowser = async (
   }
 }
 
+interface ValueWithTimeout {
+  timeoutID: NodeJS.Timeout | null
+}
+
 export function timeLimitPromise<T>(
   promise: Promise<T>,
   limitms: number,
   message: string,
 ): Promise<T> {
+  let valueWithTimeout: ValueWithTimeout = { timeoutID: null }
   const timeoutPromise: Promise<any> = new Promise((resolve, reject) => {
-    const timeoutID = setTimeout(() => {
-      clearTimeout(timeoutID)
+    valueWithTimeout.timeoutID = setTimeout(() => {
+      if (valueWithTimeout.timeoutID != null) {
+        clearTimeout(valueWithTimeout.timeoutID)
+      }
       reject(message)
     }, limitms)
   })
-  return Promise.race([promise, timeoutPromise])
+  const promiseWithCleanup = promise.finally(() => {
+    if (valueWithTimeout.timeoutID != null) {
+      clearTimeout(valueWithTimeout.timeoutID)
+    }
+  })
+  return Promise.race([promiseWithCleanup, timeoutPromise])
 }
 
 export function consoleDoneMessage(
@@ -62,7 +74,7 @@ export function consoleDoneMessage(
   })
   return timeLimitPromise(
     consoleDonePromise,
-    120000,
+    120000 * 5,
     `Missing console message ${expectedConsoleMessage} in test browser.`,
   )
 }
