@@ -1,6 +1,6 @@
 import { produce } from 'immer'
 import React from 'react'
-import create from 'zustand'
+import create, { StoreApi, UseBoundStore } from 'zustand'
 import { emptyComments, jsxAttributeValue, JSXElement } from '../../../core/shared/element-template'
 import { setJSXValueAtPath } from '../../../core/shared/jsx-attributes'
 import { isRight } from '../../../core/shared/either'
@@ -61,16 +61,17 @@ export function getStoreHook(
     builtInDependencies: createBuiltInDependenciesList(null),
   }
 
-  const storeHook = create<EditorStorePatched & UpdateFunctionHelpers>((set) => ({
-    ...defaultState,
-    updateStoreWithImmer: (fn: (store: EditorStorePatched) => void) => set(produce(fn)),
-    updateStore: (fn: (store: EditorStorePatched) => EditorStorePatched) => set(fn),
-  }))
+  const storeHook = create<EditorStorePatched>((set) => defaultState)
+  const updateStoreWithImmer = (fn: (store: EditorStorePatched) => void) =>
+    storeHook.setState(produce(fn))
+  const updateStore = (fn: (store: EditorStorePatched) => EditorStorePatched) =>
+    storeHook.setState(fn)
+
   return {
     api: storeHook,
     useStore: storeHook,
-    updateStoreWithImmer: storeHook.getState().updateStoreWithImmer,
-    updateStore: storeHook.getState().updateStore,
+    updateStoreWithImmer: updateStoreWithImmer,
+    updateStore: updateStore,
   }
 }
 

@@ -9,6 +9,7 @@ import { useEditorState } from '../../editor/store/store-hook'
 import { CanvasCommand } from '../commands/commands'
 import { absoluteMoveStrategy } from './absolute-move-strategy'
 import { absoluteReparentStrategy } from './absolute-reparent-strategy'
+import { absoluteResizeStrategy } from './absolute-resize-strategy'
 import {
   CanvasStrategy,
   CanvasStrategyId,
@@ -22,6 +23,7 @@ export const RegisteredCanvasStrategies: Array<CanvasStrategy> = [
   absoluteMoveStrategy,
   absoluteReparentStrategy,
   keyboardAbsoluteMoveStrategy,
+  absoluteResizeStrategy,
 ]
 
 export function pickCanvasStateFromEditorState(editorState: EditorState): InteractionCanvasState {

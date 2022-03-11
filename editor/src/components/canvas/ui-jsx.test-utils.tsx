@@ -33,6 +33,7 @@ import { act, render, RenderResult } from '@testing-library/react'
 import * as Prettier from 'prettier/standalone'
 import create from 'zustand'
 import {
+  ElementPath,
   foldParsedTextFile,
   isParseFailure,
   isParseSuccess,
@@ -441,6 +442,16 @@ export function getEditorState(fileContents: string): EditorState {
       [StoryboardFilePath]: storyboardFile,
     }),
     jsxMetadata: createFakeMetadataForParseSuccess(success),
+  }
+}
+
+export function getEditorStateWithSelectedViews(
+  fileContents: string,
+  selectedViews: Array<ElementPath>,
+): EditorState {
+  return {
+    ...getEditorState(fileContents),
+    selectedViews: selectedViews,
   }
 }
 

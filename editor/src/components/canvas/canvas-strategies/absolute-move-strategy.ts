@@ -4,17 +4,26 @@ import { framePointForPinnedProp } from '../../../core/layout/layout-helpers-new
 import { MetadataUtils } from '../../../core/model/element-metadata-utils'
 import { mapDropNulls } from '../../../core/shared/array-utils'
 import { isRight, right } from '../../../core/shared/either'
-import { JSXElement } from '../../../core/shared/element-template'
-import { CanvasRectangle, CanvasVector } from '../../../core/shared/math-utils'
+import { ElementInstanceMetadataMap, JSXElement } from '../../../core/shared/element-template'
+import {
+  boundingRectangleArray,
+  CanvasPoint,
+  CanvasRectangle,
+  CanvasVector,
+  offsetPoint,
+} from '../../../core/shared/math-utils'
 import { ElementPath } from '../../../core/shared/project-file-types'
-import { withUnderlyingTarget } from '../../editor/store/editor-state'
+import { getElementFromProjectContents } from '../../editor/store/editor-state'
 import { stylePropPathMappingFn } from '../../inspector/common/property-path-hooks'
 import {
   AdjustCssLengthProperty,
   adjustCssLengthProperty,
 } from '../commands/adjust-css-length-command'
-import { adjustNumberProperty } from '../commands/adjust-number-command'
+import { setSnappingGuidelines } from '../commands/set-snapping-guidelines-command'
+import { updateHighlightedViews } from '../commands/update-highlighted-views-command'
 import { wildcardPatch } from '../commands/wildcard-patch-command'
+import { runLegacySnapping } from '../controls/guideline-helpers'
+import { ConstrainedDragAxis, Guideline, GuidelineWithSnappingVector } from '../guideline'
 import { CanvasStrategy } from './canvas-strategy-types'
 
 export const absoluteMoveStrategy: CanvasStrategy = {
@@ -49,15 +58,19 @@ export const absoluteMoveStrategy: CanvasStrategy = {
       interactionState.interactionData.drag != null
     ) {
       const drag = interactionState.interactionData.drag
+      const { snappedDragVector, guidelinesWithSnappingVector } = snapDrag(
+        drag,
+        null, // TODO constrain drag axis!
+        sessionState.startingMetadata,
+        canvasState.selectedElements,
+        canvasState.scale,
+      )
       const commandsForSelectedElements = canvasState.selectedElements.flatMap(
         (selectedElement) => {
-          const element: JSXElement | null = withUnderlyingTarget(
+          const element: JSXElement | null = getElementFromProjectContents(
             selectedElement,
             canvasState.projectContents,
-            {},
             canvasState.openFile,
-            null,
-            (_, e) => e,
           )
           const elementParentBounds =
             MetadataUtils.findElementByElementPath(
@@ -69,16 +82,18 @@ export const absoluteMoveStrategy: CanvasStrategy = {
             return []
           }
 
-          return createMoveCommandsForElement(element, selectedElement, drag, elementParentBounds)
+          return createMoveCommandsForElement(
+            element,
+            selectedElement,
+            snappedDragVector,
+            elementParentBounds,
+          )
         },
       )
       return [
         ...commandsForSelectedElements,
-        wildcardPatch('transient', {
-          highlightedViews: {
-            $set: [],
-          },
-        }),
+        updateHighlightedViews('transient', []),
+        setSnappingGuidelines('transient', guidelinesWithSnappingVector),
       ]
     }
     // Fallback for when the checks above are not satisfied.
@@ -116,4 +131,41 @@ function createMoveCommandsForElement(
     },
     ['top', 'bottom', 'left', 'right'] as const,
   )
+}
+
+function snapDrag(
+  drag: CanvasPoint,
+  constrainedDragAxis: ConstrainedDragAxis | null,
+  jsxMetadata: ElementInstanceMetadataMap,
+  selectedElements: Array<ElementPath>,
+  canvasScale: number,
+): {
+  snappedDragVector: CanvasPoint
+  guidelinesWithSnappingVector: Array<GuidelineWithSnappingVector>
+} {
+  const multiselectBounds = getMultiselectBounds(jsxMetadata, selectedElements)
+
+  // This is the entry point to extend the list of snapping strategies, if we want to add more
+
+  const { snappedDragVector, guidelinesWithSnappingVector } = runLegacySnapping(
+    drag,
+    constrainedDragAxis,
+    jsxMetadata,
+    selectedElements,
+    canvasScale,
+    multiselectBounds,
+  )
+
+  return { snappedDragVector, guidelinesWithSnappingVector }
+}
+
+function getMultiselectBounds(
+  jsxMetadata: ElementInstanceMetadataMap,
+  selectedElements: Array<ElementPath>,
+): CanvasRectangle | null {
+  const frames = mapDropNulls((element) => {
+    return MetadataUtils.getFrameInCanvasCoords(element, jsxMetadata)
+  }, selectedElements)
+
+  return boundingRectangleArray(frames)
 }
