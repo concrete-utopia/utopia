@@ -165,7 +165,7 @@ export function interactionUpdate(
   strategies: Array<CanvasStrategy>,
   storedState: EditorStoreFull,
   result: InnerDispatchResult,
-  isInteractionAction: boolean,
+  actionType: 'interaction-create-or-update' | 'non-interaction',
 ): HandleStrategiesResult {
   const newEditorState = result.unpatchedEditor
   const canvasState: InteractionCanvasState = pickCanvasStateFromEditorState(newEditorState)
@@ -215,7 +215,7 @@ export function interactionUpdate(
 
     if (
       result.unpatchedEditor.canvas.interactionSession?.interactionData.type === 'KEYBOARD' &&
-      isInteractionAction
+      actionType === 'interaction-create-or-update'
     ) {
       return handleAccumulatingKeypresses(
         newEditorState,
