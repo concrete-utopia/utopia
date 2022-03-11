@@ -122,7 +122,7 @@ async function testBaselinePerformance(page: puppeteer.Page): Promise<FrameResul
 
   let traceData = fs.readFileSync('trace.json').toString()
   const traceJson = JSON.parse(traceData)
-  return getFrameData(traceJson, 'baseline_step_', 'Empty Dispatch')
+  return getFrameData(traceJson, 'baseline_frame_', 'Empty Dispatch')
 }
 
 async function initialiseTestsReturnScale(page: puppeteer.Page): Promise<Baselines> {
@@ -182,7 +182,7 @@ export const testPerformanceInner = async function (url: string): Promise<Perfor
   let resizeResult = EmptyResult
   let highlightRegularResult = EmptyResult
   let highlightAllElementsResult = EmptyResult
-  let selectionResult = EmptyResult
+  let selectionResult: Array<FrameResult> = []
   let basicCalc = EmptyResult
   let simpleDispatch = EmptyResult
   const { page, browser } = await setupBrowser(url, 120000)
@@ -203,7 +203,7 @@ export const testPerformanceInner = async function (url: string): Promise<Perfor
   const summaryImage = await uploadSummaryImage([
     highlightRegularResult,
     highlightAllElementsResult,
-    selectionResult,
+    ...selectionResult,
     scrollResult,
     resizeResult,
     basicCalc,
@@ -214,7 +214,7 @@ export const testPerformanceInner = async function (url: string): Promise<Perfor
     resizeResult,
   )} | ${consoleMessageForResult(highlightRegularResult)} | ${consoleMessageForResult(
     highlightAllElementsResult,
-  )} | ${consoleMessageForResult(selectionResult)} | ${consoleMessageForResult(
+  )} | ${selectionResult.map(consoleMessageForResult).join(' | ')} | ${consoleMessageForResult(
     basicCalc,
   )} | ${consoleMessageForResult(simpleDispatch)}`
 
@@ -250,7 +250,7 @@ export const testScrollingPerformance = async function (
   await page.tracing.stop()
   let traceData = fs.readFileSync('trace.json').toString()
   const traceJson = JSON.parse(traceData)
-  return getFrameData(traceJson, 'scroll_step_', 'Scroll Canvas')
+  return getFrameData(traceJson, 'scroll_frame_', 'Scroll Canvas')
 }
 
 export const testResizePerformance = async function (page: puppeteer.Page): Promise<FrameResult> {
@@ -286,7 +286,7 @@ export const testResizePerformance = async function (page: puppeteer.Page): Prom
   await page.tracing.stop()
   let traceData = fs.readFileSync('trace.json').toString()
   const traceJson = JSON.parse(traceData)
-  return getFrameData(traceJson, 'resize_step_', 'Resize')
+  return getFrameData(traceJson, 'resize_frame_', 'Resize')
 }
 
 export const testHighlightRegularPerformance = async function (
@@ -319,7 +319,7 @@ export const testHighlightRegularPerformance = async function (
   await page.tracing.stop()
   let traceData = fs.readFileSync('trace.json').toString()
   const traceJson = JSON.parse(traceData)
-  return getFrameData(traceJson, 'highlight_regular_step_', 'Highlight Regular')
+  return getFrameData(traceJson, 'highlight_regular_frame_', 'Highlight Regular')
 }
 
 export const testHighlightAllElementsPerformance = async function (
@@ -352,12 +352,12 @@ export const testHighlightAllElementsPerformance = async function (
   await page.tracing.stop()
   let traceData = fs.readFileSync('trace.json').toString()
   const traceJson = JSON.parse(traceData)
-  return getFrameData(traceJson, 'highlight_all-elements_step_', 'Highlight All Elements')
+  return getFrameData(traceJson, 'highlight_all-elements_frame_', 'Highlight All Elements')
 }
 
 export const testSelectionPerformance = async function (
   page: puppeteer.Page,
-): Promise<FrameResult> {
+): Promise<Array<FrameResult>> {
   console.log('Test Selection Performance')
   await page.waitForXPath("//a[contains(., 'P E')]")
   // we run it twice without measurements to warm up the environment
@@ -370,7 +370,10 @@ export const testSelectionPerformance = async function (
   await page.tracing.stop()
   let traceData = fs.readFileSync('trace.json').toString()
   const traceJson = JSON.parse(traceData)
-  return getFrameData(traceJson, 'select_step_', 'Selection')
+  return [
+    getFrameData(traceJson, 'select_frame_', 'Selection'),
+    getFrameData(traceJson, 'select_deselect_frame_', 'De-Selection'),
+  ]
 }
 
 const getFrameData = (traceJson: any, markNamePrefix: string, title: string): FrameResult => {
