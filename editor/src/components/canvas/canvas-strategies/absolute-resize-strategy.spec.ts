@@ -48,65 +48,39 @@ function resizeElement(editor: EditorState, edgePosition: EdgePosition): EditorS
   return foldAndApplyCommands(editor, editor, strategyResult, 'permanent').editorState
 }
 
-describe('Absolute Resize Strategy', () => {
-  it('works with a TLWH pinned absolute element resized from BR corner', async () => {
-    const targetElement = elementPath([
-      ['scene-aaa', 'app-entity'],
-      ['aaa', 'bbb'],
-    ])
+function createTestEditorAndResizeElement(
+  edgePosition: EdgePosition,
+  snippet: string,
+): EditorState {
+  const targetElement = elementPath([
+    ['scene-aaa', 'app-entity'],
+    ['aaa', 'bbb'],
+  ])
 
-    const initialEditor = getEditorStateWithSelectedViews(
-      makeTestProjectCodeWithSnippet(
-        `
-    <View style={{ ...(props.style || {}) }} data-uid='aaa'>
-      <View
-        style={{ backgroundColor: '#0091FFAA', position: 'absolute', left: '50px', top: 50, width: 250, height: 300 }}
-        data-uid='bbb'
-      />
-    </View>
-    `,
-      ),
-      [targetElement],
-    )
+  const initialEditor = getEditorStateWithSelectedViews(makeTestProjectCodeWithSnippet(snippet), [
+    targetElement,
+  ])
 
-    const edgePosition: EdgePosition = { x: 1, y: 1 }
-    const updatedEditor = resizeElement(initialEditor, edgePosition)
+  return resizeElement(initialEditor, edgePosition)
+}
 
-    expect(testPrintCodeFromEditorState(updatedEditor)).toEqual(
-      makeTestProjectCodeWithSnippet(
-        `<View style={{ ...(props.style || {}) }} data-uid='aaa'>
-        <View
-          style={{ backgroundColor: '#0091FFAA', position: 'absolute', left: '50px', top: 50, width: 265, height: 325 }}
-          data-uid='bbb'
-        />
-      </View>`,
-      ),
-    )
-  })
-  it('works with a TLWH pinned absolute element resized from TL corner', async () => {
-    const targetElement = elementPath([
-      ['scene-aaa', 'app-entity'],
-      ['aaa', 'bbb'],
-    ])
+function resizeTestWithTLWH(edgePosition: EdgePosition): EditorState {
+  const snippet = `
+  <View style={{ ...(props.style || {}) }} data-uid='aaa'>
+    <View
+      style={{ backgroundColor: '#0091FFAA', position: 'absolute', left: '50px', top: 50, width: 250, height: 300 }}
+      data-uid='bbb'
+    />
+  </View>
+  `
+  return createTestEditorAndResizeElement(edgePosition, snippet)
+}
 
-    const initialEditor = getEditorStateWithSelectedViews(
-      makeTestProjectCodeWithSnippet(
-        `
-    <View style={{ ...(props.style || {}) }} data-uid='aaa'>
-      <View
-        style={{ backgroundColor: '#0091FFAA', position: 'absolute', left: '50px', top: 50, width: 250, height: 300 }}
-        data-uid='bbb'
-      />
-    </View>
-    `,
-      ),
-      [targetElement],
-    )
-
+describe('Absolute Resize Strategy TLWH', () => {
+  it('works with element resized from TL corner', async () => {
     const edgePosition: EdgePosition = { x: 0, y: 0 }
-    const updatedEditor = resizeElement(initialEditor, edgePosition)
-
-    expect(testPrintCodeFromEditorState(updatedEditor)).toEqual(
+    const editorAfterStrategy = resizeTestWithTLWH(edgePosition)
+    expect(testPrintCodeFromEditorState(editorAfterStrategy)).toEqual(
       makeTestProjectCodeWithSnippet(
         `<View style={{ ...(props.style || {}) }} data-uid='aaa'>
         <View
@@ -117,64 +91,66 @@ describe('Absolute Resize Strategy', () => {
       ),
     )
   })
-  it('works with a TLBR pinned absolute element resized from BR corner', async () => {
-    const targetElement = elementPath([
-      ['scene-aaa', 'app-entity'],
-      ['aaa', 'bbb'],
-    ])
-
-    const initialEditor = getEditorStateWithSelectedViews(
-      makeTestProjectCodeWithSnippet(
-        `
-    <View style={{ ...(props.style || {}) }} data-uid='aaa'>
-      <View
-        style={{ backgroundColor: '#0091FFAA', position: 'absolute', left: '50px', top: 50, bottom: 85, right: 110 }}
-        data-uid='bbb'
-      />
-    </View>
-    `,
-      ),
-      [targetElement],
-    )
-
+  it('works with element resized from BR corner', async () => {
     const edgePosition: EdgePosition = { x: 1, y: 1 }
-    const updatedEditor = resizeElement(initialEditor, edgePosition)
-
-    expect(testPrintCodeFromEditorState(updatedEditor)).toEqual(
+    const editorAfterStrategy = resizeTestWithTLWH(edgePosition)
+    expect(testPrintCodeFromEditorState(editorAfterStrategy)).toEqual(
       makeTestProjectCodeWithSnippet(
         `<View style={{ ...(props.style || {}) }} data-uid='aaa'>
         <View
-          style={{ backgroundColor: '#0091FFAA', position: 'absolute', left: '50px', top: 50, bottom: 60, right: 95 }}
+          style={{ backgroundColor: '#0091FFAA', position: 'absolute', left: '50px', top: 50, width: 265, height: 325 }}
           data-uid='bbb'
         />
       </View>`,
       ),
     )
   })
-  it('works with a TLBR pinned absolute element resized from TL corner', async () => {
-    const targetElement = elementPath([
-      ['scene-aaa', 'app-entity'],
-      ['aaa', 'bbb'],
-    ])
-
-    const initialEditor = getEditorStateWithSelectedViews(
+  it('works with element resized from R edge', async () => {
+    const edgePosition: EdgePosition = { x: 1, y: 0.5 }
+    const editorAfterStrategy = resizeTestWithTLWH(edgePosition)
+    expect(testPrintCodeFromEditorState(editorAfterStrategy)).toEqual(
       makeTestProjectCodeWithSnippet(
-        `
-    <View style={{ ...(props.style || {}) }} data-uid='aaa'>
-      <View
-        style={{ backgroundColor: '#0091FFAA', position: 'absolute', left: '50px', top: 50, bottom: 85, right: 110 }}
-        data-uid='bbb'
-      />
-    </View>
-    `,
+        `<View style={{ ...(props.style || {}) }} data-uid='aaa'>
+        <View
+          style={{ backgroundColor: '#0091FFAA', position: 'absolute', left: '50px', top: 50, width: 265, height: 300 }}
+          data-uid='bbb'
+        />
+      </View>`,
       ),
-      [targetElement],
     )
+  })
+  it('works with element resized from T edge', async () => {
+    const edgePosition: EdgePosition = { x: 0.5, y: 0 }
+    const editorAfterStrategy = resizeTestWithTLWH(edgePosition)
+    expect(testPrintCodeFromEditorState(editorAfterStrategy)).toEqual(
+      makeTestProjectCodeWithSnippet(
+        `<View style={{ ...(props.style || {}) }} data-uid='aaa'>
+        <View
+          style={{ backgroundColor: '#0091FFAA', position: 'absolute', left: '50px', top: 75, width: 250, height: 275 }}
+          data-uid='bbb'
+        />
+      </View>`,
+      ),
+    )
+  })
+})
 
+function resizeTestWithTLBR(edgePosition: EdgePosition): EditorState {
+  const snippet = `
+  <View style={{ ...(props.style || {}) }} data-uid='aaa'>
+    <View
+      style={{ backgroundColor: '#0091FFAA', position: 'absolute', left: '50px', top: 50, bottom: 85, right: 110 }}
+      data-uid='bbb'
+    />
+  </View>
+  `
+  return createTestEditorAndResizeElement(edgePosition, snippet)
+}
+describe('Absolute Resize Strategy TLBR', () => {
+  it('works with element resized from TL corner', async () => {
     const edgePosition: EdgePosition = { x: 0, y: 0 }
-    const updatedEditor = resizeElement(initialEditor, edgePosition)
-
-    expect(testPrintCodeFromEditorState(updatedEditor)).toEqual(
+    const editorAfterStrategy = resizeTestWithTLBR(edgePosition)
+    expect(testPrintCodeFromEditorState(editorAfterStrategy)).toEqual(
       makeTestProjectCodeWithSnippet(
         `<View style={{ ...(props.style || {}) }} data-uid='aaa'>
         <View
@@ -185,30 +161,80 @@ describe('Absolute Resize Strategy', () => {
       ),
     )
   })
-  it('works with a WHBR pinned absolute element resized from BR corner', async () => {
-    const targetElement = elementPath([
-      ['scene-aaa', 'app-entity'],
-      ['aaa', 'bbb'],
-    ])
-
-    const initialEditor = getEditorStateWithSelectedViews(
-      makeTestProjectCodeWithSnippet(
-        `
-    <View style={{ ...(props.style || {}) }} data-uid='aaa'>
-      <View
-        style={{ backgroundColor: '#0091FFAA', position: 'absolute', width: 250, height: 300, bottom: '50px', right: 40, }}
-        data-uid='bbb'
-      />
-    </View>
-    `,
-      ),
-      [targetElement],
-    )
-
+  it('works with element resized from BR corner', async () => {
     const edgePosition: EdgePosition = { x: 1, y: 1 }
-    const updatedEditor = resizeElement(initialEditor, edgePosition)
+    const editorAfterStrategy = resizeTestWithTLBR(edgePosition)
+    expect(testPrintCodeFromEditorState(editorAfterStrategy)).toEqual(
+      makeTestProjectCodeWithSnippet(
+        `<View style={{ ...(props.style || {}) }} data-uid='aaa'>
+        <View
+          style={{ backgroundColor: '#0091FFAA', position: 'absolute', left: '50px', top: 50, bottom: 60, right: 95 }}
+          data-uid='bbb'
+        />
+      </View>`,
+      ),
+    )
+  })
+  it('works with element resized from R edge', async () => {
+    const edgePosition: EdgePosition = { x: 1, y: 0.5 }
+    const editorAfterStrategy = resizeTestWithTLBR(edgePosition)
+    expect(testPrintCodeFromEditorState(editorAfterStrategy)).toEqual(
+      makeTestProjectCodeWithSnippet(
+        `<View style={{ ...(props.style || {}) }} data-uid='aaa'>
+        <View
+          style={{ backgroundColor: '#0091FFAA', position: 'absolute', left: '50px', top: 50, bottom: 85, right: 95 }}
+          data-uid='bbb'
+        />
+      </View>`,
+      ),
+    )
+  })
+  it('works with element resized from T edge', async () => {
+    const edgePosition: EdgePosition = { x: 0.5, y: 0 }
+    const editorAfterStrategy = resizeTestWithTLBR(edgePosition)
+    expect(testPrintCodeFromEditorState(editorAfterStrategy)).toEqual(
+      makeTestProjectCodeWithSnippet(
+        `<View style={{ ...(props.style || {}) }} data-uid='aaa'>
+        <View
+          style={{ backgroundColor: '#0091FFAA', position: 'absolute', left: '50px', top: 75, bottom: 85, right: 110 }}
+          data-uid='bbb'
+        />
+      </View>`,
+      ),
+    )
+  })
+})
 
-    expect(testPrintCodeFromEditorState(updatedEditor)).toEqual(
+function resizeTestWithBRWH(edgePosition: EdgePosition): EditorState {
+  const snippet = `
+  <View style={{ ...(props.style || {}) }} data-uid='aaa'>
+    <View
+      style={{ backgroundColor: '#0091FFAA', position: 'absolute', width: 250, height: 300, bottom: '50px', right: 40 }}
+      data-uid='bbb'
+    />
+  </View>
+  `
+  return createTestEditorAndResizeElement(edgePosition, snippet)
+}
+describe('Absolute Resize Strategy BRWH', () => {
+  it('works with element resized from TL corner', async () => {
+    const edgePosition: EdgePosition = { x: 0, y: 0 }
+    const editorAfterStrategy = resizeTestWithBRWH(edgePosition)
+    expect(testPrintCodeFromEditorState(editorAfterStrategy)).toEqual(
+      makeTestProjectCodeWithSnippet(
+        `<View style={{ ...(props.style || {}) }} data-uid='aaa'>
+        <View
+          style={{ backgroundColor: '#0091FFAA', position: 'absolute', width: 235, height: 275, bottom: '50px', right: 40 }}
+          data-uid='bbb'
+        />
+      </View>`,
+      ),
+    )
+  })
+  it('works with element resized from BR corner', async () => {
+    const edgePosition: EdgePosition = { x: 1, y: 1 }
+    const editorAfterStrategy = resizeTestWithBRWH(edgePosition)
+    expect(testPrintCodeFromEditorState(editorAfterStrategy)).toEqual(
       makeTestProjectCodeWithSnippet(
         `<View style={{ ...(props.style || {}) }} data-uid='aaa'>
         <View
@@ -219,34 +245,71 @@ describe('Absolute Resize Strategy', () => {
       ),
     )
   })
-  it('works with a WHBR pinned absolute element resized from TL corner', async () => {
-    const targetElement = elementPath([
-      ['scene-aaa', 'app-entity'],
-      ['aaa', 'bbb'],
-    ])
-
-    const initialEditor = getEditorStateWithSelectedViews(
-      makeTestProjectCodeWithSnippet(
-        `
-    <View style={{ ...(props.style || {}) }} data-uid='aaa'>
-      <View
-        style={{ backgroundColor: '#0091FFAA', position: 'absolute', width: 250, height: 300, bottom: '50px', right: 40, }}
-        data-uid='bbb'
-      />
-    </View>
-    `,
-      ),
-      [targetElement],
-    )
-
-    const edgePosition: EdgePosition = { x: 0, y: 0 }
-    const updatedEditor = resizeElement(initialEditor, edgePosition)
-
-    expect(testPrintCodeFromEditorState(updatedEditor)).toEqual(
+  it('works with element resized from R edge', async () => {
+    const edgePosition: EdgePosition = { x: 1, y: 0.5 }
+    const editorAfterStrategy = resizeTestWithBRWH(edgePosition)
+    expect(testPrintCodeFromEditorState(editorAfterStrategy)).toEqual(
       makeTestProjectCodeWithSnippet(
         `<View style={{ ...(props.style || {}) }} data-uid='aaa'>
         <View
-          style={{ backgroundColor: '#0091FFAA', position: 'absolute', width: 235, height: 275, bottom: '50px', right: 40 }}
+          style={{ backgroundColor: '#0091FFAA', position: 'absolute', width: 265, height: 300, bottom: '50px', right: 25 }}
+          data-uid='bbb'
+        />
+      </View>`,
+      ),
+    )
+  })
+  it('works with element resized from T edge', async () => {
+    const edgePosition: EdgePosition = { x: 0.5, y: 0 }
+    const editorAfterStrategy = resizeTestWithBRWH(edgePosition)
+    expect(testPrintCodeFromEditorState(editorAfterStrategy)).toEqual(
+      makeTestProjectCodeWithSnippet(
+        `<View style={{ ...(props.style || {}) }} data-uid='aaa'>
+        <View
+          style={{ backgroundColor: '#0091FFAA', position: 'absolute', width: 250, height: 275, bottom: '50px', right: 40 }}
+          data-uid='bbb'
+        />
+      </View>`,
+      ),
+    )
+  })
+})
+
+describe('Absolute Resize Strategy TLBRWH', () => {
+  it('works with element resized from TL corner with too many pins', async () => {
+    const edgePosition: EdgePosition = { x: 0, y: 0 }
+    const snippet = `
+  <View style={{ ...(props.style || {}) }} data-uid='aaa'>
+    <View
+      style={{ 
+        backgroundColor: '#0091FFAA',
+        position: 'absolute',
+        width: 100,
+        height: 120,
+        top: 50,
+        left: 30,
+        bottom: 230,
+        right: 270
+       }}
+      data-uid='bbb'
+    />
+  </View>
+  `
+    const editorAfterStrategy = createTestEditorAndResizeElement(edgePosition, snippet)
+    expect(testPrintCodeFromEditorState(editorAfterStrategy)).toEqual(
+      makeTestProjectCodeWithSnippet(
+        `<View style={{ ...(props.style || {}) }} data-uid='aaa'>
+        <View
+          style={{
+            backgroundColor: '#0091FFAA',
+            position: 'absolute',
+            width: 85,
+            height: 95,
+            top: 75,
+            left: 45,
+            bottom: 230,
+            right: 270
+          }}
           data-uid='bbb'
         />
       </View>`,
