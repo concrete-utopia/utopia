@@ -461,7 +461,7 @@ export function useTriggerAbsoluteMovePerformanceTest(): () => void {
 
       // Mouse move and performance marks for that.
       performance.mark(`absolute_move_move_step_${framesPassed}`)
-      for (let moveCount = 1; moveCount <= 10; moveCount++) {
+      for (let moveCount = 1; moveCount <= 1; moveCount++) {
         controlsContainerElement.dispatchEvent(
           new MouseEvent('mousemove', {
             detail: 1,
