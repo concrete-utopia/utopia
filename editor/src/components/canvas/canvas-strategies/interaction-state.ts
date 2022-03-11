@@ -57,7 +57,7 @@ export interface CommandDescription {
 }
 
 export interface StrategyAndAccumulatedCommands {
-  strategy: string | null
+  strategy: CanvasStrategyId | null
   commands: Array<CanvasCommand>
 }
 
@@ -279,6 +279,8 @@ export function interactionSessionHardReset(
     interactionData: interactionDataHardReset(interactionSession.interactionData),
   }
 }
+
+export const KeyboardInteractionTimeout = 3000
 
 export function hasDragModifiersChanged(
   prevInteractionData: InputData | null,

@@ -17,10 +17,12 @@ import {
   InteractionCanvasState,
 } from './canvas-strategy-types'
 import { InteractionSession, StrategyState } from './interaction-state'
+import { keyboardAbsoluteMoveStrategy } from './keyboard-absolute-move-strategy'
 
 export const RegisteredCanvasStrategies: Array<CanvasStrategy> = [
   absoluteMoveStrategy,
   absoluteReparentStrategy,
+  keyboardAbsoluteMoveStrategy,
   absoluteResizeStrategy,
 ]
 
