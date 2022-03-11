@@ -15,6 +15,7 @@ import {
   adjustCssLengthProperty,
 } from '../commands/adjust-css-length-command'
 import { wildcardPatch } from '../commands/wildcard-patch-command'
+import { AbsoluteResizeControl } from '../controls/select-mode/absolute-resize-control'
 import { CanvasStrategy } from './canvas-strategy-types'
 
 type AbsolutePin = 'left' | 'top' | 'right' | 'bottom' | 'width' | 'height'
@@ -34,7 +35,7 @@ export const absoluteResizeStrategy: CanvasStrategy = {
     }
   },
   controlsToRender: [
-    // { control: AbsoluteResizeControl, key: 'absolute-resize-control', show: 'always-visible' }, // TODO IT HAS PROPS
+    { control: AbsoluteResizeControl, key: 'absolute-resize-control', show: 'always-visible' },
   ],
   fitness: (canvasState, interactionState, sessionState) => {
     return absoluteResizeStrategy.isApplicable(
