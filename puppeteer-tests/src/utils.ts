@@ -18,8 +18,8 @@ export const setupBrowser = async (
     executablePath: process.env.BROWSER,
   })
   const page = await browser.newPage()
-  await page.setDefaultNavigationTimeout(120000)
-  await page.setDefaultTimeout(defaultTimeout)
+  page.setDefaultNavigationTimeout(120000)
+  page.setDefaultTimeout(defaultTimeout)
   await page.setViewport({ width: 1500, height: 768 })
   console.info('loading editor at URL:', url)
   await page.goto(url)
