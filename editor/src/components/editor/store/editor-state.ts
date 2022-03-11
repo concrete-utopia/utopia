@@ -159,6 +159,7 @@ import { DefaultThirdPartyControlDefinitions } from '../../../core/third-party/t
 import { Spec } from 'immutability-helper'
 import { memoize } from '../../../core/shared/memoize'
 import { InteractionSession, StrategyState } from '../../canvas/canvas-strategies/interaction-state'
+import { Guideline, GuidelineWithSnappingVector } from '../../canvas/guideline'
 
 const ObjectPathImmutable: any = OPI
 
@@ -470,6 +471,7 @@ export interface EditorState {
     domWalkerAdditionalElementsToUpdate: Array<ElementPath>
     controls: {
       // this is where we can put props for the strategy controls
+      snappingGuidelines: Array<GuidelineWithSnappingVector>
     }
   }
   floatingInsertMenu: FloatingInsertMenuState
@@ -1248,7 +1250,9 @@ export function createEditorState(dispatch: EditorDispatch): EditorState {
         propertyTargetSelectedIndex: 0,
       },
       domWalkerAdditionalElementsToUpdate: [],
-      controls: {},
+      controls: {
+        snappingGuidelines: [],
+      },
     },
     floatingInsertMenu: {
       insertMenuMode: 'closed',
@@ -1536,8 +1540,7 @@ export function editorModelFromPersistentModel(
       },
       domWalkerAdditionalElementsToUpdate: [],
       controls: {
-        animatedPlaceholderTargetUids: [],
-        flexAlignDropTargets: [],
+        snappingGuidelines: [],
       },
     },
     floatingInsertMenu: {
@@ -2229,6 +2232,14 @@ export function forUnderlyingTarget(
   ) => void,
 ): void {
   withUnderlyingTarget<any>(target, projectContents, nodeModules, openFile, {}, withTarget)
+}
+
+export function getElementFromProjectContents(
+  target: ElementPath | null,
+  projectContents: ProjectContentTreeRoot,
+  openFile: string | null | undefined,
+): JSXElement | null {
+  return withUnderlyingTarget(target, projectContents, {}, openFile, null, (_, element) => element)
 }
 
 export function getCurrentTheme(editor: EditorState): Theme {

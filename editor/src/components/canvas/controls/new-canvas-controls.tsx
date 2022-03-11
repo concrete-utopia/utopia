@@ -63,6 +63,7 @@ import {
 } from '../canvas-strategies/canvas-strategies'
 import { FlexResizeControl } from './select-mode/flex-resize-control'
 import { MultiSelectOutlineControl } from './select-mode/simple-outline-control'
+import { GuidelineControls } from './guideline-controls'
 
 export const CanvasControlsContainerID = 'new-canvas-controls-container'
 
@@ -413,6 +414,7 @@ const NewCanvasControlsInner = (props: NewCanvasControlsInnerProps) => {
         isFeatureEnabled('Canvas Absolute Resize Controls'),
         <MultiSelectOutlineControl localSelectedElements={localSelectedViews} />,
       )}
+      {when(isFeatureEnabled('Canvas Absolute Resize Controls'), <GuidelineControls />)}
       {when(
         isFeatureEnabled('Canvas Strategies'),
         <>{strategyControls.map((c) => React.createElement(c.control, { key: c.key }))}</>,
