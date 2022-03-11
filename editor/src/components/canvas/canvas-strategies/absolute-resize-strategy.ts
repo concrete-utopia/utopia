@@ -14,7 +14,7 @@ import {
   AdjustCssLengthProperty,
   adjustCssLengthProperty,
 } from '../commands/adjust-css-length-command'
-import { wildcardPatch } from '../commands/wildcard-patch-command'
+import { updateHighlightedViews } from '../commands/update-highlighted-views-command'
 import { AbsoluteResizeControl } from '../controls/select-mode/absolute-resize-control'
 import { CanvasStrategy } from './canvas-strategy-types'
 
@@ -86,14 +86,7 @@ export const absoluteResizeStrategy: CanvasStrategy = {
           )
         },
       )
-      return [
-        ...commandsForSelectedElements,
-        wildcardPatch('transient', {
-          highlightedViews: {
-            $set: [],
-          },
-        }),
-      ]
+      return [...commandsForSelectedElements, updateHighlightedViews('transient', [])]
     }
     // Fallback for when the checks above are not satisfied.
     return []
