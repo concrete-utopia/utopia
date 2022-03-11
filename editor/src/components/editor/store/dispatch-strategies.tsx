@@ -619,6 +619,8 @@ function handleStrategiesInner(
   const cancelInteraction =
     dispatchedActions.some(isClearInteractionSession) && !makeChangesPermanent
   const isInteractionAction = dispatchedActions.some(isCreateOrUpdateInteractionSession)
+    ? 'interaction-create-or-update'
+    : 'non-interaction'
   if (storedState.unpatchedEditor.canvas.interactionSession == null) {
     if (result.unpatchedEditor.canvas.interactionSession == null) {
       return {
