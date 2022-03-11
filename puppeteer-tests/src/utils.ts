@@ -62,7 +62,7 @@ export function consoleDoneMessage(
   })
   return timeLimitPromise(
     consoleDonePromise,
-    120000,
+    120000 * 5,
     `Missing console message ${expectedConsoleMessage} in test browser.`,
   )
 }
