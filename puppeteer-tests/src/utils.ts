@@ -29,18 +29,30 @@ export const setupBrowser = async (
   }
 }
 
+interface ValueWithTimeout {
+  timeoutID: NodeJS.Timeout | null
+}
+
 export function timeLimitPromise<T>(
   promise: Promise<T>,
   limitms: number,
   message: string,
 ): Promise<T> {
+  let valueWithTimeout: ValueWithTimeout = { timeoutID: null }
   const timeoutPromise: Promise<any> = new Promise((resolve, reject) => {
-    const timeoutID = setTimeout(() => {
-      clearTimeout(timeoutID)
+    valueWithTimeout.timeoutID = setTimeout(() => {
+      if (valueWithTimeout.timeoutID != null) {
+        clearTimeout(valueWithTimeout.timeoutID)
+      }
       reject(message)
     }, limitms)
   })
-  return Promise.race([promise, timeoutPromise])
+  const promiseWithCleanup = promise.finally(() => {
+    if (valueWithTimeout.timeoutID != null) {
+      clearTimeout(valueWithTimeout.timeoutID)
+    }
+  })
+  return Promise.race([promiseWithCleanup, timeoutPromise])
 }
 
 export function consoleDoneMessage(
