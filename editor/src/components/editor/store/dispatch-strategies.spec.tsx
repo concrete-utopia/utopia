@@ -532,7 +532,7 @@ describe('interactionUpdate with stacked strategy change', () => {
       interactionSession.interactionData.prevDrag = canvasPoint({ x: 30, y: 120 })
     }
     const editorStore = createEditorStore(interactionSession)
-    editorStore.strategyState.currentStrategy = 'TEST_STRATEGY' as CanvasStrategyId
+    editorStore.strategyState.currentStrategy = 'EMPTY_TEST_STRATEGY' as CanvasStrategyId
     const actualResult = interactionUpdate(
       [testStrategy],
       editorStore,
@@ -544,7 +544,7 @@ describe('interactionUpdate with stacked strategy change', () => {
         "accumulatedCommands": Array [
           Object {
             "commands": Array [],
-            "strategy": "TEST_STRATEGY",
+            "strategy": "EMPTY_TEST_STRATEGY",
           },
           Object {
             "commands": Array [
