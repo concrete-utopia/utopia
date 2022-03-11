@@ -57,7 +57,7 @@ export interface CommandDescription {
 }
 
 export interface StrategyAndAccumulatedCommands {
-  strategy: string | null
+  strategy: CanvasStrategyId | null
   commands: Array<CanvasCommand>
 }
 

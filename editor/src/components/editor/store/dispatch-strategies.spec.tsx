@@ -28,6 +28,7 @@ import {
 } from '../../../core/shared/element-template'
 import {
   createEmptyStrategyState,
+  createInteractionViaKeyboard,
   createInteractionViaMouse,
   InteractionSession,
   InteractionSessionWithoutMetadata,
@@ -152,14 +153,14 @@ const testStrategy: CanvasStrategy = {
 }
 
 const emptyTestStrategy: CanvasStrategy = {
-  id: 'EMPTY TEST_STRATEGY' as CanvasStrategyId,
+  id: 'EMPTY_TEST_STRATEGY' as CanvasStrategyId,
   name: 'Empty test Strategy',
   isApplicable: function (
     canvasState: InteractionCanvasState,
     interactionSession: InteractionSession | null,
     metadata: ElementInstanceMetadataMap,
   ): boolean {
-    return interactionSession?.interactionData.type === 'KEYBOARD'
+    return true
   },
   controlsToRender: [],
   fitness: function (
@@ -689,19 +690,16 @@ describe('interactionUpdate with stacked strategy change', () => {
 
 describe('interactionUpdate with accumulating keypresses', () => {
   it('steps an interaction session correctly', () => {
-    let interactionSession = createInteractionViaMouse(
-      canvasPoint({ x: 100, y: 200 }),
+    let interactionSession = createInteractionViaKeyboard(
+      ['left'],
       { alt: false, shift: false, ctrl: false, cmd: false },
       { type: 'BOUNDING_AREA', target: EP.elementPath([['aaa']]) },
     )
-    if (interactionSession.interactionData.type === 'KEYBOARD') {
-      interactionSession.interactionData.keysPressed = ['left']
-    }
     const editorStore = createEditorStore(interactionSession)
     editorStore.strategyState.currentStrategy = 'EMPTY_TEST_STRATEGY' as CanvasStrategyId
     editorStore.strategyState.accumulatedCommands = [
       {
-        strategy: 'TEST_STRATEGY',
+        strategy: 'EMPTY_TEST_STRATEGY' as CanvasStrategyId,
         commands: [wildcardPatch('permanent', { canvas: { scale: { $set: 100 } } })],
       },
     ]
@@ -709,7 +707,7 @@ describe('interactionUpdate with accumulating keypresses', () => {
       [emptyTestStrategy],
       editorStore,
       dispatchResultFromEditorStore(editorStore),
-      false,
+      true,
     )
     expect(actualResult.newStrategyState).toMatchInlineSnapshot(`
       Object {
@@ -728,7 +726,11 @@ describe('interactionUpdate with accumulating keypresses', () => {
                 "type": "WILDCARD_PATCH",
               },
             ],
-            "strategy": "TEST_STRATEGY",
+            "strategy": "EMPTY_TEST_STRATEGY",
+          },
+          Object {
+            "commands": Array [],
+            "strategy": "EMPTY_TEST_STRATEGY",
           },
         ],
         "commandDescriptions": Array [
@@ -743,38 +745,24 @@ describe('interactionUpdate with accumulating keypresses', () => {
             "transient": false,
           },
         ],
-        "currentStrategy": null,
+        "currentStrategy": "EMPTY_TEST_STRATEGY",
         "currentStrategyCommands": Array [],
-        "currentStrategyFitness": 0,
-        "sortedApplicableStrategies": Array [],
+        "currentStrategyFitness": 10,
+        "sortedApplicableStrategies": Array [
+          Object {
+            "apply": [Function],
+            "controlsToRender": Array [],
+            "fitness": [Function],
+            "id": "EMPTY_TEST_STRATEGY",
+            "isApplicable": [Function],
+            "name": "Empty test Strategy",
+          },
+        ],
         "startingMetadata": Object {},
       }
     `)
     expect(actualResult.patchedEditorState.canvas.scale).toEqual(100)
     expect(actualResult.unpatchedEditorState.canvas.scale).toEqual(1)
-    expect(actualResult.patchedEditorState.canvas.interactionSession?.interactionData)
-      .toMatchInlineSnapshot(`
-      Object {
-        "drag": null,
-        "dragStart": Object {
-          "x": 100,
-          "y": 200,
-        },
-        "dragThresholdPassed": false,
-        "modifiers": Object {
-          "alt": false,
-          "cmd": false,
-          "ctrl": false,
-          "shift": false,
-        },
-        "originalDragStart": Object {
-          "x": 100,
-          "y": 200,
-        },
-        "prevDrag": null,
-        "type": "DRAG",
-      }
-    `)
   })
 })
 
