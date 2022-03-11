@@ -159,7 +159,7 @@ const emptyTestStrategy: CanvasStrategy = {
     interactionSession: InteractionSession | null,
     metadata: ElementInstanceMetadataMap,
   ): boolean {
-    return interactionSession?.interactionData.type === 'KEYBOARD_ARROW'
+    return interactionSession?.interactionData.type === 'KEYBOARD'
   },
   controlsToRender: [],
   fitness: function (
@@ -694,7 +694,7 @@ describe('interactionUpdate with accumulating keypresses', () => {
       { alt: false, shift: false, ctrl: false, cmd: false },
       { type: 'BOUNDING_AREA', target: EP.elementPath([['aaa']]) },
     )
-    if (interactionSession.interactionData.type === 'KEYBOARD_ARROW') {
+    if (interactionSession.interactionData.type === 'KEYBOARD') {
       interactionSession.interactionData.keysPressed = ['left']
     }
     const editorStore = createEditorStore(interactionSession)

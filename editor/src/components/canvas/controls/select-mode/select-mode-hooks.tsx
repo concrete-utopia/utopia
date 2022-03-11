@@ -661,8 +661,7 @@ export function setupClearKeyboardInteraction(
         keyboardTimeoutHandler.current = null
       }
       if (
-        editorStoreRef.current.editor.canvas.interactionSession?.interactionData.type ===
-        'KEYBOARD_ARROW'
+        editorStoreRef.current.editor.canvas.interactionSession?.interactionData.type === 'KEYBOARD'
       ) {
         editorStoreRef.current.dispatch([CanvasActions.clearInteractionSession(true)], 'everyone')
       }

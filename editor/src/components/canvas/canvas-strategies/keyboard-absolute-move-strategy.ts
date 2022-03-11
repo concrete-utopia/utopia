@@ -28,7 +28,7 @@ export const keyboardAbsoluteMoveStrategy: CanvasStrategy = {
         interactionState,
         sessionState.startingMetadata,
       ) &&
-      interactionState.interactionData.type === 'KEYBOARD_ARROW'
+      interactionState.interactionData.type === 'KEYBOARD'
     ) {
       const { interactionData } = interactionState
 
@@ -47,7 +47,7 @@ export const keyboardAbsoluteMoveStrategy: CanvasStrategy = {
   },
   apply: (canvasState, interactionState, sessionState) => {
     // TODO: absolutely minimal implementation
-    if (interactionState.interactionData.type === 'KEYBOARD_ARROW') {
+    if (interactionState.interactionData.type === 'KEYBOARD') {
       const key = interactionState.interactionData.keysPressed[0]
       if (key == null) {
         return []

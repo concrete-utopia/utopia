@@ -25,15 +25,15 @@ export interface DragInteractionData {
   modifiers: Modifiers
 }
 
-interface KeyboardArrowInteractionData {
-  type: 'KEYBOARD_ARROW'
+interface KeyboardInteractionData {
+  type: 'KEYBOARD'
   keysPressed: Array<KeyCharacter>
   // keysPressed also includes modifiers, but we want the separate modifiers array since they are captured and mapped to a specific
   // set via modifiersForEvent in keyboard.ts
   modifiers: Modifiers
 }
 
-export type InputData = KeyboardArrowInteractionData | DragInteractionData
+export type InputData = KeyboardInteractionData | DragInteractionData
 
 export interface InteractionSession {
   // This represents an actual interaction that has started as the result of a key press or a drag
@@ -152,7 +152,7 @@ export function createInteractionViaKeyboard(
 ): InteractionSessionWithoutMetadata {
   return {
     interactionData: {
-      type: 'KEYBOARD_ARROW',
+      type: 'KEYBOARD',
       keysPressed: keysPressed,
       modifiers: modifiers,
     },
@@ -172,7 +172,7 @@ export function updateInteractionViaKeyboard(
   sourceOfUpdate: CanvasControlType,
 ): InteractionSessionWithoutMetadata {
   switch (currentState.interactionData.type) {
-    case 'KEYBOARD_ARROW': {
+    case 'KEYBOARD': {
       const withRemovedKeys = currentState.interactionData.keysPressed.filter(
         (k) => !keysReleased.includes(k),
       )
@@ -180,7 +180,7 @@ export function updateInteractionViaKeyboard(
 
       return {
         interactionData: {
-          type: 'KEYBOARD_ARROW',
+          type: 'KEYBOARD',
           keysPressed: newKeysPressed,
           modifiers: modifiers,
         },
@@ -228,7 +228,7 @@ export function strategySwitchInteractionDataReset(interactionData: InputData): 
           prevDrag: null,
         }
       }
-    case 'KEYBOARD_ARROW':
+    case 'KEYBOARD':
       return interactionData
     default:
       const _exhaustiveCheck: never = interactionData
@@ -253,7 +253,7 @@ export function interactionDataHardReset(interactionData: InputData): InputData 
           ),
         }
       }
-    case 'KEYBOARD_ARROW':
+    case 'KEYBOARD':
       return interactionData
     default:
       const _exhaustiveCheck: never = interactionData

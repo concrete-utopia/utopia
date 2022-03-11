@@ -214,7 +214,7 @@ export function interactionUpdate(
     }
 
     if (
-      result.unpatchedEditor.canvas.interactionSession?.interactionData.type === 'KEYBOARD_ARROW' &&
+      result.unpatchedEditor.canvas.interactionSession?.interactionData.type === 'KEYBOARD' &&
       isInteractionAction
     ) {
       return handleAccumulatingKeypresses(
