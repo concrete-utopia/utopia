@@ -184,7 +184,3 @@ export function windowToCanvasCoordinates(
     throw new Error('calling screenToElementCoordinates() before being mounted')
   }
 }
-
-export function windowToCanvasCoordinatesGlobal(screenPoint: WindowPoint): CanvasPositions {
-  return windowToCanvasCoordinates(CanvasScale.current, CanvasScrollOffset, screenPoint)
-}

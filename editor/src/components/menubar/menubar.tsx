@@ -11,6 +11,7 @@ import {
   useTriggerBaselinePerformanceTest,
   useTriggerRegularHighlightPerformanceTest,
   useTriggerAllElementsHighlightPerformanceTest,
+  useTriggerAbsoluteMovePerformanceTest,
 } from '../../core/model/performance-scripts'
 import { useReParseOpenProjectFile } from '../../core/model/project-file-helper-hooks'
 import { shareURLForProject } from '../../core/shared/utils'
@@ -192,6 +193,7 @@ export const Menubar = React.memo(() => {
   const onTriggerRegularHighlightTest = useTriggerRegularHighlightPerformanceTest()
   const onTriggerAllElementsHighlightTest = useTriggerAllElementsHighlightPerformanceTest()
   const onTriggerSelectionTest = useTriggerSelectionPerformanceTest()
+  const onTriggerAbsoluteMoveTest = useTriggerAbsoluteMovePerformanceTest()
   const onTriggerBaselineTest = useTriggerBaselinePerformanceTest()
 
   const previewURL =
@@ -367,6 +369,9 @@ export const Menubar = React.memo(() => {
           </Tile>
           <Tile style={{ marginTop: 12, marginBottom: 12 }} size='large'>
             <a onClick={onTriggerSelectionTest}>P E</a>
+          </Tile>
+          <Tile style={{ marginTop: 12, marginBottom: 12 }} size='large'>
+            <a onClick={onTriggerAbsoluteMoveTest}>PAM</a>
           </Tile>
           <Tile style={{ marginTop: 12, marginBottom: 12 }} size='large'>
             <a onClick={onTriggerBaselineTest}>B L</a>

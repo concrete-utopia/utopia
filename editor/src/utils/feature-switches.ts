@@ -14,6 +14,7 @@ export type FeatureName =
   | 'Insertion Plus Button'
   | 'Canvas Strategies'
   | 'Canvas Absolute Resize Controls'
+  | 'Keyboard up clears interaction'
 
 export const AllFeatureNames: FeatureName[] = [
   // 'Dragging Reparents By Default', // Removing this option so that we can experiment on this later
@@ -27,6 +28,7 @@ export const AllFeatureNames: FeatureName[] = [
   'Insertion Plus Button',
   'Canvas Strategies',
   'Canvas Absolute Resize Controls',
+  'Keyboard up clears interaction',
 ]
 
 let FeatureSwitches: { [feature in FeatureName]: boolean } = {
@@ -41,6 +43,7 @@ let FeatureSwitches: { [feature in FeatureName]: boolean } = {
   'Insertion Plus Button': true,
   'Canvas Strategies': false,
   'Canvas Absolute Resize Controls': false,
+  'Keyboard up clears interaction': false,
 }
 
 function settingKeyForName(featureName: FeatureName): string {

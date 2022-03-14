@@ -1,6 +1,6 @@
 import React from 'react'
 import type { EditorStorePatched } from './editor-state'
-import { UseStore, StoreApi, EqualityChecker } from 'zustand'
+import { UseStore, StoreApi, EqualityChecker, UseBoundStore } from 'zustand'
 import { shallowEqual } from '../../../core/shared/equality-utils'
 import { isFeatureEnabled } from '../../../utils/feature-switches'
 import { PERFORMANCE_MARKS_ALLOWED } from '../../../common/env-vars'
@@ -126,7 +126,7 @@ export const useRefEditorState = <U>(
   return sliceRef
 }
 
-export type UtopiaStoreHook = UseStore<EditorStorePatched>
+export type UtopiaStoreHook = UseBoundStore<EditorStorePatched>
 export type UtopiaStoreAPI = StoreApi<EditorStorePatched>
 
 export type EditorStateContextData = {

@@ -293,8 +293,6 @@ function on(
   return additionalEvents
 }
 
-let interactionSessionTimerHandle: any = undefined
-
 export function runLocalCanvasAction(
   dispatch: EditorDispatch,
   model: EditorState,
@@ -317,6 +315,15 @@ export function runLocalCanvasAction(
         },
       }
     }
+    case 'POSITION_CANVAS':
+      return {
+        ...model,
+        canvas: {
+          ...model.canvas,
+          realCanvasOffset: action.position,
+          roundedCanvasOffset: Utils.roundPointTo(action.position, 0),
+        },
+      }
     case 'CLEAR_DRAG_STATE':
       return clearDragState(model, derivedState, action.applyChanges)
     case 'CREATE_DRAG_STATE':
@@ -359,10 +366,6 @@ export function runLocalCanvasAction(
       }
     }
     case 'CREATE_INTERACTION_SESSION':
-      clearInterval(interactionSessionTimerHandle)
-      interactionSessionTimerHandle = setInterval(() => {
-        dispatch([CanvasActions.updateInteractionSession({ globalTime: Date.now() })])
-      }, 200)
       return {
         ...model,
         canvas: {
@@ -374,7 +377,6 @@ export function runLocalCanvasAction(
         },
       }
     case 'CLEAR_INTERACTION_SESSION':
-      clearInterval(interactionSessionTimerHandle)
       const metadataToKeep =
         action.applyChanges && model.canvas.interactionSession != null
           ? model.canvas.interactionSession.metadata
@@ -757,7 +759,6 @@ export class EditorCanvas extends React.Component<EditorCanvasProps> {
         id: 'canvas-root',
         key: 'canvas-root',
         'data-testid': 'canvas-root',
-        className: 'utopia-canvas-var-container',
         style: {
           ...canvasLiveEditingStyle,
           transition: 'all .2s linear',

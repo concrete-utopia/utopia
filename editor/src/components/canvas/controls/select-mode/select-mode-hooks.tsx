@@ -13,7 +13,7 @@ import {
 import { ElementPath } from '../../../../core/shared/project-file-types'
 import * as EP from '../../../../core/shared/element-path'
 import { fastForEach, NO_OP } from '../../../../core/shared/utils'
-import { KeysPressed } from '../../../../utils/keyboard'
+import { KeyCharacter, KeysPressed } from '../../../../utils/keyboard'
 import { useKeepShallowReferenceEquality } from '../../../../utils/react-performance'
 import Utils from '../../../../utils/utils'
 import {
@@ -23,7 +23,7 @@ import {
   setFocusedElement,
   setHighlightedView,
 } from '../../../editor/actions/action-creators'
-import { EditorState } from '../../../editor/store/editor-state'
+import { EditorState, EditorStorePatched } from '../../../editor/store/editor-state'
 import { useEditorState, useRefEditorState } from '../../../editor/store/store-hook'
 import CanvasActions from '../../canvas-actions'
 import { DragState, moveDragState } from '../../canvas-types'
@@ -41,7 +41,10 @@ import { useWindowToCanvasCoordinates } from '../../dom-lookup-hooks'
 import { useInsertModeSelectAndHover } from './insert-mode-hooks'
 import { WindowMousePositionRaw } from '../../../../utils/global-positions'
 import { isFeatureEnabled } from '../../../../utils/feature-switches'
-import { createInteractionViaMouse } from '../../canvas-strategies/interaction-state'
+import {
+  createInteractionViaMouse,
+  KeyboardInteractionTimeout,
+} from '../../canvas-strategies/interaction-state'
 import { Modifier } from '../../../../utils/modifiers'
 import { pathsEqual } from '../../../../core/shared/element-path'
 
@@ -53,7 +56,7 @@ export function isResizing(editorState: EditorState): boolean {
   return (
     (dragState?.type === 'RESIZE_DRAG_STATE' &&
       getDragStateDrag(dragState, editorState.canvas.resizeOptions) != null) ||
-    editorState.canvas.interactionSession != null
+    editorState.canvas.interactionSession?.interactionData.type === 'DRAG'
   )
 }
 
@@ -63,7 +66,7 @@ export function isDragging(editorState: EditorState): boolean {
   return (
     (dragState?.type === 'MOVE_DRAG_STATE' &&
       getDragStateDrag(dragState, editorState.canvas.resizeOptions) != null) ||
-    editorState.canvas.interactionSession != null
+    editorState.canvas.interactionSession?.interactionData.type === 'DRAG'
   )
 }
 
@@ -637,5 +640,34 @@ export function useSelectAndHover(
         const _exhaustiveCheck: never = modeType
         throw new Error(`Unhandled editor mode ${JSON.stringify(modeType)}`)
     }
+  }
+}
+
+export function setupClearKeyboardInteraction(
+  editorStoreRef: { readonly current: EditorStorePatched },
+  keyboardTimeoutHandler: React.MutableRefObject<NodeJS.Timeout | null>,
+) {
+  if (!isFeatureEnabled('Keyboard up clears interaction')) {
+    if (keyboardTimeoutHandler.current != null) {
+      clearTimeout(keyboardTimeoutHandler.current)
+      keyboardTimeoutHandler.current = null
+    }
+
+    keyboardTimeoutHandler.current = setTimeout(clearHighlightedViews, KeyboardInteractionTimeout)
+
+    const clearKeyboardInteraction = () => {
+      window.removeEventListener('mousedown', clearKeyboardInteraction)
+      if (keyboardTimeoutHandler.current != null) {
+        clearTimeout(keyboardTimeoutHandler.current)
+        keyboardTimeoutHandler.current = null
+      }
+      if (
+        editorStoreRef.current.editor.canvas.interactionSession?.interactionData.type === 'KEYBOARD'
+      ) {
+        editorStoreRef.current.dispatch([CanvasActions.clearInteractionSession(true)], 'everyone')
+      }
+    }
+
+    window.addEventListener('mousedown', clearKeyboardInteraction, { once: true, capture: true })
   }
 }

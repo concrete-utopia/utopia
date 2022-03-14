@@ -48,6 +48,10 @@ function dragBy15Pixels(editorState: EditorState): EditorState {
       sortedApplicableStrategies: null as any, // the strategy does not use this
       startingMetadata: {
         'scene-aaa/app-entity:aaa/bbb': {
+          elementPath: elementPath([
+            ['scene-aaa', 'app-entity'],
+            ['aaa', 'bbb'],
+          ]),
           specialSizeMeasurements: {
             immediateParentBounds: canvasRectangle({ x: 0, y: 0, width: 400, height: 400 }),
           } as SpecialSizeMeasurements,

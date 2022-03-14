@@ -47,7 +47,6 @@ export interface InteractionSession {
   userPreferredStrategy: CanvasStrategyId | null
 
   startedAt: number
-  globalTime: number
 }
 
 export type InteractionSessionWithoutMetadata = Omit<InteractionSession, 'metadata'>
@@ -58,7 +57,7 @@ export interface CommandDescription {
 }
 
 export interface StrategyAndAccumulatedCommands {
-  strategy: string | null
+  strategy: CanvasStrategyId | null
   commands: Array<CanvasCommand>
 }
 
@@ -107,7 +106,6 @@ export function createInteractionViaMouse(
     lastInteractionTime: Date.now(),
     userPreferredStrategy: null,
     startedAt: Date.now(),
-    globalTime: Date.now(),
   }
 }
 
@@ -141,13 +139,9 @@ export function updateInteractionViaMouse(
       lastInteractionTime: Date.now(),
       userPreferredStrategy: currentState.userPreferredStrategy,
       startedAt: currentState.startedAt,
-      globalTime: Date.now(),
     }
   } else {
-    return {
-      ...currentState,
-      globalTime: Date.now(),
-    }
+    return currentState
   }
 }
 
@@ -167,7 +161,6 @@ export function createInteractionViaKeyboard(
     lastInteractionTime: Date.now(),
     userPreferredStrategy: null,
     startedAt: Date.now(),
-    globalTime: Date.now(),
   }
 }
 
@@ -196,7 +189,6 @@ export function updateInteractionViaKeyboard(
         lastInteractionTime: Date.now(),
         userPreferredStrategy: currentState.userPreferredStrategy,
         startedAt: currentState.startedAt,
-        globalTime: Date.now(),
       }
     }
     case 'DRAG': {
@@ -215,7 +207,6 @@ export function updateInteractionViaKeyboard(
         lastInteractionTime: Date.now(),
         userPreferredStrategy: currentState.userPreferredStrategy,
         startedAt: currentState.startedAt,
-        globalTime: Date.now(),
       }
     }
     default:
@@ -288,6 +279,8 @@ export function interactionSessionHardReset(
     interactionData: interactionDataHardReset(interactionSession.interactionData),
   }
 }
+
+export const KeyboardInteractionTimeout = 3000
 
 export function hasDragModifiersChanged(
   prevInteractionData: InputData | null,

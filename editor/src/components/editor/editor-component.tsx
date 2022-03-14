@@ -56,8 +56,11 @@ import { isFeatureEnabled } from '../../utils/feature-switches'
 import Keyboard from '../../utils/keyboard'
 import { Modifier } from '../../utils/modifiers'
 import CanvasActions from '../canvas/canvas-actions'
-import { UtopiaCanvasVarStyleTag } from '../canvas/utopia-canvas-vars'
-import { updateInteractionViaKeyboard } from '../canvas/canvas-strategies/interaction-state'
+import {
+  createInteractionViaKeyboard,
+  updateInteractionViaKeyboard,
+} from '../canvas/canvas-strategies/interaction-state'
+import { setupClearKeyboardInteraction } from '../canvas/controls/select-mode/select-mode-hooks'
 
 function pushProjectURLToBrowserHistory(projectId: string, projectName: string): void {
   // Make sure we don't replace the query params
@@ -132,22 +135,37 @@ export const EditorComponentInner = React.memo((props: EditorProps) => {
     return applyShortcutConfigurationToDefaults(editorStoreRef.current.userState.shortcutConfig)
   }, [editorStoreRef])
 
+  const keyboardTimeoutHandler = React.useRef<NodeJS.Timeout | null>(null)
+
   const onWindowKeyDown = React.useCallback(
     (event: KeyboardEvent) => {
       if (isFeatureEnabled('Canvas Strategies')) {
-        const existingInteractionSession = editorStoreRef.current.editor.canvas.interactionSession
-        // TODO: we don't handle new interaction started with keyboard now
-        if (existingInteractionSession != null) {
-          const action = CanvasActions.createInteractionSession(
-            updateInteractionViaKeyboard(
-              existingInteractionSession,
-              [Keyboard.keyCharacterForCode(event.keyCode)],
-              [],
-              Modifier.modifiersForKeyboardEvent(event),
-              { type: 'KEYBOARD_CATCHER_CONTROL' },
-            ),
-          )
+        const key = Keyboard.keyCharacterForCode(event.keyCode)
+
+        // TODO: maybe we should not whitelist keys, just check if Keyboard.keyIsModifer(key) is false
+        if (Keyboard.keyIsInteraction(key)) {
+          const existingInteractionSession = editorStoreRef.current.editor.canvas.interactionSession
+          const action =
+            existingInteractionSession == null
+              ? CanvasActions.createInteractionSession(
+                  createInteractionViaKeyboard(
+                    [Keyboard.keyCharacterForCode(event.keyCode)],
+                    Modifier.modifiersForKeyboardEvent(event),
+                    { type: 'KEYBOARD_CATCHER_CONTROL' },
+                  ),
+                )
+              : CanvasActions.createInteractionSession(
+                  updateInteractionViaKeyboard(
+                    existingInteractionSession,
+                    [Keyboard.keyCharacterForCode(event.keyCode)],
+                    [],
+                    Modifier.modifiersForKeyboardEvent(event),
+                    { type: 'KEYBOARD_CATCHER_CONTROL' },
+                  ),
+                )
+
           editorStoreRef.current.dispatch([action], 'everyone')
+          setupClearKeyboardInteraction(editorStoreRef, keyboardTimeoutHandler)
         }
       }
 
@@ -167,16 +185,21 @@ export const EditorComponentInner = React.memo((props: EditorProps) => {
       if (isFeatureEnabled('Canvas Strategies')) {
         const existingInteractionSession = editorStoreRef.current.editor.canvas.interactionSession
         if (existingInteractionSession != null) {
-          const action = CanvasActions.createInteractionSession(
-            updateInteractionViaKeyboard(
-              existingInteractionSession,
-              [],
-              [Keyboard.keyCharacterForCode(event.keyCode)],
-              Modifier.modifiersForKeyboardEvent(event),
-              { type: 'KEYBOARD_CATCHER_CONTROL' },
-            ),
-          )
-          editorStoreRef.current.dispatch([action], 'everyone')
+          if (isFeatureEnabled('Keyboard up clears interaction')) {
+            const action = CanvasActions.clearInteractionSession(true)
+            editorStoreRef.current.dispatch([action], 'everyone')
+          } else {
+            const action = CanvasActions.createInteractionSession(
+              updateInteractionViaKeyboard(
+                existingInteractionSession,
+                [],
+                [Keyboard.keyCharacterForCode(event.keyCode)],
+                Modifier.modifiersForKeyboardEvent(event),
+                { type: 'KEYBOARD_CATCHER_CONTROL' },
+              ),
+            )
+            editorStoreRef.current.dispatch([action], 'everyone')
+          }
         }
       }
 
@@ -256,7 +279,6 @@ export const EditorComponentInner = React.memo((props: EditorProps) => {
 
   return (
     <>
-      <UtopiaCanvasVarStyleTag />
       <SimpleFlexRow
         className='editor-main-vertical-and-modals'
         style={{

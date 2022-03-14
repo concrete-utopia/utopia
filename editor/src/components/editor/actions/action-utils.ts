@@ -16,6 +16,7 @@ export function isTransientAction(action: EditorAction): boolean {
     case 'UPDATE_KEYS_PRESSED':
     case 'SET_SELECTION_CONTROLS_VISIBILITY':
     case 'SCROLL_CANVAS':
+    case 'POSITION_CANVAS':
     case 'SET_FOCUS':
     case 'RESIZE_LEFTPANE':
     case 'CREATE_DRAG_STATE':
@@ -226,6 +227,20 @@ export function isClearInteractionSession(action: EditorAction): boolean {
     case 'ATOMIC':
       return action.actions.some(isClearInteractionSession)
     case 'CLEAR_INTERACTION_SESSION':
+      return true
+    default:
+      return false
+  }
+}
+
+export function isCreateOrUpdateInteractionSession(action: EditorAction): boolean {
+  switch (action.action) {
+    case 'TRANSIENT_ACTIONS':
+      return action.transientActions.some(isCreateOrUpdateInteractionSession)
+    case 'ATOMIC':
+      return action.actions.some(isCreateOrUpdateInteractionSession)
+    case 'CREATE_INTERACTION_SESSION':
+    case 'UPDATE_INTERACTION_SESSION':
       return true
     default:
       return false
