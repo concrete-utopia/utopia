@@ -1,9 +1,10 @@
 import { MetadataUtils } from '../../../core/model/element-metadata-utils'
-import { stylePropPathMappingFn } from '../../inspector/common/property-path-hooks'
-import { adjustNumberProperty } from '../commands/adjust-number-command'
-import { wildcardPatch } from '../commands/wildcard-patch-command'
-import { Keyboard } from '../../../utils/keyboard'
+import { Keyboard, KeyCharacter } from '../../../utils/keyboard'
 import { CanvasStrategy } from './canvas-strategy-types'
+import { Modifiers } from '../../../utils/modifiers'
+import { CanvasVector } from '../../../core/shared/math-utils'
+import { getAbsoluteMoveCommandsForSelectedElement } from './shared-absolute-move-strategy-helpers'
+import { AdjustCssLengthProperty } from '../commands/adjust-css-length-command'
 
 export const keyboardAbsoluteMoveStrategy: CanvasStrategy = {
   id: 'KEYBOARD_ABSOLUTE_MOVE',
@@ -32,70 +33,72 @@ export const keyboardAbsoluteMoveStrategy: CanvasStrategy = {
     ) {
       const { interactionData } = interactionState
 
-      const singleKeyPressed = interactionData.keysPressed.length === 1
-      const arrowKeyPressed = Keyboard.keyIsArrow(interactionData.keysPressed[0])
+      const arrowKeyPressed = interactionData.keysPressed.some(Keyboard.keyIsArrow)
       const shiftOrNoModifier =
         !interactionState.interactionData.modifiers.alt &&
         !interactionState.interactionData.modifiers.cmd &&
         !interactionState.interactionData.modifiers.ctrl
 
-      if (singleKeyPressed && arrowKeyPressed && shiftOrNoModifier) {
+      if (arrowKeyPressed && shiftOrNoModifier) {
         return 1
       }
     }
     return 0
   },
   apply: (canvasState, interactionState, sessionState) => {
-    // TODO: absolutely minimal implementation
     if (interactionState.interactionData.type === 'KEYBOARD') {
-      const key = interactionState.interactionData.keysPressed[0]
-      if (key == null) {
-        return []
-      }
-      switch (key) {
-        case 'left':
-          return canvasState.selectedElements.flatMap((selectedElement) => [
-            adjustNumberProperty(
-              'permanent',
-              selectedElement,
-              stylePropPathMappingFn('left', ['style']),
-              -10,
-              true,
-            ),
-          ])
-        case 'right':
-          return canvasState.selectedElements.flatMap((selectedElement) => [
-            adjustNumberProperty(
-              'permanent',
-              selectedElement,
-              stylePropPathMappingFn('left', ['style']),
-              10,
-              true,
-            ),
-          ])
-        case 'up':
-          return canvasState.selectedElements.flatMap((selectedElement) => [
-            adjustNumberProperty(
-              'permanent',
-              selectedElement,
-              stylePropPathMappingFn('top', ['style']),
-              -10,
-              true,
-            ),
-          ])
-        case 'down':
-          return canvasState.selectedElements.flatMap((selectedElement) => [
-            adjustNumberProperty(
-              'permanent',
-              selectedElement,
-              stylePropPathMappingFn('top', ['style']),
-              10,
-              true,
-            ),
-          ])
-      }
+      return interactionState.interactionData.keysPressed.flatMap<AdjustCssLengthProperty>(
+        (key) => {
+          if (key == null) {
+            return []
+          }
+          const drag = getDragDeltaFromKey(key, interactionState.interactionData.modifiers)
+          if (drag.x !== 0 || drag.y !== 0) {
+            return canvasState.selectedElements.flatMap((selectedElement) =>
+              getAbsoluteMoveCommandsForSelectedElement(
+                selectedElement,
+                drag,
+                canvasState,
+                sessionState,
+              ),
+            )
+          } else {
+            return []
+          }
+        },
+      )
     }
-    // Fallback for when the checks above are not satisfied.
     return []
   },
+}
+
+function getDragDeltaFromKey(key: KeyCharacter, modifiers: Modifiers): CanvasVector {
+  const step = modifiers.shift ? 10 : 1
+  switch (key) {
+    case 'left':
+      return {
+        x: -step,
+        y: 0,
+      } as CanvasVector
+    case 'right':
+      return {
+        x: step,
+        y: 0,
+      } as CanvasVector
+    case 'up':
+      return {
+        x: 0,
+        y: -step,
+      } as CanvasVector
+    case 'down':
+      return {
+        x: 0,
+        y: step,
+      } as CanvasVector
+    default:
+      return {
+        x: 0,
+        y: 0,
+      } as CanvasVector
+  }
 }

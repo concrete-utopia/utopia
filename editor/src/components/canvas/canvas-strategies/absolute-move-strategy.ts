@@ -25,6 +25,7 @@ import { wildcardPatch } from '../commands/wildcard-patch-command'
 import { runLegacySnapping } from '../controls/guideline-helpers'
 import { ConstrainedDragAxis, Guideline, GuidelineWithSnappingVector } from '../guideline'
 import { CanvasStrategy } from './canvas-strategy-types'
+import { getAbsoluteMoveCommandsForSelectedElement } from './shared-absolute-move-strategy-helpers'
 
 export const absoluteMoveStrategy: CanvasStrategy = {
   id: 'ABSOLUTE_MOVE',
@@ -65,30 +66,13 @@ export const absoluteMoveStrategy: CanvasStrategy = {
         canvasState.selectedElements,
         canvasState.scale,
       )
-      const commandsForSelectedElements = canvasState.selectedElements.flatMap(
-        (selectedElement) => {
-          const element: JSXElement | null = getElementFromProjectContents(
-            selectedElement,
-            canvasState.projectContents,
-            canvasState.openFile,
-          )
-          const elementParentBounds =
-            MetadataUtils.findElementByElementPath(
-              sessionState.startingMetadata, // TODO should this be using the current metadata?
-              selectedElement,
-            )?.specialSizeMeasurements.immediateParentBounds ?? null
-
-          if (element == null) {
-            return []
-          }
-
-          return createMoveCommandsForElement(
-            element,
-            selectedElement,
-            snappedDragVector,
-            elementParentBounds,
-          )
-        },
+      const commandsForSelectedElements = canvasState.selectedElements.flatMap((selectedElement) =>
+        getAbsoluteMoveCommandsForSelectedElement(
+          selectedElement,
+          snappedDragVector,
+          canvasState,
+          sessionState,
+        ),
       )
       return [
         ...commandsForSelectedElements,
@@ -99,38 +83,6 @@ export const absoluteMoveStrategy: CanvasStrategy = {
     // Fallback for when the checks above are not satisfied.
     return []
   },
-}
-
-function createMoveCommandsForElement(
-  element: JSXElement,
-  selectedElement: ElementPath,
-  drag: CanvasVector,
-  elementParentBounds: CanvasRectangle | null,
-): AdjustCssLengthProperty[] {
-  return mapDropNulls(
-    (pin) => {
-      const horizontal = isHorizontalPoint(
-        // TODO avoid using the loaded FramePoint enum
-        framePointForPinnedProp(pin),
-      )
-      const negative = pin === 'right' || pin === 'bottom'
-      const value = getLayoutProperty(pin, right(element.props), ['style'])
-      if (isRight(value) && value.value != null) {
-        // TODO what to do about missing properties?
-        return adjustCssLengthProperty(
-          'permanent',
-          selectedElement,
-          stylePropPathMappingFn(pin, ['style']),
-          (horizontal ? drag.x : drag.y) * (negative ? -1 : 1),
-          horizontal ? elementParentBounds?.width : elementParentBounds?.height,
-          true,
-        )
-      } else {
-        return null
-      }
-    },
-    ['top', 'bottom', 'left', 'right'] as const,
-  )
 }
 
 function snapDrag(
