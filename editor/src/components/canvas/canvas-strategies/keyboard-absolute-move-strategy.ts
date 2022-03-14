@@ -3,7 +3,7 @@ import { Keyboard, KeyCharacter } from '../../../utils/keyboard'
 import { CanvasStrategy } from './canvas-strategy-types'
 import { Modifiers } from '../../../utils/modifiers'
 import { CanvasVector } from '../../../core/shared/math-utils'
-import { getMoveCommandsForSelectedElement } from './shared-move-strategy-helpers'
+import { getAbsoluteMoveCommandsForSelectedElement } from './shared-absolute-move-strategy-helpers'
 
 export const keyboardAbsoluteMoveStrategy: CanvasStrategy = {
   id: 'KEYBOARD_ABSOLUTE_MOVE',
@@ -54,7 +54,12 @@ export const keyboardAbsoluteMoveStrategy: CanvasStrategy = {
       const drag = getDragDeltaFromKey(key, interactionState.interactionData.modifiers)
       if (drag.x !== 0 || drag.y !== 0) {
         return canvasState.selectedElements.flatMap((selectedElement) =>
-          getMoveCommandsForSelectedElement(selectedElement, drag, canvasState, sessionState),
+          getAbsoluteMoveCommandsForSelectedElement(
+            selectedElement,
+            drag,
+            canvasState,
+            sessionState,
+          ),
         )
       }
     }

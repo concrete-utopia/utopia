@@ -19,12 +19,12 @@ import {
 import { InteractionCanvasState } from './canvas-strategy-types'
 import { StrategyState } from './interaction-state'
 
-export function getMoveCommandsForSelectedElement(
+export function getAbsoluteMoveCommandsForSelectedElement(
   selectedElement: ElementPath,
   drag: CanvasVector,
   canvasState: InteractionCanvasState,
   sessionState: StrategyState,
-) {
+): Array<AdjustCssLengthProperty> {
   const element: JSXElement | null = getElementFromProjectContents(
     selectedElement,
     canvasState.projectContents,

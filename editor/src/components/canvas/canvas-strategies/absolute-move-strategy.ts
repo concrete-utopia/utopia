@@ -25,7 +25,7 @@ import { wildcardPatch } from '../commands/wildcard-patch-command'
 import { runLegacySnapping } from '../controls/guideline-helpers'
 import { ConstrainedDragAxis, Guideline, GuidelineWithSnappingVector } from '../guideline'
 import { CanvasStrategy } from './canvas-strategy-types'
-import { getMoveCommandsForSelectedElement } from './shared-move-strategy-helpers'
+import { getAbsoluteMoveCommandsForSelectedElement } from './shared-absolute-move-strategy-helpers'
 
 export const absoluteMoveStrategy: CanvasStrategy = {
   id: 'ABSOLUTE_MOVE',
@@ -67,7 +67,7 @@ export const absoluteMoveStrategy: CanvasStrategy = {
         canvasState.scale,
       )
       const commandsForSelectedElements = canvasState.selectedElements.flatMap((selectedElement) =>
-        getMoveCommandsForSelectedElement(
+        getAbsoluteMoveCommandsForSelectedElement(
           selectedElement,
           snappedDragVector,
           canvasState,
