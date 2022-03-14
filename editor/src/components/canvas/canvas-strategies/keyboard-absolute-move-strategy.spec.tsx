@@ -5,6 +5,7 @@ import {
 } from '../../../core/shared/element-template'
 import { canvasPoint, canvasRectangle } from '../../../core/shared/math-utils'
 import { ElementPath } from '../../../core/shared/project-file-types'
+import { KeyCharacter } from '../../../utils/keyboard'
 import { emptyModifiers } from '../../../utils/modifiers'
 import { EditorState } from '../../editor/store/editor-state'
 import { foldAndApplyCommands } from '../commands/commands'
@@ -28,10 +29,10 @@ function prepareEditorState(codeSnippet: string, selectedViews: Array<ElementPat
   }
 }
 
-function pressLeft(editorState: EditorState): EditorState {
+function pressKeys(editorState: EditorState, keys: Array<KeyCharacter>): EditorState {
   const interactionSession: InteractionSession = {
     ...createInteractionViaKeyboard(
-      ['left'],
+      keys,
       emptyModifiers,
       null as any, // the strategy does not use this
     ),
@@ -68,6 +69,10 @@ function pressLeft(editorState: EditorState): EditorState {
   return finalEditor
 }
 
+function pressLeft(editorState: EditorState): EditorState {
+  return pressKeys(editorState, ['left'])
+}
+
 describe('Keyboard Absolute Move Strategy', () => {
   it('works with a TL pinned absolute element', async () => {
     const targetElement = elementPath([
@@ -94,6 +99,38 @@ describe('Keyboard Absolute Move Strategy', () => {
         `<View style={{ ...(props.style || {}) }} data-uid='aaa'>
         <View
           style={{ backgroundColor: '#0091FFAA', position: 'absolute', left: 49, top: 50, width: 250, height: 300 }}
+          data-uid='bbb'
+        />
+      </View>`,
+      ),
+    )
+  })
+
+  it('works with left and top pressed simultaneously', async () => {
+    const targetElement = elementPath([
+      ['scene-aaa', 'app-entity'],
+      ['aaa', 'bbb'],
+    ])
+
+    const initialEditor: EditorState = prepareEditorState(
+      `
+    <View style={{ ...(props.style || {}) }} data-uid='aaa'>
+      <View
+        style={{ backgroundColor: '#0091FFAA', position: 'absolute', left: 50, top: 50, width: 250, height: 300 }}
+        data-uid='bbb'
+      />
+    </View>
+    `,
+      [targetElement],
+    )
+
+    const finalEditor = pressKeys(initialEditor, ['left', 'up'])
+
+    expect(testPrintCodeFromEditorState(finalEditor)).toEqual(
+      makeTestProjectCodeWithSnippet(
+        `<View style={{ ...(props.style || {}) }} data-uid='aaa'>
+        <View
+          style={{ backgroundColor: '#0091FFAA', position: 'absolute', left: 49, top: 49, width: 250, height: 300 }}
           data-uid='bbb'
         />
       </View>`,

@@ -4,6 +4,7 @@ import { CanvasStrategy } from './canvas-strategy-types'
 import { Modifiers } from '../../../utils/modifiers'
 import { CanvasVector } from '../../../core/shared/math-utils'
 import { getAbsoluteMoveCommandsForSelectedElement } from './shared-absolute-move-strategy-helpers'
+import { AdjustCssLengthProperty } from '../commands/adjust-css-length-command'
 
 export const keyboardAbsoluteMoveStrategy: CanvasStrategy = {
   id: 'KEYBOARD_ABSOLUTE_MOVE',
@@ -32,14 +33,13 @@ export const keyboardAbsoluteMoveStrategy: CanvasStrategy = {
     ) {
       const { interactionData } = interactionState
 
-      const singleKeyPressed = interactionData.keysPressed.length === 1
-      const arrowKeyPressed = Keyboard.keyIsArrow(interactionData.keysPressed[0])
+      const arrowKeyPressed = interactionData.keysPressed.some(Keyboard.keyIsArrow)
       const shiftOrNoModifier =
         !interactionState.interactionData.modifiers.alt &&
         !interactionState.interactionData.modifiers.cmd &&
         !interactionState.interactionData.modifiers.ctrl
 
-      if (singleKeyPressed && arrowKeyPressed && shiftOrNoModifier) {
+      if (arrowKeyPressed && shiftOrNoModifier) {
         return 1
       }
     }
@@ -47,21 +47,26 @@ export const keyboardAbsoluteMoveStrategy: CanvasStrategy = {
   },
   apply: (canvasState, interactionState, sessionState) => {
     if (interactionState.interactionData.type === 'KEYBOARD') {
-      const key = interactionState.interactionData.keysPressed[0]
-      if (key == null) {
-        return []
-      }
-      const drag = getDragDeltaFromKey(key, interactionState.interactionData.modifiers)
-      if (drag.x !== 0 || drag.y !== 0) {
-        return canvasState.selectedElements.flatMap((selectedElement) =>
-          getAbsoluteMoveCommandsForSelectedElement(
-            selectedElement,
-            drag,
-            canvasState,
-            sessionState,
-          ),
-        )
-      }
+      return interactionState.interactionData.keysPressed.flatMap<AdjustCssLengthProperty>(
+        (key) => {
+          if (key == null) {
+            return []
+          }
+          const drag = getDragDeltaFromKey(key, interactionState.interactionData.modifiers)
+          if (drag.x !== 0 || drag.y !== 0) {
+            return canvasState.selectedElements.flatMap((selectedElement) =>
+              getAbsoluteMoveCommandsForSelectedElement(
+                selectedElement,
+                drag,
+                canvasState,
+                sessionState,
+              ),
+            )
+          } else {
+            return []
+          }
+        },
+      )
     }
     return []
   },
