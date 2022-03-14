@@ -61,7 +61,6 @@ import {
   useGetApplicableStrategiesOrderedByFitness,
   useGetApplicableStrategyControls,
 } from '../canvas-strategies/canvas-strategies'
-import { AbsoluteResizeControl } from './select-mode/absolute-resize-control'
 import { FlexResizeControl } from './select-mode/flex-resize-control'
 import { MultiSelectOutlineControl } from './select-mode/simple-outline-control'
 import { GuidelineControls } from './guideline-controls'
@@ -412,17 +411,13 @@ const NewCanvasControlsInner = (props: NewCanvasControlsInnerProps) => {
       {renderHighlightControls()}
       <LayoutParentControl />
       {when(
-        isFeatureEnabled('Canvas Strategies'),
-        <>{strategyControls.map((c) => React.createElement(c.control, { key: c.key }))}</>,
-      )}
-      {when(
         isFeatureEnabled('Canvas Absolute Resize Controls'),
         <MultiSelectOutlineControl localSelectedElements={localSelectedViews} />,
       )}
       {when(isFeatureEnabled('Canvas Absolute Resize Controls'), <GuidelineControls />)}
       {when(
-        isFeatureEnabled('Canvas Absolute Resize Controls'),
-        <AbsoluteResizeControl localSelectedElements={localSelectedViews} />,
+        isFeatureEnabled('Canvas Strategies'),
+        <>{strategyControls.map((c) => React.createElement(c.control, { key: c.key }))}</>,
       )}
       {when(
         isFeatureEnabled('Canvas Absolute Resize Controls'),

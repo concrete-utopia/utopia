@@ -254,6 +254,21 @@ export const Keyboard = {
       return char === keyChar
     })
   },
+  keyIsArrow: function (keyChar: KeyCharacter): boolean {
+    switch (keyChar) {
+      case 'left':
+      case 'right':
+      case 'up':
+      case 'down':
+        return true
+      default:
+        return false
+    }
+  },
+  // This needs to be extended when we introduce new keys in canvas strategies
+  keyIsInteraction: function (keyChar: KeyCharacter): boolean {
+    return this.keyIsArrow(keyChar)
+  },
   keyTriggersScroll: function (keyChar: KeyCharacter, keysPressed: KeysPressed): boolean {
     return (
       ['up', 'down', 'left', 'right', 'space'].some((char) => {
