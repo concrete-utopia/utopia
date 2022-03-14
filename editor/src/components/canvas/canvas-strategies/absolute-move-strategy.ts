@@ -22,7 +22,7 @@ import {
 import { setSnappingGuidelines } from '../commands/set-snapping-guidelines-command'
 import { updateHighlightedViews } from '../commands/update-highlighted-views-command'
 import { wildcardPatch } from '../commands/wildcard-patch-command'
-import { runLegacySnapping } from '../controls/guideline-helpers'
+import { runLegacyAbsoluteMoveSnapping } from '../controls/guideline-helpers'
 import { ConstrainedDragAxis, Guideline, GuidelineWithSnappingVector } from '../guideline'
 import { CanvasStrategy } from './canvas-strategy-types'
 import { getAbsoluteMoveCommandsForSelectedElement } from './shared-absolute-move-strategy-helpers'
@@ -99,7 +99,7 @@ function snapDrag(
 
   // This is the entry point to extend the list of snapping strategies, if we want to add more
 
-  const { snappedDragVector, guidelinesWithSnappingVector } = runLegacySnapping(
+  const { snappedDragVector, guidelinesWithSnappingVector } = runLegacyAbsoluteMoveSnapping(
     drag,
     constrainedDragAxis,
     jsxMetadata,

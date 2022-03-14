@@ -199,7 +199,7 @@ function pointGuidelineToBoundsEdge(
   })
 }
 
-export function runLegacySnapping(
+export function runLegacyAbsoluteMoveSnapping(
   drag: CanvasPoint,
   constrainedDragAxis: ConstrainedDragAxis | null,
   jsxMetadata: ElementInstanceMetadataMap,
