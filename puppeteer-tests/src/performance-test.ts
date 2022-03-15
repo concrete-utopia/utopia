@@ -3,6 +3,7 @@ require('dotenv').config({ path: 'src/.env' })
 import puppeteer from 'puppeteer'
 import { v4 } from 'uuid'
 import { consoleDoneMessage, initialiseTests, setupBrowser, uploadPNGtoAWS } from './utils'
+import * as JSONStream from 'JSONStream'
 const fs = require('fs')
 const path = require('path')
 const moveFile = require('move-file')
@@ -38,6 +39,24 @@ const EmptyResult: FrameResult = {
     percentile50: undefined,
     percentile75: undefined,
   },
+}
+
+function loadTraceEventsJSON(): Promise<any> {
+  const fileReader = fs.createReadStream('trace.json')
+  const parser = JSONStream.parse('traceEvents.*')
+  const composed = fileReader.pipe(parser)
+  let result: Array<any> = []
+  composed.on('data', (data: any) => {
+    result.push(data)
+  })
+  return new Promise((resolve, reject) => {
+    composed.on('end', () => {
+      resolve(result)
+    })
+    composed.on('error', (err: any) => {
+      reject(err)
+    })
+  })
 }
 
 // this is the same as utils.ts@defer
@@ -116,13 +135,12 @@ function timeBasicCalc(): FrameResult {
 
 async function testBaselinePerformance(page: puppeteer.Page): Promise<FrameResult> {
   console.log('Test Baseline Performance')
-  await page.tracing.start({ categories: ['blink.user_timing'], path: 'trace.json' })
+  await page.tracing.start({ path: 'trace.json' })
   await clickOnce(page, "//a[contains(., 'B L')]", 'BASELINE_TEST_FINISHED')
   await page.tracing.stop()
 
-  let traceData = fs.readFileSync('trace.json').toString()
-  const traceJson = JSON.parse(traceData)
-  return getFrameData(traceJson, 'baseline_frame_', 'Empty Dispatch')
+  const traceJson = await loadTraceEventsJSON()
+  return getFrameData(traceJson, 'baseline', 'Empty Dispatch')
 }
 
 async function initialiseTestsReturnScale(page: puppeteer.Page): Promise<Baselines> {
@@ -136,7 +154,7 @@ async function initialiseTestsReturnScale(page: puppeteer.Page): Promise<Baselin
   // This change should have triggered a fork, so pause again
   await page.waitForTimeout(15000)
 
-  console.log('Taking baseline performance measurments')
+  console.log('Taking baseline performance measurements')
   // Now take a baseline measurement for general performance of the machine running this test
   // This value should be as close as possible to 1 on a good run on CI
   const basicCalc = timeBasicCalc()
@@ -243,12 +261,11 @@ export const testScrollingPerformance = async function (
   await clickOnce(page, "//a[contains(., 'P S')]", 'SCROLL_TEST_FINISHED')
 
   // and then we run the test for a third time, this time running tracing
-  await page.tracing.start({ categories: ['blink.user_timing'], path: 'trace.json' })
+  await page.tracing.start({ path: 'trace.json' })
   await clickOnce(page, "//a[contains(., 'P S')]", 'SCROLL_TEST_FINISHED')
   await page.tracing.stop()
-  let traceData = fs.readFileSync('trace.json').toString()
-  const traceJson = JSON.parse(traceData)
-  return getFrameData(traceJson, 'scroll_frame_', 'Scroll Canvas')
+  const traceJson = await loadTraceEventsJSON()
+  return getFrameData(traceJson, 'scroll', 'Scroll Canvas')
 }
 
 export const testResizePerformance = async function (page: puppeteer.Page): Promise<FrameResult> {
@@ -274,7 +291,7 @@ export const testResizePerformance = async function (page: puppeteer.Page): Prom
   )
 
   // and then we run the test for a third time, this time running tracing
-  await page.tracing.start({ categories: ['blink.user_timing'], path: 'trace.json' })
+  await page.tracing.start({ path: 'trace.json' })
   await clickOnce(
     page,
     ResizeButtonXPath,
@@ -282,9 +299,8 @@ export const testResizePerformance = async function (page: puppeteer.Page): Prom
     'RESIZE_TEST_MISSING_SELECTEDVIEW',
   )
   await page.tracing.stop()
-  let traceData = fs.readFileSync('trace.json').toString()
-  const traceJson = JSON.parse(traceData)
-  return getFrameData(traceJson, 'resize_frame_', 'Resize')
+  const traceJson = await loadTraceEventsJSON()
+  return getFrameData(traceJson, 'resize', 'Resize')
 }
 
 export const testHighlightRegularPerformance = async function (
@@ -307,7 +323,7 @@ export const testHighlightRegularPerformance = async function (
   )
 
   // and then we run the test for a third time, this time running tracing
-  await page.tracing.start({ categories: ['blink.user_timing'], path: 'trace.json' })
+  await page.tracing.start({ path: 'trace.json' })
   await clickOnce(
     page,
     "//a[contains(., 'PRH')]",
@@ -315,9 +331,8 @@ export const testHighlightRegularPerformance = async function (
     'HIGHLIGHT_REGULAR_TEST_ERROR',
   )
   await page.tracing.stop()
-  let traceData = fs.readFileSync('trace.json').toString()
-  const traceJson = JSON.parse(traceData)
-  return getFrameData(traceJson, 'highlight_regular_frame_', 'Highlight Regular')
+  const traceJson = await loadTraceEventsJSON()
+  return getFrameData(traceJson, 'highlight_regular', 'Highlight Regular')
 }
 
 export const testHighlightAllElementsPerformance = async function (
@@ -340,7 +355,7 @@ export const testHighlightAllElementsPerformance = async function (
   )
 
   // and then we run the test for a third time, this time running tracing
-  await page.tracing.start({ categories: ['blink.user_timing'], path: 'trace.json' })
+  await page.tracing.start({ path: 'trace.json' })
   await clickOnce(
     page,
     "//a[contains(., 'PAH')]",
@@ -348,9 +363,8 @@ export const testHighlightAllElementsPerformance = async function (
     'HIGHLIGHT_ALL-ELEMENTS_TEST_ERROR',
   )
   await page.tracing.stop()
-  let traceData = fs.readFileSync('trace.json').toString()
-  const traceJson = JSON.parse(traceData)
-  return getFrameData(traceJson, 'highlight_all-elements_frame_', 'Highlight All Elements')
+  const traceJson = await loadTraceEventsJSON()
+  return getFrameData(traceJson, 'highlight_all-elements', 'Highlight All Elements')
 }
 
 export const testSelectionPerformance = async function (
@@ -363,14 +377,13 @@ export const testSelectionPerformance = async function (
   await clickOnce(page, "//a[contains(., 'P E')]", 'SELECT_TEST_FINISHED', 'SELECT_TEST_ERROR')
 
   // and then we run the test for a third time, this time running tracing
-  await page.tracing.start({ categories: ['blink.user_timing'], path: 'trace.json' })
+  await page.tracing.start({ path: 'trace.json' })
   await clickOnce(page, "//a[contains(., 'P E')]", 'SELECT_TEST_FINISHED', 'SELECT_TEST_ERROR')
   await page.tracing.stop()
-  let traceData = fs.readFileSync('trace.json').toString()
-  const traceJson = JSON.parse(traceData)
+  const traceJson = await loadTraceEventsJSON()
   return [
-    getFrameData(traceJson, 'select_frame_', 'Selection'),
-    getFrameData(traceJson, 'select_deselect_frame_', 'De-Selection'),
+    getFrameData(traceJson, 'select', 'Selection'),
+    getFrameData(traceJson, 'select_deselect', 'De-Selection'),
   ]
 }
 
@@ -394,7 +407,7 @@ export const testAbsoluteMovePerformance = async function (
   )
 
   // and then we run the test for a third time, this time running tracing
-  await page.tracing.start({ categories: ['blink.user_timing'], path: 'trace.json' })
+  await page.tracing.start({ path: 'trace.json' })
   await clickOnce(
     page,
     "//a[contains(., 'PAM')]",
@@ -402,31 +415,43 @@ export const testAbsoluteMovePerformance = async function (
     'ABSOLUTE_MOVE_TEST_ERROR',
   )
   await page.tracing.stop()
-  let traceData = fs.readFileSync('trace.json').toString()
-  const traceJson = JSON.parse(traceData)
+  const traceJson = await loadTraceEventsJSON()
   return [
-    getFrameData(traceJson, 'absolute_move_interaction_frame_', 'Absolute Move (Interaction)'),
-    getFrameData(traceJson, 'absolute_move_move_frame_', 'Absolute Move (Just Move)'),
+    getFrameData(traceJson, 'absolute_move_interaction', 'Absolute Move (Interaction)'),
+    getFrameData(traceJson, 'absolute_move_move', 'Absolute Move (Just Move)'),
   ]
 }
 
-const getFrameData = (traceJson: any, markNamePrefix: string, title: string): FrameResult => {
-  const frameTimeEvents: any[] = traceJson.traceEvents.filter((e: any) =>
-    e.name.startsWith(markNamePrefix),
-  )
+const getFrameData = (traceEventsJson: any, markNamePrefix: string, title: string): FrameResult => {
+  const relevantEvents: any[] = traceEventsJson.filter((e: any) => {
+    return e.cat === 'blink.user_timing' && e.name.startsWith(`${markNamePrefix}_`)
+  })
+
+  function findStartEvent(frameCounter: number): any | null {
+    return relevantEvents.find((e) => {
+      return e.cat === 'blink.user_timing' && e.name === `${markNamePrefix}_start_${frameCounter}`
+    })
+  }
+
+  function findEndEvent(frameCounter: number): any | null {
+    return relevantEvents.find((e) => {
+      return e.cat === 'blink.user_timing' && e.name === `${markNamePrefix}_end_${frameCounter}`
+    })
+  }
+
   let frameTimes: Array<number> = []
-  let lastFrameTimestamp: number | null = null
   let totalFrameTimes = 0
-  frameTimeEvents.forEach((fte) => {
-    const frameID = fte.name.split(markNamePrefix)[1] - 1
-    const frameTimestamp = fte.ts
-    if (lastFrameTimestamp != null) {
-      const frameDelta = (frameTimestamp - lastFrameTimestamp) / 1000
-      frameTimes[frameID] = frameDelta
+  for (let frameCounter: number = 0; frameCounter < 100000; frameCounter++) {
+    const startEvent = findStartEvent(frameCounter)
+    const endEvent = findEndEvent(frameCounter)
+    if (startEvent == null || endEvent == null) {
+      break
+    } else {
+      const frameDelta = (endEvent.ts - startEvent.ts) / 1000
+      frameTimes[frameCounter] = frameDelta
       totalFrameTimes += frameDelta
     }
-    lastFrameTimestamp = frameTimestamp
-  })
+  }
 
   let frameTimesFixed = frameTimes.map((x) => Number(x.toFixed(1)))
   const sortedFrameTimes = frameTimesFixed.sort((a, b) => a - b)
