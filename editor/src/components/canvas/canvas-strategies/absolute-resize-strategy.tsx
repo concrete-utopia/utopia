@@ -21,6 +21,7 @@ import {
   AdjustCssLengthProperty,
   adjustCssLengthProperty,
 } from '../commands/adjust-css-length-command'
+import { setSnappingGuidelines } from '../commands/set-snapping-guidelines-command'
 import { updateHighlightedViews } from '../commands/update-highlighted-views-command'
 import { AbsoluteResizeControl } from '../controls/select-mode/absolute-resize-control'
 import { GuidelineWithSnappingVector } from '../guideline'
@@ -64,7 +65,7 @@ export const absoluteResizeStrategy: CanvasStrategy = {
     ) {
       const drag = interactionState.interactionData.drag
       const edgePosition = interactionState.activeControl.edgePosition
-      const snappedDrag = snapDrag(
+      const { snappedDragVector, guidelinesWithSnappingVector } = snapDrag(
         canvasState.selectedElements,
         sessionState.startingMetadata,
         canvasState.scale,
@@ -101,12 +102,16 @@ export const absoluteResizeStrategy: CanvasStrategy = {
             element,
             selectedElement,
             edgePosition,
-            snappedDrag.snappedDragVector,
+            snappedDragVector,
             elementParentBounds,
           )
         },
       )
-      return [...commandsForSelectedElements, updateHighlightedViews('transient', [])]
+      return [
+        ...commandsForSelectedElements,
+        updateHighlightedViews('transient', []),
+        setSnappingGuidelines('transient', guidelinesWithSnappingVector),
+      ]
     }
     // Fallback for when the checks above are not satisfied.
     return []
