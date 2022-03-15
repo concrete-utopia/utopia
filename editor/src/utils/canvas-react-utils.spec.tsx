@@ -664,4 +664,42 @@ describe('Monkey Function', () => {
       "
     `)
   })
+
+  it('builds the correct paths', () => {
+    const Red = () => {
+      return <div data-uid='red-root' data-paths='test1/red~~~1:red-root' />
+    }
+
+    var Component = () => {
+      const red = <Red data-uid='red' data-paths='test1/red~~~1' />
+
+      return (
+        <div data-uid='parent' data-paths='test1:parent'>
+          {red}
+        </div>
+      )
+    }
+
+    // expect(renderToFormattedString(<Component data-uid={'test1'} data-paths='test1' />))
+    //   .toMatchInlineSnapshot(`
+    //   "<div data-uid=\\"parent test1\\" data-paths=\\"test1:parent test1\\">
+    //     <div
+    //       data-uid=\\"red-root red\\"
+    //       data-paths=\\"test1:parent/red~~~1:red-root test1:parent/red~~~1\\"
+    //     ></div>
+    //   </div>
+    //   "
+    // `)
+
+    expect(renderToFormattedString(<Component data-uid={'test1'} data-paths='test1' />))
+      .toMatchInlineSnapshot(`
+      "<div data-uid=\\"parent test1\\" data-paths=\\"test1:parent test1\\">
+        <div
+          data-uid=\\"red-root red\\"
+          data-paths=\\"test1/red~~~1:red-root test1/red~~~1\\"
+        ></div>
+      </div>
+      "
+    `)
+  })
 })

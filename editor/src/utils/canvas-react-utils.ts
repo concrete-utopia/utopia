@@ -10,6 +10,7 @@ import {
   UTOPIA_UIDS_KEY,
   UTOPIA_PATHS_KEY,
   UTOPIA_UID_PARENTS_KEY,
+  UTOPIA_PATHS_2_KEY,
 } from '../core/model/utopia-constants'
 import { v4 } from 'uuid'
 import { appendToUidString } from '../core/shared/uid-utils'
@@ -298,6 +299,13 @@ function isClassComponent(component: any) {
 }
 
 function patchedCreateReactElement(type: any, props: any, ...children: any): any {
+  if (props?.[UTOPIA_UIDS_KEY] != null) {
+    console.log(`patchedCreateReactElement ${props[UTOPIA_UIDS_KEY]}`)
+  }
+  if (props?.[UTOPIA_PATHS_2_KEY] != null) {
+    console.log(`patchedCreateReactElement paths ${props[UTOPIA_PATHS_2_KEY]}`)
+  }
+
   if (isClassComponent(type)) {
     const mangledClass = mangleClassType(type)
     return realCreateElement(mangledClass, props, ...children)
