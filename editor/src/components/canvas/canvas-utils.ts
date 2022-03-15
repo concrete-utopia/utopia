@@ -1239,18 +1239,14 @@ export function collectGuidelines(
 }
 
 function innerSnapPoint(
-  editor: EditorState,
+  selectedViews: Array<ElementPath>,
+  jsxMetadata: ElementInstanceMetadataMap,
+  canvasScale: number,
   point: CanvasPoint,
   resizingFromPosition: EdgePosition | null,
 ): { point: CanvasPoint; guideline: GuidelineWithSnappingVector | null } {
   const guidelines = oneGuidelinePerDimension(
-    collectGuidelines(
-      editor.jsxMetadata,
-      editor.selectedViews,
-      editor.canvas.scale,
-      point,
-      resizingFromPosition,
-    ),
+    collectGuidelines(jsxMetadata, selectedViews, canvasScale, point, resizingFromPosition),
   )
   let snappedPoint = point
   let snappedGuideline: GuidelineWithSnappingVector | null = null
@@ -1268,29 +1264,40 @@ function innerSnapPoint(
 }
 
 export function snapPoint(
-  editor: EditorState,
+  selectedViews: Array<ElementPath>,
+  jsxMetadata: ElementInstanceMetadataMap,
+  canvasScale: number,
   pointToSnap: CanvasPoint,
   enableSnapping: boolean,
   keepAspectRatio: boolean,
   diagonalA: CanvasPoint,
   diagonalB: CanvasPoint,
   resizingFromPosition: EdgePosition | null,
-): CanvasPoint {
+): {
+  snappedPointOnCanvas: CanvasPoint
+  guidelinesWithSnappingVector: Array<GuidelineWithSnappingVector>
+} {
   const elementsToTarget = determineElementsToOperateOnForDragging(
-    editor.selectedViews,
-    editor.jsxMetadata,
+    selectedViews,
+    jsxMetadata,
     true,
     false,
   )
   const anythingPinnedAndNotAbsolutePositioned = elementsToTarget.some((elementToTarget) => {
-    return MetadataUtils.isPinnedAndNotAbsolutePositioned(editor.jsxMetadata, elementToTarget)
+    return MetadataUtils.isPinnedAndNotAbsolutePositioned(jsxMetadata, elementToTarget)
   })
   const shouldSnap = enableSnapping && !anythingPinnedAndNotAbsolutePositioned
 
   if (keepAspectRatio) {
     const closestPointOnLine = Utils.closestPointOnLine(diagonalA, diagonalB, pointToSnap)
     if (shouldSnap) {
-      const { guideline } = innerSnapPoint(editor, closestPointOnLine, resizingFromPosition)
+      const { guideline } = innerSnapPoint(
+        selectedViews,
+        jsxMetadata,
+        canvasScale,
+        closestPointOnLine,
+        resizingFromPosition,
+      )
       if (guideline != null) {
         const guidelinePoints = Guidelines.convertGuidelineToPoints(guideline.guideline)
         // for now, because scale is not a first-class citizen, we know that CanvasVector and LocalVector have the same dimensions
@@ -1308,17 +1315,28 @@ export function snapPoint(
             )
         }
         if (snappedPoint != null) {
-          return snappedPoint
+          return { snappedPointOnCanvas: snappedPoint, guidelinesWithSnappingVector: [guideline] }
         }
       }
       // fallback to regular diagonal snapping
-      return closestPointOnLine
+      return { snappedPointOnCanvas: closestPointOnLine, guidelinesWithSnappingVector: [] }
     } else {
-      return pointToSnap
+      return { snappedPointOnCanvas: pointToSnap, guidelinesWithSnappingVector: [] }
     }
   } else {
-    const { point } = innerSnapPoint(editor, pointToSnap, resizingFromPosition)
-    return shouldSnap ? point : pointToSnap
+    const { point, guideline } = innerSnapPoint(
+      selectedViews,
+      jsxMetadata,
+      canvasScale,
+      pointToSnap,
+      resizingFromPosition,
+    )
+    return shouldSnap
+      ? {
+          snappedPointOnCanvas: point,
+          guidelinesWithSnappingVector: guideline != null ? [guideline] : [],
+        }
+      : { snappedPointOnCanvas: pointToSnap, guidelinesWithSnappingVector: [] }
   }
 }
 
@@ -1368,14 +1386,16 @@ function calculateDraggedRectangle(
     const newCorner = Utils.offsetPoint(draggedCorner, delta)
     const snappedNewCorner = Utils.roundPointTo(
       snapPoint(
-        editor,
+        editor.selectedViews,
+        editor.jsxMetadata,
+        editor.canvas.scale,
         newCorner,
         propertyChange.enableSnapping,
         propertyChange.keepAspectRatio,
         startingPoint,
         draggedCorner,
         startingCorner,
-      ),
+      ).snappedPointOnCanvas,
       0,
     )
     const newSizeVector = Utils.pointDifference(startingPoint, snappedNewCorner)
