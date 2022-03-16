@@ -165,7 +165,7 @@ export function getSnapDelta(
   return { delta: Utils.roundPointTo(delta, 0), guidelinesWithSnappingVector: winningGuidelines }
 }
 
-function pointGuidelineToBoundsEdge(
+export function pointGuidelineToBoundsEdge(
   guidelinesWithSnappingVector: Array<GuidelineWithSnappingVector>,
   multiselectBounds: CanvasRectangle,
 ): Array<GuidelineWithSnappingVector> {

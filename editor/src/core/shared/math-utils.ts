@@ -659,6 +659,13 @@ export function rectFromPointVector<C extends CoordinateMarker>(
   return normalizeRect(rectangle)
 }
 
+export function rectFromTwoPoints<C extends CoordinateMarker>(
+  corner: Point<C>,
+  oppositeCorner: Point<C>,
+): Rectangle<C> {
+  return rectFromPointVector(corner, vectorDifference(corner, oppositeCorner), false)
+}
+
 export function rectSizeToVector<C extends CoordinateMarker>(sizeOfVector: Size): Point<C> {
   return {
     x: sizeOfVector.width,

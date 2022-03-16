@@ -113,6 +113,7 @@ import {
   localRectangle,
   LocalRectangle,
   offsetPoint,
+  rectFromTwoPoints,
   Size,
   vectorDifference,
 } from '../../core/shared/math-utils'
@@ -171,6 +172,7 @@ import {
   collectParentAndSiblingGuidelines,
   filterGuidelinesStaticAxis,
   oneGuidelinePerDimension,
+  pointGuidelineToBoundsEdge,
 } from './controls/guideline-helpers'
 import {
   determineElementsToOperateOnForDragging,
@@ -1386,9 +1388,15 @@ export function runLegacyAbsoluteResizeSnapping(
   const delta = vectorDifference(draggedPointMovedWithoutSnap, snappedPointOnCanvas)
   const snappedDragVector = offsetPoint(drag, delta)
 
+  const snappedBounds = rectFromTwoPoints(oppositePoint, snappedPointOnCanvas)
+  const updatedGuidelinesWithSnapping = pointGuidelineToBoundsEdge(
+    guidelinesWithSnappingVector,
+    snappedBounds,
+  )
+
   return {
     snappedDragVector: snappedDragVector,
-    guidelinesWithSnappingVector: guidelinesWithSnappingVector,
+    guidelinesWithSnappingVector: updatedGuidelinesWithSnapping,
   }
 }
 
