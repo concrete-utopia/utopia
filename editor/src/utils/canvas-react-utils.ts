@@ -137,11 +137,9 @@ function attachDataUidToRoot(
     return originalResponse
   } else {
     if (shouldIncludeDataUID(originalResponse.type)) {
-      const result = appendRootUIDToPath(path2, originalResponse.props[UTOPIA_UIDS_KEY])
-      console.log(`Attaching path2 ${result} to ${originalResponse.props[UTOPIA_UIDS_KEY]}`)
       return React.cloneElement(originalResponse, {
         [UTOPIA_UIDS_KEY]: appendToUidString(originalResponse.props[UTOPIA_UIDS_KEY], dataUids),
-        [UTOPIA_PATHS_KEY]: appendToUidString(originalResponse.props[UTOPIA_PATHS_KEY], paths),
+        [UTOPIA_PATHS_KEY]: appendToUidString(originalResponse.props[UTOPIA_PATHS_KEY], paths), // This is the line that adds all paths to the element
         [UTOPIA_PATHS_2_KEY]: appendRootUIDToPath(path2, originalResponse.props[UTOPIA_UIDS_KEY]),
       })
     } else {
@@ -171,8 +169,6 @@ function attachPath2ToChild(
     return originalResponse
   } else {
     if (shouldIncludeDataUID(originalResponse.type)) {
-      const result = appendChildUIDToPath(path2, originalResponse.props[UTOPIA_UIDS_KEY])
-      console.log(`Attaching path2 ${result} to ${originalResponse.props[UTOPIA_UIDS_KEY]}`)
       return React.cloneElement(originalResponse, {
         [UTOPIA_PATHS_2_KEY]: appendChildUIDToPath(path2, originalResponse.props[UTOPIA_UIDS_KEY]),
       })
@@ -209,7 +205,6 @@ function attachPath2ToChildElement(child: React.ReactElement | null, path2: stri
 
 function attachPath2ToChildren(children: any, path2: string | null): any {
   if (typeof children === 'function') {
-    // mangle the function so that what it returns has the data uid
     const originalFunction = children
     return function (...params: any[]) {
       const originalResponse = originalFunction(...params)
@@ -221,6 +216,26 @@ function attachPath2ToChildren(children: any, path2: string | null): any {
     } else {
       return attachPath2ToChildElement(children, path2)
     }
+  }
+}
+
+function attachPath2ToChildrenOfElement(
+  originalTypeResponse: React.ReactElement | null,
+  children: any,
+  path2: string | null,
+): any {
+  if (originalTypeResponse == null) {
+    return originalTypeResponse
+  }
+
+  const updatedChildren = attachPath2ToChildren(children, path2)
+
+  if (updatedChildren == null) {
+    return originalTypeResponse
+  } else if (Array.isArray(updatedChildren)) {
+    return React.cloneElement(originalTypeResponse, undefined, ...updatedChildren)
+  } else {
+    return React.cloneElement(originalTypeResponse, undefined, updatedChildren)
   }
 }
 
@@ -237,31 +252,17 @@ const mangleFunctionType = Utils.memoize(
           performance.mark(`render_start_${uuid}`)
         }
 
+        let originalTypeResponse = (type as React.FunctionComponent)(p, context)
+
         const path2 = p?.[UTOPIA_PATHS_2_KEY] ?? p?.[UTOPIA_UIDS_KEY]
-        const children = attachPath2ToChildren(p?.children, path2)
-
-        // let mangledProps = {
-        //   ...p,
-        //   children,
-        // }
-
-        // const kids = Array.isArray(children) ? ...children : children
-        let originalTypeResponse
-
-        if (Array.isArray(children)) {
-          let originalTypeResponseBefore = (type as React.FunctionComponent)(p, context)
-          originalTypeResponse = React.cloneElement(
-            originalTypeResponseBefore as any,
-            {},
-            ...children,
-          )
-        } else {
-          let originalTypeResponseBefore = (type as React.FunctionComponent)(p, context)
-          originalTypeResponse = React.cloneElement(originalTypeResponseBefore as any, {}, children)
-        }
+        const withUpdatedChildren = attachPath2ToChildrenOfElement(
+          originalTypeResponse,
+          p?.children,
+          path2,
+        )
 
         const res = attachDataUidToRoot(
-          originalTypeResponse,
+          withUpdatedChildren,
           (p as any)?.[UTOPIA_UIDS_KEY],
           (p as any)?.[UTOPIA_PATHS_KEY],
           path2,
@@ -303,18 +304,17 @@ const mangleClassType = Utils.memoize(
       let originalTypeResponse = originalRender.bind(this)()
 
       const path2 = this.props?.[UTOPIA_PATHS_2_KEY] ?? this.props?.[UTOPIA_UIDS_KEY]
-      const children = attachPath2ToChildren(this.props?.children, path2)
-
-      let mangledProps = {
-        ...this.props,
-        children,
-      }
+      const withUpdatedChildren = attachPath2ToChildrenOfElement(
+        originalTypeResponse,
+        this.props?.children,
+        path2,
+      )
 
       const res = attachDataUidToRoot(
-        originalTypeResponse,
+        withUpdatedChildren,
         (this.props as any)?.[UTOPIA_UIDS_KEY],
         (this.props as any)?.[UTOPIA_PATHS_KEY],
-        (this.props as any)?.[UTOPIA_PATHS_2_KEY],
+        path2,
       )
       if (MeasureRenderTimes) {
         performance.mark(`render_end_${uuid}`)
@@ -430,10 +430,36 @@ const mangleExoticType = Utils.memoize(
   },
 )
 
+const mangleIntrinsicType = Utils.memoize(
+  (type: string): React.FunctionComponent => {
+    const wrapperComponent = (p: any, context?: any) => {
+      console.log(`Creating a ${type}`)
+
+      let updatedProps = p
+      if (!shouldIncludeDataUID(type)) {
+        updatedProps = filterDataProps(updatedProps)
+      }
+
+      return realCreateElement(type, updatedProps)
+    }
+
+    return wrapperComponent
+  },
+)
+
 function isClassComponent(component: any) {
   // this is copied from stack overflow https://stackoverflow.com/a/41658173
   return typeof component === 'function' && component?.prototype?.isReactComponent != null
 }
+
+// Remaining TODO
+// - [ ] Update mangleExoticType
+//   - [ ] Add a test case
+// - [ ] Update mangleIntrinsicType
+//   - [ ] Add a test case
+// - [ ] Remove existing creation of `data-paths` and replace it completely with this new method
+// - [ ] Tidy up the types
+// - [ ] Check if we need all paths on an element, or just the deepest path
 
 function patchedCreateReactElement(type: any, props: any, ...children: any): any {
   if (isClassComponent(type)) {
@@ -446,7 +472,10 @@ function patchedCreateReactElement(type: any, props: any, ...children: any): any
   } else if (fragmentOrProviderOrContext(type)) {
     // fragment-like components, the list is not exhaustive, we might need to extend it later
     return realCreateElement(mangleExoticType(type), props, ...children)
+  } else if (typeof type === 'string') {
+    return realCreateElement(mangleIntrinsicType(type), props, ...children)
   } else {
+    // Are there other types we're missing here?
     let updatedProps = props
     if (!shouldIncludeDataUID(type)) {
       updatedProps = filterDataProps(updatedProps)

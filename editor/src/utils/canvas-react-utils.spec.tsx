@@ -707,7 +707,7 @@ describe('Monkey Function', () => {
     `)
   })
 
-  it('builds the correct paths', () => {
+  it('builds the correct paths for function components', () => {
     const Red = () => {
       return <div data-uid='red-root' />
     }
@@ -731,6 +731,64 @@ describe('Monkey Function', () => {
 
     var OuterComponent = () => {
       return <InnerComponent data-uid='outer' />
+    }
+
+    expect(renderToFormattedString(<OuterComponent data-uid={'component'} />))
+      .toMatchInlineSnapshot(`
+      "<div
+        data-uid=\\"blue-root inner-parent outer component\\"
+        data-paths-2=\\"component:outer:inner-parent:blue-root\\"
+      >
+        <div
+          data-uid=\\"blue-root inner-child\\"
+          data-paths-2=\\"component:outer:inner-parent/inner-child:blue-root\\"
+        >
+          <div
+            data-uid=\\"blue-root blue\\"
+            data-paths-2=\\"component:outer:inner-parent/inner-child/blue:blue-root\\"
+          ></div>
+          <div
+            data-uid=\\"red-root red\\"
+            data-paths-2=\\"component:outer:inner-parent/inner-child/red:red-root\\"
+          ></div>
+        </div>
+      </div>
+      "
+    `)
+  })
+
+  it('builds the correct paths for class components', () => {
+    class Red extends React.Component {
+      render() {
+        return <div data-uid='red-root' />
+      }
+    }
+
+    class Blue extends React.Component {
+      render() {
+        return <div data-uid='blue-root'>{this.props.children}</div>
+      }
+    }
+
+    class InnerComponent extends React.Component {
+      render() {
+        const red = <Red data-uid='red' />
+
+        return (
+          <Blue data-uid='inner-parent'>
+            <Blue data-uid='inner-child'>
+              <Blue data-uid='blue' />
+              {red}
+            </Blue>
+          </Blue>
+        )
+      }
+    }
+
+    class OuterComponent extends React.Component {
+      render() {
+        return <InnerComponent data-uid='outer' />
+      }
     }
 
     expect(renderToFormattedString(<OuterComponent data-uid={'component'} />))
