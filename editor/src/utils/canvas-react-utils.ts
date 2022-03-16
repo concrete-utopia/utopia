@@ -237,24 +237,29 @@ const mangleFunctionType = Utils.memoize(
           performance.mark(`render_start_${uuid}`)
         }
 
-        const path2 = (p as any)?.[UTOPIA_PATHS_2_KEY] ?? (p as any)?.[UTOPIA_UIDS_KEY]
-        // console.log(`Attaching path2 to children of ${path2}`)
-        // const children = attachPath2ToChildren(p?.children, path2)
+        const path2 = p?.[UTOPIA_PATHS_2_KEY] ?? p?.[UTOPIA_UIDS_KEY]
+        const children = attachPath2ToChildren(p?.children, path2)
+
         // let mangledProps = {
         //   ...p,
-        //   children: children,
+        //   children,
         // }
 
-        // First actually put the path into the props passed to the component, even though we'll still need to add it to the resultant element
-        // that comes out after
-        let mangledProps = { ...p }
+        // const kids = Array.isArray(children) ? ...children : children
+        let originalTypeResponse
 
-        if (path2 != null && path2.length > 0) {
-          console.log(`Inserting path2 into props before rendering ${path2}`)
-          mangledProps[UTOPIA_PATHS_2_KEY] = path2
+        if (Array.isArray(children)) {
+          let originalTypeResponseBefore = (type as React.FunctionComponent)(p, context)
+          originalTypeResponse = React.cloneElement(
+            originalTypeResponseBefore as any,
+            {},
+            ...children,
+          )
+        } else {
+          let originalTypeResponseBefore = (type as React.FunctionComponent)(p, context)
+          originalTypeResponse = React.cloneElement(originalTypeResponseBefore as any, {}, children)
         }
 
-        let originalTypeResponse = (type as React.FunctionComponent)(mangledProps, context)
         const res = attachDataUidToRoot(
           originalTypeResponse,
           (p as any)?.[UTOPIA_UIDS_KEY],
@@ -294,7 +299,17 @@ const mangleClassType = Utils.memoize(
       if (MeasureRenderTimes) {
         performance.mark(`render_start_${uuid}`)
       }
+
       let originalTypeResponse = originalRender.bind(this)()
+
+      const path2 = this.props?.[UTOPIA_PATHS_2_KEY] ?? this.props?.[UTOPIA_UIDS_KEY]
+      const children = attachPath2ToChildren(this.props?.children, path2)
+
+      let mangledProps = {
+        ...this.props,
+        children,
+      }
+
       const res = attachDataUidToRoot(
         originalTypeResponse,
         (this.props as any)?.[UTOPIA_UIDS_KEY],
@@ -420,12 +435,7 @@ function isClassComponent(component: any) {
   return typeof component === 'function' && component?.prototype?.isReactComponent != null
 }
 
-function patchedCreateReactElement(type: any, props: any, ...childrenBefore: any): any {
-  const path2 = props?.[UTOPIA_PATHS_2_KEY] ?? props?.[UTOPIA_UIDS_KEY]
-  console.log(`Attaching path2 to children of ${path2}`)
-  console.log(`Props of ${path2}: ${Object.keys(props).join(',')}`)
-  const children = attachPath2ToChildren(childrenBefore, path2)
-
+function patchedCreateReactElement(type: any, props: any, ...children: any): any {
   if (isClassComponent(type)) {
     const mangledClass = mangleClassType(type)
     return realCreateElement(mangledClass, props, ...children)
