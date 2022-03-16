@@ -1,8 +1,6 @@
 import { MetadataUtils } from '../../../core/model/element-metadata-utils'
 import { ElementInstanceMetadataMap } from '../../../core/shared/element-template'
-import {
-  CanvasPoint
-} from '../../../core/shared/math-utils'
+import { CanvasPoint } from '../../../core/shared/math-utils'
 import { ElementPath } from '../../../core/shared/project-file-types'
 import { setSnappingGuidelines } from '../commands/set-snapping-guidelines-command'
 import { updateHighlightedViews } from '../commands/update-highlighted-views-command'
@@ -11,7 +9,7 @@ import { ConstrainedDragAxis, GuidelineWithSnappingVector } from '../guideline'
 import { CanvasStrategy } from './canvas-strategy-types'
 import {
   getAbsoluteMoveCommandsForSelectedElement,
-  getMultiselectBounds
+  getMultiselectBounds,
 } from './shared-absolute-move-strategy-helpers'
 
 export const absoluteMoveStrategy: CanvasStrategy = {
