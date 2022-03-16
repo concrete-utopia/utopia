@@ -440,7 +440,10 @@ const mangleIntrinsicType = Utils.memoize(
         updatedProps = filterDataProps(updatedProps)
       }
 
-      return realCreateElement(type, updatedProps)
+      const path2 = updatedProps?.[UTOPIA_PATHS_2_KEY] ?? updatedProps?.[UTOPIA_UIDS_KEY]
+      const updatedChildren = attachPath2ToChildren(updatedProps?.children, path2)
+
+      return realCreateElement(type, { ...updatedProps, children: updatedChildren })
     }
 
     return wrapperComponent
@@ -473,7 +476,8 @@ function patchedCreateReactElement(type: any, props: any, ...children: any): any
     // fragment-like components, the list is not exhaustive, we might need to extend it later
     return realCreateElement(mangleExoticType(type), props, ...children)
   } else if (typeof type === 'string') {
-    return realCreateElement(mangleIntrinsicType(type), props, ...children)
+    const mangledType = mangleIntrinsicType(type)
+    return realCreateElement(mangledType, props, ...children)
   } else {
     // Are there other types we're missing here?
     let updatedProps = props

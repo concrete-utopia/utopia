@@ -814,4 +814,65 @@ describe('Monkey Function', () => {
       "
     `)
   })
+
+  it('builds the correct paths for intrinsic components', () => {
+    const Red = () => {
+      return <div data-uid='red-root' />
+    }
+
+    // const Blue = (props: any) => {
+    //   return <div data-uid='blue-root'>{props.children}</div>
+    // }
+
+    // var InnerComponent = () => {
+    //   const red = <Red data-uid='red' />
+
+    //   return (
+    //     <Blue data-uid='inner-parent'>
+    //       <Blue data-uid='inner-child'>
+    //         <Blue data-uid='blue' />
+    //         {red}
+    //       </Blue>
+    //     </Blue>
+    //   )
+    // }
+
+    var OuterComponent = () => {
+      const red = <Red data-uid='red' />
+
+      return (
+        <div data-uid='outer'>
+          <div data-uid='inner-parent'>
+            <div data-uid='inner-child'>
+              <div data-uid='blue' />
+              {red}
+            </div>
+          </div>
+        </div>
+      )
+    }
+
+    expect(renderToFormattedString(<OuterComponent data-uid={'component'} />))
+      .toMatchInlineSnapshot(`
+      "<div
+        data-uid=\\"blue-root inner-parent outer component\\"
+        data-paths-2=\\"component:outer:inner-parent:blue-root\\"
+      >
+        <div
+          data-uid=\\"blue-root inner-child\\"
+          data-paths-2=\\"component:outer:inner-parent/inner-child:blue-root\\"
+        >
+          <div
+            data-uid=\\"blue-root blue\\"
+            data-paths-2=\\"component:outer:inner-parent/inner-child/blue:blue-root\\"
+          ></div>
+          <div
+            data-uid=\\"red-root red\\"
+            data-paths-2=\\"component:outer:inner-parent/inner-child/red:red-root\\"
+          ></div>
+        </div>
+      </div>
+      "
+    `)
+  })
 })
