@@ -16,9 +16,8 @@ import {
 } from '../commands/adjust-css-length-command'
 import { updateHighlightedViews } from '../commands/update-highlighted-views-command'
 import { AbsoluteResizeControl } from '../controls/select-mode/absolute-resize-control'
+import { AbsolutePin } from './absolute-resize-helpers'
 import { CanvasStrategy } from './canvas-strategy-types'
-
-type AbsolutePin = 'left' | 'top' | 'right' | 'bottom' | 'width' | 'height'
 
 export const absoluteResizeStrategy: CanvasStrategy = {
   id: 'ABSOLUTE_RESIZE',

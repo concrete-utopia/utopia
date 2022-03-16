@@ -28,6 +28,7 @@ export type CanvasStrategyId =
   | 'ABSOLUTE_MOVE'
   | 'ABSOLUTE_REPARENT'
   | 'ABSOLUTE_RESIZE'
+  | 'MULTISELECT_ABSOLUTE_RESIZE'
   | 'KEYBOARD_ABSOLUTE_MOVE'
 
 export interface CanvasStrategy {
