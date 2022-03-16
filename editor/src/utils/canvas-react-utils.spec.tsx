@@ -712,12 +712,14 @@ describe('Monkey Function', () => {
       return <div data-uid='red-root' data-paths='component:outer/red~~~1:red-root' />
     }
 
-    const Blue = () => {
+    const Blue = (props: any) => {
       return (
         <div
           data-uid='blue-root'
           data-paths='component:outer:inner-parent/inner-child/blue:blue-root'
-        />
+        >
+          {props.children}
+        </div>
       )
     }
 
@@ -725,12 +727,12 @@ describe('Monkey Function', () => {
       const red = <Red data-uid='red' data-paths='component:outer/red~~~1' />
 
       return (
-        <div data-uid='inner-parent' data-paths='component:outer:inner-parent'>
-          <div data-uid='inner-child' data-paths='component:outer:inner-parent/inner-child'>
+        <Blue data-uid='inner-parent' data-paths='component:outer:inner-parent'>
+          <Blue data-uid='inner-child' data-paths='component:outer:inner-parent/inner-child'>
             <Blue data-uid='blue' data-paths='component:outer:inner-parent/inner-child/blue' />
             {red}
-          </div>
-        </div>
+          </Blue>
+        </Blue>
       )
     }
 
@@ -742,24 +744,24 @@ describe('Monkey Function', () => {
       renderToFormattedString(<OuterComponent data-uid={'component'} data-paths='component' />),
     ).toMatchInlineSnapshot(`
       "<div
-        data-uid=\\"inner-parent outer component\\"
-        data-paths=\\"component:outer:inner-parent component:outer component\\"
-        data-paths-2=\\"component:outer:inner-parent\\"
+        data-uid=\\"blue-root inner-parent outer component\\"
+        data-paths=\\"component:outer:inner-parent/inner-child/blue:blue-root component:outer:inner-parent component:outer component\\"
+        data-paths-2=\\"component:outer:inner-parent:blue-root\\"
       >
         <div
-          data-uid=\\"inner-child\\"
-          data-paths=\\"component:outer:inner-parent/inner-child\\"
-          data-paths-2=\\"inner-parent/inner-child\\"
+          data-uid=\\"blue-root inner-child\\"
+          data-paths=\\"component:outer:inner-parent/inner-child/blue:blue-root component:outer:inner-parent/inner-child\\"
+          data-paths-2=\\"blue-root/inner-child:blue-root\\"
         >
           <div
             data-uid=\\"blue-root blue\\"
             data-paths=\\"component:outer:inner-parent/inner-child/blue:blue-root component:outer:inner-parent/inner-child/blue\\"
-            data-paths-2=\\"inner-child/blue:blue-root\\"
+            data-paths-2=\\"blue-root/blue:blue-root\\"
           ></div>
           <div
             data-uid=\\"red-root red\\"
             data-paths=\\"component:outer/red~~~1:red-root component:outer/red~~~1\\"
-            data-paths-2=\\"inner-child/red:red-root\\"
+            data-paths-2=\\"blue-root/red:red-root\\"
           ></div>
         </div>
       </div>
