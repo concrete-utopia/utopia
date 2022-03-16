@@ -125,7 +125,7 @@ describe('Absolute Multiselect Resize Strategy', () => {
               position: 'absolute',
               top: 65,
               left: 99,
-              bottom: 254,
+              bottom: 246,
               right: 210
             }}
             data-uid='ccc'
@@ -193,8 +193,8 @@ describe('Absolute Multiselect Resize Strategy', () => {
               position: 'absolute',
               top: 40,
               left: 96,
-              bottom: 271,
-              right: 225
+              bottom: 229,
+              right: 195
             }}
             data-uid='ccc'
           />
@@ -262,7 +262,7 @@ describe('Absolute Multiselect Resize Strategy', () => {
               top: 40,
               left: 96,
               bottom: 250,
-              right: 225
+              right: 195
             }}
             data-uid='ccc'
           />
@@ -329,7 +329,7 @@ describe('Absolute Multiselect Resize Strategy', () => {
               position: 'absolute',
               top: 65,
               left: 90,
-              bottom: 254,
+              bottom: 246,
               right: 210
             }}
             data-uid='ccc'

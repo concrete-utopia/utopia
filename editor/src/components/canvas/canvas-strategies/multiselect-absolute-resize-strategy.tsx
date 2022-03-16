@@ -9,7 +9,6 @@ import {
   boundingRectangleArray,
   canvasPoint,
   CanvasPoint,
-  canvasRectangle,
   CanvasRectangle,
   offsetPoint,
   pointDifference,
@@ -22,7 +21,7 @@ import { ElementPath } from '../../../core/shared/project-file-types'
 import { getElementFromProjectContents } from '../../editor/store/editor-state'
 import { stylePropPathMappingFn } from '../../inspector/common/property-path-hooks'
 import { EdgePosition } from '../canvas-types'
-import { pickPointOnRect } from '../canvas-utils'
+import { isEdgePositionOnSide, pickPointOnRect } from '../canvas-utils'
 import {
   AdjustCssLengthProperty,
   adjustCssLengthProperty,
@@ -137,12 +136,13 @@ function createResizeCommandsFromFrame(
     const rectangleDiff = rectangleDifference(originalFrame, newFrame)
     const delta = allPinsFromFrame(rectangleDiff)[pin]
     const roundedDelta = roundTo(delta, 0)
+    const pinDirection = pin === 'right' || pin === 'bottom' ? -1 : 1
     if (isRight(value) && value.value != null && roundedDelta !== 0) {
       return adjustCssLengthProperty(
         'permanent',
         selectedElement,
         stylePropPathMappingFn(pin, ['style']),
-        roundedDelta,
+        roundedDelta * pinDirection,
         horizontal ? elementParentBounds?.width : elementParentBounds?.height,
         true,
       )
@@ -158,38 +158,28 @@ function resizeBoundingBox(
   edgePosition: EdgePosition,
 ): CanvasRectangle {
   let dragToUse = drag
-  if (edgePosition.x === 0.5) {
-    dragToUse = canvasPoint({ x: 0, y: drag.y })
-  } else if (edgePosition.y === 0.5) {
-    dragToUse = canvasPoint({ x: drag.x, y: 0 })
-  }
-  const startingCorner: EdgePosition = {
+  let cornerEdgePosition = edgePosition
+  let startingCornerPosition = {
     x: 1 - edgePosition.x,
     y: 1 - edgePosition.y,
   } as EdgePosition
-  const startingPoint = pickPointOnRect(boundingBox, startingCorner)
-  const draggedCorner = pickPointOnRect(boundingBox, edgePosition)
+  if (isEdgePositionOnSide(edgePosition)) {
+    if (edgePosition.x === 0.5) {
+      dragToUse = canvasPoint({ x: 0, y: drag.y })
+      startingCornerPosition = { x: 0, y: startingCornerPosition.y }
+      cornerEdgePosition = { x: 1, y: edgePosition.y }
+    } else if (edgePosition.y === 0.5) {
+      dragToUse = canvasPoint({ x: drag.x, y: 0 })
+      startingCornerPosition = { x: startingCornerPosition.x, y: 0 }
+      cornerEdgePosition = { x: edgePosition.x, y: 1 }
+    }
+  }
+
+  const startingPoint = pickPointOnRect(boundingBox, startingCornerPosition)
+  const draggedCorner = pickPointOnRect(boundingBox, cornerEdgePosition)
   const newCorner = offsetPoint(draggedCorner, dragToUse)
   const newSizeVector = pointDifference(startingPoint, newCorner)
-  const newFrameFromVector = rectFromPointVector(startingPoint, newSizeVector, false)
-
-  if (edgePosition.x === 0.5) {
-    return canvasRectangle({
-      x: newFrameFromVector.x - boundingBox.width / 2,
-      y: newFrameFromVector.y,
-      width: boundingBox.width,
-      height: newFrameFromVector.height,
-    })
-  } else if (edgePosition.y === 0.5) {
-    return canvasRectangle({
-      x: newFrameFromVector.x,
-      y: newFrameFromVector.y - boundingBox.height / 2,
-      width: newFrameFromVector.width,
-      height: boundingBox.height,
-    })
-  } else {
-    return newFrameFromVector
-  }
+  return rectFromPointVector(startingPoint, newSizeVector, false)
 }
 
 function allPinsFromFrame(frame: CanvasRectangle): { [key: string]: number } {
