@@ -1,3 +1,4 @@
+import { Patch, produceWithPatches } from 'immer'
 import { Spec } from 'immutability-helper'
 import { drop } from '../../../core/shared/array-utils'
 import { foldEither } from '../../../core/shared/either'
@@ -108,7 +109,7 @@ export const runAdjustNumberProperty: CommandFunction<AdjustNumberProperty> = (
 
   if (targetPropertyNonExistant && !command.createIfNonExistant) {
     return {
-      editorStatePatch: {},
+      editorStatePatch: [],
       commandDescription: `Adjust Number Prop: ${EP.toUid(command.target)}/${PP.toString(
         command.property,
       )} not applied as the property does not exist.`,
@@ -127,7 +128,7 @@ export const runAdjustNumberProperty: CommandFunction<AdjustNumberProperty> = (
           case 'less-than':
             if (inequalityValue <= currentValue) {
               return {
-                editorStatePatch: {},
+                editorStatePatch: [],
                 commandDescription: `Adjust Number Prop: ${EP.toUid(command.target)}/${PP.toString(
                   command.property,
                 )} not applied as value is large enough already.`,
@@ -139,7 +140,7 @@ export const runAdjustNumberProperty: CommandFunction<AdjustNumberProperty> = (
           case 'greater-than':
             if (inequalityValue >= currentValue) {
               return {
-                editorStatePatch: {},
+                editorStatePatch: [],
                 commandDescription: `Adjust Number Prop: ${EP.toUid(command.target)}/${PP.toString(
                   command.property,
                 )} not applied as value is small enough already.`,
@@ -182,7 +183,7 @@ export function applyValuesAtPath(
   editorState: EditorState,
   target: ElementPath,
   jsxValuesAndPathsToSet: ValueAtPath[],
-): { editorStateWithChanges: EditorState; editorStatePatch: EditorStatePatch } {
+): { editorStateWithChanges: EditorState; editorStatePatch: Array<Patch> } {
   let editorStatePatch: EditorStatePatch = {}
 
   const workingEditorState = modifyUnderlyingForOpenFile(
@@ -254,6 +255,6 @@ export function applyValuesAtPath(
   )
   return {
     editorStateWithChanges: workingEditorState,
-    editorStatePatch: editorStatePatch,
+    editorStatePatch: [],
   }
 }

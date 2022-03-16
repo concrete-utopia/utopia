@@ -24,7 +24,7 @@ export const runSetSnappingGuidelines: CommandFunction<SetSnappingGuidelines> = 
   _: EditorState,
   command: SetSnappingGuidelines,
 ) => {
-  const editorStatePatch: EditorStatePatch = {
+  const editorStatePatch = {
     canvas: {
       controls: {
         snappingGuidelines: { $set: command.value },
@@ -32,7 +32,7 @@ export const runSetSnappingGuidelines: CommandFunction<SetSnappingGuidelines> = 
     },
   }
   return {
-    editorStatePatch: editorStatePatch,
+    editorStatePatch: [],
     commandDescription: `Set Snapping Guidelines`,
   }
 }

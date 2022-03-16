@@ -44,7 +44,7 @@ export const runReparentElement: CommandFunction<ReparentElement> = (
   editorState: EditorState,
   command: ReparentElement,
 ) => {
-  let editorStatePatch: EditorStatePatch = {}
+  let editorStatePatch = {}
   forUnderlyingTargetFromEditorState(
     command.target,
     editorState,
@@ -110,7 +110,7 @@ export const runReparentElement: CommandFunction<ReparentElement> = (
   )
 
   return {
-    editorStatePatch: editorStatePatch,
+    editorStatePatch: [],
     commandDescription: `Reparent Element ${EP.toUid(command.target)} to new parent ${EP.toUid(
       command.newParent,
     )}`,

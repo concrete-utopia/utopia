@@ -29,7 +29,7 @@ export const runUpdateSelectedViews: CommandFunction<UpdateSelectedViews> = (
     },
   }
   return {
-    editorStatePatch: editorStatePatch,
+    editorStatePatch: [],
     commandDescription: `Update Selected Views: ${command.value.map(EP.toString).join(', ')}`,
   }
 }

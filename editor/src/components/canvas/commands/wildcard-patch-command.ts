@@ -19,7 +19,7 @@ export const runWildcardPatch: CommandFunction<WildcardPatch> = (
   command: WildcardPatch,
 ) => {
   return {
-    editorStatePatch: command.patch,
+    editorStatePatch: [],
     commandDescription: `Wildcard Patch: ${JSON.stringify(command.patch, null, 2)}`,
   }
 }
