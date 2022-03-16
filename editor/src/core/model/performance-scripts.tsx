@@ -50,6 +50,22 @@ export function wait(timeout: number): Promise<void> {
 
 const NumberOfIterations = 100
 
+function markStart(prefix: string, framesPassed: number): void {
+  performance.mark(`${prefix}_start_${framesPassed}`)
+}
+
+function markEnd(prefix: string, framesPassed: number): void {
+  performance.mark(`${prefix}_end_${framesPassed}`)
+}
+
+function measureStep(prefix: string, framesPassed: number): void {
+  performance.measure(
+    `${prefix}_step_${framesPassed}`,
+    `${prefix}_start_${framesPassed}`,
+    `${prefix}_end_${framesPassed}`,
+  )
+}
+
 export function useTriggerScrollPerformanceTest(): () => void {
   const dispatch = useEditorState(
     (store) => store.dispatch as DebugDispatch,
@@ -70,15 +86,11 @@ export function useTriggerScrollPerformanceTest(): () => void {
 
     let framesPassed = 0
     async function step() {
-      performance.mark(`scroll_step_${framesPassed}`)
+      markStart('scroll', framesPassed)
       await dispatch([CanvasActions.scrollCanvas(canvasPoint({ x: -5, y: -1 }))])
         .entireUpdateFinished
-      performance.mark(`scroll_dispatch_finished_${framesPassed}`)
-      performance.measure(
-        `scroll_frame_${framesPassed}`,
-        `scroll_step_${framesPassed}`,
-        `scroll_dispatch_finished_${framesPassed}`,
-      )
+      markEnd('scroll', framesPassed)
+      measureStep('scroll', framesPassed)
       if (framesPassed < NumberOfIterations) {
         framesPassed++
         requestAnimationFrame(step)
@@ -119,7 +131,7 @@ export function useTriggerResizePerformanceTest(): () => void {
 
     let framesPassed = 0
     async function step() {
-      performance.mark(`resize_step_${framesPassed}`)
+      markStart('resize', framesPassed)
       const dragState = updateResizeDragState(
         resizeDragState(
           targetFrame ?? (zeroRectangle as CanvasRectangle),
@@ -139,12 +151,8 @@ export function useTriggerResizePerformanceTest(): () => void {
         false,
       )
       await dispatch([CanvasActions.createDragState(dragState)]).entireUpdateFinished
-      performance.mark(`resize_dispatch_finished_${framesPassed}`)
-      performance.measure(
-        `resize_frame_${framesPassed}`,
-        `resize_step_${framesPassed}`,
-        `resize_dispatch_finished_${framesPassed}`,
-      )
+      markEnd('resize', framesPassed)
+      measureStep('resize', framesPassed)
       if (framesPassed < NumberOfIterations) {
         framesPassed++
         requestAnimationFrame(step)
@@ -181,7 +189,7 @@ function useTriggerHighlightPerformanceTest(key: 'regular' | 'all-elements'): ()
 
     let framesPassed = 0
     async function step() {
-      performance.mark(`highlight_${key}_step_${framesPassed}`)
+      markStart(`highlight_${key}`, framesPassed)
 
       calculateHighlightedViews(
         windowPoint({ x: elementBounds.left + 10, y: elementBounds.top + 10 }),
@@ -193,13 +201,8 @@ function useTriggerHighlightPerformanceTest(key: 'regular' | 'all-elements'): ()
         windowPoint({ x: elementBounds.left - 100, y: elementBounds.top - 100 }),
         key === 'all-elements',
       )
-
-      performance.mark(`highlight_${key}_dispatch_finished_${framesPassed}`)
-      performance.measure(
-        `highlight_${key}_frame_${framesPassed}`,
-        `highlight_${key}_step_${framesPassed}`,
-        `highlight_${key}_dispatch_finished_${framesPassed}`,
-      )
+      markEnd(`highlight_${key}`, framesPassed)
+      measureStep(`highlight_${key}`, framesPassed)
 
       if (framesPassed < NumberOfIterations) {
         framesPassed++
@@ -267,7 +270,7 @@ export function useTriggerSelectionPerformanceTest(): () => void {
 
     let framesPassed = 0
     async function step() {
-      performance.mark(`select_step_${framesPassed}`)
+      markStart('select', framesPassed)
       controlsContainerElement.dispatchEvent(
         new MouseEvent('mousedown', {
           detail: 1,
@@ -311,21 +314,13 @@ export function useTriggerSelectionPerformanceTest(): () => void {
           buttons: 1,
         }),
       )
-      performance.mark(`select_dispatch_finished_${framesPassed}`)
-      performance.measure(
-        `select_frame_${framesPassed}`,
-        `select_step_${framesPassed}`,
-        `select_dispatch_finished_${framesPassed}`,
-      )
+      markEnd('select', framesPassed)
+      measureStep('select', framesPassed)
 
-      performance.mark(`select_deselect_step_${framesPassed}`)
+      markStart('select_deselect', framesPassed)
       await dispatch([clearSelection()]).entireUpdateFinished
-      performance.mark(`select_deselect_dispatch_finished_${framesPassed}`)
-      performance.measure(
-        `select_deselect_frame_${framesPassed}`,
-        `select_deselect_step_${framesPassed}`,
-        `select_deselect_dispatch_finished_${framesPassed}`,
-      )
+      markEnd('select_deselect', framesPassed)
+      measureStep('select_deselect', framesPassed)
 
       if (framesPassed < NumberOfIterations) {
         framesPassed++
@@ -452,7 +447,7 @@ export function useTriggerAbsoluteMovePerformanceTest(): () => void {
         ],
         'everyone',
       ).entireUpdateFinished
-      performance.mark(`absolute_move_interaction_step_${framesPassed}`)
+      markStart('absolute_move_interaction', framesPassed)
 
       // Move it down and to the right.
       controlsContainerElement.dispatchEvent(
@@ -469,7 +464,7 @@ export function useTriggerAbsoluteMovePerformanceTest(): () => void {
       await wait(0)
 
       // Mouse move and performance marks for that.
-      performance.mark(`absolute_move_move_step_${framesPassed}`)
+      markStart('absolute_move_move', framesPassed)
       for (let moveCount = 1; moveCount <= 1; moveCount++) {
         controlsContainerElement.dispatchEvent(
           new MouseEvent('mousemove', {
@@ -484,7 +479,8 @@ export function useTriggerAbsoluteMovePerformanceTest(): () => void {
         )
         await wait(0)
       }
-      performance.mark(`absolute_move_move_finished_${framesPassed}`)
+      markEnd('absolute_move_move', framesPassed)
+      measureStep('absolute_move_move', framesPassed)
 
       controlsContainerElement.dispatchEvent(
         new MouseEvent('mouseup', {
@@ -498,17 +494,8 @@ export function useTriggerAbsoluteMovePerformanceTest(): () => void {
         }),
       )
       await wait(0)
-      performance.mark(`absolute_move_interaction_finished_${framesPassed}`)
-      performance.measure(
-        `absolute_move_interaction_frame_${framesPassed}`,
-        `absolute_move_interaction_step_${framesPassed}`,
-        `absolute_move_interaction_finished_${framesPassed}`,
-      )
-      performance.measure(
-        `absolute_move_move_frame_${framesPassed}`,
-        `absolute_move_move_step_${framesPassed}`,
-        `absolute_move_move_finished_${framesPassed}`,
-      )
+      markEnd('absolute_move_interaction', framesPassed)
+      measureStep('absolute_move_interaction', framesPassed)
 
       if (framesPassed < NumberOfIterations) {
         framesPassed++
@@ -539,16 +526,12 @@ export function useTriggerBaselinePerformanceTest(): () => void {
   const trigger = React.useCallback(async () => {
     let framesPassed = 0
     async function step() {
-      performance.mark(`baseline_step_${framesPassed}`)
+      markStart('baseline', framesPassed)
       for (let i = 0; i < 3000; i++) {
         await dispatch([]).entireUpdateFinished
       }
-      performance.mark(`baseline_dispatch_finished_${framesPassed}`)
-      performance.measure(
-        `baseline_frame_${framesPassed}`,
-        `baseline_step_${framesPassed}`,
-        `baseline_dispatch_finished_${framesPassed}`,
-      )
+      markEnd('baseline', framesPassed)
+      measureStep('baseline', framesPassed)
 
       if (framesPassed < NumberOfIterations) {
         framesPassed++
