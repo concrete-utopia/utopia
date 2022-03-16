@@ -112,7 +112,9 @@ import {
   CanvasVector,
   localRectangle,
   LocalRectangle,
+  offsetPoint,
   Size,
+  vectorDifference,
 } from '../../core/shared/math-utils'
 import { insertionSubjectIsJSXElement } from '../editor/editor-modes'
 import {
@@ -1337,6 +1339,48 @@ export function snapPoint(
           guidelinesWithSnappingVector: guideline != null ? [guideline] : [],
         }
       : { snappedPointOnCanvas: pointToSnap, guidelinesWithSnappingVector: [] }
+  }
+}
+
+export function runLegacyAbsoluteResizeSnapping(
+  selectedElements: Array<ElementPath>,
+  jsxMetadata: ElementInstanceMetadataMap,
+  drag: CanvasVector,
+  draggedCorner: EdgePosition,
+  startingBounds: CanvasRectangle,
+  canvasScale: number,
+  keepAspectRatio: boolean,
+): {
+  snappedDragVector: CanvasVector
+  guidelinesWithSnappingVector: Array<GuidelineWithSnappingVector>
+} {
+  const oppositeCorner: EdgePosition = {
+    x: 1 - draggedCorner.x,
+    y: 1 - draggedCorner.y,
+  } as EdgePosition
+
+  const oppositePoint = pickPointOnRect(startingBounds, oppositeCorner)
+  const draggedPoint = pickPointOnRect(startingBounds, draggedCorner)
+  const draggedPointMovedWithoutSnap = offsetPoint(draggedPoint, drag)
+
+  const { snappedPointOnCanvas, guidelinesWithSnappingVector } = snapPoint(
+    selectedElements,
+    jsxMetadata,
+    canvasScale,
+    draggedPointMovedWithoutSnap,
+    true,
+    keepAspectRatio,
+    draggedPointMovedWithoutSnap,
+    oppositePoint,
+    draggedCorner,
+  )
+
+  const delta = vectorDifference(draggedPointMovedWithoutSnap, snappedPointOnCanvas)
+  const snappedDragVector = offsetPoint(drag, delta)
+
+  return {
+    snappedDragVector: snappedDragVector,
+    guidelinesWithSnappingVector: guidelinesWithSnappingVector,
   }
 }
 

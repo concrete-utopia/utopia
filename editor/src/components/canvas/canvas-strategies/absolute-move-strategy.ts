@@ -1,31 +1,18 @@
-import { isHorizontalPoint } from 'utopia-api/core'
-import { getLayoutProperty } from '../../../core/layout/getLayoutProperty'
-import { framePointForPinnedProp } from '../../../core/layout/layout-helpers-new'
 import { MetadataUtils } from '../../../core/model/element-metadata-utils'
-import { mapDropNulls } from '../../../core/shared/array-utils'
-import { isRight, right } from '../../../core/shared/either'
-import { ElementInstanceMetadataMap, JSXElement } from '../../../core/shared/element-template'
+import { ElementInstanceMetadataMap } from '../../../core/shared/element-template'
 import {
-  boundingRectangleArray,
-  CanvasPoint,
-  CanvasRectangle,
-  CanvasVector,
-  offsetPoint,
+  CanvasPoint
 } from '../../../core/shared/math-utils'
 import { ElementPath } from '../../../core/shared/project-file-types'
-import { getElementFromProjectContents } from '../../editor/store/editor-state'
-import { stylePropPathMappingFn } from '../../inspector/common/property-path-hooks'
-import {
-  AdjustCssLengthProperty,
-  adjustCssLengthProperty,
-} from '../commands/adjust-css-length-command'
 import { setSnappingGuidelines } from '../commands/set-snapping-guidelines-command'
 import { updateHighlightedViews } from '../commands/update-highlighted-views-command'
-import { wildcardPatch } from '../commands/wildcard-patch-command'
 import { runLegacyAbsoluteMoveSnapping } from '../controls/guideline-helpers'
-import { ConstrainedDragAxis, Guideline, GuidelineWithSnappingVector } from '../guideline'
+import { ConstrainedDragAxis, GuidelineWithSnappingVector } from '../guideline'
 import { CanvasStrategy } from './canvas-strategy-types'
-import { getAbsoluteMoveCommandsForSelectedElement } from './shared-absolute-move-strategy-helpers'
+import {
+  getAbsoluteMoveCommandsForSelectedElement,
+  getMultiselectBounds
+} from './shared-absolute-move-strategy-helpers'
 
 export const absoluteMoveStrategy: CanvasStrategy = {
   id: 'ABSOLUTE_MOVE',
@@ -109,15 +96,4 @@ function snapDrag(
   )
 
   return { snappedDragVector, guidelinesWithSnappingVector }
-}
-
-function getMultiselectBounds(
-  jsxMetadata: ElementInstanceMetadataMap,
-  selectedElements: Array<ElementPath>,
-): CanvasRectangle | null {
-  const frames = mapDropNulls((element) => {
-    return MetadataUtils.getFrameInCanvasCoords(element, jsxMetadata)
-  }, selectedElements)
-
-  return boundingRectangleArray(frames)
 }

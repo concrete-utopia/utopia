@@ -5,18 +5,12 @@ import { MetadataUtils } from '../../../core/model/element-metadata-utils'
 import { mapDropNulls } from '../../../core/shared/array-utils'
 import { isRight, right } from '../../../core/shared/either'
 import { ElementInstanceMetadataMap, JSXElement } from '../../../core/shared/element-template'
-import {
-  CanvasPoint,
-  CanvasRectangle,
-  CanvasVector,
-  offsetPoint,
-  vectorDifference,
-} from '../../../core/shared/math-utils'
+import { CanvasRectangle, CanvasVector } from '../../../core/shared/math-utils'
 import { ElementPath } from '../../../core/shared/project-file-types'
 import { withUnderlyingTarget } from '../../editor/store/editor-state'
 import { stylePropPathMappingFn } from '../../inspector/common/property-path-hooks'
 import { EdgePosition } from '../canvas-types'
-import { snapPoint } from '../canvas-utils'
+import { runLegacyAbsoluteResizeSnapping } from '../canvas-utils'
 import {
   AdjustCssLengthProperty,
   adjustCssLengthProperty,
@@ -26,6 +20,7 @@ import { updateHighlightedViews } from '../commands/update-highlighted-views-com
 import { AbsoluteResizeControl } from '../controls/select-mode/absolute-resize-control'
 import { GuidelineWithSnappingVector } from '../guideline'
 import { CanvasStrategy } from './canvas-strategy-types'
+import { getMultiselectBounds } from './shared-absolute-move-strategy-helpers'
 
 type AbsolutePin = 'left' | 'top' | 'right' | 'bottom' | 'width' | 'height'
 
@@ -68,14 +63,10 @@ export const absoluteResizeStrategy: CanvasStrategy = {
       const { snappedDragVector, guidelinesWithSnappingVector } = snapDrag(
         canvasState.selectedElements,
         sessionState.startingMetadata,
-        canvasState.scale,
-        interactionState.interactionData.dragStart,
         drag,
-        true,
-        false,
-        null as any,
-        null as any,
         edgePosition,
+        canvasState.scale,
+        false,
       )
 
       const commandsForSelectedElements = canvasState.selectedElements.flatMap(
@@ -173,33 +164,31 @@ function createResizeCommands(
 }
 
 function snapDrag(
-  selectedViews: Array<ElementPath>,
-  jsxMetadata: ElementInstanceMetadataMap,
-  canvasScale: number,
-  dragStart: CanvasPoint,
+  selectedElements: Array<ElementPath>,
+  startingMetadata: ElementInstanceMetadataMap,
   drag: CanvasVector,
-  enableSnapping: boolean,
+  resizingFromPosition: EdgePosition,
+  canvasScale: number,
   keepAspectRatio: boolean,
-  diagonalA: CanvasPoint,
-  diagonalB: CanvasPoint,
-  resizingFromPosition: EdgePosition | null,
 ): {
-  snappedDragVector: CanvasPoint
+  snappedDragVector: CanvasVector
   guidelinesWithSnappingVector: Array<GuidelineWithSnappingVector>
 } {
-  const pointToSnap: CanvasPoint = offsetPoint(dragStart, drag)
-  const { snappedPointOnCanvas, guidelinesWithSnappingVector } = snapPoint(
-    selectedViews,
-    jsxMetadata,
-    canvasScale,
-    pointToSnap,
-    enableSnapping,
-    keepAspectRatio,
-    diagonalA,
-    diagonalB,
+  const multiselectBounds = getMultiselectBounds(startingMetadata, selectedElements)
+
+  if (multiselectBounds == null) {
+    return { snappedDragVector: drag, guidelinesWithSnappingVector: [] }
+  }
+
+  const { snappedDragVector, guidelinesWithSnappingVector } = runLegacyAbsoluteResizeSnapping(
+    selectedElements,
+    startingMetadata,
+    drag,
     resizingFromPosition,
+    multiselectBounds,
+    canvasScale,
+    keepAspectRatio,
   )
-  const snappedDragVector = vectorDifference(dragStart, snappedPointOnCanvas)
   return {
     snappedDragVector: snappedDragVector,
     guidelinesWithSnappingVector: guidelinesWithSnappingVector,
