@@ -1246,7 +1246,11 @@ function innerSnapPoint(
   canvasScale: number,
   point: CanvasPoint,
   resizingFromPosition: EdgePosition | null,
-): { point: CanvasPoint; guideline: GuidelineWithSnappingVector | null } {
+): {
+  point: CanvasPoint
+  snappedGuideline: GuidelineWithSnappingVector | null
+  guidelinesWithSnappingVector: Array<GuidelineWithSnappingVector>
+} {
   const guidelines = oneGuidelinePerDimension(
     collectGuidelines(jsxMetadata, selectedViews, canvasScale, point, resizingFromPosition),
   )
@@ -1261,7 +1265,8 @@ function innerSnapPoint(
   })
   return {
     point: snappedPoint,
-    guideline: snappedGuideline,
+    snappedGuideline: snappedGuideline,
+    guidelinesWithSnappingVector: guidelines,
   }
 }
 
@@ -1293,7 +1298,7 @@ export function snapPoint(
   if (keepAspectRatio) {
     const closestPointOnLine = Utils.closestPointOnLine(diagonalA, diagonalB, pointToSnap)
     if (shouldSnap) {
-      const { guideline } = innerSnapPoint(
+      const { snappedGuideline: guideline, guidelinesWithSnappingVector } = innerSnapPoint(
         selectedViews,
         jsxMetadata,
         canvasScale,
@@ -1317,7 +1322,10 @@ export function snapPoint(
             )
         }
         if (snappedPoint != null) {
-          return { snappedPointOnCanvas: snappedPoint, guidelinesWithSnappingVector: [guideline] }
+          return {
+            snappedPointOnCanvas: snappedPoint,
+            guidelinesWithSnappingVector: guidelinesWithSnappingVector,
+          }
         }
       }
       // fallback to regular diagonal snapping
@@ -1326,7 +1334,7 @@ export function snapPoint(
       return { snappedPointOnCanvas: pointToSnap, guidelinesWithSnappingVector: [] }
     }
   } else {
-    const { point, guideline } = innerSnapPoint(
+    const { point, guidelinesWithSnappingVector } = innerSnapPoint(
       selectedViews,
       jsxMetadata,
       canvasScale,
@@ -1336,7 +1344,7 @@ export function snapPoint(
     return shouldSnap
       ? {
           snappedPointOnCanvas: point,
-          guidelinesWithSnappingVector: guideline != null ? [guideline] : [],
+          guidelinesWithSnappingVector: guidelinesWithSnappingVector,
         }
       : { snappedPointOnCanvas: pointToSnap, guidelinesWithSnappingVector: [] }
   }
