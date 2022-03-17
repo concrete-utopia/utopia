@@ -220,16 +220,23 @@ export function runLegacyAbsoluteMoveSnapping(
   )
 
   const snappedDragVector = offsetPoint(drag, delta)
+  const directionConstrainedDragVector = Guidelines.applyDirectionConstraint(
+    constrainedDragAxis,
+    snappedDragVector,
+  )
 
   if (multiselectBounds != null) {
-    const draggedBounds = offsetRect(multiselectBounds, snappedDragVector)
+    const draggedBounds = offsetRect(multiselectBounds, directionConstrainedDragVector)
     const updatedGuidelinesWithSnapping = pointGuidelineToBoundsEdge(
       guidelinesWithSnappingVector,
       draggedBounds,
     )
-    return { snappedDragVector, guidelinesWithSnappingVector: updatedGuidelinesWithSnapping }
+    return {
+      snappedDragVector: directionConstrainedDragVector,
+      guidelinesWithSnappingVector: updatedGuidelinesWithSnapping,
+    }
   } else {
-    return { snappedDragVector, guidelinesWithSnappingVector }
+    return { snappedDragVector: directionConstrainedDragVector, guidelinesWithSnappingVector }
   }
 }
 
