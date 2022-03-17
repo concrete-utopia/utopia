@@ -181,7 +181,7 @@ export function interactionUpdate(
       newStrategyState: result.strategyState,
     }
   } else {
-    console.log("$$$ 161")
+    console.log('$$$ 161')
     // Determine the new canvas strategy to run this time around.
     const { strategy, previousStrategy, sortedApplicableStrategies } = findCanvasStrategy(
       strategies,
@@ -208,7 +208,7 @@ export function interactionUpdate(
     }
 
     if (strategy?.strategy.id !== previousStrategy?.strategy.id) {
-      console.log("$$$ 162")
+      console.log('$$$ 162')
       return handleStrategyChangeStacked(
         newEditorState,
         storedState.patchedEditor,
@@ -223,7 +223,7 @@ export function interactionUpdate(
       result.unpatchedEditor.canvas.interactionSession?.interactionData.type === 'KEYBOARD' &&
       actionType === 'interaction-create-or-update'
     ) {
-      console.log("$$$ 163")
+      console.log('$$$ 163')
       return handleAccumulatingKeypresses(
         newEditorState,
         storedState.patchedEditor,
@@ -233,7 +233,7 @@ export function interactionUpdate(
         sortedApplicableStrategies,
       )
     }
-    console.log("$$$ 164")
+    console.log('$$$ 164')
     return handleUpdate(
       newEditorState,
       storedState.patchedEditor,
@@ -374,7 +374,7 @@ function handleUserChangedStrategy(
       newEditorState,
       storedEditorState,
       strategyState.accumulatedPatches,
-      [...newAccumulatedCommands.flatMap((c) => c.commands), ...commands],
+      commands,
       'transient',
     )
     const newStrategyState: StrategyState = {
@@ -429,11 +429,17 @@ function handleAccumulatingKeypresses(
         commands: strategyState.currentStrategyCommands,
       },
     ]
-    const commandResult = foldAndApplyCommands(newEditorState, storedEditorState, strategyState.accumulatedPatches, commands, 'transient')
-    const [_, newAccumulatedPatches] = produceWithPatches(newEditorState, draft => {
+    const commandResult = foldAndApplyCommands(
+      newEditorState,
+      storedEditorState,
+      strategyState.accumulatedPatches,
+      commands,
+      'transient',
+    )
+    const [_, newAccumulatedPatches] = produceWithPatches(newEditorState, (draft) => {
       applyPatches(draft, commandResult.editorStatePatches)
     })
-    console.log("NEW ACC PATCHES", newAccumulatedPatches, strategyState.accumulatedPatches)
+    console.log('NEW ACC PATCHES', newAccumulatedPatches, strategyState.accumulatedPatches)
     const newStrategyState: StrategyState = {
       currentStrategy: strategy?.strategy.id ?? null,
       currentStrategyFitness: strategy?.fitness ?? 0,
@@ -469,9 +475,9 @@ function handleUpdate(
 ): HandleStrategiesResult {
   const canvasState: InteractionCanvasState = pickCanvasStateFromEditorState(newEditorState)
   // If there is a current strategy, produce the commands from it.
-  console.log("$$$ 1641")
+  console.log('$$$ 1641')
   if (newEditorState.canvas.interactionSession != null) {
-    console.log("$$$ 1642", strategy, canvasState, newEditorState, strategyState)
+    console.log('$$$ 1642', strategy, canvasState, newEditorState, strategyState)
     const commands =
       strategy != null
         ? applyCanvasStrategy(
@@ -481,7 +487,7 @@ function handleUpdate(
             strategyState,
           )
         : []
-    console.log("$$$ 1643")
+    console.log('$$$ 1643')
     const commandResult = foldAndApplyCommands(
       newEditorState,
       storedEditorState,
@@ -489,7 +495,7 @@ function handleUpdate(
       commands,
       'transient',
     )
-    console.log("$$$ COMMANDRESult", commandResult, strategyState)
+    console.log('$$$ COMMANDRESult', commandResult, strategyState)
     const newStrategyState: StrategyState = {
       currentStrategy: strategy?.strategy.id ?? null,
       currentStrategyFitness: strategy?.fitness ?? 0,
@@ -524,9 +530,9 @@ function handleStrategyChangeStacked(
 ): HandleStrategiesResult {
   const canvasState: InteractionCanvasState = pickCanvasStateFromEditorState(newEditorState)
   // If there is a current strategy, produce the commands from it.
-  console.log("$$$ 1641")
+  console.log('$$$ 1641')
   if (newEditorState.canvas.interactionSession != null) {
-    console.log("$$$ 1642")
+    console.log('$$$ 1642')
     const strategyChangedLogCommands = [
       {
         strategy: null,
@@ -566,12 +572,15 @@ function handleStrategyChangeStacked(
       commands,
       'transient',
     )
+    const [_, newAccumulatedPatches] = produceWithPatches(newEditorState, (draft) => {
+      applyPatches(draft, commandResult.editorStatePatches)
+    })
     const newStrategyState: StrategyState = {
       currentStrategy: strategy?.strategy.id ?? null,
       currentStrategyFitness: strategy?.fitness ?? 0,
       currentStrategyCommands: commands,
       accumulatedCommands: newAccumulatedCommands,
-      accumulatedPatches: strategyState.accumulatedPatches,
+      accumulatedPatches: newAccumulatedPatches,
       commandDescriptions: commandResult.commandDescriptions,
       sortedApplicableStrategies: sortedApplicableStrategies,
       startingMetadata: strategyState.startingMetadata,
@@ -608,23 +617,23 @@ export function handleStrategies(
   result: InnerDispatchResult,
   oldDerivedState: DerivedState,
 ): HandleStrategiesResult & { patchedDerivedState: DerivedState } {
-  console.log("$$$ 1")
+  console.log('$$$ 1')
   const { unpatchedEditorState, patchedEditorState, newStrategyState } = handleStrategiesInner(
     strategies,
     dispatchedActions,
     storedState,
     result,
   )
-  console.log("$$$ 2")
+  console.log('$$$ 2')
   const patchedEditorWithMetadata: EditorState = {
     ...patchedEditorState,
     jsxMetadata:
       patchedEditorState.canvas.interactionSession?.metadata ?? patchedEditorState.jsxMetadata,
   }
-  console.log("$$$ 3")
+  console.log('$$$ 3')
 
   const patchedDerivedState = deriveState(patchedEditorWithMetadata, oldDerivedState, 'patched')
-  console.log("$$$ 4")
+  console.log('$$$ 4')
 
   return {
     unpatchedEditorState,
@@ -654,7 +663,7 @@ function handleStrategiesInner(
         newStrategyState: result.strategyState,
       }
     } else {
-      console.log("$$$ 11")
+      console.log('$$$ 11')
       return interactionStart(strategies, storedState, result)
     }
   } else {
@@ -663,16 +672,16 @@ function handleStrategiesInner(
     } else if (makeChangesPermanent) {
       return interactionFinished(strategies, storedState, result)
     } else {
-      console.log("$$$ 14")
+      console.log('$$$ 14')
       const interactionHardResetNeeded = hasDragModifiersChanged(
         storedState.unpatchedEditor.canvas.interactionSession?.interactionData ?? null,
         result.unpatchedEditor.canvas.interactionSession?.interactionData ?? null,
       )
       if (interactionHardResetNeeded) {
-        console.log("$$$ 15")
+        console.log('$$$ 15')
         return interactionHardReset(strategies, storedState, result)
       } else {
-        console.log("$$$ 16")
+        console.log('$$$ 16')
         return interactionUpdate(strategies, storedState, result, isInteractionAction)
       }
     }
