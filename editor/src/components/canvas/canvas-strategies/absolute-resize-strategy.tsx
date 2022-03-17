@@ -5,12 +5,11 @@ import { MetadataUtils } from '../../../core/model/element-metadata-utils'
 import { mapDropNulls } from '../../../core/shared/array-utils'
 import { isRight, right } from '../../../core/shared/either'
 import { ElementInstanceMetadataMap, JSXElement } from '../../../core/shared/element-template'
-import { CanvasRectangle, CanvasVector } from '../../../core/shared/math-utils'
+import { CanvasRectangle, CanvasVector, offsetPoint } from '../../../core/shared/math-utils'
 import { ElementPath } from '../../../core/shared/project-file-types'
 import { withUnderlyingTarget } from '../../editor/store/editor-state'
 import { stylePropPathMappingFn } from '../../inspector/common/property-path-hooks'
 import { EdgePosition } from '../canvas-types'
-import { runLegacyAbsoluteResizeSnapping } from '../canvas-utils'
 import {
   AdjustCssLengthProperty,
   adjustCssLengthProperty,
@@ -21,7 +20,11 @@ import { AbsoluteResizeControl } from '../controls/select-mode/absolute-resize-c
 import { AbsolutePin } from './absolute-resize-helpers'
 import { GuidelineWithSnappingVector } from '../guideline'
 import { CanvasStrategy } from './canvas-strategy-types'
-import { getMultiselectBounds } from './shared-absolute-move-strategy-helpers'
+import {
+  getMultiselectBounds,
+  resizeBoundingBox,
+  runLegacyAbsoluteResizeSnapping,
+} from './shared-absolute-move-strategy-helpers'
 
 export const absoluteResizeStrategy: CanvasStrategy = {
   id: 'ABSOLUTE_RESIZE',
@@ -169,28 +172,31 @@ function snapDrag(
   selectedElements: Array<ElementPath>,
   startingMetadata: ElementInstanceMetadataMap,
   drag: CanvasVector,
-  resizingFromPosition: EdgePosition,
+  edgePosition: EdgePosition,
   canvasScale: number,
   keepAspectRatio: boolean,
 ): {
   snappedDragVector: CanvasVector
   guidelinesWithSnappingVector: Array<GuidelineWithSnappingVector>
 } {
-  const multiselectBounds = getMultiselectBounds(startingMetadata, selectedElements)
+  const originalBoundingBox = getMultiselectBounds(startingMetadata, selectedElements)
 
-  if (multiselectBounds == null) {
+  if (originalBoundingBox == null) {
     return { snappedDragVector: drag, guidelinesWithSnappingVector: [] }
   }
 
-  const { snappedDragVector, guidelinesWithSnappingVector } = runLegacyAbsoluteResizeSnapping(
+  const resizedUnsnappedBounds = resizeBoundingBox(originalBoundingBox, drag, edgePosition, false)
+  const { snapDelta, guidelinesWithSnappingVector } = runLegacyAbsoluteResizeSnapping(
     selectedElements,
     startingMetadata,
-    drag,
-    resizingFromPosition,
-    multiselectBounds,
+    edgePosition,
+    resizedUnsnappedBounds,
     canvasScale,
     keepAspectRatio,
+    false,
   )
+  const snappedDragVector = offsetPoint(drag, snapDelta)
+
   return {
     snappedDragVector: snappedDragVector,
     guidelinesWithSnappingVector: guidelinesWithSnappingVector,

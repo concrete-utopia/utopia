@@ -1,4 +1,5 @@
-import { elementPath } from '../../../core/shared/element-path'
+import { left } from '../../../core/shared/either'
+import { elementPath, fromString } from '../../../core/shared/element-path'
 import {
   ElementInstanceMetadata,
   SpecialSizeMeasurements,
@@ -48,12 +49,16 @@ function multiselectResizeElements(
       sortedApplicableStrategies: null as any, // the strategy does not use this
       startingMetadata: {
         'scene-aaa/app-entity:aaa/bbb': {
+          elementPath: fromString('scene-aaa/app-entity:aaa/bbb'),
+          element: left('div'),
           specialSizeMeasurements: {
             immediateParentBounds: canvasRectangle({ x: 0, y: 0, width: 400, height: 400 }),
           } as SpecialSizeMeasurements,
           globalFrame: { height: 120, width: 100, x: 30, y: 50 },
         } as ElementInstanceMetadata,
         'scene-aaa/app-entity:aaa/ccc': {
+          elementPath: fromString('scene-aaa/app-entity:aaa/ccc'),
+          element: left('div'),
           specialSizeMeasurements: {
             immediateParentBounds: canvasRectangle({ x: 0, y: 0, width: 400, height: 400 }),
           } as SpecialSizeMeasurements,

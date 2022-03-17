@@ -1352,54 +1352,6 @@ export function snapPoint(
   }
 }
 
-export function runLegacyAbsoluteResizeSnapping(
-  selectedElements: Array<ElementPath>,
-  jsxMetadata: ElementInstanceMetadataMap,
-  drag: CanvasVector,
-  draggedCorner: EdgePosition,
-  startingBounds: CanvasRectangle,
-  canvasScale: number,
-  keepAspectRatio: boolean,
-): {
-  snappedDragVector: CanvasVector
-  guidelinesWithSnappingVector: Array<GuidelineWithSnappingVector>
-} {
-  const oppositeCorner: EdgePosition = {
-    x: 1 - draggedCorner.x,
-    y: 1 - draggedCorner.y,
-  } as EdgePosition
-
-  const oppositePoint = pickPointOnRect(startingBounds, oppositeCorner)
-  const draggedPoint = pickPointOnRect(startingBounds, draggedCorner)
-  const draggedPointMovedWithoutSnap = offsetPoint(draggedPoint, drag)
-
-  const { snappedPointOnCanvas, guidelinesWithSnappingVector } = snapPoint(
-    selectedElements,
-    jsxMetadata,
-    canvasScale,
-    draggedPointMovedWithoutSnap,
-    true,
-    keepAspectRatio,
-    draggedPointMovedWithoutSnap,
-    oppositePoint,
-    draggedCorner,
-  )
-
-  const delta = vectorDifference(draggedPointMovedWithoutSnap, snappedPointOnCanvas)
-  const snappedDragVector = offsetPoint(drag, delta)
-
-  const snappedBounds = rectFromTwoPoints(oppositePoint, snappedPointOnCanvas)
-  const updatedGuidelinesWithSnapping = pointGuidelineToBoundsEdge(
-    guidelinesWithSnappingVector,
-    snappedBounds,
-  )
-
-  return {
-    snappedDragVector: snappedDragVector,
-    guidelinesWithSnappingVector: updatedGuidelinesWithSnapping,
-  }
-}
-
 function getTargetableProp(resizeOptions: ResizeOptions): LayoutTargetableProp | undefined {
   return resizeOptions.propertyTargetOptions[resizeOptions.propertyTargetSelectedIndex]
 }

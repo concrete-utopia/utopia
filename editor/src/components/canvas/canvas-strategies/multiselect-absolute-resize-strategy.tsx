@@ -4,7 +4,7 @@ import { framePointForPinnedProp } from '../../../core/layout/layout-helpers-new
 import { MetadataUtils } from '../../../core/model/element-metadata-utils'
 import { mapDropNulls } from '../../../core/shared/array-utils'
 import { isRight, right } from '../../../core/shared/either'
-import { JSXElement } from '../../../core/shared/element-template'
+import { ElementInstanceMetadataMap, JSXElement } from '../../../core/shared/element-template'
 import {
   CanvasRectangle,
   rectangleDifference,
@@ -14,15 +14,21 @@ import {
 import { ElementPath } from '../../../core/shared/project-file-types'
 import { getElementFromProjectContents } from '../../editor/store/editor-state'
 import { stylePropPathMappingFn } from '../../inspector/common/property-path-hooks'
+import { EdgePosition } from '../canvas-types'
 import {
   AdjustCssLengthProperty,
   adjustCssLengthProperty,
 } from '../commands/adjust-css-length-command'
+import { setSnappingGuidelines } from '../commands/set-snapping-guidelines-command'
 import { updateHighlightedViews } from '../commands/update-highlighted-views-command'
 import { AbsoluteResizeControl } from '../controls/select-mode/absolute-resize-control'
 import { AbsolutePin, hasAtLeastTwoPinsPerSide } from './absolute-resize-helpers'
 import { CanvasStrategy } from './canvas-strategy-types'
-import { getMultiselectBounds, resizeBoundingBox } from './shared-absolute-move-strategy-helpers'
+import {
+  getMultiselectBounds,
+  resizeBoundingBox,
+  runLegacyAbsoluteResizeSnapping,
+} from './shared-absolute-move-strategy-helpers'
 
 export const multiselectAbsoluteResizeStrategy: CanvasStrategy = {
   id: 'MULTISELECT_ABSOLUTE_RESIZE',
@@ -78,6 +84,15 @@ export const multiselectAbsoluteResizeStrategy: CanvasStrategy = {
           edgePosition,
           centerBased,
         )
+        const { snappedBoundingBox, guidelinesWithSnappingVector } = snapBoundingBox(
+          canvasState.selectedElements,
+          sessionState.startingMetadata,
+          edgePosition,
+          newBoundingBox,
+          canvasState.scale,
+          false,
+          centerBased,
+        )
         const commandsForSelectedElements = canvasState.selectedElements.flatMap(
           (selectedElement) => {
             const element = getElementFromProjectContents(
@@ -95,7 +110,7 @@ export const multiselectAbsoluteResizeStrategy: CanvasStrategy = {
             }
 
             const newFrame = transformFrameUsingBoundingBox(
-              newBoundingBox,
+              snappedBoundingBox,
               originalBoundingBox,
               originalFrame,
             )
@@ -103,13 +118,16 @@ export const multiselectAbsoluteResizeStrategy: CanvasStrategy = {
               MetadataUtils.findElementByElementPath(sessionState.startingMetadata, selectedElement)
                 ?.specialSizeMeasurements.immediateParentBounds ?? null
 
-            return createResizeCommandsFromFrame(
-              element,
-              selectedElement,
-              newFrame,
-              originalFrame,
-              elementParentBounds,
-            )
+            return [
+              ...createResizeCommandsFromFrame(
+                element,
+                selectedElement,
+                newFrame,
+                originalFrame,
+                elementParentBounds,
+              ),
+              setSnappingGuidelines('transient', guidelinesWithSnappingVector),
+            ]
           },
         )
         return [...commandsForSelectedElements, updateHighlightedViews('transient', [])]
@@ -161,5 +179,30 @@ function allPinsFromFrame(frame: CanvasRectangle): { [key: string]: number } {
     height: frame.height,
     right: frame.x + frame.width,
     bottom: frame.y + frame.height,
+  }
+}
+
+function snapBoundingBox(
+  selectedElements: Array<ElementPath>,
+  jsxMetadata: ElementInstanceMetadataMap,
+  edgePosition: EdgePosition,
+  resizedBounds: CanvasRectangle,
+  canvasScale: number,
+  keepAspectRatio: boolean,
+  centerBased: boolean,
+) {
+  const { snappedBoundingBox, guidelinesWithSnappingVector } = runLegacyAbsoluteResizeSnapping(
+    selectedElements,
+    jsxMetadata,
+    edgePosition,
+    resizedBounds,
+    canvasScale,
+    keepAspectRatio,
+    centerBased,
+  )
+
+  return {
+    snappedBoundingBox,
+    guidelinesWithSnappingVector,
   }
 }

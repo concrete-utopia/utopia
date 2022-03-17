@@ -13,7 +13,6 @@ import {
   CanvasVector,
   offsetPoint,
   pointDifference,
-  rectFromPointVector,
   rectFromTwoPoints,
   zeroCanvasPoint,
 } from '../../../core/shared/math-utils'
@@ -21,11 +20,13 @@ import { ElementPath } from '../../../core/shared/project-file-types'
 import { getElementFromProjectContents } from '../../editor/store/editor-state'
 import { stylePropPathMappingFn } from '../../inspector/common/property-path-hooks'
 import { EdgePosition } from '../canvas-types'
-import { isEdgePositionOnSide, pickPointOnRect } from '../canvas-utils'
+import { isEdgePositionOnSide, pickPointOnRect, snapPoint } from '../canvas-utils'
 import {
   adjustCssLengthProperty,
   AdjustCssLengthProperty,
 } from '../commands/adjust-css-length-command'
+import { pointGuidelineToBoundsEdge } from '../controls/guideline-helpers'
+import { GuidelineWithSnappingVector } from '../guideline'
 import { InteractionCanvasState } from './canvas-strategy-types'
 import { StrategyState } from './interaction-state'
 
@@ -134,5 +135,53 @@ export function resizeBoundingBox(
     const fixedCornerPoint = pickPointOnRect(boundingBox, startingCornerPosition)
     const newBoundingBox = rectFromTwoPoints(fixedCornerPoint, newCorner)
     return newBoundingBox
+  }
+}
+
+export function runLegacyAbsoluteResizeSnapping(
+  selectedElements: Array<ElementPath>,
+  jsxMetadata: ElementInstanceMetadataMap,
+  draggedCorner: EdgePosition,
+  resizedBounds: CanvasRectangle,
+  canvasScale: number,
+  keepAspectRatio: boolean,
+  centerBased: boolean,
+): {
+  snapDelta: CanvasVector
+  snappedBoundingBox: CanvasRectangle
+  guidelinesWithSnappingVector: Array<GuidelineWithSnappingVector>
+} {
+  const oppositeCorner: EdgePosition = {
+    x: 1 - draggedCorner.x,
+    y: 1 - draggedCorner.y,
+  } as EdgePosition
+
+  const oppositePoint = pickPointOnRect(resizedBounds, oppositeCorner)
+  const draggedPointMovedWithoutSnap = pickPointOnRect(resizedBounds, draggedCorner)
+
+  const { snappedPointOnCanvas, guidelinesWithSnappingVector } = snapPoint(
+    selectedElements,
+    jsxMetadata,
+    canvasScale,
+    draggedPointMovedWithoutSnap,
+    true,
+    keepAspectRatio,
+    draggedPointMovedWithoutSnap,
+    oppositePoint,
+    draggedCorner,
+  )
+
+  const snapDelta = pointDifference(draggedPointMovedWithoutSnap, snappedPointOnCanvas)
+  const snappedBounds = resizeBoundingBox(resizedBounds, snapDelta, draggedCorner, centerBased)
+
+  const updatedGuidelinesWithSnapping = pointGuidelineToBoundsEdge(
+    guidelinesWithSnappingVector,
+    snappedBounds,
+  )
+
+  return {
+    snapDelta: snapDelta,
+    snappedBoundingBox: snappedBounds,
+    guidelinesWithSnappingVector: updatedGuidelinesWithSnapping,
   }
 }
