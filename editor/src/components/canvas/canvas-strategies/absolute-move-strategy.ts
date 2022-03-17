@@ -1,10 +1,11 @@
 import { MetadataUtils } from '../../../core/model/element-metadata-utils'
 import { ElementInstanceMetadataMap } from '../../../core/shared/element-template'
-import { CanvasPoint } from '../../../core/shared/math-utils'
+import { CanvasPoint, offsetPoint } from '../../../core/shared/math-utils'
 import { ElementPath } from '../../../core/shared/project-file-types'
 import { setSnappingGuidelines } from '../commands/set-snapping-guidelines-command'
 import { updateHighlightedViews } from '../commands/update-highlighted-views-command'
 import { runLegacyAbsoluteMoveSnapping } from '../controls/guideline-helpers'
+import { determineConstrainedDragAxis } from '../controls/select-mode/move-utils'
 import { ConstrainedDragAxis, GuidelineWithSnappingVector } from '../guideline'
 import { CanvasStrategy } from './canvas-strategy-types'
 import {
@@ -44,9 +45,11 @@ export const absoluteMoveStrategy: CanvasStrategy = {
       interactionState.interactionData.drag != null
     ) {
       const drag = interactionState.interactionData.drag
+      const shiftKeyPressed = interactionState.interactionData.modifiers.shift
+      const constrainedDragAxis = shiftKeyPressed ? determineConstrainedDragAxis(drag) : null
       const { snappedDragVector, guidelinesWithSnappingVector } = snapDrag(
         drag,
-        null, // TODO constrain drag axis!
+        constrainedDragAxis,
         sessionState.startingMetadata,
         canvasState.selectedElements,
         canvasState.scale,

@@ -33,8 +33,11 @@ import {
 export const multiselectAbsoluteResizeStrategy: CanvasStrategy = {
   id: 'MULTISELECT_ABSOLUTE_RESIZE',
   name: 'Multiselect Absolute Resize',
-  isApplicable: (canvasState, _interactionState, metadata) => {
-    if (canvasState.selectedElements.length > 1) {
+  isApplicable: (canvasState, interactionState, metadata) => {
+    if (
+      canvasState.selectedElements.length > 1 ||
+      (canvasState.selectedElements.length >= 1 && interactionState?.interactionData.modifiers.alt)
+    ) {
       return canvasState.selectedElements.every((element) => {
         const elementMetadata = MetadataUtils.findElementByElementPath(metadata, element)
         return (
@@ -74,7 +77,13 @@ export const multiselectAbsoluteResizeStrategy: CanvasStrategy = {
         canvasState.selectedElements,
       )
       if (originalBoundingBox != null) {
-        const newBoundingBox = resizeBoundingBox(originalBoundingBox, drag, edgePosition)
+        const centerBased = interactionState.interactionData.modifiers.alt
+        const newBoundingBox = resizeBoundingBox(
+          originalBoundingBox,
+          drag,
+          edgePosition,
+          centerBased,
+        )
         const { snappedBoundingBox, guidelinesWithSnappingVector } = snapBoundingBox(
           canvasState.selectedElements,
           sessionState.startingMetadata,
@@ -82,6 +91,7 @@ export const multiselectAbsoluteResizeStrategy: CanvasStrategy = {
           newBoundingBox,
           canvasState.scale,
           false,
+          centerBased,
         )
         const commandsForSelectedElements = canvasState.selectedElements.flatMap(
           (selectedElement) => {
@@ -179,6 +189,7 @@ function snapBoundingBox(
   resizedBounds: CanvasRectangle,
   canvasScale: number,
   keepAspectRatio: boolean,
+  centerBased: boolean,
 ) {
   const { snappedBoundingBox, guidelinesWithSnappingVector } = runLegacyAbsoluteResizeSnapping(
     selectedElements,
@@ -187,6 +198,7 @@ function snapBoundingBox(
     resizedBounds,
     canvasScale,
     keepAspectRatio,
+    centerBased,
   )
 
   return {
