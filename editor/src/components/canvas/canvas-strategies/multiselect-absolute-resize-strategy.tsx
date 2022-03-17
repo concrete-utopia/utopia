@@ -6,14 +6,8 @@ import { mapDropNulls } from '../../../core/shared/array-utils'
 import { isRight, right } from '../../../core/shared/either'
 import { ElementInstanceMetadataMap, JSXElement } from '../../../core/shared/element-template'
 import {
-  boundingRectangleArray,
-  canvasPoint,
-  CanvasPoint,
   CanvasRectangle,
-  offsetPoint,
-  pointDifference,
   rectangleDifference,
-  rectFromPointVector,
   roundTo,
   transformFrameUsingBoundingBox,
 } from '../../../core/shared/math-utils'
@@ -21,7 +15,6 @@ import { ElementPath } from '../../../core/shared/project-file-types'
 import { getElementFromProjectContents } from '../../editor/store/editor-state'
 import { stylePropPathMappingFn } from '../../inspector/common/property-path-hooks'
 import { EdgePosition } from '../canvas-types'
-import { isEdgePositionOnSide, pickPointOnRect } from '../canvas-utils'
 import {
   AdjustCssLengthProperty,
   adjustCssLengthProperty,

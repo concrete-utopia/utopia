@@ -13,7 +13,6 @@ import {
   CanvasVector,
   offsetPoint,
   pointDifference,
-  rectFromPointVector,
   rectFromTwoPoints,
 } from '../../../core/shared/math-utils'
 import { ElementPath } from '../../../core/shared/project-file-types'
