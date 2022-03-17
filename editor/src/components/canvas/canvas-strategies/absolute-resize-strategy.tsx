@@ -185,7 +185,7 @@ function snapDrag(
     return { snappedDragVector: drag, guidelinesWithSnappingVector: [] }
   }
 
-  const resizedUnsnappedBounds = resizeBoundingBox(originalBoundingBox, drag, edgePosition)
+  const resizedUnsnappedBounds = resizeBoundingBox(originalBoundingBox, drag, edgePosition, false)
   const { snapDelta, guidelinesWithSnappingVector } = runLegacyAbsoluteResizeSnapping(
     selectedElements,
     startingMetadata,
@@ -193,6 +193,7 @@ function snapDrag(
     resizedUnsnappedBounds,
     canvasScale,
     keepAspectRatio,
+    false,
   )
   const snappedDragVector = offsetPoint(drag, snapDelta)
 

@@ -145,6 +145,7 @@ export function runLegacyAbsoluteResizeSnapping(
   resizedBounds: CanvasRectangle,
   canvasScale: number,
   keepAspectRatio: boolean,
+  centerBased: boolean,
 ): {
   snapDelta: CanvasVector
   snappedBoundingBox: CanvasRectangle
@@ -171,7 +172,7 @@ export function runLegacyAbsoluteResizeSnapping(
   )
 
   const snapDelta = pointDifference(draggedPointMovedWithoutSnap, snappedPointOnCanvas)
-  const snappedBounds = resizeBoundingBox(resizedBounds, snapDelta, draggedCorner)
+  const snappedBounds = resizeBoundingBox(resizedBounds, snapDelta, draggedCorner, centerBased)
 
   const updatedGuidelinesWithSnapping = pointGuidelineToBoundsEdge(
     guidelinesWithSnappingVector,
