@@ -1,3 +1,4 @@
+import { Patch } from 'immer'
 import { addAllUniquely } from '../../../core/shared/array-utils'
 import { ElementInstanceMetadataMap } from '../../../core/shared/element-template'
 import {
@@ -67,6 +68,7 @@ export interface StrategyState {
   currentStrategyFitness: number
   currentStrategyCommands: Array<CanvasCommand>
   accumulatedCommands: Array<StrategyAndAccumulatedCommands>
+  accumulatedPatches: Array<Patch>
   commandDescriptions: Array<CommandDescription>
   sortedApplicableStrategies: Array<CanvasStrategy>
 
@@ -80,6 +82,7 @@ export function createEmptyStrategyState(metadata?: ElementInstanceMetadataMap):
     currentStrategyFitness: 0,
     currentStrategyCommands: [],
     accumulatedCommands: [],
+    accumulatedPatches: [],
     commandDescriptions: [],
     sortedApplicableStrategies: [],
     startingMetadata: metadata ?? {},

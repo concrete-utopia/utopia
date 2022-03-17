@@ -1,3 +1,4 @@
+import fastDeepEquals from 'fast-deep-equal'
 import { Patch, produceWithPatches } from 'immer'
 import { Spec } from 'immutability-helper'
 import { drop } from '../../../core/shared/array-utils'
@@ -29,6 +30,7 @@ import {
   modifyUnderlyingForOpenFile,
   withUnderlyingTargetFromEditorState,
 } from '../../editor/store/editor-state'
+import { ConstraintsControls } from '../controls/constraints-control'
 import type { BaseCommand, CommandFunction, TransientOrNot } from './commands'
 
 export interface AdjustNumberProperty extends BaseCommand {
@@ -253,8 +255,16 @@ export function applyValuesAtPath(
       }
     },
   )
+  console.log("IMMU PATCH", jsxValuesAndPathsToSet, editorStatePatch, fastDeepEquals(editorState.projectContents, workingEditorState.projectContents))
+  // TODO: absolute hack, instead of writing to whole function to produce immer patches I just assume only the projectcontents changed
+  const [_, patches] = produceWithPatches(editorState, draft => {
+    if (editorState.projectContents != workingEditorState.projectContents) {
+      draft.projectContents = workingEditorState.projectContents
+    }
+  })
+  console.log("CMD PATCH", patches)
   return {
     editorStateWithChanges: workingEditorState,
-    editorStatePatch: [],
+    editorStatePatch: patches,
   }
 }

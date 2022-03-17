@@ -1,3 +1,4 @@
+import * as Diff from 'diff'
 import { produceWithPatches, enablePatches, Patch, applyPatches } from 'immer'
 import update from 'immutability-helper'
 import { ElementPath, TextFile } from '../../../core/shared/project-file-types'
@@ -16,6 +17,7 @@ import {
 } from './update-highlighted-views-command'
 import { runUpdateSelectedViews, UpdateSelectedViews } from './update-selected-views-command'
 import { runWildcardPatch, WildcardPatch } from './wildcard-patch-command'
+import { abstractEquals } from "../../../core/shared/equality-utils"
 enablePatches()
 export interface CommandFunctionResult {
   editorStatePatch: Array<Patch>
@@ -70,6 +72,7 @@ export const runCanvasCommand: CommandFunction<CanvasCommand> = (
 export function foldAndApplyCommands(
   editorState: EditorState,
   priorPatchedState: EditorState,
+  patches: Array<Patch>,
   commands: Array<CanvasCommand>,
   transient: TransientOrNot,
 ): {
@@ -77,7 +80,7 @@ export function foldAndApplyCommands(
   editorStatePatches: Array<Patch>
   commandDescriptions: Array<CommandDescription>
 } {
-  const commandResult = foldCommands(editorState, commands, transient)
+  const commandResult = foldCommands(editorState, patches, commands, transient)
   const updatedEditorState = applyStatePatches(
     editorState,
     priorPatchedState,
@@ -92,52 +95,51 @@ export function foldAndApplyCommands(
 
 function foldCommands(
   editorState: EditorState,
+  patches: Array<Patch>,
   commands: Array<CanvasCommand>,
   transient: TransientOrNot,
 ): {
   editorStatePatches: Array<Patch>
   commandDescriptions: Array<CommandDescription>
 } {
-  let workingEditorState: EditorState = editorState
+  let workingEditorState: EditorState = applyPatches(editorState, patches)
   let workingCommandDescriptions: Array<CommandDescription> = []
+  let statePatches: Array<Patch> = []
 
-  // let patches: Array<Patch> = []
-  // console.time("immer");
-  // for (let i=0; i<100; i++) {
-  // const result = produceWithPatches(editorState, draft => {
-  //   applyPatches(draft, patches)
-  // })
-
-  // const afterCommand = produceWithPatches(result[0], draft => {
-  //   // for (let i=0; i<100; i++) {
-  //     (((draft.projectContents.src as ProjectContentDirectory).children['app.js'] as ProjectContentFile).content as TextFile).fileContents.code =
-  //       (((draft.projectContents.src as ProjectContentDirectory).children['app.js'] as ProjectContentFile).content as TextFile).fileContents.code + "hello"
-  //   // }
-  // })
-  // const merged = produceWithPatches(editorState, draft => {
-  //   applyPatches(draft, [...patches, ...afterCommand[1]])
-  // })
-  // patches = merged[1]
-  // }
-  // console.timeEnd("immer");
-  const [_, statePatches] = produceWithPatches(workingEditorState, (draft) => {
-    for (const command of commands) {
-      // Allow every command if this is a transient fold, otherwise only allow commands that are not transient.
-      if (transient === 'transient' || command.transient === 'permanent') {
-        // Run the command with our current states.
-        const commandResult = runCanvasCommand(workingEditorState, command)
-        // Capture values from the result.
-        const statePatch = commandResult.editorStatePatch
-        // Apply the update to the editor state.
-        workingEditorState = applyPatches(workingEditorState, statePatch)
-        // Collate the patches.
-        workingCommandDescriptions.push({
-          description: commandResult.commandDescription,
-          transient: command.transient === 'transient',
-        })
-      }
+  for (const command of commands) {
+    // Allow every command if this is a transient fold, otherwise only allow commands that are not transient.
+    if (transient === 'transient' || command.transient === 'permanent') {
+      // Run the command with our current states.
+      const commandResult = runCanvasCommand(workingEditorState, command)
+      // Capture values from the result.
+      const statePatch = commandResult.editorStatePatch
+      // Apply the update to the editor state.
+      workingEditorState = applyPatches(workingEditorState, statePatch)
+      // Collate the patches.
+      statePatches.push(...statePatch)
+      workingCommandDescriptions.push({
+        description: commandResult.commandDescription,
+        transient: command.transient === 'transient',
+      })
     }
-  })
+  }
+
+  // for (const command of commands) {
+  //     // Allow every command if this is a transient fold, otherwise only allow commands that are not transient.
+  //   if (transient === 'transient' || command.transient === 'permanent') {
+  //     // Run the command with our current states.
+  //     const commandResult = runCanvasCommand(patchedState, command)
+  //     // Capture values from the result.
+  //     const statePatch = commandResult.editorStatePatch
+  //     statePatches.push(...stateP)
+      
+  //     // Collate the patches.
+  //     workingCommandDescriptions.push({
+  //       description: commandResult.commandDescription,
+  //       transient: command.transient === 'transient',
+  //     })
+  //   }
+  // }
 
   return {
     editorStatePatches: statePatches,
@@ -153,9 +155,13 @@ export function applyStatePatches(
   if (patches.length === 0) {
     return editorState
   } else {
+    const myEq = (a: any, b: any) => abstractEquals(a, b, true, myEq)
+    const diff = myEq(priorPatchedState, applyPatches(editorState, patches))
+    console.log("DIFF", priorPatchedState, diff)
     return keepDeepReferenceEqualityIfPossible(
       priorPatchedState,
       applyPatches(editorState, patches),
     )
   }
 }
+
