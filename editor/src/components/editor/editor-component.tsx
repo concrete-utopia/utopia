@@ -189,16 +189,16 @@ export const EditorComponentInner = React.memo((props: EditorProps) => {
             const action = CanvasActions.clearInteractionSession(true)
             editorStoreRef.current.dispatch([action], 'everyone')
           } else {
-            const action = CanvasActions.createInteractionSession(
-              updateInteractionViaKeyboard(
-                existingInteractionSession,
-                [],
-                [Keyboard.keyCharacterForCode(event.keyCode)],
-                Modifier.modifiersForKeyboardEvent(event),
-                { type: 'KEYBOARD_CATCHER_CONTROL' },
-              ),
-            )
-            editorStoreRef.current.dispatch([action], 'everyone')
+            // const action = CanvasActions.createInteractionSession(
+            //   updateInteractionViaKeyboard(
+            //     existingInteractionSession,
+            //     [],
+            //     [Keyboard.keyCharacterForCode(event.keyCode)],
+            //     Modifier.modifiersForKeyboardEvent(event),
+            //     { type: 'KEYBOARD_CATCHER_CONTROL' },
+            //   ),
+            // )
+            // editorStoreRef.current.dispatch([action], 'everyone')
           }
         }
       }
