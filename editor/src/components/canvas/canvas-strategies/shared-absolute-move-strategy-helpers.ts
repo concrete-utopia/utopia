@@ -4,13 +4,14 @@ import { framePointForPinnedProp } from '../../../core/layout/layout-helpers-new
 import { MetadataUtils } from '../../../core/model/element-metadata-utils'
 import { mapDropNulls } from '../../../core/shared/array-utils'
 import { isRight, right } from '../../../core/shared/either'
-import { JSXElement } from '../../../core/shared/element-template'
-import { CanvasRectangle, CanvasVector } from '../../../core/shared/math-utils'
-import { ElementPath } from '../../../core/shared/project-file-types'
+import type { ElementInstanceMetadataMap, JSXElement } from '../../../core/shared/element-template'
 import {
-  getElementFromProjectContents,
-  withUnderlyingTarget,
-} from '../../editor/store/editor-state'
+  boundingRectangleArray,
+  CanvasRectangle,
+  CanvasVector,
+} from '../../../core/shared/math-utils'
+import { ElementPath } from '../../../core/shared/project-file-types'
+import { getElementFromProjectContents } from '../../editor/store/editor-state'
 import { stylePropPathMappingFn } from '../../inspector/common/property-path-hooks'
 import {
   adjustCssLengthProperty,
@@ -73,4 +74,15 @@ function createMoveCommandsForElement(
     },
     ['top', 'bottom', 'left', 'right'] as const,
   )
+}
+
+export function getMultiselectBounds(
+  jsxMetadata: ElementInstanceMetadataMap,
+  selectedElements: Array<ElementPath>,
+): CanvasRectangle | null {
+  const frames = mapDropNulls((element) => {
+    return MetadataUtils.getFrameInCanvasCoords(element, jsxMetadata)
+  }, selectedElements)
+
+  return boundingRectangleArray(frames)
 }
