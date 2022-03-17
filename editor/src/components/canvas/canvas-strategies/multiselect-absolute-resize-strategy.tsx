@@ -21,11 +21,7 @@ import { ElementPath } from '../../../core/shared/project-file-types'
 import { getElementFromProjectContents } from '../../editor/store/editor-state'
 import { stylePropPathMappingFn } from '../../inspector/common/property-path-hooks'
 import { EdgePosition } from '../canvas-types'
-import {
-  isEdgePositionOnSide,
-  pickPointOnRect,
-  runLegacyAbsoluteResizeSnapping2,
-} from '../canvas-utils'
+import { isEdgePositionOnSide, pickPointOnRect } from '../canvas-utils'
 import {
   AdjustCssLengthProperty,
   adjustCssLengthProperty,
@@ -35,7 +31,11 @@ import { updateHighlightedViews } from '../commands/update-highlighted-views-com
 import { AbsoluteResizeControl } from '../controls/select-mode/absolute-resize-control'
 import { AbsolutePin, hasAtLeastTwoPinsPerSide } from './absolute-resize-helpers'
 import { CanvasStrategy } from './canvas-strategy-types'
-import { getMultiselectBounds, resizeBoundingBox } from './shared-absolute-move-strategy-helpers'
+import {
+  getMultiselectBounds,
+  resizeBoundingBox,
+  runLegacyAbsoluteResizeSnapping2,
+} from './shared-absolute-move-strategy-helpers'
 
 export const multiselectAbsoluteResizeStrategy: CanvasStrategy = {
   id: 'MULTISELECT_ABSOLUTE_RESIZE',
