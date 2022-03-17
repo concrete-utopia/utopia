@@ -854,22 +854,12 @@ describe('Monkey Function', () => {
 
     expect(renderToFormattedString(<OuterComponent data-uid={'component'} />))
       .toMatchInlineSnapshot(`
-      "<div
-        data-uid=\\"blue-root inner-parent outer component\\"
-        data-paths-2=\\"component:outer:inner-parent:blue-root\\"
-      >
-        <div
-          data-uid=\\"blue-root inner-child\\"
-          data-paths-2=\\"component:outer:inner-parent/inner-child:blue-root\\"
-        >
-          <div
-            data-uid=\\"blue-root blue\\"
-            data-paths-2=\\"component:outer:inner-parent/inner-child/blue:blue-root\\"
-          ></div>
-          <div
-            data-uid=\\"red-root red\\"
-            data-paths-2=\\"component:outer:inner-parent/inner-child/red:red-root\\"
-          ></div>
+      "<div data-uid=\\"outer component\\" data-paths-2=\\"component:outer\\">
+        <div data-uid=\\"inner-parent\\">
+          <div data-uid=\\"inner-child\\">
+            <div data-uid=\\"blue\\"></div>
+            <div data-uid=\\"red-root red\\" data-paths-2=\\"red:red-root\\"></div>
+          </div>
         </div>
       </div>
       "
