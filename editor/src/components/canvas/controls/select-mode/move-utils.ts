@@ -22,7 +22,7 @@ import { getSnapDelta } from '../guideline-helpers'
 import { getNewIndex } from './yoga-utils'
 import { flatMapArray } from '../../../../core/shared/array-utils'
 
-function determineConstrainedDragAxis(dragDelta: CanvasVector): 'x' | 'y' {
+export function determineConstrainedDragAxis(dragDelta: CanvasVector): 'x' | 'y' {
   if (Math.abs(dragDelta.x) > Math.abs(dragDelta.y)) {
     return 'x'
   } else {
