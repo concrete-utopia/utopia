@@ -267,20 +267,11 @@ export function applyValuesAtPath(
           value: success.imports,
         },
       ]
-      const [_, patcccse] = produceWithPatches(editorState, (draft) => {
-        ;((((draft.projectContents['src'] as ProjectContentDirectory).children[
-          'app.js'
-        ] as ProjectContentFile).content as TextFile).fileContents
-          .parsed as ParseSuccess).topLevelElements = success.topLevelElements
-      })
-
-      console.log(immerPatches, patcccse)
 
       return immerPatches
     },
   )
 
-  console.log('CMD PATCH', patches)
   return {
     editorStateWithChanges: workingEditorState,
     editorStatePatch: patches,

@@ -556,7 +556,7 @@ function editorDispatchInner(
   storedState: InnerDispatchResult,
   spyCollector: UiJsxCanvasContextData,
 ): InnerDispatchResult {
-  console.log('DISPATCH', simpleStringifyActions(dispatchedActions))
+  // console.log('DISPATCH', simpleStringifyActions(dispatchedActions))
 
   const MeasureDispatchTime =
     isFeatureEnabled('Debug mode – Performance Marks') && PERFORMANCE_MARKS_ALLOWED

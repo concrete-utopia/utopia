@@ -1,6 +1,4 @@
-import * as Diff from 'diff'
-import { produceWithPatches, enablePatches, Patch, applyPatches } from 'immer'
-import update from 'immutability-helper'
+import { produceWithPatches, enablePatches, Patch, applyPatches, Draft } from 'immer'
 import { ElementPath, TextFile } from '../../../core/shared/project-file-types'
 import { keepDeepReferenceEqualityIfPossible } from '../../../utils/react-performance'
 import { ProjectContentDirectory, ProjectContentFile } from '../../assets'
@@ -17,7 +15,6 @@ import {
 } from './update-highlighted-views-command'
 import { runUpdateSelectedViews, UpdateSelectedViews } from './update-selected-views-command'
 import { runWildcardPatch, WildcardPatch } from './wildcard-patch-command'
-import { abstractEquals } from "../../../core/shared/equality-utils"
 enablePatches()
 export interface CommandFunctionResult {
   editorStatePatch: Array<Patch>
@@ -132,7 +129,7 @@ function foldCommands(
   //     // Capture values from the result.
   //     const statePatch = commandResult.editorStatePatch
   //     statePatches.push(...stateP)
-      
+
   //     // Collate the patches.
   //     workingCommandDescriptions.push({
   //       description: commandResult.commandDescription,
@@ -155,9 +152,6 @@ export function applyStatePatches(
   if (patches.length === 0) {
     return editorState
   } else {
-    const myEq = (a: any, b: any) => abstractEquals(a, b, true, myEq)
-    const diff = myEq(priorPatchedState, applyPatches(editorState, patches))
-    console.log("DIFF", priorPatchedState, diff)
     return keepDeepReferenceEqualityIfPossible(
       priorPatchedState,
       applyPatches(editorState, patches),
@@ -165,3 +159,7 @@ export function applyStatePatches(
   }
 }
 
+export function compressPatches(patches: Array<Patch>, base: EditorState): Array<Patch> {
+  const [, compressedPatches] = produceWithPatches(base, (draft) => applyPatches(draft, patches))
+  return compressedPatches
+}
