@@ -167,6 +167,9 @@ function attachPath2ToChild(
     return originalResponse.map((element) => attachPath2ToChild(element, path2))
   } else if (!React.isValidElement(originalResponse as any)) {
     return originalResponse
+  } else if (originalResponse.props?.[UTOPIA_PATHS_2_KEY] != null) {
+    // Prevent the path being overwritten
+    return originalResponse
   } else {
     if (shouldIncludeDataUID(originalResponse.type)) {
       return React.cloneElement(originalResponse, {
@@ -183,6 +186,9 @@ function attachPath2ToChildElement(child: React.ReactElement | null, path2: stri
     return child
   }
   if ((!React.isValidElement(child) as boolean) || child == null) {
+    return child
+  } else if (child.props?.[UTOPIA_PATHS_2_KEY] != null) {
+    // Prevent the path being overwritten
     return child
   } else {
     // Setup the result.
@@ -433,8 +439,6 @@ const mangleExoticType = Utils.memoize(
 const mangleIntrinsicType = Utils.memoize(
   (type: string): React.FunctionComponent => {
     const wrapperComponent = (p: any, context?: any) => {
-      console.log(`Creating a ${type}`)
-
       let updatedProps = p
       if (!shouldIncludeDataUID(type)) {
         updatedProps = filterDataProps(updatedProps)
@@ -456,10 +460,11 @@ function isClassComponent(component: any) {
 }
 
 // Remaining TODO
+// - [x] BUG Parent child paths should not include inner paths of component
 // - [ ] Update mangleExoticType
 //   - [ ] Add a test case
-// - [ ] Update mangleIntrinsicType
-//   - [ ] Add a test case
+// - [x] Update mangleIntrinsicType
+//   - [x] Add a test case
 // - [ ] Remove existing creation of `data-paths` and replace it completely with this new method
 // - [ ] Tidy up the types
 // - [ ] Check if we need all paths on an element, or just the deepest path
