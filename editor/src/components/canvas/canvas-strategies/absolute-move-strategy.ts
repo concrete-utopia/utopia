@@ -25,7 +25,10 @@ import { wildcardPatch } from '../commands/wildcard-patch-command'
 import { runLegacyAbsoluteMoveSnapping } from '../controls/guideline-helpers'
 import { ConstrainedDragAxis, Guideline, GuidelineWithSnappingVector } from '../guideline'
 import { CanvasStrategy } from './canvas-strategy-types'
-import { getAbsoluteMoveCommandsForSelectedElement } from './shared-absolute-move-strategy-helpers'
+import {
+  getAbsoluteMoveCommandsForSelectedElement,
+  getMultiselectBounds,
+} from './shared-absolute-move-strategy-helpers'
 
 export const absoluteMoveStrategy: CanvasStrategy = {
   id: 'ABSOLUTE_MOVE',
@@ -109,15 +112,4 @@ function snapDrag(
   )
 
   return { snappedDragVector, guidelinesWithSnappingVector }
-}
-
-function getMultiselectBounds(
-  jsxMetadata: ElementInstanceMetadataMap,
-  selectedElements: Array<ElementPath>,
-): CanvasRectangle | null {
-  const frames = mapDropNulls((element) => {
-    return MetadataUtils.getFrameInCanvasCoords(element, jsxMetadata)
-  }, selectedElements)
-
-  return boundingRectangleArray(frames)
 }

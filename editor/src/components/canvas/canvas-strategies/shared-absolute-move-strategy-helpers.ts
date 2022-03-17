@@ -4,8 +4,12 @@ import { framePointForPinnedProp } from '../../../core/layout/layout-helpers-new
 import { MetadataUtils } from '../../../core/model/element-metadata-utils'
 import { mapDropNulls } from '../../../core/shared/array-utils'
 import { isRight, right } from '../../../core/shared/either'
-import { JSXElement } from '../../../core/shared/element-template'
-import { CanvasRectangle, CanvasVector } from '../../../core/shared/math-utils'
+import { ElementInstanceMetadataMap, JSXElement } from '../../../core/shared/element-template'
+import {
+  boundingRectangleArray,
+  CanvasRectangle,
+  CanvasVector,
+} from '../../../core/shared/math-utils'
 import { ElementPath } from '../../../core/shared/project-file-types'
 import {
   getElementFromProjectContents,
@@ -18,6 +22,17 @@ import {
 } from '../commands/adjust-css-length-command'
 import { InteractionCanvasState } from './canvas-strategy-types'
 import { StrategyState } from './interaction-state'
+
+export function getMultiselectBounds(
+  jsxMetadata: ElementInstanceMetadataMap,
+  selectedElements: Array<ElementPath>,
+): CanvasRectangle | null {
+  const frames = mapDropNulls((element) => {
+    return MetadataUtils.getFrameInCanvasCoords(element, jsxMetadata)
+  }, selectedElements)
+
+  return boundingRectangleArray(frames)
+}
 
 export function getAbsoluteMoveCommandsForSelectedElement(
   selectedElement: ElementPath,

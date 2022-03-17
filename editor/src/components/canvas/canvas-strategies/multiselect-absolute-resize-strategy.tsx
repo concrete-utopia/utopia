@@ -30,6 +30,7 @@ import { updateHighlightedViews } from '../commands/update-highlighted-views-com
 import { AbsoluteResizeControl } from '../controls/select-mode/absolute-resize-control'
 import { AbsolutePin, hasAtLeastTwoPinsPerSide } from './absolute-resize-helpers'
 import { CanvasStrategy } from './canvas-strategy-types'
+import { getMultiselectBounds } from './shared-absolute-move-strategy-helpers'
 
 export const multiselectAbsoluteResizeStrategy: CanvasStrategy = {
   id: 'MULTISELECT_ABSOLUTE_RESIZE',
@@ -70,11 +71,10 @@ export const multiselectAbsoluteResizeStrategy: CanvasStrategy = {
       const drag = interactionState.interactionData.drag
       const edgePosition = interactionState.activeControl.edgePosition
 
-      const originalFrames = mapDropNulls(
-        (path) => MetadataUtils.getFrameInCanvasCoords(path, sessionState.startingMetadata),
+      const originalBoundingBox = getMultiselectBounds(
+        sessionState.startingMetadata,
         canvasState.selectedElements,
       )
-      const originalBoundingBox = boundingRectangleArray(originalFrames)
       if (originalBoundingBox != null) {
         const newBoundingBox = resizeBoundingBox(originalBoundingBox, drag, edgePosition)
         const commandsForSelectedElements = canvasState.selectedElements.flatMap(
