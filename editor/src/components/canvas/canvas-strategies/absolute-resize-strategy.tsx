@@ -4,26 +4,30 @@ import { framePointForPinnedProp } from '../../../core/layout/layout-helpers-new
 import { MetadataUtils } from '../../../core/model/element-metadata-utils'
 import { mapDropNulls } from '../../../core/shared/array-utils'
 import { isRight, right } from '../../../core/shared/either'
-import { JSXElement } from '../../../core/shared/element-template'
+import { ElementInstanceMetadataMap, JSXElement } from '../../../core/shared/element-template'
 import { CanvasRectangle, CanvasVector } from '../../../core/shared/math-utils'
 import { ElementPath } from '../../../core/shared/project-file-types'
 import { withUnderlyingTarget } from '../../editor/store/editor-state'
 import { stylePropPathMappingFn } from '../../inspector/common/property-path-hooks'
 import { EdgePosition } from '../canvas-types'
+import { runLegacyAbsoluteResizeSnapping } from '../canvas-utils'
 import {
   AdjustCssLengthProperty,
   adjustCssLengthProperty,
 } from '../commands/adjust-css-length-command'
+import { setSnappingGuidelines } from '../commands/set-snapping-guidelines-command'
 import { updateHighlightedViews } from '../commands/update-highlighted-views-command'
 import { AbsoluteResizeControl } from '../controls/select-mode/absolute-resize-control'
 import { AbsolutePin } from './absolute-resize-helpers'
+import { GuidelineWithSnappingVector } from '../guideline'
 import { CanvasStrategy } from './canvas-strategy-types'
+import { getMultiselectBounds } from './shared-absolute-move-strategy-helpers'
 
 export const absoluteResizeStrategy: CanvasStrategy = {
   id: 'ABSOLUTE_RESIZE',
   name: 'Absolute Resize',
   isApplicable: (canvasState, _interactionState, metadata) => {
-    if (canvasState.selectedElements.length > 0) {
+    if (canvasState.selectedElements.length === 1) {
       return canvasState.selectedElements.every((element) => {
         const elementMetadata = MetadataUtils.findElementByElementPath(metadata, element)
 
@@ -55,6 +59,14 @@ export const absoluteResizeStrategy: CanvasStrategy = {
     ) {
       const drag = interactionState.interactionData.drag
       const edgePosition = interactionState.activeControl.edgePosition
+      const { snappedDragVector, guidelinesWithSnappingVector } = snapDrag(
+        canvasState.selectedElements,
+        sessionState.startingMetadata,
+        drag,
+        edgePosition,
+        canvasState.scale,
+        false,
+      )
 
       const commandsForSelectedElements = canvasState.selectedElements.flatMap(
         (selectedElement) => {
@@ -80,12 +92,16 @@ export const absoluteResizeStrategy: CanvasStrategy = {
             element,
             selectedElement,
             edgePosition,
-            drag,
+            snappedDragVector,
             elementParentBounds,
           )
         },
       )
-      return [...commandsForSelectedElements, updateHighlightedViews('transient', [])]
+      return [
+        ...commandsForSelectedElements,
+        updateHighlightedViews('transient', []),
+        setSnappingGuidelines('transient', guidelinesWithSnappingVector),
+      ]
     }
     // Fallback for when the checks above are not satisfied.
     return []
@@ -144,4 +160,36 @@ function createResizeCommands(
       return null
     }
   }, pins)
+}
+
+function snapDrag(
+  selectedElements: Array<ElementPath>,
+  startingMetadata: ElementInstanceMetadataMap,
+  drag: CanvasVector,
+  resizingFromPosition: EdgePosition,
+  canvasScale: number,
+  keepAspectRatio: boolean,
+): {
+  snappedDragVector: CanvasVector
+  guidelinesWithSnappingVector: Array<GuidelineWithSnappingVector>
+} {
+  const multiselectBounds = getMultiselectBounds(startingMetadata, selectedElements)
+
+  if (multiselectBounds == null) {
+    return { snappedDragVector: drag, guidelinesWithSnappingVector: [] }
+  }
+
+  const { snappedDragVector, guidelinesWithSnappingVector } = runLegacyAbsoluteResizeSnapping(
+    selectedElements,
+    startingMetadata,
+    drag,
+    resizingFromPosition,
+    multiselectBounds,
+    canvasScale,
+    keepAspectRatio,
+  )
+  return {
+    snappedDragVector: snappedDragVector,
+    guidelinesWithSnappingVector: guidelinesWithSnappingVector,
+  }
 }
