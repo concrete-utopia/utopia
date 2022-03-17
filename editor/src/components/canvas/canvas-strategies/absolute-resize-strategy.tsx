@@ -26,8 +26,11 @@ import { getMultiselectBounds } from './shared-absolute-move-strategy-helpers'
 export const absoluteResizeStrategy: CanvasStrategy = {
   id: 'ABSOLUTE_RESIZE',
   name: 'Absolute Resize',
-  isApplicable: (canvasState, _interactionState, metadata) => {
-    if (canvasState.selectedElements.length === 1) {
+  isApplicable: (canvasState, interactionState, metadata) => {
+    if (
+      canvasState.selectedElements.length === 1 &&
+      !interactionState?.interactionData.modifiers.alt
+    ) {
       return canvasState.selectedElements.every((element) => {
         const elementMetadata = MetadataUtils.findElementByElementPath(metadata, element)
 

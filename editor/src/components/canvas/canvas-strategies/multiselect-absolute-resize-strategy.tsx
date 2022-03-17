@@ -6,22 +6,14 @@ import { mapDropNulls } from '../../../core/shared/array-utils'
 import { isRight, right } from '../../../core/shared/either'
 import { JSXElement } from '../../../core/shared/element-template'
 import {
-  boundingRectangleArray,
-  canvasPoint,
-  CanvasPoint,
   CanvasRectangle,
-  offsetPoint,
-  pointDifference,
   rectangleDifference,
-  rectFromPointVector,
   roundTo,
   transformFrameUsingBoundingBox,
 } from '../../../core/shared/math-utils'
 import { ElementPath } from '../../../core/shared/project-file-types'
 import { getElementFromProjectContents } from '../../editor/store/editor-state'
 import { stylePropPathMappingFn } from '../../inspector/common/property-path-hooks'
-import { EdgePosition } from '../canvas-types'
-import { isEdgePositionOnSide, pickPointOnRect } from '../canvas-utils'
 import {
   AdjustCssLengthProperty,
   adjustCssLengthProperty,
@@ -35,8 +27,11 @@ import { getMultiselectBounds, resizeBoundingBox } from './shared-absolute-move-
 export const multiselectAbsoluteResizeStrategy: CanvasStrategy = {
   id: 'MULTISELECT_ABSOLUTE_RESIZE',
   name: 'Multiselect Absolute Resize',
-  isApplicable: (canvasState, _interactionState, metadata) => {
-    if (canvasState.selectedElements.length > 1) {
+  isApplicable: (canvasState, interactionState, metadata) => {
+    if (
+      canvasState.selectedElements.length > 1 ||
+      (canvasState.selectedElements.length >= 1 && interactionState?.interactionData.modifiers.alt)
+    ) {
       return canvasState.selectedElements.every((element) => {
         const elementMetadata = MetadataUtils.findElementByElementPath(metadata, element)
         return (
@@ -76,7 +71,13 @@ export const multiselectAbsoluteResizeStrategy: CanvasStrategy = {
         canvasState.selectedElements,
       )
       if (originalBoundingBox != null) {
-        const newBoundingBox = resizeBoundingBox(originalBoundingBox, drag, edgePosition)
+        const centerBased = interactionState.interactionData.modifiers.alt
+        const newBoundingBox = resizeBoundingBox(
+          originalBoundingBox,
+          drag,
+          edgePosition,
+          centerBased,
+        )
         const commandsForSelectedElements = canvasState.selectedElements.flatMap(
           (selectedElement) => {
             const element = getElementFromProjectContents(
