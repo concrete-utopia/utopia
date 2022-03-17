@@ -15,6 +15,7 @@ import {
   pointDifference,
   rectFromPointVector,
   rectFromTwoPoints,
+  zeroCanvasPoint,
 } from '../../../core/shared/math-utils'
 import { ElementPath } from '../../../core/shared/project-file-types'
 import { getElementFromProjectContents } from '../../editor/store/editor-state'
@@ -99,6 +100,7 @@ export function resizeBoundingBox(
   boundingBox: CanvasRectangle,
   drag: CanvasPoint,
   edgePosition: EdgePosition,
+  centerBased: boolean,
 ): CanvasRectangle {
   let dragToUse = drag
   let cornerEdgePosition = edgePosition
@@ -118,9 +120,19 @@ export function resizeBoundingBox(
     }
   }
 
-  const startingPoint = pickPointOnRect(boundingBox, startingCornerPosition)
   const draggedCorner = pickPointOnRect(boundingBox, cornerEdgePosition)
   const newCorner = offsetPoint(draggedCorner, dragToUse)
-  const newBoundingBox = rectFromTwoPoints(startingPoint, newCorner)
-  return newBoundingBox
+  if (centerBased) {
+    const oppositeCornerPoint = pickPointOnRect(boundingBox, startingCornerPosition)
+    const oppositeCornerDragged = offsetPoint(
+      oppositeCornerPoint,
+      pointDifference(dragToUse, zeroCanvasPoint),
+    )
+    const newBoundingBox = rectFromTwoPoints(oppositeCornerDragged, newCorner)
+    return newBoundingBox
+  } else {
+    const fixedCornerPoint = pickPointOnRect(boundingBox, startingCornerPosition)
+    const newBoundingBox = rectFromTwoPoints(fixedCornerPoint, newCorner)
+    return newBoundingBox
+  }
 }
