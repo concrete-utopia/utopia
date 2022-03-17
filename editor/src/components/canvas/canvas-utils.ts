@@ -1400,6 +1400,49 @@ export function runLegacyAbsoluteResizeSnapping(
   }
 }
 
+export function runLegacyAbsoluteResizeSnapping2(
+  selectedElements: Array<ElementPath>,
+  jsxMetadata: ElementInstanceMetadataMap,
+  draggedCorner: EdgePosition,
+  resizedBounds: CanvasRectangle,
+  canvasScale: number,
+  keepAspectRatio: boolean,
+): {
+  snappedBoundingBox: CanvasRectangle
+  guidelinesWithSnappingVector: Array<GuidelineWithSnappingVector>
+} {
+  const oppositeCorner: EdgePosition = {
+    x: 1 - draggedCorner.x,
+    y: 1 - draggedCorner.y,
+  } as EdgePosition
+
+  const oppositePoint = pickPointOnRect(resizedBounds, oppositeCorner)
+  const draggedPointMovedWithoutSnap = pickPointOnRect(resizedBounds, draggedCorner)
+
+  const { snappedPointOnCanvas, guidelinesWithSnappingVector } = snapPoint(
+    selectedElements,
+    jsxMetadata,
+    canvasScale,
+    draggedPointMovedWithoutSnap,
+    true,
+    keepAspectRatio,
+    draggedPointMovedWithoutSnap,
+    oppositePoint,
+    draggedCorner,
+  )
+
+  const snappedBounds = rectFromTwoPoints(oppositePoint, snappedPointOnCanvas)
+  const updatedGuidelinesWithSnapping = pointGuidelineToBoundsEdge(
+    guidelinesWithSnappingVector,
+    snappedBounds,
+  )
+
+  return {
+    snappedBoundingBox: snappedBounds,
+    guidelinesWithSnappingVector: updatedGuidelinesWithSnapping,
+  }
+}
+
 function getTargetableProp(resizeOptions: ResizeOptions): LayoutTargetableProp | undefined {
   return resizeOptions.propertyTargetOptions[resizeOptions.propertyTargetSelectedIndex]
 }

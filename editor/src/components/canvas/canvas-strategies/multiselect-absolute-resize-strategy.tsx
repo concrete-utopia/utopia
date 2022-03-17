@@ -21,11 +21,16 @@ import { ElementPath } from '../../../core/shared/project-file-types'
 import { getElementFromProjectContents } from '../../editor/store/editor-state'
 import { stylePropPathMappingFn } from '../../inspector/common/property-path-hooks'
 import { EdgePosition } from '../canvas-types'
-import { isEdgePositionOnSide, pickPointOnRect } from '../canvas-utils'
+import {
+  isEdgePositionOnSide,
+  pickPointOnRect,
+  runLegacyAbsoluteResizeSnapping2,
+} from '../canvas-utils'
 import {
   AdjustCssLengthProperty,
   adjustCssLengthProperty,
 } from '../commands/adjust-css-length-command'
+import { setSnappingGuidelines } from '../commands/set-snapping-guidelines-command'
 import { updateHighlightedViews } from '../commands/update-highlighted-views-command'
 import { AbsoluteResizeControl } from '../controls/select-mode/absolute-resize-control'
 import { AbsolutePin, hasAtLeastTwoPinsPerSide } from './absolute-resize-helpers'
@@ -77,6 +82,17 @@ export const multiselectAbsoluteResizeStrategy: CanvasStrategy = {
       )
       if (originalBoundingBox != null) {
         const newBoundingBox = resizeBoundingBox(originalBoundingBox, drag, edgePosition)
+        const {
+          snappedBoundingBox,
+          guidelinesWithSnappingVector,
+        } = runLegacyAbsoluteResizeSnapping2(
+          canvasState.selectedElements,
+          sessionState.startingMetadata,
+          edgePosition,
+          newBoundingBox,
+          canvasState.scale,
+          false,
+        )
         const commandsForSelectedElements = canvasState.selectedElements.flatMap(
           (selectedElement) => {
             const element = getElementFromProjectContents(
@@ -94,7 +110,7 @@ export const multiselectAbsoluteResizeStrategy: CanvasStrategy = {
             }
 
             const newFrame = transformFrameUsingBoundingBox(
-              newBoundingBox,
+              snappedBoundingBox,
               originalBoundingBox,
               originalFrame,
             )
@@ -102,13 +118,16 @@ export const multiselectAbsoluteResizeStrategy: CanvasStrategy = {
               MetadataUtils.findElementByElementPath(sessionState.startingMetadata, selectedElement)
                 ?.specialSizeMeasurements.immediateParentBounds ?? null
 
-            return createResizeCommandsFromFrame(
-              element,
-              selectedElement,
-              newFrame,
-              originalFrame,
-              elementParentBounds,
-            )
+            return [
+              ...createResizeCommandsFromFrame(
+                element,
+                selectedElement,
+                newFrame,
+                originalFrame,
+                elementParentBounds,
+              ),
+              setSnappingGuidelines('transient', guidelinesWithSnappingVector),
+            ]
           },
         )
         return [...commandsForSelectedElements, updateHighlightedViews('transient', [])]

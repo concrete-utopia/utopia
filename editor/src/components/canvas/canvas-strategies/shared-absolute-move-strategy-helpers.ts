@@ -25,6 +25,7 @@ import {
   adjustCssLengthProperty,
   AdjustCssLengthProperty,
 } from '../commands/adjust-css-length-command'
+import { GuidelineWithSnappingVector } from '../guideline'
 import { InteractionCanvasState } from './canvas-strategy-types'
 import { StrategyState } from './interaction-state'
 
