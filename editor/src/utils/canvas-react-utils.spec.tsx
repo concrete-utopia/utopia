@@ -820,24 +820,7 @@ describe('Monkey Function', () => {
       return <div data-uid='red-root' />
     }
 
-    // const Blue = (props: any) => {
-    //   return <div data-uid='blue-root'>{props.children}</div>
-    // }
-
-    // var InnerComponent = () => {
-    //   const red = <Red data-uid='red' />
-
-    //   return (
-    //     <Blue data-uid='inner-parent'>
-    //       <Blue data-uid='inner-child'>
-    //         <Blue data-uid='blue' />
-    //         {red}
-    //       </Blue>
-    //     </Blue>
-    //   )
-    // }
-
-    var OuterComponent = () => {
+    const OuterComponent = () => {
       const red = <Red data-uid='red' />
 
       return (
@@ -867,6 +850,49 @@ describe('Monkey Function', () => {
             <div
               data-uid=\\"red-root red\\"
               data-paths-2=\\"component:outer/inner-parent/inner-child/red:red-root\\"
+            ></div>
+          </div>
+        </div>
+      </div>
+      "
+    `)
+  })
+
+  it('builds the correct paths for Exotic-type components', () => {
+    const Red = () => {
+      return <div data-uid='red-root' />
+    }
+
+    const OuterComponent = () => {
+      const red = <Red data-uid='red' />
+
+      return (
+        <>
+          <div data-uid='outer'>
+            <>
+              <div data-uid='inner-parent'>
+                <>
+                  <div data-uid='inner-child'>
+                    <div data-uid='blue' />
+                    {red}
+                  </div>
+                </>
+              </div>
+            </>
+          </div>
+        </>
+      )
+    }
+
+    expect(renderToFormattedString(<OuterComponent data-uid={'component'} />))
+      .toMatchInlineSnapshot(`
+      "<div data-uid=\\"outer component\\">
+        <div data-uid=\\"inner-parent\\">
+          <div data-uid=\\"inner-child\\">
+            <div data-uid=\\"blue\\" data-paths-2=\\"inner-child/blue\\"></div>
+            <div
+              data-uid=\\"red-root red\\"
+              data-paths-2=\\"inner-child/red:red-root\\"
             ></div>
           </div>
         </div>

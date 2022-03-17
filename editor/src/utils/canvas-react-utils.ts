@@ -362,6 +362,13 @@ const mangleExoticType = Utils.memoize(
         let additionalProps: any = {}
         let shouldClone: boolean = false
 
+        const path2 = appendedPathsString ?? appendedUIDString
+        const withUpdatedChildren = attachPath2ToChildrenOfElement(
+          child,
+          child.props?.children,
+          path2,
+        )
+
         if (appendedUIDString != null) {
           additionalProps[UTOPIA_UIDS_KEY] = appendedUIDString
           additionalProps[UTOPIA_PATHS_KEY] = appendedPathsString
@@ -369,7 +376,7 @@ const mangleExoticType = Utils.memoize(
         }
 
         if (shouldClone) {
-          return React.cloneElement(child, additionalProps)
+          return React.cloneElement(withUpdatedChildren, additionalProps)
         } else {
           return child
         }
@@ -479,7 +486,8 @@ function patchedCreateReactElement(type: any, props: any, ...children: any): any
     return realCreateElement(mangledType, props, ...children)
   } else if (fragmentOrProviderOrContext(type)) {
     // fragment-like components, the list is not exhaustive, we might need to extend it later
-    return realCreateElement(mangleExoticType(type), props, ...children)
+    const mangledType = mangleExoticType(type)
+    return realCreateElement(mangledType, props, ...children)
   } else if (typeof type === 'string') {
     const mangledType = mangleIntrinsicType(type)
     return realCreateElement(mangledType, props, ...children)
