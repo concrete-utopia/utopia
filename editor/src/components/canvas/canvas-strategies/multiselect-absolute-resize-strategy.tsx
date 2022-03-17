@@ -30,7 +30,7 @@ import { updateHighlightedViews } from '../commands/update-highlighted-views-com
 import { AbsoluteResizeControl } from '../controls/select-mode/absolute-resize-control'
 import { AbsolutePin, hasAtLeastTwoPinsPerSide } from './absolute-resize-helpers'
 import { CanvasStrategy } from './canvas-strategy-types'
-import { getMultiselectBounds } from './shared-absolute-move-strategy-helpers'
+import { getMultiselectBounds, resizeBoundingBox } from './shared-absolute-move-strategy-helpers'
 
 export const multiselectAbsoluteResizeStrategy: CanvasStrategy = {
   id: 'MULTISELECT_ABSOLUTE_RESIZE',
@@ -150,36 +150,6 @@ function createResizeCommandsFromFrame(
       return null
     }
   }, pins)
-}
-
-function resizeBoundingBox(
-  boundingBox: CanvasRectangle,
-  drag: CanvasPoint,
-  edgePosition: EdgePosition,
-): CanvasRectangle {
-  let dragToUse = drag
-  let cornerEdgePosition = edgePosition
-  let startingCornerPosition = {
-    x: 1 - edgePosition.x,
-    y: 1 - edgePosition.y,
-  } as EdgePosition
-  if (isEdgePositionOnSide(edgePosition)) {
-    if (edgePosition.x === 0.5) {
-      dragToUse = canvasPoint({ x: 0, y: drag.y })
-      startingCornerPosition = { x: 0, y: startingCornerPosition.y }
-      cornerEdgePosition = { x: 1, y: edgePosition.y }
-    } else if (edgePosition.y === 0.5) {
-      dragToUse = canvasPoint({ x: drag.x, y: 0 })
-      startingCornerPosition = { x: startingCornerPosition.x, y: 0 }
-      cornerEdgePosition = { x: edgePosition.x, y: 1 }
-    }
-  }
-
-  const startingPoint = pickPointOnRect(boundingBox, startingCornerPosition)
-  const draggedCorner = pickPointOnRect(boundingBox, cornerEdgePosition)
-  const newCorner = offsetPoint(draggedCorner, dragToUse)
-  const newSizeVector = pointDifference(startingPoint, newCorner)
-  return rectFromPointVector(startingPoint, newSizeVector, false)
 }
 
 function allPinsFromFrame(frame: CanvasRectangle): { [key: string]: number } {

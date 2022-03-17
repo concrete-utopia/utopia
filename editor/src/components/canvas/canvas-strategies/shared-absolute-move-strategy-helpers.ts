@@ -7,12 +7,20 @@ import { isRight, right } from '../../../core/shared/either'
 import type { ElementInstanceMetadataMap, JSXElement } from '../../../core/shared/element-template'
 import {
   boundingRectangleArray,
+  canvasPoint,
+  CanvasPoint,
   CanvasRectangle,
   CanvasVector,
+  offsetPoint,
+  pointDifference,
+  rectFromPointVector,
+  rectFromTwoPoints,
 } from '../../../core/shared/math-utils'
 import { ElementPath } from '../../../core/shared/project-file-types'
 import { getElementFromProjectContents } from '../../editor/store/editor-state'
 import { stylePropPathMappingFn } from '../../inspector/common/property-path-hooks'
+import { EdgePosition } from '../canvas-types'
+import { isEdgePositionOnSide, pickPointOnRect } from '../canvas-utils'
 import {
   adjustCssLengthProperty,
   AdjustCssLengthProperty,
@@ -85,4 +93,34 @@ export function getMultiselectBounds(
   }, selectedElements)
 
   return boundingRectangleArray(frames)
+}
+
+export function resizeBoundingBox(
+  boundingBox: CanvasRectangle,
+  drag: CanvasPoint,
+  edgePosition: EdgePosition,
+): CanvasRectangle {
+  let dragToUse = drag
+  let cornerEdgePosition = edgePosition
+  let startingCornerPosition = {
+    x: 1 - edgePosition.x,
+    y: 1 - edgePosition.y,
+  } as EdgePosition
+  if (isEdgePositionOnSide(edgePosition)) {
+    if (edgePosition.x === 0.5) {
+      dragToUse = canvasPoint({ x: 0, y: drag.y })
+      startingCornerPosition = { x: 0, y: startingCornerPosition.y }
+      cornerEdgePosition = { x: 1, y: edgePosition.y }
+    } else if (edgePosition.y === 0.5) {
+      dragToUse = canvasPoint({ x: drag.x, y: 0 })
+      startingCornerPosition = { x: startingCornerPosition.x, y: 0 }
+      cornerEdgePosition = { x: edgePosition.x, y: 1 }
+    }
+  }
+
+  const startingPoint = pickPointOnRect(boundingBox, startingCornerPosition)
+  const draggedCorner = pickPointOnRect(boundingBox, cornerEdgePosition)
+  const newCorner = offsetPoint(draggedCorner, dragToUse)
+  const newBoundingBox = rectFromTwoPoints(startingPoint, newCorner)
+  return newBoundingBox
 }
