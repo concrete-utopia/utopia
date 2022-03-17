@@ -133,7 +133,7 @@
     "hosted-git-info": "3.0.5",
     "html-entities": "1.2.1",
     "html-react-parser": "0.13.0",
-    "immer": "3.2.0",
+    "immer": "9.0.12",
     "immutability-helper": "3.1.1",
     "istextorbinary": "5.11.0",
     "jest-fetch-mock": "3.0.1",

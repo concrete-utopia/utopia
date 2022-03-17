@@ -15,10 +15,17 @@ import {
   setJSXValuesAtPaths,
   ValueAtPath,
 } from '../../../core/shared/jsx-attributes'
-import { ElementPath, PropertyPath, RevisionsState } from '../../../core/shared/project-file-types'
+import {
+  ElementPath,
+  ParseSuccess,
+  PropertyPath,
+  RevisionsState,
+  TextFile,
+} from '../../../core/shared/project-file-types'
 import * as PP from '../../../core/shared/property-path'
 import {
   getProjectContentKeyPathElements,
+  ProjectContentDirectory,
   ProjectContentFile,
   ProjectContentsTree,
   ProjectContentTreeRoot,
@@ -207,62 +214,73 @@ export function applyValuesAtPath(
     },
   )
 
-  forUnderlyingTargetFromEditorState(
+  const patches: Array<Patch> = withUnderlyingTargetFromEditorState(
     target,
     workingEditorState,
+    [],
     (success, underlyingElement, underlyingTarget, underlyingFilePath) => {
-      const projectContentFilePatch: Spec<ProjectContentFile> = {
-        content: {
-          fileContents: {
-            revisionsState: {
-              $set: RevisionsState.ParsedAhead,
-            },
-            parsed: {
-              topLevelElements: {
-                $set: success.topLevelElements,
-              },
-              imports: {
-                $set: success.imports,
-              },
-            },
-          },
-        },
-      }
       // ProjectContentTreeRoot is a bit awkward to patch.
       const pathElements = getProjectContentKeyPathElements(underlyingFilePath)
+      const pathElementsWithChildren = pathElements.flatMap((value, index, array) =>
+        array.length - 1 !== index // check for the last item
+          ? [value, 'children']
+          : value,
+      )
+
       if (pathElements.length === 0) {
         throw new Error('Invalid path length.')
       }
-      const remainderPath = drop(1, pathElements)
-      const projectContentsTreePatch: Spec<ProjectContentsTree> = remainderPath.reduceRight(
-        (working: Spec<ProjectContentsTree>, pathPart: string) => {
-          return {
-            children: {
-              [pathPart]: working,
-            },
-          }
+      const immerPatches: Array<Patch> = [
+        {
+          op: 'replace',
+          path: [
+            'projectContents',
+            ...pathElementsWithChildren,
+            'content',
+            'fileContents',
+            'revisionsState',
+          ],
+          value: RevisionsState.ParsedAhead,
         },
-        projectContentFilePatch,
-      )
+        {
+          op: 'replace',
+          path: [
+            'projectContents',
+            ...pathElementsWithChildren,
+            'content',
+            'fileContents',
+            'parsed',
+            'topLevelElements',
+          ],
+          value: success.topLevelElements,
+        },
+        {
+          op: 'replace',
+          path: [
+            'projectContents',
+            ...pathElementsWithChildren,
+            'content',
+            'fileContents',
+            'parsed',
+            'imports',
+          ],
+          value: success.imports,
+        },
+      ]
+      const [_, patcccse] = produceWithPatches(editorState, (draft) => {
+        ;((((draft.projectContents['src'] as ProjectContentDirectory).children[
+          'app.js'
+        ] as ProjectContentFile).content as TextFile).fileContents
+          .parsed as ParseSuccess).topLevelElements = success.topLevelElements
+      })
 
-      // Finally patch the last part of the path in.
-      const projectContentTreeRootPatch: Spec<ProjectContentTreeRoot> = {
-        [pathElements[0]]: projectContentsTreePatch,
-      }
+      console.log(immerPatches, patcccse)
 
-      editorStatePatch = {
-        projectContents: projectContentTreeRootPatch,
-      }
+      return immerPatches
     },
   )
-  console.log("IMMU PATCH", jsxValuesAndPathsToSet, editorStatePatch, fastDeepEquals(editorState.projectContents, workingEditorState.projectContents))
-  // TODO: absolute hack, instead of writing to whole function to produce immer patches I just assume only the projectcontents changed
-  const [_, patches] = produceWithPatches(editorState, draft => {
-    if (editorState.projectContents != workingEditorState.projectContents) {
-      draft.projectContents = workingEditorState.projectContents
-    }
-  })
-  console.log("CMD PATCH", patches)
+
+  console.log('CMD PATCH', patches)
   return {
     editorStateWithChanges: workingEditorState,
     editorStatePatch: patches,
