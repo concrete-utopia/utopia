@@ -18,17 +18,16 @@ import {
 import { setSnappingGuidelines } from '../commands/set-snapping-guidelines-command'
 import { updateHighlightedViews } from '../commands/update-highlighted-views-command'
 import { AbsoluteResizeControl } from '../controls/select-mode/absolute-resize-control'
+import { AbsolutePin } from './absolute-resize-helpers'
 import { GuidelineWithSnappingVector } from '../guideline'
 import { CanvasStrategy } from './canvas-strategy-types'
 import { getMultiselectBounds } from './shared-absolute-move-strategy-helpers'
-
-type AbsolutePin = 'left' | 'top' | 'right' | 'bottom' | 'width' | 'height'
 
 export const absoluteResizeStrategy: CanvasStrategy = {
   id: 'ABSOLUTE_RESIZE',
   name: 'Absolute Resize',
   isApplicable: (canvasState, _interactionState, metadata) => {
-    if (canvasState.selectedElements.length > 0) {
+    if (canvasState.selectedElements.length === 1) {
       return canvasState.selectedElements.every((element) => {
         const elementMetadata = MetadataUtils.findElementByElementPath(metadata, element)
 
