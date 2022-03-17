@@ -46,11 +46,7 @@ export const absoluteMoveStrategy: CanvasStrategy = {
     ) {
       const drag = interactionState.interactionData.drag
       const shiftKeyPressed = interactionState.interactionData.modifiers.shift
-      const constrainedDragAxis = shiftKeyPressed
-        ? determineConstrainedDragAxis(
-            offsetPoint(interactionState.interactionData.dragStart, drag),
-          )
-        : null
+      const constrainedDragAxis = shiftKeyPressed ? determineConstrainedDragAxis(drag) : null
       const { snappedDragVector, guidelinesWithSnappingVector } = snapDrag(
         drag,
         constrainedDragAxis,
