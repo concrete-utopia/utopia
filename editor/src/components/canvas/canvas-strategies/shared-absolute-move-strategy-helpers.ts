@@ -127,7 +127,7 @@ export function resizeBoundingBox(
   return newBoundingBox
 }
 
-export function runLegacyAbsoluteResizeSnapping2(
+export function runLegacyAbsoluteResizeSnapping(
   selectedElements: Array<ElementPath>,
   jsxMetadata: ElementInstanceMetadataMap,
   draggedCorner: EdgePosition,

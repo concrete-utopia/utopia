@@ -4,7 +4,7 @@ import { framePointForPinnedProp } from '../../../core/layout/layout-helpers-new
 import { MetadataUtils } from '../../../core/model/element-metadata-utils'
 import { mapDropNulls } from '../../../core/shared/array-utils'
 import { isRight, right } from '../../../core/shared/either'
-import { JSXElement } from '../../../core/shared/element-template'
+import { ElementInstanceMetadataMap, JSXElement } from '../../../core/shared/element-template'
 import {
   boundingRectangleArray,
   canvasPoint,
@@ -34,7 +34,7 @@ import { CanvasStrategy } from './canvas-strategy-types'
 import {
   getMultiselectBounds,
   resizeBoundingBox,
-  runLegacyAbsoluteResizeSnapping2,
+  runLegacyAbsoluteResizeSnapping,
 } from './shared-absolute-move-strategy-helpers'
 
 export const multiselectAbsoluteResizeStrategy: CanvasStrategy = {
@@ -82,10 +82,7 @@ export const multiselectAbsoluteResizeStrategy: CanvasStrategy = {
       )
       if (originalBoundingBox != null) {
         const newBoundingBox = resizeBoundingBox(originalBoundingBox, drag, edgePosition)
-        const {
-          snappedBoundingBox,
-          guidelinesWithSnappingVector,
-        } = runLegacyAbsoluteResizeSnapping2(
+        const { snappedBoundingBox, guidelinesWithSnappingVector } = snapBoundingBox(
           canvasState.selectedElements,
           sessionState.startingMetadata,
           edgePosition,
@@ -179,5 +176,28 @@ function allPinsFromFrame(frame: CanvasRectangle): { [key: string]: number } {
     height: frame.height,
     right: frame.x + frame.width,
     bottom: frame.y + frame.height,
+  }
+}
+
+function snapBoundingBox(
+  selectedElements: Array<ElementPath>,
+  jsxMetadata: ElementInstanceMetadataMap,
+  edgePosition: EdgePosition,
+  resizedBounds: CanvasRectangle,
+  canvasScale: number,
+  keepAspectRatio: boolean,
+) {
+  const { snappedBoundingBox, guidelinesWithSnappingVector } = runLegacyAbsoluteResizeSnapping(
+    selectedElements,
+    jsxMetadata,
+    edgePosition,
+    resizedBounds,
+    canvasScale,
+    keepAspectRatio,
+  )
+
+  return {
+    snappedBoundingBox,
+    guidelinesWithSnappingVector,
   }
 }

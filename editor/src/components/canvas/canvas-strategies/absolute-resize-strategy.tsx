@@ -23,7 +23,7 @@ import { CanvasStrategy } from './canvas-strategy-types'
 import {
   getMultiselectBounds,
   resizeBoundingBox,
-  runLegacyAbsoluteResizeSnapping2,
+  runLegacyAbsoluteResizeSnapping,
 } from './shared-absolute-move-strategy-helpers'
 
 export const absoluteResizeStrategy: CanvasStrategy = {
@@ -183,8 +183,7 @@ function snapDrag(
   }
 
   const resizedUnsnappedBounds = resizeBoundingBox(originalBoundingBox, drag, edgePosition)
-
-  const { snapDelta, guidelinesWithSnappingVector } = runLegacyAbsoluteResizeSnapping2(
+  const { snapDelta, guidelinesWithSnappingVector } = runLegacyAbsoluteResizeSnapping(
     selectedElements,
     startingMetadata,
     edgePosition,
@@ -193,6 +192,7 @@ function snapDrag(
     keepAspectRatio,
   )
   const snappedDragVector = offsetPoint(drag, snapDelta)
+
   return {
     snappedDragVector: snappedDragVector,
     guidelinesWithSnappingVector: guidelinesWithSnappingVector,
