@@ -17,7 +17,6 @@ function emptyElementPathTree(path: ElementPath): ElementPathTree {
 export type ElementPathTreeRoot = Array<ElementPathTree>
 
 export function buildTree(elementPaths: Array<ElementPath>): ElementPathTreeRoot {
-  console.log('build tree', elementPaths)
   let result: ElementPathTreeRoot = []
   let workingRoot: ElementPathTreeRoot = result
   fastForEach(elementPaths, (elementPath) => {
