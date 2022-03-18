@@ -113,9 +113,10 @@ function attachDataUidToRoot(
     return originalResponse
   } else {
     if (shouldIncludeDataUID(originalResponse.type)) {
+      const newPaths = originalResponse.props[UTOPIA_PATHS_KEY] ?? paths
       return React.cloneElement(originalResponse, {
         [UTOPIA_UIDS_KEY]: appendToUidString(originalResponse.props[UTOPIA_UIDS_KEY], dataUids),
-        [UTOPIA_PATHS_KEY]: appendToUidString(originalResponse.props[UTOPIA_PATHS_KEY], paths),
+        [UTOPIA_PATHS_KEY]: newPaths, //appendToUidString(originalResponse.props[UTOPIA_PATHS_KEY], paths),
       })
     } else {
       return originalResponse
@@ -212,7 +213,7 @@ const mangleExoticType = Utils.memoize(
       const existingChildUIDs = child.props?.[UTOPIA_UIDS_KEY]
       const existingChildPaths = child.props?.[UTOPIA_PATHS_KEY]
       const appendedUIDString = appendToUidString(existingChildUIDs, dataUids)
-      const appendedPathsString = appendToUidString(existingChildPaths, paths)
+      const appendedPathsString = existingChildPaths ?? paths //appendToUidString(existingChildPaths, paths)
       if ((!React.isValidElement(child) as boolean) || child == null) {
         return child
       } else {

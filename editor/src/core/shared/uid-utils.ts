@@ -238,7 +238,8 @@ function getSplitPathsStrings(pathsString: string | null): Array<string> {
   if (pathsString == null) {
     return []
   } else {
-    return pathsString.split(' ')
+    const firstPath = pathsString.split(' ')[0]
+    return firstPath == null ? [] : EP.getAllElementPathStringsForPathString(firstPath)
   }
 }
 
