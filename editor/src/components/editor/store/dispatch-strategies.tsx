@@ -26,6 +26,7 @@ import {
   CanvasStrategy,
   InteractionCanvasState,
 } from '../../canvas/canvas-strategies/canvas-strategy-types'
+import { mergePatches } from '../../canvas/commands/merge-patches'
 
 interface HandleStrategiesResult {
   unpatchedEditorState: EditorState
@@ -77,7 +78,8 @@ export function interactionFinished(
     const commandResult = foldAndApplyCommands(
       newEditorState,
       storedState.patchedEditor,
-      [...result.strategyState.accumulatedCommands.flatMap((c) => c.commands), ...commands],
+      result.strategyState.accumulatedPatches,
+      commands,
       'permanent',
     )
 
@@ -133,6 +135,7 @@ export function interactionHardReset(
       const commandResult = foldAndApplyCommands(
         newEditorState,
         storedState.patchedEditor,
+        [],
         commands,
         'transient',
       )
@@ -141,6 +144,7 @@ export function interactionHardReset(
         currentStrategyFitness: strategy.fitness,
         currentStrategyCommands: commands,
         accumulatedCommands: [],
+        accumulatedPatches: [],
         commandDescriptions: commandResult.commandDescriptions,
         sortedApplicableStrategies: sortedApplicableStrategies,
         startingMetadata: resetStrategyState.startingMetadata,
@@ -275,6 +279,7 @@ export function interactionStart(
       const commandResult = foldAndApplyCommands(
         newEditorState,
         storedState.patchedEditor,
+        [],
         commands,
         'transient',
       )
@@ -284,6 +289,7 @@ export function interactionStart(
         currentStrategyFitness: strategy.fitness,
         currentStrategyCommands: commands,
         accumulatedCommands: [],
+        accumulatedPatches: [],
         commandDescriptions: commandResult.commandDescriptions,
         sortedApplicableStrategies: sortedApplicableStrategies,
         startingMetadata: newEditorState.canvas.interactionSession.metadata,
@@ -363,7 +369,8 @@ function handleUserChangedStrategy(
     const commandResult = foldAndApplyCommands(
       newEditorState,
       storedEditorState,
-      [...newAccumulatedCommands.flatMap((c) => c.commands), ...commands],
+      strategyState.accumulatedPatches,
+      commands,
       'transient',
     )
     const newStrategyState: StrategyState = {
@@ -371,6 +378,7 @@ function handleUserChangedStrategy(
       currentStrategyFitness: strategy.fitness,
       currentStrategyCommands: commands,
       accumulatedCommands: newAccumulatedCommands,
+      accumulatedPatches: mergePatches(commandResult.editorStatePatches),
       commandDescriptions: commandResult.commandDescriptions,
       sortedApplicableStrategies: sortedApplicableStrategies,
       startingMetadata: strategyState.startingMetadata,
@@ -420,7 +428,8 @@ function handleAccumulatingKeypresses(
     const commandResult = foldAndApplyCommands(
       newEditorState,
       storedEditorState,
-      [...newAccumulatedCommands.flatMap((c) => c.commands), ...commands],
+      strategyState.accumulatedPatches,
+      [...strategyState.currentStrategyCommands, ...commands],
       'transient',
     )
     const newStrategyState: StrategyState = {
@@ -428,6 +437,7 @@ function handleAccumulatingKeypresses(
       currentStrategyFitness: strategy?.fitness ?? 0,
       currentStrategyCommands: commands,
       accumulatedCommands: newAccumulatedCommands,
+      accumulatedPatches: mergePatches(commandResult.editorStatePatches),
       commandDescriptions: commandResult.commandDescriptions,
       sortedApplicableStrategies: sortedApplicableStrategies,
       startingMetadata: strategyState.startingMetadata,
@@ -470,7 +480,8 @@ function handleUpdate(
     const commandResult = foldAndApplyCommands(
       newEditorState,
       storedEditorState,
-      [...strategyState.accumulatedCommands.flatMap((c) => c.commands), ...commands],
+      strategyState.accumulatedPatches,
+      commands,
       'transient',
     )
     const newStrategyState: StrategyState = {
@@ -478,6 +489,7 @@ function handleUpdate(
       currentStrategyFitness: strategy?.fitness ?? 0,
       currentStrategyCommands: commands,
       accumulatedCommands: strategyState.accumulatedCommands,
+      accumulatedPatches: strategyState.accumulatedPatches,
       commandDescriptions: commandResult.commandDescriptions,
       sortedApplicableStrategies: sortedApplicableStrategies,
       startingMetadata: strategyState.startingMetadata,
@@ -542,7 +554,8 @@ function handleStrategyChangeStacked(
     const commandResult = foldAndApplyCommands(
       newEditorState,
       storedEditorState,
-      [...newAccumulatedCommands.flatMap((c) => c.commands), ...commands],
+      strategyState.accumulatedPatches,
+      [...strategyState.currentStrategyCommands, ...commands],
       'transient',
     )
     const newStrategyState: StrategyState = {
@@ -550,6 +563,7 @@ function handleStrategyChangeStacked(
       currentStrategyFitness: strategy?.fitness ?? 0,
       currentStrategyCommands: commands,
       accumulatedCommands: newAccumulatedCommands,
+      accumulatedPatches: mergePatches(commandResult.editorStatePatches),
       commandDescriptions: commandResult.commandDescriptions,
       sortedApplicableStrategies: sortedApplicableStrategies,
       startingMetadata: strategyState.startingMetadata,

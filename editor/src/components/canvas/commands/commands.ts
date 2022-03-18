@@ -68,6 +68,7 @@ export const runCanvasCommand: CommandFunction<CanvasCommand> = (
 export function foldAndApplyCommands(
   editorState: EditorState,
   priorPatchedState: EditorState,
+  patches: Array<EditorStatePatch>,
   commands: Array<CanvasCommand>,
   transient: TransientOrNot,
 ): {
@@ -75,7 +76,7 @@ export function foldAndApplyCommands(
   editorStatePatches: Array<EditorStatePatch>
   commandDescriptions: Array<CommandDescription>
 } {
-  const commandResult = foldCommands(editorState, commands, transient)
+  const commandResult = foldCommands(editorState, patches, commands, transient)
   const updatedEditorState = applyStatePatches(
     editorState,
     priorPatchedState,
@@ -90,6 +91,7 @@ export function foldAndApplyCommands(
 
 function foldCommands(
   editorState: EditorState,
+  patches: Array<EditorStatePatch>,
   commands: Array<CanvasCommand>,
   transient: TransientOrNot,
 ): {
@@ -97,7 +99,9 @@ function foldCommands(
   commandDescriptions: Array<CommandDescription>
 } {
   let statePatches: Array<EditorStatePatch> = []
-  let workingEditorState: EditorState = editorState
+  let workingEditorState: EditorState = patches.reduce((workingState, patch) => {
+    return update(workingState, patch)
+  }, editorState)
   let workingCommandDescriptions: Array<CommandDescription> = []
   for (const command of commands) {
     // Allow every command if this is a transient fold, otherwise only allow commands that are not transient.
