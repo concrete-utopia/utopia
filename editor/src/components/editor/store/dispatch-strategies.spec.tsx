@@ -169,6 +169,7 @@ describe('interactionStart', () => {
     expect(actualResult.newStrategyState).toMatchInlineSnapshot(`
       Object {
         "accumulatedCommands": Array [],
+        "accumulatedPatches": Array [],
         "commandDescriptions": Array [
           Object {
             "description": "Wildcard Patch: {
@@ -245,6 +246,7 @@ describe('interactionStart', () => {
     expect(actualResult.newStrategyState).toMatchInlineSnapshot(`
       Object {
         "accumulatedCommands": Array [],
+        "accumulatedPatches": Array [],
         "commandDescriptions": Array [],
         "currentStrategy": null,
         "currentStrategyCommands": Array [],
@@ -280,6 +282,7 @@ describe('interactionUpdatex', () => {
     expect(actualResult.newStrategyState).toMatchInlineSnapshot(`
       Object {
         "accumulatedCommands": Array [],
+        "accumulatedPatches": Array [],
         "commandDescriptions": Array [
           Object {
             "description": "Wildcard Patch: {
@@ -357,6 +360,7 @@ describe('interactionUpdatex', () => {
     expect(actualResult.newStrategyState).toMatchInlineSnapshot(`
       Object {
         "accumulatedCommands": Array [],
+        "accumulatedPatches": Array [],
         "commandDescriptions": Array [],
         "currentStrategy": null,
         "currentStrategyCommands": Array [],
@@ -421,6 +425,7 @@ describe('interactionHardReset', () => {
     expect(actualResult.newStrategyState).toMatchInlineSnapshot(`
       Object {
         "accumulatedCommands": Array [],
+        "accumulatedPatches": Array [],
         "commandDescriptions": Array [
           Object {
             "description": "Wildcard Patch: {
@@ -503,6 +508,7 @@ describe('interactionHardReset', () => {
     expect(actualResult.newStrategyState).toMatchInlineSnapshot(`
       Object {
         "accumulatedCommands": Array [],
+        "accumulatedPatches": Array [],
         "commandDescriptions": Array [],
         "currentStrategy": null,
         "currentStrategyCommands": Array [],
@@ -559,6 +565,15 @@ describe('interactionUpdate with stacked strategy change', () => {
               },
             ],
             "strategy": null,
+          },
+        ],
+        "accumulatedPatches": Array [
+          Object {
+            "canvas": Object {
+              "scale": Object {
+                "$set": 100,
+              },
+            },
           },
         ],
         "commandDescriptions": Array [
@@ -645,6 +660,7 @@ describe('interactionUpdate with stacked strategy change', () => {
     expect(actualResult.newStrategyState).toMatchInlineSnapshot(`
       Object {
         "accumulatedCommands": Array [],
+        "accumulatedPatches": Array [],
         "commandDescriptions": Array [],
         "currentStrategy": null,
         "currentStrategyCommands": Array [],
@@ -736,8 +752,7 @@ describe('interactionUpdate with accumulating keypresses', () => {
     // accumulatedCommands + currentStrategyCommands + the command coming from the strategy should all be applied to the patch
     expect(actualResult.patchedEditorState.canvas.scale).toEqual(100)
     expect(actualResult.unpatchedEditorState.canvas.scale).toEqual(1)
-    expect(actualResult.patchedEditorState.selectedViews).toMatchInlineSnapshot(
-      `
+    expect(actualResult.patchedEditorState.selectedViews).toMatchInlineSnapshot(`
       Array [
         Object {
           "parts": Array [
@@ -748,8 +763,7 @@ describe('interactionUpdate with accumulating keypresses', () => {
           "type": "elementpath",
         },
       ]
-    `,
-    )
+    `)
     expect(actualResult.unpatchedEditorState.selectedViews).toHaveLength(0)
     expect(actualResult.patchedEditorState.focusedPanel).toEqual('codeEditor')
     expect(actualResult.unpatchedEditorState.focusedPanel).toEqual('canvas')
@@ -800,6 +814,15 @@ describe('interactionUpdate with user changed strategy', () => {
               },
             ],
             "strategy": null,
+          },
+        ],
+        "accumulatedPatches": Array [
+          Object {
+            "canvas": Object {
+              "scale": Object {
+                "$set": 100,
+              },
+            },
           },
         ],
         "commandDescriptions": Array [
@@ -889,6 +912,7 @@ describe('interactionUpdate with user changed strategy', () => {
     expect(actualResult.newStrategyState).toMatchInlineSnapshot(`
       Object {
         "accumulatedCommands": Array [],
+        "accumulatedPatches": Array [],
         "commandDescriptions": Array [],
         "currentStrategy": null,
         "currentStrategyCommands": Array [],
