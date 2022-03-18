@@ -16,6 +16,7 @@ import { v4 } from 'uuid'
 import { appendToUidString } from '../core/shared/uid-utils'
 import { isFeatureEnabled } from './feature-switches'
 import { PERFORMANCE_MARKS_ALLOWED } from '../common/env-vars'
+import { ElementSeparator, SceneSeparator } from '../core/shared/element-path'
 
 const realCreateElement = React.createElement
 
@@ -90,23 +91,25 @@ function shouldIncludeDataUID(type: any): boolean {
   return true
 }
 
+function trimLastSeparatorFromPath(path: string): string {
+  return path.endsWith(SceneSeparator) || path.endsWith(ElementSeparator) ? path.slice(0, -1) : path
+}
+
 function appendRootUIDToPath(path: string | null, rootUID: string | null): string | undefined {
-  if (rootUID == null) {
-    return undefined
-  } else if (path == null) {
-    return rootUID
+  if (path == null) {
+    return rootUID ?? undefined
   } else {
-    return `${path}:${rootUID}`
+    const trimmedPath = trimLastSeparatorFromPath(path)
+    return `${trimmedPath}${SceneSeparator}${rootUID ?? ''}`
   }
 }
 
 function appendChildUIDToPath(path: string | null, childUID: string | null): string | undefined {
-  if (childUID == null) {
-    return path ?? undefined
-  } else if (path == null) {
-    return childUID
+  if (path == null) {
+    return childUID ?? undefined
   } else {
-    return `${path}/${childUID}`
+    const trimmedPath = trimLastSeparatorFromPath(path)
+    return `${trimmedPath}${ElementSeparator}${childUID ?? ''}`
   }
 }
 
@@ -247,7 +250,6 @@ function attachPath2ToChildrenOfElement(
 
 const mangleFunctionType = Utils.memoize(
   (type: unknown): React.FunctionComponent => {
-    console.log('mangleFunctionType')
     const mangledFunctionName = `UtopiaSpiedFunctionComponent(${getDisplayName(type)})`
 
     const mangledFunction = {
@@ -298,7 +300,6 @@ const mangleFunctionType = Utils.memoize(
 
 const mangleClassType = Utils.memoize(
   (type: any) => {
-    console.log('mangleClassType')
     const originalRender = type.prototype.render
     // mutation
     type.prototype.render = function monkeyRender() {
@@ -343,13 +344,12 @@ const mangleClassType = Utils.memoize(
   },
 )
 
-function updateChild(
+function updateChildOfExotic(
   child: React.ReactElement | null,
   dataUids: string | null,
   paths: string | null,
   path2: string | null,
 ) {
-  console.log('~updateChild~')
   if (child == null || !shouldIncludeDataUID(child.type)) {
     return child
   }
@@ -358,23 +358,22 @@ function updateChild(
   const appendedUIDString = appendToUidString(existingChildUIDs, dataUids)
   const appendedPathsString = appendToUidString(existingChildPaths, paths)
   if ((!React.isValidElement(child) as boolean) || child == null) {
-    console.log('childchildchildchildchild')
     return child
   } else {
     // Setup the result.
     let additionalProps: any = {}
     let shouldClone: boolean = false
 
-    const childPath2 = appendChildUIDToPath(path2, child.props?.[UTOPIA_UIDS_KEY])
-    if (childPath2 != null && child.props?.[UTOPIA_PATHS_2_KEY] == null) {
-      console.log({ childPath2 })
+    // Because the parent of this won't exist in the rendered DOM, we need to capture whether the parent's
+    // path was that of a root element, or a child element, and transfer that relationship to this element
+    const isRootElement = path2 != null && path2.endsWith(SceneSeparator)
+    const appendUIDToPath = isRootElement ? appendRootUIDToPath : appendChildUIDToPath
 
+    const childPath2 = appendUIDToPath(path2, child.props?.[UTOPIA_UIDS_KEY])
+    if (childPath2 != null && child.props?.[UTOPIA_PATHS_2_KEY] == null) {
       additionalProps[UTOPIA_PATHS_2_KEY] = childPath2
       shouldClone = true
     }
-
-    // const withUpdatedChildren = attachPath2ToChildrenOfElement(child, child.props?.children, path2)
-    // console.log({ path2 })
 
     if (appendedUIDString != null) {
       additionalProps[UTOPIA_UIDS_KEY] = appendedUIDString
@@ -405,7 +404,6 @@ const mangleExoticType = Utils.memoize(
       const uids = p?.[UTOPIA_UIDS_KEY]
       const paths = p?.[UTOPIA_PATHS_KEY]
       const path2 = p?.[UTOPIA_PATHS_2_KEY] ?? (p as any)?.[UTOPIA_UIDS_KEY]
-      console.log('wrapperComponent')
       if (p?.children == null || typeof p.children === 'string') {
         return realCreateElement(type, p)
       } else {
@@ -433,11 +431,10 @@ const mangleExoticType = Utils.memoize(
 
           if (Array.isArray(p?.children)) {
             children = React.Children.map(p?.children, (child) =>
-              updateChild(child, uidsToPass, pathsToPass, path2),
+              updateChildOfExotic(child, uidsToPass, pathsToPass, path2),
             )
           } else {
-            console.log('updateChild path2', path2)
-            children = updateChild(p.children, uidsToPass, pathsToPass, path2)
+            children = updateChildOfExotic(p.children, uidsToPass, pathsToPass, path2)
           }
         }
 
@@ -464,8 +461,6 @@ const mangleExoticType = Utils.memoize(
 const mangleIntrinsicType = Utils.memoize(
   (type: string): React.FunctionComponent => {
     const wrapperComponent = (p: any, context?: any) => {
-      console.log('mangleIntrinsicType', shouldIncludeDataUID(type))
-
       let updatedProps = p
       if (!shouldIncludeDataUID(type)) {
         updatedProps = filterDataProps(updatedProps)
@@ -495,8 +490,8 @@ function isClassComponent(component: any) {
 
 // Remaining TODO
 // - [x] BUG Parent child paths should not include inner paths of component
-// - [ ] Update mangleExoticType
-//   - [ ] Add a test case
+// - [x] Update mangleExoticType
+//   - [ ] Add test cases
 // - [x] Update mangleIntrinsicType
 //   - [x] Add a test case
 // - [ ] Remove existing creation of `data-paths` and replace it completely with this new method

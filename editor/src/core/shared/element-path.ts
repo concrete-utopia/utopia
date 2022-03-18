@@ -70,8 +70,8 @@ function getElementPathCache(fullElementPath: ElementPathPart[]): ElementPathCac
   return workingPathCache
 }
 
-const SceneSeparator = ':'
-const ElementSeparator = '/'
+export const SceneSeparator = ':'
+export const ElementSeparator = '/'
 
 export function elementPathPartToString(path: ElementPathPart): string {
   let result: string = ''

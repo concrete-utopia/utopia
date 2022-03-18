@@ -1,4 +1,4 @@
-import React, { Fragment } from 'react'
+import React from 'react'
 import * as PropTypes from 'prop-types'
 import { applyUIDMonkeyPatch } from './canvas-react-utils'
 applyUIDMonkeyPatch()
@@ -867,7 +867,7 @@ describe('Monkey Function', () => {
       const red = <Red data-uid='red' />
 
       return (
-        <Fragment data-uid='frament-root'>
+        <>
           <div data-uid='inner-parent'>
             <>
               <div data-uid='inner-child'>
@@ -876,16 +876,22 @@ describe('Monkey Function', () => {
               </div>
             </>
           </div>
-        </Fragment>
+        </>
       )
     }
 
     expect(renderToFormattedString(<OuterComponent data-uid={'component'} />))
       .toMatchInlineSnapshot(`
       "<div data-uid=\\"inner-parent component\\" data-paths-2=\\"component:inner-parent\\">
-        <div data-uid=\\"inner-child\\">
-          <div data-uid=\\"blue\\" data-paths-2=\\"inner-child/blue\\"></div>
-          <div data-uid=\\"red-root red\\" data-paths-2=\\"inner-child/red:red-root\\"></div>
+        <div data-uid=\\"inner-child\\" data-paths-2=\\"component:inner-parent/inner-child\\">
+          <div
+            data-uid=\\"blue\\"
+            data-paths-2=\\"component:inner-parent/inner-child/blue\\"
+          ></div>
+          <div
+            data-uid=\\"red-root red\\"
+            data-paths-2=\\"component:inner-parent/inner-child/red:red-root\\"
+          ></div>
         </div>
       </div>
       "
