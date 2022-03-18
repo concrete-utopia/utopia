@@ -247,6 +247,7 @@ function attachPath2ToChildrenOfElement(
 
 const mangleFunctionType = Utils.memoize(
   (type: unknown): React.FunctionComponent => {
+    console.log('mangleFunctionType')
     const mangledFunctionName = `UtopiaSpiedFunctionComponent(${getDisplayName(type)})`
 
     const mangledFunction = {
@@ -297,6 +298,7 @@ const mangleFunctionType = Utils.memoize(
 
 const mangleClassType = Utils.memoize(
   (type: any) => {
+    console.log('mangleClassType')
     const originalRender = type.prototype.render
     // mutation
     type.prototype.render = function monkeyRender() {
@@ -341,47 +343,52 @@ const mangleClassType = Utils.memoize(
   },
 )
 
+function updateChild(
+  child: React.ReactElement | null,
+  dataUids: string | null,
+  paths: string | null,
+  path2: string | null,
+) {
+  console.log('~updateChild~')
+  if (child == null || !shouldIncludeDataUID(child.type)) {
+    return child
+  }
+  const existingChildUIDs = child.props?.[UTOPIA_UIDS_KEY]
+  const existingChildPaths = child.props?.[UTOPIA_PATHS_KEY]
+  const appendedUIDString = appendToUidString(existingChildUIDs, dataUids)
+  const appendedPathsString = appendToUidString(existingChildPaths, paths)
+  if ((!React.isValidElement(child) as boolean) || child == null) {
+    return child
+  } else {
+    // Setup the result.
+    let additionalProps: any = {}
+    let shouldClone: boolean = false
+
+    const childPath2 = appendChildUIDToPath(path2, child.props?.[UTOPIA_UIDS_KEY])
+    if (childPath2 != null && child.props?.[UTOPIA_PATHS_2_KEY] != null) {
+      additionalProps[UTOPIA_PATHS_2_KEY] = childPath2
+      shouldClone = true
+    }
+
+    // const withUpdatedChildren = attachPath2ToChildrenOfElement(child, child.props?.children, path2)
+    // console.log({ path2 })
+
+    if (appendedUIDString != null) {
+      additionalProps[UTOPIA_UIDS_KEY] = appendedUIDString
+      additionalProps[UTOPIA_PATHS_KEY] = appendedPathsString
+      shouldClone = true
+    }
+
+    if (shouldClone) {
+      return React.cloneElement(child, additionalProps)
+    } else {
+      return child
+    }
+  }
+}
+
 const mangleExoticType = Utils.memoize(
   (type: React.ComponentType): React.FunctionComponent => {
-    function updateChild(
-      child: React.ReactElement | null,
-      dataUids: string | null,
-      paths: string | null,
-    ) {
-      if (child == null || !shouldIncludeDataUID(child.type)) {
-        return child
-      }
-      const existingChildUIDs = child.props?.[UTOPIA_UIDS_KEY]
-      const existingChildPaths = child.props?.[UTOPIA_PATHS_KEY]
-      const appendedUIDString = appendToUidString(existingChildUIDs, dataUids)
-      const appendedPathsString = appendToUidString(existingChildPaths, paths)
-      if ((!React.isValidElement(child) as boolean) || child == null) {
-        return child
-      } else {
-        // Setup the result.
-        let additionalProps: any = {}
-        let shouldClone: boolean = false
-
-        const path2 = appendedPathsString ?? appendedUIDString
-        const withUpdatedChildren = attachPath2ToChildrenOfElement(
-          child,
-          child.props?.children,
-          path2,
-        )
-
-        if (appendedUIDString != null) {
-          additionalProps[UTOPIA_UIDS_KEY] = appendedUIDString
-          additionalProps[UTOPIA_PATHS_KEY] = appendedPathsString
-          shouldClone = true
-        }
-
-        if (shouldClone) {
-          return React.cloneElement(withUpdatedChildren, additionalProps)
-        } else {
-          return child
-        }
-      }
-    }
     /**
      * Fragment-like components need to be special cased because we know they return with a root component
      * that will not end up in the DOM, but is also not subject to further reconciliation.
@@ -394,14 +401,22 @@ const mangleExoticType = Utils.memoize(
     const wrapperComponent = (p: any, context?: any) => {
       const uids = p?.[UTOPIA_UIDS_KEY]
       const paths = p?.[UTOPIA_PATHS_KEY]
-      const path2 = (p as any)?.[UTOPIA_PATHS_2_KEY]
-      if (uids == null) {
-        // early return for the cases where there's no data-uid
-        return realCreateElement(type, p)
-      } else if (p?.children == null || typeof p.children === 'string') {
+      const path2 = p?.[UTOPIA_PATHS_2_KEY] ?? (p as any)?.[UTOPIA_UIDS_KEY]
+      console.log('wrapperComponent')
+      if (p?.children == null || typeof p.children === 'string') {
         return realCreateElement(type, p)
       } else {
         let children: any
+
+        let mangledProps = {
+          ...p,
+        }
+
+        delete mangledProps[UTOPIA_UIDS_KEY]
+        delete mangledProps[UTOPIA_PATHS_KEY]
+        delete mangledProps[UTOPIA_PATHS_2_KEY]
+        let originalTypeResponse = realCreateElement(type, { ...mangledProps })
+
         if (typeof p?.children === 'function') {
           // mangle the function so that what it returns has the data uid
           const originalFunction = p.children
@@ -415,21 +430,21 @@ const mangleExoticType = Utils.memoize(
 
           if (Array.isArray(p?.children)) {
             children = React.Children.map(p?.children, (child) =>
-              updateChild(child, uidsToPass, pathsToPass),
+              updateChild(child, uidsToPass, pathsToPass, path2),
             )
           } else {
-            children = updateChild(p.children, uidsToPass, pathsToPass)
+            console.log('updateChild path2', path2)
+            children = updateChild(p.children, uidsToPass, pathsToPass, path2)
           }
         }
-        let mangledProps = {
-          ...p,
-          children: children,
-        }
 
-        delete mangledProps[UTOPIA_UIDS_KEY]
-        delete mangledProps[UTOPIA_PATHS_KEY]
-        delete mangledProps[UTOPIA_PATHS_2_KEY]
-        return realCreateElement(type as any, mangledProps)
+        if (children == null) {
+          return originalTypeResponse
+        } else if (Array.isArray(children)) {
+          return React.cloneElement(originalTypeResponse, undefined, ...children)
+        } else {
+          return React.cloneElement(originalTypeResponse, undefined, children)
+        }
       }
     }
     ;(wrapperComponent as any).theOriginalType = type
@@ -446,15 +461,24 @@ const mangleExoticType = Utils.memoize(
 const mangleIntrinsicType = Utils.memoize(
   (type: string): React.FunctionComponent => {
     const wrapperComponent = (p: any, context?: any) => {
+      console.log('mangleIntrinsicType', shouldIncludeDataUID(type))
+
       let updatedProps = p
       if (!shouldIncludeDataUID(type)) {
         updatedProps = filterDataProps(updatedProps)
       }
 
-      const path2 = updatedProps?.[UTOPIA_PATHS_2_KEY] ?? updatedProps?.[UTOPIA_UIDS_KEY]
-      const updatedChildren = attachPath2ToChildren(updatedProps?.children, path2)
+      let originalTypeResponse = realCreateElement(type, { ...updatedProps })
 
-      return realCreateElement(type, { ...updatedProps, children: updatedChildren })
+      const path2 = updatedProps?.[UTOPIA_PATHS_2_KEY] ?? updatedProps?.[UTOPIA_UIDS_KEY]
+
+      const withUpdatedChildren = attachPath2ToChildrenOfElement(
+        originalTypeResponse,
+        updatedProps?.children,
+        path2,
+      )
+
+      return withUpdatedChildren
     }
 
     return wrapperComponent
