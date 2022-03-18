@@ -31,8 +31,8 @@ import {
 } from './shared-absolute-move-strategy-helpers'
 
 export const multiselectAbsoluteResizeStrategy: CanvasStrategy = {
-  id: 'MULTISELECT_ABSOLUTE_RESIZE',
-  name: 'Multiselect Absolute Resize',
+  id: 'ABSOLUTE_RESIZE_BOUNDING_BOX',
+  name: 'Absolute Resize',
   isApplicable: (canvasState, interactionState, metadata) => {
     if (
       canvasState.selectedElements.length > 1 ||

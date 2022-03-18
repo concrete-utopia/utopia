@@ -9,7 +9,7 @@ import { useEditorState } from '../../editor/store/store-hook'
 import { CanvasCommand } from '../commands/commands'
 import { absoluteMoveStrategy } from './absolute-move-strategy'
 import { absoluteReparentStrategy } from './absolute-reparent-strategy'
-import { absoluteResizeStrategy } from './absolute-resize-strategy'
+import { absoluteResizeDeltaStrategy } from './absolute-resize-delta-strategy'
 import {
   CanvasStrategy,
   CanvasStrategyId,
@@ -18,14 +18,14 @@ import {
 } from './canvas-strategy-types'
 import { InteractionSession, StrategyState } from './interaction-state'
 import { keyboardAbsoluteMoveStrategy } from './keyboard-absolute-move-strategy'
-import { multiselectAbsoluteResizeStrategy } from './multiselect-absolute-resize-strategy'
+import { multiselectAbsoluteResizeStrategy } from './absolute-resize-bounding-box-strategy'
 
 export const RegisteredCanvasStrategies: Array<CanvasStrategy> = [
   absoluteMoveStrategy,
   absoluteReparentStrategy,
   keyboardAbsoluteMoveStrategy,
   multiselectAbsoluteResizeStrategy,
-  absoluteResizeStrategy,
+  absoluteResizeDeltaStrategy,
 ]
 
 export function pickCanvasStateFromEditorState(editorState: EditorState): InteractionCanvasState {
