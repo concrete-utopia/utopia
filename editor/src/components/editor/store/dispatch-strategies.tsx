@@ -370,15 +370,19 @@ function handleUserChangedStrategy(
       newEditorState,
       storedEditorState,
       strategyState.accumulatedPatches,
-      commands,
+      [...strategyChangedLogCommands.flatMap((c) => c.commands), ...commands],
       'transient',
     )
+    const newAccumulatedPatches = mergePatches([
+      ...strategyState.accumulatedPatches,
+      ...commandResult.editorStatePatches,
+    ])
     const newStrategyState: StrategyState = {
       currentStrategy: strategy.strategy.id,
       currentStrategyFitness: strategy.fitness,
       currentStrategyCommands: commands,
       accumulatedCommands: newAccumulatedCommands,
-      accumulatedPatches: mergePatches(commandResult.editorStatePatches),
+      accumulatedPatches: newAccumulatedPatches,
       commandDescriptions: commandResult.commandDescriptions,
       sortedApplicableStrategies: sortedApplicableStrategies,
       startingMetadata: strategyState.startingMetadata,
@@ -432,12 +436,16 @@ function handleAccumulatingKeypresses(
       [...strategyState.currentStrategyCommands, ...commands],
       'transient',
     )
+    const newAccumulatedPatches = mergePatches([
+      ...strategyState.accumulatedPatches,
+      ...commandResult.editorStatePatches,
+    ])
     const newStrategyState: StrategyState = {
       currentStrategy: strategy?.strategy.id ?? null,
       currentStrategyFitness: strategy?.fitness ?? 0,
       currentStrategyCommands: commands,
       accumulatedCommands: newAccumulatedCommands,
-      accumulatedPatches: mergePatches(commandResult.editorStatePatches),
+      accumulatedPatches: newAccumulatedPatches,
       commandDescriptions: commandResult.commandDescriptions,
       sortedApplicableStrategies: sortedApplicableStrategies,
       startingMetadata: strategyState.startingMetadata,
@@ -555,15 +563,23 @@ function handleStrategyChangeStacked(
       newEditorState,
       storedEditorState,
       strategyState.accumulatedPatches,
-      [...strategyState.currentStrategyCommands, ...commands],
+      [
+        ...strategyState.currentStrategyCommands,
+        ...strategyChangedLogCommands.flatMap((c) => c.commands),
+        ...commands,
+      ],
       'transient',
     )
+    const newAccumulatedPatches = mergePatches([
+      ...strategyState.accumulatedPatches,
+      ...commandResult.editorStatePatches,
+    ])
     const newStrategyState: StrategyState = {
       currentStrategy: strategy?.strategy.id ?? null,
       currentStrategyFitness: strategy?.fitness ?? 0,
       currentStrategyCommands: commands,
       accumulatedCommands: newAccumulatedCommands,
-      accumulatedPatches: mergePatches(commandResult.editorStatePatches),
+      accumulatedPatches: newAccumulatedPatches,
       commandDescriptions: commandResult.commandDescriptions,
       sortedApplicableStrategies: sortedApplicableStrategies,
       startingMetadata: strategyState.startingMetadata,
