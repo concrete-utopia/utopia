@@ -1,6 +1,5 @@
-import { EditorState } from 'draft-js'
 import type { EditorAction } from '../../components/editor/action-types'
-import type { EditorStoreFull } from '../../components/editor/store/editor-state'
+import type { EditorStoreFull, EditorState } from '../../components/editor/store/editor-state'
 import { isFeatureEnabled } from '../../utils/feature-switches'
 import { pluck } from './array-utils'
 import * as EP from './element-path'
