@@ -26,6 +26,9 @@ function getPathsInner<T, K extends keyof Spec<T>>(
   prefix: string,
   paths: Array<string>,
 ) {
+  if (typeof spec !== 'object') {
+    return
+  }
   const keys = Object.keys(spec) as Array<K>
   if (keys.length === 0) {
     return
