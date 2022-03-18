@@ -1,4 +1,4 @@
-import React from 'react'
+import React, { Fragment } from 'react'
 import * as PropTypes from 'prop-types'
 import { applyUIDMonkeyPatch } from './canvas-react-utils'
 applyUIDMonkeyPatch()
@@ -867,14 +867,16 @@ describe('Monkey Function', () => {
       const red = <Red data-uid='red' />
 
       return (
-        <div data-uid='inner-parent'>
-          <>
-            <div data-uid='inner-child'>
-              <div data-uid='blue' />
-              {red}
-            </div>
-          </>
-        </div>
+        <Fragment data-uid='frament-root'>
+          <div data-uid='inner-parent'>
+            <>
+              <div data-uid='inner-child'>
+                <div data-uid='blue' />
+                {red}
+              </div>
+            </>
+          </div>
+        </Fragment>
       )
     }
 

@@ -102,7 +102,7 @@ function appendRootUIDToPath(path: string | null, rootUID: string | null): strin
 
 function appendChildUIDToPath(path: string | null, childUID: string | null): string | undefined {
   if (childUID == null) {
-    return undefined
+    return path ?? undefined
   } else if (path == null) {
     return childUID
   } else {
@@ -358,6 +358,7 @@ function updateChild(
   const appendedUIDString = appendToUidString(existingChildUIDs, dataUids)
   const appendedPathsString = appendToUidString(existingChildPaths, paths)
   if ((!React.isValidElement(child) as boolean) || child == null) {
+    console.log('childchildchildchildchild')
     return child
   } else {
     // Setup the result.
@@ -365,7 +366,9 @@ function updateChild(
     let shouldClone: boolean = false
 
     const childPath2 = appendChildUIDToPath(path2, child.props?.[UTOPIA_UIDS_KEY])
-    if (childPath2 != null && child.props?.[UTOPIA_PATHS_2_KEY] != null) {
+    if (childPath2 != null && child.props?.[UTOPIA_PATHS_2_KEY] == null) {
+      console.log({ childPath2 })
+
       additionalProps[UTOPIA_PATHS_2_KEY] = childPath2
       shouldClone = true
     }
