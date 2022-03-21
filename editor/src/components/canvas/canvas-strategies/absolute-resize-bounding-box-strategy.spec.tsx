@@ -18,7 +18,7 @@ import {
 import { pickCanvasStateFromEditorState } from './canvas-strategies'
 import { StrategyState } from './interaction-state'
 import { createMouseInteractionForTests } from './interaction-state.test-utils'
-import { multiselectAbsoluteResizeStrategy } from './multiselect-absolute-resize-strategy'
+import { absoluteResizeBoundingBoxStrategy } from './absolute-resize-bounding-box-strategy'
 
 function multiselectResizeElements(
   snippet: string,
@@ -37,7 +37,7 @@ function multiselectResizeElements(
     canvasPoint({ x: 15, y: 25 }),
   )
 
-  const strategyResult = multiselectAbsoluteResizeStrategy.apply(
+  const strategyResult = absoluteResizeBoundingBoxStrategy.apply(
     pickCanvasStateFromEditorState(initialEditor),
     { ...interactionSessionWithoutMetadata, metadata: {} },
     {
@@ -70,7 +70,7 @@ function multiselectResizeElements(
   return foldAndApplyCommands(initialEditor, initialEditor, strategyResult, 'permanent').editorState
 }
 
-describe('Absolute Multiselect Resize Strategy', () => {
+describe('Absolute Resize Bounding Box Strategy', () => {
   it('works with element resized from TL corner', async () => {
     const edgePosition: EdgePosition = { x: 0, y: 0 }
     const snippet = `
