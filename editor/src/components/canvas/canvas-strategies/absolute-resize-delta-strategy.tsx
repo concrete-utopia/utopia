@@ -26,9 +26,9 @@ import {
   runLegacyAbsoluteResizeSnapping,
 } from './shared-absolute-move-strategy-helpers'
 
-export const absoluteResizeStrategy: CanvasStrategy = {
-  id: 'ABSOLUTE_RESIZE',
-  name: 'Absolute Resize',
+export const absoluteResizeDeltaStrategy: CanvasStrategy = {
+  id: 'ABSOLUTE_RESIZE_DELTA',
+  name: 'Absolute Resize (Delta-based)',
   isApplicable: (canvasState, interactionState, metadata) => {
     if (
       canvasState.selectedElements.length === 1 &&
@@ -47,7 +47,7 @@ export const absoluteResizeStrategy: CanvasStrategy = {
     { control: AbsoluteResizeControl, key: 'absolute-resize-control', show: 'always-visible' },
   ],
   fitness: (canvasState, interactionState, sessionState) => {
-    return absoluteResizeStrategy.isApplicable(
+    return absoluteResizeDeltaStrategy.isApplicable(
       canvasState,
       interactionState,
       sessionState.startingMetadata,
