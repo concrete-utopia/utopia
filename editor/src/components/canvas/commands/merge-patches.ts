@@ -26,21 +26,21 @@ export function mergePatches<T>(patches: Array<Spec<T>>) {
   return compressedPatches
 }
 
-function getPaths<T>(spec: Spec<T>) {
+function getPaths<T>(patch: Spec<T>) {
   let paths: Array<string> = []
-  getPathsInner(spec, '', paths)
+  getPathsInner(patch, '', paths)
   return paths
 }
 
 function getPathsInner<T, K extends keyof Spec<T>>(
-  spec: Spec<T>,
+  patch: Spec<T>,
   prefix: string,
   paths: Array<string>,
 ) {
-  if (typeof spec !== 'object') {
+  if (typeof patch !== 'object') {
     return
   }
-  const keys = Object.keys(spec) as Array<K>
+  const keys = Object.keys(patch) as Array<K>
   if (keys.length === 0) {
     return
   }
@@ -51,7 +51,7 @@ function getPathsInner<T, K extends keyof Spec<T>>(
     if (key === '$set') {
       paths.push(prefix)
     } else {
-      getPathsInner(spec[key] as Spec<T>, `${prefix}.${key}`, paths)
+      getPathsInner(patch[key] as Spec<T>, `${prefix}.${key}`, paths)
     }
   })
 }
