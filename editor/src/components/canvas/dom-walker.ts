@@ -47,7 +47,7 @@ import {
 } from '../editor/store/store-hook'
 import {
   UTOPIA_DO_NOT_TRAVERSE_KEY,
-  UTOPIA_PATHS_KEY,
+  UTOPIA_PATH_KEY,
   UTOPIA_SCENE_ID_KEY,
 } from '../../core/model/utopia-constants'
 
