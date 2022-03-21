@@ -67,6 +67,7 @@ function pressKeys(editorState: EditorState, keys: Array<KeyCharacter>): EditorS
     editorState,
     editorState,
     [],
+    [],
     strategyResult,
     'permanent',
   ).editorState

@@ -67,7 +67,7 @@ function multiselectResizeElements(
       },
     } as StrategyState,
   )
-  return foldAndApplyCommands(initialEditor, initialEditor, [], strategyResult, 'permanent')
+  return foldAndApplyCommands(initialEditor, initialEditor, [], [], strategyResult, 'permanent')
     .editorState
 }
 

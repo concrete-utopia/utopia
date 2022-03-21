@@ -542,15 +542,7 @@ describe('interactionUpdate with stacked strategy change', () => {
     )
     expect(actualResult.newStrategyState).toMatchInlineSnapshot(`
       Object {
-        "accumulatedPatches": Array [
-          Object {
-            "canvas": Object {
-              "scale": Object {
-                "$set": 100,
-              },
-            },
-          },
-        ],
+        "accumulatedPatches": Array [],
         "commandDescriptions": Array [
           Object {
             "description": "Strategy switched to Test Strategy by user input. Interaction data reset.",
@@ -702,13 +694,6 @@ describe('interactionUpdate with accumulating keypresses', () => {
             ],
           },
         },
-        Object {
-          "canvas": Object {
-            "scale": Object {
-              "$set": 100,
-            },
-          },
-        },
       ]
     `)
 
@@ -763,15 +748,7 @@ describe('interactionUpdate with user changed strategy', () => {
     const actualResult = interactionUpdate([testStrategy], editorStore, result, 'non-interaction')
     expect(actualResult.newStrategyState).toMatchInlineSnapshot(`
       Object {
-        "accumulatedPatches": Array [
-          Object {
-            "canvas": Object {
-              "scale": Object {
-                "$set": 100,
-              },
-            },
-          },
-        ],
+        "accumulatedPatches": Array [],
         "commandDescriptions": Array [
           Object {
             "description": "Strategy switched to Test Strategy by user input. Interaction data reset.",
