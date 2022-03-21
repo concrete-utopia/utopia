@@ -41,7 +41,6 @@ specifiers:
   '@types/css-tree': 1.0.6
   '@types/diff': 4.0.2
   '@types/dom-to-image': 2.6.0
-  '@types/draft-js': 0.10.19
   '@types/enzyme': 3.1.9
   '@types/eslint': 7.2.2
   '@types/filesystem': 0.0.29
@@ -397,7 +396,6 @@ devDependencies:
   '@types/css-tree': 1.0.6
   '@types/diff': 4.0.2
   '@types/dom-to-image': 2.6.0
-  '@types/draft-js': 0.10.19
   '@types/enzyme': 3.1.9
   '@types/eslint': 7.2.2
   '@types/filesystem': 0.0.29
@@ -3313,13 +3311,6 @@ packages:
     dependencies:
       domhandler: 2.4.2
     dev: false
-
-  /@types/draft-js/0.10.19:
-    resolution: {integrity: sha512-bYTweyLT7IqLmJQjnQitzYWuz72McyVn3LXIGpzWGdsw0u8XLVaw6IL0dz7yDIlekqATmaI/V9thsXQfe/zwjg==}
-    dependencies:
-      '@types/react': 16.9.49
-      immutable: 3.8.1
-    dev: true
 
   /@types/enzyme/3.1.9:
     resolution: {integrity: sha512-spu+IYTIxDaaRBP12eYCpFJNQwtANX1ZxxXLk8SaCVjZnNUaIPtY7ek6ATdn5GykIf/E7L2lWnC3gQUl5b8kpQ==}
