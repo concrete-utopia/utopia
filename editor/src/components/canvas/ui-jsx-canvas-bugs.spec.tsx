@@ -81,7 +81,7 @@ export var storyboard = (
         >
           <div
             data-utopia-scene-id=\\"sb/scene\\"
-            data-paths=\\"sb/scene sb\\"
+            data-paths=\\"sb/scene\\"
             style=\\"
               position: absolute;
               background-color: rgba(255, 255, 255, 1);
@@ -93,10 +93,7 @@ export var storyboard = (
             \\"
             data-uid=\\"scene sb\\"
           >
-            <div
-              data-uid=\\"app-root app\\"
-              data-paths=\\"sb/scene/app:app-root sb/scene/app\\"
-            ></div>
+            <div data-uid=\\"app-root app\\" data-paths=\\"sb/scene/app:app-root\\"></div>
           </div>
         </div>
       </div>
@@ -148,7 +145,7 @@ export default function App(props) {
         >
           <div
             data-utopia-scene-id=\\"sb/scene\\"
-            data-paths=\\"sb/scene sb\\"
+            data-paths=\\"sb/scene\\"
             style=\\"
               position: absolute;
               background-color: rgba(255, 255, 255, 1);
@@ -245,7 +242,7 @@ export default function App(props) {
         >
           <div
             data-utopia-scene-id=\\"storyboard-entity/scene-1-entity\\"
-            data-paths=\\"storyboard-entity/scene-1-entity storyboard-entity\\"
+            data-paths=\\"storyboard-entity/scene-1-entity\\"
             style=\\"
               position: absolute;
               background-color: rgba(255, 255, 255, 1);
@@ -267,7 +264,7 @@ export default function App(props) {
           </div>
           <div
             data-utopia-scene-id=\\"storyboard-entity/scene-2-entity\\"
-            data-paths=\\"storyboard-entity/scene-2-entity storyboard-entity\\"
+            data-paths=\\"storyboard-entity/scene-2-entity\\"
             style=\\"
               position: absolute;
               background-color: rgba(255, 255, 255, 1);
@@ -289,7 +286,7 @@ export default function App(props) {
                 height: 100%;
                 background-color: blue;
               \\"
-              data-paths=\\"storyboard-entity/scene-2-entity/same-file-app-entity:same-file-app-div storyboard-entity/scene-2-entity/same-file-app-entity\\"
+              data-paths=\\"storyboard-entity/scene-2-entity/same-file-app-entity:same-file-app-div\\"
             ></div>
           </div>
         </div>
@@ -399,7 +396,7 @@ export default function () {
         >
           <div
             data-utopia-scene-id=\\"storyboard-entity/scene-1-entity\\"
-            data-paths=\\"storyboard-entity/scene-1-entity storyboard-entity\\"
+            data-paths=\\"storyboard-entity/scene-1-entity\\"
             style=\\"
               position: absolute;
               background-color: rgba(255, 255, 255, 1);
@@ -420,7 +417,7 @@ export default function () {
                 height: 100%;
                 background-color: #ffffff;
               \\"
-              data-paths=\\"storyboard-entity/scene-1-entity/app-entity:app-outer-div storyboard-entity/scene-1-entity/app-entity\\"
+              data-paths=\\"storyboard-entity/scene-1-entity/app-entity:app-outer-div\\"
             >
               <div
                 data-uid=\\"card-outer-div card-instance\\"
@@ -431,7 +428,7 @@ export default function () {
                   width: 133px;
                   height: 300px;
                 \\"
-                data-paths=\\"storyboard-entity/scene-1-entity/app-entity:app-outer-div/card-instance:card-outer-div storyboard-entity/scene-1-entity/app-entity:app-outer-div/card-instance\\"
+                data-paths=\\"storyboard-entity/scene-1-entity/app-entity:app-outer-div/card-instance:card-outer-div\\"
               >
                 <div
                   data-uid=\\"card-inner-div\\"
@@ -462,7 +459,7 @@ export default function () {
               hello
               <div
                 data-uid=\\"4cf d7f\\"
-                data-paths=\\"storyboard-entity/scene-1-entity/app-entity:app-outer-div/d7f:4cf storyboard-entity/scene-1-entity/app-entity:app-outer-div/d7f\\"
+                data-paths=\\"storyboard-entity/scene-1-entity/app-entity:app-outer-div/d7f:4cf\\"
               >
                 Default Function Time
               </div>

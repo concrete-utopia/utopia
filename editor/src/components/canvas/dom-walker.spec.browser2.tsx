@@ -476,7 +476,7 @@ describe('DOM Walker tests', () => {
           "y": 0,
         },
         "props": Object {
-          "data-paths": "utopia-storyboard-uid/scene-aaa/app-entity:05c utopia-storyboard-uid/scene-aaa/app-entity",
+          "data-paths": "utopia-storyboard-uid/scene-aaa/app-entity:05c",
           "data-uid": "05c app-entity",
           "skipDeepFreeze": true,
           "style": Object {
@@ -1112,7 +1112,7 @@ describe('DOM Walker tests', () => {
           "y": 0,
         },
         "props": Object {
-          "data-paths": "utopia-storyboard-uid/scene-aaa/app-entity:05c utopia-storyboard-uid/scene-aaa/app-entity",
+          "data-paths": "utopia-storyboard-uid/scene-aaa/app-entity:05c",
           "data-uid": "05c app-entity",
           "skipDeepFreeze": true,
           "style": Object {
@@ -1736,7 +1736,7 @@ describe('DOM Walker tests', () => {
           "y": 0,
         },
         "props": Object {
-          "data-paths": "utopia-storyboard-uid/scene-aaa/app-entity:05c utopia-storyboard-uid/scene-aaa/app-entity",
+          "data-paths": "utopia-storyboard-uid/scene-aaa/app-entity:05c",
           "data-uid": "05c app-entity",
           "skipDeepFreeze": true,
           "style": Object {
@@ -2350,7 +2350,7 @@ describe('DOM Walker tests', () => {
         },
         "props": Object {
           "data-label": "Hat",
-          "data-paths": "utopia-storyboard-uid/scene-aaa/app-entity:aaa utopia-storyboard-uid/scene-aaa/app-entity",
+          "data-paths": "utopia-storyboard-uid/scene-aaa/app-entity:aaa",
           "data-uid": "aaa app-entity",
           "skipDeepFreeze": true,
           "style": Object {
@@ -2770,7 +2770,7 @@ describe('DOM Walker tests', () => {
           "y": 0,
         },
         "props": Object {
-          "data-paths": "utopia-storyboard-uid/scene-aaa/app-entity:aaa utopia-storyboard-uid/scene-aaa/app-entity",
+          "data-paths": "utopia-storyboard-uid/scene-aaa/app-entity:aaa",
           "data-uid": "aaa app-entity",
           "skipDeepFreeze": true,
           "style": Object {

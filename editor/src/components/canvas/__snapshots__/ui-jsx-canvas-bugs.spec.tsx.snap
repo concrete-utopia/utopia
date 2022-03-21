@@ -10,7 +10,7 @@ exports[`UiJsxCanvas #747 - DOM object constructor cannot be called as a functio
   >
     <div
       data-utopia-scene-id=\\"sb/scene\\"
-      data-paths=\\"sb/scene sb\\"
+      data-paths=\\"sb/scene\\"
       style=\\"
         position: absolute;
         background-color: rgba(255, 255, 255, 1);
@@ -24,7 +24,7 @@ exports[`UiJsxCanvas #747 - DOM object constructor cannot be called as a functio
     >
       <div
         data-uid=\\"comment-root 5c5~~~1 app\\"
-        data-paths=\\"5c5~~~1:comment-root 5c5~~~1 sb/scene/app\\"
+        data-paths=\\"5c5~~~1:comment-root\\"
       >
         hat
       </div>
@@ -146,7 +146,7 @@ Object {
     "label": null,
     "localFrame": null,
     "props": Object {
-      "data-paths": "sb/scene sb",
+      "data-paths": "sb/scene",
       "data-uid": "scene sb",
       "data-utopia-scene-id": "sb/scene",
       "skipDeepFreeze": true,

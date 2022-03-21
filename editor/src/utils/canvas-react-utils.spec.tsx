@@ -54,7 +54,7 @@ describe('Monkey Function', () => {
 
     expect(renderToFormattedString(<TestClass data-uid={'test1'} data-paths='test1' />))
       .toMatchInlineSnapshot(`
-      "<div data-uid=\\"cica test1\\" data-paths=\\"cica test1\\">
+      "<div data-uid=\\"cica test1\\" data-paths=\\"cica\\">
         <div data-uid=\\"kutya\\" data-paths=\\"kutya\\">Hello!</div>
         <div data-uid=\\"majom\\" data-paths=\\"majom\\">Hello!</div>
       </div>
@@ -82,10 +82,7 @@ describe('Monkey Function', () => {
         </MyContext.Provider>,
       ),
     ).toMatchInlineSnapshot(`
-      "<div
-        data-uid=\\"inner-div test-class provider\\"
-        data-paths=\\"inner-div test-class provider\\"
-      >
+      "<div data-uid=\\"inner-div test-class provider\\" data-paths=\\"inner-div\\">
         hello!
       </div>
       "
@@ -115,10 +112,7 @@ describe('Monkey Function', () => {
 
     expect(renderToFormattedString(<Renderer data-uid={'renderer'} data-paths={'renderer'} />))
       .toMatchInlineSnapshot(`
-      "<div
-        data-uid=\\"inner-div test-class provider renderer\\"
-        data-paths=\\"inner-div test-class provider renderer\\"
-      >
+      "<div data-uid=\\"inner-div test-class provider renderer\\" data-paths=\\"inner-div\\">
         hello!
       </div>
       "
