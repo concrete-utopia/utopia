@@ -1,5 +1,5 @@
 export const UTOPIA_UIDS_KEY = 'data-uid'
-export const UTOPIA_PATH_KEY = 'data-paths'
+export const UTOPIA_PATH_KEY = 'data-path'
 export const UTOPIA_LABEL_KEY = 'data-label'
 export const UTOPIA_DO_NOT_TRAVERSE_KEY = 'data-utopia-do-not-traverse'
 export const UTOPIA_SCENE_ID_KEY = 'data-utopia-scene-id'
