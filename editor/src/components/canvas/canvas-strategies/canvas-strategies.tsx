@@ -18,13 +18,13 @@ import {
 } from './canvas-strategy-types'
 import { InteractionSession, StrategyState } from './interaction-state'
 import { keyboardAbsoluteMoveStrategy } from './keyboard-absolute-move-strategy'
-import { multiselectAbsoluteResizeStrategy } from './absolute-resize-bounding-box-strategy'
+import { absoluteResizeBoundingBoxStrategy } from './absolute-resize-bounding-box-strategy'
 
 export const RegisteredCanvasStrategies: Array<CanvasStrategy> = [
   absoluteMoveStrategy,
   absoluteReparentStrategy,
   keyboardAbsoluteMoveStrategy,
-  multiselectAbsoluteResizeStrategy,
+  absoluteResizeBoundingBoxStrategy,
   absoluteResizeDeltaStrategy,
 ]
 

@@ -30,7 +30,7 @@ import {
   runLegacyAbsoluteResizeSnapping,
 } from './shared-absolute-move-strategy-helpers'
 
-export const multiselectAbsoluteResizeStrategy: CanvasStrategy = {
+export const absoluteResizeBoundingBoxStrategy: CanvasStrategy = {
   id: 'ABSOLUTE_RESIZE_BOUNDING_BOX',
   name: 'Absolute Resize',
   isApplicable: (canvasState, interactionState, metadata) => {
@@ -53,7 +53,7 @@ export const multiselectAbsoluteResizeStrategy: CanvasStrategy = {
     { control: AbsoluteResizeControl, key: 'absolute-resize-control', show: 'always-visible' },
   ],
   fitness: (canvasState, interactionState, sessionState) => {
-    return multiselectAbsoluteResizeStrategy.isApplicable(
+    return absoluteResizeBoundingBoxStrategy.isApplicable(
       canvasState,
       interactionState,
       sessionState.startingMetadata,
