@@ -5,6 +5,7 @@ import { EditorState, EditorStatePatch } from '../../editor/store/editor-state'
 import { CommandDescription } from '../canvas-strategies/interaction-state'
 import { AdjustCssLengthProperty, runAdjustCssLengthProperty } from './adjust-css-length-command'
 import { AdjustNumberProperty, runAdjustNumberProperty } from './adjust-number-command'
+import { mergePatches } from './merge-patches'
 import { ReparentElement, runReparentElement } from './reparent-element-command'
 import { runSetSnappingGuidelines, SetSnappingGuidelines } from './set-snapping-guidelines-command'
 import { runStrategySwitchedCommand, StrategySwitched } from './strategy-switched-command'
@@ -98,7 +99,7 @@ function foldCommands(
   editorStatePatches: Array<EditorStatePatch>
   commandDescriptions: Array<CommandDescription>
 } {
-  let statePatches: Array<EditorStatePatch> = []
+  let statePatches: Array<EditorStatePatch> = [...patches]
   let workingEditorState: EditorState = patches.reduce((workingState, patch) => {
     return update(workingState, patch)
   }, editorState)
@@ -122,7 +123,7 @@ function foldCommands(
   }
 
   return {
-    editorStatePatches: statePatches,
+    editorStatePatches: mergePatches(statePatches),
     commandDescriptions: workingCommandDescriptions,
   }
 }

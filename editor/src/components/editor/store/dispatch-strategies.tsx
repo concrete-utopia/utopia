@@ -367,15 +367,11 @@ function handleUserChangedStrategy(
       [...strategyChangedLogCommands.flatMap((c) => c.commands), ...commands],
       'transient',
     )
-    const newAccumulatedPatches = mergePatches([
-      ...strategyState.accumulatedPatches,
-      ...commandResult.editorStatePatches,
-    ])
     const newStrategyState: StrategyState = {
       currentStrategy: strategy.strategy.id,
       currentStrategyFitness: strategy.fitness,
       currentStrategyCommands: commands,
-      accumulatedPatches: newAccumulatedPatches,
+      accumulatedPatches: commandResult.editorStatePatches,
       commandDescriptions: commandResult.commandDescriptions,
       sortedApplicableStrategies: sortedApplicableStrategies,
       startingMetadata: strategyState.startingMetadata,
@@ -422,15 +418,11 @@ function handleAccumulatingKeypresses(
       [...strategyState.currentStrategyCommands, ...commands],
       'transient',
     )
-    const newAccumulatedPatches = mergePatches([
-      ...strategyState.accumulatedPatches,
-      ...commandResult.editorStatePatches,
-    ])
     const newStrategyState: StrategyState = {
       currentStrategy: strategy?.strategy.id ?? null,
       currentStrategyFitness: strategy?.fitness ?? 0,
       currentStrategyCommands: commands,
-      accumulatedPatches: newAccumulatedPatches,
+      accumulatedPatches: commandResult.editorStatePatches,
       commandDescriptions: commandResult.commandDescriptions,
       sortedApplicableStrategies: sortedApplicableStrategies,
       startingMetadata: strategyState.startingMetadata,
@@ -546,15 +538,11 @@ function handleStrategyChangeStacked(
       ],
       'transient',
     )
-    const newAccumulatedPatches = mergePatches([
-      ...strategyState.accumulatedPatches,
-      ...commandResult.editorStatePatches,
-    ])
     const newStrategyState: StrategyState = {
       currentStrategy: strategy?.strategy.id ?? null,
       currentStrategyFitness: strategy?.fitness ?? 0,
       currentStrategyCommands: commands,
-      accumulatedPatches: newAccumulatedPatches,
+      accumulatedPatches: commandResult.editorStatePatches,
       commandDescriptions: commandResult.commandDescriptions,
       sortedApplicableStrategies: sortedApplicableStrategies,
       startingMetadata: strategyState.startingMetadata,
