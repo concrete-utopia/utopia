@@ -257,6 +257,6 @@ export function findCanvasStrategyFromDispatchResult(
 
 export function isStrategyActive(strategyState: StrategyState): boolean {
   return (
-    strategyState.accumulatedCommands.length > 0 || strategyState.currentStrategyCommands.length > 0
+    strategyState.accumulatedPatches.length > 0 || strategyState.currentStrategyCommands.length > 0
   )
 }

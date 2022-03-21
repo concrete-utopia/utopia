@@ -143,7 +143,6 @@ export function interactionHardReset(
         currentStrategy: strategy.strategy.id,
         currentStrategyFitness: strategy.fitness,
         currentStrategyCommands: commands,
-        accumulatedCommands: [],
         accumulatedPatches: [],
         commandDescriptions: commandResult.commandDescriptions,
         sortedApplicableStrategies: sortedApplicableStrategies,
@@ -288,7 +287,6 @@ export function interactionStart(
         currentStrategy: strategy.strategy.id,
         currentStrategyFitness: strategy.fitness,
         currentStrategyCommands: commands,
-        accumulatedCommands: [],
         accumulatedPatches: [],
         commandDescriptions: commandResult.commandDescriptions,
         sortedApplicableStrategies: sortedApplicableStrategies,
@@ -362,10 +360,6 @@ function handleUserChangedStrategy(
       newEditorState.canvas.interactionSession,
       strategyState,
     )
-    const newAccumulatedCommands = [
-      ...strategyState.accumulatedCommands,
-      ...strategyChangedLogCommands,
-    ]
     const commandResult = foldAndApplyCommands(
       newEditorState,
       storedEditorState,
@@ -381,7 +375,6 @@ function handleUserChangedStrategy(
       currentStrategy: strategy.strategy.id,
       currentStrategyFitness: strategy.fitness,
       currentStrategyCommands: commands,
-      accumulatedCommands: newAccumulatedCommands,
       accumulatedPatches: newAccumulatedPatches,
       commandDescriptions: commandResult.commandDescriptions,
       sortedApplicableStrategies: sortedApplicableStrategies,
@@ -422,13 +415,6 @@ function handleAccumulatingKeypresses(
             strategyState,
           )
         : []
-    const newAccumulatedCommands = [
-      ...strategyState.accumulatedCommands,
-      {
-        strategy: strategyState.currentStrategy,
-        commands: strategyState.currentStrategyCommands,
-      },
-    ]
     const commandResult = foldAndApplyCommands(
       newEditorState,
       storedEditorState,
@@ -444,7 +430,6 @@ function handleAccumulatingKeypresses(
       currentStrategy: strategy?.strategy.id ?? null,
       currentStrategyFitness: strategy?.fitness ?? 0,
       currentStrategyCommands: commands,
-      accumulatedCommands: newAccumulatedCommands,
       accumulatedPatches: newAccumulatedPatches,
       commandDescriptions: commandResult.commandDescriptions,
       sortedApplicableStrategies: sortedApplicableStrategies,
@@ -496,7 +481,6 @@ function handleUpdate(
       currentStrategy: strategy?.strategy.id ?? null,
       currentStrategyFitness: strategy?.fitness ?? 0,
       currentStrategyCommands: commands,
-      accumulatedCommands: strategyState.accumulatedCommands,
       accumulatedPatches: strategyState.accumulatedPatches,
       commandDescriptions: commandResult.commandDescriptions,
       sortedApplicableStrategies: sortedApplicableStrategies,
@@ -551,14 +535,6 @@ function handleStrategyChangeStacked(
             strategyState,
           )
         : []
-    const newAccumulatedCommands = [
-      ...strategyState.accumulatedCommands,
-      {
-        strategy: strategyState.currentStrategy,
-        commands: strategyState.currentStrategyCommands,
-      },
-      ...strategyChangedLogCommands,
-    ]
     const commandResult = foldAndApplyCommands(
       newEditorState,
       storedEditorState,
@@ -578,7 +554,6 @@ function handleStrategyChangeStacked(
       currentStrategy: strategy?.strategy.id ?? null,
       currentStrategyFitness: strategy?.fitness ?? 0,
       currentStrategyCommands: commands,
-      accumulatedCommands: newAccumulatedCommands,
       accumulatedPatches: newAccumulatedPatches,
       commandDescriptions: commandResult.commandDescriptions,
       sortedApplicableStrategies: sortedApplicableStrategies,
