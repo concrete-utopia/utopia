@@ -46,7 +46,7 @@ function pressKeys(editorState: EditorState, keys: Array<KeyCharacter>): EditorS
       currentStrategy: null as any, // the strategy does not use this
       currentStrategyFitness: null as any, // the strategy does not use this
       currentStrategyCommands: null as any, // the strategy does not use this
-      accumulatedCommands: null as any, // the strategy does not use this
+      accumulatedPatches: null as any, // the strategy does not use this
       commandDescriptions: null as any, // the strategy does not use this
       sortedApplicableStrategies: null as any, // the strategy does not use this
       startingMetadata: {
@@ -63,8 +63,14 @@ function pressKeys(editorState: EditorState, keys: Array<KeyCharacter>): EditorS
     } as StrategyState,
   )
 
-  const finalEditor = foldAndApplyCommands(editorState, editorState, strategyResult, 'permanent')
-    .editorState
+  const finalEditor = foldAndApplyCommands(
+    editorState,
+    editorState,
+    [],
+    [],
+    strategyResult,
+    'permanent',
+  ).editorState
 
   return finalEditor
 }

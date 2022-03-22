@@ -45,7 +45,7 @@ export function getAbsoluteMoveCommandsForSelectedElement(
     MetadataUtils.findElementByElementPath(
       sessionState.startingMetadata, // TODO should this be using the current metadata?
       selectedElement,
-    )?.specialSizeMeasurements.immediateParentBounds ?? null
+    )?.specialSizeMeasurements.immediateParentBounds ?? null // TODO this should probably be coordinateSystemBounds
 
   if (element == null) {
     return []
