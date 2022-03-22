@@ -802,6 +802,10 @@ export function SpecialSizeMeasurementsKeepDeepEquality(): KeepDeepEqualityCall<
     const displayEquals = oldSize.display === newSize.display
     const htmlElementNameEquals = oldSize.htmlElementName === newSize.htmlElementName
     const renderedChildrenCount = oldSize.renderedChildrenCount === newSize.renderedChildrenCount
+    const globalContentBoxEquals = nullableDeepEquality(CanvasRectangleKeepDeepEquality)(
+      oldSize.globalContentBox,
+      newSize.globalContentBox,
+    )
     const areEqual =
       offsetResult.areEqual &&
       coordinateSystemBoundsResult.areEqual &&
@@ -822,7 +826,8 @@ export function SpecialSizeMeasurementsKeepDeepEquality(): KeepDeepEqualityCall<
       flexDirectionResult &&
       displayEquals &&
       htmlElementNameEquals &&
-      renderedChildrenCount
+      renderedChildrenCount &&
+      globalContentBoxEquals
     if (areEqual) {
       return keepDeepEqualityResult(oldSize, true)
     } else {
@@ -847,6 +852,7 @@ export function SpecialSizeMeasurementsKeepDeepEquality(): KeepDeepEqualityCall<
         newSize.flexDirection,
         newSize.htmlElementName,
         newSize.renderedChildrenCount,
+        newSize.globalContentBox,
       )
       return keepDeepEqualityResult(sizeMeasurements, false)
     }

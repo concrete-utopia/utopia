@@ -31,6 +31,7 @@ import {
   roundToNearestHalf,
   zeroCanvasRect,
   zeroLocalRect,
+  canvasRectangle,
 } from '../../core/shared/math-utils'
 import {
   CSSNumber,
@@ -761,6 +762,13 @@ function getSpecialMeasurements(
     parseCSSLength(elementStyle.paddingBottom),
     parseCSSLength(elementStyle.paddingLeft),
   )
+  const border = applicative4Either(
+    applicativeSidesPxTransform,
+    parseCSSLength(elementStyle.borderTopWidth),
+    parseCSSLength(elementStyle.borderRightWidth),
+    parseCSSLength(elementStyle.borderBottomWidth),
+    parseCSSLength(elementStyle.borderLeftWidth),
+  )
 
   let naturalWidth: number | null = null
   let naturalHeight: number | null = null
@@ -773,6 +781,32 @@ function getSpecialMeasurements(
   let clientHeight = roundToNearestHalf(element.clientHeight)
 
   const childrenCount = element.childElementCount
+
+  const paddingValues = isRight(padding)
+    ? padding.value
+    : sides(undefined, undefined, undefined, undefined)
+  const borderValues = isRight(border)
+    ? border.value
+    : sides(undefined, undefined, undefined, undefined)
+
+  const globalFrame = globalFrameForElement(element, scale, containerRectLazy)
+  const globalContentBox = canvasRectangle({
+    x: globalFrame.x + (paddingValues.left ?? 0) + (borderValues.left ?? 0),
+    y: globalFrame.y + (paddingValues.top ?? 0) + (borderValues.top ?? 0),
+    width:
+      globalFrame.width -
+      (paddingValues.left ?? 0) -
+      (paddingValues.right ?? 0) -
+      (borderValues.left ?? 0) -
+      (borderValues.right ?? 0),
+    height:
+      globalFrame.height -
+      (paddingValues.top ?? 0) -
+      (paddingValues.bottom ?? 0) -
+      (borderValues.top ?? 0) -
+      (borderValues.bottom ?? 0),
+  })
+
   return specialSizeMeasurements(
     offset,
     coordinateSystemBounds,
@@ -785,7 +819,7 @@ function getSpecialMeasurements(
     elementStyle.display,
     position,
     isRight(margin) ? margin.value : sides(undefined, undefined, undefined, undefined),
-    isRight(padding) ? padding.value : sides(undefined, undefined, undefined, undefined),
+    paddingValues,
     naturalWidth,
     naturalHeight,
     clientWidth,
@@ -794,6 +828,7 @@ function getSpecialMeasurements(
     flexDirection,
     element.localName,
     childrenCount,
+    globalContentBox,
   )
 }
 

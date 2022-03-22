@@ -1,6 +1,6 @@
 import { isHorizontalPoint } from 'utopia-api/core'
 import { getLayoutProperty } from '../../../core/layout/getLayoutProperty'
-import { framePointForPinnedProp } from '../../../core/layout/layout-helpers-new'
+import { framePointForPinnedProp, LayoutPinnedProp } from '../../../core/layout/layout-helpers-new'
 import { MetadataUtils } from '../../../core/model/element-metadata-utils'
 import { mapDropNulls } from '../../../core/shared/array-utils'
 import { isRight, right } from '../../../core/shared/either'
@@ -89,13 +89,13 @@ function createMoveCommandsForElement(
 }
 
 export function getAbsoluteOffsetCommandsForSelectedElement(
-  selectedElement: ElementPath,
-  newParentPath: ElementPath,
+  target: ElementPath,
+  newParent: ElementPath,
   strategyState: StrategyState,
   canvasState: InteractionCanvasState,
 ): Array<AdjustCssLengthProperty> {
   const element: JSXElement | null = getElementFromProjectContents(
-    selectedElement,
+    target,
     canvasState.projectContents,
     canvasState.openFile,
   )
@@ -104,65 +104,72 @@ export function getAbsoluteOffsetCommandsForSelectedElement(
     return []
   }
 
-  const oldParentFrame =
-    MetadataUtils.getFrameInCanvasCoords(
-      EP.parentPath(selectedElement),
-      strategyState.startingMetadata,
-    ) ?? zeroCanvasRect
-  const newParentFrame =
-    MetadataUtils.getFrameInCanvasCoords(newParentPath, strategyState.startingMetadata) ??
-    zeroCanvasRect
+  const currentParentContentBox =
+    MetadataUtils.findElementByElementPath(strategyState.startingMetadata, EP.parentPath(target))
+      ?.specialSizeMeasurements.globalContentBox ?? zeroCanvasRect
 
-  const offsetTL = pointDifference(newParentFrame, oldParentFrame)
+  const newParentContentBox =
+    MetadataUtils.findElementByElementPath(strategyState.startingMetadata, newParent)
+      ?.specialSizeMeasurements.globalContentBox ?? zeroCanvasRect
+
+  const offsetTL = pointDifference(newParentContentBox, currentParentContentBox)
   const offsetBR = pointDifference(
     canvasPoint({
-      x: oldParentFrame.x + oldParentFrame.width,
-      y: oldParentFrame.y + oldParentFrame.height,
+      x: currentParentContentBox.x + currentParentContentBox.width,
+      y: currentParentContentBox.y + currentParentContentBox.height,
     }),
     canvasPoint({
-      x: newParentFrame.x + newParentFrame.width,
-      y: newParentFrame.y + newParentFrame.height,
+      x: newParentContentBox.x + newParentContentBox.width,
+      y: newParentContentBox.y + newParentContentBox.height,
     }),
+  )
+
+  const createAdjustCssLengthProperty = (
+    pin: LayoutPinnedProp,
+    newValue: number,
+    parentDimension: number | undefined,
+  ): AdjustCssLengthProperty | null => {
+    const value = getLayoutProperty(pin, right(element.props), ['style'])
+    if (isRight(value) && value.value != null) {
+      // TODO what to do about missing properties?
+      return adjustCssLengthProperty(
+        'permanent',
+        target,
+        stylePropPathMappingFn(pin, ['style']),
+        newValue,
+        parentDimension,
+        true,
+      )
+    } else {
+      return null
+    }
+  }
+
+  const newParentFrame = MetadataUtils.getFrameInCanvasCoords(
+    newParent,
+    strategyState.startingMetadata,
   )
 
   return [
     ...mapDropNulls(
       (pin) => {
         const horizontal = isHorizontalPoint(framePointForPinnedProp(pin))
-        const value = getLayoutProperty(pin, right(element.props), ['style'])
-        if (isRight(value) && value.value != null) {
-          // TODO what to do about missing properties?
-          return adjustCssLengthProperty(
-            'permanent',
-            selectedElement,
-            stylePropPathMappingFn(pin, ['style']),
-            horizontal ? offsetTL.x : offsetTL.y,
-            horizontal ? newParentFrame?.width : newParentFrame?.height,
-            true,
-          )
-        } else {
-          return null
-        }
+        return createAdjustCssLengthProperty(
+          pin,
+          horizontal ? offsetTL.x : offsetTL.y,
+          horizontal ? newParentFrame?.width : newParentFrame?.height,
+        )
       },
       ['top', 'left'] as const,
     ),
     ...mapDropNulls(
       (pin) => {
         const horizontal = isHorizontalPoint(framePointForPinnedProp(pin))
-        const value = getLayoutProperty(pin, right(element.props), ['style'])
-        if (isRight(value) && value.value != null) {
-          // TODO what to do about missing properties?
-          return adjustCssLengthProperty(
-            'permanent',
-            selectedElement,
-            stylePropPathMappingFn(pin, ['style']),
-            horizontal ? offsetBR.x : offsetBR.y,
-            horizontal ? newParentFrame?.width : newParentFrame?.height,
-            true,
-          )
-        } else {
-          return null
-        }
+        return createAdjustCssLengthProperty(
+          pin,
+          horizontal ? offsetBR.x : offsetBR.y,
+          horizontal ? newParentFrame?.width : newParentFrame?.height,
+        )
       },
       ['bottom', 'right'] as const,
     ),
