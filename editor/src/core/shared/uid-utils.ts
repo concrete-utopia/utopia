@@ -235,12 +235,7 @@ export function appendToUidString(
 }
 
 function getSplitPathsStrings(pathsString: string | null): Array<string> {
-  if (pathsString == null) {
-    return []
-  } else {
-    const firstPath = pathsString.split(' ')[0]
-    return firstPath == null ? [] : EP.getAllElementPathStringsForPathString(firstPath)
-  }
+  return pathsString == null ? [] : EP.getAllElementPathStringsForPathString(pathsString)
 }
 
 function getPathsFromSplitString(splitPaths: Array<string>): Array<ElementPath> {
