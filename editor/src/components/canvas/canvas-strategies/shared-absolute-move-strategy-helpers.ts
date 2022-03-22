@@ -11,6 +11,7 @@ import {
   CanvasPoint,
   CanvasRectangle,
   CanvasVector,
+  closestPointOnLine,
   offsetPoint,
   pointDifference,
   rectFromTwoPoints,
@@ -101,6 +102,7 @@ export function resizeBoundingBox(
   boundingBox: CanvasRectangle,
   drag: CanvasPoint,
   edgePosition: EdgePosition,
+  keepAspectRatio: boolean,
   centerBased: boolean,
 ): CanvasRectangle {
   let dragToUse = drag
@@ -109,6 +111,7 @@ export function resizeBoundingBox(
     x: 1 - edgePosition.x,
     y: 1 - edgePosition.y,
   } as EdgePosition
+
   if (isEdgePositionOnSide(edgePosition)) {
     if (edgePosition.x === 0.5) {
       dragToUse = canvasPoint({ x: 0, y: drag.y })
@@ -121,10 +124,16 @@ export function resizeBoundingBox(
     }
   }
 
+  const oppositeCornerPoint = pickPointOnRect(boundingBox, startingCornerPosition)
   const draggedCorner = pickPointOnRect(boundingBox, cornerEdgePosition)
-  const newCorner = offsetPoint(draggedCorner, dragToUse)
+  let newCorner = offsetPoint(draggedCorner, dragToUse)
+
+  if (keepAspectRatio) {
+    newCorner = closestPointOnLine(oppositeCornerPoint, draggedCorner, newCorner)
+    dragToUse = pointDifference(draggedCorner, newCorner)
+  }
+
   if (centerBased) {
-    const oppositeCornerPoint = pickPointOnRect(boundingBox, startingCornerPosition)
     const oppositeCornerDragged = offsetPoint(
       oppositeCornerPoint,
       pointDifference(dragToUse, zeroCanvasPoint),
@@ -132,8 +141,7 @@ export function resizeBoundingBox(
     const newBoundingBox = rectFromTwoPoints(oppositeCornerDragged, newCorner)
     return newBoundingBox
   } else {
-    const fixedCornerPoint = pickPointOnRect(boundingBox, startingCornerPosition)
-    const newBoundingBox = rectFromTwoPoints(fixedCornerPoint, newCorner)
+    const newBoundingBox = rectFromTwoPoints(oppositeCornerPoint, newCorner)
     return newBoundingBox
   }
 }
@@ -172,7 +180,13 @@ export function runLegacyAbsoluteResizeSnapping(
   )
 
   const snapDelta = pointDifference(draggedPointMovedWithoutSnap, snappedPointOnCanvas)
-  const snappedBounds = resizeBoundingBox(resizedBounds, snapDelta, draggedCorner, centerBased)
+  const snappedBounds = resizeBoundingBox(
+    resizedBounds,
+    snapDelta,
+    draggedCorner,
+    keepAspectRatio,
+    centerBased,
+  )
 
   const updatedGuidelinesWithSnapping = pointGuidelineToBoundsEdge(
     guidelinesWithSnappingVector,

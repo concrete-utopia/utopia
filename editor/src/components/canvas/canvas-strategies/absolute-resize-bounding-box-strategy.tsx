@@ -77,11 +77,13 @@ export const absoluteResizeBoundingBoxStrategy: CanvasStrategy = {
         canvasState.selectedElements,
       )
       if (originalBoundingBox != null) {
+        const keepAspectRatio = interactionState.interactionData.modifiers.shift
         const centerBased = interactionState.interactionData.modifiers.alt
         const newBoundingBox = resizeBoundingBox(
           originalBoundingBox,
           drag,
           edgePosition,
+          keepAspectRatio,
           centerBased,
         )
         const { snappedBoundingBox, guidelinesWithSnappingVector } = snapBoundingBox(
@@ -90,7 +92,7 @@ export const absoluteResizeBoundingBoxStrategy: CanvasStrategy = {
           edgePosition,
           newBoundingBox,
           canvasState.scale,
-          false,
+          keepAspectRatio,
           centerBased,
         )
         const commandsForSelectedElements = canvasState.selectedElements.flatMap(
