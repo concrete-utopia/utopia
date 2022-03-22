@@ -50,7 +50,7 @@ export const absoluteReparentStrategy: CanvasStrategy = {
     const newParent = reparentResult.newParent
     const moveCommands = absoluteMoveStrategy.apply(canvasState, interactionState, strategyState)
 
-    if (newParent != null) {
+    if (reparentResult.shouldReparent && newParent != null) {
       const target = canvasState.selectedElements[0]
       const newPath = EP.appendToPath(newParent, EP.toUid(canvasState.selectedElements[0]))
 
