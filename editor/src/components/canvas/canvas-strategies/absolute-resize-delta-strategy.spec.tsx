@@ -33,7 +33,7 @@ function resizeElement(editor: EditorState, edgePosition: EdgePosition): EditorS
       currentStrategy: null as any, // the strategy does not use this
       currentStrategyFitness: null as any, // the strategy does not use this
       currentStrategyCommands: null as any, // the strategy does not use this
-      accumulatedCommands: null as any, // the strategy does not use this
+      accumulatedPatches: null as any, // the strategy does not use this
       commandDescriptions: null as any, // the strategy does not use this
       sortedApplicableStrategies: null as any, // the strategy does not use this
       startingMetadata: {
@@ -45,7 +45,7 @@ function resizeElement(editor: EditorState, edgePosition: EdgePosition): EditorS
       },
     } as StrategyState,
   )
-  return foldAndApplyCommands(editor, editor, strategyResult, 'permanent').editorState
+  return foldAndApplyCommands(editor, editor, [], [], strategyResult, 'permanent').editorState
 }
 
 function createTestEditorAndResizeElement(
