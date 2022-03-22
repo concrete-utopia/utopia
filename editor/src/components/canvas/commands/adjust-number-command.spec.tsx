@@ -1,3 +1,4 @@
+import update from 'immutability-helper'
 import { createBuiltInDependenciesList } from '../../../core/es-modules/package-manager/built-in-dependencies-list'
 import * as EP from '../../../core/shared/element-path'
 import { getNumberPropertyFromProps } from '../../../core/shared/jsx-attributes'
@@ -6,7 +7,6 @@ import { withUnderlyingTargetFromEditorState } from '../../editor/store/editor-s
 import { stylePropPathMappingFn } from '../../inspector/common/property-path-hooks'
 import { renderTestEditorWithModel } from '../ui-jsx.test-utils'
 import { adjustNumberProperty, runAdjustNumberProperty } from './adjust-number-command'
-import { applyStatePatches } from './commands'
 
 describe('adjustNumberProperty', () => {
   it('works for left style prop', async () => {
@@ -47,12 +47,7 @@ describe('adjustNumberProperty', () => {
       adjustNumberPropertyCommand,
     )
 
-    const patchedEditor = applyStatePatches(
-      renderResult.getEditorState().editor,
-      renderResult.getEditorState().editor,
-      [result.editorStatePatch],
-    )
-
+    const patchedEditor = update(renderResult.getEditorState().editor, result.editorStatePatch)
     const updatedLeftStyleProp = withUnderlyingTargetFromEditorState(
       cardInstancePath,
       patchedEditor,

@@ -79,36 +79,6 @@ export function foldAndApplyCommands(
   accumulatedPatches: Array<EditorStatePatch>
   commandDescriptions: Array<CommandDescription>
 } {
-  const commandResult = foldCommands(
-    editorState,
-    patches,
-    commandsToAccumulate,
-    commands,
-    transient,
-  )
-  const updatedEditorState = applyStatePatches(
-    editorState,
-    priorPatchedState,
-    commandResult.editorStatePatches,
-  )
-  return {
-    editorState: updatedEditorState,
-    accumulatedPatches: commandResult.accumulatedPatches,
-    commandDescriptions: commandResult.commandDescriptions,
-  }
-}
-
-function foldCommands(
-  editorState: EditorState,
-  patches: Array<EditorStatePatch>,
-  commandsToAccumulate: Array<CanvasCommand>,
-  commands: Array<CanvasCommand>,
-  transient: TransientOrNot,
-): {
-  editorStatePatches: Array<EditorStatePatch>
-  accumulatedPatches: Array<EditorStatePatch>
-  commandDescriptions: Array<CommandDescription>
-} {
   let statePatches: Array<EditorStatePatch> = [...patches]
   let accumulatedPatches: Array<EditorStatePatch> = [...patches]
   let workingEditorState: EditorState = patches.reduce((workingState, patch) => {
@@ -139,26 +109,15 @@ function foldCommands(
   commandsToAccumulate.forEach((command) => runCommand(command, true))
   commands.forEach((command) => runCommand(command, false))
 
+  if (statePatches.length === 0) {
+    workingEditorState = editorState
+  } else {
+    workingEditorState = keepDeepReferenceEqualityIfPossible(priorPatchedState, workingEditorState)
+  }
+
   return {
-    editorStatePatches: mergePatches(statePatches),
+    editorState: workingEditorState,
     accumulatedPatches: mergePatches(accumulatedPatches),
     commandDescriptions: workingCommandDescriptions,
-  }
-}
-
-export function applyStatePatches(
-  editorState: EditorState,
-  priorPatchedState: EditorState,
-  patches: Array<EditorStatePatch>,
-): EditorState {
-  if (patches.length === 0) {
-    return editorState
-  } else {
-    return keepDeepReferenceEqualityIfPossible(
-      priorPatchedState,
-      patches.reduce((workingState, patch) => {
-        return update(workingState, patch)
-      }, editorState),
-    )
   }
 }

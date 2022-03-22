@@ -1,8 +1,9 @@
+import update from 'immutability-helper'
 import { createBuiltInDependenciesList } from '../../../core/es-modules/package-manager/built-in-dependencies-list'
 import * as EP from '../../../core/shared/element-path'
 import { complexDefaultProjectPreParsed } from '../../../sample-projects/sample-project-utils.test-utils'
 import { renderTestEditorWithModel } from '../ui-jsx.test-utils'
-import { applyStatePatches } from './commands'
+import { foldAndApplyCommands } from './commands'
 import { runUpdateSelectedViews, updateSelectedViews } from './update-selected-views-command'
 
 describe('updateSelectedViews', () => {
@@ -25,9 +26,7 @@ describe('updateSelectedViews', () => {
 
     const result = runUpdateSelectedViews(originalEditorState, updateSelectedViewsCommand)
 
-    const patchedEditor = applyStatePatches(originalEditorState, originalEditorState, [
-      result.editorStatePatch,
-    ])
+    const patchedEditor = update(originalEditorState, result.editorStatePatch)
 
     expect(patchedEditor.selectedViews).toEqual([targetPath])
   })
