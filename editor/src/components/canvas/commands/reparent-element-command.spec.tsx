@@ -1,9 +1,9 @@
+import update from 'immutability-helper'
 import { createBuiltInDependenciesList } from '../../../core/es-modules/package-manager/built-in-dependencies-list'
 import * as EP from '../../../core/shared/element-path'
 import { complexDefaultProjectPreParsed } from '../../../sample-projects/sample-project-utils.test-utils'
 import { withUnderlyingTargetFromEditorState } from '../../editor/store/editor-state'
 import { renderTestEditorWithModel } from '../ui-jsx.test-utils'
-import { applyStatePatches } from './commands'
 import { reparentElement, runReparentElement } from './reparent-element-command'
 
 describe('runReparentElement', () => {
@@ -31,9 +31,7 @@ describe('runReparentElement', () => {
 
     const result = runReparentElement(originalEditorState, reparentCommand)
 
-    const patchedEditor = applyStatePatches(originalEditorState, originalEditorState, [
-      result.editorStatePatch,
-    ])
+    const patchedEditor = update(originalEditorState, result.editorStatePatch)
     const newPath = EP.appendToPath(newParentPath, EP.toUid(targetPath))
 
     const newElement = withUnderlyingTargetFromEditorState(
