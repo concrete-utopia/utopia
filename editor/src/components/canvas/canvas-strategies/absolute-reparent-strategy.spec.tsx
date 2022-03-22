@@ -73,7 +73,7 @@ function reparentElement(
           specialSizeMeasurements: {
             immediateParentBounds: canvasRectangle({ x: 0, y: 0, width: 400, height: 400 }),
             globalContentBox: targetParentWithSpecialContentBox
-              ? canvasRectangle({ x: 60, y: 70, width: 225, height: 180 })
+              ? canvasRectangle({ x: 90, y: 100, width: 170, height: 120 })
               : canvasRectangle({ x: 50, y: 60, width: 250, height: 200 }),
           } as SpecialSizeMeasurements,
         } as ElementInstanceMetadata,
@@ -322,10 +322,10 @@ describe('Absolute Move Strategy', () => {
               data-uid='ccc'
               style={{
                 position: 'absolute',
-                top: 35,
-                left: 60,
-                bottom: 90,
-                right: 125,
+                top: 5,
+                left: 30,
+                bottom: 60,
+                right: 100,
               }}
             />
           </div>
