@@ -1,7 +1,5 @@
-import { stylePropPathMappingFn } from '../../../components/inspector/common/property-path-hooks'
 import { MetadataUtils } from '../../../core/model/element-metadata-utils'
 import * as EP from '../../../core/shared/element-path'
-import { pointDifference, zeroCanvasRect } from '../../../core/shared/math-utils'
 import { getReparentTarget } from '../canvas-utils'
 import { reparentElement } from '../commands/reparent-element-command'
 import { updateSelectedViews } from '../commands/update-selected-views-command'
