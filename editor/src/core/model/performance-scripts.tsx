@@ -179,7 +179,7 @@ function useTriggerHighlightPerformanceTest(key: 'regular' | 'all-elements'): ()
 
     const targetPath = allPaths.current[0]
 
-    const htmlElement = document.querySelector(`*[data-path~="${EP.toString(targetPath)}"]`)
+    const htmlElement = document.querySelector(`*[data-path*="${EP.toString(targetPath)}"]`)
     if (htmlElement == null) {
       console.info(`HIGHLIGHT_${allCapsKey}_TEST_ERROR_NO_ELEMENT`)
       return
@@ -252,7 +252,7 @@ export function useTriggerSelectionPerformanceTest(): () => void {
 
     const targetElement = forceNotNull(
       'Target element should exist.',
-      document.querySelector(`*[data-path~="${EP.toString(targetPath)}"]`),
+      document.querySelector(`*[data-path*="${EP.toString(targetPath)}"]`),
     )
     const originalTargetBounds = targetElement.getBoundingClientRect()
     const leftToTarget =
@@ -421,7 +421,7 @@ export function useTriggerAbsoluteMovePerformanceTest(): () => void {
 
     const targetElement = forceNotNull(
       'Target element should exist.',
-      document.querySelector(`*[data-path~="${EP.toString(childTargetPath)}"]`),
+      document.querySelector(`*[data-path*="${EP.toString(childTargetPath)}"]`),
     )
     const originalTargetBounds = targetElement.getBoundingClientRect()
     const leftToTarget =
