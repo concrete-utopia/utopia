@@ -4,6 +4,7 @@ import { framePointForPinnedProp } from '../../../core/layout/layout-helpers-new
 import { MetadataUtils } from '../../../core/model/element-metadata-utils'
 import { mapDropNulls } from '../../../core/shared/array-utils'
 import { isRight, right } from '../../../core/shared/either'
+import * as EP from '../../../core/shared/element-path'
 import type { ElementInstanceMetadataMap, JSXElement } from '../../../core/shared/element-template'
 import {
   boundingRectangleArray,
@@ -15,6 +16,7 @@ import {
   pointDifference,
   rectFromTwoPoints,
   zeroCanvasPoint,
+  zeroCanvasRect,
 } from '../../../core/shared/math-utils'
 import { ElementPath } from '../../../core/shared/project-file-types'
 import { getElementFromProjectContents } from '../../editor/store/editor-state'
@@ -84,6 +86,87 @@ function createMoveCommandsForElement(
     },
     ['top', 'bottom', 'left', 'right'] as const,
   )
+}
+
+export function getAbsoluteOffsetCommandsForSelectedElement(
+  selectedElement: ElementPath,
+  newParentPath: ElementPath,
+  strategyState: StrategyState,
+  canvasState: InteractionCanvasState,
+): Array<AdjustCssLengthProperty> {
+  const element: JSXElement | null = getElementFromProjectContents(
+    selectedElement,
+    canvasState.projectContents,
+    canvasState.openFile,
+  )
+
+  if (element == null) {
+    return []
+  }
+
+  const oldParentFrame =
+    MetadataUtils.getFrameInCanvasCoords(
+      EP.parentPath(selectedElement),
+      strategyState.startingMetadata,
+    ) ?? zeroCanvasRect
+  const newParentFrame =
+    MetadataUtils.getFrameInCanvasCoords(newParentPath, strategyState.startingMetadata) ??
+    zeroCanvasRect
+
+  const offsetTL = pointDifference(newParentFrame, oldParentFrame)
+  const offsetBR = pointDifference(
+    canvasPoint({
+      x: oldParentFrame.x + oldParentFrame.width,
+      y: oldParentFrame.y + oldParentFrame.height,
+    }),
+    canvasPoint({
+      x: newParentFrame.x + newParentFrame.width,
+      y: newParentFrame.y + newParentFrame.height,
+    }),
+  )
+
+  return [
+    ...mapDropNulls(
+      (pin) => {
+        const horizontal = isHorizontalPoint(framePointForPinnedProp(pin))
+        const value = getLayoutProperty(pin, right(element.props), ['style'])
+        if (isRight(value) && value.value != null) {
+          // TODO what to do about missing properties?
+          return adjustCssLengthProperty(
+            'permanent',
+            selectedElement,
+            stylePropPathMappingFn(pin, ['style']),
+            horizontal ? offsetTL.x : offsetTL.y,
+            horizontal ? newParentFrame?.width : newParentFrame?.height,
+            true,
+          )
+        } else {
+          return null
+        }
+      },
+      ['top', 'left'] as const,
+    ),
+    ...mapDropNulls(
+      (pin) => {
+        const horizontal = isHorizontalPoint(framePointForPinnedProp(pin))
+        const value = getLayoutProperty(pin, right(element.props), ['style'])
+        if (isRight(value) && value.value != null) {
+          // TODO what to do about missing properties?
+          return adjustCssLengthProperty(
+            'permanent',
+            selectedElement,
+            stylePropPathMappingFn(pin, ['style']),
+            horizontal ? offsetBR.x : offsetBR.y,
+            horizontal ? newParentFrame?.width : newParentFrame?.height,
+            true,
+          )
+        } else {
+          return null
+        }
+      },
+      ['bottom', 'right'] as const,
+    ),
+  ]
 }
 
 export function getMultiselectBounds(
