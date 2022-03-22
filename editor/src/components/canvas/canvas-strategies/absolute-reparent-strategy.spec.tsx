@@ -61,6 +61,7 @@ function reparentElement(
           globalFrame: canvasRectangle({ x: 0, y: 0, width: 400, height: 400 }),
           specialSizeMeasurements: {
             immediateParentBounds: canvasRectangle({ x: 0, y: 0, width: 400, height: 400 }),
+            providesBoundsForChildren: true,
             globalContentBox: canvasRectangle({ x: 0, y: 0, width: 400, height: 400 }),
           } as SpecialSizeMeasurements,
         } as ElementInstanceMetadata,
@@ -72,6 +73,7 @@ function reparentElement(
           globalFrame: canvasRectangle({ x: 50, y: 60, width: 250, height: 200 }),
           specialSizeMeasurements: {
             immediateParentBounds: canvasRectangle({ x: 0, y: 0, width: 400, height: 400 }),
+            providesBoundsForChildren: true,
             globalContentBox: targetParentWithSpecialContentBox
               ? canvasRectangle({ x: 90, y: 100, width: 170, height: 120 })
               : canvasRectangle({ x: 50, y: 60, width: 250, height: 200 }),
