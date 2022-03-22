@@ -83,13 +83,19 @@ function reparentElement(
     } as StrategyState,
   )
 
-  const finalEditor = foldAndApplyCommands(editorState, editorState, strategyResult, 'permanent')
-    .editorState
+  const finalEditor = foldAndApplyCommands(
+    editorState,
+    editorState,
+    [],
+    [],
+    strategyResult,
+    'permanent',
+  ).editorState
 
   return finalEditor
 }
 
-describe('Absolute Move Strategy', () => {
+describe('Absolute Rerarent Strategy', () => {
   it('works with a TL pinned absolute element', async () => {
     const targetElement = elementPath([
       ['scene-aaa', 'app-entity'],
