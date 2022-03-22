@@ -1,10 +1,12 @@
 import update from 'immutability-helper'
 import { ElementPath } from '../../../core/shared/project-file-types'
 import { keepDeepReferenceEqualityIfPossible } from '../../../utils/react-performance'
+import { Canvas } from '../../editor/action-types'
 import { EditorState, EditorStatePatch } from '../../editor/store/editor-state'
 import { CommandDescription } from '../canvas-strategies/interaction-state'
 import { AdjustCssLengthProperty, runAdjustCssLengthProperty } from './adjust-css-length-command'
 import { AdjustNumberProperty, runAdjustNumberProperty } from './adjust-number-command'
+import { mergePatches } from './merge-patches'
 import { ReparentElement, runReparentElement } from './reparent-element-command'
 import { runSetSnappingGuidelines, SetSnappingGuidelines } from './set-snapping-guidelines-command'
 import { runStrategySwitchedCommand, StrategySwitched } from './strategy-switched-command'
@@ -68,39 +70,23 @@ export const runCanvasCommand: CommandFunction<CanvasCommand> = (
 export function foldAndApplyCommands(
   editorState: EditorState,
   priorPatchedState: EditorState,
+  patches: Array<EditorStatePatch>,
+  commandsToAccumulate: Array<CanvasCommand>,
   commands: Array<CanvasCommand>,
   transient: TransientOrNot,
 ): {
   editorState: EditorState
-  editorStatePatches: Array<EditorStatePatch>
+  accumulatedPatches: Array<EditorStatePatch>
   commandDescriptions: Array<CommandDescription>
 } {
-  const commandResult = foldCommands(editorState, commands, transient)
-  const updatedEditorState = applyStatePatches(
-    editorState,
-    priorPatchedState,
-    commandResult.editorStatePatches,
-  )
-  return {
-    editorState: updatedEditorState,
-    editorStatePatches: commandResult.editorStatePatches,
-    commandDescriptions: commandResult.commandDescriptions,
-  }
-}
-
-function foldCommands(
-  editorState: EditorState,
-  commands: Array<CanvasCommand>,
-  transient: TransientOrNot,
-): {
-  editorStatePatches: Array<EditorStatePatch>
-  commandDescriptions: Array<CommandDescription>
-} {
-  let statePatches: Array<EditorStatePatch> = []
-  let workingEditorState: EditorState = editorState
+  let statePatches: Array<EditorStatePatch> = [...patches]
+  let accumulatedPatches: Array<EditorStatePatch> = [...patches]
+  let workingEditorState: EditorState = patches.reduce((workingState, patch) => {
+    return update(workingState, patch)
+  }, editorState)
   let workingCommandDescriptions: Array<CommandDescription> = []
-  for (const command of commands) {
-    // Allow every command if this is a transient fold, otherwise only allow commands that are not transient.
+
+  const runCommand = (command: CanvasCommand, shouldAccumulatePatches: boolean) => {
     if (transient === 'transient' || command.transient === 'permanent') {
       // Run the command with our current states.
       const commandResult = runCanvasCommand(workingEditorState, command)
@@ -110,6 +96,9 @@ function foldCommands(
       workingEditorState = update(workingEditorState, statePatch)
       // Collate the patches.
       statePatches.push(statePatch)
+      if (shouldAccumulatePatches) {
+        accumulatedPatches.push(statePatch)
+      }
       workingCommandDescriptions.push({
         description: commandResult.commandDescription,
         transient: command.transient === 'transient',
@@ -117,25 +106,18 @@ function foldCommands(
     }
   }
 
-  return {
-    editorStatePatches: statePatches,
-    commandDescriptions: workingCommandDescriptions,
-  }
-}
+  commandsToAccumulate.forEach((command) => runCommand(command, true))
+  commands.forEach((command) => runCommand(command, false))
 
-export function applyStatePatches(
-  editorState: EditorState,
-  priorPatchedState: EditorState,
-  patches: Array<EditorStatePatch>,
-): EditorState {
-  if (patches.length === 0) {
-    return editorState
+  if (statePatches.length === 0) {
+    workingEditorState = editorState
   } else {
-    return keepDeepReferenceEqualityIfPossible(
-      priorPatchedState,
-      patches.reduce((workingState, patch) => {
-        return update(workingState, patch)
-      }, editorState),
-    )
+    workingEditorState = keepDeepReferenceEqualityIfPossible(priorPatchedState, workingEditorState)
+  }
+
+  return {
+    editorState: workingEditorState,
+    accumulatedPatches: mergePatches(accumulatedPatches),
+    commandDescriptions: workingCommandDescriptions,
   }
 }

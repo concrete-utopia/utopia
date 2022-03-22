@@ -10,6 +10,7 @@ import {
 import { ElementPath } from '../../../core/shared/project-file-types'
 import { KeyCharacter } from '../../../utils/keyboard'
 import { Modifiers } from '../../../utils/modifiers'
+import { EditorStatePatch } from '../../editor/store/editor-state'
 import { EdgePosition } from '../canvas-types'
 import { MoveIntoDragThreshold } from '../canvas-utils'
 import { CanvasCommand } from '../commands/commands'
@@ -56,17 +57,12 @@ export interface CommandDescription {
   transient: boolean
 }
 
-export interface StrategyAndAccumulatedCommands {
-  strategy: CanvasStrategyId | null
-  commands: Array<CanvasCommand>
-}
-
 export interface StrategyState {
   // Need to track here which strategy is being applied.
   currentStrategy: CanvasStrategyId | null
   currentStrategyFitness: number
   currentStrategyCommands: Array<CanvasCommand>
-  accumulatedCommands: Array<StrategyAndAccumulatedCommands>
+  accumulatedPatches: Array<EditorStatePatch>
   commandDescriptions: Array<CommandDescription>
   sortedApplicableStrategies: Array<CanvasStrategy>
 
@@ -79,7 +75,7 @@ export function createEmptyStrategyState(metadata?: ElementInstanceMetadataMap):
     currentStrategy: null,
     currentStrategyFitness: 0,
     currentStrategyCommands: [],
-    accumulatedCommands: [],
+    accumulatedPatches: [],
     commandDescriptions: [],
     sortedApplicableStrategies: [],
     startingMetadata: metadata ?? {},
