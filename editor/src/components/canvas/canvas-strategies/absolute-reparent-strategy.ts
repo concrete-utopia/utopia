@@ -49,8 +49,12 @@ export const absoluteReparentStrategy: CanvasStrategy = {
     )
     const newParent = reparentResult.newParent
     const moveCommands = absoluteMoveStrategy.apply(canvasState, interactionState, strategyState)
+    const providesBoundsForChildren = MetadataUtils.findElementByElementPath(
+      strategyState.startingMetadata,
+      newParent,
+    )?.specialSizeMeasurements.providesBoundsForChildren
 
-    if (reparentResult.shouldReparent && newParent != null) {
+    if (reparentResult.shouldReparent && newParent != null && providesBoundsForChildren) {
       const target = canvasState.selectedElements[0]
       const newPath = EP.appendToPath(newParent, EP.toUid(canvasState.selectedElements[0]))
 
