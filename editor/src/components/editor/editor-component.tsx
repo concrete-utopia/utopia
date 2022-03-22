@@ -144,7 +144,22 @@ export const EditorComponentInner = React.memo((props: EditorProps) => {
 
         // TODO: maybe we should not whitelist keys, just check if Keyboard.keyIsModifer(key) is false
         const existingInteractionSession = editorStoreRef.current.editor.canvas.interactionSession
-        if (Keyboard.keyIsInteraction(key)) {
+        if (Keyboard.keyIsModifier(key) && existingInteractionSession != null) {
+          editorStoreRef.current.dispatch(
+            [
+              CanvasActions.createInteractionSession(
+                updateInteractionViaKeyboard(
+                  existingInteractionSession,
+                  [Keyboard.keyCharacterForCode(event.keyCode)],
+                  [],
+                  Modifier.modifiersForKeyboardEvent(event),
+                  { type: 'KEYBOARD_CATCHER_CONTROL' },
+                ),
+              ),
+            ],
+            'everyone',
+          )
+        } else if (Keyboard.keyIsInteraction(key)) {
           const action =
             existingInteractionSession == null
               ? CanvasActions.createInteractionSession(
@@ -166,23 +181,6 @@ export const EditorComponentInner = React.memo((props: EditorProps) => {
 
           editorStoreRef.current.dispatch([action], 'everyone')
           setupClearKeyboardInteraction(editorStoreRef, keyboardTimeoutHandler)
-        } else if (Keyboard.keyIsModifier(key)) {
-          if (existingInteractionSession != null) {
-            editorStoreRef.current.dispatch(
-              [
-                CanvasActions.createInteractionSession(
-                  updateInteractionViaKeyboard(
-                    existingInteractionSession,
-                    [Keyboard.keyCharacterForCode(event.keyCode)],
-                    [],
-                    Modifier.modifiersForKeyboardEvent(event),
-                    { type: 'KEYBOARD_CATCHER_CONTROL' },
-                  ),
-                ),
-              ],
-              'everyone',
-            )
-          }
         }
       }
 
