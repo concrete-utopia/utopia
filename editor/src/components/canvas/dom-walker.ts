@@ -762,13 +762,6 @@ function getSpecialMeasurements(
     parseCSSLength(elementStyle.paddingBottom),
     parseCSSLength(elementStyle.paddingLeft),
   )
-  const border = applicative4Either(
-    applicativeSidesPxTransform,
-    parseCSSLength(elementStyle.borderTopWidth),
-    parseCSSLength(elementStyle.borderRightWidth),
-    parseCSSLength(elementStyle.borderBottomWidth),
-    parseCSSLength(elementStyle.borderLeftWidth),
-  )
 
   let naturalWidth: number | null = null
   let naturalHeight: number | null = null
@@ -782,29 +775,23 @@ function getSpecialMeasurements(
 
   const childrenCount = element.childElementCount
 
-  const paddingValues = isRight(padding)
-    ? padding.value
-    : sides(undefined, undefined, undefined, undefined)
-  const borderValues = isRight(border)
-    ? border.value
-    : sides(undefined, undefined, undefined, undefined)
+  const borderTopWidth = parseCSSLength(elementStyle.borderTopWidth)
+  const borderRightWidth = parseCSSLength(elementStyle.borderRightWidth)
+  const borderBottomWidth = parseCSSLength(elementStyle.borderBottomWidth)
+  const borderLeftWidth = parseCSSLength(elementStyle.borderLeftWidth)
+  const border = {
+    top: isRight(borderTopWidth) ? borderTopWidth.value.value : 0,
+    right: isRight(borderRightWidth) ? borderRightWidth.value.value : 0,
+    bottom: isRight(borderBottomWidth) ? borderBottomWidth.value.value : 0,
+    left: isRight(borderLeftWidth) ? borderLeftWidth.value.value : 0,
+  }
 
   const globalFrame = globalFrameForElement(element, scale, containerRectLazy)
   const globalContentBox = canvasRectangle({
-    x: globalFrame.x + (paddingValues.left ?? 0) + (borderValues.left ?? 0),
-    y: globalFrame.y + (paddingValues.top ?? 0) + (borderValues.top ?? 0),
-    width:
-      globalFrame.width -
-      (paddingValues.left ?? 0) -
-      (paddingValues.right ?? 0) -
-      (borderValues.left ?? 0) -
-      (borderValues.right ?? 0),
-    height:
-      globalFrame.height -
-      (paddingValues.top ?? 0) -
-      (paddingValues.bottom ?? 0) -
-      (borderValues.top ?? 0) -
-      (borderValues.bottom ?? 0),
+    x: globalFrame.x + border.left,
+    y: globalFrame.y + border.top,
+    width: globalFrame.width - border.left - border.right,
+    height: globalFrame.height - border.top - border.bottom,
   })
 
   return specialSizeMeasurements(
@@ -819,7 +806,7 @@ function getSpecialMeasurements(
     elementStyle.display,
     position,
     isRight(margin) ? margin.value : sides(undefined, undefined, undefined, undefined),
-    paddingValues,
+    isRight(padding) ? padding.value : sides(undefined, undefined, undefined, undefined),
     naturalWidth,
     naturalHeight,
     clientWidth,
