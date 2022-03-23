@@ -805,7 +805,7 @@ export function SpecialSizeMeasurementsKeepDeepEquality(): KeepDeepEqualityCall<
     const globalContentBoxEquals = nullableDeepEquality(CanvasRectangleKeepDeepEquality)(
       oldSize.globalContentBox,
       newSize.globalContentBox,
-    )
+    ).areEqual
     const areEqual =
       offsetResult.areEqual &&
       coordinateSystemBoundsResult.areEqual &&
