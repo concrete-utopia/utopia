@@ -680,6 +680,8 @@ export function useClearKeyboardInteraction(editorStoreRef: {
   }, [editorStoreRef])
 }
 
+const AutomaticKeyUpTimeout = 500
+
 // Nasty problem: when cmd is down, other keys don't trigger keyup events.
 // Workaround: automatically remove the button from the interactionsession after a timeout
 export function useAutomaticKeyUp(editorStoreRef: { readonly current: EditorStorePatched }) {
@@ -713,7 +715,7 @@ export function useAutomaticKeyUp(editorStoreRef: { readonly current: EditorStor
         }
       }
 
-      keyupTimeoutHandler.current[key] = setTimeout(removeKeypressed, 500)
+      keyupTimeoutHandler.current[key] = setTimeout(removeKeypressed, AutomaticKeyUpTimeout)
     },
     [editorStoreRef],
   )
