@@ -21,69 +21,13 @@ import {
   StrategyState,
 } from './interaction-state'
 import { keyboardAbsoluteMoveStrategy } from './keyboard-absolute-move-strategy'
+import { pressKeys, shiftModifier } from './keyboard-interaction.test-utils'
 
 function prepareEditorState(codeSnippet: string, selectedViews: Array<ElementPath>): EditorState {
   return {
     ...getEditorState(makeTestProjectCodeWithSnippet(codeSnippet)),
     selectedViews: selectedViews,
   }
-}
-
-function pressKeys(
-  editorState: EditorState,
-  keys: Array<KeyCharacter>,
-  modifiers: Modifiers,
-): EditorState {
-  const interactionSession: InteractionSession = {
-    ...createInteractionViaKeyboard(
-      keys,
-      modifiers,
-      null as any, // the strategy does not use this
-    ),
-    metadata: null as any, // the strategy does not use this
-  }
-
-  const strategyResult = keyboardAbsoluteMoveStrategy.apply(
-    pickCanvasStateFromEditorState(editorState),
-    interactionSession,
-    {
-      currentStrategy: null as any, // the strategy does not use this
-      currentStrategyFitness: null as any, // the strategy does not use this
-      currentStrategyCommands: null as any, // the strategy does not use this
-      accumulatedPatches: null as any, // the strategy does not use this
-      commandDescriptions: null as any, // the strategy does not use this
-      sortedApplicableStrategies: null as any, // the strategy does not use this
-      startingMetadata: {
-        'scene-aaa/app-entity:aaa/bbb': {
-          elementPath: elementPath([
-            ['scene-aaa', 'app-entity'],
-            ['aaa', 'bbb'],
-          ]),
-          specialSizeMeasurements: {
-            immediateParentBounds: canvasRectangle({ x: 0, y: 0, width: 400, height: 400 }),
-          } as SpecialSizeMeasurements,
-        } as ElementInstanceMetadata,
-      },
-    } as StrategyState,
-  )
-
-  const finalEditor = foldAndApplyCommands(
-    editorState,
-    editorState,
-    [],
-    [],
-    strategyResult,
-    'permanent',
-  ).editorState
-
-  return finalEditor
-}
-
-const shiftModifier: Modifiers = {
-  alt: false,
-  cmd: false,
-  ctrl: false,
-  shift: true,
 }
 
 describe('Keyboard Absolute Move Strategy', () => {
@@ -120,7 +64,7 @@ describe('Keyboard Absolute Move Strategy', () => {
         [targetElement],
       )
 
-      const finalEditor = pressKeys(initialEditor, keys, modifiers)
+      const finalEditor = pressKeys(initialEditor, keyboardAbsoluteMoveStrategy, keys, modifiers)
 
       expect(testPrintCodeFromEditorState(finalEditor)).toEqual(
         makeTestProjectCodeWithSnippet(
@@ -170,7 +114,7 @@ describe('Keyboard Absolute Move Strategy', () => {
         [targetElement],
       )
 
-      const finalEditor = pressKeys(initialEditor, keys, modifiers)
+      const finalEditor = pressKeys(initialEditor, keyboardAbsoluteMoveStrategy, keys, modifiers)
 
       expect(testPrintCodeFromEditorState(finalEditor)).toEqual(
         makeTestProjectCodeWithSnippet(
@@ -220,7 +164,7 @@ describe('Keyboard Absolute Move Strategy', () => {
         [targetElement],
       )
 
-      const finalEditor = pressKeys(initialEditor, keys, modifiers)
+      const finalEditor = pressKeys(initialEditor, keyboardAbsoluteMoveStrategy, keys, modifiers)
 
       expect(testPrintCodeFromEditorState(finalEditor)).toEqual(
         makeTestProjectCodeWithSnippet(
@@ -269,7 +213,7 @@ describe('Keyboard Absolute Move Strategy', () => {
         [targetElement],
       )
 
-      const finalEditor = pressKeys(initialEditor, keys, modifiers)
+      const finalEditor = pressKeys(initialEditor, keyboardAbsoluteMoveStrategy, keys, modifiers)
 
       expect(testPrintCodeFromEditorState(finalEditor)).toEqual(
         makeTestProjectCodeWithSnippet(
@@ -320,7 +264,7 @@ describe('Keyboard Absolute Move Strategy', () => {
         [targetElement],
       )
 
-      const finalEditor = pressKeys(initialEditor, keys, modifiers)
+      const finalEditor = pressKeys(initialEditor, keyboardAbsoluteMoveStrategy, keys, modifiers)
 
       expect(testPrintCodeFromEditorState(finalEditor)).toEqual(
         testPrintCodeFromEditorState(initialEditor),
@@ -361,7 +305,7 @@ describe('Keyboard Absolute Move Strategy', () => {
         [targetElement],
       )
 
-      const finalEditor = pressKeys(initialEditor, keys, modifiers)
+      const finalEditor = pressKeys(initialEditor, keyboardAbsoluteMoveStrategy, keys, modifiers)
 
       expect(testPrintCodeFromEditorState(finalEditor)).not.toEqual(
         expect(testPrintCodeFromEditorState(finalEditor)).toEqual(

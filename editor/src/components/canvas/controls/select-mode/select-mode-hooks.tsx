@@ -13,7 +13,7 @@ import {
 import { ElementPath } from '../../../../core/shared/project-file-types'
 import * as EP from '../../../../core/shared/element-path'
 import { fastForEach, NO_OP } from '../../../../core/shared/utils'
-import { KeyCharacter, KeysPressed } from '../../../../utils/keyboard'
+import Keyboard, { KeyCharacter, KeysPressed } from '../../../../utils/keyboard'
 import { useKeepShallowReferenceEquality } from '../../../../utils/react-performance'
 import Utils from '../../../../utils/utils'
 import {
@@ -44,9 +44,11 @@ import { isFeatureEnabled } from '../../../../utils/feature-switches'
 import {
   createInteractionViaMouse,
   KeyboardInteractionTimeout,
+  updateInteractionViaKeyboard,
 } from '../../canvas-strategies/interaction-state'
-import { Modifier } from '../../../../utils/modifiers'
+import { Modifier, Modifiers } from '../../../../utils/modifiers'
 import { pathsEqual } from '../../../../core/shared/element-path'
+import { getNodeMajorVersion } from 'typescript'
 
 const DRAG_START_TRESHOLD = 2
 
@@ -676,4 +678,43 @@ export function useClearKeyboardInteraction(editorStoreRef: {
       window.addEventListener('mousedown', clearKeyboardInteraction, { once: true, capture: true })
     }
   }, [editorStoreRef])
+}
+
+// Nasty problem: when cmd is down, other keys don't trigger keyup events.
+// Workaround: automatically remove the button from the interactionsession after a timeout
+export function useAutomaticKeyUp(editorStoreRef: { readonly current: EditorStorePatched }) {
+  const keyupTimeoutHandler = React.useRef<{ [key: string]: NodeJS.Timeout }>({})
+  return React.useCallback(
+    (key: KeyCharacter, modifiers: Modifiers) => {
+      // the problem only appears when cmd is down
+      if (!modifiers.cmd) {
+        return
+      }
+      if (keyupTimeoutHandler.current[key] != null) {
+        clearTimeout(keyupTimeoutHandler.current[key])
+        delete keyupTimeoutHandler.current[key]
+      }
+
+      const removeKeypressed = () => {
+        clearTimeout(keyupTimeoutHandler.current[key])
+        delete keyupTimeoutHandler.current[key]
+
+        const { interactionSession } = editorStoreRef.current.editor.canvas
+        if (
+          interactionSession?.interactionData.type === 'KEYBOARD' &&
+          interactionSession?.interactionData.keysPressed.indexOf(key) > -1
+        ) {
+          const action = CanvasActions.createInteractionSession(
+            updateInteractionViaKeyboard(interactionSession, [], [key], modifiers, {
+              type: 'KEYBOARD_CATCHER_CONTROL',
+            }),
+          )
+          editorStoreRef.current.dispatch([action], 'everyone')
+        }
+      }
+
+      keyupTimeoutHandler.current[key] = setTimeout(removeKeypressed, 500)
+    },
+    [editorStoreRef],
+  )
 }
