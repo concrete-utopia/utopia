@@ -33,6 +33,9 @@ interface ValueWithTimeout {
   timeoutID: NodeJS.Timeout | null
 }
 
+export const ONE_SECOND_IN_MS = 1000
+export const ONE_MINUTE_IN_MS = 60 * ONE_SECOND_IN_MS
+
 export function timeLimitPromise<T>(
   promise: Promise<T>,
   limitms: number,
@@ -79,7 +82,7 @@ export function consoleDoneMessage(
   })
   return timeLimitPromise(
     consoleDonePromise,
-    60 * 1000, // 10 minutes.
+    10 * ONE_MINUTE_IN_MS, // 10 minutes.
     `Missing console message ${expectedConsoleMessage} in test browser.`,
   ).finally(() => {
     // Ensure we remove the handler afterwards.

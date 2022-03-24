@@ -74,6 +74,8 @@ function measureStep(prefix: string, framesPassed: number): void {
   )
 }
 
+const CANVAS_POPULATE_WAIT_TIME_MS = 20 * 1000
+
 async function loadProject(
   dispatch: DebugDispatch,
   builtInDependencies: BuiltInDependencies,
@@ -115,7 +117,7 @@ async function loadProject(
   let canvasPopulated: boolean = false
   let codeEditorPopulated: boolean = false
   let codeEditorLoaded: boolean = false
-  while (startWaitingTime + 20000 > Date.now() && !editorReady) {
+  while (startWaitingTime + CANVAS_POPULATE_WAIT_TIME_MS > Date.now() && !editorReady) {
     // Check canvas has been populated.
     if (!canvasPopulated) {
       const canvasContainerElement = document.getElementById(CanvasContainerID)
@@ -665,9 +667,10 @@ export function useTriggerAbsoluteMovePerformanceTest(): () => void {
         // Potentially turn off Canvas Strategies.
         setFeatureEnabled('Canvas Strategies', strategiesCurrentlyEnabled)
         // Reset the position.
-        // await dispatch([unsetProperty(childTargetPath!, PP.create(['style']))], 'everyone').entireUpdateFinished
+        await dispatch([unsetProperty(childTargetPath!, PP.create(['style']))], 'everyone')
+          .entireUpdateFinished
         // Unfocus the target.
-        // await dispatch([setFocusedElement(null)], 'everyone').entireUpdateFinished
+        await dispatch([setFocusedElement(null)], 'everyone').entireUpdateFinished
 
         console.info('ABSOLUTE_MOVE_TEST_FINISHED')
       }
