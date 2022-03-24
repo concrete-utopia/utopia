@@ -74,7 +74,7 @@ function measureStep(prefix: string, framesPassed: number): void {
   )
 }
 
-const CANVAS_POPULATE_WAIT_TIME_MS = 20 * 1000
+const CANVAS_POPULATE_WAIT_TIME_MS = 60 * 1000
 
 async function loadProject(
   dispatch: DebugDispatch,
