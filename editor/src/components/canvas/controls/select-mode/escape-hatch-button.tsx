@@ -1,6 +1,6 @@
 import React from 'react'
 import { MetadataUtils } from '../../../../core/model/element-metadata-utils'
-import { Button, Tooltip, useColorTheme } from '../../../../uuiui'
+import { Button, Icn, Tooltip, useColorTheme } from '../../../../uuiui'
 import { convertSelectionToAbsolute } from '../../../editor/actions/action-creators'
 import { useEditorState, useRefEditorState } from '../../../editor/store/store-hook'
 import { getMultiselectBounds } from '../../canvas-strategies/shared-absolute-move-strategy-helpers'
@@ -62,7 +62,7 @@ const ConversionButton = React.memo(() => {
           }}
           onMouseDown={buttonMouseDown}
         >
-          <img src={'/editor/icons/icon-absolute-position.png'} width={16} height={16} />
+          <Icn color='main' category='layout/systems' type='pins' />
         </Button>
       </Tooltip>
     )
