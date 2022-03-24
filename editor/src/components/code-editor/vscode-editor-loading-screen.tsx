@@ -82,6 +82,8 @@ const JSIcon = () => (
   </svg>
 )
 
+export const VSCodeLoadingScreenID = 'vscode-loading-screen'
+
 export const VSCodeLoadingScreen = React.memo((): React.ReactElement | null => {
   const vscodeLoadingScreenVisible = useEditorState(
     (store) => store.editor.vscodeLoadingScreenVisible,
@@ -100,6 +102,7 @@ export const VSCodeLoadingScreen = React.memo((): React.ReactElement | null => {
         flexDirection: 'column',
         fontFamily: '-apple-system, system-ui, sans-serif',
       }}
+      id={VSCodeLoadingScreenID}
     >
       <Global
         styles={css`
