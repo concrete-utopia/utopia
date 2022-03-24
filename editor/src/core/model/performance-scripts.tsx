@@ -109,7 +109,6 @@ async function loadProject(
 
   // Load the project itself.
   await load(dispatch, persistentModel, 'Test', '999999', builtInDependencies, false)
-  console.log('Finished load')
 
   // Wait for the editor to stabilise, ensuring that the canvas can render for example.
   const startWaitingTime = Date.now()
@@ -169,7 +168,6 @@ async function loadProject(
       await wait(500)
     }
   }
-  console.log('editorReady', editorReady)
   return editorReady
 }
 
