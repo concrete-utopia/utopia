@@ -647,7 +647,7 @@ export function useClearKeyboardInteraction(editorStoreRef: {
   readonly current: EditorStorePatched
 }) {
   const keyboardTimeoutHandler = React.useRef<NodeJS.Timeout | null>(null)
-  return () => {
+  return React.useCallback(() => {
     if (!isFeatureEnabled('Keyboard up clears interaction')) {
       if (keyboardTimeoutHandler.current != null) {
         clearTimeout(keyboardTimeoutHandler.current)
@@ -675,5 +675,5 @@ export function useClearKeyboardInteraction(editorStoreRef: {
 
       window.addEventListener('mousedown', clearKeyboardInteraction, { once: true, capture: true })
     }
-  }
+  }, [editorStoreRef])
 }
