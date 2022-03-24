@@ -64,6 +64,7 @@ import {
 import { FlexResizeControl } from './select-mode/flex-resize-control'
 import { MultiSelectOutlineControl } from './select-mode/simple-outline-control'
 import { GuidelineControls } from './guideline-controls'
+import { EscapeHatchButtonControl } from './select-mode/escape-hatch-button'
 
 export const CanvasControlsContainerID = 'new-canvas-controls-container'
 
@@ -423,6 +424,7 @@ const NewCanvasControlsInner = (props: NewCanvasControlsInnerProps) => {
         isFeatureEnabled('Canvas Absolute Resize Controls'),
         <FlexResizeControl localSelectedElements={localSelectedViews} />,
       )}
+      {when(isFeatureEnabled('Escape Hatch experiment'), <EscapeHatchButtonControl />)}
     </div>
   )
 }

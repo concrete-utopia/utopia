@@ -167,6 +167,7 @@ export function isTransientAction(action: EditorAction): boolean {
     case 'UPDATE_CHILD_TEXT':
     case 'INSERT_INSERTABLE':
     case 'ADD_TAILWIND_CONFIG':
+    case 'CONVERT_SELECTION_TO_ABSOLUTE':
       return false
     case 'SAVE_ASSET':
       return (

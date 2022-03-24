@@ -370,6 +370,7 @@ import {
   SetIndexedDBFailed,
   ForceParseFile,
   RemoveFromNodeModulesContents,
+  ConvertSelectionToAbsolute,
 } from '../action-types'
 import { defaultTransparentViewElement, defaultSceneElement } from '../defaults'
 import {
@@ -495,6 +496,7 @@ import {
   setScrollAnimation,
   updatePackageJson,
   removeFromNodeModulesContents,
+  setProp_UNSAFE,
 } from './action-creators'
 import { getAllTargetsAtPoint } from '../../canvas/dom-lookup'
 import {
@@ -4850,6 +4852,78 @@ export const UPDATE_FNS = {
       ...editor,
       forceParseFiles: editor.forceParseFiles.concat(action.filePath),
     }
+  },
+  CONVERT_SELECTION_TO_ABSOLUTE: (
+    action: ConvertSelectionToAbsolute,
+    editor: EditorModel,
+  ): EditorModel => {
+    const selectedViewsWithSiblings = editor.selectedViews.flatMap((path) => {
+      return [
+        path,
+        ...MetadataUtils.getSiblings(editor.jsxMetadata, path).map(
+          (metadata) => metadata.elementPath,
+        ),
+      ]
+    })
+
+    const elementsThatNeedParentRelative = editor.selectedViews.filter((path) => {
+      return !MetadataUtils.findElementByElementPath(editor.jsxMetadata, path)
+        ?.specialSizeMeasurements.immediateParentProvidesLayout
+    })
+
+    const withParentUpdated = elementsThatNeedParentRelative.reduce((working, path) => {
+      return UPDATE_FNS.SET_PROP(
+        setProp_UNSAFE(
+          EP.parentPath(path),
+          stylePropPathMappingFn('position', ['style']),
+          jsxAttributeValue('relative', emptyComments),
+        ),
+        working,
+      )
+    }, editor)
+
+    return selectedViewsWithSiblings.reduce((working, path) => {
+      const frame = MetadataUtils.getFrame(path, editor.jsxMetadata)
+      if (frame != null) {
+        const propsToAdd: Array<ValueAtPath> = [
+          {
+            path: stylePropPathMappingFn('left', ['style']),
+            value: jsxAttributeValue(frame.x, emptyComments),
+          },
+          {
+            path: stylePropPathMappingFn('top', ['style']),
+            value: jsxAttributeValue(frame.y, emptyComments),
+          },
+          {
+            path: stylePropPathMappingFn('width', ['style']),
+            value: jsxAttributeValue(frame.width, emptyComments),
+          },
+          {
+            path: stylePropPathMappingFn('height', ['style']),
+            value: jsxAttributeValue(frame.height, emptyComments),
+          },
+          {
+            path: stylePropPathMappingFn('position', ['style']),
+            value: jsxAttributeValue('absolute', emptyComments),
+          },
+        ]
+        return propsToAdd.reduce((withFramePropsUpdated, propToAdd) => {
+          return UPDATE_FNS.SET_PROP(
+            setProp_UNSAFE(path, propToAdd.path, propToAdd.value),
+            withFramePropsUpdated,
+          )
+        }, working)
+      } else {
+        return UPDATE_FNS.SET_PROP(
+          setProp_UNSAFE(
+            path,
+            stylePropPathMappingFn('position', ['style']),
+            jsxAttributeValue('absolute', emptyComments),
+          ),
+          working,
+        )
+      }
+    }, withParentUpdated)
   },
 }
 

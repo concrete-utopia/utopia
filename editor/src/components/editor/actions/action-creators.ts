@@ -207,6 +207,7 @@ import type {
   SetIndexedDBFailed,
   ForceParseFile,
   RemoveFromNodeModulesContents,
+  ConvertSelectionToAbsolute,
 } from '../action-types'
 import { EditorModes, elementInsertionSubject, Mode, SceneInsertionSubject } from '../editor-modes'
 import type {
@@ -1469,5 +1470,11 @@ export function forceParseFile(filePath: string): ForceParseFile {
   return {
     action: 'FORCE_PARSE_FILE',
     filePath: filePath,
+  }
+}
+
+export function convertSelectionToAbsolute(): ConvertSelectionToAbsolute {
+  return {
+    action: 'CONVERT_SELECTION_TO_ABSOLUTE',
   }
 }

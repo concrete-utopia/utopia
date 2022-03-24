@@ -15,6 +15,7 @@ export type FeatureName =
   | 'Canvas Strategies'
   | 'Canvas Absolute Resize Controls'
   | 'Keyboard up clears interaction'
+  | 'Escape Hatch experiment'
 
 export const AllFeatureNames: FeatureName[] = [
   // 'Dragging Reparents By Default', // Removing this option so that we can experiment on this later
@@ -29,6 +30,7 @@ export const AllFeatureNames: FeatureName[] = [
   'Canvas Strategies',
   'Canvas Absolute Resize Controls',
   'Keyboard up clears interaction',
+  'Escape Hatch experiment',
 ]
 
 let FeatureSwitches: { [feature in FeatureName]: boolean } = {
@@ -44,6 +46,7 @@ let FeatureSwitches: { [feature in FeatureName]: boolean } = {
   'Canvas Strategies': false,
   'Canvas Absolute Resize Controls': false,
   'Keyboard up clears interaction': false,
+  'Escape Hatch experiment': true,
 }
 
 function settingKeyForName(featureName: FeatureName): string {
