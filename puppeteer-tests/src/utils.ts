@@ -76,6 +76,8 @@ export function consoleDoneMessage(
         // the editor will console.info('SCROLL_TEST_FINISHED') when the scrolling test is complete.
         // we wait until we see this console log and then we resolve the Promise
         resolve()
+      } else {
+        console.info(`CONSOLE: ${messageText}`)
       }
     }
     page.on('console', handler)
