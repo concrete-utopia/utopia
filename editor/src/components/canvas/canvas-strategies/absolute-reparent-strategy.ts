@@ -1,13 +1,11 @@
-import { stylePropPathMappingFn } from '../../../components/inspector/common/property-path-hooks'
 import { MetadataUtils } from '../../../core/model/element-metadata-utils'
 import * as EP from '../../../core/shared/element-path'
-import { pointDifference, zeroCanvasRect } from '../../../core/shared/math-utils'
 import { getReparentTarget } from '../canvas-utils'
-import { adjustNumberProperty } from '../commands/adjust-number-command'
 import { reparentElement } from '../commands/reparent-element-command'
 import { updateSelectedViews } from '../commands/update-selected-views-command'
 import { absoluteMoveStrategy } from './absolute-move-strategy'
 import { CanvasStrategy } from './canvas-strategy-types'
+import { getAbsoluteOffsetCommandsForSelectedElement } from './shared-absolute-move-strategy-helpers'
 
 export const absoluteReparentStrategy: CanvasStrategy = {
   id: 'ABSOLUTE_REPARENT',
@@ -51,37 +49,25 @@ export const absoluteReparentStrategy: CanvasStrategy = {
     )
     const newParent = reparentResult.newParent
     const moveCommands = absoluteMoveStrategy.apply(canvasState, interactionState, strategyState)
+    const providesBoundsForChildren = MetadataUtils.findElementByElementPath(
+      strategyState.startingMetadata,
+      newParent,
+    )?.specialSizeMeasurements.providesBoundsForChildren
 
-    if (newParent != null) {
+    if (reparentResult.shouldReparent && newParent != null && providesBoundsForChildren) {
       const target = canvasState.selectedElements[0]
       const newPath = EP.appendToPath(newParent, EP.toUid(canvasState.selectedElements[0]))
 
-      const oldParentFrame =
-        MetadataUtils.getFrameInCanvasCoords(
-          EP.parentPath(target),
-          strategyState.startingMetadata,
-        ) ?? zeroCanvasRect
-      const newParentFrame =
-        MetadataUtils.getFrameInCanvasCoords(newParent, strategyState.startingMetadata) ??
-        zeroCanvasRect
-      const offset = pointDifference(newParentFrame, oldParentFrame)
+      const offsetCommands = getAbsoluteOffsetCommandsForSelectedElement(
+        target,
+        newParent,
+        strategyState,
+        canvasState,
+      )
 
       return [
         ...moveCommands,
-        adjustNumberProperty(
-          'permanent',
-          target,
-          stylePropPathMappingFn('left', ['style']),
-          offset.x,
-          true,
-        ),
-        adjustNumberProperty(
-          'permanent',
-          target,
-          stylePropPathMappingFn('top', ['style']),
-          offset.y,
-          true,
-        ),
+        ...offsetCommands,
         reparentElement('permanent', target, newParent),
         updateSelectedViews('permanent', [newPath]),
       ]

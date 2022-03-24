@@ -260,6 +260,12 @@ describe('SpecialSizeMeasurementsKeepDeepEquality', () => {
     flexDirection: 'column',
     htmlElementName: 'div',
     renderedChildrenCount: 10,
+    globalContentBox: canvasRectangle({
+      x: 20,
+      y: 40,
+      width: 60,
+      height: 80,
+    }),
   }
 
   const newSameValue: SpecialSizeMeasurements = {
@@ -306,6 +312,12 @@ describe('SpecialSizeMeasurementsKeepDeepEquality', () => {
     flexDirection: 'column',
     htmlElementName: 'div',
     renderedChildrenCount: 10,
+    globalContentBox: canvasRectangle({
+      x: 20,
+      y: 40,
+      width: 60,
+      height: 80,
+    }),
   }
   const newDifferentValue: SpecialSizeMeasurements = {
     offset: {
@@ -351,6 +363,12 @@ describe('SpecialSizeMeasurementsKeepDeepEquality', () => {
     flexDirection: 'column',
     htmlElementName: 'div',
     renderedChildrenCount: 10,
+    globalContentBox: canvasRectangle({
+      x: 20,
+      y: 40,
+      width: 60,
+      height: 0,
+    }),
   }
 
   it('same reference returns the same reference', () => {
@@ -459,6 +477,12 @@ describe('ElementInstanceMetadataKeepDeepEquality', () => {
       flexDirection: 'column',
       htmlElementName: 'div',
       renderedChildrenCount: 10,
+      globalContentBox: canvasRectangle({
+        x: 20,
+        y: 40,
+        width: 60,
+        height: 80,
+      }),
     },
     computedStyle: {
       a: 'a',
@@ -538,6 +562,12 @@ describe('ElementInstanceMetadataKeepDeepEquality', () => {
       flexDirection: 'column',
       htmlElementName: 'div',
       renderedChildrenCount: 10,
+      globalContentBox: canvasRectangle({
+        x: 20,
+        y: 40,
+        width: 60,
+        height: 80,
+      }),
     },
     computedStyle: {
       a: 'a',
@@ -617,6 +647,12 @@ describe('ElementInstanceMetadataKeepDeepEquality', () => {
       flexDirection: 'column',
       htmlElementName: 'div',
       renderedChildrenCount: 10,
+      globalContentBox: canvasRectangle({
+        x: 20,
+        y: 40,
+        width: 60,
+        height: 80,
+      }),
     },
     computedStyle: {
       a: 'a',
@@ -728,6 +764,12 @@ describe('ElementInstanceMetadataMapKeepDeepEquality', () => {
         flexDirection: 'column',
         htmlElementName: 'div',
         renderedChildrenCount: 10,
+        globalContentBox: canvasRectangle({
+          x: 20,
+          y: 40,
+          width: 60,
+          height: 80,
+        }),
       },
       computedStyle: {
         a: 'a',
@@ -809,6 +851,12 @@ describe('ElementInstanceMetadataMapKeepDeepEquality', () => {
         flexDirection: 'column',
         htmlElementName: 'div',
         renderedChildrenCount: 10,
+        globalContentBox: canvasRectangle({
+          x: 20,
+          y: 40,
+          width: 60,
+          height: 80,
+        }),
       },
       computedStyle: {
         a: 'a',
@@ -890,6 +938,12 @@ describe('ElementInstanceMetadataMapKeepDeepEquality', () => {
         flexDirection: 'column',
         htmlElementName: 'div',
         renderedChildrenCount: 10,
+        globalContentBox: canvasRectangle({
+          x: 20,
+          y: 40,
+          width: 60,
+          height: 80,
+        }),
       },
       computedStyle: {
         a: 'a',
