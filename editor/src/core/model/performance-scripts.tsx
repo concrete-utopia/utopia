@@ -74,7 +74,7 @@ function measureStep(prefix: string, framesPassed: number): void {
   )
 }
 
-const CANVAS_POPULATE_WAIT_TIME_MS = 60 * 1000
+const CANVAS_POPULATE_WAIT_TIME_MS = 20 * 1000
 
 async function loadProject(
   dispatch: DebugDispatch,
@@ -109,6 +109,7 @@ async function loadProject(
 
   // Load the project itself.
   await load(dispatch, persistentModel, 'Test', '999999', builtInDependencies, false)
+  console.log('Finished load')
 
   // Wait for the editor to stabilise, ensuring that the canvas can render for example.
   const startWaitingTime = Date.now()
@@ -168,6 +169,7 @@ async function loadProject(
       await wait(500)
     }
   }
+  console.log('editorReady', editorReady)
   return editorReady
 }
 
