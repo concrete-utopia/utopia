@@ -7,6 +7,7 @@ import { AdjustCssLengthProperty } from '../commands/adjust-css-length-command'
 import { createResizeCommands } from './shared-absolute-resize-strategy-helpers'
 import { withUnderlyingTarget } from '../../editor/store/editor-state'
 import { EdgePosition } from '../canvas-types'
+import { AbsoluteResizeControl } from '../controls/select-mode/absolute-resize-control'
 
 export const keyboardAbsoluteResizeStrategy: CanvasStrategy = {
   id: 'KEYBOARD_ABSOLUTE_RESIZE',
@@ -23,7 +24,9 @@ export const keyboardAbsoluteResizeStrategy: CanvasStrategy = {
       return false
     }
   },
-  controlsToRender: [], // Uses existing hooks in select-mode-hooks.tsx
+  controlsToRender: [
+    { control: AbsoluteResizeControl, key: 'absolute-resize-control', show: 'always-visible' },
+  ],
   fitness: (canvasState, interactionState, sessionState) => {
     if (
       keyboardAbsoluteResizeStrategy.isApplicable(
