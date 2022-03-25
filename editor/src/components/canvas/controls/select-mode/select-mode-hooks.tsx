@@ -1,6 +1,6 @@
 import React from 'react'
 import { MetadataUtils } from '../../../../core/model/element-metadata-utils'
-import { last, uniqBy } from '../../../../core/shared/array-utils'
+import { uniqBy } from '../../../../core/shared/array-utils'
 import { ElementInstanceMetadataMap } from '../../../../core/shared/element-template'
 import {
   boundingRectangleArray,
@@ -13,8 +13,7 @@ import {
 import { ElementPath } from '../../../../core/shared/project-file-types'
 import * as EP from '../../../../core/shared/element-path'
 import { fastForEach, NO_OP } from '../../../../core/shared/utils'
-import Keyboard, { KeyCharacter, KeysPressed } from '../../../../utils/keyboard'
-import { useKeepShallowReferenceEquality } from '../../../../utils/react-performance'
+import { KeyCharacter, KeysPressed } from '../../../../utils/keyboard'
 import Utils from '../../../../utils/utils'
 import {
   clearHighlightedViews,
@@ -26,17 +25,13 @@ import {
 import { EditorState, EditorStorePatched } from '../../../editor/store/editor-state'
 import { useEditorState, useRefEditorState } from '../../../editor/store/store-hook'
 import CanvasActions from '../../canvas-actions'
-import { DragState, moveDragState } from '../../canvas-types'
+import { moveDragState } from '../../canvas-types'
 import {
   createDuplicationNewUIDs,
   getDragStateDrag,
   getOriginalCanvasFrames,
 } from '../../canvas-utils'
-import {
-  findFirstParentWithValidElementPath,
-  getAllTargetsAtPoint,
-  getValidTargetAtPoint,
-} from '../../dom-lookup'
+import { getValidTargetAtPoint } from '../../dom-lookup'
 import { useWindowToCanvasCoordinates } from '../../dom-lookup-hooks'
 import { useInsertModeSelectAndHover } from './insert-mode-hooks'
 import { WindowMousePositionRaw } from '../../../../utils/global-positions'
@@ -48,7 +43,6 @@ import {
 } from '../../canvas-strategies/interaction-state'
 import { Modifier, Modifiers } from '../../../../utils/modifiers'
 import { pathsEqual } from '../../../../core/shared/element-path'
-import { getNodeMajorVersion } from 'typescript'
 
 const DRAG_START_TRESHOLD = 2
 
