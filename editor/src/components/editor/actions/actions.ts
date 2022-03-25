@@ -171,6 +171,8 @@ import {
   canvasRectangle,
   Rectangle,
   rectangleIntersection,
+  offsetRect,
+  LocalPoint,
 } from '../../../core/shared/math-utils'
 import {
   addFileToProjectContents,
@@ -4883,16 +4885,23 @@ export const UPDATE_FNS = {
     }, editor)
 
     return selectedViewsWithSiblings.reduce((working, path) => {
+      const margin = MetadataUtils.findElementByElementPath(editor.jsxMetadata, path)
+        ?.specialSizeMeasurements.margin
+      const marginPoint: LocalPoint = {
+        x: -(margin?.left ?? 0),
+        y: -(margin?.top ?? 0),
+      } as LocalPoint
       const frame = MetadataUtils.getFrame(path, editor.jsxMetadata)
       if (frame != null) {
+        const frameWithoutMargin = offsetRect(frame, marginPoint)
         const propsToAdd: Array<ValueAtPath> = [
           {
             path: stylePropPathMappingFn('left', ['style']),
-            value: jsxAttributeValue(frame.x, emptyComments),
+            value: jsxAttributeValue(frameWithoutMargin.x, emptyComments),
           },
           {
             path: stylePropPathMappingFn('top', ['style']),
-            value: jsxAttributeValue(frame.y, emptyComments),
+            value: jsxAttributeValue(frameWithoutMargin.y, emptyComments),
           },
           {
             path: stylePropPathMappingFn('width', ['style']),
