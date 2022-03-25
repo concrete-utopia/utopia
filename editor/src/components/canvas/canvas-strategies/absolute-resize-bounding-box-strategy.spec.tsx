@@ -6,7 +6,7 @@ import {
 } from '../../../core/shared/element-template'
 import { canvasPoint, canvasRectangle } from '../../../core/shared/math-utils'
 import { ElementPath } from '../../../core/shared/project-file-types'
-import { emptyModifiers } from '../../../utils/modifiers'
+import { emptyModifiers, Modifiers, shiftModifier } from '../../../utils/modifiers'
 import { EditorState } from '../../editor/store/editor-state'
 import { EdgePosition } from '../canvas-types'
 import { foldAndApplyCommands } from '../commands/commands'
@@ -24,6 +24,7 @@ function multiselectResizeElements(
   snippet: string,
   targetElements: Array<ElementPath>,
   edgePosition: EdgePosition,
+  modifiers: Modifiers = emptyModifiers,
 ): EditorState {
   const initialEditor = getEditorStateWithSelectedViews(
     makeTestProjectCodeWithSnippet(snippet),
@@ -32,7 +33,7 @@ function multiselectResizeElements(
 
   const interactionSessionWithoutMetadata = createMouseInteractionForTests(
     null as any, // the strategy does not use this
-    emptyModifiers,
+    modifiers,
     { type: 'RESIZE_HANDLE', edgePosition: edgePosition },
     canvasPoint({ x: 15, y: 25 }),
   )
@@ -140,6 +141,79 @@ describe('Absolute Resize Bounding Box Strategy', () => {
       ),
     )
   })
+  it('works with element aspect ratio locked resized from TL corner', async () => {
+    const edgePosition: EdgePosition = { x: 0, y: 0 }
+    const snippet = `
+  <div style={{ ...(props.style || {}) }} data-uid='aaa'>
+    <div
+      style={{ 
+        backgroundColor: '#0091FFAA',
+        position: 'absolute',
+        top: 50,
+        left: 30,
+        width: 100,
+        height: 120,
+       }}
+      data-uid='bbb'
+    />
+    <div
+      style={{ 
+        backgroundColor: '#0091FFAA',
+        position: 'absolute',
+        top: 40,
+        left: 90,
+        bottom: 250,
+        right: 210
+       }}
+      data-uid='ccc'
+    />
+  </div>
+  `
+    const selectedElements = [
+      elementPath([
+        ['scene-aaa', 'app-entity'],
+        ['aaa', 'bbb'],
+      ]),
+      elementPath([
+        ['scene-aaa', 'app-entity'],
+        ['aaa', 'ccc'],
+      ]),
+    ]
+    const editorAfterStrategy = multiselectResizeElements(
+      snippet,
+      selectedElements,
+      edgePosition,
+      shiftModifier,
+    )
+    expect(testPrintCodeFromEditorState(editorAfterStrategy)).toEqual(
+      makeTestProjectCodeWithSnippet(
+        `<div style={{ ...(props.style || {}) }} data-uid='aaa'>
+          <div
+            style={{ 
+              backgroundColor: '#0091FFAA',
+              position: 'absolute',
+              top: 66,
+              left: 51,
+              width: 87,
+              height: 104,
+            }}
+            data-uid='bbb'
+          />
+          <div
+            style={{ 
+              backgroundColor: '#0091FFAA',
+              position: 'absolute',
+              top: 57,
+              left: 103,
+              bottom: 247,
+              right: 210
+            }}
+            data-uid='ccc'
+          />
+        </div>`,
+      ),
+    )
+  })
   it('works with element resized from BR corner', async () => {
     const edgePosition: EdgePosition = { x: 1, y: 1 }
     const snippet = `
@@ -201,6 +275,79 @@ describe('Absolute Resize Bounding Box Strategy', () => {
               left: 96,
               bottom: 229,
               right: 195
+            }}
+            data-uid='ccc'
+          />
+        </div>`,
+      ),
+    )
+  })
+  it('works with element aspect ratio locked resized from BR corner', async () => {
+    const edgePosition: EdgePosition = { x: 1, y: 1 }
+    const snippet = `
+  <div style={{ ...(props.style || {}) }} data-uid='aaa'>
+    <div
+      style={{ 
+        backgroundColor: '#0091FFAA',
+        position: 'absolute',
+        top: 50,
+        left: 30,
+        width: 100,
+        height: 120,
+       }}
+      data-uid='bbb'
+    />
+    <div
+      style={{ 
+        backgroundColor: '#0091FFAA',
+        position: 'absolute',
+        top: 40,
+        left: 90,
+        bottom: 250,
+        right: 210
+       }}
+      data-uid='ccc'
+    />
+  </div>
+  `
+    const selectedElements = [
+      elementPath([
+        ['scene-aaa', 'app-entity'],
+        ['aaa', 'bbb'],
+      ]),
+      elementPath([
+        ['scene-aaa', 'app-entity'],
+        ['aaa', 'ccc'],
+      ]),
+    ]
+    const editorAfterStrategy = multiselectResizeElements(
+      snippet,
+      selectedElements,
+      edgePosition,
+      shiftModifier,
+    )
+    expect(testPrintCodeFromEditorState(editorAfterStrategy)).toEqual(
+      makeTestProjectCodeWithSnippet(
+        `<div style={{ ...(props.style || {}) }} data-uid='aaa'>
+          <div
+            style={{ 
+              backgroundColor: '#0091FFAA',
+              position: 'absolute',
+              top: 51,
+              left: 30,
+              width: 113,
+              height: 136,
+            }}
+            data-uid='bbb'
+          />
+          <div
+            style={{ 
+              backgroundColor: '#0091FFAA',
+              position: 'absolute',
+              top: 40,
+              left: 98,
+              bottom: 235,
+              right: 189
             }}
             data-uid='ccc'
           />
@@ -276,6 +423,79 @@ describe('Absolute Resize Bounding Box Strategy', () => {
       ),
     )
   })
+  it('works with element aspect ratio locked resized from RIGHT edge', async () => {
+    const edgePosition: EdgePosition = { x: 1, y: 0.5 }
+    const snippet = `
+  <div style={{ ...(props.style || {}) }} data-uid='aaa'>
+    <div
+      style={{ 
+        backgroundColor: '#0091FFAA',
+        position: 'absolute',
+        top: 50,
+        left: 30,
+        width: 100,
+        height: 120,
+       }}
+      data-uid='bbb'
+    />
+    <div
+      style={{ 
+        backgroundColor: '#0091FFAA',
+        position: 'absolute',
+        top: 40,
+        left: 90,
+        bottom: 250,
+        right: 210
+       }}
+      data-uid='ccc'
+    />
+  </div>
+  `
+    const selectedElements = [
+      elementPath([
+        ['scene-aaa', 'app-entity'],
+        ['aaa', 'bbb'],
+      ]),
+      elementPath([
+        ['scene-aaa', 'app-entity'],
+        ['aaa', 'ccc'],
+      ]),
+    ]
+    const editorAfterStrategy = multiselectResizeElements(
+      snippet,
+      selectedElements,
+      edgePosition,
+      shiftModifier,
+    )
+    expect(testPrintCodeFromEditorState(editorAfterStrategy)).toEqual(
+      makeTestProjectCodeWithSnippet(
+        `<div style={{ ...(props.style || {}) }} data-uid='aaa'>
+          <div
+            style={{ 
+              backgroundColor: '#0091FFAA',
+              position: 'absolute',
+              top: 51,
+              left: 30,
+              width: 106,
+              height: 127,
+            }}
+            data-uid='bbb'
+          />
+          <div
+            style={{ 
+              backgroundColor: '#0091FFAA',
+              position: 'absolute',
+              top: 40,
+              left: 93,
+              bottom: 244,
+              right: 201
+            }}
+            data-uid='ccc'
+          />
+        </div>`,
+      ),
+    )
+  })
   it('works with element resized from TOP edge', async () => {
     const edgePosition: EdgePosition = { x: 0.5, y: 0 }
     const snippet = `
@@ -337,6 +557,79 @@ describe('Absolute Resize Bounding Box Strategy', () => {
               left: 90,
               bottom: 246,
               right: 210
+            }}
+            data-uid='ccc'
+          />
+        </div>`,
+      ),
+    )
+  })
+  it('works with element aspect ratio locked resized from TOP edge', async () => {
+    const edgePosition: EdgePosition = { x: 0.5, y: 0 }
+    const snippet = `
+  <div style={{ ...(props.style || {}) }} data-uid='aaa'>
+    <div
+      style={{ 
+        backgroundColor: '#0091FFAA',
+        position: 'absolute',
+        top: 50,
+        left: 30,
+        width: 100,
+        height: 120,
+       }}
+      data-uid='bbb'
+    />
+    <div
+      style={{ 
+        backgroundColor: '#0091FFAA',
+        position: 'absolute',
+        top: 40,
+        left: 90,
+        bottom: 250,
+        right: 210
+       }}
+      data-uid='ccc'
+    />
+  </div>
+  `
+    const selectedElements = [
+      elementPath([
+        ['scene-aaa', 'app-entity'],
+        ['aaa', 'bbb'],
+      ]),
+      elementPath([
+        ['scene-aaa', 'app-entity'],
+        ['aaa', 'ccc'],
+      ]),
+    ]
+    const editorAfterStrategy = multiselectResizeElements(
+      snippet,
+      selectedElements,
+      edgePosition,
+      shiftModifier,
+    )
+    expect(testPrintCodeFromEditorState(editorAfterStrategy)).toEqual(
+      makeTestProjectCodeWithSnippet(
+        `<div style={{ ...(props.style || {}) }} data-uid='aaa'>
+          <div
+            style={{ 
+              backgroundColor: '#0091FFAA',
+              position: 'absolute',
+              top: 59,
+              left: 30,
+              width: 92,
+              height: 111,
+            }}
+            data-uid='bbb'
+          />
+          <div
+            style={{ 
+              backgroundColor: '#0091FFAA',
+              position: 'absolute',
+              top: 50,
+              left: 85,
+              bottom: 248,
+              right: 222
             }}
             data-uid='ccc'
           />
