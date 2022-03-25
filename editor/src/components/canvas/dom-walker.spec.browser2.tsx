@@ -205,6 +205,7 @@ describe('DOM Walker tests', () => {
           },
           "display": "initial",
           "flexDirection": null,
+          "globalContentBox": null,
           "htmlElementName": "div",
           "immediateParentBounds": Object {
             "height": 0,
@@ -293,6 +294,12 @@ describe('DOM Walker tests', () => {
           },
           "display": "block",
           "flexDirection": "row",
+          "globalContentBox": Object {
+            "height": 812,
+            "width": 375,
+            "x": 0,
+            "y": 0,
+          },
           "htmlElementName": "div",
           "immediateParentBounds": Object {
             "height": 812,
@@ -397,6 +404,12 @@ describe('DOM Walker tests', () => {
           },
           "display": "block",
           "flexDirection": "row",
+          "globalContentBox": Object {
+            "height": 812,
+            "width": 375,
+            "x": 0,
+            "y": 0,
+          },
           "htmlElementName": "div",
           "immediateParentBounds": Object {
             "height": 812,
@@ -499,6 +512,12 @@ describe('DOM Walker tests', () => {
           },
           "display": "block",
           "flexDirection": "row",
+          "globalContentBox": Object {
+            "height": 812,
+            "width": 375,
+            "x": 0,
+            "y": 0,
+          },
           "htmlElementName": "div",
           "immediateParentBounds": Object {
             "height": 812,
@@ -602,6 +621,12 @@ describe('DOM Walker tests', () => {
           },
           "display": "block",
           "flexDirection": "row",
+          "globalContentBox": Object {
+            "height": 124,
+            "width": 266,
+            "x": 55,
+            "y": 98,
+          },
           "htmlElementName": "div",
           "immediateParentBounds": Object {
             "height": 812,
@@ -706,6 +731,12 @@ describe('DOM Walker tests', () => {
           },
           "display": "block",
           "flexDirection": "row",
+          "globalContentBox": Object {
+            "height": 70,
+            "width": 125,
+            "x": 126,
+            "y": 125,
+          },
           "htmlElementName": "div",
           "immediateParentBounds": Object {
             "height": 124,
@@ -845,6 +876,7 @@ describe('DOM Walker tests', () => {
           },
           "display": "initial",
           "flexDirection": null,
+          "globalContentBox": null,
           "htmlElementName": "div",
           "immediateParentBounds": Object {
             "height": 0,
@@ -933,6 +965,12 @@ describe('DOM Walker tests', () => {
           },
           "display": "block",
           "flexDirection": "row",
+          "globalContentBox": Object {
+            "height": 812,
+            "width": 375,
+            "x": 0,
+            "y": 0,
+          },
           "htmlElementName": "div",
           "immediateParentBounds": Object {
             "height": 812,
@@ -1037,6 +1075,12 @@ describe('DOM Walker tests', () => {
           },
           "display": "block",
           "flexDirection": "row",
+          "globalContentBox": Object {
+            "height": 812,
+            "width": 375,
+            "x": 0,
+            "y": 0,
+          },
           "htmlElementName": "div",
           "immediateParentBounds": Object {
             "height": 812,
@@ -1135,6 +1179,12 @@ describe('DOM Walker tests', () => {
           },
           "display": "block",
           "flexDirection": "row",
+          "globalContentBox": Object {
+            "height": 812,
+            "width": 375,
+            "x": 0,
+            "y": 0,
+          },
           "htmlElementName": "div",
           "immediateParentBounds": Object {
             "height": 812,
@@ -1230,6 +1280,12 @@ describe('DOM Walker tests', () => {
           "coordinateSystemBounds": null,
           "display": "block",
           "flexDirection": "row",
+          "globalContentBox": Object {
+            "height": 164,
+            "width": 306,
+            "x": 55,
+            "y": 98,
+          },
           "htmlElementName": "div",
           "immediateParentBounds": Object {
             "height": 812,
@@ -1330,6 +1386,12 @@ describe('DOM Walker tests', () => {
           },
           "display": "block",
           "flexDirection": "row",
+          "globalContentBox": Object {
+            "height": 70,
+            "width": 125,
+            "x": 126,
+            "y": 125,
+          },
           "htmlElementName": "div",
           "immediateParentBounds": Object {
             "height": 164,
@@ -1469,6 +1531,7 @@ describe('DOM Walker tests', () => {
           },
           "display": "initial",
           "flexDirection": null,
+          "globalContentBox": null,
           "htmlElementName": "div",
           "immediateParentBounds": Object {
             "height": 0,
@@ -1557,6 +1620,12 @@ describe('DOM Walker tests', () => {
           },
           "display": "block",
           "flexDirection": "row",
+          "globalContentBox": Object {
+            "height": 812,
+            "width": 375,
+            "x": 0,
+            "y": 0,
+          },
           "htmlElementName": "div",
           "immediateParentBounds": Object {
             "height": 812,
@@ -1661,6 +1730,12 @@ describe('DOM Walker tests', () => {
           },
           "display": "flex",
           "flexDirection": "row",
+          "globalContentBox": Object {
+            "height": 812,
+            "width": 375,
+            "x": 0,
+            "y": 0,
+          },
           "htmlElementName": "div",
           "immediateParentBounds": Object {
             "height": 812,
@@ -1760,6 +1835,12 @@ describe('DOM Walker tests', () => {
           },
           "display": "flex",
           "flexDirection": "row",
+          "globalContentBox": Object {
+            "height": 812,
+            "width": 375,
+            "x": 0,
+            "y": 0,
+          },
           "htmlElementName": "div",
           "immediateParentBounds": Object {
             "height": 812,
@@ -1855,6 +1936,12 @@ describe('DOM Walker tests', () => {
           "coordinateSystemBounds": null,
           "display": "block",
           "flexDirection": "row",
+          "globalContentBox": Object {
+            "height": 164,
+            "width": 306,
+            "x": 55,
+            "y": 98,
+          },
           "htmlElementName": "div",
           "immediateParentBounds": Object {
             "height": 812,
@@ -1955,6 +2042,12 @@ describe('DOM Walker tests', () => {
           },
           "display": "block",
           "flexDirection": "row",
+          "globalContentBox": Object {
+            "height": 70,
+            "width": 125,
+            "x": 126,
+            "y": 125,
+          },
           "htmlElementName": "div",
           "immediateParentBounds": Object {
             "height": 164,
@@ -2082,6 +2175,7 @@ describe('DOM Walker tests', () => {
           },
           "display": "initial",
           "flexDirection": null,
+          "globalContentBox": null,
           "htmlElementName": "div",
           "immediateParentBounds": Object {
             "height": 0,
@@ -2170,6 +2264,12 @@ describe('DOM Walker tests', () => {
           },
           "display": "block",
           "flexDirection": "row",
+          "globalContentBox": Object {
+            "height": 812,
+            "width": 375,
+            "x": 0,
+            "y": 0,
+          },
           "htmlElementName": "div",
           "immediateParentBounds": Object {
             "height": 812,
@@ -2274,6 +2374,12 @@ describe('DOM Walker tests', () => {
           },
           "display": "block",
           "flexDirection": "row",
+          "globalContentBox": Object {
+            "height": 812,
+            "width": 375,
+            "x": 0,
+            "y": 0,
+          },
           "htmlElementName": "div",
           "immediateParentBounds": Object {
             "height": 812,
@@ -2372,6 +2478,12 @@ describe('DOM Walker tests', () => {
           },
           "display": "block",
           "flexDirection": "row",
+          "globalContentBox": Object {
+            "height": 812,
+            "width": 375,
+            "x": 0,
+            "y": 0,
+          },
           "htmlElementName": "div",
           "immediateParentBounds": Object {
             "height": 812,
@@ -2503,6 +2615,7 @@ describe('DOM Walker tests', () => {
           },
           "display": "initial",
           "flexDirection": null,
+          "globalContentBox": null,
           "htmlElementName": "div",
           "immediateParentBounds": Object {
             "height": 0,
@@ -2591,6 +2704,12 @@ describe('DOM Walker tests', () => {
           },
           "display": "block",
           "flexDirection": "row",
+          "globalContentBox": Object {
+            "height": 812,
+            "width": 375,
+            "x": 0,
+            "y": 0,
+          },
           "htmlElementName": "div",
           "immediateParentBounds": Object {
             "height": 812,
@@ -2695,6 +2814,12 @@ describe('DOM Walker tests', () => {
           },
           "display": "block",
           "flexDirection": "row",
+          "globalContentBox": Object {
+            "height": 812,
+            "width": 375,
+            "x": 0,
+            "y": 0,
+          },
           "htmlElementName": "div",
           "immediateParentBounds": Object {
             "height": 812,
@@ -2792,6 +2917,12 @@ describe('DOM Walker tests', () => {
           },
           "display": "block",
           "flexDirection": "row",
+          "globalContentBox": Object {
+            "height": 812,
+            "width": 375,
+            "x": 0,
+            "y": 0,
+          },
           "htmlElementName": "div",
           "immediateParentBounds": Object {
             "height": 812,
@@ -2884,6 +3015,12 @@ describe('DOM Walker tests', () => {
           },
           "display": "block",
           "flexDirection": "row",
+          "globalContentBox": Object {
+            "height": 0,
+            "width": 375,
+            "x": 0,
+            "y": 0,
+          },
           "htmlElementName": "div",
           "immediateParentBounds": Object {
             "height": 812,
@@ -2976,6 +3113,12 @@ describe('DOM Walker tests', () => {
           },
           "display": "block",
           "flexDirection": "row",
+          "globalContentBox": Object {
+            "height": 0,
+            "width": 375,
+            "x": 0,
+            "y": 0,
+          },
           "htmlElementName": "div",
           "immediateParentBounds": Object {
             "height": 812,
@@ -3068,6 +3211,12 @@ describe('DOM Walker tests', () => {
           },
           "display": "block",
           "flexDirection": "row",
+          "globalContentBox": Object {
+            "height": 0,
+            "width": 375,
+            "x": 0,
+            "y": 0,
+          },
           "htmlElementName": "div",
           "immediateParentBounds": Object {
             "height": 812,

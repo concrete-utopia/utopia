@@ -643,31 +643,37 @@ export function useSelectAndHover(
   }
 }
 
-export function setupClearKeyboardInteraction(
-  editorStoreRef: { readonly current: EditorStorePatched },
-  keyboardTimeoutHandler: React.MutableRefObject<NodeJS.Timeout | null>,
-) {
-  if (!isFeatureEnabled('Keyboard up clears interaction')) {
-    if (keyboardTimeoutHandler.current != null) {
-      clearTimeout(keyboardTimeoutHandler.current)
-      keyboardTimeoutHandler.current = null
-    }
-
-    keyboardTimeoutHandler.current = setTimeout(clearHighlightedViews, KeyboardInteractionTimeout)
-
-    const clearKeyboardInteraction = () => {
-      window.removeEventListener('mousedown', clearKeyboardInteraction)
+export function useClearKeyboardInteraction(editorStoreRef: {
+  readonly current: EditorStorePatched
+}) {
+  const keyboardTimeoutHandler = React.useRef<NodeJS.Timeout | null>(null)
+  return React.useCallback(() => {
+    if (!isFeatureEnabled('Keyboard up clears interaction')) {
       if (keyboardTimeoutHandler.current != null) {
         clearTimeout(keyboardTimeoutHandler.current)
         keyboardTimeoutHandler.current = null
       }
-      if (
-        editorStoreRef.current.editor.canvas.interactionSession?.interactionData.type === 'KEYBOARD'
-      ) {
-        editorStoreRef.current.dispatch([CanvasActions.clearInteractionSession(true)], 'everyone')
-      }
-    }
 
-    window.addEventListener('mousedown', clearKeyboardInteraction, { once: true, capture: true })
-  }
+      const clearKeyboardInteraction = () => {
+        window.removeEventListener('mousedown', clearKeyboardInteraction)
+        if (keyboardTimeoutHandler.current != null) {
+          clearTimeout(keyboardTimeoutHandler.current)
+          keyboardTimeoutHandler.current = null
+        }
+        if (
+          editorStoreRef.current.editor.canvas.interactionSession?.interactionData.type ===
+          'KEYBOARD'
+        ) {
+          editorStoreRef.current.dispatch([CanvasActions.clearInteractionSession(true)], 'everyone')
+        }
+      }
+
+      keyboardTimeoutHandler.current = setTimeout(
+        clearKeyboardInteraction,
+        KeyboardInteractionTimeout,
+      )
+
+      window.addEventListener('mousedown', clearKeyboardInteraction, { once: true, capture: true })
+    }
+  }, [editorStoreRef])
 }
