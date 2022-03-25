@@ -13,13 +13,12 @@ export const keyboardAbsoluteResizeStrategy: CanvasStrategy = {
   id: 'KEYBOARD_ABSOLUTE_RESIZE',
   name: 'Keyboard absolute resize',
   isApplicable: (canvasState, interactionState, metadata) => {
-    if (canvasState.selectedElements.length === 1) {
-      const elementMetadata = MetadataUtils.findElementByElementPath(
-        metadata,
-        canvasState.selectedElements[0],
-      )
+    if (canvasState.selectedElements.length > 0) {
+      return canvasState.selectedElements.every((element) => {
+        const elementMetadata = MetadataUtils.findElementByElementPath(metadata, element)
 
-      return elementMetadata?.specialSizeMeasurements.position === 'absolute'
+        return elementMetadata?.specialSizeMeasurements.position === 'absolute'
+      })
     } else {
       return false
     }
