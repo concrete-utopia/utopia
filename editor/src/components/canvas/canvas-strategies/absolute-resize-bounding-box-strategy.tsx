@@ -36,7 +36,9 @@ export const absoluteResizeBoundingBoxStrategy: CanvasStrategy = {
   isApplicable: (canvasState, interactionState, metadata) => {
     if (
       canvasState.selectedElements.length > 1 ||
-      (canvasState.selectedElements.length >= 1 && interactionState?.interactionData.modifiers.alt)
+      (canvasState.selectedElements.length >= 1 &&
+        (interactionState?.interactionData.modifiers.alt ||
+          interactionState?.interactionData.modifiers.shift))
     ) {
       return canvasState.selectedElements.every((element) => {
         const elementMetadata = MetadataUtils.findElementByElementPath(metadata, element)

@@ -32,7 +32,8 @@ export const absoluteResizeDeltaStrategy: CanvasStrategy = {
   isApplicable: (canvasState, interactionState, metadata) => {
     if (
       canvasState.selectedElements.length === 1 &&
-      !interactionState?.interactionData.modifiers.alt
+      !interactionState?.interactionData.modifiers.alt &&
+      !interactionState?.interactionData.modifiers.shift // shift is aspect ratio locked resize implemented in absolute-resize-bounding-box-strategy.tsx
     ) {
       return canvasState.selectedElements.every((element) => {
         const elementMetadata = MetadataUtils.findElementByElementPath(metadata, element)
