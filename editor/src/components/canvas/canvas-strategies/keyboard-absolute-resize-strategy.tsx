@@ -3,13 +3,16 @@ import { Keyboard, KeyCharacter } from '../../../utils/keyboard'
 import { CanvasStrategy } from './canvas-strategy-types'
 import { Modifiers } from '../../../utils/modifiers'
 import { CanvasVector } from '../../../core/shared/math-utils'
-import { getAbsoluteMoveCommandsForSelectedElement } from './shared-absolute-move-strategy-helpers'
 import { AdjustCssLengthProperty } from '../commands/adjust-css-length-command'
+import { createResizeCommands } from './shared-absolute-resize-strategy-helpers'
+import { withUnderlyingTarget } from '../../editor/store/editor-state'
+import { EdgePosition } from '../canvas-types'
+import { AbsoluteResizeControl } from '../controls/select-mode/absolute-resize-control'
 
-export const keyboardAbsoluteMoveStrategy: CanvasStrategy = {
-  id: 'KEYBOARD_ABSOLUTE_MOVE',
-  name: 'Keyboard absolute Move',
-  isApplicable: (canvasState, _interactionState, metadata) => {
+export const keyboardAbsoluteResizeStrategy: CanvasStrategy = {
+  id: 'KEYBOARD_ABSOLUTE_RESIZE',
+  name: 'Keyboard absolute resize',
+  isApplicable: (canvasState, interactionState, metadata) => {
     if (canvasState.selectedElements.length > 0) {
       return canvasState.selectedElements.every((element) => {
         const elementMetadata = MetadataUtils.findElementByElementPath(metadata, element)
@@ -20,10 +23,12 @@ export const keyboardAbsoluteMoveStrategy: CanvasStrategy = {
       return false
     }
   },
-  controlsToRender: [], // Uses existing hooks in select-mode-hooks.tsx
+  controlsToRender: [
+    { control: AbsoluteResizeControl, key: 'absolute-resize-control', show: 'always-visible' },
+  ],
   fitness: (canvasState, interactionState, sessionState) => {
     if (
-      keyboardAbsoluteMoveStrategy.isApplicable(
+      keyboardAbsoluteResizeStrategy.isApplicable(
         canvasState,
         interactionState,
         sessionState.startingMetadata,
@@ -33,12 +38,12 @@ export const keyboardAbsoluteMoveStrategy: CanvasStrategy = {
       const { interactionData } = interactionState
 
       const arrowKeyPressed = interactionData.keysPressed.some(Keyboard.keyIsArrow)
-      const shiftOrNoModifier =
+      const cmdAndOptionallyShiftModifier =
+        interactionState.interactionData.modifiers.cmd &&
         !interactionState.interactionData.modifiers.alt &&
-        !interactionState.interactionData.modifiers.cmd &&
         !interactionState.interactionData.modifiers.ctrl
 
-      if (arrowKeyPressed && shiftOrNoModifier) {
+      if (arrowKeyPressed && cmdAndOptionallyShiftModifier) {
         return 1
       }
     }
@@ -52,15 +57,34 @@ export const keyboardAbsoluteMoveStrategy: CanvasStrategy = {
             return []
           }
           const drag = getDragDeltaFromKey(key, interactionState.interactionData.modifiers)
+          const edgePosition = getEdgePositionFromKey(key)
           if (drag.x !== 0 || drag.y !== 0) {
-            return canvasState.selectedElements.flatMap((selectedElement) =>
-              getAbsoluteMoveCommandsForSelectedElement(
+            return canvasState.selectedElements.flatMap((selectedElement) => {
+              const element = withUnderlyingTarget(
                 selectedElement,
+                canvasState.projectContents,
+                {},
+                canvasState.openFile,
+                null,
+                (_, e) => e,
+              )
+              const elementParentBounds =
+                MetadataUtils.findElementByElementPath(
+                  sessionState.startingMetadata,
+                  selectedElement,
+                )?.specialSizeMeasurements.immediateParentBounds ?? null
+
+              if (element == null || edgePosition == null) {
+                return []
+              }
+              return createResizeCommands(
+                element,
+                selectedElement,
+                edgePosition,
                 drag,
-                canvasState,
-                sessionState,
-              ),
-            )
+                elementParentBounds,
+              )
+            })
           } else {
             return []
           }
@@ -99,5 +123,24 @@ function getDragDeltaFromKey(key: KeyCharacter, modifiers: Modifiers): CanvasVec
         x: 0,
         y: 0,
       } as CanvasVector
+  }
+}
+
+function getEdgePositionFromKey(key: KeyCharacter): EdgePosition | null {
+  switch (key) {
+    case 'left':
+    case 'right':
+      return {
+        x: 1,
+        y: 0.5,
+      } as EdgePosition
+    case 'up':
+    case 'down':
+      return {
+        x: 0.5,
+        y: 1,
+      } as EdgePosition
+    default:
+      return null
   }
 }
