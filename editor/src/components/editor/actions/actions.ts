@@ -4874,14 +4874,36 @@ export const UPDATE_FNS = {
     })
 
     const withParentUpdated = elementsThatNeedParentRelative.reduce((working, path) => {
-      return UPDATE_FNS.SET_PROP(
-        setProp_UNSAFE(
-          EP.parentPath(path),
-          stylePropPathMappingFn('position', ['style']),
-          jsxAttributeValue('relative', emptyComments),
-        ),
-        working,
-      )
+      const parentPath = EP.parentPath(path)
+      const frame = MetadataUtils.getFrameInCanvasCoords(parentPath, editor.jsxMetadata)
+      const hasFrameProps =
+        MetadataUtils.findElementByElementPath(editor.jsxMetadata, parentPath)?.props.style
+          ?.width != null ||
+        MetadataUtils.findElementByElementPath(editor.jsxMetadata, parentPath)?.props.style
+          ?.height != null
+      const propsToAdd: Array<ValueAtPath> = [
+        {
+          path: stylePropPathMappingFn('position', ['style']),
+          value: jsxAttributeValue('relative', emptyComments),
+        },
+      ]
+      if (frame != null && !hasFrameProps) {
+        propsToAdd.push({
+          path: stylePropPathMappingFn('width', ['style']),
+          value: jsxAttributeValue(frame.width, emptyComments),
+        })
+        propsToAdd.push({
+          path: stylePropPathMappingFn('height', ['style']),
+          value: jsxAttributeValue(frame.height, emptyComments),
+        })
+      }
+
+      return propsToAdd.reduce((parentWithFramePropsUpdated, propToAdd) => {
+        return UPDATE_FNS.SET_PROP(
+          setProp_UNSAFE(parentPath, propToAdd.path, propToAdd.value),
+          parentWithFramePropsUpdated,
+        )
+      }, working)
     }, editor)
 
     return selectedViewsWithSiblings.reduce((working, path) => {
