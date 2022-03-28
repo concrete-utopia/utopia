@@ -76,7 +76,9 @@ function measureStep(prefix: string, framesPassed: number): void {
 
 const CANVAS_POPULATE_WAIT_TIME_MS = 20 * 1000
 
-async function loadProject(
+let testProjectID: number = 999000
+
+async function loadProjectInner(
   dispatch: DebugDispatch,
   builtInDependencies: BuiltInDependencies,
   projectContents: ProjectContentTreeRoot,
@@ -108,7 +110,8 @@ async function loadProject(
   }
 
   // Load the project itself.
-  await load(dispatch, persistentModel, 'Test', '999999', builtInDependencies, false)
+  const newProjectID = testProjectID++
+  await load(dispatch, persistentModel, 'Test', `${newProjectID}`, builtInDependencies, false)
 
   // Wait for the editor to stabilise, ensuring that the canvas can render for example.
   const startWaitingTime = Date.now()
@@ -168,7 +171,28 @@ async function loadProject(
       await wait(500)
     }
   }
+
+  // Give the editor a little bit of an extra window of time just in case.
+  if (editorReady) {
+    await wait(2000)
+  }
   return editorReady
+}
+
+const LOAD_PROJECT_MAX_ATTEMPTS = 3
+
+async function loadProject(
+  dispatch: DebugDispatch,
+  builtInDependencies: BuiltInDependencies,
+  projectContents: ProjectContentTreeRoot,
+): Promise<boolean> {
+  for (let attempt = 1; attempt <= LOAD_PROJECT_MAX_ATTEMPTS; attempt++) {
+    const result = await loadProjectInner(dispatch, builtInDependencies, projectContents)
+    if (result) {
+      return true
+    }
+  }
+  return false
 }
 
 export function useTriggerScrollPerformanceTest(): () => void {
