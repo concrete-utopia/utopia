@@ -1,4 +1,4 @@
-import React from 'react'
+import React, { useRef } from 'react'
 import * as PropTypes from 'prop-types'
 import { applyUIDMonkeyPatch } from './canvas-react-utils'
 applyUIDMonkeyPatch()
@@ -899,9 +899,7 @@ describe('Monkey Function', () => {
   })
 
   it('builds the correct paths for Exotic-type with-memo components', () => {
-    const Red = React.memo(() => {
-      return <div data-uid='red-root' />
-    })
+    const Red = React.memo(() => <div data-uid='red-root' />)
 
     const OuterComponent = () => {
       const red = <Red data-uid='red' />
@@ -935,12 +933,13 @@ describe('Monkey Function', () => {
   })
 
   it('builds the correct paths for Exotic-type with-forwardRef components', () => {
-    const Red = React.forwardRef(() => {
-      return <div data-uid='red-root' />
+    const Red = React.forwardRef(({}, test) => {
+      return <div data-uid='red-root' ref={test as any} />
     })
 
     const OuterComponent = () => {
-      const red = <Red data-uid='red' />
+      const test = useRef(null)
+      const red = <Red data-uid='red' ref={test} /> // it's like it skips over, just 'red' goes straight to red-root
 
       return (
         <div data-uid='inner-parent'>
