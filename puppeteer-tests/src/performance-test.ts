@@ -181,7 +181,7 @@ export const testPerformanceInner = async function (url: string): Promise<Perfor
     selectionResult = await testSelectionPerformance(page)
     resizeResult = await testResizePerformance(page)
     scrollResult = await testScrollingPerformance(page)
-    absoluteMoveResult = await testAbsoluteMovePerformance(page)
+    //absoluteMoveResult = await testAbsoluteMovePerformance(page)
   } catch (e) {
     throw new Error(`Error during measurements ${e}`)
   } finally {
@@ -193,7 +193,7 @@ export const testPerformanceInner = async function (url: string): Promise<Perfor
     ...selectionResult,
     scrollResult,
     resizeResult,
-    ...absoluteMoveResult,
+    //...absoluteMoveResult,
     basicCalc,
     simpleDispatch,
   ]
