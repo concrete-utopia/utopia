@@ -1,6 +1,6 @@
 /* eslint-disable no-console */
 require('dotenv').config({ path: 'src/.env' })
-import puppeteer from 'puppeteer'
+import * as puppeteer from 'puppeteer'
 import { v4 } from 'uuid'
 import { consoleDoneMessage, setupBrowser, uploadPNGtoAWS } from './utils'
 import * as JSONStream from 'JSONStream'
