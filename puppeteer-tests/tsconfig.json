@@ -5,6 +5,7 @@
     "module": "CommonJS",
     "declaration": true,
     "removeComments": true,
+    "noEmit": true,
     "noLib": false,
     "noImplicitAny": true,
     "noFallthroughCasesInSwitch": true,
