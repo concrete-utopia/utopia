@@ -31,47 +31,17 @@ export const runSwitchToAbsolute: CommandFunction<SwitchToAbsolute> = (
   editor: EditorState,
   command: SwitchToAbsolute,
 ) => {
-  // const updatedProjectContents = UPDATE_FNS.CONVERT_SELECTION_TO_ABSOLUTE(
-  //   convertSelectionToAbsolute(),
-  //   editor,
-  // ).projectContents
+  const updatedProjectContents = UPDATE_FNS.CONVERT_SELECTION_TO_ABSOLUTE(
+    convertSelectionToAbsolute(),
+    editor,
+  ).projectContents
 
-  const target = editor.selectedViews[0]
-  const frame = MetadataUtils.getFrame(target, editor.jsxMetadata)
-  let propsToAdd: Array<ValueAtPath> = [
-    {
-      path: stylePropPathMappingFn('position', ['style']),
-      value: jsxAttributeValue('absolute', emptyComments),
-    },
-  ]
-  if (frame != null) {
-    propsToAdd = [
-      {
-        path: stylePropPathMappingFn('left', ['style']),
-        value: jsxAttributeValue(frame.x, emptyComments),
-      },
-      {
-        path: stylePropPathMappingFn('top', ['style']),
-        value: jsxAttributeValue(frame.y, emptyComments),
-      },
-      {
-        path: stylePropPathMappingFn('width', ['style']),
-        value: jsxAttributeValue(frame.width, emptyComments),
-      },
-      {
-        path: stylePropPathMappingFn('height', ['style']),
-        value: jsxAttributeValue(frame.height, emptyComments),
-      },
-      {
-        path: stylePropPathMappingFn('position', ['style']),
-        value: jsxAttributeValue('absolute', emptyComments),
-      },
-    ]
-  }
-
-  const { editorStatePatch: propertyUpdatePatch } = applyValuesAtPath(editor, target, propsToAdd)
   return {
-    editorStatePatch: propertyUpdatePatch,
+    editorStatePatch: {
+      projectContents: {
+        $set: updatedProjectContents,
+      },
+    },
     commandDescription: `Switch to Absolute: ${command.value.map(EP.toString).join(', ')}`,
   }
 }

@@ -424,7 +424,6 @@ const NewCanvasControlsInner = (props: NewCanvasControlsInnerProps) => {
         isFeatureEnabled('Canvas Absolute Resize Controls'),
         <FlexResizeControl localSelectedElements={localSelectedViews} />,
       )}
-      {when(isFeatureEnabled('Escape Hatch experiment'), <EscapeHatchButtonControl />)}
     </div>
   )
 }
