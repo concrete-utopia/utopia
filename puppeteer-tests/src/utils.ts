@@ -1,5 +1,5 @@
 /* eslint-disable no-console */
-import puppeteer from 'puppeteer'
+import puppeteer, { PageEventObject } from 'puppeteer'
 const fs = require('fs')
 const path = require('path')
 const AWS = require('aws-sdk')
@@ -33,6 +33,9 @@ interface ValueWithTimeout {
   timeoutID: NodeJS.Timeout | null
 }
 
+export const ONE_SECOND_IN_MS = 1000
+export const ONE_MINUTE_IN_MS = 60 * ONE_SECOND_IN_MS
+
 export function timeLimitPromise<T>(
   promise: Promise<T>,
   limitms: number,
@@ -60,37 +63,33 @@ export function consoleDoneMessage(
   expectedConsoleMessage: string,
   errorMessage?: string,
 ): Promise<void> {
+  let handler: (message: PageEventObject['console']) => void = () => {
+    console.info('Should not fire.')
+  }
   const consoleDonePromise = new Promise<void>((resolve, reject) => {
-    page.on('console', (message) => {
+    handler = (message: PageEventObject['console']) => {
+      const messageText = message.text()
       if (
-        message.text().includes(expectedConsoleMessage) ||
-        (errorMessage != null && message.text().includes(errorMessage))
+        messageText.includes(expectedConsoleMessage) ||
+        (errorMessage != null && messageText.includes(errorMessage))
       ) {
         // the editor will console.info('SCROLL_TEST_FINISHED') when the scrolling test is complete.
         // we wait until we see this console log and then we resolve the Promise
         resolve()
+      } else {
+        console.info(`CONSOLE: ${messageText}`)
       }
-    })
+    }
+    page.on('console', handler)
   })
   return timeLimitPromise(
     consoleDonePromise,
-    120000 * 5,
+    10 * ONE_MINUTE_IN_MS, // 10 minutes.
     `Missing console message ${expectedConsoleMessage} in test browser.`,
-  )
-}
-
-export async function initialiseTests(page: puppeteer.Page): Promise<void> {
-  console.log('Initialising the project')
-  await page.waitForXPath('//div[contains(@class, "item-label-container")]')
-
-  // Select something
-  const navigatorElement = await page.$('[class^="item-label-container"]')
-  await navigatorElement!.click()
-
-  // First selection will open the file in VS Code, triggering a bunch of downloads, so we pause briefly
-  await page.waitForTimeout(15000)
-
-  console.log('Finished initialising')
+  ).finally(() => {
+    // Ensure we remove the handler afterwards.
+    page.off('console', handler)
+  })
 }
 
 export async function uploadPNGtoAWS(testFile: string): Promise<string | null> {
@@ -139,4 +138,18 @@ export async function uploadPNGtoAWS(testFile: string): Promise<string | null> {
       }
     })
   })
+}
+
+export async function initialiseTests(page: puppeteer.Page): Promise<void> {
+  console.log('Initialising the project')
+  await page.waitForXPath('//div[contains(@class, "item-label-container")]')
+
+  // Select something
+  const navigatorElement = await page.$('[class^="item-label-container"]')
+  await navigatorElement!.click()
+
+  // First selection will open the file in VS Code, triggering a bunch of downloads, so we pause briefly
+  await page.waitForTimeout(15000)
+
+  console.log('Finished initialising')
 }

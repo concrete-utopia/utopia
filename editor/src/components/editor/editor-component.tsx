@@ -60,7 +60,10 @@ import {
   createInteractionViaKeyboard,
   updateInteractionViaKeyboard,
 } from '../canvas/canvas-strategies/interaction-state'
-import { setupClearKeyboardInteraction } from '../canvas/controls/select-mode/select-mode-hooks'
+import {
+  useAutomaticKeyUp,
+  useClearKeyboardInteraction,
+} from '../canvas/controls/select-mode/select-mode-hooks'
 
 function pushProjectURLToBrowserHistory(projectId: string, projectName: string): void {
   // Make sure we don't replace the query params
@@ -135,12 +138,14 @@ export const EditorComponentInner = React.memo((props: EditorProps) => {
     return applyShortcutConfigurationToDefaults(editorStoreRef.current.userState.shortcutConfig)
   }, [editorStoreRef])
 
-  const keyboardTimeoutHandler = React.useRef<NodeJS.Timeout | null>(null)
+  const setClearKeyboardInteraction = useClearKeyboardInteraction(editorStoreRef)
+  const automaticKeyUp = useAutomaticKeyUp(editorStoreRef)
 
   const onWindowKeyDown = React.useCallback(
     (event: KeyboardEvent) => {
       if (isFeatureEnabled('Canvas Strategies')) {
         const key = Keyboard.keyCharacterForCode(event.keyCode)
+        const modifiers = Modifier.modifiersForKeyboardEvent(event)
 
         // TODO: maybe we should not whitelist keys, just check if Keyboard.keyIsModifer(key) is false
         const existingInteractionSession = editorStoreRef.current.editor.canvas.interactionSession
@@ -148,13 +153,9 @@ export const EditorComponentInner = React.memo((props: EditorProps) => {
           editorStoreRef.current.dispatch(
             [
               CanvasActions.createInteractionSession(
-                updateInteractionViaKeyboard(
-                  existingInteractionSession,
-                  [Keyboard.keyCharacterForCode(event.keyCode)],
-                  [],
-                  Modifier.modifiersForKeyboardEvent(event),
-                  { type: 'KEYBOARD_CATCHER_CONTROL' },
-                ),
+                updateInteractionViaKeyboard(existingInteractionSession, [key], [], modifiers, {
+                  type: 'KEYBOARD_CATCHER_CONTROL',
+                }),
               ),
             ],
             'everyone',
@@ -163,24 +164,20 @@ export const EditorComponentInner = React.memo((props: EditorProps) => {
           const action =
             existingInteractionSession == null
               ? CanvasActions.createInteractionSession(
-                  createInteractionViaKeyboard(
-                    [Keyboard.keyCharacterForCode(event.keyCode)],
-                    Modifier.modifiersForKeyboardEvent(event),
-                    { type: 'KEYBOARD_CATCHER_CONTROL' },
-                  ),
+                  createInteractionViaKeyboard([key], modifiers, {
+                    type: 'KEYBOARD_CATCHER_CONTROL',
+                  }),
                 )
               : CanvasActions.createInteractionSession(
-                  updateInteractionViaKeyboard(
-                    existingInteractionSession,
-                    [Keyboard.keyCharacterForCode(event.keyCode)],
-                    [],
-                    Modifier.modifiersForKeyboardEvent(event),
-                    { type: 'KEYBOARD_CATCHER_CONTROL' },
-                  ),
+                  updateInteractionViaKeyboard(existingInteractionSession, [key], [], modifiers, {
+                    type: 'KEYBOARD_CATCHER_CONTROL',
+                  }),
                 )
 
           editorStoreRef.current.dispatch([action], 'everyone')
-          setupClearKeyboardInteraction(editorStoreRef, keyboardTimeoutHandler)
+
+          setClearKeyboardInteraction()
+          automaticKeyUp(key, modifiers)
         }
       }
 
@@ -192,7 +189,7 @@ export const EditorComponentInner = React.memo((props: EditorProps) => {
         editorStoreRef.current.dispatch,
       )
     },
-    [editorStoreRef, namesByKey],
+    [editorStoreRef, namesByKey, setClearKeyboardInteraction, automaticKeyUp],
   )
 
   const onWindowKeyUp = React.useCallback(

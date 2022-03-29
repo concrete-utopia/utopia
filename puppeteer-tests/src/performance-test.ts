@@ -2,18 +2,15 @@
 require('dotenv').config({ path: 'src/.env' })
 import puppeteer from 'puppeteer'
 import { v4 } from 'uuid'
-import { consoleDoneMessage, initialiseTests, setupBrowser, uploadPNGtoAWS } from './utils'
+import { consoleDoneMessage, setupBrowser, uploadPNGtoAWS } from './utils'
 import * as JSONStream from 'JSONStream'
 const fs = require('fs')
 const path = require('path')
 const moveFile = require('move-file')
 
 const BRANCH_NAME = process.env.BRANCH_NAME ? `?branch_name=${process.env.BRANCH_NAME}` : ''
-const PROJECT_ID = 'e46ccdca'
-const STAGING_EDITOR_URL =
-  process.env.EDITOR_URL ?? `https://utopia.pizza/project/${PROJECT_ID}/${BRANCH_NAME}`
-const MASTER_EDITOR_URL =
-  process.env.MASTER_EDITOR_URL ?? `https://utopia.pizza/project/${PROJECT_ID}/`
+const STAGING_EDITOR_URL = process.env.EDITOR_URL ?? `https://utopia.pizza/p${BRANCH_NAME}`
+const MASTER_EDITOR_URL = process.env.MASTER_EDITOR_URL ?? `https://utopia.pizza/p`
 
 type FrameResult = {
   title: string
@@ -74,11 +71,6 @@ function defer() {
 
 const ResizeButtonXPath = "//a[contains(., 'P R')]"
 
-interface Baselines {
-  basicCalc: FrameResult
-  simpleDispatch: FrameResult
-}
-
 function calculatePi(accuracy: number): number {
   // Uses the Nilakantha series
   let i = 2
@@ -133,39 +125,14 @@ function timeBasicCalc(): FrameResult {
   }
 }
 
-async function testBaselinePerformance(page: puppeteer.Page): Promise<FrameResult> {
+async function testEmptyDispatch(page: puppeteer.Page): Promise<FrameResult> {
   console.log('Test Baseline Performance')
   await page.tracing.start({ path: 'trace.json' })
-  await clickOnce(page, "//a[contains(., 'B L')]", 'BASELINE_TEST_FINISHED')
+  await clickOnce(page, "//a[contains(., 'B L')]", 'BASELINE_TEST_FINISHED', 'BASELINE_TEST_ERROR')
   await page.tracing.stop()
 
   const traceJson = await loadTraceEventsJSON()
   return getFrameData(traceJson, 'baseline', 'Empty Dispatch')
-}
-
-async function initialiseTestsReturnScale(page: puppeteer.Page): Promise<Baselines> {
-  await initialiseTests(page)
-
-  // Resize to trigger a fork
-  const [button] = await page.$x(ResizeButtonXPath)
-  await button!.click()
-  await consoleDoneMessage(page, 'RESIZE_TEST_FINISHED', 'RESIZE_TEST_MISSING_SELECTEDVIEW')
-
-  // This change should have triggered a fork, so pause again
-  await page.waitForTimeout(15000)
-
-  console.log('Taking baseline performance measurements')
-  // Now take a baseline measurement for general performance of the machine running this test
-  // This value should be as close as possible to 1 on a good run on CI
-  const basicCalc = timeBasicCalc()
-  const simpleDispatch = await testBaselinePerformance(page)
-
-  console.log('Finished baseline measurements')
-
-  return {
-    basicCalc,
-    simpleDispatch,
-  }
 }
 
 function consoleMessageForResult(result: FrameResult): string {
@@ -206,9 +173,8 @@ export const testPerformanceInner = async function (url: string): Promise<Perfor
   let absoluteMoveResult: Array<FrameResult> = []
   const { page, browser } = await setupBrowser(url, 120000)
   try {
-    const baselines = await initialiseTestsReturnScale(page)
-    basicCalc = baselines.basicCalc
-    simpleDispatch = baselines.simpleDispatch
+    simpleDispatch = await testEmptyDispatch(page)
+    basicCalc = timeBasicCalc()
     highlightRegularResult = await testHighlightRegularPerformance(page)
     highlightAllElementsResult = await testHighlightAllElementsPerformance(page)
     selectionResult = await testSelectionPerformance(page)
@@ -246,6 +212,7 @@ async function clickOnce(
   expectedConsoleMessage: string,
   errorMessage?: string,
 ): Promise<void> {
+  await page.waitForXPath(xpath)
   const [button] = await page.$x(xpath)
   await button!.click()
   await consoleDoneMessage(page, expectedConsoleMessage, errorMessage)
@@ -255,14 +222,13 @@ export const testScrollingPerformance = async function (
   page: puppeteer.Page,
 ): Promise<FrameResult> {
   console.log('Test Scrolling Performance')
-  await page.waitForXPath("//a[contains(., 'P S')]") // the button with the text 'P S' is the "secret" trigger to start the scrolling performance test
   // we run it twice without measurements to warm up the environment
-  await clickOnce(page, "//a[contains(., 'P S')]", 'SCROLL_TEST_FINISHED')
-  await clickOnce(page, "//a[contains(., 'P S')]", 'SCROLL_TEST_FINISHED')
+  await clickOnce(page, "//a[contains(., 'P S')]", 'SCROLL_TEST_FINISHED', 'SCROLL_TEST_ERROR')
+  await clickOnce(page, "//a[contains(., 'P S')]", 'SCROLL_TEST_FINISHED', 'SCROLL_TEST_ERROR')
 
   // and then we run the test for a third time, this time running tracing
   await page.tracing.start({ path: 'trace.json' })
-  await clickOnce(page, "//a[contains(., 'P S')]", 'SCROLL_TEST_FINISHED')
+  await clickOnce(page, "//a[contains(., 'P S')]", 'SCROLL_TEST_FINISHED', 'SCROLL_TEST_ERROR')
   await page.tracing.stop()
   const traceJson = await loadTraceEventsJSON()
   return getFrameData(traceJson, 'scroll', 'Scroll Canvas')
