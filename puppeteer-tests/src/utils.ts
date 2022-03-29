@@ -22,7 +22,7 @@ export const setupBrowser = async (
   page.setDefaultTimeout(defaultTimeout)
   await page.setViewport({ width: 1500, height: 768 })
   console.info('loading editor at URL:', url)
-  await page.goto(url)
+  await page.goto(url, { waitUntil: ['networkidle0', 'load'] })
   return {
     browser: browser,
     page: page,
