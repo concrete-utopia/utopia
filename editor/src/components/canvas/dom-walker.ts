@@ -31,6 +31,7 @@ import {
   roundToNearestHalf,
   zeroCanvasRect,
   zeroLocalRect,
+  canvasRectangle,
 } from '../../core/shared/math-utils'
 import {
   CSSNumber,
@@ -773,6 +774,26 @@ function getSpecialMeasurements(
   let clientHeight = roundToNearestHalf(element.clientHeight)
 
   const childrenCount = element.childElementCount
+
+  const borderTopWidth = parseCSSLength(elementStyle.borderTopWidth)
+  const borderRightWidth = parseCSSLength(elementStyle.borderRightWidth)
+  const borderBottomWidth = parseCSSLength(elementStyle.borderBottomWidth)
+  const borderLeftWidth = parseCSSLength(elementStyle.borderLeftWidth)
+  const border = {
+    top: isRight(borderTopWidth) ? borderTopWidth.value.value : 0,
+    right: isRight(borderRightWidth) ? borderRightWidth.value.value : 0,
+    bottom: isRight(borderBottomWidth) ? borderBottomWidth.value.value : 0,
+    left: isRight(borderLeftWidth) ? borderLeftWidth.value.value : 0,
+  }
+
+  const globalFrame = globalFrameForElement(element, scale, containerRectLazy)
+  const globalContentBox = canvasRectangle({
+    x: globalFrame.x + border.left,
+    y: globalFrame.y + border.top,
+    width: globalFrame.width - border.left - border.right,
+    height: globalFrame.height - border.top - border.bottom,
+  })
+
   return specialSizeMeasurements(
     offset,
     coordinateSystemBounds,
@@ -794,6 +815,7 @@ function getSpecialMeasurements(
     flexDirection,
     element.localName,
     childrenCount,
+    globalContentBox,
   )
 }
 

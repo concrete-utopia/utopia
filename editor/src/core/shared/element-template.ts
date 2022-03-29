@@ -1552,6 +1552,7 @@ export interface SpecialSizeMeasurements {
   flexDirection: string | null
   htmlElementName: string
   renderedChildrenCount: number
+  globalContentBox: CanvasRectangle | null
 }
 
 export function specialSizeMeasurements(
@@ -1575,6 +1576,7 @@ export function specialSizeMeasurements(
   flexDirection: string | null,
   htmlElementName: string,
   renderedChildrenCount: number,
+  globalContentBox: CanvasRectangle | null,
 ): SpecialSizeMeasurements {
   return {
     offset,
@@ -1597,6 +1599,7 @@ export function specialSizeMeasurements(
     flexDirection,
     htmlElementName,
     renderedChildrenCount,
+    globalContentBox,
   }
 }
 
@@ -1624,6 +1627,7 @@ export const emptySpecialSizeMeasurements = specialSizeMeasurements(
   null,
   'div',
   0,
+  null,
 )
 
 export const emptyComputedStyle: ComputedStyle = {}
