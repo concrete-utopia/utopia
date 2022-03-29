@@ -916,6 +916,10 @@ export interface ForceParseFile {
   filePath: string
 }
 
+export interface ConvertSelectionToAbsolute {
+  action: 'CONVERT_SELECTION_TO_ABSOLUTE'
+}
+
 export type EditorAction =
   | ClearSelection
   | InsertScene
@@ -1068,6 +1072,7 @@ export type EditorAction =
   | HideVSCodeLoadingScreen
   | SetIndexedDBFailed
   | ForceParseFile
+  | ConvertSelectionToAbsolute
 
 export type DispatchPriority =
   | 'everyone'

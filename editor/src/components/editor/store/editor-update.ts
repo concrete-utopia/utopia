@@ -338,6 +338,8 @@ export function runSimpleLocalEditorAction(
       return UPDATE_FNS.SET_INDEXED_DB_FAILED(action, state)
     case 'FORCE_PARSE_FILE':
       return UPDATE_FNS.FORCE_PARSE_FILE(action, state)
+    case 'CONVERT_SELECTION_TO_ABSOLUTE':
+      return UPDATE_FNS.CONVERT_SELECTION_TO_ABSOLUTE(action, state)
     default:
       return state
   }

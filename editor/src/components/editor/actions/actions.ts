@@ -171,6 +171,8 @@ import {
   canvasRectangle,
   Rectangle,
   rectangleIntersection,
+  LocalPoint,
+  offsetRect,
 } from '../../../core/shared/math-utils'
 import {
   addFileToProjectContents,
@@ -370,6 +372,7 @@ import {
   SetIndexedDBFailed,
   ForceParseFile,
   RemoveFromNodeModulesContents,
+  ConvertSelectionToAbsolute,
 } from '../action-types'
 import { defaultTransparentViewElement, defaultSceneElement } from '../defaults'
 import {
@@ -495,6 +498,7 @@ import {
   setScrollAnimation,
   updatePackageJson,
   removeFromNodeModulesContents,
+  setProp_UNSAFE,
 } from './action-creators'
 import { getAllTargetsAtPoint } from '../../canvas/dom-lookup'
 import {
@@ -4850,6 +4854,107 @@ export const UPDATE_FNS = {
       ...editor,
       forceParseFiles: editor.forceParseFiles.concat(action.filePath),
     }
+  },
+  CONVERT_SELECTION_TO_ABSOLUTE: (
+    action: ConvertSelectionToAbsolute,
+    editor: EditorModel,
+  ): EditorModel => {
+    const selectedViewsWithSiblings = editor.selectedViews.flatMap((path) => {
+      return [
+        path,
+        ...MetadataUtils.getSiblings(editor.jsxMetadata, path).map(
+          (metadata) => metadata.elementPath,
+        ),
+      ]
+    })
+
+    const elementsThatNeedParentRelative = editor.selectedViews.filter((path) => {
+      return !MetadataUtils.findElementByElementPath(editor.jsxMetadata, path)
+        ?.specialSizeMeasurements.immediateParentProvidesLayout
+    })
+
+    const withParentUpdated = elementsThatNeedParentRelative.reduce((working, path) => {
+      const parentPath = EP.parentPath(path)
+      const frame = MetadataUtils.getFrameInCanvasCoords(parentPath, editor.jsxMetadata)
+      const hasFrameProps =
+        MetadataUtils.findElementByElementPath(editor.jsxMetadata, parentPath)?.props.style
+          ?.width != null ||
+        MetadataUtils.findElementByElementPath(editor.jsxMetadata, parentPath)?.props.style
+          ?.height != null
+      const propsToAdd: Array<ValueAtPath> = [
+        {
+          path: stylePropPathMappingFn('position', ['style']),
+          value: jsxAttributeValue('relative', emptyComments),
+        },
+      ]
+      if (frame != null && !hasFrameProps) {
+        propsToAdd.push({
+          path: stylePropPathMappingFn('width', ['style']),
+          value: jsxAttributeValue(frame.width, emptyComments),
+        })
+        propsToAdd.push({
+          path: stylePropPathMappingFn('height', ['style']),
+          value: jsxAttributeValue(frame.height, emptyComments),
+        })
+      }
+
+      return propsToAdd.reduce((parentWithFramePropsUpdated, propToAdd) => {
+        return UPDATE_FNS.SET_PROP(
+          setProp_UNSAFE(parentPath, propToAdd.path, propToAdd.value),
+          parentWithFramePropsUpdated,
+        )
+      }, working)
+    }, editor)
+
+    return selectedViewsWithSiblings.reduce((working, path) => {
+      const margin = MetadataUtils.findElementByElementPath(editor.jsxMetadata, path)
+        ?.specialSizeMeasurements.margin
+      const marginPoint: LocalPoint = {
+        x: -(margin?.left ?? 0),
+        y: -(margin?.top ?? 0),
+      } as LocalPoint
+      const frame = MetadataUtils.getFrame(path, editor.jsxMetadata)
+      if (frame != null) {
+        const frameWithoutMargin = offsetRect(frame, marginPoint)
+        const propsToAdd: Array<ValueAtPath> = [
+          {
+            path: stylePropPathMappingFn('left', ['style']),
+            value: jsxAttributeValue(frameWithoutMargin.x, emptyComments),
+          },
+          {
+            path: stylePropPathMappingFn('top', ['style']),
+            value: jsxAttributeValue(frameWithoutMargin.y, emptyComments),
+          },
+          {
+            path: stylePropPathMappingFn('width', ['style']),
+            value: jsxAttributeValue(frame.width, emptyComments),
+          },
+          {
+            path: stylePropPathMappingFn('height', ['style']),
+            value: jsxAttributeValue(frame.height, emptyComments),
+          },
+          {
+            path: stylePropPathMappingFn('position', ['style']),
+            value: jsxAttributeValue('absolute', emptyComments),
+          },
+        ]
+        return propsToAdd.reduce((withFramePropsUpdated, propToAdd) => {
+          return UPDATE_FNS.SET_PROP(
+            setProp_UNSAFE(path, propToAdd.path, propToAdd.value),
+            withFramePropsUpdated,
+          )
+        }, working)
+      } else {
+        return UPDATE_FNS.SET_PROP(
+          setProp_UNSAFE(
+            path,
+            stylePropPathMappingFn('position', ['style']),
+            jsxAttributeValue('absolute', emptyComments),
+          ),
+          working,
+        )
+      }
+    }, withParentUpdated)
   },
 }
 
