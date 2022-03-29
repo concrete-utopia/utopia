@@ -24,9 +24,7 @@ export const flowMoveStrategy: CanvasStrategy = {
       sessionState.startingMetadata,
     ) &&
       interactionState.interactionData.type === 'DRAG' &&
-      interactionState.activeControl.type === 'BOUNDING_AREA' &&
-      ((interactionState.interactionData.drag?.x ?? 0) > 20 ||
-        (interactionState.interactionData.drag?.y ?? 0) > 20)
+      interactionState.activeControl.type === 'BOUNDING_AREA'
       ? 1
       : 0
   },
