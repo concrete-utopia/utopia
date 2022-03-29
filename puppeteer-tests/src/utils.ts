@@ -140,7 +140,7 @@ export async function uploadPNGtoAWS(testFile: string): Promise<string | null> {
   })
 }
 
-export function initialiseTests(page: puppeteer.Page): Promise<void> {
+export async function initialiseTests(page: puppeteer.Page): Promise<void> {
   console.log('Initialising the project')
   await page.waitForXPath('//div[contains(@class, "item-label-container")]')
 
