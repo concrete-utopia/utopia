@@ -190,7 +190,7 @@ describe('DOM Walker tests', () => {
           "y": 0,
         },
         "props": Object {
-          "data-paths": "utopia-storyboard-uid",
+          "data-path": "utopia-storyboard-uid",
           "data-uid": "utopia-storyboard-uid",
           "skipDeepFreeze": true,
         },
@@ -271,7 +271,7 @@ describe('DOM Walker tests', () => {
           "y": 0,
         },
         "props": Object {
-          "data-paths": "utopia-storyboard-uid/scene-aaa",
+          "data-path": "utopia-storyboard-uid/scene-aaa",
           "data-uid": "scene-aaa",
           "data-utopia-scene-id": "utopia-storyboard-uid/scene-aaa",
           "skipDeepFreeze": true,
@@ -372,7 +372,7 @@ describe('DOM Walker tests', () => {
           "y": 0,
         },
         "props": Object {
-          "data-paths": "utopia-storyboard-uid/scene-aaa/app-entity",
+          "data-path": "utopia-storyboard-uid/scene-aaa/app-entity",
           "data-uid": "app-entity",
           "data-utopia-instance-path": Object {
             "parts": Array [
@@ -489,7 +489,7 @@ describe('DOM Walker tests', () => {
           "y": 0,
         },
         "props": Object {
-          "data-paths": "utopia-storyboard-uid/scene-aaa/app-entity:05c utopia-storyboard-uid/scene-aaa/app-entity",
+          "data-path": "utopia-storyboard-uid/scene-aaa/app-entity:05c",
           "data-uid": "05c app-entity",
           "skipDeepFreeze": true,
           "style": Object {
@@ -598,7 +598,7 @@ describe('DOM Walker tests', () => {
           "y": 98,
         },
         "props": Object {
-          "data-paths": "utopia-storyboard-uid/scene-aaa/app-entity:05c/ef0",
+          "data-path": "utopia-storyboard-uid/scene-aaa/app-entity:05c/ef0",
           "data-uid": "ef0",
           "skipDeepFreeze": true,
           "style": Object {
@@ -708,7 +708,7 @@ describe('DOM Walker tests', () => {
           "y": 27,
         },
         "props": Object {
-          "data-paths": "utopia-storyboard-uid/scene-aaa/app-entity:05c/ef0/488",
+          "data-path": "utopia-storyboard-uid/scene-aaa/app-entity:05c/ef0/488",
           "data-uid": "488",
           "skipDeepFreeze": true,
           "style": Object {
@@ -861,7 +861,7 @@ describe('DOM Walker tests', () => {
           "y": 0,
         },
         "props": Object {
-          "data-paths": "utopia-storyboard-uid",
+          "data-path": "utopia-storyboard-uid",
           "data-uid": "utopia-storyboard-uid",
           "skipDeepFreeze": true,
         },
@@ -942,7 +942,7 @@ describe('DOM Walker tests', () => {
           "y": 0,
         },
         "props": Object {
-          "data-paths": "utopia-storyboard-uid/scene-aaa",
+          "data-path": "utopia-storyboard-uid/scene-aaa",
           "data-uid": "scene-aaa",
           "data-utopia-scene-id": "utopia-storyboard-uid/scene-aaa",
           "skipDeepFreeze": true,
@@ -1043,7 +1043,7 @@ describe('DOM Walker tests', () => {
           "y": 0,
         },
         "props": Object {
-          "data-paths": "utopia-storyboard-uid/scene-aaa/app-entity",
+          "data-path": "utopia-storyboard-uid/scene-aaa/app-entity",
           "data-uid": "app-entity",
           "data-utopia-instance-path": Object {
             "parts": Array [
@@ -1156,7 +1156,7 @@ describe('DOM Walker tests', () => {
           "y": 0,
         },
         "props": Object {
-          "data-paths": "utopia-storyboard-uid/scene-aaa/app-entity:05c utopia-storyboard-uid/scene-aaa/app-entity",
+          "data-path": "utopia-storyboard-uid/scene-aaa/app-entity:05c",
           "data-uid": "05c app-entity",
           "skipDeepFreeze": true,
           "style": Object {
@@ -1261,7 +1261,7 @@ describe('DOM Walker tests', () => {
           "y": 98,
         },
         "props": Object {
-          "data-paths": "utopia-storyboard-uid/scene-aaa/app-entity:05c/ef0",
+          "data-path": "utopia-storyboard-uid/scene-aaa/app-entity:05c/ef0",
           "data-uid": "ef0",
           "skipDeepFreeze": true,
           "style": Object {
@@ -1363,7 +1363,7 @@ describe('DOM Walker tests', () => {
           "y": 27,
         },
         "props": Object {
-          "data-paths": "utopia-storyboard-uid/scene-aaa/app-entity:05c/ef0/488",
+          "data-path": "utopia-storyboard-uid/scene-aaa/app-entity:05c/ef0/488",
           "data-uid": "488",
           "skipDeepFreeze": true,
           "style": Object {
@@ -1516,7 +1516,7 @@ describe('DOM Walker tests', () => {
           "y": 0,
         },
         "props": Object {
-          "data-paths": "utopia-storyboard-uid",
+          "data-path": "utopia-storyboard-uid",
           "data-uid": "utopia-storyboard-uid",
           "skipDeepFreeze": true,
         },
@@ -1597,7 +1597,7 @@ describe('DOM Walker tests', () => {
           "y": 0,
         },
         "props": Object {
-          "data-paths": "utopia-storyboard-uid/scene-aaa",
+          "data-path": "utopia-storyboard-uid/scene-aaa",
           "data-uid": "scene-aaa",
           "data-utopia-scene-id": "utopia-storyboard-uid/scene-aaa",
           "skipDeepFreeze": true,
@@ -1698,7 +1698,7 @@ describe('DOM Walker tests', () => {
           "y": 0,
         },
         "props": Object {
-          "data-paths": "utopia-storyboard-uid/scene-aaa/app-entity",
+          "data-path": "utopia-storyboard-uid/scene-aaa/app-entity",
           "data-uid": "app-entity",
           "data-utopia-instance-path": Object {
             "parts": Array [
@@ -1811,7 +1811,7 @@ describe('DOM Walker tests', () => {
           "y": 0,
         },
         "props": Object {
-          "data-paths": "utopia-storyboard-uid/scene-aaa/app-entity:05c utopia-storyboard-uid/scene-aaa/app-entity",
+          "data-path": "utopia-storyboard-uid/scene-aaa/app-entity:05c",
           "data-uid": "05c app-entity",
           "skipDeepFreeze": true,
           "style": Object {
@@ -1917,7 +1917,7 @@ describe('DOM Walker tests', () => {
           "y": 98,
         },
         "props": Object {
-          "data-paths": "utopia-storyboard-uid/scene-aaa/app-entity:05c/ef0",
+          "data-path": "utopia-storyboard-uid/scene-aaa/app-entity:05c/ef0",
           "data-uid": "ef0",
           "skipDeepFreeze": true,
           "style": Object {
@@ -2019,7 +2019,7 @@ describe('DOM Walker tests', () => {
           "y": 27,
         },
         "props": Object {
-          "data-paths": "utopia-storyboard-uid/scene-aaa/app-entity:05c/ef0/488",
+          "data-path": "utopia-storyboard-uid/scene-aaa/app-entity:05c/ef0/488",
           "data-uid": "488",
           "skipDeepFreeze": true,
           "style": Object {
@@ -2160,7 +2160,7 @@ describe('DOM Walker tests', () => {
           "y": 0,
         },
         "props": Object {
-          "data-paths": "utopia-storyboard-uid",
+          "data-path": "utopia-storyboard-uid",
           "data-uid": "utopia-storyboard-uid",
           "skipDeepFreeze": true,
         },
@@ -2241,7 +2241,7 @@ describe('DOM Walker tests', () => {
           "y": 0,
         },
         "props": Object {
-          "data-paths": "utopia-storyboard-uid/scene-aaa",
+          "data-path": "utopia-storyboard-uid/scene-aaa",
           "data-uid": "scene-aaa",
           "data-utopia-scene-id": "utopia-storyboard-uid/scene-aaa",
           "skipDeepFreeze": true,
@@ -2342,7 +2342,7 @@ describe('DOM Walker tests', () => {
           "y": 0,
         },
         "props": Object {
-          "data-paths": "utopia-storyboard-uid/scene-aaa/app-entity",
+          "data-path": "utopia-storyboard-uid/scene-aaa/app-entity",
           "data-uid": "app-entity",
           "data-utopia-instance-path": Object {
             "parts": Array [
@@ -2456,7 +2456,7 @@ describe('DOM Walker tests', () => {
         },
         "props": Object {
           "data-label": "Hat",
-          "data-paths": "utopia-storyboard-uid/scene-aaa/app-entity:aaa utopia-storyboard-uid/scene-aaa/app-entity",
+          "data-path": "utopia-storyboard-uid/scene-aaa/app-entity:aaa",
           "data-uid": "aaa app-entity",
           "skipDeepFreeze": true,
           "style": Object {
@@ -2600,7 +2600,7 @@ describe('DOM Walker tests', () => {
           "y": 0,
         },
         "props": Object {
-          "data-paths": "utopia-storyboard-uid",
+          "data-path": "utopia-storyboard-uid",
           "data-uid": "utopia-storyboard-uid",
           "skipDeepFreeze": true,
         },
@@ -2681,7 +2681,7 @@ describe('DOM Walker tests', () => {
           "y": 0,
         },
         "props": Object {
-          "data-paths": "utopia-storyboard-uid/scene-aaa",
+          "data-path": "utopia-storyboard-uid/scene-aaa",
           "data-uid": "scene-aaa",
           "data-utopia-scene-id": "utopia-storyboard-uid/scene-aaa",
           "skipDeepFreeze": true,
@@ -2782,7 +2782,7 @@ describe('DOM Walker tests', () => {
           "y": 0,
         },
         "props": Object {
-          "data-paths": "utopia-storyboard-uid/scene-aaa/app-entity",
+          "data-path": "utopia-storyboard-uid/scene-aaa/app-entity",
           "data-uid": "app-entity",
           "data-utopia-instance-path": Object {
             "parts": Array [
@@ -2895,7 +2895,7 @@ describe('DOM Walker tests', () => {
           "y": 0,
         },
         "props": Object {
-          "data-paths": "utopia-storyboard-uid/scene-aaa/app-entity:aaa utopia-storyboard-uid/scene-aaa/app-entity",
+          "data-path": "utopia-storyboard-uid/scene-aaa/app-entity:aaa",
           "data-uid": "aaa app-entity",
           "skipDeepFreeze": true,
           "style": Object {
@@ -3000,7 +3000,7 @@ describe('DOM Walker tests', () => {
         },
         "props": Object {
           "data-label": "Plane",
-          "data-paths": "utopia-storyboard-uid/scene-aaa/app-entity:aaa/bbb~~~1",
+          "data-path": "utopia-storyboard-uid/scene-aaa/app-entity:aaa/bbb~~~1",
           "data-uid": "bbb~~~1",
           "skipDeepFreeze": true,
         },
@@ -3098,7 +3098,7 @@ describe('DOM Walker tests', () => {
         },
         "props": Object {
           "data-label": "Plane",
-          "data-paths": "utopia-storyboard-uid/scene-aaa/app-entity:aaa/bbb~~~2",
+          "data-path": "utopia-storyboard-uid/scene-aaa/app-entity:aaa/bbb~~~2",
           "data-uid": "bbb~~~2",
           "skipDeepFreeze": true,
         },
@@ -3196,7 +3196,7 @@ describe('DOM Walker tests', () => {
         },
         "props": Object {
           "data-label": "Plane",
-          "data-paths": "utopia-storyboard-uid/scene-aaa/app-entity:aaa/bbb~~~3",
+          "data-path": "utopia-storyboard-uid/scene-aaa/app-entity:aaa/bbb~~~3",
           "data-uid": "bbb~~~3",
           "skipDeepFreeze": true,
         },
