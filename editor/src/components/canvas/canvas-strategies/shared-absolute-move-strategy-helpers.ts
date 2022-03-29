@@ -62,30 +62,27 @@ function createMoveCommandsForElement(
   drag: CanvasVector,
   elementParentBounds: CanvasRectangle | null,
 ): AdjustCssLengthProperty[] {
-  return mapDropNulls(
-    (pin) => {
-      const horizontal = isHorizontalPoint(
-        // TODO avoid using the loaded FramePoint enum
-        framePointForPinnedProp(pin),
-      )
-      const negative = pin === 'right' || pin === 'bottom'
-      const value = getLayoutProperty(pin, right(element.props), ['style'])
-      if (isRight(value) && value.value != null) {
-        // TODO what to do about missing properties?
-        return adjustCssLengthProperty(
-          'permanent',
-          selectedElement,
-          stylePropPathMappingFn(pin, ['style']),
-          (horizontal ? drag.x : drag.y) * (negative ? -1 : 1),
-          horizontal ? elementParentBounds?.width : elementParentBounds?.height,
-          true,
-        )
-      } else {
-        return null
-      }
-    },
-    ['top', 'bottom', 'left', 'right'] as const,
-  )
+  const hasBottomProp = getLayoutProperty('bottom', right(element.props), ['style'])
+  const hasRightProp = getLayoutProperty('right', right(element.props), ['style'])
+  let pinsToSet: LayoutPinnedProp[] = [
+    isRight(hasRightProp) && hasRightProp.value != null ? 'right' : 'left',
+    isRight(hasBottomProp) && hasBottomProp.value != null ? 'bottom' : 'top',
+  ]
+  return mapDropNulls((pin) => {
+    const horizontal = isHorizontalPoint(
+      // TODO avoid using the loaded FramePoint enum
+      framePointForPinnedProp(pin),
+    )
+    const negative = pin === 'right' || pin === 'bottom'
+    return adjustCssLengthProperty(
+      'permanent',
+      selectedElement,
+      stylePropPathMappingFn(pin, ['style']),
+      (horizontal ? drag.x : drag.y) * (negative ? -1 : 1),
+      horizontal ? elementParentBounds?.width : elementParentBounds?.height,
+      true,
+    )
+  }, pinsToSet)
 }
 
 export function getAbsoluteOffsetCommandsForSelectedElement(
