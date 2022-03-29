@@ -10,6 +10,7 @@ import { mergePatches } from './merge-patches'
 import { ReparentElement, runReparentElement } from './reparent-element-command'
 import { runSetSnappingGuidelines, SetSnappingGuidelines } from './set-snapping-guidelines-command'
 import { runStrategySwitchedCommand, StrategySwitched } from './strategy-switched-command'
+import { runSwitchToAbsolute, SwitchToAbsolute } from './switch-to-absolute'
 import {
   runUpdateHighlightedViews,
   UpdateHighlightedViews,
@@ -39,6 +40,7 @@ export type CanvasCommand =
   | UpdateSelectedViews
   | UpdateHighlightedViews
   | SetSnappingGuidelines
+  | SwitchToAbsolute
 
 export const runCanvasCommand: CommandFunction<CanvasCommand> = (
   editorState: EditorState,
@@ -61,6 +63,8 @@ export const runCanvasCommand: CommandFunction<CanvasCommand> = (
       return runUpdateHighlightedViews(editorState, command)
     case 'SET_SNAPPING_GUIDELINES':
       return runSetSnappingGuidelines(editorState, command)
+    case 'SWITCH_TO_ABSOLUTE':
+      return runSwitchToAbsolute(editorState, command)
     default:
       const _exhaustiveCheck: never = command
       throw new Error(`Unhandled canvas command ${JSON.stringify(command)}`)

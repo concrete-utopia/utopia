@@ -27,6 +27,7 @@ import {
   InteractionCanvasState,
 } from '../../canvas/canvas-strategies/canvas-strategy-types'
 import { mergePatches } from '../../canvas/commands/merge-patches'
+import { flowMoveStrategy } from '../../canvas/canvas-strategies/flow-move-strategy'
 
 interface HandleStrategiesResult {
   unpatchedEditorState: EditorState
@@ -96,6 +97,7 @@ export function interactionHardReset(
   strategies: Array<CanvasStrategy>,
   storedState: EditorStoreFull,
   result: InnerDispatchResult,
+  keepSession: boolean = false,
 ): HandleStrategiesResult {
   const newEditorState = result.unpatchedEditor
   const withClearedSession = {
@@ -111,10 +113,13 @@ export function interactionHardReset(
       newStrategyState: withClearedSession,
     }
   } else {
-    const resetInteractionSession = interactionSessionHardReset(interactionSession)
+    let resetInteractionSession = interactionSessionHardReset(interactionSession)
+    if (keepSession) {
+      resetInteractionSession = interactionSession
+    }
     const resetStrategyState = {
       ...result.strategyState,
-      startingMetadata: storedState.unpatchedEditor.jsxMetadata,
+      startingMetadata: interactionSession.metadata,
     }
     // Determine the new canvas strategy to run this time around.
     const { strategy, sortedApplicableStrategies } = findCanvasStrategy(
@@ -640,6 +645,30 @@ function handleStrategiesInner(
         storedState.unpatchedEditor.canvas.interactionSession?.interactionData ?? null,
         result.unpatchedEditor.canvas.interactionSession?.interactionData ?? null,
       )
+
+      if (result.unpatchedEditor.canvas.interactionSession != null) {
+        const { strategy } = findCanvasStrategy(
+          strategies,
+          pickCanvasStateFromEditorState(result.unpatchedEditor),
+          result.unpatchedEditor.canvas.interactionSession,
+          result.strategyState,
+          result.strategyState.currentStrategy,
+        )
+        if (
+          strategy?.strategy.id === 'FLOW_MOVE' &&
+          result.strategyState.currentStrategyCommands.some(
+            (c) => c.type === 'SWITCH_TO_ABSOLUTE',
+          ) &&
+          !flowMoveStrategy.isApplicable(
+            pickCanvasStateFromEditorState(result.unpatchedEditor),
+            result.unpatchedEditor.canvas.interactionSession,
+            result.unpatchedEditor.canvas.interactionSession.metadata,
+          )
+        ) {
+          return interactionHardReset(strategies, storedState, result, true)
+        }
+      }
+
       if (interactionHardResetNeeded) {
         return interactionHardReset(strategies, storedState, result)
       } else {

@@ -19,8 +19,10 @@ import {
 import { InteractionSession, StrategyState } from './interaction-state'
 import { keyboardAbsoluteMoveStrategy } from './keyboard-absolute-move-strategy'
 import { absoluteResizeBoundingBoxStrategy } from './absolute-resize-bounding-box-strategy'
+import { flowMoveStrategy } from './flow-move-strategy'
 
 export const RegisteredCanvasStrategies: Array<CanvasStrategy> = [
+  flowMoveStrategy,
   absoluteMoveStrategy,
   absoluteReparentStrategy,
   keyboardAbsoluteMoveStrategy,
