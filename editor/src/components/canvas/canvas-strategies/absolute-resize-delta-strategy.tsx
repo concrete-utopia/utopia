@@ -25,6 +25,7 @@ import {
   resizeBoundingBox,
   runLegacyAbsoluteResizeSnapping,
 } from './shared-absolute-move-strategy-helpers'
+import { createResizeCommands } from './shared-absolute-resize-strategy-helpers'
 
 export const absoluteResizeDeltaStrategy: CanvasStrategy = {
   id: 'ABSOLUTE_RESIZE_DELTA',
@@ -112,60 +113,6 @@ export const absoluteResizeDeltaStrategy: CanvasStrategy = {
     // Fallback for when the checks above are not satisfied.
     return []
   },
-}
-
-function pinsForEdgePosition(edgePosition: EdgePosition): AbsolutePin[] {
-  let horizontalPins: AbsolutePin[] = []
-  let verticalPins: AbsolutePin[] = []
-
-  if (edgePosition.x === 0) {
-    horizontalPins = ['left', 'width']
-  } else if (edgePosition.x === 1) {
-    horizontalPins = ['right', 'width']
-  }
-
-  if (edgePosition.y === 0) {
-    verticalPins = ['top', 'height']
-  } else if (edgePosition.y === 1) {
-    verticalPins = ['bottom', 'height']
-  }
-
-  return [...horizontalPins, ...verticalPins]
-}
-
-function createResizeCommands(
-  element: JSXElement,
-  selectedElement: ElementPath,
-  edgePosition: EdgePosition,
-  drag: CanvasVector,
-  elementParentBounds: CanvasRectangle | null,
-): AdjustCssLengthProperty[] {
-  const pins = pinsForEdgePosition(edgePosition)
-  return mapDropNulls((pin) => {
-    const horizontal = isHorizontalPoint(
-      // TODO avoid using the loaded FramePoint enum
-      framePointForPinnedProp(pin),
-    )
-    const negative =
-      pin === 'right' ||
-      pin === 'bottom' ||
-      (pin === 'width' && edgePosition.x === 0) ||
-      (pin === 'height' && edgePosition.y === 0)
-    const value = getLayoutProperty(pin, right(element.props), ['style'])
-    if (isRight(value) && value.value != null) {
-      // TODO what to do about missing properties?
-      return adjustCssLengthProperty(
-        'permanent',
-        selectedElement,
-        stylePropPathMappingFn(pin, ['style']),
-        (horizontal ? drag.x : drag.y) * (negative ? -1 : 1),
-        horizontal ? elementParentBounds?.width : elementParentBounds?.height,
-        true,
-      )
-    } else {
-      return null
-    }
-  }, pins)
 }
 
 function snapDrag(

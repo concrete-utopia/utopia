@@ -318,7 +318,7 @@ const NewCanvasControlsInner = (props: NewCanvasControlsInnerProps) => {
       case 'select':
       case 'select-lite':
       case 'live': {
-        if (isFeatureEnabled('Canvas Absolute Resize Controls')) {
+        if (isFeatureEnabled('Canvas Strategies')) {
           return null
         } else {
           return (
@@ -412,16 +412,16 @@ const NewCanvasControlsInner = (props: NewCanvasControlsInnerProps) => {
       {renderHighlightControls()}
       <LayoutParentControl />
       {when(
-        isFeatureEnabled('Canvas Absolute Resize Controls'),
+        isFeatureEnabled('Canvas Strategies'),
         <MultiSelectOutlineControl localSelectedElements={localSelectedViews} />,
       )}
-      {when(isFeatureEnabled('Canvas Absolute Resize Controls'), <GuidelineControls />)}
+      {when(isFeatureEnabled('Canvas Strategies'), <GuidelineControls />)}
       {when(
         isFeatureEnabled('Canvas Strategies'),
         <>{strategyControls.map((c) => React.createElement(c.control, { key: c.key }))}</>,
       )}
       {when(
-        isFeatureEnabled('Canvas Absolute Resize Controls'),
+        isFeatureEnabled('Canvas Strategies'),
         <FlexResizeControl localSelectedElements={localSelectedViews} />,
       )}
       {when(isFeatureEnabled('Escape Hatch experiment'), <EscapeHatchButtonControl />)}

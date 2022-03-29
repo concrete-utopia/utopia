@@ -13,7 +13,6 @@ export type FeatureName =
   | 'Click on empty canvas unfocuses'
   | 'Insertion Plus Button'
   | 'Canvas Strategies'
-  | 'Canvas Absolute Resize Controls'
   | 'Keyboard up clears interaction'
   | 'Escape Hatch experiment'
 
@@ -28,7 +27,6 @@ export const AllFeatureNames: FeatureName[] = [
   'Click on empty canvas unfocuses',
   'Insertion Plus Button',
   'Canvas Strategies',
-  'Canvas Absolute Resize Controls',
   'Keyboard up clears interaction',
   'Escape Hatch experiment',
 ]
@@ -44,7 +42,6 @@ let FeatureSwitches: { [feature in FeatureName]: boolean } = {
   'Click on empty canvas unfocuses': true,
   'Insertion Plus Button': true,
   'Canvas Strategies': false,
-  'Canvas Absolute Resize Controls': false,
   'Keyboard up clears interaction': false,
   'Escape Hatch experiment': true,
 }
