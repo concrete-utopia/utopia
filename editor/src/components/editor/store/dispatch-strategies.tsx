@@ -665,7 +665,20 @@ function handleStrategiesInner(
             result.unpatchedEditor.canvas.interactionSession.metadata,
           )
         ) {
-          return interactionHardReset(strategies, storedState, result, true)
+          const newStrategyState = {
+            ...result.strategyState,
+            startingMetadata: result.unpatchedEditor.canvas.interactionSession.metadata,
+          }
+          return {
+            unpatchedEditorState: result.unpatchedEditor,
+            patchedEditorState: interactionUpdate(
+              strategies,
+              storedState,
+              result,
+              isInteractionAction,
+            ).patchedEditorState,
+            newStrategyState: newStrategyState,
+          }
         }
       }
 
