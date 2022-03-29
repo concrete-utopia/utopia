@@ -259,7 +259,7 @@ export function useTriggerResizePerformanceTest(): () => void {
   const trigger = React.useCallback(async () => {
     const editorReady = await loadProject(dispatch, builtInDependencies, LargeProjectContents)
     if (!editorReady) {
-      console.info('ABSOLUTE_MOVE_TEST_ERROR')
+      console.info('RESIZE_TEST_ERROR')
       return
     }
     const targetPath = [...allPaths.current].sort(
@@ -332,12 +332,12 @@ function useTriggerHighlightPerformanceTest(key: 'regular' | 'all-elements'): ()
     'useTriggerHighlightPerformanceTest builtInDependencies',
   )
   const trigger = React.useCallback(async () => {
+    const allCapsKey = key.toLocaleUpperCase()
     const editorReady = await loadProject(dispatch, builtInDependencies, LargeProjectContents)
     if (!editorReady) {
-      console.info('ABSOLUTE_MOVE_TEST_ERROR')
+      console.info(`HIGHLIGHT_${allCapsKey}_TEST_ERROR`)
       return
     }
-    const allCapsKey = key.toLocaleUpperCase()
     if (allPaths.current.length === 0) {
       console.info(`HIGHLIGHT_${allCapsKey}_TEST_ERROR_NO_PATHS`)
       return
@@ -403,7 +403,7 @@ export function useTriggerSelectionPerformanceTest(): () => void {
   const trigger = React.useCallback(async () => {
     const editorReady = await loadProject(dispatch, builtInDependencies, LargeProjectContents)
     if (!editorReady) {
-      console.info('ABSOLUTE_MOVE_TEST_ERROR')
+      console.info('SELECT_TEST_ERROR')
       return
     }
     const targetPath = [...allPaths.current].sort(
