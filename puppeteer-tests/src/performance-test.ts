@@ -174,7 +174,7 @@ export const testPerformanceInner = async function (url: string): Promise<Perfor
   let absoluteMoveResult: Array<FrameResult> = []
   const { page, browser } = await setupBrowser(url, 120000)
   try {
-    simpleDispatch = await testEmptyDispatch(page)
+    //simpleDispatch = await testEmptyDispatch(page)
     basicCalc = timeBasicCalc()
     highlightRegularResult = await testHighlightRegularPerformance(page)
     highlightAllElementsResult = await testHighlightAllElementsPerformance(page)
