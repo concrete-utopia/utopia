@@ -933,7 +933,7 @@ describe('Monkey Function', () => {
   })
 
   xit('builds the correct paths for Exotic-type with-forwardRef components', () => {
-    const Red = React.forwardRef(({}, test) => {
+    const Red = React.forwardRef((props, test) => {
       return <div data-uid='red-root' ref={test as any} />
     })
 
@@ -964,6 +964,38 @@ describe('Monkey Function', () => {
             data-paths-2=\\"component:inner-parent/inner-child/red:red-root\\"
           ></div>
         </div>
+      </div>
+      "
+    `)
+  })
+
+  it('builds the correct paths for forwardRef components', () => {
+    const Blue = React.forwardRef((props: any, test) => {
+      return (
+        <div data-uid='blue-root' ref={test as any}>
+          {props.children}
+        </div>
+      )
+    })
+
+    const OuterComponent = () => {
+      const parentRef = useRef(null)
+      const childRef = useRef(null)
+      const blueRef = useRef(null)
+
+      return (
+        <Blue data-uid='inner-parent' ref={parentRef}>
+          <Blue data-uid='inner-child' ref={childRef}>
+            <Blue data-uid='blue' ref={blueRef} />
+          </Blue>
+        </Blue>
+      )
+    }
+
+    expect(renderToFormattedString(<OuterComponent data-uid={'component'} />))
+      .toMatchInlineSnapshot(`
+      "<div data-uid=\\"blue-root\\">
+        <div data-uid=\\"blue-root\\"><div data-uid=\\"blue-root\\"></div></div>
       </div>
       "
     `)

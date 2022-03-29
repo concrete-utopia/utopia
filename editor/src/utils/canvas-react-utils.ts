@@ -60,7 +60,8 @@ function fragmentOrProviderOrContext(type: any): boolean {
     type == React.Fragment ||
     type?.$$typeof == fragmentSymbol ||
     type?.$$typeof == providerSymbol ||
-    type?.$$typeof == contextSymbol
+    type?.$$typeof == contextSymbol ||
+    type?.$$typeof == forwardRefSymbol
   )
 }
 
@@ -356,6 +357,7 @@ function updateChildOfExotic(
   path2: string | null,
 ) {
   if (child == null || !shouldIncludeDataUID(child.type)) {
+    console.log(`Not including UID on child of type`, child?.type)
     return child
   }
   const existingChildUIDs = child.props?.[UTOPIA_UIDS_KEY]
@@ -363,8 +365,11 @@ function updateChildOfExotic(
   const appendedUIDString = appendToUidString(existingChildUIDs, dataUids)
   const appendedPathsString = appendToUidString(existingChildPaths, paths)
   if ((!React.isValidElement(child) as boolean) || child == null) {
+    console.log(`Not including UID on invalid child`)
     return child
   } else {
+    console.log(`Attempting to update a child`)
+
     // Setup the result.
     let additionalProps: any = {}
     let shouldClone: boolean = false
@@ -378,6 +383,8 @@ function updateChildOfExotic(
     if (childPath2 != null && child.props?.[UTOPIA_PATHS_2_KEY] == null) {
       additionalProps[UTOPIA_PATHS_2_KEY] = childPath2
       shouldClone = true
+    } else {
+      console.log(`Not attaching path to child`)
     }
 
     if (appendedUIDString != null) {
@@ -387,6 +394,7 @@ function updateChildOfExotic(
     }
 
     if (shouldClone) {
+      console.log(`Cloning child with additionalProps`, additionalProps)
       return React.cloneElement(child, additionalProps)
     } else {
       return child
@@ -424,6 +432,7 @@ const mangleExoticType = Utils.memoize(
         let originalTypeResponse = realCreateElement(type, { ...mangledProps })
 
         if (typeof p?.children === 'function') {
+          console.log(`Children are a function`)
           // mangle the function so that what it returns has the data uid
           const originalFunction = p.children
           children = function (...params: any[]) {
@@ -431,6 +440,7 @@ const mangleExoticType = Utils.memoize(
             return attachDataUidToRoot(originalResponse, uids, paths, path2)
           }
         } else {
+          console.log(`Children are not a function`)
           const uidsToPass = uids
           const pathsToPass = paths
 
@@ -444,10 +454,13 @@ const mangleExoticType = Utils.memoize(
         }
 
         if (children == null) {
+          console.log(`Children are null`)
           return originalTypeResponse
         } else if (Array.isArray(children)) {
+          console.log(`Children are an array`)
           return React.cloneElement(originalTypeResponse, undefined, ...children)
         } else {
+          console.log(`Children are not an array`)
           return React.cloneElement(originalTypeResponse, undefined, children)
         }
       }
@@ -505,7 +518,10 @@ function isClassComponent(component: any) {
 // - [ ] Check if we need all paths on an element, or just the deepest path
 
 function patchedCreateReactElement(type: any, props: any, ...children: any): any {
-  console.log('patchedCreateReactElement PROPS', props)
+  console.log('patchedCreateReactElement props', props)
+  console.log('patchedCreateReactElement type', type)
+  console.log('is forwardref?', type?.$$typeof == forwardRefSymbol)
+
   if (isClassComponent(type)) {
     const mangledClass = mangleClassType(type)
     return realCreateElement(mangledClass, props, ...children)
