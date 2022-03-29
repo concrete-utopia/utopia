@@ -1,5 +1,6 @@
 /* eslint-disable no-console */
-import puppeteer, { PageEventObject } from 'puppeteer'
+import * as puppeteer from 'puppeteer'
+import type { PageEventObject } from 'puppeteer'
 const fs = require('fs')
 const path = require('path')
 const AWS = require('aws-sdk')
