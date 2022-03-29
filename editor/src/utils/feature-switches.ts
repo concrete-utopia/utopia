@@ -62,6 +62,9 @@ fastForEach(AllFeatureNames, (name) => {
 })
 
 export function isFeatureEnabled(featureName: FeatureName): boolean {
+  if (featureName === 'Canvas Strategies') {
+    return true
+  }
   return FeatureSwitches[featureName] ?? false
 }
 
