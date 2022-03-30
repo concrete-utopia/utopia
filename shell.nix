@@ -178,6 +178,13 @@ let
   withBaseEditorScripts = lib.optionals includeEditorBuildSupport baseEditorScripts;
 
   puppeteerScripts = [
+    (pkgs.writeScriptBin "build-puppeteer-tests" ''
+      #!/usr/bin/env bash
+      set -e
+      cd $(${pkgs.git}/bin/git rev-parse --show-toplevel)/puppeteer-tests
+      ${pnpm} install --unsafe-perm
+      ${pnpm} run build
+    '')
       (pkgs.writeScriptBin "run-puppeteer-test" ''
       #!/usr/bin/env bash
       set -e

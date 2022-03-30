@@ -40,11 +40,11 @@ describe('Monkey Function', () => {
     class TestClass extends React.Component {
       render() {
         return (
-          <div data-uid='cica' data-paths='cica'>
-            <div data-uid='kutya' data-paths='kutya'>
+          <div data-uid='cica' data-path='cica'>
+            <div data-uid='kutya' data-path='kutya'>
               Hello!
             </div>
-            <div data-uid='majom' data-paths='majom'>
+            <div data-uid='majom' data-path='majom'>
               Hello!
             </div>
           </div>
@@ -52,15 +52,11 @@ describe('Monkey Function', () => {
       }
     }
 
-    expect(renderToFormattedString(<TestClass data-uid={'test1'} data-paths='test1' />))
+    expect(renderToFormattedString(<TestClass data-uid={'test1'} data-path='test1' />))
       .toMatchInlineSnapshot(`
-      "<div data-uid=\\"cica test1\\" data-paths=\\"cica test1\\" data-paths-2=\\"cica\\">
-        <div data-uid=\\"kutya\\" data-paths=\\"kutya\\" data-paths-2=\\"cica/kutya\\">
-          Hello!
-        </div>
-        <div data-uid=\\"majom\\" data-paths=\\"majom\\" data-paths-2=\\"cica/majom\\">
-          Hello!
-        </div>
+      "<div data-uid=\\"cica test1\\" data-path=\\"cica\\">
+        <div data-uid=\\"kutya\\" data-path=\\"kutya\\">Hello!</div>
+        <div data-uid=\\"majom\\" data-path=\\"majom\\">Hello!</div>
       </div>
       "
     `)
@@ -71,7 +67,7 @@ describe('Monkey Function', () => {
     class TestClass extends React.Component {
       render() {
         return (
-          <div data-uid='inner-div' data-paths='inner-div'>
+          <div data-uid='inner-div' data-path='inner-div'>
             {this.context.value}
           </div>
         )
@@ -81,18 +77,12 @@ describe('Monkey Function', () => {
 
     expect(
       renderToFormattedString(
-        <MyContext.Provider value={{ value: 'hello!' }} data-uid='provider' data-paths='provider'>
-          <TestClass data-uid={'test-class'} data-paths='test-class' />
+        <MyContext.Provider value={{ value: 'hello!' }} data-uid='provider' data-path='provider'>
+          <TestClass data-uid={'test-class'} data-path='test-class' />
         </MyContext.Provider>,
       ),
     ).toMatchInlineSnapshot(`
-      "<div
-        data-uid=\\"inner-div test-class provider\\"
-        data-paths=\\"inner-div test-class provider\\"
-        data-paths-2=\\"provider/test-class:inner-div\\"
-      >
-        hello!
-      </div>
+      "<div data-uid=\\"inner-div test-class provider\\" data-path=\\"inner-div\\">hello!</div>
       "
     `)
   })
@@ -102,7 +92,7 @@ describe('Monkey Function', () => {
     class TestClass extends React.Component {
       render() {
         return (
-          <div data-uid='inner-div' data-paths='inner-div'>
+          <div data-uid='inner-div' data-path='inner-div'>
             {this.context.value}
           </div>
         )
@@ -112,19 +102,15 @@ describe('Monkey Function', () => {
 
     const Renderer = () => {
       return (
-        <MyContext.Provider value={{ value: 'hello!' }} data-uid='provider' data-paths='provider'>
-          <TestClass data-uid='test-class' data-paths='test-class' />
+        <MyContext.Provider value={{ value: 'hello!' }} data-uid='provider' data-path='provider'>
+          <TestClass data-uid='test-class' data-path='test-class' />
         </MyContext.Provider>
       )
     }
 
-    expect(renderToFormattedString(<Renderer data-uid={'renderer'} data-paths={'renderer'} />))
+    expect(renderToFormattedString(<Renderer data-uid={'renderer'} data-path={'renderer'} />))
       .toMatchInlineSnapshot(`
-      "<div
-        data-uid=\\"inner-div test-class provider renderer\\"
-        data-paths=\\"inner-div test-class provider renderer\\"
-        data-paths-2=\\"provider/test-class:inner-div\\"
-      >
+      "<div data-uid=\\"inner-div test-class provider renderer\\" data-path=\\"inner-div\\">
         hello!
       </div>
       "

@@ -2,7 +2,7 @@ import React from 'react'
 import { MapLike } from 'typescript'
 import { getUtopiaID } from '../../../core/model/element-template-utils'
 import {
-  UTOPIA_PATHS_KEY,
+  UTOPIA_PATH_KEY,
   UTOPIA_SCENE_ID_KEY,
   UTOPIA_INSTANCE_PATH,
   UTOPIA_UIDS_KEY,
@@ -400,7 +400,7 @@ function renderJSXElement(
 
   const finalPropsIcludingElementPath = {
     ...finalProps,
-    [UTOPIA_PATHS_KEY]: optionalMap(EP.toString, elementPath),
+    [UTOPIA_PATH_KEY]: optionalMap(EP.toString, elementPath),
   }
 
   const staticElementPathForGeneratedElement = optionalMap(EP.makeLastPartOfPathStatic, elementPath)

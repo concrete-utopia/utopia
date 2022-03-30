@@ -190,7 +190,7 @@ describe('DOM Walker tests', () => {
           "y": 0,
         },
         "props": Object {
-          "data-paths": "utopia-storyboard-uid",
+          "data-path": "utopia-storyboard-uid",
           "data-uid": "utopia-storyboard-uid",
           "skipDeepFreeze": true,
         },
@@ -205,6 +205,7 @@ describe('DOM Walker tests', () => {
           },
           "display": "initial",
           "flexDirection": null,
+          "globalContentBox": null,
           "htmlElementName": "div",
           "immediateParentBounds": Object {
             "height": 0,
@@ -270,7 +271,7 @@ describe('DOM Walker tests', () => {
           "y": 0,
         },
         "props": Object {
-          "data-paths": "utopia-storyboard-uid/scene-aaa",
+          "data-path": "utopia-storyboard-uid/scene-aaa",
           "data-uid": "scene-aaa",
           "data-utopia-scene-id": "utopia-storyboard-uid/scene-aaa",
           "skipDeepFreeze": true,
@@ -293,6 +294,12 @@ describe('DOM Walker tests', () => {
           },
           "display": "block",
           "flexDirection": "row",
+          "globalContentBox": Object {
+            "height": 812,
+            "width": 375,
+            "x": 0,
+            "y": 0,
+          },
           "htmlElementName": "div",
           "immediateParentBounds": Object {
             "height": 812,
@@ -365,7 +372,7 @@ describe('DOM Walker tests', () => {
           "y": 0,
         },
         "props": Object {
-          "data-paths": "utopia-storyboard-uid/scene-aaa/app-entity",
+          "data-path": "utopia-storyboard-uid/scene-aaa/app-entity",
           "data-uid": "app-entity",
           "data-utopia-instance-path": Object {
             "parts": Array [
@@ -397,6 +404,12 @@ describe('DOM Walker tests', () => {
           },
           "display": "block",
           "flexDirection": "row",
+          "globalContentBox": Object {
+            "height": 812,
+            "width": 375,
+            "x": 0,
+            "y": 0,
+          },
           "htmlElementName": "div",
           "immediateParentBounds": Object {
             "height": 812,
@@ -476,7 +489,7 @@ describe('DOM Walker tests', () => {
           "y": 0,
         },
         "props": Object {
-          "data-paths": "utopia-storyboard-uid/scene-aaa/app-entity:05c utopia-storyboard-uid/scene-aaa/app-entity",
+          "data-path": "utopia-storyboard-uid/scene-aaa/app-entity:05c",
           "data-uid": "05c app-entity",
           "skipDeepFreeze": true,
           "style": Object {
@@ -499,6 +512,12 @@ describe('DOM Walker tests', () => {
           },
           "display": "block",
           "flexDirection": "row",
+          "globalContentBox": Object {
+            "height": 812,
+            "width": 375,
+            "x": 0,
+            "y": 0,
+          },
           "htmlElementName": "div",
           "immediateParentBounds": Object {
             "height": 812,
@@ -579,7 +598,7 @@ describe('DOM Walker tests', () => {
           "y": 98,
         },
         "props": Object {
-          "data-paths": "utopia-storyboard-uid/scene-aaa/app-entity:05c/ef0",
+          "data-path": "utopia-storyboard-uid/scene-aaa/app-entity:05c/ef0",
           "data-uid": "ef0",
           "skipDeepFreeze": true,
           "style": Object {
@@ -602,6 +621,12 @@ describe('DOM Walker tests', () => {
           },
           "display": "block",
           "flexDirection": "row",
+          "globalContentBox": Object {
+            "height": 124,
+            "width": 266,
+            "x": 55,
+            "y": 98,
+          },
           "htmlElementName": "div",
           "immediateParentBounds": Object {
             "height": 812,
@@ -683,7 +708,7 @@ describe('DOM Walker tests', () => {
           "y": 27,
         },
         "props": Object {
-          "data-paths": "utopia-storyboard-uid/scene-aaa/app-entity:05c/ef0/488",
+          "data-path": "utopia-storyboard-uid/scene-aaa/app-entity:05c/ef0/488",
           "data-uid": "488",
           "skipDeepFreeze": true,
           "style": Object {
@@ -706,6 +731,12 @@ describe('DOM Walker tests', () => {
           },
           "display": "block",
           "flexDirection": "row",
+          "globalContentBox": Object {
+            "height": 70,
+            "width": 125,
+            "x": 126,
+            "y": 125,
+          },
           "htmlElementName": "div",
           "immediateParentBounds": Object {
             "height": 124,
@@ -830,7 +861,7 @@ describe('DOM Walker tests', () => {
           "y": 0,
         },
         "props": Object {
-          "data-paths": "utopia-storyboard-uid",
+          "data-path": "utopia-storyboard-uid",
           "data-uid": "utopia-storyboard-uid",
           "skipDeepFreeze": true,
         },
@@ -845,6 +876,7 @@ describe('DOM Walker tests', () => {
           },
           "display": "initial",
           "flexDirection": null,
+          "globalContentBox": null,
           "htmlElementName": "div",
           "immediateParentBounds": Object {
             "height": 0,
@@ -910,7 +942,7 @@ describe('DOM Walker tests', () => {
           "y": 0,
         },
         "props": Object {
-          "data-paths": "utopia-storyboard-uid/scene-aaa",
+          "data-path": "utopia-storyboard-uid/scene-aaa",
           "data-uid": "scene-aaa",
           "data-utopia-scene-id": "utopia-storyboard-uid/scene-aaa",
           "skipDeepFreeze": true,
@@ -933,6 +965,12 @@ describe('DOM Walker tests', () => {
           },
           "display": "block",
           "flexDirection": "row",
+          "globalContentBox": Object {
+            "height": 812,
+            "width": 375,
+            "x": 0,
+            "y": 0,
+          },
           "htmlElementName": "div",
           "immediateParentBounds": Object {
             "height": 812,
@@ -1005,7 +1043,7 @@ describe('DOM Walker tests', () => {
           "y": 0,
         },
         "props": Object {
-          "data-paths": "utopia-storyboard-uid/scene-aaa/app-entity",
+          "data-path": "utopia-storyboard-uid/scene-aaa/app-entity",
           "data-uid": "app-entity",
           "data-utopia-instance-path": Object {
             "parts": Array [
@@ -1037,6 +1075,12 @@ describe('DOM Walker tests', () => {
           },
           "display": "block",
           "flexDirection": "row",
+          "globalContentBox": Object {
+            "height": 812,
+            "width": 375,
+            "x": 0,
+            "y": 0,
+          },
           "htmlElementName": "div",
           "immediateParentBounds": Object {
             "height": 812,
@@ -1112,7 +1156,7 @@ describe('DOM Walker tests', () => {
           "y": 0,
         },
         "props": Object {
-          "data-paths": "utopia-storyboard-uid/scene-aaa/app-entity:05c utopia-storyboard-uid/scene-aaa/app-entity",
+          "data-path": "utopia-storyboard-uid/scene-aaa/app-entity:05c",
           "data-uid": "05c app-entity",
           "skipDeepFreeze": true,
           "style": Object {
@@ -1135,6 +1179,12 @@ describe('DOM Walker tests', () => {
           },
           "display": "block",
           "flexDirection": "row",
+          "globalContentBox": Object {
+            "height": 812,
+            "width": 375,
+            "x": 0,
+            "y": 0,
+          },
           "htmlElementName": "div",
           "immediateParentBounds": Object {
             "height": 812,
@@ -1211,7 +1261,7 @@ describe('DOM Walker tests', () => {
           "y": 98,
         },
         "props": Object {
-          "data-paths": "utopia-storyboard-uid/scene-aaa/app-entity:05c/ef0",
+          "data-path": "utopia-storyboard-uid/scene-aaa/app-entity:05c/ef0",
           "data-uid": "ef0",
           "skipDeepFreeze": true,
           "style": Object {
@@ -1230,6 +1280,12 @@ describe('DOM Walker tests', () => {
           "coordinateSystemBounds": null,
           "display": "block",
           "flexDirection": "row",
+          "globalContentBox": Object {
+            "height": 164,
+            "width": 306,
+            "x": 55,
+            "y": 98,
+          },
           "htmlElementName": "div",
           "immediateParentBounds": Object {
             "height": 812,
@@ -1307,7 +1363,7 @@ describe('DOM Walker tests', () => {
           "y": 27,
         },
         "props": Object {
-          "data-paths": "utopia-storyboard-uid/scene-aaa/app-entity:05c/ef0/488",
+          "data-path": "utopia-storyboard-uid/scene-aaa/app-entity:05c/ef0/488",
           "data-uid": "488",
           "skipDeepFreeze": true,
           "style": Object {
@@ -1330,6 +1386,12 @@ describe('DOM Walker tests', () => {
           },
           "display": "block",
           "flexDirection": "row",
+          "globalContentBox": Object {
+            "height": 70,
+            "width": 125,
+            "x": 126,
+            "y": 125,
+          },
           "htmlElementName": "div",
           "immediateParentBounds": Object {
             "height": 164,
@@ -1454,7 +1516,7 @@ describe('DOM Walker tests', () => {
           "y": 0,
         },
         "props": Object {
-          "data-paths": "utopia-storyboard-uid",
+          "data-path": "utopia-storyboard-uid",
           "data-uid": "utopia-storyboard-uid",
           "skipDeepFreeze": true,
         },
@@ -1469,6 +1531,7 @@ describe('DOM Walker tests', () => {
           },
           "display": "initial",
           "flexDirection": null,
+          "globalContentBox": null,
           "htmlElementName": "div",
           "immediateParentBounds": Object {
             "height": 0,
@@ -1534,7 +1597,7 @@ describe('DOM Walker tests', () => {
           "y": 0,
         },
         "props": Object {
-          "data-paths": "utopia-storyboard-uid/scene-aaa",
+          "data-path": "utopia-storyboard-uid/scene-aaa",
           "data-uid": "scene-aaa",
           "data-utopia-scene-id": "utopia-storyboard-uid/scene-aaa",
           "skipDeepFreeze": true,
@@ -1557,6 +1620,12 @@ describe('DOM Walker tests', () => {
           },
           "display": "block",
           "flexDirection": "row",
+          "globalContentBox": Object {
+            "height": 812,
+            "width": 375,
+            "x": 0,
+            "y": 0,
+          },
           "htmlElementName": "div",
           "immediateParentBounds": Object {
             "height": 812,
@@ -1629,7 +1698,7 @@ describe('DOM Walker tests', () => {
           "y": 0,
         },
         "props": Object {
-          "data-paths": "utopia-storyboard-uid/scene-aaa/app-entity",
+          "data-path": "utopia-storyboard-uid/scene-aaa/app-entity",
           "data-uid": "app-entity",
           "data-utopia-instance-path": Object {
             "parts": Array [
@@ -1661,6 +1730,12 @@ describe('DOM Walker tests', () => {
           },
           "display": "flex",
           "flexDirection": "row",
+          "globalContentBox": Object {
+            "height": 812,
+            "width": 375,
+            "x": 0,
+            "y": 0,
+          },
           "htmlElementName": "div",
           "immediateParentBounds": Object {
             "height": 812,
@@ -1736,7 +1811,7 @@ describe('DOM Walker tests', () => {
           "y": 0,
         },
         "props": Object {
-          "data-paths": "utopia-storyboard-uid/scene-aaa/app-entity:05c utopia-storyboard-uid/scene-aaa/app-entity",
+          "data-path": "utopia-storyboard-uid/scene-aaa/app-entity:05c",
           "data-uid": "05c app-entity",
           "skipDeepFreeze": true,
           "style": Object {
@@ -1760,6 +1835,12 @@ describe('DOM Walker tests', () => {
           },
           "display": "flex",
           "flexDirection": "row",
+          "globalContentBox": Object {
+            "height": 812,
+            "width": 375,
+            "x": 0,
+            "y": 0,
+          },
           "htmlElementName": "div",
           "immediateParentBounds": Object {
             "height": 812,
@@ -1836,7 +1917,7 @@ describe('DOM Walker tests', () => {
           "y": 98,
         },
         "props": Object {
-          "data-paths": "utopia-storyboard-uid/scene-aaa/app-entity:05c/ef0",
+          "data-path": "utopia-storyboard-uid/scene-aaa/app-entity:05c/ef0",
           "data-uid": "ef0",
           "skipDeepFreeze": true,
           "style": Object {
@@ -1855,6 +1936,12 @@ describe('DOM Walker tests', () => {
           "coordinateSystemBounds": null,
           "display": "block",
           "flexDirection": "row",
+          "globalContentBox": Object {
+            "height": 164,
+            "width": 306,
+            "x": 55,
+            "y": 98,
+          },
           "htmlElementName": "div",
           "immediateParentBounds": Object {
             "height": 812,
@@ -1932,7 +2019,7 @@ describe('DOM Walker tests', () => {
           "y": 27,
         },
         "props": Object {
-          "data-paths": "utopia-storyboard-uid/scene-aaa/app-entity:05c/ef0/488",
+          "data-path": "utopia-storyboard-uid/scene-aaa/app-entity:05c/ef0/488",
           "data-uid": "488",
           "skipDeepFreeze": true,
           "style": Object {
@@ -1955,6 +2042,12 @@ describe('DOM Walker tests', () => {
           },
           "display": "block",
           "flexDirection": "row",
+          "globalContentBox": Object {
+            "height": 70,
+            "width": 125,
+            "x": 126,
+            "y": 125,
+          },
           "htmlElementName": "div",
           "immediateParentBounds": Object {
             "height": 164,
@@ -2067,7 +2160,7 @@ describe('DOM Walker tests', () => {
           "y": 0,
         },
         "props": Object {
-          "data-paths": "utopia-storyboard-uid",
+          "data-path": "utopia-storyboard-uid",
           "data-uid": "utopia-storyboard-uid",
           "skipDeepFreeze": true,
         },
@@ -2082,6 +2175,7 @@ describe('DOM Walker tests', () => {
           },
           "display": "initial",
           "flexDirection": null,
+          "globalContentBox": null,
           "htmlElementName": "div",
           "immediateParentBounds": Object {
             "height": 0,
@@ -2147,7 +2241,7 @@ describe('DOM Walker tests', () => {
           "y": 0,
         },
         "props": Object {
-          "data-paths": "utopia-storyboard-uid/scene-aaa",
+          "data-path": "utopia-storyboard-uid/scene-aaa",
           "data-uid": "scene-aaa",
           "data-utopia-scene-id": "utopia-storyboard-uid/scene-aaa",
           "skipDeepFreeze": true,
@@ -2170,6 +2264,12 @@ describe('DOM Walker tests', () => {
           },
           "display": "block",
           "flexDirection": "row",
+          "globalContentBox": Object {
+            "height": 812,
+            "width": 375,
+            "x": 0,
+            "y": 0,
+          },
           "htmlElementName": "div",
           "immediateParentBounds": Object {
             "height": 812,
@@ -2242,7 +2342,7 @@ describe('DOM Walker tests', () => {
           "y": 0,
         },
         "props": Object {
-          "data-paths": "utopia-storyboard-uid/scene-aaa/app-entity",
+          "data-path": "utopia-storyboard-uid/scene-aaa/app-entity",
           "data-uid": "app-entity",
           "data-utopia-instance-path": Object {
             "parts": Array [
@@ -2274,6 +2374,12 @@ describe('DOM Walker tests', () => {
           },
           "display": "block",
           "flexDirection": "row",
+          "globalContentBox": Object {
+            "height": 812,
+            "width": 375,
+            "x": 0,
+            "y": 0,
+          },
           "htmlElementName": "div",
           "immediateParentBounds": Object {
             "height": 812,
@@ -2350,7 +2456,7 @@ describe('DOM Walker tests', () => {
         },
         "props": Object {
           "data-label": "Hat",
-          "data-paths": "utopia-storyboard-uid/scene-aaa/app-entity:aaa utopia-storyboard-uid/scene-aaa/app-entity",
+          "data-path": "utopia-storyboard-uid/scene-aaa/app-entity:aaa",
           "data-uid": "aaa app-entity",
           "skipDeepFreeze": true,
           "style": Object {
@@ -2372,6 +2478,12 @@ describe('DOM Walker tests', () => {
           },
           "display": "block",
           "flexDirection": "row",
+          "globalContentBox": Object {
+            "height": 812,
+            "width": 375,
+            "x": 0,
+            "y": 0,
+          },
           "htmlElementName": "div",
           "immediateParentBounds": Object {
             "height": 812,
@@ -2488,7 +2600,7 @@ describe('DOM Walker tests', () => {
           "y": 0,
         },
         "props": Object {
-          "data-paths": "utopia-storyboard-uid",
+          "data-path": "utopia-storyboard-uid",
           "data-uid": "utopia-storyboard-uid",
           "skipDeepFreeze": true,
         },
@@ -2503,6 +2615,7 @@ describe('DOM Walker tests', () => {
           },
           "display": "initial",
           "flexDirection": null,
+          "globalContentBox": null,
           "htmlElementName": "div",
           "immediateParentBounds": Object {
             "height": 0,
@@ -2568,7 +2681,7 @@ describe('DOM Walker tests', () => {
           "y": 0,
         },
         "props": Object {
-          "data-paths": "utopia-storyboard-uid/scene-aaa",
+          "data-path": "utopia-storyboard-uid/scene-aaa",
           "data-uid": "scene-aaa",
           "data-utopia-scene-id": "utopia-storyboard-uid/scene-aaa",
           "skipDeepFreeze": true,
@@ -2591,6 +2704,12 @@ describe('DOM Walker tests', () => {
           },
           "display": "block",
           "flexDirection": "row",
+          "globalContentBox": Object {
+            "height": 812,
+            "width": 375,
+            "x": 0,
+            "y": 0,
+          },
           "htmlElementName": "div",
           "immediateParentBounds": Object {
             "height": 812,
@@ -2663,7 +2782,7 @@ describe('DOM Walker tests', () => {
           "y": 0,
         },
         "props": Object {
-          "data-paths": "utopia-storyboard-uid/scene-aaa/app-entity",
+          "data-path": "utopia-storyboard-uid/scene-aaa/app-entity",
           "data-uid": "app-entity",
           "data-utopia-instance-path": Object {
             "parts": Array [
@@ -2695,6 +2814,12 @@ describe('DOM Walker tests', () => {
           },
           "display": "block",
           "flexDirection": "row",
+          "globalContentBox": Object {
+            "height": 812,
+            "width": 375,
+            "x": 0,
+            "y": 0,
+          },
           "htmlElementName": "div",
           "immediateParentBounds": Object {
             "height": 812,
@@ -2770,7 +2895,7 @@ describe('DOM Walker tests', () => {
           "y": 0,
         },
         "props": Object {
-          "data-paths": "utopia-storyboard-uid/scene-aaa/app-entity:aaa utopia-storyboard-uid/scene-aaa/app-entity",
+          "data-path": "utopia-storyboard-uid/scene-aaa/app-entity:aaa",
           "data-uid": "aaa app-entity",
           "skipDeepFreeze": true,
           "style": Object {
@@ -2792,6 +2917,12 @@ describe('DOM Walker tests', () => {
           },
           "display": "block",
           "flexDirection": "row",
+          "globalContentBox": Object {
+            "height": 812,
+            "width": 375,
+            "x": 0,
+            "y": 0,
+          },
           "htmlElementName": "div",
           "immediateParentBounds": Object {
             "height": 812,
@@ -2869,7 +3000,7 @@ describe('DOM Walker tests', () => {
         },
         "props": Object {
           "data-label": "Plane",
-          "data-paths": "utopia-storyboard-uid/scene-aaa/app-entity:aaa/bbb~~~1",
+          "data-path": "utopia-storyboard-uid/scene-aaa/app-entity:aaa/bbb~~~1",
           "data-uid": "bbb~~~1",
           "skipDeepFreeze": true,
         },
@@ -2884,6 +3015,12 @@ describe('DOM Walker tests', () => {
           },
           "display": "block",
           "flexDirection": "row",
+          "globalContentBox": Object {
+            "height": 0,
+            "width": 375,
+            "x": 0,
+            "y": 0,
+          },
           "htmlElementName": "div",
           "immediateParentBounds": Object {
             "height": 812,
@@ -2961,7 +3098,7 @@ describe('DOM Walker tests', () => {
         },
         "props": Object {
           "data-label": "Plane",
-          "data-paths": "utopia-storyboard-uid/scene-aaa/app-entity:aaa/bbb~~~2",
+          "data-path": "utopia-storyboard-uid/scene-aaa/app-entity:aaa/bbb~~~2",
           "data-uid": "bbb~~~2",
           "skipDeepFreeze": true,
         },
@@ -2976,6 +3113,12 @@ describe('DOM Walker tests', () => {
           },
           "display": "block",
           "flexDirection": "row",
+          "globalContentBox": Object {
+            "height": 0,
+            "width": 375,
+            "x": 0,
+            "y": 0,
+          },
           "htmlElementName": "div",
           "immediateParentBounds": Object {
             "height": 812,
@@ -3053,7 +3196,7 @@ describe('DOM Walker tests', () => {
         },
         "props": Object {
           "data-label": "Plane",
-          "data-paths": "utopia-storyboard-uid/scene-aaa/app-entity:aaa/bbb~~~3",
+          "data-path": "utopia-storyboard-uid/scene-aaa/app-entity:aaa/bbb~~~3",
           "data-uid": "bbb~~~3",
           "skipDeepFreeze": true,
         },
@@ -3068,6 +3211,12 @@ describe('DOM Walker tests', () => {
           },
           "display": "block",
           "flexDirection": "row",
+          "globalContentBox": Object {
+            "height": 0,
+            "width": 375,
+            "x": 0,
+            "y": 0,
+          },
           "htmlElementName": "div",
           "immediateParentBounds": Object {
             "height": 812,

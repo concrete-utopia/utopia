@@ -1,6 +1,6 @@
 import React from 'react'
 import { MetadataUtils } from '../../../../core/model/element-metadata-utils'
-import { last, uniqBy } from '../../../../core/shared/array-utils'
+import { uniqBy } from '../../../../core/shared/array-utils'
 import { ElementInstanceMetadataMap } from '../../../../core/shared/element-template'
 import {
   boundingRectangleArray,
@@ -14,7 +14,6 @@ import { ElementPath } from '../../../../core/shared/project-file-types'
 import * as EP from '../../../../core/shared/element-path'
 import { fastForEach, NO_OP } from '../../../../core/shared/utils'
 import { KeyCharacter, KeysPressed } from '../../../../utils/keyboard'
-import { useKeepShallowReferenceEquality } from '../../../../utils/react-performance'
 import Utils from '../../../../utils/utils'
 import {
   clearHighlightedViews,
@@ -26,17 +25,13 @@ import {
 import { EditorState, EditorStorePatched } from '../../../editor/store/editor-state'
 import { useEditorState, useRefEditorState } from '../../../editor/store/store-hook'
 import CanvasActions from '../../canvas-actions'
-import { DragState, moveDragState } from '../../canvas-types'
+import { moveDragState } from '../../canvas-types'
 import {
   createDuplicationNewUIDs,
   getDragStateDrag,
   getOriginalCanvasFrames,
 } from '../../canvas-utils'
-import {
-  findFirstParentWithValidElementPath,
-  getAllTargetsAtPoint,
-  getValidTargetAtPoint,
-} from '../../dom-lookup'
+import { getValidTargetAtPoint } from '../../dom-lookup'
 import { useWindowToCanvasCoordinates } from '../../dom-lookup-hooks'
 import { useInsertModeSelectAndHover } from './insert-mode-hooks'
 import { WindowMousePositionRaw } from '../../../../utils/global-positions'
@@ -44,8 +39,9 @@ import { isFeatureEnabled } from '../../../../utils/feature-switches'
 import {
   createInteractionViaMouse,
   KeyboardInteractionTimeout,
+  updateInteractionViaKeyboard,
 } from '../../canvas-strategies/interaction-state'
-import { Modifier } from '../../../../utils/modifiers'
+import { Modifier, Modifiers } from '../../../../utils/modifiers'
 import { pathsEqual } from '../../../../core/shared/element-path'
 
 const DRAG_START_TRESHOLD = 2
@@ -125,8 +121,9 @@ export function useMaybeHighlightElement(): {
   )
 
   const maybeClearHighlightsOnHoverEnd = React.useCallback((): void => {
-    const { dispatch, dragging, resizing, selectionEnabled } = stateRef.current
-    if (selectionEnabled && !dragging && !resizing) {
+    const { dispatch, dragging, resizing, selectionEnabled, highlightedViews } = stateRef.current
+
+    if (selectionEnabled && !dragging && !resizing && highlightedViews.length > 0) {
       dispatch([clearHighlightedViews()], 'canvas')
     }
   }, [stateRef])
@@ -642,31 +639,78 @@ export function useSelectAndHover(
   }
 }
 
-export function setupClearKeyboardInteraction(
-  editorStoreRef: { readonly current: EditorStorePatched },
-  keyboardTimeoutHandler: React.MutableRefObject<NodeJS.Timeout | null>,
-) {
-  if (!isFeatureEnabled('Keyboard up clears interaction')) {
-    if (keyboardTimeoutHandler.current != null) {
-      clearTimeout(keyboardTimeoutHandler.current)
-      keyboardTimeoutHandler.current = null
-    }
-
-    keyboardTimeoutHandler.current = setTimeout(clearHighlightedViews, KeyboardInteractionTimeout)
-
-    const clearKeyboardInteraction = () => {
-      window.removeEventListener('mousedown', clearKeyboardInteraction)
+export function useClearKeyboardInteraction(editorStoreRef: {
+  readonly current: EditorStorePatched
+}) {
+  const keyboardTimeoutHandler = React.useRef<NodeJS.Timeout | null>(null)
+  return React.useCallback(() => {
+    if (!isFeatureEnabled('Keyboard up clears interaction')) {
       if (keyboardTimeoutHandler.current != null) {
         clearTimeout(keyboardTimeoutHandler.current)
         keyboardTimeoutHandler.current = null
       }
-      if (
-        editorStoreRef.current.editor.canvas.interactionSession?.interactionData.type === 'KEYBOARD'
-      ) {
-        editorStoreRef.current.dispatch([CanvasActions.clearInteractionSession(true)], 'everyone')
-      }
-    }
 
-    window.addEventListener('mousedown', clearKeyboardInteraction, { once: true, capture: true })
-  }
+      const clearKeyboardInteraction = () => {
+        window.removeEventListener('mousedown', clearKeyboardInteraction)
+        if (keyboardTimeoutHandler.current != null) {
+          clearTimeout(keyboardTimeoutHandler.current)
+          keyboardTimeoutHandler.current = null
+        }
+        if (
+          editorStoreRef.current.editor.canvas.interactionSession?.interactionData.type ===
+          'KEYBOARD'
+        ) {
+          editorStoreRef.current.dispatch([CanvasActions.clearInteractionSession(true)], 'everyone')
+        }
+      }
+
+      keyboardTimeoutHandler.current = setTimeout(
+        clearKeyboardInteraction,
+        KeyboardInteractionTimeout,
+      )
+
+      window.addEventListener('mousedown', clearKeyboardInteraction, { once: true, capture: true })
+    }
+  }, [editorStoreRef])
+}
+
+const AutomaticKeyUpTimeout = 500
+
+// Nasty problem: when cmd is down, other keys don't trigger keyup events.
+// Workaround: automatically remove the button from the interactionsession after a timeout
+export function useAutomaticKeyUp(editorStoreRef: { readonly current: EditorStorePatched }) {
+  const keyupTimeoutHandler = React.useRef<{ [key: string]: NodeJS.Timeout }>({})
+  return React.useCallback(
+    (key: KeyCharacter, modifiers: Modifiers) => {
+      // the problem only appears when cmd is down
+      if (!modifiers.cmd) {
+        return
+      }
+      if (keyupTimeoutHandler.current[key] != null) {
+        clearTimeout(keyupTimeoutHandler.current[key])
+        delete keyupTimeoutHandler.current[key]
+      }
+
+      const removeKeypressed = () => {
+        clearTimeout(keyupTimeoutHandler.current[key])
+        delete keyupTimeoutHandler.current[key]
+
+        const { interactionSession } = editorStoreRef.current.editor.canvas
+        if (
+          interactionSession?.interactionData.type === 'KEYBOARD' &&
+          interactionSession?.interactionData.keysPressed.indexOf(key) > -1
+        ) {
+          const action = CanvasActions.createInteractionSession(
+            updateInteractionViaKeyboard(interactionSession, [], [key], modifiers, {
+              type: 'KEYBOARD_CATCHER_CONTROL',
+            }),
+          )
+          editorStoreRef.current.dispatch([action], 'everyone')
+        }
+      }
+
+      keyupTimeoutHandler.current[key] = setTimeout(removeKeypressed, AutomaticKeyUpTimeout)
+    },
+    [editorStoreRef],
+  )
 }

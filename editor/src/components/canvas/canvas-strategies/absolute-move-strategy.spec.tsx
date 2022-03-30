@@ -3,9 +3,14 @@ import {
   ElementInstanceMetadata,
   SpecialSizeMeasurements,
 } from '../../../core/shared/element-template'
-import { canvasPoint, canvasRectangle } from '../../../core/shared/math-utils'
+import {
+  CanvasPoint,
+  canvasPoint,
+  canvasRectangle,
+  CanvasVector,
+} from '../../../core/shared/math-utils'
 import { ElementPath } from '../../../core/shared/project-file-types'
-import { emptyModifiers } from '../../../utils/modifiers'
+import { emptyModifiers, Modifiers } from '../../../utils/modifiers'
 import { EditorState } from '../../editor/store/editor-state'
 import { foldAndApplyCommands } from '../commands/commands'
 import {
@@ -26,12 +31,20 @@ function prepareEditorState(codeSnippet: string, selectedViews: Array<ElementPat
 }
 
 function dragBy15Pixels(editorState: EditorState): EditorState {
+  return dragByPixels(editorState, canvasPoint({ x: 15, y: 15 }), emptyModifiers)
+}
+
+function dragByPixels(
+  editorState: EditorState,
+  vector: CanvasVector,
+  modifiers: Modifiers,
+): EditorState {
   const interactionSession: InteractionSession = {
     ...createMouseInteractionForTests(
       null as any, // the strategy does not use this
-      emptyModifiers,
+      modifiers,
       null as any, // the strategy does not use this
-      canvasPoint({ x: 15, y: 15 }),
+      vector,
     ),
     metadata: null as any, // the strategy does not use this
   }
@@ -43,7 +56,7 @@ function dragBy15Pixels(editorState: EditorState): EditorState {
       currentStrategy: null as any, // the strategy does not use this
       currentStrategyFitness: null as any, // the strategy does not use this
       currentStrategyCommands: null as any, // the strategy does not use this
-      accumulatedCommands: null as any, // the strategy does not use this
+      accumulatedPatches: null as any, // the strategy does not use this
       commandDescriptions: null as any, // the strategy does not use this
       sortedApplicableStrategies: null as any, // the strategy does not use this
       startingMetadata: {
@@ -60,8 +73,14 @@ function dragBy15Pixels(editorState: EditorState): EditorState {
     } as StrategyState,
   )
 
-  const finalEditor = foldAndApplyCommands(editorState, editorState, strategyResult, 'permanent')
-    .editorState
+  const finalEditor = foldAndApplyCommands(
+    editorState,
+    editorState,
+    [],
+    [],
+    strategyResult,
+    'permanent',
+  ).editorState
 
   return finalEditor
 }
@@ -251,6 +270,85 @@ describe('Absolute Move Strategy', () => {
         />
       </View>`,
         ),
+      ),
+    )
+  })
+})
+
+describe('Axis locked move', () => {
+  it('works with a TL pinned absolute element', async () => {
+    const targetElement = elementPath([
+      ['scene-aaa', 'app-entity'],
+      ['aaa', 'bbb'],
+    ])
+
+    const initialEditor: EditorState = prepareEditorState(
+      `
+    <View style={{ ...(props.style || {}) }} data-uid='aaa'>
+      <View
+        style={{ backgroundColor: '#0091FFAA', position: 'absolute', left: 50, top: 50, width: 250, height: 300 }}
+        data-uid='bbb'
+      />
+    </View>
+    `,
+      [targetElement],
+    )
+
+    const modifiers: Modifiers = {
+      alt: false,
+      cmd: false,
+      ctrl: false,
+      shift: true,
+    }
+
+    const finalEditor = dragByPixels(initialEditor, canvasPoint({ x: 10, y: 20 }), modifiers)
+
+    expect(testPrintCodeFromEditorState(finalEditor)).toEqual(
+      makeTestProjectCodeWithSnippet(
+        `<View style={{ ...(props.style || {}) }} data-uid='aaa'>
+        <View
+          style={{ backgroundColor: '#0091FFAA', position: 'absolute', left: 50, top: 70, width: 250, height: 300 }}
+          data-uid='bbb'
+        />
+      </View>`,
+      ),
+    )
+  })
+  it('works with a TLBR pinned absolute element', async () => {
+    const targetElement = elementPath([
+      ['scene-aaa', 'app-entity'],
+      ['aaa', 'bbb'],
+    ])
+
+    const initialEditor: EditorState = prepareEditorState(
+      `
+    <View style={{ ...(props.style || {}) }} data-uid='aaa'>
+      <View
+        style={{ backgroundColor: '#0091FFAA', position: 'absolute', left: 50, top: 50, bottom: 250, right: 200 }}
+        data-uid='bbb'
+      />
+    </View>
+    `,
+      [targetElement],
+    )
+
+    const modifiers: Modifiers = {
+      alt: false,
+      cmd: false,
+      ctrl: false,
+      shift: true,
+    }
+
+    const finalEditor = dragByPixels(initialEditor, canvasPoint({ x: 25, y: 10 }), modifiers)
+
+    expect(testPrintCodeFromEditorState(finalEditor)).toEqual(
+      makeTestProjectCodeWithSnippet(
+        `<View style={{ ...(props.style || {}) }} data-uid='aaa'>
+        <View
+          style={{ backgroundColor: '#0091FFAA', position: 'absolute', left: 75, top: 50, bottom: 250, right: 175 }}
+          data-uid='bbb'
+        />
+      </View>`,
       ),
     )
   })

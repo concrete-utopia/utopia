@@ -13,7 +13,7 @@ import {
   makeTestProjectCodeWithSnippet,
   testPrintCodeFromEditorState,
 } from '../ui-jsx.test-utils'
-import { absoluteResizeStrategy } from './absolute-resize-strategy'
+import { absoluteResizeDeltaStrategy } from './absolute-resize-delta-strategy'
 import { pickCanvasStateFromEditorState } from './canvas-strategies'
 import { StrategyState } from './interaction-state'
 import { createMouseInteractionForTests } from './interaction-state.test-utils'
@@ -26,14 +26,14 @@ function resizeElement(editor: EditorState, edgePosition: EdgePosition): EditorS
     canvasPoint({ x: 15, y: 25 }),
   )
 
-  const strategyResult = absoluteResizeStrategy.apply(
+  const strategyResult = absoluteResizeDeltaStrategy.apply(
     pickCanvasStateFromEditorState(editor),
     { ...interactionSessionWithoutMetadata, metadata: {} },
     {
       currentStrategy: null as any, // the strategy does not use this
       currentStrategyFitness: null as any, // the strategy does not use this
       currentStrategyCommands: null as any, // the strategy does not use this
-      accumulatedCommands: null as any, // the strategy does not use this
+      accumulatedPatches: null as any, // the strategy does not use this
       commandDescriptions: null as any, // the strategy does not use this
       sortedApplicableStrategies: null as any, // the strategy does not use this
       startingMetadata: {
@@ -45,7 +45,7 @@ function resizeElement(editor: EditorState, edgePosition: EdgePosition): EditorS
       },
     } as StrategyState,
   )
-  return foldAndApplyCommands(editor, editor, strategyResult, 'permanent').editorState
+  return foldAndApplyCommands(editor, editor, [], [], strategyResult, 'permanent').editorState
 }
 
 function createTestEditorAndResizeElement(
@@ -76,7 +76,7 @@ function resizeTestWithTLWH(edgePosition: EdgePosition): EditorState {
   return createTestEditorAndResizeElement(edgePosition, snippet)
 }
 
-describe('Absolute Resize Strategy TLWH', () => {
+describe('Absolute Delta Resize Strategy TLWH', () => {
   it('works with element resized from TL corner', async () => {
     const edgePosition: EdgePosition = { x: 0, y: 0 }
     const editorAfterStrategy = resizeTestWithTLWH(edgePosition)
@@ -146,7 +146,7 @@ function resizeTestWithTLBR(edgePosition: EdgePosition): EditorState {
   `
   return createTestEditorAndResizeElement(edgePosition, snippet)
 }
-describe('Absolute Resize Strategy TLBR', () => {
+describe('Absolute Delta Resize Strategy TLBR', () => {
   it('works with element resized from TL corner', async () => {
     const edgePosition: EdgePosition = { x: 0, y: 0 }
     const editorAfterStrategy = resizeTestWithTLBR(edgePosition)
@@ -216,7 +216,7 @@ function resizeTestWithBRWH(edgePosition: EdgePosition): EditorState {
   `
   return createTestEditorAndResizeElement(edgePosition, snippet)
 }
-describe('Absolute Resize Strategy BRWH', () => {
+describe('Absolute Delta Resize Strategy BRWH', () => {
   it('works with element resized from TL corner', async () => {
     const edgePosition: EdgePosition = { x: 0, y: 0 }
     const editorAfterStrategy = resizeTestWithBRWH(edgePosition)
@@ -275,7 +275,7 @@ describe('Absolute Resize Strategy BRWH', () => {
   })
 })
 
-describe('Absolute Resize Strategy TLBRWH', () => {
+describe('Absolute Delta Resize Strategy TLBRWH', () => {
   it('works with element resized from TL corner with too many pins', async () => {
     const edgePosition: EdgePosition = { x: 0, y: 0 }
     const snippet = `

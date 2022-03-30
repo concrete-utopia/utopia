@@ -1,9 +1,9 @@
+import update from 'immutability-helper'
 import { createBuiltInDependenciesList } from '../../../core/es-modules/package-manager/built-in-dependencies-list'
 import * as EP from '../../../core/shared/element-path'
 import { complexDefaultProjectPreParsed } from '../../../sample-projects/sample-project-utils.test-utils'
 import { selectComponents, setFocusedElement } from '../../editor/actions/action-creators'
 import { renderTestEditorWithModel } from '../ui-jsx.test-utils'
-import { applyStatePatches } from './commands'
 import { runWildcardPatch, wildcardPatch } from './wildcard-patch-command'
 
 describe('wildcardPatch', () => {
@@ -28,11 +28,7 @@ describe('wildcardPatch', () => {
 
     const result = runWildcardPatch(renderResult.getEditorState().editor, wildcardCommand)
 
-    const patchedEditor = applyStatePatches(
-      renderResult.getEditorState().editor,
-      renderResult.getEditorState().editor,
-      [result.editorStatePatch],
-    )
+    const patchedEditor = update(renderResult.getEditorState().editor, result.editorStatePatch)
     expect(patchedEditor.selectedViews).toEqual([])
   })
 })

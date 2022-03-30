@@ -30,7 +30,7 @@ import {
 } from './ui-jsx-canvas-element-renderer-utils'
 import { useContextSelector } from 'use-context-selector'
 import { ElementPath } from '../../../core/shared/project-file-types'
-import { UTOPIA_INSTANCE_PATH, UTOPIA_PATHS_KEY } from '../../../core/model/utopia-constants'
+import { UTOPIA_INSTANCE_PATH, UTOPIA_PATH_KEY } from '../../../core/model/utopia-constants'
 import { getPathsFromString } from '../../../core/shared/uid-utils'
 import { useGetTopLevelElementsAndImports } from './ui-jsx-canvas-top-level-elements'
 import { useGetCodeAndHighlightBounds } from './ui-jsx-canvas-execution-scope'
@@ -39,7 +39,7 @@ import { JSX_CANVAS_LOOKUP_FUNCTION_NAME } from '../../../core/shared/dom-utils'
 
 export type ComponentRendererComponent = React.ComponentType<{
   [UTOPIA_INSTANCE_PATH]: ElementPath
-  [UTOPIA_PATHS_KEY]?: string
+  [UTOPIA_PATH_KEY]?: string
 }> & {
   topLevelElementName: string | null
   propertyControls?: PropertyControls
@@ -78,7 +78,7 @@ export function createComponentRendererComponent(params: {
   const Component = (realPassedPropsIncludingUtopiaSpecialStuff: any) => {
     const {
       [UTOPIA_INSTANCE_PATH]: instancePathAny, // TODO types?
-      [UTOPIA_PATHS_KEY]: pathsString, // TODO types?
+      [UTOPIA_PATH_KEY]: pathsString, // TODO types?
       ...realPassedProps
     } = realPassedPropsIncludingUtopiaSpecialStuff
 

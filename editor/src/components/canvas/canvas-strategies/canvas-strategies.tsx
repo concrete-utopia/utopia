@@ -9,7 +9,7 @@ import { useEditorState } from '../../editor/store/store-hook'
 import { CanvasCommand } from '../commands/commands'
 import { absoluteMoveStrategy } from './absolute-move-strategy'
 import { absoluteReparentStrategy } from './absolute-reparent-strategy'
-import { absoluteResizeStrategy } from './absolute-resize-strategy'
+import { absoluteResizeDeltaStrategy } from './absolute-resize-delta-strategy'
 import {
   CanvasStrategy,
   CanvasStrategyId,
@@ -18,12 +18,16 @@ import {
 } from './canvas-strategy-types'
 import { InteractionSession, StrategyState } from './interaction-state'
 import { keyboardAbsoluteMoveStrategy } from './keyboard-absolute-move-strategy'
+import { absoluteResizeBoundingBoxStrategy } from './absolute-resize-bounding-box-strategy'
+import { keyboardAbsoluteResizeStrategy } from './keyboard-absolute-resize-strategy'
 
 export const RegisteredCanvasStrategies: Array<CanvasStrategy> = [
   absoluteMoveStrategy,
   absoluteReparentStrategy,
   keyboardAbsoluteMoveStrategy,
-  absoluteResizeStrategy,
+  keyboardAbsoluteResizeStrategy,
+  absoluteResizeBoundingBoxStrategy,
+  absoluteResizeDeltaStrategy,
 ]
 
 export function pickCanvasStateFromEditorState(editorState: EditorState): InteractionCanvasState {
@@ -255,6 +259,6 @@ export function findCanvasStrategyFromDispatchResult(
 
 export function isStrategyActive(strategyState: StrategyState): boolean {
   return (
-    strategyState.accumulatedCommands.length > 0 || strategyState.currentStrategyCommands.length > 0
+    strategyState.accumulatedPatches.length > 0 || strategyState.currentStrategyCommands.length > 0
   )
 }
