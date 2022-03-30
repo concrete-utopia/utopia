@@ -8,11 +8,11 @@ import { useEditorState } from '../../editor/store/store-hook'
 import { getMultiselectBounds } from '../canvas-strategies/shared-absolute-move-strategy-helpers'
 import { CanvasOffsetWrapper } from './canvas-offset-wrapper'
 
-export const FlowMoveControls = React.memo(() => {
+export const FlowMoveControlTooltip = React.memo(() => {
   const colorTheme = useColorTheme()
   const frame = useEditorState((store) => {
     return getMultiselectBounds(store.editor.jsxMetadata, store.editor.selectedViews)
-  }, 'flowmovecontrols frame')
+  }, 'FlowMoveControlTooltip frame')
   if (frame == null) {
     return null
   } else {
