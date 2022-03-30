@@ -4,6 +4,7 @@ import { EditorStateContext } from '../../editor/store/store-hook'
 import { useGetPropertyControlsForSelectedComponents } from './property-controls-hooks'
 import { InspectorCallbackContext, InspectorCallbackContextData } from './property-path-hooks'
 import create from 'zustand'
+import { subscribeWithSelector } from 'zustand/middleware'
 import {
   editorModelFromPersistentModel,
   EditorState,
@@ -187,7 +188,7 @@ function callPropertyControlsHook(selectedViews: ElementPath[]) {
     builtInDependencies: [],
   }
 
-  const storeHook = create<EditorStorePatched>((set) => initialEditorStore)
+  const storeHook = create<EditorStorePatched>(subscribeWithSelector((set) => initialEditorStore))
 
   const inspectorCallbackContext: InspectorCallbackContextData = {
     selectedViewsRef: { current: selectedViews },
