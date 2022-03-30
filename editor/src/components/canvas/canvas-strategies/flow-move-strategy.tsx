@@ -2,6 +2,7 @@ import { MetadataUtils } from '../../../core/model/element-metadata-utils'
 import { switchToAbsolute } from '../commands/switch-to-absolute'
 import {
   AnimationTimer,
+  FlowGhostOutline,
   FlowMoveControlTimer,
   FlowMoveControlTooltip,
 } from '../controls/flow-move-controls'
@@ -30,6 +31,11 @@ export const flowMoveStrategy: CanvasStrategy = {
     {
       control: FlowMoveControlTimer,
       key: 'flow-move-control-timer',
+      show: 'visible-only-while-active',
+    },
+    {
+      control: FlowGhostOutline,
+      key: 'flow-ghost-outline',
       show: 'visible-only-while-active',
     },
   ],

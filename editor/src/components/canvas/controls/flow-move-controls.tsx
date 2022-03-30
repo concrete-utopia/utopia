@@ -3,7 +3,7 @@
 import { jsx } from '@emotion/react'
 import Tippy from '@tippyjs/react'
 import React, { useEffect } from 'react'
-import { offsetPoint } from '../../../core/shared/math-utils'
+import { offsetPoint, zeroCanvasPoint, zeroRectangle } from '../../../core/shared/math-utils'
 import { useColorTheme } from '../../../uuiui'
 import { useEditorState } from '../../editor/store/store-hook'
 import { getMultiselectBounds } from '../canvas-strategies/shared-absolute-move-strategy-helpers'
@@ -14,6 +14,13 @@ export const FlowMoveControlTooltip = React.memo(() => {
   const frame = useEditorState((store) => {
     return getMultiselectBounds(store.editor.jsxMetadata, store.editor.selectedViews)
   }, 'FlowMoveControlTooltip frame')
+  const dragVector = useEditorState((store) => {
+    if (store.editor.canvas.interactionSession?.interactionData.type === 'DRAG') {
+      return store.editor.canvas.interactionSession.interactionData.drag ?? zeroCanvasPoint
+    } else {
+      return zeroCanvasPoint
+    }
+  }, 'FlowMoveControlTooltip dragVector')
   if (frame == null) {
     return null
   } else {
@@ -54,8 +61,8 @@ export const FlowMoveControlTooltip = React.memo(() => {
           <div
             style={{
               position: 'absolute',
-              top: frame.y,
-              left: frame.x,
+              top: frame.y + dragVector.y,
+              left: frame.x + dragVector.x,
               width: frame.width,
               height: frame.height,
             }}
@@ -170,4 +177,38 @@ const SvgLoader = React.memo(() => {
       <path id='flow-move-loader' transform='translate(125, 125)' />
     </svg>
   )
+})
+
+export const FlowGhostOutline = React.memo(() => {
+  const frame = useEditorState((store) => {
+    return getMultiselectBounds(store.editor.jsxMetadata, store.editor.selectedViews)
+  }, 'FlowGhostOutline frame')
+  const dragVector = useEditorState((store) => {
+    if (store.editor.canvas.interactionSession?.interactionData.type === 'DRAG') {
+      return store.editor.canvas.interactionSession.interactionData.drag ?? zeroCanvasPoint
+    } else {
+      return zeroCanvasPoint
+    }
+  }, 'FlowGhostOutline dragVector')
+  const colorTheme = useColorTheme()
+  if (frame == null) {
+    return null
+  } else {
+    return (
+      <CanvasOffsetWrapper>
+        <div
+          style={{
+            position: 'absolute',
+            top: frame.y + dragVector.y,
+            left: frame.x + dragVector.x,
+            width: frame.width,
+            height: frame.height,
+            boxSizing: 'border-box',
+            boxShadow: `0px 0px 0px 1px ${colorTheme.canvasSelectionFocusable.value}`,
+            opacity: '50%',
+          }}
+        />
+      </CanvasOffsetWrapper>
+    )
+  }
 })
