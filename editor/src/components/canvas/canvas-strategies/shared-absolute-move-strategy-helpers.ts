@@ -20,6 +20,7 @@ import {
   zeroCanvasRect,
 } from '../../../core/shared/math-utils'
 import { ElementPath } from '../../../core/shared/project-file-types'
+import Utils from '../../../utils/utils'
 import { getElementFromProjectContents } from '../../editor/store/editor-state'
 import { stylePropPathMappingFn } from '../../inspector/common/property-path-hooks'
 import { EdgePosition } from '../canvas-types'
@@ -202,7 +203,9 @@ export function resizeBoundingBox(
     y: 1 - edgePosition.y,
   } as EdgePosition
 
-  if (isEdgePositionOnSide(edgePosition)) {
+  const isEdgeOnSide = isEdgePositionOnSide(edgePosition)
+
+  if (isEdgeOnSide) {
     if (edgePosition.x === 0.5) {
       dragToUse = canvasPoint({ x: 0, y: drag.y })
       startingCornerPosition = { x: 0, y: startingCornerPosition.y }
@@ -221,19 +224,35 @@ export function resizeBoundingBox(
   if (keepAspectRatio) {
     newCorner = closestPointOnLine(oppositeCornerPoint, draggedCorner, newCorner)
     dragToUse = pointDifference(draggedCorner, newCorner)
+    if (isEdgeOnSide) {
+      if (edgePosition.x === 0.5) {
+        dragToUse.x *= 2
+      } else if (edgePosition.y === 0.5) {
+        dragToUse.y *= 2
+      }
+    }
   }
 
+  let newBoundingBox = boundingBox
   if (centerBased) {
     const oppositeCornerDragged = offsetPoint(
       oppositeCornerPoint,
       pointDifference(dragToUse, zeroCanvasPoint),
     )
-    const newBoundingBox = rectFromTwoPoints(oppositeCornerDragged, newCorner)
-    return newBoundingBox
+    newBoundingBox = rectFromTwoPoints(oppositeCornerDragged, newCorner)
   } else {
-    const newBoundingBox = rectFromTwoPoints(oppositeCornerPoint, newCorner)
-    return newBoundingBox
+    newBoundingBox = rectFromTwoPoints(oppositeCornerPoint, newCorner)
   }
+
+  if (keepAspectRatio && isEdgeOnSide) {
+    if (edgePosition.x === 0.5) {
+      newBoundingBox.x -= Utils.roundTo(dragToUse.x / 2)
+    } else if (edgePosition.y === 0.5) {
+      newBoundingBox.y -= Utils.roundTo(dragToUse.y / 2)
+    }
+  }
+
+  return newBoundingBox
 }
 
 export function runLegacyAbsoluteResizeSnapping(
