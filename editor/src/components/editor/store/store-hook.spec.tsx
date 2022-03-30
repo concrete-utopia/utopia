@@ -117,6 +117,7 @@ describe('useSelectorWithCallback', () => {
     let rerenderTestHook: () => void
 
     storeHook.subscribe(
+      (store) => store.editor.selectedViews,
       (newSelectedViews) => {
         if (newSelectedViews != null) {
           rerenderTestHook()
@@ -125,7 +126,6 @@ describe('useSelectorWithCallback', () => {
           // TODO this is super-baffling. turning this test async and putting done() here and expect()-ing values did not work for some reason
         }
       },
-      (store) => store.editor.selectedViews,
     )
 
     const { result, rerender } = renderHook<{ storeHook: UseStore<EditorStorePatched> }, void>(
