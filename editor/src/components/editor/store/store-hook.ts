@@ -193,7 +193,7 @@ export function useSelectorWithCallback<U>(
   if (explainMe) {
     console.info('useSelectorWithCallback was executed so we call the callback ourselves')
   }
-  innerCallback(selectorRef.current(api.getState()))
+  innerCallback(selectorRef.current(api.getState())) // TODO investigate if we can use subscribeWithSelector's fireImmediately instead of this hack here
 
   React.useEffect(() => {
     if (explainMe) {
