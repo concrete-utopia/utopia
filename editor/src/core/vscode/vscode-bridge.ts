@@ -63,6 +63,7 @@ import {
   getOpenTextFileKey,
 } from '../../components/editor/store/editor-state'
 import { ProjectFileChange } from '../../components/editor/store/vscode-changes'
+import { checkVSCodeRendered } from '../../components/code-editor/vscode-editor-loading-screen'
 
 const Scheme = 'utopia'
 const RootDir = `/${Scheme}`
@@ -163,6 +164,7 @@ function watchForChanges(dispatch: EditorDispatch): void {
 }
 
 let currentInit: Promise<void> = Promise.resolve()
+let polledClearLoadingScreenTimeout: any = null
 
 export async function initVSCodeBridge(
   projectID: string,
@@ -171,6 +173,24 @@ export async function initVSCodeBridge(
   openFilePath: string | null,
 ): Promise<void> {
   let loadingScreenHidden = false
+  function hideLoadingScreen() {
+    if (polledClearLoadingScreenTimeout != null) {
+      clearTimeout(polledClearLoadingScreenTimeout)
+      polledClearLoadingScreenTimeout = null
+    }
+    loadingScreenHidden = true
+    dispatch([hideVSCodeLoadingScreen()], 'everyone')
+  }
+  function polledClearLoadingScreen() {
+    const codeEditorLoaded = checkVSCodeRendered(openFilePath)
+    if (codeEditorLoaded) {
+      hideLoadingScreen()
+    } else {
+      polledClearLoadingScreenTimeout = setTimeout(() => {
+        polledClearLoadingScreen()
+      }, 1000)
+    }
+  }
   async function innerInit(): Promise<void> {
     dispatch([markVSCodeBridgeReady(false)], 'everyone')
     if (isBrowserEnvironment) {
@@ -194,10 +214,6 @@ export async function initVSCodeBridge(
             dispatch([updateConfigFromVSCode(message.config)], 'everyone')
             break
           case 'FILE_OPENED':
-            if (!loadingScreenHidden) {
-              loadingScreenHidden = true
-              dispatch([hideVSCodeLoadingScreen()], 'everyone')
-            }
             break
           default:
             const _exhaustiveCheck: never = message
@@ -208,10 +224,8 @@ export async function initVSCodeBridge(
       watchForChanges(dispatch)
       if (openFilePath != null) {
         await sendOpenFileMessage(openFilePath)
-      } else {
-        loadingScreenHidden = true
-        dispatch([hideVSCodeLoadingScreen()], 'everyone')
       }
+      polledClearLoadingScreen()
     }
     dispatch([markVSCodeBridgeReady(true)], 'everyone')
   }
