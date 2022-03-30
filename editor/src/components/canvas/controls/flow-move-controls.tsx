@@ -3,6 +3,7 @@
 import { jsx } from '@emotion/react'
 import Tippy from '@tippyjs/react'
 import React, { useEffect } from 'react'
+import { offsetPoint } from '../../../core/shared/math-utils'
 import { useColorTheme } from '../../../uuiui'
 import { useEditorState } from '../../editor/store/store-hook'
 import { getMultiselectBounds } from '../canvas-strategies/shared-absolute-move-strategy-helpers'
@@ -46,7 +47,7 @@ export const FlowMoveControlTooltip = React.memo(() => {
           arrow
           content={'Hold Mouse to Convert to Absolute'}
           placement={'top'}
-          delay={[100, 100]}
+          delay={[200, 100]}
           animation='fade'
           theme='material'
         >
@@ -66,14 +67,57 @@ export const FlowMoveControlTooltip = React.memo(() => {
 })
 
 export const AnimationTimer = 2000
-
+const ShowControlDelay = 150
 export const FlowMoveControlTimer = React.memo(() => {
   const cursorPosition = useEditorState((store) => {
-    return store.editor.canvas.interactionSession?.interactionData.type === 'DRAG'
-      ? store.editor.canvas.interactionSession?.interactionData.dragStart
-      : null
+    if (store.editor.canvas.interactionSession?.interactionData.type === 'DRAG') {
+      if (store.editor.canvas.interactionSession.interactionData.drag != null) {
+        return offsetPoint(
+          store.editor.canvas.interactionSession.interactionData.dragStart,
+          store.editor.canvas.interactionSession.interactionData.drag,
+        )
+      } else {
+        return store.editor.canvas.interactionSession.interactionData.dragStart
+      }
+    } else {
+      return null
+    }
   }, 'FlowMoveControlTimer cursorPosition')
 
+  const canvasOffset = useEditorState((store) => {
+    return store.editor.canvas.roundedCanvasOffset
+  }, 'FlowMoveControlTimer canvasOffset')
+
+  const showControl = useEditorState((store) => {
+    if (store.editor.canvas.interactionSession != null) {
+      return (
+        store.editor.canvas.interactionSession.globalTime -
+          store.editor.canvas.interactionSession.lastInteractionTime >
+        ShowControlDelay
+      )
+    } else {
+      return false
+    }
+  }, 'FlowMoveControlTimer showControl')
+
+  if (showControl) {
+    return (
+      <div
+        style={{
+          position: 'absolute',
+          top: (cursorPosition?.y ?? 0) - 120 + canvasOffset.y,
+          left: (cursorPosition?.x ?? 0) - 95 + canvasOffset.x,
+        }}
+      >
+        <SvgLoader />
+      </div>
+    )
+  } else {
+    return null
+  }
+})
+
+const SvgLoader = React.memo(() => {
   useEffect(() => {
     ;(function (w) {
       function draw(element: any, rate: number) {
@@ -116,25 +160,14 @@ export const FlowMoveControlTimer = React.memo(() => {
     var loader = document.getElementById('flow-move-loader')
     ;(window as any).svgPieTimer({
       element: [loader],
-      duration: AnimationTimer,
+      duration: AnimationTimer - ShowControlDelay,
       loops: 1,
     })
   })
 
   return (
-    <CanvasOffsetWrapper>
-      <div
-        style={{
-          position: 'absolute',
-          top: (cursorPosition?.y ?? 0) - 120,
-          left: (cursorPosition?.x ?? 0) - 95,
-          display: cursorPosition == null ? 'none' : 'block',
-        }}
-      >
-        <svg width='250' height='250' viewBox='0 0 250 250' id='container' transform='scale(.11)'>
-          <path id='flow-move-loader' transform='translate(125, 125)' />
-        </svg>
-      </div>
-    </CanvasOffsetWrapper>
+    <svg width='250' height='250' viewBox='0 0 250 250' id='container' transform='scale(.11)'>
+      <path id='flow-move-loader' transform='translate(125, 125)' />
+    </svg>
   )
 })
