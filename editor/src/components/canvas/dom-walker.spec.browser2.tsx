@@ -1,6 +1,7 @@
 import { act, render } from '@testing-library/react'
 import React from 'react'
-import create from 'zustand'
+import create, { GetState, Mutate, SetState, StoreApi } from 'zustand'
+import { subscribeWithSelector } from 'zustand/middleware'
 import { notLoggedIn } from '../../common/user'
 import {
   ElementInstanceMetadata,
@@ -87,7 +88,12 @@ async function renderTestEditorWithCode(appUiJsFileCode: string) {
     builtInDependencies: createBuiltInDependenciesList(null),
   }
 
-  const storeHook = create<EditorStorePatched>((set) => patchedStoreFromFullStore(editorStore))
+  const storeHook = create<
+    EditorStorePatched,
+    SetState<EditorStorePatched>,
+    GetState<EditorStorePatched>,
+    Mutate<StoreApi<EditorStorePatched>, [['zustand/subscribeWithSelector', never]]>
+  >(subscribeWithSelector((set) => patchedStoreFromFullStore(editorStore)))
 
   render(<EditorRoot api={storeHook} useStore={storeHook} spyCollector={spyCollector} />)
 

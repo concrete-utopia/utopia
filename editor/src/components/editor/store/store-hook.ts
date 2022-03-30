@@ -1,6 +1,6 @@
 import React from 'react'
 import type { EditorStorePatched } from './editor-state'
-import { UseStore, StoreApi, EqualityChecker, UseBoundStore } from 'zustand'
+import { StoreApi, EqualityChecker, UseBoundStore, Mutate } from 'zustand'
 import { shallowEqual } from '../../../core/shared/equality-utils'
 import { isFeatureEnabled } from '../../../utils/feature-switches'
 import { PERFORMANCE_MARKS_ALLOWED } from '../../../common/env-vars'
@@ -105,6 +105,7 @@ export const useRefEditorState = <U>(
       console.info('useRefEditorState: subscribing to the zustand api')
     }
     const unsubscribe = api.subscribe(
+      (store: EditorStorePatched) => selectorRef.current(store),
       (newSlice) => {
         if (newSlice != null) {
           if (explainMe) {
@@ -113,8 +114,7 @@ export const useRefEditorState = <U>(
           sliceRef.current = newSlice
         }
       },
-      (store: EditorStorePatched) => selectorRef.current(store),
-      shallowEqual,
+      { equalityFn: shallowEqual },
     )
     return function cleanup() {
       if (explainMe) {
@@ -127,7 +127,12 @@ export const useRefEditorState = <U>(
 }
 
 export type UtopiaStoreHook = UseBoundStore<EditorStorePatched>
-export type UtopiaStoreAPI = StoreApi<EditorStorePatched>
+
+// This is how to officially type the store with a subscribeWithSelector middleware as of Zustand 3.6.0 https://github.com/pmndrs/zustand#using-subscribe-with-selector
+export type UtopiaStoreAPI = Mutate<
+  StoreApi<EditorStorePatched>,
+  [['zustand/subscribeWithSelector', never]]
+>
 
 export type EditorStateContextData = {
   api: UtopiaStoreAPI
@@ -188,21 +193,21 @@ export function useSelectorWithCallback<U>(
   if (explainMe) {
     console.info('useSelectorWithCallback was executed so we call the callback ourselves')
   }
-  innerCallback(selectorRef.current(api.getState()))
+  innerCallback(selectorRef.current(api.getState())) // TODO investigate if we can use subscribeWithSelector's fireImmediately instead of this hack here
 
   React.useEffect(() => {
     if (explainMe) {
       console.info('subscribing to the api')
     }
     const unsubscribe = api.subscribe(
+      (store: EditorStorePatched) => selectorRef.current(store),
       (newSlice) => {
         if (explainMe) {
           console.info('the Zustand api.subscribe is calling our callback')
         }
         innerCallback(newSlice)
       },
-      (store: EditorStorePatched) => selectorRef.current(store),
-      (oldValue: any, newValue: any) => equalityFnRef.current(oldValue, newValue),
+      { equalityFn: (oldValue: any, newValue: any) => equalityFnRef.current(oldValue, newValue) },
     )
     return function cleanup() {
       if (explainMe) {
