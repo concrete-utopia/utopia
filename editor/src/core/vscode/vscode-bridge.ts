@@ -173,6 +173,7 @@ export async function initVSCodeBridge(
   openFilePath: string | null,
 ): Promise<void> {
   let loadingScreenHidden = false
+  let loadingScreenPollCount = 0
   function hideLoadingScreen() {
     if (polledClearLoadingScreenTimeout != null) {
       clearTimeout(polledClearLoadingScreenTimeout)
@@ -182,7 +183,10 @@ export async function initVSCodeBridge(
     dispatch([hideVSCodeLoadingScreen()], 'everyone')
   }
   function polledClearLoadingScreen() {
-    const codeEditorLoaded = checkVSCodeRendered(openFilePath)
+    loadingScreenPollCount++
+    // Fallback incase the file just doesn't load for some reason
+    const desiredFile = loadingScreenPollCount >= 10 ? null : openFilePath
+    const codeEditorLoaded = checkVSCodeRendered(desiredFile)
     if (codeEditorLoaded) {
       hideLoadingScreen()
     } else {
