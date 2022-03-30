@@ -48,6 +48,7 @@ export interface InteractionSession {
   userPreferredStrategy: CanvasStrategyId | null
 
   startedAt: number
+  globalTime: number
 }
 
 export type InteractionSessionWithoutMetadata = Omit<InteractionSession, 'metadata'>
@@ -102,6 +103,7 @@ export function createInteractionViaMouse(
     lastInteractionTime: Date.now(),
     userPreferredStrategy: null,
     startedAt: Date.now(),
+    globalTime: Date.now(),
   }
 }
 
@@ -135,9 +137,13 @@ export function updateInteractionViaMouse(
       lastInteractionTime: Date.now(),
       userPreferredStrategy: currentState.userPreferredStrategy,
       startedAt: currentState.startedAt,
+      globalTime: Date.now(),
     }
   } else {
-    return currentState
+    return {
+      ...currentState,
+      globalTime: Date.now(),
+    }
   }
 }
 
@@ -157,6 +163,7 @@ export function createInteractionViaKeyboard(
     lastInteractionTime: Date.now(),
     userPreferredStrategy: null,
     startedAt: Date.now(),
+    globalTime: Date.now(),
   }
 }
 
@@ -185,6 +192,7 @@ export function updateInteractionViaKeyboard(
         lastInteractionTime: Date.now(),
         userPreferredStrategy: currentState.userPreferredStrategy,
         startedAt: currentState.startedAt,
+        globalTime: Date.now(),
       }
     }
     case 'DRAG': {
@@ -203,6 +211,7 @@ export function updateInteractionViaKeyboard(
         lastInteractionTime: Date.now(),
         userPreferredStrategy: currentState.userPreferredStrategy,
         startedAt: currentState.startedAt,
+        globalTime: Date.now(),
       }
     }
     default:
