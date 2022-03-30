@@ -2,7 +2,7 @@
 /** @jsx jsx */
 import { jsx } from '@emotion/react'
 import Tippy from '@tippyjs/react'
-import React from 'react'
+import React, { useEffect } from 'react'
 import { useColorTheme } from '../../../uuiui'
 import { useEditorState } from '../../editor/store/store-hook'
 import { getMultiselectBounds } from '../canvas-strategies/shared-absolute-move-strategy-helpers'
@@ -63,4 +63,78 @@ export const FlowMoveControlTooltip = React.memo(() => {
       </CanvasOffsetWrapper>
     )
   }
+})
+
+export const AnimationTimer = 2000
+
+export const FlowMoveControlTimer = React.memo(() => {
+  const cursorPosition = useEditorState((store) => {
+    return store.editor.canvas.interactionSession?.interactionData.type === 'DRAG'
+      ? store.editor.canvas.interactionSession?.interactionData.dragStart
+      : null
+  }, 'FlowMoveControlTimer cursorPosition')
+
+  useEffect(() => {
+    ;(function (w) {
+      function draw(element: any, rate: number) {
+        var count = element.length,
+          angle = 360 * rate
+        angle %= 360
+
+        var rad = (angle * Math.PI) / 180,
+          x = Math.sin(rad) * 125,
+          y = Math.cos(rad) * -125,
+          mid = angle > 180 ? 1 : 0,
+          shape = 'M 0 0 v -125 A 125 125 1 ' + mid + ' 1 ' + x + ' ' + y + ' z'
+        if (element instanceof Array) while (count--) element[count].setAttribute('d', shape)
+        else element.setAttribute('d', shape)
+      }
+      ;(w as any).svgPieTimer = function (props: any) {
+        var element = props.element,
+          duration = props.duration || 1000,
+          n = props.loops
+        n = n === 0 ? 0 : n ? n : 1
+        var end = Date.now() + duration * n,
+          totaldur = duration * n
+        ;(function frame() {
+          var current = Date.now(),
+            remaining = end - current,
+            rate = n + 1 - remaining / duration
+          if (remaining < 60) {
+            draw(element, n - 0.0001)
+            // Stop animating when we reach n loops (if n is set)
+            if (remaining < totaldur && n) return
+          }
+          // To reverse, uncomment this line
+          //rate = 360 - rate;
+          draw(element, rate)
+          requestAnimationFrame(frame)
+        })()
+      }
+    })(window)
+
+    var loader = document.getElementById('flow-move-loader')
+    ;(window as any).svgPieTimer({
+      element: [loader],
+      duration: AnimationTimer,
+      loops: 1,
+    })
+  })
+
+  return (
+    <CanvasOffsetWrapper>
+      <div
+        style={{
+          position: 'absolute',
+          top: (cursorPosition?.y ?? 0) - 120,
+          left: (cursorPosition?.x ?? 0) - 95,
+          display: cursorPosition == null ? 'none' : 'block',
+        }}
+      >
+        <svg width='250' height='250' viewBox='0 0 250 250' id='container' transform='scale(.11)'>
+          <path id='flow-move-loader' transform='translate(125, 125)' />
+        </svg>
+      </div>
+    </CanvasOffsetWrapper>
+  )
 })

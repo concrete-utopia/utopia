@@ -1,6 +1,10 @@
 import { MetadataUtils } from '../../../core/model/element-metadata-utils'
 import { switchToAbsolute } from '../commands/switch-to-absolute'
-import { FlowMoveControlTimer, FlowMoveControlTooltip } from '../controls/flow-move-controls'
+import {
+  AnimationTimer,
+  FlowMoveControlTimer,
+  FlowMoveControlTooltip,
+} from '../controls/flow-move-controls'
 import { CanvasStrategy } from './canvas-strategy-types'
 
 export const flowMoveStrategy: CanvasStrategy = {
@@ -23,6 +27,11 @@ export const flowMoveStrategy: CanvasStrategy = {
       key: 'flow-move-control-tooltip',
       show: 'visible-only-while-active',
     },
+    {
+      control: FlowMoveControlTimer,
+      key: 'flow-move-control-timer',
+      show: 'visible-only-while-active',
+    },
   ],
   fitness: (canvasState, interactionState, sessionState) => {
     return flowMoveStrategy.isApplicable(
@@ -37,8 +46,8 @@ export const flowMoveStrategy: CanvasStrategy = {
   },
   apply: (canvasState, interactionState, sessionState) => {
     if (interactionState.interactionData.type === 'DRAG') {
-      if (interactionState.globalTime - interactionState.lastInteractionTime > 2000) {
-        // return [switchToAbsolute('permanent', canvasState.selectedElements)]
+      if (interactionState.globalTime - interactionState.lastInteractionTime > AnimationTimer) {
+        return [switchToAbsolute('permanent', canvasState.selectedElements)]
       }
     }
     // Fallback for when the checks above are not satisfied.
