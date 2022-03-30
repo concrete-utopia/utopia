@@ -1,5 +1,5 @@
 import React from 'react'
-import create, { UseStore } from 'zustand'
+import create, { GetState, Mutate, SetState, StoreApi, UseStore } from 'zustand'
 import { subscribeWithSelector } from 'zustand/middleware'
 import { renderHook } from '@testing-library/react-hooks'
 import { EditorStateContext, useSelectorWithCallback } from './store-hook'
@@ -25,7 +25,12 @@ function createEmptyEditorStoreHook() {
     builtInDependencies: createBuiltInDependenciesList(null),
   }
 
-  const storeHook = create<EditorStorePatched>(subscribeWithSelector((set) => initialEditorStore))
+  const storeHook = create<
+    EditorStorePatched,
+    SetState<EditorStorePatched>,
+    GetState<EditorStorePatched>,
+    Mutate<StoreApi<EditorStorePatched>, [['zustand/subscribeWithSelector', never]]>
+  >(subscribeWithSelector((set) => initialEditorStore))
 
   return storeHook
 }

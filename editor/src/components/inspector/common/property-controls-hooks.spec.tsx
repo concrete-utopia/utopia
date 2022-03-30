@@ -3,7 +3,7 @@ import { renderHook } from '@testing-library/react-hooks'
 import { EditorStateContext } from '../../editor/store/store-hook'
 import { useGetPropertyControlsForSelectedComponents } from './property-controls-hooks'
 import { InspectorCallbackContext, InspectorCallbackContextData } from './property-path-hooks'
-import create from 'zustand'
+import create, { GetState, Mutate, SetState, StoreApi } from 'zustand'
 import { subscribeWithSelector } from 'zustand/middleware'
 import {
   editorModelFromPersistentModel,
@@ -188,7 +188,12 @@ function callPropertyControlsHook(selectedViews: ElementPath[]) {
     builtInDependencies: [],
   }
 
-  const storeHook = create<EditorStorePatched>(subscribeWithSelector((set) => initialEditorStore))
+  const storeHook = create<
+    EditorStorePatched,
+    SetState<EditorStorePatched>,
+    GetState<EditorStorePatched>,
+    Mutate<StoreApi<EditorStorePatched>, [['zustand/subscribeWithSelector', never]]>
+  >(subscribeWithSelector((set) => initialEditorStore))
 
   const inspectorCallbackContext: InspectorCallbackContextData = {
     selectedViewsRef: { current: selectedViews },
