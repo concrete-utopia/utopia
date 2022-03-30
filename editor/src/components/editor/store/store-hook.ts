@@ -1,6 +1,6 @@
 import React from 'react'
 import type { EditorStorePatched } from './editor-state'
-import { UseStore, StoreApi, EqualityChecker, UseBoundStore } from 'zustand'
+import { StoreApi, EqualityChecker, UseBoundStore, Mutate } from 'zustand'
 import { shallowEqual } from '../../../core/shared/equality-utils'
 import { isFeatureEnabled } from '../../../utils/feature-switches'
 import { PERFORMANCE_MARKS_ALLOWED } from '../../../common/env-vars'
@@ -105,6 +105,7 @@ export const useRefEditorState = <U>(
       console.info('useRefEditorState: subscribing to the zustand api')
     }
     const unsubscribe = api.subscribe(
+      (store: EditorStorePatched) => selectorRef.current(store),
       (newSlice) => {
         if (newSlice != null) {
           if (explainMe) {
@@ -113,8 +114,7 @@ export const useRefEditorState = <U>(
           sliceRef.current = newSlice
         }
       },
-      (store: EditorStorePatched) => selectorRef.current(store),
-      shallowEqual,
+      { equalityFn: shallowEqual },
     )
     return function cleanup() {
       if (explainMe) {
@@ -127,7 +127,10 @@ export const useRefEditorState = <U>(
 }
 
 export type UtopiaStoreHook = UseBoundStore<EditorStorePatched>
-export type UtopiaStoreAPI = StoreApi<EditorStorePatched>
+export type UtopiaStoreAPI = Mutate<
+  StoreApi<EditorStorePatched>,
+  [['zustand/subscribeWithSelector', never]]
+>
 
 export type EditorStateContextData = {
   api: UtopiaStoreAPI
@@ -195,14 +198,14 @@ export function useSelectorWithCallback<U>(
       console.info('subscribing to the api')
     }
     const unsubscribe = api.subscribe(
+      (store: EditorStorePatched) => selectorRef.current(store),
       (newSlice) => {
         if (explainMe) {
           console.info('the Zustand api.subscribe is calling our callback')
         }
         innerCallback(newSlice)
       },
-      (store: EditorStorePatched) => selectorRef.current(store),
-      (oldValue: any, newValue: any) => equalityFnRef.current(oldValue, newValue),
+      { equalityFn: (oldValue: any, newValue: any) => equalityFnRef.current(oldValue, newValue) },
     )
     return function cleanup() {
       if (explainMe) {

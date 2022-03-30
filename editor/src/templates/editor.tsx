@@ -6,6 +6,7 @@ import * as ReactDOM from 'react-dom'
 import { hot } from 'react-hot-loader/root'
 import { unstable_trace as trace } from 'scheduler/tracing'
 import create from 'zustand'
+import { subscribeWithSelector } from 'zustand/middleware'
 import '../utils/vite-hmr-config'
 import {
   getProjectID,
@@ -160,8 +161,8 @@ export class Editor {
       alreadySaved: false,
     }
 
-    const storeHook = create<EditorStorePatched>((set) =>
-      patchedStoreFromFullStore(this.storedState),
+    const storeHook = create<EditorStorePatched>(
+      subscribeWithSelector((set) => patchedStoreFromFullStore(this.storedState)),
     )
 
     this.utopiaStoreHook = storeHook
