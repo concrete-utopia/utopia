@@ -1,5 +1,6 @@
 import { MetadataUtils } from '../../../core/model/element-metadata-utils'
 import { switchToAbsolute } from '../commands/switch-to-absolute'
+import { FlowMoveControls } from '../controls/flow-move-controls'
 import { CanvasStrategy } from './canvas-strategy-types'
 
 export const flowMoveStrategy: CanvasStrategy = {
@@ -16,7 +17,9 @@ export const flowMoveStrategy: CanvasStrategy = {
       return false
     }
   },
-  controlsToRender: [], // Uses existing hooks in select-mode-hooks.tsx
+  controlsToRender: [
+    { control: FlowMoveControls, key: 'flow-move-control', show: 'visible-only-while-active' },
+  ],
   fitness: (canvasState, interactionState, sessionState) => {
     return flowMoveStrategy.isApplicable(
       canvasState,
@@ -29,11 +32,10 @@ export const flowMoveStrategy: CanvasStrategy = {
       : 0
   },
   apply: (canvasState, interactionState, sessionState) => {
-    if (
-      interactionState.interactionData.type === 'DRAG' &&
-      interactionState.interactionData.drag != null
-    ) {
-      return [switchToAbsolute('permanent', canvasState.selectedElements)]
+    if (interactionState.interactionData.type === 'DRAG') {
+      if (interactionState.globalTime - interactionState.lastInteractionTime > 2000) {
+        return [switchToAbsolute('permanent', canvasState.selectedElements)]
+      }
     }
     // Fallback for when the checks above are not satisfied.
     return []
