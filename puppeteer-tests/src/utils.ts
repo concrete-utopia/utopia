@@ -1,5 +1,6 @@
 /* eslint-disable no-console */
-import puppeteer, { PageEventObject } from 'puppeteer'
+import * as puppeteer from 'puppeteer'
+import type { PageEventObject } from 'puppeteer'
 const fs = require('fs')
 const path = require('path')
 const AWS = require('aws-sdk')
@@ -138,4 +139,18 @@ export async function uploadPNGtoAWS(testFile: string): Promise<string | null> {
       }
     })
   })
+}
+
+export async function initialiseTests(page: puppeteer.Page): Promise<void> {
+  console.log('Initialising the project')
+  await page.waitForXPath('//div[contains(@class, "item-label-container")]')
+
+  // Select something
+  const navigatorElement = await page.$('[class^="item-label-container"]')
+  await navigatorElement!.click()
+
+  // First selection will open the file in VS Code, triggering a bunch of downloads, so we pause briefly
+  await page.waitForTimeout(15000)
+
+  console.log('Finished initialising')
 }
