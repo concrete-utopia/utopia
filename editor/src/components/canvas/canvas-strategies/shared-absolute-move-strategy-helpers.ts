@@ -13,6 +13,7 @@ import {
   CanvasRectangle,
   CanvasVector,
   closestPointOnLine,
+  lineIntersection,
   offsetPoint,
   pointDifference,
   rectFromTwoPoints,
@@ -222,14 +223,24 @@ export function resizeBoundingBox(
   let newCorner = offsetPoint(draggedCorner, dragToUse)
 
   if (keepAspectRatio) {
-    newCorner = closestPointOnLine(oppositeCornerPoint, draggedCorner, newCorner)
-    dragToUse = pointDifference(draggedCorner, newCorner)
     if (isEdgeOnSide) {
-      if (edgePosition.x === 0.5) {
-        dragToUse.x *= 2
-      } else if (edgePosition.y === 0.5) {
-        dragToUse.y *= 2
-      }
+      const horizontalLineB = {
+        x: newCorner.x + 10,
+        y: newCorner.y,
+      } as CanvasPoint
+      const verticalLineB = {
+        x: newCorner.x,
+        y: newCorner.y + 10,
+      } as CanvasPoint
+      newCorner =
+        lineIntersection(
+          oppositeCornerPoint,
+          draggedCorner,
+          newCorner,
+          edgePosition.x === 0.5 ? horizontalLineB : verticalLineB,
+        ) ?? closestPointOnLine(oppositeCornerPoint, draggedCorner, newCorner)
+    } else {
+      newCorner = closestPointOnLine(oppositeCornerPoint, draggedCorner, newCorner)
     }
   }
 
@@ -246,9 +257,9 @@ export function resizeBoundingBox(
 
   if (keepAspectRatio && isEdgeOnSide) {
     if (edgePosition.x === 0.5) {
-      newBoundingBox.x -= Utils.roundTo(dragToUse.x / 2)
+      newBoundingBox.x -= Utils.roundTo((newBoundingBox.width - boundingBox.width) / 2)
     } else if (edgePosition.y === 0.5) {
-      newBoundingBox.y -= Utils.roundTo(dragToUse.y / 2)
+      newBoundingBox.y -= Utils.roundTo((newBoundingBox.height - boundingBox.height) / 2)
     }
   }
 
