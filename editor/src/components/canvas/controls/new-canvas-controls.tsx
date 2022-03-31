@@ -65,6 +65,7 @@ import { FlexResizeControl } from './select-mode/flex-resize-control'
 import { MultiSelectOutlineControl } from './select-mode/simple-outline-control'
 import { GuidelineControls } from './guideline-controls'
 import { EscapeHatchButtonControl } from './select-mode/escape-hatch-button'
+import { ConversionHighlightOutline } from './flow-move-controls'
 
 export const CanvasControlsContainerID = 'new-canvas-controls-container'
 
@@ -424,6 +425,7 @@ const NewCanvasControlsInner = (props: NewCanvasControlsInnerProps) => {
         isFeatureEnabled('Canvas Strategies'),
         <FlexResizeControl localSelectedElements={localSelectedViews} />,
       )}
+      <ConversionHighlightOutline />
     </div>
   )
 }

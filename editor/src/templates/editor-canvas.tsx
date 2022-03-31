@@ -428,6 +428,18 @@ export function runLocalCanvasAction(
         return model
       }
     }
+    case 'CLEAR_OUTLINE_HIGHLIGHTS': {
+      return {
+        ...model,
+        canvas: {
+          ...model.canvas,
+          controls: {
+            ...model.canvas.controls,
+            highlightOutlines: [],
+          },
+        },
+      }
+    }
     default:
       const _exhaustiveCheck: never = action
       return model

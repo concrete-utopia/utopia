@@ -3,10 +3,14 @@
 import { jsx } from '@emotion/react'
 import Tippy from '@tippyjs/react'
 import React, { useEffect } from 'react'
+import { usePubSubAtomReadOnly } from '../../../core/shared/atom-with-pub-sub'
 import { offsetPoint, zeroCanvasPoint, zeroRectangle } from '../../../core/shared/math-utils'
-import { useColorTheme } from '../../../uuiui'
-import { useEditorState } from '../../editor/store/store-hook'
+import { useColorTheme, UtopiaStyles } from '../../../uuiui'
+import { NavigatorWidthAtom } from '../../editor/store/editor-state'
+import { useEditorState, useRefEditorState } from '../../editor/store/store-hook'
+import CanvasActions from '../canvas-actions'
 import { getMultiselectBounds } from '../canvas-strategies/shared-absolute-move-strategy-helpers'
+import { ModeSelectButton } from '../mode-select-buttons'
 import { CanvasOffsetWrapper } from './canvas-offset-wrapper'
 
 export const FlowMoveControlTooltip = React.memo(() => {
@@ -211,4 +215,183 @@ export const FlowGhostOutline = React.memo(() => {
       </CanvasOffsetWrapper>
     )
   }
+})
+
+const styleContent = `
+.outline1 {
+  background-image: linear-gradient(90deg, blue 50%, transparent 50%),
+    linear-gradient(90deg, blue 50%, transparent 50%),
+    linear-gradient(0deg, blue 50%, transparent 50%),
+    linear-gradient(0deg, blue 50%, transparent 50%);
+  background-repeat: repeat-x, repeat-x, repeat-y, repeat-y;
+  background-size: 15px 2px, 15px 2px, 2px 15px, 2px 15px;
+  background-position: left top, right bottom, left bottom, right top;
+  animation: border-dance 1s infinite linear;
+}
+@keyframes border-dance {
+  0% {
+    background-position: left top, right bottom, left bottom, right top;
+    background-image: none;
+  }
+  100% {
+    background-position: left 15px top, right 15px bottom, left bottom 15px,
+      right top 15px;
+    background-image: linear-gradient(90deg, blue 50%, transparent 50%),
+      linear-gradient(90deg, blue 50%, transparent 50%),
+      linear-gradient(0deg, blue 50%, transparent 50%),
+      linear-gradient(0deg, blue 50%, transparent 50%);
+  }
+}
+.outline2 {
+  box-sizing: border-box;
+  animation: magic-border 2s ease-in-out infinite forwards;
+}
+@keyframes magic-border {
+  0% {
+    border-image-slice: 0;
+  }
+  50% {
+    border-image-slice: 4;
+    border-image-width: 6px;
+    border-image-outset: 4px;
+    border-image-repeat: repeat repeat;
+    border-image-source: url("https://mdn.github.io/css-examples/tools/border-image-generator/border-image-5.png");
+    border-style: solid;
+  }
+  100% {
+    border-image-slice: 0;
+  }
+}
+.outline3 {
+  background-color: blue;
+  left: 50%;
+  top: 50%;
+  transform: scale(0.8);
+  animation: grow 1.5s ease-in-out infinite forwards;
+  z-index: 10;
+}
+@keyframes grow {
+  0% {
+    opacity: 0;
+    transform: scale(0.8);
+  }
+  25% {
+    opacity: 0;
+  }
+  50% {
+    opacity: 0.5;
+  }
+  75% {
+    opacity: 0;
+  }
+  100% {
+    opacity: 0;
+    transform: scale(1.2);
+  }
+}
+
+.outline4 {
+    border:3px solid blue;
+    border-image: url("data:image/svg+xml;charset=utf-8,%3Csvg width='102' height='102' viewBox='0 0 100 100' fill='none' xmlns='http://www.w3.org/2000/svg'%3E %3Cstyle%3Epath%7Banimation:stroke 3s infinite linear%3B%7D%40keyframes stroke%7Bto%7Bstroke-dashoffset:776%3B%7D%7D%3C/style%3E%3ClinearGradient id='g' x1='0%25' y1='0%25' x2='0%25' y2='100%25'%3E%3Cstop offset='0%25' stop-color='%blue' /%3E%3Cstop offset='25%25' stop-color='blue' /%3E%3Cstop offset='50%25' stop-color='blue' /%3E%3Cstop offset='100%25' stop-color='blue' /%3E%3C/linearGradient%3E %3Cpath d='M1.5 1.5 l97 0l0 97l-97 0 l0 -97' stroke-linecap='square' stroke='url(%23g)' stroke-width='3' stroke-dasharray='388'/%3E %3C/svg%3E") 1;
+  }
+}
+`
+export const ConversionHighlightOutline = React.memo(() => {
+  const navigatorVisible = useEditorState(
+    (store) => !store.editor.navigator.minimised,
+    'ConversionHighlightOutline navigatorVisible',
+  )
+  const navigatorWidth = usePubSubAtomReadOnly(NavigatorWidthAtom)
+  const [selectedOutline, setSelectedOutline] = React.useState('outline1')
+  const outlineFrames = useEditorState(
+    (store) => store.editor.canvas.controls.highlightOutlines,
+    'ConversionHighlightOutline frames',
+  )
+  const colorTheme = useColorTheme()
+  const dispatch = useRefEditorState((store) => store.dispatch)
+  const ref = React.useRef<HTMLDivElement>(null)
+  const timerRef = React.useRef<NodeJS.Timeout | null>(null)
+
+  useEffect(() => {
+    if (ref.current != null) {
+      ref.current.style.setProperty('display', 'block')
+      if (timerRef.current != null) {
+        clearTimeout(timerRef.current)
+        timerRef.current = null
+      }
+    }
+
+    timerRef.current = setTimeout(() => {
+      if (ref.current != null) {
+        ref.current.style.setProperty('display', 'none')
+        dispatch.current([CanvasActions.clearOutlineHighlights()], 'canvas')
+      }
+    }, 3000)
+  }, [outlineFrames, dispatch])
+
+  return (
+    <React.Fragment>
+      <CanvasOffsetWrapper>
+        <style>{styleContent}</style>
+        <div ref={ref} style={{ display: 'none' }}>
+          {outlineFrames.map((frame, i) => (
+            <div
+              key={i}
+              style={{
+                position: 'absolute',
+                top: frame.y,
+                left: frame.x,
+                width: frame.width,
+                height: frame.height,
+              }}
+              className={selectedOutline}
+            ></div>
+          ))}
+        </div>
+      </CanvasOffsetWrapper>
+      <div
+        style={{
+          paddingTop: 4,
+          paddingLeft: navigatorVisible ? navigatorWidth + 4 : 4,
+          display: 'flex',
+        }}
+      >
+        <div
+          style={{
+            height: 29,
+            display: 'flex',
+            alignItems: 'center',
+            paddingLeft: 4,
+            paddingRight: 4,
+            gap: 4,
+            borderRadius: 4,
+            background: colorTheme.bg0.value,
+            boxShadow: UtopiaStyles.popup.boxShadow,
+            cursor: 'pointer',
+          }}
+        >
+          <ModeSelectButton
+            selected={selectedOutline === 'outline1'}
+            title={'Border1'}
+            onMouseDown={React.useCallback(() => setSelectedOutline('outline1'), [])}
+          />
+          <ModeSelectButton
+            selected={selectedOutline === 'outline2'}
+            title={'Border2'}
+            onMouseDown={React.useCallback(() => setSelectedOutline('outline2'), [])}
+          />
+          <ModeSelectButton
+            selected={selectedOutline === 'outline3'}
+            title={'Border3'}
+            onMouseDown={React.useCallback(() => setSelectedOutline('outline3'), [])}
+          />
+          <ModeSelectButton
+            selected={selectedOutline === 'outline4'}
+            title={'Border4'}
+            onMouseDown={React.useCallback(() => setSelectedOutline('outline4'), [])}
+          />
+        </div>
+      </div>
+    </React.Fragment>
+  )
 })

@@ -13,7 +13,7 @@ interface ModeSelectButtonProps {
   onMouseDown: () => void
 }
 
-const ModeSelectButton = React.memo((props: ModeSelectButtonProps) => {
+export const ModeSelectButton = React.memo((props: ModeSelectButtonProps) => {
   const colorTheme = useColorTheme()
   return props.selected ? (
     <div

@@ -4859,6 +4859,7 @@ export const UPDATE_FNS = {
     action: ConvertSelectionToAbsolute,
     editor: EditorModel,
   ): EditorModel => {
+    let updatedFrames: CanvasRectangle[] = []
     const selectedViewsWithSiblings = editor.selectedViews.flatMap((path) => {
       return [
         path,
@@ -4888,6 +4889,7 @@ export const UPDATE_FNS = {
         },
       ]
       if (frame != null && !hasFrameProps) {
+        updatedFrames.push(frame)
         propsToAdd.push({
           path: stylePropPathMappingFn('width', ['style']),
           value: jsxAttributeValue(frame.width, emptyComments),
@@ -4906,7 +4908,15 @@ export const UPDATE_FNS = {
       }, working)
     }, editor)
 
-    return selectedViewsWithSiblings.reduce((working, path) => {
+    const withElementAndSiblingUpdated = selectedViewsWithSiblings.reduce((working, path) => {
+      const canvasFrame = MetadataUtils.getFrameInCanvasCoords(path, editor.jsxMetadata)
+      if (
+        canvasFrame != null &&
+        !editor.selectedViews.some((selectedView) => EP.pathsEqual(path, selectedView))
+      ) {
+        updatedFrames.push(canvasFrame)
+      }
+
       const margin = MetadataUtils.findElementByElementPath(editor.jsxMetadata, path)
         ?.specialSizeMeasurements.margin
       const marginPoint: LocalPoint = {
@@ -4955,6 +4965,17 @@ export const UPDATE_FNS = {
         )
       }
     }, withParentUpdated)
+
+    return {
+      ...withElementAndSiblingUpdated,
+      canvas: {
+        ...withElementAndSiblingUpdated.canvas,
+        controls: {
+          ...withElementAndSiblingUpdated.canvas.controls,
+          highlightOutlines: updatedFrames,
+        },
+      },
+    }
   },
 }
 

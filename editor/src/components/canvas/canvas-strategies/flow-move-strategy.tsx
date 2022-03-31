@@ -2,6 +2,7 @@ import { MetadataUtils } from '../../../core/model/element-metadata-utils'
 import { switchToAbsolute } from '../commands/switch-to-absolute'
 import {
   AnimationTimer,
+  ConversionHighlightOutline,
   FlowGhostOutline,
   FlowMoveControlTimer,
   FlowMoveControlTooltip,

@@ -680,6 +680,10 @@ type SetUsersPreferredStrategy = {
   strategyId: CanvasStrategyId
 }
 
+type ClearOutlineHighlights = {
+  action: 'CLEAR_OUTLINE_HIGHLIGHTS'
+}
+
 export type CanvasAction =
   | ScrollCanvas
   | PositionCanvas
@@ -692,6 +696,7 @@ export type CanvasAction =
   | ZoomUI
   | SetSelectionControlsVisibility
   | SetUsersPreferredStrategy
+  | ClearOutlineHighlights
 
 export type CanvasModel = {
   controls: Array<HigherOrderControl>

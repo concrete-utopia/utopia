@@ -76,6 +76,11 @@ const CanvasActions = {
       strategyId: strategyId,
     }
   },
+  clearOutlineHighlights: function (): CanvasAction {
+    return {
+      action: 'CLEAR_OUTLINE_HIGHLIGHTS',
+    }
+  },
 }
 
 export default CanvasActions
