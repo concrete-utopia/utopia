@@ -5,7 +5,7 @@ import Tippy from '@tippyjs/react'
 import React, { useEffect } from 'react'
 import { usePubSubAtomReadOnly } from '../../../core/shared/atom-with-pub-sub'
 import { offsetPoint, zeroCanvasPoint, zeroRectangle } from '../../../core/shared/math-utils'
-import { useColorTheme, UtopiaStyles } from '../../../uuiui'
+import { HeadlessStringInput, useColorTheme, UtopiaStyles } from '../../../uuiui'
 import { NavigatorWidthAtom } from '../../editor/store/editor-state'
 import { useEditorState, useRefEditorState } from '../../editor/store/store-hook'
 import CanvasActions from '../canvas-actions'
@@ -301,6 +301,7 @@ export const ConversionHighlightOutline = React.memo(() => {
     (store) => !store.editor.navigator.minimised,
     'ConversionHighlightOutline navigatorVisible',
   )
+  const [animationTime, setAnimationTime] = React.useState(1000)
   const navigatorWidth = usePubSubAtomReadOnly(NavigatorWidthAtom)
   const [selectedOutline, setSelectedOutline] = React.useState('outline1')
   const outlineFrames = useEditorState(
@@ -326,8 +327,8 @@ export const ConversionHighlightOutline = React.memo(() => {
         ref.current.style.setProperty('display', 'none')
         dispatch.current([CanvasActions.clearOutlineHighlights()], 'canvas')
       }
-    }, 3000)
-  }, [outlineFrames, dispatch])
+    }, animationTime)
+  }, [outlineFrames, dispatch, animationTime])
 
   return (
     <React.Fragment>
@@ -389,6 +390,12 @@ export const ConversionHighlightOutline = React.memo(() => {
             selected={selectedOutline === 'outline4'}
             title={'Border4'}
             onMouseDown={React.useCallback(() => setSelectedOutline('outline4'), [])}
+          />
+          <HeadlessStringInput
+            value={animationTime}
+            onChange={React.useCallback((event) => {
+              setAnimationTime(Number(event.target.value))
+            }, [])}
           />
         </div>
       </div>
