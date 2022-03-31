@@ -17,6 +17,7 @@ import {
   offsetPoint,
   pointDifference,
   rectFromTwoPoints,
+  sideOfLine,
   zeroCanvasPoint,
   zeroCanvasRect,
 } from '../../../core/shared/math-utils'
@@ -25,7 +26,13 @@ import Utils from '../../../utils/utils'
 import { getElementFromProjectContents } from '../../editor/store/editor-state'
 import { stylePropPathMappingFn } from '../../inspector/common/property-path-hooks'
 import { EdgePosition } from '../canvas-types'
-import { isEdgePositionOnSide, pickPointOnRect, snapPoint } from '../canvas-utils'
+import {
+  isEdgePositionAHorizontalEdge,
+  isEdgePositionAVerticalEdge,
+  isEdgePositionOnSide,
+  pickPointOnRect,
+  snapPoint,
+} from '../canvas-utils'
 import {
   adjustCssLengthProperty,
   AdjustCssLengthProperty,
@@ -204,18 +211,17 @@ export function resizeBoundingBox(
     y: 1 - edgePosition.y,
   } as EdgePosition
 
-  const isEdgeOnSide = isEdgePositionOnSide(edgePosition)
+  const isEdgeHorizontalSide = isEdgePositionAHorizontalEdge(edgePosition)
+  const isEdgeVerticalSide = isEdgePositionAVerticalEdge(edgePosition)
 
-  if (isEdgeOnSide) {
-    if (edgePosition.x === 0.5) {
-      dragToUse = canvasPoint({ x: 0, y: drag.y })
-      startingCornerPosition = { x: 0, y: startingCornerPosition.y }
-      cornerEdgePosition = { x: 1, y: edgePosition.y }
-    } else if (edgePosition.y === 0.5) {
-      dragToUse = canvasPoint({ x: drag.x, y: 0 })
-      startingCornerPosition = { x: startingCornerPosition.x, y: 0 }
-      cornerEdgePosition = { x: edgePosition.x, y: 1 }
-    }
+  if (isEdgeHorizontalSide) {
+    dragToUse = canvasPoint({ x: 0, y: drag.y })
+    startingCornerPosition = { x: 0, y: startingCornerPosition.y }
+    cornerEdgePosition = { x: 1, y: edgePosition.y }
+  } else if (isEdgeVerticalSide) {
+    dragToUse = canvasPoint({ x: drag.x, y: 0 })
+    startingCornerPosition = { x: startingCornerPosition.x, y: 0 }
+    cornerEdgePosition = { x: edgePosition.x, y: 1 }
   }
 
   const oppositeCornerPoint = pickPointOnRect(boundingBox, startingCornerPosition)
@@ -223,24 +229,35 @@ export function resizeBoundingBox(
   let newCorner = offsetPoint(draggedCorner, dragToUse)
 
   if (keepAspectRatio) {
-    if (isEdgeOnSide) {
-      const horizontalLineB = {
-        x: newCorner.x + 10,
-        y: newCorner.y,
-      } as CanvasPoint
-      const verticalLineB = {
-        x: newCorner.x,
-        y: newCorner.y + 10,
-      } as CanvasPoint
+    const horizontalLineB = {
+      x: newCorner.x + 100,
+      y: newCorner.y,
+    } as CanvasPoint
+    const verticalLineB = {
+      x: newCorner.x,
+      y: newCorner.y + 100,
+    } as CanvasPoint
+    if (isEdgeHorizontalSide || isEdgeVerticalSide) {
       newCorner =
         lineIntersection(
           oppositeCornerPoint,
           draggedCorner,
           newCorner,
-          edgePosition.x === 0.5 ? horizontalLineB : verticalLineB,
+          isEdgeHorizontalSide ? horizontalLineB : verticalLineB,
         ) ?? closestPointOnLine(oppositeCornerPoint, draggedCorner, newCorner)
     } else {
-      newCorner = closestPointOnLine(oppositeCornerPoint, draggedCorner, newCorner)
+      const pointPosToAxis = sideOfLine(oppositeCornerPoint, draggedCorner, newCorner)
+      const topLeftOrBottomRight = edgePosition.x === edgePosition.y
+      const horizontalMatching =
+        (topLeftOrBottomRight && pointPosToAxis === 'right') ||
+        (!topLeftOrBottomRight && pointPosToAxis === 'left')
+      newCorner =
+        lineIntersection(
+          oppositeCornerPoint,
+          draggedCorner,
+          newCorner,
+          horizontalMatching ? horizontalLineB : verticalLineB,
+        ) ?? closestPointOnLine(oppositeCornerPoint, draggedCorner, newCorner)
     }
   }
 
@@ -255,10 +272,10 @@ export function resizeBoundingBox(
     newBoundingBox = rectFromTwoPoints(oppositeCornerPoint, newCorner)
   }
 
-  if (keepAspectRatio && isEdgeOnSide) {
-    if (edgePosition.x === 0.5) {
+  if (keepAspectRatio) {
+    if (isEdgeHorizontalSide) {
       newBoundingBox.x -= Utils.roundTo((newBoundingBox.width - boundingBox.width) / 2)
-    } else if (edgePosition.y === 0.5) {
+    } else if (isEdgeVerticalSide) {
       newBoundingBox.y -= Utils.roundTo((newBoundingBox.height - boundingBox.height) / 2)
     }
   }

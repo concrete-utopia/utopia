@@ -741,6 +741,22 @@ export function lineIntersection<C extends CoordinateMarker>(
   } as Point<C>
 }
 
+export function sideOfLine<C extends CoordinateMarker>(
+  lineA: Point<C>,
+  lineB: Point<C>,
+  p: Point<C>,
+): 'left' | 'right' | 'on-line' {
+  const d = (p.x - lineA.x) * (lineB.y - lineA.y) - (p.y - lineA.y) * (lineB.x - lineA.x)
+  if (d == 0) {
+    return 'on-line'
+  } else if (d < 0) {
+    return 'right'
+  } else {
+    // d > 0
+    return 'left'
+  }
+}
+
 export function roundPointTo<C extends CoordinateMarker>(p: Point<C>, precision: number): Point<C> {
   return {
     x: roundTo(p.x, precision),
