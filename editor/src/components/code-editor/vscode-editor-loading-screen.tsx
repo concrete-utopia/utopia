@@ -278,17 +278,3 @@ export const VSCodeLoadingScreen = React.memo((): React.ReactElement | null => {
     </div>
   )
 })
-
-export function checkVSCodeRendered(desiredFile: string | null): boolean {
-  const vscodeEditorElement = document.querySelector<HTMLIFrameElement>(`iframe#vscode-editor`)
-  const vscodeOuterElement = vscodeEditorElement?.contentWindow?.document.body.querySelector<
-    HTMLIFrameElement
-  >(`iframe#vscode-outer`)
-
-  const editorSelector = desiredFile == null ? `div[data-uri]` : `div[data-uri$='${desiredFile}']`
-  const codeEditorElement = vscodeOuterElement?.contentWindow?.document.body.querySelector(
-    editorSelector,
-  )
-
-  return codeEditorElement != null
-}

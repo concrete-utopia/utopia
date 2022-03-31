@@ -63,7 +63,6 @@ import {
   getOpenTextFileKey,
 } from '../../components/editor/store/editor-state'
 import { ProjectFileChange } from '../../components/editor/store/vscode-changes'
-import { checkVSCodeRendered } from '../../components/code-editor/vscode-editor-loading-screen'
 
 const Scheme = 'utopia'
 const RootDir = `/${Scheme}`
@@ -161,6 +160,20 @@ function watchForChanges(dispatch: EditorDispatch): void {
   }
 
   watch(toFSPath('/'), true, onCreated, onModified, onDeleted, onIndexedDBFailure)
+}
+
+function checkVSCodeRendered(desiredFile: string | null): boolean {
+  const vscodeEditorElement = document.querySelector<HTMLIFrameElement>(`iframe#vscode-editor`)
+  const vscodeOuterElement = vscodeEditorElement?.contentWindow?.document.body.querySelector<
+    HTMLIFrameElement
+  >(`iframe#vscode-outer`)
+
+  const editorSelector = desiredFile == null ? `div[data-uri]` : `div[data-uri$='${desiredFile}']`
+  const codeEditorElement = vscodeOuterElement?.contentWindow?.document.body.querySelector(
+    editorSelector,
+  )
+
+  return codeEditorElement != null
 }
 
 let currentInit: Promise<void> = Promise.resolve()
