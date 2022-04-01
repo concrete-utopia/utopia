@@ -73,7 +73,7 @@ export const absoluteResizeDeltaStrategy: CanvasStrategy = {
         drag,
         edgePosition,
         canvasState.scale,
-        false,
+        null,
       )
 
       const commandsForSelectedElements = canvasState.selectedElements.flatMap(
@@ -122,7 +122,7 @@ function snapDrag(
   drag: CanvasVector,
   edgePosition: EdgePosition,
   canvasScale: number,
-  keepAspectRatio: boolean,
+  lockedAspectRatio: number | null,
 ): {
   snappedDragVector: CanvasVector
   guidelinesWithSnappingVector: Array<GuidelineWithSnappingVector>
@@ -137,7 +137,7 @@ function snapDrag(
     originalBoundingBox,
     drag,
     edgePosition,
-    false,
+    null,
     false,
   )
   const { snapDelta, guidelinesWithSnappingVector } = runLegacyAbsoluteResizeSnapping(
@@ -146,7 +146,7 @@ function snapDrag(
     edgePosition,
     resizedUnsnappedBounds,
     canvasScale,
-    keepAspectRatio,
+    lockedAspectRatio,
     false,
   )
   const snappedDragVector = offsetPoint(drag, snapDelta)

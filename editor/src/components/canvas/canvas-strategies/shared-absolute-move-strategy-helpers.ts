@@ -16,6 +16,7 @@ import {
   lineIntersection,
   offsetPoint,
   pointDifference,
+  pointsEqual,
   rectFromTwoPoints,
   sideOfLine,
   zeroCanvasPoint,
@@ -201,7 +202,7 @@ export function resizeBoundingBox(
   boundingBox: CanvasRectangle,
   drag: CanvasPoint,
   edgePosition: EdgePosition,
-  keepAspectRatio: boolean,
+  lockedAspectRatio: number | null,
   centerBased: boolean,
 ): CanvasRectangle {
   let dragToUse = drag
@@ -228,7 +229,7 @@ export function resizeBoundingBox(
   const draggedCorner = pickPointOnRect(boundingBox, cornerEdgePosition)
   let newCorner = offsetPoint(draggedCorner, dragToUse)
 
-  if (keepAspectRatio) {
+  if (lockedAspectRatio != null) {
     const horizontalLineB = {
       x: newCorner.x + 100,
       y: newCorner.y,
@@ -237,27 +238,28 @@ export function resizeBoundingBox(
       x: newCorner.x,
       y: newCorner.y + 100,
     } as CanvasPoint
+    const diagonalA = getPointOnDiagonal(cornerEdgePosition, draggedCorner, lockedAspectRatio)
     if (isEdgeHorizontalSide || isEdgeVerticalSide) {
       newCorner =
         lineIntersection(
-          oppositeCornerPoint,
+          diagonalA,
           draggedCorner,
           newCorner,
           isEdgeHorizontalSide ? horizontalLineB : verticalLineB,
-        ) ?? closestPointOnLine(oppositeCornerPoint, draggedCorner, newCorner)
+        ) ?? closestPointOnLine(diagonalA, draggedCorner, newCorner)
     } else {
-      const pointPosToAxis = sideOfLine(oppositeCornerPoint, draggedCorner, newCorner)
+      const pointPosToAxis = sideOfLine(diagonalA, draggedCorner, newCorner)
       const topLeftOrBottomRight = edgePosition.x === edgePosition.y
       const horizontalMatching =
         (topLeftOrBottomRight && pointPosToAxis === 'right') ||
         (!topLeftOrBottomRight && pointPosToAxis === 'left')
       newCorner =
         lineIntersection(
-          oppositeCornerPoint,
+          diagonalA,
           draggedCorner,
           newCorner,
           horizontalMatching ? horizontalLineB : verticalLineB,
-        ) ?? closestPointOnLine(oppositeCornerPoint, draggedCorner, newCorner)
+        ) ?? closestPointOnLine(diagonalA, draggedCorner, newCorner)
     }
   }
 
@@ -272,11 +274,15 @@ export function resizeBoundingBox(
     newBoundingBox = rectFromTwoPoints(oppositeCornerPoint, newCorner)
   }
 
-  if (keepAspectRatio) {
+  if (lockedAspectRatio != null) {
     if (isEdgeHorizontalSide) {
-      newBoundingBox.x -= Utils.roundTo((newBoundingBox.width - boundingBox.width) / 2)
+      newBoundingBox.x = Utils.roundTo(
+        boundingBox.x + (boundingBox.width - newBoundingBox.width) / 2,
+      )
     } else if (isEdgeVerticalSide) {
-      newBoundingBox.y -= Utils.roundTo((newBoundingBox.height - boundingBox.height) / 2)
+      newBoundingBox.y -= Utils.roundTo(
+        boundingBox.y + (boundingBox.height - newBoundingBox.height) / 2,
+      )
     }
   }
 
@@ -289,7 +295,7 @@ export function runLegacyAbsoluteResizeSnapping(
   draggedCorner: EdgePosition,
   resizedBounds: CanvasRectangle,
   canvasScale: number,
-  keepAspectRatio: boolean,
+  lockedAspectRatio: number | null,
   centerBased: boolean,
 ): {
   snapDelta: CanvasVector
@@ -301,8 +307,11 @@ export function runLegacyAbsoluteResizeSnapping(
     y: 1 - draggedCorner.y,
   } as EdgePosition
 
-  const oppositePoint = pickPointOnRect(resizedBounds, oppositeCorner)
   const draggedPointMovedWithoutSnap = pickPointOnRect(resizedBounds, draggedCorner)
+  const oppositePoint =
+    lockedAspectRatio == null
+      ? pickPointOnRect(resizedBounds, oppositeCorner)
+      : getPointOnDiagonal(draggedCorner, draggedPointMovedWithoutSnap, lockedAspectRatio)
 
   const { snappedPointOnCanvas, guidelinesWithSnappingVector } = snapPoint(
     selectedElements,
@@ -310,7 +319,7 @@ export function runLegacyAbsoluteResizeSnapping(
     canvasScale,
     draggedPointMovedWithoutSnap,
     true,
-    keepAspectRatio,
+    lockedAspectRatio != null,
     draggedPointMovedWithoutSnap,
     oppositePoint,
     draggedCorner,
@@ -321,7 +330,7 @@ export function runLegacyAbsoluteResizeSnapping(
     resizedBounds,
     snapDelta,
     draggedCorner,
-    keepAspectRatio,
+    lockedAspectRatio,
     centerBased,
   )
 
@@ -335,4 +344,26 @@ export function runLegacyAbsoluteResizeSnapping(
     snappedBoundingBox: snappedBounds,
     guidelinesWithSnappingVector: updatedGuidelinesWithSnapping,
   }
+}
+
+function getPointOnDiagonal(
+  edgePosition: EdgePosition,
+  cornerPoint: CanvasPoint,
+  aspectRatio: number,
+) {
+  if (
+    (edgePosition.x === 0 && edgePosition.y === 0) ||
+    (edgePosition.x === 1 && edgePosition.y === 1) ||
+    (edgePosition.x === 0.5 && edgePosition.y === 1) ||
+    (edgePosition.x === 1 && edgePosition.y === 0.5)
+  ) {
+    return {
+      x: cornerPoint.x + 100 * aspectRatio,
+      y: cornerPoint.y + 100,
+    } as CanvasPoint
+  }
+  return {
+    x: cornerPoint.x + 100 * aspectRatio,
+    y: cornerPoint.y - 100,
+  } as CanvasPoint
 }
