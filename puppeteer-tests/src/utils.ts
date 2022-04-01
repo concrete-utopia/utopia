@@ -4,7 +4,6 @@ import type { PageEventObject } from 'puppeteer'
 const fs = require('fs')
 const path = require('path')
 const AWS = require('aws-sdk')
-const yn = require('yn')
 
 export const setupBrowser = async (
   url: string,
@@ -15,7 +14,7 @@ export const setupBrowser = async (
 }> => {
   const browser = await puppeteer.launch({
     args: ['--no-sandbox', '--enable-thread-instruction-count'],
-    headless: yn(process.env.HEADLESS),
+    headless: false,
     executablePath: process.env.BROWSER,
   })
   const page = await browser.newPage()

@@ -134,7 +134,6 @@ jobs:
         id: run-performance-test
         env:
           BRANCH_NAME: ${{ steps.extract_branch.outputs.branch }}
-          HEADLESS: 'true'
           AWS_S3_BUCKET: ${{secrets.PERFORMANCE_GRAPHS_BUCKET}}
           AWS_ACCESS_KEY_ID: ${{ secrets.PERFORMANCE_GRAPHS_ACCESS_KEY}}
           AWS_SECRET_ACCESS_KEY: ${{ secrets.PERFORMANCE_GRAPHS_SECRET_KEY }}
@@ -142,7 +141,7 @@ jobs:
           PERFORMANCE_GRAPHS_PLOTLY_USERNAME: ${{ secrets.PERFORMANCE_GRAPHS_PLOTLY_USERNAME}}
           PERFORMANCE_GRAPHS_PLOTLY_API_KEY: ${{secrets.PERFORMANCE_GRAPHS_PLOTLY_API_KEY}}
         run: |
-          nix-shell --arg includeServerBuildSupport false --arg includeRunLocallySupport false --run "run-puppeteer-test"
+          nix-shell --arg includeServerBuildSupport false --arg includeRunLocallySupport false --run "xvfb-run --server-args='-screen 0 1920x1080x24' run-puppeteer-test"
       - name: Find Comment
         uses: peter-evans/find-comment@v1
         id: fc
