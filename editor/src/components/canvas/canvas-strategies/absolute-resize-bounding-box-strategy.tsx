@@ -24,11 +24,11 @@ import { updateHighlightedViews } from '../commands/update-highlighted-views-com
 import { AbsoluteResizeControl } from '../controls/select-mode/absolute-resize-control'
 import { AbsolutePin, hasAtLeastTwoPinsPerSide } from './absolute-resize-helpers'
 import { CanvasStrategy } from './canvas-strategy-types'
+import { getMultiselectBounds } from './shared-absolute-move-strategy-helpers'
 import {
-  getMultiselectBounds,
   resizeBoundingBox,
   runLegacyAbsoluteResizeSnapping,
-} from './shared-absolute-move-strategy-helpers'
+} from './shared-absolute-resize-strategy-helpers'
 
 export const absoluteResizeBoundingBoxStrategy: CanvasStrategy = {
   id: 'ABSOLUTE_RESIZE_BOUNDING_BOX',
@@ -84,6 +84,8 @@ export const absoluteResizeBoundingBoxStrategy: CanvasStrategy = {
           ? originalBoundingBox.width / originalBoundingBox.height
           : null
         const centerBased = interactionState.interactionData.modifiers.alt
+          ? 'center-based'
+          : 'non-center-based'
         const newBoundingBox = resizeBoundingBox(
           originalBoundingBox,
           drag,
@@ -196,7 +198,7 @@ function snapBoundingBox(
   resizedBounds: CanvasRectangle,
   canvasScale: number,
   lockedAspectRatio: number | null,
-  centerBased: boolean,
+  centerBased: 'center-based' | 'non-center-based',
 ) {
   const { snappedBoundingBox, guidelinesWithSnappingVector } = runLegacyAbsoluteResizeSnapping(
     selectedElements,
