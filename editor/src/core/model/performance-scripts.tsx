@@ -49,6 +49,7 @@ import { CURRENT_PROJECT_VERSION } from '../../components/editor/actions/migrati
 import { BuiltInDependencies } from '../es-modules/package-manager/built-in-dependencies-list'
 import { LargeProjectContents } from '../../test-cases/large-project'
 import { VSCodeLoadingScreenID } from '../../components/code-editor/vscode-editor-loading-screen'
+import { v4 as UUID } from 'uuid'
 
 export function wait(timeout: number): Promise<void> {
   return new Promise((resolve) => {
@@ -76,9 +77,7 @@ function measureStep(prefix: string, framesPassed: number): void {
 
 const CANVAS_POPULATE_WAIT_TIME_MS = 20 * 1000
 
-let testProjectID: number = 999000
-
-async function loadProjectInner(
+async function loadProject(
   dispatch: DebugDispatch,
   builtInDependencies: BuiltInDependencies,
   projectContents: ProjectContentTreeRoot,
@@ -110,8 +109,7 @@ async function loadProjectInner(
   }
 
   // Load the project itself.
-  const newProjectID = testProjectID++
-  await load(dispatch, persistentModel, 'Test', `${newProjectID}`, builtInDependencies, false)
+  await load(dispatch, persistentModel, 'Test', UUID(), builtInDependencies, false)
 
   // Wait for the editor to stabilise, ensuring that the canvas can render for example.
   const startWaitingTime = Date.now()
@@ -177,22 +175,6 @@ async function loadProjectInner(
     await wait(2000)
   }
   return editorReady
-}
-
-const LOAD_PROJECT_MAX_ATTEMPTS = 3
-
-async function loadProject(
-  dispatch: DebugDispatch,
-  builtInDependencies: BuiltInDependencies,
-  projectContents: ProjectContentTreeRoot,
-): Promise<boolean> {
-  for (let attempt = 1; attempt <= LOAD_PROJECT_MAX_ATTEMPTS; attempt++) {
-    const result = await loadProjectInner(dispatch, builtInDependencies, projectContents)
-    if (result) {
-      return true
-    }
-  }
-  return false
 }
 
 export function useTriggerScrollPerformanceTest(): () => void {
