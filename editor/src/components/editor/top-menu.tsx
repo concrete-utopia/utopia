@@ -40,7 +40,7 @@ const TopMenuLeftControls = React.memo(() => {
     'TopMenuLeftControls navigatorVisible',
   )
 
-  const navigatorWidth = usePubSubAtomReadOnly(NavigatorWidthAtom)
+  const navigatorWidth = usePubSubAtomReadOnly(NavigatorWidthAtom, true)
 
   const onClickNavigateTab = React.useCallback(() => {
     let actions: EditorAction[] = [EditorActions.togglePanel('navigator')]

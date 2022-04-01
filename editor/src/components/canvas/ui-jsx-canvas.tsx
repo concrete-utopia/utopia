@@ -163,6 +163,7 @@ export interface UiJsxCanvasProps {
   propertyControlsInfo: PropertyControlsInfo
   dispatch: EditorDispatch
   domWalkerAdditionalElementsToUpdate: Array<ElementPath>
+  elementsToRerender: Array<ElementPath> | 'rerender-all-elements'
 }
 
 export interface CanvasReactReportErrorCallback {
@@ -244,6 +245,7 @@ export function pickUiJsxCanvasProps(
       propertyControlsInfo: editor.propertyControlsInfo,
       dispatch: dispatch,
       domWalkerAdditionalElementsToUpdate: editor.canvas.domWalkerAdditionalElementsToUpdate,
+      elementsToRerender: editor.canvas.elementsToRerender,
     }
   }
 }
@@ -341,9 +343,10 @@ export const UiJsxCanvas = React.memo(
       clearErrors()
     }
 
-    let metadataContext: UiJsxCanvasContextData = usePubSubAtomReadOnly(UiJsxCanvasCtxAtom)
+    let metadataContext: UiJsxCanvasContextData = usePubSubAtomReadOnly(UiJsxCanvasCtxAtom, true)
     const updateInvalidatedPaths: DomWalkerInvalidatePathsCtxData = usePubSubAtomReadOnly(
       DomWalkerInvalidatePathsCtxAtom,
+      true,
     )
     useClearSpyMetadataOnRemount(props.mountCount, props.domWalkerInvalidateCount, metadataContext)
 
@@ -477,6 +480,7 @@ export const UiJsxCanvas = React.memo(
       hiddenInstances: hiddenInstances,
       canvasIsLive: canvasIsLive,
       shouldIncludeCanvasRootInTheSpy: props.shouldIncludeCanvasRootInTheSpy,
+      elementsToRerender: props.elementsToRerender,
     })
 
     const utopiaProjectContextValue = useKeepShallowReferenceEquality({
@@ -485,6 +489,12 @@ export const UiJsxCanvas = React.memo(
       openStoryboardFilePathKILLME: props.uiFilePath,
       resolve: resolve,
     })
+
+    const StoryboardRoot = React.useMemo(() => {
+      return StoryboardRootComponent == null ? null : (
+        <StoryboardRootComponent {...{ [UTOPIA_INSTANCE_PATH]: rootInstancePath }} />
+      )
+    }, [StoryboardRootComponent, rootInstancePath])
 
     return (
       <div
@@ -508,9 +518,7 @@ export const UiJsxCanvas = React.memo(
               canvasInteractionHappening={props.transientFilesState != null}
             >
               <SceneLevelUtopiaCtxAtom.Provider value={sceneLevelUtopiaContextValue}>
-                {StoryboardRootComponent == null ? null : (
-                  <StoryboardRootComponent {...{ [UTOPIA_INSTANCE_PATH]: rootInstancePath }} />
-                )}
+                {StoryboardRoot}
               </SceneLevelUtopiaCtxAtom.Provider>
             </CanvasContainer>
           </UtopiaProjectCtxAtom.Provider>

@@ -954,6 +954,7 @@ function restoreEditorState(currentEditor: EditorModel, history: StateHistory): 
       additionalControls: currentEditor.interfaceDesigner.additionalControls,
     },
     canvas: {
+      elementsToRerender: currentEditor.canvas.elementsToRerender,
       visible: currentEditor.canvas.visible,
       dragState: null,
       interactionSession: null,

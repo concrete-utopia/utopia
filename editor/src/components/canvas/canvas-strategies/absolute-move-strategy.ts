@@ -1,9 +1,13 @@
 import { MetadataUtils } from '../../../core/model/element-metadata-utils'
+import { toString } from '../../../core/shared/element-path'
 import { ElementInstanceMetadataMap } from '../../../core/shared/element-template'
 import { CanvasPoint, offsetPoint } from '../../../core/shared/math-utils'
 import { ElementPath } from '../../../core/shared/project-file-types'
+import { keepDeepReferenceEqualityIfPossible } from '../../../utils/react-performance'
+import { withUnderlyingTarget } from '../../editor/store/editor-state'
 import { setSnappingGuidelines } from '../commands/set-snapping-guidelines-command'
 import { updateHighlightedViews } from '../commands/update-highlighted-views-command'
+import { wildcardPatch } from '../commands/wildcard-patch-command'
 import { runLegacyAbsoluteMoveSnapping } from '../controls/guideline-helpers'
 import { determineConstrainedDragAxis } from '../controls/select-mode/move-utils'
 import { ConstrainedDragAxis, GuidelineWithSnappingVector } from '../guideline'
@@ -12,6 +16,8 @@ import {
   getAbsoluteMoveCommandsForSelectedElement,
   getMultiselectBounds,
 } from './shared-absolute-move-strategy-helpers'
+
+let elementsToRerender: Array<ElementPath> | 'rerender-all-elements'
 
 export const absoluteMoveStrategy: CanvasStrategy = {
   id: 'ABSOLUTE_MOVE',
@@ -62,8 +68,20 @@ export const absoluteMoveStrategy: CanvasStrategy = {
           sessionState,
         ),
       )
+
+      elementsToRerender = keepDeepReferenceEqualityIfPossible(elementsToRerender, [
+        canvasState.selectedElements[0],
+      ])
+
       return [
         ...commandsForSelectedElements,
+        wildcardPatch('transient', {
+          canvas: {
+            elementsToRerender: {
+              $set: elementsToRerender,
+            },
+          },
+        }),
         updateHighlightedViews('transient', []),
         setSnappingGuidelines('transient', guidelinesWithSnappingVector),
       ]

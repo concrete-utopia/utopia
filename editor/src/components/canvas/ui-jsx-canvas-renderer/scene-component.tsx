@@ -13,8 +13,8 @@ type ExtendedSceneProps = SceneProps & { [UTOPIA_SCENE_ID_KEY]: string }
 export const SceneComponent = React.memo(
   (props: React.PropsWithChildren<ExtendedSceneProps>) => {
     const colorTheme = useColorTheme()
-    const canvasIsLive = usePubSubAtomReadOnly(RerenderUtopiaCtxAtom).canvasIsLive
-    const updateInvalidatedScenes = usePubSubAtomReadOnly(DomWalkerInvalidateScenesCtxAtom)
+    const canvasIsLive = usePubSubAtomReadOnly(RerenderUtopiaCtxAtom, true).canvasIsLive
+    const updateInvalidatedScenes = usePubSubAtomReadOnly(DomWalkerInvalidateScenesCtxAtom, true)
 
     const { style, ...remainingProps } = props
 
