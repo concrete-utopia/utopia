@@ -1,5 +1,6 @@
 import React from 'react'
-import create, { UseStore } from 'zustand'
+import create, { GetState, Mutate, SetState, StoreApi, UseStore } from 'zustand'
+import { subscribeWithSelector } from 'zustand/middleware'
 import { renderHook } from '@testing-library/react-hooks'
 import { EditorStateContext, useSelectorWithCallback } from './store-hook'
 import { createEditorState, EditorState, EditorStorePatched } from './editor-state'
@@ -24,7 +25,12 @@ function createEmptyEditorStoreHook() {
     builtInDependencies: createBuiltInDependenciesList(null),
   }
 
-  const storeHook = create<EditorStorePatched>((set) => initialEditorStore)
+  const storeHook = create<
+    EditorStorePatched,
+    SetState<EditorStorePatched>,
+    GetState<EditorStorePatched>,
+    Mutate<StoreApi<EditorStorePatched>, [['zustand/subscribeWithSelector', never]]>
+  >(subscribeWithSelector((set) => initialEditorStore))
 
   return storeHook
 }
@@ -111,6 +117,7 @@ describe('useSelectorWithCallback', () => {
     let rerenderTestHook: () => void
 
     storeHook.subscribe(
+      (store) => store.editor.selectedViews,
       (newSelectedViews) => {
         if (newSelectedViews != null) {
           rerenderTestHook()
@@ -119,7 +126,6 @@ describe('useSelectorWithCallback', () => {
           // TODO this is super-baffling. turning this test async and putting done() here and expect()-ing values did not work for some reason
         }
       },
-      (store) => store.editor.selectedViews,
     )
 
     const { result, rerender } = renderHook<{ storeHook: UseStore<EditorStorePatched> }, void>(

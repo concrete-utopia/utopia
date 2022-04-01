@@ -1,4 +1,5 @@
 import create from 'zustand'
+import { subscribeWithSelector } from 'zustand/middleware'
 import { createBuiltInDependenciesList } from '../../../core/es-modules/package-manager/built-in-dependencies-list'
 import { NO_OP } from '../../../core/shared/utils'
 import {
@@ -90,7 +91,7 @@ function createEditorStore(
     builtInDependencies: createBuiltInDependenciesList(null),
   }
 
-  const storeHook = create<EditorStoreFull>((set) => initialEditorStore)
+  const storeHook = create<EditorStoreFull>(subscribeWithSelector((set) => initialEditorStore))
 
   return initialEditorStore
 }

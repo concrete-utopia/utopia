@@ -76,7 +76,9 @@ function measureStep(prefix: string, framesPassed: number): void {
 
 const CANVAS_POPULATE_WAIT_TIME_MS = 20 * 1000
 
-async function loadProject(
+let testProjectID: number = 999000
+
+async function loadProjectInner(
   dispatch: DebugDispatch,
   builtInDependencies: BuiltInDependencies,
   projectContents: ProjectContentTreeRoot,
@@ -108,7 +110,8 @@ async function loadProject(
   }
 
   // Load the project itself.
-  await load(dispatch, persistentModel, 'Test', '999999', builtInDependencies, false)
+  const newProjectID = testProjectID++
+  await load(dispatch, persistentModel, 'Test', `${newProjectID}`, builtInDependencies, false)
 
   // Wait for the editor to stabilise, ensuring that the canvas can render for example.
   const startWaitingTime = Date.now()
@@ -168,7 +171,28 @@ async function loadProject(
       await wait(500)
     }
   }
+
+  // Give the editor a little bit of an extra window of time just in case.
+  if (editorReady) {
+    await wait(2000)
+  }
   return editorReady
+}
+
+const LOAD_PROJECT_MAX_ATTEMPTS = 3
+
+async function loadProject(
+  dispatch: DebugDispatch,
+  builtInDependencies: BuiltInDependencies,
+  projectContents: ProjectContentTreeRoot,
+): Promise<boolean> {
+  for (let attempt = 1; attempt <= LOAD_PROJECT_MAX_ATTEMPTS; attempt++) {
+    const result = await loadProjectInner(dispatch, builtInDependencies, projectContents)
+    if (result) {
+      return true
+    }
+  }
+  return false
 }
 
 export function useTriggerScrollPerformanceTest(): () => void {
@@ -235,7 +259,7 @@ export function useTriggerResizePerformanceTest(): () => void {
   const trigger = React.useCallback(async () => {
     const editorReady = await loadProject(dispatch, builtInDependencies, LargeProjectContents)
     if (!editorReady) {
-      console.info('ABSOLUTE_MOVE_TEST_ERROR')
+      console.info('RESIZE_TEST_ERROR')
       return
     }
     const targetPath = [...allPaths.current].sort(
@@ -308,12 +332,12 @@ function useTriggerHighlightPerformanceTest(key: 'regular' | 'all-elements'): ()
     'useTriggerHighlightPerformanceTest builtInDependencies',
   )
   const trigger = React.useCallback(async () => {
+    const allCapsKey = key.toLocaleUpperCase()
     const editorReady = await loadProject(dispatch, builtInDependencies, LargeProjectContents)
     if (!editorReady) {
-      console.info('ABSOLUTE_MOVE_TEST_ERROR')
+      console.info(`HIGHLIGHT_${allCapsKey}_TEST_ERROR`)
       return
     }
-    const allCapsKey = key.toLocaleUpperCase()
     if (allPaths.current.length === 0) {
       console.info(`HIGHLIGHT_${allCapsKey}_TEST_ERROR_NO_PATHS`)
       return
@@ -379,7 +403,7 @@ export function useTriggerSelectionPerformanceTest(): () => void {
   const trigger = React.useCallback(async () => {
     const editorReady = await loadProject(dispatch, builtInDependencies, LargeProjectContents)
     if (!editorReady) {
-      console.info('ABSOLUTE_MOVE_TEST_ERROR')
+      console.info('SELECT_TEST_ERROR')
       return
     }
     const targetPath = [...allPaths.current].sort(

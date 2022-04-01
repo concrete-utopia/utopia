@@ -98,6 +98,7 @@ function calculatePi(accuracy: number): number {
 }
 
 function timeBasicCalc(): FrameResult {
+  console.log('Test Basic Calc')
   let times: Array<number> = []
 
   for (let i = 0; i < 100; i++) {
