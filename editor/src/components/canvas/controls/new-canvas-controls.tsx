@@ -425,7 +425,7 @@ const NewCanvasControlsInner = (props: NewCanvasControlsInnerProps) => {
         isFeatureEnabled('Canvas Strategies'),
         <FlexResizeControl localSelectedElements={localSelectedViews} />,
       )}
-      <ConversionHighlightOutline />
+      {/* <ConversionHighlightOutline /> */}
     </div>
   )
 }

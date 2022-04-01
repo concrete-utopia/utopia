@@ -436,6 +436,7 @@ export function runLocalCanvasAction(
           controls: {
             ...model.canvas.controls,
             highlightOutlines: [],
+            highlightedElements: [],
           },
         },
       }

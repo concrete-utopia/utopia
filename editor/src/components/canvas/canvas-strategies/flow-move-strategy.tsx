@@ -1,5 +1,5 @@
 import { MetadataUtils } from '../../../core/model/element-metadata-utils'
-import { switchToAbsolute } from '../commands/switch-to-absolute'
+import { highlightConversion, switchToAbsolute } from '../commands/switch-to-absolute'
 import {
   AnimationTimer,
   ConversionHighlightOutline,
@@ -54,7 +54,10 @@ export const flowMoveStrategy: CanvasStrategy = {
   apply: (canvasState, interactionState, sessionState) => {
     if (interactionState.interactionData.type === 'DRAG') {
       if (interactionState.globalTime - interactionState.lastInteractionTime > AnimationTimer) {
-        return [switchToAbsolute('permanent', canvasState.selectedElements)]
+        return [
+          switchToAbsolute('permanent', canvasState.selectedElements),
+          highlightConversion('transient'),
+        ]
       }
     }
     // Fallback for when the checks above are not satisfied.

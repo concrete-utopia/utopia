@@ -7,7 +7,9 @@ import {
   ArbitraryJSBlock,
   ElementInstanceMetadata,
   ElementInstanceMetadataMap,
+  emptyComments,
   isUtopiaJSXComponent,
+  jsxAttributeValue,
   TopLevelElement,
   UtopiaJSXComponent,
 } from '../../core/shared/element-template'
@@ -95,6 +97,10 @@ import {
   clearListOfEvaluatedFiles,
   getListOfEvaluatedFiles,
 } from '../../core/shared/code-exec-utils'
+import { useEditorState, useRefEditorState } from '../editor/store/store-hook'
+import CanvasActions from './canvas-actions'
+import { setProp_UNSAFE, unsetProperty } from '../editor/actions/action-creators'
+import { create } from '../../core/shared/property-path'
 
 applyUIDMonkeyPatch()
 
@@ -486,12 +492,58 @@ export const UiJsxCanvas = React.memo(
       resolve: resolve,
     })
 
+    const higlightedElements = useEditorState(
+      (store) => store.editor.canvas.controls.highlightedElements,
+      'higlightedElements',
+    )
+    const [animationCode, setAnimationCode] = React.useState('')
+    const highlightAnimation = `
+    .utopia-highlight-animation::after {
+      animation: simple 2s ease forwards;
+      outline: 2px solid;
+      mix-blend-mode: difference;
+      position: absolute;
+      width: 100%;
+      height: 100%;
+      content: " ";
+    }
+    @keyframes simple {
+      0%, 100% {
+        outline-color: rgba(255,165,0, 0);
+      }
+      50% {
+        outline-color: rgba(255,165,0, 1);
+      }
+    }
+    `
+    const timerRef = React.useRef<NodeJS.Timeout | null>(null)
+    React.useEffect(() => {
+      if (higlightedElements.length > 0) {
+        setAnimationCode(highlightAnimation)
+      }
+      if (timerRef.current != null) {
+        clearTimeout(timerRef.current)
+        timerRef.current = null
+      }
+      timerRef.current = setTimeout(() => {
+        setAnimationCode('')
+        dispatch(
+          [
+            CanvasActions.clearOutlineHighlights(),
+            // ...higlightedElements.map((path) => unsetProperty(path, create(['className']))),
+          ],
+          'canvas',
+        )
+      }, 2000)
+    }, [higlightedElements, dispatch, highlightAnimation])
+
     return (
       <div
         style={{
           all: 'initial',
         }}
       >
+        <style>{animationCode}</style>
         <Helmet>{parse(linkTags)}</Helmet>
         <RerenderUtopiaCtxAtom.Provider value={rerenderUtopiaContextValue}>
           <UtopiaProjectCtxAtom.Provider value={utopiaProjectContextValue}>

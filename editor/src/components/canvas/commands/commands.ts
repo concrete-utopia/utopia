@@ -10,7 +10,12 @@ import { mergePatches } from './merge-patches'
 import { ReparentElement, runReparentElement } from './reparent-element-command'
 import { runSetSnappingGuidelines, SetSnappingGuidelines } from './set-snapping-guidelines-command'
 import { runStrategySwitchedCommand, StrategySwitched } from './strategy-switched-command'
-import { runSwitchToAbsolute, SwitchToAbsolute } from './switch-to-absolute'
+import {
+  HighlightConversion,
+  runHighlightConversion,
+  runSwitchToAbsolute,
+  SwitchToAbsolute,
+} from './switch-to-absolute'
 import {
   runUpdateHighlightedViews,
   UpdateHighlightedViews,
@@ -41,6 +46,7 @@ export type CanvasCommand =
   | UpdateHighlightedViews
   | SetSnappingGuidelines
   | SwitchToAbsolute
+  | HighlightConversion
 
 export const runCanvasCommand: CommandFunction<CanvasCommand> = (
   editorState: EditorState,
@@ -65,6 +71,8 @@ export const runCanvasCommand: CommandFunction<CanvasCommand> = (
       return runSetSnappingGuidelines(editorState, command)
     case 'SWITCH_TO_ABSOLUTE':
       return runSwitchToAbsolute(editorState, command)
+    case 'HIGHLIGHT_CONVERSION':
+      return runHighlightConversion(editorState, command)
     default:
       const _exhaustiveCheck: never = command
       throw new Error(`Unhandled canvas command ${JSON.stringify(command)}`)
