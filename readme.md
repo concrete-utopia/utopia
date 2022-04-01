@@ -69,18 +69,92 @@ Limitations:
 
 ## fsevents
 
-If you notice that 1 or more CPU cores are running 100% because of `node` processes, it is probably webpack-dev-server having trouble with `fsevents` on MacOS. To fix it, run `npm install fsevents` in the `utopia/editor` directory. see https://github.com/webpack/webpack/issues/701#issuecomment-216082726
+If you notice that 1 or more CPU cores are running 100% because of `node` processes, it is probably webpack-dev-server having trouble with `fsevents` on MacOS. To fix it, run `pnpm install fsevents` in the `utopia/editor` directory. see https://github.com/webpack/webpack/issues/701#issuecomment-216082726
 
 ## Running this without Nix
 
-You'll need four things running concurrently:
+We highly recommend using Nix to make life easier, but if you're having trouble with that or would prefer not to, then there is always the option to run each of the various scripts individually.
+
+**You'll first need to build VS Code and install a few dependencies:**
 
 ```
-editor/npm run webpack
-editor/npx tsc --watch
-Website/npm start
-server/cabal new-run --disable-optimization --disable-profiling --disable-documentation --disable-library-coverage --disable-benchmarks utopia-web -- +RTS -N
+cd [root-directory]/utopia-vscode-extension
+pnpm install
+pnpm run build
 
+cd [root-directory]/vscode-build
+yarn
+yarn run build
+
+cd [root-directory]/editor
+pnpm install
+```
+
+**Then, to run the application, you'll need multiple things running concurrently...**
+The server:
+
+```
+cd [root-directory]/server
+hpack
+cabal new-run -j --disable-optimization --disable-profiling --disable-documentation --disable-library-coverage --disable-benchmarks utopia-web -- +RTS -N -c"
+```
+
+PostgreSQL:
+
+```
+cd [root-directory]
+PGLOCK_DIR="`pwd`/.pglock/"
+mkdir -p $PGLOCK_DIR
+pg_ctl -D utopia-db stop
+initdb -D utopia-db
+pg_ctl -D utopia-db -l pglog.txt -o "--unix_socket_directories='$PGLOCK_DIR' -c log_statement=none" start
+psql -o /dev/null -h "$PGLOCK_DIR" -d utopia -tc "SELECT 1 FROM pg_database WHERE datname = 'utopia'" || create-db
+tail -f pglog.txt
+```
+
+`tsc` to compile the editor:
+
+```
+cd [root-directory]/editor
+pnpm tsc --watch && NODE_OPTIONS=--max_old_space_size=4096
+```
+
+Vite to run the editor:
+
+```
+cd [root-directory]/editor
+pnpm run dev-fast
+```
+
+The utopia-vscode-common module:
+
+```
+cd [root-directory]/utopia-vscode-common
+pnpm install
+pnpm run watch-dev
+```
+
+The utopia-vscode-extension module:
+
+```
+cd [root-directory]/utopia-vscode-extension
+pnpm install
+pnpm run watch-dev
+```
+
+A script for pulling changes to the above extension into VS Code:
+
+```
+cd [root-directory]/vscode-build
+yarn run pull-utopia-extension
+```
+
+The website project (if developing that)
+
+```
+cd [root-directory]/website-next
+pnpm install
+BROWSER=none pnpm run dev
 ```
 
 ## Using direnv to make your life easier
