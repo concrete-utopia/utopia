@@ -486,6 +486,12 @@ export const UiJsxCanvas = React.memo(
       resolve: resolve,
     })
 
+    const StoryboardRoot = React.useMemo(() => {
+      return StoryboardRootComponent == null ? null : (
+        <StoryboardRootComponent {...{ [UTOPIA_INSTANCE_PATH]: rootInstancePath }} />
+      )
+    }, [StoryboardRootComponent, rootInstancePath])
+
     return (
       <div
         style={{
@@ -508,9 +514,7 @@ export const UiJsxCanvas = React.memo(
               canvasInteractionHappening={props.transientFilesState != null}
             >
               <SceneLevelUtopiaCtxAtom.Provider value={sceneLevelUtopiaContextValue}>
-                {StoryboardRootComponent == null ? null : (
-                  <StoryboardRootComponent {...{ [UTOPIA_INSTANCE_PATH]: rootInstancePath }} />
-                )}
+                {StoryboardRoot}
               </SceneLevelUtopiaCtxAtom.Provider>
             </CanvasContainer>
           </UtopiaProjectCtxAtom.Provider>
