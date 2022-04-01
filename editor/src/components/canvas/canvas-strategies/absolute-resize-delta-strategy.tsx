@@ -62,7 +62,6 @@ export const absoluteResizeDeltaStrategy: CanvasStrategy = {
         drag,
         edgePosition,
         canvasState.scale,
-        null,
       )
 
       const commandsForSelectedElements = canvasState.selectedElements.flatMap(
@@ -111,7 +110,6 @@ function snapDrag(
   drag: CanvasVector,
   edgePosition: EdgePosition,
   canvasScale: number,
-  lockedAspectRatio: number | null,
 ): {
   snappedDragVector: CanvasVector
   guidelinesWithSnappingVector: Array<GuidelineWithSnappingVector>
@@ -135,7 +133,7 @@ function snapDrag(
     edgePosition,
     resizedUnsnappedBounds,
     canvasScale,
-    lockedAspectRatio,
+    null,
     'non-center-based',
   )
   const snappedDragVector = offsetPoint(drag, snapDelta)
