@@ -162,22 +162,7 @@ function watchForChanges(dispatch: EditorDispatch): void {
   watch(toFSPath('/'), true, onCreated, onModified, onDeleted, onIndexedDBFailure)
 }
 
-function checkVSCodeRendered(desiredFile: string | null): boolean {
-  const vscodeEditorElement = document.querySelector<HTMLIFrameElement>(`iframe#vscode-editor`)
-  const vscodeOuterElement = vscodeEditorElement?.contentWindow?.document.body.querySelector<
-    HTMLIFrameElement
-  >(`iframe#vscode-outer`)
-
-  const editorSelector = desiredFile == null ? `div[data-uri]` : `div[data-uri$='${desiredFile}']`
-  const codeEditorElement = vscodeOuterElement?.contentWindow?.document.body.querySelector(
-    editorSelector,
-  )
-
-  return codeEditorElement != null
-}
-
 let currentInit: Promise<void> = Promise.resolve()
-let polledClearLoadingScreenTimeout: any = null
 
 export async function initVSCodeBridge(
   projectID: string,
@@ -186,28 +171,6 @@ export async function initVSCodeBridge(
   openFilePath: string | null,
 ): Promise<void> {
   let loadingScreenHidden = false
-  let loadingScreenPollCount = 0
-  function hideLoadingScreen() {
-    if (polledClearLoadingScreenTimeout != null) {
-      clearTimeout(polledClearLoadingScreenTimeout)
-      polledClearLoadingScreenTimeout = null
-    }
-    loadingScreenHidden = true
-    dispatch([hideVSCodeLoadingScreen()], 'everyone')
-  }
-  function polledClearLoadingScreen() {
-    loadingScreenPollCount++
-    // Fallback incase the file just doesn't load for some reason
-    const desiredFile = loadingScreenPollCount >= 10 ? null : openFilePath
-    const codeEditorLoaded = checkVSCodeRendered(desiredFile)
-    if (codeEditorLoaded) {
-      hideLoadingScreen()
-    } else {
-      polledClearLoadingScreenTimeout = setTimeout(() => {
-        polledClearLoadingScreen()
-      }, 1000)
-    }
-  }
   async function innerInit(): Promise<void> {
     dispatch([markVSCodeBridgeReady(false)], 'everyone')
     if (isBrowserEnvironment) {
@@ -231,6 +194,10 @@ export async function initVSCodeBridge(
             dispatch([updateConfigFromVSCode(message.config)], 'everyone')
             break
           case 'FILE_OPENED':
+            if (!loadingScreenHidden) {
+              loadingScreenHidden = true
+              dispatch([hideVSCodeLoadingScreen()], 'everyone')
+            }
             break
           default:
             const _exhaustiveCheck: never = message
@@ -241,8 +208,10 @@ export async function initVSCodeBridge(
       watchForChanges(dispatch)
       if (openFilePath != null) {
         await sendOpenFileMessage(openFilePath)
+      } else {
+        loadingScreenHidden = true
+        dispatch([hideVSCodeLoadingScreen()], 'everyone')
       }
-      polledClearLoadingScreen()
     }
     dispatch([markVSCodeBridgeReady(true)], 'everyone')
   }
