@@ -194,6 +194,7 @@ export async function initVSCodeBridge(
             dispatch([updateConfigFromVSCode(message.config)], 'everyone')
             break
           case 'FILE_OPENED':
+          case 'FAILED_TO_OPEN_FILE':
             if (!loadingScreenHidden) {
               loadingScreenHidden = true
               dispatch([hideVSCodeLoadingScreen()], 'everyone')
