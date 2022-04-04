@@ -10,29 +10,42 @@ let thisDBName: string
 
 const StoreExistsKey = '.store-exists'
 
+/* eslint-disable-next-line @typescript-eslint/no-empty-function */
+let resolveFirstInitialize: () => void = () => {}
+const firstInitialize = new Promise<void>((resolve) => {
+  resolveFirstInitialize = resolve
+})
+let initializeStoreChain: Promise<void> = Promise.resolve()
+
 export async function initializeStore(
   storeName: string,
   driver: string = localforage.INDEXEDDB,
 ): Promise<void> {
-  thisDBName = `utopia-project-${storeName}`
+  async function innerInitialize(): Promise<void> {
+    thisDBName = `utopia-project-${storeName}`
 
-  store = localforage.createInstance({
-    name: thisDBName,
-    driver: driver,
-  })
+    store = localforage.createInstance({
+      name: thisDBName,
+      driver: driver,
+    })
 
-  await store.ready()
-  await store.setItem(StoreExistsKey, true)
+    await store.ready()
+    await store.setItem(StoreExistsKey, true)
 
-  dbHeartbeatsStore = localforage.createInstance({
-    name: 'utopia-all-store-heartbeats',
-    driver: localforage.INDEXEDDB,
-  })
+    dbHeartbeatsStore = localforage.createInstance({
+      name: 'utopia-all-store-heartbeats',
+      driver: localforage.INDEXEDDB,
+    })
 
-  await dbHeartbeatsStore.ready()
+    await dbHeartbeatsStore.ready()
 
-  triggerHeartbeat().then(dropOldStores)
+    triggerHeartbeat().then(dropOldStores)
+  }
+  initializeStoreChain = initializeStoreChain.then(innerInitialize)
+  resolveFirstInitialize()
+  return initializeStoreChain
 }
+
 export interface StoreDoesNotExist {
   type: 'StoreDoesNotExist'
 }
@@ -50,6 +63,8 @@ export type AsyncFSResult<T> = Promise<Either<StoreDoesNotExist, T>>
 async function withSanityCheckedStore<T>(
   withStore: (sanityCheckedStore: LocalForage) => Promise<T>,
 ): AsyncFSResult<T> {
+  await firstInitialize
+  await initializeStoreChain
   const storeExists = store != null && (await store.getItem<boolean>(StoreExistsKey))
   if (store != null && storeExists) {
     const result = await withStore(store)
