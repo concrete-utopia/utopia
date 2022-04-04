@@ -502,6 +502,7 @@ export const UiJsxCanvas = React.memo(
     const outlineAnimation = usePubSubAtomReadOnly(OutlineAnimationAtom)
     React.useEffect(() => {
       setAnimationCode(outlineAnimation)
+      console.log(outlineAnimation)
       if (timerRef.current != null) {
         clearTimeout(timerRef.current)
         timerRef.current = null
