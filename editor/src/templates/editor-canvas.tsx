@@ -1261,6 +1261,9 @@ export class EditorCanvas extends React.Component<EditorCanvasProps> {
     }
   }
   handlePaste = (event: ClipboardEvent) => {
+    if ((event.target as any).tagName === 'INPUT') {
+      return
+    }
     const editor = this.props.editor
     const selectedViews = editor.selectedViews
 

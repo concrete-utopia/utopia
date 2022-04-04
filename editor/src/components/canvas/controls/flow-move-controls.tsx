@@ -3,9 +3,13 @@
 import { jsx } from '@emotion/react'
 import Tippy from '@tippyjs/react'
 import React, { useEffect } from 'react'
-import { usePubSubAtomReadOnly } from '../../../core/shared/atom-with-pub-sub'
+import {
+  atomWithPubSub,
+  usePubSubAtomReadOnly,
+  usePubSubAtomWriteOnly,
+} from '../../../core/shared/atom-with-pub-sub'
 import { offsetPoint, zeroCanvasPoint, zeroRectangle } from '../../../core/shared/math-utils'
-import { HeadlessStringInput, useColorTheme, UtopiaStyles } from '../../../uuiui'
+import { HeadlessStringInput, PopupList, useColorTheme, UtopiaStyles } from '../../../uuiui'
 import { NavigatorWidthAtom } from '../../editor/store/editor-state'
 import { useEditorState, useRefEditorState } from '../../editor/store/store-hook'
 import CanvasActions from '../canvas-actions'
@@ -217,147 +221,471 @@ export const FlowGhostOutline = React.memo(() => {
   }
 })
 
-const styleContent = `
-.outline1 {
-  background-image: linear-gradient(90deg, blue 50%, transparent 50%),
-    linear-gradient(90deg, blue 50%, transparent 50%),
-    linear-gradient(0deg, blue 50%, transparent 50%),
-    linear-gradient(0deg, blue 50%, transparent 50%);
-  background-repeat: repeat-x, repeat-x, repeat-y, repeat-y;
-  background-size: 15px 2px, 15px 2px, 2px 15px, 2px 15px;
-  background-position: left top, right bottom, left bottom, right top;
-  animation: border-dance 1s infinite linear;
-}
-@keyframes border-dance {
-  0% {
-    background-position: left top, right bottom, left bottom, right top;
-    background-image: none;
-  }
-  100% {
-    background-position: left 15px top, right 15px bottom, left bottom 15px,
-      right top 15px;
-    background-image: linear-gradient(90deg, blue 50%, transparent 50%),
-      linear-gradient(90deg, blue 50%, transparent 50%),
-      linear-gradient(0deg, blue 50%, transparent 50%),
-      linear-gradient(0deg, blue 50%, transparent 50%);
-  }
-}
-.outline2 {
-  box-sizing: border-box;
-  animation: magic-border 2s ease-in-out infinite forwards;
-}
-@keyframes magic-border {
-  0% {
-    border-image-slice: 0;
-  }
-  50% {
-    border-image-slice: 4;
-    border-image-width: 6px;
-    border-image-outset: 4px;
-    border-image-repeat: repeat repeat;
-    border-image-source: url("https://mdn.github.io/css-examples/tools/border-image-generator/border-image-5.png");
-    border-style: solid;
-  }
-  100% {
-    border-image-slice: 0;
-  }
-}
-.outline3 {
-  background-color: blue;
-  left: 50%;
-  top: 50%;
-  transform: scale(0.8);
-  animation: grow 1.5s ease-in-out infinite forwards;
-  z-index: 10;
-}
-@keyframes grow {
-  0% {
-    opacity: 0;
-    transform: scale(0.8);
-  }
-  25% {
-    opacity: 0;
-  }
-  50% {
-    opacity: 0.5;
-  }
-  75% {
-    opacity: 0;
-  }
-  100% {
-    opacity: 0;
-    transform: scale(1.2);
+type AnimationName =
+  | 'simple'
+  | 'glow'
+  | 'glow2'
+  | 'double'
+  | 'gradient-wave'
+  | 'scan'
+  | 'flip'
+  | 'dashed'
+  | 'dotted'
+  | 'sides2'
+  | 'flashsides'
+
+const defaultMixBlendMode = 'difference'
+const defaultColor = '#0000FF'
+const defaultOutline = 'simple'
+const animationStyle = (styleName: AnimationName, color: string, mixBlendMode: string) => {
+  switch (styleName) {
+    case 'simple': {
+      return `
+      .utopia-highlight-animation::after {
+        animation: simple 2s ease forwards;
+        outline: 2px solid;
+        mix-blend-mode: ${mixBlendMode};
+        position: absolute;
+        width: 100%;
+        height: 100%;
+        content: " ";
+        outline-color: ${color};
+      }
+      @keyframes simple {
+        0%, 100% {
+          opacity: 0;
+        }
+        50% {
+          opacity: 1;
+        }
+      }
+      `
+    }
+    case 'glow': {
+      return `
+        .utopia-highlight-animation::after {
+          animation: glow 2s ease  forwards;
+          mix-blend-mode: ${mixBlendMode};
+          position: absolute;
+          width: 100%;
+          height: 100%;
+          content: " ";
+        }
+
+        @keyframes glow {
+          0%, 100% {
+          }
+          50% {
+            box-shadow: 0px 0px 8px 12px ${color};
+          }
+        }
+        `
+    }
+    case 'glow2': {
+      return `
+      .utopia-highlight-animation::after {
+        animation: glow2 2s ease  forwards;
+        mix-blend-mode: ${mixBlendMode};
+        position: absolute;
+        width: 100%;
+        height: 100%;
+        content: " ";
+      }
+      
+      @keyframes glow2 {
+        0%, 100% {
+        }
+        50% {
+          box-shadow: 0px 0px 8px 4px ${color};
+        }
+      }
+      `
+    }
+    case 'double': {
+      return `
+      .utopia-highlight-animation::after {
+        mix-blend-mode: ${mixBlendMode};
+        position: absolute;
+        width: 100%;
+        height: 100%;
+        content: " ";
+        animation: double 2s ease  forwards;
+        border: 8px double ${color};
+      }
+      @keyframes double {
+        0% {
+          border: 2px solid rgba(1, 1, 1, 0);
+        }
+        20% {
+          border: 2px solid ${color};
+        }
+        50% {
+          border: 8px double ${color};
+        }
+        80% {
+          border: 2px solid ${color};
+        }
+        100% {
+          border: 2px solid rgba(1, 1, 1, 0);
+        }
+      }
+      `
+    }
+    case 'gradient-wave': {
+      return `
+      .utopia-highlight-animation::after {
+        mix-blend-mode: ${mixBlendMode};
+        position: absolute;
+        width: 100%;
+        height: 100%;
+        content: " ";
+        animation: gradient-wave 02s ease ;
+      }
+      
+      @keyframes gradient-wave {
+        0% {
+          background: rgba(1, 1, 1, 0);
+        }
+        10% {
+          background: linear-gradient(
+            90deg,
+            ${color} 0%,
+            rgba(1, 1, 1, 0) 20%,
+            rgba(1, 1, 1, 0) 100%
+          );
+        }
+        30% {
+          background: linear-gradient(
+            90deg,
+            rgba(1, 1, 1, 0) 20%,
+            ${color} 30%,
+            rgba(1, 1, 1, 0) 40%
+          );
+        }
+        50% {
+          background: linear-gradient(
+            90deg,
+            rgba(1, 1, 1, 0) 40%,
+            ${color} 50%,
+            rgba(1, 1, 1, 0) 60%
+          );
+        }
+        70% {
+          background: linear-gradient(
+            90deg,
+            rgba(1, 1, 1, 0) 60%,
+            ${color} 70%,
+            rgba(1, 1, 1, 0) 80%
+          );
+        }
+        90% {
+          background: linear-gradient(
+            90deg,
+            rgba(1, 1, 1, 0) 0%,
+            rgba(1, 1, 1, 0) 80%,
+            ${color} 100%
+          );
+        }
+        100% {
+          background: rgba(1, 1, 1, 0);
+        }
+      }
+      `
+    }
+    case 'scan': {
+      return `
+      .utopia-highlight-animation::after {
+        mix-blend-mode: ${mixBlendMode};
+        position: absolute;
+        width: 100%;
+        height: 100%;
+        content: " ";
+        animation: scan 0.3s ease  forwards;
+      }
+      
+      @keyframes scan {
+        0% {
+          background: rgba(1, 1, 1, 0);
+        }
+        10% {
+          background: linear-gradient(
+            90deg,
+            ${color} 0%,
+            rgba(1, 1, 1, 0) 5%,
+            rgba(1, 1, 1, 0) 100%
+          );
+        }
+        20% {
+          background: linear-gradient(
+            90deg,
+            rgba(1, 1, 1, 0) 20%,
+            ${color} 25%,
+            rgba(1, 1, 1, 0) 30%,
+            rgba(1, 1, 1, 0) 100%
+          );
+        }
+        30% {
+          background: linear-gradient(
+            90deg,
+            rgba(1, 1, 1, 0) 45%,
+            ${color} 50%,
+            rgba(1, 1, 1, 0) 55%,
+            rgba(1, 1, 1, 0) 100%
+          );
+        }
+        40% {
+          background: linear-gradient(
+            90deg,
+            rgba(1, 1, 1, 0) 70%,
+            ${color} 75%,
+            rgba(1, 1, 1, 0) 80%,
+            rgba(1, 1, 1, 0) 100%
+          );
+        }
+      
+        50% {
+          background: linear-gradient(
+            90deg,
+            rgba(1, 1, 1, 0) 0%,
+            rgba(1, 1, 1, 0) 95%,
+            ${color} 100%
+          );
+        }
+        60% {
+          background: rgba(1, 1, 1, 0);
+        }
+        100% {
+          background: rgba(1, 1, 1, 0);
+        }
+      }
+      `
+    }
+    case 'flip': {
+      return `
+      .utopia-highlight-animation::after {
+        mix-blend-mode: ${mixBlendMode};
+        position: absolute;
+        width: 100%;
+        height: 100%;
+        content: " ";
+        animation: flip 2s ;
+        border: 1px solid ${color};
+      }
+      
+      @keyframes flip {
+        0% {
+          border: 1px solid rgba(1, 1, 1, 0);
+        }
+        10% {
+          transform: perspective(600px) rotateY(0);
+          animation-timing-function: ease-out;
+          border: 1px solid rgba(1, 1, 1, 0);
+        }
+        40% {
+          transform: perspective(600px) translateZ(150px) rotateY(170deg);
+          animation-timing-function: ease-out;
+          border: 1px solid ${color};
+        }
+        50% {
+          transform: perspective(600px) translateZ(150px) rotateY(190deg) scale(1);
+          animation-timing-function: ease-in;
+          border: 1px solid ${color};
+        }
+        80% {
+          transform: perspective(600px) rotateY(360deg) scale(0.95);
+          animation-timing-function: ease-in;
+          border: 1px solid rgba(1, 1, 1, 0);
+        }
+        90% {
+          transform: perspective(600px) scale(1);
+          animation-timing-function: ease-in;
+          border: 1px solid rgba(1, 1, 1, 0);
+        }
+        100% {
+          border: 1px solid rgba(1, 1, 1, 0);
+        }
+      }      
+      `
+    }
+    case 'dashed': {
+      return `
+      .utopia-highlight-animation::after {
+        mix-blend-mode: ${mixBlendMode};
+        position: absolute;
+        width: 100%;
+        height: 100%;
+        content: " ";
+        animation: dashed1 2s ease  forwards;
+        outline: dashed;
+        outline-width: 2px;
+      }
+      
+      @keyframes dashed1 {
+        0% {
+          outline-color: rgba(1, 1, 1, 0);
+          outline-width: 2px;
+        }
+        50% {
+          outline-color: ${color};
+          outline-width: 4px;
+        }
+        100% {
+          outline-color: rgba(1, 1, 1, 0);
+          outline-width: 4px;
+        }
+      }
+      `
+    }
+    case 'dotted': {
+      return `
+      .utopia-highlight-animation::after {
+        mix-blend-mode: ${mixBlendMode};
+        position: absolute;
+        width: 100%;
+        height: 100%;
+        content: " ";
+        animation: dotted 2s ease  forwards;
+        outline: 3px;
+        outline-style: dotted;
+      }
+      
+      @keyframes dotted {
+        0% {
+          outline-color: rgba(1, 1, 1, 0);
+        }
+        50% {
+          outline-color: ${color};
+        }
+        100% {
+          outline-color: rgba(1, 1, 1, 0);
+        }
+      }
+      
+      `
+    }
+    case 'sides2': {
+      return `
+      .utopia-highlight-animation::after {
+        mix-blend-mode: ${mixBlendMode};
+        position: absolute;
+        width: 100%;
+        height: 100%;
+        content: " ";
+        animation: sides2 2s ease  forwards;
+      }
+      
+      @keyframes sides2 {
+        0% {
+          border: 0px;
+        }
+        20% {
+          border-top: 2px solid ${color};
+          border-right: 2px solid ${color};
+          border-bottom: 0px;
+          border-left: 0px;
+        }
+        40% {
+          border-top: 0px;
+          border-right: 0px;
+          border-bottom: 2px solid ${color};
+          border-left: 2px solid ${color};
+        }
+        60% {
+          border-top: 2px solid ${color};
+          border-right: 2px solid ${color};
+          border-bottom: 0px;
+          border-left: 0px;
+        }
+        80% {
+          border-top: 0px;
+          border-right: 0px;
+          border-bottom: 2px solid ${color};
+          border-left: 2px solid ${color};
+        }
+        100% {
+          border: 0px;
+        }
+      }
+      
+      `
+    }
+    case 'flashsides': {
+      return `
+      .utopia-highlight-animation::after {
+        mix-blend-mode: ${mixBlendMode};
+        position: absolute;
+        width: 100%;
+        height: 100%;
+        content: " ";
+        animation: flashsides 2s ease  forwards;
+      }
+      
+      @keyframes flashsides {
+        0% {
+          border: 0px;
+        }
+        20% {
+          border-top: 2px solid ${color};
+          border-right: 0px;
+          border-bottom: 0px;
+          border-left: 0px;
+        }
+        40% {
+          border-top: 0px;
+          border-right: 2px solid ${color};
+          border-bottom: 0px;
+          border-left: 0px;
+        }
+        60% {
+          border-top: 0px;
+          border-right: 0px;
+          border-bottom: 2px solid ${color};
+          border-left: 0px;
+        }
+        80% {
+          border-top: 0px;
+          border-right: 0px;
+          border-bottom: 0px;
+          border-left: 2px solid ${color};
+        }
+        100% {
+          border: 0px;
+        }
+      }
+      `
+    }
+    default:
+      const _exhaustiveCheck: never = styleName
+      throw new Error(`Missing style for ${styleName}`)
   }
 }
 
-.outline4 {
-  border:3px solid blue;
-  border-image: url("data:image/svg+xml;charset=utf-8,%3Csvg width='102' height='102' viewBox='0 0 100 100' fill='none' xmlns='http://www.w3.org/2000/svg'%3E %3Cstyle%3Epath%7Banimation:stroke 3s infinite linear%3B%7D%40keyframes stroke%7Bto%7Bstroke-dashoffset:776%3B%7D%7D%3C/style%3E%3ClinearGradient id='g' x1='0%25' y1='0%25' x2='0%25' y2='100%25'%3E%3Cstop offset='0%25' stop-color='%blue' /%3E%3Cstop offset='25%25' stop-color='blue' /%3E%3Cstop offset='50%25' stop-color='blue' /%3E%3Cstop offset='100%25' stop-color='blue' /%3E%3C/linearGradient%3E %3Cpath d='M1.5 1.5 l97 0l0 97l-97 0 l0 -97' stroke-linecap='square' stroke='url(%23g)' stroke-width='3' stroke-dasharray='388'/%3E %3C/svg%3E") 1;
-}
+export const OutlineAnimationAtom = atomWithPubSub({
+  key: 'OutlineAnimationAtom',
+  defaultValue: animationStyle(defaultOutline, defaultColor, defaultMixBlendMode),
+})
 
-.outline5 {
-  border: 1px solid #574BE2;
-  animation: fadeinoutflow 2s linear infinite forwards;
-}
-@keyframes fadeinoutflow {
-  0%,100% { opacity: 0; }
-  50% { opacity: 1; }
-}
-`
 export const ConversionHighlightOutline = React.memo(() => {
   const navigatorVisible = useEditorState(
     (store) => !store.editor.navigator.minimised,
     'ConversionHighlightOutline navigatorVisible',
   )
-  const [animationTime, setAnimationTime] = React.useState(1000)
   const navigatorWidth = usePubSubAtomReadOnly(NavigatorWidthAtom)
-  const [selectedOutline, setSelectedOutline] = React.useState('outline1')
-  const outlineFrames = useEditorState(
-    (store) => store.editor.canvas.controls.highlightOutlines,
-    'ConversionHighlightOutline frames',
-  )
+  const updateStyleTag = usePubSubAtomWriteOnly(OutlineAnimationAtom)
+  const [selectedOutline, setSelectedOutline] = React.useState<AnimationName>(defaultOutline)
+  const [baseColor, setBaseColor] = React.useState(defaultColor)
+  const [blendModeType, setBlendModeType] = React.useState(defaultMixBlendMode)
   const colorTheme = useColorTheme()
-  const dispatch = useRefEditorState((store) => store.dispatch)
-  const ref = React.useRef<HTMLDivElement>(null)
-  const timerRef = React.useRef<NodeJS.Timeout | null>(null)
 
-  useEffect(() => {
-    if (ref.current != null) {
-      ref.current.style.setProperty('display', 'block')
-      if (timerRef.current != null) {
-        clearTimeout(timerRef.current)
-        timerRef.current = null
-      }
-    }
-
-    timerRef.current = setTimeout(() => {
-      if (ref.current != null) {
-        ref.current.style.setProperty('display', 'none')
-        dispatch.current([CanvasActions.clearOutlineHighlights()], 'canvas')
-      }
-    }, animationTime)
-  }, [outlineFrames, dispatch, animationTime])
+  const collectStyleContent = React.useCallback(
+    (outline: AnimationName, color: string, mixBlendModeType: string) => {
+      return updateStyleTag(animationStyle(outline, color, mixBlendModeType))
+    },
+    [updateStyleTag],
+  )
 
   return (
     <React.Fragment>
-      <CanvasOffsetWrapper>
-        <style>{styleContent}</style>
-        <div ref={ref} style={{ display: 'none' }}>
-          {outlineFrames.map((frame, i) => (
-            <div
-              key={i}
-              style={{
-                position: 'absolute',
-                top: frame.y,
-                left: frame.x,
-                width: frame.width,
-                height: frame.height,
-              }}
-              className={selectedOutline}
-            ></div>
-          ))}
-        </div>
-      </CanvasOffsetWrapper>
       <div
         style={{
           paddingTop: 4,
@@ -379,39 +707,62 @@ export const ConversionHighlightOutline = React.memo(() => {
             cursor: 'pointer',
           }}
         >
-          <ModeSelectButton
-            selected={selectedOutline === 'outline1'}
-            title={'1'}
-            onMouseDown={React.useCallback(() => setSelectedOutline('outline1'), [])}
+          <PopupList
+            options={[
+              'simple',
+              'glow',
+              'glow2',
+              'double',
+              'gradient-wave',
+              'scan',
+              'flip',
+              'dashed',
+              'dotted',
+              'sides2',
+              'flashsides',
+            ].map((name) => ({ label: name, value: name }))}
+            value={{ label: selectedOutline, value: selectedOutline }}
+            // eslint-disable-next-line react/jsx-no-bind
+            onSubmitValue={(name) => {
+              setSelectedOutline(name.value)
+              collectStyleContent(name.value, baseColor, blendModeType)
+            }}
           />
-          <ModeSelectButton
-            selected={selectedOutline === 'outline2'}
-            title={'2'}
-            onMouseDown={React.useCallback(() => setSelectedOutline('outline2'), [])}
-          />
-          <ModeSelectButton
-            selected={selectedOutline === 'outline3'}
-            title={'3'}
-            onMouseDown={React.useCallback(() => setSelectedOutline('outline3'), [])}
-          />
-          <ModeSelectButton
-            selected={selectedOutline === 'outline4'}
-            title={'4'}
-            onMouseDown={React.useCallback(() => setSelectedOutline('outline4'), [])}
-          />
-          <ModeSelectButton
-            selected={selectedOutline === 'outline5'}
-            title={'5'}
-            onMouseDown={React.useCallback(() => {
-              setSelectedOutline('outline5')
-              setAnimationTime(2000)
-            }, [])}
+          <PopupList
+            options={[
+              'normal',
+              'multiply',
+              'screen',
+              'overlay',
+              'darken',
+              'lighten',
+              'color-dodge',
+              'color-burn',
+              'hard-light',
+              'soft-light',
+              'difference',
+              'exclusion',
+              'hue',
+              'saturation',
+              'color',
+              'luminosity',
+            ].map((name) => ({ label: name, value: name }))}
+            value={{ label: blendModeType, value: blendModeType }}
+            // eslint-disable-next-line react/jsx-no-bind
+            onSubmitValue={(name) => {
+              setBlendModeType(name.value)
+              collectStyleContent(selectedOutline, baseColor, name.value)
+            }}
           />
           <HeadlessStringInput
-            value={animationTime}
-            onChange={React.useCallback((event) => {
-              setAnimationTime(Number(event.target.value))
-            }, [])}
+            value={baseColor}
+            onChange={React.useCallback(
+              (event) => {
+                setBaseColor(event.target.value)
+                collectStyleContent(selectedOutline, event.target.value, blendModeType)
+              },
+              [selectedOutline, blendModeType, collectStyleContent],
+            )}
           />
         </div>
       </div>

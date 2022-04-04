@@ -101,6 +101,7 @@ import { useEditorState, useRefEditorState } from '../editor/store/store-hook'
 import CanvasActions from './canvas-actions'
 import { setProp_UNSAFE, unsetProperty } from '../editor/actions/action-creators'
 import { create } from '../../core/shared/property-path'
+import { OutlineAnimationAtom } from './controls/flow-move-controls'
 
 applyUIDMonkeyPatch()
 
@@ -497,45 +498,18 @@ export const UiJsxCanvas = React.memo(
       'higlightedElements',
     )
     const [animationCode, setAnimationCode] = React.useState('')
-    const highlightAnimation = `
-    .utopia-highlight-animation::after {
-      animation: simple 2s ease forwards;
-      outline: 2px solid;
-      mix-blend-mode: difference;
-      position: absolute;
-      width: 100%;
-      height: 100%;
-      content: " ";
-    }
-    @keyframes simple {
-      0%, 100% {
-        outline-color: rgba(255,165,0, 0);
-      }
-      50% {
-        outline-color: rgba(255,165,0, 1);
-      }
-    }
-    `
     const timerRef = React.useRef<NodeJS.Timeout | null>(null)
+    const outlineAnimation = usePubSubAtomReadOnly(OutlineAnimationAtom)
     React.useEffect(() => {
-      if (higlightedElements.length > 0) {
-        setAnimationCode(highlightAnimation)
-      }
+      setAnimationCode(outlineAnimation)
       if (timerRef.current != null) {
         clearTimeout(timerRef.current)
         timerRef.current = null
       }
       timerRef.current = setTimeout(() => {
-        setAnimationCode('')
-        dispatch(
-          [
-            CanvasActions.clearOutlineHighlights(),
-            // ...higlightedElements.map((path) => unsetProperty(path, create(['className']))),
-          ],
-          'canvas',
-        )
+        dispatch([CanvasActions.clearOutlineHighlights()], 'canvas')
       }, 2000)
-    }, [higlightedElements, dispatch, highlightAnimation])
+    }, [higlightedElements, dispatch, outlineAnimation])
 
     return (
       <div
