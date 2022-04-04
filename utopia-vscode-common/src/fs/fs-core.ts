@@ -2,6 +2,7 @@ import * as localforage from 'localforage'
 import { Either, left, mapEither, right } from '../lite-either'
 import { stripTrailingSlash } from '../path-utils'
 import { FSNode } from './fs-types'
+import { defer } from './fs-utils'
 
 let dbHeartbeatsStore: LocalForage // There is no way to request a list of existing stores, so we have to explicitly track them
 
@@ -10,11 +11,7 @@ let thisDBName: string
 
 const StoreExistsKey = '.store-exists'
 
-/* eslint-disable-next-line @typescript-eslint/no-empty-function */
-let resolveFirstInitialize: () => void = () => {}
-const firstInitialize = new Promise<void>((resolve) => {
-  resolveFirstInitialize = resolve
-})
+const firstInitialize = defer<void>()
 let initializeStoreChain: Promise<void> = Promise.resolve()
 
 export async function initializeStore(
@@ -42,7 +39,7 @@ export async function initializeStore(
     triggerHeartbeat().then(dropOldStores)
   }
   initializeStoreChain = initializeStoreChain.then(innerInitialize)
-  resolveFirstInitialize()
+  firstInitialize.resolve()
   return initializeStoreChain
 }
 
