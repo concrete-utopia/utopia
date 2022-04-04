@@ -508,6 +508,7 @@ export const UiJsxCanvas = React.memo(
         timerRef.current = null
       }
       timerRef.current = setTimeout(() => {
+        setAnimationCode('')
         dispatch([CanvasActions.clearOutlineHighlights()], 'canvas')
       }, 2000)
     }, [higlightedElements, dispatch, outlineAnimation])
