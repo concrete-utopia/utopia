@@ -333,10 +333,10 @@ describe('Absolute Resize Bounding Box Strategy', () => {
             style={{ 
               backgroundColor: '#0091FFAA',
               position: 'absolute',
-              top: 51,
+              top: 52,
               left: 30,
-              width: 109,
-              height: 131,
+              width: 119,
+              height: 143,
             }}
             data-uid='bbb'
           />
@@ -345,9 +345,9 @@ describe('Absolute Resize Bounding Box Strategy', () => {
               backgroundColor: '#0091FFAA',
               position: 'absolute',
               top: 40,
-              left: 96,
-              bottom: 240,
-              right: 195
+              left: 102,
+              bottom: 229,
+              right: 179
             }}
             data-uid='ccc'
           />
@@ -474,7 +474,7 @@ describe('Absolute Resize Bounding Box Strategy', () => {
             style={{ 
               backgroundColor: '#0091FFAA',
               position: 'absolute',
-              top: 11,
+              top: 45,
               left: 30,
               width: 109,
               height: 131,
@@ -485,9 +485,9 @@ describe('Absolute Resize Bounding Box Strategy', () => {
             style={{ 
               backgroundColor: '#0091FFAA',
               position: 'absolute',
-              top: 0,
+              top: 34,
               left: 96,
-              bottom: 280,
+              bottom: 246,
               right: 195
             }}
             data-uid='ccc'
@@ -627,9 +627,9 @@ describe('Absolute Resize Bounding Box Strategy', () => {
               backgroundColor: '#0091FFAA',
               position: 'absolute',
               top: 65,
-              left: 93,
+              left: 94,
               bottom: 246,
-              right: 226
+              right: 225
             }}
             data-uid='ccc'
           />
