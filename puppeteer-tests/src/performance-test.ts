@@ -12,6 +12,12 @@ const BRANCH_NAME = process.env.BRANCH_NAME ? `?branch_name=${process.env.BRANCH
 const STAGING_EDITOR_URL = process.env.EDITOR_URL ?? `https://utopia.pizza/p${BRANCH_NAME}`
 const MASTER_EDITOR_URL = process.env.MASTER_EDITOR_URL ?? `https://utopia.pizza/p`
 
+export function wait(timeout: number): Promise<void> {
+  return new Promise((resolve) => {
+    setTimeout(resolve, timeout)
+  })
+}
+
 interface FrameResult {
   title: string
   timeSeries: Array<number>
@@ -183,6 +189,7 @@ async function retryPageCalls<T>(
     const { page, browser } = await setupBrowser(url, 120000)
     await page.waitForXPath(`//div[contains(@id, "canvas-container")]`)
     await page.waitForXPath('//div[contains(@class, "item-label-container")]')
+    await wait(10000)
     try {
       const result = await call(page)
       // Check the result.
