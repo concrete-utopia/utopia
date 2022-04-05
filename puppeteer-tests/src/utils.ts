@@ -87,7 +87,7 @@ export function consoleDoneMessage(
   })
   return timeLimitPromise(
     consoleDonePromise,
-    10 * ONE_MINUTE_IN_MS, // 10 minutes.
+    1 * ONE_MINUTE_IN_MS, // 10 minutes.
     `Missing console message ${expectedConsoleMessage} in test browser.`,
   ).finally(() => {
     // Ensure we remove the handler afterwards.
