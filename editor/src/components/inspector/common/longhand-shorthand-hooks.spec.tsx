@@ -14,7 +14,8 @@ import {
   makeInspectorHookContextProvider,
 } from './property-path-hooks.test-utils'
 import { EditorStorePatched } from '../../editor/store/editor-state'
-import create from 'zustand'
+import create, { GetState, Mutate, SetState, StoreApi } from 'zustand'
+import { subscribeWithSelector } from 'zustand/middleware'
 import { EditorStateContext } from '../../editor/store/store-hook'
 import * as EP from '../../../core/shared/element-path'
 import * as PP from '../../../core/shared/property-path'
@@ -60,7 +61,12 @@ function getPaddingHookResult<P extends ParsedPropertiesKeys, S extends ParsedPr
       builtInDependencies: [],
     }
 
-    const storeHook = create<EditorStorePatched>(() => initialEditorStore)
+    const storeHook = create<
+      EditorStorePatched,
+      SetState<EditorStorePatched>,
+      GetState<EditorStorePatched>,
+      Mutate<StoreApi<EditorStorePatched>, [['zustand/subscribeWithSelector', never]]>
+    >(subscribeWithSelector(() => initialEditorStore))
 
     return (
       <EditorStateContext.Provider value={{ api: storeHook, useStore: storeHook }}>
