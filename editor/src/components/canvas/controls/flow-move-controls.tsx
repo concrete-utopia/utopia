@@ -305,13 +305,8 @@ const styleContent = `
 }
 `
 export const ConversionHighlightOutline = React.memo(() => {
-  const navigatorVisible = useEditorState(
-    (store) => !store.editor.navigator.minimised,
-    'ConversionHighlightOutline navigatorVisible',
-  )
   const [animationTime, setAnimationTime] = React.useState(1000)
-  const navigatorWidth = usePubSubAtomReadOnly(NavigatorWidthAtom)
-  const [selectedOutline, setSelectedOutline] = React.useState('outline1')
+  const [selectedOutline, setSelectedOutline] = React.useState('outline5')
   const outlineFrames = useEditorState(
     (store) => store.editor.canvas.controls.highlightOutlines,
     'ConversionHighlightOutline frames',
@@ -339,82 +334,73 @@ export const ConversionHighlightOutline = React.memo(() => {
   }, [outlineFrames, dispatch, animationTime])
 
   return (
-    <React.Fragment>
-      <CanvasOffsetWrapper>
-        <style>{styleContent}</style>
-        <div ref={ref} style={{ display: 'none' }}>
-          {outlineFrames.map((frame, i) => (
-            <div
-              key={i}
-              style={{
-                position: 'absolute',
-                top: frame.y,
-                left: frame.x,
-                width: frame.width,
-                height: frame.height,
-              }}
-              className={selectedOutline}
-            ></div>
-          ))}
-        </div>
-      </CanvasOffsetWrapper>
+    <CanvasOffsetWrapper>
+      <style>{styleContent}</style>
+      <div ref={ref} style={{ display: 'none' }}>
+        {outlineFrames.map((frame, i) => (
+          <div
+            key={i}
+            style={{
+              position: 'absolute',
+              top: frame.y,
+              left: frame.x,
+              width: frame.width,
+              height: frame.height,
+            }}
+            className={selectedOutline}
+          ></div>
+        ))}
+      </div>
+    </CanvasOffsetWrapper>
+  )
+})
+
+export const ConversionTargetButton = React.memo(() => {
+  const colorTheme = useColorTheme()
+  const navigatorVisible = useEditorState(
+    (store) => !store.editor.navigator.minimised,
+    'ConversionHighlightOutline navigatorVisible',
+  )
+  const navigatorWidth = usePubSubAtomReadOnly(NavigatorWidthAtom)
+  const isAltPressed = useEditorState(
+    (store) => store.editor.canvas.interactionSession?.interactionData.modifiers.alt ?? false,
+    'isAltPressed',
+  )
+  return (
+    <div
+      style={{
+        paddingTop: 4,
+        paddingLeft: navigatorVisible ? navigatorWidth + 4 : 4,
+        display: 'flex',
+      }}
+    >
       <div
         style={{
-          paddingTop: 4,
-          paddingLeft: navigatorVisible ? navigatorWidth + 4 : 4,
+          height: 29,
           display: 'flex',
+          alignItems: 'center',
+          paddingLeft: 4,
+          paddingRight: 4,
+          gap: 4,
+          borderRadius: 4,
+          background: colorTheme.bg0.value,
+          boxShadow: UtopiaStyles.popup.boxShadow,
+          cursor: 'pointer',
         }}
       >
-        <div
-          style={{
-            height: 29,
-            display: 'flex',
-            alignItems: 'center',
-            paddingLeft: 4,
-            paddingRight: 4,
-            gap: 4,
-            borderRadius: 4,
-            background: colorTheme.bg0.value,
-            boxShadow: UtopiaStyles.popup.boxShadow,
-            cursor: 'pointer',
-          }}
-        >
-          <ModeSelectButton
-            selected={selectedOutline === 'outline1'}
-            title={'1'}
-            onMouseDown={React.useCallback(() => setSelectedOutline('outline1'), [])}
-          />
-          <ModeSelectButton
-            selected={selectedOutline === 'outline2'}
-            title={'2'}
-            onMouseDown={React.useCallback(() => setSelectedOutline('outline2'), [])}
-          />
-          <ModeSelectButton
-            selected={selectedOutline === 'outline3'}
-            title={'3'}
-            onMouseDown={React.useCallback(() => setSelectedOutline('outline3'), [])}
-          />
-          <ModeSelectButton
-            selected={selectedOutline === 'outline4'}
-            title={'4'}
-            onMouseDown={React.useCallback(() => setSelectedOutline('outline4'), [])}
-          />
-          <ModeSelectButton
-            selected={selectedOutline === 'outline5'}
-            title={'5'}
-            onMouseDown={React.useCallback(() => {
-              setSelectedOutline('outline5')
-              setAnimationTime(2000)
-            }, [])}
-          />
-          <HeadlessStringInput
-            value={animationTime}
-            onChange={React.useCallback((event) => {
-              setAnimationTime(Number(event.target.value))
-            }, [])}
-          />
-        </div>
+        <ModeSelectButton
+          selected={!isAltPressed}
+          title={'Keep Sibling Layout'}
+          // eslint-disable-next-line react/jsx-no-bind
+          onMouseDown={() => {}}
+        />
+        <ModeSelectButton
+          selected={isAltPressed}
+          title={'Only Selected'}
+          // eslint-disable-next-line react/jsx-no-bind
+          onMouseDown={() => {}}
+        />
       </div>
-    </React.Fragment>
+    </div>
   )
 })

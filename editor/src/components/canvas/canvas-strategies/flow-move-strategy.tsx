@@ -3,6 +3,7 @@ import { switchToAbsolute } from '../commands/switch-to-absolute'
 import {
   AnimationTimer,
   ConversionHighlightOutline,
+  ConversionTargetButton,
   FlowGhostOutline,
   FlowMoveControlTimer,
   FlowMoveControlTooltip,
@@ -39,6 +40,11 @@ export const flowMoveStrategy: CanvasStrategy = {
       key: 'flow-ghost-outline',
       show: 'visible-only-while-active',
     },
+    {
+      control: ConversionTargetButton,
+      key: 'conversion-target-button',
+      show: 'visible-only-while-active',
+    },
   ],
   fitness: (canvasState, interactionState, sessionState) => {
     return flowMoveStrategy.isApplicable(
@@ -54,7 +60,11 @@ export const flowMoveStrategy: CanvasStrategy = {
   apply: (canvasState, interactionState, sessionState) => {
     if (interactionState.interactionData.type === 'DRAG') {
       if (interactionState.globalTime - interactionState.lastInteractionTime > AnimationTimer) {
-        return [switchToAbsolute('permanent', canvasState.selectedElements)]
+        if (interactionState.interactionData.modifiers.alt) {
+          return [switchToAbsolute('permanent', canvasState.selectedElements, 'selected')]
+        } else {
+          return [switchToAbsolute('permanent', canvasState.selectedElements, 'all')]
+        }
       }
     }
     // Fallback for when the checks above are not satisfied.

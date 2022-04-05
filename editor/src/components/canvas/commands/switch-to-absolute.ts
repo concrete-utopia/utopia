@@ -14,16 +14,19 @@ import type { BaseCommand, CommandFunction, TransientOrNot } from './commands'
 export interface SwitchToAbsolute extends BaseCommand {
   type: 'SWITCH_TO_ABSOLUTE'
   value: Array<ElementPath>
+  target: 'all' | 'selected'
 }
 
 export function switchToAbsolute(
   transient: TransientOrNot,
   value: Array<ElementPath>,
+  target: 'all' | 'selected',
 ): SwitchToAbsolute {
   return {
     type: 'SWITCH_TO_ABSOLUTE',
     transient: transient,
     value: value,
+    target: target,
   }
 }
 
@@ -32,7 +35,7 @@ export const runSwitchToAbsolute: CommandFunction<SwitchToAbsolute> = (
   command: SwitchToAbsolute,
 ) => {
   const updatedEditor = UPDATE_FNS.CONVERT_SELECTION_TO_ABSOLUTE(
-    convertSelectionToAbsolute(),
+    convertSelectionToAbsolute(command.target),
     editor,
   )
 

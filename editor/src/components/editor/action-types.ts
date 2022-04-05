@@ -918,6 +918,7 @@ export interface ForceParseFile {
 
 export interface ConvertSelectionToAbsolute {
   action: 'CONVERT_SELECTION_TO_ABSOLUTE'
+  target: 'all' | 'selected'
 }
 
 export type EditorAction =

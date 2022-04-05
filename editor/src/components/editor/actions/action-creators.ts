@@ -1473,8 +1473,9 @@ export function forceParseFile(filePath: string): ForceParseFile {
   }
 }
 
-export function convertSelectionToAbsolute(): ConvertSelectionToAbsolute {
+export function convertSelectionToAbsolute(target: 'all' | 'selected'): ConvertSelectionToAbsolute {
   return {
     action: 'CONVERT_SELECTION_TO_ABSOLUTE',
+    target: target,
   }
 }

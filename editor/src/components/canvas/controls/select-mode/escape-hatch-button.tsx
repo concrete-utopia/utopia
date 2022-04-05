@@ -40,7 +40,7 @@ const ConversionButton = React.memo(() => {
   const buttonMouseDown = React.useCallback(
     (e: React.MouseEvent<HTMLDivElement>) => {
       e.stopPropagation()
-      dispatch.current([convertSelectionToAbsolute()], 'everyone')
+      dispatch.current([convertSelectionToAbsolute('all')], 'everyone')
     },
     [dispatch],
   )
