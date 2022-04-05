@@ -530,7 +530,6 @@ export function useTriggerAbsoluteMovePerformanceTest(): () => void {
     const targetPath = forceNotNull('Invalid array.', last(grandChildrenPaths))
 
     // Switch Canvas Strategies on.
-    const strategiesCurrentlyEnabled = isFeatureEnabled('Canvas Strategies')
     setFeatureEnabled('Canvas Strategies', true)
     // Delete the other children that just get in the way.
     const parentPath = EP.parentPath(targetPath)
@@ -670,14 +669,6 @@ export function useTriggerAbsoluteMovePerformanceTest(): () => void {
         framesPassed++
         requestAnimationFrame(step)
       } else {
-        // Potentially turn off Canvas Strategies.
-        setFeatureEnabled('Canvas Strategies', strategiesCurrentlyEnabled)
-        // Reset the position.
-        await dispatch([unsetProperty(childTargetPath!, PP.create(['style']))], 'everyone')
-          .entireUpdateFinished
-        // Unfocus the target.
-        await dispatch([setFocusedElement(null)], 'everyone').entireUpdateFinished
-
         console.info('ABSOLUTE_MOVE_TEST_FINISHED')
       }
     }

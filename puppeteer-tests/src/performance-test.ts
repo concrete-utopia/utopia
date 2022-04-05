@@ -189,7 +189,6 @@ async function retryPageCalls<T>(
     const { page, browser } = await setupBrowser(url, 120000)
     await page.waitForXPath(`//div[contains(@id, "canvas-container")]`)
     await page.waitForXPath('//div[contains(@class, "item-label-container")]')
-    await wait(10000)
     try {
       const result = await call(page)
       // Check the result.
@@ -203,7 +202,7 @@ async function retryPageCalls<T>(
         throw new Error(`Error during measurements ${e}`)
       }
     } finally {
-      await page.close({ runBeforeUnload: true })
+      await page.close()
       await browser.close()
     }
   }

@@ -18,6 +18,9 @@ export const setupBrowser = async (
     executablePath: process.env.BROWSER,
   })
   const page = await browser.newPage()
+  page.on('dialog', async (dialog) => {
+    await dialog.dismiss()
+  })
   page.setDefaultNavigationTimeout(120000)
   page.setDefaultTimeout(defaultTimeout)
   await page.setViewport({ width: 1500, height: 768 })
