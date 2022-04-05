@@ -114,10 +114,7 @@ async function loadProject(
   // Wait for the editor to stabilise, ensuring that the canvas can render for example.
   const startWaitingTime = Date.now()
   let editorReady: boolean = false
-  let itemSelected: boolean = false
   let canvasPopulated: boolean = false
-  let codeEditorPopulated: boolean = false
-  let codeEditorLoaded: boolean = false
   while (startWaitingTime + CANVAS_POPULATE_WAIT_TIME_MS > Date.now() && !editorReady) {
     // Check canvas has been populated.
     if (!canvasPopulated) {
@@ -134,36 +131,14 @@ async function loadProject(
     const itemLabelContainer = document.querySelector(`div[class~="item-label-container"]`)
     if (itemLabelContainer != null) {
       if (itemLabelContainer instanceof HTMLElement) {
-        itemSelected = true
         itemLabelContainer.click()
       }
     }
     //}
 
-    // Wait for the code to appear in the code editor.
-    if (!codeEditorPopulated) {
-      const loadingScreenElement = document.querySelector(`div#${VSCodeLoadingScreenID}`)
-      const vscodeEditorElement = document.querySelector(`iframe#vscode-editor`)
-      if (vscodeEditorElement != null && loadingScreenElement == null) {
-        // Drill down inside the outer iframe.
-        const vscodeOuterElement = (vscodeEditorElement as any).contentWindow?.document.body.querySelector(
-          `iframe#vscode-outer`,
-        )
-        if (vscodeOuterElement != null) {
-          codeEditorLoaded = true
-          const firstViewLine = (vscodeOuterElement as any).contentWindow?.document.body.querySelector(
-            `div.view-line`,
-          )
-          if (firstViewLine != null) {
-            codeEditorPopulated = true
-          }
-        }
-      }
-    }
-
     // Appears the code editor can't be relied on to load enough of the time for
     // this check to not break everything.
-    editorReady = canvasPopulated // && codeEditorPopulated
+    editorReady = canvasPopulated
 
     if (!editorReady) {
       await wait(500)
