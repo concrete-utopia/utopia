@@ -195,7 +195,7 @@ export function resizeBoundingBoxFromCornerAspectRatioLocked(
   if (centerBased === 'center-based') {
     const oppositeCornerDragged = offsetPoint(
       oppositeCorner,
-      pointDifference(drag, zeroCanvasPoint),
+      pointDifference(aspectRatioFixedNewCorner, draggedCorner),
     )
     return rectFromTwoPoints(oppositeCornerDragged, aspectRatioFixedNewCorner)
   } else {
