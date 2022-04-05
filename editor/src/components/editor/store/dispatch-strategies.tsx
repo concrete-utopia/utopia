@@ -27,6 +27,8 @@ import {
   InteractionCanvasState,
 } from '../../canvas/canvas-strategies/canvas-strategy-types'
 import { mergePatches } from '../../canvas/commands/merge-patches'
+import { isFeatureEnabled } from '../../../utils/feature-switches'
+import { PERFORMANCE_MARKS_ALLOWED } from '../../../common/env-vars'
 
 interface HandleStrategiesResult {
   unpatchedEditorState: EditorState
@@ -585,6 +587,12 @@ export function handleStrategies(
   result: InnerDispatchResult,
   oldDerivedState: DerivedState,
 ): HandleStrategiesResult & { patchedDerivedState: DerivedState } {
+  const MeasureDispatchTime =
+    isFeatureEnabled('Debug mode – Performance Marks') && PERFORMANCE_MARKS_ALLOWED
+
+  if (MeasureDispatchTime) {
+    window.performance.mark('strategies_begin')
+  }
   const { unpatchedEditorState, patchedEditorState, newStrategyState } = handleStrategiesInner(
     strategies,
     dispatchedActions,
@@ -598,7 +606,21 @@ export function handleStrategies(
       patchedEditorState.canvas.interactionSession?.metadata ?? patchedEditorState.jsxMetadata,
   }
 
+  if (MeasureDispatchTime) {
+    window.performance.mark('strategies_derive_state')
+  }
+
   const patchedDerivedState = deriveState(patchedEditorWithMetadata, oldDerivedState, 'patched')
+
+  if (MeasureDispatchTime) {
+    window.performance.mark('strategies_end')
+    window.performance.measure(`Handle Strategies`, 'strategies_begin', 'strategies_end')
+    window.performance.measure(
+      'Strategies DeriveState',
+      'strategies_derive_state',
+      'strategies_end',
+    )
+  }
 
   return {
     unpatchedEditorState,
