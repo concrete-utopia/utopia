@@ -31,7 +31,8 @@ try {
 
 import { act, render, RenderResult } from '@testing-library/react'
 import * as Prettier from 'prettier/standalone'
-import create from 'zustand'
+import create, { GetState, Mutate, SetState, StoreApi } from 'zustand'
+import { subscribeWithSelector } from 'zustand/middleware'
 import {
   ElementPath,
   foldParsedTextFile,
@@ -240,9 +241,12 @@ export async function renderTestEditorWithModel(
     builtInDependencies: builtInDependencies,
   }
 
-  const storeHook = create<EditorStorePatched>((set) =>
-    patchedStoreFromFullStore(initialEditorStore),
-  )
+  const storeHook = create<
+    EditorStorePatched,
+    SetState<EditorStorePatched>,
+    GetState<EditorStorePatched>,
+    Mutate<StoreApi<EditorStorePatched>, [['zustand/subscribeWithSelector', never]]>
+  >(subscribeWithSelector((set) => patchedStoreFromFullStore(initialEditorStore)))
 
   // initializing the local editor state
   workingEditorState = initialEditorStore

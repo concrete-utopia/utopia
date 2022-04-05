@@ -24,7 +24,7 @@ import * as PP from './property-path'
 import * as EP from './element-path'
 import { objectMap, objectValues } from './object-utils'
 import { getDOMAttribute } from './dom-utils'
-import { UTOPIA_PATHS_KEY, UTOPIA_UIDS_KEY } from '../model/utopia-constants'
+import { UTOPIA_PATH_KEY, UTOPIA_UIDS_KEY } from '../model/utopia-constants'
 import { addAllUniquely, mapDropNulls } from './array-utils'
 import { ElementPath } from './project-file-types'
 
@@ -235,11 +235,7 @@ export function appendToUidString(
 }
 
 function getSplitPathsStrings(pathsString: string | null): Array<string> {
-  if (pathsString == null) {
-    return []
-  } else {
-    return pathsString.split(' ')
-  }
+  return pathsString == null ? [] : EP.getAllElementPathStringsForPathString(pathsString)
 }
 
 function getPathsFromSplitString(splitPaths: Array<string>): Array<ElementPath> {
@@ -256,7 +252,7 @@ export interface PathWithString {
 }
 
 export function getPathWithStringsOnDomElement(element: Element): Array<PathWithString> {
-  const pathsAttribute = getDOMAttribute(element, UTOPIA_PATHS_KEY)
+  const pathsAttribute = getDOMAttribute(element, UTOPIA_PATH_KEY)
   return mapDropNulls((pathString) => {
     const parsedPath = EP.fromString(pathString)
     if (EP.isElementPath(parsedPath)) {
@@ -271,7 +267,7 @@ export function getPathWithStringsOnDomElement(element: Element): Array<PathWith
 }
 
 export function getPathsOnDomElement(element: Element): Array<ElementPath> {
-  const pathsAttribute = getDOMAttribute(element, UTOPIA_PATHS_KEY)
+  const pathsAttribute = getDOMAttribute(element, UTOPIA_PATH_KEY)
   return getPathsFromString(pathsAttribute)
 }
 

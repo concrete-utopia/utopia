@@ -1,6 +1,6 @@
 /* eslint-disable no-console */
 require('dotenv').config({ path: 'src/.env' })
-import puppeteer from 'puppeteer'
+import * as puppeteer from 'puppeteer'
 import { v4 } from 'uuid'
 import { consoleDoneMessage, setupBrowser, uploadPNGtoAWS } from './utils'
 import * as JSONStream from 'JSONStream'
@@ -98,6 +98,7 @@ function calculatePi(accuracy: number): number {
 }
 
 function timeBasicCalc(): FrameResult {
+  console.log('Test Basic Calc')
   let times: Array<number> = []
 
   for (let i = 0; i < 100; i++) {
