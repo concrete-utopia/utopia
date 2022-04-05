@@ -6,6 +6,7 @@ import React, { useEffect } from 'react'
 import { usePubSubAtomReadOnly } from '../../../core/shared/atom-with-pub-sub'
 import { offsetPoint, zeroCanvasPoint, zeroRectangle } from '../../../core/shared/math-utils'
 import { HeadlessStringInput, useColorTheme, UtopiaStyles } from '../../../uuiui'
+import { Utils } from '../../../uuiui-deps'
 import { NavigatorWidthAtom } from '../../editor/store/editor-state'
 import { useEditorState, useRefEditorState } from '../../editor/store/store-hook'
 import CanvasActions from '../canvas-actions'
@@ -391,14 +392,12 @@ export const ConversionTargetButton = React.memo(() => {
         <ModeSelectButton
           selected={!isAltPressed}
           title={'Keep Sibling Layout'}
-          // eslint-disable-next-line react/jsx-no-bind
-          onMouseDown={() => {}}
+          onMouseDown={Utils.NO_OP}
         />
         <ModeSelectButton
           selected={isAltPressed}
           title={'Only Selected'}
-          // eslint-disable-next-line react/jsx-no-bind
-          onMouseDown={() => {}}
+          onMouseDown={Utils.NO_OP}
         />
       </div>
     </div>
