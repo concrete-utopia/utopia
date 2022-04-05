@@ -25,6 +25,7 @@ import {
   findElementAtPath,
   MetadataUtils,
   findJSXElementAtPath,
+  getSimpleAttributeAtPath,
 } from '../../../core/model/element-metadata-utils'
 import {
   DetectedLayoutSystem,

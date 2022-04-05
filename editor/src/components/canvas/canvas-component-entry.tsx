@@ -115,9 +115,10 @@ function DomWalkerWrapper(props: UiJsxCanvasPropsWithErrorCallback) {
     (store) => store.editor.selectedViews,
     'DomWalkerWrapper selectedViews',
   )
+  // console.log('DomWalkerWrapper render')
   let [updateInvalidatedPaths, updateInvalidatedScenes, containerRef] = useDomWalker({
     selectedViews: selectedViews,
-    canvasInteractionHappening: props.transientFilesState != null,
+    canvasInteractionHappening: props.transientFilesState != null, // TODO make this work for canvas interactions too
     mountCount: props.mountCount,
     domWalkerInvalidateCount: props.domWalkerInvalidateCount,
     scale: props.scale,

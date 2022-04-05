@@ -59,7 +59,7 @@ import { emptySet } from '../../core/shared/set-utils'
 import { getPathWithStringsOnDomElement, PathWithString } from '../../core/shared/uid-utils'
 import { mapDropNulls, pluck, uniqBy } from '../../core/shared/array-utils'
 import { optionalMap } from '../../core/shared/optional-utils'
-import { fastForEach } from '../../core/shared/utils'
+import { fastForEach, NO_OP } from '../../core/shared/utils'
 import { MapLike } from 'typescript'
 import { isFeatureEnabled } from '../../utils/feature-switches'
 
@@ -196,13 +196,21 @@ function useResizeObserver(
         if (canvasInteractionHappening.current) {
           // Only add the selected views
           fastForEach(selectedViews.current, (v) =>
-            updateInvalidatedPaths((current) => current.add(EP.toString(v)), 'invalidate'),
+            updateInvalidatedPaths(
+              (current) => current.add(EP.toString(v)),
+              'invalidate-throttled', // TODO try immediate
+              'useResizeObserver only adds selected view during canvas interaction',
+            ),
           )
         } else {
           for (let entry of entries) {
             const sceneID = findParentScene(entry.target)
             if (sceneID != null) {
-              updateInvalidatedScenes((current) => current.add(sceneID), 'invalidate')
+              updateInvalidatedScenes(
+                (current) => current.add(sceneID),
+                'invalidate-throttled', // TODO try immediate
+                'useResizeObserver invalidates parent scene',
+              )
             }
           }
         }
@@ -234,7 +242,11 @@ function useMutationObserver(
         if (canvasInteractionHappening.current) {
           // Only add the selected views
           fastForEach(selectedViews.current, (v) =>
-            updateInvalidatedPaths((current) => current.add(EP.toString(v)), 'invalidate'),
+            updateInvalidatedPaths(
+              (current) => current.add(EP.toString(v)),
+              'invalidate-throttled', // TODO try immediate
+              'useMutationObserver only adds selected view during canvas interaction',
+            ),
           )
         } else {
           for (let mutation of mutations) {
@@ -246,7 +258,11 @@ function useMutationObserver(
               if (mutation.target instanceof HTMLElement) {
                 const sceneID = findParentScene(mutation.target)
                 if (sceneID != null) {
-                  updateInvalidatedScenes((current) => current.add(sceneID), 'invalidate')
+                  updateInvalidatedScenes(
+                    (current) => current.add(sceneID),
+                    'invalidate-throttled', // TODO try immediate
+                    'useMutationObserver fires on parent scene',
+                  )
                 }
               }
             }
@@ -279,7 +295,11 @@ function useInvalidateScenesWhenSelectedViewChanges(
         const scenePath = EP.createBackwardsCompatibleScenePath(sv)
         if (scenePath != null) {
           const sceneID = EP.toString(scenePath)
-          updateInvalidatedScenes((current) => current.add(sceneID), 'invalidate')
+          updateInvalidatedScenes(
+            (current) => current.add(sceneID),
+            'invalidate-throttled', // TODO is this right?
+            'useInvalidateScenesWhenSelectedViewChanges',
+          )
           invalidatedPathsForStylesheetCacheRef.current.add(EP.toString(sv))
         }
       })
@@ -315,21 +335,24 @@ type ValueOrUpdater<S> = S | ((prevState: S) => S)
 // todo move to file
 export type SetValueCallback<S> = (
   valueOrUpdater: ValueOrUpdater<S>,
-  invalidate: 'invalidate' | 'do-not-invalidate',
+  invalidate: 'do-not-invalidate' | 'invalidate-immediate' | 'invalidate-throttled',
+  reason: string,
 ) => void
 
 function isSimpleValue<S>(valueOrUpdater: ValueOrUpdater<S>): valueOrUpdater is S {
   return typeof valueOrUpdater !== 'function'
 }
 function useStateAsyncInvalidate<S>(
-  onInvalidate: (immediate: 'immediate' | 'throttled') => void,
+  onInvalidate: (immediate: 'immediate' | 'throttled', reason: string) => void,
   initialState: S,
+  name: string,
 ): [S, SetValueCallback<S>] {
   const stateRef = React.useRef(initialState)
   const setAndMarkInvalidated = React.useCallback(
     (
       valueOrUpdater: ValueOrUpdater<S>,
-      invalidate: 'invalidate' | 'do-not-invalidate' = 'invalidate',
+      invalidate: 'do-not-invalidate' | 'invalidate-immediate' | 'invalidate-throttled',
+      reason: string,
     ) => {
       let resolvedNewValue: S
       if (isSimpleValue(valueOrUpdater)) {
@@ -340,35 +363,47 @@ function useStateAsyncInvalidate<S>(
       }
       stateRef.current = resolvedNewValue
 
-      if (invalidate === 'invalidate') {
-        onInvalidate('throttled')
+      if (invalidate !== 'do-not-invalidate') {
+        onInvalidate(
+          invalidate === 'invalidate-immediate' ? 'immediate' : 'throttled',
+          name + ': ' + reason,
+        )
       }
     },
-    [stateRef, onInvalidate],
+    [stateRef, onInvalidate, name],
   )
 
   return [stateRef.current, setAndMarkInvalidated]
 }
 
 function useThrottledCallback(
-  callback: () => void,
-): (immediate: 'immediate' | 'throttled') => void {
+  callback: (reason: string) => void,
+): (immediate: 'immediate' | 'throttled', reason: string) => void {
   const timeoutRef = React.useRef<NodeJS.Timeout | null>(null)
 
   const callbackRef = React.useRef(callback)
   callbackRef.current = callback
 
-  return React.useCallback((immediate: 'immediate' | 'throttled') => {
+  const reasonRef = React.useRef('')
+
+  return React.useCallback((immediate: 'immediate' | 'throttled', reason: string) => {
+    // console.log('invalidation register', immediate, reason)
+    reasonRef.current = reasonRef.current + '\n' + immediate + ' - ' + reason
+
     if (immediate === 'immediate') {
       if (timeoutRef.current != null) {
         clearTimeout(timeoutRef.current)
         timeoutRef.current = null
       }
-      callbackRef.current()
+      const currentReason = reasonRef.current
+      reasonRef.current = ''
+      callbackRef.current(currentReason)
     } else if (timeoutRef.current == null) {
       timeoutRef.current = setTimeout(() => {
         timeoutRef.current = null
-        callbackRef.current()
+        const currentReason = reasonRef.current
+        reasonRef.current = ''
+        callbackRef.current(currentReason)
       }, 0)
     }
   }, [])
@@ -433,7 +468,8 @@ export function useDomWalker(
 ): [SetValueCallback<Set<string>>, SetValueCallback<Set<string>>, React.Ref<HTMLDivElement>] {
   const containerRef = React.useRef<HTMLDivElement>(null)
 
-  const fireThrottledCallback = useThrottledCallback(() => {
+  const fireThrottledCallback = useThrottledCallback((reason) => {
+    // console.log('DOM WALKER WALKS\n' + reason)
     const LogDomWalkerPerformance =
       isFeatureEnabled('Debug mode – Performance Marks') && PERFORMANCE_MARKS_ALLOWED
 
@@ -475,7 +511,7 @@ export function useDomWalker(
       )
       if (LogDomWalkerPerformance) {
         performance.mark('DOM_WALKER_END')
-        performance.measure('DOM WALKER', 'DOM_WALKER_START', 'DOM_WALKER_END')
+        performance.measure(`DOM WALKER ${reason}`, 'DOM_WALKER_START', 'DOM_WALKER_END')
       }
       setInitComplete()
 
@@ -492,10 +528,12 @@ export function useDomWalker(
   const [invalidatedPaths, updateInvalidatedPaths] = useStateAsyncInvalidate<Set<string>>(
     fireThrottledCallback,
     emptySet(),
+    'invalidatedPaths',
   ) // For invalidating specific paths only
   const [invalidatedScenes, updateInvalidatedScenes] = useStateAsyncInvalidate<Set<string>>(
     fireThrottledCallback,
     emptySet(),
+    'invalidatedScenes',
   ) // For invalidating entire scenes and everything below them
   const invalidatedPathsForStylesheetCacheRef = React.useRef<Set<string>>(emptySet())
   const [initComplete, setInitComplete] = useInvalidateInitCompleteOnMountCount(
@@ -530,7 +568,7 @@ export function useDomWalker(
   )
 
   React.useLayoutEffect(() => {
-    fireThrottledCallback('immediate')
+    fireThrottledCallback('throttled', 'dom-walker hook useLayoutEffect')
   })
 
   return [updateInvalidatedPaths, updateInvalidatedScenes, containerRef]
@@ -608,11 +646,15 @@ function collectMetadata(
     )
 
     const collectedMetadata = pathsForElement.map((path) => {
-      updateInvalidatedPaths((current) => {
-        // sneaky mutation to improve performance
-        ;(current as Set<string>).delete(EP.toString(path))
-        return current
-      }, 'do-not-invalidate')
+      updateInvalidatedPaths(
+        (current) => {
+          // sneaky mutation to improve performance
+          ;(current as Set<string>).delete(EP.toString(path))
+          return current
+        },
+        'do-not-invalidate',
+        'collectMetadata validates element do-not-invalidate',
+      )
 
       return elementInstanceMetadata(
         path,
@@ -940,11 +982,15 @@ function walkScene(
         invalidated ||
         (ObserversAvailable && invalidatedScenes.size > 0 && invalidatedScenes.has(sceneID))
 
-      updateInvalidatedScenes((current) => {
-        // mutating here and skipping invalidation
-        current.delete(sceneID)
-        return current
-      }, 'do-not-invalidate')
+      updateInvalidatedScenes(
+        (current) => {
+          // mutating here and skipping invalidation
+          current.delete(sceneID)
+          return current
+        },
+        'do-not-invalidate',
+        'walkScene validates scene with do-not-invalidate',
+      )
 
       const { childPaths: rootElements, rootMetadata, cachedPaths } = walkSceneInner(
         scene,

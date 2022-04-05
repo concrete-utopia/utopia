@@ -33,6 +33,7 @@ import {
   persistentModelFromEditorModel,
   reconstructJSXMetadata,
   storedEditorStateFromEditorState,
+  withUnderlyingTargetFromEditorState,
 } from './editor-state'
 import { runLocalEditorAction } from './editor-update'
 import { fastForEach, isBrowserEnvironment } from '../../../core/shared/utils'
@@ -57,6 +58,10 @@ import { handleStrategies } from './dispatch-strategies'
 
 import { emptySet } from '../../../core/shared/set-utils'
 import { RegisteredCanvasStrategies } from '../../canvas/canvas-strategies/canvas-strategies'
+import { getSimpleAttributeAtPath } from '../../../core/model/element-metadata-utils'
+import { right } from '../../../core/shared/either'
+import { create } from '../../../core/shared/property-path'
+import { pathsEqual } from '../../../core/shared/element-path'
 
 type DispatchResultFields = {
   nothingChanged: boolean
@@ -461,6 +466,25 @@ export function editorDispatch(
     ]),
     alreadySaved: alreadySaved || shouldSave,
     builtInDependencies: storedState.builtInDependencies,
+  }
+
+  if (dispatchedActions.some((a) => a.action === 'SAVE_DOM_REPORT')) {
+    const elementProps = withUnderlyingTargetFromEditorState(
+      patchedEditorState.selectedViews[0],
+      patchedEditorState,
+      null,
+      (_, element) => {
+        return getSimpleAttributeAtPath(right(element.props), create(['style', 'left']))
+      },
+    )
+
+    // console.log(
+    //   'SAVE_DOM_REPORT',
+    //   patchedEditorState.domMetadata.find((m) =>
+    //     pathsEqual(m.elementPath, patchedEditorState.selectedViews[0]),
+    //   )?.globalFrame?.x,
+    //   JSON.stringify(elementProps?.value),
+    // )
   }
 
   if (!finalStore.nothingChanged) {

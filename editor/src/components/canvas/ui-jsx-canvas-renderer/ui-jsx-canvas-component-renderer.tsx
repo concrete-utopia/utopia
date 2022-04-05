@@ -155,6 +155,27 @@ export function createComponentRendererComponent(params: {
       instancePath,
     )
 
+    // console.log('ComponentRendererComponent render', utopiaJsxComponent?.name)
+    // if (shouldUpdate) {
+    // }
+
+    React.useLayoutEffect(() => {
+      // console.log('greeee', 'shouldUpdate', utopiaJsxComponent?.name, shouldUpdate)
+      if (shouldUpdate) {
+        updateInvalidatedPaths(
+          (invalidPaths) => {
+            if (rootElementPath != null) {
+              return invalidPaths.add(EP.toString(rootElementPath))
+            } else {
+              return invalidPaths
+            }
+          },
+          'invalidate-immediate',
+          'ComponentRendererComponent useLayoutEffect',
+        )
+      }
+    })
+
     if (utopiaJsxComponent.arbitraryJSBlock != null) {
       const lookupRenderer = createLookupRender(
         rootElementPath,

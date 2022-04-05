@@ -298,6 +298,7 @@ function clearSpyCollectorInvalidPaths(
 
 export const UiJsxCanvas = React.memo(
   React.forwardRef<HTMLDivElement, UiJsxCanvasPropsWithErrorCallback>((props, ref) => {
+    // console.log('Canvas "Render"')
     const {
       scale,
       uiFilePath,

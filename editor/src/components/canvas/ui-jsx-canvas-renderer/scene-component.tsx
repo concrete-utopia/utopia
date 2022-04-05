@@ -28,7 +28,7 @@ export const SceneComponent = React.memo(
     }
 
     // TODO right now we don't actually change the invalidated paths, just let the dom-walker know it should walk again
-    updateInvalidatedScenes((current) => current, 'invalidate')
+    updateInvalidatedScenes((current) => current, 'invalidate-throttled', 'SceneComponent render')
 
     return (
       <Scene {...remainingProps} style={sceneStyle}>
