@@ -57,7 +57,7 @@ export const FlowMoveControlTooltip = React.memo(() => {
           }}
           visible
           arrow
-          content={'Hold Mouse to Convert to Absolute'}
+          content={'Hold Alt to Convert Only Selected'}
           placement={'top'}
           delay={[200, 100]}
           animation='fade'
