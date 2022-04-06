@@ -4,7 +4,6 @@ import type { PageEventObject } from 'puppeteer'
 const fs = require('fs')
 const path = require('path')
 const AWS = require('aws-sdk')
-const yn = require('yn')
 
 export const setupBrowser = async (
   url: string,
@@ -15,10 +14,13 @@ export const setupBrowser = async (
 }> => {
   const browser = await puppeteer.launch({
     args: ['--no-sandbox', '--enable-thread-instruction-count'],
-    headless: yn(process.env.HEADLESS),
+    headless: false,
     executablePath: process.env.BROWSER,
   })
   const page = await browser.newPage()
+  page.on('dialog', async (dialog) => {
+    await dialog.dismiss()
+  })
   page.setDefaultNavigationTimeout(120000)
   page.setDefaultTimeout(defaultTimeout)
   await page.setViewport({ width: 1500, height: 768 })
@@ -63,11 +65,11 @@ export function consoleDoneMessage(
   page: puppeteer.Page,
   expectedConsoleMessage: string,
   errorMessage?: string,
-): Promise<void> {
+): Promise<boolean> {
   let handler: (message: PageEventObject['console']) => void = () => {
     console.info('Should not fire.')
   }
-  const consoleDonePromise = new Promise<void>((resolve, reject) => {
+  const consoleDonePromise = new Promise<boolean>((resolve, reject) => {
     handler = (message: PageEventObject['console']) => {
       const messageText = message.text()
       if (
@@ -76,7 +78,7 @@ export function consoleDoneMessage(
       ) {
         // the editor will console.info('SCROLL_TEST_FINISHED') when the scrolling test is complete.
         // we wait until we see this console log and then we resolve the Promise
-        resolve()
+        resolve(true)
       } else {
         console.info(`CONSOLE: ${messageText}`)
       }
