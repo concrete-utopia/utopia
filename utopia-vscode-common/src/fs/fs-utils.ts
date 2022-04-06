@@ -554,3 +554,19 @@ export function stopWatchingAll() {
   watchedPaths = new Map()
   lastModifiedTSs = new Map()
 }
+
+export function defer<T>(): Promise<T> & {
+  resolve: (value?: T) => void
+  reject: (reason?: any) => void
+} {
+  var res, rej
+
+  var promise = new Promise<T>((resolve, reject) => {
+    res = resolve
+    rej = reject
+  })
+  Object.defineProperty(promise, 'resolve', { value: res })
+  Object.defineProperty(promise, 'reject', { value: rej })
+
+  return promise as any
+}
