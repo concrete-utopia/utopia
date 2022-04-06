@@ -416,7 +416,7 @@ export const FlowUndoButton = React.memo(() => {
         }}
       >
         <ModeSelectButton
-          title={'Undo Conversion'}
+          title={'Undo Conversion to Absolute'}
           selected={false}
           // eslint-disable-next-line react/jsx-no-bind
           onMouseDown={() => dispatch([CanvasActions.removeUndoButton(), undo()], 'everyone')}
