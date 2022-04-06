@@ -376,20 +376,19 @@ export const FlowUndoButton = React.memo(() => {
     (store) => store.editor.canvas.controls.undoButtonVisible,
     'undoButtonVisible',
   )
+  const isInteraction = useEditorState(
+    (store) => store.editor.canvas.interactionSession != null,
+    'isInteraction',
+  )
 
   const timerRef = React.useRef<NodeJS.Timeout | null>(null)
   useEffect(() => {
-    if (undoButtonVisible != null) {
-      if (timerRef.current != null) {
-        clearTimeout(timerRef.current)
-        timerRef.current = null
-      }
+    if (undoButtonVisible && !isInteraction) {
+      timerRef.current = setTimeout(() => {
+        dispatch([CanvasActions.removeUndoButton()], 'canvas')
+      }, 2000)
     }
-
-    timerRef.current = setTimeout(() => {
-      dispatch([CanvasActions.removeUndoButton()], 'canvas')
-    }, 2000)
-  }, [undoButtonVisible, dispatch])
+  }, [isInteraction, dispatch, undoButtonVisible])
   if (!undoButtonVisible) {
     return null
   }

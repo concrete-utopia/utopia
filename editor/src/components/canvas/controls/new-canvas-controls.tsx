@@ -426,8 +426,8 @@ const NewCanvasControlsInner = (props: NewCanvasControlsInnerProps) => {
         isFeatureEnabled('Canvas Strategies'),
         <FlexResizeControl localSelectedElements={localSelectedViews} />,
       )}
-      <FlowUndoButton />
       <ConversionHighlightOutline />
+      <FlowUndoButton />
     </div>
   )
 }
