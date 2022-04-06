@@ -8,10 +8,9 @@ import { isIntrinsicHTMLElementString } from '../core/shared/element-template'
 import {
   UtopiaKeys,
   UTOPIA_UIDS_KEY,
-  // UTOPIA_PATHS_KEY,
-  UTOPIA_UID_PARENTS_KEY,
-  // UTOPIA_PATHS_2_KEY,
   UTOPIA_PATH_KEY,
+  UTOPIA_UID_PARENTS_KEY,
+  UTOPIA_PATHS_2_KEY,
 } from '../core/model/utopia-constants'
 import { v4 } from 'uuid'
 import { appendToUidString } from '../core/shared/uid-utils'
@@ -119,34 +118,34 @@ function appendChildUIDToPath(path: string | null, childUID: string | null): str
 function attachDataUidToRoot(
   originalResponse: React.ReactElement | null | undefined,
   dataUids: string | null,
-  path: string | null,
-  // path2: string | null,
+  paths: string | null,
+  path2: string | null,
 ): React.ReactElement | null
 function attachDataUidToRoot(
   originalResponse: Array<React.ReactElement | null>,
   dataUids: string | null,
-  path: string | null,
-  // path2: string | null,
+  paths: string | null,
+  path2: string | null,
 ): Array<React.ReactElement | null>
 function attachDataUidToRoot(
   originalResponse: React.ReactElement | Array<React.ReactElement | null> | null | undefined,
   dataUids: string | null,
-  path: string | null,
-  // path2: string | null,
+  paths: string | null,
+  path2: string | null,
 ): React.ReactElement | Array<React.ReactElement | null> | null {
   if (originalResponse == null || dataUids == null) {
     return originalResponse as any
   } else if (Array.isArray(originalResponse)) {
     // the response was an array of elements
-    return originalResponse.map((element) => attachDataUidToRoot(element, dataUids, path))
+    return originalResponse.map((element) => attachDataUidToRoot(element, dataUids, paths, path2))
   } else if (!React.isValidElement(originalResponse as any)) {
     return originalResponse
   } else {
     if (shouldIncludeDataUID(originalResponse.type)) {
       return React.cloneElement(originalResponse, {
         [UTOPIA_UIDS_KEY]: appendToUidString(originalResponse.props[UTOPIA_UIDS_KEY], dataUids),
-        //[UTOPIA_PATHS_KEY]: appendToUidString(originalResponse.props[UTOPIA_PATHS_KEY], paths), // This is the line that adds all paths to the element
-        [UTOPIA_PATH_KEY]: originalResponse.props[UTOPIA_PATH_KEY] ?? path, // PATHS_x
+        [UTOPIA_PATH_KEY]: appendToUidString(originalResponse.props[UTOPIA_PATH_KEY], paths), // This is the line that adds all paths to the element
+        [UTOPIA_PATHS_2_KEY]: appendRootUIDToPath(path2, originalResponse.props[UTOPIA_UIDS_KEY]),
       })
     } else {
       return originalResponse
@@ -173,14 +172,13 @@ function attachPath2ToChild(
     return originalResponse.map((element) => attachPath2ToChild(element, path2))
   } else if (!React.isValidElement(originalResponse as any)) {
     return originalResponse
-  } else if (originalResponse.props?.[UTOPIA_PATH_KEY] != null) {
-    // PATHS
+  } else if (originalResponse.props?.[UTOPIA_PATHS_2_KEY] != null) {
     // Prevent the path being overwritten
     return originalResponse
   } else {
     if (shouldIncludeDataUID(originalResponse.type)) {
       return React.cloneElement(originalResponse, {
-        [UTOPIA_PATH_KEY]: appendChildUIDToPath(path2, originalResponse.props[UTOPIA_UIDS_KEY]), // PATHS
+        [UTOPIA_PATHS_2_KEY]: appendChildUIDToPath(path2, originalResponse.props[UTOPIA_UIDS_KEY]),
       })
     } else {
       return originalResponse
@@ -194,8 +192,7 @@ function attachPath2ToChildElement(child: React.ReactElement | null, path2: stri
   }
   if ((!React.isValidElement(child) as boolean) || child == null) {
     return child
-  } else if (child.props?.[UTOPIA_PATH_KEY] != null) {
-    // PATHS
+  } else if (child.props?.[UTOPIA_PATHS_2_KEY] != null) {
     // Prevent the path being overwritten
     return child
   } else {
@@ -206,7 +203,7 @@ function attachPath2ToChildElement(child: React.ReactElement | null, path2: stri
     const childPath2 = appendChildUIDToPath(path2, child.props?.[UTOPIA_UIDS_KEY])
 
     if (childPath2 != null) {
-      additionalProps[UTOPIA_PATH_KEY] = childPath2 // PATHS
+      additionalProps[UTOPIA_PATHS_2_KEY] = childPath2
       shouldClone = true
     }
 
@@ -228,7 +225,6 @@ function attachPath2ToChildren(children: any, path2: string | null): any {
   } else {
     if (Array.isArray(children)) {
       return React.Children.map(children, (child) => attachPath2ToChildElement(child, path2))
-      // hits here?
     } else {
       return attachPath2ToChildElement(children, path2)
     }
@@ -263,24 +259,26 @@ const mangleFunctionType = Utils.memoize(
       [mangledFunctionName]: (p: any, context?: any) => {
         const MeasureRenderTimes =
           isFeatureEnabled('Debug mode – Performance Marks') && PERFORMANCE_MARKS_ALLOWED
-
         const uuid = MeasureRenderTimes ? v4() : ''
         if (MeasureRenderTimes) {
           performance.mark(`render_start_${uuid}`)
         }
+
         let originalTypeResponse = (type as React.FunctionComponent)(p, context)
 
-        const path2 = p?.[UTOPIA_PATH_KEY] ?? p?.[UTOPIA_UIDS_KEY] // PATHS
+        const path2 = p?.[UTOPIA_PATHS_2_KEY] ?? p?.[UTOPIA_UIDS_KEY]
         const withUpdatedChildren = attachPath2ToChildrenOfElement(
           originalTypeResponse,
           p?.children,
           path2,
         )
 
+        //Problem, is the data-uid is getting appended to the end of path2
+
         const res = attachDataUidToRoot(
           withUpdatedChildren,
           (p as any)?.[UTOPIA_UIDS_KEY],
-          // (p as any)?.[UTOPIA_PATH_KEY], // PATHS?
+          (p as any)?.[UTOPIA_PATH_KEY],
           path2,
         )
         if (MeasureRenderTimes) {
@@ -321,7 +319,7 @@ const mangleClassType = Utils.memoize(
 
       let originalTypeResponse = originalRender.bind(this)()
 
-      const path2 = this.props?.[UTOPIA_PATH_KEY] ?? this.props?.[UTOPIA_UIDS_KEY] // PATHS
+      const path2 = this.props?.[UTOPIA_PATHS_2_KEY] ?? this.props?.[UTOPIA_UIDS_KEY]
       const withUpdatedChildren = attachPath2ToChildrenOfElement(
         originalTypeResponse,
         this.props?.children,
@@ -331,7 +329,7 @@ const mangleClassType = Utils.memoize(
       const res = attachDataUidToRoot(
         withUpdatedChildren,
         (this.props as any)?.[UTOPIA_UIDS_KEY],
-        // (this.props as any)?.[UTOPIA_PATH_KEY], // PATHS?
+        (this.props as any)?.[UTOPIA_PATH_KEY],
         path2,
       )
       if (MeasureRenderTimes) {
@@ -356,19 +354,17 @@ const mangleClassType = Utils.memoize(
 function updateChildOfExotic(
   child: React.ReactElement | null,
   dataUids: string | null,
-  path: string | null,
-  // path2: string | null,
+  paths: string | null,
+  path2: string | null,
 ) {
   if (child == null || !shouldIncludeDataUID(child.type)) {
     console.log(`Not including UID on child of type`, child?.type)
     return child
   }
   const existingChildUIDs = child.props?.[UTOPIA_UIDS_KEY]
-  const existingChildPath = child.props?.[UTOPIA_PATH_KEY] // PATHS
-
+  const existingChildPaths = child.props?.[UTOPIA_PATH_KEY]
   const appendedUIDString = appendToUidString(existingChildUIDs, dataUids)
-  const appendedPathsString = appendToUidString(existingChildPath, path)
-
+  const appendedPathsString = appendToUidString(existingChildPaths, paths)
   if ((!React.isValidElement(child) as boolean) || child == null) {
     console.log(`Not including UID on invalid child`)
     return child
@@ -381,13 +377,12 @@ function updateChildOfExotic(
 
     // Because the parent of this won't exist in the rendered DOM, we need to capture whether the parent's
     // path was that of a root element, or a child element, and transfer that relationship to this element
-    const isRootElement = path != null && path.endsWith(SceneSeparator)
+    const isRootElement = path2 != null && path2.endsWith(SceneSeparator)
     const appendUIDToPath = isRootElement ? appendRootUIDToPath : appendChildUIDToPath
 
-    const childPath = appendUIDToPath(path, child.props?.[UTOPIA_UIDS_KEY])
-    if (childPath != null && child.props?.[UTOPIA_PATH_KEY] == null) {
-      // PATHS
-      additionalProps[UTOPIA_PATH_KEY] = childPath // PATHS
+    const childPath2 = appendUIDToPath(path2, child.props?.[UTOPIA_UIDS_KEY])
+    if (childPath2 != null && child.props?.[UTOPIA_PATHS_2_KEY] == null) {
+      additionalProps[UTOPIA_PATHS_2_KEY] = childPath2
       shouldClone = true
     } else {
       console.log(`Not attaching path to child`)
@@ -395,7 +390,7 @@ function updateChildOfExotic(
 
     if (appendedUIDString != null) {
       additionalProps[UTOPIA_UIDS_KEY] = appendedUIDString
-      additionalProps[UTOPIA_PATH_KEY] = appendedPathsString // PATHS
+      additionalProps[UTOPIA_PATH_KEY] = appendedPathsString
       shouldClone = true
     }
 
@@ -421,8 +416,8 @@ const mangleExoticType = Utils.memoize(
      */
     const wrapperComponent = (p: any, context?: any) => {
       const uids = p?.[UTOPIA_UIDS_KEY]
-      //const paths = p?.[UTOPIA_PATH_KEY] // PATHS
-      const path = p?.[UTOPIA_PATH_KEY] ?? (p as any)?.[UTOPIA_UIDS_KEY] // PATHS ?
+      const paths = p?.[UTOPIA_PATH_KEY]
+      const path2 = p?.[UTOPIA_PATHS_2_KEY] ?? (p as any)?.[UTOPIA_UIDS_KEY]
       if (p?.children == null || typeof p.children === 'string') {
         return realCreateElement(type, p)
       } else {
@@ -433,8 +428,8 @@ const mangleExoticType = Utils.memoize(
         }
 
         delete mangledProps[UTOPIA_UIDS_KEY]
-        delete mangledProps[UTOPIA_PATH_KEY] // PATHS
-        //delete mangledProps[UTOPIA_PATHS_2_KEY] // PATHS
+        delete mangledProps[UTOPIA_PATH_KEY]
+        delete mangledProps[UTOPIA_PATHS_2_KEY]
         let originalTypeResponse = realCreateElement(type, { ...mangledProps })
 
         if (typeof p?.children === 'function') {
@@ -443,19 +438,19 @@ const mangleExoticType = Utils.memoize(
           const originalFunction = p.children
           children = function (...params: any[]) {
             const originalResponse = originalFunction(...params)
-            return attachDataUidToRoot(originalResponse, uids, path)
+            return attachDataUidToRoot(originalResponse, uids, paths, path2)
           }
         } else {
           console.log(`Children are not a function`)
           const uidsToPass = uids
-          // const pathToPass = path
+          const pathsToPass = paths
 
           if (Array.isArray(p?.children)) {
             children = React.Children.map(p?.children, (child) =>
-              updateChildOfExotic(child, uidsToPass, path),
+              updateChildOfExotic(child, uidsToPass, pathsToPass, path2),
             )
           } else {
-            children = updateChildOfExotic(p.children, uidsToPass, path)
+            children = updateChildOfExotic(p.children, uidsToPass, pathsToPass, path2)
           }
         }
 
@@ -493,7 +488,7 @@ const mangleIntrinsicType = Utils.memoize(
 
       let originalTypeResponse = realCreateElement(type, { ...updatedProps })
 
-      const path2 = updatedProps?.[UTOPIA_PATH_KEY] ?? updatedProps?.[UTOPIA_UIDS_KEY] // PATHS
+      const path2 = updatedProps?.[UTOPIA_PATHS_2_KEY] ?? updatedProps?.[UTOPIA_UIDS_KEY]
 
       const withUpdatedChildren = attachPath2ToChildrenOfElement(
         originalTypeResponse,

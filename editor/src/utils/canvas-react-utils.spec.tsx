@@ -54,9 +54,13 @@ describe('Monkey Function', () => {
 
     expect(renderToFormattedString(<TestClass data-uid={'test1'} data-path='test1' />))
       .toMatchInlineSnapshot(`
-      "<div data-uid=\\"cica test1\\" data-path=\\"cica\\">
-        <div data-uid=\\"kutya\\" data-path=\\"kutya\\">Hello!</div>
-        <div data-uid=\\"majom\\" data-path=\\"majom\\">Hello!</div>
+      "<div data-uid=\\"cica test1\\" data-path=\\"cica test1\\" data-paths-2=\\"test1:cica\\">
+        <div data-uid=\\"kutya\\" data-path=\\"kutya\\" data-paths-2=\\"test1:cica/kutya\\">
+          Hello!
+        </div>
+        <div data-uid=\\"majom\\" data-path=\\"majom\\" data-paths-2=\\"test1:cica/majom\\">
+          Hello!
+        </div>
       </div>
       "
     `)
@@ -82,7 +86,13 @@ describe('Monkey Function', () => {
         </MyContext.Provider>,
       ),
     ).toMatchInlineSnapshot(`
-      "<div data-uid=\\"inner-div test-class provider\\" data-path=\\"inner-div\\">hello!</div>
+      "<div
+        data-uid=\\"inner-div test-class provider\\"
+        data-path=\\"inner-div test-class provider\\"
+        data-paths-2=\\"provider/test-class:inner-div\\"
+      >
+        hello!
+      </div>
       "
     `)
   })
@@ -110,7 +120,11 @@ describe('Monkey Function', () => {
 
     expect(renderToFormattedString(<Renderer data-uid={'renderer'} data-path={'renderer'} />))
       .toMatchInlineSnapshot(`
-      "<div data-uid=\\"inner-div test-class provider renderer\\" data-path=\\"inner-div\\">
+      "<div
+        data-uid=\\"inner-div test-class provider renderer\\"
+        data-path=\\"inner-div test-class provider renderer\\"
+        data-paths-2=\\"renderer:provider/test-class:inner-div\\"
+      >
         hello!
       </div>
       "
@@ -129,7 +143,7 @@ describe('Monkey Function', () => {
 
     const TestStoryboard: React.FunctionComponent = (props) => {
       return (
-        <UtopiaStoryboard data-uid='scene sb test1'>
+        <UtopiaStoryboard data-uid='sb'>
           <UtopiaScene data-uid='scene'>
             <TestComponent data-uid='component-instance' />
           </UtopiaScene>
@@ -139,21 +153,21 @@ describe('Monkey Function', () => {
 
     expect(renderToFormattedString(<TestStoryboard data-uid={'test1'} />)).toMatchInlineSnapshot(`
       "<div
-        data-paths-2=\\"scene:scene sb test1:scene sb test1\\"
+        data-paths-2=\\"test1:sb/scene:scene sb test1:scene sb test1\\"
         data-uid=\\"scene sb test1\\"
       >
         <div
-          data-paths-2=\\"scene:scene sb test1/component-instance:component-root:component-root component-instance\\"
+          data-paths-2=\\"test1:sb/scene/component-instance:component-root:component-root component-instance\\"
           data-uid=\\"component-root component-instance\\"
         >
           <div
-            data-paths-2=\\"scene:scene sb test1/component-instance:component-root/kutya:kutya\\"
+            data-paths-2=\\"test1:sb/scene/component-instance:component-root/kutya:kutya\\"
             data-uid=\\"kutya\\"
           >
             Hello!
           </div>
           <div
-            data-paths-2=\\"scene:scene sb test1/component-instance:component-root/majom:majom\\"
+            data-paths-2=\\"test1:sb/scene/component-instance:component-root/majom:majom\\"
             data-uid=\\"majom\\"
           >
             Hello!
@@ -176,8 +190,8 @@ describe('Monkey Function', () => {
 
     expect(renderToFormattedString(<TestComponent data-uid={'test1'} />)).toMatchInlineSnapshot(`
       "<div data-uid=\\"test1\\" data-paths-2=\\"test1:test1\\">
-        <div data-uid=\\"kutya\\" data-paths-2=\\"test1/kutya\\">Hello!</div>
-        <div data-uid=\\"majom\\" data-paths-2=\\"test1/majom\\">Hello!</div>
+        <div data-uid=\\"kutya\\" data-paths-2=\\"test1:test1/kutya\\">Hello!</div>
+        <div data-uid=\\"majom\\" data-paths-2=\\"test1:test1/majom\\">Hello!</div>
       </div>
       "
     `)
@@ -194,7 +208,9 @@ describe('Monkey Function', () => {
     }
 
     expect(renderToFormattedString(<TestComponent data-uid={'test1'} />)).toMatchInlineSnapshot(`
-      "<div data-uid=\\"test1\\"><div>Hello!</div></div>
+      "<div data-uid=\\"test1\\" data-paths-2=\\"test1:\\">
+        <div data-paths-2=\\"test1/\\">Hello!</div>
+      </div>
       "
     `)
   })
@@ -229,7 +245,7 @@ describe('Monkey Function', () => {
     }
 
     expect(renderToFormattedString(<TestComponent />)).toMatchInlineSnapshot(`
-      "<div data-uid=\\"cica\\">Hello!</div>
+      "<div data-uid=\\"cica\\" data-paths-2=\\"cica:\\">Hello!</div>
       "
     `)
   })
@@ -251,7 +267,7 @@ describe('Monkey Function', () => {
     }
 
     expect(renderToFormattedString(<TestComponent data-uid={'test1'} />)).toMatchInlineSnapshot(`
-      "<div data-uid=\\"cica test1\\"><div>Hello!</div></div>
+      "<div data-uid=\\"cica test1\\" data-paths-2=\\"test1:cica:\\"><div>Hello!</div></div>
       "
     `)
   })
@@ -266,7 +282,7 @@ describe('Monkey Function', () => {
     }
 
     expect(renderToFormattedString(<TestComponent data-uid={'test1'} />)).toMatchInlineSnapshot(`
-      "<div data-uid=\\"test1\\">Hello!</div>
+      "<div data-uid=\\"test1\\" data-paths-2=\\"test1:\\">Hello!</div>
       "
     `)
   })
@@ -285,7 +301,10 @@ describe('Monkey Function', () => {
     }
 
     expect(renderToFormattedString(<TestClass data-uid={'test1'} />)).toMatchInlineSnapshot(`
-      "<div data-uid=\\"root-div test-class test1\\" data-paths-2=\\"test-class:root-div\\">
+      "<div
+        data-uid=\\"root-div test-class test1\\"
+        data-paths-2=\\"test1:test-class:root-div\\"
+      >
         Hello!
       </div>
       "
@@ -311,9 +330,7 @@ describe('Monkey Function', () => {
       "<div
         data-uid=\\"root-div wrapper-component test1\\"
         data-paths-2=\\"test1:wrapper-component:root-div\\"
-      >
-        Hello!
-      </div>
+      ></div>
       "
     `)
   })
@@ -334,7 +351,7 @@ describe('Monkey Function', () => {
     }
 
     expect(renderToFormattedString(<TestClass data-uid={'test1'} />)).toMatchInlineSnapshot(`
-      "<div data-uid=\\"root-div cica test1\\" data-paths-2=\\"cica:root-div\\">Hello!</div>
+      "<div data-uid=\\"root-div cica test1\\" data-paths-2=\\"test1:cica:root-div\\"></div>
       "
     `)
   })
@@ -355,7 +372,7 @@ describe('Monkey Function', () => {
     }
 
     expect(renderToFormattedString(<TestClass data-uid={'test1'} />)).toMatchInlineSnapshot(`
-      "<div data-uid=\\"test1\\">Hello!</div>
+      "<div data-uid=\\"test1\\" data-paths-2=\\"test1:\\"></div>
       "
     `)
   })
@@ -370,7 +387,7 @@ describe('Monkey Function', () => {
     }
 
     expect(renderToFormattedString(<Component data-uid={'test1'} />)).toMatchInlineSnapshot(`
-      "<div data-uid=\\"test1\\">Hello!</div>
+      "<div data-paths-2=\\"test1:\\" data-uid=\\"test1\\">Hello!</div>
       "
     `)
   })
@@ -385,7 +402,7 @@ describe('Monkey Function', () => {
     }
 
     expect(renderToFormattedString(<Component data-uid={'test1'} />)).toMatchInlineSnapshot(`
-      "<div data-uid=\\"root-div fragment test1\\" data-paths-2=\\"fragment/root-div\\">
+      "<div data-uid=\\"root-div fragment test1\\" data-paths-2=\\"test1:fragment/root-div\\">
         Hello!
       </div>
       "
@@ -436,8 +453,12 @@ describe('Monkey Function', () => {
 
     expect(renderToFormattedString(<Component />)).toMatchInlineSnapshot(`
       "<div data-uid=\\"cica\\">
-        <div data-uid=\\"hello-div kutya\\" data-paths-2=\\"kutya/hello-div\\">Hello</div>
-        <div data-uid=\\"world-div kutya\\" data-paths-2=\\"kutya/world-div\\">world!</div>
+        <div data-uid=\\"hello-div kutya\\" data-paths-2=\\"cica/kutya/hello-div\\">
+          Hello
+        </div>
+        <div data-uid=\\"world-div kutya\\" data-paths-2=\\"cica/kutya/world-div\\">
+          world!
+        </div>
       </div>
       "
     `)
@@ -453,10 +474,10 @@ describe('Monkey Function', () => {
         </Storyboard>,
       ),
     ).toMatchInlineSnapshot(`
-      "<div data-uid=\\"scene ignore\\" data-paths-2=\\"scene:scene ignore\\">
+      "<div data-uid=\\"scene ignore\\" data-paths-2=\\"ignore/scene:scene ignore\\">
         <div
           data-uid=\\"cica scene-component\\"
-          data-paths-2=\\"scene ignore/scene-component:cica\\"
+          data-paths-2=\\"ignore/scene/scene-component:cica\\"
         >
           Hello!
         </div>
@@ -481,7 +502,7 @@ describe('Monkey Function', () => {
     }
 
     expect(renderToFormattedString(<WrappedComponent data-uid='cica' />)).toMatchInlineSnapshot(`
-      "<div data-uid=\\"cica\\">Hello!</div>
+      "<div data-uid=\\"cica\\" data-paths-2=\\"cica:\\">Hello!</div>
       "
     `)
   })
@@ -537,8 +558,8 @@ describe('Monkey Function', () => {
     }
 
     expect(renderToFormattedString(<App />)).toMatchInlineSnapshot(`
-      "<div data-uid=\\"aaa\\">
-        <div>huha</div>
+      "<div data-uid=\\"aaa\\" data-paths-2=\\"aaa:\\">
+        <div data-paths-2=\\"aaa/\\">huha!</div>
         huha!
       </div>
       "
@@ -567,20 +588,20 @@ describe('Monkey Function', () => {
     }
     expect(renderToFormattedString(<App data-uid='cica' />)).toMatchInlineSnapshot(`
       "<div data-uid=\\"zzz cica\\" data-paths-2=\\"cica:zzz\\">
-        <div data-uid=\\"aaa\\" data-paths-2=\\"zzz/aaa\\">
-          <div data-uid=\\"bbb\\" data-paths-2=\\"aaa/bbb\\">4</div>
-          <div data-uid=\\"bbb\\" data-paths-2=\\"aaa/bbb\\">5</div>
-          <div data-uid=\\"bbb\\" data-paths-2=\\"aaa/bbb\\">6</div>
+        <div data-uid=\\"aaa\\" data-paths-2=\\"cica:zzz/aaa\\">
+          <div data-uid=\\"bbb\\" data-paths-2=\\"cica:zzz/aaa/bbb\\">4</div>
+          <div data-uid=\\"bbb\\" data-paths-2=\\"cica:zzz/aaa/bbb\\">5</div>
+          <div data-uid=\\"bbb\\" data-paths-2=\\"cica:zzz/aaa/bbb\\">6</div>
         </div>
-        <div data-uid=\\"aaa\\" data-paths-2=\\"zzz/aaa\\">
-          <div data-uid=\\"bbb\\" data-paths-2=\\"aaa/bbb\\">8</div>
-          <div data-uid=\\"bbb\\" data-paths-2=\\"aaa/bbb\\">10</div>
-          <div data-uid=\\"bbb\\" data-paths-2=\\"aaa/bbb\\">12</div>
+        <div data-uid=\\"aaa\\" data-paths-2=\\"cica:zzz/aaa\\">
+          <div data-uid=\\"bbb\\" data-paths-2=\\"cica:zzz/aaa/bbb\\">8</div>
+          <div data-uid=\\"bbb\\" data-paths-2=\\"cica:zzz/aaa/bbb\\">10</div>
+          <div data-uid=\\"bbb\\" data-paths-2=\\"cica:zzz/aaa/bbb\\">12</div>
         </div>
-        <div data-uid=\\"aaa\\" data-paths-2=\\"zzz/aaa\\">
-          <div data-uid=\\"bbb\\" data-paths-2=\\"aaa/bbb\\">12</div>
-          <div data-uid=\\"bbb\\" data-paths-2=\\"aaa/bbb\\">15</div>
-          <div data-uid=\\"bbb\\" data-paths-2=\\"aaa/bbb\\">18</div>
+        <div data-uid=\\"aaa\\" data-paths-2=\\"cica:zzz/aaa\\">
+          <div data-uid=\\"bbb\\" data-paths-2=\\"cica:zzz/aaa/bbb\\">12</div>
+          <div data-uid=\\"bbb\\" data-paths-2=\\"cica:zzz/aaa/bbb\\">15</div>
+          <div data-uid=\\"bbb\\" data-paths-2=\\"cica:zzz/aaa/bbb\\">18</div>
         </div>
       </div>
       "
@@ -620,14 +641,24 @@ describe('Monkey Function', () => {
       "<div
         data-uid=\\"scene-aaa utopia-storyboard-uid\\"
         style=\\"left: 0; top: 0; width: 400px; height: 400px;\\"
-        data-paths-2=\\"scene-aaa:scene-aaa utopia-storyboard-uid\\"
+        data-paths-2=\\"utopia-storyboard-uid/scene-aaa:scene-aaa utopia-storyboard-uid\\"
       >
         <div
           data-uid=\\"zzz app\\"
-          data-paths-2=\\"scene-aaa utopia-storyboard-uid/app:zzz\\"
+          data-paths-2=\\"utopia-storyboard-uid/scene-aaa/app:zzz\\"
         >
-          <div data-uid=\\"ccc aaa\\" data-paths-2=\\"zzz/aaa:ccc\\">Hello World!!</div>
-          <div data-uid=\\"ddd bbb\\" data-paths-2=\\"zzz/bbb:ddd\\">Hello Dolly!!</div>
+          <div
+            data-uid=\\"ccc aaa\\"
+            data-paths-2=\\"utopia-storyboard-uid/scene-aaa/app:zzz/aaa:ccc\\"
+          >
+            Hello World!!
+          </div>
+          <div
+            data-uid=\\"ddd bbb\\"
+            data-paths-2=\\"utopia-storyboard-uid/scene-aaa/app:zzz/bbb:ddd\\"
+          >
+            Hello Dolly!!
+          </div>
         </div>
       </div>
       "
