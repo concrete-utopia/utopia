@@ -683,6 +683,9 @@ type SetUsersPreferredStrategy = {
 type ClearOutlineHighlights = {
   action: 'CLEAR_OUTLINE_HIGHLIGHTS'
 }
+type RemoveUndoButton = {
+  action: 'REMOVE_UNDO_BUTTON'
+}
 
 export type CanvasAction =
   | ScrollCanvas
@@ -697,6 +700,7 @@ export type CanvasAction =
   | SetSelectionControlsVisibility
   | SetUsersPreferredStrategy
   | ClearOutlineHighlights
+  | RemoveUndoButton
 
 export type CanvasModel = {
   controls: Array<HigherOrderControl>

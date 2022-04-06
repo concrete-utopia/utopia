@@ -440,6 +440,18 @@ export function runLocalCanvasAction(
         },
       }
     }
+    case 'REMOVE_UNDO_BUTTON': {
+      return {
+        ...model,
+        canvas: {
+          ...model.canvas,
+          controls: {
+            ...model.canvas.controls,
+            undoButtonVisible: false,
+          },
+        },
+      }
+    }
     default:
       const _exhaustiveCheck: never = action
       return model

@@ -46,6 +46,9 @@ export const runSwitchToAbsolute: CommandFunction<SwitchToAbsolute> = (
           highlightOutlines: {
             $set: updatedEditor.canvas.controls.highlightOutlines,
           },
+          undoButtonVisible: {
+            $set: true,
+          },
         },
       },
     },

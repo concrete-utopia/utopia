@@ -112,6 +112,7 @@ export function isTransientAction(action: EditorAction): boolean {
     case 'UPDATE_INTERACTION_SESSION':
     case 'SET_USERS_PREFERRED_STRATEGY':
     case 'CLEAR_OUTLINE_HIGHLIGHTS':
+    case 'REMOVE_UNDO_BUTTON':
       return true
 
     case 'NEW':

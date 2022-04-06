@@ -66,6 +66,7 @@ import { MultiSelectOutlineControl } from './select-mode/simple-outline-control'
 import { GuidelineControls } from './guideline-controls'
 import { EscapeHatchButtonControl } from './select-mode/escape-hatch-button'
 import { ConversionHighlightOutline } from './flow-move-controls'
+import { FlowUndoButton } from './flow-move-controls'
 
 export const CanvasControlsContainerID = 'new-canvas-controls-container'
 
@@ -425,6 +426,7 @@ const NewCanvasControlsInner = (props: NewCanvasControlsInnerProps) => {
         isFeatureEnabled('Canvas Strategies'),
         <FlexResizeControl localSelectedElements={localSelectedViews} />,
       )}
+      <FlowUndoButton />
       <ConversionHighlightOutline />
     </div>
   )

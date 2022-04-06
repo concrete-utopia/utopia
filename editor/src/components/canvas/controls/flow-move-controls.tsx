@@ -6,6 +6,7 @@ import React, { useEffect } from 'react'
 import { usePubSubAtomReadOnly } from '../../../core/shared/atom-with-pub-sub'
 import { offsetPoint, zeroCanvasPoint, zeroRectangle } from '../../../core/shared/math-utils'
 import { HeadlessStringInput, useColorTheme, UtopiaStyles } from '../../../uuiui'
+import { undo } from '../../editor/actions/action-creators'
 import { NavigatorWidthAtom } from '../../editor/store/editor-state'
 import { useEditorState, useRefEditorState } from '../../editor/store/store-hook'
 import CanvasActions from '../canvas-actions'
@@ -309,9 +310,9 @@ export const ConversionHighlightOutline = React.memo(() => {
     (store) => !store.editor.navigator.minimised,
     'ConversionHighlightOutline navigatorVisible',
   )
-  const [animationTime, setAnimationTime] = React.useState(1000)
+  const [animationTime, setAnimationTime] = React.useState(2000)
   const navigatorWidth = usePubSubAtomReadOnly(NavigatorWidthAtom)
-  const [selectedOutline, setSelectedOutline] = React.useState('outline1')
+  const [selectedOutline, setSelectedOutline] = React.useState('outline5')
   const outlineFrames = useEditorState(
     (store) => store.editor.canvas.controls.highlightOutlines,
     'ConversionHighlightOutline frames',
@@ -358,63 +359,69 @@ export const ConversionHighlightOutline = React.memo(() => {
           ))}
         </div>
       </CanvasOffsetWrapper>
+    </React.Fragment>
+  )
+})
+
+export const FlowUndoButton = React.memo(() => {
+  const colorTheme = useColorTheme()
+  const navigatorVisible = useEditorState(
+    (store) => !store.editor.navigator.minimised,
+    'FlowUndoButton navigatorVisible',
+  )
+  const navigatorWidth = usePubSubAtomReadOnly(NavigatorWidthAtom)
+  const dispatch = useEditorState((store) => store.dispatch, 'flowundobutton dispatch')
+
+  const undoButtonVisible = useEditorState(
+    (store) => store.editor.canvas.controls.undoButtonVisible,
+    'undoButtonVisible',
+  )
+
+  const timerRef = React.useRef<NodeJS.Timeout | null>(null)
+  useEffect(() => {
+    if (undoButtonVisible != null) {
+      if (timerRef.current != null) {
+        clearTimeout(timerRef.current)
+        timerRef.current = null
+      }
+    }
+
+    timerRef.current = setTimeout(() => {
+      dispatch([CanvasActions.removeUndoButton()], 'canvas')
+    }, 2000)
+  }, [undoButtonVisible, dispatch])
+  if (!undoButtonVisible) {
+    return null
+  }
+  return (
+    <div
+      style={{
+        paddingTop: 4,
+        paddingLeft: navigatorVisible ? navigatorWidth + 4 : 4,
+        display: 'flex',
+      }}
+    >
       <div
         style={{
-          paddingTop: 4,
-          paddingLeft: navigatorVisible ? navigatorWidth + 4 : 4,
+          height: 29,
           display: 'flex',
+          alignItems: 'center',
+          paddingLeft: 4,
+          paddingRight: 4,
+          gap: 4,
+          borderRadius: 4,
+          background: colorTheme.bg0.value,
+          boxShadow: UtopiaStyles.popup.boxShadow,
+          cursor: 'pointer',
         }}
       >
-        <div
-          style={{
-            height: 29,
-            display: 'flex',
-            alignItems: 'center',
-            paddingLeft: 4,
-            paddingRight: 4,
-            gap: 4,
-            borderRadius: 4,
-            background: colorTheme.bg0.value,
-            boxShadow: UtopiaStyles.popup.boxShadow,
-            cursor: 'pointer',
-          }}
-        >
-          <ModeSelectButton
-            selected={selectedOutline === 'outline1'}
-            title={'1'}
-            onMouseDown={React.useCallback(() => setSelectedOutline('outline1'), [])}
-          />
-          <ModeSelectButton
-            selected={selectedOutline === 'outline2'}
-            title={'2'}
-            onMouseDown={React.useCallback(() => setSelectedOutline('outline2'), [])}
-          />
-          <ModeSelectButton
-            selected={selectedOutline === 'outline3'}
-            title={'3'}
-            onMouseDown={React.useCallback(() => setSelectedOutline('outline3'), [])}
-          />
-          <ModeSelectButton
-            selected={selectedOutline === 'outline4'}
-            title={'4'}
-            onMouseDown={React.useCallback(() => setSelectedOutline('outline4'), [])}
-          />
-          <ModeSelectButton
-            selected={selectedOutline === 'outline5'}
-            title={'5'}
-            onMouseDown={React.useCallback(() => {
-              setSelectedOutline('outline5')
-              setAnimationTime(2000)
-            }, [])}
-          />
-          <HeadlessStringInput
-            value={animationTime}
-            onChange={React.useCallback((event) => {
-              setAnimationTime(Number(event.target.value))
-            }, [])}
-          />
-        </div>
+        <ModeSelectButton
+          title={'Undo Conversion'}
+          selected={false}
+          // eslint-disable-next-line react/jsx-no-bind
+          onMouseDown={() => dispatch([CanvasActions.removeUndoButton(), undo()], 'everyone')}
+        />
       </div>
-    </React.Fragment>
+    </div>
   )
 })

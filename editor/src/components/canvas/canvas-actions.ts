@@ -81,6 +81,11 @@ const CanvasActions = {
       action: 'CLEAR_OUTLINE_HIGHLIGHTS',
     }
   },
+  removeUndoButton: function (): CanvasAction {
+    return {
+      action: 'REMOVE_UNDO_BUTTON',
+    }
+  },
 }
 
 export default CanvasActions
