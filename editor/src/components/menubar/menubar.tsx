@@ -8,7 +8,6 @@ import {
   useTriggerScrollPerformanceTest,
   useTriggerResizePerformanceTest,
   useTriggerSelectionPerformanceTest,
-  useTriggerBaselinePerformanceTest,
   useTriggerRegularHighlightPerformanceTest,
   useTriggerAllElementsHighlightPerformanceTest,
   useTriggerAbsoluteMovePerformanceTest,
@@ -194,7 +193,6 @@ export const Menubar = React.memo(() => {
   const onTriggerAllElementsHighlightTest = useTriggerAllElementsHighlightPerformanceTest()
   const onTriggerSelectionTest = useTriggerSelectionPerformanceTest()
   const onTriggerAbsoluteMoveTest = useTriggerAbsoluteMovePerformanceTest()
-  const onTriggerBaselineTest = useTriggerBaselinePerformanceTest()
 
   const previewURL =
     projectId == null ? '' : shareURLForProject(FLOATING_PREVIEW_BASE_URL, projectId, projectName)
@@ -372,9 +370,6 @@ export const Menubar = React.memo(() => {
           </Tile>
           <Tile style={{ marginTop: 12, marginBottom: 12 }} size='large'>
             <a onClick={onTriggerAbsoluteMoveTest}>PAM</a>
-          </Tile>
-          <Tile style={{ marginTop: 12, marginBottom: 12 }} size='large'>
-            <a onClick={onTriggerBaselineTest}>B L</a>
           </Tile>
         </React.Fragment>
       ) : null}
