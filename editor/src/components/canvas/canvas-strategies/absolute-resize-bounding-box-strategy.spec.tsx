@@ -7,7 +7,13 @@ import {
 } from '../../../core/shared/element-template'
 import { CanvasPoint, canvasPoint, canvasRectangle } from '../../../core/shared/math-utils'
 import { ElementPath } from '../../../core/shared/project-file-types'
-import { altModifier, emptyModifiers, Modifiers, shiftModifier } from '../../../utils/modifiers'
+import {
+  altModifier,
+  altShiftModifier,
+  emptyModifiers,
+  Modifiers,
+  shiftModifier,
+} from '../../../utils/modifiers'
 import { EditorState } from '../../editor/store/editor-state'
 import { EdgePosition } from '../canvas-types'
 import { foldAndApplyCommands } from '../commands/commands'
@@ -77,18 +83,22 @@ const testMetadata: ElementInstanceMetadataMap = {
   } as ElementInstanceMetadata,
 }
 
+const testDrag = canvasPoint({
+  x: 15,
+  y: 25,
+})
+
+const testBounding = { left: 50, top: 50, width: 250, height: 300 }
+
 describe('Absolute Resize Bounding Box Strategy single select', () => {
   it.each([
     [
       'top left corner',
       {
         edgePosition: { x: 0, y: 0 } as EdgePosition,
-        drag: canvasPoint({
-          x: 15,
-          y: 25,
-        }),
+        drag: testDrag,
         modifiers: emptyModifiers,
-        bounding: { left: 50, top: 50, width: 250, height: 300 },
+        bounding: testBounding,
         draggedBounding: { left: 65, top: 75, width: 235, height: 275 },
       },
     ],
@@ -96,12 +106,9 @@ describe('Absolute Resize Bounding Box Strategy single select', () => {
       'bottom left corner',
       {
         edgePosition: { x: 0, y: 1 } as EdgePosition,
-        drag: canvasPoint({
-          x: 15,
-          y: 25,
-        }),
+        drag: testDrag,
         modifiers: emptyModifiers,
-        bounding: { left: 50, top: 50, width: 250, height: 300 },
+        bounding: testBounding,
         draggedBounding: { left: 65, top: 50, width: 235, height: 325 },
       },
     ],
@@ -109,12 +116,9 @@ describe('Absolute Resize Bounding Box Strategy single select', () => {
       'top right corner',
       {
         edgePosition: { x: 1, y: 0 } as EdgePosition,
-        drag: canvasPoint({
-          x: 15,
-          y: 25,
-        }),
+        drag: testDrag,
         modifiers: emptyModifiers,
-        bounding: { left: 50, top: 50, width: 250, height: 300 },
+        bounding: testBounding,
         draggedBounding: { left: 50, top: 75, width: 265, height: 275 },
       },
     ],
@@ -122,12 +126,9 @@ describe('Absolute Resize Bounding Box Strategy single select', () => {
       'bottom right corner',
       {
         edgePosition: { x: 1, y: 1 } as EdgePosition,
-        drag: canvasPoint({
-          x: 15,
-          y: 25,
-        }),
+        drag: testDrag,
         modifiers: emptyModifiers,
-        bounding: { left: 50, top: 50, width: 250, height: 300 },
+        bounding: testBounding,
         draggedBounding: { left: 50, top: 50, width: 265, height: 325 },
       },
     ],
@@ -135,12 +136,9 @@ describe('Absolute Resize Bounding Box Strategy single select', () => {
       'top side',
       {
         edgePosition: { x: 0.5, y: 0 } as EdgePosition,
-        drag: canvasPoint({
-          x: 15,
-          y: 25,
-        }),
+        drag: testDrag,
         modifiers: emptyModifiers,
-        bounding: { left: 50, top: 50, width: 250, height: 300 },
+        bounding: testBounding,
         draggedBounding: { left: 50, top: 75, width: 250, height: 275 },
       },
     ],
@@ -148,12 +146,9 @@ describe('Absolute Resize Bounding Box Strategy single select', () => {
       'left side',
       {
         edgePosition: { x: 0, y: 0.5 } as EdgePosition,
-        drag: canvasPoint({
-          x: 15,
-          y: 25,
-        }),
+        drag: testDrag,
         modifiers: emptyModifiers,
-        bounding: { left: 50, top: 50, width: 250, height: 300 },
+        bounding: testBounding,
         draggedBounding: { left: 65, top: 50, width: 235, height: 300 },
       },
     ],
@@ -161,12 +156,9 @@ describe('Absolute Resize Bounding Box Strategy single select', () => {
       'bottom side',
       {
         edgePosition: { x: 0.5, y: 1 } as EdgePosition,
-        drag: canvasPoint({
-          x: 15,
-          y: 25,
-        }),
+        drag: testDrag,
         modifiers: emptyModifiers,
-        bounding: { left: 50, top: 50, width: 250, height: 300 },
+        bounding: testBounding,
         draggedBounding: { left: 50, top: 50, width: 250, height: 325 },
       },
     ],
@@ -174,12 +166,9 @@ describe('Absolute Resize Bounding Box Strategy single select', () => {
       'right side',
       {
         edgePosition: { x: 1, y: 0.5 } as EdgePosition,
-        drag: canvasPoint({
-          x: 15,
-          y: 25,
-        }),
+        drag: testDrag,
         modifiers: emptyModifiers,
-        bounding: { left: 50, top: 50, width: 250, height: 300 },
+        bounding: testBounding,
         draggedBounding: { left: 50, top: 50, width: 265, height: 300 },
       },
     ],
@@ -187,12 +176,9 @@ describe('Absolute Resize Bounding Box Strategy single select', () => {
       'top left corner, center mode',
       {
         edgePosition: { x: 0, y: 0 } as EdgePosition,
-        drag: canvasPoint({
-          x: 15,
-          y: 25,
-        }),
+        drag: testDrag,
         modifiers: altModifier,
-        bounding: { left: 50, top: 50, width: 250, height: 300 },
+        bounding: testBounding,
         draggedBounding: { left: 65, top: 75, width: 220, height: 250 },
       },
     ],
@@ -200,12 +186,9 @@ describe('Absolute Resize Bounding Box Strategy single select', () => {
       'bottom left corner, center mode',
       {
         edgePosition: { x: 0, y: 1 } as EdgePosition,
-        drag: canvasPoint({
-          x: 15,
-          y: 25,
-        }),
+        drag: testDrag,
         modifiers: altModifier,
-        bounding: { left: 50, top: 50, width: 250, height: 300 },
+        bounding: testBounding,
         draggedBounding: { left: 65, top: 25, width: 220, height: 350 },
       },
     ],
@@ -213,12 +196,9 @@ describe('Absolute Resize Bounding Box Strategy single select', () => {
       'top right corner, center mode',
       {
         edgePosition: { x: 1, y: 0 } as EdgePosition,
-        drag: canvasPoint({
-          x: 15,
-          y: 25,
-        }),
+        drag: testDrag,
         modifiers: altModifier,
-        bounding: { left: 50, top: 50, width: 250, height: 300 },
+        bounding: testBounding,
         draggedBounding: { left: 35, top: 75, width: 280, height: 250 },
       },
     ],
@@ -226,12 +206,9 @@ describe('Absolute Resize Bounding Box Strategy single select', () => {
       'bottom right corner, center mode',
       {
         edgePosition: { x: 1, y: 1 } as EdgePosition,
-        drag: canvasPoint({
-          x: 15,
-          y: 25,
-        }),
+        drag: testDrag,
         modifiers: altModifier,
-        bounding: { left: 50, top: 50, width: 250, height: 300 },
+        bounding: testBounding,
         draggedBounding: { left: 35, top: 25, width: 280, height: 350 },
       },
     ],
@@ -239,12 +216,9 @@ describe('Absolute Resize Bounding Box Strategy single select', () => {
       'top side, center mode',
       {
         edgePosition: { x: 0.5, y: 0 } as EdgePosition,
-        drag: canvasPoint({
-          x: 15,
-          y: 25,
-        }),
+        drag: testDrag,
         modifiers: altModifier,
-        bounding: { left: 50, top: 50, width: 250, height: 300 },
+        bounding: testBounding,
         draggedBounding: { left: 50, top: 75, width: 250, height: 250 },
       },
     ],
@@ -252,12 +226,9 @@ describe('Absolute Resize Bounding Box Strategy single select', () => {
       'left side, center mode',
       {
         edgePosition: { x: 0, y: 0.5 } as EdgePosition,
-        drag: canvasPoint({
-          x: 15,
-          y: 25,
-        }),
+        drag: testDrag,
         modifiers: altModifier,
-        bounding: { left: 50, top: 50, width: 250, height: 300 },
+        bounding: testBounding,
         draggedBounding: { left: 65, top: 50, width: 220, height: 300 },
       },
     ],
@@ -265,12 +236,9 @@ describe('Absolute Resize Bounding Box Strategy single select', () => {
       'bottom side, center mode',
       {
         edgePosition: { x: 0.5, y: 1 } as EdgePosition,
-        drag: canvasPoint({
-          x: 15,
-          y: 25,
-        }),
+        drag: testDrag,
         modifiers: altModifier,
-        bounding: { left: 50, top: 50, width: 250, height: 300 },
+        bounding: testBounding,
         draggedBounding: { left: 50, top: 25, width: 250, height: 350 },
       },
     ],
@@ -278,13 +246,170 @@ describe('Absolute Resize Bounding Box Strategy single select', () => {
       'right side, center mode',
       {
         edgePosition: { x: 1, y: 0.5 } as EdgePosition,
-        drag: canvasPoint({
-          x: 15,
-          y: 25,
-        }),
+        drag: testDrag,
         modifiers: altModifier,
-        bounding: { left: 50, top: 50, width: 250, height: 300 },
+        bounding: testBounding,
         draggedBounding: { left: 35, top: 50, width: 280, height: 300 },
+      },
+    ],
+    [
+      'top left corner, aspect ratio locked',
+      {
+        edgePosition: { x: 0, y: 0 } as EdgePosition,
+        drag: testDrag,
+        modifiers: shiftModifier,
+        bounding: testBounding,
+        draggedBounding: { left: 65, top: 68, width: 235, height: 282 },
+      },
+    ],
+    [
+      'bottom left corner, aspect ratio locked',
+      {
+        edgePosition: { x: 0, y: 1 } as EdgePosition,
+        drag: testDrag,
+        modifiers: shiftModifier,
+        bounding: testBounding,
+        draggedBounding: { left: 29, top: 50, width: 271, height: 325 },
+      },
+    ],
+    [
+      'top right corner, aspect ratio locked',
+      {
+        edgePosition: { x: 1, y: 0 } as EdgePosition,
+        drag: testDrag,
+        modifiers: shiftModifier,
+        bounding: testBounding,
+        draggedBounding: { left: 50, top: 32, width: 265, height: 318 },
+      },
+    ],
+    [
+      'bottom right corner, aspect ratio locked',
+      {
+        edgePosition: { x: 1, y: 1 } as EdgePosition,
+        drag: testDrag,
+        modifiers: shiftModifier,
+        bounding: testBounding,
+        draggedBounding: { left: 50, top: 50, width: 271, height: 325 },
+      },
+    ],
+    [
+      'top side, aspect ratio locked',
+      {
+        edgePosition: { x: 0.5, y: 0 } as EdgePosition,
+        drag: testDrag,
+        modifiers: shiftModifier,
+        bounding: testBounding,
+        draggedBounding: { left: 60, top: 75, width: 229, height: 275 },
+      },
+    ],
+    [
+      'left side, aspect ratio locked',
+      {
+        edgePosition: { x: 0, y: 0.5 } as EdgePosition,
+        drag: testDrag,
+        modifiers: shiftModifier,
+        bounding: testBounding,
+        draggedBounding: { left: 65, top: 59, width: 235, height: 282 },
+      },
+    ],
+    [
+      'bottom side, aspect ratio locked',
+      {
+        edgePosition: { x: 0.5, y: 1 } as EdgePosition,
+        drag: testDrag,
+        modifiers: shiftModifier,
+        bounding: testBounding,
+        draggedBounding: { left: 40, top: 50, width: 271, height: 325 },
+      },
+    ],
+    [
+      'right side, aspect ratio locked',
+      {
+        edgePosition: { x: 1, y: 0.5 } as EdgePosition,
+        drag: testDrag,
+        modifiers: shiftModifier,
+        bounding: testBounding,
+        draggedBounding: { left: 50, top: 41, width: 265, height: 318 },
+      },
+    ],
+    [
+      'top left corner, center mode, aspect ratio locked',
+      {
+        edgePosition: { x: 0, y: 0 } as EdgePosition,
+        drag: testDrag,
+        modifiers: altShiftModifier,
+        bounding: testBounding,
+        draggedBounding: { left: 65, top: 68, width: 220, height: 264 },
+      },
+    ],
+    [
+      'bottom left corner, center mode, aspect ratio locked',
+      {
+        edgePosition: { x: 0, y: 1 } as EdgePosition,
+        drag: testDrag,
+        modifiers: altShiftModifier,
+        bounding: testBounding,
+        draggedBounding: { left: 29, top: 25, width: 292, height: 350 },
+      },
+    ],
+    [
+      'top right corner, center mode, aspect ratio locked',
+      {
+        edgePosition: { x: 1, y: 0 } as EdgePosition,
+        drag: testDrag,
+        modifiers: altShiftModifier,
+        bounding: testBounding,
+        draggedBounding: { left: 35, top: 32, width: 280, height: 336 },
+      },
+    ],
+    [
+      'bottom right corner, center mode, aspect ratio locked',
+      {
+        edgePosition: { x: 1, y: 1 } as EdgePosition,
+        drag: testDrag,
+        modifiers: altShiftModifier,
+        bounding: testBounding,
+        draggedBounding: { left: 29, top: 25, width: 292, height: 350 },
+      },
+    ],
+    [
+      'top side, center mode, aspect ratio locked',
+      {
+        edgePosition: { x: 0.5, y: 0 } as EdgePosition,
+        drag: testDrag,
+        modifiers: altShiftModifier,
+        bounding: testBounding,
+        draggedBounding: { left: 71, top: 75, width: 208, height: 250 },
+      },
+    ],
+    [
+      'left side, center mode, aspect ratio locked',
+      {
+        edgePosition: { x: 0, y: 0.5 } as EdgePosition,
+        drag: testDrag,
+        modifiers: altShiftModifier,
+        bounding: testBounding,
+        draggedBounding: { left: 65, top: 68, width: 220, height: 264 },
+      },
+    ],
+    [
+      'bottom side, center mode, aspect ratio locked',
+      {
+        edgePosition: { x: 0.5, y: 1 } as EdgePosition,
+        drag: testDrag,
+        modifiers: altShiftModifier,
+        bounding: testBounding,
+        draggedBounding: { left: 29, top: 25, width: 292, height: 350 },
+      },
+    ],
+    [
+      'right side, center mode, aspect ratio locked',
+      {
+        edgePosition: { x: 1, y: 0.5 } as EdgePosition,
+        drag: testDrag,
+        modifiers: altShiftModifier,
+        bounding: testBounding,
+        draggedBounding: { left: 35, top: 32, width: 280, height: 336 },
       },
     ],
   ])(
@@ -381,10 +506,7 @@ describe('Absolute Resize Bounding Box Strategy single select', () => {
         snippet,
         selectedElements,
         edgePosition,
-        canvasPoint({
-          x: 15,
-          y: 25,
-        }),
+        testDrag,
         shiftModifier,
         testMetadata,
       )
@@ -459,10 +581,7 @@ describe('Absolute Resize Bounding Box Strategy single select', () => {
         snippet,
         selectedElements,
         edgePosition,
-        canvasPoint({
-          x: 15,
-          y: 25,
-        }),
+        testDrag,
         emptyModifiers,
         testMetadata,
       )
@@ -537,10 +656,7 @@ describe('Absolute Resize Bounding Box Strategy single select', () => {
         snippet,
         selectedElements,
         edgePosition,
-        canvasPoint({
-          x: 15,
-          y: 25,
-        }),
+        testDrag,
         shiftModifier,
         testMetadata,
       )
@@ -615,10 +731,7 @@ describe('Absolute Resize Bounding Box Strategy single select', () => {
         snippet,
         selectedElements,
         edgePosition,
-        canvasPoint({
-          x: 15,
-          y: 25,
-        }),
+        testDrag,
         emptyModifiers,
         testMetadata,
       )
@@ -693,10 +806,7 @@ describe('Absolute Resize Bounding Box Strategy single select', () => {
         snippet,
         selectedElements,
         edgePosition,
-        canvasPoint({
-          x: 15,
-          y: 25,
-        }),
+        testDrag,
         shiftModifier,
         testMetadata,
       )
@@ -771,10 +881,7 @@ describe('Absolute Resize Bounding Box Strategy single select', () => {
         snippet,
         selectedElements,
         edgePosition,
-        canvasPoint({
-          x: 15,
-          y: 25,
-        }),
+        testDrag,
         emptyModifiers,
         testMetadata,
       )
@@ -849,10 +956,7 @@ describe('Absolute Resize Bounding Box Strategy single select', () => {
         snippet,
         selectedElements,
         edgePosition,
-        canvasPoint({
-          x: 15,
-          y: 25,
-        }),
+        testDrag,
         shiftModifier,
         testMetadata,
       )
@@ -936,10 +1040,7 @@ describe('Absolute Resize Bounding Box Strategy single select', () => {
         snippet,
         selectedElements,
         edgePosition,
-        canvasPoint({
-          x: 15,
-          y: 25,
-        }),
+        testDrag,
         modifiers,
         testMetadata,
       )
@@ -1020,10 +1121,7 @@ describe('Absolute Resize Bounding Box Strategy single select', () => {
         snippet,
         selectedElements,
         edgePosition,
-        canvasPoint({
-          x: 15,
-          y: 25,
-        }),
+        testDrag,
         modifiers,
         testMetadata,
       )
