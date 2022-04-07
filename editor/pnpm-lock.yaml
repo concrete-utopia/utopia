@@ -208,6 +208,7 @@ specifiers:
   react-spring: 9.0.0-rc.3
   react-syntax-highlighter: 12.2.1
   react-test-renderer: 16.9.0
+  react-toastify: ^8.2.0
   react-use-gesture: 6.0.2
   react-virtualized-auto-sizer: 1.0.2
   react-vtree: 2.0.0
@@ -346,6 +347,7 @@ dependencies:
   react-select: 3.1.0_d9cccff7df39c9a08a2a815f75fb6cbc
   react-spring: 9.0.0-rc.3_fb240f2ddf3ca4b47c2b562802d6427d
   react-syntax-highlighter: 12.2.1_utopia-react@17.0.0-rc.1
+  react-toastify: 8.2.0_d9cccff7df39c9a08a2a815f75fb6cbc
   react-use-gesture: 6.0.2_utopia-react@17.0.0-rc.1
   react-virtualized-auto-sizer: 1.0.2_d9cccff7df39c9a08a2a815f75fb6cbc
   react-vtree: 2.0.0_255ea23c1365d9cdd0d891903b4d6c66
@@ -13513,6 +13515,17 @@ packages:
   /react-three-fiber/0.0.0-deprecated:
     resolution: {integrity: sha512-EblIqTAsIpkYeM8bZtC4lcpTE0A2zCEGipFB52RgcQq/q+0oryrk7Sxt+sqhIjUu6xMNEVywV8dr74lz5yWO6A==}
     dev: true
+
+  /react-toastify/8.2.0_d9cccff7df39c9a08a2a815f75fb6cbc:
+    resolution: {integrity: sha512-Pg2Ju7NngAamarFvLwqrFomJ57u/Ay6i6zfLurt/qPynWkAkOthu6vxfqYpJCyNhHRhR4hu7+bySSeWWJu6PAg==}
+    peerDependencies:
+      react: '>=16'
+      react-dom: '>=16'
+    dependencies:
+      clsx: 1.1.1
+      react: /utopia-react/17.0.0-rc.1
+      react-dom: /utopia-react-dom/17.0.0-rc.1_utopia-react@17.0.0-rc.1
+    dev: false
 
   /react-transition-group/4.4.2_d9cccff7df39c9a08a2a815f75fb6cbc:
     resolution: {integrity: sha512-/RNYfRAMlZwDSr6z4zNKV6xu53/e2BuaBbGhbyYIXTrmgu/bGHzmqOs7mJSJBHy9Ud+ApHx3QjrkKSp1pxvlFg==}

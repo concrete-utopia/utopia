@@ -37,6 +37,7 @@ import { canvasPoint } from '../../core/shared/math-utils'
 import { InspectorWidthAtom } from '../inspector/common/inspector-atoms'
 import { useAtom } from 'jotai'
 import { CanvasStrategyInspector } from './canvas-strategies/canvas-strategy-inspector'
+import { ToastContainer } from 'react-toastify'
 
 interface NumberSize {
   width: number
@@ -318,6 +319,14 @@ const DesignPanelRootInner = React.memo(() => {
               </div>
             ) : null}
             <CanvasWrapperComponent />
+            <ToastContainer
+              position='top-center'
+              autoClose={2000}
+              hideProgressBar={false}
+              newestOnTop={false}
+              closeOnClick
+              rtl={false}
+            />
             <FloatingInsertMenu />
           </SimpleFlexColumn>
         ) : null}

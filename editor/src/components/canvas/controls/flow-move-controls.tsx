@@ -13,6 +13,9 @@ import CanvasActions from '../canvas-actions'
 import { getMultiselectBounds } from '../canvas-strategies/shared-absolute-move-strategy-helpers'
 import { ModeSelectButton } from '../mode-select-buttons'
 import { CanvasOffsetWrapper } from './canvas-offset-wrapper'
+import { toast, ToastContainer } from 'react-toastify'
+import 'react-toastify/dist/ReactToastify.css'
+import { NO_OP } from '../../../core/shared/utils'
 
 export const FlowMoveControlTooltip = React.memo(() => {
   const colorTheme = useColorTheme()
@@ -364,14 +367,7 @@ export const ConversionHighlightOutline = React.memo(() => {
 })
 
 export const FlowUndoButton = React.memo(() => {
-  const colorTheme = useColorTheme()
-  const navigatorVisible = useEditorState(
-    (store) => !store.editor.navigator.minimised,
-    'FlowUndoButton navigatorVisible',
-  )
-  const navigatorWidth = usePubSubAtomReadOnly(NavigatorWidthAtom)
   const dispatch = useEditorState((store) => store.dispatch, 'flowundobutton dispatch')
-
   const undoButtonVisible = useEditorState(
     (store) => store.editor.canvas.controls.undoButtonVisible,
     'undoButtonVisible',
@@ -380,47 +376,34 @@ export const FlowUndoButton = React.memo(() => {
     (store) => store.editor.canvas.interactionSession != null,
     'isInteraction',
   )
+  const onButtonClick = React.useCallback(
+    () => dispatch([CanvasActions.removeUndoButton(), undo()], 'everyone'),
+    [dispatch],
+  )
 
-  const timerRef = React.useRef<NodeJS.Timeout | null>(null)
   useEffect(() => {
     if (undoButtonVisible && !isInteraction) {
-      timerRef.current = setTimeout(() => {
-        dispatch([CanvasActions.removeUndoButton()], 'canvas')
-      }, 2000)
+      toast(<Undo onUndo={onButtonClick} closeToast={NO_OP} />, {
+        // hook will be called whent the component unmount
+        onClose: () => dispatch([CanvasActions.removeUndoButton()], 'everyone'),
+        toastId: 'customId',
+      })
     }
-  }, [isInteraction, dispatch, undoButtonVisible])
-  if (!undoButtonVisible) {
-    return null
+  }, [isInteraction, onButtonClick, undoButtonVisible, dispatch])
+
+  return null
+})
+
+const Undo = ({ onUndo, closeToast }: { onUndo: () => void; closeToast: () => void }) => {
+  const handleClick = () => {
+    onUndo()
+    closeToast()
   }
   return (
-    <div
-      style={{
-        paddingTop: 4,
-        paddingLeft: navigatorVisible ? navigatorWidth + 4 : 4,
-        display: 'flex',
-      }}
-    >
-      <div
-        style={{
-          height: 29,
-          display: 'flex',
-          alignItems: 'center',
-          paddingLeft: 4,
-          paddingRight: 4,
-          gap: 4,
-          borderRadius: 4,
-          background: colorTheme.bg0.value,
-          boxShadow: UtopiaStyles.popup.boxShadow,
-          cursor: 'pointer',
-        }}
-      >
-        <ModeSelectButton
-          title={'Undo Conversion to Absolute'}
-          selected={false}
-          // eslint-disable-next-line react/jsx-no-bind
-          onMouseDown={() => dispatch([CanvasActions.removeUndoButton(), undo()], 'everyone')}
-        />
-      </div>
+    <div>
+      <h3>
+        div converted to absolute <button onClick={handleClick}>undo?</button>
+      </h3>
     </div>
   )
-})
+}
