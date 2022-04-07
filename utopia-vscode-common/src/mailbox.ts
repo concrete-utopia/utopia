@@ -20,8 +20,27 @@ let onMessageCallback: (message: any) => void
 let lastSentMessage: number = 0
 let lastConsumedMessage: number = -1
 let queuedMessages: Array<ToVSCodeMessage | FromVSCodeMessage> = []
-const POLLING_TIMEOUT = 8
+const MIN_POLLING_TIMEOUT = 8
+const MAX_POLLING_TIMEOUT = MIN_POLLING_TIMEOUT * Math.pow(2, 6) // Max out at 512ms
+let POLLING_TIMEOUT = MIN_POLLING_TIMEOUT
 let pollTimeout: any | null = null
+
+let reducePollingAttemptsCount = 0
+
+function reducePollingFrequency() {
+  if (POLLING_TIMEOUT < MAX_POLLING_TIMEOUT) {
+    reducePollingAttemptsCount++
+    if (reducePollingAttemptsCount >= 5) {
+      reducePollingAttemptsCount = 0
+      POLLING_TIMEOUT = POLLING_TIMEOUT * 2
+    }
+  }
+}
+
+function resetPollingFrequency() {
+  reducePollingAttemptsCount = 0
+  POLLING_TIMEOUT = MIN_POLLING_TIMEOUT
+}
 
 function lastConsumedMessageKey(mailbox: Mailbox): string {
   return `/${mailbox}_LAST_CONSUMED`
@@ -43,6 +62,8 @@ function generateMessageName(): string {
 }
 
 export async function sendMessage(message: ToVSCodeMessage | FromVSCodeMessage): Promise<void> {
+  resetPollingFrequency()
+
   if (outbox == null) {
     queuedMessages.push(message)
   } else {
@@ -106,6 +127,9 @@ async function pollInbox<T>(parseMessage: (msg: string) => T): Promise<void> {
     lastConsumedMessage = maxMessageNumber(messagesToProcess, lastConsumedMessage)
     await updateLastConsumedMessageFile(inbox, lastConsumedMessage)
     messages.forEach(onMessageCallback)
+    resetPollingFrequency()
+  } else {
+    reducePollingFrequency()
   }
   pollTimeout = setTimeout(() => pollInbox(parseMessage), POLLING_TIMEOUT)
 }

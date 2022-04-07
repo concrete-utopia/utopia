@@ -304,8 +304,8 @@ startup ProductionServerResources{..} = do
   return $ do
         killThread hashedFilenamesThread
 
-serverPortFromResources :: ProductionServerResources -> Int
-serverPortFromResources = _serverPort
+serverPortFromResources :: ProductionServerResources -> [Int]
+serverPortFromResources resources = [_serverPort resources]
 
 productionEnvironmentRuntime :: EnvironmentRuntime ProductionServerResources
 productionEnvironmentRuntime = EnvironmentRuntime
