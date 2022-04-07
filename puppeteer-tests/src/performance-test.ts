@@ -46,8 +46,8 @@ const EmptyResult: FrameResult = {
   succeeded: true,
 }
 
-function loadTraceEventsJSON(): Promise<any> {
-  const fileReader = fs.createReadStream('trace.json')
+function loadTraceEventsJSON(fileName: string): Promise<any> {
+  const fileReader = fs.createReadStream(fileName)
   const parser = JSONStream.parse('traceEvents.*')
   const composed = fileReader.pipe(parser)
   let result: Array<any> = []
@@ -217,7 +217,8 @@ export const testScrollingPerformance = async function (
   await clickOnce(page, "//a[contains(., 'P S')]", 'SCROLL_TEST_FINISHED', 'SCROLL_TEST_ERROR')
 
   // and then we run the test for a third time, this time running tracing
-  await page.tracing.start({ categories: ['blink.user_timing'], path: 'trace.json' })
+  const traceFileName = 'trace-scrolling.json'
+  await page.tracing.start({ categories: ['blink.user_timing'], path: traceFileName })
   const succeeded = await clickOnce(
     page,
     "//a[contains(., 'P S')]",
@@ -225,7 +226,7 @@ export const testScrollingPerformance = async function (
     'SCROLL_TEST_ERROR',
   )
   await page.tracing.stop()
-  const traceJson = await loadTraceEventsJSON()
+  const traceJson = await loadTraceEventsJSON(traceFileName)
   return getFrameData(traceJson, 'scroll', 'Scroll Canvas', succeeded)
 }
 
@@ -244,7 +245,8 @@ export const testResizePerformance = async function (page: puppeteer.Page): Prom
   await clickOnce(page, ResizeButtonXPath, 'RESIZE_TEST_FINISHED', 'RESIZE_TEST_ERROR')
 
   // and then we run the test for a third time, this time running tracing
-  await page.tracing.start({ categories: ['blink.user_timing'], path: 'trace.json' })
+  const traceFileName = 'trace-resizing.json'
+  await page.tracing.start({ categories: ['blink.user_timing'], path: traceFileName })
   const succeeded = await clickOnce(
     page,
     ResizeButtonXPath,
@@ -252,7 +254,7 @@ export const testResizePerformance = async function (page: puppeteer.Page): Prom
     'RESIZE_TEST_ERROR',
   )
   await page.tracing.stop()
-  const traceJson = await loadTraceEventsJSON()
+  const traceJson = await loadTraceEventsJSON(traceFileName)
   return getFrameData(traceJson, 'resize', 'Resize', succeeded)
 }
 
@@ -276,7 +278,8 @@ export const testHighlightRegularPerformance = async function (
   )
 
   // and then we run the test for a third time, this time running tracing
-  await page.tracing.start({ categories: ['blink.user_timing'], path: 'trace.json' })
+  const traceFileName = 'trace-highlight-regular.json'
+  await page.tracing.start({ categories: ['blink.user_timing'], path: traceFileName })
   const succeeded = await clickOnce(
     page,
     "//a[contains(., 'PRH')]",
@@ -284,7 +287,7 @@ export const testHighlightRegularPerformance = async function (
     'HIGHLIGHT_REGULAR_TEST_ERROR',
   )
   await page.tracing.stop()
-  const traceJson = await loadTraceEventsJSON()
+  const traceJson = await loadTraceEventsJSON(traceFileName)
   return getFrameData(traceJson, 'highlight_regular', 'Highlight Regular', succeeded)
 }
 
@@ -308,7 +311,8 @@ export const testHighlightAllElementsPerformance = async function (
   )
 
   // and then we run the test for a third time, this time running tracing
-  await page.tracing.start({ categories: ['blink.user_timing'], path: 'trace.json' })
+  const traceFileName = 'trace-highlight-all.json'
+  await page.tracing.start({ categories: ['blink.user_timing'], path: traceFileName })
   const succeeded = await clickOnce(
     page,
     "//a[contains(., 'PAH')]",
@@ -316,7 +320,7 @@ export const testHighlightAllElementsPerformance = async function (
     'HIGHLIGHT_ALL-ELEMENTS_TEST_ERROR',
   )
   await page.tracing.stop()
-  const traceJson = await loadTraceEventsJSON()
+  const traceJson = await loadTraceEventsJSON(traceFileName)
   return getFrameData(traceJson, 'highlight_all-elements', 'Highlight All Elements', succeeded)
 }
 
@@ -330,7 +334,8 @@ export const testSelectionPerformance = async function (
   await clickOnce(page, "//a[contains(., 'P E')]", 'SELECT_TEST_FINISHED', 'SELECT_TEST_ERROR')
 
   // and then we run the test for a third time, this time running tracing
-  await page.tracing.start({ categories: ['blink.user_timing'], path: 'trace.json' })
+  const traceFileName = 'trace-selection.json'
+  await page.tracing.start({ categories: ['blink.user_timing'], path: traceFileName })
   const succeeded = await clickOnce(
     page,
     "//a[contains(., 'P E')]",
@@ -338,7 +343,7 @@ export const testSelectionPerformance = async function (
     'SELECT_TEST_ERROR',
   )
   await page.tracing.stop()
-  const traceJson = await loadTraceEventsJSON()
+  const traceJson = await loadTraceEventsJSON(traceFileName)
   return [
     getFrameData(traceJson, 'select', 'Selection', succeeded),
     getFrameData(traceJson, 'select_deselect', 'De-Selection', succeeded),
@@ -365,7 +370,8 @@ export const testAbsoluteMovePerformance = async function (
   )
 
   // and then we run the test for a third time, this time running tracing
-  await page.tracing.start({ categories: ['blink.user_timing'], path: 'trace.json' })
+  const traceFileName = 'trace-absolute-move.json'
+  await page.tracing.start({ categories: ['blink.user_timing'], path: traceFileName })
   const succeeded = await clickOnce(
     page,
     "//a[contains(., 'PAM')]",
@@ -373,7 +379,7 @@ export const testAbsoluteMovePerformance = async function (
     'ABSOLUTE_MOVE_TEST_ERROR',
   )
   await page.tracing.stop()
-  const traceJson = await loadTraceEventsJSON()
+  const traceJson = await loadTraceEventsJSON(traceFileName)
   return [
     getFrameData(traceJson, 'absolute_move_interaction', 'Absolute Move (Interaction)', succeeded),
     getFrameData(traceJson, 'absolute_move_move', 'Absolute Move (Just Move)', succeeded),
