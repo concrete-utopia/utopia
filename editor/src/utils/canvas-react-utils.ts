@@ -296,7 +296,12 @@ function patchedCreateReactElement(type: any, props: any, ...children: any): any
   if (isClassComponent(type)) {
     const mangledClass = mangleClassType(type)
     return realCreateElement(mangledClass, props, ...children)
-  } else if (typeof type === 'function') {
+  } else if (
+    typeof type === 'function' &&
+    getDisplayName(type) !== 'Toast' &&
+    getDisplayName(type) !== 'ToastContainer' &&
+    getDisplayName(type) !== 'UndoToast'
+  ) {
     // if the type is function and it is NOT a class component, we deduce it is a function component
     const mangledType: React.FunctionComponent = mangleFunctionType(type)
     return realCreateElement(mangledType, props, ...children)

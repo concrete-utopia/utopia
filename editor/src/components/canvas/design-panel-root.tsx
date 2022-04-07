@@ -319,14 +319,6 @@ const DesignPanelRootInner = React.memo(() => {
               </div>
             ) : null}
             <CanvasWrapperComponent />
-            <ToastContainer
-              position='top-center'
-              autoClose={2000}
-              hideProgressBar={false}
-              newestOnTop={false}
-              closeOnClick
-              rtl={false}
-            />
             <FloatingInsertMenu />
           </SimpleFlexColumn>
         ) : null}

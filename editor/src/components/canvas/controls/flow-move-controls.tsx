@@ -383,7 +383,7 @@ export const FlowUndoButton = React.memo(() => {
 
   useEffect(() => {
     if (undoButtonVisible && !isInteraction) {
-      toast(<Undo onUndo={onButtonClick} closeToast={NO_OP} />, {
+      toast(<UndoToast onUndo={onButtonClick} closeToast={NO_OP} />, {
         // hook will be called whent the component unmount
         onClose: () => dispatch([CanvasActions.removeUndoButton()], 'everyone'),
         toastId: 'customId',
@@ -394,7 +394,7 @@ export const FlowUndoButton = React.memo(() => {
   return null
 })
 
-const Undo = ({ onUndo, closeToast }: { onUndo: () => void; closeToast: () => void }) => {
+const UndoToast = ({ onUndo, closeToast }: { onUndo: () => void; closeToast: () => void }) => {
   const handleClick = () => {
     onUndo()
     closeToast()

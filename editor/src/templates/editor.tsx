@@ -87,6 +87,7 @@ import { PersistenceBackend } from '../components/editor/persistence/persistence
 import { defaultProject } from '../sample-projects/sample-project-utils'
 import { createBuiltInDependenciesList } from '../core/es-modules/package-manager/built-in-dependencies-list'
 import { createEmptyStrategyState } from '../components/canvas/canvas-strategies/interaction-state'
+import { ToastContainer } from 'react-toastify'
 
 if (PROBABLY_ELECTRON) {
   let { webFrame } = requireElectron()
@@ -329,6 +330,14 @@ export const EditorRoot: React.FunctionComponent<{
     <EditorStateContext.Provider value={{ api, useStore }}>
       <UiJsxCanvasCtxAtom.Provider value={spyCollector}>
         <EditorComponent />
+        <ToastContainer
+          position='top-center'
+          autoClose={2000}
+          hideProgressBar={false}
+          newestOnTop={false}
+          closeOnClick
+          rtl={false}
+        />
       </UiJsxCanvasCtxAtom.Provider>
     </EditorStateContext.Provider>
   )
