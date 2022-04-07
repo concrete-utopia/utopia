@@ -83,338 +83,427 @@ const testMetadata: ElementInstanceMetadataMap = {
   } as ElementInstanceMetadata,
 }
 
-const testDrag = canvasPoint({
-  x: 15,
-  y: 25,
-})
-
-const testBounding = { left: 50, top: 50, width: 250, height: 300 }
-
 describe('Absolute Resize Bounding Box Strategy single select', () => {
   it.each([
     [
       'top left corner',
       {
         edgePosition: { x: 0, y: 0 } as EdgePosition,
-        drag: testDrag,
+        drag: canvasPoint({
+          x: 15,
+          y: 25,
+        }),
         modifiers: emptyModifiers,
-        bounding: testBounding,
-        draggedBounding: { left: 65, top: 75, width: 235, height: 275 },
+        bounding: { left: 50, top: 50, width: 250, height: 300 },
+        expectedBounding: { left: 65, top: 75, width: 235, height: 275 },
       },
     ],
     [
       'bottom left corner',
       {
         edgePosition: { x: 0, y: 1 } as EdgePosition,
-        drag: testDrag,
+        drag: canvasPoint({
+          x: 15,
+          y: 25,
+        }),
         modifiers: emptyModifiers,
-        bounding: testBounding,
-        draggedBounding: { left: 65, top: 50, width: 235, height: 325 },
+        bounding: { left: 50, top: 50, width: 250, height: 300 },
+        expectedBounding: { left: 65, top: 50, width: 235, height: 325 },
       },
     ],
     [
       'top right corner',
       {
         edgePosition: { x: 1, y: 0 } as EdgePosition,
-        drag: testDrag,
+        drag: canvasPoint({
+          x: 15,
+          y: 25,
+        }),
         modifiers: emptyModifiers,
-        bounding: testBounding,
-        draggedBounding: { left: 50, top: 75, width: 265, height: 275 },
+        bounding: { left: 50, top: 50, width: 250, height: 300 },
+        expectedBounding: { left: 50, top: 75, width: 265, height: 275 },
       },
     ],
     [
       'bottom right corner',
       {
         edgePosition: { x: 1, y: 1 } as EdgePosition,
-        drag: testDrag,
+        drag: canvasPoint({
+          x: 15,
+          y: 25,
+        }),
         modifiers: emptyModifiers,
-        bounding: testBounding,
-        draggedBounding: { left: 50, top: 50, width: 265, height: 325 },
+        bounding: { left: 50, top: 50, width: 250, height: 300 },
+        expectedBounding: { left: 50, top: 50, width: 265, height: 325 },
       },
     ],
     [
       'top side',
       {
         edgePosition: { x: 0.5, y: 0 } as EdgePosition,
-        drag: testDrag,
+        drag: canvasPoint({
+          x: 15,
+          y: 25,
+        }),
         modifiers: emptyModifiers,
-        bounding: testBounding,
-        draggedBounding: { left: 50, top: 75, width: 250, height: 275 },
+        bounding: { left: 50, top: 50, width: 250, height: 300 },
+        expectedBounding: { left: 50, top: 75, width: 250, height: 275 },
       },
     ],
     [
       'left side',
       {
         edgePosition: { x: 0, y: 0.5 } as EdgePosition,
-        drag: testDrag,
+        drag: canvasPoint({
+          x: 15,
+          y: 25,
+        }),
         modifiers: emptyModifiers,
-        bounding: testBounding,
-        draggedBounding: { left: 65, top: 50, width: 235, height: 300 },
+        bounding: { left: 50, top: 50, width: 250, height: 300 },
+        expectedBounding: { left: 65, top: 50, width: 235, height: 300 },
       },
     ],
     [
       'bottom side',
       {
         edgePosition: { x: 0.5, y: 1 } as EdgePosition,
-        drag: testDrag,
+        drag: canvasPoint({
+          x: 15,
+          y: 25,
+        }),
         modifiers: emptyModifiers,
-        bounding: testBounding,
-        draggedBounding: { left: 50, top: 50, width: 250, height: 325 },
+        bounding: { left: 50, top: 50, width: 250, height: 300 },
+        expectedBounding: { left: 50, top: 50, width: 250, height: 325 },
       },
     ],
     [
       'right side',
       {
         edgePosition: { x: 1, y: 0.5 } as EdgePosition,
-        drag: testDrag,
+        drag: canvasPoint({
+          x: 15,
+          y: 25,
+        }),
         modifiers: emptyModifiers,
-        bounding: testBounding,
-        draggedBounding: { left: 50, top: 50, width: 265, height: 300 },
+        bounding: { left: 50, top: 50, width: 250, height: 300 },
+        expectedBounding: { left: 50, top: 50, width: 265, height: 300 },
       },
     ],
     [
       'top left corner, center mode',
       {
         edgePosition: { x: 0, y: 0 } as EdgePosition,
-        drag: testDrag,
+        drag: canvasPoint({
+          x: 15,
+          y: 25,
+        }),
         modifiers: altModifier,
-        bounding: testBounding,
-        draggedBounding: { left: 65, top: 75, width: 220, height: 250 },
+        bounding: { left: 50, top: 50, width: 250, height: 300 },
+        expectedBounding: { left: 65, top: 75, width: 220, height: 250 },
       },
     ],
     [
       'bottom left corner, center mode',
       {
         edgePosition: { x: 0, y: 1 } as EdgePosition,
-        drag: testDrag,
+        drag: canvasPoint({
+          x: 15,
+          y: 25,
+        }),
         modifiers: altModifier,
-        bounding: testBounding,
-        draggedBounding: { left: 65, top: 25, width: 220, height: 350 },
+        bounding: { left: 50, top: 50, width: 250, height: 300 },
+        expectedBounding: { left: 65, top: 25, width: 220, height: 350 },
       },
     ],
     [
       'top right corner, center mode',
       {
         edgePosition: { x: 1, y: 0 } as EdgePosition,
-        drag: testDrag,
+        drag: canvasPoint({
+          x: 15,
+          y: 25,
+        }),
         modifiers: altModifier,
-        bounding: testBounding,
-        draggedBounding: { left: 35, top: 75, width: 280, height: 250 },
+        bounding: { left: 50, top: 50, width: 250, height: 300 },
+        expectedBounding: { left: 35, top: 75, width: 280, height: 250 },
       },
     ],
     [
       'bottom right corner, center mode',
       {
         edgePosition: { x: 1, y: 1 } as EdgePosition,
-        drag: testDrag,
+        drag: canvasPoint({
+          x: 15,
+          y: 25,
+        }),
         modifiers: altModifier,
-        bounding: testBounding,
-        draggedBounding: { left: 35, top: 25, width: 280, height: 350 },
+        bounding: { left: 50, top: 50, width: 250, height: 300 },
+        expectedBounding: { left: 35, top: 25, width: 280, height: 350 },
       },
     ],
     [
       'top side, center mode',
       {
         edgePosition: { x: 0.5, y: 0 } as EdgePosition,
-        drag: testDrag,
+        drag: canvasPoint({
+          x: 15,
+          y: 25,
+        }),
         modifiers: altModifier,
-        bounding: testBounding,
-        draggedBounding: { left: 50, top: 75, width: 250, height: 250 },
+        bounding: { left: 50, top: 50, width: 250, height: 300 },
+        expectedBounding: { left: 50, top: 75, width: 250, height: 250 },
       },
     ],
     [
       'left side, center mode',
       {
         edgePosition: { x: 0, y: 0.5 } as EdgePosition,
-        drag: testDrag,
+        drag: canvasPoint({
+          x: 15,
+          y: 25,
+        }),
         modifiers: altModifier,
-        bounding: testBounding,
-        draggedBounding: { left: 65, top: 50, width: 220, height: 300 },
+        bounding: { left: 50, top: 50, width: 250, height: 300 },
+        expectedBounding: { left: 65, top: 50, width: 220, height: 300 },
       },
     ],
     [
       'bottom side, center mode',
       {
         edgePosition: { x: 0.5, y: 1 } as EdgePosition,
-        drag: testDrag,
+        drag: canvasPoint({
+          x: 15,
+          y: 25,
+        }),
         modifiers: altModifier,
-        bounding: testBounding,
-        draggedBounding: { left: 50, top: 25, width: 250, height: 350 },
+        bounding: { left: 50, top: 50, width: 250, height: 300 },
+        expectedBounding: { left: 50, top: 25, width: 250, height: 350 },
       },
     ],
     [
       'right side, center mode',
       {
         edgePosition: { x: 1, y: 0.5 } as EdgePosition,
-        drag: testDrag,
+        drag: canvasPoint({
+          x: 15,
+          y: 25,
+        }),
         modifiers: altModifier,
-        bounding: testBounding,
-        draggedBounding: { left: 35, top: 50, width: 280, height: 300 },
+        bounding: { left: 50, top: 50, width: 250, height: 300 },
+        expectedBounding: { left: 35, top: 50, width: 280, height: 300 },
       },
     ],
     [
       'top left corner, aspect ratio locked',
       {
         edgePosition: { x: 0, y: 0 } as EdgePosition,
-        drag: testDrag,
+        drag: canvasPoint({
+          x: 15,
+          y: 25,
+        }),
         modifiers: shiftModifier,
-        bounding: testBounding,
-        draggedBounding: { left: 65, top: 68, width: 235, height: 282 },
+        bounding: { left: 50, top: 50, width: 250, height: 300 },
+        expectedBounding: { left: 65, top: 68, width: 235, height: 282 },
       },
     ],
     [
       'bottom left corner, aspect ratio locked',
       {
         edgePosition: { x: 0, y: 1 } as EdgePosition,
-        drag: testDrag,
+        drag: canvasPoint({
+          x: 15,
+          y: 25,
+        }),
         modifiers: shiftModifier,
-        bounding: testBounding,
-        draggedBounding: { left: 29, top: 50, width: 271, height: 325 },
+        bounding: { left: 50, top: 50, width: 250, height: 300 },
+        expectedBounding: { left: 29, top: 50, width: 271, height: 325 },
       },
     ],
     [
       'top right corner, aspect ratio locked',
       {
         edgePosition: { x: 1, y: 0 } as EdgePosition,
-        drag: testDrag,
+        drag: canvasPoint({
+          x: 15,
+          y: 25,
+        }),
         modifiers: shiftModifier,
-        bounding: testBounding,
-        draggedBounding: { left: 50, top: 32, width: 265, height: 318 },
+        bounding: { left: 50, top: 50, width: 250, height: 300 },
+        expectedBounding: { left: 50, top: 32, width: 265, height: 318 },
       },
     ],
     [
       'bottom right corner, aspect ratio locked',
       {
         edgePosition: { x: 1, y: 1 } as EdgePosition,
-        drag: testDrag,
+        drag: canvasPoint({
+          x: 15,
+          y: 25,
+        }),
         modifiers: shiftModifier,
-        bounding: testBounding,
-        draggedBounding: { left: 50, top: 50, width: 271, height: 325 },
+        bounding: { left: 50, top: 50, width: 250, height: 300 },
+        expectedBounding: { left: 50, top: 50, width: 271, height: 325 },
       },
     ],
     [
       'top side, aspect ratio locked',
       {
         edgePosition: { x: 0.5, y: 0 } as EdgePosition,
-        drag: testDrag,
+        drag: canvasPoint({
+          x: 15,
+          y: 25,
+        }),
         modifiers: shiftModifier,
-        bounding: testBounding,
-        draggedBounding: { left: 60, top: 75, width: 229, height: 275 },
+        bounding: { left: 50, top: 50, width: 250, height: 300 },
+        expectedBounding: { left: 60, top: 75, width: 229, height: 275 },
       },
     ],
     [
       'left side, aspect ratio locked',
       {
         edgePosition: { x: 0, y: 0.5 } as EdgePosition,
-        drag: testDrag,
+        drag: canvasPoint({
+          x: 15,
+          y: 25,
+        }),
         modifiers: shiftModifier,
-        bounding: testBounding,
-        draggedBounding: { left: 65, top: 59, width: 235, height: 282 },
+        bounding: { left: 50, top: 50, width: 250, height: 300 },
+        expectedBounding: { left: 65, top: 59, width: 235, height: 282 },
       },
     ],
     [
       'bottom side, aspect ratio locked',
       {
         edgePosition: { x: 0.5, y: 1 } as EdgePosition,
-        drag: testDrag,
+        drag: canvasPoint({
+          x: 15,
+          y: 25,
+        }),
         modifiers: shiftModifier,
-        bounding: testBounding,
-        draggedBounding: { left: 40, top: 50, width: 271, height: 325 },
+        bounding: { left: 50, top: 50, width: 250, height: 300 },
+        expectedBounding: { left: 40, top: 50, width: 271, height: 325 },
       },
     ],
     [
       'right side, aspect ratio locked',
       {
         edgePosition: { x: 1, y: 0.5 } as EdgePosition,
-        drag: testDrag,
+        drag: canvasPoint({
+          x: 15,
+          y: 25,
+        }),
         modifiers: shiftModifier,
-        bounding: testBounding,
-        draggedBounding: { left: 50, top: 41, width: 265, height: 318 },
+        bounding: { left: 50, top: 50, width: 250, height: 300 },
+        expectedBounding: { left: 50, top: 41, width: 265, height: 318 },
       },
     ],
     [
       'top left corner, center mode, aspect ratio locked',
       {
         edgePosition: { x: 0, y: 0 } as EdgePosition,
-        drag: testDrag,
+        drag: canvasPoint({
+          x: 15,
+          y: 25,
+        }),
         modifiers: altShiftModifier,
-        bounding: testBounding,
-        draggedBounding: { left: 65, top: 68, width: 220, height: 264 },
+        bounding: { left: 50, top: 50, width: 250, height: 300 },
+        expectedBounding: { left: 65, top: 68, width: 220, height: 264 },
       },
     ],
     [
       'bottom left corner, center mode, aspect ratio locked',
       {
         edgePosition: { x: 0, y: 1 } as EdgePosition,
-        drag: testDrag,
+        drag: canvasPoint({
+          x: 15,
+          y: 25,
+        }),
         modifiers: altShiftModifier,
-        bounding: testBounding,
-        draggedBounding: { left: 29, top: 25, width: 292, height: 350 },
+        bounding: { left: 50, top: 50, width: 250, height: 300 },
+        expectedBounding: { left: 29, top: 25, width: 292, height: 350 },
       },
     ],
     [
       'top right corner, center mode, aspect ratio locked',
       {
         edgePosition: { x: 1, y: 0 } as EdgePosition,
-        drag: testDrag,
+        drag: canvasPoint({
+          x: 15,
+          y: 25,
+        }),
         modifiers: altShiftModifier,
-        bounding: testBounding,
-        draggedBounding: { left: 35, top: 32, width: 280, height: 336 },
+        bounding: { left: 50, top: 50, width: 250, height: 300 },
+        expectedBounding: { left: 35, top: 32, width: 280, height: 336 },
       },
     ],
     [
       'bottom right corner, center mode, aspect ratio locked',
       {
         edgePosition: { x: 1, y: 1 } as EdgePosition,
-        drag: testDrag,
+        drag: canvasPoint({
+          x: 15,
+          y: 25,
+        }),
         modifiers: altShiftModifier,
-        bounding: testBounding,
-        draggedBounding: { left: 29, top: 25, width: 292, height: 350 },
+        bounding: { left: 50, top: 50, width: 250, height: 300 },
+        expectedBounding: { left: 29, top: 25, width: 292, height: 350 },
       },
     ],
     [
       'top side, center mode, aspect ratio locked',
       {
         edgePosition: { x: 0.5, y: 0 } as EdgePosition,
-        drag: testDrag,
+        drag: canvasPoint({
+          x: 15,
+          y: 25,
+        }),
         modifiers: altShiftModifier,
-        bounding: testBounding,
-        draggedBounding: { left: 71, top: 75, width: 208, height: 250 },
+        bounding: { left: 50, top: 50, width: 250, height: 300 },
+        expectedBounding: { left: 71, top: 75, width: 208, height: 250 },
       },
     ],
     [
       'left side, center mode, aspect ratio locked',
       {
         edgePosition: { x: 0, y: 0.5 } as EdgePosition,
-        drag: testDrag,
+        drag: canvasPoint({
+          x: 15,
+          y: 25,
+        }),
         modifiers: altShiftModifier,
-        bounding: testBounding,
-        draggedBounding: { left: 65, top: 68, width: 220, height: 264 },
+        bounding: { left: 50, top: 50, width: 250, height: 300 },
+        expectedBounding: { left: 65, top: 68, width: 220, height: 264 },
       },
     ],
     [
       'bottom side, center mode, aspect ratio locked',
       {
         edgePosition: { x: 0.5, y: 1 } as EdgePosition,
-        drag: testDrag,
+        drag: canvasPoint({
+          x: 15,
+          y: 25,
+        }),
         modifiers: altShiftModifier,
-        bounding: testBounding,
-        draggedBounding: { left: 29, top: 25, width: 292, height: 350 },
+        bounding: { left: 50, top: 50, width: 250, height: 300 },
+        expectedBounding: { left: 29, top: 25, width: 292, height: 350 },
       },
     ],
     [
       'right side, center mode, aspect ratio locked',
       {
         edgePosition: { x: 1, y: 0.5 } as EdgePosition,
-        drag: testDrag,
+        drag: canvasPoint({
+          x: 15,
+          y: 25,
+        }),
         modifiers: altShiftModifier,
-        bounding: testBounding,
-        draggedBounding: { left: 35, top: 32, width: 280, height: 336 },
+        bounding: { left: 50, top: 50, width: 250, height: 300 },
+        expectedBounding: { left: 35, top: 32, width: 280, height: 336 },
       },
     ],
   ])(
     `Single select absolute resize: %s`,
-    async (_, { edgePosition, drag, modifiers, bounding, draggedBounding }) => {
+    async (_, { edgePosition, drag, modifiers, bounding, expectedBounding }) => {
       const snippet = `
         <View style={{ ...(props.style || {}) }} data-uid='aaa'>
           <View
@@ -455,7 +544,7 @@ describe('Absolute Resize Bounding Box Strategy single select', () => {
         makeTestProjectCodeWithSnippet(`
         <View style={{ ...(props.style || {}) }} data-uid='aaa'>
           <View
-            style={{ backgroundColor: '#0091FFAA', position: 'absolute', left: ${draggedBounding.left}, top: ${draggedBounding.top}, width: ${draggedBounding.width}, height: ${draggedBounding.height} }}
+            style={{ backgroundColor: '#0091FFAA', position: 'absolute', left: ${expectedBounding.left}, top: ${expectedBounding.top}, width: ${expectedBounding.width}, height: ${expectedBounding.height} }}
             data-uid='bbb'
           />
         </View>
@@ -506,7 +595,10 @@ describe('Absolute Resize Bounding Box Strategy single select', () => {
         snippet,
         selectedElements,
         edgePosition,
-        testDrag,
+        canvasPoint({
+          x: 15,
+          y: 25,
+        }),
         emptyModifiers,
         testMetadata,
       )
@@ -581,7 +673,10 @@ describe('Absolute Resize Bounding Box Strategy single select', () => {
         snippet,
         selectedElements,
         edgePosition,
-        testDrag,
+        canvasPoint({
+          x: 15,
+          y: 25,
+        }),
         shiftModifier,
         testMetadata,
       )
@@ -656,7 +751,10 @@ describe('Absolute Resize Bounding Box Strategy single select', () => {
         snippet,
         selectedElements,
         edgePosition,
-        testDrag,
+        canvasPoint({
+          x: 15,
+          y: 25,
+        }),
         emptyModifiers,
         testMetadata,
       )
@@ -731,7 +829,10 @@ describe('Absolute Resize Bounding Box Strategy single select', () => {
         snippet,
         selectedElements,
         edgePosition,
-        testDrag,
+        canvasPoint({
+          x: 15,
+          y: 25,
+        }),
         shiftModifier,
         testMetadata,
       )
@@ -806,7 +907,10 @@ describe('Absolute Resize Bounding Box Strategy single select', () => {
         snippet,
         selectedElements,
         edgePosition,
-        testDrag,
+        canvasPoint({
+          x: 15,
+          y: 25,
+        }),
         emptyModifiers,
         testMetadata,
       )
@@ -881,7 +985,10 @@ describe('Absolute Resize Bounding Box Strategy single select', () => {
         snippet,
         selectedElements,
         edgePosition,
-        testDrag,
+        canvasPoint({
+          x: 15,
+          y: 25,
+        }),
         shiftModifier,
         testMetadata,
       )
@@ -956,7 +1063,10 @@ describe('Absolute Resize Bounding Box Strategy single select', () => {
         snippet,
         selectedElements,
         edgePosition,
-        testDrag,
+        canvasPoint({
+          x: 15,
+          y: 25,
+        }),
         emptyModifiers,
         testMetadata,
       )
@@ -1031,7 +1141,10 @@ describe('Absolute Resize Bounding Box Strategy single select', () => {
         snippet,
         selectedElements,
         edgePosition,
-        testDrag,
+        canvasPoint({
+          x: 15,
+          y: 25,
+        }),
         shiftModifier,
         testMetadata,
       )
@@ -1115,7 +1228,10 @@ describe('Absolute Resize Bounding Box Strategy single select', () => {
         snippet,
         selectedElements,
         edgePosition,
-        testDrag,
+        canvasPoint({
+          x: 15,
+          y: 25,
+        }),
         modifiers,
         testMetadata,
       )
@@ -1196,7 +1312,10 @@ describe('Absolute Resize Bounding Box Strategy single select', () => {
         snippet,
         selectedElements,
         edgePosition,
-        testDrag,
+        canvasPoint({
+          x: 15,
+          y: 25,
+        }),
         modifiers,
         testMetadata,
       )
