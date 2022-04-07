@@ -3,6 +3,7 @@ on:
   repository_dispatch:
     types: [trigger-staging-screenshot]
   workflow_dispatch:
+  pull_request:
 
 jobs:
   take-screenshot:
@@ -36,7 +37,7 @@ jobs:
           AWS_SECRET_ACCESS_KEY: ${{ secrets.PERFORMANCE_GRAPHS_SECRET_KEY }}
           AWS_REGION: ${{ secrets.STAGING_BUNDLE_REGION }}
         run: |
-          nix-shell --arg includeServerBuildSupport false --arg includeRunLocallySupport false --run "cd puppeteer-tests; pnpm install --unsafe-perm; xvfb-run --server-args='-screen 0 1920x1080x24' pnpm run screenshot-test"
+          nix-shell --arg includeServerBuildSupport false --arg includeRunLocallySupport false --run "cd puppeteer-tests; pnpm install --unsafe-perm; pnpm run screenshot-test"
       - name: Build Discord Message
         env:
           TEMPLATE: >-
