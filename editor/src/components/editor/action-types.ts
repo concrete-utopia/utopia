@@ -123,6 +123,7 @@ export interface InsertJSXElement {
   jsxElement: JSXElement
   parent: ElementPath | null
   importsToAdd: Imports
+  indexPosition: IndexPosition | null
 }
 
 export type DeleteSelected = {

@@ -61,6 +61,7 @@ import {
   isIntrinsicHTMLElement,
   JSXElementChildren,
   emptyComments,
+  JSXElementChild,
 } from '../../../core/shared/element-template'
 import {
   generateUidWithExistingComponents,
@@ -72,6 +73,7 @@ import {
   getZIndexOfElement,
   elementOnlyHasSingleTextChild,
   transformJSXComponentAtPath,
+  guaranteeUniqueUids,
 } from '../../../core/model/element-template-utils'
 import {
   getJSXAttributeAtPath,
@@ -161,7 +163,7 @@ import {
 import { OutgoingWorkerMessage, UtopiaTsWorkers } from '../../../core/workers/common/worker-types'
 import { defaultProject } from '../../../sample-projects/sample-project-utils'
 import { KeysPressed, Key } from '../../../utils/keyboard'
-import Utils, { IndexPosition } from '../../../utils/utils'
+import Utils, { generateUUID, IndexPosition } from '../../../utils/utils'
 import {
   CanvasPoint,
   CanvasRectangle,
@@ -461,7 +463,11 @@ import {
 import { loadStoredState } from '../stored-state'
 import { applyMigrations } from './migrations/migrations'
 import { fastForEach, getProjectLockedKey } from '../../../core/shared/utils'
-import { PathForSceneDataLabel, getStoryboardElementPath } from '../../../core/model/scene-utils'
+import {
+  PathForSceneDataLabel,
+  getStoryboardElementPath,
+  getStoryboardUID,
+} from '../../../core/model/scene-utils'
 import { getFrameAndMultiplier } from '../../images'
 import { arrayToMaybe, forceNotNull, optionalMap } from '../../../core/shared/optional-utils'
 
@@ -499,6 +505,7 @@ import {
   updatePackageJson,
   removeFromNodeModulesContents,
   setProp_UNSAFE,
+  unsetProperty,
 } from './action-creators'
 import { getAllTargetsAtPoint } from '../../canvas/dom-lookup'
 import {
@@ -526,6 +533,7 @@ import { uniqToasts } from './toast-helpers'
 import { NavigatorStateKeepDeepEquality } from '../../../utils/deep-equality-instances'
 import type { BuiltInDependencies } from '../../../core/es-modules/package-manager/built-in-dependencies-list'
 import { stylePropPathMappingFn } from '../../inspector/common/property-path-hooks'
+import { UtopiaIDPropertyPath } from '../../../core/shared/uid-utils'
 
 export function updateSelectedLeftMenuTab(editorState: EditorState, tab: LeftMenuTab): EditorState {
   return {
@@ -2009,7 +2017,7 @@ export const UPDATE_FNS = {
           targetParent,
           action.jsxElement,
           utopiaComponents,
-          null,
+          action.indexPosition,
         )
 
         const uid = getUtopiaID(action.jsxElement)
@@ -4978,7 +4986,54 @@ export const UPDATE_FNS = {
         },
       }
     } else {
-      let withElementsUpdated = editor.selectedViews.reduce((working, path) => {
+      const withNewElementsInserted = editor.selectedViews.reduce((working, path) => {
+        const originalElement = MetadataUtils.findElementByElementPath(editor.jsxMetadata, path)
+          ?.element
+        const parentPath = EP.parentPath(path)
+        const indexPosition: IndexPosition = {
+          type: 'before',
+          index: MetadataUtils.getViewZIndexFromMetadata(editor.jsxMetadata, path),
+        }
+        if (
+          originalElement != null &&
+          isRight(originalElement) &&
+          isJSXElement(originalElement.value)
+        ) {
+          const newUID = 'kiskutyaful'
+          const originalElementValue: JSXElement = originalElement.value
+          const propsWithUID = setJSXValueAtPath(
+            originalElementValue.props,
+            UtopiaIDPropertyPath,
+            jsxAttributeValue(newUID, emptyComments),
+          )
+
+          if (isLeft(propsWithUID)) {
+            return working
+          } else {
+            const fixedProps = unsetJSXValuesAtPaths(propsWithUID.value, [
+              stylePropPathMappingFn('backgroundColor', ['style']),
+              stylePropPathMappingFn('border', ['style']),
+              stylePropPathMappingFn('boxShadow', ['style']),
+            ])
+            if (isLeft(fixedProps)) {
+              return working
+            } else {
+              return UPDATE_FNS.INSERT_JSX_ELEMENT(
+                insertJSXElement(
+                  jsxElement('div', newUID, fixedProps.value, originalElementValue.children),
+                  parentPath,
+                  {},
+                  indexPosition,
+                ),
+                working,
+              )
+            }
+          }
+        } else {
+          return working
+        }
+      }, editor)
+      const withElementsUpdated = editor.selectedViews.reduce((working, path) => {
         const margin = MetadataUtils.findElementByElementPath(editor.jsxMetadata, path)
           ?.specialSizeMeasurements.margin
         const marginPoint: LocalPoint = {
@@ -5026,7 +5081,7 @@ export const UPDATE_FNS = {
             working,
           )
         }
-      }, editor)
+      }, withNewElementsInserted)
       return withElementsUpdated
     }
   },

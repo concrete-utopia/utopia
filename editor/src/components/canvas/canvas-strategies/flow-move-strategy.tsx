@@ -61,9 +61,9 @@ export const flowMoveStrategy: CanvasStrategy = {
     if (interactionState.interactionData.type === 'DRAG') {
       if (interactionState.globalTime - interactionState.lastInteractionTime > AnimationTimer) {
         if (interactionState.interactionData.modifiers.alt) {
-          return [switchToAbsolute('permanent', canvasState.selectedElements, 'selected')]
-        } else {
           return [switchToAbsolute('permanent', canvasState.selectedElements, 'all')]
+        } else {
+          return [switchToAbsolute('permanent', canvasState.selectedElements, 'selected')]
         }
       }
     }

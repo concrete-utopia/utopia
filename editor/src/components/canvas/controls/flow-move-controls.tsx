@@ -391,12 +391,12 @@ export const ConversionTargetButton = React.memo(() => {
       >
         <ModeSelectButton
           selected={!isAltPressed}
-          title={'Keep Siblings Visual Layout'}
+          title={'Convert Only Selected Element'}
           onMouseDown={Utils.NO_OP}
         />
         <ModeSelectButton
           selected={isAltPressed}
-          title={'Convert Only Selected Element'}
+          title={'Keep Siblings Visual Layout'}
           onMouseDown={Utils.NO_OP}
         />
       </div>
