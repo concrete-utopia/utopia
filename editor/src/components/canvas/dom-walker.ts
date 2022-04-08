@@ -1005,7 +1005,6 @@ function walkSceneInner(
   scene.childNodes.forEach((childNode) => {
     const { childPaths: childNodePaths, rootMetadata, cachedPaths } = walkElements(
       childNode,
-      0,
       globalFrame,
       validPaths,
       rootMetadataInStateRef,
@@ -1036,7 +1035,6 @@ function walkSceneInner(
 // Walks through the DOM producing the structure and values from within.
 function walkElements(
   element: Node,
-  depth: number,
   parentPoint: CanvasPoint,
   validPaths: Array<ElementPath>,
   rootMetadataInStateRef: React.MutableRefObject<ReadonlyArray<ElementInstanceMetadata>>,
@@ -1109,7 +1107,6 @@ function walkElements(
           cachedPaths,
         } = walkElements(
           child,
-          depth + 1,
           globalFrame,
           validPaths,
           rootMetadataInStateRef,
