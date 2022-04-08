@@ -346,11 +346,16 @@ export interface FloatingInsertMenuStateWrap {
   insertMenuMode: 'wrap'
 }
 
+export interface FloatingInsertMenuStateEscapeHatch {
+  insertMenuMode: 'escapeHatch'
+}
+
 export type FloatingInsertMenuState =
   | FloatingInsertMenuStateClosed
   | FloatingInsertMenuStateInsert
   | FloatingInsertMenuStateConvert
   | FloatingInsertMenuStateWrap
+  | FloatingInsertMenuStateEscapeHatch
 
 export interface ResizeOptions {
   propertyTargetOptions: Array<LayoutTargetableProp>

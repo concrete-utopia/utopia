@@ -14,6 +14,7 @@ import { getControlStyles } from '../../../uuiui-deps'
 import { useEditorState, useRefEditorState } from '../../editor/store/store-hook'
 
 import {
+  Button,
   FlexColumn,
   FlexRow,
   OnClickOutsideHOC,
@@ -35,6 +36,7 @@ import {
   updateJSXElementName,
   wrapInView,
   wrapInElement,
+  convertSelectionToAbsolute,
 } from '../../editor/actions/action-creators'
 import {
   elementOnlyHasSingleTextChild,
@@ -351,7 +353,9 @@ const CheckboxRow = React.memo<React.PropsWithChildren<CheckboxRowProps>>(
   },
 )
 
-function getMenuTitle(insertMenuMode: 'closed' | 'insert' | 'convert' | 'wrap'): string {
+function getMenuTitle(
+  insertMenuMode: 'closed' | 'insert' | 'convert' | 'wrap' | 'escapeHatch',
+): string {
   switch (insertMenuMode) {
     case 'closed':
       return ''
@@ -361,6 +365,8 @@ function getMenuTitle(insertMenuMode: 'closed' | 'insert' | 'convert' | 'wrap'):
       return 'Add Element'
     case 'wrap':
       return 'Wrap in'
+    case 'escapeHatch':
+      return 'Convert to absolute'
   }
 }
 
@@ -514,6 +520,8 @@ export var FloatingMenu = React.memo(() => {
           }
           case 'closed':
             break
+          case 'escapeHatch':
+            break
           default:
             const _exhaustiveCheck: never = floatingMenuState
             throw new Error(`Unhandled type ${JSON.stringify(floatingMenuState)}`)
@@ -545,6 +553,92 @@ export var FloatingMenu = React.memo(() => {
       [dispatch, onChange],
     ),
   )
+
+  const convertToAbsolute = React.useCallback(() => {
+    dispatch([convertSelectionToAbsolute(), closeFloatingInsertMenu()])
+  }, [dispatch])
+
+  const close = React.useCallback(() => {
+    dispatch([closeFloatingInsertMenu()])
+  }, [dispatch])
+
+  if (floatingMenuState.insertMenuMode === 'escapeHatch') {
+    return (
+      <div
+        style={{
+          position: 'relative',
+          fontSize: 11,
+        }}
+      >
+        <FlexColumn
+          style={{
+            ...UtopiaStyles.popup,
+            width: 380,
+            height: 150,
+            overflow: 'hidden',
+          }}
+        >
+          <div
+            style={{
+              color: colorTheme.primary.value,
+              display: 'flex',
+              paddingLeft: 9,
+              paddingRight: 8,
+              height: UtopiaTheme.layout.rowHeight.normal,
+              alignItems: 'center',
+            }}
+          >
+            <b>{menuTitle}</b>
+          </div>
+          <FlexColumn>
+            <FlexRow
+              css={{
+                height: UtopiaTheme.layout.rowHeight.smaller,
+                paddingLeft: 8,
+                paddingRight: 8,
+                paddingTop: 15,
+                borderTop: `1px solid ${colorTheme.border1.value}`,
+              }}
+            >
+              Click continue to convert the selected elements to absolute layout
+            </FlexRow>
+            <FlexRow
+              css={{
+                height: UtopiaTheme.layout.rowHeight.smaller,
+                paddingLeft: 8,
+                paddingRight: 8,
+                justifyContent: 'space-evenly',
+                marginTop: 25,
+              }}
+            >
+              <Button
+                primary
+                highlight
+                style={{
+                  padding: 10,
+                  margin: 10,
+                }}
+                onClick={convertToAbsolute}
+              >
+                Continue
+              </Button>
+              <Button
+                primary
+                highlight
+                style={{
+                  padding: 10,
+                  margin: 10,
+                }}
+                onClick={close}
+              >
+                Cancel
+              </Button>
+            </FlexRow>
+          </FlexColumn>
+        </FlexColumn>
+      </div>
+    )
+  }
 
   return (
     <div

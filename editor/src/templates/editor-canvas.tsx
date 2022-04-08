@@ -1095,6 +1095,22 @@ export class EditorCanvas extends React.Component<EditorCanvasProps> {
         this.props.editor.canvas.interactionSession != null &&
         this.props.editor.canvas.interactionSession.interactionData.type === 'DRAG'
       ) {
+        if (this.props.editor.floatingInsertMenu.insertMenuMode === 'closed') {
+          const needsConversion = this.props.editor.selectedViews.every((element) => {
+            const elementMetadata = MetadataUtils.findElementByElementPath(
+              this.props.editor.jsxMetadata,
+              element,
+            )
+            return elementMetadata?.specialSizeMeasurements.position === 'static'
+          })
+          if (needsConversion) {
+            this.props.dispatch([
+              EditorActions.openFloatingInsertMenu({ insertMenuMode: 'escapeHatch' }),
+            ])
+            return
+          }
+        }
+
         const dragStart = this.props.editor.canvas.interactionSession.interactionData.dragStart
 
         const newDrag = roundPointForScale(
