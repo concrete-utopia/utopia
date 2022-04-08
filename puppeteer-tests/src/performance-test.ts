@@ -172,9 +172,15 @@ export const testPerformanceInner = async function (url: string): Promise<Perfor
     frameResultSuccess,
     EmptyResult,
   )
-  const absoluteMoveResult = await retryPageCalls(
+  const absoluteMoveLargeResult = await retryPageCalls(
     url,
-    testAbsoluteMovePerformance,
+    testAbsoluteMovePerformanceLarge,
+    frameArraySuccess,
+    [],
+  )
+  const absoluteMoveSmallResult = await retryPageCalls(
+    url,
+    testAbsoluteMovePerformanceSmall,
     frameArraySuccess,
     [],
   )
@@ -184,7 +190,8 @@ export const testPerformanceInner = async function (url: string): Promise<Perfor
     ...selectionResult,
     scrollResult,
     resizeResult,
-    ...absoluteMoveResult,
+    ...absoluteMoveLargeResult,
+    ...absoluteMoveSmallResult,
   ]
   const summaryImage = await uploadSummaryImage(messageParts)
 
@@ -345,21 +352,21 @@ export const testSelectionPerformance = async function (
   ]
 }
 
-export const testAbsoluteMovePerformance = async function (
+export const testAbsoluteMovePerformanceLarge = async function (
   page: puppeteer.Page,
 ): Promise<Array<FrameResult>> {
-  console.log('Test Absolute Move Performance')
-  await page.waitForXPath("//a[contains(., 'PAM')]")
+  console.log('Test Absolute Move Performance (Large)')
+  await page.waitForXPath("//a[contains(., 'PAML')]")
   // we run it twice without measurements to warm up the environment
   await clickOnce(
     page,
-    "//a[contains(., 'PAM')]",
+    "//a[contains(., 'PAML')]",
     'ABSOLUTE_MOVE_TEST_FINISHED',
     'ABSOLUTE_MOVE_TEST_ERROR',
   )
   await clickOnce(
     page,
-    "//a[contains(., 'PAM')]",
+    "//a[contains(., 'PAML')]",
     'ABSOLUTE_MOVE_TEST_FINISHED',
     'ABSOLUTE_MOVE_TEST_ERROR',
   )
@@ -368,15 +375,60 @@ export const testAbsoluteMovePerformance = async function (
   await page.tracing.start({ categories: ['blink.user_timing'], path: 'trace.json' })
   const succeeded = await clickOnce(
     page,
-    "//a[contains(., 'PAM')]",
+    "//a[contains(., 'PAML')]",
     'ABSOLUTE_MOVE_TEST_FINISHED',
     'ABSOLUTE_MOVE_TEST_ERROR',
   )
   await page.tracing.stop()
   const traceJson = await loadTraceEventsJSON()
   return [
-    getFrameData(traceJson, 'absolute_move_interaction', 'Absolute Move (Interaction)', succeeded),
-    getFrameData(traceJson, 'absolute_move_move', 'Absolute Move (Just Move)', succeeded),
+    getFrameData(
+      traceJson,
+      'absolute_move_interaction',
+      'Absolute Move (Interaction, Large)',
+      succeeded,
+    ),
+    getFrameData(traceJson, 'absolute_move_move', 'Absolute Move (Just Move, Large)', succeeded),
+  ]
+}
+
+export const testAbsoluteMovePerformanceSmall = async function (
+  page: puppeteer.Page,
+): Promise<Array<FrameResult>> {
+  console.log('Test Absolute Move Performance (Small)')
+  await page.waitForXPath("//a[contains(., 'PAMS')]")
+  // we run it twice without measurements to warm up the environment
+  await clickOnce(
+    page,
+    "//a[contains(., 'PAMS')]",
+    'ABSOLUTE_MOVE_TEST_FINISHED',
+    'ABSOLUTE_MOVE_TEST_ERROR',
+  )
+  await clickOnce(
+    page,
+    "//a[contains(., 'PAMS')]",
+    'ABSOLUTE_MOVE_TEST_FINISHED',
+    'ABSOLUTE_MOVE_TEST_ERROR',
+  )
+
+  // and then we run the test for a third time, this time running tracing
+  await page.tracing.start({ categories: ['blink.user_timing'], path: 'trace.json' })
+  const succeeded = await clickOnce(
+    page,
+    "//a[contains(., 'PAMS')]",
+    'ABSOLUTE_MOVE_TEST_FINISHED',
+    'ABSOLUTE_MOVE_TEST_ERROR',
+  )
+  await page.tracing.stop()
+  const traceJson = await loadTraceEventsJSON()
+  return [
+    getFrameData(
+      traceJson,
+      'absolute_move_interaction',
+      'Absolute Move (Interaction, Small)',
+      succeeded,
+    ),
+    getFrameData(traceJson, 'absolute_move_move', 'Absolute Move (Just Move, Small)', succeeded),
   ]
 }
 
