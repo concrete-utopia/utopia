@@ -455,10 +455,8 @@ export function useDomWalker(
       const { metadata, cachedPaths } = walkCanvasRootFragment(
         canvasRootContainer,
         rootMetadataInStateRef,
-        invalidatedPaths as ReadonlySet<string>, // this is not the nicest type here, but it should be fine for now :)
-        updateInvalidatedPaths,
-        invalidatedScenes as ReadonlySet<string>,
-        updateInvalidatedScenes,
+        invalidatedPaths, // this is not the nicest type here, but it should be fine for now :)
+        invalidatedScenes,
         invalidatedPathsForStylesheetCacheRef,
         props.selectedViews,
         !initComplete,
@@ -569,8 +567,7 @@ function collectMetadata(
   allUnfilteredChildrenPaths: Array<ElementPath>,
   scale: number,
   containerRectLazy: () => CanvasRectangle,
-  invalidatedPaths: ReadonlySet<string>,
-  updateInvalidatedPaths: UpdateMutableCallbackNoInvalidate<Set<string>>,
+  invalidatedPaths: Set<string>,
   invalidatedPathsForStylesheetCacheRef: React.MutableRefObject<Set<string>>,
   rootMetadataInStateRef: React.MutableRefObject<ReadonlyArray<ElementInstanceMetadata>>,
   invalidated: boolean,
@@ -601,11 +598,7 @@ function collectMetadata(
     )
 
     const collectedMetadata = pathsForElement.map((path) => {
-      updateInvalidatedPaths((current) => {
-        // sneaky mutation to improve performance
-        ;(current as Set<string>).delete(EP.toString(path))
-        return current
-      }, 'do-not-invalidate')
+      invalidatedPaths.delete(EP.toString(path)) // mutation!
 
       return elementInstanceMetadata(
         path,
@@ -648,7 +641,6 @@ function collectMetadata(
         scale,
         containerRectLazy,
         invalidatedPaths,
-        updateInvalidatedPaths,
         invalidatedPathsForStylesheetCacheRef,
         rootMetadataInStateRef,
         true,
@@ -824,10 +816,8 @@ function globalFrameForElement(
 function walkCanvasRootFragment(
   canvasRoot: HTMLElement,
   rootMetadataInStateRef: React.MutableRefObject<ReadonlyArray<ElementInstanceMetadata>>,
-  invalidatedPaths: ReadonlySet<string>,
-  updateInvalidatedPaths: UpdateMutableCallbackNoInvalidate<Set<string>>,
-  invalidatedScenes: ReadonlySet<string>,
-  updateInvalidatedScenes: UpdateMutableCallbackNoInvalidate<Set<string>>,
+  invalidatedPaths: Set<string>,
+  invalidatedScenes: Set<string>,
   invalidatedPathsForStylesheetCacheRef: React.MutableRefObject<Set<string>>,
   selectedViews: Array<ElementPath>,
   invalidated: boolean,
@@ -869,9 +859,7 @@ function walkCanvasRootFragment(
       validPaths,
       rootMetadataInStateRef,
       invalidatedPaths,
-      updateInvalidatedPaths,
       invalidatedScenes,
-      updateInvalidatedScenes,
       invalidatedPathsForStylesheetCacheRef,
       selectedViews,
       invalidated,
@@ -904,10 +892,8 @@ function walkScene(
   scene: HTMLElement,
   validPaths: Array<ElementPath>,
   rootMetadataInStateRef: React.MutableRefObject<ReadonlyArray<ElementInstanceMetadata>>,
-  invalidatedPaths: ReadonlySet<string>,
-  updateInvalidatedPaths: UpdateMutableCallbackNoInvalidate<Set<string>>,
-  invalidatedScenes: ReadonlySet<string>,
-  updateInvalidatedScenes: UpdateMutableCallbackNoInvalidate<Set<string>>,
+  invalidatedPaths: Set<string>,
+  invalidatedScenes: Set<string>,
   invalidatedPathsForStylesheetCacheRef: React.MutableRefObject<Set<string>>,
   selectedViews: Array<ElementPath>,
   invalidated: boolean,
@@ -930,20 +916,14 @@ function walkScene(
         invalidated ||
         (ObserversAvailable && invalidatedScenes.size > 0 && invalidatedScenes.has(sceneID))
 
-      updateInvalidatedScenes((current) => {
-        // mutating here and skipping invalidation
-        current.delete(sceneID)
-        return current
-      }, 'do-not-invalidate')
+      invalidatedScenes.delete(sceneID) // mutation!
 
       const { childPaths: rootElements, rootMetadata, cachedPaths } = walkSceneInner(
         scene,
         validPaths,
         rootMetadataInStateRef,
         invalidatedPaths,
-        updateInvalidatedPaths,
         invalidatedScenes,
-        updateInvalidatedScenes,
         invalidatedPathsForStylesheetCacheRef,
         selectedViews,
         invalidatedScene,
@@ -961,7 +941,6 @@ function walkScene(
         scale,
         containerRectLazy,
         invalidatedPaths,
-        updateInvalidatedPaths,
         invalidatedPathsForStylesheetCacheRef,
         rootMetadataInStateRef,
         invalidatedScene,
@@ -981,10 +960,8 @@ function walkSceneInner(
   scene: HTMLElement,
   validPaths: Array<ElementPath>,
   rootMetadataInStateRef: React.MutableRefObject<ReadonlyArray<ElementInstanceMetadata>>,
-  invalidatedPaths: ReadonlySet<string>,
-  updateInvalidatedPaths: UpdateMutableCallbackNoInvalidate<Set<string>>,
-  invalidatedScenes: ReadonlySet<string>,
-  updateInvalidatedScenes: UpdateMutableCallbackNoInvalidate<Set<string>>,
+  invalidatedPaths: Set<string>,
+  invalidatedScenes: Set<string>,
   invalidatedPathsForStylesheetCacheRef: React.MutableRefObject<Set<string>>,
   selectedViews: Array<ElementPath>,
   invalidated: boolean,
@@ -1009,9 +986,7 @@ function walkSceneInner(
       validPaths,
       rootMetadataInStateRef,
       invalidatedPaths,
-      updateInvalidatedPaths,
       invalidatedScenes,
-      updateInvalidatedScenes,
       invalidatedPathsForStylesheetCacheRef,
       selectedViews,
       invalidated,
@@ -1038,10 +1013,8 @@ function walkElements(
   parentPoint: CanvasPoint,
   validPaths: Array<ElementPath>,
   rootMetadataInStateRef: React.MutableRefObject<ReadonlyArray<ElementInstanceMetadata>>,
-  invalidatedPaths: ReadonlySet<string>,
-  updateInvalidatedPaths: UpdateMutableCallbackNoInvalidate<Set<string>>,
-  invalidatedScenes: ReadonlySet<string>,
-  updateInvalidatedScenes: UpdateMutableCallbackNoInvalidate<Set<string>>,
+  invalidatedPaths: Set<string>,
+  invalidatedScenes: Set<string>,
   invalidatedPathsForStylesheetCacheRef: React.MutableRefObject<Set<string>>,
   selectedViews: Array<ElementPath>,
   invalidated: boolean,
@@ -1060,9 +1033,7 @@ function walkElements(
       validPaths,
       rootMetadataInStateRef,
       invalidatedPaths,
-      updateInvalidatedPaths,
       invalidatedScenes,
-      updateInvalidatedScenes,
       invalidatedPathsForStylesheetCacheRef,
       selectedViews,
       invalidated,
@@ -1111,9 +1082,7 @@ function walkElements(
           validPaths,
           rootMetadataInStateRef,
           invalidatedPaths,
-          updateInvalidatedPaths,
           invalidatedScenes,
-          updateInvalidatedScenes,
           invalidatedPathsForStylesheetCacheRef,
           selectedViews,
           invalidated,
@@ -1138,7 +1107,6 @@ function walkElements(
       scale,
       containerRectLazy,
       invalidatedPaths,
-      updateInvalidatedPaths,
       invalidatedPathsForStylesheetCacheRef,
       rootMetadataInStateRef,
       invalidated,
