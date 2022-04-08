@@ -454,7 +454,6 @@ export function useDomWalker(
       // because the fragment is invisible in the DOM.
       const { metadata, cachedPaths } = walkCanvasRootFragment(
         canvasRootContainer,
-        0,
         rootMetadataInStateRef,
         invalidatedPaths as ReadonlySet<string>, // this is not the nicest type here, but it should be fine for now :)
         updateInvalidatedPaths,
@@ -824,7 +823,6 @@ function globalFrameForElement(
 
 function walkCanvasRootFragment(
   canvasRoot: HTMLElement,
-  index: number,
   rootMetadataInStateRef: React.MutableRefObject<ReadonlyArray<ElementInstanceMetadata>>,
   invalidatedPaths: ReadonlySet<string>,
   updateInvalidatedPaths: UpdateMutableCallbackNoInvalidate<Set<string>>,
@@ -868,7 +866,6 @@ function walkCanvasRootFragment(
   } else {
     const { childPaths: rootElements, rootMetadata, cachedPaths } = walkSceneInner(
       canvasRoot,
-      index,
       validPaths,
       rootMetadataInStateRef,
       invalidatedPaths,
@@ -905,7 +902,6 @@ function walkCanvasRootFragment(
 
 function walkScene(
   scene: HTMLElement,
-  index: number,
   validPaths: Array<ElementPath>,
   rootMetadataInStateRef: React.MutableRefObject<ReadonlyArray<ElementInstanceMetadata>>,
   invalidatedPaths: ReadonlySet<string>,
@@ -942,7 +938,6 @@ function walkScene(
 
       const { childPaths: rootElements, rootMetadata, cachedPaths } = walkSceneInner(
         scene,
-        index,
         validPaths,
         rootMetadataInStateRef,
         invalidatedPaths,
@@ -984,7 +979,6 @@ function walkScene(
 
 function walkSceneInner(
   scene: HTMLElement,
-  index: number,
   validPaths: Array<ElementPath>,
   rootMetadataInStateRef: React.MutableRefObject<ReadonlyArray<ElementInstanceMetadata>>,
   invalidatedPaths: ReadonlySet<string>,
@@ -1011,7 +1005,6 @@ function walkSceneInner(
   scene.childNodes.forEach((childNode) => {
     const { childPaths: childNodePaths, rootMetadata, cachedPaths } = walkElements(
       childNode,
-      index,
       0,
       globalFrame,
       validPaths,
@@ -1043,7 +1036,6 @@ function walkSceneInner(
 // Walks through the DOM producing the structure and values from within.
 function walkElements(
   element: Node,
-  index: number,
   depth: number,
   parentPoint: CanvasPoint,
   validPaths: Array<ElementPath>,
@@ -1067,7 +1059,6 @@ function walkElements(
     // we found a nested scene, restart the walk
     const { metadata, cachedPaths: cachedPaths } = walkScene(
       element,
-      index,
       validPaths,
       rootMetadataInStateRef,
       invalidatedPaths,
@@ -1111,14 +1102,13 @@ function walkElements(
     let rootMetadataAccumulator: ReadonlyArray<ElementInstanceMetadata> = []
     let cachedPathsAccumulator: Array<ElementPath> = []
     if (traverseChildren) {
-      element.childNodes.forEach((child, childIndex) => {
+      element.childNodes.forEach((child) => {
         const {
           childPaths: childNodePaths,
           rootMetadata: rootMetadataInner,
           cachedPaths,
         } = walkElements(
           child,
-          childIndex,
           depth + 1,
           globalFrame,
           validPaths,
