@@ -115,7 +115,7 @@ function DomWalkerWrapper(props: UiJsxCanvasPropsWithErrorCallback) {
     (store) => store.editor.selectedViews,
     'DomWalkerWrapper selectedViews',
   )
-  let [updateInvalidatedPaths, updateInvalidatedScenes, containerRef] = useDomWalker({
+  let [updateInvalidatedPaths, updateInvalidatedScenes] = useDomWalker({
     selectedViews: selectedViews,
     canvasInteractionHappening: props.transientFilesState != null,
     mountCount: props.mountCount,
@@ -128,7 +128,7 @@ function DomWalkerWrapper(props: UiJsxCanvasPropsWithErrorCallback) {
   return (
     <DomWalkerInvalidatePathsCtxAtom.Provider value={updateInvalidatedPaths}>
       <DomWalkerInvalidateScenesCtxAtom.Provider value={updateInvalidatedScenes}>
-        <UiJsxCanvas {...props} ref={containerRef} />
+        <UiJsxCanvas {...props} />
       </DomWalkerInvalidateScenesCtxAtom.Provider>
     </DomWalkerInvalidatePathsCtxAtom.Provider>
   )

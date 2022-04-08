@@ -425,40 +425,35 @@ function mergeFragmentMetadata(
 
 export function useDomWalker(
   props: DomWalkerProps,
-): [
-  UpdateMutableCallback<Set<string>>,
-  UpdateMutableCallback<Set<string>>,
-  React.Ref<HTMLDivElement>,
-] {
-  const containerRef = React.useRef<HTMLDivElement>(null)
-
+): [UpdateMutableCallback<Set<string>>, UpdateMutableCallback<Set<string>>] {
   const fireThrottledCallback = useThrottledCallback(() => {
     const LogDomWalkerPerformance =
       isFeatureEnabled('Debug mode – Performance Marks') && PERFORMANCE_MARKS_ALLOWED
 
-    if (containerRef.current != null) {
+    const canvasRootContainer = document.getElementById(CanvasContainerID)
+
+    if (canvasRootContainer != null) {
       if (LogDomWalkerPerformance) {
         performance.mark('DOM_WALKER_START')
       }
       // Get some base values relating to the div this component creates.
-      const refOfContainer = containerRef.current
       if (ObserversAvailable && resizeObserver != null && mutationObserver != null) {
         Array.from(document.querySelectorAll(`#${CanvasContainerID} *`)).map((elem) => {
           resizeObserver.observe(elem)
         })
-        mutationObserver.observe(refOfContainer, MutationObserverConfig)
+        mutationObserver.observe(canvasRootContainer, MutationObserverConfig)
       }
 
       // getCanvasRectangleFromElement is costly, so I made it lazy. we only need the value inside globalFrameForElement
       const containerRect = lazyValue(() => {
-        return getCanvasRectangleFromElement(refOfContainer, props.scale)
+        return getCanvasRectangleFromElement(canvasRootContainer, props.scale)
       })
 
       // This assumes that the canvas root is rendering a Storyboard fragment.
       // The necessary validPaths and the root fragment's template path comes from props,
       // because the fragment is invisible in the DOM.
       const { metadata, cachedPaths } = walkCanvasRootFragment(
-        refOfContainer,
+        canvasRootContainer,
         0,
         rootMetadataInStateRef,
         invalidatedPaths as ReadonlySet<string>, // this is not the nicest type here, but it should be fine for now :)
@@ -532,7 +527,7 @@ export function useDomWalker(
     fireThrottledCallback('immediate')
   })
 
-  return [updateInvalidatedPaths, updateInvalidatedScenes, containerRef]
+  return [updateInvalidatedPaths, updateInvalidatedScenes]
 }
 
 function collectMetadataForElement(
