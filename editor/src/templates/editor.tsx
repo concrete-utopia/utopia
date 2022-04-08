@@ -53,6 +53,7 @@ import {
   patchedStoreFromFullStore,
 } from '../components/editor/store/editor-state'
 import {
+  CanvasStateContext,
   EditorStateContext,
   UtopiaStoreAPI,
   UtopiaStoreHook,
@@ -106,6 +107,8 @@ export class Editor {
   utopiaStoreHook: UtopiaStoreHook
   utopiaStoreApi: UtopiaStoreAPI
   updateStore: (partialState: EditorStorePatched) => void
+  canvasStore: UtopiaStoreHook & UtopiaStoreAPI
+  updateCanvasStore: (partialState: EditorStorePatched) => void
   spyCollector: UiJsxCanvasContextData = emptyUiJsxCanvasContextData()
 
   constructor() {
@@ -126,7 +129,12 @@ export class Editor {
     const watchdogWorker = new RealWatchdogWorker()
 
     const renderRootEditor = () =>
-      renderRootComponent(this.utopiaStoreHook, this.utopiaStoreApi, this.spyCollector)
+      renderRootComponent(
+        this.utopiaStoreHook,
+        this.utopiaStoreApi,
+        this.canvasStore,
+        this.spyCollector,
+      )
 
     const workers = new UtopiaTsWorkersImplementation(
       new RealParserPrinterWorker(),
@@ -168,9 +176,19 @@ export class Editor {
       Mutate<StoreApi<EditorStorePatched>, [['zustand/subscribeWithSelector', never]]>
     >(subscribeWithSelector((set) => patchedStoreFromFullStore(this.storedState)))
 
+    const canvasStoreHook = create<
+      EditorStorePatched,
+      SetState<EditorStorePatched>,
+      GetState<EditorStorePatched>,
+      Mutate<StoreApi<EditorStorePatched>, [['zustand/subscribeWithSelector', never]]>
+    >(subscribeWithSelector((set) => patchedStoreFromFullStore(this.storedState)))
+
     this.utopiaStoreHook = storeHook
     this.updateStore = storeHook.setState
     this.utopiaStoreApi = storeHook
+
+    this.canvasStore = canvasStoreHook
+    this.updateCanvasStore = canvasStoreHook.setState
 
     renderRootEditor()
 
@@ -304,7 +322,12 @@ export class Editor {
 
       if (!result.nothingChanged) {
         // we update the zustand store with the new editor state. this will trigger a re-render in the EditorComponent
+        performance.mark(`update canvas ${dispatchedActions[0].action}`)
+        this.updateCanvasStore(patchedStoreFromFullStore(result))
+        performance.measure(`Update Canvas`, `update canvas ${dispatchedActions[0].action}`)
+        performance.mark(`update editor ${dispatchedActions[0].action}`)
         this.updateStore(patchedStoreFromFullStore(result))
+        performance.measure(`Update Editor`, `update editor ${dispatchedActions[0].action}`)
       }
       return { entireUpdateFinished: result.entireUpdateFinished }
     }
@@ -323,13 +346,16 @@ export class Editor {
 export const EditorRoot: React.FunctionComponent<{
   api: UtopiaStoreAPI
   useStore: UtopiaStoreHook
+  canvasStore: UtopiaStoreAPI & UtopiaStoreHook
   spyCollector: UiJsxCanvasContextData
-}> = ({ api, useStore, spyCollector }) => {
+}> = ({ api, useStore, canvasStore, spyCollector }) => {
   return (
     <EditorStateContext.Provider value={{ api, useStore }}>
-      <UiJsxCanvasCtxAtom.Provider value={spyCollector}>
-        <EditorComponent />
-      </UiJsxCanvasCtxAtom.Provider>
+      <CanvasStateContext.Provider value={{ api: canvasStore, useStore: canvasStore }}>
+        <UiJsxCanvasCtxAtom.Provider value={spyCollector}>
+          <EditorComponent />
+        </UiJsxCanvasCtxAtom.Provider>
+      </CanvasStateContext.Provider>
     </EditorStateContext.Provider>
   )
 }
@@ -339,15 +365,24 @@ EditorRoot.displayName = 'Utopia Editor Root'
 export const HotRoot: React.FunctionComponent<{
   api: UtopiaStoreAPI
   useStore: UtopiaStoreHook
+  canvasStore: UtopiaStoreAPI & UtopiaStoreHook
   spyCollector: UiJsxCanvasContextData
-}> = hot(({ api, useStore, spyCollector }) => {
-  return <EditorRoot api={api} useStore={useStore} spyCollector={spyCollector} />
+}> = hot(({ api, useStore, canvasStore, spyCollector }) => {
+  return (
+    <EditorRoot
+      api={api}
+      useStore={useStore}
+      spyCollector={spyCollector}
+      canvasStore={canvasStore}
+    />
+  )
 })
 HotRoot.displayName = 'Utopia Editor Hot Root'
 
 async function renderRootComponent(
   useStore: UtopiaStoreHook,
   api: UtopiaStoreAPI,
+  canvasStore: UtopiaStoreAPI & UtopiaStoreHook,
   spyCollector: UiJsxCanvasContextData,
 ): Promise<void> {
   return triggerHashedAssetsUpdate().then(() => {
@@ -357,12 +392,22 @@ async function renderRootComponent(
     if (rootElement != null) {
       if (process.env.HOT_MODE) {
         ReactDOM.render(
-          <HotRoot api={api} useStore={useStore} spyCollector={spyCollector} />,
+          <HotRoot
+            api={api}
+            useStore={useStore}
+            spyCollector={spyCollector}
+            canvasStore={canvasStore}
+          />,
           rootElement,
         )
       } else {
         ReactDOM.render(
-          <EditorRoot api={api} useStore={useStore} spyCollector={spyCollector} />,
+          <EditorRoot
+            api={api}
+            useStore={useStore}
+            spyCollector={spyCollector}
+            canvasStore={canvasStore}
+          />,
           rootElement,
         )
       }

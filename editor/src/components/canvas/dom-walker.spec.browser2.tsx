@@ -95,7 +95,14 @@ async function renderTestEditorWithCode(appUiJsFileCode: string) {
     Mutate<StoreApi<EditorStorePatched>, [['zustand/subscribeWithSelector', never]]>
   >(subscribeWithSelector((set) => patchedStoreFromFullStore(editorStore)))
 
-  render(<EditorRoot api={storeHook} useStore={storeHook} spyCollector={spyCollector} />)
+  render(
+    <EditorRoot
+      api={storeHook}
+      useStore={storeHook}
+      canvasStore={storeHook} // TODO create canvas store
+      spyCollector={spyCollector}
+    />,
+  )
 
   await act(async () => {
     await load(

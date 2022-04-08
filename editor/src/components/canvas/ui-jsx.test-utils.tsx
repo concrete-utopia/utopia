@@ -262,7 +262,12 @@ export async function renderTestEditorWithModel(
       }}
     >
       <FailJestOnCanvasError />
-      <EditorRoot api={storeHook} useStore={storeHook} spyCollector={spyCollector} />
+      <EditorRoot
+        api={storeHook}
+        useStore={storeHook}
+        canvasStore={storeHook} // TODO create canvas store for tests
+        spyCollector={spyCollector}
+      />
     </React.Profiler>,
   )
 
