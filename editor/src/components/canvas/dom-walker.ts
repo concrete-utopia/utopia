@@ -291,7 +291,7 @@ function useInvalidateScenesWhenSelectedViewChanges(
 function useInvalidateInitCompleteOnMountCount(
   mountCount: number,
   domWalkerInvalidateCount: number,
-): [boolean, () => void] {
+): [React.RefObject<boolean>, () => void] {
   const initCompleteRef = React.useRef<boolean>(false)
   const previousMountCountRef = React.useRef<number>(mountCount)
   const previousDomWalkerInvalidateCountRef = React.useRef<number>(domWalkerInvalidateCount)
@@ -310,7 +310,7 @@ function useInvalidateInitCompleteOnMountCount(
     previousDomWalkerInvalidateCountRef.current = domWalkerInvalidateCount
   }
 
-  return [initCompleteRef.current, setInitComplete]
+  return [initCompleteRef, setInitComplete]
 }
 type ValueOrUpdater<S> = S | ((prevState: S) => S)
 // todo move to file
@@ -471,7 +471,7 @@ export function useDomWalker(
         updateInvalidatedScenes,
         invalidatedPathsForStylesheetCacheRef,
         props.selectedViews,
-        !initComplete,
+        !initComplete.current,
         props.scale,
         containerRect,
         [...props.additionalElementsToUpdate, ...props.selectedViews],
