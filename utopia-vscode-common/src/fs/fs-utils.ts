@@ -368,6 +368,7 @@ function updateMTime(node: FSNode): FSNode {
 
 async function markModified(nodeWithPath: FSNodeWithPath): Promise<void> {
   await setItem(nodeWithPath.path, updateMTime(nodeWithPath.node))
+  resetPollingFrequency()
 }
 
 async function uncheckedMove(oldPath: string, newPath: string): Promise<void> {
@@ -419,7 +420,27 @@ interface WatchConfig {
 let watchTimeout: number | null = null
 let watchedPaths: Map<string, WatchConfig> = new Map()
 let lastModifiedTSs: Map<string, number> = new Map()
-const POLLING_TIMEOUT = 100
+
+const MIN_POLLING_TIMEOUT = 128
+const MAX_POLLING_TIMEOUT = MIN_POLLING_TIMEOUT * Math.pow(2, 2) // Max out at 512ms
+let POLLING_TIMEOUT = MIN_POLLING_TIMEOUT
+
+let reducePollingAttemptsCount = 0
+
+function reducePollingFrequency() {
+  if (POLLING_TIMEOUT < MAX_POLLING_TIMEOUT) {
+    reducePollingAttemptsCount++
+    if (reducePollingAttemptsCount >= 5) {
+      reducePollingAttemptsCount = 0
+      POLLING_TIMEOUT = POLLING_TIMEOUT + MIN_POLLING_TIMEOUT
+    }
+  }
+}
+
+function resetPollingFrequency() {
+  reducePollingAttemptsCount = 0
+  POLLING_TIMEOUT = MIN_POLLING_TIMEOUT
+}
 
 function watchPath(path: string, config: WatchConfig) {
   watchedPaths.set(path, config)
@@ -430,7 +451,9 @@ function isFSUnavailableError(e: unknown): boolean {
   return (e as any)?.name === 'FS_UNAVAILABLE'
 }
 
-async function onPolledWatch(path: string, config: WatchConfig): Promise<void> {
+type FileModifiedStatus = 'modified' | 'not-modified' | 'unknown'
+
+async function onPolledWatch(path: string, config: WatchConfig): Promise<FileModifiedStatus> {
   const { recursive, onCreated, onModified, onDeleted } = config
 
   try {
@@ -439,6 +462,7 @@ async function onPolledWatch(path: string, config: WatchConfig): Promise<void> {
       watchedPaths.delete(path)
       lastModifiedTSs.delete(path)
       onDeleted(path)
+      return 'modified'
     } else {
       const stats = fsStatForNode(node)
 
@@ -464,6 +488,9 @@ async function onPolledWatch(path: string, config: WatchConfig): Promise<void> {
         }
 
         lastModifiedTSs.set(path, modifiedTS)
+        return 'modified'
+      } else {
+        return 'not-modified'
       }
     }
   } catch (e) {
@@ -474,16 +501,35 @@ async function onPolledWatch(path: string, config: WatchConfig): Promise<void> {
       throw e
     }
     // Something was changed mid-poll, likely the file or its parent was deleted. We'll catch it on the next poll.
+    return 'unknown'
   }
 }
 
 async function polledWatch(): Promise<void> {
-  let promises: Array<Promise<void>> = []
+  let promises: Array<Promise<FileModifiedStatus>> = []
   watchedPaths.forEach((config, path) => {
     promises.push(onPolledWatch(path, config))
   })
 
-  await Promise.all(promises)
+  const results = await Promise.all(promises)
+
+  let shouldReducePollingFrequency = true
+  for (var i = 0, len = results.length; i < len; i++) {
+    if (i in results) {
+      const fileModifiedStatus = results[i]
+      if (fileModifiedStatus === 'modified') {
+        resetPollingFrequency()
+        shouldReducePollingFrequency = false
+        return
+      } else if (fileModifiedStatus === 'unknown') {
+        shouldReducePollingFrequency = false
+      }
+    }
+  }
+
+  if (shouldReducePollingFrequency) {
+    reducePollingFrequency()
+  }
 }
 
 export async function watch(

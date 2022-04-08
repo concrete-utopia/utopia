@@ -79,77 +79,6 @@ function defer() {
 
 const ResizeButtonXPath = "//a[contains(., 'P R')]"
 
-function calculatePi(accuracy: number): number {
-  // Uses the Nilakantha series
-  let i = 2
-  let j = 3
-  let k = 4
-  let count = 0
-  let result = 3
-
-  while (count < accuracy) {
-    const nextAdjustment = 4 / (i * j * k)
-    if (count % 2 === 0) {
-      result += nextAdjustment
-    } else {
-      result -= nextAdjustment
-    }
-
-    i += 2
-    j += 2
-    k += 2
-
-    count++
-  }
-
-  return result
-}
-
-function timeBasicCalc(): FrameResult {
-  console.log('Test Basic Calc')
-  let times: Array<number> = []
-
-  for (let i = 0; i < 100; i++) {
-    const start = Date.now()
-    calculatePi(7500000)
-    const end = Date.now()
-    times.push(end - start)
-  }
-
-  const sortedTimes = times.sort((a, b) => a - b)
-  const totalTime = sortedTimes.reduce((sum, next) => sum + next, 0)
-
-  const analytics = {
-    frameMin: sortedTimes[0]!,
-    frameMax: sortedTimes[sortedTimes.length - 1]!,
-    frameAvg: Number((totalTime / sortedTimes.length).toFixed()),
-    percentile25: sortedTimes[Math.floor(sortedTimes.length * 0.25)],
-    percentile50: sortedTimes[Math.floor(sortedTimes.length * 0.5)],
-    percentile75: sortedTimes[Math.floor(sortedTimes.length * 0.75)],
-  }
-  return {
-    title: 'Calc Pi',
-    analytics: analytics,
-    timeSeries: sortedTimes,
-    succeeded: true,
-  }
-}
-
-async function testEmptyDispatch(page: puppeteer.Page): Promise<FrameResult> {
-  console.log('Test Baseline Performance')
-  await page.tracing.start({ path: 'trace.json' })
-  const succeeded = await clickOnce(
-    page,
-    "//a[contains(., 'B L')]",
-    'BASELINE_TEST_FINISHED',
-    'BASELINE_TEST_ERROR',
-  )
-  await page.tracing.stop()
-
-  const traceJson = await loadTraceEventsJSON()
-  return getFrameData(traceJson, 'baseline', 'Empty Dispatch', succeeded)
-}
-
 function consoleMessageForResult(result: FrameResult): string {
   return `${result.title}: ${result.analytics.percentile50}ms (${result.analytics.frameMin}-${result.analytics.frameMax}ms)`
 }
@@ -218,13 +147,6 @@ function frameArraySuccess(frameArray: Array<FrameResult>): boolean {
 }
 
 export const testPerformanceInner = async function (url: string): Promise<PerformanceResult> {
-  const simpleDispatch = await retryPageCalls(
-    url,
-    testEmptyDispatch,
-    frameResultSuccess,
-    EmptyResult,
-  )
-  const basicCalc = timeBasicCalc()
   const highlightRegularResult = await retryPageCalls(
     url,
     testHighlightRegularPerformance,
@@ -263,8 +185,6 @@ export const testPerformanceInner = async function (url: string): Promise<Perfor
     scrollResult,
     resizeResult,
     ...absoluteMoveResult,
-    basicCalc,
-    simpleDispatch,
   ]
   const summaryImage = await uploadSummaryImage(messageParts)
 
@@ -297,7 +217,7 @@ export const testScrollingPerformance = async function (
   await clickOnce(page, "//a[contains(., 'P S')]", 'SCROLL_TEST_FINISHED', 'SCROLL_TEST_ERROR')
 
   // and then we run the test for a third time, this time running tracing
-  await page.tracing.start({ path: 'trace.json' })
+  await page.tracing.start({ categories: ['blink.user_timing'], path: 'trace.json' })
   const succeeded = await clickOnce(
     page,
     "//a[contains(., 'P S')]",
@@ -324,7 +244,7 @@ export const testResizePerformance = async function (page: puppeteer.Page): Prom
   await clickOnce(page, ResizeButtonXPath, 'RESIZE_TEST_FINISHED', 'RESIZE_TEST_ERROR')
 
   // and then we run the test for a third time, this time running tracing
-  await page.tracing.start({ path: 'trace.json' })
+  await page.tracing.start({ categories: ['blink.user_timing'], path: 'trace.json' })
   const succeeded = await clickOnce(
     page,
     ResizeButtonXPath,
@@ -356,7 +276,7 @@ export const testHighlightRegularPerformance = async function (
   )
 
   // and then we run the test for a third time, this time running tracing
-  await page.tracing.start({ path: 'trace.json' })
+  await page.tracing.start({ categories: ['blink.user_timing'], path: 'trace.json' })
   const succeeded = await clickOnce(
     page,
     "//a[contains(., 'PRH')]",
@@ -388,7 +308,7 @@ export const testHighlightAllElementsPerformance = async function (
   )
 
   // and then we run the test for a third time, this time running tracing
-  await page.tracing.start({ path: 'trace.json' })
+  await page.tracing.start({ categories: ['blink.user_timing'], path: 'trace.json' })
   const succeeded = await clickOnce(
     page,
     "//a[contains(., 'PAH')]",
@@ -410,7 +330,7 @@ export const testSelectionPerformance = async function (
   await clickOnce(page, "//a[contains(., 'P E')]", 'SELECT_TEST_FINISHED', 'SELECT_TEST_ERROR')
 
   // and then we run the test for a third time, this time running tracing
-  await page.tracing.start({ path: 'trace.json' })
+  await page.tracing.start({ categories: ['blink.user_timing'], path: 'trace.json' })
   const succeeded = await clickOnce(
     page,
     "//a[contains(., 'P E')]",
@@ -445,7 +365,7 @@ export const testAbsoluteMovePerformance = async function (
   )
 
   // and then we run the test for a third time, this time running tracing
-  await page.tracing.start({ path: 'trace.json' })
+  await page.tracing.start({ categories: ['blink.user_timing'], path: 'trace.json' })
   const succeeded = await clickOnce(
     page,
     "//a[contains(., 'PAM')]",

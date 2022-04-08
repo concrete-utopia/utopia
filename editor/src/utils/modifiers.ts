@@ -28,9 +28,23 @@ export const cmdModifier: Modifiers = {
   shift: false,
 }
 
+export const altModifier: Modifiers = {
+  alt: true,
+  cmd: false,
+  ctrl: false,
+  shift: false,
+}
+
 export const shiftCmdModifier: Modifiers = {
   alt: false,
   cmd: true,
+  ctrl: false,
+  shift: true,
+}
+
+export const altShiftModifier: Modifiers = {
+  alt: true,
+  cmd: false,
   ctrl: false,
   shift: true,
 }
