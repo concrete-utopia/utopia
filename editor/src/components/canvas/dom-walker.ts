@@ -185,8 +185,8 @@ function getCachedAttributesComingFromStyleSheets(
 }
 
 function useResizeObserver(
-  updateInvalidatedPaths: SetValueCallback<Set<string>>,
-  updateInvalidatedScenes: SetValueCallback<Set<string>>,
+  updateInvalidatedPaths: UpdateMutableCallback<Set<string>>,
+  updateInvalidatedScenes: UpdateMutableCallback<Set<string>>,
   selectedViews: React.MutableRefObject<Array<ElementPath>>,
   canvasInteractionHappening: React.MutableRefObject<boolean>,
 ) {
@@ -223,8 +223,8 @@ function useResizeObserver(
 }
 
 function useMutationObserver(
-  updateInvalidatedPaths: SetValueCallback<Set<string>>,
-  updateInvalidatedScenes: SetValueCallback<Set<string>>,
+  updateInvalidatedPaths: UpdateMutableCallback<Set<string>>,
+  updateInvalidatedScenes: UpdateMutableCallback<Set<string>>,
   selectedViews: React.MutableRefObject<Array<ElementPath>>,
   canvasInteractionHappening: React.MutableRefObject<boolean>,
 ) {
@@ -269,7 +269,7 @@ function useMutationObserver(
 }
 
 function useInvalidateScenesWhenSelectedViewChanges(
-  updateInvalidatedScenes: SetValueCallback<Set<string>>,
+  updateInvalidatedScenes: UpdateMutableCallback<Set<string>>,
   invalidatedPathsForStylesheetCacheRef: React.MutableRefObject<Set<string>>,
 ): void {
   return useSelectorWithCallback(
@@ -311,34 +311,23 @@ function useInvalidateInitCompleteOnMountCount(
 
   return [initCompleteRef.current, setInitComplete]
 }
-type ValueOrUpdater<S> = S | ((prevState: S) => S)
 // todo move to file
-export type SetValueCallback<S> = (
-  valueOrUpdater: ValueOrUpdater<S>,
+export type UpdateMutableCallback<S> = (
+  updater: (mutableState: S) => void,
   invalidate: 'invalidate' | 'do-not-invalidate',
 ) => void
 
-function isSimpleValue<S>(valueOrUpdater: ValueOrUpdater<S>): valueOrUpdater is S {
-  return typeof valueOrUpdater !== 'function'
-}
-function useStateAsyncInvalidate<S>(
+function useMutableStateAsyncInvalidate<S>(
   onInvalidate: (immediate: 'immediate' | 'throttled') => void,
   initialState: S,
-): [S, SetValueCallback<S>] {
+): [S, UpdateMutableCallback<S>] {
   const stateRef = React.useRef(initialState)
   const setAndMarkInvalidated = React.useCallback(
     (
-      valueOrUpdater: ValueOrUpdater<S>,
+      updater: (mutableState: S) => void,
       invalidate: 'invalidate' | 'do-not-invalidate' = 'invalidate',
     ) => {
-      let resolvedNewValue: S
-      if (isSimpleValue(valueOrUpdater)) {
-        // TODO make this type nicer using a type guard
-        resolvedNewValue = valueOrUpdater
-      } else {
-        resolvedNewValue = valueOrUpdater(stateRef.current)
-      }
-      stateRef.current = resolvedNewValue
+      updater(stateRef.current) // Mutation! (for performance reasons)
 
       if (invalidate === 'invalidate') {
         onInvalidate('throttled')
@@ -430,7 +419,11 @@ function mergeFragmentMetadata(
 
 export function useDomWalker(
   props: DomWalkerProps,
-): [SetValueCallback<Set<string>>, SetValueCallback<Set<string>>, React.Ref<HTMLDivElement>] {
+): [
+  UpdateMutableCallback<Set<string>>,
+  UpdateMutableCallback<Set<string>>,
+  React.Ref<HTMLDivElement>,
+] {
   const containerRef = React.useRef<HTMLDivElement>(null)
 
   const fireThrottledCallback = useThrottledCallback(() => {
@@ -489,11 +482,11 @@ export function useDomWalker(
   const rootMetadataInStateRef = useRefEditorState(
     (store) => store.editor.domMetadata as ReadonlyArray<ElementInstanceMetadata>,
   )
-  const [invalidatedPaths, updateInvalidatedPaths] = useStateAsyncInvalidate<Set<string>>(
+  const [invalidatedPaths, updateInvalidatedPaths] = useMutableStateAsyncInvalidate<Set<string>>(
     fireThrottledCallback,
     emptySet(),
   ) // For invalidating specific paths only
-  const [invalidatedScenes, updateInvalidatedScenes] = useStateAsyncInvalidate<Set<string>>(
+  const [invalidatedScenes, updateInvalidatedScenes] = useMutableStateAsyncInvalidate<Set<string>>(
     fireThrottledCallback,
     emptySet(),
   ) // For invalidating entire scenes and everything below them
@@ -577,7 +570,7 @@ function collectMetadata(
   scale: number,
   containerRectLazy: () => CanvasRectangle,
   invalidatedPaths: ReadonlySet<string>,
-  updateInvalidatedPaths: SetValueCallback<Set<string>>,
+  updateInvalidatedPaths: UpdateMutableCallback<Set<string>>,
   invalidatedPathsForStylesheetCacheRef: React.MutableRefObject<Set<string>>,
   rootMetadataInStateRef: React.MutableRefObject<ReadonlyArray<ElementInstanceMetadata>>,
   invalidated: boolean,
@@ -833,9 +826,9 @@ function walkCanvasRootFragment(
   index: number,
   rootMetadataInStateRef: React.MutableRefObject<ReadonlyArray<ElementInstanceMetadata>>,
   invalidatedPaths: ReadonlySet<string>,
-  updateInvalidatedPaths: SetValueCallback<Set<string>>,
+  updateInvalidatedPaths: UpdateMutableCallback<Set<string>>,
   invalidatedScenes: ReadonlySet<string>,
-  updateInvalidatedScenes: SetValueCallback<Set<string>>,
+  updateInvalidatedScenes: UpdateMutableCallback<Set<string>>,
   invalidatedPathsForStylesheetCacheRef: React.MutableRefObject<Set<string>>,
   selectedViews: Array<ElementPath>,
   invalidated: boolean,
@@ -915,9 +908,9 @@ function walkScene(
   validPaths: Array<ElementPath>,
   rootMetadataInStateRef: React.MutableRefObject<ReadonlyArray<ElementInstanceMetadata>>,
   invalidatedPaths: ReadonlySet<string>,
-  updateInvalidatedPaths: SetValueCallback<Set<string>>,
+  updateInvalidatedPaths: UpdateMutableCallback<Set<string>>,
   invalidatedScenes: ReadonlySet<string>,
-  updateInvalidatedScenes: SetValueCallback<Set<string>>,
+  updateInvalidatedScenes: UpdateMutableCallback<Set<string>>,
   invalidatedPathsForStylesheetCacheRef: React.MutableRefObject<Set<string>>,
   selectedViews: Array<ElementPath>,
   invalidated: boolean,
@@ -994,9 +987,9 @@ function walkSceneInner(
   validPaths: Array<ElementPath>,
   rootMetadataInStateRef: React.MutableRefObject<ReadonlyArray<ElementInstanceMetadata>>,
   invalidatedPaths: ReadonlySet<string>,
-  updateInvalidatedPaths: SetValueCallback<Set<string>>,
+  updateInvalidatedPaths: UpdateMutableCallback<Set<string>>,
   invalidatedScenes: ReadonlySet<string>,
-  updateInvalidatedScenes: SetValueCallback<Set<string>>,
+  updateInvalidatedScenes: UpdateMutableCallback<Set<string>>,
   invalidatedPathsForStylesheetCacheRef: React.MutableRefObject<Set<string>>,
   selectedViews: Array<ElementPath>,
   invalidated: boolean,
@@ -1055,9 +1048,9 @@ function walkElements(
   validPaths: Array<ElementPath>,
   rootMetadataInStateRef: React.MutableRefObject<ReadonlyArray<ElementInstanceMetadata>>,
   invalidatedPaths: ReadonlySet<string>,
-  updateInvalidatedPaths: SetValueCallback<Set<string>>,
+  updateInvalidatedPaths: UpdateMutableCallback<Set<string>>,
   invalidatedScenes: ReadonlySet<string>,
-  updateInvalidatedScenes: SetValueCallback<Set<string>>,
+  updateInvalidatedScenes: UpdateMutableCallback<Set<string>>,
   invalidatedPathsForStylesheetCacheRef: React.MutableRefObject<Set<string>>,
   selectedViews: Array<ElementPath>,
   invalidated: boolean,

@@ -50,7 +50,7 @@ import {
   TransientFilesState,
 } from '../editor/store/editor-state'
 import { proxyConsole } from './console-proxy'
-import { SetValueCallback, useDomWalker } from './dom-walker'
+import { UpdateMutableCallback, useDomWalker } from './dom-walker'
 import { isLiveMode } from '../editor/editor-modes'
 import { BakedInStoryboardVariableName } from '../../core/model/scene-utils'
 import { normalizeName } from '../custom-code/custom-code-utils'
@@ -125,11 +125,11 @@ export const UiJsxCanvasCtxAtom = atomWithPubSub<UiJsxCanvasContextData>({
   defaultValue: emptyUiJsxCanvasContextData(),
 })
 
-export const DomWalkerInvalidateScenesCtxAtom = atomWithPubSub<SetValueCallback<Set<string>>>({
+export const DomWalkerInvalidateScenesCtxAtom = atomWithPubSub<UpdateMutableCallback<Set<string>>>({
   key: 'DomWalkerInvalidateScenesCtxAtom',
   defaultValue: NO_OP,
 })
-export type DomWalkerInvalidatePathsCtxData = SetValueCallback<Set<string>>
+export type DomWalkerInvalidatePathsCtxData = UpdateMutableCallback<Set<string>>
 export const DomWalkerInvalidatePathsCtxAtom = atomWithPubSub<DomWalkerInvalidatePathsCtxData>({
   key: 'DomWalkerInvalidatePathsCtxAtom',
   defaultValue: NO_OP,
@@ -534,7 +534,7 @@ function attemptToResolveParsedComponents(
   base64FileBlobs: CanvasBase64Blobs,
   hiddenInstances: ElementPath[],
   metadataContext: UiJsxCanvasContextData,
-  updateInvalidatedPaths: SetValueCallback<Set<string>>,
+  updateInvalidatedPaths: UpdateMutableCallback<Set<string>>,
   shouldIncludeCanvasRootInTheSpy: boolean,
   filePathResolveResult: Either<string, string>,
 ): Either<string, MapLike<any>> {
