@@ -9,6 +9,13 @@ export const PRODUCTION_ENV: boolean = process.env.NODE_ENV === 'production'
 export const PRODUCTION_CONFIG: boolean = process.env.REACT_APP_ENVIRONMENT_CONFIG === 'production'
 const STAGING_CONFIG: boolean = process.env.REACT_APP_ENVIRONMENT_CONFIG === 'staging'
 const PRODUCTION_OR_STAGING_CONFIG = PRODUCTION_CONFIG || STAGING_CONFIG
+const SECONDARY_BASE_URL: string = PRODUCTION_CONFIG
+  ? `https://utopia.fm/`
+  : STAGING_CONFIG
+  ? 'https://utopia95.com/'
+  : BARE_HOST === 'localhost:8000'
+  ? 'http://localhost:8001'
+  : BASE_URL
 
 export const PROBABLY_ELECTRON: boolean =
   typeof window === 'undefined' || (window as any)?.['process']?.['type'] != null
@@ -27,25 +34,15 @@ export const STATIC_BASE_URL: string =
     ? `https://cdn.${BARE_HOST}/`
     : `http://${BARE_HOST}/`
 
-export const FLOATING_PREVIEW_BASE_URL: string = PRODUCTION_CONFIG
-  ? `https://utopia.fm/`
-  : STAGING_CONFIG
-  ? 'https://utopia95.com/'
-  : BASE_URL
-export const PROPERTY_CONTROLS_INFO_BASE_URL: string = PRODUCTION_CONFIG
-  ? `https://utopia.fm/`
-  : STAGING_CONFIG
-  ? 'https://utopia95.com/'
-  : BASE_URL
-export const MONACO_EDITOR_IFRAME_BASE_URL: string = PRODUCTION_CONFIG
-  ? `https://utopia.fm/`
-  : STAGING_CONFIG
-  ? 'https://utopia95.com/'
-  : BASE_URL
+export const FLOATING_PREVIEW_BASE_URL: string = SECONDARY_BASE_URL
+export const PROPERTY_CONTROLS_INFO_BASE_URL: string = SECONDARY_BASE_URL
+export const MONACO_EDITOR_IFRAME_BASE_URL: string = SECONDARY_BASE_URL
 export const VSCODE_EDITOR_IFRAME_BASE_URL: string = PRODUCTION_CONFIG
   ? `https://utopia.app/`
   : STAGING_CONFIG
   ? 'https://utopia.pizza/'
+  : BARE_HOST === 'localhost:8000' || BARE_HOST === 'localhost:8001'
+  ? 'http://localhost:8000'
   : BASE_URL
 export const UTOPIA_BACKEND = BASE_URL + 'v1/'
 export const UTOPIA_BACKEND_WS = BASE_WS + 'v1/'

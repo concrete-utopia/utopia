@@ -340,8 +340,8 @@ startup DevServerResources{..} = do
   return $ do
         killThread hashedFilenamesThread
 
-serverPortFromResources :: DevServerResources -> Int
-serverPortFromResources = _serverPort
+serverPortFromResources :: DevServerResources -> [Int]
+serverPortFromResources resources = [_serverPort resources, _serverPort resources + 1]
 
 shouldProxyWebpack :: IO Bool
 shouldProxyWebpack = do
