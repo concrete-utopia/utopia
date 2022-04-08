@@ -305,6 +305,8 @@ export class Editor {
     )
   }
 
+  dispatchCounter = 0
+
   boundDispatch = (
     dispatchedActions: readonly EditorAction[],
     priority?: DispatchPriority,
@@ -312,6 +314,7 @@ export class Editor {
     entireUpdateFinished: Promise<any>
   } => {
     const runDispatch = () => {
+      const dispatchID = this.dispatchCounter++
       const result = editorDispatch(
         this.boundDispatch,
         dispatchedActions,
@@ -322,14 +325,26 @@ export class Editor {
 
       if (!result.nothingChanged) {
         // we update the zustand store with the new editor state. this will trigger a re-render in the EditorComponent
-        performance.mark(`update canvas ${dispatchedActions[0].action}`)
+        performance.mark(`update canvas ${dispatchID}`)
         this.updateCanvasStore(patchedStoreFromFullStore(result))
-        performance.measure(`Update Canvas`, `update canvas ${dispatchedActions[0].action}`)
-        performance.mark(`update editor ${dispatchedActions[0].action}`)
-        this.updateStore(patchedStoreFromFullStore(result))
-        performance.measure(`Update Editor`, `update editor ${dispatchedActions[0].action}`)
+        performance.measure(`Update Canvas`, `update canvas ${dispatchID}`)
+        const domWalkerResult = UiJsxCanvasCtxAtom.currentValue.current.fireDomWalker()
+
+        if (domWalkerResult != null) {
+          const editorWithUpdatedMetadata = editorDispatch(
+            this.boundDispatch,
+            [EditorActions.saveDOMReport(domWalkerResult?.metadata, domWalkerResult?.cachedPaths)],
+            this.storedState,
+            this.spyCollector,
+          )
+          this.storedState = editorWithUpdatedMetadata
+        }
+
+        performance.mark(`update editor ${dispatchID}`)
+        this.updateStore(patchedStoreFromFullStore(this.storedState))
+        performance.measure(`Update Editor`, `update editor ${dispatchID}`)
       }
-      return { entireUpdateFinished: result.entireUpdateFinished }
+      return { entireUpdateFinished: (this.storedState as any).entireUpdateFinished } // TODO remove any // TODO KILL entireUpdateFinished!!!!!
     }
     if (PRODUCTION_ENV) {
       return runDispatch()

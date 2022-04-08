@@ -39,7 +39,7 @@ import {
   CSSPosition,
   positionValues,
 } from '../inspector/common/css-utils'
-import { CanvasContainerProps } from './ui-jsx-canvas'
+import { CanvasContainerProps, UiJsxCanvasCtxAtom } from './ui-jsx-canvas'
 import { camelCaseToDashed } from '../../core/shared/string-utils'
 import {
   useEditorState,
@@ -62,6 +62,7 @@ import { optionalMap } from '../../core/shared/optional-utils'
 import { fastForEach } from '../../core/shared/utils'
 import { MapLike } from 'typescript'
 import { isFeatureEnabled } from '../../utils/feature-switches'
+import { usePubSubAtomReadOnly } from '../../core/shared/atom-with-pub-sub'
 
 const MutationObserverConfig = { attributes: true, childList: true, subtree: true }
 const ObserversAvailable = (window as any).MutationObserver != null && ResizeObserver != null
@@ -350,9 +351,9 @@ function useStateAsyncInvalidate<S>(
   return [stateRef.current, setAndMarkInvalidated]
 }
 
-function useThrottledCallback(
-  callback: () => void,
-): (immediate: 'immediate' | 'throttled') => void {
+function useThrottledCallback<T>(
+  callback: () => T,
+): (immediate: 'immediate' | 'throttled') => T | null {
   const timeoutRef = React.useRef<NodeJS.Timeout | null>(null)
 
   const callbackRef = React.useRef(callback)
@@ -364,13 +365,15 @@ function useThrottledCallback(
         clearTimeout(timeoutRef.current)
         timeoutRef.current = null
       }
-      callbackRef.current()
+      return callbackRef.current()
     } else if (timeoutRef.current == null) {
-      timeoutRef.current = setTimeout(() => {
-        timeoutRef.current = null
-        callbackRef.current()
-      }, 0)
+      // TODO figure out a way to re-enable the throttled fire
+      // timeoutRef.current = setTimeout(() => {
+      //   timeoutRef.current = null
+      //   callbackRef.current()
+      // }, 0)
     }
+    return null
   }, [])
 }
 
@@ -482,7 +485,11 @@ export function useDomWalker(
       // Fragments will appear as multiple separate entries with duplicate UIDs, so we need to handle those
       const fixedMetadata = mergeFragmentMetadata(metadata)
 
-      props.onDomReport(fixedMetadata, cachedPaths)
+      return { metadata: fixedMetadata, cachedPaths }
+
+      // props.onDomReport(fixedMetadata, cachedPaths)
+    } else {
+      return null // TODO flip if-else
     }
   })
 
@@ -529,9 +536,16 @@ export function useDomWalker(
     invalidatedPathsForStylesheetCacheRef,
   )
 
-  React.useLayoutEffect(() => {
-    fireThrottledCallback('immediate')
-  })
+  // React.useLayoutEffect(() => {
+  //   fireThrottledCallback('immediate')
+  // })
+
+  const fireDomWalker = React.useCallback(() => {
+    return fireThrottledCallback('immediate')
+  }, [fireThrottledCallback])
+
+  const uiJsxCanvasContext = usePubSubAtomReadOnly(UiJsxCanvasCtxAtom)
+  uiJsxCanvasContext.current.fireDomWalker = fireDomWalker
 
   return [updateInvalidatedPaths, updateInvalidatedScenes, containerRef]
 }

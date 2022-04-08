@@ -107,6 +107,10 @@ export type SpyValues = {
 export interface UiJsxCanvasContextData {
   current: {
     spyValues: SpyValues
+    fireDomWalker: () => {
+      metadata: ElementInstanceMetadata[]
+      cachedPaths: ElementPath[]
+    } | null
   }
 }
 
@@ -116,6 +120,7 @@ export function emptyUiJsxCanvasContextData(): UiJsxCanvasContextData {
       spyValues: {
         metadata: {},
       },
+      fireDomWalker: () => null,
     },
   }
 }
