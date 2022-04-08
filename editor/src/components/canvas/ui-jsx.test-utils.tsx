@@ -268,6 +268,7 @@ export async function renderTestEditorWithModel(
       <EditorRoot
         api={storeHook}
         useStore={storeHook}
+        canvasStore={storeHook} // TODO create canvas store for tests
         spyCollector={spyCollector}
         domWalkerMutableState={domWalkerMutableState}
       />

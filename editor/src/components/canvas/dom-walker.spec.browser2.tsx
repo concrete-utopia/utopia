@@ -102,6 +102,7 @@ async function renderTestEditorWithCode(appUiJsFileCode: string) {
     <EditorRoot
       api={storeHook}
       useStore={storeHook}
+      canvasStore={storeHook} // TODO create canvas store
       spyCollector={spyCollector}
       domWalkerMutableState={domWalkerMutableState}
     />,

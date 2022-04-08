@@ -1,5 +1,5 @@
 import React from 'react'
-import { useEditorState } from '../editor/store/store-hook'
+import { CanvasStateContext, EditorStateContext, useEditorState } from '../editor/store/store-hook'
 import {
   UiJsxCanvas,
   pickUiJsxCanvasProps,
@@ -30,6 +30,18 @@ import { useApplyCanvasOffsetToStyle } from './controls/canvas-offset-wrapper'
 interface CanvasComponentEntryProps {}
 
 export const CanvasComponentEntry = React.memo((props: CanvasComponentEntryProps) => {
+  const canvasStore = React.useContext(CanvasStateContext)?.useStore
+
+  return (
+    <EditorStateContext.Provider
+      value={canvasStore == null ? null : { api: canvasStore, useStore: canvasStore }}
+    >
+      <CanvasComponentEntryInner {...props} />
+    </EditorStateContext.Provider>
+  )
+})
+
+const CanvasComponentEntryInner = React.memo((props: CanvasComponentEntryProps) => {
   const dispatch = useEditorState((store) => store.dispatch, 'CanvasComponentEntry dispatch')
   const onDomReport = React.useCallback(
     (elementMetadata: ReadonlyArray<ElementInstanceMetadata>, cachedPaths: Array<ElementPath>) => {
