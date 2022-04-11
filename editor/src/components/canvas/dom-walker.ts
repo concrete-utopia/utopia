@@ -496,7 +496,7 @@ export function useDomWalker(props: DomWalkerProps): void {
     domWalkerMutableState.invalidatedScenes.size > 0
 
   if (needsWalk) {
-    fireDomWalker()
+    fireDomWalker() // TODO this should NOT live inside the hook!
   }
 }
 
