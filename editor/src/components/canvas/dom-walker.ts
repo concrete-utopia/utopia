@@ -169,17 +169,17 @@ function getAttributesComingFromStyleSheets(element: HTMLElement): Set<string> {
 let AttributesFromStyleSheetsCache: Map<HTMLElement, Set<string>> = new Map()
 
 function getCachedAttributesComingFromStyleSheets(
-  invalidatedPathsForStylesheetCacheRef: React.MutableRefObject<Set<string>>,
+  invalidatedPathsForStylesheetCache: Set<string>,
   elementPath: ElementPath,
   element: HTMLElement,
 ): Set<string> {
   const pathAsString = EP.toString(elementPath)
-  const invalidated = invalidatedPathsForStylesheetCacheRef.current.has(pathAsString)
+  const invalidated = invalidatedPathsForStylesheetCache.has(pathAsString)
   const inCache = AttributesFromStyleSheetsCache.has(element)
   if (inCache && !invalidated) {
     return AttributesFromStyleSheetsCache.get(element)!
   }
-  invalidatedPathsForStylesheetCacheRef.current.delete(pathAsString) // Mutation!
+  invalidatedPathsForStylesheetCache.delete(pathAsString) // Mutation!
   const value = getAttributesComingFromStyleSheets(element)
   AttributesFromStyleSheetsCache.set(element, value)
   return value
@@ -271,7 +271,7 @@ function useMutationObserver(
 
 function useInvalidateScenesWhenSelectedViewChanges(
   updateInvalidatedScenes: UpdateMutableCallback<Set<string>>,
-  invalidatedPathsForStylesheetCacheRef: React.MutableRefObject<Set<string>>,
+  invalidatedPathsForStylesheetCacheRef: Set<string>,
 ): void {
   return useSelectorWithCallback(
     (store) => store.editor.selectedViews,
@@ -281,7 +281,7 @@ function useInvalidateScenesWhenSelectedViewChanges(
         if (scenePath != null) {
           const sceneID = EP.toString(scenePath)
           updateInvalidatedScenes((current) => current.add(sceneID), 'invalidate')
-          invalidatedPathsForStylesheetCacheRef.current.add(EP.toString(sv))
+          invalidatedPathsForStylesheetCacheRef.add(EP.toString(sv))
         }
       })
     },
@@ -461,7 +461,7 @@ interface RunDomWalkerParams {
   rootMetadataInStateRef: { readonly current: readonly ElementInstanceMetadata[] }
   invalidatedPaths: Set<string>
   invalidatedScenes: Set<string>
-  invalidatedPathsForStylesheetCacheRef: React.MutableRefObject<Set<string>>
+  invalidatedPathsForStylesheetCache: Set<string>
   initComplete: boolean
   setInitComplete: () => void
 }
@@ -475,7 +475,7 @@ function runDomWalker({
   rootMetadataInStateRef,
   invalidatedPaths,
   invalidatedScenes,
-  invalidatedPathsForStylesheetCacheRef,
+  invalidatedPathsForStylesheetCache,
   initComplete,
   setInitComplete,
 }: RunDomWalkerParams): { metadata: ElementInstanceMetadata[]; cachedPaths: ElementPath[] } {
@@ -509,7 +509,7 @@ function runDomWalker({
       rootMetadataInStateRef,
       invalidatedPaths,
       invalidatedScenes,
-      invalidatedPathsForStylesheetCacheRef,
+      invalidatedPathsForStylesheetCache,
       selectedViews,
       !initComplete,
       scale,
@@ -545,7 +545,7 @@ export function useDomWalker(
       rootMetadataInStateRef: rootMetadataInStateRef,
       invalidatedPaths: invalidatedPaths,
       invalidatedScenes: invalidatedScenes,
-      invalidatedPathsForStylesheetCacheRef: invalidatedPathsForStylesheetCacheRef,
+      invalidatedPathsForStylesheetCache: invalidatedPathsForStylesheetCache,
       initComplete: initComplete, // TODO review initComplete
       setInitComplete: setInitComplete, // TODO remove setInitComplete
     })
@@ -582,7 +582,7 @@ export function useDomWalker(
     [domWalkerMutableState, fireThrottledCallback],
   )
 
-  const invalidatedPathsForStylesheetCacheRef = React.useRef<Set<string>>(emptySet())
+  const invalidatedPathsForStylesheetCache = React.useRef<Set<string>>(emptySet()).current
   const [initComplete, setInitComplete] = useInvalidateInitCompleteOnMountCount(
     props.mountCount,
     props.domWalkerInvalidateCount,
@@ -611,7 +611,7 @@ export function useDomWalker(
   )
   useInvalidateScenesWhenSelectedViewChanges(
     updateInvalidatedScenes,
-    invalidatedPathsForStylesheetCacheRef,
+    invalidatedPathsForStylesheetCache,
   )
 
   React.useLayoutEffect(() => {
@@ -662,7 +662,7 @@ function collectMetadata(
   scale: number,
   containerRectLazy: () => CanvasRectangle,
   invalidatedPaths: Set<string>,
-  invalidatedPathsForStylesheetCacheRef: React.MutableRefObject<Set<string>>,
+  invalidatedPathsForStylesheetCache: Set<string>,
   rootMetadataInStateRef: React.MutableRefObject<ReadonlyArray<ElementInstanceMetadata>>,
   invalidated: boolean,
   selectedViews: Array<ElementPath>,
@@ -687,7 +687,7 @@ function collectMetadata(
     const { computedStyle, attributeMetadata } = getComputedStyle(
       element,
       pathsForElement,
-      invalidatedPathsForStylesheetCacheRef,
+      invalidatedPathsForStylesheetCache,
       selectedViews,
     )
 
@@ -735,7 +735,7 @@ function collectMetadata(
         scale,
         containerRectLazy,
         invalidatedPaths,
-        invalidatedPathsForStylesheetCacheRef,
+        invalidatedPathsForStylesheetCache,
         rootMetadataInStateRef,
         true,
         selectedViews,
@@ -748,7 +748,7 @@ function collectMetadata(
 function getComputedStyle(
   element: HTMLElement,
   paths: Array<ElementPath>,
-  invalidatedPathsForStylesheetCacheRef: React.MutableRefObject<Set<string>>,
+  invalidatedPathsForStylesheetCache: Set<string>,
   selectedViews: Array<ElementPath>,
 ): { computedStyle: ComputedStyle | null; attributeMetadata: StyleAttributeMetadata | null } {
   const isSelectedOnAnyPaths = selectedViews.some((sv) =>
@@ -763,7 +763,7 @@ function getComputedStyle(
   }
   const elementStyle = window.getComputedStyle(element)
   const attributesSetByStylesheet = getCachedAttributesComingFromStyleSheets(
-    invalidatedPathsForStylesheetCacheRef,
+    invalidatedPathsForStylesheetCache,
     paths[0], // TODO is this sufficient to use the first path element for caching?
     element,
   )
@@ -912,7 +912,7 @@ function walkCanvasRootFragment(
   rootMetadataInStateRef: React.MutableRefObject<ReadonlyArray<ElementInstanceMetadata>>,
   invalidatedPaths: Set<string>,
   invalidatedScenes: Set<string>,
-  invalidatedPathsForStylesheetCacheRef: React.MutableRefObject<Set<string>>,
+  invalidatedPathsForStylesheetCache: Set<string>,
   selectedViews: Array<ElementPath>,
   invalidated: boolean,
   scale: number,
@@ -954,7 +954,7 @@ function walkCanvasRootFragment(
       rootMetadataInStateRef,
       invalidatedPaths,
       invalidatedScenes,
-      invalidatedPathsForStylesheetCacheRef,
+      invalidatedPathsForStylesheetCache,
       selectedViews,
       invalidated,
       scale,
@@ -988,7 +988,7 @@ function walkScene(
   rootMetadataInStateRef: React.MutableRefObject<ReadonlyArray<ElementInstanceMetadata>>,
   invalidatedPaths: Set<string>,
   invalidatedScenes: Set<string>,
-  invalidatedPathsForStylesheetCacheRef: React.MutableRefObject<Set<string>>,
+  invalidatedPathsForStylesheetCache: Set<string>,
   selectedViews: Array<ElementPath>,
   invalidated: boolean,
   scale: number,
@@ -1018,7 +1018,7 @@ function walkScene(
         rootMetadataInStateRef,
         invalidatedPaths,
         invalidatedScenes,
-        invalidatedPathsForStylesheetCacheRef,
+        invalidatedPathsForStylesheetCache,
         selectedViews,
         invalidatedScene,
         scale,
@@ -1035,7 +1035,7 @@ function walkScene(
         scale,
         containerRectLazy,
         invalidatedPaths,
-        invalidatedPathsForStylesheetCacheRef,
+        invalidatedPathsForStylesheetCache,
         rootMetadataInStateRef,
         invalidatedScene,
         selectedViews,
@@ -1056,7 +1056,7 @@ function walkSceneInner(
   rootMetadataInStateRef: React.MutableRefObject<ReadonlyArray<ElementInstanceMetadata>>,
   invalidatedPaths: Set<string>,
   invalidatedScenes: Set<string>,
-  invalidatedPathsForStylesheetCacheRef: React.MutableRefObject<Set<string>>,
+  invalidatedPathsForStylesheetCache: Set<string>,
   selectedViews: Array<ElementPath>,
   invalidated: boolean,
   scale: number,
@@ -1081,7 +1081,7 @@ function walkSceneInner(
       rootMetadataInStateRef,
       invalidatedPaths,
       invalidatedScenes,
-      invalidatedPathsForStylesheetCacheRef,
+      invalidatedPathsForStylesheetCache,
       selectedViews,
       invalidated,
       scale,
@@ -1109,7 +1109,7 @@ function walkElements(
   rootMetadataInStateRef: React.MutableRefObject<ReadonlyArray<ElementInstanceMetadata>>,
   invalidatedPaths: Set<string>,
   invalidatedScenes: Set<string>,
-  invalidatedPathsForStylesheetCacheRef: React.MutableRefObject<Set<string>>,
+  invalidatedPathsForStylesheetCache: Set<string>,
   selectedViews: Array<ElementPath>,
   invalidated: boolean,
   scale: number,
@@ -1128,7 +1128,7 @@ function walkElements(
       rootMetadataInStateRef,
       invalidatedPaths,
       invalidatedScenes,
-      invalidatedPathsForStylesheetCacheRef,
+      invalidatedPathsForStylesheetCache,
       selectedViews,
       invalidated,
       scale,
@@ -1177,7 +1177,7 @@ function walkElements(
           rootMetadataInStateRef,
           invalidatedPaths,
           invalidatedScenes,
-          invalidatedPathsForStylesheetCacheRef,
+          invalidatedPathsForStylesheetCache,
           selectedViews,
           invalidated,
           scale,
@@ -1201,7 +1201,7 @@ function walkElements(
       scale,
       containerRectLazy,
       invalidatedPaths,
-      invalidatedPathsForStylesheetCacheRef,
+      invalidatedPathsForStylesheetCache,
       rootMetadataInStateRef,
       invalidated,
       selectedViews,
