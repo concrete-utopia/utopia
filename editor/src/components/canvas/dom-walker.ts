@@ -295,7 +295,6 @@ interface RunDomWalkerParams {
 
   domWalkerMutableState: DomWalkerMutableStateData
   rootMetadataInStateRef: { readonly current: readonly ElementInstanceMetadata[] }
-  invalidatedPathsForStylesheetCache: Set<string>
 }
 
 function runDomWalker({
@@ -304,7 +303,6 @@ function runDomWalker({
   scale,
   additionalElementsToUpdate,
   rootMetadataInStateRef,
-  invalidatedPathsForStylesheetCache,
 }: RunDomWalkerParams): { metadata: ElementInstanceMetadata[]; cachedPaths: ElementPath[] } | null {
   const LogDomWalkerPerformance =
     isFeatureEnabled('Debug mode – Performance Marks') && PERFORMANCE_MARKS_ALLOWED
@@ -340,7 +338,7 @@ function runDomWalker({
       rootMetadataInStateRef,
       domWalkerMutableState.invalidatedPaths,
       domWalkerMutableState.invalidatedScenes,
-      invalidatedPathsForStylesheetCache,
+      domWalkerMutableState.invalidatedPathsForStylesheetCache,
       selectedViews,
       !domWalkerMutableState.initComplete,
       scale,
@@ -423,7 +421,6 @@ export function useDomWalker(props: DomWalkerProps): void {
       scale: props.scale,
       additionalElementsToUpdate: props.additionalElementsToUpdate,
       rootMetadataInStateRef: rootMetadataInStateRef,
-      invalidatedPathsForStylesheetCache: invalidatedPathsForStylesheetCache,
     })
     if (domWalkerResult != null) {
       props.onDomReport(domWalkerResult.metadata, domWalkerResult.cachedPaths) // TODO remove this
@@ -435,9 +432,6 @@ export function useDomWalker(props: DomWalkerProps): void {
   )
 
   const domWalkerMutableState = useDomWalkerMutableStateContext()
-
-  const invalidatedPathsForStylesheetCache =
-    domWalkerMutableState.invalidatedPathsForStylesheetCache
 
   const needsWalk =
     !domWalkerMutableState.initComplete ||
