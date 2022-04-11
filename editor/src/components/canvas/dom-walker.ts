@@ -583,36 +583,8 @@ export function useDomWalker(
     props.domWalkerInvalidateCount,
   )
 
-  const selectedViewsRef = React.useRef(props.selectedViews)
-  const canvasInteractionHappeningRef = React.useRef(props.canvasInteractionHappening)
-
-  if (selectedViewsRef.current !== props.selectedViews) {
-    selectedViewsRef.current = props.selectedViews
-  }
-  if (canvasInteractionHappeningRef.current !== props.canvasInteractionHappening) {
-    canvasInteractionHappeningRef.current = props.canvasInteractionHappening
-  }
-
-  const editorStore = forceNotNull(
-    `EditorStateContext not initialized in dom walker`,
-    React.useContext(EditorStateContext)?.api,
-  )
-
-  const { mutationObserver, resizeObserver } = React.useMemo(
-    () => initDomWalkerObservers(domWalkerMutableState, editorStore),
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-    [], // the dependencies are empty because this should only evaluate once
-  )
-  React.useEffect(
-    () => {
-      return function cleanup() {
-        mutationObserver.disconnect()
-        resizeObserver.disconnect()
-      }
-    },
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-    [], // we deliberately only want to run this once
-  )
+  const mutationObserver = domWalkerMutableState.mutationObserver
+  const resizeObserver = domWalkerMutableState.resizeObserver
 
   useInvalidateScenesWhenSelectedViewChanges(
     updateInvalidatedScenes,
