@@ -586,6 +586,7 @@ export function useDomWalker(
   const mutationObserver = domWalkerMutableState.mutationObserver
   const resizeObserver = domWalkerMutableState.resizeObserver
 
+  // TODO move this to somewhere in dispatch
   useInvalidateScenesWhenSelectedViewChanges(
     updateInvalidatedScenes,
     invalidatedPathsForStylesheetCache,
