@@ -42,9 +42,11 @@ import {
 import { CanvasContainerProps, UiJsxCanvasCtxAtom } from './ui-jsx-canvas'
 import { camelCaseToDashed } from '../../core/shared/string-utils'
 import {
+  EditorStateContext,
   useEditorState,
   useRefEditorState,
   useSelectorWithCallback,
+  UtopiaStoreAPI,
 } from '../editor/store/store-hook'
 import {
   UTOPIA_DO_NOT_TRAVERSE_KEY,
@@ -183,90 +185,6 @@ function getCachedAttributesComingFromStyleSheets(
   const value = getAttributesComingFromStyleSheets(element)
   AttributesFromStyleSheetsCache.set(element, value)
   return value
-}
-
-function useResizeObserver(
-  updateInvalidatedPaths: UpdateMutableCallback<Set<string>>,
-  updateInvalidatedScenes: UpdateMutableCallback<Set<string>>,
-  selectedViews: React.MutableRefObject<Array<ElementPath>>,
-  canvasInteractionHappening: React.MutableRefObject<boolean>,
-) {
-  const resizeObserver = React.useMemo((): typeof ResizeObserver | null => {
-    if (ObserversAvailable) {
-      return new ResizeObserver((entries: any) => {
-        if (canvasInteractionHappening.current) {
-          // Only add the selected views
-          fastForEach(selectedViews.current, (v) =>
-            updateInvalidatedPaths((current) => current.add(EP.toString(v)), 'invalidate'),
-          )
-        } else {
-          for (let entry of entries) {
-            const sceneID = findParentScene(entry.target)
-            if (sceneID != null) {
-              updateInvalidatedScenes((current) => current.add(sceneID), 'invalidate')
-            }
-          }
-        }
-      })
-    } else {
-      return null
-    }
-    /* eslint-disable-next-line react-hooks/exhaustive-deps */
-  }, []) // the dependencies are empty because this should only evaluate once
-  React.useEffect(() => {
-    return function cleanup() {
-      if (resizeObserver != null) {
-        resizeObserver.disconnect()
-      }
-    }
-  }, [resizeObserver])
-  return resizeObserver
-}
-
-function useMutationObserver(
-  updateInvalidatedPaths: UpdateMutableCallback<Set<string>>,
-  updateInvalidatedScenes: UpdateMutableCallback<Set<string>>,
-  selectedViews: React.MutableRefObject<Array<ElementPath>>,
-  canvasInteractionHappening: React.MutableRefObject<boolean>,
-) {
-  const mutationObserver = React.useMemo((): MutationObserver | null => {
-    if (ObserversAvailable) {
-      return new (window as any).MutationObserver((mutations: MutationRecord[]) => {
-        if (canvasInteractionHappening.current) {
-          // Only add the selected views
-          fastForEach(selectedViews.current, (v) =>
-            updateInvalidatedPaths((current) => current.add(EP.toString(v)), 'invalidate'),
-          )
-        } else {
-          for (let mutation of mutations) {
-            if (
-              mutation.attributeName === 'style' ||
-              mutation.addedNodes.length > 0 ||
-              mutation.removedNodes.length > 0
-            ) {
-              if (mutation.target instanceof HTMLElement) {
-                const sceneID = findParentScene(mutation.target)
-                if (sceneID != null) {
-                  updateInvalidatedScenes((current) => current.add(sceneID), 'invalidate')
-                }
-              }
-            }
-          }
-        }
-      })
-    } else {
-      return null
-    }
-    /* eslint-disable-next-line react-hooks/exhaustive-deps */
-  }, []) // the dependencies are empty because this should only evaluate once
-  React.useEffect(() => {
-    return function cleanup() {
-      if (mutationObserver != null) {
-        mutationObserver.disconnect()
-      }
-    }
-  }, [mutationObserver])
-  return mutationObserver
 }
 
 function useInvalidateScenesWhenSelectedViewChanges(
@@ -527,6 +445,62 @@ function runDomWalker({
   }
 }
 
+export function initDomWalkerObservers(
+  domWalkerMutableState: DomWalkerMutableStateData,
+  editorStore: UtopiaStoreAPI,
+): { resizeObserver: ResizeObserver; mutationObserver: MutationObserver } {
+  const resizeObserver = new ResizeObserver((entries: any) => {
+    const canvasInteractionHappening = false // TODO introduce some sort of canvasInteractionHappening
+    const selectedViews = editorStore.getState().editor.selectedViews
+    if (canvasInteractionHappening) {
+      // Only add the selected views
+      fastForEach(selectedViews, (v) => {
+        domWalkerMutableState.invalidatedPaths.add(EP.toString(v))
+        domWalkerMutableState.needsWalk = true
+      })
+    } else {
+      for (let entry of entries) {
+        const sceneID = findParentScene(entry.target)
+        if (sceneID != null) {
+          domWalkerMutableState.invalidatedScenes.add(sceneID)
+          domWalkerMutableState.needsWalk = true
+        }
+      }
+    }
+  })
+
+  const mutationObserver = new window.MutationObserver((mutations: MutationRecord[]) => {
+    const canvasInteractionHappening = false // TODO introduce some sort of canvasInteractionHappening
+    const selectedViews = editorStore.getState().editor.selectedViews
+
+    if (canvasInteractionHappening) {
+      // Only add the selected views
+      fastForEach(selectedViews, (v) => {
+        domWalkerMutableState.invalidatedPaths.add(EP.toString(v))
+        domWalkerMutableState.needsWalk = true
+      })
+    } else {
+      for (let mutation of mutations) {
+        if (
+          mutation.attributeName === 'style' ||
+          mutation.addedNodes.length > 0 ||
+          mutation.removedNodes.length > 0
+        ) {
+          if (mutation.target instanceof HTMLElement) {
+            const sceneID = findParentScene(mutation.target)
+            if (sceneID != null) {
+              domWalkerMutableState.invalidatedScenes.add(sceneID)
+              domWalkerMutableState.needsWalk = true
+            }
+          }
+        }
+      }
+    }
+  })
+
+  return { resizeObserver, mutationObserver }
+}
+
 export function useDomWalker(
   props: DomWalkerProps,
 ): [UpdateMutableCallback<Set<string>>, UpdateMutableCallback<Set<string>>] {
@@ -605,18 +579,27 @@ export function useDomWalker(
     canvasInteractionHappeningRef.current = props.canvasInteractionHappening
   }
 
-  const resizeObserver = useResizeObserver(
-    updateInvalidatedPaths,
-    updateInvalidatedScenes,
-    selectedViewsRef,
-    canvasInteractionHappeningRef,
+  const editorStore = forceNotNull(
+    `EditorStateContext not initialized in dom walker`,
+    React.useContext(EditorStateContext)?.api,
   )
-  const mutationObserver = useMutationObserver(
-    updateInvalidatedPaths,
-    updateInvalidatedScenes,
-    selectedViewsRef,
-    canvasInteractionHappeningRef,
+
+  const { mutationObserver, resizeObserver } = React.useMemo(
+    () => initDomWalkerObservers(domWalkerMutableState, editorStore),
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+    [], // the dependencies are empty because this should only evaluate once
   )
+  React.useEffect(
+    () => {
+      return function cleanup() {
+        mutationObserver.disconnect()
+        resizeObserver.disconnect()
+      }
+    },
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+    [], // we deliberately only want to run this once
+  )
+
   useInvalidateScenesWhenSelectedViewChanges(
     updateInvalidatedScenes,
     invalidatedPathsForStylesheetCache,
