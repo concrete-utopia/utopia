@@ -428,7 +428,7 @@ export interface DomWalkerMutableStateData {
   needsWalk: boolean
   invalidatedPaths: Set<string>
   invalidatedScenes: Set<string> // TODO should this be merged with invalidatedPaths?
-  invalidatedPathsForStylesheetCacheRef: Set<string>
+  invalidatedPathsForStylesheetCache: Set<string>
   initComplete: boolean
 }
 
@@ -437,7 +437,7 @@ export function emptyDomWalkerMutableState(): DomWalkerMutableStateData {
     needsWalk: false,
     invalidatedPaths: emptySet(),
     invalidatedScenes: emptySet(),
-    invalidatedPathsForStylesheetCacheRef: emptySet(),
+    invalidatedPathsForStylesheetCache: emptySet(),
     initComplete: false,
   }
 }
@@ -582,7 +582,8 @@ export function useDomWalker(
     [domWalkerMutableState, fireThrottledCallback],
   )
 
-  const invalidatedPathsForStylesheetCache = React.useRef<Set<string>>(emptySet()).current
+  const invalidatedPathsForStylesheetCache =
+    domWalkerMutableState.invalidatedPathsForStylesheetCache
   const [initComplete, setInitComplete] = useInvalidateInitCompleteOnMountCount(
     props.mountCount,
     props.domWalkerInvalidateCount,
