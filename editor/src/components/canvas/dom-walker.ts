@@ -423,58 +423,106 @@ function mergeFragmentMetadata(
   return Object.values(working)
 }
 
+interface RunDomWalkerParams {
+  // from dom walker props
+  selectedViews: Array<ElementPath>
+  scale: number
+  additionalElementsToUpdate: Array<ElementPath>
+
+  resizeObserver: any
+  mutationObserver: MutationObserver | null
+  rootMetadataInStateRef: { readonly current: readonly ElementInstanceMetadata[] }
+  invalidatedPaths: Set<string>
+  invalidatedScenes: Set<string>
+  invalidatedPathsForStylesheetCacheRef: React.MutableRefObject<Set<string>>
+  initComplete: boolean
+  setInitComplete: () => void
+}
+
+function runDomWalker({
+  selectedViews,
+  scale,
+  additionalElementsToUpdate,
+  resizeObserver,
+  mutationObserver,
+  rootMetadataInStateRef,
+  invalidatedPaths,
+  invalidatedScenes,
+  invalidatedPathsForStylesheetCacheRef,
+  initComplete,
+  setInitComplete,
+}: RunDomWalkerParams): { metadata: ElementInstanceMetadata[]; cachedPaths: ElementPath[] } {
+  const LogDomWalkerPerformance =
+    isFeatureEnabled('Debug mode – Performance Marks') && PERFORMANCE_MARKS_ALLOWED
+
+  const canvasRootContainer = document.getElementById(CanvasContainerID)
+
+  if (canvasRootContainer != null) {
+    if (LogDomWalkerPerformance) {
+      performance.mark('DOM_WALKER_START')
+    }
+    // Get some base values relating to the div this component creates.
+    if (ObserversAvailable && resizeObserver != null && mutationObserver != null) {
+      Array.from(document.querySelectorAll(`#${CanvasContainerID} *`)).map((elem) => {
+        resizeObserver.observe(elem)
+      })
+      mutationObserver.observe(canvasRootContainer, MutationObserverConfig)
+    }
+
+    // getCanvasRectangleFromElement is costly, so I made it lazy. we only need the value inside globalFrameForElement
+    const containerRect = lazyValue(() => {
+      return getCanvasRectangleFromElement(canvasRootContainer, scale)
+    })
+
+    // This assumes that the canvas root is rendering a Storyboard fragment.
+    // The necessary validPaths and the root fragment's template path comes from props,
+    // because the fragment is invisible in the DOM.
+    const { metadata, cachedPaths } = walkCanvasRootFragment(
+      canvasRootContainer,
+      rootMetadataInStateRef,
+      invalidatedPaths,
+      invalidatedScenes,
+      invalidatedPathsForStylesheetCacheRef,
+      selectedViews,
+      !initComplete,
+      scale,
+      containerRect,
+      [...additionalElementsToUpdate, ...selectedViews],
+    )
+    if (LogDomWalkerPerformance) {
+      performance.mark('DOM_WALKER_END')
+      performance.measure('DOM WALKER', 'DOM_WALKER_START', 'DOM_WALKER_END')
+    }
+    setInitComplete()
+
+    // Fragments will appear as multiple separate entries with duplicate UIDs, so we need to handle those
+    const fixedMetadata = mergeFragmentMetadata(metadata)
+
+    return { metadata: fixedMetadata, cachedPaths: cachedPaths }
+  } else {
+    // TODO flip if-else
+    throw new Error(`Dom walker: canvasRootContainer shouldn't be null`)
+  }
+}
+
 export function useDomWalker(
   props: DomWalkerProps,
 ): [UpdateMutableCallback<Set<string>>, UpdateMutableCallback<Set<string>>] {
   const fireThrottledCallback = useThrottledCallback(() => {
-    const LogDomWalkerPerformance =
-      isFeatureEnabled('Debug mode – Performance Marks') && PERFORMANCE_MARKS_ALLOWED
-
-    const canvasRootContainer = document.getElementById(CanvasContainerID)
-
-    if (canvasRootContainer != null) {
-      if (LogDomWalkerPerformance) {
-        performance.mark('DOM_WALKER_START')
-      }
-      // Get some base values relating to the div this component creates.
-      if (ObserversAvailable && resizeObserver != null && mutationObserver != null) {
-        Array.from(document.querySelectorAll(`#${CanvasContainerID} *`)).map((elem) => {
-          resizeObserver.observe(elem)
-        })
-        mutationObserver.observe(canvasRootContainer, MutationObserverConfig)
-      }
-
-      // getCanvasRectangleFromElement is costly, so I made it lazy. we only need the value inside globalFrameForElement
-      const containerRect = lazyValue(() => {
-        return getCanvasRectangleFromElement(canvasRootContainer, props.scale)
-      })
-
-      // This assumes that the canvas root is rendering a Storyboard fragment.
-      // The necessary validPaths and the root fragment's template path comes from props,
-      // because the fragment is invisible in the DOM.
-      const { metadata, cachedPaths } = walkCanvasRootFragment(
-        canvasRootContainer,
-        rootMetadataInStateRef,
-        invalidatedPaths, // this is not the nicest type here, but it should be fine for now :)
-        invalidatedScenes,
-        invalidatedPathsForStylesheetCacheRef,
-        props.selectedViews,
-        !initComplete,
-        props.scale,
-        containerRect,
-        [...props.additionalElementsToUpdate, ...props.selectedViews],
-      )
-      if (LogDomWalkerPerformance) {
-        performance.mark('DOM_WALKER_END')
-        performance.measure('DOM WALKER', 'DOM_WALKER_START', 'DOM_WALKER_END')
-      }
-      setInitComplete()
-
-      // Fragments will appear as multiple separate entries with duplicate UIDs, so we need to handle those
-      const fixedMetadata = mergeFragmentMetadata(metadata)
-
-      props.onDomReport(fixedMetadata, cachedPaths)
-    }
+    const { metadata, cachedPaths } = runDomWalker({
+      selectedViews: props.selectedViews,
+      scale: props.scale,
+      additionalElementsToUpdate: props.additionalElementsToUpdate,
+      resizeObserver: resizeObserver,
+      mutationObserver: mutationObserver,
+      rootMetadataInStateRef: rootMetadataInStateRef,
+      invalidatedPaths: invalidatedPaths,
+      invalidatedScenes: invalidatedScenes,
+      invalidatedPathsForStylesheetCacheRef: invalidatedPathsForStylesheetCacheRef,
+      initComplete: initComplete, // TODO review initComplete
+      setInitComplete: setInitComplete, // TODO remove setInitComplete
+    })
+    props.onDomReport(metadata, cachedPaths) // TODO remove this
   })
 
   const rootMetadataInStateRef = useRefEditorState(
