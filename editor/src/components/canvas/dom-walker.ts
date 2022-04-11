@@ -220,7 +220,6 @@ function useInvalidateInitCompleteOnMountCount(
   ) {
     // mount count increased, re-initialize dom-walker
     domWalkerMutableState.initComplete = false // Mutation!
-    domWalkerMutableState.needsWalk = true // Mutation!
     previousMountCountRef.current = mountCount
     previousDomWalkerInvalidateCountRef.current = domWalkerInvalidateCount
   }
@@ -339,7 +338,6 @@ function mergeFragmentMetadata(
 }
 
 export interface DomWalkerMutableStateData {
-  needsWalk: boolean
   invalidatedPaths: Set<string>
   invalidatedScenes: Set<string> // TODO should this be merged with invalidatedPaths?
   invalidatedPathsForStylesheetCache: Set<string>
@@ -353,11 +351,10 @@ export function createDomWalkerMutableState(
   editorStoreApi: UtopiaStoreAPI,
 ): DomWalkerMutableStateData {
   const mutableData: DomWalkerMutableStateData = {
-    needsWalk: false,
     invalidatedPaths: emptySet(),
     invalidatedScenes: emptySet(),
     invalidatedPathsForStylesheetCache: emptySet(),
-    initComplete: false,
+    initComplete: true,
 
     mutationObserver: null as any,
     resizeObserver: null as any,
@@ -469,14 +466,12 @@ export function initDomWalkerObservers(
       // Only add the selected views
       fastForEach(selectedViews, (v) => {
         domWalkerMutableState.invalidatedPaths.add(EP.toString(v))
-        domWalkerMutableState.needsWalk = true
       })
     } else {
       for (let entry of entries) {
         const sceneID = findParentScene(entry.target)
         if (sceneID != null) {
           domWalkerMutableState.invalidatedScenes.add(sceneID)
-          domWalkerMutableState.needsWalk = true
         }
       }
     }
@@ -490,7 +485,6 @@ export function initDomWalkerObservers(
       // Only add the selected views
       fastForEach(selectedViews, (v) => {
         domWalkerMutableState.invalidatedPaths.add(EP.toString(v))
-        domWalkerMutableState.needsWalk = true
       })
     } else {
       for (let mutation of mutations) {
@@ -503,7 +497,6 @@ export function initDomWalkerObservers(
             const sceneID = findParentScene(mutation.target)
             if (sceneID != null) {
               domWalkerMutableState.invalidatedScenes.add(sceneID)
-              domWalkerMutableState.needsWalk = true
             }
           }
         }
@@ -560,8 +553,12 @@ export function useDomWalker(props: DomWalkerProps): void {
   React.useLayoutEffect(() => {
     fireThrottledCallback('immediate')
   })
-  if (domWalkerMutableState.needsWalk) {
-    domWalkerMutableState.needsWalk = false
+  const needsWalk =
+    !domWalkerMutableState.initComplete ||
+    domWalkerMutableState.invalidatedPaths.size > 0 ||
+    domWalkerMutableState.invalidatedScenes.size > 0
+
+  if (needsWalk) {
     fireThrottledCallback('immediate')
   }
 }
@@ -573,21 +570,15 @@ export function useDomWalkerInvalidateCallbacks(): [
   const domWalkerMutableState = useDomWalkerMutableStateContext()
   // For invalidating specific paths only
   const updateInvalidatedPaths: UpdateMutableCallback<Set<string>> = React.useCallback(
-    (callback, invalidate) => {
+    (callback) => {
       callback(domWalkerMutableState.invalidatedPaths)
-      if (invalidate === 'invalidate') {
-        domWalkerMutableState.needsWalk = true // TODO this needs an actual trigger!
-      }
     },
     [domWalkerMutableState],
   )
 
   const updateInvalidatedScenes: UpdateMutableCallback<Set<string>> = React.useCallback(
-    (callback, invalidate) => {
+    (callback) => {
       callback(domWalkerMutableState.invalidatedScenes)
-      if (invalidate === 'invalidate') {
-        domWalkerMutableState.needsWalk = true // TODO this needs an actual trigger!
-      }
     },
     [domWalkerMutableState],
   )
