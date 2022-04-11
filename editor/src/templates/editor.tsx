@@ -92,6 +92,7 @@ import {
   DomWalkerMutableStateData,
   createDomWalkerMutableState,
   initDomWalkerObservers,
+  invalidateDomWalkerIfNecessary,
 } from '../components/canvas/dom-walker'
 
 if (PROBABLY_ELECTRON) {
@@ -314,12 +315,20 @@ export class Editor {
         this.storedState,
         this.spyCollector,
       )
-      this.storedState = result
+
+      invalidateDomWalkerIfNecessary(
+        this.domWalkerMutableState,
+        this.storedState.patchedEditor,
+        result.patchedEditor,
+      )
 
       if (!result.nothingChanged) {
         // we update the zustand store with the new editor state. this will trigger a re-render in the EditorComponent
         this.updateStore(patchedStoreFromFullStore(result))
       }
+
+      this.storedState = result
+
       return { entireUpdateFinished: result.entireUpdateFinished }
     }
     if (PRODUCTION_ENV) {

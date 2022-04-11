@@ -65,6 +65,8 @@ import { fastForEach } from '../../core/shared/utils'
 import { MapLike } from 'typescript'
 import { isFeatureEnabled } from '../../utils/feature-switches'
 import { usePubSubAtomReadOnly } from '../../core/shared/atom-with-pub-sub'
+import type { EditorState } from '../editor/store/editor-state'
+import { shallowEqual } from '../../core/shared/equality-utils'
 
 const MutationObserverConfig = { attributes: true, childList: true, subtree: true }
 const ObserversAvailable = (window as any).MutationObserver != null && ResizeObserver != null
@@ -187,44 +189,6 @@ function getCachedAttributesComingFromStyleSheets(
   return value
 }
 
-function useInvalidateScenesWhenSelectedViewChanges(
-  updateInvalidatedScenes: UpdateMutableCallback<Set<string>>,
-  invalidatedPathsForStylesheetCacheRef: Set<string>,
-): void {
-  return useSelectorWithCallback(
-    (store) => store.editor.selectedViews,
-    (newSelectedViews) => {
-      newSelectedViews.forEach((sv) => {
-        const scenePath = EP.createBackwardsCompatibleScenePath(sv)
-        if (scenePath != null) {
-          const sceneID = EP.toString(scenePath)
-          updateInvalidatedScenes((current) => current.add(sceneID), 'invalidate')
-          invalidatedPathsForStylesheetCacheRef.add(EP.toString(sv))
-        }
-      })
-    },
-  )
-}
-
-function useInvalidateInitCompleteOnMountCount(
-  domWalkerMutableState: DomWalkerMutableStateData,
-  mountCount: number,
-  domWalkerInvalidateCount: number,
-): void {
-  const previousMountCountRef = React.useRef<number>(mountCount)
-  const previousDomWalkerInvalidateCountRef = React.useRef<number>(domWalkerInvalidateCount)
-
-  if (
-    previousMountCountRef.current !== mountCount ||
-    previousDomWalkerInvalidateCountRef.current !== domWalkerInvalidateCount
-  ) {
-    // mount count increased, re-initialize dom-walker
-    domWalkerMutableState.initComplete = false // Mutation!
-    previousMountCountRef.current = mountCount
-    previousDomWalkerInvalidateCountRef.current = domWalkerInvalidateCount
-  }
-}
-
 // todo move to file
 export type UpdateMutableCallback<S> = (
   updater: (mutableState: S) => void,
@@ -341,7 +305,7 @@ function runDomWalker({
   additionalElementsToUpdate,
   rootMetadataInStateRef,
   invalidatedPathsForStylesheetCache,
-}: RunDomWalkerParams): { metadata: ElementInstanceMetadata[]; cachedPaths: ElementPath[] } {
+}: RunDomWalkerParams): { metadata: ElementInstanceMetadata[]; cachedPaths: ElementPath[] } | null {
   const LogDomWalkerPerformance =
     isFeatureEnabled('Debug mode – Performance Marks') && PERFORMANCE_MARKS_ALLOWED
 
@@ -395,7 +359,7 @@ function runDomWalker({
     return { metadata: fixedMetadata, cachedPaths: cachedPaths }
   } else {
     // TODO flip if-else
-    throw new Error(`Dom walker: canvasRootContainer shouldn't be null`)
+    return null
   }
 }
 
@@ -453,7 +417,7 @@ export function initDomWalkerObservers(
 
 export function useDomWalker(props: DomWalkerProps): void {
   const fireDomWalker = () => {
-    const { metadata, cachedPaths } = runDomWalker({
+    const domWalkerResult = runDomWalker({
       domWalkerMutableState: domWalkerMutableState,
       selectedViews: props.selectedViews,
       scale: props.scale,
@@ -461,7 +425,9 @@ export function useDomWalker(props: DomWalkerProps): void {
       rootMetadataInStateRef: rootMetadataInStateRef,
       invalidatedPathsForStylesheetCache: invalidatedPathsForStylesheetCache,
     })
-    props.onDomReport(metadata, cachedPaths) // TODO remove this
+    if (domWalkerResult != null) {
+      props.onDomReport(domWalkerResult.metadata, domWalkerResult.cachedPaths) // TODO remove this
+    }
   }
 
   const rootMetadataInStateRef = useRefEditorState(
@@ -469,34 +435,48 @@ export function useDomWalker(props: DomWalkerProps): void {
   )
 
   const domWalkerMutableState = useDomWalkerMutableStateContext()
-  const [updateInvalidatedPaths, updateInvalidatedScenes] = useDomWalkerInvalidateCallbacks()
 
   const invalidatedPathsForStylesheetCache =
     domWalkerMutableState.invalidatedPathsForStylesheetCache
 
-  // TODO move this to somewhere in dispatch
-  useInvalidateInitCompleteOnMountCount(
-    domWalkerMutableState,
-    props.mountCount,
-    props.domWalkerInvalidateCount,
-  )
-
-  // TODO move this to somewhere in dispatch
-  useInvalidateScenesWhenSelectedViewChanges(
-    updateInvalidatedScenes,
-    invalidatedPathsForStylesheetCache,
-  )
-
-  React.useLayoutEffect(() => {
-    fireDomWalker()
-  })
   const needsWalk =
     !domWalkerMutableState.initComplete ||
     domWalkerMutableState.invalidatedPaths.size > 0 ||
     domWalkerMutableState.invalidatedScenes.size > 0
 
+  React.useLayoutEffect(() => {
+    fireDomWalker()
+  })
+
   if (needsWalk) {
     fireDomWalker() // TODO this should NOT live inside the hook!
+  }
+}
+
+export function invalidateDomWalkerIfNecessary(
+  domWalkerMutableState: DomWalkerMutableStateData,
+  oldEditorState: EditorState,
+  newEditorState: EditorState,
+): void {
+  // invalidate initComplete on mountCount increase
+  if (
+    newEditorState.canvas.domWalkerInvalidateCount >
+      oldEditorState.canvas.domWalkerInvalidateCount ||
+    newEditorState.canvas.mountCount > oldEditorState.canvas.mountCount
+  ) {
+    domWalkerMutableState.initComplete = false // Mutation!
+  }
+
+  // invalidate scenes when selectedViews change
+  if (!shallowEqual(oldEditorState.selectedViews, newEditorState.selectedViews)) {
+    newEditorState.selectedViews.forEach((sv) => {
+      const scenePath = EP.createBackwardsCompatibleScenePath(sv)
+      if (scenePath != null) {
+        const sceneID = EP.toString(scenePath)
+        domWalkerMutableState.invalidatedScenes.add(sceneID) // Mutation!
+        domWalkerMutableState.invalidatedPathsForStylesheetCache.add(EP.toString(sv))
+      }
+    })
   }
 }
 
