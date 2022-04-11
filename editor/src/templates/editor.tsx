@@ -10,6 +10,7 @@ import { subscribeWithSelector } from 'zustand/middleware'
 import '../utils/vite-hmr-config'
 import {
   getProjectID,
+  PERFORMANCE_MARKS_ALLOWED,
   PROBABLY_ELECTRON,
   PRODUCTION_ENV,
   requireElectron,
@@ -94,7 +95,9 @@ import {
   createDomWalkerMutableState,
   initDomWalkerObservers,
   invalidateDomWalkerIfNecessary,
+  runDomWalker,
 } from '../components/canvas/dom-walker'
+import { isFeatureEnabled } from '../utils/feature-switches'
 
 if (PROBABLY_ELECTRON) {
   let { webFrame } = requireElectron()
@@ -323,32 +326,69 @@ export class Editor {
     entireUpdateFinished: Promise<any>
   } => {
     const runDispatch = () => {
-      const result = editorDispatch(
+      const PerformanceMarks =
+        isFeatureEnabled('Debug mode – Performance Marks') && PERFORMANCE_MARKS_ALLOWED
+
+      const oldEditorState = this.storedState
+
+      const dispatchResult = editorDispatch(
         this.boundDispatch,
         dispatchedActions,
-        this.storedState,
+        oldEditorState,
         this.spyCollector,
       )
 
       invalidateDomWalkerIfNecessary(
         this.domWalkerMutableState,
-        this.storedState.patchedEditor,
-        result.patchedEditor,
+        oldEditorState.patchedEditor,
+        dispatchResult.patchedEditor,
       )
 
-      if (!result.nothingChanged) {
+      let dispatchResultWithMetadata = dispatchResult
+
+      if (
+        !dispatchResult.nothingChanged // TODO fix type!
+      ) {
+        const updateId = canvasUpdateId++
         // we update the zustand store with the new editor state. this will trigger a re-render in the EditorComponent
-        performance.mark(`update canvas ${dispatchedActions[0].action}`)
-        this.updateCanvasStore(patchedStoreFromFullStore(result))
-        performance.measure(`Update Canvas`, `update canvas ${dispatchedActions[0].action}`)
-        performance.mark(`update editor ${dispatchedActions[0].action}`)
-        this.updateStore(patchedStoreFromFullStore(result))
-        performance.measure(`Update Editor`, `update editor ${dispatchedActions[0].action}`)
+        if (PerformanceMarks) {
+          performance.mark(`update canvas ${updateId}`)
+        }
+        this.updateCanvasStore(patchedStoreFromFullStore(dispatchResult))
+        if (PerformanceMarks) {
+          performance.measure(`Update Canvas`, `update canvas ${updateId}`)
+        }
+
+        const domWalkerResult = runDomWalker({
+          domWalkerMutableState: this.domWalkerMutableState,
+          selectedViews: dispatchResult.patchedEditor.selectedViews,
+          scale: dispatchResult.patchedEditor.canvas.scale,
+          additionalElementsToUpdate:
+            dispatchResult.patchedEditor.canvas.domWalkerAdditionalElementsToUpdate,
+          rootMetadataInStateRef: { current: dispatchResult.patchedEditor.domMetadata },
+        })
+
+        if (domWalkerResult != null) {
+          dispatchResultWithMetadata = editorDispatch(
+            this.boundDispatch,
+            [EditorActions.saveDOMReport(domWalkerResult.metadata, domWalkerResult.cachedPaths)],
+            dispatchResult,
+            this.spyCollector,
+          )
+        }
+
+        if (PerformanceMarks) {
+          performance.mark(`update editor ${updateId}`)
+        }
+        this.updateStore(patchedStoreFromFullStore(dispatchResultWithMetadata))
+        if (PerformanceMarks) {
+          performance.measure(`Update Editor`, `update editor ${updateId}`)
+        }
       }
 
-      this.storedState = result
+      this.storedState = dispatchResultWithMetadata
 
-      return { entireUpdateFinished: result.entireUpdateFinished }
+      return { entireUpdateFinished: dispatchResultWithMetadata.entireUpdateFinished }
     }
     if (PRODUCTION_ENV) {
       return runDispatch()
@@ -361,6 +401,8 @@ export class Editor {
     }
   }
 }
+
+let canvasUpdateId: number = 0
 
 export const EditorRoot: React.FunctionComponent<{
   api: UtopiaStoreAPI

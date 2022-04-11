@@ -21,7 +21,7 @@ import {
 } from '../../core/shared/runtime-report-logs'
 import { ProjectContentTreeRoot } from '../assets'
 import { FancyError, processErrorWithSourceMap } from '../../core/shared/code-exec-utils'
-import { DomWalkerProps, useDomWalker, useDomWalkerInvalidateCallbacks } from './dom-walker'
+import { DomWalkerProps, useDomWalkerInvalidateCallbacks } from './dom-walker'
 import { ResolvingRemoteDependencyErrorName } from '../../core/es-modules/package-manager/package-manager'
 import { CanvasLoadingScreen } from './canvas-loading-screen'
 import { isHooksErrorMessage } from '../../utils/canvas-react-utils'
@@ -128,16 +128,6 @@ function DomWalkerWrapper(props: UiJsxCanvasPropsWithErrorCallback) {
     'DomWalkerWrapper selectedViews',
   )
   let [updateInvalidatedPaths, updateInvalidatedScenes] = useDomWalkerInvalidateCallbacks()
-
-  useDomWalker({
-    selectedViews: selectedViews,
-    canvasInteractionHappening: props.transientFilesState != null,
-    mountCount: props.mountCount,
-    domWalkerInvalidateCount: props.domWalkerInvalidateCount,
-    scale: props.scale,
-    onDomReport: props.onDomReport,
-    additionalElementsToUpdate: props.domWalkerAdditionalElementsToUpdate,
-  })
 
   return (
     <DomWalkerInvalidatePathsCtxAtom.Provider value={updateInvalidatedPaths}>

@@ -50,7 +50,7 @@ import {
   TransientFilesState,
 } from '../editor/store/editor-state'
 import { proxyConsole } from './console-proxy'
-import { UpdateMutableCallback, useDomWalker } from './dom-walker'
+import type { UpdateMutableCallback } from './dom-walker'
 import { isLiveMode } from '../editor/editor-modes'
 import { BakedInStoryboardVariableName } from '../../core/model/scene-utils'
 import { normalizeName } from '../custom-code/custom-code-utils'

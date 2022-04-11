@@ -297,13 +297,22 @@ interface RunDomWalkerParams {
   rootMetadataInStateRef: { readonly current: readonly ElementInstanceMetadata[] }
 }
 
-function runDomWalker({
+export function runDomWalker({
   domWalkerMutableState,
   selectedViews,
   scale,
   additionalElementsToUpdate,
   rootMetadataInStateRef,
 }: RunDomWalkerParams): { metadata: ElementInstanceMetadata[]; cachedPaths: ElementPath[] } | null {
+  const needsWalk =
+    !domWalkerMutableState.initComplete ||
+    domWalkerMutableState.invalidatedPaths.size > 0 ||
+    domWalkerMutableState.invalidatedScenes.size > 0
+
+  if (!needsWalk) {
+    return null // early return to save performance
+  }
+
   const LogDomWalkerPerformance =
     isFeatureEnabled('Debug mode – Performance Marks') && PERFORMANCE_MARKS_ALLOWED
 
@@ -411,40 +420,6 @@ export function initDomWalkerObservers(
   })
 
   return { resizeObserver, mutationObserver }
-}
-
-export function useDomWalker(props: DomWalkerProps): void {
-  const fireDomWalker = () => {
-    const domWalkerResult = runDomWalker({
-      domWalkerMutableState: domWalkerMutableState,
-      selectedViews: props.selectedViews,
-      scale: props.scale,
-      additionalElementsToUpdate: props.additionalElementsToUpdate,
-      rootMetadataInStateRef: rootMetadataInStateRef,
-    })
-    if (domWalkerResult != null) {
-      props.onDomReport(domWalkerResult.metadata, domWalkerResult.cachedPaths) // TODO remove this
-    }
-  }
-
-  const rootMetadataInStateRef = useRefEditorState(
-    (store) => store.editor.domMetadata as ReadonlyArray<ElementInstanceMetadata>,
-  )
-
-  const domWalkerMutableState = useDomWalkerMutableStateContext()
-
-  const needsWalk =
-    !domWalkerMutableState.initComplete ||
-    domWalkerMutableState.invalidatedPaths.size > 0 ||
-    domWalkerMutableState.invalidatedScenes.size > 0
-
-  React.useLayoutEffect(() => {
-    fireDomWalker()
-  })
-
-  if (needsWalk) {
-    fireDomWalker() // TODO this should NOT live inside the hook!
-  }
 }
 
 export function invalidateDomWalkerIfNecessary(
