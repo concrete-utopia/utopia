@@ -259,30 +259,6 @@ function useMutableStateAsyncInvalidate<S>(
   return [stateRef.current, setAndMarkInvalidated]
 }
 
-function useThrottledCallback(
-  callback: () => void,
-): (immediate: 'immediate' | 'throttled') => void {
-  const timeoutRef = React.useRef<NodeJS.Timeout | null>(null)
-
-  const callbackRef = React.useRef(callback)
-  callbackRef.current = callback
-
-  return React.useCallback((immediate: 'immediate' | 'throttled') => {
-    if (immediate === 'immediate') {
-      if (timeoutRef.current != null) {
-        clearTimeout(timeoutRef.current)
-        timeoutRef.current = null
-      }
-      callbackRef.current()
-    } else if (timeoutRef.current == null) {
-      timeoutRef.current = setTimeout(() => {
-        timeoutRef.current = null
-        callbackRef.current()
-      }, 0)
-    }
-  }, [])
-}
-
 export interface DomWalkerProps {
   selectedViews: Array<ElementPath>
   scale: number
@@ -508,7 +484,7 @@ export function initDomWalkerObservers(
 }
 
 export function useDomWalker(props: DomWalkerProps): void {
-  const fireThrottledCallback = useThrottledCallback(() => {
+  const fireDomWalker = () => {
     const { metadata, cachedPaths } = runDomWalker({
       domWalkerMutableState: domWalkerMutableState,
       selectedViews: props.selectedViews,
@@ -522,7 +498,7 @@ export function useDomWalker(props: DomWalkerProps): void {
       invalidatedPathsForStylesheetCache: invalidatedPathsForStylesheetCache,
     })
     props.onDomReport(metadata, cachedPaths) // TODO remove this
-  })
+  }
 
   const rootMetadataInStateRef = useRefEditorState(
     (store) => store.editor.domMetadata as ReadonlyArray<ElementInstanceMetadata>,
@@ -551,7 +527,7 @@ export function useDomWalker(props: DomWalkerProps): void {
   )
 
   React.useLayoutEffect(() => {
-    fireThrottledCallback('immediate')
+    fireDomWalker()
   })
   const needsWalk =
     !domWalkerMutableState.initComplete ||
@@ -559,7 +535,7 @@ export function useDomWalker(props: DomWalkerProps): void {
     domWalkerMutableState.invalidatedScenes.size > 0
 
   if (needsWalk) {
-    fireThrottledCallback('immediate')
+    fireDomWalker()
   }
 }
 
