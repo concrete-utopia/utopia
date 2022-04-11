@@ -388,7 +388,12 @@ export class Editor {
 
       this.storedState = dispatchResultWithMetadata
 
-      return { entireUpdateFinished: dispatchResultWithMetadata.entireUpdateFinished }
+      return {
+        entireUpdateFinished: Promise.all([
+          dispatchResult.entireUpdateFinished,
+          dispatchResultWithMetadata.entireUpdateFinished,
+        ]),
+      }
     }
     if (PRODUCTION_ENV) {
       return runDispatch()
