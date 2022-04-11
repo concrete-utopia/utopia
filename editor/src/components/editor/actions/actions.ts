@@ -4999,7 +4999,7 @@ export const UPDATE_FNS = {
           isRight(originalElement) &&
           isJSXElement(originalElement.value)
         ) {
-          const newUID = 'kiskutyaful'
+          const newUID = generateUidWithExistingComponents(working.projectContents)
           const originalElementValue: JSXElement = originalElement.value
           const propsWithUID = setJSXValueAtPath(
             originalElementValue.props,
