@@ -484,6 +484,7 @@ export function useDomWalker(
     fireThrottledCallback,
     emptySet(),
   ) // For invalidating specific paths only
+  // TODO invalidating should not rely on hooks – possibly use editor level state
   const [invalidatedScenes, updateInvalidatedScenes] = useMutableStateAsyncInvalidate<Set<string>>(
     fireThrottledCallback,
     emptySet(),
