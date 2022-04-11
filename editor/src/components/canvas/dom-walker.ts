@@ -343,16 +343,30 @@ export interface DomWalkerMutableStateData {
   invalidatedScenes: Set<string> // TODO should this be merged with invalidatedPaths?
   invalidatedPathsForStylesheetCache: Set<string>
   initComplete: boolean
+
+  mutationObserver: MutationObserver
+  resizeObserver: ResizeObserver
 }
 
-export function emptyDomWalkerMutableState(): DomWalkerMutableStateData {
-  return {
+export function createDomWalkerMutableState(
+  editorStoreApi: UtopiaStoreAPI,
+): DomWalkerMutableStateData {
+  const mutableData: DomWalkerMutableStateData = {
     needsWalk: false,
     invalidatedPaths: emptySet(),
     invalidatedScenes: emptySet(),
     invalidatedPathsForStylesheetCache: emptySet(),
     initComplete: false,
+
+    mutationObserver: null as any,
+    resizeObserver: null as any,
   }
+
+  const observers = initDomWalkerObservers(mutableData, editorStoreApi)
+  mutableData.mutationObserver = observers.mutationObserver
+  mutableData.resizeObserver = observers.resizeObserver
+
+  return mutableData
 }
 
 export const DomWalkerMutableStateCtx = React.createContext<DomWalkerMutableStateData | null>(null)

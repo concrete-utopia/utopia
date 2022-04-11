@@ -90,7 +90,8 @@ import { createEmptyStrategyState } from '../components/canvas/canvas-strategies
 import {
   DomWalkerMutableStateCtx,
   DomWalkerMutableStateData,
-  emptyDomWalkerMutableState,
+  createDomWalkerMutableState,
+  initDomWalkerObservers,
 } from '../components/canvas/dom-walker'
 
 if (PROBABLY_ELECTRON) {
@@ -183,7 +184,7 @@ export class Editor {
     this.updateStore = storeHook.setState
     this.utopiaStoreApi = storeHook
 
-    this.domWalkerMutableState = emptyDomWalkerMutableState()
+    this.domWalkerMutableState = createDomWalkerMutableState(this.utopiaStoreApi)
 
     renderRootEditor()
 

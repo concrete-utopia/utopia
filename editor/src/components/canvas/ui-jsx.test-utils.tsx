@@ -91,7 +91,7 @@ import {
 } from '../../core/es-modules/package-manager/built-in-dependencies-list'
 import { clearAllRegisteredControls } from './canvas-globals'
 import { createEmptyStrategyState } from './canvas-strategies/interaction-state'
-import { emptyDomWalkerMutableState } from './dom-walker'
+import { createDomWalkerMutableState } from './dom-walker'
 
 // eslint-disable-next-line no-unused-expressions
 typeof process !== 'undefined' &&
@@ -181,7 +181,6 @@ export async function renderTestEditorWithModel(
   }
 
   const spyCollector = emptyUiJsxCanvasContextData()
-  const domWalkerMutableState = emptyDomWalkerMutableState()
 
   // Reset canvas globals
   clearAllRegisteredControls()
@@ -249,6 +248,8 @@ export async function renderTestEditorWithModel(
     GetState<EditorStorePatched>,
     Mutate<StoreApi<EditorStorePatched>, [['zustand/subscribeWithSelector', never]]>
   >(subscribeWithSelector((set) => patchedStoreFromFullStore(initialEditorStore)))
+
+  const domWalkerMutableState = createDomWalkerMutableState(storeHook)
 
   // initializing the local editor state
   workingEditorState = initialEditorStore
