@@ -289,29 +289,24 @@ function useInvalidateScenesWhenSelectedViewChanges(
 }
 
 function useInvalidateInitCompleteOnMountCount(
+  setInitComplete: (value: boolean) => void,
   mountCount: number,
   domWalkerInvalidateCount: number,
-): [boolean, () => void] {
-  const initCompleteRef = React.useRef<boolean>(false)
+): void {
   const previousMountCountRef = React.useRef<number>(mountCount)
   const previousDomWalkerInvalidateCountRef = React.useRef<number>(domWalkerInvalidateCount)
-
-  const setInitComplete = React.useCallback(() => {
-    initCompleteRef.current = true
-  }, [])
 
   if (
     previousMountCountRef.current !== mountCount ||
     previousDomWalkerInvalidateCountRef.current !== domWalkerInvalidateCount
   ) {
     // mount count increased, re-initialize dom-walker
-    initCompleteRef.current = false
+    setInitComplete(false)
     previousMountCountRef.current = mountCount
     previousDomWalkerInvalidateCountRef.current = domWalkerInvalidateCount
   }
-
-  return [initCompleteRef.current, setInitComplete]
 }
+
 // todo move to file
 export type UpdateMutableCallback<S> = (
   updater: (mutableState: S) => void,
@@ -463,7 +458,7 @@ interface RunDomWalkerParams {
   invalidatedScenes: Set<string>
   invalidatedPathsForStylesheetCache: Set<string>
   initComplete: boolean
-  setInitComplete: () => void
+  setInitComplete: (value: boolean) => void
 }
 
 function runDomWalker({
@@ -520,7 +515,7 @@ function runDomWalker({
       performance.mark('DOM_WALKER_END')
       performance.measure('DOM WALKER', 'DOM_WALKER_START', 'DOM_WALKER_END')
     }
-    setInitComplete()
+    setInitComplete(true)
 
     // Fragments will appear as multiple separate entries with duplicate UIDs, so we need to handle those
     const fixedMetadata = mergeFragmentMetadata(metadata)
@@ -584,10 +579,22 @@ export function useDomWalker(
 
   const invalidatedPathsForStylesheetCache =
     domWalkerMutableState.invalidatedPathsForStylesheetCache
-  const [initComplete, setInitComplete] = useInvalidateInitCompleteOnMountCount(
+
+  const initComplete = domWalkerMutableState.initComplete
+  const setInitComplete = React.useCallback(
+    (value: boolean) => {
+      domWalkerMutableState.initComplete = value
+    },
+    [domWalkerMutableState],
+  )
+
+  // TODO move this to somewhere in dispatch
+  useInvalidateInitCompleteOnMountCount(
+    setInitComplete,
     props.mountCount,
     props.domWalkerInvalidateCount,
   )
+
   const selectedViewsRef = React.useRef(props.selectedViews)
   const canvasInteractionHappeningRef = React.useRef(props.canvasInteractionHappening)
 
