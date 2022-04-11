@@ -330,11 +330,7 @@ interface RunDomWalkerParams {
   additionalElementsToUpdate: Array<ElementPath>
 
   domWalkerMutableState: DomWalkerMutableStateData
-  resizeObserver: any
-  mutationObserver: MutationObserver | null
   rootMetadataInStateRef: { readonly current: readonly ElementInstanceMetadata[] }
-  invalidatedPaths: Set<string>
-  invalidatedScenes: Set<string>
   invalidatedPathsForStylesheetCache: Set<string>
 }
 
@@ -343,11 +339,7 @@ function runDomWalker({
   selectedViews,
   scale,
   additionalElementsToUpdate,
-  resizeObserver,
-  mutationObserver,
   rootMetadataInStateRef,
-  invalidatedPaths,
-  invalidatedScenes,
   invalidatedPathsForStylesheetCache,
 }: RunDomWalkerParams): { metadata: ElementInstanceMetadata[]; cachedPaths: ElementPath[] } {
   const LogDomWalkerPerformance =
@@ -360,11 +352,15 @@ function runDomWalker({
       performance.mark('DOM_WALKER_START')
     }
     // Get some base values relating to the div this component creates.
-    if (ObserversAvailable && resizeObserver != null && mutationObserver != null) {
+    if (
+      ObserversAvailable &&
+      domWalkerMutableState.resizeObserver != null &&
+      domWalkerMutableState.mutationObserver != null
+    ) {
       Array.from(document.querySelectorAll(`#${CanvasContainerID} *`)).map((elem) => {
-        resizeObserver.observe(elem)
+        domWalkerMutableState.resizeObserver.observe(elem)
       })
-      mutationObserver.observe(canvasRootContainer, MutationObserverConfig)
+      domWalkerMutableState.mutationObserver.observe(canvasRootContainer, MutationObserverConfig)
     }
 
     // getCanvasRectangleFromElement is costly, so I made it lazy. we only need the value inside globalFrameForElement
@@ -378,8 +374,8 @@ function runDomWalker({
     const { metadata, cachedPaths } = walkCanvasRootFragment(
       canvasRootContainer,
       rootMetadataInStateRef,
-      invalidatedPaths,
-      invalidatedScenes,
+      domWalkerMutableState.invalidatedPaths,
+      domWalkerMutableState.invalidatedScenes,
       invalidatedPathsForStylesheetCache,
       selectedViews,
       !domWalkerMutableState.initComplete,
@@ -462,11 +458,7 @@ export function useDomWalker(props: DomWalkerProps): void {
       selectedViews: props.selectedViews,
       scale: props.scale,
       additionalElementsToUpdate: props.additionalElementsToUpdate,
-      resizeObserver: resizeObserver,
-      mutationObserver: mutationObserver,
       rootMetadataInStateRef: rootMetadataInStateRef,
-      invalidatedPaths: domWalkerMutableState.invalidatedPaths,
-      invalidatedScenes: domWalkerMutableState.invalidatedScenes,
       invalidatedPathsForStylesheetCache: invalidatedPathsForStylesheetCache,
     })
     props.onDomReport(metadata, cachedPaths) // TODO remove this
@@ -488,9 +480,6 @@ export function useDomWalker(props: DomWalkerProps): void {
     props.mountCount,
     props.domWalkerInvalidateCount,
   )
-
-  const mutationObserver = domWalkerMutableState.mutationObserver
-  const resizeObserver = domWalkerMutableState.resizeObserver
 
   // TODO move this to somewhere in dispatch
   useInvalidateScenesWhenSelectedViewChanges(
