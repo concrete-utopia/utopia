@@ -207,7 +207,7 @@ function useInvalidateScenesWhenSelectedViewChanges(
 }
 
 function useInvalidateInitCompleteOnMountCount(
-  setInitComplete: (value: boolean) => void,
+  domWalkerMutableState: DomWalkerMutableStateData,
   mountCount: number,
   domWalkerInvalidateCount: number,
 ): void {
@@ -219,7 +219,8 @@ function useInvalidateInitCompleteOnMountCount(
     previousDomWalkerInvalidateCountRef.current !== domWalkerInvalidateCount
   ) {
     // mount count increased, re-initialize dom-walker
-    setInitComplete(false)
+    domWalkerMutableState.initComplete = false // Mutation!
+    domWalkerMutableState.needsWalk = true // Mutation!
     previousMountCountRef.current = mountCount
     previousDomWalkerInvalidateCountRef.current = domWalkerInvalidateCount
   }
@@ -383,17 +384,17 @@ interface RunDomWalkerParams {
   scale: number
   additionalElementsToUpdate: Array<ElementPath>
 
+  domWalkerMutableState: DomWalkerMutableStateData
   resizeObserver: any
   mutationObserver: MutationObserver | null
   rootMetadataInStateRef: { readonly current: readonly ElementInstanceMetadata[] }
   invalidatedPaths: Set<string>
   invalidatedScenes: Set<string>
   invalidatedPathsForStylesheetCache: Set<string>
-  initComplete: boolean
-  setInitComplete: (value: boolean) => void
 }
 
 function runDomWalker({
+  domWalkerMutableState,
   selectedViews,
   scale,
   additionalElementsToUpdate,
@@ -403,8 +404,6 @@ function runDomWalker({
   invalidatedPaths,
   invalidatedScenes,
   invalidatedPathsForStylesheetCache,
-  initComplete,
-  setInitComplete,
 }: RunDomWalkerParams): { metadata: ElementInstanceMetadata[]; cachedPaths: ElementPath[] } {
   const LogDomWalkerPerformance =
     isFeatureEnabled('Debug mode – Performance Marks') && PERFORMANCE_MARKS_ALLOWED
@@ -438,7 +437,7 @@ function runDomWalker({
       invalidatedScenes,
       invalidatedPathsForStylesheetCache,
       selectedViews,
-      !initComplete,
+      !domWalkerMutableState.initComplete,
       scale,
       containerRect,
       [...additionalElementsToUpdate, ...selectedViews],
@@ -447,7 +446,7 @@ function runDomWalker({
       performance.mark('DOM_WALKER_END')
       performance.measure('DOM WALKER', 'DOM_WALKER_START', 'DOM_WALKER_END')
     }
-    setInitComplete(true)
+    domWalkerMutableState.initComplete = true // Mutation!
 
     // Fragments will appear as multiple separate entries with duplicate UIDs, so we need to handle those
     const fixedMetadata = mergeFragmentMetadata(metadata)
@@ -515,22 +514,19 @@ export function initDomWalkerObservers(
   return { resizeObserver, mutationObserver }
 }
 
-export function useDomWalker(
-  props: DomWalkerProps,
-): [UpdateMutableCallback<Set<string>>, UpdateMutableCallback<Set<string>>] {
+export function useDomWalker(props: DomWalkerProps): void {
   const fireThrottledCallback = useThrottledCallback(() => {
     const { metadata, cachedPaths } = runDomWalker({
+      domWalkerMutableState: domWalkerMutableState,
       selectedViews: props.selectedViews,
       scale: props.scale,
       additionalElementsToUpdate: props.additionalElementsToUpdate,
       resizeObserver: resizeObserver,
       mutationObserver: mutationObserver,
       rootMetadataInStateRef: rootMetadataInStateRef,
-      invalidatedPaths: invalidatedPaths,
-      invalidatedScenes: invalidatedScenes,
+      invalidatedPaths: domWalkerMutableState.invalidatedPaths,
+      invalidatedScenes: domWalkerMutableState.invalidatedScenes,
       invalidatedPathsForStylesheetCache: invalidatedPathsForStylesheetCache,
-      initComplete: initComplete, // TODO review initComplete
-      setInitComplete: setInitComplete, // TODO remove setInitComplete
     })
     props.onDomReport(metadata, cachedPaths) // TODO remove this
   })
@@ -540,45 +536,14 @@ export function useDomWalker(
   )
 
   const domWalkerMutableState = useDomWalkerMutableStateContext()
-  const invalidatedPaths = domWalkerMutableState.invalidatedPaths
-  // For invalidating specific paths only
-  const updateInvalidatedPaths: UpdateMutableCallback<Set<string>> = React.useCallback(
-    (callback, invalidate) => {
-      callback(domWalkerMutableState.invalidatedPaths)
-      if (invalidate === 'invalidate') {
-        domWalkerMutableState.needsWalk = true // TODO this needs an actual trigger!
-        fireThrottledCallback('throttled') // TODO this needs to be deleted
-      }
-    },
-    [domWalkerMutableState, fireThrottledCallback],
-  )
-
-  const invalidatedScenes = domWalkerMutableState.invalidatedScenes
-  const updateInvalidatedScenes: UpdateMutableCallback<Set<string>> = React.useCallback(
-    (callback, invalidate) => {
-      callback(domWalkerMutableState.invalidatedScenes)
-      if (invalidate === 'invalidate') {
-        domWalkerMutableState.needsWalk = true // TODO this needs an actual trigger!
-        fireThrottledCallback('throttled') // TODO this needs to be deleted
-      }
-    },
-    [domWalkerMutableState, fireThrottledCallback],
-  )
+  const [updateInvalidatedPaths, updateInvalidatedScenes] = useDomWalkerInvalidateCallbacks()
 
   const invalidatedPathsForStylesheetCache =
     domWalkerMutableState.invalidatedPathsForStylesheetCache
 
-  const initComplete = domWalkerMutableState.initComplete
-  const setInitComplete = React.useCallback(
-    (value: boolean) => {
-      domWalkerMutableState.initComplete = value
-    },
-    [domWalkerMutableState],
-  )
-
   // TODO move this to somewhere in dispatch
   useInvalidateInitCompleteOnMountCount(
-    setInitComplete,
+    domWalkerMutableState,
     props.mountCount,
     props.domWalkerInvalidateCount,
   )
@@ -595,6 +560,37 @@ export function useDomWalker(
   React.useLayoutEffect(() => {
     fireThrottledCallback('immediate')
   })
+  if (domWalkerMutableState.needsWalk) {
+    domWalkerMutableState.needsWalk = false
+    fireThrottledCallback('immediate')
+  }
+}
+
+export function useDomWalkerInvalidateCallbacks(): [
+  UpdateMutableCallback<Set<string>>,
+  UpdateMutableCallback<Set<string>>,
+] {
+  const domWalkerMutableState = useDomWalkerMutableStateContext()
+  // For invalidating specific paths only
+  const updateInvalidatedPaths: UpdateMutableCallback<Set<string>> = React.useCallback(
+    (callback, invalidate) => {
+      callback(domWalkerMutableState.invalidatedPaths)
+      if (invalidate === 'invalidate') {
+        domWalkerMutableState.needsWalk = true // TODO this needs an actual trigger!
+      }
+    },
+    [domWalkerMutableState],
+  )
+
+  const updateInvalidatedScenes: UpdateMutableCallback<Set<string>> = React.useCallback(
+    (callback, invalidate) => {
+      callback(domWalkerMutableState.invalidatedScenes)
+      if (invalidate === 'invalidate') {
+        domWalkerMutableState.needsWalk = true // TODO this needs an actual trigger!
+      }
+    },
+    [domWalkerMutableState],
+  )
 
   return [updateInvalidatedPaths, updateInvalidatedScenes]
 }
