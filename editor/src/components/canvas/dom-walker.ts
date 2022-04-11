@@ -39,7 +39,7 @@ import {
   CSSPosition,
   positionValues,
 } from '../inspector/common/css-utils'
-import { CanvasContainerProps } from './ui-jsx-canvas'
+import { CanvasContainerProps, UiJsxCanvasCtxAtom } from './ui-jsx-canvas'
 import { camelCaseToDashed } from '../../core/shared/string-utils'
 import {
   useEditorState,
@@ -58,10 +58,11 @@ import { CanvasContainerID } from './canvas-types'
 import { emptySet } from '../../core/shared/set-utils'
 import { getPathWithStringsOnDomElement, PathWithString } from '../../core/shared/uid-utils'
 import { mapDropNulls, pluck, uniqBy } from '../../core/shared/array-utils'
-import { optionalMap } from '../../core/shared/optional-utils'
+import { forceNotNull, optionalMap } from '../../core/shared/optional-utils'
 import { fastForEach } from '../../core/shared/utils'
 import { MapLike } from 'typescript'
 import { isFeatureEnabled } from '../../utils/feature-switches'
+import { usePubSubAtomReadOnly } from '../../core/shared/atom-with-pub-sub'
 
 const MutationObserverConfig = { attributes: true, childList: true, subtree: true }
 const ObserversAvailable = (window as any).MutationObserver != null && ResizeObserver != null
@@ -423,6 +424,32 @@ function mergeFragmentMetadata(
   return Object.values(working)
 }
 
+export interface DomWalkerMutableStateData {
+  needsWalk: boolean
+  invalidatedPaths: Set<string>
+  invalidatedScenes: Set<string> // TODO should this be merged with invalidatedPaths?
+  invalidatedPathsForStylesheetCacheRef: Set<string>
+  initComplete: boolean
+}
+
+export function emptyDomWalkerMutableState(): DomWalkerMutableStateData {
+  return {
+    needsWalk: false,
+    invalidatedPaths: emptySet(),
+    invalidatedScenes: emptySet(),
+    invalidatedPathsForStylesheetCacheRef: emptySet(),
+    initComplete: false,
+  }
+}
+
+export const DomWalkerMutableStateCtx = React.createContext<DomWalkerMutableStateData | null>(null)
+function useDomWalkerMutableStateContext() {
+  return forceNotNull(
+    `DomWalkerMutableStateCtx needs a Provider`,
+    React.useContext(DomWalkerMutableStateCtx),
+  )
+}
+
 interface RunDomWalkerParams {
   // from dom walker props
   selectedViews: Array<ElementPath>
@@ -528,15 +555,33 @@ export function useDomWalker(
   const rootMetadataInStateRef = useRefEditorState(
     (store) => store.editor.domMetadata as ReadonlyArray<ElementInstanceMetadata>,
   )
-  const [invalidatedPaths, updateInvalidatedPaths] = useMutableStateAsyncInvalidate<Set<string>>(
-    fireThrottledCallback,
-    emptySet(),
-  ) // For invalidating specific paths only
-  // TODO invalidating should not rely on hooks – possibly use editor level state
-  const [invalidatedScenes, updateInvalidatedScenes] = useMutableStateAsyncInvalidate<Set<string>>(
-    fireThrottledCallback,
-    emptySet(),
-  ) // For invalidating entire scenes and everything below them
+
+  const domWalkerMutableState = useDomWalkerMutableStateContext()
+  const invalidatedPaths = domWalkerMutableState.invalidatedPaths
+  // For invalidating specific paths only
+  const updateInvalidatedPaths: UpdateMutableCallback<Set<string>> = React.useCallback(
+    (callback, invalidate) => {
+      callback(domWalkerMutableState.invalidatedPaths)
+      if (invalidate === 'invalidate') {
+        domWalkerMutableState.needsWalk = true // TODO this needs an actual trigger!
+        fireThrottledCallback('throttled') // TODO this needs to be deleted
+      }
+    },
+    [domWalkerMutableState, fireThrottledCallback],
+  )
+
+  const invalidatedScenes = domWalkerMutableState.invalidatedScenes
+  const updateInvalidatedScenes: UpdateMutableCallback<Set<string>> = React.useCallback(
+    (callback, invalidate) => {
+      callback(domWalkerMutableState.invalidatedScenes)
+      if (invalidate === 'invalidate') {
+        domWalkerMutableState.needsWalk = true // TODO this needs an actual trigger!
+        fireThrottledCallback('throttled') // TODO this needs to be deleted
+      }
+    },
+    [domWalkerMutableState, fireThrottledCallback],
+  )
+
   const invalidatedPathsForStylesheetCacheRef = React.useRef<Set<string>>(emptySet())
   const [initComplete, setInitComplete] = useInvalidateInitCompleteOnMountCount(
     props.mountCount,

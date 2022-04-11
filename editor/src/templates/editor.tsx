@@ -87,6 +87,11 @@ import { PersistenceBackend } from '../components/editor/persistence/persistence
 import { defaultProject } from '../sample-projects/sample-project-utils'
 import { createBuiltInDependenciesList } from '../core/es-modules/package-manager/built-in-dependencies-list'
 import { createEmptyStrategyState } from '../components/canvas/canvas-strategies/interaction-state'
+import {
+  DomWalkerMutableStateCtx,
+  DomWalkerMutableStateData,
+  emptyDomWalkerMutableState,
+} from '../components/canvas/dom-walker'
 
 if (PROBABLY_ELECTRON) {
   let { webFrame } = requireElectron()
@@ -107,6 +112,7 @@ export class Editor {
   utopiaStoreApi: UtopiaStoreAPI
   updateStore: (partialState: EditorStorePatched) => void
   spyCollector: UiJsxCanvasContextData = emptyUiJsxCanvasContextData()
+  domWalkerMutableState: DomWalkerMutableStateData
 
   constructor() {
     updateCssVars()
@@ -126,7 +132,12 @@ export class Editor {
     const watchdogWorker = new RealWatchdogWorker()
 
     const renderRootEditor = () =>
-      renderRootComponent(this.utopiaStoreHook, this.utopiaStoreApi, this.spyCollector)
+      renderRootComponent(
+        this.utopiaStoreHook,
+        this.utopiaStoreApi,
+        this.spyCollector,
+        this.domWalkerMutableState,
+      )
 
     const workers = new UtopiaTsWorkersImplementation(
       new RealParserPrinterWorker(),
@@ -171,6 +182,8 @@ export class Editor {
     this.utopiaStoreHook = storeHook
     this.updateStore = storeHook.setState
     this.utopiaStoreApi = storeHook
+
+    this.domWalkerMutableState = emptyDomWalkerMutableState()
 
     renderRootEditor()
 
@@ -324,12 +337,15 @@ export const EditorRoot: React.FunctionComponent<{
   api: UtopiaStoreAPI
   useStore: UtopiaStoreHook
   spyCollector: UiJsxCanvasContextData
-}> = ({ api, useStore, spyCollector }) => {
+  domWalkerMutableState: DomWalkerMutableStateData
+}> = ({ api, useStore, spyCollector, domWalkerMutableState }) => {
   return (
     <EditorStateContext.Provider value={{ api, useStore }}>
-      <UiJsxCanvasCtxAtom.Provider value={spyCollector}>
-        <EditorComponent />
-      </UiJsxCanvasCtxAtom.Provider>
+      <DomWalkerMutableStateCtx.Provider value={domWalkerMutableState}>
+        <UiJsxCanvasCtxAtom.Provider value={spyCollector}>
+          <EditorComponent />
+        </UiJsxCanvasCtxAtom.Provider>
+      </DomWalkerMutableStateCtx.Provider>
     </EditorStateContext.Provider>
   )
 }
@@ -340,8 +356,16 @@ export const HotRoot: React.FunctionComponent<{
   api: UtopiaStoreAPI
   useStore: UtopiaStoreHook
   spyCollector: UiJsxCanvasContextData
-}> = hot(({ api, useStore, spyCollector }) => {
-  return <EditorRoot api={api} useStore={useStore} spyCollector={spyCollector} />
+  domWalkerMutableState: DomWalkerMutableStateData
+}> = hot(({ api, useStore, spyCollector, domWalkerMutableState }) => {
+  return (
+    <EditorRoot
+      api={api}
+      useStore={useStore}
+      spyCollector={spyCollector}
+      domWalkerMutableState={domWalkerMutableState}
+    />
+  )
 })
 HotRoot.displayName = 'Utopia Editor Hot Root'
 
@@ -349,6 +373,7 @@ async function renderRootComponent(
   useStore: UtopiaStoreHook,
   api: UtopiaStoreAPI,
   spyCollector: UiJsxCanvasContextData,
+  domWalkerMutableState: DomWalkerMutableStateData,
 ): Promise<void> {
   return triggerHashedAssetsUpdate().then(() => {
     // NOTE: we only need to call this function once,
@@ -357,12 +382,22 @@ async function renderRootComponent(
     if (rootElement != null) {
       if (process.env.HOT_MODE) {
         ReactDOM.render(
-          <HotRoot api={api} useStore={useStore} spyCollector={spyCollector} />,
+          <HotRoot
+            api={api}
+            useStore={useStore}
+            spyCollector={spyCollector}
+            domWalkerMutableState={domWalkerMutableState}
+          />,
           rootElement,
         )
       } else {
         ReactDOM.render(
-          <EditorRoot api={api} useStore={useStore} spyCollector={spyCollector} />,
+          <EditorRoot
+            api={api}
+            useStore={useStore}
+            spyCollector={spyCollector}
+            domWalkerMutableState={domWalkerMutableState}
+          />,
           rootElement,
         )
       }

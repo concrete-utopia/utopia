@@ -91,6 +91,7 @@ import {
 } from '../../core/es-modules/package-manager/built-in-dependencies-list'
 import { clearAllRegisteredControls } from './canvas-globals'
 import { createEmptyStrategyState } from './canvas-strategies/interaction-state'
+import { emptyDomWalkerMutableState } from './dom-walker'
 
 // eslint-disable-next-line no-unused-expressions
 typeof process !== 'undefined' &&
@@ -180,6 +181,7 @@ export async function renderTestEditorWithModel(
   }
 
   const spyCollector = emptyUiJsxCanvasContextData()
+  const domWalkerMutableState = emptyDomWalkerMutableState()
 
   // Reset canvas globals
   clearAllRegisteredControls()
@@ -262,7 +264,12 @@ export async function renderTestEditorWithModel(
       }}
     >
       <FailJestOnCanvasError />
-      <EditorRoot api={storeHook} useStore={storeHook} spyCollector={spyCollector} />
+      <EditorRoot
+        api={storeHook}
+        useStore={storeHook}
+        spyCollector={spyCollector}
+        domWalkerMutableState={domWalkerMutableState}
+      />
     </React.Profiler>,
   )
 

@@ -38,6 +38,7 @@ import { disableStoredStateforTests } from '../editor/stored-state'
 import { matchInlineSnapshotBrowser } from '../../../test/karma-snapshots'
 import { createBuiltInDependenciesList } from '../../core/es-modules/package-manager/built-in-dependencies-list'
 import { createEmptyStrategyState } from './canvas-strategies/interaction-state'
+import { emptyDomWalkerMutableState } from './dom-walker'
 
 disableStoredStateforTests()
 
@@ -59,6 +60,7 @@ async function renderTestEditorWithCode(appUiJsFileCode: string) {
 
   const history = History.init(emptyEditorState, derivedState)
   const spyCollector = emptyUiJsxCanvasContextData()
+  const domWalkerMutableState = emptyDomWalkerMutableState()
 
   const dispatch: EditorDispatch = (actions) => {
     const result = editorDispatch(dispatch, actions, editorStore, spyCollector)
@@ -95,7 +97,14 @@ async function renderTestEditorWithCode(appUiJsFileCode: string) {
     Mutate<StoreApi<EditorStorePatched>, [['zustand/subscribeWithSelector', never]]>
   >(subscribeWithSelector((set) => patchedStoreFromFullStore(editorStore)))
 
-  render(<EditorRoot api={storeHook} useStore={storeHook} spyCollector={spyCollector} />)
+  render(
+    <EditorRoot
+      api={storeHook}
+      useStore={storeHook}
+      spyCollector={spyCollector}
+      domWalkerMutableState={domWalkerMutableState}
+    />,
+  )
 
   await act(async () => {
     await load(
