@@ -164,11 +164,9 @@ export async function renderTestEditorWithModel(
 
   const history = History.init(emptyEditorState, derivedState)
 
-  let domReportDispatched = Utils.defer<void>()
   let dispatchFollowUpActionsFinished = Utils.defer<void>()
 
   function resetPromises() {
-    domReportDispatched = Utils.defer()
     dispatchFollowUpActionsFinished = Utils.defer()
   }
 
@@ -190,15 +188,11 @@ export async function renderTestEditorWithModel(
     actions: ReadonlyArray<EditorAction>,
     priority?: DispatchPriority, // priority is not used in the editorDispatch now, but we didn't delete this param yet
     waitForDispatchEntireUpdate = false,
-    waitForADomReport = false,
   ) => {
     recordedActions.push(...actions)
     const result = editorDispatch(asyncTestDispatch, actions, workingEditorState, spyCollector)
     result.entireUpdateFinished.then(() => dispatchFollowUpActionsFinished.resolve())
     workingEditorState = result
-    if (actions[0]?.action === 'SAVE_DOM_REPORT') {
-      domReportDispatched.resolve()
-    }
     if (waitForDispatchEntireUpdate) {
       await Utils.timeLimitPromise(
         dispatchFollowUpActionsFinished,
@@ -208,10 +202,7 @@ export async function renderTestEditorWithModel(
     }
     updateEditor()
 
-    if (waitForADomReport) {
-      await Utils.timeLimitPromise(domReportDispatched, 2000, 'DOM report took too long.')
-      resetPromises() // I _think_ this is safe for concurrency, so long as all the test callsites `await` the dispatch
-    }
+    resetPromises() // I _think_ this is safe for concurrency, so long as all the test callsites `await` the dispatch
   }
 
   const workers = new UtopiaTsWorkersImplementation(
@@ -280,7 +271,7 @@ export async function renderTestEditorWithModel(
       load(
         async (actions) => {
           try {
-            await asyncTestDispatch(actions, undefined, true, true)
+            await asyncTestDispatch(actions, undefined, true)
             resolve()
           } catch (e) {
             reject(e)
@@ -300,21 +291,16 @@ export async function renderTestEditorWithModel(
       [switchEditorMode(EditorModes.selectMode()), setPanelVisibility('codeEditor', false)],
       undefined,
       true,
-      false,
     )
   })
-
-  if (awaitFirstDomReport === 'await-first-dom-report') {
-    await domReportDispatched
-  }
 
   return {
     dispatch: async (actions: ReadonlyArray<EditorAction>, waitForDOMReport: boolean) => {
       return await act(async () => {
-        await asyncTestDispatch(actions, 'everyone', true, waitForDOMReport)
+        await asyncTestDispatch(actions, 'everyone', true)
       })
     },
-    getDomReportDispatched: () => domReportDispatched,
+    getDomReportDispatched: () => Promise.resolve(),
     getDispatchFollowUpactionsFinished: () => dispatchFollowUpActionsFinished,
     getEditorState: () => storeHook.getState(),
     renderedDOM: result,
