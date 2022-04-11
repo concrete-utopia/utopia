@@ -231,34 +231,6 @@ export type UpdateMutableCallback<S> = (
   invalidate: 'invalidate' | 'do-not-invalidate',
 ) => void
 
-// This type is used during the actual walking, to prevent the dom walker from triggering itself
-type UpdateMutableCallbackNoInvalidate<S> = (
-  updater: (mutableState: S) => void,
-  invalidate: 'do-not-invalidate',
-) => void
-
-function useMutableStateAsyncInvalidate<S>(
-  onInvalidate: (immediate: 'immediate' | 'throttled') => void,
-  initialState: S,
-): [S, UpdateMutableCallback<S>] {
-  const stateRef = React.useRef(initialState)
-  const setAndMarkInvalidated = React.useCallback(
-    (
-      updater: (mutableState: S) => void,
-      invalidate: 'invalidate' | 'do-not-invalidate' = 'invalidate',
-    ) => {
-      updater(stateRef.current) // Mutation! (for performance reasons)
-
-      if (invalidate === 'invalidate') {
-        onInvalidate('throttled')
-      }
-    },
-    [stateRef, onInvalidate],
-  )
-
-  return [stateRef.current, setAndMarkInvalidated]
-}
-
 export interface DomWalkerProps {
   selectedViews: Array<ElementPath>
   scale: number
