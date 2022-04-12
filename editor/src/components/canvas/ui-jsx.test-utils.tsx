@@ -79,7 +79,11 @@ import { printCode, printCodeOptions } from '../../core/workers/parser-printer/p
 import { contentsToTree, getContentsTreeFileFromString, ProjectContentTreeRoot } from '../assets'
 import { testStaticElementPath } from '../../core/shared/element-path.test-utils'
 import { createFakeMetadataForParseSuccess } from '../../utils/utils.test-utils'
-import { setPanelVisibility, switchEditorMode } from '../editor/actions/action-creators'
+import {
+  saveDOMReport,
+  setPanelVisibility,
+  switchEditorMode,
+} from '../editor/actions/action-creators'
 import { EditorModes } from '../editor/editor-modes'
 import { useUpdateOnRuntimeErrors } from '../../core/shared/runtime-report-logs'
 import { clearListOfEvaluatedFiles, RuntimeErrorInfo } from '../../core/shared/code-exec-utils'
@@ -91,7 +95,11 @@ import {
 } from '../../core/es-modules/package-manager/built-in-dependencies-list'
 import { clearAllRegisteredControls } from './canvas-globals'
 import { createEmptyStrategyState } from './canvas-strategies/interaction-state'
-import { createDomWalkerMutableState } from './dom-walker'
+import {
+  createDomWalkerMutableState,
+  invalidateDomWalkerIfNecessary,
+  runDomWalker,
+} from './dom-walker'
 
 // eslint-disable-next-line no-unused-expressions
 typeof process !== 'undefined' &&
@@ -174,10 +182,6 @@ export async function renderTestEditorWithModel(
 
   let workingEditorState: EditorStoreFull
 
-  function updateEditor() {
-    storeHook.setState(patchedStoreFromFullStore(workingEditorState))
-  }
-
   const spyCollector = emptyUiJsxCanvasContextData()
 
   // Reset canvas globals
@@ -192,6 +196,12 @@ export async function renderTestEditorWithModel(
     recordedActions.push(...actions)
     const result = editorDispatch(asyncTestDispatch, actions, workingEditorState, spyCollector)
     result.entireUpdateFinished.then(() => dispatchFollowUpActionsFinished.resolve())
+    invalidateDomWalkerIfNecessary(
+      domWalkerMutableState,
+      workingEditorState.patchedEditor,
+      result.patchedEditor,
+    )
+
     workingEditorState = result
     if (waitForDispatchEntireUpdate) {
       await Utils.timeLimitPromise(
@@ -200,7 +210,33 @@ export async function renderTestEditorWithModel(
         'Follow up actions took too long.',
       )
     }
-    updateEditor()
+
+    canvasStoreHook.setState(patchedStoreFromFullStore(workingEditorState))
+
+    // run dom walker
+
+    const domWalkerResult = runDomWalker({
+      domWalkerMutableState: domWalkerMutableState,
+      selectedViews: workingEditorState.patchedEditor.selectedViews,
+      scale: workingEditorState.patchedEditor.canvas.scale,
+      additionalElementsToUpdate:
+        workingEditorState.patchedEditor.canvas.domWalkerAdditionalElementsToUpdate,
+      rootMetadataInStateRef: { current: workingEditorState.patchedEditor.domMetadata },
+    })
+
+    if (domWalkerResult != null) {
+      const editorWithNewMetadata = editorDispatch(
+        asyncTestDispatch,
+        [saveDOMReport(domWalkerResult.metadata, domWalkerResult.cachedPaths)],
+        workingEditorState,
+        spyCollector,
+      )
+      workingEditorState = editorWithNewMetadata
+    }
+
+    // update state with new metadata
+
+    storeHook.setState(patchedStoreFromFullStore(workingEditorState))
 
     resetPromises() // I _think_ this is safe for concurrency, so long as all the test callsites `await` the dispatch
   }
@@ -233,14 +269,21 @@ export async function renderTestEditorWithModel(
     builtInDependencies: builtInDependencies,
   }
 
-  const storeHook = create<
+  const canvasStoreHook = create<
     EditorStorePatched,
     SetState<EditorStorePatched>,
     GetState<EditorStorePatched>,
     Mutate<StoreApi<EditorStorePatched>, [['zustand/subscribeWithSelector', never]]>
   >(subscribeWithSelector((set) => patchedStoreFromFullStore(initialEditorStore)))
 
-  const domWalkerMutableState = createDomWalkerMutableState(storeHook)
+  const domWalkerMutableState = createDomWalkerMutableState(canvasStoreHook)
+
+  const storeHook = create<
+    EditorStorePatched,
+    SetState<EditorStorePatched>,
+    GetState<EditorStorePatched>,
+    Mutate<StoreApi<EditorStorePatched>, [['zustand/subscribeWithSelector', never]]>
+  >(subscribeWithSelector((set) => patchedStoreFromFullStore(initialEditorStore)))
 
   // initializing the local editor state
   workingEditorState = initialEditorStore
@@ -259,7 +302,7 @@ export async function renderTestEditorWithModel(
       <EditorRoot
         api={storeHook}
         useStore={storeHook}
-        canvasStore={storeHook} // TODO create canvas store for tests
+        canvasStore={canvasStoreHook} // TODO create canvas store for tests
         spyCollector={spyCollector}
         domWalkerMutableState={domWalkerMutableState}
       />
