@@ -54,8 +54,7 @@ function fragmentOrProviderOrContext(type: any): boolean {
     type == React.Fragment ||
     type?.$$typeof == fragmentSymbol ||
     type?.$$typeof == providerSymbol ||
-    type?.$$typeof == contextSymbol ||
-    type?.$$typeof == forwardRefSymbol
+    type?.$$typeof == contextSymbol
   )
 }
 
@@ -96,6 +95,7 @@ function appendRootUIDToPath(path: string | null, rootUID: string | null): strin
     return rootUID ?? undefined
   } else {
     const trimmedPath = trimLastSeparatorFromPath(path)
+    //originalResponse.props[UTOPIA_PATH_KEY] ?? path,
     return `${trimmedPath}${SceneSeparator}${rootUID ?? ''}`
   }
 }
@@ -135,6 +135,7 @@ function attachDataUidToRoot(
     if (shouldIncludeDataUID(originalResponse.type)) {
       return React.cloneElement(originalResponse, {
         [UTOPIA_UIDS_KEY]: appendToUidString(originalResponse.props[UTOPIA_UIDS_KEY], dataUids),
+        // [UTOPIA_PATH_KEY]: originalResponse.props[UTOPIA_PATH_KEY] ?? path,
         [UTOPIA_PATH_KEY]: appendRootUIDToPath(path, originalResponse.props[UTOPIA_UIDS_KEY]),
       })
     } else {

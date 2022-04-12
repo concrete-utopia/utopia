@@ -31,9 +31,9 @@ export const SceneComponent = React.memo(
     updateInvalidatedScenes((current) => current, 'invalidate')
 
     return (
-      <Scene {...remainingProps} style={sceneStyle}>
+      <div {...remainingProps} style={sceneStyle}>
         {props.children}
-      </Scene>
+      </div>
     )
   },
   (

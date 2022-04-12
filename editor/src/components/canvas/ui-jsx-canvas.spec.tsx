@@ -9,6 +9,66 @@ import {
 } from './ui-jsx-canvas.test-utils'
 import { TestAppUID, TestSceneUID } from './ui-jsx.test-utils'
 
+describe('DebugAbc', () => {
+  it('testing path fixes', () => {
+    const result = testCanvasRenderInline(
+      null,
+      `
+import React from 'react'
+import Utopia, {
+  Scene,
+  Storyboard,
+  registerModule,
+} from 'utopia-api'
+
+export const App = () => {
+  return <div data-uid='app-root' />
+}
+
+export var storyboard = (
+  <Storyboard data-uid='sb'>
+    <Scene
+      data-uid='scene'
+      style={{ position: 'absolute', left: 0, top: 0, width: 375, height: 812 }}
+    >
+      <App data-uid='app' />
+    </Scene>
+  </Storyboard>
+)
+    `,
+    )
+
+    expect(result).toMatchInlineSnapshot(`
+      "<div style=\\"all: initial;\\">
+        <div
+          id=\\"canvas-container\\"
+          style=\\"position: absolute;\\" 
+          data-utopia-valid-paths=\\"sb sb/scene sb/scene/app sb/scene/app:app-root\\"
+          data-utopia-root-element-path=\\"sb\\"
+        >
+          <div
+            data-uid=\\"scene sb\\"
+            data-utopia-scene-id=\\"sb/scene\\"
+            data-path=\\"sb/scene\\"
+            style=\\"
+              position: absolute;
+              background-color: rgba(255, 255, 255, 1);
+              box-shadow: 0px 0px 1px 0px rgba(26, 26, 26, 0.3);
+              left: 0;
+              top: 0;
+              width: 375px;
+              height: 812px;
+            \\"
+          >
+            <div data-uid=\\"app-root app\\" data-path=\\"sb/scene/app:app-root\\"></div>
+          </div>
+        </div>
+      </div>
+      "
+    `)
+  })
+})
+
 describe('UiJsxCanvas render', () => {
   it('renders a canvas testing a multitude of export styles', () => {
     testCanvasRenderMultifile(
