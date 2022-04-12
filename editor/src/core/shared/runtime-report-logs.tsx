@@ -27,7 +27,7 @@ export function useUpdateOnRuntimeErrors(
 }
 
 export function useReadOnlyRuntimeErrors(): Array<RuntimeErrorInfo> {
-  return usePubSubAtomReadOnly(runtimeErrorsAtom)
+  return usePubSubAtomReadOnly(runtimeErrorsAtom, true)
 }
 
 export function useWriteOnlyRuntimeErrors(): {
@@ -84,7 +84,7 @@ export function useUpdateOnConsoleLogs(
 }
 
 export function useReadOnlyConsoleLogs(): Array<ConsoleLog> {
-  return usePubSubAtomReadOnly(consoleLogsAtom)
+  return usePubSubAtomReadOnly(consoleLogsAtom, true)
 }
 
 export function useWriteOnlyConsoleLogs(): {

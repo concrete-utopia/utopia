@@ -165,6 +165,7 @@ export interface UiJsxCanvasProps {
   propertyControlsInfo: PropertyControlsInfo
   dispatch: EditorDispatch
   domWalkerAdditionalElementsToUpdate: Array<ElementPath>
+  elementsToRerender: Array<ElementPath> | 'rerender-all-elements'
 }
 
 export interface CanvasReactReportErrorCallback {
@@ -246,6 +247,7 @@ export function pickUiJsxCanvasProps(
       propertyControlsInfo: editor.propertyControlsInfo,
       dispatch: dispatch,
       domWalkerAdditionalElementsToUpdate: editor.canvas.domWalkerAdditionalElementsToUpdate,
+      elementsToRerender: editor.canvas.elementsToRerender,
     }
   }
 }
@@ -344,11 +346,12 @@ export const UiJsxCanvas = React.memo<UiJsxCanvasPropsWithErrorCallback>((props)
 
   let metadataContext: UiJsxCanvasContextData = forceNotNull(
     `Missing UiJsxCanvasCtxAtom provider`,
-    usePubSubAtomReadOnly(UiJsxCanvasCtxAtom),
+    usePubSubAtomReadOnly(UiJsxCanvasCtxAtom, true),
   )
 
   const updateInvalidatedPaths: DomWalkerInvalidatePathsCtxData = usePubSubAtomReadOnly(
     DomWalkerInvalidatePathsCtxAtom,
+    true,
   )
   useClearSpyMetadataOnRemount(props.mountCount, props.domWalkerInvalidateCount, metadataContext)
 
@@ -482,6 +485,7 @@ export const UiJsxCanvas = React.memo<UiJsxCanvasPropsWithErrorCallback>((props)
     hiddenInstances: hiddenInstances,
     canvasIsLive: canvasIsLive,
     shouldIncludeCanvasRootInTheSpy: props.shouldIncludeCanvasRootInTheSpy,
+    elementsToRerender: props.elementsToRerender,
   })
 
   const utopiaProjectContextValue = useKeepShallowReferenceEquality({
@@ -490,6 +494,12 @@ export const UiJsxCanvas = React.memo<UiJsxCanvasPropsWithErrorCallback>((props)
     openStoryboardFilePathKILLME: props.uiFilePath,
     resolve: resolve,
   })
+
+  const StoryboardRoot = React.useMemo(() => {
+    return StoryboardRootComponent == null ? null : (
+      <StoryboardRootComponent {...{ [UTOPIA_INSTANCE_PATH]: rootInstancePath }} />
+    )
+  }, [StoryboardRootComponent, rootInstancePath])
 
   return (
     <div
@@ -512,9 +522,7 @@ export const UiJsxCanvas = React.memo<UiJsxCanvasPropsWithErrorCallback>((props)
             canvasInteractionHappening={props.transientFilesState != null}
           >
             <SceneLevelUtopiaCtxAtom.Provider value={sceneLevelUtopiaContextValue}>
-              {StoryboardRootComponent == null ? null : (
-                <StoryboardRootComponent {...{ [UTOPIA_INSTANCE_PATH]: rootInstancePath }} />
-              )}
+              {StoryboardRoot}
             </SceneLevelUtopiaCtxAtom.Provider>
           </CanvasContainer>
         </UtopiaProjectCtxAtom.Provider>

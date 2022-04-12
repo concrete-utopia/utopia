@@ -80,7 +80,7 @@ export const CanvasWrapperComponent = React.memo(() => {
     'ErrorOverlayComponent isOverlappingWithNavigator',
   )
 
-  const navigatorWidth = usePubSubAtomReadOnly(NavigatorWidthAtom)
+  const navigatorWidth = usePubSubAtomReadOnly(NavigatorWidthAtom, true)
 
   return (
     <FlexColumn

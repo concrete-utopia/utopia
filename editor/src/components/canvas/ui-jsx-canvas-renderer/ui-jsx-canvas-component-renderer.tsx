@@ -84,23 +84,39 @@ export function createComponentRendererComponent(params: {
 
     const mutableContext = params.mutableContextRef.current[params.filePath].mutableContext
 
-    const { topLevelElements, imports } = useGetTopLevelElementsAndImports(params.filePath)
-    const { code, highlightBounds } = useGetCodeAndHighlightBounds(params.filePath)
+    const rerenderUtopiaContext = usePubSubAtomReadOnly(RerenderUtopiaCtxAtom, true)
+
+    const instancePath: ElementPath | null = tryToGetInstancePath(instancePathAny, pathsString)
+
+    const shouldUpdate =
+      rerenderUtopiaContext.elementsToRerender === 'rerender-all-elements' ||
+      rerenderUtopiaContext.elementsToRerender.findIndex((er) => {
+        return instancePath != null && EP.isParentComponentOf(instancePath, er)
+      }) > -1
+
+    const { topLevelElements, imports } = useGetTopLevelElementsAndImports(
+      params.filePath,
+      shouldUpdate,
+    )
+    const { code, highlightBounds } = useGetCodeAndHighlightBounds(params.filePath, shouldUpdate)
 
     const utopiaJsxComponent: UtopiaJSXComponent | null =
       topLevelElements.find((elem): elem is UtopiaJSXComponent => {
         return isUtopiaJSXComponent(elem) && elem.name === params.topLevelElementName
       }) ?? null
 
-    const rerenderUtopiaContext = usePubSubAtomReadOnly(RerenderUtopiaCtxAtom)
     const shouldIncludeCanvasRootInTheSpy = rerenderUtopiaContext.shouldIncludeCanvasRootInTheSpy
 
     const hiddenInstances = rerenderUtopiaContext.hiddenInstances
-    const sceneContext = usePubSubAtomReadOnly(SceneLevelUtopiaCtxAtom)
+    const sceneContext = usePubSubAtomReadOnly(SceneLevelUtopiaCtxAtom, shouldUpdate)
 
-    let metadataContext: UiJsxCanvasContextData = usePubSubAtomReadOnly(UiJsxCanvasCtxAtom)
+    let metadataContext: UiJsxCanvasContextData = usePubSubAtomReadOnly(
+      UiJsxCanvasCtxAtom,
+      shouldUpdate,
+    )
     const updateInvalidatedPaths: DomWalkerInvalidatePathsCtxData = usePubSubAtomReadOnly(
       DomWalkerInvalidatePathsCtxAtom,
+      shouldUpdate,
     )
 
     if (utopiaJsxComponent == null) {
@@ -127,8 +143,6 @@ export function createComponentRendererComponent(params: {
 
     let codeError: Error | null = null
 
-    const instancePath: ElementPath | null = tryToGetInstancePath(instancePathAny, pathsString)
-
     // Protect against infinite recursion by taking the view that anything
     // beyond a particular depth is going infinite or is likely
     // to be out of control otherwise.
@@ -140,6 +154,18 @@ export function createComponentRendererComponent(params: {
       (path) => EP.appendNewElementPath(path, getUtopiaID(utopiaJsxComponent.rootElement)),
       instancePath,
     )
+
+    React.useLayoutEffect(() => {
+      if (shouldUpdate) {
+        updateInvalidatedPaths((invalidPaths) => {
+          if (rootElementPath != null) {
+            return invalidPaths.add(EP.toString(rootElementPath))
+          } else {
+            return invalidPaths
+          }
+        }, 'invalidate')
+      }
+    })
 
     if (utopiaJsxComponent.arbitraryJSBlock != null) {
       const lookupRenderer = createLookupRender(
@@ -215,7 +241,11 @@ export function createComponentRendererComponent(params: {
       }
     }
 
-    return buildComponentRenderResult(utopiaJsxComponent.rootElement)
+    const buildResult = React.useRef(buildComponentRenderResult(utopiaJsxComponent.rootElement))
+    if (shouldUpdate) {
+      buildResult.current = buildComponentRenderResult(utopiaJsxComponent.rootElement)
+    }
+    return buildResult.current
   }
   Component.displayName = `ComponentRenderer(${params.topLevelElementName})`
   Component.topLevelElementName = params.topLevelElementName

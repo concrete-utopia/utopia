@@ -273,6 +273,10 @@ export function parentPath(path: ElementPath): ElementPath {
   }
 }
 
+export function isParentComponentOf(maybeParent: ElementPath, maybeChild: ElementPath): boolean {
+  return pathsEqual(maybeParent, dropLastPathPart(maybeChild))
+}
+
 export function isParentOf(maybeParent: ElementPath, maybeChild: ElementPath): boolean {
   const childLength = maybeChild.parts.length
   const parentLength = maybeParent.parts.length

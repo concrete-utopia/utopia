@@ -182,8 +182,9 @@ const emptyHighlightBoundsResult = { code: '', highlightBounds: null }
 
 export function useGetCodeAndHighlightBounds(
   filePath: string | null,
+  updateOnChange: boolean,
 ): { code: string; highlightBounds: HighlightBoundsForUids | null } {
-  const projectContext = usePubSubAtomReadOnly(UtopiaProjectCtxAtom)
+  const projectContext = usePubSubAtomReadOnly(UtopiaProjectCtxAtom, updateOnChange)
   if (filePath == null) {
     return emptyHighlightBoundsResult
   } else {
