@@ -134,7 +134,7 @@ function valueTypeAsArray<T>(valueType: ValueType<T>): ReadonlyArray<T> {
 
 const FooterSection = React.memo((props: { filter: string; options: Array<TailWindOption> }) => {
   const theme = useColorTheme()
-  const focusedOptionValue = usePubSubAtomReadOnly(focusedOptionAtom)
+  const focusedOptionValue = usePubSubAtomReadOnly(focusedOptionAtom, true)
   const focusedOption =
     focusedOptionValue == null ? null : props.options.find((o) => o.value === focusedOptionValue)
   const joinedAttributes = focusedOption?.attributes?.join(', ')

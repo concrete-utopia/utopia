@@ -25,6 +25,7 @@ export function updateMutableUtopiaCtxRefWithNewProps(
 }
 
 interface RerenderUtopiaContextProps {
+  elementsToRerender: Array<ElementPath> | 'rerender-all-elements'
   hiddenInstances: Array<ElementPath>
   canvasIsLive: boolean
   shouldIncludeCanvasRootInTheSpy: boolean
@@ -33,6 +34,7 @@ interface RerenderUtopiaContextProps {
 export const RerenderUtopiaCtxAtom = atomWithPubSub<RerenderUtopiaContextProps>({
   key: 'RerenderUtopiaCtxAtom',
   defaultValue: {
+    elementsToRerender: 'rerender-all-elements',
     hiddenInstances: [],
     canvasIsLive: false,
     shouldIncludeCanvasRootInTheSpy: false,
