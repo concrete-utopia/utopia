@@ -15,8 +15,9 @@ export interface OptionChainOption<T> {
 }
 
 // TODO come up with a typed OptionChainControl types!
-export const OptionChainControl: React.FunctionComponent<DEPRECATEDControlProps<any>> = React.memo(
-  ({ style, ...props }) => {
+type OptionChainControlProps = Omit<DEPRECATEDControlProps<any>, 'style'>
+export const OptionChainControl: React.FunctionComponent<OptionChainControlProps> = React.memo(
+  (props) => {
     const options = props.options as Array<OptionChainOption<string | number>>
     const labelBelow = (props.DEPRECATED_controlOptions as DEPRECATEDGenericControlOptions)
       ?.labelBelow
@@ -45,9 +46,8 @@ export const OptionChainControl: React.FunctionComponent<DEPRECATEDControlProps<
         flexDirection: 'column',
         marginBottom: 0,
         width: '100%',
-        ...style,
       }
-    }, [style])
+    }, [])
 
     return (
       <div id={props.id} key={props.key} css={containerCSS}>

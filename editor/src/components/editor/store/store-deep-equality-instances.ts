@@ -85,6 +85,8 @@ import {
   DestructuredArray,
   DestructuredArrayPart,
   functionParam,
+  StyleAttributeMetadata,
+  StyleAttributeMetadataEntry,
 } from '../../../core/shared/element-template'
 import { CanvasRectangle, LocalPoint, LocalRectangle } from '../../../core/shared/math-utils'
 import { RawSourceMap } from '../../../core/workers/ts/ts-typings/RawSourceMap'
@@ -859,6 +861,21 @@ export function SpecialSizeMeasurementsKeepDeepEquality(): KeepDeepEqualityCall<
   }
 }
 
+export const StyleAttributeMetadataEntryKeepDeepEquality: KeepDeepEqualityCall<StyleAttributeMetadataEntry> = (
+  oldValue: StyleAttributeMetadataEntry,
+  newValue: StyleAttributeMetadataEntry,
+) => {
+  if (oldValue.fromStyleSheet === newValue.fromStyleSheet) {
+    return keepDeepEqualityResult(oldValue, true)
+  } else {
+    return keepDeepEqualityResult(newValue, false)
+  }
+}
+
+export const StyleAttributeMetadataKeepDeepEquality: KeepDeepEqualityCall<StyleAttributeMetadata> = objectDeepEquality(
+  undefinableDeepEquality(StyleAttributeMetadataEntryKeepDeepEquality),
+)
+
 export function ElementInstanceMetadataKeepDeepEquality(): KeepDeepEqualityCall<
   ElementInstanceMetadata
 > {
@@ -868,7 +885,7 @@ export function ElementInstanceMetadataKeepDeepEquality(): KeepDeepEqualityCall<
     (metadata) => metadata.element,
     EitherKeepDeepEquality(createCallWithTripleEquals(), JSXElementChildKeepDeepEquality()),
     (metadata) => metadata.props,
-    createCallFromIntrospectiveKeepDeep(),
+    objectDeepEquality(createCallFromIntrospectiveKeepDeep()),
     (metadata) => metadata.globalFrame,
     nullableDeepEquality(CanvasRectangleKeepDeepEquality),
     (metadata) => metadata.localFrame,
@@ -882,7 +899,7 @@ export function ElementInstanceMetadataKeepDeepEquality(): KeepDeepEqualityCall<
     (metadata) => metadata.computedStyle,
     nullableDeepEquality(objectDeepEquality(createCallWithTripleEquals())),
     (metadata) => metadata.attributeMetadatada,
-    createCallFromIntrospectiveKeepDeep(),
+    nullableDeepEquality(StyleAttributeMetadataKeepDeepEquality),
     (metadata) => metadata.label,
     nullableDeepEquality(createCallWithTripleEquals()),
     (metadata) => metadata.importInfo,

@@ -23,6 +23,7 @@ import {
   InspectorCallbackContext,
   InspectorPropsContext,
   stylePropPathMappingFn,
+  useGetLayoutControlStatus,
   useInspectorLayoutInfo,
 } from '../../../common/property-path-hooks'
 import { isNotUnsetDefaultOrDetected } from '../../../common/control-status'
@@ -80,35 +81,35 @@ export const FlexElementSubsectionExperiment = React.memo((props: FlexElementSub
 export function useInitialFixedSectionState(parentFlexDirection: string | null): boolean {
   const isRowLayouted = parentFlexDirection === 'row' || parentFlexDirection === 'row-reverse'
 
-  const width = useInspectorLayoutInfo('width')
-  const minWidth = useInspectorLayoutInfo('minWidth')
-  const maxWidth = useInspectorLayoutInfo('maxWidth')
-  const height = useInspectorLayoutInfo('height')
-  const minHeight = useInspectorLayoutInfo('minHeight')
-  const maxHeight = useInspectorLayoutInfo('maxHeight')
+  const width = useGetLayoutControlStatus('width')
+  const minWidth = useGetLayoutControlStatus('minWidth')
+  const maxWidth = useGetLayoutControlStatus('maxWidth')
+  const height = useGetLayoutControlStatus('height')
+  const minHeight = useGetLayoutControlStatus('minHeight')
+  const maxHeight = useGetLayoutControlStatus('maxHeight')
 
   return isRowLayouted
-    ? isNotUnsetDefaultOrDetected(width.controlStatus) ||
-        isNotUnsetDefaultOrDetected(minWidth.controlStatus) ||
-        isNotUnsetDefaultOrDetected(maxWidth.controlStatus)
-    : isNotUnsetDefaultOrDetected(height.controlStatus) ||
-        isNotUnsetDefaultOrDetected(minHeight.controlStatus) ||
-        isNotUnsetDefaultOrDetected(maxHeight.controlStatus)
+    ? isNotUnsetDefaultOrDetected(width) ||
+        isNotUnsetDefaultOrDetected(minWidth) ||
+        isNotUnsetDefaultOrDetected(maxWidth)
+    : isNotUnsetDefaultOrDetected(height) ||
+        isNotUnsetDefaultOrDetected(minHeight) ||
+        isNotUnsetDefaultOrDetected(maxHeight)
 }
 
 export function useInitialAdvancedSectionState(): boolean {
-  const alignSelf = useInspectorLayoutInfo('alignSelf')
-  return isNotUnsetDefaultOrDetected(alignSelf.controlStatus)
+  const alignSelf = useGetLayoutControlStatus('alignSelf')
+  return isNotUnsetDefaultOrDetected(alignSelf)
 }
 
 export function useInitialSizeSectionState(): boolean {
-  const flexBasis = useInspectorLayoutInfo('flexBasis')
-  const flexGrow = useInspectorLayoutInfo('flexGrow')
-  const flexShrink = useInspectorLayoutInfo('flexShrink')
+  const flexBasis = useGetLayoutControlStatus('flexBasis')
+  const flexGrow = useGetLayoutControlStatus('flexGrow')
+  const flexShrink = useGetLayoutControlStatus('flexShrink')
   return (
-    isNotUnsetDefaultOrDetected(flexBasis.controlStatus) ||
-    isNotUnsetDefaultOrDetected(flexGrow.controlStatus) ||
-    isNotUnsetDefaultOrDetected(flexShrink.controlStatus)
+    isNotUnsetDefaultOrDetected(flexBasis) ||
+    isNotUnsetDefaultOrDetected(flexGrow) ||
+    isNotUnsetDefaultOrDetected(flexShrink)
   )
 }
 
@@ -253,20 +254,20 @@ export function useInitialCrossSectionState(parentFlexDirection: string | null):
   const isColumnLayouted =
     parentFlexDirection === 'column' || parentFlexDirection === 'column-reverse'
 
-  const width = useInspectorLayoutInfo('width')
-  const minWidth = useInspectorLayoutInfo('minWidth')
-  const maxWidth = useInspectorLayoutInfo('maxWidth')
-  const height = useInspectorLayoutInfo('height')
-  const minHeight = useInspectorLayoutInfo('minHeight')
-  const maxHeight = useInspectorLayoutInfo('maxHeight')
+  const width = useGetLayoutControlStatus('width')
+  const minWidth = useGetLayoutControlStatus('minWidth')
+  const maxWidth = useGetLayoutControlStatus('maxWidth')
+  const height = useGetLayoutControlStatus('height')
+  const minHeight = useGetLayoutControlStatus('minHeight')
+  const maxHeight = useGetLayoutControlStatus('maxHeight')
 
   return isColumnLayouted
-    ? isNotUnsetDefaultOrDetected(width.controlStatus) ||
-        isNotUnsetDefaultOrDetected(minWidth.controlStatus) ||
-        isNotUnsetDefaultOrDetected(maxWidth.controlStatus)
-    : isNotUnsetDefaultOrDetected(height.controlStatus) ||
-        isNotUnsetDefaultOrDetected(minHeight.controlStatus) ||
-        isNotUnsetDefaultOrDetected(maxHeight.controlStatus)
+    ? isNotUnsetDefaultOrDetected(width) ||
+        isNotUnsetDefaultOrDetected(minWidth) ||
+        isNotUnsetDefaultOrDetected(maxWidth)
+    : isNotUnsetDefaultOrDetected(height) ||
+        isNotUnsetDefaultOrDetected(minHeight) ||
+        isNotUnsetDefaultOrDetected(maxHeight)
 }
 
 const CrossAxisControls = React.memo((props: FlexElementSubsectionProps) => {
