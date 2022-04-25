@@ -42,12 +42,11 @@ export var storyboard = (
       "<div style=\\"all: initial;\\">
         <div
           id=\\"canvas-container\\"
-          style=\\"position: absolute;\\" 
+          style=\\"position: absolute;\\"
           data-utopia-valid-paths=\\"sb sb/scene sb/scene/app sb/scene/app:app-root\\"
           data-utopia-root-element-path=\\"sb\\"
         >
           <div
-            data-uid=\\"scene sb\\"
             data-utopia-scene-id=\\"sb/scene\\"
             data-path=\\"sb/scene\\"
             style=\\"
@@ -59,6 +58,7 @@ export var storyboard = (
               width: 375px;
               height: 812px;
             \\"
+            data-uid=\\"scene sb\\"
           >
             <div data-uid=\\"app-root app\\" data-path=\\"sb/scene/app:app-root\\"></div>
           </div>

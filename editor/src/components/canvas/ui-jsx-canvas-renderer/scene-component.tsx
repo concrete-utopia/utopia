@@ -16,7 +16,7 @@ export const SceneComponent = React.memo(
     const canvasIsLive = usePubSubAtomReadOnly(RerenderUtopiaCtxAtom).canvasIsLive
     const updateInvalidatedScenes = usePubSubAtomReadOnly(DomWalkerInvalidateScenesCtxAtom)
 
-    const { style, ...remainingProps } = props
+    const { style, ['data-uid']: dataUid, ...remainingProps } = props
 
     const sceneStyle: React.CSSProperties = {
       position: 'relative',

@@ -91,21 +91,28 @@ function trimLastSeparatorFromPath(path: string): string {
 }
 
 function appendRootUIDToPath(path: string | null, rootUID: string | null): string | undefined {
+  const splitUid = rootUID ? rootUID.split(' ')?.[0] : undefined
   if (path == null) {
-    return rootUID ?? undefined
+    return splitUid ?? undefined
+  } else if (!splitUid) {
+    return path
   } else {
     const trimmedPath = trimLastSeparatorFromPath(path)
     //originalResponse.props[UTOPIA_PATH_KEY] ?? path,
-    return `${trimmedPath}${SceneSeparator}${rootUID ?? ''}`
+    return `${trimmedPath}${SceneSeparator}${splitUid ?? ''}`
   }
 }
 
 function appendChildUIDToPath(path: string | null, childUID: string | null): string | undefined {
+  const splitUid = childUID ? childUID.split(' ')?.[0] : undefined // might not be needed
+
   if (path == null) {
     return childUID ?? undefined
+  } else if (!splitUid) {
+    return path
   } else {
     const trimmedPath = trimLastSeparatorFromPath(path)
-    return `${trimmedPath}${ElementSeparator}${childUID ?? ''}`
+    return `${trimmedPath}${ElementSeparator}${splitUid ?? ''}`
   }
 }
 
@@ -134,7 +141,7 @@ function attachDataUidToRoot(
   } else {
     if (shouldIncludeDataUID(originalResponse.type)) {
       return React.cloneElement(originalResponse, {
-        [UTOPIA_UIDS_KEY]: appendToUidString(originalResponse.props[UTOPIA_UIDS_KEY], dataUids),
+        [UTOPIA_UIDS_KEY]: appendToUidString(originalResponse.props[UTOPIA_UIDS_KEY], dataUids), //
         // [UTOPIA_PATH_KEY]: originalResponse.props[UTOPIA_PATH_KEY] ?? path,
         [UTOPIA_PATH_KEY]: appendRootUIDToPath(path, originalResponse.props[UTOPIA_UIDS_KEY]),
       })
