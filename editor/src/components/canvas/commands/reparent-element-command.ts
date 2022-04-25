@@ -6,7 +6,13 @@ import {
 } from '../../../core/model/project-file-utils'
 import { drop, last, dropLast } from '../../../core/shared/array-utils'
 import * as EP from '../../../core/shared/element-path'
-import { ElementPath, RevisionsState } from '../../../core/shared/project-file-types'
+import { TopLevelElement, UtopiaJSXComponent } from '../../../core/shared/element-template'
+import {
+  ElementPath,
+  Imports,
+  ParseSuccess,
+  RevisionsState,
+} from '../../../core/shared/project-file-types'
 import { fastForEach } from '../../../core/shared/utils'
 import {
   getProjectContentKeyPathElements,
@@ -51,120 +57,70 @@ export const runReparentElement: CommandFunction<ReparentElement> = (
   forUnderlyingTargetFromEditorState(
     command.target,
     editorState,
-    (success, underlyingElement, underlyingTarget, underlyingFilePath) => {
+    (
+      successOldParent,
+      underlyingElementOldParent,
+      underlyingTargetOldParent,
+      underlyingFilePathOldParent,
+    ) => {
       forUnderlyingTargetFromEditorState(
         command.newParent,
         editorState,
-        (successInner, underlyingElementInner, underlyingTargetInner, underlyingFilePathInner) => {
-          const components = getUtopiaJSXComponentsFromSuccess(success)
-          const withElementRemoved = removeElementAtPath(command.target, components)
-          const componentsFromParentFile = getUtopiaJSXComponentsFromSuccess(successInner)
+        (
+          successNewParent,
+          underlyingElementNewParent,
+          underlyingTargetNewParent,
+          underlyingFilePathNewParent,
+        ) => {
+          if (underlyingFilePathOldParent === underlyingFilePathNewParent) {
+            const components = getUtopiaJSXComponentsFromSuccess(successOldParent)
+            const withElementRemoved = removeElementAtPath(command.target, components)
 
-          const withElementInserted = insertElementAtPath(
-            editorState.projectContents,
-            underlyingFilePathInner,
-            command.newParent,
-            underlyingElement,
-            componentsFromParentFile,
-            null,
-          )
+            const withElementInserted = insertElementAtPath(
+              editorState.projectContents,
+              underlyingFilePathOldParent,
+              command.newParent,
+              underlyingElementOldParent,
+              withElementRemoved,
+              null,
+            )
+            const editorStatePatchOldParentFile = getPatchForComponentChange(
+              successOldParent.topLevelElements,
+              withElementInserted,
+              successOldParent.imports,
+              underlyingFilePathOldParent,
+            )
 
-          const updatedTopLevelElementsChildFile = applyUtopiaJSXComponentsChanges(
-            success.topLevelElements,
-            withElementRemoved,
-          )
-          const updatedTopLevelElementsParentFile = applyUtopiaJSXComponentsChanges(
-            success.topLevelElements,
-            withElementInserted,
-          )
-          const projectContentFilePatchChildFile: Spec<ProjectContentFile> = {
-            content: {
-              fileContents: {
-                revisionsState: {
-                  $set: RevisionsState.ParsedAhead,
-                },
-                parsed: {
-                  topLevelElements: {
-                    $set: updatedTopLevelElementsChildFile,
-                  },
-                  imports: {
-                    $set: success.imports,
-                  },
-                },
-              },
-            },
+            editorStatePatches = [editorStatePatchOldParentFile]
+          } else {
+            const componentsOldParent = getUtopiaJSXComponentsFromSuccess(successOldParent)
+            const withElementRemoved = removeElementAtPath(command.target, componentsOldParent)
+            const componentsNewParent = getUtopiaJSXComponentsFromSuccess(successNewParent)
+
+            const withElementInserted = insertElementAtPath(
+              editorState.projectContents,
+              underlyingFilePathNewParent,
+              command.newParent,
+              underlyingElementNewParent,
+              componentsNewParent,
+              null,
+            )
+
+            const editorStatePatchOldParentFile = getPatchForComponentChange(
+              successOldParent.topLevelElements,
+              withElementRemoved,
+              successOldParent.imports,
+              underlyingFilePathOldParent,
+            )
+            const editorStatePatchNewParentFile = getPatchForComponentChange(
+              successNewParent.topLevelElements,
+              withElementInserted,
+              successNewParent.imports,
+              underlyingFilePathNewParent,
+            )
+
+            editorStatePatches = [editorStatePatchOldParentFile, editorStatePatchNewParentFile]
           }
-          const projectContentFilePatchParentFile: Spec<ProjectContentFile> = {
-            content: {
-              fileContents: {
-                revisionsState: {
-                  $set: RevisionsState.ParsedAhead,
-                },
-                parsed: {
-                  topLevelElements: {
-                    $set: updatedTopLevelElementsParentFile,
-                  },
-                  imports: {
-                    $set: success.imports,
-                  },
-                },
-              },
-            },
-          }
-          // ProjectContentTreeRoot is a bit awkward to patch.
-          const pathElementsChildFile = getProjectContentKeyPathElements(underlyingFilePath)
-          if (pathElementsChildFile.length === 0) {
-            throw new Error('Invalid path length.')
-          }
-          const remainderPathChildFile = drop(1, pathElementsChildFile)
-
-          // ProjectContentTreeRoot is a bit awkward to patch.
-          const pathElementsParentFile = getProjectContentKeyPathElements(underlyingFilePathInner)
-          if (pathElementsChildFile.length === 0) {
-            throw new Error('Invalid path length.')
-          }
-          const remainderPathParentFile = drop(1, pathElementsParentFile)
-
-          const projectContentsTreePatchParentFile: Spec<ProjectContentsTree> = remainderPathParentFile.reduceRight(
-            (working: Spec<ProjectContentsTree>, pathPart: string) => {
-              return {
-                children: {
-                  [pathPart]: working,
-                },
-              }
-            },
-            projectContentFilePatchParentFile,
-          )
-
-          const projectContentsTreePatchChildFile: Spec<ProjectContentsTree> = remainderPathChildFile.reduceRight(
-            (working: Spec<ProjectContentsTree>, pathPart: string) => {
-              return {
-                children: {
-                  [pathPart]: working,
-                },
-              }
-            },
-            projectContentFilePatchChildFile,
-          )
-
-          // Finally patch the last part of the path in.
-          const projectContentTreeRootPatchChildFile: Spec<ProjectContentTreeRoot> = {
-            [pathElementsChildFile[0]]: projectContentsTreePatchChildFile,
-          }
-
-          // Finally patch the last part of the path in.
-          const projectContentTreeRootPatchParentFile: Spec<ProjectContentTreeRoot> = {
-            [pathElementsParentFile[0]]: projectContentsTreePatchParentFile,
-          }
-
-          const editorStatePatchChildFile = {
-            projectContents: projectContentTreeRootPatchChildFile,
-          }
-          const editorStatePatchParentFile = {
-            projectContents: projectContentTreeRootPatchParentFile,
-          }
-
-          editorStatePatches = [editorStatePatchChildFile, editorStatePatchParentFile]
         },
       )
     },
@@ -175,5 +131,59 @@ export const runReparentElement: CommandFunction<ReparentElement> = (
     commandDescription: `Reparent Element ${EP.toUid(command.target)} to new parent ${EP.toUid(
       command.newParent,
     )}`,
+  }
+}
+
+function getPatchForComponentChange(
+  topLevelElements: Array<TopLevelElement>,
+  newUtopiaComponents: Array<UtopiaJSXComponent>,
+  imports: Imports,
+  filePath: string,
+) {
+  const updatedTopLevelElements = applyUtopiaJSXComponentsChanges(
+    topLevelElements,
+    newUtopiaComponents,
+  )
+  const projectContentFilePatch: Spec<ProjectContentFile> = {
+    content: {
+      fileContents: {
+        revisionsState: {
+          $set: RevisionsState.ParsedAhead,
+        },
+        parsed: {
+          topLevelElements: {
+            $set: updatedTopLevelElements,
+          },
+          imports: {
+            $set: imports,
+          },
+        },
+      },
+    },
+  }
+  // ProjectContentTreeRoot is a bit awkward to patch.
+  const pathElements = getProjectContentKeyPathElements(filePath)
+  if (pathElements.length === 0) {
+    throw new Error('Invalid path length.')
+  }
+  const remainderPath = drop(1, pathElements)
+  const projectContentsTreePatch: Spec<ProjectContentsTree> = remainderPath.reduceRight(
+    (working: Spec<ProjectContentsTree>, pathPart: string) => {
+      return {
+        children: {
+          [pathPart]: working,
+        },
+      }
+    },
+    projectContentFilePatch,
+  )
+
+  // Finally patch the last part of the path in.
+  const projectContentTreeRootPatch: Spec<ProjectContentTreeRoot> = {
+    [pathElements[0]]: projectContentsTreePatch,
+  }
+
+  return {
+    projectContents: projectContentTreeRootPatch,
   }
 }
