@@ -47,7 +47,7 @@ export const runReparentElement: CommandFunction<ReparentElement> = (
   editorState: EditorState,
   command: ReparentElement,
 ) => {
-  let editorStatePatch: EditorStatePatch = {}
+  let editorStatePatches: Array<EditorStatePatch> = []
   forUnderlyingTargetFromEditorState(
     command.target,
     editorState,
@@ -64,7 +64,7 @@ export const runReparentElement: CommandFunction<ReparentElement> = (
             editorState.projectContents,
             underlyingFilePathInner,
             command.newParent,
-            underlyingElementInner,
+            underlyingElement,
             componentsFromParentFile,
             null,
           )
@@ -116,7 +116,7 @@ export const runReparentElement: CommandFunction<ReparentElement> = (
           if (pathElementsChildFile.length === 0) {
             throw new Error('Invalid path length.')
           }
-          const remainderPath = drop(1, pathElementsChildFile)
+          const remainderPathChildFile = drop(1, pathElementsChildFile)
 
           // ProjectContentTreeRoot is a bit awkward to patch.
           const pathElementsParentFile = getProjectContentKeyPathElements(underlyingFilePathInner)
@@ -125,19 +125,7 @@ export const runReparentElement: CommandFunction<ReparentElement> = (
           }
           const remainderPathParentFile = drop(1, pathElementsParentFile)
 
-          const commonPathElements = []
-          const uniquePathElementsParentFile = []
-          const uniquePathElementsChildFile = []
-          for (let i = 0; i < Math.min(remainderPathParentFile.length, remainderPath.length); i++) {
-            if (remainderPathParentFile[i] === remainderPath[i]) {
-              commonPathElements.push(remainderPathParentFile[i])
-            } else {
-              uniquePathElementsParentFile.push(remainderPathParentFile[i])
-              uniquePathElementsChildFile.push(remainderPath[i])
-            }
-          }
-
-          const projectContentsTreePatchParentFile: Spec<ProjectContentsTree> = uniquePathElementsParentFile.reduceRight(
+          const projectContentsTreePatchParentFile: Spec<ProjectContentsTree> = remainderPathParentFile.reduceRight(
             (working: Spec<ProjectContentsTree>, pathPart: string) => {
               return {
                 children: {
@@ -148,7 +136,7 @@ export const runReparentElement: CommandFunction<ReparentElement> = (
             projectContentFilePatchParentFile,
           )
 
-          const projectContentsTreePatchChildFile: Spec<ProjectContentsTree> = uniquePathElementsChildFile.reduceRight(
+          const projectContentsTreePatchChildFile: Spec<ProjectContentsTree> = remainderPathChildFile.reduceRight(
             (working: Spec<ProjectContentsTree>, pathPart: string) => {
               return {
                 children: {
@@ -166,7 +154,7 @@ export const runReparentElement: CommandFunction<ReparentElement> = (
 
           // Finally patch the last part of the path in.
           const projectContentTreeRootPatchParentFile: Spec<ProjectContentTreeRoot> = {
-            [pathElementsChildFile[0]]: projectContentsTreePatchParentFile,
+            [pathElementsParentFile[0]]: projectContentsTreePatchParentFile,
           }
 
           const editorStatePatchChildFile = {
@@ -176,14 +164,14 @@ export const runReparentElement: CommandFunction<ReparentElement> = (
             projectContents: projectContentTreeRootPatchParentFile,
           }
 
-          editorStatePatch = editorStatePatchChildFile
+          editorStatePatches = [editorStatePatchChildFile, editorStatePatchParentFile]
         },
       )
     },
   )
 
   return {
-    editorStatePatch: editorStatePatch,
+    editorStatePatches: editorStatePatches,
     commandDescription: `Reparent Element ${EP.toUid(command.target)} to new parent ${EP.toUid(
       command.newParent,
     )}`,

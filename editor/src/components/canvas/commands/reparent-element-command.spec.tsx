@@ -4,6 +4,7 @@ import * as EP from '../../../core/shared/element-path'
 import { complexDefaultProjectPreParsed } from '../../../sample-projects/sample-project-utils.test-utils'
 import { withUnderlyingTargetFromEditorState } from '../../editor/store/editor-state'
 import { renderTestEditorWithModel } from '../ui-jsx.test-utils'
+import { updateEditorStateWithPatches } from './commands'
 import { reparentElement, runReparentElement } from './reparent-element-command'
 
 describe('runReparentElement', () => {
@@ -31,7 +32,10 @@ describe('runReparentElement', () => {
 
     const result = runReparentElement(originalEditorState, reparentCommand)
 
-    const patchedEditor = update(originalEditorState, result.editorStatePatch)
+    const patchedEditor = updateEditorStateWithPatches(
+      originalEditorState,
+      result.editorStatePatches,
+    )
     const newPath = EP.appendToPath(newParentPath, EP.toUid(targetPath))
 
     const newElement = withUnderlyingTargetFromEditorState(

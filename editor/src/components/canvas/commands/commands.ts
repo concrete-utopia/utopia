@@ -18,7 +18,7 @@ import { runUpdateSelectedViews, UpdateSelectedViews } from './update-selected-v
 import { runWildcardPatch, WildcardPatch } from './wildcard-patch-command'
 
 export interface CommandFunctionResult {
-  editorStatePatch: EditorStatePatch
+  editorStatePatches: Array<EditorStatePatch>
   commandDescription: string
 }
 
@@ -91,13 +91,13 @@ export function foldAndApplyCommands(
       // Run the command with our current states.
       const commandResult = runCanvasCommand(workingEditorState, command)
       // Capture values from the result.
-      const statePatch = commandResult.editorStatePatch
+      const statePatch = commandResult.editorStatePatches
       // Apply the update to the editor state.
-      workingEditorState = update(workingEditorState, statePatch)
+      workingEditorState = updateEditorStateWithPatches(workingEditorState, statePatch)
       // Collate the patches.
-      statePatches.push(statePatch)
+      statePatches.push(...statePatch)
       if (shouldAccumulatePatches) {
-        accumulatedPatches.push(statePatch)
+        accumulatedPatches.push(...statePatch)
       }
       workingCommandDescriptions.push({
         description: commandResult.commandDescription,
@@ -120,4 +120,13 @@ export function foldAndApplyCommands(
     accumulatedPatches: mergePatches(accumulatedPatches),
     commandDescriptions: workingCommandDescriptions,
   }
+}
+
+export function updateEditorStateWithPatches(
+  state: EditorState,
+  patches: Array<EditorStatePatch>,
+): EditorState {
+  return patches.reduce((acc, curr) => {
+    return update(acc, curr)
+  }, state)
 }

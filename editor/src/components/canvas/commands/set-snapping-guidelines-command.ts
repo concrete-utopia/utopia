@@ -32,7 +32,7 @@ export const runSetSnappingGuidelines: CommandFunction<SetSnappingGuidelines> = 
     },
   }
   return {
-    editorStatePatch: editorStatePatch,
+    editorStatePatches: [editorStatePatch],
     commandDescription: `Set Snapping Guidelines`,
   }
 }

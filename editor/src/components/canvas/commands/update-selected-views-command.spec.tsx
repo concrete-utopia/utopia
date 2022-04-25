@@ -3,7 +3,7 @@ import { createBuiltInDependenciesList } from '../../../core/es-modules/package-
 import * as EP from '../../../core/shared/element-path'
 import { complexDefaultProjectPreParsed } from '../../../sample-projects/sample-project-utils.test-utils'
 import { renderTestEditorWithModel } from '../ui-jsx.test-utils'
-import { foldAndApplyCommands } from './commands'
+import { foldAndApplyCommands, updateEditorStateWithPatches } from './commands'
 import { runUpdateSelectedViews, updateSelectedViews } from './update-selected-views-command'
 
 describe('updateSelectedViews', () => {
@@ -26,7 +26,10 @@ describe('updateSelectedViews', () => {
 
     const result = runUpdateSelectedViews(originalEditorState, updateSelectedViewsCommand)
 
-    const patchedEditor = update(originalEditorState, result.editorStatePatch)
+    const patchedEditor = updateEditorStateWithPatches(
+      originalEditorState,
+      result.editorStatePatches,
+    )
 
     expect(patchedEditor.selectedViews).toEqual([targetPath])
   })
