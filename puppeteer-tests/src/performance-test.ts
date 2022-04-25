@@ -1,6 +1,6 @@
 /* eslint-disable no-console */
 require('dotenv').config({ path: 'src/.env' })
-import puppeteer from 'puppeteer'
+import * as puppeteer from 'puppeteer'
 import { v4 } from 'uuid'
 import { consoleDoneMessage, setupBrowser, uploadPNGtoAWS } from './utils'
 import * as JSONStream from 'JSONStream'
@@ -12,7 +12,13 @@ const BRANCH_NAME = process.env.BRANCH_NAME ? `?branch_name=${process.env.BRANCH
 const STAGING_EDITOR_URL = process.env.EDITOR_URL ?? `https://utopia.pizza/p${BRANCH_NAME}`
 const MASTER_EDITOR_URL = process.env.MASTER_EDITOR_URL ?? `https://utopia.pizza/p`
 
-type FrameResult = {
+export function wait(timeout: number): Promise<void> {
+  return new Promise((resolve) => {
+    setTimeout(resolve, timeout)
+  })
+}
+
+interface FrameResult {
   title: string
   timeSeries: Array<number>
   analytics: {
@@ -23,6 +29,7 @@ type FrameResult = {
     percentile50: number | undefined
     percentile75: number | undefined
   }
+  succeeded: boolean
 }
 
 const EmptyResult: FrameResult = {
@@ -36,6 +43,7 @@ const EmptyResult: FrameResult = {
     percentile50: undefined,
     percentile75: undefined,
   },
+  succeeded: true,
 }
 
 function loadTraceEventsJSON(): Promise<any> {
@@ -71,70 +79,6 @@ function defer() {
 
 const ResizeButtonXPath = "//a[contains(., 'P R')]"
 
-function calculatePi(accuracy: number): number {
-  // Uses the Nilakantha series
-  let i = 2
-  let j = 3
-  let k = 4
-  let count = 0
-  let result = 3
-
-  while (count < accuracy) {
-    const nextAdjustment = 4 / (i * j * k)
-    if (count % 2 === 0) {
-      result += nextAdjustment
-    } else {
-      result -= nextAdjustment
-    }
-
-    i += 2
-    j += 2
-    k += 2
-
-    count++
-  }
-
-  return result
-}
-
-function timeBasicCalc(): FrameResult {
-  let times: Array<number> = []
-
-  for (let i = 0; i < 100; i++) {
-    const start = Date.now()
-    calculatePi(7500000)
-    const end = Date.now()
-    times.push(end - start)
-  }
-
-  const sortedTimes = times.sort((a, b) => a - b)
-  const totalTime = sortedTimes.reduce((sum, next) => sum + next, 0)
-
-  const analytics = {
-    frameMin: sortedTimes[0]!,
-    frameMax: sortedTimes[sortedTimes.length - 1]!,
-    frameAvg: Number((totalTime / sortedTimes.length).toFixed()),
-    percentile25: sortedTimes[Math.floor(sortedTimes.length * 0.25)],
-    percentile50: sortedTimes[Math.floor(sortedTimes.length * 0.5)],
-    percentile75: sortedTimes[Math.floor(sortedTimes.length * 0.75)],
-  }
-  return {
-    title: 'Calc Pi',
-    analytics: analytics,
-    timeSeries: sortedTimes,
-  }
-}
-
-async function testEmptyDispatch(page: puppeteer.Page): Promise<FrameResult> {
-  console.log('Test Baseline Performance')
-  await page.tracing.start({ path: 'trace.json' })
-  await clickOnce(page, "//a[contains(., 'B L')]", 'BASELINE_TEST_FINISHED', 'BASELINE_TEST_ERROR')
-  await page.tracing.stop()
-
-  const traceJson = await loadTraceEventsJSON()
-  return getFrameData(traceJson, 'baseline', 'Empty Dispatch')
-}
-
 function consoleMessageForResult(result: FrameResult): string {
   return `${result.title}: ${result.analytics.percentile50}ms (${result.analytics.frameMin}-${result.analytics.frameMax}ms)`
 }
@@ -162,39 +106,92 @@ export const testPerformance = async function () {
   console.info(`::set-output name=perf-chart-master:: ${masterResult.summaryImageUrl}`)
 }
 
-export const testPerformanceInner = async function (url: string): Promise<PerformanceResult> {
-  let scrollResult = EmptyResult
-  let resizeResult = EmptyResult
-  let highlightRegularResult = EmptyResult
-  let highlightAllElementsResult = EmptyResult
-  let selectionResult: Array<FrameResult> = []
-  let basicCalc = EmptyResult
-  let simpleDispatch = EmptyResult
-  let absoluteMoveResult: Array<FrameResult> = []
-  const { page, browser } = await setupBrowser(url, 120000)
-  try {
-    simpleDispatch = await testEmptyDispatch(page)
-    basicCalc = timeBasicCalc()
-    highlightRegularResult = await testHighlightRegularPerformance(page)
-    highlightAllElementsResult = await testHighlightAllElementsPerformance(page)
-    selectionResult = await testSelectionPerformance(page)
-    resizeResult = await testResizePerformance(page)
-    scrollResult = await testScrollingPerformance(page)
-    absoluteMoveResult = await testAbsoluteMovePerformance(page)
-  } catch (e) {
-    throw new Error(`Error during measurements ${e}`)
-  } finally {
-    browser.close()
+type PageToPromiseResult<T> = (page: puppeteer.Page) => Promise<T>
+
+async function retryPageCalls<T>(
+  url: string,
+  call: PageToPromiseResult<T>,
+  checkSucceeded: (value: T) => boolean,
+  defaultResult: T,
+): Promise<T> {
+  for (let retryCount: number = 1; retryCount <= 3; retryCount++) {
+    const { page, browser } = await setupBrowser(url, 120000)
+    await page.waitForXPath(`//div[contains(@id, "canvas-container")]`)
+    await page.waitForXPath('//div[contains(@class, "item-label-container")]')
+    try {
+      const result = await call(page)
+      // Check the result.
+      const success: boolean = checkSucceeded(result)
+      if (success || retryCount === 3) {
+        return result
+      }
+    } catch (e) {
+      if (retryCount >= 3) {
+        console.error(e)
+        throw new Error(`Error during measurements ${e}`)
+      }
+    } finally {
+      await page.close()
+      await browser.close()
+    }
   }
+  return defaultResult
+}
+
+function frameResultSuccess(frameResult: FrameResult): boolean {
+  return frameResult.succeeded
+}
+
+function frameArraySuccess(frameArray: Array<FrameResult>): boolean {
+  return frameArray.every(frameResultSuccess)
+}
+
+export const testPerformanceInner = async function (url: string): Promise<PerformanceResult> {
+  const highlightRegularResult = await retryPageCalls(
+    url,
+    testHighlightRegularPerformance,
+    frameResultSuccess,
+    EmptyResult,
+  )
+  const highlightAllElementsResult = await retryPageCalls(
+    url,
+    testHighlightAllElementsPerformance,
+    frameResultSuccess,
+    EmptyResult,
+  )
+  const selectionResult = await retryPageCalls(url, testSelectionPerformance, frameArraySuccess, [])
+  const resizeResult = await retryPageCalls(
+    url,
+    testResizePerformance,
+    frameResultSuccess,
+    EmptyResult,
+  )
+  const scrollResult = await retryPageCalls(
+    url,
+    testScrollingPerformance,
+    frameResultSuccess,
+    EmptyResult,
+  )
+  const absoluteMoveLargeResult = await retryPageCalls(
+    url,
+    testAbsoluteMovePerformanceLarge,
+    frameArraySuccess,
+    [],
+  )
+  const absoluteMoveSmallResult = await retryPageCalls(
+    url,
+    testAbsoluteMovePerformanceSmall,
+    frameArraySuccess,
+    [],
+  )
   const messageParts = [
     highlightRegularResult,
     highlightAllElementsResult,
     ...selectionResult,
     scrollResult,
     resizeResult,
-    ...absoluteMoveResult,
-    basicCalc,
-    simpleDispatch,
+    ...absoluteMoveLargeResult,
+    ...absoluteMoveSmallResult,
   ]
   const summaryImage = await uploadSummaryImage(messageParts)
 
@@ -211,11 +208,11 @@ async function clickOnce(
   xpath: string,
   expectedConsoleMessage: string,
   errorMessage?: string,
-): Promise<void> {
+): Promise<boolean> {
   await page.waitForXPath(xpath)
   const [button] = await page.$x(xpath)
   await button!.click()
-  await consoleDoneMessage(page, expectedConsoleMessage, errorMessage)
+  return consoleDoneMessage(page, expectedConsoleMessage, errorMessage)
 }
 
 export const testScrollingPerformance = async function (
@@ -227,11 +224,16 @@ export const testScrollingPerformance = async function (
   await clickOnce(page, "//a[contains(., 'P S')]", 'SCROLL_TEST_FINISHED', 'SCROLL_TEST_ERROR')
 
   // and then we run the test for a third time, this time running tracing
-  await page.tracing.start({ path: 'trace.json' })
-  await clickOnce(page, "//a[contains(., 'P S')]", 'SCROLL_TEST_FINISHED', 'SCROLL_TEST_ERROR')
+  await page.tracing.start({ categories: ['blink.user_timing'], path: 'trace.json' })
+  const succeeded = await clickOnce(
+    page,
+    "//a[contains(., 'P S')]",
+    'SCROLL_TEST_FINISHED',
+    'SCROLL_TEST_ERROR',
+  )
   await page.tracing.stop()
   const traceJson = await loadTraceEventsJSON()
-  return getFrameData(traceJson, 'scroll', 'Scroll Canvas')
+  return getFrameData(traceJson, 'scroll', 'Scroll Canvas', succeeded)
 }
 
 export const testResizePerformance = async function (page: puppeteer.Page): Promise<FrameResult> {
@@ -239,34 +241,26 @@ export const testResizePerformance = async function (page: puppeteer.Page): Prom
   await page.waitForXPath(ResizeButtonXPath)
 
   // select element using the navigator
-  const navigatorElement = await page.$('[class^="item-label-container"]')
+  const navigatorElement = await page.waitForXPath(
+    '//div[contains(@class, "item-label-container")]',
+  )
   await navigatorElement!.click()
 
   // we run it twice without measurements to warm up the environment
-  await clickOnce(
-    page,
-    ResizeButtonXPath,
-    'RESIZE_TEST_FINISHED',
-    'RESIZE_TEST_MISSING_SELECTEDVIEW',
-  )
-  await clickOnce(
-    page,
-    ResizeButtonXPath,
-    'RESIZE_TEST_FINISHED',
-    'RESIZE_TEST_MISSING_SELECTEDVIEW',
-  )
+  await clickOnce(page, ResizeButtonXPath, 'RESIZE_TEST_FINISHED', 'RESIZE_TEST_ERROR')
+  await clickOnce(page, ResizeButtonXPath, 'RESIZE_TEST_FINISHED', 'RESIZE_TEST_ERROR')
 
   // and then we run the test for a third time, this time running tracing
-  await page.tracing.start({ path: 'trace.json' })
-  await clickOnce(
+  await page.tracing.start({ categories: ['blink.user_timing'], path: 'trace.json' })
+  const succeeded = await clickOnce(
     page,
     ResizeButtonXPath,
     'RESIZE_TEST_FINISHED',
-    'RESIZE_TEST_MISSING_SELECTEDVIEW',
+    'RESIZE_TEST_ERROR',
   )
   await page.tracing.stop()
   const traceJson = await loadTraceEventsJSON()
-  return getFrameData(traceJson, 'resize', 'Resize')
+  return getFrameData(traceJson, 'resize', 'Resize', succeeded)
 }
 
 export const testHighlightRegularPerformance = async function (
@@ -289,8 +283,8 @@ export const testHighlightRegularPerformance = async function (
   )
 
   // and then we run the test for a third time, this time running tracing
-  await page.tracing.start({ path: 'trace.json' })
-  await clickOnce(
+  await page.tracing.start({ categories: ['blink.user_timing'], path: 'trace.json' })
+  const succeeded = await clickOnce(
     page,
     "//a[contains(., 'PRH')]",
     'HIGHLIGHT_REGULAR_TEST_FINISHED',
@@ -298,7 +292,7 @@ export const testHighlightRegularPerformance = async function (
   )
   await page.tracing.stop()
   const traceJson = await loadTraceEventsJSON()
-  return getFrameData(traceJson, 'highlight_regular', 'Highlight Regular')
+  return getFrameData(traceJson, 'highlight_regular', 'Highlight Regular', succeeded)
 }
 
 export const testHighlightAllElementsPerformance = async function (
@@ -321,8 +315,8 @@ export const testHighlightAllElementsPerformance = async function (
   )
 
   // and then we run the test for a third time, this time running tracing
-  await page.tracing.start({ path: 'trace.json' })
-  await clickOnce(
+  await page.tracing.start({ categories: ['blink.user_timing'], path: 'trace.json' })
+  const succeeded = await clickOnce(
     page,
     "//a[contains(., 'PAH')]",
     'HIGHLIGHT_ALL-ELEMENTS_TEST_FINISHED',
@@ -330,7 +324,7 @@ export const testHighlightAllElementsPerformance = async function (
   )
   await page.tracing.stop()
   const traceJson = await loadTraceEventsJSON()
-  return getFrameData(traceJson, 'highlight_all-elements', 'Highlight All Elements')
+  return getFrameData(traceJson, 'highlight_all-elements', 'Highlight All Elements', succeeded)
 }
 
 export const testSelectionPerformance = async function (
@@ -343,52 +337,107 @@ export const testSelectionPerformance = async function (
   await clickOnce(page, "//a[contains(., 'P E')]", 'SELECT_TEST_FINISHED', 'SELECT_TEST_ERROR')
 
   // and then we run the test for a third time, this time running tracing
-  await page.tracing.start({ path: 'trace.json' })
-  await clickOnce(page, "//a[contains(., 'P E')]", 'SELECT_TEST_FINISHED', 'SELECT_TEST_ERROR')
+  await page.tracing.start({ categories: ['blink.user_timing'], path: 'trace.json' })
+  const succeeded = await clickOnce(
+    page,
+    "//a[contains(., 'P E')]",
+    'SELECT_TEST_FINISHED',
+    'SELECT_TEST_ERROR',
+  )
   await page.tracing.stop()
   const traceJson = await loadTraceEventsJSON()
   return [
-    getFrameData(traceJson, 'select', 'Selection'),
-    getFrameData(traceJson, 'select_deselect', 'De-Selection'),
+    getFrameData(traceJson, 'select', 'Selection', succeeded),
+    getFrameData(traceJson, 'select_deselect', 'De-Selection', succeeded),
   ]
 }
 
-export const testAbsoluteMovePerformance = async function (
+export const testAbsoluteMovePerformanceLarge = async function (
   page: puppeteer.Page,
 ): Promise<Array<FrameResult>> {
-  console.log('Test Absolute Move Performance')
-  await page.waitForXPath("//a[contains(., 'PAM')]")
+  console.log('Test Absolute Move Performance (Large)')
+  await page.waitForXPath("//a[contains(., 'PAML')]")
   // we run it twice without measurements to warm up the environment
   await clickOnce(
     page,
-    "//a[contains(., 'PAM')]",
+    "//a[contains(., 'PAML')]",
     'ABSOLUTE_MOVE_TEST_FINISHED',
     'ABSOLUTE_MOVE_TEST_ERROR',
   )
   await clickOnce(
     page,
-    "//a[contains(., 'PAM')]",
+    "//a[contains(., 'PAML')]",
     'ABSOLUTE_MOVE_TEST_FINISHED',
     'ABSOLUTE_MOVE_TEST_ERROR',
   )
 
   // and then we run the test for a third time, this time running tracing
-  await page.tracing.start({ path: 'trace.json' })
-  await clickOnce(
+  await page.tracing.start({ categories: ['blink.user_timing'], path: 'trace.json' })
+  const succeeded = await clickOnce(
     page,
-    "//a[contains(., 'PAM')]",
+    "//a[contains(., 'PAML')]",
     'ABSOLUTE_MOVE_TEST_FINISHED',
     'ABSOLUTE_MOVE_TEST_ERROR',
   )
   await page.tracing.stop()
   const traceJson = await loadTraceEventsJSON()
   return [
-    getFrameData(traceJson, 'absolute_move_interaction', 'Absolute Move (Interaction)'),
-    getFrameData(traceJson, 'absolute_move_move', 'Absolute Move (Just Move)'),
+    getFrameData(
+      traceJson,
+      'absolute_move_interaction',
+      'Absolute Move (Interaction, Large)',
+      succeeded,
+    ),
+    getFrameData(traceJson, 'absolute_move_move', 'Absolute Move (Just Move, Large)', succeeded),
   ]
 }
 
-const getFrameData = (traceEventsJson: any, markNamePrefix: string, title: string): FrameResult => {
+export const testAbsoluteMovePerformanceSmall = async function (
+  page: puppeteer.Page,
+): Promise<Array<FrameResult>> {
+  console.log('Test Absolute Move Performance (Small)')
+  await page.waitForXPath("//a[contains(., 'PAMS')]")
+  // we run it twice without measurements to warm up the environment
+  await clickOnce(
+    page,
+    "//a[contains(., 'PAMS')]",
+    'ABSOLUTE_MOVE_TEST_FINISHED',
+    'ABSOLUTE_MOVE_TEST_ERROR',
+  )
+  await clickOnce(
+    page,
+    "//a[contains(., 'PAMS')]",
+    'ABSOLUTE_MOVE_TEST_FINISHED',
+    'ABSOLUTE_MOVE_TEST_ERROR',
+  )
+
+  // and then we run the test for a third time, this time running tracing
+  await page.tracing.start({ categories: ['blink.user_timing'], path: 'trace.json' })
+  const succeeded = await clickOnce(
+    page,
+    "//a[contains(., 'PAMS')]",
+    'ABSOLUTE_MOVE_TEST_FINISHED',
+    'ABSOLUTE_MOVE_TEST_ERROR',
+  )
+  await page.tracing.stop()
+  const traceJson = await loadTraceEventsJSON()
+  return [
+    getFrameData(
+      traceJson,
+      'absolute_move_interaction',
+      'Absolute Move (Interaction, Small)',
+      succeeded,
+    ),
+    getFrameData(traceJson, 'absolute_move_move', 'Absolute Move (Just Move, Small)', succeeded),
+  ]
+}
+
+const getFrameData = (
+  traceEventsJson: any,
+  markNamePrefix: string,
+  title: string,
+  succeeded: boolean,
+): FrameResult => {
   const relevantEvents: any[] = traceEventsJson.filter((e: any) => {
     return e.cat === 'blink.user_timing' && e.name.startsWith(`${markNamePrefix}_`)
   })
@@ -434,6 +483,7 @@ const getFrameData = (traceEventsJson: any, markNamePrefix: string, title: strin
     title: title,
     analytics: analytics,
     timeSeries: sortedFrameTimes,
+    succeeded: succeeded,
   }
 }
 
@@ -562,6 +612,7 @@ async function createSummaryPng(
 }
 
 testPerformance().catch((e) => {
+  console.error(e)
   const errorMessage = `"There was an error with Puppeteer: ${e.name} – ${e.message}"`
   console.info(`::set-output name=perf-result::${errorMessage}`)
 

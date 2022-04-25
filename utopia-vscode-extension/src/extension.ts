@@ -25,6 +25,7 @@ import {
   UtopiaVSCodeConfig,
   utopiaVSCodeConfigValues,
   fileOpened,
+  failedToOpenFile,
 } from 'utopia-vscode-common'
 import { UtopiaFSExtension } from './utopia-fs'
 import { fromUtopiaURI } from './path-utils'
@@ -462,6 +463,8 @@ async function openFile(fileUri: vscode.Uri, retries: number = 5): Promise<boole
       await new Promise<void>((resolve) => setTimeout(() => resolve(), 100))
       return openFile(fileUri, retries - 1)
     } else {
+      const path = fromUtopiaURI(fileUri)
+      sendMessage(failedToOpenFile(path))
       return false
     }
   }

@@ -8,10 +8,10 @@ import {
   useTriggerScrollPerformanceTest,
   useTriggerResizePerformanceTest,
   useTriggerSelectionPerformanceTest,
-  useTriggerBaselinePerformanceTest,
   useTriggerRegularHighlightPerformanceTest,
   useTriggerAllElementsHighlightPerformanceTest,
-  useTriggerAbsoluteMovePerformanceTest,
+  useTriggerAbsoluteMoveLargePerformanceTest,
+  useTriggerAbsoluteMoveSmallPerformanceTest,
 } from '../../core/model/performance-scripts'
 import { useReParseOpenProjectFile } from '../../core/model/project-file-helper-hooks'
 import { shareURLForProject } from '../../core/shared/utils'
@@ -193,8 +193,8 @@ export const Menubar = React.memo(() => {
   const onTriggerRegularHighlightTest = useTriggerRegularHighlightPerformanceTest()
   const onTriggerAllElementsHighlightTest = useTriggerAllElementsHighlightPerformanceTest()
   const onTriggerSelectionTest = useTriggerSelectionPerformanceTest()
-  const onTriggerAbsoluteMoveTest = useTriggerAbsoluteMovePerformanceTest()
-  const onTriggerBaselineTest = useTriggerBaselinePerformanceTest()
+  const onTriggerAbsoluteMoveLargeTest = useTriggerAbsoluteMoveLargePerformanceTest()
+  const onTriggerAbsoluteMoveSmallTest = useTriggerAbsoluteMoveSmallPerformanceTest()
 
   const previewURL =
     projectId == null ? '' : shareURLForProject(FLOATING_PREVIEW_BASE_URL, projectId, projectName)
@@ -371,10 +371,10 @@ export const Menubar = React.memo(() => {
             <a onClick={onTriggerSelectionTest}>P E</a>
           </Tile>
           <Tile style={{ marginTop: 12, marginBottom: 12 }} size='large'>
-            <a onClick={onTriggerAbsoluteMoveTest}>PAM</a>
+            <a onClick={onTriggerAbsoluteMoveLargeTest}>PAML</a>
           </Tile>
           <Tile style={{ marginTop: 12, marginBottom: 12 }} size='large'>
-            <a onClick={onTriggerBaselineTest}>B L</a>
+            <a onClick={onTriggerAbsoluteMoveSmallTest}>PAMS</a>
           </Tile>
         </React.Fragment>
       ) : null}

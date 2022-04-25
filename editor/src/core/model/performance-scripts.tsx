@@ -49,6 +49,8 @@ import { CURRENT_PROJECT_VERSION } from '../../components/editor/actions/migrati
 import { BuiltInDependencies } from '../es-modules/package-manager/built-in-dependencies-list'
 import { LargeProjectContents } from '../../test-cases/large-project'
 import { VSCodeLoadingScreenID } from '../../components/code-editor/vscode-editor-loading-screen'
+import { v4 as UUID } from 'uuid'
+import { SmallSingleDivProjectContents } from '../../test-cases/simple-single-div-project'
 
 export function wait(timeout: number): Promise<void> {
   return new Promise((resolve) => {
@@ -108,15 +110,12 @@ async function loadProject(
   }
 
   // Load the project itself.
-  await load(dispatch, persistentModel, 'Test', '999999', builtInDependencies, false)
+  await load(dispatch, persistentModel, 'Test', UUID(), builtInDependencies, false)
 
   // Wait for the editor to stabilise, ensuring that the canvas can render for example.
   const startWaitingTime = Date.now()
   let editorReady: boolean = false
-  let itemSelected: boolean = false
   let canvasPopulated: boolean = false
-  let codeEditorPopulated: boolean = false
-  let codeEditorLoaded: boolean = false
   while (startWaitingTime + CANVAS_POPULATE_WAIT_TIME_MS > Date.now() && !editorReady) {
     // Check canvas has been populated.
     if (!canvasPopulated) {
@@ -133,40 +132,23 @@ async function loadProject(
     const itemLabelContainer = document.querySelector(`div[class~="item-label-container"]`)
     if (itemLabelContainer != null) {
       if (itemLabelContainer instanceof HTMLElement) {
-        itemSelected = true
         itemLabelContainer.click()
       }
     }
     //}
 
-    // Wait for the code to appear in the code editor.
-    if (!codeEditorPopulated) {
-      const loadingScreenElement = document.querySelector(`div#${VSCodeLoadingScreenID}`)
-      const vscodeEditorElement = document.querySelector(`iframe#vscode-editor`)
-      if (vscodeEditorElement != null && loadingScreenElement == null) {
-        // Drill down inside the outer iframe.
-        const vscodeOuterElement = (vscodeEditorElement as any).contentWindow?.document.body.querySelector(
-          `iframe#vscode-outer`,
-        )
-        if (vscodeOuterElement != null) {
-          codeEditorLoaded = true
-          const firstViewLine = (vscodeOuterElement as any).contentWindow?.document.body.querySelector(
-            `div.view-line`,
-          )
-          if (firstViewLine != null) {
-            codeEditorPopulated = true
-          }
-        }
-      }
-    }
-
     // Appears the code editor can't be relied on to load enough of the time for
     // this check to not break everything.
-    editorReady = canvasPopulated // && codeEditorPopulated
+    editorReady = canvasPopulated
 
     if (!editorReady) {
       await wait(500)
     }
+  }
+
+  // Give the editor a little bit of an extra window of time just in case.
+  if (editorReady) {
+    await wait(2000)
   }
   return editorReady
 }
@@ -235,7 +217,7 @@ export function useTriggerResizePerformanceTest(): () => void {
   const trigger = React.useCallback(async () => {
     const editorReady = await loadProject(dispatch, builtInDependencies, LargeProjectContents)
     if (!editorReady) {
-      console.info('ABSOLUTE_MOVE_TEST_ERROR')
+      console.info('RESIZE_TEST_ERROR')
       return
     }
     const targetPath = [...allPaths.current].sort(
@@ -308,12 +290,12 @@ function useTriggerHighlightPerformanceTest(key: 'regular' | 'all-elements'): ()
     'useTriggerHighlightPerformanceTest builtInDependencies',
   )
   const trigger = React.useCallback(async () => {
+    const allCapsKey = key.toLocaleUpperCase()
     const editorReady = await loadProject(dispatch, builtInDependencies, LargeProjectContents)
     if (!editorReady) {
-      console.info('ABSOLUTE_MOVE_TEST_ERROR')
+      console.info(`HIGHLIGHT_${allCapsKey}_TEST_ERROR`)
       return
     }
-    const allCapsKey = key.toLocaleUpperCase()
     if (allPaths.current.length === 0) {
       console.info(`HIGHLIGHT_${allCapsKey}_TEST_ERROR_NO_PATHS`)
       return
@@ -321,7 +303,7 @@ function useTriggerHighlightPerformanceTest(key: 'regular' | 'all-elements'): ()
 
     const targetPath = allPaths.current[0]
 
-    const htmlElement = document.querySelector(`*[data-paths~="${EP.toString(targetPath)}"]`)
+    const htmlElement = document.querySelector(`*[data-path^="${EP.toString(targetPath)}"]`)
     if (htmlElement == null) {
       console.info(`HIGHLIGHT_${allCapsKey}_TEST_ERROR_NO_ELEMENT`)
       return
@@ -379,7 +361,7 @@ export function useTriggerSelectionPerformanceTest(): () => void {
   const trigger = React.useCallback(async () => {
     const editorReady = await loadProject(dispatch, builtInDependencies, LargeProjectContents)
     if (!editorReady) {
-      console.info('ABSOLUTE_MOVE_TEST_ERROR')
+      console.info('SELECT_TEST_ERROR')
       return
     }
     const targetPath = [...allPaths.current].sort(
@@ -403,7 +385,7 @@ export function useTriggerSelectionPerformanceTest(): () => void {
 
     const targetElement = forceNotNull(
       'Target element should exist.',
-      document.querySelector(`*[data-paths~="${EP.toString(targetPath)}"]`),
+      document.querySelector(`*[data-path^="${EP.toString(targetPath)}"]`),
     )
     const originalTargetBounds = targetElement.getBoundingClientRect()
     const leftToTarget =
@@ -485,7 +467,15 @@ export function useTriggerSelectionPerformanceTest(): () => void {
   return trigger
 }
 
-export function useTriggerAbsoluteMovePerformanceTest(): () => void {
+export const useTriggerAbsoluteMoveLargePerformanceTest = () =>
+  useTriggerAbsoluteMovePerformanceTest(LargeProjectContents)
+
+export const useTriggerAbsoluteMoveSmallPerformanceTest = () =>
+  useTriggerAbsoluteMovePerformanceTest(SmallSingleDivProjectContents)
+
+export function useTriggerAbsoluteMovePerformanceTest(
+  projectContents: ProjectContentTreeRoot,
+): () => void {
   const dispatch = useEditorState(
     React.useCallback((store) => store.dispatch as DebugDispatch, []),
     'useTriggerAbsoluteMovePerformanceTest dispatch',
@@ -494,15 +484,12 @@ export function useTriggerAbsoluteMovePerformanceTest(): () => void {
     React.useCallback((store) => store.derived.navigatorTargets, []),
   )
   const metadata = useRefEditorState(React.useCallback((store) => store.editor.jsxMetadata, []))
-  const selectedViews = useRefEditorState(
-    React.useCallback((store) => store.editor.selectedViews, []),
-  )
   const builtInDependencies = useEditorState(
     (store) => store.builtInDependencies,
     'useTriggerAbsoluteMovePerformanceTest builtInDependencies',
   )
   const trigger = React.useCallback(async () => {
-    const editorReady = await loadProject(dispatch, builtInDependencies, LargeProjectContents)
+    const editorReady = await loadProject(dispatch, builtInDependencies, projectContents)
     if (!editorReady) {
       console.info('ABSOLUTE_MOVE_TEST_ERROR')
       return
@@ -524,7 +511,6 @@ export function useTriggerAbsoluteMovePerformanceTest(): () => void {
     const targetPath = forceNotNull('Invalid array.', last(grandChildrenPaths))
 
     // Switch Canvas Strategies on.
-    const strategiesCurrentlyEnabled = isFeatureEnabled('Canvas Strategies')
     setFeatureEnabled('Canvas Strategies', true)
     // Delete the other children that just get in the way.
     const parentPath = EP.parentPath(targetPath)
@@ -581,7 +567,7 @@ export function useTriggerAbsoluteMovePerformanceTest(): () => void {
 
     const targetElement = forceNotNull(
       'Target element should exist.',
-      document.querySelector(`*[data-paths~="${EP.toString(childTargetPath)}"]`),
+      document.querySelector(`*[data-path^="${EP.toString(childTargetPath)}"]`),
     )
     const originalTargetBounds = targetElement.getBoundingClientRect()
     const leftToTarget =
@@ -664,56 +650,10 @@ export function useTriggerAbsoluteMovePerformanceTest(): () => void {
         framesPassed++
         requestAnimationFrame(step)
       } else {
-        // Potentially turn off Canvas Strategies.
-        setFeatureEnabled('Canvas Strategies', strategiesCurrentlyEnabled)
-        // Reset the position.
-        await dispatch([unsetProperty(childTargetPath!, PP.create(['style']))], 'everyone')
-          .entireUpdateFinished
-        // Unfocus the target.
-        await dispatch([setFocusedElement(null)], 'everyone').entireUpdateFinished
-
         console.info('ABSOLUTE_MOVE_TEST_FINISHED')
       }
     }
     requestAnimationFrame(step)
-  }, [dispatch, allPaths, metadata, builtInDependencies])
-  return trigger
-}
-
-export function useTriggerBaselinePerformanceTest(): () => void {
-  const dispatch = useEditorState(
-    (store) => store.dispatch as DebugDispatch,
-    'useTriggerSelectionPerformanceTest dispatch',
-  )
-  const builtInDependencies = useEditorState(
-    (store) => store.builtInDependencies,
-    'useTriggerScrollPerformanceTest builtInDependencies',
-  )
-  const trigger = React.useCallback(async () => {
-    const editorReady = await loadProject(dispatch, builtInDependencies, LargeProjectContents)
-    if (!editorReady) {
-      console.info('BASELINE_TEST_ERROR')
-      return
-    }
-
-    let framesPassed = 0
-    async function step() {
-      markStart('baseline', framesPassed)
-      for (let i = 0; i < 3000; i++) {
-        await dispatch([]).entireUpdateFinished
-      }
-      markEnd('baseline', framesPassed)
-      measureStep('baseline', framesPassed)
-
-      if (framesPassed < NumberOfIterations) {
-        framesPassed++
-        requestAnimationFrame(step)
-      } else {
-        requestAnimationFrame(() => console.info('BASELINE_TEST_FINISHED'))
-      }
-    }
-    requestAnimationFrame(step)
-  }, [dispatch, builtInDependencies])
-
+  }, [dispatch, allPaths, metadata, builtInDependencies, projectContents])
   return trigger
 }

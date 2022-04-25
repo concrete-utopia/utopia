@@ -73,6 +73,28 @@ function getElementPathCache(fullElementPath: ElementPathPart[]): ElementPathCac
 const SceneSeparator = ':'
 const ElementSeparator = '/'
 
+function getComponentPathStringForPathString(path: string): string | null {
+  const indexOfLastSceneSeparator = path.lastIndexOf(SceneSeparator)
+  const indexOfLastElementSeparator = path.lastIndexOf(ElementSeparator)
+  if (indexOfLastSceneSeparator > indexOfLastElementSeparator) {
+    return path.slice(0, indexOfLastSceneSeparator)
+  } else {
+    return null
+  }
+}
+
+export function getAllElementPathStringsForPathString(path: string): Array<string> {
+  let allElementPathStrings: Array<string> = []
+  let workingPath: string | null = path
+
+  while (workingPath != null) {
+    allElementPathStrings.push(workingPath)
+    workingPath = getComponentPathStringForPathString(workingPath)
+  }
+
+  return allElementPathStrings
+}
+
 export function elementPathPartToString(path: ElementPathPart): string {
   let result: string = ''
   const elementsLength = path.length
