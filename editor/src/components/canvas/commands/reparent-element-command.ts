@@ -1,17 +1,20 @@
 import { Spec } from 'immutability-helper'
+import { openFileMessage } from 'utopia-vscode-common'
 import {
   applyUtopiaJSXComponentsChanges,
   getUtopiaJSXComponentsFromSuccess,
 } from '../../../core/model/project-file-utils'
-import { drop } from '../../../core/shared/array-utils'
+import { drop, last, dropLast } from '../../../core/shared/array-utils'
 import * as EP from '../../../core/shared/element-path'
 import { ElementPath, RevisionsState } from '../../../core/shared/project-file-types'
+import { fastForEach } from '../../../core/shared/utils'
 import {
   getProjectContentKeyPathElements,
   ProjectContentFile,
   ProjectContentsTree,
   ProjectContentTreeRoot,
 } from '../../assets'
+import { normalisePathToUnderlyingTarget } from '../../custom-code/code-file'
 import {
   EditorState,
   EditorStatePatch,
@@ -49,63 +52,133 @@ export const runReparentElement: CommandFunction<ReparentElement> = (
     command.target,
     editorState,
     (success, underlyingElement, underlyingTarget, underlyingFilePath) => {
-      const components = getUtopiaJSXComponentsFromSuccess(success)
-      const withElementRemoved = removeElementAtPath(command.target, components)
-      const withElementInserted = insertElementAtPath(
-        editorState.projectContents,
-        editorState.canvas.openFile?.filename ?? null,
+      forUnderlyingTargetFromEditorState(
         command.newParent,
-        underlyingElement,
-        withElementRemoved,
-        null,
-      )
+        editorState,
+        (successInner, underlyingElementInner, underlyingTargetInner, underlyingFilePathInner) => {
+          const components = getUtopiaJSXComponentsFromSuccess(success)
+          const withElementRemoved = removeElementAtPath(command.target, components)
+          const componentsFromParentFile = getUtopiaJSXComponentsFromSuccess(successInner)
 
-      const updatedTopLevelElements = applyUtopiaJSXComponentsChanges(
-        success.topLevelElements,
-        withElementInserted,
-      )
-      const projectContentFilePatch: Spec<ProjectContentFile> = {
-        content: {
-          fileContents: {
-            revisionsState: {
-              $set: RevisionsState.ParsedAhead,
-            },
-            parsed: {
-              topLevelElements: {
-                $set: updatedTopLevelElements,
+          const withElementInserted = insertElementAtPath(
+            editorState.projectContents,
+            underlyingFilePathInner,
+            command.newParent,
+            underlyingElementInner,
+            componentsFromParentFile,
+            null,
+          )
+
+          const updatedTopLevelElementsChildFile = applyUtopiaJSXComponentsChanges(
+            success.topLevelElements,
+            withElementRemoved,
+          )
+          const updatedTopLevelElementsParentFile = applyUtopiaJSXComponentsChanges(
+            success.topLevelElements,
+            withElementInserted,
+          )
+          const projectContentFilePatchChildFile: Spec<ProjectContentFile> = {
+            content: {
+              fileContents: {
+                revisionsState: {
+                  $set: RevisionsState.ParsedAhead,
+                },
+                parsed: {
+                  topLevelElements: {
+                    $set: updatedTopLevelElementsChildFile,
+                  },
+                  imports: {
+                    $set: success.imports,
+                  },
+                },
               },
-              imports: {
-                $set: success.imports,
-              },
-            },
-          },
-        },
-      }
-      // ProjectContentTreeRoot is a bit awkward to patch.
-      const pathElements = getProjectContentKeyPathElements(underlyingFilePath)
-      if (pathElements.length === 0) {
-        throw new Error('Invalid path length.')
-      }
-      const remainderPath = drop(1, pathElements)
-      const projectContentsTreePatch: Spec<ProjectContentsTree> = remainderPath.reduceRight(
-        (working: Spec<ProjectContentsTree>, pathPart: string) => {
-          return {
-            children: {
-              [pathPart]: working,
             },
           }
+          const projectContentFilePatchParentFile: Spec<ProjectContentFile> = {
+            content: {
+              fileContents: {
+                revisionsState: {
+                  $set: RevisionsState.ParsedAhead,
+                },
+                parsed: {
+                  topLevelElements: {
+                    $set: updatedTopLevelElementsParentFile,
+                  },
+                  imports: {
+                    $set: success.imports,
+                  },
+                },
+              },
+            },
+          }
+          // ProjectContentTreeRoot is a bit awkward to patch.
+          const pathElementsChildFile = getProjectContentKeyPathElements(underlyingFilePath)
+          if (pathElementsChildFile.length === 0) {
+            throw new Error('Invalid path length.')
+          }
+          const remainderPath = drop(1, pathElementsChildFile)
+
+          // ProjectContentTreeRoot is a bit awkward to patch.
+          const pathElementsParentFile = getProjectContentKeyPathElements(underlyingFilePathInner)
+          if (pathElementsChildFile.length === 0) {
+            throw new Error('Invalid path length.')
+          }
+          const remainderPathParentFile = drop(1, pathElementsParentFile)
+
+          const commonPathElements = []
+          const uniquePathElementsParentFile = []
+          const uniquePathElementsChildFile = []
+          for (let i = 0; i < Math.min(remainderPathParentFile.length, remainderPath.length); i++) {
+            if (remainderPathParentFile[i] === remainderPath[i]) {
+              commonPathElements.push(remainderPathParentFile[i])
+            } else {
+              uniquePathElementsParentFile.push(remainderPathParentFile[i])
+              uniquePathElementsChildFile.push(remainderPath[i])
+            }
+          }
+
+          const projectContentsTreePatchParentFile: Spec<ProjectContentsTree> = uniquePathElementsParentFile.reduceRight(
+            (working: Spec<ProjectContentsTree>, pathPart: string) => {
+              return {
+                children: {
+                  [pathPart]: working,
+                },
+              }
+            },
+            projectContentFilePatchParentFile,
+          )
+
+          const projectContentsTreePatchChildFile: Spec<ProjectContentsTree> = uniquePathElementsChildFile.reduceRight(
+            (working: Spec<ProjectContentsTree>, pathPart: string) => {
+              return {
+                children: {
+                  [pathPart]: working,
+                },
+              }
+            },
+            projectContentFilePatchChildFile,
+          )
+
+          // Finally patch the last part of the path in.
+          const projectContentTreeRootPatchChildFile: Spec<ProjectContentTreeRoot> = {
+            [pathElementsChildFile[0]]: projectContentsTreePatchChildFile,
+          }
+
+          // Finally patch the last part of the path in.
+          const projectContentTreeRootPatchParentFile: Spec<ProjectContentTreeRoot> = {
+            [pathElementsChildFile[0]]: projectContentsTreePatchParentFile,
+          }
+
+          const editorStatePatchChildFile = {
+            projectContents: projectContentTreeRootPatchChildFile,
+          }
+          const editorStatePatchParentFile = {
+            projectContents: projectContentTreeRootPatchParentFile,
+          }
+
+          editorStatePatch = editorStatePatchChildFile
         },
-        projectContentFilePatch,
       )
-
-      // Finally patch the last part of the path in.
-      const projectContentTreeRootPatch: Spec<ProjectContentTreeRoot> = {
-        [pathElements[0]]: projectContentsTreePatch,
-      }
-
-      editorStatePatch = {
-        projectContents: projectContentTreeRootPatch,
-      }
     },
   )
 
