@@ -3,7 +3,7 @@ import { getLayoutProperty } from '../../../core/layout/getLayoutProperty'
 import { framePointForPinnedProp, LayoutPinnedProp } from '../../../core/layout/layout-helpers-new'
 import { MetadataUtils } from '../../../core/model/element-metadata-utils'
 import { mapDropNulls } from '../../../core/shared/array-utils'
-import { isRight, right } from '../../../core/shared/either'
+import { foldEither, isRight, right } from '../../../core/shared/either'
 import * as EP from '../../../core/shared/element-path'
 import type { ElementInstanceMetadataMap, JSXElement } from '../../../core/shared/element-template'
 import {
@@ -42,20 +42,34 @@ export function getAbsoluteMoveCommandsForSelectedElement(
       selectedElement,
     )?.specialSizeMeasurements.immediateParentBounds ?? null // TODO this should probably be coordinateSystemBounds
 
+  const elementBounds =
+    MetadataUtils.findElementByElementPath(
+      sessionState.startingMetadata, // TODO should this be using the current metadata?
+      selectedElement,
+    )?.globalFrame ?? null
+
   if (element == null) {
     return []
   }
 
-  return createMoveCommandsForElement(element, selectedElement, drag, elementParentBounds)
+  return createMoveCommandsForElement(
+    element,
+    selectedElement,
+    drag,
+    elementBounds,
+    elementParentBounds,
+  )
 }
 
 function createMoveCommandsForElement(
   element: JSXElement,
   selectedElement: ElementPath,
   drag: CanvasVector,
+  elementBounds: CanvasRectangle | null,
   elementParentBounds: CanvasRectangle | null,
 ): AdjustCssLengthProperty[] {
-  return mapDropNulls(
+  let pinsAdded: Set<string> = new Set()
+  let result = mapDropNulls(
     (pin) => {
       const horizontal = isHorizontalPoint(
         // TODO avoid using the loaded FramePoint enum
@@ -63,22 +77,66 @@ function createMoveCommandsForElement(
       )
       const negative = pin === 'right' || pin === 'bottom'
       const value = getLayoutProperty(pin, right(element.props), ['style'])
-      if (isRight(value) && value.value != null) {
-        // TODO what to do about missing properties?
-        return adjustCssLengthProperty(
-          'permanent',
-          selectedElement,
-          stylePropPathMappingFn(pin, ['style']),
-          (horizontal ? drag.x : drag.y) * (negative ? -1 : 1),
-          horizontal ? elementParentBounds?.width : elementParentBounds?.height,
-          true,
-        )
-      } else {
-        return null
-      }
+      return foldEither(
+        () => {
+          return null
+        },
+        (successValue) => {
+          if (successValue == null) {
+            return null
+          } else {
+            pinsAdded.add(pin)
+            return adjustCssLengthProperty(
+              'permanent',
+              selectedElement,
+              stylePropPathMappingFn(pin, ['style']),
+              (horizontal ? drag.x : drag.y) * (negative ? -1 : 1),
+              horizontal ? elementParentBounds?.width : elementParentBounds?.height,
+              true,
+            )
+          }
+        },
+        value,
+      )
     },
     ['top', 'bottom', 'left', 'right'] as const,
   )
+
+  // If neither value for the axis exists (defining the position), fill in one of these.
+  for (const pin of ['top', 'left'] as const) {
+    const horizontal = isHorizontalPoint(framePointForPinnedProp(pin))
+    const value = getLayoutProperty(pin, right(element.props), ['style'])
+    let dimensionValue: number = 0
+    switch (pin) {
+      case 'top':
+        if (pinsAdded.has('top') || pinsAdded.has('bottom')) {
+          continue
+        } else {
+          dimensionValue = elementBounds?.y ?? 0
+        }
+        break
+      case 'left':
+        if (pinsAdded.has('left') || pinsAdded.has('right')) {
+          continue
+        } else {
+          dimensionValue = elementBounds?.x ?? 0
+        }
+        break
+    }
+
+    result.push(
+      adjustCssLengthProperty(
+        'permanent',
+        selectedElement,
+        stylePropPathMappingFn(pin, ['style']),
+        dimensionValue + (horizontal ? drag.x : drag.y),
+        horizontal ? elementParentBounds?.width : elementParentBounds?.height,
+        true,
+      ),
+    )
+  }
+
+  return result
 }
 
 export function getAbsoluteOffsetCommandsForSelectedElement(

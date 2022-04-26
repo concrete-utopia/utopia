@@ -11,6 +11,7 @@ import { ElementPath, PropertyPath } from '../../../core/shared/project-file-typ
 import * as PP from '../../../core/shared/property-path'
 import { EditorState, withUnderlyingTargetFromEditorState } from '../../editor/store/editor-state'
 import {
+  cssNumber,
   CSSNumber,
   parseCSSPercent,
   parseCSSPx,
@@ -112,6 +113,16 @@ export const runAdjustCssLengthProperty: CommandFunction<AdjustCssLengthProperty
       command.property,
       command.parentDimensionPx,
       parsePercentResult.value,
+      command.valuePx,
+    )
+  }
+
+  if (command.createIfNonExistant) {
+    return updatePixelValueByPixel(
+      editorState,
+      command.target,
+      command.property,
+      cssNumber(0),
       command.valuePx,
     )
   }
