@@ -15,8 +15,9 @@ import {
   zeroCanvasRect,
 } from '../../../core/shared/math-utils'
 import { ElementPath } from '../../../core/shared/project-file-types'
+import { ProjectContentTreeRoot } from '../../assets'
 
-import { getElementFromProjectContents } from '../../editor/store/editor-state'
+import { forUnderlyingTarget, getElementFromProjectContents } from '../../editor/store/editor-state'
 import { stylePropPathMappingFn } from '../../inspector/common/property-path-hooks'
 import {
   adjustCssLengthProperty,
@@ -178,4 +179,22 @@ export function getMultiselectBounds(
   }, selectedElements)
 
   return boundingRectangleArray(frames)
+}
+
+export function getFileOfElement(
+  target: ElementPath | null,
+  projectContents: ProjectContentTreeRoot,
+  openFile: string | null | undefined,
+): string | null {
+  let elementFile: string | null = null
+  forUnderlyingTarget(
+    target,
+    projectContents,
+    {},
+    openFile,
+    (_success, _element, _underlyingTarget, underlyingFilePath) => {
+      elementFile = underlyingFilePath
+    },
+  )
+  return elementFile
 }
