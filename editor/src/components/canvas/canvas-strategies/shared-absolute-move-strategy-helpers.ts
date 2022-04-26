@@ -17,7 +17,10 @@ import {
 import { ElementPath } from '../../../core/shared/project-file-types'
 import { ProjectContentTreeRoot } from '../../assets'
 
-import { forUnderlyingTarget, getElementFromProjectContents } from '../../editor/store/editor-state'
+import {
+  getElementFromProjectContents,
+  withUnderlyingTarget,
+} from '../../editor/store/editor-state'
 import { stylePropPathMappingFn } from '../../inspector/common/property-path-hooks'
 import {
   adjustCssLengthProperty,
@@ -186,15 +189,12 @@ export function getFileOfElement(
   projectContents: ProjectContentTreeRoot,
   openFile: string | null | undefined,
 ): string | null {
-  let elementFile: string | null = null
-  forUnderlyingTarget(
+  return withUnderlyingTarget(
     target,
     projectContents,
     {},
     openFile,
-    (_success, _element, _underlyingTarget, underlyingFilePath) => {
-      elementFile = underlyingFilePath
-    },
+    null,
+    (_success, _element, _underlyingTarget, underlyingFilePath) => underlyingFilePath,
   )
-  return elementFile
 }
