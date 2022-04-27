@@ -442,6 +442,7 @@ export interface EditorState {
     restorableCodePaneWidth: number
     additionalControls: boolean
   }
+  conversionPropertyChanges: MapLike<Array<ValueAtPath>>
   canvas: {
     visible: boolean
     dragState: DragState | null
@@ -1224,6 +1225,7 @@ export function createEditorState(dispatch: EditorDispatch): EditorState {
       restorableCodePaneWidth: 500,
       additionalControls: true,
     },
+    conversionPropertyChanges: {},
     canvas: {
       dragState: null, // TODO change dragState if editorMode changes
       interactionSession: null,
@@ -1513,6 +1515,7 @@ export function editorModelFromPersistentModel(
       restorableCodePaneWidth: 500,
       additionalControls: true,
     },
+    conversionPropertyChanges: {},
     canvas: {
       dragState: null, // TODO change dragState if editorMode changes
       interactionSession: null,

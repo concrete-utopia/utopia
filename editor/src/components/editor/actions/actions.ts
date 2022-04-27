@@ -373,6 +373,7 @@ import {
   ForceParseFile,
   RemoveFromNodeModulesContents,
   ConvertSelectionToAbsolute,
+  UpdateConversionPropertyChanges,
 } from '../action-types'
 import { defaultTransparentViewElement, defaultSceneElement } from '../defaults'
 import {
@@ -526,6 +527,7 @@ import { uniqToasts } from './toast-helpers'
 import { NavigatorStateKeepDeepEquality } from '../../../utils/deep-equality-instances'
 import type { BuiltInDependencies } from '../../../core/es-modules/package-manager/built-in-dependencies-list'
 import { stylePropPathMappingFn } from '../../inspector/common/property-path-hooks'
+import { MapLike } from 'typescript'
 
 export function updateSelectedLeftMenuTab(editorState: EditorState, tab: LeftMenuTab): EditorState {
   return {
@@ -957,6 +959,7 @@ function restoreEditorState(currentEditor: EditorModel, history: StateHistory): 
       restorableCodePaneWidth: currentEditor.interfaceDesigner.codePaneWidth,
       additionalControls: currentEditor.interfaceDesigner.additionalControls,
     },
+    conversionPropertyChanges: poppedEditor.conversionPropertyChanges,
     canvas: {
       visible: currentEditor.canvas.visible,
       dragState: null,
@@ -4859,6 +4862,7 @@ export const UPDATE_FNS = {
     action: ConvertSelectionToAbsolute,
     editor: EditorModel,
   ): EditorModel => {
+    let conversionPropertyChanges: MapLike<Array<ValueAtPath>> = {}
     const selectedViewsWithSiblings = editor.selectedViews.flatMap((path) => {
       return [
         path,
@@ -4898,6 +4902,7 @@ export const UPDATE_FNS = {
         })
       }
 
+      conversionPropertyChanges[EP.toString(parentPath)] = propsToAdd
       return propsToAdd.reduce((parentWithFramePropsUpdated, propToAdd) => {
         return UPDATE_FNS.SET_PROP(
           setProp_UNSAFE(parentPath, propToAdd.path, propToAdd.value),
@@ -4906,7 +4911,7 @@ export const UPDATE_FNS = {
       }, working)
     }, editor)
 
-    return selectedViewsWithSiblings.reduce((working, path) => {
+    const updatedEditor = selectedViewsWithSiblings.reduce((working, path) => {
       const margin = MetadataUtils.findElementByElementPath(editor.jsxMetadata, path)
         ?.specialSizeMeasurements.margin
       const marginPoint: LocalPoint = {
@@ -4938,6 +4943,12 @@ export const UPDATE_FNS = {
             value: jsxAttributeValue('absolute', emptyComments),
           },
         ]
+        conversionPropertyChanges[EP.toString(path)] = propsToAdd.filter(
+          (propToAdd) =>
+            MetadataUtils.findElementByElementPath(editor.jsxMetadata, path)?.props.style[
+              PP.lastPart(propToAdd.path)
+            ] == null,
+        )
         return propsToAdd.reduce((withFramePropsUpdated, propToAdd) => {
           return UPDATE_FNS.SET_PROP(
             setProp_UNSAFE(path, propToAdd.path, propToAdd.value),
@@ -4945,6 +4956,12 @@ export const UPDATE_FNS = {
           )
         }, working)
       } else {
+        conversionPropertyChanges[EP.toString(path)] = [
+          {
+            path: stylePropPathMappingFn('position', ['style']),
+            value: jsxAttributeValue('absolute', emptyComments),
+          },
+        ]
         return UPDATE_FNS.SET_PROP(
           setProp_UNSAFE(
             path,
@@ -4955,6 +4972,13 @@ export const UPDATE_FNS = {
         )
       }
     }, withParentUpdated)
+    return { ...updatedEditor, conversionPropertyChanges }
+  },
+  UPDATE_CONVERSION_PROPERTY_CHANGES: (
+    action: UpdateConversionPropertyChanges,
+    editor: EditorModel,
+  ): EditorModel => {
+    return { ...editor, conversionPropertyChanges: action.conversionPropertyChanges }
   },
 }
 

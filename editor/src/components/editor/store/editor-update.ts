@@ -340,6 +340,8 @@ export function runSimpleLocalEditorAction(
       return UPDATE_FNS.FORCE_PARSE_FILE(action, state)
     case 'CONVERT_SELECTION_TO_ABSOLUTE':
       return UPDATE_FNS.CONVERT_SELECTION_TO_ABSOLUTE(action, state)
+    case 'UPDATE_CONVERSION_PROPERTY_CHANGES':
+      return UPDATE_FNS.UPDATE_CONVERSION_PROPERTY_CHANGES(action, state)
     default:
       return state
   }

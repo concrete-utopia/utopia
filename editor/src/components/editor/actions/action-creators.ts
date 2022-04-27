@@ -1,3 +1,4 @@
+import { MapLike } from 'typescript'
 import { LayoutSystem } from 'utopia-api/core' // TODO fixme this imports utopia-api
 import { UtopiaVSCodeConfig } from 'utopia-vscode-common'
 import type { LoginState } from '../../../common/user'
@@ -12,6 +13,7 @@ import type {
   ElementInstanceMetadataMap,
   SettableLayoutSystem,
 } from '../../../core/shared/element-template'
+import { ValueAtPath } from '../../../core/shared/jsx-attributes'
 import type {
   CanvasPoint,
   CanvasRectangle,
@@ -208,6 +210,7 @@ import type {
   ForceParseFile,
   RemoveFromNodeModulesContents,
   ConvertSelectionToAbsolute,
+  UpdateConversionPropertyChanges,
 } from '../action-types'
 import { EditorModes, elementInsertionSubject, Mode, SceneInsertionSubject } from '../editor-modes'
 import type {
@@ -1476,5 +1479,13 @@ export function forceParseFile(filePath: string): ForceParseFile {
 export function convertSelectionToAbsolute(): ConvertSelectionToAbsolute {
   return {
     action: 'CONVERT_SELECTION_TO_ABSOLUTE',
+  }
+}
+export function updateConversionPropertyChanges(
+  conversionPropertyChanges: MapLike<Array<ValueAtPath>>,
+): UpdateConversionPropertyChanges {
+  return {
+    action: 'UPDATE_CONVERSION_PROPERTY_CHANGES',
+    conversionPropertyChanges,
   }
 }

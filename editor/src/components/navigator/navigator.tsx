@@ -1,7 +1,7 @@
 /** @jsxRuntime classic */
 /** @jsx jsx */
 import { jsx } from '@emotion/react'
-import React from 'react'
+import React, { useRef } from 'react'
 import * as EP from '../../core/shared/element-path'
 import Utils from '../../utils/utils'
 import { setFocus } from '../common/actions'
@@ -25,8 +25,14 @@ import {
   useColorTheme,
   FlexColumn,
   InspectorSectionHeader,
+  SquareButton,
+  FunctionIcons,
 } from '../../uuiui'
 import { last } from '../../core/shared/array-utils'
+import { MetadataUtils } from '../../core/model/element-metadata-utils'
+import * as PP from '../../core/shared/property-path'
+import { jsxSimpleAttributeToValue } from '../../core/shared/jsx-attributes'
+import { omit } from '../../core/shared/object-utils'
 
 export const NavigatorContainerId = 'navigator'
 
@@ -161,62 +167,150 @@ export const NavigatorComponent = React.memo(() => {
   }
 
   return (
-    <Section
-      data-name='Navigator'
-      onFocus={onFocus}
-      onMouseLeave={onMouseLeave}
-      onContextMenu={onContextMenu}
-      id={NavigatorContainerId}
-      tabIndex={-1}
-      style={{
-        zIndex: 1,
-        flexGrow: 1,
-        height: '100%',
-        display: 'flex',
-        flexDirection: 'column',
-        alignItems: 'stretch',
-        justifyContent: 'stretch',
-        overscrollBehavior: 'contain',
-      }}
-    >
-      <SectionTitleRow minimised={minimised} toggleMinimised={toggleTwirler}>
-        <FlexRow flexGrow={1}>
-          <Title>Structure</Title>
-        </FlexRow>
-      </SectionTitleRow>
-      <SectionBodyArea
-        minimised={minimised}
-        flexGrow={1}
+    <React.Fragment>
+      <Section
+        data-name='Navigator'
+        onFocus={onFocus}
+        onMouseLeave={onMouseLeave}
+        onContextMenu={onContextMenu}
+        id={NavigatorContainerId}
+        tabIndex={-1}
         style={{
+          zIndex: 1,
           flexGrow: 1,
-          overscrollBehavior: 'contain',
+          height: '50%',
           display: 'flex',
+          flexDirection: 'column',
           alignItems: 'stretch',
           justifyContent: 'stretch',
+          overscrollBehavior: 'contain',
         }}
       >
-        <ElementContextMenu contextMenuInstance={'context-menu-navigator'} />
-        <FlexColumn
+        <SectionTitleRow minimised={minimised} toggleMinimised={toggleTwirler}>
+          <FlexRow flexGrow={1}>
+            <Title>Structure</Title>
+          </FlexRow>
+        </SectionTitleRow>
+        <SectionBodyArea
+          minimised={minimised}
+          flexGrow={1}
           style={{
             flexGrow: 1,
-            flexShrink: 1,
-            flexBasis: '100%',
-            overflowX: 'hidden',
+            overscrollBehavior: 'contain',
+            display: 'flex',
+            alignItems: 'stretch',
+            justifyContent: 'stretch',
           }}
         >
-          <AutoSizer
-            disableWidth={true}
+          <ElementContextMenu contextMenuInstance={'context-menu-navigator'} />
+          <FlexColumn
             style={{
-              overscrollBehavior: 'contain',
+              flexGrow: 1,
+              flexShrink: 1,
+              flexBasis: '100%',
               overflowX: 'hidden',
-              height: '100%',
             }}
           >
-            {ItemList}
-          </AutoSizer>
-        </FlexColumn>
-      </SectionBodyArea>
-    </Section>
+            <AutoSizer
+              disableWidth={true}
+              style={{
+                overscrollBehavior: 'contain',
+                overflowX: 'hidden',
+                height: '100%',
+              }}
+            >
+              {ItemList}
+            </AutoSizer>
+          </FlexColumn>
+        </SectionBodyArea>
+      </Section>
+      <ConversionSection />
+    </React.Fragment>
   )
 })
 NavigatorComponent.displayName = 'NavigatorComponent'
+
+const ConversionSection = React.memo(() => {
+  const conversionPropertyChanges = useEditorState(
+    (store) => store.editor.conversionPropertyChanges,
+    'ConversionSection conversionPropertyChanges',
+  )
+  const colorTheme = useColorTheme()
+  const dispatch = useEditorState((store) => store.dispatch, 'ConversionSection dispatch')
+  const metadataRef = useRefEditorState((store) => store.editor.jsxMetadata)
+  if (Object.keys(conversionPropertyChanges).length === 0) {
+    return null
+  }
+  return (
+    <div
+      style={{
+        height: '50%',
+        display: 'flex',
+        flexDirection: 'column',
+        borderTop: '1px solid hsl(0,0%,95%)',
+      }}
+    >
+      <Title>New style properties from layout switch</Title>
+      {Object.keys(conversionPropertyChanges).map((pathAsString) => {
+        const elementPath = EP.fromString(pathAsString)
+        const elementName = MetadataUtils.getElementLabel(elementPath, metadataRef.current)
+        const valuesAtPath = conversionPropertyChanges[pathAsString]
+        return (
+          <div
+            key={pathAsString}
+            css={{
+              display: 'flex',
+              flexDirection: 'column',
+              ':hover': { backgroundColor: colorTheme.bg3.value },
+            }}
+            onMouseOver={() => {
+              dispatch([EditorActions.setHighlightedView(elementPath)], 'everyone')
+            }}
+          >
+            <div
+              style={{
+                display: 'flex',
+                flexDirection: 'row',
+                justifyContent: 'space-between',
+                alignItems: 'center',
+              }}
+            >
+              <div>{elementName}</div>
+              <SquareButton
+                highlight
+                /* eslint-disable-next-line react/jsx-no-bind */
+                onClick={() => {
+                  const changesUpdated = omit([pathAsString], conversionPropertyChanges)
+                  dispatch(
+                    [
+                      ...valuesAtPath.map((valueAtPath) =>
+                        EditorActions.unsetProperty(elementPath, valueAtPath.path),
+                      ),
+                      EditorActions.updateConversionPropertyChanges(changesUpdated),
+                    ],
+                    'everyone',
+                  )
+                }}
+              >
+                <FunctionIcons.Delete />
+              </SquareButton>
+            </div>
+            {valuesAtPath.map((valueAtPath) => {
+              return (
+                <div
+                  key={PP.toString(valueAtPath.path)}
+                  style={{ display: 'flex', flexDirection: 'row' }}
+                >
+                  <span style={{ paddingLeft: 20, paddingRight: 10 }}>
+                    {PP.lastPartToString(valueAtPath.path)}
+                  </span>
+                  {JSON.stringify(jsxSimpleAttributeToValue(valueAtPath.value).value)}
+                </div>
+              )
+            })}
+          </div>
+        )
+      })}
+    </div>
+  )
+})

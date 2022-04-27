@@ -31,15 +31,18 @@ export const runSwitchToAbsolute: CommandFunction<SwitchToAbsolute> = (
   editor: EditorState,
   command: SwitchToAbsolute,
 ) => {
-  const updatedProjectContents = UPDATE_FNS.CONVERT_SELECTION_TO_ABSOLUTE(
+  const updatedEditor = UPDATE_FNS.CONVERT_SELECTION_TO_ABSOLUTE(
     convertSelectionToAbsolute(),
     editor,
-  ).projectContents
+  )
 
   return {
     editorStatePatch: {
       projectContents: {
-        $set: updatedProjectContents,
+        $set: updatedEditor.projectContents,
+      },
+      conversionPropertyChanges: {
+        $set: updatedEditor.conversionPropertyChanges,
       },
     },
     commandDescription: `Switch to Absolute: ${command.value.map(EP.toString).join(', ')}`,

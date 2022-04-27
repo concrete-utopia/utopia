@@ -57,6 +57,8 @@ import {
 } from '../shared/project-components'
 import { LayoutTargetableProp } from '../../core/layout/layout-helpers-new'
 import { BuildType } from '../../core/workers/common/worker-types'
+import { MapLike } from 'typescript'
+import { ValueAtPath } from '../../core/shared/jsx-attributes'
 export { isLoggedIn, loggedInUser, notLoggedIn } from '../../common/user'
 export type { LoginState, UserDetails } from '../../common/user'
 
@@ -919,6 +921,10 @@ export interface ForceParseFile {
 export interface ConvertSelectionToAbsolute {
   action: 'CONVERT_SELECTION_TO_ABSOLUTE'
 }
+export interface UpdateConversionPropertyChanges {
+  action: 'UPDATE_CONVERSION_PROPERTY_CHANGES'
+  conversionPropertyChanges: MapLike<Array<ValueAtPath>>
+}
 
 export type EditorAction =
   | ClearSelection
@@ -1073,6 +1079,7 @@ export type EditorAction =
   | SetIndexedDBFailed
   | ForceParseFile
   | ConvertSelectionToAbsolute
+  | UpdateConversionPropertyChanges
 
 export type DispatchPriority =
   | 'everyone'

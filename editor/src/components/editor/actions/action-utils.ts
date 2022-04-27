@@ -111,6 +111,7 @@ export function isTransientAction(action: EditorAction): boolean {
     case 'CREATE_INTERACTION_SESSION':
     case 'UPDATE_INTERACTION_SESSION':
     case 'SET_USERS_PREFERRED_STRATEGY':
+    case 'UPDATE_CONVERSION_PROPERTY_CHANGES':
       return true
 
     case 'NEW':
