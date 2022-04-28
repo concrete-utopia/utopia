@@ -5,7 +5,10 @@ import { reparentElement } from '../commands/reparent-element-command'
 import { updateSelectedViews } from '../commands/update-selected-views-command'
 import { absoluteMoveStrategy } from './absolute-move-strategy'
 import { CanvasStrategy } from './canvas-strategy-types'
-import { getAbsoluteOffsetCommandsForSelectedElement } from './shared-absolute-move-strategy-helpers'
+import {
+  getAbsoluteOffsetCommandsForSelectedElement,
+  getFileOfElement,
+} from './shared-absolute-move-strategy-helpers'
 
 export const absoluteReparentStrategy: CanvasStrategy = {
   id: 'ABSOLUTE_REPARENT',
@@ -37,15 +40,17 @@ export const absoluteReparentStrategy: CanvasStrategy = {
     return 0
   },
   apply: (canvasState, interactionState, strategyState) => {
+    const { selectedElements, scale, canvasOffset, projectContents, openFile } = canvasState
+
     const reparentResult = getReparentTarget(
-      canvasState.selectedElements,
-      canvasState.selectedElements,
+      selectedElements,
+      selectedElements,
       strategyState.startingMetadata,
       [],
-      canvasState.scale,
-      canvasState.canvasOffset,
-      canvasState.projectContents,
-      canvasState.openFile,
+      scale,
+      canvasOffset,
+      projectContents,
+      openFile,
     )
     const newParent = reparentResult.newParent
     const moveCommands = absoluteMoveStrategy.apply(canvasState, interactionState, strategyState)
@@ -54,9 +59,22 @@ export const absoluteReparentStrategy: CanvasStrategy = {
       newParent,
     )?.specialSizeMeasurements.providesBoundsForChildren
 
-    if (reparentResult.shouldReparent && newParent != null && providesBoundsForChildren) {
-      const target = canvasState.selectedElements[0]
-      const newPath = EP.appendToPath(newParent, EP.toUid(canvasState.selectedElements[0]))
+    const target = selectedElements[0]
+
+    const targetElementFile = getFileOfElement(target, projectContents, openFile)
+
+    const newParentFile = getFileOfElement(newParent, projectContents, openFile)
+
+    // Currently we only support reparenting into the same file
+    const reparentingToSameFile = targetElementFile === newParentFile
+
+    if (
+      reparentResult.shouldReparent &&
+      newParent != null &&
+      providesBoundsForChildren &&
+      reparentingToSameFile
+    ) {
+      const newPath = EP.appendToPath(newParent, EP.toUid(target))
 
       const offsetCommands = getAbsoluteOffsetCommandsForSelectedElement(
         target,

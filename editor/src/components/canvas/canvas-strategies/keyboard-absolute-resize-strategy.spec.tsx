@@ -1,27 +1,15 @@
 import { elementPath } from '../../../core/shared/element-path'
-import {
-  ElementInstanceMetadata,
-  SpecialSizeMeasurements,
-} from '../../../core/shared/element-template'
-import { canvasRectangle } from '../../../core/shared/math-utils'
 import { ElementPath } from '../../../core/shared/project-file-types'
 import { KeyCharacter } from '../../../utils/keyboard'
-import { Modifiers } from '../../../utils/modifiers'
+import { cmdModifier, Modifiers, shiftCmdModifier } from '../../../utils/modifiers'
 import { EditorState } from '../../editor/store/editor-state'
-import { foldAndApplyCommands } from '../commands/commands'
 import {
   getEditorState,
   makeTestProjectCodeWithSnippet,
   testPrintCodeFromEditorState,
 } from '../ui-jsx.test-utils'
-import { pickCanvasStateFromEditorState } from './canvas-strategies'
-import {
-  createInteractionViaKeyboard,
-  InteractionSession,
-  StrategyState,
-} from './interaction-state'
 import { keyboardAbsoluteResizeStrategy } from './keyboard-absolute-resize-strategy'
-import { cmdModifier, pressKeys, shiftCmdModifier } from './keyboard-interaction.test-utils'
+import { pressKeys } from './keyboard-interaction.test-utils'
 
 function prepareEditorState(codeSnippet: string, selectedViews: Array<ElementPath>): EditorState {
   return {

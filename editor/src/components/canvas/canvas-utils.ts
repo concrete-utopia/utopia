@@ -2865,8 +2865,7 @@ export function getValidElementPathsFromElement(
 
     const isFocused = parentIsScene || matchingFocusedPathPart != null
     if (isFocused) {
-      paths = [
-        ...paths,
+      paths.push(
         ...getValidElementPaths(
           focusedElementPath,
           name,
@@ -2876,7 +2875,7 @@ export function getValidElementPathsFromElement(
           transientFilesState,
           resolve,
         ),
-      ]
+      )
     }
 
     return paths

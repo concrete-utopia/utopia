@@ -7,6 +7,7 @@ module Utopia.Web.Server where
 
 import qualified Data.ByteString                 as B
 import qualified Data.ByteString.Char8           as S8
+import qualified Data.HashMap.Strict             as H
 import           Data.IORef
 import           Network.HTTP.Types.Header
 import           Network.HTTP.Types.Method
@@ -25,6 +26,7 @@ import           Utopia.Web.Logging
 import           Utopia.Web.ServantMonitoring
 import           Utopia.Web.Types
 import           Utopia.Web.Utils.Files
+import Control.Concurrent (ThreadId)
 
 data RequestTooLargeException = RequestTooLargeException
   deriving (Eq, Show)
@@ -148,6 +150,22 @@ serverApplication :: Server API -> Application
 serverApplication = serve apiProxy
 
 {-|
+  Run a Warp server and return the ThreadId associated with it
+-}
+runWarpServer :: Server API -> H.HashMap Text Meters -> Bool -> IO AssetResultCache -> Warp.Settings -> IO ThreadId
+runWarpServer serverAPI meterMap shouldForceSSL assetsCache settings = forkIO $ Warp.runSettings settings
+  $ limitRequestSizeMiddleware (1024 * 1024 * 5) -- 5MB
+  $ ifRequest (const shouldForceSSL) forceSSL
+  $ redirector [projectPathRedirection, previewInnerPathRedirection]
+  $ projectToPPathMiddleware
+  $ requestRewriter assetsCache
+  $ gzip def
+  $ noCacheMiddleware
+  $ viteFudgeMiddleware
+  $ monitorEndpoints apiProxy meterMap
+  $ serverApplication serverAPI
+
+{-|
   For a given environment, start the HTTP service.
 -}
 runServerWithResources :: EnvironmentRuntime r -> IO Stop
@@ -158,24 +176,16 @@ runServerWithResources EnvironmentRuntime{..} = do
   when loggingEnabled $ loggerLn logger "Starting"
   shutdown <- _startup resources
   when loggingEnabled $ loggerLn logger "Startup Processes Completed"
-  let port = _envServerPort resources
-  -- Note: '<>' is used to append text (amongst other things).
-  when loggingEnabled $ loggerLn logger ("Running On: http://localhost:" <> toLogStr port <> "/")
+  let ports = _envServerPort resources
+  when loggingEnabled $ do
+    forM_ ports $ \port -> do
+      -- Note: '<>' is used to append text (amongst other things).
+      loggerLn logger ("Running On: http://localhost:" <> toLogStr port <> "/")
   let storeForMetrics = _metricsStore resources
   meterMap <- mkMeterMap apiProxy storeForMetrics
-  let settings = Warp.setPort port $ Warp.setOnException (exceptionHandler (loggerLn logger)) Warp.defaultSettings
+  let settingsList = [ Warp.setPort port $ Warp.setOnException (exceptionHandler (loggerLn logger)) Warp.defaultSettings | port <- ports ]
+  let serverAPI = _serverAPI resources
   let assetsCache = _cacheForAssets resources
   let shouldForceSSL = _forceSSL resources
-  threadId <- forkIO $ Warp.runSettings settings
-    $ limitRequestSizeMiddleware (1024 * 1024 * 5) -- 5MB
-    $ ifRequest (const shouldForceSSL) forceSSL
-    $ redirector [projectPathRedirection, previewInnerPathRedirection]
-    $ projectToPPathMiddleware
-    $ requestRewriter assetsCache
-    $ gzip def
-    $ noCacheMiddleware
-    $ viteFudgeMiddleware
-    $ monitorEndpoints apiProxy meterMap
-    $ serverApplication
-    $ _serverAPI resources
-  return (killThread threadId >> shutdown)
+  threads <- traverse (runWarpServer serverAPI meterMap shouldForceSSL assetsCache) settingsList
+  return (traverse_ killThread threads >> shutdown)

@@ -178,6 +178,13 @@ let
   withBaseEditorScripts = lib.optionals includeEditorBuildSupport baseEditorScripts;
 
   puppeteerScripts = [
+    (pkgs.writeScriptBin "build-puppeteer-tests" ''
+      #!/usr/bin/env bash
+      set -e
+      cd $(${pkgs.git}/bin/git rev-parse --show-toplevel)/puppeteer-tests
+      ${pnpm} install --unsafe-perm
+      ${pnpm} run build
+    '')
       (pkgs.writeScriptBin "run-puppeteer-test" ''
       #!/usr/bin/env bash
       set -e
@@ -532,7 +539,7 @@ let
     pkgs.heroku
   ];
 
-  pythonAndPackages = pkgs.python37.withPackages(ps: with ps; [ pyusb tkinter pkgconfig ]);
+  pythonAndPackages = pkgs.python3.withPackages(ps: with ps; [ pyusb tkinter pkgconfig ]);
 
   basePackages = [ node pkgs.libsecret pythonAndPackages pkgs.pkg-config pkgs.tmux pkgs.git pkgs.wget ] ++ linuxOnlyPackages ++ macOSOnlyPackages;
   withServerBasePackages = basePackages ++ (lib.optionals includeServerBuildSupport baseServerPackages);
