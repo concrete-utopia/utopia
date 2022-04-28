@@ -217,12 +217,14 @@ export const FlowGhostOutline = React.memo(() => {
   }
 })
 
+const color = 'blue'
+
 const styleContent = `
 .outline1 {
-  background-image: linear-gradient(90deg, blue 50%, transparent 50%),
-    linear-gradient(90deg, blue 50%, transparent 50%),
-    linear-gradient(0deg, blue 50%, transparent 50%),
-    linear-gradient(0deg, blue 50%, transparent 50%);
+  background-image: linear-gradient(90deg, ${color} 50%, transparent 50%),
+    linear-gradient(90deg, ${color} 50%, transparent 50%),
+    linear-gradient(0deg, ${color} 50%, transparent 50%),
+    linear-gradient(0deg, ${color} 50%, transparent 50%);
   background-repeat: repeat-x, repeat-x, repeat-y, repeat-y;
   background-size: 15px 2px, 15px 2px, 2px 15px, 2px 15px;
   background-position: left top, right bottom, left bottom, right top;
@@ -236,10 +238,10 @@ const styleContent = `
   100% {
     background-position: left 15px top, right 15px bottom, left bottom 15px,
       right top 15px;
-    background-image: linear-gradient(90deg, blue 50%, transparent 50%),
-      linear-gradient(90deg, blue 50%, transparent 50%),
-      linear-gradient(0deg, blue 50%, transparent 50%),
-      linear-gradient(0deg, blue 50%, transparent 50%);
+    background-image: linear-gradient(90deg, ${color} 50%, transparent 50%),
+      linear-gradient(90deg, ${color} 50%, transparent 50%),
+      linear-gradient(0deg, ${color} 50%, transparent 50%),
+      linear-gradient(0deg, ${color} 50%, transparent 50%);
   }
 }
 .outline2 {
@@ -263,7 +265,7 @@ const styleContent = `
   }
 }
 .outline3 {
-  background-color: blue;
+  background-color: ${color};
   left: 50%;
   top: 50%;
   transform: scale(0.8);
@@ -291,7 +293,7 @@ const styleContent = `
 }
 
 .outline4 {
-  border:3px solid blue;
+  border:3px solid ${color};
   border-image: url("data:image/svg+xml;charset=utf-8,%3Csvg width='102' height='102' viewBox='0 0 100 100' fill='none' xmlns='http://www.w3.org/2000/svg'%3E %3Cstyle%3Epath%7Banimation:stroke 3s infinite linear%3B%7D%40keyframes stroke%7Bto%7Bstroke-dashoffset:776%3B%7D%7D%3C/style%3E%3ClinearGradient id='g' x1='0%25' y1='0%25' x2='0%25' y2='100%25'%3E%3Cstop offset='0%25' stop-color='%blue' /%3E%3Cstop offset='25%25' stop-color='blue' /%3E%3Cstop offset='50%25' stop-color='blue' /%3E%3Cstop offset='100%25' stop-color='blue' /%3E%3C/linearGradient%3E %3Cpath d='M1.5 1.5 l97 0l0 97l-97 0 l0 -97' stroke-linecap='square' stroke='url(%23g)' stroke-width='3' stroke-dasharray='388'/%3E %3C/svg%3E") 1;
 }
 
@@ -302,6 +304,19 @@ const styleContent = `
 @keyframes fadeinoutflow {
   0%,100% { opacity: 0; }
   50% { opacity: 1; }
+}
+
+.outline6 {
+  animation: glow3 2s ease infinite forwards;
+}
+@keyframes glow3 {
+  0% {
+  }
+  50% {
+    box-shadow: 0px 0px 2px 2px black, 0px 0px 4px 4px white;
+  }
+  100% {
+  }
 }
 `
 export const ConversionHighlightOutline = React.memo(() => {
@@ -404,6 +419,14 @@ export const ConversionHighlightOutline = React.memo(() => {
             title={'5'}
             onMouseDown={React.useCallback(() => {
               setSelectedOutline('outline5')
+              setAnimationTime(2000)
+            }, [])}
+          />
+          <ModeSelectButton
+            selected={selectedOutline === 'outline6'}
+            title={'6'}
+            onMouseDown={React.useCallback(() => {
+              setSelectedOutline('outline6')
               setAnimationTime(2000)
             }, [])}
           />
