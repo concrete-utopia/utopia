@@ -33,6 +33,8 @@ import {
 } from '../components/custom-code/code-file'
 import { mapDropNulls } from '../core/shared/array-utils'
 import ClipboardPolyfill from 'clipboard-polyfill'
+import { mapValues, omit, pick } from '../core/shared/object-utils'
+import { metaProperty } from '@babel/types'
 
 interface JSXElementCopyData {
   type: 'ELEMENT_COPY'
@@ -179,18 +181,50 @@ export function createClipboardDataFromSelection(
       return null
     }
   }, filteredSelectedViews)
+
   return {
     data: [
       {
         type: 'ELEMENT_COPY',
         elements: json5.stringify(jsxElements),
         originalElementPaths: editor.selectedViews,
-        targetOriginalContextMetadata: editor.jsxMetadata,
+        targetOriginalContextMetadata: filterMetadataForCopy(
+          editor.selectedViews,
+          editor.jsxMetadata,
+        ),
       },
     ],
     imageFilenames: [],
     plaintext: '',
   }
+}
+
+function filterMetadataForCopy(
+  selectedViews: Array<ElementPath>,
+  jsxMetadata: ElementInstanceMetadataMap,
+): ElementInstanceMetadataMap {
+  const allPaths = Object.keys(jsxMetadata)
+  const necessaryPaths = allPaths.filter((p) => {
+    const elementPath = EP.fromString(p)
+    // only those element paths are relevant which are descendants or ascentors of at least one selected view
+    return selectedViews.some(
+      (selected) =>
+        EP.isDescendantOf(selected, elementPath) || EP.isDescendantOf(elementPath, selected),
+    )
+  })
+  const filteredMetadata = pick(necessaryPaths, jsxMetadata)
+  // The static props in metadata are not necessary for copy paste, and they are huge, deep objects
+  // Embedding the props can cause two different kinds of exceptions when json stringified:
+  // 1. props can contain circular references
+  // 2. props can contain the Window object, which throws a DOMException when stringified
+  const filteredMetadataWithoutProps = mapValues(
+    (meta) => ({
+      ...meta,
+      props: {},
+    }),
+    filteredMetadata,
+  )
+  return filteredMetadataWithoutProps
 }
 
 export function getTargetParentForPaste(

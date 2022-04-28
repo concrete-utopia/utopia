@@ -72,6 +72,8 @@ import {
   getZIndexOfElement,
   elementOnlyHasSingleTextChild,
   transformJSXComponentAtPath,
+  guaranteeUniqueUids,
+  getAllUniqueUids,
 } from '../../../core/model/element-template-utils'
 import {
   getJSXAttributeAtPath,
@@ -2742,7 +2744,11 @@ export const UPDATE_FNS = {
       }
     }
     if (insertionAllowed) {
-      return action.elements.reduce((workingEditorState, currentValue, index) => {
+      const elements = guaranteeUniqueUids(
+        action.elements,
+        getAllUniqueUids(editor.projectContents),
+      )
+      return elements.reduce((workingEditorState, currentValue, index) => {
         let toastsAdded: Array<Notice> = []
         const modifyResult = modifyUnderlyingForOpenFile(
           targetParent,
