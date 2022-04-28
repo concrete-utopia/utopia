@@ -5,7 +5,6 @@ import {
   pickUiJsxCanvasProps,
   CanvasReactErrorCallback,
   CanvasReactReportErrorCallback,
-  DomWalkerInvalidateScenesCtxAtom,
   DomWalkerInvalidatePathsCtxAtom,
   UiJsxCanvasProps,
   UiJsxCanvasPropsWithErrorCallback,
@@ -127,13 +126,11 @@ function DomWalkerWrapper(props: UiJsxCanvasPropsWithErrorCallback) {
     (store) => store.editor.selectedViews,
     'DomWalkerWrapper selectedViews',
   )
-  let [updateInvalidatedPaths, updateInvalidatedScenes] = useDomWalkerInvalidateCallbacks()
+  let [updateInvalidatedPaths] = useDomWalkerInvalidateCallbacks()
 
   return (
     <DomWalkerInvalidatePathsCtxAtom.Provider value={updateInvalidatedPaths}>
-      <DomWalkerInvalidateScenesCtxAtom.Provider value={updateInvalidatedScenes}>
-        <UiJsxCanvas {...props} />
-      </DomWalkerInvalidateScenesCtxAtom.Provider>
+      <UiJsxCanvas {...props} />
     </DomWalkerInvalidatePathsCtxAtom.Provider>
   )
 }

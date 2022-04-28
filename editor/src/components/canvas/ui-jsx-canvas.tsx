@@ -127,10 +127,6 @@ export const UiJsxCanvasCtxAtom = atomWithPubSub<UiJsxCanvasContextData>({
   defaultValue: emptyUiJsxCanvasContextData(),
 })
 
-export const DomWalkerInvalidateScenesCtxAtom = atomWithPubSub<UpdateMutableCallback<Set<string>>>({
-  key: 'DomWalkerInvalidateScenesCtxAtom',
-  defaultValue: NO_OP,
-})
 export type DomWalkerInvalidatePathsCtxData = UpdateMutableCallback<Set<string>>
 export const DomWalkerInvalidatePathsCtxAtom = atomWithPubSub<DomWalkerInvalidatePathsCtxData>({
   key: 'DomWalkerInvalidatePathsCtxAtom',
