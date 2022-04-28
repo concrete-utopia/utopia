@@ -95,8 +95,7 @@ describe('Select Mode Selection', () => {
 
     const doubleClick = async () => {
       await act(async () => {
-        const domFinished = renderResult.getDomReportDispatched()
-        const dispatchDone = renderResult.getDispatchFollowUpactionsFinished()
+        const dispatchDone = renderResult.getDispatchFollowUpActionsFinished()
         fireEvent(
           canvasControlsLayer,
           new MouseEvent('mousedown', {
@@ -121,7 +120,6 @@ describe('Select Mode Selection', () => {
             buttons: 1,
           }),
         )
-        await domFinished
         await dispatchDone
       })
       await waitForAnimationFrame()
@@ -193,8 +191,7 @@ describe('Select Mode Advanced Cases', () => {
     const canvasControlsLayer = renderResult.renderedDOM.getByTestId(CanvasControlsContainerID)
 
     await act(async () => {
-      const domFinished = renderResult.getDomReportDispatched()
-      const dispatchDone = renderResult.getDispatchFollowUpactionsFinished()
+      const dispatchDone = renderResult.getDispatchFollowUpActionsFinished()
       fireEvent(
         canvasControlsLayer,
         new MouseEvent('mousedown', {
@@ -207,7 +204,6 @@ describe('Select Mode Advanced Cases', () => {
           buttons: 1,
         }),
       )
-      await domFinished
       await dispatchDone
     })
     await waitForAnimationFrame()
@@ -230,8 +226,7 @@ describe('Select Mode Advanced Cases', () => {
 
     const doubleClick = async () => {
       await act(async () => {
-        const domFinished = renderResult.getDomReportDispatched()
-        const dispatchDone = renderResult.getDispatchFollowUpactionsFinished()
+        const dispatchDone = renderResult.getDispatchFollowUpActionsFinished()
         fireEvent(
           canvasControlsLayer,
           new MouseEvent('mousedown', {
@@ -256,7 +251,6 @@ describe('Select Mode Advanced Cases', () => {
             buttons: 1,
           }),
         )
-        await domFinished
         await dispatchDone
       })
       await waitForAnimationFrame()
@@ -301,8 +295,7 @@ describe('Select Mode Advanced Cases', () => {
 
     const doubleClick = async () => {
       await act(async () => {
-        const domFinished = renderResult.getDomReportDispatched()
-        const dispatchDone = renderResult.getDispatchFollowUpactionsFinished()
+        const dispatchDone = renderResult.getDispatchFollowUpActionsFinished()
         fireEvent(
           canvasControlsLayer,
           new MouseEvent('mousedown', {
@@ -327,7 +320,6 @@ describe('Select Mode Advanced Cases', () => {
             buttons: 1,
           }),
         )
-        await domFinished
         await dispatchDone
       })
       await waitForAnimationFrame()
@@ -349,7 +341,6 @@ describe('Select Mode Advanced Cases', () => {
     ])
   })
 })
-
 function waitForAnimationFrame(): Promise<void> {
   return new Promise<void>((resolve, reject) => {
     requestAnimationFrame(() => {
@@ -371,7 +362,6 @@ export const Col = (props) => (
   <div
     style={{
       display: "flex",
-      flexDirection: "column",
       gap: 34,
       padding: 12,
       alignItems: "stretch",
@@ -393,7 +383,6 @@ export const LabelRow = (props) => (
       backdropFilter: "blur(6px) brightness(120%)",
       paddingLeft: 12,
       paddingRight: 12,
-      position: "absolute",
       bottom: 0,
       left: 0,
       height: 34,
@@ -411,7 +400,6 @@ export const LabelRow = (props) => (
 export const Button = styled.button({
   minWidth: 40,
   minHeight: 22,
-  boxShadow: "1px 1px 0px 1px black",
   backgroundColor: "#00FFAA",
   color: "black",
 });
@@ -424,7 +412,6 @@ export const CardList = (props) => {
       <h2 data-uid="CardList-h2">List of available street art</h2>
       <Col data-uid="CardList-Col">
         {cards.map((card) => (
-          <Card data-uid="CardList-Card" testid={'generated-card-'+ card} />
         ))}
       </Col>
     </div>
@@ -441,7 +428,6 @@ export const ManualCardList = (props) => {
       </Col>
     </div>
   );
-};
 
 export const Card = (props) => (
   <div
@@ -458,7 +444,6 @@ export const Card = (props) => (
   >
     <Row
       style={{ minHeight: 200, position: "relative", overflow: "hidden" }}
-      data-uid="Card-Row"
     >
       <img
         src="https://www.hackneycitizen.co.uk/wp-content/uploads/nerone-1-620.jpg"
@@ -468,7 +453,6 @@ export const Card = (props) => (
     </Row>
     <Row style={{ minHeight: 40, gap: 12 }} data-uid="Card-Row-Buttons">
       <Button data-uid="Card-Button-1">Hello</Button>
-      <Button data-uid="Card-Button-2">Button</Button>
       <Button data-uid="Card-Button-3">Button</Button>
     </Row>
   </div>
@@ -489,7 +473,6 @@ export const UIRow = styled.div({
 });
 
 export const UIListRow = styled(UIRow)({
-  height: 27,
   minHeight: "initial",
   "&:hover": {
     color: "white",
@@ -511,7 +494,6 @@ export const UIListGridRow = styled(UIRow)({
 export const UIContextMenuRow = styled(UIRow)({
   height: 22,
   borderRadius: 2,
-  minHeight: "initial",
   display: "grid",
   gridTemplateColumns: "1fr auto",
   minHeight: "initial",
@@ -535,7 +517,6 @@ export const ContextMenu = (props) => {
         fontSize: 11,
         fontWeight: 400,
         boxShadow:
-          "0px 2px 7px rgb(0, 0, 0, 0.12), 0px 0px 0px 1px rgb(0, 0, 0, 0.12)",
       }}
       data-uid="ContextMenu-Root"
     >
@@ -547,7 +528,6 @@ export const ContextMenu = (props) => {
       </UIContextMenuRow>
       <UIContextMenuRow data-uid="ContextMenu-Cut">
         <span data-uid="a3e">Cut</span>
-        <span style={{ color: "hsl(0,0%,60%)" }} data-uid="b34">
           ⌘+X
         </span>
       </UIContextMenuRow>
@@ -559,7 +539,6 @@ export const ContextMenu = (props) => {
       </UIContextMenuRow>
       <UIContextMenuRow data-uid="ContextMenu-">
         <span data-uid="821">Paste</span>
-        <span style={{ color: "hsl(0,0%,60%)" }} data-uid="46d">
           ⌘+V
         </span>
       </UIContextMenuRow>
@@ -575,7 +554,6 @@ export const ContextMenu = (props) => {
         data-uid="ContextMenu-hr"
       />
       <UIContextMenuRow data-uid="ContextMenu-Backward">
-        <span data-uid="ab9">Bring Backward</span>
         <span style={{ color: "hsl(0,0%,60%)" }} data-uid="c2b">
           ⌘+V
         </span>
@@ -594,7 +572,6 @@ export var App = (props) => {
   return (
     <div
       style={{
-        padding: 20,
         width: "100%",
         height: "100%",
         backgroundColor: "#FFFFFF",
@@ -613,7 +590,6 @@ export var App = (props) => {
           background: "hsl(0,0%,97%)",
           backgroundColor: "rgb(247, 247, 247, 1)",
           boxShadow:
-            "0px 2px 7px rgb(0, 0, 0, 0.12), 0px 0px 0px 1px rgb(0, 0, 0, 0.12)",
           borderRadius: 3,
         }}
         data-uid="App-div"
@@ -633,7 +609,6 @@ export var App = (props) => {
         >
           <span style={{ fontWeight: 600 }} data-uid="App-div-div-span">
             Popup Menu
-          </span>
         </div>
         <div
           style={{
@@ -652,7 +627,6 @@ export var App = (props) => {
             <Row data-uid="04c">Select Elements</Row>
           </UIListGridRow>
           <UIListGridRow
-            style={{ gap: 8, borderRadius: 2, flexGrow: 1 }}
             data-uid="App-Copy"
           >
             <div data-uid="2a2" />
@@ -666,7 +640,6 @@ export var App = (props) => {
             <div data-uid="1a3">Paste</div>
           </UIListGridRow>
           <UIListGridRow data-uid="App-Check">
-            <Row style={{ justifyContent: "center" }} data-uid="a1d">
               ✓
             </Row>
             <Row data-uid="2d9">A little label</Row>
@@ -684,7 +657,6 @@ export var App = (props) => {
   );
 };
 export var storyboard = (
-  <Storyboard data-uid="sb" >
     <Scene
       style={{ position: "absolute", left: 0, top: 0, width: 313, height: 261 }}
       data-uid="scene-App"

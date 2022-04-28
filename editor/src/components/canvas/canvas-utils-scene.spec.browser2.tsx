@@ -55,8 +55,7 @@ describe('moving a scene/rootview on the canvas', () => {
     )
 
     await act(async () => {
-      const domFinished = renderResult.getDomReportDispatched()
-      const dispatchDone = renderResult.getDispatchFollowUpactionsFinished()
+      const dispatchDone = renderResult.getDispatchFollowUpActionsFinished()
       fireEvent(
         canvasControlsLayer,
         new MouseEvent('mousemove', {
@@ -68,13 +67,11 @@ describe('moving a scene/rootview on the canvas', () => {
           buttons: 1,
         }),
       )
-      await domFinished
       await dispatchDone
     })
 
     await act(async () => {
-      const domFinished = renderResult.getDomReportDispatched()
-      const dispatchDone = renderResult.getDispatchFollowUpactionsFinished()
+      const dispatchDone = renderResult.getDispatchFollowUpActionsFinished()
       fireEvent(
         canvasControlsLayer,
         new MouseEvent('mousemove', {
@@ -86,13 +83,11 @@ describe('moving a scene/rootview on the canvas', () => {
           buttons: 1,
         }),
       )
-      await domFinished
       await dispatchDone
     })
 
     await act(async () => {
-      const domFinished = renderResult.getDomReportDispatched()
-      const dispatchDone = renderResult.getDispatchFollowUpactionsFinished()
+      const dispatchDone = renderResult.getDispatchFollowUpActionsFinished()
       fireEvent(
         window,
         new MouseEvent('mouseup', {
@@ -103,7 +98,6 @@ describe('moving a scene/rootview on the canvas', () => {
           clientY: areaControlBounds.top - 25,
         }),
       )
-      await domFinished
       await dispatchDone
     })
     expect(getPrintedUiJsCode(renderResult.getEditorState())).toEqual(
@@ -180,8 +174,7 @@ describe('moving a scene/rootview on the canvas', () => {
     )
 
     await act(async () => {
-      const domFinished = renderResult.getDomReportDispatched()
-      const dispatchDone = renderResult.getDispatchFollowUpactionsFinished()
+      const dispatchDone = renderResult.getDispatchFollowUpActionsFinished()
       fireEvent(
         areaControl,
         new MouseEvent('mousemove', {
@@ -193,13 +186,11 @@ describe('moving a scene/rootview on the canvas', () => {
           buttons: 1,
         }),
       )
-      await domFinished
       await dispatchDone
     })
 
     await act(async () => {
-      const domFinished = renderResult.getDomReportDispatched()
-      const dispatchDone = renderResult.getDispatchFollowUpactionsFinished()
+      const dispatchDone = renderResult.getDispatchFollowUpActionsFinished()
       fireEvent(
         areaControl,
         new MouseEvent('mousemove', {
@@ -211,13 +202,11 @@ describe('moving a scene/rootview on the canvas', () => {
           buttons: 1,
         }),
       )
-      await domFinished
       await dispatchDone
     })
 
     await act(async () => {
-      const domFinished = renderResult.getDomReportDispatched()
-      const dispatchDone = renderResult.getDispatchFollowUpactionsFinished()
+      const dispatchDone = renderResult.getDispatchFollowUpActionsFinished()
       fireEvent(
         window,
         new MouseEvent('mouseup', {
@@ -228,7 +217,6 @@ describe('moving a scene/rootview on the canvas', () => {
           clientY: areaControlBounds.top - 25,
         }),
       )
-      await domFinished
       await dispatchDone
     })
 
@@ -328,8 +316,7 @@ describe('resizing a scene/rootview on the canvas', () => {
     )
 
     await act(async () => {
-      const domFinished = renderResult.getDomReportDispatched()
-      const dispatchDone = renderResult.getDispatchFollowUpactionsFinished()
+      const dispatchDone = renderResult.getDispatchFollowUpActionsFinished()
       fireEvent(
         areaControl,
         new MouseEvent('mousemove', {
@@ -341,13 +328,11 @@ describe('resizing a scene/rootview on the canvas', () => {
           buttons: 1,
         }),
       )
-      await domFinished
       await dispatchDone
     })
 
     await act(async () => {
-      const domFinished = renderResult.getDomReportDispatched()
-      const dispatchDone = renderResult.getDispatchFollowUpactionsFinished()
+      const dispatchDone = renderResult.getDispatchFollowUpActionsFinished()
       fireEvent(
         window,
         new MouseEvent('mouseup', {
@@ -358,7 +343,6 @@ describe('resizing a scene/rootview on the canvas', () => {
           clientY: areaControlBounds.top - 25,
         }),
       )
-      await domFinished
       await dispatchDone
     })
 
@@ -456,8 +440,7 @@ describe('resizing a scene/rootview on the canvas', () => {
     )
 
     await act(async () => {
-      const domFinished = renderResult.getDomReportDispatched()
-      const dispatchDone = renderResult.getDispatchFollowUpactionsFinished()
+      const dispatchDone = renderResult.getDispatchFollowUpActionsFinished()
       fireEvent(
         areaControl,
         new MouseEvent('mousemove', {
@@ -469,13 +452,11 @@ describe('resizing a scene/rootview on the canvas', () => {
           buttons: 1,
         }),
       )
-      await domFinished
       await dispatchDone
     })
 
     await act(async () => {
-      const domFinished = renderResult.getDomReportDispatched()
-      const dispatchDone = renderResult.getDispatchFollowUpactionsFinished()
+      const dispatchDone = renderResult.getDispatchFollowUpActionsFinished()
       fireEvent(
         window,
         new MouseEvent('mouseup', {
@@ -486,7 +467,6 @@ describe('resizing a scene/rootview on the canvas', () => {
           clientY: areaControlBounds.top - 25,
         }),
       )
-      await domFinished
       await dispatchDone
     })
 

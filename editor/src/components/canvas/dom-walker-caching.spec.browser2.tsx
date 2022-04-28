@@ -66,19 +66,15 @@ describe('Dom-walker Caching', () => {
     )
 
     await act(async () => {
-      const domFinished = renderResult.getDomReportDispatched()
-      const dispatchDone = renderResult.getDispatchFollowUpactionsFinished()
+      const dispatchDone = renderResult.getDispatchFollowUpActionsFinished()
       await renderResult.dispatch([setCanvasFrames([pinChange1], false)], true)
 
-      await domFinished
       await dispatchDone
     })
     await act(async () => {
-      const domFinished = renderResult.getDomReportDispatched()
-      const dispatchDone = renderResult.getDispatchFollowUpactionsFinished()
+      const dispatchDone = renderResult.getDispatchFollowUpActionsFinished()
       await renderResult.dispatch([setCanvasFrames([pinChange2], false)], true)
 
-      await domFinished
       await dispatchDone
     })
 
@@ -110,20 +106,16 @@ describe('Dom-walker Caching', () => {
     )
 
     await act(async () => {
-      const domFinished = renderResult.getDomReportDispatched()
-      const dispatchDone = renderResult.getDispatchFollowUpactionsFinished()
+      const dispatchDone = renderResult.getDispatchFollowUpActionsFinished()
       await renderResult.dispatch([setCanvasFrames([pinChange1], false)], true)
 
-      await domFinished
       await dispatchDone
     })
 
     await act(async () => {
-      const domFinished = renderResult.getDomReportDispatched()
-      const dispatchDone = renderResult.getDispatchFollowUpactionsFinished()
+      const dispatchDone = renderResult.getDispatchFollowUpActionsFinished()
       await renderResult.dispatch([setCanvasFrames([pinChange2], false)], true)
 
-      await domFinished
       await dispatchDone
     })
 
