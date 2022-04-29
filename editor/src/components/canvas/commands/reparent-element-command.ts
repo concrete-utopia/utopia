@@ -1,26 +1,18 @@
 import { Spec } from 'immutability-helper'
-import { openFileMessage } from 'utopia-vscode-common'
 import {
   applyUtopiaJSXComponentsChanges,
   getUtopiaJSXComponentsFromSuccess,
 } from '../../../core/model/project-file-utils'
-import { drop, last, dropLast } from '../../../core/shared/array-utils'
+import { drop } from '../../../core/shared/array-utils'
 import * as EP from '../../../core/shared/element-path'
 import { TopLevelElement, UtopiaJSXComponent } from '../../../core/shared/element-template'
-import {
-  ElementPath,
-  Imports,
-  ParseSuccess,
-  RevisionsState,
-} from '../../../core/shared/project-file-types'
-import { fastForEach } from '../../../core/shared/utils'
+import { ElementPath, Imports, RevisionsState } from '../../../core/shared/project-file-types'
 import {
   getProjectContentKeyPathElements,
   ProjectContentFile,
   ProjectContentsTree,
   ProjectContentTreeRoot,
 } from '../../assets'
-import { normalisePathToUnderlyingTarget } from '../../custom-code/code-file'
 import {
   EditorState,
   EditorStatePatch,
@@ -57,43 +49,38 @@ export const runReparentElement: CommandFunction<ReparentElement> = (
   forUnderlyingTargetFromEditorState(
     command.target,
     editorState,
-    (
-      successOldParent,
-      underlyingElementOldParent,
-      underlyingTargetOldParent,
-      underlyingFilePathOldParent,
-    ) => {
+    (successTarget, underlyingElementTarget, _underlyingTarget, underlyingFilePathTarget) => {
       forUnderlyingTargetFromEditorState(
         command.newParent,
         editorState,
         (
           successNewParent,
-          underlyingElementNewParent,
-          underlyingTargetNewParent,
+          _underlyingElementNewParent,
+          _underlyingTargetNewParent,
           underlyingFilePathNewParent,
         ) => {
-          if (underlyingFilePathOldParent === underlyingFilePathNewParent) {
-            const components = getUtopiaJSXComponentsFromSuccess(successOldParent)
+          if (underlyingFilePathTarget === underlyingFilePathNewParent) {
+            const components = getUtopiaJSXComponentsFromSuccess(successTarget)
             const withElementRemoved = removeElementAtPath(command.target, components)
 
             const withElementInserted = insertElementAtPath(
               editorState.projectContents,
-              underlyingFilePathOldParent,
+              underlyingFilePathTarget,
               command.newParent,
-              underlyingElementOldParent,
+              underlyingElementTarget,
               withElementRemoved,
               null,
             )
             const editorStatePatchOldParentFile = getPatchForComponentChange(
-              successOldParent.topLevelElements,
+              successTarget.topLevelElements,
               withElementInserted,
-              successOldParent.imports,
-              underlyingFilePathOldParent,
+              successTarget.imports,
+              underlyingFilePathTarget,
             )
 
             editorStatePatches = [editorStatePatchOldParentFile]
           } else {
-            const componentsOldParent = getUtopiaJSXComponentsFromSuccess(successOldParent)
+            const componentsOldParent = getUtopiaJSXComponentsFromSuccess(successTarget)
             const withElementRemoved = removeElementAtPath(command.target, componentsOldParent)
             const componentsNewParent = getUtopiaJSXComponentsFromSuccess(successNewParent)
 
@@ -101,17 +88,18 @@ export const runReparentElement: CommandFunction<ReparentElement> = (
               editorState.projectContents,
               underlyingFilePathNewParent,
               command.newParent,
-              underlyingElementNewParent,
+              underlyingElementTarget,
               componentsNewParent,
               null,
             )
 
             const editorStatePatchOldParentFile = getPatchForComponentChange(
-              successOldParent.topLevelElements,
+              successTarget.topLevelElements,
               withElementRemoved,
-              successOldParent.imports,
-              underlyingFilePathOldParent,
+              successTarget.imports,
+              underlyingFilePathTarget,
             )
+
             const editorStatePatchNewParentFile = getPatchForComponentChange(
               successNewParent.topLevelElements,
               withElementInserted,
