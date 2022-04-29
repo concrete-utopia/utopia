@@ -352,4 +352,133 @@ describe('Axis locked move', () => {
       ),
     )
   })
+  it('works with a TL pinned absolute element with child', async () => {
+    const targetElement = elementPath([
+      ['scene-aaa', 'app-entity'],
+      ['aaa', 'bbb'],
+    ])
+
+    const initialEditor: EditorState = prepareEditorState(
+      `
+    <View style={{ ...(props.style || {}) }} data-uid='aaa'>
+      <View
+        style={{ backgroundColor: '#0091FFAA', position: 'absolute', left: 50, top: 50, width: 250, height: 300 }}
+        data-uid='bbb'
+      >
+        <View
+          style={{ backgroundColor: '#0091FFAB', position: 'absolute', left: 100, top: 100, width: 250, height: 300 }}
+          data-uid='ccc'
+        />
+      </View>
+    </View>
+    `,
+      [targetElement],
+    )
+
+    const finalEditor = dragBy15Pixels(initialEditor)
+
+    expect(testPrintCodeFromEditorState(finalEditor)).toEqual(
+      makeTestProjectCodeWithSnippet(
+        `<View style={{ ...(props.style || {}) }} data-uid='aaa'>
+        <View
+          style={{ backgroundColor: '#0091FFAA', position: 'absolute', left: 65, top: 65, width: 250, height: 300 }}
+          data-uid='bbb'
+        >
+          <View
+            style={{ backgroundColor: '#0091FFAB', position: 'absolute', left: 100, top: 100, width: 250, height: 300 }}
+            data-uid='ccc'
+          />
+        </View>
+      </View>`,
+      ),
+    )
+  })
+  it('works with TL pinned absolute elements in multiselection', async () => {
+    const targetElement1 = elementPath([
+      ['scene-aaa', 'app-entity'],
+      ['aaa', 'bbb'],
+    ])
+    const targetElement2 = elementPath([
+      ['scene-aaa', 'app-entity'],
+      ['aaa', 'ccc'],
+    ])
+
+    const initialEditor: EditorState = prepareEditorState(
+      `
+    <View style={{ ...(props.style || {}) }} data-uid='aaa'>
+      <View
+        style={{ backgroundColor: '#0091FFAA', position: 'absolute', left: 50, top: 50, width: 250, height: 300 }}
+        data-uid='bbb'
+      />
+      <View
+        style={{ backgroundColor: '#0091FFAB', position: 'absolute', left: 100, top: 100, width: 250, height: 300 }}
+        data-uid='ccc'
+      />
+    </View>
+    `,
+      [targetElement1, targetElement2],
+    )
+
+    const finalEditor = dragBy15Pixels(initialEditor)
+
+    expect(testPrintCodeFromEditorState(finalEditor)).toEqual(
+      makeTestProjectCodeWithSnippet(
+        `<View style={{ ...(props.style || {}) }} data-uid='aaa'>
+        <View
+          style={{ backgroundColor: '#0091FFAA', position: 'absolute', left: 65, top: 65, width: 250, height: 300 }}
+          data-uid='bbb'
+        />
+        <View
+          style={{ backgroundColor: '#0091FFAB', position: 'absolute', left: 115, top: 115, width: 250, height: 300 }}
+          data-uid='ccc'
+        />
+      </View>`,
+      ),
+    )
+  })
+  it('works with TL pinned absolute elements in multiselection with descendant', async () => {
+    const targetElement1 = elementPath([
+      ['scene-aaa', 'app-entity'],
+      ['aaa', 'bbb'],
+    ])
+    const targetElement2 = elementPath([
+      ['scene-aaa', 'app-entity'],
+      ['aaa', 'bbb', 'ccc'],
+    ])
+
+    const initialEditor: EditorState = prepareEditorState(
+      `
+    <View style={{ ...(props.style || {}) }} data-uid='aaa'>
+      <View
+        style={{ backgroundColor: '#0091FFAA', position: 'absolute', left: 50, top: 50, width: 250, height: 300 }}
+        data-uid='bbb'
+      >
+        <View
+          style={{ backgroundColor: '#0091FFAB', position: 'absolute', left: 100, top: 100, width: 250, height: 300 }}
+          data-uid='ccc'
+        />
+      </View>
+    </View>
+    `,
+      [targetElement1, targetElement2],
+    )
+
+    const finalEditor = dragBy15Pixels(initialEditor)
+
+    expect(testPrintCodeFromEditorState(finalEditor)).toEqual(
+      makeTestProjectCodeWithSnippet(
+        `<View style={{ ...(props.style || {}) }} data-uid='aaa'>
+        <View
+          style={{ backgroundColor: '#0091FFAA', position: 'absolute', left: 65, top: 65, width: 250, height: 300 }}
+          data-uid='bbb'
+        >
+          <View
+            style={{ backgroundColor: '#0091FFAB', position: 'absolute', left: 100, top: 100, width: 250, height: 300 }}
+            data-uid='ccc'
+          />
+        </View>
+      </View>`,
+      ),
+    )
+  })
 })
