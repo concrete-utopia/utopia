@@ -156,7 +156,8 @@ export type HeadlessStringInputProps = React.InputHTMLAttributes<HTMLInputElemen
 
 export const HeadlessStringInput = React.forwardRef<HTMLInputElement, HeadlessStringInputProps>(
   (props, propsRef) => {
-    const { disabled, onKeyDown, onFocus, onSubmitValue, onEscape } = props
+    const { onSubmitValue, onEscape, ...otherProps } = props
+    const { disabled, onKeyDown, onFocus } = otherProps
 
     const ref = React.useRef<HTMLInputElement>(null)
 
@@ -202,7 +203,7 @@ export const HeadlessStringInput = React.forwardRef<HTMLInputElement, HeadlessSt
     return (
       <input
         ref={composeRefs(ref, propsRef)}
-        {...props}
+        {...otherProps}
         onKeyDown={handleOnKeyDown}
         onFocus={handleOnFocus}
       />
