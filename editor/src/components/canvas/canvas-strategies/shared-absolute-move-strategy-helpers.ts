@@ -198,3 +198,10 @@ export function getFileOfElement(
     (_success, _element, _underlyingTarget, underlyingFilePath) => underlyingFilePath,
   )
 }
+
+// No need to include descendants in multiselection when dragging
+export function getDragTargets(selectedViews: Array<ElementPath>): Array<ElementPath> {
+  return selectedViews.filter((view) =>
+    selectedViews.every((otherView) => !EP.isDescendantOf(view, otherView)),
+  )
+}

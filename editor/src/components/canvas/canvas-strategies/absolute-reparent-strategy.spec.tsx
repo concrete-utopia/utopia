@@ -95,7 +95,7 @@ function reparentElement(
   return finalEditor
 }
 
-describe('Absolute Rerarent Strategy', () => {
+describe('Absolute Reparent Strategy', () => {
   it('works with a TL pinned absolute element', async () => {
     const targetElement = elementPath([
       ['scene-aaa', 'app-entity'],
@@ -339,6 +339,328 @@ describe('Absolute Rerarent Strategy', () => {
           </div>
         </div>
         `),
+    )
+  })
+
+  it('works with a TL pinned absolute element with child', async () => {
+    const targetElement = elementPath([
+      ['scene-aaa', 'app-entity'],
+      ['aaa', 'ccc'],
+    ])
+
+    const initialEditor = getEditorStateWithSelectedViews(
+      makeTestProjectCodeWithSnippet(`
+      <div
+        data-uid='aaa'
+        style={{
+          position: 'relative',
+          width: '100%',
+          height: '100%',
+          backgroundColor: '#FFFFFF',
+        }}
+      >
+        <div
+          data-uid='bbb'
+          style={{
+            position: 'absolute',
+            width: 250,
+            height: 200,
+            top: 60,
+            left: 50,
+          }}
+        />
+        <div
+          data-uid='ccc'
+          style={{
+            position: 'absolute',
+            width: 20,
+            height: 30,
+            top: 75,
+            left: 90,
+          }}
+        >
+          <div
+            data-uid='ddd'
+            style={{
+              position: 'absolute',
+              width: 10,
+              height: 10,
+              top: 30,
+              left: 40,
+            }}
+          />
+        </div>
+      </div>
+      `),
+      [targetElement],
+    )
+
+    const finalEditor = reparentElement(initialEditor, false)
+
+    expect(testPrintCodeFromEditorState(finalEditor)).toEqual(
+      makeTestProjectCodeWithSnippet(
+        `
+        <div
+        data-uid='aaa'
+        style={{
+          position: 'relative',
+          width: '100%',
+          height: '100%',
+          backgroundColor: '#FFFFFF',
+        }}
+        >
+          <div
+            data-uid='bbb'
+            style={{
+              position: 'absolute',
+              width: 250,
+              height: 200,
+              top: 60,
+              left: 50,
+            }}
+          >
+            <div
+              data-uid='ccc'
+              style={{
+                position: 'absolute',
+                width: 20,
+                height: 30,
+                top: 15,
+                left: 40,
+              }}
+            >
+              <div
+                data-uid='ddd'
+                style={{
+                  position: 'absolute',
+                  width: 10,
+                  height: 10,
+                  top: 30,
+                  left: 40,
+                }}
+              />
+            </div>
+          </div>
+        </div>
+        `,
+      ),
+    )
+  })
+
+  it('works with TL pinned absolute elements in multiselection', async () => {
+    const targetElement1 = elementPath([
+      ['scene-aaa', 'app-entity'],
+      ['aaa', 'ccc'],
+    ])
+
+    const targetElement2 = elementPath([
+      ['scene-aaa', 'app-entity'],
+      ['aaa', 'ddd'],
+    ])
+
+    const initialEditor = getEditorStateWithSelectedViews(
+      makeTestProjectCodeWithSnippet(`
+      <div
+        data-uid='aaa'
+        style={{
+          position: 'relative',
+          width: '100%',
+          height: '100%',
+          backgroundColor: '#FFFFFF',
+        }}
+      >
+        <div
+          data-uid='bbb'
+          style={{
+            position: 'absolute',
+            width: 250,
+            height: 200,
+            top: 60,
+            left: 50,
+          }}
+        />
+        <div
+          data-uid='ccc'
+          style={{
+            position: 'absolute',
+            width: 20,
+            height: 30,
+            top: 75,
+            left: 90,
+          }}
+        />
+        <div
+          data-uid='ddd'
+          style={{
+            position: 'absolute',
+            width: 10,
+            height: 10,
+            top: 30,
+            left: 40,
+          }}
+        />
+      </div>
+      `),
+      [targetElement1, targetElement2],
+    )
+
+    const finalEditor = reparentElement(initialEditor, false)
+
+    expect(testPrintCodeFromEditorState(finalEditor)).toEqual(
+      makeTestProjectCodeWithSnippet(
+        `
+        <div
+        data-uid='aaa'
+        style={{
+          position: 'relative',
+          width: '100%',
+          height: '100%',
+          backgroundColor: '#FFFFFF',
+        }}
+        >
+          <div
+            data-uid='bbb'
+            style={{
+              position: 'absolute',
+              width: 250,
+              height: 200,
+              top: 60,
+              left: 50,
+            }}
+          >
+            <div
+              data-uid='ccc'
+              style={{
+                position: 'absolute',
+                width: 20,
+                height: 30,
+                top: 15,
+                left: 40,
+              }}
+            />
+            <div
+              data-uid='ddd'
+              style={{
+                position: 'absolute',
+                width: 10,
+                height: 10,
+                top: -30,
+                left: -10,
+              }}
+            />
+          </div>
+        </div>
+        `,
+      ),
+    )
+  })
+
+  it('works with a TL pinned absolute elements in multiselection with descendant', async () => {
+    const targetElement = elementPath([
+      ['scene-aaa', 'app-entity'],
+      ['aaa', 'ccc'],
+    ])
+    const targetElement2 = elementPath([
+      ['scene-aaa', 'app-entity'],
+      ['aaa', 'ccc', 'ddd'],
+    ])
+
+    const initialEditor = getEditorStateWithSelectedViews(
+      makeTestProjectCodeWithSnippet(`
+      <div
+        data-uid='aaa'
+        style={{
+          position: 'relative',
+          width: '100%',
+          height: '100%',
+          backgroundColor: '#FFFFFF',
+        }}
+      >
+        <div
+          data-uid='bbb'
+          style={{
+            position: 'absolute',
+            width: 250,
+            height: 200,
+            top: 60,
+            left: 50,
+          }}
+        />
+        <div
+          data-uid='ccc'
+          style={{
+            position: 'absolute',
+            width: 20,
+            height: 30,
+            top: 75,
+            left: 90,
+          }}
+        >
+          <div
+            data-uid='ddd'
+            style={{
+              position: 'absolute',
+              width: 10,
+              height: 10,
+              top: 30,
+              left: 40,
+            }}
+          />
+        </div>
+      </div>
+      `),
+      [targetElement],
+    )
+
+    const finalEditor = reparentElement(initialEditor, false)
+
+    expect(testPrintCodeFromEditorState(finalEditor)).toEqual(
+      makeTestProjectCodeWithSnippet(
+        `
+        <div
+        data-uid='aaa'
+        style={{
+          position: 'relative',
+          width: '100%',
+          height: '100%',
+          backgroundColor: '#FFFFFF',
+        }}
+        >
+          <div
+            data-uid='bbb'
+            style={{
+              position: 'absolute',
+              width: 250,
+              height: 200,
+              top: 60,
+              left: 50,
+            }}
+          >
+            <div
+              data-uid='ccc'
+              style={{
+                position: 'absolute',
+                width: 20,
+                height: 30,
+                top: 15,
+                left: 40,
+              }}
+            >
+              <div
+                data-uid='ddd'
+                style={{
+                  position: 'absolute',
+                  width: 10,
+                  height: 10,
+                  top: 30,
+                  left: 40,
+                }}
+              />
+            </div>
+          </div>
+        </div>
+        `,
+      ),
     )
   })
 })
