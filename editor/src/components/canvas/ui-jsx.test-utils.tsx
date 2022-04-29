@@ -58,7 +58,7 @@ import Utils from '../../utils/utils'
 import { DispatchPriority, EditorAction, notLoggedIn } from '../editor/action-types'
 import { load } from '../editor/actions/actions'
 import * as History from '../editor/history'
-import { editorDispatch } from '../editor/store/dispatch'
+import { editorDispatch, resetDispatchGlobals } from '../editor/store/dispatch'
 import {
   createEditorState,
   deriveState,
@@ -172,8 +172,8 @@ export async function renderTestEditorWithModel(
   const history = History.init(emptyEditorState, derivedState)
 
   let editorDispatchPromises: Array<Promise<void>> = []
-  function getDispatchFollowUpActionsFinished(): Promise<void> {
-    return Promise.all(editorDispatchPromises).then(() => {})
+  async function getDispatchFollowUpActionsFinished(): Promise<void> {
+    return Promise.all(editorDispatchPromises).then(NO_OP)
   }
 
   let workingEditorState: EditorStoreFull
@@ -181,6 +181,7 @@ export async function renderTestEditorWithModel(
   const spyCollector = emptyUiJsxCanvasContextData()
 
   // Reset canvas globals
+  resetDispatchGlobals()
   clearAllRegisteredControls()
   clearListOfEvaluatedFiles()
 
@@ -221,9 +222,14 @@ export async function renderTestEditorWithModel(
     })
 
     if (domWalkerResult != null) {
+      const saveDomReportAction = saveDOMReport(
+        domWalkerResult.metadata,
+        domWalkerResult.cachedPaths,
+      )
+      recordedActions.push(saveDomReportAction)
       const editorWithNewMetadata = editorDispatch(
         asyncTestDispatch,
-        [saveDOMReport(domWalkerResult.metadata, domWalkerResult.cachedPaths)],
+        [saveDomReportAction],
         workingEditorState,
         spyCollector,
       )

@@ -1,44 +1,13 @@
-import { act, render } from '@testing-library/react'
-import React from 'react'
-import create, { GetState, Mutate, SetState, StoreApi } from 'zustand'
-import { subscribeWithSelector } from 'zustand/middleware'
-import { notLoggedIn } from '../../common/user'
 import {
   ElementInstanceMetadata,
   ElementInstanceMetadataMap,
 } from '../../core/shared/element-template'
-import {
-  FakeLinterWorker,
-  FakeParserPrinterWorker,
-  FakeWatchdogWorker,
-} from '../../core/workers/test-workers'
-import { UtopiaTsWorkersImplementation } from '../../core/workers/workers'
-import { EditorRoot } from '../../templates/editor'
 import { left } from '../../core/shared/either'
-import { EditorDispatch } from '../editor/action-types'
-import { load } from '../editor/actions/actions'
-import * as History from '../editor/history'
-import { editorDispatch } from '../editor/store/dispatch'
-import {
-  createEditorState,
-  deriveState,
-  EditorStoreFull,
-  EditorStorePatched,
-  patchedStoreFromFullStore,
-} from '../editor/store/editor-state'
-import Utils from '../../utils/utils'
 import { BakedInStoryboardUID } from '../../core/model/scene-utils'
-import { NO_OP } from '../../core/shared/utils'
 import { mapValues } from '../../core/shared/object-utils'
-import { emptyUiJsxCanvasContextData } from './ui-jsx-canvas'
-import { TestAppUID, TestSceneUID } from './ui-jsx.test-utils'
-import { createTestProjectWithCode } from '../../sample-projects/sample-project-utils.test-utils'
-import { DummyPersistenceMachine } from '../editor/persistence/persistence.test-utils'
+import { renderTestEditorWithCode, TestAppUID, TestSceneUID } from './ui-jsx.test-utils'
 import { disableStoredStateforTests } from '../editor/stored-state'
 import { matchInlineSnapshotBrowser } from '../../../test/karma-snapshots'
-import { createBuiltInDependenciesList } from '../../core/es-modules/package-manager/built-in-dependencies-list'
-import { createEmptyStrategyState } from './canvas-strategies/interaction-state'
-import { createDomWalkerMutableState } from './dom-walker'
 
 disableStoredStateforTests()
 
@@ -54,77 +23,9 @@ function sanitizeJsxMetadata(metadata: ElementInstanceMetadataMap) {
   return mapValues(sanitizeElementMetadata, metadata)
 }
 
-async function renderTestEditorWithCode(appUiJsFileCode: string) {
-  let emptyEditorState = createEditorState(NO_OP)
-  const derivedState = deriveState(emptyEditorState, null)
-
-  const history = History.init(emptyEditorState, derivedState)
-  const spyCollector = emptyUiJsxCanvasContextData()
-
-  const dispatch: EditorDispatch = (actions) => {
-    const result = editorDispatch(dispatch, actions, editorStore, spyCollector)
-    editorStore = result
-    storeHook.setState(patchedStoreFromFullStore(result))
-  }
-
-  let editorStore: EditorStoreFull = {
-    strategyState: createEmptyStrategyState(),
-    unpatchedEditor: emptyEditorState,
-    patchedEditor: emptyEditorState,
-    unpatchedDerived: derivedState,
-    patchedDerived: derivedState,
-    history: history,
-    userState: {
-      loginState: notLoggedIn,
-      shortcutConfig: {},
-    },
-    workers: new UtopiaTsWorkersImplementation(
-      new FakeParserPrinterWorker(),
-      new FakeLinterWorker(),
-      new FakeWatchdogWorker(),
-    ),
-    persistence: DummyPersistenceMachine,
-    dispatch: dispatch,
-    alreadySaved: false,
-    builtInDependencies: createBuiltInDependenciesList(null),
-  }
-
-  const storeHook = create<
-    EditorStorePatched,
-    SetState<EditorStorePatched>,
-    GetState<EditorStorePatched>,
-    Mutate<StoreApi<EditorStorePatched>, [['zustand/subscribeWithSelector', never]]>
-  >(subscribeWithSelector((set) => patchedStoreFromFullStore(editorStore)))
-
-  const domWalkerMutableState = createDomWalkerMutableState(storeHook)
-
-  render(
-    <EditorRoot
-      api={storeHook}
-      useStore={storeHook}
-      canvasStore={storeHook} // TODO create canvas store
-      spyCollector={spyCollector}
-      domWalkerMutableState={domWalkerMutableState}
-    />,
-  )
-
-  await act(async () => {
-    await load(
-      dispatch,
-      createTestProjectWithCode(appUiJsFileCode),
-      'Test',
-      '0',
-      editorStore.builtInDependencies,
-      false,
-    )
-  })
-  const sanitizedMetadata = sanitizeJsxMetadata(storeHook.getState().editor.jsxMetadata)
-  return sanitizedMetadata
-}
-
 describe('DOM Walker tests', () => {
   it('Simple Project with one child View', async () => {
-    const sanitizedMetadata = await renderTestEditorWithCode(
+    const renderResult = await renderTestEditorWithCode(
       `
       import * as React from 'react'
       import {
@@ -163,7 +64,9 @@ describe('DOM Walker tests', () => {
         )
       }
       `,
+      'await-first-dom-report',
     )
+    const sanitizedMetadata = sanitizeJsxMetadata(renderResult.getEditorState().editor.jsxMetadata)
     matchInlineSnapshotBrowser(
       sanitizedMetadata,
       `
@@ -795,7 +698,7 @@ describe('DOM Walker tests', () => {
   })
 
   it('Simple Project with divs', async () => {
-    const sanitizedMetadata = await renderTestEditorWithCode(
+    const renderResult = await renderTestEditorWithCode(
       `
       import * as React from 'react'
       import {
@@ -834,7 +737,9 @@ describe('DOM Walker tests', () => {
         )
       }
       `,
+      'await-first-dom-report',
     )
+    const sanitizedMetadata = sanitizeJsxMetadata(renderResult.getEditorState().editor.jsxMetadata)
     matchInlineSnapshotBrowser(
       sanitizedMetadata,
       `
@@ -1450,7 +1355,7 @@ describe('DOM Walker tests', () => {
   })
 
   it('Simple Project with flex parent', async () => {
-    const sanitizedMetadata = await renderTestEditorWithCode(
+    const renderResult = await renderTestEditorWithCode(
       `
       import * as React from 'react'
       import {
@@ -1489,7 +1394,9 @@ describe('DOM Walker tests', () => {
         )
       }
       `,
+      'await-first-dom-report',
     )
+    const sanitizedMetadata = sanitizeJsxMetadata(renderResult.getEditorState().editor.jsxMetadata)
     matchInlineSnapshotBrowser(
       sanitizedMetadata,
       `
@@ -2106,7 +2013,7 @@ describe('DOM Walker tests', () => {
   })
 
   it('Label carried through for normal elements', async () => {
-    const sanitizedMetadata = await renderTestEditorWithCode(
+    const renderResult = await renderTestEditorWithCode(
       `
       import * as React from 'react'
       import {
@@ -2133,7 +2040,9 @@ describe('DOM Walker tests', () => {
         )
       }
       `,
+      'await-first-dom-report',
     )
+    const sanitizedMetadata = sanitizeJsxMetadata(renderResult.getEditorState().editor.jsxMetadata)
     matchInlineSnapshotBrowser(
       sanitizedMetadata,
       `
@@ -2542,7 +2451,7 @@ describe('DOM Walker tests', () => {
   })
 
   it('Label carried through for generated elements', async () => {
-    const sanitizedMetadata = await renderTestEditorWithCode(
+    const renderResult = await renderTestEditorWithCode(
       `
       import * as React from 'react'
       import {
@@ -2573,7 +2482,9 @@ describe('DOM Walker tests', () => {
         )
       }
       `,
+      'await-first-dom-report',
     )
+    const sanitizedMetadata = sanitizeJsxMetadata(renderResult.getEditorState().editor.jsxMetadata)
     matchInlineSnapshotBrowser(
       sanitizedMetadata,
       `

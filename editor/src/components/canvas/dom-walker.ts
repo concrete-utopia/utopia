@@ -429,6 +429,7 @@ export function invalidateDomWalkerIfNecessary(
     newEditorState.canvas.mountCount > oldEditorState.canvas.mountCount
   ) {
     domWalkerMutableState.initComplete = false // Mutation!
+    domWalkerMutableState.invalidatedPaths.clear() // Mutation!
   }
 
   // invalidate scenes when selectedViews change

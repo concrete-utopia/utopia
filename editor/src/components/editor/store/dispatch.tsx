@@ -328,6 +328,11 @@ function maybeRequestModelUpdateOnEditor(
 let accumulatedProjectChanges: ProjectChanges = emptyProjectChanges
 let applyProjectChangesCoordinator: Promise<void> = Promise.resolve()
 
+export function resetDispatchGlobals(): void {
+  accumulatedProjectChanges = emptyProjectChanges
+  applyProjectChangesCoordinator = Promise.resolve()
+}
+
 export function editorDispatch(
   boundDispatch: EditorDispatch,
   dispatchedActions: readonly EditorAction[],
