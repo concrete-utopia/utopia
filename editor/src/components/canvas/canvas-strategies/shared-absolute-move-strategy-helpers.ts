@@ -200,6 +200,7 @@ export function getFileOfElement(
 }
 
 // No need to include descendants in multiselection when dragging
+// Note: this maybe slow when there are lot of selected views
 export function getDragTargets(selectedViews: Array<ElementPath>): Array<ElementPath> {
   return selectedViews.filter((view) =>
     selectedViews.every((otherView) => !EP.isDescendantOf(view, otherView)),
