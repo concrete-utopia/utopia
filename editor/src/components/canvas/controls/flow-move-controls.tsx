@@ -324,9 +324,9 @@ export const ConversionHighlightOutline = React.memo(() => {
     (store) => !store.editor.navigator.minimised,
     'ConversionHighlightOutline navigatorVisible',
   )
-  const [animationTime, setAnimationTime] = React.useState(1000)
+  const [animationTime, setAnimationTime] = React.useState(2000)
   const navigatorWidth = usePubSubAtomReadOnly(NavigatorWidthAtom)
-  const [selectedOutline, setSelectedOutline] = React.useState('outline1')
+  const [selectedOutline, setSelectedOutline] = React.useState('outline6')
   const outlineFrames = useEditorState(
     (store) => store.editor.canvas.controls.highlightOutlines,
     'ConversionHighlightOutline frames',

@@ -61,6 +61,7 @@ import {
   isIntrinsicHTMLElement,
   JSXElementChildren,
   emptyComments,
+  jsxElementNameEquals,
 } from '../../../core/shared/element-template'
 import {
   generateUidWithExistingComponents,
@@ -4971,6 +4972,29 @@ export const UPDATE_FNS = {
         )
       }
     }, withParentUpdated)
+
+    editor.selectedViews.forEach((path) => {
+      if (EP.isInsideFocusedComponent(path) && editor.focusedElementPath != null) {
+        const focusedComponentName = MetadataUtils.getJSXElementNameFromMetadata(
+          editor.jsxMetadata,
+          editor.focusedElementPath,
+        )
+        if (focusedComponentName != null) {
+          Object.keys(editor.jsxMetadata).map((key) => {
+            const elementName = MetadataUtils.getJSXElementNameFromMetadata(
+              editor.jsxMetadata,
+              editor.jsxMetadata[key].elementPath,
+            )
+            if (elementName != null && jsxElementNameEquals(elementName, focusedComponentName)) {
+              const frame = editor.jsxMetadata[key].globalFrame
+              if (frame != null) {
+                updatedFrames.push(frame)
+              }
+            }
+          })
+        }
+      }
+    })
 
     return {
       ...withElementAndSiblingUpdated,
