@@ -35,7 +35,7 @@ export function runStrategySwitchedCommand(command: StrategySwitched): CommandFu
   }. ${command.dataReset ? 'Interaction data reset.' : ''}`
 
   return {
-    editorStatePatch: {},
+    editorStatePatches: [],
     commandDescription: commandDescription,
   }
 }

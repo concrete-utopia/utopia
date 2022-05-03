@@ -62,21 +62,7 @@ export const absoluteReparentStrategy: CanvasStrategy = {
       newParent,
     )?.specialSizeMeasurements.providesBoundsForChildren
 
-    const selectedElementFiles = filteredSelectedElements.map((element) =>
-      getFileOfElement(element, projectContents, openFile),
-    )
-
-    const newParentFile = getFileOfElement(newParent, projectContents, openFile)
-
-    // Currently we only support reparenting into the same file
-    const reparentingToSameFile = selectedElementFiles.every((file) => file === newParentFile)
-
-    if (
-      reparentResult.shouldReparent &&
-      newParent != null &&
-      providesBoundsForChildren &&
-      reparentingToSameFile
-    ) {
+    if (reparentResult.shouldReparent && newParent != null && providesBoundsForChildren) {
       const commands = filteredSelectedElements.map((selectedElement) => {
         const offsetCommands = getAbsoluteOffsetCommandsForSelectedElement(
           selectedElement,
