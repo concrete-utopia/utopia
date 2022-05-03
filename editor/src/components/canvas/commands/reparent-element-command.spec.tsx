@@ -59,4 +59,68 @@ describe('runReparentElement', () => {
     expect(newElement).not.toBeNull()
     expect(oldElement).toBeNull()
   })
+  it('reparent works across files', async () => {
+    const renderResult = await renderTestEditorWithModel(
+      complexDefaultProjectPreParsed(),
+      'dont-await-first-dom-report',
+      createBuiltInDependenciesList(null),
+    )
+
+    const targetPath = EP.elementPath([
+      ['storyboard-entity', 'scene-1-entity', 'app-entity'],
+      ['app-outer-div', 'card-instance'],
+      ['card-outer-div', 'card-inner-rectangle'],
+    ])
+
+    const newParentPath = EP.elementPath([
+      ['storyboard-entity', 'scene-1-entity', 'app-entity'],
+      ['app-outer-div'],
+    ])
+    const originalEditorState = renderResult.getEditorState().editor
+
+    const reparentCommand = reparentElement('permanent', targetPath, newParentPath)
+
+    const result = runReparentElement(originalEditorState, reparentCommand)
+
+    const oldFile = withUnderlyingTargetFromEditorState(
+      targetPath,
+      originalEditorState,
+      null,
+      (success, element, underlyingTarget, underlyingFilePath) => {
+        return underlyingFilePath
+      },
+    )
+
+    const patchedEditor = updateEditorStateWithPatches(
+      originalEditorState,
+      result.editorStatePatches,
+    )
+    const newPath = EP.appendToPath(newParentPath, EP.toUid(targetPath))
+
+    const { newElement, newFile } = withUnderlyingTargetFromEditorState(
+      newPath,
+      patchedEditor,
+      null,
+      (success, element, underlyingTarget, underlyingFilePath) => {
+        return {
+          newElement: element,
+          newFile: underlyingFilePath,
+        }
+      },
+    )!
+
+    const oldElement = withUnderlyingTargetFromEditorState(
+      targetPath,
+      patchedEditor,
+      null,
+      (success, element, underlyingTarget, underlyingFilePath) => {
+        return element
+      },
+    )
+
+    expect(oldElement).toBeNull()
+    expect(newElement).not.toBeNull()
+    expect(oldFile).toBe('/src/card.js')
+    expect(newFile).toBe('/src/app.js')
+  })
 })
