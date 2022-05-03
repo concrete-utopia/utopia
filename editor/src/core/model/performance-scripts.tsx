@@ -50,6 +50,7 @@ import { BuiltInDependencies } from '../es-modules/package-manager/built-in-depe
 import { LargeProjectContents } from '../../test-cases/large-project'
 import { VSCodeLoadingScreenID } from '../../components/code-editor/vscode-editor-loading-screen'
 import { v4 as UUID } from 'uuid'
+import { SmallSingleDivProjectContents } from '../../test-cases/simple-single-div-project'
 
 export function wait(timeout: number): Promise<void> {
   return new Promise((resolve) => {
@@ -466,7 +467,15 @@ export function useTriggerSelectionPerformanceTest(): () => void {
   return trigger
 }
 
-export function useTriggerAbsoluteMovePerformanceTest(): () => void {
+export const useTriggerAbsoluteMoveLargePerformanceTest = () =>
+  useTriggerAbsoluteMovePerformanceTest(LargeProjectContents)
+
+export const useTriggerAbsoluteMoveSmallPerformanceTest = () =>
+  useTriggerAbsoluteMovePerformanceTest(SmallSingleDivProjectContents)
+
+export function useTriggerAbsoluteMovePerformanceTest(
+  projectContents: ProjectContentTreeRoot,
+): () => void {
   const dispatch = useEditorState(
     React.useCallback((store) => store.dispatch as DebugDispatch, []),
     'useTriggerAbsoluteMovePerformanceTest dispatch',
@@ -475,15 +484,12 @@ export function useTriggerAbsoluteMovePerformanceTest(): () => void {
     React.useCallback((store) => store.derived.navigatorTargets, []),
   )
   const metadata = useRefEditorState(React.useCallback((store) => store.editor.jsxMetadata, []))
-  const selectedViews = useRefEditorState(
-    React.useCallback((store) => store.editor.selectedViews, []),
-  )
   const builtInDependencies = useEditorState(
     (store) => store.builtInDependencies,
     'useTriggerAbsoluteMovePerformanceTest builtInDependencies',
   )
   const trigger = React.useCallback(async () => {
-    const editorReady = await loadProject(dispatch, builtInDependencies, LargeProjectContents)
+    const editorReady = await loadProject(dispatch, builtInDependencies, projectContents)
     if (!editorReady) {
       console.info('ABSOLUTE_MOVE_TEST_ERROR')
       return
@@ -648,6 +654,6 @@ export function useTriggerAbsoluteMovePerformanceTest(): () => void {
       }
     }
     requestAnimationFrame(step)
-  }, [dispatch, allPaths, metadata, builtInDependencies])
+  }, [dispatch, allPaths, metadata, builtInDependencies, projectContents])
   return trigger
 }

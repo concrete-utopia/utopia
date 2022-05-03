@@ -539,7 +539,7 @@ let
     pkgs.heroku
   ];
 
-  pythonAndPackages = pkgs.python37.withPackages(ps: with ps; [ pyusb tkinter pkgconfig ]);
+  pythonAndPackages = pkgs.python3.withPackages(ps: with ps; [ pyusb tkinter pkgconfig ]);
 
   basePackages = [ node pkgs.libsecret pythonAndPackages pkgs.pkg-config pkgs.tmux pkgs.git pkgs.wget ] ++ linuxOnlyPackages ++ macOSOnlyPackages;
   withServerBasePackages = basePackages ++ (lib.optionals includeServerBuildSupport baseServerPackages);

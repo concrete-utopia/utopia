@@ -15,8 +15,12 @@ import {
   zeroCanvasRect,
 } from '../../../core/shared/math-utils'
 import { ElementPath } from '../../../core/shared/project-file-types'
+import { ProjectContentTreeRoot } from '../../assets'
 
-import { getElementFromProjectContents } from '../../editor/store/editor-state'
+import {
+  getElementFromProjectContents,
+  withUnderlyingTarget,
+} from '../../editor/store/editor-state'
 import { stylePropPathMappingFn } from '../../inspector/common/property-path-hooks'
 import {
   adjustCssLengthProperty,
@@ -178,4 +182,27 @@ export function getMultiselectBounds(
   }, selectedElements)
 
   return boundingRectangleArray(frames)
+}
+
+export function getFileOfElement(
+  target: ElementPath | null,
+  projectContents: ProjectContentTreeRoot,
+  openFile: string | null | undefined,
+): string | null {
+  return withUnderlyingTarget(
+    target,
+    projectContents,
+    {},
+    openFile,
+    null,
+    (_success, _element, _underlyingTarget, underlyingFilePath) => underlyingFilePath,
+  )
+}
+
+// No need to include descendants in multiselection when dragging
+// Note: this maybe slow when there are lot of selected views
+export function getDragTargets(selectedViews: Array<ElementPath>): Array<ElementPath> {
+  return selectedViews.filter((view) =>
+    selectedViews.every((otherView) => !EP.isDescendantOf(view, otherView)),
+  )
 }

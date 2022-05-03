@@ -22,6 +22,7 @@ import {
   InspectorInfo,
   InspectorPropsContext,
   stylePropPathMappingFn,
+  useGetLayoutControlStatus,
   useInspectorLayoutInfo,
 } from '../../../common/property-path-hooks'
 import { UIGridRow } from '../../../widgets/ui-grid-row'
@@ -574,16 +575,16 @@ interface GiganticSizePinsSubsectionProps {
 export const GiganticSizePinsSubsection = React.memo((props: GiganticSizePinsSubsectionProps) => {
   const { layoutType, parentFlexDirection, aspectRatioLocked, toggleAspectRatioLock } = props
 
-  const minWidth = useInspectorLayoutInfo('minWidth')
-  const maxWidth = useInspectorLayoutInfo('maxWidth')
-  const minHeight = useInspectorLayoutInfo('minHeight')
-  const maxHeight = useInspectorLayoutInfo('maxHeight')
+  const minWidth = useGetLayoutControlStatus('minWidth')
+  const maxWidth = useGetLayoutControlStatus('maxWidth')
+  const minHeight = useGetLayoutControlStatus('minHeight')
+  const maxHeight = useGetLayoutControlStatus('maxHeight')
 
   const hasMinMaxValues =
-    isNotUnsetOrDefault(minWidth.controlStatus) ||
-    isNotUnsetOrDefault(maxWidth.controlStatus) ||
-    isNotUnsetOrDefault(minHeight.controlStatus) ||
-    isNotUnsetOrDefault(maxHeight.controlStatus)
+    isNotUnsetOrDefault(minWidth) ||
+    isNotUnsetOrDefault(maxWidth) ||
+    isNotUnsetOrDefault(minHeight) ||
+    isNotUnsetOrDefault(maxHeight)
   const [minMaxToggled, setMinMaxToggled] = usePropControlledStateV2(hasMinMaxValues)
   const toggleMinMax = React.useCallback(() => {
     setMinMaxToggled(!minMaxToggled)
