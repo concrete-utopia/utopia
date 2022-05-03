@@ -183,7 +183,7 @@ function getCachedAttributesComingFromStyleSheets(
   if (inCache && !invalidated) {
     return AttributesFromStyleSheetsCache.get(element)!
   }
-  invalidatedPathsForStylesheetCache.delete(pathAsString) // Mutation!
+  invalidatedPathsForStylesheetCache.delete(pathAsString) // mutation!
   const value = getAttributesComingFromStyleSheets(element)
   AttributesFromStyleSheetsCache.set(element, value)
   return value
@@ -773,7 +773,7 @@ function walkCanvasRootFragment(
     )
   }
 
-  invalidatedPaths.delete(EP.toString(canvasRootPath))
+  invalidatedPaths.delete(EP.toString(canvasRootPath)) // mutation!
 
   if (
     ObserversAvailable &&
