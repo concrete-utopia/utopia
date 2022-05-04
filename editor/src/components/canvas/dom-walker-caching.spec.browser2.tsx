@@ -8,6 +8,7 @@ import CanvasActions from './canvas-actions'
 import { pinFrameChange } from './canvas-types'
 import { renderTestEditorWithProjectContent } from './ui-jsx.test-utils'
 import { act } from '@testing-library/react'
+import { wait } from '../../utils/utils.test-utils'
 
 describe('Dom-walker Caching', () => {
   async function prepareTestProject() {
@@ -66,12 +67,16 @@ describe('Dom-walker Caching', () => {
 
     await act(async () => {
       await renderResult.dispatch([setCanvasFrames([pinChange1], false)], true)
+      // Gives a chance for any resize/mutation observers to fire.
+      await wait(20)
       const dispatchDone = renderResult.getDispatchFollowUpActionsFinished()
 
       await dispatchDone
     })
     await act(async () => {
       await renderResult.dispatch([setCanvasFrames([pinChange2], false)], true)
+      // Gives a chance for any resize/mutation observers to fire.
+      await wait(20)
       const dispatchDone = renderResult.getDispatchFollowUpActionsFinished()
 
       await dispatchDone
@@ -115,6 +120,8 @@ describe('Dom-walker Caching', () => {
 
     await act(async () => {
       await renderResult.dispatch([setCanvasFrames([pinChange1], false)], true)
+      // Gives a chance for any resize/mutation observers to fire.
+      await wait(20)
       const dispatchDone = renderResult.getDispatchFollowUpActionsFinished()
 
       await dispatchDone
@@ -122,6 +129,8 @@ describe('Dom-walker Caching', () => {
 
     await act(async () => {
       await renderResult.dispatch([setCanvasFrames([pinChange2], false)], true)
+      // Gives a chance for any resize/mutation observers to fire.
+      await wait(20)
       const dispatchDone = renderResult.getDispatchFollowUpActionsFinished()
 
       await dispatchDone
