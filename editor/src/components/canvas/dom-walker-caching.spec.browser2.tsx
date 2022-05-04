@@ -61,18 +61,18 @@ describe('Dom-walker Caching', () => {
     )
     const pinChange2 = pinFrameChange(
       EP.fromString('storyboard-entity/scene-1-entity/app-entity:app-outer-div/card-instance'),
-      canvasRectangle({ x: 20, y: 20, width: 100, height: 100 }),
+      canvasRectangle({ x: 20, y: 20, width: 100, height: 101 }),
     )
 
     await act(async () => {
-      const dispatchDone = renderResult.getDispatchFollowUpActionsFinished()
       await renderResult.dispatch([setCanvasFrames([pinChange1], false)], true)
+      const dispatchDone = renderResult.getDispatchFollowUpActionsFinished()
 
       await dispatchDone
     })
     await act(async () => {
-      const dispatchDone = renderResult.getDispatchFollowUpActionsFinished()
       await renderResult.dispatch([setCanvasFrames([pinChange2], false)], true)
+      const dispatchDone = renderResult.getDispatchFollowUpActionsFinished()
 
       await dispatchDone
     })
@@ -81,8 +81,18 @@ describe('Dom-walker Caching', () => {
       .getRecordedActions()
       .filter((action): action is SaveDOMReport => action.action === 'SAVE_DOM_REPORT')
 
-    expect(saveDomReportActions.length).toBe(1)
+    expect(saveDomReportActions.length).toBe(3)
     expect(saveDomReportActions[0].cachedPaths).toEqual([
+      EP.fromString(':storyboard-entity/scene-2-entity/same-file-app-entity:same-file-app-div'),
+      EP.fromString(':storyboard-entity/scene-2-entity/same-file-app-entity'),
+      EP.fromString(':storyboard-entity/scene-2-entity'),
+    ])
+    expect(saveDomReportActions[1].cachedPaths).toEqual([
+      EP.fromString(':storyboard-entity/scene-2-entity/same-file-app-entity:same-file-app-div'),
+      EP.fromString(':storyboard-entity/scene-2-entity/same-file-app-entity'),
+      EP.fromString(':storyboard-entity/scene-2-entity'),
+    ])
+    expect(saveDomReportActions[2].cachedPaths).toEqual([
       EP.fromString(':storyboard-entity/scene-2-entity/same-file-app-entity:same-file-app-div'),
       EP.fromString(':storyboard-entity/scene-2-entity/same-file-app-entity'),
       EP.fromString(':storyboard-entity/scene-2-entity'),
@@ -104,15 +114,15 @@ describe('Dom-walker Caching', () => {
     )
 
     await act(async () => {
-      const dispatchDone = renderResult.getDispatchFollowUpActionsFinished()
       await renderResult.dispatch([setCanvasFrames([pinChange1], false)], true)
+      const dispatchDone = renderResult.getDispatchFollowUpActionsFinished()
 
       await dispatchDone
     })
 
     await act(async () => {
-      const dispatchDone = renderResult.getDispatchFollowUpActionsFinished()
       await renderResult.dispatch([setCanvasFrames([pinChange2], false)], true)
+      const dispatchDone = renderResult.getDispatchFollowUpActionsFinished()
 
       await dispatchDone
     })
@@ -121,7 +131,7 @@ describe('Dom-walker Caching', () => {
       .getRecordedActions()
       .filter((action): action is SaveDOMReport => action.action === 'SAVE_DOM_REPORT')
 
-    expect(saveDomReportActions.length).toBe(2)
+    expect(saveDomReportActions.length).toBe(3)
     expect(saveDomReportActions[0].cachedPaths).toEqual([
       EP.fromString(':storyboard-entity/scene-1-entity/app-entity:app-outer-div/card-instance'),
       EP.fromString(':storyboard-entity/scene-1-entity/app-entity:app-outer-div'),
@@ -129,6 +139,12 @@ describe('Dom-walker Caching', () => {
       EP.fromString(':storyboard-entity/scene-1-entity'),
     ])
     expect(saveDomReportActions[1].cachedPaths).toEqual([
+      EP.fromString(':storyboard-entity/scene-1-entity/app-entity:app-outer-div/card-instance'),
+      EP.fromString(':storyboard-entity/scene-1-entity/app-entity:app-outer-div'),
+      EP.fromString(':storyboard-entity/scene-1-entity/app-entity'),
+      EP.fromString(':storyboard-entity/scene-1-entity'),
+    ])
+    expect(saveDomReportActions[2].cachedPaths).toEqual([
       EP.fromString(':storyboard-entity/scene-1-entity/app-entity:app-outer-div/card-instance'),
       EP.fromString(':storyboard-entity/scene-1-entity/app-entity:app-outer-div'),
       EP.fromString(':storyboard-entity/scene-1-entity/app-entity'),
