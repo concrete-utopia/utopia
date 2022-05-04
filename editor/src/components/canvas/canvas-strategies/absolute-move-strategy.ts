@@ -7,6 +7,7 @@ import { updateHighlightedViews } from '../commands/update-highlighted-views-com
 import { runLegacyAbsoluteMoveSnapping } from '../controls/guideline-helpers'
 import { determineConstrainedDragAxis } from '../controls/select-mode/move-utils'
 import { ConstrainedDragAxis, GuidelineWithSnappingVector } from '../guideline'
+import { interactionSessionStartedWithLeftMouseButton } from './canvas-strategies-utils'
 import { CanvasStrategy } from './canvas-strategy-types'
 import {
   getAbsoluteMoveCommandsForSelectedElement,
@@ -17,8 +18,11 @@ import {
 export const absoluteMoveStrategy: CanvasStrategy = {
   id: 'ABSOLUTE_MOVE',
   name: 'Absolute Move',
-  isApplicable: (canvasState, _interactionState, metadata) => {
-    if (canvasState.selectedElements.length > 0) {
+  isApplicable: (canvasState, interactionState, metadata) => {
+    if (
+      interactionSessionStartedWithLeftMouseButton(interactionState) &&
+      canvasState.selectedElements.length > 0
+    ) {
       const filteredSelectedElements = getDragTargets(canvasState.selectedElements)
       return filteredSelectedElements.every((element) => {
         const elementMetadata = MetadataUtils.findElementByElementPath(metadata, element)

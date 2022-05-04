@@ -24,6 +24,7 @@ export interface DragInteractionData {
   dragThresholdPassed: boolean
   originalDragStart: CanvasPoint
   modifiers: Modifiers
+  startedWithButton: number
 }
 
 interface KeyboardInteractionData {
@@ -35,6 +36,16 @@ interface KeyboardInteractionData {
 }
 
 export type InputData = KeyboardInteractionData | DragInteractionData
+
+export function isDragInteractionData(inputData: InputData): inputData is DragInteractionData {
+  return inputData.type === 'DRAG'
+}
+
+export function isKeyboardInteractionData(
+  inputData: InputData,
+): inputData is KeyboardInteractionData {
+  return inputData.type === 'KEYBOARD'
+}
 
 export interface InteractionSession {
   // This represents an actual interaction that has started as the result of a key press or a drag
@@ -86,6 +97,7 @@ export function createInteractionViaMouse(
   mouseDownPoint: CanvasPoint,
   modifiers: Modifiers,
   activeControl: CanvasControlType,
+  startedWithButton: number,
 ): InteractionSessionWithoutMetadata {
   return {
     interactionData: {
@@ -96,6 +108,7 @@ export function createInteractionViaMouse(
       dragThresholdPassed: false,
       originalDragStart: mouseDownPoint,
       modifiers: modifiers,
+      startedWithButton: startedWithButton,
     },
     activeControl: activeControl,
     sourceOfUpdate: activeControl,
@@ -129,6 +142,7 @@ export function updateInteractionViaMouse(
         dragThresholdPassed: dragThresholdPassed,
         originalDragStart: currentState.interactionData.originalDragStart,
         modifiers: modifiers,
+        startedWithButton: currentState.interactionData.startedWithButton,
       },
       activeControl: currentState.activeControl,
       sourceOfUpdate: sourceOfUpdate ?? currentState.activeControl,
@@ -197,6 +211,7 @@ export function updateInteractionViaKeyboard(
           dragThresholdPassed: currentState.interactionData.dragThresholdPassed,
           originalDragStart: currentState.interactionData.originalDragStart,
           modifiers: modifiers,
+          startedWithButton: currentState.interactionData.startedWithButton,
         },
         activeControl: currentState.activeControl,
         sourceOfUpdate: currentState.activeControl,

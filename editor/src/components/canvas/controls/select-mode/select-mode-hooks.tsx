@@ -328,10 +328,15 @@ function useStartCanvasSession(): (event: MouseEvent, target: ElementPath) => vo
 
       dispatch([
         CanvasActions.createInteractionSession(
-          createInteractionViaMouse(start, Modifier.modifiersForEvent(event), {
-            type: 'BOUNDING_AREA',
-            target: target,
-          }),
+          createInteractionViaMouse(
+            start,
+            Modifier.modifiersForEvent(event),
+            {
+              type: 'BOUNDING_AREA',
+              target: target,
+            },
+            event.button,
+          ),
         ),
       ])
     },

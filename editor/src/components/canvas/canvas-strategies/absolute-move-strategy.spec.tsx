@@ -1,6 +1,7 @@
 import { elementPath } from '../../../core/shared/element-path'
 import {
   ElementInstanceMetadata,
+  ElementInstanceMetadataMap,
   SpecialSizeMeasurements,
 } from '../../../core/shared/element-template'
 import {
@@ -31,13 +32,14 @@ function prepareEditorState(codeSnippet: string, selectedViews: Array<ElementPat
 }
 
 function dragBy15Pixels(editorState: EditorState): EditorState {
-  return dragByPixels(editorState, canvasPoint({ x: 15, y: 15 }), emptyModifiers)
+  return dragByPixels(editorState, canvasPoint({ x: 15, y: 15 }), emptyModifiers, 1)
 }
 
 function dragByPixels(
   editorState: EditorState,
   vector: CanvasVector,
   modifiers: Modifiers,
+  startedWithButton: number,
 ): EditorState {
   const interactionSession: InteractionSession = {
     ...createMouseInteractionForTests(
@@ -45,6 +47,7 @@ function dragByPixels(
       modifiers,
       null as any, // the strategy does not use this
       vector,
+      startedWithButton,
     ),
     metadata: null as any, // the strategy does not use this
   }
@@ -86,6 +89,53 @@ function dragByPixels(
 }
 
 describe('Absolute Move Strategy', () => {
+  it('do nothing if the button pressed is not the left one', async () => {
+    const targetElement = elementPath([
+      ['scene-aaa', 'app-entity'],
+      ['aaa', 'bbb'],
+    ])
+
+    const editorState: EditorState = prepareEditorState(
+      `
+    <View style={{ ...(props.style || {}) }} data-uid='aaa'>
+      <View
+        style={{ backgroundColor: '#0091FFAA', position: 'absolute', left: 50, top: 50, width: 250, height: 300 }}
+        data-uid='bbb'
+      />
+    </View>
+    `,
+      [targetElement],
+    )
+
+    const interactionSession: InteractionSession = {
+      ...createMouseInteractionForTests(
+        null as any, // the strategy does not use this
+        emptyModifiers,
+        null as any, // the strategy does not use this
+        canvasPoint({ x: 10, y: 20 }),
+        2,
+      ),
+      metadata: null as any, // the strategy does not use this
+    }
+    const metadataMap: ElementInstanceMetadataMap = {
+      'scene-aaa/app-entity:aaa/bbb': {
+        elementPath: elementPath([
+          ['scene-aaa', 'app-entity'],
+          ['aaa', 'bbb'],
+        ]),
+        specialSizeMeasurements: {
+          immediateParentBounds: canvasRectangle({ x: 0, y: 0, width: 400, height: 400 }),
+        } as SpecialSizeMeasurements,
+      } as ElementInstanceMetadata,
+    }
+    const result = absoluteMoveStrategy.isApplicable(
+      pickCanvasStateFromEditorState(editorState),
+      interactionSession,
+      metadataMap,
+    )
+    expect(result).toEqual(false)
+  })
+
   it('works with a TL pinned absolute element', async () => {
     const targetElement = elementPath([
       ['scene-aaa', 'app-entity'],
@@ -301,7 +351,7 @@ describe('Axis locked move', () => {
       shift: true,
     }
 
-    const finalEditor = dragByPixels(initialEditor, canvasPoint({ x: 10, y: 20 }), modifiers)
+    const finalEditor = dragByPixels(initialEditor, canvasPoint({ x: 10, y: 20 }), modifiers, 1)
 
     expect(testPrintCodeFromEditorState(finalEditor)).toEqual(
       makeTestProjectCodeWithSnippet(
@@ -339,7 +389,7 @@ describe('Axis locked move', () => {
       shift: true,
     }
 
-    const finalEditor = dragByPixels(initialEditor, canvasPoint({ x: 25, y: 10 }), modifiers)
+    const finalEditor = dragByPixels(initialEditor, canvasPoint({ x: 25, y: 10 }), modifiers, 1)
 
     expect(testPrintCodeFromEditorState(finalEditor)).toEqual(
       makeTestProjectCodeWithSnippet(

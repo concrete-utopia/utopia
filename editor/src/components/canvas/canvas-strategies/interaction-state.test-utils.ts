@@ -12,9 +12,10 @@ export function createMouseInteractionForTests(
   modifiers: Modifiers,
   activeControl: CanvasControlType,
   drag: CanvasVector,
+  mouseButton: number,
 ): InteractionSessionWithoutMetadata {
   return updateInteractionViaMouse(
-    createInteractionViaMouse(mouseDownPoint, modifiers, activeControl),
+    createInteractionViaMouse(mouseDownPoint, modifiers, activeControl, mouseButton),
     drag,
     modifiers,
     null,

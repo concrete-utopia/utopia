@@ -122,10 +122,15 @@ class ResizeControl extends React.Component<ResizeControlProps> {
         this.props.dispatch(
           [
             CanvasActions.createInteractionSession(
-              createInteractionViaMouse(startPoint, Modifier.modifiersForEvent(event), {
-                type: 'RESIZE_HANDLE',
-                edgePosition: this.props.position,
-              }),
+              createInteractionViaMouse(
+                startPoint,
+                Modifier.modifiersForEvent(event),
+                {
+                  type: 'RESIZE_HANDLE',
+                  edgePosition: this.props.position,
+                },
+                event.button,
+              ),
             ),
           ],
           'everyone',

@@ -8,6 +8,7 @@ import { setSnappingGuidelines } from '../commands/set-snapping-guidelines-comma
 import { updateHighlightedViews } from '../commands/update-highlighted-views-command'
 import { AbsoluteResizeControl } from '../controls/select-mode/absolute-resize-control'
 import { GuidelineWithSnappingVector } from '../guideline'
+import { interactionSessionStartedWithLeftMouseButton } from './canvas-strategies-utils'
 import { CanvasStrategy } from './canvas-strategy-types'
 import { getMultiselectBounds } from './shared-absolute-move-strategy-helpers'
 import {
@@ -21,6 +22,7 @@ export const absoluteResizeDeltaStrategy: CanvasStrategy = {
   name: 'Absolute Resize (Delta-based)',
   isApplicable: (canvasState, interactionState, metadata) => {
     if (
+      interactionSessionStartedWithLeftMouseButton(interactionState) &&
       canvasState.selectedElements.length === 1 &&
       !interactionState?.interactionData.modifiers.alt &&
       !interactionState?.interactionData.modifiers.shift // shift is aspect ratio locked resize implemented in absolute-resize-bounding-box-strategy.tsx
