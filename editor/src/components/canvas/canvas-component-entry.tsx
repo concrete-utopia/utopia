@@ -32,20 +32,10 @@ interface CanvasComponentEntryProps {}
 
 export const CanvasComponentEntry = React.memo((props: CanvasComponentEntryProps) => {
   const dispatch = useEditorState((store) => store.dispatch, 'CanvasComponentEntry dispatch')
-  const onDomReport = React.useCallback(
-    // TODO move to DomWalkerWrapper
-    (elementMetadata: ReadonlyArray<ElementInstanceMetadata>, cachedPaths: Array<ElementPath>) => {
-      dispatch([saveDOMReport(elementMetadata, cachedPaths)])
-    },
-    [dispatch],
-  )
+
   const canvasScrollAnimation = useEditorState(
     (store) => store.editor.canvas.scrollAnimation,
     'CanvasComponentEntry scrollAnimation',
-  )
-  const canvasScale = useEditorState(
-    (store) => store.editor.canvas.scale,
-    'CanvasComponentEntry canvasScale',
   )
   const { addToRuntimeErrors, clearRuntimeErrors } = useWriteOnlyRuntimeErrors()
   const { addToConsoleLogs, clearConsoleLogs } = useWriteOnlyConsoleLogs()
@@ -110,12 +100,7 @@ export const CanvasComponentEntry = React.memo((props: CanvasComponentEntryProps
               projectContents={canvasProps.projectContents}
               requireFn={canvasProps.curriedRequireFn}
             >
-              <DomWalkerWrapper
-                {...canvasProps}
-                onDomReport={onDomReport}
-                scale={canvasScale}
-                clearErrors={localClearRuntimeErrors}
-              />
+              <DomWalkerWrapper {...canvasProps} clearErrors={localClearRuntimeErrors} />
             </RemoteDependencyBoundary>
           </CanvasErrorBoundary>
         )}
@@ -124,15 +109,18 @@ export const CanvasComponentEntry = React.memo((props: CanvasComponentEntryProps
   )
 })
 
-type DomWalkerWrapperProps = UiJsxCanvasPropsWithErrorCallback & {
-  scale: number
-  onDomReport: (
-    elementMetadata: ReadonlyArray<ElementInstanceMetadata>,
-    cachedPaths: Array<ElementPath>,
-  ) => void
-}
-
-function DomWalkerWrapper(props: DomWalkerWrapperProps) {
+function DomWalkerWrapper(props: UiJsxCanvasPropsWithErrorCallback) {
+  const dispatch = useEditorState((store) => store.dispatch, 'CanvasComponentEntry dispatch')
+  const onDomReport = React.useCallback(
+    (elementMetadata: ReadonlyArray<ElementInstanceMetadata>, cachedPaths: Array<ElementPath>) => {
+      dispatch([saveDOMReport(elementMetadata, cachedPaths)])
+    },
+    [dispatch],
+  )
+  const canvasScale = useEditorState(
+    (store) => store.editor.canvas.scale,
+    'CanvasComponentEntry canvasScale',
+  )
   const selectedViews = useEditorState(
     (store) => store.editor.selectedViews,
     'DomWalkerWrapper selectedViews',
@@ -146,8 +134,8 @@ function DomWalkerWrapper(props: DomWalkerWrapperProps) {
     canvasInteractionHappening: interactionSessionActive || props.transientFilesState != null,
     mountCount: props.mountCount,
     domWalkerInvalidateCount: props.domWalkerInvalidateCount,
-    scale: props.scale,
-    onDomReport: props.onDomReport,
+    scale: canvasScale,
+    onDomReport: onDomReport,
     additionalElementsToUpdate: props.domWalkerAdditionalElementsToUpdate,
   })
 
