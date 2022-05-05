@@ -1,5 +1,4 @@
 import React from 'react'
-import { useContextSelector } from 'use-context-selector'
 import {
   FlexRow,
   H1,
@@ -8,14 +7,8 @@ import {
   InspectorSectionIcons,
   InspectorSubsectionHeader,
 } from '../../../../../uuiui'
-import { InspectorPropsContext } from '../../../common/property-path-hooks'
-import { PropertyLabel } from '../../../widgets/property-label'
 import { SeeMoreButton, SeeMoreHOC, useToggle } from '../../../widgets/see-more'
-import { UIGridRow } from '../../../widgets/ui-grid-row'
-import {
-  PaddingControl,
-  buildPaddingPropsToUnset,
-} from '../../layout-section/layout-system-subsection/layout-system-controls'
+import { PaddingRow } from '../../layout-section/layout-system-subsection/layout-system-controls'
 import { BlendModeRow } from './blendmode-row'
 import { OpacityRow } from './opacity-row'
 import { OverflowRow } from './overflow-row'
@@ -23,12 +16,7 @@ import { RadiusRow } from './radius-row'
 
 export const ContainerSubsection = React.memo(() => {
   const [seeMoreVisible, toggleSeeMoreVisible] = useToggle(false)
-  const targetPath = useContextSelector(InspectorPropsContext, (contextData) => {
-    return contextData.targetPath
-  })
-  const paddingPropsToUnset = React.useMemo(() => {
-    return buildPaddingPropsToUnset(targetPath)
-  }, [targetPath])
+
   return (
     <>
       <InspectorSubsectionHeader>
@@ -50,16 +38,7 @@ export const ContainerSubsection = React.memo(() => {
       <OpacityRow />
       <OverflowRow />
       <RadiusRow />
-      <UIGridRow tall padded={true} variant='<---1fr--->|------172px-------|'>
-        <PropertyLabel
-          target={paddingPropsToUnset}
-          propNamesToUnset={['all paddings']}
-          style={{ paddingBottom: 12 }}
-        >
-          Padding
-        </PropertyLabel>
-        <PaddingControl />
-      </UIGridRow>
+      <PaddingRow />
       <SeeMoreHOC visible={seeMoreVisible}>
         <BlendModeRow />
       </SeeMoreHOC>

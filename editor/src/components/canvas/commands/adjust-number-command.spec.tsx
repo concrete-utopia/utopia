@@ -7,6 +7,7 @@ import { withUnderlyingTargetFromEditorState } from '../../editor/store/editor-s
 import { stylePropPathMappingFn } from '../../inspector/common/property-path-hooks'
 import { renderTestEditorWithModel } from '../ui-jsx.test-utils'
 import { adjustNumberProperty, runAdjustNumberProperty } from './adjust-number-command'
+import { updateEditorStateWithPatches } from './commands'
 
 describe('adjustNumberProperty', () => {
   it('works for left style prop', async () => {
@@ -47,7 +48,10 @@ describe('adjustNumberProperty', () => {
       adjustNumberPropertyCommand,
     )
 
-    const patchedEditor = update(renderResult.getEditorState().editor, result.editorStatePatch)
+    const patchedEditor = updateEditorStateWithPatches(
+      renderResult.getEditorState().editor,
+      result.editorStatePatches,
+    )
     const updatedLeftStyleProp = withUnderlyingTargetFromEditorState(
       cardInstancePath,
       patchedEditor,

@@ -77,7 +77,7 @@ type Stop = IO ()
 data EnvironmentRuntime r = EnvironmentRuntime
   { _initialiseResources :: IO r
   , _startup             :: r -> IO Stop
-  , _envServerPort       :: r -> Int
+  , _envServerPort       :: r -> [Int]
   , _serverAPI           :: r -> Server API
   , _startupLogging      :: r -> Bool
   , _getLogger           :: r -> FastLogger

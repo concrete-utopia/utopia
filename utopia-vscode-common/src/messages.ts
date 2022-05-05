@@ -251,12 +251,24 @@ export function fileOpened(path: string): FileOpened {
     path: path,
   }
 }
+export interface FailedToOpenFile {
+  type: 'FAILED_TO_OPEN_FILE'
+  path: string
+}
+
+export function failedToOpenFile(path: string): FailedToOpenFile {
+  return {
+    type: 'FAILED_TO_OPEN_FILE',
+    path: path,
+  }
+}
 
 export type FromVSCodeMessage =
   | EditorCursorPositionChanged
   | SendInitialData
   | UtopiaVSCodeConfigValues
   | FileOpened
+  | FailedToOpenFile
 
 export function isEditorCursorPositionChanged(
   message: unknown,
@@ -284,11 +296,19 @@ export function isUtopiaVSCodeConfigValues(message: unknown): message is UtopiaV
   )
 }
 
-export function isFileOpened(message: unknown): message is UtopiaVSCodeConfigValues {
+export function isFileOpened(message: unknown): message is FileOpened {
   return (
     typeof message === 'object' &&
     !Array.isArray(message) &&
     (message as any).type === 'FILE_OPENED'
+  )
+}
+
+export function isFailedToOpenFile(message: unknown): message is FailedToOpenFile {
+  return (
+    typeof message === 'object' &&
+    !Array.isArray(message) &&
+    (message as any).type === 'FAILED_TO_OPEN_FILE'
   )
 }
 
@@ -298,7 +318,8 @@ export function parseFromVSCodeMessage(unparsed: string): FromVSCodeMessage {
     isEditorCursorPositionChanged(message) ||
     isSendInitialData(message) ||
     isUtopiaVSCodeConfigValues(message) ||
-    isFileOpened(message)
+    isFileOpened(message) ||
+    isFailedToOpenFile(message)
   ) {
     return message
   } else {

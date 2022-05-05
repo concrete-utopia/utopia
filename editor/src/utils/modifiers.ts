@@ -14,6 +14,41 @@ export const emptyModifiers: Modifiers = optionalDeepFreeze({
   shift: false,
 })
 
+export const shiftModifier: Modifiers = {
+  alt: false,
+  cmd: false,
+  ctrl: false,
+  shift: true,
+}
+
+export const cmdModifier: Modifiers = {
+  alt: false,
+  cmd: true,
+  ctrl: false,
+  shift: false,
+}
+
+export const altModifier: Modifiers = {
+  alt: true,
+  cmd: false,
+  ctrl: false,
+  shift: false,
+}
+
+export const shiftCmdModifier: Modifiers = {
+  alt: false,
+  cmd: true,
+  ctrl: false,
+  shift: true,
+}
+
+export const altShiftModifier: Modifiers = {
+  alt: true,
+  cmd: false,
+  ctrl: false,
+  shift: true,
+}
+
 export const Modifier = {
   modifiersForKeyboardEvent: function (event: KeyboardEvent): Modifiers {
     let result: Modifiers = { ...Modifier.modifiersForEvent(event) }

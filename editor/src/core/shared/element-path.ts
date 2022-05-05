@@ -391,11 +391,7 @@ export function notNullPathsEqual(l: ElementPath, r: ElementPath): boolean {
 }
 
 function elementPathPartsEqual(l: ElementPathPart, r: ElementPathPart): boolean {
-  if (l === r) {
-    return true
-  } else {
-    return arrayEquals(l, r)
-  }
+  return arrayEquals(l, r)
 }
 
 export function fullElementPathsEqual(l: ElementPathPart[], r: ElementPathPart[]): boolean {
