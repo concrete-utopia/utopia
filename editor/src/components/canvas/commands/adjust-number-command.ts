@@ -108,7 +108,7 @@ export const runAdjustNumberProperty: CommandFunction<AdjustNumberProperty> = (
 
   if (targetPropertyNonExistant && !command.createIfNonExistant) {
     return {
-      editorStatePatch: {},
+      editorStatePatches: [],
       commandDescription: `Adjust Number Prop: ${EP.toUid(command.target)}/${PP.toString(
         command.property,
       )} not applied as the property does not exist.`,
@@ -127,7 +127,7 @@ export const runAdjustNumberProperty: CommandFunction<AdjustNumberProperty> = (
           case 'less-than':
             if (inequalityValue <= currentValue) {
               return {
-                editorStatePatch: {},
+                editorStatePatches: [],
                 commandDescription: `Adjust Number Prop: ${EP.toUid(command.target)}/${PP.toString(
                   command.property,
                 )} not applied as value is large enough already.`,
@@ -139,7 +139,7 @@ export const runAdjustNumberProperty: CommandFunction<AdjustNumberProperty> = (
           case 'greater-than':
             if (inequalityValue >= currentValue) {
               return {
-                editorStatePatch: {},
+                editorStatePatches: [],
                 commandDescription: `Adjust Number Prop: ${EP.toUid(command.target)}/${PP.toString(
                   command.property,
                 )} not applied as value is small enough already.`,
@@ -170,7 +170,7 @@ export const runAdjustNumberProperty: CommandFunction<AdjustNumberProperty> = (
     )
 
     return {
-      editorStatePatch: propertyUpdatePatch,
+      editorStatePatches: [propertyUpdatePatch],
       commandDescription: `Adjust Number Prop: ${EP.toUid(command.target)}/${PP.toString(
         command.property,
       )} by ${command.value}`,

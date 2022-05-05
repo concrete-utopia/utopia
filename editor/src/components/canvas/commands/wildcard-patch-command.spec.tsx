@@ -4,6 +4,7 @@ import * as EP from '../../../core/shared/element-path'
 import { complexDefaultProjectPreParsed } from '../../../sample-projects/sample-project-utils.test-utils'
 import { selectComponents, setFocusedElement } from '../../editor/actions/action-creators'
 import { renderTestEditorWithModel } from '../ui-jsx.test-utils'
+import { updateEditorStateWithPatches } from './commands'
 import { runWildcardPatch, wildcardPatch } from './wildcard-patch-command'
 
 describe('wildcardPatch', () => {
@@ -28,7 +29,10 @@ describe('wildcardPatch', () => {
 
     const result = runWildcardPatch(renderResult.getEditorState().editor, wildcardCommand)
 
-    const patchedEditor = update(renderResult.getEditorState().editor, result.editorStatePatch)
+    const patchedEditor = updateEditorStateWithPatches(
+      renderResult.getEditorState().editor,
+      result.editorStatePatches,
+    )
     expect(patchedEditor.selectedViews).toEqual([])
   })
 })

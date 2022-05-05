@@ -113,12 +113,10 @@ describe('interactionCancel', () => {
         { type: 'BOUNDING_AREA', target: EP.elementPath([['aaa']]) },
       ),
     )
-    editorStore.strategyState.accumulatedPatches = [
-      runCanvasCommand(
-        editorStore.unpatchedEditor,
-        wildcardPatch('permanent', { selectedViews: { $set: [] } }),
-      ).editorStatePatch,
-    ]
+    editorStore.strategyState.accumulatedPatches = runCanvasCommand(
+      editorStore.unpatchedEditor,
+      wildcardPatch('permanent', { selectedViews: { $set: [] } }),
+    ).editorStatePatches
     const actualResult = interactionCancel(editorStore, dispatchResultFromEditorStore(editorStore))
     expect(actualResult.newStrategyState.accumulatedPatches).toHaveLength(0)
     expect(actualResult.newStrategyState.commandDescriptions).toHaveLength(0)
@@ -385,12 +383,10 @@ describe('interactionUpdate without strategy', () => {
       ),
     )
     editorStore.strategyState.currentStrategy = null
-    editorStore.strategyState.accumulatedPatches = [
-      runCanvasCommand(
-        editorStore.unpatchedEditor,
-        wildcardPatch('permanent', { canvas: { scale: { $set: 100 } } }),
-      ).editorStatePatch,
-    ]
+    editorStore.strategyState.accumulatedPatches = runCanvasCommand(
+      editorStore.unpatchedEditor,
+      wildcardPatch('permanent', { canvas: { scale: { $set: 100 } } }),
+    ).editorStatePatches
     const actualResult = interactionUpdate(
       [],
       editorStore,
@@ -659,12 +655,10 @@ describe('interactionUpdate with accumulating keypresses', () => {
     editorStore.strategyState.currentStrategyCommands = [
       wildcardPatch('permanent', { selectedViews: { $set: [EP.elementPath([['aaa']])] } }),
     ]
-    editorStore.strategyState.accumulatedPatches = [
-      runCanvasCommand(
-        editorStore.unpatchedEditor,
-        wildcardPatch('permanent', { focusedPanel: { $set: 'codeEditor' } }),
-      ).editorStatePatch,
-    ]
+    editorStore.strategyState.accumulatedPatches = runCanvasCommand(
+      editorStore.unpatchedEditor,
+      wildcardPatch('permanent', { focusedPanel: { $set: 'codeEditor' } }),
+    ).editorStatePatches
 
     const actualResult = interactionUpdate(
       [testStrategy],

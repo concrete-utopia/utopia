@@ -23,13 +23,13 @@ export const runUpdateHighlightedViews: CommandFunction<UpdateHighlightedViews> 
   _: EditorState,
   command: UpdateHighlightedViews,
 ) => {
-  const editorStatePatch: EditorStatePatch = {
+  const editorStatePatch = {
     highlightedViews: {
       $set: command.value,
     },
   }
   return {
-    editorStatePatch: editorStatePatch,
+    editorStatePatches: [editorStatePatch],
     commandDescription: `Update Highlighted Views: ${command.value.map(EP.toString).join(', ')}`,
   }
 }

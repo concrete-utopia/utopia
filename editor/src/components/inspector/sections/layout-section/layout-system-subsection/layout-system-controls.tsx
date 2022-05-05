@@ -10,6 +10,7 @@ import {
   InspectorInfo,
   stylePropPathMappingFn,
   InspectorPropsContext,
+  useInspectorInfoSimpleUntyped,
 } from '../../../common/property-path-hooks'
 import { useEditorState } from '../../../../editor/store/store-hook'
 import { switchLayoutSystem } from '../../../../editor/actions/action-creators'
@@ -35,6 +36,10 @@ import {
 import { useInspectorInfoLonghandShorthand } from '../../../common/longhand-shorthand-hooks'
 import { PropertyPath } from '../../../../../core/shared/project-file-types'
 import { useContextSelector } from 'use-context-selector'
+import { UIGridRow } from '../../../widgets/ui-grid-row'
+import { PropertyLabel } from '../../../widgets/property-label'
+import { InspectorContextMenuWrapper } from '../../../../context-menu-wrapper'
+import { optionalAddOnUnsetValues } from '../../../common/context-menu-items'
 
 function useDefaultedLayoutSystemInfo(): {
   value: LayoutSystem | 'flow'
@@ -151,6 +156,50 @@ export function buildPaddingPropsToUnset(
     stylePropPathMappingFn('paddingBottom', propertyTarget),
   ]
 }
+
+export const PaddingRow = React.memo(() => {
+  const targetPath = useContextSelector(InspectorPropsContext, (contextData) => {
+    return contextData.targetPath
+  })
+  const paddingPropsToUnset = React.useMemo(() => {
+    return buildPaddingPropsToUnset(targetPath)
+  }, [targetPath])
+  const metadata = useInspectorInfoSimpleUntyped(
+    paddingPropsToUnset,
+    (v) => v,
+    (v) => v,
+  )
+
+  const contextMenuLabel = React.useMemo(() => ['all paddings'], [])
+  const contextMenuItems = React.useMemo(
+    () =>
+      optionalAddOnUnsetValues(
+        metadata.propertyStatus.set,
+        contextMenuLabel,
+        metadata.onUnsetValues,
+      ),
+    [contextMenuLabel, metadata.propertyStatus.set, metadata.onUnsetValues],
+  )
+
+  return (
+    <InspectorContextMenuWrapper
+      id='padding-subsection-context-menu'
+      items={contextMenuItems}
+      data={null}
+    >
+      <UIGridRow tall padded={true} variant='<---1fr--->|------172px-------|'>
+        <PropertyLabel
+          target={paddingPropsToUnset}
+          propNamesToUnset={contextMenuLabel}
+          style={{ paddingBottom: 12 }}
+        >
+          Padding
+        </PropertyLabel>
+        <PaddingControl />
+      </UIGridRow>
+    </InspectorContextMenuWrapper>
+  )
+})
 
 export const PaddingControl = React.memo(() => {
   const {
