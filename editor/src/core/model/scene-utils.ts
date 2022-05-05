@@ -42,7 +42,7 @@ import {
   jsxSimpleAttributeToValue,
 } from '../shared/jsx-attributes'
 import { stripNulls } from '../shared/array-utils'
-import { UTOPIA_UIDS_KEY } from './utopia-constants'
+import { UTOPIA_UID_KEY } from './utopia-constants'
 import { getUtopiaID } from './element-template-utils'
 import { getContentsTreeFileFromString, ProjectContentTreeRoot } from '../../components/assets'
 import { getUtopiaJSXComponentsFromSuccess } from './project-file-utils'
@@ -150,7 +150,7 @@ export function createSceneFromComponent(
   uid: string,
 ): JSXElement {
   const sceneProps = jsxAttributesFromMap({
-    [UTOPIA_UIDS_KEY]: jsxAttributeValue(uid, emptyComments),
+    [UTOPIA_UID_KEY]: jsxAttributeValue(uid, emptyComments),
     style: jsxAttributeValue(
       {
         position: 'absolute',
@@ -173,7 +173,7 @@ export function createSceneFromComponent(
       componentImportedAs,
       componentUID,
       jsxAttributesFromMap({
-        [UTOPIA_UIDS_KEY]: jsxAttributeValue(componentUID, emptyComments),
+        [UTOPIA_UID_KEY]: jsxAttributeValue(componentUID, emptyComments),
       }),
       [],
     ),
@@ -182,7 +182,7 @@ export function createSceneFromComponent(
 
 export function createStoryboardElement(scenes: Array<JSXElement>, uid: string): JSXElement {
   const storyboardProps = jsxAttributesFromMap({
-    [UTOPIA_UIDS_KEY]: jsxAttributeValue(uid, emptyComments),
+    [UTOPIA_UID_KEY]: jsxAttributeValue(uid, emptyComments),
   })
   return jsxElement('Storyboard', uid, storyboardProps, scenes)
 }

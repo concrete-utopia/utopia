@@ -76,7 +76,7 @@ import {
 } from '../shared/project-components'
 import { ProjectContentTreeRoot } from '../assets'
 import { generateUidWithExistingComponents } from '../../core/model/element-template-utils'
-import { UTOPIA_UIDS_KEY } from '../../core/model/utopia-constants'
+import { UTOPIA_UID_KEY } from '../../core/model/utopia-constants'
 
 interface InsertMenuProps {
   lastFontSettings: FontSettings | null
@@ -135,7 +135,7 @@ export function componentBeingInserted(
 }
 
 function isUidProp(prop: JSXAttributesPart): boolean {
-  return isJSXAttributesEntry(prop) && prop.key === UTOPIA_UIDS_KEY
+  return isJSXAttributesEntry(prop) && prop.key === UTOPIA_UID_KEY
 }
 
 const isNonUidProp = (prop: JSXAttributesPart) => !isUidProp(prop)

@@ -134,7 +134,6 @@ export const DomWalkerInvalidatePathsCtxAtom = atomWithPubSub<DomWalkerInvalidat
 })
 
 export interface UiJsxCanvasProps {
-  scale: number
   uiFilePath: string
   curriedRequireFn: CurriedUtopiaRequireFn
   curriedResolveFn: CurriedResolveFn
@@ -143,11 +142,6 @@ export interface UiJsxCanvasProps {
   base64FileBlobs: CanvasBase64Blobs
   mountCount: number
   domWalkerInvalidateCount: number
-  onDomReport: (
-    elementMetadata: ReadonlyArray<ElementInstanceMetadata>,
-    cachedPaths: Array<ElementPath>,
-  ) => void
-  walkDOM: boolean
   imports_KILLME: Imports // FIXME this is the storyboard imports object used only for the cssimport
   canvasIsLive: boolean
   shouldIncludeCanvasRootInTheSpy: boolean // FOR ui-jsx-canvas.spec TESTS ONLY!!!! this prevents us from having to update the legacy test snapshots
@@ -157,7 +151,6 @@ export interface UiJsxCanvasProps {
   focusedElementPath: ElementPath | null
   projectContents: ProjectContentTreeRoot
   transientFilesState: TransientFilesState | null
-  scrollAnimation: boolean
   propertyControlsInfo: PropertyControlsInfo
   dispatch: EditorDispatch
   domWalkerAdditionalElementsToUpdate: Array<ElementPath>
@@ -180,11 +173,6 @@ export function pickUiJsxCanvasProps(
   editor: EditorState,
   derived: DerivedState,
   dispatch: EditorDispatch,
-  walkDOM: boolean,
-  onDomReport: (
-    elementMetadata: ReadonlyArray<ElementInstanceMetadata>,
-    cachedPaths: Array<ElementPath>,
-  ) => void,
   clearConsoleLogs: () => void,
   addToConsoleLogs: (log: ConsoleLog) => void,
 ): UiJsxCanvasProps | null {
@@ -218,7 +206,6 @@ export function pickUiJsxCanvasProps(
       hiddenInstances = [...hiddenInstances, editedTextElement]
     }
     return {
-      scale: editor.canvas.scale,
       uiFilePath: uiFilePath,
       curriedRequireFn: editor.codeResultCache.curriedRequireFn,
       curriedResolveFn: editor.codeResultCache.curriedResolveFn,
@@ -227,8 +214,6 @@ export function pickUiJsxCanvasProps(
       base64FileBlobs: editor.canvas.base64Blobs,
       mountCount: editor.canvas.mountCount,
       domWalkerInvalidateCount: editor.canvas.domWalkerInvalidateCount,
-      onDomReport: onDomReport,
-      walkDOM: walkDOM,
       imports_KILLME: imports_KILLME,
       clearConsoleLogs: clearConsoleLogs,
       addToConsoleLogs: addToConsoleLogs,
@@ -238,7 +223,6 @@ export function pickUiJsxCanvasProps(
       focusedElementPath: editor.focusedElementPath,
       projectContents: editor.projectContents,
       transientFilesState: derived.canvas.transientState.filesState,
-      scrollAnimation: editor.canvas.scrollAnimation,
       propertyControlsInfo: editor.propertyControlsInfo,
       dispatch: dispatch,
       domWalkerAdditionalElementsToUpdate: editor.canvas.domWalkerAdditionalElementsToUpdate,
@@ -294,13 +278,10 @@ function clearSpyCollectorInvalidPaths(
 
 export const UiJsxCanvas = React.memo<UiJsxCanvasPropsWithErrorCallback>((props) => {
   const {
-    scale,
     uiFilePath,
     curriedRequireFn,
     curriedResolveFn,
     hiddenInstances,
-    walkDOM,
-    onDomReport,
     imports_KILLME: imports, // FIXME this is the storyboard imports object used only for the cssimport
     clearErrors,
     clearConsoleLogs,
@@ -497,15 +478,8 @@ export const UiJsxCanvas = React.memo<UiJsxCanvasPropsWithErrorCallback>((props)
       <RerenderUtopiaCtxAtom.Provider value={rerenderUtopiaContextValue}>
         <UtopiaProjectCtxAtom.Provider value={utopiaProjectContextValue}>
           <CanvasContainer
-            mountCount={props.mountCount}
-            domWalkerInvalidateCount={props.domWalkerInvalidateCount}
-            walkDOM={walkDOM}
-            scale={scale}
-            onDomReport={onDomReport}
             validRootPaths={rootValidPaths}
             canvasRootElementElementPath={storyboardRootElementPath}
-            scrollAnimation={props.scrollAnimation}
-            canvasInteractionHappening={props.transientFilesState != null}
           >
             <SceneLevelUtopiaCtxAtom.Provider value={sceneLevelUtopiaContextValue}>
               {StoryboardRootComponent == null ? null : (
@@ -734,18 +708,8 @@ function useGetStoryboardRoot(
 }
 
 export interface CanvasContainerProps {
-  walkDOM: boolean
-  scale: number
-  onDomReport: (
-    elementMetadata: ReadonlyArray<ElementInstanceMetadata>,
-    cachedPaths: Array<ElementPath>,
-  ) => void
   canvasRootElementElementPath: ElementPath
   validRootPaths: Array<ElementPath>
-  mountCount: number
-  domWalkerInvalidateCount: number
-  scrollAnimation: boolean
-  canvasInteractionHappening: boolean
 }
 
 const CanvasContainer = React.forwardRef<
