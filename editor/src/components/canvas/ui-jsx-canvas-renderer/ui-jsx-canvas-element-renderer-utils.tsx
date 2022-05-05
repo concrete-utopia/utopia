@@ -5,7 +5,7 @@ import {
   UTOPIA_PATH_KEY,
   UTOPIA_SCENE_ID_KEY,
   UTOPIA_INSTANCE_PATH,
-  UTOPIA_UIDS_KEY,
+  UTOPIA_UID_KEY,
   UTOPIA_UID_ORIGINAL_PARENTS_KEY,
 } from '../../../core/model/utopia-constants'
 import { flatMapEither, forEachRight } from '../../../core/shared/either'
@@ -128,9 +128,9 @@ function monkeyUidProp(uid: string | undefined, propsToUpdate: MapLike<any>): Ma
     ...propsToUpdate,
   }
 
-  const uidsFromProps = monkeyedProps[UTOPIA_UIDS_KEY]
-  const uidsToPass = uidsFromProps ?? uid
-  monkeyedProps[UTOPIA_UIDS_KEY] = uidsToPass
+  const uidFromProps = monkeyedProps[UTOPIA_UID_KEY]
+  const uidToPass = uidFromProps ?? uid
+  monkeyedProps[UTOPIA_UID_KEY] = uidToPass
 
   return monkeyedProps
 }
@@ -213,7 +213,7 @@ export function renderCoreElement(
 
       const passthroughProps = monkeyUidProp(uid, assembledProps)
 
-      const key = optionalMap(EP.toString, elementPath) ?? passthroughProps[UTOPIA_UIDS_KEY]
+      const key = optionalMap(EP.toString, elementPath) ?? passthroughProps[UTOPIA_UID_KEY]
 
       return renderJSXElement(
         key,
