@@ -1,5 +1,4 @@
 export const UTOPIA_UIDS_KEY = 'data-uid'
-export const UTOPIA_PATHS_2_KEY = 'data-paths-2'
 export const UTOPIA_PATH_KEY = 'data-path'
 export const UTOPIA_LABEL_KEY = 'data-label'
 export const UTOPIA_DO_NOT_TRAVERSE_KEY = 'data-utopia-do-not-traverse'
@@ -10,7 +9,6 @@ export const UTOPIA_INSTANCE_PATH = 'data-utopia-instance-path'
 
 export const UtopiaKeys: Array<string> = [
   UTOPIA_UIDS_KEY,
-  UTOPIA_PATHS_2_KEY,
   UTOPIA_PATH_KEY,
   UTOPIA_LABEL_KEY,
   UTOPIA_DO_NOT_TRAVERSE_KEY,

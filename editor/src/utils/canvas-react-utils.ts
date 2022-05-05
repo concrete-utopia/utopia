@@ -1,6 +1,5 @@
 import React from 'react'
 import Utils from './utils'
-import { keepDeepReferenceEqualityIfPossible } from './react-performance'
 import { omitWithPredicate } from '../core/shared/object-utils'
 import { MapLike } from 'typescript'
 import { firstLetterIsLowerCase } from '../core/shared/string-utils'
@@ -17,7 +16,6 @@ const realCreateElement = React.createElement
 const fragmentSymbol = Symbol.for('react.fragment')
 const providerSymbol = Symbol.for('react.provider')
 const contextSymbol = Symbol.for('react.context')
-const forwardRefSymbol = Symbol.for('react.forward_ref')
 
 let uidMonkeyPatchApplied: boolean = false
 
@@ -98,7 +96,6 @@ function appendRootUIDToPath(path: string | null, rootUID: string | null): strin
     return path
   } else {
     const trimmedPath = trimLastSeparatorFromPath(path)
-    //originalResponse.props[UTOPIA_PATH_KEY] ?? path,
     return `${trimmedPath}${SceneSeparator}${splitUid ?? ''}`
   }
 }
@@ -141,8 +138,7 @@ function attachDataUidToRoot(
   } else {
     if (shouldIncludeDataUID(originalResponse.type)) {
       return React.cloneElement(originalResponse, {
-        [UTOPIA_UIDS_KEY]: appendToUidString(originalResponse.props[UTOPIA_UIDS_KEY], dataUids), //
-        // [UTOPIA_PATH_KEY]: originalResponse.props[UTOPIA_PATH_KEY] ?? path,
+        [UTOPIA_UIDS_KEY]: appendToUidString(originalResponse.props[UTOPIA_UIDS_KEY], dataUids),
         [UTOPIA_PATH_KEY]: appendRootUIDToPath(path, originalResponse.props[UTOPIA_UIDS_KEY]),
       })
     } else {
@@ -271,8 +267,6 @@ const mangleFunctionType = Utils.memoize(
           path,
         )
 
-        //Problem, is the data-uid is getting appended to the end of path
-
         const res = attachDataUidToRoot(withUpdatedChildren, (p as any)?.[UTOPIA_UIDS_KEY], path)
         if (MeasureRenderTimes) {
           performance.mark(`render_end_${uuid}`)
@@ -343,49 +337,51 @@ const mangleClassType = Utils.memoize(
   },
 )
 
+function pathIsRoot(path: string | null): boolean {
+  if (path == null) {
+    return false
+  } else if (path.endsWith(SceneSeparator)) {
+    return true
+  } else {
+    return !path.includes(SceneSeparator) && !path.includes(ElementSeparator)
+  }
+}
+
 function updateChildOfExotic(
   child: React.ReactElement | null,
   dataUids: string | null,
   path: string | null,
 ) {
   if (child == null || !shouldIncludeDataUID(child.type)) {
-    //console.log(`Not including UID on child of type`, child?.type)
     return child
   }
   const existingChildUIDs = child.props?.[UTOPIA_UIDS_KEY]
   const appendedUIDString = appendToUidString(existingChildUIDs, dataUids)
 
   if ((!React.isValidElement(child) as boolean) || child == null) {
-    //console.log(`Not including UID on invalid child`)
     return child
   } else {
-    //console.log(`Attempting to update a child`)
-
     // Setup the result.
     let additionalProps: any = {}
     let shouldClone: boolean = false
 
     // Because the parent of this won't exist in the rendered DOM, we need to capture whether the parent's
     // path was that of a root element, or a child element, and transfer that relationship to this element
-    const isRootElement = path != null && path.endsWith(SceneSeparator)
+    const isRootElement = pathIsRoot(path)
     const appendUIDToPath = isRootElement ? appendRootUIDToPath : appendChildUIDToPath
 
     const childPath = appendUIDToPath(path, child.props?.[UTOPIA_UIDS_KEY])
     if (childPath != null && child.props?.[UTOPIA_PATH_KEY] == null) {
       additionalProps[UTOPIA_PATH_KEY] = childPath
       shouldClone = true
-    } else {
-      //console.log(`Not attaching path to child`)
     }
 
     if (appendedUIDString != null) {
       additionalProps[UTOPIA_UIDS_KEY] = appendedUIDString
-      // additionalProps[UTOPIA_PATH_KEY] = appendedPathsString
       shouldClone = true
     }
 
     if (shouldClone) {
-      //console.log(`Cloning child with additionalProps`, additionalProps)
       return React.cloneElement(child, additionalProps)
     } else {
       return child
@@ -417,12 +413,10 @@ const mangleExoticType = Utils.memoize(
         }
 
         delete mangledProps[UTOPIA_UIDS_KEY]
-        // delete mangledProps[UTOPIA_PATH_KEY]
         delete mangledProps[UTOPIA_PATH_KEY]
         let originalTypeResponse = realCreateElement(type, { ...mangledProps })
 
         if (typeof p?.children === 'function') {
-          //console.log(`Children are a function`)
           // mangle the function so that what it returns has the data uid
           const originalFunction = p.children
           children = function (...params: any[]) {
@@ -430,7 +424,6 @@ const mangleExoticType = Utils.memoize(
             return attachDataUidToRoot(originalResponse, uids, path)
           }
         } else {
-          //console.log(`Children are not a function`)
           const uidsToPass = uids
 
           if (Array.isArray(p?.children)) {
@@ -443,13 +436,10 @@ const mangleExoticType = Utils.memoize(
         }
 
         if (children == null) {
-          //console.log(`Children are null`)
           return originalTypeResponse
         } else if (Array.isArray(children)) {
-          //console.log(`Children are an array`)
           return React.cloneElement(originalTypeResponse, undefined, ...children)
         } else {
-          //console.log(`Children are not an array`)
           return React.cloneElement(originalTypeResponse, undefined, children)
         }
       }
@@ -496,21 +486,7 @@ function isClassComponent(component: any) {
   return typeof component === 'function' && component?.prototype?.isReactComponent != null
 }
 
-// Remaining TODO
-// - [x] BUG Parent child paths should not include inner paths of component
-// - [x] Update mangleExoticType
-//   - [ ] Add test cases
-// - [x] Update mangleIntrinsicType
-//   - [x] Add a test case
-// - [ ] Remove existing creation of `data-paths` and replace it completely with this new method
-// - [ ] Tidy up the types
-// - [ ] Check if we need all paths on an element, or just the deepest path
-
 function patchedCreateReactElement(type: any, props: any, ...children: any): any {
-  //console.log('patchedCreateReactElement props', props)
-  //console.log('patchedCreateReactElement type', type)
-  //console.log('is forwardref?', type?.$$typeof == forwardRefSymbol)
-
   if (isClassComponent(type)) {
     const mangledClass = mangleClassType(type)
     return realCreateElement(mangledClass, props, ...children)

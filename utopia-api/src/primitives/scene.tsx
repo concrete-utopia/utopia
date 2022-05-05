@@ -8,5 +8,5 @@ export interface SceneProps {
 }
 
 export const Scene = React.memo((props: React.PropsWithChildren<SceneProps>) => {
-  return <View {...props}>{props.children}</View>
+  return <div {...props}>{props.children}</div>
 })

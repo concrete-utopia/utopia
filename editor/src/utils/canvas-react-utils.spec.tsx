@@ -851,7 +851,7 @@ describe('Monkey Function', () => {
     `)
   })
 
-  it('builds the correct paths for Exotic-type with-fragment components', () => {
+  it('builds the correct paths for fragments at the root', () => {
     const Red = () => {
       return <div data-uid='red-root' />
     }
@@ -885,6 +885,53 @@ describe('Monkey Function', () => {
             data-uid=\\"red-root red\\"
             data-path=\\"component:inner-parent/inner-child/red:red-root\\"
           ></div>
+        </div>
+      </div>
+      "
+    `)
+  })
+
+  it('builds the correct paths for fragments below the root', () => {
+    const Red = () => {
+      return <div data-uid='red-root' />
+    }
+
+    const OuterComponent = () => {
+      const red = <Red data-uid='red' />
+
+      return (
+        <div data-uid='root'>
+          <>
+            <div data-uid='inner-parent'>
+              <>
+                <div data-uid='inner-child'>
+                  <div data-uid='blue' />
+                  {red}
+                </div>
+              </>
+            </div>
+          </>
+        </div>
+      )
+    }
+
+    expect(renderToFormattedString(<OuterComponent data-uid={'component'} />))
+      .toMatchInlineSnapshot(`
+      "<div data-uid=\\"root\\" data-path=\\"component:root\\">
+        <div data-uid=\\"inner-parent\\" data-path=\\"component:root/inner-parent\\">
+          <div
+            data-uid=\\"inner-child\\"
+            data-path=\\"component:root/inner-parent/inner-child\\"
+          >
+            <div
+              data-uid=\\"blue\\"
+              data-path=\\"component:root/inner-parent/inner-child/blue\\"
+            ></div>
+            <div
+              data-uid=\\"red-root\\"
+              data-path=\\"component:root/inner-parent/inner-child/red:red-root\\"
+            ></div>
+          </div>
         </div>
       </div>
       "
