@@ -7,7 +7,6 @@ import { firstLetterIsLowerCase } from '../core/shared/string-utils'
 import { isIntrinsicHTMLElementString } from '../core/shared/element-template'
 import { UtopiaKeys, UTOPIA_UIDS_KEY, UTOPIA_PATH_KEY } from '../core/model/utopia-constants'
 import { v4 } from 'uuid'
-import { appendToUidString } from '../core/shared/uid-utils'
 import { isFeatureEnabled } from './feature-switches'
 import { PERFORMANCE_MARKS_ALLOWED } from '../common/env-vars'
 
@@ -109,7 +108,7 @@ function attachDataUidToRoot(
   } else {
     if (shouldIncludeDataUID(originalResponse.type)) {
       return React.cloneElement(originalResponse, {
-        [UTOPIA_UIDS_KEY]: appendToUidString(originalResponse.props[UTOPIA_UIDS_KEY], dataUids),
+        [UTOPIA_UIDS_KEY]: originalResponse.props[UTOPIA_UIDS_KEY] ?? dataUids,
         [UTOPIA_PATH_KEY]: originalResponse.props[UTOPIA_PATH_KEY] ?? path,
       })
     } else {
@@ -206,7 +205,7 @@ const mangleExoticType = Utils.memoize(
       }
       const existingChildUIDs = child.props?.[UTOPIA_UIDS_KEY]
       const existingChildPath = child.props?.[UTOPIA_PATH_KEY]
-      const appendedUIDString = appendToUidString(existingChildUIDs, dataUids)
+      const appendedUIDString = existingChildUIDs ?? dataUids
       const mangledChildPath = existingChildPath ?? path
       if ((!React.isValidElement(child) as boolean) || child == null) {
         return child

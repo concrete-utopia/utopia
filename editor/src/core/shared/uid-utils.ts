@@ -218,22 +218,6 @@ export function uidsToString(uidList: Array<string>): string {
   return uidList.join(' ')
 }
 
-export function appendToUidString(
-  uidsString: string | null | undefined,
-  uidsToAppendString: string | null | undefined,
-): string | null {
-  if (uidsToAppendString == null) {
-    return uidsString ?? null
-  } else if (uidsString == null || uidsString.length === 0) {
-    return uidsToAppendString
-  } else {
-    const existingUIDs = uidsFromString(uidsString)
-    const uidsToAppend = uidsFromString(uidsToAppendString)
-    const updatedUIDs = addAllUniquely(existingUIDs, uidsToAppend)
-    return uidsToString(updatedUIDs)
-  }
-}
-
 function getSplitPathsStrings(pathsString: string | null): Array<string> {
   return pathsString == null ? [] : EP.getAllElementPathStringsForPathString(pathsString)
 }

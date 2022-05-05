@@ -43,7 +43,7 @@ import { objectMap } from '../../../core/shared/object-utils'
 import { cssValueOnlyContainsComments } from '../../../printer-parsers/css/css-parser-utils'
 import { filterDataProps } from '../../../utils/canvas-react-utils'
 import { buildSpyWrappedElement } from './ui-jsx-canvas-spy-wrapper'
-import { appendToUidString, createIndexedUid } from '../../../core/shared/uid-utils'
+import { createIndexedUid } from '../../../core/shared/uid-utils'
 import { isComponentRendererComponent } from './ui-jsx-canvas-component-renderer'
 import { optionalMap } from '../../../core/shared/optional-utils'
 import { canvasMissingJSXElementError } from './canvas-render-errors'
@@ -129,7 +129,7 @@ function monkeyUidProp(uid: string | undefined, propsToUpdate: MapLike<any>): Ma
   }
 
   const uidsFromProps = monkeyedProps[UTOPIA_UIDS_KEY]
-  const uidsToPass = appendToUidString(uidsFromProps, uid)
+  const uidsToPass = uidsFromProps ?? uid
   monkeyedProps[UTOPIA_UIDS_KEY] = uidsToPass
 
   return monkeyedProps
