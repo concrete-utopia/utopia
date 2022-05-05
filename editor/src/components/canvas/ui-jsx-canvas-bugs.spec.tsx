@@ -91,9 +91,9 @@ export var storyboard = (
               width: 375px;
               height: 812px;
             \\"
-            data-uid=\\"scene sb\\"
+            data-uid=\\"scene\\"
           >
-            <div data-uid=\\"app-root app\\" data-path=\\"sb/scene/app:app-root\\"></div>
+            <div data-uid=\\"app-root\\" data-path=\\"sb/scene/app:app-root\\"></div>
           </div>
         </div>
       </div>
@@ -155,9 +155,9 @@ export default function App(props) {
               width: 375px;
               height: 812px;
             \\"
-            data-uid=\\"scene sb\\"
+            data-uid=\\"scene\\"
           >
-            <div data-uid=\\"app-outer-div app\\" data-path=\\"sb/scene/app\\">
+            <div data-uid=\\"app-outer-div\\" data-path=\\"sb/scene/app\\">
               <div data-uid=\\"inner-div\\">hello</div>
             </div>
           </div>
@@ -252,11 +252,11 @@ export default function App(props) {
               width: 375px;
               height: 812px;
             \\"
-            data-uid=\\"scene-1-entity storyboard-entity\\"
+            data-uid=\\"scene-1-entity\\"
             data-label=\\"Imported App\\"
           >
             <div
-              data-uid=\\"app-outer-div app-entity\\"
+              data-uid=\\"app-outer-div\\"
               data-path=\\"storyboard-entity/scene-1-entity/app-entity\\"
             >
               <div data-uid=\\"inner-div\\">hello</div>
@@ -274,11 +274,11 @@ export default function App(props) {
               width: 375px;
               height: 812px;
             \\"
-            data-uid=\\"scene-2-entity storyboard-entity\\"
+            data-uid=\\"scene-2-entity\\"
             data-label=\\"Same File App\\"
           >
             <div
-              data-uid=\\"same-file-app-div same-file-app-entity\\"
+              data-uid=\\"same-file-app-div\\"
               data-label=\\"Scene Thing\\"
               style=\\"
                 position: relative;
@@ -406,11 +406,11 @@ export default function () {
               width: 375px;
               height: 812px;
             \\"
-            data-uid=\\"scene-1-entity storyboard-entity\\"
+            data-uid=\\"scene-1-entity\\"
             data-label=\\"Imported App\\"
           >
             <div
-              data-uid=\\"app-outer-div app-entity\\"
+              data-uid=\\"app-outer-div\\"
               style=\\"
                 position: relative;
                 width: 100%;
@@ -420,7 +420,7 @@ export default function () {
               data-path=\\"storyboard-entity/scene-1-entity/app-entity:app-outer-div\\"
             >
               <div
-                data-uid=\\"card-outer-div card-instance\\"
+                data-uid=\\"card-outer-div\\"
                 style=\\"
                   position: absolute;
                   left: 67px;
@@ -458,7 +458,7 @@ export default function () {
               </div>
               hello
               <div
-                data-uid=\\"4cf d7f\\"
+                data-uid=\\"4cf\\"
                 data-path=\\"storyboard-entity/scene-1-entity/app-entity:app-outer-div/d7f:4cf\\"
               >
                 Default Function Time
