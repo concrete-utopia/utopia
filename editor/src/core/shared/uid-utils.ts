@@ -24,7 +24,7 @@ import * as PP from './property-path'
 import * as EP from './element-path'
 import { objectMap, objectValues } from './object-utils'
 import { getDOMAttribute } from './dom-utils'
-import { UTOPIA_PATH_KEY, UTOPIA_UIDS_KEY } from '../model/utopia-constants'
+import { UTOPIA_PATH_KEY, UTOPIA_UID_KEY } from '../model/utopia-constants'
 import { addAllUniquely, mapDropNulls } from './array-utils'
 import { ElementPath } from './project-file-types'
 
@@ -208,30 +208,6 @@ export function fixUtopiaElement(
   }
 
   return fixUtopiaElementInner(elementToFix)
-}
-
-export function uidsFromString(uidList: string = ''): Array<string> {
-  return uidList.split(' ')
-}
-
-export function uidsToString(uidList: Array<string>): string {
-  return uidList.join(' ')
-}
-
-export function appendToUidString(
-  uidsString: string | null | undefined,
-  uidsToAppendString: string | null | undefined,
-): string | null {
-  if (uidsToAppendString == null) {
-    return uidsString ?? null
-  } else if (uidsString == null || uidsString.length === 0) {
-    return uidsToAppendString
-  } else {
-    const existingUIDs = uidsFromString(uidsString)
-    const uidsToAppend = uidsFromString(uidsToAppendString)
-    const updatedUIDs = addAllUniquely(existingUIDs, uidsToAppend)
-    return uidsToString(updatedUIDs)
-  }
 }
 
 function getSplitPathsStrings(pathsString: string | null): Array<string> {

@@ -513,7 +513,7 @@ import { emptySet } from '../../../core/shared/set-utils'
 import { absolutePathFromRelativePath, stripLeadingSlash } from '../../../utils/path-utils'
 import { resolveModule } from '../../../core/es-modules/package-manager/module-resolution'
 import { reverse, uniqBy } from '../../../core/shared/array-utils'
-import { UTOPIA_UIDS_KEY } from '../../../core/model/utopia-constants'
+import { UTOPIA_UID_KEY } from '../../../core/model/utopia-constants'
 import {
   DefaultPostCSSConfig,
   DefaultTailwindConfig,
@@ -4601,7 +4601,7 @@ export const UPDATE_FNS = {
           const propsWithUid = forceRight(
             setJSXValueAtPath(
               action.toInsert.element.props,
-              PP.create([UTOPIA_UIDS_KEY]),
+              PP.create([UTOPIA_UID_KEY]),
               jsxAttributeValue(newUID, emptyComments),
             ),
             `Could not set data-uid on props of insertable element ${action.toInsert.element.name}`,
