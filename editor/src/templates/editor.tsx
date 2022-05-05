@@ -346,9 +346,7 @@ export class Editor {
 
       let dispatchResultWithMetadata = dispatchResult
 
-      if (
-        !dispatchResult.nothingChanged // TODO fix type!
-      ) {
+      if (!dispatchResult.nothingChanged) {
         const updateId = canvasUpdateId++
         // we update the zustand store with the new editor state. this will trigger a re-render in the EditorComponent
         if (PerformanceMarks) {
