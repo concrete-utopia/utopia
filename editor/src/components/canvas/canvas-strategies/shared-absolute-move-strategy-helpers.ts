@@ -59,30 +59,47 @@ function createMoveCommandsForElement(
   drag: CanvasVector,
   elementParentBounds: CanvasRectangle | null,
 ): AdjustCssLengthProperty[] {
-  return mapDropNulls(
-    (pin) => {
-      const horizontal = isHorizontalPoint(
-        // TODO avoid using the loaded FramePoint enum
-        framePointForPinnedProp(pin),
-      )
-      const negative = pin === 'right' || pin === 'bottom'
-      const value = getLayoutProperty(pin, right(element.props), ['style'])
-      if (isRight(value) && value.value != null) {
-        // TODO what to do about missing properties?
-        return adjustCssLengthProperty(
-          'permanent',
-          selectedElement,
-          stylePropPathMappingFn(pin, ['style']),
-          (horizontal ? drag.x : drag.y) * (negative ? -1 : 1),
-          horizontal ? elementParentBounds?.width : elementParentBounds?.height,
-          true,
-        )
-      } else {
-        return null
-      }
-    },
-    ['top', 'bottom', 'left', 'right'] as const,
-  )
+  const pinsToSet = collectPinsToSetWithDefaults(element)
+  return mapDropNulls((pin) => {
+    const horizontal = isHorizontalPoint(
+      // TODO avoid using the loaded FramePoint enum
+      framePointForPinnedProp(pin),
+    )
+    const negative = pin === 'right' || pin === 'bottom'
+    return adjustCssLengthProperty(
+      'permanent',
+      selectedElement,
+      stylePropPathMappingFn(pin, ['style']),
+      (horizontal ? drag.x : drag.y) * (negative ? -1 : 1),
+      horizontal ? elementParentBounds?.width : elementParentBounds?.height,
+      true,
+    )
+  }, pinsToSet)
+}
+
+function collectPinsToSetWithDefaults(element: JSXElement): Array<LayoutPinnedProp> {
+  const horizontalProps = (['left', 'right'] as Array<LayoutPinnedProp>).filter((p) => {
+    const prop = getLayoutProperty(p, right(element.props), ['style'])
+    return isRight(prop) && prop.value != null
+  })
+  const verticalProps = (['top', 'bottom'] as Array<LayoutPinnedProp>).filter((p) => {
+    const prop = getLayoutProperty(p, right(element.props), ['style'])
+    return isRight(prop) && prop.value != null
+  })
+
+  let pinsToSet: Array<LayoutPinnedProp> = []
+  // set default top/left props if missing
+  if (horizontalProps.length === 0) {
+    pinsToSet.push('left')
+  } else {
+    pinsToSet.push(...horizontalProps)
+  }
+  if (verticalProps.length === 0) {
+    pinsToSet.push('top')
+  } else {
+    pinsToSet.push(...verticalProps)
+  }
+  return pinsToSet
 }
 
 export function getAbsoluteOffsetCommandsForSelectedElement(
