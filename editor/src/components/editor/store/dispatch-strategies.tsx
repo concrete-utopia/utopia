@@ -29,6 +29,7 @@ import {
 import { mergePatches } from '../../canvas/commands/merge-patches'
 import { isFeatureEnabled } from '../../../utils/feature-switches'
 import { PERFORMANCE_MARKS_ALLOWED } from '../../../common/env-vars'
+import { escapeHatchStrategy } from '../../canvas/canvas-strategies/escape-hatch-strategy'
 
 interface HandleStrategiesResult {
   unpatchedEditorState: EditorState
@@ -116,7 +117,7 @@ export function interactionHardReset(
     const resetInteractionSession = interactionSessionHardReset(interactionSession)
     const resetStrategyState = {
       ...result.strategyState,
-      startingMetadata: storedState.unpatchedEditor.jsxMetadata,
+      startingMetadata: interactionSession.metadata,
     }
     // Determine the new canvas strategy to run this time around.
     const { strategy, sortedApplicableStrategies } = findCanvasStrategy(
@@ -658,6 +659,10 @@ function handleStrategiesInner(
     } else if (makeChangesPermanent) {
       return interactionFinished(strategies, storedState, result)
     } else {
+      if (shouldResetMetadataToSwitchStrategy(strategies, storedState, result)) {
+        return interactionMetadataReset(strategies, storedState, result, isInteractionAction)
+      }
+
       const interactionHardResetNeeded = hasDragModifiersChanged(
         storedState.unpatchedEditor.canvas.interactionSession?.interactionData ?? null,
         result.unpatchedEditor.canvas.interactionSession?.interactionData ?? null,
@@ -668,5 +673,59 @@ function handleStrategiesInner(
         return interactionUpdate(strategies, storedState, result, isInteractionAction)
       }
     }
+  }
+}
+
+function shouldResetMetadataToSwitchStrategy(
+  strategies: CanvasStrategy[],
+  storedState: EditorStoreFull,
+  result: InnerDispatchResult,
+): boolean {
+  if (result.unpatchedEditor.canvas.interactionSession != null) {
+    const hasEscapeHatchCommands = storedState.strategyState.currentStrategyCommands.some(
+      (c) => c.type === 'CONVERT_TO_ABSOLUTE',
+    )
+    const isMetadataFreshEnough = !escapeHatchStrategy.isApplicable(
+      pickCanvasStateFromEditorState(storedState.unpatchedEditor),
+      storedState.unpatchedEditor.canvas.interactionSession,
+      storedState.unpatchedEditor.canvas.interactionSession!.metadata,
+    )
+    const { strategy } = findCanvasStrategy(
+      strategies,
+      pickCanvasStateFromEditorState(result.unpatchedEditor),
+      result.unpatchedEditor.canvas.interactionSession,
+      result.strategyState,
+      result.strategyState.currentStrategy,
+    )
+    return (
+      strategy?.strategy.id === 'ESCAPE_HATCH_STRATEGY' &&
+      isMetadataFreshEnough &&
+      storedState.strategyState.currentStrategy === 'ESCAPE_HATCH_STRATEGY' &&
+      hasEscapeHatchCommands
+    )
+  } else {
+    return false
+  }
+}
+
+function interactionMetadataReset(
+  strategies: CanvasStrategy[],
+  storedState: EditorStoreFull,
+  result: InnerDispatchResult,
+  isInteractionAction: 'interaction-create-or-update' | 'non-interaction',
+): HandleStrategiesResult {
+  if (result.unpatchedEditor.canvas.interactionSession) {
+    const newStrategyState = {
+      ...result.strategyState,
+      startingMetadata: result.unpatchedEditor.canvas.interactionSession.metadata,
+    }
+    return {
+      unpatchedEditorState: result.unpatchedEditor,
+      patchedEditorState: interactionUpdate(strategies, storedState, result, isInteractionAction)
+        .patchedEditorState,
+      newStrategyState: newStrategyState,
+    }
+  } else {
+    return interactionUpdate(strategies, storedState, result, isInteractionAction)
   }
 }
