@@ -17,7 +17,7 @@ import {
 export const absoluteMoveStrategy: CanvasStrategy = {
   id: 'ABSOLUTE_MOVE',
   name: 'Absolute Move',
-  isApplicable: (canvasState, interactionState, metadata) => {
+  isApplicable: (canvasState, _interactionState, metadata) => {
     if (canvasState.selectedElements.length > 0) {
       const filteredSelectedElements = getDragTargets(canvasState.selectedElements)
       return filteredSelectedElements.every((element) => {
