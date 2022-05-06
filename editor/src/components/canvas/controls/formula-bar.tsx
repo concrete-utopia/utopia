@@ -36,6 +36,31 @@ export const FormulaBar = React.memo<FormulaBarProps>((props) => {
     'FormulaBar selectedMode',
   )
 
+  const selectedElementPath = useEditorState((store) => {
+    if (store.editor.selectedViews.length === 1) {
+      return store.editor.selectedViews[0]
+    } else {
+      return null
+    }
+  }, 'FormulaBar selectedElementPath')
+
+  const selectedElementTextContent = useEditorState((store) => {
+    if (store.editor.selectedViews.length === 1) {
+      const metadata = MetadataUtils.findElementByElementPath(
+        store.editor.jsxMetadata,
+        store.editor.selectedViews[0],
+      )
+      if (metadata == null) {
+        return null
+      } else {
+        return MetadataUtils.getTextContentOfElement(metadata)
+      }
+    } else {
+      return null
+    }
+  }, 'FormulaBar selectedElementTextContent')
+
+  /*
   const selectedElement = useEditorState((store) => {
     const metadata = store.editor.jsxMetadata
     if (store.editor.selectedViews.length === 1) {
@@ -44,6 +69,7 @@ export const FormulaBar = React.memo<FormulaBarProps>((props) => {
       return null
     }
   }, 'FormulaBar selectedElement')
+  */
 
   const focusTriggerCount = useEditorState(
     (store) => store.editor.topmenu.formulaBarFocusCounter,
@@ -60,11 +86,10 @@ export const FormulaBar = React.memo<FormulaBarProps>((props) => {
     if (document.activeElement === inputRef.current) {
       return
     }
-    const foundText = optionalMap(MetadataUtils.getTextContentOfElement, selectedElement)
-    const isDisabled = foundText == null
-    setSimpleText(foundText?.trim() ?? '')
+    const isDisabled = selectedElementTextContent == null
+    setSimpleText(selectedElementTextContent?.trim() ?? '')
     setDisabled(isDisabled)
-  }, [selectedElement, inputRef])
+  }, [selectedElementTextContent, inputRef])
 
   const dispatchUpdate = React.useCallback(
     ({ path, text }) => {
@@ -77,31 +102,30 @@ export const FormulaBar = React.memo<FormulaBarProps>((props) => {
 
   const onInputChange = React.useCallback(
     (event: React.ChangeEvent<HTMLInputElement>) => {
-      if (selectedElement != null) {
+      if (selectedElementPath != null) {
         clearTimeout(saveTimerRef.current)
         saveTimerRef.current = setTimeout(dispatchUpdate, 300, {
-          path: selectedElement.elementPath,
+          path: selectedElementPath,
           text: event.target.value,
         })
         setSimpleText(event.target.value)
       }
     },
-    [saveTimerRef, selectedElement, dispatchUpdate],
+    [saveTimerRef, selectedElementPath, dispatchUpdate],
   )
 
   const onBlur = React.useCallback(
     (event: React.ChangeEvent<HTMLInputElement>) => {
-      if (selectedElement != null) {
+      if (selectedElementPath != null) {
         clearTimeout(saveTimerRef.current)
-        dispatchUpdate({ path: selectedElement.elementPath, text: event.target.value.trim() })
+        dispatchUpdate({ path: selectedElementPath, text: event.target.value.trim() })
         setSimpleText(event.target.value)
       }
     },
-    [saveTimerRef, selectedElement, dispatchUpdate],
+    [saveTimerRef, selectedElementPath, dispatchUpdate],
   )
 
-  const buttonsVisible = selectedElement != null
-  const classNameFieldVisible = selectedElement != null && selectedMode === 'css'
+  const classNameFieldVisible = selectedElementPath != null && selectedMode === 'css'
   const inputFieldVisible = !classNameFieldVisible
 
   const editorStoreRef = useRefEditorState((store) => store)
