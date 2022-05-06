@@ -1,6 +1,3 @@
-/** @jsxRuntime classic */
-/** @jsx jsx */
-import { css, jsx } from '@emotion/react'
 import * as ObjectPath from 'object-path'
 import React from 'react'
 import {
@@ -84,7 +81,6 @@ import { ElementPath, PropertyPath } from '../../core/shared/project-file-types'
 import { when } from '../../utils/react-conditionals'
 import { createSelector } from 'reselect'
 import { isTwindEnabled } from '../../core/tailwind/tailwind'
-import { getControlStyles } from './common/control-status'
 import { isStrategyActive } from '../canvas/canvas-strategies/canvas-strategies'
 
 export interface ElementPathElement {
@@ -352,26 +348,6 @@ export const Inspector = React.memo<InspectorProps>((props: InspectorProps) => {
           width: '100%',
           position: 'relative',
           color: colorTheme.neutralForeground.value,
-        }}
-        css={{
-          '--control-styles-interactive-unset-main-color': UtopiaTheme.color.fg7.value,
-          '--control-styles-interactive-unset-secondary-color': UtopiaTheme.color.fg7.value,
-          '--control-styles-interactive-unset-track-color': UtopiaTheme.color.bg5.value,
-          '--control-styles-interactive-unset-rail-color': UtopiaTheme.color.bg3.value,
-          '&:hover': {
-            '--control-styles-interactive-unset-main-color': getControlStyles('simple').mainColor,
-            '--control-styles-interactive-unset-secondary-color': getControlStyles('simple')
-              .secondaryColor,
-            '--control-styles-interactive-unset-track-color': getControlStyles('simple').trackColor,
-            '--control-styles-interactive-unset-rail-color': getControlStyles('simple').railColor,
-          },
-          '&:focus-within': {
-            '--control-styles-interactive-unset-main-color': getControlStyles('simple').mainColor,
-            '--control-styles-interactive-unset-secondary-color': getControlStyles('simple')
-              .secondaryColor,
-            '--control-styles-interactive-unset-track-color': getControlStyles('simple').trackColor,
-            '--control-styles-interactive-unset-rail-color': getControlStyles('simple').railColor,
-          },
         }}
         onFocus={onFocus}
       >

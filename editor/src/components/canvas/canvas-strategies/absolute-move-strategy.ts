@@ -14,6 +14,7 @@ import { ConstrainedDragAxis, GuidelineWithSnappingVector } from '../guideline'
 import { CanvasStrategy } from './canvas-strategy-types'
 import {
   getAbsoluteMoveCommandsForSelectedElement,
+  getDragTargets,
   getMultiselectBounds,
 } from './shared-absolute-move-strategy-helpers'
 
@@ -24,7 +25,8 @@ export const absoluteMoveStrategy: CanvasStrategy = {
   name: 'Absolute Move',
   isApplicable: (canvasState, _interactionState, metadata) => {
     if (canvasState.selectedElements.length > 0) {
-      return canvasState.selectedElements.every((element) => {
+      const filteredSelectedElements = getDragTargets(canvasState.selectedElements)
+      return filteredSelectedElements.every((element) => {
         const elementMetadata = MetadataUtils.findElementByElementPath(metadata, element)
 
         return elementMetadata?.specialSizeMeasurements.position === 'absolute'
@@ -50,6 +52,7 @@ export const absoluteMoveStrategy: CanvasStrategy = {
       interactionState.interactionData.type === 'DRAG' &&
       interactionState.interactionData.drag != null
     ) {
+      const filteredSelectedElements = getDragTargets(canvasState.selectedElements)
       const drag = interactionState.interactionData.drag
       const shiftKeyPressed = interactionState.interactionData.modifiers.shift
       const constrainedDragAxis = shiftKeyPressed ? determineConstrainedDragAxis(drag) : null
@@ -60,7 +63,7 @@ export const absoluteMoveStrategy: CanvasStrategy = {
         canvasState.selectedElements,
         canvasState.scale,
       )
-      const commandsForSelectedElements = canvasState.selectedElements.flatMap((selectedElement) =>
+      const commandsForSelectedElements = filteredSelectedElements.flatMap((selectedElement) =>
         getAbsoluteMoveCommandsForSelectedElement(
           selectedElement,
           snappedDragVector,

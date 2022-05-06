@@ -12,15 +12,12 @@ export const CanvasOffsetWrapper = React.memo((props) => {
   )
 })
 
-export function useApplyCanvasOffsetToStyle(
-  setScaleToo: boolean,
-  forceOffset?: boolean, // this is not so nice, but the element is optionally rendered in canvas-component-entry
-): React.RefObject<HTMLDivElement> {
+export function useApplyCanvasOffsetToStyle(setScaleToo: boolean): React.RefObject<HTMLDivElement> {
   const elementRef = React.useRef<HTMLDivElement>(null)
   const canvasOffsetRef = useRefEditorState((store) => store.editor.canvas.roundedCanvasOffset)
   const scaleRef = useRefEditorState((store) => store.editor.canvas.scale)
   const applyCanvasOffset = React.useCallback(
-    (roundedCanvasOffset: CanvasVector, _?: any) => {
+    (roundedCanvasOffset: CanvasVector) => {
       if (elementRef.current != null) {
         elementRef.current.style.setProperty(
           'transform',
@@ -39,8 +36,9 @@ export function useApplyCanvasOffsetToStyle(
   useSelectorWithCallback((store) => store.editor.canvas.roundedCanvasOffset, applyCanvasOffset)
 
   const applyCanvasOffsetEffect = React.useCallback(() => {
-    applyCanvasOffset(canvasOffsetRef.current, forceOffset)
-  }, [applyCanvasOffset, canvasOffsetRef, forceOffset])
+    applyCanvasOffset(canvasOffsetRef.current)
+  }, [applyCanvasOffset, canvasOffsetRef])
   React.useLayoutEffect(applyCanvasOffsetEffect, [applyCanvasOffsetEffect])
+
   return elementRef
 }

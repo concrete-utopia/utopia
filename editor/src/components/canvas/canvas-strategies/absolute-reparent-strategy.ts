@@ -5,47 +5,55 @@ import { reparentElement } from '../commands/reparent-element-command'
 import { updateSelectedViews } from '../commands/update-selected-views-command'
 import { absoluteMoveStrategy } from './absolute-move-strategy'
 import { CanvasStrategy } from './canvas-strategy-types'
-import { getAbsoluteOffsetCommandsForSelectedElement } from './shared-absolute-move-strategy-helpers'
+import {
+  getAbsoluteOffsetCommandsForSelectedElement,
+  getDragTargets,
+  getFileOfElement,
+} from './shared-absolute-move-strategy-helpers'
 
 export const absoluteReparentStrategy: CanvasStrategy = {
   id: 'ABSOLUTE_REPARENT',
   name: 'Reparent Absolute Elements',
   isApplicable: (canvasState, interactionState, metadata) => {
     if (
-      canvasState.selectedElements.length === 1 &&
+      canvasState.selectedElements.length > 0 &&
       interactionState != null &&
       interactionState.interactionData.modifiers.cmd
     ) {
-      const selectedMetadata = MetadataUtils.findElementByElementPath(
-        metadata,
-        canvasState.selectedElements[0],
-      )
-      return selectedMetadata?.specialSizeMeasurements.position === 'absolute'
+      const filteredSelectedElements = getDragTargets(canvasState.selectedElements)
+      return filteredSelectedElements.every((element) => {
+        const elementMetadata = MetadataUtils.findElementByElementPath(metadata, element)
+
+        return elementMetadata?.specialSizeMeasurements.position === 'absolute'
+      })
     }
     return false
   },
   controlsToRender: [],
   fitness: (canvasState, interactionState) => {
     if (
-      canvasState.selectedElements.length === 1 &&
+      canvasState.selectedElements.length > 0 &&
       interactionState.interactionData.modifiers.cmd &&
       interactionState.interactionData.type === 'DRAG' &&
       interactionState.interactionData.dragThresholdPassed
     ) {
-      return 999
+      return 2
     }
     return 0
   },
   apply: (canvasState, interactionState, strategyState) => {
+    const { selectedElements, scale, canvasOffset, projectContents, openFile } = canvasState
+    const filteredSelectedElements = getDragTargets(selectedElements)
+
     const reparentResult = getReparentTarget(
-      canvasState.selectedElements,
-      canvasState.selectedElements,
+      filteredSelectedElements,
+      filteredSelectedElements,
       strategyState.startingMetadata,
       [],
-      canvasState.scale,
-      canvasState.canvasOffset,
-      canvasState.projectContents,
-      canvasState.openFile,
+      scale,
+      canvasOffset,
+      projectContents,
+      openFile,
     )
     const newParent = reparentResult.newParent
     const moveCommands = absoluteMoveStrategy.apply(canvasState, interactionState, strategyState)
@@ -55,21 +63,28 @@ export const absoluteReparentStrategy: CanvasStrategy = {
     )?.specialSizeMeasurements.providesBoundsForChildren
 
     if (reparentResult.shouldReparent && newParent != null && providesBoundsForChildren) {
-      const target = canvasState.selectedElements[0]
-      const newPath = EP.appendToPath(newParent, EP.toUid(canvasState.selectedElements[0]))
+      const commands = filteredSelectedElements.map((selectedElement) => {
+        const offsetCommands = getAbsoluteOffsetCommandsForSelectedElement(
+          selectedElement,
+          newParent,
+          strategyState,
+          canvasState,
+        )
 
-      const offsetCommands = getAbsoluteOffsetCommandsForSelectedElement(
-        target,
-        newParent,
-        strategyState,
-        canvasState,
-      )
+        const newPath = EP.appendToPath(newParent, EP.toUid(selectedElement))
+        return {
+          newPath: newPath,
+          commands: [...offsetCommands, reparentElement('permanent', selectedElement, newParent)],
+        }
+      })
 
       return [
         ...moveCommands,
-        ...offsetCommands,
-        reparentElement('permanent', target, newParent),
-        updateSelectedViews('permanent', [newPath]),
+        ...commands.flatMap((c) => c.commands),
+        updateSelectedViews(
+          'permanent',
+          commands.map((c) => c.newPath),
+        ),
       ]
     } else {
       return moveCommands

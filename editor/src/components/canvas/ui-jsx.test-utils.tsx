@@ -58,7 +58,7 @@ import Utils from '../../utils/utils'
 import { DispatchPriority, EditorAction, notLoggedIn } from '../editor/action-types'
 import { load } from '../editor/actions/actions'
 import * as History from '../editor/history'
-import { editorDispatch } from '../editor/store/dispatch'
+import { editorDispatch, resetDispatchGlobals } from '../editor/store/dispatch'
 import {
   createEditorState,
   deriveState,
@@ -155,8 +155,7 @@ export async function renderTestEditorWithModel(
   mockBuiltInDependencies?: BuiltInDependencies,
 ): Promise<{
   dispatch: (actions: ReadonlyArray<EditorAction>, waitForDOMReport: boolean) => Promise<void>
-  getDomReportDispatched: () => Promise<void>
-  getDispatchFollowUpactionsFinished: () => Promise<void>
+  getDispatchFollowUpActionsFinished: () => Promise<void>
   getEditorState: () => EditorStorePatched
   renderedDOM: RenderResult
   getNumberOfCommits: () => number
@@ -172,19 +171,17 @@ export async function renderTestEditorWithModel(
 
   const history = History.init(emptyEditorState, derivedState)
 
-  let dispatchFollowUpActionsFinished = Utils.defer<void>()
-
-  function resetPromises() {
-    dispatchFollowUpActionsFinished = Utils.defer()
+  let editorDispatchPromises: Array<Promise<void>> = []
+  async function getDispatchFollowUpActionsFinished(): Promise<void> {
+    return Promise.all(editorDispatchPromises).then(NO_OP)
   }
-
-  resetPromises()
 
   let workingEditorState: EditorStoreFull
 
   const spyCollector = emptyUiJsxCanvasContextData()
 
   // Reset canvas globals
+  resetDispatchGlobals()
   clearAllRegisteredControls()
   clearListOfEvaluatedFiles()
 
@@ -195,7 +192,7 @@ export async function renderTestEditorWithModel(
   ) => {
     recordedActions.push(...actions)
     const result = editorDispatch(asyncTestDispatch, actions, workingEditorState, spyCollector)
-    result.entireUpdateFinished.then(() => dispatchFollowUpActionsFinished.resolve())
+    editorDispatchPromises.push(result.entireUpdateFinished)
     invalidateDomWalkerIfNecessary(
       domWalkerMutableState,
       workingEditorState.patchedEditor,
@@ -205,7 +202,7 @@ export async function renderTestEditorWithModel(
     workingEditorState = result
     if (waitForDispatchEntireUpdate) {
       await Utils.timeLimitPromise(
-        dispatchFollowUpActionsFinished,
+        getDispatchFollowUpActionsFinished(),
         2000,
         'Follow up actions took too long.',
       )
@@ -225,9 +222,14 @@ export async function renderTestEditorWithModel(
     })
 
     if (domWalkerResult != null) {
+      const saveDomReportAction = saveDOMReport(
+        domWalkerResult.metadata,
+        domWalkerResult.cachedPaths,
+      )
+      recordedActions.push(saveDomReportAction)
       const editorWithNewMetadata = editorDispatch(
         asyncTestDispatch,
-        [saveDOMReport(domWalkerResult.metadata, domWalkerResult.cachedPaths)],
+        [saveDomReportAction],
         workingEditorState,
         spyCollector,
       )
@@ -237,8 +239,6 @@ export async function renderTestEditorWithModel(
     // update state with new metadata
 
     storeHook.setState(patchedStoreFromFullStore(workingEditorState))
-
-    resetPromises() // I _think_ this is safe for concurrency, so long as all the test callsites `await` the dispatch
   }
 
   const workers = new UtopiaTsWorkersImplementation(
@@ -302,7 +302,7 @@ export async function renderTestEditorWithModel(
       <EditorRoot
         api={storeHook}
         useStore={storeHook}
-        canvasStore={canvasStoreHook} // TODO create canvas store for tests
+        canvasStore={canvasStoreHook}
         spyCollector={spyCollector}
         domWalkerMutableState={domWalkerMutableState}
       />
@@ -343,8 +343,7 @@ export async function renderTestEditorWithModel(
         await asyncTestDispatch(actions, 'everyone', true)
       })
     },
-    getDomReportDispatched: () => Promise.resolve(),
-    getDispatchFollowUpactionsFinished: () => dispatchFollowUpActionsFinished,
+    getDispatchFollowUpActionsFinished: getDispatchFollowUpActionsFinished,
     getEditorState: () => storeHook.getState(),
     renderedDOM: result,
     getNumberOfCommits: () => numberOfCommits,

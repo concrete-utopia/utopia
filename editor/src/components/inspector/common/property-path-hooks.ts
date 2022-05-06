@@ -863,7 +863,7 @@ export function useInspectorInfoSimpleUntyped(
     },
   )
 
-  let controlStatus: ControlStatus = getControlStatusFromPropertyStatus(propertyStatus)
+  const controlStatus: ControlStatus = getControlStatusFromPropertyStatus(propertyStatus)
 
   const {
     onContextSubmitValue: onSingleSubmitValue,
@@ -918,6 +918,36 @@ export function useInspectorInfoSimpleUntyped(
   }
 }
 
+export function useGetLayoutControlStatus<P extends StyleLayoutProp>(property: P): ControlStatus {
+  const propKeys = useMemoizedPropKeys([property])
+  const multiselectAtProps: MultiselectAtProps<P> = useGetMultiselectedProps<P>(
+    stylePropPathMappingFn,
+    propKeys,
+  )
+
+  const selectedProps = useGetSpiedProps<P>(stylePropPathMappingFn, propKeys)
+
+  const selectedComputedStyles = useGetSelectedComputedStyles<P>(stylePropPathMappingFn, propKeys)
+
+  const selectedAttributeMetadatas: {
+    [key in P]: StyleAttributeMetadataEntry[]
+  } = useGetSelectedAttributeMetadatas<P>(stylePropPathMappingFn, propKeys)
+
+  const simpleAndRawValues = useInspectorInfoFromMultiselectMultiStyleAttribute(
+    multiselectAtProps,
+    selectedProps,
+    selectedComputedStyles,
+    selectedAttributeMetadatas,
+  )
+
+  const propertyStatus = calculateMultiPropertyStatusForSelection(
+    multiselectAtProps,
+    simpleAndRawValues,
+  )
+
+  return getControlStatusFromPropertyStatus(propertyStatus)
+}
+
 export function useInspectorLayoutInfo<P extends StyleLayoutProp>(
   property: P,
 ): InspectorInfo<ParsedProperties[P]> {
@@ -941,8 +971,8 @@ export function useIsSubSectionVisible(sectionName: string): boolean {
   const selectedViews = useRefSelectedViews()
 
   return useEditorState((store) => {
-    const types = selectedViews.current.map((view) => {
-      return withUnderlyingTarget(
+    return selectedViews.current.every((view) => {
+      const selectedViewType = withUnderlyingTarget(
         view,
         store.editor.projectContents,
         store.editor.nodeModules.files,
@@ -962,20 +992,19 @@ export function useIsSubSectionVisible(sectionName: string): boolean {
           }
         },
       )
-    })
-    return types.every((type) => {
+
       const subSectionAvailable = StyleSubSectionForType[sectionName]
       if (subSectionAvailable == null) {
         return false
       } else {
-        if (type == null) {
+        if (selectedViewType == null) {
           return true
         } else {
           switch (subSectionAvailable.type) {
             case 'permit':
-              return subSectionAvailable.allowedElementTypes.includes(type)
+              return subSectionAvailable.allowedElementTypes.includes(selectedViewType)
             case 'deny':
-              return !subSectionAvailable.deniedElementTypes.includes(type)
+              return !subSectionAvailable.deniedElementTypes.includes(selectedViewType)
             case 'allowall':
               return true
             default:

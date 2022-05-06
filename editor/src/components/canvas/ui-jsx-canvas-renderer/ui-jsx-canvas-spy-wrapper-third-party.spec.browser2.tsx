@@ -25,6 +25,8 @@ import { applyUIDMonkeyPatch } from '../../../utils/canvas-react-utils'
 import { matchInlineSnapshotBrowser } from '../../../../test/karma-snapshots'
 import { createBuiltInDependenciesList } from '../../../core/es-modules/package-manager/built-in-dependencies-list'
 import { NO_OP } from '../../../core/shared/utils'
+import CanvasActions from '../canvas-actions'
+import { CanvasVector } from 'src/core/shared/math-utils'
 
 const builtInDependencies = createBuiltInDependenciesList(null)
 builtInDependencies.push({
@@ -105,7 +107,7 @@ const exampleFiles = {
   `,
 }
 
-function renderTestProject() {
+async function renderTestProject() {
   const baseModel = defaultProject()
 
   const updatedProject = Object.keys(exampleFiles).reduce((workingProject, modifiedFilename) => {
@@ -135,7 +137,19 @@ function renderTestProject() {
       projectContents: updatedProjectContents,
     }
   }, baseModel)
-  return renderTestEditorWithModel(updatedProject, 'await-first-dom-report', builtInDependencies)
+  const renderTestResult = await renderTestEditorWithModel(
+    updatedProject,
+    'await-first-dom-report',
+    builtInDependencies,
+  )
+  // Pause to let R3F do what it needs to do.
+  await wait(500)
+  // This is a kludge to get the DOM walker to run after processing the action.
+  await renderTestResult.dispatch(
+    [CanvasActions.scrollCanvas({ x: 1, y: 0 } as CanvasVector)],
+    true,
+  )
+  return renderTestResult
 }
 
 async function waitForFullMetadata(getEditorState: () => EditorStorePatched): Promise<true> {

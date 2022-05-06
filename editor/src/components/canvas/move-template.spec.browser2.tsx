@@ -679,8 +679,7 @@ describe('moveTemplate', () => {
     )
 
     await act(async () => {
-      const domFinished = renderResult.getDomReportDispatched()
-      const dispatchDone = renderResult.getDispatchFollowUpactionsFinished()
+      const dispatchDone = renderResult.getDispatchFollowUpActionsFinished()
       fireEvent(
         canvasControlsLayer,
         new MouseEvent('mousemove', {
@@ -692,13 +691,11 @@ describe('moveTemplate', () => {
           buttons: 1,
         }),
       )
-      await domFinished
       await dispatchDone
     })
 
     await act(async () => {
-      const domFinished = renderResult.getDomReportDispatched()
-      const dispatchDone = renderResult.getDispatchFollowUpactionsFinished()
+      const dispatchDone = renderResult.getDispatchFollowUpActionsFinished()
       fireEvent(
         canvasControlsLayer,
         new MouseEvent('mousemove', {
@@ -710,13 +707,11 @@ describe('moveTemplate', () => {
           buttons: 1,
         }),
       )
-      await domFinished
       await dispatchDone
     })
 
     await act(async () => {
-      const domFinished = renderResult.getDomReportDispatched()
-      const dispatchDone = renderResult.getDispatchFollowUpactionsFinished()
+      const dispatchDone = renderResult.getDispatchFollowUpActionsFinished()
       fireEvent(
         window,
         new MouseEvent('mouseup', {
@@ -727,7 +722,6 @@ describe('moveTemplate', () => {
           clientY: areaControlBounds.top - 25,
         }),
       )
-      await domFinished
       await dispatchDone
     })
 
@@ -812,8 +806,7 @@ describe('moveTemplate', () => {
     )
 
     await act(async () => {
-      const domFinished = renderResult.getDomReportDispatched()
-      const dispatchDone = renderResult.getDispatchFollowUpactionsFinished()
+      const dispatchDone = renderResult.getDispatchFollowUpActionsFinished()
       fireEvent(
         canvasControlsLayer,
         new MouseEvent('mousemove', {
@@ -825,13 +818,11 @@ describe('moveTemplate', () => {
           buttons: 1,
         }),
       )
-      await domFinished
       await dispatchDone
     })
 
     await act(async () => {
-      const domFinished = renderResult.getDomReportDispatched()
-      const dispatchDone = renderResult.getDispatchFollowUpactionsFinished()
+      const dispatchDone = renderResult.getDispatchFollowUpActionsFinished()
       fireEvent(
         canvasControlsLayer,
         new MouseEvent('mousemove', {
@@ -843,13 +834,11 @@ describe('moveTemplate', () => {
           buttons: 1,
         }),
       )
-      await domFinished
       await dispatchDone
     })
 
     await act(async () => {
-      const domFinished = renderResult.getDomReportDispatched()
-      const dispatchDone = renderResult.getDispatchFollowUpactionsFinished()
+      const dispatchDone = renderResult.getDispatchFollowUpActionsFinished()
       fireEvent(
         window,
         new MouseEvent('mouseup', {
@@ -860,7 +849,6 @@ describe('moveTemplate', () => {
           clientY: areaControlBounds.top + 5,
         }),
       )
-      await domFinished
       await dispatchDone
     })
 
@@ -973,8 +961,7 @@ describe('moveTemplate', () => {
     )
 
     await act(async () => {
-      const domFinished = renderResult.getDomReportDispatched()
-      const dispatchDone = renderResult.getDispatchFollowUpactionsFinished()
+      const dispatchDone = renderResult.getDispatchFollowUpActionsFinished()
       fireEvent(
         canvasControlsLayer,
         new MouseEvent('mousemove', {
@@ -986,13 +973,11 @@ describe('moveTemplate', () => {
           buttons: 1,
         }),
       )
-      await domFinished
       await dispatchDone
     })
 
     await act(async () => {
-      const domFinished = renderResult.getDomReportDispatched()
-      const dispatchDone = renderResult.getDispatchFollowUpactionsFinished()
+      const dispatchDone = renderResult.getDispatchFollowUpActionsFinished()
       fireEvent(
         canvasControlsLayer,
         new MouseEvent('mousemove', {
@@ -1004,13 +989,11 @@ describe('moveTemplate', () => {
           buttons: 1,
         }),
       )
-      await domFinished
       await dispatchDone
     })
 
     await act(async () => {
-      const domFinished = renderResult.getDomReportDispatched()
-      const dispatchDone = renderResult.getDispatchFollowUpactionsFinished()
+      const dispatchDone = renderResult.getDispatchFollowUpActionsFinished()
       fireEvent(
         window,
         new MouseEvent('mouseup', {
@@ -1021,7 +1004,6 @@ describe('moveTemplate', () => {
           clientY: areaControlBounds.top - 25,
         }),
       )
-      await domFinished
       await dispatchDone
     })
 
@@ -1090,7 +1072,7 @@ describe('moveTemplate', () => {
     const canvasRoot = renderResult.renderedDOM.getByTestId('canvas-root')
 
     await act(async () => {
-      const dispatchDone = renderResult.getDispatchFollowUpactionsFinished()
+      const dispatchDone = renderResult.getDispatchFollowUpActionsFinished()
       fireEvent.keyDown(canvasRoot, { key: 'v', keyCode: 86 })
       await dispatchDone
     })
@@ -1141,8 +1123,7 @@ describe('moveTemplate', () => {
     })
 
     await act(async () => {
-      const domFinished = renderResult.getDomReportDispatched()
-      const dispatchDone = renderResult.getDispatchFollowUpactionsFinished()
+      const dispatchDone = renderResult.getDispatchFollowUpActionsFinished()
       fireEvent(
         canvasControlContainer,
         new MouseEvent('mouseup', {
@@ -1152,7 +1133,6 @@ describe('moveTemplate', () => {
           clientY: areaControlBounds.top + 100,
         }),
       )
-      await domFinished
       await dispatchDone
     })
 
@@ -1212,7 +1192,7 @@ describe('moveTemplate', () => {
     const canvasRoot = renderResult.renderedDOM.getByTestId('canvas-root')
 
     await act(async () => {
-      const dispatchDone = renderResult.getDispatchFollowUpactionsFinished()
+      const dispatchDone = renderResult.getDispatchFollowUpActionsFinished()
       fireEvent.keyDown(canvasRoot, { key: 'v', keyCode: 86 })
       await dispatchDone
     })
@@ -1261,8 +1241,7 @@ describe('moveTemplate', () => {
     })
 
     await act(async () => {
-      const domFinished = renderResult.getDomReportDispatched()
-      const dispatchDone = renderResult.getDispatchFollowUpactionsFinished()
+      const dispatchDone = renderResult.getDispatchFollowUpActionsFinished()
       fireEvent(
         canvasControlContainer,
         new MouseEvent('mouseup', {
@@ -1272,7 +1251,6 @@ describe('moveTemplate', () => {
           clientY: areaControlBounds.top + 50,
         }),
       )
-      await domFinished
       await dispatchDone
     })
 
@@ -1359,8 +1337,7 @@ describe('moveTemplate', () => {
     )
 
     await act(async () => {
-      const domFinished = renderResult.getDomReportDispatched()
-      const dispatchDone = renderResult.getDispatchFollowUpactionsFinished()
+      const dispatchDone = renderResult.getDispatchFollowUpActionsFinished()
       fireEvent(
         window,
         new MouseEvent('mousemove', {
@@ -1372,13 +1349,11 @@ describe('moveTemplate', () => {
           buttons: 1,
         }),
       )
-      await domFinished
       await dispatchDone
     })
 
     await act(async () => {
-      const domFinished = renderResult.getDomReportDispatched()
-      const dispatchDone = renderResult.getDispatchFollowUpactionsFinished()
+      const dispatchDone = renderResult.getDispatchFollowUpActionsFinished()
       fireEvent(
         window,
         new MouseEvent('mousemove', {
@@ -1390,13 +1365,11 @@ describe('moveTemplate', () => {
           buttons: 1,
         }),
       )
-      await domFinished
       await dispatchDone
     })
 
     await act(async () => {
-      const domFinished = renderResult.getDomReportDispatched()
-      const dispatchDone = renderResult.getDispatchFollowUpactionsFinished()
+      const dispatchDone = renderResult.getDispatchFollowUpActionsFinished()
       fireEvent(
         window,
         new MouseEvent('mouseup', {
@@ -1407,7 +1380,6 @@ describe('moveTemplate', () => {
           clientY: areaControlBounds.top - 25,
         }),
       )
-      await domFinished
       await dispatchDone
     })
 
@@ -1475,8 +1447,7 @@ describe('moveTemplate', () => {
     )
 
     await act(async () => {
-      const domFinished = renderResult.getDomReportDispatched()
-      const dispatchDone = renderResult.getDispatchFollowUpactionsFinished()
+      const dispatchDone = renderResult.getDispatchFollowUpActionsFinished()
       fireEvent(
         canvasControlsLayer,
         new MouseEvent('mousemove', {
@@ -1488,13 +1459,11 @@ describe('moveTemplate', () => {
           buttons: 1,
         }),
       )
-      await domFinished
       await dispatchDone
     })
 
     await act(async () => {
-      const domFinished = renderResult.getDomReportDispatched()
-      const dispatchDone = renderResult.getDispatchFollowUpactionsFinished()
+      const dispatchDone = renderResult.getDispatchFollowUpActionsFinished()
       fireEvent(
         canvasControlsLayer,
         new MouseEvent('mousemove', {
@@ -1506,13 +1475,11 @@ describe('moveTemplate', () => {
           buttons: 1,
         }),
       )
-      await domFinished
       await dispatchDone
     })
 
     await act(async () => {
-      const domFinished = renderResult.getDomReportDispatched()
-      const dispatchDone = renderResult.getDispatchFollowUpactionsFinished()
+      const dispatchDone = renderResult.getDispatchFollowUpActionsFinished()
       fireEvent(
         window,
         new MouseEvent('mouseup', {
@@ -1523,7 +1490,6 @@ describe('moveTemplate', () => {
           clientY: areaControlBounds.top - 25,
         }),
       )
-      await domFinished
       await dispatchDone
     })
 

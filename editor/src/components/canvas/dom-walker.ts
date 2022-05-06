@@ -183,7 +183,7 @@ function getCachedAttributesComingFromStyleSheets(
   if (inCache && !invalidated) {
     return AttributesFromStyleSheetsCache.get(element)!
   }
-  invalidatedPathsForStylesheetCache.delete(pathAsString) // Mutation!
+  invalidatedPathsForStylesheetCache.delete(pathAsString) // mutation!
   const value = getAttributesComingFromStyleSheets(element)
   AttributesFromStyleSheetsCache.set(element, value)
   return value
@@ -251,7 +251,6 @@ function mergeFragmentMetadata(
 
 export interface DomWalkerMutableStateData {
   invalidatedPaths: Set<string>
-  invalidatedScenes: Set<string> // TODO should this be merged with invalidatedPaths?
   invalidatedPathsForStylesheetCache: Set<string>
   initComplete: boolean
 
@@ -264,7 +263,6 @@ export function createDomWalkerMutableState(
 ): DomWalkerMutableStateData {
   const mutableData: DomWalkerMutableStateData = {
     invalidatedPaths: emptySet(),
-    invalidatedScenes: emptySet(),
     invalidatedPathsForStylesheetCache: emptySet(),
     initComplete: true,
 
@@ -305,9 +303,7 @@ export function runDomWalker({
   rootMetadataInStateRef,
 }: RunDomWalkerParams): { metadata: ElementInstanceMetadata[]; cachedPaths: ElementPath[] } | null {
   const needsWalk =
-    !domWalkerMutableState.initComplete ||
-    domWalkerMutableState.invalidatedPaths.size > 0 ||
-    domWalkerMutableState.invalidatedScenes.size > 0
+    !domWalkerMutableState.initComplete || domWalkerMutableState.invalidatedPaths.size > 0
 
   if (!needsWalk) {
     return null // early return to save performance
@@ -346,7 +342,6 @@ export function runDomWalker({
       canvasRootContainer,
       rootMetadataInStateRef,
       domWalkerMutableState.invalidatedPaths,
-      domWalkerMutableState.invalidatedScenes,
       domWalkerMutableState.invalidatedPathsForStylesheetCache,
       selectedViews,
       !domWalkerMutableState.initComplete,
@@ -386,7 +381,7 @@ export function initDomWalkerObservers(
       for (let entry of entries) {
         const sceneID = findParentScene(entry.target)
         if (sceneID != null) {
-          domWalkerMutableState.invalidatedScenes.add(sceneID)
+          domWalkerMutableState.invalidatedPaths.add(sceneID)
         }
       }
     }
@@ -411,7 +406,7 @@ export function initDomWalkerObservers(
           if (mutation.target instanceof HTMLElement) {
             const sceneID = findParentScene(mutation.target)
             if (sceneID != null) {
-              domWalkerMutableState.invalidatedScenes.add(sceneID)
+              domWalkerMutableState.invalidatedPaths.add(sceneID)
             }
           }
         }
@@ -434,6 +429,7 @@ export function invalidateDomWalkerIfNecessary(
     newEditorState.canvas.mountCount > oldEditorState.canvas.mountCount
   ) {
     domWalkerMutableState.initComplete = false // Mutation!
+    domWalkerMutableState.invalidatedPaths.clear() // Mutation!
   }
 
   // invalidate scenes when selectedViews change
@@ -442,17 +438,14 @@ export function invalidateDomWalkerIfNecessary(
       const scenePath = EP.createBackwardsCompatibleScenePath(sv)
       if (scenePath != null) {
         const sceneID = EP.toString(scenePath)
-        domWalkerMutableState.invalidatedScenes.add(sceneID) // Mutation!
+        domWalkerMutableState.invalidatedPaths.add(sceneID) // Mutation!
         domWalkerMutableState.invalidatedPathsForStylesheetCache.add(EP.toString(sv))
       }
     })
   }
 }
 
-export function useDomWalkerInvalidateCallbacks(): [
-  UpdateMutableCallback<Set<string>>,
-  UpdateMutableCallback<Set<string>>,
-] {
+export function useDomWalkerInvalidateCallbacks(): [UpdateMutableCallback<Set<string>>] {
   const domWalkerMutableState = useDomWalkerMutableStateContext()
   // For invalidating specific paths only
   const updateInvalidatedPaths: UpdateMutableCallback<Set<string>> = React.useCallback(
@@ -462,14 +455,7 @@ export function useDomWalkerInvalidateCallbacks(): [
     [domWalkerMutableState],
   )
 
-  const updateInvalidatedScenes: UpdateMutableCallback<Set<string>> = React.useCallback(
-    (callback) => {
-      callback(domWalkerMutableState.invalidatedScenes)
-    },
-    [domWalkerMutableState],
-  )
-
-  return [updateInvalidatedPaths, updateInvalidatedScenes]
+  return [updateInvalidatedPaths]
 }
 
 function collectMetadataForElement(
@@ -762,7 +748,6 @@ function walkCanvasRootFragment(
   canvasRoot: HTMLElement,
   rootMetadataInStateRef: React.MutableRefObject<ReadonlyArray<ElementInstanceMetadata>>,
   invalidatedPaths: Set<string>,
-  invalidatedScenes: Set<string>,
   invalidatedPathsForStylesheetCache: Set<string>,
   selectedViews: Array<ElementPath>,
   invalidated: boolean,
@@ -788,10 +773,11 @@ function walkCanvasRootFragment(
     )
   }
 
+  invalidatedPaths.delete(EP.toString(canvasRootPath)) // mutation!
+
   if (
     ObserversAvailable &&
     invalidatedPaths.size === 0 &&
-    invalidatedScenes.size === 0 &&
     rootMetadataInStateRef.current.length > 0 &&
     additionalElementsToUpdate.length === 0 &&
     !invalidated
@@ -804,7 +790,6 @@ function walkCanvasRootFragment(
       validPaths,
       rootMetadataInStateRef,
       invalidatedPaths,
-      invalidatedScenes,
       invalidatedPathsForStylesheetCache,
       selectedViews,
       invalidated,
@@ -838,7 +823,6 @@ function walkScene(
   validPaths: Array<ElementPath>,
   rootMetadataInStateRef: React.MutableRefObject<ReadonlyArray<ElementInstanceMetadata>>,
   invalidatedPaths: Set<string>,
-  invalidatedScenes: Set<string>,
   invalidatedPathsForStylesheetCache: Set<string>,
   selectedViews: Array<ElementPath>,
   invalidated: boolean,
@@ -859,16 +843,15 @@ function walkScene(
     if (sceneID != null && instancePath != null && EP.isElementPath(instancePath)) {
       const invalidatedScene =
         invalidated ||
-        (ObserversAvailable && invalidatedScenes.size > 0 && invalidatedScenes.has(sceneID))
+        (ObserversAvailable && invalidatedPaths.size > 0 && invalidatedPaths.has(sceneID))
 
-      invalidatedScenes.delete(sceneID) // mutation!
+      invalidatedPaths.delete(sceneID) // mutation!
 
       const { childPaths: rootElements, rootMetadata, cachedPaths } = walkSceneInner(
         scene,
         validPaths,
         rootMetadataInStateRef,
         invalidatedPaths,
-        invalidatedScenes,
         invalidatedPathsForStylesheetCache,
         selectedViews,
         invalidatedScene,
@@ -906,7 +889,6 @@ function walkSceneInner(
   validPaths: Array<ElementPath>,
   rootMetadataInStateRef: React.MutableRefObject<ReadonlyArray<ElementInstanceMetadata>>,
   invalidatedPaths: Set<string>,
-  invalidatedScenes: Set<string>,
   invalidatedPathsForStylesheetCache: Set<string>,
   selectedViews: Array<ElementPath>,
   invalidated: boolean,
@@ -931,7 +913,6 @@ function walkSceneInner(
       validPaths,
       rootMetadataInStateRef,
       invalidatedPaths,
-      invalidatedScenes,
       invalidatedPathsForStylesheetCache,
       selectedViews,
       invalidated,
@@ -959,7 +940,6 @@ function walkElements(
   validPaths: Array<ElementPath>,
   rootMetadataInStateRef: React.MutableRefObject<ReadonlyArray<ElementInstanceMetadata>>,
   invalidatedPaths: Set<string>,
-  invalidatedScenes: Set<string>,
   invalidatedPathsForStylesheetCache: Set<string>,
   selectedViews: Array<ElementPath>,
   invalidated: boolean,
@@ -978,7 +958,6 @@ function walkElements(
       validPaths,
       rootMetadataInStateRef,
       invalidatedPaths,
-      invalidatedScenes,
       invalidatedPathsForStylesheetCache,
       selectedViews,
       invalidated,
@@ -997,6 +976,9 @@ function walkElements(
   if (element instanceof HTMLElement) {
     // Determine the uid of this element if it has one.
     const pathsWithStrings = getPathWithStringsOnDomElement(element)
+    for (const pathWithString of pathsWithStrings) {
+      invalidatedPaths.delete(pathWithString.asString) // mutation!
+    }
 
     const doNotTraverseAttribute = getDOMAttribute(element, UTOPIA_DO_NOT_TRAVERSE_KEY)
     const traverseChildren: boolean = doNotTraverseAttribute !== 'true'
@@ -1027,7 +1009,6 @@ function walkElements(
           validPaths,
           rootMetadataInStateRef,
           invalidatedPaths,
-          invalidatedScenes,
           invalidatedPathsForStylesheetCache,
           selectedViews,
           invalidated,

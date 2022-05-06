@@ -5,7 +5,6 @@ import {
   pickUiJsxCanvasProps,
   CanvasReactErrorCallback,
   CanvasReactReportErrorCallback,
-  DomWalkerInvalidateScenesCtxAtom,
   DomWalkerInvalidatePathsCtxAtom,
   UiJsxCanvasProps,
   UiJsxCanvasPropsWithErrorCallback,
@@ -26,6 +25,7 @@ import { ResolvingRemoteDependencyErrorName } from '../../core/es-modules/packag
 import { CanvasLoadingScreen } from './canvas-loading-screen'
 import { isHooksErrorMessage } from '../../utils/canvas-react-utils'
 import { useApplyCanvasOffsetToStyle } from './controls/canvas-offset-wrapper'
+import { when } from '../../utils/react-conditionals'
 
 interface CanvasComponentEntryProps {}
 
@@ -43,11 +43,10 @@ export const CanvasComponentEntry = React.memo((props: CanvasComponentEntryProps
 
 const CanvasComponentEntryInner = React.memo((props: CanvasComponentEntryProps) => {
   const dispatch = useEditorState((store) => store.dispatch, 'CanvasComponentEntry dispatch')
-  const onDomReport = React.useCallback(
-    (elementMetadata: ReadonlyArray<ElementInstanceMetadata>, cachedPaths: Array<ElementPath>) => {
-      dispatch([saveDOMReport(elementMetadata, cachedPaths)])
-    },
-    [dispatch],
+
+  const canvasScrollAnimation = useEditorState(
+    (store) => store.editor.canvas.scrollAnimation,
+    'CanvasComponentEntry scrollAnimation',
   )
   const { addToRuntimeErrors, clearRuntimeErrors } = useWriteOnlyRuntimeErrors()
   const { addToConsoleLogs, clearConsoleLogs } = useWriteOnlyConsoleLogs()
@@ -57,8 +56,6 @@ const CanvasComponentEntryInner = React.memo((props: CanvasComponentEntryProps) 
       store.editor,
       store.derived,
       store.dispatch,
-      true,
-      onDomReport,
       clearConsoleLogs,
       addToConsoleLogs,
     )
@@ -88,52 +85,47 @@ const CanvasComponentEntryInner = React.memo((props: CanvasComponentEntryProps) 
     clearRuntimeErrors()
   }, [clearRuntimeErrors])
 
-  const containerRef = useApplyCanvasOffsetToStyle(true, canvasProps != null)
+  const containerRef = useApplyCanvasOffsetToStyle(true)
 
-  if (canvasProps == null) {
-    return <CanvasLoadingScreen />
-  } else {
-    return (
+  return (
+    <>
+      {when(canvasProps == null, <CanvasLoadingScreen />)}
       <div
         id='canvas-container-outer'
         ref={containerRef}
         style={{
           position: 'absolute',
-          transition: canvasProps.scrollAnimation ? 'transform 0.3s ease-in-out' : 'initial',
+          transition: canvasScrollAnimation ? 'transform 0.3s ease-in-out' : 'initial',
           transform: 'translate3d(0px, 0px, 0px)',
         }}
       >
-        <CanvasErrorBoundary
-          filePath={canvasProps.uiFilePath}
-          projectContents={canvasProps.projectContents}
-          reportError={onRuntimeError}
-          requireFn={canvasProps.curriedRequireFn}
-          key={`canvas-error-boundary-${canvasProps.mountCount}`}
-        >
-          <RemoteDependencyBoundary
+        {canvasProps == null ? null : (
+          <CanvasErrorBoundary
+            filePath={canvasProps.uiFilePath}
             projectContents={canvasProps.projectContents}
+            reportError={onRuntimeError}
             requireFn={canvasProps.curriedRequireFn}
+            key={`canvas-error-boundary-${canvasProps.mountCount}`}
           >
-            <DomWalkerWrapper {...canvasProps} clearErrors={localClearRuntimeErrors} />
-          </RemoteDependencyBoundary>
-        </CanvasErrorBoundary>
+            <RemoteDependencyBoundary
+              projectContents={canvasProps.projectContents}
+              requireFn={canvasProps.curriedRequireFn}
+            >
+              <DomWalkerWrapper {...canvasProps} clearErrors={localClearRuntimeErrors} />
+            </RemoteDependencyBoundary>
+          </CanvasErrorBoundary>
+        )}
       </div>
-    )
-  }
+    </>
+  )
 })
 
 function DomWalkerWrapper(props: UiJsxCanvasPropsWithErrorCallback) {
-  const selectedViews = useEditorState(
-    (store) => store.editor.selectedViews,
-    'DomWalkerWrapper selectedViews',
-  )
-  let [updateInvalidatedPaths, updateInvalidatedScenes] = useDomWalkerInvalidateCallbacks()
+  let [updateInvalidatedPaths] = useDomWalkerInvalidateCallbacks()
 
   return (
     <DomWalkerInvalidatePathsCtxAtom.Provider value={updateInvalidatedPaths}>
-      <DomWalkerInvalidateScenesCtxAtom.Provider value={updateInvalidatedScenes}>
-        <UiJsxCanvas {...props} />
-      </DomWalkerInvalidateScenesCtxAtom.Provider>
+      <UiJsxCanvas {...props} />
     </DomWalkerInvalidatePathsCtxAtom.Provider>
   )
 }
