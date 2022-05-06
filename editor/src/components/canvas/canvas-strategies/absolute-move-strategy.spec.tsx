@@ -1,7 +1,6 @@
 import { elementPath } from '../../../core/shared/element-path'
 import {
   ElementInstanceMetadata,
-  ElementInstanceMetadataMap,
   SpecialSizeMeasurements,
 } from '../../../core/shared/element-template'
 import {
