@@ -111,7 +111,6 @@ describe('interactionCancel', () => {
         canvasPoint({ x: 100, y: 200 }),
         { alt: false, shift: false, ctrl: false, cmd: false },
         { type: 'BOUNDING_AREA', target: EP.elementPath([['aaa']]) },
-        1,
       ),
     )
     editorStore.strategyState.accumulatedPatches = runCanvasCommand(
@@ -160,7 +159,6 @@ describe('interactionStart', () => {
         canvasPoint({ x: 100, y: 200 }),
         { alt: false, shift: false, ctrl: false, cmd: false },
         { type: 'BOUNDING_AREA', target: EP.elementPath([['aaa']]) },
-        1,
       ),
     )
     const actualResult = interactionStart(
@@ -271,7 +269,6 @@ describe('interactionUpdatex', () => {
         canvasPoint({ x: 100, y: 200 }),
         { alt: false, shift: false, ctrl: false, cmd: false },
         { type: 'BOUNDING_AREA', target: EP.elementPath([['aaa']]) },
-        1,
       ),
     )
     editorStore.strategyState.currentStrategy = 'TEST_STRATEGY' as CanvasStrategyId
@@ -385,7 +382,6 @@ describe('interactionUpdate without strategy', () => {
         canvasPoint({ x: 100, y: 200 }),
         { alt: false, shift: false, ctrl: false, cmd: false },
         { type: 'BOUNDING_AREA', target: EP.elementPath([['aaa']]) },
-        1,
       ),
     )
     editorStore.strategyState.currentStrategy = null
@@ -410,7 +406,6 @@ describe('interactionHardReset', () => {
       canvasPoint({ x: 100, y: 200 }),
       { alt: false, shift: false, ctrl: false, cmd: false },
       { type: 'BOUNDING_AREA', target: EP.elementPath([['aaa']]) },
-      1,
     )
     if (interactionSession.interactionData.type === 'DRAG') {
       interactionSession.interactionData.dragStart = canvasPoint({ x: 110, y: 210 })
@@ -531,7 +526,6 @@ describe('interactionUpdate with stacked strategy change', () => {
       canvasPoint({ x: 100, y: 200 }),
       { alt: false, shift: false, ctrl: false, cmd: false },
       { type: 'BOUNDING_AREA', target: EP.elementPath([['aaa']]) },
-      1,
     )
     if (interactionSession.interactionData.type === 'DRAG') {
       interactionSession.interactionData.dragStart = canvasPoint({ x: 110, y: 210 })
@@ -729,7 +723,6 @@ describe('interactionUpdate with user changed strategy', () => {
       canvasPoint({ x: 100, y: 200 }),
       { alt: false, shift: false, ctrl: false, cmd: false },
       { type: 'BOUNDING_AREA', target: EP.elementPath([['aaa']]) },
-      1,
     )
     if (interactionSession.interactionData.type === 'DRAG') {
       interactionSession.interactionData.dragStart = canvasPoint({ x: 110, y: 210 })

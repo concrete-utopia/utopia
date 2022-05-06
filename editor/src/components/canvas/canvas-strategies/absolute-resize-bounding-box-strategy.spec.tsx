@@ -45,7 +45,6 @@ function multiselectResizeElements(
     modifiers,
     { type: 'RESIZE_HANDLE', edgePosition: edgePosition },
     drag,
-    1,
   )
 
   const strategyResult = absoluteResizeBoundingBoxStrategy.apply(

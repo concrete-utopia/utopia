@@ -4,7 +4,6 @@ import { getReparentTarget } from '../canvas-utils'
 import { reparentElement } from '../commands/reparent-element-command'
 import { updateSelectedViews } from '../commands/update-selected-views-command'
 import { absoluteMoveStrategy } from './absolute-move-strategy'
-import { interactionSessionStartedWithLeftMouseButton } from './canvas-strategies-utils'
 import { CanvasStrategy } from './canvas-strategy-types'
 import {
   getAbsoluteOffsetCommandsForSelectedElement,
@@ -17,7 +16,6 @@ export const absoluteReparentStrategy: CanvasStrategy = {
   name: 'Reparent Absolute Elements',
   isApplicable: (canvasState, interactionState, metadata) => {
     if (
-      interactionSessionStartedWithLeftMouseButton(interactionState) &&
       canvasState.selectedElements.length > 0 &&
       interactionState != null &&
       interactionState.interactionData.modifiers.cmd
@@ -34,7 +32,6 @@ export const absoluteReparentStrategy: CanvasStrategy = {
   controlsToRender: [],
   fitness: (canvasState, interactionState) => {
     if (
-      interactionSessionStartedWithLeftMouseButton(interactionState) &&
       canvasState.selectedElements.length > 0 &&
       interactionState.interactionData.modifiers.cmd &&
       interactionState.interactionData.type === 'DRAG' &&

@@ -24,7 +24,6 @@ export interface DragInteractionData {
   dragThresholdPassed: boolean
   originalDragStart: CanvasPoint
   modifiers: Modifiers
-  startedWithButton: number
 }
 
 interface KeyboardInteractionData {
@@ -97,7 +96,6 @@ export function createInteractionViaMouse(
   mouseDownPoint: CanvasPoint,
   modifiers: Modifiers,
   activeControl: CanvasControlType,
-  startedWithButton: number,
 ): InteractionSessionWithoutMetadata {
   return {
     interactionData: {
@@ -108,7 +106,6 @@ export function createInteractionViaMouse(
       dragThresholdPassed: false,
       originalDragStart: mouseDownPoint,
       modifiers: modifiers,
-      startedWithButton: startedWithButton,
     },
     activeControl: activeControl,
     sourceOfUpdate: activeControl,
@@ -142,7 +139,6 @@ export function updateInteractionViaMouse(
         dragThresholdPassed: dragThresholdPassed,
         originalDragStart: currentState.interactionData.originalDragStart,
         modifiers: modifiers,
-        startedWithButton: currentState.interactionData.startedWithButton,
       },
       activeControl: currentState.activeControl,
       sourceOfUpdate: sourceOfUpdate ?? currentState.activeControl,
@@ -211,7 +207,6 @@ export function updateInteractionViaKeyboard(
           dragThresholdPassed: currentState.interactionData.dragThresholdPassed,
           originalDragStart: currentState.interactionData.originalDragStart,
           modifiers: modifiers,
-          startedWithButton: currentState.interactionData.startedWithButton,
         },
         activeControl: currentState.activeControl,
         sourceOfUpdate: currentState.activeControl,

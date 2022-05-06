@@ -41,7 +41,6 @@ function reparentElement(
       { cmd: true, alt: false, shift: false, ctrl: false },
       null as any, // the strategy does not use this
       canvasPoint({ x: 0, y: 0 }),
-      1,
     ),
     metadata: null as any, // the strategy does not use this
   }

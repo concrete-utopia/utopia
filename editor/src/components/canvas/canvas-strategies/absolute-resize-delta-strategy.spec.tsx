@@ -24,7 +24,6 @@ function resizeElement(editor: EditorState, edgePosition: EdgePosition): EditorS
     emptyModifiers,
     { type: 'RESIZE_HANDLE', edgePosition: edgePosition },
     canvasPoint({ x: 15, y: 25 }),
-    1,
   )
 
   const strategyResult = absoluteResizeDeltaStrategy.apply(
