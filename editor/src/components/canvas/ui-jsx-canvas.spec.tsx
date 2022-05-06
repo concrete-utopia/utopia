@@ -9,66 +9,6 @@ import {
 } from './ui-jsx-canvas.test-utils'
 import { TestAppUID, TestSceneUID } from './ui-jsx.test-utils'
 
-describe('DebugAbc', () => {
-  it('testing path fixes', () => {
-    const result = testCanvasRenderInline(
-      null,
-      `
-import React from 'react'
-import Utopia, {
-  Scene,
-  Storyboard,
-  registerModule,
-} from 'utopia-api'
-
-export const App = () => {
-  return <div data-uid='app-root' />
-}
-
-export var storyboard = (
-  <Storyboard data-uid='sb'>
-    <Scene
-      data-uid='scene'
-      style={{ position: 'absolute', left: 0, top: 0, width: 375, height: 812 }}
-    >
-      <App data-uid='app' />
-    </Scene>
-  </Storyboard>
-)
-    `,
-    )
-
-    expect(result).toMatchInlineSnapshot(`
-      "<div style=\\"all: initial;\\">
-        <div
-          id=\\"canvas-container\\"
-          style=\\"position: absolute;\\"
-          data-utopia-valid-paths=\\"sb sb/scene sb/scene/app sb/scene/app:app-root\\"
-          data-utopia-root-element-path=\\"sb\\"
-        >
-          <div
-            data-utopia-scene-id=\\"sb/scene\\"
-            data-path=\\"sb/scene\\"
-            style=\\"
-              position: absolute;
-              background-color: rgba(255, 255, 255, 1);
-              box-shadow: 0px 0px 1px 0px rgba(26, 26, 26, 0.3);
-              left: 0;
-              top: 0;
-              width: 375px;
-              height: 812px;
-            \\"
-            data-uid=\\"scene sb\\"
-          >
-            <div data-uid=\\"app-root app\\" data-path=\\"sb/scene/app:app-root\\"></div>
-          </div>
-        </div>
-      </div>
-      "
-    `)
-  })
-})
-
 describe('UiJsxCanvas render', () => {
   it('renders a canvas testing a multitude of export styles', () => {
     testCanvasRenderMultifile(
@@ -1349,7 +1289,7 @@ export var ${BakedInStoryboardVariableName} = (props) => {
           >
             <div
               data-uid=\\"ccc-unparsed-no-template-path\\"
-              data-path=\\"utopia-storyboard-uid/scene-aaa/app-entity:aaa\\"
+              data-path=\\"utopia-storyboard-uid/scene-aaa/app-entity:aaa:ccc-unparsed-no-template-path\\"
             >
               hello
             </div>
@@ -1445,7 +1385,11 @@ export var ${BakedInStoryboardVariableName} = (props) => {
             \\"
             data-uid=\\"scene-aaa\\"
           >
-            <div id=\\"nasty-div\\" data-uid=\\"77f~~~1\\" data-path=\\"833~~~2/77f~~~1\\">
+            <div
+              id=\\"nasty-div\\"
+              data-uid=\\"77f~~~1\\"
+              data-path=\\"utopia-storyboard-uid/scene-aaa/app-entity:aaa:65e~~~1:833~~~2:77f~~~1\\"
+            >
               huhahuha
             </div>
           </div>
@@ -2124,9 +2068,14 @@ describe('UiJsxCanvas render multifile projects', () => {
           >
             <div
               data-uid=\\"app-outer-div\\"
-              data-path=\\"utopia-storyboard-uid/scene-aaa/app-entity\\"
+              data-path=\\"utopia-storyboard-uid/scene-aaa/app-entity:app-outer-div\\"
             >
-              <div data-uid=\\"inner-div\\">Hi there!</div>
+              <div
+                data-uid=\\"inner-div\\"
+                data-path=\\"utopia-storyboard-uid/scene-aaa/app-entity:app-outer-div/inner-div\\"
+              >
+                Hi there!
+              </div>
             </div>
           </div>
         </div>
@@ -2195,9 +2144,14 @@ describe('UiJsxCanvas render multifile projects', () => {
           >
             <div
               data-uid=\\"app-outer-div\\"
-              data-path=\\"utopia-storyboard-uid/scene-aaa/app-entity\\"
+              data-path=\\"utopia-storyboard-uid/scene-aaa/app-entity:app-outer-div\\"
             >
-              <div data-uid=\\"inner-div\\">Hi there!</div>
+              <div
+                data-uid=\\"inner-div\\"
+                data-path=\\"utopia-storyboard-uid/scene-aaa/app-entity:app-outer-div/inner-div\\"
+              >
+                Hi there!
+              </div>
             </div>
           </div>
         </div>

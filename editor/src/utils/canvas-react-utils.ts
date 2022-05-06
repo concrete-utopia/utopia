@@ -224,26 +224,6 @@ function attachPathToChildren(children: any, path: string | null): any {
   }
 }
 
-function attachPathToChildrenOfElement(
-  originalTypeResponse: React.ReactElement | null,
-  children: any,
-  path: string | null,
-): any {
-  if (originalTypeResponse == null) {
-    return originalTypeResponse
-  }
-
-  const updatedChildren = attachPathToChildren(children, path)
-
-  if (updatedChildren == null) {
-    return originalTypeResponse
-  } else if (Array.isArray(updatedChildren)) {
-    return React.cloneElement(originalTypeResponse, undefined, ...updatedChildren)
-  } else {
-    return React.cloneElement(originalTypeResponse, undefined, updatedChildren)
-  }
-}
-
 const mangleFunctionType = Utils.memoize(
   (type: unknown): React.FunctionComponent => {
     const mangledFunctionName = `UtopiaSpiedFunctionComponent(${getDisplayName(type)})`
@@ -257,14 +237,15 @@ const mangleFunctionType = Utils.memoize(
           performance.mark(`render_start_${uuid}`)
         }
 
-        let originalTypeResponse = (type as React.FunctionComponent)(p, context)
-
         const path = p?.[UTOPIA_PATH_KEY] ?? p?.[UTOPIA_UID_KEY]
-        const withUpdatedChildren = attachPathToChildrenOfElement(
-          originalTypeResponse,
-          p?.children,
-          path,
-        )
+        const updatedChildren = attachPathToChildren(p?.children, path)
+
+        let updatedProps = { ...p }
+        if (updatedChildren != null) {
+          updatedProps.children = updatedChildren
+        }
+
+        const withUpdatedChildren = (type as React.FunctionComponent)(updatedProps, context)
 
         const res = attachDataUidToRoot(withUpdatedChildren, (p as any)?.[UTOPIA_UID_KEY], path)
         if (MeasureRenderTimes) {
@@ -303,14 +284,13 @@ const mangleClassType = Utils.memoize(
         performance.mark(`render_start_${uuid}`)
       }
 
-      let originalTypeResponse = originalRender.bind(this)()
-
       const path = this.props?.[UTOPIA_PATH_KEY] ?? this.props?.[UTOPIA_UID_KEY]
-      const withUpdatedChildren = attachPathToChildrenOfElement(
-        originalTypeResponse,
-        this.props?.children,
-        path,
-      )
+      const updatedChildren = attachPathToChildren(this.props?.children, path)
+      if (updatedChildren != null) {
+        this.props = { ...this.props, children: updatedChildren }
+      }
+
+      const withUpdatedChildren = originalRender.bind(this)()
 
       const res = attachDataUidToRoot(
         withUpdatedChildren,
@@ -402,18 +382,18 @@ const mangleExoticType = Utils.memoize(
     const wrapperComponent = (p: any, context?: any) => {
       const uid = p?.[UTOPIA_UID_KEY]
       const path = p?.[UTOPIA_PATH_KEY] ?? (p as any)?.[UTOPIA_UID_KEY]
+
+      let mangledProps = {
+        ...p,
+      }
+
+      delete mangledProps[UTOPIA_UID_KEY]
+      delete mangledProps[UTOPIA_PATH_KEY]
+
       if (p?.children == null || typeof p.children === 'string') {
-        return realCreateElement(type, p)
+        return realCreateElement(type, mangledProps)
       } else {
         let children: any
-
-        let mangledProps = {
-          ...p,
-        }
-
-        delete mangledProps[UTOPIA_UID_KEY]
-        delete mangledProps[UTOPIA_PATH_KEY]
-        let originalTypeResponse = realCreateElement(type, { ...mangledProps })
 
         if (typeof p?.children === 'function') {
           // mangle the function so that what it returns has the data uid
@@ -434,13 +414,11 @@ const mangleExoticType = Utils.memoize(
           }
         }
 
-        if (children == null) {
-          return originalTypeResponse
-        } else if (Array.isArray(children)) {
-          return React.cloneElement(originalTypeResponse, undefined, ...children)
-        } else {
-          return React.cloneElement(originalTypeResponse, undefined, children)
+        if (children != null) {
+          mangledProps.children = children
         }
+
+        return realCreateElement(type, { ...mangledProps })
       }
     }
     ;(wrapperComponent as any).theOriginalType = type
@@ -457,21 +435,20 @@ const mangleExoticType = Utils.memoize(
 const mangleIntrinsicType = Utils.memoize(
   (type: string): React.FunctionComponent => {
     const wrapperComponent = (p: any, context?: any) => {
-      let updatedProps = p
+      let updatedProps = { ...p }
 
       if (!shouldIncludeDataUID(type)) {
         updatedProps = filterDataProps(updatedProps)
       }
 
-      let originalTypeResponse = realCreateElement(type, { ...updatedProps })
+      const path = p?.[UTOPIA_PATH_KEY] ?? p?.[UTOPIA_UID_KEY]
+      const updatedChildren = attachPathToChildren(p?.children, path)
 
-      const path = updatedProps?.[UTOPIA_PATH_KEY] ?? updatedProps?.[UTOPIA_UID_KEY]
+      if (updatedChildren != null) {
+        updatedProps.children = updatedChildren
+      }
 
-      const withUpdatedChildren = attachPathToChildrenOfElement(
-        originalTypeResponse,
-        updatedProps?.children,
-        path,
-      )
+      const withUpdatedChildren = realCreateElement(type, { ...updatedProps })
 
       return withUpdatedChildren
     }
