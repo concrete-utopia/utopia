@@ -231,7 +231,6 @@ describe('interactionStart', () => {
           "y": 200,
         },
         "prevDrag": null,
-        "startedWithButton": 1,
         "type": "DRAG",
       }
     `)
@@ -343,7 +342,6 @@ describe('interactionUpdatex', () => {
           "y": 200,
         },
         "prevDrag": null,
-        "startedWithButton": 1,
         "type": "DRAG",
       }
     `)
@@ -489,7 +487,6 @@ describe('interactionHardReset', () => {
           "x": 30,
           "y": 120,
         },
-        "startedWithButton": 1,
         "type": "DRAG",
       }
     `)
@@ -612,7 +609,6 @@ describe('interactionUpdate with stacked strategy change', () => {
           "y": 200,
         },
         "prevDrag": null,
-        "startedWithButton": 1,
         "type": "DRAG",
       }
     `)
@@ -820,7 +816,6 @@ describe('interactionUpdate with user changed strategy', () => {
           "x": 30,
           "y": 120,
         },
-        "startedWithButton": 1,
         "type": "DRAG",
       }
     `)
