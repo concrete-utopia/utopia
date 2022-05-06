@@ -20,6 +20,7 @@ import { InteractionSession, StrategyState } from './interaction-state'
 import { keyboardAbsoluteMoveStrategy } from './keyboard-absolute-move-strategy'
 import { absoluteResizeBoundingBoxStrategy } from './absolute-resize-bounding-box-strategy'
 import { keyboardAbsoluteResizeStrategy } from './keyboard-absolute-resize-strategy'
+import { flexReorderStrategy } from './flex-reorder-strategy'
 
 export const RegisteredCanvasStrategies: Array<CanvasStrategy> = [
   absoluteMoveStrategy,
@@ -28,6 +29,7 @@ export const RegisteredCanvasStrategies: Array<CanvasStrategy> = [
   keyboardAbsoluteResizeStrategy,
   absoluteResizeBoundingBoxStrategy,
   absoluteResizeDeltaStrategy,
+  flexReorderStrategy,
 ]
 
 export function pickCanvasStateFromEditorState(editorState: EditorState): InteractionCanvasState {
@@ -234,27 +236,6 @@ export function useGetApplicableStrategyControls(): Array<ControlWithKey> {
       return addAllUniquelyBy(working, filteredControls, (l, r) => l.control === r.control)
     }, [])
   }, [applicableStrategies, currentStrategy])
-}
-
-export function findCanvasStrategyFromDispatchResult(
-  strategies: Array<CanvasStrategy>,
-  result: InnerDispatchResult,
-): StrategyWithFitness | null {
-  const newEditorState = result.unpatchedEditor
-  const canvasState: InteractionCanvasState = pickCanvasStateFromEditorState(newEditorState)
-  const interactionSession = newEditorState.canvas.interactionSession
-  if (interactionSession == null) {
-    return null
-  } else {
-    const { strategy } = findCanvasStrategy(
-      strategies,
-      canvasState,
-      interactionSession,
-      result.strategyState,
-      result.strategyState.currentStrategy,
-    )
-    return strategy
-  }
 }
 
 export function isStrategyActive(strategyState: StrategyState): boolean {
