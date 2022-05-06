@@ -64,6 +64,7 @@ import {
 import { FlexResizeControl } from './select-mode/flex-resize-control'
 import { MultiSelectOutlineControl } from './select-mode/simple-outline-control'
 import { GuidelineControls } from './guideline-controls'
+import { showContextMenu } from '../../editor/actions/action-creators'
 
 export const CanvasControlsContainerID = 'new-canvas-controls-container'
 
@@ -275,6 +276,28 @@ const NewCanvasControlsInner = (props: NewCanvasControlsInnerProps) => {
     return 'enabled'
   }
 
+  const onContextMenu = React.useCallback(
+    (event: React.MouseEvent<HTMLDivElement>): void => {
+      if (isFeatureEnabled('Canvas Strategies')) {
+        switch (props.editor.mode.type) {
+          case 'select':
+          case 'select-lite':
+          case 'live': {
+            event.stopPropagation()
+            event.preventDefault()
+            if (contextMenuEnabled && localSelectedViews.length > 0) {
+              props.dispatch([showContextMenu('context-menu-canvas', event.nativeEvent)], 'canvas')
+            }
+            break
+          }
+          default:
+            break
+        }
+      }
+    },
+    [contextMenuEnabled, localSelectedViews, props],
+  )
+
   const renderModeControlContainer = () => {
     const elementAspectRatioLocked = localSelectedViews.every((target) => {
       const possibleElement = MetadataUtils.findElementByElementPath(componentMetadata, target)
@@ -404,6 +427,7 @@ const NewCanvasControlsInner = (props: NewCanvasControlsInnerProps) => {
         width: '100%',
         height: '100%',
       }}
+      onContextMenu={onContextMenu}
       onMouseDown={onMouseDown}
       onMouseMove={onMouseMove}
     >

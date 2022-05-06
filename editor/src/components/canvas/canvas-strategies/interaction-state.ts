@@ -36,6 +36,16 @@ interface KeyboardInteractionData {
 
 export type InputData = KeyboardInteractionData | DragInteractionData
 
+export function isDragInteractionData(inputData: InputData): inputData is DragInteractionData {
+  return inputData.type === 'DRAG'
+}
+
+export function isKeyboardInteractionData(
+  inputData: InputData,
+): inputData is KeyboardInteractionData {
+  return inputData.type === 'KEYBOARD'
+}
+
 export interface InteractionSession {
   // This represents an actual interaction that has started as the result of a key press or a drag
   interactionData: InputData
