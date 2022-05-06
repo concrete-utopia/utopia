@@ -60,17 +60,6 @@ export const FormulaBar = React.memo<FormulaBarProps>((props) => {
     }
   }, 'FormulaBar selectedElementTextContent')
 
-  /*
-  const selectedElement = useEditorState((store) => {
-    const metadata = store.editor.jsxMetadata
-    if (store.editor.selectedViews.length === 1) {
-      return MetadataUtils.findElementByElementPath(metadata, store.editor.selectedViews[0])
-    } else {
-      return null
-    }
-  }, 'FormulaBar selectedElement')
-  */
-
   const focusTriggerCount = useEditorState(
     (store) => store.editor.topmenu.formulaBarFocusCounter,
     'FormulaBar formulaBarFocusCounter',
