@@ -3,8 +3,7 @@ import {
   ElementInstanceMetadata,
   SpecialSizeMeasurements,
 } from '../../../core/shared/element-template'
-import { canvasPoint, canvasRectangle } from '../../../core/shared/math-utils'
-import { WindowMousePositionRaw } from '../../../utils/global-positions'
+import { CanvasPoint, canvasPoint, canvasRectangle } from '../../../core/shared/math-utils'
 import { emptyModifiers } from '../../../utils/modifiers'
 import { EditorState } from '../../editor/store/editor-state'
 import { foldAndApplyCommands } from '../commands/commands'
@@ -13,19 +12,23 @@ import {
   makeTestProjectCodeWithSnippet,
   testPrintCodeFromEditorState,
 } from '../ui-jsx.test-utils'
-import { absoluteReparentStrategy } from './absolute-reparent-strategy'
 import { pickCanvasStateFromEditorState } from './canvas-strategies'
 import { flexReorderStrategy } from './flex-reorder-strategy'
 import { InteractionSession, StrategyState } from './interaction-state'
 import { createMouseInteractionForTests } from './interaction-state.test-utils'
 
-function reorderElement(editorState: EditorState, flexDirection: string): EditorState {
+function reorderElement(
+  editorState: EditorState,
+  flexDirection: string,
+  dragStart: CanvasPoint,
+  drag: CanvasPoint,
+): EditorState {
   const interactionSession: InteractionSession = {
     ...createMouseInteractionForTests(
-      canvasPoint({ x: 89, y: 27 }),
+      dragStart,
       emptyModifiers,
       null as any, // the strategy does not use this
-      canvasPoint({ x: 52, y: 0 }),
+      drag,
     ),
     metadata: null as any, // the strategy does not use this
   }
@@ -135,7 +138,12 @@ describe('Flex Reorder Strategy', () => {
       [targetElement],
     )
 
-    const finalEditor = reorderElement(initialEditor, 'row')
+    const finalEditor = reorderElement(
+      initialEditor,
+      'row',
+      canvasPoint({ x: 89, y: 27 }),
+      canvasPoint({ x: 52, y: 0 }),
+    )
 
     expect(testPrintCodeFromEditorState(finalEditor)).toEqual(
       makeTestProjectCodeWithSnippet(`
@@ -210,7 +218,12 @@ describe('Flex Reorder Strategy', () => {
       [targetElement],
     )
 
-    const finalEditor = reorderElement(initialEditor, 'row-reverse')
+    const finalEditor = reorderElement(
+      initialEditor,
+      'row-reverse',
+      canvasPoint({ x: 89, y: 27 }),
+      canvasPoint({ x: 52, y: 0 }),
+    )
 
     expect(testPrintCodeFromEditorState(finalEditor)).toEqual(
       makeTestProjectCodeWithSnippet(`
