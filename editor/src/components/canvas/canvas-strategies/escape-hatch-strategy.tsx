@@ -10,7 +10,7 @@ import {
   zeroCanvasRect,
 } from '../../../core/shared/math-utils'
 import { ElementPath } from '../../../core/shared/project-file-types'
-import { boundingBoxMove, BoundingBoxMoveCommand } from '../commands/bounding-box-move-command'
+import { setLocalFrame, SetLocalFrameCommand } from '../commands/bounding-box-move-command'
 import { CanvasCommand } from '../commands/commands'
 import { convertToAbsolute } from '../commands/convert-to-absolute-command'
 import { CanvasStrategy } from './canvas-strategy-types'
@@ -46,7 +46,7 @@ export const escapeHatchStrategy: CanvasStrategy = {
       //   return [switchToAbsolute('permanent', canvasState.selectedElements)]
       // }
       const dragDelta = interactionState.interactionData.drag
-      const moveCommands = collectMoveCommandsForSelectedElement(
+      const moveAndPositionCommands = collectMoveCommandsForSelectedElements(
         dragDelta,
         canvasState.selectedElements,
         strategyState.startingMetadata,
@@ -55,23 +55,19 @@ export const escapeHatchStrategy: CanvasStrategy = {
         canvasState.selectedElements,
         strategyState.startingMetadata,
       )
-      return [
-        ...canvasState.selectedElements.map((path) => convertToAbsolute('permanent', path)),
-        ...moveCommands,
-        ...siblingCommands,
-      ]
+      return [...moveAndPositionCommands, ...siblingCommands]
     }
     // Fallback for when the checks above are not satisfied.
     return []
   },
 }
 
-function collectMoveCommandsForSelectedElement(
+function collectMoveCommandsForSelectedElements(
   dragDelta: CanvasVector | null,
   selectedElements: Array<ElementPath>,
   metadata: ElementInstanceMetadataMap,
-): Array<BoundingBoxMoveCommand> {
-  return mapDropNulls((path) => {
+): Array<CanvasCommand> {
+  return flatMapArray((path) => {
     const frame = MetadataUtils.getFrame(path, metadata)
     if (frame != null) {
       const margin = MetadataUtils.findElementByElementPath(metadata, path)?.specialSizeMeasurements
@@ -82,9 +78,9 @@ function collectMoveCommandsForSelectedElement(
       } as LocalPoint
       const frameWithoutMargin = offsetRect(frame, marginPoint)
       const updatedFrame = offsetRect(frameWithoutMargin, asLocal(dragDelta ?? zeroCanvasRect))
-      return boundingBoxMove('permanent', path, updatedFrame)
+      return [convertToAbsolute('permanent', path), setLocalFrame('permanent', path, updatedFrame)]
     } else {
-      return null
+      return []
     }
   }, selectedElements)
 }
@@ -111,7 +107,7 @@ function collectSiblingCommands(
       const frameWithoutMargin = offsetRect(frame, marginPoint)
       return [
         convertToAbsolute('permanent', path),
-        boundingBoxMove('permanent', path, frameWithoutMargin),
+        setLocalFrame('permanent', path, frameWithoutMargin),
       ]
     } else {
       return []

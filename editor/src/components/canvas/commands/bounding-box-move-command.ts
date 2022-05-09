@@ -7,28 +7,28 @@ import { stylePropPathMappingFn } from '../../inspector/common/property-path-hoo
 import { applyValuesAtPath } from './adjust-number-command'
 import { BaseCommand, CommandFunction, TransientOrNot } from './commands'
 
-export interface BoundingBoxMoveCommand extends BaseCommand {
-  type: 'BOUNDING_BOX_MOVE'
+export interface SetLocalFrameCommand extends BaseCommand {
+  type: 'SET_LOCAL_FRAME'
   target: ElementPath
   frame: LocalRectangle
 }
 
-export function boundingBoxMove(
+export function setLocalFrame(
   transient: TransientOrNot,
   target: ElementPath,
   frame: LocalRectangle,
-): BoundingBoxMoveCommand {
+): SetLocalFrameCommand {
   return {
-    type: 'BOUNDING_BOX_MOVE',
+    type: 'SET_LOCAL_FRAME',
     transient: transient,
     target: target,
     frame: frame,
   }
 }
 
-export const runBoundingBoxMove: CommandFunction<BoundingBoxMoveCommand> = (
+export const runSetLocalFrame: CommandFunction<SetLocalFrameCommand> = (
   editorState: EditorState,
-  command: BoundingBoxMoveCommand,
+  command: SetLocalFrameCommand,
 ) => {
   const propsToUpdate: Array<ValueAtPath> = [
     {
