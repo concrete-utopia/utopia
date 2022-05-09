@@ -1,6 +1,6 @@
 /** @jsxRuntime classic */
 /** @jsx jsx */
-import { jsx } from '@emotion/react'
+import { jsx, Theme } from '@emotion/react'
 import React from 'react'
 import { BreadcrumbTrail } from '../canvas/controls/breadcrumb-trail'
 import {
@@ -19,11 +19,17 @@ import { useEditorState } from './store/store-hook'
 import * as EP from '../../core/shared/element-path'
 import { MetadataUtils } from '../../core/model/element-metadata-utils'
 import { setFocusedElement } from './actions/action-creators'
+import { Interpolation } from '@emotion/serialize'
 
 export const ComponentOrInstanceIndicator = React.memo(() => {
-  const { metadata, focusedElementPath, selectedViews } = useEditorState((store) => {
+  const { isComponent, focusedElementPath, selectedViews } = useEditorState((store) => {
+    const target = store.editor.selectedViews[0]
+
+    const isFocusableComponent =
+      target == null ? false : MetadataUtils.isFocusableComponent(target, store.editor.jsxMetadata)
+
     return {
-      metadata: store.editor.jsxMetadata,
+      isComponent: isFocusableComponent,
       focusedElementPath: store.editor.focusedElementPath,
       selectedViews: store.editor.selectedViews,
     }
@@ -35,8 +41,8 @@ export const ComponentOrInstanceIndicator = React.memo(() => {
 
   const [isOpen, setIsOpen] = React.useState(false)
   const toggleOpen = React.useCallback(() => {
-    setIsOpen(!isOpen)
-  }, [isOpen])
+    setIsOpen((currentValue) => !currentValue)
+  }, [])
 
   const closeAndEatEvent = React.useCallback(
     (e: MouseEvent) => {
@@ -55,16 +61,14 @@ export const ComponentOrInstanceIndicator = React.memo(() => {
     dispatch([setFocusedElement(isFocused ? null : target)])
   }, [dispatch, isFocused, target])
 
-  const isComponent = target == null ? false : MetadataUtils.isFocusableComponent(target, metadata)
-
-  const getEditContextStyle = (): React.CSSProperties => {
+  const editContextStyle: React.CSSProperties = React.useMemo(() => {
     if (target != null) {
-      if (MetadataUtils.isFocusableComponent(target, metadata) && isFocused == false) {
+      if (isComponent && !isFocused) {
         return {
           color: colorTheme.component.value,
           backgroundColor: colorTheme.component.shade(10).value,
         }
-      } else if (isFocused && MetadataUtils.isFocusableComponent(target, metadata)) {
+      } else if (isFocused && isComponent) {
         return {
           color: colorTheme.componentChild.value,
           backgroundColor: colorTheme.componentChild.shade(10).value,
@@ -86,7 +90,28 @@ export const ComponentOrInstanceIndicator = React.memo(() => {
         pointerEvents: 'none',
       }
     }
-  }
+  }, [target, isComponent, isFocused, colorTheme])
+
+  const flexRowTheme: Interpolation<Theme> = React.useMemo(() => {
+    return {
+      flexGrow: 1,
+      flexShrink: 1,
+      overflow: 'hidden',
+      borderTopLeftRadius: UtopiaTheme.inputBorderRadius,
+      borderBottomLeftRadius: UtopiaTheme.inputBorderRadius,
+      gap: 8,
+      paddingLeft: 4,
+      cursor: 'pointer',
+      transition: 'background-color .1s ease-in-out',
+      ...editContextStyle,
+      '&:hover': {
+        filter: 'brightness(1.02  )',
+      },
+      '&:active': {
+        filter: 'brightness(1.03)',
+      },
+    }
+  }, [editContextStyle])
 
   return (
     <div
@@ -99,37 +124,16 @@ export const ComponentOrInstanceIndicator = React.memo(() => {
         flexBasis: 38,
       }}
     >
-      <FlexRow
-        role='button'
-        onClick={toggleFocusMode}
-        css={{
-          flexGrow: 1,
-          flexShrink: 1,
-          overflow: 'hidden',
-          borderTopLeftRadius: UtopiaTheme.inputBorderRadius,
-          borderBottomLeftRadius: UtopiaTheme.inputBorderRadius,
-          gap: 8,
-          paddingLeft: 4,
-          cursor: 'pointer',
-          transition: 'background-color .1s ease-in-out',
-          ...getEditContextStyle(),
-          '&:hover': {
-            filter: 'brightness(1.02  )',
-          },
-          '&:active': {
-            filter: 'brightness(1.03)',
-          },
-        }}
-      >
+      <FlexRow role='button' onClick={toggleFocusMode} css={flexRowTheme}>
         {isComponent ? (
-          <Icons.Component color={getEditContextStyle().stroke as IcnColor} />
+          <Icons.Component color={editContextStyle.stroke as IcnColor} />
         ) : (
           <Icn
             category='element'
             type='ghost'
             width={18}
             height={18}
-            color={getEditContextStyle().stroke as IcnColor}
+            color={editContextStyle.stroke as IcnColor}
           />
         )}
       </FlexRow>
@@ -146,7 +150,7 @@ export const ComponentOrInstanceIndicator = React.memo(() => {
           flexShrink: 0,
           flexBasis: 14,
           transition: 'background-color .1s ease-in-out',
-          ...getEditContextStyle(),
+          ...editContextStyle,
           // slightly darker than the button next to it
           filter: 'brightness(.99)',
           borderLeft: `1px dashed ${colorTheme.secondaryBorder.value}`,
@@ -167,7 +171,7 @@ export const ComponentOrInstanceIndicator = React.memo(() => {
       >
         <SmallerIcons.ExpansionArrowDown
           isDisabled={!popupEnabled}
-          color={getEditContextStyle().stroke as IcnColor}
+          color={editContextStyle.stroke as IcnColor}
           style={{
             flexGrow: 0,
             flexShrink: 0,

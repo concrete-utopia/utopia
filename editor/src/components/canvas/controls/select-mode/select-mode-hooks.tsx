@@ -325,15 +325,16 @@ function useStartCanvasSession(): (event: MouseEvent, target: ElementPath) => vo
     (event: MouseEvent, target: ElementPath) => {
       const start = windowToCanvasCoordinates(windowPoint(point(event.clientX, event.clientY)))
         .canvasPositionRounded
-
-      dispatch([
-        CanvasActions.createInteractionSession(
-          createInteractionViaMouse(start, Modifier.modifiersForEvent(event), {
-            type: 'BOUNDING_AREA',
-            target: target,
-          }),
-        ),
-      ])
+      if (event.button !== 2) {
+        dispatch([
+          CanvasActions.createInteractionSession(
+            createInteractionViaMouse(start, Modifier.modifiersForEvent(event), {
+              type: 'BOUNDING_AREA',
+              target: target,
+            }),
+          ),
+        ])
+      }
     },
     [dispatch, windowToCanvasCoordinates],
   )

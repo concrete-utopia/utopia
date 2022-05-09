@@ -1285,10 +1285,10 @@ export var ${BakedInStoryboardVariableName} = (props) => {
               width: 400px;
               height: 400px;
             \\"
-            data-uid=\\"scene-aaa utopia-storyboard-uid\\"
+            data-uid=\\"scene-aaa\\"
           >
             <div
-              data-uid=\\"ccc-unparsed-no-template-path aaa app-entity\\"
+              data-uid=\\"ccc-unparsed-no-template-path\\"
               data-path=\\"utopia-storyboard-uid/scene-aaa/app-entity:aaa\\"
             >
               hello
@@ -1383,13 +1383,9 @@ export var ${BakedInStoryboardVariableName} = (props) => {
               width: 400px;
               height: 400px;
             \\"
-            data-uid=\\"scene-aaa utopia-storyboard-uid\\"
+            data-uid=\\"scene-aaa\\"
           >
-            <div
-              id=\\"nasty-div\\"
-              data-uid=\\"77f~~~1 833~~~2 65e~~~1 aaa app-entity\\"
-              data-path=\\"833~~~2/77f~~~1\\"
-            >
+            <div id=\\"nasty-div\\" data-uid=\\"77f~~~1\\" data-path=\\"833~~~2/77f~~~1\\">
               huhahuha
             </div>
           </div>
@@ -1894,10 +1890,10 @@ describe('UiJsxCanvas render multifile projects', () => {
               width: 200px;
               top: 79px;
             \\"
-            data-uid=\\"scene-aaa utopia-storyboard-uid\\"
+            data-uid=\\"scene-aaa\\"
           >
             <div
-              data-uid=\\"app-outer-div app-entity\\"
+              data-uid=\\"app-outer-div\\"
               data-path=\\"utopia-storyboard-uid/scene-aaa/app-entity:app-outer-div\\"
             >
               <div
@@ -1978,14 +1974,14 @@ describe('UiJsxCanvas render multifile projects', () => {
               width: 200px;
               top: 79px;
             \\"
-            data-uid=\\"scene-aaa utopia-storyboard-uid\\"
+            data-uid=\\"scene-aaa\\"
           >
             <div
-              data-uid=\\"app-outer-div app-entity\\"
+              data-uid=\\"app-outer-div\\"
               data-path=\\"utopia-storyboard-uid/scene-aaa/app-entity:app-outer-div\\"
             >
               <div
-                data-uid=\\"card-outer-div card-instance\\"
+                data-uid=\\"card-outer-div\\"
                 data-path=\\"utopia-storyboard-uid/scene-aaa/app-entity:app-outer-div/card-instance:card-outer-div\\"
               >
                 <div
@@ -2064,10 +2060,10 @@ describe('UiJsxCanvas render multifile projects', () => {
               width: 200px;
               top: 79px;
             \\"
-            data-uid=\\"scene-aaa utopia-storyboard-uid\\"
+            data-uid=\\"scene-aaa\\"
           >
             <div
-              data-uid=\\"app-outer-div app-entity\\"
+              data-uid=\\"app-outer-div\\"
               data-path=\\"utopia-storyboard-uid/scene-aaa/app-entity\\"
             >
               <div data-uid=\\"inner-div\\">Hi there!</div>
@@ -2135,10 +2131,10 @@ describe('UiJsxCanvas render multifile projects', () => {
               width: 200px;
               top: 79px;
             \\"
-            data-uid=\\"scene-aaa utopia-storyboard-uid\\"
+            data-uid=\\"scene-aaa\\"
           >
             <div
-              data-uid=\\"app-outer-div app-entity\\"
+              data-uid=\\"app-outer-div\\"
               data-path=\\"utopia-storyboard-uid/scene-aaa/app-entity\\"
             >
               <div data-uid=\\"inner-div\\">Hi there!</div>
@@ -2219,10 +2215,10 @@ describe('UiJsxCanvas render multifile projects', () => {
               width: 400px;
               height: 400px;
             \\"
-            data-uid=\\"scene-aaa utopia-storyboard-uid\\"
+            data-uid=\\"scene-aaa\\"
           >
             <div
-              data-uid=\\"outer-div app-entity\\"
+              data-uid=\\"outer-div\\"
               data-path=\\"utopia-storyboard-uid/scene-aaa/app-entity:outer-div\\"
             >
               <div

@@ -5,7 +5,7 @@ import {
   UTOPIA_PATH_KEY,
   UTOPIA_SCENE_ID_KEY,
   UTOPIA_INSTANCE_PATH,
-  UTOPIA_UIDS_KEY,
+  UTOPIA_UID_KEY,
   UTOPIA_UID_ORIGINAL_PARENTS_KEY,
 } from '../../../core/model/utopia-constants'
 import { flatMapEither, forEachRight } from '../../../core/shared/either'
@@ -43,7 +43,7 @@ import { objectMap } from '../../../core/shared/object-utils'
 import { cssValueOnlyContainsComments } from '../../../printer-parsers/css/css-parser-utils'
 import { filterDataProps } from '../../../utils/canvas-react-utils'
 import { buildSpyWrappedElement } from './ui-jsx-canvas-spy-wrapper'
-import { appendToUidString, createIndexedUid } from '../../../core/shared/uid-utils'
+import { createIndexedUid } from '../../../core/shared/uid-utils'
 import { isComponentRendererComponent } from './ui-jsx-canvas-component-renderer'
 import { optionalMap } from '../../../core/shared/optional-utils'
 import { canvasMissingJSXElementError } from './canvas-render-errors'
@@ -128,9 +128,9 @@ function monkeyUidProp(uid: string | undefined, propsToUpdate: MapLike<any>): Ma
     ...propsToUpdate,
   }
 
-  const uidsFromProps = monkeyedProps[UTOPIA_UIDS_KEY]
-  const uidsToPass = appendToUidString(uidsFromProps, uid)
-  monkeyedProps[UTOPIA_UIDS_KEY] = uidsToPass
+  const uidFromProps = monkeyedProps[UTOPIA_UID_KEY]
+  const uidToPass = uidFromProps ?? uid
+  monkeyedProps[UTOPIA_UID_KEY] = uidToPass
 
   return monkeyedProps
 }
@@ -213,7 +213,7 @@ export function renderCoreElement(
 
       const passthroughProps = monkeyUidProp(uid, assembledProps)
 
-      const key = optionalMap(EP.toString, elementPath) ?? passthroughProps[UTOPIA_UIDS_KEY]
+      const key = optionalMap(EP.toString, elementPath) ?? passthroughProps[UTOPIA_UID_KEY]
 
       return renderJSXElement(
         key,

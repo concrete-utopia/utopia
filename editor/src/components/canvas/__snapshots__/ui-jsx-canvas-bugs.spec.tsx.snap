@@ -20,11 +20,9 @@ exports[`UiJsxCanvas #747 - DOM object constructor cannot be called as a functio
         width: 375px;
         height: 812px;
       \\"
-      data-uid=\\"scene sb\\"
+      data-uid=\\"scene\\"
     >
-      <div data-uid=\\"comment-root 5c5~~~1 app\\" data-path=\\"5c5~~~1:comment-root\\">
-        hat
-      </div>
+      <div data-uid=\\"comment-root\\" data-path=\\"5c5~~~1:comment-root\\">hat</div>
     </div>
   </div>
 </div>
@@ -144,7 +142,7 @@ Object {
     "localFrame": null,
     "props": Object {
       "data-path": "sb/scene",
-      "data-uid": "scene sb",
+      "data-uid": "scene",
       "data-utopia-scene-id": "sb/scene",
       "skipDeepFreeze": true,
       "style": Object {
