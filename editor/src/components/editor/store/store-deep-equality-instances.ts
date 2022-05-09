@@ -243,9 +243,7 @@ export function JSXAttributeValueKeepDeepEqualityCall<T>(): KeepDeepEqualityCall
   )
 }
 
-export function JSXAttributeOtherJavaScriptKeepDeepEqualityCall(): KeepDeepEqualityCall<
-  JSXAttributeOtherJavaScript
-> {
+export function JSXAttributeOtherJavaScriptKeepDeepEqualityCall(): KeepDeepEqualityCall<JSXAttributeOtherJavaScript> {
   return combine6EqualityCalls(
     (attribute) => attribute.javascript,
     createCallWithTripleEquals(),
@@ -305,9 +303,7 @@ export function JSXArrayElementKeepDeepEqualityCall(): KeepDeepEqualityCall<JSXA
   }
 }
 
-export function JSXAttributeNestedArrayKeepDeepEqualityCall(): KeepDeepEqualityCall<
-  JSXAttributeNestedArray
-> {
+export function JSXAttributeNestedArrayKeepDeepEqualityCall(): KeepDeepEqualityCall<JSXAttributeNestedArray> {
   return combine2EqualityCalls(
     (attribute) => attribute.content,
     arrayDeepEquality(JSXArrayElementKeepDeepEqualityCall()),
@@ -317,9 +313,7 @@ export function JSXAttributeNestedArrayKeepDeepEqualityCall(): KeepDeepEqualityC
   )
 }
 
-export function JSXSpreadAssignmentKeepDeepEqualityCall(): KeepDeepEqualityCall<
-  JSXSpreadAssignment
-> {
+export function JSXSpreadAssignmentKeepDeepEqualityCall(): KeepDeepEqualityCall<JSXSpreadAssignment> {
   return combine2EqualityCalls(
     (value) => value.value,
     JSXAttributeKeepDeepEqualityCall(),
@@ -329,9 +323,7 @@ export function JSXSpreadAssignmentKeepDeepEqualityCall(): KeepDeepEqualityCall<
   )
 }
 
-export function JSXPropertyAssignmentKeepDeepEqualityCall(): KeepDeepEqualityCall<
-  JSXPropertyAssignment
-> {
+export function JSXPropertyAssignmentKeepDeepEqualityCall(): KeepDeepEqualityCall<JSXPropertyAssignment> {
   return combine4EqualityCalls(
     (value) => value.key,
     createCallWithTripleEquals(),
@@ -357,9 +349,7 @@ export function JSXPropertyKeepDeepEqualityCall(): KeepDeepEqualityCall<JSXPrope
   }
 }
 
-export function JSXAttributeNestedObjectKeepDeepEqualityCall(): KeepDeepEqualityCall<
-  JSXAttributeNestedObject
-> {
+export function JSXAttributeNestedObjectKeepDeepEqualityCall(): KeepDeepEqualityCall<JSXAttributeNestedObject> {
   return combine2EqualityCalls(
     (attribute) => attribute.content,
     arrayDeepEquality(JSXPropertyKeepDeepEqualityCall()),
@@ -369,9 +359,7 @@ export function JSXAttributeNestedObjectKeepDeepEqualityCall(): KeepDeepEquality
   )
 }
 
-export function JSXAttributeFunctionCallKeepDeepEqualityCall(): KeepDeepEqualityCall<
-  JSXAttributeFunctionCall
-> {
+export function JSXAttributeFunctionCallKeepDeepEqualityCall(): KeepDeepEqualityCall<JSXAttributeFunctionCall> {
   return combine2EqualityCalls(
     (value) => value.functionName,
     createCallWithTripleEquals(),
@@ -599,29 +587,32 @@ export function JSXElementChildArrayKeepDeepEquality(): KeepDeepEqualityCall<
   return arrayDeepEquality(JSXElementChildKeepDeepEquality())
 }
 
-export const RegularParamKeepDeepEquality: KeepDeepEqualityCall<RegularParam> = combine2EqualityCalls(
-  (param) => param.paramName,
-  createCallWithTripleEquals(),
-  (param) => param.defaultExpression,
-  nullableDeepEquality(JSXAttributeOtherJavaScriptKeepDeepEqualityCall()),
-  regularParam,
-)
+export const RegularParamKeepDeepEquality: KeepDeepEqualityCall<RegularParam> =
+  combine2EqualityCalls(
+    (param) => param.paramName,
+    createCallWithTripleEquals(),
+    (param) => param.defaultExpression,
+    nullableDeepEquality(JSXAttributeOtherJavaScriptKeepDeepEqualityCall()),
+    regularParam,
+  )
 
-export const DestructuredParamPartKeepDeepEquality: KeepDeepEqualityCall<DestructuredParamPart> = combine3EqualityCalls(
-  (paramPart) => paramPart.propertyName,
-  createCallWithTripleEquals(),
-  (paramPart) => paramPart.param,
-  ParamKeepDeepEquality(),
-  (paramPart) => paramPart.defaultExpression,
-  nullableDeepEquality(JSXAttributeOtherJavaScriptKeepDeepEqualityCall()),
-  destructuredParamPart,
-)
+export const DestructuredParamPartKeepDeepEquality: KeepDeepEqualityCall<DestructuredParamPart> =
+  combine3EqualityCalls(
+    (paramPart) => paramPart.propertyName,
+    createCallWithTripleEquals(),
+    (paramPart) => paramPart.param,
+    ParamKeepDeepEquality(),
+    (paramPart) => paramPart.defaultExpression,
+    nullableDeepEquality(JSXAttributeOtherJavaScriptKeepDeepEqualityCall()),
+    destructuredParamPart,
+  )
 
-export const DestructuredObjectParamKeepDeepEquality: KeepDeepEqualityCall<DestructuredObject> = combine1EqualityCall(
-  (paramPart) => paramPart.parts,
-  arrayDeepEquality(DestructuredParamPartKeepDeepEquality),
-  destructuredObject,
-)
+export const DestructuredObjectParamKeepDeepEquality: KeepDeepEqualityCall<DestructuredObject> =
+  combine1EqualityCall(
+    (paramPart) => paramPart.parts,
+    arrayDeepEquality(DestructuredParamPartKeepDeepEquality),
+    destructuredObject,
+  )
 
 export const DestructuredArrayPartKeepDeepEquality: KeepDeepEqualityCall<DestructuredArrayPart> = (
   oldValue,
@@ -636,11 +627,12 @@ export const DestructuredArrayPartKeepDeepEquality: KeepDeepEqualityCall<Destruc
   }
 }
 
-export const DestructuredArrayKeepDeepEquality: KeepDeepEqualityCall<DestructuredArray> = combine1EqualityCall(
-  (param) => param.parts,
-  arrayDeepEquality(DestructuredArrayPartKeepDeepEquality),
-  destructuredArray,
-)
+export const DestructuredArrayKeepDeepEquality: KeepDeepEqualityCall<DestructuredArray> =
+  combine1EqualityCall(
+    (param) => param.parts,
+    arrayDeepEquality(DestructuredArrayPartKeepDeepEquality),
+    destructuredArray,
+  )
 
 export function BoundParamKeepDeepEquality(): KeepDeepEqualityCall<BoundParam> {
   return (oldValue, newValue) => {
@@ -666,29 +658,30 @@ export function ParamKeepDeepEquality(): KeepDeepEqualityCall<Param> {
   )
 }
 
-export const UtopiaJSXComponentKeepDeepEquality: KeepDeepEqualityCall<UtopiaJSXComponent> = combine10EqualityCalls(
-  (component) => component.name,
-  createCallWithTripleEquals(),
-  (component) => component.isFunction,
-  createCallWithTripleEquals(),
-  (component) => component.declarationSyntax,
-  createCallWithTripleEquals(),
-  (component) => component.blockOrExpression,
-  createCallWithTripleEquals(),
-  (component) => component.param,
-  nullableDeepEquality(ParamKeepDeepEquality()),
-  (component) => component.propsUsed,
-  arrayDeepEquality(createCallWithTripleEquals()),
-  (component) => component.rootElement,
-  JSXElementChildKeepDeepEquality(),
-  (component) => component.arbitraryJSBlock,
-  nullableDeepEquality(ArbitraryJsBlockKeepDeepEquality()),
-  (component) => component.usedInReactDOMRender,
-  createCallWithTripleEquals(),
-  (component) => component.returnStatementComments,
-  ParsedCommentsKeepDeepEqualityCall(),
-  utopiaJSXComponent,
-)
+export const UtopiaJSXComponentKeepDeepEquality: KeepDeepEqualityCall<UtopiaJSXComponent> =
+  combine10EqualityCalls(
+    (component) => component.name,
+    createCallWithTripleEquals(),
+    (component) => component.isFunction,
+    createCallWithTripleEquals(),
+    (component) => component.declarationSyntax,
+    createCallWithTripleEquals(),
+    (component) => component.blockOrExpression,
+    createCallWithTripleEquals(),
+    (component) => component.param,
+    nullableDeepEquality(ParamKeepDeepEquality()),
+    (component) => component.propsUsed,
+    arrayDeepEquality(createCallWithTripleEquals()),
+    (component) => component.rootElement,
+    JSXElementChildKeepDeepEquality(),
+    (component) => component.arbitraryJSBlock,
+    nullableDeepEquality(ArbitraryJsBlockKeepDeepEquality()),
+    (component) => component.usedInReactDOMRender,
+    createCallWithTripleEquals(),
+    (component) => component.returnStatementComments,
+    ParsedCommentsKeepDeepEqualityCall(),
+    utopiaJSXComponent,
+  )
 
 export function CanvasRectangleKeepDeepEquality(
   oldRect: CanvasRectangle,
@@ -771,9 +764,7 @@ export const ImportInfoKeepDeepEquality: KeepDeepEqualityCall<ImportInfo> = Eith
   ),
 )
 
-export function SpecialSizeMeasurementsKeepDeepEquality(): KeepDeepEqualityCall<
-  SpecialSizeMeasurements
-> {
+export function SpecialSizeMeasurementsKeepDeepEquality(): KeepDeepEqualityCall<SpecialSizeMeasurements> {
   return (oldSize, newSize) => {
     const offsetResult = LocalPointKeepDeepEquality(oldSize.offset, newSize.offset)
     const coordinateSystemBoundsResult = nullableDeepEquality(CanvasRectangleKeepDeepEquality)(
@@ -861,10 +852,9 @@ export function SpecialSizeMeasurementsKeepDeepEquality(): KeepDeepEqualityCall<
   }
 }
 
-export const StyleAttributeMetadataEntryKeepDeepEquality: KeepDeepEqualityCall<StyleAttributeMetadataEntry> = (
-  oldValue: StyleAttributeMetadataEntry,
-  newValue: StyleAttributeMetadataEntry,
-) => {
+export const StyleAttributeMetadataEntryKeepDeepEquality: KeepDeepEqualityCall<
+  StyleAttributeMetadataEntry
+> = (oldValue: StyleAttributeMetadataEntry, newValue: StyleAttributeMetadataEntry) => {
   if (oldValue.fromStyleSheet === newValue.fromStyleSheet) {
     return keepDeepEqualityResult(oldValue, true)
   } else {
@@ -872,13 +862,10 @@ export const StyleAttributeMetadataEntryKeepDeepEquality: KeepDeepEqualityCall<S
   }
 }
 
-export const StyleAttributeMetadataKeepDeepEquality: KeepDeepEqualityCall<StyleAttributeMetadata> = objectDeepEquality(
-  undefinableDeepEquality(StyleAttributeMetadataEntryKeepDeepEquality),
-)
+export const StyleAttributeMetadataKeepDeepEquality: KeepDeepEqualityCall<StyleAttributeMetadata> =
+  objectDeepEquality(undefinableDeepEquality(StyleAttributeMetadataEntryKeepDeepEquality))
 
-export function ElementInstanceMetadataKeepDeepEquality(): KeepDeepEqualityCall<
-  ElementInstanceMetadata
-> {
+export function ElementInstanceMetadataKeepDeepEquality(): KeepDeepEqualityCall<ElementInstanceMetadata> {
   return combine12EqualityCalls(
     (metadata) => metadata.elementPath,
     ElementPathKeepDeepEquality,
@@ -908,8 +895,6 @@ export function ElementInstanceMetadataKeepDeepEquality(): KeepDeepEqualityCall<
   )
 }
 
-export function ElementInstanceMetadataMapKeepDeepEquality(): KeepDeepEqualityCall<
-  ElementInstanceMetadataMap
-> {
+export function ElementInstanceMetadataMapKeepDeepEquality(): KeepDeepEqualityCall<ElementInstanceMetadataMap> {
   return objectDeepEquality(ElementInstanceMetadataKeepDeepEquality())
 }

@@ -117,14 +117,11 @@ export const BorderSubsection: React.FunctionComponent = React.memo(() => {
     onInsertBorderSubmitValue(null)
   }, [onInsertBorderSubmitValue])
 
-  const [borderColorSubmitValue, borderColorTransientSubmitValue] = useSubmitValueFactory(
-    updateBorderColor,
-  )
+  const [borderColorSubmitValue, borderColorTransientSubmitValue] =
+    useSubmitValueFactory(updateBorderColor)
   const [borderColorStringSubmitValue] = useSubmitValueFactory(updateBorderColorString)
-  const [
-    borderWidthSubmitValue,
-    borderWidthTransientSubmitValue,
-  ] = useWrappedSubmitFactoryEmptyOrUnknownOnSubmitValue(useSubmitValueFactory(updateBorderWidth))
+  const [borderWidthSubmitValue, borderWidthTransientSubmitValue] =
+    useWrappedSubmitFactoryEmptyOrUnknownOnSubmitValue(useSubmitValueFactory(updateBorderWidth))
 
   const allOrSplitControls = (
     <UIGridRow tall alignItems='start' padded={false} variant='<-------1fr------>|----80px----|'>

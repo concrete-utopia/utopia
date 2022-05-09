@@ -87,10 +87,10 @@ export const SolidBackgroundLayer = React.memo<SolidBackgroundLayerProps>((props
     getIndexedUpdateStringCSSBackgroundLayerSolidColor(props.index),
   )
 
-  const toggleCheckbox = React.useCallback(() => onCheckboxSubmitValue(!props.value.enabled), [
-    onCheckboxSubmitValue,
-    props,
-  ])
+  const toggleCheckbox = React.useCallback(
+    () => onCheckboxSubmitValue(!props.value.enabled),
+    [onCheckboxSubmitValue, props],
+  )
   const [onRemoveRowSubmit] = props.useSubmitTransformedValuesFactory(
     getIndexedSpliceArrayItem<CSSBackgroundLayer | CSSUnknownArrayItem>(props.index),
   )

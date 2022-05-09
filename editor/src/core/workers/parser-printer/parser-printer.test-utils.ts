@@ -92,8 +92,8 @@ import { optionalMap } from '../../shared/optional-utils'
 import { getUtopiaID } from '../../model/element-template-utils'
 import { emptySet } from '../../shared/set-utils'
 
-export const singleLineCommentArbitrary: Arbitrary<SingleLineComment> = lowercaseStringArbitrary().map(
-  (text) => {
+export const singleLineCommentArbitrary: Arbitrary<SingleLineComment> =
+  lowercaseStringArbitrary().map((text) => {
     return {
       type: 'SINGLE_LINE_COMMENT',
       comment: text,
@@ -101,11 +101,10 @@ export const singleLineCommentArbitrary: Arbitrary<SingleLineComment> = lowercas
       trailingNewLine: false,
       pos: null,
     }
-  },
-)
+  })
 
-export const multiLineCommentArbitrary: Arbitrary<MultiLineComment> = lowercaseStringArbitrary().map(
-  (text) => {
+export const multiLineCommentArbitrary: Arbitrary<MultiLineComment> =
+  lowercaseStringArbitrary().map((text) => {
     return {
       type: 'MULTI_LINE_COMMENT',
       comment: text,
@@ -113,8 +112,7 @@ export const multiLineCommentArbitrary: Arbitrary<MultiLineComment> = lowercaseS
       trailingNewLine: false,
       pos: null,
     }
-  },
-)
+  })
 
 export const commentArbitrary: Arbitrary<Comment> = FastCheck.oneof<Comment>(
   singleLineCommentArbitrary,
@@ -431,10 +429,9 @@ export function jsxArbitraryBlockArbitrary(): Arbitrary<JSXArbitraryBlock> {
 }
 
 export function jsxAttributeValueArbitrary(): Arbitrary<JSXAttributeValue<any>> {
-  return FastCheck.tuple(
-    FastCheck.jsonObject(),
-    arbitraryMultiLineComments(),
-  ).map(([value, comments]) => jsxAttributeValue(value, comments))
+  return FastCheck.tuple(FastCheck.jsonObject(), arbitraryMultiLineComments()).map(
+    ([value, comments]) => jsxAttributeValue(value, comments),
+  )
 }
 
 export function jsxAttributeOtherJavaScriptArbitrary(): Arbitrary<JSXAttributeOtherJavaScript> {
@@ -442,17 +439,15 @@ export function jsxAttributeOtherJavaScriptArbitrary(): Arbitrary<JSXAttributeOt
 }
 
 export function jsxArrayValueArbitrary(depth: number): Arbitrary<JSXArrayValue> {
-  return FastCheck.tuple(
-    jsxAttributeArbitrary(depth),
-    arbitraryMultiLineComments(),
-  ).map(([array, comments]) => jsxArrayValue(array, comments))
+  return FastCheck.tuple(jsxAttributeArbitrary(depth), arbitraryMultiLineComments()).map(
+    ([array, comments]) => jsxArrayValue(array, comments),
+  )
 }
 
 export function jsxArraySpreadArbitrary(depth: number): Arbitrary<JSXArraySpread> {
-  return FastCheck.tuple(
-    jsxAttributeArbitrary(depth),
-    arbitraryMultiLineComments(),
-  ).map(([array, comments]) => jsxArraySpread(array, comments))
+  return FastCheck.tuple(jsxAttributeArbitrary(depth), arbitraryMultiLineComments()).map(
+    ([array, comments]) => jsxArraySpread(array, comments),
+  )
 }
 
 export function jsxArrayElementArbitrary(depth: number): Arbitrary<JSXArrayElement> {
@@ -480,10 +475,9 @@ export function jsxPropertyAssignmentArbitrary(depth: number): Arbitrary<JSXProp
 }
 
 export function jsxSpreadAssignmentArbitrary(depth: number): Arbitrary<JSXSpreadAssignment> {
-  return FastCheck.tuple(
-    jsxAttributeArbitrary(depth),
-    arbitraryMultiLineComments(),
-  ).map(([spread, comments]) => jsxSpreadAssignment(spread, comments))
+  return FastCheck.tuple(jsxAttributeArbitrary(depth), arbitraryMultiLineComments()).map(
+    ([spread, comments]) => jsxSpreadAssignment(spread, comments),
+  )
 }
 
 export function jsxPropertyArbitrary(depth: number): Arbitrary<JSXProperty> {
@@ -589,10 +583,9 @@ export function arbitraryJSBlockArbitrary(): Arbitrary<ArbitraryJSBlock> {
 }
 
 export function arbitraryComments(): Arbitrary<ParsedComments> {
-  return FastCheck.tuple(
-    FastCheck.array(commentArbitrary),
-    FastCheck.array(commentArbitrary),
-  ).map(([leadingComments, trailingComments]) => parsedComments(leadingComments, trailingComments))
+  return FastCheck.tuple(FastCheck.array(commentArbitrary), FastCheck.array(commentArbitrary)).map(
+    ([leadingComments, trailingComments]) => parsedComments(leadingComments, trailingComments),
+  )
 }
 
 export function arbitraryMultiLineComments(): Arbitrary<ParsedComments> {
@@ -909,7 +902,7 @@ export function elementsStructure(topLevelElements: Array<TopLevelElement>): str
     }
     structureResults.push(elementResult)
     if (isUtopiaJSXComponent(topLevelElement)) {
-      const emptyPath = ([] as any) as StaticElementPathPart
+      const emptyPath = [] as any as StaticElementPathPart
       walkElement(topLevelElement.rootElement, emptyPath, 1, (innerElement, path, depth) => {
         let innerElementResult: string = ''
         for (let index = 0; index < depth; index++) {

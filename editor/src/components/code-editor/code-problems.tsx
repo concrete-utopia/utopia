@@ -199,8 +199,10 @@ export const CodeEditorTabPane = React.memo<CodeEditorTabPaneProps>(
       setSelectedTab('console')
     }, [setSelectedTab, isOpen, toggleIsOpen])
 
-    const problemsTabBackgroundColor = getTabStyleForErrors(errorMessages, colorTheme)
-      .backgroundColor
+    const problemsTabBackgroundColor = getTabStyleForErrors(
+      errorMessages,
+      colorTheme,
+    ).backgroundColor
     const ProblemsTabLabel = React.useMemo(() => {
       return (
         <span>
@@ -222,8 +224,10 @@ export const CodeEditorTabPane = React.memo<CodeEditorTabPaneProps>(
       )
     }, [colorTheme, problemsTabBackgroundColor, errorMessages.length])
 
-    const consoleTabBackgroundColor = getTabStyleForLogs(canvasConsoleLogs, colorTheme)
-      .backgroundColor
+    const consoleTabBackgroundColor = getTabStyleForLogs(
+      canvasConsoleLogs,
+      colorTheme,
+    ).backgroundColor
     const ConsoleTabLabel = React.useMemo(() => {
       return (
         <span>

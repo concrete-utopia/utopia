@@ -142,10 +142,10 @@ const SelectableElementItem = (props: SelectableElementItemProps) => {
     (store) => store.editor.highlightedViews.some((view) => EP.pathsEqual(path, view)),
     'SelectableElementItem isHighlighted',
   )
-  const highlightElement = React.useCallback(() => dispatch([setHighlightedView(path)]), [
-    dispatch,
-    path,
-  ])
+  const highlightElement = React.useCallback(
+    () => dispatch([setHighlightedView(path)]),
+    [dispatch, path],
+  )
 
   React.useEffect(() => {
     const current = rawRef.current

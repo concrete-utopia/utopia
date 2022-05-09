@@ -437,7 +437,7 @@ export function calculatePropertyStatusForSelection(
 }
 
 export function calculateMultiPropertyStatusForSelection<
-  PropertiesToControl extends ParsedPropertiesKeys
+  PropertiesToControl extends ParsedPropertiesKeys,
 >(
   multiselectAtProps: MultiselectAtProps<PropertiesToControl>,
   realValues: {

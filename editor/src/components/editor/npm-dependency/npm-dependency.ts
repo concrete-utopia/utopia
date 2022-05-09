@@ -264,9 +264,10 @@ export async function checkPackageVersionExists(
   }
 }
 
-function allDependenciesFromUnparsedPackageJson(
-  packageJson: string,
-): { dependencies: any; devDependencies: any } {
+function allDependenciesFromUnparsedPackageJson(packageJson: string): {
+  dependencies: any
+  devDependencies: any
+} {
   try {
     const parsedJSON = json5.parse(packageJson)
     if (typeof parsedJSON === 'object') {

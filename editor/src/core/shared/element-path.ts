@@ -38,10 +38,8 @@ function emptyElementPathCache(): ElementPathCache {
 
 let dynamicToStaticPathCache: Map<ElementPath, StaticElementPath> = new Map()
 let dynamicToStaticLastElementPathPartCache: Map<ElementPath, ElementPath> = new Map()
-let dynamicElementPathToStaticElementPathCache: Map<
-  ElementPathPart,
-  StaticElementPathPart
-> = new Map()
+let dynamicElementPathToStaticElementPathCache: Map<ElementPathPart, StaticElementPathPart> =
+  new Map()
 
 let globalPathStringToPathCache: { [key: string]: ElementPath } = {}
 let globalElementPathCache: ElementPathCache = emptyElementPathCache()

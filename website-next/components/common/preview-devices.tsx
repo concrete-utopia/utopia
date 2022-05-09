@@ -13,9 +13,9 @@ export const getDeviceReactSelectOption = (deviceID: DeviceID): DeviceReactSelec
 
 export type DeviceReactSelectOption = { value: DeviceID; label: string }
 export type DeviceReactSelectList = Array<DeviceReactSelectOption>
-export const deviceReactSelectOptionList: DeviceReactSelectList = (Object.keys(
-  deviceInfoList,
-) as Array<DeviceID>).map((value): DeviceReactSelectOption => getDeviceReactSelectOption(value))
+export const deviceReactSelectOptionList: DeviceReactSelectList = (
+  Object.keys(deviceInfoList) as Array<DeviceID>
+).map((value): DeviceReactSelectOption => getDeviceReactSelectOption(value))
 
 interface PreviewReactSelectDeviceSelectorProps {
   value: DeviceReactSelectOption
@@ -23,11 +23,9 @@ interface PreviewReactSelectDeviceSelectorProps {
   caratOffset: number
 }
 
-export const PreviewReactSelectDeviceSelector: React.FunctionComponent<PreviewReactSelectDeviceSelectorProps> = ({
-  value,
-  onChange,
-  caratOffset,
-}) => {
+export const PreviewReactSelectDeviceSelector: React.FunctionComponent<
+  PreviewReactSelectDeviceSelectorProps
+> = ({ value, onChange, caratOffset }) => {
   const PreviewReactSelectSingleValue = (singleValueProps: any) => {
     return components.SingleValue == null ? null : (
       <components.SingleValue {...singleValueProps}>

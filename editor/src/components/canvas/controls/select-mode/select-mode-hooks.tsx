@@ -102,14 +102,8 @@ export function useMaybeHighlightElement(): {
   const maybeHighlightOnHover = React.useCallback(
     (target: ElementPath): void => {
       /// target, parts, array, 0 contains [0: "0cd" 1: "478]
-      const {
-        dispatch,
-        dragging,
-        resizing,
-        selectionEnabled,
-        inserting,
-        highlightedViews,
-      } = stateRef.current
+      const { dispatch, dragging, resizing, selectionEnabled, inserting, highlightedViews } =
+        stateRef.current
 
       const alreadyHighlighted = pathsEqual(target, highlightedViews?.[0])
 
@@ -177,13 +171,11 @@ export function getSelectableViews(
         ? EP.allPathsForLastPart(view)
         : EP.allPathsForLastPart(EP.parentPath(view))
       Utils.fastForEach(allPaths, (ancestor) => {
-        const {
-          children,
-          unfurledComponents,
-        } = MetadataUtils.getAllChildrenIncludingUnfurledFocusedComponents(
-          ancestor,
-          componentMetadata,
-        )
+        const { children, unfurledComponents } =
+          MetadataUtils.getAllChildrenIncludingUnfurledFocusedComponents(
+            ancestor,
+            componentMetadata,
+          )
         const ancestorChildren = [...children, ...unfurledComponents]
         fastForEach(ancestorChildren, (child) => siblings.push(child))
       })
@@ -218,13 +210,8 @@ function useFindValidTarget(): (
 
   return React.useCallback(
     (selectableViews: Array<ElementPath>, mousePoint: WindowPoint | null) => {
-      const {
-        selectedViews,
-        componentMetadata,
-        hiddenInstances,
-        canvasScale,
-        canvasOffset,
-      } = storeRef.current
+      const { selectedViews, componentMetadata, hiddenInstances, canvasScale, canvasOffset } =
+        storeRef.current
       const validElementMouseOver: ElementPath | null = getValidTargetAtPoint(
         componentMetadata,
         selectedViews,
@@ -323,8 +310,9 @@ function useStartCanvasSession(): (event: MouseEvent, target: ElementPath) => vo
 
   return React.useCallback(
     (event: MouseEvent, target: ElementPath) => {
-      const start = windowToCanvasCoordinates(windowPoint(point(event.clientX, event.clientY)))
-        .canvasPositionRounded
+      const start = windowToCanvasCoordinates(
+        windowPoint(point(event.clientX, event.clientY)),
+      ).canvasPositionRounded
       if (event.button !== 2) {
         dispatch([
           CanvasActions.createInteractionSession(

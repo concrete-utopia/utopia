@@ -185,13 +185,10 @@ export const NumberInput = React.memo<NumberInputProps>(
     const { showContent } = controlStyles
 
     const [mixed, setMixed] = React.useState<boolean>(controlStyles.mixed)
-    const [
-      stateValue,
-      setStateValueDirectly,
-      forceStateValueToUpdateFromProps,
-    ] = usePropControlledState(
-      getDisplayValue(propsValue ?? null, defaultUnitToHide, mixed, showContent),
-    )
+    const [stateValue, setStateValueDirectly, forceStateValueToUpdateFromProps] =
+      usePropControlledState(
+        getDisplayValue(propsValue ?? null, defaultUnitToHide, mixed, showContent),
+      )
     const updateStateValue = React.useCallback(
       (newValue: CSSNumber) =>
         setStateValueDirectly(getDisplayValue(newValue, defaultUnitToHide, false, true)),
@@ -208,9 +205,8 @@ export const NumberInput = React.memo<NumberInputProps>(
     const [isFauxcused, setIsFauxcused] = React.useState<boolean>(false)
     const isFocused = isActuallyFocused || isFauxcused
 
-    const [labelDragDirection, setLabelDragDirection] = React.useState<LabelDragDirection>(
-      'horizontal',
-    )
+    const [labelDragDirection, setLabelDragDirection] =
+      React.useState<LabelDragDirection>('horizontal')
 
     const [, setValueAtDragOriginState] = React.useState<number>(0)
     const valueAtDragOrigin = React.useRef(0)

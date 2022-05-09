@@ -29,7 +29,11 @@ export class SourceMap {
     line: number,
     column: number,
   ): { source: string | null; line: number | null; column: number | null } {
-    const { line: l, column: c, source: s } = this.__source_map.originalPositionFor({
+    const {
+      line: l,
+      column: c,
+      source: s,
+    } = this.__source_map.originalPositionFor({
       line,
       column,
     })

@@ -80,10 +80,10 @@ interface HiddenControlLabelProps {
 const HiddenControlLabel = React.memo((props: HiddenControlLabelProps): JSX.Element | null => {
   const colorTheme = useColorTheme()
   const { propName, showHiddenControl } = props
-  const labelOnClick = React.useCallback(() => showHiddenControl(propName), [
-    propName,
-    showHiddenControl,
-  ])
+  const labelOnClick = React.useCallback(
+    () => showHiddenControl(propName),
+    [propName, showHiddenControl],
+  )
   return (
     <Subdued
       css={{
