@@ -10,7 +10,7 @@ import {
   zeroCanvasRect,
 } from '../../../core/shared/math-utils'
 import { ElementPath } from '../../../core/shared/project-file-types'
-import { setLocalFrame, SetLocalFrameCommand } from '../commands/bounding-box-move-command'
+import { setLocalFrame, SetLocalFrameCommand } from '../commands/set-local-frame-command'
 import { CanvasCommand } from '../commands/commands'
 import { convertToAbsolute } from '../commands/convert-to-absolute-command'
 import { CanvasStrategy } from './canvas-strategy-types'
