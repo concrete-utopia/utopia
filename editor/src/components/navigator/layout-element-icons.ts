@@ -5,6 +5,7 @@ import {
   isJSXElement,
   ElementInstanceMetadataMap,
   UtopiaJSXComponent,
+  ElementInstanceMetadata,
 } from '../../core/shared/element-template'
 import * as EP from '../../core/shared/element-path'
 import { Imports, ElementPath } from '../../core/shared/project-file-types'
@@ -41,11 +42,10 @@ export function useComponentIcon(path: ElementPath): IcnPropsBase | null {
   }, 'useComponentIcon') // TODO Memoize Icon Result
 }
 
-export function createComponentOrElementIconProps(
-  path: ElementPath,
-  metadata: ElementInstanceMetadataMap,
-): IcnPropsBase {
-  return createComponentIconProps(path, metadata) ?? createElementIconProps(path, metadata)
+export function createComponentOrElementIconProps(element: ElementInstanceMetadata): IcnPropsBase {
+  return (
+    createComponentIconPropsFromMetadata(element) ?? createElementIconPropsFromMetadata(element)
+  )
 }
 
 export function createLayoutOrElementIconResult(
@@ -61,7 +61,7 @@ export function createLayoutOrElementIconResult(
   }
 
   const layoutIcon = createLayoutIconProps(path, metadata)
-  if (MetadataUtils.isProbablySceneFromMetadata(metadata, path)) {
+  if (MetadataUtils.isProbablyScene(metadata, path)) {
     return {
       iconProps: {
         category: 'component',
@@ -124,12 +124,10 @@ function createLayoutIconProps(
   return null
 }
 
-export function createElementIconProps(
-  path: ElementPath,
-  metadata: ElementInstanceMetadataMap,
+export function createElementIconPropsFromMetadata(
+  element: ElementInstanceMetadata | null,
 ): IcnPropsBase {
-  const element = MetadataUtils.findElementByElementPath(metadata, path)
-  const isButton = MetadataUtils.isButton(path, metadata)
+  const isButton = MetadataUtils.isButtonFromMetadata(element)
   if (isButton) {
     return {
       category: 'element',
@@ -176,12 +174,18 @@ export function createElementIconProps(
   }
 }
 
-function createComponentIconProps(
+export function createElementIconProps(
   path: ElementPath,
   metadata: ElementInstanceMetadataMap,
-): IcnPropsBase | null {
+): IcnPropsBase {
   const element = MetadataUtils.findElementByElementPath(metadata, path)
-  if (MetadataUtils.isProbablySceneFromMetadata(metadata, path)) {
+  return createElementIconPropsFromMetadata(element)
+}
+
+function createComponentIconPropsFromMetadata(
+  element: ElementInstanceMetadata | null,
+): IcnPropsBase | null {
+  if (MetadataUtils.isProbablySceneFromMetadata(element)) {
     return null
   }
   if (element?.isEmotionOrStyledComponent) {
@@ -210,7 +214,7 @@ function createComponentIconProps(
       height: 18,
     }
   }
-  const isComponent = MetadataUtils.isFocusableComponent(path, metadata)
+  const isComponent = MetadataUtils.isFocusableComponentFromMetadata(element)
   if (isComponent) {
     return {
       category: 'component',
@@ -221,4 +225,12 @@ function createComponentIconProps(
   }
 
   return null
+}
+
+function createComponentIconProps(
+  path: ElementPath,
+  metadata: ElementInstanceMetadataMap,
+): IcnPropsBase | null {
+  const element = MetadataUtils.findElementByElementPath(metadata, path)
+  return createComponentIconPropsFromMetadata(element)
 }
