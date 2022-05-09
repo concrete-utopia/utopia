@@ -6,8 +6,8 @@ import {
   asLocal,
   CanvasVector,
   LocalPoint,
-  localRectangle,
   offsetRect,
+  zeroCanvasRect,
 } from '../../../core/shared/math-utils'
 import { ElementPath } from '../../../core/shared/project-file-types'
 import { boundingBoxMove, BoundingBoxMoveCommand } from '../commands/bounding-box-move-command'
@@ -73,7 +73,7 @@ function collectMoveCommandsForSelectedElement(
 ): Array<BoundingBoxMoveCommand> {
   return mapDropNulls((path) => {
     const frame = MetadataUtils.getFrame(path, metadata)
-    if (dragDelta != null && frame != null) {
+    if (frame != null) {
       const margin = MetadataUtils.findElementByElementPath(metadata, path)?.specialSizeMeasurements
         .margin
       const marginPoint: LocalPoint = {
@@ -81,7 +81,7 @@ function collectMoveCommandsForSelectedElement(
         y: -(margin?.top ?? 0),
       } as LocalPoint
       const frameWithoutMargin = offsetRect(frame, marginPoint)
-      const updatedFrame = offsetRect(frameWithoutMargin, asLocal(dragDelta))
+      const updatedFrame = offsetRect(frameWithoutMargin, asLocal(dragDelta ?? zeroCanvasRect))
       return boundingBoxMove('permanent', path, updatedFrame)
     } else {
       return null
@@ -110,8 +110,8 @@ function collectSiblingCommands(
       } as LocalPoint
       const frameWithoutMargin = offsetRect(frame, marginPoint)
       return [
-        boundingBoxMove('permanent', path, frameWithoutMargin),
         convertToAbsolute('permanent', path),
+        boundingBoxMove('permanent', path, frameWithoutMargin),
       ]
     } else {
       return []
