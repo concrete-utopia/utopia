@@ -6,6 +6,8 @@ import { EditorState, EditorStatePatch } from '../../editor/store/editor-state'
 import { CommandDescription } from '../canvas-strategies/interaction-state'
 import { AdjustCssLengthProperty, runAdjustCssLengthProperty } from './adjust-css-length-command'
 import { AdjustNumberProperty, runAdjustNumberProperty } from './adjust-number-command'
+import { BoundingBoxMoveCommand, runBoundingBoxMove } from './bounding-box-move-command'
+import { ConvertToAbsolute, runConvertToAbsolute } from './convert-to-absolute-command'
 import { mergePatches } from './merge-patches'
 import { ReparentElement, runReparentElement } from './reparent-element-command'
 import { runSetSnappingGuidelines, SetSnappingGuidelines } from './set-snapping-guidelines-command'
@@ -39,6 +41,8 @@ export type CanvasCommand =
   | UpdateSelectedViews
   | UpdateHighlightedViews
   | SetSnappingGuidelines
+  | ConvertToAbsolute
+  | BoundingBoxMoveCommand
 
 export const runCanvasCommand: CommandFunction<CanvasCommand> = (
   editorState: EditorState,
@@ -61,6 +65,10 @@ export const runCanvasCommand: CommandFunction<CanvasCommand> = (
       return runUpdateHighlightedViews(editorState, command)
     case 'SET_SNAPPING_GUIDELINES':
       return runSetSnappingGuidelines(editorState, command)
+    case 'CONVERT_TO_ABSOLUTE':
+      return runConvertToAbsolute(editorState, command)
+    case 'BOUNDING_BOX_MOVE':
+      return runBoundingBoxMove(editorState, command)
     default:
       const _exhaustiveCheck: never = command
       throw new Error(`Unhandled canvas command ${JSON.stringify(command)}`)
