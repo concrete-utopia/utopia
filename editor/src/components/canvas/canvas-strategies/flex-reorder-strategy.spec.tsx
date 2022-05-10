@@ -1,6 +1,7 @@
 import { elementPath } from '../../../core/shared/element-path'
 import {
   ElementInstanceMetadata,
+  ElementInstanceMetadataMap,
   SpecialSizeMeasurements,
 } from '../../../core/shared/element-template'
 import { CanvasPoint, canvasPoint, canvasRectangle } from '../../../core/shared/math-utils'
@@ -17,11 +18,105 @@ import { flexReorderStrategy } from './flex-reorder-strategy'
 import { InteractionSession, StrategyState } from './interaction-state'
 import { createMouseInteractionForTests } from './interaction-state.test-utils'
 
+function getDefaultMetadata(flexDirection: string): ElementInstanceMetadataMap {
+  return {
+    'scene-aaa/app-entity:app-outer-div': {
+      elementPath: elementPath([['scene-aaa', 'app-entity'], ['app-outer-div']]),
+      globalFrame: canvasRectangle({ x: 0, y: 0, width: 375, height: 50 }),
+      specialSizeMeasurements: {
+        flexDirection: flexDirection,
+      } as SpecialSizeMeasurements,
+    } as ElementInstanceMetadata,
+    'scene-aaa/app-entity:app-outer-div/child-0': {
+      elementPath: elementPath([
+        ['scene-aaa', 'app-entity'],
+        ['app-outer-div', 'child-0'],
+      ]),
+      globalFrame: canvasRectangle({ x: 0, y: 0, width: 50, height: 50 }),
+      specialSizeMeasurements: {
+        parentLayoutSystem: 'flex',
+      } as SpecialSizeMeasurements,
+    } as ElementInstanceMetadata,
+    'scene-aaa/app-entity:app-outer-div/child-1': {
+      elementPath: elementPath([
+        ['scene-aaa', 'app-entity'],
+        ['app-outer-div', 'child-1'],
+      ]),
+      globalFrame: canvasRectangle({ x: 60, y: 0, width: 50, height: 50 }),
+      specialSizeMeasurements: {
+        parentLayoutSystem: 'flex',
+      } as SpecialSizeMeasurements,
+    } as ElementInstanceMetadata,
+    'scene-aaa/app-entity:app-outer-div/child-2': {
+      elementPath: elementPath([
+        ['scene-aaa', 'app-entity'],
+        ['app-outer-div', 'child-2'],
+      ]),
+      globalFrame: canvasRectangle({ x: 120, y: 0, width: 50, height: 50 }),
+      specialSizeMeasurements: {
+        parentLayoutSystem: 'flex',
+      } as SpecialSizeMeasurements,
+    } as ElementInstanceMetadata,
+  }
+}
+
+function getMetadataWithAbsoluteChild(flexDirection: string): ElementInstanceMetadataMap {
+  return {
+    'scene-aaa/app-entity:app-outer-div': {
+      elementPath: elementPath([['scene-aaa', 'app-entity'], ['app-outer-div']]),
+      globalFrame: canvasRectangle({ x: 0, y: 0, width: 375, height: 50 }),
+      specialSizeMeasurements: {
+        flexDirection: flexDirection,
+      } as SpecialSizeMeasurements,
+    } as ElementInstanceMetadata,
+    'scene-aaa/app-entity:app-outer-div/absolute-child': {
+      elementPath: elementPath([
+        ['scene-aaa', 'app-entity'],
+        ['app-outer-div', 'child-0'],
+      ]),
+      globalFrame: canvasRectangle({ x: 0, y: 0, width: 50, height: 50 }),
+      specialSizeMeasurements: {
+        parentLayoutSystem: 'flex',
+      } as SpecialSizeMeasurements,
+    } as ElementInstanceMetadata,
+    'scene-aaa/app-entity:app-outer-div/child-0': {
+      elementPath: elementPath([
+        ['scene-aaa', 'app-entity'],
+        ['app-outer-div', 'child-0'],
+      ]),
+      globalFrame: canvasRectangle({ x: 0, y: 0, width: 50, height: 50 }),
+      specialSizeMeasurements: {
+        parentLayoutSystem: 'flex',
+      } as SpecialSizeMeasurements,
+    } as ElementInstanceMetadata,
+    'scene-aaa/app-entity:app-outer-div/child-1': {
+      elementPath: elementPath([
+        ['scene-aaa', 'app-entity'],
+        ['app-outer-div', 'child-1'],
+      ]),
+      globalFrame: canvasRectangle({ x: 60, y: 0, width: 50, height: 50 }),
+      specialSizeMeasurements: {
+        parentLayoutSystem: 'flex',
+      } as SpecialSizeMeasurements,
+    } as ElementInstanceMetadata,
+    'scene-aaa/app-entity:app-outer-div/child-2': {
+      elementPath: elementPath([
+        ['scene-aaa', 'app-entity'],
+        ['app-outer-div', 'child-2'],
+      ]),
+      globalFrame: canvasRectangle({ x: 120, y: 0, width: 50, height: 50 }),
+      specialSizeMeasurements: {
+        parentLayoutSystem: 'flex',
+      } as SpecialSizeMeasurements,
+    } as ElementInstanceMetadata,
+  }
+}
+
 function reorderElement(
   editorState: EditorState,
-  flexDirection: string,
   dragStart: CanvasPoint,
   drag: CanvasPoint,
+  metadata: ElementInstanceMetadataMap,
 ): EditorState {
   const interactionSession: InteractionSession = {
     ...createMouseInteractionForTests(
@@ -43,45 +138,7 @@ function reorderElement(
       accumulatedPatches: null as any, // the strategy does not use this
       commandDescriptions: null as any, // the strategy does not use this
       sortedApplicableStrategies: null as any, // the strategy does not use this
-      startingMetadata: {
-        'scene-aaa/app-entity:app-outer-div': {
-          elementPath: elementPath([['scene-aaa', 'app-entity'], ['app-outer-div']]),
-          globalFrame: canvasRectangle({ x: 0, y: 0, width: 375, height: 50 }),
-          specialSizeMeasurements: {
-            flexDirection: flexDirection,
-          } as SpecialSizeMeasurements,
-        } as ElementInstanceMetadata,
-        'scene-aaa/app-entity:app-outer-div/child-0': {
-          elementPath: elementPath([
-            ['scene-aaa', 'app-entity'],
-            ['app-outer-div', 'child-0'],
-          ]),
-          globalFrame: canvasRectangle({ x: 0, y: 0, width: 50, height: 50 }),
-          specialSizeMeasurements: {
-            parentLayoutSystem: 'flex',
-          } as SpecialSizeMeasurements,
-        } as ElementInstanceMetadata,
-        'scene-aaa/app-entity:app-outer-div/child-1': {
-          elementPath: elementPath([
-            ['scene-aaa', 'app-entity'],
-            ['app-outer-div', 'child-1'],
-          ]),
-          globalFrame: canvasRectangle({ x: 60, y: 0, width: 50, height: 50 }),
-          specialSizeMeasurements: {
-            parentLayoutSystem: 'flex',
-          } as SpecialSizeMeasurements,
-        } as ElementInstanceMetadata,
-        'scene-aaa/app-entity:app-outer-div/child-2': {
-          elementPath: elementPath([
-            ['scene-aaa', 'app-entity'],
-            ['app-outer-div', 'child-2'],
-          ]),
-          globalFrame: canvasRectangle({ x: 120, y: 0, width: 50, height: 50 }),
-          specialSizeMeasurements: {
-            parentLayoutSystem: 'flex',
-          } as SpecialSizeMeasurements,
-        } as ElementInstanceMetadata,
-      },
+      startingMetadata: metadata,
     } as StrategyState,
   )
 
@@ -140,9 +197,9 @@ describe('Flex Reorder Strategy', () => {
 
     const finalEditor = reorderElement(
       initialEditor,
-      'row',
       canvasPoint({ x: 89, y: 27 }),
       canvasPoint({ x: 52, y: 0 }),
+      getDefaultMetadata('row'),
     )
 
     expect(testPrintCodeFromEditorState(finalEditor)).toEqual(
@@ -151,6 +208,108 @@ describe('Flex Reorder Strategy', () => {
         data-uid='app-outer-div'
         style={{ display: 'flex', gap: 10 }}
       >
+        <div
+          data-uid='child-0'
+          style={{
+            width: 50,
+            height: 50,
+            backgroundColor: 'green',
+          }}
+        />
+        <div
+          data-uid='child-2'
+          style={{
+            width: 50,
+            height: 50,
+            backgroundColor: 'purple',
+          }}
+        />
+        <div
+          data-uid='child-1'
+          style={{
+            width: 50,
+            height: 50,
+            backgroundColor: 'blue',
+          }}
+        />
+      </div>`),
+    )
+  })
+  it('excludes absolute siblings', async () => {
+    const targetElement = elementPath([
+      ['scene-aaa', 'app-entity'],
+      ['app-outer-div', 'child-1'],
+    ])
+
+    const initialEditor = getEditorStateWithSelectedViews(
+      makeTestProjectCodeWithSnippet(`
+      <div
+        data-uid='app-outer-div'
+        style={{ display: 'flex', gap: 10 }}
+      >
+        <div
+          data-uid='absolute-child'
+          style={{
+            position: 'absolute',
+            top: 100,
+            left: 50,
+            width: 50,
+            height: 50,
+            backgroundColor: 'yellow',
+          }}
+        />  
+        <div
+          data-uid='child-0'
+          style={{
+            width: 50,
+            height: 50,
+            backgroundColor: 'green',
+          }}
+        />
+        <div
+          data-uid='child-1'
+          style={{
+            width: 50,
+            height: 50,
+            backgroundColor: 'blue',
+          }}
+        />
+        <div
+          data-uid='child-2'
+          style={{
+            width: 50,
+            height: 50,
+            backgroundColor: 'purple',
+          }}
+        />
+      </div>`),
+      [targetElement],
+    )
+
+    const finalEditor = reorderElement(
+      initialEditor,
+      canvasPoint({ x: 89, y: 27 }),
+      canvasPoint({ x: 52, y: 0 }),
+      getMetadataWithAbsoluteChild('row'),
+    )
+
+    expect(testPrintCodeFromEditorState(finalEditor)).toEqual(
+      makeTestProjectCodeWithSnippet(`
+      <div
+        data-uid='app-outer-div'
+        style={{ display: 'flex', gap: 10 }}
+      >
+        <div
+          data-uid='absolute-child'
+          style={{
+            position: 'absolute',
+            top: 100,
+            left: 50,
+            width: 50,
+            height: 50,
+            backgroundColor: 'yellow',
+          }}
+        />
         <div
           data-uid='child-0'
           style={{
@@ -220,9 +379,9 @@ describe('Flex Reorder Strategy', () => {
 
     const finalEditor = reorderElement(
       initialEditor,
-      'row-reverse',
       canvasPoint({ x: 89, y: 27 }),
       canvasPoint({ x: 52, y: 0 }),
+      getDefaultMetadata('row-reverse'),
     )
 
     expect(testPrintCodeFromEditorState(finalEditor)).toEqual(

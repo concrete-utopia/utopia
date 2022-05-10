@@ -51,20 +51,15 @@ export const flexReorderStrategy: CanvasStrategy = {
     const siblingsOfTarget = MetadataUtils.getSiblings(sessionState.startingMetadata, target).map(
       (element) => element.elementPath,
     )
-    const flexSiblingsOfTarget = siblingsOfTarget.filter((child) =>
-      MetadataUtils.isParentYogaLayoutedContainerAndElementParticipatesInLayout(
-        child,
-        sessionState.startingMetadata,
-      ),
-    )
+
     const pointOnCanvas = offsetPoint(
       interactionState.interactionData.dragStart,
       interactionState.interactionData.drag,
     )
-    const oldIndex = flexSiblingsOfTarget.findIndex((sibling) => EP.pathsEqual(sibling, target))
+    const oldIndex = siblingsOfTarget.findIndex((sibling) => EP.pathsEqual(sibling, target))
     const newIndex = getReorderIndex(
       sessionState.startingMetadata,
-      flexSiblingsOfTarget,
+      siblingsOfTarget,
       target,
       pointOnCanvas,
     )
@@ -77,6 +72,31 @@ export const flexReorderStrategy: CanvasStrategy = {
 }
 
 function getReorderIndex(
+  metadata: ElementInstanceMetadataMap,
+  siblings: Array<ElementPath>,
+  target: ElementPath,
+  point: CanvasVector,
+) {
+  const flexSiblingsOfTarget = siblings.filter((child) =>
+    MetadataUtils.isParentYogaLayoutedContainerAndElementParticipatesInLayout(child, metadata),
+  )
+  const newIndexAmongFlexSiblings = getReorderIndexAmongFlexSiblings(
+    metadata,
+    flexSiblingsOfTarget,
+    target,
+    point,
+  )
+
+  if (newIndexAmongFlexSiblings == null) {
+    return null
+  } else {
+    const elementToReplaceWith = flexSiblingsOfTarget[newIndexAmongFlexSiblings]
+    const newIndex = siblings.indexOf(elementToReplaceWith)
+    return newIndex > -1 ? newIndex : null
+  }
+}
+
+function getReorderIndexAmongFlexSiblings(
   metadata: ElementInstanceMetadataMap,
   siblings: Array<ElementPath>,
   target: ElementPath,
