@@ -86,7 +86,7 @@ export const CustomReactSelectInput = (props: InputProps) => {
   )
 }
 
-export const SelectControl: React.StatelessComponent<DEPRECATEDControlProps<any>> = (props) => {
+export const SelectControl: React.FunctionComponent<DEPRECATEDControlProps<any>> = (props) => {
   const colorTheme = useColorTheme()
   const options = props.options != null ? (props.options as Array<SelectOption>) : []
   const controlOptions = {

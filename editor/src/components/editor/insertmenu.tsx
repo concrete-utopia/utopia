@@ -400,7 +400,7 @@ interface InsertItemProps {
   warningMessage?: string
 }
 
-export const InsertItem: React.StatelessComponent<InsertItemProps> = (props) => {
+export const InsertItem: React.FunctionComponent<InsertItemProps> = (props) => {
   const colorTheme = useColorTheme()
   const regularIcon = (
     <Icn
