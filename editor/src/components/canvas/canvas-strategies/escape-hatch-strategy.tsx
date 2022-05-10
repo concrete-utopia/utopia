@@ -46,11 +46,10 @@ export const escapeHatchStrategy: CanvasStrategy = {
       // if (interactionState.globalTime - interactionState.lastInteractionTime > AnimationTimer) {
       //   return [switchToAbsolute('permanent', canvasState.selectedElements)]
       // }
-      const dragDelta = interactionState.interactionData.drag
       const moveAndPositionCommands = collectMoveCommandsForSelectedElements(
         canvasState.selectedElements,
         strategyState.startingMetadata,
-        dragDelta,
+        interactionState.interactionData.drag,
       )
       const siblingCommands = collectSiblingCommands(
         canvasState.selectedElements,
