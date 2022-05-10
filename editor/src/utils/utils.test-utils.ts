@@ -102,9 +102,7 @@ export function createPersistentModel(): PersistentModel {
   return persistentModelFromEditorModel(editor)
 }
 
-export function createEditorStates(
-  selectedViews: ElementPath[] = [],
-): {
+export function createEditorStates(selectedViews: ElementPath[] = []): {
   editor: EditorState
   derivedState: DerivedState
   dispatch: EditorDispatch
@@ -209,9 +207,8 @@ export function createFakeMetadataForParseSuccess(
     })
   })
 
-  elements[EP.toString(storyboardElementPath)] = createFakeMetadataForStoryboard(
-    storyboardElementPath,
-  )
+  elements[EP.toString(storyboardElementPath)] =
+    createFakeMetadataForStoryboard(storyboardElementPath)
 
   return elements
 }
@@ -260,9 +257,8 @@ export function createFakeMetadataForComponents(
     }
   })
 
-  elements[EP.toString(storyboardElementPath)] = createFakeMetadataForStoryboard(
-    storyboardElementPath,
-  )
+  elements[EP.toString(storyboardElementPath)] =
+    createFakeMetadataForStoryboard(storyboardElementPath)
 
   return elements
 }

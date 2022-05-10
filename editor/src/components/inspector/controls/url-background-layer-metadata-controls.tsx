@@ -34,9 +34,9 @@ interface URLBackgroundLayerMetadataControlsProps extends BackgroundLayerControl
 
 const backgroundImagePropertyPath = [PP.create(['style', 'backgroundImage'])]
 
-export const URLBackgroundLayerMetadataControls: React.FunctionComponent<URLBackgroundLayerMetadataControlsProps> = (
-  props,
-) => {
+export const URLBackgroundLayerMetadataControls: React.FunctionComponent<
+  URLBackgroundLayerMetadataControlsProps
+> = (props) => {
   const [onSubmitValue] = props.useSubmitValueFactory(
     getIndexedUpdateCSSBackgroundLayerURLImageValue(props.index),
   )

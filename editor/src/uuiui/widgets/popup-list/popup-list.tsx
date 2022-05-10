@@ -56,7 +56,7 @@ const getValueOfValueType = (value: ValueType<SelectOption>): SelectOption['valu
       return undefined
     }
   } else {
-    return ((value as unknown) as SelectOption).value
+    return (value as unknown as SelectOption).value
   }
 }
 
@@ -417,48 +417,45 @@ const displayNone: styleFn = () => ({
   display: 'none',
 })
 
-const getDefaultContainer = (
-  controlStyles: ControlStyles,
-  propsStyle?: React.CSSProperties,
-): styleFn => () => ({
-  width: '100%',
-  height: OptionHeight,
-  borderRadius: UtopiaTheme.inputBorderRadius,
-  boxShadow: `inset 0 0 0 1px ${controlStyles.borderColor}`,
-  backgroundColor: controlStyles.backgroundColor,
-  color: controlStyles.mainColor,
-  textTransform: 'capitalize',
-  ...propsStyle,
-})
-
-const getShowBorderOnHoverContainer = (
-  controlStyles: ControlStyles,
-  propsStyle?: React.CSSProperties,
-): styleFn => () => {
-  return ({
+const getDefaultContainer =
+  (controlStyles: ControlStyles, propsStyle?: React.CSSProperties): styleFn =>
+  () => ({
     width: '100%',
     height: OptionHeight,
     borderRadius: UtopiaTheme.inputBorderRadius,
+    boxShadow: `inset 0 0 0 1px ${controlStyles.borderColor}`,
+    backgroundColor: controlStyles.backgroundColor,
     color: controlStyles.mainColor,
     textTransform: 'capitalize',
-    '&:hover': {
-      boxShadow: `inset 0 0 0 1px ${controlStyles.borderColor}`,
-      backgroundColor: controlStyles.backgroundColor,
-    },
     ...propsStyle,
-  } as unknown) as React.CSSProperties // incorrect react-select type. it actually accepts an emotion style object
-}
+  })
 
-const getNoBorderContainer = (
-  controlStyles: ControlStyles,
-  propsStyle?: React.CSSProperties,
-): styleFn => () => ({
-  width: '100%',
-  height: OptionHeight,
-  color: controlStyles.mainColor,
-  textTransform: 'capitalize',
-  ...propsStyle,
-})
+const getShowBorderOnHoverContainer =
+  (controlStyles: ControlStyles, propsStyle?: React.CSSProperties): styleFn =>
+  () => {
+    return {
+      width: '100%',
+      height: OptionHeight,
+      borderRadius: UtopiaTheme.inputBorderRadius,
+      color: controlStyles.mainColor,
+      textTransform: 'capitalize',
+      '&:hover': {
+        boxShadow: `inset 0 0 0 1px ${controlStyles.borderColor}`,
+        backgroundColor: controlStyles.backgroundColor,
+      },
+      ...propsStyle,
+    } as unknown as React.CSSProperties // incorrect react-select type. it actually accepts an emotion style object
+  }
+
+const getNoBorderContainer =
+  (controlStyles: ControlStyles, propsStyle?: React.CSSProperties): styleFn =>
+  () => ({
+    width: '100%',
+    height: OptionHeight,
+    color: controlStyles.mainColor,
+    textTransform: 'capitalize',
+    ...propsStyle,
+  })
 
 const getContainer = (
   containerMode: ContainerMode,

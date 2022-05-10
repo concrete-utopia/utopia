@@ -147,12 +147,14 @@ const AlignmentButtons = React.memo((props: { numberOfTargets: number }) => {
   const alignTop = React.useCallback(() => alignSelected('top'), [alignSelected])
   const alignVCenter = React.useCallback(() => alignSelected('vcenter'), [alignSelected])
   const alignBottom = React.useCallback(() => alignSelected('bottom'), [alignSelected])
-  const distributeHorizontal = React.useCallback(() => distributeSelected('horizontal'), [
-    distributeSelected,
-  ])
-  const distributeVertical = React.useCallback(() => distributeSelected('vertical'), [
-    distributeSelected,
-  ])
+  const distributeHorizontal = React.useCallback(
+    () => distributeSelected('horizontal'),
+    [distributeSelected],
+  )
+  const distributeVertical = React.useCallback(
+    () => distributeSelected('vertical'),
+    [distributeSelected],
+  )
   const colorTheme = useColorTheme()
   return (
     <FlexRow

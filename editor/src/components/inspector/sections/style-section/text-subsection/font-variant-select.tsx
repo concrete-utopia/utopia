@@ -103,23 +103,23 @@ export const FontVariantSelect = React.memo(() => {
   const fontWeightAndStyleContextMenuItems = utils.stripNulls([
     controlStyles.unsettable ? addOnUnsetValues(['fontWeight', 'fontStyle'], onUnsetValues) : null,
   ])
-  const fontWeightAndStyleOptions: OptionsType<FontWeightAndStyleSelectOption> = React.useMemo(() => {
-    const variantsToMap =
-      googleFontsList.find((font) => font.name === primaryFont)?.variants ??
-      defaultWebFontWeightsAndStyles
-    return variantsToMap.map((variant) => {
-      return {
-        value: webFontFamilyVariant(primaryFont, variant),
-        label: prettyNameForFontVariant(variant),
-        style: { fontWeight: variant.webFontWeight, fontStyle: variant.webFontStyle },
-      }
-    })
-  }, [primaryFont])
+  const fontWeightAndStyleOptions: OptionsType<FontWeightAndStyleSelectOption> =
+    React.useMemo(() => {
+      const variantsToMap =
+        googleFontsList.find((font) => font.name === primaryFont)?.variants ??
+        defaultWebFontWeightsAndStyles
+      return variantsToMap.map((variant) => {
+        return {
+          value: webFontFamilyVariant(primaryFont, variant),
+          label: prettyNameForFontVariant(variant),
+          style: { fontWeight: variant.webFontWeight, fontStyle: variant.webFontStyle },
+        }
+      })
+    }, [primaryFont])
 
   const { useSubmitValueFactory: useResourcesSubmitValueFactory } = useExternalResources()
-  const [onSubmitNewFontVariantToResources] = useResourcesSubmitValueFactory(
-    updateAddNewFontVariant,
-  )
+  const [onSubmitNewFontVariantToResources] =
+    useResourcesSubmitValueFactory(updateAddNewFontVariant)
   const [onSubmitFontWeightAndStyle] = useSubmitValueFactory(updateFontWeightAndStyle)
   const onSubmitValue = React.useCallback(
     (newValue: FontWeightAndStyleSelectOption) => {

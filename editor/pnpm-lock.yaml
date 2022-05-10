@@ -185,7 +185,7 @@ specifiers:
   path-parse: 1.0.6
   pegjs: 0.10.0
   platform-detect: 3.0.0
-  prettier: 2.0.5
+  prettier: 2.6.2
   pretty-format: 26.1.0
   prop-types: 15.6.2
   pubsub-js: ^1.9.2
@@ -325,7 +325,7 @@ dependencies:
   path: 0.12.7
   path-parse: 1.0.6
   platform-detect: 3.0.0
-  prettier: 2.0.5
+  prettier: 2.6.2
   prop-types: 15.6.2
   pubsub-js: 1.9.3
   rc-slider: github.com/momentumworks/slider/93a6ef5d67845a340bb1847be4e7fc9b3f5c9c5f
@@ -453,7 +453,7 @@ devDependencies:
   eslint: 6.8.0
   eslint-config-prettier: 6.9.0_eslint@6.8.0
   eslint-plugin-jest: 25.3.0_8fd0a5697fab765342df5a2a3599194b
-  eslint-plugin-prettier: 3.1.2_eslint@6.8.0+prettier@2.0.5
+  eslint-plugin-prettier: 3.1.2_eslint@6.8.0+prettier@2.6.2
   expect: 26.1.0
   fast-check: 1.15.0
   file-loader: 5.0.2_webpack@5.52.0
@@ -7436,7 +7436,7 @@ packages:
       minimatch: 3.0.4
     dev: false
 
-  /eslint-plugin-prettier/3.1.2_eslint@6.8.0+prettier@2.0.5:
+  /eslint-plugin-prettier/3.1.2_eslint@6.8.0+prettier@2.6.2:
     resolution: {integrity: sha512-GlolCC9y3XZfv3RQfwGew7NnuFDKsfI4lbvRK+PIIo23SFH+LemGs4cKwzAaRa+Mdb+lQO/STaIayno8T5sJJA==}
     engines: {node: '>=6.0.0'}
     peerDependencies:
@@ -7444,7 +7444,7 @@ packages:
       prettier: '>= 1.13.0'
     dependencies:
       eslint: 6.8.0
-      prettier: 2.0.5
+      prettier: 2.6.2
       prettier-linter-helpers: 1.0.0
     dev: true
 
@@ -12397,8 +12397,8 @@ packages:
       fast-diff: 1.2.0
     dev: true
 
-  /prettier/2.0.5:
-    resolution: {integrity: sha512-7PtVymN48hGcO4fGjybyBSIWDsLU4H4XlvOHfq91pz9kkGlonzwTfYkaIEwiRg/dAJF9YlbsduBAgtYLi+8cFg==}
+  /prettier/2.6.2:
+    resolution: {integrity: sha512-PkUpF+qoXTqhOeWL9fu7As8LXsIUZ1WYaJiY/a7McAQzxjk82OF0tibkFXVCDImZtWxbvojFjerkiLb0/q8mew==}
     engines: {node: '>=10.13.0'}
     hasBin: true
     dev: false

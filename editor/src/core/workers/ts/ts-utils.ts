@@ -8,9 +8,8 @@ export function diagnosticToErrorMessage(diagnostic: TS.Diagnostic): ErrorMessag
   if (diagnostic.file != null) {
     const start = diagnostic.start == null ? 0 : diagnostic.start
     const length = diagnostic.length == null ? 0 : diagnostic.length
-    let { line: startLine, character: startColumn } = diagnostic.file.getLineAndCharacterOfPosition(
-      start,
-    )
+    let { line: startLine, character: startColumn } =
+      diagnostic.file.getLineAndCharacterOfPosition(start)
     let { line: endLine, character: endColumn } = diagnostic.file.getLineAndCharacterOfPosition(
       start + length,
     )
@@ -91,9 +90,8 @@ export function createCodeSnippetFromCode(
 }
 
 export function createCodeSnippet(sourceFile: TS.SourceFile, start: number, end: number): string {
-  let { line: startLine, character: errorStartCol } = sourceFile.getLineAndCharacterOfPosition(
-    start,
-  )
+  let { line: startLine, character: errorStartCol } =
+    sourceFile.getLineAndCharacterOfPosition(start)
   let { line: endLine, character: errorEndCol } = sourceFile.getLineAndCharacterOfPosition(end)
   const codeString = sourceFile.text
   return createCodeSnippetFromCode(codeString, startLine, errorStartCol, endLine, errorEndCol)

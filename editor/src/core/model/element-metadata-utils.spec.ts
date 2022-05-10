@@ -240,9 +240,8 @@ const testElementMetadataMap: ElementInstanceMetadataMap = {
   [EP.toString(testComponentMetadataChild3.elementPath)]: testComponentMetadataChild3,
   [EP.toString(testComponentMetadataGrandchild.elementPath)]: testComponentMetadataGrandchild,
   [EP.toString(testComponentRoot1.elementPath)]: testComponentRoot1,
-  [EP.toString(
-    testComponentSceneChildElementRootChild.elementPath,
-  )]: testComponentSceneChildElementRootChild,
+  [EP.toString(testComponentSceneChildElementRootChild.elementPath)]:
+    testComponentSceneChildElementRootChild,
   [EP.toString(testComponentSceneChildElementRoot.elementPath)]: testComponentSceneChildElementRoot,
   [EP.toString(testComponentSceneChildElement.elementPath)]: testComponentSceneChildElement,
   [EP.toString(testComponentSceneElement.elementPath)]: testComponentSceneElement,

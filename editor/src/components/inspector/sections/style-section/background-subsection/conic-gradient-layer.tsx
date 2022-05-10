@@ -40,22 +40,18 @@ export const ConicGradientBackgroundLayer = React.memo<ConicGradientBackgroundLa
       () => gradientCheckboxSubmitValue(!props.value.enabled),
       [gradientCheckboxSubmitValue, props.value.enabled],
     )
-    const [
-      gradientCenterXSubmitValue,
-      gradientCenterXTransientSubmitValue,
-    ] = useWrappedSubmitFactoryEmptyOrUnknownOnSubmitValue(
-      props.useSubmitTransformedValuesFactory(
-        getIndexedUpdateRadialOrConicGradientCenterX(props.index),
-      ),
-    )
-    const [
-      gradientCenterYSubmitValue,
-      gradientCenterYTransientSubmitValue,
-    ] = useWrappedSubmitFactoryEmptyOrUnknownOnSubmitValue(
-      props.useSubmitTransformedValuesFactory(
-        getIndexedUpdateRadialOrConicGradientCenterY(props.index),
-      ),
-    )
+    const [gradientCenterXSubmitValue, gradientCenterXTransientSubmitValue] =
+      useWrappedSubmitFactoryEmptyOrUnknownOnSubmitValue(
+        props.useSubmitTransformedValuesFactory(
+          getIndexedUpdateRadialOrConicGradientCenterX(props.index),
+        ),
+      )
+    const [gradientCenterYSubmitValue, gradientCenterYTransientSubmitValue] =
+      useWrappedSubmitFactoryEmptyOrUnknownOnSubmitValue(
+        props.useSubmitTransformedValuesFactory(
+          getIndexedUpdateRadialOrConicGradientCenterY(props.index),
+        ),
+      )
     const [backgroundLayerType] = props.useSubmitTransformedValuesFactory(
       getIndexedOnCSSBackgroundLayerTypeSelectSubmitValue(props.index),
     )

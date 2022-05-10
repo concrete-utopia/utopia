@@ -242,12 +242,12 @@ export class DistanceGuideline extends React.Component<DistanceGuidelineProps> {
     bothAxesOverlap: boolean,
   ): Array<JSX.Element> {
     if (bothAxesOverlap) {
-      const xAxisGuidelines = guidelines.filter((g) => g.type === 'XAxisGuideline') as Array<
-        XAxisGuideline
-      >
-      const yAxisGuidelines = guidelines.filter((g) => g.type === 'YAxisGuideline') as Array<
-        YAxisGuideline
-      >
+      const xAxisGuidelines = guidelines.filter(
+        (g) => g.type === 'XAxisGuideline',
+      ) as Array<XAxisGuideline>
+      const yAxisGuidelines = guidelines.filter(
+        (g) => g.type === 'YAxisGuideline',
+      ) as Array<YAxisGuideline>
       const guidelineXs = xAxisGuidelines.map((g) => g.x)
       const guidelineYs = yAxisGuidelines.map((g) => g.y)
       const leftGuidelineX = Math.min(...guidelineXs)

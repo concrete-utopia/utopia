@@ -686,10 +686,10 @@ export var ${BakedInStoryboardVariableName} = (props) => {
 `,
     )
     expect(result).toMatchInlineSnapshot(`
-      "<div style=\\"all: initial;\\">
+      "<div style=\\"all: initial\\">
         <div
           id=\\"canvas-container\\"
-          style=\\"position: absolute;\\"
+          style=\\"position: absolute\\"
           data-utopia-valid-paths=\\"\\"
           data-utopia-root-element-path=\\"\\"
         ></div>

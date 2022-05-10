@@ -120,10 +120,10 @@ const MainAxisControls = React.memo((props: FlexElementSubsectionProps) => {
   const [fixedControlsOpen, setFixedControlsOpen] = usePropControlledStateV2(
     initialIsFixedSectionVisible,
   )
-  const toggleFixedSection = React.useCallback(() => setFixedControlsOpen(!fixedControlsOpen), [
-    fixedControlsOpen,
-    setFixedControlsOpen,
-  ])
+  const toggleFixedSection = React.useCallback(
+    () => setFixedControlsOpen(!fixedControlsOpen),
+    [fixedControlsOpen, setFixedControlsOpen],
+  )
   const [advancedControlsOpen, setAdvancedControlsOpen] = usePropControlledStateV2(
     initialIsAdvancedSectionVisible,
   )
@@ -273,13 +273,12 @@ export function useInitialCrossSectionState(parentFlexDirection: string | null):
 const CrossAxisControls = React.memo((props: FlexElementSubsectionProps) => {
   const isCrossAxisVisible = useInitialCrossSectionState(props.parentFlexDirection)
 
-  const [crossAxisControlsOpen, setCrossAxisControlsOpen] = usePropControlledStateV2(
-    isCrossAxisVisible,
+  const [crossAxisControlsOpen, setCrossAxisControlsOpen] =
+    usePropControlledStateV2(isCrossAxisVisible)
+  const toggleSection = React.useCallback(
+    () => setCrossAxisControlsOpen(!crossAxisControlsOpen),
+    [crossAxisControlsOpen, setCrossAxisControlsOpen],
   )
-  const toggleSection = React.useCallback(() => setCrossAxisControlsOpen(!crossAxisControlsOpen), [
-    crossAxisControlsOpen,
-    setCrossAxisControlsOpen,
-  ])
   const isColumnLayouted =
     props.parentFlexDirection === 'column' || props.parentFlexDirection === 'column-reverse'
   const widthOrHeightControls = isColumnLayouted ? <FlexWidthControls /> : <FlexHeightControls />
