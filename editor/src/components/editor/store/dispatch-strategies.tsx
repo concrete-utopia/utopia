@@ -1,7 +1,6 @@
 import {
   applyCanvasStrategy,
   findCanvasStrategy,
-  findCanvasStrategyFromDispatchResult,
   pickCanvasStateFromEditorState,
   StrategyWithFitness,
 } from '../../canvas/canvas-strategies/canvas-strategies'
@@ -12,7 +11,7 @@ import {
   StrategyState,
   strategySwitchInteractionSessionReset,
 } from '../../canvas/canvas-strategies/interaction-state'
-import { foldAndApplyCommands, runCanvasCommand } from '../../canvas/commands/commands'
+import { foldAndApplyCommands } from '../../canvas/commands/commands'
 import { strategySwitched } from '../../canvas/commands/strategy-switched-command'
 import { EditorAction } from '../action-types'
 import {
@@ -26,7 +25,6 @@ import {
   CanvasStrategy,
   InteractionCanvasState,
 } from '../../canvas/canvas-strategies/canvas-strategy-types'
-import { mergePatches } from '../../canvas/commands/merge-patches'
 import { isFeatureEnabled } from '../../../utils/feature-switches'
 import { PERFORMANCE_MARKS_ALLOWED } from '../../../common/env-vars'
 

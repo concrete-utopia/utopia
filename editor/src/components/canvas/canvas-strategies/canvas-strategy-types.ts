@@ -31,6 +31,7 @@ export type CanvasStrategyId =
   | 'ABSOLUTE_RESIZE_BOUNDING_BOX'
   | 'KEYBOARD_ABSOLUTE_MOVE'
   | 'KEYBOARD_ABSOLUTE_RESIZE'
+  | 'FLEX_REORDER'
 
 export interface CanvasStrategy {
   id: CanvasStrategyId // We'd need to do something to guarantee uniqueness here if using this for the commands' reason
