@@ -32,10 +32,6 @@ export const runSetLocalFrame: CommandFunction<SetLocalFrameCommand> = (
 ) => {
   const propsToUpdate: Array<ValueAtPath> = [
     {
-      path: stylePropPathMappingFn('position', ['style']),
-      value: jsxAttributeValue('absolute', emptyComments),
-    },
-    {
       path: stylePropPathMappingFn('left', ['style']),
       value: jsxAttributeValue(command.frame.x, emptyComments),
     },
