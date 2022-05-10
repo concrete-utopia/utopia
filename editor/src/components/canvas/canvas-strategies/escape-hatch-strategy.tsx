@@ -30,11 +30,11 @@ export const escapeHatchStrategy: CanvasStrategy = {
     }
   },
   controlsToRender: [],
-  fitness: (canvasState, interactionState, sessionState) => {
+  fitness: (canvasState, interactionState, strategyState) => {
     return escapeHatchStrategy.isApplicable(
       canvasState,
       interactionState,
-      sessionState.startingMetadata,
+      strategyState.startingMetadata,
     ) &&
       interactionState.interactionData.type === 'DRAG' &&
       interactionState.activeControl.type === 'BOUNDING_AREA'
@@ -43,9 +43,9 @@ export const escapeHatchStrategy: CanvasStrategy = {
   },
   apply: (canvasState, interactionState, strategyState) => {
     if (interactionState.interactionData.type === 'DRAG') {
-      // if (interactionState.globalTime - interactionState.lastInteractionTime > AnimationTimer) {
-      //   return [switchToAbsolute('permanent', canvasState.selectedElements)]
-      // }
+      // TODO if the element has siblings the escape hatch is triggered when pulled outside of the parent bounds
+      // without siblings it's automatically converted
+      // TODO timer
       const moveAndPositionCommands = collectMoveCommandsForSelectedElements(
         canvasState.selectedElements,
         strategyState.startingMetadata,
