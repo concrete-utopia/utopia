@@ -272,7 +272,7 @@ export function renderCanvasReturnResultAndError(
     )
     formattedSpyEnabled = Prettier.format(flatFormat, { parser: 'html' })
     errorsReportedSpyEnabled = errorsReported
-  } catch (e) {
+  } catch (e: any) {
     // TODO instead of relying on this hack here, we should create a new test function that runs the real react render instead of ReactDOMServer.renderToStaticMarkup
     processErrorWithSourceMap(UiFilePath, uiFileCode, e, true)
     errorsReportedSpyEnabled = [e]
@@ -292,7 +292,7 @@ export function renderCanvasReturnResultAndError(
     )
     formattedSpyDisabled = Prettier.format(flatFormatSpyDisabled, { parser: 'html' })
     errorsReportedSpyDisabled = errorsReported
-  } catch (e) {
+  } catch (e: any) {
     // TODO instead of relying on this hack here, we should create a new test function that runs the real react render instead of ReactDOMServer.renderToStaticMarkup
     processErrorWithSourceMap(UiFilePath, uiFileCode, e, true)
     errorsReportedSpyDisabled = [e]

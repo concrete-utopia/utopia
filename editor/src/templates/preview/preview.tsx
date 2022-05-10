@@ -84,7 +84,7 @@ export async function startPolledLoad({
       } else if (intervalHandle != null) {
         window.clearInterval(intervalHandle)
       }
-    } catch (e) {
+    } catch (e: any) {
       onError(e)
     }
   }

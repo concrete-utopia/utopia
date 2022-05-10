@@ -208,7 +208,7 @@ export function transpileJavascript(
       elementsWithin,
       wrapInParens,
     )
-  } catch (e) {
+  } catch (e: any) {
     return left(e.message)
   }
 }
@@ -241,7 +241,7 @@ export function insertDataUIDsIntoCode(
       code: transformResult.code,
       sourceMap: transformResult.map,
     })
-  } catch (e) {
+  } catch (e: any) {
     return left(e.message)
   }
 }
@@ -294,7 +294,7 @@ export function transpileJavascriptFromCode(
       code: transformResult.code,
       sourceMap: sourceMap,
     })
-  } catch (e) {
+  } catch (e: any) {
     return left(e.message)
   }
 }
