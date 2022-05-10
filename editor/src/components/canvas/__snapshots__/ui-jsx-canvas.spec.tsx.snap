@@ -1,10 +1,10 @@
 // Jest Snapshot v1, https://goo.gl/fbAQLP
 
 exports[`UiJsxCanvas render Label carried through for generated elements 1`] = `
-"<div style=\\"all: initial;\\">
+"<div style=\\"all: initial\\">
   <div
     id=\\"canvas-container\\"
-    style=\\"position: absolute;\\"
+    style=\\"position: absolute\\"
     data-utopia-valid-paths=\\"utopia-storyboard-uid utopia-storyboard-uid/scene-aaa utopia-storyboard-uid/scene-aaa/app-entity utopia-storyboard-uid/scene-aaa/app-entity:aaa utopia-storyboard-uid/scene-aaa/app-entity:aaa/bbb\\"
     data-utopia-root-element-path=\\"utopia-storyboard-uid\\"
   >
@@ -23,7 +23,7 @@ exports[`UiJsxCanvas render Label carried through for generated elements 1`] = `
       data-uid=\\"scene-aaa\\"
     >
       <div
-        style=\\"position: absolute; bottom: 0; left: 0; right: 0; top: 0;\\"
+        style=\\"position: absolute; bottom: 0; left: 0; right: 0; top: 0\\"
         data-uid=\\"aaa\\"
         data-path=\\"utopia-storyboard-uid/scene-aaa/app-entity:aaa\\"
       >
@@ -1006,10 +1006,10 @@ Object {
 `;
 
 exports[`UiJsxCanvas render Label carried through for normal elements 1`] = `
-"<div style=\\"all: initial;\\">
+"<div style=\\"all: initial\\">
   <div
     id=\\"canvas-container\\"
-    style=\\"position: absolute;\\"
+    style=\\"position: absolute\\"
     data-utopia-valid-paths=\\"utopia-storyboard-uid utopia-storyboard-uid/scene-aaa utopia-storyboard-uid/scene-aaa/app-entity utopia-storyboard-uid/scene-aaa/app-entity:aaa\\"
     data-utopia-root-element-path=\\"utopia-storyboard-uid\\"
   >
@@ -1028,7 +1028,7 @@ exports[`UiJsxCanvas render Label carried through for normal elements 1`] = `
       data-uid=\\"scene-aaa\\"
     >
       <div
-        style=\\"position: absolute; bottom: 0; left: 0; right: 0; top: 0;\\"
+        style=\\"position: absolute; bottom: 0; left: 0; right: 0; top: 0\\"
         data-uid=\\"aaa\\"
         data-label=\\"Hat\\"
         data-path=\\"utopia-storyboard-uid/scene-aaa/app-entity:aaa\\"
@@ -1554,10 +1554,10 @@ Object {
 `;
 
 exports[`UiJsxCanvas render Renders input tag without errors 1`] = `
-"<div style=\\"all: initial;\\">
+"<div style=\\"all: initial\\">
   <div
     id=\\"canvas-container\\"
-    style=\\"position: absolute;\\"
+    style=\\"position: absolute\\"
     data-utopia-valid-paths=\\"utopia-storyboard-uid utopia-storyboard-uid/scene-aaa utopia-storyboard-uid/scene-aaa/app-entity utopia-storyboard-uid/scene-aaa/app-entity:567\\"
     data-utopia-root-element-path=\\"utopia-storyboard-uid\\"
   >
@@ -1577,7 +1577,7 @@ exports[`UiJsxCanvas render Renders input tag without errors 1`] = `
     >
       <input
         data-uid=\\"00f\\"
-        style=\\"top: 10px;\\"
+        style=\\"top: 10px\\"
         data-path=\\"utopia-storyboard-uid/scene-aaa/app-entity:567:00f\\"
       />
     </div>
@@ -2020,10 +2020,10 @@ Object {
 `;
 
 exports[`UiJsxCanvas render arbitrary jsx block inside an element inside an arbitrary jsx block 1`] = `
-"<div style=\\"all: initial;\\">
+"<div style=\\"all: initial\\">
   <div
     id=\\"canvas-container\\"
-    style=\\"position: absolute;\\"
+    style=\\"position: absolute\\"
     data-utopia-valid-paths=\\"utopia-storyboard-uid utopia-storyboard-uid/scene-aaa utopia-storyboard-uid/scene-aaa/app-entity utopia-storyboard-uid/scene-aaa/app-entity:zzz utopia-storyboard-uid/scene-aaa/app-entity:zzz/aaa\\"
     data-utopia-root-element-path=\\"utopia-storyboard-uid\\"
   >
@@ -3086,10 +3086,10 @@ Object {
 `;
 
 exports[`UiJsxCanvas render arbitrary jsx block inside an element inside an arbitrary jsx block inside an element inside an arbitrary jsx block 1`] = `
-"<div style=\\"all: initial;\\">
+"<div style=\\"all: initial\\">
   <div
     id=\\"canvas-container\\"
-    style=\\"position: absolute;\\"
+    style=\\"position: absolute\\"
     data-utopia-valid-paths=\\"utopia-storyboard-uid utopia-storyboard-uid/scene-aaa utopia-storyboard-uid/scene-aaa/app-entity utopia-storyboard-uid/scene-aaa/app-entity:zzz utopia-storyboard-uid/scene-aaa/app-entity:zzz/aaa utopia-storyboard-uid/scene-aaa/app-entity:zzz/aaa/bbb\\"
     data-utopia-root-element-path=\\"utopia-storyboard-uid\\"
   >
@@ -6056,10 +6056,10 @@ Object {
 `;
 
 exports[`UiJsxCanvas render class component is available from arbitrary block in JSX element 1`] = `
-"<div style=\\"all: initial;\\">
+"<div style=\\"all: initial\\">
   <div
     id=\\"canvas-container\\"
-    style=\\"position: absolute;\\"
+    style=\\"position: absolute\\"
     data-utopia-valid-paths=\\"utopia-storyboard-uid utopia-storyboard-uid/scene-aaa utopia-storyboard-uid/scene-aaa/app-entity utopia-storyboard-uid/scene-aaa/app-entity:zzz utopia-storyboard-uid/scene-aaa/app-entity:zzz/aaa utopia-storyboard-uid/scene-aaa/app-entity:zzz/bbb\\"
     data-utopia-root-element-path=\\"utopia-storyboard-uid\\"
   >
@@ -6780,10 +6780,10 @@ Object {
 `;
 
 exports[`UiJsxCanvas render console logging does not do anything bizarre 1`] = `
-"<div style=\\"all: initial;\\">
+"<div style=\\"all: initial\\">
   <div
     id=\\"canvas-container\\"
-    style=\\"position: absolute;\\"
+    style=\\"position: absolute\\"
     data-utopia-valid-paths=\\"utopia-storyboard-uid utopia-storyboard-uid/scene-aaa utopia-storyboard-uid/scene-aaa/app-entity utopia-storyboard-uid/scene-aaa/app-entity:aaa\\"
     data-utopia-root-element-path=\\"utopia-storyboard-uid\\"
   >
@@ -6802,7 +6802,7 @@ exports[`UiJsxCanvas render console logging does not do anything bizarre 1`] = `
       data-uid=\\"scene-aaa\\"
     >
       <div
-        style=\\"position: absolute; bottom: 0; left: 0; right: 0; top: 0;\\"
+        style=\\"position: absolute; bottom: 0; left: 0; right: 0; top: 0\\"
         data-uid=\\"aaa\\"
         data-path=\\"utopia-storyboard-uid/scene-aaa/app-entity:aaa\\"
       ></div>
@@ -7312,10 +7312,10 @@ Object {
 `;
 
 exports[`UiJsxCanvas render does not crash if the metadata scenes are not the appropriate value 1`] = `
-"<div style=\\"all: initial;\\">
+"<div style=\\"all: initial\\">
   <div
     id=\\"canvas-container\\"
-    style=\\"position: absolute;\\"
+    style=\\"position: absolute\\"
     data-utopia-valid-paths=\\"utopia-storyboard-uid utopia-storyboard-uid/scene-aaa utopia-storyboard-uid/scene-aaa/app-entity utopia-storyboard-uid/scene-aaa/app-entity:aaa utopia-storyboard-uid/scene-aaa/app-entity:aaa/bbb\\"
     data-utopia-root-element-path=\\"utopia-storyboard-uid\\"
   >
@@ -8463,10 +8463,10 @@ Object {
 `;
 
 exports[`UiJsxCanvas render does not crash if the metadata scenes are undefined 1`] = `
-"<div style=\\"all: initial;\\">
+"<div style=\\"all: initial\\">
   <div
     id=\\"canvas-container\\"
-    style=\\"position: absolute;\\"
+    style=\\"position: absolute\\"
     data-utopia-valid-paths=\\"utopia-storyboard-uid utopia-storyboard-uid/scene-aaa utopia-storyboard-uid/scene-aaa/app-entity utopia-storyboard-uid/scene-aaa/app-entity:aaa utopia-storyboard-uid/scene-aaa/app-entity:aaa/bbb\\"
     data-utopia-root-element-path=\\"utopia-storyboard-uid\\"
   >
@@ -9614,10 +9614,10 @@ Object {
 `;
 
 exports[`UiJsxCanvas render function component is available from arbitrary block in JSX element 1`] = `
-"<div style=\\"all: initial;\\">
+"<div style=\\"all: initial\\">
   <div
     id=\\"canvas-container\\"
-    style=\\"position: absolute;\\"
+    style=\\"position: absolute\\"
     data-utopia-valid-paths=\\"utopia-storyboard-uid utopia-storyboard-uid/scene-aaa utopia-storyboard-uid/scene-aaa/app-entity utopia-storyboard-uid/scene-aaa/app-entity:zzz utopia-storyboard-uid/scene-aaa/app-entity:zzz/aaa utopia-storyboard-uid/scene-aaa/app-entity:zzz/bbb\\"
     data-utopia-root-element-path=\\"utopia-storyboard-uid\\"
   >
@@ -10366,10 +10366,10 @@ Object {
 `;
 
 exports[`UiJsxCanvas render function component works inside a map 1`] = `
-"<div style=\\"all: initial;\\">
+"<div style=\\"all: initial\\">
   <div
     id=\\"canvas-container\\"
-    style=\\"position: absolute;\\"
+    style=\\"position: absolute\\"
     data-utopia-valid-paths=\\"utopia-storyboard-uid utopia-storyboard-uid/scene-aaa utopia-storyboard-uid/scene-aaa/app-entity utopia-storyboard-uid/scene-aaa/app-entity:zzz utopia-storyboard-uid/scene-aaa/app-entity:zzz/aaa\\"
     data-utopia-root-element-path=\\"utopia-storyboard-uid\\"
   >
@@ -11151,10 +11151,10 @@ Object {
 `;
 
 exports[`UiJsxCanvas render handles a component that destructures its props object 1`] = `
-"<div style=\\"all: initial;\\">
+"<div style=\\"all: initial\\">
   <div
     id=\\"canvas-container\\"
-    style=\\"position: absolute;\\"
+    style=\\"position: absolute\\"
     data-utopia-valid-paths=\\"utopia-storyboard-uid utopia-storyboard-uid/scene-aaa utopia-storyboard-uid/scene-aaa/app-entity utopia-storyboard-uid/scene-aaa/app-entity:aaa utopia-storyboard-uid/scene-aaa/app-entity:aaa/bbb\\"
     data-utopia-root-element-path=\\"utopia-storyboard-uid\\"
   >
@@ -11183,7 +11183,7 @@ exports[`UiJsxCanvas render handles a component that destructures its props obje
         data-uid=\\"aaa\\"
       >
         <div
-          style=\\"position: absolute; background-color: #000000;\\"
+          style=\\"position: absolute; background-color: #000000\\"
           data-uid=\\"xxx\\"
           data-path=\\"utopia-storyboard-uid/scene-aaa/app-entity:aaa/bbb:xxx\\"
         >
@@ -12069,10 +12069,10 @@ Object {
 `;
 
 exports[`UiJsxCanvas render handles a component that renames its props object 1`] = `
-"<div style=\\"all: initial;\\">
+"<div style=\\"all: initial\\">
   <div
     id=\\"canvas-container\\"
-    style=\\"position: absolute;\\"
+    style=\\"position: absolute\\"
     data-utopia-valid-paths=\\"utopia-storyboard-uid utopia-storyboard-uid/scene-aaa utopia-storyboard-uid/scene-aaa/app-entity utopia-storyboard-uid/scene-aaa/app-entity:aaa utopia-storyboard-uid/scene-aaa/app-entity:aaa/bbb\\"
     data-utopia-root-element-path=\\"utopia-storyboard-uid\\"
   >
@@ -12986,10 +12986,10 @@ Object {
 `;
 
 exports[`UiJsxCanvas render handles a component with a props object written by someone that wants to watch the world burn 1`] = `
-"<div style=\\"all: initial;\\">
+"<div style=\\"all: initial\\">
   <div
     id=\\"canvas-container\\"
-    style=\\"position: absolute;\\"
+    style=\\"position: absolute\\"
     data-utopia-valid-paths=\\"utopia-storyboard-uid utopia-storyboard-uid/scene-aaa utopia-storyboard-uid/scene-aaa/app-entity utopia-storyboard-uid/scene-aaa/app-entity:aaa utopia-storyboard-uid/scene-aaa/app-entity:aaa/bbb\\"
     data-utopia-root-element-path=\\"utopia-storyboard-uid\\"
   >
@@ -13018,7 +13018,7 @@ exports[`UiJsxCanvas render handles a component with a props object written by s
         data-uid=\\"aaa\\"
       >
         <div
-          style=\\"position: absolute; background-color: #000000;\\"
+          style=\\"position: absolute; background-color: #000000\\"
           data-uid=\\"xxx\\"
           data-path=\\"utopia-storyboard-uid/scene-aaa/app-entity:aaa/bbb:xxx\\"
         >
@@ -14006,10 +14006,10 @@ Object {
 `;
 
 exports[`UiJsxCanvas render handles a component with a props object written by someone that wants to watch the world burn and also loves defaults 1`] = `
-"<div style=\\"all: initial;\\">
+"<div style=\\"all: initial\\">
   <div
     id=\\"canvas-container\\"
-    style=\\"position: absolute;\\"
+    style=\\"position: absolute\\"
     data-utopia-valid-paths=\\"utopia-storyboard-uid utopia-storyboard-uid/scene-aaa utopia-storyboard-uid/scene-aaa/app-entity utopia-storyboard-uid/scene-aaa/app-entity:aaa utopia-storyboard-uid/scene-aaa/app-entity:aaa/bbb\\"
     data-utopia-root-element-path=\\"utopia-storyboard-uid\\"
   >
@@ -14038,7 +14038,7 @@ exports[`UiJsxCanvas render handles a component with a props object written by s
         data-uid=\\"aaa\\"
       >
         <div
-          style=\\"position: absolute; background-color: #000000;\\"
+          style=\\"position: absolute; background-color: #000000\\"
           data-uid=\\"xxx\\"
           data-path=\\"utopia-storyboard-uid/scene-aaa/app-entity:aaa/bbb:xxx\\"
         >
@@ -15026,10 +15026,10 @@ Object {
 `;
 
 exports[`UiJsxCanvas render handles chaining dependencies into the appropriate order 1`] = `
-"<div style=\\"all: initial;\\">
+"<div style=\\"all: initial\\">
   <div
     id=\\"canvas-container\\"
-    style=\\"position: absolute;\\"
+    style=\\"position: absolute\\"
     data-utopia-valid-paths=\\"utopia-storyboard-uid utopia-storyboard-uid/scene-aaa utopia-storyboard-uid/scene-aaa/app-entity utopia-storyboard-uid/scene-aaa/app-entity:bbb\\"
     data-utopia-root-element-path=\\"utopia-storyboard-uid\\"
   >
@@ -15491,10 +15491,10 @@ Object {
 `;
 
 exports[`UiJsxCanvas render handles fragments in an arbitrary block 1`] = `
-"<div style=\\"all: initial;\\">
+"<div style=\\"all: initial\\">
   <div
     id=\\"canvas-container\\"
-    style=\\"position: absolute;\\"
+    style=\\"position: absolute\\"
     data-utopia-valid-paths=\\"utopia-storyboard-uid utopia-storyboard-uid/scene-aaa utopia-storyboard-uid/scene-aaa/app-entity utopia-storyboard-uid/scene-aaa/app-entity:aaa utopia-storyboard-uid/scene-aaa/app-entity:aaa/03a utopia-storyboard-uid/scene-aaa/app-entity:aaa/03a/834 utopia-storyboard-uid/scene-aaa/app-entity:aaa/03a/999 utopia-storyboard-uid/scene-aaa/app-entity:aaa/03a/999/000\\"
     data-utopia-root-element-path=\\"utopia-storyboard-uid\\"
   >
@@ -15554,17 +15554,17 @@ exports[`UiJsxCanvas render handles fragments in an arbitrary block 1`] = `
               data-uid=\\"6a8\\"
               data-path=\\"utopia-storyboard-uid/scene-aaa/app-entity:aaa/03a/999~~~2/000:6a8\\"
               ><span
-                style=\\"padding: 6px;\\"
+                style=\\"padding: 6px\\"
                 data-uid=\\"726~~~1\\"
                 data-path=\\"utopia-storyboard-uid/scene-aaa/app-entity:aaa/03a/999~~~2/000:6a8/726~~~1\\"
                 >⌘</span
               ><span
-                style=\\"padding: 6px;\\"
+                style=\\"padding: 6px\\"
                 data-uid=\\"726~~~2\\"
                 data-path=\\"utopia-storyboard-uid/scene-aaa/app-entity:aaa/03a/999~~~2/000:6a8/726~~~2\\"
                 >⎇</span
               ><span
-                style=\\"padding: 6px;\\"
+                style=\\"padding: 6px\\"
                 data-uid=\\"726~~~3\\"
                 data-path=\\"utopia-storyboard-uid/scene-aaa/app-entity:aaa/03a/999~~~2/000:6a8/726~~~3\\"
                 >C</span
@@ -15587,17 +15587,17 @@ exports[`UiJsxCanvas render handles fragments in an arbitrary block 1`] = `
               data-uid=\\"6a8\\"
               data-path=\\"utopia-storyboard-uid/scene-aaa/app-entity:aaa/03a/999~~~4/000:6a8\\"
               ><span
-                style=\\"padding: 6px;\\"
+                style=\\"padding: 6px\\"
                 data-uid=\\"726~~~1\\"
                 data-path=\\"utopia-storyboard-uid/scene-aaa/app-entity:aaa/03a/999~~~4/000:6a8/726~~~1\\"
                 >⌘</span
               ><span
-                style=\\"padding: 6px;\\"
+                style=\\"padding: 6px\\"
                 data-uid=\\"726~~~2\\"
                 data-path=\\"utopia-storyboard-uid/scene-aaa/app-entity:aaa/03a/999~~~4/000:6a8/726~~~2\\"
                 >⎇</span
               ><span
-                style=\\"padding: 6px;\\"
+                style=\\"padding: 6px\\"
                 data-uid=\\"726~~~3\\"
                 data-path=\\"utopia-storyboard-uid/scene-aaa/app-entity:aaa/03a/999~~~4/000:6a8/726~~~3\\"
                 >V</span
@@ -15620,17 +15620,17 @@ exports[`UiJsxCanvas render handles fragments in an arbitrary block 1`] = `
               data-uid=\\"6a8\\"
               data-path=\\"utopia-storyboard-uid/scene-aaa/app-entity:aaa/03a/999~~~6/000:6a8\\"
               ><span
-                style=\\"padding: 6px;\\"
+                style=\\"padding: 6px\\"
                 data-uid=\\"726~~~1\\"
                 data-path=\\"utopia-storyboard-uid/scene-aaa/app-entity:aaa/03a/999~~~6/000:6a8/726~~~1\\"
                 >⌘</span
               ><span
-                style=\\"padding: 6px;\\"
+                style=\\"padding: 6px\\"
                 data-uid=\\"726~~~2\\"
                 data-path=\\"utopia-storyboard-uid/scene-aaa/app-entity:aaa/03a/999~~~6/000:6a8/726~~~2\\"
                 >⎇</span
               ><span
-                style=\\"padding: 6px;\\"
+                style=\\"padding: 6px\\"
                 data-uid=\\"726~~~3\\"
                 data-path=\\"utopia-storyboard-uid/scene-aaa/app-entity:aaa/03a/999~~~6/000:6a8/726~~~3\\"
                 >C</span
@@ -20976,10 +20976,10 @@ Array [
 `;
 
 exports[`UiJsxCanvas render props can be accessed inside the arbitrary js block inside a text range 1`] = `
-"<div style=\\"all: initial;\\">
+"<div style=\\"all: initial\\">
   <div
     id=\\"canvas-container\\"
-    style=\\"position: absolute;\\"
+    style=\\"position: absolute\\"
     data-utopia-valid-paths=\\"utopia-storyboard-uid utopia-storyboard-uid/scene-aaa utopia-storyboard-uid/scene-aaa/app-entity utopia-storyboard-uid/scene-aaa/app-entity:zzz utopia-storyboard-uid/scene-aaa/app-entity:zzz/aaa utopia-storyboard-uid/scene-aaa/app-entity:zzz/bbb\\"
     data-utopia-root-element-path=\\"utopia-storyboard-uid\\"
   >
@@ -21794,10 +21794,10 @@ Object {
 `;
 
 exports[`UiJsxCanvas render refs are handled and triggered correctly in a class component 1`] = `
-"<div style=\\"all: initial;\\">
+"<div style=\\"all: initial\\">
   <div
     id=\\"canvas-container\\"
-    style=\\"position: absolute;\\"
+    style=\\"position: absolute\\"
     data-utopia-valid-paths=\\"utopia-storyboard-uid utopia-storyboard-uid/scene-aaa utopia-storyboard-uid/scene-aaa/app-entity utopia-storyboard-uid/scene-aaa/app-entity:aaa\\"
     data-utopia-root-element-path=\\"utopia-storyboard-uid\\"
   >
@@ -22313,10 +22313,10 @@ Object {
 `;
 
 exports[`UiJsxCanvas render refs are handled and triggered correctly in a functional component 1`] = `
-"<div style=\\"all: initial;\\">
+"<div style=\\"all: initial\\">
   <div
     id=\\"canvas-container\\"
-    style=\\"position: absolute;\\"
+    style=\\"position: absolute\\"
     data-utopia-valid-paths=\\"utopia-storyboard-uid utopia-storyboard-uid/scene-aaa utopia-storyboard-uid/scene-aaa/app-entity utopia-storyboard-uid/scene-aaa/app-entity:aaa\\"
     data-utopia-root-element-path=\\"utopia-storyboard-uid\\"
   >
@@ -22335,7 +22335,7 @@ exports[`UiJsxCanvas render refs are handled and triggered correctly in a functi
       data-uid=\\"scene-aaa\\"
     >
       <div
-        style=\\"position: absolute; bottom: 0; left: 0; right: 0; top: 0;\\"
+        style=\\"position: absolute; bottom: 0; left: 0; right: 0; top: 0\\"
         data-uid=\\"aaa\\"
         data-path=\\"utopia-storyboard-uid/scene-aaa/app-entity:aaa\\"
       ></div>
@@ -22903,10 +22903,10 @@ Object {
 `;
 
 exports[`UiJsxCanvas render renderrs correctly when a component is passed in via a prop 1`] = `
-"<div style=\\"all: initial;\\">
+"<div style=\\"all: initial\\">
   <div
     id=\\"canvas-container\\"
-    style=\\"position: absolute;\\"
+    style=\\"position: absolute\\"
     data-utopia-valid-paths=\\"eee eee/fff eee/fff/app-entity eee/fff/app-entity:aaa eee/fff/app-entity:aaa/bbb\\"
     data-utopia-root-element-path=\\"eee\\"
   >
@@ -22926,13 +22926,13 @@ exports[`UiJsxCanvas render renderrs correctly when a component is passed in via
     >
       <div
         data-uid=\\"aaa\\"
-        style=\\"width: 100%; height: 100%; background-color: #ffffff;\\"
+        style=\\"width: 100%; height: 100%; background-color: #ffffff\\"
         data-path=\\"eee/fff/app-entity:aaa\\"
       >
         Test
         <div
           data-uid=\\"ddd\\"
-          style=\\"background-color: pink; width: 100%; height: 20px;\\"
+          style=\\"background-color: pink; width: 100%; height: 20px\\"
           data-path=\\"eee/fff/app-entity:aaa/bbb:ddd\\"
         >
           <div data-uid=\\"ccc~~~1\\" data-path=\\"eee/fff/app-entity:aaa/ccc~~~1\\">
@@ -23706,10 +23706,10 @@ export var storyboard = (
 `;
 
 exports[`UiJsxCanvas render renders a 1st party component with uids correctly, using the passed uid instead inside App 1`] = `
-"<div style=\\"all: initial;\\">
+"<div style=\\"all: initial\\">
   <div
     id=\\"canvas-container\\"
-    style=\\"position: absolute;\\"
+    style=\\"position: absolute\\"
     data-utopia-valid-paths=\\"utopia-storyboard-uid utopia-storyboard-uid/scene-aaa utopia-storyboard-uid/scene-aaa/app-entity utopia-storyboard-uid/scene-aaa/app-entity:aaa utopia-storyboard-uid/scene-aaa/app-entity:aaa/d59 utopia-storyboard-uid/scene-aaa/app-entity:aaa/d59/dd5\\"
     data-utopia-root-element-path=\\"utopia-storyboard-uid\\"
   >
@@ -23728,7 +23728,7 @@ exports[`UiJsxCanvas render renders a 1st party component with uids correctly, u
       data-uid=\\"scene-aaa\\"
     >
       <div
-        style=\\"position: absolute; background-color: lightgrey;\\"
+        style=\\"position: absolute; background-color: lightgrey\\"
         data-path=\\"utopia-storyboard-uid/scene-aaa/app-entity:aaa\\"
         data-uid=\\"aaa\\"
       >
@@ -24662,10 +24662,10 @@ Object {
 `;
 
 exports[`UiJsxCanvas render renders a canvas defined by a utopia storyboard component 1`] = `
-"<div style=\\"all: initial;\\">
+"<div style=\\"all: initial\\">
   <div
     id=\\"canvas-container\\"
-    style=\\"position: absolute;\\"
+    style=\\"position: absolute\\"
     data-utopia-valid-paths=\\"utopia-storyboard-uid utopia-storyboard-uid/scene-aaa utopia-storyboard-uid/scene-aaa/app-entity utopia-storyboard-uid/scene-aaa/app-entity:aaa utopia-storyboard-uid/scene-aaa/app-entity:aaa/bbb\\"
     data-utopia-root-element-path=\\"utopia-storyboard-uid\\"
   >
@@ -24694,7 +24694,7 @@ exports[`UiJsxCanvas render renders a canvas defined by a utopia storyboard comp
         data-uid=\\"aaa\\"
       >
         <div
-          style=\\"position: absolute;\\"
+          style=\\"position: absolute\\"
           data-path=\\"utopia-storyboard-uid/scene-aaa/app-entity:aaa/bbb\\"
           data-uid=\\"bbb\\"
         >
@@ -25449,10 +25449,10 @@ Object {
 `;
 
 exports[`UiJsxCanvas render renders a canvas reliant on another file that uses module.exports 1`] = `
-"<div style=\\"all: initial;\\">
+"<div style=\\"all: initial\\">
   <div
     id=\\"canvas-container\\"
-    style=\\"position: absolute;\\"
+    style=\\"position: absolute\\"
     data-utopia-valid-paths=\\"utopia-storyboard-uid utopia-storyboard-uid/scene-aaa utopia-storyboard-uid/scene-aaa/app-entity utopia-storyboard-uid/scene-aaa/app-entity:aaa utopia-storyboard-uid/scene-aaa/app-entity:aaa/bbb\\"
     data-utopia-root-element-path=\\"utopia-storyboard-uid\\"
   >
@@ -25481,7 +25481,7 @@ exports[`UiJsxCanvas render renders a canvas reliant on another file that uses m
         data-uid=\\"aaa\\"
       >
         <div
-          style=\\"position: absolute;\\"
+          style=\\"position: absolute\\"
           data-path=\\"utopia-storyboard-uid/scene-aaa/app-entity:aaa/bbb\\"
           data-uid=\\"bbb\\"
         >
@@ -26381,10 +26381,10 @@ Object {
 `;
 
 exports[`UiJsxCanvas render renders a canvas testing a multitude of export styles 1`] = `
-"<div style=\\"all: initial;\\">
+"<div style=\\"all: initial\\">
   <div
     id=\\"canvas-container\\"
-    style=\\"position: absolute;\\"
+    style=\\"position: absolute\\"
     data-utopia-valid-paths=\\"utopia-storyboard-uid utopia-storyboard-uid/scene-aaa utopia-storyboard-uid/scene-aaa/app-entity utopia-storyboard-uid/scene-aaa/app-entity:b93 utopia-storyboard-uid/scene-aaa/app-entity:b93/2f0 utopia-storyboard-uid/scene-aaa/app-entity:b93/59c utopia-storyboard-uid/scene-aaa/app-entity:b93/54b utopia-storyboard-uid/scene-aaa/app-entity:b93/d18 utopia-storyboard-uid/scene-aaa/app-entity:b93/995 utopia-storyboard-uid/scene-aaa/app-entity:b93/0cf utopia-storyboard-uid/scene-aaa/app-entity:b93/d00 utopia-storyboard-uid/scene-aaa/app-entity:b93/7d0 utopia-storyboard-uid/scene-aaa/app-entity:b93/4cf utopia-storyboard-uid/scene-aaa/app-entity:b93/d7f utopia-storyboard-uid/scene-aaa/app-entity:b93/315 utopia-storyboard-uid/scene-aaa/app-entity:b93/5b9 utopia-storyboard-uid/scene-aaa/app-entity:b93/1a1 utopia-storyboard-uid/scene-aaa/app-entity:b93/301 utopia-storyboard-uid/scene-aaa/app-entity:b93/8ce utopia-storyboard-uid/scene-aaa/app-entity:b93/f77 utopia-storyboard-uid/scene-aaa/app-entity:b93/218 utopia-storyboard-uid/scene-aaa/app-entity:b93/a17 utopia-storyboard-uid/scene-aaa/app-entity:b93/8aa\\"
     data-utopia-root-element-path=\\"utopia-storyboard-uid\\"
   >
@@ -29808,10 +29808,10 @@ export var App = (props) => {
 `;
 
 exports[`UiJsxCanvas render renders a component used in an arbitrary block correctly 1`] = `
-"<div style=\\"all: initial;\\">
+"<div style=\\"all: initial\\">
   <div
     id=\\"canvas-container\\"
-    style=\\"position: absolute;\\"
+    style=\\"position: absolute\\"
     data-utopia-valid-paths=\\"utopia-storyboard-uid utopia-storyboard-uid/scene-aaa utopia-storyboard-uid/scene-aaa/app-entity utopia-storyboard-uid/scene-aaa/app-entity:aaa utopia-storyboard-uid/scene-aaa/app-entity:aaa/bbb\\"
     data-utopia-root-element-path=\\"utopia-storyboard-uid\\"
   >
@@ -30959,10 +30959,10 @@ Object {
 `;
 
 exports[`UiJsxCanvas render renders a component used in an arbitrary block correctly, with an HTML element name as a parameter name 1`] = `
-"<div style=\\"all: initial;\\">
+"<div style=\\"all: initial\\">
   <div
     id=\\"canvas-container\\"
-    style=\\"position: absolute;\\"
+    style=\\"position: absolute\\"
     data-utopia-valid-paths=\\"utopia-storyboard-uid utopia-storyboard-uid/scene-aaa utopia-storyboard-uid/scene-aaa/app-entity utopia-storyboard-uid/scene-aaa/app-entity:aaa utopia-storyboard-uid/scene-aaa/app-entity:aaa/bbb\\"
     data-utopia-root-element-path=\\"utopia-storyboard-uid\\"
   >
@@ -32114,10 +32114,10 @@ Object {
 `;
 
 exports[`UiJsxCanvas render renders a component used in an arbitrary block with eye-stabbingly awful nested destructuring correctly 1`] = `
-"<div style=\\"all: initial;\\">
+"<div style=\\"all: initial\\">
   <div
     id=\\"canvas-container\\"
-    style=\\"position: absolute;\\"
+    style=\\"position: absolute\\"
     data-utopia-valid-paths=\\"utopia-storyboard-uid utopia-storyboard-uid/scene-aaa utopia-storyboard-uid/scene-aaa/app-entity utopia-storyboard-uid/scene-aaa/app-entity:aaa utopia-storyboard-uid/scene-aaa/app-entity:aaa/bbb\\"
     data-utopia-root-element-path=\\"utopia-storyboard-uid\\"
   >
@@ -33272,10 +33272,10 @@ Object {
 `;
 
 exports[`UiJsxCanvas render renders a component using the spread operator 1`] = `
-"<div style=\\"all: initial;\\">
+"<div style=\\"all: initial\\">
   <div
     id=\\"canvas-container\\"
-    style=\\"position: absolute;\\"
+    style=\\"position: absolute\\"
     data-utopia-valid-paths=\\"utopia-storyboard-uid utopia-storyboard-uid/scene-aaa utopia-storyboard-uid/scene-aaa/app-entity utopia-storyboard-uid/scene-aaa/app-entity:aaa utopia-storyboard-uid/scene-aaa/app-entity:aaa/bbb\\"
     data-utopia-root-element-path=\\"utopia-storyboard-uid\\"
   >
@@ -33294,13 +33294,13 @@ exports[`UiJsxCanvas render renders a component using the spread operator 1`] = 
       data-uid=\\"scene-aaa\\"
     >
       <div
-        style=\\"position: absolute; height: 99.9; width: 77.7;\\"
+        style=\\"position: absolute; height: 99.9; width: 77.7\\"
         title=\\"Hi there!\\"
         data-path=\\"utopia-storyboard-uid/scene-aaa/app-entity:aaa\\"
         data-uid=\\"aaa\\"
       >
         <div
-          style=\\"position: absolute;\\"
+          style=\\"position: absolute\\"
           data-path=\\"utopia-storyboard-uid/scene-aaa/app-entity:aaa/bbb\\"
           data-uid=\\"bbb\\"
         >
@@ -34017,10 +34017,10 @@ Object {
 `;
 
 exports[`UiJsxCanvas render renders a component with a fragment at the root 1`] = `
-"<div style=\\"all: initial;\\">
+"<div style=\\"all: initial\\">
   <div
     id=\\"canvas-container\\"
-    style=\\"position: absolute;\\"
+    style=\\"position: absolute\\"
     data-utopia-valid-paths=\\"utopia-storyboard-uid utopia-storyboard-uid/scene-aaa utopia-storyboard-uid/scene-aaa/app-entity utopia-storyboard-uid/scene-aaa/app-entity:aaa utopia-storyboard-uid/scene-aaa/app-entity:bbb\\"
     data-utopia-root-element-path=\\"utopia-storyboard-uid\\"
   >
@@ -34555,10 +34555,10 @@ Object {
 `;
 
 exports[`UiJsxCanvas render renders correctly with a context 1`] = `
-"<div style=\\"all: initial;\\">
+"<div style=\\"all: initial\\">
   <div
     id=\\"canvas-container\\"
-    style=\\"position: absolute;\\"
+    style=\\"position: absolute\\"
     data-utopia-valid-paths=\\"ccc ccc/ddd ccc/ddd/app-entity ccc/ddd/app-entity:aaa ccc/ddd/app-entity:aaa/bbb\\"
     data-utopia-root-element-path=\\"ccc\\"
   >
@@ -34578,7 +34578,7 @@ exports[`UiJsxCanvas render renders correctly with a context 1`] = `
     >
       <div
         data-uid=\\"bbb\\"
-        style=\\"width: 100%; height: 100%; background-color: #eb1010;\\"
+        style=\\"width: 100%; height: 100%; background-color: #eb1010\\"
         data-path=\\"ccc/ddd/app-entity:aaa/bbb\\"
       ></div>
     </div>
@@ -35201,10 +35201,10 @@ export var storyboard = (
 `;
 
 exports[`UiJsxCanvas render renders correctly with a nested context in another component 1`] = `
-"<div style=\\"all: initial;\\">
+"<div style=\\"all: initial\\">
   <div
     id=\\"canvas-container\\"
-    style=\\"position: absolute;\\"
+    style=\\"position: absolute\\"
     data-utopia-valid-paths=\\"ccc ccc/ddd ccc/ddd/app-entity ccc/ddd/app-entity:card\\"
     data-utopia-root-element-path=\\"ccc\\"
   >
@@ -35224,7 +35224,7 @@ exports[`UiJsxCanvas render renders correctly with a nested context in another c
     >
       <div
         data-uid=\\"bbb\\"
-        style=\\"width: 100%; height: 100%; background-color: #eb1010;\\"
+        style=\\"width: 100%; height: 100%; background-color: #eb1010\\"
         data-path=\\"ccc/ddd/app-entity:card:aaa/inner/bbb\\"
       ></div>
     </div>
@@ -35616,10 +35616,10 @@ Object {
 `;
 
 exports[`UiJsxCanvas render renders fine with a valid registerModule call 1`] = `
-"<div style=\\"all: initial;\\">
+"<div style=\\"all: initial\\">
   <div
     id=\\"canvas-container\\"
-    style=\\"position: absolute;\\"
+    style=\\"position: absolute\\"
     data-utopia-valid-paths=\\"utopia-storyboard-uid utopia-storyboard-uid/scene-aaa utopia-storyboard-uid/scene-aaa/app-entity utopia-storyboard-uid/scene-aaa/app-entity:aaa utopia-storyboard-uid/scene-aaa/app-entity:aaa/bbb\\"
     data-utopia-root-element-path=\\"utopia-storyboard-uid\\"
   >
@@ -35638,12 +35638,12 @@ exports[`UiJsxCanvas render renders fine with a valid registerModule call 1`] = 
       data-uid=\\"scene-aaa\\"
     >
       <div
-        style=\\"position: absolute; height: 99.9; width: 77.7;\\"
+        style=\\"position: absolute; height: 99.9; width: 77.7\\"
         data-path=\\"utopia-storyboard-uid/scene-aaa/app-entity:aaa\\"
         data-uid=\\"aaa\\"
       >
         <div
-          style=\\"position: absolute;\\"
+          style=\\"position: absolute\\"
           data-path=\\"utopia-storyboard-uid/scene-aaa/app-entity:aaa/bbb\\"
           data-uid=\\"bbb\\"
         >
@@ -36240,10 +36240,10 @@ Object {
 `;
 
 exports[`UiJsxCanvas render renders fine with two circularly referencing arbitrary blocks 1`] = `
-"<div style=\\"all: initial;\\">
+"<div style=\\"all: initial\\">
   <div
     id=\\"canvas-container\\"
-    style=\\"position: absolute;\\"
+    style=\\"position: absolute\\"
     data-utopia-valid-paths=\\"utopia-storyboard-uid utopia-storyboard-uid/scene utopia-storyboard-uid/scene/app-entity utopia-storyboard-uid/scene/app-entity:aaa\\"
     data-utopia-root-element-path=\\"utopia-storyboard-uid\\"
   >
@@ -36263,7 +36263,7 @@ exports[`UiJsxCanvas render renders fine with two circularly referencing arbitra
     >
       <div
         data-uid=\\"aaa\\"
-        style=\\"width: 100%; height: 100%; background-color: #ffffff;\\"
+        style=\\"width: 100%; height: 100%; background-color: #ffffff\\"
         data-path=\\"utopia-storyboard-uid/scene/app-entity:aaa\\"
       >
         0 - 0
@@ -36809,10 +36809,10 @@ export var storyboard = (
 `;
 
 exports[`UiJsxCanvas render renders fine with two components that reference each other 1`] = `
-"<div style=\\"all: initial;\\">
+"<div style=\\"all: initial\\">
   <div
     id=\\"canvas-container\\"
-    style=\\"position: absolute;\\"
+    style=\\"position: absolute\\"
     data-utopia-valid-paths=\\"utopia-storyboard-uid utopia-storyboard-uid/scene utopia-storyboard-uid/scene/app-entity utopia-storyboard-uid/scene/app-entity:BBB\\"
     data-utopia-root-element-path=\\"utopia-storyboard-uid\\"
   >
@@ -37224,10 +37224,10 @@ Object {
 `;
 
 exports[`UiJsxCanvas render renders fragments correctly 1`] = `
-"<div style=\\"all: initial;\\">
+"<div style=\\"all: initial\\">
   <div
     id=\\"canvas-container\\"
-    style=\\"position: absolute;\\"
+    style=\\"position: absolute\\"
     data-utopia-valid-paths=\\"eee eee/fff eee/fff/app eee/fff/app:aaa eee/fff/app:aaa/bbb eee/fff/app:aaa/bbb/ccc eee/fff/app:aaa/ddd\\"
     data-utopia-root-element-path=\\"eee\\"
   >
@@ -37259,14 +37259,14 @@ exports[`UiJsxCanvas render renders fragments correctly 1`] = `
       >
         <div
           data-label=\\"random-div\\"
-          style=\\"width: 100px; height: 100px;\\"
+          style=\\"width: 100px; height: 100px\\"
           data-uid=\\"bbb\\"
           data-path=\\"eee/fff/app:aaa/bbb\\"
         >
           Hello
           <div
             data-label=\\"some-other-div\\"
-            style=\\"width: 100px; height: 100px;\\"
+            style=\\"width: 100px; height: 100px\\"
             data-uid=\\"ccc\\"
             data-path=\\"eee/fff/app:aaa/bbb/ccc\\"
           ></div>
@@ -38489,10 +38489,10 @@ export var storyboard = (
 `;
 
 exports[`UiJsxCanvas render renders img tag 1`] = `
-"<div style=\\"all: initial;\\">
+"<div style=\\"all: initial\\">
   <div
     id=\\"canvas-container\\"
-    style=\\"position: absolute;\\"
+    style=\\"position: absolute\\"
     data-utopia-valid-paths=\\"utopia-storyboard-uid utopia-storyboard-uid/scene-aaa utopia-storyboard-uid/scene-aaa/app-entity utopia-storyboard-uid/scene-aaa/app-entity:aaa utopia-storyboard-uid/scene-aaa/app-entity:aaa/bbb\\"
     data-utopia-root-element-path=\\"utopia-storyboard-uid\\"
   >
@@ -39114,10 +39114,10 @@ Object {
 `;
 
 exports[`UiJsxCanvas render respects a jsx pragma 1`] = `
-"<div style=\\"all: initial;\\">
+"<div style=\\"all: initial\\">
   <div
     id=\\"canvas-container\\"
-    style=\\"position: absolute;\\"
+    style=\\"position: absolute\\"
     data-utopia-valid-paths=\\"utopia-storyboard-uid utopia-storyboard-uid/scene-aaa utopia-storyboard-uid/scene-aaa/app-entity utopia-storyboard-uid/scene-aaa/app-entity:aaa\\"
     data-utopia-root-element-path=\\"utopia-storyboard-uid\\"
   >
@@ -39586,10 +39586,10 @@ Object {
 `;
 
 exports[`UiJsxCanvas render supports passing down the scope to children of components 1`] = `
-"<div style=\\"all: initial;\\">
+"<div style=\\"all: initial\\">
   <div
     id=\\"canvas-container\\"
-    style=\\"position: absolute;\\"
+    style=\\"position: absolute\\"
     data-utopia-valid-paths=\\"utopia-storyboard-uid utopia-storyboard-uid/scene-aaa utopia-storyboard-uid/scene-aaa/app-entity utopia-storyboard-uid/scene-aaa/app-entity:aaa utopia-storyboard-uid/scene-aaa/app-entity:aaa/bbb utopia-storyboard-uid/scene-aaa/app-entity:aaa/bbb/ccc\\"
     data-utopia-root-element-path=\\"utopia-storyboard-uid\\"
   >
@@ -41273,10 +41273,10 @@ Object {
 `;
 
 exports[`UiJsxCanvas render the canvas supports emotion CSS prop 1`] = `
-"<div style=\\"all: initial;\\">
+"<div style=\\"all: initial\\">
   <div
     id=\\"canvas-container\\"
-    style=\\"position: absolute;\\"
+    style=\\"position: absolute\\"
     data-utopia-valid-paths=\\"utopia-storyboard-uid utopia-storyboard-uid/scene-aaa utopia-storyboard-uid/scene-aaa/app-entity utopia-storyboard-uid/scene-aaa/app-entity:aaa\\"
     data-utopia-root-element-path=\\"utopia-storyboard-uid\\"
   >
@@ -41741,10 +41741,10 @@ Object {
 `;
 
 exports[`UiJsxCanvas render the spy wrapper is compatible with React.cloneElement 1`] = `
-"<div style=\\"all: initial;\\">
+"<div style=\\"all: initial\\">
   <div
     id=\\"canvas-container\\"
-    style=\\"position: absolute;\\"
+    style=\\"position: absolute\\"
     data-utopia-valid-paths=\\"utopia-storyboard-uid utopia-storyboard-uid/scene-aaa utopia-storyboard-uid/scene-aaa/app-entity utopia-storyboard-uid/scene-aaa/app-entity:zzz utopia-storyboard-uid/scene-aaa/app-entity:zzz/cloner utopia-storyboard-uid/scene-aaa/app-entity:zzz/cloner/cloned\\"
     data-utopia-root-element-path=\\"utopia-storyboard-uid\\"
   >
@@ -41773,7 +41773,7 @@ exports[`UiJsxCanvas render the spy wrapper is compatible with React.cloneElemen
           <div
             data-uid=\\"cloned\\"
             data-path=\\"utopia-storyboard-uid/scene-aaa/app-entity:zzz/cloner/cloned\\"
-            style=\\"color: red; font-weight: 800;\\"
+            style=\\"color: red; font-weight: 800\\"
           >
             ha
           </div>

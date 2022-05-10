@@ -12,9 +12,10 @@ interface ConfirmCloseDialogProps {
 }
 
 export const ConfirmCloseDialog: React.FunctionComponent<ConfirmCloseDialogProps> = (props) => {
-  const close = React.useCallback(() => props.dispatch([EditorActions.hideModal()], 'everyone'), [
-    props,
-  ])
+  const close = React.useCallback(
+    () => props.dispatch([EditorActions.hideModal()], 'everyone'),
+    [props],
+  )
   return (
     <Dialog
       title='Close file'

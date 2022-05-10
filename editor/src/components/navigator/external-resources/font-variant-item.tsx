@@ -21,14 +21,14 @@ export const FontVariantItem: React.FunctionComponent<FontVariantItemProps> = ({
 
   const { pushNewFontFamilyVariant, removeFontFamilyVariant, variant } = data
 
-  const onDownloadedClick = React.useCallback(() => removeFontFamilyVariant(variant), [
-    removeFontFamilyVariant,
-    variant,
-  ])
-  const onDownloadClick = React.useCallback(() => pushNewFontFamilyVariant(variant), [
-    pushNewFontFamilyVariant,
-    variant,
-  ])
+  const onDownloadedClick = React.useCallback(
+    () => removeFontFamilyVariant(variant),
+    [removeFontFamilyVariant, variant],
+  )
+  const onDownloadClick = React.useCallback(
+    () => pushNewFontFamilyVariant(variant),
+    [pushNewFontFamilyVariant, variant],
+  )
   return (
     <FlexRow style={style} onMouseEnter={onMouseEnter} onMouseLeave={onMouseLeave}>
       <div style={{ paddingLeft: 24 + 12, flexGrow: 1 }}>

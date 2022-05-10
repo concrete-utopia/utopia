@@ -39,34 +39,31 @@ export const LayoutParentControl = React.memo((): JSX.Element | null => {
       scale: store.editor.canvas.scale,
     }
   }, 'LayoutParentControl canvas')
-  const {
-    parentTarget,
-    parentLayout,
-    parentFrame,
-    flexWrap,
-    flexDirection,
-    alignItems,
-  } = useEditorState((store) => {
-    if (store.editor.selectedViews.length !== 1) {
-      return {
-        parentTarget: null,
-        parentLayout: null,
-        parentFrame: null,
-        flexWrap: null,
-        flexDirection: null,
-        alignItems: null,
+  const { parentTarget, parentLayout, parentFrame, flexWrap, flexDirection, alignItems } =
+    useEditorState((store) => {
+      if (store.editor.selectedViews.length !== 1) {
+        return {
+          parentTarget: null,
+          parentLayout: null,
+          parentFrame: null,
+          flexWrap: null,
+          flexDirection: null,
+          alignItems: null,
+        }
       }
-    }
-    const element = MetadataUtils.getParent(store.editor.jsxMetadata, store.editor.selectedViews[0])
-    return {
-      parentTarget: element?.elementPath,
-      parentLayout: element?.specialSizeMeasurements.layoutSystemForChildren,
-      parentFrame: element?.globalFrame,
-      flexWrap: element?.props?.style?.flexWrap ?? 'nowrap',
-      flexDirection: element?.props?.style?.flexDirection ?? 'row',
-      alignItems: element?.props?.style?.alignItems ?? 'flex-start',
-    }
-  }, 'LayoutParentControl')
+      const element = MetadataUtils.getParent(
+        store.editor.jsxMetadata,
+        store.editor.selectedViews[0],
+      )
+      return {
+        parentTarget: element?.elementPath,
+        parentLayout: element?.specialSizeMeasurements.layoutSystemForChildren,
+        parentFrame: element?.globalFrame,
+        flexWrap: element?.props?.style?.flexWrap ?? 'nowrap',
+        flexDirection: element?.props?.style?.flexDirection ?? 'row',
+        alignItems: element?.props?.style?.alignItems ?? 'flex-start',
+      }
+    }, 'LayoutParentControl')
 
   const {
     justifyFlexStart,

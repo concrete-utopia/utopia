@@ -450,9 +450,8 @@ export var FloatingMenu = React.memo(() => {
             const isFlexLayoutSystemMaybe_KILLME = getIsFlexBasedOnName_KILLME_EXPERIMENTAL(
               newElement.name,
             )
-            const flexDirection_KILLME = getIsFlexDirectionBasedOnName_KILLME_SERIOUSLY_EXPERIMENTAL(
-              newElement.name,
-            )
+            const flexDirection_KILLME =
+              getIsFlexDirectionBasedOnName_KILLME_SERIOUSLY_EXPERIMENTAL(newElement.name)
 
             actionsToDispatch = [
               preserveVisualPositionForWrap

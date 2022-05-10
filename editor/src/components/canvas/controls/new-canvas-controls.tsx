@@ -141,15 +141,12 @@ export const NewCanvasControls = React.memo((props: NewCanvasControlsProps) => {
     'NewCanvasControls',
   )
 
-  const {
-    localSelectedViews,
-    localHighlightedViews,
-    setSelectedViewsLocally,
-  } = useLocalSelectedHighlightedViews(
-    canvasControlProps.editor.selectedViews,
-    canvasControlProps.editor.highlightedViews,
-    canvasControlProps.transientCanvasState,
-  )
+  const { localSelectedViews, localHighlightedViews, setSelectedViewsLocally } =
+    useLocalSelectedHighlightedViews(
+      canvasControlProps.editor.selectedViews,
+      canvasControlProps.editor.highlightedViews,
+      canvasControlProps.transientCanvasState,
+    )
 
   const canvasScrollAnimation = useEditorState(
     (store) => store.editor.canvas.scrollAnimation,

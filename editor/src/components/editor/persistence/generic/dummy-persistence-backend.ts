@@ -58,7 +58,5 @@ export function createDummyPersistenceBackend<ModelType, FileType>(): Persistenc
   }
 }
 
-export const VisualiserBackend: PersistenceBackendAPI<
-  string,
-  never
-> = createDummyPersistenceBackend()
+export const VisualiserBackend: PersistenceBackendAPI<string, never> =
+  createDummyPersistenceBackend()

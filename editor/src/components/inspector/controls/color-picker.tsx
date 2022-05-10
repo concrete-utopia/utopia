@@ -94,7 +94,7 @@ function toPassedInColorType(
       hex: color.hex('auto').toUpperCase(),
     }
   } else if (isHSL(passedInColor)) {
-    const [h, s, l, a] = (color.hsl() as any) as [number, number, number, number] // again, the types are out of date
+    const [h, s, l, a] = color.hsl() as any as [number, number, number, number] // again, the types are out of date
     return {
       type: 'HSL',
       h: getSafeHue(h, stateNormalisedHuePosition),
