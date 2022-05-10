@@ -237,7 +237,7 @@ function useStyleFullyVisible(path: ElementPath): boolean {
 
 function useIsProbablyScene(path: ElementPath): boolean {
   return useEditorState(
-    (store) => MetadataUtils.isProbablySceneFromMetadata(store.editor.jsxMetadata, path),
+    (store) => MetadataUtils.isProbablyScene(store.editor.jsxMetadata, path),
     'NavigatorItem useIsProbablyScene',
   )
 }

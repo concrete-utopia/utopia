@@ -22,7 +22,7 @@ function useComponentType(path: ElementPath | null): string | null {
   return useEditorState((store) => {
     const metadata = store.editor.jsxMetadata
     const elementMetadata = MetadataUtils.findElementByElementPath(metadata, path)
-    if (path != null && MetadataUtils.isProbablySceneFromMetadata(metadata, path)) {
+    if (path != null && MetadataUtils.isProbablyScene(metadata, path)) {
       return 'Scene'
     }
     if (path != null && MetadataUtils.isEmotionOrStyledComponent(path, metadata)) {
