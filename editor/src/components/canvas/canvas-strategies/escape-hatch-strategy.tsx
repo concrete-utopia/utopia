@@ -10,9 +10,10 @@ import {
   zeroCanvasRect,
 } from '../../../core/shared/math-utils'
 import { ElementPath } from '../../../core/shared/project-file-types'
-import { setLocalFrame, SetLocalFrameCommand } from '../commands/set-local-frame-command'
+import { stylePropPathMappingFn } from '../../inspector/common/property-path-hooks'
 import { CanvasCommand } from '../commands/commands'
 import { convertToAbsolute } from '../commands/convert-to-absolute-command'
+import { setCssLengthProperty } from '../commands/set-css-length-command'
 import { CanvasStrategy } from './canvas-strategy-types'
 
 export const escapeHatchStrategy: CanvasStrategy = {
@@ -78,7 +79,33 @@ function collectMoveCommandsForSelectedElements(
       } as LocalPoint
       const frameWithoutMargin = offsetRect(frame, marginPoint)
       const updatedFrame = offsetRect(frameWithoutMargin, asLocal(dragDelta ?? zeroCanvasRect))
-      return [convertToAbsolute('permanent', path), setLocalFrame('permanent', path, updatedFrame)]
+      return [
+        convertToAbsolute('permanent', path),
+        setCssLengthProperty(
+          'permanent',
+          path,
+          stylePropPathMappingFn('left', ['style']),
+          updatedFrame.x,
+        ),
+        setCssLengthProperty(
+          'permanent',
+          path,
+          stylePropPathMappingFn('top', ['style']),
+          updatedFrame.y,
+        ),
+        setCssLengthProperty(
+          'permanent',
+          path,
+          stylePropPathMappingFn('width', ['style']),
+          updatedFrame.width,
+        ),
+        setCssLengthProperty(
+          'permanent',
+          path,
+          stylePropPathMappingFn('height', ['style']),
+          updatedFrame.height,
+        ),
+      ]
     } else {
       return []
     }
@@ -107,7 +134,30 @@ function collectSiblingCommands(
       const frameWithoutMargin = offsetRect(frame, marginPoint)
       return [
         convertToAbsolute('permanent', path),
-        setLocalFrame('permanent', path, frameWithoutMargin),
+        setCssLengthProperty(
+          'permanent',
+          path,
+          stylePropPathMappingFn('left', ['style']),
+          frameWithoutMargin.x,
+        ),
+        setCssLengthProperty(
+          'permanent',
+          path,
+          stylePropPathMappingFn('top', ['style']),
+          frameWithoutMargin.y,
+        ),
+        setCssLengthProperty(
+          'permanent',
+          path,
+          stylePropPathMappingFn('width', ['style']),
+          frameWithoutMargin.width,
+        ),
+        setCssLengthProperty(
+          'permanent',
+          path,
+          stylePropPathMappingFn('height', ['style']),
+          frameWithoutMargin.height,
+        ),
       ]
     } else {
       return []

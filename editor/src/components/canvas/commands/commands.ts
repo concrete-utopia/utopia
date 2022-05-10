@@ -6,7 +6,6 @@ import { EditorState, EditorStatePatch } from '../../editor/store/editor-state'
 import { CommandDescription } from '../canvas-strategies/interaction-state'
 import { AdjustCssLengthProperty, runAdjustCssLengthProperty } from './adjust-css-length-command'
 import { AdjustNumberProperty, runAdjustNumberProperty } from './adjust-number-command'
-import { SetLocalFrameCommand, runSetLocalFrame } from './set-local-frame-command'
 import { ConvertToAbsolute, runConvertToAbsolute } from './convert-to-absolute-command'
 import { mergePatches } from './merge-patches'
 import { ReparentElement, runReparentElement } from './reparent-element-command'
@@ -18,6 +17,7 @@ import {
 } from './update-highlighted-views-command'
 import { runUpdateSelectedViews, UpdateSelectedViews } from './update-selected-views-command'
 import { runWildcardPatch, WildcardPatch } from './wildcard-patch-command'
+import { runSetCssLengthProperty, SetCssLengthProperty } from './set-css-length-command'
 
 export interface CommandFunctionResult {
   editorStatePatches: Array<EditorStatePatch>
@@ -42,7 +42,7 @@ export type CanvasCommand =
   | UpdateHighlightedViews
   | SetSnappingGuidelines
   | ConvertToAbsolute
-  | SetLocalFrameCommand
+  | SetCssLengthProperty
 
 export const runCanvasCommand: CommandFunction<CanvasCommand> = (
   editorState: EditorState,
@@ -67,8 +67,8 @@ export const runCanvasCommand: CommandFunction<CanvasCommand> = (
       return runSetSnappingGuidelines(editorState, command)
     case 'CONVERT_TO_ABSOLUTE':
       return runConvertToAbsolute(editorState, command)
-    case 'SET_LOCAL_FRAME':
-      return runSetLocalFrame(editorState, command)
+    case 'SET_CSS_LENGTH_PROPERTY':
+      return runSetCssLengthProperty(editorState, command)
     default:
       const _exhaustiveCheck: never = command
       throw new Error(`Unhandled canvas command ${JSON.stringify(command)}`)
