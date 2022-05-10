@@ -509,15 +509,6 @@ export function updateFramesOfScenesAndComponents(
     let propsToUnset: Array<PropertyPath> = []
     if (isFlexContainer) {
       switch (frameAndTarget.type) {
-        case 'PIN_FRAME_CHANGE': // this can never run now since frameAndTarget.type cannot be both PIN_FRAME_CHANGE and not PIN_FRAME_CHANGE
-        case 'PIN_SIZE_CHANGE': // this can never run now since frameAndTarget.type cannot be both PIN_FRAME_CHANGE and not PIN_FRAME_CHANGE
-        case 'PIN_MOVE_CHANGE': // this can never run now since frameAndTarget.type cannot be both PIN_FRAME_CHANGE and not PIN_FRAME_CHANGE
-        case 'SINGLE_RESIZE': // this can never run now since frameAndTarget.type cannot be both PIN_FRAME_CHANGE and not PIN_FRAME_CHANGE
-          throw new Error(
-            `Attempted to make a pin change against an element in a flex container ${JSON.stringify(
-              staticParentPath,
-            )}.`,
-          )
         case 'FLEX_MOVE':
           workingEditorState = modifyUnderlyingForOpenFile(
             originalTarget,
@@ -797,13 +788,6 @@ export function updateFramesOfScenesAndComponents(
             ),
           )
           break
-        case 'FLEX_MOVE':
-        case 'FLEX_RESIZE':
-          throw new Error(
-            `Attempted to make a flex change against a pinned element ${JSON.stringify(
-              staticParentPath,
-            )}.`,
-          )
         default:
           const _exhaustiveCheck: never = frameAndTarget
           throw new Error(`Unhandled type ${JSON.stringify(frameAndTarget)}`)
