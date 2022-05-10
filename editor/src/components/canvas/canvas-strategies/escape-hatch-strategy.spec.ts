@@ -45,7 +45,7 @@ const complexMetadata = {
       ['scene-aaa', 'app-entity'],
       ['aaa', 'bbb'],
     ]),
-    localFrame: { x: 0, y: 0, width: 250, height: 300 },
+    localFrame: { x: 0, y: 0, width: 250, height: 100 },
     specialSizeMeasurements: {
       immediateParentBounds: canvasRectangle({ x: 0, y: 0, width: 400, height: 400 }),
     } as SpecialSizeMeasurements,
@@ -55,7 +55,7 @@ const complexMetadata = {
       ['scene-aaa', 'app-entity'],
       ['aaa', 'ccc'],
     ]),
-    localFrame: { x: 0, y: 300, width: 125, height: 50 },
+    localFrame: { x: 15, y: 115, width: 125, height: 50 },
     specialSizeMeasurements: {
       immediateParentBounds: canvasRectangle({ x: 0, y: 0, width: 400, height: 400 }),
     } as SpecialSizeMeasurements,
@@ -65,7 +65,7 @@ const complexMetadata = {
       ['scene-aaa', 'app-entity'],
       ['aaa', 'ddd'],
     ]),
-    localFrame: { x: 0, y: 350, width: 100, height: 50 },
+    localFrame: { x: 0, y: 280, width: 100, height: 50 },
     specialSizeMeasurements: {
       immediateParentBounds: canvasRectangle({ x: 0, y: 0, width: 400, height: 400 }),
     } as SpecialSizeMeasurements,
@@ -155,11 +155,11 @@ describe('Escape Hatch Strategy', () => {
       `
     <View style={{ ...(props.style || {}) }} data-uid='aaa'>
       <div
-        style={{ backgroundColor: '#0091FFAA', width: 250, height: 300 }}
+        style={{ backgroundColor: '#0091FFAA', width: 250, height: 100 }}
         data-uid='bbb'
       />
       <div
-        style={{ backgroundColor: '#0091FFAA', width: 125, height: 150 }}
+        style={{ backgroundColor: '#0091FFAA', width: 125, height: 150, margin: 15 }}
         data-uid='ccc'
       />
       <div
@@ -180,7 +180,7 @@ describe('Escape Hatch Strategy', () => {
           style={{
             backgroundColor: '#0091FFAA',
             width: 250,
-            height: 300,
+            height: 100,
             position: 'absolute',
             left: 15,
             top: 15,
@@ -192,12 +192,13 @@ describe('Escape Hatch Strategy', () => {
             backgroundColor: '#0091FFAA',
             width: 125,
             height: 50,
+            margin: 15,
             position: 'absolute',
-            left: 0,
-            top: 300,
+            left: 15,
+            top: 115,
           }}
           data-uid='ccc'
-        />
+          />
         <div
           style={{
             backgroundColor: '#0091FFAA',
@@ -205,7 +206,7 @@ describe('Escape Hatch Strategy', () => {
             height: 50,
             position: 'absolute',
             left: 0,
-            top: 350,
+            top: 280,
           }}
           data-uid='ddd'
         />
