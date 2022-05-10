@@ -212,12 +212,11 @@ const transformItemControlMetadatas: {
   },
 }
 
-const transformSelectOptions: Array<TransformSelectOption> = cssTransformSupportedValidFunctionNames.map(
-  (supportedTransformFunctionName) => ({
+const transformSelectOptions: Array<TransformSelectOption> =
+  cssTransformSupportedValidFunctionNames.map((supportedTransformFunctionName) => ({
     value: supportedTransformFunctionName,
     label: transformItemControlMetadatas[supportedTransformFunctionName].prettyName,
-  }),
-)
+  }))
 
 export function getIndexedOnTransformTypeSelectSubmitValue(transformIndex: number) {
   return function onTransformTypeSelectSubmitValue(
@@ -291,12 +290,10 @@ const SingleLengthItem = React.memo<SingleLengthItemProps>((props) => {
   const [onTransformTypeSubmitValue] = props.useSubmitValueFactory(
     getIndexedOnTransformTypeSelectSubmitValue(props.index),
   )
-  const [
-    singleLengthItemSubmitValue,
-    singleLengthItemTransientSubmitValue,
-  ] = useWrappedSubmitFactoryEmptyOrUnknownOnSubmitValue(
-    props.useSubmitValueFactory(getIndexedUpdateSingleLengthValue(props.index, props.emptyValue)),
-  )
+  const [singleLengthItemSubmitValue, singleLengthItemTransientSubmitValue] =
+    useWrappedSubmitFactoryEmptyOrUnknownOnSubmitValue(
+      props.useSubmitValueFactory(getIndexedUpdateSingleLengthValue(props.index, props.emptyValue)),
+    )
 
   const [deleteTransformItemSubmitValue] = props.useSubmitValueFactory(
     getIndexedSpliceArrayItem(props.index),
@@ -410,22 +407,18 @@ const DoubleLengthItem = React.memo<DoubleLengthItemProps>((props) => {
   const [onTransformTypeSubmitValue] = props.useSubmitValueFactory(
     getIndexedOnTransformTypeSelectSubmitValue(props.index),
   )
-  const [
-    doubleLengthZeroethItemSubmitValue,
-    doubleLengthZeroethItemTransientSubmitValue,
-  ] = useWrappedSubmitFactoryEmptyOrUnknownOnSubmitValue(
-    props.useSubmitValueFactory(
-      getIndexedUpdateDoubleLengthValue(props.index, 0, props.emptyValue.values[0]),
-    ),
-  )
-  const [
-    doubleLengthFirstItemSubmitValue,
-    doubleLengthFirstItemTransientSubmitValue,
-  ] = useWrappedSubmitFactoryEmptyOrUnknownOnSubmitValue(
-    props.useSubmitValueFactory(
-      getIndexedUpdateDoubleLengthValue(props.index, 1, props.emptyValue.values[1]),
-    ),
-  )
+  const [doubleLengthZeroethItemSubmitValue, doubleLengthZeroethItemTransientSubmitValue] =
+    useWrappedSubmitFactoryEmptyOrUnknownOnSubmitValue(
+      props.useSubmitValueFactory(
+        getIndexedUpdateDoubleLengthValue(props.index, 0, props.emptyValue.values[0]),
+      ),
+    )
+  const [doubleLengthFirstItemSubmitValue, doubleLengthFirstItemTransientSubmitValue] =
+    useWrappedSubmitFactoryEmptyOrUnknownOnSubmitValue(
+      props.useSubmitValueFactory(
+        getIndexedUpdateDoubleLengthValue(props.index, 1, props.emptyValue.values[1]),
+      ),
+    )
 
   const [deleteTransformItemSubmitValue] = props.useSubmitValueFactory(
     getIndexedSpliceArrayItem(props.index),

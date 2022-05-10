@@ -205,15 +205,15 @@ export class InspectorContextMenuWrapper<T> extends ReactComponent<ContextMenuWr
           '--control-styles-interactive-unset-rail-color': UtopiaTheme.color.bg3.value,
           '&:hover': {
             '--control-styles-interactive-unset-main-color': getControlStyles('simple').mainColor,
-            '--control-styles-interactive-unset-secondary-color': getControlStyles('simple')
-              .secondaryColor,
+            '--control-styles-interactive-unset-secondary-color':
+              getControlStyles('simple').secondaryColor,
             '--control-styles-interactive-unset-track-color': getControlStyles('simple').trackColor,
             '--control-styles-interactive-unset-rail-color': getControlStyles('simple').railColor,
           },
           '&:focus-within': {
             '--control-styles-interactive-unset-main-color': getControlStyles('simple').mainColor,
-            '--control-styles-interactive-unset-secondary-color': getControlStyles('simple')
-              .secondaryColor,
+            '--control-styles-interactive-unset-secondary-color':
+              getControlStyles('simple').secondaryColor,
             '--control-styles-interactive-unset-track-color': getControlStyles('simple').trackColor,
             '--control-styles-interactive-unset-rail-color': getControlStyles('simple').railColor,
           },

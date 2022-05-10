@@ -202,16 +202,12 @@ export const PaddingRow = React.memo(() => {
 })
 
 export const PaddingControl = React.memo(() => {
-  const {
-    paddingTop,
-    paddingRight,
-    paddingBottom,
-    paddingLeft,
-  } = useInspectorInfoLonghandShorthand(
-    ['paddingTop', 'paddingRight', 'paddingBottom', 'paddingLeft'],
-    'padding',
-    stylePropPathMappingFn,
-  )
+  const { paddingTop, paddingRight, paddingBottom, paddingLeft } =
+    useInspectorInfoLonghandShorthand(
+      ['paddingTop', 'paddingRight', 'paddingBottom', 'paddingLeft'],
+      'padding',
+      stylePropPathMappingFn,
+    )
 
   const paddingTopOnSubmitValue = useWrappedEmptyOrUnknownOnSubmitValue(
     paddingTop.onSubmitValue,

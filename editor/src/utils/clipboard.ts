@@ -148,9 +148,7 @@ export function createDirectInsertImageActions(
   }
 }
 
-export function createClipboardDataFromSelection(
-  editor: EditorState,
-): {
+export function createClipboardDataFromSelection(editor: EditorState): {
   data: Array<JSXElementCopyData>
   imageFilenames: Array<string>
   plaintext: string

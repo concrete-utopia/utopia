@@ -145,24 +145,23 @@ export function prebuildExpressions<T>(
         expressions.map((e) => e.id),
       )
 
-      const prebuiltExpressions: Array<PrebuiltExpressionFunction<
-        T
-      >> = graphProcessingOrder.flatMap((graphNode) => {
-        const expression = graph.node(graphNode)
-        if (expression == null) {
-          return []
-        } else {
-          const func = evaluator(expression.expression, expression.dependencies)
-          return [
-            {
-              id: expression.id,
-              path: expression.path,
-              dependencies: expression.dependencies,
-              func: func,
-            },
-          ]
-        }
-      })
+      const prebuiltExpressions: Array<PrebuiltExpressionFunction<T>> =
+        graphProcessingOrder.flatMap((graphNode) => {
+          const expression = graph.node(graphNode)
+          if (expression == null) {
+            return []
+          } else {
+            const func = evaluator(expression.expression, expression.dependencies)
+            return [
+              {
+                id: expression.id,
+                path: expression.path,
+                dependencies: expression.dependencies,
+                func: func,
+              },
+            ]
+          }
+        })
 
       return {
         type: 'success',

@@ -593,10 +593,11 @@ export function switchChildToGroupWithParentFrame(
   parentFrame: CanvasRectangle,
   propertyTarget: ReadonlyArray<string>,
 ): SwitchLayoutTypeResult {
-  const isParentFlexContainer = MetadataUtils.isParentYogaLayoutedContainerAndElementParticipatesInLayout(
-    target,
-    componentMetadata,
-  )
+  const isParentFlexContainer =
+    MetadataUtils.isParentYogaLayoutedContainerAndElementParticipatesInLayout(
+      target,
+      componentMetadata,
+    )
   const currentFrame = Utils.defaultIfNull(
     zeroLocalRect,
     MetadataUtils.getFrame(originalPath, componentMetadata),

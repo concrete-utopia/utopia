@@ -181,9 +181,7 @@ export function mapToArray<T, U>(
 
 export function mergeObjects<T, U>(
   array: Array<T>,
-  fn: (
-    elem: T,
-  ) => {
+  fn: (elem: T) => {
     [key: string]: U
   },
 ): {

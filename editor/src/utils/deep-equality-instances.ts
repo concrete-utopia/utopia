@@ -29,15 +29,13 @@ import {
 } from '../components/editor/store/editor-state'
 import { LayoutTargetableProp } from '../core/layout/layout-helpers-new'
 
-export const ElementPathKeepDeepEquality: KeepDeepEqualityCall<ElementPath> = createCallFromEqualsFunction(
-  (oldPath: ElementPath, newPath: ElementPath) => {
+export const ElementPathKeepDeepEquality: KeepDeepEqualityCall<ElementPath> =
+  createCallFromEqualsFunction((oldPath: ElementPath, newPath: ElementPath) => {
     return EP.pathsEqual(oldPath, newPath)
-  },
-)
+  })
 
-export const ElementPathArrayKeepDeepEquality: KeepDeepEqualityCall<Array<
-  ElementPath
->> = arrayDeepEquality(ElementPathKeepDeepEquality)
+export const ElementPathArrayKeepDeepEquality: KeepDeepEqualityCall<Array<ElementPath>> =
+  arrayDeepEquality(ElementPathKeepDeepEquality)
 
 export function PropertyPathKeepDeepEquality(): KeepDeepEqualityCall<PropertyPath> {
   return createCallFromEqualsFunction((oldPath: PropertyPath, newPath: PropertyPath) => {
@@ -45,9 +43,9 @@ export function PropertyPathKeepDeepEquality(): KeepDeepEqualityCall<PropertyPat
   })
 }
 
-export const HigherOrderControlArrayKeepDeepEquality: KeepDeepEqualityCall<Array<
-  HigherOrderControl
->> = arrayDeepEquality(createCallFromIntrospectiveKeepDeep())
+export const HigherOrderControlArrayKeepDeepEquality: KeepDeepEqualityCall<
+  Array<HigherOrderControl>
+> = arrayDeepEquality(createCallFromIntrospectiveKeepDeep())
 
 export function JSXElementNameKeepDeepEqualityCall(): KeepDeepEqualityCall<JSXElementName> {
   return combine2EqualityCalls(
@@ -102,71 +100,75 @@ export function EitherKeepDeepEquality<L, R>(
   }
 }
 
-export const NameAndIconResultKeepDeepEquality: KeepDeepEqualityCall<NameAndIconResult> = combine4EqualityCalls(
-  (result) => result.path,
-  ElementPathKeepDeepEquality,
-  (result) => result.name,
-  nullableDeepEquality(JSXElementNameKeepDeepEqualityCall()),
-  (result) => result.label,
-  createCallWithTripleEquals(),
-  (result) => result.iconProps,
-  createCallWithShallowEquals(),
-  (path, name, label, iconProps) => {
-    return {
-      path: path,
-      name: name,
-      label: label,
-      iconProps: iconProps,
-    }
-  },
-)
+export const NameAndIconResultKeepDeepEquality: KeepDeepEqualityCall<NameAndIconResult> =
+  combine4EqualityCalls(
+    (result) => result.path,
+    ElementPathKeepDeepEquality,
+    (result) => result.name,
+    nullableDeepEquality(JSXElementNameKeepDeepEqualityCall()),
+    (result) => result.label,
+    createCallWithTripleEquals(),
+    (result) => result.iconProps,
+    createCallWithShallowEquals(),
+    (path, name, label, iconProps) => {
+      return {
+        path: path,
+        name: name,
+        label: label,
+        iconProps: iconProps,
+      }
+    },
+  )
 
-export const NameAndIconResultArrayKeepDeepEquality: KeepDeepEqualityCall<Array<
-  NameAndIconResult
->> = arrayDeepEquality(NameAndIconResultKeepDeepEquality)
+export const NameAndIconResultArrayKeepDeepEquality: KeepDeepEqualityCall<
+  Array<NameAndIconResult>
+> = arrayDeepEquality(NameAndIconResultKeepDeepEquality)
 
-export const DropTargetHintKeepDeepEquality: KeepDeepEqualityCall<DropTargetHint> = combine2EqualityCalls(
-  (hint) => hint.target,
-  nullableDeepEquality(ElementPathKeepDeepEquality),
-  (hint) => hint.type,
-  createCallWithTripleEquals(),
-  (target, type) => {
-    return {
-      target: target,
-      type: type,
-    }
-  },
-)
+export const DropTargetHintKeepDeepEquality: KeepDeepEqualityCall<DropTargetHint> =
+  combine2EqualityCalls(
+    (hint) => hint.target,
+    nullableDeepEquality(ElementPathKeepDeepEquality),
+    (hint) => hint.type,
+    createCallWithTripleEquals(),
+    (target, type) => {
+      return {
+        target: target,
+        type: type,
+      }
+    },
+  )
 
-export const NavigatorStateKeepDeepEquality: KeepDeepEqualityCall<NavigatorState> = combine4EqualityCalls(
-  (state) => state.minimised,
-  createCallWithTripleEquals(),
-  (state) => state.dropTargetHint,
-  DropTargetHintKeepDeepEquality,
-  (state) => state.collapsedViews,
-  ElementPathArrayKeepDeepEquality,
-  (state) => state.renamingTarget,
-  nullableDeepEquality(ElementPathKeepDeepEquality),
-  (minimised, dropTargetHint, collapsedViews, renamingTarget) => {
-    return {
-      minimised: minimised,
-      dropTargetHint: dropTargetHint,
-      collapsedViews: collapsedViews,
-      renamingTarget: renamingTarget,
-    }
-  },
-)
+export const NavigatorStateKeepDeepEquality: KeepDeepEqualityCall<NavigatorState> =
+  combine4EqualityCalls(
+    (state) => state.minimised,
+    createCallWithTripleEquals(),
+    (state) => state.dropTargetHint,
+    DropTargetHintKeepDeepEquality,
+    (state) => state.collapsedViews,
+    ElementPathArrayKeepDeepEquality,
+    (state) => state.renamingTarget,
+    nullableDeepEquality(ElementPathKeepDeepEquality),
+    (minimised, dropTargetHint, collapsedViews, renamingTarget) => {
+      return {
+        minimised: minimised,
+        dropTargetHint: dropTargetHint,
+        collapsedViews: collapsedViews,
+        renamingTarget: renamingTarget,
+      }
+    },
+  )
 
-export const LayoutTargetablePropArrayKeepDeepEquality: KeepDeepEqualityCall<Array<
-  LayoutTargetableProp
->> = arrayDeepEquality(createCallWithTripleEquals())
+export const LayoutTargetablePropArrayKeepDeepEquality: KeepDeepEqualityCall<
+  Array<LayoutTargetableProp>
+> = arrayDeepEquality(createCallWithTripleEquals())
 
-export const ElementWarningsKeepDeepEquality: KeepDeepEqualityCall<ElementWarnings> = combine3EqualityCalls(
-  (warnings) => warnings.widthOrHeightZero,
-  createCallWithTripleEquals(),
-  (warnings) => warnings.absoluteWithUnpositionedParent,
-  createCallWithTripleEquals(),
-  (warnings) => warnings.dynamicSceneChildWidthHeightPercentage,
-  createCallWithTripleEquals(),
-  elementWarnings,
-)
+export const ElementWarningsKeepDeepEquality: KeepDeepEqualityCall<ElementWarnings> =
+  combine3EqualityCalls(
+    (warnings) => warnings.widthOrHeightZero,
+    createCallWithTripleEquals(),
+    (warnings) => warnings.absoluteWithUnpositionedParent,
+    createCallWithTripleEquals(),
+    (warnings) => warnings.dynamicSceneChildWidthHeightPercentage,
+    createCallWithTripleEquals(),
+    elementWarnings,
+  )

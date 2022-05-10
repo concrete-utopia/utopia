@@ -63,7 +63,8 @@ function newEventQueue<T>(): EventQueue<T> {
 }
 
 export class UtopiaFSExtension
-  implements FileSystemProvider, FileSearchProvider, TextSearchProvider, Disposable {
+  implements FileSystemProvider, FileSearchProvider, TextSearchProvider, Disposable
+{
   private disposable: Disposable
 
   private fileChangeEventQueue = newEventQueue<FileChangeEvent>()
@@ -86,10 +87,10 @@ export class UtopiaFSExtension
 
   // FileSystemProvider
   readonly onDidChangeFile: Event<FileChangeEvent[]> = this.fileChangeEventQueue.emitter.event
-  readonly onUtopiaDidChangeSavedContent: Event<Uri[]> = this.utopiaSavedChangeEventQueue.emitter
-    .event
-  readonly onUtopiaDidChangeUnsavedContent: Event<Uri[]> = this.utopiaUnsavedChangeEventQueue
-    .emitter.event
+  readonly onUtopiaDidChangeSavedContent: Event<Uri[]> =
+    this.utopiaSavedChangeEventQueue.emitter.event
+  readonly onUtopiaDidChangeUnsavedContent: Event<Uri[]> =
+    this.utopiaUnsavedChangeEventQueue.emitter.event
 
   private queueEvent<T>(event: T, eventQueue: EventQueue<T>): void {
     eventQueue.queue.push(event)

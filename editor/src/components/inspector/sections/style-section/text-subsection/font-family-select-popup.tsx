@@ -322,10 +322,8 @@ export const FontFamilySelectPopup = React.memo(
 
       const colorTheme = useColorTheme()
 
-      const {
-        values,
-        useSubmitValueFactory: useResourcesSubmitValueFactory,
-      } = useExternalResources()
+      const { values, useSubmitValueFactory: useResourcesSubmitValueFactory } =
+        useExternalResources()
       const projectTypefaces: Array<ProjectTypefaceItemData> = React.useMemo(() => {
         return isRight(values)
           ? Utils.stripNulls(
@@ -443,9 +441,10 @@ export const FontFamilySelectPopup = React.memo(
         ],
       )
 
-      const getItemSize = React.useCallback((index: number) => filteredData[index].height, [
-        filteredData,
-      ])
+      const getItemSize = React.useCallback(
+        (index: number) => filteredData[index].height,
+        [filteredData],
+      )
 
       const updateSizes = React.useCallback(() => {
         if (variableSizeListRef.current != null) {

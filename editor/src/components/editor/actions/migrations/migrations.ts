@@ -138,8 +138,9 @@ function migrateFromVersion2(
           ((file.fileContents as any).value.canvasMetadata.value as any).utopiaCanvasJSXComponent !=
             null
         ) {
-          const utopiaCanvasJSXComponent = ((file.fileContents as any).value.canvasMetadata
-            .value as any).utopiaCanvasJSXComponent
+          const utopiaCanvasJSXComponent = (
+            (file.fileContents as any).value.canvasMetadata.value as any
+          ).utopiaCanvasJSXComponent
           const updatedTopLevelElements = [
             ...(file.fileContents as any).value.topLevelElements,
             utopiaCanvasJSXComponent,

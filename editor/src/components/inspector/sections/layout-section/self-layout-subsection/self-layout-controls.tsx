@@ -10,9 +10,8 @@ interface LayoutTypePickerProps {
 }
 
 export const LayoutTypePicker = React.memo(({ value, setActiveTab }: LayoutTypePickerProps) => {
-  const { onSubmitValue, onUnsetValues, controlStatus, controlStyles } = useInspectorStyleInfo(
-    'position',
-  )
+  const { onSubmitValue, onUnsetValues, controlStatus, controlStyles } =
+    useInspectorStyleInfo('position')
   const changeSelectedType = React.useCallback(
     (newValue: SelfLayoutTab) => {
       setActiveTab(newValue)

@@ -299,7 +299,7 @@ const initPreview = () => {
            * calling ReactDOM.render() which starts the Preview app.
            */
           requireFn('/', previewJSFilePath)
-        } catch (e) {
+        } catch (e: any) {
           if (e?.name === ResolvingRemoteDependencyErrorName && e?.message != null) {
             const loadingMessageDiv = document.createElement('div')
             loadingMessageDiv.innerHTML = e.message

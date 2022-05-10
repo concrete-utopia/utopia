@@ -200,8 +200,10 @@ function useStyleFullyVisible(path: ElementPath): boolean {
     })
 
     const isFlexAncestorDirectionChange = selectedViews.some((selected) => {
-      const selectedSizeMeasurements = MetadataUtils.findElementByElementPath(metadata, selected)
-        ?.specialSizeMeasurements
+      const selectedSizeMeasurements = MetadataUtils.findElementByElementPath(
+        metadata,
+        selected,
+      )?.specialSizeMeasurements
       const parentPath = EP.parentPath(selected)
       if (
         selectedSizeMeasurements?.parentLayoutSystem === 'flex' &&
@@ -235,7 +237,7 @@ function useStyleFullyVisible(path: ElementPath): boolean {
 
 function useIsProbablyScene(path: ElementPath): boolean {
   return useEditorState(
-    (store) => MetadataUtils.isProbablySceneFromMetadata(store.editor.jsxMetadata, path),
+    (store) => MetadataUtils.isProbablyScene(store.editor.jsxMetadata, path),
     'NavigatorItem useIsProbablyScene',
   )
 }
@@ -295,10 +297,10 @@ export const NavigatorItem: React.FunctionComponent<NavigatorItemInnerProps> = R
       warningText = 'Element is trying to be position absolutely with an unconfigured parent'
     }
 
-    const collapse = React.useCallback((event: any) => collapseItem(dispatch, elementPath, event), [
-      dispatch,
-      elementPath,
-    ])
+    const collapse = React.useCallback(
+      (event: any) => collapseItem(dispatch, elementPath, event),
+      [dispatch, elementPath],
+    )
     const select = React.useCallback(
       (event: any) =>
         selectItem(dispatch, getSelectedViewsInRange, elementPath, index, selected, event),

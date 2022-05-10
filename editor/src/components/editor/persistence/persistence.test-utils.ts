@@ -5,10 +5,8 @@ import { PersistentModel } from '../store/editor-state'
 import { ProjectFile } from '../../../core/shared/project-file-types'
 import { PersistenceBackendAPI } from './generic/persistence-types'
 
-const DummyPersistenceBackend: PersistenceBackendAPI<
-  PersistentModel,
-  ProjectFile
-> = createDummyPersistenceBackend()
+const DummyPersistenceBackend: PersistenceBackendAPI<PersistentModel, ProjectFile> =
+  createDummyPersistenceBackend()
 
 export const DummyPersistenceMachine: PersistenceMachine = new PersistenceMachine(
   DummyPersistenceBackend,

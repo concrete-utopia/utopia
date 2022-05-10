@@ -11,44 +11,46 @@ import { NO_OP } from '../../../core/shared/utils'
 import { testParseCode } from '../../../core/workers/parser-printer/parser-printer.test-utils'
 import { InspectorCallbackContext, InspectorPropsContext } from './property-path-hooks'
 
-export const makeInspectorHookContextProvider = (
-  selectedViews: Array<ElementPath>,
-  multiselectAttributes: JSXAttributes[],
-  targetPath: string[],
-  spiedProps: Array<{ [key: string]: any }>,
-  computedStyles: Array<ComputedStyle>,
-  attributeMetadatas: Array<StyleAttributeMetadata>,
-) => ({ children }: any) => {
-  const spiedPropsWrappedInTargetPath = spiedProps.map((realInnerValue) => {
-    return targetPath.reduceRight((working, pathPart) => {
-      return {
-        [pathPart]: working,
-      }
-    }, realInnerValue)
-  })
-  return (
-    <InspectorCallbackContext.Provider
-      value={{
-        selectedViewsRef: { current: selectedViews },
-        onSubmitValue: NO_OP,
-        onUnsetValue: NO_OP,
-      }}
-    >
-      <InspectorPropsContext.Provider
+export const makeInspectorHookContextProvider =
+  (
+    selectedViews: Array<ElementPath>,
+    multiselectAttributes: JSXAttributes[],
+    targetPath: string[],
+    spiedProps: Array<{ [key: string]: any }>,
+    computedStyles: Array<ComputedStyle>,
+    attributeMetadatas: Array<StyleAttributeMetadata>,
+  ) =>
+  ({ children }: any) => {
+    const spiedPropsWrappedInTargetPath = spiedProps.map((realInnerValue) => {
+      return targetPath.reduceRight((working, pathPart) => {
+        return {
+          [pathPart]: working,
+        }
+      }, realInnerValue)
+    })
+    return (
+      <InspectorCallbackContext.Provider
         value={{
-          selectedViews: selectedViews,
-          editedMultiSelectedProps: multiselectAttributes,
-          targetPath,
-          spiedProps: spiedPropsWrappedInTargetPath,
-          computedStyles: computedStyles,
-          selectedAttributeMetadatas: attributeMetadatas,
+          selectedViewsRef: { current: selectedViews },
+          onSubmitValue: NO_OP,
+          onUnsetValue: NO_OP,
         }}
       >
-        {children}
-      </InspectorPropsContext.Provider>
-    </InspectorCallbackContext.Provider>
-  )
-}
+        <InspectorPropsContext.Provider
+          value={{
+            selectedViews: selectedViews,
+            editedMultiSelectedProps: multiselectAttributes,
+            targetPath,
+            spiedProps: spiedPropsWrappedInTargetPath,
+            computedStyles: computedStyles,
+            selectedAttributeMetadatas: attributeMetadatas,
+          }}
+        >
+          {children}
+        </InspectorPropsContext.Provider>
+      </InspectorCallbackContext.Provider>
+    )
+  }
 
 export function getPropsForStyleProp(
   targetPropExpression: string,

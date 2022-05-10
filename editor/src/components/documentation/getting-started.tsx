@@ -179,9 +179,8 @@ const LoadedProjectsRow = React.memo(
 )
 
 const FeaturedProjects = React.memo(() => {
-  const [featuredProjectList, setFeaturedProjectList] = React.useState<ReadonlyArray<
-    ProjectListing
-  > | null>(null)
+  const [featuredProjectList, setFeaturedProjectList] =
+    React.useState<ReadonlyArray<ProjectListing> | null>(null)
 
   React.useEffect(() => {
     const fetchedProjectPromises = FeaturedProjectIDs.map((projectId) =>
