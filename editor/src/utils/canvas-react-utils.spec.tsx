@@ -581,7 +581,7 @@ describe('Monkey Function', () => {
       </Storyboard>
     )
     expect(renderToFormattedString(storyboard)).toMatchInlineSnapshot(`
-      "<div data-uid=\\"scene-aaa\\" style=\\"left: 0; top: 0; width: 400px; height: 400px;\\">
+      "<div data-uid=\\"scene-aaa\\" style=\\"left: 0; top: 0; width: 400px; height: 400px\\">
         <div data-uid=\\"zzz\\">
           <div data-uid=\\"ccc\\">Hello World!!</div>
           <div data-uid=\\"ddd\\">Hello Dolly!!</div>
