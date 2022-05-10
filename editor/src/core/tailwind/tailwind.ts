@@ -47,9 +47,10 @@ function postCSSIncludesTailwindPlugin(postCSSFile: ProjectFile, requireFn: Requ
 }
 
 function useGetPostCSSConfigFile(projectContents: ProjectContentTreeRoot): ProjectFile | null {
-  return React.useMemo(() => getContentsTreeFileFromString(projectContents, PostCSSPath), [
-    projectContents,
-  ])
+  return React.useMemo(
+    () => getContentsTreeFileFromString(projectContents, PostCSSPath),
+    [projectContents],
+  )
 }
 
 function usePostCSSIncludesTailwindPlugin(
@@ -112,9 +113,10 @@ function getTailwindConfig(
 }
 
 function useGetTailwindConfigFile(projectContents: ProjectContentTreeRoot): ProjectFile | null {
-  return React.useMemo(() => getContentsTreeFileFromString(projectContents, TailwindConfigPath), [
-    projectContents,
-  ])
+  return React.useMemo(
+    () => getContentsTreeFileFromString(projectContents, TailwindConfigPath),
+    [projectContents],
+  )
 }
 
 function useGetTailwindConfig(

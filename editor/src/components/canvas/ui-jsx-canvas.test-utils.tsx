@@ -415,7 +415,7 @@ export function testCanvasErrorInline(
   expect(errorsReportedSpyEnabled.length).toEqual(errorsReportedSpyDisabled.length)
   expect(errorsReportedSpyEnabled.length).toBeGreaterThan(0)
   const errorsToCheck = errorsReportedSpyEnabled.map((error) => {
-    let realError = error.error != null ? error.error : ((error as unknown) as FancyError) // is this conversion needed?
+    let realError = error.error != null ? error.error : (error as unknown as FancyError) // is this conversion needed?
     return {
       name: realError.name,
       message: realError.message,

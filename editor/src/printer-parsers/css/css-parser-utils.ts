@@ -428,7 +428,7 @@ function isLexerToken(leaf: unknown): leaf is LexerToken<string> {
 
 // Type is very much in flex, if you find it doesn't match the data, fix it please
 export type LexerMatch<
-  T extends csstreemissing.Syntax.SyntaxItem = csstreemissing.Syntax.SyntaxItem
+  T extends csstreemissing.Syntax.SyntaxItem = csstreemissing.Syntax.SyntaxItem,
 > = {
   syntax: T
   match: Array<LexerElement>

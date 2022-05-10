@@ -64,14 +64,12 @@ export const LinearGradientBackgroundLayer = React.memo<LinearGradientBackground
       () => gradientCheckboxSubmitValue(!props.value.enabled),
       [gradientCheckboxSubmitValue, props.value.enabled],
     )
-    const [
-      gradientAngleSubmitValue,
-      gradientAngleTransientSubmitValue,
-    ] = useWrappedSubmitFactoryEmptyOrUnknownOnSubmitValue(
-      props.useSubmitTransformedValuesFactory(
-        getIndexedUpdateCSSBackgroundLayerLinearGradientAngle(props.index),
-      ),
-    )
+    const [gradientAngleSubmitValue, gradientAngleTransientSubmitValue] =
+      useWrappedSubmitFactoryEmptyOrUnknownOnSubmitValue(
+        props.useSubmitTransformedValuesFactory(
+          getIndexedUpdateCSSBackgroundLayerLinearGradientAngle(props.index),
+        ),
+      )
     const [backgroundLayerType] = props.useSubmitTransformedValuesFactory(
       getIndexedOnCSSBackgroundLayerTypeSelectSubmitValue(props.index),
     )

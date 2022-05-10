@@ -150,9 +150,10 @@ export const TextSubsection = React.memo(() => {
       : null,
   ])
 
-  const toggleExpanded = React.useCallback(() => setExpanded((prevExpanded) => !prevExpanded), [
-    setExpanded,
-  ])
+  const toggleExpanded = React.useCallback(
+    () => setExpanded((prevExpanded) => !prevExpanded),
+    [setExpanded],
+  )
 
   const wrappedFontSizeOnSubmitValue = useWrappedEmptyOrUnknownOnSubmitValue(
     fontSizeMetadata.onSubmitValue,

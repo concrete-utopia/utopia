@@ -31,7 +31,7 @@ import {
 
 function getShadowedLonghandShorthandValue<
   LonghandKey extends ParsedPropertiesKeys,
-  ShorthandKey extends ParsedPropertiesKeys
+  ShorthandKey extends ParsedPropertiesKeys,
 >(
   longhand: LonghandKey,
   shorthand: ShorthandKey,
@@ -93,14 +93,14 @@ function getShadowedLonghandShorthandValue<
 
 export type InspectorInfoWithPropKeys<
   LonghandKey extends ParsedPropertiesKeys,
-  ShorthandKey extends ParsedPropertiesKeys
+  ShorthandKey extends ParsedPropertiesKeys,
 > = Omit<InspectorInfo<ParsedProperties[LonghandKey]>, 'useSubmitValueFactory'> & {
   orderedPropKeys: Array<Array<LonghandKey | ShorthandKey>>
 }
 
 export function useInspectorInfoLonghandShorthand<
   LonghandKey extends ParsedPropertiesKeys,
-  ShorthandKey extends ParsedPropertiesKeys
+  ShorthandKey extends ParsedPropertiesKeys,
 >(
   longhands: Array<LonghandKey>,
   shorthand: ShorthandKey,
@@ -179,10 +179,10 @@ export function useInspectorInfoLonghandShorthand<
         // the shorthand key is the dominant AND it can be updated
         // let's figure out the new value for the prop
         const currentValue = shorthandInfo.value
-        const updatedValue = ({
+        const updatedValue = {
           ...(currentValue as any),
           [longhand]: newTransformedValues, // VERY IMPORTANT here we assume that the longhand key is a valid key in the parsed shorthand value!!
-        } as any) as ParsedProperties[ShorthandKey]
+        } as any as ParsedProperties[ShorthandKey]
         const longhandPropertyPath = pathMappingFn(longhand, inspectorTargetPath)
         const shorthandPropertyPath = pathMappingFn(shorthand, inspectorTargetPath)
         const printedValue = printCSSValue(shorthand, updatedValue)
@@ -270,7 +270,7 @@ export function useInspectorInfoLonghandShorthand<
 
 function createUnsetActions<
   LonghandKey extends ParsedPropertiesKeys,
-  ShorthandKey extends ParsedPropertiesKeys
+  ShorthandKey extends ParsedPropertiesKeys,
 >(
   pathMappingFn: PathMappingFn<LonghandKey | ShorthandKey>,
   inspectorTargetPath: readonly string[],

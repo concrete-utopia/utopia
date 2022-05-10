@@ -64,18 +64,17 @@ export const NumberOrKeywordControl = React.memo<NumberOrKeywordControlProps>(
     controlStatus,
     DEPRECATED_labelBelow,
   }) => {
-    const onSubmitValue: OnSubmitValue<UnknownOrEmptyInput<
-      CSSNumber | CSSKeyword
-    >> = React.useCallback(
-      (newValue) => {
-        const parsedNewValue = parseUnknownInputValueAsNumberOrKeyword(
-          newValue,
-          keywordControlOptions.validKeywords,
-        )
-        propsOnSubmitValue(parsedNewValue)
-      },
-      [keywordControlOptions.validKeywords, propsOnSubmitValue],
-    )
+    const onSubmitValue: OnSubmitValue<UnknownOrEmptyInput<CSSNumber | CSSKeyword>> =
+      React.useCallback(
+        (newValue) => {
+          const parsedNewValue = parseUnknownInputValueAsNumberOrKeyword(
+            newValue,
+            keywordControlOptions.validKeywords,
+          )
+          propsOnSubmitValue(parsedNewValue)
+        },
+        [keywordControlOptions.validKeywords, propsOnSubmitValue],
+      )
     if (isCSSNumber(value)) {
       return (
         <NumberInput

@@ -41,8 +41,10 @@ describe('Parsing and then printing code', () => {
   })
 
   it('retains a non-parenthesized expression body on an arrow function component', () => {
-    const code = applyPrettier(`export const whatever = (props) => <div data-uid='aaa' />`, false)
-      .formatted
+    const code = applyPrettier(
+      `export const whatever = (props) => <div data-uid='aaa' />`,
+      false,
+    ).formatted
 
     const parsedThenPrinted = parseThenPrint('/index.js', code)
     expect(parsedThenPrinted).toEqual(code)

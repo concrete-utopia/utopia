@@ -80,18 +80,16 @@ export type CSSFrame = Partial<
 export function convertPinsToStyleProps(
   props: PinFrameProps & Pick<React.CSSProperties, 'position'>, // todo make me cleaner code
 ): CSSFrame {
-  const { start: left, end: right, size: width } = axisPinsToAxisCSSProps(
-    props.left,
-    props.centerX,
-    props.right,
-    props.width,
-  )
-  const { start: top, end: bottom, size: height } = axisPinsToAxisCSSProps(
-    props.top,
-    props.centerY,
-    props.bottom,
-    props.height,
-  )
+  const {
+    start: left,
+    end: right,
+    size: width,
+  } = axisPinsToAxisCSSProps(props.left, props.centerX, props.right, props.width)
+  const {
+    start: top,
+    end: bottom,
+    size: height,
+  } = axisPinsToAxisCSSProps(props.top, props.centerY, props.bottom, props.height)
   let returnStyle: CSSFrame = {}
   if (left != null) {
     returnStyle.left = left

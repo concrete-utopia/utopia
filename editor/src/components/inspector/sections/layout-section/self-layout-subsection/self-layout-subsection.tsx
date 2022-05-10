@@ -101,14 +101,13 @@ export const LayoutSubsection = React.memo((props: SelfLayoutSubsectionProps) =>
     props.parentFlexDirection,
   )
 
-  const [selfLayoutSectionOpen, setSelfLayoutSectionOpen] = usePropControlledStateV2(
-    initialLayoutSectionOpen,
-  )
+  const [selfLayoutSectionOpen, setSelfLayoutSectionOpen] =
+    usePropControlledStateV2(initialLayoutSectionOpen)
 
-  const toggleSection = React.useCallback(() => setSelfLayoutSectionOpen(!selfLayoutSectionOpen), [
-    selfLayoutSectionOpen,
-    setSelfLayoutSectionOpen,
-  ])
+  const toggleSection = React.useCallback(
+    () => setSelfLayoutSectionOpen(!selfLayoutSectionOpen),
+    [selfLayoutSectionOpen, setSelfLayoutSectionOpen],
+  )
   return (
     <>
       <LayoutSectionHeader

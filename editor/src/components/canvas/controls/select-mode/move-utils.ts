@@ -90,10 +90,11 @@ export function dragComponent(
   let dragChanges: Array<PinMoveChange | FlexMoveChange> = []
   Utils.fastForEach(viewsToOperateOn, (view) => {
     const parentPath = EP.parentPath(view)
-    const isFlexContainer = MetadataUtils.isParentYogaLayoutedContainerAndElementParticipatesInLayout(
-      view,
-      componentsMetadata,
-    )
+    const isFlexContainer =
+      MetadataUtils.isParentYogaLayoutedContainerAndElementParticipatesInLayout(
+        view,
+        componentsMetadata,
+      )
     const originalFrame = originalFrames.find((frame) => EP.pathsEqual(frame.target, view))
     if (originalFrame == null) {
       // found a target with no original frame
@@ -243,10 +244,11 @@ export function adjustAllSelectedFrames(
           return null
         } else {
           const newFrame = Utils.transformFrameUsingBoundingBox(newBoundingBox, boundingBox, frame)
-          const hasFlexParent = MetadataUtils.isParentYogaLayoutedContainerAndElementParticipatesInLayout(
-            view,
-            editor.jsxMetadata,
-          )
+          const hasFlexParent =
+            MetadataUtils.isParentYogaLayoutedContainerAndElementParticipatesInLayout(
+              view,
+              editor.jsxMetadata,
+            )
           if (hasFlexParent) {
             return flexResizeChange(view, 'flexBasis', adjustment * directionModifier)
           } else {

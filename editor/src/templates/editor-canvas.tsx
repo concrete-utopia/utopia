@@ -261,7 +261,7 @@ function on(
         }
       }
     } else {
-      return [CanvasActions.scrollCanvas((event.delta as any) as CanvasVector)]
+      return [CanvasActions.scrollCanvas(event.delta as any as CanvasVector)]
     }
   } else if (
     isDragging(canvas.editorState) &&
@@ -475,33 +475,33 @@ export function getNewCanvasControlsCursor(canvasCursor: CanvasCursor): CSSCurso
   }
 }
 
-const applyScaleToControl = (scale: number) => (
-  control: ControlOrHigherOrderControl,
-): ControlOrHigherOrderControl => {
-  switch (control.type) {
-    case 'text':
-      return { ...control, props: control.scaleFn(control.props, scale) }
-    case 'circle':
-      return { ...control, props: control.scaleFn(control.props, scale) }
-    case 'ellipse':
-      return { ...control, props: control.scaleFn(control.props, scale) }
-    case 'image':
-      return { ...control, props: control.scaleFn(control.props, scale) }
-    case 'path':
-      return { ...control, props: control.scaleFn(control.props, scale) }
-    case 'rect':
-      return { ...control, props: control.scaleFn(control.props, scale) }
-    case 'svgControl':
-    case 'divControl':
-      return {
-        ...control,
-        controls: (control.controls as any).map(applyScaleToControl(scale)), // HACK why do I need an any here
-      }
-    default:
-      const _exhaustiveCheck: never = control
-      throw `Invalid control type: ${JSON.stringify(control)}`
+const applyScaleToControl =
+  (scale: number) =>
+  (control: ControlOrHigherOrderControl): ControlOrHigherOrderControl => {
+    switch (control.type) {
+      case 'text':
+        return { ...control, props: control.scaleFn(control.props, scale) }
+      case 'circle':
+        return { ...control, props: control.scaleFn(control.props, scale) }
+      case 'ellipse':
+        return { ...control, props: control.scaleFn(control.props, scale) }
+      case 'image':
+        return { ...control, props: control.scaleFn(control.props, scale) }
+      case 'path':
+        return { ...control, props: control.scaleFn(control.props, scale) }
+      case 'rect':
+        return { ...control, props: control.scaleFn(control.props, scale) }
+      case 'svgControl':
+      case 'divControl':
+        return {
+          ...control,
+          controls: (control.controls as any).map(applyScaleToControl(scale)), // HACK why do I need an any here
+        }
+      default:
+        const _exhaustiveCheck: never = control
+        throw `Invalid control type: ${JSON.stringify(control)}`
+    }
   }
-}
 
 function controlFragmentContainingPoint(
   control: ControlOrHigherOrderControl,
@@ -966,11 +966,10 @@ export class EditorCanvas extends React.Component<EditorCanvasProps> {
           const dragPositions = getDragStatePositions(dragState, resizeOptions)
           const targetProperty =
             resizeOptions.propertyTargetOptions[resizeOptions.propertyTargetSelectedIndex]
-          const propertyChange:
-            | ResizeDragStatePropertyChange
-            | undefined = dragState.properties.find((prop) => {
-            return prop.targetProperty === targetProperty
-          })
+          const propertyChange: ResizeDragStatePropertyChange | undefined =
+            dragState.properties.find((prop) => {
+              return prop.targetProperty === targetProperty
+            })
           const keepAspectRatio =
             (key === 'shift' ? pressed : propertyChange?.keepAspectRatio) ||
             this.getElementAspectRatioLocked()

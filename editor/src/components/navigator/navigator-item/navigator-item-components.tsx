@@ -95,8 +95,8 @@ interface OriginalComponentNameLabelProps {
   instanceOriginalComponentName: string | null
 }
 
-export const OriginalComponentNameLabel: React.FunctionComponent<OriginalComponentNameLabelProps> = React.memo(
-  (props) => {
+export const OriginalComponentNameLabel: React.FunctionComponent<OriginalComponentNameLabelProps> =
+  React.memo((props) => {
     const colorTheme = useColorTheme()
     return (
       <div
@@ -112,8 +112,7 @@ export const OriginalComponentNameLabel: React.FunctionComponent<OriginalCompone
         {props.instanceOriginalComponentName}
       </div>
     )
-  },
-)
+  })
 
 interface NavigatorItemActionSheetProps {
   selected: boolean
@@ -124,8 +123,8 @@ interface NavigatorItemActionSheetProps {
   dispatch: EditorDispatch
 }
 
-export const NavigatorItemActionSheet: React.FunctionComponent<NavigatorItemActionSheetProps> = React.memo(
-  (props) => {
+export const NavigatorItemActionSheet: React.FunctionComponent<NavigatorItemActionSheetProps> =
+  React.memo((props) => {
     const { elementPath, dispatch } = props
 
     const toggleHidden = React.useCallback(() => {
@@ -146,5 +145,4 @@ export const NavigatorItemActionSheet: React.FunctionComponent<NavigatorItemActi
         />
       </SectionActionSheet>
     )
-  },
-)
+  })

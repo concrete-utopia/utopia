@@ -53,9 +53,10 @@ const Canvas = {
     // the code that produced these elements.
     const projectTree = buildTree(objectValues(metadata).map((m) => m.elementPath))
 
-    function recurseChildren(
-      component: ElementInstanceMetadata,
-    ): { boundingRect: CanvasRectangle | null; frames: Array<FrameWithPath> } {
+    function recurseChildren(component: ElementInstanceMetadata): {
+      boundingRect: CanvasRectangle | null
+      frames: Array<FrameWithPath>
+    } {
       const globalFrame = component.globalFrame
       if (globalFrame == null) {
         return {

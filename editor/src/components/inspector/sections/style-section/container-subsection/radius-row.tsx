@@ -182,38 +182,18 @@ export const RadiusRow = React.memo(() => {
   const sliderMax = getSliderMax(valueWidth.value, valueHeight.value)
 
   const [onBorderRadiusTypeSubmitValue] = useSubmitValueFactory(updateRadiusType)
-  const [
-    onBorderRadiusAllSubmitCSSNumberValue,
-    onBorderRadiusAllTransientSubmitCSSNumberValue,
-  ] = useSubmitValueFactory(updateBorderRadiusAllCSSNumber)
-  const [
-    onBorderRadiusAllSubmitValue,
-    onBorderRadiusAllTransientSubmitValue,
-  ] = useSubmitValueFactory(updateBorderRadiusAll)
-  const [
-    onBorderRadiusTLSubmitValue,
-    onBorderRadiusTLTransientSubmitValue,
-  ] = useWrappedSubmitFactoryEmptyOrUnknownOnSubmitValue(
-    useSubmitValueFactory(updateBorderRadiusTL),
-  )
-  const [
-    onBorderRadiusTRSubmitValue,
-    onBorderRadiusTRTransientSubmitValue,
-  ] = useWrappedSubmitFactoryEmptyOrUnknownOnSubmitValue(
-    useSubmitValueFactory(updateBorderRadiusTR),
-  )
-  const [
-    onBorderRadiusBLSubmitValue,
-    onBorderRadiusBLTransientSubmitValue,
-  ] = useWrappedSubmitFactoryEmptyOrUnknownOnSubmitValue(
-    useSubmitValueFactory(updateBorderRadiusBL),
-  )
-  const [
-    onBorderRadiusBRSubmitValue,
-    onBorderRadiusBRTransientSubmitValue,
-  ] = useWrappedSubmitFactoryEmptyOrUnknownOnSubmitValue(
-    useSubmitValueFactory(updateBorderRadiusBR),
-  )
+  const [onBorderRadiusAllSubmitCSSNumberValue, onBorderRadiusAllTransientSubmitCSSNumberValue] =
+    useSubmitValueFactory(updateBorderRadiusAllCSSNumber)
+  const [onBorderRadiusAllSubmitValue, onBorderRadiusAllTransientSubmitValue] =
+    useSubmitValueFactory(updateBorderRadiusAll)
+  const [onBorderRadiusTLSubmitValue, onBorderRadiusTLTransientSubmitValue] =
+    useWrappedSubmitFactoryEmptyOrUnknownOnSubmitValue(useSubmitValueFactory(updateBorderRadiusTL))
+  const [onBorderRadiusTRSubmitValue, onBorderRadiusTRTransientSubmitValue] =
+    useWrappedSubmitFactoryEmptyOrUnknownOnSubmitValue(useSubmitValueFactory(updateBorderRadiusTR))
+  const [onBorderRadiusBLSubmitValue, onBorderRadiusBLTransientSubmitValue] =
+    useWrappedSubmitFactoryEmptyOrUnknownOnSubmitValue(useSubmitValueFactory(updateBorderRadiusBL))
+  const [onBorderRadiusBRSubmitValue, onBorderRadiusBRTransientSubmitValue] =
+    useWrappedSubmitFactoryEmptyOrUnknownOnSubmitValue(useSubmitValueFactory(updateBorderRadiusBR))
 
   const borderRadiusContextMenuItems = InspectorContextMenuItems.optionalAddOnUnsetValues(
     borderRadiusValue != null,

@@ -72,14 +72,14 @@ export function dumbGetter<
   T,
   K1 extends keyof T,
   K2 extends keyof T[K1],
-  K3 extends keyof T[K1][K2]
+  K3 extends keyof T[K1][K2],
 >(obj: PropMetadata<T>, key1: K1, key2: K2, key3: K3): T[K1][K2][K3]
 export function dumbGetter<
   T,
   K1 extends keyof T,
   K2 extends keyof T[K1],
   K3 extends keyof T[K1][K2],
-  K4 extends keyof T[K1][K2][K3]
+  K4 extends keyof T[K1][K2][K3],
 >(obj: PropMetadata<T>, key1: K1, key2: K2, key3: K3, key4: K4): T[K1][K2][K3][K4]
 export function dumbGetter<T, K1 extends keyof T, K2 extends keyof T[K1]>(
   obj: PropMetadata<T>,

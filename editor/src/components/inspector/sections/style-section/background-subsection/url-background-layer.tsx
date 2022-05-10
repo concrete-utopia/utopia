@@ -58,10 +58,10 @@ export const URLBackgroundLayer = React.memo<URLBackgroundLayerProps>((props) =>
   const [onURLSubmitValue] = props.useSubmitTransformedValuesFactory(
     getIndexedUpdateNewURL(props.index),
   )
-  const toggleCheckbox = React.useCallback(() => onCheckboxSubmitValue(!props.value.enabled), [
-    onCheckboxSubmitValue,
-    props,
-  ])
+  const toggleCheckbox = React.useCallback(
+    () => onCheckboxSubmitValue(!props.value.enabled),
+    [onCheckboxSubmitValue, props],
+  )
 
   const [backgroundLayerType] = props.useSubmitTransformedValuesFactory(
     getIndexedOnCSSBackgroundLayerTypeSelectSubmitValue(props.index),

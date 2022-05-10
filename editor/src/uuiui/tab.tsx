@@ -70,12 +70,14 @@ export const TabComponent: React.FunctionComponent<TabComponentProps> = React.me
   const setTabHoveredTrue = React.useCallback(() => setTabIsHovered(true), [setTabIsHovered])
   const setTabHoveredFalse = React.useCallback(() => setTabIsHovered(false), [setTabIsHovered])
 
-  const setIndicatorHoveredTrue = React.useCallback(() => setIndicatorIsHovered(true), [
-    setIndicatorIsHovered,
-  ])
-  const setIndicatorHoveredFalse = React.useCallback(() => setIndicatorIsHovered(false), [
-    setIndicatorIsHovered,
-  ])
+  const setIndicatorHoveredTrue = React.useCallback(
+    () => setIndicatorIsHovered(true),
+    [setIndicatorIsHovered],
+  )
+  const setIndicatorHoveredFalse = React.useCallback(
+    () => setIndicatorIsHovered(false),
+    [setIndicatorIsHovered],
+  )
 
   const close = React.useCallback(
     (e) => {
