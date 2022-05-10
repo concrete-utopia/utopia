@@ -48,9 +48,9 @@ export const escapeHatchStrategy: CanvasStrategy = {
       // }
       const dragDelta = interactionState.interactionData.drag
       const moveAndPositionCommands = collectMoveCommandsForSelectedElements(
-        dragDelta,
         canvasState.selectedElements,
         strategyState.startingMetadata,
+        dragDelta,
       )
       const siblingCommands = collectSiblingCommands(
         canvasState.selectedElements,
@@ -64,52 +64,14 @@ export const escapeHatchStrategy: CanvasStrategy = {
 }
 
 function collectMoveCommandsForSelectedElements(
-  dragDelta: CanvasVector | null,
   selectedElements: Array<ElementPath>,
   metadata: ElementInstanceMetadataMap,
+  dragDelta: CanvasVector | null,
 ): Array<CanvasCommand> {
-  return flatMapArray((path) => {
-    const frame = MetadataUtils.getFrame(path, metadata)
-    if (frame != null) {
-      const margin = MetadataUtils.findElementByElementPath(metadata, path)?.specialSizeMeasurements
-        .margin
-      const marginPoint: LocalPoint = {
-        x: -(margin?.left ?? 0),
-        y: -(margin?.top ?? 0),
-      } as LocalPoint
-      const frameWithoutMargin = offsetRect(frame, marginPoint)
-      const updatedFrame = offsetRect(frameWithoutMargin, asLocal(dragDelta ?? zeroCanvasRect))
-      return [
-        convertToAbsolute('permanent', path),
-        setCssLengthProperty(
-          'permanent',
-          path,
-          stylePropPathMappingFn('left', ['style']),
-          updatedFrame.x,
-        ),
-        setCssLengthProperty(
-          'permanent',
-          path,
-          stylePropPathMappingFn('top', ['style']),
-          updatedFrame.y,
-        ),
-        setCssLengthProperty(
-          'permanent',
-          path,
-          stylePropPathMappingFn('width', ['style']),
-          updatedFrame.width,
-        ),
-        setCssLengthProperty(
-          'permanent',
-          path,
-          stylePropPathMappingFn('height', ['style']),
-          updatedFrame.height,
-        ),
-      ]
-    } else {
-      return []
-    }
-  }, selectedElements)
+  return flatMapArray(
+    (path) => collectSetLayoutPropCommands(path, metadata, dragDelta),
+    selectedElements,
+  )
 }
 
 function collectSiblingCommands(
@@ -122,45 +84,52 @@ function collectSiblingCommands(
     })
     .filter((sibling) => selectedElements.every((path) => !EP.pathsEqual(path, sibling)))
 
-  return flatMapArray((path) => {
-    const frame = MetadataUtils.getFrame(path, metadata)
-    if (frame != null) {
-      const margin = MetadataUtils.findElementByElementPath(metadata, path)?.specialSizeMeasurements
-        .margin
-      const marginPoint: LocalPoint = {
-        x: -(margin?.left ?? 0),
-        y: -(margin?.top ?? 0),
-      } as LocalPoint
-      const frameWithoutMargin = offsetRect(frame, marginPoint)
-      return [
-        convertToAbsolute('permanent', path),
-        setCssLengthProperty(
-          'permanent',
-          path,
-          stylePropPathMappingFn('left', ['style']),
-          frameWithoutMargin.x,
-        ),
-        setCssLengthProperty(
-          'permanent',
-          path,
-          stylePropPathMappingFn('top', ['style']),
-          frameWithoutMargin.y,
-        ),
-        setCssLengthProperty(
-          'permanent',
-          path,
-          stylePropPathMappingFn('width', ['style']),
-          frameWithoutMargin.width,
-        ),
-        setCssLengthProperty(
-          'permanent',
-          path,
-          stylePropPathMappingFn('height', ['style']),
-          frameWithoutMargin.height,
-        ),
-      ]
-    } else {
-      return []
-    }
-  }, siblings)
+  return flatMapArray((path) => collectSetLayoutPropCommands(path, metadata, null), siblings)
+}
+
+function collectSetLayoutPropCommands(
+  path: ElementPath,
+  metadata: ElementInstanceMetadataMap,
+  dragDelta: CanvasVector | null,
+) {
+  const frame = MetadataUtils.getFrame(path, metadata)
+  if (frame != null) {
+    const margin = MetadataUtils.findElementByElementPath(metadata, path)?.specialSizeMeasurements
+      .margin
+    const marginPoint: LocalPoint = {
+      x: -(margin?.left ?? 0),
+      y: -(margin?.top ?? 0),
+    } as LocalPoint
+    const frameWithoutMargin = offsetRect(frame, marginPoint)
+    const updatedFrame = offsetRect(frameWithoutMargin, asLocal(dragDelta ?? zeroCanvasRect))
+    return [
+      convertToAbsolute('permanent', path),
+      setCssLengthProperty(
+        'permanent',
+        path,
+        stylePropPathMappingFn('left', ['style']),
+        updatedFrame.x,
+      ),
+      setCssLengthProperty(
+        'permanent',
+        path,
+        stylePropPathMappingFn('top', ['style']),
+        updatedFrame.y,
+      ),
+      setCssLengthProperty(
+        'permanent',
+        path,
+        stylePropPathMappingFn('width', ['style']),
+        updatedFrame.width,
+      ),
+      setCssLengthProperty(
+        'permanent',
+        path,
+        stylePropPathMappingFn('height', ['style']),
+        updatedFrame.height,
+      ),
+    ]
+  } else {
+    return []
+  }
 }
