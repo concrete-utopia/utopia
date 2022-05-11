@@ -79,7 +79,7 @@ function collectSiblingCommands(
 ): Array<CanvasCommand> {
   const siblings = selectedElements
     .flatMap((path) => {
-      return [...MetadataUtils.getSiblings(metadata, path).map((element) => element.elementPath)]
+      return MetadataUtils.getSiblings(metadata, path).map((element) => element.elementPath)
     })
     .filter((sibling) => selectedElements.every((path) => !EP.pathsEqual(path, sibling)))
 
