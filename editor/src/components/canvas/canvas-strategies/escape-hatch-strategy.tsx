@@ -55,10 +55,14 @@ export const escapeHatchStrategy: CanvasStrategy = {
         canvasState.selectedElements,
         strategyState.startingMetadata,
       )
-      return [...moveAndPositionCommands, ...siblingCommands]
+      return {
+        commands: [...moveAndPositionCommands, ...siblingCommands],
+      }
     }
     // Fallback for when the checks above are not satisfied.
-    return []
+    return {
+      commands: [],
+    }
   },
 }
 

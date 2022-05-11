@@ -105,7 +105,7 @@ function dragBy15Pixels(
     editorState,
     [],
     [],
-    strategyResult,
+    strategyResult.commands,
     'permanent',
   ).editorState
 
