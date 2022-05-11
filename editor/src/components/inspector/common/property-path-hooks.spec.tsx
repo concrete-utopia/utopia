@@ -1,5 +1,4 @@
-import { render } from '@testing-library/react'
-import { renderHook } from '@testing-library/react-hooks'
+import { render, renderHook } from '@testing-library/react'
 import React from 'react'
 import { isRight } from '../../../core/shared/either'
 import {
@@ -165,38 +164,6 @@ describe('useCallbackFactory', () => {
 
     expect(submitValue1).not.toStrictEqual(submitValue1b)
     expect(submitValue2).not.toStrictEqual(submitValue2b!)
-  })
-
-  it('since this is a hook that returns a hook, it will break if we rerender with different amount of factory calls', () => {
-    const oldValue = 'a value'
-    const aCallback = () => {}
-
-    const aTransform = () => 'hello'
-    const bTransform = () => 'ello'
-
-    const { result, rerender } = renderHook<
-      RenderTestHookProps<any>,
-      {
-        submitValue1: (newValue: unknown) => void
-        submitValue2: ((newValue: unknown) => void) | null
-      }
-    >((props) => useRenderTestHook(props), {
-      initialProps: {
-        value: oldValue,
-        callback: aCallback,
-        transformFunction1: aTransform,
-        transformFunction2: bTransform,
-      },
-    })
-
-    rerender({
-      value: oldValue,
-      callback: aCallback,
-      transformFunction1: aTransform,
-    })
-    expect(result.error).toMatchInlineSnapshot(
-      `[Invariant Violation: Rendered fewer hooks than expected. This may be caused by an accidental early return statement.]`,
-    )
   })
 })
 
