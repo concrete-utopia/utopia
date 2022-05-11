@@ -72,6 +72,49 @@ const complexMetadata = {
   } as ElementInstanceMetadata,
 }
 
+const mixedPinsMetadata = {
+  'scene-aaa/app-entity:aaa/bbb': {
+    elementPath: elementPath([
+      ['scene-aaa', 'app-entity'],
+      ['aaa', 'bbb'],
+    ]),
+    localFrame: { x: 0, y: 0, width: 400, height: 19 },
+    specialSizeMeasurements: {
+      immediateParentBounds: canvasRectangle({ x: 0, y: 0, width: 400, height: 400 }),
+    } as SpecialSizeMeasurements,
+  } as ElementInstanceMetadata,
+  'scene-aaa/app-entity:aaa/ccc': {
+    elementPath: elementPath([
+      ['scene-aaa', 'app-entity'],
+      ['aaa', 'ccc'],
+    ]),
+    localFrame: { x: 0, y: 19, width: 65, height: 50 },
+    specialSizeMeasurements: {
+      immediateParentBounds: canvasRectangle({ x: 0, y: 0, width: 400, height: 400 }),
+    } as SpecialSizeMeasurements,
+  } as ElementInstanceMetadata,
+  'scene-aaa/app-entity:aaa/ddd': {
+    elementPath: elementPath([
+      ['scene-aaa', 'app-entity'],
+      ['aaa', 'ddd'],
+    ]),
+    localFrame: { x: 0, y: 69, width: 65, height: 50 },
+    specialSizeMeasurements: {
+      immediateParentBounds: canvasRectangle({ x: 0, y: 0, width: 400, height: 400 }),
+    } as SpecialSizeMeasurements,
+  } as ElementInstanceMetadata,
+  'scene-aaa/app-entity:aaa/eee': {
+    elementPath: elementPath([
+      ['scene-aaa', 'app-entity'],
+      ['aaa', 'eee'],
+    ]),
+    localFrame: { x: 0, y: 119, width: 65, height: 50 },
+    specialSizeMeasurements: {
+      immediateParentBounds: canvasRectangle({ x: 0, y: 0, width: 400, height: 400 }),
+    } as SpecialSizeMeasurements,
+  } as ElementInstanceMetadata,
+}
+
 function dragBy15Pixels(
   editorState: EditorState,
   metadata: ElementInstanceMetadataMap,
@@ -211,6 +254,86 @@ describe('Escape Hatch Strategy', () => {
           data-uid='ddd'
         />
       </View>`,
+      ),
+    )
+  })
+  it('works on a flow element with lots of siblings and mixed frame pins', async () => {
+    const targetElement = elementPath([
+      ['scene-aaa', 'app-entity'],
+      ['aaa', 'bbb'],
+    ])
+
+    const initialEditor: EditorState = prepareEditorState(
+      `<div style={{ ...(props.style || {}) }} data-uid='aaa'>
+        <div data-uid='bbb' style={{}}><div data-uid='sad' style={{ width: 400, height: 19 }} /></div>
+        <div
+          style={{ bottom: 0, height: 50, width: 65, right: 0 }}
+          data-uid='ccc'
+        />
+        <div
+          style={{ top: 10, height: 50, width: 65, right: 335 }}
+          data-uid='ddd'
+        />
+        <div
+          style={{ top: 20, height: 50, width: 65, left: 0 }}
+          data-uid='eee'
+        />
+    </div>
+      `,
+      [targetElement],
+    )
+
+    const finalEditor = dragBy15Pixels(initialEditor, mixedPinsMetadata)
+
+    expect(testPrintCodeFromEditorState(finalEditor)).toEqual(
+      makeTestProjectCodeWithSnippet(
+        `<div style={{ ...(props.style || {}) }} data-uid='aaa'>
+        <div
+          data-uid='bbb'
+          style={{
+            position: 'absolute',
+            left: 15,
+            width: 400,
+            top: 15,
+            height: 19,
+          }}
+        >
+          <div
+            data-uid='sad'
+            style={{ width: 400, height: 19 }}
+          />
+        </div>
+        <div
+          style={{
+            bottom: 331,
+            height: 50,
+            width: 65,
+            right: 335,
+            position: 'absolute',
+          }}
+          data-uid='ccc'
+        />
+        <div
+          style={{
+            top: 69,
+            height: 50,
+            width: 65,
+            right: 335,
+            position: 'absolute',
+          }}
+          data-uid='ddd'
+        />
+        <div
+          style={{
+            top: 119,
+            height: 50,
+            width: 65,
+            left: 0,
+            position: 'absolute',
+          }}
+          data-uid='eee'
+        />
+      </div>`,
       ),
     )
   })
