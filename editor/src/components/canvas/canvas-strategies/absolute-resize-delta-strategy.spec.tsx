@@ -45,7 +45,8 @@ function resizeElement(editor: EditorState, edgePosition: EdgePosition): EditorS
       },
     } as StrategyState,
   )
-  return foldAndApplyCommands(editor, editor, [], [], strategyResult, 'permanent').editorState
+  return foldAndApplyCommands(editor, editor, [], [], strategyResult.commands, 'permanent')
+    .editorState
 }
 
 function createTestEditorAndResizeElement(

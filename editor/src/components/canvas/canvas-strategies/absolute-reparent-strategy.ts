@@ -78,16 +78,20 @@ export const absoluteReparentStrategy: CanvasStrategy = {
         }
       })
 
-      return [
-        ...moveCommands,
-        ...commands.flatMap((c) => c.commands),
-        updateSelectedViews(
-          'permanent',
-          commands.map((c) => c.newPath),
-        ),
-      ]
+      return {
+        commands: [
+          ...moveCommands.commands,
+          ...commands.flatMap((c) => c.commands),
+          updateSelectedViews(
+            'permanent',
+            commands.map((c) => c.newPath),
+          ),
+        ],
+      }
     } else {
-      return moveCommands
+      return {
+        commands: moveCommands.commands,
+      }
     }
   },
 }

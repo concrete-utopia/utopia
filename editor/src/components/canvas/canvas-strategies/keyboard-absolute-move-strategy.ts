@@ -46,28 +46,32 @@ export const keyboardAbsoluteMoveStrategy: CanvasStrategy = {
   },
   apply: (canvasState, interactionState, sessionState) => {
     if (interactionState.interactionData.type === 'KEYBOARD') {
-      return interactionState.interactionData.keysPressed.flatMap<AdjustCssLengthProperty>(
-        (key) => {
-          if (key == null) {
-            return []
-          }
-          const drag = getDragDeltaFromKey(key, interactionState.interactionData.modifiers)
-          if (drag.x !== 0 || drag.y !== 0) {
-            return canvasState.selectedElements.flatMap((selectedElement) =>
-              getAbsoluteMoveCommandsForSelectedElement(
-                selectedElement,
-                drag,
-                canvasState,
-                sessionState,
-              ),
-            )
-          } else {
-            return []
-          }
-        },
-      )
+      return {
+        commands: interactionState.interactionData.keysPressed.flatMap<AdjustCssLengthProperty>(
+          (key) => {
+            if (key == null) {
+              return []
+            }
+            const drag = getDragDeltaFromKey(key, interactionState.interactionData.modifiers)
+            if (drag.x !== 0 || drag.y !== 0) {
+              return canvasState.selectedElements.flatMap((selectedElement) =>
+                getAbsoluteMoveCommandsForSelectedElement(
+                  selectedElement,
+                  drag,
+                  canvasState,
+                  sessionState,
+                ),
+              )
+            } else {
+              return []
+            }
+          },
+        ),
+      }
     }
-    return []
+    return {
+      commands: [],
+    }
   },
 }
 

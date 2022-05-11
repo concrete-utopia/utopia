@@ -88,7 +88,7 @@ function reparentElement(
     editorState,
     [],
     [],
-    strategyResult,
+    strategyResult.commands,
     'permanent',
   ).editorState
 

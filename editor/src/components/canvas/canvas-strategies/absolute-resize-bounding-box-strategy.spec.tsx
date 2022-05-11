@@ -60,8 +60,14 @@ function multiselectResizeElements(
       startingMetadata: metadata,
     } as StrategyState,
   )
-  return foldAndApplyCommands(initialEditor, initialEditor, [], [], strategyResult, 'permanent')
-    .editorState
+  return foldAndApplyCommands(
+    initialEditor,
+    initialEditor,
+    [],
+    [],
+    strategyResult.commands,
+    'permanent',
+  ).editorState
 }
 
 const testMetadata: ElementInstanceMetadataMap = {

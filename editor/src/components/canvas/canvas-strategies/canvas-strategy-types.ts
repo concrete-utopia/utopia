@@ -5,7 +5,9 @@ import { ProjectContentTreeRoot } from '../../assets'
 import { CanvasCommand } from '../commands/commands'
 import { InteractionSession, StrategyState } from './interaction-state'
 
-export type StrategyApplicationResult = Array<CanvasCommand>
+export type StrategyApplicationResult = {
+  commands: Array<CanvasCommand>
+}
 
 export interface ControlWithKey {
   control: React.FC

@@ -139,11 +139,15 @@ export const absoluteResizeBoundingBoxStrategy: CanvasStrategy = {
             ]
           },
         )
-        return [...commandsForSelectedElements, updateHighlightedViews('transient', [])]
+        return {
+          commands: [...commandsForSelectedElements, updateHighlightedViews('transient', [])],
+        }
       }
     }
     // Fallback for when the checks above are not satisfied.
-    return []
+    return {
+      commands: [],
+    }
   },
 }
 

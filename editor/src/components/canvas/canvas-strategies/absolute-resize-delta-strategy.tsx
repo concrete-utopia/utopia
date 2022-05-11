@@ -93,14 +93,18 @@ export const absoluteResizeDeltaStrategy: CanvasStrategy = {
           )
         },
       )
-      return [
-        ...commandsForSelectedElements,
-        updateHighlightedViews('transient', []),
-        setSnappingGuidelines('transient', guidelinesWithSnappingVector),
-      ]
+      return {
+        commands: [
+          ...commandsForSelectedElements,
+          updateHighlightedViews('transient', []),
+          setSnappingGuidelines('transient', guidelinesWithSnappingVector),
+        ],
+      }
     }
     // Fallback for when the checks above are not satisfied.
-    return []
+    return {
+      commands: [],
+    }
   },
 }
 

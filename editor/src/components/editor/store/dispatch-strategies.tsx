@@ -66,7 +66,7 @@ export function interactionFinished(
       sortedApplicableStrategies: sortedApplicableStrategies,
     }
 
-    const commands =
+    const strategyResult =
       strategy != null
         ? applyCanvasStrategy(
             strategy.strategy,
@@ -74,13 +74,15 @@ export function interactionFinished(
             interactionSession,
             result.strategyState,
           )
-        : []
+        : {
+            commands: [],
+          }
     const commandResult = foldAndApplyCommands(
       newEditorState,
       storedState.patchedEditor,
       result.strategyState.accumulatedPatches,
       [],
-      commands,
+      strategyResult.commands,
       'permanent',
     )
 
@@ -127,7 +129,7 @@ export function interactionHardReset(
 
     // If there is a current strategy, produce the commands from it.
     if (strategy != null && newEditorState.canvas.interactionSession != null) {
-      const commands = applyCanvasStrategy(
+      const strategyResult = applyCanvasStrategy(
         strategy.strategy,
         canvasState,
         newEditorState.canvas.interactionSession,
@@ -138,13 +140,13 @@ export function interactionHardReset(
         storedState.patchedEditor,
         [],
         [],
-        commands,
+        strategyResult.commands,
         'transient',
       )
       const newStrategyState: StrategyState = {
         currentStrategy: strategy.strategy.id,
         currentStrategyFitness: strategy.fitness,
-        currentStrategyCommands: commands,
+        currentStrategyCommands: strategyResult.commands,
         accumulatedPatches: [],
         commandDescriptions: commandResult.commandDescriptions,
         sortedApplicableStrategies: sortedApplicableStrategies,
@@ -260,7 +262,7 @@ export function interactionStart(
 
     // If there is a current strategy, produce the commands from it.
     if (strategy != null && newEditorState.canvas.interactionSession != null) {
-      const commands = applyCanvasStrategy(
+      const strategyResult = applyCanvasStrategy(
         strategy.strategy,
         canvasState,
         newEditorState.canvas.interactionSession,
@@ -271,14 +273,14 @@ export function interactionStart(
         storedState.patchedEditor,
         [],
         [],
-        commands,
+        strategyResult.commands,
         'transient',
       )
 
       const newStrategyState: StrategyState = {
         currentStrategy: strategy.strategy.id,
         currentStrategyFitness: strategy.fitness,
-        currentStrategyCommands: commands,
+        currentStrategyCommands: strategyResult.commands,
         accumulatedPatches: [],
         commandDescriptions: commandResult.commandDescriptions,
         sortedApplicableStrategies: sortedApplicableStrategies,
@@ -346,7 +348,7 @@ function handleUserChangedStrategy(
       },
     ]
 
-    const commands = applyCanvasStrategy(
+    const strategyResult = applyCanvasStrategy(
       strategy.strategy,
       canvasState,
       newEditorState.canvas.interactionSession,
@@ -357,13 +359,13 @@ function handleUserChangedStrategy(
       storedEditorState,
       strategyState.accumulatedPatches,
       strategyChangedLogCommands.flatMap((c) => c.commands),
-      commands,
+      strategyResult.commands,
       'transient',
     )
     const newStrategyState: StrategyState = {
       currentStrategy: strategy.strategy.id,
       currentStrategyFitness: strategy.fitness,
-      currentStrategyCommands: commands,
+      currentStrategyCommands: strategyResult.commands,
       accumulatedPatches: commandResult.accumulatedPatches,
       commandDescriptions: commandResult.commandDescriptions,
       sortedApplicableStrategies: sortedApplicableStrategies,
@@ -395,7 +397,7 @@ function handleAccumulatingKeypresses(
   const canvasState: InteractionCanvasState = pickCanvasStateFromEditorState(newEditorState)
   // If there is a current strategy, produce the commands from it.
   if (newEditorState.canvas.interactionSession != null) {
-    const commands =
+    const strategyResult =
       strategy != null
         ? applyCanvasStrategy(
             strategy.strategy,
@@ -403,19 +405,21 @@ function handleAccumulatingKeypresses(
             newEditorState.canvas.interactionSession,
             strategyState,
           )
-        : []
+        : {
+            commands: [],
+          }
     const commandResult = foldAndApplyCommands(
       newEditorState,
       storedEditorState,
       strategyState.accumulatedPatches,
       strategyState.currentStrategyCommands,
-      commands,
+      strategyResult.commands,
       'transient',
     )
     const newStrategyState: StrategyState = {
       currentStrategy: strategy?.strategy.id ?? null,
       currentStrategyFitness: strategy?.fitness ?? 0,
-      currentStrategyCommands: commands,
+      currentStrategyCommands: strategyResult.commands,
       accumulatedPatches: commandResult.accumulatedPatches,
       commandDescriptions: commandResult.commandDescriptions,
       sortedApplicableStrategies: sortedApplicableStrategies,
@@ -447,7 +451,7 @@ function handleUpdate(
   const canvasState: InteractionCanvasState = pickCanvasStateFromEditorState(newEditorState)
   // If there is a current strategy, produce the commands from it.
   if (newEditorState.canvas.interactionSession != null) {
-    const commands =
+    const strategyResult =
       strategy != null
         ? applyCanvasStrategy(
             strategy.strategy,
@@ -455,19 +459,21 @@ function handleUpdate(
             newEditorState.canvas.interactionSession,
             strategyState,
           )
-        : []
+        : {
+            commands: [],
+          }
     const commandResult = foldAndApplyCommands(
       newEditorState,
       storedEditorState,
       strategyState.accumulatedPatches,
       [],
-      commands,
+      strategyResult.commands,
       'transient',
     )
     const newStrategyState: StrategyState = {
       currentStrategy: strategy?.strategy.id ?? null,
       currentStrategyFitness: strategy?.fitness ?? 0,
-      currentStrategyCommands: commands,
+      currentStrategyCommands: strategyResult.commands,
       accumulatedPatches: strategyState.accumulatedPatches,
       commandDescriptions: commandResult.commandDescriptions,
       sortedApplicableStrategies: sortedApplicableStrategies,

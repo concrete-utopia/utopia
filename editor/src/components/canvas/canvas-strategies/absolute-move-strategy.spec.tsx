@@ -78,7 +78,7 @@ function dragByPixels(
     editorState,
     [],
     [],
-    strategyResult,
+    strategyResult.commands,
     'permanent',
   ).editorState
 

@@ -148,7 +148,9 @@ const testStrategy: CanvasStrategy = {
     interactionSession: InteractionSession,
     strategyState: StrategyState,
   ): StrategyApplicationResult {
-    return [wildcardPatch('permanent', { canvas: { scale: { $set: 100 } } })]
+    return {
+      commands: [wildcardPatch('permanent', { canvas: { scale: { $set: 100 } } })],
+    }
   },
 }
 
