@@ -725,7 +725,7 @@ export const parseCSSNumber = (
   numberType: CSSNumberType,
   defaultUnit: CSSNumberUnit | null = null,
 ): Either<string, CSSNumber> => {
-  if (typeof input === 'number') {
+  if (typeof input === 'number' && (defaultUnit == null || defaultUnit === 'px')) {
     return right(cssNumber(input, defaultUnit))
   } else if (typeof input === 'string') {
     const unitParseFn = unitParseFnForType(numberType)

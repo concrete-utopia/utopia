@@ -81,8 +81,7 @@ export const runSetCssLengthProperty: CommandFunction<SetCssLengthProperty> = (
   let propsToUpdate: Array<ValueAtPath> = []
 
   const parsePercentResult = parseCSSPercent(simpleValueResult.value)
-  const parsePxResult = parseCSSPx(simpleValueResult.value)
-  if (isLeft(parsePxResult) && isRight(parsePercentResult) && command.parentDimensionPx != null) {
+  if (isRight(parsePercentResult) && command.parentDimensionPx != null) {
     const currentValuePercent = parsePercentResult.value
     const valueInPercent = (command.valuePx / command.parentDimensionPx) * 100
     const newValueCssNumber: CSSNumber = {
