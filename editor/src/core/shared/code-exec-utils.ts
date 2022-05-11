@@ -217,7 +217,7 @@ export const SafeFunctionCurriedErrorHandler = {
           setGlobalEvaluatedFileName(sourceFile ?? 'unknown')
           const [boundThis, ...otherParams] = params
           return fn.bind(boundThis)(...contextValues, ...otherParams)
-        } catch (e) {
+        } catch (e: any) {
           processErrorAndCallHandler(code, filePath, onError, e, true)
         }
       }
@@ -243,7 +243,7 @@ export function safeFunction(
       sourceMapWithoutTranspiledCode,
       extraParamKeys,
     )(onError)
-  } catch (e) {
+  } catch (e: any) {
     processErrorAndCallHandler(code, filePath, onError, e, true)
     return NO_OP
   }

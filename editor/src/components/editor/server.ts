@@ -423,6 +423,9 @@ async function downloadAssetFromProject(
   if (fileWithName.file.base64 != undefined) {
     return fileWithName
   } else {
+    if (window.top == null) {
+      throw new Error(`Failed downloading asset: window.top is null`)
+    }
     const baseUrl = window.top.location.origin
     const assetUrl = urljoin(baseUrl, 'p', projectId, fileWithName.fileName)
     const assetResponse = await fetch(assetUrl, {
