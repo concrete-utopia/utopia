@@ -1,5 +1,6 @@
+import { isHorizontalPoint } from 'utopia-api/core'
 import { getLayoutProperty } from '../../../core/layout/getLayoutProperty'
-import { LayoutPinnedProp } from '../../../core/layout/layout-helpers-new'
+import { framePointForPinnedProp, LayoutPinnedProp } from '../../../core/layout/layout-helpers-new'
 import { MetadataUtils } from '../../../core/model/element-metadata-utils'
 import { flatMapArray, mapDropNulls, stripNulls } from '../../../core/shared/array-utils'
 import { isRight, right } from '../../../core/shared/either'
@@ -112,7 +113,7 @@ function collectSetLayoutPropCommands(
       metadata,
       path,
     )?.specialSizeMeasurements
-    const parentFrame = specialSizeMeasurements?.immediateParentBounds
+    const parentFrame = specialSizeMeasurements?.immediateParentBounds ?? null
     const margin = specialSizeMeasurements?.margin
     const marginPoint: LocalPoint = {
       x: -(margin?.left ?? 0),
@@ -125,13 +126,16 @@ function collectSetLayoutPropCommands(
 
     let commands: Array<CanvasCommand> = [convertToAbsolute('permanent', path)]
     fastForEach(pinsToSet, (framePin) => {
-      const pinValue = pinValueToSet(framePin, fullFrame, parentFrame ?? null)
+      const pinValue = pinValueToSet(framePin, fullFrame, parentFrame)
       commands.push(
         setCssLengthProperty(
           'permanent',
           path,
           stylePropPathMappingFn(framePin, ['style']),
           pinValue,
+          isHorizontalPoint(framePointForPinnedProp(framePin))
+            ? parentFrame?.width
+            : parentFrame?.height,
         ),
       )
     })
