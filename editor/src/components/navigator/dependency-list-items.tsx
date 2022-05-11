@@ -19,7 +19,9 @@ interface DependencyListItemsProps {
   handleAbandonEdit: () => void
 }
 
-export const DependencyListItems: React.FunctionComponent<DependencyListItemsProps> = ({
+export const DependencyListItems: React.FunctionComponent<
+  React.PropsWithChildren<DependencyListItemsProps>
+> = ({
   packages,
   editingLocked,
   newlyLoadedItems,

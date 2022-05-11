@@ -35,9 +35,11 @@ function createEmptyEditorStoreHook() {
   return storeHook
 }
 
-const ContextProvider: React.FunctionComponent<{
-  storeHook: UseStore<EditorStorePatched>
-}> = ({ storeHook, children }) => {
+const ContextProvider: React.FunctionComponent<
+  React.PropsWithChildren<{
+    storeHook: UseStore<EditorStorePatched>
+  }>
+> = ({ storeHook, children }) => {
   return (
     <EditorStateContext.Provider value={{ api: storeHook, useStore: storeHook }}>
       {children}

@@ -49,7 +49,7 @@ class RU {
 
   // Custom components
   static create<P>(
-    type: FC<P>,
+    type: FC<React.PropsWithChildren<P>>,
     props?: { key: Key } & Attributes & P,
     ...children: ReactNode[]
   ): FunctionComponentElement<P>

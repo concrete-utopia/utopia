@@ -19,7 +19,9 @@ interface DependencyListItemProps {
   removeDependency: (key: string) => void
 }
 
-export const DependencyListItem: React.FunctionComponent<DependencyListItemProps> = ({
+export const DependencyListItem: React.FunctionComponent<
+  React.PropsWithChildren<DependencyListItemProps>
+> = ({
   packageDetails,
   editingLocked,
   isNewlyLoaded,

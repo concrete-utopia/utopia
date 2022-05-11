@@ -23,8 +23,8 @@ interface ButtonControlProps {
   indexPosition: IndexPosition
 }
 
-export const InsertionControls: React.FunctionComponent<ControlProps> = React.memo(
-  (props: ControlProps): React.ReactElement | null => {
+export const InsertionControls: React.FunctionComponent<React.PropsWithChildren<ControlProps>> =
+  React.memo((props: ControlProps): React.ReactElement | null => {
     if (props.selectedViews.length !== 1) {
       return null
     }
@@ -187,8 +187,7 @@ export const InsertionControls: React.FunctionComponent<ControlProps> = React.me
         ))}
       </>
     )
-  },
-)
+  })
 
 const InsertionButtonContainer = React.memo((props: ButtonControlProps) => {
   const [plusVisible, setPlusVisible] = React.useState(false)
@@ -252,7 +251,7 @@ const PlusButton = React.memo((props: ButtonControlProps) => {
   const dispatch = useEditorState((store) => store.dispatch, 'PlusButton dispatch')
   const colorTheme = useColorTheme()
   const { parentPath, indexPosition } = props
-  const insertElement = React.useCallback(
+  const insertElement: React.MouseEventHandler<HTMLDivElement> = React.useCallback(
     (event) => {
       event.stopPropagation()
       event.preventDefault()

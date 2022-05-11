@@ -394,9 +394,9 @@ const MenuList = (props: MenuListComponentProps<SelectOption>) => {
   return <components.MenuList {...props} innerRef={ref} />
 }
 
-const DropdownIndicator: React.FunctionComponent<IndicatorProps<SelectOption>> = (
-  indicatorProps,
-) => {
+const DropdownIndicator: React.FunctionComponent<
+  React.PropsWithChildren<IndicatorProps<SelectOption>>
+> = (indicatorProps) => {
   return components.DropdownIndicator == null ? null : (
     <components.DropdownIndicator {...indicatorProps}>
       <SmallerIcons.ExpansionArrowDown />

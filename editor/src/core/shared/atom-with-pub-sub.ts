@@ -14,7 +14,7 @@ export const useIsomorphicLayoutEffect = isSSR ? React.useEffect : React.useLayo
 export interface AtomWithPubSub<T> {
   key: string
   currentValue: T
-  Provider: React.FunctionComponent<React.PropsWithChildren<{ value: T }>>
+  Provider: React.FunctionComponent<React.PropsWithChildren<React.PropsWithChildren<{ value: T }>>>
 }
 
 const GlobalAtomMap: { [key: string]: AtomWithPubSub<any> } = {}

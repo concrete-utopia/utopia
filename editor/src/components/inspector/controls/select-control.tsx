@@ -29,9 +29,9 @@ export interface SelectOption {
   options?: SelectOption[]
 }
 
-const DropdownIndicator: React.FunctionComponent<IndicatorProps<SelectOption>> = (
-  indicatorProps,
-) => {
+const DropdownIndicator: React.FunctionComponent<
+  React.PropsWithChildren<IndicatorProps<SelectOption>>
+> = (indicatorProps) => {
   return components.DropdownIndicator == null ? null : (
     <components.DropdownIndicator {...indicatorProps}>
       <Icons.ExpansionArrow />
@@ -39,9 +39,9 @@ const DropdownIndicator: React.FunctionComponent<IndicatorProps<SelectOption>> =
   )
 }
 
-const ControlledDropdownIndicator: React.FunctionComponent<IndicatorProps<SelectOption>> = (
-  indicatorProps,
-) => {
+const ControlledDropdownIndicator: React.FunctionComponent<
+  React.PropsWithChildren<IndicatorProps<SelectOption>>
+> = (indicatorProps) => {
   return components.DropdownIndicator == null ? null : (
     <components.DropdownIndicator {...indicatorProps}>
       <Icons.ExpansionArrowControlled />
@@ -86,7 +86,9 @@ export const CustomReactSelectInput = (props: InputProps) => {
   )
 }
 
-export const SelectControl: React.FunctionComponent<DEPRECATEDControlProps<any>> = (props) => {
+export const SelectControl: React.FunctionComponent<
+  React.PropsWithChildren<DEPRECATEDControlProps<any>>
+> = (props) => {
   const colorTheme = useColorTheme()
   const options = props.options != null ? (props.options as Array<SelectOption>) : []
   const controlOptions = {

@@ -118,7 +118,7 @@ function attachDataUidToRoot(
 }
 
 const mangleFunctionType = Utils.memoize(
-  (type: unknown): React.FunctionComponent => {
+  (type: unknown): React.FunctionComponent<React.PropsWithChildren<unknown>> => {
     const mangledFunctionName = `UtopiaSpiedFunctionComponent(${getDisplayName(type)})`
 
     const mangledFunction = {
@@ -129,7 +129,9 @@ const mangleFunctionType = Utils.memoize(
         if (MeasureRenderTimes) {
           performance.mark(`render_start_${uuid}`)
         }
-        let originalTypeResponse = (type as React.FunctionComponent)(p, context)
+        let originalTypeResponse = (
+          type as React.FunctionComponent<React.PropsWithChildren<unknown>>
+        )(p, context)
         const res = attachDataUidToRoot(
           originalTypeResponse,
           (p as any)?.[UTOPIA_UID_KEY],
@@ -194,7 +196,9 @@ const mangleClassType = Utils.memoize(
 )
 
 const mangleExoticType = Utils.memoize(
-  (type: React.ComponentType): React.FunctionComponent => {
+  (
+    type: React.ComponentType<React.PropsWithChildren<unknown>>,
+  ): React.FunctionComponent<React.PropsWithChildren<unknown>> => {
     function updateChild(
       child: React.ReactElement | null,
       dataUid: string | null,
@@ -297,7 +301,8 @@ function patchedCreateReactElement(type: any, props: any, ...children: any): any
     return realCreateElement(mangledClass, props, ...children)
   } else if (typeof type === 'function') {
     // if the type is function and it is NOT a class component, we deduce it is a function component
-    const mangledType: React.FunctionComponent = mangleFunctionType(type)
+    const mangledType: React.FunctionComponent<React.PropsWithChildren<unknown>> =
+      mangleFunctionType(type)
     return realCreateElement(mangledType, props, ...children)
   } else if (fragmentOrProviderOrContext(type)) {
     // fragment-like components, the list is not exhaustive, we might need to extend it later

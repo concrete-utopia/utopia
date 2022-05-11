@@ -7,10 +7,9 @@ import { DEPRECATEDControlProps } from './control'
 import { SelectOption } from './select-control'
 
 // TODO stronger type for this control
-export const LightSelectControl: React.FunctionComponent<DEPRECATEDControlProps<any>> = ({
-  onSubmitValue: propsOnSubmitValue,
-  ...props
-}) => {
+export const LightSelectControl: React.FunctionComponent<
+  React.PropsWithChildren<DEPRECATEDControlProps<any>>
+> = ({ onSubmitValue: propsOnSubmitValue, ...props }) => {
   const options = props.options as Array<SelectOption>
   const selectedOption = options.find((option) => option.value === props.value)
   const label = selectedOption != null ? selectedOption.label : props.value + ''

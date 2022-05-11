@@ -1,6 +1,8 @@
 import React from 'react'
 
-export const ProjectFontHeaderItem: React.FunctionComponent = () => {
+export const ProjectFontHeaderItem: React.FunctionComponent<
+  React.PropsWithChildren<unknown>
+> = () => {
   return (
     <div
       style={{

@@ -8,7 +8,7 @@ import { InteractionSession, StrategyState } from './interaction-state'
 export type StrategyApplicationResult = Array<CanvasCommand>
 
 export interface ControlWithKey {
-  control: React.FC
+  control: React.FC<React.PropsWithChildren<unknown>>
   key: string
   show:
     | 'always-visible'
