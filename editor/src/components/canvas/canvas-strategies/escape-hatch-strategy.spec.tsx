@@ -38,6 +38,18 @@ const simpleMetadata = {
     } as SpecialSizeMeasurements,
   } as ElementInstanceMetadata,
 }
+const simpleMetadataPercentValue = {
+  'scene-aaa/app-entity:aaa/bbb': {
+    elementPath: elementPath([
+      ['scene-aaa', 'app-entity'],
+      ['aaa', 'bbb'],
+    ]),
+    localFrame: { x: 0, y: 0, width: 200, height: 80 },
+    specialSizeMeasurements: {
+      immediateParentBounds: canvasRectangle({ x: 0, y: 0, width: 400, height: 400 }),
+    } as SpecialSizeMeasurements,
+  } as ElementInstanceMetadata,
+}
 
 const complexMetadata = {
   'scene-aaa/app-entity:aaa/bbb': {
@@ -183,6 +195,44 @@ describe('Escape Hatch Strategy', () => {
           style={{ backgroundColor: '#0091FFAA', width: 250, height: 300, position: 'absolute', left: 15, top: 15  }}
           data-uid='bbb'
         />
+      </View>`,
+      ),
+    )
+  })
+  it('works on a flow element without siblings where width and height is percentage', async () => {
+    const targetElement = elementPath([
+      ['scene-aaa', 'app-entity'],
+      ['aaa', 'bbb'],
+    ])
+
+    const initialEditor: EditorState = prepareEditorState(
+      `
+    <View style={{ position: 'relative', width: 400, height: 400 }} data-uid='aaa'>
+      <div
+        style={{ backgroundColor: '#0091FFAA', width: '50%', height: '20%' }}
+        data-uid='bbb'
+      />
+    </View>
+    `,
+      [targetElement],
+    )
+
+    const finalEditor = dragBy15Pixels(initialEditor, simpleMetadataPercentValue)
+
+    expect(testPrintCodeFromEditorState(finalEditor)).toEqual(
+      makeTestProjectCodeWithSnippet(
+        `<View style={{ position: 'relative', width: 400, height: 400 }} data-uid='aaa'>
+          <div
+            style={{
+              backgroundColor: '#0091FFAA',
+              width: '50%',
+              height: '20%',
+              position: 'absolute',
+              left: 15,
+              top: 15,
+            }}
+            data-uid='bbb'
+          />
       </View>`,
       ),
     )
