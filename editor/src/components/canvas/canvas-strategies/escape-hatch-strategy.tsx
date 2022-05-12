@@ -14,6 +14,7 @@ import { stylePropPathMappingFn } from '../../inspector/common/property-path-hoo
 import { CanvasCommand } from '../commands/commands'
 import { convertToAbsolute } from '../commands/convert-to-absolute-command'
 import { setCssLengthProperty } from '../commands/set-css-length-command'
+import { DragOutlineControl } from '../controls/select-mode/drag-outline-control'
 import { CanvasStrategy } from './canvas-strategy-types'
 
 export const AnimationTimer = 2000
@@ -30,7 +31,14 @@ export const escapeHatchStrategy: CanvasStrategy = {
       return false
     }
   },
-  controlsToRender: [],
+  controlsToRender: [
+    {
+      control: DragOutlineControl,
+      key: 'ghost-outline-control',
+      // show: 'visible-only-while-active',
+      show: 'always-visible',
+    },
+  ],
   fitness: (canvasState, interactionState, strategyState) => {
     return escapeHatchStrategy.isApplicable(
       canvasState,
