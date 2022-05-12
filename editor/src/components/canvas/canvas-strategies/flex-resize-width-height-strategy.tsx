@@ -21,15 +21,15 @@ export const flexResizeWidthStrategy: CanvasStrategy = {
   id: 'FLEX_RESIZE_WIDTH_HEIGHT',
   name: 'Flex Resize (Width/Height)',
   isApplicable: (canvasState, interactionState, metadata) => {
-    if (
-      canvasState.selectedElements.length === 1 &&
-      !interactionState?.interactionData.modifiers.alt &&
-      !interactionState?.interactionData.modifiers.shift // shift is aspect ratio locked resize implemented in absolute-resize-bounding-box-strategy.tsx
-    ) {
+    if (canvasState.selectedElements.length === 1) {
       return canvasState.selectedElements.every((element) => {
         const elementMetadata = MetadataUtils.findElementByElementPath(metadata, element)
 
-        return elementMetadata?.specialSizeMeasurements.position !== 'absolute'
+        return (
+          elementMetadata?.specialSizeMeasurements.position !== 'absolute'
+          // &&
+          // elementMetadata?.specialSizeMeasurements.parentLayoutSystem === 'flex'
+        )
       })
     } else {
       return false
@@ -57,13 +57,6 @@ export const flexResizeWidthStrategy: CanvasStrategy = {
     ) {
       const drag = interactionState.interactionData.drag
       const edgePosition = interactionState.activeControl.edgePosition
-      const { snappedDragVector, guidelinesWithSnappingVector } = snapDrag(
-        canvasState.selectedElements,
-        sessionState.startingMetadata,
-        drag,
-        edgePosition,
-        canvasState.scale,
-      )
 
       const commandsForSelectedElements = canvasState.selectedElements.flatMap(
         (selectedElement) => {
@@ -89,16 +82,12 @@ export const flexResizeWidthStrategy: CanvasStrategy = {
             element,
             selectedElement,
             edgePosition,
-            snappedDragVector,
+            drag,
             elementParentBounds,
           )
         },
       )
-      return [
-        ...commandsForSelectedElements,
-        updateHighlightedViews('transient', []),
-        setSnappingGuidelines('transient', guidelinesWithSnappingVector),
-      ]
+      return [...commandsForSelectedElements, updateHighlightedViews('transient', [])]
     }
     // Fallback for when the checks above are not satisfied.
     return []
