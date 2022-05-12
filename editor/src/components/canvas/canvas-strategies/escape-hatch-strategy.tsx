@@ -16,6 +16,7 @@ import { convertToAbsolute } from '../commands/convert-to-absolute-command'
 import { setCssLengthProperty } from '../commands/set-css-length-command'
 import { CanvasStrategy } from './canvas-strategy-types'
 
+export const AnimationTimer = 2000
 export const escapeHatchStrategy: CanvasStrategy = {
   id: 'ESCAPE_HATCH_STRATEGY',
   name: 'Escape Hatch',
@@ -45,17 +46,18 @@ export const escapeHatchStrategy: CanvasStrategy = {
     if (interactionState.interactionData.type === 'DRAG') {
       // TODO if the element has siblings the escape hatch is triggered when pulled outside of the parent bounds
       // without siblings it's automatically converted
-      // TODO timer
-      const moveAndPositionCommands = collectMoveCommandsForSelectedElements(
-        canvasState.selectedElements,
-        strategyState.startingMetadata,
-        interactionState.interactionData.drag,
-      )
-      const siblingCommands = collectSiblingCommands(
-        canvasState.selectedElements,
-        strategyState.startingMetadata,
-      )
-      return [...moveAndPositionCommands, ...siblingCommands]
+      if (interactionState.globalTime - interactionState.lastInteractionTime > AnimationTimer) {
+        const moveAndPositionCommands = collectMoveCommandsForSelectedElements(
+          canvasState.selectedElements,
+          strategyState.startingMetadata,
+          interactionState.interactionData.drag,
+        )
+        const siblingCommands = collectSiblingCommands(
+          canvasState.selectedElements,
+          strategyState.startingMetadata,
+        )
+        return [...moveAndPositionCommands, ...siblingCommands]
+      }
     }
     // Fallback for when the checks above are not satisfied.
     return []
