@@ -14,6 +14,7 @@ import { EditorState, EditorStatePatch } from '../../editor/store/editor-state'
 import { CommandDescription } from '../canvas-strategies/interaction-state'
 import { AdjustCssLengthProperty, runAdjustCssLengthProperty } from './adjust-css-length-command'
 import { AdjustNumberProperty, runAdjustNumberProperty } from './adjust-number-command'
+import { ConvertToAbsolute, runConvertToAbsolute } from './convert-to-absolute-command'
 import { mergePatches } from './merge-patches'
 import { ReorderElement, runReorderElement } from './reorder-element-command'
 import { ReparentElement, runReparentElement } from './reparent-element-command'
@@ -25,6 +26,7 @@ import {
 } from './update-highlighted-views-command'
 import { runUpdateSelectedViews, UpdateSelectedViews } from './update-selected-views-command'
 import { runWildcardPatch, WildcardPatch } from './wildcard-patch-command'
+import { runSetCssLengthProperty, SetCssLengthProperty } from './set-css-length-command'
 
 export interface CommandFunctionResult {
   editorStatePatches: Array<EditorStatePatch>
@@ -48,6 +50,8 @@ export type CanvasCommand =
   | UpdateSelectedViews
   | UpdateHighlightedViews
   | SetSnappingGuidelines
+  | ConvertToAbsolute
+  | SetCssLengthProperty
   | ReorderElement
 
 export const runCanvasCommand: CommandFunction<CanvasCommand> = (
@@ -71,6 +75,10 @@ export const runCanvasCommand: CommandFunction<CanvasCommand> = (
       return runUpdateHighlightedViews(editorState, command)
     case 'SET_SNAPPING_GUIDELINES':
       return runSetSnappingGuidelines(editorState, command)
+    case 'CONVERT_TO_ABSOLUTE':
+      return runConvertToAbsolute(editorState, command)
+    case 'SET_CSS_LENGTH_PROPERTY':
+      return runSetCssLengthProperty(editorState, command)
     case 'REORDER_ELEMENT':
       return runReorderElement(editorState, command)
     default:

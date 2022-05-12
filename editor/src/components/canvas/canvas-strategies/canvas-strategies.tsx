@@ -20,6 +20,7 @@ import { InteractionSession, StrategyState } from './interaction-state'
 import { keyboardAbsoluteMoveStrategy } from './keyboard-absolute-move-strategy'
 import { absoluteResizeBoundingBoxStrategy } from './absolute-resize-bounding-box-strategy'
 import { keyboardAbsoluteResizeStrategy } from './keyboard-absolute-resize-strategy'
+import { escapeHatchStrategy } from './escape-hatch-strategy'
 import { flexReorderStrategy } from './flex-reorder-strategy'
 import { flexResizeWidthStrategy } from './flex-resize-width-height-strategy'
 
@@ -32,6 +33,7 @@ export const RegisteredCanvasStrategies: Array<CanvasStrategy> = [
   absoluteResizeDeltaStrategy,
   flexReorderStrategy,
   flexResizeWidthStrategy,
+  escapeHatchStrategy,
 ]
 
 export function pickCanvasStateFromEditorState(editorState: EditorState): InteractionCanvasState {
