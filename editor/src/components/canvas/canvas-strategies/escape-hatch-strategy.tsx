@@ -54,7 +54,10 @@ export const escapeHatchStrategy: CanvasStrategy = {
     if (interactionState.interactionData.type === 'DRAG') {
       // TODO if the element has siblings the escape hatch is triggered when pulled outside of the parent bounds
       // without siblings it's automatically converted
-      if (interactionState.globalTime - interactionState.lastInteractionTime > AnimationTimer) {
+      if (
+        interactionState.interactionData.globalTime - interactionState.lastInteractionTime >
+        AnimationTimer
+      ) {
         const moveAndPositionCommands = collectMoveCommandsForSelectedElements(
           canvasState.selectedElements,
           strategyState.startingMetadata,

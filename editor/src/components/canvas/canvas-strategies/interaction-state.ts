@@ -24,6 +24,7 @@ export interface DragInteractionData {
   dragThresholdPassed: boolean
   originalDragStart: CanvasPoint
   modifiers: Modifiers
+  globalTime: number
 }
 
 interface KeyboardInteractionData {
@@ -58,7 +59,6 @@ export interface InteractionSession {
   userPreferredStrategy: CanvasStrategyId | null
 
   startedAt: number
-  globalTime: number
 }
 
 export type InteractionSessionWithoutMetadata = Omit<InteractionSession, 'metadata'>
@@ -107,13 +107,13 @@ export function createInteractionViaMouse(
       dragThresholdPassed: false,
       originalDragStart: mouseDownPoint,
       modifiers: modifiers,
+      globalTime: Date.now(),
     },
     activeControl: activeControl,
     sourceOfUpdate: activeControl,
     lastInteractionTime: Date.now(),
     userPreferredStrategy: null,
     startedAt: Date.now(),
-    globalTime: Date.now(),
   }
 }
 
@@ -141,18 +141,17 @@ export function updateInteractionViaMouse(
         dragThresholdPassed: dragThresholdPassed,
         originalDragStart: currentState.interactionData.originalDragStart,
         modifiers: modifiers,
+        globalTime: Date.now(),
       },
       activeControl: currentState.activeControl,
       sourceOfUpdate: sourceOfUpdate ?? currentState.activeControl,
       lastInteractionTime: Date.now(),
       userPreferredStrategy: currentState.userPreferredStrategy,
       startedAt: currentState.startedAt,
-      globalTime: Date.now(),
     }
   } else {
     return {
       ...currentState,
-      globalTime: Date.now(),
     }
   }
 }
@@ -173,7 +172,6 @@ export function createInteractionViaKeyboard(
     lastInteractionTime: Date.now(),
     userPreferredStrategy: null,
     startedAt: Date.now(),
-    globalTime: Date.now(),
   }
 }
 
@@ -202,7 +200,6 @@ export function updateInteractionViaKeyboard(
         lastInteractionTime: Date.now(),
         userPreferredStrategy: currentState.userPreferredStrategy,
         startedAt: currentState.startedAt,
-        globalTime: Date.now(),
       }
     }
     case 'DRAG': {
@@ -215,13 +212,13 @@ export function updateInteractionViaKeyboard(
           dragThresholdPassed: currentState.interactionData.dragThresholdPassed,
           originalDragStart: currentState.interactionData.originalDragStart,
           modifiers: modifiers,
+          globalTime: Date.now(),
         },
         activeControl: currentState.activeControl,
         sourceOfUpdate: currentState.activeControl,
         lastInteractionTime: Date.now(),
         userPreferredStrategy: currentState.userPreferredStrategy,
         startedAt: currentState.startedAt,
-        globalTime: Date.now(),
       }
     }
     default:
