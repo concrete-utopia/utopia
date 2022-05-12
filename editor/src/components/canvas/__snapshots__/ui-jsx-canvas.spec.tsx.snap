@@ -23658,12 +23658,12 @@ export var storyboard = (
         "type": "elementpath",
       },
       "skipDeepFreeze": true,
-      "thing": <wrapperComponent
+      "thing": <div
         data-path="eee/fff/app-entity:aaa/ccc~~~1"
         data-uid="ccc~~~1"
       >
         test
-      </wrapperComponent>,
+      </div>,
     },
     "specialSizeMeasurements": Object {
       "clientHeight": 0,
