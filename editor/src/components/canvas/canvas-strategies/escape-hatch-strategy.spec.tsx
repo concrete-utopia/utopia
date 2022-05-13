@@ -125,6 +125,16 @@ const mixedPinsMetadata = {
       immediateParentBounds: canvasRectangle({ x: 0, y: 0, width: 400, height: 400 }),
     } as SpecialSizeMeasurements,
   } as ElementInstanceMetadata,
+  'scene-aaa/app-entity:aaa/fff': {
+    elementPath: elementPath([
+      ['scene-aaa', 'app-entity'],
+      ['aaa', 'fff'],
+    ]),
+    localFrame: { x: 0, y: 169, width: 65, height: 50 },
+    specialSizeMeasurements: {
+      immediateParentBounds: canvasRectangle({ x: 0, y: 0, width: 400, height: 400 }),
+    } as SpecialSizeMeasurements,
+  } as ElementInstanceMetadata,
 }
 
 function dragBy15Pixels(
@@ -328,6 +338,10 @@ describe('Escape Hatch Strategy', () => {
           style={{ top: 20, height: 50, width: 65, left: 0 }}
           data-uid='eee'
         />
+        <div
+          style={{ top: 10, height: 50, width: 65, left: 0, bottom: 60, right: 10 }}
+          data-uid='fff'
+        />
     </div>
       `,
       [targetElement],
@@ -382,6 +396,18 @@ describe('Escape Hatch Strategy', () => {
             position: 'absolute',
           }}
           data-uid='eee'
+        />
+        <div
+          style={{
+            top: 169,
+            height: 50,
+            width: 65,
+            left: 0,
+            bottom: 181,
+            right: 335,
+            position: 'absolute',
+          }}
+          data-uid='fff'
         />
       </div>`,
       ),
