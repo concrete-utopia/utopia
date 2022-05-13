@@ -4,7 +4,7 @@ import { getReparentTarget } from '../canvas-utils'
 import { reparentElement } from '../commands/reparent-element-command'
 import { updateSelectedViews } from '../commands/update-selected-views-command'
 import { absoluteMoveStrategy } from './absolute-move-strategy'
-import { CanvasStrategy } from './canvas-strategy-types'
+import { CanvasStrategy, emptyStrategyApplicationResult } from './canvas-strategy-types'
 import {
   getAbsoluteOffsetCommandsForSelectedElement,
   getDragTargets,
@@ -90,10 +90,7 @@ export const absoluteReparentStrategy: CanvasStrategy = {
         customState: null,
       }
     } else {
-      return {
-        commands: moveCommands.commands,
-        customState: null,
-      }
+      return emptyStrategyApplicationResult
     }
   },
 }
