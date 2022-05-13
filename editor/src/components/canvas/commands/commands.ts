@@ -90,18 +90,23 @@ export const runCanvasCommand: CommandFunction<CanvasCommand> = (
 export function foldAndApplyCommands(
   editorState: EditorState,
   priorPatchedState: EditorState,
+  patches: Array<EditorStatePatch>,
   commandsToAccumulate: Array<CanvasCommand>,
   commands: Array<CanvasCommand>,
   transient: TransientOrNot,
 ): {
   editorState: EditorState
+  accumulatedPatches: Array<EditorStatePatch>
   commandDescriptions: Array<CommandDescription>
 } {
-  let statePatches: Array<EditorStatePatch> = []
-  let workingEditorState = editorState
+  let statePatches: Array<EditorStatePatch> = [...patches]
+  let accumulatedPatches: Array<EditorStatePatch> = [...patches]
+  let workingEditorState: EditorState = patches.reduce((workingState, patch) => {
+    return update(workingState, patch)
+  }, editorState)
   let workingCommandDescriptions: Array<CommandDescription> = []
 
-  const runCommand = (command: CanvasCommand) => {
+  const runCommand = (command: CanvasCommand, shouldAccumulatePatches: boolean) => {
     if (transient === 'transient' || command.transient === 'permanent') {
       // Run the command with our current states.
       const commandResult = runCanvasCommand(workingEditorState, command)
@@ -111,6 +116,9 @@ export function foldAndApplyCommands(
       workingEditorState = updateEditorStateWithPatches(workingEditorState, statePatch)
       // Collate the patches.
       statePatches.push(...statePatch)
+      if (shouldAccumulatePatches) {
+        accumulatedPatches.push(...statePatch)
+      }
       workingCommandDescriptions.push({
         description: commandResult.commandDescription,
         transient: command.transient === 'transient',
@@ -118,7 +126,8 @@ export function foldAndApplyCommands(
     }
   }
 
-  commands.forEach((command) => runCommand(command))
+  commandsToAccumulate.forEach((command) => runCommand(command, true))
+  commands.forEach((command) => runCommand(command, false))
 
   if (statePatches.length === 0) {
     workingEditorState = editorState
@@ -128,6 +137,7 @@ export function foldAndApplyCommands(
 
   return {
     editorState: workingEditorState,
+    accumulatedPatches: mergePatches(accumulatedPatches),
     commandDescriptions: workingCommandDescriptions,
   }
 }

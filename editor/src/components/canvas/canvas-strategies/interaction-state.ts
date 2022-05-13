@@ -72,6 +72,7 @@ export interface StrategyState {
   currentStrategy: CanvasStrategyId | null
   currentStrategyFitness: number
   currentStrategyCommands: Array<CanvasCommand>
+  accumulatedPatches: Array<EditorStatePatch>
   commandDescriptions: Array<CommandDescription>
   sortedApplicableStrategies: Array<CanvasStrategy>
 
@@ -84,6 +85,7 @@ export function createEmptyStrategyState(metadata?: ElementInstanceMetadataMap):
     currentStrategy: null,
     currentStrategyFitness: 0,
     currentStrategyCommands: [],
+    accumulatedPatches: [],
     commandDescriptions: [],
     sortedApplicableStrategies: [],
     startingMetadata: metadata ?? {},

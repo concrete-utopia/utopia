@@ -113,8 +113,12 @@ describe('interactionCancel', () => {
         { type: 'BOUNDING_AREA', target: EP.elementPath([['aaa']]) },
       ),
     )
-
+    editorStore.strategyState.accumulatedPatches = runCanvasCommand(
+      editorStore.unpatchedEditor,
+      wildcardPatch('permanent', { selectedViews: { $set: [] } }),
+    ).editorStatePatches
     const actualResult = interactionCancel(editorStore, dispatchResultFromEditorStore(editorStore))
+    expect(actualResult.newStrategyState.accumulatedPatches).toHaveLength(0)
     expect(actualResult.newStrategyState.commandDescriptions).toHaveLength(0)
     expect(actualResult.newStrategyState.currentStrategyCommands).toHaveLength(0)
     expect(actualResult.newStrategyState.currentStrategy).toBeNull()
@@ -166,6 +170,7 @@ describe('interactionStart', () => {
     )
     expect(actualResult.newStrategyState).toMatchInlineSnapshot(`
       Object {
+        "accumulatedPatches": Array [],
         "commandDescriptions": Array [
           Object {
             "description": "Wildcard Patch: {
@@ -241,6 +246,7 @@ describe('interactionStart', () => {
     )
     expect(actualResult.newStrategyState).toMatchInlineSnapshot(`
       Object {
+        "accumulatedPatches": Array [],
         "commandDescriptions": Array [],
         "currentStrategy": null,
         "currentStrategyCommands": Array [],
@@ -275,6 +281,7 @@ describe('interactionUpdatex', () => {
     )
     expect(actualResult.newStrategyState).toMatchInlineSnapshot(`
       Object {
+        "accumulatedPatches": Array [],
         "commandDescriptions": Array [
           Object {
             "description": "Wildcard Patch: {
@@ -351,6 +358,7 @@ describe('interactionUpdatex', () => {
     )
     expect(actualResult.newStrategyState).toMatchInlineSnapshot(`
       Object {
+        "accumulatedPatches": Array [],
         "commandDescriptions": Array [],
         "currentStrategy": null,
         "currentStrategyCommands": Array [],
@@ -364,6 +372,31 @@ describe('interactionUpdatex', () => {
     expect(
       actualResult.patchedEditorState.canvas.interactionSession?.interactionData,
     ).toMatchInlineSnapshot(`undefined`)
+  })
+})
+
+describe('interactionUpdate without strategy', () => {
+  it('processes the accumulated commands', () => {
+    const editorStore = createEditorStore(
+      createInteractionViaMouse(
+        canvasPoint({ x: 100, y: 200 }),
+        { alt: false, shift: false, ctrl: false, cmd: false },
+        { type: 'BOUNDING_AREA', target: EP.elementPath([['aaa']]) },
+      ),
+    )
+    editorStore.strategyState.currentStrategy = null
+    editorStore.strategyState.accumulatedPatches = runCanvasCommand(
+      editorStore.unpatchedEditor,
+      wildcardPatch('permanent', { canvas: { scale: { $set: 100 } } }),
+    ).editorStatePatches
+    const actualResult = interactionUpdate(
+      [],
+      editorStore,
+      dispatchResultFromEditorStore(editorStore),
+      'non-interaction',
+    )
+    expect(actualResult.patchedEditorState.canvas.scale).toEqual(100)
+    expect(actualResult.unpatchedEditorState.canvas.scale).toEqual(1)
   })
 })
 
@@ -387,6 +420,7 @@ describe('interactionHardReset', () => {
     )
     expect(actualResult.newStrategyState).toMatchInlineSnapshot(`
       Object {
+        "accumulatedPatches": Array [],
         "commandDescriptions": Array [
           Object {
             "description": "Wildcard Patch: {
@@ -468,6 +502,7 @@ describe('interactionHardReset', () => {
     )
     expect(actualResult.newStrategyState).toMatchInlineSnapshot(`
       Object {
+        "accumulatedPatches": Array [],
         "commandDescriptions": Array [],
         "currentStrategy": null,
         "currentStrategyCommands": Array [],
@@ -484,78 +519,78 @@ describe('interactionHardReset', () => {
   })
 })
 
-// describe('interactionUpdate with accumulating keypresses', () => {
-//   it('steps an interaction session correctly', () => {
-//     let interactionSession = createInteractionViaKeyboard(
-//       ['left'],
-//       { alt: false, shift: false, ctrl: false, cmd: false },
-//       { type: 'BOUNDING_AREA', target: EP.elementPath([['aaa']]) },
-//     )
+describe('interactionUpdate with accumulating keypresses', () => {
+  it('steps an interaction session correctly', () => {
+    let interactionSession = createInteractionViaKeyboard(
+      ['left'],
+      { alt: false, shift: false, ctrl: false, cmd: false },
+      { type: 'BOUNDING_AREA', target: EP.elementPath([['aaa']]) },
+    )
 
-//     const editorStore = createEditorStore(interactionSession)
+    const editorStore = createEditorStore(interactionSession)
 
-//     editorStore.strategyState.currentStrategy = 'TEST_STRATEGY' as CanvasStrategyId
-//     // the currentStrategyCommands should be added to accumulatedCommands
-//     editorStore.strategyState.currentStrategyCommands = [
-//       wildcardPatch('permanent', { selectedViews: { $set: [EP.elementPath([['aaa']])] } }),
-//     ]
-//     editorStore.strategyState.accumulatedPatches = runCanvasCommand(
-//       editorStore.unpatchedEditor,
-//       wildcardPatch('permanent', { focusedPanel: { $set: 'codeEditor' } }),
-//     ).editorStatePatches
+    editorStore.strategyState.currentStrategy = 'TEST_STRATEGY' as CanvasStrategyId
+    // the currentStrategyCommands should be added to accumulatedCommands
+    editorStore.strategyState.currentStrategyCommands = [
+      wildcardPatch('permanent', { selectedViews: { $set: [EP.elementPath([['aaa']])] } }),
+    ]
+    editorStore.strategyState.accumulatedPatches = runCanvasCommand(
+      editorStore.unpatchedEditor,
+      wildcardPatch('permanent', { focusedPanel: { $set: 'codeEditor' } }),
+    ).editorStatePatches
 
-//     const actualResult = interactionUpdate(
-//       [testStrategy],
-//       editorStore,
-//       dispatchResultFromEditorStore(editorStore),
-//       'interaction-create-or-update',
-//     )
+    const actualResult = interactionUpdate(
+      [testStrategy],
+      editorStore,
+      dispatchResultFromEditorStore(editorStore),
+      'interaction-create-or-update',
+    )
 
-//     // accumulatedCommands should have the currentStrategyCommands added
-//     expect(actualResult.newStrategyState.accumulatedPatches).toMatchInlineSnapshot(`
-//       Array [
-//         Object {
-//           "focusedPanel": Object {
-//             "$set": "codeEditor",
-//           },
-//         },
-//         Object {
-//           "selectedViews": Object {
-//             "$set": Array [
-//               Object {
-//                 "parts": Array [
-//                   Array [
-//                     "aaa",
-//                   ],
-//                 ],
-//                 "type": "elementpath",
-//               },
-//             ],
-//           },
-//         },
-//       ]
-//     `)
+    // accumulatedCommands should have the currentStrategyCommands added
+    expect(actualResult.newStrategyState.accumulatedPatches).toMatchInlineSnapshot(`
+      Array [
+        Object {
+          "focusedPanel": Object {
+            "$set": "codeEditor",
+          },
+        },
+        Object {
+          "selectedViews": Object {
+            "$set": Array [
+              Object {
+                "parts": Array [
+                  Array [
+                    "aaa",
+                  ],
+                ],
+                "type": "elementpath",
+              },
+            ],
+          },
+        },
+      ]
+    `)
 
-//     // accumulatedCommands + currentStrategyCommands + the command coming from the strategy should all be applied to the patch
-//     expect(actualResult.patchedEditorState.canvas.scale).toEqual(100)
-//     expect(actualResult.unpatchedEditorState.canvas.scale).toEqual(1)
-//     expect(actualResult.patchedEditorState.selectedViews).toMatchInlineSnapshot(`
-//       Array [
-//         Object {
-//           "parts": Array [
-//             Array [
-//               "aaa",
-//             ],
-//           ],
-//           "type": "elementpath",
-//         },
-//       ]
-//     `)
-//     expect(actualResult.unpatchedEditorState.selectedViews).toHaveLength(0)
-//     expect(actualResult.patchedEditorState.focusedPanel).toEqual('codeEditor')
-//     expect(actualResult.unpatchedEditorState.focusedPanel).toEqual('canvas')
-//   })
-// })
+    // accumulatedCommands + currentStrategyCommands + the command coming from the strategy should all be applied to the patch
+    expect(actualResult.patchedEditorState.canvas.scale).toEqual(100)
+    expect(actualResult.unpatchedEditorState.canvas.scale).toEqual(1)
+    expect(actualResult.patchedEditorState.selectedViews).toMatchInlineSnapshot(`
+      Array [
+        Object {
+          "parts": Array [
+            Array [
+              "aaa",
+            ],
+          ],
+          "type": "elementpath",
+        },
+      ]
+    `)
+    expect(actualResult.unpatchedEditorState.selectedViews).toHaveLength(0)
+    expect(actualResult.patchedEditorState.focusedPanel).toEqual('codeEditor')
+    expect(actualResult.unpatchedEditorState.focusedPanel).toEqual('canvas')
+  })
+})
 
 describe('interactionUpdate with user changed strategy', () => {
   it('steps an interaction session correctly', () => {
@@ -587,7 +622,12 @@ describe('interactionUpdate with user changed strategy', () => {
     const actualResult = interactionUpdate([testStrategy], editorStore, result, 'non-interaction')
     expect(actualResult.newStrategyState).toMatchInlineSnapshot(`
       Object {
+        "accumulatedPatches": Array [],
         "commandDescriptions": Array [
+          Object {
+            "description": "Strategy switched to Test Strategy by user input. Interaction data reset.",
+            "transient": true,
+          },
           Object {
             "description": "Wildcard Patch: {
         \\"canvas\\": {
@@ -669,6 +709,7 @@ describe('interactionUpdate with user changed strategy', () => {
     )
     expect(actualResult.newStrategyState).toMatchInlineSnapshot(`
       Object {
+        "accumulatedPatches": Array [],
         "commandDescriptions": Array [],
         "currentStrategy": null,
         "currentStrategyCommands": Array [],

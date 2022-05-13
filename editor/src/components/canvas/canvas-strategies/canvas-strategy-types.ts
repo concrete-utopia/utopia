@@ -2,17 +2,11 @@ import { ElementInstanceMetadataMap } from '../../../core/shared/element-templat
 import { CanvasVector } from '../../../core/shared/math-utils'
 import { ElementPath } from '../../../core/shared/project-file-types'
 import { ProjectContentTreeRoot } from '../../assets'
-import { EditorStatePatch } from '../../editor/store/editor-state'
 import { CanvasCommand } from '../commands/commands'
 import { InteractionSession, StrategyState } from './interaction-state'
 
-export interface CustomStrategyState {
-  accumulatedPatches: Array<EditorStatePatch>
-}
-
-export interface StrategyApplicationResult {
+export type StrategyApplicationResult = {
   commands: Array<CanvasCommand>
-  customState?: CustomStrategyState
 }
 
 export interface ControlWithKey {

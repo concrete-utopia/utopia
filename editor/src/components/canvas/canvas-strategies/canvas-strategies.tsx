@@ -242,5 +242,7 @@ export function useGetApplicableStrategyControls(): Array<ControlWithKey> {
 }
 
 export function isStrategyActive(strategyState: StrategyState): boolean {
-  return strategyState.currentStrategyCommands.length > 0
+  return (
+    strategyState.accumulatedPatches.length > 0 || strategyState.currentStrategyCommands.length > 0
+  )
 }
