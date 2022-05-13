@@ -55,7 +55,10 @@ const Canvas = {
 
     function recurseChildren(
       component: ElementInstanceMetadata,
-    ): { boundingRect: CanvasRectangle | null; frames: Array<FrameWithPath> } {
+    ): {
+      boundingRect: CanvasRectangle | null
+      frames: Array<FrameWithPath>
+    } {
       const globalFrame = component.globalFrame
       if (globalFrame == null) {
         return {

@@ -1,10 +1,10 @@
 // Jest Snapshot v1, https://goo.gl/fbAQLP
 
 exports[`UiJsxCanvas #747 - DOM object constructor cannot be called as a function 1`] = `
-"<div style=\\"all: initial;\\">
+"<div style=\\"all: initial\\">
   <div
     id=\\"canvas-container\\"
-    style=\\"position: absolute;\\"
+    style=\\"position: absolute\\"
     data-utopia-valid-paths=\\"sb sb/scene sb/scene/app\\"
     data-utopia-root-element-path=\\"sb\\"
   >

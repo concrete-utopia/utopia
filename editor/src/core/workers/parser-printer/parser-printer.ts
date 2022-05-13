@@ -839,6 +839,7 @@ function printCodeImpl(
           : TS.createNamedImports(
               missingImports.map((i) => {
                 return TS.createImportSpecifier(
+                  false,
                   TS.createIdentifier(i.name),
                   TS.createIdentifier(i.alias),
                 )

@@ -216,7 +216,7 @@ function startResizeInteraction(
   scale: number,
 ) {
   event.stopPropagation()
-  if (event.buttons === 1) {
+  if (event.buttons === 1 && event.button !== 2) {
     const canvasPositions = windowToCanvasCoordinates(
       scale,
       canvasOffset,

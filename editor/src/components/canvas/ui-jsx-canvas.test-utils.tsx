@@ -55,7 +55,6 @@ import type { CurriedResolveFn } from '../custom-code/code-file'
 import * as path from 'path'
 
 export interface PartialCanvasProps {
-  scale: UiJsxCanvasProps['scale']
   hiddenInstances: UiJsxCanvasProps['hiddenInstances']
   editedTextElement: UiJsxCanvasProps['editedTextElement']
   mountCount: UiJsxCanvasProps['mountCount']
@@ -206,14 +205,11 @@ export function renderCanvasReturnResultAndError(
       curriedRequireFn: curriedRequireFn,
       curriedResolveFn: dumbResolveFn(Object.keys(codeFilesString)),
       base64FileBlobs: {},
-      onDomReport: Utils.NO_OP,
       clearErrors: clearErrors,
-      scale: 1,
       hiddenInstances: [],
       editedTextElement: null,
       mountCount: 0,
       domWalkerInvalidateCount: 0,
-      walkDOM: false,
       imports_KILLME: imports,
       canvasIsLive: false,
       shouldIncludeCanvasRootInTheSpy: false,
@@ -223,7 +219,6 @@ export function renderCanvasReturnResultAndError(
       focusedElementPath: null,
       projectContents: storeHookForTest.api.getState().editor.projectContents,
       transientFilesState: storeHookForTest.api.getState().derived.canvas.transientState.filesState,
-      scrollAnimation: false,
       propertyControlsInfo: {},
       dispatch: NO_OP,
       domWalkerAdditionalElementsToUpdate: [],
@@ -235,10 +230,8 @@ export function renderCanvasReturnResultAndError(
       curriedRequireFn: curriedRequireFn,
       curriedResolveFn: dumbResolveFn(Object.keys(codeFilesString)),
       base64FileBlobs: {},
-      onDomReport: Utils.NO_OP,
       clearErrors: clearErrors,
       domWalkerInvalidateCount: 0,
-      walkDOM: false,
       imports_KILLME: imports,
       canvasIsLive: false,
       shouldIncludeCanvasRootInTheSpy: false,
@@ -248,7 +241,6 @@ export function renderCanvasReturnResultAndError(
       focusedElementPath: null,
       projectContents: storeHookForTest.api.getState().editor.projectContents,
       transientFilesState: storeHookForTest.api.getState().derived.canvas.transientState.filesState,
-      scrollAnimation: false,
       propertyControlsInfo: {},
       dispatch: NO_OP,
       domWalkerAdditionalElementsToUpdate: [],

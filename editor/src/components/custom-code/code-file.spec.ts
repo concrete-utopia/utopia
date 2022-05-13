@@ -267,7 +267,7 @@ describe('transpileCode', () => {
           "errors": Array [],
           "sourceMap": Object {
             "file": "app.js",
-            "mappings": ";;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;AACE,IAAA,KAAA,GAAA,YAAA,CAAA,OAAA,CAAA,OAAA,CAAA,CAAA;;AACA,IAAA,UAAA,GAAA,eAAA,CAAA,OAAA,CAAA,YAAA,CAAA,CAAA;;AACO,IAAI,GAAG,GAAG,SAAN,GAAM,CAAC,KAAD;AAAA,SAAW,aAAA,CAAA,GAAA,CAAA,KAAA,EAAA,MAAA,CAAA,MAAA,CAAA;AAAA,gBAAe;AAAf,GAAA,EAAoB;AAAA,IAAA,QAAA,EAAG,UAAA,CAAA;AAAH,GAApB,CAAA,EAA2B,KAAA,CAA3B,CAAX;AAAA,CAAV;;AAAI,OAAA,CAAA,GAAA,GAAG,GAAH,C",
+            "mappings": ";;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;AACE,IAAA,KAAA,GAAA,YAAA,CAAA,OAAA,CAAA,OAAA,CAAA,CAAA;;AACA,IAAA,UAAA,GAAA,eAAA,CAAA,OAAA,CAAA,YAAA,CAAA,CAAA;;AACO,IAAI,GAAG,GAAG,SAAN,GAAM,CAAC,KAAD;AAAA,SAAW,CAAA,GAAA,aAAA,CAAA,GAAA,EAAA,KAAA,EAAA;AAAA,gBAAe,KAAf;AAAoB,IAAA,QAAA,EAAG,UAAA,CAAA;AAAvB,GAAA,CAAX;AAAA,CAAV;;AAAI,OAAA,CAAA,GAAA,GAAG,GAAH,C",
             "names": Array [],
             "sourceRoot": "",
             "sources": Array [
@@ -286,12 +286,18 @@ describe('transpileCode', () => {
 
       var __createBinding = this && this.__createBinding || (Object.create ? function (o, m, k, k2) {
         if (k2 === undefined) k2 = k;
-        Object.defineProperty(o, k2, {
-          enumerable: true,
-          get: function get() {
-            return m[k];
-          }
-        });
+        var desc = Object.getOwnPropertyDescriptor(m, k);
+
+        if (!desc || (\\"get\\" in desc ? !m.__esModule : desc.writable || desc.configurable)) {
+          desc = {
+            enumerable: true,
+            get: function get() {
+              return m[k];
+            }
+          };
+        }
+
+        Object.defineProperty(o, k2, desc);
       } : function (o, m, k, k2) {
         if (k2 === undefined) k2 = k;
         o[k2] = m[k];
@@ -336,11 +342,10 @@ describe('transpileCode', () => {
       var icon_css_1 = __importDefault(require(\\"./icon.css\\"));
 
       var App = function App(props) {
-        return jsx_runtime_1.jsx(\\"div\\", Object.assign({
-          \\"data-uid\\": 'aaa'
-        }, {
+        return (0, jsx_runtime_1.jsx)(\\"div\\", {
+          \\"data-uid\\": 'aaa',
           children: icon_css_1.default
-        }), void 0);
+        });
       };
 
       exports.App = App; //# sourceMappingURL=app.js.map",

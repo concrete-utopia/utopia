@@ -212,7 +212,9 @@ export function isJavascriptOrTypescript(filePath: string): boolean {
 
 export function codeCacheToBuildResult(cache: {
   [filename: string]: CodeResult
-}): { [filename: string]: EmitFileResult } {
+}): {
+  [filename: string]: EmitFileResult
+} {
   return objectMap((entry) => {
     return {
       transpiledCode: entry.transpiledCode,

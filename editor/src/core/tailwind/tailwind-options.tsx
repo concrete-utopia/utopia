@@ -247,7 +247,10 @@ function getJSXElementForTarget(
 
 function getClassNameAttribute(
   element: JSXElementChild | null,
-): { value: string | null; isSettable: boolean } {
+): {
+  value: string | null
+  isSettable: boolean
+} {
   if (element != null && isJSXElement(element)) {
     const jsxAttributes = element.props
     const foundAttribute = getModifiableJSXAttributeAtPath(jsxAttributes, PP.create(['className']))

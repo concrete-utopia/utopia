@@ -1803,7 +1803,10 @@ export function normalisedCSSTransformOriginValueToCSSTransformValue(
 
 export function cssTransformOriginToNormalisedValue(
   cssTransformOrigin: CSSTransformOrigin,
-): { x: number; y: number } {
+): {
+  x: number
+  y: number
+} {
   const x =
     typeof cssTransformOrigin.x === 'string'
       ? cssTransformOriginStringValueToPercentage(cssTransformOrigin.x)
@@ -4743,7 +4746,9 @@ type ParseFunction<T, K extends keyof T> = (
 ) => Either<string, ValueOf<T>>
 
 function parseValueFactory<T, K extends keyof T>(
-  parserMap: { [key in keyof T]: Parser<T[key]> },
+  parserMap: {
+    [key in keyof T]: Parser<T[key]>
+  },
 ): ParseFunction<T, K> {
   return (prop: K, maybeValue: unknown, maybeRawValue: ModifiableAttribute | null) => {
     try {

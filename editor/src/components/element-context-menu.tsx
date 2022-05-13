@@ -84,6 +84,7 @@ function useCanvasContextMenuItems(
   const elementNamesAndIcons = useNamesAndIconsAllPaths()
 
   if (contextMenuInstance === 'context-menu-canvas') {
+    let elementsUnderCursor: Array<ElementPath> | null = null
     const elementListSubmenu: Array<ContextMenuItem<CanvasData>> = elementNamesAndIcons.map(
       ({ label, path, iconProps }) => {
         return {
@@ -102,22 +103,22 @@ function useCanvasContextMenuItems(
           enabled: true,
           action: () => dispatch([selectComponents([path], false)], 'canvas'),
           isHidden: (data: CanvasData) => {
-            const elementsUnderCursor = getAllTargetsAtPoint(
-              data.jsxMetadata,
-              data.selectedViews,
-              data.hiddenInstances,
-              'no-filter',
-              WindowMousePositionRaw,
-              data.scale,
-              data.canvasOffset,
-            )
-            if (elementsUnderCursor != null) {
-              return !elementsUnderCursor.some((underCursor: ElementPath) =>
-                EP.pathsEqual(underCursor, path),
+            // Only run this once as the values used are the same for each and every
+            // entry and `getAllTargetsAtPoint` is very expensive.
+            if (elementsUnderCursor == null) {
+              elementsUnderCursor = getAllTargetsAtPoint(
+                data.jsxMetadata,
+                data.selectedViews,
+                data.hiddenInstances,
+                'no-filter',
+                WindowMousePositionRaw,
+                data.scale,
+                data.canvasOffset,
               )
-            } else {
-              return true
             }
+            return !elementsUnderCursor.some((underCursor: ElementPath) =>
+              EP.pathsEqual(underCursor, path),
+            )
           },
         }
       },

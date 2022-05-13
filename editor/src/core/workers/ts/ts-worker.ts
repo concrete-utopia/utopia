@@ -320,7 +320,7 @@ function getTypeInfoFromClassComponent(
   if (symbolCalledProps != null) {
     const reactClassType = typeChecker.getTypeOfSymbolAtLocation(
       symbolCalledProps,
-      symbolCalledProps.valueDeclaration,
+      symbolCalledProps.valueDeclaration!, // TODO instead of fixing this just delete the collection of exports from ts-worker altogether
     )
     const propSymbols = typeChecker.getAugmentedPropertiesOfType(reactClassType)
     let memberInfo: { [name: string]: string } = {}
@@ -330,7 +330,7 @@ function getTypeInfoFromClassComponent(
           // somehow it can have type and no valueDeclaration
           (symbol as any)['type'] != null
             ? (symbol as any)['type']
-            : typeChecker.getTypeOfSymbolAtLocation(symbol, symbol.valueDeclaration)
+            : typeChecker.getTypeOfSymbolAtLocation(symbol, symbol.valueDeclaration!) // TODO instead of fixing this just delete the collection of exports from ts-worker altogether
         memberInfo[symbol.name] = typeChecker.typeToString(detailedType)
       })
     }
@@ -378,7 +378,7 @@ function getReactExports(
       if (firstSignature != null) {
         var parameters = firstSignature.getParameters()
         parameters.forEach((param) => {
-          const paramType = typeChecker.getTypeOfSymbolAtLocation(param, param.valueDeclaration)
+          const paramType = typeChecker.getTypeOfSymbolAtLocation(param, param.valueDeclaration!) // TODO instead of fixing this just delete the collection of exports from ts-worker altogether
           const augmentedProperties = typeChecker.getAugmentedPropertiesOfType(paramType)
           if (augmentedProperties.length > 0 && (paramType as any)['members'] != null) {
             let memberInfo: { type: string; members: { [member: string]: string } } = {
@@ -389,7 +389,7 @@ function getReactExports(
             augmentedProperties.forEach((augmentedProp) => {
               const memberType = typeChecker.getTypeOfSymbolAtLocation(
                 augmentedProp,
-                augmentedProp.valueDeclaration,
+                augmentedProp.valueDeclaration!, // TODO instead of fixing this just delete the collection of exports from ts-worker altogether
               )
               memberInfo.members[augmentedProp.name] = typeChecker.typeToString(memberType)
             })

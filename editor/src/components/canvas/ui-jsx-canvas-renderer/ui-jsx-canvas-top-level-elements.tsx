@@ -9,7 +9,10 @@ const emptyResult = { topLevelElements: [], imports: emptyImports() }
 
 export function useGetTopLevelElementsAndImports(
   filePath: string | null,
-): { topLevelElements: TopLevelElement[]; imports: Imports } {
+): {
+  topLevelElements: TopLevelElement[]
+  imports: Imports
+} {
   const projectContext = usePubSubAtomReadOnly(UtopiaProjectCtxAtom) // TODO MAYBE create a usePubSubAtomSelector
   if (filePath == null) {
     return emptyResult

@@ -27,10 +27,7 @@ import { getValueFromComplexMap } from '../../../utils/map'
 import { createSelector } from 'reselect'
 import { nullableDeepEquality } from '../../../utils/deep-equality'
 import { JSXElementNameKeepDeepEqualityCall } from '../../../utils/deep-equality-instances'
-import {
-  useHookUpdateAnalysisStrictEquals,
-  useKeepDeepEqualityCall,
-} from '../../../utils/react-performance'
+import { useKeepDeepEqualityCall } from '../../../utils/react-performance'
 import {
   normalisePathSuccessOrThrowError,
   normalisePathToUnderlyingTarget,
@@ -151,9 +148,9 @@ export const NavigatorItemWrapper: React.FunctionComponent<NavigatorItemWrapperP
     const {
       isElementVisible,
       renamingTarget,
-      collapsedViews,
       appropriateDropTargetHint,
       dispatch,
+      isCollapsed,
     } = useEditorState((store) => {
       // Only capture this if it relates to the current navigator item, as it may change while
       // dragging around the navigator but we don't want the entire navigator to re-render each time.
@@ -161,17 +158,18 @@ export const NavigatorItemWrapper: React.FunctionComponent<NavigatorItemWrapperP
       if (EP.pathsEqual(store.editor.navigator.dropTargetHint.target, props.elementPath)) {
         possiblyAppropriateDropTargetHint = store.editor.navigator.dropTargetHint
       }
+      const elementIsCollapsed = EP.containsPath(
+        props.elementPath,
+        store.editor.navigator.collapsedViews,
+      )
       return {
         dispatch: store.dispatch,
-        selectedViews: store.editor.selectedViews,
-        collapsedViews: store.editor.navigator.collapsedViews,
         appropriateDropTargetHint: possiblyAppropriateDropTargetHint,
         renamingTarget: store.editor.navigator.renamingTarget,
         isElementVisible: !EP.containsPath(props.elementPath, store.editor.hiddenInstances),
+        isCollapsed: elementIsCollapsed,
       }
     }, 'NavigatorItemWrapper')
-
-    const isCollapsed = EP.containsPath(props.elementPath, collapsedViews)
 
     const deepReferenceStaticElementName = useKeepDeepEqualityCall(
       staticElementName,

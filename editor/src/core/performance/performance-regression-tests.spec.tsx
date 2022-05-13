@@ -64,7 +64,7 @@ describe('React Render Count Tests -', () => {
 
     const renderCountAfter = renderResult.getNumberOfRenders()
     // if this breaks, GREAT NEWS but update the test please :)
-    expect(renderCountAfter - renderCountBefore).toMatchInlineSnapshot(`359`)
+    expect(renderCountAfter - renderCountBefore).toMatchInlineSnapshot(`343`)
   })
 
   it('Clicking on opacity slider with a less simple project', async () => {
@@ -124,7 +124,7 @@ describe('React Render Count Tests -', () => {
 
     const renderCountAfter = renderResult.getNumberOfRenders()
     // if this breaks, GREAT NEWS but update the test please :)
-    expect(renderCountAfter - renderCountBefore).toMatchInlineSnapshot(`419`)
+    expect(renderCountAfter - renderCountBefore).toMatchInlineSnapshot(`403`)
   })
 
   it('Changing the selected view with a simple project', async () => {
@@ -178,7 +178,7 @@ describe('React Render Count Tests -', () => {
 
     const renderCountAfter = renderResult.getNumberOfRenders()
     // if this breaks, GREAT NEWS but update the test please :)
-    expect(renderCountAfter - renderCountBefore).toMatchInlineSnapshot(`2373`)
+    expect(renderCountAfter - renderCountBefore).toMatchInlineSnapshot(`2353`)
   })
 
   it('Changing the selected view with a less simple project', async () => {
@@ -242,6 +242,6 @@ describe('React Render Count Tests -', () => {
 
     const renderCountAfter = renderResult.getNumberOfRenders()
     // if this breaks, GREAT NEWS but update the test please :)
-    expect(renderCountAfter - renderCountBefore).toMatchInlineSnapshot(`2526`)
+    expect(renderCountAfter - renderCountBefore).toMatchInlineSnapshot(`2506`)
   })
 })

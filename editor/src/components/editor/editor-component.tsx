@@ -67,10 +67,10 @@ import {
 
 function pushProjectURLToBrowserHistory(projectId: string, projectName: string): void {
   // Make sure we don't replace the query params
-  const queryParams = window.top.location.search
+  const queryParams = window.top?.location.search
   const projectURL = projectURLForProject(projectId, projectName)
   const title = `Utopia ${projectName}`
-  window.top.history.pushState({}, title, `${projectURL}${queryParams}`)
+  window.top?.history.pushState({}, title, `${projectURL}${queryParams}`)
 }
 
 interface NumberSize {

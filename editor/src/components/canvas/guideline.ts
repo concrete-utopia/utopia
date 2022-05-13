@@ -274,7 +274,8 @@ export const Guidelines = {
           to: guidelinePoint,
         }
       default:
-        const _exhaustiveCheck: never = guideline // TODO ts-migration
+        // TODO ts-migration
+        const _exhaustiveCheck: never = guideline
         throw 'Unexpected value for guideline of type: ' + (guideline as any).type // TODO ts-migration
     }
   },
@@ -408,7 +409,8 @@ export const Guidelines = {
       case 'CornerGuideline':
         return Guidelines.getOffsetToSnapToCornerGuideline(corners, guideline)
       default:
-        const _exhaustiveCheck: never = guideline // TODO ts-migration
+        // TODO ts-migration
+        const _exhaustiveCheck: never = guideline
         throw 'Unexpected value for guideline of type: ' + (guideline as any).type // TODO ts-migration
     }
   },
@@ -560,7 +562,8 @@ export const Guidelines = {
           guideline.yMovement + offset.y,
         )
       default:
-        const _exhaustiveCheck: never = guideline // TODO ts-migration
+        // TODO ts-migration
+        const _exhaustiveCheck: never = guideline
         throw 'Unexpected value for guideline of type: ' + (guideline as any).type // TODO ts-migration
     }
   },
