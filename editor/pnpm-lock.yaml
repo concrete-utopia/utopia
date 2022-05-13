@@ -194,8 +194,8 @@ specifiers:
   re-resizable: 6.9.1
   react: npm:utopia-react@17.0.0-rc.1
   react-contexify: 5.0.0
-  react-dnd: 10.0.2
-  react-dnd-html5-backend: 10.0.2
+  react-dnd: 16.0.0
+  react-dnd-html5-backend: 16.0.0
   react-dom: npm:utopia-react-dom@17.0.0-rc.1
   react-error-overlay: git://github.com/concrete-utopia/react-error-overlay.git#201980990d653e821f36ab4f921a4f83588a8a42
   react-helmet: 6.1.0
@@ -333,8 +333,8 @@ dependencies:
   re-resizable: 6.9.1_d9cccff7df39c9a08a2a815f75fb6cbc
   react: /utopia-react/17.0.0-rc.1
   react-contexify: 5.0.0_d9cccff7df39c9a08a2a815f75fb6cbc
-  react-dnd: 10.0.2_d9cccff7df39c9a08a2a815f75fb6cbc
-  react-dnd-html5-backend: 10.0.2
+  react-dnd: 16.0.0_fbd2853ff510addf585616a72ad18d07
+  react-dnd-html5-backend: 16.0.0
   react-dom: /utopia-react-dom/17.0.0-rc.1_utopia-react@17.0.0-rc.1
   react-error-overlay: github.com/concrete-utopia/react-error-overlay/201980990d653e821f36ab4f921a4f83588a8a42
   react-helmet: 6.1.0_utopia-react@17.0.0-rc.1
@@ -420,7 +420,7 @@ devDependencies:
   '@types/pubsub-js': 1.8.2
   '@types/rc-slider': 8.2.2
   '@types/react': 16.9.49
-  '@types/react-dnd': 3.0.2_d9cccff7df39c9a08a2a815f75fb6cbc
+  '@types/react-dnd': 3.0.2_fbd2853ff510addf585616a72ad18d07
   '@types/react-dom': 16.9.8
   '@types/react-helmet': 6.1.0
   '@types/react-highlight-words': 0.16.3
@@ -2810,14 +2810,14 @@ packages:
     resolution: {integrity: sha512-1oO6+dN5kdIA3sKPZhRGJTfGVP4SWV6KqlMOwry4J3HfyD68sl/3KmG7DeYUzvN+RbhXDnv/D8vNNB8168tAMg==}
     dev: false
 
-  /@react-dnd/asap/4.0.0:
-    resolution: {integrity: sha512-0XhqJSc6pPoNnf8DhdsPHtUhRzZALVzYMTzRwV4VI6DJNJ/5xxfL9OQUwb8IH5/2x7lSf7nAZrnzUD+16VyOVQ==}
+  /@react-dnd/asap/5.0.2:
+    resolution: {integrity: sha512-WLyfoHvxhs0V9U+GTsGilGgf2QsPl6ZZ44fnv0/b8T3nQyvzxidxsg/ZltbWssbsRDlYW8UKSQMTGotuTotZ6A==}
 
-  /@react-dnd/invariant/2.0.0:
-    resolution: {integrity: sha512-xL4RCQBCBDJ+GRwKTFhGUW8GXa4yoDfJrPbLblc3U09ciS+9ZJXJ3Qrcs/x2IODOdIE5kQxvMmE2UKyqUictUw==}
+  /@react-dnd/invariant/4.0.2:
+    resolution: {integrity: sha512-xKCTqAK/FFauOM9Ta2pswIyT3D8AQlfrYdOi/toTPEhqCuAs1v5tcJ3Y08Izh1cJ5Jchwy9SeAXmMg6zrKs2iw==}
 
-  /@react-dnd/shallowequal/2.0.0:
-    resolution: {integrity: sha512-Pc/AFTdwZwEKJxFJvlxrSmGe/di+aAOBn60sremrpLo6VI/6cmiUYNNwlI5KNYttg7uypzA3ILPMPgxB2GYZEg==}
+  /@react-dnd/shallowequal/4.0.2:
+    resolution: {integrity: sha512-/RVXdLvJxLg4QKvMoM5WlwNR9ViO9z8B/qPcc+C0Sa/teJY7QG7kJ441DwzOjMYEY7GmU4dj5EcGHIkKZiQZCA==}
 
   /@react-spring/animated/9.0.0-rc.3_utopia-react@17.0.0-rc.1:
     resolution: {integrity: sha512-dAvgtKhkYpzzr+EkmZ4ZuJ5CujxCW0LaT109DvO/2MQNk3EWIxcgl+ik4tSulSbgau1GN8RlkRKyDp0wISdQ3Q==}
@@ -3376,12 +3376,6 @@ packages:
     resolution: {integrity: sha1-G1F/QRHgd2ZVXPG9kwS+yQU7AkA=}
     dev: true
 
-  /@types/hoist-non-react-statics/3.3.1:
-    resolution: {integrity: sha512-iMIqiko6ooLrTh1joXodJK5X9xeEALT1kM5G3ZLhD3hszxBdIEd5C75U834D9mLcINgD4OyZf5uQXjkuYydWvA==}
-    dependencies:
-      '@types/react': 17.0.25
-      hoist-non-react-statics: 3.3.2
-
   /@types/hosted-git-info/3.0.0:
     resolution: {integrity: sha512-dYLI2VgU1UTpdigoeLYc8vVpe7kpu3jysLCTUPB9NS1B+7+BdH6XefI4BhB33CNUaBewnxmjy9GPhF4NXOSNew==}
     dev: true
@@ -3548,14 +3542,16 @@ packages:
       '@types/react': 16.9.49
     dev: true
 
-  /@types/react-dnd/3.0.2_d9cccff7df39c9a08a2a815f75fb6cbc:
+  /@types/react-dnd/3.0.2_fbd2853ff510addf585616a72ad18d07:
     resolution: {integrity: sha512-Z1BqHYGFtfSPfWs+kgX4b6wQmwwtqq4/pLo4zdO9xcDUB1ZQP8iWTAYNf3EJ2f0WiVQpSLN8UytP+ILzZHDLYw==}
     deprecated: This is a stub types definition. react-dnd provides its own type definitions, so you don't need this installed.
     dependencies:
-      react-dnd: 10.0.2_d9cccff7df39c9a08a2a815f75fb6cbc
+      react-dnd: 16.0.0_fbd2853ff510addf585616a72ad18d07
     transitivePeerDependencies:
+      - '@types/hoist-non-react-statics'
+      - '@types/node'
+      - '@types/react'
       - react
-      - react-dom
     dev: true
 
   /@types/react-dom/16.9.8:
@@ -6740,12 +6736,12 @@ packages:
     resolution: {integrity: sha1-44Mx8IRLukm5qctxx3FYWqsbxlo=}
     dev: true
 
-  /dnd-core/10.0.2:
-    resolution: {integrity: sha512-PrxEjxF0+6Y1n1n1Z9hSWZ1tvnDXv9syL+BccV1r1RC08uWNsyetf8AnWmUF3NgYPwy0HKQJwTqGkZK+1NlaFA==}
+  /dnd-core/16.0.1:
+    resolution: {integrity: sha512-HK294sl7tbw6F6IeuK16YSBUoorvHpY8RHO+9yFfaJyCDVb6n7PRcezrOEOa2SBCqiYpemh5Jx20ZcjKdFAVng==}
     dependencies:
-      '@react-dnd/asap': 4.0.0
-      '@react-dnd/invariant': 2.0.0
-      redux: 4.1.1
+      '@react-dnd/asap': 5.0.2
+      '@react-dnd/invariant': 4.0.2
+      redux: 4.2.0
 
   /dns-equal/1.0.0:
     resolution: {integrity: sha1-s55/HabrCnW6nBcySzR1PEfgZU0=}
@@ -13229,24 +13225,34 @@ packages:
       react-dom: /utopia-react-dom/17.0.0-rc.1_utopia-react@17.0.0-rc.1
     dev: false
 
-  /react-dnd-html5-backend/10.0.2:
-    resolution: {integrity: sha512-ny17gUdInZ6PIGXdzfwPhoztRdNVVvjoJMdG80hkDBamJBeUPuNF2Wv4D3uoQJLjXssX1+i9PhBqc7EpogClwQ==}
+  /react-dnd-html5-backend/16.0.0:
+    resolution: {integrity: sha512-be3lKEbbT8FQcoTjFlQ4ZXG/NVrFNJu9W0INc5rm/5EFQpHCkz+xpbB2U8j9uh5Bvk7AsJyQrZznEut0hrNPIA==}
     dependencies:
-      dnd-core: 10.0.2
+      dnd-core: 16.0.1
     dev: false
 
-  /react-dnd/10.0.2_d9cccff7df39c9a08a2a815f75fb6cbc:
-    resolution: {integrity: sha512-SC2Ymvntynhoqtf5zaFhZscm9xenCoMofilxPdlwUlaelAzmbl9fw82C4ZJ//+lNm3kWAKXjGDZg2/aWjKEAtg==}
+  /react-dnd/16.0.0_fbd2853ff510addf585616a72ad18d07:
+    resolution: {integrity: sha512-RCoeWRWhuwSoqdLaJV8N/weARLyXqsf43OC3QiBWPORIIGGovF/EqI8ckf14ca3bl6oZNI/igtxX49+IDmNDeQ==}
     peerDependencies:
-      react: '>= 16.8'
-      react-dom: '>= 16.8'
+      '@types/hoist-non-react-statics': '>= 3.3.1'
+      '@types/node': '>= 12'
+      '@types/react': '>= 16'
+      react: '>= 16.14'
+    peerDependenciesMeta:
+      '@types/hoist-non-react-statics':
+        optional: true
+      '@types/node':
+        optional: true
+      '@types/react':
+        optional: true
     dependencies:
-      '@react-dnd/shallowequal': 2.0.0
-      '@types/hoist-non-react-statics': 3.3.1
-      dnd-core: 10.0.2
+      '@react-dnd/invariant': 4.0.2
+      '@react-dnd/shallowequal': 4.0.2
+      '@types/react': 16.9.49
+      dnd-core: 16.0.1
+      fast-deep-equal: 3.1.3
       hoist-non-react-statics: 3.3.2
       react: /utopia-react/17.0.0-rc.1
-      react-dom: /utopia-react-dom/17.0.0-rc.1_utopia-react@17.0.0-rc.1
 
   /react-emotion/9.2.12_199862f3a34dd9afef4fd8fbf7ffe670:
     resolution: {integrity: sha512-qt7XbxnEKX5sZ73rERJ92JMbEOoyOwG3BuCRFRkXrsJhEe+rFBRTljRw7yOLHZUCQC4GBObZhjXIduQ8S0ZpYw==}
@@ -13689,8 +13695,8 @@ packages:
       balanced-match: 1.0.2
     dev: true
 
-  /redux/4.1.1:
-    resolution: {integrity: sha512-hZQZdDEM25UY2P493kPYuKqviVwZ58lEmGQNeQ+gXa+U0gYPUBf7NKYazbe3m+bs/DzM/ahN12DbF+NG8i0CWw==}
+  /redux/4.2.0:
+    resolution: {integrity: sha512-oSBmcKKIuIR4ME29/AeNUnl5L+hvBq7OaJWzaptTQJAntaPvxIJqfnjbaEiCzzaIz+XmVILfqAM3Ob0aXLPfjA==}
     dependencies:
       '@babel/runtime': 7.16.5
 
