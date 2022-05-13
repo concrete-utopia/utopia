@@ -15,9 +15,9 @@ import { CanvasCommand } from '../commands/commands'
 import { convertToAbsolute } from '../commands/convert-to-absolute-command'
 import { setCssLengthProperty } from '../commands/set-css-length-command'
 import { DragOutlineControl } from '../controls/select-mode/drag-outline-control'
+import { AnimationTimer, PieTimerControl } from '../controls/select-mode/pie-timer'
 import { CanvasStrategy } from './canvas-strategy-types'
 
-export const AnimationTimer = 2000
 export const escapeHatchStrategy: CanvasStrategy = {
   id: 'ESCAPE_HATCH_STRATEGY',
   name: 'Escape Hatch',
@@ -35,8 +35,12 @@ export const escapeHatchStrategy: CanvasStrategy = {
     {
       control: DragOutlineControl,
       key: 'ghost-outline-control',
-      // show: 'visible-only-while-active',
-      show: 'always-visible',
+      show: 'visible-only-while-active',
+    },
+    {
+      control: PieTimerControl,
+      key: 'pie-timer-control',
+      show: 'visible-only-while-active',
     },
   ],
   fitness: (canvasState, interactionState, strategyState) => {
