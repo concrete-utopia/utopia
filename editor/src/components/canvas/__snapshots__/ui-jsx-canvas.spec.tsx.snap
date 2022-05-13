@@ -23728,7 +23728,7 @@ exports[`UiJsxCanvas render renders a 1st party component with uids correctly, u
       data-uid=\\"scene-aaa\\"
     >
       <div
-        style=\\"position: absolute; background-color: lightgrey;\\"
+        style=\\"position: absolute; background-color: lightgrey\\"
         data-path=\\"utopia-storyboard-uid/scene-aaa/app-entity:aaa:aaa\\"
         data-uid=\\"aaa\\"
       >
@@ -24694,7 +24694,7 @@ exports[`UiJsxCanvas render renders a canvas defined by a utopia storyboard comp
         data-uid=\\"aaa\\"
       >
         <div
-          style=\\"position: absolute;\\"
+          style=\\"position: absolute\\"
           data-path=\\"utopia-storyboard-uid/scene-aaa/app-entity:aaa/bbb:bbb\\"
           data-uid=\\"bbb\\"
         >
@@ -25481,7 +25481,7 @@ exports[`UiJsxCanvas render renders a canvas reliant on another file that uses m
         data-uid=\\"aaa\\"
       >
         <div
-          style=\\"position: absolute;\\"
+          style=\\"position: absolute\\"
           data-path=\\"utopia-storyboard-uid/scene-aaa/app-entity:aaa/bbb:bbb\\"
           data-uid=\\"bbb\\"
         >
@@ -33300,7 +33300,7 @@ exports[`UiJsxCanvas render renders a component using the spread operator 1`] = 
         data-uid=\\"aaa\\"
       >
         <div
-          style=\\"position: absolute;\\"
+          style=\\"position: absolute\\"
           data-path=\\"utopia-storyboard-uid/scene-aaa/app-entity:aaa/bbb:bbb\\"
           data-uid=\\"bbb\\"
         >
@@ -35638,12 +35638,12 @@ exports[`UiJsxCanvas render renders fine with a valid registerModule call 1`] = 
       data-uid=\\"scene-aaa\\"
     >
       <div
-        style=\\"position: absolute; height: 99.9; width: 77.7;\\"
+        style=\\"position: absolute; height: 99.9; width: 77.7\\"
         data-path=\\"utopia-storyboard-uid/scene-aaa/app-entity:aaa:aaa\\"
         data-uid=\\"aaa\\"
       >
         <div
-          style=\\"position: absolute;\\"
+          style=\\"position: absolute\\"
           data-path=\\"utopia-storyboard-uid/scene-aaa/app-entity:aaa/bbb:bbb\\"
           data-uid=\\"bbb\\"
         >
