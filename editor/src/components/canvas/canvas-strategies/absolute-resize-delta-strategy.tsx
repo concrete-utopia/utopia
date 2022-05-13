@@ -8,7 +8,7 @@ import { setSnappingGuidelines } from '../commands/set-snapping-guidelines-comma
 import { updateHighlightedViews } from '../commands/update-highlighted-views-command'
 import { AbsoluteResizeControl } from '../controls/select-mode/absolute-resize-control'
 import { GuidelineWithSnappingVector } from '../guideline'
-import { CanvasStrategy } from './canvas-strategy-types'
+import { CanvasStrategy, emptyStrategyApplicationResult } from './canvas-strategy-types'
 import { getMultiselectBounds } from './shared-absolute-move-strategy-helpers'
 import {
   resizeBoundingBox,
@@ -99,12 +99,11 @@ export const absoluteResizeDeltaStrategy: CanvasStrategy = {
           updateHighlightedViews('transient', []),
           setSnappingGuidelines('transient', guidelinesWithSnappingVector),
         ],
+        customState: null,
       }
     }
     // Fallback for when the checks above are not satisfied.
-    return {
-      commands: [],
-    }
+    return emptyStrategyApplicationResult
   },
 }
 

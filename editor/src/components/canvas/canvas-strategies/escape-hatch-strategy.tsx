@@ -14,7 +14,7 @@ import { stylePropPathMappingFn } from '../../inspector/common/property-path-hoo
 import { CanvasCommand } from '../commands/commands'
 import { convertToAbsolute } from '../commands/convert-to-absolute-command'
 import { setCssLengthProperty } from '../commands/set-css-length-command'
-import { CanvasStrategy } from './canvas-strategy-types'
+import { CanvasStrategy, emptyStrategyApplicationResult } from './canvas-strategy-types'
 
 export const escapeHatchStrategy: CanvasStrategy = {
   id: 'ESCAPE_HATCH_STRATEGY',
@@ -57,12 +57,11 @@ export const escapeHatchStrategy: CanvasStrategy = {
       )
       return {
         commands: [...moveAndPositionCommands, ...siblingCommands],
+        customState: null,
       }
     }
     // Fallback for when the checks above are not satisfied.
-    return {
-      commands: [],
-    }
+    return emptyStrategyApplicationResult
   },
 }
 

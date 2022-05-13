@@ -45,6 +45,7 @@ export const flexReorderStrategy: CanvasStrategy = {
     ) {
       return {
         commands: [],
+        customState: null,
       }
     }
     const { selectedElements } = canvasState
@@ -68,11 +69,13 @@ export const flexReorderStrategy: CanvasStrategy = {
     if (newIndex == null || newIndex === oldIndex) {
       return {
         commands: [],
+        customState: null,
       }
     }
 
     return {
       commands: [reorderElement('permanent', target, newIndex)],
+      customState: null,
     }
   },
 }

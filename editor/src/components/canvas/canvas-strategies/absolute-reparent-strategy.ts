@@ -87,10 +87,12 @@ export const absoluteReparentStrategy: CanvasStrategy = {
             commands.map((c) => c.newPath),
           ),
         ],
+        customState: null,
       }
     } else {
       return {
         commands: moveCommands.commands,
+        customState: null,
       }
     }
   },

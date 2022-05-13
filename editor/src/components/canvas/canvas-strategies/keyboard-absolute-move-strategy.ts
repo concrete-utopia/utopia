@@ -1,6 +1,6 @@
 import { MetadataUtils } from '../../../core/model/element-metadata-utils'
 import { Keyboard, KeyCharacter } from '../../../utils/keyboard'
-import { CanvasStrategy } from './canvas-strategy-types'
+import { CanvasStrategy, emptyStrategyApplicationResult } from './canvas-strategy-types'
 import { Modifiers } from '../../../utils/modifiers'
 import { CanvasVector } from '../../../core/shared/math-utils'
 import { getAbsoluteMoveCommandsForSelectedElement } from './shared-absolute-move-strategy-helpers'
@@ -67,11 +67,10 @@ export const keyboardAbsoluteMoveStrategy: CanvasStrategy = {
             }
           },
         ),
+        customState: null,
       }
     }
-    return {
-      commands: [],
-    }
+    return emptyStrategyApplicationResult
   },
 }
 
