@@ -26,9 +26,8 @@ export const flexResizeWidthStrategy: CanvasStrategy = {
         const elementMetadata = MetadataUtils.findElementByElementPath(metadata, element)
 
         return (
-          elementMetadata?.specialSizeMeasurements.position !== 'absolute'
-          // &&
-          // elementMetadata?.specialSizeMeasurements.parentLayoutSystem === 'flex'
+          elementMetadata?.specialSizeMeasurements.position !== 'absolute' &&
+          elementMetadata?.specialSizeMeasurements.parentLayoutSystem === 'flex'
         )
       })
     } else {

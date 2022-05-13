@@ -141,12 +141,15 @@ export const NewCanvasControls = React.memo((props: NewCanvasControlsProps) => {
     'NewCanvasControls',
   )
 
-  const { localSelectedViews, localHighlightedViews, setSelectedViewsLocally } =
-    useLocalSelectedHighlightedViews(
-      canvasControlProps.editor.selectedViews,
-      canvasControlProps.editor.highlightedViews,
-      canvasControlProps.transientCanvasState,
-    )
+  const {
+    localSelectedViews,
+    localHighlightedViews,
+    setSelectedViewsLocally,
+  } = useLocalSelectedHighlightedViews(
+    canvasControlProps.editor.selectedViews,
+    canvasControlProps.editor.highlightedViews,
+    canvasControlProps.transientCanvasState,
+  )
 
   const canvasScrollAnimation = useEditorState(
     (store) => store.editor.canvas.scrollAnimation,
@@ -440,10 +443,10 @@ const NewCanvasControlsInner = (props: NewCanvasControlsInnerProps) => {
         isFeatureEnabled('Canvas Strategies'),
         <>{strategyControls.map((c) => React.createElement(c.control, { key: c.key }))}</>,
       )}
-      {when(
+      {/* {when(
         isFeatureEnabled('Canvas Strategies'),
         <FlexResizeControl localSelectedElements={localSelectedViews} />,
-      )}
+      )} */}
     </div>
   )
 }
