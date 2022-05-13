@@ -1696,10 +1696,6 @@ export const UPDATE_FNS = {
       ...withMovedTemplate,
       selectedViews: newPaths,
       highlightedViews: [],
-      canvas: {
-        ...withMovedTemplate.canvas,
-        domWalkerInvalidateCount: withMovedTemplate.canvas.domWalkerInvalidateCount + 1,
-      },
     }
   },
   SET_Z_INDEX: (action: SetZIndex, editor: EditorModel, derived: DerivedState): EditorModel => {

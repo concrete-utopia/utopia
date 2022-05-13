@@ -4,7 +4,13 @@ import { jsx } from '@emotion/react'
 import * as Path from 'path'
 import pathParse from 'path-parse'
 import React from 'react'
-import { ConnectableElement, ConnectDragPreview, useDrag, useDrop } from 'react-dnd'
+import {
+  ConnectableElement,
+  ConnectDragPreview,
+  DragObjectWithType,
+  useDrag,
+  useDrop,
+} from 'react-dnd'
 import { codeFile, ProjectFileType } from '../../core/shared/project-file-types'
 import { parseClipboardData } from '../../utils/clipboard'
 import Utils from '../../utils/utils'
@@ -761,57 +767,62 @@ class FileBrowserItemInner extends React.PureComponent<
   }
 }
 
-interface FilebrowserDragItem {
+interface FilebrowserDragItem extends DragObjectWithType {
   type: 'filebrowser'
   props: FileBrowserItemProps
 }
 
 export function FileBrowserItem(props: FileBrowserItemProps) {
-  const [{ isDragging }, drag, dragPreview] = useDrag(
-    () => ({
-      type: 'files',
-      canDrag: () => canDragnDrop(props),
-      collect: (monitor) => ({
-        isDragging: monitor.isDragging(),
-      }),
-      item: () => {
-        props.dispatch([
-          EditorActions.switchEditorMode(
-            EditorModes.insertMode(false, dragAndDropInsertionSubject([props.path])),
-          ),
-        ])
-        return props
-      },
+  const [{ isDragging }, drag, dragPreview] = useDrag({
+    item: { type: 'filebrowser', props: props } as FilebrowserDragItem,
+    canDrag: () => canDragnDrop(props),
+    collect: (monitor) => ({
+      isDragging: monitor.isDragging(),
     }),
-    [props],
-  )
-  const [{ isOver }, drop] = useDrop(
-    {
-      accept: 'files',
-      canDrop: () => true,
-      drop: (item, monitor) => {
-        onDrop(props, item)
-      },
-      hover: (item: FileBrowserItemProps) => {
-        const targetDirectory =
-          props.fileType === 'DIRECTORY' ? props.path : getParentDirectory(props.path)
-        // do not trigger highlight when it tries to move to it's descendant directories
-        if (targetDirectory.includes(item.path)) {
-          if (props.dropTarget != null) {
-            props.dispatch([EditorActions.setFilebrowserDropTarget(null)], 'leftpane')
-          }
-        } else {
-          if (props.dropTarget !== targetDirectory) {
-            props.dispatch([EditorActions.setFilebrowserDropTarget(targetDirectory)], 'leftpane')
-          }
-        }
-      },
-      collect: (monitor) => ({
-        isOver: monitor.isOver(),
-      }),
+    begin: (monitor) => {
+      props.dispatch([
+        EditorActions.switchEditorMode(
+          EditorModes.insertMode(false, dragAndDropInsertionSubject([props.path])),
+        ),
+      ])
     },
-    [props],
-  )
+    end: (dropResult: FileBrowserItemProps | undefined, monitor) => {
+      const didDrop = monitor.didDrop()
+      if (didDrop) {
+        onDrop(monitor.getDropResult(), props)
+      } else {
+        props.dispatch(
+          [
+            EditorActions.switchEditorMode(EditorModes.selectMode()),
+            EditorActions.setFilebrowserDropTarget(null),
+          ],
+          'everyone',
+        )
+      }
+    },
+  })
+  const [{ isOver }, drop] = useDrop({
+    accept: 'filebrowser',
+    canDrop: () => true,
+    drop: () => props,
+    hover: (item: FilebrowserDragItem) => {
+      const targetDirectory =
+        props.fileType === 'DIRECTORY' ? props.path : getParentDirectory(props.path)
+      // do not trigger highlight when it tries to move to it's descendant directories
+      if (targetDirectory.includes(item.props.path)) {
+        if (props.dropTarget != null) {
+          props.dispatch([EditorActions.setFilebrowserDropTarget(null)], 'leftpane')
+        }
+      } else {
+        if (props.dropTarget !== targetDirectory) {
+          props.dispatch([EditorActions.setFilebrowserDropTarget(targetDirectory)], 'leftpane')
+        }
+      }
+    },
+    collect: (monitor) => ({
+      isOver: monitor.isOver(),
+    }),
+  })
 
   const forwardedRef = (node: ConnectableElement) => drag(drop(node))
 

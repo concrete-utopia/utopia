@@ -5,7 +5,7 @@ import { jsx } from '@emotion/react'
 import { ResizeDirection } from 're-resizable'
 import React from 'react'
 import { DndProvider } from 'react-dnd'
-import { HTML5Backend } from 'react-dnd-html5-backend'
+import Backend from 'react-dnd-html5-backend'
 import Utils from '../../utils/utils'
 import { FancyError, RuntimeErrorInfo } from '../../core/shared/code-exec-utils'
 import { getCursorFromDragState } from '../canvas/canvas-utils'
@@ -428,7 +428,7 @@ export function EditorComponent(props: EditorProps) {
   return indexedDBFailed ? (
     <FatalIndexedDBErrorComponent />
   ) : (
-    <DndProvider backend={HTML5Backend}>
+    <DndProvider backend={Backend}>
       <EditorComponentInner {...props} />
     </DndProvider>
   )

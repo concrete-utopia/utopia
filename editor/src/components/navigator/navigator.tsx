@@ -30,9 +30,11 @@ import { last } from '../../core/shared/array-utils'
 interface ItemProps extends ListChildComponentProps {}
 
 const Item = React.memo(({ index, style }: ItemProps) => {
-  const visibleNavigatorTargets = useEditorState((store) => {
-    return store.derived.visibleNavigatorTargets
-  }, 'Item visibleNavigatorTargets')
+  const { visibleNavigatorTargets } = useEditorState((store) => {
+    return {
+      visibleNavigatorTargets: store.derived.visibleNavigatorTargets,
+    }
+  }, 'Item')
   const editorSliceRef = useRefEditorState((store) => {
     const dragSelections = createDragSelections(
       store.derived.navigatorTargets,

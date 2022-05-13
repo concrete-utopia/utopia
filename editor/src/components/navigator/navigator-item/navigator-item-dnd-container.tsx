@@ -3,7 +3,7 @@
 import { jsx } from '@emotion/react'
 import React from 'react'
 import { PureComponent } from 'react'
-import { DropTargetMonitor, useDrag, useDrop } from 'react-dnd'
+import { DragSource, DropTarget, DropTargetMonitor } from 'react-dnd'
 import * as ReactDOM from 'react-dom'
 import { ElementPath, ElementOriginType, Imports } from '../../../core/shared/project-file-types'
 import { EditorDispatch } from '../../editor/action-types'
@@ -15,7 +15,15 @@ import {
   reparentComponents,
   showNavigatorDropTargetHint,
 } from '../actions'
-import { CollectResults, isCursorInBottomArea, isCursorInTopArea } from '../drag-and-drop-utils'
+import {
+  cardSource,
+  CollectResults,
+  connectDragSource,
+  connectDropTarget,
+  isCursorInBottomArea,
+  isCursorInTopArea,
+  onDragActions,
+} from '../drag-and-drop-utils'
 import { ExpansionArrowWidth } from './expandable-indicator'
 import { BasePaddingUnit, getElementPadding, NavigatorItem } from './navigator-item'
 import { NavigatorHintBottom, NavigatorHintTop } from './navigator-item-components'
@@ -60,38 +68,37 @@ function canDrop(props: NavigatorItemDragAndDropWrapperProps, dropSource: Elemen
 }
 
 function onDrop(
-  propsOfDraggedItem: NavigatorItemDragAndDropWrapperProps,
-  propsOfDropTargetItem: NavigatorItemDragAndDropWrapperProps,
+  props: NavigatorItemDragAndDropWrapperProps,
   monitor?: DropTargetMonitor,
   component?: unknown,
 ) {
   if (monitor != null && component != null) {
-    const dragSelections = propsOfDraggedItem.getDragSelections()
+    const dragSelections = props.getDragSelections()
     const filteredSelections = dragSelections.filter((selection) =>
-      canDrop(propsOfDraggedItem, selection.elementPath),
+      canDrop(props, selection.elementPath),
     )
     const draggedElements = filteredSelections.map((selection) => selection.elementPath)
     const clearHintAction = showNavigatorDropTargetHint(null, null)
-    const target = propsOfDropTargetItem.elementPath
+    const target = props.appropriateDropTargetHint?.target ?? props.elementPath
 
-    switch (propsOfDropTargetItem.appropriateDropTargetHint?.type) {
+    switch (props.appropriateDropTargetHint?.type) {
       case 'before':
-        return propsOfDraggedItem.editorDispatch(
+        return props.editorDispatch(
           [placeComponentsBefore(draggedElements, target), clearHintAction],
-          'everyone',
+          'leftpane',
         )
       case 'after':
-        return propsOfDraggedItem.editorDispatch(
+        return props.editorDispatch(
           [placeComponentsAfter(draggedElements, target), clearHintAction],
-          'everyone',
+          'leftpane',
         )
       case 'reparent':
-        return propsOfDraggedItem.editorDispatch(
+        return props.editorDispatch(
           [reparentComponents(draggedElements, target), clearHintAction],
-          'everyone',
+          'leftpane',
         )
       default:
-        return propsOfDraggedItem.editorDispatch([clearHintAction], 'everyone')
+        return props.editorDispatch([clearHintAction], 'leftpane')
     }
   }
 }
@@ -109,37 +116,29 @@ function getTargetDepthFromMousePosition(x: number, elementPath: ElementPath) {
 }
 
 function onHover(
-  propsOfDraggedItem: NavigatorItemDragAndDropWrapperProps,
-  propsOfDropTargetItem: NavigatorItemDragAndDropWrapperProps,
-  monitor: DropTargetMonitor | null,
-  component: React.Component<NavigatorItemDragAndDropWrapperProps, any> | null | undefined,
+  props: NavigatorItemDragAndDropWrapperProps,
+  monitor?: DropTargetMonitor,
+  component?: React.Component<NavigatorItemDragAndDropWrapperProps, any>,
 ): void {
   if (
     monitor != null &&
     component != null &&
-    propsOfDraggedItem
-      .getDragSelections()
-      .some((selection) => canDrop(propsOfDraggedItem, selection.elementPath))
+    props.getDragSelections().some((selection) => canDrop(props, selection.elementPath))
   ) {
-    // React DnD necessitates the two divs around the actual navigator item,
-    // so we need to drill down to the navigator elements themselves which have real dimensions.
-    const dropDomNode = ReactDOM.findDOMNode(component)
-    const dragDomNode = dropDomNode?.firstChild
-    const domNode = dragDomNode?.firstChild
+    const domNode = ReactDOM.findDOMNode(component)
     if (domNode == null || typeof domNode === 'string') {
       return
     }
     const dropTargetRectangle = (domNode as HTMLElement).getBoundingClientRect()
     const cursor = monitor.getClientOffset()
-    const targetAction = propsOfDraggedItem.highlighted
+    const targetAction = props.highlighted
       ? []
-      : [EditorActions.setHighlightedView(propsOfDraggedItem.elementPath)]
-    const canReparent = propsOfDraggedItem
+      : [EditorActions.setHighlightedView(props.elementPath)]
+    const canReparent = props
       .getDragSelections()
       .every(
         (dragSelectedItem: DragSelection) =>
-          !EP.pathsEqual(propsOfDraggedItem.elementPath, dragSelectedItem.elementPath) &&
-          propsOfDraggedItem.supportsChildren,
+          !EP.pathsEqual(props.elementPath, dragSelectedItem.elementPath) && props.supportsChildren,
       )
     const numberOfAreasToCut = canReparent ? 3 : 2
 
@@ -148,71 +147,57 @@ function onHover(
     }
 
     if (isCursorInTopArea(dropTargetRectangle, cursor.y, numberOfAreasToCut)) {
-      if (propsOfDraggedItem.appropriateDropTargetHint?.type !== 'before') {
-        propsOfDraggedItem.editorDispatch(
-          [
-            ...targetAction,
-            showNavigatorDropTargetHint('before', propsOfDropTargetItem.elementPath),
-          ],
+      if (props.appropriateDropTargetHint?.type !== 'before') {
+        props.editorDispatch(
+          [...targetAction, showNavigatorDropTargetHint('before', component.props.elementPath)],
           'leftpane',
         )
       }
     } else if (
       isCursorInBottomArea(dropTargetRectangle, cursor.y, numberOfAreasToCut) &&
-      (propsOfDraggedItem.noOfChildren === 0 || propsOfDraggedItem.collapsed)
+      (props.noOfChildren === 0 || props.collapsed)
     ) {
       if (
-        isCursorInLeftAreaOfItem(cursor.x, propsOfDraggedItem.elementPath) &&
-        EP.parentPath(propsOfDraggedItem.elementPath) != null
+        isCursorInLeftAreaOfItem(cursor.x, props.elementPath) &&
+        EP.parentPath(props.elementPath) != null
       ) {
-        const maximumTargetDepth = propsOfDraggedItem.getMaximumDistance(
-          EP.toComponentId(propsOfDraggedItem.elementPath),
-          0,
-        )
-        const cursorTargetDepth = getTargetDepthFromMousePosition(
-          cursor.x,
-          propsOfDraggedItem.elementPath,
-        )
+        const maximumTargetDepth = props.getMaximumDistance(EP.toComponentId(props.elementPath), 0)
+        const cursorTargetDepth = getTargetDepthFromMousePosition(cursor.x, props.elementPath)
         const targetDistance = Math.min(cursorTargetDepth, maximumTargetDepth)
-        const targetTP = EP.getNthParent(propsOfDraggedItem.elementPath, targetDistance)
+        const targetTP = EP.getNthParent(props.elementPath, targetDistance)
         if (
-          propsOfDraggedItem.appropriateDropTargetHint?.type !== 'after' ||
-          !EP.pathsEqual(propsOfDraggedItem.appropriateDropTargetHint?.target, targetTP)
+          props.appropriateDropTargetHint?.type !== 'after' ||
+          !EP.pathsEqual(props.appropriateDropTargetHint?.target, targetTP)
         ) {
-          propsOfDraggedItem.editorDispatch(
+          props.editorDispatch(
             [...targetAction, showNavigatorDropTargetHint('after', targetTP)],
             'leftpane',
           )
         }
       } else if (
-        propsOfDraggedItem.appropriateDropTargetHint?.type !== 'after' ||
-        !EP.pathsEqual(
-          propsOfDraggedItem.appropriateDropTargetHint?.target,
-          propsOfDropTargetItem.elementPath,
-        )
+        props.appropriateDropTargetHint?.type !== 'after' ||
+        !EP.pathsEqual(props.appropriateDropTargetHint?.target, component.props.elementPath)
       ) {
-        propsOfDraggedItem.editorDispatch(
-          [
-            ...targetAction,
-            showNavigatorDropTargetHint('after', propsOfDropTargetItem.elementPath),
-          ],
+        props.editorDispatch(
+          [...targetAction, showNavigatorDropTargetHint('after', component.props.elementPath)],
           'leftpane',
         )
       }
     } else if (canReparent) {
-      if (propsOfDraggedItem.appropriateDropTargetHint?.type !== 'reparent') {
-        propsOfDraggedItem.editorDispatch(
-          [
-            ...targetAction,
-            showNavigatorDropTargetHint('reparent', propsOfDropTargetItem.elementPath),
-          ],
+      if (props.appropriateDropTargetHint?.type !== 'reparent') {
+        props.editorDispatch(
+          [...targetAction, showNavigatorDropTargetHint('reparent', component.props.elementPath)],
           'leftpane',
         )
       }
-    } else if (propsOfDraggedItem.appropriateDropTargetHint?.type !== null) {
-      propsOfDraggedItem.editorDispatch([showNavigatorDropTargetHint(null, null)], 'leftpane')
+    } else if (props.appropriateDropTargetHint?.type !== null) {
+      props.editorDispatch([showNavigatorDropTargetHint(null, null)], 'leftpane')
     }
   }
+}
+
+function clearDropTargetHint(props: NavigatorItemDragAndDropWrapperProps) {
+  props.editorDispatch([showNavigatorDropTargetHint(null, null)], 'leftpane')
 }
 
 function beginDrag(
@@ -246,7 +231,7 @@ export class NavigatorItemDndWrapper extends PureComponent<
   render(): React.ReactElement {
     const props = this.props
 
-    return (
+    const navigatorItemContainer = (
       <div
         key='navigatorItem'
         id={`navigator-item-${EP.toVarSafeComponentId(this.props.elementPath)}`}
@@ -284,63 +269,21 @@ export class NavigatorItemDndWrapper extends PureComponent<
         />
       </div>
     )
+
+    return props.connectDropTarget(props.connectDragSource(navigatorItemContainer))
   }
 }
 
-interface DropCollectedProps {
-  isOver: boolean
-  canDrop: boolean
-}
-
-export const NavigatorItemContainer = React.memo((props: NavigatorItemDragAndDropWrapperProps) => {
-  const [{ isDragging }, drag] = useDrag(
-    () => ({
-      type: 'NAVIGATOR_ITEM',
-      collect: (monitor) => ({
-        isDragging: monitor.isDragging(),
-      }),
-      item: props,
-      beginDrag: beginDrag,
-    }),
-    [props],
-  )
-
-  const dropRef = React.useRef(null)
-
-  const [{ isOver }, drop] = useDrop<
-    NavigatorItemDragAndDropWrapperProps,
-    unknown,
-    DropCollectedProps
-  >(
-    () => ({
-      accept: 'NAVIGATOR_ITEM',
-      collect: (monitor) => ({
-        isOver: monitor.isOver(),
-        canDrop: monitor.canDrop(),
-      }),
-      hover: (item: NavigatorItemDragAndDropWrapperProps, monitor) => {
-        onHover(item, props, monitor, dropRef.current)
-      },
-      drop: (item: NavigatorItemDragAndDropWrapperProps, monitor) => {
-        onDrop(item, props, monitor, dropRef.current)
-      },
-    }),
-    [props],
-  )
-
-  const attachDrop = React.useCallback(
-    (domElement) => {
-      drop(domElement)
-      dropRef.current = domElement
-    },
-    [drop, dropRef],
-  )
-
-  return (
-    <div ref={attachDrop}>
-      <div ref={drag}>
-        <NavigatorItemDndWrapper {...props} isOver={isOver} isDragging={isDragging} />
-      </div>
-    </div>
-  )
-})
+export const NavigatorItemContainer = DropTarget(
+  'navigator-item',
+  onDragActions(onDrop, onHover),
+  connectDropTarget,
+)(
+  DragSource<NavigatorItemDragAndDropWrapperProps>(
+    'navigator-item',
+    cardSource(beginDrag, clearDropTargetHint),
+    connectDragSource,
+  )(
+    NavigatorItemDndWrapper as any, // TODO DragSource type is shit
+  ),
+)
