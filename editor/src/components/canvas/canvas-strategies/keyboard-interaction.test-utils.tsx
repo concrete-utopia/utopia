@@ -9,7 +9,7 @@ import { Modifiers } from '../../../utils/modifiers'
 import { EditorState } from '../../editor/store/editor-state'
 import { foldAndApplyCommands } from '../commands/commands'
 import { pickCanvasStateFromEditorState } from './canvas-strategies'
-import { CanvasStrategy, CustomStrategyState } from './canvas-strategy-types'
+import { CanvasStrategy } from './canvas-strategy-types'
 import {
   createInteractionViaKeyboard,
   InteractionSession,

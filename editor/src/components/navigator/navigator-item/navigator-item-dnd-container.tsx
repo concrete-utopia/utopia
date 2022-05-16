@@ -62,8 +62,8 @@ function canDrop(props: NavigatorItemDragAndDropWrapperProps, dropSource: Elemen
 function onDrop(
   propsOfDraggedItem: NavigatorItemDragAndDropWrapperProps,
   propsOfDropTargetItem: NavigatorItemDragAndDropWrapperProps,
-  monitor?: DropTargetMonitor,
-  component?: unknown,
+  monitor: DropTargetMonitor,
+  component: HTMLDivElement | null,
 ) {
   if (monitor != null && component != null) {
     const dragSelections = propsOfDraggedItem.getDragSelections()
@@ -112,7 +112,7 @@ function onHover(
   propsOfDraggedItem: NavigatorItemDragAndDropWrapperProps,
   propsOfDropTargetItem: NavigatorItemDragAndDropWrapperProps,
   monitor: DropTargetMonitor | null,
-  component: React.Component<NavigatorItemDragAndDropWrapperProps, any> | null | undefined,
+  component: HTMLDivElement | null,
 ): void {
   if (
     monitor != null &&
@@ -305,7 +305,7 @@ export const NavigatorItemContainer = React.memo((props: NavigatorItemDragAndDro
     [props],
   )
 
-  const dropRef = React.useRef(null)
+  const dropRef = React.useRef<HTMLDivElement | null>(null)
 
   const [{ isOver }, drop] = useDrop<
     NavigatorItemDragAndDropWrapperProps,
@@ -329,7 +329,7 @@ export const NavigatorItemContainer = React.memo((props: NavigatorItemDragAndDro
   )
 
   const attachDrop = React.useCallback(
-    (domElement) => {
+    (domElement: HTMLDivElement) => {
       drop(domElement)
       dropRef.current = domElement
     },
