@@ -8,7 +8,7 @@ import { InteractionSession, StrategyState } from './interaction-state'
 // TODO: fill this in, maybe make it an ADT for different strategies
 export interface CustomStrategyState {}
 
-export function defaultCustomStrategyState() {
+export function defaultCustomStrategyState(): CustomStrategyState {
   return {}
 }
 
