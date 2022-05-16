@@ -151,6 +151,8 @@ function dragBy15Pixels(
     metadata: null as any, // the strategy does not use this
   }
 
+  const customStrategyState = { foo: 'bar' }
+
   const strategyResult = escapeHatchStrategy.apply(
     pickCanvasStateFromEditorState(editorState),
     interactionSession,
@@ -162,11 +164,11 @@ function dragBy15Pixels(
       commandDescriptions: null as any, // the strategy does not use this
       sortedApplicableStrategies: null as any, // the strategy does not use this
       startingMetadata: metadata,
-      customStrategyState: { foo: 'bar' },
+      customStrategyState: customStrategyState,
     } as StrategyState,
   )
 
-  expect(strategyResult.customState).toBeNull()
+  expect(strategyResult.customState).toEqual(customStrategyState)
 
   const finalEditor = foldAndApplyCommands(
     editorState,

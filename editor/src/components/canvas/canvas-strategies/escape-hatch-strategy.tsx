@@ -71,11 +71,14 @@ export const escapeHatchStrategy: CanvasStrategy = {
       )
       return {
         commands: [...moveAndPositionCommands, ...siblingCommands],
-        customState: null,
+        customState: strategyState.customStrategyState,
       }
     }
     // Fallback for when the checks above are not satisfied.
-    return emptyStrategyApplicationResult
+    return {
+      commands: [],
+      customState: strategyState.customStrategyState,
+    }
   },
 }
 

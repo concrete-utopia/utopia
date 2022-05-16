@@ -33,7 +33,7 @@ export function getAbsoluteMoveCommandsForSelectedElement(
   selectedElement: ElementPath,
   drag: CanvasVector,
   canvasState: InteractionCanvasState,
-  sessionState: StrategyState,
+  strategyState: StrategyState,
 ): Array<AdjustCssLengthProperty> {
   const element: JSXElement | null = getElementFromProjectContents(
     selectedElement,
@@ -42,7 +42,7 @@ export function getAbsoluteMoveCommandsForSelectedElement(
   )
   const elementParentBounds =
     MetadataUtils.findElementByElementPath(
-      sessionState.startingMetadata, // TODO should this be using the current metadata?
+      strategyState.startingMetadata, // TODO should this be using the current metadata?
       selectedElement,
     )?.specialSizeMeasurements.immediateParentBounds ?? null // TODO this should probably be coordinateSystemBounds
 

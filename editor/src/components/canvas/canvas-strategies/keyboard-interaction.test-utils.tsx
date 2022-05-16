@@ -31,6 +31,8 @@ export function pressKeys(
     metadata: null as any, // the strategy does not use this
   }
 
+  const customStrategyState = { foo: 'bar' }
+
   const strategyResult = strategy.apply(
     pickCanvasStateFromEditorState(editorState),
     interactionSession,
@@ -52,11 +54,11 @@ export function pressKeys(
           } as SpecialSizeMeasurements,
         } as ElementInstanceMetadata,
       },
-      customStrategyState: { foo: 'bar' },
+      customStrategyState: customStrategyState,
     } as StrategyState,
   )
 
-  expect(strategyResult.customState).toBeNull()
+  expect(strategyResult.customState).toEqual(customStrategyState)
 
   const finalEditor = foldAndApplyCommands(
     editorState,

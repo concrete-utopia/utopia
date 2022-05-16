@@ -26,6 +26,8 @@ function resizeElement(editor: EditorState, edgePosition: EdgePosition): EditorS
     canvasPoint({ x: 15, y: 25 }),
   )
 
+  const customStrategyState = { foo: 'bar' }
+
   const strategyResult = absoluteResizeDeltaStrategy.apply(
     pickCanvasStateFromEditorState(editor),
     { ...interactionSessionWithoutMetadata, metadata: {} },
@@ -43,11 +45,11 @@ function resizeElement(editor: EditorState, edgePosition: EdgePosition): EditorS
           } as SpecialSizeMeasurements,
         } as ElementInstanceMetadata,
       },
-      customStrategyState: { foo: 'bar' },
+      customStrategyState: customStrategyState,
     } as StrategyState,
   )
 
-  expect(strategyResult.customState).toBeNull()
+  expect(strategyResult.customState).toEqual(customStrategyState)
 
   return foldAndApplyCommands(editor, editor, [], [], strategyResult.commands, 'permanent')
     .editorState

@@ -47,6 +47,8 @@ function multiselectResizeElements(
     drag,
   )
 
+  const customStrategyState = { foo: 'bar' }
+
   const strategyResult = absoluteResizeBoundingBoxStrategy.apply(
     pickCanvasStateFromEditorState(initialEditor),
     { ...interactionSessionWithoutMetadata, metadata: {} },
@@ -58,11 +60,11 @@ function multiselectResizeElements(
       commandDescriptions: null as any, // the strategy does not use this
       sortedApplicableStrategies: null as any, // the strategy does not use this
       startingMetadata: metadata,
-      customStrategyState: { foo: 'bar' },
+      customStrategyState: customStrategyState,
     } as StrategyState,
   )
 
-  expect(strategyResult.customState).toBeNull()
+  expect(strategyResult.customState).toEqual(customStrategyState)
 
   return foldAndApplyCommands(
     initialEditor,

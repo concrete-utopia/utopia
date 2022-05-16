@@ -128,6 +128,8 @@ function reorderElement(
     metadata: null as any, // the strategy does not use this
   }
 
+  const customStrategyState = { foo: 'bar' }
+
   const strategyResult = flexReorderStrategy.apply(
     pickCanvasStateFromEditorState(editorState),
     interactionSession,
@@ -139,11 +141,11 @@ function reorderElement(
       commandDescriptions: null as any, // the strategy does not use this
       sortedApplicableStrategies: null as any, // the strategy does not use this
       startingMetadata: metadata,
-      customStrategyState: { foo: 'bar' },
+      customStrategyState: customStrategyState,
     } as StrategyState,
   )
 
-  expect(strategyResult.customState).toBeNull()
+  expect(strategyResult.customState).toEqual(customStrategyState)
 
   const finalEditor = foldAndApplyCommands(
     editorState,

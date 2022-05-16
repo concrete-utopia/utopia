@@ -37,18 +37,18 @@ export const absoluteResizeDeltaStrategy: CanvasStrategy = {
   controlsToRender: [
     { control: AbsoluteResizeControl, key: 'absolute-resize-control', show: 'always-visible' },
   ],
-  fitness: (canvasState, interactionState, sessionState) => {
+  fitness: (canvasState, interactionState, strategyState) => {
     return absoluteResizeDeltaStrategy.isApplicable(
       canvasState,
       interactionState,
-      sessionState.startingMetadata,
+      strategyState.startingMetadata,
     ) &&
       interactionState.interactionData.type === 'DRAG' &&
       interactionState.activeControl.type === 'RESIZE_HANDLE'
       ? 1
       : 0
   },
-  apply: (canvasState, interactionState, sessionState) => {
+  apply: (canvasState, interactionState, strategyState) => {
     if (
       interactionState.interactionData.type === 'DRAG' &&
       interactionState.interactionData.drag != null &&
@@ -58,7 +58,7 @@ export const absoluteResizeDeltaStrategy: CanvasStrategy = {
       const edgePosition = interactionState.activeControl.edgePosition
       const { snappedDragVector, guidelinesWithSnappingVector } = snapDrag(
         canvasState.selectedElements,
-        sessionState.startingMetadata,
+        strategyState.startingMetadata,
         drag,
         edgePosition,
         canvasState.scale,
@@ -76,7 +76,7 @@ export const absoluteResizeDeltaStrategy: CanvasStrategy = {
           )
           const elementParentBounds =
             MetadataUtils.findElementByElementPath(
-              sessionState.startingMetadata, // TODO should this be using the current metadata?
+              strategyState.startingMetadata, // TODO should this be using the current metadata?
               selectedElement,
             )?.specialSizeMeasurements.immediateParentBounds ?? null
 
@@ -99,11 +99,14 @@ export const absoluteResizeDeltaStrategy: CanvasStrategy = {
           updateHighlightedViews('transient', []),
           setSnappingGuidelines('transient', guidelinesWithSnappingVector),
         ],
-        customState: null,
+        customState: strategyState.customStrategyState,
       }
     }
     // Fallback for when the checks above are not satisfied.
-    return emptyStrategyApplicationResult
+    return {
+      commands: [],
+      customState: strategyState.customStrategyState,
+    }
   },
 }
 

@@ -30,11 +30,11 @@ export const absoluteMoveStrategy: CanvasStrategy = {
     }
   },
   controlsToRender: [], // Uses existing hooks in select-mode-hooks.tsx
-  fitness: (canvasState, interactionState, sessionState) => {
+  fitness: (canvasState, interactionState, strategyState) => {
     return absoluteMoveStrategy.isApplicable(
       canvasState,
       interactionState,
-      sessionState.startingMetadata,
+      strategyState.startingMetadata,
     ) &&
       interactionState.interactionData.type === 'DRAG' &&
       interactionState.activeControl.type === 'BOUNDING_AREA'
@@ -71,7 +71,7 @@ export const absoluteMoveStrategy: CanvasStrategy = {
           updateHighlightedViews('transient', []),
           setSnappingGuidelines('transient', guidelinesWithSnappingVector),
         ],
-        customState: null,
+        customState: sessionState.customStrategyState,
       }
     }
     // Fallback for when the checks above are not satisfied.

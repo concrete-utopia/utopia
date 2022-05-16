@@ -49,6 +49,8 @@ function dragByPixels(
     metadata: null as any, // the strategy does not use this
   }
 
+  const customStrategyState = { foo: 'bar' }
+
   const strategyResult = absoluteMoveStrategy.apply(
     pickCanvasStateFromEditorState(editorState),
     interactionSession,
@@ -70,11 +72,11 @@ function dragByPixels(
           } as SpecialSizeMeasurements,
         } as ElementInstanceMetadata,
       },
-      customStrategyState: { foo: 'bar' },
+      customStrategyState: customStrategyState,
     } as StrategyState,
   )
 
-  expect(strategyResult.customState).toBeNull()
+  expect(strategyResult.customState).toEqual(customStrategyState)
 
   const finalEditor = foldAndApplyCommands(
     editorState,

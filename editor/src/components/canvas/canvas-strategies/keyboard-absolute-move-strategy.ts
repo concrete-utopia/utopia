@@ -44,7 +44,7 @@ export const keyboardAbsoluteMoveStrategy: CanvasStrategy = {
     }
     return 0
   },
-  apply: (canvasState, interactionState, sessionState) => {
+  apply: (canvasState, interactionState, strategyState) => {
     if (interactionState.interactionData.type === 'KEYBOARD') {
       return {
         commands: interactionState.interactionData.keysPressed.flatMap<AdjustCssLengthProperty>(
@@ -59,7 +59,7 @@ export const keyboardAbsoluteMoveStrategy: CanvasStrategy = {
                   selectedElement,
                   drag,
                   canvasState,
-                  sessionState,
+                  strategyState,
                 ),
               )
             } else {
@@ -67,10 +67,13 @@ export const keyboardAbsoluteMoveStrategy: CanvasStrategy = {
             }
           },
         ),
-        customState: null,
+        customState: strategyState.customStrategyState,
       }
     }
-    return emptyStrategyApplicationResult
+    return {
+      commands: [],
+      customState: strategyState.customStrategyState,
+    }
   },
 }
 

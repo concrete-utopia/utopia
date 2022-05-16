@@ -27,11 +27,11 @@ export const flexReorderStrategy: CanvasStrategy = {
     }
   },
   controlsToRender: [], // Uses existing hooks in select-mode-hooks.tsx
-  fitness: (canvasState, interactionState, sessionState) => {
+  fitness: (canvasState, interactionState, strategyState) => {
     return flexReorderStrategy.isApplicable(
       canvasState,
       interactionState,
-      sessionState.startingMetadata,
+      strategyState.startingMetadata,
     ) &&
       interactionState.interactionData.type === 'DRAG' &&
       interactionState.activeControl.type === 'BOUNDING_AREA'
@@ -69,13 +69,13 @@ export const flexReorderStrategy: CanvasStrategy = {
     if (newIndex == null || newIndex === oldIndex) {
       return {
         commands: [],
-        customState: null,
+        customState: sessionState.customStrategyState,
       }
     }
 
     return {
       commands: [reorderElement('permanent', target, newIndex)],
-      customState: null,
+      customState: sessionState.customStrategyState,
     }
   },
 }

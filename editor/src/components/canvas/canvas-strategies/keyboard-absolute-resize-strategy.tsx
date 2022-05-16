@@ -26,12 +26,12 @@ export const keyboardAbsoluteResizeStrategy: CanvasStrategy = {
   controlsToRender: [
     { control: AbsoluteResizeControl, key: 'absolute-resize-control', show: 'always-visible' },
   ],
-  fitness: (canvasState, interactionState, sessionState) => {
+  fitness: (canvasState, interactionState, strategyState) => {
     if (
       keyboardAbsoluteResizeStrategy.isApplicable(
         canvasState,
         interactionState,
-        sessionState.startingMetadata,
+        strategyState.startingMetadata,
       ) &&
       interactionState.interactionData.type === 'KEYBOARD'
     ) {
@@ -49,7 +49,7 @@ export const keyboardAbsoluteResizeStrategy: CanvasStrategy = {
     }
     return 0
   },
-  apply: (canvasState, interactionState, sessionState) => {
+  apply: (canvasState, interactionState, strategyState) => {
     if (interactionState.interactionData.type === 'KEYBOARD') {
       return {
         commands: interactionState.interactionData.keysPressed.flatMap<AdjustCssLengthProperty>(
@@ -71,7 +71,7 @@ export const keyboardAbsoluteResizeStrategy: CanvasStrategy = {
                 )
                 const elementParentBounds =
                   MetadataUtils.findElementByElementPath(
-                    sessionState.startingMetadata,
+                    strategyState.startingMetadata,
                     selectedElement,
                   )?.specialSizeMeasurements.immediateParentBounds ?? null
 
@@ -91,10 +91,13 @@ export const keyboardAbsoluteResizeStrategy: CanvasStrategy = {
             }
           },
         ),
-        customState: null,
+        customState: strategyState.customStrategyState,
       }
     }
-    return emptyStrategyApplicationResult
+    return {
+      commands: [],
+      customState: strategyState.customStrategyState,
+    }
   },
 }
 

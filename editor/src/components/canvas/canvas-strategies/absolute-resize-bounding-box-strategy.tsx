@@ -54,18 +54,18 @@ export const absoluteResizeBoundingBoxStrategy: CanvasStrategy = {
   controlsToRender: [
     { control: AbsoluteResizeControl, key: 'absolute-resize-control', show: 'always-visible' },
   ],
-  fitness: (canvasState, interactionState, sessionState) => {
+  fitness: (canvasState, interactionState, strategyState) => {
     return absoluteResizeBoundingBoxStrategy.isApplicable(
       canvasState,
       interactionState,
-      sessionState.startingMetadata,
+      strategyState.startingMetadata,
     ) &&
       interactionState.interactionData.type === 'DRAG' &&
       interactionState.activeControl.type === 'RESIZE_HANDLE'
       ? 1
       : 0
   },
-  apply: (canvasState, interactionState, sessionState) => {
+  apply: (canvasState, interactionState, strategyState) => {
     if (
       interactionState.interactionData.type === 'DRAG' &&
       interactionState.interactionData.drag != null &&
@@ -75,7 +75,7 @@ export const absoluteResizeBoundingBoxStrategy: CanvasStrategy = {
       const edgePosition = interactionState.activeControl.edgePosition
 
       const originalBoundingBox = getMultiselectBounds(
-        sessionState.startingMetadata,
+        strategyState.startingMetadata,
         canvasState.selectedElements,
       )
       if (originalBoundingBox != null) {
@@ -95,7 +95,7 @@ export const absoluteResizeBoundingBoxStrategy: CanvasStrategy = {
         )
         const { snappedBoundingBox, guidelinesWithSnappingVector } = snapBoundingBox(
           canvasState.selectedElements,
-          sessionState.startingMetadata,
+          strategyState.startingMetadata,
           edgePosition,
           newBoundingBox,
           canvasState.scale,
@@ -111,7 +111,7 @@ export const absoluteResizeBoundingBoxStrategy: CanvasStrategy = {
             )
             const originalFrame = MetadataUtils.getFrameInCanvasCoords(
               selectedElement,
-              sessionState.startingMetadata,
+              strategyState.startingMetadata,
             )
 
             if (element == null || originalFrame == null) {
@@ -124,8 +124,10 @@ export const absoluteResizeBoundingBoxStrategy: CanvasStrategy = {
               originalFrame,
             )
             const elementParentBounds =
-              MetadataUtils.findElementByElementPath(sessionState.startingMetadata, selectedElement)
-                ?.specialSizeMeasurements.immediateParentBounds ?? null
+              MetadataUtils.findElementByElementPath(
+                strategyState.startingMetadata,
+                selectedElement,
+              )?.specialSizeMeasurements.immediateParentBounds ?? null
 
             return [
               ...createResizeCommandsFromFrame(
@@ -141,12 +143,15 @@ export const absoluteResizeBoundingBoxStrategy: CanvasStrategy = {
         )
         return {
           commands: [...commandsForSelectedElements, updateHighlightedViews('transient', [])],
-          customState: null,
+          customState: strategyState.customStrategyState,
         }
       }
     }
     // Fallback for when the checks above are not satisfied.
-    return emptyStrategyApplicationResult
+    return {
+      commands: [],
+      customState: strategyState.customStrategyState,
+    }
   },
 }
 

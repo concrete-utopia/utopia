@@ -45,6 +45,8 @@ function reparentElement(
     metadata: null as any, // the strategy does not use this
   }
 
+  const customStrategyState = { foo: 'bar' }
+
   const strategyResult = absoluteReparentStrategy.apply(
     pickCanvasStateFromEditorState(editorState),
     interactionSession,
@@ -80,11 +82,11 @@ function reparentElement(
           } as SpecialSizeMeasurements,
         } as ElementInstanceMetadata,
       },
-      customStrategyState: { foo: 'bar' },
+      customStrategyState: customStrategyState,
     } as StrategyState,
   )
 
-  expect(strategyResult.customState).toBeNull()
+  expect(strategyResult.customState).toEqual(customStrategyState)
 
   const finalEditor = foldAndApplyCommands(
     editorState,
