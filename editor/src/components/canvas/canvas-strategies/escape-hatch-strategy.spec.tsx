@@ -38,6 +38,18 @@ const simpleMetadata = {
     } as SpecialSizeMeasurements,
   } as ElementInstanceMetadata,
 }
+const simpleMetadataPercentValue = {
+  'scene-aaa/app-entity:aaa/bbb': {
+    elementPath: elementPath([
+      ['scene-aaa', 'app-entity'],
+      ['aaa', 'bbb'],
+    ]),
+    localFrame: { x: 0, y: 0, width: 200, height: 80 },
+    specialSizeMeasurements: {
+      immediateParentBounds: canvasRectangle({ x: 0, y: 0, width: 400, height: 400 }),
+    } as SpecialSizeMeasurements,
+  } as ElementInstanceMetadata,
+}
 
 const complexMetadata = {
   'scene-aaa/app-entity:aaa/bbb': {
@@ -66,6 +78,59 @@ const complexMetadata = {
       ['aaa', 'ddd'],
     ]),
     localFrame: { x: 0, y: 280, width: 100, height: 50 },
+    specialSizeMeasurements: {
+      immediateParentBounds: canvasRectangle({ x: 0, y: 0, width: 400, height: 400 }),
+    } as SpecialSizeMeasurements,
+  } as ElementInstanceMetadata,
+}
+
+const mixedPinsMetadata = {
+  'scene-aaa/app-entity:aaa/bbb': {
+    elementPath: elementPath([
+      ['scene-aaa', 'app-entity'],
+      ['aaa', 'bbb'],
+    ]),
+    localFrame: { x: 0, y: 0, width: 400, height: 19 },
+    specialSizeMeasurements: {
+      immediateParentBounds: canvasRectangle({ x: 0, y: 0, width: 400, height: 400 }),
+    } as SpecialSizeMeasurements,
+  } as ElementInstanceMetadata,
+  'scene-aaa/app-entity:aaa/ccc': {
+    elementPath: elementPath([
+      ['scene-aaa', 'app-entity'],
+      ['aaa', 'ccc'],
+    ]),
+    localFrame: { x: 0, y: 19, width: 65, height: 50 },
+    specialSizeMeasurements: {
+      immediateParentBounds: canvasRectangle({ x: 0, y: 0, width: 400, height: 400 }),
+    } as SpecialSizeMeasurements,
+  } as ElementInstanceMetadata,
+  'scene-aaa/app-entity:aaa/ddd': {
+    elementPath: elementPath([
+      ['scene-aaa', 'app-entity'],
+      ['aaa', 'ddd'],
+    ]),
+    localFrame: { x: 0, y: 69, width: 65, height: 50 },
+    specialSizeMeasurements: {
+      immediateParentBounds: canvasRectangle({ x: 0, y: 0, width: 400, height: 400 }),
+    } as SpecialSizeMeasurements,
+  } as ElementInstanceMetadata,
+  'scene-aaa/app-entity:aaa/eee': {
+    elementPath: elementPath([
+      ['scene-aaa', 'app-entity'],
+      ['aaa', 'eee'],
+    ]),
+    localFrame: { x: 0, y: 119, width: 65, height: 50 },
+    specialSizeMeasurements: {
+      immediateParentBounds: canvasRectangle({ x: 0, y: 0, width: 400, height: 400 }),
+    } as SpecialSizeMeasurements,
+  } as ElementInstanceMetadata,
+  'scene-aaa/app-entity:aaa/fff': {
+    elementPath: elementPath([
+      ['scene-aaa', 'app-entity'],
+      ['aaa', 'fff'],
+    ]),
+    localFrame: { x: 0, y: 169, width: 65, height: 50 },
     specialSizeMeasurements: {
       immediateParentBounds: canvasRectangle({ x: 0, y: 0, width: 400, height: 400 }),
     } as SpecialSizeMeasurements,
@@ -144,6 +209,44 @@ describe('Escape Hatch Strategy', () => {
       ),
     )
   })
+  it('works on a flow element without siblings where width and height is percentage', async () => {
+    const targetElement = elementPath([
+      ['scene-aaa', 'app-entity'],
+      ['aaa', 'bbb'],
+    ])
+
+    const initialEditor: EditorState = prepareEditorState(
+      `
+    <View style={{ position: 'relative', width: 400, height: 400 }} data-uid='aaa'>
+      <div
+        style={{ backgroundColor: '#0091FFAA', width: '50%', height: '20%' }}
+        data-uid='bbb'
+      />
+    </View>
+    `,
+      [targetElement],
+    )
+
+    const finalEditor = dragBy15Pixels(initialEditor, simpleMetadataPercentValue)
+
+    expect(testPrintCodeFromEditorState(finalEditor)).toEqual(
+      makeTestProjectCodeWithSnippet(
+        `<View style={{ position: 'relative', width: 400, height: 400 }} data-uid='aaa'>
+          <div
+            style={{
+              backgroundColor: '#0091FFAA',
+              width: '50%',
+              height: '20%',
+              position: 'absolute',
+              left: 15,
+              top: 15,
+            }}
+            data-uid='bbb'
+          />
+      </View>`,
+      ),
+    )
+  })
 
   it('works on a flow element with lots of siblings', async () => {
     const targetElement = elementPath([
@@ -211,6 +314,102 @@ describe('Escape Hatch Strategy', () => {
           data-uid='ddd'
         />
       </View>`,
+      ),
+    )
+  })
+  it('works on a flow element with lots of siblings and mixed frame pins', async () => {
+    const targetElement = elementPath([
+      ['scene-aaa', 'app-entity'],
+      ['aaa', 'bbb'],
+    ])
+
+    const initialEditor: EditorState = prepareEditorState(
+      `<div style={{ ...(props.style || {}) }} data-uid='aaa'>
+        <div data-uid='bbb' style={{}}><div data-uid='sad' style={{ width: 400, height: 19 }} /></div>
+        <div
+          style={{ bottom: 0, height: 50, width: 65, right: 0 }}
+          data-uid='ccc'
+        />
+        <div
+          style={{ top: 10, height: 50, width: 65, right: 335 }}
+          data-uid='ddd'
+        />
+        <div
+          style={{ top: 20, height: 50, width: 65, left: 0 }}
+          data-uid='eee'
+        />
+        <div
+          style={{ top: 10, height: 50, width: 65, left: 0, bottom: 60, right: 10 }}
+          data-uid='fff'
+        />
+    </div>
+      `,
+      [targetElement],
+    )
+
+    const finalEditor = dragBy15Pixels(initialEditor, mixedPinsMetadata)
+
+    expect(testPrintCodeFromEditorState(finalEditor)).toEqual(
+      makeTestProjectCodeWithSnippet(
+        `<div style={{ ...(props.style || {}) }} data-uid='aaa'>
+        <div
+          data-uid='bbb'
+          style={{
+            position: 'absolute',
+            left: 15,
+            width: 400,
+            top: 15,
+            height: 19,
+          }}
+        >
+          <div
+            data-uid='sad'
+            style={{ width: 400, height: 19 }}
+          />
+        </div>
+        <div
+          style={{
+            bottom: 331,
+            height: 50,
+            width: 65,
+            right: 335,
+            position: 'absolute',
+          }}
+          data-uid='ccc'
+        />
+        <div
+          style={{
+            top: 69,
+            height: 50,
+            width: 65,
+            right: 335,
+            position: 'absolute',
+          }}
+          data-uid='ddd'
+        />
+        <div
+          style={{
+            top: 119,
+            height: 50,
+            width: 65,
+            left: 0,
+            position: 'absolute',
+          }}
+          data-uid='eee'
+        />
+        <div
+          style={{
+            top: 169,
+            height: 50,
+            width: 65,
+            left: 0,
+            bottom: 181,
+            right: 335,
+            position: 'absolute',
+          }}
+          data-uid='fff'
+        />
+      </div>`,
       ),
     )
   })

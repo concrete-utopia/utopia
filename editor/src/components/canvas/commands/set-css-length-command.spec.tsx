@@ -27,6 +27,7 @@ describe('setCssLengthProperty', () => {
       cardInstancePath,
       stylePropPathMappingFn('height', ['style']),
       valueToSet,
+      400,
     )
 
     const result = runSetCssLengthProperty(
