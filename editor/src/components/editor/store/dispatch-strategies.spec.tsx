@@ -255,7 +255,7 @@ describe('interactionStart', () => {
         "currentStrategy": null,
         "currentStrategyCommands": Array [],
         "currentStrategyFitness": 0,
-        "customStrategyState": null,
+        "customStrategyState": Object {},
         "sortedApplicableStrategies": Array [],
         "startingMetadata": Object {},
       }
@@ -371,7 +371,7 @@ describe('interactionUpdatex', () => {
         "currentStrategy": null,
         "currentStrategyCommands": Array [],
         "currentStrategyFitness": 0,
-        "customStrategyState": null,
+        "customStrategyState": Object {},
         "sortedApplicableStrategies": Array [],
         "startingMetadata": Object {},
       }
@@ -519,7 +519,7 @@ describe('interactionHardReset', () => {
         "currentStrategy": null,
         "currentStrategyCommands": Array [],
         "currentStrategyFitness": 0,
-        "customStrategyState": null,
+        "customStrategyState": Object {},
         "sortedApplicableStrategies": Array [],
         "startingMetadata": Object {},
       }
@@ -730,7 +730,7 @@ describe('interactionUpdate with user changed strategy', () => {
         "currentStrategy": null,
         "currentStrategyCommands": Array [],
         "currentStrategyFitness": 0,
-        "customStrategyState": null,
+        "customStrategyState": Object {},
         "sortedApplicableStrategies": Array [],
         "startingMetadata": Object {},
       }
