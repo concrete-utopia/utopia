@@ -1,12 +1,14 @@
 const rules = [
   {
-    match: /^Warning: Invalid value for prop `(\w*)` on <(\w*)> tag. Either remove it from the element, or pass a string or number value to keep it in the DOM./,
+    match:
+      /^Warning: Invalid value for prop `(\w*)` on <(\w*)> tag. Either remove it from the element, or pass a string or number value to keep it in the DOM./,
     group:
       'Warning: Invalid value for prop *** on *** tag. Either remove it from the element, or pass a string or number value to keep it in the DOM.',
     level: 'error',
   },
   {
-    match: /^Warning: React.createElement: type is invalid -- expected a string \(for built-in components\) or a class\/function \(for composite components\) but got: undefined./,
+    match:
+      /^Warning: React.createElement: type is invalid -- expected a string \(for built-in components\) or a class\/function \(for composite components\) but got: undefined./,
     group: 'Warning: React.createElement called with undefined',
     level: 'error',
   },
@@ -22,19 +24,22 @@ const rules = [
     level: 'error',
   },
   {
-    match: /^Warning: useLayoutEffect does nothing on the server, because its effect cannot be encoded into the server renderer's output format./,
+    match:
+      /^Warning: useLayoutEffect does nothing on the server, because its effect cannot be encoded into the server renderer's output format./,
     group:
       'Warning: React.useLayoutEffect used in the tests – should replace with useIsoLayoutEffect',
     level: 'error',
   },
   {
-    match: /^Warning: FIXME: Cannot update a component \(`OpenFileEditor`\) while rendering a different component \(`UiJsxCanvas`\)./,
+    match:
+      /^Warning: FIXME: Cannot update a component \(`OpenFileEditor`\) while rendering a different component \(`UiJsxCanvas`\)./,
     group:
       'Warning: FIXME: Cannot update a component (`OpenFileEditor`) while rendering a different component (`UiJsxCanvas`). We should actually fix this!',
     level: 'error',
   },
   {
-    match: /^Warning: FIXME: Cannot update a component .* while rendering a different component .*./,
+    match:
+      /^Warning: FIXME: Cannot update a component .* while rendering a different component .*./,
     group:
       'Warning: FIXME: Cannot update a component **** while rendering a different component ****. We should actually fix this!',
     level: 'error',
@@ -45,7 +50,8 @@ const rules = [
     level: 'error',
   },
   {
-    match: /Cannot log after tests are done. Did you forget to wait for something async in your test\?/,
+    match:
+      /Cannot log after tests are done. Did you forget to wait for something async in your test\?/,
     group:
       'Warning: FIXME: Cannot log after tests are done. Did you forget to wait for something async in your test?',
     level: 'error',
@@ -61,7 +67,8 @@ const rules = [
     level: 'warning',
   },
   {
-    match: /^Warning: Invalid prop `(.*)` supplied to `React.Fragment`. React.Fragment can only have `key` and `children` props./,
+    match:
+      /^Warning: Invalid prop `(.*)` supplied to `React.Fragment`. React.Fragment can only have `key` and `children` props./,
     group:
       'Warning: Invalid prop *** supplied to `React.Fragment`. React.Fragment can only have `key` and `children` props.',
     level: 'warning',
@@ -102,6 +109,8 @@ module.exports = {
         'utopia-api/core': '<rootDir>/node_modules/utopia-api/dist/core.js',
         'worker-imports': '<rootDir>/src/core/workers/__mocks__/worker-import-utils.ts',
         '../utils/vite-hmr-config': '<rootDir>/src/utils/__mocks__/vite-hmr-config.ts',
+        'react-dnd': '<rootDir>/test/jest/__mocks__/react-dnd.js',
+        'react-dnd-html5-backend': '<rootDir>/test/jest/__mocks__/react-dnd-html5-backend.js',
       },
       transform: {
         '\\.[jt]sx?$': 'babel-jest',
