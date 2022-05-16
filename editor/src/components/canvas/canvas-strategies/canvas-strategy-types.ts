@@ -5,7 +5,18 @@ import { ProjectContentTreeRoot } from '../../assets'
 import { CanvasCommand } from '../commands/commands'
 import { InteractionSession, StrategyState } from './interaction-state'
 
-export type StrategyApplicationResult = Array<CanvasCommand>
+// TODO: fill this in, maybe make it an ADT for different strategies
+export interface CustomStrategyState {}
+
+export interface StrategyApplicationResult {
+  commands: Array<CanvasCommand>
+  customState: CustomStrategyState | null
+}
+
+export const emptyStrategyApplicationResult = {
+  commands: [],
+  customState: null,
+}
 
 export interface ControlWithKey {
   control: React.FC

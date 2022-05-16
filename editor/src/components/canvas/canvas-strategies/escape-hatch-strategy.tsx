@@ -24,7 +24,11 @@ import { convertToAbsolute } from '../commands/convert-to-absolute-command'
 import { setCssLengthProperty } from '../commands/set-css-length-command'
 import { DragOutlineControl } from '../controls/select-mode/drag-outline-control'
 import { AnimationTimer, PieTimerControl } from '../controls/select-mode/pie-timer'
-import { CanvasStrategy, InteractionCanvasState } from './canvas-strategy-types'
+import {
+  CanvasStrategy,
+  emptyStrategyApplicationResult,
+  InteractionCanvasState,
+} from './canvas-strategy-types'
 
 export const escapeHatchStrategy: CanvasStrategy = {
   id: 'ESCAPE_HATCH_STRATEGY',
@@ -81,11 +85,14 @@ export const escapeHatchStrategy: CanvasStrategy = {
           strategyState.startingMetadata,
           canvasState,
         )
-        return [...moveAndPositionCommands, ...siblingCommands]
+        return {
+          commands: [...moveAndPositionCommands, ...siblingCommands],
+          customState: null,
+        }
       }
     }
     // Fallback for when the checks above are not satisfied.
-    return []
+    return emptyStrategyApplicationResult
   },
 }
 

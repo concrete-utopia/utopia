@@ -43,7 +43,10 @@ export const flexReorderStrategy: CanvasStrategy = {
       interactionState.interactionData.type !== 'DRAG' ||
       interactionState.interactionData.drag == null
     ) {
-      return []
+      return {
+        commands: [],
+        customState: null,
+      }
     }
     const { selectedElements } = canvasState
     const target = selectedElements[0]
@@ -64,10 +67,16 @@ export const flexReorderStrategy: CanvasStrategy = {
       pointOnCanvas,
     )
     if (newIndex == null || newIndex === oldIndex) {
-      return []
+      return {
+        commands: [],
+        customState: null,
+      }
     }
 
-    return [reorderElement('permanent', target, newIndex)]
+    return {
+      commands: [reorderElement('permanent', target, newIndex)],
+      customState: null,
+    }
   },
 }
 

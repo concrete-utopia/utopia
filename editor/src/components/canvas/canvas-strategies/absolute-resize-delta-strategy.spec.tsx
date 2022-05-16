@@ -43,9 +43,14 @@ function resizeElement(editor: EditorState, edgePosition: EdgePosition): EditorS
           } as SpecialSizeMeasurements,
         } as ElementInstanceMetadata,
       },
+      customStrategyState: { foo: 'bar' },
     } as StrategyState,
   )
-  return foldAndApplyCommands(editor, editor, [], [], strategyResult, 'permanent').editorState
+
+  expect(strategyResult.customState).toBeNull()
+
+  return foldAndApplyCommands(editor, editor, [], [], strategyResult.commands, 'permanent')
+    .editorState
 }
 
 function createTestEditorAndResizeElement(

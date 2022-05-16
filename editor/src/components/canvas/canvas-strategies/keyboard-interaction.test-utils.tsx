@@ -9,7 +9,7 @@ import { Modifiers } from '../../../utils/modifiers'
 import { EditorState } from '../../editor/store/editor-state'
 import { foldAndApplyCommands } from '../commands/commands'
 import { pickCanvasStateFromEditorState } from './canvas-strategies'
-import { CanvasStrategy } from './canvas-strategy-types'
+import { CanvasStrategy, CustomStrategyState } from './canvas-strategy-types'
 import {
   createInteractionViaKeyboard,
   InteractionSession,
@@ -52,15 +52,18 @@ export function pressKeys(
           } as SpecialSizeMeasurements,
         } as ElementInstanceMetadata,
       },
+      customStrategyState: { foo: 'bar' },
     } as StrategyState,
   )
+
+  expect(strategyResult.customState).toBeNull()
 
   const finalEditor = foldAndApplyCommands(
     editorState,
     editorState,
     [],
     [],
-    strategyResult,
+    strategyResult.commands,
     'permanent',
   ).editorState
 

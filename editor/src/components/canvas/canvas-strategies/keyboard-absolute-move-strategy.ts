@@ -1,6 +1,6 @@
 import { MetadataUtils } from '../../../core/model/element-metadata-utils'
 import { Keyboard, KeyCharacter } from '../../../utils/keyboard'
-import { CanvasStrategy } from './canvas-strategy-types'
+import { CanvasStrategy, emptyStrategyApplicationResult } from './canvas-strategy-types'
 import { Modifiers } from '../../../utils/modifiers'
 import { CanvasVector } from '../../../core/shared/math-utils'
 import { getAbsoluteMoveCommandsForSelectedElement } from './shared-absolute-move-strategy-helpers'
@@ -46,28 +46,31 @@ export const keyboardAbsoluteMoveStrategy: CanvasStrategy = {
   },
   apply: (canvasState, interactionState, sessionState) => {
     if (interactionState.interactionData.type === 'KEYBOARD') {
-      return interactionState.interactionData.keysPressed.flatMap<AdjustCssLengthProperty>(
-        (key) => {
-          if (key == null) {
-            return []
-          }
-          const drag = getDragDeltaFromKey(key, interactionState.interactionData.modifiers)
-          if (drag.x !== 0 || drag.y !== 0) {
-            return canvasState.selectedElements.flatMap((selectedElement) =>
-              getAbsoluteMoveCommandsForSelectedElement(
-                selectedElement,
-                drag,
-                canvasState,
-                sessionState,
-              ),
-            )
-          } else {
-            return []
-          }
-        },
-      )
+      return {
+        commands: interactionState.interactionData.keysPressed.flatMap<AdjustCssLengthProperty>(
+          (key) => {
+            if (key == null) {
+              return []
+            }
+            const drag = getDragDeltaFromKey(key, interactionState.interactionData.modifiers)
+            if (drag.x !== 0 || drag.y !== 0) {
+              return canvasState.selectedElements.flatMap((selectedElement) =>
+                getAbsoluteMoveCommandsForSelectedElement(
+                  selectedElement,
+                  drag,
+                  canvasState,
+                  sessionState,
+                ),
+              )
+            } else {
+              return []
+            }
+          },
+        ),
+        customState: null,
+      }
     }
-    return []
+    return emptyStrategyApplicationResult
   },
 }
 
