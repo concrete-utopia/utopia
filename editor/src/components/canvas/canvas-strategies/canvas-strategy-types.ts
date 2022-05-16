@@ -14,7 +14,7 @@ export function defaultCustomStrategyState() {
 
 export interface StrategyApplicationResult {
   commands: Array<CanvasCommand>
-  customState: CustomStrategyState | null
+  customState: CustomStrategyState | null // null means the previous custom strategy state should be kept
 }
 
 export const emptyStrategyApplicationResult = {
