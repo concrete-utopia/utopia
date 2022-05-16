@@ -1,4 +1,4 @@
-import { isLeft, left } from '../../../core/shared/either'
+import { isLeft, isRight, left } from '../../../core/shared/either'
 import * as EP from '../../../core/shared/element-path'
 import { emptyComments, jsxAttributeValue } from '../../../core/shared/element-template'
 import {
@@ -10,6 +10,12 @@ import {
 import { ElementPath, PropertyPath } from '../../../core/shared/project-file-types'
 import * as PP from '../../../core/shared/property-path'
 import { EditorState, withUnderlyingTargetFromEditorState } from '../../editor/store/editor-state'
+import {
+  CSSNumber,
+  parseCSSPercent,
+  parseCSSPx,
+  printCSSNumber,
+} from '../../inspector/common/css-utils'
 import { applyValuesAtPath } from './adjust-number-command'
 import { BaseCommand, CommandFunction, TransientOrNot } from './commands'
 
@@ -18,6 +24,7 @@ export interface SetCssLengthProperty extends BaseCommand {
   target: ElementPath
   property: PropertyPath
   valuePx: number
+  parentDimensionPx: number | undefined
 }
 
 export function setCssLengthProperty(
@@ -25,6 +32,7 @@ export function setCssLengthProperty(
   target: ElementPath,
   property: PropertyPath,
   valuePx: number,
+  parentDimensionPx: number | undefined,
 ): SetCssLengthProperty {
   return {
     type: 'SET_CSS_LENGTH_PROPERTY',
@@ -32,6 +40,7 @@ export function setCssLengthProperty(
     target: target,
     property: property,
     valuePx: valuePx,
+    parentDimensionPx: parentDimensionPx,
   }
 }
 
@@ -68,12 +77,29 @@ export const runSetCssLengthProperty: CommandFunction<SetCssLengthProperty> = (
       )} not applied as the property is an expression we did not want to override.`,
     }
   }
-  const propsToUpdate: Array<ValueAtPath> = [
-    {
+
+  let propsToUpdate: Array<ValueAtPath> = []
+
+  const parsePercentResult = parseCSSPercent(simpleValueResult.value)
+  if (isRight(parsePercentResult) && command.parentDimensionPx != null) {
+    const currentValuePercent = parsePercentResult.value
+    const valueInPercent = (command.valuePx / command.parentDimensionPx) * 100
+    const newValueCssNumber: CSSNumber = {
+      value: valueInPercent,
+      unit: currentValuePercent.unit,
+    }
+    const newValue = printCSSNumber(newValueCssNumber, null)
+
+    propsToUpdate.push({
+      path: command.property,
+      value: jsxAttributeValue(newValue, emptyComments),
+    })
+  } else {
+    propsToUpdate.push({
       path: command.property,
       value: jsxAttributeValue(command.valuePx, emptyComments),
-    },
-  ]
+    })
+  }
 
   // Apply the update to the properties.
   const { editorStatePatch: propertyUpdatePatch } = applyValuesAtPath(
