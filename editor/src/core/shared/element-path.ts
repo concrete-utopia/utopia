@@ -385,7 +385,7 @@ export function appendToPath(path: ElementPath, next: id | ElementPathPart): Ele
 }
 
 export function notNullPathsEqual(l: ElementPath, r: ElementPath): boolean {
-  return pathsEqual(l, r)
+  return fullElementPathsEqual(l.parts, r.parts)
 }
 
 function elementPathPartsEqual(l: ElementPathPart, r: ElementPathPart): boolean {
@@ -408,9 +408,13 @@ export function pathsEqual(l: ElementPath | null, r: ElementPath | null): boolea
   }
 }
 
-export function containsPath(path: ElementPath | null, paths: Array<ElementPath>): boolean {
-  const matchesPath = (p: ElementPath) => pathsEqual(path, p)
-  return paths.some(matchesPath)
+export function containsPath(path: ElementPath, paths: Array<ElementPath>): boolean {
+  for (const toCheck of paths) {
+    if (notNullPathsEqual(toCheck, path)) {
+      return true
+    }
+  }
+  return false
 }
 
 export function filterPaths(paths: ElementPath[], pathsToFilter: ElementPath[]): ElementPath[] {

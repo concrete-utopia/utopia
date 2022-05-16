@@ -413,6 +413,7 @@ function renderJSXElement(
 
   if (
     elementPath != null &&
+    staticElementPathForGeneratedElement != null &&
     EP.containsPath(staticElementPathForGeneratedElement, staticValidPaths)
   ) {
     return buildSpyWrappedElement(
