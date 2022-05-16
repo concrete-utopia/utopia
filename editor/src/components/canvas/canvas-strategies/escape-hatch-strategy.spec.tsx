@@ -162,15 +162,18 @@ function dragBy15Pixels(
       commandDescriptions: null as any, // the strategy does not use this
       sortedApplicableStrategies: null as any, // the strategy does not use this
       startingMetadata: metadata,
+      customStrategyState: { foo: 'bar' },
     } as StrategyState,
   )
+
+  expect(strategyResult.customState).toBeNull()
 
   const finalEditor = foldAndApplyCommands(
     editorState,
     editorState,
     [],
     [],
-    strategyResult,
+    strategyResult.commands,
     'permanent',
   ).editorState
 

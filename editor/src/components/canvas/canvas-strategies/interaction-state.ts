@@ -14,7 +14,7 @@ import { EditorStatePatch } from '../../editor/store/editor-state'
 import { EdgePosition } from '../canvas-types'
 import { MoveIntoDragThreshold } from '../canvas-utils'
 import { CanvasCommand } from '../commands/commands'
-import { CanvasStrategy, CanvasStrategyId } from './canvas-strategy-types'
+import { CanvasStrategy, CanvasStrategyId, CustomStrategyState } from './canvas-strategy-types'
 
 export interface DragInteractionData {
   type: 'DRAG'
@@ -78,6 +78,7 @@ export interface StrategyState {
 
   // Checkpointed metadata at the point at which a strategy change has occurred.
   startingMetadata: ElementInstanceMetadataMap
+  customStrategyState: CustomStrategyState | null
 }
 
 export function createEmptyStrategyState(metadata?: ElementInstanceMetadataMap): StrategyState {
@@ -89,6 +90,7 @@ export function createEmptyStrategyState(metadata?: ElementInstanceMetadataMap):
     commandDescriptions: [],
     sortedApplicableStrategies: [],
     startingMetadata: metadata ?? {},
+    customStrategyState: null,
   }
 }
 

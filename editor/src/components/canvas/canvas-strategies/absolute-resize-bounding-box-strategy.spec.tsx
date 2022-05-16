@@ -58,10 +58,20 @@ function multiselectResizeElements(
       commandDescriptions: null as any, // the strategy does not use this
       sortedApplicableStrategies: null as any, // the strategy does not use this
       startingMetadata: metadata,
+      customStrategyState: { foo: 'bar' },
     } as StrategyState,
   )
-  return foldAndApplyCommands(initialEditor, initialEditor, [], [], strategyResult, 'permanent')
-    .editorState
+
+  expect(strategyResult.customState).toBeNull()
+
+  return foldAndApplyCommands(
+    initialEditor,
+    initialEditor,
+    [],
+    [],
+    strategyResult.commands,
+    'permanent',
+  ).editorState
 }
 
 const testMetadata: ElementInstanceMetadataMap = {
