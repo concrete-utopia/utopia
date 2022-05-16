@@ -80,15 +80,18 @@ function reparentElement(
           } as SpecialSizeMeasurements,
         } as ElementInstanceMetadata,
       },
+      customStrategyState: { foo: 'bar' },
     } as StrategyState,
   )
+
+  expect(strategyResult.customState).toBeNull()
 
   const finalEditor = foldAndApplyCommands(
     editorState,
     editorState,
     [],
     [],
-    strategyResult,
+    strategyResult.commands,
     'permanent',
   ).editorState
 

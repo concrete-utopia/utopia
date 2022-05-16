@@ -148,7 +148,10 @@ const testStrategy: CanvasStrategy = {
     interactionSession: InteractionSession,
     strategyState: StrategyState,
   ): StrategyApplicationResult {
-    return [wildcardPatch('permanent', { canvas: { scale: { $set: 100 } } })]
+    return {
+      commands: [wildcardPatch('permanent', { canvas: { scale: { $set: 100 } } })],
+      customState: { foo: 'bar' },
+    }
   },
 }
 
@@ -196,6 +199,9 @@ describe('interactionStart', () => {
           },
         ],
         "currentStrategyFitness": 10,
+        "customStrategyState": Object {
+          "foo": "bar",
+        },
         "sortedApplicableStrategies": Array [
           Object {
             "apply": [Function],
@@ -249,6 +255,7 @@ describe('interactionStart', () => {
         "currentStrategy": null,
         "currentStrategyCommands": Array [],
         "currentStrategyFitness": 0,
+        "customStrategyState": null,
         "sortedApplicableStrategies": Array [],
         "startingMetadata": Object {},
       }
@@ -307,6 +314,9 @@ describe('interactionUpdatex', () => {
           },
         ],
         "currentStrategyFitness": 10,
+        "customStrategyState": Object {
+          "foo": "bar",
+        },
         "sortedApplicableStrategies": Array [
           Object {
             "apply": [Function],
@@ -361,6 +371,7 @@ describe('interactionUpdatex', () => {
         "currentStrategy": null,
         "currentStrategyCommands": Array [],
         "currentStrategyFitness": 0,
+        "customStrategyState": null,
         "sortedApplicableStrategies": Array [],
         "startingMetadata": Object {},
       }
@@ -446,6 +457,9 @@ describe('interactionHardReset', () => {
           },
         ],
         "currentStrategyFitness": 10,
+        "customStrategyState": Object {
+          "foo": "bar",
+        },
         "sortedApplicableStrategies": Array [
           Object {
             "apply": [Function],
@@ -505,6 +519,7 @@ describe('interactionHardReset', () => {
         "currentStrategy": null,
         "currentStrategyCommands": Array [],
         "currentStrategyFitness": 0,
+        "customStrategyState": null,
         "sortedApplicableStrategies": Array [],
         "startingMetadata": Object {},
       }
@@ -652,6 +667,9 @@ describe('interactionUpdate with user changed strategy', () => {
           },
         ],
         "currentStrategyFitness": 10,
+        "customStrategyState": Object {
+          "foo": "bar",
+        },
         "sortedApplicableStrategies": Array [
           Object {
             "apply": [Function],
@@ -712,6 +730,7 @@ describe('interactionUpdate with user changed strategy', () => {
         "currentStrategy": null,
         "currentStrategyCommands": Array [],
         "currentStrategyFitness": 0,
+        "customStrategyState": null,
         "sortedApplicableStrategies": Array [],
         "startingMetadata": Object {},
       }

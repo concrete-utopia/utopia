@@ -1,20 +1,32 @@
+import { isHorizontalPoint } from 'utopia-api/core'
+import { getLayoutProperty } from '../../../core/layout/getLayoutProperty'
+import { framePointForPinnedProp, LayoutPinnedProp } from '../../../core/layout/layout-helpers-new'
 import { MetadataUtils } from '../../../core/model/element-metadata-utils'
 import { flatMapArray, mapDropNulls, stripNulls } from '../../../core/shared/array-utils'
+import { isRight, right } from '../../../core/shared/either'
 import * as EP from '../../../core/shared/element-path'
 import { ElementInstanceMetadataMap } from '../../../core/shared/element-template'
 import {
   asLocal,
+  CanvasRectangle,
   CanvasVector,
   LocalPoint,
   offsetRect,
   zeroCanvasRect,
 } from '../../../core/shared/math-utils'
 import { ElementPath } from '../../../core/shared/project-file-types'
+import { fastForEach } from '../../../core/shared/utils'
+import { getElementFromProjectContents } from '../../editor/store/editor-state'
+import { FullFrame, getFullFrame } from '../../frame'
 import { stylePropPathMappingFn } from '../../inspector/common/property-path-hooks'
 import { CanvasCommand } from '../commands/commands'
 import { convertToAbsolute } from '../commands/convert-to-absolute-command'
 import { setCssLengthProperty } from '../commands/set-css-length-command'
-import { CanvasStrategy } from './canvas-strategy-types'
+import {
+  CanvasStrategy,
+  emptyStrategyApplicationResult,
+  InteractionCanvasState,
+} from './canvas-strategy-types'
 
 export const escapeHatchStrategy: CanvasStrategy = {
   id: 'ESCAPE_HATCH_STRATEGY',
@@ -49,26 +61,32 @@ export const escapeHatchStrategy: CanvasStrategy = {
       const moveAndPositionCommands = collectMoveCommandsForSelectedElements(
         canvasState.selectedElements,
         strategyState.startingMetadata,
+        canvasState,
         interactionState.interactionData.drag,
       )
       const siblingCommands = collectSiblingCommands(
         canvasState.selectedElements,
         strategyState.startingMetadata,
+        canvasState,
       )
-      return [...moveAndPositionCommands, ...siblingCommands]
+      return {
+        commands: [...moveAndPositionCommands, ...siblingCommands],
+        customState: null,
+      }
     }
     // Fallback for when the checks above are not satisfied.
-    return []
+    return emptyStrategyApplicationResult
   },
 }
 
 function collectMoveCommandsForSelectedElements(
   selectedElements: Array<ElementPath>,
   metadata: ElementInstanceMetadataMap,
+  canvasState: InteractionCanvasState,
   dragDelta: CanvasVector | null,
 ): Array<CanvasCommand> {
   return flatMapArray(
-    (path) => collectSetLayoutPropCommands(path, metadata, dragDelta),
+    (path) => collectSetLayoutPropCommands(path, metadata, canvasState, dragDelta),
     selectedElements,
   )
 }
@@ -76,6 +94,7 @@ function collectMoveCommandsForSelectedElements(
 function collectSiblingCommands(
   selectedElements: Array<ElementPath>,
   metadata: ElementInstanceMetadataMap,
+  canvasState: InteractionCanvasState,
 ): Array<CanvasCommand> {
   const siblings = selectedElements
     .flatMap((path) => {
@@ -83,52 +102,114 @@ function collectSiblingCommands(
     })
     .filter((sibling) => selectedElements.every((path) => !EP.pathsEqual(path, sibling)))
 
-  return flatMapArray((path) => collectSetLayoutPropCommands(path, metadata, null), siblings)
+  return flatMapArray(
+    (path) => collectSetLayoutPropCommands(path, metadata, canvasState, null),
+    siblings,
+  )
 }
 
 function collectSetLayoutPropCommands(
   path: ElementPath,
   metadata: ElementInstanceMetadataMap,
+  canvasState: InteractionCanvasState,
   dragDelta: CanvasVector | null,
-) {
+): Array<CanvasCommand> {
   const frame = MetadataUtils.getFrame(path, metadata)
   if (frame != null) {
-    const margin = MetadataUtils.findElementByElementPath(metadata, path)?.specialSizeMeasurements
-      .margin
+    const specialSizeMeasurements = MetadataUtils.findElementByElementPath(
+      metadata,
+      path,
+    )?.specialSizeMeasurements
+    const parentFrame = specialSizeMeasurements?.immediateParentBounds ?? null
+    const margin = specialSizeMeasurements?.margin
     const marginPoint: LocalPoint = {
       x: -(margin?.left ?? 0),
       y: -(margin?.top ?? 0),
     } as LocalPoint
     const frameWithoutMargin = offsetRect(frame, marginPoint)
     const updatedFrame = offsetRect(frameWithoutMargin, asLocal(dragDelta ?? zeroCanvasRect))
-    return [
-      convertToAbsolute('permanent', path),
-      setCssLengthProperty(
-        'permanent',
-        path,
-        stylePropPathMappingFn('left', ['style']),
-        updatedFrame.x,
-      ),
-      setCssLengthProperty(
-        'permanent',
-        path,
-        stylePropPathMappingFn('top', ['style']),
-        updatedFrame.y,
-      ),
-      setCssLengthProperty(
-        'permanent',
-        path,
-        stylePropPathMappingFn('width', ['style']),
-        updatedFrame.width,
-      ),
-      setCssLengthProperty(
-        'permanent',
-        path,
-        stylePropPathMappingFn('height', ['style']),
-        updatedFrame.height,
-      ),
-    ]
+    const fullFrame = getFullFrame(updatedFrame)
+    const pinsToSet = filterPinsToSet(path, canvasState)
+
+    let commands: Array<CanvasCommand> = [convertToAbsolute('permanent', path)]
+    fastForEach(pinsToSet, (framePin) => {
+      const pinValue = pinValueToSet(framePin, fullFrame, parentFrame)
+      commands.push(
+        setCssLengthProperty(
+          'permanent',
+          path,
+          stylePropPathMappingFn(framePin, ['style']),
+          pinValue,
+          isHorizontalPoint(framePointForPinnedProp(framePin))
+            ? parentFrame?.width
+            : parentFrame?.height,
+        ),
+      )
+    })
+    return commands
   } else {
     return []
+  }
+}
+
+function filterPinsToSet(
+  path: ElementPath,
+  canvasState: InteractionCanvasState,
+): Array<LayoutPinnedProp> {
+  const element = getElementFromProjectContents(
+    path,
+    canvasState.projectContents,
+    canvasState.openFile,
+  )
+  if (element == null) {
+    return ['top', 'left', 'width', 'height']
+  } else {
+    const horizontalProps = (['left', 'right', 'width'] as Array<LayoutPinnedProp>).filter((p) => {
+      const prop = getLayoutProperty(p, right(element.props), ['style'])
+      return isRight(prop) && prop.value != null
+    })
+    const verticalProps = (['top', 'bottom', 'height'] as Array<LayoutPinnedProp>).filter((p) => {
+      const prop = getLayoutProperty(p, right(element.props), ['style'])
+      return isRight(prop) && prop.value != null
+    })
+
+    let pinsToSet: Array<LayoutPinnedProp> = []
+    if (horizontalProps.length === 0) {
+      pinsToSet.push('left', 'width')
+    } else if (horizontalProps.length === 1) {
+      if (horizontalProps[0] !== 'width') {
+        pinsToSet.push(...horizontalProps, 'width')
+      } else {
+        pinsToSet.push('left', 'width')
+      }
+    } else {
+      pinsToSet.push(...horizontalProps)
+    }
+    if (verticalProps.length === 0) {
+      pinsToSet.push('top', 'height')
+    } else if (verticalProps.length === 1) {
+      if (verticalProps[0] !== 'height') {
+        pinsToSet.push(...verticalProps, 'height')
+      } else {
+        pinsToSet.push('top', 'height')
+      }
+    } else {
+      pinsToSet.push(...verticalProps)
+    }
+    return pinsToSet
+  }
+}
+
+function pinValueToSet(
+  pin: LayoutPinnedProp,
+  fullFrame: FullFrame,
+  parentFrame: CanvasRectangle | null,
+) {
+  if (pin === 'right') {
+    return (parentFrame?.width ?? 0) - fullFrame[pin]
+  } else if (pin === 'bottom') {
+    return (parentFrame?.height ?? 0) - fullFrame[pin]
+  } else {
+    return fullFrame[pin]
   }
 }
