@@ -151,7 +151,7 @@ export function interactionHardReset(
         commandDescriptions: commandResult.commandDescriptions,
         sortedApplicableStrategies: sortedApplicableStrategies,
         startingMetadata: resetStrategyState.startingMetadata,
-        customStrategyState: strategyResult.customState,
+        customStrategyState: strategyResult.customState ?? result.strategyState.customStrategyState,
       }
 
       return {
@@ -286,7 +286,7 @@ export function interactionStart(
         commandDescriptions: commandResult.commandDescriptions,
         sortedApplicableStrategies: sortedApplicableStrategies,
         startingMetadata: newEditorState.canvas.interactionSession.metadata,
-        customStrategyState: strategyResult.customState,
+        customStrategyState: strategyResult.customState ?? result.strategyState.customStrategyState,
       }
 
       return {
@@ -372,7 +372,7 @@ function handleUserChangedStrategy(
       commandDescriptions: commandResult.commandDescriptions,
       sortedApplicableStrategies: sortedApplicableStrategies,
       startingMetadata: strategyState.startingMetadata,
-      customStrategyState: strategyResult.customState,
+      customStrategyState: strategyResult.customState ?? strategyState.customStrategyState,
     }
 
     return {
@@ -428,7 +428,7 @@ function handleAccumulatingKeypresses(
       commandDescriptions: commandResult.commandDescriptions,
       sortedApplicableStrategies: sortedApplicableStrategies,
       startingMetadata: strategyState.startingMetadata,
-      customStrategyState: strategyResult.customState,
+      customStrategyState: strategyResult.customState ?? strategyState.customStrategyState,
     }
 
     return {
@@ -484,7 +484,7 @@ function handleUpdate(
       commandDescriptions: commandResult.commandDescriptions,
       sortedApplicableStrategies: sortedApplicableStrategies,
       startingMetadata: strategyState.startingMetadata,
-      customStrategyState: strategyResult.customState,
+      customStrategyState: strategyResult.customState ?? strategyState.customStrategyState,
     }
     return {
       unpatchedEditorState: newEditorState,

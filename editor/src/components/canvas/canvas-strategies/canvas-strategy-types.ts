@@ -8,9 +8,13 @@ import { InteractionSession, StrategyState } from './interaction-state'
 // TODO: fill this in, maybe make it an ADT for different strategies
 export interface CustomStrategyState {}
 
+export function defaultCustomStrategyState(): CustomStrategyState {
+  return {}
+}
+
 export interface StrategyApplicationResult {
   commands: Array<CanvasCommand>
-  customState: CustomStrategyState | null
+  customState: CustomStrategyState | null // null means the previous custom strategy state should be kept
 }
 
 export const emptyStrategyApplicationResult = {
