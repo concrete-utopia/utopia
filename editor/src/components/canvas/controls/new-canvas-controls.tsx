@@ -443,10 +443,6 @@ const NewCanvasControlsInner = (props: NewCanvasControlsInnerProps) => {
         isFeatureEnabled('Canvas Strategies'),
         <>{strategyControls.map((c) => React.createElement(c.control, { key: c.key }))}</>,
       )}
-      {when(
-        isFeatureEnabled('Canvas Strategies'),
-        <FlexResizeControl localSelectedElements={localSelectedViews} />,
-      )}
     </div>
   )
 }
