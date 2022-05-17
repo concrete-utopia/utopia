@@ -24,7 +24,7 @@ export const SceneComponent = React.memo(
       boxShadow: canvasIsLive
         ? UtopiaStyles.scene.live.boxShadow
         : UtopiaStyles.scene.editing.boxShadow,
-      ...style, // TODO Emotion and React 18 types don't like each other
+      ...style,
     }
 
     // TODO right now we don't actually change the invalidated paths, just let the dom-walker know it should walk again
