@@ -1,3 +1,5 @@
+jest.spyOn(Date, 'now').mockReturnValue(new Date(1000).getTime())
+
 import create from 'zustand'
 import { subscribeWithSelector } from 'zustand/middleware'
 import { createBuiltInDependenciesList } from '../../../core/es-modules/package-manager/built-in-dependencies-list'
@@ -201,7 +203,7 @@ describe('interactionStart', () => {
         ],
         "currentStrategyFitness": 10,
         "customStrategyState": Object {
-          "foo": "bar",
+          "timerFinished": false,
         },
         "sortedApplicableStrategies": Array [
           Object {
@@ -227,6 +229,7 @@ describe('interactionStart', () => {
           "y": 200,
         },
         "dragThresholdPassed": false,
+        "globalTime": 1000,
         "modifiers": Object {
           "alt": false,
           "cmd": false,
@@ -256,7 +259,9 @@ describe('interactionStart', () => {
         "currentStrategy": null,
         "currentStrategyCommands": Array [],
         "currentStrategyFitness": 0,
-        "customStrategyState": Object {},
+        "customStrategyState": Object {
+          "timerFinished": false,
+        },
         "sortedApplicableStrategies": Array [],
         "startingMetadata": Object {},
       }
@@ -316,7 +321,7 @@ describe('interactionUpdatex', () => {
         ],
         "currentStrategyFitness": 10,
         "customStrategyState": Object {
-          "foo": "bar",
+          "timerFinished": false,
         },
         "sortedApplicableStrategies": Array [
           Object {
@@ -342,6 +347,7 @@ describe('interactionUpdatex', () => {
           "y": 200,
         },
         "dragThresholdPassed": false,
+        "globalTime": 1000,
         "modifiers": Object {
           "alt": false,
           "cmd": false,
@@ -372,7 +378,9 @@ describe('interactionUpdatex', () => {
         "currentStrategy": null,
         "currentStrategyCommands": Array [],
         "currentStrategyFitness": 0,
-        "customStrategyState": Object {},
+        "customStrategyState": Object {
+          "timerFinished": false,
+        },
         "sortedApplicableStrategies": Array [],
         "startingMetadata": Object {},
       }
@@ -459,7 +467,7 @@ describe('interactionHardReset', () => {
         ],
         "currentStrategyFitness": 10,
         "customStrategyState": Object {
-          "foo": "bar",
+          "timerFinished": false,
         },
         "sortedApplicableStrategies": Array [
           Object {
@@ -488,6 +496,7 @@ describe('interactionHardReset', () => {
           "y": 210,
         },
         "dragThresholdPassed": false,
+        "globalTime": 1000,
         "modifiers": Object {
           "alt": false,
           "cmd": false,
@@ -520,7 +529,9 @@ describe('interactionHardReset', () => {
         "currentStrategy": null,
         "currentStrategyCommands": Array [],
         "currentStrategyFitness": 0,
-        "customStrategyState": Object {},
+        "customStrategyState": Object {
+          "timerFinished": false,
+        },
         "sortedApplicableStrategies": Array [],
         "startingMetadata": Object {},
       }
@@ -669,7 +680,7 @@ describe('interactionUpdate with user changed strategy', () => {
         ],
         "currentStrategyFitness": 10,
         "customStrategyState": Object {
-          "foo": "bar",
+          "timerFinished": false,
         },
         "sortedApplicableStrategies": Array [
           Object {
@@ -698,6 +709,7 @@ describe('interactionUpdate with user changed strategy', () => {
           "y": 210,
         },
         "dragThresholdPassed": false,
+        "globalTime": 1000,
         "modifiers": Object {
           "alt": false,
           "cmd": false,
@@ -731,7 +743,9 @@ describe('interactionUpdate with user changed strategy', () => {
         "currentStrategy": null,
         "currentStrategyCommands": Array [],
         "currentStrategyFitness": 0,
-        "customStrategyState": Object {},
+        "customStrategyState": Object {
+          "timerFinished": false,
+        },
         "sortedApplicableStrategies": Array [],
         "startingMetadata": Object {},
       }
