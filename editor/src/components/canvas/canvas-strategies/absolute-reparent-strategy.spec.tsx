@@ -14,6 +14,7 @@ import {
 } from '../ui-jsx.test-utils'
 import { absoluteReparentStrategy } from './absolute-reparent-strategy'
 import { pickCanvasStateFromEditorState } from './canvas-strategies'
+import { defaultCustomStrategyState } from './canvas-strategy-types'
 import { InteractionSession, StrategyState } from './interaction-state'
 import { createMouseInteractionForTests } from './interaction-state.test-utils'
 
@@ -80,7 +81,7 @@ function reparentElement(
           } as SpecialSizeMeasurements,
         } as ElementInstanceMetadata,
       },
-      customStrategyState: { foo: 'bar' },
+      customStrategyState: defaultCustomStrategyState(),
     } as StrategyState,
   )
 

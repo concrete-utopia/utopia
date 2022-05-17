@@ -14,6 +14,7 @@ import {
   testPrintCodeFromEditorState,
 } from '../ui-jsx.test-utils'
 import { pickCanvasStateFromEditorState } from './canvas-strategies'
+import { defaultCustomStrategyState } from './canvas-strategy-types'
 import { flexReorderStrategy } from './flex-reorder-strategy'
 import { InteractionSession, StrategyState } from './interaction-state'
 import { createMouseInteractionForTests } from './interaction-state.test-utils'
@@ -139,7 +140,7 @@ function reorderElement(
       commandDescriptions: null as any, // the strategy does not use this
       sortedApplicableStrategies: null as any, // the strategy does not use this
       startingMetadata: metadata,
-      customStrategyState: { foo: 'bar' },
+      customStrategyState: defaultCustomStrategyState(),
     } as StrategyState,
   )
 

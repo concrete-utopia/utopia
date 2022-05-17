@@ -38,6 +38,7 @@ import {
 import {
   CanvasStrategy,
   CanvasStrategyId,
+  defaultCustomStrategyState,
   InteractionCanvasState,
   StrategyApplicationResult,
 } from '../../canvas/canvas-strategies/canvas-strategy-types'
@@ -150,7 +151,7 @@ const testStrategy: CanvasStrategy = {
   ): StrategyApplicationResult {
     return {
       commands: [wildcardPatch('permanent', { canvas: { scale: { $set: 100 } } })],
-      customState: { foo: 'bar' },
+      customState: defaultCustomStrategyState(),
     }
   },
 }
