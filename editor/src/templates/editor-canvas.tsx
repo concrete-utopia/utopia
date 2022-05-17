@@ -293,6 +293,7 @@ function on(
   return additionalEvents
 }
 
+let interactionSessionTimerHandle: any = undefined
 export function runLocalCanvasAction(
   dispatch: EditorDispatch,
   model: EditorState,
@@ -366,6 +367,10 @@ export function runLocalCanvasAction(
       }
     }
     case 'CREATE_INTERACTION_SESSION':
+      clearInterval(interactionSessionTimerHandle)
+      interactionSessionTimerHandle = setInterval(() => {
+        dispatch([CanvasActions.updateDragInteractionData({ globalTime: Date.now() })])
+      }, 200)
       return {
         ...model,
         canvas: {
@@ -377,6 +382,7 @@ export function runLocalCanvasAction(
         },
       }
     case 'CLEAR_INTERACTION_SESSION':
+      clearInterval(interactionSessionTimerHandle)
       const metadataToKeep =
         action.applyChanges && model.canvas.interactionSession != null
           ? model.canvas.interactionSession.metadata
@@ -401,6 +407,27 @@ export function runLocalCanvasAction(
             interactionSession: {
               ...model.canvas.interactionSession,
               ...action.interactionSessionUpdate,
+            },
+          },
+        }
+      }
+    case 'UPDATE_DRAG_INTERACTION_DATA':
+      if (
+        model.canvas.interactionSession == null ||
+        model.canvas.interactionSession.interactionData.type === 'KEYBOARD'
+      ) {
+        return model
+      } else {
+        return {
+          ...model,
+          canvas: {
+            ...model.canvas,
+            interactionSession: {
+              ...model.canvas.interactionSession,
+              interactionData: {
+                ...model.canvas.interactionSession.interactionData,
+                ...action.dragInteractionUpdate,
+              },
             },
           },
         }

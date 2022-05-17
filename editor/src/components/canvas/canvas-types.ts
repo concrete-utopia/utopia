@@ -25,6 +25,7 @@ import {
   LayoutTargetableProp,
 } from '../../core/layout/layout-helpers-new'
 import {
+  DragInteractionData,
   InteractionSession,
   InteractionSessionWithoutMetadata,
 } from './canvas-strategies/interaction-state'
@@ -659,6 +660,11 @@ export interface UpdateInteractionSession {
   interactionSessionUpdate: Partial<InteractionSession>
 }
 
+export interface UpdateDragInteractionData {
+  action: 'UPDATE_DRAG_INTERACTION_DATA'
+  dragInteractionUpdate: Partial<DragInteractionData>
+}
+
 type SetSelectionControlsVisibility = {
   action: 'SET_SELECTION_CONTROLS_VISIBILITY'
   selectionControlsVisible: boolean
@@ -688,6 +694,7 @@ export type CanvasAction =
   | CreateInteractionSession
   | ClearInteractionSession
   | UpdateInteractionSession
+  | UpdateDragInteractionData
   | Zoom
   | ZoomUI
   | SetSelectionControlsVisibility

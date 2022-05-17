@@ -29,6 +29,7 @@ export interface DragInteractionData {
   dragThresholdPassed: boolean
   originalDragStart: CanvasPoint
   modifiers: Modifiers
+  globalTime: number
 }
 
 interface KeyboardInteractionData {
@@ -113,6 +114,7 @@ export function createInteractionViaMouse(
       dragThresholdPassed: false,
       originalDragStart: mouseDownPoint,
       modifiers: modifiers,
+      globalTime: Date.now(),
     },
     activeControl: activeControl,
     sourceOfUpdate: activeControl,
@@ -146,6 +148,7 @@ export function updateInteractionViaMouse(
         dragThresholdPassed: dragThresholdPassed,
         originalDragStart: currentState.interactionData.originalDragStart,
         modifiers: modifiers,
+        globalTime: Date.now(),
       },
       activeControl: currentState.activeControl,
       sourceOfUpdate: sourceOfUpdate ?? currentState.activeControl,
@@ -214,6 +217,7 @@ export function updateInteractionViaKeyboard(
           dragThresholdPassed: currentState.interactionData.dragThresholdPassed,
           originalDragStart: currentState.interactionData.originalDragStart,
           modifiers: modifiers,
+          globalTime: Date.now(),
         },
         activeControl: currentState.activeControl,
         sourceOfUpdate: currentState.activeControl,

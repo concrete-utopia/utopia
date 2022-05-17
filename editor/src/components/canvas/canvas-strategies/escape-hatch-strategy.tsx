@@ -11,7 +11,10 @@ import {
   CanvasRectangle,
   CanvasVector,
   LocalPoint,
+  offsetPoint,
   offsetRect,
+  rectContainsPoint,
+  zeroCanvasPoint,
   zeroCanvasRect,
 } from '../../../core/shared/math-utils'
 import { ElementPath } from '../../../core/shared/project-file-types'
@@ -22,11 +25,14 @@ import { stylePropPathMappingFn } from '../../inspector/common/property-path-hoo
 import { CanvasCommand } from '../commands/commands'
 import { convertToAbsolute } from '../commands/convert-to-absolute-command'
 import { setCssLengthProperty } from '../commands/set-css-length-command'
+import { DragOutlineControl } from '../controls/select-mode/drag-outline-control'
+import { AnimationTimer, PieTimerControl } from '../controls/select-mode/pie-timer'
 import {
   CanvasStrategy,
   emptyStrategyApplicationResult,
   InteractionCanvasState,
 } from './canvas-strategy-types'
+import { DragInteractionData, StrategyState } from './interaction-state'
 
 export const escapeHatchStrategy: CanvasStrategy = {
   id: 'ESCAPE_HATCH_STRATEGY',
@@ -35,13 +41,30 @@ export const escapeHatchStrategy: CanvasStrategy = {
     if (canvasState.selectedElements.length > 0) {
       return canvasState.selectedElements.every((element) => {
         const elementMetadata = MetadataUtils.findElementByElementPath(metadata, element)
-        return elementMetadata?.specialSizeMeasurements.position === 'static'
+        return (
+          elementMetadata?.specialSizeMeasurements.position === 'static' ||
+          MetadataUtils.isParentYogaLayoutedContainerAndElementParticipatesInLayout(
+            element,
+            metadata,
+          )
+        )
       })
     } else {
       return false
     }
   },
-  controlsToRender: [],
+  controlsToRender: [
+    {
+      control: DragOutlineControl,
+      key: 'ghost-outline-control',
+      show: 'visible-only-while-active',
+    },
+    {
+      control: PieTimerControl,
+      key: 'pie-timer-control',
+      show: 'visible-only-while-active',
+    },
+  ],
   fitness: (canvasState, interactionState, strategyState) => {
     return escapeHatchStrategy.isApplicable(
       canvasState,
@@ -49,29 +72,43 @@ export const escapeHatchStrategy: CanvasStrategy = {
       strategyState.startingMetadata,
     ) &&
       interactionState.interactionData.type === 'DRAG' &&
-      interactionState.activeControl.type === 'BOUNDING_AREA'
-      ? 1
+      interactionState.activeControl.type === 'BOUNDING_AREA' &&
+      escapeHatchAllowed(canvasState, interactionState.interactionData, strategyState)
+      ? 2
       : 0
   },
   apply: (canvasState, interactionState, strategyState) => {
     if (interactionState.interactionData.type === 'DRAG') {
-      // TODO if the element has siblings the escape hatch is triggered when pulled outside of the parent bounds
-      // without siblings it's automatically converted
-      // TODO timer
-      const moveAndPositionCommands = collectMoveCommandsForSelectedElements(
-        canvasState.selectedElements,
-        strategyState.startingMetadata,
-        canvasState,
-        interactionState.interactionData.drag,
-      )
-      const siblingCommands = collectSiblingCommands(
-        canvasState.selectedElements,
-        strategyState.startingMetadata,
-        canvasState,
-      )
-      return {
-        commands: [...moveAndPositionCommands, ...siblingCommands],
-        customState: null,
+      let escapeHatchActivated = strategyState.customStrategyState.escapeHatchActivated ?? false
+      if (
+        interactionState.interactionData.globalTime - interactionState.lastInteractionTime >
+        AnimationTimer
+      ) {
+        escapeHatchActivated = true
+      }
+      if (escapeHatchActivated) {
+        const moveAndPositionCommands = collectMoveCommandsForSelectedElements(
+          canvasState.selectedElements,
+          strategyState.startingMetadata,
+          canvasState,
+          interactionState.interactionData.drag,
+        )
+        const siblingCommands = collectSiblingCommands(
+          canvasState.selectedElements,
+          strategyState.startingMetadata,
+          canvasState,
+        )
+        return {
+          commands: [...moveAndPositionCommands, ...siblingCommands],
+          customState: {
+            escapeHatchActivated,
+          },
+        }
+      } else {
+        return {
+          commands: [],
+          customState: null,
+        }
       }
     }
     // Fallback for when the checks above are not satisfied.
@@ -211,5 +248,38 @@ function pinValueToSet(
     return (parentFrame?.height ?? 0) - fullFrame[pin]
   } else {
     return fullFrame[pin]
+  }
+}
+
+function escapeHatchAllowed(
+  canvasState: InteractionCanvasState,
+  interactionData: DragInteractionData,
+  strategyState: StrategyState,
+): boolean {
+  // flex children with siblings switches to escape hatch when the cursor reaches the parent bounds
+  // for flow elements and flex child without siblings the conversion automatically starts on drag
+  if (strategyState.customStrategyState.escapeHatchActivated) {
+    return true
+  }
+  const selectedElementsHaveSiblingsAndFlex = canvasState.selectedElements.some((path) => {
+    return (
+      MetadataUtils.isParentYogaLayoutedContainerAndElementParticipatesInLayout(
+        path,
+        strategyState.startingMetadata,
+      ) && MetadataUtils.getSiblings(strategyState.startingMetadata, path).length > 1
+    )
+  })
+  if (selectedElementsHaveSiblingsAndFlex) {
+    const cursorPosition = offsetPoint(
+      interactionData.dragStart,
+      interactionData.drag ?? zeroCanvasPoint,
+    )
+    const parentBounds = mapDropNulls((path) => {
+      return MetadataUtils.findElementByElementPath(strategyState.startingMetadata, path)
+        ?.specialSizeMeasurements.immediateParentBounds
+    }, canvasState.selectedElements)
+    return parentBounds.some((frame) => !rectContainsPoint(frame, cursorPosition))
+  } else {
+    return true
   }
 }

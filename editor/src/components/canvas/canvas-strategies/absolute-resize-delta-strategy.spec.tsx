@@ -15,6 +15,7 @@ import {
 } from '../ui-jsx.test-utils'
 import { absoluteResizeDeltaStrategy } from './absolute-resize-delta-strategy'
 import { pickCanvasStateFromEditorState } from './canvas-strategies'
+import { defaultCustomStrategyState } from './canvas-strategy-types'
 import { StrategyState } from './interaction-state'
 import { createMouseInteractionForTests } from './interaction-state.test-utils'
 
@@ -43,7 +44,7 @@ function resizeElement(editor: EditorState, edgePosition: EdgePosition): EditorS
           } as SpecialSizeMeasurements,
         } as ElementInstanceMetadata,
       },
-      customStrategyState: { foo: 'bar' },
+      customStrategyState: defaultCustomStrategyState(),
     } as StrategyState,
   )
 

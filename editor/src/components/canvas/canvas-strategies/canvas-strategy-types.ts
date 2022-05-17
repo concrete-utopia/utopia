@@ -6,10 +6,14 @@ import { CanvasCommand } from '../commands/commands'
 import { InteractionSession, StrategyState } from './interaction-state'
 
 // TODO: fill this in, maybe make it an ADT for different strategies
-export interface CustomStrategyState {}
+export interface CustomStrategyState {
+  escapeHatchActivated: boolean
+}
 
 export function defaultCustomStrategyState(): CustomStrategyState {
-  return {}
+  return {
+    escapeHatchActivated: false,
+  }
 }
 
 export interface StrategyApplicationResult {
