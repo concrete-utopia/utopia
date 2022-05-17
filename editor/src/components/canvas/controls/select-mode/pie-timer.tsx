@@ -164,17 +164,13 @@ export function useApplyCursorPositionToStyle(): React.RefObject<HTMLDivElement>
 
   useSelectorWithCallback((store) => {
     if (store.editor.canvas.interactionSession?.interactionData.type === 'DRAG') {
-      if (store.editor.canvas.interactionSession?.interactionData.type === 'DRAG') {
-        if (store.editor.canvas.interactionSession.interactionData.drag != null) {
-          return offsetPoint(
-            store.editor.canvas.interactionSession.interactionData.dragStart,
-            store.editor.canvas.interactionSession.interactionData.drag,
-          )
-        } else {
-          return store.editor.canvas.interactionSession.interactionData.dragStart
-        }
+      if (store.editor.canvas.interactionSession.interactionData.drag != null) {
+        return offsetPoint(
+          store.editor.canvas.interactionSession.interactionData.dragStart,
+          store.editor.canvas.interactionSession.interactionData.drag,
+        )
       } else {
-        return null
+        return store.editor.canvas.interactionSession.interactionData.dragStart
       }
     } else {
       return null
