@@ -164,7 +164,7 @@ function dragBy15Pixels(
       sortedApplicableStrategies: null as any, // the strategy does not use this
       startingMetadata: metadata,
       customStrategyState: {
-        timerFinished: true,
+        escapeHatchActivated: true,
       },
     } as StrategyState,
   )

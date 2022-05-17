@@ -203,7 +203,7 @@ describe('interactionStart', () => {
         ],
         "currentStrategyFitness": 10,
         "customStrategyState": Object {
-          "timerFinished": false,
+          "escapeHatchActivated": false,
         },
         "sortedApplicableStrategies": Array [
           Object {
@@ -260,7 +260,7 @@ describe('interactionStart', () => {
         "currentStrategyCommands": Array [],
         "currentStrategyFitness": 0,
         "customStrategyState": Object {
-          "timerFinished": false,
+          "escapeHatchActivated": false,
         },
         "sortedApplicableStrategies": Array [],
         "startingMetadata": Object {},
@@ -321,7 +321,7 @@ describe('interactionUpdatex', () => {
         ],
         "currentStrategyFitness": 10,
         "customStrategyState": Object {
-          "timerFinished": false,
+          "escapeHatchActivated": false,
         },
         "sortedApplicableStrategies": Array [
           Object {
@@ -379,7 +379,7 @@ describe('interactionUpdatex', () => {
         "currentStrategyCommands": Array [],
         "currentStrategyFitness": 0,
         "customStrategyState": Object {
-          "timerFinished": false,
+          "escapeHatchActivated": false,
         },
         "sortedApplicableStrategies": Array [],
         "startingMetadata": Object {},
@@ -467,7 +467,7 @@ describe('interactionHardReset', () => {
         ],
         "currentStrategyFitness": 10,
         "customStrategyState": Object {
-          "timerFinished": false,
+          "escapeHatchActivated": false,
         },
         "sortedApplicableStrategies": Array [
           Object {
@@ -530,7 +530,7 @@ describe('interactionHardReset', () => {
         "currentStrategyCommands": Array [],
         "currentStrategyFitness": 0,
         "customStrategyState": Object {
-          "timerFinished": false,
+          "escapeHatchActivated": false,
         },
         "sortedApplicableStrategies": Array [],
         "startingMetadata": Object {},
@@ -680,7 +680,7 @@ describe('interactionUpdate with user changed strategy', () => {
         ],
         "currentStrategyFitness": 10,
         "customStrategyState": Object {
-          "timerFinished": false,
+          "escapeHatchActivated": false,
         },
         "sortedApplicableStrategies": Array [
           Object {
@@ -744,7 +744,7 @@ describe('interactionUpdate with user changed strategy', () => {
         "currentStrategyCommands": Array [],
         "currentStrategyFitness": 0,
         "customStrategyState": Object {
-          "timerFinished": false,
+          "escapeHatchActivated": false,
         },
         "sortedApplicableStrategies": Array [],
         "startingMetadata": Object {},

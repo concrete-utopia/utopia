@@ -7,12 +7,12 @@ import { InteractionSession, StrategyState } from './interaction-state'
 
 // TODO: fill this in, maybe make it an ADT for different strategies
 export interface CustomStrategyState {
-  timerFinished: boolean
+  escapeHatchActivated: boolean
 }
 
 export function defaultCustomStrategyState(): CustomStrategyState {
   return {
-    timerFinished: false,
+    escapeHatchActivated: false,
   }
 }
 
