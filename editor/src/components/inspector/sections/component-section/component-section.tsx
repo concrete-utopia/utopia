@@ -187,7 +187,7 @@ function getLabelControlStyle(
 }
 
 interface RowForBaseControlProps extends AbstractRowForControlProps {
-  label?: React.ComponentType<any> // TODO Before Merge this probably should not be a component
+  label?: React.ComponentType<React.PropsWithChildren<any>> // TODO Before Merge this probably should not be a component
   controlDescription: BaseControlDescription
 }
 

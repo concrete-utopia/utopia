@@ -20,7 +20,9 @@ export type SliderControlProps = DEPRECATEDControlProps<number> & {
   DEPRECATED_controlOptions: DEPRECATEDSliderControlOptions
 }
 
-export const SliderControl: React.FunctionComponent<SliderControlProps> = (props) => {
+export const SliderControl: React.FunctionComponent<React.PropsWithChildren<SliderControlProps>> = (
+  props,
+) => {
   const [isSliding, setIsSliding] = React.useState(false)
 
   const handleBeforeChange = React.useCallback(() => {

@@ -551,6 +551,7 @@ class ResizePoint extends React.Component<ResizePointProps> {
 }
 
 interface ResizeRectangleProps {
+  children?: React.ReactNode
   targetComponentMetadata: ElementInstanceMetadata | null
   dispatch: EditorDispatch
   scale: number

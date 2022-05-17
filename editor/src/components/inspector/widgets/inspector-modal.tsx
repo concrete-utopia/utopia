@@ -17,7 +17,9 @@ export type InspectorModalProps = {
 
 const padding = 16
 
-export const InspectorModal: React.FunctionComponent<InspectorModalProps> = ({
+export const InspectorModal: React.FunctionComponent<
+  React.PropsWithChildren<InspectorModalProps>
+> = ({
   offsetX,
   offsetY,
   portalTarget = document.getElementById(PortalTargetID) as HTMLElement,

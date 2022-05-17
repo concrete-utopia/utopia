@@ -22,7 +22,7 @@ export const ImageThumbnailControl = React.memo<ImageThumbnailControlProps>((pro
   const closePopup = React.useCallback(() => setOpenPopup(undefined), [setOpenPopup])
 
   const backgroundIndex = props.backgroundIndex
-  const onMouseDown = React.useCallback(
+  const onMouseDown: React.MouseEventHandler<HTMLDivElement> = React.useCallback(
     (e) => {
       e.stopPropagation()
       setOpenPopup((openPopup) => {

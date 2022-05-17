@@ -1,5 +1,5 @@
 import React from 'react'
-import { renderHook } from '@testing-library/react-hooks'
+import { renderHook } from '@testing-library/react'
 import { EditorStateContext } from '../../editor/store/store-hook'
 import { useGetPropertyControlsForSelectedComponents } from './property-controls-hooks'
 import { InspectorCallbackContext, InspectorCallbackContextData } from './property-path-hooks'

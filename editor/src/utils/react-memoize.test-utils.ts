@@ -33,9 +33,9 @@ export function setupReactWhyDidYouRender(verbose: boolean = false) {
   ]
 }
 
-export function enableWhyDidYouRenderOnComponent<T extends React.ComponentType<any>>(
-  component: T,
-): T {
+export function enableWhyDidYouRenderOnComponent<
+  T extends React.ComponentType<React.PropsWithChildren<any>>,
+>(component: T): T {
   ;(component as any).whyDidYouRender = true
   return component
 }

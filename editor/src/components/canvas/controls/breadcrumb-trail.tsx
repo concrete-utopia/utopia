@@ -23,7 +23,7 @@ export const BreadcrumbTrail = React.memo(() => {
   }, 'TopMenuContextProvider')
 
   const onSelect = React.useCallback(
-    (path) => dispatch([selectComponents([path], false)], 'everyone'),
+    (path: ElementPath) => dispatch([selectComponents([path], false)], 'everyone'),
     [dispatch],
   )
 

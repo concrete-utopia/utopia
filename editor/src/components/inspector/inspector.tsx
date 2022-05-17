@@ -362,19 +362,20 @@ Inspector.displayName = 'Inspector'
 
 const DefaultStyleTargets: Array<CSSTarget> = [cssTarget(['style'], 0), cssTarget(['css'], 0)]
 
-export const InspectorEntryPoint: React.FunctionComponent = React.memo(() => {
-  const selectedViews = useEditorState(
-    (store) => store.editor.selectedViews,
-    'InspectorEntryPoint selectedViews',
-  )
+export const InspectorEntryPoint: React.FunctionComponent<React.PropsWithChildren<unknown>> =
+  React.memo(() => {
+    const selectedViews = useEditorState(
+      (store) => store.editor.selectedViews,
+      'InspectorEntryPoint selectedViews',
+    )
 
-  return (
-    <SingleInspectorEntryPoint
-      key={'inspector-entry-selected-views'}
-      selectedViews={selectedViews}
-    />
-  )
-})
+    return (
+      <SingleInspectorEntryPoint
+        key={'inspector-entry-selected-views'}
+        selectedViews={selectedViews}
+      />
+    )
+  })
 
 function updateTargets(localJSXElement: JSXElement): Array<CSSTarget> {
   let localTargets: Array<CSSTarget> = []
@@ -409,9 +410,11 @@ function updateTargets(localJSXElement: JSXElement): Array<CSSTarget> {
   return localTargets
 }
 
-export const SingleInspectorEntryPoint: React.FunctionComponent<{
-  selectedViews: Array<ElementPath>
-}> = React.memo((props) => {
+export const SingleInspectorEntryPoint: React.FunctionComponent<
+  React.PropsWithChildren<{
+    selectedViews: Array<ElementPath>
+  }>
+> = React.memo((props) => {
   const { selectedViews } = props
   const { dispatch, jsxMetadata, isUIJSFile } = useEditorState((store) => {
     return {
