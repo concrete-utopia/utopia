@@ -107,9 +107,7 @@ export const escapeHatchStrategy: CanvasStrategy = {
       } else {
         return {
           commands: [],
-          customState: {
-            escapeHatchActivated: false,
-          },
+          customState: null,
         }
       }
     }
