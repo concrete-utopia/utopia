@@ -157,9 +157,7 @@ export function updateInteractionViaMouse(
       startedAt: currentState.startedAt,
     }
   } else {
-    return {
-      ...currentState,
-    }
+    return currentState
   }
 }
 
