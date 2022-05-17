@@ -109,7 +109,6 @@ class ProjectCard extends React.Component<ProjectCardProps> {
                 fontSize: 11,
                 display: 'inline-block',
                 wordWrap: 'break-word',
-                marginTop: 0,
               }}
             >
               <span className='timeago'>Last edited about {timeago.format(modifiedAt)}</span>
