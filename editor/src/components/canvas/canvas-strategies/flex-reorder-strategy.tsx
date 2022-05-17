@@ -12,6 +12,7 @@ import {
 } from '../../../core/shared/math-utils'
 import * as EP from '../../../core/shared/element-path'
 import { reverse, stripNulls } from '../../../core/shared/array-utils'
+import { DragOutlineControl } from '../controls/select-mode/drag-outline-control'
 
 export const flexReorderStrategy: CanvasStrategy = {
   id: 'FLEX_REORDER',
@@ -26,7 +27,13 @@ export const flexReorderStrategy: CanvasStrategy = {
       return false
     }
   },
-  controlsToRender: [], // Uses existing hooks in select-mode-hooks.tsx
+  controlsToRender: [
+    {
+      control: DragOutlineControl,
+      key: 'ghost-outline-control',
+      show: 'visible-only-while-active',
+    },
+  ],
   fitness: (canvasState, interactionState, sessionState) => {
     return flexReorderStrategy.isApplicable(
       canvasState,
