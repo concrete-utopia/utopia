@@ -1,5 +1,3 @@
-jest.spyOn(Date, 'now').mockReturnValue(new Date(1000).getTime())
-
 import create from 'zustand'
 import { subscribeWithSelector } from 'zustand/middleware'
 import { createBuiltInDependenciesList } from '../../../core/es-modules/package-manager/built-in-dependencies-list'
@@ -47,6 +45,14 @@ import {
 import { canvasPoint } from '../../../core/shared/math-utils'
 import { wildcardPatch } from '../../canvas/commands/wildcard-patch-command'
 import { runCanvasCommand } from '../../canvas/commands/commands'
+
+beforeAll(() => {
+  return jest.spyOn(Date, 'now').mockReturnValue(new Date(1000).getTime())
+})
+
+afterAll(() => {
+  return jest.clearAllMocks()
+})
 
 function createEditorStore(
   interactionSession: InteractionSessionWithoutMetadata | null,
