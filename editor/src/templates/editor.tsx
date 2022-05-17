@@ -320,11 +320,13 @@ export class Editor {
   }
 }
 
-export const EditorRoot: React.FunctionComponent<{
-  api: UtopiaStoreAPI
-  useStore: UtopiaStoreHook
-  spyCollector: UiJsxCanvasContextData
-}> = ({ api, useStore, spyCollector }) => {
+export const EditorRoot: React.FunctionComponent<
+  React.PropsWithChildren<{
+    api: UtopiaStoreAPI
+    useStore: UtopiaStoreHook
+    spyCollector: UiJsxCanvasContextData
+  }>
+> = ({ api, useStore, spyCollector }) => {
   return (
     <EditorStateContext.Provider value={{ api, useStore }}>
       <UiJsxCanvasCtxAtom.Provider value={spyCollector}>
@@ -336,11 +338,13 @@ export const EditorRoot: React.FunctionComponent<{
 
 EditorRoot.displayName = 'Utopia Editor Root'
 
-export const HotRoot: React.FunctionComponent<{
-  api: UtopiaStoreAPI
-  useStore: UtopiaStoreHook
-  spyCollector: UiJsxCanvasContextData
-}> = hot(({ api, useStore, spyCollector }) => {
+export const HotRoot: React.FunctionComponent<
+  React.PropsWithChildren<{
+    api: UtopiaStoreAPI
+    useStore: UtopiaStoreHook
+    spyCollector: UiJsxCanvasContextData
+  }>
+> = hot(({ api, useStore, spyCollector }) => {
   return <EditorRoot api={api} useStore={useStore} spyCollector={spyCollector} />
 })
 HotRoot.displayName = 'Utopia Editor Hot Root'

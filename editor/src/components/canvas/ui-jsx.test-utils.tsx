@@ -264,6 +264,7 @@ export async function renderTestEditorWithModel(
       <FailJestOnCanvasError />
       <EditorRoot api={storeHook} useStore={storeHook} spyCollector={spyCollector} />
     </React.Profiler>,
+    { legacyRoot: true },
   )
 
   await act(async () => {

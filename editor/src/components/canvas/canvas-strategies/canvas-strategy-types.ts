@@ -23,7 +23,7 @@ export const emptyStrategyApplicationResult = {
 }
 
 export interface ControlWithKey {
-  control: React.FC
+  control: React.FC<React.PropsWithChildren<unknown>>
   key: string
   show:
     | 'always-visible'

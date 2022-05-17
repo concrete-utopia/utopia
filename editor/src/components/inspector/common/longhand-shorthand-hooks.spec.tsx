@@ -1,5 +1,5 @@
 import React from 'react'
-import { renderHook } from '@testing-library/react-hooks'
+import { renderHook } from '@testing-library/react'
 import {
   ComputedStyle,
   emptyComments,
@@ -38,7 +38,7 @@ function getPaddingHookResult<P extends ParsedPropertiesKeys, S extends ParsedPr
   const mockDispatch = jest.fn()
 
   // eslint-disable-next-line @typescript-eslint/ban-types
-  const contextProvider: React.FunctionComponent<{}> = ({ children }) => {
+  const contextProvider: React.FunctionComponent<React.PropsWithChildren<{}>> = ({ children }) => {
     const InspectorContextProvider = makeInspectorHookContextProvider(
       [TestSelectedComponent],
       props,

@@ -50,7 +50,9 @@ interface BoundingMarksProps {
   rect: CanvasRectangle
 }
 
-export const BoundingMarks: React.FunctionComponent<BoundingMarksProps> = (props) => {
+export const BoundingMarks: React.FunctionComponent<React.PropsWithChildren<BoundingMarksProps>> = (
+  props,
+) => {
   const colorTheme = useColorTheme()
   const frame = {
     x: Utils.roundToNearestHalf(props.rect.x + props.canvasOffset.x),

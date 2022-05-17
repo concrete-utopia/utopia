@@ -25,9 +25,11 @@ export interface DEPRECATEDOptionControlOptions extends DEPRECATEDGenericControl
 }
 
 export const OptionControl: React.FunctionComponent<
-  DEPRECATEDControlProps<boolean> & {
-    className?: string
-  }
+  React.PropsWithChildren<
+    DEPRECATEDControlProps<boolean> & {
+      className?: string
+    }
+  >
 > = (props) => {
   const isChecked = props.value
   const propsOnSubmitValue = props.onSubmitValue

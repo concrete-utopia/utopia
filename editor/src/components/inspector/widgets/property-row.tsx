@@ -4,10 +4,12 @@ import { UtopiaTheme } from '../../../uuiui'
 export const PropertyRowHeightDefault = 33
 export const PropertyRowHeightWithLabel = 45
 
-export const PropertyRow: React.FunctionComponent<{
-  className?: string
-  style?: React.CSSProperties
-}> = (props) => {
+export const PropertyRow: React.FunctionComponent<
+  React.PropsWithChildren<{
+    className?: string
+    style?: React.CSSProperties
+  }>
+> = (props) => {
   const { style } = props
   const styleProps: React.CSSProperties = React.useMemo(() => {
     return {

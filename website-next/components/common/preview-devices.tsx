@@ -24,7 +24,7 @@ interface PreviewReactSelectDeviceSelectorProps {
 }
 
 export const PreviewReactSelectDeviceSelector: React.FunctionComponent<
-  PreviewReactSelectDeviceSelectorProps
+  React.PropsWithChildren<PreviewReactSelectDeviceSelectorProps>
 > = ({ value, onChange, caratOffset }) => {
   const PreviewReactSelectSingleValue = (singleValueProps: any) => {
     return components.SingleValue == null ? null : (

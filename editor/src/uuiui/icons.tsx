@@ -1,7 +1,9 @@
 import React from 'react'
 import { Icn, IcnProps } from './icn'
 
-const makeIcon = (appliedProps: IcnProps): React.FunctionComponent<Omit<IcnProps, 'type'>> =>
+const makeIcon = (
+  appliedProps: IcnProps,
+): React.FunctionComponent<React.PropsWithChildren<Omit<IcnProps, 'type'>>> =>
   React.memo((props) => <Icn {...appliedProps} {...props} />)
 
 /**

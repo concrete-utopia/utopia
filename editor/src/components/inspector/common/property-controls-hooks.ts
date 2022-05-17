@@ -136,7 +136,7 @@ export function useInspectorInfoForPropertyControl(
   )
 
   const onTransientSubmitValue = React.useCallback(
-    (newValue) => onSubmitValue(newValue, true),
+    (newValue: any) => onSubmitValue(newValue, true),
     [onSubmitValue],
   )
 

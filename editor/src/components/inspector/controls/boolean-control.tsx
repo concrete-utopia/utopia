@@ -10,11 +10,9 @@ export interface BooleanControlProps extends DEPRECATEDControlProps<boolean> {
   focusOnMount?: boolean
 }
 
-export const BooleanControl: React.FunctionComponent<BooleanControlProps> = ({
-  onSubmitValue: propsOnSubmitValue,
-  value,
-  ...props
-}) => {
+export const BooleanControl: React.FunctionComponent<
+  React.PropsWithChildren<BooleanControlProps>
+> = ({ onSubmitValue: propsOnSubmitValue, value, ...props }) => {
   const onSubmitValue = React.useCallback(() => {
     const checked = !value
     propsOnSubmitValue(checked)
