@@ -75,10 +75,10 @@ export const TargetSelectorPanel = React.memo((props: TargetSelectorPanelProps) 
     (index: number) => onStyleSelectorDelete(targets[index]),
     [targets, onStyleSelectorDelete],
   )
-  const onSelectByIndex = React.useCallback((index: number) => onSelect(targets[index].path), [
-    targets,
-    onSelect,
-  ])
+  const onSelectByIndex = React.useCallback(
+    (index: number) => onSelect(targets[index].path),
+    [targets, onSelect],
+  )
   const onInsertByIndex = React.useCallback(
     (index: number, label: string) => {
       onStyleSelectorInsert(targets[index], label)
@@ -87,10 +87,10 @@ export const TargetSelectorPanel = React.memo((props: TargetSelectorPanelProps) 
   )
   const targetIndex = getCSSTargetIndex(selectedTargetPath, targets)
 
-  const slicedTargetsAdding = React.useMemo(() => targets.slice(0, addingIndex ?? undefined), [
-    addingIndex,
-    targets,
-  ])
+  const slicedTargetsAdding = React.useMemo(
+    () => targets.slice(0, addingIndex ?? undefined),
+    [addingIndex, targets],
+  )
 
   const slicedTargets = React.useMemo(
     () => (addingIndex != null ? targets.slice(addingIndex, targets.length) : targets),
@@ -286,7 +286,7 @@ const TargetListItem = React.memo((props: TargetListItemProps) => {
   const onSelectByMouseCallback = React.useCallback(() => {
     onSelect(fixedItemIndex)
   }, [fixedItemIndex, onSelect])
-  const onSelectByEnterCallback = React.useCallback(
+  const onSelectByEnterCallback: React.MouseEventHandler<HTMLDivElement> = React.useCallback(
     (e) => {
       if (e.buttons === 1) {
         onSelect(fixedItemIndex)

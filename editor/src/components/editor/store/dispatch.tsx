@@ -188,7 +188,7 @@ export function updateEmbeddedPreview(
 ): void {
   const embeddedPreviewElement = document.getElementById(PreviewIframeId)
   if (embeddedPreviewElement != null) {
-    const embeddedPreviewIframe = (embeddedPreviewElement as any) as HTMLIFrameElement
+    const embeddedPreviewIframe = embeddedPreviewElement as any as HTMLIFrameElement
     const contentWindow = embeddedPreviewIframe.contentWindow
     if (contentWindow != null) {
       try {
@@ -421,25 +421,21 @@ export function editorDispatch(
     (!transientOrNoChange || anyUndoOrRedo || (anyWorkerUpdates && alreadySaved)) &&
     isBrowserEnvironment
 
-  const {
-    unpatchedEditorState,
-    patchedEditorState,
-    newStrategyState,
-    patchedDerivedState,
-  } = isFeatureEnabled('Canvas Strategies')
-    ? handleStrategies(
-        RegisteredCanvasStrategies,
-        dispatchedActions,
-        storedState,
-        result,
-        storedState.patchedDerived,
-      )
-    : {
-        unpatchedEditorState: result.unpatchedEditor,
-        patchedEditorState: result.unpatchedEditor,
-        newStrategyState: result.strategyState,
-        patchedDerivedState: result.unpatchedDerived,
-      }
+  const { unpatchedEditorState, patchedEditorState, newStrategyState, patchedDerivedState } =
+    isFeatureEnabled('Canvas Strategies')
+      ? handleStrategies(
+          RegisteredCanvasStrategies,
+          dispatchedActions,
+          storedState,
+          result,
+          storedState.patchedDerived,
+        )
+      : {
+          unpatchedEditorState: result.unpatchedEditor,
+          patchedEditorState: result.unpatchedEditor,
+          newStrategyState: result.strategyState,
+          patchedDerivedState: result.unpatchedDerived,
+        }
 
   const editorWithModelChecked =
     !anyUndoOrRedo && transientOrNoChange && !workerUpdatedModel

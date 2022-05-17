@@ -14,7 +14,12 @@ import { EditorStatePatch } from '../../editor/store/editor-state'
 import { EdgePosition } from '../canvas-types'
 import { MoveIntoDragThreshold } from '../canvas-utils'
 import { CanvasCommand } from '../commands/commands'
-import { CanvasStrategy, CanvasStrategyId } from './canvas-strategy-types'
+import {
+  CanvasStrategy,
+  CanvasStrategyId,
+  CustomStrategyState,
+  defaultCustomStrategyState,
+} from './canvas-strategy-types'
 
 export interface DragInteractionData {
   type: 'DRAG'
@@ -24,6 +29,7 @@ export interface DragInteractionData {
   dragThresholdPassed: boolean
   originalDragStart: CanvasPoint
   modifiers: Modifiers
+  globalTime: number
 }
 
 interface KeyboardInteractionData {
@@ -35,6 +41,16 @@ interface KeyboardInteractionData {
 }
 
 export type InputData = KeyboardInteractionData | DragInteractionData
+
+export function isDragInteractionData(inputData: InputData): inputData is DragInteractionData {
+  return inputData.type === 'DRAG'
+}
+
+export function isKeyboardInteractionData(
+  inputData: InputData,
+): inputData is KeyboardInteractionData {
+  return inputData.type === 'KEYBOARD'
+}
 
 export interface InteractionSession {
   // This represents an actual interaction that has started as the result of a key press or a drag
@@ -68,6 +84,7 @@ export interface StrategyState {
 
   // Checkpointed metadata at the point at which a strategy change has occurred.
   startingMetadata: ElementInstanceMetadataMap
+  customStrategyState: CustomStrategyState
 }
 
 export function createEmptyStrategyState(metadata?: ElementInstanceMetadataMap): StrategyState {
@@ -79,6 +96,7 @@ export function createEmptyStrategyState(metadata?: ElementInstanceMetadataMap):
     commandDescriptions: [],
     sortedApplicableStrategies: [],
     startingMetadata: metadata ?? {},
+    customStrategyState: defaultCustomStrategyState(),
   }
 }
 
@@ -96,6 +114,7 @@ export function createInteractionViaMouse(
       dragThresholdPassed: false,
       originalDragStart: mouseDownPoint,
       modifiers: modifiers,
+      globalTime: Date.now(),
     },
     activeControl: activeControl,
     sourceOfUpdate: activeControl,
@@ -129,6 +148,7 @@ export function updateInteractionViaMouse(
         dragThresholdPassed: dragThresholdPassed,
         originalDragStart: currentState.interactionData.originalDragStart,
         modifiers: modifiers,
+        globalTime: Date.now(),
       },
       activeControl: currentState.activeControl,
       sourceOfUpdate: sourceOfUpdate ?? currentState.activeControl,
@@ -197,6 +217,7 @@ export function updateInteractionViaKeyboard(
           dragThresholdPassed: currentState.interactionData.dragThresholdPassed,
           originalDragStart: currentState.interactionData.originalDragStart,
           modifiers: modifiers,
+          globalTime: Date.now(),
         },
         activeControl: currentState.activeControl,
         sourceOfUpdate: currentState.activeControl,

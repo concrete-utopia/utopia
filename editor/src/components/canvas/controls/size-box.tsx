@@ -119,17 +119,19 @@ class ResizeControl extends React.Component<ResizeControlProps> {
           windowPoint(point(event.clientX, event.clientY)),
         ).canvasPositionRounded
 
-        this.props.dispatch(
-          [
-            CanvasActions.createInteractionSession(
-              createInteractionViaMouse(startPoint, Modifier.modifiersForEvent(event), {
-                type: 'RESIZE_HANDLE',
-                edgePosition: this.props.position,
-              }),
-            ),
-          ],
-          'everyone',
-        )
+        if (event.button !== 2) {
+          this.props.dispatch(
+            [
+              CanvasActions.createInteractionSession(
+                createInteractionViaMouse(startPoint, Modifier.modifiersForEvent(event), {
+                  type: 'RESIZE_HANDLE',
+                  edgePosition: this.props.position,
+                }),
+              ),
+            ],
+            'everyone',
+          )
+        }
       } else {
         const newDragState = updateResizeDragState(
           resizeDragState(
@@ -549,6 +551,7 @@ class ResizePoint extends React.Component<ResizePointProps> {
 }
 
 interface ResizeRectangleProps {
+  children?: React.ReactNode
   targetComponentMetadata: ElementInstanceMetadata | null
   dispatch: EditorDispatch
   scale: number

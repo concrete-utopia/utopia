@@ -514,12 +514,8 @@ function collectMetadata(
       )
     })
   if (shouldCollect && pathsForElement.length > 0) {
-    const {
-      tagName,
-      globalFrame,
-      localFrame,
-      specialSizeMeasurementsObject,
-    } = collectMetadataForElement(element, parentPoint, scale, containerRectLazy)
+    const { tagName, globalFrame, localFrame, specialSizeMeasurementsObject } =
+      collectMetadataForElement(element, parentPoint, scale, containerRectLazy)
 
     const { computedStyle, attributeMetadata } = getComputedStyle(
       element,
@@ -785,7 +781,11 @@ function walkCanvasRootFragment(
     // no mutation happened on the entire canvas, just return the old metadata
     return { metadata: rootMetadataInStateRef.current, cachedPaths: [canvasRootPath] }
   } else {
-    const { childPaths: rootElements, rootMetadata, cachedPaths } = walkSceneInner(
+    const {
+      childPaths: rootElements,
+      rootMetadata,
+      cachedPaths,
+    } = walkSceneInner(
       canvasRoot,
       validPaths,
       rootMetadataInStateRef,
@@ -847,7 +847,11 @@ function walkScene(
 
       invalidatedPaths.delete(sceneID) // mutation!
 
-      const { childPaths: rootElements, rootMetadata, cachedPaths } = walkSceneInner(
+      const {
+        childPaths: rootElements,
+        rootMetadata,
+        cachedPaths,
+      } = walkSceneInner(
         scene,
         validPaths,
         rootMetadataInStateRef,
@@ -907,7 +911,11 @@ function walkSceneInner(
   let cachedPathsAccumulator: Array<ElementPath> = []
 
   scene.childNodes.forEach((childNode) => {
-    const { childPaths: childNodePaths, rootMetadata, cachedPaths } = walkElements(
+    const {
+      childPaths: childNodePaths,
+      rootMetadata,
+      cachedPaths,
+    } = walkElements(
       childNode,
       globalFrame,
       validPaths,

@@ -67,12 +67,10 @@ const SampleSingleFileBuildResult = transpileCode(['/app.js'], {
 const SampleSingleFileExportsInfo = [
   {
     filename: '/app.js',
-    code:
-      "\nimport * as React from 'react'\nimport {\n  Ellipse,\n  HelperFunctions,\n  Image,\n  NodeImplementations,\n  Rectangle,\n  Text,\n  View,\n } from 'utopia-api'\nimport {\n  colorTheme,\n  Button,\n  Dialog,\n  Icn,\n  Icons,\n  LargerIcons,\n  FunctionIcons,\n  MenuIcons,\n  Isolator,\n  TabComponent,\n  Tooltip,\n  ActionSheet,\n  Avatar,\n  ControlledTextArea,\n  Title,\n  H1,\n  H2,\n  H3,\n  Subdued,\n  InspectorSectionHeader,\n  InspectorSubsectionHeader,\n  FlexColumn,\n  FlexRow,\n  ResizableFlexColumn,\n  PopupList,\n  Section,\n  SectionTitleRow,\n  SectionBodyArea,\n  UtopiaListSelect,\n  UtopiaListItem,\n  CheckboxInput,\n  NumberInput,\n  StringInput,\n  OnClickOutsideHOC,\n} from 'uuiui'\n\nexport var canvasMetadata = {\n  specialNodes: [],\n  nodeMetadata: {},\n  scenes: [\n    {\n      component: 'App',\n      frame: { height: 812, left: 0, width: 375, top: 0 },\n      props: { layout: { top: 0, left: 0, bottom: 0, right: 0 } },\n      container: { layoutSystem: 'pinSystem' },\n    },\n  ],\n  elementMetadata: {},\n}\n\nexport var App = (props) => {\n  return (\n    <View\n      style={{ ...props.style, backgroundColor: colorTheme.white.value }}\n      layout={{ layoutSystem: 'pinSystem' }}\n      data-uid={'aaa'}\n    ></View>\n  )\n}\n\n",
+    code: "\nimport * as React from 'react'\nimport {\n  Ellipse,\n  HelperFunctions,\n  Image,\n  NodeImplementations,\n  Rectangle,\n  Text,\n  View,\n } from 'utopia-api'\nimport {\n  colorTheme,\n  Button,\n  Dialog,\n  Icn,\n  Icons,\n  LargerIcons,\n  FunctionIcons,\n  MenuIcons,\n  Isolator,\n  TabComponent,\n  Tooltip,\n  ActionSheet,\n  Avatar,\n  ControlledTextArea,\n  Title,\n  H1,\n  H2,\n  H3,\n  Subdued,\n  InspectorSectionHeader,\n  InspectorSubsectionHeader,\n  FlexColumn,\n  FlexRow,\n  ResizableFlexColumn,\n  PopupList,\n  Section,\n  SectionTitleRow,\n  SectionBodyArea,\n  UtopiaListSelect,\n  UtopiaListItem,\n  CheckboxInput,\n  NumberInput,\n  StringInput,\n  OnClickOutsideHOC,\n} from 'uuiui'\n\nexport var canvasMetadata = {\n  specialNodes: [],\n  nodeMetadata: {},\n  scenes: [\n    {\n      component: 'App',\n      frame: { height: 812, left: 0, width: 375, top: 0 },\n      props: { layout: { top: 0, left: 0, bottom: 0, right: 0 } },\n      container: { layoutSystem: 'pinSystem' },\n    },\n  ],\n  elementMetadata: {},\n}\n\nexport var App = (props) => {\n  return (\n    <View\n      style={{ ...props.style, backgroundColor: colorTheme.white.value }}\n      layout={{ layoutSystem: 'pinSystem' }}\n      data-uid={'aaa'}\n    ></View>\n  )\n}\n\n",
     exportTypes: {
       canvasMetadata: {
-        type:
-          '{ specialNodes: any[]; nodeMetadata: {}; scenes: { component: string; frame: { height: number; left: number; width: number; top: number; }; props: { layout: { top: number; left: number; bottom: number; right: number; }; }; container: { ...; }; }[]; elementMetadata: {}; }',
+        type: '{ specialNodes: any[]; nodeMetadata: {}; scenes: { component: string; frame: { height: number; left: number; width: number; top: number; }; props: { layout: { top: number; left: number; bottom: number; right: number; }; }; container: { ...; }; }[]; elementMetadata: {}; }',
         functionInfo: null,
         reactClassInfo: null,
       },
@@ -108,12 +106,10 @@ const SampleMultiFileBuildResult = transpileCode(
 const SampleMultiFileExportsInfo: Array<ExportsInfo> = [
   {
     filename: '/app.js',
-    code:
-      "\nimport * as React from 'react'\nimport {\n  Ellipse,\n  HelperFunctions,\n  Image,\n  NodeImplementations,\n  Rectangle,\n  Text,\n  View,\n} from 'utopia-api'\nimport {\n  colorTheme,\n  Button,\n  Dialog,\n  Icn,\n  Icons,\n  LargerIcons,\n  FunctionIcons,\n  MenuIcons,\n  Isolator,\n  TabComponent,\n  Tooltip,\n  ActionSheet,\n  Avatar,\n  ControlledTextArea,\n  Title,\n  H1,\n  H2,\n  H3,\n  Subdued,\n  InspectorSectionHeader,\n  InspectorSubsectionHeader,\n  FlexColumn,\n  FlexRow,\n  ResizableFlexColumn,\n  PopupList,\n  Section,\n  SectionTitleRow,\n  SectionBodyArea,\n  UtopiaListSelect,\n  UtopiaListItem,\n  CheckboxInput,\n  NumberInput,\n  StringInput,\n  OnClickOutsideHOC,\n} from 'uuiui'\n\nexport var canvasMetadata = {\n  specialNodes: [],\n  nodeMetadata: {},\n  scenes: [\n    {\n      component: 'App',\n      frame: { height: 812, left: 0, width: 375, top: 0 },\n      props: { layout: { top: 0, left: 0, bottom: 0, right: 0 } },\n      container: { layoutSystem: 'pinSystem' },\n    },\n  ],\n  elementMetadata: {},\n}\n\n\nexport var App = (props) => {\n  return (\n    <View\n      style={{ ...props.style, backgroundColor: colorTheme.white.value }}\n      layout={{ layoutSystem: 'pinSystem' }}\n      data-uid={'aaa'}\n    ></View>\n  )\n}\n\n",
+    code: "\nimport * as React from 'react'\nimport {\n  Ellipse,\n  HelperFunctions,\n  Image,\n  NodeImplementations,\n  Rectangle,\n  Text,\n  View,\n} from 'utopia-api'\nimport {\n  colorTheme,\n  Button,\n  Dialog,\n  Icn,\n  Icons,\n  LargerIcons,\n  FunctionIcons,\n  MenuIcons,\n  Isolator,\n  TabComponent,\n  Tooltip,\n  ActionSheet,\n  Avatar,\n  ControlledTextArea,\n  Title,\n  H1,\n  H2,\n  H3,\n  Subdued,\n  InspectorSectionHeader,\n  InspectorSubsectionHeader,\n  FlexColumn,\n  FlexRow,\n  ResizableFlexColumn,\n  PopupList,\n  Section,\n  SectionTitleRow,\n  SectionBodyArea,\n  UtopiaListSelect,\n  UtopiaListItem,\n  CheckboxInput,\n  NumberInput,\n  StringInput,\n  OnClickOutsideHOC,\n} from 'uuiui'\n\nexport var canvasMetadata = {\n  specialNodes: [],\n  nodeMetadata: {},\n  scenes: [\n    {\n      component: 'App',\n      frame: { height: 812, left: 0, width: 375, top: 0 },\n      props: { layout: { top: 0, left: 0, bottom: 0, right: 0 } },\n      container: { layoutSystem: 'pinSystem' },\n    },\n  ],\n  elementMetadata: {},\n}\n\n\nexport var App = (props) => {\n  return (\n    <View\n      style={{ ...props.style, backgroundColor: colorTheme.white.value }}\n      layout={{ layoutSystem: 'pinSystem' }}\n      data-uid={'aaa'}\n    ></View>\n  )\n}\n\n",
     exportTypes: {
       canvasMetadata: {
-        type:
-          '{ specialNodes: any[]; nodeMetadata: {}; scenes: { component: string; frame: { height: number; left: number; width: number; top: number; }; props: { layout: { top: number; left: number; bottom: number; right: number; }; }; container: { ...; }; }[]; elementMetadata: {}; }',
+        type: '{ specialNodes: any[]; nodeMetadata: {}; scenes: { component: string; frame: { height: number; left: number; width: number; top: number; }; props: { layout: { top: number; left: number; bottom: number; right: number; }; }; container: { ...; }; }[]; elementMetadata: {}; }',
         functionInfo: null,
         reactClassInfo: null,
       },
@@ -134,8 +130,7 @@ const SampleMultiFileExportsInfo: Array<ExportsInfo> = [
   },
   {
     filename: '/src/components.js',
-    code:
-      "// component library\nimport * as React from 'react'\nimport { Text, View } from 'utopia-api'\n\nexport default (props) => (\n  <View layout={props.layout} style={props.style} onMouseDown={props.onMouseDown}>\n    <Text\n      style={{ fontSize: 16, textAlign: 'center' }}\n      text={props.text}\n      layout={{\n        left: 0,\n        top: 10,\n        width: '100%',\n        height: '100%',\n      }}\n      textSizing={'fixed'}\n    />\n  </View>\n)\n\nexport const LABEL = 'press me! 😉'\n\nexport const ComponentWithProps = (props) => {\n  return (\n    <div\n      style={{\n        ...props.style,\n        backgroundColor: props.pink ? 'hotpink' : 'transparent',\n        whiteSpace: 'normal',\n      }}\n    >\n      {(props.text + ' ').repeat(props.num)}\n    </div>\n  )\n}\n\nComponentWithProps.propertyControls = {\n  text: {\n    type: 'string',\n    title: 'Title',\n    defaultValue: 'Change me',\n  },\n  num: {\n    type: 'number',\n    title: 'amount',\n    defaultValue: 2,\n  },\n  pink: {\n    type: 'boolean',\n    title: 'Enabled',\n    defaultValue: true,\n  },\n}\n\n",
+    code: "// component library\nimport * as React from 'react'\nimport { Text, View } from 'utopia-api'\n\nexport default (props) => (\n  <View layout={props.layout} style={props.style} onMouseDown={props.onMouseDown}>\n    <Text\n      style={{ fontSize: 16, textAlign: 'center' }}\n      text={props.text}\n      layout={{\n        left: 0,\n        top: 10,\n        width: '100%',\n        height: '100%',\n      }}\n      textSizing={'fixed'}\n    />\n  </View>\n)\n\nexport const LABEL = 'press me! 😉'\n\nexport const ComponentWithProps = (props) => {\n  return (\n    <div\n      style={{\n        ...props.style,\n        backgroundColor: props.pink ? 'hotpink' : 'transparent',\n        whiteSpace: 'normal',\n      }}\n    >\n      {(props.text + ' ').repeat(props.num)}\n    </div>\n  )\n}\n\nComponentWithProps.propertyControls = {\n  text: {\n    type: 'string',\n    title: 'Title',\n    defaultValue: 'Change me',\n  },\n  num: {\n    type: 'number',\n    title: 'amount',\n    defaultValue: 2,\n  },\n  pink: {\n    type: 'boolean',\n    title: 'Enabled',\n    defaultValue: true,\n  },\n}\n\n",
     exportTypes: {
       LABEL: {
         type: '"press me! 😉"',
@@ -143,8 +138,7 @@ const SampleMultiFileExportsInfo: Array<ExportsInfo> = [
         reactClassInfo: null,
       },
       ComponentWithProps: {
-        type:
-          '{ (props: any): Element; propertyControls: { text: { type: string; title: string; defaultValue: string; }; num: { type: string; title: string; defaultValue: number; }; pink: { type: string; title: string; defaultValue: boolean; }; }; }',
+        type: '{ (props: any): Element; propertyControls: { text: { type: string; title: string; defaultValue: string; }; num: { type: string; title: string; defaultValue: number; }; pink: { type: string; title: string; defaultValue: boolean; }; }; }',
         functionInfo: [
           {
             name: 'props',
@@ -160,8 +154,7 @@ const SampleMultiFileExportsInfo: Array<ExportsInfo> = [
   },
   {
     filename: '/src/index.js',
-    code:
-      'import * as React from "react";\nimport * as ReactDOM from "react-dom";\nimport { App } from "../app";\n\nconst root = document.getElementById("root");\nif (root != null) {\nReactDOM.render(<App />, root);\n}',
+    code: 'import * as React from "react";\nimport * as ReactDOM from "react-dom";\nimport { App } from "../app";\n\nconst root = document.getElementById("root");\nif (root != null) {\nReactDOM.render(<App />, root);\n}',
     exportTypes: {},
   },
 ]
@@ -206,8 +199,7 @@ const SampleBuildResultWithError: MultiFileBuildResult = {
 const SampleExportsInfoWithError = [
   {
     filename: '/src/components.js',
-    code:
-      "// component library\nimport * as React from 'react'\nimport { Text, View } from 'utopia-api'\n\nexport default (props) => (\n  <View layout={props.layout} style={props.style} onMouseDown={props.onMouseDown}>\n    <Text\n      style={{ fontSize: 16, textAlign: 'center' }}\n      text={props.text}\n      layout={{\n        left: 0,\n        top: 10,\n        width: '100%',\n        height: '100%',++\n      }}\n      textSizing={'fixed'}\n    />\n  </View>\n)\n\nexport const LABEL = 'press me! 😉'\n\nexport const ComponentWithProps = (props) => {\n  return (\n    <div\n      style={{\n        ...props.style,\n        backgroundColor: props.pink ? 'hotpink' : 'transparent',\n        whiteSpace: 'normal',\n      }}\n    >\n      {(props.text + ' ').repeat(props.num)}\n    </div>\n  )\n}\n\nComponentWithProps.propertyControls = {\n  text: {\n    type: 'string',\n    title: 'Title',\n    defaultValue: 'Change me',\n  },\n  num: {\n    type: 'number',\n    title: 'amount',\n    defaultValue: 2,\n  },\n  pink: {\n    type: 'boolean',\n    title: 'Enabled',\n    defaultValue: true,\n  },\n}\n\n",
+    code: "// component library\nimport * as React from 'react'\nimport { Text, View } from 'utopia-api'\n\nexport default (props) => (\n  <View layout={props.layout} style={props.style} onMouseDown={props.onMouseDown}>\n    <Text\n      style={{ fontSize: 16, textAlign: 'center' }}\n      text={props.text}\n      layout={{\n        left: 0,\n        top: 10,\n        width: '100%',\n        height: '100%',++\n      }}\n      textSizing={'fixed'}\n    />\n  </View>\n)\n\nexport const LABEL = 'press me! 😉'\n\nexport const ComponentWithProps = (props) => {\n  return (\n    <div\n      style={{\n        ...props.style,\n        backgroundColor: props.pink ? 'hotpink' : 'transparent',\n        whiteSpace: 'normal',\n      }}\n    >\n      {(props.text + ' ').repeat(props.num)}\n    </div>\n  )\n}\n\nComponentWithProps.propertyControls = {\n  text: {\n    type: 'string',\n    title: 'Title',\n    defaultValue: 'Change me',\n  },\n  num: {\n    type: 'number',\n    title: 'amount',\n    defaultValue: 2,\n  },\n  pink: {\n    type: 'boolean',\n    title: 'Enabled',\n    defaultValue: true,\n  },\n}\n\n",
     exportTypes: {
       LABEL: {
         type: '"press me! 😉"',
@@ -215,8 +207,7 @@ const SampleExportsInfoWithError = [
         reactClassInfo: null,
       },
       ComponentWithProps: {
-        type:
-          '{ (props: any): Element; propertyControls: { text: { type: string; title: string; defaultValue: string; }; num: { type: string; title: string; defaultValue: number; }; pink: { type: string; title: string; defaultValue: boolean; }; }; }',
+        type: '{ (props: any): Element; propertyControls: { text: { type: string; title: string; defaultValue: string; }; num: { type: string; title: string; defaultValue: number; }; pink: { type: string; title: string; defaultValue: boolean; }; }; }',
         functionInfo: [
           {
             name: 'props',
@@ -267,7 +258,7 @@ describe('transpileCode', () => {
           "errors": Array [],
           "sourceMap": Object {
             "file": "app.js",
-            "mappings": ";;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;AACE,IAAA,KAAA,GAAA,YAAA,CAAA,OAAA,CAAA,OAAA,CAAA,CAAA;;AACA,IAAA,UAAA,GAAA,eAAA,CAAA,OAAA,CAAA,YAAA,CAAA,CAAA;;AACO,IAAI,GAAG,GAAG,SAAN,GAAM,CAAC,KAAD;AAAA,SAAW,aAAA,CAAA,GAAA,CAAA,KAAA,EAAA,MAAA,CAAA,MAAA,CAAA;AAAA,gBAAe;AAAf,GAAA,EAAoB;AAAA,IAAA,QAAA,EAAG,UAAA,CAAA;AAAH,GAApB,CAAA,EAA2B,KAAA,CAA3B,CAAX;AAAA,CAAV;;AAAI,OAAA,CAAA,GAAA,GAAG,GAAH,C",
+            "mappings": ";;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;AACE,IAAA,KAAA,GAAA,YAAA,CAAA,OAAA,CAAA,OAAA,CAAA,CAAA;;AACA,IAAA,UAAA,GAAA,eAAA,CAAA,OAAA,CAAA,YAAA,CAAA,CAAA;;AACO,IAAI,GAAG,GAAG,SAAN,GAAM,CAAC,KAAD;AAAA,SAAW,CAAA,GAAA,aAAA,CAAA,GAAA,EAAA,KAAA,EAAA;AAAA,gBAAe,KAAf;AAAoB,IAAA,QAAA,EAAG,UAAA,CAAA;AAAvB,GAAA,CAAX;AAAA,CAAV;;AAAI,OAAA,CAAA,GAAA,GAAG,GAAH,C",
             "names": Array [],
             "sourceRoot": "",
             "sources": Array [
@@ -286,12 +277,18 @@ describe('transpileCode', () => {
 
       var __createBinding = this && this.__createBinding || (Object.create ? function (o, m, k, k2) {
         if (k2 === undefined) k2 = k;
-        Object.defineProperty(o, k2, {
-          enumerable: true,
-          get: function get() {
-            return m[k];
-          }
-        });
+        var desc = Object.getOwnPropertyDescriptor(m, k);
+
+        if (!desc || (\\"get\\" in desc ? !m.__esModule : desc.writable || desc.configurable)) {
+          desc = {
+            enumerable: true,
+            get: function get() {
+              return m[k];
+            }
+          };
+        }
+
+        Object.defineProperty(o, k2, desc);
       } : function (o, m, k, k2) {
         if (k2 === undefined) k2 = k;
         o[k2] = m[k];
@@ -336,11 +333,10 @@ describe('transpileCode', () => {
       var icon_css_1 = __importDefault(require(\\"./icon.css\\"));
 
       var App = function App(props) {
-        return jsx_runtime_1.jsx(\\"div\\", Object.assign({
-          \\"data-uid\\": 'aaa'
-        }, {
+        return (0, jsx_runtime_1.jsx)(\\"div\\", {
+          \\"data-uid\\": 'aaa',
           children: icon_css_1.default
-        }), void 0);
+        });
       };
 
       exports.App = App; //# sourceMappingURL=app.js.map",

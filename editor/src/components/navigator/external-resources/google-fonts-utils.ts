@@ -217,8 +217,7 @@ export interface SystemDefaultTypeface {
 }
 export const systemDefaultTypeface: SystemDefaultTypeface = {
   type: 'system-default-typeface',
-  name:
-    'San Francisco, SF UI, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif, "Apple Color Emoji", "Segoe UI Emoji", "Segoe UI Symbol"',
+  name: 'San Francisco, SF UI, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif, "Apple Color Emoji", "Segoe UI Emoji", "Segoe UI Symbol"',
 }
 
 export interface GoogleFontsTypeface {

@@ -343,17 +343,17 @@ export const UiJsxCanvas = React.memo<UiJsxCanvasPropsWithErrorCallback>((props)
     MapLike<MapLike<ComponentRendererComponent>>
   >({})
 
-  const resolve = React.useMemo(() => curriedResolveFn(projectContents), [
-    curriedResolveFn,
-    projectContents,
-  ])
+  const resolve = React.useMemo(
+    () => curriedResolveFn(projectContents),
+    [curriedResolveFn, projectContents],
+  )
 
   let resolvedFiles = React.useRef<MapLike<Array<string>>>({}) // Mapping from importOrigin to an array of toImport
   resolvedFiles.current = {}
-  const requireFn = React.useMemo(() => curriedRequireFn(projectContents), [
-    curriedRequireFn,
-    projectContents,
-  ])
+  const requireFn = React.useMemo(
+    () => curriedRequireFn(projectContents),
+    [curriedRequireFn, projectContents],
+  )
   const customRequire = React.useCallback(
     (importOrigin: string, toImport: string) => {
       if (resolvedFiles.current[importOrigin] == null) {
@@ -434,20 +434,16 @@ export const UiJsxCanvas = React.memo<UiJsxCanvasPropsWithErrorCallback>((props)
 
   const topLevelElementsMap = useKeepReferenceEqualityIfPossible(new Map(topLevelJsxComponents))
 
-  const {
-    StoryboardRootComponent,
-    rootValidPaths,
-    storyboardRootElementPath,
-    rootInstancePath,
-  } = useGetStoryboardRoot(
-    props.focusedElementPath,
-    topLevelElementsMap,
-    executionScope,
-    projectContents,
-    uiFilePath,
-    transientFilesState,
-    resolve,
-  )
+  const { StoryboardRootComponent, rootValidPaths, storyboardRootElementPath, rootInstancePath } =
+    useGetStoryboardRoot(
+      props.focusedElementPath,
+      topLevelElementsMap,
+      executionScope,
+      projectContents,
+      uiFilePath,
+      transientFilesState,
+      resolve,
+    )
 
   clearSpyCollectorInvalidPaths(rootValidPaths, metadataContext)
 

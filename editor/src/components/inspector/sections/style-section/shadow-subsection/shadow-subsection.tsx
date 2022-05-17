@@ -151,30 +151,22 @@ const ShadowItem = React.memo<ShadowItemProps>((props) => {
   const [colorSubmitValue, colorTransientSubmitValue] = props.useSubmitValueFactory(
     getIndexedUpdateShadowColor(props.index),
   )
-  const [
-    offsetXSubmitValue,
-    offsetXTransientSubmitValue,
-  ] = useWrappedSubmitFactoryEmptyOrUnknownOnSubmitValue(
-    props.useSubmitValueFactory(getIndexedUpdateShadowOffsetX(props.index)),
-  )
-  const [
-    offsetYSubmitValue,
-    offsetYTransientSubmitValue,
-  ] = useWrappedSubmitFactoryEmptyOrUnknownOnSubmitValue(
-    props.useSubmitValueFactory(getIndexedUpdateShadowOffsetY(props.index)),
-  )
-  const [
-    blurRadiusSubmitValue,
-    blurRadiusTransientSubmitValue,
-  ] = useWrappedSubmitFactoryEmptyOrUnknownOnSubmitValue(
-    props.useSubmitValueFactory(getIndexedUpdateShadowBlurRadius(props.index)),
-  )
-  const [
-    spreadRadiusSubmitValue,
-    spreadRadiusTransientSubmitValue,
-  ] = useWrappedSubmitFactoryEmptyOrUnknownOnSubmitValue(
-    props.useSubmitValueFactory(getIndexedUpdateShadowSpreadRadius(props.index)),
-  )
+  const [offsetXSubmitValue, offsetXTransientSubmitValue] =
+    useWrappedSubmitFactoryEmptyOrUnknownOnSubmitValue(
+      props.useSubmitValueFactory(getIndexedUpdateShadowOffsetX(props.index)),
+    )
+  const [offsetYSubmitValue, offsetYTransientSubmitValue] =
+    useWrappedSubmitFactoryEmptyOrUnknownOnSubmitValue(
+      props.useSubmitValueFactory(getIndexedUpdateShadowOffsetY(props.index)),
+    )
+  const [blurRadiusSubmitValue, blurRadiusTransientSubmitValue] =
+    useWrappedSubmitFactoryEmptyOrUnknownOnSubmitValue(
+      props.useSubmitValueFactory(getIndexedUpdateShadowBlurRadius(props.index)),
+    )
+  const [spreadRadiusSubmitValue, spreadRadiusTransientSubmitValue] =
+    useWrappedSubmitFactoryEmptyOrUnknownOnSubmitValue(
+      props.useSubmitValueFactory(getIndexedUpdateShadowSpreadRadius(props.index)),
+    )
   const [onSubmitIndexedSpliceValue] = props.useSubmitValueFactory(
     getIndexedSpliceShadow(props.index),
   )

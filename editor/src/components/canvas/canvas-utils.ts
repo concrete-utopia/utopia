@@ -509,15 +509,6 @@ export function updateFramesOfScenesAndComponents(
     let propsToUnset: Array<PropertyPath> = []
     if (isFlexContainer) {
       switch (frameAndTarget.type) {
-        case 'PIN_FRAME_CHANGE': // this can never run now since frameAndTarget.type cannot be both PIN_FRAME_CHANGE and not PIN_FRAME_CHANGE
-        case 'PIN_SIZE_CHANGE': // this can never run now since frameAndTarget.type cannot be both PIN_FRAME_CHANGE and not PIN_FRAME_CHANGE
-        case 'PIN_MOVE_CHANGE': // this can never run now since frameAndTarget.type cannot be both PIN_FRAME_CHANGE and not PIN_FRAME_CHANGE
-        case 'SINGLE_RESIZE': // this can never run now since frameAndTarget.type cannot be both PIN_FRAME_CHANGE and not PIN_FRAME_CHANGE
-          throw new Error(
-            `Attempted to make a pin change against an element in a flex container ${JSON.stringify(
-              staticParentPath,
-            )}.`,
-          )
         case 'FLEX_MOVE':
           workingEditorState = modifyUnderlyingForOpenFile(
             originalTarget,
@@ -753,9 +744,9 @@ export function updateFramesOfScenesAndComponents(
             }
           })
 
-          let framePointsToUse: Array<LayoutPinnedProp> = Object.keys(frameProps) as Array<
-            LayoutPinnedProp
-          >
+          let framePointsToUse: Array<LayoutPinnedProp> = Object.keys(
+            frameProps,
+          ) as Array<LayoutPinnedProp>
 
           if (isEdgePositionOnSide(frameAndTarget.edgePosition)) {
             framePointsToUse = extendPartialFramePointsForResize(
@@ -797,13 +788,6 @@ export function updateFramesOfScenesAndComponents(
             ),
           )
           break
-        case 'FLEX_MOVE':
-        case 'FLEX_RESIZE':
-          throw new Error(
-            `Attempted to make a flex change against a pinned element ${JSON.stringify(
-              staticParentPath,
-            )}.`,
-          )
         default:
           const _exhaustiveCheck: never = frameAndTarget
           throw new Error(`Unhandled type ${JSON.stringify(frameAndTarget)}`)
@@ -1604,10 +1588,11 @@ export function produceResizeCanvasTransientState(
               width: Math.ceil(newTargetFrame.width),
               height: Math.ceil(newTargetFrame.height),
             } as CanvasRectangle
-            const isFlexContainer = MetadataUtils.isParentYogaLayoutedContainerAndElementParticipatesInLayout(
-              target,
-              editorState.jsxMetadata,
-            )
+            const isFlexContainer =
+              MetadataUtils.isParentYogaLayoutedContainerAndElementParticipatesInLayout(
+                target,
+                editorState.jsxMetadata,
+              )
 
             if (isFlexContainer) {
               for (const resizePropertyChange of dragState.properties) {
@@ -1682,10 +1667,11 @@ export function produceResizeSingleSelectCanvasTransientState(
           width: Math.ceil(newTargetFrame.width),
           height: Math.ceil(newTargetFrame.height),
         } as CanvasRectangle
-        const isFlexContainer = MetadataUtils.isParentYogaLayoutedContainerAndElementParticipatesInLayout(
-          elementToTarget,
-          editorState.jsxMetadata,
-        )
+        const isFlexContainer =
+          MetadataUtils.isParentYogaLayoutedContainerAndElementParticipatesInLayout(
+            elementToTarget,
+            editorState.jsxMetadata,
+          )
         for (const propertyChange of dragState.properties) {
           if (
             isFlexContainer ||
@@ -2012,9 +1998,8 @@ function editorReparentNoStyleChange(
           underlyingNewParentPath,
           underlyingNewParentFilePath,
         ) => {
-          const utopiaComponentsIncludingScenes = getUtopiaJSXComponentsFromSuccess(
-            newParentSuccess,
-          )
+          const utopiaComponentsIncludingScenes =
+            getUtopiaJSXComponentsFromSuccess(newParentSuccess)
           const updatedUnderlyingElement = findElementAtPath(
             underlyingTarget,
             utopiaComponentsIncludingScenes,
@@ -2108,9 +2093,8 @@ export function moveTemplate(
             underlyingNewParentPath,
             underlyingNewParentFilePath,
           ) => {
-            const utopiaComponentsIncludingScenes = getUtopiaJSXComponentsFromSuccess(
-              newParentSuccess,
-            )
+            const utopiaComponentsIncludingScenes =
+              getUtopiaJSXComponentsFromSuccess(newParentSuccess)
             const {
               components: withLayoutUpdatedForNewContext,
               componentMetadata: withMetadataUpdatedForNewContext,
@@ -2137,7 +2121,8 @@ export function moveTemplate(
             } else {
               let workingEditorState: EditorState = editorState
 
-              let updatedUtopiaComponents: Array<UtopiaJSXComponent> = withLayoutUpdatedForNewContext
+              let updatedUtopiaComponents: Array<UtopiaJSXComponent> =
+                withLayoutUpdatedForNewContext
 
               flexContextChanged = flexContextChanged || didSwitch
 
@@ -2184,9 +2169,8 @@ export function moveTemplate(
                   'Element should exist',
                   findJSXElementAtPath(underlyingNewParentPath, updatedUtopiaComponents),
                 )
-                newIndex = updatedUnderlyingNewParentElement.children.indexOf(
-                  updatedUnderlyingElement,
-                )
+                newIndex =
+                  updatedUnderlyingNewParentElement.children.indexOf(updatedUnderlyingElement)
                 if (newIndex === -1) {
                   throw new Error('Invalid child element index.')
                 }
@@ -2194,7 +2178,8 @@ export function moveTemplate(
 
               newPath = EP.appendToPath(newParentPath, targetID)
 
-              let updatedComponentMetadata: ElementInstanceMetadataMap = withMetadataUpdatedForNewContext
+              let updatedComponentMetadata: ElementInstanceMetadataMap =
+                withMetadataUpdatedForNewContext
               // Need to make these changes ahead of updating the frame.
               const elementMetadata = MetadataUtils.findElementByElementPath(
                 updatedComponentMetadata,
@@ -2226,10 +2211,11 @@ export function moveTemplate(
                 newPath != null &&
                 !flexContextChanged
               ) {
-                const isParentFlex = MetadataUtils.isParentYogaLayoutedContainerAndElementParticipatesInLayout(
-                  originalPath,
-                  componentMetadata,
-                )
+                const isParentFlex =
+                  MetadataUtils.isParentYogaLayoutedContainerAndElementParticipatesInLayout(
+                    originalPath,
+                    componentMetadata,
+                  )
                 const frameChanges: Array<PinOrFlexFrameChange> = [
                   getFrameChange(newPath, newFrame, isParentFlex),
                 ]
@@ -2783,14 +2769,12 @@ export function getValidElementPaths(
     const resolvedImportSource = resolve(filePath, importSource.filePath)
     if (isRight(resolvedImportSource)) {
       const resolvedFilePath = resolvedImportSource.value
-      const {
-        topLevelElements: resolvedTopLevelElements,
-        exportsDetail,
-      } = getParseSuccessOrTransientForFilePath(
-        resolvedFilePath,
-        projectContents,
-        transientFilesState,
-      )
+      const { topLevelElements: resolvedTopLevelElements, exportsDetail } =
+        getParseSuccessOrTransientForFilePath(
+          resolvedFilePath,
+          projectContents,
+          transientFilesState,
+        )
       // Handle default exports as they may actually be named.
       if (originTopLevelName == null) {
         for (const exportDetail of exportsDetail) {

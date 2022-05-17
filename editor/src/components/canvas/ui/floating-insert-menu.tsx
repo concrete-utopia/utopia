@@ -381,7 +381,7 @@ export var FloatingMenu = React.memo(() => {
   )
 
   const [filterInputValue, setFilterInputValue] = React.useState('')
-  const onInputValueChange = React.useCallback((newValue, actionMeta: InputActionMeta) => {
+  const onInputValueChange = React.useCallback((newValue: string, actionMeta: InputActionMeta) => {
     // when the user "tabs out" to the checkboxes, prevent react-select from clearing the input text
     if (actionMeta.action !== 'input-blur' && actionMeta.action !== 'menu-close') {
       setFilterInputValue(newValue)
@@ -450,9 +450,8 @@ export var FloatingMenu = React.memo(() => {
             const isFlexLayoutSystemMaybe_KILLME = getIsFlexBasedOnName_KILLME_EXPERIMENTAL(
               newElement.name,
             )
-            const flexDirection_KILLME = getIsFlexDirectionBasedOnName_KILLME_SERIOUSLY_EXPERIMENTAL(
-              newElement.name,
-            )
+            const flexDirection_KILLME =
+              getIsFlexDirectionBasedOnName_KILLME_SERIOUSLY_EXPERIMENTAL(newElement.name)
 
             actionsToDispatch = [
               preserveVisualPositionForWrap

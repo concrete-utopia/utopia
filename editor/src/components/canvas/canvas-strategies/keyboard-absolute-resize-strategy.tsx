@@ -1,6 +1,6 @@
 import { MetadataUtils } from '../../../core/model/element-metadata-utils'
 import { Keyboard, KeyCharacter } from '../../../utils/keyboard'
-import { CanvasStrategy } from './canvas-strategy-types'
+import { CanvasStrategy, emptyStrategyApplicationResult } from './canvas-strategy-types'
 import { Modifiers } from '../../../utils/modifiers'
 import { CanvasVector } from '../../../core/shared/math-utils'
 import { AdjustCssLengthProperty } from '../commands/adjust-css-length-command'
@@ -51,47 +51,50 @@ export const keyboardAbsoluteResizeStrategy: CanvasStrategy = {
   },
   apply: (canvasState, interactionState, sessionState) => {
     if (interactionState.interactionData.type === 'KEYBOARD') {
-      return interactionState.interactionData.keysPressed.flatMap<AdjustCssLengthProperty>(
-        (key) => {
-          if (key == null) {
-            return []
-          }
-          const drag = getDragDeltaFromKey(key, interactionState.interactionData.modifiers)
-          const edgePosition = getEdgePositionFromKey(key)
-          if (drag.x !== 0 || drag.y !== 0) {
-            return canvasState.selectedElements.flatMap((selectedElement) => {
-              const element = withUnderlyingTarget(
-                selectedElement,
-                canvasState.projectContents,
-                {},
-                canvasState.openFile,
-                null,
-                (_, e) => e,
-              )
-              const elementParentBounds =
-                MetadataUtils.findElementByElementPath(
-                  sessionState.startingMetadata,
+      return {
+        commands: interactionState.interactionData.keysPressed.flatMap<AdjustCssLengthProperty>(
+          (key) => {
+            if (key == null) {
+              return []
+            }
+            const drag = getDragDeltaFromKey(key, interactionState.interactionData.modifiers)
+            const edgePosition = getEdgePositionFromKey(key)
+            if (drag.x !== 0 || drag.y !== 0) {
+              return canvasState.selectedElements.flatMap((selectedElement) => {
+                const element = withUnderlyingTarget(
                   selectedElement,
-                )?.specialSizeMeasurements.immediateParentBounds ?? null
+                  canvasState.projectContents,
+                  {},
+                  canvasState.openFile,
+                  null,
+                  (_, e) => e,
+                )
+                const elementParentBounds =
+                  MetadataUtils.findElementByElementPath(
+                    sessionState.startingMetadata,
+                    selectedElement,
+                  )?.specialSizeMeasurements.immediateParentBounds ?? null
 
-              if (element == null || edgePosition == null) {
-                return []
-              }
-              return createResizeCommands(
-                element,
-                selectedElement,
-                edgePosition,
-                drag,
-                elementParentBounds,
-              )
-            })
-          } else {
-            return []
-          }
-        },
-      )
+                if (element == null || edgePosition == null) {
+                  return []
+                }
+                return createResizeCommands(
+                  element,
+                  selectedElement,
+                  edgePosition,
+                  drag,
+                  elementParentBounds,
+                )
+              })
+            } else {
+              return []
+            }
+          },
+        ),
+        customState: null,
+      }
     }
-    return []
+    return emptyStrategyApplicationResult
   },
 }
 

@@ -1,5 +1,9 @@
 import { MetadataUtils } from '../../../core/model/element-metadata-utils'
-import { JSXElementName, ElementInstanceMetadataMap } from '../../../core/shared/element-template'
+import {
+  JSXElementName,
+  ElementInstanceMetadataMap,
+  ElementInstanceMetadata,
+} from '../../../core/shared/element-template'
 import { ElementPath } from '../../../core/shared/project-file-types'
 import { useEditorState } from '../../editor/store/store-hook'
 import { IcnProps } from '../../../uuiui'
@@ -11,6 +15,8 @@ import {
 import { createSelector } from 'reselect'
 import { EditorStorePatched } from '../../editor/store/editor-state'
 import React from 'react'
+import { objectValues } from '../../../core/shared/object-utils'
+import { eitherToMaybe } from '../../../core/shared/either'
 
 export interface NameAndIconResult {
   path: ElementPath
@@ -26,9 +32,12 @@ export function useMetadata(): ElementInstanceMetadataMap {
 const namesAndIconsAllPathsResultSelector = createSelector(
   (store: EditorStorePatched) => store.editor.jsxMetadata,
   (metadata) => {
-    return MetadataUtils.getAllPaths(metadata).map((path) => {
-      return getNameAndIconResult(path, metadata)
-    })
+    let result: Array<NameAndIconResult> = []
+    for (const metadataElement of objectValues(metadata)) {
+      const nameAndIconResult = getNameAndIconResult(metadataElement)
+      result.push(nameAndIconResult)
+    }
+    return result
   },
 )
 
@@ -39,15 +48,12 @@ export function useNamesAndIconsAllPaths(): NameAndIconResult[] {
   })
 }
 
-function getNameAndIconResult(
-  path: ElementPath,
-  metadata: ElementInstanceMetadataMap,
-): NameAndIconResult {
-  const elementName = MetadataUtils.getJSXElementNameFromMetadata(metadata, path)
+function getNameAndIconResult(metadata: ElementInstanceMetadata): NameAndIconResult {
+  const elementName = MetadataUtils.getJSXElementName(eitherToMaybe(metadata.element))
   return {
-    path: path,
+    path: metadata.elementPath,
     name: elementName,
-    label: MetadataUtils.getElementLabel(path, metadata),
-    iconProps: createComponentOrElementIconProps(path, metadata),
+    label: MetadataUtils.getElementLabelFromMetadata(metadata),
+    iconProps: createComponentOrElementIconProps(metadata),
   }
 }

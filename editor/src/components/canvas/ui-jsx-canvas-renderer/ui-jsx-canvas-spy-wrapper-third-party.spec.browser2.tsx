@@ -1,3 +1,4 @@
+/* eslint-disable jest/expect-expect */
 import * as MockReactThreeFiber from '@react-three/fiber'
 import * as mockWithEditorPackageJSON from '../../../../package.json'
 

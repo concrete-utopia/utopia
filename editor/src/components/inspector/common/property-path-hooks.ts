@@ -183,7 +183,7 @@ function getAttributeMetadatas(
 
 // TODO also memoize me!
 export function useInspectorInfoFromMultiselectMultiStyleAttribute<
-  PropertiesToControl extends ParsedPropertiesKeys
+  PropertiesToControl extends ParsedPropertiesKeys,
 >(
   multiselectAtProps: MultiselectAtProps<PropertiesToControl>,
   selectedProps: { [key in PropertiesToControl]: ReadonlyArray<any> },
@@ -363,9 +363,8 @@ export function useInspectorContext(): {
     transient: boolean,
   ) => void
 } {
-  const { onSubmitValue, onUnsetValue, selectedViewsRef } = React.useContext(
-    InspectorCallbackContext,
-  )
+  const { onSubmitValue, onUnsetValue, selectedViewsRef } =
+    React.useContext(InspectorCallbackContext)
   return React.useMemo(() => {
     return {
       onContextSubmitValue: onSubmitValue,
@@ -502,10 +501,8 @@ export function useInspectorInfo<P extends ParsedPropertiesKeys, T = ParsedPrope
 
   const controlStatus = calculateControlStatusWithUnknown(propertyStatus, isUnknown)
 
-  const {
-    onContextSubmitValue: onSingleSubmitValue,
-    onContextUnsetValue: onUnsetValue,
-  } = useInspectorContext()
+  const { onContextSubmitValue: onSingleSubmitValue, onContextUnsetValue: onUnsetValue } =
+    useInspectorContext()
 
   const target = useKeepReferenceEqualityIfPossible(
     useContextSelector(InspectorPropsContext, (contextData) => contextData.targetPath, deepEqual),
@@ -712,13 +709,8 @@ function getParsedValues<P extends ParsedPropertiesKeys>(
     propKeys,
     (propKey) => propKey,
     (propKey) => {
-      const {
-        simpleValues,
-        rawValues,
-        spiedValues,
-        computedValues,
-        attributeMetadatas,
-      } = simpleAndRawValues[propKey]
+      const { simpleValues, rawValues, spiedValues, computedValues, attributeMetadatas } =
+        simpleAndRawValues[propKey]
       if (propertyStatus.identical) {
         const simpleValue: Either<string, any> = Utils.defaultIfNull(
           left('Simple value missing'),
@@ -865,10 +857,8 @@ export function useInspectorInfoSimpleUntyped(
 
   const controlStatus: ControlStatus = getControlStatusFromPropertyStatus(propertyStatus)
 
-  const {
-    onContextSubmitValue: onSingleSubmitValue,
-    onContextUnsetValue: onSingleUnsetValue,
-  } = useInspectorContext()
+  const { onContextSubmitValue: onSingleSubmitValue, onContextUnsetValue: onSingleUnsetValue } =
+    useInspectorContext()
 
   const onUnsetValues = React.useCallback(() => {
     for (const propertyPath of propertyPaths) {
@@ -897,9 +887,10 @@ export function useInspectorInfoSimpleUntyped(
     [onSingleSubmitValue, untransformValue, propertyPaths, onSingleUnsetValue],
   )
 
-  const onTransientSubmitValue = React.useCallback((newValue) => onSubmitValue(newValue, true), [
-    onSubmitValue,
-  ])
+  const onTransientSubmitValue = React.useCallback(
+    (newValue: any) => onSubmitValue(newValue, true),
+    [onSubmitValue],
+  )
 
   const useSubmitValueFactory = useCallbackFactory(transformedValue, onSubmitValue)
 

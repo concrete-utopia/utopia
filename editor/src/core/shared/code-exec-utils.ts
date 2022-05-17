@@ -210,15 +210,17 @@ export const SafeFunctionCurriedErrorHandler = {
       codeWithSourceMapAttached,
     )
     fn.displayName = UTOPIA_FUNCTION_ROOT_NAME
-    const safeFn = (onError: ErrorHandler) => (...params: Array<unknown>) => {
-      try {
-        setGlobalEvaluatedFileName(sourceFile ?? 'unknown')
-        const [boundThis, ...otherParams] = params
-        return fn.bind(boundThis)(...contextValues, ...otherParams)
-      } catch (e) {
-        processErrorAndCallHandler(code, filePath, onError, e, true)
+    const safeFn =
+      (onError: ErrorHandler) =>
+      (...params: Array<unknown>) => {
+        try {
+          setGlobalEvaluatedFileName(sourceFile ?? 'unknown')
+          const [boundThis, ...otherParams] = params
+          return fn.bind(boundThis)(...contextValues, ...otherParams)
+        } catch (e: any) {
+          processErrorAndCallHandler(code, filePath, onError, e, true)
+        }
       }
-    }
     return safeFn
   },
 }[UTOPIA_FUNCTION_ROOT_NAME]
@@ -241,7 +243,7 @@ export function safeFunction(
       sourceMapWithoutTranspiledCode,
       extraParamKeys,
     )(onError)
-  } catch (e) {
+  } catch (e: any) {
     processErrorAndCallHandler(code, filePath, onError, e, true)
     return NO_OP
   }

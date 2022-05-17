@@ -1,12 +1,22 @@
-import update from 'immutability-helper'
-import { ElementPath } from '../../../core/shared/project-file-types'
+import update, { Spec } from 'immutability-helper'
+import { applyUtopiaJSXComponentsChanges } from '../../../core/model/project-file-utils'
+import { drop } from '../../../core/shared/array-utils'
+import { TopLevelElement, UtopiaJSXComponent } from '../../../core/shared/element-template'
+import { Imports, RevisionsState } from '../../../core/shared/project-file-types'
 import { keepDeepReferenceEqualityIfPossible } from '../../../utils/react-performance'
-import { Canvas } from '../../editor/action-types'
+import {
+  getProjectContentKeyPathElements,
+  ProjectContentFile,
+  ProjectContentsTree,
+  ProjectContentTreeRoot,
+} from '../../assets'
 import { EditorState, EditorStatePatch } from '../../editor/store/editor-state'
 import { CommandDescription } from '../canvas-strategies/interaction-state'
 import { AdjustCssLengthProperty, runAdjustCssLengthProperty } from './adjust-css-length-command'
 import { AdjustNumberProperty, runAdjustNumberProperty } from './adjust-number-command'
+import { ConvertToAbsolute, runConvertToAbsolute } from './convert-to-absolute-command'
 import { mergePatches } from './merge-patches'
+import { ReorderElement, runReorderElement } from './reorder-element-command'
 import { ReparentElement, runReparentElement } from './reparent-element-command'
 import { runSetSnappingGuidelines, SetSnappingGuidelines } from './set-snapping-guidelines-command'
 import { runStrategySwitchedCommand, StrategySwitched } from './strategy-switched-command'
@@ -16,6 +26,7 @@ import {
 } from './update-highlighted-views-command'
 import { runUpdateSelectedViews, UpdateSelectedViews } from './update-selected-views-command'
 import { runWildcardPatch, WildcardPatch } from './wildcard-patch-command'
+import { runSetCssLengthProperty, SetCssLengthProperty } from './set-css-length-command'
 
 export interface CommandFunctionResult {
   editorStatePatches: Array<EditorStatePatch>
@@ -39,6 +50,9 @@ export type CanvasCommand =
   | UpdateSelectedViews
   | UpdateHighlightedViews
   | SetSnappingGuidelines
+  | ConvertToAbsolute
+  | SetCssLengthProperty
+  | ReorderElement
 
 export const runCanvasCommand: CommandFunction<CanvasCommand> = (
   editorState: EditorState,
@@ -61,6 +75,12 @@ export const runCanvasCommand: CommandFunction<CanvasCommand> = (
       return runUpdateHighlightedViews(editorState, command)
     case 'SET_SNAPPING_GUIDELINES':
       return runSetSnappingGuidelines(editorState, command)
+    case 'CONVERT_TO_ABSOLUTE':
+      return runConvertToAbsolute(editorState, command)
+    case 'SET_CSS_LENGTH_PROPERTY':
+      return runSetCssLengthProperty(editorState, command)
+    case 'REORDER_ELEMENT':
+      return runReorderElement(editorState, command)
     default:
       const _exhaustiveCheck: never = command
       throw new Error(`Unhandled canvas command ${JSON.stringify(command)}`)
@@ -129,4 +149,58 @@ export function updateEditorStateWithPatches(
   return patches.reduce((acc, curr) => {
     return update(acc, curr)
   }, state)
+}
+
+export function getPatchForComponentChange(
+  topLevelElements: Array<TopLevelElement>,
+  newUtopiaComponents: Array<UtopiaJSXComponent>,
+  imports: Imports,
+  filePath: string,
+): EditorStatePatch {
+  const updatedTopLevelElements = applyUtopiaJSXComponentsChanges(
+    topLevelElements,
+    newUtopiaComponents,
+  )
+  const projectContentFilePatch: Spec<ProjectContentFile> = {
+    content: {
+      fileContents: {
+        revisionsState: {
+          $set: RevisionsState.ParsedAhead,
+        },
+        parsed: {
+          topLevelElements: {
+            $set: updatedTopLevelElements,
+          },
+          imports: {
+            $set: imports,
+          },
+        },
+      },
+    },
+  }
+  // ProjectContentTreeRoot is a bit awkward to patch.
+  const pathElements = getProjectContentKeyPathElements(filePath)
+  if (pathElements.length === 0) {
+    throw new Error('Invalid path length.')
+  }
+  const remainderPath = drop(1, pathElements)
+  const projectContentsTreePatch: Spec<ProjectContentsTree> = remainderPath.reduceRight(
+    (working: Spec<ProjectContentsTree>, pathPart: string) => {
+      return {
+        children: {
+          [pathPart]: working,
+        },
+      }
+    },
+    projectContentFilePatch,
+  )
+
+  // Finally patch the last part of the path in.
+  const projectContentTreeRootPatch: Spec<ProjectContentTreeRoot> = {
+    [pathElements[0]]: projectContentsTreePatch,
+  }
+
+  return {
+    projectContents: projectContentTreeRootPatch,
+  }
 }

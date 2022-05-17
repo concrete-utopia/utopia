@@ -839,6 +839,7 @@ function printCodeImpl(
           : TS.createNamedImports(
               missingImports.map((i) => {
                 return TS.createImportSpecifier(
+                  false,
                   TS.createIdentifier(i.name),
                   TS.createIdentifier(i.alias),
                 )
@@ -1694,20 +1695,19 @@ function parseParam(
   const parsedExpression: Either<
     string,
     WithParserMetadata<JSXAttributeOtherJavaScript | undefined>
-  > =
-    param.initializer == null
-      ? right(withParserMetadata(undefined, existingHighlightBounds, [], []))
-      : parseAttributeOtherJavaScript(
-          file,
-          sourceText,
-          filename,
-          imports,
-          topLevelNames,
-          null,
-          param.initializer,
-          existingHighlightBounds,
-          existingUIDs,
-        )
+  > = param.initializer == null
+    ? right(withParserMetadata(undefined, existingHighlightBounds, [], []))
+    : parseAttributeOtherJavaScript(
+        file,
+        sourceText,
+        filename,
+        imports,
+        topLevelNames,
+        null,
+        param.initializer,
+        existingHighlightBounds,
+        existingUIDs,
+      )
   return flatMapEither((paramExpression) => {
     const parsedBindingName = parseBindingName(
       param.name,

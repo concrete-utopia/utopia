@@ -11,10 +11,13 @@ interface ConfirmCloseDialogProps {
   currentDesignerFile: string | null
 }
 
-export const ConfirmCloseDialog: React.FunctionComponent<ConfirmCloseDialogProps> = (props) => {
-  const close = React.useCallback(() => props.dispatch([EditorActions.hideModal()], 'everyone'), [
-    props,
-  ])
+export const ConfirmCloseDialog: React.FunctionComponent<
+  React.PropsWithChildren<ConfirmCloseDialogProps>
+> = (props) => {
+  const close = React.useCallback(
+    () => props.dispatch([EditorActions.hideModal()], 'everyone'),
+    [props],
+  )
   return (
     <Dialog
       title='Close file'
@@ -27,7 +30,9 @@ export const ConfirmCloseDialog: React.FunctionComponent<ConfirmCloseDialogProps
   )
 }
 
-const DialogBody: React.FunctionComponent<ConfirmCloseDialogProps> = (props) => {
+const DialogBody: React.FunctionComponent<React.PropsWithChildren<ConfirmCloseDialogProps>> = (
+  props,
+) => {
   let message: string = `Do you want to save the changes you made?`
   if (props.currentDesignerFile != null) {
     message = `Do you want to save the changes you made to {props.currentDesignerFile}?`
@@ -40,7 +45,9 @@ const DialogBody: React.FunctionComponent<ConfirmCloseDialogProps> = (props) => 
   )
 }
 
-const SaveAndCloseButton: React.FunctionComponent<ConfirmCloseDialogProps> = (props) => {
+const SaveAndCloseButton: React.FunctionComponent<
+  React.PropsWithChildren<ConfirmCloseDialogProps>
+> = (props) => {
   const closeClick = React.useCallback(() => {
     props.dispatch([EditorActions.saveCurrentFile(), EditorActions.hideModal()], 'everyone')
   }, [props])
@@ -51,7 +58,9 @@ const SaveAndCloseButton: React.FunctionComponent<ConfirmCloseDialogProps> = (pr
   )
 }
 
-const DontSaveButton: React.FunctionComponent<ConfirmCloseDialogProps> = (props) => {
+const DontSaveButton: React.FunctionComponent<React.PropsWithChildren<ConfirmCloseDialogProps>> = (
+  props,
+) => {
   const dontSaveClick = React.useCallback(() => {
     let actions: Array<EditorAction> = []
     if (props.currentDesignerFile != null) {
@@ -68,7 +77,9 @@ const DontSaveButton: React.FunctionComponent<ConfirmCloseDialogProps> = (props)
   )
 }
 
-const CancelButton: React.FunctionComponent<ConfirmCloseDialogProps> = (props) => {
+const CancelButton: React.FunctionComponent<React.PropsWithChildren<ConfirmCloseDialogProps>> = (
+  props,
+) => {
   const cancelClick = React.useCallback(() => {
     props.dispatch([EditorActions.hideModal()], 'everyone')
   }, [props])

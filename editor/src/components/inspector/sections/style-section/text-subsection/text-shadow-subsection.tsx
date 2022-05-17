@@ -139,24 +139,18 @@ const TextShadowItem = React.memo<TextShadowItemProps>((props) => {
   const [colorSubmitValue, colorTransientSubmitValue] = props.useSubmitValueFactory(
     getIndexedUpdateTextShadowColor(props.index),
   )
-  const [
-    offsetXSubmitValue,
-    offsetXTransientSubmitValue,
-  ] = useWrappedSubmitFactoryEmptyOrUnknownOnSubmitValue(
-    props.useSubmitValueFactory(getIndexedUpdateTextShadowOffsetX(props.index)),
-  )
-  const [
-    offsetYSubmitValue,
-    offsetYTransientSubmitValue,
-  ] = useWrappedSubmitFactoryEmptyOrUnknownOnSubmitValue(
-    props.useSubmitValueFactory(getIndexedUpdateTextShadowOffsetY(props.index)),
-  )
-  const [
-    blurRadiusSubmitValue,
-    blurRadiusTransientSubmitValue,
-  ] = useWrappedSubmitFactoryEmptyOrUnknownOnSubmitValue(
-    props.useSubmitValueFactory(getIndexedUpdateTextShadowBlurRadius(props.index)),
-  )
+  const [offsetXSubmitValue, offsetXTransientSubmitValue] =
+    useWrappedSubmitFactoryEmptyOrUnknownOnSubmitValue(
+      props.useSubmitValueFactory(getIndexedUpdateTextShadowOffsetX(props.index)),
+    )
+  const [offsetYSubmitValue, offsetYTransientSubmitValue] =
+    useWrappedSubmitFactoryEmptyOrUnknownOnSubmitValue(
+      props.useSubmitValueFactory(getIndexedUpdateTextShadowOffsetY(props.index)),
+    )
+  const [blurRadiusSubmitValue, blurRadiusTransientSubmitValue] =
+    useWrappedSubmitFactoryEmptyOrUnknownOnSubmitValue(
+      props.useSubmitValueFactory(getIndexedUpdateTextShadowBlurRadius(props.index)),
+    )
   const [deleteTextShadowItemSubmitValue] = useWrappedSubmitFactoryEmptyOrUnknownOnSubmitValue(
     props.useSubmitValueFactory(getIndexedSpliceTextShadow(props.index)),
   )

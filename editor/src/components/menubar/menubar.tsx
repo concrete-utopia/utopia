@@ -51,7 +51,9 @@ export interface MenuTileProps extends React.HTMLAttributes<HTMLDivElement>, Til
   size: keyof typeof UtopiaTheme.layout.rowHeight
 }
 
-export const MenuTile: React.FunctionComponent<MenuTileProps> = (props) => {
+export const MenuTile: React.FunctionComponent<React.PropsWithChildren<MenuTileProps>> = (
+  props,
+) => {
   const [hovered, setHovered] = React.useState(false)
   const colorTheme = useColorTheme()
   const handleOnMouseOver = React.useCallback(() => setHovered(true), [])

@@ -113,10 +113,8 @@ export function useInspectorInfoForPropertyControl(
   const controlStyles = getControlStyles(controlStatus)
   const propertyStatusToReturn = useKeepReferenceEqualityIfPossible(propertyStatus)
 
-  const {
-    onContextSubmitValue: onSingleSubmitValue,
-    onContextUnsetValue: onSingleUnsetValue,
-  } = useInspectorContext()
+  const { onContextSubmitValue: onSingleSubmitValue, onContextUnsetValue: onSingleUnsetValue } =
+    useInspectorContext()
 
   const parserFn = unwrapperAndParserForPropertyControl(control)
   const printerFn = printerForPropertyControl(control)
@@ -137,9 +135,10 @@ export function useInspectorInfoForPropertyControl(
     [onSingleSubmitValue, printerFn, propertyPath, onSingleUnsetValue],
   )
 
-  const onTransientSubmitValue = React.useCallback((newValue) => onSubmitValue(newValue, true), [
-    onSubmitValue,
-  ])
+  const onTransientSubmitValue = React.useCallback(
+    (newValue: any) => onSubmitValue(newValue, true),
+    [onSubmitValue],
+  )
 
   const useSubmitValueFactory = useCallbackFactory(parsedValue, onSubmitValue)
 
@@ -210,9 +209,7 @@ type FullPropertyControlsAndTargets = {
 
 const emptyControls: PropertyControls = {}
 
-export function useGetPropertyControlsForSelectedComponents(): Array<
-  FullPropertyControlsAndTargets
-> {
+export function useGetPropertyControlsForSelectedComponents(): Array<FullPropertyControlsAndTargets> {
   const selectedViews = useRefSelectedViews()
 
   const selectedPropertyControls = useEditorState(

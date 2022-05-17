@@ -131,6 +131,7 @@ function DomWalkerWrapper(props: UiJsxCanvasPropsWithErrorCallback) {
 }
 
 interface CanvasErrorBoundaryProps extends CanvasReactReportErrorCallback {
+  children?: React.ReactNode
   filePath: string
   projectContents: ProjectContentTreeRoot
   requireFn: CurriedUtopiaRequireFn | null
@@ -198,6 +199,7 @@ export class CanvasErrorBoundary extends React.Component<
 }
 
 interface RemoteDependencyBoundaryProps {
+  children?: React.ReactNode
   projectContents: ProjectContentTreeRoot
   requireFn: CurriedUtopiaRequireFn | null
 }

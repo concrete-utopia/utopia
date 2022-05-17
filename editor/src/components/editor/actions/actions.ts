@@ -816,10 +816,11 @@ function switchAndUpdateFrames(
     const child = MetadataUtils.findElementByElementPath(editor.jsxMetadata, childPath)
     if (child?.globalFrame != null) {
       // if the globalFrame is null, this child is a non-layoutable so just skip it
-      const isParentOfChildFlex = MetadataUtils.isParentYogaLayoutedContainerAndElementParticipatesInLayout(
-        child.elementPath,
-        withChildrenUpdated.jsxMetadata,
-      )
+      const isParentOfChildFlex =
+        MetadataUtils.isParentYogaLayoutedContainerAndElementParticipatesInLayout(
+          child.elementPath,
+          withChildrenUpdated.jsxMetadata,
+        )
       framesAndTargets.push(
         getFrameChange(child.elementPath, child.globalFrame, isParentOfChildFlex),
       )
@@ -1695,6 +1696,10 @@ export const UPDATE_FNS = {
       ...withMovedTemplate,
       selectedViews: newPaths,
       highlightedViews: [],
+      canvas: {
+        ...withMovedTemplate.canvas,
+        domWalkerInvalidateCount: withMovedTemplate.canvas.domWalkerInvalidateCount + 1,
+      },
     }
   },
   SET_Z_INDEX: (action: SetZIndex, editor: EditorModel, derived: DerivedState): EditorModel => {
@@ -3897,9 +3902,9 @@ export const UPDATE_FNS = {
           projectContents: updatedProjectContents,
         }
         const oldFolderRegex = new RegExp('^' + action.filename)
-        const filesToDelete: Array<string> = Object.keys(
-          updatedEditor.projectContents,
-        ).filter((key) => oldFolderRegex.test(key))
+        const filesToDelete: Array<string> = Object.keys(updatedEditor.projectContents).filter(
+          (key) => oldFolderRegex.test(key),
+        )
         return filesToDelete.reduce((working, filename) => {
           return UPDATE_FNS.DELETE_FILE(
             { action: 'DELETE_FILE', filename: filename },
@@ -4925,10 +4930,11 @@ function alignOrDistributeCanvasRects(
 
   function addChange(target: ElementPath, frame: CanvasRectangle | null): void {
     if (frame != null) {
-      const isParentFlex = MetadataUtils.isParentYogaLayoutedContainerAndElementParticipatesInLayout(
-        target,
-        componentMetadata,
-      )
+      const isParentFlex =
+        MetadataUtils.isParentYogaLayoutedContainerAndElementParticipatesInLayout(
+          target,
+          componentMetadata,
+        )
       results.push(getFrameChange(target, frame, isParentFlex))
     }
   }

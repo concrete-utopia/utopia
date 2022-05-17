@@ -13,7 +13,9 @@ interface NavigatorHintProps {
   getMarginForHint: () => number
 }
 
-export const NavigatorHintTop: React.FunctionComponent<NavigatorHintProps> = React.memo((props) => {
+export const NavigatorHintTop: React.FunctionComponent<
+  React.PropsWithChildren<NavigatorHintProps>
+> = React.memo((props) => {
   const colorTheme = useColorTheme()
   if (props.shouldBeShown) {
     return (
@@ -35,29 +37,29 @@ export const NavigatorHintTop: React.FunctionComponent<NavigatorHintProps> = Rea
   }
 })
 
-export const NavigatorHintBottom: React.FunctionComponent<NavigatorHintProps> = React.memo(
-  (props) => {
-    const colorTheme = useColorTheme()
-    if (props.shouldBeShown) {
-      return (
-        <div
-          style={{
-            marginLeft: props.getMarginForHint(),
-            backgroundColor: colorTheme.navigatorResizeHintBorder.value,
-            height: 2,
-            position: 'absolute',
-            bottom: 0,
-            width: '100%',
-            borderRadius: '2px',
-            overflow: 'hidden',
-          }}
-        />
-      )
-    } else {
-      return null
-    }
-  },
-)
+export const NavigatorHintBottom: React.FunctionComponent<
+  React.PropsWithChildren<NavigatorHintProps>
+> = React.memo((props) => {
+  const colorTheme = useColorTheme()
+  if (props.shouldBeShown) {
+    return (
+      <div
+        style={{
+          marginLeft: props.getMarginForHint(),
+          backgroundColor: colorTheme.navigatorResizeHintBorder.value,
+          height: 2,
+          position: 'absolute',
+          bottom: 0,
+          width: '100%',
+          borderRadius: '2px',
+          overflow: 'hidden',
+        }}
+      />
+    )
+  } else {
+    return null
+  }
+})
 
 interface VisiblityIndicatorProps {
   shouldShow: boolean
@@ -66,54 +68,54 @@ interface VisiblityIndicatorProps {
   onClick: () => void
 }
 
-export const VisibilityIndicator: React.FunctionComponent<VisiblityIndicatorProps> = React.memo(
-  (props) => {
-    const color = props.selected ? 'on-highlight-main' : 'subdued'
+export const VisibilityIndicator: React.FunctionComponent<
+  React.PropsWithChildren<VisiblityIndicatorProps>
+> = React.memo((props) => {
+  const color = props.selected ? 'on-highlight-main' : 'subdued'
 
-    return (
-      <Button
-        onClick={props.onClick}
-        style={{
-          marginRight: 4,
-          height: 18,
-          width: 18,
-          opacity: props.shouldShow ? 1 : 0,
-        }}
-      >
-        {props.visibilityEnabled ? (
-          <Icons.EyeOpen color={color} style={{ transform: 'scale(.85)' }} />
-        ) : (
-          <Icons.EyeStrikethrough color={color} />
-        )}
-      </Button>
-    )
-  },
-)
+  return (
+    <Button
+      onClick={props.onClick}
+      style={{
+        marginRight: 4,
+        height: 18,
+        width: 18,
+        opacity: props.shouldShow ? 1 : 0,
+      }}
+    >
+      {props.visibilityEnabled ? (
+        <Icons.EyeOpen color={color} style={{ transform: 'scale(.85)' }} />
+      ) : (
+        <Icons.EyeStrikethrough color={color} />
+      )}
+    </Button>
+  )
+})
 
 interface OriginalComponentNameLabelProps {
   selected: boolean
   instanceOriginalComponentName: string | null
 }
 
-export const OriginalComponentNameLabel: React.FunctionComponent<OriginalComponentNameLabelProps> = React.memo(
-  (props) => {
-    const colorTheme = useColorTheme()
-    return (
-      <div
-        style={{
-          fontStyle: 'normal',
-          paddingRight: 4,
-          paddingLeft: 4,
-          fontSize: 10,
-          color: props.selected ? colorTheme.white.value : colorTheme.navigatorComponentName.value,
-          display: props.instanceOriginalComponentName == null ? 'none' : undefined,
-        }}
-      >
-        {props.instanceOriginalComponentName}
-      </div>
-    )
-  },
-)
+export const OriginalComponentNameLabel: React.FunctionComponent<
+  React.PropsWithChildren<OriginalComponentNameLabelProps>
+> = React.memo((props) => {
+  const colorTheme = useColorTheme()
+  return (
+    <div
+      style={{
+        fontStyle: 'normal',
+        paddingRight: 4,
+        paddingLeft: 4,
+        fontSize: 10,
+        color: props.selected ? colorTheme.white.value : colorTheme.navigatorComponentName.value,
+        display: props.instanceOriginalComponentName == null ? 'none' : undefined,
+      }}
+    >
+      {props.instanceOriginalComponentName}
+    </div>
+  )
+})
 
 interface NavigatorItemActionSheetProps {
   selected: boolean
@@ -124,27 +126,27 @@ interface NavigatorItemActionSheetProps {
   dispatch: EditorDispatch
 }
 
-export const NavigatorItemActionSheet: React.FunctionComponent<NavigatorItemActionSheetProps> = React.memo(
-  (props) => {
-    const { elementPath, dispatch } = props
+export const NavigatorItemActionSheet: React.FunctionComponent<
+  React.PropsWithChildren<NavigatorItemActionSheetProps>
+> = React.memo((props) => {
+  const { elementPath, dispatch } = props
 
-    const toggleHidden = React.useCallback(() => {
-      dispatch([EditorActions.toggleHidden([elementPath])], 'everyone')
-    }, [dispatch, elementPath])
-    return (
-      <SectionActionSheet>
-        <OriginalComponentNameLabel
-          selected={props.selected}
-          instanceOriginalComponentName={props.instanceOriginalComponentName}
-        />
-        <VisibilityIndicator
-          key={`visibility-indicator-${EP.toVarSafeComponentId(elementPath)}`}
-          shouldShow={props.highlighted || props.selected || !props.isVisibleOnCanvas}
-          visibilityEnabled={props.isVisibleOnCanvas}
-          selected={props.selected}
-          onClick={toggleHidden}
-        />
-      </SectionActionSheet>
-    )
-  },
-)
+  const toggleHidden = React.useCallback(() => {
+    dispatch([EditorActions.toggleHidden([elementPath])], 'everyone')
+  }, [dispatch, elementPath])
+  return (
+    <SectionActionSheet>
+      <OriginalComponentNameLabel
+        selected={props.selected}
+        instanceOriginalComponentName={props.instanceOriginalComponentName}
+      />
+      <VisibilityIndicator
+        key={`visibility-indicator-${EP.toVarSafeComponentId(elementPath)}`}
+        shouldShow={props.highlighted || props.selected || !props.isVisibleOnCanvas}
+        visibilityEnabled={props.isVisibleOnCanvas}
+        selected={props.selected}
+        onClick={toggleHidden}
+      />
+    </SectionActionSheet>
+  )
+})

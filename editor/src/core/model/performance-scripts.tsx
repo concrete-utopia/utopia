@@ -229,8 +229,10 @@ export function useTriggerResizePerformanceTest(): () => void {
     ]).entireUpdateFinished
 
     const target = selectedViews.current[0]
-    const targetFrame = MetadataUtils.findElementByElementPath(metadata.current, target)
-      ?.globalFrame
+    const targetFrame = MetadataUtils.findElementByElementPath(
+      metadata.current,
+      target,
+    )?.globalFrame
     const targetStartPoint =
       targetFrame != null
         ? ({

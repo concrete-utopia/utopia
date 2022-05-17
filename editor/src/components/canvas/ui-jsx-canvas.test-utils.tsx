@@ -272,7 +272,7 @@ export function renderCanvasReturnResultAndError(
     )
     formattedSpyEnabled = Prettier.format(flatFormat, { parser: 'html' })
     errorsReportedSpyEnabled = errorsReported
-  } catch (e) {
+  } catch (e: any) {
     // TODO instead of relying on this hack here, we should create a new test function that runs the real react render instead of ReactDOMServer.renderToStaticMarkup
     processErrorWithSourceMap(UiFilePath, uiFileCode, e, true)
     errorsReportedSpyEnabled = [e]
@@ -292,7 +292,7 @@ export function renderCanvasReturnResultAndError(
     )
     formattedSpyDisabled = Prettier.format(flatFormatSpyDisabled, { parser: 'html' })
     errorsReportedSpyDisabled = errorsReported
-  } catch (e) {
+  } catch (e: any) {
     // TODO instead of relying on this hack here, we should create a new test function that runs the real react render instead of ReactDOMServer.renderToStaticMarkup
     processErrorWithSourceMap(UiFilePath, uiFileCode, e, true)
     errorsReportedSpyDisabled = [e]
@@ -415,7 +415,7 @@ export function testCanvasErrorInline(
   expect(errorsReportedSpyEnabled.length).toEqual(errorsReportedSpyDisabled.length)
   expect(errorsReportedSpyEnabled.length).toBeGreaterThan(0)
   const errorsToCheck = errorsReportedSpyEnabled.map((error) => {
-    let realError = error.error != null ? error.error : ((error as unknown) as FancyError) // is this conversion needed?
+    let realError = error.error != null ? error.error : (error as unknown as FancyError) // is this conversion needed?
     return {
       name: realError.name,
       message: realError.message,

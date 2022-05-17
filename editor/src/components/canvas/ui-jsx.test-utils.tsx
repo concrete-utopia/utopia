@@ -307,6 +307,7 @@ export async function renderTestEditorWithModel(
         domWalkerMutableState={domWalkerMutableState}
       />
     </React.Profiler>,
+    { legacyRoot: true },
   )
 
   await act(async () => {

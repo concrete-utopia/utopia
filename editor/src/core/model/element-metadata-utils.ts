@@ -190,17 +190,20 @@ export const MetadataUtils = {
       return scene.props[ResizesContentProp] ?? false
     }
   },
-  isProbablySceneFromMetadata(jsxMetadata: ElementInstanceMetadataMap, path: ElementPath): boolean {
-    const elementMetadata = MetadataUtils.findElementByElementPath(jsxMetadata, path)
+  isProbablySceneFromMetadata(element: ElementInstanceMetadata | null): boolean {
     return (
-      elementMetadata != null &&
-      elementMetadata.importInfo != null &&
+      element != null &&
+      element.importInfo != null &&
       foldEither(
         (_) => false,
         (info) => info.path === 'utopia-api' && info.originalName === 'Scene',
-        elementMetadata.importInfo,
+        element.importInfo,
       )
     )
+  },
+  isProbablyScene(jsxMetadata: ElementInstanceMetadataMap, path: ElementPath): boolean {
+    const elementMetadata = MetadataUtils.findElementByElementPath(jsxMetadata, path)
+    return MetadataUtils.isProbablySceneFromMetadata(elementMetadata)
   },
   findElements(
     elementMap: ElementInstanceMetadataMap,
@@ -274,9 +277,8 @@ export const MetadataUtils = {
   isPositionAbsolute(instance: ElementInstanceMetadata | null): boolean {
     return instance?.specialSizeMeasurements.position === 'absolute'
   },
-  isButton(target: ElementPath, metadata: ElementInstanceMetadataMap): boolean {
-    const instance = MetadataUtils.findElementByElementPath(metadata, target)
-    const elementName = MetadataUtils.getJSXElementName(maybeEitherToMaybe(instance?.element))
+  isButtonFromMetadata(element: ElementInstanceMetadata | null): boolean {
+    const elementName = MetadataUtils.getJSXElementName(maybeEitherToMaybe(element?.element))
     if (
       elementName != null &&
       PP.depth(elementName.propertyPath) === 0 &&
@@ -285,8 +287,8 @@ export const MetadataUtils = {
       return true
     }
     let buttonRoleFound: boolean = false
-    if (instance != null) {
-      forEachRight(instance.element, (elem) => {
+    if (element != null) {
+      forEachRight(element.element, (elem) => {
         if (isJSXElement(elem)) {
           const attrResult = getSimpleAttributeAtPath(right(elem.props), PP.create(['role']))
           forEachRight(attrResult, (value) => {
@@ -300,8 +302,12 @@ export const MetadataUtils = {
     if (buttonRoleFound) {
       return true
     } else {
-      return instance?.specialSizeMeasurements.htmlElementName.toLowerCase() === 'button'
+      return element?.specialSizeMeasurements.htmlElementName.toLowerCase() === 'button'
     }
+  },
+  isButton(target: ElementPath, metadata: ElementInstanceMetadataMap): boolean {
+    const instance = MetadataUtils.findElementByElementPath(metadata, target)
+    return MetadataUtils.isButtonFromMetadata(instance)
   },
   getYogaSizeProps(
     target: ElementPath,
@@ -517,7 +523,8 @@ export const MetadataUtils = {
     (metadata: ElementInstanceMetadataMap): ElementPath[] => {
       // Note: This will not necessarily be representative of the structured ordering in
       // the code that produced these elements.
-      const projectTree = buildTree(objectValues(metadata).map((m) => m.elementPath))
+      const paths = objectValues(metadata).map((m) => m.elementPath)
+      const projectTree = buildTree(paths)
 
       // This function needs to explicitly return the paths in a depth first manner
       let result: Array<ElementPath> = []
@@ -531,7 +538,9 @@ export const MetadataUtils = {
       const storyboardChildren = MetadataUtils.getAllStoryboardChildrenPaths(metadata)
       fastForEach(storyboardChildren, recurseElement)
 
-      return uniqBy<ElementPath>(result, EP.pathsEqual)
+      const uniqueResult = uniqBy<ElementPath>(result, EP.pathsEqual)
+
+      return uniqueResult
     },
     { maxSize: 1 },
   ),
@@ -824,6 +833,84 @@ export const MetadataUtils = {
       return null
     }
   },
+  getElementLabelFromMetadata(
+    element: ElementInstanceMetadata,
+    staticName: JSXElementName | null = null,
+  ): string {
+    const sceneLabel = element.label // KILLME?
+    const dataLabelProp = MetadataUtils.getElementLabelFromProps(element)
+    if (dataLabelProp != null) {
+      return dataLabelProp
+    } else if (sceneLabel != null) {
+      return sceneLabel
+    } else {
+      const possibleName: string = foldEither(
+        (tagName) => {
+          const staticNameString = optionalMap(getJSXElementNameAsString, staticName)
+          return staticNameString ?? tagName
+        },
+        (jsxElement) => {
+          switch (jsxElement.type) {
+            case 'JSX_ELEMENT':
+              const lastNamePart = getJSXElementNameLastPart(jsxElement.name)
+              // Check for certain elements and check if they have text content within them.
+              if (ElementsToDrillIntoForTextContent.includes(lastNamePart)) {
+                const firstChild = jsxElement.children[0]
+                if (firstChild != null) {
+                  if (isJSXTextBlock(firstChild)) {
+                    return firstChild.text
+                  }
+                  if (isJSXArbitraryBlock(firstChild)) {
+                    return `{${firstChild.originalJavascript}}`
+                  }
+                }
+              }
+              // With images, take their alt and src properties as possible names first.
+              if (lastNamePart === 'img') {
+                const alt = element.props['alt']
+                if (alt != null && typeof alt === 'string' && alt.length > 0) {
+                  return alt
+                }
+                const src = element.props['src']
+                if (src != null && typeof src === 'string' && src.length > 0) {
+                  return src
+                }
+              }
+              // For Text elements, use their text property if it exists.
+              if (lastNamePart === 'Text') {
+                const text = element.props['text']
+                if (text != null && typeof text === 'string' && text.length > 0) {
+                  return text
+                }
+              }
+
+              return lastNamePart
+            case 'JSX_TEXT_BLOCK':
+              return '(text)'
+            case 'JSX_ARBITRARY_BLOCK':
+              return '(code)'
+            case 'JSX_FRAGMENT':
+              return '(fragment)'
+            default:
+              const _exhaustiveCheck: never = jsxElement
+              throw new Error(`Unexpected element type ${jsxElement}`)
+          }
+        },
+        element.element,
+      )
+      if (possibleName != null) {
+        return possibleName
+      }
+      if (isRight(element.element)) {
+        if (isJSXElement(element.element.value)) {
+          return getJSXElementNameLastPart(element.element.value.name).toString()
+        }
+      }
+    }
+
+    // Default catch all name, will probably avoid some odd cases in the future.
+    return 'Element'
+  },
   getElementLabel(
     path: ElementPath,
     metadata: ElementInstanceMetadataMap,
@@ -831,76 +918,7 @@ export const MetadataUtils = {
   ): string {
     const element = this.findElementByElementPath(metadata, path)
     if (element != null) {
-      const sceneLabel = element.label // KILLME?
-      const dataLabelProp = MetadataUtils.getElementLabelFromProps(element)
-      if (dataLabelProp != null) {
-        return dataLabelProp
-      } else if (sceneLabel != null) {
-        return sceneLabel
-      } else {
-        const possibleName: string = foldEither(
-          (tagName) => {
-            const staticNameString = optionalMap(getJSXElementNameAsString, staticName)
-            return staticNameString ?? tagName
-          },
-          (jsxElement) => {
-            switch (jsxElement.type) {
-              case 'JSX_ELEMENT':
-                const lastNamePart = getJSXElementNameLastPart(jsxElement.name)
-                // Check for certain elements and check if they have text content within them.
-                if (ElementsToDrillIntoForTextContent.includes(lastNamePart)) {
-                  const firstChild = jsxElement.children[0]
-                  if (firstChild != null) {
-                    if (isJSXTextBlock(firstChild)) {
-                      return firstChild.text
-                    }
-                    if (isJSXArbitraryBlock(firstChild)) {
-                      return `{${firstChild.originalJavascript}}`
-                    }
-                  }
-                }
-                // With images, take their alt and src properties as possible names first.
-                if (lastNamePart === 'img') {
-                  const alt = element.props['alt']
-                  if (alt != null && typeof alt === 'string' && alt.length > 0) {
-                    return alt
-                  }
-                  const src = element.props['src']
-                  if (src != null && typeof src === 'string' && src.length > 0) {
-                    return src
-                  }
-                }
-                // For Text elements, use their text property if it exists.
-                if (lastNamePart === 'Text') {
-                  const text = element.props['text']
-                  if (text != null && typeof text === 'string' && text.length > 0) {
-                    return text
-                  }
-                }
-
-                return lastNamePart
-              case 'JSX_TEXT_BLOCK':
-                return '(text)'
-              case 'JSX_ARBITRARY_BLOCK':
-                return '(code)'
-              case 'JSX_FRAGMENT':
-                return '(fragment)'
-              default:
-                const _exhaustiveCheck: never = jsxElement
-                throw new Error(`Unexpected element type ${jsxElement}`)
-            }
-          },
-          element.element,
-        )
-        if (possibleName != null) {
-          return possibleName
-        }
-        if (isRight(element.element)) {
-          if (isJSXElement(element.element.value)) {
-            return getJSXElementNameLastPart(element.element.value.name).toString()
-          }
-        }
-      }
+      return MetadataUtils.getElementLabelFromMetadata(element, staticName)
     }
 
     // Default catch all name, will probably avoid some odd cases in the future.
@@ -1191,8 +1209,10 @@ export const MetadataUtils = {
     elementMap: ElementInstanceMetadataMap,
     path: ElementPath,
   ): ElementPath | null {
-    const specialSizeMeasurements = MetadataUtils.findElementByElementPath(elementMap, path)
-      ?.specialSizeMeasurements
+    const specialSizeMeasurements = MetadataUtils.findElementByElementPath(
+      elementMap,
+      path,
+    )?.specialSizeMeasurements
     const parentPath = EP.parentPath(path)
     if (parentPath == null || specialSizeMeasurements == null) {
       return null
@@ -1208,10 +1228,14 @@ export const MetadataUtils = {
     path: ElementPath,
   ): ElementPath | null {
     const parentPath = EP.parentPath(path)
-    const specialSizeMeasurements = MetadataUtils.findElementByElementPath(elementMap, path)
-      ?.specialSizeMeasurements
-    const parentSizeMeasurements = MetadataUtils.findElementByElementPath(elementMap, parentPath)
-      ?.specialSizeMeasurements
+    const specialSizeMeasurements = MetadataUtils.findElementByElementPath(
+      elementMap,
+      path,
+    )?.specialSizeMeasurements
+    const parentSizeMeasurements = MetadataUtils.findElementByElementPath(
+      elementMap,
+      parentPath,
+    )?.specialSizeMeasurements
     if (parentPath == null || specialSizeMeasurements == null || parentSizeMeasurements == null) {
       return null
     }
@@ -1221,8 +1245,7 @@ export const MetadataUtils = {
       return this.findNearestAncestorFlexDirectionChange(elementMap, parentPath)
     }
   },
-  isFocusableComponent(path: ElementPath, metadata: ElementInstanceMetadataMap): boolean {
-    const element = MetadataUtils.findElementByElementPath(metadata, path)
+  isFocusableComponentFromMetadata(element: ElementInstanceMetadata | null): boolean {
     const elementName = MetadataUtils.getJSXElementName(maybeEitherToMaybe(element?.element))
     if (element?.isEmotionOrStyledComponent) {
       return false
@@ -1241,6 +1264,10 @@ export const MetadataUtils = {
     } else {
       return false
     }
+  },
+  isFocusableComponent(path: ElementPath, metadata: ElementInstanceMetadataMap): boolean {
+    const element = MetadataUtils.findElementByElementPath(metadata, path)
+    return MetadataUtils.isFocusableComponentFromMetadata(element)
   },
   isFocusableLeafComponent(path: ElementPath, metadata: ElementInstanceMetadataMap): boolean {
     return (

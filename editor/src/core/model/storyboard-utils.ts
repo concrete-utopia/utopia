@@ -220,9 +220,8 @@ export function addStoryboardFileToProject(editorModel: EditorModel): EditorMode
                     const exportName = exportVar.variableAlias ?? exportVar.variableName
                     if (exportName !== 'default') {
                       namedExportKeys.push(exportName)
-                      const possibleMainComponentName = PossiblyMainComponentNames.includes(
-                        exportName,
-                      )
+                      const possibleMainComponentName =
+                        PossiblyMainComponentNames.includes(exportName)
                       updateCandidate(
                         namedComponentToImport(fullPath, possibleMainComponentName, exportName),
                       )
@@ -247,9 +246,8 @@ export function addStoryboardFileToProject(editorModel: EditorModel): EditorMode
                   for (const exportName of exportDetail.variables) {
                     if (exportName !== 'default') {
                       namedExportKeys.push(exportName)
-                      const possibleMainComponentName = PossiblyMainComponentNames.includes(
-                        exportName,
-                      )
+                      const possibleMainComponentName =
+                        PossiblyMainComponentNames.includes(exportName)
                       updateCandidate(
                         namedComponentToImport(fullPath, possibleMainComponentName, exportName),
                       )

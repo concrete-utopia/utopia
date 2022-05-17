@@ -38,12 +38,21 @@ import {
 import {
   CanvasStrategy,
   CanvasStrategyId,
+  defaultCustomStrategyState,
   InteractionCanvasState,
   StrategyApplicationResult,
 } from '../../canvas/canvas-strategies/canvas-strategy-types'
 import { canvasPoint } from '../../../core/shared/math-utils'
 import { wildcardPatch } from '../../canvas/commands/wildcard-patch-command'
 import { runCanvasCommand } from '../../canvas/commands/commands'
+
+beforeAll(() => {
+  return jest.spyOn(Date, 'now').mockReturnValue(new Date(1000).getTime())
+})
+
+afterAll(() => {
+  return jest.clearAllMocks()
+})
 
 function createEditorStore(
   interactionSession: InteractionSessionWithoutMetadata | null,
@@ -148,7 +157,10 @@ const testStrategy: CanvasStrategy = {
     interactionSession: InteractionSession,
     strategyState: StrategyState,
   ): StrategyApplicationResult {
-    return [wildcardPatch('permanent', { canvas: { scale: { $set: 100 } } })]
+    return {
+      commands: [wildcardPatch('permanent', { canvas: { scale: { $set: 100 } } })],
+      customState: defaultCustomStrategyState(),
+    }
   },
 }
 
@@ -196,6 +208,9 @@ describe('interactionStart', () => {
           },
         ],
         "currentStrategyFitness": 10,
+        "customStrategyState": Object {
+          "escapeHatchActivated": false,
+        },
         "sortedApplicableStrategies": Array [
           Object {
             "apply": [Function],
@@ -220,6 +235,7 @@ describe('interactionStart', () => {
           "y": 200,
         },
         "dragThresholdPassed": false,
+        "globalTime": 1000,
         "modifiers": Object {
           "alt": false,
           "cmd": false,
@@ -249,6 +265,9 @@ describe('interactionStart', () => {
         "currentStrategy": null,
         "currentStrategyCommands": Array [],
         "currentStrategyFitness": 0,
+        "customStrategyState": Object {
+          "escapeHatchActivated": false,
+        },
         "sortedApplicableStrategies": Array [],
         "startingMetadata": Object {},
       }
@@ -307,6 +326,9 @@ describe('interactionUpdatex', () => {
           },
         ],
         "currentStrategyFitness": 10,
+        "customStrategyState": Object {
+          "escapeHatchActivated": false,
+        },
         "sortedApplicableStrategies": Array [
           Object {
             "apply": [Function],
@@ -331,6 +353,7 @@ describe('interactionUpdatex', () => {
           "y": 200,
         },
         "dragThresholdPassed": false,
+        "globalTime": 1000,
         "modifiers": Object {
           "alt": false,
           "cmd": false,
@@ -361,6 +384,9 @@ describe('interactionUpdatex', () => {
         "currentStrategy": null,
         "currentStrategyCommands": Array [],
         "currentStrategyFitness": 0,
+        "customStrategyState": Object {
+          "escapeHatchActivated": false,
+        },
         "sortedApplicableStrategies": Array [],
         "startingMetadata": Object {},
       }
@@ -446,6 +472,9 @@ describe('interactionHardReset', () => {
           },
         ],
         "currentStrategyFitness": 10,
+        "customStrategyState": Object {
+          "escapeHatchActivated": false,
+        },
         "sortedApplicableStrategies": Array [
           Object {
             "apply": [Function],
@@ -473,6 +502,7 @@ describe('interactionHardReset', () => {
           "y": 210,
         },
         "dragThresholdPassed": false,
+        "globalTime": 1000,
         "modifiers": Object {
           "alt": false,
           "cmd": false,
@@ -505,129 +535,9 @@ describe('interactionHardReset', () => {
         "currentStrategy": null,
         "currentStrategyCommands": Array [],
         "currentStrategyFitness": 0,
-        "sortedApplicableStrategies": Array [],
-        "startingMetadata": Object {},
-      }
-    `)
-    expect(actualResult.patchedEditorState.canvas.scale).toEqual(1)
-    expect(actualResult.unpatchedEditorState.canvas.scale).toEqual(1)
-    expect(
-      actualResult.patchedEditorState.canvas.interactionSession?.interactionData,
-    ).toMatchInlineSnapshot(`undefined`)
-  })
-})
-
-describe('interactionUpdate with stacked strategy change', () => {
-  it('steps an interaction session correctly', () => {
-    let interactionSession = createInteractionViaMouse(
-      canvasPoint({ x: 100, y: 200 }),
-      { alt: false, shift: false, ctrl: false, cmd: false },
-      { type: 'BOUNDING_AREA', target: EP.elementPath([['aaa']]) },
-    )
-    if (interactionSession.interactionData.type === 'DRAG') {
-      interactionSession.interactionData.dragStart = canvasPoint({ x: 110, y: 210 })
-      interactionSession.interactionData.drag = canvasPoint({ x: 50, y: 140 })
-      interactionSession.interactionData.prevDrag = canvasPoint({ x: 30, y: 120 })
-    }
-    const editorStore = createEditorStore(interactionSession)
-    editorStore.strategyState.currentStrategy = 'EMPTY_TEST_STRATEGY' as CanvasStrategyId
-    const actualResult = interactionUpdate(
-      [testStrategy],
-      editorStore,
-      dispatchResultFromEditorStore(editorStore),
-      'non-interaction',
-    )
-    expect(actualResult.newStrategyState).toMatchInlineSnapshot(`
-      Object {
-        "accumulatedPatches": Array [],
-        "commandDescriptions": Array [
-          Object {
-            "description": "Strategy switched to Test Strategy by user input. Interaction data reset.",
-            "transient": true,
-          },
-          Object {
-            "description": "Wildcard Patch: {
-        \\"canvas\\": {
-          \\"scale\\": {
-            \\"$set\\": 100
-          }
-        }
-      }",
-            "transient": false,
-          },
-        ],
-        "currentStrategy": "TEST_STRATEGY",
-        "currentStrategyCommands": Array [
-          Object {
-            "patch": Object {
-              "canvas": Object {
-                "scale": Object {
-                  "$set": 100,
-                },
-              },
-            },
-            "transient": "permanent",
-            "type": "WILDCARD_PATCH",
-          },
-        ],
-        "currentStrategyFitness": 10,
-        "sortedApplicableStrategies": Array [
-          Object {
-            "apply": [Function],
-            "controlsToRender": Array [],
-            "fitness": [Function],
-            "id": "TEST_STRATEGY",
-            "isApplicable": [Function],
-            "name": "Test Strategy",
-          },
-        ],
-        "startingMetadata": Object {},
-      }
-    `)
-    expect(actualResult.patchedEditorState.canvas.scale).toEqual(1)
-    expect(actualResult.unpatchedEditorState.canvas.scale).toEqual(1)
-    expect(actualResult.patchedEditorState.canvas.interactionSession?.interactionData)
-      .toMatchInlineSnapshot(`
-      Object {
-        "drag": Object {
-          "x": 20,
-          "y": 20,
+        "customStrategyState": Object {
+          "escapeHatchActivated": false,
         },
-        "dragStart": Object {
-          "x": 140,
-          "y": 330,
-        },
-        "dragThresholdPassed": false,
-        "modifiers": Object {
-          "alt": false,
-          "cmd": false,
-          "ctrl": false,
-          "shift": false,
-        },
-        "originalDragStart": Object {
-          "x": 100,
-          "y": 200,
-        },
-        "prevDrag": null,
-        "type": "DRAG",
-      }
-    `)
-  })
-  it('potentially process an update with no interaction session', () => {
-    const editorStore = createEditorStore(null)
-    const actualResult = interactionUpdate(
-      [testStrategy],
-      editorStore,
-      dispatchResultFromEditorStore(editorStore),
-      'non-interaction',
-    )
-    expect(actualResult.newStrategyState).toMatchInlineSnapshot(`
-      Object {
-        "accumulatedPatches": Array [],
-        "commandDescriptions": Array [],
-        "currentStrategy": null,
-        "currentStrategyCommands": Array [],
-        "currentStrategyFitness": 0,
         "sortedApplicableStrategies": Array [],
         "startingMetadata": Object {},
       }
@@ -775,6 +685,9 @@ describe('interactionUpdate with user changed strategy', () => {
           },
         ],
         "currentStrategyFitness": 10,
+        "customStrategyState": Object {
+          "escapeHatchActivated": false,
+        },
         "sortedApplicableStrategies": Array [
           Object {
             "apply": [Function],
@@ -802,6 +715,7 @@ describe('interactionUpdate with user changed strategy', () => {
           "y": 210,
         },
         "dragThresholdPassed": false,
+        "globalTime": 1000,
         "modifiers": Object {
           "alt": false,
           "cmd": false,
@@ -835,6 +749,9 @@ describe('interactionUpdate with user changed strategy', () => {
         "currentStrategy": null,
         "currentStrategyCommands": Array [],
         "currentStrategyFitness": 0,
+        "customStrategyState": Object {
+          "escapeHatchActivated": false,
+        },
         "sortedApplicableStrategies": Array [],
         "startingMetadata": Object {},
       }

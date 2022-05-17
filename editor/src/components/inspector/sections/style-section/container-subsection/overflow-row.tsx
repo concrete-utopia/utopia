@@ -22,13 +22,8 @@ const OverflowControlOptions: Array<OptionChainOption<boolean>> = [
 ]
 
 export const OverflowRow = React.memo(() => {
-  const {
-    value,
-    controlStatus,
-    controlStyles,
-    onSubmitValue,
-    onUnsetValues,
-  } = useInspectorStyleInfo('overflow')
+  const { value, controlStatus, controlStyles, onSubmitValue, onUnsetValues } =
+    useInspectorStyleInfo('overflow')
 
   const overflowContextMenuItems = InspectorContextMenuItems.optionalAddOnUnsetValues(
     value != null,

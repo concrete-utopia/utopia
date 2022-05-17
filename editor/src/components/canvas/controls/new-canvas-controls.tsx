@@ -30,7 +30,7 @@ import { MetadataUtils } from '../../../core/model/element-metadata-utils'
 import { isAspectRatioLockedNew } from '../../aspect-ratio'
 import { ElementContextMenu } from '../../element-context-menu'
 import { isLiveMode, EditorModes, isSelectLiteMode } from '../../editor/editor-modes'
-import { DropTargetHookSpec, ConnectableElement, useDrop } from 'react-dnd'
+import { DropTargetHookSpec, ConnectableElement, useDrop, DndProvider } from 'react-dnd'
 import { FileBrowserItemProps } from '../../filebrowser/fileitem'
 import { forceNotNull } from '../../../core/shared/optional-utils'
 import { flatMapArray } from '../../../core/shared/array-utils'
@@ -64,6 +64,8 @@ import {
 import { FlexResizeControl } from './select-mode/flex-resize-control'
 import { MultiSelectOutlineControl } from './select-mode/simple-outline-control'
 import { GuidelineControls } from './guideline-controls'
+import { showContextMenu } from '../../editor/actions/action-creators'
+import { HTML5Backend } from 'react-dnd-html5-backend'
 
 export const CanvasControlsContainerID = 'new-canvas-controls-container'
 
@@ -140,15 +142,12 @@ export const NewCanvasControls = React.memo((props: NewCanvasControlsProps) => {
     'NewCanvasControls',
   )
 
-  const {
-    localSelectedViews,
-    localHighlightedViews,
-    setSelectedViewsLocally,
-  } = useLocalSelectedHighlightedViews(
-    canvasControlProps.editor.selectedViews,
-    canvasControlProps.editor.highlightedViews,
-    canvasControlProps.transientCanvasState,
-  )
+  const { localSelectedViews, localHighlightedViews, setSelectedViewsLocally } =
+    useLocalSelectedHighlightedViews(
+      canvasControlProps.editor.selectedViews,
+      canvasControlProps.editor.highlightedViews,
+      canvasControlProps.transientCanvasState,
+    )
 
   const canvasScrollAnimation = useEditorState(
     (store) => store.editor.canvas.scrollAnimation,
@@ -175,49 +174,51 @@ export const NewCanvasControls = React.memo((props: NewCanvasControlsProps) => {
     return null
   } else {
     return (
-      <div
-        key='canvas-controls'
-        ref={forwardedRef}
-        className={
-          canvasControlProps.focusedPanel === 'canvas'
-            ? '  canvas-controls focused '
-            : ' canvas-controls '
-        }
-        id='canvas-controls'
-        style={{
-          pointerEvents: 'initial',
-          position: 'absolute',
-          top: 0,
-          left: 0,
-          transform: 'translate3d(0, 0, 0)',
-          width: `100%`,
-          height: `100%`,
-          zoom: canvasControlProps.scale >= 1 ? `${canvasControlProps.scale * 100}%` : 1,
-          cursor: props.cursor,
-          visibility: canvasScrollAnimation ? 'hidden' : 'initial',
-        }}
-      >
+      <DndProvider backend={HTML5Backend}>
         <div
+          key='canvas-controls'
+          ref={forwardedRef}
+          className={
+            canvasControlProps.focusedPanel === 'canvas'
+              ? '  canvas-controls focused '
+              : ' canvas-controls '
+          }
+          id='canvas-controls'
           style={{
+            pointerEvents: 'initial',
             position: 'absolute',
             top: 0,
             left: 0,
-            width: `${canvasControlProps.scale < 1 ? 100 / canvasControlProps.scale : 100}%`,
-            height: `${canvasControlProps.scale < 1 ? 100 / canvasControlProps.scale : 100}%`,
-            transformOrigin: 'top left',
-            transform: canvasControlProps.scale < 1 ? `scale(${canvasControlProps.scale}) ` : '',
+            transform: 'translate3d(0, 0, 0)',
+            width: `100%`,
+            height: `100%`,
+            zoom: canvasControlProps.scale >= 1 ? `${canvasControlProps.scale * 100}%` : 1,
+            cursor: props.cursor,
+            visibility: canvasScrollAnimation ? 'hidden' : 'initial',
           }}
         >
-          <NewCanvasControlsInner
-            windowToCanvasPosition={props.windowToCanvasPosition}
-            localSelectedViews={localSelectedViews}
-            localHighlightedViews={localHighlightedViews}
-            setLocalSelectedViews={setSelectedViewsLocally}
-            {...canvasControlProps}
-          />
+          <div
+            style={{
+              position: 'absolute',
+              top: 0,
+              left: 0,
+              width: `${canvasControlProps.scale < 1 ? 100 / canvasControlProps.scale : 100}%`,
+              height: `${canvasControlProps.scale < 1 ? 100 / canvasControlProps.scale : 100}%`,
+              transformOrigin: 'top left',
+              transform: canvasControlProps.scale < 1 ? `scale(${canvasControlProps.scale}) ` : '',
+            }}
+          >
+            <NewCanvasControlsInner
+              windowToCanvasPosition={props.windowToCanvasPosition}
+              localSelectedViews={localSelectedViews}
+              localHighlightedViews={localHighlightedViews}
+              setLocalSelectedViews={setSelectedViewsLocally}
+              {...canvasControlProps}
+            />
+          </div>
+          <ElementContextMenu contextMenuInstance='context-menu-canvas' />
         </div>
-        <ElementContextMenu contextMenuInstance='context-menu-canvas' />
-      </div>
+      </DndProvider>
     )
   }
 })
@@ -274,6 +275,28 @@ const NewCanvasControlsInner = (props: NewCanvasControlsInnerProps) => {
     }
     return 'enabled'
   }
+
+  const onContextMenu = React.useCallback(
+    (event: React.MouseEvent<HTMLDivElement>): void => {
+      if (isFeatureEnabled('Canvas Strategies')) {
+        switch (props.editor.mode.type) {
+          case 'select':
+          case 'select-lite':
+          case 'live': {
+            event.stopPropagation()
+            event.preventDefault()
+            if (contextMenuEnabled && localSelectedViews.length > 0) {
+              props.dispatch([showContextMenu('context-menu-canvas', event.nativeEvent)], 'canvas')
+            }
+            break
+          }
+          default:
+            break
+        }
+      }
+    },
+    [contextMenuEnabled, localSelectedViews, props],
+  )
 
   const renderModeControlContainer = () => {
     const elementAspectRatioLocked = localSelectedViews.every((target) => {
@@ -404,6 +427,7 @@ const NewCanvasControlsInner = (props: NewCanvasControlsInnerProps) => {
         width: '100%',
         height: '100%',
       }}
+      onContextMenu={onContextMenu}
       onMouseDown={onMouseDown}
       onMouseMove={onMouseMove}
     >
@@ -418,10 +442,6 @@ const NewCanvasControlsInner = (props: NewCanvasControlsInnerProps) => {
       {when(
         isFeatureEnabled('Canvas Strategies'),
         <>{strategyControls.map((c) => React.createElement(c.control, { key: c.key }))}</>,
-      )}
-      {when(
-        isFeatureEnabled('Canvas Strategies'),
-        <FlexResizeControl localSelectedElements={localSelectedViews} />,
       )}
     </div>
   )

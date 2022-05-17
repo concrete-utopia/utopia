@@ -22,15 +22,17 @@ import {
   FlexRow,
   Title,
   SectionBodyArea,
-  useColorTheme,
   FlexColumn,
   InspectorSectionHeader,
 } from '../../uuiui'
 import { last } from '../../core/shared/array-utils'
 
-export const NavigatorContainerId = 'navigator'
+interface ItemProps extends ListChildComponentProps {}
 
-export const NavigatorComponent = React.memo(() => {
+const Item = React.memo(({ index, style }: ItemProps) => {
+  const visibleNavigatorTargets = useEditorState((store) => {
+    return store.derived.visibleNavigatorTargets
+  }, 'Item visibleNavigatorTargets')
   const editorSliceRef = useRefEditorState((store) => {
     const dragSelections = createDragSelections(
       store.derived.navigatorTargets,
@@ -42,7 +44,73 @@ export const NavigatorComponent = React.memo(() => {
       dragSelections: dragSelections,
     }
   })
-  const colorTheme = useColorTheme()
+  const getDistanceFromAncestorWhereImTheLastLeaf = React.useCallback(
+    (componentId: string, distance: number): number => {
+      // TODO FIXME HOLY SHIT THIS IS STUCK IN OLDE WORLDE
+      console.error('FIX getDistanceFromAncestorWhereImTheLastLeaf')
+      return distance
+    },
+    [],
+  )
+
+  const getDragSelections = React.useCallback((): Array<DragSelection> => {
+    return editorSliceRef.current.dragSelections
+  }, [editorSliceRef])
+
+  const getSelectedViewsInRange = React.useCallback(
+    (targetIndex: number): Array<ElementPath> => {
+      const selectedItemIndexes = editorSliceRef.current.selectedViews
+        .map((selection) =>
+          editorSliceRef.current.navigatorTargets.findIndex((tp) => EP.pathsEqual(tp, selection)),
+        )
+        .sort((a, b) => a - b)
+      const lastSelectedItemIndex = last(selectedItemIndexes)
+      if (lastSelectedItemIndex == null) {
+        return [editorSliceRef.current.navigatorTargets[targetIndex]]
+      } else {
+        let start = 0
+        let end = 0
+        if (targetIndex > lastSelectedItemIndex) {
+          start = selectedItemIndexes[0]
+          end = targetIndex
+        } else if (targetIndex < lastSelectedItemIndex && targetIndex > selectedItemIndexes[0]) {
+          start = selectedItemIndexes[0]
+          end = targetIndex
+        } else {
+          start = targetIndex
+          end = lastSelectedItemIndex
+        }
+        let selectedViewTargets: Array<ElementPath> = editorSliceRef.current.selectedViews
+        Utils.fastForEach(editorSliceRef.current.navigatorTargets, (item, itemIndex) => {
+          if (itemIndex >= start && itemIndex <= end) {
+            selectedViewTargets = EP.addPathIfMissing(item, selectedViewTargets)
+          }
+        })
+        return selectedViewTargets
+      }
+    },
+    [editorSliceRef],
+  )
+
+  const targetPath = visibleNavigatorTargets[index]
+  const componentKey = EP.toComponentId(targetPath)
+  return (
+    <NavigatorItemWrapper
+      key={componentKey}
+      index={index}
+      targetComponentKey={componentKey}
+      elementPath={targetPath}
+      getMaximumDistance={getDistanceFromAncestorWhereImTheLastLeaf}
+      getDragSelections={getDragSelections}
+      getSelectedViewsInRange={getSelectedViewsInRange}
+      windowStyle={style}
+    />
+  )
+})
+
+export const NavigatorContainerId = 'navigator'
+
+export const NavigatorComponent = React.memo(() => {
   const { dispatch, minimised, visibleNavigatorTargets } = useEditorState((store) => {
     return {
       dispatch: store.dispatch,
@@ -72,74 +140,9 @@ export const NavigatorComponent = React.memo(() => {
     [dispatch],
   )
 
-  const getDistanceFromAncestorWhereImTheLastLeaf = React.useCallback(
-    (componentId: string, distance: number): number => {
-      // TODO FIXME HOLY SHIT THIS IS STUCK IN OLDE WORLDE
-      console.error('FIX getDistanceFromAncestorWhereImTheLastLeaf')
-      return distance
-    },
-    [],
-  )
-
-  const getDragSelections = React.useCallback((): Array<DragSelection> => {
-    return editorSliceRef.current.dragSelections
-  }, [editorSliceRef])
-
-  const getSelectedViewsInRange = React.useCallback(
-    (index: number): Array<ElementPath> => {
-      const selectedItemIndexes = editorSliceRef.current.selectedViews
-        .map((selection) =>
-          editorSliceRef.current.navigatorTargets.findIndex((tp) => EP.pathsEqual(tp, selection)),
-        )
-        .sort((a, b) => a - b)
-      const lastSelectedItemIndex = last(selectedItemIndexes)
-      if (lastSelectedItemIndex == null) {
-        return [editorSliceRef.current.navigatorTargets[index]]
-      } else {
-        let start = 0
-        let end = 0
-        if (index > lastSelectedItemIndex) {
-          start = selectedItemIndexes[0]
-          end = index
-        } else if (index < lastSelectedItemIndex && index > selectedItemIndexes[0]) {
-          start = selectedItemIndexes[0]
-          end = index
-        } else {
-          start = index
-          end = lastSelectedItemIndex
-        }
-        let selectedViewTargets: Array<ElementPath> = editorSliceRef.current.selectedViews
-        Utils.fastForEach(editorSliceRef.current.navigatorTargets, (item, itemIndex) => {
-          if (itemIndex >= start && itemIndex <= end) {
-            selectedViewTargets = EP.addPathIfMissing(item, selectedViewTargets)
-          }
-        })
-        return selectedViewTargets
-      }
-    },
-    [editorSliceRef],
-  )
-
   const toggleTwirler = React.useCallback(() => {
     dispatch([EditorActions.togglePanel('navigator')])
   }, [dispatch])
-
-  const Item = React.memo(({ index, style }: ListChildComponentProps) => {
-    const targetPath = visibleNavigatorTargets[index]
-    const componentKey = EP.toComponentId(targetPath)
-    return (
-      <NavigatorItemWrapper
-        key={componentKey}
-        index={index}
-        targetComponentKey={componentKey}
-        elementPath={targetPath}
-        getMaximumDistance={getDistanceFromAncestorWhereImTheLastLeaf}
-        getDragSelections={getDragSelections}
-        getSelectedViewsInRange={getSelectedViewsInRange}
-        windowStyle={style}
-      />
-    )
-  })
 
   const ItemList = (size: Size) => {
     if (size.height == null) {
