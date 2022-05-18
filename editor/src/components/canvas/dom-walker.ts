@@ -325,7 +325,7 @@ export function runDomWalker({
       domWalkerMutableState.resizeObserver != null &&
       domWalkerMutableState.mutationObserver != null
     ) {
-      Array.from(document.querySelectorAll(`#${CanvasContainerID} *`)).map((elem) => {
+      document.querySelectorAll(`#${CanvasContainerID} *`).forEach((elem) => {
         domWalkerMutableState.resizeObserver.observe(elem)
       })
       domWalkerMutableState.mutationObserver.observe(canvasRootContainer, MutationObserverConfig)
