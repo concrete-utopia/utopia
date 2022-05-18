@@ -352,7 +352,9 @@ export class Editor {
         if (PerformanceMarks) {
           performance.mark(`update canvas ${updateId}`)
         }
-        this.updateCanvasStore(patchedStoreFromFullStore(dispatchResult))
+        ReactDOM.flushSync(() => {
+          this.updateCanvasStore(patchedStoreFromFullStore(dispatchResult))
+        })
         if (PerformanceMarks) {
           performance.mark(`update canvas end ${updateId}`)
           performance.measure(
@@ -383,7 +385,9 @@ export class Editor {
         if (PerformanceMarks) {
           performance.mark(`update editor ${updateId}`)
         }
-        this.updateStore(patchedStoreFromFullStore(dispatchResultWithMetadata))
+        ReactDOM.flushSync(() => {
+          this.updateStore(patchedStoreFromFullStore(dispatchResultWithMetadata))
+        })
         if (PerformanceMarks) {
           performance.mark(`update editor end ${updateId}`)
           performance.measure(
