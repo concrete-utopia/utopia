@@ -353,7 +353,9 @@ export class Editor {
           performance.mark(`update canvas ${updateId}`)
         }
         ReactDOM.flushSync(() => {
-          this.updateCanvasStore(patchedStoreFromFullStore(dispatchResult))
+          ReactDOM.unstable_batchedUpdates(() => {
+            this.updateCanvasStore(patchedStoreFromFullStore(dispatchResult))
+          })
         })
         if (PerformanceMarks) {
           performance.mark(`update canvas end ${updateId}`)
@@ -386,7 +388,9 @@ export class Editor {
           performance.mark(`update editor ${updateId}`)
         }
         ReactDOM.flushSync(() => {
-          this.updateStore(patchedStoreFromFullStore(dispatchResultWithMetadata))
+          ReactDOM.unstable_batchedUpdates(() => {
+            this.updateStore(patchedStoreFromFullStore(dispatchResultWithMetadata))
+          })
         })
         if (PerformanceMarks) {
           performance.mark(`update editor end ${updateId}`)
