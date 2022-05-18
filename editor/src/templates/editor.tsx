@@ -354,7 +354,12 @@ export class Editor {
         }
         this.updateCanvasStore(patchedStoreFromFullStore(dispatchResult))
         if (PerformanceMarks) {
-          performance.measure(`Update Canvas`, `update canvas ${updateId}`)
+          performance.mark(`update canvas end ${updateId}`)
+          performance.measure(
+            `Update Canvas ${updateId}`,
+            `update canvas ${updateId}`,
+            `update canvas end ${updateId}`,
+          )
         }
 
         const domWalkerResult = runDomWalker({
@@ -380,7 +385,12 @@ export class Editor {
         }
         this.updateStore(patchedStoreFromFullStore(dispatchResultWithMetadata))
         if (PerformanceMarks) {
-          performance.measure(`Update Editor`, `update editor ${updateId}`)
+          performance.mark(`update editor end ${updateId}`)
+          performance.measure(
+            `Update Editor ${updateId}`,
+            `update editor ${updateId}`,
+            `update editor end ${updateId}`,
+          )
         }
       }
 
