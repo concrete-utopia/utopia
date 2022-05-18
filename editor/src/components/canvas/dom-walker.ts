@@ -65,8 +65,9 @@ import { fastForEach } from '../../core/shared/utils'
 import { MapLike } from 'typescript'
 import { isFeatureEnabled } from '../../utils/feature-switches'
 import { usePubSubAtomReadOnly } from '../../core/shared/atom-with-pub-sub'
-import type { EditorState } from '../editor/store/editor-state'
+import type { EditorState, EditorStorePatched } from '../editor/store/editor-state'
 import { shallowEqual } from '../../core/shared/equality-utils'
+import { StrategyState } from './canvas-strategies/interaction-state'
 
 const MutationObserverConfig = { attributes: true, childList: true, subtree: true }
 const ObserversAvailable = (window as any).MutationObserver != null && ResizeObserver != null
@@ -365,12 +366,18 @@ export function runDomWalker({
   }
 }
 
+function selectCanvasInteractionHappening(store: EditorStorePatched): boolean {
+  const interactionSessionActive = store.editor.canvas.interactionSession != null
+  const oldDragStateActiveKILLME = store.derived.canvas.transientState.filesState != null
+  return interactionSessionActive || oldDragStateActiveKILLME
+}
+
 export function initDomWalkerObservers(
   domWalkerMutableState: DomWalkerMutableStateData,
   editorStore: UtopiaStoreAPI,
 ): { resizeObserver: ResizeObserver; mutationObserver: MutationObserver } {
   const resizeObserver = new ResizeObserver((entries: any) => {
-    const canvasInteractionHappening = false // TODO introduce some sort of canvasInteractionHappening
+    const canvasInteractionHappening = selectCanvasInteractionHappening(editorStore.getState())
     const selectedViews = editorStore.getState().editor.selectedViews
     if (canvasInteractionHappening) {
       // Only add the selected views
@@ -388,7 +395,7 @@ export function initDomWalkerObservers(
   })
 
   const mutationObserver = new window.MutationObserver((mutations: MutationRecord[]) => {
-    const canvasInteractionHappening = false // TODO introduce some sort of canvasInteractionHappening
+    const canvasInteractionHappening = selectCanvasInteractionHappening(editorStore.getState())
     const selectedViews = editorStore.getState().editor.selectedViews
 
     if (canvasInteractionHappening) {
