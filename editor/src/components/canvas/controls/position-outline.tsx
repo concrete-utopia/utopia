@@ -125,29 +125,27 @@ interface PinOutlineProps {
   scale: number
 }
 
-const PinOutline = React.memo(
-  (props: PinOutlineProps): JSX.Element => {
-    const colorTheme = useColorTheme()
-    const width = props.isHorizontalLine ? props.size : 0
-    const height = props.isHorizontalLine ? 0 : props.size
-    const borderTop = props.isHorizontalLine
-      ? `${1 / props.scale}px dashed ${colorTheme.primary.value}`
-      : 'none'
-    const borderLeft = props.isHorizontalLine
-      ? 'none'
-      : `${1 / props.scale}px dashed ${colorTheme.primary.value}`
-    return (
-      <div
-        style={{
-          position: 'absolute',
-          left: props.startX,
-          top: props.startY,
-          width: width,
-          height: height,
-          borderTop: borderTop,
-          borderLeft: borderLeft,
-        }}
-      />
-    )
-  },
-)
+const PinOutline = React.memo((props: PinOutlineProps): JSX.Element => {
+  const colorTheme = useColorTheme()
+  const width = props.isHorizontalLine ? props.size : 0
+  const height = props.isHorizontalLine ? 0 : props.size
+  const borderTop = props.isHorizontalLine
+    ? `${1 / props.scale}px dashed ${colorTheme.primary.value}`
+    : 'none'
+  const borderLeft = props.isHorizontalLine
+    ? 'none'
+    : `${1 / props.scale}px dashed ${colorTheme.primary.value}`
+  return (
+    <div
+      style={{
+        position: 'absolute',
+        left: props.startX,
+        top: props.startY,
+        width: width,
+        height: height,
+        borderTop: borderTop,
+        borderLeft: borderLeft,
+      }}
+    />
+  )
+})

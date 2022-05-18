@@ -75,12 +75,8 @@ export function createExecutionScope(
 
   const fileBlobsForFile = defaultIfNull(emptyFileBlobs, fileBlobs[filePath])
 
-  const {
-    topLevelElements,
-    imports,
-    jsxFactoryFunction,
-    combinedTopLevelArbitraryBlock,
-  } = getParseSuccessOrTransientForFilePath(filePath, projectContents, transientFilesStateKILLME)
+  const { topLevelElements, imports, jsxFactoryFunction, combinedTopLevelArbitraryBlock } =
+    getParseSuccessOrTransientForFilePath(filePath, projectContents, transientFilesStateKILLME)
   const requireResult: MapLike<any> = importResultFromImports(filePath, imports, customRequire)
 
   const userRequireFn = (toImport: string) => customRequire(filePath, toImport) // TODO this was a React usecallback
@@ -180,9 +176,7 @@ export function createExecutionScope(
 
 const emptyHighlightBoundsResult = { code: '', highlightBounds: null }
 
-export function useGetCodeAndHighlightBounds(
-  filePath: string | null,
-): {
+export function useGetCodeAndHighlightBounds(filePath: string | null): {
   code: string
   highlightBounds: HighlightBoundsForUids | null
 } {

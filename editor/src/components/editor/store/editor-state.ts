@@ -1381,10 +1381,8 @@ function deriveCacheableStateInner(
   jsxMetadata: ElementInstanceMetadataMap,
   collapsedViews: ElementPath[],
 ): CacheableDerivedState {
-  const {
-    navigatorTargets,
-    visibleNavigatorTargets,
-  } = MetadataUtils.createOrderedElementPathsFromElements(jsxMetadata, collapsedViews)
+  const { navigatorTargets, visibleNavigatorTargets } =
+    MetadataUtils.createOrderedElementPathsFromElements(jsxMetadata, collapsedViews)
 
   const warnings = getElementWarnings(jsxMetadata)
 

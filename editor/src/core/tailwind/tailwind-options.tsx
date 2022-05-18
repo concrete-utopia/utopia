@@ -245,9 +245,7 @@ function getJSXElementForTarget(
   }
 }
 
-function getClassNameAttribute(
-  element: JSXElementChild | null,
-): {
+function getClassNameAttribute(element: JSXElementChild | null): {
   value: string | null
   isSettable: boolean
 } {

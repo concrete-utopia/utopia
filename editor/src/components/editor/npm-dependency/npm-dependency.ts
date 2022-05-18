@@ -264,9 +264,7 @@ export async function checkPackageVersionExists(
   }
 }
 
-function allDependenciesFromUnparsedPackageJson(
-  packageJson: string,
-): {
+function allDependenciesFromUnparsedPackageJson(packageJson: string): {
   dependencies: any
   devDependencies: any
 } {

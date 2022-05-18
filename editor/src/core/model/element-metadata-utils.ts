@@ -1209,8 +1209,10 @@ export const MetadataUtils = {
     elementMap: ElementInstanceMetadataMap,
     path: ElementPath,
   ): ElementPath | null {
-    const specialSizeMeasurements = MetadataUtils.findElementByElementPath(elementMap, path)
-      ?.specialSizeMeasurements
+    const specialSizeMeasurements = MetadataUtils.findElementByElementPath(
+      elementMap,
+      path,
+    )?.specialSizeMeasurements
     const parentPath = EP.parentPath(path)
     if (parentPath == null || specialSizeMeasurements == null) {
       return null
@@ -1226,10 +1228,14 @@ export const MetadataUtils = {
     path: ElementPath,
   ): ElementPath | null {
     const parentPath = EP.parentPath(path)
-    const specialSizeMeasurements = MetadataUtils.findElementByElementPath(elementMap, path)
-      ?.specialSizeMeasurements
-    const parentSizeMeasurements = MetadataUtils.findElementByElementPath(elementMap, parentPath)
-      ?.specialSizeMeasurements
+    const specialSizeMeasurements = MetadataUtils.findElementByElementPath(
+      elementMap,
+      path,
+    )?.specialSizeMeasurements
+    const parentSizeMeasurements = MetadataUtils.findElementByElementPath(
+      elementMap,
+      parentPath,
+    )?.specialSizeMeasurements
     if (parentPath == null || specialSizeMeasurements == null || parentSizeMeasurements == null) {
       return null
     }

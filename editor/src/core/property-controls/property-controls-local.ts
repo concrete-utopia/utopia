@@ -178,9 +178,8 @@ function parseComponentToRegister(value: unknown): ParseResult<ComponentToRegist
 
 const parseComponents: (
   value: unknown,
-) => ParseResult<{ [componentName: string]: ComponentToRegister }> = parseObject(
-  parseComponentToRegister,
-)
+) => ParseResult<{ [componentName: string]: ComponentToRegister }> =
+  parseObject(parseComponentToRegister)
 
 function parseAndPrepareComponents(
   workers: UtopiaTsWorkers,

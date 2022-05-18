@@ -7,9 +7,7 @@ import { UtopiaProjectCtxAtom } from './ui-jsx-canvas-contexts'
 
 const emptyResult = { topLevelElements: [], imports: emptyImports() }
 
-export function useGetTopLevelElementsAndImports(
-  filePath: string | null,
-): {
+export function useGetTopLevelElementsAndImports(filePath: string | null): {
   topLevelElements: TopLevelElement[]
   imports: Imports
 } {

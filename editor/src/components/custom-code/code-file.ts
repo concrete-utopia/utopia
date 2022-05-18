@@ -147,10 +147,11 @@ export function incorporateBuildResult(
   })
 }
 
-const getCurriedEditorResolveFunction = (nodeModules: NodeModules): CurriedResolveFn => (
-  projectContents: ProjectContentTreeRoot,
-) => (importOrigin: string, toImport: string) =>
-  resolveModulePath(projectContents, nodeModules, importOrigin, toImport)
+const getCurriedEditorResolveFunction =
+  (nodeModules: NodeModules): CurriedResolveFn =>
+  (projectContents: ProjectContentTreeRoot) =>
+  (importOrigin: string, toImport: string) =>
+    resolveModulePath(projectContents, nodeModules, importOrigin, toImport)
 
 export function generateCodeResultCache(
   projectContents: ProjectContentTreeRoot,
@@ -210,9 +211,7 @@ export function isJavascriptOrTypescript(filePath: string): boolean {
   return regex.test(filePath)
 }
 
-export function codeCacheToBuildResult(cache: {
-  [filename: string]: CodeResult
-}): {
+export function codeCacheToBuildResult(cache: { [filename: string]: CodeResult }): {
   [filename: string]: EmitFileResult
 } {
   return objectMap((entry) => {

@@ -940,16 +940,14 @@ describe('LOAD', () => {
 
     const startingState = deepFreeze(createEditorState(NO_OP))
     const result = UPDATE_FNS.LOAD(action, startingState, NO_OP)
-    const newFirstFileContents = (getContentsTreeFileFromString(
-      result.projectContents,
-      firstUIJSFile,
-    ) as TextFile).fileContents
+    const newFirstFileContents = (
+      getContentsTreeFileFromString(result.projectContents, firstUIJSFile) as TextFile
+    ).fileContents
     expect(isUnparsed(newFirstFileContents.parsed)).toBeTruthy()
     expect(newFirstFileContents.code).toEqual(initialFileContents.code)
-    const newSecondFileContents = (getContentsTreeFileFromString(
-      result.projectContents,
-      secondUIJSFile,
-    ) as TextFile).fileContents
+    const newSecondFileContents = (
+      getContentsTreeFileFromString(result.projectContents, secondUIJSFile) as TextFile
+    ).fileContents
     expect(isUnparsed(newSecondFileContents.parsed)).toBeTruthy()
     expect(newSecondFileContents.code).toEqual(initialFileContents.code)
   })
