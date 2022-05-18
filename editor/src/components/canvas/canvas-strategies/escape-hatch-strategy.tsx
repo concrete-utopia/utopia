@@ -25,6 +25,8 @@ import { stylePropPathMappingFn } from '../../inspector/common/property-path-hoo
 import { CanvasCommand } from '../commands/commands'
 import { convertToAbsolute } from '../commands/convert-to-absolute-command'
 import { setCssLengthProperty } from '../commands/set-css-length-command'
+import { showOutlineHighlight } from '../commands/show-blinking-highlight-command'
+import { OutlineHighlightControl } from '../controls/select-mode/outline-highlight-control'
 import { DragOutlineControl } from '../controls/select-mode/drag-outline-control'
 import { AnimationTimer, PieTimerControl } from '../controls/select-mode/pie-timer'
 import {
@@ -64,6 +66,11 @@ export const escapeHatchStrategy: CanvasStrategy = {
       key: 'pie-timer-control',
       show: 'visible-only-while-active',
     },
+    {
+      control: OutlineHighlightControl,
+      key: 'outline-highlight-control',
+      show: 'visible-only-while-active',
+    },
   ],
   fitness: (canvasState, interactionState, strategyState) => {
     return escapeHatchStrategy.isApplicable(
@@ -98,8 +105,9 @@ export const escapeHatchStrategy: CanvasStrategy = {
           strategyState.startingMetadata,
           canvasState,
         )
+        const showHighlightCommand = showOutlineHighlight('transient', [])
         return {
-          commands: [...moveAndPositionCommands, ...siblingCommands],
+          commands: [...moveAndPositionCommands, ...siblingCommands, showHighlightCommand],
           customState: {
             ...strategyState.customStrategyState,
             escapeHatchActivated,
