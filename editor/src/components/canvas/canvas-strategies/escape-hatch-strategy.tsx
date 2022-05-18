@@ -101,6 +101,7 @@ export const escapeHatchStrategy: CanvasStrategy = {
         return {
           commands: [...moveAndPositionCommands, ...siblingCommands],
           customState: {
+            ...strategyState.customStrategyState,
             escapeHatchActivated,
           },
         }

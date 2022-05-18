@@ -8,11 +8,13 @@ import { InteractionSession, StrategyState } from './interaction-state'
 // TODO: fill this in, maybe make it an ADT for different strategies
 export interface CustomStrategyState {
   escapeHatchActivated: boolean
+  lastReorderIdx: number | null
 }
 
 export function defaultCustomStrategyState(): CustomStrategyState {
   return {
     escapeHatchActivated: false,
+    lastReorderIdx: null,
   }
 }
 
