@@ -273,8 +273,7 @@ export const Guidelines = {
           from: point as Point<C>,
           to: guidelinePoint,
         }
-      default:
-        // TODO ts-migration
+      default: // TODO ts-migration
         const _exhaustiveCheck: never = guideline
         throw 'Unexpected value for guideline of type: ' + (guideline as any).type // TODO ts-migration
     }
@@ -408,8 +407,7 @@ export const Guidelines = {
         return Guidelines.getOffsetToSnapToYGuideline(ys, guideline, constrainedDragAxis)
       case 'CornerGuideline':
         return Guidelines.getOffsetToSnapToCornerGuideline(corners, guideline)
-      default:
-        // TODO ts-migration
+      default: // TODO ts-migration
         const _exhaustiveCheck: never = guideline
         throw 'Unexpected value for guideline of type: ' + (guideline as any).type // TODO ts-migration
     }
@@ -561,8 +559,7 @@ export const Guidelines = {
           guideline.xMovement + offset.x,
           guideline.yMovement + offset.y,
         )
-      default:
-        // TODO ts-migration
+      default: // TODO ts-migration
         const _exhaustiveCheck: never = guideline
         throw 'Unexpected value for guideline of type: ' + (guideline as any).type // TODO ts-migration
     }

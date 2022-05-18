@@ -168,7 +168,7 @@ export function prebuildExpressions<T>(
         prebuiltExpressions: prebuiltExpressions,
       }
     }
-  } catch (e) {
+  } catch (e: any) {
     return {
       type: 'exception',
       error: e,
@@ -250,7 +250,7 @@ export function evaluateExpressions<T>(
         results: results,
       }
     }
-  } catch (e) {
+  } catch (e: any) {
     return {
       type: 'exception',
       error: e,
