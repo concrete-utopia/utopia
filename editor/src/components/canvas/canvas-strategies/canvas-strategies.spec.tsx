@@ -25,12 +25,7 @@ function prepareEditorState(codeSnippet: string, selectedViews: Array<ElementPat
   }
 }
 
-const baseStrategyState = (
-  metadata: ElementInstanceMetadataMap,
-  customState: CustomStrategyState = {
-    escapeHatchActivated: true,
-  },
-) =>
+const baseStrategyState = (metadata: ElementInstanceMetadataMap) =>
   ({
     currentStrategy: null as any, // the strategy does not use this
     currentStrategyFitness: null as any, // the strategy does not use this
@@ -39,7 +34,10 @@ const baseStrategyState = (
     commandDescriptions: null as any, // the strategy does not use this
     sortedApplicableStrategies: null as any, // the strategy does not use this
     startingMetadata: metadata,
-    customStrategyState: customState,
+    customStrategyState: {
+      escapeHatchActivated: false,
+      lastReorderIdx: null,
+    },
   } as StrategyState)
 
 describe('Strategy Fitness', () => {
@@ -201,7 +199,7 @@ describe('Strategy Fitness', () => {
       RegisteredCanvasStrategies,
       pickCanvasStateFromEditorState(initialEditor),
       interactionSession,
-      baseStrategyState(metadata, { escapeHatchActivated: false }),
+      baseStrategyState(metadata),
       null,
     )
 
@@ -365,7 +363,7 @@ describe('Strategy Fitness', () => {
       RegisteredCanvasStrategies,
       pickCanvasStateFromEditorState(initialEditor),
       interactionSession,
-      baseStrategyState(metadata, { escapeHatchActivated: false }),
+      baseStrategyState(metadata),
       null,
     )
 
@@ -603,7 +601,7 @@ describe('Strategy Fitness', () => {
       RegisteredCanvasStrategies,
       pickCanvasStateFromEditorState(initialEditor),
       interactionSession,
-      baseStrategyState(metadata, { escapeHatchActivated: false }),
+      baseStrategyState(metadata),
       null,
     )
 
@@ -841,7 +839,7 @@ describe('Strategy Fitness', () => {
       RegisteredCanvasStrategies,
       pickCanvasStateFromEditorState(initialEditor),
       interactionSession,
-      baseStrategyState(metadata, { escapeHatchActivated: false }),
+      baseStrategyState(metadata),
       null,
     )
 
