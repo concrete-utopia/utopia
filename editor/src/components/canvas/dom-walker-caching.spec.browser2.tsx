@@ -8,6 +8,7 @@ import CanvasActions from './canvas-actions'
 import { pinFrameChange } from './canvas-types'
 import { renderTestEditorWithProjectContent } from './ui-jsx.test-utils'
 import { act } from '@testing-library/react'
+import { wait } from '../../utils/utils.test-utils'
 
 describe('Dom-walker Caching', () => {
   async function prepareTestProject() {
@@ -47,8 +48,7 @@ describe('Dom-walker Caching', () => {
       .getRecordedActions()
       .filter((action): action is SaveDOMReport => action.action === 'SAVE_DOM_REPORT')
 
-    expect(saveDomReportActions.length).toBe(1)
-    expect(saveDomReportActions[0].cachedPaths).toEqual([EP.fromString(':storyboard-entity')])
+    expect(saveDomReportActions.length).toBe(0)
   })
 
   it('resizing an out-of-file element invalidates the cache for only that scene', async () => {
@@ -62,23 +62,23 @@ describe('Dom-walker Caching', () => {
     )
     const pinChange2 = pinFrameChange(
       EP.fromString('storyboard-entity/scene-1-entity/app-entity:app-outer-div/card-instance'),
-      canvasRectangle({ x: 20, y: 20, width: 100, height: 100 }),
+      canvasRectangle({ x: 20, y: 20, width: 100, height: 101 }),
     )
 
     await act(async () => {
-      const domFinished = renderResult.getDomReportDispatched()
-      const dispatchDone = renderResult.getDispatchFollowUpactionsFinished()
       await renderResult.dispatch([setCanvasFrames([pinChange1], false)], true)
+      // Gives a chance for any resize/mutation observers to fire.
+      await wait(20)
+      const dispatchDone = renderResult.getDispatchFollowUpActionsFinished()
 
-      await domFinished
       await dispatchDone
     })
     await act(async () => {
-      const domFinished = renderResult.getDomReportDispatched()
-      const dispatchDone = renderResult.getDispatchFollowUpactionsFinished()
       await renderResult.dispatch([setCanvasFrames([pinChange2], false)], true)
+      // Gives a chance for any resize/mutation observers to fire.
+      await wait(20)
+      const dispatchDone = renderResult.getDispatchFollowUpActionsFinished()
 
-      await domFinished
       await dispatchDone
     })
 
@@ -86,9 +86,18 @@ describe('Dom-walker Caching', () => {
       .getRecordedActions()
       .filter((action): action is SaveDOMReport => action.action === 'SAVE_DOM_REPORT')
 
-    expect(saveDomReportActions.length).toBe(2)
-    expect(saveDomReportActions[0].cachedPaths).toEqual([EP.fromString(':storyboard-entity')])
+    expect(saveDomReportActions.length).toBe(3)
+    expect(saveDomReportActions[0].cachedPaths).toEqual([
+      EP.fromString(':storyboard-entity/scene-2-entity/same-file-app-entity:same-file-app-div'),
+      EP.fromString(':storyboard-entity/scene-2-entity/same-file-app-entity'),
+      EP.fromString(':storyboard-entity/scene-2-entity'),
+    ])
     expect(saveDomReportActions[1].cachedPaths).toEqual([
+      EP.fromString(':storyboard-entity/scene-2-entity/same-file-app-entity:same-file-app-div'),
+      EP.fromString(':storyboard-entity/scene-2-entity/same-file-app-entity'),
+      EP.fromString(':storyboard-entity/scene-2-entity'),
+    ])
+    expect(saveDomReportActions[2].cachedPaths).toEqual([
       EP.fromString(':storyboard-entity/scene-2-entity/same-file-app-entity:same-file-app-div'),
       EP.fromString(':storyboard-entity/scene-2-entity/same-file-app-entity'),
       EP.fromString(':storyboard-entity/scene-2-entity'),
@@ -110,20 +119,20 @@ describe('Dom-walker Caching', () => {
     )
 
     await act(async () => {
-      const domFinished = renderResult.getDomReportDispatched()
-      const dispatchDone = renderResult.getDispatchFollowUpactionsFinished()
       await renderResult.dispatch([setCanvasFrames([pinChange1], false)], true)
+      // Gives a chance for any resize/mutation observers to fire.
+      await wait(20)
+      const dispatchDone = renderResult.getDispatchFollowUpActionsFinished()
 
-      await domFinished
       await dispatchDone
     })
 
     await act(async () => {
-      const domFinished = renderResult.getDomReportDispatched()
-      const dispatchDone = renderResult.getDispatchFollowUpactionsFinished()
       await renderResult.dispatch([setCanvasFrames([pinChange2], false)], true)
+      // Gives a chance for any resize/mutation observers to fire.
+      await wait(20)
+      const dispatchDone = renderResult.getDispatchFollowUpActionsFinished()
 
-      await domFinished
       await dispatchDone
     })
 
@@ -131,9 +140,20 @@ describe('Dom-walker Caching', () => {
       .getRecordedActions()
       .filter((action): action is SaveDOMReport => action.action === 'SAVE_DOM_REPORT')
 
-    expect(saveDomReportActions.length).toBe(2)
-    expect(saveDomReportActions[0].cachedPaths).toEqual([EP.fromString(':storyboard-entity')])
+    expect(saveDomReportActions.length).toBe(3)
+    expect(saveDomReportActions[0].cachedPaths).toEqual([
+      EP.fromString(':storyboard-entity/scene-1-entity/app-entity:app-outer-div/card-instance'),
+      EP.fromString(':storyboard-entity/scene-1-entity/app-entity:app-outer-div'),
+      EP.fromString(':storyboard-entity/scene-1-entity/app-entity'),
+      EP.fromString(':storyboard-entity/scene-1-entity'),
+    ])
     expect(saveDomReportActions[1].cachedPaths).toEqual([
+      EP.fromString(':storyboard-entity/scene-1-entity/app-entity:app-outer-div/card-instance'),
+      EP.fromString(':storyboard-entity/scene-1-entity/app-entity:app-outer-div'),
+      EP.fromString(':storyboard-entity/scene-1-entity/app-entity'),
+      EP.fromString(':storyboard-entity/scene-1-entity'),
+    ])
+    expect(saveDomReportActions[2].cachedPaths).toEqual([
       EP.fromString(':storyboard-entity/scene-1-entity/app-entity:app-outer-div/card-instance'),
       EP.fromString(':storyboard-entity/scene-1-entity/app-entity:app-outer-div'),
       EP.fromString(':storyboard-entity/scene-1-entity/app-entity'),
