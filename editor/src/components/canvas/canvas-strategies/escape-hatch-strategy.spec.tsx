@@ -15,7 +15,6 @@ import {
   testPrintCodeFromEditorState,
 } from '../ui-jsx.test-utils'
 import { pickCanvasStateFromEditorState } from './canvas-strategies'
-import { CustomStrategyState } from './canvas-strategy-types'
 import { escapeHatchStrategy } from './escape-hatch-strategy'
 import { InteractionSession, StrategyState } from './interaction-state'
 import { createMouseInteractionForTests } from './interaction-state.test-utils'
