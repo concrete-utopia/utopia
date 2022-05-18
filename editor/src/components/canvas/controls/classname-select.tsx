@@ -347,7 +347,7 @@ export const ClassNameSelect = React.memo(
     )
 
     const onInputChange = React.useCallback(
-      (newInput, actionMeta: InputActionMeta) => {
+      (newInput: string, actionMeta: InputActionMeta) => {
         if (newInput === '') {
           dispatch([EditorActions.clearTransientProps()], 'canvas')
         }

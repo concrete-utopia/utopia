@@ -26,7 +26,9 @@ interface FontsListChildComponentProps extends ListChildComponentProps {
   }
 }
 
-export const FontFamilySelectPopupItem: React.FunctionComponent<FontsListChildComponentProps> = ({
+export const FontFamilySelectPopupItem: React.FunctionComponent<
+  React.PropsWithChildren<FontsListChildComponentProps>
+> = ({
   data: {
     itemsArray,
     onSubmitFontFamily,

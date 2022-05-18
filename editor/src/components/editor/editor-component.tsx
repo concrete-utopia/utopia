@@ -5,7 +5,7 @@ import { jsx } from '@emotion/react'
 import { ResizeDirection } from 're-resizable'
 import React from 'react'
 import { DndProvider } from 'react-dnd'
-import Backend from 'react-dnd-html5-backend'
+import { HTML5Backend } from 'react-dnd-html5-backend'
 import Utils from '../../utils/utils'
 import { FancyError, RuntimeErrorInfo } from '../../core/shared/code-exec-utils'
 import { getCursorFromDragState } from '../canvas/canvas-utils'
@@ -193,7 +193,7 @@ export const EditorComponentInner = React.memo((props: EditorProps) => {
   )
 
   const onWindowKeyUp = React.useCallback(
-    (event) => {
+    (event: KeyboardEvent) => {
       if (isFeatureEnabled('Canvas Strategies')) {
         const existingInteractionSession = editorStoreRef.current.editor.canvas.interactionSession
         if (existingInteractionSession != null) {
@@ -428,7 +428,7 @@ export function EditorComponent(props: EditorProps) {
   return indexedDBFailed ? (
     <FatalIndexedDBErrorComponent />
   ) : (
-    <DndProvider backend={Backend}>
+    <DndProvider backend={HTML5Backend}>
       <EditorComponentInner {...props} />
     </DndProvider>
   )

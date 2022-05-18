@@ -83,7 +83,7 @@ export function buildSpyWrappedElement(
 
 interface SpyWrapperProps {
   spyCallback: (finalProps: any) => void
-  elementToRender: React.ComponentType<any>
+  elementToRender: React.ComponentType<React.PropsWithChildren<any>>
   inScope: MapLike<any>
   jsxFactoryFunctionName: string | null
   $$utopiaElementPath: ElementPath

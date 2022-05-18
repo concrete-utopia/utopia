@@ -22,7 +22,7 @@ export const DependencySearchSelect = React.forwardRef(
     const [stateEditedPackageName, setStateEditedPackageName] = React.useState<string>('')
 
     const onSubmitValue = React.useCallback(
-      (newValue) => {
+      (newValue: string) => {
         setStateEditedPackageName(newValue)
         addDependency(newValue, null)
         setStateEditedPackageName('')

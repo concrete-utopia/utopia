@@ -61,6 +61,7 @@ describe('Monkey Function', () => {
   xit('class components have a working context', () => {
     const MyContext = React.createContext({ value: 'wrong!' })
     class TestClass extends React.Component {
+      context: any
       render() {
         return <div data-uid='inner-div'>{this.context.value}</div>
       }
@@ -82,6 +83,7 @@ describe('Monkey Function', () => {
   it('class components have a working context, second variant', () => {
     const MyContext = React.createContext({ value: 'wrong!' })
     class TestClass extends React.Component {
+      context: any
       render() {
         return <div data-uid='inner-div'>{this.context.value}</div>
       }
@@ -114,7 +116,7 @@ describe('Monkey Function', () => {
       )
     }
 
-    const TestStoryboard: React.FunctionComponent = (props) => {
+    const TestStoryboard: React.FunctionComponent<React.PropsWithChildren<unknown>> = (props) => {
       return (
         <UtopiaStoryboard data-uid='sb'>
           <UtopiaScene data-uid='scene'>
@@ -149,7 +151,7 @@ describe('Monkey Function', () => {
   })
 
   it('works for simple function components', () => {
-    const TestComponent: React.FunctionComponent = (props) => {
+    const TestComponent: React.FunctionComponent<React.PropsWithChildren<unknown>> = (props) => {
       return (
         <div data-uid='test1'>
           <div data-uid='kutya'>Hello!</div>
@@ -168,7 +170,7 @@ describe('Monkey Function', () => {
   })
 
   it('function components have working hooks', () => {
-    const TestComponent: React.FunctionComponent = (props) => {
+    const TestComponent: React.FunctionComponent<React.PropsWithChildren<unknown>> = (props) => {
       const [value, setValue] = React.useState('Hello!')
       return (
         <div>
@@ -184,11 +186,13 @@ describe('Monkey Function', () => {
   })
 
   it('works for function components', () => {
-    const OtherTestComponent: React.FunctionComponent = (props) => {
+    const OtherTestComponent: React.FunctionComponent<React.PropsWithChildren<unknown>> = (
+      props,
+    ) => {
       return <div data-uid='root-div'>Hello!</div>
     }
 
-    const TestComponent: React.FunctionComponent = (props) => {
+    const TestComponent: React.FunctionComponent<React.PropsWithChildren<unknown>> = (props) => {
       return <OtherTestComponent data-uid={'cica'} />
     }
 
@@ -199,14 +203,16 @@ describe('Monkey Function', () => {
   })
 
   it('works for function components that have uid returning function components', () => {
-    const MyComponent: React.FunctionComponent = (props) => {
+    const MyComponent: React.FunctionComponent<React.PropsWithChildren<unknown>> = (props) => {
       return <div>Hello!</div>
     }
-    const OtherTestComponent: React.FunctionComponent = (props) => {
+    const OtherTestComponent: React.FunctionComponent<React.PropsWithChildren<unknown>> = (
+      props,
+    ) => {
       return <MyComponent />
     }
 
-    const TestComponent: React.FunctionComponent = (props) => {
+    const TestComponent: React.FunctionComponent<React.PropsWithChildren<unknown>> = (props) => {
       return <OtherTestComponent data-uid={'cica'} />
     }
 
@@ -217,10 +223,12 @@ describe('Monkey Function', () => {
   })
 
   it('works for function components that have uid returning function components wrapped in divs', () => {
-    const MyComponent: React.FunctionComponent = (props) => {
+    const MyComponent: React.FunctionComponent<React.PropsWithChildren<unknown>> = (props) => {
       return <div>Hello!</div>
     }
-    const OtherTestComponent: React.FunctionComponent = (props) => {
+    const OtherTestComponent: React.FunctionComponent<React.PropsWithChildren<unknown>> = (
+      props,
+    ) => {
       return (
         <div>
           <MyComponent />
@@ -228,7 +236,7 @@ describe('Monkey Function', () => {
       )
     }
 
-    const TestComponent: React.FunctionComponent = (props) => {
+    const TestComponent: React.FunctionComponent<React.PropsWithChildren<unknown>> = (props) => {
       return <OtherTestComponent data-uid={'cica'} />
     }
 
@@ -239,11 +247,13 @@ describe('Monkey Function', () => {
   })
 
   it('works for function components that have no uid returning function components', () => {
-    const OtherTestComponent: React.FunctionComponent = (props) => {
+    const OtherTestComponent: React.FunctionComponent<React.PropsWithChildren<unknown>> = (
+      props,
+    ) => {
       return <div>Hello!</div>
     }
 
-    const TestComponent: React.FunctionComponent = (props) => {
+    const TestComponent: React.FunctionComponent<React.PropsWithChildren<unknown>> = (props) => {
       return <OtherTestComponent />
     }
 
@@ -273,8 +283,8 @@ describe('Monkey Function', () => {
   })
 
   it('works with a silly render prop', () => {
-    const CallRenderPropChild: React.FunctionComponent = (props) => {
-      return (props.children as any)('Hello!')
+    const CallRenderPropChild: React.FunctionComponent<any> = (props) => {
+      return props.children('Hello!')
     }
 
     const Cica = (props: any) => {
@@ -296,8 +306,8 @@ describe('Monkey Function', () => {
   })
 
   it('works with a render prop with a class component if there is a uid', () => {
-    const CallRenderPropChild: React.FunctionComponent = (props) => {
-      return (props.children as any)('Hello!')
+    const CallRenderPropChild: React.FunctionComponent<any> = (props) => {
+      return props.children('Hello!')
     }
 
     class TestClass extends React.Component {
@@ -317,8 +327,8 @@ describe('Monkey Function', () => {
   })
 
   it('works with a render prop with a class component if there is NO uid', () => {
-    const CallRenderPropChild: React.FunctionComponent = (props) => {
-      return (props.children as any)('Hello!')
+    const CallRenderPropChild: React.FunctionComponent<any> = (props) => {
+      return props.children('Hello!')
     }
 
     class TestClass extends React.Component {
@@ -470,9 +480,9 @@ describe('Monkey Function', () => {
       }
     }
 
-    class RenderPropsFunctionChild extends React.Component {
+    class RenderPropsFunctionChild extends React.Component<any> {
       render() {
-        return (this.props.children as any)('huha')
+        return this.props.children('huha')
       }
     }
 

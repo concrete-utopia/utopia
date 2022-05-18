@@ -11,17 +11,15 @@ export class SvgControlComponent extends React.Component<ControlComponentProps<S
       this.props.control.followCanvas,
       this.props.control.offset,
     )
-    const svgChildren = this.props.control.controls.map(
-      (control, index): React.ReactFragment => {
-        if ((control.type as any) === 'svgControl' || (control.type as any) === 'divControl') {
-          throw new Error(
-            `please wrap ${control.controlid} HigherOrderSvgControlComponent in HigherOrderDivControlComponents to avoid CSS sadness!`,
-          )
-        } else {
-          return controlToSvg(control, index)
-        }
-      },
-    )
+    const svgChildren = this.props.control.controls.map((control, index): React.ReactFragment => {
+      if ((control.type as any) === 'svgControl' || (control.type as any) === 'divControl') {
+        throw new Error(
+          `please wrap ${control.controlid} HigherOrderSvgControlComponent in HigherOrderDivControlComponents to avoid CSS sadness!`,
+        )
+      } else {
+        return controlToSvg(control, index)
+      }
+    })
     return (
       <svg
         id={this.props.control.controlid}
@@ -57,33 +55,31 @@ export class DivControlComponent extends React.Component<ControlComponentProps<D
       this.props.control.followCanvas,
       this.props.control.offset,
     )
-    const children = this.props.control.controls.map(
-      (control, index): React.ReactFragment => {
-        if (control.type === 'svgControl') {
-          // okay something is very fishy here, I needed this IF here for typescript type narrowing... but why?!
-          // both branches of the if statement are 100% similar
-          return (
-            <control.component
-              key={control.controlid}
-              control={control}
-              canvasOffset={this.props.canvasOffset}
-              index={index}
-            />
-          )
-        } else {
-          // okay something is very fishy here, I needed this IF here for typescript type narrowing... but why?!
-          // both branches of the if statement are 100% similar
-          return (
-            <control.component
-              key={control.controlid}
-              control={control}
-              canvasOffset={this.props.canvasOffset}
-              index={index}
-            />
-          )
-        }
-      },
-    )
+    const children = this.props.control.controls.map((control, index): React.ReactFragment => {
+      if (control.type === 'svgControl') {
+        // okay something is very fishy here, I needed this IF here for typescript type narrowing... but why?!
+        // both branches of the if statement are 100% similar
+        return (
+          <control.component
+            key={control.controlid}
+            control={control}
+            canvasOffset={this.props.canvasOffset}
+            index={index}
+          />
+        ) as any // TODO delete this file
+      } else {
+        // okay something is very fishy here, I needed this IF here for typescript type narrowing... but why?!
+        // both branches of the if statement are 100% similar
+        return (
+          <control.component
+            key={control.controlid}
+            control={control}
+            canvasOffset={this.props.canvasOffset}
+            index={index}
+          />
+        ) as any // TODO delete this file
+      }
+    })
     return (
       <div
         id={this.props.control.controlid}
@@ -156,8 +152,7 @@ const controlToSvg = (control: SvgFragmentControl, index: number) => {
             key: patternPathId,
             id: patternPathId,
             fill: 'white',
-            d:
-              'M4,0.990777969 C4,0.443586406 4.44386482,0 5,0 C5.55228475,0 6,0.45097518 6,0.990777969 L6,5.00922203 C6,5.55641359 5.55613518,6 5,6 C4.44771525,6 4,5.54902482 4,5.00922203 L4,0.990777969 Z M10,8.99077797 C10,8.44358641 10.4438648,8 11,8 C11.5522847,8 12,8.45097518 12,8.99077797 L12,13.009222 C12,13.5564136 11.5561352,14 11,14 C10.4477153,14 10,13.5490248 10,13.009222 L10,8.99077797 Z',
+            d: 'M4,0.990777969 C4,0.443586406 4.44386482,0 5,0 C5.55228475,0 6,0.45097518 6,0.990777969 L6,5.00922203 C6,5.55641359 5.55613518,6 5,6 C4.44771525,6 4,5.54902482 4,5.00922203 L4,0.990777969 Z M10,8.99077797 C10,8.44358641 10.4438648,8 11,8 C11.5522847,8 12,8.45097518 12,8.99077797 L12,13.009222 C12,13.5564136 11.5561352,14 11,14 C10.4477153,14 10,13.5490248 10,13.009222 L10,8.99077797 Z',
           }),
         ),
       ),

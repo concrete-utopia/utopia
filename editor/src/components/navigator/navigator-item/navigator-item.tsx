@@ -200,8 +200,10 @@ function useStyleFullyVisible(path: ElementPath): boolean {
     })
 
     const isFlexAncestorDirectionChange = selectedViews.some((selected) => {
-      const selectedSizeMeasurements = MetadataUtils.findElementByElementPath(metadata, selected)
-        ?.specialSizeMeasurements
+      const selectedSizeMeasurements = MetadataUtils.findElementByElementPath(
+        metadata,
+        selected,
+      )?.specialSizeMeasurements
       const parentPath = EP.parentPath(selected)
       if (
         selectedSizeMeasurements?.parentLayoutSystem === 'flex' &&
@@ -240,135 +242,135 @@ function useIsProbablyScene(path: ElementPath): boolean {
   )
 }
 
-export const NavigatorItem: React.FunctionComponent<NavigatorItemInnerProps> = React.memo(
-  (props) => {
-    const {
-      dispatch,
-      isHighlighted,
-      isElementVisible,
-      selected,
-      collapsed,
-      elementOriginType,
-      elementPath,
-      getSelectedViewsInRange,
-      index,
-      elementWarnings,
-    } = props
+export const NavigatorItem: React.FunctionComponent<
+  React.PropsWithChildren<NavigatorItemInnerProps>
+> = React.memo((props) => {
+  const {
+    dispatch,
+    isHighlighted,
+    isElementVisible,
+    selected,
+    collapsed,
+    elementOriginType,
+    elementPath,
+    getSelectedViewsInRange,
+    index,
+    elementWarnings,
+  } = props
 
-    const colorTheme = useColorTheme()
-    const isFocusedComponent = useEditorState(
-      (store) => EP.isFocused(store.editor.focusedElementPath, elementPath),
-      'NavigatorItem isFocusedComponent',
-    )
+  const colorTheme = useColorTheme()
+  const isFocusedComponent = useEditorState(
+    (store) => EP.isFocused(store.editor.focusedElementPath, elementPath),
+    'NavigatorItem isFocusedComponent',
+  )
 
-    const isFocusableComponent = useEditorState((store) => {
-      return MetadataUtils.isFocusableComponent(elementPath, store.editor.jsxMetadata)
-    }, 'NavigatorItem isFocusable')
+  const isFocusableComponent = useEditorState((store) => {
+    return MetadataUtils.isFocusableComponent(elementPath, store.editor.jsxMetadata)
+  }, 'NavigatorItem isFocusable')
 
-    const childComponentCount = props.noOfChildren
+  const childComponentCount = props.noOfChildren
 
-    const isDynamic =
-      elementOriginType === 'unknown-element' ||
-      elementOriginType === 'generated-static-definition-present'
+  const isDynamic =
+    elementOriginType === 'unknown-element' ||
+    elementOriginType === 'generated-static-definition-present'
 
-    const isInsideComponent = EP.isInsideFocusedComponent(elementPath) || isFocusedComponent
-    const fullyVisible = useStyleFullyVisible(elementPath)
-    const isProbablyScene = useIsProbablyScene(elementPath)
+  const isInsideComponent = EP.isInsideFocusedComponent(elementPath) || isFocusedComponent
+  const fullyVisible = useStyleFullyVisible(elementPath)
+  const isProbablyScene = useIsProbablyScene(elementPath)
 
-    const resultingStyle = computeResultingStyle(
-      selected,
-      isInsideComponent,
-      isDynamic,
-      isProbablyScene,
-      fullyVisible,
-      isFocusedComponent,
-      isFocusableComponent,
-      colorTheme,
-    )
+  const resultingStyle = computeResultingStyle(
+    selected,
+    isInsideComponent,
+    isDynamic,
+    isProbablyScene,
+    fullyVisible,
+    isFocusedComponent,
+    isFocusableComponent,
+    colorTheme,
+  )
 
-    let warningText: string | null = null
-    if (elementWarnings.dynamicSceneChildWidthHeightPercentage) {
-      warningText = ChildWithPercentageSize
-    } else if (elementWarnings.widthOrHeightZero) {
-      warningText = 'Missing width or height'
-    } else if (elementWarnings.absoluteWithUnpositionedParent) {
-      warningText = 'Element is trying to be position absolutely with an unconfigured parent'
+  let warningText: string | null = null
+  if (elementWarnings.dynamicSceneChildWidthHeightPercentage) {
+    warningText = ChildWithPercentageSize
+  } else if (elementWarnings.widthOrHeightZero) {
+    warningText = 'Missing width or height'
+  } else if (elementWarnings.absoluteWithUnpositionedParent) {
+    warningText = 'Element is trying to be position absolutely with an unconfigured parent'
+  }
+
+  const collapse = React.useCallback(
+    (event: any) => collapseItem(dispatch, elementPath, event),
+    [dispatch, elementPath],
+  )
+  const select = React.useCallback(
+    (event: any) =>
+      selectItem(dispatch, getSelectedViewsInRange, elementPath, index, selected, event),
+    [dispatch, getSelectedViewsInRange, elementPath, index, selected],
+  )
+  const highlight = React.useCallback(
+    () => highlightItem(dispatch, elementPath, selected, isHighlighted),
+    [dispatch, elementPath, selected, isHighlighted],
+  )
+  const focusComponent = React.useCallback(() => {
+    if (isFocusableComponent) {
+      dispatch([EditorActions.setFocusedElement(elementPath)])
     }
+  }, [dispatch, elementPath, isFocusableComponent])
 
-    const collapse = React.useCallback((event: any) => collapseItem(dispatch, elementPath, event), [
-      dispatch,
-      elementPath,
-    ])
-    const select = React.useCallback(
-      (event: any) =>
-        selectItem(dispatch, getSelectedViewsInRange, elementPath, index, selected, event),
-      [dispatch, getSelectedViewsInRange, elementPath, index, selected],
-    )
-    const highlight = React.useCallback(
-      () => highlightItem(dispatch, elementPath, selected, isHighlighted),
-      [dispatch, elementPath, selected, isHighlighted],
-    )
-    const focusComponent = React.useCallback(() => {
-      if (isFocusableComponent) {
-        dispatch([EditorActions.setFocusedElement(elementPath)])
-      }
-    }, [dispatch, elementPath, isFocusableComponent])
+  const containerStyle: React.CSSProperties = React.useMemo(() => {
+    return {
+      opacity: isElementVisible ? undefined : 0.5,
+      overflow: 'hidden',
+      flexGrow: 1,
+      flexShrink: 0,
+    }
+  }, [isElementVisible])
 
-    const containerStyle: React.CSSProperties = React.useMemo(() => {
-      return {
-        opacity: isElementVisible ? undefined : 0.5,
-        overflow: 'hidden',
-        flexGrow: 1,
-        flexShrink: 0,
-      }
-    }, [isElementVisible])
+  const rowStyle = useKeepReferenceEqualityIfPossible({
+    paddingLeft: getElementPadding(elementPath),
+    height: UtopiaTheme.layout.rowHeight.smaller,
+    ...resultingStyle.style,
+  })
 
-    const rowStyle = useKeepReferenceEqualityIfPossible({
-      paddingLeft: getElementPadding(elementPath),
-      height: UtopiaTheme.layout.rowHeight.smaller,
-      ...resultingStyle.style,
-    })
-
-    return (
-      <FlexRow
-        style={rowStyle}
-        onMouseDown={select}
-        onMouseMove={highlight}
-        onDoubleClick={focusComponent}
-      >
-        <FlexRow style={containerStyle}>
-          <ExpandableIndicator
-            key='expandable-indicator'
-            visible={childComponentCount > 0 || isFocusedComponent}
-            collapsed={collapsed}
-            selected={selected && !isInsideComponent}
-            onMouseDown={collapse}
-            style={{ transform: 'scale(0.8)', opacity: 0.5 }}
-          />
-          <NavigatorRowLabel
-            elementPath={elementPath}
-            label={props.label}
-            renamingTarget={props.renamingTarget}
-            selected={props.selected}
-            elementOriginType={props.elementOriginType}
-            dispatch={props.dispatch}
-            isDynamic={isDynamic}
-            iconColor={resultingStyle.iconColor}
-            warningText={warningText}
-          />
-        </FlexRow>
-        <NavigatorItemActionSheet
+  return (
+    <FlexRow
+      style={rowStyle}
+      onMouseDown={select}
+      onMouseMove={highlight}
+      onDoubleClick={focusComponent}
+    >
+      <FlexRow style={containerStyle}>
+        <ExpandableIndicator
+          key='expandable-indicator'
+          visible={childComponentCount > 0 || isFocusedComponent}
+          collapsed={collapsed}
+          selected={selected && !isInsideComponent}
+          onMouseDown={collapse}
+          style={{ transform: 'scale(0.8)', opacity: 0.5 }}
+        />
+        <NavigatorRowLabel
           elementPath={elementPath}
-          selected={selected}
-          highlighted={isHighlighted}
-          isVisibleOnCanvas={isElementVisible}
-          instanceOriginalComponentName={null}
-          dispatch={dispatch}
+          label={props.label}
+          renamingTarget={props.renamingTarget}
+          selected={props.selected}
+          elementOriginType={props.elementOriginType}
+          dispatch={props.dispatch}
+          isDynamic={isDynamic}
+          iconColor={resultingStyle.iconColor}
+          warningText={warningText}
         />
       </FlexRow>
-    )
-  },
-)
+      <NavigatorItemActionSheet
+        elementPath={elementPath}
+        selected={selected}
+        highlighted={isHighlighted}
+        isVisibleOnCanvas={isElementVisible}
+        instanceOriginalComponentName={null}
+        dispatch={dispatch}
+      />
+    </FlexRow>
+  )
+})
 NavigatorItem.displayName = 'NavigatorItem'
 
 interface NavigatorRowLabelProps {

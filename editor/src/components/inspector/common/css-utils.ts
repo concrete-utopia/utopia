@@ -139,12 +139,18 @@ export const RegExpLibrary = (function GenerateRegExpLib() {
   const searchFlags = 'gi' // ignore case for angles, "rgb" etc
   const angle = /(?:[+-]?\d*\.?\d+)(?:deg|grad|rad|turn)/ // Angle +ive, -ive and angle types
   const colorHex = /\#(?:[A-Fa-f0-9]{8}|[A-Fa-f0-9]{6}|[A-Fa-f0-9]{4}|[A-Fa-f0-9]{3})/ // #RGB #RGBA #RRGGBB #RRGGBBAA
-  const colorHexOptionalOctothorp = /(\#?)([A-Fa-f0-9]{8}|[A-Fa-f0-9]{6}|[A-Fa-f0-9]{4}|[A-Fa-f0-9]{3})/ // #RGB #RGBA #RRGGBB #RRGGBBAA RGB RGBA RRGGBB RRGGBBAA
-  const colorHSLaComponents = /hsla?(\((\d*\.?\d+)(deg|grad|rad|turn)?\s*,\s*([\d.]+)%\s*,\s*([\d.]+)%(\s*,\s*(\d*\.?\d+%?))?\)|\((\d*\.?\d+)(deg|grad|rad|turn)?\s*([\d.]+)%\s*([\d.]+)%(\s*\/\s*(\d*\.?\d+%?))?\))/
-  const colorHSLa = /hsla?(?:\((?:\d*\.?\d+)(?:deg|grad|rad|turn)?\s*,\s*(?:[\d.]+)%\s*,\s*(?:[\d.]+)%(?:\s*,\s*(?:\d*\.?\d+%?))?\)|\((?:\d*\.?\d+)(?:deg|grad|rad|turn)?\s*(?:[\d.]+)%\s*(?:[\d.]+)%(?:\s*\/\s*(?:\d*\.?\d+%?))?\))/
-  const colorRGBaComponents = /rgba?(?:\((\d*\.?\d+)\s*,\s*(\d*\.?\d+)\s*,\s*(\d*\.?\d+)\s*(?:,\s*(\d*\.?\d+%?))?\)|\((\d*\.?\d+)\s*(\d*\.?\d+)\s*(\d*\.?\d+)\s*(?:\/\s*(\d*\.?\d+%?))?\)|\((\d*\.?\d+%)\s*,\s*(\d*\.?\d+%)\s*,\s*(\d*\.?\d+%)(?:\s*,\s*(\d*\.?\d+%?))?\))/
-  const colorRGBa = /rgba?(?:\((?:\d*\.?\d+)\s*,\s*(?:\d*\.?\d+)\s*,\s*(?:\d*\.?\d+)\s*(?:,\s*(?:\d*\.?\d+%?))?\)|\((?:\d*\.?\d+)\s*(?:\d*\.?\d+)\s*(?:\d*\.?\d+)\s*(?:\/\s*(?:\d*\.?\d+%?))?\)|\((?:\d*\.?\d+%)\s*,\s*(?:\d*\.?\d+%)\s*,\s*(?:\d*\.?\d+%)(?:\s*,\s*(?:\d*\.?\d+%?))?\))/
-  const colorKeyword = /(?:aliceblue|antiquewhite|aqua|aquamarine|azure|beige|bisque|black|blanchedalmond|blue|blueviolet|brown|burlywood|cadetblue|chartreuse|chocolate|coral|cornflowerblue|cornsilk|crimson|cyan|darkblue|darkcyan|darkgoldenrod|darkgray|darkgreen|darkgrey|darkkhaki|darkmagenta|darkolivegreen|darkorange|darkorchid|darkred|darksalmon|darkseagreen|darkslateblue|darkslategray|darkslategrey|darkturquoise|darkviolet|deeppink|deepskyblue|dimgray|dimgrey|dodgerblue|firebrick|floralwhite|forestgreen|fuchsia|gainsboro|ghostwhite|gold|goldenrod|gray|green|greenyellow|grey|honeydew|hotpink|indianred|indigo|ivory|khaki|lavender|lavenderblush|lawngreen|lemonchiffon|lightblue|lightcoral|lightcyan|lightgoldenrodyellow|lightgray|lightgreen|lightgrey|lightpink|lightsalmon|lightseagreen|lightskyblue|lightslategray|lightslategrey|lightsteelblue|lightyellow|lime|limegreen|linen|magenta|maroon|mediumaquamarine|mediumblue|mediumorchid|mediumpurple|mediumseagreen|mediumslateblue|mediumspringgreen|mediumturquoise|mediumvioletred|midnightblue|mintcream|mistyrose|moccasin|navajowhite|navy|oldlace|olive|olivedrab|orange|orangered|orchid|palegoldenrod|palegreen|paleturquoise|palevioletred|papayawhip|peachpuff|peru|pink|plum|powderblue|purple|rebeccapurple|red|rosybrown|royalblue|saddlebrown|salmon|sandybrown|seagreen|seashell|sienna|silver|skyblue|slateblue|slategray|slategrey|snow|springgreen|steelblue|tan|teal|thistle|tomato|turquoise|violet|wheat|white|whitesmoke|yellow|yellowgreen)/
+  const colorHexOptionalOctothorp =
+    /(\#?)([A-Fa-f0-9]{8}|[A-Fa-f0-9]{6}|[A-Fa-f0-9]{4}|[A-Fa-f0-9]{3})/ // #RGB #RGBA #RRGGBB #RRGGBBAA RGB RGBA RRGGBB RRGGBBAA
+  const colorHSLaComponents =
+    /hsla?(\((\d*\.?\d+)(deg|grad|rad|turn)?\s*,\s*([\d.]+)%\s*,\s*([\d.]+)%(\s*,\s*(\d*\.?\d+%?))?\)|\((\d*\.?\d+)(deg|grad|rad|turn)?\s*([\d.]+)%\s*([\d.]+)%(\s*\/\s*(\d*\.?\d+%?))?\))/
+  const colorHSLa =
+    /hsla?(?:\((?:\d*\.?\d+)(?:deg|grad|rad|turn)?\s*,\s*(?:[\d.]+)%\s*,\s*(?:[\d.]+)%(?:\s*,\s*(?:\d*\.?\d+%?))?\)|\((?:\d*\.?\d+)(?:deg|grad|rad|turn)?\s*(?:[\d.]+)%\s*(?:[\d.]+)%(?:\s*\/\s*(?:\d*\.?\d+%?))?\))/
+  const colorRGBaComponents =
+    /rgba?(?:\((\d*\.?\d+)\s*,\s*(\d*\.?\d+)\s*,\s*(\d*\.?\d+)\s*(?:,\s*(\d*\.?\d+%?))?\)|\((\d*\.?\d+)\s*(\d*\.?\d+)\s*(\d*\.?\d+)\s*(?:\/\s*(\d*\.?\d+%?))?\)|\((\d*\.?\d+%)\s*,\s*(\d*\.?\d+%)\s*,\s*(\d*\.?\d+%)(?:\s*,\s*(\d*\.?\d+%?))?\))/
+  const colorRGBa =
+    /rgba?(?:\((?:\d*\.?\d+)\s*,\s*(?:\d*\.?\d+)\s*,\s*(?:\d*\.?\d+)\s*(?:,\s*(?:\d*\.?\d+%?))?\)|\((?:\d*\.?\d+)\s*(?:\d*\.?\d+)\s*(?:\d*\.?\d+)\s*(?:\/\s*(?:\d*\.?\d+%?))?\)|\((?:\d*\.?\d+%)\s*,\s*(?:\d*\.?\d+%)\s*,\s*(?:\d*\.?\d+%)(?:\s*,\s*(?:\d*\.?\d+%?))?\))/
+  const colorKeyword =
+    /(?:aliceblue|antiquewhite|aqua|aquamarine|azure|beige|bisque|black|blanchedalmond|blue|blueviolet|brown|burlywood|cadetblue|chartreuse|chocolate|coral|cornflowerblue|cornsilk|crimson|cyan|darkblue|darkcyan|darkgoldenrod|darkgray|darkgreen|darkgrey|darkkhaki|darkmagenta|darkolivegreen|darkorange|darkorchid|darkred|darksalmon|darkseagreen|darkslateblue|darkslategray|darkslategrey|darkturquoise|darkviolet|deeppink|deepskyblue|dimgray|dimgrey|dodgerblue|firebrick|floralwhite|forestgreen|fuchsia|gainsboro|ghostwhite|gold|goldenrod|gray|green|greenyellow|grey|honeydew|hotpink|indianred|indigo|ivory|khaki|lavender|lavenderblush|lawngreen|lemonchiffon|lightblue|lightcoral|lightcyan|lightgoldenrodyellow|lightgray|lightgreen|lightgrey|lightpink|lightsalmon|lightseagreen|lightskyblue|lightslategray|lightslategrey|lightsteelblue|lightyellow|lime|limegreen|linen|magenta|maroon|mediumaquamarine|mediumblue|mediumorchid|mediumpurple|mediumseagreen|mediumslateblue|mediumspringgreen|mediumturquoise|mediumvioletred|midnightblue|mintcream|mistyrose|moccasin|navajowhite|navy|oldlace|olive|olivedrab|orange|orangered|orchid|palegoldenrod|palegreen|paleturquoise|palevioletred|papayawhip|peachpuff|peru|pink|plum|powderblue|purple|rebeccapurple|red|rosybrown|royalblue|saddlebrown|salmon|sandybrown|seagreen|seashell|sienna|silver|skyblue|slateblue|slategray|slategrey|snow|springgreen|steelblue|tan|teal|thistle|tomato|turquoise|violet|wheat|white|whitesmoke|yellow|yellowgreen)/
   // prettier-ignore
   const color = combineRegExp([
     '(',
@@ -719,7 +725,7 @@ export const parseCSSNumber = (
   numberType: CSSNumberType,
   defaultUnit: CSSNumberUnit | null = null,
 ): Either<string, CSSNumber> => {
-  if (typeof input === 'number') {
+  if (typeof input === 'number' && (defaultUnit == null || defaultUnit === 'px')) {
     return right(cssNumber(input, defaultUnit))
   } else if (typeof input === 'string') {
     const unitParseFn = unitParseFnForType(numberType)
@@ -1801,9 +1807,7 @@ export function normalisedCSSTransformOriginValueToCSSTransformValue(
   }
 }
 
-export function cssTransformOriginToNormalisedValue(
-  cssTransformOrigin: CSSTransformOrigin,
-): {
+export function cssTransformOriginToNormalisedValue(cssTransformOrigin: CSSTransformOrigin): {
   x: number
   y: number
 } {
@@ -3258,7 +3262,8 @@ export function parseConicGradient(match: string): Either<string, CSSConicGradie
   return left('No conic-gradient found')
 }
 
-const backgroundImageRegExp = /(\/\*)?(?:(?:((?:url|(?:linear|radial|conic)-gradient)\((?:\([^\)]*\)|[^\)\(]*)*\)),?)|((?:(?:repeating-linear|repeating-radial|repeating-conic)-gradient|image-set)\(.+\)))(\*\/)?/g
+const backgroundImageRegExp =
+  /(\/\*)?(?:(?:((?:url|(?:linear|radial|conic)-gradient)\((?:\([^\)]*\)|[^\)\(]*)*\)),?)|((?:(?:repeating-linear|repeating-radial|repeating-conic)-gradient|image-set)\(.+\)))(\*\/)?/g
 
 export function parseBackgroundImage(backgroundImage?: unknown): Either<string, CSSBackgrounds> {
   if (typeof backgroundImage === 'string') {
@@ -3716,9 +3721,9 @@ const updateBackgroundImageLayersWithNewValues = (
 }
 
 export function toggleBackgroundLayers(styleAttribute: JSXAttribute): JSXAttribute {
-  let workingStyleProp: Either<string, JSXAttribute> = right(styleAttribute) as EitherRight<
-    JSXAttribute
-  >
+  let workingStyleProp: Either<string, JSXAttribute> = right(
+    styleAttribute,
+  ) as EitherRight<JSXAttribute>
   const backgroundColorResult = getJSXAttributeAtPathInner(
     styleAttribute,
     backgroundColorPathWithoutStyle,
@@ -4745,11 +4750,9 @@ type ParseFunction<T, K extends keyof T> = (
   maybeRawValue: ModifiableAttribute | null,
 ) => Either<string, ValueOf<T>>
 
-function parseValueFactory<T, K extends keyof T>(
-  parserMap: {
-    [key in keyof T]: Parser<T[key]>
-  },
-): ParseFunction<T, K> {
+function parseValueFactory<T, K extends keyof T>(parserMap: {
+  [key in keyof T]: Parser<T[key]>
+}): ParseFunction<T, K> {
   return (prop: K, maybeValue: unknown, maybeRawValue: ModifiableAttribute | null) => {
     try {
       return parserMap[prop](maybeValue, maybeRawValue)

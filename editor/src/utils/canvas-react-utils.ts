@@ -240,7 +240,7 @@ function attachPathToChildren(children: any, path: string | null): any {
 }
 
 const mangleFunctionType = Utils.memoize(
-  (type: unknown): React.FunctionComponent => {
+  (type: unknown): React.FunctionComponent<React.PropsWithChildren<unknown>> => {
     const mangledFunctionName = `UtopiaSpiedFunctionComponent(${getDisplayName(type)})`
 
     const mangledFunction = {
@@ -260,7 +260,9 @@ const mangleFunctionType = Utils.memoize(
           updatedProps.children = updatedChildren
         }
 
-        const withUpdatedChildren = (type as React.FunctionComponent)(updatedProps, context)
+        const withUpdatedChildren = (
+          type as React.FunctionComponent<React.PropsWithChildren<unknown>>
+        )(updatedProps, context)
 
         const res = attachDataUidToRoot(withUpdatedChildren, (p as any)?.[UTOPIA_UID_KEY], path)
         if (MeasureRenderTimes) {
@@ -391,7 +393,7 @@ function updateChildOfExotic(
 }
 
 const mangleExoticType = Utils.memoize(
-  (type: React.ComponentType): React.FunctionComponent => {
+  (type: React.ComponentType): React.FunctionComponent<React.PropsWithChildren<unknown>> => {
     /**
      * Fragment-like components need to be special cased because we know they return with a root component
      * that will not end up in the DOM, but is also not subject to further reconciliation.
@@ -469,7 +471,8 @@ function patchedCreateReactElement(type: any, props: any, ...children: any): any
     return realCreateElement(mangledClass, props, ...children)
   } else if (typeof type === 'function') {
     // if the type is function and it is NOT a class component, we deduce it is a function component
-    const mangledType: React.FunctionComponent = mangleFunctionType(type)
+    const mangledType: React.FunctionComponent<React.PropsWithChildren<unknown>> =
+      mangleFunctionType(type)
     return realCreateElement(mangledType, props, ...children)
   } else if (fragmentOrProviderOrContext(type)) {
     // fragment-like components, the list is not exhaustive, we might need to extend it later

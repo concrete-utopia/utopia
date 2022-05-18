@@ -38,12 +38,21 @@ import {
 import {
   CanvasStrategy,
   CanvasStrategyId,
+  defaultCustomStrategyState,
   InteractionCanvasState,
   StrategyApplicationResult,
 } from '../../canvas/canvas-strategies/canvas-strategy-types'
 import { canvasPoint } from '../../../core/shared/math-utils'
 import { wildcardPatch } from '../../canvas/commands/wildcard-patch-command'
 import { runCanvasCommand } from '../../canvas/commands/commands'
+
+beforeAll(() => {
+  return jest.spyOn(Date, 'now').mockReturnValue(new Date(1000).getTime())
+})
+
+afterAll(() => {
+  return jest.clearAllMocks()
+})
 
 function createEditorStore(
   interactionSession: InteractionSessionWithoutMetadata | null,
@@ -148,7 +157,10 @@ const testStrategy: CanvasStrategy = {
     interactionSession: InteractionSession,
     strategyState: StrategyState,
   ): StrategyApplicationResult {
-    return [wildcardPatch('permanent', { canvas: { scale: { $set: 100 } } })]
+    return {
+      commands: [wildcardPatch('permanent', { canvas: { scale: { $set: 100 } } })],
+      customState: defaultCustomStrategyState(),
+    }
   },
 }
 
@@ -196,6 +208,10 @@ describe('interactionStart', () => {
           },
         ],
         "currentStrategyFitness": 10,
+        "customStrategyState": Object {
+          "escapeHatchActivated": false,
+          "lastReorderIdx": null,
+        },
         "sortedApplicableStrategies": Array [
           Object {
             "apply": [Function],
@@ -220,6 +236,7 @@ describe('interactionStart', () => {
           "y": 200,
         },
         "dragThresholdPassed": false,
+        "globalTime": 1000,
         "modifiers": Object {
           "alt": false,
           "cmd": false,
@@ -249,6 +266,10 @@ describe('interactionStart', () => {
         "currentStrategy": null,
         "currentStrategyCommands": Array [],
         "currentStrategyFitness": 0,
+        "customStrategyState": Object {
+          "escapeHatchActivated": false,
+          "lastReorderIdx": null,
+        },
         "sortedApplicableStrategies": Array [],
         "startingMetadata": Object {},
       }
@@ -307,6 +328,10 @@ describe('interactionUpdatex', () => {
           },
         ],
         "currentStrategyFitness": 10,
+        "customStrategyState": Object {
+          "escapeHatchActivated": false,
+          "lastReorderIdx": null,
+        },
         "sortedApplicableStrategies": Array [
           Object {
             "apply": [Function],
@@ -331,6 +356,7 @@ describe('interactionUpdatex', () => {
           "y": 200,
         },
         "dragThresholdPassed": false,
+        "globalTime": 1000,
         "modifiers": Object {
           "alt": false,
           "cmd": false,
@@ -361,6 +387,10 @@ describe('interactionUpdatex', () => {
         "currentStrategy": null,
         "currentStrategyCommands": Array [],
         "currentStrategyFitness": 0,
+        "customStrategyState": Object {
+          "escapeHatchActivated": false,
+          "lastReorderIdx": null,
+        },
         "sortedApplicableStrategies": Array [],
         "startingMetadata": Object {},
       }
@@ -446,6 +476,10 @@ describe('interactionHardReset', () => {
           },
         ],
         "currentStrategyFitness": 10,
+        "customStrategyState": Object {
+          "escapeHatchActivated": false,
+          "lastReorderIdx": null,
+        },
         "sortedApplicableStrategies": Array [
           Object {
             "apply": [Function],
@@ -473,6 +507,7 @@ describe('interactionHardReset', () => {
           "y": 210,
         },
         "dragThresholdPassed": false,
+        "globalTime": 1000,
         "modifiers": Object {
           "alt": false,
           "cmd": false,
@@ -505,6 +540,10 @@ describe('interactionHardReset', () => {
         "currentStrategy": null,
         "currentStrategyCommands": Array [],
         "currentStrategyFitness": 0,
+        "customStrategyState": Object {
+          "escapeHatchActivated": false,
+          "lastReorderIdx": null,
+        },
         "sortedApplicableStrategies": Array [],
         "startingMetadata": Object {},
       }
@@ -652,6 +691,10 @@ describe('interactionUpdate with user changed strategy', () => {
           },
         ],
         "currentStrategyFitness": 10,
+        "customStrategyState": Object {
+          "escapeHatchActivated": false,
+          "lastReorderIdx": null,
+        },
         "sortedApplicableStrategies": Array [
           Object {
             "apply": [Function],
@@ -679,6 +722,7 @@ describe('interactionUpdate with user changed strategy', () => {
           "y": 210,
         },
         "dragThresholdPassed": false,
+        "globalTime": 1000,
         "modifiers": Object {
           "alt": false,
           "cmd": false,
@@ -712,6 +756,10 @@ describe('interactionUpdate with user changed strategy', () => {
         "currentStrategy": null,
         "currentStrategyCommands": Array [],
         "currentStrategyFitness": 0,
+        "customStrategyState": Object {
+          "escapeHatchActivated": false,
+          "lastReorderIdx": null,
+        },
         "sortedApplicableStrategies": Array [],
         "startingMetadata": Object {},
       }

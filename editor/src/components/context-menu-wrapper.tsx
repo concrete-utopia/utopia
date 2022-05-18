@@ -157,7 +157,7 @@ export class MomentumContextMenu<T> extends ReactComponent<ContextMenuProps<T>> 
 }
 
 export class ContextMenuWrapper<T> extends ReactComponent<
-  ContextMenuWrapperProps<T> & { dispatch: EditorDispatch }
+  ContextMenuWrapperProps<T> & { dispatch: EditorDispatch; children?: React.ReactNode }
 > {
   getData = () => this.props.data
   render() {
@@ -188,7 +188,9 @@ export class ContextMenuWrapper<T> extends ReactComponent<
   }
 }
 
-export class InspectorContextMenuWrapper<T> extends ReactComponent<ContextMenuWrapperProps<T>> {
+export class InspectorContextMenuWrapper<T> extends ReactComponent<
+  React.PropsWithChildren<ContextMenuWrapperProps<T>>
+> {
   getData = () => this.props.data
   render() {
     const name = `${this.props.id}-context-menu-wrapper`
@@ -198,22 +200,22 @@ export class InspectorContextMenuWrapper<T> extends ReactComponent<ContextMenuWr
         className={name + ' ' + (this.props.className ?? '')}
         css={{
           width: '100%',
-          ...this.props.style,
+          ...(this.props.style as any), // TODO Emotion and React 18 types don't like each other
           '--control-styles-interactive-unset-main-color': UtopiaTheme.color.fg7.value,
           '--control-styles-interactive-unset-secondary-color': UtopiaTheme.color.fg7.value,
           '--control-styles-interactive-unset-track-color': UtopiaTheme.color.bg5.value,
           '--control-styles-interactive-unset-rail-color': UtopiaTheme.color.bg3.value,
           '&:hover': {
             '--control-styles-interactive-unset-main-color': getControlStyles('simple').mainColor,
-            '--control-styles-interactive-unset-secondary-color': getControlStyles('simple')
-              .secondaryColor,
+            '--control-styles-interactive-unset-secondary-color':
+              getControlStyles('simple').secondaryColor,
             '--control-styles-interactive-unset-track-color': getControlStyles('simple').trackColor,
             '--control-styles-interactive-unset-rail-color': getControlStyles('simple').railColor,
           },
           '&:focus-within': {
             '--control-styles-interactive-unset-main-color': getControlStyles('simple').mainColor,
-            '--control-styles-interactive-unset-secondary-color': getControlStyles('simple')
-              .secondaryColor,
+            '--control-styles-interactive-unset-secondary-color':
+              getControlStyles('simple').secondaryColor,
             '--control-styles-interactive-unset-track-color': getControlStyles('simple').trackColor,
             '--control-styles-interactive-unset-rail-color': getControlStyles('simple').railColor,
           },
@@ -249,7 +251,9 @@ interface MenuProviderProps {
   style?: React.CSSProperties
 }
 
-export const MenuProvider: React.FunctionComponent<MenuProviderProps> = (props) => {
+export const MenuProvider: React.FunctionComponent<React.PropsWithChildren<MenuProviderProps>> = (
+  props,
+) => {
   const { show } = useContextMenu({ id: props.id })
   const onContextMenu = React.useCallback(
     (event: React.MouseEvent<HTMLDivElement>) => {

@@ -81,10 +81,12 @@ export function getStoreHook(
   }
 }
 
-export const TestInspectorContextProvider: React.FunctionComponent<{
-  selectedViews: Array<ElementPath>
-  editorStoreData: EditorStateContextData
-}> = (props) => {
+export const TestInspectorContextProvider: React.FunctionComponent<
+  React.PropsWithChildren<{
+    selectedViews: Array<ElementPath>
+    editorStoreData: EditorStateContextData
+  }>
+> = (props) => {
   return (
     <EditorStateContext.Provider value={props.editorStoreData}>
       <InspectorContextProvider selectedViews={props.selectedViews} targetPath={['style']}>

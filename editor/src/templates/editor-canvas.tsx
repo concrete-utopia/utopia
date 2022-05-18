@@ -261,7 +261,7 @@ function on(
         }
       }
     } else {
-      return [CanvasActions.scrollCanvas((event.delta as any) as CanvasVector)]
+      return [CanvasActions.scrollCanvas(event.delta as any as CanvasVector)]
     }
   } else if (
     isDragging(canvas.editorState) &&
@@ -293,6 +293,7 @@ function on(
   return additionalEvents
 }
 
+let interactionSessionTimerHandle: any = undefined
 export function runLocalCanvasAction(
   dispatch: EditorDispatch,
   model: EditorState,
@@ -366,6 +367,10 @@ export function runLocalCanvasAction(
       }
     }
     case 'CREATE_INTERACTION_SESSION':
+      clearInterval(interactionSessionTimerHandle)
+      interactionSessionTimerHandle = setInterval(() => {
+        dispatch([CanvasActions.updateDragInteractionData({ globalTime: Date.now() })])
+      }, 200)
       return {
         ...model,
         canvas: {
@@ -377,6 +382,7 @@ export function runLocalCanvasAction(
         },
       }
     case 'CLEAR_INTERACTION_SESSION':
+      clearInterval(interactionSessionTimerHandle)
       const metadataToKeep =
         action.applyChanges && model.canvas.interactionSession != null
           ? model.canvas.interactionSession.metadata
@@ -401,6 +407,27 @@ export function runLocalCanvasAction(
             interactionSession: {
               ...model.canvas.interactionSession,
               ...action.interactionSessionUpdate,
+            },
+          },
+        }
+      }
+    case 'UPDATE_DRAG_INTERACTION_DATA':
+      if (
+        model.canvas.interactionSession == null ||
+        model.canvas.interactionSession.interactionData.type === 'KEYBOARD'
+      ) {
+        return model
+      } else {
+        return {
+          ...model,
+          canvas: {
+            ...model.canvas,
+            interactionSession: {
+              ...model.canvas.interactionSession,
+              interactionData: {
+                ...model.canvas.interactionSession.interactionData,
+                ...action.dragInteractionUpdate,
+              },
             },
           },
         }
@@ -475,33 +502,33 @@ export function getNewCanvasControlsCursor(canvasCursor: CanvasCursor): CSSCurso
   }
 }
 
-const applyScaleToControl = (scale: number) => (
-  control: ControlOrHigherOrderControl,
-): ControlOrHigherOrderControl => {
-  switch (control.type) {
-    case 'text':
-      return { ...control, props: control.scaleFn(control.props, scale) }
-    case 'circle':
-      return { ...control, props: control.scaleFn(control.props, scale) }
-    case 'ellipse':
-      return { ...control, props: control.scaleFn(control.props, scale) }
-    case 'image':
-      return { ...control, props: control.scaleFn(control.props, scale) }
-    case 'path':
-      return { ...control, props: control.scaleFn(control.props, scale) }
-    case 'rect':
-      return { ...control, props: control.scaleFn(control.props, scale) }
-    case 'svgControl':
-    case 'divControl':
-      return {
-        ...control,
-        controls: (control.controls as any).map(applyScaleToControl(scale)), // HACK why do I need an any here
-      }
-    default:
-      const _exhaustiveCheck: never = control
-      throw `Invalid control type: ${JSON.stringify(control)}`
+const applyScaleToControl =
+  (scale: number) =>
+  (control: ControlOrHigherOrderControl): ControlOrHigherOrderControl => {
+    switch (control.type) {
+      case 'text':
+        return { ...control, props: control.scaleFn(control.props, scale) }
+      case 'circle':
+        return { ...control, props: control.scaleFn(control.props, scale) }
+      case 'ellipse':
+        return { ...control, props: control.scaleFn(control.props, scale) }
+      case 'image':
+        return { ...control, props: control.scaleFn(control.props, scale) }
+      case 'path':
+        return { ...control, props: control.scaleFn(control.props, scale) }
+      case 'rect':
+        return { ...control, props: control.scaleFn(control.props, scale) }
+      case 'svgControl':
+      case 'divControl':
+        return {
+          ...control,
+          controls: (control.controls as any).map(applyScaleToControl(scale)), // HACK why do I need an any here
+        }
+      default:
+        const _exhaustiveCheck: never = control
+        throw `Invalid control type: ${JSON.stringify(control)}`
+    }
   }
-}
 
 function controlFragmentContainingPoint(
   control: ControlOrHigherOrderControl,
@@ -966,11 +993,10 @@ export class EditorCanvas extends React.Component<EditorCanvasProps> {
           const dragPositions = getDragStatePositions(dragState, resizeOptions)
           const targetProperty =
             resizeOptions.propertyTargetOptions[resizeOptions.propertyTargetSelectedIndex]
-          const propertyChange:
-            | ResizeDragStatePropertyChange
-            | undefined = dragState.properties.find((prop) => {
-            return prop.targetProperty === targetProperty
-          })
+          const propertyChange: ResizeDragStatePropertyChange | undefined =
+            dragState.properties.find((prop) => {
+              return prop.targetProperty === targetProperty
+            })
           const keepAspectRatio =
             (key === 'shift' ? pressed : propertyChange?.keepAspectRatio) ||
             this.getElementAspectRatioLocked()

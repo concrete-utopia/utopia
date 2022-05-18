@@ -129,29 +129,26 @@ const nullableJSXElementNameKeepDeepEquality = nullableDeepEquality(
   JSXElementNameKeepDeepEqualityCall(),
 )
 
-export const NavigatorItemWrapper: React.FunctionComponent<NavigatorItemWrapperProps> = React.memo(
-  (props) => {
-    const selector = React.useMemo(() => navigatorItemWrapperSelectorFactory(props.elementPath), [
-      props.elementPath,
-    ])
-    const {
-      isSelected,
-      isHighlighted,
-      noOfChildren,
-      supportsChildren,
-      elementOriginType,
-      staticElementName,
-      label,
-      elementWarnings,
-    } = useEditorState(selector, 'NavigatorItemWrapper')
+export const NavigatorItemWrapper: React.FunctionComponent<
+  React.PropsWithChildren<NavigatorItemWrapperProps>
+> = React.memo((props) => {
+  const selector = React.useMemo(
+    () => navigatorItemWrapperSelectorFactory(props.elementPath),
+    [props.elementPath],
+  )
+  const {
+    isSelected,
+    isHighlighted,
+    noOfChildren,
+    supportsChildren,
+    elementOriginType,
+    staticElementName,
+    label,
+    elementWarnings,
+  } = useEditorState(selector, 'NavigatorItemWrapper')
 
-    const {
-      isElementVisible,
-      renamingTarget,
-      appropriateDropTargetHint,
-      dispatch,
-      isCollapsed,
-    } = useEditorState((store) => {
+  const { isElementVisible, renamingTarget, appropriateDropTargetHint, dispatch, isCollapsed } =
+    useEditorState((store) => {
       // Only capture this if it relates to the current navigator item, as it may change while
       // dragging around the navigator but we don't want the entire navigator to re-render each time.
       let possiblyAppropriateDropTargetHint: DropTargetHint | null = null
@@ -171,34 +168,33 @@ export const NavigatorItemWrapper: React.FunctionComponent<NavigatorItemWrapperP
       }
     }, 'NavigatorItemWrapper')
 
-    const deepReferenceStaticElementName = useKeepDeepEqualityCall(
-      staticElementName,
-      nullableJSXElementNameKeepDeepEquality,
-    )
+  const deepReferenceStaticElementName = useKeepDeepEqualityCall(
+    staticElementName,
+    nullableJSXElementNameKeepDeepEquality,
+  )
 
-    const navigatorItemProps: NavigatorItemDragAndDropWrapperProps = {
-      index: props.index,
-      editorDispatch: dispatch,
-      elementPath: props.elementPath,
-      selected: isSelected,
-      highlighted: isHighlighted,
-      collapsed: isCollapsed,
-      getDragSelections: props.getDragSelections,
-      getMaximumDistance: props.getMaximumDistance,
-      getSelectedViewsInRange: props.getSelectedViewsInRange,
-      appropriateDropTargetHint: appropriateDropTargetHint,
-      supportsChildren: supportsChildren,
-      noOfChildren: noOfChildren,
-      elementOriginType: elementOriginType,
-      staticElementName: deepReferenceStaticElementName,
-      label: label,
-      isElementVisible: isElementVisible,
-      renamingTarget: renamingTarget,
-      elementWarnings: elementWarnings,
-      windowStyle: props.windowStyle,
-    }
+  const navigatorItemProps: NavigatorItemDragAndDropWrapperProps = {
+    index: props.index,
+    editorDispatch: dispatch,
+    elementPath: props.elementPath,
+    selected: isSelected,
+    highlighted: isHighlighted,
+    collapsed: isCollapsed,
+    getDragSelections: props.getDragSelections,
+    getMaximumDistance: props.getMaximumDistance,
+    getSelectedViewsInRange: props.getSelectedViewsInRange,
+    appropriateDropTargetHint: appropriateDropTargetHint,
+    supportsChildren: supportsChildren,
+    noOfChildren: noOfChildren,
+    elementOriginType: elementOriginType,
+    staticElementName: deepReferenceStaticElementName,
+    label: label,
+    isElementVisible: isElementVisible,
+    renamingTarget: renamingTarget,
+    elementWarnings: elementWarnings,
+    windowStyle: props.windowStyle,
+  }
 
-    return <NavigatorItemContainer {...navigatorItemProps} />
-  },
-)
+  return <NavigatorItemContainer {...navigatorItemProps} />
+})
 NavigatorItemWrapper.displayName = 'NavigatorItemWrapper'

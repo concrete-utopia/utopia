@@ -18,7 +18,9 @@ interface SectionTitleRowProps {
   toggleMinimised?: () => void
 }
 
-export const SectionTitleRow: React.FunctionComponent<SectionTitleRowProps> = (props) => {
+export const SectionTitleRow: React.FunctionComponent<
+  React.PropsWithChildren<SectionTitleRowProps>
+> = (props) => {
   const colorTheme = useColorTheme()
   const toggleMinimised = props.toggleMinimised
   const handleClick = React.useCallback(

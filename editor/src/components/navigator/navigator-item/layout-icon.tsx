@@ -18,42 +18,43 @@ const borderColorForIconColor = (color: IcnProps['color'], colorTheme: any): str
   }
 }
 
-export const LayoutIcon: React.FunctionComponent<LayoutIconProps> = React.memo((props) => {
-  const colorTheme = useColorTheme()
-  const { iconProps, isPositionAbsolute } = useLayoutOrElementIcon(props.path)
+export const LayoutIcon: React.FunctionComponent<React.PropsWithChildren<LayoutIconProps>> =
+  React.memo((props) => {
+    const colorTheme = useColorTheme()
+    const { iconProps, isPositionAbsolute } = useLayoutOrElementIcon(props.path)
 
-  return (
-    <div
-      style={{
-        width: 18,
-        height: 18,
-        display: 'flex',
-        alignItems: 'center',
-        justifyItems: 'center',
-        position: 'relative',
-        marginLeft: 8,
-      }}
-    >
-      {isPositionAbsolute ? (
-        <div
-          style={{
-            position: 'absolute',
-            left: -5,
-            top: 3,
-            color: '#ff00ff',
-            fontSize: 11,
-            fontWeight: 600,
-          }}
-        >
-          *
-        </div>
-      ) : null}
+    return (
+      <div
+        style={{
+          width: 18,
+          height: 18,
+          display: 'flex',
+          alignItems: 'center',
+          justifyItems: 'center',
+          position: 'relative',
+          marginLeft: 8,
+        }}
+      >
+        {isPositionAbsolute ? (
+          <div
+            style={{
+              position: 'absolute',
+              left: -5,
+              top: 3,
+              color: '#ff00ff',
+              fontSize: 11,
+              fontWeight: 600,
+            }}
+          >
+            *
+          </div>
+        ) : null}
 
-      {props.warningText != null ? (
-        <WarningIcon tooltipText={props.warningText} />
-      ) : (
-        <Icn {...iconProps} color={props.color} />
-      )}
-    </div>
-  )
-})
+        {props.warningText != null ? (
+          <WarningIcon tooltipText={props.warningText} />
+        ) : (
+          <Icn {...iconProps} color={props.color} />
+        )}
+      </div>
+    )
+  })

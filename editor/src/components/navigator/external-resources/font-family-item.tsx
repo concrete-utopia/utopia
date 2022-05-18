@@ -9,7 +9,7 @@ interface FontFamilyItem {
   toggle: () => void
 }
 
-export const FontFamilyItem: React.FunctionComponent<FontFamilyItem> = ({
+export const FontFamilyItem: React.FunctionComponent<React.PropsWithChildren<FontFamilyItem>> = ({
   style,
   data,
   isOpen,
