@@ -100,6 +100,7 @@ import {
   invalidateDomWalkerIfNecessary,
   runDomWalker,
 } from './dom-walker'
+import { flushSync } from 'react-dom'
 
 // eslint-disable-next-line no-unused-expressions
 typeof process !== 'undefined' &&
@@ -208,7 +209,9 @@ export async function renderTestEditorWithModel(
       )
     }
 
-    canvasStoreHook.setState(patchedStoreFromFullStore(workingEditorState))
+    flushSync(() => {
+      canvasStoreHook.setState(patchedStoreFromFullStore(workingEditorState))
+    })
 
     // run dom walker
 
@@ -238,7 +241,9 @@ export async function renderTestEditorWithModel(
 
     // update state with new metadata
 
-    storeHook.setState(patchedStoreFromFullStore(workingEditorState))
+    flushSync(() => {
+      storeHook.setState(patchedStoreFromFullStore(workingEditorState))
+    })
   }
 
   const workers = new UtopiaTsWorkersImplementation(
