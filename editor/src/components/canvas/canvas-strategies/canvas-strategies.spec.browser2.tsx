@@ -48,10 +48,8 @@ describe('Strategy Fitness', () => {
     )
 
     await act(async () => {
-      const domFinished = renderResult.getDomReportDispatched()
-      const dispatchDone = renderResult.getDispatchFollowUpactionsFinished()
+      const dispatchDone = renderResult.getDispatchFollowUpActionsFinished()
       await renderResult.dispatch([selectComponents([targetElement], false)], false)
-      await domFinished
       await dispatchDone
     })
 
@@ -94,10 +92,8 @@ describe('Strategy Fitness', () => {
     )
 
     await act(async () => {
-      const domFinished = renderResult.getDomReportDispatched()
-      const dispatchDone = renderResult.getDispatchFollowUpactionsFinished()
+      const dispatchDone = renderResult.getDispatchFollowUpActionsFinished()
       await renderResult.dispatch([selectComponents([targetElement], false)], false)
-      await domFinished
       await dispatchDone
     })
 
@@ -144,10 +140,8 @@ describe('Strategy Fitness', () => {
     )
 
     await act(async () => {
-      const domFinished = renderResult.getDomReportDispatched()
-      const dispatchDone = renderResult.getDispatchFollowUpactionsFinished()
+      const dispatchDone = renderResult.getDispatchFollowUpActionsFinished()
       await renderResult.dispatch([selectComponents([targetElement], false)], false)
-      await domFinished
       await dispatchDone
     })
 
@@ -194,10 +188,8 @@ describe('Strategy Fitness', () => {
     )
 
     await act(async () => {
-      const domFinished = renderResult.getDomReportDispatched()
-      const dispatchDone = renderResult.getDispatchFollowUpactionsFinished()
+      const dispatchDone = renderResult.getDispatchFollowUpActionsFinished()
       await renderResult.dispatch([selectComponents([targetElement], false)], false)
-      await domFinished
       await dispatchDone
     })
 
