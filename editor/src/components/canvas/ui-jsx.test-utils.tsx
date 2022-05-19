@@ -101,6 +101,7 @@ import {
   runDomWalker,
 } from './dom-walker'
 import { flushSync } from 'react-dom'
+import { shouldInspectorUpdate } from '../inspector/inspector'
 
 // eslint-disable-next-line no-unused-expressions
 typeof process !== 'undefined' &&
@@ -243,6 +244,9 @@ export async function renderTestEditorWithModel(
 
     flushSync(() => {
       storeHook.setState(patchedStoreFromFullStore(workingEditorState))
+      if (shouldInspectorUpdate(workingEditorState.strategyState)) {
+        inspectorStoreHook.setState(patchedStoreFromFullStore(workingEditorState))
+      }
     })
   }
 
@@ -283,6 +287,13 @@ export async function renderTestEditorWithModel(
 
   const domWalkerMutableState = createDomWalkerMutableState(canvasStoreHook)
 
+  const inspectorStoreHook = create<
+    EditorStorePatched,
+    SetState<EditorStorePatched>,
+    GetState<EditorStorePatched>,
+    Mutate<StoreApi<EditorStorePatched>, [['zustand/subscribeWithSelector', never]]>
+  >(subscribeWithSelector((set) => patchedStoreFromFullStore(initialEditorStore)))
+
   const storeHook = create<
     EditorStorePatched,
     SetState<EditorStorePatched>,
@@ -309,6 +320,7 @@ export async function renderTestEditorWithModel(
         useStore={storeHook}
         canvasStore={canvasStoreHook}
         spyCollector={spyCollector}
+        inspectorStore={inspectorStoreHook}
         domWalkerMutableState={domWalkerMutableState}
       />
     </React.Profiler>,
