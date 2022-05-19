@@ -207,6 +207,7 @@ import type {
   SetIndexedDBFailed,
   ForceParseFile,
   RemoveFromNodeModulesContents,
+  RunEscapeHatch,
 } from '../action-types'
 import { EditorModes, elementInsertionSubject, Mode, SceneInsertionSubject } from '../editor-modes'
 import type {
@@ -1469,5 +1470,12 @@ export function forceParseFile(filePath: string): ForceParseFile {
   return {
     action: 'FORCE_PARSE_FILE',
     filePath: filePath,
+  }
+}
+
+export function runEscapeHatch(targets: Array<ElementPath>): RunEscapeHatch {
+  return {
+    action: 'RUN_ESCAPE_HATCH',
+    targets: targets,
   }
 }
