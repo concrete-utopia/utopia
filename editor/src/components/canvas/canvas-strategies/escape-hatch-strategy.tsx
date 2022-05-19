@@ -66,11 +66,6 @@ export const escapeHatchStrategy: CanvasStrategy = {
       key: 'pie-timer-control',
       show: 'visible-only-while-active',
     },
-    {
-      control: OutlineHighlightControl,
-      key: 'outline-highlight-control',
-      show: 'visible-only-while-active',
-    },
   ],
   fitness: (canvasState, interactionState, strategyState) => {
     return escapeHatchStrategy.isApplicable(
@@ -106,14 +101,13 @@ export const escapeHatchStrategy: CanvasStrategy = {
           canvasState,
         )
 
-        const siblingAndDraggedFrames = collectHighlightFrames(
+        const highlightCommand = collectHighlightCommand(
           canvasState,
           interactionState.interactionData,
           strategyState,
         )
-        const showHighlightCommand = showOutlineHighlight('transient', siblingAndDraggedFrames)
         return {
-          commands: [...moveAndPositionCommands, ...siblingCommands, showHighlightCommand],
+          commands: [...moveAndPositionCommands, ...siblingCommands, highlightCommand],
           customState: {
             ...strategyState.customStrategyState,
             escapeHatchActivated,
@@ -299,11 +293,11 @@ function escapeHatchAllowed(
   }
 }
 
-function collectHighlightFrames(
+function collectHighlightCommand(
   canvasState: InteractionCanvasState,
   interactionData: DragInteractionData,
   strategyState: StrategyState,
-): Array<CanvasRectangle> {
+): CanvasCommand {
   const siblingFrames = stripNulls(
     canvasState.selectedElements.flatMap((path) => {
       return MetadataUtils.getSiblings(strategyState.startingMetadata, path)
@@ -326,5 +320,5 @@ function collectHighlightFrames(
       return null
     }
   }, canvasState.selectedElements)
-  return [...siblingFrames, ...draggedFrames]
+  return showOutlineHighlight('transient', [...siblingFrames, ...draggedFrames])
 }
