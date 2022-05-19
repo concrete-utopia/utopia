@@ -340,23 +340,19 @@ export const Inspector = React.memo<InspectorProps>((props: InspectorProps) => {
     }
   }
 
-  if (isInteractionActive) {
-    return null
-  } else {
-    return (
-      <div
-        id='inspector'
-        style={{
-          width: '100%',
-          position: 'relative',
-          color: colorTheme.neutralForeground.value,
-        }}
-        onFocus={onFocus}
-      >
-        {renderInspectorContents()}
-      </div>
-    )
-  }
+  return (
+    <div
+      id='inspector'
+      style={{
+        width: '100%',
+        position: 'relative',
+        color: colorTheme.neutralForeground.value,
+      }}
+      onFocus={onFocus}
+    >
+      {renderInspectorContents()}
+    </div>
+  )
 })
 Inspector.displayName = 'Inspector'
 
