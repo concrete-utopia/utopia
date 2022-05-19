@@ -1,11 +1,10 @@
 import React from 'react'
-import { useEditorState } from '../editor/store/store-hook'
+import { CanvasStateContext, EditorStateContext, useEditorState } from '../editor/store/store-hook'
 import {
   UiJsxCanvas,
   pickUiJsxCanvasProps,
   CanvasReactErrorCallback,
   CanvasReactReportErrorCallback,
-  DomWalkerInvalidateScenesCtxAtom,
   DomWalkerInvalidatePathsCtxAtom,
   UiJsxCanvasProps,
   UiJsxCanvasPropsWithErrorCallback,
@@ -21,7 +20,7 @@ import {
 } from '../../core/shared/runtime-report-logs'
 import { ProjectContentTreeRoot } from '../assets'
 import { FancyError, processErrorWithSourceMap } from '../../core/shared/code-exec-utils'
-import { DomWalkerProps, useDomWalker } from './dom-walker'
+import { DomWalkerProps, useDomWalkerInvalidateCallbacks } from './dom-walker'
 import { ResolvingRemoteDependencyErrorName } from '../../core/es-modules/package-manager/package-manager'
 import { CanvasLoadingScreen } from './canvas-loading-screen'
 import { isHooksErrorMessage } from '../../utils/canvas-react-utils'
@@ -31,6 +30,18 @@ import { when } from '../../utils/react-conditionals'
 interface CanvasComponentEntryProps {}
 
 export const CanvasComponentEntry = React.memo((props: CanvasComponentEntryProps) => {
+  const canvasStore = React.useContext(CanvasStateContext)?.useStore
+
+  return (
+    <EditorStateContext.Provider
+      value={canvasStore == null ? null : { api: canvasStore, useStore: canvasStore }}
+    >
+      <CanvasComponentEntryInner {...props} />
+    </EditorStateContext.Provider>
+  )
+})
+
+const CanvasComponentEntryInner = React.memo((props: CanvasComponentEntryProps) => {
   const dispatch = useEditorState((store) => store.dispatch, 'CanvasComponentEntry dispatch')
 
   const canvasScrollAnimation = useEditorState(
@@ -110,40 +121,11 @@ export const CanvasComponentEntry = React.memo((props: CanvasComponentEntryProps
 })
 
 function DomWalkerWrapper(props: UiJsxCanvasPropsWithErrorCallback) {
-  const dispatch = useEditorState((store) => store.dispatch, 'CanvasComponentEntry dispatch')
-  const onDomReport = React.useCallback(
-    (elementMetadata: ReadonlyArray<ElementInstanceMetadata>, cachedPaths: Array<ElementPath>) => {
-      dispatch([saveDOMReport(elementMetadata, cachedPaths)])
-    },
-    [dispatch],
-  )
-  const canvasScale = useEditorState(
-    (store) => store.editor.canvas.scale,
-    'CanvasComponentEntry canvasScale',
-  )
-  const selectedViews = useEditorState(
-    (store) => store.editor.selectedViews,
-    'DomWalkerWrapper selectedViews',
-  )
-  const interactionSessionActive = useEditorState(
-    (store) => store.editor.canvas.interactionSession != null,
-    'DomWalkerWrapper interactionSession',
-  )
-  let [updateInvalidatedPaths, updateInvalidatedScenes, containerRef] = useDomWalker({
-    selectedViews: selectedViews,
-    canvasInteractionHappening: interactionSessionActive || props.transientFilesState != null,
-    mountCount: props.mountCount,
-    domWalkerInvalidateCount: props.domWalkerInvalidateCount,
-    scale: canvasScale,
-    onDomReport: onDomReport,
-    additionalElementsToUpdate: props.domWalkerAdditionalElementsToUpdate,
-  })
+  let [updateInvalidatedPaths] = useDomWalkerInvalidateCallbacks()
 
   return (
     <DomWalkerInvalidatePathsCtxAtom.Provider value={updateInvalidatedPaths}>
-      <DomWalkerInvalidateScenesCtxAtom.Provider value={updateInvalidatedScenes}>
-        <UiJsxCanvas {...props} ref={containerRef} />
-      </DomWalkerInvalidateScenesCtxAtom.Provider>
+      <UiJsxCanvas {...props} />
     </DomWalkerInvalidatePathsCtxAtom.Provider>
   )
 }

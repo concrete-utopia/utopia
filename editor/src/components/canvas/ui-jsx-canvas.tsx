@@ -50,7 +50,7 @@ import {
   TransientFilesState,
 } from '../editor/store/editor-state'
 import { proxyConsole } from './console-proxy'
-import { SetValueCallback, useDomWalker } from './dom-walker'
+import type { UpdateMutableCallback } from './dom-walker'
 import { isLiveMode } from '../editor/editor-modes'
 import { BakedInStoryboardVariableName } from '../../core/model/scene-utils'
 import { normalizeName } from '../custom-code/custom-code-utils'
@@ -95,6 +95,8 @@ import {
   clearListOfEvaluatedFiles,
   getListOfEvaluatedFiles,
 } from '../../core/shared/code-exec-utils'
+import { emptySet } from '../../core/shared/set-utils'
+import { forceNotNull } from '../../core/shared/optional-utils'
 
 applyUIDMonkeyPatch()
 
@@ -125,11 +127,7 @@ export const UiJsxCanvasCtxAtom = atomWithPubSub<UiJsxCanvasContextData>({
   defaultValue: emptyUiJsxCanvasContextData(),
 })
 
-export const DomWalkerInvalidateScenesCtxAtom = atomWithPubSub<SetValueCallback<Set<string>>>({
-  key: 'DomWalkerInvalidateScenesCtxAtom',
-  defaultValue: NO_OP,
-})
-export type DomWalkerInvalidatePathsCtxData = SetValueCallback<Set<string>>
+export type DomWalkerInvalidatePathsCtxData = UpdateMutableCallback<Set<string>>
 export const DomWalkerInvalidatePathsCtxAtom = atomWithPubSub<DomWalkerInvalidatePathsCtxData>({
   key: 'DomWalkerInvalidatePathsCtxAtom',
   defaultValue: NO_OP,
@@ -278,217 +276,218 @@ function clearSpyCollectorInvalidPaths(
   })
 }
 
-export const UiJsxCanvas = React.memo(
-  React.forwardRef<HTMLDivElement, UiJsxCanvasPropsWithErrorCallback>((props, ref) => {
-    const {
-      uiFilePath,
-      curriedRequireFn,
-      curriedResolveFn,
-      hiddenInstances,
-      imports_KILLME: imports, // FIXME this is the storyboard imports object used only for the cssimport
-      clearErrors,
-      clearConsoleLogs,
-      addToConsoleLogs,
-      canvasIsLive,
-      linkTags,
-      base64FileBlobs,
-      projectContents,
-      transientFilesState,
-      shouldIncludeCanvasRootInTheSpy,
-      propertyControlsInfo,
+export const UiJsxCanvas = React.memo<UiJsxCanvasPropsWithErrorCallback>((props) => {
+  const {
+    uiFilePath,
+    curriedRequireFn,
+    curriedResolveFn,
+    hiddenInstances,
+    imports_KILLME: imports, // FIXME this is the storyboard imports object used only for the cssimport
+    clearErrors,
+    clearConsoleLogs,
+    addToConsoleLogs,
+    canvasIsLive,
+    linkTags,
+    base64FileBlobs,
+    projectContents,
+    transientFilesState,
+    shouldIncludeCanvasRootInTheSpy,
+    propertyControlsInfo,
+    dispatch,
+  } = props
+
+  clearListOfEvaluatedFiles()
+  let resolvedFileNames = React.useRef<Array<string>>([]) // resolved (i.e. imported) files this render
+  resolvedFileNames.current = [uiFilePath]
+  let evaluatedFileNames = React.useRef<Array<string>>([]) // evaluated (i.e. not using a cached evaluation) this render
+  evaluatedFileNames.current = [uiFilePath]
+  React.useEffect(() => {
+    validateControlsToCheck(
       dispatch,
-    } = props
-
-    clearListOfEvaluatedFiles()
-    let resolvedFileNames = React.useRef<Array<string>>([]) // resolved (i.e. imported) files this render
-    resolvedFileNames.current = [uiFilePath]
-    let evaluatedFileNames = React.useRef<Array<string>>([]) // evaluated (i.e. not using a cached evaluation) this render
-    evaluatedFileNames.current = [uiFilePath]
-    React.useEffect(() => {
-      validateControlsToCheck(
-        dispatch,
-        propertyControlsInfo,
-        resolvedFileNames.current,
-        evaluatedFileNames.current,
-      )
-    })
-
-    // FIXME This is illegal! The two lines below are triggering a re-render
-    clearConsoleLogs()
-    proxyConsole(console, addToConsoleLogs)
-
-    if (clearErrors != null) {
-      // a new canvas render, a new chance at having no errors
-      clearErrors()
-    }
-
-    let metadataContext: UiJsxCanvasContextData = usePubSubAtomReadOnly(UiJsxCanvasCtxAtom)
-    const updateInvalidatedPaths: DomWalkerInvalidatePathsCtxData = usePubSubAtomReadOnly(
-      DomWalkerInvalidatePathsCtxAtom,
+      propertyControlsInfo,
+      resolvedFileNames.current,
+      evaluatedFileNames.current,
     )
-    useClearSpyMetadataOnRemount(props.mountCount, props.domWalkerInvalidateCount, metadataContext)
+  })
 
-    // Handle the imports changing, this needs to run _before_ any require function
-    // calls as it's modifying the underlying DOM elements. This is somewhat working
-    // like useEffect, except that runs after everything has rendered.
-    const cssImports = useKeepReferenceEqualityIfPossible(
-      normalizedCssImportsFromImports(uiFilePath, imports),
-    )
-    unimportAllButTheseCSSFiles(cssImports) // TODO this needs to support more than just the storyboard file!!!!!
+  // FIXME This is illegal! The two lines below are triggering a re-render
+  clearConsoleLogs()
+  proxyConsole(console, addToConsoleLogs)
 
-    let mutableContextRef = React.useRef<MutableUtopiaCtxRefData>({})
+  if (clearErrors != null) {
+    // a new canvas render, a new chance at having no errors
+    clearErrors()
+  }
 
-    let topLevelComponentRendererComponents = React.useRef<
-      MapLike<MapLike<ComponentRendererComponent>>
-    >({})
+  let metadataContext: UiJsxCanvasContextData = forceNotNull(
+    `Missing UiJsxCanvasCtxAtom provider`,
+    usePubSubAtomReadOnly(UiJsxCanvasCtxAtom),
+  )
 
-    const resolve = React.useMemo(
-      () => curriedResolveFn(projectContents),
-      [curriedResolveFn, projectContents],
-    )
+  const updateInvalidatedPaths: DomWalkerInvalidatePathsCtxData = usePubSubAtomReadOnly(
+    DomWalkerInvalidatePathsCtxAtom,
+  )
+  useClearSpyMetadataOnRemount(props.mountCount, props.domWalkerInvalidateCount, metadataContext)
 
-    let resolvedFiles = React.useRef<MapLike<Array<string>>>({}) // Mapping from importOrigin to an array of toImport
-    resolvedFiles.current = {}
-    const requireFn = React.useMemo(
-      () => curriedRequireFn(projectContents),
-      [curriedRequireFn, projectContents],
-    )
-    const customRequire = React.useCallback(
-      (importOrigin: string, toImport: string) => {
-        if (resolvedFiles.current[importOrigin] == null) {
-          resolvedFiles.current[importOrigin] = []
-        }
-        let resolvedFromThisOrigin = resolvedFiles.current[importOrigin]
+  // Handle the imports changing, this needs to run _before_ any require function
+  // calls as it's modifying the underlying DOM elements. This is somewhat working
+  // like useEffect, except that runs after everything has rendered.
+  const cssImports = useKeepReferenceEqualityIfPossible(
+    normalizedCssImportsFromImports(uiFilePath, imports),
+  )
+  unimportAllButTheseCSSFiles(cssImports) // TODO this needs to support more than just the storyboard file!!!!!
 
-        const alreadyResolved = resolvedFromThisOrigin.includes(toImport) // We're inside a cyclic dependency, so trigger the below fallback
-        const filePathResolveResult = alreadyResolved
-          ? left<string, string>('Already resolved')
-          : resolve(importOrigin, toImport)
+  let mutableContextRef = React.useRef<MutableUtopiaCtxRefData>({})
 
-        forEachRight(filePathResolveResult, (filepath) => resolvedFileNames.current.push(filepath))
+  let topLevelComponentRendererComponents = React.useRef<
+    MapLike<MapLike<ComponentRendererComponent>>
+  >({})
 
-        const resolvedParseSuccess: Either<string, MapLike<any>> = attemptToResolveParsedComponents(
-          resolvedFromThisOrigin,
-          toImport,
-          projectContents,
-          customRequire,
-          mutableContextRef,
-          topLevelComponentRendererComponents,
-          uiFilePath,
-          transientFilesState,
-          base64FileBlobs,
-          hiddenInstances,
-          metadataContext,
-          updateInvalidatedPaths,
-          shouldIncludeCanvasRootInTheSpy,
-          filePathResolveResult,
-        )
-        return foldEither(
-          () => {
-            // We did not find a ParseSuccess, fallback to standard require Fn
-            return requireFn(importOrigin, toImport, false)
-          },
-          (scope) => {
-            // Return an artificial exports object that contains our ComponentRendererComponents
-            return scope
-          },
-          resolvedParseSuccess,
-        )
-      },
-      // TODO I don't like projectContents and transientFileState here because that means dragging smth on the Canvas would recreate the customRequire fn
-      [
-        requireFn,
-        resolve,
+  const resolve = React.useMemo(
+    () => curriedResolveFn(projectContents),
+    [curriedResolveFn, projectContents],
+  )
+
+  let resolvedFiles = React.useRef<MapLike<Array<string>>>({}) // Mapping from importOrigin to an array of toImport
+  resolvedFiles.current = {}
+  const requireFn = React.useMemo(
+    () => curriedRequireFn(projectContents),
+    [curriedRequireFn, projectContents],
+  )
+  const customRequire = React.useCallback(
+    (importOrigin: string, toImport: string) => {
+      if (resolvedFiles.current[importOrigin] == null) {
+        resolvedFiles.current[importOrigin] = []
+      }
+      let resolvedFromThisOrigin = resolvedFiles.current[importOrigin]
+
+      const alreadyResolved = resolvedFromThisOrigin.includes(toImport) // We're inside a cyclic dependency, so trigger the below fallback
+      const filePathResolveResult = alreadyResolved
+        ? left<string, string>('Already resolved')
+        : resolve(importOrigin, toImport)
+
+      forEachRight(filePathResolveResult, (filepath) => resolvedFileNames.current.push(filepath))
+
+      const resolvedParseSuccess: Either<string, MapLike<any>> = attemptToResolveParsedComponents(
+        resolvedFromThisOrigin,
+        toImport,
         projectContents,
-        transientFilesState,
+        customRequire,
+        mutableContextRef,
+        topLevelComponentRendererComponents,
         uiFilePath,
+        transientFilesState,
         base64FileBlobs,
         hiddenInstances,
         metadataContext,
         updateInvalidatedPaths,
         shouldIncludeCanvasRootInTheSpy,
-      ],
-    )
-
-    const { scope, topLevelJsxComponents } = createExecutionScope(
+        filePathResolveResult,
+      )
+      return foldEither(
+        () => {
+          // We did not find a ParseSuccess, fallback to standard require Fn
+          return requireFn(importOrigin, toImport, false)
+        },
+        (scope) => {
+          // Return an artificial exports object that contains our ComponentRendererComponents
+          return scope
+        },
+        resolvedParseSuccess,
+      )
+    },
+    // TODO I don't like projectContents and transientFileState here because that means dragging smth on the Canvas would recreate the customRequire fn
+    [
+      requireFn,
+      resolve,
+      projectContents,
+      transientFilesState,
       uiFilePath,
-      customRequire,
-      mutableContextRef,
-      topLevelComponentRendererComponents,
-      props.projectContents,
-      uiFilePath, // this is the storyboard filepath
-      props.transientFilesState,
       base64FileBlobs,
       hiddenInstances,
       metadataContext,
       updateInvalidatedPaths,
-      props.shouldIncludeCanvasRootInTheSpy,
+      shouldIncludeCanvasRootInTheSpy,
+    ],
+  )
+
+  const { scope, topLevelJsxComponents } = createExecutionScope(
+    uiFilePath,
+    customRequire,
+    mutableContextRef,
+    topLevelComponentRendererComponents,
+    props.projectContents,
+    uiFilePath, // this is the storyboard filepath
+    props.transientFilesState,
+    base64FileBlobs,
+    hiddenInstances,
+    metadataContext,
+    updateInvalidatedPaths,
+    props.shouldIncludeCanvasRootInTheSpy,
+  )
+
+  evaluatedFileNames.current = getListOfEvaluatedFiles()
+
+  const executionScope = scope
+
+  useTwind(projectContents, customRequire, '#canvas-container')
+
+  const topLevelElementsMap = useKeepReferenceEqualityIfPossible(new Map(topLevelJsxComponents))
+
+  const { StoryboardRootComponent, rootValidPaths, storyboardRootElementPath, rootInstancePath } =
+    useGetStoryboardRoot(
+      props.focusedElementPath,
+      topLevelElementsMap,
+      executionScope,
+      projectContents,
+      uiFilePath,
+      transientFilesState,
+      resolve,
     )
 
-    evaluatedFileNames.current = getListOfEvaluatedFiles()
+  clearSpyCollectorInvalidPaths(rootValidPaths, metadataContext)
 
-    const executionScope = scope
+  const sceneLevelUtopiaContextValue = useKeepReferenceEqualityIfPossible({
+    validPaths: rootValidPaths,
+  })
 
-    useTwind(projectContents, customRequire, '#canvas-container')
+  const rerenderUtopiaContextValue = useKeepShallowReferenceEquality({
+    hiddenInstances: hiddenInstances,
+    canvasIsLive: canvasIsLive,
+    shouldIncludeCanvasRootInTheSpy: props.shouldIncludeCanvasRootInTheSpy,
+  })
 
-    const topLevelElementsMap = useKeepReferenceEqualityIfPossible(new Map(topLevelJsxComponents))
+  const utopiaProjectContextValue = useKeepShallowReferenceEquality({
+    projectContents: props.projectContents,
+    transientFilesState: props.transientFilesState,
+    openStoryboardFilePathKILLME: props.uiFilePath,
+    resolve: resolve,
+  })
 
-    const { StoryboardRootComponent, rootValidPaths, storyboardRootElementPath, rootInstancePath } =
-      useGetStoryboardRoot(
-        props.focusedElementPath,
-        topLevelElementsMap,
-        executionScope,
-        projectContents,
-        uiFilePath,
-        transientFilesState,
-        resolve,
-      )
-
-    clearSpyCollectorInvalidPaths(rootValidPaths, metadataContext)
-
-    const sceneLevelUtopiaContextValue = useKeepReferenceEqualityIfPossible({
-      validPaths: rootValidPaths,
-    })
-
-    const rerenderUtopiaContextValue = useKeepShallowReferenceEquality({
-      hiddenInstances: hiddenInstances,
-      canvasIsLive: canvasIsLive,
-      shouldIncludeCanvasRootInTheSpy: props.shouldIncludeCanvasRootInTheSpy,
-    })
-
-    const utopiaProjectContextValue = useKeepShallowReferenceEquality({
-      projectContents: props.projectContents,
-      transientFilesState: props.transientFilesState,
-      openStoryboardFilePathKILLME: props.uiFilePath,
-      resolve: resolve,
-    })
-
-    return (
-      <div
-        style={{
-          all: 'initial',
-        }}
-      >
-        <Helmet>{parse(linkTags)}</Helmet>
-        <RerenderUtopiaCtxAtom.Provider value={rerenderUtopiaContextValue}>
-          <UtopiaProjectCtxAtom.Provider value={utopiaProjectContextValue}>
-            <CanvasContainer
-              ref={ref}
-              validRootPaths={rootValidPaths}
-              canvasRootElementElementPath={storyboardRootElementPath}
-            >
-              <SceneLevelUtopiaCtxAtom.Provider value={sceneLevelUtopiaContextValue}>
-                {StoryboardRootComponent == null ? null : (
-                  <StoryboardRootComponent {...{ [UTOPIA_INSTANCE_PATH]: rootInstancePath }} />
-                )}
-              </SceneLevelUtopiaCtxAtom.Provider>
-            </CanvasContainer>
-          </UtopiaProjectCtxAtom.Provider>
-        </RerenderUtopiaCtxAtom.Provider>
-      </div>
-    )
-  }),
-)
+  return (
+    <div
+      style={{
+        all: 'initial',
+      }}
+    >
+      <Helmet>{parse(linkTags)}</Helmet>
+      <RerenderUtopiaCtxAtom.Provider value={rerenderUtopiaContextValue}>
+        <UtopiaProjectCtxAtom.Provider value={utopiaProjectContextValue}>
+          <CanvasContainer
+            validRootPaths={rootValidPaths}
+            canvasRootElementElementPath={storyboardRootElementPath}
+          >
+            <SceneLevelUtopiaCtxAtom.Provider value={sceneLevelUtopiaContextValue}>
+              {StoryboardRootComponent == null ? null : (
+                <StoryboardRootComponent {...{ [UTOPIA_INSTANCE_PATH]: rootInstancePath }} />
+              )}
+            </SceneLevelUtopiaCtxAtom.Provider>
+          </CanvasContainer>
+        </UtopiaProjectCtxAtom.Provider>
+      </RerenderUtopiaCtxAtom.Provider>
+    </div>
+  )
+})
 
 function attemptToResolveParsedComponents(
   resolvedFromThisOrigin: string[],
@@ -504,7 +503,7 @@ function attemptToResolveParsedComponents(
   base64FileBlobs: CanvasBase64Blobs,
   hiddenInstances: ElementPath[],
   metadataContext: UiJsxCanvasContextData,
-  updateInvalidatedPaths: SetValueCallback<Set<string>>,
+  updateInvalidatedPaths: UpdateMutableCallback<Set<string>>,
   shouldIncludeCanvasRootInTheSpy: boolean,
   filePathResolveResult: Either<string, string>,
 ): Either<string, MapLike<any>> {

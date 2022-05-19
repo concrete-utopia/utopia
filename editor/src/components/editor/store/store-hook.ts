@@ -140,6 +140,7 @@ export type EditorStateContextData = {
 }
 
 export const EditorStateContext = React.createContext<EditorStateContextData | null>(null)
+export const CanvasStateContext = React.createContext<EditorStateContextData | null>(null)
 EditorStateContext.displayName = 'EditorStateContext'
 
 export function useSelectorWithCallback<U>(
