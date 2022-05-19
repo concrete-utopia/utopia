@@ -91,6 +91,18 @@ export const runCanvasCommand: CommandFunction<CanvasCommand> = (
   }
 }
 
+export function foldAndApplyCommandsSimple(
+  editorState: EditorState,
+  commands: Array<CanvasCommand>,
+): EditorState {
+  const updatedEditorState = commands.reduce((workingEditorState, command) => {
+    const patches = runCanvasCommand(workingEditorState, command)
+    return updateEditorStateWithPatches(workingEditorState, patches.editorStatePatches)
+  }, editorState)
+
+  return updatedEditorState
+}
+
 export function foldAndApplyCommands(
   editorState: EditorState,
   priorPatchedState: EditorState,
