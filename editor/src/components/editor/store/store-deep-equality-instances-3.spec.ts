@@ -668,17 +668,17 @@ describe('ElementInstanceMetadataKeepDeepEquality', () => {
   }
 
   it('same reference returns the same reference', () => {
-    const result = ElementInstanceMetadataKeepDeepEquality()(oldValue, oldValue)
+    const result = ElementInstanceMetadataKeepDeepEquality(oldValue, oldValue)
     expect(result.value).toBe(oldValue)
     expect(result.areEqual).toEqual(true)
   })
   it('same value returns the same reference', () => {
-    const result = ElementInstanceMetadataKeepDeepEquality()(oldValue, newSameValue)
+    const result = ElementInstanceMetadataKeepDeepEquality(oldValue, newSameValue)
     expect(result.value).toBe(oldValue)
     expect(result.areEqual).toEqual(true)
   })
   it('different but similar value handled appropriately', () => {
-    const result = ElementInstanceMetadataKeepDeepEquality()(oldValue, newDifferentValue)
+    const result = ElementInstanceMetadataKeepDeepEquality(oldValue, newDifferentValue)
     expect(result.value.elementPath).toBe(oldValue.elementPath)
     expect(result.value.element).toBe(oldValue.element)
     expect(result.value.props).toBe(oldValue.props)
@@ -960,17 +960,17 @@ describe('ElementInstanceMetadataMapKeepDeepEquality', () => {
   }
 
   it('same reference returns the same reference', () => {
-    const result = ElementInstanceMetadataMapKeepDeepEquality()(oldValue, oldValue)
+    const result = ElementInstanceMetadataMapKeepDeepEquality(oldValue, oldValue)
     expect(result.value).toBe(oldValue)
     expect(result.areEqual).toEqual(true)
   })
   it('same value returns the same reference', () => {
-    const result = ElementInstanceMetadataMapKeepDeepEquality()(oldValue, newSameValue)
+    const result = ElementInstanceMetadataMapKeepDeepEquality(oldValue, newSameValue)
     expect(result.value).toBe(oldValue)
     expect(result.areEqual).toEqual(true)
   })
   it('different but similar value handled appropriately', () => {
-    const result = ElementInstanceMetadataMapKeepDeepEquality()(oldValue, newDifferentValue)
+    const result = ElementInstanceMetadataMapKeepDeepEquality(oldValue, newDifferentValue)
     expect(result.value.elem.elementPath).toBe(oldValue.elem.elementPath)
     expect(result.value.elem.element).toBe(oldValue.elem.element)
     expect(result.value.elem.props).toBe(oldValue.elem.props)

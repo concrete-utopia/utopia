@@ -72,10 +72,22 @@ type GuidelineWithDistance = {
   distance: number
 }
 
-export type GuidelineWithSnappingVector = {
+export interface GuidelineWithSnappingVector {
   guideline: Guideline
   snappingVector: CanvasVector
   activateSnap: boolean
+}
+
+export function guidelineWithSnappingVector(
+  guideline: Guideline,
+  snappingVector: CanvasVector,
+  activateSnap: boolean,
+): GuidelineWithSnappingVector {
+  return {
+    guideline: guideline,
+    snappingVector: snappingVector,
+    activateSnap: activateSnap,
+  }
 }
 
 export type ConstrainedDragAxis = Axis | DiagonalAxis

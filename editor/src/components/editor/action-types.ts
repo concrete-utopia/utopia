@@ -72,6 +72,22 @@ export interface ProjectListing {
   thumbnail: string
 }
 
+export function projectListing(
+  id: string,
+  title: string,
+  createdAt: string,
+  modifiedAt: string,
+  thumbnail: string,
+): ProjectListing {
+  return {
+    id: id,
+    title: title,
+    createdAt: createdAt,
+    modifiedAt: modifiedAt,
+    thumbnail: thumbnail,
+  }
+}
+
 export type EditorModel = EditorState
 
 export type MoveRowBefore = {

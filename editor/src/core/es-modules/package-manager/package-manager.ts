@@ -26,10 +26,33 @@ import { Either } from '../../shared/either'
 import { CurriedUtopiaRequireFn } from '../../../components/custom-code/code-file'
 import type { BuiltInDependencies } from './built-in-dependencies-list'
 
-export type FileEvaluationCache = { exports: any }
+export interface FileEvaluationCache {
+  exports: any
+}
+
+export function fileEvaluationCache(exports: any): FileEvaluationCache {
+  return {
+    exports: exports,
+  }
+}
+
+export interface EvaluationCacheForPath {
+  module: FileEvaluationCache
+  lastEvaluatedContent: string
+}
+
+export function evaluationCacheForPath(
+  module: FileEvaluationCache,
+  lastEvaluatedContent: string,
+): EvaluationCacheForPath {
+  return {
+    module: module,
+    lastEvaluatedContent: lastEvaluatedContent,
+  }
+}
 
 export type EvaluationCache = {
-  [path: string]: { module: FileEvaluationCache; lastEvaluatedContent: string }
+  [path: string]: EvaluationCacheForPath
 }
 
 export const DependencyNotFoundErrorName = 'DependencyNotFoundError'
@@ -97,15 +120,15 @@ export function getRequireFn(
         const cacheEntryExists =
           resolvedPath in evaluationCache &&
           evaluationCache[resolvedPath].lastEvaluatedContent === resolvedFile.fileContents
-        let fileEvaluationCache: FileEvaluationCache
+        let fileCache: FileEvaluationCache
         if (cacheEntryExists) {
-          fileEvaluationCache = evaluationCache[resolvedPath].module
+          fileCache = evaluationCache[resolvedPath].module
         } else {
-          fileEvaluationCache = {
+          fileCache = {
             exports: {},
           }
           evaluationCache[resolvedPath] = {
-            module: fileEvaluationCache,
+            module: fileCache,
             lastEvaluatedContent: resolvedFile.fileContents,
           }
         }
@@ -135,7 +158,7 @@ export function getRequireFn(
             injectedEvaluator(
               loadedModuleResult.filename,
               loadedModuleResult.loadedContents,
-              fileEvaluationCache,
+              fileCache,
               partialRequire,
             )
           } catch (e) {
@@ -151,7 +174,7 @@ export function getRequireFn(
             throw e
           }
         }
-        return fileEvaluationCache.exports
+        return fileCache.exports
       } else if (isEsRemoteDependencyPlaceholder(resolvedFile)) {
         if (!resolvedFile.downloadStarted) {
           // return empty exports object, fire off an async job to fetch the dependency from jsdelivr

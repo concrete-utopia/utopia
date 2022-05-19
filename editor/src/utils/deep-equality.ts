@@ -1,6 +1,7 @@
 import { shallowEqual } from '../core/shared/equality-utils'
 import { fastForEach } from '../core/shared/utils'
 import { ComplexMap, complexMapValue, ComplexMapValue } from './map'
+import { keepDeepReferenceEqualityIfPossible } from './react-performance'
 
 export interface KeepDeepEqualityResult<T> {
   value: T
@@ -757,6 +758,36 @@ export function createCallWithTripleEquals<T>(): KeepDeepEqualityCall<T> {
     return keepDeepEqualityResult(areEqual ? oldValue : newValue, areEqual)
   }
 }
+
+export const StringKeepDeepEquality: KeepDeepEqualityCall<string> =
+  createCallWithTripleEquals<string>()
+
+export const NullableStringKeepDeepEquality: KeepDeepEqualityCall<string | null> =
+  createCallWithTripleEquals<string | null>()
+
+export const NumberKeepDeepEquality: KeepDeepEqualityCall<number> =
+  createCallWithTripleEquals<number>()
+
+export const NullableNumberKeepDeepEquality: KeepDeepEqualityCall<number | null> =
+  createCallWithTripleEquals<number | null>()
+
+export const BooleanKeepDeepEquality: KeepDeepEqualityCall<boolean> =
+  createCallWithTripleEquals<boolean>()
+
+export const NullableBooleanKeepDeepEquality: KeepDeepEqualityCall<boolean | null> =
+  createCallWithTripleEquals<boolean | null>()
+
+export function createCallWithDeepEquals<T>(): KeepDeepEqualityCall<T> {
+  return (oldValue, newValue) => {
+    const keepDeepResult = keepDeepReferenceEqualityIfPossible(oldValue, newValue)
+    if (keepDeepResult === oldValue) {
+      return keepDeepEqualityResult(oldValue, true)
+    } else {
+      return keepDeepEqualityResult(keepDeepResult, false)
+    }
+  }
+}
+
 export function createCallWithShallowEquals<T>(): KeepDeepEqualityCall<T> {
   return (oldValue, newValue) => {
     const areEqual = shallowEqual(oldValue, newValue)
@@ -768,6 +799,39 @@ export function createCallFromEqualsFunction<T>(check: EqualityCheck<T>): KeepDe
   return (oldValue, newValue) => {
     const areEqual = check(oldValue, newValue)
     return keepDeepEqualityResult(areEqual ? oldValue : newValue, areEqual)
+  }
+}
+
+export function readOnlyArrayDeepEquality<T>(
+  elementCall: KeepDeepEqualityCall<T>,
+): KeepDeepEqualityCall<ReadonlyArray<T>> {
+  return (oldArray, newArray) => {
+    if (oldArray === newArray) {
+      return keepDeepEqualityResult(oldArray, true)
+    } else {
+      let areEquals: boolean = true
+      let workingResult: Array<T> = []
+      const length = newArray.length
+      const oldLength = oldArray.length
+      for (let arrayIndex = 0; arrayIndex < length; arrayIndex++) {
+        const newArrayElement = newArray[arrayIndex]
+        if (arrayIndex < oldLength) {
+          const oldArrayElement = oldArray[arrayIndex]
+          const equalityResult = elementCall(oldArrayElement, newArrayElement)
+          areEquals = areEquals && equalityResult.areEqual
+          workingResult.push(equalityResult.value)
+        } else {
+          areEquals = false
+          workingResult.push(newArrayElement)
+        }
+      }
+
+      if (length === oldArray.length && areEquals) {
+        return keepDeepEqualityResult(oldArray, true)
+      } else {
+        return keepDeepEqualityResult(workingResult, false)
+      }
+    }
   }
 }
 

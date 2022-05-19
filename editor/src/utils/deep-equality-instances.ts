@@ -17,7 +17,7 @@ import * as EP from '../core/shared/element-path'
 import * as PP from '../core/shared/property-path'
 import { HigherOrderControl } from '../components/canvas/canvas-types'
 import { JSXElementName } from '../core/shared/element-template'
-import { ElementPath, PropertyPath } from '../core/shared/project-file-types'
+import { ElementPath, PropertyPath, StaticElementPath } from '../core/shared/project-file-types'
 import { createCallFromIntrospectiveKeepDeep } from './react-performance'
 import { Either, foldEither, isLeft, left, right } from '../core/shared/either'
 import { NameAndIconResult } from '../components/inspector/common/name-and-icon-hook'
@@ -28,9 +28,15 @@ import {
   NavigatorState,
 } from '../components/editor/store/editor-state'
 import { LayoutTargetableProp } from '../core/layout/layout-helpers-new'
+import { CanvasPoint, canvasPoint, windowPoint, WindowPoint } from '../core/shared/math-utils'
 
 export const ElementPathKeepDeepEquality: KeepDeepEqualityCall<ElementPath> =
   createCallFromEqualsFunction((oldPath: ElementPath, newPath: ElementPath) => {
+    return EP.pathsEqual(oldPath, newPath)
+  })
+
+export const StaticElementPathKeepDeepEquality: KeepDeepEqualityCall<StaticElementPath> =
+  createCallFromEqualsFunction((oldPath: StaticElementPath, newPath: StaticElementPath) => {
     return EP.pathsEqual(oldPath, newPath)
   })
 
@@ -43,9 +49,16 @@ export function PropertyPathKeepDeepEquality(): KeepDeepEqualityCall<PropertyPat
   })
 }
 
+export function HigherOrderControlKeepDeepEquality(
+  oldValue: HigherOrderControl,
+  newValue: HigherOrderControl,
+): KeepDeepEqualityResult<HigherOrderControl> {
+  return createCallFromIntrospectiveKeepDeep<HigherOrderControl>()(oldValue, newValue)
+}
+
 export const HigherOrderControlArrayKeepDeepEquality: KeepDeepEqualityCall<
   Array<HigherOrderControl>
-> = arrayDeepEquality(createCallFromIntrospectiveKeepDeep())
+> = arrayDeepEquality(HigherOrderControlKeepDeepEquality)
 
 export function JSXElementNameKeepDeepEqualityCall(): KeepDeepEqualityCall<JSXElementName> {
   return combine2EqualityCalls(
@@ -172,3 +185,19 @@ export const ElementWarningsKeepDeepEquality: KeepDeepEqualityCall<ElementWarnin
     createCallWithTripleEquals(),
     elementWarnings,
   )
+
+export const WindowPointKeepDeepEquality: KeepDeepEqualityCall<WindowPoint> = combine2EqualityCalls(
+  (point) => point.x,
+  createCallWithTripleEquals(),
+  (point) => point.y,
+  createCallWithTripleEquals(),
+  (x, y) => windowPoint({ x: x, y: y }),
+)
+
+export const CanvasPointKeepDeepEquality: KeepDeepEqualityCall<CanvasPoint> = combine2EqualityCalls(
+  (point) => point.x,
+  createCallWithTripleEquals(),
+  (point) => point.y,
+  createCallWithTripleEquals(),
+  (x, y) => canvasPoint({ x: x, y: y }),
+)

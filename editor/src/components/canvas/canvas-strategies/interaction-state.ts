@@ -32,7 +32,7 @@ export interface DragInteractionData {
   globalTime: number
 }
 
-interface KeyboardInteractionData {
+export interface KeyboardInteractionData {
   type: 'KEYBOARD'
   keysPressed: Array<KeyCharacter>
   // keysPressed also includes modifiers, but we want the separate modifiers array since they are captured and mapped to a specific
@@ -64,6 +64,26 @@ export interface InteractionSession {
   userPreferredStrategy: CanvasStrategyId | null
 
   startedAt: number
+}
+
+export function interactionSession(
+  interactionData: InputData,
+  activeControl: CanvasControlType,
+  sourceOfUpdate: CanvasControlType,
+  lastInteractionTime: number,
+  metadata: ElementInstanceMetadataMap,
+  userPreferredStrategy: CanvasStrategyId | null,
+  startedAt: number,
+): InteractionSession {
+  return {
+    interactionData: interactionData,
+    activeControl: activeControl,
+    sourceOfUpdate: sourceOfUpdate,
+    lastInteractionTime: lastInteractionTime,
+    metadata: metadata,
+    userPreferredStrategy: userPreferredStrategy,
+    startedAt: startedAt,
+  }
 }
 
 export type InteractionSessionWithoutMetadata = Omit<InteractionSession, 'metadata'>
@@ -279,21 +299,21 @@ export function interactionDataHardReset(interactionData: InputData): InputData 
 }
 
 export function strategySwitchInteractionSessionReset(
-  interactionSession: InteractionSession,
+  interactionSessionToReset: InteractionSession,
 ): InteractionSession {
   return {
-    ...interactionSession,
-    interactionData: strategySwitchInteractionDataReset(interactionSession.interactionData),
+    ...interactionSessionToReset,
+    interactionData: strategySwitchInteractionDataReset(interactionSessionToReset.interactionData),
   }
 }
 
 // Hard reset means we need to ignore everything happening in the interaction until now, and replay all the dragging
 export function interactionSessionHardReset(
-  interactionSession: InteractionSession,
+  interactionSessionToReset: InteractionSession,
 ): InteractionSession {
   return {
-    ...interactionSession,
-    interactionData: interactionDataHardReset(interactionSession.interactionData),
+    ...interactionSessionToReset,
+    interactionData: interactionDataHardReset(interactionSessionToReset.interactionData),
   }
 }
 
@@ -313,22 +333,48 @@ export function hasDragModifiersChanged(
   )
 }
 
-interface BoundingArea {
+export interface BoundingArea {
   type: 'BOUNDING_AREA'
   target: ElementPath
 }
 
-interface ResizeHandle {
+export function boundingArea(target: ElementPath): BoundingArea {
+  return {
+    type: 'BOUNDING_AREA',
+    target: target,
+  }
+}
+
+export interface ResizeHandle {
   type: 'RESIZE_HANDLE'
   edgePosition: EdgePosition
 }
 
-interface FlexGapHandle {
+export function resizeHandle(edgePosition: EdgePosition): ResizeHandle {
+  return {
+    type: 'RESIZE_HANDLE',
+    edgePosition: edgePosition,
+  }
+}
+
+export interface FlexGapHandle {
   type: 'FLEX_GAP_HANDLE'
 }
 
-interface KeyboardCatcherControl {
+export function flexGapHandle(): FlexGapHandle {
+  return {
+    type: 'FLEX_GAP_HANDLE',
+  }
+}
+
+export interface KeyboardCatcherControl {
   type: 'KEYBOARD_CATCHER_CONTROL'
+}
+
+export function keyboardCatcherControl(): KeyboardCatcherControl {
+  return {
+    type: 'KEYBOARD_CATCHER_CONTROL',
+  }
 }
 
 export type CanvasControlType = BoundingArea | ResizeHandle | FlexGapHandle | KeyboardCatcherControl

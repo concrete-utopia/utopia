@@ -27,6 +27,7 @@ import {
 import { runUpdateSelectedViews, UpdateSelectedViews } from './update-selected-views-command'
 import { runWildcardPatch, WildcardPatch } from './wildcard-patch-command'
 import { runSetCssLengthProperty, SetCssLengthProperty } from './set-css-length-command'
+import { EditorStateKeepDeepEquality } from '../../editor/store/store-deep-equality-instances'
 
 export interface CommandFunctionResult {
   editorStatePatches: Array<EditorStatePatch>
@@ -144,7 +145,7 @@ export function foldAndApplyCommands(
   if (statePatches.length === 0) {
     workingEditorState = editorState
   } else {
-    workingEditorState = keepDeepReferenceEqualityIfPossible(priorPatchedState, workingEditorState)
+    workingEditorState = EditorStateKeepDeepEquality(priorPatchedState, workingEditorState).value
   }
 
   return {

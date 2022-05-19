@@ -18,7 +18,7 @@ import {
   UtopiaJSXComponent,
 } from '../../../core/shared/element-template'
 import {
-  ArbitraryJsBlockKeepDeepEquality,
+  ArbitraryJSBlockKeepDeepEquality,
   BoundParamKeepDeepEquality,
   DestructuredArrayKeepDeepEquality,
   DestructuredArrayPartKeepDeepEquality,
@@ -194,17 +194,17 @@ describe('JSXArbitraryBlockKeepDeepEquality', () => {
   }
 
   it('same reference returns the same reference', () => {
-    const result = JSXArbitraryBlockKeepDeepEquality()(oldValue, oldValue)
+    const result = JSXArbitraryBlockKeepDeepEquality(oldValue, oldValue)
     expect(result.value).toBe(oldValue)
     expect(result.areEqual).toEqual(true)
   })
   it('same value returns the same reference', () => {
-    const result = JSXArbitraryBlockKeepDeepEquality()(oldValue, newSameValue)
+    const result = JSXArbitraryBlockKeepDeepEquality(oldValue, newSameValue)
     expect(result.value).toBe(oldValue)
     expect(result.areEqual).toEqual(true)
   })
   it('different but similar value handled appropriately', () => {
-    const result = JSXArbitraryBlockKeepDeepEquality()(oldValue, newDifferentValue)
+    const result = JSXArbitraryBlockKeepDeepEquality(oldValue, newDifferentValue)
     expect(result.value.type).toBe(oldValue.type)
     expect(result.value.originalJavascript).toBe(newDifferentValue.originalJavascript)
     expect(result.value.javascript).toBe(oldValue.javascript)
@@ -251,17 +251,17 @@ describe('ArbitraryJsBlockKeepDeepEquality', () => {
   }
 
   it('same reference returns the same reference', () => {
-    const result = ArbitraryJsBlockKeepDeepEquality()(oldValue, oldValue)
+    const result = ArbitraryJSBlockKeepDeepEquality()(oldValue, oldValue)
     expect(result.value).toBe(oldValue)
     expect(result.areEqual).toEqual(true)
   })
   it('same value returns the same reference', () => {
-    const result = ArbitraryJsBlockKeepDeepEquality()(oldValue, newSameValue)
+    const result = ArbitraryJSBlockKeepDeepEquality()(oldValue, newSameValue)
     expect(result.value).toBe(oldValue)
     expect(result.areEqual).toEqual(true)
   })
   it('different but similar value handled appropriately', () => {
-    const result = ArbitraryJsBlockKeepDeepEquality()(oldValue, newDifferentValue)
+    const result = ArbitraryJSBlockKeepDeepEquality()(oldValue, newDifferentValue)
     expect(result.value.type).toBe(oldValue.type)
     expect(result.value.javascript).toBe(newDifferentValue.javascript)
     expect(result.value.transpiledJavascript).toBe(oldValue.transpiledJavascript)
@@ -293,17 +293,17 @@ describe('JSXTextBlockKeepDeepEquality', () => {
   }
 
   it('same reference returns the same reference', () => {
-    const result = JSXTextBlockKeepDeepEquality()(oldValue, oldValue)
+    const result = JSXTextBlockKeepDeepEquality(oldValue, oldValue)
     expect(result.value).toBe(oldValue)
     expect(result.areEqual).toEqual(true)
   })
   it('same value returns the same reference', () => {
-    const result = JSXTextBlockKeepDeepEquality()(oldValue, newSameValue)
+    const result = JSXTextBlockKeepDeepEquality(oldValue, newSameValue)
     expect(result.value).toBe(oldValue)
     expect(result.areEqual).toEqual(true)
   })
   it('different but similar value handled appropriately', () => {
-    const result = JSXTextBlockKeepDeepEquality()(oldValue, newDifferentValue)
+    const result = JSXTextBlockKeepDeepEquality(oldValue, newDifferentValue)
     expect(result.value.type).toBe(oldValue.type)
     expect(result.value.text).toBe(newDifferentValue.text)
     expect(result.value.uniqueID).toBe(oldValue.uniqueID)
@@ -351,17 +351,17 @@ describe('JSXFragmentKeepDeepEquality', () => {
   }
 
   it('same reference returns the same reference', () => {
-    const result = JSXFragmentKeepDeepEquality()(oldValue, oldValue)
+    const result = JSXFragmentKeepDeepEquality(oldValue, oldValue)
     expect(result.value).toBe(oldValue)
     expect(result.areEqual).toEqual(true)
   })
   it('same value returns the same reference', () => {
-    const result = JSXFragmentKeepDeepEquality()(oldValue, newSameValue)
+    const result = JSXFragmentKeepDeepEquality(oldValue, newSameValue)
     expect(result.value).toBe(oldValue)
     expect(result.areEqual).toEqual(true)
   })
   it('different but similar value handled appropriately', () => {
-    const result = JSXFragmentKeepDeepEquality()(oldValue, newDifferentValue)
+    const result = JSXFragmentKeepDeepEquality(oldValue, newDifferentValue)
     expect(result.value.type).toBe(oldValue.type)
     expect(result.value.children).toBe(oldValue.children)
     expect(result.value.uniqueID).toBe(newDifferentValue.uniqueID)
