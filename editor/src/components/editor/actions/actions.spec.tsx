@@ -26,6 +26,7 @@ import {
   jsxAttributesEntry,
   elementInstanceMetadata,
   emptyComments,
+  SpecialSizeMeasurements,
 } from '../../../core/shared/element-template'
 import { getModifiableJSXAttributeAtPath } from '../../../core/shared/jsx-attributes'
 import {
@@ -79,6 +80,7 @@ import {
 import { editorMoveTemplate, UPDATE_FNS } from './actions'
 import {
   insertInsertable,
+  runEscapeHatch,
   setCanvasFrames,
   setFocusedElement,
   setProp_UNSAFE,
@@ -98,7 +100,12 @@ import {
   BakedInStoryboardVariableName,
 } from '../../../core/model/scene-utils'
 import { sampleCode } from '../../../core/model/new-project-files'
-import { TestScenePath } from '../../canvas/ui-jsx.test-utils'
+import {
+  getEditorState,
+  makeTestProjectCodeWithSnippet,
+  testPrintCodeFromEditorState,
+  TestScenePath,
+} from '../../canvas/ui-jsx.test-utils'
 import { NO_OP } from '../../../core/shared/utils'
 import { CURRENT_PROJECT_VERSION } from './migrations/migrations'
 import { generateCodeResultCache } from '../../custom-code/code-file'
@@ -1538,5 +1545,54 @@ describe('SET_FOCUSED_ELEMENT', () => {
     const action = setFocusedElement(pathToFocus)
     const updatedEditorState = UPDATE_FNS.SET_FOCUSED_ELEMENT(action, editorState)
     expect(updatedEditorState.focusedElementPath).toEqual(pathToFocus)
+  })
+})
+// more detailed tests on the different cases are in escape-hatch-strategy.spec-tsx
+describe('RUN_ESCAPE_HATCH', () => {
+  it('Runs the escape hatch strategy', () => {
+    const targetElement = EP.elementPath([
+      ['scene-aaa', 'app-entity'],
+      ['aaa', 'bbb'],
+    ])
+
+    const editorState = getEditorState(
+      makeTestProjectCodeWithSnippet(
+        `
+          <View style={{ ...(props.style || {}) }} data-uid='aaa'>
+            <View
+              style={{ backgroundColor: '#0091FFAA', width: 250, height: 300 }}
+              data-uid='bbb'
+            />
+          </View>
+      `,
+      ),
+    )
+    editorState.jsxMetadata = {
+      'scene-aaa/app-entity:aaa/bbb': {
+        elementPath: EP.elementPath([
+          ['scene-aaa', 'app-entity'],
+          ['aaa', 'bbb'],
+        ]),
+        localFrame: { x: 0, y: 0, width: 250, height: 300 },
+        specialSizeMeasurements: {
+          immediateParentBounds: canvasRectangle({ x: 0, y: 0, width: 400, height: 400 }),
+        } as SpecialSizeMeasurements,
+      } as ElementInstanceMetadata,
+    } as ElementInstanceMetadataMap
+
+    const action = runEscapeHatch([targetElement])
+
+    const updatedEditorState = UPDATE_FNS.RUN_ESCAPE_HATCH(action, editorState)
+
+    expect(testPrintCodeFromEditorState(updatedEditorState)).toEqual(
+      makeTestProjectCodeWithSnippet(
+        `<View style={{ ...(props.style || {}) }} data-uid='aaa'>
+        <View
+          style={{ backgroundColor: '#0091FFAA', width: 250, height: 300, position: 'absolute', left: 0, top: 0  }}
+          data-uid='bbb'
+        />
+      </View>`,
+      ),
+    )
   })
 })

@@ -338,6 +338,8 @@ export function runSimpleLocalEditorAction(
       return UPDATE_FNS.SET_INDEXED_DB_FAILED(action, state)
     case 'FORCE_PARSE_FILE':
       return UPDATE_FNS.FORCE_PARSE_FILE(action, state)
+    case 'RUN_ESCAPE_HATCH':
+      return UPDATE_FNS.RUN_ESCAPE_HATCH(action, state)
     default:
       return state
   }

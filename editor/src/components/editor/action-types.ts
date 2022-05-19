@@ -916,6 +916,11 @@ export interface ForceParseFile {
   filePath: string
 }
 
+export interface RunEscapeHatch {
+  action: 'RUN_ESCAPE_HATCH'
+  targets: Array<ElementPath>
+}
+
 export type EditorAction =
   | ClearSelection
   | InsertScene
@@ -1068,6 +1073,7 @@ export type EditorAction =
   | HideVSCodeLoadingScreen
   | SetIndexedDBFailed
   | ForceParseFile
+  | RunEscapeHatch
 
 export type DispatchPriority =
   | 'everyone'
