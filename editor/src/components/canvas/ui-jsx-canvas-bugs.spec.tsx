@@ -3,6 +3,136 @@ import {
   testCanvasRenderInline,
   testCanvasRenderInlineMultifile,
 } from './ui-jsx-canvas.test-utils'
+import { renderTestEditorWithCode } from './ui-jsx.test-utils'
+
+describe('React Memo', () => {
+  it('Correctly adds paths', () => {
+    const result = testCanvasRenderInline(
+      null,
+      `
+import React from 'react'
+import Utopia, {
+  Scene,
+  Storyboard,
+} from 'utopia-api'
+
+const Red = React.memo(() => <div data-testid='red-root' data-uid='red-root' />)
+
+const App = () => {
+  return (
+    <div data-uid='inner-parent'>
+      <div data-uid='inner-child'>
+        <div data-uid='blue' />
+        <Red data-uid='red' />
+      </div>
+    </div>
+  )
+}
+
+export var storyboard = (
+  <Storyboard data-uid='sb'>
+    <Scene
+      data-uid='scene'
+      style={{ position: 'absolute', left: 0, top: 0, width: 375, height: 812 }}
+    >
+      <App data-uid='app' />
+    </Scene>
+  </Storyboard>
+)
+    `,
+    )
+
+    expect(result).toMatchInlineSnapshot(`
+      "<div style=\\"all: initial\\">
+        <div
+          id=\\"canvas-container\\"
+          style=\\"position: absolute\\"
+          data-utopia-valid-paths=\\"sb sb/scene sb/scene/app sb/scene/app:inner-parent sb/scene/app:inner-parent/inner-child sb/scene/app:inner-parent/inner-child/blue sb/scene/app:inner-parent/inner-child/red\\"
+          data-utopia-root-element-path=\\"sb\\"
+        >
+          <div
+            data-utopia-scene-id=\\"sb/scene\\"
+            data-path=\\"sb/scene\\"
+            style=\\"
+              position: absolute;
+              background-color: rgba(255, 255, 255, 1);
+              box-shadow: 0px 0px 1px 0px rgba(26, 26, 26, 0.3);
+              left: 0;
+              top: 0;
+              width: 375px;
+              height: 812px;
+            \\"
+            data-uid=\\"scene\\"
+          >
+            <div data-uid=\\"inner-parent\\" data-path=\\"sb/scene/app:inner-parent\\">
+              <div
+                data-uid=\\"inner-child\\"
+                data-path=\\"sb/scene/app:inner-parent/inner-child\\"
+              >
+                <div
+                  data-uid=\\"blue\\"
+                  data-path=\\"sb/scene/app:inner-parent/inner-child/blue\\"
+                ></div>
+                <div
+                  data-testid=\\"red-root\\"
+                  data-uid=\\"red-root\\"
+                  data-path=\\"sb/scene/app:inner-parent/inner-child/red:red-root\\"
+                ></div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+      "
+    `)
+  })
+
+  it('Correctly adds paths when running renderTestEditorWithCode', async () => {
+    const renderResult = await renderTestEditorWithCode(
+      `
+import React from 'react'
+import Utopia, {
+  Scene,
+  Storyboard,
+} from 'utopia-api'
+
+const Red = React.memo(() => <div data-uid='red-root' />)
+
+const App = () => {
+  return (
+    <div data-uid='inner-parent'>
+      <div data-uid='inner-child' data-testid='inner-child' >
+        <div data-uid='blue' />
+        <Red data-uid='red' />
+      </div>
+    </div>
+  )
+}
+
+export var storyboard = (
+  <Storyboard data-uid='sb'>
+    <Scene
+      data-uid='scene'
+      style={{ position: 'absolute', left: 0, top: 0, width: 375, height: 812 }}
+    >
+      <App data-uid='app' />
+    </Scene>
+  </Storyboard>
+)
+    `,
+      'dont-await-first-dom-report',
+    )
+
+    const redRootDiv = renderResult.renderedDOM.getByTestId('inner-child')
+    expect(
+      JSON.stringify(redRootDiv.innerHTML, (key, value) =>
+        key.startsWith('__') ? '[REDACTED]' : value,
+      ),
+    ).toMatchInlineSnapshot(
+      `"\\"<div data-uid=\\\\\\"blue\\\\\\" data-path=\\\\\\"sb/scene/app:inner-parent/inner-child/blue\\\\\\"></div><div data-uid=\\\\\\"red-root\\\\\\"></div>\\""`,
+    )
+  })
+})
 
 describe('UiJsxCanvas', () => {
   it('#747 - DOM object constructor cannot be called as a function', () => {

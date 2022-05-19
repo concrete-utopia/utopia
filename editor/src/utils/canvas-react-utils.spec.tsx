@@ -482,7 +482,7 @@ describe('Monkey Function', () => {
 
     class RenderPropsFunctionChild extends React.Component<any> {
       render() {
-        return this.props.children('huha')
+        return (this.props.children as any)('huha')
       }
     }
 
@@ -933,14 +933,46 @@ describe('Monkey Function', () => {
     `)
   })
 
-  xit('builds the correct paths for Exotic-type with-forwardRef components', () => {
+  it('builds the correct paths for Exotic-type with-memo components 2', () => {
+    const Red = React.memo(() => <div data-uid='red-root' />)
+
+    const OuterComponent = () => {
+      return (
+        <div data-uid='inner-parent'>
+          <div data-uid='inner-child'>
+            <div data-uid='blue' />
+            <Red data-uid='red' />
+          </div>
+        </div>
+      )
+    }
+
+    expect(renderToFormattedString(<OuterComponent data-uid={'component'} />))
+      .toMatchInlineSnapshot(`
+      "<div data-uid=\\"inner-parent\\" data-path=\\"component:inner-parent\\">
+        <div data-uid=\\"inner-child\\" data-path=\\"component:inner-parent/inner-child\\">
+          <div
+            data-uid=\\"blue\\"
+            data-path=\\"component:inner-parent/inner-child/blue\\"
+          ></div>
+          <div
+            data-uid=\\"red-root\\"
+            data-path=\\"component:inner-parent/inner-child/red:red-root\\"
+          ></div>
+        </div>
+      </div>
+      "
+    `)
+  })
+
+  it('builds the correct paths for Exotic-type with-forwardRef components', () => {
     const Red = React.forwardRef((props, test) => {
       return <div data-uid='red-root' ref={test as any} />
     })
 
     const OuterComponent = () => {
       const test = useRef(null)
-      const red = <Red data-uid='red' ref={test} /> // it's like it skips over, just 'red' goes straight to red-root
+      const red = <Red data-uid='red' ref={test} />
 
       return (
         <div data-uid='inner-parent'>
@@ -995,8 +1027,16 @@ describe('Monkey Function', () => {
 
     expect(renderToFormattedString(<OuterComponent data-uid={'component'} />))
       .toMatchInlineSnapshot(`
-      "<div data-uid=\\"blue-root\\">
-        <div data-uid=\\"blue-root\\"><div data-uid=\\"blue-root\\"></div></div>
+      "<div data-uid=\\"blue-root\\" data-path=\\"component:inner-parent:blue-root\\">
+        <div
+          data-uid=\\"blue-root\\"
+          data-path=\\"component:inner-parent/inner-child:blue-root\\"
+        >
+          <div
+            data-uid=\\"blue-root\\"
+            data-path=\\"component:inner-parent/inner-child/blue:blue-root\\"
+          ></div>
+        </div>
       </div>
       "
     `)

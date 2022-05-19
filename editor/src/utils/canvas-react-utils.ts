@@ -15,6 +15,8 @@ const realCreateElement = React.createElement
 const fragmentSymbol = Symbol.for('react.fragment')
 const providerSymbol = Symbol.for('react.provider')
 const contextSymbol = Symbol.for('react.context')
+const memoSymbol = Symbol.for('react.memo')
+const forwardRefSymbol = Symbol.for('react.forward_ref')
 
 let uidMonkeyPatchApplied: boolean = false
 
@@ -51,7 +53,9 @@ function fragmentOrProviderOrContext(type: any): boolean {
     type == React.Fragment ||
     type?.$$typeof == fragmentSymbol ||
     type?.$$typeof == providerSymbol ||
-    type?.$$typeof == contextSymbol
+    type?.$$typeof == contextSymbol //||
+    // || type?.$$typeof == memoSymbol //||
+    // type?.$$typeof == forwardRefSymbol
   )
 }
 
@@ -403,6 +407,26 @@ const mangleExoticType = Utils.memoize(
      *
      * Instead of that we render these fragment-like components, and mangle with their children
      */
+    let mangledType: any = type
+
+    if ((type as React.MemoExoticComponent<any>).type != null) {
+      // React.memo uses a field `type` to hold the actual component
+      const innerType = (type as React.MemoExoticComponent<any>).type
+      mangledType = {
+        ...type,
+        type: mangleElementType(innerType),
+      }
+    }
+
+    if ((type as any).render != null) {
+      // React.forwardRef uses a field `render` to hold the actual component
+      const innerRender = (type as any).render
+      mangledType = {
+        ...type,
+        render: mangleElementType(innerRender),
+      }
+    }
+
     const wrapperComponent = (p: any, context?: any) => {
       const uid = p?.[UTOPIA_UID_KEY]
       const path = p?.[UTOPIA_PATH_KEY] ?? (p as any)?.[UTOPIA_UID_KEY]
@@ -411,11 +435,13 @@ const mangleExoticType = Utils.memoize(
         ...p,
       }
 
-      delete mangledProps[UTOPIA_UID_KEY]
-      delete mangledProps[UTOPIA_PATH_KEY]
+      if (mangledType === type) {
+        delete mangledProps[UTOPIA_UID_KEY]
+        delete mangledProps[UTOPIA_PATH_KEY]
+      }
 
       if (p?.children == null || typeof p.children === 'string') {
-        return realCreateElement(type, mangledProps)
+        return realCreateElement(mangledType, mangledProps)
       } else {
         let children: any
 
@@ -442,7 +468,7 @@ const mangleExoticType = Utils.memoize(
           mangledProps.children = children
         }
 
-        return realCreateElement(type, { ...mangledProps })
+        return realCreateElement(mangledType, { ...mangledProps })
       }
     }
     ;(wrapperComponent as any).theOriginalType = type
@@ -459,6 +485,21 @@ const mangleExoticType = Utils.memoize(
 function isClassComponent(component: any) {
   // this is copied from stack overflow https://stackoverflow.com/a/41658173
   return typeof component === 'function' && component?.prototype?.isReactComponent != null
+}
+
+function mangleElementType(type: any): any {
+  if (isClassComponent(type)) {
+    return mangleClassType(type)
+  } else if (typeof type === 'function') {
+    // if the type is function and it is NOT a class component, we deduce it is a function component
+    return mangleFunctionType(type)
+  } else if (fragmentOrProviderOrContext(type)) {
+    // fragment-like components, the list is not exhaustive, we might need to extend it later
+    return mangleExoticType(type)
+  } else {
+    // Are there other types we're missing here?
+    return type
+  }
 }
 
 function patchedCreateReactElement(type: any, props: any, ...children: any): any {
