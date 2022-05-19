@@ -26,7 +26,6 @@ import { CanvasCommand } from '../commands/commands'
 import { convertToAbsolute } from '../commands/convert-to-absolute-command'
 import { setCssLengthProperty } from '../commands/set-css-length-command'
 import { showOutlineHighlight } from '../commands/show-outline-highlight-command'
-import { OutlineHighlightControl } from '../controls/select-mode/outline-highlight-control'
 import { DragOutlineControl } from '../controls/select-mode/drag-outline-control'
 import { AnimationTimer, PieTimerControl } from '../controls/select-mode/pie-timer'
 import {
