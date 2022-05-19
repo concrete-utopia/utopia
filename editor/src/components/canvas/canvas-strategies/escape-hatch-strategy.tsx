@@ -87,19 +87,14 @@ export const escapeHatchStrategy: CanvasStrategy = {
         escapeHatchActivated = true
       }
       if (escapeHatchActivated) {
-        const moveAndPositionCommands = collectMoveCommandsForSelectedElements(
+        const commands = getEscapeHatchCommands(
           canvasState.selectedElements,
           strategyState.startingMetadata,
           canvasState,
           interactionState.interactionData.drag,
         )
-        const siblingCommands = collectSiblingCommands(
-          canvasState.selectedElements,
-          strategyState.startingMetadata,
-          canvasState,
-        )
         return {
-          commands: [...moveAndPositionCommands, ...siblingCommands],
+          commands: commands,
           customState: {
             ...strategyState.customStrategyState,
             escapeHatchActivated,
@@ -115,6 +110,22 @@ export const escapeHatchStrategy: CanvasStrategy = {
     // Fallback for when the checks above are not satisfied.
     return emptyStrategyApplicationResult
   },
+}
+
+export function getEscapeHatchCommands(
+  selectedElements: Array<ElementPath>,
+  metadata: ElementInstanceMetadataMap,
+  canvasState: InteractionCanvasState,
+  dragDelta: CanvasVector | null,
+): Array<CanvasCommand> {
+  const moveAndPositionCommands = collectMoveCommandsForSelectedElements(
+    selectedElements,
+    metadata,
+    canvasState,
+    dragDelta,
+  )
+  const siblingCommands = collectSiblingCommands(selectedElements, metadata, canvasState)
+  return [...moveAndPositionCommands, ...siblingCommands]
 }
 
 function collectMoveCommandsForSelectedElements(

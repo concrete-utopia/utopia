@@ -336,3 +336,13 @@ export const rename: ContextMenuItem<CanvasData> = {
     }
   },
 }
+
+export const escapeHatch: ContextMenuItem<CanvasData> = {
+  name: 'Convert to Absolute Layout',
+  enabled: true,
+  action: (data, dispatch?: EditorDispatch) => {
+    if (data.selectedViews.length > 0) {
+      requireDispatch(dispatch)([EditorActions.runEscapeHatch(data.selectedViews)], 'everyone')
+    }
+  },
+}

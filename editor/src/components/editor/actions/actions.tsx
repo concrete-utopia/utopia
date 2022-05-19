@@ -372,6 +372,7 @@ import {
   SetIndexedDBFailed,
   ForceParseFile,
   RemoveFromNodeModulesContents,
+  RunEscapeHatch,
 } from '../action-types'
 import { defaultTransparentViewElement, defaultSceneElement } from '../defaults'
 import {
@@ -524,6 +525,9 @@ import { uniqToasts } from './toast-helpers'
 import { NavigatorStateKeepDeepEquality } from '../../../utils/deep-equality-instances'
 import type { BuiltInDependencies } from '../../../core/es-modules/package-manager/built-in-dependencies-list'
 import { stylePropPathMappingFn } from '../../inspector/common/property-path-hooks'
+import { getEscapeHatchCommands } from '../../../components/canvas/canvas-strategies/escape-hatch-strategy'
+import { pickCanvasStateFromEditorState } from '../../canvas/canvas-strategies/canvas-strategies'
+import { foldAndApplyCommandsSimple, runCanvasCommand } from '../../canvas/commands/commands'
 
 export function updateSelectedLeftMenuTab(editorState: EditorState, tab: LeftMenuTab): EditorState {
   return {
@@ -4856,11 +4860,16 @@ export const UPDATE_FNS = {
   SET_INDEXED_DB_FAILED: (action: SetIndexedDBFailed, editor: EditorModel): EditorModel => {
     return { ...editor, indexedDBFailed: action.indexedDBFailed }
   },
-  FORCE_PARSE_FILE: (action: ForceParseFile, editor: EditorModel) => {
+  FORCE_PARSE_FILE: (action: ForceParseFile, editor: EditorModel): EditorModel => {
     return {
       ...editor,
       forceParseFiles: editor.forceParseFiles.concat(action.filePath),
     }
+  },
+  RUN_ESCAPE_HATCH: (action: RunEscapeHatch, editor: EditorModel): EditorModel => {
+    const canvasState = pickCanvasStateFromEditorState(editor)
+    const commands = getEscapeHatchCommands(action.targets, editor.jsxMetadata, canvasState, null)
+    return foldAndApplyCommandsSimple(editor, commands)
   },
 }
 
