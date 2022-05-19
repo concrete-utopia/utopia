@@ -27,7 +27,7 @@ import {
 import { runUpdateSelectedViews, UpdateSelectedViews } from './update-selected-views-command'
 import { runWildcardPatch, WildcardPatch } from './wildcard-patch-command'
 import { runSetCssLengthProperty, SetCssLengthProperty } from './set-css-length-command'
-import { runShowOutlineHighlight, ShowOutlineHighlight } from './show-blinking-highlight-command'
+import { runShowOutlineHighlight, ShowOutlineHighlight } from './show-outline-highlight-command'
 
 export interface CommandFunctionResult {
   editorStatePatches: Array<EditorStatePatch>
@@ -83,7 +83,7 @@ export const runCanvasCommand: CommandFunction<CanvasCommand> = (
       return runSetCssLengthProperty(editorState, command)
     case 'REORDER_ELEMENT':
       return runReorderElement(editorState, command)
-    case 'SHOW_BLINKING_HIGHLIGHT':
+    case 'SHOW_OUTLINE_HIGHLIGHT':
       return runShowOutlineHighlight(editorState, command)
     default:
       const _exhaustiveCheck: never = command

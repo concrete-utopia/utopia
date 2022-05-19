@@ -25,7 +25,7 @@ import { stylePropPathMappingFn } from '../../inspector/common/property-path-hoo
 import { CanvasCommand } from '../commands/commands'
 import { convertToAbsolute } from '../commands/convert-to-absolute-command'
 import { setCssLengthProperty } from '../commands/set-css-length-command'
-import { showOutlineHighlight } from '../commands/show-blinking-highlight-command'
+import { showOutlineHighlight } from '../commands/show-outline-highlight-command'
 import { OutlineHighlightControl } from '../controls/select-mode/outline-highlight-control'
 import { DragOutlineControl } from '../controls/select-mode/drag-outline-control'
 import { AnimationTimer, PieTimerControl } from '../controls/select-mode/pie-timer'
@@ -105,7 +105,13 @@ export const escapeHatchStrategy: CanvasStrategy = {
           strategyState.startingMetadata,
           canvasState,
         )
-        const showHighlightCommand = showOutlineHighlight('transient', [])
+
+        const siblingAndDraggedFrames = collectHighlightFrames(
+          canvasState,
+          interactionState.interactionData,
+          strategyState,
+        )
+        const showHighlightCommand = showOutlineHighlight('transient', siblingAndDraggedFrames)
         return {
           commands: [...moveAndPositionCommands, ...siblingCommands, showHighlightCommand],
           customState: {
@@ -291,4 +297,34 @@ function escapeHatchAllowed(
   } else {
     return true
   }
+}
+
+function collectHighlightFrames(
+  canvasState: InteractionCanvasState,
+  interactionData: DragInteractionData,
+  strategyState: StrategyState,
+): Array<CanvasRectangle> {
+  const siblingFrames = stripNulls(
+    canvasState.selectedElements.flatMap((path) => {
+      return MetadataUtils.getSiblings(strategyState.startingMetadata, path)
+        .filter((sibling) =>
+          canvasState.selectedElements.every(
+            (selected) => !EP.pathsEqual(selected, sibling.elementPath),
+          ),
+        )
+        .map((element) =>
+          MetadataUtils.getFrameInCanvasCoords(element.elementPath, strategyState.startingMetadata),
+        )
+    }),
+  )
+
+  const draggedFrames = mapDropNulls((path) => {
+    const frame = MetadataUtils.getFrameInCanvasCoords(path, strategyState.startingMetadata)
+    if (frame != null) {
+      return offsetRect(frame, interactionData.drag ?? zeroCanvasPoint)
+    } else {
+      return null
+    }
+  }, canvasState.selectedElements)
+  return [...siblingFrames, ...draggedFrames]
 }

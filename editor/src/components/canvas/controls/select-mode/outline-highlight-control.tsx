@@ -4,7 +4,8 @@ import { CanvasOffsetWrapper } from '../canvas-offset-wrapper'
 
 const animation = `
   .outline-animation {
-    animation: glow3 2s ease infinite forwards;
+    animation: glow3 2s ease;
+    animation-iteration-count: 1;
   }
   @keyframes glow3 {
     0% {
@@ -25,7 +26,6 @@ export const OutlineHighlightControl = React.memo(() => {
     <CanvasOffsetWrapper>
       <style>{animation}</style>
       <div style={{ display: 'block' }}>
-        {/* <div ref={ref} style={{ display: 'none' }}> */}
         {outlineFrames.map((frame, i) => (
           <div
             key={i}
