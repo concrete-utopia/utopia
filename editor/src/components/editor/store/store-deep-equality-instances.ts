@@ -1246,7 +1246,7 @@ export const StyleAttributeMetadataKeepDeepEquality: KeepDeepEqualityCall<StyleA
   objectDeepEquality(undefinableDeepEquality(StyleAttributeMetadataEntryKeepDeepEquality))
 
 export const ElementInstanceMetadataPropsKeepDeepEquality: KeepDeepEqualityCall<any> =
-  createCallWithShallowEquals()
+  createCallFromIntrospectiveKeepDeep()
 
 export const ElementInstanceMetadataKeepDeepEquality: KeepDeepEqualityCall<ElementInstanceMetadata> =
   combine12EqualityCalls(
