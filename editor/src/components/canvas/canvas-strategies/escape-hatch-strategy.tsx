@@ -28,6 +28,7 @@ import { setCssLengthProperty } from '../commands/set-css-length-command'
 import { showOutlineHighlight } from '../commands/show-outline-highlight-command'
 import { DragOutlineControl } from '../controls/select-mode/drag-outline-control'
 import { AnimationTimer, PieTimerControl } from '../controls/select-mode/pie-timer'
+import { getTransientMoveCommands, snapDragAbsoluteMove } from './absolute-move-strategy'
 import {
   CanvasStrategy,
   emptyStrategyApplicationResult,
@@ -88,11 +89,17 @@ export const escapeHatchStrategy: CanvasStrategy = {
         escapeHatchActivated = true
       }
       if (escapeHatchActivated) {
-        const commands = getEscapeHatchCommands(
+        const { snappedDragVector, guidelinesWithSnappingVector } = snapDragAbsoluteMove(
+          canvasState,
+          interactionState.interactionData,
+          strategyState,
+        )
+
+        const conversionCommands = getEscapeHatchCommands(
           canvasState.selectedElements,
           strategyState.startingMetadata,
           canvasState,
-          interactionState.interactionData.drag,
+          snappedDragVector,
         )
 
         const highlightCommand = collectHighlightCommand(
@@ -100,8 +107,9 @@ export const escapeHatchStrategy: CanvasStrategy = {
           interactionState.interactionData,
           strategyState,
         )
+        const moveTransientCommands = getTransientMoveCommands(guidelinesWithSnappingVector)
         return {
-          commands: [...commands, highlightCommand],
+          commands: [...conversionCommands, highlightCommand, ...moveTransientCommands],
           customState: {
             ...strategyState.customStrategyState,
             escapeHatchActivated,

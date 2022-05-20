@@ -1,13 +1,23 @@
 import { MetadataUtils } from '../../../core/model/element-metadata-utils'
 import { ElementInstanceMetadataMap } from '../../../core/shared/element-template'
-import { CanvasPoint, offsetPoint } from '../../../core/shared/math-utils'
+import {
+  CanvasPoint,
+  offsetPoint,
+  zeroCanvasPoint,
+  zeroPoint,
+} from '../../../core/shared/math-utils'
 import { ElementPath } from '../../../core/shared/project-file-types'
 import { setSnappingGuidelines } from '../commands/set-snapping-guidelines-command'
 import { updateHighlightedViews } from '../commands/update-highlighted-views-command'
 import { runLegacyAbsoluteMoveSnapping } from '../controls/guideline-helpers'
 import { determineConstrainedDragAxis } from '../controls/select-mode/move-utils'
 import { ConstrainedDragAxis, GuidelineWithSnappingVector } from '../guideline'
-import { CanvasStrategy, emptyStrategyApplicationResult } from './canvas-strategy-types'
+import {
+  CanvasStrategy,
+  emptyStrategyApplicationResult,
+  InteractionCanvasState,
+} from './canvas-strategy-types'
+import { DragInteractionData, StrategyState } from './interaction-state'
 import {
   getAbsoluteMoveCommandsForSelectedElement,
   getDragTargets,
@@ -47,15 +57,10 @@ export const absoluteMoveStrategy: CanvasStrategy = {
       interactionState.interactionData.drag != null
     ) {
       const filteredSelectedElements = getDragTargets(canvasState.selectedElements)
-      const drag = interactionState.interactionData.drag
-      const shiftKeyPressed = interactionState.interactionData.modifiers.shift
-      const constrainedDragAxis = shiftKeyPressed ? determineConstrainedDragAxis(drag) : null
-      const { snappedDragVector, guidelinesWithSnappingVector } = snapDrag(
-        drag,
-        constrainedDragAxis,
-        sessionState.startingMetadata,
-        canvasState.selectedElements,
-        canvasState.scale,
+      const { snappedDragVector, guidelinesWithSnappingVector } = snapDragAbsoluteMove(
+        canvasState,
+        interactionState.interactionData,
+        sessionState,
       )
       const commandsForSelectedElements = filteredSelectedElements.flatMap((selectedElement) =>
         getAbsoluteMoveCommandsForSelectedElement(
@@ -65,12 +70,9 @@ export const absoluteMoveStrategy: CanvasStrategy = {
           sessionState,
         ),
       )
+      const transientMoveCommands = getTransientMoveCommands(guidelinesWithSnappingVector)
       return {
-        commands: [
-          ...commandsForSelectedElements,
-          updateHighlightedViews('transient', []),
-          setSnappingGuidelines('transient', guidelinesWithSnappingVector),
-        ],
+        commands: [...commandsForSelectedElements, ...transientMoveCommands],
         customState: null,
       }
     }
@@ -79,28 +81,45 @@ export const absoluteMoveStrategy: CanvasStrategy = {
   },
 }
 
-function snapDrag(
-  drag: CanvasPoint,
-  constrainedDragAxis: ConstrainedDragAxis | null,
-  jsxMetadata: ElementInstanceMetadataMap,
-  selectedElements: Array<ElementPath>,
-  canvasScale: number,
+export function snapDragAbsoluteMove(
+  canvasState: InteractionCanvasState,
+  interactionData: DragInteractionData,
+  strategyState: StrategyState,
 ): {
   snappedDragVector: CanvasPoint
   guidelinesWithSnappingVector: Array<GuidelineWithSnappingVector>
 } {
-  const multiselectBounds = getMultiselectBounds(jsxMetadata, selectedElements)
+  const drag = interactionData.drag
+  if (drag == null) {
+    return { snappedDragVector: zeroCanvasPoint, guidelinesWithSnappingVector: [] }
+  } else {
+    const shiftKeyPressed = interactionData.modifiers.shift
+    const constrainedDragAxis = shiftKeyPressed ? determineConstrainedDragAxis(drag) : null
+    const multiselectBounds = getMultiselectBounds(
+      strategyState.startingMetadata,
+      canvasState.selectedElements,
+    )
 
-  // This is the entry point to extend the list of snapping strategies, if we want to add more
+    // This is the entry point to extend the list of snapping strategies, if we want to add more
 
-  const { snappedDragVector, guidelinesWithSnappingVector } = runLegacyAbsoluteMoveSnapping(
-    drag,
-    constrainedDragAxis,
-    jsxMetadata,
-    selectedElements,
-    canvasScale,
-    multiselectBounds,
-  )
+    const { snappedDragVector, guidelinesWithSnappingVector } = runLegacyAbsoluteMoveSnapping(
+      drag,
+      constrainedDragAxis,
+      strategyState.startingMetadata,
+      canvasState.selectedElements,
+      canvasState.scale,
+      multiselectBounds,
+    )
 
-  return { snappedDragVector, guidelinesWithSnappingVector }
+    return { snappedDragVector, guidelinesWithSnappingVector }
+  }
+}
+
+export function getTransientMoveCommands(
+  guidelinesWithSnappingVector: Array<GuidelineWithSnappingVector>,
+) {
+  return [
+    updateHighlightedViews('transient', []),
+    setSnappingGuidelines('transient', guidelinesWithSnappingVector),
+  ]
 }
