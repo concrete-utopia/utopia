@@ -98,6 +98,8 @@ export function createComponentRendererComponent(params: {
         return isUtopiaJSXComponent(elem) && elem.name === params.topLevelElementName
       }) ?? null
 
+    //hello
+
     const rerenderUtopiaContext = usePubSubAtomReadOnly(RerenderUtopiaCtxAtom)
     const shouldIncludeCanvasRootInTheSpy = rerenderUtopiaContext.shouldIncludeCanvasRootInTheSpy
 
