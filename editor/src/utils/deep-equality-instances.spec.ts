@@ -173,17 +173,17 @@ describe('JSXElementNameKeepDeepEqualityCall', () => {
   }
 
   it('same reference returns the same reference', () => {
-    const result = JSXElementNameKeepDeepEqualityCall()(oldValue, oldValue)
+    const result = JSXElementNameKeepDeepEqualityCall(oldValue, oldValue)
     expect(result.value).toBe(oldValue)
     expect(result.areEqual).toEqual(true)
   })
   it('same value returns the same reference', () => {
-    const result = JSXElementNameKeepDeepEqualityCall()(oldValue, newSameValue)
+    const result = JSXElementNameKeepDeepEqualityCall(oldValue, newSameValue)
     expect(result.value).toBe(oldValue)
     expect(result.areEqual).toEqual(true)
   })
   it('different but similar value handled appropriately', () => {
-    const result = JSXElementNameKeepDeepEqualityCall()(oldValue, newDifferentValue)
+    const result = JSXElementNameKeepDeepEqualityCall(oldValue, newDifferentValue)
     expect(result.value).toEqual(newDifferentValue)
     expect(result.value.baseVariable).toBe(newDifferentValue.baseVariable)
     expect(result.value.propertyPath).toBe(oldValue.propertyPath)

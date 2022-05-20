@@ -12,6 +12,7 @@ import {
   keepDeepEqualityResult,
   mapKeepDeepEqualityResult,
   nullableDeepEquality,
+  StringKeepDeepEquality,
 } from './deep-equality'
 import * as EP from '../core/shared/element-path'
 import * as PP from '../core/shared/property-path'
@@ -60,10 +61,10 @@ export const HigherOrderControlArrayKeepDeepEquality: KeepDeepEqualityCall<
   Array<HigherOrderControl>
 > = arrayDeepEquality(HigherOrderControlKeepDeepEquality)
 
-export function JSXElementNameKeepDeepEqualityCall(): KeepDeepEqualityCall<JSXElementName> {
-  return combine2EqualityCalls(
+export const JSXElementNameKeepDeepEqualityCall: KeepDeepEqualityCall<JSXElementName> =
+  combine2EqualityCalls(
     (name) => name.baseVariable,
-    createCallWithTripleEquals(),
+    StringKeepDeepEquality,
     (name) => name.propertyPath,
     PropertyPathKeepDeepEquality(),
     (baseVariable, propertyPath) => {
@@ -73,7 +74,6 @@ export function JSXElementNameKeepDeepEqualityCall(): KeepDeepEqualityCall<JSXEl
       }
     },
   )
-}
 
 export function EitherKeepDeepEquality<L, R>(
   leftDeep: KeepDeepEqualityCall<L>,
@@ -118,7 +118,7 @@ export const NameAndIconResultKeepDeepEquality: KeepDeepEqualityCall<NameAndIcon
     (result) => result.path,
     ElementPathKeepDeepEquality,
     (result) => result.name,
-    nullableDeepEquality(JSXElementNameKeepDeepEqualityCall()),
+    nullableDeepEquality(JSXElementNameKeepDeepEqualityCall),
     (result) => result.label,
     createCallWithTripleEquals(),
     (result) => result.iconProps,

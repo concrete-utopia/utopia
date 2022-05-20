@@ -93,17 +93,17 @@ describe('JSXElementKeepDeepEquality', () => {
   }
 
   it('same reference returns the same reference', () => {
-    const result = JSXElementKeepDeepEquality()(oldValue, oldValue)
+    const result = JSXElementKeepDeepEquality(oldValue, oldValue)
     expect(result.value).toBe(oldValue)
     expect(result.areEqual).toEqual(true)
   })
   it('same value returns the same reference', () => {
-    const result = JSXElementKeepDeepEquality()(oldValue, newSameValue)
+    const result = JSXElementKeepDeepEquality(oldValue, newSameValue)
     expect(result.value).toBe(oldValue)
     expect(result.areEqual).toEqual(true)
   })
   it('different but similar value handled appropriately', () => {
-    const result = JSXElementKeepDeepEquality()(oldValue, newDifferentValue)
+    const result = JSXElementKeepDeepEquality(oldValue, newDifferentValue)
     expect(result.value.type).toBe(oldValue.type)
     expect(result.value.name).toBe(oldValue.name)
     expect(result.value.props).toBe(oldValue.props)
@@ -432,17 +432,17 @@ describe('JSXElementChildArrayKeepDeepEquality', () => {
   ]
 
   it('same reference returns the same reference', () => {
-    const result = JSXElementChildArrayKeepDeepEquality()(oldValue, oldValue)
+    const result = JSXElementChildArrayKeepDeepEquality(oldValue, oldValue)
     expect(result.value).toBe(oldValue)
     expect(result.areEqual).toEqual(true)
   })
   it('same value returns the same reference', () => {
-    const result = JSXElementChildArrayKeepDeepEquality()(oldValue, newSameValue)
+    const result = JSXElementChildArrayKeepDeepEquality(oldValue, newSameValue)
     expect(result.value).toBe(oldValue)
     expect(result.areEqual).toEqual(true)
   })
   it('different but similar value handled appropriately', () => {
-    const result = JSXElementChildArrayKeepDeepEquality()(oldValue, newDifferentValue)
+    const result = JSXElementChildArrayKeepDeepEquality(oldValue, newDifferentValue)
     expect(result.value[0].type).toBe(oldValue[0].type)
     expect((result.value[0] as JSXTextBlock).text).toBe(newDifferentValue[0].text)
     expect((result.value[0] as JSXTextBlock).uniqueID).toBe(oldValue[0].uniqueID)

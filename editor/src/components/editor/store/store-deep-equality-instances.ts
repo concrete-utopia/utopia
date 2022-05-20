@@ -756,34 +756,35 @@ export function JSXAttributesKeepDeepEqualityCall(): KeepDeepEqualityCall<JSXAtt
   return arrayDeepEquality(JSXAttributesPartDeepEqualityCall())
 }
 
-export function JSXElementKeepDeepEquality(): KeepDeepEqualityCall<JSXElement> {
-  return combine4EqualityCalls(
-    (element) => element.name,
-    JSXElementNameKeepDeepEqualityCall(),
-    (element) => element.uid,
-    createCallWithTripleEquals(),
-    (element) => element.props,
-    JSXAttributesKeepDeepEqualityCall(),
-    (element) => element.children,
-    JSXElementChildArrayKeepDeepEquality(),
-    jsxElement,
-  )
-}
+export const JSXElementChildArrayKeepDeepEquality: KeepDeepEqualityCall<Array<JSXElementChild>> =
+  arrayDeepEquality(JSXElementChildKeepDeepEquality())
+
+export const JSXElementKeepDeepEquality: KeepDeepEqualityCall<JSXElement> = combine4EqualityCalls(
+  (element) => element.name,
+  JSXElementNameKeepDeepEqualityCall,
+  (element) => element.uid,
+  StringKeepDeepEquality,
+  (element) => element.props,
+  JSXAttributesKeepDeepEqualityCall(),
+  (element) => element.children,
+  JSXElementChildArrayKeepDeepEquality,
+  jsxElement,
+)
 
 export function JSXElementWithoutUIDKeepDeepEquality(): KeepDeepEqualityCall<JSXElementWithoutUID> {
   return combine3EqualityCalls(
     (element) => element.name,
-    JSXElementNameKeepDeepEqualityCall(),
+    JSXElementNameKeepDeepEqualityCall,
     (element) => element.props,
     JSXAttributesKeepDeepEqualityCall(),
     (element) => element.children,
-    JSXElementChildArrayKeepDeepEquality(),
+    JSXElementChildArrayKeepDeepEquality,
     jsxElementWithoutUID,
   )
 }
 
 export function ElementsWithinKeepDeepEqualityCall(): KeepDeepEqualityCall<ElementsWithin> {
-  return objectDeepEquality(JSXElementKeepDeepEquality())
+  return objectDeepEquality(JSXElementKeepDeepEquality)
 }
 
 export const JSXArbitraryBlockKeepDeepEquality: KeepDeepEqualityCall<JSXArbitraryBlock> =
@@ -866,7 +867,7 @@ export function ArbitraryJSBlockKeepDeepEquality(): KeepDeepEqualityCall<Arbitra
 export function JSXElementChildKeepDeepEquality(): KeepDeepEqualityCall<JSXElementChild> {
   return (oldElement, newElement) => {
     if (isJSXElement(oldElement) && isJSXElement(newElement)) {
-      return JSXElementKeepDeepEquality()(oldElement, newElement)
+      return JSXElementKeepDeepEquality(oldElement, newElement)
     } else if (isJSXArbitraryBlock(oldElement) && isJSXArbitraryBlock(newElement)) {
       return JSXArbitraryBlockKeepDeepEquality(oldElement, newElement)
     } else if (isJSXTextBlock(oldElement) && isJSXTextBlock(newElement)) {
@@ -971,11 +972,11 @@ export const JSXTextBlockKeepDeepEquality: KeepDeepEqualityCall<JSXTextBlock> =
 
 export const JSXFragmentKeepDeepEquality: KeepDeepEqualityCall<JSXFragment> = combine3EqualityCalls(
   (fragment) => fragment.children,
-  JSXElementChildArrayKeepDeepEquality(),
+  JSXElementChildArrayKeepDeepEquality,
   (fragment) => fragment.uniqueID,
-  createCallWithTripleEquals(),
+  StringKeepDeepEquality,
   (fragment) => fragment.longForm,
-  createCallWithTripleEquals(),
+  BooleanKeepDeepEquality,
   (children, uniqueID, longForm) => {
     return {
       type: 'JSX_FRAGMENT',
@@ -985,12 +986,6 @@ export const JSXFragmentKeepDeepEquality: KeepDeepEqualityCall<JSXFragment> = co
     }
   },
 )
-
-export function JSXElementChildArrayKeepDeepEquality(): KeepDeepEqualityCall<
-  Array<JSXElementChild>
-> {
-  return arrayDeepEquality(JSXElementChildKeepDeepEquality())
-}
 
 export const RegularParamKeepDeepEquality: KeepDeepEqualityCall<RegularParam> =
   combine2EqualityCalls(
@@ -1246,7 +1241,7 @@ export const StyleAttributeMetadataKeepDeepEquality: KeepDeepEqualityCall<StyleA
   objectDeepEquality(undefinableDeepEquality(StyleAttributeMetadataEntryKeepDeepEquality))
 
 export const ElementInstanceMetadataPropsKeepDeepEquality: KeepDeepEqualityCall<any> =
-  createCallFromIntrospectiveKeepDeep()
+  createCallWithShallowEquals()
 
 export const ElementInstanceMetadataKeepDeepEquality: KeepDeepEqualityCall<ElementInstanceMetadata> =
   combine12EqualityCalls(
@@ -2401,7 +2396,7 @@ export const ElementInsertionSubjectKeepDeepEquality: KeepDeepEqualityCall<Eleme
     (subject) => subject.uid,
     StringKeepDeepEquality,
     (subject) => subject.element,
-    JSXElementKeepDeepEquality(),
+    JSXElementKeepDeepEquality,
     (subject) => subject.size,
     nullableDeepEquality(SizeKeepDeepEquality),
     (subject) => subject.importsToAdd,
