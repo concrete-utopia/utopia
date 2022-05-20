@@ -1609,20 +1609,20 @@ export const BoundingAreaKeepDeepEquality: KeepDeepEqualityCall<BoundingArea> =
 export const ResizeHandleKeepDeepEquality: KeepDeepEqualityCall<ResizeHandle> =
   combine1EqualityCall((handle) => handle.edgePosition, EdgePositionKeepDeepEquality, resizeHandle)
 
+// This will break should the definition of `FlexGapHandle` change.
+flexGapHandle()
 export const FlexGapHandleKeepDeepEquality: KeepDeepEqualityCall<FlexGapHandle> = (
   oldValue,
   newValue,
 ) => {
-  // This will break should the definition of `FlexGapHandle` change.
-  flexGapHandle()
   return keepDeepEqualityResult(oldValue, true)
 }
 
+// This will break should the definition of `KeyboardCatcherControl` change.
+keyboardCatcherControl()
 export const KeyboardCatcherControlKeepDeepEquality: KeepDeepEqualityCall<
   KeyboardCatcherControl
 > = (oldValue, newValue) => {
-  // This will break should the definition of `KeyboardCatcherControl` change.
-  keyboardCatcherControl()
   return keepDeepEqualityResult(oldValue, true)
 }
 
@@ -2121,9 +2121,9 @@ export const ParsedTextFileKeepDeepEquality: KeepDeepEqualityCall<ParsedTextFile
   return keepDeepEqualityResult(newValue, false)
 }
 
+// Here so that this breaks the build if the definition of `Directory` changes.
+directory()
 export const DirectoryKeepDeepEquality: KeepDeepEqualityCall<Directory> = (oldValue, newValue) => {
-  // Here so that this breaks the build if the definition of `Directory` changes.
-  directory()
   return keepDeepEqualityResult(oldValue, true)
 }
 
