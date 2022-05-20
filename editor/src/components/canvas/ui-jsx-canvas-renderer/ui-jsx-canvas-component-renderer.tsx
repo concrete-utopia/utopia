@@ -36,6 +36,7 @@ import { useGetTopLevelElementsAndImports } from './ui-jsx-canvas-top-level-elem
 import { useGetCodeAndHighlightBounds } from './ui-jsx-canvas-execution-scope'
 import { usePubSubAtomReadOnly } from '../../../core/shared/atom-with-pub-sub'
 import { JSX_CANVAS_LOOKUP_FUNCTION_NAME } from '../../../core/shared/dom-utils'
+import { isFeatureEnabled } from '../../../utils/feature-switches'
 
 export type ComponentRendererComponent = React.ComponentType<
   React.PropsWithChildren<{
@@ -95,6 +96,7 @@ export function createComponentRendererComponent(params: {
     const instancePath: ElementPath | null = tryToGetInstancePath(instancePathAny, pathsString)
 
     const shouldUpdate =
+      !isFeatureEnabled('Canvas Selective Rerender') ||
       rerenderUtopiaContext.elementsToRerender === 'rerender-all-elements' ||
       rerenderUtopiaContext.elementsToRerender.findIndex((er) => {
         return instancePath != null && EP.isParentComponentOf(instancePath, er)
