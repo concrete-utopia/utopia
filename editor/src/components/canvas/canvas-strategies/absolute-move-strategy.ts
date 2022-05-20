@@ -76,6 +76,10 @@ export const absoluteMoveStrategy: CanvasStrategy = {
           ...commandsForSelectedElements,
           updateHighlightedViews('transient', []),
           setSnappingGuidelines('transient', guidelinesWithSnappingVector),
+          wildcardPatch('transient', {
+            // TODO this shouldn't be a wildcardPatch
+            canvas: { elementsToRerender: { $set: canvasState.selectedElements } },
+          }),
         ],
         customState: null,
       }
