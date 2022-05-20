@@ -27,7 +27,6 @@ import {
 import { runUpdateSelectedViews, UpdateSelectedViews } from './update-selected-views-command'
 import { runWildcardPatch, WildcardPatch } from './wildcard-patch-command'
 import { runSetCssLengthProperty, SetCssLengthProperty } from './set-css-length-command'
-import { runShowOutlineHighlight, ShowOutlineHighlight } from './show-outline-highlight-command'
 
 export interface CommandFunctionResult {
   editorStatePatches: Array<EditorStatePatch>
@@ -54,7 +53,6 @@ export type CanvasCommand =
   | ConvertToAbsolute
   | SetCssLengthProperty
   | ReorderElement
-  | ShowOutlineHighlight
 
 export const runCanvasCommand: CommandFunction<CanvasCommand> = (
   editorState: EditorState,
@@ -83,8 +81,6 @@ export const runCanvasCommand: CommandFunction<CanvasCommand> = (
       return runSetCssLengthProperty(editorState, command)
     case 'REORDER_ELEMENT':
       return runReorderElement(editorState, command)
-    case 'SHOW_OUTLINE_HIGHLIGHT':
-      return runShowOutlineHighlight(editorState, command)
     default:
       const _exhaustiveCheck: never = command
       throw new Error(`Unhandled canvas command ${JSON.stringify(command)}`)

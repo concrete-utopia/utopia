@@ -25,7 +25,6 @@ import { stylePropPathMappingFn } from '../../inspector/common/property-path-hoo
 import { CanvasCommand } from '../commands/commands'
 import { convertToAbsolute } from '../commands/convert-to-absolute-command'
 import { setCssLengthProperty } from '../commands/set-css-length-command'
-import { showOutlineHighlight } from '../commands/show-outline-highlight-command'
 import { DragOutlineControl } from '../controls/select-mode/drag-outline-control'
 import { AnimationTimer, PieTimerControl } from '../controls/select-mode/pie-timer'
 import {
@@ -94,14 +93,8 @@ export const escapeHatchStrategy: CanvasStrategy = {
           canvasState,
           interactionState.interactionData.drag,
         )
-
-        const highlightCommand = collectHighlightCommand(
-          canvasState,
-          interactionState.interactionData,
-          strategyState,
-        )
         return {
-          commands: [...commands, highlightCommand],
+          commands: commands,
           customState: {
             ...strategyState.customStrategyState,
             escapeHatchActivated,
@@ -301,34 +294,4 @@ function escapeHatchAllowed(
   } else {
     return true
   }
-}
-
-function collectHighlightCommand(
-  canvasState: InteractionCanvasState,
-  interactionData: DragInteractionData,
-  strategyState: StrategyState,
-): CanvasCommand {
-  const siblingFrames = stripNulls(
-    canvasState.selectedElements.flatMap((path) => {
-      return MetadataUtils.getSiblings(strategyState.startingMetadata, path)
-        .filter((sibling) =>
-          canvasState.selectedElements.every(
-            (selected) => !EP.pathsEqual(selected, sibling.elementPath),
-          ),
-        )
-        .map((element) =>
-          MetadataUtils.getFrameInCanvasCoords(element.elementPath, strategyState.startingMetadata),
-        )
-    }),
-  )
-
-  const draggedFrames = mapDropNulls((path) => {
-    const frame = MetadataUtils.getFrameInCanvasCoords(path, strategyState.startingMetadata)
-    if (frame != null) {
-      return offsetRect(frame, interactionData.drag ?? zeroCanvasPoint)
-    } else {
-      return null
-    }
-  }, canvasState.selectedElements)
-  return showOutlineHighlight('transient', [...siblingFrames, ...draggedFrames])
 }
