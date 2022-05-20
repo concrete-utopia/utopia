@@ -32,6 +32,10 @@ export function combine1EqualityCall<A, X>(
   combine: (a: A) => X,
 ): KeepDeepEqualityCall<X> {
   return (oldValue, newValue) => {
+    if (oldValue === newValue) {
+      return keepDeepEqualityResult(oldValue, true)
+    }
+
     const resultA = callA(getAValue(oldValue), getAValue(newValue))
     const areEqual = resultA.areEqual
     if (areEqual) {
@@ -51,6 +55,10 @@ export function combine2EqualityCalls<A, B, X>(
   combine: (a: A, b: B) => X,
 ): KeepDeepEqualityCall<X> {
   return (oldValue, newValue) => {
+    if (oldValue === newValue) {
+      return keepDeepEqualityResult(oldValue, true)
+    }
+
     const resultA = callA(getAValue(oldValue), getAValue(newValue))
     const resultB = callB(getBValue(oldValue), getBValue(newValue))
     const areEqual = resultA.areEqual && resultB.areEqual
@@ -73,6 +81,10 @@ export function combine3EqualityCalls<A, B, C, X>(
   combine: (a: A, b: B, c: C) => X,
 ): KeepDeepEqualityCall<X> {
   return (oldValue, newValue) => {
+    if (oldValue === newValue) {
+      return keepDeepEqualityResult(oldValue, true)
+    }
+
     const resultA = callA(getAValue(oldValue), getAValue(newValue))
     const resultB = callB(getBValue(oldValue), getBValue(newValue))
     const resultC = callC(getCValue(oldValue), getCValue(newValue))
@@ -98,6 +110,10 @@ export function combine4EqualityCalls<A, B, C, D, X>(
   combine: (a: A, b: B, c: C, d: D) => X,
 ): KeepDeepEqualityCall<X> {
   return (oldValue, newValue) => {
+    if (oldValue === newValue) {
+      return keepDeepEqualityResult(oldValue, true)
+    }
+
     const resultA = callA(getAValue(oldValue), getAValue(newValue))
     const resultB = callB(getBValue(oldValue), getBValue(newValue))
     const resultC = callC(getCValue(oldValue), getCValue(newValue))
@@ -126,6 +142,10 @@ export function combine5EqualityCalls<A, B, C, D, E, X>(
   combine: (a: A, b: B, c: C, d: D, e: E) => X,
 ): KeepDeepEqualityCall<X> {
   return (oldValue, newValue) => {
+    if (oldValue === newValue) {
+      return keepDeepEqualityResult(oldValue, true)
+    }
+
     const resultA = callA(getAValue(oldValue), getAValue(newValue))
     const resultB = callB(getBValue(oldValue), getBValue(newValue))
     const resultC = callC(getCValue(oldValue), getCValue(newValue))
@@ -168,6 +188,10 @@ export function combine6EqualityCalls<A, B, C, D, E, F, X>(
   combine: (a: A, b: B, c: C, d: D, e: E, f: F) => X,
 ): KeepDeepEqualityCall<X> {
   return (oldValue, newValue) => {
+    if (oldValue === newValue) {
+      return keepDeepEqualityResult(oldValue, true)
+    }
+
     const resultA = callA(getAValue(oldValue), getAValue(newValue))
     const resultB = callB(getBValue(oldValue), getBValue(newValue))
     const resultC = callC(getCValue(oldValue), getCValue(newValue))
@@ -215,6 +239,10 @@ export function combine7EqualityCalls<A, B, C, D, E, F, G, X>(
   combine: (a: A, b: B, c: C, d: D, e: E, f: F, g: G) => X,
 ): KeepDeepEqualityCall<X> {
   return (oldValue, newValue) => {
+    if (oldValue === newValue) {
+      return keepDeepEqualityResult(oldValue, true)
+    }
+
     const resultA = callA(getAValue(oldValue), getAValue(newValue))
     const resultB = callB(getBValue(oldValue), getBValue(newValue))
     const resultC = callC(getCValue(oldValue), getCValue(newValue))
@@ -267,6 +295,10 @@ export function combine8EqualityCalls<A, B, C, D, E, F, G, H, X>(
   combine: (a: A, b: B, c: C, d: D, e: E, f: F, g: G, h: H) => X,
 ): KeepDeepEqualityCall<X> {
   return (oldValue, newValue) => {
+    if (oldValue === newValue) {
+      return keepDeepEqualityResult(oldValue, true)
+    }
+
     const resultA = callA(getAValue(oldValue), getAValue(newValue))
     const resultB = callB(getBValue(oldValue), getBValue(newValue))
     const resultC = callC(getCValue(oldValue), getCValue(newValue))
@@ -324,6 +356,10 @@ export function combine9EqualityCalls<A, B, C, D, E, F, G, H, I, X>(
   combine: (a: A, b: B, c: C, d: D, e: E, f: F, g: G, h: H, i: I) => X,
 ): KeepDeepEqualityCall<X> {
   return (oldValue, newValue) => {
+    if (oldValue === newValue) {
+      return keepDeepEqualityResult(oldValue, true)
+    }
+
     const resultA = callA(getAValue(oldValue), getAValue(newValue))
     const resultB = callB(getBValue(oldValue), getBValue(newValue))
     const resultC = callC(getCValue(oldValue), getCValue(newValue))
@@ -386,6 +422,10 @@ export function combine10EqualityCalls<A, B, C, D, E, F, G, H, I, J, X>(
   combine: (a: A, b: B, c: C, d: D, e: E, f: F, g: G, h: H, i: I, j: J) => X,
 ): KeepDeepEqualityCall<X> {
   return (oldValue, newValue) => {
+    if (oldValue === newValue) {
+      return keepDeepEqualityResult(oldValue, true)
+    }
+
     const resultA = callA(getAValue(oldValue), getAValue(newValue))
     const resultB = callB(getBValue(oldValue), getBValue(newValue))
     const resultC = callC(getCValue(oldValue), getCValue(newValue))
@@ -453,6 +493,10 @@ export function combine11EqualityCalls<A, B, C, D, E, F, G, H, I, J, K, X>(
   combine: (a: A, b: B, c: C, d: D, e: E, f: F, g: G, h: H, i: I, j: J, k: K) => X,
 ): KeepDeepEqualityCall<X> {
   return (oldValue, newValue) => {
+    if (oldValue === newValue) {
+      return keepDeepEqualityResult(oldValue, true)
+    }
+
     const resultA = callA(getAValue(oldValue), getAValue(newValue))
     const resultB = callB(getBValue(oldValue), getBValue(newValue))
     const resultC = callC(getCValue(oldValue), getCValue(newValue))
@@ -525,6 +569,10 @@ export function combine12EqualityCalls<A, B, C, D, E, F, G, H, I, J, K, L, X>(
   combine: (a: A, b: B, c: C, d: D, e: E, f: F, g: G, h: H, i: I, j: J, k: K, l: L) => X,
 ): KeepDeepEqualityCall<X> {
   return (oldValue, newValue) => {
+    if (oldValue === newValue) {
+      return keepDeepEqualityResult(oldValue, true)
+    }
+
     const resultA = callA(getAValue(oldValue), getAValue(newValue))
     const resultB = callB(getBValue(oldValue), getBValue(newValue))
     const resultC = callC(getCValue(oldValue), getCValue(newValue))
@@ -602,6 +650,10 @@ export function combine13EqualityCalls<A, B, C, D, E, F, G, H, I, J, K, L, M, X>
   combine: (a: A, b: B, c: C, d: D, e: E, f: F, g: G, h: H, i: I, j: J, k: K, l: L, m: M) => X,
 ): KeepDeepEqualityCall<X> {
   return (oldValue, newValue) => {
+    if (oldValue === newValue) {
+      return keepDeepEqualityResult(oldValue, true)
+    }
+
     const resultA = callA(getAValue(oldValue), getAValue(newValue))
     const resultB = callB(getBValue(oldValue), getBValue(newValue))
     const resultC = callC(getCValue(oldValue), getCValue(newValue))
@@ -699,6 +751,10 @@ export function combine14EqualityCalls<A, B, C, D, E, F, G, H, I, J, K, L, M, N,
   ) => X,
 ): KeepDeepEqualityCall<X> {
   return (oldValue, newValue) => {
+    if (oldValue === newValue) {
+      return keepDeepEqualityResult(oldValue, true)
+    }
+
     const resultA = callA(getAValue(oldValue), getAValue(newValue))
     const resultB = callB(getBValue(oldValue), getBValue(newValue))
     const resultC = callC(getCValue(oldValue), getCValue(newValue))

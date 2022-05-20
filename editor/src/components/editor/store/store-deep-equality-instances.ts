@@ -1724,6 +1724,10 @@ export const EditorStateCanvasKeepDeepEquality: KeepDeepEqualityCall<EditorState
   oldValue,
   newValue,
 ) => {
+  if (oldValue === newValue) {
+    return keepDeepEqualityResult(oldValue, true)
+  }
+
   const visibleResult = BooleanKeepDeepEquality(oldValue.visible, newValue.visible)
   // `dragState` likely going away, so a suboptimal way of handling this seems fine for now.
   const dragStateResult = nullableDeepEquality(createCallWithDeepEquals<DragState>())(
@@ -2874,6 +2878,10 @@ export const EditorStateKeepDeepEquality: KeepDeepEqualityCall<EditorState> = (
   oldValue,
   newValue,
 ) => {
+  if (oldValue === newValue) {
+    return keepDeepEqualityResult(oldValue, true)
+  }
+
   const idResult = NullableStringKeepDeepEquality(oldValue.id, newValue.id)
   const vscodeBridgeIdResult = VSCodeBridgeIdKeepDeepEquality(
     oldValue.vscodeBridgeId,
