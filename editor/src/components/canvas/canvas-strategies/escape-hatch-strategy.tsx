@@ -8,6 +8,7 @@ import * as EP from '../../../core/shared/element-path'
 import { ElementInstanceMetadataMap } from '../../../core/shared/element-template'
 import {
   asLocal,
+  CanvasPoint,
   CanvasRectangle,
   CanvasVector,
   LocalPoint,
@@ -28,13 +29,13 @@ import { setCssLengthProperty } from '../commands/set-css-length-command'
 import { showOutlineHighlight } from '../commands/show-outline-highlight-command'
 import { DragOutlineControl } from '../controls/select-mode/drag-outline-control'
 import { AnimationTimer, PieTimerControl } from '../controls/select-mode/pie-timer'
-import { getTransientMoveCommands, snapDragAbsoluteMove } from './absolute-move-strategy'
+import { applyAbsoluteMoveCommon } from './absolute-move-strategy'
 import {
   CanvasStrategy,
   emptyStrategyApplicationResult,
   InteractionCanvasState,
 } from './canvas-strategy-types'
-import { DragInteractionData, StrategyState } from './interaction-state'
+import { DragInteractionData, InteractionSession, StrategyState } from './interaction-state'
 
 export const escapeHatchStrategy: CanvasStrategy = {
   id: 'ESCAPE_HATCH_STRATEGY',
@@ -89,17 +90,21 @@ export const escapeHatchStrategy: CanvasStrategy = {
         escapeHatchActivated = true
       }
       if (escapeHatchActivated) {
-        const { snappedDragVector, guidelinesWithSnappingVector } = snapDragAbsoluteMove(
+        const getConversionAndMoveCommands = (
+          snappedDragVector: CanvasPoint,
+        ): Array<CanvasCommand> => {
+          return getEscapeHatchCommands(
+            canvasState.selectedElements,
+            strategyState.startingMetadata,
+            canvasState,
+            snappedDragVector,
+          )
+        }
+        const absoluteMoveApplyResult = applyAbsoluteMoveCommon(
           canvasState,
-          interactionState.interactionData,
+          interactionState,
           strategyState,
-        )
-
-        const conversionCommands = getEscapeHatchCommands(
-          canvasState.selectedElements,
-          strategyState.startingMetadata,
-          canvasState,
-          snappedDragVector,
+          getConversionAndMoveCommands,
         )
 
         const highlightCommand = collectHighlightCommand(
@@ -107,9 +112,8 @@ export const escapeHatchStrategy: CanvasStrategy = {
           interactionState.interactionData,
           strategyState,
         )
-        const moveTransientCommands = getTransientMoveCommands(guidelinesWithSnappingVector)
         return {
-          commands: [...conversionCommands, highlightCommand, ...moveTransientCommands],
+          commands: [...absoluteMoveApplyResult.commands, highlightCommand],
           customState: {
             ...strategyState.customStrategyState,
             escapeHatchActivated,
