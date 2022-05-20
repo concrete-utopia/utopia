@@ -592,13 +592,16 @@ export function editorStateCanvasTransientProperty(
 export interface EditorStateCanvasControls {
   // this is where we can put props for the strategy controls
   snappingGuidelines: Array<GuidelineWithSnappingVector>
+  outlineHighlights: Array<CanvasRectangle>
 }
 
 export function editorStateCanvasControls(
   snappingGuidelines: Array<GuidelineWithSnappingVector>,
+  outlineHighlights: Array<CanvasRectangle>,
 ): EditorStateCanvasControls {
   return {
     snappingGuidelines: snappingGuidelines,
+    outlineHighlights: outlineHighlights,
   }
 }
 
@@ -1714,6 +1717,7 @@ export function createEditorState(dispatch: EditorDispatch): EditorState {
       domWalkerAdditionalElementsToUpdate: [],
       controls: {
         snappingGuidelines: [],
+        outlineHighlights: [],
       },
     },
     floatingInsertMenu: {
@@ -2001,6 +2005,7 @@ export function editorModelFromPersistentModel(
       domWalkerAdditionalElementsToUpdate: [],
       controls: {
         snappingGuidelines: [],
+        outlineHighlights: [],
       },
     },
     floatingInsertMenu: {
