@@ -15,6 +15,7 @@ import {
   CanvasStrategyId,
   ControlWithKey,
   InteractionCanvasState,
+  StrategyApplicationResult,
 } from './canvas-strategy-types'
 import { InteractionSession, StrategyState } from './interaction-state'
 import { keyboardAbsoluteMoveStrategy } from './keyboard-absolute-move-strategy'
@@ -220,7 +221,7 @@ export function applyCanvasStrategy(
   canvasState: InteractionCanvasState,
   interactionSession: InteractionSession,
   strategyState: StrategyState,
-): Array<CanvasCommand> {
+): StrategyApplicationResult {
   return strategy.apply(canvasState, interactionSession, strategyState)
 }
 

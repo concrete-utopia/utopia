@@ -7,7 +7,7 @@ import { updateHighlightedViews } from '../commands/update-highlighted-views-com
 import { runLegacyAbsoluteMoveSnapping } from '../controls/guideline-helpers'
 import { determineConstrainedDragAxis } from '../controls/select-mode/move-utils'
 import { ConstrainedDragAxis, GuidelineWithSnappingVector } from '../guideline'
-import { CanvasStrategy } from './canvas-strategy-types'
+import { CanvasStrategy, emptyStrategyApplicationResult } from './canvas-strategy-types'
 import {
   getAbsoluteMoveCommandsForSelectedElement,
   getDragTargets,
@@ -65,14 +65,17 @@ export const absoluteMoveStrategy: CanvasStrategy = {
           sessionState,
         ),
       )
-      return [
-        ...commandsForSelectedElements,
-        updateHighlightedViews('transient', []),
-        setSnappingGuidelines('transient', guidelinesWithSnappingVector),
-      ]
+      return {
+        commands: [
+          ...commandsForSelectedElements,
+          updateHighlightedViews('transient', []),
+          setSnappingGuidelines('transient', guidelinesWithSnappingVector),
+        ],
+        customState: null,
+      }
     }
     // Fallback for when the checks above are not satisfied.
-    return []
+    return emptyStrategyApplicationResult
   },
 }
 

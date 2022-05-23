@@ -1,3 +1,4 @@
+/// <reference types="karma-viewport" />
 import { act, fireEvent } from '@testing-library/react'
 import { BakedInStoryboardUID } from '../../../../core/model/scene-utils'
 import { canvasPoint } from '../../../../core/shared/math-utils'
@@ -95,8 +96,7 @@ describe('Select Mode Selection', () => {
 
     const doubleClick = async () => {
       await act(async () => {
-        const domFinished = renderResult.getDomReportDispatched()
-        const dispatchDone = renderResult.getDispatchFollowUpactionsFinished()
+        const dispatchDone = renderResult.getDispatchFollowUpActionsFinished()
         fireEvent(
           canvasControlsLayer,
           new MouseEvent('mousedown', {
@@ -121,7 +121,6 @@ describe('Select Mode Selection', () => {
             buttons: 1,
           }),
         )
-        await domFinished
         await dispatchDone
       })
       await waitForAnimationFrame()
@@ -193,8 +192,7 @@ describe('Select Mode Advanced Cases', () => {
     const canvasControlsLayer = renderResult.renderedDOM.getByTestId(CanvasControlsContainerID)
 
     await act(async () => {
-      const domFinished = renderResult.getDomReportDispatched()
-      const dispatchDone = renderResult.getDispatchFollowUpactionsFinished()
+      const dispatchDone = renderResult.getDispatchFollowUpActionsFinished()
       fireEvent(
         canvasControlsLayer,
         new MouseEvent('mousedown', {
@@ -207,7 +205,6 @@ describe('Select Mode Advanced Cases', () => {
           buttons: 1,
         }),
       )
-      await domFinished
       await dispatchDone
     })
     await waitForAnimationFrame()
@@ -230,8 +227,7 @@ describe('Select Mode Advanced Cases', () => {
 
     const doubleClick = async () => {
       await act(async () => {
-        const domFinished = renderResult.getDomReportDispatched()
-        const dispatchDone = renderResult.getDispatchFollowUpactionsFinished()
+        const dispatchDone = renderResult.getDispatchFollowUpActionsFinished()
         fireEvent(
           canvasControlsLayer,
           new MouseEvent('mousedown', {
@@ -256,7 +252,6 @@ describe('Select Mode Advanced Cases', () => {
             buttons: 1,
           }),
         )
-        await domFinished
         await dispatchDone
       })
       await waitForAnimationFrame()
@@ -301,8 +296,7 @@ describe('Select Mode Advanced Cases', () => {
 
     const doubleClick = async () => {
       await act(async () => {
-        const domFinished = renderResult.getDomReportDispatched()
-        const dispatchDone = renderResult.getDispatchFollowUpactionsFinished()
+        const dispatchDone = renderResult.getDispatchFollowUpActionsFinished()
         fireEvent(
           canvasControlsLayer,
           new MouseEvent('mousedown', {
@@ -327,7 +321,6 @@ describe('Select Mode Advanced Cases', () => {
             buttons: 1,
           }),
         )
-        await domFinished
         await dispatchDone
       })
       await waitForAnimationFrame()
@@ -349,7 +342,6 @@ describe('Select Mode Advanced Cases', () => {
     ])
   })
 })
-
 function waitForAnimationFrame(): Promise<void> {
   return new Promise<void>((resolve, reject) => {
     requestAnimationFrame(() => {

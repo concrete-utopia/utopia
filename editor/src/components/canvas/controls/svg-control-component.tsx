@@ -66,7 +66,7 @@ export class DivControlComponent extends React.Component<ControlComponentProps<D
             canvasOffset={this.props.canvasOffset}
             index={index}
           />
-        )
+        ) as any // TODO delete this file
       } else {
         // okay something is very fishy here, I needed this IF here for typescript type narrowing... but why?!
         // both branches of the if statement are 100% similar
@@ -77,7 +77,7 @@ export class DivControlComponent extends React.Component<ControlComponentProps<D
             canvasOffset={this.props.canvasOffset}
             index={index}
           />
-        )
+        ) as any // TODO delete this file
       }
     })
     return (

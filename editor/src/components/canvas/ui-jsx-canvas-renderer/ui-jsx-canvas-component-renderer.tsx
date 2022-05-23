@@ -37,17 +37,23 @@ import { useGetCodeAndHighlightBounds } from './ui-jsx-canvas-execution-scope'
 import { usePubSubAtomReadOnly } from '../../../core/shared/atom-with-pub-sub'
 import { JSX_CANVAS_LOOKUP_FUNCTION_NAME } from '../../../core/shared/dom-utils'
 
-export type ComponentRendererComponent = React.ComponentType<{
-  [UTOPIA_INSTANCE_PATH]: ElementPath
-  [UTOPIA_PATH_KEY]?: string
-}> & {
+export type ComponentRendererComponent = React.ComponentType<
+  React.PropsWithChildren<{
+    [UTOPIA_INSTANCE_PATH]: ElementPath
+    [UTOPIA_PATH_KEY]?: string
+  }>
+> & {
   topLevelElementName: string | null
   propertyControls?: PropertyControls
   utopiaType: 'UTOPIA_COMPONENT_RENDERER_COMPONENT'
 }
 
 export function isComponentRendererComponent(
-  component: ComponentRendererComponent | React.ComponentType | null | undefined,
+  component:
+    | ComponentRendererComponent
+    | React.ComponentType<React.PropsWithChildren<unknown>>
+    | null
+    | undefined,
 ): component is ComponentRendererComponent {
   return (
     component != null &&

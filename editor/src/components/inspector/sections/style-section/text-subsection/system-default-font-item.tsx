@@ -5,9 +5,9 @@ interface SystedDefaultFontItemProps {
   selected: boolean
 }
 
-export const SystedDefaultFontItem: React.FunctionComponent<SystedDefaultFontItemProps> = ({
-  selected,
-}) => {
+export const SystedDefaultFontItem: React.FunctionComponent<
+  React.PropsWithChildren<SystedDefaultFontItemProps>
+> = ({ selected }) => {
   const colorTheme = useColorTheme()
   return (
     <div>

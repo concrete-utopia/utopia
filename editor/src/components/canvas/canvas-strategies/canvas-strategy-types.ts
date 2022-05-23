@@ -5,10 +5,31 @@ import { ProjectContentTreeRoot } from '../../assets'
 import { CanvasCommand } from '../commands/commands'
 import { InteractionSession, StrategyState } from './interaction-state'
 
-export type StrategyApplicationResult = Array<CanvasCommand>
+// TODO: fill this in, maybe make it an ADT for different strategies
+export interface CustomStrategyState {
+  escapeHatchActivated: boolean
+  lastReorderIdx: number | null
+}
+
+export function defaultCustomStrategyState(): CustomStrategyState {
+  return {
+    escapeHatchActivated: false,
+    lastReorderIdx: null,
+  }
+}
+
+export interface StrategyApplicationResult {
+  commands: Array<CanvasCommand>
+  customState: CustomStrategyState | null // null means the previous custom strategy state should be kept
+}
+
+export const emptyStrategyApplicationResult = {
+  commands: [],
+  customState: null,
+}
 
 export interface ControlWithKey {
-  control: React.FC
+  control: React.FC<React.PropsWithChildren<unknown>>
   key: string
   show:
     | 'always-visible'

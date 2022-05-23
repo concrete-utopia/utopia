@@ -372,6 +372,7 @@ import {
   SetIndexedDBFailed,
   ForceParseFile,
   RemoveFromNodeModulesContents,
+  RunEscapeHatch,
 } from '../action-types'
 import { defaultTransparentViewElement, defaultSceneElement } from '../defaults'
 import {
@@ -512,7 +513,7 @@ import { getTargetParentForPaste } from '../../../utils/clipboard'
 import { emptySet } from '../../../core/shared/set-utils'
 import { absolutePathFromRelativePath, stripLeadingSlash } from '../../../utils/path-utils'
 import { resolveModule } from '../../../core/es-modules/package-manager/module-resolution'
-import { reverse, uniqBy } from '../../../core/shared/array-utils'
+import { mapDropNulls, reverse, uniqBy } from '../../../core/shared/array-utils'
 import { UTOPIA_UID_KEY } from '../../../core/model/utopia-constants'
 import {
   DefaultPostCSSConfig,
@@ -524,6 +525,9 @@ import { uniqToasts } from './toast-helpers'
 import { NavigatorStateKeepDeepEquality } from '../../../utils/deep-equality-instances'
 import type { BuiltInDependencies } from '../../../core/es-modules/package-manager/built-in-dependencies-list'
 import { stylePropPathMappingFn } from '../../inspector/common/property-path-hooks'
+import { getEscapeHatchCommands } from '../../../components/canvas/canvas-strategies/escape-hatch-strategy'
+import { pickCanvasStateFromEditorState } from '../../canvas/canvas-strategies/canvas-strategies'
+import { foldAndApplyCommandsSimple, runCanvasCommand } from '../../canvas/commands/commands'
 
 export function updateSelectedLeftMenuTab(editorState: EditorState, tab: LeftMenuTab): EditorState {
   return {
@@ -1696,6 +1700,10 @@ export const UPDATE_FNS = {
       ...withMovedTemplate,
       selectedViews: newPaths,
       highlightedViews: [],
+      canvas: {
+        ...withMovedTemplate.canvas,
+        domWalkerInvalidateCount: withMovedTemplate.canvas.domWalkerInvalidateCount + 1,
+      },
     }
   },
   SET_Z_INDEX: (action: SetZIndex, editor: EditorModel, derived: DerivedState): EditorModel => {
@@ -1718,7 +1726,7 @@ export const UPDATE_FNS = {
     dispatch: EditorDispatch,
   ): EditorModel => {
     return toastOnGeneratedElementsSelected(
-      'Generated elements can only be deleted in code. ',
+      'Generated elements can only be deleted in code.',
       editorForAction,
       true,
       (editor) => {
@@ -1730,7 +1738,17 @@ export const UPDATE_FNS = {
           )
           return MetadataUtils.isStaticElement(components, selectedView)
         })
-        return deleteElements(staticSelectedElements, editor)
+        const withElementDeleted = deleteElements(staticSelectedElements, editor)
+        const parentsToSelect = uniqBy(
+          mapDropNulls((view) => {
+            return EP.parentPath(view)
+          }, editor.selectedViews),
+          EP.pathsEqual,
+        )
+        return {
+          ...withElementDeleted,
+          selectedViews: parentsToSelect,
+        }
       },
       dispatch,
     )
@@ -4007,11 +4025,11 @@ export const UPDATE_FNS = {
     // Calculate the spy metadata given what has been collected.
     const spyResult = spyCollector.current.spyValues.metadata
 
-    const finalDomMetadata = arrayDeepEquality(ElementInstanceMetadataKeepDeepEquality())(
+    const finalDomMetadata = arrayDeepEquality(ElementInstanceMetadataKeepDeepEquality)(
       editor.domMetadata,
       action.elementMetadata as Array<ElementInstanceMetadata>, // we convert a ReadonlyArray to a regular array – it'd be nice to make more arrays readonly in the future
     ).value
-    const finalSpyMetadata = ElementInstanceMetadataMapKeepDeepEquality()(
+    const finalSpyMetadata = ElementInstanceMetadataMapKeepDeepEquality(
       editor.spyMetadata,
       spyResult,
     ).value
@@ -4852,11 +4870,16 @@ export const UPDATE_FNS = {
   SET_INDEXED_DB_FAILED: (action: SetIndexedDBFailed, editor: EditorModel): EditorModel => {
     return { ...editor, indexedDBFailed: action.indexedDBFailed }
   },
-  FORCE_PARSE_FILE: (action: ForceParseFile, editor: EditorModel) => {
+  FORCE_PARSE_FILE: (action: ForceParseFile, editor: EditorModel): EditorModel => {
     return {
       ...editor,
       forceParseFiles: editor.forceParseFiles.concat(action.filePath),
     }
+  },
+  RUN_ESCAPE_HATCH: (action: RunEscapeHatch, editor: EditorModel): EditorModel => {
+    const canvasState = pickCanvasStateFromEditorState(editor)
+    const commands = getEscapeHatchCommands(action.targets, editor.jsxMetadata, canvasState, null)
+    return foldAndApplyCommandsSimple(editor, commands)
   },
 }
 

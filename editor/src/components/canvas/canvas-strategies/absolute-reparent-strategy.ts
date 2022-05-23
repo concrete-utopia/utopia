@@ -4,7 +4,7 @@ import { getReparentTarget } from '../canvas-utils'
 import { reparentElement } from '../commands/reparent-element-command'
 import { updateSelectedViews } from '../commands/update-selected-views-command'
 import { absoluteMoveStrategy } from './absolute-move-strategy'
-import { CanvasStrategy } from './canvas-strategy-types'
+import { CanvasStrategy, emptyStrategyApplicationResult } from './canvas-strategy-types'
 import {
   getAbsoluteOffsetCommandsForSelectedElement,
   getDragTargets,
@@ -78,14 +78,17 @@ export const absoluteReparentStrategy: CanvasStrategy = {
         }
       })
 
-      return [
-        ...moveCommands,
-        ...commands.flatMap((c) => c.commands),
-        updateSelectedViews(
-          'permanent',
-          commands.map((c) => c.newPath),
-        ),
-      ]
+      return {
+        commands: [
+          ...moveCommands.commands,
+          ...commands.flatMap((c) => c.commands),
+          updateSelectedViews(
+            'permanent',
+            commands.map((c) => c.newPath),
+          ),
+        ],
+        customState: null,
+      }
     } else {
       return moveCommands
     }

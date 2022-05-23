@@ -139,14 +139,14 @@ export function memoEqualityCheckAnalysis<P>(previousProps: P, nextProps: P): bo
 export function failSafeReactMemo<P extends Record<string, unknown>>(
   displayName: string,
   severity: 'strict' | 'gentle',
-  Component: React.FunctionComponent<P>,
+  Component: React.FunctionComponent<React.PropsWithChildren<P>>,
 ): React.NamedExoticComponent<P>
-export function failSafeReactMemo<T extends React.ComponentType<any>>(
+export function failSafeReactMemo<T extends React.ComponentType<React.PropsWithChildren<any>>>(
   displayName: string,
   severity: 'strict' | 'gentle',
   Component: T,
 ): React.MemoExoticComponent<T>
-export function failSafeReactMemo<T extends React.ComponentType<any>>(
+export function failSafeReactMemo<T extends React.ComponentType<React.PropsWithChildren<any>>>(
   displayName: string,
   severity: 'strict' | 'gentle',
   Component: T,
@@ -218,6 +218,8 @@ function keepDeepReferenceEqualityInner(
   stackSizeInner: number,
   valueStackSoFar: Set<any>,
 ) {
+  if (oldValue === possibleNewValue) return oldValue
+
   if (stackSizeInner > 100) {
     return possibleNewValue
   }
@@ -229,8 +231,6 @@ function keepDeepReferenceEqualityInner(
   }
   // mutation
   valueStackSoFar.add(possibleNewValue)
-
-  if (oldValue === possibleNewValue) return oldValue
 
   if (
     oldValue != null &&

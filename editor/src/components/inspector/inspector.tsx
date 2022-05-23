@@ -39,7 +39,11 @@ import {
   getOpenUtopiaJSXComponentsFromStateMultifile,
   isOpenFileUiJs,
 } from '../editor/store/editor-state'
-import { useEditorState } from '../editor/store/store-hook'
+import {
+  EditorStateContext,
+  InspectorStateContext,
+  useEditorState,
+} from '../editor/store/store-hook'
 import {
   InspectorCallbackContext,
   InspectorPropsContext,
@@ -82,6 +86,7 @@ import { when } from '../../utils/react-conditionals'
 import { createSelector } from 'reselect'
 import { isTwindEnabled } from '../../core/tailwind/tailwind'
 import { isStrategyActive } from '../canvas/canvas-strategies/canvas-strategies'
+import type { StrategyState } from '../canvas/canvas-strategies/interaction-state'
 
 export interface ElementPathElement {
   name?: string
@@ -227,6 +232,10 @@ function buildNonDefaultPositionPaths(propertyTarget: Array<string>): Array<Prop
   ]
 }
 
+export function shouldInspectorUpdate(strategyState: StrategyState): boolean {
+  return !isStrategyActive(strategyState)
+}
+
 export const Inspector = React.memo<InspectorProps>((props: InspectorProps) => {
   const colorTheme = useColorTheme()
   const { selectedViews, setSelectedTarget, targets } = props
@@ -241,7 +250,6 @@ export const Inspector = React.memo<InspectorProps>((props: InspectorProps) => {
     anyUnknownElements,
     hasNonDefaultPositionAttributes,
     aspectRatioLocked,
-    isInteractionActive,
   } = useEditorState((store) => {
     const rootMetadata = store.editor.jsxMetadata
     let anyComponentsInner: boolean = false
@@ -289,7 +297,6 @@ export const Inspector = React.memo<InspectorProps>((props: InspectorProps) => {
       anyUnknownElements: anyUnknownElementsInner,
       hasNonDefaultPositionAttributes: hasNonDefaultPositionAttributesInner,
       aspectRatioLocked: aspectRatioLockedInner,
-      isInteractionActive: isStrategyActive(store.strategyState),
     }
   }, 'Inspector')
 
@@ -340,41 +347,51 @@ export const Inspector = React.memo<InspectorProps>((props: InspectorProps) => {
     }
   }
 
-  if (isInteractionActive) {
-    return null
-  } else {
-    return (
-      <div
-        id='inspector'
-        style={{
-          width: '100%',
-          position: 'relative',
-          color: colorTheme.neutralForeground.value,
-        }}
-        onFocus={onFocus}
-      >
-        {renderInspectorContents()}
-      </div>
-    )
-  }
+  return (
+    <div
+      id='inspector'
+      style={{
+        width: '100%',
+        position: 'relative',
+        color: colorTheme.neutralForeground.value,
+      }}
+      onFocus={onFocus}
+    >
+      {renderInspectorContents()}
+    </div>
+  )
 })
 Inspector.displayName = 'Inspector'
 
 const DefaultStyleTargets: Array<CSSTarget> = [cssTarget(['style'], 0), cssTarget(['css'], 0)]
 
-export const InspectorEntryPoint: React.FunctionComponent = React.memo(() => {
-  const selectedViews = useEditorState(
-    (store) => store.editor.selectedViews,
-    'InspectorEntryPoint selectedViews',
-  )
+export const InspectorEntryPoint: React.FunctionComponent<React.PropsWithChildren<unknown>> =
+  React.memo(() => {
+    const inspectorStore = React.useContext(InspectorStateContext)?.useStore
+    return (
+      <EditorStateContext.Provider
+        value={inspectorStore == null ? null : { api: inspectorStore, useStore: inspectorStore }}
+      >
+        <MultiselectInspector />
+      </EditorStateContext.Provider>
+    )
+  })
 
-  return (
-    <SingleInspectorEntryPoint
-      key={'inspector-entry-selected-views'}
-      selectedViews={selectedViews}
-    />
-  )
-})
+const MultiselectInspector: React.FunctionComponent<React.PropsWithChildren<unknown>> = React.memo(
+  () => {
+    const selectedViews = useEditorState(
+      (store) => store.editor.selectedViews,
+      'InspectorEntryPoint selectedViews',
+    )
+
+    return (
+      <SingleInspectorEntryPoint
+        key={'inspector-entry-selected-views'}
+        selectedViews={selectedViews}
+      />
+    )
+  },
+)
 
 function updateTargets(localJSXElement: JSXElement): Array<CSSTarget> {
   let localTargets: Array<CSSTarget> = []
@@ -409,9 +426,11 @@ function updateTargets(localJSXElement: JSXElement): Array<CSSTarget> {
   return localTargets
 }
 
-export const SingleInspectorEntryPoint: React.FunctionComponent<{
-  selectedViews: Array<ElementPath>
-}> = React.memo((props) => {
+export const SingleInspectorEntryPoint: React.FunctionComponent<
+  React.PropsWithChildren<{
+    selectedViews: Array<ElementPath>
+  }>
+> = React.memo((props) => {
   const { selectedViews } = props
   const { dispatch, jsxMetadata, isUIJSFile } = useEditorState((store) => {
     return {

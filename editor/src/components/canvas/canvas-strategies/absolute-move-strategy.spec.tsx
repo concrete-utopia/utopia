@@ -20,6 +20,7 @@ import {
 } from '../ui-jsx.test-utils'
 import { absoluteMoveStrategy } from './absolute-move-strategy'
 import { pickCanvasStateFromEditorState } from './canvas-strategies'
+import { defaultCustomStrategyState } from './canvas-strategy-types'
 import { InteractionSession, StrategyState } from './interaction-state'
 import { createMouseInteractionForTests } from './interaction-state.test-utils'
 
@@ -70,15 +71,18 @@ function dragByPixels(
           } as SpecialSizeMeasurements,
         } as ElementInstanceMetadata,
       },
+      customStrategyState: defaultCustomStrategyState(),
     } as StrategyState,
   )
+
+  expect(strategyResult.customState).toBeNull()
 
   const finalEditor = foldAndApplyCommands(
     editorState,
     editorState,
     [],
     [],
-    strategyResult,
+    strategyResult.commands,
     'permanent',
   ).editorState
 

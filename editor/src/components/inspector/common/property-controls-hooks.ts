@@ -136,7 +136,7 @@ export function useInspectorInfoForPropertyControl(
   )
 
   const onTransientSubmitValue = React.useCallback(
-    (newValue) => onSubmitValue(newValue, true),
+    (newValue: any) => onSubmitValue(newValue, true),
     [onSubmitValue],
   )
 
@@ -258,8 +258,7 @@ export function useGetPropertyControlsForSelectedComponents(): Array<FullPropert
     },
     'useGetPropertyControlsForSelectedComponents selectedElements',
     (a, b) =>
-      arrayDeepEquality(arrayDeepEquality(ElementInstanceMetadataKeepDeepEquality()))(a, b)
-        .areEqual,
+      arrayDeepEquality(arrayDeepEquality(ElementInstanceMetadataKeepDeepEquality))(a, b).areEqual,
   )
 
   const selectedComponentsFIXME = useEditorState(

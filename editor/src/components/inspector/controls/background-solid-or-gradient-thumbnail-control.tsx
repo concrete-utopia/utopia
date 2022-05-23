@@ -158,7 +158,7 @@ export const BackgroundSolidOrGradientThumbnailControl = React.memo(
       ) : null
 
     const backgroundIndex = props.backgroundIndex
-    const onMouseDown = React.useCallback(
+    const onMouseDown: React.MouseEventHandler<HTMLDivElement> = React.useCallback(
       (e) => {
         e.stopPropagation()
         setOpenPopup((openPopup) => {

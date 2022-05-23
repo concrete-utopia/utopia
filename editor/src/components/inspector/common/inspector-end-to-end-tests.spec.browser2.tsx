@@ -61,10 +61,8 @@ describe('inspector tests with real metadata', () => {
     const targetPath = EP.appendNewElementPath(TestScenePath, ['aaa', 'bbb'])
 
     await act(async () => {
-      const domFinished = renderResult.getDomReportDispatched()
-      const dispatchDone = renderResult.getDispatchFollowUpactionsFinished()
+      const dispatchDone = renderResult.getDispatchFollowUpActionsFinished()
       await renderResult.dispatch([selectComponents([targetPath], false)], false)
-      await domFinished
       await dispatchDone
     })
 
@@ -119,10 +117,8 @@ describe('inspector tests with real metadata', () => {
     const targetPath = EP.appendNewElementPath(TestScenePath, ['aaa', 'bbb'])
 
     await act(async () => {
-      const domFinished = renderResult.getDomReportDispatched()
-      const dispatchDone = renderResult.getDispatchFollowUpactionsFinished()
+      const dispatchDone = renderResult.getDispatchFollowUpActionsFinished()
       await renderResult.dispatch([selectComponents([targetPath], false)], false)
-      await domFinished
       await dispatchDone
     })
 
@@ -213,10 +209,8 @@ describe('inspector tests with real metadata', () => {
     const targetPath = EP.appendNewElementPath(TestScenePath, ['aaa', 'bbb'])
 
     await act(async () => {
-      const domFinished = renderResult.getDomReportDispatched()
-      const dispatchDone = renderResult.getDispatchFollowUpactionsFinished()
+      const dispatchDone = renderResult.getDispatchFollowUpActionsFinished()
       await renderResult.dispatch([selectComponents([targetPath], false)], false)
-      await domFinished
       await dispatchDone
     })
 
@@ -307,10 +301,8 @@ describe('inspector tests with real metadata', () => {
     const targetPath = EP.appendNewElementPath(TestScenePath, ['aaa', 'bbb'])
 
     await act(async () => {
-      const domFinished = renderResult.getDomReportDispatched()
-      const dispatchDone = renderResult.getDispatchFollowUpactionsFinished()
+      const dispatchDone = renderResult.getDispatchFollowUpActionsFinished()
       await renderResult.dispatch([selectComponents([targetPath], false)], false)
-      await domFinished
       await dispatchDone
     })
 
@@ -399,13 +391,11 @@ describe('inspector tests with real metadata', () => {
     )
 
     await act(async () => {
-      const domFinished = renderResult.getDomReportDispatched()
-      const dispatchDone = renderResult.getDispatchFollowUpactionsFinished()
+      const dispatchDone = renderResult.getDispatchFollowUpActionsFinished()
       await renderResult.dispatch(
         [selectComponents([EP.appendNewElementPath(TestScenePath, ['aaa', 'bbb'])], false)],
         false,
       )
-      await domFinished
       await dispatchDone
     })
 
@@ -473,10 +463,8 @@ describe('inspector tests with real metadata', () => {
     const targetPath = EP.appendNewElementPath(TestScenePath, ['aaa', 'bbb'])
 
     await act(async () => {
-      const domFinished = renderResult.getDomReportDispatched()
-      const dispatchDone = renderResult.getDispatchFollowUpactionsFinished()
+      const dispatchDone = renderResult.getDispatchFollowUpActionsFinished()
       await renderResult.dispatch([selectComponents([targetPath], false)], false)
-      await domFinished
       await dispatchDone
     })
 
@@ -562,10 +550,8 @@ describe('inspector tests with real metadata', () => {
     const targetPath = EP.appendNewElementPath(TestScenePath, ['aaa', 'bbb'])
 
     await act(async () => {
-      const domFinished = renderResult.getDomReportDispatched()
-      const dispatchDone = renderResult.getDispatchFollowUpactionsFinished()
+      const dispatchDone = renderResult.getDispatchFollowUpActionsFinished()
       await renderResult.dispatch([selectComponents([targetPath], false)], false)
-      await domFinished
       await dispatchDone
     })
     const metadata = renderResult.getEditorState().editor.jsxMetadata[EP.toString(targetPath)]
@@ -690,13 +676,11 @@ describe('inspector tests with real metadata', () => {
     )
 
     await act(async () => {
-      const domFinished = renderResult.getDomReportDispatched()
-      const dispatchDone = renderResult.getDispatchFollowUpactionsFinished()
+      const dispatchDone = renderResult.getDispatchFollowUpActionsFinished()
       await renderResult.dispatch(
         [selectComponents([EP.appendNewElementPath(TestScenePath, ['aaa', 'bbb'])], false)],
         false,
       )
-      await domFinished
       await dispatchDone
     })
 
@@ -792,13 +776,11 @@ describe('inspector tests with real metadata', () => {
     )
 
     await act(async () => {
-      const domFinished = renderResult.getDomReportDispatched()
-      const dispatchDone = renderResult.getDispatchFollowUpactionsFinished()
+      const dispatchDone = renderResult.getDispatchFollowUpActionsFinished()
       await renderResult.dispatch(
         [selectComponents([EP.appendNewElementPath(TestScenePath, ['aaa', 'bbb'])], false)],
         false,
       )
-      await domFinished
       await dispatchDone
     })
 
@@ -893,13 +875,11 @@ describe('inspector tests with real metadata', () => {
     )
 
     await act(async () => {
-      const domFinished = renderResult.getDomReportDispatched()
-      const dispatchDone = renderResult.getDispatchFollowUpactionsFinished()
+      const dispatchDone = renderResult.getDispatchFollowUpActionsFinished()
       await renderResult.dispatch(
         [selectComponents([EP.appendNewElementPath(TestScenePath, ['aaa', 'bbb'])], false)],
         false,
       )
-      await domFinished
       await dispatchDone
     })
 
@@ -994,13 +974,11 @@ describe('inspector tests with real metadata', () => {
     )
 
     await act(async () => {
-      const domFinished = renderResult.getDomReportDispatched()
-      const dispatchDone = renderResult.getDispatchFollowUpactionsFinished()
+      const dispatchDone = renderResult.getDispatchFollowUpActionsFinished()
       await renderResult.dispatch(
         [selectComponents([EP.appendNewElementPath(TestScenePath, ['aaa', 'bbb'])], false)],
         false,
       )
-      await domFinished
       await dispatchDone
     })
 
@@ -1128,10 +1106,8 @@ describe('inspector tests with real metadata', () => {
     const targetPath = EP.appendNewElementPath(TestScenePath, ['aaa', 'bbb'])
 
     await act(async () => {
-      const domFinished = renderResult.getDomReportDispatched()
-      const dispatchDone = renderResult.getDispatchFollowUpactionsFinished()
+      const dispatchDone = renderResult.getDispatchFollowUpActionsFinished()
       await renderResult.dispatch([selectComponents([targetPath], false)], false)
-      await domFinished
       await dispatchDone
     })
 
@@ -1239,10 +1215,8 @@ describe('inspector tests with real metadata', () => {
     const targetPath = EP.appendNewElementPath(TestScenePath, ['aaa', 'bbb'])
 
     await act(async () => {
-      const domFinished = renderResult.getDomReportDispatched()
-      const dispatchDone = renderResult.getDispatchFollowUpactionsFinished()
+      const dispatchDone = renderResult.getDispatchFollowUpActionsFinished()
       await renderResult.dispatch([selectComponents([targetPath], false)], false)
-      await domFinished
       await dispatchDone
     })
 
@@ -1382,13 +1356,11 @@ describe('inspector tests with real metadata', () => {
     )
 
     await act(async () => {
-      const domFinished = renderResult.getDomReportDispatched()
-      const dispatchDone = renderResult.getDispatchFollowUpactionsFinished()
+      const dispatchDone = renderResult.getDispatchFollowUpActionsFinished()
       await renderResult.dispatch(
         [selectComponents([EP.appendNewElementPath(TestScenePath, ['aaa', 'bbb'])], false)],
         false,
       )
-      await domFinished
       await dispatchDone
     })
 
@@ -1509,10 +1481,8 @@ describe('inspector tests with real metadata', () => {
     const targetPath = EP.appendNewElementPath(TestScenePath, ['aaa', 'bbb'])
 
     await act(async () => {
-      const domFinished = renderResult.getDomReportDispatched()
-      const dispatchDone = renderResult.getDispatchFollowUpactionsFinished()
+      const dispatchDone = renderResult.getDispatchFollowUpActionsFinished()
       await renderResult.dispatch([selectComponents([targetPath], false)], false)
-      await domFinished
       await dispatchDone
     })
 
@@ -1624,10 +1594,8 @@ describe('inspector tests with real metadata', () => {
     const targetPath = EP.appendNewElementPath(TestScenePath, ['aaa', 'bbb'])
 
     await act(async () => {
-      const domFinished = renderResult.getDomReportDispatched()
-      const dispatchDone = renderResult.getDispatchFollowUpactionsFinished()
+      const dispatchDone = renderResult.getDispatchFollowUpActionsFinished()
       await renderResult.dispatch([selectComponents([targetPath], false)], false)
-      await domFinished
       await dispatchDone
     })
 
@@ -1735,10 +1703,8 @@ describe('inspector tests with real metadata', () => {
     const targetPath = EP.appendNewElementPath(TestScenePath, ['aaa', 'bbb'])
 
     await act(async () => {
-      const domFinished = renderResult.getDomReportDispatched()
-      const dispatchDone = renderResult.getDispatchFollowUpactionsFinished()
+      const dispatchDone = renderResult.getDispatchFollowUpActionsFinished()
       await renderResult.dispatch([selectComponents([targetPath], false)], false)
-      await domFinished
       await dispatchDone
     })
 
@@ -1824,10 +1790,8 @@ describe('inspector tests with real metadata', () => {
     const targetPath = EP.appendNewElementPath(TestScenePath, ['aaa', 'bbb'])
 
     await act(async () => {
-      const domFinished = renderResult.getDomReportDispatched()
-      const dispatchDone = renderResult.getDispatchFollowUpactionsFinished()
+      const dispatchDone = renderResult.getDispatchFollowUpActionsFinished()
       await renderResult.dispatch([selectComponents([targetPath], false)], false)
-      await domFinished
       await dispatchDone
     })
 
@@ -1862,10 +1826,8 @@ describe('inspector tests with real metadata', () => {
     const targetPath = EP.appendNewElementPath(TestScenePath, ['aaa', 'bbb'])
 
     await act(async () => {
-      const domFinished = renderResult.getDomReportDispatched()
-      const dispatchDone = renderResult.getDispatchFollowUpactionsFinished()
+      const dispatchDone = renderResult.getDispatchFollowUpActionsFinished()
       await renderResult.dispatch([selectComponents([targetPath], false)], false)
-      await domFinished
       await dispatchDone
     })
 
@@ -1930,10 +1892,8 @@ describe('inspector tests with real metadata', () => {
     const targetPath = EP.appendNewElementPath(TestScenePath, ['aaa', 'bbb'])
 
     await act(async () => {
-      const domFinished = renderResult.getDomReportDispatched()
-      const dispatchDone = renderResult.getDispatchFollowUpactionsFinished()
+      const dispatchDone = renderResult.getDispatchFollowUpActionsFinished()
       await renderResult.dispatch([selectComponents([targetPath], false)], false)
-      await domFinished
       await dispatchDone
     })
 
@@ -2024,10 +1984,8 @@ describe('inspector tests with real metadata', () => {
     const targetPath = EP.appendNewElementPath(TestScenePath, ['app-outer-div', 'app-inner-div'])
 
     await act(async () => {
-      const domFinished = renderResult.getDomReportDispatched()
-      const dispatchDone = renderResult.getDispatchFollowUpactionsFinished()
+      const dispatchDone = renderResult.getDispatchFollowUpActionsFinished()
       await renderResult.dispatch([selectComponents([targetPath], false)], false)
-      await domFinished
       await dispatchDone
     })
 

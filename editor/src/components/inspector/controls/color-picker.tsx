@@ -31,7 +31,7 @@ export const GradientStopCaratSize = 5
 export const StopsPadding = GradientStopSize / 2 + inspectorEdgePadding
 export const GradientPickerWidth = colorPickerWidth - StopsPadding * 2
 
-export const ColorPicker: React.FunctionComponent<ColorPickerProps> = ({
+export const ColorPicker: React.FunctionComponent<React.PropsWithChildren<ColorPickerProps>> = ({
   closePopup,
   portalTarget,
   ...props
