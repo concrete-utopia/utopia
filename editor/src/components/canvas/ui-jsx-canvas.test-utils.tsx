@@ -1,12 +1,6 @@
 const Prettier = jest != null ? require('prettier') : require('prettier/standalone') // TODO split these files, standalone prettier is not working in unit tests
-import React from 'react'
-import { applyUIDMonkeyPatch } from '../../utils/canvas-react-utils'
-applyUIDMonkeyPatch()
-import * as ReactDOM from 'react-dom'
+import { PatchedReact as React } from '../../utils/canvas-react-utils'
 import * as ReactDOMServer from 'react-dom/server'
-import * as UtopiaAPI from 'utopia-api/core'
-import * as UUIUI from '../../uuiui'
-import * as EmotionReact from '@emotion/react'
 
 import { FancyError, processErrorWithSourceMap } from '../../core/shared/code-exec-utils'
 import { Either, isRight, left, right } from '../../core/shared/either'

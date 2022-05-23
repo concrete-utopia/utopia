@@ -66,6 +66,7 @@ import { MultiSelectOutlineControl } from './select-mode/simple-outline-control'
 import { GuidelineControls } from './guideline-controls'
 import { showContextMenu } from '../../editor/actions/action-creators'
 import { HTML5Backend } from 'react-dnd-html5-backend'
+import { OutlineHighlightControl } from './select-mode/outline-highlight-control'
 
 export const CanvasControlsContainerID = 'new-canvas-controls-container'
 
@@ -439,6 +440,7 @@ const NewCanvasControlsInner = (props: NewCanvasControlsInnerProps) => {
         <MultiSelectOutlineControl localSelectedElements={localSelectedViews} />,
       )}
       {when(isFeatureEnabled('Canvas Strategies'), <GuidelineControls />)}
+      <OutlineHighlightControl />
       {when(
         isFeatureEnabled('Canvas Strategies'),
         <>{strategyControls.map((c) => React.createElement(c.control, { key: c.key }))}</>,

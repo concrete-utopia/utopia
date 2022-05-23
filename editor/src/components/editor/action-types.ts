@@ -72,6 +72,22 @@ export interface ProjectListing {
   thumbnail: string
 }
 
+export function projectListing(
+  id: string,
+  title: string,
+  createdAt: string,
+  modifiedAt: string,
+  thumbnail: string,
+): ProjectListing {
+  return {
+    id: id,
+    title: title,
+    createdAt: createdAt,
+    modifiedAt: modifiedAt,
+    thumbnail: thumbnail,
+  }
+}
+
 export type EditorModel = EditorState
 
 export type MoveRowBefore = {
@@ -916,6 +932,11 @@ export interface ForceParseFile {
   filePath: string
 }
 
+export interface RunEscapeHatch {
+  action: 'RUN_ESCAPE_HATCH'
+  targets: Array<ElementPath>
+}
+
 export type EditorAction =
   | ClearSelection
   | InsertScene
@@ -1068,6 +1089,7 @@ export type EditorAction =
   | HideVSCodeLoadingScreen
   | SetIndexedDBFailed
   | ForceParseFile
+  | RunEscapeHatch
 
 export type DispatchPriority =
   | 'everyone'

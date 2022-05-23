@@ -12,16 +12,18 @@ try {
   disableStoredStateforTests()
 }
 
-import React from 'react'
+import RealReact from 'react'
 
 ///// IMPORTANT NOTE - THIS MUST BE BELOW THE REACT IMPORT AND ABOVE ALL OTHER IMPORTS
-const realCreateElement = React.createElement
+const realCreateElement = RealReact.createElement
 let renderCount = 0
 const monkeyCreateElement = (...params: any[]) => {
   renderCount++
   return (realCreateElement as any)(...params)
 }
-;(React as any).createElement = monkeyCreateElement
+;(RealReact as any).createElement = monkeyCreateElement
+
+import { PatchedReact as React } from '../../utils/canvas-react-utils'
 
 try {
   jest.setTimeout(10000) // in milliseconds
@@ -58,7 +60,7 @@ import Utils from '../../utils/utils'
 import { DispatchPriority, EditorAction, notLoggedIn } from '../editor/action-types'
 import { load } from '../editor/actions/actions'
 import * as History from '../editor/history'
-import { editorDispatch } from '../editor/store/dispatch'
+import { editorDispatch, resetDispatchGlobals } from '../editor/store/dispatch'
 import {
   createEditorState,
   deriveState,
@@ -79,7 +81,11 @@ import { printCode, printCodeOptions } from '../../core/workers/parser-printer/p
 import { contentsToTree, getContentsTreeFileFromString, ProjectContentTreeRoot } from '../assets'
 import { testStaticElementPath } from '../../core/shared/element-path.test-utils'
 import { createFakeMetadataForParseSuccess } from '../../utils/utils.test-utils'
-import { setPanelVisibility, switchEditorMode } from '../editor/actions/action-creators'
+import {
+  saveDOMReport,
+  setPanelVisibility,
+  switchEditorMode,
+} from '../editor/actions/action-creators'
 import { EditorModes } from '../editor/editor-modes'
 import { useUpdateOnRuntimeErrors } from '../../core/shared/runtime-report-logs'
 import { clearListOfEvaluatedFiles, RuntimeErrorInfo } from '../../core/shared/code-exec-utils'
@@ -91,6 +97,13 @@ import {
 } from '../../core/es-modules/package-manager/built-in-dependencies-list'
 import { clearAllRegisteredControls } from './canvas-globals'
 import { createEmptyStrategyState } from './canvas-strategies/interaction-state'
+import {
+  createDomWalkerMutableState,
+  invalidateDomWalkerIfNecessary,
+  runDomWalker,
+} from './dom-walker'
+import { flushSync } from 'react-dom'
+import { shouldInspectorUpdate } from '../inspector/inspector'
 
 // eslint-disable-next-line no-unused-expressions
 typeof process !== 'undefined' &&
@@ -146,8 +159,7 @@ export async function renderTestEditorWithModel(
   mockBuiltInDependencies?: BuiltInDependencies,
 ): Promise<{
   dispatch: (actions: ReadonlyArray<EditorAction>, waitForDOMReport: boolean) => Promise<void>
-  getDomReportDispatched: () => Promise<void>
-  getDispatchFollowUpactionsFinished: () => Promise<void>
+  getDispatchFollowUpActionsFinished: () => Promise<void>
   getEditorState: () => EditorStorePatched
   renderedDOM: RenderResult
   getNumberOfCommits: () => number
@@ -163,25 +175,17 @@ export async function renderTestEditorWithModel(
 
   const history = History.init(emptyEditorState, derivedState)
 
-  let domReportDispatched = Utils.defer<void>()
-  let dispatchFollowUpActionsFinished = Utils.defer<void>()
-
-  function resetPromises() {
-    domReportDispatched = Utils.defer()
-    dispatchFollowUpActionsFinished = Utils.defer()
+  let editorDispatchPromises: Array<Promise<void>> = []
+  async function getDispatchFollowUpActionsFinished(): Promise<void> {
+    return Promise.all(editorDispatchPromises).then(NO_OP)
   }
-
-  resetPromises()
 
   let workingEditorState: EditorStoreFull
-
-  function updateEditor() {
-    storeHook.setState(patchedStoreFromFullStore(workingEditorState))
-  }
 
   const spyCollector = emptyUiJsxCanvasContextData()
 
   // Reset canvas globals
+  resetDispatchGlobals()
   clearAllRegisteredControls()
   clearListOfEvaluatedFiles()
 
@@ -189,28 +193,63 @@ export async function renderTestEditorWithModel(
     actions: ReadonlyArray<EditorAction>,
     priority?: DispatchPriority, // priority is not used in the editorDispatch now, but we didn't delete this param yet
     waitForDispatchEntireUpdate = false,
-    waitForADomReport = false,
   ) => {
     recordedActions.push(...actions)
     const result = editorDispatch(asyncTestDispatch, actions, workingEditorState, spyCollector)
-    result.entireUpdateFinished.then(() => dispatchFollowUpActionsFinished.resolve())
+    editorDispatchPromises.push(result.entireUpdateFinished)
+    invalidateDomWalkerIfNecessary(
+      domWalkerMutableState,
+      workingEditorState.patchedEditor,
+      result.patchedEditor,
+    )
+
     workingEditorState = result
-    if (actions[0]?.action === 'SAVE_DOM_REPORT') {
-      domReportDispatched.resolve()
-    }
     if (waitForDispatchEntireUpdate) {
       await Utils.timeLimitPromise(
-        dispatchFollowUpActionsFinished,
+        getDispatchFollowUpActionsFinished(),
         2000,
         'Follow up actions took too long.',
       )
     }
-    updateEditor()
 
-    if (waitForADomReport) {
-      await Utils.timeLimitPromise(domReportDispatched, 2000, 'DOM report took too long.')
-      resetPromises() // I _think_ this is safe for concurrency, so long as all the test callsites `await` the dispatch
+    flushSync(() => {
+      canvasStoreHook.setState(patchedStoreFromFullStore(workingEditorState))
+    })
+
+    // run dom walker
+
+    const domWalkerResult = runDomWalker({
+      domWalkerMutableState: domWalkerMutableState,
+      selectedViews: workingEditorState.patchedEditor.selectedViews,
+      scale: workingEditorState.patchedEditor.canvas.scale,
+      additionalElementsToUpdate:
+        workingEditorState.patchedEditor.canvas.domWalkerAdditionalElementsToUpdate,
+      rootMetadataInStateRef: { current: workingEditorState.patchedEditor.domMetadata },
+    })
+
+    if (domWalkerResult != null) {
+      const saveDomReportAction = saveDOMReport(
+        domWalkerResult.metadata,
+        domWalkerResult.cachedPaths,
+      )
+      recordedActions.push(saveDomReportAction)
+      const editorWithNewMetadata = editorDispatch(
+        asyncTestDispatch,
+        [saveDomReportAction],
+        workingEditorState,
+        spyCollector,
+      )
+      workingEditorState = editorWithNewMetadata
     }
+
+    // update state with new metadata
+
+    flushSync(() => {
+      storeHook.setState(patchedStoreFromFullStore(workingEditorState))
+      if (shouldInspectorUpdate(workingEditorState.strategyState)) {
+        inspectorStoreHook.setState(patchedStoreFromFullStore(workingEditorState))
+      }
+    })
   }
 
   const workers = new UtopiaTsWorkersImplementation(
@@ -241,6 +280,22 @@ export async function renderTestEditorWithModel(
     builtInDependencies: builtInDependencies,
   }
 
+  const canvasStoreHook = create<
+    EditorStorePatched,
+    SetState<EditorStorePatched>,
+    GetState<EditorStorePatched>,
+    Mutate<StoreApi<EditorStorePatched>, [['zustand/subscribeWithSelector', never]]>
+  >(subscribeWithSelector((set) => patchedStoreFromFullStore(initialEditorStore)))
+
+  const domWalkerMutableState = createDomWalkerMutableState(canvasStoreHook)
+
+  const inspectorStoreHook = create<
+    EditorStorePatched,
+    SetState<EditorStorePatched>,
+    GetState<EditorStorePatched>,
+    Mutate<StoreApi<EditorStorePatched>, [['zustand/subscribeWithSelector', never]]>
+  >(subscribeWithSelector((set) => patchedStoreFromFullStore(initialEditorStore)))
+
   const storeHook = create<
     EditorStorePatched,
     SetState<EditorStorePatched>,
@@ -262,7 +317,14 @@ export async function renderTestEditorWithModel(
       }}
     >
       <FailJestOnCanvasError />
-      <EditorRoot api={storeHook} useStore={storeHook} spyCollector={spyCollector} />
+      <EditorRoot
+        api={storeHook}
+        useStore={storeHook}
+        canvasStore={canvasStoreHook}
+        spyCollector={spyCollector}
+        inspectorStore={inspectorStoreHook}
+        domWalkerMutableState={domWalkerMutableState}
+      />
     </React.Profiler>,
     { legacyRoot: true },
   )
@@ -272,7 +334,7 @@ export async function renderTestEditorWithModel(
       load(
         async (actions) => {
           try {
-            await asyncTestDispatch(actions, undefined, true, true)
+            await asyncTestDispatch(actions, undefined, true)
             resolve()
           } catch (e) {
             reject(e)
@@ -292,22 +354,16 @@ export async function renderTestEditorWithModel(
       [switchEditorMode(EditorModes.selectMode()), setPanelVisibility('codeEditor', false)],
       undefined,
       true,
-      false,
     )
   })
-
-  if (awaitFirstDomReport === 'await-first-dom-report') {
-    await domReportDispatched
-  }
 
   return {
     dispatch: async (actions: ReadonlyArray<EditorAction>, waitForDOMReport: boolean) => {
       return await act(async () => {
-        await asyncTestDispatch(actions, 'everyone', true, waitForDOMReport)
+        await asyncTestDispatch(actions, 'everyone', true)
       })
     },
-    getDomReportDispatched: () => domReportDispatched,
-    getDispatchFollowUpactionsFinished: () => dispatchFollowUpActionsFinished,
+    getDispatchFollowUpActionsFinished: getDispatchFollowUpActionsFinished,
     getEditorState: () => storeHook.getState(),
     renderedDOM: result,
     getNumberOfCommits: () => numberOfCommits,

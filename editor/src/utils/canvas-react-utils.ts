@@ -18,16 +18,6 @@ const contextSymbol = Symbol.for('react.context')
 const memoSymbol = Symbol.for('react.memo')
 const forwardRefSymbol = Symbol.for('react.forward_ref')
 
-let uidMonkeyPatchApplied: boolean = false
-
-export function applyUIDMonkeyPatch(): void {
-  if (!uidMonkeyPatchApplied) {
-    uidMonkeyPatchApplied = true
-    ;(React as any).createElement = patchedCreateReactElement
-    ;(React as any).monkeyPatched = true
-  }
-}
-
 function getDisplayName(type: any): string {
   // taken from https://github.com/facebook/react/blob/7e405d458d6481fb1c04dfca6afab0651e6f67cd/packages/react/src/ReactElement.js#L415
   if (typeof type === 'function') {
@@ -53,9 +43,9 @@ function fragmentOrProviderOrContext(type: any): boolean {
     type == React.Fragment ||
     type?.$$typeof == fragmentSymbol ||
     type?.$$typeof == providerSymbol ||
-    type?.$$typeof == contextSymbol //||
-    // || type?.$$typeof == memoSymbol //||
-    // type?.$$typeof == forwardRefSymbol
+    type?.$$typeof == contextSymbol ||
+    type?.$$typeof == memoSymbol
+    // || type?.$$typeof == forwardRefSymbol
   )
 }
 
@@ -502,7 +492,7 @@ function mangleElementType(type: any): any {
   }
 }
 
-function patchedCreateReactElement(type: any, props: any, ...children: any): any {
+export function patchedCreateReactElement(type: any, props: any, ...children: any): any {
   // createElement runs from the inside out, meaning it will run for child elements before parents, as
   // opposed to the actual rendering of the created elements, which will happen in the correct order.
   // Because of that, in order to pass down paths and UIDs we mangle the component definitions so that
@@ -551,4 +541,9 @@ export function isHooksErrorMessage(message: string): boolean {
       'Rendered fewer hooks than expected. This may be caused by an accidental early return statement.' ||
     message === 'Should have a queue. This is likely a bug in React. Please file an issue.'
   )
+}
+
+export const PatchedReact: typeof React = {
+  ...React,
+  createElement: patchedCreateReactElement,
 }

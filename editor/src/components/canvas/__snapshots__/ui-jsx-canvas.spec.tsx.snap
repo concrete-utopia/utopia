@@ -41297,7 +41297,6 @@ exports[`UiJsxCanvas render the canvas supports emotion CSS prop 1`] = `
         width: 400px;
         height: 400px;
       \\"
-      data-uid=\\"scene-aaa\\"
     >
       <div
         data-uid=\\"ba3\\"

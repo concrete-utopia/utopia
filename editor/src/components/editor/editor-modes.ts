@@ -42,7 +42,7 @@ export function elementInsertionSubject(
   }
 }
 
-export function SceneInsertionSubject(): SceneInsertionSubject {
+export function sceneInsertionSubject(): SceneInsertionSubject {
   return {
     type: 'Scene',
   }
@@ -80,10 +80,22 @@ export function insertionSubjectIsDragAndDrop(
   return insertionSubject.type === 'DragAndDrop'
 }
 
-type InsertionParent = null | {
+export interface TargetedInsertionParent {
   target: ElementPath
   staticTarget: StaticElementPath
 }
+
+export function targetedInsertionParent(
+  target: ElementPath,
+  staticTarget: StaticElementPath,
+): TargetedInsertionParent {
+  return {
+    target: target,
+    staticTarget: staticTarget,
+  }
+}
+
+export type InsertionParent = null | TargetedInsertionParent
 
 export function insertionParent(
   target: ElementPath | null,
@@ -99,22 +111,22 @@ export function insertionParent(
   }
 }
 
-export type InsertMode = {
+export interface InsertMode {
   type: 'insert'
   subject: InsertionSubject
   insertionStarted: boolean
 }
 
-export type SelectMode = {
+export interface SelectMode {
   type: 'select'
   controlId: string | null
 }
 
-export type SelectLiteMode = {
+export interface SelectLiteMode {
   type: 'select-lite'
 }
 
-export type LiveCanvasMode = {
+export interface LiveCanvasMode {
   type: 'live'
   controlId: string | null
 }

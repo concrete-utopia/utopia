@@ -126,7 +126,7 @@ const navigatorItemWrapperSelectorFactory = (elementPath: ElementPath) =>
   )
 
 const nullableJSXElementNameKeepDeepEquality = nullableDeepEquality(
-  JSXElementNameKeepDeepEqualityCall(),
+  JSXElementNameKeepDeepEqualityCall,
 )
 
 export const NavigatorItemWrapper: React.FunctionComponent<

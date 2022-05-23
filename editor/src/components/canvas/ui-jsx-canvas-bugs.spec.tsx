@@ -129,7 +129,7 @@ export var storyboard = (
         key.startsWith('__') ? '[REDACTED]' : value,
       ),
     ).toMatchInlineSnapshot(
-      `"\\"<div data-uid=\\\\\\"blue\\\\\\" data-path=\\\\\\"sb/scene/app:inner-parent/inner-child/blue\\\\\\"></div><div data-uid=\\\\\\"red-root\\\\\\"></div>\\""`,
+      `"\\"<div data-uid=\\\\\\"blue\\\\\\" data-path=\\\\\\"sb/scene/app:inner-parent/inner-child/blue\\\\\\"></div><div data-uid=\\\\\\"red-root\\\\\\" data-path=\\\\\\"sb/scene/app:inner-parent/inner-child/red:red-root\\\\\\"></div>\\""`,
     )
   })
 })

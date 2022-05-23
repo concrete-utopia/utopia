@@ -468,7 +468,9 @@ export function useHighlightCallbacks(
     if (active && WindowMousePositionRaw != null) {
       // this useEffect will re-calculate (and update) the highlighted views if the user presses or releases 'cmd' without moving the mouse,
       // or if the user enters a new mode (the `active` flag will change for the modes), this is important when entering insert mode
-      calculateHighlightedViews(WindowMousePositionRaw, cmdPressed)
+      setTimeout(() => {
+        calculateHighlightedViews(WindowMousePositionRaw!, cmdPressed)
+      }, 0)
     }
   }, [calculateHighlightedViews, active, cmdPressed])
 
