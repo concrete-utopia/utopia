@@ -353,7 +353,11 @@ export function runDomWalker({
     )
     if (LogDomWalkerPerformance) {
       performance.mark('DOM_WALKER_END')
-      performance.measure('DOM WALKER', 'DOM_WALKER_START', 'DOM_WALKER_END')
+      performance.measure(
+        `DOM WALKER - cached paths: [${cachedPaths.map(EP.toString).join(', ')}]`,
+        'DOM_WALKER_START',
+        'DOM_WALKER_END',
+      )
     }
     domWalkerMutableState.initComplete = true // Mutation!
 
