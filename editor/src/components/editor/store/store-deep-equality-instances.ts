@@ -1241,36 +1241,10 @@ export const StyleAttributeMetadataKeepDeepEquality: KeepDeepEqualityCall<StyleA
   objectDeepEquality(undefinableDeepEquality(StyleAttributeMetadataEntryKeepDeepEquality))
 
 export const ElementInstanceMetadataPropsKeepDeepEquality: KeepDeepEqualityCall<any> =
-  createCallWithShallowEquals()
+  createCallWithTripleEquals()
 
 export const ElementInstanceMetadataKeepDeepEquality: KeepDeepEqualityCall<ElementInstanceMetadata> =
-  combine12EqualityCalls(
-    (metadata) => metadata.elementPath,
-    ElementPathKeepDeepEquality,
-    (metadata) => metadata.element,
-    EitherKeepDeepEquality(createCallWithTripleEquals(), JSXElementChildKeepDeepEquality()),
-    (metadata) => metadata.props,
-    objectDeepEquality(ElementInstanceMetadataPropsKeepDeepEquality),
-    (metadata) => metadata.globalFrame,
-    nullableDeepEquality(CanvasRectangleKeepDeepEquality),
-    (metadata) => metadata.localFrame,
-    nullableDeepEquality(LocalRectangleKeepDeepEquality),
-    (metadata) => metadata.componentInstance,
-    createCallWithTripleEquals(),
-    (metadata) => metadata.isEmotionOrStyledComponent,
-    createCallWithTripleEquals(),
-    (metadata) => metadata.specialSizeMeasurements,
-    SpecialSizeMeasurementsKeepDeepEquality(),
-    (metadata) => metadata.computedStyle,
-    nullableDeepEquality(objectDeepEquality(createCallWithTripleEquals())),
-    (metadata) => metadata.attributeMetadatada,
-    nullableDeepEquality(StyleAttributeMetadataKeepDeepEquality),
-    (metadata) => metadata.label,
-    nullableDeepEquality(createCallWithTripleEquals()),
-    (metadata) => metadata.importInfo,
-    nullableDeepEquality(ImportInfoKeepDeepEquality),
-    elementInstanceMetadata,
-  )
+  createCallWithTripleEquals()
 
 export const ESCodeFileKeepDeepEquality: KeepDeepEqualityCall<ESCodeFile> = combine3EqualityCalls(
   (codeFile) => codeFile.fileContents,
@@ -1313,11 +1287,8 @@ export const NodeModuleFileKeepDeepEquality: KeepDeepEqualityCall<NodeModuleFile
   return keepDeepEqualityResult(newValue, false)
 }
 
-export const ElementInstanceMetadataMapKeepDeepEquality: KeepDeepEqualityCall<
-  ElementInstanceMetadataMap
-> = (oldValue, newValue) => {
-  return keepDeepEqualityResult(newValue, false)
-}
+export const ElementInstanceMetadataMapKeepDeepEquality: KeepDeepEqualityCall<ElementInstanceMetadataMap> =
+  createCallWithTripleEquals()
 
 export const ErrorMessageKeepDeepEquality: KeepDeepEqualityCall<ErrorMessage> =
   combine12EqualityCalls(
@@ -2906,10 +2877,7 @@ export const EditorStateKeepDeepEquality: KeepDeepEqualityCall<EditorState> = (
     oldValue.spyMetadata,
     newValue.spyMetadata,
   )
-  const domMetadataResult = arrayDeepEquality(ElementInstanceMetadataKeepDeepEquality)(
-    oldValue.domMetadata,
-    newValue.domMetadata,
-  )
+  const domMetadataResult = createCallWithTripleEquals()
   const jsxMetadataResult = ElementInstanceMetadataMapKeepDeepEquality(
     oldValue.jsxMetadata,
     newValue.jsxMetadata,
