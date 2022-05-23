@@ -209,7 +209,13 @@ import type {
   RemoveFromNodeModulesContents,
   RunEscapeHatch,
 } from '../action-types'
-import { EditorModes, elementInsertionSubject, Mode, SceneInsertionSubject } from '../editor-modes'
+import {
+  EditorModes,
+  elementInsertionSubject,
+  Mode,
+  sceneInsertionSubject,
+  SceneInsertionSubject,
+} from '../editor-modes'
 import type {
   DuplicationState,
   ErrorMessages,
@@ -434,7 +440,7 @@ export function enableInsertModeForJSXElement(
 }
 
 export function enableInsertModeForScene(name: JSXElementName | 'scene'): SwitchEditorMode {
-  return switchEditorMode(EditorModes.insertMode(false, SceneInsertionSubject()))
+  return switchEditorMode(EditorModes.insertMode(false, sceneInsertionSubject()))
 }
 
 export function addToast(toastContent: Notice): AddToast {

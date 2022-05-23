@@ -197,6 +197,18 @@ export interface SingleFileBuildResult {
   errors: Array<ErrorMessage>
 }
 
+export function singleFileBuildResult(
+  transpiledCode: string | null,
+  sourceMap: RawSourceMap | null,
+  errors: Array<ErrorMessage>,
+): SingleFileBuildResult {
+  return {
+    transpiledCode: transpiledCode,
+    sourceMap: sourceMap,
+    errors: errors,
+  }
+}
+
 export interface MultiFileBuildResult {
   [filename: string]: SingleFileBuildResult
 }
@@ -209,15 +221,64 @@ export interface ExportsInfo {
   exportTypes: { [name: string]: ExportType }
 }
 
-export interface DetailedTypeInfo {
-  name: string
-  memberInfo: { type: string; members: { [member: string]: string } }
+export function exportsInfo(
+  filename: string,
+  code: string,
+  exportTypes: { [name: string]: ExportType },
+): ExportsInfo {
+  return {
+    filename: filename,
+    code: code,
+    exportTypes: exportTypes,
+  }
 }
 
-export type ExportType = {
+export interface DetailedTypeInfoMemberInfo {
+  type: string
+  members: { [member: string]: string }
+}
+
+export function detailedTypeInfoMemberInfo(
+  type: string,
+  members: { [member: string]: string },
+): DetailedTypeInfoMemberInfo {
+  return {
+    type: type,
+    members: members,
+  }
+}
+
+export interface DetailedTypeInfo {
+  name: string
+  memberInfo: DetailedTypeInfoMemberInfo
+}
+
+export function detailedTypeInfo(
+  name: string,
+  memberInfo: DetailedTypeInfoMemberInfo,
+): DetailedTypeInfo {
+  return {
+    name: name,
+    memberInfo: memberInfo,
+  }
+}
+
+export interface ExportType {
   type: string
   functionInfo: Array<DetailedTypeInfo> | null
   reactClassInfo: DetailedTypeInfo | null
+}
+
+export function exportType(
+  type: string,
+  functionInfo: Array<DetailedTypeInfo> | null,
+  reactClassInfo: DetailedTypeInfo | null,
+): ExportType {
+  return {
+    type: type,
+    functionInfo: functionInfo,
+    reactClassInfo: reactClassInfo,
+  }
 }
 
 export interface BuildResultMessage {

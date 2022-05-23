@@ -83,7 +83,6 @@ import {
 } from './ui-jsx-canvas-renderer/ui-jsx-canvas-element-renderer-utils'
 import { ProjectContentTreeRoot, getContentsTreeFileFromString, walkContentsTree } from '../assets'
 import { createExecutionScope } from './ui-jsx-canvas-renderer/ui-jsx-canvas-execution-scope'
-import { applyUIDMonkeyPatch } from '../../utils/canvas-react-utils'
 import { getParseSuccessOrTransientForFilePath, getValidElementPaths } from './canvas-utils'
 import { fastForEach, NO_OP } from '../../core/shared/utils'
 import { useTwind } from '../../core/tailwind/tailwind'
@@ -97,8 +96,6 @@ import {
 } from '../../core/shared/code-exec-utils'
 import { emptySet } from '../../core/shared/set-utils'
 import { forceNotNull } from '../../core/shared/optional-utils'
-
-applyUIDMonkeyPatch()
 
 const emptyFileBlobs: UIFileBase64Blobs = {}
 

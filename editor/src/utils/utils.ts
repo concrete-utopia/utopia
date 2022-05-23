@@ -150,23 +150,60 @@ export type FilteredFields<Base, T> = {
   [K in keyof Base]: Base[K] extends T ? K : never
 }[keyof Base]
 
-export type Front = {
+export interface Front {
   type: 'front'
 }
-export type Back = {
+
+export function front(): Front {
+  return {
+    type: 'front',
+  }
+}
+
+export interface Back {
   type: 'back'
 }
-export type Absolute = {
+
+export function back(): Back {
+  return {
+    type: 'back',
+  }
+}
+
+export interface Absolute {
   type: 'absolute'
   index: number
 }
-export type After = {
+
+export function absolute(index: number): Absolute {
+  return {
+    type: 'absolute',
+    index: index,
+  }
+}
+
+export interface After {
   type: 'after'
   index: number
 }
-export type Before = {
+
+export function after(index: number): After {
+  return {
+    type: 'after',
+    index: index,
+  }
+}
+
+export interface Before {
   type: 'before'
   index: number
+}
+
+export function before(index: number): Before {
+  return {
+    type: 'before',
+    index: index,
+  }
 }
 
 export type IndexPosition = Front | Back | Absolute | After | Before

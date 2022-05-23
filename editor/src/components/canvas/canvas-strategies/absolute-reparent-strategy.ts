@@ -90,7 +90,7 @@ export const absoluteReparentStrategy: CanvasStrategy = {
         customState: null,
       }
     } else {
-      return emptyStrategyApplicationResult
+      return moveCommands
     }
   },
 }

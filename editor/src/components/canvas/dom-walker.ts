@@ -38,6 +38,7 @@ import {
   parseCSSLength,
   CSSPosition,
   positionValues,
+  computedStyleKeys,
 } from '../inspector/common/css-utils'
 import { CanvasContainerProps, UiJsxCanvasCtxAtom } from './ui-jsx-canvas'
 import { camelCaseToDashed } from '../../core/shared/string-utils'
@@ -352,7 +353,11 @@ export function runDomWalker({
     )
     if (LogDomWalkerPerformance) {
       performance.mark('DOM_WALKER_END')
-      performance.measure('DOM WALKER', 'DOM_WALKER_START', 'DOM_WALKER_END')
+      performance.measure(
+        `DOM WALKER - cached paths: [${cachedPaths.map(EP.toString).join(', ')}]`,
+        'DOM_WALKER_START',
+        'DOM_WALKER_END',
+      )
     }
     domWalkerMutableState.initComplete = true // Mutation!
 
@@ -610,7 +615,7 @@ function getComputedStyle(
   let computedStyle: ComputedStyle = {}
   let attributeMetadata: StyleAttributeMetadata = {}
   if (elementStyle != null) {
-    Object.keys(elementStyle).forEach((key) => {
+    computedStyleKeys.forEach((key) => {
       // Accessing the value directly often doesn't work, and using `getPropertyValue` requires
       // using dashed case rather than camel case
       const caseCorrectedKey = camelCaseToDashed(key)

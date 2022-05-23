@@ -268,57 +268,6 @@ describe('SpecialSizeMeasurementsKeepDeepEquality', () => {
     }),
   }
 
-  const newSameValue: SpecialSizeMeasurements = {
-    offset: {
-      x: 10,
-      y: 20,
-    } as LocalPoint,
-    coordinateSystemBounds: canvasRectangle({
-      x: 10,
-      y: 20,
-      width: 100,
-      height: 200,
-    }),
-    immediateParentBounds: canvasRectangle({
-      x: 100,
-      y: 200,
-      width: 1000,
-      height: 2000,
-    }),
-    immediateParentProvidesLayout: false,
-    usesParentBounds: false,
-    parentLayoutSystem: 'flex',
-    layoutSystemForChildren: 'flex',
-    providesBoundsForChildren: true,
-    display: 'flex',
-    position: 'absolute',
-    margin: {
-      top: 1,
-      right: 2,
-      bottom: 3,
-      left: 4,
-    },
-    padding: {
-      top: 10,
-      right: 20,
-      bottom: 30,
-      left: 40,
-    },
-    naturalWidth: 100,
-    naturalHeight: 200,
-    clientWidth: 300,
-    clientHeight: 400,
-    parentFlexDirection: 'row',
-    flexDirection: 'column',
-    htmlElementName: 'div',
-    renderedChildrenCount: 10,
-    globalContentBox: canvasRectangle({
-      x: 20,
-      y: 40,
-      width: 60,
-      height: 80,
-    }),
-  }
   const newDifferentValue: SpecialSizeMeasurements = {
     offset: {
       x: 10,
@@ -376,11 +325,6 @@ describe('SpecialSizeMeasurementsKeepDeepEquality', () => {
     expect(result.value).toBe(oldValue)
     expect(result.areEqual).toEqual(true)
   })
-  it('same value returns the same reference', () => {
-    const result = SpecialSizeMeasurementsKeepDeepEquality()(oldValue, newSameValue)
-    expect(result.value).toBe(oldValue)
-    expect(result.areEqual).toEqual(true)
-  })
   it('different but similar value handled appropriately', () => {
     const result = SpecialSizeMeasurementsKeepDeepEquality()(oldValue, newDifferentValue)
     expect(result.value.offset).toBe(oldValue.offset)
@@ -412,91 +356,6 @@ describe('SpecialSizeMeasurementsKeepDeepEquality', () => {
 
 describe('ElementInstanceMetadataKeepDeepEquality', () => {
   const oldValue: ElementInstanceMetadata = {
-    elementPath: EP.elementPath([['scene'], ['aaa', 'bbb']]),
-    element: left('div'),
-    props: {
-      a: {
-        b: [],
-      },
-    },
-    globalFrame: canvasRectangle({
-      x: 10,
-      y: 20,
-      width: 100,
-      height: 200,
-    }),
-    localFrame: localRectangle({
-      x: 10,
-      y: 20,
-      width: 100,
-      height: 200,
-    }),
-    componentInstance: true,
-    isEmotionOrStyledComponent: false,
-    specialSizeMeasurements: {
-      offset: {
-        x: 10,
-        y: 20,
-      } as LocalPoint,
-      coordinateSystemBounds: canvasRectangle({
-        x: 10,
-        y: 20,
-        width: 100,
-        height: 200,
-      }),
-      immediateParentBounds: canvasRectangle({
-        x: 100,
-        y: 200,
-        width: 1000,
-        height: 2000,
-      }),
-      immediateParentProvidesLayout: false,
-      usesParentBounds: false,
-      parentLayoutSystem: 'flex',
-      layoutSystemForChildren: 'flex',
-      providesBoundsForChildren: true,
-      display: 'flex',
-      position: 'absolute',
-      margin: {
-        top: 1,
-        right: 2,
-        bottom: 3,
-        left: 4,
-      },
-      padding: {
-        top: 10,
-        right: 20,
-        bottom: 30,
-        left: 40,
-      },
-      naturalWidth: 100,
-      naturalHeight: 200,
-      clientWidth: 300,
-      clientHeight: 400,
-      parentFlexDirection: 'row',
-      flexDirection: 'column',
-      htmlElementName: 'div',
-      renderedChildrenCount: 10,
-      globalContentBox: canvasRectangle({
-        x: 20,
-        y: 40,
-        width: 60,
-        height: 80,
-      }),
-    },
-    computedStyle: {
-      a: 'a',
-      b: 'b',
-    },
-    attributeMetadatada: {
-      a: {
-        fromStyleSheet: false,
-      },
-    },
-    label: 'label',
-    importInfo: createImportedFrom('old', 'old', 'old'),
-  }
-  const newSameValue: ElementInstanceMetadata = {
     elementPath: EP.elementPath([['scene'], ['aaa', 'bbb']]),
     element: left('div'),
     props: {
@@ -668,20 +527,15 @@ describe('ElementInstanceMetadataKeepDeepEquality', () => {
   }
 
   it('same reference returns the same reference', () => {
-    const result = ElementInstanceMetadataKeepDeepEquality()(oldValue, oldValue)
-    expect(result.value).toBe(oldValue)
-    expect(result.areEqual).toEqual(true)
-  })
-  it('same value returns the same reference', () => {
-    const result = ElementInstanceMetadataKeepDeepEquality()(oldValue, newSameValue)
+    const result = ElementInstanceMetadataKeepDeepEquality(oldValue, oldValue)
     expect(result.value).toBe(oldValue)
     expect(result.areEqual).toEqual(true)
   })
   it('different but similar value handled appropriately', () => {
-    const result = ElementInstanceMetadataKeepDeepEquality()(oldValue, newDifferentValue)
+    const result = ElementInstanceMetadataKeepDeepEquality(oldValue, newDifferentValue)
     expect(result.value.elementPath).toBe(oldValue.elementPath)
     expect(result.value.element).toBe(oldValue.element)
-    expect(result.value.props).toBe(oldValue.props)
+    expect(result.value.props).toEqual(oldValue.props)
     expect(result.value.globalFrame).toBe(oldValue.globalFrame)
     expect(result.value.localFrame).toBe(oldValue.localFrame)
     expect(result.value.componentInstance).toBe(oldValue.componentInstance)
@@ -960,20 +814,20 @@ describe('ElementInstanceMetadataMapKeepDeepEquality', () => {
   }
 
   it('same reference returns the same reference', () => {
-    const result = ElementInstanceMetadataMapKeepDeepEquality()(oldValue, oldValue)
+    const result = ElementInstanceMetadataMapKeepDeepEquality(oldValue, oldValue)
     expect(result.value).toBe(oldValue)
     expect(result.areEqual).toEqual(true)
   })
   it('same value returns the same reference', () => {
-    const result = ElementInstanceMetadataMapKeepDeepEquality()(oldValue, newSameValue)
-    expect(result.value).toBe(oldValue)
-    expect(result.areEqual).toEqual(true)
+    const result = ElementInstanceMetadataMapKeepDeepEquality(oldValue, newSameValue)
+    expect(result.value).toStrictEqual(oldValue)
+    expect(result.areEqual).toEqual(false)
   })
   it('different but similar value handled appropriately', () => {
-    const result = ElementInstanceMetadataMapKeepDeepEquality()(oldValue, newDifferentValue)
+    const result = ElementInstanceMetadataMapKeepDeepEquality(oldValue, newDifferentValue)
     expect(result.value.elem.elementPath).toBe(oldValue.elem.elementPath)
     expect(result.value.elem.element).toBe(oldValue.elem.element)
-    expect(result.value.elem.props).toBe(oldValue.elem.props)
+    expect(result.value.elem.props).toEqual(oldValue.elem.props)
     expect(result.value.elem.globalFrame).toBe(oldValue.elem.globalFrame)
     expect(result.value.elem.localFrame).toBe(oldValue.elem.localFrame)
     expect(result.value.elem.componentInstance).toBe(oldValue.elem.componentInstance)

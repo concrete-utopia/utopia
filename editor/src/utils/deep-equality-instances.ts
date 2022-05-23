@@ -12,25 +12,34 @@ import {
   keepDeepEqualityResult,
   mapKeepDeepEqualityResult,
   nullableDeepEquality,
+  StringKeepDeepEquality,
+  unionDeepEquality,
 } from './deep-equality'
 import * as EP from '../core/shared/element-path'
 import * as PP from '../core/shared/property-path'
 import { HigherOrderControl } from '../components/canvas/canvas-types'
 import { JSXElementName } from '../core/shared/element-template'
-import { ElementPath, PropertyPath } from '../core/shared/project-file-types'
+import { ElementPath, PropertyPath, StaticElementPath } from '../core/shared/project-file-types'
 import { createCallFromIntrospectiveKeepDeep } from './react-performance'
 import { Either, foldEither, isLeft, left, right } from '../core/shared/either'
 import { NameAndIconResult } from '../components/inspector/common/name-and-icon-hook'
 import {
   DropTargetHint,
+  ElementsToRerender,
   elementWarnings,
   ElementWarnings,
   NavigatorState,
 } from '../components/editor/store/editor-state'
 import { LayoutTargetableProp } from '../core/layout/layout-helpers-new'
+import { CanvasPoint, canvasPoint, windowPoint, WindowPoint } from '../core/shared/math-utils'
 
 export const ElementPathKeepDeepEquality: KeepDeepEqualityCall<ElementPath> =
   createCallFromEqualsFunction((oldPath: ElementPath, newPath: ElementPath) => {
+    return EP.pathsEqual(oldPath, newPath)
+  })
+
+export const StaticElementPathKeepDeepEquality: KeepDeepEqualityCall<StaticElementPath> =
+  createCallFromEqualsFunction((oldPath: StaticElementPath, newPath: StaticElementPath) => {
     return EP.pathsEqual(oldPath, newPath)
   })
 
@@ -43,14 +52,21 @@ export function PropertyPathKeepDeepEquality(): KeepDeepEqualityCall<PropertyPat
   })
 }
 
+export function HigherOrderControlKeepDeepEquality(
+  oldValue: HigherOrderControl,
+  newValue: HigherOrderControl,
+): KeepDeepEqualityResult<HigherOrderControl> {
+  return createCallFromIntrospectiveKeepDeep<HigherOrderControl>()(oldValue, newValue)
+}
+
 export const HigherOrderControlArrayKeepDeepEquality: KeepDeepEqualityCall<
   Array<HigherOrderControl>
-> = arrayDeepEquality(createCallFromIntrospectiveKeepDeep())
+> = arrayDeepEquality(HigherOrderControlKeepDeepEquality)
 
-export function JSXElementNameKeepDeepEqualityCall(): KeepDeepEqualityCall<JSXElementName> {
-  return combine2EqualityCalls(
+export const JSXElementNameKeepDeepEqualityCall: KeepDeepEqualityCall<JSXElementName> =
+  combine2EqualityCalls(
     (name) => name.baseVariable,
-    createCallWithTripleEquals(),
+    StringKeepDeepEquality,
     (name) => name.propertyPath,
     PropertyPathKeepDeepEquality(),
     (baseVariable, propertyPath) => {
@@ -60,7 +76,6 @@ export function JSXElementNameKeepDeepEqualityCall(): KeepDeepEqualityCall<JSXEl
       }
     },
   )
-}
 
 export function EitherKeepDeepEquality<L, R>(
   leftDeep: KeepDeepEqualityCall<L>,
@@ -105,7 +120,7 @@ export const NameAndIconResultKeepDeepEquality: KeepDeepEqualityCall<NameAndIcon
     (result) => result.path,
     ElementPathKeepDeepEquality,
     (result) => result.name,
-    nullableDeepEquality(JSXElementNameKeepDeepEqualityCall()),
+    nullableDeepEquality(JSXElementNameKeepDeepEqualityCall),
     (result) => result.label,
     createCallWithTripleEquals(),
     (result) => result.iconProps,
@@ -171,4 +186,28 @@ export const ElementWarningsKeepDeepEquality: KeepDeepEqualityCall<ElementWarnin
     (warnings) => warnings.dynamicSceneChildWidthHeightPercentage,
     createCallWithTripleEquals(),
     elementWarnings,
+  )
+
+export const WindowPointKeepDeepEquality: KeepDeepEqualityCall<WindowPoint> = combine2EqualityCalls(
+  (point) => point.x,
+  createCallWithTripleEquals(),
+  (point) => point.y,
+  createCallWithTripleEquals(),
+  (x, y) => windowPoint({ x: x, y: y }),
+)
+
+export const CanvasPointKeepDeepEquality: KeepDeepEqualityCall<CanvasPoint> = combine2EqualityCalls(
+  (point) => point.x,
+  createCallWithTripleEquals(),
+  (point) => point.y,
+  createCallWithTripleEquals(),
+  (x, y) => canvasPoint({ x: x, y: y }),
+)
+
+export const ElementsToRerenderKeepDeepEquality: KeepDeepEqualityCall<ElementsToRerender> =
+  unionDeepEquality(
+    createCallWithTripleEquals<'rerender-all-elements'>(),
+    ElementPathArrayKeepDeepEquality,
+    (p): p is 'rerender-all-elements' => p === 'rerender-all-elements',
+    (p): p is Array<ElementPath> => Array.isArray(p),
   )
