@@ -12,6 +12,7 @@ import {
   CanvasStrategy,
   emptyStrategyApplicationResult,
   InteractionCanvasState,
+  StrategyApplicationResult,
 } from './canvas-strategy-types'
 import { DragInteractionData, InteractionSession, StrategyState } from './interaction-state'
 import {
@@ -80,7 +81,7 @@ export function applyAbsoluteMoveCommon(
   interactionState: InteractionSession,
   strategyState: StrategyState,
   getMoveCommands: (snappedDragVector: CanvasPoint) => Array<CanvasCommand>,
-) {
+): StrategyApplicationResult {
   if (interactionState.interactionData.type === 'DRAG') {
     const drag = interactionState.interactionData.drag
     const shiftKeyPressed = interactionState.interactionData.modifiers.shift
