@@ -216,7 +216,7 @@ function keepDeepReferenceEqualityInner(
   oldValue: any,
   possibleNewValue: any,
   stackSizeInner: number,
-  valueStackSoFar: Array<any>,
+  valueStackSoFar: Set<any>,
 ) {
   if (oldValue === possibleNewValue) return oldValue
 
@@ -226,11 +226,11 @@ function keepDeepReferenceEqualityInner(
 
   // We appear to have looped back on ourselves,
   // escape by just returning the value.
-  if (valueStackSoFar.includes(possibleNewValue)) {
+  if (valueStackSoFar.has(possibleNewValue)) {
     return possibleNewValue
   }
   // mutation
-  valueStackSoFar.push(possibleNewValue)
+  valueStackSoFar.add(possibleNewValue)
 
   if (
     oldValue != null &&
@@ -419,7 +419,7 @@ export function keepDeepReferenceEqualityIfPossible(
   possibleNewValue: any,
   stackSize: number = 0,
 ) {
-  return keepDeepReferenceEqualityInner(oldValue, possibleNewValue, stackSize, [])
+  return keepDeepReferenceEqualityInner(oldValue, possibleNewValue, stackSize, new Set())
 }
 
 /**
