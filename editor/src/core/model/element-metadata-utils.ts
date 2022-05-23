@@ -105,7 +105,12 @@ import { UTOPIA_LABEL_KEY } from './utopia-constants'
 import { withUnderlyingTarget } from '../../components/editor/store/editor-state'
 import { ProjectContentTreeRoot } from '../../components/assets'
 import { memoize } from '../shared/memoize'
-import { buildTree, forEachChildOfTarget } from '../shared/element-path-tree'
+import {
+  buildTree,
+  ElementPathTree,
+  forEachChildOfTarget,
+  getSubTree,
+} from '../shared/element-path-tree'
 const ObjectPathImmutable: any = OPI
 
 export const getChildrenOfCollapsedViews = (
@@ -734,35 +739,40 @@ export const MetadataUtils = {
       let navigatorTargets: Array<ElementPath> = []
       let visibleNavigatorTargets: Array<ElementPath> = []
 
-      function walkAndAddKeys(path: ElementPath, collapsedAncestor: boolean): void {
-        navigatorTargets.push(path)
-        if (!collapsedAncestor) {
-          visibleNavigatorTargets.push(path)
-        }
-
-        const isCollapsed = EP.containsPath(path, collapsedViews)
-
-        let children: Array<ElementPath> = []
-        let unfurledComponents: Array<ElementPath> = []
-        forEachChildOfTarget(projectTree, path, (childPath) => {
-          if (EP.isRootElementOfInstance(childPath)) {
-            unfurledComponents.push(childPath)
-          } else {
-            children.push(childPath)
+      function walkAndAddKeys(subTree: ElementPathTree | null, collapsedAncestor: boolean): void {
+        if (subTree != null) {
+          const path = subTree.path
+          navigatorTargets.push(path)
+          if (!collapsedAncestor) {
+            visibleNavigatorTargets.push(path)
           }
-        })
 
-        fastForEach(children, (childPath) => {
-          walkAndAddKeys(childPath, collapsedAncestor || isCollapsed)
-        })
-        fastForEach(unfurledComponents, (childPath) => {
-          walkAndAddKeys(childPath, collapsedAncestor || isCollapsed)
-        })
+          const isCollapsed = EP.containsPath(path, collapsedViews)
+
+          let children: Array<ElementPathTree> = []
+          let unfurledComponents: Array<ElementPathTree> = []
+          fastForEach(subTree.children, (child) => {
+            if (EP.isRootElementOfInstance(child.path)) {
+              unfurledComponents.push(child)
+            } else {
+              children.push(child)
+            }
+          })
+
+          fastForEach(children, (child) => {
+            walkAndAddKeys(child, collapsedAncestor || isCollapsed)
+          })
+          fastForEach(unfurledComponents, (unfurledComponent) => {
+            walkAndAddKeys(unfurledComponent, collapsedAncestor || isCollapsed)
+          })
+        }
       }
 
       const canvasRoots = MetadataUtils.getAllStoryboardChildrenPaths(metadata)
       fastForEach(canvasRoots, (childElement) => {
-        walkAndAddKeys(childElement, false)
+        const subTree = getSubTree(projectTree, childElement)
+
+        walkAndAddKeys(subTree, false)
       })
 
       return {
