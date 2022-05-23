@@ -13,6 +13,7 @@ import {
 import * as EP from '../../../core/shared/element-path'
 import { reverse, stripNulls } from '../../../core/shared/array-utils'
 import { DragOutlineControl } from '../controls/select-mode/drag-outline-control'
+import { ParentOutlines } from '../controls/parent-outlines'
 
 export const flexReorderStrategy: CanvasStrategy = {
   id: 'FLEX_REORDER',
@@ -32,6 +33,11 @@ export const flexReorderStrategy: CanvasStrategy = {
       control: DragOutlineControl,
       key: 'ghost-outline-control',
       show: 'visible-only-while-active',
+    },
+    {
+      control: ParentOutlines,
+      key: 'parent-outlines-control',
+      show: 'always-visible',
     },
   ],
   fitness: (canvasState, interactionState, strategyState) => {
