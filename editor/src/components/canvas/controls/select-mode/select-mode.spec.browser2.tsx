@@ -1,3 +1,4 @@
+/// <reference types="karma-viewport" />
 import { act, fireEvent } from '@testing-library/react'
 import { BakedInStoryboardUID } from '../../../../core/model/scene-utils'
 import { canvasPoint } from '../../../../core/shared/math-utils'
