@@ -65,6 +65,18 @@ export interface CodeResult {
   sourceMap: RawSourceMap | null
 }
 
+export function codeResult(
+  exports: ModuleExportTypes,
+  transpiledCode: string | null,
+  sourceMap: RawSourceMap | null,
+): CodeResult {
+  return {
+    exports: exports,
+    transpiledCode: transpiledCode,
+    sourceMap: sourceMap,
+  }
+}
+
 // UtopiaRequireFn is a special require function, where you can control whether the evaluation of the code should happen only once or more.
 // Standard JS behavior is to evaluate modules once lazily (the first time an import is processed), then cache
 // the value of the exports, and then use these values later. However, in our system this is not the desired behavior, because we need to evaluate the imports
@@ -80,18 +92,40 @@ export type UtopiaRequireFn = (
 
 export type CurriedUtopiaRequireFn = (projectContents: ProjectContentTreeRoot) => UtopiaRequireFn
 
-export type ComponentInfo = {
+export interface ComponentInfo {
   insertMenuLabel: string
   elementToInsert: JSXElementWithoutUID
   importsToAdd: Imports
 }
 
-export type ComponentDescriptor = {
+export function componentInfo(
+  insertMenuLabel: string,
+  elementToInsert: JSXElementWithoutUID,
+  importsToAdd: Imports,
+): ComponentInfo {
+  return {
+    insertMenuLabel: insertMenuLabel,
+    elementToInsert: elementToInsert,
+    importsToAdd: importsToAdd,
+  }
+}
+
+export interface ComponentDescriptor {
   properties: PropertyControls
   variants: ComponentInfo[]
 }
 
-export type ComponentDescriptorWithName = ComponentDescriptor & {
+export function componentDescriptor(
+  properties: PropertyControls,
+  variants: Array<ComponentInfo>,
+): ComponentDescriptor {
+  return {
+    properties: properties,
+    variants: variants,
+  }
+}
+
+export interface ComponentDescriptorWithName extends ComponentDescriptor {
   componentName: string
 }
 
@@ -106,15 +140,36 @@ export type PropertyControlsInfo = {
 export type ResolveFn = (importOrigin: string, toImport: string) => Either<string, string>
 export type CurriedResolveFn = (projectContents: ProjectContentTreeRoot) => ResolveFn
 
-export type CodeResultCache = {
+export interface CodeResultCache {
   skipDeepFreeze: true
   cache: { [filename: string]: CodeResult }
-  exportsInfo: ReadonlyArray<ExportsInfo>
+  exportsInfo: Array<ExportsInfo>
   error: Error | null
   curriedRequireFn: CurriedUtopiaRequireFn
   curriedResolveFn: CurriedResolveFn
   projectModules: MultiFileBuildResult
   evaluationCache: EvaluationCache
+}
+
+export function codeResultCache(
+  cache: { [filename: string]: CodeResult },
+  exportsInfo: Array<ExportsInfo>,
+  error: Error | null,
+  curriedRequireFn: CurriedUtopiaRequireFn,
+  curriedResolveFn: CurriedResolveFn,
+  projectModules: MultiFileBuildResult,
+  evaluationCache: EvaluationCache,
+): CodeResultCache {
+  return {
+    skipDeepFreeze: true,
+    cache: cache,
+    exportsInfo: exportsInfo,
+    error: error,
+    curriedRequireFn: curriedRequireFn,
+    curriedResolveFn: curriedResolveFn,
+    projectModules: projectModules,
+    evaluationCache: evaluationCache,
+  }
 }
 
 export function incorporateBuildResult(
@@ -156,7 +211,7 @@ const getCurriedEditorResolveFunction =
 export function generateCodeResultCache(
   projectContents: ProjectContentTreeRoot,
   updatedModules: MultiFileBuildResult,
-  exportsInfo: ReadonlyArray<ExportsInfo>,
+  exportsInfo: Array<ExportsInfo>,
   nodeModules: NodeModules,
   dispatch: EditorDispatch,
   evaluationCache: EvaluationCache,

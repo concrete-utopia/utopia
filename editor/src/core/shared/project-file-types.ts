@@ -353,6 +353,22 @@ export interface HighlightBounds {
   uid: string
 }
 
+export function highlightBounds(
+  startLine: number,
+  startCol: number,
+  endLine: number,
+  endCol: number,
+  uid: string,
+): HighlightBounds {
+  return {
+    startLine: startLine,
+    startCol: startCol,
+    endLine: endLine,
+    endCol: endCol,
+    uid: uid,
+  }
+}
+
 export type HighlightBoundsForUids = { [uid: string]: HighlightBounds }
 
 export interface HighlightBoundsWithFile extends HighlightBounds {
@@ -374,7 +390,7 @@ export interface ParseSuccess {
 export function parseSuccess(
   imports: Imports,
   topLevelElements: Array<TopLevelElement>,
-  highlightBounds: HighlightBoundsForUids,
+  bounds: HighlightBoundsForUids,
   jsxFactoryFunction: string | null,
   combinedTopLevelArbitraryBlock: ArbitraryJSBlock | null,
   exportsDetail: ExportsDetail,
@@ -383,7 +399,7 @@ export function parseSuccess(
     type: 'PARSE_SUCCESS',
     imports: imports,
     topLevelElements: topLevelElements,
-    highlightBounds: highlightBounds,
+    highlightBounds: bounds,
     jsxFactoryFunction: jsxFactoryFunction,
     combinedTopLevelArbitraryBlock: combinedTopLevelArbitraryBlock,
     exportsDetail: exportsDetail,
@@ -632,10 +648,34 @@ export interface ImageFile {
   hash: number
 }
 
+export function imageFile(
+  imageType: string | undefined,
+  base64: string | undefined,
+  width: number | undefined,
+  height: number | undefined,
+  hash: number,
+): ImageFile {
+  return {
+    type: 'IMAGE_FILE',
+    imageType: imageType,
+    base64: base64,
+    width: width,
+    height: height,
+    hash: hash,
+  }
+}
+
 // Ensure this is kept up to date with server/src/Utopia/Web/ClientModel.hs.
 export interface AssetFile {
   type: 'ASSET_FILE'
   base64?: string
+}
+
+export function assetFile(base64: string | undefined): AssetFile {
+  return {
+    type: 'ASSET_FILE',
+    base64: base64,
+  }
 }
 
 export function isAssetFile(projectFile: ProjectFile | null): projectFile is AssetFile {

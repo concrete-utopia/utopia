@@ -218,6 +218,8 @@ function keepDeepReferenceEqualityInner(
   stackSizeInner: number,
   valueStackSoFar: Set<any>,
 ) {
+  if (oldValue === possibleNewValue) return oldValue
+
   if (stackSizeInner > 100) {
     return possibleNewValue
   }
@@ -229,8 +231,6 @@ function keepDeepReferenceEqualityInner(
   }
   // mutation
   valueStackSoFar.add(possibleNewValue)
-
-  if (oldValue === possibleNewValue) return oldValue
 
   if (
     oldValue != null &&

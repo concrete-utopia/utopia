@@ -312,17 +312,17 @@ describe('MultiLineCommentKeepDeepEqualityCall', () => {
   }
 
   it('same reference returns the same reference', () => {
-    const result = MultiLineCommentKeepDeepEqualityCall()(oldValue, oldValue)
+    const result = MultiLineCommentKeepDeepEqualityCall(oldValue, oldValue)
     expect(result.value).toBe(oldValue)
     expect(result.areEqual).toEqual(true)
   })
   it('same value returns the same reference', () => {
-    const result = MultiLineCommentKeepDeepEqualityCall()(oldValue, newSameValue)
+    const result = MultiLineCommentKeepDeepEqualityCall(oldValue, newSameValue)
     expect(result.value).toBe(oldValue)
     expect(result.areEqual).toEqual(true)
   })
   it('different but similar value handled appropriately', () => {
-    const result = MultiLineCommentKeepDeepEqualityCall()(oldValue, newDifferentValue)
+    const result = MultiLineCommentKeepDeepEqualityCall(oldValue, newDifferentValue)
     expect(result.value.type).toBe(oldValue.type)
     expect(result.value.comment).toBe(oldValue.comment)
     expect(result.value.rawText).toBe(oldValue.rawText)
@@ -357,17 +357,17 @@ describe('SingleLineCommentKeepDeepEqualityCall', () => {
   }
 
   it('same reference returns the same reference', () => {
-    const result = SingleLineCommentKeepDeepEqualityCall()(oldValue, oldValue)
+    const result = SingleLineCommentKeepDeepEqualityCall(oldValue, oldValue)
     expect(result.value).toBe(oldValue)
     expect(result.areEqual).toEqual(true)
   })
   it('same value returns the same reference', () => {
-    const result = SingleLineCommentKeepDeepEqualityCall()(oldValue, newSameValue)
+    const result = SingleLineCommentKeepDeepEqualityCall(oldValue, newSameValue)
     expect(result.value).toBe(oldValue)
     expect(result.areEqual).toEqual(true)
   })
   it('different but similar value handled appropriately', () => {
-    const result = SingleLineCommentKeepDeepEqualityCall()(oldValue, newDifferentValue)
+    const result = SingleLineCommentKeepDeepEqualityCall(oldValue, newDifferentValue)
     expect(result.value.type).toBe(oldValue.type)
     expect(result.value.comment).toBe(oldValue.comment)
     expect(result.value.rawText).toBe(oldValue.rawText)
@@ -424,25 +424,25 @@ describe('CommentKeepDeepEqualityCall', () => {
   }
 
   it('same reference returns the same reference', () => {
-    const resultSingle = CommentKeepDeepEqualityCall()(oldSingleValue, oldSingleValue)
+    const resultSingle = CommentKeepDeepEqualityCall(oldSingleValue, oldSingleValue)
     expect(resultSingle.value).toBe(oldSingleValue)
     expect(resultSingle.areEqual).toEqual(true)
 
-    const resultMulti = CommentKeepDeepEqualityCall()(oldMultiValue, oldMultiValue)
+    const resultMulti = CommentKeepDeepEqualityCall(oldMultiValue, oldMultiValue)
     expect(resultMulti.value).toBe(oldMultiValue)
     expect(resultMulti.areEqual).toEqual(true)
   })
   it('same value returns the same reference', () => {
-    const resultSingle = CommentKeepDeepEqualityCall()(oldSingleValue, newSameSingleValue)
+    const resultSingle = CommentKeepDeepEqualityCall(oldSingleValue, newSameSingleValue)
     expect(resultSingle.value).toBe(oldSingleValue)
     expect(resultSingle.areEqual).toEqual(true)
 
-    const resultMulti = CommentKeepDeepEqualityCall()(oldMultiValue, newSameMultiValue)
+    const resultMulti = CommentKeepDeepEqualityCall(oldMultiValue, newSameMultiValue)
     expect(resultMulti.value).toBe(oldMultiValue)
     expect(resultMulti.areEqual).toEqual(true)
   })
   it('different but similar value handled appropriately', () => {
-    const resultSingle = CommentKeepDeepEqualityCall()(oldSingleValue, newDifferentSingleValue)
+    const resultSingle = CommentKeepDeepEqualityCall(oldSingleValue, newDifferentSingleValue)
     expect(resultSingle.value.type).toBe(oldSingleValue.type)
     expect(resultSingle.value.comment).toBe(oldSingleValue.comment)
     expect(resultSingle.value.rawText).toBe(oldSingleValue.rawText)
@@ -451,7 +451,7 @@ describe('CommentKeepDeepEqualityCall', () => {
     expect(resultSingle.value).toEqual(newDifferentSingleValue)
     expect(resultSingle.areEqual).toEqual(false)
 
-    const resultMulti = CommentKeepDeepEqualityCall()(oldMultiValue, newDifferentMultiValue)
+    const resultMulti = CommentKeepDeepEqualityCall(oldMultiValue, newDifferentMultiValue)
     expect(resultMulti.value.type).toBe(oldMultiValue.type)
     expect(resultMulti.value.comment).toBe(oldMultiValue.comment)
     expect(resultMulti.value.rawText).toBe(oldMultiValue.rawText)
@@ -525,17 +525,17 @@ describe('ParsedCommentsKeepDeepEqualityCall', () => {
   }
 
   it('same reference returns the same reference', () => {
-    const result = ParsedCommentsKeepDeepEqualityCall()(oldValue, oldValue)
+    const result = ParsedCommentsKeepDeepEqualityCall(oldValue, oldValue)
     expect(result.value).toBe(oldValue)
     expect(result.areEqual).toEqual(true)
   })
   it('same value returns the same reference', () => {
-    const result = ParsedCommentsKeepDeepEqualityCall()(oldValue, newSameValue)
+    const result = ParsedCommentsKeepDeepEqualityCall(oldValue, newSameValue)
     expect(result.value).toBe(oldValue)
     expect(result.areEqual).toEqual(true)
   })
   it('different but similar value handled appropriately', () => {
-    const result = ParsedCommentsKeepDeepEqualityCall()(oldValue, newDifferentValue)
+    const result = ParsedCommentsKeepDeepEqualityCall(oldValue, newDifferentValue)
     expect(result.value.leadingComments).toBe(oldValue.leadingComments)
     expect(result.value.trailingComments[0].type).toBe(oldValue.trailingComments[0].type)
     expect(result.value.trailingComments[0].comment).toBe(oldValue.trailingComments[0].comment)
@@ -555,17 +555,17 @@ describe('JSXAttributeValueKeepDeepEqualityCall', () => {
   const newDifferentValue = jsxAttributeValue('new', emptyComments)
 
   it('same reference returns the same reference', () => {
-    const result = JSXAttributeValueKeepDeepEqualityCall()(oldValue, oldValue)
+    const result = JSXAttributeValueKeepDeepEqualityCall(oldValue, oldValue)
     expect(result.value).toBe(oldValue)
     expect(result.areEqual).toEqual(true)
   })
   it('same value returns the same reference', () => {
-    const result = JSXAttributeValueKeepDeepEqualityCall()(oldValue, newSameValue)
+    const result = JSXAttributeValueKeepDeepEqualityCall(oldValue, newSameValue)
     expect(result.value).toBe(oldValue)
     expect(result.areEqual).toEqual(true)
   })
   it('different but similar value handled appropriately', () => {
-    const result = JSXAttributeValueKeepDeepEqualityCall()(oldValue, newDifferentValue)
+    const result = JSXAttributeValueKeepDeepEqualityCall(oldValue, newDifferentValue)
     expect(result.value.type).toBe(oldValue.type)
     expect(result.value.comments).toBe(oldValue.comments)
     expect(result.value.value).toBe(newDifferentValue.value)
@@ -949,17 +949,17 @@ describe('JSXAttributeKeepDeepEqualityCall', () => {
   const newDifferentValue = jsxAttributeValue('new', emptyComments)
 
   it('same reference returns the same reference', () => {
-    const result = JSXAttributeKeepDeepEqualityCall()(oldValue, oldValue)
+    const result = JSXAttributeKeepDeepEqualityCall(oldValue, oldValue)
     expect(result.value).toBe(oldValue)
     expect(result.areEqual).toEqual(true)
   })
   it('same value returns the same reference', () => {
-    const result = JSXAttributeKeepDeepEqualityCall()(oldValue, newSameValue)
+    const result = JSXAttributeKeepDeepEqualityCall(oldValue, newSameValue)
     expect(result.value).toBe(oldValue)
     expect(result.areEqual).toEqual(true)
   })
   it('different but similar value handled appropriately', () => {
-    const result = JSXAttributeKeepDeepEqualityCall()(oldValue, newDifferentValue)
+    const result = JSXAttributeKeepDeepEqualityCall(oldValue, newDifferentValue)
     expect(result.value.type).toBe(oldValue.type)
     expect((result.value as JSXAttributeValue<string>).value).toBe(
       (newDifferentValue as JSXAttributeValue<string>).value,
