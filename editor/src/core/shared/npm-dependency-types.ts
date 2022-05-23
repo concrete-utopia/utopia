@@ -15,7 +15,7 @@ export interface PackageDetails {
   status: PackageStatus
 }
 
-function packageDetails(status: PackageStatus): PackageDetails {
+export function packageDetails(status: PackageStatus): PackageDetails {
   return {
     status: status,
   }

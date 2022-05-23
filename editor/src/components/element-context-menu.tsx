@@ -25,6 +25,7 @@ import {
   insert,
   convert,
   removeAsFocusedElement,
+  escapeHatch,
 } from './context-menu-items'
 import { MomentumContextMenu } from './context-menu-wrapper'
 import { useRefEditorState, useEditorState } from './editor/store/store-hook'
@@ -59,6 +60,7 @@ const ElementContextMenuItems: Array<ContextMenuItem<CanvasData>> = [
   insert,
   lineSeparator,
   convert,
+  escapeHatch,
   lineSeparator,
   wrapInPicker,
   wrapInView,

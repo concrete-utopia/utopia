@@ -258,8 +258,7 @@ export function useGetPropertyControlsForSelectedComponents(): Array<FullPropert
     },
     'useGetPropertyControlsForSelectedComponents selectedElements',
     (a, b) =>
-      arrayDeepEquality(arrayDeepEquality(ElementInstanceMetadataKeepDeepEquality()))(a, b)
-        .areEqual,
+      arrayDeepEquality(arrayDeepEquality(ElementInstanceMetadataKeepDeepEquality))(a, b).areEqual,
   )
 
   const selectedComponentsFIXME = useEditorState(
