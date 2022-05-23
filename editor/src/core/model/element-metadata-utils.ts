@@ -1254,13 +1254,8 @@ export const MetadataUtils = {
     if (isAnimatedComponent) {
       return false
     }
-    const isImported = isImportedComponentNPM(element)
+    const isImported = isImportedComponent(element)
     if (isImported) {
-      return false
-    }
-    const isImportedFromUtopiaApi =
-      element != null ? isUtopiaAPIComponentFromMetadata(element) : false
-    if (isImportedFromUtopiaApi) {
       return false
     }
     const isComponent = elementName != null && !isIntrinsicElement(elementName)
