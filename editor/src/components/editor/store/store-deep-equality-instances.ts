@@ -1313,8 +1313,11 @@ export const NodeModuleFileKeepDeepEquality: KeepDeepEqualityCall<NodeModuleFile
   return keepDeepEqualityResult(newValue, false)
 }
 
-export const ElementInstanceMetadataMapKeepDeepEquality: KeepDeepEqualityCall<ElementInstanceMetadataMap> =
-  objectDeepEquality(ElementInstanceMetadataKeepDeepEquality)
+export const ElementInstanceMetadataMapKeepDeepEquality: KeepDeepEqualityCall<
+  ElementInstanceMetadataMap
+> = (oldValue, newValue) => {
+  return keepDeepEqualityResult(newValue, false)
+}
 
 export const ErrorMessageKeepDeepEquality: KeepDeepEqualityCall<ErrorMessage> =
   combine12EqualityCalls(

@@ -4015,26 +4015,14 @@ export const UPDATE_FNS = {
     // Calculate the spy metadata given what has been collected.
     const spyResult = spyCollector.current.spyValues.metadata
 
-    const finalDomMetadata = arrayDeepEquality(ElementInstanceMetadataKeepDeepEquality)(
-      editor.domMetadata,
-      action.elementMetadata as Array<ElementInstanceMetadata>, // we convert a ReadonlyArray to a regular array – it'd be nice to make more arrays readonly in the future
-    ).value
-    const finalSpyMetadata = ElementInstanceMetadataMapKeepDeepEquality(
-      editor.spyMetadata,
-      spyResult,
-    ).value
+    // TODO _maybe_ look into mutating the editor state?
+    const finalDomMetadata = action.elementMetadata
+    const finalSpyMetadata = spyResult
 
-    const stayedTheSame =
-      editor.domMetadata === finalDomMetadata && editor.spyMetadata === finalSpyMetadata
-
-    if (stayedTheSame) {
-      return editor
-    } else {
-      return {
-        ...editor,
-        domMetadata: finalDomMetadata,
-        spyMetadata: finalSpyMetadata,
-      }
+    return {
+      ...editor,
+      domMetadata: finalDomMetadata as ElementInstanceMetadata[],
+      spyMetadata: finalSpyMetadata,
     }
   },
   SET_PROP: (action: SetProp, editor: EditorModel): EditorModel => {

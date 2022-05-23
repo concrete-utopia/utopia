@@ -2383,11 +2383,12 @@ export function reconstructJSXMetadata(editor: EditorState): ElementInstanceMeta
       (success) => {
         const elementsByUID = getElementsByUIDFromTopLevelElements(success.topLevelElements)
         const mergedMetadata = MetadataUtils.mergeComponentMetadata(
+          // TODO hopefully get rid of this merge here?
           elementsByUID,
           editor.spyMetadata,
           editor.domMetadata,
         )
-        return ElementInstanceMetadataMapKeepDeepEquality(editor.jsxMetadata, mergedMetadata).value
+        return mergedMetadata
       },
       (_) => editor.jsxMetadata,
       uiFile.fileContents.parsed,
