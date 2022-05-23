@@ -1,7 +1,5 @@
-import React from 'react'
+import { PatchedReact as React } from './canvas-react-utils'
 import * as PropTypes from 'prop-types'
-import { applyUIDMonkeyPatch } from './canvas-react-utils'
-applyUIDMonkeyPatch()
 import * as ReactDOMServer from 'react-dom/server'
 import * as Prettier from 'prettier'
 import { DatePicker } from 'antd'
