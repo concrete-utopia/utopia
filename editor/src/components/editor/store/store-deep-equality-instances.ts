@@ -2877,7 +2877,10 @@ export const EditorStateKeepDeepEquality: KeepDeepEqualityCall<EditorState> = (
     oldValue.spyMetadata,
     newValue.spyMetadata,
   )
-  const domMetadataResult = createCallWithTripleEquals()
+  const domMetadataResult = arrayDeepEquality(ElementInstanceMetadataKeepDeepEquality)(
+    oldValue.domMetadata,
+    newValue.domMetadata,
+  )
   const jsxMetadataResult = ElementInstanceMetadataMapKeepDeepEquality(
     oldValue.jsxMetadata,
     newValue.jsxMetadata,
