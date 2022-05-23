@@ -513,7 +513,7 @@ import { getTargetParentForPaste } from '../../../utils/clipboard'
 import { emptySet } from '../../../core/shared/set-utils'
 import { absolutePathFromRelativePath, stripLeadingSlash } from '../../../utils/path-utils'
 import { resolveModule } from '../../../core/es-modules/package-manager/module-resolution'
-import { reverse, uniqBy } from '../../../core/shared/array-utils'
+import { mapDropNulls, reverse, uniqBy } from '../../../core/shared/array-utils'
 import { UTOPIA_UID_KEY } from '../../../core/model/utopia-constants'
 import {
   DefaultPostCSSConfig,
@@ -1726,7 +1726,7 @@ export const UPDATE_FNS = {
     dispatch: EditorDispatch,
   ): EditorModel => {
     return toastOnGeneratedElementsSelected(
-      'Generated elements can only be deleted in code. ',
+      'Generated elements can only be deleted in code.',
       editorForAction,
       true,
       (editor) => {
@@ -1738,7 +1738,17 @@ export const UPDATE_FNS = {
           )
           return MetadataUtils.isStaticElement(components, selectedView)
         })
-        return deleteElements(staticSelectedElements, editor)
+        const withElementDeleted = deleteElements(staticSelectedElements, editor)
+        const parentsToSelect = uniqBy(
+          mapDropNulls((view) => {
+            return EP.parentPath(view)
+          }, editor.selectedViews),
+          EP.pathsEqual,
+        )
+        return {
+          ...withElementDeleted,
+          selectedViews: parentsToSelect,
+        }
       },
       dispatch,
     )
