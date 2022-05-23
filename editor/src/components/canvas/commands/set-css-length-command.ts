@@ -110,7 +110,7 @@ export const runSetCssLengthProperty: CommandFunction<SetCssLengthProperty> = (
 
   return {
     editorStatePatches: [propertyUpdatePatch],
-    commandDescription: `Adjust Css Length Prop: ${EP.toUid(command.target)}/${PP.toString(
+    commandDescription: `Set Css Length Prop: ${EP.toUid(command.target)}/${PP.toString(
       command.property,
     )} by ${command.valuePx}`,
   }
