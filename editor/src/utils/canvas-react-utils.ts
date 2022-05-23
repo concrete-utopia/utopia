@@ -315,8 +315,7 @@ export function isHooksErrorMessage(message: string): boolean {
   )
 }
 
-export const PatchedReact: typeof React & { isPatched: boolean } = {
+export const PatchedReact: typeof React = {
   ...React,
   createElement: patchedCreateReactElement,
-  isPatched: true,
 }
