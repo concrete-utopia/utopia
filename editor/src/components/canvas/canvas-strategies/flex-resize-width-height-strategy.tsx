@@ -7,7 +7,7 @@ import { EdgePosition } from '../canvas-types'
 import { setSnappingGuidelines } from '../commands/set-snapping-guidelines-command'
 import { updateHighlightedViews } from '../commands/update-highlighted-views-command'
 import { GuidelineWithSnappingVector } from '../guideline'
-import { CanvasStrategy } from './canvas-strategy-types'
+import { CanvasStrategy, emptyStrategyApplicationResult } from './canvas-strategy-types'
 
 import { getMultiselectBounds } from './shared-absolute-move-strategy-helpers'
 import {
@@ -56,6 +56,13 @@ export const flexResizeWidthStrategy: CanvasStrategy = {
     ) {
       const drag = interactionState.interactionData.drag
       const edgePosition = interactionState.activeControl.edgePosition
+      const { snappedDragVector, guidelinesWithSnappingVector } = snapDrag(
+        canvasState.selectedElements,
+        sessionState.startingMetadata,
+        drag,
+        edgePosition,
+        canvasState.scale,
+      )
 
       const commandsForSelectedElements = canvasState.selectedElements.flatMap(
         (selectedElement) => {
@@ -81,15 +88,22 @@ export const flexResizeWidthStrategy: CanvasStrategy = {
             element,
             selectedElement,
             edgePosition,
-            drag,
+            snappedDragVector,
             elementParentBounds,
           )
         },
       )
-      return [...commandsForSelectedElements, updateHighlightedViews('transient', [])]
+      return {
+        commands: [
+          ...commandsForSelectedElements,
+          updateHighlightedViews('transient', []),
+          setSnappingGuidelines('transient', guidelinesWithSnappingVector),
+        ],
+        customState: null,
+      }
     }
     // Fallback for when the checks above are not satisfied.
-    return []
+    return emptyStrategyApplicationResult
   },
 }
 
