@@ -58,7 +58,7 @@ export function wait(timeout: number): Promise<void> {
   })
 }
 
-const NumberOfIterations = 5
+const NumberOfIterations = 100
 
 function markStart(prefix: string, framesPassed: number): void {
   performance.mark(`${prefix}_start_${framesPassed}`)
