@@ -12,16 +12,18 @@ try {
   disableStoredStateforTests()
 }
 
-import React from 'react'
+import RealReact from 'react'
 
 ///// IMPORTANT NOTE - THIS MUST BE BELOW THE REACT IMPORT AND ABOVE ALL OTHER IMPORTS
-const realCreateElement = React.createElement
+const realCreateElement = RealReact.createElement
 let renderCount = 0
 const monkeyCreateElement = (...params: any[]) => {
   renderCount++
   return (realCreateElement as any)(...params)
 }
-;(React as any).createElement = monkeyCreateElement
+;(RealReact as any).createElement = monkeyCreateElement
+
+import { PatchedReact as React } from '../../utils/canvas-react-utils'
 
 try {
   jest.setTimeout(10000) // in milliseconds
