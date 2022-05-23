@@ -335,11 +335,15 @@ const scene = utopiaJSXComponent(
 
 export const TestScene0UID = 'scene-0'
 export const TestMainComponentUID = 'main-component-0'
-const ElementPathForTestUiJsFile = [BakedInStoryboardUID, TestScene0UID, TestMainComponentUID]
+export const ElementPathForTestUiJsFile = [
+  BakedInStoryboardUID,
+  TestScene0UID,
+  TestMainComponentUID,
+]
 export const ScenePathForTestUiJsFile = testStaticElementPath([ElementPathForTestUiJsFile])
-const Scene1UID = 'scene-1'
-const TestMainComponent1UID = 'main-component-1'
-const ElementPath1ForTestUiJsFile = [BakedInStoryboardUID, Scene1UID, TestMainComponent1UID]
+export const Scene1UID = 'scene-1'
+export const TestMainComponent1UID = 'main-component-1'
+export const ElementPath1ForTestUiJsFile = [BakedInStoryboardUID, Scene1UID, TestMainComponent1UID]
 export const ScenePath1ForTestUiJsFile = testStaticElementPath([ElementPath1ForTestUiJsFile])
 
 const Scene1 = defaultSceneElement(
