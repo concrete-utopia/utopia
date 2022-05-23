@@ -1258,6 +1258,11 @@ export const MetadataUtils = {
     if (isImported) {
       return false
     }
+    const isImportedFromUtopiaApi =
+      element != null ? isUtopiaAPIComponentFromMetadata(element) : false
+    if (isImportedFromUtopiaApi) {
+      return false
+    }
     const isComponent = elementName != null && !isIntrinsicElement(elementName)
     if (isComponent) {
       return true
