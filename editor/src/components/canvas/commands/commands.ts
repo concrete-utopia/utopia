@@ -29,6 +29,7 @@ import { runWildcardPatch, WildcardPatch } from './wildcard-patch-command'
 import { runSetCssLengthProperty, SetCssLengthProperty } from './set-css-length-command'
 import { EditorStateKeepDeepEquality } from '../../editor/store/store-deep-equality-instances'
 import { runShowOutlineHighlight, ShowOutlineHighlight } from './show-outline-highlight-command'
+import { runSetCursor, SetCursorCommand } from './set-cursor-command'
 
 export interface CommandFunctionResult {
   editorStatePatches: Array<EditorStatePatch>
@@ -56,6 +57,7 @@ export type CanvasCommand =
   | SetCssLengthProperty
   | ReorderElement
   | ShowOutlineHighlight
+  | SetCursorCommand
 
 export const runCanvasCommand: CommandFunction<CanvasCommand> = (
   editorState: EditorState,
@@ -86,6 +88,8 @@ export const runCanvasCommand: CommandFunction<CanvasCommand> = (
       return runReorderElement(editorState, command)
     case 'SHOW_OUTLINE_HIGHLIGHT':
       return runShowOutlineHighlight(editorState, command)
+    case 'SET_CURSOR_COMMAND':
+      return runSetCursor(editorState, command)
     default:
       const _exhaustiveCheck: never = command
       throw new Error(`Unhandled canvas command ${JSON.stringify(command)}`)

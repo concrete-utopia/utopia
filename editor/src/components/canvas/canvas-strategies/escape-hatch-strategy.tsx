@@ -23,9 +23,11 @@ import { fastForEach } from '../../../core/shared/utils'
 import { getElementFromProjectContents } from '../../editor/store/editor-state'
 import { FullFrame, getFullFrame } from '../../frame'
 import { stylePropPathMappingFn } from '../../inspector/common/property-path-hooks'
+import { CSSCursor } from '../canvas-types'
 import { CanvasCommand } from '../commands/commands'
 import { convertToAbsolute } from '../commands/convert-to-absolute-command'
 import { setCssLengthProperty } from '../commands/set-css-length-command'
+import { setCursorCommand } from '../commands/set-cursor-command'
 import { showOutlineHighlight } from '../commands/show-outline-highlight-command'
 import { DragOutlineControl } from '../controls/select-mode/drag-outline-control'
 import { AnimationTimer, PieTimerControl } from '../controls/select-mode/pie-timer'
@@ -121,7 +123,7 @@ export const escapeHatchStrategy: CanvasStrategy = {
         }
       } else {
         return {
-          commands: [],
+          commands: [setCursorCommand('transient', CSSCursor.Move)],
           customState: null,
         }
       }
