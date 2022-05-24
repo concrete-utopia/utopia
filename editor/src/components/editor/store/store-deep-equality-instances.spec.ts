@@ -152,7 +152,6 @@ describe('DerivedStateKeepDeepEquality', () => {
   const oldValue: DerivedState = {
     navigatorTargets: [EP.elementPath([['scene'], ['aaa', 'bbb']])],
     visibleNavigatorTargets: [EP.elementPath([['scene'], ['aaa', 'bbb']])],
-    descendantsOfHiddenInstances: [],
     controls: [],
     transientState: transientCanvasState(
       [EP.elementPath([['scene'], ['aaa', 'bbb']])],
@@ -188,7 +187,6 @@ describe('DerivedStateKeepDeepEquality', () => {
   const newSameValue: DerivedState = {
     navigatorTargets: [EP.elementPath([['scene'], ['aaa', 'bbb']])],
     visibleNavigatorTargets: [EP.elementPath([['scene'], ['aaa', 'bbb']])],
-    descendantsOfHiddenInstances: [],
     controls: [],
     transientState: transientCanvasState(
       [EP.elementPath([['scene'], ['aaa', 'bbb']])],
@@ -224,7 +222,6 @@ describe('DerivedStateKeepDeepEquality', () => {
   const newDifferentValue: DerivedState = {
     navigatorTargets: [EP.elementPath([['scene'], ['aaa', 'ddd']])],
     visibleNavigatorTargets: [EP.elementPath([['scene'], ['aaa', 'bbb']])],
-    descendantsOfHiddenInstances: [],
     controls: [],
     transientState: transientCanvasState(
       [EP.elementPath([['scene'], ['aaa', 'bbb']])],
@@ -271,7 +268,6 @@ describe('DerivedStateKeepDeepEquality', () => {
     const result = DerivedStateKeepDeepEquality()(oldValue, newDifferentValue)
     expect(result.value.navigatorTargets[0]).toBe(newDifferentValue.navigatorTargets[0])
     expect(result.value.visibleNavigatorTargets).toBe(oldValue.visibleNavigatorTargets)
-    expect(result.value.descendantsOfHiddenInstances).toBe(oldValue.descendantsOfHiddenInstances)
     expect(result.value.controls).toBe(oldValue.controls)
     expect(result.value.transientState).toBe(oldValue.transientState)
     expect(result.value.elementWarnings).toBe(oldValue.elementWarnings)

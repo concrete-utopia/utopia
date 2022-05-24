@@ -1536,7 +1536,6 @@ export const defaultElementWarnings: ElementWarnings = {
 export interface DerivedState {
   navigatorTargets: Array<ElementPath>
   visibleNavigatorTargets: Array<ElementPath>
-  descendantsOfHiddenInstances: Array<ElementPath>
   controls: Array<HigherOrderControl>
   transientState: TransientCanvasState
   elementWarnings: ComplexMap<ElementPath, ElementWarnings>
@@ -1546,7 +1545,6 @@ function emptyDerivedState(editor: EditorState): DerivedState {
   return {
     navigatorTargets: [],
     visibleNavigatorTargets: [],
-    descendantsOfHiddenInstances: [],
     controls: [],
     transientState: produceCanvasTransientState(editor.selectedViews, editor, false),
     elementWarnings: emptyComplexMap(),
@@ -1872,7 +1870,6 @@ export function deriveState(
   const derived: DerivedState = {
     navigatorTargets: navigatorTargets,
     visibleNavigatorTargets: visibleNavigatorTargets,
-    descendantsOfHiddenInstances: editor.hiddenInstances, // FIXME This has been dead for like ever
     controls: derivedState.controls,
     transientState: produceCanvasTransientState(
       oldDerivedState?.transientState.selectedViews ?? editor.selectedViews,
