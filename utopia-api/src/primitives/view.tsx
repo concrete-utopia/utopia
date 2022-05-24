@@ -10,6 +10,7 @@ export interface ViewProps
 
 export const View: React.FunctionComponent<ViewProps> = (props: ViewProps) => {
   let { 'data-uid': dataUid, 'data-label': dataLabel, ...divProps } = props
+  // We're removing the data-uid prop here as the monkey patch will deal with it
   const propsWithEventHandlers = addEventHandlersToDivProps(divProps)
 
   return (

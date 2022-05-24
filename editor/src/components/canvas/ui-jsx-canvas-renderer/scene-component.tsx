@@ -16,6 +16,7 @@ export const SceneComponent = React.memo(
     const updateInvalidatedPaths = usePubSubAtomReadOnly(DomWalkerInvalidatePathsCtxAtom)
 
     const { style, ['data-uid']: dataUid, ...remainingProps } = props
+    // We're removing the data-uid prop here as the monkey patch will deal with it
 
     const sceneStyle: React.CSSProperties = {
       position: 'relative',
