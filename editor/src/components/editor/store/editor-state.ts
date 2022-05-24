@@ -1331,7 +1331,7 @@ export function getJSXComponentsAndImportsForPathFromState(
     storyboardFilePath,
     model.projectContents,
     model.nodeModules.files,
-    derived.canvas.transientState.filesState,
+    derived.transientState.filesState,
   )
 }
 
@@ -1536,11 +1536,9 @@ export const defaultElementWarnings: ElementWarnings = {
 export interface DerivedState {
   navigatorTargets: Array<ElementPath>
   visibleNavigatorTargets: Array<ElementPath>
-  canvas: {
-    descendantsOfHiddenInstances: Array<ElementPath>
-    controls: Array<HigherOrderControl>
-    transientState: TransientCanvasState
-  }
+  descendantsOfHiddenInstances: Array<ElementPath>
+  controls: Array<HigherOrderControl>
+  transientState: TransientCanvasState
   elementWarnings: ComplexMap<ElementPath, ElementWarnings>
 }
 
@@ -1548,11 +1546,9 @@ function emptyDerivedState(editor: EditorState): DerivedState {
   return {
     navigatorTargets: [],
     visibleNavigatorTargets: [],
-    canvas: {
-      descendantsOfHiddenInstances: [],
-      controls: [],
-      transientState: produceCanvasTransientState(editor.selectedViews, editor, false),
-    },
+    descendantsOfHiddenInstances: [],
+    controls: [],
+    transientState: produceCanvasTransientState(editor.selectedViews, editor, false),
     elementWarnings: emptyComplexMap(),
   }
 }
@@ -1876,15 +1872,13 @@ export function deriveState(
   const derived: DerivedState = {
     navigatorTargets: navigatorTargets,
     visibleNavigatorTargets: visibleNavigatorTargets,
-    canvas: {
-      descendantsOfHiddenInstances: editor.hiddenInstances, // FIXME This has been dead for like ever
-      controls: derivedState.canvas.controls,
-      transientState: produceCanvasTransientState(
-        oldDerivedState?.canvas.transientState.selectedViews ?? editor.selectedViews,
-        editor,
-        true,
-      ),
-    },
+    descendantsOfHiddenInstances: editor.hiddenInstances, // FIXME This has been dead for like ever
+    controls: derivedState.controls,
+    transientState: produceCanvasTransientState(
+      oldDerivedState?.transientState.selectedViews ?? editor.selectedViews,
+      editor,
+      true,
+    ),
     elementWarnings: warnings,
   }
 
@@ -1898,7 +1892,7 @@ export function createCanvasModelKILLME(
   derivedState: DerivedState,
 ): CanvasModel {
   return {
-    controls: derivedState.canvas.controls,
+    controls: derivedState.controls,
     dragState: editor.canvas.dragState,
     keysPressed: editor.keysPressed,
     mode: editor.mode,

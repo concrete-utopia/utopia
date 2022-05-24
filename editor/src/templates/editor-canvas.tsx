@@ -488,7 +488,7 @@ export function collectControlsDependencies(
     highlightedviews: editor.highlightedViews,
     selectedViews: editor.selectedViews,
     topLevelHiddenInstances: editor.hiddenInstances,
-    descendantsOfHiddenInstances: derived.canvas.descendantsOfHiddenInstances,
+    descendantsOfHiddenInstances: derived.descendantsOfHiddenInstances,
     editorState: editor,
     derivedState: derived,
   }

@@ -134,11 +134,10 @@ export const NewCanvasControls = React.memo((props: NewCanvasControlsProps) => {
       editor: store.editor,
       derived: store.derived,
       canvasOffset: store.editor.canvas.roundedCanvasOffset,
-
-      controls: store.derived.canvas.controls,
+      controls: store.derived.controls,
       scale: store.editor.canvas.scale,
       focusedPanel: store.editor.focusedPanel,
-      transientCanvasState: store.derived.canvas.transientState,
+      transientCanvasState: store.derived.transientState,
     }),
     'NewCanvasControls',
   )
@@ -214,7 +213,10 @@ export const NewCanvasControls = React.memo((props: NewCanvasControlsProps) => {
               localSelectedViews={localSelectedViews}
               localHighlightedViews={localHighlightedViews}
               setLocalSelectedViews={setSelectedViewsLocally}
-              {...canvasControlProps}
+              editor={canvasControlProps.editor}
+              transientState={canvasControlProps.transientCanvasState}
+              dispatch={canvasControlProps.dispatch}
+              canvasOffset={canvasControlProps.canvasOffset}
             />
           </div>
           <ElementContextMenu contextMenuInstance='context-menu-canvas' />
@@ -227,7 +229,7 @@ NewCanvasControls.displayName = 'NewCanvasControls'
 
 interface NewCanvasControlsInnerProps {
   editor: EditorState
-  derived: DerivedState
+  transientState: TransientCanvasState
   dispatch: EditorDispatch
   canvasOffset: CanvasPoint
   windowToCanvasPosition: (event: MouseEvent) => CanvasPositions
@@ -332,7 +334,7 @@ const NewCanvasControlsInner = (props: NewCanvasControlsInnerProps) => {
       projectContents: props.editor.projectContents,
       nodeModules: props.editor.nodeModules.files,
       openFile: props.editor.canvas.openFile?.filename ?? null,
-      transientState: props.derived.canvas.transientState,
+      transientState: props.transientState,
       resolve: resolveFn,
       resizeOptions: props.editor.canvas.resizeOptions,
     }

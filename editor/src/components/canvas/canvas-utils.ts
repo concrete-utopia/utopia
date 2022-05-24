@@ -348,7 +348,7 @@ export function clearDragState(
     getDragStateDrag(result.canvas.dragState, result.canvas.resizeOptions) != null
   ) {
     const producedTransientCanvasState = produceCanvasTransientState(
-      derived.canvas.transientState.selectedViews,
+      derived.transientState.selectedViews,
       result,
       false,
     )
@@ -367,9 +367,7 @@ export function clearDragState(
       ...result.canvas,
       dragState: null,
     },
-    selectedViews: applyChanges
-      ? derived.canvas.transientState.selectedViews
-      : result.selectedViews,
+    selectedViews: applyChanges ? derived.transientState.selectedViews : result.selectedViews,
   }
 }
 
