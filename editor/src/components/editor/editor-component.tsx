@@ -8,7 +8,7 @@ import { DndProvider } from 'react-dnd'
 import { HTML5Backend } from 'react-dnd-html5-backend'
 import Utils from '../../utils/utils'
 import { FancyError, RuntimeErrorInfo } from '../../core/shared/code-exec-utils'
-import { getCursorFromDragState } from '../canvas/canvas-utils'
+import { getCursorFromDragStateOrInteractionSession } from '../canvas/canvas-utils'
 import { DesignPanelRoot } from '../canvas/design-panel-root'
 import { resizeLeftPane } from '../common/actions'
 import { ConfirmCloseDialog } from '../filebrowser/confirm-close-dialog'
@@ -436,7 +436,10 @@ export function EditorComponent(props: EditorProps) {
 
 const EditorCursorComponent = React.memo(() => {
   const cursor = useEditorState((store) => {
-    return Utils.defaultIfNull(store.editor.canvas.cursor, getCursorFromDragState(store.editor))
+    return Utils.defaultIfNull(
+      store.editor.canvas.cursor,
+      getCursorFromDragStateOrInteractionSession(store.editor),
+    )
   }, 'EditorCursorComponent cursor')
 
   const styleProps = React.useMemo(() => {
