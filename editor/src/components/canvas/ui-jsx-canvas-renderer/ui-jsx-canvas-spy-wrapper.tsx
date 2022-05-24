@@ -57,7 +57,7 @@ export function buildSpyWrappedElement(
     }
     if (!EP.isStoryboardPath(elementPath) || shouldIncludeCanvasRootInTheSpy) {
       const elementPathString = EP.toComponentId(elementPath)
-      updateInvalidatedPaths((current) => current.add(elementPathString), 'invalidate')
+      updateInvalidatedPaths((current) => current.add(elementPathString))
       metadataContext.current.spyValues.metadata[elementPathString] = instanceMetadata
     }
   }

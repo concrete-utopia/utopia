@@ -27,7 +27,7 @@ export const SceneComponent = React.memo(
       ...style,
     }
 
-    updateInvalidatedPaths((current) => current.add(props[UTOPIA_SCENE_ID_KEY]), 'invalidate')
+    updateInvalidatedPaths((current) => current.add(props[UTOPIA_SCENE_ID_KEY]))
 
     return (
       <Scene {...remainingProps} style={sceneStyle}>
