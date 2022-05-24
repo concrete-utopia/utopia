@@ -51,7 +51,6 @@ import { LargeProjectContents } from '../../test-cases/large-project'
 import { VSCodeLoadingScreenID } from '../../components/code-editor/vscode-editor-loading-screen'
 import { v4 as UUID } from 'uuid'
 import { SmallSingleDivProjectContents } from '../../test-cases/simple-single-div-project'
-import { PERFORMANCE_TEST_ITERATION_COUNT } from '../../common/env-vars'
 
 export function wait(timeout: number): Promise<void> {
   return new Promise((resolve) => {
@@ -59,7 +58,7 @@ export function wait(timeout: number): Promise<void> {
   })
 }
 
-const NumberOfIterations = PERFORMANCE_TEST_ITERATION_COUNT
+const NumberOfIterations = 100
 
 function markStart(prefix: string, framesPassed: number): void {
   performance.mark(`${prefix}_start_${framesPassed}`)

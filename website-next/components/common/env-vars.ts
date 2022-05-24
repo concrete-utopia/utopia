@@ -27,11 +27,6 @@ export const DEEP_FREEZE_STATE = !PRODUCTION_ENV
 export const RUN_PERFORMANCE_CHECK = false
 export const REFERENCE_EQUALITY_CHECK = false
 
-export const PERFORMANCE_TEST_ITERATION_COUNT =
-  typeof process.env.PERFORMANCE_TEST_ITERATION_COUNT === 'number'
-    ? process.env.PERFORMANCE_TEST_ITERATION_COUNT // can be overwritten by environment. in vite.config.js it is set to 5 for convenient local development
-    : 100 // the default case for performance tests on the CI
-
 export const BASE_WS: string = PRODUCTION_OR_STAGING_CONFIG ? `wss://${HOST}/` : `ws://${HOST}/`
 
 export const STATIC_BASE_URL: string =
