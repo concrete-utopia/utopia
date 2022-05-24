@@ -214,7 +214,6 @@ import { LayoutTargetablePropArrayKeepDeepEquality } from '../../utils/deep-equa
 import { stylePropPathMappingFn } from '../inspector/common/property-path-hooks'
 import { EditorDispatch } from '../editor/action-types'
 import CanvasActions from './canvas-actions'
-import { InteractionSession } from './canvas-strategies/interaction-state'
 
 export function getOriginalFrames(
   selectedViews: Array<ElementPath>,
@@ -1447,12 +1446,7 @@ export function calculateNewBounds(
   }
 }
 
-export function getCursorFromDragStateOrInteractionSession(
-  editorState: EditorState,
-): CSSCursor | null {
-  if (editorState.canvas.interactionSession != null) {
-    return getCursorFromInteractionSession(editorState.canvas.interactionSession)
-  }
+export function getCursorFromDragState(editorState: EditorState): CSSCursor | null {
   const dragState = editorState.canvas.dragState
   if (dragState == null) {
     return null
@@ -1512,34 +1506,6 @@ export function getCursorFromDragStateOrInteractionSession(
         const _exhaustiveCheck: never = dragState
         throw new Error(`Unhandled drag state type ${JSON.stringify(dragState)}`)
     }
-  }
-}
-
-function getCursorFromInteractionSession(interactionSession: InteractionSession) {
-  switch (interactionSession.activeControl.type) {
-    case 'BOUNDING_AREA':
-      return CSSCursor.Move
-    case 'FLEX_GAP_HANDLE':
-      return CSSCursor.Move
-    case 'RESIZE_HANDLE':
-      const edgePosition = interactionSession.activeControl.edgePosition
-      const isTopLeft = edgePosition.x === 0 && edgePosition.y === 0
-      const isBottomRight = edgePosition.x === 1 && edgePosition.y === 1
-
-      if (isEdgePositionAHorizontalEdge(edgePosition)) {
-        return CSSCursor.ResizeNS
-      } else if (isEdgePositionAVerticalEdge(edgePosition)) {
-        return CSSCursor.ResizeEW
-      } else if (isTopLeft || isBottomRight) {
-        return CSSCursor.ResizeNWSE
-      } else {
-        return CSSCursor.ResizeNESW
-      }
-    case 'KEYBOARD_CATCHER_CONTROL':
-      return null
-    default:
-      const _exhaustiveCheck: never = interactionSession.activeControl
-      throw new Error(`Unhandled control type ${JSON.stringify(interactionSession.activeControl)}`)
   }
 }
 
