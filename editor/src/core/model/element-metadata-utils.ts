@@ -1254,7 +1254,7 @@ export const MetadataUtils = {
     if (isAnimatedComponent) {
       return false
     }
-    const isImported = isImportedComponentNPM(element)
+    const isImported = isImportedComponent(element)
     if (isImported) {
       return false
     }
