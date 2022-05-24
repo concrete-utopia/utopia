@@ -20,9 +20,10 @@ import {
 import { ElementPath } from '../../../core/shared/project-file-types'
 import Utils from '../../../utils/utils'
 import { stylePropPathMappingFn } from '../../inspector/common/property-path-hooks'
-import { EdgePosition } from '../canvas-types'
+import { CSSCursor, EdgePosition } from '../canvas-types'
 import {
   isEdgePositionAHorizontalEdge,
+  isEdgePositionAVerticalEdge,
   isEdgePositionOnSide,
   pickPointOnRect,
   snapPoint,
@@ -456,4 +457,19 @@ function getPointOnVerticalLine(p: CanvasPoint) {
     x: p.x,
     y: p.y + 100,
   })
+}
+
+export function pickCursorFromEdgePosition(edgePosition: EdgePosition) {
+  const isTopLeft = edgePosition.x === 0 && edgePosition.y === 0
+  const isBottomRight = edgePosition.x === 1 && edgePosition.y === 1
+
+  if (isEdgePositionAHorizontalEdge(edgePosition)) {
+    return CSSCursor.ResizeNS
+  } else if (isEdgePositionAVerticalEdge(edgePosition)) {
+    return CSSCursor.ResizeEW
+  } else if (isTopLeft || isBottomRight) {
+    return CSSCursor.ResizeNWSE
+  } else {
+    return CSSCursor.ResizeNESW
+  }
 }
