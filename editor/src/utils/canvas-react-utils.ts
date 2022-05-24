@@ -410,6 +410,7 @@ const mangleExoticType = Utils.memoize(
 
     if ((type as any).render != null) {
       // React.forwardRef uses a field `render` to hold the actual component
+      // FIXME This isn't quite right. Something else is needed to handle forwardRef components...
       const innerRender = (type as any).render
       mangledType = {
         ...type,
