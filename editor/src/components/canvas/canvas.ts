@@ -16,8 +16,9 @@ import { EditorAction } from '../editor/action-types'
 import * as EditorActions from '../editor/actions/action-creators'
 import { DerivedState, EditorState } from '../editor/store/editor-state'
 import * as EP from '../../core/shared/element-path'
-import { buildTree, forEachChildOfTarget } from '../../core/shared/element-path-tree'
+import { buildTree, ElementPathTree, getSubTree } from '../../core/shared/element-path-tree'
 import { objectValues } from '../../core/shared/object-utils'
+import { fastForEach } from '../../core/shared/utils'
 
 export enum TargetSearchType {
   ParentsOfSelected = 'ParentsOfSelected',
@@ -53,10 +54,17 @@ const Canvas = {
     // the code that produced these elements.
     const projectTree = buildTree(objectValues(metadata).map((m) => m.elementPath))
 
-    function recurseChildren(component: ElementInstanceMetadata): {
+    function recurseChildren(componentTree: ElementPathTree): {
       boundingRect: CanvasRectangle | null
       frames: Array<FrameWithPath>
     } {
+      const component = MetadataUtils.findElementByElementPath(metadata, componentTree.path)
+      if (component == null) {
+        return {
+          boundingRect: null,
+          frames: [],
+        }
+      }
       const globalFrame = component.globalFrame
       if (globalFrame == null) {
         return {
@@ -68,16 +76,13 @@ const Canvas = {
       const overflows = MetadataUtils.overflows(component)
       const includeClippedNext = useBoundingFrames && overflows
 
-      let children: Array<ElementInstanceMetadata> = []
-      let unfurledComponents: Array<ElementInstanceMetadata> = []
-      forEachChildOfTarget(projectTree, component.elementPath, (childPath) => {
-        const childMetadata = MetadataUtils.findElementByElementPath(metadata, childPath)
-        if (childMetadata != null) {
-          if (EP.isRootElementOfInstance(childPath)) {
-            unfurledComponents.push(childMetadata)
-          } else {
-            children.push(childMetadata)
-          }
+      let children: Array<ElementPathTree> = []
+      let unfurledComponents: Array<ElementPathTree> = []
+      fastForEach(componentTree.children, (childTree) => {
+        if (EP.isRootElementOfInstance(childTree.path)) {
+          unfurledComponents.push(childTree)
+        } else {
+          children.push(childTree)
         }
       })
 
@@ -108,9 +113,14 @@ const Canvas = {
       }
     }
 
-    const storyboardChildren = MetadataUtils.getAllStoryboardChildren(metadata)
+    const storyboardChildren = MetadataUtils.getAllStoryboardChildrenPaths(metadata)
     return storyboardChildren.flatMap((storyboardChild) => {
-      return recurseChildren(storyboardChild).frames
+      const subTree = getSubTree(projectTree, storyboardChild)
+      if (subTree == null) {
+        return []
+      } else {
+        return recurseChildren(subTree).frames
+      }
     })
   },
   jumpToParent(selectedViews: Array<ElementPath>): ElementPath | 'CLEAR' | null {

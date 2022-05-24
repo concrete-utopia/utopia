@@ -29,6 +29,7 @@ import { convertToAbsolute } from '../commands/convert-to-absolute-command'
 import { setCssLengthProperty } from '../commands/set-css-length-command'
 import { setCursorCommand } from '../commands/set-cursor-command'
 import { showOutlineHighlight } from '../commands/show-outline-highlight-command'
+import { ParentOutlines } from '../controls/parent-outlines'
 import { DragOutlineControl } from '../controls/select-mode/drag-outline-control'
 import { AnimationTimer, PieTimerControl } from '../controls/select-mode/pie-timer'
 import { applyAbsoluteMoveCommon } from './absolute-move-strategy'
@@ -68,6 +69,11 @@ export const escapeHatchStrategy: CanvasStrategy = {
       control: PieTimerControl,
       key: 'pie-timer-control',
       show: 'visible-only-while-active',
+    },
+    {
+      control: ParentOutlines,
+      key: 'parent-outlines-control',
+      show: 'always-visible',
     },
   ],
   fitness: (canvasState, interactionState, strategyState) => {

@@ -75,6 +75,18 @@ export function forEachChildOfTarget(
   target: ElementPath,
   handler: (elementPath: ElementPath) => void,
 ): void {
+  const foundTree = getSubTree(treeRoot, target)
+  if (foundTree != null) {
+    fastForEach(foundTree.children, (subTree) => {
+      handler(subTree.path)
+    })
+  }
+}
+
+export function getSubTree(
+  treeRoot: ElementPathTreeRoot,
+  target: ElementPath,
+): ElementPathTree | null {
   let workingRoot: ElementPathTreeRoot = treeRoot
   const totalParts = target.parts.reduce((workingCount, elem) => {
     return workingCount + elem.length
@@ -97,17 +109,17 @@ export function forEachChildOfTarget(
     const foundTree = workingRoot.find((elem) => EP.pathsEqual(elem.path, subElementPath))
     // Should there not be something at this point of the tree, bail out.
     if (foundTree == null) {
-      return
+      return null
     } else {
       if (pathSize === totalParts) {
         // When this is true, we're at the target element.
-        fastForEach(foundTree.children, (subTree) => {
-          handler(subTree.path)
-        })
+        return foundTree
       } else {
         // Otherwise continue working down the tree.
         workingRoot = foundTree.children
       }
     }
   }
+
+  return null
 }
