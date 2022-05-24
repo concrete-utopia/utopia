@@ -105,12 +105,7 @@ import { UTOPIA_LABEL_KEY } from './utopia-constants'
 import { withUnderlyingTarget } from '../../components/editor/store/editor-state'
 import { ProjectContentTreeRoot } from '../../components/assets'
 import { memoize } from '../shared/memoize'
-import {
-  buildTree,
-  ElementPathTree,
-  forEachChildOfTarget,
-  getSubTree,
-} from '../shared/element-path-tree'
+import { buildTree, ElementPathTree, getSubTree } from '../shared/element-path-tree'
 const ObjectPathImmutable: any = OPI
 
 export const getChildrenOfCollapsedViews = (
@@ -533,15 +528,20 @@ export const MetadataUtils = {
 
       // This function needs to explicitly return the paths in a depth first manner
       let result: Array<ElementPath> = []
-      function recurseElement(elementPath: ElementPath): void {
-        result.push(elementPath)
-        forEachChildOfTarget(projectTree, elementPath, (childPath) => {
-          recurseElement(childPath)
+      function recurseElement(tree: ElementPathTree): void {
+        result.push(tree.path)
+        fastForEach(tree.children, (childTree) => {
+          recurseElement(childTree)
         })
       }
 
       const storyboardChildren = MetadataUtils.getAllStoryboardChildrenPaths(metadata)
-      fastForEach(storyboardChildren, recurseElement)
+      fastForEach(storyboardChildren, (childPath) => {
+        const subTree = getSubTree(projectTree, childPath)
+        if (subTree != null) {
+          recurseElement(subTree)
+        }
+      })
 
       const uniqueResult = uniqBy<ElementPath>(result, EP.pathsEqual)
 
@@ -557,15 +557,14 @@ export const MetadataUtils = {
     const projectTree = buildTree(objectValues(metadata).map((m) => m.elementPath))
     // This function needs to explicitly return the paths in a depth first manner
     let result: Array<ElementPath> = []
-    function recurseElement(elementPath: ElementPath): void {
-      result.push(elementPath)
+    function recurseElement(tree: ElementPathTree | null): void {
+      if (tree != null) {
+        result.push(tree.path)
 
-      forEachChildOfTarget(projectTree, elementPath, (childPath) => {
-        const childMetadata = MetadataUtils.findElementByElementPath(metadata, childPath)
-        if (childMetadata != null) {
-          recurseElement(childMetadata.elementPath)
-        }
-      })
+        fastForEach(tree.children, (childTree) => {
+          recurseElement(childTree)
+        })
+      }
     }
 
     const rootInstances = this.getAllStoryboardChildrenPaths(metadata)
@@ -575,9 +574,15 @@ export const MetadataUtils = {
       if (element != null) {
         result.push(rootInstance)
         const rootElements = MetadataUtils.getRootViewPaths(metadata, element.elementPath)
-        rootElements.forEach(recurseElement)
+        fastForEach(rootElements, (rootPath) => {
+          const subTree = getSubTree(projectTree, rootPath)
+          recurseElement(subTree)
+        })
         const children = MetadataUtils.getChildrenPaths(metadata, element.elementPath)
-        children.forEach(recurseElement)
+        fastForEach(children, (child) => {
+          const subTree = getSubTree(projectTree, child)
+          recurseElement(subTree)
+        })
       }
     })
 
