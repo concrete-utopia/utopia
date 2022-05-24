@@ -700,7 +700,7 @@ export type CanvasAction =
   | SetSelectionControlsVisibility
   | SetUsersPreferredStrategy
 
-export type CanvasModel = {
+export interface CanvasModel {
   controls: Array<HigherOrderControl>
   dragState: DragState | null
   keysPressed: KeysPressed

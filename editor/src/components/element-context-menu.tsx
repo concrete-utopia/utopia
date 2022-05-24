@@ -188,7 +188,7 @@ export const ElementContextMenu = React.memo(({ contextMenuInstance }: ElementCo
       editorDispatch: store.dispatch,
       projectContents: store.editor.projectContents,
       nodeModules: store.editor.nodeModules.files,
-      transientFilesState: store.derived.canvas.transientState.filesState,
+      transientFilesState: store.derived.transientState.filesState,
       resolve: resolveFn,
       hiddenInstances: store.editor.hiddenInstances,
       scale: store.editor.canvas.scale,

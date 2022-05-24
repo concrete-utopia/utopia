@@ -373,7 +373,7 @@ export function runDomWalker({
 
 function selectCanvasInteractionHappening(store: EditorStorePatched): boolean {
   const interactionSessionActive = store.editor.canvas.interactionSession != null
-  const oldDragStateActiveKILLME = store.derived.canvas.transientState.filesState != null
+  const oldDragStateActiveKILLME = store.derived.transientState.filesState != null
   return interactionSessionActive || oldDragStateActiveKILLME
 }
 

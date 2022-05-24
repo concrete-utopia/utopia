@@ -1055,15 +1055,12 @@ export function restoreDerivedState(history: StateHistory): DerivedState {
   return {
     navigatorTargets: poppedDerived.navigatorTargets,
     visibleNavigatorTargets: poppedDerived.visibleNavigatorTargets,
-    canvas: {
-      descendantsOfHiddenInstances: poppedDerived.canvas.descendantsOfHiddenInstances,
-      controls: [],
-      transientState: produceCanvasTransientState(
-        poppedDerived.canvas.transientState.selectedViews,
-        history.current.editor,
-        true,
-      ),
-    },
+    controls: [],
+    transientState: produceCanvasTransientState(
+      poppedDerived.transientState.selectedViews,
+      history.current.editor,
+      true,
+    ),
     elementWarnings: poppedDerived.elementWarnings,
   }
 }

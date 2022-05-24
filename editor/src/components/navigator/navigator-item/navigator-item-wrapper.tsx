@@ -51,7 +51,7 @@ const navigatorItemWrapperSelectorFactory = (elementPath: ElementPath) =>
     (store: EditorStorePatched) => store.editor.jsxMetadata,
     (store: EditorStorePatched) => store.editor.selectedViews,
     (store: EditorStorePatched) => store.editor.highlightedViews,
-    (store: EditorStorePatched) => store.derived.canvas.transientState,
+    (store: EditorStorePatched) => store.derived.transientState,
     (store: EditorStorePatched) => store.derived.navigatorTargets,
     (store: EditorStorePatched) => store.derived.elementWarnings,
     (store: EditorStorePatched) => store.editor.projectContents,
