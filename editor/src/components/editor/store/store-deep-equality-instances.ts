@@ -432,35 +432,23 @@ export function TransientCanvasStateKeepDeepEquality(): KeepDeepEqualityCall<Tra
 }
 
 export function DerivedStateKeepDeepEquality(): KeepDeepEqualityCall<DerivedState> {
-  return combine6EqualityCalls(
+  return combine5EqualityCalls(
     (state) => state.navigatorTargets,
     ElementPathArrayKeepDeepEquality,
     (state) => state.visibleNavigatorTargets,
     ElementPathArrayKeepDeepEquality,
-    (state) => state.canvas.descendantsOfHiddenInstances,
-    ElementPathArrayKeepDeepEquality,
-    (state) => state.canvas.controls,
+    (state) => state.controls,
     HigherOrderControlArrayKeepDeepEquality,
-    (state) => state.canvas.transientState,
+    (state) => state.transientState,
     TransientCanvasStateKeepDeepEquality(),
     (state) => state.elementWarnings,
     ComplexMapKeepDeepEquality(ElementPathKeepDeepEquality, ElementWarningsKeepDeepEquality),
-    (
-      navigatorTargets,
-      visibleNavigatorTargets,
-      descendantsOfHiddenInstances,
-      controls,
-      transientState,
-      elementWarnings,
-    ) => {
+    (navigatorTargets, visibleNavigatorTargets, controls, transientState, elementWarnings) => {
       return {
         navigatorTargets: navigatorTargets,
         visibleNavigatorTargets: visibleNavigatorTargets,
-        canvas: {
-          descendantsOfHiddenInstances: descendantsOfHiddenInstances,
-          controls: controls,
-          transientState: transientState,
-        },
+        controls: controls,
+        transientState: transientState,
         elementWarnings: elementWarnings,
       }
     },

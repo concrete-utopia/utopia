@@ -19,6 +19,7 @@ import {
   AdjustCssLengthProperty,
   adjustCssLengthProperty,
 } from '../commands/adjust-css-length-command'
+import { setCursorCommand } from '../commands/set-cursor-command'
 import { setSnappingGuidelines } from '../commands/set-snapping-guidelines-command'
 import { updateHighlightedViews } from '../commands/update-highlighted-views-command'
 import { AbsoluteResizeControl } from '../controls/select-mode/absolute-resize-control'
@@ -26,6 +27,7 @@ import { AbsolutePin, hasAtLeastTwoPinsPerSide } from './absolute-resize-helpers
 import { CanvasStrategy, emptyStrategyApplicationResult } from './canvas-strategy-types'
 import { getMultiselectBounds } from './shared-absolute-move-strategy-helpers'
 import {
+  pickCursorFromEdgePosition,
   resizeBoundingBox,
   runLegacyAbsoluteResizeSnapping,
 } from './shared-absolute-resize-strategy-helpers'
@@ -140,7 +142,11 @@ export const absoluteResizeBoundingBoxStrategy: CanvasStrategy = {
           },
         )
         return {
-          commands: [...commandsForSelectedElements, updateHighlightedViews('transient', [])],
+          commands: [
+            ...commandsForSelectedElements,
+            updateHighlightedViews('transient', []),
+            setCursorCommand('transient', pickCursorFromEdgePosition(edgePosition)),
+          ],
           customState: null,
         }
       }

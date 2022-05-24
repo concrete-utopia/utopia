@@ -187,7 +187,7 @@ export function pickUiJsxCanvasProps(
     const { imports: imports_KILLME } = getParseSuccessOrTransientForFilePath(
       uiFilePath,
       editor.projectContents,
-      derived.canvas.transientState.filesState,
+      derived.transientState.filesState,
     )
 
     let linkTags = ''
@@ -225,7 +225,7 @@ export function pickUiJsxCanvasProps(
       linkTags: linkTags,
       focusedElementPath: editor.focusedElementPath,
       projectContents: editor.projectContents,
-      transientFilesState: derived.canvas.transientState.filesState,
+      transientFilesState: derived.transientState.filesState,
       propertyControlsInfo: editor.propertyControlsInfo,
       dispatch: dispatch,
       domWalkerAdditionalElementsToUpdate: editor.canvas.domWalkerAdditionalElementsToUpdate,

@@ -1,5 +1,4 @@
 import React from 'react'
-import { zeroCanvasPoint } from '../../../../core/shared/math-utils'
 import { useColorTheme } from '../../../../uuiui'
 import { useEditorState } from '../../../editor/store/store-hook'
 import { getMultiselectBounds } from '../../canvas-strategies/shared-absolute-move-strategy-helpers'
@@ -12,15 +11,15 @@ export const DragOutlineControl = React.memo(() => {
   }, 'GhostOutline frame')
   const dragVector = useEditorState((store) => {
     if (store.editor.canvas.interactionSession?.interactionData.type === 'DRAG') {
-      return store.editor.canvas.interactionSession.interactionData.drag ?? zeroCanvasPoint
+      return store.editor.canvas.interactionSession.interactionData.drag
     } else {
-      return zeroCanvasPoint
+      return null
     }
   }, 'GhostOutline dragVector')
 
   const colorTheme = useColorTheme()
 
-  if (frame == null) {
+  if (frame == null || dragVector == null) {
     return null
   } else {
     return (

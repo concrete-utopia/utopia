@@ -5,7 +5,9 @@ import { CanvasPoint, offsetPoint, zeroCanvasPoint } from '../../../core/shared/
 import { ElementPath } from '../../../core/shared/project-file-types'
 import { keepDeepReferenceEqualityIfPossible } from '../../../utils/react-performance'
 import { withUnderlyingTarget } from '../../editor/store/editor-state'
+import { CSSCursor } from '../canvas-types'
 import { CanvasCommand } from '../commands/commands'
+import { setCursorCommand } from '../commands/set-cursor-command'
 import { setSnappingGuidelines } from '../commands/set-snapping-guidelines-command'
 import { updateHighlightedViews } from '../commands/update-highlighted-views-command'
 import { wildcardPatch } from '../commands/wildcard-patch-command'
@@ -110,6 +112,7 @@ export function applyAbsoluteMoveCommon(
           // TODO this shouldn't be a wildcardPatch
           canvas: { elementsToRerender: { $set: canvasState.selectedElements } },
         }),
+        setCursorCommand('transient', CSSCursor.Move),
       ],
       customState: null,
     }

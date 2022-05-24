@@ -4,6 +4,7 @@ import { CanvasVector, offsetPoint } from '../../../core/shared/math-utils'
 import { ElementPath } from '../../../core/shared/project-file-types'
 import { withUnderlyingTarget } from '../../editor/store/editor-state'
 import { EdgePosition } from '../canvas-types'
+import { setCursorCommand } from '../commands/set-cursor-command'
 import { setSnappingGuidelines } from '../commands/set-snapping-guidelines-command'
 import { updateHighlightedViews } from '../commands/update-highlighted-views-command'
 import { AbsoluteResizeControl } from '../controls/select-mode/absolute-resize-control'
@@ -11,6 +12,7 @@ import { GuidelineWithSnappingVector } from '../guideline'
 import { CanvasStrategy, emptyStrategyApplicationResult } from './canvas-strategy-types'
 import { getMultiselectBounds } from './shared-absolute-move-strategy-helpers'
 import {
+  pickCursorFromEdgePosition,
   resizeBoundingBox,
   runLegacyAbsoluteResizeSnapping,
 } from './shared-absolute-resize-strategy-helpers'
@@ -97,6 +99,7 @@ export const absoluteResizeDeltaStrategy: CanvasStrategy = {
         commands: [
           ...commandsForSelectedElements,
           updateHighlightedViews('transient', []),
+          setCursorCommand('transient', pickCursorFromEdgePosition(edgePosition)),
           setSnappingGuidelines('transient', guidelinesWithSnappingVector),
         ],
         customState: null,
