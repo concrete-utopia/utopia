@@ -91,7 +91,7 @@ export function createComponentRendererComponent(params: {
 
     const mutableContext = params.mutableContextRef.current[params.filePath].mutableContext
 
-    const rerenderUtopiaContext = usePubSubAtomReadOnly(RerenderUtopiaCtxAtom, true)
+    const rerenderUtopiaContext = usePubSubAtomReadOnly(RerenderUtopiaCtxAtom, false)
 
     const instancePath: ElementPath | null = tryToGetInstancePath(instancePathAny, pathsString)
 
