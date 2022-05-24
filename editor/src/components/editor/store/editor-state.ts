@@ -1809,35 +1809,30 @@ function getElementWarningsInner(
   rootMetadata: ElementInstanceMetadataMap,
 ): ComplexMap<ElementPath, ElementWarnings> {
   let result: ComplexMap<ElementPath, ElementWarnings> = emptyComplexMap()
-  MetadataUtils.walkMetadata(
-    rootMetadata,
-    (elementMetadata: ElementInstanceMetadata, parentMetadata: ElementInstanceMetadata | null) => {
-      // Check to see if this element is collapsed in one dimension.
-      const globalFrame = elementMetadata.globalFrame
-      const widthOrHeightZero =
-        globalFrame != null ? globalFrame.width === 0 || globalFrame.height === 0 : false
+  Object.values(rootMetadata).forEach((elementMetadata) => {
+    // Check to see if this element is collapsed in one dimension.
+    const globalFrame = elementMetadata.globalFrame
+    const widthOrHeightZero =
+      globalFrame != null ? globalFrame.width === 0 || globalFrame.height === 0 : false
 
-      // Identify if this element looks to be trying to position itself with "pins", but
-      // the parent element isn't appropriately configured.
-      let absoluteWithUnpositionedParent: boolean = false
-      if (parentMetadata != null) {
-        if (
-          elementMetadata.specialSizeMeasurements.position === 'absolute' &&
-          !elementMetadata.specialSizeMeasurements.immediateParentProvidesLayout
-        ) {
-          absoluteWithUnpositionedParent = true
-        }
-      }
+    // Identify if this element looks to be trying to position itself with "pins", but
+    // the parent element isn't appropriately configured.
+    let absoluteWithUnpositionedParent: boolean = false
+    if (
+      elementMetadata.specialSizeMeasurements.position === 'absolute' &&
+      !elementMetadata.specialSizeMeasurements.immediateParentProvidesLayout
+    ) {
+      absoluteWithUnpositionedParent = true
+    }
 
-      // Build the warnings object and add it to the map.
-      const warnings: ElementWarnings = {
-        widthOrHeightZero: widthOrHeightZero,
-        absoluteWithUnpositionedParent: absoluteWithUnpositionedParent,
-        dynamicSceneChildWidthHeightPercentage: false,
-      }
-      result = addToComplexMap(toString, result, elementMetadata.elementPath, warnings)
-    },
-  )
+    // Build the warnings object and add it to the map.
+    const warnings: ElementWarnings = {
+      widthOrHeightZero: widthOrHeightZero,
+      absoluteWithUnpositionedParent: absoluteWithUnpositionedParent,
+      dynamicSceneChildWidthHeightPercentage: false,
+    }
+    result = addToComplexMap(toString, result, elementMetadata.elementPath, warnings)
+  })
   return result
 }
 
