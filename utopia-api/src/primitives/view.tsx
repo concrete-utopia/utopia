@@ -13,7 +13,7 @@ export const View: React.FunctionComponent<ViewProps> = (props: ViewProps) => {
   const propsWithEventHandlers = addEventHandlersToDivProps(divProps)
 
   return (
-    <div {...propsWithEventHandlers} data-uid={dataUid} data-label={dataLabel}>
+    <div {...propsWithEventHandlers} data-label={dataLabel}>
       {props.children}
     </div>
   )
