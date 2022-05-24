@@ -623,11 +623,16 @@ export function useTriggerAbsoluteMovePerformanceTest(
             bubbles: true,
             cancelable: true,
             metaKey: false,
-            clientX: targetBounds.left + (20 + moveCount * 3),
-            clientY: targetBounds.top + (20 + moveCount * 4),
+            clientX: targetBounds.left + (20 + 10 + moveCount * 3),
+            clientY: targetBounds.top + (20 + 10 + moveCount * 4),
             buttons: 1,
           }),
         )
+        const newBounds = targetElement.getBoundingClientRect()
+        if (newBounds.left !== targetBounds.left + 10 + moveCount * 3) {
+          console.info('ABSOLUTE_MOVE_TEST_ERROR')
+          return
+        }
         await wait(0)
       }
       markEnd('absolute_move_move', framesPassed)
