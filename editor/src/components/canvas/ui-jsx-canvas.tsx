@@ -325,11 +325,12 @@ export const UiJsxCanvas = React.memo<UiJsxCanvasPropsWithErrorCallback>((props)
 
   let metadataContext: UiJsxCanvasContextData = forceNotNull(
     `Missing UiJsxCanvasCtxAtom provider`,
-    usePubSubAtomReadOnly(UiJsxCanvasCtxAtom),
+    usePubSubAtomReadOnly(UiJsxCanvasCtxAtom, () => false),
   )
 
   const updateInvalidatedPaths: DomWalkerInvalidatePathsCtxData = usePubSubAtomReadOnly(
     DomWalkerInvalidatePathsCtxAtom,
+    () => false,
   )
   useClearSpyMetadataOnRemount(props.mountCount, props.domWalkerInvalidateCount, metadataContext)
 
