@@ -2,7 +2,9 @@ import { MetadataUtils } from '../../../core/model/element-metadata-utils'
 import { ElementInstanceMetadataMap } from '../../../core/shared/element-template'
 import { CanvasPoint, offsetPoint, zeroCanvasPoint } from '../../../core/shared/math-utils'
 import { ElementPath } from '../../../core/shared/project-file-types'
+import { CSSCursor } from '../canvas-types'
 import { CanvasCommand } from '../commands/commands'
+import { setCursorCommand } from '../commands/set-cursor-command'
 import { setSnappingGuidelines } from '../commands/set-snapping-guidelines-command'
 import { updateHighlightedViews } from '../commands/update-highlighted-views-command'
 import { runLegacyAbsoluteMoveSnapping } from '../controls/guideline-helpers'
@@ -100,6 +102,7 @@ export function applyAbsoluteMoveCommon(
         ...commandsForSelectedElements,
         updateHighlightedViews('transient', []),
         setSnappingGuidelines('transient', guidelinesWithSnappingVector),
+        setCursorCommand('transient', CSSCursor.Move),
       ],
       customState: null,
     }

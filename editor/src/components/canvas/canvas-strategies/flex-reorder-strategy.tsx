@@ -13,6 +13,8 @@ import {
 import * as EP from '../../../core/shared/element-path'
 import { reverse, stripNulls } from '../../../core/shared/array-utils'
 import { DragOutlineControl } from '../controls/select-mode/drag-outline-control'
+import { CSSCursor } from '../canvas-types'
+import { setCursorCommand } from '../commands/set-cursor-command'
 import { ParentOutlines } from '../controls/parent-outlines'
 
 export const flexReorderStrategy: CanvasStrategy = {
@@ -87,7 +89,7 @@ export const flexReorderStrategy: CanvasStrategy = {
 
     if (realNewIndex === unpatchedIndex) {
       return {
-        commands: [],
+        commands: [setCursorCommand('transient', CSSCursor.Move)],
         customState: {
           ...strategyState.customStrategyState,
           lastReorderIdx: realNewIndex,
@@ -95,7 +97,10 @@ export const flexReorderStrategy: CanvasStrategy = {
       }
     } else {
       return {
-        commands: [reorderElement('permanent', target, realNewIndex)],
+        commands: [
+          reorderElement('permanent', target, realNewIndex),
+          setCursorCommand('transient', CSSCursor.Move),
+        ],
         customState: {
           ...strategyState.customStrategyState,
           lastReorderIdx: realNewIndex,
