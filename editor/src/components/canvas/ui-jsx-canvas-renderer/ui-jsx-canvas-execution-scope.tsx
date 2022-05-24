@@ -176,14 +176,11 @@ export function createExecutionScope(
 
 const emptyHighlightBoundsResult = { code: '', highlightBounds: null }
 
-export function useGetCodeAndHighlightBounds(
-  filePath: string | null,
-  updateOnChange: boolean,
-): {
+export function useGetCodeAndHighlightBounds(filePath: string | null): {
   code: string
   highlightBounds: HighlightBoundsForUids | null
 } {
-  const projectContext = usePubSubAtomReadOnly(UtopiaProjectCtxAtom, updateOnChange)
+  const projectContext = usePubSubAtomReadOnly(UtopiaProjectCtxAtom)
   if (filePath == null) {
     return emptyHighlightBoundsResult
   } else {

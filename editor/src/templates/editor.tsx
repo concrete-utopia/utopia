@@ -76,6 +76,7 @@ import {
   UiJsxCanvasContextData,
   emptyUiJsxCanvasContextData,
   UiJsxCanvasCtxAtom,
+  ElementsToRerenderGLOBAL,
 } from '../components/canvas/ui-jsx-canvas'
 import { isLeft } from '../core/shared/either'
 import { importZippedGitProject, isProjectImportSuccess } from '../core/model/project-import'
@@ -367,6 +368,7 @@ export class Editor {
         if (PerformanceMarks) {
           performance.mark(`update canvas ${updateId}`)
         }
+        ElementsToRerenderGLOBAL.current = dispatchResult.patchedEditor.canvas.elementsToRerender // Mutation!
         ReactDOM.flushSync(() => {
           ReactDOM.unstable_batchedUpdates(() => {
             this.updateCanvasStore(patchedStoreFromFullStore(dispatchResult))

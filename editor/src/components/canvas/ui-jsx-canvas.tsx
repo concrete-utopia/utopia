@@ -48,6 +48,7 @@ import {
   getIndexHtmlFileFromEditorState,
   CanvasBase64Blobs,
   TransientFilesState,
+  ElementsToRerender,
 } from '../editor/store/editor-state'
 import { proxyConsole } from './console-proxy'
 import type { UpdateMutableCallback } from './dom-walker'
@@ -98,6 +99,10 @@ import { emptySet } from '../../core/shared/set-utils'
 import { forceNotNull } from '../../core/shared/optional-utils'
 
 const emptyFileBlobs: UIFileBase64Blobs = {}
+
+export const ElementsToRerenderGLOBAL: { current: ElementsToRerender } = {
+  current: 'rerender-all-elements',
+}
 
 export type SpyValues = {
   metadata: ElementInstanceMetadataMap
@@ -320,12 +325,11 @@ export const UiJsxCanvas = React.memo<UiJsxCanvasPropsWithErrorCallback>((props)
 
   let metadataContext: UiJsxCanvasContextData = forceNotNull(
     `Missing UiJsxCanvasCtxAtom provider`,
-    usePubSubAtomReadOnly(UiJsxCanvasCtxAtom, true),
+    usePubSubAtomReadOnly(UiJsxCanvasCtxAtom),
   )
 
   const updateInvalidatedPaths: DomWalkerInvalidatePathsCtxData = usePubSubAtomReadOnly(
     DomWalkerInvalidatePathsCtxAtom,
-    true,
   )
   useClearSpyMetadataOnRemount(props.mountCount, props.domWalkerInvalidateCount, metadataContext)
 
@@ -455,7 +459,6 @@ export const UiJsxCanvas = React.memo<UiJsxCanvasPropsWithErrorCallback>((props)
     hiddenInstances: hiddenInstances,
     canvasIsLive: canvasIsLive,
     shouldIncludeCanvasRootInTheSpy: props.shouldIncludeCanvasRootInTheSpy,
-    elementsToRerender: props.elementsToRerender,
   })
 
   const utopiaProjectContextValue = useKeepShallowReferenceEquality({

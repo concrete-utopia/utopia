@@ -7,14 +7,11 @@ import { UtopiaProjectCtxAtom } from './ui-jsx-canvas-contexts'
 
 const emptyResult = { topLevelElements: [], imports: emptyImports() }
 
-export function useGetTopLevelElementsAndImports(
-  filePath: string | null,
-  updateOnChange: boolean,
-): {
+export function useGetTopLevelElementsAndImports(filePath: string | null): {
   topLevelElements: TopLevelElement[]
   imports: Imports
 } {
-  const projectContext = usePubSubAtomReadOnly(UtopiaProjectCtxAtom, updateOnChange) // TODO MAYBE create a usePubSubAtomSelector
+  const projectContext = usePubSubAtomReadOnly(UtopiaProjectCtxAtom) // TODO MAYBE create a usePubSubAtomSelector
   if (filePath == null) {
     return emptyResult
   } else {

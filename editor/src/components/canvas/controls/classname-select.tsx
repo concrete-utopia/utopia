@@ -90,7 +90,7 @@ function formatOptionLabel(
 
 const Menu = React.memo((props: MenuProps<TailWindOption, true>) => {
   const theme = useColorTheme()
-  const focusedOption = usePubSubAtomReadOnly(focusedOptionAtom, true)
+  const focusedOption = usePubSubAtomReadOnly(focusedOptionAtom)
   const showFooter = props.options.length > 0
   const joinedAttributes = focusedOption?.attributes?.join(', ')
   const attributesText =

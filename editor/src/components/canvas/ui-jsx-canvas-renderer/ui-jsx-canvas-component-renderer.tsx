@@ -14,6 +14,7 @@ import {
   DomWalkerInvalidatePathsCtxData,
   UiJsxCanvasCtxAtom,
   UiJsxCanvasContextData,
+  ElementsToRerenderGLOBAL,
 } from '../ui-jsx-canvas'
 import {
   MutableUtopiaCtxRefData,
@@ -91,22 +92,19 @@ export function createComponentRendererComponent(params: {
 
     const mutableContext = params.mutableContextRef.current[params.filePath].mutableContext
 
-    const rerenderUtopiaContext = usePubSubAtomReadOnly(RerenderUtopiaCtxAtom, false)
+    const rerenderUtopiaContext = usePubSubAtomReadOnly(RerenderUtopiaCtxAtom)
 
     const instancePath: ElementPath | null = tryToGetInstancePath(instancePathAny, pathsString)
 
     const shouldUpdate =
       !isFeatureEnabled('Canvas Selective Rerender') ||
-      rerenderUtopiaContext.elementsToRerender === 'rerender-all-elements' ||
-      rerenderUtopiaContext.elementsToRerender.findIndex((er) => {
+      ElementsToRerenderGLOBAL.current === 'rerender-all-elements' ||
+      ElementsToRerenderGLOBAL.current.findIndex((er) => {
         return instancePath != null && EP.isParentComponentOf(instancePath, er)
       }) > -1
 
-    const { topLevelElements, imports } = useGetTopLevelElementsAndImports(
-      params.filePath,
-      shouldUpdate,
-    )
-    const { code, highlightBounds } = useGetCodeAndHighlightBounds(params.filePath, shouldUpdate)
+    const { topLevelElements, imports } = useGetTopLevelElementsAndImports(params.filePath)
+    const { code, highlightBounds } = useGetCodeAndHighlightBounds(params.filePath)
 
     const utopiaJsxComponent: UtopiaJSXComponent | null =
       topLevelElements.find((elem): elem is UtopiaJSXComponent => {
@@ -116,15 +114,11 @@ export function createComponentRendererComponent(params: {
     const shouldIncludeCanvasRootInTheSpy = rerenderUtopiaContext.shouldIncludeCanvasRootInTheSpy
 
     const hiddenInstances = rerenderUtopiaContext.hiddenInstances
-    const sceneContext = usePubSubAtomReadOnly(SceneLevelUtopiaCtxAtom, shouldUpdate)
+    const sceneContext = usePubSubAtomReadOnly(SceneLevelUtopiaCtxAtom)
 
-    let metadataContext: UiJsxCanvasContextData = usePubSubAtomReadOnly(
-      UiJsxCanvasCtxAtom,
-      shouldUpdate,
-    )
+    let metadataContext: UiJsxCanvasContextData = usePubSubAtomReadOnly(UiJsxCanvasCtxAtom)
     const updateInvalidatedPaths: DomWalkerInvalidatePathsCtxData = usePubSubAtomReadOnly(
       DomWalkerInvalidatePathsCtxAtom,
-      shouldUpdate,
     )
 
     if (utopiaJsxComponent == null) {
@@ -175,7 +169,7 @@ export function createComponentRendererComponent(params: {
       }
     })
 
-    if (utopiaJsxComponent.arbitraryJSBlock != null) {
+    if (utopiaJsxComponent.arbitraryJSBlock != null && shouldUpdate) {
       const lookupRenderer = createLookupRender(
         rootElementPath,
         scope,
@@ -249,7 +243,7 @@ export function createComponentRendererComponent(params: {
       }
     }
 
-    const buildResult = React.useRef(buildComponentRenderResult(utopiaJsxComponent.rootElement))
+    const buildResult = React.useRef<React.ReactElement | null>(null)
     if (shouldUpdate) {
       buildResult.current = buildComponentRenderResult(utopiaJsxComponent.rootElement)
     }

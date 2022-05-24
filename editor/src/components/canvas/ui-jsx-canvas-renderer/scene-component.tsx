@@ -14,7 +14,7 @@ export const SceneComponent = React.memo(
   (props: React.PropsWithChildren<ExtendedSceneProps>) => {
     const colorTheme = useColorTheme()
     const canvasIsLive = false
-    const updateInvalidatedPaths = usePubSubAtomReadOnly(DomWalkerInvalidatePathsCtxAtom, false)
+    const updateInvalidatedPaths = usePubSubAtomReadOnly(DomWalkerInvalidatePathsCtxAtom)
 
     const { style, ...remainingProps } = props
 

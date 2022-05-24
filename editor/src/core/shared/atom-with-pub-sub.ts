@@ -64,16 +64,16 @@ export function useSubscribeToPubSubAtom<T>(
   }, [atom.key, pubsubCallback])
 }
 
-export function usePubSubAtomReadOnly<T>(atom: AtomWithPubSub<T>, updateOnChange: boolean): T {
+export function usePubSubAtomReadOnly<T>(atom: AtomWithPubSub<T>): T {
   const forceUpdate = useForceUpdate()
   const previousValueRef = React.useRef(atom.currentValue)
   useSubscribeToPubSubAtom(
     atom,
     React.useCallback(() => {
-      if (previousValueRef.current !== atom.currentValue && updateOnChange) {
+      if (previousValueRef.current !== atom.currentValue) {
         forceUpdate()
       }
-    }, [forceUpdate, atom, updateOnChange]),
+    }, [forceUpdate, atom]),
   )
   previousValueRef.current = atom.currentValue
   return atom.currentValue
@@ -113,5 +113,5 @@ export function usePubSubAtomWriteOnly<T>(
 export function usePubSubAtom<T>(
   atom: AtomWithPubSub<T>,
 ): [T, (newValueOrUpdater: T | ((oldValue: T) => T)) => void] {
-  return [usePubSubAtomReadOnly(atom, true), usePubSubAtomWriteOnly(atom)]
+  return [usePubSubAtomReadOnly(atom), usePubSubAtomWriteOnly(atom)]
 }
