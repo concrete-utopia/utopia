@@ -28,7 +28,7 @@ export const SceneComponent = React.memo(
     }
 
     // TODO right now we don't actually change the invalidated paths, just let the dom-walker know it should walk again
-    updateInvalidatedPaths((current) => current, 'invalidate')
+    updateInvalidatedPaths((current) => current.add(props[UTOPIA_SCENE_ID_KEY]), 'invalidate')
 
     return (
       <Scene {...remainingProps} style={sceneStyle}>
