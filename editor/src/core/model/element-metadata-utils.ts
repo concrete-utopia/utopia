@@ -753,22 +753,19 @@ export const MetadataUtils = {
           }
 
           const isCollapsed = EP.containsPath(path, collapsedViews)
+          const newCollapsedAncestor = collapsedAncestor || isCollapsed
 
-          let children: Array<ElementPathTree> = []
           let unfurledComponents: Array<ElementPathTree> = []
           fastForEach(subTree.children, (child) => {
             if (EP.isRootElementOfInstance(child.path)) {
               unfurledComponents.push(child)
             } else {
-              children.push(child)
+              walkAndAddKeys(child, newCollapsedAncestor)
             }
           })
 
-          fastForEach(children, (child) => {
-            walkAndAddKeys(child, collapsedAncestor || isCollapsed)
-          })
           fastForEach(unfurledComponents, (unfurledComponent) => {
-            walkAndAddKeys(unfurledComponent, collapsedAncestor || isCollapsed)
+            walkAndAddKeys(unfurledComponent, newCollapsedAncestor)
           })
         }
       }
