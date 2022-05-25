@@ -4022,9 +4022,11 @@ export const UPDATE_FNS = {
     // Calculate the spy metadata given what has been collected.
     const spyResult = spyCollector.current.spyValues.metadata
 
+    const fullMetadata = [...editor.domMetadata, ...action.elementMetadata]
+
     const finalDomMetadata = arrayDeepEquality(ElementInstanceMetadataKeepDeepEquality)(
       editor.domMetadata,
-      action.elementMetadata as Array<ElementInstanceMetadata>, // we convert a ReadonlyArray to a regular array – it'd be nice to make more arrays readonly in the future
+      fullMetadata,
     ).value
     const finalSpyMetadata = ElementInstanceMetadataMapKeepDeepEquality(
       editor.spyMetadata,

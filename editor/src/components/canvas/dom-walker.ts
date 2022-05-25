@@ -1013,11 +1013,16 @@ function walkElements(
       })
     })
 
+    const invalidatedDescendant = foundValidPaths.some((pathWithString) => {
+      return Array.from(invalidatedPaths).some((invalidatedPath) =>
+        EP.isDescendantOfOrEqualTo(EP.fromString(invalidatedPath), pathWithString.path),
+      )
+    })
     // Build the metadata for the children of this DOM node.
     let childPaths: Array<ElementPath> = []
     let rootMetadataAccumulator: ReadonlyArray<ElementInstanceMetadata> = []
     let cachedPathsAccumulator: Array<ElementPath> = []
-    if (traverseChildren) {
+    if ((invalidatedDescendant || invalidated) && traverseChildren) {
       element.childNodes.forEach((child) => {
         const {
           childPaths: childNodePaths,
