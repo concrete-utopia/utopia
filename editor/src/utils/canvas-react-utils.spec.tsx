@@ -735,7 +735,7 @@ describe('Monkey Function', () => {
       }
     }
 
-    class Blue extends React.Component {
+    class Blue extends React.Component<React.PropsWithChildren<{ 'data-uid': string }>> {
       render() {
         return <div data-uid='blue-root'>{this.props.children}</div>
       }
