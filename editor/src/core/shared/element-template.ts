@@ -1531,6 +1531,16 @@ export function elementInstanceMetadata(
 export type DetectedLayoutSystem = 'flex' | 'grid' | 'flow' | 'none'
 export type SettableLayoutSystem = 'flex' | 'flow' | 'grid' | LayoutSystem
 
+export interface FlexProperties {
+  flexBasis: string
+  hasFlexBasis: boolean
+  flex: string
+  flexGrow: string
+  flexShrink: string
+  minWidth: string
+  maxWidth: string
+}
+
 export interface SpecialSizeMeasurements {
   offset: LocalPoint
   coordinateSystemBounds: CanvasRectangle | null
@@ -1553,6 +1563,7 @@ export interface SpecialSizeMeasurements {
   htmlElementName: string
   renderedChildrenCount: number
   globalContentBox: CanvasRectangle | null
+  flexProperties: FlexProperties | null
 }
 
 export function specialSizeMeasurements(
@@ -1577,6 +1588,7 @@ export function specialSizeMeasurements(
   htmlElementName: string,
   renderedChildrenCount: number,
   globalContentBox: CanvasRectangle | null,
+  flexProperties: FlexProperties | null,
 ): SpecialSizeMeasurements {
   return {
     offset,
@@ -1600,6 +1612,7 @@ export function specialSizeMeasurements(
     htmlElementName,
     renderedChildrenCount,
     globalContentBox,
+    flexProperties,
   }
 }
 
@@ -1627,6 +1640,7 @@ export const emptySpecialSizeMeasurements = specialSizeMeasurements(
   null,
   'div',
   0,
+  null,
   null,
 )
 

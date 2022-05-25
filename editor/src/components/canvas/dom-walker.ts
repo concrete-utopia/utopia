@@ -15,6 +15,7 @@ import {
   emptyComputedStyle,
   StyleAttributeMetadata,
   emptyAttributeMetadatada,
+  FlexProperties,
 } from '../../core/shared/element-template'
 import { ElementPath } from '../../core/shared/project-file-types'
 import { getCanvasRectangleFromElement, getDOMAttribute } from '../../core/shared/dom-utils'
@@ -714,6 +715,16 @@ function getSpecialMeasurements(
     height: globalFrame.height - border.top - border.bottom,
   })
 
+  const flexProperties: FlexProperties = {
+    flexBasis: elementStyle.flexBasis,
+    hasFlexBasis: !!(elementStyle.flexBasis && elementStyle.flexBasis !== 'auto'),
+    flex: elementStyle.flex,
+    flexGrow: elementStyle.flexGrow,
+    flexShrink: elementStyle.flexShrink,
+    minWidth: elementStyle.minWidth,
+    maxWidth: elementStyle.maxWidth,
+  }
+
   return specialSizeMeasurements(
     offset,
     coordinateSystemBounds,
@@ -736,6 +747,7 @@ function getSpecialMeasurements(
     element.localName,
     childrenCount,
     globalContentBox,
+    flexProperties,
   )
 }
 
