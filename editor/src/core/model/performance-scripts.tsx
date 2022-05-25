@@ -52,11 +52,11 @@ import { VSCodeLoadingScreenID } from '../../components/code-editor/vscode-edito
 import { v4 as UUID } from 'uuid'
 import { SmallSingleDivProjectContents } from '../../test-cases/simple-single-div-project'
 
-const NumberOfIterations = { current: 5 }
+let NumberOfIterations = 5
 if (window != null) {
   // we are exposing this function on window so it can be called from Puppeteer
   ;(window as any).SetPerformanceScriptNumberOfIterations = (value: number) => {
-    NumberOfIterations.current = value
+    NumberOfIterations = value
     return NumberOfIterations
   }
 }
@@ -195,7 +195,7 @@ export function useTriggerScrollPerformanceTest(): () => void {
         .entireUpdateFinished
       markEnd('scroll', framesPassed)
       measureStep('scroll', framesPassed)
-      if (framesPassed < NumberOfIterations.current) {
+      if (framesPassed < NumberOfIterations) {
         framesPassed++
         requestAnimationFrame(step)
       } else {
@@ -273,7 +273,7 @@ export function useTriggerResizePerformanceTest(): () => void {
       await dispatch([CanvasActions.createDragState(dragState)]).entireUpdateFinished
       markEnd('resize', framesPassed)
       measureStep('resize', framesPassed)
-      if (framesPassed < NumberOfIterations.current) {
+      if (framesPassed < NumberOfIterations) {
         framesPassed++
         requestAnimationFrame(step)
       } else {
@@ -337,7 +337,7 @@ function useTriggerHighlightPerformanceTest(key: 'regular' | 'all-elements'): ()
       markEnd(`highlight_${key}`, framesPassed)
       measureStep(`highlight_${key}`, framesPassed)
 
-      if (framesPassed < NumberOfIterations.current) {
+      if (framesPassed < NumberOfIterations) {
         framesPassed++
         requestAnimationFrame(step)
       } else {
@@ -464,7 +464,7 @@ export function useTriggerSelectionPerformanceTest(): () => void {
       markEnd('select_deselect', framesPassed)
       measureStep('select_deselect', framesPassed)
 
-      if (framesPassed < NumberOfIterations.current) {
+      if (framesPassed < NumberOfIterations) {
         framesPassed++
         requestAnimationFrame(step)
       } else {
@@ -660,7 +660,7 @@ export function useTriggerAbsoluteMovePerformanceTest(
       markEnd('absolute_move_interaction', framesPassed)
       measureStep('absolute_move_interaction', framesPassed)
 
-      if (framesPassed < NumberOfIterations.current) {
+      if (framesPassed < NumberOfIterations) {
         framesPassed++
         requestAnimationFrame(step)
       } else {
