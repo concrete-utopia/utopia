@@ -19,7 +19,7 @@ import { ComponentOrInstanceIndicator } from '../editor/component-button'
 import { IconToggleButton } from '../../uuiui/icon-toggle-button'
 import { LeftPaneDefaultWidth, RightMenuTab, NavigatorWidthAtom } from './store/editor-state'
 import { CanvasVector } from '../../core/shared/math-utils'
-import { usePubSubAtomReadOnly } from '../../core/shared/atom-with-pub-sub'
+import { AlwaysTrue, usePubSubAtomReadOnly } from '../../core/shared/atom-with-pub-sub'
 
 function useShouldResetCanvas(invalidateCount: number): [boolean, (value: boolean) => void] {
   const [shouldResetCanvas, setShouldResetCanvas] = React.useState(false)
@@ -40,7 +40,7 @@ const TopMenuLeftControls = React.memo(() => {
     'TopMenuLeftControls navigatorVisible',
   )
 
-  const navigatorWidth = usePubSubAtomReadOnly(NavigatorWidthAtom, () => true)
+  const navigatorWidth = usePubSubAtomReadOnly(NavigatorWidthAtom, AlwaysTrue)
 
   const onClickNavigateTab = React.useCallback(() => {
     let actions: EditorAction[] = [EditorActions.togglePanel('navigator')]

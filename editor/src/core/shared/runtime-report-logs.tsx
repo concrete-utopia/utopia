@@ -1,6 +1,7 @@
 import React from 'react'
 import type { ConsoleLog } from '../../components/editor/store/editor-state'
 import {
+  AlwaysTrue,
   atomWithPubSub,
   usePubSubAtomReadOnly,
   usePubSubAtomWriteOnly,
@@ -27,7 +28,7 @@ export function useUpdateOnRuntimeErrors(
 }
 
 export function useReadOnlyRuntimeErrors(): Array<RuntimeErrorInfo> {
-  return usePubSubAtomReadOnly(runtimeErrorsAtom, () => true)
+  return usePubSubAtomReadOnly(runtimeErrorsAtom, AlwaysTrue)
 }
 
 export function useWriteOnlyRuntimeErrors(): {
@@ -84,7 +85,7 @@ export function useUpdateOnConsoleLogs(
 }
 
 export function useReadOnlyConsoleLogs(): Array<ConsoleLog> {
-  return usePubSubAtomReadOnly(consoleLogsAtom, () => true)
+  return usePubSubAtomReadOnly(consoleLogsAtom, AlwaysTrue)
 }
 
 export function useWriteOnlyConsoleLogs(): {

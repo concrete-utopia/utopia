@@ -26,7 +26,7 @@ import { FlexColumn, Button, UtopiaTheme, FlexRow } from '../../uuiui'
 import { useReadOnlyRuntimeErrors } from '../../core/shared/runtime-report-logs'
 import StackFrame from '../../third-party/react-error-overlay/utils/stack-frame'
 import { ModeSelectButtons } from './mode-select-buttons'
-import { usePubSubAtomReadOnly } from '../../core/shared/atom-with-pub-sub'
+import { AlwaysTrue, usePubSubAtomReadOnly } from '../../core/shared/atom-with-pub-sub'
 import { ErrorMessage } from '../../core/shared/error-messages'
 import CanvasActions from './canvas-actions'
 import { EditorModes } from '../editor/editor-modes'
@@ -80,7 +80,7 @@ export const CanvasWrapperComponent = React.memo(() => {
     'ErrorOverlayComponent isOverlappingWithNavigator',
   )
 
-  const navigatorWidth = usePubSubAtomReadOnly(NavigatorWidthAtom, () => true)
+  const navigatorWidth = usePubSubAtomReadOnly(NavigatorWidthAtom, AlwaysTrue)
 
   return (
     <FlexColumn

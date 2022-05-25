@@ -87,7 +87,11 @@ import { createExecutionScope } from './ui-jsx-canvas-renderer/ui-jsx-canvas-exe
 import { getParseSuccessOrTransientForFilePath, getValidElementPaths } from './canvas-utils'
 import { fastForEach, NO_OP } from '../../core/shared/utils'
 import { useTwind } from '../../core/tailwind/tailwind'
-import { atomWithPubSub, usePubSubAtomReadOnly } from '../../core/shared/atom-with-pub-sub'
+import {
+  AlwaysFalse,
+  atomWithPubSub,
+  usePubSubAtomReadOnly,
+} from '../../core/shared/atom-with-pub-sub'
 import { omit } from '../../core/shared/object-utils'
 import { validateControlsToCheck } from './canvas-globals'
 import { EditorDispatch } from '../editor/action-types'
@@ -325,12 +329,12 @@ export const UiJsxCanvas = React.memo<UiJsxCanvasPropsWithErrorCallback>((props)
 
   let metadataContext: UiJsxCanvasContextData = forceNotNull(
     `Missing UiJsxCanvasCtxAtom provider`,
-    usePubSubAtomReadOnly(UiJsxCanvasCtxAtom, () => false),
+    usePubSubAtomReadOnly(UiJsxCanvasCtxAtom, AlwaysFalse),
   )
 
   const updateInvalidatedPaths: DomWalkerInvalidatePathsCtxData = usePubSubAtomReadOnly(
     DomWalkerInvalidatePathsCtxAtom,
-    () => false,
+    AlwaysFalse,
   )
   useClearSpyMetadataOnRemount(props.mountCount, props.domWalkerInvalidateCount, metadataContext)
 

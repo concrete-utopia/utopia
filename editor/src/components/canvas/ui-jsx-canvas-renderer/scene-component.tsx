@@ -6,7 +6,7 @@ import { useColorTheme, UtopiaStyles } from '../../../uuiui'
 import { RerenderUtopiaCtxAtom } from './ui-jsx-canvas-contexts'
 import { DomWalkerInvalidatePathsCtxAtom, UiJsxCanvasCtxAtom } from '../ui-jsx-canvas'
 import { UTOPIA_SCENE_ID_KEY } from '../../../core/model/utopia-constants'
-import { usePubSubAtomReadOnly } from '../../../core/shared/atom-with-pub-sub'
+import { AlwaysFalse, usePubSubAtomReadOnly } from '../../../core/shared/atom-with-pub-sub'
 
 type ExtendedSceneProps = SceneProps & { [UTOPIA_SCENE_ID_KEY]: string }
 
@@ -16,7 +16,7 @@ export const SceneComponent = React.memo(
     const canvasIsLive = false
     const updateInvalidatedPaths = usePubSubAtomReadOnly(
       DomWalkerInvalidatePathsCtxAtom,
-      () => false,
+      AlwaysFalse,
     )
 
     const { style, ...remainingProps } = props

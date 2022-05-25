@@ -64,6 +64,9 @@ export function useSubscribeToPubSubAtom<T>(
   }, [atom.key, pubsubCallback])
 }
 
+export const AlwaysTrue = (): boolean => true
+export const AlwaysFalse = (): boolean => false
+
 export function usePubSubAtomReadOnly<T>(
   atom: AtomWithPubSub<T>,
   shouldUpdateCallback: (newValue: T) => boolean,
@@ -123,5 +126,5 @@ export function usePubSubAtomWriteOnly<T>(
 export function usePubSubAtom<T>(
   atom: AtomWithPubSub<T>,
 ): [T, (newValueOrUpdater: T | ((oldValue: T) => T)) => void] {
-  return [usePubSubAtomReadOnly(atom, () => true), usePubSubAtomWriteOnly(atom)]
+  return [usePubSubAtomReadOnly(atom, AlwaysTrue), usePubSubAtomWriteOnly(atom)]
 }
