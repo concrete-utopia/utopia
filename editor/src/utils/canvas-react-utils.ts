@@ -350,7 +350,7 @@ function replaceExoticUIDInPathWithChildUID(
   path: string | null,
   childUID: string | null,
 ): string | undefined {
-  if (path == null || childUID == null) {
+  if (path == null) {
     return undefined
   } else if (path.endsWith(UIDForExotic)) {
     const slicedPath = path.slice(0, path.length - UIDForExotic.length)

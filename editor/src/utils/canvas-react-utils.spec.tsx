@@ -994,6 +994,46 @@ describe('Monkey Function', () => {
     expect(renderedFragmentAtRoot).toEqual(renderedFragmentBelowRoot)
   })
 
+  it('fragment correctly handles path on child with no uid', () => {
+    const FragmentAtRoot = () => {
+      return (
+        <>
+          <div />
+        </>
+      )
+    }
+
+    const FragmentBelowRoot = () => {
+      return (
+        <div data-uid='inner-parent'>
+          <>
+            <div />
+          </>
+        </div>
+      )
+    }
+
+    const renderedFragmentAtRoot = renderToFormattedString(
+      <FragmentAtRoot data-uid={'component'} />,
+    )
+
+    expect(renderedFragmentAtRoot).toMatchInlineSnapshot(`
+      "<div data-path=\\"component\\" data-uid=\\"component\\"></div>
+      "
+    `)
+
+    const renderedFragmentBelowRoot = renderToFormattedString(
+      <FragmentBelowRoot data-uid={'component'} />,
+    )
+
+    expect(renderedFragmentBelowRoot).toMatchInlineSnapshot(`
+      "<div data-uid=\\"inner-parent\\" data-path=\\"component:inner-parent\\">
+        <div></div>
+      </div>
+      "
+    `)
+  })
+
   it('builds the correct paths for Exotic-type with-memo components', () => {
     const Red = React.memo(() => <div data-uid='red-root' />)
 
