@@ -418,10 +418,14 @@ describe('Monkey Function', () => {
       )
     }
 
-    expect(renderToFormattedString(<Component />)).toMatchInlineSnapshot(`
-      "<div data-uid=\\"cica\\">
-        <div data-uid=\\"hello-div\\" data-path=\\"cica/kutya/hello-div\\">Hello</div>
-        <div data-uid=\\"world-div\\" data-path=\\"cica/kutya/world-div\\">world!</div>
+    expect(renderToFormattedString(<Component data-uid='component' />)).toMatchInlineSnapshot(`
+      "<div data-uid=\\"cica\\" data-path=\\"component:cica\\">
+        <div data-uid=\\"hello-div\\" data-path=\\"component:cica/kutya/hello-div\\">
+          Hello
+        </div>
+        <div data-uid=\\"world-div\\" data-path=\\"component:cica/kutya/world-div\\">
+          world!
+        </div>
       </div>
       "
     `)

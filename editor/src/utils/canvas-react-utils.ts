@@ -340,13 +340,13 @@ const mangleClassType = Utils.memoize(
   },
 )
 
-function pathIsRoot(path: string | null): boolean {
+function pathIsRootMaybeRoot(path: string | null): boolean {
   if (path == null) {
     return false
   } else if (path.endsWith(SceneSeparator)) {
     return true
   } else {
-    return !path.includes(SceneSeparator) && !path.includes(ElementSeparator)
+    return !path.includes(SceneSeparator)
   }
 }
 
@@ -370,7 +370,7 @@ function updateChildOfExotic(
 
     // Because the parent of this won't exist in the rendered DOM, we need to capture whether the parent's
     // path was that of a root element, or a child element, and transfer that relationship to this element
-    const isRootElement = pathIsRoot(path)
+    const isRootElement = pathIsRootMaybeRoot(path) && (dataUid == null || path?.endsWith(dataUid))
     const childPath = isRootElement
       ? appendRootUIDToPath(path, child.props?.[UTOPIA_UID_KEY])
       : appendChildUIDToPath(path, child.props?.[UTOPIA_UID_KEY], true)
