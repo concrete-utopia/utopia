@@ -5,6 +5,7 @@ import { ElementPath } from '../../../core/shared/project-file-types'
 import { withUnderlyingTarget } from '../../editor/store/editor-state'
 import { EdgePosition } from '../canvas-types'
 import { setCursorCommand } from '../commands/set-cursor-command'
+import { setElementsToRerenderCommand } from '../commands/set-elements-to-rerender-command'
 import { setSnappingGuidelines } from '../commands/set-snapping-guidelines-command'
 import { updateHighlightedViews } from '../commands/update-highlighted-views-command'
 import { AbsoluteResizeControl } from '../controls/select-mode/absolute-resize-control'
@@ -101,6 +102,7 @@ export const absoluteResizeDeltaStrategy: CanvasStrategy = {
           updateHighlightedViews('transient', []),
           setCursorCommand('transient', pickCursorFromEdgePosition(edgePosition)),
           setSnappingGuidelines('transient', guidelinesWithSnappingVector),
+          setElementsToRerenderCommand(canvasState.selectedElements),
         ],
         customState: null,
       }

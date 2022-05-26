@@ -8,6 +8,7 @@ import { withUnderlyingTarget } from '../../editor/store/editor-state'
 import { CSSCursor } from '../canvas-types'
 import { CanvasCommand } from '../commands/commands'
 import { setCursorCommand } from '../commands/set-cursor-command'
+import { setElementsToRerenderCommand } from '../commands/set-elements-to-rerender-command'
 import { setSnappingGuidelines } from '../commands/set-snapping-guidelines-command'
 import { updateHighlightedViews } from '../commands/update-highlighted-views-command'
 import { wildcardPatch } from '../commands/wildcard-patch-command'
@@ -108,10 +109,7 @@ export function applyAbsoluteMoveCommon(
         ...commandsForSelectedElements,
         updateHighlightedViews('transient', []),
         setSnappingGuidelines('transient', guidelinesWithSnappingVector),
-        wildcardPatch('transient', {
-          // TODO this shouldn't be a wildcardPatch
-          canvas: { elementsToRerender: { $set: canvasState.selectedElements } },
-        }),
+        setElementsToRerenderCommand(canvasState.selectedElements),
         setCursorCommand('transient', CSSCursor.Move),
       ],
       customState: null,
