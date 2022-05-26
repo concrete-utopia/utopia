@@ -29,6 +29,7 @@ import { convertToAbsolute } from '../commands/convert-to-absolute-command'
 import { setCssLengthProperty } from '../commands/set-css-length-command'
 import { setCursorCommand } from '../commands/set-cursor-command'
 import { showOutlineHighlight } from '../commands/show-outline-highlight-command'
+import { ParentBounds } from '../controls/parent-bounds'
 import { ParentOutlines } from '../controls/parent-outlines'
 import { DragOutlineControl } from '../controls/select-mode/drag-outline-control'
 import { AnimationTimer, PieTimerControl } from '../controls/select-mode/pie-timer'
@@ -73,7 +74,12 @@ export const escapeHatchStrategy: CanvasStrategy = {
     {
       control: ParentOutlines,
       key: 'parent-outlines-control',
-      show: 'always-visible',
+      show: 'visible-only-while-active',
+    },
+    {
+      control: ParentBounds,
+      key: 'parent-bounds-control',
+      show: 'visible-only-while-active',
     },
   ],
   fitness: (canvasState, interactionState, strategyState) => {
