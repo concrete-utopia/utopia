@@ -9,6 +9,8 @@ import { setElementsToRerenderCommand } from '../commands/set-elements-to-rerend
 import { setSnappingGuidelines } from '../commands/set-snapping-guidelines-command'
 import { updateHighlightedViews } from '../commands/update-highlighted-views-command'
 import { runLegacyAbsoluteMoveSnapping } from '../controls/guideline-helpers'
+import { ParentBounds } from '../controls/parent-bounds'
+import { ParentOutlines } from '../controls/parent-outlines'
 import { determineConstrainedDragAxis } from '../controls/select-mode/move-utils'
 import { ConstrainedDragAxis, GuidelineWithSnappingVector } from '../guideline'
 import {
@@ -26,7 +28,7 @@ import {
 
 export const absoluteMoveStrategy: CanvasStrategy = {
   id: 'ABSOLUTE_MOVE',
-  name: 'Absolute Move',
+  name: 'Absolute Move (Delta-based)',
   isApplicable: (canvasState, _interactionState, metadata) => {
     if (canvasState.selectedElements.length > 0) {
       const filteredSelectedElements = getDragTargets(canvasState.selectedElements)
@@ -39,7 +41,18 @@ export const absoluteMoveStrategy: CanvasStrategy = {
       return false
     }
   },
-  controlsToRender: [], // Uses existing hooks in select-mode-hooks.tsx
+  controlsToRender: [
+    {
+      control: ParentOutlines,
+      key: 'parent-outlines-control',
+      show: 'visible-only-while-active',
+    },
+    {
+      control: ParentBounds,
+      key: 'parent-bounds-control',
+      show: 'visible-only-while-active',
+    },
+  ], // Uses existing hooks in select-mode-hooks.tsx
   fitness: (canvasState, interactionState, sessionState) => {
     return absoluteMoveStrategy.isApplicable(
       canvasState,

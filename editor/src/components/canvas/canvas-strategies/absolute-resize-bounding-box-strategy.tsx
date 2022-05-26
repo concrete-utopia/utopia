@@ -23,6 +23,8 @@ import { setCursorCommand } from '../commands/set-cursor-command'
 import { setElementsToRerenderCommand } from '../commands/set-elements-to-rerender-command'
 import { setSnappingGuidelines } from '../commands/set-snapping-guidelines-command'
 import { updateHighlightedViews } from '../commands/update-highlighted-views-command'
+import { ParentBounds } from '../controls/parent-bounds'
+import { ParentOutlines } from '../controls/parent-outlines'
 import { AbsoluteResizeControl } from '../controls/select-mode/absolute-resize-control'
 import { AbsolutePin, hasAtLeastTwoPinsPerSide } from './absolute-resize-helpers'
 import { CanvasStrategy, emptyStrategyApplicationResult } from './canvas-strategy-types'
@@ -56,6 +58,8 @@ export const absoluteResizeBoundingBoxStrategy: CanvasStrategy = {
   },
   controlsToRender: [
     { control: AbsoluteResizeControl, key: 'absolute-resize-control', show: 'always-visible' },
+    { control: ParentOutlines, key: 'parent-outlines-control', show: 'visible-only-while-active' },
+    { control: ParentBounds, key: 'parent-bounds-control', show: 'visible-only-while-active' },
   ],
   fitness: (canvasState, interactionState, sessionState) => {
     return absoluteResizeBoundingBoxStrategy.isApplicable(
