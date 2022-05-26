@@ -52,13 +52,20 @@ import { VSCodeLoadingScreenID } from '../../components/code-editor/vscode-edito
 import { v4 as UUID } from 'uuid'
 import { SmallSingleDivProjectContents } from '../../test-cases/simple-single-div-project'
 
+let NumberOfIterations = 5
+if (window != null) {
+  // we are exposing this function on window so it can be called from Puppeteer
+  ;(window as any).SetPerformanceScriptNumberOfIterations = (value: number) => {
+    NumberOfIterations = value
+    return NumberOfIterations
+  }
+}
+
 export function wait(timeout: number): Promise<void> {
   return new Promise((resolve) => {
     setTimeout(resolve, timeout)
   })
 }
-
-const NumberOfIterations = 100
 
 function markStart(prefix: string, framesPassed: number): void {
   performance.mark(`${prefix}_start_${framesPassed}`)

@@ -3,6 +3,8 @@ import * as EP from '../../../core/shared/element-path'
 import { getReparentTarget } from '../canvas-utils'
 import { reparentElement } from '../commands/reparent-element-command'
 import { updateSelectedViews } from '../commands/update-selected-views-command'
+import { ParentBounds } from '../controls/parent-bounds'
+import { ParentOutlines } from '../controls/parent-outlines'
 import { absoluteMoveStrategy } from './absolute-move-strategy'
 import { CanvasStrategy, emptyStrategyApplicationResult } from './canvas-strategy-types'
 import {
@@ -29,7 +31,18 @@ export const absoluteReparentStrategy: CanvasStrategy = {
     }
     return false
   },
-  controlsToRender: [],
+  controlsToRender: [
+    {
+      control: ParentOutlines,
+      key: 'parent-outlines-control',
+      show: 'visible-only-while-active',
+    },
+    {
+      control: ParentBounds,
+      key: 'parent-bounds-control',
+      show: 'visible-only-while-active',
+    },
+  ],
   fitness: (canvasState, interactionState) => {
     if (
       canvasState.selectedElements.length > 0 &&
