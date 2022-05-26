@@ -77,23 +77,31 @@ export const escapeHatchStrategy: CanvasStrategy = {
     },
   ],
   fitness: (canvasState, interactionState, strategyState) => {
-    return escapeHatchStrategy.isApplicable(
-      canvasState,
-      interactionState,
-      strategyState.startingMetadata,
-    ) &&
+    if (
+      escapeHatchStrategy.isApplicable(
+        canvasState,
+        interactionState,
+        strategyState.startingMetadata,
+      ) &&
       interactionState.interactionData.type === 'DRAG' &&
-      interactionState.activeControl.type === 'BOUNDING_AREA' &&
-      escapeHatchAllowed(canvasState, interactionState.interactionData, strategyState)
-      ? 2
-      : 0
+      interactionState.activeControl.type === 'BOUNDING_AREA'
+    ) {
+      if (escapeHatchAllowed(canvasState, interactionState.interactionData, strategyState)) {
+        return 2
+      } else {
+        return 0.5
+      }
+    } else {
+      return 0
+    }
   },
   apply: (canvasState, interactionState, strategyState) => {
     if (interactionState.interactionData.type === 'DRAG') {
       let escapeHatchActivated = strategyState.customStrategyState.escapeHatchActivated ?? false
       if (
         interactionState.interactionData.globalTime - interactionState.lastInteractionTime >
-        AnimationTimer
+          AnimationTimer ||
+        interactionState.interactionData.modifiers.cmd
       ) {
         escapeHatchActivated = true
       }
@@ -298,6 +306,9 @@ function escapeHatchAllowed(
   interactionData: DragInteractionData,
   strategyState: StrategyState,
 ): boolean {
+  if (interactionData.modifiers.cmd) {
+    return true
+  }
   // flex children with siblings switches to escape hatch when the cursor reaches the parent bounds
   // for flow elements and flex child without siblings the conversion automatically starts on drag
   if (strategyState.customStrategyState.escapeHatchActivated) {
