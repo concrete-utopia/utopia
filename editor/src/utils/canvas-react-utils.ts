@@ -49,6 +49,14 @@ function fragmentOrProviderOrContext(type: any): boolean {
   )
 }
 
+function wrappedExotic(type: any): boolean {
+  return type?.theOriginalType != null && fragmentOrProviderOrContext(type.theOriginalType)
+}
+
+function exoticOrWrappedExotic(type: any): boolean {
+  return fragmentOrProviderOrContext(type) || wrappedExotic(type)
+}
+
 function keyShouldBeExcluded(key: string): boolean {
   return UtopiaKeys.includes(key)
 }
@@ -84,7 +92,7 @@ function trimLastSeparatorFromPath(path: string): string {
 function appendRootUIDToPath(path: string | null, rootUID: string | null): string | undefined {
   if (path == null) {
     return rootUID ?? undefined
-  } else if (!rootUID) {
+  } else if (rootUID == null) {
     return path
   } else if (path.endsWith(rootUID)) {
     return path
@@ -197,7 +205,7 @@ function attachPathToChild(
     const childPath = appendChildUIDToPath(
       path,
       originalResponse.props[UTOPIA_UID_KEY],
-      fragmentOrProviderOrContext(originalResponse.type),
+      exoticOrWrappedExotic(originalResponse.type),
     )
     const shouldSetPath = existingPath == null || childPath?.endsWith(existingPath)
     if (shouldSetPath) {
