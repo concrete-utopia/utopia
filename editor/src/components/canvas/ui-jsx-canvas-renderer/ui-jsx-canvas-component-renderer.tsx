@@ -164,18 +164,6 @@ export function createComponentRendererComponent(params: {
       instancePath,
     )
 
-    React.useLayoutEffect(() => {
-      if (shouldUpdate()) {
-        updateInvalidatedPaths((invalidPaths) => {
-          if (rootElementPath != null) {
-            return invalidPaths.add(EP.toString(rootElementPath))
-          } else {
-            return invalidPaths
-          }
-        }, 'invalidate')
-      }
-    })
-
     if (utopiaJsxComponent.arbitraryJSBlock != null && shouldUpdate) {
       const lookupRenderer = createLookupRender(
         rootElementPath,
