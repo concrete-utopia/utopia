@@ -97,15 +97,21 @@ export const escapeHatchStrategy: CanvasStrategy = {
   },
   apply: (canvasState, interactionState, strategyState) => {
     if (interactionState.interactionData.type === 'DRAG') {
+      let shouldEscapeHatch = false
       let escapeHatchActivated = strategyState.customStrategyState.escapeHatchActivated ?? false
-      if (
-        interactionState.interactionData.globalTime - interactionState.lastInteractionTime >
-          AnimationTimer ||
-        interactionState.interactionData.modifiers.cmd
-      ) {
-        escapeHatchActivated = true
+      if (interactionState.interactionData.modifiers.cmd) {
+        shouldEscapeHatch = true
+      } else {
+        if (
+          interactionState.interactionData.globalTime - interactionState.lastInteractionTime >
+          AnimationTimer
+        ) {
+          shouldEscapeHatch = true
+          escapeHatchActivated = true
+        }
       }
-      if (escapeHatchActivated) {
+
+      if (shouldEscapeHatch) {
         const getConversionAndMoveCommands = (
           snappedDragVector: CanvasPoint,
         ): Array<CanvasCommand> => {
