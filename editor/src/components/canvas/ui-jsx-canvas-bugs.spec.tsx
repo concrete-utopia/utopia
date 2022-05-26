@@ -462,7 +462,7 @@ export default function () {
                     height: 50px;
                     background-color: blue;
                   \\"
-                  data-path=\\"storyboard-entity/scene-1-entity/app-entity:app-outer-div/card-instance:card-outer-div/card-inner-rectangle:card-inner-rectangle\\"
+                  data-path=\\"storyboard-entity/scene-1-entity/app-entity:app-outer-div/card-instance:card-outer-div/card-inner-rectangle\\"
                   data-uid=\\"card-inner-rectangle\\"
                   data-utopia-do-not-traverse=\\"true\\"
                 ></div>

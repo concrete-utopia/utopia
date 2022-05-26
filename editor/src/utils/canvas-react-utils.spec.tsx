@@ -126,7 +126,7 @@ describe('Monkey Function', () => {
     }
 
     expect(renderToFormattedString(<TestStoryboard data-uid={'test1'} />)).toMatchInlineSnapshot(`
-      "<div data-uid=\\"scene\\" data-path=\\"test1:sb/scene:scene\\">
+      "<div data-uid=\\"scene\\" data-path=\\"test1:sb/scene\\">
         <div
           data-path=\\"test1:sb/scene/component-instance:component-root\\"
           data-uid=\\"component-root\\"
@@ -160,9 +160,9 @@ describe('Monkey Function', () => {
     }
 
     expect(renderToFormattedString(<TestComponent data-uid={'test1'} />)).toMatchInlineSnapshot(`
-      "<div data-uid=\\"test1\\" data-path=\\"test1:test1\\">
-        <div data-uid=\\"kutya\\" data-path=\\"test1:test1/kutya\\">Hello!</div>
-        <div data-uid=\\"majom\\" data-path=\\"test1:test1/majom\\">Hello!</div>
+      "<div data-uid=\\"test1\\" data-path=\\"test1\\">
+        <div data-uid=\\"kutya\\" data-path=\\"test1/kutya\\">Hello!</div>
+        <div data-uid=\\"majom\\" data-path=\\"test1/majom\\">Hello!</div>
       </div>
       "
     `)
@@ -437,7 +437,7 @@ describe('Monkey Function', () => {
         </Storyboard>,
       ),
     ).toMatchInlineSnapshot(`
-      "<div data-uid=\\"scene\\" data-path=\\"ignore/scene:scene\\">
+      "<div data-uid=\\"scene\\" data-path=\\"ignore/scene\\">
         <div data-uid=\\"cica\\" data-path=\\"ignore/scene/scene-component:cica\\">
           Hello!
         </div>
@@ -601,7 +601,7 @@ describe('Monkey Function', () => {
       "<div
         data-uid=\\"scene-aaa\\"
         style=\\"left: 0; top: 0; width: 400px; height: 400px\\"
-        data-path=\\"utopia-storyboard-uid/scene-aaa:scene-aaa\\"
+        data-path=\\"utopia-storyboard-uid/scene-aaa\\"
       >
         <div data-uid=\\"zzz\\" data-path=\\"utopia-storyboard-uid/scene-aaa/app:zzz\\">
           <div

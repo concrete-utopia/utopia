@@ -82,14 +82,15 @@ function trimLastSeparatorFromPath(path: string): string {
 }
 
 function appendRootUIDToPath(path: string | null, rootUID: string | null): string | undefined {
-  const splitUid = rootUID ? rootUID.split(' ')?.[0] : undefined
   if (path == null) {
-    return splitUid ?? undefined
-  } else if (!splitUid) {
+    return rootUID ?? undefined
+  } else if (!rootUID) {
+    return path
+  } else if (path.endsWith(rootUID)) {
     return path
   } else {
     const trimmedPath = trimLastSeparatorFromPath(path)
-    return `${trimmedPath}${SceneSeparator}${splitUid ?? ''}`
+    return `${trimmedPath}${SceneSeparator}${rootUID}`
   }
 }
 
@@ -104,9 +105,11 @@ function appendChildUIDToPath(
     // This special case exists for exotics, since they'll act purely as a pass-through
     // for getting a path and/or UID onto their children, but won't have either themselves
     return usePathIfNoUID ? path : undefined
+  } else if (path.endsWith(childUID)) {
+    return path
   } else {
     const trimmedPath = trimLastSeparatorFromPath(path)
-    return `${trimmedPath}${ElementSeparator}${childUID ?? ''}`
+    return `${trimmedPath}${ElementSeparator}${childUID}`
   }
 }
 
@@ -441,7 +444,7 @@ const mangleExoticType = Utils.memoize(
           const originalFunction = p.children
           children = function (...params: any[]) {
             const originalResponse = originalFunction(...params)
-            return attachDataUidToRoot(originalResponse, uid, path)
+            return updateChildOfExotic(originalResponse, uid, path)
           }
         } else {
           const uidToPass = uid
