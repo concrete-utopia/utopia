@@ -151,8 +151,10 @@ export function getEscapeHatchCommands(
     canvasState,
     dragDelta,
   )
-  const siblingCommands = collectSiblingCommands(selectedElements, metadata, canvasState)
-  return [...moveAndPositionCommands, ...siblingCommands]
+  return moveAndPositionCommands
+  // TEMPORARILY REMOVING SIBLING CONVERSION FOR EXPERIMENTING
+  // const siblingCommands = collectSiblingCommands(selectedElements, metadata, canvasState)
+  // return [...moveAndPositionCommands, ...siblingCommands]
 }
 
 function collectMoveCommandsForSelectedElements(
