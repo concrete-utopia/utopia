@@ -109,8 +109,9 @@ export const escapeHatchStrategy: CanvasStrategy = {
         shouldEscapeHatch = true
       } else {
         if (
+          escapeHatchActivated ||
           interactionState.interactionData.globalTime - interactionState.lastInteractionTime >
-          AnimationTimer
+            AnimationTimer
         ) {
           shouldEscapeHatch = true
           escapeHatchActivated = true
