@@ -994,6 +994,51 @@ describe('Monkey Function', () => {
     expect(renderedFragmentAtRoot).toEqual(renderedFragmentBelowRoot)
   })
 
+  it('nested fragments work', () => {
+    const FragmentAtRoot = () => {
+      return (
+        <>
+          <>
+            <div data-uid='inner-parent'>
+              <div data-uid='inner-child' />
+            </div>
+          </>
+        </>
+      )
+    }
+
+    const FragmentBelowRoot = () => {
+      return (
+        <div data-uid='inner-parent'>
+          <>
+            <>
+              <div data-uid='inner-child' />
+            </>
+          </>
+        </div>
+      )
+    }
+
+    const renderedFragmentAtRoot = renderToFormattedString(
+      <FragmentAtRoot data-uid={'component'} />,
+    )
+    const renderedFragmentBelowRoot = renderToFormattedString(
+      <FragmentBelowRoot data-uid={'component'} />,
+    )
+
+    expect(renderedFragmentAtRoot).toMatchInlineSnapshot(`
+      "<div data-uid=\\"inner-parent\\" data-path=\\"component:inner-parent\\">
+        <div
+          data-uid=\\"inner-child\\"
+          data-path=\\"component:inner-parent/inner-child\\"
+        ></div>
+      </div>
+      "
+    `)
+
+    expect(renderedFragmentAtRoot).toEqual(renderedFragmentBelowRoot)
+  })
+
   it('fragment correctly handles path on child with no uid', () => {
     const FragmentAtRoot = () => {
       return (

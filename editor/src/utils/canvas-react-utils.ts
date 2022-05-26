@@ -372,7 +372,7 @@ function updateChildOfExotic(
   if (child == null || !shouldIncludeDataUID(child.type)) {
     return child
   }
-  const existingChildUID = child.props?.[UTOPIA_UID_KEY]
+  const existingChildUID = propsUIDOrExoticPlaceholder(child)
   const childUID = existingChildUID ?? dataUid
 
   if ((!React.isValidElement(child) as boolean) || child == null) {
@@ -382,10 +382,7 @@ function updateChildOfExotic(
     let additionalProps: any = {}
     let shouldClone: boolean = false
 
-    const childPath = replaceExoticUIDInPathWithChildUID(
-      path,
-      child.props?.[UTOPIA_UID_KEY] ?? dataUid,
-    )
+    const childPath = replaceExoticUIDInPathWithChildUID(path, childUID)
     if (childPath != null && child.props?.[UTOPIA_PATH_KEY] == null) {
       additionalProps[UTOPIA_PATH_KEY] = childPath
       shouldClone = true
