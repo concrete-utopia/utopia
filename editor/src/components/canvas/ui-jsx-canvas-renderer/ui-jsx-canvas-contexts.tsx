@@ -1,4 +1,5 @@
 import React from 'react'
+import { emptySet } from '../../../core/shared/set-utils'
 import type { MapLike } from 'typescript'
 import { atomWithPubSub } from '../../../core/shared/atom-with-pub-sub'
 import { Either, left } from '../../../core/shared/either'
@@ -60,12 +61,12 @@ export const UtopiaProjectCtxAtom = atomWithPubSub<UtopiaProjectCtxProps>({
 })
 
 interface SceneLevelContextProps {
-  validPaths: Array<ElementPath>
+  validPaths: Set<ElementPath>
 }
 
 export const SceneLevelUtopiaCtxAtom = atomWithPubSub<SceneLevelContextProps>({
   key: 'SceneLevelUtopiaCtxAtom',
   defaultValue: {
-    validPaths: [],
+    validPaths: new Set(),
   },
 })
