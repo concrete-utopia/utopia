@@ -44,12 +44,12 @@ export const absoluteMoveStrategy: CanvasStrategy = {
     {
       control: ParentOutlines,
       key: 'parent-outlines-control',
-      show: 'always-visible',
+      show: 'visible-only-while-active',
     },
     {
       control: ParentBounds,
       key: 'parent-bounds-control',
-      show: 'always-visible',
+      show: 'visible-only-while-active',
     },
   ], // Uses existing hooks in select-mode-hooks.tsx
   fitness: (canvasState, interactionState, sessionState) => {

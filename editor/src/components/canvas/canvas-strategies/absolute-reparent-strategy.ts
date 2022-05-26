@@ -35,12 +35,12 @@ export const absoluteReparentStrategy: CanvasStrategy = {
     {
       control: ParentOutlines,
       key: 'parent-outlines-control',
-      show: 'always-visible',
+      show: 'visible-only-while-active',
     },
     {
       control: ParentBounds,
       key: 'parent-bounds-control',
-      show: 'always-visible',
+      show: 'visible-only-while-active',
     },
   ],
   fitness: (canvasState, interactionState) => {
