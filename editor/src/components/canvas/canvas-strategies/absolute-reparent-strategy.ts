@@ -54,6 +54,7 @@ export const absoluteReparentStrategy: CanvasStrategy = {
       canvasOffset,
       projectContents,
       openFile,
+      strategyState.startingAllElementProps,
     )
     const newParent = reparentResult.newParent
     const moveCommands = absoluteMoveStrategy.apply(canvasState, interactionState, strategyState)

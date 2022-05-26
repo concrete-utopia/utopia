@@ -61,6 +61,7 @@ describe('Strategy Fitness', () => {
         canvasPoint({ x: 15, y: 15 }),
       ),
       metadata: renderResult.getEditorState().editor.jsxMetadata,
+      allElementProps: renderResult.getEditorState().editor.allElementProps,
     }
 
     const canvasStrategy = findCanvasStrategy(
@@ -105,6 +106,7 @@ describe('Strategy Fitness', () => {
         canvasPoint({ x: 15, y: 15 }),
       ),
       metadata: renderResult.getEditorState().editor.jsxMetadata,
+      allElementProps: renderResult.getEditorState().editor.allElementProps,
     }
 
     const canvasStrategy = findCanvasStrategy(
@@ -153,6 +155,7 @@ describe('Strategy Fitness', () => {
         canvasPoint({ x: 15, y: 15 }),
       ),
       metadata: renderResult.getEditorState().editor.jsxMetadata,
+      allElementProps: renderResult.getEditorState().editor.allElementProps,
     }
 
     const canvasStrategy = findCanvasStrategy(
@@ -201,6 +204,7 @@ describe('Strategy Fitness', () => {
         canvasPoint({ x: -15, y: -15 }),
       ),
       metadata: renderResult.getEditorState().editor.jsxMetadata,
+      allElementProps: renderResult.getEditorState().editor.allElementProps,
     }
 
     const canvasStrategy = findCanvasStrategy(

@@ -14,6 +14,8 @@ import { Size, CanvasRectangle, CanvasPoint, canvasRectangle } from '../core/sha
 import { EditorAction } from './editor/action-types'
 import { insertJSXElement } from './editor/actions/action-creators'
 import { forceNotNull } from '../core/shared/optional-utils'
+import { AllElementProps } from './editor/store/editor-state'
+import * as EP from '../core/shared/element-path'
 
 export function getImageSrc(
   projectId: string | null,
@@ -136,12 +138,18 @@ export function getImageSizeFromProps(props: any): Size {
   }
 }
 
-export function getImageSize(component: ElementInstanceMetadata): Size {
-  return getImageSizeFromProps(component.props)
+export function getImageSize(
+  allElementProps: AllElementProps,
+  component: ElementInstanceMetadata,
+): Size {
+  return getImageSizeFromProps(allElementProps[EP.toString(component.elementPath)])
 }
 
-export function getImageSizeFromMetadata(instance: ElementInstanceMetadata): Size {
-  return getImageSizeFromProps(instance.props)
+export function getImageSizeFromMetadata(
+  allElementProps: AllElementProps,
+  instance: ElementInstanceMetadata,
+): Size {
+  return getImageSizeFromProps(allElementProps[EP.toString(instance.elementPath)])
 }
 
 export function getImageSizeMultiplierFromProps(props: any): number {

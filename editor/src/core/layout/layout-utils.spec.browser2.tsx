@@ -22,6 +22,7 @@ import {
 import { FOR_TESTS_setNextGeneratedUid } from '../model/element-template-utils'
 import { left, right } from '../shared/either'
 import { CanvasRectangle, LocalRectangle } from '../shared/math-utils'
+import { ElementProps } from 'src/components/editor/store/editor-state'
 
 const NewUID = 'catdog'
 
@@ -72,16 +73,21 @@ describe('maybeSwitchLayoutProps', () => {
     )
     const elementPath = EP.appendNewElementPath(TestScenePath, [NewUID])
 
+    const testSceneProps: ElementProps = {
+      style: {
+        width: 375,
+        height: 812,
+      },
+    }
+
+    const elementProps: ElementProps = {
+      'data-uid': NewUID,
+    }
+
     const metadata: ElementInstanceMetadataMap = {
       [EP.toString(TestScenePath)]: {
         elementPath: TestScenePath,
         element: left('Scene'),
-        props: {
-          style: {
-            width: 375,
-            height: 812,
-          },
-        },
         globalFrame: { x: 0, y: 0, width: 375, height: 812 } as CanvasRectangle,
         localFrame: { x: 0, y: 0, width: 375, height: 812 } as LocalRectangle,
         componentInstance: false,
@@ -95,9 +101,6 @@ describe('maybeSwitchLayoutProps', () => {
       [EP.toString(elementPath)]: {
         elementPath: elementPath,
         element: right(elementToPaste),
-        props: {
-          'data-uid': NewUID,
-        },
         globalFrame: { x: 0, y: 0, width: 375, height: 812 } as CanvasRectangle,
         localFrame: { x: 0, y: 0, width: 375, height: 812 } as LocalRectangle,
         componentInstance: true,

@@ -13,6 +13,7 @@ import { useEditorState } from '../editor/store/store-hook'
 import { isRight, maybeEitherToMaybe } from '../../core/shared/either'
 import { IcnPropsBase } from '../../uuiui'
 import { shallowEqual } from '../../core/shared/equality-utils'
+import { AllElementProps } from '../editor/store/editor-state'
 
 interface LayoutIconResult {
   iconProps: IcnPropsBase
@@ -23,7 +24,7 @@ export function useLayoutOrElementIcon(path: ElementPath): LayoutIconResult {
   return useEditorState(
     (store) => {
       const metadata = store.editor.jsxMetadata
-      return createLayoutOrElementIconResult(path, metadata)
+      return createLayoutOrElementIconResult(path, metadata, store.editor.allElementProps)
     },
     'useLayoutOrElementIcon',
     (oldResult: LayoutIconResult, newResult: LayoutIconResult) => {
@@ -51,13 +52,15 @@ export function createComponentOrElementIconProps(element: ElementInstanceMetada
 export function createLayoutOrElementIconResult(
   path: ElementPath,
   metadata: ElementInstanceMetadataMap,
+  allElementProps: AllElementProps,
 ): LayoutIconResult {
   let isPositionAbsolute: boolean = false
 
   const element = MetadataUtils.findElementByElementPath(metadata, path)
+  const elementProps = allElementProps[EP.toString(path)]
 
-  if (element != null && element.props != null && element.props.style != null) {
-    isPositionAbsolute = element.props.style['position'] === 'absolute'
+  if (element != null && elementProps != null && elementProps.style != null) {
+    isPositionAbsolute = elementProps.style['position'] === 'absolute'
   }
 
   const layoutIcon = createLayoutIconProps(path, metadata)

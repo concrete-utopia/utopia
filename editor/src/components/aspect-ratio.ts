@@ -6,6 +6,7 @@ import {
 } from '../core/shared/jsx-attributes'
 import * as PP from '../core/shared/property-path'
 import * as ObjectPath from 'object-path'
+import { ElementProps } from './editor/store/editor-state'
 
 export const AspectRatioPath = 'aspectRatio'
 export const AspectRatioEnabledPath = `${AspectRatioPath}.enabled`
@@ -14,7 +15,10 @@ export function isAspectRatioLockedFromProps(props: any): boolean {
   return ObjectPath.get(props, AspectRatioEnabledPath) ?? false
 }
 
-export function isAspectRatioLockedNew(component: ElementInstanceMetadata): boolean {
+export function isAspectRatioLockedNew(
+  component: ElementInstanceMetadata,
+  elementProps: ElementProps,
+): boolean {
   const element = component.element
   if (isRight(element) && isJSXElement(element.value)) {
     const props = element.value.props
@@ -32,6 +36,6 @@ export function isAspectRatioLockedNew(component: ElementInstanceMetadata): bool
       )
     }
   } else {
-    return isAspectRatioLockedFromProps(component.props)
+    return isAspectRatioLockedFromProps(elementProps)
   }
 }

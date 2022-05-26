@@ -42,6 +42,7 @@ export function interactionFinished(
   const newEditorState = result.unpatchedEditor
   const withClearedSession = createEmptyStrategyState(
     newEditorState.canvas.interactionSession?.metadata ?? newEditorState.jsxMetadata,
+    newEditorState.canvas.interactionSession?.allElementProps ?? newEditorState.allElementProps,
   )
   const canvasState: InteractionCanvasState = pickCanvasStateFromEditorState(newEditorState)
   const interactionSession = storedState.unpatchedEditor.canvas.interactionSession
@@ -152,6 +153,7 @@ export function interactionHardReset(
         sortedApplicableStrategies: sortedApplicableStrategies,
         startingMetadata: resetStrategyState.startingMetadata,
         customStrategyState: strategyResult.customState ?? result.strategyState.customStrategyState,
+        startingAllElementProps: resetStrategyState.startingAllElementProps,
       }
 
       return {
@@ -242,6 +244,7 @@ export function interactionStart(
   const newEditorState = result.unpatchedEditor
   const withClearedSession = createEmptyStrategyState(
     newEditorState.canvas.interactionSession?.metadata ?? newEditorState.jsxMetadata,
+    newEditorState.canvas.interactionSession?.allElementProps ?? newEditorState.allElementProps,
   )
   const canvasState: InteractionCanvasState = pickCanvasStateFromEditorState(newEditorState)
   const interactionSession = newEditorState.canvas.interactionSession
@@ -287,6 +290,7 @@ export function interactionStart(
         sortedApplicableStrategies: sortedApplicableStrategies,
         startingMetadata: newEditorState.canvas.interactionSession.metadata,
         customStrategyState: strategyResult.customState ?? result.strategyState.customStrategyState,
+        startingAllElementProps: newEditorState.canvas.interactionSession.allElementProps,
       }
 
       return {
@@ -319,7 +323,7 @@ export function interactionCancel(
   return {
     unpatchedEditorState: updatedEditorState,
     patchedEditorState: updatedEditorState,
-    newStrategyState: createEmptyStrategyState(),
+    newStrategyState: createEmptyStrategyState({}, {}),
   }
 }
 
@@ -373,6 +377,7 @@ function handleUserChangedStrategy(
       sortedApplicableStrategies: sortedApplicableStrategies,
       startingMetadata: strategyState.startingMetadata,
       customStrategyState: strategyResult.customState ?? strategyState.customStrategyState,
+      startingAllElementProps: strategyState.startingAllElementProps,
     }
 
     return {
@@ -429,6 +434,7 @@ function handleAccumulatingKeypresses(
       sortedApplicableStrategies: sortedApplicableStrategies,
       startingMetadata: strategyState.startingMetadata,
       customStrategyState: strategyResult.customState ?? strategyState.customStrategyState,
+      startingAllElementProps: strategyState.startingAllElementProps,
     }
 
     return {
@@ -485,6 +491,7 @@ function handleUpdate(
       sortedApplicableStrategies: sortedApplicableStrategies,
       startingMetadata: strategyState.startingMetadata,
       customStrategyState: strategyResult.customState ?? strategyState.customStrategyState,
+      startingAllElementProps: strategyState.startingAllElementProps,
     }
     return {
       unpatchedEditorState: newEditorState,

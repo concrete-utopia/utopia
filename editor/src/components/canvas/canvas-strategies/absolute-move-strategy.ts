@@ -44,6 +44,7 @@ export const absoluteMoveStrategy: CanvasStrategy = {
       canvasState,
       interactionState,
       sessionState.startingMetadata,
+      sessionState.startingAllElementProps,
     ) &&
       interactionState.interactionData.type === 'DRAG' &&
       interactionState.activeControl.type === 'BOUNDING_AREA'

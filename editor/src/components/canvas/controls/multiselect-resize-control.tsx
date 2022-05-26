@@ -69,6 +69,7 @@ export class MultiselectResizeControl extends React.Component<
         this.props.scale,
         pickPointOnRect(boundingBox, this.state.guidelineStartPoint),
         resizingFromPosition,
+        this.props.allElementProps,
       )
     }
   }
@@ -176,6 +177,7 @@ export class MultiselectResizeControl extends React.Component<
               maybeClearHighlightsOnHoverEnd={this.props.maybeClearHighlightsOnHoverEnd}
               flexDirection={null}
               propertyTargetSelectedIndex={this.props.resizeOptions.propertyTargetSelectedIndex}
+              targetProps={null}
             />
             {guidelineElements}
           </>
@@ -206,6 +208,8 @@ export class SingleSelectResizeControls extends React.Component<SingleSelectResi
     return this.props.selectedViews.map((view, index) => {
       const target = MetadataUtils.findElementByElementPath(this.props.componentMetadata, view)
       const frame = optionalMap((metadata) => metadata.globalFrame, target)
+      const targetProps =
+        target == null ? {} : this.props.allElementProps[EP.toString(target.elementPath)] ?? {}
       if (frame == null) {
         return null
       } else {
@@ -236,6 +240,7 @@ export class SingleSelectResizeControls extends React.Component<SingleSelectResi
             maybeClearHighlightsOnHoverEnd={this.props.maybeClearHighlightsOnHoverEnd}
             flexDirection={null}
             propertyTargetSelectedIndex={this.props.resizeOptions.propertyTargetSelectedIndex}
+            targetProps={targetProps}
           />
         )
       }

@@ -299,6 +299,7 @@ import {
   editorStateCodeEditorErrors,
   Theme,
   editorState,
+  AllElementProps,
 } from './editor-state'
 import {
   CornerGuideline,
@@ -1232,13 +1233,11 @@ export const ElementInstanceMetadataPropsKeepDeepEquality: KeepDeepEqualityCall<
   createCallWithShallowEquals()
 
 export const ElementInstanceMetadataKeepDeepEquality: KeepDeepEqualityCall<ElementInstanceMetadata> =
-  combine12EqualityCalls(
+  combine11EqualityCalls(
     (metadata) => metadata.elementPath,
     ElementPathKeepDeepEquality,
     (metadata) => metadata.element,
     EitherKeepDeepEquality(createCallWithTripleEquals(), JSXElementChildKeepDeepEquality()),
-    (metadata) => metadata.props,
-    objectDeepEquality(ElementInstanceMetadataPropsKeepDeepEquality),
     (metadata) => metadata.globalFrame,
     nullableDeepEquality(CanvasRectangleKeepDeepEquality),
     (metadata) => metadata.localFrame,
@@ -1647,7 +1646,7 @@ export const CanvasControlTypeKeepDeepEquality: KeepDeepEqualityCall<CanvasContr
 }
 
 export const InteractionSessionKeepDeepEquality: KeepDeepEqualityCall<InteractionSession> =
-  combine7EqualityCalls(
+  combine8EqualityCalls(
     (session) => session.interactionData,
     InputDataKeepDeepEquality,
     (session) => session.activeControl,
@@ -1662,6 +1661,8 @@ export const InteractionSessionKeepDeepEquality: KeepDeepEqualityCall<Interactio
     nullableDeepEquality(createCallWithTripleEquals()),
     (session) => session.startedAt,
     createCallWithTripleEquals(),
+    (session) => session.allElementProps,
+    createCallFromIntrospectiveKeepDeep(),
     interactionSession,
   )
 
@@ -3059,6 +3060,10 @@ export const EditorStateKeepDeepEquality: KeepDeepEqualityCall<EditorState> = (
     oldValue.forceParseFiles,
     newValue.forceParseFiles,
   )
+  const allElementPropsResults = createCallFromIntrospectiveKeepDeep<AllElementProps>()(
+    oldValue.allElementProps,
+    newValue.allElementProps,
+  )
 
   const areEqual =
     idResult.areEqual &&
@@ -3120,7 +3125,8 @@ export const EditorStateKeepDeepEquality: KeepDeepEqualityCall<EditorState> = (
     themeResults.areEqual &&
     vscodeLoadingScreenVisibleResults.areEqual &&
     indexedDBFailedResults.areEqual &&
-    forceParseFilesResults.areEqual
+    forceParseFilesResults.areEqual &&
+    allElementPropsResults.areEqual
 
   if (areEqual) {
     return keepDeepEqualityResult(oldValue, true)
@@ -3186,6 +3192,7 @@ export const EditorStateKeepDeepEquality: KeepDeepEqualityCall<EditorState> = (
       vscodeLoadingScreenVisibleResults.value,
       indexedDBFailedResults.value,
       forceParseFilesResults.value,
+      allElementPropsResults.value,
     )
 
     return keepDeepEqualityResult(newEditorState, false)

@@ -10,7 +10,7 @@ import {
 import { ElementPath } from '../../../core/shared/project-file-types'
 import { KeyCharacter } from '../../../utils/keyboard'
 import { Modifiers } from '../../../utils/modifiers'
-import { EditorStatePatch } from '../../editor/store/editor-state'
+import { AllElementProps, EditorStatePatch } from '../../editor/store/editor-state'
 import { EdgePosition } from '../canvas-types'
 import { MoveIntoDragThreshold } from '../canvas-utils'
 import { CanvasCommand } from '../commands/commands'
@@ -59,6 +59,7 @@ export interface InteractionSession {
   sourceOfUpdate: CanvasControlType
   lastInteractionTime: number
   metadata: ElementInstanceMetadataMap
+  allElementProps: AllElementProps
 
   // To track if the user selected a strategy
   userPreferredStrategy: CanvasStrategyId | null
@@ -74,6 +75,7 @@ export function interactionSession(
   metadata: ElementInstanceMetadataMap,
   userPreferredStrategy: CanvasStrategyId | null,
   startedAt: number,
+  allElementProps: AllElementProps,
 ): InteractionSession {
   return {
     interactionData: interactionData,
@@ -83,10 +85,14 @@ export function interactionSession(
     metadata: metadata,
     userPreferredStrategy: userPreferredStrategy,
     startedAt: startedAt,
+    allElementProps: allElementProps,
   }
 }
 
-export type InteractionSessionWithoutMetadata = Omit<InteractionSession, 'metadata'>
+export type InteractionSessionWithoutMetadata = Omit<
+  InteractionSession,
+  'metadata' | 'allElementProps'
+>
 
 export interface CommandDescription {
   description: string
@@ -105,9 +111,13 @@ export interface StrategyState {
   // Checkpointed metadata at the point at which a strategy change has occurred.
   startingMetadata: ElementInstanceMetadataMap
   customStrategyState: CustomStrategyState
+  startingAllElementProps: AllElementProps
 }
 
-export function createEmptyStrategyState(metadata?: ElementInstanceMetadataMap): StrategyState {
+export function createEmptyStrategyState(
+  metadata: ElementInstanceMetadataMap,
+  allElementProps: AllElementProps,
+): StrategyState {
   return {
     currentStrategy: null,
     currentStrategyFitness: 0,
@@ -115,8 +125,9 @@ export function createEmptyStrategyState(metadata?: ElementInstanceMetadataMap):
     accumulatedPatches: [],
     commandDescriptions: [],
     sortedApplicableStrategies: [],
-    startingMetadata: metadata ?? {},
+    startingMetadata: metadata,
     customStrategyState: defaultCustomStrategyState(),
+    startingAllElementProps: allElementProps,
   }
 }
 

@@ -55,13 +55,14 @@ export const LayoutParentControl = React.memo((): JSX.Element | null => {
         store.editor.jsxMetadata,
         store.editor.selectedViews[0],
       )
+      const elementProps = store.editor.allElementProps[EP.toString(store.editor.selectedViews[0])]
       return {
         parentTarget: element?.elementPath,
         parentLayout: element?.specialSizeMeasurements.layoutSystemForChildren,
         parentFrame: element?.globalFrame,
-        flexWrap: element?.props?.style?.flexWrap ?? 'nowrap',
-        flexDirection: element?.props?.style?.flexDirection ?? 'row',
-        alignItems: element?.props?.style?.alignItems ?? 'flex-start',
+        flexWrap: elementProps?.style?.flexWrap ?? 'nowrap',
+        flexDirection: elementProps?.style?.flexDirection ?? 'row',
+        alignItems: elementProps?.style?.alignItems ?? 'flex-start',
       }
     }, 'LayoutParentControl')
 
