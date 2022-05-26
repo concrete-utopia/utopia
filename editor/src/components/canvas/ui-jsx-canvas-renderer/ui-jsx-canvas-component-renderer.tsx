@@ -164,6 +164,7 @@ export function createComponentRendererComponent(params: {
       instancePath,
     )
 
+    // either this updateInvalidatedPaths or the one in SpyWrapper is probably redundant
     if (shouldUpdate()) {
       updateInvalidatedPaths((invalidPaths) => {
         if (rootElementPath != null) {
