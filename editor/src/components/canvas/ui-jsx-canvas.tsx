@@ -104,6 +104,8 @@ import { forceNotNull } from '../../core/shared/optional-utils'
 
 const emptyFileBlobs: UIFileBase64Blobs = {}
 
+// The reason this is not in a React Context, and in a crummy global instead is that sometimes the user code
+// will need to bridge across react roots that erase context
 export const ElementsToRerenderGLOBAL: { current: ElementsToRerender } = {
   current: 'rerender-all-elements',
 }
