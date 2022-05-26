@@ -115,13 +115,14 @@ export const escapeHatchStrategy: CanvasStrategy = {
           getConversionAndMoveCommands,
         )
 
-        const highlightCommand = collectHighlightCommand(
-          canvasState,
-          interactionState.interactionData,
-          strategyState,
-        )
+        // TEMPORARILY REMOVING SIBLING CONVERSION FOR EXPERIMENTING
+        // const highlightCommand = collectHighlightCommand(
+        //   canvasState,
+        //   interactionState.interactionData,
+        //   strategyState,
+        // )
         return {
-          commands: [...absoluteMoveApplyResult.commands, highlightCommand],
+          commands: absoluteMoveApplyResult.commands,
           customState: {
             ...strategyState.customStrategyState,
             escapeHatchActivated,
