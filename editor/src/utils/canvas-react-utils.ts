@@ -102,17 +102,11 @@ function appendRootUIDToPath(path: string | null, rootUID: string | null): strin
   }
 }
 
-function appendChildUIDToPath(
-  path: string | null,
-  childUID: string | null,
-  usePathIfNoUID: boolean,
-): string | undefined {
+function appendChildUIDToPath(path: string | null, childUID: string | null): string | undefined {
   if (path == null) {
     return childUID ?? undefined
   } else if (childUID == null) {
-    // This special case exists for exotics, since they'll act purely as a pass-through
-    // for getting a path and/or UID onto their children, but won't have either themselves
-    return usePathIfNoUID ? path : undefined
+    return undefined
   } else if (path.endsWith(childUID)) {
     return path
   } else {
@@ -132,6 +126,19 @@ function maybeAttachPathToChildrenOfIntrinsic(
   } else {
     return null
   }
+}
+
+const UIDForExotic = '[exotic]'
+
+function propsUIDOrExoticPlaceholder(originalResponse: React.ReactElement): string | null {
+  const originalResponseUID = originalResponse.props[UTOPIA_UID_KEY]
+  if (originalResponseUID == null) {
+    if (exoticOrWrappedExotic(originalResponse.type)) {
+      return UIDForExotic
+    }
+  }
+
+  return originalResponseUID
 }
 
 function attachDataUidToRoot(
@@ -158,9 +165,11 @@ function attachDataUidToRoot(
     return originalResponse
   } else {
     if (shouldIncludeDataUID(originalResponse.type)) {
-      const rootPath = appendRootUIDToPath(path, originalResponse.props[UTOPIA_UID_KEY])
+      const propsUID = propsUIDOrExoticPlaceholder(originalResponse)
+      const rootPath = appendRootUIDToPath(path, propsUID)
+      const originalResponseUID = originalResponse.props[UTOPIA_UID_KEY]
       let updatedProps: any = {
-        [UTOPIA_UID_KEY]: originalResponse.props[UTOPIA_UID_KEY] ?? dataUid,
+        [UTOPIA_UID_KEY]: originalResponseUID ?? dataUid,
         [UTOPIA_PATH_KEY]: rootPath,
       }
 
@@ -201,12 +210,9 @@ function attachPathToChild(
   } else if (!shouldIncludeDataUID(originalResponse.type)) {
     return originalResponse
   } else {
+    const propsUID = propsUIDOrExoticPlaceholder(originalResponse)
     const existingPath = originalResponse.props?.[UTOPIA_PATH_KEY]
-    const childPath = appendChildUIDToPath(
-      path,
-      originalResponse.props[UTOPIA_UID_KEY],
-      exoticOrWrappedExotic(originalResponse.type),
-    )
+    const childPath = appendChildUIDToPath(path, propsUID)
     const shouldSetPath = existingPath == null || childPath?.endsWith(existingPath)
     if (shouldSetPath) {
       let updatedProps: any = {
@@ -340,13 +346,21 @@ const mangleClassType = Utils.memoize(
   },
 )
 
-function pathIsMaybeRoot(path: string | null): boolean {
-  if (path == null) {
-    return false
-  } else if (path.endsWith(SceneSeparator)) {
-    return true
+function replaceExoticUIDInPathWithChildUID(
+  path: string | null,
+  childUID: string | null,
+): string | undefined {
+  if (path == null || childUID == null) {
+    return undefined
+  } else if (path.endsWith(UIDForExotic)) {
+    const slicedPath = path.slice(0, path.length - UIDForExotic.length)
+    const isRootPath = slicedPath.endsWith(SceneSeparator)
+    const trimmedPath = trimLastSeparatorFromPath(slicedPath)
+    return isRootPath
+      ? appendRootUIDToPath(trimmedPath, childUID)
+      : appendChildUIDToPath(trimmedPath, childUID)
   } else {
-    return !path.includes(SceneSeparator)
+    return appendChildUIDToPath(path, childUID)
   }
 }
 
@@ -368,12 +382,10 @@ function updateChildOfExotic(
     let additionalProps: any = {}
     let shouldClone: boolean = false
 
-    // Because the parent of this won't exist in the rendered DOM, we need to capture whether the parent's
-    // path was that of a root element, or a child element, and transfer that relationship to this element
-    const isRootElement = pathIsMaybeRoot(path) && (dataUid == null || path?.endsWith(dataUid))
-    const childPath = isRootElement
-      ? appendRootUIDToPath(path, child.props?.[UTOPIA_UID_KEY])
-      : appendChildUIDToPath(path, child.props?.[UTOPIA_UID_KEY], true)
+    const childPath = replaceExoticUIDInPathWithChildUID(
+      path,
+      child.props?.[UTOPIA_UID_KEY] ?? dataUid,
+    )
     if (childPath != null && child.props?.[UTOPIA_PATH_KEY] == null) {
       additionalProps[UTOPIA_PATH_KEY] = childPath
       shouldClone = true

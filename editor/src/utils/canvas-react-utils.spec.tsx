@@ -56,8 +56,7 @@ describe('Monkey Function', () => {
     `)
   })
 
-  // FIXME
-  xit('class components have a working context', () => {
+  it('class components have a working context', () => {
     const MyContext = React.createContext({ value: 'wrong!' })
     class TestClass extends React.Component {
       context: any
@@ -732,6 +731,43 @@ describe('Monkey Function', () => {
     `)
   })
 
+  it('builds the correct paths for function components with children', () => {
+    const Red = () => {
+      return <div data-uid='red-root' />
+    }
+
+    const Blue = (props: any) => {
+      return (
+        <div data-uid='blue-root'>
+          <div data-uid='blue-child' />
+          {props.children}
+        </div>
+      )
+    }
+
+    var Component = () => {
+      return (
+        <Blue data-uid='inner-parent'>
+          <Red data-uid='red' />
+        </Blue>
+      )
+    }
+
+    expect(renderToFormattedString(<Component data-uid={'component'} />)).toMatchInlineSnapshot(`
+      "<div data-uid=\\"blue-root\\" data-path=\\"component:inner-parent:blue-root\\">
+        <div
+          data-uid=\\"blue-child\\"
+          data-path=\\"component:inner-parent:blue-root/blue-child\\"
+        ></div>
+        <div
+          data-uid=\\"red-root\\"
+          data-path=\\"component:inner-parent/red:red-root\\"
+        ></div>
+      </div>
+      "
+    `)
+  })
+
   it('builds the correct paths for class components', () => {
     class Red extends React.Component {
       render() {
@@ -915,6 +951,47 @@ describe('Monkey Function', () => {
       </div>
       "
     `)
+  })
+
+  it('fragment ordering should not affect the printed paths', () => {
+    const FragmentAtRoot = () => {
+      return (
+        <>
+          <div data-uid='inner-parent'>
+            <div data-uid='inner-child' />
+          </div>
+        </>
+      )
+    }
+
+    const FragmentBelowRoot = () => {
+      return (
+        <div data-uid='inner-parent'>
+          <>
+            <div data-uid='inner-child' />
+          </>
+        </div>
+      )
+    }
+
+    const renderedFragmentAtRoot = renderToFormattedString(
+      <FragmentAtRoot data-uid={'component'} />,
+    )
+    const renderedFragmentBelowRoot = renderToFormattedString(
+      <FragmentBelowRoot data-uid={'component'} />,
+    )
+
+    expect(renderedFragmentAtRoot).toMatchInlineSnapshot(`
+      "<div data-uid=\\"inner-parent\\" data-path=\\"component:inner-parent\\">
+        <div
+          data-uid=\\"inner-child\\"
+          data-path=\\"component:inner-parent/inner-child\\"
+        ></div>
+      </div>
+      "
+    `)
+
+    expect(renderedFragmentAtRoot).toEqual(renderedFragmentBelowRoot)
   })
 
   it('builds the correct paths for Exotic-type with-memo components', () => {
