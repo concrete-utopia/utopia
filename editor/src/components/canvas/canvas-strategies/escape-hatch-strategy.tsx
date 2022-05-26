@@ -43,7 +43,7 @@ import { DragInteractionData, InteractionSession, StrategyState } from './intera
 
 export const escapeHatchStrategy: CanvasStrategy = {
   id: 'ESCAPE_HATCH_STRATEGY',
-  name: 'Escape Hatch',
+  name: 'Absolute Move',
   isApplicable: (canvasState, _interactionState, metadata) => {
     if (canvasState.selectedElements.length > 0) {
       return canvasState.selectedElements.every((element) => {
@@ -83,27 +83,42 @@ export const escapeHatchStrategy: CanvasStrategy = {
     },
   ],
   fitness: (canvasState, interactionState, strategyState) => {
-    return escapeHatchStrategy.isApplicable(
-      canvasState,
-      interactionState,
-      strategyState.startingMetadata,
-    ) &&
+    if (
+      escapeHatchStrategy.isApplicable(
+        canvasState,
+        interactionState,
+        strategyState.startingMetadata,
+      ) &&
       interactionState.interactionData.type === 'DRAG' &&
-      interactionState.activeControl.type === 'BOUNDING_AREA' &&
-      escapeHatchAllowed(canvasState, interactionState.interactionData, strategyState)
-      ? 2
-      : 0
+      interactionState.activeControl.type === 'BOUNDING_AREA'
+    ) {
+      if (escapeHatchAllowed(canvasState, interactionState.interactionData, strategyState)) {
+        return 2
+      } else {
+        return 0.5
+      }
+    } else {
+      return 0
+    }
   },
   apply: (canvasState, interactionState, strategyState) => {
     if (interactionState.interactionData.type === 'DRAG') {
+      let shouldEscapeHatch = false
       let escapeHatchActivated = strategyState.customStrategyState.escapeHatchActivated ?? false
-      if (
-        interactionState.interactionData.globalTime - interactionState.lastInteractionTime >
-        AnimationTimer
-      ) {
-        escapeHatchActivated = true
+      if (interactionState.interactionData.modifiers.cmd) {
+        shouldEscapeHatch = true
+      } else {
+        if (
+          escapeHatchActivated ||
+          interactionState.interactionData.globalTime - interactionState.lastInteractionTime >
+            AnimationTimer
+        ) {
+          shouldEscapeHatch = true
+          escapeHatchActivated = true
+        }
       }
-      if (escapeHatchActivated) {
+
+      if (shouldEscapeHatch) {
         const getConversionAndMoveCommands = (
           snappedDragVector: CanvasPoint,
         ): Array<CanvasCommand> => {
@@ -121,13 +136,14 @@ export const escapeHatchStrategy: CanvasStrategy = {
           getConversionAndMoveCommands,
         )
 
-        const highlightCommand = collectHighlightCommand(
-          canvasState,
-          interactionState.interactionData,
-          strategyState,
-        )
+        // TEMPORARILY REMOVING SIBLING CONVERSION FOR EXPERIMENTING
+        // const highlightCommand = collectHighlightCommand(
+        //   canvasState,
+        //   interactionState.interactionData,
+        //   strategyState,
+        // )
         return {
-          commands: [...absoluteMoveApplyResult.commands, highlightCommand],
+          commands: absoluteMoveApplyResult.commands,
           customState: {
             ...strategyState.customStrategyState,
             escapeHatchActivated,
@@ -157,8 +173,10 @@ export function getEscapeHatchCommands(
     canvasState,
     dragDelta,
   )
-  const siblingCommands = collectSiblingCommands(selectedElements, metadata, canvasState)
-  return [...moveAndPositionCommands, ...siblingCommands]
+  return moveAndPositionCommands
+  // TEMPORARILY REMOVING SIBLING CONVERSION FOR EXPERIMENTING
+  // const siblingCommands = collectSiblingCommands(selectedElements, metadata, canvasState)
+  // return [...moveAndPositionCommands, ...siblingCommands]
 }
 
 function collectMoveCommandsForSelectedElements(
@@ -301,6 +319,9 @@ function escapeHatchAllowed(
   interactionData: DragInteractionData,
   strategyState: StrategyState,
 ): boolean {
+  if (interactionData.modifiers.cmd) {
+    return true
+  }
   // flex children with siblings switches to escape hatch when the cursor reaches the parent bounds
   // for flow elements and flex child without siblings the conversion automatically starts on drag
   if (strategyState.customStrategyState.escapeHatchActivated) {
