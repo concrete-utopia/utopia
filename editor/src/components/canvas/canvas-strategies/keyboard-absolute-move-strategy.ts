@@ -5,6 +5,8 @@ import { Modifiers } from '../../../utils/modifiers'
 import { CanvasVector } from '../../../core/shared/math-utils'
 import { getAbsoluteMoveCommandsForSelectedElement } from './shared-absolute-move-strategy-helpers'
 import { AdjustCssLengthProperty } from '../commands/adjust-css-length-command'
+import { ParentOutlines } from '../controls/parent-outlines'
+import { ParentBounds } from '../controls/parent-bounds'
 
 export const keyboardAbsoluteMoveStrategy: CanvasStrategy = {
   id: 'KEYBOARD_ABSOLUTE_MOVE',
@@ -20,7 +22,18 @@ export const keyboardAbsoluteMoveStrategy: CanvasStrategy = {
       return false
     }
   },
-  controlsToRender: [], // Uses existing hooks in select-mode-hooks.tsx
+  controlsToRender: [
+    {
+      control: ParentOutlines,
+      key: 'parent-outlines-control',
+      show: 'always-visible',
+    },
+    {
+      control: ParentBounds,
+      key: 'parent-bounds-control',
+      show: 'always-visible',
+    },
+  ], // Uses existing hooks in select-mode-hooks.tsx
   fitness: (canvasState, interactionState, sessionState) => {
     if (
       keyboardAbsoluteMoveStrategy.isApplicable(

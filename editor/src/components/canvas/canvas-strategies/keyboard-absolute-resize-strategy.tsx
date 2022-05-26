@@ -8,6 +8,8 @@ import { createResizeCommands } from './shared-absolute-resize-strategy-helpers'
 import { withUnderlyingTarget } from '../../editor/store/editor-state'
 import { EdgePosition } from '../canvas-types'
 import { AbsoluteResizeControl } from '../controls/select-mode/absolute-resize-control'
+import { ParentOutlines } from '../controls/parent-outlines'
+import { ParentBounds } from '../controls/parent-bounds'
 
 export const keyboardAbsoluteResizeStrategy: CanvasStrategy = {
   id: 'KEYBOARD_ABSOLUTE_RESIZE',
@@ -25,6 +27,16 @@ export const keyboardAbsoluteResizeStrategy: CanvasStrategy = {
   },
   controlsToRender: [
     { control: AbsoluteResizeControl, key: 'absolute-resize-control', show: 'always-visible' },
+    {
+      control: ParentOutlines,
+      key: 'parent-outlines-control',
+      show: 'always-visible',
+    },
+    {
+      control: ParentBounds,
+      key: 'parent-bounds-control',
+      show: 'always-visible',
+    },
   ],
   fitness: (canvasState, interactionState, sessionState) => {
     if (
