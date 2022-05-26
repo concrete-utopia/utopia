@@ -13,6 +13,10 @@ import {
 import * as EP from '../../../core/shared/element-path'
 import { reverse, stripNulls } from '../../../core/shared/array-utils'
 import { DragOutlineControl } from '../controls/select-mode/drag-outline-control'
+import { CSSCursor } from '../canvas-types'
+import { setCursorCommand } from '../commands/set-cursor-command'
+import { ParentOutlines } from '../controls/parent-outlines'
+import { updateHighlightedViews } from '../commands/update-highlighted-views-command'
 
 export const flexReorderStrategy: CanvasStrategy = {
   id: 'FLEX_REORDER',
@@ -32,6 +36,11 @@ export const flexReorderStrategy: CanvasStrategy = {
       control: DragOutlineControl,
       key: 'ghost-outline-control',
       show: 'visible-only-while-active',
+    },
+    {
+      control: ParentOutlines,
+      key: 'parent-outlines-control',
+      show: 'always-visible',
     },
   ],
   fitness: (canvasState, interactionState, strategyState) => {
@@ -81,7 +90,10 @@ export const flexReorderStrategy: CanvasStrategy = {
 
     if (realNewIndex === unpatchedIndex) {
       return {
-        commands: [],
+        commands: [
+          updateHighlightedViews('transient', []),
+          setCursorCommand('transient', CSSCursor.Move),
+        ],
         customState: {
           ...strategyState.customStrategyState,
           lastReorderIdx: realNewIndex,
@@ -89,7 +101,11 @@ export const flexReorderStrategy: CanvasStrategy = {
       }
     } else {
       return {
-        commands: [reorderElement('permanent', target, realNewIndex)],
+        commands: [
+          reorderElement('permanent', target, realNewIndex),
+          updateHighlightedViews('transient', []),
+          setCursorCommand('transient', CSSCursor.Move),
+        ],
         customState: {
           ...strategyState.customStrategyState,
           lastReorderIdx: realNewIndex,

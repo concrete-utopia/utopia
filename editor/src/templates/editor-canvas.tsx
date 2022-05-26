@@ -464,7 +464,6 @@ export interface ControlDependencies {
   highlightedviews: Array<ElementPath>
   selectedViews: Array<ElementPath>
   topLevelHiddenInstances: Array<ElementPath>
-  descendantsOfHiddenInstances: Array<ElementPath>
   editorState: EditorState
   derivedState: DerivedState
 }
@@ -488,7 +487,6 @@ export function collectControlsDependencies(
     highlightedviews: editor.highlightedViews,
     selectedViews: editor.selectedViews,
     topLevelHiddenInstances: editor.hiddenInstances,
-    descendantsOfHiddenInstances: derived.canvas.descendantsOfHiddenInstances,
     editorState: editor,
     derivedState: derived,
   }

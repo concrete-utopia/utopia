@@ -354,7 +354,11 @@ export function runDomWalker({
     )
     if (LogDomWalkerPerformance) {
       performance.mark('DOM_WALKER_END')
-      performance.measure('DOM WALKER', 'DOM_WALKER_START', 'DOM_WALKER_END')
+      performance.measure(
+        `DOM WALKER - cached paths: [${cachedPaths.map(EP.toString).join(', ')}]`,
+        'DOM_WALKER_START',
+        'DOM_WALKER_END',
+      )
     }
     domWalkerMutableState.initComplete = true // Mutation!
 
@@ -370,7 +374,7 @@ export function runDomWalker({
 
 function selectCanvasInteractionHappening(store: EditorStorePatched): boolean {
   const interactionSessionActive = store.editor.canvas.interactionSession != null
-  const oldDragStateActiveKILLME = store.derived.canvas.transientState.filesState != null
+  const oldDragStateActiveKILLME = store.derived.transientState.filesState != null
   return interactionSessionActive || oldDragStateActiveKILLME
 }
 

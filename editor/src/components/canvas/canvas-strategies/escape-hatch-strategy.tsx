@@ -8,6 +8,7 @@ import * as EP from '../../../core/shared/element-path'
 import { ElementInstanceMetadataMap } from '../../../core/shared/element-template'
 import {
   asLocal,
+  CanvasPoint,
   CanvasRectangle,
   CanvasVector,
   LocalPoint,
@@ -22,18 +23,22 @@ import { fastForEach } from '../../../core/shared/utils'
 import { getElementFromProjectContents } from '../../editor/store/editor-state'
 import { FullFrame, getFullFrame } from '../../frame'
 import { stylePropPathMappingFn } from '../../inspector/common/property-path-hooks'
+import { CSSCursor } from '../canvas-types'
 import { CanvasCommand } from '../commands/commands'
 import { convertToAbsolute } from '../commands/convert-to-absolute-command'
 import { setCssLengthProperty } from '../commands/set-css-length-command'
+import { setCursorCommand } from '../commands/set-cursor-command'
 import { showOutlineHighlight } from '../commands/show-outline-highlight-command'
+import { ParentOutlines } from '../controls/parent-outlines'
 import { DragOutlineControl } from '../controls/select-mode/drag-outline-control'
 import { AnimationTimer, PieTimerControl } from '../controls/select-mode/pie-timer'
+import { applyAbsoluteMoveCommon } from './absolute-move-strategy'
 import {
   CanvasStrategy,
   emptyStrategyApplicationResult,
   InteractionCanvasState,
 } from './canvas-strategy-types'
-import { DragInteractionData, StrategyState } from './interaction-state'
+import { DragInteractionData, InteractionSession, StrategyState } from './interaction-state'
 
 export const escapeHatchStrategy: CanvasStrategy = {
   id: 'ESCAPE_HATCH_STRATEGY',
@@ -65,6 +70,11 @@ export const escapeHatchStrategy: CanvasStrategy = {
       key: 'pie-timer-control',
       show: 'visible-only-while-active',
     },
+    {
+      control: ParentOutlines,
+      key: 'parent-outlines-control',
+      show: 'always-visible',
+    },
   ],
   fitness: (canvasState, interactionState, strategyState) => {
     return escapeHatchStrategy.isApplicable(
@@ -88,11 +98,21 @@ export const escapeHatchStrategy: CanvasStrategy = {
         escapeHatchActivated = true
       }
       if (escapeHatchActivated) {
-        const commands = getEscapeHatchCommands(
-          canvasState.selectedElements,
-          strategyState.startingMetadata,
+        const getConversionAndMoveCommands = (
+          snappedDragVector: CanvasPoint,
+        ): Array<CanvasCommand> => {
+          return getEscapeHatchCommands(
+            canvasState.selectedElements,
+            strategyState.startingMetadata,
+            canvasState,
+            snappedDragVector,
+          )
+        }
+        const absoluteMoveApplyResult = applyAbsoluteMoveCommon(
           canvasState,
-          interactionState.interactionData.drag,
+          interactionState,
+          strategyState,
+          getConversionAndMoveCommands,
         )
 
         const highlightCommand = collectHighlightCommand(
@@ -101,7 +121,7 @@ export const escapeHatchStrategy: CanvasStrategy = {
           strategyState,
         )
         return {
-          commands: [...commands, highlightCommand],
+          commands: [...absoluteMoveApplyResult.commands, highlightCommand],
           customState: {
             ...strategyState.customStrategyState,
             escapeHatchActivated,
@@ -109,7 +129,7 @@ export const escapeHatchStrategy: CanvasStrategy = {
         }
       } else {
         return {
-          commands: [],
+          commands: [setCursorCommand('transient', CSSCursor.Move)],
           customState: null,
         }
       }
