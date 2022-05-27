@@ -77,30 +77,26 @@ export interface GridRowProps extends React.InputHTMLAttributes<HTMLDivElement> 
   alignItems?: 'start' | 'center'
 }
 
-export const UIGridRow: React.FunctionComponent<React.PropsWithChildren<GridRowProps>> = ({
-  tall,
-  variant,
-  alignItems,
-  style,
-  padded,
-  children,
-  ...props
-}) => (
-  <div
-    {...props}
-    css={{
-      padding: padded ? `0px ${UtopiaTheme.layout.rowHorizontalPadding}px` : undefined,
-      display: 'grid',
-      minHeight: tall ? UtopiaTheme.layout.rowHeight.max : UtopiaTheme.layout.rowHeight.normal,
-      whiteSpace: 'normal',
-      gridColumnGap: 10,
-      overflow: 'hidden',
-      alignItems: alignItems ?? 'center',
-      ...gridTemplates[variant],
-      ...(style as any), // TODO Emotion and React 18 types don't like each other
-    }}
-  >
-    {children}
-  </div>
+export const UIGridRow: React.FunctionComponent<React.PropsWithChildren<GridRowProps>> = React.memo(
+  ({ tall, variant, alignItems, style, padded, children, ...props }) => {
+    const divCss = React.useMemo(() => {
+      return {
+        padding: padded ? `0px ${UtopiaTheme.layout.rowHorizontalPadding}px` : undefined,
+        display: 'grid',
+        minHeight: tall ? UtopiaTheme.layout.rowHeight.max : UtopiaTheme.layout.rowHeight.normal,
+        whiteSpace: 'normal',
+        gridColumnGap: 10,
+        overflow: 'hidden',
+        alignItems: alignItems ?? 'center',
+        ...gridTemplates[variant],
+        ...(style as any), // TODO Emotion and React 18 types don't like each other
+      }
+    }, [tall, padded, variant, alignItems, style])
+    return (
+      <div {...props} css={divCss}>
+        {children}
+      </div>
+    )
+  },
 )
 UIGridRow.displayName = 'UIGridRow'

@@ -1,7 +1,7 @@
 /** @jsxRuntime classic */
 /** @jsx jsx */
 import React from 'react'
-import { css, jsx } from '@emotion/react'
+import { css, Interpolation, jsx, Theme } from '@emotion/react'
 import { Component as ReactComponent } from 'react'
 import {
   Menu,
@@ -188,61 +188,75 @@ export class ContextMenuWrapper<T> extends ReactComponent<
   }
 }
 
-export class InspectorContextMenuWrapper<T> extends ReactComponent<
-  React.PropsWithChildren<ContextMenuWrapperProps<T>>
-> {
-  getData = () => this.props.data
-  render() {
-    const name = `${this.props.id}-context-menu-wrapper`
-    return (
-      <div
-        key={name}
-        className={name + ' ' + (this.props.className ?? '')}
-        css={{
-          width: '100%',
-          ...(this.props.style as any), // TODO Emotion and React 18 types don't like each other
-          '--control-styles-interactive-unset-main-color': UtopiaTheme.color.fg7.value,
-          '--control-styles-interactive-unset-secondary-color': UtopiaTheme.color.fg7.value,
-          '--control-styles-interactive-unset-track-color': UtopiaTheme.color.bg5.value,
-          '--control-styles-interactive-unset-rail-color': UtopiaTheme.color.bg3.value,
-          '&:hover': {
-            '--control-styles-interactive-unset-main-color': getControlStyles('simple').mainColor,
-            '--control-styles-interactive-unset-secondary-color':
-              getControlStyles('simple').secondaryColor,
-            '--control-styles-interactive-unset-track-color': getControlStyles('simple').trackColor,
-            '--control-styles-interactive-unset-rail-color': getControlStyles('simple').railColor,
-          },
-          '&:focus-within': {
-            '--control-styles-interactive-unset-main-color': getControlStyles('simple').mainColor,
-            '--control-styles-interactive-unset-secondary-color':
-              getControlStyles('simple').secondaryColor,
-            '--control-styles-interactive-unset-track-color': getControlStyles('simple').trackColor,
-            '--control-styles-interactive-unset-rail-color': getControlStyles('simple').railColor,
-          },
-        }}
-      >
-        <React.Fragment>
-          <MenuProvider
-            key={`${this.props.id}-provider`}
-            id={this.props.id}
-            itemsLength={this.props.items.length}
-            style={{
-              width: '100%',
-              height: '100%',
-            }}
-          >
-            {this.props.children}
-          </MenuProvider>
-          <MomentumContextMenu
-            key={`${this.props.id}`}
-            id={this.props.id}
-            items={this.props.items}
-            getData={this.getData}
-          />
-        </React.Fragment>
-      </div>
-    )
-  }
+const contextMenuWrapperHighlightCSS = {
+  '--control-styles-interactive-unset-main-color': UtopiaTheme.color.fg7.value,
+  '--control-styles-interactive-unset-secondary-color': UtopiaTheme.color.fg7.value,
+  '--control-styles-interactive-unset-track-color': UtopiaTheme.color.bg5.value,
+  '--control-styles-interactive-unset-rail-color': UtopiaTheme.color.bg3.value,
+  '&:hover': {
+    '--control-styles-interactive-unset-main-color': getControlStyles('simple').mainColor,
+    '--control-styles-interactive-unset-secondary-color': getControlStyles('simple').secondaryColor,
+    '--control-styles-interactive-unset-track-color': getControlStyles('simple').trackColor,
+    '--control-styles-interactive-unset-rail-color': getControlStyles('simple').railColor,
+  },
+  '&:focus-within': {
+    '--control-styles-interactive-unset-main-color': getControlStyles('simple').mainColor,
+    '--control-styles-interactive-unset-secondary-color': getControlStyles('simple').secondaryColor,
+    '--control-styles-interactive-unset-track-color': getControlStyles('simple').trackColor,
+    '--control-styles-interactive-unset-rail-color': getControlStyles('simple').railColor,
+  },
+}
+
+const menuProviderStyle = {
+  width: '100%',
+  height: '100%',
+}
+
+export function InspectorContextMenuWrapper<T>(
+  props: React.PropsWithChildren<ContextMenuWrapperProps<T>>,
+) {
+  const name = React.useMemo(() => {
+    return `${props.id}-context-menu-wrapper`
+  }, [props.id])
+  const className = React.useMemo(() => {
+    return name + ' ' + (props.className ?? '')
+  }, [name, props.className])
+  const divCss: Interpolation<Theme> = React.useMemo(() => {
+    return {
+      width: '100%',
+      ...((props.style as any) ?? {}),
+      ...contextMenuWrapperHighlightCSS,
+    }
+  }, [props.style])
+  const getData = React.useCallback(() => {
+    return props.data
+  }, [props.data])
+  const menuProviderKey = React.useMemo(() => {
+    return `${props.id}-provider`
+  }, [props.id])
+  const contextMenuKey = React.useMemo(() => {
+    return `${props.id}-menu`
+  }, [props.id])
+  return (
+    <div key={name} className={className} css={divCss}>
+      <React.Fragment>
+        <MenuProvider
+          key={menuProviderKey}
+          id={props.id}
+          itemsLength={props.items.length}
+          style={menuProviderStyle}
+        >
+          {props.children}
+        </MenuProvider>
+        <MomentumContextMenu
+          key={contextMenuKey}
+          id={props.id}
+          items={props.items}
+          getData={getData}
+        />
+      </React.Fragment>
+    </div>
+  )
 }
 
 interface MenuProviderProps {

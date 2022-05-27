@@ -324,12 +324,18 @@ function elementPathMappingFn<P extends ParsedElementPropertiesKeys>(p: P) {
 
 export function useInspectorElementInfo<P extends ParsedElementPropertiesKeys>(prop: P) {
   type T = ParsedElementProperties[P]
-  const transformValue: (parsedValues: ParsedValues<P>) => T = (parsedValues) => parsedValues[prop]
+  const transformValue: (parsedValues: ParsedValues<P>) => T = React.useCallback(
+    (parsedValues) => parsedValues[prop],
+    [prop],
+  )
 
-  const untransformValue = (transformedType: T) =>
-    ({
-      [prop]: transformedType,
-    } as Partial<ParsedValues<P>>)
+  const untransformValue = React.useCallback(
+    (transformedType: T) =>
+      ({
+        [prop]: transformedType,
+      } as Partial<ParsedValues<P>>),
+    [prop],
+  )
 
   return useInspectorInfo([prop], transformValue, untransformValue, elementPathMappingFn)
 }

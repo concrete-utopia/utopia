@@ -26,6 +26,8 @@ import {
 const imgSrcProp = [PP.create(['src'])]
 const imgAltProp = [PP.create(['alt'])]
 
+const contextMenuStyle = { gridColumn: '1 / span 4' }
+
 export const ImgSection = React.memo(() => {
   const colorTheme = useColorTheme()
   const selectedViews = useSelectedViews()
@@ -59,21 +61,33 @@ export const ImgSection = React.memo(() => {
 
   const isVisible = useIsSubSectionVisible('img')
 
-  const srcContextMenuItems = utils.stripNulls([
-    srcValue != null ? addOnUnsetValues(['srcValue'], srcOnUnsetValues) : null,
-  ])
-  const altContextMenuItems = utils.stripNulls([
-    srcValue != null ? addOnUnsetValues(['altValue'], altOnUnsetValues) : null,
-  ])
+  const srcContextMenuItems = React.useMemo(() => {
+    return utils.stripNulls([
+      srcValue != null ? addOnUnsetValues(['srcValue'], srcOnUnsetValues) : null,
+    ])
+  }, [srcValue, srcOnUnsetValues])
+  const altContextMenuItems = React.useMemo(() => {
+    return utils.stripNulls([
+      altValue != null ? addOnUnsetValues(['altValue'], altOnUnsetValues) : null,
+    ])
+  }, [altValue, altOnUnsetValues])
 
-  let naturalDimensionsNode: React.ReactNode
-  if (naturalWidth != null && naturalHeight != null && naturalWidth !== 0 && naturalHeight !== 0) {
-    naturalDimensionsNode = (
-      <span style={{ marginLeft: 4, color: colorTheme.subduedForeground.value }}>
-        ({naturalWidth} × {naturalHeight})
-      </span>
-    )
-  }
+  const naturalDimensionsNode: React.ReactNode = React.useMemo(() => {
+    if (
+      naturalWidth != null &&
+      naturalHeight != null &&
+      naturalWidth !== 0 &&
+      naturalHeight !== 0
+    ) {
+      return (
+        <span style={{ marginLeft: 4, color: colorTheme.subduedForeground.value }}>
+          ({naturalWidth} × {naturalHeight})
+        </span>
+      )
+    } else {
+      return undefined
+    }
+  }, [naturalHeight, naturalWidth, colorTheme])
 
   if (!isVisible) {
     return null
@@ -88,7 +102,7 @@ export const ImgSection = React.memo(() => {
       <InspectorContextMenuWrapper
         id='image-section-src-context-menu'
         items={srcContextMenuItems}
-        style={{ gridColumn: '1 / span 4' }}
+        style={contextMenuStyle}
         data={null}
       >
         <UIGridRow padded={true} variant='<---1fr--->|------172px-------|'>
@@ -107,7 +121,7 @@ export const ImgSection = React.memo(() => {
       <InspectorContextMenuWrapper
         id='image-section-alt-context-menu'
         items={altContextMenuItems}
-        style={{ gridColumn: '1 / span 4' }}
+        style={contextMenuStyle}
         data={null}
       >
         <UIGridRow padded={true} variant='<---1fr--->|------172px-------|'>
