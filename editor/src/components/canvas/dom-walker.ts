@@ -297,6 +297,51 @@ interface RunDomWalkerParams {
   rootMetadataInStateRef: { readonly current: readonly ElementInstanceMetadata[] }
 }
 
+function runDomWalkerQueryMode(
+  domWalkerMutableState: DomWalkerMutableStateData,
+  selectedViews: Array<ElementPath>,
+  scale: number,
+  additionalElementsToUpdate: Array<ElementPath>,
+  rootMetadataInStateRef: { readonly current: readonly ElementInstanceMetadata[] },
+  containerRectLazy: () => CanvasRectangle,
+): { metadata: ElementInstanceMetadata[]; cachedPaths: ElementPath[] } | null {
+  let workingMetadata: ElementInstanceMetadata[] = [...rootMetadataInStateRef.current]
+  let workingCachedPaths: ElementPath[] = []
+
+  const canvasRootContainer = document.getElementById(CanvasContainerID)
+  if (canvasRootContainer != null) {
+    const invalidatedPathArr = Array.from(domWalkerMutableState.invalidatedPaths).map(EP.fromString)
+
+    const elementPathsToQuery = [...invalidatedPathArr, ...additionalElementsToUpdate]
+
+    const parentPoint = canvasPoint({ x: 0, y: 0 })
+
+    elementPathsToQuery.forEach((path) => {
+      const element = document.querySelector(`[data-path="${EP.toString(path)}"]`) as HTMLElement
+      if (element != null) {
+        const { collectedMetadata, cachedPaths } = collectAndCreateMetadataForElement(
+          element,
+          parentPoint,
+          scale,
+          containerRectLazy,
+          [path],
+          domWalkerMutableState.invalidatedPathsForStylesheetCache,
+          selectedViews,
+          domWalkerMutableState.invalidatedPaths,
+        )
+
+        workingMetadata.push(...collectedMetadata)
+        workingCachedPaths.push(...cachedPaths)
+      }
+    })
+  }
+
+  return {
+    metadata: workingMetadata,
+    cachedPaths: workingCachedPaths,
+  }
+}
+
 export function runDomWalker({
   domWalkerMutableState,
   selectedViews,
@@ -336,6 +381,17 @@ export function runDomWalker({
     const containerRect = lazyValue(() => {
       return getCanvasRectangleFromElement(canvasRootContainer, scale)
     })
+
+    if (domWalkerMutableState.initComplete) {
+      return runDomWalkerQueryMode(
+        domWalkerMutableState,
+        selectedViews,
+        scale,
+        additionalElementsToUpdate,
+        rootMetadataInStateRef,
+        containerRect,
+      )
+    }
 
     // This assumes that the canvas root is rendering a Storyboard fragment.
     // The necessary validPaths and the root fragment's template path comes from props,
@@ -517,6 +573,12 @@ function collectMetadata(
   selectedViews: Array<ElementPath>,
   additionalElementsToUpdate: Array<ElementPath>,
 ): { collectedMetadata: Array<ElementInstanceMetadata>; cachedPaths: Array<ElementPath> } {
+  if (pathsForElement.length === 0) {
+    return {
+      collectedMetadata: [],
+      cachedPaths: [],
+    }
+  }
   const shouldCollect =
     invalidated ||
     isAnyPathInvalidated(stringPathsForElement, invalidatedPaths) ||
@@ -526,39 +588,16 @@ function collectMetadata(
       )
     })
   if (shouldCollect && pathsForElement.length > 0) {
-    const { tagName, globalFrame, localFrame, specialSizeMeasurementsObject } =
-      collectMetadataForElement(element, parentPoint, scale, containerRectLazy)
-
-    const { computedStyle, attributeMetadata } = getComputedStyle(
+    return collectAndCreateMetadataForElement(
       element,
+      parentPoint,
+      scale,
+      containerRectLazy,
       pathsForElement,
       invalidatedPathsForStylesheetCache,
       selectedViews,
+      invalidatedPaths,
     )
-
-    const collectedMetadata = pathsForElement.map((path) => {
-      invalidatedPaths.delete(EP.toString(path)) // mutation!
-
-      return elementInstanceMetadata(
-        path,
-        left(tagName),
-        {},
-        globalFrame,
-        localFrame,
-        false,
-        false,
-        specialSizeMeasurementsObject,
-        computedStyle,
-        attributeMetadata,
-        null,
-        null, // This comes from the Spy Wrapper
-      )
-    })
-
-    return {
-      collectedMetadata: collectedMetadata,
-      cachedPaths: [],
-    }
   } else {
     const cachedMetadata = mapDropNulls((path) => {
       return MetadataUtils.findElementMetadata(path, rootMetadataInStateRef.current)
@@ -587,6 +626,50 @@ function collectMetadata(
         additionalElementsToUpdate,
       )
     }
+  }
+}
+
+function collectAndCreateMetadataForElement(
+  element: HTMLElement,
+  parentPoint: CanvasPoint,
+  scale: number,
+  containerRectLazy: () => CanvasRectangle,
+  pathsForElement: ElementPath[],
+  invalidatedPathsForStylesheetCache: Set<string>,
+  selectedViews: ElementPath[],
+  invalidatedPaths: Set<string>,
+) {
+  const { tagName, globalFrame, localFrame, specialSizeMeasurementsObject } =
+    collectMetadataForElement(element, parentPoint, scale, containerRectLazy)
+
+  const { computedStyle, attributeMetadata } = getComputedStyle(
+    element,
+    pathsForElement,
+    invalidatedPathsForStylesheetCache,
+    selectedViews,
+  )
+
+  const collectedMetadata = pathsForElement.map((path) => {
+    invalidatedPaths.delete(EP.toString(path)) // mutation!
+
+    return elementInstanceMetadata(
+      path,
+      left(tagName),
+      {},
+      globalFrame,
+      localFrame,
+      false,
+      false,
+      specialSizeMeasurementsObject,
+      computedStyle,
+      attributeMetadata,
+      null,
+      null,
+    )
+  })
+  return {
+    collectedMetadata: collectedMetadata,
+    cachedPaths: [],
   }
 }
 
