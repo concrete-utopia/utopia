@@ -123,8 +123,8 @@ describe('appending to a path', () => {
       ['C', 'D'],
     ])
     const singleElementAdded = EP.appendToPath(start, 'E')
-    const singleElementAddedViaArray = EP.appendToPath(start, ['E'])
-    const multipleElementsAdded = EP.appendToPath(start, ['E', 'F'])
+    const singleElementAddedViaArray = EP.appendPartToPath(start, ['E'])
+    const multipleElementsAdded = EP.appendPartToPath(start, ['E', 'F'])
 
     expect(singleElementAdded).toEqual(
       EP.elementPath([
@@ -149,8 +149,8 @@ describe('appending to a path', () => {
   it('appendToPath works with an empty path', () => {
     const start = EP.emptyElementPath
     const singleElementAdded = EP.appendToPath(start, 'E')
-    const singleElementAddedViaArray = EP.appendToPath(start, ['E'])
-    const multipleElementsAdded = EP.appendToPath(start, ['E', 'F'])
+    const singleElementAddedViaArray = EP.appendPartToPath(start, ['E'])
+    const multipleElementsAdded = EP.appendPartToPath(start, ['E', 'F'])
 
     expect(singleElementAdded).toEqual(EP.elementPath([['E']]))
     expect(singleElementAddedViaArray).toEqual(EP.elementPath([['E']]))
