@@ -57,7 +57,7 @@ export function createLookupRender(
   requireResult: MapLike<any>,
   hiddenInstances: Array<ElementPath>,
   fileBlobs: UIFileBase64Blobs,
-  validPaths: Array<ElementPath>,
+  validPaths: Set<ElementPath>,
   reactChildren: React.ReactNode | undefined,
   metadataContext: UiJsxCanvasContextData,
   updateInvalidatedPaths: DomWalkerInvalidatePathsCtxData,
@@ -150,7 +150,7 @@ export function renderCoreElement(
   requireResult: MapLike<any>,
   hiddenInstances: Array<ElementPath>,
   fileBlobs: UIFileBase64Blobs,
-  validPaths: Array<ElementPath>,
+  validPaths: Set<ElementPath>,
   uid: string | undefined,
   reactChildren: React.ReactNode | undefined,
   metadataContext: UiJsxCanvasContextData,
@@ -320,7 +320,7 @@ function renderJSXElement(
   inScope: MapLike<any>,
   hiddenInstances: Array<ElementPath>,
   fileBlobs: UIFileBase64Blobs,
-  validPaths: Array<ElementPath>,
+  validPaths: Set<ElementPath>,
   passthroughProps: MapLike<any>,
   metadataContext: UiJsxCanvasContextData,
   updateInvalidatedPaths: DomWalkerInvalidatePathsCtxData,
@@ -403,19 +403,11 @@ function renderJSXElement(
     [UTOPIA_PATH_KEY]: optionalMap(EP.toString, elementPath),
   }
 
-  const staticElementPathForGeneratedElement = optionalMap(EP.makeLastPartOfPathStatic, elementPath)
-
-  const staticValidPaths = validPaths.map(EP.makeLastPartOfPathStatic)
-
   if (FinalElement == null) {
     throw canvasMissingJSXElementError(jsxFactoryFunctionName, code, jsx, filePath, highlightBounds)
   }
 
-  if (
-    elementPath != null &&
-    staticElementPathForGeneratedElement != null &&
-    EP.containsPath(staticElementPathForGeneratedElement, staticValidPaths)
-  ) {
+  if (elementPath != null && validPaths.has(EP.makeLastPartOfPathStatic(elementPath))) {
     return buildSpyWrappedElement(
       jsx,
       finalPropsIcludingElementPath,
