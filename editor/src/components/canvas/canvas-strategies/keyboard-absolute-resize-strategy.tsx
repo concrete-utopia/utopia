@@ -56,9 +56,7 @@ export const keyboardAbsoluteResizeStrategy: CanvasStrategy = {
   apply: (canvasState, interactionState, sessionState) => {
     if (interactionState.interactionData.type === 'KEYBOARD') {
       return {
-        commands: interactionState.interactionData.keysPressed.flatMap<
-          AdjustCssLengthProperty | SetElementsToRerenderCommand
-        >((key) => {
+        commands: interactionState.interactionData.keysPressed.flatMap((key) => {
           if (key == null) {
             return []
           }
