@@ -1145,7 +1145,7 @@ describe('Monkey Function', () => {
     `)
   })
 
-  xit('builds the correct paths for Exotic-type with-forwardRef components', () => {
+  it('builds the correct paths for Exotic-type with-forwardRef components', () => {
     const Red = React.forwardRef((props, test) => {
       return <div data-uid='red-root' ref={test as any} />
     })
@@ -1182,7 +1182,7 @@ describe('Monkey Function', () => {
     `)
   })
 
-  xit('builds the correct paths for forwardRef components', () => {
+  it('builds the correct paths for forwardRef components', () => {
     const Blue = React.forwardRef((props: any, test) => {
       return (
         <div data-uid='blue-root' ref={test as any}>

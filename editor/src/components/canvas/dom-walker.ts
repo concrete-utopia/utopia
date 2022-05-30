@@ -49,11 +49,7 @@ import {
   useSelectorWithCallback,
   UtopiaStoreAPI,
 } from '../editor/store/store-hook'
-import {
-  UTOPIA_DO_NOT_TRAVERSE_KEY,
-  UTOPIA_PATH_KEY,
-  UTOPIA_SCENE_ID_KEY,
-} from '../../core/model/utopia-constants'
+import { UTOPIA_DO_NOT_TRAVERSE_KEY, UTOPIA_SCENE_ID_KEY } from '../../core/model/utopia-constants'
 
 import { MetadataUtils } from '../../core/model/element-metadata-utils'
 import { PERFORMANCE_MARKS_ALLOWED, PRODUCTION_ENV } from '../../common/env-vars'

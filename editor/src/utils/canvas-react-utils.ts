@@ -43,9 +43,7 @@ function fragmentOrProviderOrContext(type: any): boolean {
     type == React.Fragment ||
     type?.$$typeof == fragmentSymbol ||
     type?.$$typeof == providerSymbol ||
-    type?.$$typeof == contextSymbol ||
-    type?.$$typeof == memoSymbol
-    // || type?.$$typeof == forwardRefSymbol
+    type?.$$typeof == contextSymbol
   )
 }
 
@@ -419,25 +417,6 @@ const mangleExoticType = Utils.memoize(
      */
     let mangledType: any = type
 
-    if ((type as React.MemoExoticComponent<any>).type != null) {
-      // React.memo uses a field `type` to hold the actual component
-      const innerType = (type as React.MemoExoticComponent<any>).type
-      mangledType = {
-        ...type,
-        type: mangleElementType(innerType),
-      }
-    }
-
-    if ((type as any).render != null) {
-      // React.forwardRef uses a field `render` to hold the actual component
-      // FIXME This isn't quite right. Something else is needed to handle forwardRef components...
-      const innerRender = (type as any).render
-      mangledType = {
-        ...type,
-        render: mangleElementType(innerRender),
-      }
-    }
-
     const wrapperComponent = (p: any, context?: any) => {
       const uid = p?.[UTOPIA_UID_KEY]
       const path = p?.[UTOPIA_PATH_KEY] ?? (p as any)?.[UTOPIA_UID_KEY]
@@ -446,10 +425,8 @@ const mangleExoticType = Utils.memoize(
         ...p,
       }
 
-      if (mangledType === type) {
-        delete mangledProps[UTOPIA_UID_KEY]
-        delete mangledProps[UTOPIA_PATH_KEY]
-      }
+      delete mangledProps[UTOPIA_UID_KEY]
+      delete mangledProps[UTOPIA_PATH_KEY]
 
       if (p?.children == null || typeof p.children === 'string') {
         return realCreateElement(mangledType, mangledProps)
@@ -493,6 +470,31 @@ const mangleExoticType = Utils.memoize(
   },
 )
 
+const mangleMemoType = Utils.memoize(
+  (type: React.MemoExoticComponent<any>) => {
+    return {
+      ...type,
+      type: mangleElementType(type.type),
+    } as typeof type
+  },
+  {
+    maxSize: 10000,
+  },
+)
+
+const mangleForwardRefType = Utils.memoize(
+  (type: any) => {
+    // React.forwardRef uses a field `render` to hold the actual component
+    return {
+      ...type,
+      render: mangleElementType(type.render),
+    }
+  },
+  {
+    maxSize: 10000,
+  },
+)
+
 function isClassComponent(component: any) {
   // this is copied from stack overflow https://stackoverflow.com/a/41658173
   return typeof component === 'function' && component?.prototype?.isReactComponent != null
@@ -507,6 +509,10 @@ function mangleElementType(type: any): any {
   } else if (fragmentOrProviderOrContext(type)) {
     // fragment-like components, the list is not exhaustive, we might need to extend it later
     return mangleExoticType(type)
+  } else if (type?.$$typeof == memoSymbol) {
+    return mangleMemoType(type)
+  } else if (type?.$$typeof == forwardRefSymbol) {
+    return mangleForwardRefType(type)
   } else {
     // Are there other types we're missing here?
     return type
@@ -529,6 +535,12 @@ export function patchedCreateReactElement(type: any, props: any, ...children: an
   } else if (fragmentOrProviderOrContext(type)) {
     // fragment-like components, the list is not exhaustive, we might need to extend it later
     const mangledType = mangleExoticType(type)
+    return realCreateElement(mangledType, props, ...children)
+  } else if (type?.$$typeof == memoSymbol) {
+    const mangledType = mangleMemoType(type)
+    return realCreateElement(mangledType, props, ...children)
+  } else if (type?.$$typeof == forwardRefSymbol) {
+    const mangledType = mangleForwardRefType(type)
     return realCreateElement(mangledType, props, ...children)
   } else if (typeof type === 'string') {
     // We cannot create a mangled type for this as that would break libraries like ReactDND that rely

@@ -76,7 +76,7 @@ import {
 } from '../../utils/react-performance'
 import { unimportAllButTheseCSSFiles } from '../../core/webpack-loaders/css-loader'
 import { useSelectAndHover } from './controls/select-mode/select-mode-hooks'
-import { UTOPIA_INSTANCE_PATH, UTOPIA_PATH_KEY } from '../../core/model/utopia-constants'
+import { UTOPIA_INSTANCE_PATH } from '../../core/model/utopia-constants'
 import {
   createLookupRender,
   utopiaCanvasJSXLookup,

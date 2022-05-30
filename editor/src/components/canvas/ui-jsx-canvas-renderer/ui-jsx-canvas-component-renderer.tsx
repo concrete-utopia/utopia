@@ -84,9 +84,10 @@ export function createComponentRendererComponent(params: {
   const Component = (realPassedPropsIncludingUtopiaSpecialStuff: any) => {
     const {
       [UTOPIA_INSTANCE_PATH]: instancePathAny, // TODO types?
-      [UTOPIA_PATH_KEY]: pathsString, // TODO types?
       ...realPassedProps
     } = realPassedPropsIncludingUtopiaSpecialStuff
+
+    const pathsString = realPassedProps[UTOPIA_PATH_KEY]
 
     const mutableContext = params.mutableContextRef.current[params.filePath].mutableContext
 
@@ -183,6 +184,8 @@ export function createComponentRendererComponent(params: {
 
     function buildComponentRenderResult(element: JSXElementChild): React.ReactElement {
       if (isJSXFragment(element)) {
+        // FIXME For some reason this isn't calling `patchedCreateReactElement` in the running app,
+        // even when importing `PatchedReact` rather than `React` at the top of this file
         return <>{element.children.map(buildComponentRenderResult)}</>
       } else {
         const ownElementPath = optionalMap(
