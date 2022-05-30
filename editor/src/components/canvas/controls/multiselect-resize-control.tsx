@@ -208,8 +208,7 @@ export class SingleSelectResizeControls extends React.Component<SingleSelectResi
     return this.props.selectedViews.map((view, index) => {
       const target = MetadataUtils.findElementByElementPath(this.props.componentMetadata, view)
       const frame = optionalMap((metadata) => metadata.globalFrame, target)
-      const targetProps =
-        target == null ? {} : this.props.allElementProps[EP.toString(target.elementPath)] ?? {}
+      const targetProps = target == null ? {} : this.props.allElementProps[EP.toString(view)] ?? {}
       if (frame == null) {
         return null
       } else {
