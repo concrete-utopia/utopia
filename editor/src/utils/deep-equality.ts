@@ -1003,6 +1003,26 @@ export function undefinableDeepEquality<T>(
   }
 }
 
+export function unionDeepEquality<T1, T2>(
+  elementCall1: KeepDeepEqualityCall<T1>,
+  elementCall2: KeepDeepEqualityCall<T2>,
+  typeGuardT1: (param: T1 | T2) => param is T1,
+  typeGuardT2: (param: T1 | T2) => param is T2,
+): KeepDeepEqualityCall<T1 | T2> {
+  return <T extends T1 | T2>(oldValue: T, newValue: T) => {
+    if (oldValue === newValue) {
+      return keepDeepEqualityResult(oldValue, true)
+    }
+    if (typeGuardT1(oldValue) && typeGuardT1(newValue)) {
+      return elementCall1(oldValue, newValue)
+    } else if (typeGuardT2(oldValue) && typeGuardT2(newValue)) {
+      return elementCall2(oldValue, newValue)
+    } else {
+      return keepDeepEqualityResult(newValue, false)
+    }
+  }
+}
+
 // Makes the assumption that the key value stored is consistent with the key value string used to key into the dictionary.
 export function ComplexMapKeepDeepEquality<K, V>(
   keyDeepEquality: KeepDeepEqualityCall<K>,

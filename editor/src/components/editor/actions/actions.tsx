@@ -373,6 +373,7 @@ import {
   ForceParseFile,
   RemoveFromNodeModulesContents,
   RunEscapeHatch,
+  SetElementsToRerender,
 } from '../action-types'
 import { defaultTransparentViewElement, defaultSceneElement } from '../defaults'
 import {
@@ -528,6 +529,7 @@ import { stylePropPathMappingFn } from '../../inspector/common/property-path-hoo
 import { getEscapeHatchCommands } from '../../../components/canvas/canvas-strategies/escape-hatch-strategy'
 import { pickCanvasStateFromEditorState } from '../../canvas/canvas-strategies/canvas-strategies'
 import { foldAndApplyCommandsSimple, runCanvasCommand } from '../../canvas/commands/commands'
+import { setElementsToRerenderCommand } from '../../canvas/commands/set-elements-to-rerender-command'
 
 export function updateSelectedLeftMenuTab(editorState: EditorState, tab: LeftMenuTab): EditorState {
   return {
@@ -962,6 +964,7 @@ function restoreEditorState(currentEditor: EditorModel, history: StateHistory): 
       additionalControls: currentEditor.interfaceDesigner.additionalControls,
     },
     canvas: {
+      elementsToRerender: currentEditor.canvas.elementsToRerender,
       visible: currentEditor.canvas.visible,
       dragState: null,
       interactionSession: null,
@@ -4884,6 +4887,9 @@ export const UPDATE_FNS = {
     const canvasState = pickCanvasStateFromEditorState(editor)
     const commands = getEscapeHatchCommands(action.targets, editor.jsxMetadata, canvasState, null)
     return foldAndApplyCommandsSimple(editor, commands)
+  },
+  SET_ELEMENTS_TO_RERENDER: (action: SetElementsToRerender, editor: EditorModel): EditorModel => {
+    return foldAndApplyCommandsSimple(editor, [setElementsToRerenderCommand(action.value)])
   },
 }
 

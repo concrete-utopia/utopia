@@ -605,7 +605,10 @@ export function editorStateCanvasControls(
   }
 }
 
+export type ElementsToRerender = Array<ElementPath> | 'rerender-all-elements'
+
 export interface EditorStateCanvas {
+  elementsToRerender: ElementsToRerender
   visible: boolean
   dragState: DragState | null
   interactionSession: InteractionSession | null
@@ -630,6 +633,7 @@ export interface EditorStateCanvas {
 }
 
 export function editorStateCanvas(
+  elementsToRerender: Array<ElementPath> | 'rerender-all-elements',
   visible: boolean,
   dragState: DragState | null,
   interactionSession: InteractionSession | null,
@@ -653,6 +657,7 @@ export function editorStateCanvas(
   controls: EditorStateCanvasControls,
 ): EditorStateCanvas {
   return {
+    elementsToRerender: elementsToRerender,
     visible: visible,
     dragState: dragState,
     interactionSession: interactionSession,
@@ -1691,6 +1696,7 @@ export function createEditorState(dispatch: EditorDispatch): EditorState {
       additionalControls: true,
     },
     canvas: {
+      elementsToRerender: 'rerender-all-elements',
       dragState: null, // TODO change dragState if editorMode changes
       interactionSession: null,
       visible: true,
@@ -1972,6 +1978,7 @@ export function editorModelFromPersistentModel(
       additionalControls: true,
     },
     canvas: {
+      elementsToRerender: 'rerender-all-elements',
       dragState: null, // TODO change dragState if editorMode changes
       interactionSession: null,
       visible: true,

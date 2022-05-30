@@ -17,6 +17,7 @@ import { CSSCursor } from '../canvas-types'
 import { setCursorCommand } from '../commands/set-cursor-command'
 import { ParentOutlines } from '../controls/parent-outlines'
 import { updateHighlightedViews } from '../commands/update-highlighted-views-command'
+import { setElementsToRerenderCommand } from '../commands/set-elements-to-rerender-command'
 import { ParentBounds } from '../controls/parent-bounds'
 
 export const flexReorderStrategy: CanvasStrategy = {
@@ -110,6 +111,7 @@ export const flexReorderStrategy: CanvasStrategy = {
       return {
         commands: [
           reorderElement('permanent', target, realNewIndex),
+          setElementsToRerenderCommand([target]),
           updateHighlightedViews('transient', []),
           setCursorCommand('transient', CSSCursor.Move),
         ],

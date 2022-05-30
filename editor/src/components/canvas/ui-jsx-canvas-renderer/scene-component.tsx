@@ -5,15 +5,18 @@ import { useColorTheme, UtopiaStyles } from '../../../uuiui'
 import { RerenderUtopiaCtxAtom } from './ui-jsx-canvas-contexts'
 import { DomWalkerInvalidatePathsCtxAtom, UiJsxCanvasCtxAtom } from '../ui-jsx-canvas'
 import { UTOPIA_SCENE_ID_KEY } from '../../../core/model/utopia-constants'
-import { usePubSubAtomReadOnly } from '../../../core/shared/atom-with-pub-sub'
+import { AlwaysTrue, usePubSubAtomReadOnly } from '../../../core/shared/atom-with-pub-sub'
 
 type ExtendedSceneProps = SceneProps & { [UTOPIA_SCENE_ID_KEY]: string }
 
 export const SceneComponent = React.memo(
   (props: React.PropsWithChildren<ExtendedSceneProps>) => {
     const colorTheme = useColorTheme()
-    const canvasIsLive = usePubSubAtomReadOnly(RerenderUtopiaCtxAtom).canvasIsLive
-    const updateInvalidatedPaths = usePubSubAtomReadOnly(DomWalkerInvalidatePathsCtxAtom)
+    const canvasIsLive = false
+    const updateInvalidatedPaths = usePubSubAtomReadOnly(
+      DomWalkerInvalidatePathsCtxAtom,
+      AlwaysTrue,
+    )
 
     const { style, ['data-uid']: dataUid, ...remainingProps } = props
     // We're removing the data-uid prop here as the monkey patch will deal with it
