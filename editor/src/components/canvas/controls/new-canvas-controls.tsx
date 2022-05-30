@@ -67,6 +67,7 @@ import { GuidelineControls } from './guideline-controls'
 import { showContextMenu } from '../../editor/actions/action-creators'
 import { HTML5Backend } from 'react-dnd-html5-backend'
 import { OutlineHighlightControl } from './select-mode/outline-highlight-control'
+import { DistanceGuidelineControl } from './select-mode/distance-guideline-control'
 
 export const CanvasControlsContainerID = 'new-canvas-controls-container'
 
@@ -436,6 +437,11 @@ const NewCanvasControlsInner = (props: NewCanvasControlsInnerProps) => {
     >
       {renderModeControlContainer()}
       {renderHighlightControls()}
+      {when(
+        (isFeatureEnabled('Canvas Strategies') && props.editor.mode.type === 'select') ||
+          props.editor.mode.type === 'select-lite',
+        <DistanceGuidelineControl />,
+      )}
       <LayoutParentControl />
       {when(
         isFeatureEnabled('Canvas Strategies'),
