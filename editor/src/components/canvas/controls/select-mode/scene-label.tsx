@@ -54,7 +54,12 @@ const SceneLabel = React.memo<SceneLabelProps>((props) => {
     'SceneLabel Z key pressed',
   )
   const label = useEditorState(
-    (store) => MetadataUtils.getElementLabel(props.target, store.editor.jsxMetadata),
+    (store) =>
+      MetadataUtils.getElementLabel(
+        store.editor.allElementProps,
+        props.target,
+        store.editor.jsxMetadata,
+      ),
     'SceneLabel label',
   )
   const frame = useEditorState(
