@@ -411,13 +411,3 @@ export function simplifiedMetadataMap(metadata: ElementInstanceMetadataMap): Sim
   }, metadata)
   return sanitizedSpyData
 }
-
-export function domWalkerMetadataToSimplifiedMetadataMap(
-  metadata: Array<ElementInstanceMetadata>,
-): SimplifiedMetadataMap {
-  return mapArrayToDictionary(
-    metadata,
-    (elementMetadata: ElementInstanceMetadata) => EP.toString(elementMetadata.elementPath),
-    simplifiedMetadata,
-  )
-}

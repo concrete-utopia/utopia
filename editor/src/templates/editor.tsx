@@ -387,7 +387,9 @@ export class Editor {
           scale: dispatchResult.patchedEditor.canvas.scale,
           additionalElementsToUpdate:
             dispatchResult.patchedEditor.canvas.domWalkerAdditionalElementsToUpdate,
-          rootMetadataInStateRef: { current: dispatchResult.patchedEditor.domMetadata },
+          rootMetadataInStateRef: {
+            current: Object.values(dispatchResult.patchedEditor.domMetadata),
+          },
         })
 
         if (domWalkerResult != null) {

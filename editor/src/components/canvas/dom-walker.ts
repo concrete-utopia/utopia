@@ -15,6 +15,7 @@ import {
   emptyComputedStyle,
   StyleAttributeMetadata,
   emptyAttributeMetadatada,
+  ElementInstanceMetadataMap,
 } from '../../core/shared/element-template'
 import { ElementPath } from '../../core/shared/project-file-types'
 import { getCanvasRectangleFromElement, getDOMAttribute } from '../../core/shared/dom-utils'
@@ -212,7 +213,7 @@ export interface DomWalkerProps {
 
 function mergeFragmentMetadata(
   metadata: ReadonlyArray<ElementInstanceMetadata>,
-): Array<ElementInstanceMetadata> {
+): ElementInstanceMetadataMap {
   let working: MapLike<ElementInstanceMetadata> = {}
 
   fastForEach(metadata, (elementMetadata) => {
@@ -248,7 +249,7 @@ function mergeFragmentMetadata(
     }
   })
 
-  return Object.values(working)
+  return working
 }
 
 export interface DomWalkerMutableStateData {
@@ -304,8 +305,8 @@ function runDomWalkerQueryMode(
   additionalElementsToUpdate: Array<ElementPath>,
   rootMetadataInStateRef: { readonly current: readonly ElementInstanceMetadata[] },
   containerRectLazy: () => CanvasRectangle,
-): { metadata: ElementInstanceMetadata[]; cachedPaths: ElementPath[] } | null {
-  let workingMetadata: ElementInstanceMetadata[] = [...rootMetadataInStateRef.current]
+): { metadata: ElementInstanceMetadata[]; cachedPaths: ElementPath[] } {
+  let workingMetadata: ElementInstanceMetadata[] = []
   let workingCachedPaths: ElementPath[] = []
 
   const canvasRootContainer = document.getElementById(CanvasContainerID)
@@ -336,8 +337,13 @@ function runDomWalkerQueryMode(
     })
   }
 
+  const queriedPaths = new Set(workingMetadata.map((m) => EP.toString(m.elementPath)))
+  const rootMetadataForOtherElements = rootMetadataInStateRef.current.filter(
+    (m) => !queriedPaths.has(EP.toString(m.elementPath)),
+  )
+
   return {
-    metadata: workingMetadata,
+    metadata: [...rootMetadataForOtherElements, ...workingMetadata],
     cachedPaths: workingCachedPaths,
   }
 }
@@ -348,7 +354,10 @@ export function runDomWalker({
   scale,
   additionalElementsToUpdate,
   rootMetadataInStateRef,
-}: RunDomWalkerParams): { metadata: ElementInstanceMetadata[]; cachedPaths: ElementPath[] } | null {
+}: RunDomWalkerParams): {
+  metadata: ElementInstanceMetadataMap
+  cachedPaths: ElementPath[]
+} | null {
   const needsWalk =
     !domWalkerMutableState.initComplete || domWalkerMutableState.invalidatedPaths.size > 0
 
@@ -382,31 +391,29 @@ export function runDomWalker({
       return getCanvasRectangleFromElement(canvasRootContainer, scale)
     })
 
-    if (domWalkerMutableState.initComplete) {
-      return runDomWalkerQueryMode(
-        domWalkerMutableState,
-        selectedViews,
-        scale,
-        additionalElementsToUpdate,
-        rootMetadataInStateRef,
-        containerRect,
-      )
-    }
-
     // This assumes that the canvas root is rendering a Storyboard fragment.
     // The necessary validPaths and the root fragment's template path comes from props,
     // because the fragment is invisible in the DOM.
-    const { metadata, cachedPaths } = walkCanvasRootFragment(
-      canvasRootContainer,
-      rootMetadataInStateRef,
-      domWalkerMutableState.invalidatedPaths,
-      domWalkerMutableState.invalidatedPathsForStylesheetCache,
-      selectedViews,
-      !domWalkerMutableState.initComplete,
-      scale,
-      containerRect,
-      [...additionalElementsToUpdate, ...selectedViews],
-    )
+    const { metadata, cachedPaths } = domWalkerMutableState.initComplete
+      ? runDomWalkerQueryMode(
+          domWalkerMutableState,
+          selectedViews,
+          scale,
+          additionalElementsToUpdate,
+          rootMetadataInStateRef,
+          containerRect,
+        )
+      : walkCanvasRootFragment(
+          canvasRootContainer,
+          rootMetadataInStateRef,
+          domWalkerMutableState.invalidatedPaths,
+          domWalkerMutableState.invalidatedPathsForStylesheetCache,
+          selectedViews,
+          !domWalkerMutableState.initComplete,
+          scale,
+          containerRect,
+          [...additionalElementsToUpdate, ...selectedViews],
+        )
     if (LogDomWalkerPerformance) {
       performance.mark('DOM_WALKER_END')
       performance.measure(

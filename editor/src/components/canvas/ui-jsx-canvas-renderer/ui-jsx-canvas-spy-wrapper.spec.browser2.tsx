@@ -1,10 +1,6 @@
 import { canvasPoint, point } from '../../../core/shared/math-utils'
 import * as EP from '../../../core/shared/element-path'
-import {
-  wait,
-  simplifiedMetadataMap,
-  domWalkerMetadataToSimplifiedMetadataMap,
-} from '../../../utils/utils.test-utils'
+import { simplifiedMetadataMap } from '../../../utils/utils.test-utils'
 import { setFocusedElement } from '../../editor/actions/action-creators'
 import { StoryboardFilePath } from '../../editor/store/editor-state'
 import CanvasActions from '../canvas-actions'
@@ -112,7 +108,7 @@ describe('Spy Wrapper Template Path Tests', () => {
     const sanitizedSpyData = simplifiedMetadataMap(spiedMetadata)
 
     const domMetadata = getEditorState().editor.domMetadata
-    const sanitizedDomMetadata = domWalkerMetadataToSimplifiedMetadataMap(domMetadata)
+    const sanitizedDomMetadata = simplifiedMetadataMap(domMetadata)
 
     const finalMetadata = getEditorState().editor.jsxMetadata
     const sanitizedFinalMetadata = simplifiedMetadataMap(finalMetadata)
@@ -252,7 +248,7 @@ describe('Spy Wrapper Template Path Tests', () => {
     const sanitizedSpyData = simplifiedMetadataMap(spiedMetadata)
 
     const domMetadata = getEditorState().editor.domMetadata
-    const sanitizedDomMetadata = domWalkerMetadataToSimplifiedMetadataMap(domMetadata)
+    const sanitizedDomMetadata = simplifiedMetadataMap(domMetadata)
 
     const finalMetadata = getEditorState().editor.jsxMetadata
     const sanitizedFinalMetadata = simplifiedMetadataMap(finalMetadata)
@@ -441,7 +437,7 @@ describe('Spy Wrapper Template Path Tests', () => {
     const sanitizedSpyData = simplifiedMetadataMap(spiedMetadata)
 
     const domMetadata = getEditorState().editor.domMetadata
-    const sanitizedDomMetadata = domWalkerMetadataToSimplifiedMetadataMap(domMetadata)
+    const sanitizedDomMetadata = simplifiedMetadataMap(domMetadata)
 
     const finalMetadata = getEditorState().editor.jsxMetadata
     const sanitizedFinalMetadata = simplifiedMetadataMap(finalMetadata)
@@ -639,7 +635,7 @@ describe('Spy Wrapper Template Path Tests', () => {
     const sanitizedSpyData = simplifiedMetadataMap(spiedMetadata)
 
     const domMetadata = getEditorState().editor.domMetadata
-    const sanitizedDomMetadata = domWalkerMetadataToSimplifiedMetadataMap(domMetadata)
+    const sanitizedDomMetadata = simplifiedMetadataMap(domMetadata)
 
     const finalMetadata = getEditorState().editor.jsxMetadata
     const sanitizedFinalMetadata = simplifiedMetadataMap(finalMetadata)
@@ -835,7 +831,7 @@ describe('Spy Wrapper Multifile Template Path Tests', () => {
     const sanitizedSpyData = simplifiedMetadataMap(spiedMetadata)
 
     const domMetadata = getEditorState().editor.domMetadata
-    const sanitizedDomMetadata = domWalkerMetadataToSimplifiedMetadataMap(domMetadata)
+    const sanitizedDomMetadata = simplifiedMetadataMap(domMetadata)
 
     const finalMetadata = getEditorState().editor.jsxMetadata
     const sanitizedFinalMetadata = simplifiedMetadataMap(finalMetadata)
@@ -1024,7 +1020,7 @@ describe('Spy Wrapper Multifile Template Path Tests', () => {
     const sanitizedSpyData = simplifiedMetadataMap(spiedMetadata)
 
     const domMetadata = getEditorState().editor.domMetadata
-    const sanitizedDomMetadata = domWalkerMetadataToSimplifiedMetadataMap(domMetadata)
+    const sanitizedDomMetadata = simplifiedMetadataMap(domMetadata)
 
     const finalMetadata = getEditorState().editor.jsxMetadata
     const sanitizedFinalMetadata = simplifiedMetadataMap(finalMetadata)
@@ -1222,7 +1218,7 @@ describe('Spy Wrapper Multifile Template Path Tests', () => {
     const sanitizedSpyData = simplifiedMetadataMap(spiedMetadata)
 
     const domMetadata = getEditorState().editor.domMetadata
-    const sanitizedDomMetadata = domWalkerMetadataToSimplifiedMetadataMap(domMetadata)
+    const sanitizedDomMetadata = simplifiedMetadataMap(domMetadata)
 
     const finalMetadata = getEditorState().editor.jsxMetadata
     const sanitizedFinalMetadata = simplifiedMetadataMap(finalMetadata)
@@ -1450,7 +1446,7 @@ describe('Spy Wrapper Multifile With Cyclic Dependencies', () => {
     const sanitizedSpyData = simplifiedMetadataMap(spiedMetadata)
 
     const domMetadata = getEditorState().editor.domMetadata
-    const sanitizedDomMetadata = domWalkerMetadataToSimplifiedMetadataMap(domMetadata)
+    const sanitizedDomMetadata = simplifiedMetadataMap(domMetadata)
 
     const finalMetadata = getEditorState().editor.jsxMetadata
     const sanitizedFinalMetadata = simplifiedMetadataMap(finalMetadata)
@@ -1697,7 +1693,7 @@ describe('Spy Wrapper Multifile With Cyclic Dependencies', () => {
     const sanitizedSpyData = simplifiedMetadataMap(spiedMetadata)
 
     const domMetadata = getEditorState().editor.domMetadata
-    const sanitizedDomMetadata = domWalkerMetadataToSimplifiedMetadataMap(domMetadata)
+    const sanitizedDomMetadata = simplifiedMetadataMap(domMetadata)
 
     const finalMetadata = getEditorState().editor.jsxMetadata
     const sanitizedFinalMetadata = simplifiedMetadataMap(finalMetadata)

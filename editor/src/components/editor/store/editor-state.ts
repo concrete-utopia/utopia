@@ -820,7 +820,7 @@ export interface EditorState {
   projectVersion: number
   isLoaded: boolean
   spyMetadata: ElementInstanceMetadataMap // this is coming from the canvas spy report.
-  domMetadata: ElementInstanceMetadata[] // this is coming from the dom walking report.
+  domMetadata: ElementInstanceMetadataMap // this is coming from the dom walking report.
   jsxMetadata: ElementInstanceMetadataMap // this is a merged result of the two above.
   projectContents: ProjectContentTreeRoot
   codeResultCache: CodeResultCache
@@ -883,7 +883,7 @@ export function editorState(
   projectVersion: number,
   isLoaded: boolean,
   spyMetadata: ElementInstanceMetadataMap,
-  domMetadata: ElementInstanceMetadata[],
+  domMetadata: ElementInstanceMetadataMap,
   jsxMetadata: ElementInstanceMetadataMap,
   projectContents: ProjectContentTreeRoot,
   codeResultCache: CodeResultCache,
@@ -1644,7 +1644,7 @@ export function createEditorState(dispatch: EditorDispatch): EditorState {
     projectVersion: CURRENT_PROJECT_VERSION,
     isLoaded: false,
     spyMetadata: emptyJsxMetadata,
-    domMetadata: [],
+    domMetadata: emptyJsxMetadata,
     jsxMetadata: emptyJsxMetadata,
     projectContents: {},
     codeResultCache: generateCodeResultCache({}, {}, [], {}, dispatch, {}, []),
@@ -1916,7 +1916,7 @@ export function editorModelFromPersistentModel(
     projectVersion: persistentModel.projectVersion,
     isLoaded: false,
     spyMetadata: emptyJsxMetadata,
-    domMetadata: [],
+    domMetadata: emptyJsxMetadata,
     jsxMetadata: emptyJsxMetadata,
     codeResultCache: generateCodeResultCache(
       persistentModel.projectContents,

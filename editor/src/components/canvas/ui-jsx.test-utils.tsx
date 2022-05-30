@@ -224,7 +224,9 @@ export async function renderTestEditorWithModel(
       scale: workingEditorState.patchedEditor.canvas.scale,
       additionalElementsToUpdate:
         workingEditorState.patchedEditor.canvas.domWalkerAdditionalElementsToUpdate,
-      rootMetadataInStateRef: { current: workingEditorState.patchedEditor.domMetadata },
+      rootMetadataInStateRef: {
+        current: Object.values(workingEditorState.patchedEditor.domMetadata),
+      },
     })
 
     if (domWalkerResult != null) {
