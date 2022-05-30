@@ -311,9 +311,15 @@ function runDomWalkerQueryMode(
 
   const canvasRootContainer = document.getElementById(CanvasContainerID)
   if (canvasRootContainer != null) {
-    const invalidatedPathArr = Array.from(domWalkerMutableState.invalidatedPaths).map(EP.fromString)
+    const allInvalidatedPaths = new Set([
+      ...Array.from(domWalkerMutableState.invalidatedPaths),
+      ...Array.from(domWalkerMutableState.invalidatedPathsForStylesheetCache),
+    ])
 
-    const elementPathsToQuery = [...invalidatedPathArr, ...additionalElementsToUpdate]
+    const elementPathsToQuery = [
+      ...Array.from(allInvalidatedPaths).map(EP.fromString),
+      ...additionalElementsToUpdate,
+    ]
 
     const parentPoint = canvasPoint({ x: 0, y: 0 })
 
@@ -1103,16 +1109,11 @@ function walkElements(
       })
     })
 
-    const invalidatedDescendant = foundValidPaths.some((pathWithString) => {
-      return Array.from(invalidatedPaths).some((invalidatedPath) =>
-        EP.isDescendantOfOrEqualTo(EP.fromString(invalidatedPath), pathWithString.path),
-      )
-    })
     // Build the metadata for the children of this DOM node.
     let childPaths: Array<ElementPath> = []
     let rootMetadataAccumulator: ReadonlyArray<ElementInstanceMetadata> = []
     let cachedPathsAccumulator: Array<ElementPath> = []
-    if ((invalidatedDescendant || invalidated) && traverseChildren) {
+    if (traverseChildren) {
       element.childNodes.forEach((child) => {
         const {
           childPaths: childNodePaths,
