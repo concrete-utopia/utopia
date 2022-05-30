@@ -51,15 +51,18 @@ export const LayoutParentControl = React.memo((): JSX.Element | null => {
           alignItems: null,
         }
       }
-      const element = MetadataUtils.getParent(
+      const parentElement = MetadataUtils.getParent(
         store.editor.jsxMetadata,
         store.editor.selectedViews[0],
       )
-      const elementProps = store.editor.allElementProps[EP.toString(store.editor.selectedViews[0])]
+      const elementProps =
+        parentElement == null
+          ? {}
+          : store.editor.allElementProps[EP.toString(parentElement.elementPath)]
       return {
-        parentTarget: element?.elementPath,
-        parentLayout: element?.specialSizeMeasurements.layoutSystemForChildren,
-        parentFrame: element?.globalFrame,
+        parentTarget: parentElement?.elementPath,
+        parentLayout: parentElement?.specialSizeMeasurements.layoutSystemForChildren,
+        parentFrame: parentElement?.globalFrame,
         flexWrap: elementProps?.style?.flexWrap ?? 'nowrap',
         flexDirection: elementProps?.style?.flexDirection ?? 'row',
         alignItems: elementProps?.style?.alignItems ?? 'flex-start',
