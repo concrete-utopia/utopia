@@ -475,6 +475,7 @@ export function handleKeyDown(
             WindowMousePositionRaw,
             editor.canvas.scale,
             editor.canvas.realCanvasOffset,
+            editor.allElementProps,
           )
           const nextTarget = Canvas.getNextTarget(editor.selectedViews, targetStack)
           if (targetStack.length === 0 || nextTarget === null) {

@@ -44,6 +44,7 @@ function reparentElement(
       canvasPoint({ x: 0, y: 0 }),
     ),
     metadata: null as any, // the strategy does not use this
+    allElementProps: null as any, // the strategy does not use this
   }
 
   const strategyResult = absoluteReparentStrategy.apply(
@@ -81,6 +82,7 @@ function reparentElement(
           } as SpecialSizeMeasurements,
         } as ElementInstanceMetadata,
       },
+      startingAllElementProps: {},
       customStrategyState: defaultCustomStrategyState(),
     } as StrategyState,
   )

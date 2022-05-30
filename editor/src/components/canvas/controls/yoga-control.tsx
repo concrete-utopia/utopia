@@ -20,13 +20,14 @@ import { ControlProps } from './new-canvas-controls'
 import { getSelectionColor } from './outline-control'
 import { ResizeRectangle } from './size-box'
 import { useColorTheme } from '../../../uuiui'
-import { withUnderlyingTarget } from '../../editor/store/editor-state'
+import { ElementProps, withUnderlyingTarget } from '../../editor/store/editor-state'
 
 interface YogaResizeControlProps extends ControlProps {
   targetElement: ElementInstanceMetadata
   target: ElementPath
   color: string
   dragState: ResizeDragState | null
+  targetProps: ElementProps | null
 }
 
 class YogaResizeControl extends React.Component<YogaResizeControlProps> {
@@ -123,6 +124,7 @@ class YogaResizeControl extends React.Component<YogaResizeControlProps> {
         maybeClearHighlightsOnHoverEnd={this.props.maybeClearHighlightsOnHoverEnd}
         flexDirection={flexDirection}
         propertyTargetSelectedIndex={this.props.resizeOptions.propertyTargetSelectedIndex}
+        targetProps={this.props.targetProps}
       />
     )
   }
@@ -172,6 +174,7 @@ export const YogaControls = React.memo((props: YogaControlsProps) => {
           targetElement={
             MetadataUtils.findElementByElementPath(props.componentMetadata, targets[0])!
           }
+          targetProps={props.allElementProps[EP.toString(targets[0])] ?? null}
           color={color}
         />
       )}

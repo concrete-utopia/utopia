@@ -36,6 +36,7 @@ export const keyboardAbsoluteResizeStrategy: CanvasStrategy = {
         canvasState,
         interactionState,
         sessionState.startingMetadata,
+        sessionState.startingAllElementProps,
       ) &&
       interactionState.interactionData.type === 'KEYBOARD'
     ) {

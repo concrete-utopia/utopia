@@ -49,6 +49,7 @@ import {
   CanvasBase64Blobs,
   TransientFilesState,
   ElementsToRerender,
+  AllElementProps,
 } from '../editor/store/editor-state'
 import { proxyConsole } from './console-proxy'
 import type { UpdateMutableCallback } from './dom-walker'
@@ -112,6 +113,7 @@ export const ElementsToRerenderGLOBAL: { current: ElementsToRerender } = {
 
 export type SpyValues = {
   metadata: ElementInstanceMetadataMap
+  allElementProps: AllElementProps
 }
 
 export interface UiJsxCanvasContextData {
@@ -125,6 +127,7 @@ export function emptyUiJsxCanvasContextData(): UiJsxCanvasContextData {
     current: {
       spyValues: {
         metadata: {},
+        allElementProps: {},
       },
     },
   }

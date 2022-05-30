@@ -57,6 +57,7 @@ const navigatorItemWrapperSelectorFactory = (elementPath: ElementPath) =>
     (store: EditorStorePatched) => store.editor.projectContents,
     (store: EditorStorePatched) => store.editor.nodeModules.files,
     (store: EditorStorePatched) => store.editor.canvas.openFile?.filename ?? null,
+    (store: EditorStorePatched) => store.editor.allElementProps,
     (
       jsxMetadata,
       selectedViews,
@@ -67,6 +68,7 @@ const navigatorItemWrapperSelectorFactory = (elementPath: ElementPath) =>
       projectContents,
       nodeModules,
       currentFilePath,
+      allElementProps,
     ) => {
       const underlying = normalisePathToUnderlyingTarget(
         projectContents,
@@ -96,7 +98,12 @@ const navigatorItemWrapperSelectorFactory = (elementPath: ElementPath) =>
         elementPath,
       )
       const staticName = MetadataUtils.getStaticElementName(elementPath, componentsIncludingScenes)
-      const labelInner = MetadataUtils.getElementLabel(elementPath, jsxMetadata, staticName)
+      const labelInner = MetadataUtils.getElementLabel(
+        allElementProps,
+        elementPath,
+        jsxMetadata,
+        staticName,
+      )
       // FIXME: This is a mitigation for a situation where somehow this component re-renders
       // when the navigatorTargets indicate it shouldn't exist...
       const isInNavigatorTargets = EP.containsPath(elementPath, navigatorTargets)

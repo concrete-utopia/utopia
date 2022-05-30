@@ -1,3 +1,4 @@
+import { AllElementProps } from 'src/components/editor/store/editor-state'
 import { isHorizontalPoint } from 'utopia-api/core'
 import { getLayoutProperty } from '../../../core/layout/getLayoutProperty'
 import { framePointForPinnedProp } from '../../../core/layout/layout-helpers-new'
@@ -337,6 +338,7 @@ export function runLegacyAbsoluteResizeSnapping(
   canvasScale: number,
   lockedAspectRatio: number | null,
   centerBased: IsCenterBased,
+  allElementProps: AllElementProps,
 ): {
   snapDelta: CanvasVector
   snappedBoundingBox: CanvasRectangle
@@ -363,6 +365,7 @@ export function runLegacyAbsoluteResizeSnapping(
     draggedPointMovedWithoutSnap,
     oppositePoint,
     draggedCorner,
+    allElementProps,
   )
 
   const snapDelta = pointDifference(draggedPointMovedWithoutSnap, snappedPointOnCanvas)

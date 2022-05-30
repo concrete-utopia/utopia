@@ -149,6 +149,7 @@ function dragBy15Pixels(
       canvasPoint({ x: 15, y: 15 }),
     ),
     metadata: null as any, // the strategy does not use this
+    allElementProps: null as any, // the strategy does not use this
   }
 
   const strategyResult = escapeHatchStrategy.apply(

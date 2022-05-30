@@ -2,7 +2,7 @@ import { MetadataUtils } from '../../../core/model/element-metadata-utils'
 import { ElementInstanceMetadataMap, JSXElement } from '../../../core/shared/element-template'
 import { CanvasVector, offsetPoint } from '../../../core/shared/math-utils'
 import { ElementPath } from '../../../core/shared/project-file-types'
-import { withUnderlyingTarget } from '../../editor/store/editor-state'
+import { AllElementProps, withUnderlyingTarget } from '../../editor/store/editor-state'
 import { EdgePosition } from '../canvas-types'
 import { setCursorCommand } from '../commands/set-cursor-command'
 import { setElementsToRerenderCommand } from '../commands/set-elements-to-rerender-command'
@@ -49,6 +49,7 @@ export const absoluteResizeDeltaStrategy: CanvasStrategy = {
       canvasState,
       interactionState,
       sessionState.startingMetadata,
+      sessionState.startingAllElementProps,
     ) &&
       interactionState.interactionData.type === 'DRAG' &&
       interactionState.activeControl.type === 'RESIZE_HANDLE'
@@ -69,6 +70,7 @@ export const absoluteResizeDeltaStrategy: CanvasStrategy = {
         drag,
         edgePosition,
         canvasState.scale,
+        sessionState.startingAllElementProps,
       )
 
       const commandsForSelectedElements = canvasState.selectedElements.flatMap(
@@ -122,6 +124,7 @@ function snapDrag(
   drag: CanvasVector,
   edgePosition: EdgePosition,
   canvasScale: number,
+  allElementProps: AllElementProps,
 ): {
   snappedDragVector: CanvasVector
   guidelinesWithSnappingVector: Array<GuidelineWithSnappingVector>
@@ -147,6 +150,7 @@ function snapDrag(
     canvasScale,
     null,
     'non-center-based',
+    allElementProps,
   )
   const snappedDragVector = offsetPoint(drag, snapDelta)
 

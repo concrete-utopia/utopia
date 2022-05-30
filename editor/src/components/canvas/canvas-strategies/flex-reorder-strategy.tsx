@@ -55,6 +55,7 @@ export const flexReorderStrategy: CanvasStrategy = {
       canvasState,
       interactionState,
       strategyState.startingMetadata,
+      strategyState.startingAllElementProps,
     ) &&
       interactionState.interactionData.type === 'DRAG' &&
       interactionState.activeControl.type === 'BOUNDING_AREA'

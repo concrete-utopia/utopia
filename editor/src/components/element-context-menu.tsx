@@ -116,6 +116,7 @@ function useCanvasContextMenuItems(
                 WindowMousePositionRaw,
                 data.scale,
                 data.canvasOffset,
+                data.allElementProps,
               )
             }
             return !elementsUnderCursor.some((underCursor: ElementPath) =>
@@ -193,6 +194,7 @@ export const ElementContextMenu = React.memo(({ contextMenuInstance }: ElementCo
       hiddenInstances: store.editor.hiddenInstances,
       scale: store.editor.canvas.scale,
       focusedElementPath: store.editor.focusedElementPath,
+      allElementProps: store.editor.allElementProps,
     }
   })
 
@@ -209,6 +211,7 @@ export const ElementContextMenu = React.memo(({ contextMenuInstance }: ElementCo
       hiddenInstances: currentEditor.hiddenInstances,
       scale: currentEditor.scale,
       focusedElementPath: currentEditor.focusedElementPath,
+      allElementProps: currentEditor.allElementProps,
     }
   }, [editorSliceRef])
 

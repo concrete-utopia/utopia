@@ -714,8 +714,8 @@ function switchAndUpdateFrames(
     case 'flex':
       withUpdatedLayoutSystem = {
         ...withUpdatedLayoutSystem,
-        jsxMetadata: MetadataUtils.setPropertyDirectlyIntoMetadata(
-          withUpdatedLayoutSystem.jsxMetadata,
+        allElementProps: MetadataUtils.setPropertyDirectlyIntoMetadata(
+          withUpdatedLayoutSystem.allElementProps,
           target,
           styleDisplayPath, // TODO LAYOUT investigate if we should use also update the DOM walker specialSizeMeasurements
           'flex',
@@ -723,8 +723,8 @@ function switchAndUpdateFrames(
       }
       withUpdatedLayoutSystem = {
         ...withUpdatedLayoutSystem,
-        jsxMetadata: MetadataUtils.setPropertyDirectlyIntoMetadata(
-          withUpdatedLayoutSystem.jsxMetadata,
+        allElementProps: MetadataUtils.setPropertyDirectlyIntoMetadata(
+          withUpdatedLayoutSystem.allElementProps,
           target,
           stylePropPathMappingFn('position', propertyTarget), // TODO LAYOUT investigate if we should use also update the DOM walker specialSizeMeasurements
           'relative',
@@ -734,8 +734,8 @@ function switchAndUpdateFrames(
     case LayoutSystem.PinSystem:
       withUpdatedLayoutSystem = {
         ...withUpdatedLayoutSystem,
-        jsxMetadata: MetadataUtils.setPropertyDirectlyIntoMetadata(
-          withUpdatedLayoutSystem.jsxMetadata,
+        allElementProps: MetadataUtils.setPropertyDirectlyIntoMetadata(
+          withUpdatedLayoutSystem.allElementProps,
           target,
           stylePropPathMappingFn('position', propertyTarget), // TODO LAYOUT investigate if we should use also update the DOM walker specialSizeMeasurements
           'absolute',
@@ -746,16 +746,16 @@ function switchAndUpdateFrames(
     default:
       withUpdatedLayoutSystem = {
         ...withUpdatedLayoutSystem,
-        jsxMetadata: MetadataUtils.unsetPropertyDirectlyIntoMetadata(
-          withUpdatedLayoutSystem.jsxMetadata,
+        allElementProps: MetadataUtils.unsetPropertyDirectlyIntoMetadata(
+          withUpdatedLayoutSystem.allElementProps,
           target,
           styleDisplayPath,
         ),
       }
       withUpdatedLayoutSystem = {
         ...withUpdatedLayoutSystem,
-        jsxMetadata: MetadataUtils.setPropertyDirectlyIntoMetadata(
-          withUpdatedLayoutSystem.jsxMetadata,
+        allElementProps: MetadataUtils.setPropertyDirectlyIntoMetadata(
+          withUpdatedLayoutSystem.allElementProps,
           target,
           styleDisplayPath, // TODO LAYOUT investigate if we should use also update the DOM walker specialSizeMeasurements
           layoutSystem,
@@ -802,6 +802,7 @@ function switchAndUpdateFrames(
         metadata,
         components,
         propertyTarget,
+        editor.allElementProps,
       )
     },
     target,
@@ -1049,6 +1050,7 @@ function restoreEditorState(currentEditor: EditorModel, history: StateHistory): 
     vscodeLoadingScreenVisible: currentEditor.vscodeLoadingScreenVisible,
     indexedDBFailed: currentEditor.indexedDBFailed,
     forceParseFiles: currentEditor.forceParseFiles,
+    allElementProps: poppedEditor.allElementProps,
   }
 }
 
@@ -2802,6 +2804,7 @@ export const UPDATE_FNS = {
                 null,
                 null,
                 ['style'],
+                workingEditorState.allElementProps,
               )
               updatedComponents = maybeSwitchResult.components
               toastsAdded.push(...maybeSwitchResult.toast)
@@ -3086,12 +3089,13 @@ export const UPDATE_FNS = {
     } as LocalRectangle
 
     const element = MetadataUtils.findElementByElementPath(editor.jsxMetadata, action.element)
+    const elementProps = editor.allElementProps[EP.toString(action.element)] ?? {}
     if (
       element != null &&
       MetadataUtils.isTextAgainstImports(element) &&
-      element.props.textSizing == 'auto'
+      elementProps.textSizing == 'auto'
     ) {
-      const alignment = element.props.style.textAlign
+      const alignment = elementProps.style.textAlign
       if (alignment === 'center') {
         frame = Utils.setRectCenterX(frame, initialFrame.x + initialFrame.width / 2)
       } else if (alignment === 'right') {
@@ -4044,6 +4048,9 @@ export const UPDATE_FNS = {
         ...editor,
         domMetadata: finalDomMetadata,
         spyMetadata: finalSpyMetadata,
+        allElementProps: {
+          ...spyCollector.current.spyValues.allElementProps,
+        },
       }
     }
   },
