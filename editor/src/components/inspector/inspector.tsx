@@ -316,12 +316,25 @@ export const Inspector = React.memo<InspectorProps>((props: InspectorProps) => {
     dispatch(actions, 'everyone')
   }, [dispatch, selectedViews, aspectRatioLocked])
 
+  const shouldShowInspector = React.useMemo(() => {
+    return props.elementPath.length !== 0 && !anyUnknownElements
+  }, [props.elementPath, anyUnknownElements])
+
   function renderInspectorContents() {
-    if (props.elementPath.length == 0 || anyUnknownElements) {
-      return <SettingsPanel />
-    } else {
-      return (
-        <React.Fragment>
+    return (
+      <React.Fragment>
+        <div
+          style={{
+            display: shouldShowInspector ? 'none' : undefined,
+          }}
+        >
+          <SettingsPanel />
+        </div>
+        <div
+          style={{
+            display: shouldShowInspector ? undefined : 'none',
+          }}
+        >
           <AlignmentButtons numberOfTargets={selectedViews.length} />
           {when(isTwindEnabled(), <ClassNameSubsection />)}
           {anyComponents ? <ComponentSection isScene={false} /> : null}
@@ -342,9 +355,9 @@ export const Inspector = React.memo<InspectorProps>((props: InspectorProps) => {
           <WarningSubsection />
           <ImgSection />
           <EventHandlersSection />
-        </React.Fragment>
-      )
-    }
+        </div>
+      </React.Fragment>
+    )
   }
 
   return (
