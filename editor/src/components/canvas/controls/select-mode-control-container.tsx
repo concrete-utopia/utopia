@@ -515,7 +515,7 @@ export class SelectModeControlContainer extends React.Component<
                 />
               </>
             ) : null}
-            <ZeroSizedElementControls {...this.props} />
+            <ZeroSizedElementControls />
           </>
         ) : null}
         {when(isFeatureEnabled('Insertion Plus Button'), <InsertionControls />)}
