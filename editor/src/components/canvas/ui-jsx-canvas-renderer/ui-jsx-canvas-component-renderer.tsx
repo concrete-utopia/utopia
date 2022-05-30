@@ -94,15 +94,18 @@ export function createComponentRendererComponent(params: {
 
     const instancePath: ElementPath | null = tryToGetInstancePath(instancePathAny, pathsString)
 
-    const shouldUpdate = () =>
-      !isFeatureEnabled('Canvas Selective Rerender') ||
-      ElementsToRerenderGLOBAL.current === 'rerender-all-elements' ||
-      ElementsToRerenderGLOBAL.current.some((er) => {
-        return (
-          instancePath != null &&
-          (EP.pathsEqual(instancePath, er) || EP.isParentComponentOf(instancePath, er))
-        )
-      })
+    function shouldUpdate() {
+      return (
+        !isFeatureEnabled('Canvas Selective Rerender') ||
+        ElementsToRerenderGLOBAL.current === 'rerender-all-elements' ||
+        ElementsToRerenderGLOBAL.current.some((er) => {
+          return (
+            instancePath != null &&
+            (EP.pathsEqual(instancePath, er) || EP.isParentComponentOf(instancePath, er))
+          )
+        })
+      )
+    }
 
     const rerenderUtopiaContext = usePubSubAtomReadOnly(RerenderUtopiaCtxAtom, shouldUpdate)
 
