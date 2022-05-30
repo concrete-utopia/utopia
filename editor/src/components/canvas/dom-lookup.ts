@@ -17,6 +17,7 @@ import { getPathsOnDomElement } from '../../core/shared/uid-utils'
 import Canvas, { TargetSearchType } from './canvas'
 import { CanvasPositions } from './canvas-types'
 import { CanvasScale, CanvasScrollOffset } from '../../utils/global-positions'
+import { AllElementProps } from '../editor/store/editor-state'
 
 export function findParentSceneValidPaths(target: Element): Array<ElementPath> | null {
   const validPaths = getDOMAttribute(target, 'data-utopia-valid-paths')
@@ -90,6 +91,7 @@ export function getValidTargetAtPoint(
   point: WindowPoint | null,
   canvasScale: number,
   canvasOffset: CanvasVector,
+  allElementProps: AllElementProps,
 ): ElementPath | null {
   if (point == null) {
     return null
@@ -103,6 +105,7 @@ export function getValidTargetAtPoint(
       point,
       canvasScale,
       canvasOffset,
+      allElementProps,
     )[0] ?? null
   )
 }
@@ -115,6 +118,7 @@ export function getAllTargetsAtPoint(
   point: WindowPoint | null,
   canvasScale: number,
   canvasOffset: CanvasVector,
+  allElementProps: AllElementProps,
 ): Array<ElementPath> {
   if (point == null) {
     return []
@@ -128,6 +132,7 @@ export function getAllTargetsAtPoint(
     [TargetSearchType.All],
     true,
     'loose',
+    allElementProps,
   )
   const elementsUnderPoint = document.elementsFromPoint(point.x, point.y)
   const validPathsSet =

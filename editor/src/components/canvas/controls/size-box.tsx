@@ -23,7 +23,11 @@ import {
 import { ResizeStatus } from './new-canvas-controls'
 import { ElementPath } from '../../../core/shared/project-file-types'
 import CanvasActions from '../canvas-actions'
-import { OriginalCanvasAndLocalFrame, ResizeOptions } from '../../editor/store/editor-state'
+import {
+  ElementProps,
+  OriginalCanvasAndLocalFrame,
+  ResizeOptions,
+} from '../../editor/store/editor-state'
 import {
   DetectedLayoutSystem,
   ElementInstanceMetadata,
@@ -198,6 +202,7 @@ interface ResizeEdgeProps {
   resizeStatus: ResizeStatus
   targetComponentMetadata: ElementInstanceMetadata | null
   dragState: DragState | null
+  targetProps: ElementProps | null
 }
 
 interface ResizeEdgeState {}
@@ -305,6 +310,7 @@ class ResizeEdge extends React.Component<ResizeEdgeProps, ResizeEdgeState> {
             left={left + shiftPropertyTargetSelectorAxis('vertical', this.props.direction, edge)}
             options={getResizeOptions(layoutSystem, this.props.direction, edge)}
             targetComponentMetadata={this.props.targetComponentMetadata}
+            targetProps={this.props.targetProps}
             key={
               this.props.targetComponentMetadata != null
                 ? EP.toString(this.props.targetComponentMetadata.elementPath)
@@ -329,6 +335,7 @@ interface ResizeLinesProps {
   dragState: DragState | null
   color?: string
   flexDirection: 'horizontal' | 'vertical' | null
+  targetProps: ElementProps | null
 }
 
 const LineOffset = 6
@@ -399,6 +406,7 @@ const ResizeLines = React.memo((props: ResizeLinesProps) => {
           left={left + shiftPropertyTargetSelectorAxis('vertical', props.direction, edge)}
           options={getResizeOptions(layoutSystem, props.direction, edge)}
           targetComponentMetadata={props.targetComponentMetadata}
+          targetProps={props.targetProps}
           key={
             props.targetComponentMetadata != null
               ? EP.toString(props.targetComponentMetadata.elementPath)
@@ -573,6 +581,7 @@ interface ResizeRectangleProps {
   maybeClearHighlightsOnHoverEnd: () => void
   flexDirection: 'horizontal' | 'vertical' | null
   propertyTargetSelectedIndex: number
+  targetProps: ElementProps | null
 }
 
 export class ResizeRectangle extends React.Component<ResizeRectangleProps> {

@@ -48,6 +48,7 @@ import {
   getIndexHtmlFileFromEditorState,
   CanvasBase64Blobs,
   TransientFilesState,
+  AllElementProps,
 } from '../editor/store/editor-state'
 import { proxyConsole } from './console-proxy'
 import type { UpdateMutableCallback } from './dom-walker'
@@ -101,6 +102,7 @@ const emptyFileBlobs: UIFileBase64Blobs = {}
 
 export type SpyValues = {
   metadata: ElementInstanceMetadataMap
+  allElementProps: AllElementProps
 }
 
 export interface UiJsxCanvasContextData {
@@ -114,6 +116,7 @@ export function emptyUiJsxCanvasContextData(): UiJsxCanvasContextData {
     current: {
       spyValues: {
         metadata: {},
+        allElementProps: {},
       },
     },
   }

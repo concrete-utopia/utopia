@@ -44,7 +44,6 @@ export function buildSpyWrappedElement(
     const instanceMetadata: ElementInstanceMetadata = {
       element: right(jsx),
       elementPath: elementPath,
-      props: makeCanvasElementPropsSafe(reportedProps),
       globalFrame: null,
       localFrame: null,
       componentInstance: false,
@@ -60,6 +59,8 @@ export function buildSpyWrappedElement(
       updateInvalidatedPaths((current) => current, 'invalidate')
       const elementPathString = EP.toComponentId(elementPath)
       metadataContext.current.spyValues.metadata[elementPathString] = instanceMetadata
+      metadataContext.current.spyValues.allElementProps[elementPathString] =
+        makeCanvasElementPropsSafe(reportedProps)
     }
   }
   const spyWrapperProps: SpyWrapperProps = {

@@ -48,6 +48,7 @@ function dragByPixels(
       vector,
     ),
     metadata: null as any, // the strategy does not use this
+    allElementProps: null as any, // the strategy does not use this
   }
 
   const strategyResult = absoluteMoveStrategy.apply(
@@ -71,6 +72,7 @@ function dragByPixels(
           } as SpecialSizeMeasurements,
         } as ElementInstanceMetadata,
       },
+      startingAllElementProps: {},
       customStrategyState: defaultCustomStrategyState(),
     } as StrategyState,
   )

@@ -218,7 +218,9 @@ describe('action RENAME_COMPONENT', () => {
       builtInDependencies,
     )
     const updatedMetadata = createFakeMetadataForEditor(updatedEditor)
-    chaiExpect(MetadataUtils.getElementLabel(target, updatedMetadata)).to.deep.equal(newName)
+    chaiExpect(
+      MetadataUtils.getElementLabel(editor.allElementProps, target, updatedMetadata),
+    ).to.deep.equal(newName)
 
     const clearNameAction = renameComponent(target, null)
     const clearedNameEditor = runLocalEditorAction(
@@ -233,9 +235,9 @@ describe('action RENAME_COMPONENT', () => {
       builtInDependencies,
     )
     const clearedNameMetadata = createFakeMetadataForEditor(clearedNameEditor)
-    chaiExpect(MetadataUtils.getElementLabel(target, clearedNameMetadata)).to.deep.equal(
-      expectedDefaultName,
-    )
+    chaiExpect(
+      MetadataUtils.getElementLabel(editor.allElementProps, target, clearedNameMetadata),
+    ).to.deep.equal(expectedDefaultName)
   }
 
   it('renames an existing scene', () => checkRename(ScenePathForTestUiJsFile, 'Test'))

@@ -64,6 +64,7 @@ function createEditorStore(
     interactionSessionWithMetadata = {
       ...interactionSession,
       metadata: {},
+      allElementProps: {},
     }
   }
 
@@ -83,7 +84,7 @@ function createEditorStore(
     patchedEditor: emptyEditorState,
     unpatchedDerived: derivedState,
     patchedDerived: derivedState,
-    strategyState: strategyState ?? createEmptyStrategyState(),
+    strategyState: strategyState ?? createEmptyStrategyState({}, {}),
     history: history,
     userState: {
       loginState: notLoggedIn,
@@ -222,6 +223,7 @@ describe('interactionStart', () => {
             "name": "Test Strategy",
           },
         ],
+        "startingAllElementProps": Object {},
         "startingMetadata": Object {},
       }
     `)
@@ -271,6 +273,7 @@ describe('interactionStart', () => {
           "lastReorderIdx": null,
         },
         "sortedApplicableStrategies": Array [],
+        "startingAllElementProps": Object {},
         "startingMetadata": Object {},
       }
     `)
@@ -342,6 +345,7 @@ describe('interactionUpdatex', () => {
             "name": "Test Strategy",
           },
         ],
+        "startingAllElementProps": Object {},
         "startingMetadata": Object {},
       }
     `)
@@ -392,6 +396,7 @@ describe('interactionUpdatex', () => {
           "lastReorderIdx": null,
         },
         "sortedApplicableStrategies": Array [],
+        "startingAllElementProps": Object {},
         "startingMetadata": Object {},
       }
     `)
@@ -490,6 +495,7 @@ describe('interactionHardReset', () => {
             "name": "Test Strategy",
           },
         ],
+        "startingAllElementProps": Object {},
         "startingMetadata": Object {},
       }
     `)
@@ -545,6 +551,7 @@ describe('interactionHardReset', () => {
           "lastReorderIdx": null,
         },
         "sortedApplicableStrategies": Array [],
+        "startingAllElementProps": Object {},
         "startingMetadata": Object {},
       }
     `)
@@ -705,6 +712,7 @@ describe('interactionUpdate with user changed strategy', () => {
             "name": "Test Strategy",
           },
         ],
+        "startingAllElementProps": Object {},
         "startingMetadata": Object {},
       }
     `)
@@ -761,6 +769,7 @@ describe('interactionUpdate with user changed strategy', () => {
           "lastReorderIdx": null,
         },
         "sortedApplicableStrategies": Array [],
+        "startingAllElementProps": Object {},
         "startingMetadata": Object {},
       }
     `)
