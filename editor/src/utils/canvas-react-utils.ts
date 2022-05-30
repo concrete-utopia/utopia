@@ -18,6 +18,16 @@ const contextSymbol = Symbol.for('react.context')
 const memoSymbol = Symbol.for('react.memo')
 const forwardRefSymbol = Symbol.for('react.forward_ref')
 
+let uidMonkeyPatchApplied: boolean = false
+
+export function applyUIDMonkeyPatch(): void {
+  if (!uidMonkeyPatchApplied) {
+    uidMonkeyPatchApplied = true
+    ;(React as any).createElement = patchedCreateReactElement
+    ;(React as any).monkeyPatched = true
+  }
+}
+
 function getDisplayName(type: any): string {
   // taken from https://github.com/facebook/react/blob/7e405d458d6481fb1c04dfca6afab0651e6f67cd/packages/react/src/ReactElement.js#L415
   if (typeof type === 'function') {
@@ -129,9 +139,9 @@ function maybeAttachPathToChildrenOfIntrinsic(
 const UIDForExotic = '[exotic]'
 
 function propsUIDOrExoticPlaceholder(originalResponse: React.ReactElement): string | null {
-  const originalResponseUID = originalResponse.props[UTOPIA_UID_KEY]
+  const originalResponseUID = originalResponse.props?.[UTOPIA_UID_KEY]
   if (originalResponseUID == null) {
-    if (exoticOrWrappedExotic(originalResponse.type)) {
+    if (exoticOrWrappedExotic(originalResponse?.type)) {
       return UIDForExotic
     }
   }
@@ -574,9 +584,4 @@ export function isHooksErrorMessage(message: string): boolean {
       'Rendered fewer hooks than expected. This may be caused by an accidental early return statement.' ||
     message === 'Should have a queue. This is likely a bug in React. Please file an issue.'
   )
-}
-
-export const PatchedReact: typeof React = {
-  ...React,
-  createElement: patchedCreateReactElement,
 }

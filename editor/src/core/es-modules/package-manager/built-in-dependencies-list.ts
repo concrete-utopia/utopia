@@ -9,11 +9,13 @@ import * as EmotionStyled from '@emotion/styled'
 
 import editorPackageJSON from '../../../../package.json'
 import utopiaAPIPackageJSON from '../../../../../utopia-api/package.json'
-import { PatchedReact } from '../../../utils/canvas-react-utils'
+import { applyUIDMonkeyPatch } from '../../../utils/canvas-react-utils'
 import { createRegisterModuleFunction } from '../../property-controls/property-controls-local'
 import type { EditorDispatch } from '../../../components/editor/action-types'
 import type { EditorState } from '../../../components/editor/store/editor-state'
 import { UtopiaTsWorkers } from '../../workers/common/worker-types'
+
+applyUIDMonkeyPatch()
 
 export interface BuiltInDependency {
   moduleName: string
@@ -64,7 +66,7 @@ export function createBuiltInDependenciesList(
     builtInDependency('uuiui', UUIUI, editorPackageJSON.version),
     builtInDependency('uuiui-deps', UUIUIDeps, editorPackageJSON.version),
     builtInDependency('react/jsx-runtime', ReactJsxRuntime, editorPackageJSON.dependencies.react),
-    builtInDependency('react', PatchedReact, editorPackageJSON.dependencies.react),
+    builtInDependency('react', React, editorPackageJSON.dependencies.react),
     builtInDependency('react-dom', ReactDOM, editorPackageJSON.dependencies['react-dom']),
     builtInDependency(
       '@emotion/react',

@@ -218,8 +218,6 @@ export function createComponentRendererComponent(params: {
 
     function buildComponentRenderResult(element: JSXElementChild): React.ReactElement {
       if (isJSXFragment(element)) {
-        // FIXME For some reason this isn't calling `patchedCreateReactElement` in the running app,
-        // even when importing `PatchedReact` rather than `React` at the top of this file
         return <>{element.children.map(buildComponentRenderResult)}</>
       } else {
         const ownElementPath = optionalMap(

@@ -1,4 +1,6 @@
-import { PatchedReact as React } from './canvas-react-utils'
+import React from 'react'
+import { applyUIDMonkeyPatch } from './canvas-react-utils'
+applyUIDMonkeyPatch()
 import * as PropTypes from 'prop-types'
 import * as ReactDOMServer from 'react-dom/server'
 import * as Prettier from 'prettier'

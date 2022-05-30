@@ -83,6 +83,7 @@ import {
   createLookupRender,
   utopiaCanvasJSXLookup,
 } from './ui-jsx-canvas-renderer/ui-jsx-canvas-element-renderer-utils'
+import { applyUIDMonkeyPatch } from '../../utils/canvas-react-utils'
 import { ProjectContentTreeRoot, getContentsTreeFileFromString, walkContentsTree } from '../assets'
 import { createExecutionScope } from './ui-jsx-canvas-renderer/ui-jsx-canvas-execution-scope'
 import { getParseSuccessOrTransientForFilePath, getValidElementPaths } from './canvas-utils'
@@ -102,6 +103,8 @@ import {
 } from '../../core/shared/code-exec-utils'
 import { emptySet } from '../../core/shared/set-utils'
 import { forceNotNull } from '../../core/shared/optional-utils'
+
+applyUIDMonkeyPatch()
 
 const emptyFileBlobs: UIFileBase64Blobs = {}
 

@@ -21469,7 +21469,10 @@ exports[`UiJsxCanvas render renderrs correctly when a component is passed in via
           style=\\"background-color: pink; width: 100%; height: 20px\\"
           data-path=\\"eee/fff/app-entity:aaa/bbb:ddd\\"
         >
-          <div data-uid=\\"ccc~~~1\\" data-path=\\"eee/fff/app-entity:aaa/ccc~~~1\\">
+          <div
+            data-uid=\\"ccc~~~1\\"
+            data-path=\\"eee/fff/app-entity:aaa/bbb:ddd/ccc~~~1\\"
+          >
             test
           </div>
         </div>
@@ -36376,8 +36379,8 @@ exports[`UiJsxCanvas render respects a jsx pragma 1`] = `
   >
     <div
       data-utopia-scene-id=\\"utopia-storyboard-uid/scene-aaa\\"
-      data-path=\\"utopia-storyboard-uid/scene-aaa\\"
       data-factory-function-works=\\"true\\"
+      data-path=\\"utopia-storyboard-uid/scene-aaa\\"
       style=\\"
         position: absolute;
         background-color: rgba(255, 255, 255, 1);
@@ -36391,8 +36394,8 @@ exports[`UiJsxCanvas render respects a jsx pragma 1`] = `
     >
       <div
         data-uid=\\"4cf\\"
-        data-path=\\"utopia-storyboard-uid/scene-aaa/app-entity:aaa:4cf\\"
         data-factory-function-works=\\"true\\"
+        data-path=\\"utopia-storyboard-uid/scene-aaa/app-entity:aaa:4cf\\"
       >
         Utopia
       </div>
@@ -38419,6 +38422,7 @@ exports[`UiJsxCanvas render the canvas supports emotion CSS prop 1`] = `
         width: 400px;
         height: 400px;
       \\"
+      data-uid=\\"scene-aaa\\"
     >
       <div
         data-uid=\\"ba3\\"
