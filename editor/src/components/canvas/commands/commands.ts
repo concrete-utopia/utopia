@@ -30,6 +30,10 @@ import { runSetCssLengthProperty, SetCssLengthProperty } from './set-css-length-
 import { EditorStateKeepDeepEquality } from '../../editor/store/store-deep-equality-instances'
 import { runShowOutlineHighlight, ShowOutlineHighlight } from './show-outline-highlight-command'
 import { runSetCursor, SetCursorCommand } from './set-cursor-command'
+import {
+  runSetElementsToRerender,
+  SetElementsToRerenderCommand,
+} from './set-elements-to-rerender-command'
 
 export interface CommandFunctionResult {
   editorStatePatches: Array<EditorStatePatch>
@@ -58,6 +62,7 @@ export type CanvasCommand =
   | ReorderElement
   | ShowOutlineHighlight
   | SetCursorCommand
+  | SetElementsToRerenderCommand
 
 export const runCanvasCommand: CommandFunction<CanvasCommand> = (
   editorState: EditorState,
@@ -90,6 +95,8 @@ export const runCanvasCommand: CommandFunction<CanvasCommand> = (
       return runShowOutlineHighlight(editorState, command)
     case 'SET_CURSOR_COMMAND':
       return runSetCursor(editorState, command)
+    case 'SET_ELEMENTS_TO_RERENDER_COMMAND':
+      return runSetElementsToRerender(editorState, command)
     default:
       const _exhaustiveCheck: never = command
       throw new Error(`Unhandled canvas command ${JSON.stringify(command)}`)

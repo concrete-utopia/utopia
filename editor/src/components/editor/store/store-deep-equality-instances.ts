@@ -205,6 +205,7 @@ import {
   NullableStringKeepDeepEquality,
   NumberKeepDeepEquality,
   NullableNumberKeepDeepEquality,
+  unionDeepEquality,
 } from '../../../utils/deep-equality'
 import {
   ElementPathArrayKeepDeepEquality,
@@ -217,6 +218,7 @@ import {
   CanvasPointKeepDeepEquality,
   StaticElementPathKeepDeepEquality,
   NavigatorStateKeepDeepEquality,
+  ElementsToRerenderKeepDeepEquality,
 } from '../../../utils/deep-equality-instances'
 import { createCallFromIntrospectiveKeepDeep } from '../../../utils/react-performance'
 import {
@@ -1714,6 +1716,11 @@ export const EditorStateCanvasKeepDeepEquality: KeepDeepEqualityCall<EditorState
     return keepDeepEqualityResult(oldValue, true)
   }
 
+  const elementsToRerenderResult = ElementsToRerenderKeepDeepEquality(
+    oldValue.elementsToRerender,
+    newValue.elementsToRerender,
+  )
+
   const visibleResult = BooleanKeepDeepEquality(oldValue.visible, newValue.visible)
   // `dragState` likely going away, so a suboptimal way of handling this seems fine for now.
   const dragStateResult = nullableDeepEquality(createCallWithDeepEquals<DragState>())(
@@ -1791,6 +1798,7 @@ export const EditorStateCanvasKeepDeepEquality: KeepDeepEqualityCall<EditorState
   )
 
   const areEqual =
+    elementsToRerenderResult.areEqual &&
     visibleResult.areEqual &&
     dragStateResult.areEqual &&
     interactionSessionResult.areEqual &&
@@ -1816,6 +1824,7 @@ export const EditorStateCanvasKeepDeepEquality: KeepDeepEqualityCall<EditorState
     return keepDeepEqualityResult(oldValue, true)
   } else {
     const newDeepValue = editorStateCanvas(
+      elementsToRerenderResult.value,
       visibleResult.value,
       dragStateResult.value,
       interactionSessionResult.value,

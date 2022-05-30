@@ -48,6 +48,7 @@ import {
   getIndexHtmlFileFromEditorState,
   CanvasBase64Blobs,
   TransientFilesState,
+  ElementsToRerender,
   AllElementProps,
 } from '../editor/store/editor-state'
 import { proxyConsole } from './console-proxy'
@@ -87,7 +88,11 @@ import { createExecutionScope } from './ui-jsx-canvas-renderer/ui-jsx-canvas-exe
 import { getParseSuccessOrTransientForFilePath, getValidElementPaths } from './canvas-utils'
 import { fastForEach, NO_OP } from '../../core/shared/utils'
 import { useTwind } from '../../core/tailwind/tailwind'
-import { atomWithPubSub, usePubSubAtomReadOnly } from '../../core/shared/atom-with-pub-sub'
+import {
+  AlwaysFalse,
+  atomWithPubSub,
+  usePubSubAtomReadOnly,
+} from '../../core/shared/atom-with-pub-sub'
 import { omit } from '../../core/shared/object-utils'
 import { validateControlsToCheck } from './canvas-globals'
 import { EditorDispatch } from '../editor/action-types'
@@ -99,6 +104,12 @@ import { emptySet } from '../../core/shared/set-utils'
 import { forceNotNull } from '../../core/shared/optional-utils'
 
 const emptyFileBlobs: UIFileBase64Blobs = {}
+
+// The reason this is not in a React Context, and in a crummy global instead is that sometimes the user code
+// will need to bridge across react roots that erase context
+export const ElementsToRerenderGLOBAL: { current: ElementsToRerender } = {
+  current: 'rerender-all-elements',
+}
 
 export type SpyValues = {
   metadata: ElementInstanceMetadataMap
@@ -154,6 +165,7 @@ export interface UiJsxCanvasProps {
   propertyControlsInfo: PropertyControlsInfo
   dispatch: EditorDispatch
   domWalkerAdditionalElementsToUpdate: Array<ElementPath>
+  elementsToRerender: Array<ElementPath> | 'rerender-all-elements'
 }
 
 export interface CanvasReactReportErrorCallback {
@@ -226,6 +238,7 @@ export function pickUiJsxCanvasProps(
       propertyControlsInfo: editor.propertyControlsInfo,
       dispatch: dispatch,
       domWalkerAdditionalElementsToUpdate: editor.canvas.domWalkerAdditionalElementsToUpdate,
+      elementsToRerender: editor.canvas.elementsToRerender,
     }
   }
 }
@@ -321,11 +334,12 @@ export const UiJsxCanvas = React.memo<UiJsxCanvasPropsWithErrorCallback>((props)
 
   let metadataContext: UiJsxCanvasContextData = forceNotNull(
     `Missing UiJsxCanvasCtxAtom provider`,
-    usePubSubAtomReadOnly(UiJsxCanvasCtxAtom),
+    usePubSubAtomReadOnly(UiJsxCanvasCtxAtom, AlwaysFalse),
   )
 
   const updateInvalidatedPaths: DomWalkerInvalidatePathsCtxData = usePubSubAtomReadOnly(
     DomWalkerInvalidatePathsCtxAtom,
+    AlwaysFalse,
   )
   useClearSpyMetadataOnRemount(props.mountCount, props.domWalkerInvalidateCount, metadataContext)
 
@@ -464,6 +478,13 @@ export const UiJsxCanvas = React.memo<UiJsxCanvasPropsWithErrorCallback>((props)
     resolve: resolve,
   })
 
+  const StoryboardRoot = React.useMemo(() => {
+    return StoryboardRootComponent == null ? null : (
+      <StoryboardRootComponent {...{ [UTOPIA_INSTANCE_PATH]: rootInstancePath }} />
+    )
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [StoryboardRootComponent, rootInstancePath, props.domWalkerInvalidateCount, props.mountCount])
+
   return (
     <div
       style={{
@@ -478,9 +499,7 @@ export const UiJsxCanvas = React.memo<UiJsxCanvasPropsWithErrorCallback>((props)
             canvasRootElementElementPath={storyboardRootElementPath}
           >
             <SceneLevelUtopiaCtxAtom.Provider value={sceneLevelUtopiaContextValue}>
-              {StoryboardRootComponent == null ? null : (
-                <StoryboardRootComponent {...{ [UTOPIA_INSTANCE_PATH]: rootInstancePath }} />
-              )}
+              {StoryboardRoot}
             </SceneLevelUtopiaCtxAtom.Provider>
           </CanvasContainer>
         </UtopiaProjectCtxAtom.Provider>

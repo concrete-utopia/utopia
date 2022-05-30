@@ -215,6 +215,7 @@ export function renderCanvasReturnResultAndError(
       propertyControlsInfo: {},
       dispatch: NO_OP,
       domWalkerAdditionalElementsToUpdate: [],
+      elementsToRerender: 'rerender-all-elements',
     }
   } else {
     canvasProps = {
@@ -237,6 +238,7 @@ export function renderCanvasReturnResultAndError(
       propertyControlsInfo: {},
       dispatch: NO_OP,
       domWalkerAdditionalElementsToUpdate: [],
+      elementsToRerender: 'rerender-all-elements',
     }
   }
 

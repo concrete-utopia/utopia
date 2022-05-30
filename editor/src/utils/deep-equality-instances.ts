@@ -13,6 +13,7 @@ import {
   mapKeepDeepEqualityResult,
   nullableDeepEquality,
   StringKeepDeepEquality,
+  unionDeepEquality,
 } from './deep-equality'
 import * as EP from '../core/shared/element-path'
 import * as PP from '../core/shared/property-path'
@@ -24,6 +25,7 @@ import { Either, foldEither, isLeft, left, right } from '../core/shared/either'
 import { NameAndIconResult } from '../components/inspector/common/name-and-icon-hook'
 import {
   DropTargetHint,
+  ElementsToRerender,
   elementWarnings,
   ElementWarnings,
   NavigatorState,
@@ -201,3 +203,11 @@ export const CanvasPointKeepDeepEquality: KeepDeepEqualityCall<CanvasPoint> = co
   createCallWithTripleEquals(),
   (x, y) => canvasPoint({ x: x, y: y }),
 )
+
+export const ElementsToRerenderKeepDeepEquality: KeepDeepEqualityCall<ElementsToRerender> =
+  unionDeepEquality(
+    createCallWithTripleEquals<'rerender-all-elements'>(),
+    ElementPathArrayKeepDeepEquality,
+    (p): p is 'rerender-all-elements' => p === 'rerender-all-elements',
+    (p): p is Array<ElementPath> => Array.isArray(p),
+  )
