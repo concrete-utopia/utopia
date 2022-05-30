@@ -29,7 +29,7 @@ function resizeElement(editor: EditorState, edgePosition: EdgePosition): EditorS
 
   const strategyResult = absoluteResizeDeltaStrategy.apply(
     pickCanvasStateFromEditorState(editor),
-    { ...interactionSessionWithoutMetadata, metadata: {} },
+    { ...interactionSessionWithoutMetadata, metadata: {}, allElementProps: {} },
     {
       currentStrategy: null as any, // the strategy does not use this
       currentStrategyFitness: null as any, // the strategy does not use this
@@ -43,6 +43,9 @@ function resizeElement(editor: EditorState, edgePosition: EdgePosition): EditorS
             immediateParentBounds: canvasRectangle({ x: 0, y: 0, width: 400, height: 400 }),
           } as SpecialSizeMeasurements,
         } as ElementInstanceMetadata,
+      },
+      startingAllElementProps: {
+        'scene-aaa/app-entity:aaa/bbb': {},
       },
       customStrategyState: defaultCustomStrategyState(),
     } as StrategyState,

@@ -15,6 +15,7 @@ import {
   TransientCanvasState,
   TransientFilesState,
   ResizeOptions,
+  AllElementProps,
 } from '../../editor/store/editor-state'
 import { ElementPath, NodeModules } from '../../../core/shared/project-file-types'
 import { CanvasPositions, CSSCursor } from '../canvas-types'
@@ -123,6 +124,7 @@ export interface ControlProps {
   transientState: TransientCanvasState
   resolve: ResolveFn
   resizeOptions: ResizeOptions
+  allElementProps: AllElementProps
 }
 
 interface NewCanvasControlsProps {
@@ -307,15 +309,17 @@ const NewCanvasControlsInner = (props: NewCanvasControlsInnerProps) => {
   const renderModeControlContainer = () => {
     const elementAspectRatioLocked = localSelectedViews.every((target) => {
       const possibleElement = MetadataUtils.findElementByElementPath(componentMetadata, target)
-      if (possibleElement == null) {
+      const elementProps = props.editor.allElementProps[EP.toString(target)]
+      if (possibleElement == null || elementProps == null) {
         return false
       } else {
-        return isAspectRatioLockedNew(possibleElement)
+        return isAspectRatioLockedNew(possibleElement, elementProps)
       }
     })
     const imageMultiplier: number | null = MetadataUtils.getImageMultiplier(
       componentMetadata,
       localSelectedViews,
+      props.editor.allElementProps,
     )
     const resolveFn = props.editor.codeResultCache.curriedResolveFn(props.editor.projectContents)
     const controlProps: ControlProps = {
@@ -340,6 +344,7 @@ const NewCanvasControlsInner = (props: NewCanvasControlsInnerProps) => {
       transientState: props.transientState,
       resolve: resolveFn,
       resizeOptions: props.editor.canvas.resizeOptions,
+      allElementProps: props.editor.allElementProps,
     }
     const dragState = props.editor.canvas.dragState
     switch (props.editor.mode.type) {

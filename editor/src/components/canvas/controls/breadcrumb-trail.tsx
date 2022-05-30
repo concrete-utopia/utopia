@@ -14,11 +14,12 @@ interface ElementPathElement {
 }
 
 export const BreadcrumbTrail = React.memo(() => {
-  const { dispatch, jsxMetadata, selectedViews } = useEditorState((store) => {
+  const { dispatch, jsxMetadata, selectedViews, allElementProps } = useEditorState((store) => {
     return {
       dispatch: store.dispatch,
       jsxMetadata: store.editor.jsxMetadata,
       selectedViews: store.editor.selectedViews,
+      allElementProps: store.editor.allElementProps,
     }
   }, 'TopMenuContextProvider')
 
@@ -37,13 +38,13 @@ export const BreadcrumbTrail = React.memo(() => {
         const component = MetadataUtils.findElementByElementPath(jsxMetadata, path)
         if (component != null) {
           elements.push({
-            name: MetadataUtils.getElementLabel(path, jsxMetadata),
+            name: MetadataUtils.getElementLabel(allElementProps, path, jsxMetadata),
             path: path,
           })
         }
       })
       return elements
-    }, [selectedViews, jsxMetadata]),
+    }, [selectedViews, jsxMetadata, allElementProps]),
   )
 
   const lastElemIndex = elementPath.length - 1

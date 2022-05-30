@@ -14,7 +14,7 @@ import {
 } from '../../core/shared/math-utils'
 import { EditorAction } from '../editor/action-types'
 import * as EditorActions from '../editor/actions/action-creators'
-import { DerivedState, EditorState } from '../editor/store/editor-state'
+import { AllElementProps, DerivedState, EditorState } from '../editor/store/editor-state'
 import * as EP from '../../core/shared/element-path'
 import { buildTree, ElementPathTree, getSubTree } from '../../core/shared/element-path-tree'
 import { objectValues } from '../../core/shared/object-utils'
@@ -47,6 +47,7 @@ const Canvas = {
     TargetSearchType.ParentsOfSelected,
   ],
   getFramesInCanvasContext(
+    allElementProps: AllElementProps,
     metadata: ElementInstanceMetadataMap,
     useBoundingFrames: boolean,
   ): Array<FrameWithPath> {
@@ -73,7 +74,7 @@ const Canvas = {
         }
       }
 
-      const overflows = MetadataUtils.overflows(component)
+      const overflows = MetadataUtils.overflows(allElementProps, componentTree.path)
       const includeClippedNext = useBoundingFrames && overflows
 
       let children: Array<ElementPathTree> = []
@@ -271,10 +272,15 @@ const Canvas = {
     searchTypes: Array<TargetSearchType>,
     useBoundingFrames: boolean,
     looseTargetingForZeroSizedElements: 'strict' | 'loose',
+    allElementProps: AllElementProps,
   ): Array<{ elementPath: ElementPath; canBeFilteredOut: boolean }> {
     const looseReparentThreshold = 5
     const targetFilters = Canvas.targetFilter(selectedViews, searchTypes)
-    const framesWithPaths = Canvas.getFramesInCanvasContext(componentMetadata, useBoundingFrames)
+    const framesWithPaths = Canvas.getFramesInCanvasContext(
+      allElementProps,
+      componentMetadata,
+      useBoundingFrames,
+    )
     const filteredFrames = framesWithPaths.filter((frameWithPath) => {
       const shouldUseLooseTargeting =
         looseTargetingForZeroSizedElements === 'loose' &&

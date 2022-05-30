@@ -12,6 +12,7 @@ import { ControlFontSize } from '../canvas-controls-frame'
 import { CanvasPositions } from '../canvas-types'
 //TODO: switch to functional component and make use of 'useColorTheme':
 import { UtopiaTheme, colorTheme } from '../../../uuiui'
+import { AllElementProps } from 'src/components/editor/store/editor-state'
 
 interface ComponentAreaControlProps {
   mouseEnabled: boolean
@@ -39,6 +40,7 @@ interface ComponentAreaControlProps {
   selectedViews: ElementPath[]
   showAdditionalControls: boolean
   testID?: string
+  allElementProps: AllElementProps
 }
 
 // SelectModeControl is a transparent react component sitting on top of a utopia component.
@@ -129,7 +131,11 @@ class ComponentAreaControlInner extends React.Component<ComponentAreaControlProp
   }
 
   getComponentLabelControl = () => {
-    const label = MetadataUtils.getElementLabel(this.props.target, this.props.componentMetadata)
+    const label = MetadataUtils.getElementLabel(
+      this.props.allElementProps,
+      this.props.target,
+      this.props.componentMetadata,
+    )
     const scaledFontSize = ControlFontSize / this.props.scale
     const offsetY = -(scaledFontSize * 1.5)
     const offsetX = 3 / this.props.scale

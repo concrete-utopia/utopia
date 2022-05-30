@@ -5,6 +5,7 @@ import { ElementPath } from '../../../core/shared/project-file-types'
 import { CSSCursor } from '../canvas-types'
 import { CanvasCommand } from '../commands/commands'
 import { setCursorCommand } from '../commands/set-cursor-command'
+import { setElementsToRerenderCommand } from '../commands/set-elements-to-rerender-command'
 import { setSnappingGuidelines } from '../commands/set-snapping-guidelines-command'
 import { updateHighlightedViews } from '../commands/update-highlighted-views-command'
 import { runLegacyAbsoluteMoveSnapping } from '../controls/guideline-helpers'
@@ -57,6 +58,7 @@ export const absoluteMoveStrategy: CanvasStrategy = {
       canvasState,
       interactionState,
       sessionState.startingMetadata,
+      sessionState.startingAllElementProps,
     ) &&
       interactionState.interactionData.type === 'DRAG' &&
       interactionState.activeControl.type === 'BOUNDING_AREA'
@@ -115,6 +117,7 @@ export function applyAbsoluteMoveCommon(
         ...commandsForSelectedElements,
         updateHighlightedViews('transient', []),
         setSnappingGuidelines('transient', guidelinesWithSnappingVector),
+        setElementsToRerenderCommand(canvasState.selectedElements),
         setCursorCommand('transient', CSSCursor.Move),
       ],
       customState: null,

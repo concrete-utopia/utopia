@@ -205,6 +205,7 @@ import {
   NullableStringKeepDeepEquality,
   NumberKeepDeepEquality,
   NullableNumberKeepDeepEquality,
+  unionDeepEquality,
 } from '../../../utils/deep-equality'
 import {
   ElementPathArrayKeepDeepEquality,
@@ -217,6 +218,7 @@ import {
   CanvasPointKeepDeepEquality,
   StaticElementPathKeepDeepEquality,
   NavigatorStateKeepDeepEquality,
+  ElementsToRerenderKeepDeepEquality,
 } from '../../../utils/deep-equality-instances'
 import { createCallFromIntrospectiveKeepDeep } from '../../../utils/react-performance'
 import {
@@ -299,6 +301,7 @@ import {
   editorStateCodeEditorErrors,
   Theme,
   editorState,
+  AllElementProps,
 } from './editor-state'
 import {
   CornerGuideline,
@@ -1232,13 +1235,11 @@ export const ElementInstanceMetadataPropsKeepDeepEquality: KeepDeepEqualityCall<
   createCallWithShallowEquals()
 
 export const ElementInstanceMetadataKeepDeepEquality: KeepDeepEqualityCall<ElementInstanceMetadata> =
-  combine12EqualityCalls(
+  combine11EqualityCalls(
     (metadata) => metadata.elementPath,
     ElementPathKeepDeepEquality,
     (metadata) => metadata.element,
     EitherKeepDeepEquality(createCallWithTripleEquals(), JSXElementChildKeepDeepEquality()),
-    (metadata) => metadata.props,
-    objectDeepEquality(ElementInstanceMetadataPropsKeepDeepEquality),
     (metadata) => metadata.globalFrame,
     nullableDeepEquality(CanvasRectangleKeepDeepEquality),
     (metadata) => metadata.localFrame,
@@ -1647,7 +1648,7 @@ export const CanvasControlTypeKeepDeepEquality: KeepDeepEqualityCall<CanvasContr
 }
 
 export const InteractionSessionKeepDeepEquality: KeepDeepEqualityCall<InteractionSession> =
-  combine7EqualityCalls(
+  combine8EqualityCalls(
     (session) => session.interactionData,
     InputDataKeepDeepEquality,
     (session) => session.activeControl,
@@ -1662,6 +1663,8 @@ export const InteractionSessionKeepDeepEquality: KeepDeepEqualityCall<Interactio
     nullableDeepEquality(createCallWithTripleEquals()),
     (session) => session.startedAt,
     createCallWithTripleEquals(),
+    (session) => session.allElementProps,
+    createCallFromIntrospectiveKeepDeep(),
     interactionSession,
   )
 
@@ -1712,6 +1715,11 @@ export const EditorStateCanvasKeepDeepEquality: KeepDeepEqualityCall<EditorState
   if (oldValue === newValue) {
     return keepDeepEqualityResult(oldValue, true)
   }
+
+  const elementsToRerenderResult = ElementsToRerenderKeepDeepEquality(
+    oldValue.elementsToRerender,
+    newValue.elementsToRerender,
+  )
 
   const visibleResult = BooleanKeepDeepEquality(oldValue.visible, newValue.visible)
   // `dragState` likely going away, so a suboptimal way of handling this seems fine for now.
@@ -1790,6 +1798,7 @@ export const EditorStateCanvasKeepDeepEquality: KeepDeepEqualityCall<EditorState
   )
 
   const areEqual =
+    elementsToRerenderResult.areEqual &&
     visibleResult.areEqual &&
     dragStateResult.areEqual &&
     interactionSessionResult.areEqual &&
@@ -1815,6 +1824,7 @@ export const EditorStateCanvasKeepDeepEquality: KeepDeepEqualityCall<EditorState
     return keepDeepEqualityResult(oldValue, true)
   } else {
     const newDeepValue = editorStateCanvas(
+      elementsToRerenderResult.value,
       visibleResult.value,
       dragStateResult.value,
       interactionSessionResult.value,
@@ -3059,6 +3069,10 @@ export const EditorStateKeepDeepEquality: KeepDeepEqualityCall<EditorState> = (
     oldValue.forceParseFiles,
     newValue.forceParseFiles,
   )
+  const allElementPropsResults = createCallFromIntrospectiveKeepDeep<AllElementProps>()(
+    oldValue.allElementProps,
+    newValue.allElementProps,
+  )
 
   const areEqual =
     idResult.areEqual &&
@@ -3120,7 +3134,8 @@ export const EditorStateKeepDeepEquality: KeepDeepEqualityCall<EditorState> = (
     themeResults.areEqual &&
     vscodeLoadingScreenVisibleResults.areEqual &&
     indexedDBFailedResults.areEqual &&
-    forceParseFilesResults.areEqual
+    forceParseFilesResults.areEqual &&
+    allElementPropsResults.areEqual
 
   if (areEqual) {
     return keepDeepEqualityResult(oldValue, true)
@@ -3186,6 +3201,7 @@ export const EditorStateKeepDeepEquality: KeepDeepEqualityCall<EditorState> = (
       vscodeLoadingScreenVisibleResults.value,
       indexedDBFailedResults.value,
       forceParseFilesResults.value,
+      allElementPropsResults.value,
     )
 
     return keepDeepEqualityResult(newEditorState, false)

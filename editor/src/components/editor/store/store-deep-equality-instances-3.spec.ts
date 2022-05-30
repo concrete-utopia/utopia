@@ -27,6 +27,7 @@ import {
   SpecialSizeMeasurementsKeepDeepEquality,
 } from './store-deep-equality-instances'
 import * as EP from '../../../core/shared/element-path'
+import { ElementProps } from './editor-state'
 
 describe('CanvasRectangleKeepDeepEquality', () => {
   const oldValue: CanvasRectangle = canvasRectangle({
@@ -358,11 +359,6 @@ describe('ElementInstanceMetadataKeepDeepEquality', () => {
   const oldValue: ElementInstanceMetadata = {
     elementPath: EP.elementPath([['scene'], ['aaa', 'bbb']]),
     element: left('div'),
-    props: {
-      a: {
-        b: [],
-      },
-    },
     globalFrame: canvasRectangle({
       x: 10,
       y: 20,
@@ -443,11 +439,6 @@ describe('ElementInstanceMetadataKeepDeepEquality', () => {
   const newDifferentValue: ElementInstanceMetadata = {
     elementPath: EP.elementPath([['scene'], ['aaa', 'bbb']]),
     element: left('div'),
-    props: {
-      a: {
-        b: [],
-      },
-    },
     globalFrame: canvasRectangle({
       x: 10,
       y: 20,
@@ -535,7 +526,6 @@ describe('ElementInstanceMetadataKeepDeepEquality', () => {
     const result = ElementInstanceMetadataKeepDeepEquality(oldValue, newDifferentValue)
     expect(result.value.elementPath).toBe(oldValue.elementPath)
     expect(result.value.element).toBe(oldValue.element)
-    expect(result.value.props).toEqual(oldValue.props)
     expect(result.value.globalFrame).toBe(oldValue.globalFrame)
     expect(result.value.localFrame).toBe(oldValue.localFrame)
     expect(result.value.componentInstance).toBe(oldValue.componentInstance)
@@ -555,11 +545,6 @@ describe('ElementInstanceMetadataMapKeepDeepEquality', () => {
     elem: {
       elementPath: EP.elementPath([['scene'], ['aaa', 'bbb']]),
       element: left('div'),
-      props: {
-        a: {
-          b: [],
-        },
-      },
       globalFrame: canvasRectangle({
         x: 10,
         y: 20,
@@ -642,11 +627,6 @@ describe('ElementInstanceMetadataMapKeepDeepEquality', () => {
     elem: {
       elementPath: EP.elementPath([['scene'], ['aaa', 'bbb']]),
       element: left('div'),
-      props: {
-        a: {
-          b: [],
-        },
-      },
       globalFrame: canvasRectangle({
         x: 10,
         y: 20,
@@ -729,11 +709,6 @@ describe('ElementInstanceMetadataMapKeepDeepEquality', () => {
     elem: {
       elementPath: EP.elementPath([['scene'], ['aaa', 'bbb']]),
       element: left('div'),
-      props: {
-        a: {
-          b: [],
-        },
-      },
       globalFrame: canvasRectangle({
         x: 10,
         y: 20,
@@ -821,13 +796,12 @@ describe('ElementInstanceMetadataMapKeepDeepEquality', () => {
   it('same value returns the same reference', () => {
     const result = ElementInstanceMetadataMapKeepDeepEquality(oldValue, newSameValue)
     expect(result.value).toStrictEqual(oldValue)
-    expect(result.areEqual).toEqual(false)
+    expect(result.areEqual).toEqual(true)
   })
   it('different but similar value handled appropriately', () => {
     const result = ElementInstanceMetadataMapKeepDeepEquality(oldValue, newDifferentValue)
     expect(result.value.elem.elementPath).toBe(oldValue.elem.elementPath)
     expect(result.value.elem.element).toBe(oldValue.elem.element)
-    expect(result.value.elem.props).toEqual(oldValue.elem.props)
     expect(result.value.elem.globalFrame).toBe(oldValue.elem.globalFrame)
     expect(result.value.elem.localFrame).toBe(oldValue.elem.localFrame)
     expect(result.value.elem.componentInstance).toBe(oldValue.elem.componentInstance)

@@ -203,7 +203,7 @@ export class SelectModeControlContainer extends React.Component<
         if (currentInstance == null) {
           return frameIntersect
         } else {
-          if (MetadataUtils.overflows(currentInstance)) {
+          if (MetadataUtils.overflows(this.props.allElementProps, currentInstance.elementPath)) {
             return frameIntersect
           } else {
             const currentFrame = currentInstance.globalFrame
@@ -247,6 +247,7 @@ export class SelectModeControlContainer extends React.Component<
         windowToCanvasPosition={this.props.windowToCanvasPosition}
         selectedViews={this.props.selectedViews}
         showAdditionalControls={this.props.showAdditionalControls}
+        allElementProps={this.props.allElementProps}
       />
     )
   }
