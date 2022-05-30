@@ -24,10 +24,6 @@ function getDistanceGuidelines(
 }
 
 export const DistanceGuidelineControl = React.memo(() => {
-  const selectedElements = useEditorState(
-    (store) => store.editor.selectedViews,
-    'DistanceGuidelineControl selectedElements',
-  )
   const isInteractionActive = useEditorState(
     (store) => store.editor.canvas.interactionSession != null,
     'DistanceGuidelineControl isInteractionActive',
@@ -40,6 +36,10 @@ export const DistanceGuidelineControl = React.memo(() => {
   const highlightedViews = useEditorState(
     (store) => store.editor.highlightedViews,
     'DistanceGuidelineControl highlightedViews',
+  )
+  const selectedElements = useEditorState(
+    (store) => store.editor.selectedViews,
+    'DistanceGuidelineControl selectedElements',
   )
 
   const scale = useEditorState(
@@ -54,29 +54,29 @@ export const DistanceGuidelineControl = React.memo(() => {
     (store) => store.editor.jsxMetadata,
     'DistanceGuidelineControl jsxMetadata',
   )
-
-  if (selectedElements.length > 0 && !isInteractionActive && altKeyPressed) {
-    let boundingBoxes: CanvasRectangle[] = []
-    if (EP.areAllElementsInSameInstance(selectedElements)) {
-      const multiSelectBounds = getMultiselectBounds(jsxMetadata, selectedElements)
+  const boundingBoxes = useEditorState((store) => {
+    if (EP.areAllElementsInSameInstance(store.editor.selectedViews)) {
+      const multiSelectBounds = getMultiselectBounds(
+        store.editor.jsxMetadata,
+        store.editor.selectedViews,
+      )
       if (multiSelectBounds != null) {
-        boundingBoxes = [multiSelectBounds]
+        return [multiSelectBounds]
+      } else {
+        return []
       }
     } else {
-      boundingBoxes = mapDropNulls((element) => {
-        return MetadataUtils.getFrameInCanvasCoords(element, jsxMetadata)
-      }, selectedElements)
+      return mapDropNulls((element) => {
+        return MetadataUtils.getFrameInCanvasCoords(element, store.editor.jsxMetadata)
+      }, store.editor.selectedViews)
     }
+  }, 'DistanceGuidelineControl boundingBoxes')
 
-    if (boundingBoxes.length === 0) {
-      return null
-    }
-
-    let guideLineElements: Array<JSX.Element> = []
+  const distanceGuidelines = useEditorState((store) => {
+    let guidelineInfo: Array<{ guidelines: Array<Guideline>; boundingBox: CanvasRectangle }> = []
     fastForEach(boundingBoxes, (boundingBox, index) => {
-      let distanceGuidelines: Array<Guideline> = []
       if (highlightedViews.length !== 0) {
-        distanceGuidelines = flatMapArray((highlightedView) => {
+        const guidelinesForHighlightedViews = flatMapArray((highlightedView) => {
           const highlightedViewIsSelected = selectedElements.some((selectedElement) =>
             EP.pathsEqual(selectedElement, highlightedView),
           )
@@ -90,28 +90,47 @@ export const DistanceGuidelineControl = React.memo(() => {
             }
           }
         }, highlightedViews)
+        guidelineInfo.push({
+          guidelines: guidelinesForHighlightedViews,
+          boundingBox: boundingBox,
+        })
       } else {
         const parentPath = EP.parentPath(selectedElements[0])
         if (parentPath != null) {
           if (EP.isFromSameInstanceAs(parentPath, selectedElements[index])) {
-            distanceGuidelines = getDistanceGuidelines(parentPath, jsxMetadata)
+            const guidelinesForParent = getDistanceGuidelines(parentPath, jsxMetadata)
+            guidelineInfo.push({
+              guidelines: guidelinesForParent,
+              boundingBox: boundingBox,
+            })
           }
         }
       }
-      guideLineElements.push(
-        <DistanceGuideline
-          key={`${EP.toComponentId(selectedElements[index])}-distance-guidelines`}
-          canvasOffset={canvasOffset}
-          scale={scale}
-          guidelines={distanceGuidelines}
-          selectedViews={selectedElements}
-          highlightedViews={highlightedViews}
-          boundingBox={boundingBox}
-        />,
-      )
     })
+    return guidelineInfo
+  }, 'DistanceGuidelineControl distanceGuidelines')
 
-    return <>{guideLineElements}</>
+  if (
+    selectedElements.length > 0 &&
+    !isInteractionActive &&
+    altKeyPressed &&
+    boundingBoxes.length !== 0
+  ) {
+    return (
+      <>
+        {distanceGuidelines.map((guidelineInfo, index) => (
+          <DistanceGuideline
+            key={`${EP.toComponentId(selectedElements[index])}-distance-guidelines`}
+            canvasOffset={canvasOffset}
+            scale={scale}
+            guidelines={guidelineInfo.guidelines}
+            selectedViews={selectedElements}
+            highlightedViews={highlightedViews}
+            boundingBox={guidelineInfo.boundingBox}
+          />
+        ))}
+      </>
+    )
   } else {
     return null
   }
