@@ -378,6 +378,8 @@ export function runLocalCanvasAction(
           interactionSession: {
             ...action.interactionSession,
             metadata: model.canvas.interactionSession?.metadata ?? model.jsxMetadata,
+            allElementProps:
+              model.canvas.interactionSession?.allElementProps ?? model.allElementProps,
           },
         },
       }
@@ -914,10 +916,11 @@ export class EditorCanvas extends React.Component<EditorCanvasProps> {
         this.props.editor.jsxMetadata,
         target,
       )
-      if (possibleElement == null) {
+      const elementProps = this.props.editor.allElementProps[EP.toString(target)]
+      if (possibleElement == null || elementProps == null) {
         return false
       } else {
-        return isAspectRatioLockedNew(possibleElement)
+        return isAspectRatioLockedNew(possibleElement, elementProps)
       }
     })
   }

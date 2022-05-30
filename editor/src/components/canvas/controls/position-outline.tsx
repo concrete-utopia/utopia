@@ -45,7 +45,8 @@ const usePropsOrJSXAttributes = (path: ElementPath): PropsOrJSXAttributes => {
     if (element != null && isRight(element.element) && isJSXElement(element.element.value)) {
       return right(element.element.value.props)
     } else {
-      return left(element?.props ?? {})
+      const elementProps = store.editor.allElementProps[EP.toString(path)]
+      return left(elementProps ?? {})
     }
   }, 'usePropsOrJSXAttributes')
 }

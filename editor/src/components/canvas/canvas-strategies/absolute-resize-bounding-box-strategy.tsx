@@ -12,7 +12,7 @@ import {
   transformFrameUsingBoundingBox,
 } from '../../../core/shared/math-utils'
 import { ElementPath } from '../../../core/shared/project-file-types'
-import { getElementFromProjectContents } from '../../editor/store/editor-state'
+import { AllElementProps, getElementFromProjectContents } from '../../editor/store/editor-state'
 import { stylePropPathMappingFn } from '../../inspector/common/property-path-hooks'
 import { EdgePosition } from '../canvas-types'
 import {
@@ -33,11 +33,12 @@ import {
   resizeBoundingBox,
   runLegacyAbsoluteResizeSnapping,
 } from './shared-absolute-resize-strategy-helpers'
+import * as EP from '../../../core/shared/element-path'
 
 export const absoluteResizeBoundingBoxStrategy: CanvasStrategy = {
   id: 'ABSOLUTE_RESIZE_BOUNDING_BOX',
   name: 'Absolute Resize',
-  isApplicable: (canvasState, interactionState, metadata) => {
+  isApplicable: (canvasState, interactionState, metadata, allElementProps) => {
     if (
       canvasState.selectedElements.length > 1 ||
       (canvasState.selectedElements.length >= 1 &&
@@ -46,9 +47,10 @@ export const absoluteResizeBoundingBoxStrategy: CanvasStrategy = {
     ) {
       return canvasState.selectedElements.every((element) => {
         const elementMetadata = MetadataUtils.findElementByElementPath(metadata, element)
+        const elementProps = allElementProps[EP.toString(element)] ?? {}
         return (
           elementMetadata?.specialSizeMeasurements.position === 'absolute' &&
-          hasAtLeastTwoPinsPerSide(elementMetadata.props)
+          hasAtLeastTwoPinsPerSide(elementProps) // TODO should this use projectContents?
         )
       })
     } else {
@@ -65,6 +67,7 @@ export const absoluteResizeBoundingBoxStrategy: CanvasStrategy = {
       canvasState,
       interactionState,
       sessionState.startingMetadata,
+      sessionState.startingAllElementProps,
     ) &&
       interactionState.interactionData.type === 'DRAG' &&
       interactionState.activeControl.type === 'RESIZE_HANDLE'
@@ -107,6 +110,7 @@ export const absoluteResizeBoundingBoxStrategy: CanvasStrategy = {
           canvasState.scale,
           lockedAspectRatio,
           centerBased,
+          sessionState.startingAllElementProps,
         )
         const commandsForSelectedElements = canvasState.selectedElements.flatMap(
           (selectedElement) => {
@@ -212,6 +216,7 @@ function snapBoundingBox(
   canvasScale: number,
   lockedAspectRatio: number | null,
   centerBased: 'center-based' | 'non-center-based',
+  allElementProps: AllElementProps,
 ) {
   const { snappedBoundingBox, guidelinesWithSnappingVector } = runLegacyAbsoluteResizeSnapping(
     selectedElements,
@@ -221,6 +226,7 @@ function snapBoundingBox(
     canvasScale,
     lockedAspectRatio,
     centerBased,
+    allElementProps,
   )
 
   return {

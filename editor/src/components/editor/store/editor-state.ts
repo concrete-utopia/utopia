@@ -809,6 +809,10 @@ export function editorStateCodeEditorErrors(
   }
 }
 
+export type ElementProps = { [key: string]: any }
+
+export type AllElementProps = { [path: string]: ElementProps }
+
 // FIXME We need to pull out ProjectState from here
 export interface EditorState {
   id: string | null
@@ -871,6 +875,7 @@ export interface EditorState {
   vscodeLoadingScreenVisible: boolean
   indexedDBFailed: boolean
   forceParseFiles: Array<string>
+  allElementProps: AllElementProps // the final, resolved, static props value for each element.
 }
 
 export function editorState(
@@ -934,6 +939,7 @@ export function editorState(
   vscodeLoadingScreenVisible: boolean,
   indexedDBFailed: boolean,
   forceParseFiles: Array<string>,
+  allElementProps: AllElementProps,
 ): EditorState {
   return {
     id: id,
@@ -996,6 +1002,7 @@ export function editorState(
     vscodeLoadingScreenVisible: vscodeLoadingScreenVisible,
     indexedDBFailed: indexedDBFailed,
     forceParseFiles: forceParseFiles,
+    allElementProps: allElementProps,
   }
 }
 
@@ -1782,6 +1789,7 @@ export function createEditorState(dispatch: EditorDispatch): EditorState {
     vscodeLoadingScreenVisible: true,
     indexedDBFailed: false,
     forceParseFiles: [],
+    allElementProps: {},
   }
 }
 
@@ -2055,6 +2063,7 @@ export function editorModelFromPersistentModel(
     vscodeLoadingScreenVisible: true,
     indexedDBFailed: false,
     forceParseFiles: [],
+    allElementProps: {},
   }
   return editor
 }

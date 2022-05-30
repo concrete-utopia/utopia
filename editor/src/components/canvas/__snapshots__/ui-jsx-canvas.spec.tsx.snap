@@ -182,19 +182,6 @@ Object {
     "isEmotionOrStyledComponent": false,
     "label": null,
     "localFrame": null,
-    "props": Object {
-      "data-path": "utopia-storyboard-uid/scene-aaa",
-      "data-uid": "scene-aaa",
-      "data-utopia-scene-id": "utopia-storyboard-uid/scene-aaa",
-      "skipDeepFreeze": true,
-      "style": Object {
-        "height": 400,
-        "left": 0,
-        "position": "absolute",
-        "top": 0,
-        "width": 400,
-      },
-    },
     "specialSizeMeasurements": Object {
       "clientHeight": 0,
       "clientWidth": 0,
@@ -308,28 +295,6 @@ Object {
     "isEmotionOrStyledComponent": false,
     "label": null,
     "localFrame": null,
-    "props": Object {
-      "data-path": "utopia-storyboard-uid/scene-aaa/app-entity",
-      "data-uid": "app-entity",
-      "data-utopia-instance-path": Object {
-        "parts": Array [
-          Array [
-            "utopia-storyboard-uid",
-            "scene-aaa",
-            "app-entity",
-          ],
-        ],
-        "type": "elementpath",
-      },
-      "skipDeepFreeze": true,
-      "style": Object {
-        "bottom": 0,
-        "left": 0,
-        "position": "absolute",
-        "right": 0,
-        "top": 0,
-      },
-    },
     "specialSizeMeasurements": Object {
       "clientHeight": 0,
       "clientWidth": 0,
@@ -602,18 +567,6 @@ Object {
     "isEmotionOrStyledComponent": false,
     "label": null,
     "localFrame": null,
-    "props": Object {
-      "data-path": "utopia-storyboard-uid/scene-aaa/app-entity:aaa",
-      "data-uid": "aaa",
-      "skipDeepFreeze": true,
-      "style": Object {
-        "bottom": 0,
-        "left": 0,
-        "position": "absolute",
-        "right": 0,
-        "top": 0,
-      },
-    },
     "specialSizeMeasurements": Object {
       "clientHeight": 0,
       "clientWidth": 0,
@@ -725,12 +678,6 @@ Object {
     "isEmotionOrStyledComponent": false,
     "label": null,
     "localFrame": null,
-    "props": Object {
-      "data-label": "Plane",
-      "data-path": "utopia-storyboard-uid/scene-aaa/app-entity:aaa/bbb~~~1",
-      "data-uid": "bbb~~~1",
-      "skipDeepFreeze": true,
-    },
     "specialSizeMeasurements": Object {
       "clientHeight": 0,
       "clientWidth": 0,
@@ -842,12 +789,6 @@ Object {
     "isEmotionOrStyledComponent": false,
     "label": null,
     "localFrame": null,
-    "props": Object {
-      "data-label": "Plane",
-      "data-path": "utopia-storyboard-uid/scene-aaa/app-entity:aaa/bbb~~~2",
-      "data-uid": "bbb~~~2",
-      "skipDeepFreeze": true,
-    },
     "specialSizeMeasurements": Object {
       "clientHeight": 0,
       "clientWidth": 0,
@@ -959,12 +900,6 @@ Object {
     "isEmotionOrStyledComponent": false,
     "label": null,
     "localFrame": null,
-    "props": Object {
-      "data-label": "Plane",
-      "data-path": "utopia-storyboard-uid/scene-aaa/app-entity:aaa/bbb~~~3",
-      "data-uid": "bbb~~~3",
-      "skipDeepFreeze": true,
-    },
     "specialSizeMeasurements": Object {
       "clientHeight": 0,
       "clientWidth": 0,
@@ -1172,19 +1107,6 @@ Object {
     "isEmotionOrStyledComponent": false,
     "label": null,
     "localFrame": null,
-    "props": Object {
-      "data-path": "utopia-storyboard-uid/scene-aaa",
-      "data-uid": "scene-aaa",
-      "data-utopia-scene-id": "utopia-storyboard-uid/scene-aaa",
-      "skipDeepFreeze": true,
-      "style": Object {
-        "height": 400,
-        "left": 0,
-        "position": "absolute",
-        "top": 0,
-        "width": 400,
-      },
-    },
     "specialSizeMeasurements": Object {
       "clientHeight": 0,
       "clientWidth": 0,
@@ -1298,28 +1220,6 @@ Object {
     "isEmotionOrStyledComponent": false,
     "label": null,
     "localFrame": null,
-    "props": Object {
-      "data-path": "utopia-storyboard-uid/scene-aaa/app-entity",
-      "data-uid": "app-entity",
-      "data-utopia-instance-path": Object {
-        "parts": Array [
-          Array [
-            "utopia-storyboard-uid",
-            "scene-aaa",
-            "app-entity",
-          ],
-        ],
-        "type": "elementpath",
-      },
-      "skipDeepFreeze": true,
-      "style": Object {
-        "bottom": 0,
-        "left": 0,
-        "position": "absolute",
-        "right": 0,
-        "top": 0,
-      },
-    },
     "specialSizeMeasurements": Object {
       "clientHeight": 0,
       "clientWidth": 0,
@@ -1500,19 +1400,6 @@ Object {
     "isEmotionOrStyledComponent": false,
     "label": null,
     "localFrame": null,
-    "props": Object {
-      "data-label": "Hat",
-      "data-path": "utopia-storyboard-uid/scene-aaa/app-entity:aaa",
-      "data-uid": "aaa",
-      "skipDeepFreeze": true,
-      "style": Object {
-        "bottom": 0,
-        "left": 0,
-        "position": "absolute",
-        "right": 0,
-        "top": 0,
-      },
-    },
     "specialSizeMeasurements": Object {
       "clientHeight": 0,
       "clientWidth": 0,
@@ -1719,19 +1606,6 @@ Object {
     "isEmotionOrStyledComponent": false,
     "label": null,
     "localFrame": null,
-    "props": Object {
-      "data-path": "utopia-storyboard-uid/scene-aaa",
-      "data-uid": "scene-aaa",
-      "data-utopia-scene-id": "utopia-storyboard-uid/scene-aaa",
-      "skipDeepFreeze": true,
-      "style": Object {
-        "height": 400,
-        "left": 0,
-        "position": "absolute",
-        "top": 0,
-        "width": 400,
-      },
-    },
     "specialSizeMeasurements": Object {
       "clientHeight": 0,
       "clientWidth": 0,
@@ -1845,28 +1719,6 @@ Object {
     "isEmotionOrStyledComponent": false,
     "label": null,
     "localFrame": null,
-    "props": Object {
-      "data-path": "utopia-storyboard-uid/scene-aaa/app-entity",
-      "data-uid": "app-entity",
-      "data-utopia-instance-path": Object {
-        "parts": Array [
-          Array [
-            "utopia-storyboard-uid",
-            "scene-aaa",
-            "app-entity",
-          ],
-        ],
-        "type": "elementpath",
-      },
-      "skipDeepFreeze": true,
-      "style": Object {
-        "bottom": 0,
-        "left": 0,
-        "position": "absolute",
-        "right": 0,
-        "top": 0,
-      },
-    },
     "specialSizeMeasurements": Object {
       "clientHeight": 0,
       "clientWidth": 0,
@@ -1961,24 +1813,6 @@ Object {
     "isEmotionOrStyledComponent": false,
     "label": null,
     "localFrame": null,
-    "props": Object {
-      "data-path": "utopia-storyboard-uid/scene-aaa/app-entity:567",
-      "data-uid": "567",
-      "data-utopia-instance-path": Object {
-        "parts": Array [
-          Array [
-            "utopia-storyboard-uid",
-            "scene-aaa",
-            "app-entity",
-          ],
-          Array [
-            "567",
-          ],
-        ],
-        "type": "elementpath",
-      },
-      "skipDeepFreeze": true,
-    },
     "specialSizeMeasurements": Object {
       "clientHeight": 0,
       "clientWidth": 0,
@@ -2203,19 +2037,6 @@ Object {
     "isEmotionOrStyledComponent": false,
     "label": null,
     "localFrame": null,
-    "props": Object {
-      "data-path": "utopia-storyboard-uid/scene-aaa",
-      "data-uid": "scene-aaa",
-      "data-utopia-scene-id": "utopia-storyboard-uid/scene-aaa",
-      "skipDeepFreeze": true,
-      "style": Object {
-        "height": 400,
-        "left": 0,
-        "position": "absolute",
-        "top": 0,
-        "width": 400,
-      },
-    },
     "specialSizeMeasurements": Object {
       "clientHeight": 0,
       "clientWidth": 0,
@@ -2329,28 +2150,6 @@ Object {
     "isEmotionOrStyledComponent": false,
     "label": null,
     "localFrame": null,
-    "props": Object {
-      "data-path": "utopia-storyboard-uid/scene-aaa/app-entity",
-      "data-uid": "app-entity",
-      "data-utopia-instance-path": Object {
-        "parts": Array [
-          Array [
-            "utopia-storyboard-uid",
-            "scene-aaa",
-            "app-entity",
-          ],
-        ],
-        "type": "elementpath",
-      },
-      "skipDeepFreeze": true,
-      "style": Object {
-        "bottom": 0,
-        "left": 0,
-        "position": "absolute",
-        "right": 0,
-        "top": 0,
-      },
-    },
     "specialSizeMeasurements": Object {
       "clientHeight": 0,
       "clientWidth": 0,
@@ -2587,11 +2386,6 @@ Object {
     "isEmotionOrStyledComponent": false,
     "label": null,
     "localFrame": null,
-    "props": Object {
-      "data-path": "utopia-storyboard-uid/scene-aaa/app-entity:zzz",
-      "data-uid": "zzz",
-      "skipDeepFreeze": true,
-    },
     "specialSizeMeasurements": Object {
       "clientHeight": 0,
       "clientWidth": 0,
@@ -2738,11 +2532,6 @@ Object {
     "isEmotionOrStyledComponent": false,
     "label": null,
     "localFrame": null,
-    "props": Object {
-      "data-path": "utopia-storyboard-uid/scene-aaa/app-entity:zzz/aaa~~~1",
-      "data-uid": "aaa~~~1",
-      "skipDeepFreeze": true,
-    },
     "specialSizeMeasurements": Object {
       "clientHeight": 0,
       "clientWidth": 0,
@@ -2889,11 +2678,6 @@ Object {
     "isEmotionOrStyledComponent": false,
     "label": null,
     "localFrame": null,
-    "props": Object {
-      "data-path": "utopia-storyboard-uid/scene-aaa/app-entity:zzz/aaa~~~2",
-      "data-uid": "aaa~~~2",
-      "skipDeepFreeze": true,
-    },
     "specialSizeMeasurements": Object {
       "clientHeight": 0,
       "clientWidth": 0,
@@ -3040,11 +2824,6 @@ Object {
     "isEmotionOrStyledComponent": false,
     "label": null,
     "localFrame": null,
-    "props": Object {
-      "data-path": "utopia-storyboard-uid/scene-aaa/app-entity:zzz/aaa~~~3",
-      "data-uid": "aaa~~~3",
-      "skipDeepFreeze": true,
-    },
     "specialSizeMeasurements": Object {
       "clientHeight": 0,
       "clientWidth": 0,
@@ -3320,19 +3099,6 @@ Object {
     "isEmotionOrStyledComponent": false,
     "label": null,
     "localFrame": null,
-    "props": Object {
-      "data-path": "utopia-storyboard-uid/scene-aaa",
-      "data-uid": "scene-aaa",
-      "data-utopia-scene-id": "utopia-storyboard-uid/scene-aaa",
-      "skipDeepFreeze": true,
-      "style": Object {
-        "height": 400,
-        "left": 0,
-        "position": "absolute",
-        "top": 0,
-        "width": 400,
-      },
-    },
     "specialSizeMeasurements": Object {
       "clientHeight": 0,
       "clientWidth": 0,
@@ -3446,28 +3212,6 @@ Object {
     "isEmotionOrStyledComponent": false,
     "label": null,
     "localFrame": null,
-    "props": Object {
-      "data-path": "utopia-storyboard-uid/scene-aaa/app-entity",
-      "data-uid": "app-entity",
-      "data-utopia-instance-path": Object {
-        "parts": Array [
-          Array [
-            "utopia-storyboard-uid",
-            "scene-aaa",
-            "app-entity",
-          ],
-        ],
-        "type": "elementpath",
-      },
-      "skipDeepFreeze": true,
-      "style": Object {
-        "bottom": 0,
-        "left": 0,
-        "position": "absolute",
-        "right": 0,
-        "top": 0,
-      },
-    },
     "specialSizeMeasurements": Object {
       "clientHeight": 0,
       "clientWidth": 0,
@@ -3823,11 +3567,6 @@ Object {
     "isEmotionOrStyledComponent": false,
     "label": null,
     "localFrame": null,
-    "props": Object {
-      "data-path": "utopia-storyboard-uid/scene-aaa/app-entity:zzz",
-      "data-uid": "zzz",
-      "skipDeepFreeze": true,
-    },
     "specialSizeMeasurements": Object {
       "clientHeight": 0,
       "clientWidth": 0,
@@ -4078,11 +3817,6 @@ Object {
     "isEmotionOrStyledComponent": false,
     "label": null,
     "localFrame": null,
-    "props": Object {
-      "data-path": "utopia-storyboard-uid/scene-aaa/app-entity:zzz/aaa~~~1",
-      "data-uid": "aaa~~~1",
-      "skipDeepFreeze": true,
-    },
     "specialSizeMeasurements": Object {
       "clientHeight": 0,
       "clientWidth": 0,
@@ -4236,11 +3970,6 @@ Object {
     "isEmotionOrStyledComponent": false,
     "label": null,
     "localFrame": null,
-    "props": Object {
-      "data-path": "utopia-storyboard-uid/scene-aaa/app-entity:zzz/aaa~~~1/bbb~~~1",
-      "data-uid": "bbb~~~1",
-      "skipDeepFreeze": true,
-    },
     "specialSizeMeasurements": Object {
       "clientHeight": 0,
       "clientWidth": 0,
@@ -4394,11 +4123,6 @@ Object {
     "isEmotionOrStyledComponent": false,
     "label": null,
     "localFrame": null,
-    "props": Object {
-      "data-path": "utopia-storyboard-uid/scene-aaa/app-entity:zzz/aaa~~~1/bbb~~~2",
-      "data-uid": "bbb~~~2",
-      "skipDeepFreeze": true,
-    },
     "specialSizeMeasurements": Object {
       "clientHeight": 0,
       "clientWidth": 0,
@@ -4552,11 +4276,6 @@ Object {
     "isEmotionOrStyledComponent": false,
     "label": null,
     "localFrame": null,
-    "props": Object {
-      "data-path": "utopia-storyboard-uid/scene-aaa/app-entity:zzz/aaa~~~1/bbb~~~3",
-      "data-uid": "bbb~~~3",
-      "skipDeepFreeze": true,
-    },
     "specialSizeMeasurements": Object {
       "clientHeight": 0,
       "clientWidth": 0,
@@ -4807,11 +4526,6 @@ Object {
     "isEmotionOrStyledComponent": false,
     "label": null,
     "localFrame": null,
-    "props": Object {
-      "data-path": "utopia-storyboard-uid/scene-aaa/app-entity:zzz/aaa~~~2",
-      "data-uid": "aaa~~~2",
-      "skipDeepFreeze": true,
-    },
     "specialSizeMeasurements": Object {
       "clientHeight": 0,
       "clientWidth": 0,
@@ -4965,11 +4679,6 @@ Object {
     "isEmotionOrStyledComponent": false,
     "label": null,
     "localFrame": null,
-    "props": Object {
-      "data-path": "utopia-storyboard-uid/scene-aaa/app-entity:zzz/aaa~~~2/bbb~~~1",
-      "data-uid": "bbb~~~1",
-      "skipDeepFreeze": true,
-    },
     "specialSizeMeasurements": Object {
       "clientHeight": 0,
       "clientWidth": 0,
@@ -5123,11 +4832,6 @@ Object {
     "isEmotionOrStyledComponent": false,
     "label": null,
     "localFrame": null,
-    "props": Object {
-      "data-path": "utopia-storyboard-uid/scene-aaa/app-entity:zzz/aaa~~~2/bbb~~~2",
-      "data-uid": "bbb~~~2",
-      "skipDeepFreeze": true,
-    },
     "specialSizeMeasurements": Object {
       "clientHeight": 0,
       "clientWidth": 0,
@@ -5281,11 +4985,6 @@ Object {
     "isEmotionOrStyledComponent": false,
     "label": null,
     "localFrame": null,
-    "props": Object {
-      "data-path": "utopia-storyboard-uid/scene-aaa/app-entity:zzz/aaa~~~2/bbb~~~3",
-      "data-uid": "bbb~~~3",
-      "skipDeepFreeze": true,
-    },
     "specialSizeMeasurements": Object {
       "clientHeight": 0,
       "clientWidth": 0,
@@ -5536,11 +5235,6 @@ Object {
     "isEmotionOrStyledComponent": false,
     "label": null,
     "localFrame": null,
-    "props": Object {
-      "data-path": "utopia-storyboard-uid/scene-aaa/app-entity:zzz/aaa~~~3",
-      "data-uid": "aaa~~~3",
-      "skipDeepFreeze": true,
-    },
     "specialSizeMeasurements": Object {
       "clientHeight": 0,
       "clientWidth": 0,
@@ -5694,11 +5388,6 @@ Object {
     "isEmotionOrStyledComponent": false,
     "label": null,
     "localFrame": null,
-    "props": Object {
-      "data-path": "utopia-storyboard-uid/scene-aaa/app-entity:zzz/aaa~~~3/bbb~~~1",
-      "data-uid": "bbb~~~1",
-      "skipDeepFreeze": true,
-    },
     "specialSizeMeasurements": Object {
       "clientHeight": 0,
       "clientWidth": 0,
@@ -5852,11 +5541,6 @@ Object {
     "isEmotionOrStyledComponent": false,
     "label": null,
     "localFrame": null,
-    "props": Object {
-      "data-path": "utopia-storyboard-uid/scene-aaa/app-entity:zzz/aaa~~~3/bbb~~~2",
-      "data-uid": "bbb~~~2",
-      "skipDeepFreeze": true,
-    },
     "specialSizeMeasurements": Object {
       "clientHeight": 0,
       "clientWidth": 0,
@@ -6010,11 +5694,6 @@ Object {
     "isEmotionOrStyledComponent": false,
     "label": null,
     "localFrame": null,
-    "props": Object {
-      "data-path": "utopia-storyboard-uid/scene-aaa/app-entity:zzz/aaa~~~3/bbb~~~3",
-      "data-uid": "bbb~~~3",
-      "skipDeepFreeze": true,
-    },
     "specialSizeMeasurements": Object {
       "clientHeight": 0,
       "clientWidth": 0,
@@ -6233,19 +5912,6 @@ Object {
     "isEmotionOrStyledComponent": false,
     "label": null,
     "localFrame": null,
-    "props": Object {
-      "data-path": "utopia-storyboard-uid/scene-aaa",
-      "data-uid": "scene-aaa",
-      "data-utopia-scene-id": "utopia-storyboard-uid/scene-aaa",
-      "skipDeepFreeze": true,
-      "style": Object {
-        "height": 400,
-        "left": 0,
-        "position": "absolute",
-        "top": 0,
-        "width": 400,
-      },
-    },
     "specialSizeMeasurements": Object {
       "clientHeight": 0,
       "clientWidth": 0,
@@ -6359,28 +6025,6 @@ Object {
     "isEmotionOrStyledComponent": false,
     "label": null,
     "localFrame": null,
-    "props": Object {
-      "data-path": "utopia-storyboard-uid/scene-aaa/app-entity",
-      "data-uid": "app-entity",
-      "data-utopia-instance-path": Object {
-        "parts": Array [
-          Array [
-            "utopia-storyboard-uid",
-            "scene-aaa",
-            "app-entity",
-          ],
-        ],
-        "type": "elementpath",
-      },
-      "skipDeepFreeze": true,
-      "style": Object {
-        "bottom": 0,
-        "left": 0,
-        "position": "absolute",
-        "right": 0,
-        "top": 0,
-      },
-    },
     "specialSizeMeasurements": Object {
       "clientHeight": 0,
       "clientWidth": 0,
@@ -6534,11 +6178,6 @@ Object {
     "isEmotionOrStyledComponent": false,
     "label": null,
     "localFrame": null,
-    "props": Object {
-      "data-path": "utopia-storyboard-uid/scene-aaa/app-entity:zzz",
-      "data-uid": "zzz",
-      "skipDeepFreeze": true,
-    },
     "specialSizeMeasurements": Object {
       "clientHeight": 0,
       "clientWidth": 0,
@@ -6634,11 +6273,6 @@ Object {
     "isEmotionOrStyledComponent": false,
     "label": null,
     "localFrame": null,
-    "props": Object {
-      "data-path": "utopia-storyboard-uid/scene-aaa/app-entity:zzz/aaa",
-      "data-uid": "aaa",
-      "skipDeepFreeze": true,
-    },
     "specialSizeMeasurements": Object {
       "clientHeight": 0,
       "clientWidth": 0,
@@ -6734,11 +6368,6 @@ Object {
     "isEmotionOrStyledComponent": false,
     "label": null,
     "localFrame": null,
-    "props": Object {
-      "data-path": "utopia-storyboard-uid/scene-aaa/app-entity:zzz/bbb",
-      "data-uid": "bbb",
-      "skipDeepFreeze": true,
-    },
     "specialSizeMeasurements": Object {
       "clientHeight": 0,
       "clientWidth": 0,
@@ -6945,19 +6574,6 @@ Object {
     "isEmotionOrStyledComponent": false,
     "label": null,
     "localFrame": null,
-    "props": Object {
-      "data-path": "utopia-storyboard-uid/scene-aaa",
-      "data-uid": "scene-aaa",
-      "data-utopia-scene-id": "utopia-storyboard-uid/scene-aaa",
-      "skipDeepFreeze": true,
-      "style": Object {
-        "height": 400,
-        "left": 0,
-        "position": "absolute",
-        "top": 0,
-        "width": 400,
-      },
-    },
     "specialSizeMeasurements": Object {
       "clientHeight": 0,
       "clientWidth": 0,
@@ -7071,28 +6687,6 @@ Object {
     "isEmotionOrStyledComponent": false,
     "label": null,
     "localFrame": null,
-    "props": Object {
-      "data-path": "utopia-storyboard-uid/scene-aaa/app-entity",
-      "data-uid": "app-entity",
-      "data-utopia-instance-path": Object {
-        "parts": Array [
-          Array [
-            "utopia-storyboard-uid",
-            "scene-aaa",
-            "app-entity",
-          ],
-        ],
-        "type": "elementpath",
-      },
-      "skipDeepFreeze": true,
-      "style": Object {
-        "bottom": 0,
-        "left": 0,
-        "position": "absolute",
-        "right": 0,
-        "top": 0,
-      },
-    },
     "specialSizeMeasurements": Object {
       "clientHeight": 0,
       "clientWidth": 0,
@@ -7259,18 +6853,6 @@ Object {
     "isEmotionOrStyledComponent": false,
     "label": null,
     "localFrame": null,
-    "props": Object {
-      "data-path": "utopia-storyboard-uid/scene-aaa/app-entity:aaa",
-      "data-uid": "aaa",
-      "skipDeepFreeze": true,
-      "style": Object {
-        "bottom": 0,
-        "left": 0,
-        "position": "absolute",
-        "right": 0,
-        "top": 0,
-      },
-    },
     "specialSizeMeasurements": Object {
       "clientHeight": 0,
       "clientWidth": 0,
@@ -7495,19 +7077,6 @@ Object {
     "isEmotionOrStyledComponent": false,
     "label": null,
     "localFrame": null,
-    "props": Object {
-      "data-path": "utopia-storyboard-uid/scene-aaa",
-      "data-uid": "scene-aaa",
-      "data-utopia-scene-id": "utopia-storyboard-uid/scene-aaa",
-      "skipDeepFreeze": true,
-      "style": Object {
-        "height": 400,
-        "left": 0,
-        "position": "absolute",
-        "top": 0,
-        "width": 400,
-      },
-    },
     "specialSizeMeasurements": Object {
       "clientHeight": 0,
       "clientWidth": 0,
@@ -7621,28 +7190,6 @@ Object {
     "isEmotionOrStyledComponent": false,
     "label": null,
     "localFrame": null,
-    "props": Object {
-      "data-path": "utopia-storyboard-uid/scene-aaa/app-entity",
-      "data-uid": "app-entity",
-      "data-utopia-instance-path": Object {
-        "parts": Array [
-          Array [
-            "utopia-storyboard-uid",
-            "scene-aaa",
-            "app-entity",
-          ],
-        ],
-        "type": "elementpath",
-      },
-      "skipDeepFreeze": true,
-      "style": Object {
-        "bottom": 0,
-        "left": 0,
-        "position": "absolute",
-        "right": 0,
-        "top": 0,
-      },
-    },
     "specialSizeMeasurements": Object {
       "clientHeight": 0,
       "clientWidth": 0,
@@ -7892,11 +7439,6 @@ Object {
     "isEmotionOrStyledComponent": false,
     "label": null,
     "localFrame": null,
-    "props": Object {
-      "data-path": "utopia-storyboard-uid/scene-aaa/app-entity:aaa",
-      "data-uid": "aaa",
-      "skipDeepFreeze": true,
-    },
     "specialSizeMeasurements": Object {
       "clientHeight": 0,
       "clientWidth": 0,
@@ -8052,26 +7594,6 @@ Object {
     "isEmotionOrStyledComponent": false,
     "label": null,
     "localFrame": null,
-    "props": Object {
-      "data-path": "utopia-storyboard-uid/scene-aaa/app-entity:aaa/bbb~~~1",
-      "data-uid": "bbb~~~1",
-      "data-utopia-instance-path": Object {
-        "parts": Array [
-          Array [
-            "utopia-storyboard-uid",
-            "scene-aaa",
-            "app-entity",
-          ],
-          Array [
-            "aaa",
-            "bbb~~~1",
-          ],
-        ],
-        "type": "elementpath",
-      },
-      "skipDeepFreeze": true,
-      "title": "n1",
-    },
     "specialSizeMeasurements": Object {
       "clientHeight": 0,
       "clientWidth": 0,
@@ -8227,26 +7749,6 @@ Object {
     "isEmotionOrStyledComponent": false,
     "label": null,
     "localFrame": null,
-    "props": Object {
-      "data-path": "utopia-storyboard-uid/scene-aaa/app-entity:aaa/bbb~~~2",
-      "data-uid": "bbb~~~2",
-      "data-utopia-instance-path": Object {
-        "parts": Array [
-          Array [
-            "utopia-storyboard-uid",
-            "scene-aaa",
-            "app-entity",
-          ],
-          Array [
-            "aaa",
-            "bbb~~~2",
-          ],
-        ],
-        "type": "elementpath",
-      },
-      "skipDeepFreeze": true,
-      "title": "n2",
-    },
     "specialSizeMeasurements": Object {
       "clientHeight": 0,
       "clientWidth": 0,
@@ -8402,26 +7904,6 @@ Object {
     "isEmotionOrStyledComponent": false,
     "label": null,
     "localFrame": null,
-    "props": Object {
-      "data-path": "utopia-storyboard-uid/scene-aaa/app-entity:aaa/bbb~~~3",
-      "data-uid": "bbb~~~3",
-      "data-utopia-instance-path": Object {
-        "parts": Array [
-          Array [
-            "utopia-storyboard-uid",
-            "scene-aaa",
-            "app-entity",
-          ],
-          Array [
-            "aaa",
-            "bbb~~~3",
-          ],
-        ],
-        "type": "elementpath",
-      },
-      "skipDeepFreeze": true,
-      "title": "n3",
-    },
     "specialSizeMeasurements": Object {
       "clientHeight": 0,
       "clientWidth": 0,
@@ -8646,19 +8128,6 @@ Object {
     "isEmotionOrStyledComponent": false,
     "label": null,
     "localFrame": null,
-    "props": Object {
-      "data-path": "utopia-storyboard-uid/scene-aaa",
-      "data-uid": "scene-aaa",
-      "data-utopia-scene-id": "utopia-storyboard-uid/scene-aaa",
-      "skipDeepFreeze": true,
-      "style": Object {
-        "height": 400,
-        "left": 0,
-        "position": "absolute",
-        "top": 0,
-        "width": 400,
-      },
-    },
     "specialSizeMeasurements": Object {
       "clientHeight": 0,
       "clientWidth": 0,
@@ -8772,28 +8241,6 @@ Object {
     "isEmotionOrStyledComponent": false,
     "label": null,
     "localFrame": null,
-    "props": Object {
-      "data-path": "utopia-storyboard-uid/scene-aaa/app-entity",
-      "data-uid": "app-entity",
-      "data-utopia-instance-path": Object {
-        "parts": Array [
-          Array [
-            "utopia-storyboard-uid",
-            "scene-aaa",
-            "app-entity",
-          ],
-        ],
-        "type": "elementpath",
-      },
-      "skipDeepFreeze": true,
-      "style": Object {
-        "bottom": 0,
-        "left": 0,
-        "position": "absolute",
-        "right": 0,
-        "top": 0,
-      },
-    },
     "specialSizeMeasurements": Object {
       "clientHeight": 0,
       "clientWidth": 0,
@@ -9043,11 +8490,6 @@ Object {
     "isEmotionOrStyledComponent": false,
     "label": null,
     "localFrame": null,
-    "props": Object {
-      "data-path": "utopia-storyboard-uid/scene-aaa/app-entity:aaa",
-      "data-uid": "aaa",
-      "skipDeepFreeze": true,
-    },
     "specialSizeMeasurements": Object {
       "clientHeight": 0,
       "clientWidth": 0,
@@ -9203,26 +8645,6 @@ Object {
     "isEmotionOrStyledComponent": false,
     "label": null,
     "localFrame": null,
-    "props": Object {
-      "data-path": "utopia-storyboard-uid/scene-aaa/app-entity:aaa/bbb~~~1",
-      "data-uid": "bbb~~~1",
-      "data-utopia-instance-path": Object {
-        "parts": Array [
-          Array [
-            "utopia-storyboard-uid",
-            "scene-aaa",
-            "app-entity",
-          ],
-          Array [
-            "aaa",
-            "bbb~~~1",
-          ],
-        ],
-        "type": "elementpath",
-      },
-      "skipDeepFreeze": true,
-      "title": "n1",
-    },
     "specialSizeMeasurements": Object {
       "clientHeight": 0,
       "clientWidth": 0,
@@ -9378,26 +8800,6 @@ Object {
     "isEmotionOrStyledComponent": false,
     "label": null,
     "localFrame": null,
-    "props": Object {
-      "data-path": "utopia-storyboard-uid/scene-aaa/app-entity:aaa/bbb~~~2",
-      "data-uid": "bbb~~~2",
-      "data-utopia-instance-path": Object {
-        "parts": Array [
-          Array [
-            "utopia-storyboard-uid",
-            "scene-aaa",
-            "app-entity",
-          ],
-          Array [
-            "aaa",
-            "bbb~~~2",
-          ],
-        ],
-        "type": "elementpath",
-      },
-      "skipDeepFreeze": true,
-      "title": "n2",
-    },
     "specialSizeMeasurements": Object {
       "clientHeight": 0,
       "clientWidth": 0,
@@ -9553,26 +8955,6 @@ Object {
     "isEmotionOrStyledComponent": false,
     "label": null,
     "localFrame": null,
-    "props": Object {
-      "data-path": "utopia-storyboard-uid/scene-aaa/app-entity:aaa/bbb~~~3",
-      "data-uid": "bbb~~~3",
-      "data-utopia-instance-path": Object {
-        "parts": Array [
-          Array [
-            "utopia-storyboard-uid",
-            "scene-aaa",
-            "app-entity",
-          ],
-          Array [
-            "aaa",
-            "bbb~~~3",
-          ],
-        ],
-        "type": "elementpath",
-      },
-      "skipDeepFreeze": true,
-      "title": "n3",
-    },
     "specialSizeMeasurements": Object {
       "clientHeight": 0,
       "clientWidth": 0,
@@ -9791,19 +9173,6 @@ Object {
     "isEmotionOrStyledComponent": false,
     "label": null,
     "localFrame": null,
-    "props": Object {
-      "data-path": "utopia-storyboard-uid/scene-aaa",
-      "data-uid": "scene-aaa",
-      "data-utopia-scene-id": "utopia-storyboard-uid/scene-aaa",
-      "skipDeepFreeze": true,
-      "style": Object {
-        "height": 400,
-        "left": 0,
-        "position": "absolute",
-        "top": 0,
-        "width": 400,
-      },
-    },
     "specialSizeMeasurements": Object {
       "clientHeight": 0,
       "clientWidth": 0,
@@ -9917,28 +9286,6 @@ Object {
     "isEmotionOrStyledComponent": false,
     "label": null,
     "localFrame": null,
-    "props": Object {
-      "data-path": "utopia-storyboard-uid/scene-aaa/app-entity",
-      "data-uid": "app-entity",
-      "data-utopia-instance-path": Object {
-        "parts": Array [
-          Array [
-            "utopia-storyboard-uid",
-            "scene-aaa",
-            "app-entity",
-          ],
-        ],
-        "type": "elementpath",
-      },
-      "skipDeepFreeze": true,
-      "style": Object {
-        "bottom": 0,
-        "left": 0,
-        "position": "absolute",
-        "right": 0,
-        "top": 0,
-      },
-    },
     "specialSizeMeasurements": Object {
       "clientHeight": 0,
       "clientWidth": 0,
@@ -10092,11 +9439,6 @@ Object {
     "isEmotionOrStyledComponent": false,
     "label": null,
     "localFrame": null,
-    "props": Object {
-      "data-path": "utopia-storyboard-uid/scene-aaa/app-entity:zzz",
-      "data-uid": "zzz",
-      "skipDeepFreeze": true,
-    },
     "specialSizeMeasurements": Object {
       "clientHeight": 0,
       "clientWidth": 0,
@@ -10192,25 +9534,6 @@ Object {
     "isEmotionOrStyledComponent": false,
     "label": null,
     "localFrame": null,
-    "props": Object {
-      "data-path": "utopia-storyboard-uid/scene-aaa/app-entity:zzz/aaa",
-      "data-uid": "aaa",
-      "data-utopia-instance-path": Object {
-        "parts": Array [
-          Array [
-            "utopia-storyboard-uid",
-            "scene-aaa",
-            "app-entity",
-          ],
-          Array [
-            "zzz",
-            "aaa",
-          ],
-        ],
-        "type": "elementpath",
-      },
-      "skipDeepFreeze": true,
-    },
     "specialSizeMeasurements": Object {
       "clientHeight": 0,
       "clientWidth": 0,
@@ -10306,25 +9629,6 @@ Object {
     "isEmotionOrStyledComponent": false,
     "label": null,
     "localFrame": null,
-    "props": Object {
-      "data-path": "utopia-storyboard-uid/scene-aaa/app-entity:zzz/bbb",
-      "data-uid": "bbb",
-      "data-utopia-instance-path": Object {
-        "parts": Array [
-          Array [
-            "utopia-storyboard-uid",
-            "scene-aaa",
-            "app-entity",
-          ],
-          Array [
-            "zzz",
-            "bbb",
-          ],
-        ],
-        "type": "elementpath",
-      },
-      "skipDeepFreeze": true,
-    },
     "specialSizeMeasurements": Object {
       "clientHeight": 0,
       "clientWidth": 0,
@@ -10543,19 +9847,6 @@ Object {
     "isEmotionOrStyledComponent": false,
     "label": null,
     "localFrame": null,
-    "props": Object {
-      "data-path": "utopia-storyboard-uid/scene-aaa",
-      "data-uid": "scene-aaa",
-      "data-utopia-scene-id": "utopia-storyboard-uid/scene-aaa",
-      "skipDeepFreeze": true,
-      "style": Object {
-        "height": 400,
-        "left": 0,
-        "position": "absolute",
-        "top": 0,
-        "width": 400,
-      },
-    },
     "specialSizeMeasurements": Object {
       "clientHeight": 0,
       "clientWidth": 0,
@@ -10669,28 +9960,6 @@ Object {
     "isEmotionOrStyledComponent": false,
     "label": null,
     "localFrame": null,
-    "props": Object {
-      "data-path": "utopia-storyboard-uid/scene-aaa/app-entity",
-      "data-uid": "app-entity",
-      "data-utopia-instance-path": Object {
-        "parts": Array [
-          Array [
-            "utopia-storyboard-uid",
-            "scene-aaa",
-            "app-entity",
-          ],
-        ],
-        "type": "elementpath",
-      },
-      "skipDeepFreeze": true,
-      "style": Object {
-        "bottom": 0,
-        "left": 0,
-        "position": "absolute",
-        "right": 0,
-        "top": 0,
-      },
-    },
     "specialSizeMeasurements": Object {
       "clientHeight": 0,
       "clientWidth": 0,
@@ -10877,11 +10146,6 @@ Object {
     "isEmotionOrStyledComponent": false,
     "label": null,
     "localFrame": null,
-    "props": Object {
-      "data-path": "utopia-storyboard-uid/scene-aaa/app-entity:zzz",
-      "data-uid": "zzz",
-      "skipDeepFreeze": true,
-    },
     "specialSizeMeasurements": Object {
       "clientHeight": 0,
       "clientWidth": 0,
@@ -10977,25 +10241,6 @@ Object {
     "isEmotionOrStyledComponent": false,
     "label": null,
     "localFrame": null,
-    "props": Object {
-      "data-path": "utopia-storyboard-uid/scene-aaa/app-entity:zzz/aaa~~~1",
-      "data-uid": "aaa~~~1",
-      "data-utopia-instance-path": Object {
-        "parts": Array [
-          Array [
-            "utopia-storyboard-uid",
-            "scene-aaa",
-            "app-entity",
-          ],
-          Array [
-            "zzz",
-            "aaa~~~1",
-          ],
-        ],
-        "type": "elementpath",
-      },
-      "skipDeepFreeze": true,
-    },
     "specialSizeMeasurements": Object {
       "clientHeight": 0,
       "clientWidth": 0,
@@ -11091,25 +10336,6 @@ Object {
     "isEmotionOrStyledComponent": false,
     "label": null,
     "localFrame": null,
-    "props": Object {
-      "data-path": "utopia-storyboard-uid/scene-aaa/app-entity:zzz/aaa~~~2",
-      "data-uid": "aaa~~~2",
-      "data-utopia-instance-path": Object {
-        "parts": Array [
-          Array [
-            "utopia-storyboard-uid",
-            "scene-aaa",
-            "app-entity",
-          ],
-          Array [
-            "zzz",
-            "aaa~~~2",
-          ],
-        ],
-        "type": "elementpath",
-      },
-      "skipDeepFreeze": true,
-    },
     "specialSizeMeasurements": Object {
       "clientHeight": 0,
       "clientWidth": 0,
@@ -11343,19 +10569,6 @@ Object {
     "isEmotionOrStyledComponent": false,
     "label": null,
     "localFrame": null,
-    "props": Object {
-      "data-path": "utopia-storyboard-uid/scene-aaa",
-      "data-uid": "scene-aaa",
-      "data-utopia-scene-id": "utopia-storyboard-uid/scene-aaa",
-      "skipDeepFreeze": true,
-      "style": Object {
-        "height": 200,
-        "left": 59,
-        "position": "absolute",
-        "top": 79,
-        "width": 200,
-      },
-    },
     "specialSizeMeasurements": Object {
       "clientHeight": 0,
       "clientWidth": 0,
@@ -11483,27 +10696,6 @@ Object {
     "isEmotionOrStyledComponent": false,
     "label": null,
     "localFrame": null,
-    "props": Object {
-      "data-path": "utopia-storyboard-uid/scene-aaa/app-entity",
-      "data-uid": "app-entity",
-      "data-utopia-instance-path": Object {
-        "parts": Array [
-          Array [
-            "utopia-storyboard-uid",
-            "scene-aaa",
-            "app-entity",
-          ],
-        ],
-        "type": "elementpath",
-      },
-      "skipDeepFreeze": true,
-      "style": Object {
-        "height": "100%",
-        "position": "absolute",
-        "width": "100%",
-      },
-      "title": "Hi there!",
-    },
     "specialSizeMeasurements": Object {
       "clientHeight": 0,
       "clientWidth": 0,
@@ -11815,17 +11007,6 @@ Object {
     "isEmotionOrStyledComponent": false,
     "label": null,
     "localFrame": null,
-    "props": Object {
-      "data-path": "utopia-storyboard-uid/scene-aaa/app-entity:aaa",
-      "data-uid": "aaa",
-      "skipDeepFreeze": true,
-      "style": Object {
-        "backgroundColor": "#FFFFFF",
-        "height": "100%",
-        "position": "absolute",
-        "width": "100%",
-      },
-    },
     "specialSizeMeasurements": Object {
       "clientHeight": 0,
       "clientWidth": 0,
@@ -12004,30 +11185,6 @@ Object {
     "isEmotionOrStyledComponent": false,
     "label": null,
     "localFrame": null,
-    "props": Object {
-      "data-path": "utopia-storyboard-uid/scene-aaa/app-entity:aaa/bbb",
-      "data-uid": "bbb",
-      "data-utopia-instance-path": Object {
-        "parts": Array [
-          Array [
-            "utopia-storyboard-uid",
-            "scene-aaa",
-            "app-entity",
-          ],
-          Array [
-            "aaa",
-            "bbb",
-          ],
-        ],
-        "type": "elementpath",
-      },
-      "skipDeepFreeze": true,
-      "style": Object {
-        "backgroundColor": "#000000",
-        "position": "absolute",
-      },
-      "title": "Hi there!",
-    },
     "specialSizeMeasurements": Object {
       "clientHeight": 0,
       "clientWidth": 0,
@@ -12260,19 +11417,6 @@ Object {
     "isEmotionOrStyledComponent": false,
     "label": null,
     "localFrame": null,
-    "props": Object {
-      "data-path": "utopia-storyboard-uid/scene-aaa",
-      "data-uid": "scene-aaa",
-      "data-utopia-scene-id": "utopia-storyboard-uid/scene-aaa",
-      "skipDeepFreeze": true,
-      "style": Object {
-        "height": 200,
-        "left": 59,
-        "position": "absolute",
-        "top": 79,
-        "width": 200,
-      },
-    },
     "specialSizeMeasurements": Object {
       "clientHeight": 0,
       "clientWidth": 0,
@@ -12400,27 +11544,6 @@ Object {
     "isEmotionOrStyledComponent": false,
     "label": null,
     "localFrame": null,
-    "props": Object {
-      "data-path": "utopia-storyboard-uid/scene-aaa/app-entity",
-      "data-uid": "app-entity",
-      "data-utopia-instance-path": Object {
-        "parts": Array [
-          Array [
-            "utopia-storyboard-uid",
-            "scene-aaa",
-            "app-entity",
-          ],
-        ],
-        "type": "elementpath",
-      },
-      "skipDeepFreeze": true,
-      "style": Object {
-        "height": "100%",
-        "position": "absolute",
-        "width": "100%",
-      },
-      "title": "Hi there!",
-    },
     "specialSizeMeasurements": Object {
       "clientHeight": 0,
       "clientWidth": 0,
@@ -12732,17 +11855,6 @@ Object {
     "isEmotionOrStyledComponent": false,
     "label": null,
     "localFrame": null,
-    "props": Object {
-      "data-path": "utopia-storyboard-uid/scene-aaa/app-entity:aaa",
-      "data-uid": "aaa",
-      "skipDeepFreeze": true,
-      "style": Object {
-        "backgroundColor": "#FFFFFF",
-        "height": "100%",
-        "position": "absolute",
-        "width": "100%",
-      },
-    },
     "specialSizeMeasurements": Object {
       "clientHeight": 0,
       "clientWidth": 0,
@@ -12921,30 +12033,6 @@ Object {
     "isEmotionOrStyledComponent": false,
     "label": null,
     "localFrame": null,
-    "props": Object {
-      "data-path": "utopia-storyboard-uid/scene-aaa/app-entity:aaa/bbb",
-      "data-uid": "bbb",
-      "data-utopia-instance-path": Object {
-        "parts": Array [
-          Array [
-            "utopia-storyboard-uid",
-            "scene-aaa",
-            "app-entity",
-          ],
-          Array [
-            "aaa",
-            "bbb",
-          ],
-        ],
-        "type": "elementpath",
-      },
-      "skipDeepFreeze": true,
-      "style": Object {
-        "backgroundColor": "#000000",
-        "position": "absolute",
-      },
-      "title": "Hi there!",
-    },
     "specialSizeMeasurements": Object {
       "clientHeight": 0,
       "clientWidth": 0,
@@ -13178,19 +12266,6 @@ Object {
     "isEmotionOrStyledComponent": false,
     "label": null,
     "localFrame": null,
-    "props": Object {
-      "data-path": "utopia-storyboard-uid/scene-aaa",
-      "data-uid": "scene-aaa",
-      "data-utopia-scene-id": "utopia-storyboard-uid/scene-aaa",
-      "skipDeepFreeze": true,
-      "style": Object {
-        "height": 200,
-        "left": 59,
-        "position": "absolute",
-        "top": 79,
-        "width": 200,
-      },
-    },
     "specialSizeMeasurements": Object {
       "clientHeight": 0,
       "clientWidth": 0,
@@ -13318,27 +12393,6 @@ Object {
     "isEmotionOrStyledComponent": false,
     "label": null,
     "localFrame": null,
-    "props": Object {
-      "data-path": "utopia-storyboard-uid/scene-aaa/app-entity",
-      "data-uid": "app-entity",
-      "data-utopia-instance-path": Object {
-        "parts": Array [
-          Array [
-            "utopia-storyboard-uid",
-            "scene-aaa",
-            "app-entity",
-          ],
-        ],
-        "type": "elementpath",
-      },
-      "skipDeepFreeze": true,
-      "style": Object {
-        "height": "100%",
-        "position": "absolute",
-        "width": "100%",
-      },
-      "title": "Hi there!",
-    },
     "specialSizeMeasurements": Object {
       "clientHeight": 0,
       "clientWidth": 0,
@@ -13698,17 +12752,6 @@ Object {
     "isEmotionOrStyledComponent": false,
     "label": null,
     "localFrame": null,
-    "props": Object {
-      "data-path": "utopia-storyboard-uid/scene-aaa/app-entity:aaa",
-      "data-uid": "aaa",
-      "skipDeepFreeze": true,
-      "style": Object {
-        "backgroundColor": "#FFFFFF",
-        "height": "100%",
-        "position": "absolute",
-        "width": "100%",
-      },
-    },
     "specialSizeMeasurements": Object {
       "clientHeight": 0,
       "clientWidth": 0,
@@ -13935,36 +12978,6 @@ Object {
     "isEmotionOrStyledComponent": false,
     "label": null,
     "localFrame": null,
-    "props": Object {
-      "data-path": "utopia-storyboard-uid/scene-aaa/app-entity:aaa/bbb",
-      "data-uid": "bbb",
-      "data-utopia-instance-path": Object {
-        "parts": Array [
-          Array [
-            "utopia-storyboard-uid",
-            "scene-aaa",
-            "app-entity",
-          ],
-          Array [
-            "aaa",
-            "bbb",
-          ],
-        ],
-        "type": "elementpath",
-      },
-      "skipDeepFreeze": true,
-      "style": Object {
-        "backgroundColor": "#000000",
-        "position": "absolute",
-      },
-      "titles": Array [
-        "Hi there!",
-        "ignored",
-        Object {
-          "title": "and hello!",
-        },
-      ],
-    },
     "specialSizeMeasurements": Object {
       "clientHeight": 0,
       "clientWidth": 0,
@@ -14198,19 +13211,6 @@ Object {
     "isEmotionOrStyledComponent": false,
     "label": null,
     "localFrame": null,
-    "props": Object {
-      "data-path": "utopia-storyboard-uid/scene-aaa",
-      "data-uid": "scene-aaa",
-      "data-utopia-scene-id": "utopia-storyboard-uid/scene-aaa",
-      "skipDeepFreeze": true,
-      "style": Object {
-        "height": 200,
-        "left": 59,
-        "position": "absolute",
-        "top": 79,
-        "width": 200,
-      },
-    },
     "specialSizeMeasurements": Object {
       "clientHeight": 0,
       "clientWidth": 0,
@@ -14338,27 +13338,6 @@ Object {
     "isEmotionOrStyledComponent": false,
     "label": null,
     "localFrame": null,
-    "props": Object {
-      "data-path": "utopia-storyboard-uid/scene-aaa/app-entity",
-      "data-uid": "app-entity",
-      "data-utopia-instance-path": Object {
-        "parts": Array [
-          Array [
-            "utopia-storyboard-uid",
-            "scene-aaa",
-            "app-entity",
-          ],
-        ],
-        "type": "elementpath",
-      },
-      "skipDeepFreeze": true,
-      "style": Object {
-        "height": "100%",
-        "position": "absolute",
-        "width": "100%",
-      },
-      "title": "Hi there!",
-    },
     "specialSizeMeasurements": Object {
       "clientHeight": 0,
       "clientWidth": 0,
@@ -14718,17 +13697,6 @@ Object {
     "isEmotionOrStyledComponent": false,
     "label": null,
     "localFrame": null,
-    "props": Object {
-      "data-path": "utopia-storyboard-uid/scene-aaa/app-entity:aaa",
-      "data-uid": "aaa",
-      "skipDeepFreeze": true,
-      "style": Object {
-        "backgroundColor": "#FFFFFF",
-        "height": "100%",
-        "position": "absolute",
-        "width": "100%",
-      },
-    },
     "specialSizeMeasurements": Object {
       "clientHeight": 0,
       "clientWidth": 0,
@@ -14955,36 +13923,6 @@ Object {
     "isEmotionOrStyledComponent": false,
     "label": null,
     "localFrame": null,
-    "props": Object {
-      "data-path": "utopia-storyboard-uid/scene-aaa/app-entity:aaa/bbb",
-      "data-uid": "bbb",
-      "data-utopia-instance-path": Object {
-        "parts": Array [
-          Array [
-            "utopia-storyboard-uid",
-            "scene-aaa",
-            "app-entity",
-          ],
-          Array [
-            "aaa",
-            "bbb",
-          ],
-        ],
-        "type": "elementpath",
-      },
-      "skipDeepFreeze": true,
-      "style": Object {
-        "backgroundColor": "#000000",
-        "position": "absolute",
-      },
-      "titles": Array [
-        "Hi there!",
-        "ignored",
-        Object {
-          "title": "and hello!",
-        },
-      ],
-    },
     "specialSizeMeasurements": Object {
       "clientHeight": 0,
       "clientWidth": 0,
@@ -15190,19 +14128,6 @@ Object {
     "isEmotionOrStyledComponent": false,
     "label": null,
     "localFrame": null,
-    "props": Object {
-      "data-path": "utopia-storyboard-uid/scene-aaa",
-      "data-uid": "scene-aaa",
-      "data-utopia-scene-id": "utopia-storyboard-uid/scene-aaa",
-      "skipDeepFreeze": true,
-      "style": Object {
-        "height": 400,
-        "left": 0,
-        "position": "absolute",
-        "top": 0,
-        "width": 400,
-      },
-    },
     "specialSizeMeasurements": Object {
       "clientHeight": 0,
       "clientWidth": 0,
@@ -15316,28 +14241,6 @@ Object {
     "isEmotionOrStyledComponent": false,
     "label": null,
     "localFrame": null,
-    "props": Object {
-      "data-path": "utopia-storyboard-uid/scene-aaa/app-entity",
-      "data-uid": "app-entity",
-      "data-utopia-instance-path": Object {
-        "parts": Array [
-          Array [
-            "utopia-storyboard-uid",
-            "scene-aaa",
-            "app-entity",
-          ],
-        ],
-        "type": "elementpath",
-      },
-      "skipDeepFreeze": true,
-      "style": Object {
-        "bottom": 0,
-        "left": 0,
-        "position": "absolute",
-        "right": 0,
-        "top": 0,
-      },
-    },
     "specialSizeMeasurements": Object {
       "clientHeight": 0,
       "clientWidth": 0,
@@ -15432,24 +14335,6 @@ Object {
     "isEmotionOrStyledComponent": false,
     "label": null,
     "localFrame": null,
-    "props": Object {
-      "data-path": "utopia-storyboard-uid/scene-aaa/app-entity:bbb",
-      "data-uid": "bbb",
-      "data-utopia-instance-path": Object {
-        "parts": Array [
-          Array [
-            "utopia-storyboard-uid",
-            "scene-aaa",
-            "app-entity",
-          ],
-          Array [
-            "bbb",
-          ],
-        ],
-        "type": "elementpath",
-      },
-      "skipDeepFreeze": true,
-    },
     "specialSizeMeasurements": Object {
       "clientHeight": 0,
       "clientWidth": 0,
@@ -15778,19 +14663,6 @@ Object {
     "isEmotionOrStyledComponent": false,
     "label": null,
     "localFrame": null,
-    "props": Object {
-      "data-path": "utopia-storyboard-uid/scene-aaa",
-      "data-uid": "scene-aaa",
-      "data-utopia-scene-id": "utopia-storyboard-uid/scene-aaa",
-      "skipDeepFreeze": true,
-      "style": Object {
-        "height": 812,
-        "left": 0,
-        "position": "absolute",
-        "top": 0,
-        "width": 375,
-      },
-    },
     "specialSizeMeasurements": Object {
       "clientHeight": 0,
       "clientWidth": 0,
@@ -15904,28 +14776,6 @@ Object {
     "isEmotionOrStyledComponent": false,
     "label": null,
     "localFrame": null,
-    "props": Object {
-      "data-path": "utopia-storyboard-uid/scene-aaa/app-entity",
-      "data-uid": "app-entity",
-      "data-utopia-instance-path": Object {
-        "parts": Array [
-          Array [
-            "utopia-storyboard-uid",
-            "scene-aaa",
-            "app-entity",
-          ],
-        ],
-        "type": "elementpath",
-      },
-      "skipDeepFreeze": true,
-      "style": Object {
-        "bottom": 0,
-        "left": 0,
-        "position": "absolute",
-        "right": 0,
-        "top": 0,
-      },
-    },
     "specialSizeMeasurements": Object {
       "clientHeight": 0,
       "clientWidth": 0,
@@ -17098,24 +15948,6 @@ export var storyboard = (props) => {
     "isEmotionOrStyledComponent": false,
     "label": null,
     "localFrame": null,
-    "props": Object {
-      "data-path": "utopia-storyboard-uid/scene-aaa/app-entity:aaa",
-      "data-uid": "aaa",
-      "skipDeepFreeze": true,
-      "style": Object {
-        "backgroundColor": "#171111",
-        "bottom": 0,
-        "color": "#237AFF",
-        "fontFamily": "Inter",
-        "fontSize": "12px",
-        "height": 812,
-        "left": 0,
-        "position": "absolute",
-        "right": 0,
-        "top": 0,
-        "width": 376,
-      },
-    },
     "specialSizeMeasurements": Object {
       "clientHeight": 0,
       "clientWidth": 0,
@@ -17952,25 +16784,6 @@ export var storyboard = (props) => {
     "isEmotionOrStyledComponent": false,
     "label": null,
     "localFrame": null,
-    "props": Object {
-      "data-path": "utopia-storyboard-uid/scene-aaa/app-entity:aaa/03a",
-      "data-uid": "03a",
-      "data-utopia-instance-path": Object {
-        "parts": Array [
-          Array [
-            "utopia-storyboard-uid",
-            "scene-aaa",
-            "app-entity",
-          ],
-          Array [
-            "aaa",
-            "03a",
-          ],
-        ],
-        "type": "elementpath",
-      },
-      "skipDeepFreeze": true,
-    },
     "specialSizeMeasurements": Object {
       "clientHeight": 0,
       "clientWidth": 0,
@@ -18315,12 +17128,6 @@ export var storyboard = (props) => {
     "isEmotionOrStyledComponent": false,
     "label": null,
     "localFrame": null,
-    "props": Object {
-      "data-label": "Copy",
-      "data-path": "utopia-storyboard-uid/scene-aaa/app-entity:aaa/03a/834~~~1",
-      "data-uid": "834~~~1",
-      "skipDeepFreeze": true,
-    },
     "specialSizeMeasurements": Object {
       "clientHeight": 0,
       "clientWidth": 0,
@@ -18665,12 +17472,6 @@ export var storyboard = (props) => {
     "isEmotionOrStyledComponent": false,
     "label": null,
     "localFrame": null,
-    "props": Object {
-      "data-label": "Paste",
-      "data-path": "utopia-storyboard-uid/scene-aaa/app-entity:aaa/03a/834~~~3",
-      "data-uid": "834~~~3",
-      "skipDeepFreeze": true,
-    },
     "specialSizeMeasurements": Object {
       "clientHeight": 0,
       "clientWidth": 0,
@@ -19015,12 +17816,6 @@ export var storyboard = (props) => {
     "isEmotionOrStyledComponent": false,
     "label": null,
     "localFrame": null,
-    "props": Object {
-      "data-label": "Cut",
-      "data-path": "utopia-storyboard-uid/scene-aaa/app-entity:aaa/03a/834~~~5",
-      "data-uid": "834~~~5",
-      "skipDeepFreeze": true,
-    },
     "specialSizeMeasurements": Object {
       "clientHeight": 0,
       "clientWidth": 0,
@@ -19401,16 +18196,6 @@ export var storyboard = (props) => {
     "isEmotionOrStyledComponent": false,
     "label": null,
     "localFrame": null,
-    "props": Object {
-      "data-label": Array [
-        "⌘",
-        "⎇",
-        "C",
-      ],
-      "data-path": "utopia-storyboard-uid/scene-aaa/app-entity:aaa/03a/999~~~2",
-      "data-uid": "999~~~2",
-      "skipDeepFreeze": true,
-    },
     "specialSizeMeasurements": Object {
       "clientHeight": 0,
       "clientWidth": 0,
@@ -19635,32 +18420,6 @@ export var storyboard = (props) => {
     "isEmotionOrStyledComponent": false,
     "label": null,
     "localFrame": null,
-    "props": Object {
-      "data-path": "utopia-storyboard-uid/scene-aaa/app-entity:aaa/03a/999~~~2/000",
-      "data-uid": "000",
-      "data-utopia-instance-path": Object {
-        "parts": Array [
-          Array [
-            "utopia-storyboard-uid",
-            "scene-aaa",
-            "app-entity",
-          ],
-          Array [
-            "aaa",
-            "03a",
-            "999~~~2",
-            "000",
-          ],
-        ],
-        "type": "elementpath",
-      },
-      "shortcut": Array [
-        "⌘",
-        "⎇",
-        "C",
-      ],
-      "skipDeepFreeze": true,
-    },
     "specialSizeMeasurements": Object {
       "clientHeight": 0,
       "clientWidth": 0,
@@ -20041,12 +18800,6 @@ export var storyboard = (props) => {
     "isEmotionOrStyledComponent": false,
     "label": null,
     "localFrame": null,
-    "props": Object {
-      "data-label": "⌘⎇V",
-      "data-path": "utopia-storyboard-uid/scene-aaa/app-entity:aaa/03a/999~~~4",
-      "data-uid": "999~~~4",
-      "skipDeepFreeze": true,
-    },
     "specialSizeMeasurements": Object {
       "clientHeight": 0,
       "clientWidth": 0,
@@ -20271,28 +19024,6 @@ export var storyboard = (props) => {
     "isEmotionOrStyledComponent": false,
     "label": null,
     "localFrame": null,
-    "props": Object {
-      "data-path": "utopia-storyboard-uid/scene-aaa/app-entity:aaa/03a/999~~~4/000",
-      "data-uid": "000",
-      "data-utopia-instance-path": Object {
-        "parts": Array [
-          Array [
-            "utopia-storyboard-uid",
-            "scene-aaa",
-            "app-entity",
-          ],
-          Array [
-            "aaa",
-            "03a",
-            "999~~~4",
-            "000",
-          ],
-        ],
-        "type": "elementpath",
-      },
-      "shortcut": "⌘⎇V",
-      "skipDeepFreeze": true,
-    },
     "specialSizeMeasurements": Object {
       "clientHeight": 0,
       "clientWidth": 0,
@@ -20673,12 +19404,6 @@ export var storyboard = (props) => {
     "isEmotionOrStyledComponent": false,
     "label": null,
     "localFrame": null,
-    "props": Object {
-      "data-label": "⌘⎇C",
-      "data-path": "utopia-storyboard-uid/scene-aaa/app-entity:aaa/03a/999~~~6",
-      "data-uid": "999~~~6",
-      "skipDeepFreeze": true,
-    },
     "specialSizeMeasurements": Object {
       "clientHeight": 0,
       "clientWidth": 0,
@@ -20903,28 +19628,6 @@ export var storyboard = (props) => {
     "isEmotionOrStyledComponent": false,
     "label": null,
     "localFrame": null,
-    "props": Object {
-      "data-path": "utopia-storyboard-uid/scene-aaa/app-entity:aaa/03a/999~~~6/000",
-      "data-uid": "000",
-      "data-utopia-instance-path": Object {
-        "parts": Array [
-          Array [
-            "utopia-storyboard-uid",
-            "scene-aaa",
-            "app-entity",
-          ],
-          Array [
-            "aaa",
-            "03a",
-            "999~~~6",
-            "000",
-          ],
-        ],
-        "type": "elementpath",
-      },
-      "shortcut": "⌘⎇C",
-      "skipDeepFreeze": true,
-    },
     "specialSizeMeasurements": Object {
       "clientHeight": 0,
       "clientWidth": 0,
@@ -21153,19 +19856,6 @@ Object {
     "isEmotionOrStyledComponent": false,
     "label": null,
     "localFrame": null,
-    "props": Object {
-      "data-path": "utopia-storyboard-uid/scene-aaa",
-      "data-uid": "scene-aaa",
-      "data-utopia-scene-id": "utopia-storyboard-uid/scene-aaa",
-      "skipDeepFreeze": true,
-      "style": Object {
-        "height": 400,
-        "left": 0,
-        "position": "absolute",
-        "top": 0,
-        "width": 400,
-      },
-    },
     "specialSizeMeasurements": Object {
       "clientHeight": 0,
       "clientWidth": 0,
@@ -21279,28 +19969,6 @@ Object {
     "isEmotionOrStyledComponent": false,
     "label": null,
     "localFrame": null,
-    "props": Object {
-      "data-path": "utopia-storyboard-uid/scene-aaa/app-entity",
-      "data-uid": "app-entity",
-      "data-utopia-instance-path": Object {
-        "parts": Array [
-          Array [
-            "utopia-storyboard-uid",
-            "scene-aaa",
-            "app-entity",
-          ],
-        ],
-        "type": "elementpath",
-      },
-      "skipDeepFreeze": true,
-      "style": Object {
-        "bottom": 0,
-        "left": 0,
-        "position": "absolute",
-        "right": 0,
-        "top": 0,
-      },
-    },
     "specialSizeMeasurements": Object {
       "clientHeight": 0,
       "clientWidth": 0,
@@ -21486,11 +20154,6 @@ Object {
     "isEmotionOrStyledComponent": false,
     "label": null,
     "localFrame": null,
-    "props": Object {
-      "data-path": "utopia-storyboard-uid/scene-aaa/app-entity:zzz",
-      "data-uid": "zzz",
-      "skipDeepFreeze": true,
-    },
     "specialSizeMeasurements": Object {
       "clientHeight": 0,
       "clientWidth": 0,
@@ -21602,26 +20265,6 @@ Object {
     "isEmotionOrStyledComponent": false,
     "label": null,
     "localFrame": null,
-    "props": Object {
-      "data-path": "utopia-storyboard-uid/scene-aaa/app-entity:zzz/aaa",
-      "data-uid": "aaa",
-      "data-utopia-instance-path": Object {
-        "parts": Array [
-          Array [
-            "utopia-storyboard-uid",
-            "scene-aaa",
-            "app-entity",
-          ],
-          Array [
-            "zzz",
-            "aaa",
-          ],
-        ],
-        "type": "elementpath",
-      },
-      "name": "World!",
-      "skipDeepFreeze": true,
-    },
     "specialSizeMeasurements": Object {
       "clientHeight": 0,
       "clientWidth": 0,
@@ -21733,26 +20376,6 @@ Object {
     "isEmotionOrStyledComponent": false,
     "label": null,
     "localFrame": null,
-    "props": Object {
-      "data-path": "utopia-storyboard-uid/scene-aaa/app-entity:zzz/bbb",
-      "data-uid": "bbb",
-      "data-utopia-instance-path": Object {
-        "parts": Array [
-          Array [
-            "utopia-storyboard-uid",
-            "scene-aaa",
-            "app-entity",
-          ],
-          Array [
-            "zzz",
-            "bbb",
-          ],
-        ],
-        "type": "elementpath",
-      },
-      "name": "Dolly!",
-      "skipDeepFreeze": true,
-    },
     "specialSizeMeasurements": Object {
       "clientHeight": 0,
       "clientWidth": 0,
@@ -21960,19 +20583,6 @@ Object {
     "isEmotionOrStyledComponent": false,
     "label": null,
     "localFrame": null,
-    "props": Object {
-      "data-path": "utopia-storyboard-uid/scene-aaa",
-      "data-uid": "scene-aaa",
-      "data-utopia-scene-id": "utopia-storyboard-uid/scene-aaa",
-      "skipDeepFreeze": true,
-      "style": Object {
-        "height": 400,
-        "left": 0,
-        "position": "absolute",
-        "top": 0,
-        "width": 400,
-      },
-    },
     "specialSizeMeasurements": Object {
       "clientHeight": 0,
       "clientWidth": 0,
@@ -22086,28 +20696,6 @@ Object {
     "isEmotionOrStyledComponent": false,
     "label": null,
     "localFrame": null,
-    "props": Object {
-      "data-path": "utopia-storyboard-uid/scene-aaa/app-entity",
-      "data-uid": "app-entity",
-      "data-utopia-instance-path": Object {
-        "parts": Array [
-          Array [
-            "utopia-storyboard-uid",
-            "scene-aaa",
-            "app-entity",
-          ],
-        ],
-        "type": "elementpath",
-      },
-      "skipDeepFreeze": true,
-      "style": Object {
-        "bottom": 0,
-        "left": 0,
-        "position": "absolute",
-        "right": 0,
-        "top": 0,
-      },
-    },
     "specialSizeMeasurements": Object {
       "clientHeight": 0,
       "clientWidth": 0,
@@ -22266,12 +20854,6 @@ Object {
     "isEmotionOrStyledComponent": false,
     "label": null,
     "localFrame": null,
-    "props": Object {
-      "data-path": "utopia-storyboard-uid/scene-aaa/app-entity:aaa",
-      "data-uid": "aaa",
-      "ref": [Function],
-      "skipDeepFreeze": true,
-    },
     "specialSizeMeasurements": Object {
       "clientHeight": 0,
       "clientWidth": 0,
@@ -22478,19 +21060,6 @@ Object {
     "isEmotionOrStyledComponent": false,
     "label": null,
     "localFrame": null,
-    "props": Object {
-      "data-path": "utopia-storyboard-uid/scene-aaa",
-      "data-uid": "scene-aaa",
-      "data-utopia-scene-id": "utopia-storyboard-uid/scene-aaa",
-      "skipDeepFreeze": true,
-      "style": Object {
-        "height": 400,
-        "left": 0,
-        "position": "absolute",
-        "top": 0,
-        "width": 400,
-      },
-    },
     "specialSizeMeasurements": Object {
       "clientHeight": 0,
       "clientWidth": 0,
@@ -22604,28 +21173,6 @@ Object {
     "isEmotionOrStyledComponent": false,
     "label": null,
     "localFrame": null,
-    "props": Object {
-      "data-path": "utopia-storyboard-uid/scene-aaa/app-entity",
-      "data-uid": "app-entity",
-      "data-utopia-instance-path": Object {
-        "parts": Array [
-          Array [
-            "utopia-storyboard-uid",
-            "scene-aaa",
-            "app-entity",
-          ],
-        ],
-        "type": "elementpath",
-      },
-      "skipDeepFreeze": true,
-      "style": Object {
-        "bottom": 0,
-        "left": 0,
-        "position": "absolute",
-        "right": 0,
-        "top": 0,
-      },
-    },
     "specialSizeMeasurements": Object {
       "clientHeight": 0,
       "clientWidth": 0,
@@ -22849,19 +21396,6 @@ Object {
     "isEmotionOrStyledComponent": false,
     "label": null,
     "localFrame": null,
-    "props": Object {
-      "data-path": "utopia-storyboard-uid/scene-aaa/app-entity:aaa",
-      "data-uid": "aaa",
-      "ref": [Function],
-      "skipDeepFreeze": true,
-      "style": Object {
-        "bottom": 0,
-        "left": 0,
-        "position": "absolute",
-        "right": 0,
-        "top": 0,
-      },
-    },
     "specialSizeMeasurements": Object {
       "clientHeight": 0,
       "clientWidth": 0,
@@ -23057,19 +21591,6 @@ Object {
     "isEmotionOrStyledComponent": false,
     "label": null,
     "localFrame": null,
-    "props": Object {
-      "data-path": "eee/fff",
-      "data-uid": "fff",
-      "data-utopia-scene-id": "eee/fff",
-      "skipDeepFreeze": true,
-      "style": Object {
-        "height": 812,
-        "left": 0,
-        "position": "absolute",
-        "top": 0,
-        "width": 375,
-      },
-    },
     "specialSizeMeasurements": Object {
       "clientHeight": 0,
       "clientWidth": 0,
@@ -23161,21 +21682,6 @@ Object {
     "isEmotionOrStyledComponent": false,
     "label": null,
     "localFrame": null,
-    "props": Object {
-      "data-path": "eee/fff/app-entity",
-      "data-uid": "app-entity",
-      "data-utopia-instance-path": Object {
-        "parts": Array [
-          Array [
-            "eee",
-            "fff",
-            "app-entity",
-          ],
-        ],
-        "type": "elementpath",
-      },
-      "skipDeepFreeze": true,
-    },
     "specialSizeMeasurements": Object {
       "clientHeight": 0,
       "clientWidth": 0,
@@ -23431,16 +21937,6 @@ export var storyboard = (
     "isEmotionOrStyledComponent": false,
     "label": null,
     "localFrame": null,
-    "props": Object {
-      "data-path": "eee/fff/app-entity:aaa",
-      "data-uid": "aaa",
-      "skipDeepFreeze": true,
-      "style": Object {
-        "backgroundColor": "#FFFFFF",
-        "height": "100%",
-        "width": "100%",
-      },
-    },
     "specialSizeMeasurements": Object {
       "clientHeight": 0,
       "clientWidth": 0,
@@ -23640,31 +22136,6 @@ export var storyboard = (
     "isEmotionOrStyledComponent": false,
     "label": null,
     "localFrame": null,
-    "props": Object {
-      "data-path": "eee/fff/app-entity:aaa/bbb",
-      "data-uid": "bbb",
-      "data-utopia-instance-path": Object {
-        "parts": Array [
-          Array [
-            "eee",
-            "fff",
-            "app-entity",
-          ],
-          Array [
-            "aaa",
-            "bbb",
-          ],
-        ],
-        "type": "elementpath",
-      },
-      "skipDeepFreeze": true,
-      "thing": <div
-        data-path="eee/fff/app-entity:aaa/ccc~~~1"
-        data-uid="ccc~~~1"
-      >
-        test
-      </div>,
-    },
     "specialSizeMeasurements": Object {
       "clientHeight": 0,
       "clientWidth": 0,
@@ -23917,19 +22388,6 @@ Object {
     "isEmotionOrStyledComponent": false,
     "label": null,
     "localFrame": null,
-    "props": Object {
-      "data-path": "utopia-storyboard-uid/scene-aaa",
-      "data-uid": "scene-aaa",
-      "data-utopia-scene-id": "utopia-storyboard-uid/scene-aaa",
-      "skipDeepFreeze": true,
-      "style": Object {
-        "height": 400,
-        "left": 0,
-        "position": "absolute",
-        "top": 0,
-        "width": 400,
-      },
-    },
     "specialSizeMeasurements": Object {
       "clientHeight": 0,
       "clientWidth": 0,
@@ -24043,28 +22501,6 @@ Object {
     "isEmotionOrStyledComponent": false,
     "label": null,
     "localFrame": null,
-    "props": Object {
-      "data-path": "utopia-storyboard-uid/scene-aaa/app-entity",
-      "data-uid": "app-entity",
-      "data-utopia-instance-path": Object {
-        "parts": Array [
-          Array [
-            "utopia-storyboard-uid",
-            "scene-aaa",
-            "app-entity",
-          ],
-        ],
-        "type": "elementpath",
-      },
-      "skipDeepFreeze": true,
-      "style": Object {
-        "bottom": 0,
-        "left": 0,
-        "position": "absolute",
-        "right": 0,
-        "top": 0,
-      },
-    },
     "specialSizeMeasurements": Object {
       "clientHeight": 0,
       "clientWidth": 0,
@@ -24285,15 +22721,6 @@ Object {
     "isEmotionOrStyledComponent": false,
     "label": null,
     "localFrame": null,
-    "props": Object {
-      "data-path": "utopia-storyboard-uid/scene-aaa/app-entity:aaa",
-      "data-uid": "aaa",
-      "skipDeepFreeze": true,
-      "style": Object {
-        "backgroundColor": "lightgrey",
-        "position": "absolute",
-      },
-    },
     "specialSizeMeasurements": Object {
       "clientHeight": 0,
       "clientWidth": 0,
@@ -24462,31 +22889,6 @@ Object {
     "isEmotionOrStyledComponent": false,
     "label": null,
     "localFrame": null,
-    "props": Object {
-      "data-path": "utopia-storyboard-uid/scene-aaa/app-entity:aaa/d59",
-      "data-uid": "d59",
-      "data-utopia-instance-path": Object {
-        "parts": Array [
-          Array [
-            "utopia-storyboard-uid",
-            "scene-aaa",
-            "app-entity",
-          ],
-          Array [
-            "aaa",
-            "d59",
-          ],
-        ],
-        "type": "elementpath",
-      },
-      "skipDeepFreeze": true,
-      "style": Object {
-        "height": 348,
-        "left": 28,
-        "top": 27,
-        "width": 221,
-      },
-    },
     "specialSizeMeasurements": Object {
       "clientHeight": 0,
       "clientWidth": 0,
@@ -24609,18 +23011,6 @@ Object {
     "isEmotionOrStyledComponent": false,
     "label": null,
     "localFrame": null,
-    "props": Object {
-      "data-path": "utopia-storyboard-uid/scene-aaa/app-entity:aaa/d59/dd5",
-      "data-uid": "dd5",
-      "skipDeepFreeze": true,
-      "style": Object {
-        "backgroundColor": "#fff",
-        "height": 244,
-        "left": 14,
-        "top": 21,
-        "width": 193,
-      },
-    },
     "specialSizeMeasurements": Object {
       "clientHeight": 0,
       "clientWidth": 0,
@@ -24854,19 +23244,6 @@ Object {
     "isEmotionOrStyledComponent": false,
     "label": null,
     "localFrame": null,
-    "props": Object {
-      "data-path": "utopia-storyboard-uid/scene-aaa",
-      "data-uid": "scene-aaa",
-      "data-utopia-scene-id": "utopia-storyboard-uid/scene-aaa",
-      "skipDeepFreeze": true,
-      "style": Object {
-        "height": 200,
-        "left": 59,
-        "position": "absolute",
-        "top": 79,
-        "width": 200,
-      },
-    },
     "specialSizeMeasurements": Object {
       "clientHeight": 0,
       "clientWidth": 0,
@@ -24994,27 +23371,6 @@ Object {
     "isEmotionOrStyledComponent": false,
     "label": null,
     "localFrame": null,
-    "props": Object {
-      "data-path": "utopia-storyboard-uid/scene-aaa/app-entity",
-      "data-uid": "app-entity",
-      "data-utopia-instance-path": Object {
-        "parts": Array [
-          Array [
-            "utopia-storyboard-uid",
-            "scene-aaa",
-            "app-entity",
-          ],
-        ],
-        "type": "elementpath",
-      },
-      "skipDeepFreeze": true,
-      "style": Object {
-        "height": "100%",
-        "position": "absolute",
-        "width": "100%",
-      },
-      "title": "Hi there!",
-    },
     "specialSizeMeasurements": Object {
       "clientHeight": 0,
       "clientWidth": 0,
@@ -25266,17 +23622,6 @@ Object {
     "isEmotionOrStyledComponent": false,
     "label": null,
     "localFrame": null,
-    "props": Object {
-      "data-path": "utopia-storyboard-uid/scene-aaa/app-entity:aaa",
-      "data-uid": "aaa",
-      "skipDeepFreeze": true,
-      "style": Object {
-        "backgroundColor": "#FFFFFF",
-        "height": "100%",
-        "position": "absolute",
-        "width": "100%",
-      },
-    },
     "specialSizeMeasurements": Object {
       "clientHeight": 0,
       "clientWidth": 0,
@@ -25400,14 +23745,6 @@ Object {
     "isEmotionOrStyledComponent": false,
     "label": null,
     "localFrame": null,
-    "props": Object {
-      "data-path": "utopia-storyboard-uid/scene-aaa/app-entity:aaa/bbb",
-      "data-uid": "bbb",
-      "skipDeepFreeze": true,
-      "style": Object {
-        "position": "absolute",
-      },
-    },
     "specialSizeMeasurements": Object {
       "clientHeight": 0,
       "clientWidth": 0,
@@ -25785,19 +24122,6 @@ Object {
     "isEmotionOrStyledComponent": false,
     "label": null,
     "localFrame": null,
-    "props": Object {
-      "data-path": "utopia-storyboard-uid/scene-aaa",
-      "data-uid": "scene-aaa",
-      "data-utopia-scene-id": "utopia-storyboard-uid/scene-aaa",
-      "skipDeepFreeze": true,
-      "style": Object {
-        "height": 200,
-        "left": 59,
-        "position": "absolute",
-        "top": 79,
-        "width": 200,
-      },
-    },
     "specialSizeMeasurements": Object {
       "clientHeight": 0,
       "clientWidth": 0,
@@ -25925,27 +24249,6 @@ Object {
     "isEmotionOrStyledComponent": false,
     "label": null,
     "localFrame": null,
-    "props": Object {
-      "data-path": "utopia-storyboard-uid/scene-aaa/app-entity",
-      "data-uid": "app-entity",
-      "data-utopia-instance-path": Object {
-        "parts": Array [
-          Array [
-            "utopia-storyboard-uid",
-            "scene-aaa",
-            "app-entity",
-          ],
-        ],
-        "type": "elementpath",
-      },
-      "skipDeepFreeze": true,
-      "style": Object {
-        "height": "100%",
-        "position": "absolute",
-        "width": "100%",
-      },
-      "title": "Hi there!",
-    },
     "specialSizeMeasurements": Object {
       "clientHeight": 0,
       "clientWidth": 0,
@@ -26198,17 +24501,6 @@ Object {
     "isEmotionOrStyledComponent": false,
     "label": null,
     "localFrame": null,
-    "props": Object {
-      "data-path": "utopia-storyboard-uid/scene-aaa/app-entity:aaa",
-      "data-uid": "aaa",
-      "skipDeepFreeze": true,
-      "style": Object {
-        "backgroundColor": "#FFFFFF",
-        "height": "100%",
-        "position": "absolute",
-        "width": "100%",
-      },
-    },
     "specialSizeMeasurements": Object {
       "clientHeight": 0,
       "clientWidth": 0,
@@ -26332,14 +24624,6 @@ Object {
     "isEmotionOrStyledComponent": false,
     "label": null,
     "localFrame": null,
-    "props": Object {
-      "data-path": "utopia-storyboard-uid/scene-aaa/app-entity:aaa/bbb",
-      "data-uid": "bbb",
-      "skipDeepFreeze": true,
-      "style": Object {
-        "position": "absolute",
-      },
-    },
     "specialSizeMeasurements": Object {
       "clientHeight": 0,
       "clientWidth": 0,
@@ -26658,19 +24942,6 @@ Object {
     "isEmotionOrStyledComponent": false,
     "label": null,
     "localFrame": null,
-    "props": Object {
-      "data-path": "utopia-storyboard-uid/scene-aaa",
-      "data-uid": "scene-aaa",
-      "data-utopia-scene-id": "utopia-storyboard-uid/scene-aaa",
-      "skipDeepFreeze": true,
-      "style": Object {
-        "height": 600,
-        "left": 0,
-        "position": "absolute",
-        "top": 0,
-        "width": 600,
-      },
-    },
     "specialSizeMeasurements": Object {
       "clientHeight": 0,
       "clientWidth": 0,
@@ -26786,26 +25057,6 @@ Object {
     "isEmotionOrStyledComponent": false,
     "label": null,
     "localFrame": null,
-    "props": Object {
-      "data-path": "utopia-storyboard-uid/scene-aaa/app-entity",
-      "data-uid": "app-entity",
-      "data-utopia-instance-path": Object {
-        "parts": Array [
-          Array [
-            "utopia-storyboard-uid",
-            "scene-aaa",
-            "app-entity",
-          ],
-        ],
-        "type": "elementpath",
-      },
-      "skipDeepFreeze": true,
-      "style": Object {
-        "height": "100%",
-        "position": "absolute",
-        "width": "100%",
-      },
-    },
     "specialSizeMeasurements": Object {
       "clientHeight": 0,
       "clientWidth": 0,
@@ -27530,11 +25781,6 @@ export var App = (props) => {
     "isEmotionOrStyledComponent": false,
     "label": null,
     "localFrame": null,
-    "props": Object {
-      "data-path": "utopia-storyboard-uid/scene-aaa/app-entity:b93",
-      "data-uid": "b93",
-      "skipDeepFreeze": true,
-    },
     "specialSizeMeasurements": Object {
       "clientHeight": 0,
       "clientWidth": 0,
@@ -27634,25 +25880,6 @@ export var App = (props) => {
     "isEmotionOrStyledComponent": false,
     "label": null,
     "localFrame": null,
-    "props": Object {
-      "data-path": "utopia-storyboard-uid/scene-aaa/app-entity:b93/0cf",
-      "data-uid": "0cf",
-      "data-utopia-instance-path": Object {
-        "parts": Array [
-          Array [
-            "utopia-storyboard-uid",
-            "scene-aaa",
-            "app-entity",
-          ],
-          Array [
-            "b93",
-            "0cf",
-          ],
-        ],
-        "type": "elementpath",
-      },
-      "skipDeepFreeze": true,
-    },
     "specialSizeMeasurements": Object {
       "clientHeight": 0,
       "clientWidth": 0,
@@ -27752,25 +25979,6 @@ export var App = (props) => {
     "isEmotionOrStyledComponent": false,
     "label": null,
     "localFrame": null,
-    "props": Object {
-      "data-path": "utopia-storyboard-uid/scene-aaa/app-entity:b93/1a1",
-      "data-uid": "1a1",
-      "data-utopia-instance-path": Object {
-        "parts": Array [
-          Array [
-            "utopia-storyboard-uid",
-            "scene-aaa",
-            "app-entity",
-          ],
-          Array [
-            "b93",
-            "1a1",
-          ],
-        ],
-        "type": "elementpath",
-      },
-      "skipDeepFreeze": true,
-    },
     "specialSizeMeasurements": Object {
       "clientHeight": 0,
       "clientWidth": 0,
@@ -27870,25 +26078,6 @@ export var App = (props) => {
     "isEmotionOrStyledComponent": false,
     "label": null,
     "localFrame": null,
-    "props": Object {
-      "data-path": "utopia-storyboard-uid/scene-aaa/app-entity:b93/218",
-      "data-uid": "218",
-      "data-utopia-instance-path": Object {
-        "parts": Array [
-          Array [
-            "utopia-storyboard-uid",
-            "scene-aaa",
-            "app-entity",
-          ],
-          Array [
-            "b93",
-            "218",
-          ],
-        ],
-        "type": "elementpath",
-      },
-      "skipDeepFreeze": true,
-    },
     "specialSizeMeasurements": Object {
       "clientHeight": 0,
       "clientWidth": 0,
@@ -27988,11 +26177,6 @@ export var App = (props) => {
     "isEmotionOrStyledComponent": false,
     "label": null,
     "localFrame": null,
-    "props": Object {
-      "data-path": "utopia-storyboard-uid/scene-aaa/app-entity:b93/2f0",
-      "data-uid": "2f0",
-      "skipDeepFreeze": true,
-    },
     "specialSizeMeasurements": Object {
       "clientHeight": 0,
       "clientWidth": 0,
@@ -28092,25 +26276,6 @@ export var App = (props) => {
     "isEmotionOrStyledComponent": false,
     "label": null,
     "localFrame": null,
-    "props": Object {
-      "data-path": "utopia-storyboard-uid/scene-aaa/app-entity:b93/301",
-      "data-uid": "301",
-      "data-utopia-instance-path": Object {
-        "parts": Array [
-          Array [
-            "utopia-storyboard-uid",
-            "scene-aaa",
-            "app-entity",
-          ],
-          Array [
-            "b93",
-            "301",
-          ],
-        ],
-        "type": "elementpath",
-      },
-      "skipDeepFreeze": true,
-    },
     "specialSizeMeasurements": Object {
       "clientHeight": 0,
       "clientWidth": 0,
@@ -28210,11 +26375,6 @@ export var App = (props) => {
     "isEmotionOrStyledComponent": false,
     "label": null,
     "localFrame": null,
-    "props": Object {
-      "data-path": "utopia-storyboard-uid/scene-aaa/app-entity:b93/315",
-      "data-uid": "315",
-      "skipDeepFreeze": true,
-    },
     "specialSizeMeasurements": Object {
       "clientHeight": 0,
       "clientWidth": 0,
@@ -28384,11 +26544,6 @@ export var App = (props) => {
     "isEmotionOrStyledComponent": false,
     "label": null,
     "localFrame": null,
-    "props": Object {
-      "data-path": "utopia-storyboard-uid/scene-aaa/app-entity:b93/4cf",
-      "data-uid": "4cf",
-      "skipDeepFreeze": true,
-    },
     "specialSizeMeasurements": Object {
       "clientHeight": 0,
       "clientWidth": 0,
@@ -28488,25 +26643,6 @@ export var App = (props) => {
     "isEmotionOrStyledComponent": false,
     "label": null,
     "localFrame": null,
-    "props": Object {
-      "data-path": "utopia-storyboard-uid/scene-aaa/app-entity:b93/54b",
-      "data-uid": "54b",
-      "data-utopia-instance-path": Object {
-        "parts": Array [
-          Array [
-            "utopia-storyboard-uid",
-            "scene-aaa",
-            "app-entity",
-          ],
-          Array [
-            "b93",
-            "54b",
-          ],
-        ],
-        "type": "elementpath",
-      },
-      "skipDeepFreeze": true,
-    },
     "specialSizeMeasurements": Object {
       "clientHeight": 0,
       "clientWidth": 0,
@@ -28606,25 +26742,6 @@ export var App = (props) => {
     "isEmotionOrStyledComponent": false,
     "label": null,
     "localFrame": null,
-    "props": Object {
-      "data-path": "utopia-storyboard-uid/scene-aaa/app-entity:b93/59c",
-      "data-uid": "59c",
-      "data-utopia-instance-path": Object {
-        "parts": Array [
-          Array [
-            "utopia-storyboard-uid",
-            "scene-aaa",
-            "app-entity",
-          ],
-          Array [
-            "b93",
-            "59c",
-          ],
-        ],
-        "type": "elementpath",
-      },
-      "skipDeepFreeze": true,
-    },
     "specialSizeMeasurements": Object {
       "clientHeight": 0,
       "clientWidth": 0,
@@ -28724,25 +26841,6 @@ export var App = (props) => {
     "isEmotionOrStyledComponent": false,
     "label": null,
     "localFrame": null,
-    "props": Object {
-      "data-path": "utopia-storyboard-uid/scene-aaa/app-entity:b93/5b9",
-      "data-uid": "5b9",
-      "data-utopia-instance-path": Object {
-        "parts": Array [
-          Array [
-            "utopia-storyboard-uid",
-            "scene-aaa",
-            "app-entity",
-          ],
-          Array [
-            "b93",
-            "5b9",
-          ],
-        ],
-        "type": "elementpath",
-      },
-      "skipDeepFreeze": true,
-    },
     "specialSizeMeasurements": Object {
       "clientHeight": 0,
       "clientWidth": 0,
@@ -28842,11 +26940,6 @@ export var App = (props) => {
     "isEmotionOrStyledComponent": false,
     "label": null,
     "localFrame": null,
-    "props": Object {
-      "data-path": "utopia-storyboard-uid/scene-aaa/app-entity:b93/7d0",
-      "data-uid": "7d0",
-      "skipDeepFreeze": true,
-    },
     "specialSizeMeasurements": Object {
       "clientHeight": 0,
       "clientWidth": 0,
@@ -28946,25 +27039,6 @@ export var App = (props) => {
     "isEmotionOrStyledComponent": false,
     "label": null,
     "localFrame": null,
-    "props": Object {
-      "data-path": "utopia-storyboard-uid/scene-aaa/app-entity:b93/8aa",
-      "data-uid": "8aa",
-      "data-utopia-instance-path": Object {
-        "parts": Array [
-          Array [
-            "utopia-storyboard-uid",
-            "scene-aaa",
-            "app-entity",
-          ],
-          Array [
-            "b93",
-            "8aa",
-          ],
-        ],
-        "type": "elementpath",
-      },
-      "skipDeepFreeze": true,
-    },
     "specialSizeMeasurements": Object {
       "clientHeight": 0,
       "clientWidth": 0,
@@ -29066,25 +27140,6 @@ export var App = (props) => {
     "isEmotionOrStyledComponent": false,
     "label": null,
     "localFrame": null,
-    "props": Object {
-      "data-path": "utopia-storyboard-uid/scene-aaa/app-entity:b93/8ce",
-      "data-uid": "8ce",
-      "data-utopia-instance-path": Object {
-        "parts": Array [
-          Array [
-            "utopia-storyboard-uid",
-            "scene-aaa",
-            "app-entity",
-          ],
-          Array [
-            "b93",
-            "8ce",
-          ],
-        ],
-        "type": "elementpath",
-      },
-      "skipDeepFreeze": true,
-    },
     "specialSizeMeasurements": Object {
       "clientHeight": 0,
       "clientWidth": 0,
@@ -29184,25 +27239,6 @@ export var App = (props) => {
     "isEmotionOrStyledComponent": false,
     "label": null,
     "localFrame": null,
-    "props": Object {
-      "data-path": "utopia-storyboard-uid/scene-aaa/app-entity:b93/995",
-      "data-uid": "995",
-      "data-utopia-instance-path": Object {
-        "parts": Array [
-          Array [
-            "utopia-storyboard-uid",
-            "scene-aaa",
-            "app-entity",
-          ],
-          Array [
-            "b93",
-            "995",
-          ],
-        ],
-        "type": "elementpath",
-      },
-      "skipDeepFreeze": true,
-    },
     "specialSizeMeasurements": Object {
       "clientHeight": 0,
       "clientWidth": 0,
@@ -29302,25 +27338,6 @@ export var App = (props) => {
     "isEmotionOrStyledComponent": false,
     "label": null,
     "localFrame": null,
-    "props": Object {
-      "data-path": "utopia-storyboard-uid/scene-aaa/app-entity:b93/a17",
-      "data-uid": "a17",
-      "data-utopia-instance-path": Object {
-        "parts": Array [
-          Array [
-            "utopia-storyboard-uid",
-            "scene-aaa",
-            "app-entity",
-          ],
-          Array [
-            "b93",
-            "a17",
-          ],
-        ],
-        "type": "elementpath",
-      },
-      "skipDeepFreeze": true,
-    },
     "specialSizeMeasurements": Object {
       "clientHeight": 0,
       "clientWidth": 0,
@@ -29420,11 +27437,6 @@ export var App = (props) => {
     "isEmotionOrStyledComponent": false,
     "label": null,
     "localFrame": null,
-    "props": Object {
-      "data-path": "utopia-storyboard-uid/scene-aaa/app-entity:b93/d00",
-      "data-uid": "d00",
-      "skipDeepFreeze": true,
-    },
     "specialSizeMeasurements": Object {
       "clientHeight": 0,
       "clientWidth": 0,
@@ -29524,11 +27536,6 @@ export var App = (props) => {
     "isEmotionOrStyledComponent": false,
     "label": null,
     "localFrame": null,
-    "props": Object {
-      "data-path": "utopia-storyboard-uid/scene-aaa/app-entity:b93/d18",
-      "data-uid": "d18",
-      "skipDeepFreeze": true,
-    },
     "specialSizeMeasurements": Object {
       "clientHeight": 0,
       "clientWidth": 0,
@@ -29628,25 +27635,6 @@ export var App = (props) => {
     "isEmotionOrStyledComponent": false,
     "label": null,
     "localFrame": null,
-    "props": Object {
-      "data-path": "utopia-storyboard-uid/scene-aaa/app-entity:b93/d7f",
-      "data-uid": "d7f",
-      "data-utopia-instance-path": Object {
-        "parts": Array [
-          Array [
-            "utopia-storyboard-uid",
-            "scene-aaa",
-            "app-entity",
-          ],
-          Array [
-            "b93",
-            "d7f",
-          ],
-        ],
-        "type": "elementpath",
-      },
-      "skipDeepFreeze": true,
-    },
     "specialSizeMeasurements": Object {
       "clientHeight": 0,
       "clientWidth": 0,
@@ -29748,25 +27736,6 @@ export var App = (props) => {
     "isEmotionOrStyledComponent": false,
     "label": null,
     "localFrame": null,
-    "props": Object {
-      "data-path": "utopia-storyboard-uid/scene-aaa/app-entity:b93/f77",
-      "data-uid": "f77",
-      "data-utopia-instance-path": Object {
-        "parts": Array [
-          Array [
-            "utopia-storyboard-uid",
-            "scene-aaa",
-            "app-entity",
-          ],
-          Array [
-            "b93",
-            "f77",
-          ],
-        ],
-        "type": "elementpath",
-      },
-      "skipDeepFreeze": true,
-    },
     "specialSizeMeasurements": Object {
       "clientHeight": 0,
       "clientWidth": 0,
@@ -29991,19 +27960,6 @@ Object {
     "isEmotionOrStyledComponent": false,
     "label": null,
     "localFrame": null,
-    "props": Object {
-      "data-path": "utopia-storyboard-uid/scene-aaa",
-      "data-uid": "scene-aaa",
-      "data-utopia-scene-id": "utopia-storyboard-uid/scene-aaa",
-      "skipDeepFreeze": true,
-      "style": Object {
-        "height": 400,
-        "left": 0,
-        "position": "absolute",
-        "top": 0,
-        "width": 400,
-      },
-    },
     "specialSizeMeasurements": Object {
       "clientHeight": 0,
       "clientWidth": 0,
@@ -30117,28 +28073,6 @@ Object {
     "isEmotionOrStyledComponent": false,
     "label": null,
     "localFrame": null,
-    "props": Object {
-      "data-path": "utopia-storyboard-uid/scene-aaa/app-entity",
-      "data-uid": "app-entity",
-      "data-utopia-instance-path": Object {
-        "parts": Array [
-          Array [
-            "utopia-storyboard-uid",
-            "scene-aaa",
-            "app-entity",
-          ],
-        ],
-        "type": "elementpath",
-      },
-      "skipDeepFreeze": true,
-      "style": Object {
-        "bottom": 0,
-        "left": 0,
-        "position": "absolute",
-        "right": 0,
-        "top": 0,
-      },
-    },
     "specialSizeMeasurements": Object {
       "clientHeight": 0,
       "clientWidth": 0,
@@ -30388,11 +28322,6 @@ Object {
     "isEmotionOrStyledComponent": false,
     "label": null,
     "localFrame": null,
-    "props": Object {
-      "data-path": "utopia-storyboard-uid/scene-aaa/app-entity:aaa",
-      "data-uid": "aaa",
-      "skipDeepFreeze": true,
-    },
     "specialSizeMeasurements": Object {
       "clientHeight": 0,
       "clientWidth": 0,
@@ -30548,26 +28477,6 @@ Object {
     "isEmotionOrStyledComponent": false,
     "label": null,
     "localFrame": null,
-    "props": Object {
-      "data-path": "utopia-storyboard-uid/scene-aaa/app-entity:aaa/bbb~~~1",
-      "data-uid": "bbb~~~1",
-      "data-utopia-instance-path": Object {
-        "parts": Array [
-          Array [
-            "utopia-storyboard-uid",
-            "scene-aaa",
-            "app-entity",
-          ],
-          Array [
-            "aaa",
-            "bbb~~~1",
-          ],
-        ],
-        "type": "elementpath",
-      },
-      "skipDeepFreeze": true,
-      "title": "n1",
-    },
     "specialSizeMeasurements": Object {
       "clientHeight": 0,
       "clientWidth": 0,
@@ -30723,26 +28632,6 @@ Object {
     "isEmotionOrStyledComponent": false,
     "label": null,
     "localFrame": null,
-    "props": Object {
-      "data-path": "utopia-storyboard-uid/scene-aaa/app-entity:aaa/bbb~~~2",
-      "data-uid": "bbb~~~2",
-      "data-utopia-instance-path": Object {
-        "parts": Array [
-          Array [
-            "utopia-storyboard-uid",
-            "scene-aaa",
-            "app-entity",
-          ],
-          Array [
-            "aaa",
-            "bbb~~~2",
-          ],
-        ],
-        "type": "elementpath",
-      },
-      "skipDeepFreeze": true,
-      "title": "n2",
-    },
     "specialSizeMeasurements": Object {
       "clientHeight": 0,
       "clientWidth": 0,
@@ -30898,26 +28787,6 @@ Object {
     "isEmotionOrStyledComponent": false,
     "label": null,
     "localFrame": null,
-    "props": Object {
-      "data-path": "utopia-storyboard-uid/scene-aaa/app-entity:aaa/bbb~~~3",
-      "data-uid": "bbb~~~3",
-      "data-utopia-instance-path": Object {
-        "parts": Array [
-          Array [
-            "utopia-storyboard-uid",
-            "scene-aaa",
-            "app-entity",
-          ],
-          Array [
-            "aaa",
-            "bbb~~~3",
-          ],
-        ],
-        "type": "elementpath",
-      },
-      "skipDeepFreeze": true,
-      "title": "n3",
-    },
     "specialSizeMeasurements": Object {
       "clientHeight": 0,
       "clientWidth": 0,
@@ -31142,19 +29011,6 @@ Object {
     "isEmotionOrStyledComponent": false,
     "label": null,
     "localFrame": null,
-    "props": Object {
-      "data-path": "utopia-storyboard-uid/scene-aaa",
-      "data-uid": "scene-aaa",
-      "data-utopia-scene-id": "utopia-storyboard-uid/scene-aaa",
-      "skipDeepFreeze": true,
-      "style": Object {
-        "height": 400,
-        "left": 0,
-        "position": "absolute",
-        "top": 0,
-        "width": 400,
-      },
-    },
     "specialSizeMeasurements": Object {
       "clientHeight": 0,
       "clientWidth": 0,
@@ -31268,28 +29124,6 @@ Object {
     "isEmotionOrStyledComponent": false,
     "label": null,
     "localFrame": null,
-    "props": Object {
-      "data-path": "utopia-storyboard-uid/scene-aaa/app-entity",
-      "data-uid": "app-entity",
-      "data-utopia-instance-path": Object {
-        "parts": Array [
-          Array [
-            "utopia-storyboard-uid",
-            "scene-aaa",
-            "app-entity",
-          ],
-        ],
-        "type": "elementpath",
-      },
-      "skipDeepFreeze": true,
-      "style": Object {
-        "bottom": 0,
-        "left": 0,
-        "position": "absolute",
-        "right": 0,
-        "top": 0,
-      },
-    },
     "specialSizeMeasurements": Object {
       "clientHeight": 0,
       "clientWidth": 0,
@@ -31540,11 +29374,6 @@ Object {
     "isEmotionOrStyledComponent": false,
     "label": null,
     "localFrame": null,
-    "props": Object {
-      "data-path": "utopia-storyboard-uid/scene-aaa/app-entity:aaa",
-      "data-uid": "aaa",
-      "skipDeepFreeze": true,
-    },
     "specialSizeMeasurements": Object {
       "clientHeight": 0,
       "clientWidth": 0,
@@ -31701,26 +29530,6 @@ Object {
     "isEmotionOrStyledComponent": false,
     "label": null,
     "localFrame": null,
-    "props": Object {
-      "data-path": "utopia-storyboard-uid/scene-aaa/app-entity:aaa/bbb~~~1",
-      "data-uid": "bbb~~~1",
-      "data-utopia-instance-path": Object {
-        "parts": Array [
-          Array [
-            "utopia-storyboard-uid",
-            "scene-aaa",
-            "app-entity",
-          ],
-          Array [
-            "aaa",
-            "bbb~~~1",
-          ],
-        ],
-        "type": "elementpath",
-      },
-      "skipDeepFreeze": true,
-      "title": "n1",
-    },
     "specialSizeMeasurements": Object {
       "clientHeight": 0,
       "clientWidth": 0,
@@ -31877,26 +29686,6 @@ Object {
     "isEmotionOrStyledComponent": false,
     "label": null,
     "localFrame": null,
-    "props": Object {
-      "data-path": "utopia-storyboard-uid/scene-aaa/app-entity:aaa/bbb~~~2",
-      "data-uid": "bbb~~~2",
-      "data-utopia-instance-path": Object {
-        "parts": Array [
-          Array [
-            "utopia-storyboard-uid",
-            "scene-aaa",
-            "app-entity",
-          ],
-          Array [
-            "aaa",
-            "bbb~~~2",
-          ],
-        ],
-        "type": "elementpath",
-      },
-      "skipDeepFreeze": true,
-      "title": "n2",
-    },
     "specialSizeMeasurements": Object {
       "clientHeight": 0,
       "clientWidth": 0,
@@ -32053,26 +29842,6 @@ Object {
     "isEmotionOrStyledComponent": false,
     "label": null,
     "localFrame": null,
-    "props": Object {
-      "data-path": "utopia-storyboard-uid/scene-aaa/app-entity:aaa/bbb~~~3",
-      "data-uid": "bbb~~~3",
-      "data-utopia-instance-path": Object {
-        "parts": Array [
-          Array [
-            "utopia-storyboard-uid",
-            "scene-aaa",
-            "app-entity",
-          ],
-          Array [
-            "aaa",
-            "bbb~~~3",
-          ],
-        ],
-        "type": "elementpath",
-      },
-      "skipDeepFreeze": true,
-      "title": "n3",
-    },
     "specialSizeMeasurements": Object {
       "clientHeight": 0,
       "clientWidth": 0,
@@ -32297,19 +30066,6 @@ Object {
     "isEmotionOrStyledComponent": false,
     "label": null,
     "localFrame": null,
-    "props": Object {
-      "data-path": "utopia-storyboard-uid/scene-aaa",
-      "data-uid": "scene-aaa",
-      "data-utopia-scene-id": "utopia-storyboard-uid/scene-aaa",
-      "skipDeepFreeze": true,
-      "style": Object {
-        "height": 400,
-        "left": 0,
-        "position": "absolute",
-        "top": 0,
-        "width": 400,
-      },
-    },
     "specialSizeMeasurements": Object {
       "clientHeight": 0,
       "clientWidth": 0,
@@ -32423,28 +30179,6 @@ Object {
     "isEmotionOrStyledComponent": false,
     "label": null,
     "localFrame": null,
-    "props": Object {
-      "data-path": "utopia-storyboard-uid/scene-aaa/app-entity",
-      "data-uid": "app-entity",
-      "data-utopia-instance-path": Object {
-        "parts": Array [
-          Array [
-            "utopia-storyboard-uid",
-            "scene-aaa",
-            "app-entity",
-          ],
-        ],
-        "type": "elementpath",
-      },
-      "skipDeepFreeze": true,
-      "style": Object {
-        "bottom": 0,
-        "left": 0,
-        "position": "absolute",
-        "right": 0,
-        "top": 0,
-      },
-    },
     "specialSizeMeasurements": Object {
       "clientHeight": 0,
       "clientWidth": 0,
@@ -32701,11 +30435,6 @@ Object {
     "isEmotionOrStyledComponent": false,
     "label": null,
     "localFrame": null,
-    "props": Object {
-      "data-path": "utopia-storyboard-uid/scene-aaa/app-entity:aaa",
-      "data-uid": "aaa",
-      "skipDeepFreeze": true,
-    },
     "specialSizeMeasurements": Object {
       "clientHeight": 0,
       "clientWidth": 0,
@@ -32861,26 +30590,6 @@ Object {
     "isEmotionOrStyledComponent": false,
     "label": null,
     "localFrame": null,
-    "props": Object {
-      "data-path": "utopia-storyboard-uid/scene-aaa/app-entity:aaa/bbb~~~1",
-      "data-uid": "bbb~~~1",
-      "data-utopia-instance-path": Object {
-        "parts": Array [
-          Array [
-            "utopia-storyboard-uid",
-            "scene-aaa",
-            "app-entity",
-          ],
-          Array [
-            "aaa",
-            "bbb~~~1",
-          ],
-        ],
-        "type": "elementpath",
-      },
-      "skipDeepFreeze": true,
-      "title": "n1",
-    },
     "specialSizeMeasurements": Object {
       "clientHeight": 0,
       "clientWidth": 0,
@@ -33036,26 +30745,6 @@ Object {
     "isEmotionOrStyledComponent": false,
     "label": null,
     "localFrame": null,
-    "props": Object {
-      "data-path": "utopia-storyboard-uid/scene-aaa/app-entity:aaa/bbb~~~2",
-      "data-uid": "bbb~~~2",
-      "data-utopia-instance-path": Object {
-        "parts": Array [
-          Array [
-            "utopia-storyboard-uid",
-            "scene-aaa",
-            "app-entity",
-          ],
-          Array [
-            "aaa",
-            "bbb~~~2",
-          ],
-        ],
-        "type": "elementpath",
-      },
-      "skipDeepFreeze": true,
-      "title": "n2",
-    },
     "specialSizeMeasurements": Object {
       "clientHeight": 0,
       "clientWidth": 0,
@@ -33211,26 +30900,6 @@ Object {
     "isEmotionOrStyledComponent": false,
     "label": null,
     "localFrame": null,
-    "props": Object {
-      "data-path": "utopia-storyboard-uid/scene-aaa/app-entity:aaa/bbb~~~3",
-      "data-uid": "bbb~~~3",
-      "data-utopia-instance-path": Object {
-        "parts": Array [
-          Array [
-            "utopia-storyboard-uid",
-            "scene-aaa",
-            "app-entity",
-          ],
-          Array [
-            "aaa",
-            "bbb~~~3",
-          ],
-        ],
-        "type": "elementpath",
-      },
-      "skipDeepFreeze": true,
-      "title": "n3",
-    },
     "specialSizeMeasurements": Object {
       "clientHeight": 0,
       "clientWidth": 0,
@@ -33460,19 +31129,6 @@ Object {
     "isEmotionOrStyledComponent": false,
     "label": null,
     "localFrame": null,
-    "props": Object {
-      "data-path": "utopia-storyboard-uid/scene-aaa",
-      "data-uid": "scene-aaa",
-      "data-utopia-scene-id": "utopia-storyboard-uid/scene-aaa",
-      "skipDeepFreeze": true,
-      "style": Object {
-        "height": 200,
-        "left": 59,
-        "position": "absolute",
-        "top": 79,
-        "width": 200,
-      },
-    },
     "specialSizeMeasurements": Object {
       "clientHeight": 0,
       "clientWidth": 0,
@@ -33600,27 +31256,6 @@ Object {
     "isEmotionOrStyledComponent": false,
     "label": null,
     "localFrame": null,
-    "props": Object {
-      "data-path": "utopia-storyboard-uid/scene-aaa/app-entity",
-      "data-uid": "app-entity",
-      "data-utopia-instance-path": Object {
-        "parts": Array [
-          Array [
-            "utopia-storyboard-uid",
-            "scene-aaa",
-            "app-entity",
-          ],
-        ],
-        "type": "elementpath",
-      },
-      "skipDeepFreeze": true,
-      "style": Object {
-        "height": "99.9",
-        "position": "absolute",
-        "width": "77.7",
-      },
-      "title": "Hi there!",
-    },
     "specialSizeMeasurements": Object {
       "clientHeight": 0,
       "clientWidth": 0,
@@ -33834,17 +31469,6 @@ Object {
     "isEmotionOrStyledComponent": false,
     "label": null,
     "localFrame": null,
-    "props": Object {
-      "data-path": "utopia-storyboard-uid/scene-aaa/app-entity:aaa",
-      "data-uid": "aaa",
-      "skipDeepFreeze": true,
-      "style": Object {
-        "height": "99.9",
-        "position": "absolute",
-        "width": "77.7",
-      },
-      "title": "Hi there!",
-    },
     "specialSizeMeasurements": Object {
       "clientHeight": 0,
       "clientWidth": 0,
@@ -33968,14 +31592,6 @@ Object {
     "isEmotionOrStyledComponent": false,
     "label": null,
     "localFrame": null,
-    "props": Object {
-      "data-path": "utopia-storyboard-uid/scene-aaa/app-entity:aaa/bbb",
-      "data-uid": "bbb",
-      "skipDeepFreeze": true,
-      "style": Object {
-        "position": "absolute",
-      },
-    },
     "specialSizeMeasurements": Object {
       "clientHeight": 0,
       "clientWidth": 0,
@@ -34184,20 +31800,6 @@ Object {
     "isEmotionOrStyledComponent": false,
     "label": null,
     "localFrame": null,
-    "props": Object {
-      "data-label": "Scene 2",
-      "data-path": "utopia-storyboard-uid/scene-aaa",
-      "data-uid": "scene-aaa",
-      "data-utopia-scene-id": "utopia-storyboard-uid/scene-aaa",
-      "skipDeepFreeze": true,
-      "style": Object {
-        "height": 188,
-        "left": 406,
-        "position": "absolute",
-        "top": 62,
-        "width": 212,
-      },
-    },
     "specialSizeMeasurements": Object {
       "clientHeight": 0,
       "clientWidth": 0,
@@ -34289,21 +31891,6 @@ Object {
     "isEmotionOrStyledComponent": false,
     "label": null,
     "localFrame": null,
-    "props": Object {
-      "data-path": "utopia-storyboard-uid/scene-aaa/app-entity",
-      "data-uid": "app-entity",
-      "data-utopia-instance-path": Object {
-        "parts": Array [
-          Array [
-            "utopia-storyboard-uid",
-            "scene-aaa",
-            "app-entity",
-          ],
-        ],
-        "type": "elementpath",
-      },
-      "skipDeepFreeze": true,
-    },
     "specialSizeMeasurements": Object {
       "clientHeight": 0,
       "clientWidth": 0,
@@ -34404,11 +31991,6 @@ Object {
     "isEmotionOrStyledComponent": false,
     "label": null,
     "localFrame": null,
-    "props": Object {
-      "data-path": "utopia-storyboard-uid/scene-aaa/app-entity:aaa",
-      "data-uid": "aaa",
-      "skipDeepFreeze": true,
-    },
     "specialSizeMeasurements": Object {
       "clientHeight": 0,
       "clientWidth": 0,
@@ -34509,11 +32091,6 @@ Object {
     "isEmotionOrStyledComponent": false,
     "label": null,
     "localFrame": null,
-    "props": Object {
-      "data-path": "utopia-storyboard-uid/scene-aaa/app-entity:bbb",
-      "data-uid": "bbb",
-      "skipDeepFreeze": true,
-    },
     "specialSizeMeasurements": Object {
       "clientHeight": 0,
       "clientWidth": 0,
@@ -34698,19 +32275,6 @@ Object {
     "isEmotionOrStyledComponent": false,
     "label": null,
     "localFrame": null,
-    "props": Object {
-      "data-path": "ccc/ddd",
-      "data-uid": "ddd",
-      "data-utopia-scene-id": "ccc/ddd",
-      "skipDeepFreeze": true,
-      "style": Object {
-        "height": 812,
-        "left": 0,
-        "position": "absolute",
-        "top": 0,
-        "width": 375,
-      },
-    },
     "specialSizeMeasurements": Object {
       "clientHeight": 0,
       "clientWidth": 0,
@@ -34802,21 +32366,6 @@ Object {
     "isEmotionOrStyledComponent": false,
     "label": null,
     "localFrame": null,
-    "props": Object {
-      "data-path": "ccc/ddd/app-entity",
-      "data-uid": "app-entity",
-      "data-utopia-instance-path": Object {
-        "parts": Array [
-          Array [
-            "ccc",
-            "ddd",
-            "app-entity",
-          ],
-        ],
-        "type": "elementpath",
-      },
-      "skipDeepFreeze": true,
-    },
     "specialSizeMeasurements": Object {
       "clientHeight": 0,
       "clientWidth": 0,
@@ -35027,14 +32576,6 @@ export var storyboard = (
     "isEmotionOrStyledComponent": false,
     "label": null,
     "localFrame": null,
-    "props": Object {
-      "data-path": "ccc/ddd/app-entity:aaa",
-      "data-uid": "aaa",
-      "skipDeepFreeze": true,
-      "value": Object {
-        "current": Object {},
-      },
-    },
     "specialSizeMeasurements": Object {
       "clientHeight": 0,
       "clientWidth": 0,
@@ -35150,16 +32691,6 @@ export var storyboard = (
     "isEmotionOrStyledComponent": false,
     "label": null,
     "localFrame": null,
-    "props": Object {
-      "data-path": "ccc/ddd/app-entity:aaa/bbb",
-      "data-uid": "bbb",
-      "skipDeepFreeze": true,
-      "style": Object {
-        "backgroundColor": "#EB1010",
-        "height": "100%",
-        "width": "100%",
-      },
-    },
     "specialSizeMeasurements": Object {
       "clientHeight": 0,
       "clientWidth": 0,
@@ -35344,19 +32875,6 @@ Object {
     "isEmotionOrStyledComponent": false,
     "label": null,
     "localFrame": null,
-    "props": Object {
-      "data-path": "ccc/ddd",
-      "data-uid": "ddd",
-      "data-utopia-scene-id": "ccc/ddd",
-      "skipDeepFreeze": true,
-      "style": Object {
-        "height": 812,
-        "left": 0,
-        "position": "absolute",
-        "top": 0,
-        "width": 375,
-      },
-    },
     "specialSizeMeasurements": Object {
       "clientHeight": 0,
       "clientWidth": 0,
@@ -35448,21 +32966,6 @@ Object {
     "isEmotionOrStyledComponent": false,
     "label": null,
     "localFrame": null,
-    "props": Object {
-      "data-path": "ccc/ddd/app-entity",
-      "data-uid": "app-entity",
-      "data-utopia-instance-path": Object {
-        "parts": Array [
-          Array [
-            "ccc",
-            "ddd",
-            "app-entity",
-          ],
-        ],
-        "type": "elementpath",
-      },
-      "skipDeepFreeze": true,
-    },
     "specialSizeMeasurements": Object {
       "clientHeight": 0,
       "clientWidth": 0,
@@ -35557,24 +33060,6 @@ Object {
     "isEmotionOrStyledComponent": false,
     "label": null,
     "localFrame": null,
-    "props": Object {
-      "data-path": "ccc/ddd/app-entity:card",
-      "data-uid": "card",
-      "data-utopia-instance-path": Object {
-        "parts": Array [
-          Array [
-            "ccc",
-            "ddd",
-            "app-entity",
-          ],
-          Array [
-            "card",
-          ],
-        ],
-        "type": "elementpath",
-      },
-      "skipDeepFreeze": true,
-    },
     "specialSizeMeasurements": Object {
       "clientHeight": 0,
       "clientWidth": 0,
@@ -35767,19 +33252,6 @@ Object {
     "isEmotionOrStyledComponent": false,
     "label": null,
     "localFrame": null,
-    "props": Object {
-      "data-path": "utopia-storyboard-uid/scene-aaa",
-      "data-uid": "scene-aaa",
-      "data-utopia-scene-id": "utopia-storyboard-uid/scene-aaa",
-      "skipDeepFreeze": true,
-      "style": Object {
-        "height": 200,
-        "left": 59,
-        "position": "absolute",
-        "top": 79,
-        "width": 200,
-      },
-    },
     "specialSizeMeasurements": Object {
       "clientHeight": 0,
       "clientWidth": 0,
@@ -35871,21 +33343,6 @@ Object {
     "isEmotionOrStyledComponent": false,
     "label": null,
     "localFrame": null,
-    "props": Object {
-      "data-path": "utopia-storyboard-uid/scene-aaa/app-entity",
-      "data-uid": "app-entity",
-      "data-utopia-instance-path": Object {
-        "parts": Array [
-          Array [
-            "utopia-storyboard-uid",
-            "scene-aaa",
-            "app-entity",
-          ],
-        ],
-        "type": "elementpath",
-      },
-      "skipDeepFreeze": true,
-    },
     "specialSizeMeasurements": Object {
       "clientHeight": 0,
       "clientWidth": 0,
@@ -36058,16 +33515,6 @@ Object {
     "isEmotionOrStyledComponent": false,
     "label": null,
     "localFrame": null,
-    "props": Object {
-      "data-path": "utopia-storyboard-uid/scene-aaa/app-entity:aaa",
-      "data-uid": "aaa",
-      "skipDeepFreeze": true,
-      "style": Object {
-        "height": "99.9",
-        "position": "absolute",
-        "width": "77.7",
-      },
-    },
     "specialSizeMeasurements": Object {
       "clientHeight": 0,
       "clientWidth": 0,
@@ -36191,14 +33638,6 @@ Object {
     "isEmotionOrStyledComponent": false,
     "label": null,
     "localFrame": null,
-    "props": Object {
-      "data-path": "utopia-storyboard-uid/scene-aaa/app-entity:aaa/bbb",
-      "data-uid": "bbb",
-      "skipDeepFreeze": true,
-      "style": Object {
-        "position": "absolute",
-      },
-    },
     "specialSizeMeasurements": Object {
       "clientHeight": 0,
       "clientWidth": 0,
@@ -36385,19 +33824,6 @@ Object {
     "isEmotionOrStyledComponent": false,
     "label": null,
     "localFrame": null,
-    "props": Object {
-      "data-path": "utopia-storyboard-uid/scene",
-      "data-uid": "scene",
-      "data-utopia-scene-id": "utopia-storyboard-uid/scene",
-      "skipDeepFreeze": true,
-      "style": Object {
-        "height": 812,
-        "left": 0,
-        "position": "absolute",
-        "top": 0,
-        "width": 375,
-      },
-    },
     "specialSizeMeasurements": Object {
       "clientHeight": 0,
       "clientWidth": 0,
@@ -36489,21 +33915,6 @@ Object {
     "isEmotionOrStyledComponent": false,
     "label": null,
     "localFrame": null,
-    "props": Object {
-      "data-path": "utopia-storyboard-uid/scene/app-entity",
-      "data-uid": "app-entity",
-      "data-utopia-instance-path": Object {
-        "parts": Array [
-          Array [
-            "utopia-storyboard-uid",
-            "scene",
-            "app-entity",
-          ],
-        ],
-        "type": "elementpath",
-      },
-      "skipDeepFreeze": true,
-    },
     "specialSizeMeasurements": Object {
       "clientHeight": 0,
       "clientWidth": 0,
@@ -36758,16 +34169,6 @@ export var storyboard = (
     "isEmotionOrStyledComponent": false,
     "label": null,
     "localFrame": null,
-    "props": Object {
-      "data-path": "utopia-storyboard-uid/scene/app-entity:aaa",
-      "data-uid": "aaa",
-      "skipDeepFreeze": true,
-      "style": Object {
-        "backgroundColor": "#FFFFFF",
-        "height": "100%",
-        "width": "100%",
-      },
-    },
     "specialSizeMeasurements": Object {
       "clientHeight": 0,
       "clientWidth": 0,
@@ -36948,19 +34349,6 @@ Object {
     "isEmotionOrStyledComponent": false,
     "label": null,
     "localFrame": null,
-    "props": Object {
-      "data-path": "utopia-storyboard-uid/scene",
-      "data-uid": "scene",
-      "data-utopia-scene-id": "utopia-storyboard-uid/scene",
-      "skipDeepFreeze": true,
-      "style": Object {
-        "height": 812,
-        "left": 0,
-        "position": "absolute",
-        "top": 0,
-        "width": 375,
-      },
-    },
     "specialSizeMeasurements": Object {
       "clientHeight": 0,
       "clientWidth": 0,
@@ -37052,21 +34440,6 @@ Object {
     "isEmotionOrStyledComponent": false,
     "label": null,
     "localFrame": null,
-    "props": Object {
-      "data-path": "utopia-storyboard-uid/scene/app-entity",
-      "data-uid": "app-entity",
-      "data-utopia-instance-path": Object {
-        "parts": Array [
-          Array [
-            "utopia-storyboard-uid",
-            "scene",
-            "app-entity",
-          ],
-        ],
-        "type": "elementpath",
-      },
-      "skipDeepFreeze": true,
-    },
     "specialSizeMeasurements": Object {
       "clientHeight": 0,
       "clientWidth": 0,
@@ -37177,12 +34550,6 @@ Object {
     "isEmotionOrStyledComponent": false,
     "label": null,
     "localFrame": null,
-    "props": Object {
-      "data-path": "utopia-storyboard-uid/scene/app-entity:BBB",
-      "data-uid": "BBB",
-      "skipDeepFreeze": true,
-      "x": 5,
-    },
     "specialSizeMeasurements": Object {
       "clientHeight": 0,
       "clientWidth": 0,
@@ -37412,19 +34779,6 @@ Object {
     "isEmotionOrStyledComponent": false,
     "label": null,
     "localFrame": null,
-    "props": Object {
-      "data-path": "eee/fff",
-      "data-uid": "fff",
-      "data-utopia-scene-id": "eee/fff",
-      "skipDeepFreeze": true,
-      "style": Object {
-        "height": 812,
-        "left": 0,
-        "position": "absolute",
-        "top": 0,
-        "width": 375,
-      },
-    },
     "specialSizeMeasurements": Object {
       "clientHeight": 0,
       "clientWidth": 0,
@@ -37538,28 +34892,6 @@ Object {
     "isEmotionOrStyledComponent": false,
     "label": null,
     "localFrame": null,
-    "props": Object {
-      "data-path": "eee/fff/app",
-      "data-uid": "app",
-      "data-utopia-instance-path": Object {
-        "parts": Array [
-          Array [
-            "eee",
-            "fff",
-            "app",
-          ],
-        ],
-        "type": "elementpath",
-      },
-      "skipDeepFreeze": true,
-      "style": Object {
-        "bottom": 0,
-        "left": 0,
-        "position": "absolute",
-        "right": 0,
-        "top": 0,
-      },
-    },
     "specialSizeMeasurements": Object {
       "clientHeight": 0,
       "clientWidth": 0,
@@ -37971,19 +35303,6 @@ export var storyboard = (
     "isEmotionOrStyledComponent": false,
     "label": null,
     "localFrame": null,
-    "props": Object {
-      "data-path": "eee/fff/app:aaa",
-      "data-uid": "aaa",
-      "skipDeepFreeze": true,
-      "style": Object {
-        "backgroundColor": "#FFFFFF",
-        "bottom": 0,
-        "left": 0,
-        "position": "relative",
-        "right": 0,
-        "top": 0,
-      },
-    },
     "specialSizeMeasurements": Object {
       "clientHeight": 0,
       "clientWidth": 0,
@@ -38191,16 +35510,6 @@ export var storyboard = (
     "isEmotionOrStyledComponent": false,
     "label": null,
     "localFrame": null,
-    "props": Object {
-      "data-label": "random-div",
-      "data-path": "eee/fff/app:aaa/bbb",
-      "data-uid": "bbb",
-      "skipDeepFreeze": true,
-      "style": Object {
-        "height": 100,
-        "width": 100,
-      },
-    },
     "specialSizeMeasurements": Object {
       "clientHeight": 0,
       "clientWidth": 0,
@@ -38332,16 +35641,6 @@ export var storyboard = (
     "isEmotionOrStyledComponent": false,
     "label": null,
     "localFrame": null,
-    "props": Object {
-      "data-label": "some-other-div",
-      "data-path": "eee/fff/app:aaa/bbb/ccc",
-      "data-uid": "ccc",
-      "skipDeepFreeze": true,
-      "style": Object {
-        "height": 100,
-        "width": 100,
-      },
-    },
     "specialSizeMeasurements": Object {
       "clientHeight": 0,
       "clientWidth": 0,
@@ -38443,11 +35742,6 @@ export var storyboard = (
     "isEmotionOrStyledComponent": false,
     "label": null,
     "localFrame": null,
-    "props": Object {
-      "data-path": "eee/fff/app:aaa/ddd",
-      "data-uid": "ddd",
-      "skipDeepFreeze": true,
-    },
     "specialSizeMeasurements": Object {
       "clientHeight": 0,
       "clientWidth": 0,
@@ -38659,19 +35953,6 @@ Object {
     "isEmotionOrStyledComponent": false,
     "label": null,
     "localFrame": null,
-    "props": Object {
-      "data-path": "utopia-storyboard-uid/scene-aaa",
-      "data-uid": "scene-aaa",
-      "data-utopia-scene-id": "utopia-storyboard-uid/scene-aaa",
-      "skipDeepFreeze": true,
-      "style": Object {
-        "height": 400,
-        "left": 0,
-        "position": "absolute",
-        "top": 0,
-        "width": 400,
-      },
-    },
     "specialSizeMeasurements": Object {
       "clientHeight": 0,
       "clientWidth": 0,
@@ -38785,28 +36066,6 @@ Object {
     "isEmotionOrStyledComponent": false,
     "label": null,
     "localFrame": null,
-    "props": Object {
-      "data-path": "utopia-storyboard-uid/scene-aaa/app-entity",
-      "data-uid": "app-entity",
-      "data-utopia-instance-path": Object {
-        "parts": Array [
-          Array [
-            "utopia-storyboard-uid",
-            "scene-aaa",
-            "app-entity",
-          ],
-        ],
-        "type": "elementpath",
-      },
-      "skipDeepFreeze": true,
-      "style": Object {
-        "bottom": 0,
-        "left": 0,
-        "position": "absolute",
-        "right": 0,
-        "top": 0,
-      },
-    },
     "specialSizeMeasurements": Object {
       "clientHeight": 0,
       "clientWidth": 0,
@@ -38951,11 +36210,6 @@ Object {
     "isEmotionOrStyledComponent": false,
     "label": null,
     "localFrame": null,
-    "props": Object {
-      "data-path": "utopia-storyboard-uid/scene-aaa/app-entity:aaa",
-      "data-uid": "aaa",
-      "skipDeepFreeze": true,
-    },
     "specialSizeMeasurements": Object {
       "clientHeight": 0,
       "clientWidth": 0,
@@ -39067,12 +36321,6 @@ Object {
     "isEmotionOrStyledComponent": false,
     "label": null,
     "localFrame": null,
-    "props": Object {
-      "data-path": "utopia-storyboard-uid/scene-aaa/app-entity:aaa/bbb",
-      "data-uid": "bbb",
-      "skipDeepFreeze": true,
-      "src": "data:image/gif;base64,R0lGODlhAQABAIAAAAUEBAAAACwAAAAAAQABAAACAkQBADs=",
-    },
     "specialSizeMeasurements": Object {
       "clientHeight": 0,
       "clientWidth": 0,
@@ -39282,20 +36530,6 @@ Object {
     "isEmotionOrStyledComponent": false,
     "label": null,
     "localFrame": null,
-    "props": Object {
-      "data-factory-function-works": "true",
-      "data-path": "utopia-storyboard-uid/scene-aaa",
-      "data-uid": "scene-aaa",
-      "data-utopia-scene-id": "utopia-storyboard-uid/scene-aaa",
-      "skipDeepFreeze": true,
-      "style": Object {
-        "height": 400,
-        "left": 0,
-        "position": "absolute",
-        "top": 0,
-        "width": 400,
-      },
-    },
     "specialSizeMeasurements": Object {
       "clientHeight": 0,
       "clientWidth": 0,
@@ -39409,29 +36643,6 @@ Object {
     "isEmotionOrStyledComponent": false,
     "label": null,
     "localFrame": null,
-    "props": Object {
-      "data-factory-function-works": "true",
-      "data-path": "utopia-storyboard-uid/scene-aaa/app-entity",
-      "data-uid": "app-entity",
-      "data-utopia-instance-path": Object {
-        "parts": Array [
-          Array [
-            "utopia-storyboard-uid",
-            "scene-aaa",
-            "app-entity",
-          ],
-        ],
-        "type": "elementpath",
-      },
-      "skipDeepFreeze": true,
-      "style": Object {
-        "bottom": 0,
-        "left": 0,
-        "position": "absolute",
-        "right": 0,
-        "top": 0,
-      },
-    },
     "specialSizeMeasurements": Object {
       "clientHeight": 0,
       "clientWidth": 0,
@@ -39526,25 +36737,6 @@ Object {
     "isEmotionOrStyledComponent": false,
     "label": null,
     "localFrame": null,
-    "props": Object {
-      "data-factory-function-works": "true",
-      "data-path": "utopia-storyboard-uid/scene-aaa/app-entity:aaa",
-      "data-uid": "aaa",
-      "data-utopia-instance-path": Object {
-        "parts": Array [
-          Array [
-            "utopia-storyboard-uid",
-            "scene-aaa",
-            "app-entity",
-          ],
-          Array [
-            "aaa",
-          ],
-        ],
-        "type": "elementpath",
-      },
-      "skipDeepFreeze": true,
-    },
     "specialSizeMeasurements": Object {
       "clientHeight": 0,
       "clientWidth": 0,
@@ -39784,19 +36976,6 @@ Object {
     "isEmotionOrStyledComponent": false,
     "label": null,
     "localFrame": null,
-    "props": Object {
-      "data-path": "utopia-storyboard-uid/scene-aaa",
-      "data-uid": "scene-aaa",
-      "data-utopia-scene-id": "utopia-storyboard-uid/scene-aaa",
-      "skipDeepFreeze": true,
-      "style": Object {
-        "height": 400,
-        "left": 0,
-        "position": "absolute",
-        "top": 0,
-        "width": 400,
-      },
-    },
     "specialSizeMeasurements": Object {
       "clientHeight": 0,
       "clientWidth": 0,
@@ -39910,28 +37089,6 @@ Object {
     "isEmotionOrStyledComponent": false,
     "label": null,
     "localFrame": null,
-    "props": Object {
-      "data-path": "utopia-storyboard-uid/scene-aaa/app-entity",
-      "data-uid": "app-entity",
-      "data-utopia-instance-path": Object {
-        "parts": Array [
-          Array [
-            "utopia-storyboard-uid",
-            "scene-aaa",
-            "app-entity",
-          ],
-        ],
-        "type": "elementpath",
-      },
-      "skipDeepFreeze": true,
-      "style": Object {
-        "bottom": 0,
-        "left": 0,
-        "position": "absolute",
-        "right": 0,
-        "top": 0,
-      },
-    },
     "specialSizeMeasurements": Object {
       "clientHeight": 0,
       "clientWidth": 0,
@@ -40210,11 +37367,6 @@ Object {
     "isEmotionOrStyledComponent": false,
     "label": null,
     "localFrame": null,
-    "props": Object {
-      "data-path": "utopia-storyboard-uid/scene-aaa/app-entity:aaa",
-      "data-uid": "aaa",
-      "skipDeepFreeze": true,
-    },
     "specialSizeMeasurements": Object {
       "clientHeight": 0,
       "clientWidth": 0,
@@ -40394,11 +37546,6 @@ Object {
     "isEmotionOrStyledComponent": false,
     "label": null,
     "localFrame": null,
-    "props": Object {
-      "data-path": "utopia-storyboard-uid/scene-aaa/app-entity:aaa/bbb~~~1",
-      "data-uid": "bbb~~~1",
-      "skipDeepFreeze": true,
-    },
     "specialSizeMeasurements": Object {
       "clientHeight": 0,
       "clientWidth": 0,
@@ -40549,11 +37696,6 @@ Object {
     "isEmotionOrStyledComponent": false,
     "label": null,
     "localFrame": null,
-    "props": Object {
-      "data-path": "utopia-storyboard-uid/scene-aaa/app-entity:aaa/bbb~~~1/ccc",
-      "data-uid": "ccc",
-      "skipDeepFreeze": true,
-    },
     "specialSizeMeasurements": Object {
       "clientHeight": 0,
       "clientWidth": 0,
@@ -40733,11 +37875,6 @@ Object {
     "isEmotionOrStyledComponent": false,
     "label": null,
     "localFrame": null,
-    "props": Object {
-      "data-path": "utopia-storyboard-uid/scene-aaa/app-entity:aaa/bbb~~~2",
-      "data-uid": "bbb~~~2",
-      "skipDeepFreeze": true,
-    },
     "specialSizeMeasurements": Object {
       "clientHeight": 0,
       "clientWidth": 0,
@@ -40888,11 +38025,6 @@ Object {
     "isEmotionOrStyledComponent": false,
     "label": null,
     "localFrame": null,
-    "props": Object {
-      "data-path": "utopia-storyboard-uid/scene-aaa/app-entity:aaa/bbb~~~2/ccc",
-      "data-uid": "ccc",
-      "skipDeepFreeze": true,
-    },
     "specialSizeMeasurements": Object {
       "clientHeight": 0,
       "clientWidth": 0,
@@ -41072,11 +38204,6 @@ Object {
     "isEmotionOrStyledComponent": false,
     "label": null,
     "localFrame": null,
-    "props": Object {
-      "data-path": "utopia-storyboard-uid/scene-aaa/app-entity:aaa/bbb~~~3",
-      "data-uid": "bbb~~~3",
-      "skipDeepFreeze": true,
-    },
     "specialSizeMeasurements": Object {
       "clientHeight": 0,
       "clientWidth": 0,
@@ -41227,11 +38354,6 @@ Object {
     "isEmotionOrStyledComponent": false,
     "label": null,
     "localFrame": null,
-    "props": Object {
-      "data-path": "utopia-storyboard-uid/scene-aaa/app-entity:aaa/bbb~~~3/ccc",
-      "data-uid": "ccc",
-      "skipDeepFreeze": true,
-    },
     "specialSizeMeasurements": Object {
       "clientHeight": 0,
       "clientWidth": 0,
@@ -41440,19 +38562,6 @@ Object {
     "isEmotionOrStyledComponent": false,
     "label": null,
     "localFrame": null,
-    "props": Object {
-      "data-path": "utopia-storyboard-uid/scene-aaa",
-      "data-uid": "scene-aaa",
-      "data-utopia-scene-id": "utopia-storyboard-uid/scene-aaa",
-      "skipDeepFreeze": true,
-      "style": Object {
-        "height": 400,
-        "left": 0,
-        "position": "absolute",
-        "top": 0,
-        "width": 400,
-      },
-    },
     "specialSizeMeasurements": Object {
       "clientHeight": 0,
       "clientWidth": 0,
@@ -41566,28 +38675,6 @@ Object {
     "isEmotionOrStyledComponent": false,
     "label": null,
     "localFrame": null,
-    "props": Object {
-      "data-path": "utopia-storyboard-uid/scene-aaa/app-entity",
-      "data-uid": "app-entity",
-      "data-utopia-instance-path": Object {
-        "parts": Array [
-          Array [
-            "utopia-storyboard-uid",
-            "scene-aaa",
-            "app-entity",
-          ],
-        ],
-        "type": "elementpath",
-      },
-      "skipDeepFreeze": true,
-      "style": Object {
-        "bottom": 0,
-        "left": 0,
-        "position": "absolute",
-        "right": 0,
-        "top": 0,
-      },
-    },
     "specialSizeMeasurements": Object {
       "clientHeight": 0,
       "clientWidth": 0,
@@ -41682,24 +38769,6 @@ Object {
     "isEmotionOrStyledComponent": false,
     "label": null,
     "localFrame": null,
-    "props": Object {
-      "data-path": "utopia-storyboard-uid/scene-aaa/app-entity:aaa",
-      "data-uid": "aaa",
-      "data-utopia-instance-path": Object {
-        "parts": Array [
-          Array [
-            "utopia-storyboard-uid",
-            "scene-aaa",
-            "app-entity",
-          ],
-          Array [
-            "aaa",
-          ],
-        ],
-        "type": "elementpath",
-      },
-      "skipDeepFreeze": true,
-    },
     "specialSizeMeasurements": Object {
       "clientHeight": 0,
       "clientWidth": 0,
@@ -41918,19 +38987,6 @@ Object {
     "isEmotionOrStyledComponent": false,
     "label": null,
     "localFrame": null,
-    "props": Object {
-      "data-path": "utopia-storyboard-uid/scene-aaa",
-      "data-uid": "scene-aaa",
-      "data-utopia-scene-id": "utopia-storyboard-uid/scene-aaa",
-      "skipDeepFreeze": true,
-      "style": Object {
-        "height": 400,
-        "left": 0,
-        "position": "absolute",
-        "top": 0,
-        "width": 400,
-      },
-    },
     "specialSizeMeasurements": Object {
       "clientHeight": 0,
       "clientWidth": 0,
@@ -42044,28 +39100,6 @@ Object {
     "isEmotionOrStyledComponent": false,
     "label": null,
     "localFrame": null,
-    "props": Object {
-      "data-path": "utopia-storyboard-uid/scene-aaa/app-entity",
-      "data-uid": "app-entity",
-      "data-utopia-instance-path": Object {
-        "parts": Array [
-          Array [
-            "utopia-storyboard-uid",
-            "scene-aaa",
-            "app-entity",
-          ],
-        ],
-        "type": "elementpath",
-      },
-      "skipDeepFreeze": true,
-      "style": Object {
-        "bottom": 0,
-        "left": 0,
-        "position": "absolute",
-        "right": 0,
-        "top": 0,
-      },
-    },
     "specialSizeMeasurements": Object {
       "clientHeight": 0,
       "clientWidth": 0,
@@ -42226,11 +39260,6 @@ Object {
     "isEmotionOrStyledComponent": false,
     "label": null,
     "localFrame": null,
-    "props": Object {
-      "data-path": "utopia-storyboard-uid/scene-aaa/app-entity:zzz",
-      "data-uid": "zzz",
-      "skipDeepFreeze": true,
-    },
     "specialSizeMeasurements": Object {
       "clientHeight": 0,
       "clientWidth": 0,
@@ -42362,25 +39391,6 @@ Object {
     "isEmotionOrStyledComponent": false,
     "label": null,
     "localFrame": null,
-    "props": Object {
-      "data-path": "utopia-storyboard-uid/scene-aaa/app-entity:zzz/cloner",
-      "data-uid": "cloner",
-      "data-utopia-instance-path": Object {
-        "parts": Array [
-          Array [
-            "utopia-storyboard-uid",
-            "scene-aaa",
-            "app-entity",
-          ],
-          Array [
-            "zzz",
-            "cloner",
-          ],
-        ],
-        "type": "elementpath",
-      },
-      "skipDeepFreeze": true,
-    },
     "specialSizeMeasurements": Object {
       "clientHeight": 0,
       "clientWidth": 0,
@@ -42483,15 +39493,6 @@ Object {
     "isEmotionOrStyledComponent": false,
     "label": null,
     "localFrame": null,
-    "props": Object {
-      "data-path": "utopia-storyboard-uid/scene-aaa/app-entity:zzz/cloner/cloned",
-      "data-uid": "cloned",
-      "skipDeepFreeze": true,
-      "style": Object {
-        "color": "red",
-        "fontWeight": 800,
-      },
-    },
     "specialSizeMeasurements": Object {
       "clientHeight": 0,
       "clientWidth": 0,

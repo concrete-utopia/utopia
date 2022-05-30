@@ -263,7 +263,7 @@ export async function renderTestEditorWithModel(
       ? mockBuiltInDependencies
       : createBuiltInDependenciesList(workers)
   const initialEditorStore: EditorStoreFull = {
-    strategyState: createEmptyStrategyState(),
+    strategyState: createEmptyStrategyState({}, {}),
     unpatchedEditor: emptyEditorState,
     patchedEditor: emptyEditorState,
     unpatchedDerived: derivedState,

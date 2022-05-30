@@ -13,7 +13,7 @@ import {
   NameAndIconResultKeepDeepEquality,
 } from '../../../utils/deep-equality-instances'
 import { createSelector } from 'reselect'
-import { EditorStorePatched } from '../../editor/store/editor-state'
+import { AllElementProps, EditorStorePatched } from '../../editor/store/editor-state'
 import React from 'react'
 import { objectValues } from '../../../core/shared/object-utils'
 import { eitherToMaybe } from '../../../core/shared/either'
@@ -31,10 +31,11 @@ export function useMetadata(): ElementInstanceMetadataMap {
 
 const namesAndIconsAllPathsResultSelector = createSelector(
   (store: EditorStorePatched) => store.editor.jsxMetadata,
-  (metadata) => {
+  (store: EditorStorePatched) => store.editor.allElementProps,
+  (metadata, allElementProps) => {
     let result: Array<NameAndIconResult> = []
     for (const metadataElement of objectValues(metadata)) {
-      const nameAndIconResult = getNameAndIconResult(metadataElement)
+      const nameAndIconResult = getNameAndIconResult(allElementProps, metadataElement)
       result.push(nameAndIconResult)
     }
     return result
@@ -48,12 +49,15 @@ export function useNamesAndIconsAllPaths(): NameAndIconResult[] {
   })
 }
 
-function getNameAndIconResult(metadata: ElementInstanceMetadata): NameAndIconResult {
+function getNameAndIconResult(
+  allElementProps: AllElementProps,
+  metadata: ElementInstanceMetadata,
+): NameAndIconResult {
   const elementName = MetadataUtils.getJSXElementName(eitherToMaybe(metadata.element))
   return {
     path: metadata.elementPath,
     name: elementName,
-    label: MetadataUtils.getElementLabelFromMetadata(metadata),
+    label: MetadataUtils.getElementLabelFromMetadata(allElementProps, metadata),
     iconProps: createComponentOrElementIconProps(metadata),
   }
 }
