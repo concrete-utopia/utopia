@@ -193,10 +193,7 @@ function getCachedAttributesComingFromStyleSheets(
 }
 
 // todo move to file
-export type UpdateMutableCallback<S> = (
-  updater: (mutableState: S) => void,
-  invalidate: 'invalidate' | 'do-not-invalidate',
-) => void
+export type UpdateMutableCallback<S> = (updater: (mutableState: S) => void) => void
 
 export interface DomWalkerProps {
   selectedViews: Array<ElementPath>
