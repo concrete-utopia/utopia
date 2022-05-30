@@ -302,6 +302,7 @@ export function useGetSelectedClasses(): {
   const allElementProps = useEditorState(
     (store) => store.editor.allElementProps,
     'ClassNameSelect allElementProps',
+    (oldProps, newProps) => oldProps === newProps,
   )
 
   const classNamesFromAttributesOrProps = React.useMemo(
