@@ -7,6 +7,7 @@ import { ElementPath } from '../../../core/shared/project-file-types'
 import * as EP from '../../../core/shared/element-path'
 import { openFloatingInsertMenu } from '../../editor/actions/action-creators'
 import { useColorTheme } from '../../../uuiui/styles/theme'
+import { CanvasOffsetWrapper } from './canvas-offset-wrapper'
 
 const InsertionButtonOffset = 10
 
@@ -24,6 +25,10 @@ interface ButtonControlProps {
 
 export const InsertionControls: React.FunctionComponent = React.memo(
   (): React.ReactElement | null => {
+    const isInteractionActive = useEditorState(
+      (store) => store.editor.canvas.interactionSession != null,
+      'DistanceGuidelineControl isInteractionActive',
+    )
     const selectedViews = useEditorState(
       (store) => store.editor.selectedViews,
       'InsertionControls selectedViews',
@@ -32,12 +37,8 @@ export const InsertionControls: React.FunctionComponent = React.memo(
       (store) => store.editor.jsxMetadata,
       'InsertionControls jsxMetadata',
     )
-    const canvasOffset = useEditorState(
-      (store) => store.editor.canvas.realCanvasOffset,
-      'InsertionControls canvasOffset',
-    )
     const scale = useEditorState((store) => store.editor.canvas.scale, 'InsertionControls scale')
-    if (selectedViews.length !== 1) {
+    if (selectedViews.length !== 1 || isInteractionActive) {
       return null
     }
     const selectedView = selectedViews[0]
@@ -67,22 +68,12 @@ export const InsertionControls: React.FunctionComponent = React.memo(
         // Ignore any other values.
       }
 
-      const beforeX =
-        direction == 'column'
-          ? parentFrame.x - InsertionButtonOffset + canvasOffset.x
-          : parentFrame.x + canvasOffset.x
-      const beforeY =
-        direction == 'column'
-          ? parentFrame.y + canvasOffset.y
-          : parentFrame.y - InsertionButtonOffset + canvasOffset.y
+      const beforeX = direction == 'column' ? parentFrame.x - InsertionButtonOffset : parentFrame.x
+      const beforeY = direction == 'column' ? parentFrame.y : parentFrame.y - InsertionButtonOffset
       const beforeLineEndX =
-        direction == 'column'
-          ? parentFrame.x + parentFrame.width + canvasOffset.x
-          : parentFrame.x + canvasOffset.x
+        direction == 'column' ? parentFrame.x + parentFrame.width : parentFrame.x
       const beforeLineEndY =
-        direction == 'column'
-          ? parentFrame.y + canvasOffset.y
-          : parentFrame.y + parentFrame.height + canvasOffset.y
+        direction == 'column' ? parentFrame.y : parentFrame.y + parentFrame.height
 
       if (direction != null) {
         controlProps.push({
@@ -119,21 +110,21 @@ export const InsertionControls: React.FunctionComponent = React.memo(
         if (direction != null) {
           const positionX =
             direction == 'column'
-              ? parentFrame.x - InsertionButtonOffset + canvasOffset.x
-              : childFrame.x + childFrame.width + canvasOffset.x
+              ? parentFrame.x - InsertionButtonOffset
+              : childFrame.x + childFrame.width
           const positionY =
             direction == 'column'
-              ? childFrame.y + childFrame.height + canvasOffset.y
-              : parentFrame.y - InsertionButtonOffset + canvasOffset.y
+              ? childFrame.y + childFrame.height
+              : parentFrame.y - InsertionButtonOffset
 
           const lineEndX =
             direction == 'column'
-              ? parentFrame.x + parentFrame.width + canvasOffset.x
-              : childFrame.x + childFrame.width + canvasOffset.x
+              ? parentFrame.x + parentFrame.width
+              : childFrame.x + childFrame.width
           const lineEndY =
             direction == 'column'
-              ? childFrame.y + childFrame.height + canvasOffset.y
-              : parentFrame.y + parentFrame.height + canvasOffset.y
+              ? childFrame.y + childFrame.height
+              : parentFrame.y + parentFrame.height
           controlProps.push({
             key: EP.toString(child.elementPath),
             scale: scale,
@@ -151,21 +142,13 @@ export const InsertionControls: React.FunctionComponent = React.memo(
           // first element has a plus button before the element too
           if (index === 0) {
             const beforeX =
-              direction == 'column'
-                ? parentFrame.x - InsertionButtonOffset + canvasOffset.x
-                : childFrame.x + canvasOffset.x
+              direction == 'column' ? parentFrame.x - InsertionButtonOffset : childFrame.x
             const beforeY =
-              direction == 'column'
-                ? childFrame.y + canvasOffset.y
-                : parentFrame.y - InsertionButtonOffset + canvasOffset.y
+              direction == 'column' ? childFrame.y : parentFrame.y - InsertionButtonOffset
             const beforeLineEndX =
-              direction == 'column'
-                ? parentFrame.x + parentFrame.width + canvasOffset.x
-                : childFrame.x + canvasOffset.x
+              direction == 'column' ? parentFrame.x + parentFrame.width : childFrame.x
             const beforeLineEndY =
-              direction == 'column'
-                ? childFrame.y + canvasOffset.y
-                : parentFrame.y + parentFrame.height + canvasOffset.y
+              direction == 'column' ? childFrame.y : parentFrame.y + parentFrame.height
             controlProps.push({
               key: EP.toString(child.elementPath) + '0',
               scale: scale,
@@ -185,11 +168,11 @@ export const InsertionControls: React.FunctionComponent = React.memo(
       }
     })
     return (
-      <>
+      <CanvasOffsetWrapper>
         {controlProps.map((control) => (
           <InsertionButtonContainer {...control} key={control.key} />
         ))}
-      </>
+      </CanvasOffsetWrapper>
     )
   },
 )
