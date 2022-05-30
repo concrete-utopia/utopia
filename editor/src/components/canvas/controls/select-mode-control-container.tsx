@@ -390,8 +390,6 @@ export class SelectModeControlContainer extends React.Component<
               canvasOffset={this.props.canvasOffset}
               scale={this.props.scale}
               guidelines={distanceGuidelines}
-              selectedViews={this.props.selectedViews}
-              highlightedViews={this.props.highlightedViews}
               boundingBox={boundingBox}
             />,
           )

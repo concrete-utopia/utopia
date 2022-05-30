@@ -44,15 +44,6 @@ export const DistanceGuidelineControl = React.memo(() => {
 })
 
 const DistanceGuidelineControlInner = React.memo(() => {
-  const highlightedViews = useEditorState(
-    (store) => store.editor.highlightedViews,
-    'DistanceGuidelineControl highlightedViews',
-  )
-  const selectedElements = useEditorState(
-    (store) => store.editor.selectedViews,
-    'DistanceGuidelineControl selectedElements',
-  )
-
   const scale = useEditorState(
     (store) => store.editor.canvas.scale,
     'DistanceGuidelineControl scale',
@@ -60,10 +51,6 @@ const DistanceGuidelineControlInner = React.memo(() => {
   const canvasOffset = useEditorState(
     (store) => store.editor.canvas.realCanvasOffset,
     'DistanceGuidelineControl canvasOffset',
-  )
-  const jsxMetadata = useEditorState(
-    (store) => store.editor.jsxMetadata,
-    'DistanceGuidelineControl jsxMetadata',
   )
   const boundingBoxes = useEditorState((store) => {
     if (EP.areAllElementsInSameInstance(store.editor.selectedViews)) {
@@ -86,30 +73,30 @@ const DistanceGuidelineControlInner = React.memo(() => {
   const distanceGuidelines = useEditorState((store) => {
     let guidelineInfo: Array<{ guidelines: Array<Guideline>; boundingBox: CanvasRectangle }> = []
     fastForEach(boundingBoxes, (boundingBox, index) => {
-      if (highlightedViews.length !== 0) {
+      if (store.editor.highlightedViews.length !== 0) {
         const guidelinesForHighlightedViews = flatMapArray((highlightedView) => {
-          const highlightedViewIsSelected = selectedElements.some((selectedElement) =>
+          const highlightedViewIsSelected = store.editor.selectedViews.some((selectedElement) =>
             EP.pathsEqual(selectedElement, highlightedView),
           )
           if (highlightedViewIsSelected) {
             return []
           } else {
-            if (EP.isFromSameInstanceAs(highlightedView, selectedElements[index])) {
-              return getDistanceGuidelines(highlightedView, jsxMetadata)
+            if (EP.isFromSameInstanceAs(highlightedView, store.editor.selectedViews[index])) {
+              return getDistanceGuidelines(highlightedView, store.editor.jsxMetadata)
             } else {
               return []
             }
           }
-        }, highlightedViews)
+        }, store.editor.highlightedViews)
         guidelineInfo.push({
           guidelines: guidelinesForHighlightedViews,
           boundingBox: boundingBox,
         })
       } else {
-        const parentPath = EP.parentPath(selectedElements[0])
+        const parentPath = EP.parentPath(store.editor.selectedViews[0])
         if (parentPath != null) {
-          if (EP.isFromSameInstanceAs(parentPath, selectedElements[index])) {
-            const guidelinesForParent = getDistanceGuidelines(parentPath, jsxMetadata)
+          if (EP.isFromSameInstanceAs(parentPath, store.editor.selectedViews[index])) {
+            const guidelinesForParent = getDistanceGuidelines(parentPath, store.editor.jsxMetadata)
             guidelineInfo.push({
               guidelines: guidelinesForParent,
               boundingBox: boundingBox,
@@ -126,12 +113,10 @@ const DistanceGuidelineControlInner = React.memo(() => {
       <>
         {distanceGuidelines.map((guidelineInfo, index) => (
           <DistanceGuideline
-            key={`${EP.toComponentId(selectedElements[index])}-distance-guidelines`}
+            key={`${index}-distance-guidelines`}
             canvasOffset={canvasOffset}
             scale={scale}
             guidelines={guidelineInfo.guidelines}
-            selectedViews={selectedElements}
-            highlightedViews={highlightedViews}
             boundingBox={guidelineInfo.boundingBox}
           />
         ))}
