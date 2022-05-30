@@ -222,7 +222,6 @@ function mergeFragmentMetadata(
       const merged = elementInstanceMetadata(
         elementMetadata.elementPath,
         left('fragment'),
-        {},
         boundingRectangle(
           existingMetadata.globalFrame ?? zeroCanvasRect,
           elementMetadata.globalFrame ?? zeroCanvasRect,
@@ -538,7 +537,6 @@ function collectMetadata(
       return elementInstanceMetadata(
         path,
         left(tagName),
-        {},
         globalFrame,
         localFrame,
         false,
@@ -811,7 +809,6 @@ function walkCanvasRootFragment(
     const metadata: ElementInstanceMetadata = elementInstanceMetadata(
       canvasRootPath,
       left('Storyboard'),
-      {},
       { x: 0, y: 0, width: 0, height: 0 } as CanvasRectangle,
       { x: 0, y: 0, width: 0, height: 0 } as LocalRectangle,
       false,

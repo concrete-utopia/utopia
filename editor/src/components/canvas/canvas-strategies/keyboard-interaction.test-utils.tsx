@@ -29,6 +29,7 @@ export function pressKeys(
       null as any, // the strategy does not use this
     ),
     metadata: null as any, // the strategy does not use this
+    allElementProps: null as any,
   }
 
   const strategyResult = strategy.apply(
@@ -52,6 +53,7 @@ export function pressKeys(
           } as SpecialSizeMeasurements,
         } as ElementInstanceMetadata,
       },
+      startingAllElementProps: { 'scene-aaa/app-entity:aaa/bbb': {} },
       customStrategyState: defaultCustomStrategyState(),
     } as StrategyState,
   )

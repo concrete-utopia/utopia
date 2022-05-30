@@ -1486,7 +1486,6 @@ export function createNotImported(): ImportInfo {
 export interface ElementInstanceMetadata {
   elementPath: ElementPath
   element: Either<string, JSXElementChild>
-  props: { [key: string]: any } // the final, resolved, static props value
   globalFrame: CanvasRectangle | null
   localFrame: LocalRectangle | null
   componentInstance: boolean
@@ -1501,7 +1500,6 @@ export interface ElementInstanceMetadata {
 export function elementInstanceMetadata(
   elementPath: ElementPath,
   element: Either<string, JSXElementChild>,
-  props: { [key: string]: any },
   globalFrame: CanvasRectangle | null,
   localFrame: LocalRectangle | null,
   componentInstance: boolean,
@@ -1515,7 +1513,6 @@ export function elementInstanceMetadata(
   return {
     elementPath: elementPath,
     element: element,
-    props: props,
     globalFrame: globalFrame,
     localFrame: localFrame,
     componentInstance: componentInstance,

@@ -17,6 +17,7 @@ import { CSSCursor } from '../canvas-types'
 import { setCursorCommand } from '../commands/set-cursor-command'
 import { ParentOutlines } from '../controls/parent-outlines'
 import { updateHighlightedViews } from '../commands/update-highlighted-views-command'
+import { ParentBounds } from '../controls/parent-bounds'
 
 export const flexReorderStrategy: CanvasStrategy = {
   id: 'FLEX_REORDER',
@@ -40,7 +41,12 @@ export const flexReorderStrategy: CanvasStrategy = {
     {
       control: ParentOutlines,
       key: 'parent-outlines-control',
-      show: 'always-visible',
+      show: 'visible-only-while-active',
+    },
+    {
+      control: ParentBounds,
+      key: 'parent-bounds-control',
+      show: 'visible-only-while-active',
     },
   ],
   fitness: (canvasState, interactionState, strategyState) => {
@@ -48,6 +54,7 @@ export const flexReorderStrategy: CanvasStrategy = {
       canvasState,
       interactionState,
       strategyState.startingMetadata,
+      strategyState.startingAllElementProps,
     ) &&
       interactionState.interactionData.type === 'DRAG' &&
       interactionState.activeControl.type === 'BOUNDING_AREA'

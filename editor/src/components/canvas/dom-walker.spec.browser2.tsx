@@ -12,7 +12,6 @@ import { matchInlineSnapshotBrowser } from '../../../test/karma-snapshots'
 disableStoredStateforTests()
 
 function sanitizeElementMetadata(element: ElementInstanceMetadata): ElementInstanceMetadata {
-  delete element.props['children']
   return {
     ...element,
     element: left('REMOVED_FROM_TEST'),
@@ -109,11 +108,6 @@ describe('DOM Walker tests', () => {
           "x": 0,
           "y": 0,
         },
-        "props": Object {
-          "data-path": "utopia-storyboard-uid",
-          "data-uid": "utopia-storyboard-uid",
-          "skipDeepFreeze": true,
-        },
         "specialSizeMeasurements": Object {
           "clientHeight": 0,
           "clientWidth": 0,
@@ -189,19 +183,6 @@ describe('DOM Walker tests', () => {
           "width": 375,
           "x": 0,
           "y": 0,
-        },
-        "props": Object {
-          "data-path": "utopia-storyboard-uid/scene-aaa",
-          "data-uid": "scene-aaa",
-          "data-utopia-scene-id": "utopia-storyboard-uid/scene-aaa",
-          "skipDeepFreeze": true,
-          "style": Object {
-            "height": 812,
-            "left": 0,
-            "position": "relative",
-            "top": 0,
-            "width": 375,
-          },
         },
         "specialSizeMeasurements": Object {
           "clientHeight": 812,
@@ -290,28 +271,6 @@ describe('DOM Walker tests', () => {
           "width": 375,
           "x": 0,
           "y": 0,
-        },
-        "props": Object {
-          "data-path": "utopia-storyboard-uid/scene-aaa/app-entity",
-          "data-uid": "app-entity",
-          "data-utopia-instance-path": Object {
-            "parts": Array [
-              Array [
-                "utopia-storyboard-uid",
-                "scene-aaa",
-                "app-entity",
-              ],
-            ],
-            "type": "elementpath",
-          },
-          "skipDeepFreeze": true,
-          "style": Object {
-            "bottom": 0,
-            "left": 0,
-            "position": "absolute",
-            "right": 0,
-            "top": 0,
-          },
         },
         "specialSizeMeasurements": Object {
           "clientHeight": 812,
@@ -407,19 +366,6 @@ describe('DOM Walker tests', () => {
           "width": 375,
           "x": 0,
           "y": 0,
-        },
-        "props": Object {
-          "data-path": "utopia-storyboard-uid/scene-aaa/app-entity:05c",
-          "data-uid": "05c",
-          "skipDeepFreeze": true,
-          "style": Object {
-            "backgroundColor": "#FFFFFF",
-            "bottom": 0,
-            "left": 0,
-            "position": "absolute",
-            "right": 0,
-            "top": 0,
-          },
         },
         "specialSizeMeasurements": Object {
           "clientHeight": 812,
@@ -517,19 +463,6 @@ describe('DOM Walker tests', () => {
           "x": 55,
           "y": 98,
         },
-        "props": Object {
-          "data-path": "utopia-storyboard-uid/scene-aaa/app-entity:05c/ef0",
-          "data-uid": "ef0",
-          "skipDeepFreeze": true,
-          "style": Object {
-            "backgroundColor": "#DDDDDD",
-            "height": 124,
-            "left": 55,
-            "position": "absolute",
-            "top": 98,
-            "width": 266,
-          },
-        },
         "specialSizeMeasurements": Object {
           "clientHeight": 124,
           "clientWidth": 266,
@@ -626,19 +559,6 @@ describe('DOM Walker tests', () => {
           "width": 125,
           "x": 71,
           "y": 27,
-        },
-        "props": Object {
-          "data-path": "utopia-storyboard-uid/scene-aaa/app-entity:05c/ef0/488",
-          "data-uid": "488",
-          "skipDeepFreeze": true,
-          "style": Object {
-            "backgroundColor": "#DDDDDD",
-            "height": 70,
-            "left": 71,
-            "position": "absolute",
-            "top": 27,
-            "width": 125,
-          },
         },
         "specialSizeMeasurements": Object {
           "clientHeight": 70,
@@ -782,11 +702,6 @@ describe('DOM Walker tests', () => {
           "x": 0,
           "y": 0,
         },
-        "props": Object {
-          "data-path": "utopia-storyboard-uid",
-          "data-uid": "utopia-storyboard-uid",
-          "skipDeepFreeze": true,
-        },
         "specialSizeMeasurements": Object {
           "clientHeight": 0,
           "clientWidth": 0,
@@ -862,19 +777,6 @@ describe('DOM Walker tests', () => {
           "width": 375,
           "x": 0,
           "y": 0,
-        },
-        "props": Object {
-          "data-path": "utopia-storyboard-uid/scene-aaa",
-          "data-uid": "scene-aaa",
-          "data-utopia-scene-id": "utopia-storyboard-uid/scene-aaa",
-          "skipDeepFreeze": true,
-          "style": Object {
-            "height": 812,
-            "left": 0,
-            "position": "relative",
-            "top": 0,
-            "width": 375,
-          },
         },
         "specialSizeMeasurements": Object {
           "clientHeight": 812,
@@ -963,28 +865,6 @@ describe('DOM Walker tests', () => {
           "width": 375,
           "x": 0,
           "y": 0,
-        },
-        "props": Object {
-          "data-path": "utopia-storyboard-uid/scene-aaa/app-entity",
-          "data-uid": "app-entity",
-          "data-utopia-instance-path": Object {
-            "parts": Array [
-              Array [
-                "utopia-storyboard-uid",
-                "scene-aaa",
-                "app-entity",
-              ],
-            ],
-            "type": "elementpath",
-          },
-          "skipDeepFreeze": true,
-          "style": Object {
-            "bottom": 0,
-            "left": 0,
-            "position": "absolute",
-            "right": 0,
-            "top": 0,
-          },
         },
         "specialSizeMeasurements": Object {
           "clientHeight": 812,
@@ -1076,19 +956,6 @@ describe('DOM Walker tests', () => {
           "width": 375,
           "x": 0,
           "y": 0,
-        },
-        "props": Object {
-          "data-path": "utopia-storyboard-uid/scene-aaa/app-entity:05c",
-          "data-uid": "05c",
-          "skipDeepFreeze": true,
-          "style": Object {
-            "backgroundColor": "#FFFFFF",
-            "bottom": 0,
-            "left": 0,
-            "position": "absolute",
-            "right": 0,
-            "top": 0,
-          },
         },
         "specialSizeMeasurements": Object {
           "clientHeight": 812,
@@ -1182,20 +1049,6 @@ describe('DOM Walker tests', () => {
           "x": 55,
           "y": 98,
         },
-        "props": Object {
-          "data-path": "utopia-storyboard-uid/scene-aaa/app-entity:05c/ef0",
-          "data-uid": "ef0",
-          "skipDeepFreeze": true,
-          "style": Object {
-            "backgroundColor": "#DDDDDD",
-            "height": 124,
-            "left": 55,
-            "padding": 20,
-            "position": "fixed",
-            "top": 98,
-            "width": 266,
-          },
-        },
         "specialSizeMeasurements": Object {
           "clientHeight": 164,
           "clientWidth": 306,
@@ -1283,19 +1136,6 @@ describe('DOM Walker tests', () => {
           "width": 125,
           "x": 71,
           "y": 27,
-        },
-        "props": Object {
-          "data-path": "utopia-storyboard-uid/scene-aaa/app-entity:05c/ef0/488",
-          "data-uid": "488",
-          "skipDeepFreeze": true,
-          "style": Object {
-            "backgroundColor": "#DDDDDD",
-            "height": 70,
-            "left": 71,
-            "position": "absolute",
-            "top": 27,
-            "width": 125,
-          },
         },
         "specialSizeMeasurements": Object {
           "clientHeight": 70,
@@ -1439,11 +1279,6 @@ describe('DOM Walker tests', () => {
           "x": 0,
           "y": 0,
         },
-        "props": Object {
-          "data-path": "utopia-storyboard-uid",
-          "data-uid": "utopia-storyboard-uid",
-          "skipDeepFreeze": true,
-        },
         "specialSizeMeasurements": Object {
           "clientHeight": 0,
           "clientWidth": 0,
@@ -1519,19 +1354,6 @@ describe('DOM Walker tests', () => {
           "width": 375,
           "x": 0,
           "y": 0,
-        },
-        "props": Object {
-          "data-path": "utopia-storyboard-uid/scene-aaa",
-          "data-uid": "scene-aaa",
-          "data-utopia-scene-id": "utopia-storyboard-uid/scene-aaa",
-          "skipDeepFreeze": true,
-          "style": Object {
-            "height": 812,
-            "left": 0,
-            "position": "relative",
-            "top": 0,
-            "width": 375,
-          },
         },
         "specialSizeMeasurements": Object {
           "clientHeight": 812,
@@ -1620,28 +1442,6 @@ describe('DOM Walker tests', () => {
           "width": 375,
           "x": 0,
           "y": 0,
-        },
-        "props": Object {
-          "data-path": "utopia-storyboard-uid/scene-aaa/app-entity",
-          "data-uid": "app-entity",
-          "data-utopia-instance-path": Object {
-            "parts": Array [
-              Array [
-                "utopia-storyboard-uid",
-                "scene-aaa",
-                "app-entity",
-              ],
-            ],
-            "type": "elementpath",
-          },
-          "skipDeepFreeze": true,
-          "style": Object {
-            "bottom": 0,
-            "left": 0,
-            "position": "absolute",
-            "right": 0,
-            "top": 0,
-          },
         },
         "specialSizeMeasurements": Object {
           "clientHeight": 812,
@@ -1733,20 +1533,6 @@ describe('DOM Walker tests', () => {
           "width": 375,
           "x": 0,
           "y": 0,
-        },
-        "props": Object {
-          "data-path": "utopia-storyboard-uid/scene-aaa/app-entity:05c",
-          "data-uid": "05c",
-          "skipDeepFreeze": true,
-          "style": Object {
-            "backgroundColor": "#FFFFFF",
-            "bottom": 0,
-            "display": "flex",
-            "left": 0,
-            "position": "absolute",
-            "right": 0,
-            "top": 0,
-          },
         },
         "specialSizeMeasurements": Object {
           "clientHeight": 812,
@@ -1840,20 +1626,6 @@ describe('DOM Walker tests', () => {
           "x": 55,
           "y": 98,
         },
-        "props": Object {
-          "data-path": "utopia-storyboard-uid/scene-aaa/app-entity:05c/ef0",
-          "data-uid": "ef0",
-          "skipDeepFreeze": true,
-          "style": Object {
-            "backgroundColor": "#DDDDDD",
-            "height": 124,
-            "left": 55,
-            "padding": 20,
-            "position": "fixed",
-            "top": 98,
-            "width": 266,
-          },
-        },
         "specialSizeMeasurements": Object {
           "clientHeight": 164,
           "clientWidth": 306,
@@ -1941,19 +1713,6 @@ describe('DOM Walker tests', () => {
           "width": 125,
           "x": 71,
           "y": 27,
-        },
-        "props": Object {
-          "data-path": "utopia-storyboard-uid/scene-aaa/app-entity:05c/ef0/488",
-          "data-uid": "488",
-          "skipDeepFreeze": true,
-          "style": Object {
-            "backgroundColor": "#DDDDDD",
-            "height": 70,
-            "left": 71,
-            "position": "absolute",
-            "top": 27,
-            "width": 125,
-          },
         },
         "specialSizeMeasurements": Object {
           "clientHeight": 70,
@@ -2085,11 +1844,6 @@ describe('DOM Walker tests', () => {
           "x": 0,
           "y": 0,
         },
-        "props": Object {
-          "data-path": "utopia-storyboard-uid",
-          "data-uid": "utopia-storyboard-uid",
-          "skipDeepFreeze": true,
-        },
         "specialSizeMeasurements": Object {
           "clientHeight": 0,
           "clientWidth": 0,
@@ -2165,19 +1919,6 @@ describe('DOM Walker tests', () => {
           "width": 375,
           "x": 0,
           "y": 0,
-        },
-        "props": Object {
-          "data-path": "utopia-storyboard-uid/scene-aaa",
-          "data-uid": "scene-aaa",
-          "data-utopia-scene-id": "utopia-storyboard-uid/scene-aaa",
-          "skipDeepFreeze": true,
-          "style": Object {
-            "height": 812,
-            "left": 0,
-            "position": "relative",
-            "top": 0,
-            "width": 375,
-          },
         },
         "specialSizeMeasurements": Object {
           "clientHeight": 812,
@@ -2266,28 +2007,6 @@ describe('DOM Walker tests', () => {
           "width": 375,
           "x": 0,
           "y": 0,
-        },
-        "props": Object {
-          "data-path": "utopia-storyboard-uid/scene-aaa/app-entity",
-          "data-uid": "app-entity",
-          "data-utopia-instance-path": Object {
-            "parts": Array [
-              Array [
-                "utopia-storyboard-uid",
-                "scene-aaa",
-                "app-entity",
-              ],
-            ],
-            "type": "elementpath",
-          },
-          "skipDeepFreeze": true,
-          "style": Object {
-            "bottom": 0,
-            "left": 0,
-            "position": "absolute",
-            "right": 0,
-            "top": 0,
-          },
         },
         "specialSizeMeasurements": Object {
           "clientHeight": 812,
@@ -2379,19 +2098,6 @@ describe('DOM Walker tests', () => {
           "width": 375,
           "x": 0,
           "y": 0,
-        },
-        "props": Object {
-          "data-label": "Hat",
-          "data-path": "utopia-storyboard-uid/scene-aaa/app-entity:aaa",
-          "data-uid": "aaa",
-          "skipDeepFreeze": true,
-          "style": Object {
-            "bottom": 0,
-            "left": 0,
-            "position": "absolute",
-            "right": 0,
-            "top": 0,
-          },
         },
         "specialSizeMeasurements": Object {
           "clientHeight": 812,
@@ -2527,11 +2233,6 @@ describe('DOM Walker tests', () => {
           "x": 0,
           "y": 0,
         },
-        "props": Object {
-          "data-path": "utopia-storyboard-uid",
-          "data-uid": "utopia-storyboard-uid",
-          "skipDeepFreeze": true,
-        },
         "specialSizeMeasurements": Object {
           "clientHeight": 0,
           "clientWidth": 0,
@@ -2607,19 +2308,6 @@ describe('DOM Walker tests', () => {
           "width": 375,
           "x": 0,
           "y": 0,
-        },
-        "props": Object {
-          "data-path": "utopia-storyboard-uid/scene-aaa",
-          "data-uid": "scene-aaa",
-          "data-utopia-scene-id": "utopia-storyboard-uid/scene-aaa",
-          "skipDeepFreeze": true,
-          "style": Object {
-            "height": 812,
-            "left": 0,
-            "position": "relative",
-            "top": 0,
-            "width": 375,
-          },
         },
         "specialSizeMeasurements": Object {
           "clientHeight": 812,
@@ -2708,28 +2396,6 @@ describe('DOM Walker tests', () => {
           "width": 375,
           "x": 0,
           "y": 0,
-        },
-        "props": Object {
-          "data-path": "utopia-storyboard-uid/scene-aaa/app-entity",
-          "data-uid": "app-entity",
-          "data-utopia-instance-path": Object {
-            "parts": Array [
-              Array [
-                "utopia-storyboard-uid",
-                "scene-aaa",
-                "app-entity",
-              ],
-            ],
-            "type": "elementpath",
-          },
-          "skipDeepFreeze": true,
-          "style": Object {
-            "bottom": 0,
-            "left": 0,
-            "position": "absolute",
-            "right": 0,
-            "top": 0,
-          },
         },
         "specialSizeMeasurements": Object {
           "clientHeight": 812,
@@ -2821,18 +2487,6 @@ describe('DOM Walker tests', () => {
           "width": 375,
           "x": 0,
           "y": 0,
-        },
-        "props": Object {
-          "data-path": "utopia-storyboard-uid/scene-aaa/app-entity:aaa",
-          "data-uid": "aaa",
-          "skipDeepFreeze": true,
-          "style": Object {
-            "bottom": 0,
-            "left": 0,
-            "position": "absolute",
-            "right": 0,
-            "top": 0,
-          },
         },
         "specialSizeMeasurements": Object {
           "clientHeight": 812,
@@ -2926,12 +2580,6 @@ describe('DOM Walker tests', () => {
           "x": 0,
           "y": 0,
         },
-        "props": Object {
-          "data-label": "Plane",
-          "data-path": "utopia-storyboard-uid/scene-aaa/app-entity:aaa/bbb~~~1",
-          "data-uid": "bbb~~~1",
-          "skipDeepFreeze": true,
-        },
         "specialSizeMeasurements": Object {
           "clientHeight": 0,
           "clientWidth": 375,
@@ -3024,12 +2672,6 @@ describe('DOM Walker tests', () => {
           "x": 0,
           "y": 0,
         },
-        "props": Object {
-          "data-label": "Plane",
-          "data-path": "utopia-storyboard-uid/scene-aaa/app-entity:aaa/bbb~~~2",
-          "data-uid": "bbb~~~2",
-          "skipDeepFreeze": true,
-        },
         "specialSizeMeasurements": Object {
           "clientHeight": 0,
           "clientWidth": 375,
@@ -3121,12 +2763,6 @@ describe('DOM Walker tests', () => {
           "width": 375,
           "x": 0,
           "y": 0,
-        },
-        "props": Object {
-          "data-label": "Plane",
-          "data-path": "utopia-storyboard-uid/scene-aaa/app-entity:aaa/bbb~~~3",
-          "data-uid": "bbb~~~3",
-          "skipDeepFreeze": true,
         },
         "specialSizeMeasurements": Object {
           "clientHeight": 0,

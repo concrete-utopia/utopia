@@ -22,7 +22,11 @@ import {
   setFocusedElement,
   setHighlightedView,
 } from '../../../editor/actions/action-creators'
-import { EditorState, EditorStorePatched } from '../../../editor/store/editor-state'
+import {
+  AllElementProps,
+  EditorState,
+  EditorStorePatched,
+} from '../../../editor/store/editor-state'
 import { useEditorState, useRefEditorState } from '../../../editor/store/store-hook'
 import CanvasActions from '../../canvas-actions'
 import { moveDragState } from '../../canvas-types'
@@ -141,6 +145,7 @@ export function getSelectableViews(
   hiddenInstances: Array<ElementPath>,
   allElementsDirectlySelectable: boolean,
   childrenSelectable: boolean,
+  allElementProps: AllElementProps,
 ): ElementPath[] {
   let candidateViews: Array<ElementPath>
 
@@ -154,7 +159,7 @@ export function getSelectableViews(
       const scene = MetadataUtils.findElementByElementPath(componentMetadata, path)
       const rootElements = MetadataUtils.getRootViewPaths(componentMetadata, path)
       if (
-        MetadataUtils.isSceneTreatedAsGroup(scene) &&
+        MetadataUtils.isSceneTreatedAsGroup(allElementProps, path) &&
         rootElements != null &&
         rootElements.length > 1
       ) {
@@ -205,13 +210,20 @@ function useFindValidTarget(): (
       canvasScale: store.editor.canvas.scale,
       canvasOffset: store.editor.canvas.realCanvasOffset,
       focusedElementPath: store.editor.focusedElementPath,
+      allElementProps: store.editor.allElementProps,
     }
   })
 
   return React.useCallback(
     (selectableViews: Array<ElementPath>, mousePoint: WindowPoint | null) => {
-      const { selectedViews, componentMetadata, hiddenInstances, canvasScale, canvasOffset } =
-        storeRef.current
+      const {
+        selectedViews,
+        componentMetadata,
+        hiddenInstances,
+        canvasScale,
+        canvasOffset,
+        allElementProps,
+      } = storeRef.current
       const validElementMouseOver: ElementPath | null = getValidTargetAtPoint(
         componentMetadata,
         selectedViews,
@@ -220,6 +232,7 @@ function useFindValidTarget(): (
         mousePoint,
         canvasScale,
         canvasOffset,
+        allElementProps,
       )
       const validElementPath: ElementPath | null =
         validElementMouseOver != null ? validElementMouseOver : null
@@ -387,18 +400,21 @@ export function useGetSelectableViewsForSelectMode() {
       selectedViews: store.editor.selectedViews,
       hiddenInstances: store.editor.hiddenInstances,
       focusedElementPath: store.editor.focusedElementPath,
+      allElementProps: store.editor.allElementProps,
     }
   })
 
   return React.useCallback(
     (allElementsDirectlySelectable: boolean, childrenSelectable: boolean) => {
-      const { componentMetadata, selectedViews, hiddenInstances } = storeRef.current
+      const { componentMetadata, selectedViews, hiddenInstances, allElementProps } =
+        storeRef.current
       const selectableViews = getSelectableViews(
         componentMetadata,
         selectedViews,
         hiddenInstances,
         allElementsDirectlySelectable,
         childrenSelectable,
+        allElementProps,
       )
       return selectableViews
     },

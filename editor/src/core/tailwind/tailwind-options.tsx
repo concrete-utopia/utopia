@@ -27,6 +27,7 @@ import {
   jsxSimpleAttributeToValue,
 } from '../shared/jsx-attributes'
 import * as PP from '../shared/property-path'
+import * as EP from '../shared/element-path'
 import { isTwindEnabled } from './tailwind'
 import { AttributeCategories, AttributeCategory } from './attribute-categories'
 
@@ -298,6 +299,12 @@ export function useGetSelectedClasses(): {
     'ClassNameSelect elementPaths',
   )
 
+  const allElementProps = useEditorState(
+    (store) => store.editor.allElementProps,
+    'ClassNameSelect allElementProps',
+    (oldProps, newProps) => oldProps === newProps,
+  )
+
   const classNamesFromAttributesOrProps = React.useMemo(
     () =>
       elements.map((element, index) => {
@@ -311,12 +318,12 @@ export function useGetSelectedClasses(): {
             elementPath,
           )
           return {
-            value: elementMetadata?.props['className'],
+            value: allElementProps[EP.toString(elementPath)]['className'],
             isSettable: fromAttributes.isSettable,
           }
         }
       }),
-    [elements, elementPaths, metadataRef],
+    [elements, elementPaths, metadataRef, allElementProps],
   )
 
   const isSettable =

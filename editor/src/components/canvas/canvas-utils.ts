@@ -144,6 +144,8 @@ import {
   withUnderlyingTarget,
   transformElementAtPath,
   ResizeOptions,
+  AllElementProps,
+  ElementProps,
 } from '../editor/store/editor-state'
 import * as Frame from '../frame'
 import { getImageSizeFromMetadata, MultipliersForImages, scaleImageDimensions } from '../images'
@@ -495,6 +497,7 @@ export function updateFramesOfScenesAndComponents(
     )
 
     const elementMetadata = MetadataUtils.findElementByElementPath(editorState.jsxMetadata, target)
+    const elementProps = editorState.allElementProps[EP.toString(target)] ?? {}
 
     const isFlexContainer =
       frameAndTarget.type !== 'PIN_FRAME_CHANGE' &&
@@ -549,6 +552,7 @@ export function updateFramesOfScenesAndComponents(
             const valueFromDOM = getObservableValueForLayoutProp(
               elementMetadata,
               frameAndTarget.targetProperty,
+              elementProps,
             )
             const valueFromAttributes = eitherToMaybe(
               getSimpleAttributeAtPath(right(element.props), targetPropertyPath),
@@ -623,11 +627,11 @@ export function updateFramesOfScenesAndComponents(
             const currentLocalFrame = MetadataUtils.getFrame(target, workingEditorState.jsxMetadata)
             const currentFullFrame = optionalMap(Frame.getFullFrame, currentLocalFrame)
             const fullFrame = Frame.getFullFrame(newLocalFrame)
-            const elementProps = element.props
+            const elementAttributes = element.props
 
             // Pinning layout.
             const frameProps = LayoutPinnedProps.filter((p) => {
-              const value = getLayoutProperty(p, right(elementProps), ['style'])
+              const value = getLayoutProperty(p, right(elementAttributes), ['style'])
               return isLeft(value) || value.value != null
             })
 
@@ -667,7 +671,9 @@ export function updateFramesOfScenesAndComponents(
               const previousValue = currentFullFrame == null ? null : currentFullFrame[propToUpdate]
 
               const propPathToUpdate = stylePropPathMappingFn(propToUpdate, ['style'])
-              const existingProp = getLayoutProperty(propToUpdate, right(elementProps), ['style'])
+              const existingProp = getLayoutProperty(propToUpdate, right(elementAttributes), [
+                'style',
+              ])
               if (absoluteValue === previousValue || isLeft(existingProp)) {
                 // Only update pins that have actually changed or aren't set via code
                 propsToSkip.push(propPathToUpdate)
@@ -824,7 +830,11 @@ export function updateFramesOfScenesAndComponents(
             (updatedProps) => {
               toastsToAdd.push(
                 ...createStylePostActionToast(
-                  MetadataUtils.getElementLabel(originalTarget, workingEditorState.jsxMetadata),
+                  MetadataUtils.getElementLabel(
+                    workingEditorState.allElementProps,
+                    originalTarget,
+                    workingEditorState.jsxMetadata,
+                  ),
                   getAllPathsFromAttributes(elem.props),
                   getAllPathsFromAttributes(updatedProps),
                 ),
@@ -1097,6 +1107,7 @@ export function collectGuidelines(
   scale: number,
   draggedPoint: CanvasPoint | null,
   resizingFromPosition: EdgePosition | null,
+  allElementProps: AllElementProps,
 ): Array<GuidelineWithSnappingVector> {
   if (draggedPoint == null) {
     return []
@@ -1113,7 +1124,7 @@ export function collectGuidelines(
       const instance = MetadataUtils.findElementByElementPath(metadata, selectedView)
       if (instance != null && MetadataUtils.isImg(instance) && instance.localFrame != null) {
         const frame = instance.localFrame
-        const imageSize = getImageSizeFromMetadata(instance)
+        const imageSize = getImageSizeFromMetadata(allElementProps, instance)
         Utils.fastForEach(MultipliersForImages, (multiplier) => {
           const imageDimension = scaleImageDimensions(imageSize, multiplier)
           // Calculate the guidelines around the corner/edge given.
@@ -1230,13 +1241,21 @@ function innerSnapPoint(
   canvasScale: number,
   point: CanvasPoint,
   resizingFromPosition: EdgePosition | null,
+  allElementProps: AllElementProps,
 ): {
   point: CanvasPoint
   snappedGuideline: GuidelineWithSnappingVector | null
   guidelinesWithSnappingVector: Array<GuidelineWithSnappingVector>
 } {
   const guidelines = oneGuidelinePerDimension(
-    collectGuidelines(jsxMetadata, selectedViews, canvasScale, point, resizingFromPosition),
+    collectGuidelines(
+      jsxMetadata,
+      selectedViews,
+      canvasScale,
+      point,
+      resizingFromPosition,
+      allElementProps,
+    ),
   )
   let snappedPoint = point
   let snappedGuideline: GuidelineWithSnappingVector | null = null
@@ -1264,6 +1283,7 @@ export function snapPoint(
   diagonalA: CanvasPoint,
   diagonalB: CanvasPoint,
   resizingFromPosition: EdgePosition | null,
+  allElementProps: AllElementProps,
 ): {
   snappedPointOnCanvas: CanvasPoint
   guidelinesWithSnappingVector: Array<GuidelineWithSnappingVector>
@@ -1288,6 +1308,7 @@ export function snapPoint(
         canvasScale,
         closestPointOnLine,
         resizingFromPosition,
+        allElementProps,
       )
       if (guideline != null) {
         const guidelinePoints = Guidelines.convertGuidelineToPoints(guideline.guideline)
@@ -1324,6 +1345,7 @@ export function snapPoint(
       canvasScale,
       pointToSnap,
       resizingFromPosition,
+      allElementProps,
     )
     return shouldSnap
       ? {
@@ -1389,6 +1411,7 @@ function calculateDraggedRectangle(
         startingPoint,
         draggedCorner,
         startingCorner,
+        editor.allElementProps,
       ).snappedPointOnCanvas,
       0,
     )
@@ -1868,6 +1891,7 @@ function getReparentTargetAtPosition(
   hiddenInstances: Array<ElementPath>,
   canvasScale: number,
   canvasOffset: CanvasVector,
+  allElementProps: AllElementProps,
 ): ElementPath | undefined {
   const allTargets = getAllTargetsAtPoint(
     componentMeta,
@@ -1877,6 +1901,7 @@ function getReparentTargetAtPosition(
     WindowMousePositionRaw,
     canvasScale,
     canvasOffset,
+    allElementProps,
   )
   // filtering for non-selected views from alltargets
   return allTargets.find((target) => selectedViews.every((view) => !EP.pathsEqual(view, target)))
@@ -1900,6 +1925,7 @@ export function getReparentTargetFromState(
     editorState.canvas.realCanvasOffset,
     editorState.projectContents,
     editorState.canvas.openFile?.filename,
+    editorState.allElementProps,
   )
 }
 
@@ -1912,6 +1938,7 @@ export function getReparentTarget(
   canvasOffset: CanvasVector,
   projectContents: ProjectContentTreeRoot,
   openFile: string | null | undefined,
+  allElementProps: AllElementProps,
 ): {
   shouldReparent: boolean
   newParent: ElementPath | null
@@ -1922,6 +1949,7 @@ export function getReparentTarget(
     hiddenInstances,
     canvasScale,
     canvasOffset,
+    allElementProps,
   )
 
   const possibleNewParent = result == undefined ? null : result
@@ -2109,6 +2137,7 @@ export function moveTemplate(
               newParentLayoutSystem,
               newParentMainAxis,
               ['style'],
+              editorState.allElementProps,
             )
             const updatedUnderlyingElement = findElementAtPath(
               underlyingTarget,
@@ -3145,6 +3174,7 @@ export function dragExceededThreshold(
 export function getObservableValueForLayoutProp(
   elementMetadata: ElementInstanceMetadata | null,
   layoutProp: LayoutTargetableProp,
+  elementProps: ElementProps,
 ): unknown {
   if (elementMetadata == null) {
     return null
@@ -3162,7 +3192,7 @@ export function getObservableValueForLayoutProp(
       case 'flexGrow':
       case 'flexShrink':
         const path = stylePropPathMappingFn(layoutProp, ['style'])
-        return Utils.pathOr(null, PP.getElements(path), elementMetadata.props)
+        return Utils.pathOr(null, PP.getElements(path), elementProps)
       case 'marginTop':
         return elementMetadata.specialSizeMeasurements.margin.top
       case 'marginBottom':

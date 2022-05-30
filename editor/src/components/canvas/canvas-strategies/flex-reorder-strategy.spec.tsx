@@ -170,6 +170,7 @@ function reorderElement(
       drag,
     ),
     metadata: null as any, // the strategy does not use this
+    allElementProps: null as any, // the strategy does not use this
   }
 
   const strategyResult = flexReorderStrategy.apply(

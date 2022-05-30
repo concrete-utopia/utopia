@@ -1,3 +1,4 @@
+import { AllElementProps } from 'src/components/editor/store/editor-state'
 import { ElementInstanceMetadataMap } from '../../../core/shared/element-template'
 import { CanvasVector } from '../../../core/shared/math-utils'
 import { ElementPath } from '../../../core/shared/project-file-types'
@@ -64,6 +65,7 @@ export interface CanvasStrategy {
     canvasState: InteractionCanvasState,
     interactionSession: InteractionSession | null,
     metadata: ElementInstanceMetadataMap,
+    allElementProps: AllElementProps,
   ) => boolean
 
   // The controls to render when this strategy is applicable, regardless of if it is currently active

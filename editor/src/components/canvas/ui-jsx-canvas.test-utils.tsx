@@ -103,7 +103,6 @@ function stripUidsFromMetadata(metadata: ElementInstanceMetadata): ElementInstan
 }
 
 function stripUnwantedDataFromMetadata(metadata: ElementInstanceMetadata): ElementInstanceMetadata {
-  delete metadata.props['children']
   return stripUidsFromMetadata(metadata)
 }
 

@@ -145,19 +145,6 @@ Object {
     "isEmotionOrStyledComponent": false,
     "label": null,
     "localFrame": null,
-    "props": Object {
-      "data-path": "sb/scene",
-      "data-uid": "scene",
-      "data-utopia-scene-id": "sb/scene",
-      "skipDeepFreeze": true,
-      "style": Object {
-        "height": 812,
-        "left": 0,
-        "position": "absolute",
-        "top": 0,
-        "width": 375,
-      },
-    },
     "specialSizeMeasurements": Object {
       "clientHeight": 0,
       "clientWidth": 0,
@@ -249,11 +236,6 @@ Object {
     "isEmotionOrStyledComponent": false,
     "label": null,
     "localFrame": null,
-    "props": Object {
-      "data-path": "sb/scene/app",
-      "data-uid": "app",
-      "skipDeepFreeze": true,
-    },
     "specialSizeMeasurements": Object {
       "clientHeight": 0,
       "clientWidth": 0,

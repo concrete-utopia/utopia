@@ -2,11 +2,13 @@ import { MetadataUtils } from '../../../core/model/element-metadata-utils'
 import { ElementInstanceMetadataMap, JSXElement } from '../../../core/shared/element-template'
 import { CanvasVector, offsetPoint } from '../../../core/shared/math-utils'
 import { ElementPath } from '../../../core/shared/project-file-types'
-import { withUnderlyingTarget } from '../../editor/store/editor-state'
+import { AllElementProps, withUnderlyingTarget } from '../../editor/store/editor-state'
 import { EdgePosition } from '../canvas-types'
 import { setCursorCommand } from '../commands/set-cursor-command'
 import { setSnappingGuidelines } from '../commands/set-snapping-guidelines-command'
 import { updateHighlightedViews } from '../commands/update-highlighted-views-command'
+import { ParentBounds } from '../controls/parent-bounds'
+import { ParentOutlines } from '../controls/parent-outlines'
 import { AbsoluteResizeControl } from '../controls/select-mode/absolute-resize-control'
 import { GuidelineWithSnappingVector } from '../guideline'
 import { CanvasStrategy, emptyStrategyApplicationResult } from './canvas-strategy-types'
@@ -38,12 +40,15 @@ export const absoluteResizeDeltaStrategy: CanvasStrategy = {
   },
   controlsToRender: [
     { control: AbsoluteResizeControl, key: 'absolute-resize-control', show: 'always-visible' },
+    { control: ParentOutlines, key: 'parent-outlines-control', show: 'visible-only-while-active' },
+    { control: ParentBounds, key: 'parent-bounds-control', show: 'visible-only-while-active' },
   ],
   fitness: (canvasState, interactionState, sessionState) => {
     return absoluteResizeDeltaStrategy.isApplicable(
       canvasState,
       interactionState,
       sessionState.startingMetadata,
+      sessionState.startingAllElementProps,
     ) &&
       interactionState.interactionData.type === 'DRAG' &&
       interactionState.activeControl.type === 'RESIZE_HANDLE'
@@ -64,6 +69,7 @@ export const absoluteResizeDeltaStrategy: CanvasStrategy = {
         drag,
         edgePosition,
         canvasState.scale,
+        sessionState.startingAllElementProps,
       )
 
       const commandsForSelectedElements = canvasState.selectedElements.flatMap(
@@ -116,6 +122,7 @@ function snapDrag(
   drag: CanvasVector,
   edgePosition: EdgePosition,
   canvasScale: number,
+  allElementProps: AllElementProps,
 ): {
   snappedDragVector: CanvasVector
   guidelinesWithSnappingVector: Array<GuidelineWithSnappingVector>
@@ -141,6 +148,7 @@ function snapDrag(
     canvasScale,
     null,
     'non-center-based',
+    allElementProps,
   )
   const snappedDragVector = offsetPoint(drag, snapDelta)
 
