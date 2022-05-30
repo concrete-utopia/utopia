@@ -494,7 +494,8 @@ const mangleMemoType = Utils.memoize(
 
 const mangleForwardRefType = Utils.memoize(
   (type: any) => {
-    // React.forwardRef uses a field `render` to hold the actual component
+    // React.forwardRef uses a field `render` to hold the actual component, but for some
+    // reason that isn't reflected in the types, hence the cast to `any`
     return {
       ...type,
       render: mangleElementType(type.render),
