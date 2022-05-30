@@ -433,6 +433,7 @@ async function updateDirtyContent(resource: vscode.Uri): Promise<void> {
   const filePath = fromUtopiaURI(resource)
   const { unsavedContent } = await readFileAsUTF8(filePath)
   if (unsavedContent != null) {
+    squashNextSelectionChange = true
     incomingFileChanges.add(filePath)
     const workspaceEdit = new vscode.WorkspaceEdit()
     workspaceEdit.replace(resource, entireDocRange(), unsavedContent)
@@ -502,7 +503,7 @@ async function revealRangeIfPossible(
   }
 }
 
-async function revealRangeIfPossibleInVisibleEditor(boundsInFile: BoundsInFile): Promise<void> {
+function revealRangeIfPossibleInVisibleEditor(boundsInFile: BoundsInFile): void {
   const visibleEditor = vscode.window.visibleTextEditors.find(
     (editor) => editor.document.uri.path === boundsInFile.filePath,
   )

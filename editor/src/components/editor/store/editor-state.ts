@@ -605,7 +605,10 @@ export function editorStateCanvasControls(
   }
 }
 
+export type ElementsToRerender = Array<ElementPath> | 'rerender-all-elements'
+
 export interface EditorStateCanvas {
+  elementsToRerender: ElementsToRerender
   visible: boolean
   dragState: DragState | null
   interactionSession: InteractionSession | null
@@ -630,6 +633,7 @@ export interface EditorStateCanvas {
 }
 
 export function editorStateCanvas(
+  elementsToRerender: Array<ElementPath> | 'rerender-all-elements',
   visible: boolean,
   dragState: DragState | null,
   interactionSession: InteractionSession | null,
@@ -653,6 +657,7 @@ export function editorStateCanvas(
   controls: EditorStateCanvasControls,
 ): EditorStateCanvas {
   return {
+    elementsToRerender: elementsToRerender,
     visible: visible,
     dragState: dragState,
     interactionSession: interactionSession,
@@ -809,6 +814,10 @@ export function editorStateCodeEditorErrors(
   }
 }
 
+export type ElementProps = { [key: string]: any }
+
+export type AllElementProps = { [path: string]: ElementProps }
+
 // FIXME We need to pull out ProjectState from here
 export interface EditorState {
   id: string | null
@@ -871,6 +880,7 @@ export interface EditorState {
   vscodeLoadingScreenVisible: boolean
   indexedDBFailed: boolean
   forceParseFiles: Array<string>
+  allElementProps: AllElementProps // the final, resolved, static props value for each element.
 }
 
 export function editorState(
@@ -934,6 +944,7 @@ export function editorState(
   vscodeLoadingScreenVisible: boolean,
   indexedDBFailed: boolean,
   forceParseFiles: Array<string>,
+  allElementProps: AllElementProps,
 ): EditorState {
   return {
     id: id,
@@ -996,6 +1007,7 @@ export function editorState(
     vscodeLoadingScreenVisible: vscodeLoadingScreenVisible,
     indexedDBFailed: indexedDBFailed,
     forceParseFiles: forceParseFiles,
+    allElementProps: allElementProps,
   }
 }
 
@@ -1684,6 +1696,7 @@ export function createEditorState(dispatch: EditorDispatch): EditorState {
       additionalControls: true,
     },
     canvas: {
+      elementsToRerender: 'rerender-all-elements',
       dragState: null, // TODO change dragState if editorMode changes
       interactionSession: null,
       visible: true,
@@ -1782,6 +1795,7 @@ export function createEditorState(dispatch: EditorDispatch): EditorState {
     vscodeLoadingScreenVisible: true,
     indexedDBFailed: false,
     forceParseFiles: [],
+    allElementProps: {},
   }
 }
 
@@ -1964,6 +1978,7 @@ export function editorModelFromPersistentModel(
       additionalControls: true,
     },
     canvas: {
+      elementsToRerender: 'rerender-all-elements',
       dragState: null, // TODO change dragState if editorMode changes
       interactionSession: null,
       visible: true,
@@ -2055,6 +2070,7 @@ export function editorModelFromPersistentModel(
     vscodeLoadingScreenVisible: true,
     indexedDBFailed: false,
     forceParseFiles: [],
+    allElementProps: {},
   }
   return editor
 }

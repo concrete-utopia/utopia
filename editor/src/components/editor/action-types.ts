@@ -36,6 +36,7 @@ import type {
 import {
   DuplicationState,
   EditorState,
+  ElementsToRerender,
   ErrorMessages,
   FloatingInsertMenuState,
   LeftMenuTab,
@@ -937,6 +938,11 @@ export interface RunEscapeHatch {
   targets: Array<ElementPath>
 }
 
+export interface SetElementsToRerender {
+  action: 'SET_ELEMENTS_TO_RERENDER'
+  value: ElementsToRerender
+}
+
 export type EditorAction =
   | ClearSelection
   | InsertScene
@@ -1090,6 +1096,7 @@ export type EditorAction =
   | SetIndexedDBFailed
   | ForceParseFile
   | RunEscapeHatch
+  | SetElementsToRerender
 
 export type DispatchPriority =
   | 'everyone'

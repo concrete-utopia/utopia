@@ -103,7 +103,6 @@ function stripUidsFromMetadata(metadata: ElementInstanceMetadata): ElementInstan
 }
 
 function stripUnwantedDataFromMetadata(metadata: ElementInstanceMetadata): ElementInstanceMetadata {
-  delete metadata.props['children']
   return stripUidsFromMetadata(metadata)
 }
 
@@ -216,6 +215,7 @@ export function renderCanvasReturnResultAndError(
       propertyControlsInfo: {},
       dispatch: NO_OP,
       domWalkerAdditionalElementsToUpdate: [],
+      elementsToRerender: 'rerender-all-elements',
     }
   } else {
     canvasProps = {
@@ -238,6 +238,7 @@ export function renderCanvasReturnResultAndError(
       propertyControlsInfo: {},
       dispatch: NO_OP,
       domWalkerAdditionalElementsToUpdate: [],
+      elementsToRerender: 'rerender-all-elements',
     }
   }
 

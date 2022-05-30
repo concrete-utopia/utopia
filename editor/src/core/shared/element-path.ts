@@ -271,6 +271,10 @@ export function parentPath(path: ElementPath): ElementPath {
   }
 }
 
+export function isParentComponentOf(maybeParent: ElementPath, maybeChild: ElementPath): boolean {
+  return pathsEqual(maybeParent, dropLastPathPart(maybeChild))
+}
+
 export function isParentOf(maybeParent: ElementPath, maybeChild: ElementPath): boolean {
   const childLength = maybeChild.parts.length
   const parentLength = maybeParent.parts.length
@@ -341,26 +345,49 @@ export function toStaticUid(path: ElementPath): id {
   return extractOriginalUidFromIndexedUid(toUid(path))
 }
 
-export function appendToElementPath(
+export function appendArrayToElementPath(
   path: StaticElementPathPart,
-  next: id | Array<id>,
+  next: Array<id>,
 ): StaticElementPathPart
-export function appendToElementPath(path: ElementPathPart, next: id | Array<id>): ElementPathPart
-export function appendToElementPath(path: ElementPathPart, next: id | Array<id>): ElementPathPart {
-  return path.concat(next)
+export function appendArrayToElementPath(path: ElementPathPart, next: Array<id>): ElementPathPart
+export function appendArrayToElementPath(path: ElementPathPart, next: Array<id>): ElementPathPart {
+  return [...path, ...next]
 }
 
-function appendToElementPathArray(
+export function appendToElementPath(path: StaticElementPathPart, next: id): StaticElementPathPart
+export function appendToElementPath(path: ElementPathPart, next: id): ElementPathPart
+export function appendToElementPath(path: ElementPathPart, next: id): ElementPathPart {
+  return [...path, next]
+}
+
+function appendToElementPathArray(pathArray: ElementPathPart[], next: id): ElementPathPart[] {
+  if (isEmptyElementPathsArray(pathArray)) {
+    return [[next]]
+  } else {
+    let result: Array<ElementPathPart> = []
+    const lengthMinusOne = pathArray.length - 1
+    for (let index = 0; index < lengthMinusOne; index++) {
+      result.push(pathArray[index])
+    }
+    result.push(appendToElementPath(pathArray[lengthMinusOne], next))
+    return result
+  }
+}
+
+function appendPartToElementPathArray(
   pathArray: ElementPathPart[],
-  next: id | ElementPathPart,
+  next: ElementPathPart,
 ): ElementPathPart[] {
   if (isEmptyElementPathsArray(pathArray)) {
-    return [Array.isArray(next) ? next : [next]]
+    return [next]
   } else {
-    const prefix = dropLast(pathArray)
-    const lastPart = last(pathArray)!
-    const updatedLastPart = appendToElementPath(lastPart, next)
-    return [...prefix, updatedLastPart]
+    let result: Array<ElementPathPart> = []
+    const lengthMinusOne = pathArray.length - 1
+    for (let index = 0; index < lengthMinusOne; index++) {
+      result.push(pathArray[index])
+    }
+    result.push(appendArrayToElementPath(pathArray[lengthMinusOne], next))
+    return result
   }
 }
 
@@ -374,13 +401,20 @@ export function appendNewElementPath(path: ElementPath, next: id | ElementPathPa
   return elementPath([...path.parts, toAppend])
 }
 
-export function appendToPath(
-  path: StaticElementPath,
-  next: id | StaticElementPathPart,
-): StaticElementPath
-export function appendToPath(path: ElementPath, next: id | ElementPathPart): ElementPath
-export function appendToPath(path: ElementPath, next: id | ElementPathPart): ElementPath {
+export function appendToPath(path: StaticElementPath, next: id): StaticElementPath
+export function appendToPath(path: ElementPath, next: id): ElementPath
+export function appendToPath(path: ElementPath, next: id): ElementPath {
   const updatedPathParts = appendToElementPathArray(path.parts, next)
+  return elementPath(updatedPathParts)
+}
+
+export function appendPartToPath(
+  path: StaticElementPath,
+  next: StaticElementPathPart,
+): StaticElementPath
+export function appendPartToPath(path: ElementPath, next: ElementPathPart): ElementPath
+export function appendPartToPath(path: ElementPath, next: ElementPathPart): ElementPath {
+  const updatedPathParts = appendPartToElementPathArray(path.parts, next)
   return elementPath(updatedPathParts)
 }
 
@@ -547,7 +581,7 @@ export function replaceIfAncestor(
     } else if (replaceWith == null) {
       prefix = [trimmedOverlappingPart]
     } else {
-      prefix = appendToElementPathArray(replaceWith.parts, trimmedOverlappingPart)
+      prefix = appendPartToElementPathArray(replaceWith.parts, trimmedOverlappingPart)
     }
 
     const updatedPathParts = [...prefix, ...suffix]

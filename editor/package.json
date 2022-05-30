@@ -19,7 +19,7 @@
     "check-dependency-cruiser": "depcruise --config .dependency-cruiser.js src",
     "test": "jest --config ./jest.config.js",
     "test-ci": "NODE_OPTIONS=--max_old_space_size=6656 xvfb-run -a pnpm run test -- --maxWorkers=1",
-    "test-debug": "node --inspect-brk node_modules/.bin/jest --config ./jest.config.js --runInBand",
+    "test-debug": "NODE_OPTIONS='--inspect-brk' jest --config ./jest.config.js --runInBand",
     "test-watch": "pnpm run test -- --watch",
     "test-update-snapshot": "pnpm run test -- --updateSnapshot",
     "test-browser": "karma start --single-run",

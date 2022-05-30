@@ -15,18 +15,7 @@ export const ParentOutlines = React.memo(() => {
       EP.pathsEqual,
     )
     return mapDropNulls((parentPath) => {
-      const parentElement = MetadataUtils.findElementByElementPath(
-        store.editor.jsxMetadata,
-        parentPath,
-      )
-      if (
-        MetadataUtils.isFlexLayoutedContainer(parentElement) ||
-        MetadataUtils.isGridLayoutedContainer(parentElement)
-      ) {
-        return MetadataUtils.getFrameInCanvasCoords(parentPath, store.editor.jsxMetadata)
-      } else {
-        return null
-      }
+      return MetadataUtils.getFrameInCanvasCoords(parentPath, store.editor.jsxMetadata)
     }, targetParents)
   }, 'ParentOutlines frames')
 

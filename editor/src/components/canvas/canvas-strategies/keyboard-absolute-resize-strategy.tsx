@@ -8,6 +8,10 @@ import { createResizeCommands } from './shared-absolute-resize-strategy-helpers'
 import { withUnderlyingTarget } from '../../editor/store/editor-state'
 import { EdgePosition } from '../canvas-types'
 import { AbsoluteResizeControl } from '../controls/select-mode/absolute-resize-control'
+import {
+  SetElementsToRerenderCommand,
+  setElementsToRerenderCommand,
+} from '../commands/set-elements-to-rerender-command'
 
 export const keyboardAbsoluteResizeStrategy: CanvasStrategy = {
   id: 'KEYBOARD_ABSOLUTE_RESIZE',
@@ -32,6 +36,7 @@ export const keyboardAbsoluteResizeStrategy: CanvasStrategy = {
         canvasState,
         interactionState,
         sessionState.startingMetadata,
+        sessionState.startingAllElementProps,
       ) &&
       interactionState.interactionData.type === 'KEYBOARD'
     ) {
@@ -52,45 +57,44 @@ export const keyboardAbsoluteResizeStrategy: CanvasStrategy = {
   apply: (canvasState, interactionState, sessionState) => {
     if (interactionState.interactionData.type === 'KEYBOARD') {
       return {
-        commands: interactionState.interactionData.keysPressed.flatMap<AdjustCssLengthProperty>(
-          (key) => {
-            if (key == null) {
-              return []
-            }
-            const drag = getDragDeltaFromKey(key, interactionState.interactionData.modifiers)
-            const edgePosition = getEdgePositionFromKey(key)
-            if (drag.x !== 0 || drag.y !== 0) {
-              return canvasState.selectedElements.flatMap((selectedElement) => {
-                const element = withUnderlyingTarget(
+        commands: interactionState.interactionData.keysPressed.flatMap((key) => {
+          if (key == null) {
+            return []
+          }
+          const drag = getDragDeltaFromKey(key, interactionState.interactionData.modifiers)
+          const edgePosition = getEdgePositionFromKey(key)
+          if (drag.x !== 0 || drag.y !== 0) {
+            const resizeCommands = canvasState.selectedElements.flatMap((selectedElement) => {
+              const element = withUnderlyingTarget(
+                selectedElement,
+                canvasState.projectContents,
+                {},
+                canvasState.openFile,
+                null,
+                (_, e) => e,
+              )
+              const elementParentBounds =
+                MetadataUtils.findElementByElementPath(
+                  sessionState.startingMetadata,
                   selectedElement,
-                  canvasState.projectContents,
-                  {},
-                  canvasState.openFile,
-                  null,
-                  (_, e) => e,
-                )
-                const elementParentBounds =
-                  MetadataUtils.findElementByElementPath(
-                    sessionState.startingMetadata,
-                    selectedElement,
-                  )?.specialSizeMeasurements.immediateParentBounds ?? null
+                )?.specialSizeMeasurements.immediateParentBounds ?? null
 
-                if (element == null || edgePosition == null) {
-                  return []
-                }
-                return createResizeCommands(
-                  element,
-                  selectedElement,
-                  edgePosition,
-                  drag,
-                  elementParentBounds,
-                )
-              })
-            } else {
-              return []
-            }
-          },
-        ),
+              if (element == null || edgePosition == null) {
+                return []
+              }
+              return createResizeCommands(
+                element,
+                selectedElement,
+                edgePosition,
+                drag,
+                elementParentBounds,
+              )
+            })
+            return [...resizeCommands, setElementsToRerenderCommand(canvasState.selectedElements)]
+          } else {
+            return []
+          }
+        }),
         customState: null,
       }
     }

@@ -119,6 +119,15 @@ async function retryPageCalls<T>(
     await page.waitForXPath(`//div[contains(@id, "canvas-container")]`)
     await page.waitForXPath('//div[contains(@class, "item-label-container")]')
     try {
+      const iterations = await page.evaluate(() => {
+        try {
+          // @ts-expect-error – page.evaluate remotely calls this function in the running editor!!
+          SetPerformanceScriptNumberOfIterations(100)
+        } catch (e) {
+          // SetPerformanceScriptNumberOfIterations was not on window
+        }
+      })
+
       const result = await call(page)
       // Check the result.
       const success: boolean = checkSucceeded(result)

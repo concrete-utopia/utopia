@@ -76,6 +76,7 @@ import {
   defaultUserState,
   editorModelFromPersistentModel,
   withUnderlyingTargetFromEditorState,
+  ElementProps,
 } from '../store/editor-state'
 import { editorMoveTemplate, UPDATE_FNS } from './actions'
 import {
@@ -827,12 +828,12 @@ describe('SWITCH_LAYOUT_SYSTEM', () => {
     ['aaa', 'bbb'],
   ])
 
+  const rootElementProps: ElementProps = {
+    'data-uid': 'aaa',
+  }
   const rootElementMetadata: ElementInstanceMetadata = {
     elementPath: rootElementPath,
     element: right(firstTopLevelElement.rootElement),
-    props: {
-      'data-uid': 'aaa',
-    },
     globalFrame: canvasRectangle({ x: 0, y: 0, width: 100, height: 100 }),
     localFrame: localRectangle({ x: 0, y: 0, width: 100, height: 100 }),
     componentInstance: false,
@@ -844,18 +845,18 @@ describe('SWITCH_LAYOUT_SYSTEM', () => {
     importInfo: null,
   }
 
+  const childElementProps: ElementProps = {
+    'data-uid': 'bbb',
+    style: {
+      left: 5,
+      top: 10,
+      width: 200,
+      height: 300,
+    },
+  }
   const childElementMetadata: ElementInstanceMetadata = {
     elementPath: childElementPath,
     element: right(childElement),
-    props: {
-      'data-uid': 'bbb',
-      style: {
-        left: 5,
-        top: 10,
-        width: 200,
-        height: 300,
-      },
-    },
     globalFrame: canvasRectangle({ x: 0, y: 0, width: 200, height: 300 }),
     localFrame: localRectangle({ x: 0, y: 0, width: 200, height: 300 }),
     componentInstance: false,
@@ -1489,7 +1490,6 @@ describe('SET_FOCUSED_ELEMENT', () => {
     const divElementMetadata = elementInstanceMetadata(
       pathToFocus,
       right(underlyingElement),
-      {},
       zeroRectangle as CanvasRectangle,
       zeroRectangle as LocalRectangle,
       false,
@@ -1524,7 +1524,6 @@ describe('SET_FOCUSED_ELEMENT', () => {
     const cardElementMetadata = elementInstanceMetadata(
       pathToFocus,
       right(underlyingElement),
-      {},
       zeroRectangle as CanvasRectangle,
       zeroRectangle as LocalRectangle,
       false,

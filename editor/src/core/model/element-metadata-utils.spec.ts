@@ -27,6 +27,7 @@ import {
 import { sampleImportsForTests } from './test-ui-js-file.test-utils'
 import { BakedInStoryboardUID } from './scene-utils'
 import { ElementPath } from '../shared/project-file-types'
+import { AllElementProps, ElementProps } from 'src/components/editor/store/editor-state'
 
 const TestScenePath = 'scene-aaa'
 
@@ -37,7 +38,6 @@ const testComponentMetadataChild1: ElementInstanceMetadata = {
     [BakedInStoryboardUID, TestScenePath],
     ['View', 'View0'],
   ]),
-  props: {},
   element: right(jsxTestElement('View', [], [])),
   componentInstance: false,
   isEmotionOrStyledComponent: false,
@@ -54,7 +54,6 @@ const testComponentMetadataChild2: ElementInstanceMetadata = {
     [BakedInStoryboardUID, TestScenePath],
     ['View', 'View1'],
   ]),
-  props: {},
   element: right(jsxTestElement('View', [], [])),
   componentInstance: false,
   isEmotionOrStyledComponent: false,
@@ -72,9 +71,6 @@ const testComponentMetadataGrandchild: ElementInstanceMetadata = {
     [BakedInStoryboardUID, TestScenePath],
     ['View', 'View2', 'View0'],
   ]),
-  props: {
-    cica: 'hello',
-  },
   element: right(jsxTestElement('View', [], [])),
   componentInstance: false,
   isEmotionOrStyledComponent: false,
@@ -85,6 +81,10 @@ const testComponentMetadataGrandchild: ElementInstanceMetadata = {
   importInfo: null,
 }
 
+const testComponentPropsGrandchild: ElementProps = {
+  cica: 'hello',
+}
+
 const testComponentMetadataChild3: ElementInstanceMetadata = {
   globalFrame: canvasRectangle({ x: 0, y: 0, width: 100, height: 100 }),
   localFrame: localRectangle({ x: 0, y: 0, width: 100, height: 100 }),
@@ -92,7 +92,6 @@ const testComponentMetadataChild3: ElementInstanceMetadata = {
     [BakedInStoryboardUID, TestScenePath],
     ['View', 'View2'],
   ]),
-  props: {},
   element: right(jsxTestElement('View', [], [])),
   componentInstance: false,
   isEmotionOrStyledComponent: false,
@@ -107,7 +106,6 @@ const testComponentRoot1: ElementInstanceMetadata = {
   globalFrame: canvasRectangle({ x: 0, y: 0, width: 100, height: 100 }),
   localFrame: localRectangle({ x: 0, y: 0, width: 100, height: 100 }),
   elementPath: EP.elementPath([[BakedInStoryboardUID, TestScenePath], ['View']]),
-  props: {},
   element: right(jsxTestElement('View', [], [])),
   componentInstance: false,
   isEmotionOrStyledComponent: false,
@@ -125,7 +123,6 @@ const testComponentSceneChildElementRootChild: ElementInstanceMetadata = {
     [BakedInStoryboardUID, TestScenePath, 'Scene-Child'],
     ['Scene-Child-Root', 'Child'],
   ]),
-  props: {},
   element: right(jsxTestElement('View', [], [])),
   componentInstance: false,
   isEmotionOrStyledComponent: false,
@@ -143,7 +140,6 @@ const testComponentSceneChildElementRoot: ElementInstanceMetadata = {
     [BakedInStoryboardUID, TestScenePath, 'Scene-Child'],
     ['Scene-Child-Root'],
   ]),
-  props: {},
   element: right(jsxTestElement('View', [], [])),
   componentInstance: false,
   isEmotionOrStyledComponent: false,
@@ -158,7 +154,6 @@ const testComponentSceneChildElement: ElementInstanceMetadata = {
   globalFrame: canvasRectangle({ x: 0, y: 0, width: 100, height: 100 }),
   localFrame: localRectangle({ x: 0, y: 0, width: 100, height: 100 }),
   elementPath: EP.elementPath([[BakedInStoryboardUID, TestScenePath, 'Scene-Child']]),
-  props: {},
   element: right(jsxTestElement('View', [], [])),
   componentInstance: false,
   isEmotionOrStyledComponent: false,
@@ -173,12 +168,6 @@ const testComponentSceneElement: ElementInstanceMetadata = {
   globalFrame: canvasRectangle({ x: 0, y: 0, width: 100, height: 100 }),
   localFrame: localRectangle({ x: 0, y: 0, width: 100, height: 100 }),
   elementPath: EP.elementPath([[BakedInStoryboardUID, TestScenePath]]),
-  props: {
-    style: {
-      width: 100,
-      height: 100,
-    },
-  },
   element: right(jsxTestElement('Scene', [], [])),
   componentInstance: false,
   isEmotionOrStyledComponent: false,
@@ -189,11 +178,17 @@ const testComponentSceneElement: ElementInstanceMetadata = {
   importInfo: null,
 }
 
+const testComponentSceneElementProps: ElementProps = {
+  style: {
+    width: 100,
+    height: 100,
+  },
+}
+
 const testStoryboardGrandChildElement: ElementInstanceMetadata = {
   globalFrame: canvasRectangle({ x: 0, y: 0, width: 100, height: 100 }),
   localFrame: localRectangle({ x: 0, y: 0, width: 100, height: 100 }),
   elementPath: EP.elementPath([[BakedInStoryboardUID, 'Child', 'GrandChild']]),
-  props: {},
   element: right(jsxTestElement('View', [], [])),
   componentInstance: false,
   isEmotionOrStyledComponent: false,
@@ -208,7 +203,6 @@ const testStoryboardChildElement: ElementInstanceMetadata = {
   globalFrame: canvasRectangle({ x: 0, y: 0, width: 100, height: 100 }),
   localFrame: localRectangle({ x: 0, y: 0, width: 100, height: 100 }),
   elementPath: EP.elementPath([[BakedInStoryboardUID, 'Child']]),
-  props: {},
   element: right(jsxTestElement('View', [], [])),
   componentInstance: false,
   isEmotionOrStyledComponent: false,
@@ -223,7 +217,6 @@ const testStoryboardElement: ElementInstanceMetadata = {
   globalFrame: canvasRectangle({ x: 0, y: 0, width: 0, height: 0 }),
   localFrame: localRectangle({ x: 0, y: 0, width: 0, height: 0 }),
   elementPath: EP.elementPath([[BakedInStoryboardUID]]),
-  props: {},
   element: right(jsxTestElement('Storyboard', [], [])),
   componentInstance: true,
   isEmotionOrStyledComponent: false,
@@ -251,26 +244,6 @@ const testElementMetadataMap: ElementInstanceMetadataMap = {
 }
 
 const testJsxMetadata = testElementMetadataMap
-
-describe('findElements', () => {
-  it('Finds the element metadata', () => {
-    const foundViewsWithHelloProp = MetadataUtils.findElements(
-      testElementMetadataMap,
-      (element) => {
-        return element.props['cica'] != null
-      },
-    )
-
-    expect(foundViewsWithHelloProp).toHaveLength(1)
-    expect(foundViewsWithHelloProp[0].props.cica).toEqual('hello')
-
-    const notFoundViews = MetadataUtils.findElements(
-      testElementMetadataMap,
-      (element) => element.props.nonexistentProp != null,
-    )
-    expect(notFoundViews).toHaveLength(0)
-  })
-})
 
 describe('findElementByElementPath', () => {
   it('works with an empty object', () => {
@@ -333,7 +306,6 @@ describe('targetElementSupportsChildren', () => {
         [BakedInStoryboardUID, TestScenePath],
         ['Dummy', 'Element'],
       ]),
-      props: {},
       element: right(jsxTestElement(elementName, [], [])),
       componentInstance: false,
       isEmotionOrStyledComponent: false,
@@ -460,9 +432,6 @@ describe('getElementLabel', () => {
   const spanElementMetadata = elementInstanceMetadata(
     spanPath,
     right(spanElement),
-    {
-      'data-uid': 'span-1',
-    },
     zeroRectangle as CanvasRectangle,
     zeroRectangle as LocalRectangle,
     false,
@@ -473,6 +442,9 @@ describe('getElementLabel', () => {
     null,
     null,
   )
+  const spanElementProps: ElementProps = {
+    'data-uid': 'span-1',
+  }
   const divElement = jsxElement(
     'div',
     'div-1',
@@ -482,9 +454,6 @@ describe('getElementLabel', () => {
   const divElementMetadata = elementInstanceMetadata(
     divPath,
     right(divElement),
-    {
-      'data-uid': 'div-1',
-    },
     zeroRectangle as CanvasRectangle,
     zeroRectangle as LocalRectangle,
     false,
@@ -495,12 +464,19 @@ describe('getElementLabel', () => {
     null,
     null,
   )
+  const divElementProps: ElementProps = {
+    'data-uid': 'div-1',
+  }
   const metadata: ElementInstanceMetadataMap = {
     [EP.toString(spanElementMetadata.elementPath)]: spanElementMetadata,
     [EP.toString(divElementMetadata.elementPath)]: divElementMetadata,
   }
+  const allElementProps: AllElementProps = {
+    [EP.toString(spanElementMetadata.elementPath)]: spanElementProps,
+    [EP.toString(divElementMetadata.elementPath)]: divElementProps,
+  }
   it('the label of a spin containing text is that text', () => {
-    const actualResult = MetadataUtils.getElementLabel(spanPath, metadata)
+    const actualResult = MetadataUtils.getElementLabel(allElementProps, spanPath, metadata)
     expect(actualResult).toEqual('test text')
   })
 })

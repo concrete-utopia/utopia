@@ -102,7 +102,7 @@ import { ResizesContentProp } from './scene-utils'
 import { fastForEach } from '../shared/utils'
 import { objectValues, omit } from '../shared/object-utils'
 import { UTOPIA_LABEL_KEY } from './utopia-constants'
-import { withUnderlyingTarget } from '../../components/editor/store/editor-state'
+import { AllElementProps, withUnderlyingTarget } from '../../components/editor/store/editor-state'
 import { ProjectContentTreeRoot } from '../../components/assets'
 import { memoize } from '../shared/memoize'
 import { buildTree, ElementPathTree, getSubTree } from '../shared/element-path-tree'
@@ -183,12 +183,8 @@ export const MetadataUtils = {
   ): Array<ElementInstanceMetadata> {
     return stripNulls(paths.map((path) => MetadataUtils.findElementByElementPath(elementMap, path)))
   },
-  isSceneTreatedAsGroup(scene: ElementInstanceMetadata | null): boolean {
-    if (scene == null) {
-      return false
-    } else {
-      return scene.props[ResizesContentProp] ?? false
-    }
+  isSceneTreatedAsGroup(allElementProps: AllElementProps, path: ElementPath): boolean {
+    return allElementProps?.[EP.toString(path)]?.[ResizesContentProp] ?? false
   },
   isProbablySceneFromMetadata(element: ElementInstanceMetadata | null): boolean {
     return (
@@ -204,12 +200,6 @@ export const MetadataUtils = {
   isProbablyScene(jsxMetadata: ElementInstanceMetadataMap, path: ElementPath): boolean {
     const elementMetadata = MetadataUtils.findElementByElementPath(jsxMetadata, path)
     return MetadataUtils.isProbablySceneFromMetadata(elementMetadata)
-  },
-  findElements(
-    elementMap: ElementInstanceMetadataMap,
-    predicate: (element: ElementInstanceMetadata) => boolean,
-  ): Array<ElementInstanceMetadata> {
-    return Object.values(elementMap).filter(predicate)
   },
   getViewZIndexFromMetadata(metadata: ElementInstanceMetadataMap, target: ElementPath): number {
     const siblings = MetadataUtils.getSiblings(metadata, target)
@@ -392,29 +382,26 @@ export const MetadataUtils = {
     }
   },
   setPropertyDirectlyIntoMetadata(
-    metadata: ElementInstanceMetadataMap,
+    allElementProps: AllElementProps,
     target: ElementPath,
     property: PropertyPath,
     value: any,
-  ): ElementInstanceMetadataMap {
-    return this.transformAtPathOptionally(metadata, target, (element) => {
-      return {
-        ...element,
-        props: ObjectPathImmutable.set(element.props, PP.getElements(property), value),
-      }
-    })
+  ): AllElementProps {
+    return ObjectPathImmutable.set(
+      allElementProps,
+      [EP.toString(target), ...PP.getElements(property)],
+      value,
+    )
   },
   unsetPropertyDirectlyIntoMetadata(
-    metadata: ElementInstanceMetadataMap,
+    allElementProps: AllElementProps,
     target: ElementPath,
     property: PropertyPath,
-  ): ElementInstanceMetadataMap {
-    return this.transformAtPathOptionally(metadata, target, (element) => {
-      return {
-        ...element,
-        props: ObjectPathImmutable.del(element.props, PP.getElements(property)),
-      }
-    })
+  ): AllElementProps {
+    return ObjectPathImmutable.del(allElementProps, [
+      EP.toString(target),
+      ...PP.getElements(property),
+    ])
   },
   getRootViewPaths(elements: ElementInstanceMetadataMap, target: ElementPath): Array<ElementPath> {
     const possibleRootElementsOfTarget = mapDropNulls((elementPathString) => {
@@ -624,9 +611,11 @@ export const MetadataUtils = {
   isSpan(instance: ElementInstanceMetadata): boolean {
     return this.isElementOfType(instance, 'span')
   },
-  overflows(instance: ElementInstanceMetadata | null): boolean {
-    if (instance != null) {
-      const overflow = Utils.propOr('visible', 'overflow', instance.props.style)
+  overflows(allElementProps: AllElementProps, path: ElementPath): boolean {
+    const elementProps = allElementProps[EP.toString(path)] ?? {}
+    const styleProps = elementProps.style ?? null
+    if (styleProps != null) {
+      const overflow = Utils.propOr('visible', 'overflow', styleProps)
       return overflow !== 'hidden' && overflow !== 'clip'
     } else {
       return false
@@ -676,6 +665,7 @@ export const MetadataUtils = {
   getImageMultiplier(
     metadata: ElementInstanceMetadataMap,
     targets: Array<ElementPath>,
+    allElementProps: AllElementProps,
   ): number | null {
     const multipliers: Set<number> = Utils.emptySet()
     Utils.fastForEach(targets, (target) => {
@@ -683,7 +673,7 @@ export const MetadataUtils = {
       if (instance != null && this.isImg(instance)) {
         const componentFrame = instance.localFrame
         if (componentFrame != null) {
-          const imageSize = getImageSize(instance)
+          const imageSize = getImageSize(allElementProps, instance)
           const widthMultiplier = imageSize.width / componentFrame.width
           const roundedMultiplier = Utils.roundTo(widthMultiplier, 0)
           // Recalculate the scaled dimensions to see if they match.
@@ -837,8 +827,8 @@ export const MetadataUtils = {
       }, Utils.asLocal(frame))
     }
   },
-  getElementLabelFromProps(element: ElementInstanceMetadata): string | null {
-    const dataLabelProp = element.props[UTOPIA_LABEL_KEY]
+  getElementLabelFromProps(allElementProps: AllElementProps, path: ElementPath): string | null {
+    const dataLabelProp = allElementProps?.[EP.toString(path)]?.[UTOPIA_LABEL_KEY]
     if (dataLabelProp != null && typeof dataLabelProp === 'string' && dataLabelProp.length > 0) {
       return dataLabelProp
     } else {
@@ -846,11 +836,15 @@ export const MetadataUtils = {
     }
   },
   getElementLabelFromMetadata(
+    allElementProps: AllElementProps,
     element: ElementInstanceMetadata,
     staticName: JSXElementName | null = null,
   ): string {
     const sceneLabel = element.label // KILLME?
-    const dataLabelProp = MetadataUtils.getElementLabelFromProps(element)
+    const dataLabelProp = MetadataUtils.getElementLabelFromProps(
+      allElementProps,
+      element.elementPath,
+    )
     if (dataLabelProp != null) {
       return dataLabelProp
     } else if (sceneLabel != null) {
@@ -878,19 +872,20 @@ export const MetadataUtils = {
                 }
               }
               // With images, take their alt and src properties as possible names first.
+              const elementProps = allElementProps[EP.toString(element.elementPath)] ?? {}
               if (lastNamePart === 'img') {
-                const alt = element.props['alt']
+                const alt = elementProps['alt']
                 if (alt != null && typeof alt === 'string' && alt.length > 0) {
                   return alt
                 }
-                const src = element.props['src']
+                const src = elementProps['src']
                 if (src != null && typeof src === 'string' && src.length > 0) {
                   return src
                 }
               }
               // For Text elements, use their text property if it exists.
               if (lastNamePart === 'Text') {
-                const text = element.props['text']
+                const text = elementProps['text']
                 if (text != null && typeof text === 'string' && text.length > 0) {
                   return text
                 }
@@ -924,13 +919,14 @@ export const MetadataUtils = {
     return 'Element'
   },
   getElementLabel(
+    allElementProps: AllElementProps,
     path: ElementPath,
     metadata: ElementInstanceMetadataMap,
     staticName: JSXElementName | null = null,
   ): string {
     const element = this.findElementByElementPath(metadata, path)
     if (element != null) {
-      return MetadataUtils.getElementLabelFromMetadata(element, staticName)
+      return MetadataUtils.getElementLabelFromMetadata(allElementProps, element, staticName)
     }
 
     // Default catch all name, will probably avoid some odd cases in the future.
@@ -1034,7 +1030,6 @@ export const MetadataUtils = {
 
         const elem: ElementInstanceMetadata = {
           ...domElem,
-          props: spyElem.props,
           element: jsxElement,
           componentInstance: componentInstance,
           isEmotionOrStyledComponent: spyElem.isEmotionOrStyledComponent,

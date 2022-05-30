@@ -16,7 +16,7 @@ import {
   duplicateSelected,
   toggleHidden,
 } from './editor/actions/action-creators'
-import { TransientFilesState } from './editor/store/editor-state'
+import { AllElementProps, TransientFilesState } from './editor/store/editor-state'
 import {
   toggleBackgroundLayers,
   toggleBorder,
@@ -46,6 +46,7 @@ export interface CanvasData {
   hiddenInstances: ElementPath[]
   scale: number
   focusedElementPath: ElementPath | null
+  allElementProps: AllElementProps
 }
 
 export function requireDispatch(dispatch: EditorDispatch | null | undefined): EditorDispatch {

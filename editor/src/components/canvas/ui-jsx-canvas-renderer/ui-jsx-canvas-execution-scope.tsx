@@ -43,6 +43,7 @@ import { useContextSelector } from 'use-context-selector'
 import { shallowEqual } from '../../../core/shared/equality-utils'
 import { usePubSubAtomReadOnly } from '../../../core/shared/atom-with-pub-sub'
 import { JSX_CANVAS_LOOKUP_FUNCTION_NAME } from '../../../core/shared/dom-utils'
+import { emptySet } from '../../../core/shared/set-utils'
 
 const emptyFileBlobs: UIFileBase64Blobs = {}
 
@@ -134,7 +135,7 @@ export function createExecutionScope(
       requireResult,
       hiddenInstances,
       fileBlobsForFile,
-      [],
+      new Set(),
       undefined,
       metadataContext,
       updateInvalidatedPaths,
@@ -176,11 +177,14 @@ export function createExecutionScope(
 
 const emptyHighlightBoundsResult = { code: '', highlightBounds: null }
 
-export function useGetCodeAndHighlightBounds(filePath: string | null): {
+export function useGetCodeAndHighlightBounds(
+  filePath: string | null,
+  shouldUpdateCallback: () => boolean,
+): {
   code: string
   highlightBounds: HighlightBoundsForUids | null
 } {
-  const projectContext = usePubSubAtomReadOnly(UtopiaProjectCtxAtom)
+  const projectContext = usePubSubAtomReadOnly(UtopiaProjectCtxAtom, shouldUpdateCallback)
   if (filePath == null) {
     return emptyHighlightBoundsResult
   } else {

@@ -220,6 +220,7 @@ export class InsertModeControlContainer extends React.Component<
         windowToCanvasPosition={this.props.windowToCanvasPosition}
         selectedViews={this.props.selectedViews}
         showAdditionalControls={this.props.showAdditionalControls}
+        allElementProps={this.props.allElementProps}
       />
     )
   }
