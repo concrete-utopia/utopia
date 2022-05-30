@@ -101,6 +101,7 @@ import {
 } from '../components/canvas/dom-walker'
 import { isFeatureEnabled } from '../utils/feature-switches'
 import { shouldInspectorUpdate } from '../components/inspector/inspector'
+import * as EP from '../core/shared/element-path'
 
 if (PROBABLY_ELECTRON) {
   let { webFrame } = requireElectron()
@@ -377,7 +378,11 @@ export class Editor {
         if (PerformanceMarks) {
           performance.mark(`update canvas end ${updateId}`)
           performance.measure(
-            `Update Canvas ${updateId}`,
+            `Update Canvas ${updateId} – [${
+              typeof ElementsToRerenderGLOBAL.current === 'string'
+                ? ElementsToRerenderGLOBAL.current
+                : ElementsToRerenderGLOBAL.current.map(EP.toString).join(', ')
+            }]`,
             `update canvas ${updateId}`,
             `update canvas end ${updateId}`,
           )
