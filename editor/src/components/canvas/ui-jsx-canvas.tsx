@@ -459,7 +459,7 @@ export const UiJsxCanvas = React.memo<UiJsxCanvasPropsWithErrorCallback>((props)
   clearSpyCollectorInvalidPaths(rootValidPaths, metadataContext)
 
   const sceneLevelUtopiaContextValue = useKeepReferenceEqualityIfPossible({
-    validPaths: rootValidPaths,
+    validPaths: new Set(rootValidPaths.map((path) => EP.makeLastPartOfPathStatic(path))),
   })
 
   const rerenderUtopiaContextValue = useKeepShallowReferenceEquality({

@@ -43,6 +43,7 @@ import { useContextSelector } from 'use-context-selector'
 import { shallowEqual } from '../../../core/shared/equality-utils'
 import { usePubSubAtomReadOnly } from '../../../core/shared/atom-with-pub-sub'
 import { JSX_CANVAS_LOOKUP_FUNCTION_NAME } from '../../../core/shared/dom-utils'
+import { emptySet } from '../../../core/shared/set-utils'
 
 const emptyFileBlobs: UIFileBase64Blobs = {}
 
@@ -134,7 +135,7 @@ export function createExecutionScope(
       requireResult,
       hiddenInstances,
       fileBlobsForFile,
-      [],
+      new Set(),
       undefined,
       metadataContext,
       updateInvalidatedPaths,
