@@ -50,7 +50,7 @@ export const absoluteResizeBoundingBoxStrategy: CanvasStrategy = {
         const elementProps = allElementProps[EP.toString(element)] ?? {}
         return (
           elementMetadata?.specialSizeMeasurements.position === 'absolute' &&
-          hasAtLeastTwoPinsPerSide(elementProps)
+          hasAtLeastTwoPinsPerSide(elementProps) // TODO should this use projectContents?
         )
       })
     } else {
