@@ -73,17 +73,6 @@ describe('maybeSwitchLayoutProps', () => {
     )
     const elementPath = EP.appendNewElementPath(TestScenePath, [NewUID])
 
-    const testSceneProps: ElementProps = {
-      style: {
-        width: 375,
-        height: 812,
-      },
-    }
-
-    const elementProps: ElementProps = {
-      'data-uid': NewUID,
-    }
-
     const metadata: ElementInstanceMetadataMap = {
       [EP.toString(TestScenePath)]: {
         elementPath: TestScenePath,
