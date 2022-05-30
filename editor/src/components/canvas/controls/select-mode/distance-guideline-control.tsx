@@ -28,11 +28,22 @@ export const DistanceGuidelineControl = React.memo(() => {
     (store) => store.editor.canvas.interactionSession != null,
     'DistanceGuidelineControl isInteractionActive',
   )
-
   const altKeyPressed = useEditorState(
     (store) => store.editor.keysPressed['alt'],
     'DistanceGuidelineControl altKeyPressed',
   )
+  const selectedElements = useEditorState(
+    (store) => store.editor.selectedViews,
+    'DistanceGuidelineControl selectedElements',
+  )
+  if (selectedElements.length > 0 && !isInteractionActive && altKeyPressed) {
+    return <DistanceGuidelineControlInner />
+  } else {
+    return null
+  }
+})
+
+const DistanceGuidelineControlInner = React.memo(() => {
   const highlightedViews = useEditorState(
     (store) => store.editor.highlightedViews,
     'DistanceGuidelineControl highlightedViews',
@@ -110,12 +121,7 @@ export const DistanceGuidelineControl = React.memo(() => {
     return guidelineInfo
   }, 'DistanceGuidelineControl distanceGuidelines')
 
-  if (
-    selectedElements.length > 0 &&
-    !isInteractionActive &&
-    altKeyPressed &&
-    boundingBoxes.length !== 0
-  ) {
+  if (boundingBoxes.length !== 0) {
     return (
       <>
         {distanceGuidelines.map((guidelineInfo, index) => (
