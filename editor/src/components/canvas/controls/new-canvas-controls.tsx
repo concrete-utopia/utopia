@@ -69,6 +69,7 @@ import { HTML5Backend } from 'react-dnd-html5-backend'
 import { OutlineHighlightControl } from './select-mode/outline-highlight-control'
 import { InsertionControls } from './insertion-plus-button'
 import { DistanceGuidelineControl } from './select-mode/distance-guideline-control'
+import { SceneLabelControl } from './select-mode/scene-label'
 
 export const CanvasControlsContainerID = 'new-canvas-controls-container'
 
@@ -437,7 +438,14 @@ const NewCanvasControlsInner = (props: NewCanvasControlsInnerProps) => {
       onMouseMove={onMouseMove}
     >
       {renderModeControlContainer()}
-      {renderHighlightControls()}
+      {when(
+        (isFeatureEnabled('Canvas Strategies') && props.editor.mode.type === 'select') ||
+          props.editor.mode.type === 'select-lite',
+        <SceneLabelControl
+          maybeHighlightOnHover={maybeHighlightOnHover}
+          maybeClearHighlightsOnHoverEnd={maybeClearHighlightsOnHoverEnd}
+        />,
+      )}
       {when(
         (isFeatureEnabled('Canvas Strategies') && props.editor.mode.type === 'select') ||
           props.editor.mode.type === 'select-lite',
@@ -450,6 +458,7 @@ const NewCanvasControlsInner = (props: NewCanvasControlsInnerProps) => {
           props.editor.mode.type === 'select-lite',
         <InsertionControls />,
       )}
+      {renderHighlightControls()}
       <LayoutParentControl />
       {when(
         isFeatureEnabled('Canvas Strategies'),
