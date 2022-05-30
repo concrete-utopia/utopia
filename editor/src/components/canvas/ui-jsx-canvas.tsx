@@ -479,7 +479,8 @@ export const UiJsxCanvas = React.memo<UiJsxCanvasPropsWithErrorCallback>((props)
     return StoryboardRootComponent == null ? null : (
       <StoryboardRootComponent {...{ [UTOPIA_INSTANCE_PATH]: rootInstancePath }} />
     )
-  }, [StoryboardRootComponent, rootInstancePath])
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [StoryboardRootComponent, rootInstancePath, props.domWalkerInvalidateCount, props.mountCount])
 
   return (
     <div
