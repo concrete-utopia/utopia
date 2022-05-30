@@ -534,46 +534,23 @@ export function patchedCreateReactElement(type: any, props: any, ...children: an
   // opposed to the actual rendering of the created elements, which will happen in the correct order.
   // Because of that, in order to pass down paths and UIDs we mangle the component definitions so that
   // we can pass them down at render time.
-  if (isClassComponent(type)) {
-    const mangledClass = mangleClassType(type)
-    return realCreateElement(mangledClass, props, ...children)
-  } else if (typeof type === 'function') {
-    // if the type is function and it is NOT a class component, we deduce it is a function component
-    const mangledType: React.FunctionComponent<React.PropsWithChildren<unknown>> =
-      mangleFunctionType(type)
-    return realCreateElement(mangledType, props, ...children)
-  } else if (fragmentOrProviderOrContext(type)) {
-    // fragment-like components, the list is not exhaustive, we might need to extend it later
-    const mangledType = mangleExoticType(type)
-    return realCreateElement(mangledType, props, ...children)
-  } else if (type?.$$typeof == memoSymbol) {
-    const mangledType = mangleMemoType(type)
-    return realCreateElement(mangledType, props, ...children)
-  } else if (type?.$$typeof == forwardRefSymbol) {
-    const mangledType = mangleForwardRefType(type)
-    return realCreateElement(mangledType, props, ...children)
-  } else if (typeof type === 'string') {
+  let updatedProps = { ...props }
+
+  if (!shouldIncludeDataUID(type)) {
+    updatedProps = filterDataProps(updatedProps)
+  }
+
+  if (typeof type === 'string') {
     // We cannot create a mangled type for this as that would break libraries like ReactDND that rely
     // on the type remaining intrinsic, so we have to add the paths upfront during the createElement
     // call, rather than as part of the rendering of the element
-    let updatedProps = { ...props }
-
-    if (!shouldIncludeDataUID(type)) {
-      updatedProps = filterDataProps(updatedProps)
-    }
-
     const path = props?.[UTOPIA_PATH_KEY] ?? props?.[UTOPIA_UID_KEY]
     const updatedChildren = attachPathToChildren(children, path) ?? children
 
     return realCreateElement(type, updatedProps, ...updatedChildren)
   } else {
-    // Are there other types we're missing here?
-    let updatedProps = props
-    if (!shouldIncludeDataUID(type)) {
-      updatedProps = filterDataProps(updatedProps)
-    }
-
-    return realCreateElement(type, updatedProps, ...children)
+    const mangledType = mangleElementType(type)
+    return realCreateElement(mangledType, updatedProps, ...children)
   }
 }
 
