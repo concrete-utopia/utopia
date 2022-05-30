@@ -67,6 +67,7 @@ import { GuidelineControls } from './guideline-controls'
 import { showContextMenu } from '../../editor/actions/action-creators'
 import { HTML5Backend } from 'react-dnd-html5-backend'
 import { OutlineHighlightControl } from './select-mode/outline-highlight-control'
+import { InsertionControls } from './insertion-plus-button'
 import { DistanceGuidelineControl } from './select-mode/distance-guideline-control'
 
 export const CanvasControlsContainerID = 'new-canvas-controls-container'
@@ -441,6 +442,13 @@ const NewCanvasControlsInner = (props: NewCanvasControlsInnerProps) => {
         (isFeatureEnabled('Canvas Strategies') && props.editor.mode.type === 'select') ||
           props.editor.mode.type === 'select-lite',
         <DistanceGuidelineControl />,
+      )}
+      {when(
+        (isFeatureEnabled('Canvas Strategies') &&
+          isFeatureEnabled('Insertion Plus Button') &&
+          props.editor.mode.type === 'select') ||
+          props.editor.mode.type === 'select-lite',
+        <InsertionControls />,
       )}
       <LayoutParentControl />
       {when(
