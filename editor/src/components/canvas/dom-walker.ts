@@ -298,7 +298,11 @@ export function runDomWalker({
   scale,
   additionalElementsToUpdate,
   rootMetadataInStateRef,
-}: RunDomWalkerParams): { metadata: ElementInstanceMetadata[]; cachedPaths: ElementPath[] } | null {
+}: RunDomWalkerParams): {
+  metadata: ElementInstanceMetadata[]
+  cachedPaths: ElementPath[]
+  invalidatedPaths: string[]
+} | null {
   const needsWalk =
     !domWalkerMutableState.initComplete || domWalkerMutableState.invalidatedPaths.size > 0
 
@@ -315,6 +319,9 @@ export function runDomWalker({
     if (LogDomWalkerPerformance) {
       performance.mark('DOM_WALKER_START')
     }
+
+    const invalidatedPaths = Array.from(domWalkerMutableState.invalidatedPaths)
+
     // Get some base values relating to the div this component creates.
     if (
       ObserversAvailable &&
@@ -359,7 +366,7 @@ export function runDomWalker({
     // Fragments will appear as multiple separate entries with duplicate UIDs, so we need to handle those
     const fixedMetadata = mergeFragmentMetadata(metadata)
 
-    return { metadata: fixedMetadata, cachedPaths: cachedPaths }
+    return { metadata: fixedMetadata, cachedPaths: cachedPaths, invalidatedPaths: invalidatedPaths }
   } else {
     // TODO flip if-else
     return null

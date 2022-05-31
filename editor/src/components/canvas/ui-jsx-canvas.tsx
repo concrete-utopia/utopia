@@ -83,9 +83,9 @@ import {
   createLookupRender,
   utopiaCanvasJSXLookup,
 } from './ui-jsx-canvas-renderer/ui-jsx-canvas-element-renderer-utils'
-import { applyUIDMonkeyPatch } from '../../utils/canvas-react-utils'
 import { ProjectContentTreeRoot, getContentsTreeFileFromString, walkContentsTree } from '../assets'
 import { createExecutionScope } from './ui-jsx-canvas-renderer/ui-jsx-canvas-execution-scope'
+import { applyUIDMonkeyPatch } from '../../utils/canvas-react-utils'
 import { getParseSuccessOrTransientForFilePath, getValidElementPaths } from './canvas-utils'
 import { fastForEach, NO_OP } from '../../core/shared/utils'
 import { useTwind } from '../../core/tailwind/tailwind'
