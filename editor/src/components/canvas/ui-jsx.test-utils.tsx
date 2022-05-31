@@ -231,6 +231,7 @@ export async function renderTestEditorWithModel(
       const saveDomReportAction = saveDOMReport(
         domWalkerResult.metadata,
         domWalkerResult.cachedPaths,
+        domWalkerResult.invalidatedPaths,
       )
       recordedActions.push(saveDomReportAction)
       const editorWithNewMetadata = editorDispatch(
