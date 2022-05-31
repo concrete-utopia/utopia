@@ -655,6 +655,7 @@ export interface SaveDOMReport {
   action: 'SAVE_DOM_REPORT'
   elementMetadata: ReadonlyArray<ElementInstanceMetadata>
   cachedPaths: Array<ElementPath>
+  invalidatedPaths: Array<string>
 }
 
 export interface SetProp {
