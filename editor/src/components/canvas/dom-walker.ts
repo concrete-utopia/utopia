@@ -303,7 +303,6 @@ function runDomWalkerQueryMode(
   containerRectLazy: () => CanvasRectangle,
 ): { metadata: ElementInstanceMetadata[]; cachedPaths: ElementPath[] } {
   let workingMetadata: ElementInstanceMetadata[] = []
-  let workingCachedPaths: ElementPath[] = []
 
   const canvasRootContainer = document.getElementById(CanvasContainerID)
   if (canvasRootContainer != null) {
@@ -321,8 +320,14 @@ function runDomWalkerQueryMode(
 
     elementPathsToQuery.forEach((path) => {
       const element = document.querySelector(`[data-path="${EP.toString(path)}"]`) as HTMLElement
+
+      // const pathsWithStrings = getPathWithStringsOnDomElement(element)
+      // const pathsForElement = pathsWithStrings
+      //   .map((p) => p.path)
+      //   .filter((p) => validPaths.some((validPath) => EP.pathsEqual(validPath, p)))
+
       if (element != null) {
-        const { collectedMetadata, cachedPaths } = collectAndCreateMetadataForElement(
+        const { collectedMetadata } = collectAndCreateMetadataForElement(
           element,
           parentPoint,
           scale,
@@ -334,19 +339,20 @@ function runDomWalkerQueryMode(
         )
 
         workingMetadata.push(...collectedMetadata)
-        workingCachedPaths.push(...cachedPaths)
       }
     })
+    const rootMetadataForOtherElements = rootMetadataInStateRef.current.filter(
+      (m) => !elementPathsToQuery.some((p) => EP.pathsEqual(p, m.elementPath)),
+    )
+    return {
+      metadata: [...rootMetadataForOtherElements, ...workingMetadata],
+      cachedPaths: rootMetadataForOtherElements.map((m) => m.elementPath),
+    }
   }
 
-  const queriedPaths = new Set(workingMetadata.map((m) => EP.toString(m.elementPath)))
-  const rootMetadataForOtherElements = rootMetadataInStateRef.current.filter(
-    (m) => !queriedPaths.has(EP.toString(m.elementPath)),
-  )
-
   return {
-    metadata: [...rootMetadataForOtherElements, ...workingMetadata],
-    cachedPaths: workingCachedPaths,
+    metadata: [...rootMetadataInStateRef.current],
+    cachedPaths: rootMetadataInStateRef.current.map((m) => m.elementPath),
   }
 }
 

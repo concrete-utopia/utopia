@@ -56,7 +56,7 @@ export function buildSpyWrappedElement(
     }
     if (!EP.isStoryboardPath(elementPath) || shouldIncludeCanvasRootInTheSpy) {
       const elementPathString = EP.toComponentId(elementPath)
-      updateInvalidatedPaths((current) => current.add(elementPathString))
+      updateInvalidatedPaths((current) => current)
       metadataContext.current.spyValues.metadata[elementPathString] = instanceMetadata
       metadataContext.current.spyValues.allElementProps[elementPathString] =
         makeCanvasElementPropsSafe(reportedProps)
