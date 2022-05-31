@@ -35,6 +35,7 @@ import {
   runLegacyAbsoluteResizeSnapping,
 } from './shared-absolute-resize-strategy-helpers'
 import * as EP from '../../../core/shared/element-path'
+import { ZeroSizeResizeControlWrapper } from '../controls/zero-sized-element-controls'
 
 export const absoluteResizeBoundingBoxStrategy: CanvasStrategy = {
   id: 'ABSOLUTE_RESIZE_BOUNDING_BOX',
@@ -60,6 +61,11 @@ export const absoluteResizeBoundingBoxStrategy: CanvasStrategy = {
   },
   controlsToRender: [
     { control: AbsoluteResizeControl, key: 'absolute-resize-control', show: 'always-visible' },
+    {
+      control: ZeroSizeResizeControlWrapper,
+      key: 'zero-size-resize-control',
+      show: 'always-visible',
+    },
     { control: ParentOutlines, key: 'parent-outlines-control', show: 'visible-only-while-active' },
     { control: ParentBounds, key: 'parent-bounds-control', show: 'visible-only-while-active' },
   ],

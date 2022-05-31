@@ -33,6 +33,7 @@ import { ParentBounds } from '../controls/parent-bounds'
 import { ParentOutlines } from '../controls/parent-outlines'
 import { DragOutlineControl } from '../controls/select-mode/drag-outline-control'
 import { AnimationTimer, PieTimerControl } from '../controls/select-mode/pie-timer'
+import { ZeroSizeResizeControlWrapper } from '../controls/zero-sized-element-controls'
 import { applyAbsoluteMoveCommon } from './absolute-move-strategy'
 import {
   CanvasStrategy,
@@ -61,6 +62,11 @@ export const escapeHatchStrategy: CanvasStrategy = {
     }
   },
   controlsToRender: [
+    {
+      control: ZeroSizeResizeControlWrapper,
+      key: 'zero-size-resize-control',
+      show: 'always-visible',
+    },
     {
       control: DragOutlineControl,
       key: 'ghost-outline-control',

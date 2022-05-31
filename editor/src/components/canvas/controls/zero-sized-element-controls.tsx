@@ -22,6 +22,8 @@ import { isZeroSizedElement, ZeroControlSize } from './outline-utils'
 import { ElementPath, PropertyPath } from '../../../core/shared/project-file-types'
 import { stylePropPathMappingFn } from '../../inspector/common/property-path-hooks'
 import { useEditorState } from '../../editor/store/store-hook'
+import { mapDropNulls } from '../../../core/shared/array-utils'
+import { useMaybeHighlightElement } from './select-mode/select-mode-hooks'
 
 const EmptyChildren: ElementInstanceMetadata[] = []
 export const ZeroSizedElementControls = React.memo(() => {
@@ -184,6 +186,63 @@ export const ZeroSizeOutlineControl = React.memo((props: ZeroSizeControlProps) =
         boxShadow: `0px 0px 0px ${controlSize}px ${colorTheme.primary.value}, inset 0px 0px 0px ${controlSize}px ${colorTheme.primary.value}`,
       }}
     />
+  )
+})
+
+export const ZeroSizeResizeControlWrapper = React.memo(() => {
+  const { maybeHighlightOnHover, maybeClearHighlightsOnHoverEnd } = useMaybeHighlightElement()
+  const zeroSizeElements = useEditorState((store) => {
+    return mapDropNulls((path) => {
+      const element = MetadataUtils.findElementByElementPath(store.editor.jsxMetadata, path)
+      const frame = MetadataUtils.getFrameInCanvasCoords(path, store.editor.jsxMetadata)
+      if (frame != null && isZeroSizedElement(frame)) {
+        return element
+      } else {
+        return null
+      }
+    }, store.editor.selectedViews)
+  }, 'ZeroSizeResizeControlWrapper zeroSizeElements')
+
+  const dispatch = useEditorState(
+    (store) => store.dispatch,
+    'ZeroSizeResizeControlWrapper dispatch',
+  )
+  const scale = useEditorState(
+    (store) => store.editor.canvas.scale,
+    'ZeroSizeResizeControlWrapper scale',
+  )
+  const canvasOffset = useEditorState(
+    (store) => store.editor.canvas.realCanvasOffset,
+    'ZeroSizeResizeControlWrapper canvasOffset',
+  )
+  return (
+    <React.Fragment>
+      {zeroSizeElements.map((element) => {
+        if (element.globalFrame != null) {
+          return (
+            <React.Fragment>
+              <ZeroSizeOutlineControl
+                frame={element.globalFrame}
+                canvasOffset={canvasOffset}
+                scale={scale}
+                color={null}
+              />
+              <ZeroSizeResizeControl
+                element={element}
+                frame={element.globalFrame}
+                dispatch={dispatch}
+                canvasOffset={canvasOffset}
+                scale={scale}
+                color={null}
+                maybeClearHighlightsOnHoverEnd={maybeClearHighlightsOnHoverEnd}
+              />
+            </React.Fragment>
+          )
+        } else {
+          return null
+        }
+      })}
+    </React.Fragment>
   )
 })
 
