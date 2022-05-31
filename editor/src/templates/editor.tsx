@@ -402,7 +402,13 @@ export class Editor {
         if (domWalkerResult != null) {
           dispatchResultWithMetadata = editorDispatch(
             this.boundDispatch,
-            [EditorActions.saveDOMReport(domWalkerResult.metadata, domWalkerResult.cachedPaths)],
+            [
+              EditorActions.saveDOMReport(
+                domWalkerResult.metadata,
+                domWalkerResult.cachedPaths,
+                domWalkerResult.invalidatedPaths,
+              ),
+            ],
             dispatchResult,
             this.spyCollector,
           )

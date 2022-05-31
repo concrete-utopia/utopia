@@ -391,8 +391,6 @@ export class SelectModeControlContainer extends React.Component<
               canvasOffset={this.props.canvasOffset}
               scale={this.props.scale}
               guidelines={distanceGuidelines}
-              selectedViews={this.props.selectedViews}
-              highlightedViews={this.props.highlightedViews}
               boundingBox={boundingBox}
             />,
           )
@@ -516,10 +514,10 @@ export class SelectModeControlContainer extends React.Component<
                 />
               </>
             ) : null}
-            <ZeroSizedElementControls {...this.props} />
+            <ZeroSizedElementControls />
           </>
         ) : null}
-        {when(isFeatureEnabled('Insertion Plus Button'), <InsertionControls {...this.props} />)}
+        {when(isFeatureEnabled('Insertion Plus Button'), <InsertionControls />)}
         {this.getMoveGuidelines()}
         {this.getDistanceGuidelines()}
         {this.getBoundingMarks()}

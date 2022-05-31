@@ -1,7 +1,6 @@
 import React from 'react'
 import fastDeepEquals from 'fast-deep-equal'
-import { useContextSelector } from 'use-context-selector'
-import { Scene, SceneProps } from 'utopia-api'
+import { SceneProps } from 'utopia-api'
 import { useColorTheme, UtopiaStyles } from '../../../uuiui'
 import { RerenderUtopiaCtxAtom } from './ui-jsx-canvas-contexts'
 import { DomWalkerInvalidatePathsCtxAtom, UiJsxCanvasCtxAtom } from '../ui-jsx-canvas'
@@ -19,7 +18,8 @@ export const SceneComponent = React.memo(
       AlwaysTrue,
     )
 
-    const { style, ...remainingProps } = props
+    const { style, ['data-uid']: dataUid, ...remainingProps } = props
+    // We're removing the data-uid prop here as the monkey patch will deal with it
 
     const sceneStyle: React.CSSProperties = {
       position: 'relative',
@@ -33,9 +33,9 @@ export const SceneComponent = React.memo(
     updateInvalidatedPaths((current) => current)
 
     return (
-      <Scene {...remainingProps} style={sceneStyle}>
+      <div {...remainingProps} style={sceneStyle}>
         {props.children}
-      </Scene>
+      </div>
     )
   },
   (

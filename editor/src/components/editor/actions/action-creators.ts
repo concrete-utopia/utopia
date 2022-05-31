@@ -1017,11 +1017,13 @@ export function setMainUIFile(uiFile: string): SetMainUIFile {
 export function saveDOMReport(
   elementMetadata: ElementInstanceMetadataMap,
   cachedPaths: Array<ElementPath>,
+  invalidatedPaths: Array<string>,
 ): SaveDOMReport {
   return {
     action: 'SAVE_DOM_REPORT',
     elementMetadata: elementMetadata,
     cachedPaths: cachedPaths,
+    invalidatedPaths: invalidatedPaths,
   }
 }
 
