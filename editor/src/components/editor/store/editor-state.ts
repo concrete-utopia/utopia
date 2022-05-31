@@ -1830,7 +1830,7 @@ function getElementWarningsInner(
     // Build the warnings object and add it to the map.
     if (
       widthOrHeightZero !== defaultElementWarnings.widthOrHeightZero ||
-      widthOrHeightZero !== defaultElementWarnings.absoluteWithUnpositionedParent
+      absoluteWithUnpositionedParent !== defaultElementWarnings.absoluteWithUnpositionedParent
     ) {
       const warnings: ElementWarnings = {
         widthOrHeightZero: widthOrHeightZero,
