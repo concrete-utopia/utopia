@@ -219,6 +219,7 @@ export async function renderTestEditorWithModel(
     const domWalkerResult = runDomWalker({
       domWalkerMutableState: domWalkerMutableState,
       selectedViews: workingEditorState.patchedEditor.selectedViews,
+      elementsToFocusOn: workingEditorState.patchedEditor.canvas.elementsToRerender,
       scale: workingEditorState.patchedEditor.canvas.scale,
       additionalElementsToUpdate:
         workingEditorState.patchedEditor.canvas.domWalkerAdditionalElementsToUpdate,

@@ -63,7 +63,11 @@ import { fastForEach } from '../../core/shared/utils'
 import { MapLike } from 'typescript'
 import { isFeatureEnabled } from '../../utils/feature-switches'
 import { usePubSubAtomReadOnly } from '../../core/shared/atom-with-pub-sub'
-import type { EditorState, EditorStorePatched } from '../editor/store/editor-state'
+import type {
+  EditorState,
+  EditorStorePatched,
+  ElementsToRerender,
+} from '../editor/store/editor-state'
 import { shallowEqual } from '../../core/shared/equality-utils'
 import { StrategyState } from './canvas-strategies/interaction-state'
 
@@ -285,16 +289,17 @@ interface RunDomWalkerParams {
   selectedViews: Array<ElementPath>
   scale: number
   additionalElementsToUpdate: Array<ElementPath>
+  elementsToFocusOn: ElementsToRerender
 
   domWalkerMutableState: DomWalkerMutableStateData
   rootMetadataInStateRef: { readonly current: readonly ElementInstanceMetadata[] }
 }
 
 function runDomWalkerQueryMode(
+  elementsToFocusOn: Array<ElementPath>,
   domWalkerMutableState: DomWalkerMutableStateData,
   selectedViews: Array<ElementPath>,
   scale: number,
-  additionalElementsToUpdate: Array<ElementPath>,
   rootMetadataInStateRef: { readonly current: readonly ElementInstanceMetadata[] },
   containerRectLazy: () => CanvasRectangle,
 ): { metadata: ElementInstanceMetadata[]; cachedPaths: ElementPath[] } {
@@ -302,15 +307,7 @@ function runDomWalkerQueryMode(
 
   const canvasRootContainer = document.getElementById(CanvasContainerID)
   if (canvasRootContainer != null) {
-    const allInvalidatedPaths = new Set([
-      ...Array.from(domWalkerMutableState.invalidatedPaths),
-      ...Array.from(domWalkerMutableState.invalidatedPathsForStylesheetCache),
-    ])
-
-    const elementPathsToQuery = [
-      ...Array.from(allInvalidatedPaths).map(EP.fromString),
-      ...additionalElementsToUpdate,
-    ]
+    const elementPathsToQuery = elementsToFocusOn
 
     const parentPoint = canvasPoint({ x: 0, y: 0 })
 
@@ -355,6 +352,7 @@ function runDomWalkerQueryMode(
 export function runDomWalker({
   domWalkerMutableState,
   selectedViews,
+  elementsToFocusOn,
   scale,
   additionalElementsToUpdate,
   rootMetadataInStateRef,
@@ -402,26 +400,27 @@ export function runDomWalker({
     // This assumes that the canvas root is rendering a Storyboard fragment.
     // The necessary validPaths and the root fragment's template path comes from props,
     // because the fragment is invisible in the DOM.
-    const { metadata, cachedPaths } = domWalkerMutableState.initComplete
-      ? runDomWalkerQueryMode(
-          domWalkerMutableState,
-          selectedViews,
-          scale,
-          additionalElementsToUpdate,
-          rootMetadataInStateRef,
-          containerRect,
-        )
-      : walkCanvasRootFragment(
-          canvasRootContainer,
-          rootMetadataInStateRef,
-          domWalkerMutableState.invalidatedPaths,
-          domWalkerMutableState.invalidatedPathsForStylesheetCache,
-          selectedViews,
-          !domWalkerMutableState.initComplete,
-          scale,
-          containerRect,
-          [...additionalElementsToUpdate, ...selectedViews],
-        )
+    const { metadata, cachedPaths } =
+      elementsToFocusOn === 'rerender-all-elements'
+        ? walkCanvasRootFragment(
+            canvasRootContainer,
+            rootMetadataInStateRef,
+            domWalkerMutableState.invalidatedPaths,
+            domWalkerMutableState.invalidatedPathsForStylesheetCache,
+            selectedViews,
+            !domWalkerMutableState.initComplete,
+            scale,
+            containerRect,
+            [...additionalElementsToUpdate, ...selectedViews],
+          )
+        : runDomWalkerQueryMode(
+            elementsToFocusOn,
+            domWalkerMutableState,
+            selectedViews,
+            scale,
+            rootMetadataInStateRef,
+            containerRect,
+          )
     if (LogDomWalkerPerformance) {
       performance.mark('DOM_WALKER_END')
       performance.measure(
