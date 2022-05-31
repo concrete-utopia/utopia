@@ -307,39 +307,46 @@ function runDomWalkerQueryMode(
 
   const canvasRootContainer = document.getElementById(CanvasContainerID)
   if (canvasRootContainer != null) {
-    const elementPathsToQuery = elementsToFocusOn
-
-    const parentPoint = canvasPoint({ x: 0, y: 0 })
-
-    elementPathsToQuery.forEach((path) => {
-      const element = document.querySelector(`[data-path="${EP.toString(path)}"]`) as HTMLElement
-
-      // const pathsWithStrings = getPathWithStringsOnDomElement(element)
-      // const pathsForElement = pathsWithStrings
-      //   .map((p) => p.path)
-      //   .filter((p) => validPaths.some((validPath) => EP.pathsEqual(validPath, p)))
-
-      if (element != null) {
-        const { collectedMetadata } = collectAndCreateMetadataForElement(
-          element,
-          parentPoint,
-          scale,
-          containerRectLazy,
-          [path],
-          domWalkerMutableState.invalidatedPathsForStylesheetCache,
-          selectedViews,
-          domWalkerMutableState.invalidatedPaths,
-        )
-
-        workingMetadata.push(...collectedMetadata)
-      }
-    })
-    const rootMetadataForOtherElements = rootMetadataInStateRef.current.filter(
-      (m) => !elementPathsToQuery.some((p) => EP.pathsEqual(p, m.elementPath)),
+    const validPaths: Array<ElementPath> | null = optionalMap(
+      (paths) => paths.split(' ').map(EP.fromString),
+      canvasRootContainer.getAttribute('data-utopia-valid-paths'),
     )
-    return {
-      metadata: [...rootMetadataForOtherElements, ...workingMetadata],
-      cachedPaths: rootMetadataForOtherElements.map((m) => m.elementPath),
+    if (validPaths != null) {
+      const parentPoint = canvasPoint({ x: 0, y: 0 })
+
+      elementsToFocusOn.forEach((path) => {
+        const element = document.querySelector(`[data-path="${EP.toString(path)}"]`) as HTMLElement
+
+        if (element != null) {
+          const pathsWithStrings = getPathWithStringsOnDomElement(element)
+          const foundValidPaths = pathsWithStrings.filter((pathWithString) => {
+            const staticPath = EP.makeLastPartOfPathStatic(pathWithString.path)
+            return validPaths.some((validPath) => {
+              return EP.pathsEqual(staticPath, validPath)
+            })
+          })
+
+          const { collectedMetadata } = collectAndCreateMetadataForElement(
+            element,
+            parentPoint,
+            scale,
+            containerRectLazy,
+            foundValidPaths.map((p) => p.path),
+            domWalkerMutableState.invalidatedPathsForStylesheetCache,
+            selectedViews,
+            domWalkerMutableState.invalidatedPaths,
+          )
+
+          workingMetadata.push(...collectedMetadata)
+        }
+      })
+      const rootMetadataForOtherElements = rootMetadataInStateRef.current.filter(
+        (m) => !elementsToFocusOn.some((p) => EP.pathsEqual(p, m.elementPath)),
+      )
+      return {
+        metadata: [...rootMetadataForOtherElements, ...workingMetadata],
+        cachedPaths: rootMetadataForOtherElements.map((m) => m.elementPath),
+      }
     }
   }
 
@@ -889,11 +896,7 @@ function walkCanvasRootFragment(
     // no mutation happened on the entire canvas, just return the old metadata
     return { metadata: rootMetadataInStateRef.current, cachedPaths: [canvasRootPath] }
   } else {
-    const {
-      childPaths: rootElements,
-      rootMetadata,
-      cachedPaths,
-    } = walkSceneInner(
+    const { rootMetadata, cachedPaths } = walkSceneInner(
       canvasRoot,
       validPaths,
       rootMetadataInStateRef,
