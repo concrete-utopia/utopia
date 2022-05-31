@@ -1,4 +1,4 @@
-import { PatchedReact as React } from '../../../utils/canvas-react-utils'
+import React from 'react'
 import { MapLike } from 'typescript'
 import { getUtopiaID } from '../../../core/model/element-template-utils'
 import {

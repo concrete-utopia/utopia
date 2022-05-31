@@ -12,18 +12,16 @@ try {
   disableStoredStateforTests()
 }
 
-import RealReact from 'react'
+import React from 'react'
 
 ///// IMPORTANT NOTE - THIS MUST BE BELOW THE REACT IMPORT AND ABOVE ALL OTHER IMPORTS
-const realCreateElement = RealReact.createElement
+const realCreateElement = React.createElement
 let renderCount = 0
 const monkeyCreateElement = (...params: any[]) => {
   renderCount++
   return (realCreateElement as any)(...params)
 }
-;(RealReact as any).createElement = monkeyCreateElement
-
-import { PatchedReact as React } from '../../utils/canvas-react-utils'
+;(React as any).createElement = monkeyCreateElement
 
 try {
   jest.setTimeout(10000) // in milliseconds
@@ -231,6 +229,7 @@ export async function renderTestEditorWithModel(
       const saveDomReportAction = saveDOMReport(
         domWalkerResult.metadata,
         domWalkerResult.cachedPaths,
+        domWalkerResult.invalidatedPaths,
       )
       recordedActions.push(saveDomReportAction)
       const editorWithNewMetadata = editorDispatch(

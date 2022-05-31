@@ -5,7 +5,6 @@ import { jsx, css } from '@emotion/react'
 import { MetadataUtils } from '../../../core/model/element-metadata-utils'
 import * as EP from '../../../core/shared/element-path'
 import { useColorTheme } from '../../../uuiui'
-import { ControlProps } from './new-canvas-controls'
 import {
   ElementInstanceMetadata,
   emptyComments,
@@ -22,35 +21,53 @@ import { EditorDispatch } from '../../editor/action-types'
 import { isZeroSizedElement, ZeroControlSize } from './outline-utils'
 import { ElementPath, PropertyPath } from '../../../core/shared/project-file-types'
 import { stylePropPathMappingFn } from '../../inspector/common/property-path-hooks'
+import { useEditorState } from '../../editor/store/store-hook'
 
 const EmptyChildren: ElementInstanceMetadata[] = []
-export const ZeroSizedElementControls = React.memo((props: ControlProps) => {
-  let zeroSizeChildren = EmptyChildren
-  if (props.cmdKeyPressed) {
-    zeroSizeChildren = props.selectedViews.flatMap((view) => {
-      const children = MetadataUtils.getChildren(props.componentMetadata, view)
-      return children.filter((child) => {
-        if (child.globalFrame == null) {
-          return false
-        } else {
-          return isZeroSizedElement(child.globalFrame)
-        }
+export const ZeroSizedElementControls = React.memo(() => {
+  const highlightedViews = useEditorState(
+    (store) => store.editor.highlightedViews,
+    'ZeroSizedElementControls highlightedViews',
+  )
+  const canvasOffset = useEditorState(
+    (store) => store.editor.canvas.realCanvasOffset,
+    'ZeroSizedElementControls canvasOffset',
+  )
+  const scale = useEditorState(
+    (store) => store.editor.canvas.scale,
+    'ZeroSizedElementControls scale',
+  )
+  const dispatch = useEditorState((store) => store.dispatch, 'ZeroSizedElementControls dispatch')
+
+  const zeroSizeChildren = useEditorState((store) => {
+    if (store.editor.keysPressed['cmd']) {
+      return store.editor.selectedViews.flatMap((view) => {
+        const children = MetadataUtils.getChildren(store.editor.jsxMetadata, view)
+        return children.filter((child) => {
+          if (child.globalFrame == null) {
+            return false
+          } else {
+            return isZeroSizedElement(child.globalFrame)
+          }
+        })
       })
-    })
-  }
+    } else {
+      return EmptyChildren
+    }
+  }, 'ZeroSizedElementControls selectedViews')
 
   return (
     <React.Fragment>
       {zeroSizeChildren.map((element) => {
         let isHighlighted =
-          props.highlightedViews.find((view) => EP.pathsEqual(element.elementPath, view)) != null
+          highlightedViews.find((view) => EP.pathsEqual(element.elementPath, view)) != null
         return (
           <ZeroSizeSelectControl
             key={`zero-size-element-${EP.toString(element.elementPath)}`}
             element={element}
-            dispatch={props.dispatch}
-            canvasOffset={props.canvasOffset}
-            scale={props.scale}
+            dispatch={dispatch}
+            canvasOffset={canvasOffset}
+            scale={scale}
             isHighlighted={isHighlighted}
           />
         )
