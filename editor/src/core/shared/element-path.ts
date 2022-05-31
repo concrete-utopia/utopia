@@ -137,7 +137,7 @@ function newElementPath(fullElementPath: ElementPathPart[]): ElementPath
 function newElementPath(fullElementPath: ElementPathPart[]): ElementPath {
   return {
     type: 'elementpath',
-    parts: fullElementPath,
+    parts: [...fullElementPath.map((pathPart) => [...pathPart])],
   }
 }
 
