@@ -24,6 +24,7 @@ import { stylePropPathMappingFn } from '../../inspector/common/property-path-hoo
 import { useEditorState } from '../../editor/store/store-hook'
 import { mapDropNulls } from '../../../core/shared/array-utils'
 import { useMaybeHighlightElement } from './select-mode/select-mode-hooks'
+import { CanvasOffsetWrapper } from './canvas-offset-wrapper'
 
 const EmptyChildren: ElementInstanceMetadata[] = []
 export const ZeroSizedElementControls = React.memo(() => {
@@ -169,25 +170,29 @@ export const ZeroSizeHighlightControl = React.memo((props: ZeroSizeControlProps)
   )
 })
 
-export const ZeroSizeOutlineControl = React.memo((props: ZeroSizeControlProps) => {
-  const colorTheme = useColorTheme()
-  const controlSize = 1 / props.scale
+export const ZeroSizeOutlineControl = React.memo(
+  (props: Omit<ZeroSizeControlProps, 'canvasOffset'>) => {
+    const colorTheme = useColorTheme()
+    const controlSize = 1 / props.scale
 
-  return (
-    <div
-      className='role-outline-no-size'
-      style={{
-        position: 'absolute',
-        left: props.frame.x + props.canvasOffset.x - ZeroControlSize / 2,
-        top: props.frame.y + props.canvasOffset.y - ZeroControlSize / 2,
-        width: props.frame.width + ZeroControlSize,
-        height: props.frame.height + ZeroControlSize,
-        borderRadius: ZeroControlSize / 2,
-        boxShadow: `0px 0px 0px ${controlSize}px ${colorTheme.primary.value}, inset 0px 0px 0px ${controlSize}px ${colorTheme.primary.value}`,
-      }}
-    />
-  )
-})
+    return (
+      <CanvasOffsetWrapper>
+        <div
+          className='role-outline-no-size'
+          style={{
+            position: 'absolute',
+            left: props.frame.x - ZeroControlSize / 2,
+            top: props.frame.y - ZeroControlSize / 2,
+            width: props.frame.width + ZeroControlSize,
+            height: props.frame.height + ZeroControlSize,
+            borderRadius: ZeroControlSize / 2,
+            boxShadow: `0px 0px 0px ${controlSize}px ${colorTheme.primary.value}, inset 0px 0px 0px ${controlSize}px ${colorTheme.primary.value}`,
+          }}
+        />
+      </CanvasOffsetWrapper>
+    )
+  },
+)
 
 export const ZeroSizeResizeControlWrapper = React.memo(() => {
   const { maybeHighlightOnHover, maybeClearHighlightsOnHoverEnd } = useMaybeHighlightElement()
@@ -211,27 +216,18 @@ export const ZeroSizeResizeControlWrapper = React.memo(() => {
     (store) => store.editor.canvas.scale,
     'ZeroSizeResizeControlWrapper scale',
   )
-  const canvasOffset = useEditorState(
-    (store) => store.editor.canvas.realCanvasOffset,
-    'ZeroSizeResizeControlWrapper canvasOffset',
-  )
+
   return (
     <React.Fragment>
       {zeroSizeElements.map((element) => {
         if (element.globalFrame != null) {
           return (
             <React.Fragment>
-              <ZeroSizeOutlineControl
-                frame={element.globalFrame}
-                canvasOffset={canvasOffset}
-                scale={scale}
-                color={null}
-              />
+              <ZeroSizeOutlineControl frame={element.globalFrame} scale={scale} color={null} />
               <ZeroSizeResizeControl
                 element={element}
                 frame={element.globalFrame}
                 dispatch={dispatch}
-                canvasOffset={canvasOffset}
                 scale={scale}
                 color={null}
                 maybeClearHighlightsOnHoverEnd={maybeClearHighlightsOnHoverEnd}
@@ -246,7 +242,10 @@ export const ZeroSizeResizeControlWrapper = React.memo(() => {
   )
 })
 
-interface ZeroSizeResizeControlProps extends ZeroSizeControlProps {
+interface ZeroSizeResizeControlProps {
+  frame: CanvasRectangle
+  scale: number
+  color: string | null | undefined
   element: ElementInstanceMetadata | null
   dispatch: EditorDispatch
   maybeClearHighlightsOnHoverEnd: () => void
@@ -323,18 +322,20 @@ export const ZeroSizeResizeControl = React.memo((props: ZeroSizeResizeControlPro
   }, [dispatch, element, props.frame])
 
   return (
-    <div
-      onMouseMove={onControlMouseMove}
-      onMouseDown={onControlStopPropagation}
-      onDoubleClick={onControlDoubleClick}
-      className='role-resize-no-size'
-      style={{
-        position: 'absolute',
-        left: props.frame.x + props.canvasOffset.x - ZeroControlSize / 2,
-        top: props.frame.y + props.canvasOffset.y - ZeroControlSize / 2,
-        width: props.frame.width + ZeroControlSize,
-        height: props.frame.height + ZeroControlSize,
-      }}
-    />
+    <CanvasOffsetWrapper>
+      <div
+        onMouseMove={onControlMouseMove}
+        onMouseDown={onControlStopPropagation}
+        onDoubleClick={onControlDoubleClick}
+        className='role-resize-no-size'
+        style={{
+          position: 'absolute',
+          left: props.frame.x - ZeroControlSize / 2,
+          top: props.frame.y - ZeroControlSize / 2,
+          width: props.frame.width + ZeroControlSize,
+          height: props.frame.height + ZeroControlSize,
+        }}
+      />
+    </CanvasOffsetWrapper>
   )
 })
