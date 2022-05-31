@@ -16,6 +16,16 @@ const fragmentSymbol = Symbol.for('react.fragment')
 const providerSymbol = Symbol.for('react.provider')
 const contextSymbol = Symbol.for('react.context')
 
+let uidMonkeyPatchApplied: boolean = false
+
+export function applyUIDMonkeyPatch(): void {
+  if (!uidMonkeyPatchApplied) {
+    uidMonkeyPatchApplied = true
+    ;(React as any).createElement = patchedCreateReactElement
+    ;(React as any).monkeyPatched = true
+  }
+}
+
 function getDisplayName(type: any): string {
   // taken from https://github.com/facebook/react/blob/7e405d458d6481fb1c04dfca6afab0651e6f67cd/packages/react/src/ReactElement.js#L415
   if (typeof type === 'function') {
@@ -313,9 +323,4 @@ export function isHooksErrorMessage(message: string): boolean {
       'Rendered fewer hooks than expected. This may be caused by an accidental early return statement.' ||
     message === 'Should have a queue. This is likely a bug in React. Please file an issue.'
   )
-}
-
-export const PatchedReact: typeof React = {
-  ...React,
-  createElement: patchedCreateReactElement,
 }
