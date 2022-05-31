@@ -263,7 +263,7 @@ const mangleFunctionType = Utils.memoize(
     const mangledFunctionName = `UtopiaSpiedFunctionComponent(${getDisplayName(type)})`
 
     const mangledFunction = {
-      [mangledFunctionName]: (p: any, context?: any) => {
+      [mangledFunctionName]: (props: any, context?: any) => {
         const MeasureRenderTimes =
           isFeatureEnabled('Debug mode – Performance Marks') && PERFORMANCE_MARKS_ALLOWED
         const uuid = MeasureRenderTimes ? v4() : ''
@@ -271,10 +271,10 @@ const mangleFunctionType = Utils.memoize(
           performance.mark(`render_start_${uuid}`)
         }
 
-        const path = p?.[UTOPIA_PATH_KEY] ?? p?.[UTOPIA_UID_KEY]
-        const updatedChildren = attachPathToChildren(p?.children, path)
+        const path = props?.[UTOPIA_PATH_KEY] ?? props?.[UTOPIA_UID_KEY]
+        const updatedChildren = attachPathToChildren(props?.children, path)
 
-        let updatedProps = { ...p }
+        let updatedProps = { ...props }
         if (updatedChildren != null) {
           updatedProps.children = updatedChildren
         }
@@ -283,7 +283,7 @@ const mangleFunctionType = Utils.memoize(
           type as React.FunctionComponent<React.PropsWithChildren<unknown>>
         )(updatedProps, context)
 
-        const res = attachDataUidToRoot(withUpdatedChildren, (p as any)?.[UTOPIA_UID_KEY], path)
+        const res = attachDataUidToRoot(withUpdatedChildren, (props as any)?.[UTOPIA_UID_KEY], path)
         if (MeasureRenderTimes) {
           performance.mark(`render_end_${uuid}`)
           performance.measure(
@@ -427,25 +427,25 @@ const mangleExoticType = Utils.memoize(
      */
     let mangledType: any = type
 
-    const wrapperComponent = (p: any, context?: any) => {
-      const uid = p?.[UTOPIA_UID_KEY]
-      const path = p?.[UTOPIA_PATH_KEY] ?? (p as any)?.[UTOPIA_UID_KEY]
+    const wrapperComponent = (props: any, context?: any) => {
+      const uid = props?.[UTOPIA_UID_KEY]
+      const path = props?.[UTOPIA_PATH_KEY] ?? (props as any)?.[UTOPIA_UID_KEY]
 
       let mangledProps = {
-        ...p,
+        ...props,
       }
 
       delete mangledProps[UTOPIA_UID_KEY]
       delete mangledProps[UTOPIA_PATH_KEY]
 
-      if (p?.children == null || typeof p.children === 'string') {
+      if (props?.children == null || typeof props.children === 'string') {
         return realCreateElement(mangledType, mangledProps)
       } else {
         let children: any
 
-        if (typeof p?.children === 'function') {
+        if (typeof props?.children === 'function') {
           // mangle the function so that what it returns has the data uid
-          const originalFunction = p.children
+          const originalFunction = props.children
           children = function (...params: any[]) {
             const originalResponse = originalFunction(...params)
             return updateChildOfExotic(originalResponse, uid, path)
@@ -453,12 +453,12 @@ const mangleExoticType = Utils.memoize(
         } else {
           const uidToPass = uid
 
-          if (Array.isArray(p?.children)) {
-            children = React.Children.map(p?.children, (child) =>
+          if (Array.isArray(props?.children)) {
+            children = React.Children.map(props?.children, (child) =>
               updateChildOfExotic(child, uidToPass, path),
             )
           } else {
-            children = updateChildOfExotic(p.children, uidToPass, path)
+            children = updateChildOfExotic(props.children, uidToPass, path)
           }
         }
 
