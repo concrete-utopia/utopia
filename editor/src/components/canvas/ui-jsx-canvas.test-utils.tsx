@@ -1,5 +1,7 @@
 const Prettier = jest != null ? require('prettier') : require('prettier/standalone') // TODO split these files, standalone prettier is not working in unit tests
-import { PatchedReact as React } from '../../utils/canvas-react-utils'
+import React from 'react'
+import { applyUIDMonkeyPatch } from '../../utils/canvas-react-utils'
+applyUIDMonkeyPatch()
 import * as ReactDOMServer from 'react-dom/server'
 
 import { FancyError, processErrorWithSourceMap } from '../../core/shared/code-exec-utils'
