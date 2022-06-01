@@ -1,16 +1,51 @@
 import React from 'react'
 import { Sides } from 'utopia-api/core'
+import { MetadataUtils } from '../../../core/model/element-metadata-utils'
+import { mapDropNulls } from '../../../core/shared/array-utils'
 import { CanvasRectangle, CanvasPoint } from '../../../core/shared/math-utils'
 import { useColorTheme } from '../../../uuiui'
+import { useEditorState } from '../../editor/store/store-hook'
+import { CanvasOffsetWrapper } from './canvas-offset-wrapper'
 
-interface MarginControlsProps {
+export const MarginControls = React.memo(() => {
+  const isInteractionActive = useEditorState(
+    (store) => store.editor.canvas.interactionSession != null,
+    'MarginControls isInteractionActive',
+  )
+  const scale = useEditorState((store) => store.editor.canvas.scale, 'MarginControls scale')
+  const framesAndMargins = useEditorState((store) => {
+    return mapDropNulls((path) => {
+      const frame = MetadataUtils.getFrameInCanvasCoords(path, store.editor.jsxMetadata)
+      if (frame != null) {
+        return {
+          margin: MetadataUtils.getElementMargin(path, store.editor.jsxMetadata),
+          frame: frame,
+        }
+      } else {
+        return null
+      }
+    }, store.editor.selectedViews)
+  }, 'MarginControls margin')
+
+  if (isInteractionActive) {
+    return null
+  }
+  return (
+    <>
+      {framesAndMargins.map((frameInfo, i) => (
+        <MarginControl key={i} margin={frameInfo.margin} frame={frameInfo.frame} scale={scale} />
+      ))}
+    </>
+  )
+})
+
+interface MarginControlProps {
   margin: Partial<Sides> | null
   frame: CanvasRectangle
-  canvasOffset: CanvasPoint
   scale: number
 }
 
-export const MarginControls = React.memo((props: MarginControlsProps) => {
+export const MarginControl = React.memo((props: MarginControlProps) => {
   const colorTheme = useColorTheme()
 
   if (props.margin == null) {
@@ -27,8 +62,8 @@ export const MarginControls = React.memo((props: MarginControlsProps) => {
             overflow: 'visible',
             color: colorTheme.canvasLayoutForeground.value,
             position: 'absolute',
-            left: props.frame.x + props.canvasOffset.x - props.margin.left,
-            top: props.frame.y + props.canvasOffset.y - (props.margin.top ?? 0),
+            left: props.frame.x - props.margin.left,
+            top: props.frame.y - (props.margin.top ?? 0),
             width: props.margin.left,
             height: props.frame.height + (props.margin.top ?? 0) + (props.margin.bottom ?? 0),
             lineHeight:
@@ -49,8 +84,8 @@ export const MarginControls = React.memo((props: MarginControlsProps) => {
             background: colorTheme.canvasLayoutFillTranslucent.value,
             color: colorTheme.canvasLayoutForeground.value,
             position: 'absolute',
-            left: props.frame.x + props.canvasOffset.x,
-            top: props.frame.y + props.canvasOffset.y - props.margin.top,
+            left: props.frame.x,
+            top: props.frame.y - props.margin.top,
             width: props.frame.width,
             height: props.margin.top,
             lineHeight: props.margin.top + 'px',
@@ -71,8 +106,8 @@ export const MarginControls = React.memo((props: MarginControlsProps) => {
             background: colorTheme.canvasLayoutFillTranslucent.value,
             color: colorTheme.canvasLayoutForeground.value,
             position: 'absolute',
-            left: props.frame.x + props.canvasOffset.x + props.frame.width,
-            top: props.frame.y + props.canvasOffset.y - (props.margin.top ?? 0),
+            left: props.frame.x + props.frame.width,
+            top: props.frame.y - (props.margin.top ?? 0),
             width: props.margin.right,
             height: props.frame.height + (props.margin.top ?? 0) + (props.margin.bottom ?? 0),
             lineHeight:
@@ -94,8 +129,8 @@ export const MarginControls = React.memo((props: MarginControlsProps) => {
             background: colorTheme.canvasLayoutFillTranslucent.value,
             color: colorTheme.canvasLayoutForeground.value,
             position: 'absolute',
-            left: props.frame.x + props.canvasOffset.x,
-            top: props.frame.y + props.canvasOffset.y + props.frame.height,
+            left: props.frame.x,
+            top: props.frame.y + props.frame.height,
             width: props.frame.width,
             height: props.margin.bottom,
             lineHeight: props.margin.bottom + 'px',
@@ -118,14 +153,18 @@ export const MarginControls = React.memo((props: MarginControlsProps) => {
             border: colorTheme.canvasLayoutStroke.o(20).value,
             position: 'absolute',
             pointerEvents: 'none',
-            left: props.frame.x + props.canvasOffset.x - (props.margin.left ?? 0),
-            top: props.frame.y + props.canvasOffset.y - (props.margin.top ?? 0),
+            left: props.frame.x - (props.margin.left ?? 0),
+            top: props.frame.y - (props.margin.top ?? 0),
             width: props.frame.width + (props.margin.left ?? 0) + (props.margin.right ?? 0),
             height: props.frame.height + (props.margin.top ?? 0) + (props.margin.bottom ?? 0),
           }}
         />
       )
 
-    return <>{[leftElement, topElement, rightElement, bottomElement, outerDiv]}</>
+    return (
+      <CanvasOffsetWrapper>
+        {[leftElement, topElement, rightElement, bottomElement, outerDiv]}
+      </CanvasOffsetWrapper>
+    )
   }
 })

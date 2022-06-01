@@ -10,8 +10,8 @@ import * as EP from '../../../core/shared/element-path'
 import { ControlProps } from './new-canvas-controls'
 import { Outline } from './outline'
 import { anyInstanceYogaLayouted } from './select-mode/yoga-utils'
-import { MarginControls } from './margin-controls'
-import { PaddingControls } from './padding-controls'
+import { MarginControl } from './margin-controls'
+import { PaddingControl } from './padding-controls'
 import { MoveDragState, ResizeDragState, DragState } from '../canvas-types'
 import { CanvasRectangle, offsetRect } from '../../../core/shared/math-utils'
 import { fastForEach } from '../../../core/shared/utils'
@@ -324,9 +324,8 @@ export const OutlineControls = (props: OutlineControlsProps) => {
     if (props.dragState == null) {
       const margin = MetadataUtils.getElementMargin(selectedView, props.componentMetadata)
       selectionOutlines.push(
-        <MarginControls
+        <MarginControl
           key={`${keyPrefix}-margin-controls`}
-          canvasOffset={props.canvasOffset}
           scale={props.scale}
           margin={margin}
           frame={rect}
@@ -334,9 +333,8 @@ export const OutlineControls = (props: OutlineControlsProps) => {
       )
       const padding = MetadataUtils.getElementPadding(selectedView, props.componentMetadata)
       selectionOutlines.push(
-        <PaddingControls
+        <PaddingControl
           key={`${keyPrefix}-padding-controls`}
-          canvasOffset={props.canvasOffset}
           scale={props.scale}
           padding={padding}
           frame={rect}
