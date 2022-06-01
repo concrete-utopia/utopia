@@ -307,46 +307,44 @@ function runSelectiveDomWalker(
 
   const canvasRootContainer = document.getElementById(CanvasContainerID)
   if (canvasRootContainer != null) {
-    const validPaths: Array<ElementPath> | null = optionalMap(
-      (paths) => paths.split(' ').map(EP.fromString),
+    const validPathsArr = optionalMap(
+      (paths) => paths.split(' '),
       canvasRootContainer.getAttribute('data-utopia-valid-paths'),
     )
-    if (validPaths != null) {
-      const parentPoint = canvasPoint({ x: 0, y: 0 })
+    const validPaths = new Set(validPathsArr)
 
-      elementsToFocusOn.forEach((path) => {
-        const element = document.querySelector(`[data-path="${EP.toString(path)}"]`) as HTMLElement
+    const parentPoint = canvasPoint({ x: 0, y: 0 })
 
-        if (element != null) {
-          const pathsWithStrings = getPathWithStringsOnDomElement(element)
-          const foundValidPaths = pathsWithStrings.filter((pathWithString) => {
-            const staticPath = EP.makeLastPartOfPathStatic(pathWithString.path)
-            return validPaths.some((validPath) => {
-              return EP.pathsEqual(staticPath, validPath)
-            })
-          })
+    elementsToFocusOn.forEach((path) => {
+      const element = document.querySelector(`[data-path="${EP.toString(path)}"]`) as HTMLElement
 
-          const { collectedMetadata } = collectAndCreateMetadataForElement(
-            element,
-            parentPoint,
-            scale,
-            containerRectLazy,
-            foundValidPaths.map((p) => p.path),
-            domWalkerMutableState.invalidatedPathsForStylesheetCache,
-            selectedViews,
-            domWalkerMutableState.invalidatedPaths,
-          )
+      if (element != null) {
+        const pathsWithStrings = getPathWithStringsOnDomElement(element)
+        const foundValidPaths = pathsWithStrings.filter((pathWithString) => {
+          const staticPath = EP.toString(EP.makeLastPartOfPathStatic(pathWithString.path))
+          return validPaths.has(staticPath)
+        })
 
-          workingMetadata.push(...collectedMetadata)
-        }
-      })
-      const rootMetadataForOtherElements = rootMetadataInStateRef.current.filter(
-        (m) => !elementsToFocusOn.some((p) => EP.pathsEqual(p, m.elementPath)),
-      )
-      return {
-        metadata: [...rootMetadataForOtherElements, ...workingMetadata],
-        cachedPaths: rootMetadataForOtherElements.map((m) => m.elementPath),
+        const { collectedMetadata } = collectAndCreateMetadataForElement(
+          element,
+          parentPoint,
+          scale,
+          containerRectLazy,
+          foundValidPaths.map((p) => p.path),
+          domWalkerMutableState.invalidatedPathsForStylesheetCache,
+          selectedViews,
+          domWalkerMutableState.invalidatedPaths,
+        )
+
+        workingMetadata.push(...collectedMetadata)
       }
+    })
+    const rootMetadataForOtherElements = rootMetadataInStateRef.current.filter(
+      (m) => !elementsToFocusOn.some((p) => EP.pathsEqual(p, m.elementPath)),
+    )
+    return {
+      metadata: [...rootMetadataForOtherElements, ...workingMetadata],
+      cachedPaths: rootMetadataForOtherElements.map((m) => m.elementPath),
     }
   }
 
