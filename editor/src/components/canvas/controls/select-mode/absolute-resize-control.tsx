@@ -12,6 +12,7 @@ import { CSSCursor, EdgePosition } from '../../canvas-types'
 import { windowToCanvasCoordinates } from '../../dom-lookup'
 import { useBoundingBox } from '../bounding-box-hooks'
 import { CanvasOffsetWrapper } from '../canvas-offset-wrapper'
+import { isZeroSizedElement } from '../outline-utils'
 
 const selectedElementsSelector = (store: EditorStorePatched) => store.editor.selectedViews
 export const AbsoluteResizeControl = React.memo((props) => {
@@ -21,10 +22,15 @@ export const AbsoluteResizeControl = React.memo((props) => {
   )
 
   const controlRef = useBoundingBox(selectedElements, (ref, boundingBox) => {
-    ref.current.style.left = boundingBox.x + 'px'
-    ref.current.style.top = boundingBox.y + 'px'
-    ref.current.style.width = boundingBox.width + 'px'
-    ref.current.style.height = boundingBox.height + 'px'
+    if (isZeroSizedElement(boundingBox)) {
+      ref.current.style.display = 'none'
+    } else {
+      ref.current.style.display = 'block'
+      ref.current.style.left = boundingBox.x + 'px'
+      ref.current.style.top = boundingBox.y + 'px'
+      ref.current.style.width = boundingBox.width + 'px'
+      ref.current.style.height = boundingBox.height + 'px'
+    }
   })
 
   const leftRef = useBoundingBox(selectedElements, (ref, boundingBox) => {

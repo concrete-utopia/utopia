@@ -26,7 +26,6 @@ export class Outline extends React.Component<OutlineProps> {
       return (
         <ZeroSizeOutlineControl
           frame={this.props.rect}
-          canvasOffset={this.props.offset}
           scale={this.props.scale}
           color={this.props.color}
         />

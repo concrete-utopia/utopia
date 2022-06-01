@@ -137,7 +137,10 @@ function newElementPath(fullElementPath: ElementPathPart[]): ElementPath
 function newElementPath(fullElementPath: ElementPathPart[]): ElementPath {
   return {
     type: 'elementpath',
-    parts: fullElementPath,
+    // This makes `newElementPath` defensive against potentially mutated arrays
+    // being passed in, for this small cost that should only be incurred once for
+    // each path.
+    parts: [...fullElementPath.map((pathPart) => [...pathPart])],
   }
 }
 

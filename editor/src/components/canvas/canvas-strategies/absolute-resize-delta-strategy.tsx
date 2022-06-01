@@ -11,6 +11,7 @@ import { updateHighlightedViews } from '../commands/update-highlighted-views-com
 import { ParentBounds } from '../controls/parent-bounds'
 import { ParentOutlines } from '../controls/parent-outlines'
 import { AbsoluteResizeControl } from '../controls/select-mode/absolute-resize-control'
+import { ZeroSizeResizeControlWrapper } from '../controls/zero-sized-element-controls'
 import { GuidelineWithSnappingVector } from '../guideline'
 import { CanvasStrategy, emptyStrategyApplicationResult } from './canvas-strategy-types'
 import { getMultiselectBounds } from './shared-absolute-move-strategy-helpers'
@@ -41,6 +42,11 @@ export const absoluteResizeDeltaStrategy: CanvasStrategy = {
   },
   controlsToRender: [
     { control: AbsoluteResizeControl, key: 'absolute-resize-control', show: 'always-visible' },
+    {
+      control: ZeroSizeResizeControlWrapper,
+      key: 'zero-size-resize-control',
+      show: 'always-visible',
+    },
     { control: ParentOutlines, key: 'parent-outlines-control', show: 'visible-only-while-active' },
     { control: ParentBounds, key: 'parent-bounds-control', show: 'visible-only-while-active' },
   ],

@@ -19,35 +19,38 @@ export type ElementPathTreeRoot = Array<ElementPathTree>
 export function buildTree(elementPaths: Array<ElementPath>): ElementPathTreeRoot {
   let result: ElementPathTreeRoot = []
   let workingRoot: ElementPathTreeRoot = result
-  fastForEach(elementPaths, (elementPath) => {
+  let currentPathParts: Array<ElementPathPart> = []
+  // Loop over each and every path that needs to be added.
+  for (let elementPathIndex = 0; elementPathIndex < elementPaths.length; elementPathIndex++) {
+    const elementPath = elementPaths[elementPathIndex]
     workingRoot = result
-    const totalParts = elementPath.parts.reduce((workingCount, elem) => {
-      return workingCount + elem.length
-    }, 0)
-    for (let pathSize = 1; pathSize <= totalParts; pathSize++) {
-      let subElementPathParts: Array<ElementPathPart> = []
-      let workingCount = pathSize
-      fastForEach(elementPath.parts, (pathPart) => {
-        if (workingCount >= pathPart.length) {
-          subElementPathParts.push(pathPart)
-          workingCount = workingCount - pathPart.length
-        } else if (workingCount > 0) {
-          subElementPathParts.push(pathPart.slice(0, workingCount))
-          workingCount = 0
-        }
-      })
-      const subElementPath = EP.elementPath(subElementPathParts)
+    currentPathParts = []
+    // Loop over the array segments of the path that is being added.
+    for (let pathPartIndex = 0; pathPartIndex < elementPath.parts.length; pathPartIndex++) {
+      const pathPart = elementPath.parts[pathPartIndex]
+      currentPathParts[pathPartIndex] = []
+      let currentPathPart = currentPathParts[pathPartIndex]
+      // Loop over the parts of the of the path segment.
+      for (
+        let pathPartElementIndex = 0;
+        pathPartElementIndex < pathPart.length;
+        pathPartElementIndex++
+      ) {
+        const pathPartElement = pathPart[pathPartElementIndex]
+        currentPathPart.push(pathPartElement)
+        const subElementPath = EP.elementPath(currentPathParts)
 
-      // See if there's an already existing part of the tree with this path.
-      const foundTree = workingRoot.find((elem) => EP.pathsEqual(elem.path, subElementPath))
-      let treeToTarget = foundTree ?? emptyElementPathTree(subElementPath)
-      // Add this if it doesn't already exist.
-      if (foundTree == null) {
-        workingRoot.push(treeToTarget)
+        // See if there's an already existing part of the tree with this path.
+        const foundTree = workingRoot.find((elem) => EP.pathsEqual(elem.path, subElementPath))
+        let treeToTarget = foundTree ?? emptyElementPathTree(subElementPath)
+        // Add this if it doesn't already exist.
+        if (foundTree == null) {
+          workingRoot.push(treeToTarget)
+        }
+        workingRoot = treeToTarget.children
       }
-      workingRoot = treeToTarget.children
     }
-  })
+  }
   return result
 }
 
