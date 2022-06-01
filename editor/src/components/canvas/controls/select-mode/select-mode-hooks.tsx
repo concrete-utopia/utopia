@@ -47,6 +47,7 @@ import {
 } from '../../canvas-strategies/interaction-state'
 import { Modifier, Modifiers } from '../../../../utils/modifiers'
 import { pathsEqual } from '../../../../core/shared/element-path'
+import { EditorAction } from 'src/components/editor/action-types'
 
 const DRAG_START_TRESHOLD = 2
 
@@ -507,7 +508,8 @@ function useSelectOrLiveModeSelectAndHover(
   const findValidTarget = useFindValidTarget()
   const getSelectableViewsForSelectMode = useGetSelectableViewsForSelectMode()
   const startDragStateAfterDragExceedsThreshold = useStartDragStateAfterDragExceedsThreshold()
-  const startCanvasModeSession = useStartCanvasSession()
+  //const startCanvasModeSession = useStartCanvasSession()
+  const windowToCanvasCoordinates = useWindowToCanvasCoordinates()
 
   const { onMouseMove } = useHighlightCallbacks(
     active,
@@ -532,11 +534,24 @@ function useSelectOrLiveModeSelectAndHover(
 
       const isMultiselect = event.shiftKey
       const isDeselect = foundTarget == null && !isMultiselect
+      let editorActions: Array<EditorAction> = []
 
       if (foundTarget != null || isDeselect) {
         if (foundTarget != null && draggingAllowed) {
           if (isFeatureEnabled('Canvas Strategies')) {
-            startCanvasModeSession(event.nativeEvent, foundTarget.elementPath)
+            const start = windowToCanvasCoordinates(
+              windowPoint(point(event.clientX, event.clientY)),
+            ).canvasPositionRounded
+            if (event.button !== 2) {
+              editorActions.push(
+                CanvasActions.createInteractionSession(
+                  createInteractionViaMouse(start, Modifier.modifiersForEvent(event), {
+                    type: 'BOUNDING_AREA',
+                    target: foundTarget.elementPath,
+                  }),
+                ),
+              )
+            }
           } else {
             startDragStateAfterDragExceedsThreshold(event.nativeEvent, foundTarget.elementPath)
           }
@@ -556,7 +571,7 @@ function useSelectOrLiveModeSelectAndHover(
             editorStoreRef.current.editor.jsxMetadata,
           )
           if (isFocusableLeaf) {
-            dispatch([setFocusedElement(foundTarget.elementPath)])
+            editorActions.push(setFocusedElement(foundTarget.elementPath))
           }
         }
 
@@ -572,12 +587,14 @@ function useSelectOrLiveModeSelectAndHover(
               ? [setFocusedElement(null)]
               : []
 
-            dispatch([clearSelection(), ...clearFocusedElementIfFeatureSwitchEnabled])
+            editorActions.push(clearSelection())
+            editorActions.push(...clearFocusedElementIfFeatureSwitchEnabled)
           } else {
-            dispatch([selectComponents(updatedSelection, event.shiftKey)])
+            editorActions.push(selectComponents(updatedSelection, event.shiftKey))
           }
         }
       }
+      dispatch(editorActions)
     },
     [
       dispatch,
@@ -588,7 +605,7 @@ function useSelectOrLiveModeSelectAndHover(
       getSelectableViewsForSelectMode,
       editorStoreRef,
       draggingAllowed,
-      startCanvasModeSession,
+      windowToCanvasCoordinates,
     ],
   )
 
