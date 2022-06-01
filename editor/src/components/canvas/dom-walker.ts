@@ -316,7 +316,16 @@ function runSelectiveDomWalker(
     const parentPoint = canvasPoint({ x: 0, y: 0 })
 
     elementsToFocusOn.forEach((path) => {
-      const element = document.querySelector(`[data-path="${EP.toString(path)}"]`) as HTMLElement
+      /**
+       * if a elementToFocusOn path points to a component instance, such as App/card-instance, the DOM will
+       * only contain an element with the path App/card-instance:card-root. To be able to quickly find the "rootest" element
+       * that belongs to a path, we use the ^= prefix search in querySelector.
+       * The assumption is that querySelector will return the "topmost" DOM-element with the matching prefix,
+       * which is the same as the "rootest" element we are looking for
+       */
+      const element = document.querySelector(
+        `[data-path^="${EP.toString(path)}"]`,
+      ) as HTMLElement | null
 
       if (element != null) {
         const pathsWithStrings = getPathWithStringsOnDomElement(element)
