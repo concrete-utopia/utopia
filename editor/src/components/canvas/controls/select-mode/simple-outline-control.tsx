@@ -7,6 +7,7 @@ import { useEditorState } from '../../../editor/store/store-hook'
 import { useBoundingBox } from '../bounding-box-hooks'
 import { CanvasOffsetWrapper } from '../canvas-offset-wrapper'
 import { getSelectionColor } from '../outline-control'
+import { isZeroSizedElement } from '../outline-utils'
 
 interface MultiSelectOutlineControlProps {
   localSelectedElements: Array<ElementPath>
@@ -52,10 +53,15 @@ const OutlineControl = React.memo<OutlineControlProps>((props) => {
   }, 'OutlineControl colors')
 
   const outlineRef = useBoundingBox(targets, (ref, boundingBox) => {
-    ref.current.style.left = `${boundingBox.x + 0.5 / scale}px`
-    ref.current.style.top = `${boundingBox.y + 0.5 / scale}px`
-    ref.current.style.width = `${boundingBox.width - (0.5 / scale) * 3}px`
-    ref.current.style.height = `${boundingBox.height - (0.5 / scale) * 3}px`
+    if (isZeroSizedElement(boundingBox)) {
+      ref.current.style.display = 'none'
+    } else {
+      ref.current.style.display = 'block'
+      ref.current.style.left = `${boundingBox.x + 0.5 / scale}px`
+      ref.current.style.top = `${boundingBox.y + 0.5 / scale}px`
+      ref.current.style.width = `${boundingBox.width - (0.5 / scale) * 3}px`
+      ref.current.style.height = `${boundingBox.height - (0.5 / scale) * 3}px`
+    }
   })
 
   const color =
