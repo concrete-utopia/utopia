@@ -234,16 +234,19 @@ export function useGetApplicableStrategyControls(): Array<ControlWithKey> {
     (store) => store.strategyState.currentStrategy,
     'currentStrategy',
   )
+  const betterCurrentStrategy =
+    currentStrategy === 'ESCAPE_HATCH_STRATEGY' ? 'ABSOLUTE_MOVE' : currentStrategy
+
   return React.useMemo(() => {
     return applicableStrategies.reduce<ControlWithKey[]>((working, s) => {
       const filteredControls = s.controlsToRender.filter(
         (control) =>
           control.show === 'always-visible' ||
-          (control.show === 'visible-only-while-active' && s.id === currentStrategy),
+          (control.show === 'visible-only-while-active' && s.id === betterCurrentStrategy),
       )
       return addAllUniquelyBy(working, filteredControls, (l, r) => l.control === r.control)
     }, [])
-  }, [applicableStrategies, currentStrategy])
+  }, [applicableStrategies, betterCurrentStrategy])
 }
 
 export function isStrategyActive(strategyState: StrategyState): boolean {

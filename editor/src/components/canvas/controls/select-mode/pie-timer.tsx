@@ -1,5 +1,10 @@
 import React from 'react'
-import { CanvasVector, offsetPoint } from '../../../../core/shared/math-utils'
+import {
+  canvasPoint,
+  CanvasPoint,
+  CanvasVector,
+  offsetPoint,
+} from '../../../../core/shared/math-utils'
 import {
   useEditorState,
   useRefEditorState,
@@ -111,7 +116,7 @@ const PieTimer = React.memo(() => {
 })
 
 export const PieTimerControl = React.memo(() => {
-  const elementRef = useApplyCursorPositionToStyle()
+  const elementRef = useApplyCursorPositionToStyle(CursorCompanionOffset)
   const showControl = useEditorState((store) => {
     if (store.editor.canvas.interactionSession?.interactionData.type === 'DRAG') {
       return (
@@ -138,30 +143,27 @@ export const PieTimerControl = React.memo(() => {
   )
 })
 
-const CursorCompanionOffset = { x: 20, y: 0 }
-export function useApplyCursorPositionToStyle(): React.RefObject<HTMLDivElement> {
+const CursorCompanionOffset = canvasPoint({ x: 20, y: 0 })
+export function useApplyCursorPositionToStyle(
+  offset: CanvasPoint,
+): React.RefObject<HTMLDivElement> {
   const elementRef = React.useRef<HTMLDivElement>(null)
   const applyCursorPosition = React.useCallback(
     (cursorPosition: CanvasVector | null) => {
       if (elementRef.current != null) {
         if (cursorPosition != null) {
-          elementRef.current.style.setProperty(
-            'left',
-            `${cursorPosition.x + CursorCompanionOffset.x}px`,
-          )
-          elementRef.current.style.setProperty(
-            'top',
-            `${cursorPosition.y + CursorCompanionOffset.y}px`,
-          )
+          elementRef.current.style.setProperty('left', `${cursorPosition.x + offset.x}px`)
+          elementRef.current.style.setProperty('top', `${cursorPosition.y + offset.y}px`)
           elementRef.current.style.setProperty('display', 'block')
         } else {
           elementRef.current.style.setProperty('display', 'none')
         }
       }
     },
-    [elementRef],
+    [elementRef, offset],
   )
 
+  const interactionSessionRef = useRefEditorState((store) => store.editor.canvas.interactionSession)
   useSelectorWithCallback((store) => {
     if (store.editor.canvas.interactionSession?.interactionData.type === 'DRAG') {
       if (store.editor.canvas.interactionSession.interactionData.drag != null) {
@@ -178,8 +180,20 @@ export function useApplyCursorPositionToStyle(): React.RefObject<HTMLDivElement>
   }, applyCursorPosition)
 
   const applyCursorPositionEffect = React.useCallback(() => {
-    applyCursorPosition(null)
-  }, [applyCursorPosition])
+    if (
+      interactionSessionRef.current != null &&
+      interactionSessionRef.current.interactionData.type === 'DRAG'
+    ) {
+      const cursorPosition =
+        interactionSessionRef.current.interactionData.drag != null
+          ? offsetPoint(
+              interactionSessionRef.current.interactionData.dragStart,
+              interactionSessionRef.current.interactionData.drag,
+            )
+          : interactionSessionRef.current.interactionData.drag
+      return applyCursorPosition(cursorPosition)
+    }
+  }, [applyCursorPosition, interactionSessionRef])
   React.useLayoutEffect(applyCursorPositionEffect, [applyCursorPositionEffect])
 
   return elementRef

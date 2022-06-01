@@ -12,6 +12,7 @@ import { runLegacyAbsoluteMoveSnapping } from '../controls/guideline-helpers'
 import { ParentBounds } from '../controls/parent-bounds'
 import { ParentOutlines } from '../controls/parent-outlines'
 import { determineConstrainedDragAxis } from '../controls/select-mode/move-utils'
+import { AbsoluteMoveCompanion } from '../cursor-companions/absolute-move-companion'
 import { ConstrainedDragAxis, GuidelineWithSnappingVector } from '../guideline'
 import {
   CanvasStrategy,
@@ -50,6 +51,11 @@ export const absoluteMoveStrategy: CanvasStrategy = {
     {
       control: ParentBounds,
       key: 'parent-bounds-control',
+      show: 'visible-only-while-active',
+    },
+    {
+      control: AbsoluteMoveCompanion,
+      key: 'absolute-move-companion',
       show: 'visible-only-while-active',
     },
   ], // Uses existing hooks in select-mode-hooks.tsx

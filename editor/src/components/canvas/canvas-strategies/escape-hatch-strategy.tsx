@@ -34,6 +34,7 @@ import { ParentOutlines } from '../controls/parent-outlines'
 import { DragOutlineControl } from '../controls/select-mode/drag-outline-control'
 import { AnimationTimer, PieTimerControl } from '../controls/select-mode/pie-timer'
 import { ZeroSizeResizeControlWrapper } from '../controls/zero-sized-element-controls'
+import { AbsoluteMoveCompanion } from '../cursor-companions/absolute-move-companion'
 import { applyAbsoluteMoveCommon } from './absolute-move-strategy'
 import {
   CanvasStrategy,
@@ -72,11 +73,11 @@ export const escapeHatchStrategy: CanvasStrategy = {
       key: 'ghost-outline-control',
       show: 'visible-only-while-active',
     },
-    {
-      control: PieTimerControl,
-      key: 'pie-timer-control',
-      show: 'visible-only-while-active',
-    },
+    // {
+    //   control: PieTimerControl,
+    //   key: 'pie-timer-control',
+    //   show: 'visible-only-while-active',
+    // },
     {
       control: ParentOutlines,
       key: 'parent-outlines-control',
@@ -85,6 +86,11 @@ export const escapeHatchStrategy: CanvasStrategy = {
     {
       control: ParentBounds,
       key: 'parent-bounds-control',
+      show: 'visible-only-while-active',
+    },
+    {
+      control: AbsoluteMoveCompanion,
+      key: 'escape-hatch-companion',
       show: 'visible-only-while-active',
     },
   ],
@@ -116,9 +122,9 @@ export const escapeHatchStrategy: CanvasStrategy = {
         shouldEscapeHatch = true
       } else {
         if (
-          escapeHatchActivated ||
-          interactionState.interactionData.globalTime - interactionState.lastInteractionTime >
-            AnimationTimer
+          escapeHatchActivated
+          // ||interactionState.interactionData.globalTime - interactionState.lastInteractionTime >
+          //   AnimationTimer
         ) {
           shouldEscapeHatch = true
           escapeHatchActivated = true
