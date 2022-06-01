@@ -592,7 +592,6 @@ export class ResizeRectangle extends React.Component<ResizeRectangleProps> {
       return (
         <ZeroSizeResizeControl
           frame={this.props.measureSize}
-          canvasOffset={this.props.canvasOffset}
           scale={this.props.scale}
           color={null}
           dispatch={this.props.dispatch}
