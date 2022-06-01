@@ -249,7 +249,7 @@ function mergeFragmentMetadata(
 }
 
 export interface DomWalkerMutableStateData {
-  invalidatedPaths: Set<string>
+  invalidatedPaths: Set<string> // warning: all subtrees under each invalidated path should invalidated
   invalidatedPathsForStylesheetCache: Set<string>
   initComplete: boolean
 
@@ -292,7 +292,7 @@ interface RunDomWalkerParams {
   elementsToFocusOn: ElementsToRerender
 
   domWalkerMutableState: DomWalkerMutableStateData
-  rootMetadataInStateRef: { readonly current: readonly ElementInstanceMetadata[] }
+  rootMetadataInStateRef: { readonly current: readonly ElementInstanceMetadata[] } // TODO: use ElementInstanceMetadataMap inside dom walker, just like everywhere else
 }
 
 function runSelectiveDomWalker(
@@ -363,6 +363,10 @@ function runSelectiveDomWalker(
   }
 }
 
+// Dom walker has 3 modes for performance reasons:
+// Fastest is the selective mode, this runs when elementsToFocusOn is not 'rerender-all-elements'. In this case it only collects the metadata of the elements in elementsToFocusOn
+// Middle speed is when initComplete is true, in this case it traverses the full dom but only collects the metadata for the not invalidated elements (stored in invalidatedPaths)
+// Slowest is the full run, when elementsToFocusOn is 'rerender-all-elements' and initComplete is false
 export function runDomWalker({
   domWalkerMutableState,
   selectedViews,
@@ -415,6 +419,8 @@ export function runDomWalker({
     // The necessary validPaths and the root fragment's template path comes from props,
     // because the fragment is invisible in the DOM.
     const { metadata, cachedPaths } =
+      // when we don't rerender all elements we just run the dom walker in selective mode: only update the metatdata
+      // of the currently rendered elements (for performance reasons)
       elementsToFocusOn === 'rerender-all-elements'
         ? walkCanvasRootFragment(
             canvasRootContainer,
@@ -1122,6 +1128,9 @@ function walkElements(
     let childPaths: Array<ElementPath> = []
     let rootMetadataAccumulator: ReadonlyArray<ElementInstanceMetadata> = []
     let cachedPathsAccumulator: Array<ElementPath> = []
+    // TODO: we should not traverse the children when all elements of this subtree will be retrieved from cache anyway
+    // WARNING: we need to retrieve the metadata of all elements of the subtree from the cache, because the SAVE_DOM_REPORT
+    // action replaces (and not merges) the full metadata map
     if (traverseChildren) {
       element.childNodes.forEach((child) => {
         const {

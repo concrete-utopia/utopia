@@ -396,7 +396,7 @@ export class Editor {
           additionalElementsToUpdate:
             dispatchResult.patchedEditor.canvas.domWalkerAdditionalElementsToUpdate,
           rootMetadataInStateRef: {
-            current: Object.values(dispatchResult.patchedEditor.domMetadata),
+            current: Object.values(dispatchResult.patchedEditor.domMetadata), // TODO: use directly the map here
           },
         })
 
