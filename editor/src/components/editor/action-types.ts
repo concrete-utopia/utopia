@@ -653,7 +653,7 @@ export interface SendLinterRequestMessage {
 
 export interface SaveDOMReport {
   action: 'SAVE_DOM_REPORT'
-  elementMetadata: ReadonlyArray<ElementInstanceMetadata>
+  elementMetadata: ElementInstanceMetadataMap
   cachedPaths: Array<ElementPath>
   invalidatedPaths: Array<string>
 }

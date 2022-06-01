@@ -179,7 +179,7 @@ export function createComponentRendererComponent(params: {
         } else {
           return invalidPaths
         }
-      }, 'invalidate')
+      })
     }
 
     if (utopiaJsxComponent.arbitraryJSBlock != null && shouldUpdate) {

@@ -1015,7 +1015,7 @@ export function setMainUIFile(uiFile: string): SetMainUIFile {
 }
 
 export function saveDOMReport(
-  elementMetadata: ReadonlyArray<ElementInstanceMetadata>,
+  elementMetadata: ElementInstanceMetadataMap,
   cachedPaths: Array<ElementPath>,
   invalidatedPaths: Array<string>,
 ): SaveDOMReport {

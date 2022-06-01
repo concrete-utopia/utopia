@@ -999,7 +999,7 @@ export const MetadataUtils = {
   mergeComponentMetadata(
     elementsByUID: ElementsByUID,
     fromSpy: ElementInstanceMetadataMap,
-    fromDOM: Array<ElementInstanceMetadata>,
+    fromDOM: ElementInstanceMetadataMap,
   ): ElementInstanceMetadataMap {
     // This logic effectively puts everything from the spy first,
     // then anything missed out from the DOM right after it.
@@ -1009,11 +1009,12 @@ export const MetadataUtils = {
     // wont make any difference.
     let workingElements: ElementInstanceMetadataMap = { ...fromSpy }
     let newlyFoundElements: Array<ElementPath> = []
-    fastForEach(fromDOM, (domElem) => {
-      const spyElem = MetadataUtils.findElementByElementPath(fromSpy, domElem.elementPath)
+    fastForEach(Object.keys(fromDOM), (pathStr) => {
+      const domElem = fromDOM[pathStr]
+      const spyElem = fromSpy[pathStr]
 
       if (spyElem == null) {
-        workingElements[EP.toString(domElem.elementPath)] = domElem
+        workingElements[pathStr] = domElem
         newlyFoundElements.push(domElem.elementPath)
       } else {
         let componentInstance = spyElem.componentInstance || domElem.componentInstance
