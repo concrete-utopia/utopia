@@ -1009,11 +1009,12 @@ export const MetadataUtils = {
     // wont make any difference.
     let workingElements: ElementInstanceMetadataMap = { ...fromSpy }
     let newlyFoundElements: Array<ElementPath> = []
-    fastForEach(Object.values(fromDOM), (domElem) => {
-      const spyElem = MetadataUtils.findElementByElementPath(fromSpy, domElem.elementPath)
+    fastForEach(Object.keys(fromDOM), (pathStr) => {
+      const domElem = fromDOM[pathStr]
+      const spyElem = fromSpy[pathStr]
 
       if (spyElem == null) {
-        workingElements[EP.toString(domElem.elementPath)] = domElem
+        workingElements[pathStr] = domElem
         newlyFoundElements.push(domElem.elementPath)
       } else {
         let componentInstance = spyElem.componentInstance || domElem.componentInstance
