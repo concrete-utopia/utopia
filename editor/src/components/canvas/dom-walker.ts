@@ -295,7 +295,7 @@ interface RunDomWalkerParams {
   rootMetadataInStateRef: { readonly current: readonly ElementInstanceMetadata[] }
 }
 
-function runDomWalkerQueryMode(
+function runSelectiveDomWalker(
   elementsToFocusOn: Array<ElementPath>,
   domWalkerMutableState: DomWalkerMutableStateData,
   selectedViews: Array<ElementPath>,
@@ -420,7 +420,7 @@ export function runDomWalker({
             containerRect,
             [...additionalElementsToUpdate, ...selectedViews],
           )
-        : runDomWalkerQueryMode(
+        : runSelectiveDomWalker(
             elementsToFocusOn,
             domWalkerMutableState,
             selectedViews,
