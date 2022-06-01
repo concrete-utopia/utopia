@@ -16,6 +16,7 @@ import {
   StyleAttributeMetadata,
   emptyAttributeMetadatada,
   ElementInstanceMetadataMap,
+  parseFlexDirection,
 } from '../../core/shared/element-template'
 import { ElementPath } from '../../core/shared/project-file-types'
 import { getCanvasRectangleFromElement, getDOMAttribute } from '../../core/shared/dom-utils'
@@ -785,7 +786,7 @@ function getSpecialMeasurements(
   const parentLayoutSystem = elementLayoutSystem(parentElementStyle)
   const parentProvidesLayout = element.parentElement === element.offsetParent
   const parentFlexDirection = parentElementStyle?.flexDirection ?? null
-  const flexDirection = elementStyle.flexDirection ?? null
+  const flexDirection = parseFlexDirection(elementStyle.flexDirection)
 
   const margin = applicative4Either(
     applicativeSidesPxTransform,

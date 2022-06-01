@@ -60,6 +60,7 @@ import {
   ElementInstanceMetadataMap,
   isIntrinsicHTMLElement,
   getJSXAttribute,
+  FlexDirection,
 } from '../shared/element-template'
 import {
   getModifiableJSXAttributeAtPath,
@@ -366,7 +367,7 @@ export const MetadataUtils = {
       return null
     }
   },
-  getFlexDirection: function (instance: ElementInstanceMetadata | null): string {
+  getFlexDirection: function (instance: ElementInstanceMetadata | null): FlexDirection {
     return instance?.specialSizeMeasurements?.flexDirection ?? 'row'
   },
   findParent(metadata: ElementInstanceMetadataMap, target: ElementPath): ElementPath | null {

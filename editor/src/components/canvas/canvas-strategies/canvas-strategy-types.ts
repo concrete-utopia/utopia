@@ -54,6 +54,7 @@ export type CanvasStrategyId =
   | 'KEYBOARD_ABSOLUTE_MOVE'
   | 'KEYBOARD_ABSOLUTE_RESIZE'
   | 'ESCAPE_HATCH_STRATEGY'
+  | 'FLEX_BASIS_RESIZE'
   | 'FLEX_REORDER'
 
 export interface CanvasStrategy {

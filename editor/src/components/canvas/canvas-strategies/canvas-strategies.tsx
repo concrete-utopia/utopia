@@ -23,6 +23,7 @@ import { absoluteResizeBoundingBoxStrategy } from './absolute-resize-bounding-bo
 import { keyboardAbsoluteResizeStrategy } from './keyboard-absolute-resize-strategy'
 import { escapeHatchStrategy } from './escape-hatch-strategy'
 import { flexReorderStrategy } from './flex-reorder-strategy'
+import { flexBasisResizeStrategy } from './flex-resize-strategy'
 
 export const RegisteredCanvasStrategies: Array<CanvasStrategy> = [
   absoluteMoveStrategy,
@@ -31,6 +32,7 @@ export const RegisteredCanvasStrategies: Array<CanvasStrategy> = [
   keyboardAbsoluteResizeStrategy,
   absoluteResizeBoundingBoxStrategy,
   absoluteResizeDeltaStrategy,
+  flexBasisResizeStrategy,
   flexReorderStrategy,
   escapeHatchStrategy,
 ]

@@ -1527,6 +1527,21 @@ export function elementInstanceMetadata(
 
 export type DetectedLayoutSystem = 'flex' | 'grid' | 'flow' | 'none'
 export type SettableLayoutSystem = 'flex' | 'flow' | 'grid' | LayoutSystem
+export type FlexDirection = 'row' | 'row-reverse' | 'column' | 'column-reverse'
+
+// TODO Replace with an Either typed parser? Throw or log an error?
+export function parseFlexDirection(input: string | null): FlexDirection | null {
+  if (
+    input === 'row' ||
+    input === 'row-reverse' ||
+    input === 'column' ||
+    input === 'column-reverse'
+  ) {
+    return input
+  } else {
+    return null
+  }
+}
 
 export interface SpecialSizeMeasurements {
   offset: LocalPoint
@@ -1546,7 +1561,7 @@ export interface SpecialSizeMeasurements {
   clientWidth: number
   clientHeight: number
   parentFlexDirection: string | null
-  flexDirection: string | null
+  flexDirection: FlexDirection | null
   htmlElementName: string
   renderedChildrenCount: number
   globalContentBox: CanvasRectangle | null
@@ -1570,7 +1585,7 @@ export function specialSizeMeasurements(
   clientWidth: number,
   clientHeight: number,
   parentFlexDirection: string | null,
-  flexDirection: string | null,
+  flexDirection: FlexDirection | null,
   htmlElementName: string,
   renderedChildrenCount: number,
   globalContentBox: CanvasRectangle | null,

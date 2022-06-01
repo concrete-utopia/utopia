@@ -1,4 +1,6 @@
 import React from 'react'
+import { EditorStorePatched } from '../../../../components/editor/store/editor-state'
+import { Modifier } from '../../../../utils/modifiers'
 import { LayoutTargetableProp } from '../../../../core/layout/layout-helpers-new'
 import { MetadataUtils } from '../../../../core/model/element-metadata-utils'
 import { ElementInstanceMetadataMap } from '../../../../core/shared/element-template'
@@ -14,6 +16,7 @@ import { EditorDispatch } from '../../../editor/action-types'
 import { setResizeOptionsTargetOptions } from '../../../editor/actions/action-creators'
 import { useEditorState, useRefEditorState } from '../../../editor/store/store-hook'
 import CanvasActions from '../../canvas-actions'
+import { createInteractionViaMouse } from '../../canvas-strategies/interaction-state'
 import {
   CSSCursor,
   DirectionHorizontal,
@@ -27,78 +30,59 @@ import { windowToCanvasCoordinates } from '../../dom-lookup'
 import { useBoundingBox } from '../bounding-box-hooks'
 import { CanvasOffsetWrapper } from '../canvas-offset-wrapper'
 
-interface FlexResizeControlProps {
-  localSelectedElements: Array<ElementPath>
-}
+const selectedElementsSelector = (store: EditorStorePatched) => store.editor.selectedViews
+export const FlexResizeControl = React.memo(() => {
+  const selectedElements = useEditorState(
+    selectedElementsSelector,
+    'FlexResizeControl selectedElements',
+  )
 
-export const FlexResizeControl = React.memo<FlexResizeControlProps>((props) => {
-  const localSelectedElements = props.localSelectedElements
-  const allSelectedElementsFlex = useEditorState((store) => {
-    return (
-      localSelectedElements.length > 0 &&
-      localSelectedElements.every((path) => {
-        return (
-          MetadataUtils.findElementByElementPath(store.editor.jsxMetadata, path)
-            ?.specialSizeMeasurements.parentLayoutSystem === 'flex'
-        )
-      })
-    )
-  }, 'FlexResizeControl allSelectedElementsFlex')
-
-  const flexElements = allSelectedElementsFlex ? localSelectedElements : []
-
-  const controlRef = useBoundingBox(flexElements, (ref, boundingBox) => {
+  const controlRef = useBoundingBox(selectedElements, (ref, boundingBox) => {
     ref.current.style.left = boundingBox.x + 'px'
     ref.current.style.top = boundingBox.y + 'px'
     ref.current.style.width = boundingBox.width + 'px'
     ref.current.style.height = boundingBox.height + 'px'
   })
 
-  const rightRef = useBoundingBox(flexElements, (ref, boundingBox) => {
+  const rightRef = useBoundingBox(selectedElements, (ref, boundingBox) => {
     ref.current.style.left = boundingBox.width + 'px'
     ref.current.style.top = boundingBox.height / 2 + 'px'
   })
 
-  const bottomRef = useBoundingBox(flexElements, (ref, boundingBox) => {
+  const bottomRef = useBoundingBox(selectedElements, (ref, boundingBox) => {
     ref.current.style.left = boundingBox.width / 2 + 'px'
     ref.current.style.top = boundingBox.height + 'px'
   })
 
-  if (allSelectedElementsFlex) {
-    return (
-      <CanvasOffsetWrapper>
-        <div
-          ref={controlRef}
-          style={{
-            position: 'absolute',
-          }}
-        >
-          <ResizeEdge
-            ref={rightRef}
-            position={{ x: 1, y: 0.5 }}
-            cursor={CSSCursor.ResizeEW}
-            direction='vertical'
-            enabledDirection={DirectionHorizontal}
-          />
-          <ResizeEdge
-            ref={bottomRef}
-            position={{ x: 0.5, y: 1 }}
-            cursor={CSSCursor.ResizeNS}
-            direction='horizontal'
-            enabledDirection={DirectionVertical}
-          />
-        </div>
-      </CanvasOffsetWrapper>
-    )
-  }
-  return null
+  return (
+    <CanvasOffsetWrapper>
+      <div
+        ref={controlRef}
+        style={{
+          position: 'absolute',
+        }}
+      >
+        <ResizeEdge
+          ref={rightRef}
+          position={{ x: 1, y: 0.5 }}
+          cursor={CSSCursor.ResizeEW}
+          direction='vertical'
+        />
+        <ResizeEdge
+          ref={bottomRef}
+          position={{ x: 0.5, y: 1 }}
+          cursor={CSSCursor.ResizeNS}
+          direction='horizontal'
+        />
+      </div>
+    </CanvasOffsetWrapper>
+  )
 })
 
 interface ResizeEdgeProps {
   cursor: CSSCursor
   position: EdgePosition
   direction: 'horizontal' | 'vertical'
-  enabledDirection: EdgePosition
 }
 
 const ResizeEdgeMouseAreaSize = 12
@@ -109,32 +93,13 @@ const ResizeEdge = React.memo(
       props.position.y === 0.5 ? DimensionableControlVertical : DimensionableControlHorizontal
     const dispatch = useEditorState((store) => store.dispatch, 'ResizeEdge dispatch')
     const scale = useEditorState((store) => store.editor.canvas.scale, 'ResizeEdge scale')
-    const jsxMetadataRef = useRefEditorState((store) => store.editor.jsxMetadata)
-    const selectedViewsRef = useRefEditorState((store) => store.editor.selectedViews)
     const canvasOffsetRef = useRefEditorState((store) => store.editor.canvas.roundedCanvasOffset)
 
     const onEdgeMouseDown = React.useCallback(
       (event: React.MouseEvent<HTMLDivElement>) => {
-        startResizeInteraction(
-          event,
-          dispatch,
-          props.position,
-          props.enabledDirection,
-          jsxMetadataRef.current,
-          selectedViewsRef.current,
-          canvasOffsetRef.current,
-          scale,
-        )
+        startResizeInteraction(event, dispatch, props.position, canvasOffsetRef.current, scale)
       },
-      [
-        dispatch,
-        props.position,
-        props.enabledDirection,
-        jsxMetadataRef,
-        selectedViewsRef,
-        canvasOffsetRef,
-        scale,
-      ],
+      [dispatch, props.position, canvasOffsetRef, scale],
     )
 
     return (
@@ -161,73 +126,28 @@ function startResizeInteraction(
   event: React.MouseEvent<HTMLDivElement>,
   dispatch: EditorDispatch,
   position: EdgePosition,
-  enabledDirection: EdgePosition,
-  metadata: ElementInstanceMetadataMap,
-  selectedViews: Array<ElementPath>,
   canvasOffset: CanvasVector,
   scale: number,
 ) {
   event.stopPropagation()
-  if (event.buttons === 1) {
-    // TODO update this to call createInteractionSession to use canvas strategies
-    const centerBasedResize = event.altKey
-    const keepAspectRatio = event.shiftKey // || props.elementAspectRatioLocked ???
-    const enableSnapping = !event.metaKey
+  if (event.buttons === 1 && event.button !== 2) {
     const canvasPositions = windowToCanvasCoordinates(
       scale,
       canvasOffset,
       windowPoint({ x: event.nativeEvent.x, y: event.nativeEvent.y }),
     )
-    const start: CanvasPoint = canvasPositions.canvasPositionRaw
-    const originalFrames = getOriginalFrames(selectedViews, metadata)
-    const isMultiSelect = selectedViews.length > 1
-
-    const originalSize = boundingRectangleArray(
-      selectedViews.map((path) => MetadataUtils.getFrameInCanvasCoords(path, metadata)),
-    )
-    const flexDirection = MetadataUtils.getFlexDirection(
-      MetadataUtils.getParent(metadata, selectedViews[0]),
-    )
-    let possibleTargetProperty: LayoutTargetableProp | undefined = undefined
-    if (position.x === 0.5) {
-      possibleTargetProperty =
-        flexDirection === 'column' || flexDirection === 'column-reverse' ? 'flexBasis' : 'height'
-    } else if (position.y === 0.5) {
-      possibleTargetProperty =
-        flexDirection === 'row' || flexDirection === 'row-reverse' ? 'flexBasis' : 'width'
-    }
-
-    if (originalSize != null) {
-      const newDragState = updateResizeDragState(
-        resizeDragState(
-          originalSize,
-          originalFrames,
-          position,
-          enabledDirection,
-          metadata,
-          selectedViews,
-          isMultiSelect,
-          [],
+    dispatch([
+      CanvasActions.createInteractionSession(
+        createInteractionViaMouse(
+          canvasPositions.canvasPositionRaw,
+          Modifier.modifiersForEvent(event),
+          {
+            type: 'RESIZE_HANDLE',
+            edgePosition: position,
+          },
         ),
-        start,
-        null,
-        possibleTargetProperty,
-        enableSnapping,
-        centerBasedResize,
-        keepAspectRatio,
-      )
-
-      dispatch(
-        [
-          CanvasActions.createDragState(newDragState),
-          setResizeOptionsTargetOptions(
-            possibleTargetProperty != null ? [possibleTargetProperty] : [],
-            0,
-          ),
-        ],
-        'canvas',
-      )
-    }
+      ),
+    ])
   }
 }
 
