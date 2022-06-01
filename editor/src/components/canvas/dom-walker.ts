@@ -469,7 +469,7 @@ export function initDomWalkerObservers(
     const canvasInteractionHappening = selectCanvasInteractionHappening(editorStore.getState())
     const selectedViews = editorStore.getState().editor.selectedViews
     if (canvasInteractionHappening) {
-      // Only add the selected views
+      // Warning this only adds the selected views instead of the observed element
       fastForEach(selectedViews, (v) => {
         domWalkerMutableState.invalidatedPaths.add(EP.toString(v))
       })
@@ -477,7 +477,7 @@ export function initDomWalkerObservers(
       for (let entry of entries) {
         const sceneID = findParentScene(entry.target)
         if (sceneID != null) {
-          domWalkerMutableState.invalidatedPaths.add(sceneID)
+          domWalkerMutableState.invalidatedPaths.add(sceneID) // warning this invalidates the entire scene instead of just the observed element.
         }
       }
     }
@@ -488,7 +488,7 @@ export function initDomWalkerObservers(
     const selectedViews = editorStore.getState().editor.selectedViews
 
     if (canvasInteractionHappening) {
-      // Only add the selected views
+      // Warning this only adds the selected views instead of the observed element
       fastForEach(selectedViews, (v) => {
         domWalkerMutableState.invalidatedPaths.add(EP.toString(v))
       })
@@ -502,7 +502,7 @@ export function initDomWalkerObservers(
           if (mutation.target instanceof HTMLElement) {
             const sceneID = findParentScene(mutation.target)
             if (sceneID != null) {
-              domWalkerMutableState.invalidatedPaths.add(sceneID)
+              domWalkerMutableState.invalidatedPaths.add(sceneID) // warning this invalidates the entire scene instead of just the observed element.
             }
           }
         }
