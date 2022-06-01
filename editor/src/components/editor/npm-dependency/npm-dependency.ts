@@ -523,10 +523,7 @@ export function importResultFromImports(
     if (requireResult == null) {
       console.warn(`Could not find ${importSource} with a require call.`)
     } else {
-      result = {
-        ...result,
-        ...importResultFromModule(imports[importSource], requireResult),
-      }
+      Object.assign(result, importResultFromModule(imports[importSource], requireResult))
     }
   })
   return result

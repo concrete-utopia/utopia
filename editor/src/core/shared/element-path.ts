@@ -434,15 +434,7 @@ export function fullElementPathsEqual(l: ElementPathPart[], r: ElementPathPart[]
 }
 
 export function pathsEqual(l: ElementPath | null, r: ElementPath | null): boolean {
-  if (l == null) {
-    return r == null
-  } else if (r == null) {
-    return false
-  } else if (l === r) {
-    return true
-  } else {
-    return fullElementPathsEqual(l.parts, r.parts)
-  }
+  return l === r
 }
 
 export function containsPath(path: ElementPath, paths: Array<ElementPath>): boolean {

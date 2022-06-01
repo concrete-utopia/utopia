@@ -1,7 +1,7 @@
 import { LoadModule, loadModuleResult, MatchFile, ModuleLoader } from './loader-types'
 
 const matchFile: MatchFile = (filename: string) => {
-  return ['.json'].some((extension) => filename.endsWith(extension))
+  return filename.endsWith('.json')
 }
 
 const loadModule: LoadModule = (filename: string, contents: string) => {
