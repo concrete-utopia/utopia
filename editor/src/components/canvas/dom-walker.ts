@@ -606,7 +606,7 @@ function collectMetadata(
         EP.pathsEqual(pathForElement, additionalElementToUpdate),
       )
     })
-  if (shouldCollect && pathsForElement.length > 0) {
+  if (shouldCollect) {
     return collectAndCreateMetadataForElement(
       element,
       parentPoint,
