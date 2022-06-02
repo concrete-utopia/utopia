@@ -57,6 +57,7 @@ import { handleStrategies } from './dispatch-strategies'
 
 import { emptySet } from '../../../core/shared/set-utils'
 import { RegisteredCanvasStrategies } from '../../canvas/canvas-strategies/canvas-strategies'
+import { toString } from '../../../core/shared/element-path'
 
 type DispatchResultFields = {
   nothingChanged: boolean
@@ -444,6 +445,16 @@ export function editorDispatch(
 
   const frozenEditorState = editorWithModelChecked.editorState
 
+  if (
+    dispatchedActions.every((action) => action.action !== 'SELECT_COMPONENTS') &&
+    patchedEditorState.selectedViews.length > 0 &&
+    patchedEditorState.jsxMetadata[toString(patchedEditorState.selectedViews[0])] != null &&
+    patchedEditorState.jsxMetadata[toString(patchedEditorState.selectedViews[0])].computedStyle ==
+      null
+  ) {
+    console.error('Szia Balint! a finalStore rossz!')
+  }
+
   const finalStore: DispatchResult = {
     unpatchedEditor: frozenEditorState,
     patchedEditor: patchedEditorState,
@@ -464,14 +475,7 @@ export function editorDispatch(
     builtInDependencies: storedState.builtInDependencies,
   }
 
-  if (!finalStore.nothingChanged) {
-    /**
-     * Heads up: we do not log dispatches that resulted in a NO_OP. This is to avoid clogging up the
-     * history with a million CLEAR_HIGHLIGHTED_VIEWS and other such actions.
-     *  */
-
-    reduxDevtoolsSendActions(actionGroupsToProcess, finalStore)
-  }
+  reduxDevtoolsSendActions(actionGroupsToProcess, finalStore)
 
   if (storedState.userState.loginState.type !== result.userState.loginState.type) {
     if (isLoggedIn(result.userState.loginState)) {

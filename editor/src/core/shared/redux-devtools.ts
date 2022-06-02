@@ -62,6 +62,7 @@ const ActionsToOmit: Array<EditorAction['action']> = ['UPDATE_PREVIEW_CONNECTED'
 const ActionsWithPayload: Array<EditorAction['action']> = [
   'CREATE_INTERACTION_SESSION',
   'UPDATE_INTERACTION_SESSION',
+  'CLEAR_INTERACTION_SESSION',
 ]
 
 let lastDispatchedStore: SanitizedState
@@ -71,6 +72,7 @@ const PlaceholderMessage = '<<SANITIZED_FROM_DEVTOOLS>>'
 function simplifiedMetadata(elementMetadata: Partial<ElementInstanceMetadata>) {
   return {
     globalFrame: elementMetadata.globalFrame,
+    computedStyle: elementMetadata.computedStyle,
   }
 }
 
@@ -85,7 +87,24 @@ type SanitizedState = ReturnType<typeof sanitizeLoggedState>
 function sanitizeLoggedState(store: EditorStoreFull) {
   return {
     patchedEditor: {
+      selectedViews: store.patchedEditor.selectedViews.map(EP.toString) as any, // this is easier for human consumption
+      canvas: {
+        mountCount: store.patchedEditor.canvas.mountCount,
+        domWalkerInvalidateCount: store.patchedEditor.canvas.domWalkerInvalidateCount,
+        canvasContentInvalidateCount: store.patchedEditor.canvas.canvasContentInvalidateCount,
+        elementsToRerender: store.patchedEditor.canvas.elementsToRerender,
+        interactionSession: {
+          metadata: simplifiedMetadataMap(
+            store.patchedEditor.canvas.interactionSession?.metadata ?? {},
+          ) as any,
+        },
+      } as Partial<EditorState['canvas']>,
       jsxMetadata: simplifiedMetadataMap(store.patchedEditor.jsxMetadata) as any,
+      domMetadata: simplifiedMetadataMap(store.patchedEditor.domMetadata) as any,
+      spyMetadata: simplifiedMetadataMap(store.patchedEditor.spyMetadata) as any,
+      allElementProps: objectMap((props) => {
+        return Object.keys(props)
+      }, store.patchedEditor.allElementProps),
     } as Partial<EditorState>,
   }
 }
