@@ -183,6 +183,14 @@ export const NavigatorWidthAtom = atomWithPubSub({
   defaultValue: DefaultNavigatorWidth,
 })
 
+export const CompanionIconTypeAtom = atomWithPubSub<{ absoluteMove: 1 | 2; flexReorder: 1 | 2 }>({
+  key: 'CompanionIconType',
+  defaultValue: {
+    absoluteMove: 1,
+    flexReorder: 1,
+  },
+})
+
 export enum RightMenuTab {
   Insert = 'insert',
   Inspector = 'inspector',

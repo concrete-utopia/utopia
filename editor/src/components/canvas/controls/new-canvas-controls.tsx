@@ -71,6 +71,7 @@ import { OutlineHighlightControl } from './select-mode/outline-highlight-control
 import { InsertionControls } from './insertion-plus-button'
 import { DistanceGuidelineControl } from './select-mode/distance-guideline-control'
 import { SceneLabelControl } from './select-mode/scene-label'
+import { CompanionSelector } from './companion-selector'
 
 export const CanvasControlsContainerID = 'new-canvas-controls-container'
 
@@ -475,6 +476,7 @@ const NewCanvasControlsInner = (props: NewCanvasControlsInnerProps) => {
         isFeatureEnabled('Canvas Strategies'),
         <>{strategyControls.map((c) => React.createElement(c.control, { key: c.key }))}</>,
       )}
+      <CompanionSelector />
     </div>
   )
 }
