@@ -1,19 +1,23 @@
 import React from 'react'
+import { AlwaysTrue, usePubSubAtomReadOnly } from '../../../core/shared/atom-with-pub-sub'
 import { canvasPoint } from '../../../core/shared/math-utils'
+import { CompanionIconTypeAtom } from '../../editor/store/editor-state'
 import { CanvasOffsetWrapper } from '../controls/canvas-offset-wrapper'
 import { useApplyCursorPositionToStyle } from '../controls/select-mode/pie-timer'
 
 const CursorCompanionOffset = canvasPoint({ x: 15, y: -15 })
 
-const SVGWidth = 25
-const SVGHeight = 12
+const SVGWidth = 31
+const SVGHeight = 16
 
 export const ElementReorderCompanion = React.memo(() => {
   const elementRef = useApplyCursorPositionToStyle(CursorCompanionOffset)
+  const iconType = usePubSubAtomReadOnly(CompanionIconTypeAtom, AlwaysTrue).flexReorder
+  const IconForType = iconType === 1 ? ColorWhite : ColorBlack
   return (
     <CanvasOffsetWrapper>
       <div style={{ position: 'absolute', width: 25, height: 12 }} ref={elementRef}>
-        <ColorWhite />
+        <IconForType />
       </div>
     </CanvasOffsetWrapper>
   )
@@ -24,24 +28,51 @@ const ColorBlack = React.memo(() => {
     <svg
       width={SVGWidth}
       height={SVGHeight}
-      viewBox='0 0 75 38'
+      viewBox='0 0 95 48'
       fill='none'
       xmlns='http://www.w3.org/2000/svg'
     >
-      <path
-        fillRule='evenodd'
-        clipRule='evenodd'
-        d='M18 19.0156H2V35.0156H18V19.0156ZM0 17.0156V37.0156H20V17.0156H0Z'
-        fill='white'
-      />
-      <path
-        d='M17.6548 21.1922L18.623 21.4421L18.873 20.4739C19.6059 17.6351 22.0416 13.8864 26.0428 10.8848C29.9891 7.92438 35.3136 5.8051 41.6714 6.01426C47.3597 6.20138 51.5661 8.29679 54.9132 11.6309C57.0803 13.7897 58.9193 16.5021 60.5369 19.6363L54.0863 16.8142C52.8214 16.2607 51.3473 16.8376 50.7939 18.1025C50.2404 19.3675 50.8173 20.8415 52.0822 21.3949L64.4503 26.806C65.7153 27.3594 67.1894 26.7826 67.7428 25.5177L73.1538 13.1495C73.7072 11.8846 73.1304 10.4105 71.8655 9.85709C70.6005 9.30367 69.1265 9.88049 68.573 11.1454L65.452 18.2794C63.5653 14.4453 61.298 10.9337 58.4419 8.08858C54.2393 3.90224 48.8464 1.24759 41.8358 1.01696C34.2251 0.76659 27.8027 3.31405 23.0423 6.88512C18.3371 10.4149 15.1061 15.0626 14.0317 19.224L13.7818 20.1922L14.75 20.4422L17.6548 21.1922Z'
-        fill='black'
-        stroke='white'
-        strokeWidth='2'
-      />
-      <path d='M2 19H18V35H2V19Z' fill='black' />
-      <rect x='28' y='18.0156' width='18' height='18' fill='black' stroke='white' strokeWidth='2' />
+      <g filter='url(#filter0_d_109_23)'>
+        <rect x={34} y={21} width={18} height={18} fill='black' stroke='white' strokeWidth={2} />
+        <rect x={7} y={21} width={18} height={18} fill='white' stroke='white' strokeWidth={2} />
+        <path
+          d='M23.2327 24.9737L24.2037 25.2261L24.4529 24.2543C25.3464 20.7701 28.3013 16.2063 33.1286 12.5607C37.8947 8.96133 44.3243 6.38575 51.9986 6.6399C59.0627 6.87385 64.4923 8.94941 68.9314 12.7295C72.0997 15.4274 74.8633 19.0789 77.3422 23.7741L69.0807 20.2722C67.6505 19.666 66.0091 20.3444 65.4114 21.7735L66.3339 22.1594L65.4114 21.7735C64.8151 23.1992 65.4771 24.8476 66.9037 25.4523L81.8279 31.7783C83.258 32.3845 84.8995 31.7061 85.4972 30.277L91.7811 15.2528C92.3774 13.8271 91.7154 12.1787 90.2888 11.574C88.8587 10.9678 87.2172 11.6462 86.6195 13.0753L82.8178 22.1649C79.9773 16.5447 76.6417 11.9236 72.552 8.44098C67.0356 3.74347 60.351 1.29087 52.1831 1.02037C43.1022 0.719639 35.4413 3.77927 29.7639 8.06686C24.1478 12.3081 20.3056 17.8832 19.0313 22.8519L18.7837 23.8174L19.7485 24.0682L23.2327 24.9737Z'
+          fill='black'
+          stroke='white'
+          strokeWidth={2}
+        />
+        <rect x={8} y={22} width={16} height={16} fill='black' />
+      </g>
+      <defs>
+        <filter
+          id='filter0_d_109_23'
+          x={0}
+          y={-0.0000152588}
+          width={95.0002}
+          height={48}
+          filterUnits='userSpaceOnUse'
+          colorInterpolationFilters='sRGB'
+        >
+          <feFlood floodOpacity={0} result='BackgroundImageFix' />
+          <feColorMatrix
+            in='SourceAlpha'
+            type='matrix'
+            values='0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 127 0'
+            result='hardAlpha'
+          />
+          <feOffset dx={-2} dy={4} />
+          <feGaussianBlur stdDeviation={2} />
+          <feComposite in2='hardAlpha' operator='out' />
+          <feColorMatrix type='matrix' values='0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0.25 0' />
+          <feBlend mode='normal' in2='BackgroundImageFix' result='effect1_dropShadow_109_23' />
+          <feBlend
+            mode='normal'
+            in='SourceGraphic'
+            in2='effect1_dropShadow_109_23'
+            result='shape'
+          />
+        </filter>
+      </defs>
     </svg>
   )
 })
@@ -51,19 +82,51 @@ const ColorWhite = React.memo(() => {
     <svg
       width={SVGWidth}
       height={SVGHeight}
-      viewBox='0 0 77 37'
+      viewBox='0 0 95 48'
       fill='none'
       xmlns='http://www.w3.org/2000/svg'
     >
-      <rect x='28' y='18' width='18' height='18' fill='white' stroke='black' strokeWidth='2' />
-      <rect x='1' y='18' width='18' height='18' fill='white' stroke='black' strokeWidth='2' />
-      <path
-        d='M17.6548 21.1922L18.623 21.4421L18.873 20.4739C19.6059 17.6351 22.0416 13.8864 26.0428 10.8848C29.9891 7.92438 35.3136 5.8051 41.6714 6.01426C47.5293 6.20696 52.0193 7.9152 55.688 11.0185C58.212 13.1535 60.4304 16.0194 62.4301 19.6884L55.9804 16.9727C54.7079 16.437 53.242 17.0342 52.7062 18.3067C52.1704 19.5792 52.7676 21.0451 54.0402 21.5809L66.4822 26.8197C67.7547 27.3555 69.2207 26.7583 69.7565 25.4857L74.9952 13.0437C75.531 11.7712 74.9338 10.3052 73.6613 9.76944C72.3888 9.23364 70.9229 9.83088 70.3871 11.1034L67.3554 18.3036C65.0151 13.777 62.2706 10.0377 58.9171 7.20104C54.286 3.28368 48.6765 1.242 41.8358 1.01696C34.2251 0.76659 27.8027 3.31405 23.0423 6.88512C18.3371 10.4149 15.1061 15.0626 14.0317 19.224L13.7818 20.1922L14.75 20.4422L17.6548 21.1922Z'
-        fill='white'
-        stroke='black'
-        strokeWidth='2'
-      />
-      <rect x='2' y='19' width='16' height='16' fill='white' />
+      <g filter='url(#filter0_d_108_10)'>
+        <rect x={34} y={21} width={18} height={18} fill='white' stroke='black' strokeWidth={2} />
+        <rect x={7} y={21} width={18} height={18} fill='white' stroke='black' strokeWidth={2} />
+        <path
+          d='M23.2327 24.9737L24.2037 25.2261L24.4529 24.2543C25.3464 20.7701 28.3013 16.2063 33.1286 12.5607C37.8947 8.96133 44.3243 6.38575 51.9986 6.6399C59.0627 6.87385 64.4923 8.94941 68.9314 12.7295C72.0997 15.4274 74.8633 19.0789 77.3422 23.7741L69.0807 20.2722C67.6505 19.666 66.0091 20.3444 65.4114 21.7735L66.3339 22.1594L65.4114 21.7735C64.8151 23.1992 65.4771 24.8476 66.9037 25.4523L81.8279 31.7783C83.258 32.3845 84.8995 31.7061 85.4972 30.277L91.7811 15.2528C92.3774 13.8271 91.7154 12.1787 90.2888 11.574C88.8587 10.9678 87.2172 11.6462 86.6195 13.0753L82.8178 22.1649C79.9773 16.5447 76.6417 11.9236 72.552 8.44098C67.0356 3.74347 60.351 1.29087 52.1831 1.02037C43.1022 0.719639 35.4413 3.77927 29.7639 8.06686C24.1478 12.3081 20.3056 17.8832 19.0313 22.8519L18.7837 23.8174L19.7485 24.0682L23.2327 24.9737Z'
+          fill='white'
+          stroke='black'
+          strokeWidth={2}
+        />
+        <rect x={8} y={22} width={16} height={16} fill='white' />
+      </g>
+      <defs>
+        <filter
+          id='filter0_d_108_10'
+          x={0}
+          y={-0.0000152588}
+          width={95.0002}
+          height={48}
+          filterUnits='userSpaceOnUse'
+          colorInterpolationFilters='sRGB'
+        >
+          <feFlood floodOpacity={0} result='BackgroundImageFix' />
+          <feColorMatrix
+            in='SourceAlpha'
+            type='matrix'
+            values='0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 127 0'
+            result='hardAlpha'
+          />
+          <feOffset dx={-2} dy={4} />
+          <feGaussianBlur stdDeviation={2} />
+          <feComposite in2='hardAlpha' operator='out' />
+          <feColorMatrix type='matrix' values='0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0.25 0' />
+          <feBlend mode='normal' in2='BackgroundImageFix' result='effect1_dropShadow_108_10' />
+          <feBlend
+            mode='normal'
+            in='SourceGraphic'
+            in2='effect1_dropShadow_108_10'
+            result='shape'
+          />
+        </filter>
+      </defs>
     </svg>
   )
 })
