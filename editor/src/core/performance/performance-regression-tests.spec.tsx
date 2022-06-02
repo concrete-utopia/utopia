@@ -15,7 +15,7 @@ jest.mock('../../components/canvas/controls/outline-utils', () => ({
 }))
 
 describe('React Render Count Tests -', () => {
-  it('Clicking on opacity slider with a simple project', async () => {
+  xit('Clicking on opacity slider with a simple project', async () => {
     const renderResult = await renderTestEditorWithCode(
       makeTestProjectCodeWithSnippet(`
       <View style={{ ...props.style }} data-uid='aaa'>
@@ -67,7 +67,7 @@ describe('React Render Count Tests -', () => {
     expect(renderCountAfter - renderCountBefore).toMatchInlineSnapshot(`435`)
   })
 
-  it('Clicking on opacity slider with a less simple project', async () => {
+  xit('Clicking on opacity slider with a less simple project', async () => {
     const renderResult = await renderTestEditorWithCode(
       makeTestProjectCodeWithComponentInnards(`
       const [i, setI] = React.useState(0)
@@ -127,7 +127,7 @@ describe('React Render Count Tests -', () => {
     expect(renderCountAfter - renderCountBefore).toMatchInlineSnapshot(`498`)
   })
 
-  it('Changing the selected view with a simple project', async () => {
+  xit('Changing the selected view with a simple project', async () => {
     const renderResult = await renderTestEditorWithCode(
       makeTestProjectCodeWithSnippet(`
       <View style={{ ...props.style }} data-uid='aaa'>
@@ -181,7 +181,7 @@ describe('React Render Count Tests -', () => {
     expect(renderCountAfter - renderCountBefore).toMatchInlineSnapshot(`577`)
   })
 
-  it('Changing the selected view with a less simple project', async () => {
+  xit('Changing the selected view with a less simple project', async () => {
     const renderResult = await renderTestEditorWithCode(
       makeTestProjectCodeWithComponentInnards(`
       const [i, setI] = React.useState(0)
