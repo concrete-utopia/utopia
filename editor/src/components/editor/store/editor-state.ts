@@ -186,8 +186,8 @@ export const NavigatorWidthAtom = atomWithPubSub({
 export const CompanionIconTypeAtom = atomWithPubSub<{ absoluteMove: 1 | 2; flexReorder: 1 | 2 }>({
   key: 'CompanionIconType',
   defaultValue: {
-    absoluteMove: 1,
-    flexReorder: 1,
+    absoluteMove: 2,
+    flexReorder: 2,
   },
 })
 
