@@ -78,6 +78,8 @@ function simplifiedMetadataMap(metadata: ElementInstanceMetadataMap) {
 }
 
 function sanitizeEditor(editor: EditorState) {
+  // When you debug something, feel free to add it to the sanitized editor. right now it contains a few keys that I needed.
+  // Be careful about what you add: logging too much stuff chokes the redux devtool
   return {
     selectedViews: editor.selectedViews.map(EP.toString) as any, // this is easier for human consumption
     canvas: {
