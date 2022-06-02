@@ -69,8 +69,9 @@ let lastDispatchedStore: SanitizedState
 
 const PlaceholderMessage = '<<SANITIZED_FROM_DEVTOOLS>>'
 
-function simplifiedMetadata(elementMetadata: Partial<ElementInstanceMetadata>) {
+function simplifiedMetadata(elementMetadata: ElementInstanceMetadata) {
   return {
+    elementPath: EP.toString(elementMetadata.elementPath),
     globalFrame: elementMetadata.globalFrame,
     computedStyle: elementMetadata.computedStyle,
   }
@@ -83,29 +84,28 @@ function simplifiedMetadataMap(metadata: ElementInstanceMetadataMap) {
   return sanitizedSpyData
 }
 
+function sanitizeEditor(editor: EditorState) {
+  return {
+    selectedViews: editor.selectedViews.map(EP.toString) as any, // this is easier for human consumption
+    canvas: {
+      mountCount: editor.canvas.mountCount,
+      domWalkerInvalidateCount: editor.canvas.domWalkerInvalidateCount,
+      canvasContentInvalidateCount: editor.canvas.canvasContentInvalidateCount,
+      interactionSession: {
+        metadata: simplifiedMetadataMap(editor.canvas.interactionSession?.metadata ?? {}) as any,
+      },
+    } as Partial<EditorState['canvas']>,
+    jsxMetadata: simplifiedMetadataMap(editor.jsxMetadata) as any,
+    domMetadata: simplifiedMetadataMap(editor.domMetadata) as any,
+    spyMetadata: simplifiedMetadataMap(editor.spyMetadata) as any,
+  } as Partial<EditorState>
+}
+
 type SanitizedState = ReturnType<typeof sanitizeLoggedState>
 function sanitizeLoggedState(store: EditorStoreFull) {
   return {
-    patchedEditor: {
-      selectedViews: store.patchedEditor.selectedViews.map(EP.toString) as any, // this is easier for human consumption
-      canvas: {
-        mountCount: store.patchedEditor.canvas.mountCount,
-        domWalkerInvalidateCount: store.patchedEditor.canvas.domWalkerInvalidateCount,
-        canvasContentInvalidateCount: store.patchedEditor.canvas.canvasContentInvalidateCount,
-        elementsToRerender: store.patchedEditor.canvas.elementsToRerender,
-        interactionSession: {
-          metadata: simplifiedMetadataMap(
-            store.patchedEditor.canvas.interactionSession?.metadata ?? {},
-          ) as any,
-        },
-      } as Partial<EditorState['canvas']>,
-      jsxMetadata: simplifiedMetadataMap(store.patchedEditor.jsxMetadata) as any,
-      domMetadata: simplifiedMetadataMap(store.patchedEditor.domMetadata) as any,
-      spyMetadata: simplifiedMetadataMap(store.patchedEditor.spyMetadata) as any,
-      allElementProps: objectMap((props) => {
-        return Object.keys(props)
-      }, store.patchedEditor.allElementProps),
-    } as Partial<EditorState>,
+    unpatchedEditor: sanitizeEditor(store.unpatchedEditor),
+    patchedEditor: sanitizeEditor(store.patchedEditor),
   }
 }
 
@@ -122,9 +122,19 @@ export function reduxDevtoolsSendActions(
     const filteredActions = actions
       .flat()
       .filter((action) => !ActionsToOmit.includes(action.action))
-      .map((action) =>
-        ActionsWithPayload.includes(action.action) ? action : { action: action.action },
-      )
+      .map((action) => {
+        if (ActionsWithPayload.includes(action.action)) {
+          return action
+        } else if (action.action === 'SAVE_DOM_REPORT') {
+          return {
+            action: action.action,
+            cachedPaths: action.cachedPaths,
+            elementMetadata: simplifiedMetadataMap(action.elementMetadata),
+          }
+        } else {
+          return { action: action.action }
+        }
+      })
     if (filteredActions.length > 0) {
       const sanitizedStore = sanitizeLoggedState(newStore)
       const actionNames = pluck(filteredActions, 'action').join(' ')

@@ -452,7 +452,17 @@ export function editorDispatch(
     patchedEditorState.jsxMetadata[toString(patchedEditorState.selectedViews[0])].computedStyle ==
       null
   ) {
-    console.error('Szia Balint! a finalStore rossz!')
+    console.error(
+      'Szia Balint! a finalStore rossz!',
+      patchedEditorState.jsxMetadata[toString(patchedEditorState.selectedViews[0])].computedStyle ==
+        null
+        ? 'patchedEditorState rossz'
+        : 'patchedEditorState jo',
+      frozenEditorState.jsxMetadata[toString(patchedEditorState.selectedViews[0])].computedStyle ==
+        null
+        ? 'unpatchedEditor rossz'
+        : 'unpatchedEditor jo',
+    )
   }
 
   const finalStore: DispatchResult = {
