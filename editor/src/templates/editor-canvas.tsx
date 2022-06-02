@@ -385,10 +385,6 @@ export function runLocalCanvasAction(
       }
     case 'CLEAR_INTERACTION_SESSION':
       clearInterval(interactionSessionTimerHandle)
-      const metadataToKeep =
-        action.applyChanges && model.canvas.interactionSession != null
-          ? model.canvas.interactionSession.metadata
-          : model.jsxMetadata
       return {
         ...model,
         canvas: {
@@ -396,7 +392,9 @@ export function runLocalCanvasAction(
           interactionSession: null,
           domWalkerInvalidateCount: model.canvas.domWalkerInvalidateCount + 1,
         },
-        jsxMetadata: metadataToKeep,
+        jsxMetadata: {},
+        domMetadata: {},
+        spyMetadata: {},
       }
     case 'UPDATE_INTERACTION_SESSION':
       if (model.canvas.interactionSession == null) {
