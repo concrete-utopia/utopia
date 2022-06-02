@@ -68,8 +68,8 @@ function getElementPathCache(fullElementPath: ElementPathPart[]): ElementPathCac
   return workingPathCache
 }
 
-export const SceneSeparator = ':'
-export const ElementSeparator = '/'
+const SceneSeparator = ':'
+const ElementSeparator = '/'
 
 function getComponentPathStringForPathString(path: string): string | null {
   const indexOfLastSceneSeparator = path.lastIndexOf(SceneSeparator)
