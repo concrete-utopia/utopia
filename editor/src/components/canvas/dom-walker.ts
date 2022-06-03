@@ -16,7 +16,6 @@ import {
   StyleAttributeMetadata,
   emptyAttributeMetadatada,
   ElementInstanceMetadataMap,
-  emptyJsxMetadata,
 } from '../../core/shared/element-template'
 import { ElementPath } from '../../core/shared/project-file-types'
 import { getCanvasRectangleFromElement, getDOMAttribute } from '../../core/shared/dom-utils'
@@ -42,39 +41,29 @@ import {
   positionValues,
   computedStyleKeys,
 } from '../inspector/common/css-utils'
-import { CanvasContainerProps, UiJsxCanvasCtxAtom } from './ui-jsx-canvas'
 import { camelCaseToDashed } from '../../core/shared/string-utils'
-import {
-  EditorStateContext,
-  useEditorState,
-  useRefEditorState,
-  useSelectorWithCallback,
-  UtopiaStoreAPI,
-} from '../editor/store/store-hook'
+import { UtopiaStoreAPI } from '../editor/store/store-hook'
 import {
   UTOPIA_DO_NOT_TRAVERSE_KEY,
   UTOPIA_PATH_KEY,
   UTOPIA_SCENE_ID_KEY,
 } from '../../core/model/utopia-constants'
 
-import { MetadataUtils } from '../../core/model/element-metadata-utils'
-import { PERFORMANCE_MARKS_ALLOWED, PRODUCTION_ENV } from '../../common/env-vars'
+import { PERFORMANCE_MARKS_ALLOWED } from '../../common/env-vars'
 import { CanvasContainerID } from './canvas-types'
 import { emptySet } from '../../core/shared/set-utils'
-import { getPathWithStringsOnDomElement, PathWithString } from '../../core/shared/uid-utils'
-import { mapDropNulls, pluck, uniqBy } from '../../core/shared/array-utils'
+import { getPathWithStringsOnDomElement } from '../../core/shared/uid-utils'
+import { pluck, uniqBy } from '../../core/shared/array-utils'
 import { forceNotNull, optionalMap } from '../../core/shared/optional-utils'
 import { fastForEach } from '../../core/shared/utils'
 import { MapLike } from 'typescript'
 import { isFeatureEnabled } from '../../utils/feature-switches'
-import { usePubSubAtomReadOnly } from '../../core/shared/atom-with-pub-sub'
 import type {
   EditorState,
   EditorStorePatched,
   ElementsToRerender,
 } from '../editor/store/editor-state'
 import { shallowEqual } from '../../core/shared/equality-utils'
-import { StrategyState } from './canvas-strategies/interaction-state'
 import { pick } from '../../core/shared/object-utils'
 
 const MutationObserverConfig = { attributes: true, childList: true, subtree: true }
@@ -214,58 +203,17 @@ export interface DomWalkerProps {
   additionalElementsToUpdate: Array<ElementPath>
 }
 
-function mergeMetadataMaps(
-  metadata1: ElementInstanceMetadataMap,
-  metadata2: ElementInstanceMetadataMap,
-): ElementInstanceMetadataMap {
-  let working: MapLike<ElementInstanceMetadata> = { ...metadata1 }
-
-  fastForEach(Object.keys(metadata2), (pathString) => {
-    const elementMetadata = metadata2[pathString]
-    const existingMetadata = working[pathString]
-
-    if (existingMetadata == null) {
-      working[pathString] = elementMetadata
-    } else {
-      // We've hit a fragment, so remove the style etc., but keep the frames for selection
-      const merged = elementInstanceMetadata(
-        elementMetadata.elementPath,
-        left('fragment'),
-        boundingRectangle(
-          existingMetadata.globalFrame ?? zeroCanvasRect,
-          elementMetadata.globalFrame ?? zeroCanvasRect,
-        ),
-        boundingRectangle(
-          existingMetadata.localFrame ?? zeroLocalRect,
-          elementMetadata.localFrame ?? zeroLocalRect,
-        ),
-        false,
-        false,
-        emptySpecialSizeMeasurements,
-        {},
-        {},
-        null,
-        null,
-      )
-
-      working[pathString] = merged
-    }
-  })
-
-  return working
-}
-
-function mergeElementMetadataToMap(
-  metadata: ElementInstanceMetadataMap,
+// For performance reasons this function mutates the first parameter:
+// it adds elementMetadata to metadataToMutate in way that it merges fragments
+function mergeElementMetadataToMapWithFragments_MUTATE(
+  metadataToMutate: ElementInstanceMetadataMap,
   elementMetadata: ElementInstanceMetadata,
-): ElementInstanceMetadataMap {
-  let working: MapLike<ElementInstanceMetadata> = { ...metadata }
-
+): void {
   const pathString = EP.toString(elementMetadata.elementPath)
-  const existingMetadata = working[pathString]
+  const existingMetadata = metadataToMutate[pathString]
 
   if (existingMetadata == null) {
-    working[pathString] = elementMetadata
+    metadataToMutate[pathString] = elementMetadata
   } else {
     // We've hit a fragment, so remove the style etc., but keep the frames for selection
     const merged = elementInstanceMetadata(
@@ -288,10 +236,19 @@ function mergeElementMetadataToMap(
       null,
     )
 
-    working[pathString] = merged
+    metadataToMutate[pathString] = merged
   }
+}
 
-  return working
+// For performance reasons this function mutates the first parameter:
+// it merges otherMetadata into metadataToMutate in way that it merges fragments
+function mergeMetadataMapsWithFragments_MUTATE(
+  metadataToMutate: ElementInstanceMetadataMap,
+  otherMetadata: ElementInstanceMetadataMap,
+): void {
+  fastForEach(Object.values(otherMetadata), (elementMetadata) => {
+    mergeElementMetadataToMapWithFragments_MUTATE(metadataToMutate, elementMetadata)
+  })
 }
 
 export interface DomWalkerMutableStateData {
@@ -349,7 +306,7 @@ function runSelectiveDomWalker(
   rootMetadataInStateRef: { readonly current: ElementInstanceMetadataMap },
   containerRectLazy: () => CanvasRectangle,
 ): { metadata: ElementInstanceMetadataMap; cachedPaths: ElementPath[] } {
-  let workingMetadata = emptyJsxMetadata
+  let workingMetadata: ElementInstanceMetadataMap = {}
 
   const canvasRootContainer = document.getElementById(CanvasContainerID)
   if (canvasRootContainer != null) {
@@ -370,7 +327,7 @@ function runSelectiveDomWalker(
        * which is the same as the "rootest" element we are looking for
        */
       const element = document.querySelector(
-        `[data-path^="${EP.toString(path)}"]`,
+        `[${UTOPIA_PATH_KEY}^="${EP.toString(path)}"]`,
       ) as HTMLElement | null
 
       if (element != null) {
@@ -391,15 +348,17 @@ function runSelectiveDomWalker(
           domWalkerMutableState.invalidatedPaths,
         )
 
-        workingMetadata = mergeMetadataMaps(workingMetadata, collectedMetadata)
+        mergeMetadataMapsWithFragments_MUTATE(workingMetadata, collectedMetadata)
       }
     })
     const otherElementPaths = Object.keys(rootMetadataInStateRef.current).filter(
       (path) => !elementsToFocusOn.some((focusPath) => EP.toString(focusPath) === path),
     )
     const rootMetadataForOtherElements = pick(otherElementPaths, rootMetadataInStateRef.current)
+    mergeMetadataMapsWithFragments_MUTATE(rootMetadataForOtherElements, workingMetadata)
+
     return {
-      metadata: mergeMetadataMaps(rootMetadataForOtherElements, workingMetadata),
+      metadata: rootMetadataForOtherElements,
       cachedPaths: otherElementPaths.map(EP.fromString),
     }
   }
@@ -468,26 +427,26 @@ export function runDomWalker({
     const { metadata, cachedPaths } =
       // when we don't rerender all elements we just run the dom walker in selective mode: only update the metatdata
       // of the currently rendered elements (for performance reasons)
-      // elementsToFocusOn === 'rerender-all-elements'
-      walkCanvasRootFragment(
-        canvasRootContainer,
-        rootMetadataInStateRef,
-        domWalkerMutableState.invalidatedPaths, // TODO does walkCanvasRootFragment ever uses invalidatedPaths right now?
-        domWalkerMutableState.invalidatedPathsForStylesheetCache,
-        selectedViews,
-        !domWalkerMutableState.initComplete, // TODO do we run walkCanvasRootFragment with initComplete=true anymore? // TODO _should_ we ever run walkCanvasRootFragment with initComplete=false EVER, or instead can we set the canvas root as the invalidated path?
-        scale,
-        containerRect,
-        [...additionalElementsToUpdate, ...selectedViews],
-      )
-    // : runSelectiveDomWalker(
-    //     elementsToFocusOn,
-    //     domWalkerMutableState,
-    //     selectedViews,
-    //     scale,
-    //     rootMetadataInStateRef,
-    //     containerRect,
-    //   )
+      elementsToFocusOn === 'rerender-all-elements'
+        ? walkCanvasRootFragment(
+            canvasRootContainer,
+            rootMetadataInStateRef,
+            domWalkerMutableState.invalidatedPaths, // TODO does walkCanvasRootFragment ever uses invalidatedPaths right now?
+            domWalkerMutableState.invalidatedPathsForStylesheetCache,
+            selectedViews,
+            !domWalkerMutableState.initComplete, // TODO do we run walkCanvasRootFragment with initComplete=true anymore? // TODO _should_ we ever run walkCanvasRootFragment with initComplete=false EVER, or instead can we set the canvas root as the invalidated path?
+            scale,
+            containerRect,
+            [...additionalElementsToUpdate, ...selectedViews],
+          )
+        : runSelectiveDomWalker(
+            elementsToFocusOn,
+            domWalkerMutableState,
+            selectedViews,
+            scale,
+            rootMetadataInStateRef,
+            containerRect,
+          )
     if (LogDomWalkerPerformance) {
       performance.mark('DOM_WALKER_END')
       performance.measure(
@@ -653,7 +612,7 @@ function collectMetadata(
 ): { collectedMetadata: ElementInstanceMetadataMap; cachedPaths: Array<ElementPath> } {
   if (pathsForElement.length === 0) {
     return {
-      collectedMetadata: emptyJsxMetadata,
+      collectedMetadata: {},
       cachedPaths: [],
     }
   }
@@ -985,7 +944,10 @@ function walkCanvasRootFragment(
       null,
       null, // this comes from the Spy Wrapper
     )
-    return { metadata: mergeElementMetadataToMap(rootMetadata, metadata), cachedPaths: cachedPaths }
+
+    mergeElementMetadataToMapWithFragments_MUTATE(rootMetadata, metadata)
+
+    return { metadata: rootMetadata, cachedPaths: cachedPaths }
   }
 }
 
@@ -1050,13 +1012,16 @@ function walkScene(
         selectedViews,
         additionalElementsToUpdate,
       )
+
+      mergeMetadataMapsWithFragments_MUTATE(rootMetadata, sceneMetadata)
+
       return {
-        metadata: mergeMetadataMaps(rootMetadata, sceneMetadata),
+        metadata: rootMetadata,
         cachedPaths: [...cachedPaths, ...sceneCachedPaths],
       }
     }
   }
-  return { metadata: emptyJsxMetadata, cachedPaths: [] } // verify
+  return { metadata: {}, cachedPaths: [] } // verify
 }
 
 function walkSceneInner(
@@ -1078,7 +1043,7 @@ function walkSceneInner(
   const globalFrame: CanvasRectangle = globalFrameForElement(scene, scale, containerRectLazy)
 
   let childPaths: Array<ElementPath> = []
-  let rootMetadataAccumulator: ElementInstanceMetadataMap = emptyJsxMetadata
+  let rootMetadataAccumulator: ElementInstanceMetadataMap = {}
   let cachedPathsAccumulator: Array<ElementPath> = []
 
   scene.childNodes.forEach((childNode) => {
@@ -1101,7 +1066,7 @@ function walkSceneInner(
     )
 
     childPaths.push(...childNodePaths)
-    rootMetadataAccumulator = mergeMetadataMaps(rootMetadataAccumulator, rootMetadata)
+    mergeMetadataMapsWithFragments_MUTATE(rootMetadataAccumulator, rootMetadata)
     cachedPathsAccumulator.push(...cachedPaths)
   })
 
@@ -1174,7 +1139,7 @@ function walkElements(
 
     // Build the metadata for the children of this DOM node.
     let childPaths: Array<ElementPath> = []
-    let rootMetadataAccumulator: ElementInstanceMetadataMap = emptyJsxMetadata
+    let rootMetadataAccumulator: ElementInstanceMetadataMap = {}
     let cachedPathsAccumulator: Array<ElementPath> = []
     // TODO: we should not traverse the children when all elements of this subtree will be retrieved from cache anyway
     // WARNING: we need to retrieve the metadata of all elements of the subtree from the cache, because the SAVE_DOM_REPORT
@@ -1199,7 +1164,7 @@ function walkElements(
           additionalElementsToUpdate,
         )
         childPaths.push(...childNodePaths)
-        rootMetadataAccumulator = mergeMetadataMaps(rootMetadataAccumulator, rootMetadataInner)
+        mergeMetadataMapsWithFragments_MUTATE(rootMetadataAccumulator, rootMetadataInner)
         cachedPathsAccumulator.push(...cachedPaths)
       })
     }
@@ -1222,7 +1187,7 @@ function walkElements(
       additionalElementsToUpdate,
     )
 
-    rootMetadataAccumulator = mergeMetadataMaps(rootMetadataAccumulator, collectedMetadata)
+    mergeMetadataMapsWithFragments_MUTATE(rootMetadataAccumulator, collectedMetadata)
     cachedPathsAccumulator = [...cachedPathsAccumulator, ...cachedPaths]
     return {
       rootMetadata: rootMetadataAccumulator,
@@ -1230,6 +1195,6 @@ function walkElements(
       cachedPaths: cachedPathsAccumulator,
     }
   } else {
-    return { childPaths: [], rootMetadata: emptyJsxMetadata, cachedPaths: [] }
+    return { childPaths: [], rootMetadata: {}, cachedPaths: [] }
   }
 }
