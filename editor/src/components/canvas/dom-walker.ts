@@ -74,6 +74,7 @@ import type {
 } from '../editor/store/editor-state'
 import { shallowEqual } from '../../core/shared/equality-utils'
 import { StrategyState } from './canvas-strategies/interaction-state'
+import { pick } from '../../core/shared/object-utils'
 
 const MutationObserverConfig = { attributes: true, childList: true, subtree: true }
 const ObserversAvailable = (window as any).MutationObserver != null && ResizeObserver != null
@@ -296,7 +297,7 @@ interface RunDomWalkerParams {
   elementsToFocusOn: ElementsToRerender
 
   domWalkerMutableState: DomWalkerMutableStateData
-  rootMetadataInStateRef: { readonly current: readonly ElementInstanceMetadata[] } // TODO: use ElementInstanceMetadataMap inside dom walker, just like everywhere else
+  rootMetadataInStateRef: { readonly current: ElementInstanceMetadataMap }
 }
 
 function runSelectiveDomWalker(
@@ -304,7 +305,7 @@ function runSelectiveDomWalker(
   domWalkerMutableState: DomWalkerMutableStateData,
   selectedViews: Array<ElementPath>,
   scale: number,
-  rootMetadataInStateRef: { readonly current: readonly ElementInstanceMetadata[] },
+  rootMetadataInStateRef: { readonly current: ElementInstanceMetadataMap },
   containerRectLazy: () => CanvasRectangle,
 ): { metadata: ElementInstanceMetadata[]; cachedPaths: ElementPath[] } {
   let workingMetadata: ElementInstanceMetadata[] = []
@@ -352,7 +353,7 @@ function runSelectiveDomWalker(
         workingMetadata.push(...collectedMetadata)
       }
     })
-    const rootMetadataForOtherElements = rootMetadataInStateRef.current.filter(
+    const rootMetadataForOtherElements = Object.values(rootMetadataInStateRef.current).filter(
       (m) => !elementsToFocusOn.some((p) => EP.pathsEqual(p, m.elementPath)),
     )
     return {
@@ -361,9 +362,11 @@ function runSelectiveDomWalker(
     }
   }
 
+  const cachedMetadata = Object.values(rootMetadataInStateRef.current)
+
   return {
-    metadata: [...rootMetadataInStateRef.current],
-    cachedPaths: rootMetadataInStateRef.current.map((m) => m.elementPath),
+    metadata: cachedMetadata,
+    cachedPaths: cachedMetadata.map((p) => p.elementPath),
   }
 }
 
@@ -606,7 +609,7 @@ function collectMetadata(
   containerRectLazy: () => CanvasRectangle,
   invalidatedPaths: Set<string>,
   invalidatedPathsForStylesheetCache: Set<string>,
-  rootMetadataInStateRef: React.MutableRefObject<ReadonlyArray<ElementInstanceMetadata>>,
+  rootMetadataInStateRef: React.MutableRefObject<ElementInstanceMetadataMap>,
   invalidated: boolean,
   selectedViews: Array<ElementPath>,
   additionalElementsToUpdate: Array<ElementPath>,
@@ -638,7 +641,7 @@ function collectMetadata(
     )
   } else {
     const cachedMetadata = mapDropNulls((path) => {
-      return MetadataUtils.findElementMetadata(path, rootMetadataInStateRef.current)
+      return MetadataUtils.findElementByElementPath(rootMetadataInStateRef.current, path)
     }, pathsForElement)
 
     if (cachedMetadata.length === pathsForElement.length) {
@@ -874,7 +877,7 @@ function globalFrameForElement(
 
 function walkCanvasRootFragment(
   canvasRoot: HTMLElement,
-  rootMetadataInStateRef: React.MutableRefObject<ReadonlyArray<ElementInstanceMetadata>>,
+  rootMetadataInStateRef: React.MutableRefObject<ElementInstanceMetadataMap>,
   invalidatedPaths: Set<string>,
   invalidatedPathsForStylesheetCache: Set<string>,
   selectedViews: Array<ElementPath>,
@@ -906,12 +909,15 @@ function walkCanvasRootFragment(
   if (
     ObserversAvailable &&
     invalidatedPaths.size === 0 &&
-    rootMetadataInStateRef.current.length > 0 &&
+    Object.keys(rootMetadataInStateRef.current).length > 0 &&
     additionalElementsToUpdate.length === 0 &&
     !invalidated
   ) {
     // no mutation happened on the entire canvas, just return the old metadata
-    return { metadata: rootMetadataInStateRef.current, cachedPaths: [canvasRootPath] }
+    return {
+      metadata: Object.values(rootMetadataInStateRef.current),
+      cachedPaths: [canvasRootPath],
+    }
   } else {
     const { rootMetadata, cachedPaths } = walkSceneInner(
       canvasRoot,
@@ -948,7 +954,7 @@ function walkCanvasRootFragment(
 function walkScene(
   scene: HTMLElement,
   validPaths: Array<ElementPath>,
-  rootMetadataInStateRef: React.MutableRefObject<ReadonlyArray<ElementInstanceMetadata>>,
+  rootMetadataInStateRef: React.MutableRefObject<ElementInstanceMetadataMap>,
   invalidatedPaths: Set<string>,
   invalidatedPathsForStylesheetCache: Set<string>,
   selectedViews: Array<ElementPath>,
@@ -1018,7 +1024,7 @@ function walkScene(
 function walkSceneInner(
   scene: HTMLElement,
   validPaths: Array<ElementPath>,
-  rootMetadataInStateRef: React.MutableRefObject<ReadonlyArray<ElementInstanceMetadata>>,
+  rootMetadataInStateRef: React.MutableRefObject<ElementInstanceMetadataMap>,
   invalidatedPaths: Set<string>,
   invalidatedPathsForStylesheetCache: Set<string>,
   selectedViews: Array<ElementPath>,
@@ -1073,7 +1079,7 @@ function walkElements(
   element: Node,
   parentPoint: CanvasPoint,
   validPaths: Array<ElementPath>,
-  rootMetadataInStateRef: React.MutableRefObject<ReadonlyArray<ElementInstanceMetadata>>,
+  rootMetadataInStateRef: React.MutableRefObject<ElementInstanceMetadataMap>,
   invalidatedPaths: Set<string>,
   invalidatedPathsForStylesheetCache: Set<string>,
   selectedViews: Array<ElementPath>,
