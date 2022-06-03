@@ -207,7 +207,7 @@ export interface DomWalkerProps {
 // it adds elementMetadata to metadataToMutate in way that it merges fragments with the same elementpath
 function mergeElementMetadataToMapWithFragments_MUTATE(
   metadataToMutate: ElementInstanceMetadataMap,
-  elementMetadata: ElementInstanceMetadata,
+  elementMetadata: Readonly<ElementInstanceMetadata>,
 ): void {
   const pathString = EP.toString(elementMetadata.elementPath)
   const existingMetadata = metadataToMutate[pathString]
@@ -244,7 +244,7 @@ function mergeElementMetadataToMapWithFragments_MUTATE(
 // it merges otherMetadata into metadataToMutate in way that it merges fragments with the same elementpath
 function mergeMetadataMapsWithFragments_MUTATE(
   metadataToMutate: ElementInstanceMetadataMap,
-  otherMetadata: ElementInstanceMetadataMap,
+  otherMetadata: Readonly<ElementInstanceMetadataMap>,
 ): void {
   fastForEach(Object.values(otherMetadata), (elementMetadata) => {
     mergeElementMetadataToMapWithFragments_MUTATE(metadataToMutate, elementMetadata)
