@@ -27,6 +27,7 @@ import {
 } from '../../canvas/canvas-strategies/canvas-strategy-types'
 import { isFeatureEnabled } from '../../../utils/feature-switches'
 import { PERFORMANCE_MARKS_ALLOWED } from '../../../common/env-vars'
+import { saveDOMReport } from '../actions/action-creators'
 
 interface HandleStrategiesResult {
   unpatchedEditorState: EditorState
@@ -563,13 +564,22 @@ function handleStrategiesInner(
   storedState: EditorStoreFull,
   result: InnerDispatchResult,
 ): HandleStrategiesResult {
+  const isSaveDomReport = dispatchedActions.some((a) => a.action === 'SAVE_DOM_REPORT')
+
   const makeChangesPermanent = dispatchedActions.some(shouldApplyClearInteractionSessionResult)
   const cancelInteraction =
     dispatchedActions.some(isClearInteractionSession) && !makeChangesPermanent
   const isInteractionAction = dispatchedActions.some(isCreateOrUpdateInteractionSession)
     ? 'interaction-create-or-update'
     : 'non-interaction'
-  if (storedState.unpatchedEditor.canvas.interactionSession == null) {
+
+  if (isSaveDomReport) {
+    return {
+      unpatchedEditorState: result.unpatchedEditor,
+      patchedEditorState: result.unpatchedEditor,
+      newStrategyState: result.strategyState,
+    }
+  } else if (storedState.unpatchedEditor.canvas.interactionSession == null) {
     if (result.unpatchedEditor.canvas.interactionSession == null) {
       return {
         unpatchedEditorState: result.unpatchedEditor,
