@@ -111,6 +111,18 @@ describe('Select Mode Selection', () => {
         )
         fireEvent(
           canvasControlsLayer,
+          new MouseEvent('mouseup', {
+            detail: 1,
+            bubbles: true,
+            cancelable: true,
+            metaKey: false,
+            clientX: areaControlBounds.left + 20,
+            clientY: areaControlBounds.top + 20,
+            buttons: 1,
+          }),
+        )
+        fireEvent(
+          canvasControlsLayer,
           new MouseEvent('mousedown', {
             detail: 2,
             bubbles: true,
@@ -121,15 +133,21 @@ describe('Select Mode Selection', () => {
             buttons: 1,
           }),
         )
+        fireEvent(
+          canvasControlsLayer,
+          new MouseEvent('mouseup', {
+            detail: 1,
+            bubbles: true,
+            cancelable: true,
+            metaKey: false,
+            clientX: areaControlBounds.left + 20,
+            clientY: areaControlBounds.top + 20,
+            buttons: 1,
+          }),
+        )
         await dispatchDone
       })
-      await waitForAnimationFrame()
     }
-
-    await doubleClick()
-
-    const selectedViews1 = renderResult.getEditorState().editor.selectedViews
-    expect(selectedViews1).toEqual([EP.elementPath([[BakedInStoryboardUID, TestSceneUID]])])
 
     await doubleClick()
 
