@@ -169,6 +169,12 @@ export const testPerformanceInner = async function (url: string): Promise<Perfor
     EmptyResult,
   )
   const selectionResult = await retryPageCalls(url, testSelectionPerformance, frameArraySuccess, [])
+  const selectionChangeResult = await retryPageCalls(
+    url,
+    testSelectionChangePerformance,
+    frameResultSuccess,
+    EmptyResult,
+  )
   const resizeResult = await retryPageCalls(
     url,
     testResizePerformance,
@@ -197,6 +203,7 @@ export const testPerformanceInner = async function (url: string): Promise<Perfor
     highlightRegularResult,
     highlightAllElementsResult,
     ...selectionResult,
+    selectionChangeResult,
     scrollResult,
     resizeResult,
     ...absoluteMoveLargeResult,
@@ -359,6 +366,38 @@ export const testSelectionPerformance = async function (
     getFrameData(traceJson, 'select', 'Selection', succeeded),
     getFrameData(traceJson, 'select_deselect', 'De-Selection', succeeded),
   ]
+}
+
+export const testSelectionChangePerformance = async function (
+  page: puppeteer.Page,
+): Promise<FrameResult> {
+  console.log('Test Selection Change Performance')
+  await page.waitForXPath("//a[contains(., 'PSC')]")
+  // we run it twice without measurements to warm up the environment
+  await clickOnce(
+    page,
+    "//a[contains(., 'PSC')]",
+    'SELECTION_CHANGE_TEST_FINISHED',
+    'SELECTION_CHANGE_TEST_ERROR',
+  )
+  await clickOnce(
+    page,
+    "//a[contains(., 'PSC')]",
+    'SELECTION_CHANGE_TEST_FINISHED',
+    'SELECTION_CHANGE_TEST_ERROR',
+  )
+
+  // and then we run the test for a third time, this time running tracing
+  await page.tracing.start({ categories: ['blink.user_timing'], path: 'trace.json' })
+  const succeeded = await clickOnce(
+    page,
+    "//a[contains(., 'PSC')]",
+    'SELECTION_CHANGE_TEST_FINISHED',
+    'SELECTION_CHANGE_TEST_ERROR',
+  )
+  await page.tracing.stop()
+  const traceJson = await loadTraceEventsJSON()
+  return getFrameData(traceJson, 'selection_change', 'Selection Change', succeeded)
 }
 
 export const testAbsoluteMovePerformanceLarge = async function (

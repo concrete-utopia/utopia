@@ -671,3 +671,169 @@ export function useTriggerAbsoluteMovePerformanceTest(
   }, [dispatch, allPaths, metadata, builtInDependencies, projectContents])
   return trigger
 }
+
+export function useTriggerSelectionChangePerformanceTest(): () => void {
+  const projectContents = LargeProjectContents
+  const dispatch = useEditorState(
+    React.useCallback((store) => store.dispatch as DebugDispatch, []),
+    'useTriggerSelectionChangePerformanceTest dispatch',
+  )
+  const allPaths = useRefEditorState(
+    React.useCallback((store) => store.derived.navigatorTargets, []),
+  )
+  const metadata = useRefEditorState(React.useCallback((store) => store.editor.jsxMetadata, []))
+  const builtInDependencies = useEditorState(
+    (store) => store.builtInDependencies,
+    'useTriggerSelectionChangePerformanceTest builtInDependencies',
+  )
+  const trigger = React.useCallback(async () => {
+    const editorReady = await loadProject(dispatch, builtInDependencies, projectContents)
+    if (!editorReady) {
+      console.info('SELECTION_CHANGE_TEST_ERROR')
+      return
+    }
+    const initialTargetPath = [...allPaths.current].sort(
+      (a, b) => EP.toString(b).length - EP.toString(a).length,
+    )[0]
+    // This is very particularly tied to the test project in LargeProjectContents, we _really_ need
+    // to pick the right element because our changes can cause other elements to end up on top of the
+    // target we want.
+    const parentParentPath = EP.parentPath(EP.parentPath(initialTargetPath))
+    const grandChildrenPaths = allPaths.current.filter((path) => {
+      return EP.pathsEqual(parentParentPath, EP.parentPath(EP.parentPath(path)))
+    })
+    if (grandChildrenPaths.length === 0) {
+      console.info('SELECTION_CHANGE_TEST_ERROR')
+      return
+    }
+    const targetPath = forceNotNull('Invalid array.', last(grandChildrenPaths))
+
+    // Switch Canvas Strategies on.
+    setFeatureEnabled('Canvas Strategies', true)
+    // Delete the other children that just get in the way.
+    const parentPath = EP.parentPath(targetPath)
+    const siblingPaths = allPaths.current.filter(
+      (path) => EP.isChildOf(path, parentPath) && !EP.pathsEqual(path, targetPath),
+    )
+    await dispatch(
+      siblingPaths.map((path) => deleteView(path)),
+      'everyone',
+    ).entireUpdateFinished
+    // Focus the target so that we can edit the child div inside it.
+    await dispatch([setFocusedElement(targetPath)], 'everyone').entireUpdateFinished
+
+    const childTargetPath = allPaths.current.find((path) => EP.isChildOf(path, targetPath))
+    if (childTargetPath == null) {
+      console.info('SELECTION_CHANGE_TEST_ERROR')
+      return
+    }
+    const childMetadata = MetadataUtils.findElementByElementPath(metadata.current, childTargetPath)
+    if (
+      childMetadata == null ||
+      childMetadata.globalFrame == null ||
+      childMetadata.specialSizeMeasurements.coordinateSystemBounds == null
+    ) {
+      console.info('SELECTION_CHANGE_TEST_ERROR')
+      return
+    }
+    const childStyleValue = {
+      position: 'absolute',
+      left:
+        childMetadata.globalFrame.x -
+        childMetadata.specialSizeMeasurements.coordinateSystemBounds.x,
+      top:
+        childMetadata.globalFrame.y -
+        childMetadata.specialSizeMeasurements.coordinateSystemBounds.y,
+      width: childMetadata.globalFrame.width,
+      height: childMetadata.globalFrame.height,
+    }
+
+    // Determine where the events should be fired.
+    const controlsContainerElement = forceNotNull(
+      'Container controls element should exist.',
+      document.getElementById(CanvasControlsContainerID),
+    )
+    const canvasContainerElement = forceNotNull(
+      'Canvas container element should exist.',
+      document.getElementById(CanvasContainerID),
+    )
+    const canvasContainerBounds = canvasContainerElement.getBoundingClientRect()
+    const navigatorElement = forceNotNull(
+      'Navigator element should exist.',
+      document.getElementById(NavigatorContainerId),
+    )
+    const navigatorBounds = navigatorElement.getBoundingClientRect()
+
+    const targetElement = forceNotNull(
+      'Target element should exist.',
+      document.querySelector(`*[data-path^="${EP.toString(childTargetPath)}"]`),
+    )
+    const originalTargetBounds = targetElement.getBoundingClientRect()
+    const leftToTarget =
+      canvasContainerBounds.left + navigatorBounds.width - originalTargetBounds.left + 100
+    const topToTarget = canvasContainerBounds.top - originalTargetBounds.top + 100
+    await dispatch(
+      [
+        updateEditorMode(EditorModes.selectMode()),
+        CanvasActions.positionCanvas(canvasPoint({ x: leftToTarget, y: topToTarget })),
+      ],
+      'everyone',
+    ).entireUpdateFinished
+    const targetBounds = targetElement.getBoundingClientRect()
+
+    let framesPassed = 0
+    async function step() {
+      // Make the div inside the target absolute positioned and ensure it is selected.
+      await dispatch(
+        [
+          selectComponents([childTargetPath!], false),
+          setProp_UNSAFE(
+            childTargetPath!,
+            PP.create(['style']),
+            jsxAttributeValue(childStyleValue, emptyComments),
+          ),
+        ],
+        'everyone',
+      ).entireUpdateFinished
+
+      // Mouse move and performance marks for that.
+      markStart('selection_change', framesPassed)
+      // Select something else.
+      controlsContainerElement.dispatchEvent(
+        new MouseEvent('mousedown', {
+          detail: 1,
+          bubbles: true,
+          cancelable: true,
+          metaKey: true,
+          clientX: targetBounds.left + 200,
+          clientY: targetBounds.top,
+          buttons: 1,
+        }),
+      )
+      markEnd('selection_change', framesPassed)
+      measureStep('selection_change', framesPassed)
+
+      // Mouse up to finish.
+      controlsContainerElement.dispatchEvent(
+        new MouseEvent('mouseup', {
+          detail: 1,
+          bubbles: true,
+          cancelable: true,
+          metaKey: true,
+          clientX: targetBounds.left + 200,
+          clientY: targetBounds.top,
+          buttons: 1,
+        }),
+      )
+
+      if (framesPassed < NumberOfIterations) {
+        framesPassed++
+        requestAnimationFrame(step)
+      } else {
+        console.info('SELECTION_CHANGE_TEST_FINISHED')
+      }
+    }
+    requestAnimationFrame(step)
+  }, [dispatch, allPaths, metadata, builtInDependencies, projectContents])
+  return trigger
+}
