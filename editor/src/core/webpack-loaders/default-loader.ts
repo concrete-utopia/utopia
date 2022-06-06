@@ -1,9 +1,15 @@
 import { LoadModule, loadModuleResult, MatchFile, ModuleLoader } from './loader-types'
 
+const acceptableExtensions: Set<string> = new Set(['cjs', 'mjs', 'js', 'jsx', 'ts', 'tsx'])
+
 const matchFile: MatchFile = (filename: string) => {
-  return ['.cjs', '.mjs', '.js', '.jsx', '.ts', '.tsx', '.d.ts'].some((extension) =>
-    filename.endsWith(extension),
-  )
+  const lastDot = filename.lastIndexOf('.')
+  if (lastDot < 0) {
+    return false
+  } else {
+    const extension = filename.slice(lastDot + 1)
+    return acceptableExtensions.has(extension)
+  }
 }
 
 const loadModule: LoadModule = (filename: string, contents: string) => {
