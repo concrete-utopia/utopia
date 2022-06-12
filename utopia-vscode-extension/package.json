@@ -23,7 +23,6 @@
     "watch-dev": "yarn webpack-cli --config extension-browser.webpack.config --watch --info-verbosity verbose",
     "download-api": "mkdir -p src/vscode-types && cd src/vscode-types && npx vscode-dts dev 1.61.2",
     "postdownload-api": "mkdir -p src/vscode-types && cd src/vscode-types && npx vscode-dts 1.61.2",
-    "preinstall": "npx only-allow pnpm",
     "postinstall": "npm run download-api"
   },
   "contributes": {
