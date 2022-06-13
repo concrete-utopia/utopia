@@ -90,9 +90,9 @@ jobs:
       - name: Create Editor Directory
         run: mkdir editor
       - name: Create Editor Bundle
-        working-directory: editor/
+        working-directory: branch/editor/lib/
         run: |
-          tar -czvf ${{ steps.extract_branch.outputs.branch }}.tar.gz ../branch/editor/lib/*
+          tar -czvf ../../../editor/performance-test-target.tar.gz *
       - name: Upload Editor Bundle
         uses: jakejarvis/s3-sync-action@v0.5.1
         with:
@@ -125,9 +125,9 @@ jobs:
           cd ../utopia-vscode-common
           rm -rf ./node_modules
       - name: Create Target Editor Bundle
-        working-directory: editor/
+        working-directory: target/editor/lib/
         run: |
-          tar -czvf performance-test-target.tar.gz ../target/editor/lib/*
+          tar -czvf ../../../editor/performance-test-target.tar.gz *
       - name: Upload Target Editor Bundle
         uses: jakejarvis/s3-sync-action@v0.5.1
         with:
