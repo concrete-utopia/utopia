@@ -613,11 +613,16 @@ function collectMetadata(
   invalidated: boolean,
   selectedViews: Array<ElementPath>,
   additionalElementsToUpdate: Array<ElementPath>,
-): { collectedMetadata: ElementInstanceMetadataMap; cachedPaths: Array<ElementPath> } {
+): {
+  collectedMetadata: ElementInstanceMetadataMap
+  cachedPaths: Array<ElementPath>
+  collectedPaths: Array<ElementPath>
+} {
   if (pathsForElement.length === 0) {
     return {
       collectedMetadata: {},
       cachedPaths: [],
+      collectedPaths: [],
     }
   }
   const shouldCollect =
@@ -646,6 +651,7 @@ function collectMetadata(
       return {
         collectedMetadata: cachedMetadata,
         cachedPaths: pathsForElement,
+        collectedPaths: pathsForElement,
       }
     } else {
       // If any path is missing cached metadata we must forcibly invalidate the element
@@ -711,6 +717,7 @@ function collectAndCreateMetadataForElement(
   return {
     collectedMetadata: collectedMetadata,
     cachedPaths: [],
+    collectedPaths: pathsForElement,
   }
 }
 
@@ -1175,7 +1182,7 @@ function walkElements(
 
     const uniqueChildPaths = uniqBy(childPaths, EP.pathsEqual)
 
-    const { collectedMetadata, cachedPaths } = collectMetadata(
+    const { collectedMetadata, cachedPaths, collectedPaths } = collectMetadata(
       element,
       pluck(foundValidPaths, 'path'),
       pluck(foundValidPaths, 'asString'),
@@ -1195,7 +1202,7 @@ function walkElements(
     cachedPathsAccumulator = [...cachedPathsAccumulator, ...cachedPaths]
     return {
       rootMetadata: rootMetadataAccumulator,
-      childPaths: Object.values(collectedMetadata).map((metadata) => metadata.elementPath), // TODO why not extract childPaths from the metadata?
+      childPaths: collectedPaths,
       cachedPaths: cachedPathsAccumulator,
     }
   } else {
