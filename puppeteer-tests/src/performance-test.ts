@@ -80,7 +80,7 @@ function defer() {
 const ResizeButtonXPath = "//a[contains(., 'P R')]"
 
 function consoleMessageForResult(result: FrameResult, beforeOrAfter: 'before' | 'after'): string {
-  return `${result.title} (${beforeOrAfter}): ${result.analytics.percentile50}ms (${result.analytics.frameMin}-${result.analytics.frameMax}ms)`
+  return `${beforeOrAfter}: ${result.analytics.percentile50}ms (${result.analytics.frameMin}-${result.analytics.frameMax}ms)`
 }
 
 type PerformanceResult = { [key: string]: FrameResult }
@@ -98,9 +98,11 @@ export const testPerformance = async function () {
       const afterMedian = result.analytics.percentile50 ?? 1
       const change = ((afterMedian - beforeMedian) / beforeMedian) * 100
       return [
+        result.title,
         consoleMessageForResult(targetResult, 'before'),
         consoleMessageForResult(result, 'after'),
-        `${result.title} change: ${change}%`,
+        `Change: ${Math.round(change)}%`,
+        '',
       ]
     })
     .join('<br />')
