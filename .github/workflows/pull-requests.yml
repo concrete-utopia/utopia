@@ -130,6 +130,11 @@ jobs:
         uses: jakejarvis/s3-sync-action@v0.5.1
         with:
           args: --acl private --exclude '*' --include 'target/editor/performance-test-target.tar.gz'
+        env:
+          AWS_S3_BUCKET: ${{ secrets.STAGING_BUNDLE_S3_BUCKET }}
+          AWS_ACCESS_KEY_ID: ${{ secrets.STAGING_BUNDLE_ACCESS_KEY }}
+          AWS_SECRET_ACCESS_KEY: ${{ secrets.STAGING_BUNDLE_SECRET_ACCESS_KEY }}
+          AWS_REGION: ${{ secrets.STAGING_BUNDLE_REGION }}
       - name: Flush Staging Branch Editor Bundle
         shell: bash
         run: |
