@@ -88,13 +88,13 @@ jobs:
           cd ../utopia-vscode-common
           rm -rf ./node_modules
       - name: Create Editor Bundle
-        working-directory: branch/editor/lib/
+        working-directory: editor/
         run: |
-          tar -czvf ../${{ steps.extract_branch.outputs.branch }}.tar.gz *
+          tar -czvf ${{ steps.extract_branch.outputs.branch }}.tar.gz ../branch/editor/lib/*
       - name: Upload Editor Bundle
         uses: jakejarvis/s3-sync-action@v0.5.1
         with:
-          args: --acl private --exclude '*' --include 'branch/editor/${{ steps.extract_branch.outputs.branch }}.tar.gz'
+          args: --acl private --exclude '*' --include 'editor/${{ steps.extract_branch.outputs.branch }}.tar.gz'
         env:
           AWS_S3_BUCKET: ${{ secrets.STAGING_BUNDLE_S3_BUCKET }}
           AWS_ACCESS_KEY_ID: ${{ secrets.STAGING_BUNDLE_ACCESS_KEY }}
@@ -123,13 +123,13 @@ jobs:
           cd ../utopia-vscode-common
           rm -rf ./node_modules
       - name: Create Target Editor Bundle
-        working-directory: target/editor/lib/
+        working-directory: editor/
         run: |
-          tar -czvf ../performance-test-target.tar.gz *
+          tar -czvf performance-test-target.tar.gz ../target/editor/lib/*
       - name: Upload Target Editor Bundle
         uses: jakejarvis/s3-sync-action@v0.5.1
         with:
-          args: --acl private --exclude '*' --include 'target/editor/performance-test-target.tar.gz'
+          args: --acl private --exclude '*' --include 'editor/performance-test-target.tar.gz'
         env:
           AWS_S3_BUCKET: ${{ secrets.STAGING_BUNDLE_S3_BUCKET }}
           AWS_ACCESS_KEY_ID: ${{ secrets.STAGING_BUNDLE_ACCESS_KEY }}
