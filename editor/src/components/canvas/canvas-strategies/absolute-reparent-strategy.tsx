@@ -94,12 +94,12 @@ export const absoluteReparentStrategy: CanvasStrategy = {
 
       return {
         commands: [
-          ...moveCommands.commands,
           ...commands.flatMap((c) => c.commands),
           updateSelectedViews(
             'permanent',
             commands.map((c) => c.newPath),
           ),
+          ...moveCommands.commands,
         ],
         customState: null,
       }

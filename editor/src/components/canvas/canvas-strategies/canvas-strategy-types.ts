@@ -49,6 +49,7 @@ export interface InteractionCanvasState {
 export type CanvasStrategyId =
   | 'ABSOLUTE_MOVE'
   | 'ABSOLUTE_REPARENT'
+  | 'ABSOLUTE_DUPLICATE'
   | 'ABSOLUTE_RESIZE_DELTA'
   | 'ABSOLUTE_RESIZE_BOUNDING_BOX'
   | 'KEYBOARD_ABSOLUTE_MOVE'

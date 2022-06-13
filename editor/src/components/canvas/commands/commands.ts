@@ -34,6 +34,7 @@ import {
   runSetElementsToRerender,
   SetElementsToRerenderCommand,
 } from './set-elements-to-rerender-command'
+import { DuplicateElement, runDuplicateElement } from './duplicate-element-command'
 
 export interface CommandFunctionResult {
   editorStatePatches: Array<EditorStatePatch>
@@ -54,6 +55,7 @@ export type CanvasCommand =
   | AdjustNumberProperty
   | AdjustCssLengthProperty
   | ReparentElement
+  | DuplicateElement
   | UpdateSelectedViews
   | UpdateHighlightedViews
   | SetSnappingGuidelines
@@ -79,6 +81,8 @@ export const runCanvasCommand: CommandFunction<CanvasCommand> = (
       return runAdjustCssLengthProperty(editorState, command)
     case 'REPARENT_ELEMENT':
       return runReparentElement(editorState, command)
+    case 'DUPLICATE_ELEMENT':
+      return runDuplicateElement(editorState, command)
     case 'UPDATE_SELECTED_VIEWS':
       return runUpdateSelectedViews(editorState, command)
     case 'UPDATE_HIGHLIGHTED_VIEWS':
