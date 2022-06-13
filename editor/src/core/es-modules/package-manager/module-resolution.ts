@@ -31,6 +31,23 @@ import { dropLast, last } from '../../shared/array-utils'
 import { getPartsFromPath, makePathFromParts, normalizePath } from '../../../utils/path-utils'
 import type { MapLike } from 'typescript'
 
+import LRU from 'lru-cache'
+
+const partialPackageJsonCache: LRU<string, ParseResult<PartialPackageJsonDefinition>> = new LRU({
+  max: 20,
+})
+function getPartialPackageJson(contents: string): ParseResult<PartialPackageJsonDefinition> {
+  const fromCache = partialPackageJsonCache.get(contents)
+  if (fromCache == null) {
+    const jsonParsed = JSON.parse(contents)
+    const result = parsePartialPackageJsonDefinition(jsonParsed)
+    partialPackageJsonCache.set(contents, result)
+    return result
+  } else {
+    return fromCache
+  }
+}
+
 interface ResolveSuccess<T> {
   type: 'RESOLVE_SUCCESS'
   success: T
@@ -252,8 +269,7 @@ function processPackageJson(
 ): ResolveResult<Array<string>> {
   let possiblePackageJson: ParseResult<PartialPackageJsonDefinition>
   try {
-    const jsonParsed = JSON.parse(potentiallyJsonCode)
-    possiblePackageJson = parsePartialPackageJsonDefinition(jsonParsed)
+    possiblePackageJson = getPartialPackageJson(potentiallyJsonCode)
   } catch {
     return resolveNotPresent
   }
@@ -334,14 +350,15 @@ function resolveNonRelativeModule(
   importOrigin: string[],
   toImport: string[],
 ): FileLookupResult {
+  const pathElements = [...importOrigin, 'node_modules', ...toImport]
   return failoverResolveResults([
     // 1. look for ./node_modules/<package_name>.js
-    () => fileLookupFn([...importOrigin, 'node_modules', ...toImport]),
+    () => fileLookupFn(pathElements),
     // 2. look for ./node_modules/<package_name>/package.json
-    () => resolvePackageJson(fileLookupFn, [...importOrigin, 'node_modules', ...toImport]),
+    () => resolvePackageJson(fileLookupFn, pathElements),
     // 3. look for ./node_modules/<package_name>/index.js
     () => {
-      const indexJsPath = [...importOrigin, 'node_modules', ...toImport, 'index']
+      const indexJsPath = [...pathElements, 'index']
       return fileLookupFn(indexJsPath)
     },
     // 4. repeat in the parent folder
@@ -361,13 +378,14 @@ function resolveRelativeModule(
   importOrigin: string[],
   toImport: string[],
 ): FileLookupResult {
+  const pathElements = [...importOrigin, ...toImport]
   return failoverResolveResults([
     // 1. look for a file named <import_name>
-    () => fileLookupFn([...importOrigin, ...toImport]),
+    () => fileLookupFn(pathElements),
     // 2. look for <import_name>/package.json
-    () => resolvePackageJson(fileLookupFn, [...importOrigin, ...toImport]),
+    () => resolvePackageJson(fileLookupFn, pathElements),
     // 3. look for <import_name>/index.js
-    () => fileLookupFn([...importOrigin, ...toImport, 'index']),
+    () => fileLookupFn([...pathElements, 'index']),
   ])
 }
 
@@ -434,8 +452,7 @@ function findSubstitutionsForImport(
   const originPackageJson = findPackageJsonForPath(fileLookupFn, getPartsFromPath(importOrigin))
   if (isResolveSuccess(originPackageJson) && isEsCodeFile(originPackageJson.success.file)) {
     try {
-      const jsonParsed = JSON.parse(originPackageJson.success.file.fileContents)
-      const possiblePackageJson = parsePartialPackageJsonDefinition(jsonParsed)
+      const possiblePackageJson = getPartialPackageJson(originPackageJson.success.file.fileContents)
       if (isRight(possiblePackageJson)) {
         if (
           possiblePackageJson.value.browser != null &&
