@@ -484,7 +484,9 @@ const getFrameData = (
     withoutOutliersLength = 1
   }
   const frameTimesWithoutOutliers = sortedFrameTimes.slice(0, withoutOutliersLength)
-  let totalFrameTimes = 0
+  const totalFrameTimes = frameTimesWithoutOutliers.reduce((working, currentValue) => {
+    return working + currentValue
+  }, 0)
 
   const analytics = {
     frameMin: frameTimesWithoutOutliers[0]!,
