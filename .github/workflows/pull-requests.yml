@@ -172,7 +172,7 @@ jobs:
                 "fields": [
                   {
                     "value": $result_message
-                  },
+                  }
                 ],
                 "footer": {
                   "text": $repo_full_name
@@ -184,7 +184,7 @@ jobs:
                 "image": {
                   "url": $result_chart
                 }
-              },
+              }
             ]
           TITLE: 'Performance Results for #${{ github.event.pull_request.number }} ${{ github.event.pull_request.title }}'
           HTML_URL: ${{ github.event.pull_request.html_url }}

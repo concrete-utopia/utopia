@@ -618,7 +618,7 @@ async function createSummaryPng(
   const imgOpts = {
     format: 'png',
     width: 800,
-    height: 220,
+    height: 440,
   }
   const figure = { data: processedData, layout: layout }
 
