@@ -477,8 +477,8 @@ const getFrameData = (
 
   let frameTimesFixed = frameTimes.map((x) => Number(x.toFixed(1)))
   const sortedFrameTimes = frameTimesFixed.sort((a, b) => a - b)
-  // Trims the top 5% off.
-  let withoutOutliersLength = Math.round(sortedFrameTimes.length * 0.95)
+  // Trims the top 20% off.
+  let withoutOutliersLength = Math.round(sortedFrameTimes.length * 0.8)
   // Ensure we always have at least one result.
   if (withoutOutliersLength <= 0) {
     withoutOutliersLength = 1
