@@ -169,12 +169,6 @@ jobs:
                 "url": $html_url,
                 "color": 2369839,
                 "description": $description,
-                "fields": [
-                  {
-                    "name": "Results:",
-                    "value": $result_message
-                  }
-                ],
                 "footer": {
                   "text": $repo_full_name
                 }
@@ -189,12 +183,11 @@ jobs:
             ]
           TITLE: 'Performance Results for #${{ github.event.pull_request.number }} ${{ github.event.pull_request.title }}'
           HTML_URL: ${{ github.event.pull_request.html_url }}
-          DESCRIPTION: 'Link to test editor: https://${{ secrets.STAGING_SERVER }}/p/?branch_name=${{ steps.extract_branch.outputs.branch }}'
+          DESCRIPTION: 'Link to test editor: https://${{ secrets.STAGING_SERVER }}/p/?branch_name=${{ steps.extract_branch.outputs.branch }}<br /><br />Results:<br />${{ steps.run-performance-test.outputs.perf-message }}'
           REPO_FULL_NAME: ${{ github.event.repository.full_name }}
-          RESULT_MESSAGE: ${{ steps.run-performance-test.outputs.perf-message }}
           RESULT_CHART: ${{ steps.run-performance-test.outputs.perf-chart }}
         run: |
-          echo "DISCORD_EMBEDS=$(jq -nc --arg title "$TITLE" --arg html_url "$HTML_URL" --arg description "$DESCRIPTION" --arg repo_full_name "$REPO_FULL_NAME" --arg result_message "$RESULT_MESSAGE" --arg result_chart "$RESULT_CHART" "$TEMPLATE")" >> $GITHUB_ENV
+          echo "DISCORD_EMBEDS=$(jq -nc --arg title "$TITLE" --arg html_url "$HTML_URL" --arg description "$DESCRIPTION" --arg repo_full_name "$REPO_FULL_NAME" --arg result_chart "$RESULT_CHART" "$TEMPLATE")" >> $GITHUB_ENV
       - name: Send Discord Notification
         uses: Ilshidur/action-discord@0.3.2
         env:
