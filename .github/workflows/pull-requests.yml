@@ -53,7 +53,8 @@ jobs:
         id: extract_branch
       - name: Check out the repo
         uses: actions/checkout@v2
-        working-directory: branch/
+        with:
+          path: branch
       - name: Cache .pnpm-store
         uses: actions/cache@v2
         with:
@@ -70,9 +71,8 @@ jobs:
           nix-shell --arg includeServerBuildSupport false --arg includeRunLocallySupport false --run build-editor-staging-ci
       - name: Send webpack stats to RelativeCI
         uses: relative-ci/agent-action@v1.1.0
-        working-directory: branch/
         with:
-          webpackStatsFile: editor/lib/staging-stats.json
+          webpackStatsFile: branch/editor/lib/staging-stats.json
           key: ${{ secrets.RELATIVE_CI_KEY }}
           debug: false
       - name: Delete node_modules
@@ -102,9 +102,9 @@ jobs:
           AWS_REGION: ${{ secrets.STAGING_BUNDLE_REGION }}
       - name: Check out target version of repo
         uses: actions/checkout@v2
-        working-directory: target/
         with:
           ref: 772e55d5999b26629fd97d7a6e5afc502674fd21
+          path: target
       - name: Build Target Version of Editor
         working-directory: target/
         if: steps.cache-editor-tests.outputs.cache-hit != 'true'
