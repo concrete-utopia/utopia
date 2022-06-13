@@ -558,6 +558,60 @@ export function handleStrategies(
   }
 }
 
+function injectNewMetadataToOldEditorState(
+  oldEditorState: EditorState,
+  newEditorState: EditorState,
+): EditorState {
+  if (oldEditorState.canvas.interactionSession != null) {
+    // we expect metadata to live in EditorState.canvas.interactionSession.metadata
+    if (newEditorState.canvas.interactionSession == null) {
+      throw new Error(
+        'Dispatch error: SAVE_DOM_REPORT changed canvas.interactionSession in an illegal way',
+      )
+    } else {
+      return {
+        ...oldEditorState,
+        jsxMetadata: newEditorState.jsxMetadata,
+        domMetadata: newEditorState.domMetadata,
+        spyMetadata: newEditorState.spyMetadata,
+        canvas: {
+          ...oldEditorState.canvas,
+          interactionSession: {
+            ...oldEditorState.canvas.interactionSession,
+            metadata: newEditorState.canvas.interactionSession.metadata, // the fresh metadata from SAVE_DOM_REPORT
+          },
+        },
+      }
+    }
+  } else if (oldEditorState.canvas.dragState != null) {
+    // we expect metadata to live in EditorState.canvas.dragState.metadata
+    if (newEditorState.canvas.dragState == null) {
+      throw new Error('Dispatch error: SAVE_DOM_REPORT changed canvas.dragState in an illegal way')
+    } else {
+      return {
+        ...oldEditorState,
+        jsxMetadata: newEditorState.jsxMetadata,
+        domMetadata: newEditorState.domMetadata,
+        spyMetadata: newEditorState.spyMetadata,
+        canvas: {
+          ...oldEditorState.canvas,
+          dragState: {
+            ...oldEditorState.canvas.dragState,
+            metadata: newEditorState.canvas.dragState.metadata, // the fresh metadata from SAVE_DOM_REPORT
+          },
+        },
+      }
+    }
+  } else {
+    return {
+      ...oldEditorState, // the "old" patched editor from the action dispatch that triggered SAVE_DOM_WALKER
+      jsxMetadata: newEditorState.jsxMetadata, // the fresh metadata from SAVE_DOM_REPORT
+      domMetadata: newEditorState.domMetadata,
+      spyMetadata: newEditorState.spyMetadata,
+    }
+  }
+}
+
 function handleStrategiesInner(
   strategies: Array<CanvasStrategy>,
   dispatchedActions: readonly EditorAction[],
@@ -574,54 +628,16 @@ function handleStrategiesInner(
     : 'non-interaction'
 
   if (isSaveDomReport) {
-    if (
-      // XOR
-      (result.unpatchedEditor.canvas.interactionSession == null) !==
-      (storedState.patchedEditor.canvas.interactionSession == null)
-    ) {
-      throw new Error(
-        'Dispatch error: SAVE_DOM_REPORT changed canvas.interactionSession in an illegal way',
-      )
-    }
+    // SAVE_DOM_REPORT is a special action that is part of the dispatch flow.
+    // here we do not want to re-run strategies at all, just update the jsxMetadata in the patched EditorState
 
-    if (
-      // XOR
-      (result.unpatchedEditor.canvas.dragState == null) !==
-      (storedState.patchedEditor.canvas.dragState == null)
-    ) {
-      throw new Error('Dispatch error: SAVE_DOM_REPORT changed canvas.dragState in an illegal way')
-    }
-
-    // the goal here is to keep the old patched EditorState, except for the metadata
-    // Unfortunately there's FIVE places we have metadata in EditorState
-    const oldPatchedEditorWithNewMetadata: EditorState = {
-      ...storedState.patchedEditor, // the "old" patched editor from the action dispatch that triggered SAVE_DOM_WALKER
-      jsxMetadata: result.unpatchedEditor.jsxMetadata, // the fresh metadata from SAVE_DOM_REPORT
-      domMetadata: result.unpatchedEditor.domMetadata,
-      spyMetadata: result.unpatchedEditor.spyMetadata,
-      canvas: {
-        ...storedState.patchedEditor.canvas,
-        interactionSession:
-          result.unpatchedEditor.canvas.interactionSession == null ||
-          storedState.patchedEditor.canvas.interactionSession == null
-            ? null
-            : {
-                ...storedState.patchedEditor.canvas.interactionSession, // the "old" patched interactionSession
-                metadata: result.unpatchedEditor.canvas.interactionSession.metadata, // the fresh metadata from SAVE_DOM_REPORT
-              },
-        dragState:
-          result.unpatchedEditor.canvas.dragState == null ||
-          storedState.patchedEditor.canvas.dragState == null
-            ? null
-            : {
-                ...storedState.patchedEditor.canvas.dragState, // the "old" patched dragState
-                metadata: result.unpatchedEditor.canvas.dragState.metadata, // the fresh metadata from SAVE_DOM_REPORT
-              },
-      },
-    }
+    const oldPatchedEditorWithNewMetadata: EditorState = injectNewMetadataToOldEditorState(
+      storedState.patchedEditor,
+      result.unpatchedEditor,
+    )
     return {
       unpatchedEditorState: result.unpatchedEditor, // we return the fresh unpatchedEditor, containing the up-to-date domMetadata and spyMetadata
-      patchedEditorState: oldPatchedEditorWithNewMetadata, // the previous patched editor
+      patchedEditorState: oldPatchedEditorWithNewMetadata, // the previous patched editor with updated metadata
       newStrategyState: storedState.strategyState,
     }
   } else if (storedState.unpatchedEditor.canvas.interactionSession == null) {
