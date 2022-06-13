@@ -203,10 +203,11 @@ export interface DomWalkerProps {
   additionalElementsToUpdate: Array<ElementPath>
 }
 
-// For performance reasons this function mutates the first parameter:
-// it adds elementMetadata to metadataToMutate in way that it merges fragments with the same elementpath
-// Note: it only mutates the map itself, it should never mutate the metadata instances inside the map!
-function mergeElementMetadataToMapWithFragments_MUTATE(
+// This function adds elementMetadata to the metadataToMutate map. If a metadata instance with the same element path
+// already existed in the map, it adds the metadata of a fragment which contains both the existing and the new element.
+// NOTE: For performance reasons this function mutates the first parameter and writes the result there. It only mutates the
+// map itself, it should never mutate the metadata instances inside the map!
+function addElementMetadataToMapWithFragments_MUTATE(
   metadataToMutate: ElementInstanceMetadataMap,
   elementMetadata: Readonly<ElementInstanceMetadata>,
 ): void {
@@ -241,15 +242,16 @@ function mergeElementMetadataToMapWithFragments_MUTATE(
   }
 }
 
-// For performance reasons this function mutates the first parameter:
-// it merges otherMetadata into metadataToMutate in way that it merges fragments with the same elementpath
-// Note: it only mutates the map itself, it should never mutate the metadata instances inside the map!
+// This function merges metadataToMutate and otherMetadata maps. If metadata instances with the same element path
+// exist in both maps, it adds the metadata of a fragment which contains both the elements.
+// NOTE: For performance reasons this function mutates the first parameter and writes the result there. It only mutates
+// the map itself, it should never mutate the metadata instances inside the map!
 function mergeMetadataMapsWithFragments_MUTATE(
   metadataToMutate: ElementInstanceMetadataMap,
   otherMetadata: Readonly<ElementInstanceMetadataMap>,
 ): void {
   fastForEach(Object.values(otherMetadata), (elementMetadata) => {
-    mergeElementMetadataToMapWithFragments_MUTATE(metadataToMutate, elementMetadata)
+    addElementMetadataToMapWithFragments_MUTATE(metadataToMutate, elementMetadata)
   })
 }
 
@@ -947,7 +949,7 @@ function walkCanvasRootFragment(
       null, // this comes from the Spy Wrapper
     )
 
-    mergeElementMetadataToMapWithFragments_MUTATE(rootMetadata, metadata)
+    addElementMetadataToMapWithFragments_MUTATE(rootMetadata, metadata)
 
     return { metadata: rootMetadata, cachedPaths: cachedPaths }
   }
