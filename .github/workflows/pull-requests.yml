@@ -52,6 +52,7 @@ jobs:
           echo "##[set-output name=branch;]$FIXED_REF"
         id: extract_branch
       - name: Check out the repo
+        working-directory: branch/
         uses: actions/checkout@v2
       - name: Cache .pnpm-store
         uses: actions/cache@v2
@@ -63,17 +64,19 @@ jobs:
         with:
           nix_path: nixpkgs=https://github.com/NixOS/nixpkgs/archive/6120ac5cd201f6cb593d1b80e861be0342495be9.tar.gz
       - name: Build Editor
+        working-directory: branch/
         if: steps.cache-editor-tests.outputs.cache-hit != 'true'
         run: |
           nix-shell --arg includeServerBuildSupport false --arg includeRunLocallySupport false --run build-editor-staging-ci
       - name: Send webpack stats to RelativeCI
+        working-directory: branch/
         uses: relative-ci/agent-action@v1.1.0
         with:
           webpackStatsFile: editor/lib/staging-stats.json
           key: ${{ secrets.RELATIVE_CI_KEY }}
           debug: false
       - name: Delete node_modules
-        working-directory: editor/
+        working-directory: branch/editor/
         run: |
           rm -rf ./node_modules
           cd ../utopia-api
@@ -85,22 +88,56 @@ jobs:
           cd ../utopia-vscode-common
           rm -rf ./node_modules
       - name: Create Editor Bundle
-        working-directory: editor/lib/
+        working-directory: branch/editor/lib/
         run: |
           tar -czvf ../${{ steps.extract_branch.outputs.branch }}.tar.gz *
       - name: Upload Editor Bundle
         uses: jakejarvis/s3-sync-action@v0.5.1
         with:
-          args: --acl private --exclude '*' --include 'editor/${{ steps.extract_branch.outputs.branch }}.tar.gz'
+          args: --acl private --exclude '*' --include 'branch/editor/${{ steps.extract_branch.outputs.branch }}.tar.gz'
         env:
           AWS_S3_BUCKET: ${{ secrets.STAGING_BUNDLE_S3_BUCKET }}
           AWS_ACCESS_KEY_ID: ${{ secrets.STAGING_BUNDLE_ACCESS_KEY }}
           AWS_SECRET_ACCESS_KEY: ${{ secrets.STAGING_BUNDLE_SECRET_ACCESS_KEY }}
           AWS_REGION: ${{ secrets.STAGING_BUNDLE_REGION }}
-      - name: Flush Staging Editor Bundle
+      - name: Check out target version of repo
+        working-directory: target/
+        uses: actions/checkout@v2
+        with:
+          ref: 772e55d5999b26629fd97d7a6e5afc502674fd21
+      - name: Build Target Version of Editor
+        working-directory: target/
+        if: steps.cache-editor-tests.outputs.cache-hit != 'true'
+        run: |
+          nix-shell --arg includeServerBuildSupport false --arg includeRunLocallySupport false --run build-editor-staging-ci
+      - name: Delete Target Version node_modules
+        working-directory: target/editor/
+        run: |
+          rm -rf ./node_modules
+          cd ../utopia-api
+          rm -rf ./node_modules
+          cd ../website-next
+          rm -rf ./node_modules
+          cd ../utopia-vscode-extension
+          rm -rf ./node_modules
+          cd ../utopia-vscode-common
+          rm -rf ./node_modules
+      - name: Create Target Editor Bundle
+        working-directory: target/editor/lib/
+        run: |
+          tar -czvf ../performance-test-target.tar.gz *
+      - name: Upload Target Editor Bundle
+        uses: jakejarvis/s3-sync-action@v0.5.1
+        with:
+          args: --acl private --exclude '*' --include 'target/editor/performance-test-target.tar.gz'
+      - name: Flush Staging Branch Editor Bundle
         shell: bash
         run: |
           curl -s -o /dev/null -w "FLUSH STAGING HTTP RESPONSE CODE: %{http_code}" -X DELETE 'https://${{ secrets.STAGING_SERVER }}/internal/branch?branch_name=${{ steps.extract_branch.outputs.branch }}'
+      - name: Flush Staging Target Editor Bundle
+        shell: bash
+        run: |
+          curl -s -o /dev/null -w "FLUSH STAGING HTTP RESPONSE CODE: %{http_code}" -X DELETE 'https://${{ secrets.STAGING_SERVER }}/internal/branch?branch_name=performance-test-target'
 
   performance-test:
     name: Run Performance Tests
