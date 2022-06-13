@@ -30,14 +30,28 @@ let
     '';
   };
 
-  vsCodeYarnInstall = stdenv.mkDerivation {
-    name = "utopia-vscode-install-${vscodeVersion}";
+  stupidTest = stdenv.mkDerivation {
+    name = "stupid-test";
     src = builtins.filterSource (path: type: false) ./.;
     outputHashAlgo = "sha256";
-    outputHash = "vjuu6Qq3QakB9ab/TMLjk8MZdOGhCXPXdbXt+H0Lf9s=";
+    outputHash = "d2ytgsVKv2yemcgOyIX1iTiEsfvDubg4iGpqV5QWjsk=";
+    outputHashMode = "recursive";
+    buildPhase = ''
+    '';
+    installPhase = ''
+      mkdir -p $out/
+      echo "Test" > $out/test-file
+    '';
+  };
+
+  vsCodeYarnInstall = stdenv.mkDerivation {
+    name = "utopia-vscode-install-${vscodeVersion}";
+    pname = "utopia-vscode-install-${vscodeVersion}";
+    src = builtins.filterSource (path: type: false) ./.;
+    outputHashAlgo = "sha256";
+    outputHash = "WHp9hIurZkPAOGYNbSyONfFtJ18/GrygZd4ZFjJag79=";
     outputHashMode = "recursive";
     buildInputs = with pkgs; [
-      nodejs-16_x
       yarn
       python3
       pkg-config
@@ -56,13 +70,24 @@ let
       HOME=/build/.home
       # Needed because some subsequent step tries to use `git config`.
       git init
-      yarn install
-      ls -al /build/.home/
+      # Replace with `yarn install` once I've figured out why this is fighting me.
+      yarn --ignore-scripts add gulp
     '';
     installPhase = ''
-      mkdir -p $out/node_modules/gulp
-      cp -L -r node_modules/gulp/. $out/node_modules/gulp/
-      ls -lR $out
+      # Related nix bugs:
+      # - https://github.com/NixOS/nix/issues/5509
+      # - https://github.com/NixOS/nix/issues/4859
+      mkdir -p $out/
+      mkdir -p $out/node_modules/gulp/
+      mkdir -p $out/node_modules/gulp-cli/
+      cat node_modules/gulp/node_modules/.bin/*
+      #rm -rf node_modules/gulp/node_modules/.bin/gulp
+      #rm -rf node_modules/gulp/bin
+      #rm -rf node_modules/gulp-cli/bin/gulp.js
+      #rm -rf node_modules/gulp-cli/node_modules/.bin/color-support
+      cp -L -r node_modules/gulp/* $out/node_modules/gulp/
+      cp -L -r node_modules/gulp-cli/* $out/node_modules/gulp-cli/
+      find $out/node_modules
     '';
   };
 
@@ -116,6 +141,7 @@ let
 in
   {
     vsCode = vsCode;
+    stupidTest = stupidTest;
     vsCodeYarnInstall = vsCodeYarnInstall;
   }
 
