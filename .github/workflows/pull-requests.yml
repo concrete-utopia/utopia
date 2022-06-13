@@ -87,6 +87,8 @@ jobs:
           rm -rf ./node_modules
           cd ../utopia-vscode-common
           rm -rf ./node_modules
+      - name: Create Editor Directory
+        run: mkdir editor
       - name: Create Editor Bundle
         working-directory: editor/
         run: |
