@@ -464,7 +464,6 @@ const getFrameData = (
   }
 
   let frameTimes: Array<number> = []
-  let totalFrameTimes = 0
   for (let frameCounter: number = 0; frameCounter < 100000; frameCounter++) {
     const startEvent = findStartEvent(frameCounter)
     const endEvent = findEndEvent(frameCounter)
@@ -473,20 +472,27 @@ const getFrameData = (
     } else {
       const frameDelta = (endEvent.ts - startEvent.ts) / 1000
       frameTimes[frameCounter] = frameDelta
-      totalFrameTimes += frameDelta
     }
   }
 
   let frameTimesFixed = frameTimes.map((x) => Number(x.toFixed(1)))
   const sortedFrameTimes = frameTimesFixed.sort((a, b) => a - b)
+  // Trims the top 5% off.
+  let withoutOutliersLength = Math.round(sortedFrameTimes.length * 0.95)
+  // Ensure we always have at least one result.
+  if (withoutOutliersLength <= 0) {
+    withoutOutliersLength = 1
+  }
+  const frameTimesWithoutOutliers = sortedFrameTimes.slice(0, withoutOutliersLength)
+  let totalFrameTimes = 0
 
   const analytics = {
-    frameMin: sortedFrameTimes[0]!,
-    frameMax: sortedFrameTimes[sortedFrameTimes.length - 1]!,
+    frameMin: frameTimesWithoutOutliers[0]!,
+    frameMax: frameTimesWithoutOutliers[withoutOutliersLength - 1]!,
     frameAvg: Number((totalFrameTimes / sortedFrameTimes.length).toFixed()),
-    percentile25: sortedFrameTimes[Math.floor(sortedFrameTimes.length * 0.25)],
-    percentile50: sortedFrameTimes[Math.floor(sortedFrameTimes.length * 0.5)],
-    percentile75: sortedFrameTimes[Math.floor(sortedFrameTimes.length * 0.75)],
+    percentile25: frameTimesWithoutOutliers[Math.floor(frameTimesWithoutOutliers.length * 0.25)],
+    percentile50: frameTimesWithoutOutliers[Math.floor(frameTimesWithoutOutliers.length * 0.5)],
+    percentile75: frameTimesWithoutOutliers[Math.floor(frameTimesWithoutOutliers.length * 0.75)],
   }
   return {
     title: title,
