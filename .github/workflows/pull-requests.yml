@@ -52,8 +52,8 @@ jobs:
           echo "##[set-output name=branch;]$FIXED_REF"
         id: extract_branch
       - name: Check out the repo
-        working-directory: branch/
         uses: actions/checkout@v2
+        working-directory: branch/
       - name: Cache .pnpm-store
         uses: actions/cache@v2
         with:
@@ -69,8 +69,8 @@ jobs:
         run: |
           nix-shell --arg includeServerBuildSupport false --arg includeRunLocallySupport false --run build-editor-staging-ci
       - name: Send webpack stats to RelativeCI
-        working-directory: branch/
         uses: relative-ci/agent-action@v1.1.0
+        working-directory: branch/
         with:
           webpackStatsFile: editor/lib/staging-stats.json
           key: ${{ secrets.RELATIVE_CI_KEY }}
@@ -101,8 +101,8 @@ jobs:
           AWS_SECRET_ACCESS_KEY: ${{ secrets.STAGING_BUNDLE_SECRET_ACCESS_KEY }}
           AWS_REGION: ${{ secrets.STAGING_BUNDLE_REGION }}
       - name: Check out target version of repo
-        working-directory: target/
         uses: actions/checkout@v2
+        working-directory: target/
         with:
           ref: 772e55d5999b26629fd97d7a6e5afc502674fd21
       - name: Build Target Version of Editor
