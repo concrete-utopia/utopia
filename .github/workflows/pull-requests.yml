@@ -171,6 +171,7 @@ jobs:
                 "description": $description,
                 "fields": [
                   {
+                    "name": "Results:",
                     "value": $result_message
                   }
                 ],
