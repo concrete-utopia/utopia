@@ -94,9 +94,13 @@ export const testPerformance = async function () {
   const message = Object.entries(stagingResult)
     .flatMap(([k, result]) => {
       const targetResult = masterResult[k]
+      const beforeMedian = targetResult.analytics.percentile50 ?? 1
+      const afterMedian = result.analytics.percentile50 ?? 1
+      const change = ((afterMedian - beforeMedian) / beforeMedian) * 100
       return [
         consoleMessageForResult(targetResult, 'before'),
         consoleMessageForResult(result, 'after'),
+        `${result.title} change: ${change}%`,
       ]
     })
     .join('<br />')
