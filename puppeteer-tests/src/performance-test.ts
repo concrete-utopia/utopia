@@ -79,7 +79,7 @@ function defer() {
 
 const ResizeButtonXPath = "//a[contains(., 'P R')]"
 
-function consoleMessageForResult(result: FrameResult, beforeOrAfter: 'before' | 'after'): string {
+function consoleMessageForResult(result: FrameResult, beforeOrAfter: 'Before' | 'After'): string {
   return `${beforeOrAfter}: ${result.analytics.percentile50}ms (${result.analytics.frameMin}-${result.analytics.frameMax}ms)`
 }
 
@@ -99,8 +99,8 @@ export const testPerformance = async function () {
       const change = ((afterMedian - beforeMedian) / beforeMedian) * 100
       return [
         result.title,
-        consoleMessageForResult(targetResult, 'before'),
-        consoleMessageForResult(result, 'after'),
+        consoleMessageForResult(targetResult, 'Before'),
+        consoleMessageForResult(result, 'After'),
         `Change: ${Math.round(change)}%`,
         '',
       ]
@@ -568,13 +568,15 @@ async function createSummaryPng(
 
   const numberOfTests = Object.keys(stagingResult).length * 2
 
-  const processedData = Object.entries(stagingResult).flatMap(([k, result]) => {
+  let processedData = Object.entries(stagingResult).flatMap(([k, result]) => {
     const targetResult = masterResult[k]
     return [
       boxPlotConfig(`${targetResult.title} (before)`, targetResult.timeSeries),
       boxPlotConfig(`${result.title} (after)`, result.timeSeries),
     ]
   })
+
+  processedData.reverse() // Plotly will produce the box plot in the reverse order
 
   const layout = {
     margin: {
