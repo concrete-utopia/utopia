@@ -205,6 +205,7 @@ export interface DomWalkerProps {
 
 // For performance reasons this function mutates the first parameter:
 // it adds elementMetadata to metadataToMutate in way that it merges fragments with the same elementpath
+// Note: it only mutates the map itself, it should never mutate the metadata instances inside the map!
 function mergeElementMetadataToMapWithFragments_MUTATE(
   metadataToMutate: ElementInstanceMetadataMap,
   elementMetadata: Readonly<ElementInstanceMetadata>,
@@ -242,6 +243,7 @@ function mergeElementMetadataToMapWithFragments_MUTATE(
 
 // For performance reasons this function mutates the first parameter:
 // it merges otherMetadata into metadataToMutate in way that it merges fragments with the same elementpath
+// Note: it only mutates the map itself, it should never mutate the metadata instances inside the map!
 function mergeMetadataMapsWithFragments_MUTATE(
   metadataToMutate: ElementInstanceMetadataMap,
   otherMetadata: Readonly<ElementInstanceMetadataMap>,
