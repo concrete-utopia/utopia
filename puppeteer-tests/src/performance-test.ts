@@ -105,7 +105,7 @@ export const testPerformance = async function () {
   })
 
   const message = messageParts.join('<br />')
-  const discordMessage = messageParts.join('\n')
+  const discordMessage = messageParts.join('\\n')
 
   console.info(`::set-output name=perf-result:: ${message} <br /> ![(Chart)](${summaryImage})`)
 
