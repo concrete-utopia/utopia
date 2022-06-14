@@ -464,14 +464,7 @@ export function editorDispatch(
     builtInDependencies: storedState.builtInDependencies,
   }
 
-  if (!finalStore.nothingChanged) {
-    /**
-     * Heads up: we do not log dispatches that resulted in a NO_OP. This is to avoid clogging up the
-     * history with a million CLEAR_HIGHLIGHTED_VIEWS and other such actions.
-     *  */
-
-    reduxDevtoolsSendActions(actionGroupsToProcess, finalStore)
-  }
+  reduxDevtoolsSendActions(actionGroupsToProcess, finalStore)
 
   if (storedState.userState.loginState.type !== result.userState.loginState.type) {
     if (isLoggedIn(result.userState.loginState)) {
