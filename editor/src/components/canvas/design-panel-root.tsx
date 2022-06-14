@@ -263,7 +263,7 @@ const DesignPanelRootInner = React.memo(() => {
               borderLeft: `1px solid ${colorTheme.subduedBorder.value}`,
             }}
           >
-            <CodeEditorWrapper />
+            {/* <CodeEditorWrapper /> */}
             <ConsoleAndErrorsPane />
           </Resizable>
         </SimpleFlexColumn>
