@@ -114,7 +114,7 @@ jobs:
       - name: Check out target version of repo
         uses: actions/checkout@v2
         with:
-          ref: ${{ UTOPIA_SHA }}
+          ref: ${{ env.UTOPIA_SHA }}
       - name: Cache .pnpm-store
         uses: actions/cache@v2
         with:
