@@ -1,4 +1,4 @@
-import { setUtopiaID } from '../../../core/model/element-template-utils'
+import { getZIndexOfElement, setUtopiaID } from '../../../core/model/element-template-utils'
 import { getUtopiaJSXComponentsFromSuccess } from '../../../core/model/project-file-utils'
 import { UTOPIA_UID_KEY } from '../../../core/model/utopia-constants'
 import { foldEither } from '../../../core/shared/either'
@@ -7,6 +7,7 @@ import { emptyComments, jsxAttributeValue } from '../../../core/shared/element-t
 import { setJSXValuesAtPaths } from '../../../core/shared/jsx-attributes'
 import { ElementPath } from '../../../core/shared/project-file-types'
 import { fromString } from '../../../core/shared/property-path'
+import { before } from '../../../utils/utils'
 import {
   EditorState,
   EditorStatePatch,
@@ -49,16 +50,20 @@ export const runDuplicateElement: CommandFunction<DuplicateElement> = (
     command.target,
     editorState,
     [],
-    (successTarget, underlyingElementTarget, _underlyingTarget, underlyingFilePathTarget) => {
+    (successTarget, underlyingElementTarget, underlyingTarget, underlyingFilePathTarget) => {
       const elementWithNewUid = setUtopiaID(underlyingElementTarget, command.newUid)
       const components = getUtopiaJSXComponentsFromSuccess(successTarget)
+      const indexOfDuplicateTarget = getZIndexOfElement(
+        successTarget.topLevelElements,
+        underlyingTarget,
+      )
       const withElementDuplicated = insertElementAtPath(
         editorState.projectContents,
         underlyingFilePathTarget,
         EP.parentPath(command.target),
         elementWithNewUid,
         components,
-        null,
+        before(indexOfDuplicateTarget),
       )
 
       return [

@@ -1,7 +1,9 @@
 import { MetadataUtils } from '../../../core/model/element-metadata-utils'
 import { generateUidWithExistingComponents } from '../../../core/model/element-template-utils'
 import * as EP from '../../../core/shared/element-path'
-import { duplicateElement } from '../commands/duplicate-element-command'
+import { ElementInstanceMetadataMap } from '../../../core/shared/element-template'
+import { ElementPath } from '../../../core/shared/project-file-types'
+import { DuplicateElement, duplicateElement } from '../commands/duplicate-element-command'
 import { updateSelectedViews } from '../commands/update-selected-views-command'
 import { ParentBounds } from '../controls/parent-bounds'
 import { ParentOutlines } from '../controls/parent-outlines'
@@ -54,30 +56,41 @@ export const absoluteDuplicateStrategy: CanvasStrategy = {
     const { selectedElements } = canvasState
     const filteredSelectedElements = getDragTargets(selectedElements)
 
-    const duplicateCommands = filteredSelectedElements.map((selectedElement) => {
-      const newUid = generateUidWithExistingComponents(canvasState.projectContents)
+    let duplicatedElementNewUids = { ...strategyState.customStrategyState.duplicatedElementNewUids }
+    let withDuplicatedMetadata: ElementInstanceMetadataMap = { ...strategyState.startingMetadata }
+    let duplicateCommands: Array<{ newPath: ElementPath; commands: DuplicateElement[] }> = []
+
+    filteredSelectedElements.forEach((selectedElement) => {
+      const selectedElementString = EP.toString(selectedElement)
+      const newUid =
+        duplicatedElementNewUids[selectedElementString] ??
+        generateUidWithExistingComponents(canvasState.projectContents)
       const newPath = EP.appendToPath(EP.parentPath(selectedElement), newUid)
-      return {
+      const newPathString = EP.toString(newPath)
+
+      duplicatedElementNewUids[selectedElementString] = newUid
+      withDuplicatedMetadata[newPathString] = {
+        ...withDuplicatedMetadata[EP.toString(selectedElement)],
+        elementPath: newPath,
+      }
+
+      duplicateCommands.push({
         newPath: newPath,
         commands: [duplicateElement('permanent', selectedElement, newUid)],
-      }
+      })
     })
 
-    const newSelectedElements = duplicateCommands.map((c) => c.newPath)
-
-    const moveCommands = absoluteMoveStrategy.apply(
-      { ...canvasState, selectedElements: newSelectedElements },
-      interactionState,
-      strategyState,
-    )
+    const moveCommands = absoluteMoveStrategy.apply(canvasState, interactionState, {
+      ...strategyState,
+      startingMetadata: withDuplicatedMetadata,
+    })
 
     return {
-      commands: [
-        ...duplicateCommands.flatMap((c) => c.commands),
-        ...moveCommands.commands,
-        updateSelectedViews('permanent', newSelectedElements),
-      ],
-      customState: null,
+      commands: [...duplicateCommands.flatMap((c) => c.commands), ...moveCommands.commands],
+      customState: {
+        ...strategyState.customStrategyState,
+        duplicatedElementNewUids: duplicatedElementNewUids,
+      },
     }
   },
 }

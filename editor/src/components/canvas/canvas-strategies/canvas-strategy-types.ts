@@ -10,12 +10,14 @@ import { InteractionSession, StrategyState } from './interaction-state'
 export interface CustomStrategyState {
   escapeHatchActivated: boolean
   lastReorderIdx: number | null
+  duplicatedElementNewUids: { [elementPath: string]: string }
 }
 
 export function defaultCustomStrategyState(): CustomStrategyState {
   return {
     escapeHatchActivated: false,
     lastReorderIdx: null,
+    duplicatedElementNewUids: {},
   }
 }
 
