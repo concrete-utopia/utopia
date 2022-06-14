@@ -47,6 +47,7 @@ import {
 } from '../../canvas-strategies/interaction-state'
 import { Modifier, Modifiers } from '../../../../utils/modifiers'
 import { pathsEqual } from '../../../../core/shared/element-path'
+import { EditorAction } from 'src/components/editor/action-types'
 
 const DRAG_START_TRESHOLD = 2
 
@@ -507,7 +508,8 @@ function useSelectOrLiveModeSelectAndHover(
   const findValidTarget = useFindValidTarget()
   const getSelectableViewsForSelectMode = useGetSelectableViewsForSelectMode()
   const startDragStateAfterDragExceedsThreshold = useStartDragStateAfterDragExceedsThreshold()
-  const startCanvasModeSession = useStartCanvasSession()
+  //const startCanvasModeSession = useStartCanvasSession()
+  const windowToCanvasCoordinates = useWindowToCanvasCoordinates()
 
   const { onMouseMove } = useHighlightCallbacks(
     active,
@@ -521,8 +523,6 @@ function useSelectOrLiveModeSelectAndHover(
     derived: store.derived,
   }))
 
-  const innerAnimationFrameRef = React.useRef<number | null>(null)
-
   const onMouseDown = React.useCallback(
     (event: React.MouseEvent<HTMLDivElement>) => {
       const doubleClick = event.detail > 1 // we interpret a triple click as two double clicks, a quadruple click as three double clicks, etc  // TODO TEST ME
@@ -534,11 +534,24 @@ function useSelectOrLiveModeSelectAndHover(
 
       const isMultiselect = event.shiftKey
       const isDeselect = foundTarget == null && !isMultiselect
+      let editorActions: Array<EditorAction> = []
 
       if (foundTarget != null || isDeselect) {
         if (foundTarget != null && draggingAllowed) {
           if (isFeatureEnabled('Canvas Strategies')) {
-            startCanvasModeSession(event.nativeEvent, foundTarget.elementPath)
+            const start = windowToCanvasCoordinates(
+              windowPoint(point(event.clientX, event.clientY)),
+            ).canvasPositionRounded
+            if (event.button !== 2) {
+              editorActions.push(
+                CanvasActions.createInteractionSession(
+                  createInteractionViaMouse(start, Modifier.modifiersForEvent(event), {
+                    type: 'BOUNDING_AREA',
+                    target: foundTarget.elementPath,
+                  }),
+                ),
+              )
+            }
           } else {
             startDragStateAfterDragExceedsThreshold(event.nativeEvent, foundTarget.elementPath)
           }
@@ -558,7 +571,7 @@ function useSelectOrLiveModeSelectAndHover(
             editorStoreRef.current.editor.jsxMetadata,
           )
           if (isFocusableLeaf) {
-            dispatch([setFocusedElement(foundTarget.elementPath)])
+            editorActions.push(setFocusedElement(foundTarget.elementPath))
           }
         }
 
@@ -566,27 +579,22 @@ function useSelectOrLiveModeSelectAndHover(
           // first we only set the selected views for the canvas controls
           setSelectedViewsForCanvasControlsOnly(updatedSelection)
 
-          requestAnimationFrame(() => {
-            if (innerAnimationFrameRef.current != null) {
-              window.cancelAnimationFrame(innerAnimationFrameRef.current)
-            }
-            innerAnimationFrameRef.current = requestAnimationFrame(() => {
-              // then we set the selected views for the editor state, 1 frame later
-              if (updatedSelection.length === 0) {
-                const clearFocusedElementIfFeatureSwitchEnabled = isFeatureEnabled(
-                  'Click on empty canvas unfocuses',
-                )
-                  ? [setFocusedElement(null)]
-                  : []
+          // then we set the selected views for the editor state, 1 frame later
+          if (updatedSelection.length === 0) {
+            const clearFocusedElementIfFeatureSwitchEnabled = isFeatureEnabled(
+              'Click on empty canvas unfocuses',
+            )
+              ? [setFocusedElement(null)]
+              : []
 
-                dispatch([clearSelection(), ...clearFocusedElementIfFeatureSwitchEnabled])
-              } else {
-                dispatch([selectComponents(updatedSelection, event.shiftKey)])
-              }
-            })
-          })
+            editorActions.push(clearSelection())
+            editorActions.push(...clearFocusedElementIfFeatureSwitchEnabled)
+          } else {
+            editorActions.push(selectComponents(updatedSelection, event.shiftKey))
+          }
         }
       }
+      dispatch(editorActions)
     },
     [
       dispatch,
@@ -597,7 +605,7 @@ function useSelectOrLiveModeSelectAndHover(
       getSelectableViewsForSelectMode,
       editorStoreRef,
       draggingAllowed,
-      startCanvasModeSession,
+      windowToCanvasCoordinates,
     ],
   )
 

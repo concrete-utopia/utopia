@@ -224,7 +224,7 @@ export async function renderTestEditorWithModel(
       additionalElementsToUpdate:
         workingEditorState.patchedEditor.canvas.domWalkerAdditionalElementsToUpdate,
       rootMetadataInStateRef: {
-        current: Object.values(workingEditorState.patchedEditor.domMetadata),
+        current: workingEditorState.patchedEditor.domMetadata,
       },
     })
 
