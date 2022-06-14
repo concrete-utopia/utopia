@@ -7,12 +7,12 @@ import { useColorTheme } from '../../../uuiui'
 import { useEditorState } from '../../editor/store/store-hook'
 import { CanvasOffsetWrapper } from './canvas-offset-wrapper'
 
-export const MarginControls = React.memo(() => {
+export const MarginIndicators = React.memo(() => {
   const isInteractionActive = useEditorState(
     (store) => store.editor.canvas.interactionSession != null,
-    'MarginControls isInteractionActive',
+    'MarginIndicators isInteractionActive',
   )
-  const scale = useEditorState((store) => store.editor.canvas.scale, 'MarginControls scale')
+  const scale = useEditorState((store) => store.editor.canvas.scale, 'MarginIndicators scale')
   const framesAndMargins = useEditorState((store) => {
     return mapDropNulls((path) => {
       const frame = MetadataUtils.getFrameInCanvasCoords(path, store.editor.jsxMetadata)
@@ -25,7 +25,7 @@ export const MarginControls = React.memo(() => {
         return null
       }
     }, store.editor.selectedViews)
-  }, 'MarginControls margin')
+  }, 'MarginIndicators margin')
 
   if (isInteractionActive) {
     return null
@@ -33,19 +33,19 @@ export const MarginControls = React.memo(() => {
   return (
     <>
       {framesAndMargins.map((frameInfo, i) => (
-        <MarginControl key={i} margin={frameInfo.margin} frame={frameInfo.frame} scale={scale} />
+        <MarginIndicator key={i} margin={frameInfo.margin} frame={frameInfo.frame} scale={scale} />
       ))}
     </>
   )
 })
 
-interface MarginControlProps {
+interface MarginIndicatorProps {
   margin: Partial<Sides> | null
   frame: CanvasRectangle
   scale: number
 }
 
-export const MarginControl = React.memo((props: MarginControlProps) => {
+export const MarginIndicator = React.memo((props: MarginIndicatorProps) => {
   const colorTheme = useColorTheme()
 
   if (props.margin == null) {

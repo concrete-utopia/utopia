@@ -7,12 +7,12 @@ import { useColorTheme } from '../../../uuiui'
 import { useEditorState } from '../../editor/store/store-hook'
 import { CanvasOffsetWrapper } from './canvas-offset-wrapper'
 
-export const PaddingControls = React.memo(() => {
+export const PaddingIndicators = React.memo(() => {
   const isInteractionActive = useEditorState(
     (store) => store.editor.canvas.interactionSession != null,
-    'MarginControls isInteractionActive',
+    'PaddingIndicators isInteractionActive',
   )
-  const scale = useEditorState((store) => store.editor.canvas.scale, 'PaddingControls scale')
+  const scale = useEditorState((store) => store.editor.canvas.scale, 'PaddingIndicators scale')
   const framesAndpaddings = useEditorState((store) => {
     return mapDropNulls((path) => {
       const frame = MetadataUtils.getFrameInCanvasCoords(path, store.editor.jsxMetadata)
@@ -25,7 +25,7 @@ export const PaddingControls = React.memo(() => {
         return null
       }
     }, store.editor.selectedViews)
-  }, 'PaddingControls padding')
+  }, 'PaddingIndicators padding')
 
   if (isInteractionActive) {
     return null
@@ -33,19 +33,24 @@ export const PaddingControls = React.memo(() => {
   return (
     <>
       {framesAndpaddings.map((frameInfo, i) => (
-        <PaddingControl key={i} padding={frameInfo.padding} frame={frameInfo.frame} scale={scale} />
+        <PaddingIndicator
+          key={i}
+          padding={frameInfo.padding}
+          frame={frameInfo.frame}
+          scale={scale}
+        />
       ))}
     </>
   )
 })
 
-interface PaddingControlProps {
+interface PaddingIndicatorProps {
   padding: Partial<Sides> | null
   frame: CanvasRectangle
   scale: number
 }
 
-export const PaddingControl = React.memo((props: PaddingControlProps) => {
+export const PaddingIndicator = React.memo((props: PaddingIndicatorProps) => {
   const colorTheme = useColorTheme()
   if (props.padding == null) {
     return null
@@ -54,7 +59,7 @@ export const PaddingControl = React.memo((props: PaddingControlProps) => {
       props.padding.left != null && props.padding.left !== 0 ? (
         <div
           key='padding-left'
-          className=' roleFlexPaddingControl'
+          className=' roleFlexPaddingIndicator'
           style={{
             fontSize: 10,
             fontWeight: 5,

@@ -71,8 +71,8 @@ import { OutlineHighlightControl } from './select-mode/outline-highlight-control
 import { InsertionControls } from './insertion-plus-button'
 import { DistanceGuidelineControl } from './select-mode/distance-guideline-control'
 import { SceneLabelControl } from './select-mode/scene-label'
-import { PaddingControls } from './padding-controls'
-import { MarginControls } from './margin-controls'
+import { PaddingIndicators } from './padding-indicators'
+import { MarginIndicators } from './margin-indicators'
 
 export const CanvasControlsContainerID = 'new-canvas-controls-container'
 
@@ -448,12 +448,12 @@ const NewCanvasControlsInner = (props: NewCanvasControlsInnerProps) => {
       {when(
         (isFeatureEnabled('Canvas Strategies') && props.editor.mode.type === 'select') ||
           props.editor.mode.type === 'select-lite',
-        <PaddingControls />,
+        <PaddingIndicators />,
       )}
       {when(
         (isFeatureEnabled('Canvas Strategies') && props.editor.mode.type === 'select') ||
           props.editor.mode.type === 'select-lite',
-        <MarginControls />,
+        <MarginIndicators />,
       )}
       {when(
         (isFeatureEnabled('Canvas Strategies') && props.editor.mode.type === 'select') ||
