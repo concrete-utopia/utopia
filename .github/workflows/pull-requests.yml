@@ -161,7 +161,7 @@ jobs:
   performance-test:
     name: Run Performance Tests
     runs-on: self-hosted
-    needs: deploy-staging
+    needs: [deploy-staging, deploy-target]
     env:
       UTOPIA_SHA: ${{ github.sha }}
       AUTH0_CLIENT_ID: KB7euFO46rVYeOaWmrEdktdhAFxEO266
