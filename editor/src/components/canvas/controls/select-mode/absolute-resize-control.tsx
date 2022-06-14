@@ -114,6 +114,7 @@ const ResizePointOffset = ResizePointSize / 2
 const ResizePoint = React.memo(
   React.forwardRef<HTMLDivElement, ResizePointProps>((props, ref) => {
     const colorTheme = useColorTheme()
+    const { maybeClearHighlightsOnHoverEnd } = useMaybeHighlightElement()
     const scale = useEditorState((store) => store.editor.canvas.scale, 'ResizeEdge scale')
     const dispatch = useEditorState((store) => store.dispatch, 'ResizeEdge dispatch')
     const canvasOffsetRef = useRefEditorState((store) => store.editor.canvas.roundedCanvasOffset)
@@ -125,6 +126,14 @@ const ResizePoint = React.memo(
       [dispatch, props.position, canvasOffsetRef, scale],
     )
 
+    const onMouseMove = React.useCallback(
+      (event: React.MouseEvent<HTMLDivElement>) => {
+        maybeClearHighlightsOnHoverEnd()
+        event.stopPropagation()
+      },
+      [maybeClearHighlightsOnHoverEnd],
+    )
+
     return (
       <div
         ref={ref}
@@ -134,6 +143,7 @@ const ResizePoint = React.memo(
           height: ResizePointSize / scale,
         }}
         onMouseDown={onPointMouseDown}
+        onMouseMove={onMouseMove}
       >
         <div
           style={{
@@ -183,12 +193,21 @@ const ResizeEdge = React.memo(
     const scale = useEditorState((store) => store.editor.canvas.scale, 'ResizeEdge scale')
     const dispatch = useEditorState((store) => store.dispatch, 'ResizeEdge dispatch')
     const canvasOffsetRef = useRefEditorState((store) => store.editor.canvas.roundedCanvasOffset)
+    const { maybeClearHighlightsOnHoverEnd } = useMaybeHighlightElement()
 
     const onEdgeMouseDown = React.useCallback(
       (event: React.MouseEvent<HTMLDivElement>) => {
         startResizeInteraction(event, dispatch, props.position, canvasOffsetRef.current, scale)
       },
       [dispatch, props.position, canvasOffsetRef, scale],
+    )
+
+    const onMouseMove = React.useCallback(
+      (event: React.MouseEvent<HTMLDivElement>) => {
+        maybeClearHighlightsOnHoverEnd()
+        event.stopPropagation()
+      },
+      [maybeClearHighlightsOnHoverEnd],
     )
 
     const lineSize = ResizeMouseAreaSize / scale
@@ -209,6 +228,7 @@ const ResizeEdge = React.memo(
           transform: `translate(${offsetLeft}, ${offsetTop})`,
         }}
         onMouseDown={onEdgeMouseDown}
+        onMouseMove={onMouseMove}
       />
     )
   }),
