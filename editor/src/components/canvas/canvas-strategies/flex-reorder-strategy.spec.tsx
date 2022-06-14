@@ -203,7 +203,7 @@ function reorderElement(
 }
 
 describe('Flex Reorder Strategy', () => {
-  it('does not activate when drag treshold is not reached', async () => {
+  it('does not activate when drag threshold is not reached', async () => {
     const targetElement = elementPath([
       ['scene-aaa', 'app-entity'],
       ['app-outer-div', 'child-1'],

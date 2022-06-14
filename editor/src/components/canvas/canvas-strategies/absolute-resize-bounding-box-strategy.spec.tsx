@@ -97,7 +97,7 @@ const testMetadata: ElementInstanceMetadataMap = {
 describe('Absolute Resize Bounding Box Strategy single select', () => {
   it.each([
     [
-      'top left corner, drag treshold not reached',
+      'top left corner, drag threshold not reached',
       {
         edgePosition: { x: 0, y: 0 } as EdgePosition,
         drag: canvasPoint({

@@ -100,7 +100,7 @@ function dragByPixels(
 }
 
 describe('Absolute Reparent Strategy without new parent', () => {
-  it('does not activate when drag treshold is not reached', async () => {
+  it('does not activate when drag threshold is not reached', async () => {
     const targetElement = elementPath([
       ['scene-aaa', 'app-entity'],
       ['aaa', 'bbb'],

@@ -94,7 +94,7 @@ function resizeTestWithTLWH(
 }
 
 describe('Absolute Delta Resize Strategy TLWH', () => {
-  it('does not activate when drag treshold is not reached', async () => {
+  it('does not activate when drag threshold is not reached', async () => {
     const edgePosition: EdgePosition = { x: 0, y: 0 }
     const editorAfterStrategy = resizeTestWithTLWH(edgePosition, canvasPoint({ x: 1, y: 1 }))
     expect(testPrintCodeFromEditorState(editorAfterStrategy)).toEqual(
