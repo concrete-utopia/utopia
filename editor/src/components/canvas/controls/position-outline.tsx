@@ -7,27 +7,43 @@ import * as EP from '../../../core/shared/element-path'
 import { isJSXElement } from '../../../core/shared/element-template'
 import { CanvasPoint, CanvasRectangle } from '../../../core/shared/math-utils'
 import { ElementPath } from '../../../core/shared/project-file-types'
+import { ElementPathKeepDeepEquality } from '../../../utils/deep-equality-instances'
 import { useColorTheme } from '../../../uuiui'
+import { CanvasRectangleKeepDeepEquality } from '../../editor/store/store-deep-equality-instances'
 import { useEditorState } from '../../editor/store/store-hook'
 import { CanvasOffsetWrapper } from './canvas-offset-wrapper'
 
 export const PinLines = React.memo(() => {
   const scale = useEditorState((store) => store.editor.canvas.scale, 'PinLines scale')
-  const elementsAndFrames = useEditorState((store) => {
-    return mapDropNulls((path) => {
-      const element = MetadataUtils.findElementByElementPath(store.editor.jsxMetadata, path)
-      const isAbsolute = MetadataUtils.isPositionAbsolute(element)
-      const frame = element?.globalFrame
-      if (isAbsolute && frame != null) {
-        return {
-          path: path,
-          frame: frame,
+  const elementsAndFrames = useEditorState(
+    (store) => {
+      return mapDropNulls((path) => {
+        const element = MetadataUtils.findElementByElementPath(store.editor.jsxMetadata, path)
+        const isAbsolute = MetadataUtils.isPositionAbsolute(element)
+        const frame = element?.globalFrame
+        if (isAbsolute && frame != null) {
+          return {
+            path: path,
+            frame: frame,
+          }
+        } else {
+          return null
         }
-      } else {
-        return null
-      }
-    }, store.editor.selectedViews)
-  }, 'PinLines')
+      }, store.editor.selectedViews)
+    },
+    'PinLines',
+    (oldValue, newValue) => {
+      return (
+        oldValue.length === newValue.length &&
+        oldValue.every(
+          (old, index) =>
+            CanvasRectangleKeepDeepEquality(old.frame, newValue[index]?.frame).areEqual &&
+            ElementPathKeepDeepEquality(old.path, newValue[index]?.path).areEqual,
+        )
+      )
+    },
+  )
+
   return (
     <>
       {elementsAndFrames.map((frameInfo) => (
