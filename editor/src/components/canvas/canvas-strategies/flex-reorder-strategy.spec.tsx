@@ -160,7 +160,7 @@ function reorderElement(
   dragStart: CanvasPoint,
   drag: CanvasPoint,
   metadata: ElementInstanceMetadataMap,
-  newIndex: number,
+  newIndex?: number,
 ): EditorState {
   const interactionSession: InteractionSession = {
     ...createMouseInteractionForTests(
@@ -203,6 +203,55 @@ function reorderElement(
 }
 
 describe('Flex Reorder Strategy', () => {
+  it('does not activate when drag treshold is not reached', async () => {
+    const targetElement = elementPath([
+      ['scene-aaa', 'app-entity'],
+      ['app-outer-div', 'child-1'],
+    ])
+
+    const initialEditor = getEditorStateWithSelectedViews(
+      makeTestProjectCodeWithSnippet(`
+      <div
+        data-uid='app-outer-div'
+        style={{ display: 'flex', gap: 10 }}
+      >
+        <div
+          data-uid='child-0'
+          style={{
+            width: 50,
+            height: 50,
+            backgroundColor: 'green',
+          }}
+        />
+        <div
+          data-uid='child-1'
+          style={{
+            width: 50,
+            height: 50,
+            backgroundColor: 'blue',
+          }}
+        />
+        <div
+          data-uid='child-2'
+          style={{
+            width: 50,
+            height: 50,
+            backgroundColor: 'purple',
+          }}
+        />
+      </div>`),
+      [targetElement],
+    )
+
+    const finalEditor = reorderElement(
+      initialEditor,
+      canvasPoint({ x: 89, y: 27 }),
+      canvasPoint({ x: 1, y: 1 }),
+      getDefaultMetadata(),
+    )
+
+    expect(finalEditor).toEqual(initialEditor)
+  })
   it('works with normal direction', async () => {
     const targetElement = elementPath([
       ['scene-aaa', 'app-entity'],

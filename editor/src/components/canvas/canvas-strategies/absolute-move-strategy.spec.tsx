@@ -92,6 +92,28 @@ function dragByPixels(
 }
 
 describe('Absolute Move Strategy', () => {
+  it('does not activate when drag treshold is not reached', async () => {
+    const targetElement = elementPath([
+      ['scene-aaa', 'app-entity'],
+      ['aaa', 'bbb'],
+    ])
+
+    const initialEditor: EditorState = prepareEditorState(
+      `
+    <View style={{ ...(props.style || {}) }} data-uid='aaa'>
+      <View
+        style={{ backgroundColor: '#0091FFAA', position: 'absolute', left: 50, top: 50, width: 250, height: 300 }}
+        data-uid='bbb'
+      />
+    </View>
+    `,
+      [targetElement],
+    )
+
+    const finalEditor = dragByPixels(initialEditor, canvasPoint({ x: 1, y: 1 }), emptyModifiers)
+
+    expect(finalEditor).toEqual(finalEditor)
+  })
   it('works with a TL pinned absolute element', async () => {
     const targetElement = elementPath([
       ['scene-aaa', 'app-entity'],

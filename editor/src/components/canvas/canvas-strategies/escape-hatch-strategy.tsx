@@ -109,7 +109,10 @@ export const escapeHatchStrategy: CanvasStrategy = {
     }
   },
   apply: (canvasState, interactionState, strategyState) => {
-    if (interactionState.interactionData.type === 'DRAG') {
+    if (
+      interactionState.interactionData.type === 'DRAG' &&
+      interactionState.interactionData.drag != null
+    ) {
       let shouldEscapeHatch = false
       let escapeHatchActivated = strategyState.customStrategyState.escapeHatchActivated ?? false
       if (interactionState.interactionData.modifiers.cmd) {
