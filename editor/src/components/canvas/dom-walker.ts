@@ -15,6 +15,7 @@ import {
   emptyComputedStyle,
   StyleAttributeMetadata,
   emptyAttributeMetadatada,
+  ElementInstanceMetadataMap,
 } from '../../core/shared/element-template'
 import { ElementPath } from '../../core/shared/project-file-types'
 import { getCanvasRectangleFromElement, getDOMAttribute } from '../../core/shared/dom-utils'
@@ -40,31 +41,30 @@ import {
   positionValues,
   computedStyleKeys,
 } from '../inspector/common/css-utils'
-import { CanvasContainerProps, UiJsxCanvasCtxAtom } from './ui-jsx-canvas'
 import { camelCaseToDashed } from '../../core/shared/string-utils'
+import { UtopiaStoreAPI } from '../editor/store/store-hook'
 import {
-  EditorStateContext,
-  useEditorState,
-  useRefEditorState,
-  useSelectorWithCallback,
-  UtopiaStoreAPI,
-} from '../editor/store/store-hook'
-import { UTOPIA_DO_NOT_TRAVERSE_KEY, UTOPIA_SCENE_ID_KEY } from '../../core/model/utopia-constants'
+  UTOPIA_DO_NOT_TRAVERSE_KEY,
+  UTOPIA_PATH_KEY,
+  UTOPIA_SCENE_ID_KEY,
+} from '../../core/model/utopia-constants'
 
-import { MetadataUtils } from '../../core/model/element-metadata-utils'
-import { PERFORMANCE_MARKS_ALLOWED, PRODUCTION_ENV } from '../../common/env-vars'
+import { PERFORMANCE_MARKS_ALLOWED } from '../../common/env-vars'
 import { CanvasContainerID } from './canvas-types'
 import { emptySet } from '../../core/shared/set-utils'
-import { getPathWithStringsOnDomElement, PathWithString } from '../../core/shared/uid-utils'
-import { mapDropNulls, pluck, uniqBy } from '../../core/shared/array-utils'
+import { getPathWithStringsOnDomElement } from '../../core/shared/uid-utils'
+import { pluck, uniqBy } from '../../core/shared/array-utils'
 import { forceNotNull, optionalMap } from '../../core/shared/optional-utils'
 import { fastForEach } from '../../core/shared/utils'
 import { MapLike } from 'typescript'
 import { isFeatureEnabled } from '../../utils/feature-switches'
-import { usePubSubAtomReadOnly } from '../../core/shared/atom-with-pub-sub'
-import type { EditorState, EditorStorePatched } from '../editor/store/editor-state'
+import type {
+  EditorState,
+  EditorStorePatched,
+  ElementsToRerender,
+} from '../editor/store/editor-state'
 import { shallowEqual } from '../../core/shared/equality-utils'
-import { StrategyState } from './canvas-strategies/interaction-state'
+import { pick } from '../../core/shared/object-utils'
 
 const MutationObserverConfig = { attributes: true, childList: true, subtree: true }
 const ObserversAvailable = (window as any).MutationObserver != null && ResizeObserver != null
@@ -188,16 +188,13 @@ function getCachedAttributesComingFromStyleSheets(
 }
 
 // todo move to file
-export type UpdateMutableCallback<S> = (
-  updater: (mutableState: S) => void,
-  invalidate: 'invalidate' | 'do-not-invalidate',
-) => void
+export type UpdateMutableCallback<S> = (updater: (mutableState: S) => void) => void
 
 export interface DomWalkerProps {
   selectedViews: Array<ElementPath>
   scale: number
   onDomReport: (
-    elementMetadata: ReadonlyArray<ElementInstanceMetadata>,
+    elementMetadata: ElementInstanceMetadataMap,
     cachedPaths: Array<ElementPath>,
   ) => void
   mountCount: number
@@ -206,48 +203,60 @@ export interface DomWalkerProps {
   additionalElementsToUpdate: Array<ElementPath>
 }
 
-function mergeFragmentMetadata(
-  metadata: ReadonlyArray<ElementInstanceMetadata>,
-): Array<ElementInstanceMetadata> {
-  let working: MapLike<ElementInstanceMetadata> = {}
+// This function adds elementMetadata to the metadataToMutate map. If a metadata instance with the same element path
+// already existed in the map, it adds the metadata of a fragment which contains both the existing and the new element.
+// NOTE: For performance reasons this function mutates the first parameter and writes the result there. It only mutates the
+// map itself, it should never mutate the metadata instances inside the map!
+function addElementMetadataToMapWithFragments_MUTATE(
+  metadataToMutate: ElementInstanceMetadataMap,
+  elementMetadata: Readonly<ElementInstanceMetadata>,
+): void {
+  const pathString = EP.toString(elementMetadata.elementPath)
+  const existingMetadata = metadataToMutate[pathString]
 
-  fastForEach(metadata, (elementMetadata) => {
-    const pathString = EP.toString(elementMetadata.elementPath)
-    const existingMetadata = working[pathString]
+  if (existingMetadata == null) {
+    metadataToMutate[pathString] = elementMetadata
+  } else {
+    // We've hit a fragment, so remove the style etc., but keep the frames for selection
+    const merged = elementInstanceMetadata(
+      elementMetadata.elementPath,
+      left('fragment'),
+      boundingRectangle(
+        existingMetadata.globalFrame ?? zeroCanvasRect,
+        elementMetadata.globalFrame ?? zeroCanvasRect,
+      ),
+      boundingRectangle(
+        existingMetadata.localFrame ?? zeroLocalRect,
+        elementMetadata.localFrame ?? zeroLocalRect,
+      ),
+      false,
+      false,
+      emptySpecialSizeMeasurements,
+      {},
+      {},
+      null,
+      null,
+    )
 
-    if (existingMetadata == null) {
-      working[pathString] = elementMetadata
-    } else {
-      // We've hit a fragment, so remove the style etc., but keep the frames for selection
-      const merged = elementInstanceMetadata(
-        elementMetadata.elementPath,
-        left('fragment'),
-        boundingRectangle(
-          existingMetadata.globalFrame ?? zeroCanvasRect,
-          elementMetadata.globalFrame ?? zeroCanvasRect,
-        ),
-        boundingRectangle(
-          existingMetadata.localFrame ?? zeroLocalRect,
-          elementMetadata.localFrame ?? zeroLocalRect,
-        ),
-        false,
-        false,
-        emptySpecialSizeMeasurements,
-        {},
-        {},
-        null,
-        null,
-      )
+    metadataToMutate[pathString] = merged
+  }
+}
 
-      working[pathString] = merged
-    }
+// This function merges metadataToMutate and otherMetadata maps. If metadata instances with the same element path
+// exist in both maps, it adds the metadata of a fragment which contains both the elements.
+// NOTE: For performance reasons this function mutates the first parameter and writes the result there. It only mutates
+// the map itself, it should never mutate the metadata instances inside the map!
+function mergeMetadataMapsWithFragments_MUTATE(
+  metadataToMutate: ElementInstanceMetadataMap,
+  otherMetadata: Readonly<ElementInstanceMetadataMap>,
+): void {
+  fastForEach(Object.values(otherMetadata), (elementMetadata) => {
+    addElementMetadataToMapWithFragments_MUTATE(metadataToMutate, elementMetadata)
   })
-
-  return Object.values(working)
 }
 
 export interface DomWalkerMutableStateData {
-  invalidatedPaths: Set<string>
+  invalidatedPaths: Set<string> // warning: all subtrees under each invalidated path should invalidated
   invalidatedPathsForStylesheetCache: Set<string>
   initComplete: boolean
 
@@ -287,19 +296,96 @@ interface RunDomWalkerParams {
   selectedViews: Array<ElementPath>
   scale: number
   additionalElementsToUpdate: Array<ElementPath>
+  elementsToFocusOn: ElementsToRerender
 
   domWalkerMutableState: DomWalkerMutableStateData
-  rootMetadataInStateRef: { readonly current: readonly ElementInstanceMetadata[] }
+  rootMetadataInStateRef: { readonly current: ElementInstanceMetadataMap }
 }
 
+function runSelectiveDomWalker(
+  elementsToFocusOn: Array<ElementPath>,
+  domWalkerMutableState: DomWalkerMutableStateData,
+  selectedViews: Array<ElementPath>,
+  scale: number,
+  rootMetadataInStateRef: { readonly current: ElementInstanceMetadataMap },
+  containerRectLazy: () => CanvasRectangle,
+): { metadata: ElementInstanceMetadataMap; cachedPaths: ElementPath[] } {
+  let workingMetadata: ElementInstanceMetadataMap = {}
+
+  const canvasRootContainer = document.getElementById(CanvasContainerID)
+  if (canvasRootContainer != null) {
+    const validPathsArr = optionalMap(
+      (paths) => paths.split(' '),
+      canvasRootContainer.getAttribute('data-utopia-valid-paths'),
+    )
+    const validPaths = new Set(validPathsArr)
+
+    const parentPoint = canvasPoint({ x: 0, y: 0 })
+
+    elementsToFocusOn.forEach((path) => {
+      /**
+       * if a elementToFocusOn path points to a component instance, such as App/card-instance, the DOM will
+       * only contain an element with the path App/card-instance:card-root. To be able to quickly find the "rootest" element
+       * that belongs to a path, we use the ^= prefix search in querySelector.
+       * The assumption is that querySelector will return the "topmost" DOM-element with the matching prefix,
+       * which is the same as the "rootest" element we are looking for
+       */
+      const element = document.querySelector(
+        `[${UTOPIA_PATH_KEY}^="${EP.toString(path)}"]`,
+      ) as HTMLElement | null
+
+      if (element != null) {
+        const pathsWithStrings = getPathWithStringsOnDomElement(element)
+        const foundValidPaths = pathsWithStrings.filter((pathWithString) => {
+          const staticPath = EP.toString(EP.makeLastPartOfPathStatic(pathWithString.path))
+          return validPaths.has(staticPath)
+        })
+
+        const { collectedMetadata } = collectAndCreateMetadataForElement(
+          element,
+          parentPoint,
+          scale,
+          containerRectLazy,
+          foundValidPaths.map((p) => p.path),
+          domWalkerMutableState.invalidatedPathsForStylesheetCache,
+          selectedViews,
+          domWalkerMutableState.invalidatedPaths,
+        )
+
+        mergeMetadataMapsWithFragments_MUTATE(workingMetadata, collectedMetadata)
+      }
+    })
+    const otherElementPaths = Object.keys(rootMetadataInStateRef.current).filter(
+      (path) => !elementsToFocusOn.some((focusPath) => EP.toString(focusPath) === path),
+    )
+    const rootMetadataForOtherElements = pick(otherElementPaths, rootMetadataInStateRef.current)
+    mergeMetadataMapsWithFragments_MUTATE(rootMetadataForOtherElements, workingMetadata)
+
+    return {
+      metadata: rootMetadataForOtherElements,
+      cachedPaths: otherElementPaths.map(EP.fromString),
+    }
+  }
+
+  return {
+    metadata: rootMetadataInStateRef.current,
+    cachedPaths: Object.values(rootMetadataInStateRef.current).map((p) => p.elementPath),
+  }
+}
+
+// Dom walker has 3 modes for performance reasons:
+// Fastest is the selective mode, this runs when elementsToFocusOn is not 'rerender-all-elements'. In this case it only collects the metadata of the elements in elementsToFocusOn
+// Middle speed is when initComplete is true, in this case it traverses the full dom but only collects the metadata for the not invalidated elements (stored in invalidatedPaths)
+// Slowest is the full run, when elementsToFocusOn is 'rerender-all-elements' and initComplete is false
 export function runDomWalker({
   domWalkerMutableState,
   selectedViews,
+  elementsToFocusOn,
   scale,
   additionalElementsToUpdate,
   rootMetadataInStateRef,
 }: RunDomWalkerParams): {
-  metadata: ElementInstanceMetadata[]
+  metadata: ElementInstanceMetadataMap
   cachedPaths: ElementPath[]
   invalidatedPaths: string[]
 } | null {
@@ -342,17 +428,29 @@ export function runDomWalker({
     // This assumes that the canvas root is rendering a Storyboard fragment.
     // The necessary validPaths and the root fragment's template path comes from props,
     // because the fragment is invisible in the DOM.
-    const { metadata, cachedPaths } = walkCanvasRootFragment(
-      canvasRootContainer,
-      rootMetadataInStateRef,
-      domWalkerMutableState.invalidatedPaths,
-      domWalkerMutableState.invalidatedPathsForStylesheetCache,
-      selectedViews,
-      !domWalkerMutableState.initComplete,
-      scale,
-      containerRect,
-      [...additionalElementsToUpdate, ...selectedViews],
-    )
+    const { metadata, cachedPaths } =
+      // when we don't rerender all elements we just run the dom walker in selective mode: only update the metatdata
+      // of the currently rendered elements (for performance reasons)
+      elementsToFocusOn === 'rerender-all-elements'
+        ? walkCanvasRootFragment(
+            canvasRootContainer,
+            rootMetadataInStateRef,
+            domWalkerMutableState.invalidatedPaths, // TODO does walkCanvasRootFragment ever uses invalidatedPaths right now?
+            domWalkerMutableState.invalidatedPathsForStylesheetCache,
+            selectedViews,
+            !domWalkerMutableState.initComplete, // TODO do we run walkCanvasRootFragment with initComplete=true anymore? // TODO _should_ we ever run walkCanvasRootFragment with initComplete=false EVER, or instead can we set the canvas root as the invalidated path?
+            scale,
+            containerRect,
+            [...additionalElementsToUpdate, ...selectedViews],
+          )
+        : runSelectiveDomWalker(
+            elementsToFocusOn,
+            domWalkerMutableState,
+            selectedViews,
+            scale,
+            rootMetadataInStateRef,
+            containerRect,
+          )
     if (LogDomWalkerPerformance) {
       performance.mark('DOM_WALKER_END')
       performance.measure(
@@ -363,10 +461,7 @@ export function runDomWalker({
     }
     domWalkerMutableState.initComplete = true // Mutation!
 
-    // Fragments will appear as multiple separate entries with duplicate UIDs, so we need to handle those
-    const fixedMetadata = mergeFragmentMetadata(metadata)
-
-    return { metadata: fixedMetadata, cachedPaths: cachedPaths, invalidatedPaths: invalidatedPaths }
+    return { metadata: metadata, cachedPaths: cachedPaths, invalidatedPaths: invalidatedPaths }
   } else {
     // TODO flip if-else
     return null
@@ -387,7 +482,7 @@ export function initDomWalkerObservers(
     const canvasInteractionHappening = selectCanvasInteractionHappening(editorStore.getState())
     const selectedViews = editorStore.getState().editor.selectedViews
     if (canvasInteractionHappening) {
-      // Only add the selected views
+      // Warning this only adds the selected views instead of the observed element
       fastForEach(selectedViews, (v) => {
         domWalkerMutableState.invalidatedPaths.add(EP.toString(v))
       })
@@ -395,7 +490,7 @@ export function initDomWalkerObservers(
       for (let entry of entries) {
         const sceneID = findParentScene(entry.target)
         if (sceneID != null) {
-          domWalkerMutableState.invalidatedPaths.add(sceneID)
+          domWalkerMutableState.invalidatedPaths.add(sceneID) // warning this invalidates the entire scene instead of just the observed element.
         }
       }
     }
@@ -406,7 +501,7 @@ export function initDomWalkerObservers(
     const selectedViews = editorStore.getState().editor.selectedViews
 
     if (canvasInteractionHappening) {
-      // Only add the selected views
+      // Warning this only adds the selected views instead of the observed element
       fastForEach(selectedViews, (v) => {
         domWalkerMutableState.invalidatedPaths.add(EP.toString(v))
       })
@@ -420,7 +515,7 @@ export function initDomWalkerObservers(
           if (mutation.target instanceof HTMLElement) {
             const sceneID = findParentScene(mutation.target)
             if (sceneID != null) {
-              domWalkerMutableState.invalidatedPaths.add(sceneID)
+              domWalkerMutableState.invalidatedPaths.add(sceneID) // warning this invalidates the entire scene instead of just the observed element.
             }
           }
         }
@@ -514,11 +609,22 @@ function collectMetadata(
   containerRectLazy: () => CanvasRectangle,
   invalidatedPaths: Set<string>,
   invalidatedPathsForStylesheetCache: Set<string>,
-  rootMetadataInStateRef: React.MutableRefObject<ReadonlyArray<ElementInstanceMetadata>>,
+  rootMetadataInStateRef: React.MutableRefObject<ElementInstanceMetadataMap>,
   invalidated: boolean,
   selectedViews: Array<ElementPath>,
   additionalElementsToUpdate: Array<ElementPath>,
-): { collectedMetadata: Array<ElementInstanceMetadata>; cachedPaths: Array<ElementPath> } {
+): {
+  collectedMetadata: ElementInstanceMetadataMap
+  cachedPaths: Array<ElementPath>
+  collectedPaths: Array<ElementPath>
+} {
+  if (pathsForElement.length === 0) {
+    return {
+      collectedMetadata: {},
+      cachedPaths: [],
+      collectedPaths: [],
+    }
+  }
   const shouldCollect =
     invalidated ||
     isAnyPathInvalidated(stringPathsForElement, invalidatedPaths) ||
@@ -527,48 +633,25 @@ function collectMetadata(
         EP.pathsEqual(pathForElement, additionalElementToUpdate),
       )
     })
-  if (shouldCollect && pathsForElement.length > 0) {
-    const { tagName, globalFrame, localFrame, specialSizeMeasurementsObject } =
-      collectMetadataForElement(element, parentPoint, scale, containerRectLazy)
-
-    const { computedStyle, attributeMetadata } = getComputedStyle(
+  if (shouldCollect) {
+    return collectAndCreateMetadataForElement(
       element,
+      parentPoint,
+      scale,
+      containerRectLazy,
       pathsForElement,
       invalidatedPathsForStylesheetCache,
       selectedViews,
+      invalidatedPaths,
     )
-
-    const collectedMetadata = pathsForElement.map((path) => {
-      invalidatedPaths.delete(EP.toString(path)) // mutation!
-
-      return elementInstanceMetadata(
-        path,
-        left(tagName),
-        globalFrame,
-        localFrame,
-        false,
-        false,
-        specialSizeMeasurementsObject,
-        computedStyle,
-        attributeMetadata,
-        null,
-        null, // This comes from the Spy Wrapper
-      )
-    })
-
-    return {
-      collectedMetadata: collectedMetadata,
-      cachedPaths: [],
-    }
   } else {
-    const cachedMetadata = mapDropNulls((path) => {
-      return MetadataUtils.findElementMetadata(path, rootMetadataInStateRef.current)
-    }, pathsForElement)
+    const cachedMetadata = pick(pathsForElement.map(EP.toString), rootMetadataInStateRef.current)
 
-    if (cachedMetadata.length === pathsForElement.length) {
+    if (Object.keys(cachedMetadata).length === pathsForElement.length) {
       return {
         collectedMetadata: cachedMetadata,
         cachedPaths: pathsForElement,
+        collectedPaths: pathsForElement,
       }
     } else {
       // If any path is missing cached metadata we must forcibly invalidate the element
@@ -588,6 +671,53 @@ function collectMetadata(
         additionalElementsToUpdate,
       )
     }
+  }
+}
+
+function collectAndCreateMetadataForElement(
+  element: HTMLElement,
+  parentPoint: CanvasPoint,
+  scale: number,
+  containerRectLazy: () => CanvasRectangle,
+  pathsForElement: ElementPath[],
+  invalidatedPathsForStylesheetCache: Set<string>,
+  selectedViews: ElementPath[],
+  invalidatedPaths: Set<string>,
+) {
+  const { tagName, globalFrame, localFrame, specialSizeMeasurementsObject } =
+    collectMetadataForElement(element, parentPoint, scale, containerRectLazy)
+
+  const { computedStyle, attributeMetadata } = getComputedStyle(
+    element,
+    pathsForElement,
+    invalidatedPathsForStylesheetCache,
+    selectedViews,
+  )
+
+  const collectedMetadata: ElementInstanceMetadataMap = {}
+  pathsForElement.forEach((path) => {
+    const pathStr = EP.toString(path)
+    invalidatedPaths.delete(pathStr) // mutation!
+
+    collectedMetadata[pathStr] = elementInstanceMetadata(
+      path,
+      left(tagName),
+      globalFrame,
+      localFrame,
+      false,
+      false,
+      specialSizeMeasurementsObject,
+      computedStyle,
+      attributeMetadata,
+      null,
+      null,
+    )
+  })
+
+  return {
+    collectedMetadata: collectedMetadata,
+    cachedPaths: [],
+    collectedPaths: pathsForElement,
   }
 }
 
@@ -755,7 +885,7 @@ function globalFrameForElement(
 
 function walkCanvasRootFragment(
   canvasRoot: HTMLElement,
-  rootMetadataInStateRef: React.MutableRefObject<ReadonlyArray<ElementInstanceMetadata>>,
+  rootMetadataInStateRef: React.MutableRefObject<ElementInstanceMetadataMap>,
   invalidatedPaths: Set<string>,
   invalidatedPathsForStylesheetCache: Set<string>,
   selectedViews: Array<ElementPath>,
@@ -764,7 +894,7 @@ function walkCanvasRootFragment(
   containerRectLazy: () => CanvasRectangle,
   additionalElementsToUpdate: Array<ElementPath>,
 ): {
-  metadata: ReadonlyArray<ElementInstanceMetadata>
+  metadata: ElementInstanceMetadataMap
   cachedPaths: Array<ElementPath>
 } {
   const canvasRootPath: ElementPath | null = optionalMap(
@@ -787,18 +917,17 @@ function walkCanvasRootFragment(
   if (
     ObserversAvailable &&
     invalidatedPaths.size === 0 &&
-    rootMetadataInStateRef.current.length > 0 &&
+    Object.keys(rootMetadataInStateRef.current).length > 0 &&
     additionalElementsToUpdate.length === 0 &&
     !invalidated
   ) {
     // no mutation happened on the entire canvas, just return the old metadata
-    return { metadata: rootMetadataInStateRef.current, cachedPaths: [canvasRootPath] }
+    return {
+      metadata: rootMetadataInStateRef.current,
+      cachedPaths: [canvasRootPath],
+    }
   } else {
-    const {
-      childPaths: rootElements,
-      rootMetadata,
-      cachedPaths,
-    } = walkSceneInner(
+    const { rootMetadata, cachedPaths } = walkSceneInner(
       canvasRoot,
       validPaths,
       rootMetadataInStateRef,
@@ -826,14 +955,17 @@ function walkCanvasRootFragment(
       null,
       null, // this comes from the Spy Wrapper
     )
-    return { metadata: [...rootMetadata, metadata], cachedPaths: cachedPaths }
+
+    addElementMetadataToMapWithFragments_MUTATE(rootMetadata, metadata)
+
+    return { metadata: rootMetadata, cachedPaths: cachedPaths }
   }
 }
 
 function walkScene(
   scene: HTMLElement,
   validPaths: Array<ElementPath>,
-  rootMetadataInStateRef: React.MutableRefObject<ReadonlyArray<ElementInstanceMetadata>>,
+  rootMetadataInStateRef: React.MutableRefObject<ElementInstanceMetadataMap>,
   invalidatedPaths: Set<string>,
   invalidatedPathsForStylesheetCache: Set<string>,
   selectedViews: Array<ElementPath>,
@@ -842,7 +974,7 @@ function walkScene(
   containerRectLazy: () => CanvasRectangle,
   additionalElementsToUpdate: Array<ElementPath>,
 ): {
-  metadata: ReadonlyArray<ElementInstanceMetadata>
+  metadata: ElementInstanceMetadataMap
   cachedPaths: Array<ElementPath>
 } {
   if (scene instanceof HTMLElement) {
@@ -891,19 +1023,22 @@ function walkScene(
         selectedViews,
         additionalElementsToUpdate,
       )
+
+      mergeMetadataMapsWithFragments_MUTATE(rootMetadata, sceneMetadata)
+
       return {
-        metadata: [...rootMetadata, ...sceneMetadata],
+        metadata: rootMetadata,
         cachedPaths: [...cachedPaths, ...sceneCachedPaths],
       }
     }
   }
-  return { metadata: [], cachedPaths: [] } // verify
+  return { metadata: {}, cachedPaths: [] } // verify
 }
 
 function walkSceneInner(
   scene: HTMLElement,
   validPaths: Array<ElementPath>,
-  rootMetadataInStateRef: React.MutableRefObject<ReadonlyArray<ElementInstanceMetadata>>,
+  rootMetadataInStateRef: React.MutableRefObject<ElementInstanceMetadataMap>,
   invalidatedPaths: Set<string>,
   invalidatedPathsForStylesheetCache: Set<string>,
   selectedViews: Array<ElementPath>,
@@ -913,13 +1048,13 @@ function walkSceneInner(
   additionalElementsToUpdate: Array<ElementPath>,
 ): {
   childPaths: Array<ElementPath>
-  rootMetadata: ReadonlyArray<ElementInstanceMetadata>
+  rootMetadata: ElementInstanceMetadataMap
   cachedPaths: Array<ElementPath>
 } {
   const globalFrame: CanvasRectangle = globalFrameForElement(scene, scale, containerRectLazy)
 
   let childPaths: Array<ElementPath> = []
-  let rootMetadataAccumulator: Array<ElementInstanceMetadata> = []
+  let rootMetadataAccumulator: ElementInstanceMetadataMap = {}
   let cachedPathsAccumulator: Array<ElementPath> = []
 
   scene.childNodes.forEach((childNode) => {
@@ -942,7 +1077,7 @@ function walkSceneInner(
     )
 
     childPaths.push(...childNodePaths)
-    rootMetadataAccumulator.push(...rootMetadata)
+    mergeMetadataMapsWithFragments_MUTATE(rootMetadataAccumulator, rootMetadata)
     cachedPathsAccumulator.push(...cachedPaths)
   })
 
@@ -958,7 +1093,7 @@ function walkElements(
   element: Node,
   parentPoint: CanvasPoint,
   validPaths: Array<ElementPath>,
-  rootMetadataInStateRef: React.MutableRefObject<ReadonlyArray<ElementInstanceMetadata>>,
+  rootMetadataInStateRef: React.MutableRefObject<ElementInstanceMetadataMap>,
   invalidatedPaths: Set<string>,
   invalidatedPathsForStylesheetCache: Set<string>,
   selectedViews: Array<ElementPath>,
@@ -968,7 +1103,7 @@ function walkElements(
   additionalElementsToUpdate: Array<ElementPath>,
 ): {
   childPaths: ReadonlyArray<ElementPath>
-  rootMetadata: ReadonlyArray<ElementInstanceMetadata>
+  rootMetadata: ElementInstanceMetadataMap
   cachedPaths: Array<ElementPath>
 } {
   if (isScene(element)) {
@@ -1015,8 +1150,11 @@ function walkElements(
 
     // Build the metadata for the children of this DOM node.
     let childPaths: Array<ElementPath> = []
-    let rootMetadataAccumulator: ReadonlyArray<ElementInstanceMetadata> = []
+    let rootMetadataAccumulator: ElementInstanceMetadataMap = {}
     let cachedPathsAccumulator: Array<ElementPath> = []
+    // TODO: we should not traverse the children when all elements of this subtree will be retrieved from cache anyway
+    // WARNING: we need to retrieve the metadata of all elements of the subtree from the cache, because the SAVE_DOM_REPORT
+    // action replaces (and not merges) the full metadata map
     if (traverseChildren) {
       element.childNodes.forEach((child) => {
         const {
@@ -1037,14 +1175,14 @@ function walkElements(
           additionalElementsToUpdate,
         )
         childPaths.push(...childNodePaths)
-        rootMetadataAccumulator = [...rootMetadataAccumulator, ...rootMetadataInner]
+        mergeMetadataMapsWithFragments_MUTATE(rootMetadataAccumulator, rootMetadataInner)
         cachedPathsAccumulator.push(...cachedPaths)
       })
     }
 
     const uniqueChildPaths = uniqBy(childPaths, EP.pathsEqual)
 
-    const { collectedMetadata, cachedPaths } = collectMetadata(
+    const { collectedMetadata, cachedPaths, collectedPaths } = collectMetadata(
       element,
       pluck(foundValidPaths, 'path'),
       pluck(foundValidPaths, 'asString'),
@@ -1060,14 +1198,14 @@ function walkElements(
       additionalElementsToUpdate,
     )
 
-    rootMetadataAccumulator = [...rootMetadataAccumulator, ...collectedMetadata]
+    mergeMetadataMapsWithFragments_MUTATE(rootMetadataAccumulator, collectedMetadata)
     cachedPathsAccumulator = [...cachedPathsAccumulator, ...cachedPaths]
     return {
       rootMetadata: rootMetadataAccumulator,
-      childPaths: collectedMetadata.map((metadata) => metadata.elementPath), // TODO why not extract childPaths from the metadata?
+      childPaths: collectedPaths,
       cachedPaths: cachedPathsAccumulator,
     }
   } else {
-    return { childPaths: [], rootMetadata: [], cachedPaths: [] }
+    return { childPaths: [], rootMetadata: {}, cachedPaths: [] }
   }
 }

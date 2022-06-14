@@ -929,7 +929,7 @@ function restoreEditorState(currentEditor: EditorModel, history: StateHistory): 
     projectVersion: currentEditor.projectVersion,
     isLoaded: currentEditor.isLoaded,
     spyMetadata: poppedEditor.spyMetadata,
-    domMetadata: [],
+    domMetadata: poppedEditor.domMetadata,
     jsxMetadata: poppedEditor.jsxMetadata,
     projectContents: poppedEditor.projectContents,
     nodeModules: currentEditor.nodeModules,
@@ -3986,7 +3986,7 @@ export const UPDATE_FNS = {
         ...editor,
         codeEditorErrors: updatedCodeEditorErrors,
         jsxMetadata: emptyJsxMetadata,
-        domMetadata: [],
+        domMetadata: emptyJsxMetadata,
         spyMetadata: emptyJsxMetadata,
       }
     }
@@ -4029,9 +4029,9 @@ export const UPDATE_FNS = {
     // Calculate the spy metadata given what has been collected.
     const spyResult = spyCollector.current.spyValues.metadata
 
-    const finalDomMetadata = arrayDeepEquality(ElementInstanceMetadataKeepDeepEquality)(
+    const finalDomMetadata = ElementInstanceMetadataMapKeepDeepEquality(
       editor.domMetadata,
-      action.elementMetadata as Array<ElementInstanceMetadata>, // we convert a ReadonlyArray to a regular array – it'd be nice to make more arrays readonly in the future
+      action.elementMetadata,
     ).value
     const finalSpyMetadata = ElementInstanceMetadataMapKeepDeepEquality(
       editor.spyMetadata,

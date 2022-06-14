@@ -391,10 +391,13 @@ export class Editor {
         const domWalkerResult = runDomWalker({
           domWalkerMutableState: this.domWalkerMutableState,
           selectedViews: dispatchResult.patchedEditor.selectedViews,
+          elementsToFocusOn: dispatchResult.patchedEditor.canvas.elementsToRerender,
           scale: dispatchResult.patchedEditor.canvas.scale,
           additionalElementsToUpdate:
             dispatchResult.patchedEditor.canvas.domWalkerAdditionalElementsToUpdate,
-          rootMetadataInStateRef: { current: dispatchResult.patchedEditor.domMetadata },
+          rootMetadataInStateRef: {
+            current: dispatchResult.patchedEditor.domMetadata,
+          },
         })
 
         if (domWalkerResult != null) {

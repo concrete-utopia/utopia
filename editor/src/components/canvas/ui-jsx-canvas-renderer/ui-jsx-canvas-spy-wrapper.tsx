@@ -55,9 +55,9 @@ export function buildSpyWrappedElement(
       importInfo: importInfoFromImportDetails(jsx.name, imports),
     }
     if (!EP.isStoryboardPath(elementPath) || shouldIncludeCanvasRootInTheSpy) {
-      // TODO right now we don't actually invalidate the path, just let the dom-walker know it should walk again
-      updateInvalidatedPaths((current) => current, 'invalidate')
       const elementPathString = EP.toComponentId(elementPath)
+      // TODO right now we don't actually invalidate the path, just let the dom-walker know it should walk again
+      updateInvalidatedPaths((current) => current)
       metadataContext.current.spyValues.metadata[elementPathString] = instanceMetadata
       metadataContext.current.spyValues.allElementProps[elementPathString] =
         makeCanvasElementPropsSafe(reportedProps)

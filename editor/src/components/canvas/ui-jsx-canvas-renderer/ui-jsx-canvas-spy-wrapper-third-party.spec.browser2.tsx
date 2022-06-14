@@ -14,11 +14,7 @@ import { emptySet } from '../../../core/shared/set-utils'
 import * as EP from '../../../core/shared/element-path'
 import { lintAndParse } from '../../../core/workers/parser-printer/parser-printer'
 import { defaultProject } from '../../../sample-projects/sample-project-utils'
-import {
-  wait,
-  simplifiedMetadataMap,
-  domWalkerMetadataToSimplifiedMetadataMap,
-} from '../../../utils/utils.test-utils'
+import { wait, simplifiedMetadataMap } from '../../../utils/utils.test-utils'
 import { addFileToProjectContents } from '../../assets'
 import type { EditorStorePatched } from '../../editor/store/editor-state'
 import { StoryboardFilePath } from '../../editor/store/editor-state'
@@ -240,7 +236,7 @@ describe('Spy Wrapper Tests For React Three Fiber', () => {
     `,
     )
     const domMetadata = getEditorState().editor.domMetadata
-    const sanitizedDomMetadata = domWalkerMetadataToSimplifiedMetadataMap(domMetadata)
+    const sanitizedDomMetadata = simplifiedMetadataMap(domMetadata)
     matchInlineSnapshotBrowser(
       sanitizedDomMetadata,
       `

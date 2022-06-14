@@ -1,6 +1,7 @@
 import React from 'react'
 import fastDeepEquals from 'fast-deep-equal'
-import { SceneProps } from 'utopia-api'
+import { useContextSelector } from 'use-context-selector'
+import { Scene, SceneProps } from 'utopia-api'
 import { useColorTheme, UtopiaStyles } from '../../../uuiui'
 import { RerenderUtopiaCtxAtom } from './ui-jsx-canvas-contexts'
 import { DomWalkerInvalidatePathsCtxAtom, UiJsxCanvasCtxAtom } from '../ui-jsx-canvas'
@@ -18,8 +19,7 @@ export const SceneComponent = React.memo(
       AlwaysTrue,
     )
 
-    const { style, ['data-uid']: dataUid, ...remainingProps } = props
-    // We're removing the data-uid prop here as the monkey patch will deal with it
+    const { style, ...remainingProps } = props
 
     const sceneStyle: React.CSSProperties = {
       position: 'relative',
@@ -31,12 +31,12 @@ export const SceneComponent = React.memo(
     }
 
     // TODO right now we don't actually change the invalidated paths, just let the dom-walker know it should walk again
-    updateInvalidatedPaths((current) => current, 'invalidate')
+    updateInvalidatedPaths((current) => current)
 
     return (
-      <div {...remainingProps} style={sceneStyle}>
+      <Scene {...remainingProps} style={sceneStyle}>
         {props.children}
-      </div>
+      </Scene>
     )
   },
   (

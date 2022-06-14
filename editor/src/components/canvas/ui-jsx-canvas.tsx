@@ -78,7 +78,7 @@ import {
 } from '../../utils/react-performance'
 import { unimportAllButTheseCSSFiles } from '../../core/webpack-loaders/css-loader'
 import { useSelectAndHover } from './controls/select-mode/select-mode-hooks'
-import { UTOPIA_INSTANCE_PATH } from '../../core/model/utopia-constants'
+import { UTOPIA_INSTANCE_PATH, UTOPIA_PATH_KEY } from '../../core/model/utopia-constants'
 import {
   createLookupRender,
   utopiaCanvasJSXLookup,
@@ -278,14 +278,15 @@ function useClearSpyMetadataOnRemount(
 }
 
 function clearSpyCollectorInvalidPaths(
-  validPaths: Array<ElementPath>,
+  validPaths: Set<ElementPath>,
   spyCollectorContextRef: UiJsxCanvasContextData,
 ): void {
   const spyKeys = Object.keys(spyCollectorContextRef.current.spyValues.metadata)
   fastForEach(spyKeys, (elementPathString) => {
-    const elementPath = EP.fromString(elementPathString)
+    const elementPath =
+      spyCollectorContextRef.current.spyValues.metadata[elementPathString].elementPath
     const staticElementPath = EP.makeLastPartOfPathStatic(elementPath)
-    if (validPaths.every((validPath) => !EP.pathsEqual(validPath, staticElementPath))) {
+    if (!validPaths.has(staticElementPath)) {
       // we found a path that is no longer valid. let's delete it from the spy accumulator!
       delete spyCollectorContextRef.current.spyValues.metadata[elementPathString]
     }
@@ -451,21 +452,26 @@ export const UiJsxCanvas = React.memo<UiJsxCanvasPropsWithErrorCallback>((props)
 
   const topLevelElementsMap = useKeepReferenceEqualityIfPossible(new Map(topLevelJsxComponents))
 
-  const { StoryboardRootComponent, rootValidPaths, storyboardRootElementPath, rootInstancePath } =
-    useGetStoryboardRoot(
-      props.focusedElementPath,
-      topLevelElementsMap,
-      executionScope,
-      projectContents,
-      uiFilePath,
-      transientFilesState,
-      resolve,
-    )
+  const {
+    StoryboardRootComponent,
+    rootValidPathsArray,
+    rootValidPathsSet,
+    storyboardRootElementPath,
+    rootInstancePath,
+  } = useGetStoryboardRoot(
+    props.focusedElementPath,
+    topLevelElementsMap,
+    executionScope,
+    projectContents,
+    uiFilePath,
+    transientFilesState,
+    resolve,
+  )
 
-  clearSpyCollectorInvalidPaths(rootValidPaths, metadataContext)
+  clearSpyCollectorInvalidPaths(rootValidPathsSet, metadataContext)
 
   const sceneLevelUtopiaContextValue = useKeepReferenceEqualityIfPossible({
-    validPaths: new Set(rootValidPaths.map((path) => EP.makeLastPartOfPathStatic(path))),
+    validPaths: rootValidPathsSet,
   })
 
   const rerenderUtopiaContextValue = useKeepShallowReferenceEquality({
@@ -498,7 +504,7 @@ export const UiJsxCanvas = React.memo<UiJsxCanvasPropsWithErrorCallback>((props)
       <RerenderUtopiaCtxAtom.Provider value={rerenderUtopiaContextValue}>
         <UtopiaProjectCtxAtom.Provider value={utopiaProjectContextValue}>
           <CanvasContainer
-            validRootPaths={rootValidPaths}
+            validRootPaths={rootValidPathsArray}
             canvasRootElementElementPath={storyboardRootElementPath}
           >
             <SceneLevelUtopiaCtxAtom.Provider value={sceneLevelUtopiaContextValue}>
@@ -693,7 +699,8 @@ function useGetStoryboardRoot(
 ): {
   StoryboardRootComponent: ComponentRendererComponent | undefined
   storyboardRootElementPath: ElementPath
-  rootValidPaths: Array<ElementPath>
+  rootValidPathsSet: Set<ElementPath>
+  rootValidPathsArray: Array<ElementPath>
   rootInstancePath: ElementPath
 } {
   const StoryboardRootComponent = executionScope[BakedInStoryboardVariableName] as
@@ -717,10 +724,14 @@ function useGetStoryboardRoot(
     validPaths[0] ?? EP.emptyElementPath,
   )
 
+  const rootValidPathsArray = validPaths.map(EP.makeLastPartOfPathStatic)
+  const rootValidPathsSet = new Set(rootValidPathsArray)
+
   return {
     StoryboardRootComponent: StoryboardRootComponent,
     storyboardRootElementPath: storyboardRootElementPath,
-    rootValidPaths: validPaths,
+    rootValidPathsSet: rootValidPathsSet,
+    rootValidPathsArray: rootValidPathsArray,
     rootInstancePath: EP.emptyElementPath,
   }
 }
