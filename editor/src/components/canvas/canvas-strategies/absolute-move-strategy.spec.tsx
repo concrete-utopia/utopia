@@ -112,7 +112,7 @@ describe('Absolute Move Strategy', () => {
 
     const finalEditor = dragByPixels(initialEditor, canvasPoint({ x: 1, y: 1 }), emptyModifiers)
 
-    expect(finalEditor).toEqual(finalEditor)
+    expect(finalEditor).toEqual(initialEditor)
   })
   it('works with a TL pinned absolute element', async () => {
     const targetElement = elementPath([
