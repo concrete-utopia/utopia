@@ -26,7 +26,6 @@ export interface DragInteractionData {
   dragStart: CanvasPoint
   drag: CanvasVector | null
   prevDrag: CanvasVector | null
-  dragThresholdPassed: boolean
   originalDragStart: CanvasPoint
   modifiers: Modifiers
   globalTime: number
@@ -142,7 +141,6 @@ export function createInteractionViaMouse(
       dragStart: mouseDownPoint,
       drag: null,
       prevDrag: null,
-      dragThresholdPassed: false,
       originalDragStart: mouseDownPoint,
       modifiers: modifiers,
       globalTime: Date.now(),
@@ -169,14 +167,13 @@ export function updateInteractionViaMouse(
 ): InteractionSessionWithoutMetadata {
   if (currentState.interactionData.type === 'DRAG') {
     const dragThresholdPassed =
-      currentState.interactionData.dragThresholdPassed || dragExceededThreshold(drag)
+      currentState.interactionData.drag != null || dragExceededThreshold(drag)
     return {
       interactionData: {
         type: 'DRAG',
         dragStart: currentState.interactionData.dragStart,
         drag: dragThresholdPassed ? drag : null,
         prevDrag: currentState.interactionData.drag,
-        dragThresholdPassed: dragThresholdPassed,
         originalDragStart: currentState.interactionData.originalDragStart,
         modifiers: modifiers,
         globalTime: Date.now(),
@@ -245,7 +242,6 @@ export function updateInteractionViaKeyboard(
           dragStart: currentState.interactionData.dragStart,
           drag: currentState.interactionData.drag,
           prevDrag: currentState.interactionData.prevDrag,
-          dragThresholdPassed: currentState.interactionData.dragThresholdPassed,
           originalDragStart: currentState.interactionData.originalDragStart,
           modifiers: modifiers,
           globalTime: Date.now(),

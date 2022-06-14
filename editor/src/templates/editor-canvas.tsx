@@ -183,7 +183,7 @@ function handleCanvasEvent(model: CanvasModel, event: CanvasMouseEvent): Array<E
         }
         if (model.editorState.canvas.interactionSession?.interactionData.type === 'DRAG') {
           const applyChanges =
-            model.editorState.canvas.interactionSession?.interactionData.dragThresholdPassed
+            model.editorState.canvas.interactionSession?.interactionData.drag != null
           optionalDragStateAction = [CanvasActions.clearInteractionSession(applyChanges)]
         }
         break
