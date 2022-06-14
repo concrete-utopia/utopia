@@ -183,7 +183,7 @@ jobs:
             ]
           TITLE: 'Performance Results for #${{ github.event.pull_request.number }} ${{ github.event.pull_request.title }}'
           HTML_URL: ${{ github.event.pull_request.html_url }}
-          DESCRIPTION: 'Link to test editor: https://${{ secrets.STAGING_SERVER }}/p/?branch_name=${{ steps.extract_branch.outputs.branch }}\n\nResults:\n${{ steps.run-performance-test.outputs.perf-discord-message }}'
+          DESCRIPTION: 'Link to test editor: https://${{ secrets.STAGING_SERVER }}/p/?branch_name=${{ steps.extract_branch.outputs.branch }} \n \\n Results: \n ${{ steps.run-performance-test.outputs.perf-discord-message }}'
           REPO_FULL_NAME: ${{ github.event.repository.full_name }}
           RESULT_CHART: ${{ steps.run-performance-test.outputs.perf-chart }}
         run: |
