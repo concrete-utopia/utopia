@@ -91,26 +91,26 @@ export const testPerformance = async function () {
 
   const summaryImage = await uploadSummaryImage(stagingResult, masterResult)
 
-  const message = Object.entries(stagingResult)
-    .flatMap(([k, result]) => {
-      const targetResult = masterResult[k]
-      const beforeMedian = targetResult.analytics.percentile50 ?? 1
-      const afterMedian = result.analytics.percentile50 ?? 1
-      const change = ((afterMedian - beforeMedian) / beforeMedian) * 100
-      return [
-        result.title,
-        consoleMessageForResult(targetResult, 'Before'),
-        consoleMessageForResult(result, 'After'),
-        `Change: ${Math.round(change)}%`,
-        '',
-      ]
-    })
-    .join('<br />')
+  const messageParts = Object.entries(stagingResult).flatMap(([k, result]) => {
+    const targetResult = masterResult[k]
+    const beforeMedian = targetResult.analytics.percentile50 ?? 1
+    const afterMedian = result.analytics.percentile50 ?? 1
+    const change = ((afterMedian - beforeMedian) / beforeMedian) * 100
+    return [
+      `**${result.title} (${Math.round(change)}%):**`,
+      consoleMessageForResult(targetResult, 'Before'),
+      consoleMessageForResult(result, 'After'),
+      '',
+    ]
+  })
+
+  const message = messageParts.join('<br />')
+  const discordMessage = messageParts.join('\\n')
 
   console.info(`::set-output name=perf-result:: ${message} <br /> ![(Chart)](${summaryImage})`)
 
   // Output the individual parts for building a discord message
-  console.info(`::set-output name=perf-message:: ${message}`)
+  console.info(`::set-output name=perf-discord-message:: ${discordMessage}`)
   console.info(`::set-output name=perf-chart:: ${summaryImage}`)
 }
 
@@ -658,7 +658,7 @@ testPerformance().catch((e) => {
   console.info(`::set-output name=perf-result::${errorMessage}`)
 
   // Output the individual parts for building a discord message
-  console.info(`::set-output name=perf-message:: ${errorMessage}`)
+  console.info(`::set-output name=perf-discord-message:: ${errorMessage}`)
   console.info(`::set-output name=perf-chart:: ""`)
   return
 })
