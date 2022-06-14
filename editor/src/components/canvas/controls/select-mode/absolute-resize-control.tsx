@@ -13,6 +13,7 @@ import { windowToCanvasCoordinates } from '../../dom-lookup'
 import { useBoundingBox } from '../bounding-box-hooks'
 import { CanvasOffsetWrapper } from '../canvas-offset-wrapper'
 import { isZeroSizedElement } from '../outline-utils'
+import { useMaybeHighlightElement } from './select-mode-hooks'
 
 const selectedElementsSelector = (store: EditorStorePatched) => store.editor.selectedViews
 export const AbsoluteResizeControl = React.memo((props) => {
@@ -139,8 +140,6 @@ const ResizePoint = React.memo(
         ref={ref}
         style={{
           position: 'absolute',
-          width: ResizePointSize / scale,
-          height: ResizePointSize / scale,
         }}
         onMouseDown={onPointMouseDown}
         onMouseMove={onMouseMove}
@@ -149,8 +148,8 @@ const ResizePoint = React.memo(
           style={{
             position: 'relative',
             pointerEvents: 'initial',
-            width: '100%',
-            height: '100%',
+            width: ResizePointSize / scale,
+            height: ResizePointSize / scale,
             top: -ResizePointOffset / scale,
             left: -ResizePointOffset / scale,
             boxSizing: 'border-box',
@@ -170,7 +169,7 @@ const ResizePoint = React.memo(
             position: 'relative',
             width: ResizePointMouseAreaSize / scale,
             height: ResizePointMouseAreaSize / scale,
-            top: -ResizePointMouseAreaOffset / scale,
+            top: -ResizePointMouseAreaSize / scale,
             left: -ResizePointMouseAreaOffset / scale,
             backgroundColor: 'transparent',
             cursor: props.cursor,
