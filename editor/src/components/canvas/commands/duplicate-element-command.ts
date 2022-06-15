@@ -1,24 +1,9 @@
-import { getZIndexOfElement, setUtopiaID } from '../../../core/model/element-template-utils'
-import { getUtopiaJSXComponentsFromSuccess } from '../../../core/model/project-file-utils'
-import { UTOPIA_UID_KEY } from '../../../core/model/utopia-constants'
-import { foldEither } from '../../../core/shared/either'
 import * as EP from '../../../core/shared/element-path'
-import {
-  emptyComments,
-  isUtopiaJSXComponent,
-  jsxAttributeValue,
-  UtopiaJSXComponent,
-} from '../../../core/shared/element-template'
-import { setJSXValuesAtPaths } from '../../../core/shared/jsx-attributes'
+import { isUtopiaJSXComponent } from '../../../core/shared/element-template'
 import { ElementPath } from '../../../core/shared/project-file-types'
-import { fromString } from '../../../core/shared/property-path'
-import { before } from '../../../utils/utils'
 import {
   EditorState,
   EditorStatePatch,
-  forUnderlyingTargetFromEditorState,
-  insertElementAtPath,
-  removeElementAtPath,
   withUnderlyingTargetFromEditorState,
 } from '../../editor/store/editor-state'
 import { duplicate } from '../canvas-utils'
