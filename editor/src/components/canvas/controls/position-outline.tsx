@@ -192,6 +192,7 @@ const PinOutline = React.memo((props: PinOutlineProps): JSX.Element => {
         height: height,
         borderTop: borderTop,
         borderLeft: borderLeft,
+        pointerEvents: 'none',
       }}
     />
   )
