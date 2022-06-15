@@ -8,10 +8,12 @@ const fs = require('fs')
 const path = require('path')
 const moveFile = require('move-file')
 
-const BRANCH_NAME = process.env.BRANCH_NAME ? `?branch_name=${process.env.BRANCH_NAME}` : ''
-const STAGING_EDITOR_URL = process.env.EDITOR_URL ?? `https://utopia.pizza/p${BRANCH_NAME}`
+const BRANCH_NAME = process.env.BRANCH_NAME ? `&branch_name=${process.env.BRANCH_NAME}` : ''
+const STAGING_EDITOR_URL =
+  process.env.EDITOR_URL ?? `https://utopia.pizza/p?code_editor_disabled=true${BRANCH_NAME}`
 const MASTER_EDITOR_URL =
-  process.env.MASTER_EDITOR_URL ?? `https://utopia.pizza/p?branch_name=performance-test-target`
+  process.env.MASTER_EDITOR_URL ??
+  `https://utopia.pizza/p?code_editor_disabled=true&branch_name=performance-test-target`
 
 export function wait(timeout: number): Promise<void> {
   return new Promise((resolve) => {
