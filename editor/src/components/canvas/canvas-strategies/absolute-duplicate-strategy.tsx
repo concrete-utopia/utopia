@@ -3,13 +3,18 @@ import { generateUidWithExistingComponents } from '../../../core/model/element-t
 import * as EP from '../../../core/shared/element-path'
 import { ElementInstanceMetadataMap } from '../../../core/shared/element-template'
 import { ElementPath } from '../../../core/shared/project-file-types'
+import { EditorState, EditorStatePatch } from '../../editor/store/editor-state'
+import { foldAndApplyCommandsInner, TransientOrNot } from '../commands/commands'
 import { DuplicateElement, duplicateElement } from '../commands/duplicate-element-command'
 import { setElementsToRerenderCommand } from '../commands/set-elements-to-rerender-command'
+import { updateFunctionCommand } from '../commands/update-function-command'
 import { updateSelectedViews } from '../commands/update-selected-views-command'
 import { ParentBounds } from '../controls/parent-bounds'
 import { ParentOutlines } from '../controls/parent-outlines'
 import { absoluteMoveStrategy } from './absolute-move-strategy'
+import { pickCanvasStateFromEditorState } from './canvas-strategies'
 import { CanvasStrategy } from './canvas-strategy-types'
+import { InteractionSession, interactionSession, StrategyState } from './interaction-state'
 import { getDragTargets } from './shared-absolute-move-strategy-helpers'
 
 export const absoluteDuplicateStrategy: CanvasStrategy = {
@@ -91,17 +96,22 @@ export const absoluteDuplicateStrategy: CanvasStrategy = {
       newPaths.push(newPath)
     })
 
-    const moveCommands = absoluteMoveStrategy.apply(canvasState, interactionState, {
-      ...strategyState,
-      startingMetadata: withDuplicatedMetadata,
-    })
-
     return {
       commands: [
         ...duplicateCommands,
-        ...moveCommands.commands,
-
         setElementsToRerenderCommand([...canvasState.selectedElements, ...newPaths]),
+        updateSelectedViews('permanent', newPaths),
+        updateFunctionCommand('permanent', (editorState, transient) =>
+          runMoveStrategyForFreshlyDuplicatedElements(
+            editorState,
+            {
+              ...strategyState,
+              startingMetadata: withDuplicatedMetadata,
+            },
+            interactionState,
+            transient,
+          ),
+        ),
       ],
       customState: {
         ...strategyState.customStrategyState,
@@ -109,4 +119,21 @@ export const absoluteDuplicateStrategy: CanvasStrategy = {
       },
     }
   },
+}
+
+function runMoveStrategyForFreshlyDuplicatedElements(
+  editorState: EditorState,
+  strategyState: StrategyState,
+  interactionState: InteractionSession,
+  transient: TransientOrNot,
+): Array<EditorStatePatch> {
+  const canvasState = pickCanvasStateFromEditorState(editorState)
+
+  const moveCommands = absoluteMoveStrategy.apply(
+    canvasState,
+    interactionState,
+    strategyState,
+  ).commands
+
+  return foldAndApplyCommandsInner(editorState, [], [], moveCommands, transient).statePatches
 }

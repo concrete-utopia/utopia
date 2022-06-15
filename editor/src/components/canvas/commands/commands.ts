@@ -35,6 +35,7 @@ import {
   SetElementsToRerenderCommand,
 } from './set-elements-to-rerender-command'
 import { DuplicateElement, runDuplicateElement } from './duplicate-element-command'
+import { runUpdateFunctionCommand, UpdateFunctionCommand } from './update-function-command'
 
 export interface CommandFunctionResult {
   editorStatePatches: Array<EditorStatePatch>
@@ -51,6 +52,7 @@ export interface BaseCommand {
 
 export type CanvasCommand =
   | WildcardPatch
+  | UpdateFunctionCommand
   | StrategySwitched
   | AdjustNumberProperty
   | AdjustCssLengthProperty
@@ -66,13 +68,16 @@ export type CanvasCommand =
   | SetCursorCommand
   | SetElementsToRerenderCommand
 
-export const runCanvasCommand: CommandFunction<CanvasCommand> = (
+export const runCanvasCommand = (
   editorState: EditorState,
   command: CanvasCommand,
-) => {
+  runningAsTransient: TransientOrNot,
+): CommandFunctionResult => {
   switch (command.type) {
     case 'WILDCARD_PATCH':
       return runWildcardPatch(editorState, command)
+    case 'UPDATE_FUNCTION_COMMAND':
+      return runUpdateFunctionCommand(editorState, command, runningAsTransient)
     case 'STRATEGY_SWITCHED':
       return runStrategySwitchedCommand(command)
     case 'ADJUST_NUMBER_PROPERTY':
@@ -112,24 +117,24 @@ export function foldAndApplyCommandsSimple(
   commands: Array<CanvasCommand>,
 ): EditorState {
   const updatedEditorState = commands.reduce((workingEditorState, command) => {
-    const patches = runCanvasCommand(workingEditorState, command)
+    const patches = runCanvasCommand(workingEditorState, command, 'permanent')
     return updateEditorStateWithPatches(workingEditorState, patches.editorStatePatches)
   }, editorState)
 
   return updatedEditorState
 }
 
-export function foldAndApplyCommands(
+export function foldAndApplyCommandsInner(
   editorState: EditorState,
-  priorPatchedState: EditorState,
   patches: Array<EditorStatePatch>,
   commandsToAccumulate: Array<CanvasCommand>,
   commands: Array<CanvasCommand>,
   transient: TransientOrNot,
 ): {
-  editorState: EditorState
-  accumulatedPatches: Array<EditorStatePatch>
-  commandDescriptions: Array<CommandDescription>
+  statePatches: EditorStatePatch[]
+  updatedEditorState: EditorState
+  accumulatedPatches: EditorStatePatch[]
+  commandDescriptions: CommandDescription[]
 } {
   let statePatches: Array<EditorStatePatch> = [...patches]
   let accumulatedPatches: Array<EditorStatePatch> = [...patches]
@@ -141,7 +146,7 @@ export function foldAndApplyCommands(
   const runCommand = (command: CanvasCommand, shouldAccumulatePatches: boolean) => {
     if (transient === 'transient' || command.transient === 'permanent') {
       // Run the command with our current states.
-      const commandResult = runCanvasCommand(workingEditorState, command)
+      const commandResult = runCanvasCommand(workingEditorState, command, transient)
       // Capture values from the result.
       const statePatch = commandResult.editorStatePatches
       // Apply the update to the editor state.
@@ -161,6 +166,30 @@ export function foldAndApplyCommands(
   commandsToAccumulate.forEach((command) => runCommand(command, true))
   commands.forEach((command) => runCommand(command, false))
 
+  return {
+    statePatches: statePatches,
+    updatedEditorState: workingEditorState,
+    accumulatedPatches: accumulatedPatches,
+    commandDescriptions: workingCommandDescriptions,
+  }
+}
+
+export function foldAndApplyCommands(
+  editorState: EditorState,
+  priorPatchedState: EditorState,
+  patches: Array<EditorStatePatch>,
+  commandsToAccumulate: Array<CanvasCommand>,
+  commands: Array<CanvasCommand>,
+  transient: TransientOrNot,
+): {
+  editorState: EditorState
+  accumulatedPatches: Array<EditorStatePatch>
+  commandDescriptions: Array<CommandDescription>
+} {
+  const { statePatches, accumulatedPatches, updatedEditorState, commandDescriptions } =
+    foldAndApplyCommandsInner(editorState, patches, commandsToAccumulate, commands, transient)
+
+  let workingEditorState = updatedEditorState
   if (statePatches.length === 0) {
     workingEditorState = editorState
   } else {
@@ -170,7 +199,7 @@ export function foldAndApplyCommands(
   return {
     editorState: workingEditorState,
     accumulatedPatches: mergePatches(accumulatedPatches),
-    commandDescriptions: workingCommandDescriptions,
+    commandDescriptions: commandDescriptions,
   }
 }
 

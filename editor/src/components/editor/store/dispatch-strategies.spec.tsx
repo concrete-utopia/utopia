@@ -131,6 +131,7 @@ describe('interactionCancel', () => {
     editorStore.strategyState.accumulatedPatches = runCanvasCommand(
       editorStore.unpatchedEditor,
       wildcardPatch('permanent', { selectedViews: { $set: [] } }),
+      'permanent',
     ).editorStatePatches
     const actualResult = interactionCancel(editorStore, dispatchResultFromEditorStore(editorStore))
     expect(actualResult.newStrategyState.accumulatedPatches).toHaveLength(0)
@@ -428,6 +429,7 @@ describe('interactionUpdate without strategy', () => {
     editorStore.strategyState.accumulatedPatches = runCanvasCommand(
       editorStore.unpatchedEditor,
       wildcardPatch('permanent', { canvas: { scale: { $set: 100 } } }),
+      'permanent',
     ).editorStatePatches
     const actualResult = interactionUpdate(
       [],
@@ -589,6 +591,7 @@ describe('interactionUpdate with accumulating keypresses', () => {
     editorStore.strategyState.accumulatedPatches = runCanvasCommand(
       editorStore.unpatchedEditor,
       wildcardPatch('permanent', { focusedPanel: { $set: 'codeEditor' } }),
+      'permanent',
     ).editorStatePatches
 
     const actualResult = interactionUpdate(
