@@ -4,6 +4,7 @@ import * as EP from '../../../core/shared/element-path'
 import { ElementInstanceMetadataMap } from '../../../core/shared/element-template'
 import { ElementPath } from '../../../core/shared/project-file-types'
 import { DuplicateElement, duplicateElement } from '../commands/duplicate-element-command'
+import { setElementsToRerenderCommand } from '../commands/set-elements-to-rerender-command'
 import { updateSelectedViews } from '../commands/update-selected-views-command'
 import { ParentBounds } from '../controls/parent-bounds'
 import { ParentOutlines } from '../controls/parent-outlines'
@@ -97,7 +98,14 @@ export const absoluteDuplicateStrategy: CanvasStrategy = {
     })
 
     return {
-      commands: [...duplicateCommands.flatMap((c) => c.commands), ...moveCommands.commands],
+      commands: [
+        ...duplicateCommands.flatMap((c) => c.commands),
+        ...moveCommands.commands,
+        setElementsToRerenderCommand([
+          ...canvasState.selectedElements,
+          ...duplicateCommands.map((c) => c.newPath),
+        ]),
+      ],
       customState: {
         ...strategyState.customStrategyState,
         duplicatedElementNewUids: duplicatedElementNewUids,
