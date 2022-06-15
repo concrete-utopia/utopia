@@ -12,6 +12,7 @@ import {
   useTriggerAllElementsHighlightPerformanceTest,
   useTriggerAbsoluteMoveLargePerformanceTest,
   useTriggerAbsoluteMoveSmallPerformanceTest,
+  useTriggerSelectionChangePerformanceTest,
 } from '../../core/model/performance-scripts'
 import { useReParseOpenProjectFile } from '../../core/model/project-file-helper-hooks'
 import { shareURLForProject } from '../../core/shared/utils'
@@ -197,6 +198,7 @@ export const Menubar = React.memo(() => {
   const onTriggerSelectionTest = useTriggerSelectionPerformanceTest()
   const onTriggerAbsoluteMoveLargeTest = useTriggerAbsoluteMoveLargePerformanceTest()
   const onTriggerAbsoluteMoveSmallTest = useTriggerAbsoluteMoveSmallPerformanceTest()
+  const onTriggerSelectionChangeTest = useTriggerSelectionChangePerformanceTest()
 
   const previewURL =
     projectId == null ? '' : shareURLForProject(FLOATING_PREVIEW_BASE_URL, projectId, projectName)
@@ -377,6 +379,9 @@ export const Menubar = React.memo(() => {
           </Tile>
           <Tile style={{ marginTop: 12, marginBottom: 12 }} size='large'>
             <a onClick={onTriggerAbsoluteMoveSmallTest}>PAMS</a>
+          </Tile>
+          <Tile style={{ marginTop: 12, marginBottom: 12 }} size='large'>
+            <a onClick={onTriggerSelectionChangeTest}>PSC</a>
           </Tile>
         </React.Fragment>
       ) : null}
