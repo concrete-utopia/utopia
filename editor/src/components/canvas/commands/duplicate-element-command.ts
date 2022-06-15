@@ -3,7 +3,12 @@ import { getUtopiaJSXComponentsFromSuccess } from '../../../core/model/project-f
 import { UTOPIA_UID_KEY } from '../../../core/model/utopia-constants'
 import { foldEither } from '../../../core/shared/either'
 import * as EP from '../../../core/shared/element-path'
-import { emptyComments, jsxAttributeValue } from '../../../core/shared/element-template'
+import {
+  emptyComments,
+  isUtopiaJSXComponent,
+  jsxAttributeValue,
+  UtopiaJSXComponent,
+} from '../../../core/shared/element-template'
 import { setJSXValuesAtPaths } from '../../../core/shared/jsx-attributes'
 import { ElementPath } from '../../../core/shared/project-file-types'
 import { fromString } from '../../../core/shared/property-path'
@@ -16,6 +21,7 @@ import {
   removeElementAtPath,
   withUnderlyingTargetFromEditorState,
 } from '../../editor/store/editor-state'
+import { duplicate } from '../canvas-utils'
 import {
   BaseCommand,
   CommandFunction,
@@ -46,39 +52,42 @@ export const runDuplicateElement: CommandFunction<DuplicateElement> = (
   editorState: EditorState,
   command: DuplicateElement,
 ) => {
-  const editorStatePatches: Array<EditorStatePatch> = withUnderlyingTargetFromEditorState(
+  const targetParent = EP.parentPath(command.target)
+  const newPath = EP.appendToPath(targetParent, command.newUid)
+
+  const duplicateResult = duplicate([command.target], targetParent, editorState, [
+    { originalPath: command.target, newUID: command.newUid },
+  ])
+
+  const originalParsedFile = withUnderlyingTargetFromEditorState(
     command.target,
     editorState,
-    [],
-    (successTarget, underlyingElementTarget, underlyingTarget, underlyingFilePathTarget) => {
-      const elementWithNewUid = setUtopiaID(underlyingElementTarget, command.newUid)
-      const components = getUtopiaJSXComponentsFromSuccess(successTarget)
-      const indexOfDuplicateTarget = getZIndexOfElement(
-        successTarget.topLevelElements,
-        underlyingTarget,
-      )
-      const withElementDuplicated = insertElementAtPath(
-        editorState.projectContents,
-        underlyingFilePathTarget,
-        EP.parentPath(command.target),
-        elementWithNewUid,
-        components,
-        before(indexOfDuplicateTarget),
-      )
+    null,
+    (parseSuccess, _, __, filePath) => ({ parseSuccess, filePath }),
+  )
 
-      return [
-        getPatchForComponentChange(
-          successTarget.topLevelElements,
-          withElementDuplicated,
-          successTarget.imports,
-          underlyingFilePathTarget,
-        ),
-      ]
+  if (duplicateResult == null || originalParsedFile == null) {
+    return { editorStatePatches: [], commandDescription: `Duplicate Element Failed` }
+  }
+
+  const newUtopiaComponents = withUnderlyingTargetFromEditorState(
+    newPath,
+    duplicateResult.updatedEditorState,
+    [],
+    (parsedFile) => {
+      return parsedFile.topLevelElements.filter(isUtopiaJSXComponent) // TODO why can't getPatchForComponentChange just take all top level elements?
     },
   )
 
+  const editorStatePatch: EditorStatePatch = getPatchForComponentChange(
+    originalParsedFile?.parseSuccess.topLevelElements,
+    newUtopiaComponents,
+    originalParsedFile?.parseSuccess.imports,
+    originalParsedFile?.filePath,
+  )
+
   return {
-    editorStatePatches: editorStatePatches,
+    editorStatePatches: [editorStatePatch],
     commandDescription: `Duplicate Element ${EP.toUid(command.target)}`,
   }
 }
