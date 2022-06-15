@@ -24,7 +24,18 @@ export const absoluteDuplicateStrategy: CanvasStrategy = {
       return filteredSelectedElements.every((element) => {
         const elementMetadata = MetadataUtils.findElementByElementPath(metadata, element)
 
-        return elementMetadata?.specialSizeMeasurements.position === 'absolute'
+        // for a multiselected elements, we only apply drag-to-duplicate if they are siblings
+        // otherwise this would lead to an unpredictable behavior
+        // we can revisit this once we have a more predictable reparenting
+        const allDraggedElementsHaveTheSameParent = EP.pathsEqual(
+          EP.parentPath(filteredSelectedElements[0]),
+          EP.parentPath(element),
+        )
+
+        return (
+          elementMetadata?.specialSizeMeasurements.position === 'absolute' &&
+          allDraggedElementsHaveTheSameParent
+        )
       })
     }
     return false
