@@ -351,7 +351,6 @@ export const OutlineControls = (props: OutlineControlsProps) => {
           frame={rect}
           path={selectedView}
           scale={props.scale}
-          canvasOffset={props.canvasOffset}
         />,
       )
     }
