@@ -1,5 +1,4 @@
 import { createBuiltInDependenciesList } from '../../../core/es-modules/package-manager/built-in-dependencies-list'
-import { BakedInStoryboardUID } from '../../../core/model/scene-utils'
 import * as EP from '../../../core/shared/element-path'
 import { complexDefaultProjectPreParsed } from '../../../sample-projects/sample-project-utils.test-utils'
 import { withUnderlyingTargetFromEditorState } from '../../editor/store/editor-state'
@@ -7,12 +6,9 @@ import {
   makeTestProjectCodeWithSnippet,
   renderTestEditorWithCode,
   renderTestEditorWithModel,
-  TestAppUID,
-  TestSceneUID,
 } from '../ui-jsx.test-utils'
 import { updateEditorStateWithPatches } from './commands'
 import { duplicateElement, runDuplicateElement } from './duplicate-element-command'
-import { reparentElement, runReparentElement } from './reparent-element-command'
 
 describe('runDuplicateElement', () => {
   it('duplicate works inside component', async () => {
