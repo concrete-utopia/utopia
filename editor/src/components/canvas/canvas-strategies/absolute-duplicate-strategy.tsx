@@ -46,7 +46,7 @@ export const absoluteDuplicateStrategy: CanvasStrategy = {
       canvasState.selectedElements.length > 0 &&
       interactionState.interactionData.modifiers.alt &&
       interactionState.interactionData.type === 'DRAG' &&
-      interactionState.interactionData.dragThresholdPassed
+      interactionState.interactionData.drag != null
     ) {
       return 2
     }
