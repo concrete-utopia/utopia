@@ -48,13 +48,20 @@ export const absoluteReparentStrategy: CanvasStrategy = {
       canvasState.selectedElements.length > 0 &&
       interactionState.interactionData.modifiers.cmd &&
       interactionState.interactionData.type === 'DRAG' &&
-      interactionState.interactionData.dragThresholdPassed
+      interactionState.interactionData.drag != null
     ) {
       return 2
     }
     return 0
   },
   apply: (canvasState, interactionState, strategyState) => {
+    if (
+      interactionState.interactionData.type != 'DRAG' ||
+      interactionState.interactionData.drag == null
+    ) {
+      return emptyStrategyApplicationResult
+    }
+
     const { selectedElements, scale, canvasOffset, projectContents, openFile } = canvasState
     const filteredSelectedElements = getDragTargets(selectedElements)
 

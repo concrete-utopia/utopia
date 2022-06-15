@@ -49,7 +49,7 @@ import { Modifier, Modifiers } from '../../../../utils/modifiers'
 import { pathsEqual } from '../../../../core/shared/element-path'
 import { EditorAction } from 'src/components/editor/action-types'
 
-const DRAG_START_TRESHOLD = 2
+const DRAG_START_THRESHOLD = 2
 
 export function isResizing(editorState: EditorState): boolean {
   // TODO retire isResizing and replace with isInteractionActive once we have the strategies turned on, and the old controls removed
@@ -384,7 +384,7 @@ export function useStartDragStateAfterDragExceedsThreshold(): (
 
       callbackAfterDragExceedsThreshold(
         nativeEvent,
-        DRAG_START_TRESHOLD,
+        DRAG_START_THRESHOLD,
         startDragState(foundTarget, startPoint),
       )
     },

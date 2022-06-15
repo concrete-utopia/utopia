@@ -243,7 +243,6 @@ describe('interactionStart', () => {
           "x": 100,
           "y": 200,
         },
-        "dragThresholdPassed": false,
         "globalTime": 1000,
         "modifiers": Object {
           "alt": false,
@@ -367,7 +366,6 @@ describe('interactionUpdatex', () => {
           "x": 100,
           "y": 200,
         },
-        "dragThresholdPassed": false,
         "globalTime": 1000,
         "modifiers": Object {
           "alt": false,
@@ -522,7 +520,6 @@ describe('interactionHardReset', () => {
           "x": 110,
           "y": 210,
         },
-        "dragThresholdPassed": false,
         "globalTime": 1000,
         "modifiers": Object {
           "alt": false,
@@ -741,7 +738,6 @@ describe('interactionUpdate with user changed strategy', () => {
           "x": 110,
           "y": 210,
         },
-        "dragThresholdPassed": false,
         "globalTime": 1000,
         "modifiers": Object {
           "alt": false,
