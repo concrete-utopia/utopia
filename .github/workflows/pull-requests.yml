@@ -225,45 +225,25 @@ jobs:
                 "url": $html_url,
                 "color": 2369839,
                 "description": $description,
-                "fields": [
-                  {
-                    "name": "This PR:",
-                    "value": $staging_message
-                  },
-                  {
-                    "name": "Current Staging:",
-                    "value": $master_message
-                  }
-                ],
                 "footer": {
                   "text": $repo_full_name
                 }
               },
               {
-                "title": "This PR:",
+                "title": "Chart:",
                 "color": 2369839,
                 "image": {
-                  "url": $staging_chart
-                }
-              },
-              {
-                "title": "Current Staging:",
-                "color": 14540253,
-                "image": {
-                  "url": $master_chart
+                  "url": $result_chart
                 }
               }
             ]
           TITLE: 'Performance Results for #${{ github.event.pull_request.number }} ${{ github.event.pull_request.title }}'
           HTML_URL: ${{ github.event.pull_request.html_url }}
-          DESCRIPTION: 'Link to test editor: https://${{ secrets.STAGING_SERVER }}/p/?branch_name=${{ steps.extract_branch.outputs.branch }}'
+          DESCRIPTION: 'Link to test editor: https://${{ secrets.STAGING_SERVER }}/p/?branch_name=${{ steps.extract_branch.outputs.branch }} \n \n Results: \n ${{ steps.run-performance-test.outputs.perf-discord-message }}'
           REPO_FULL_NAME: ${{ github.event.repository.full_name }}
-          STAGING_MESSAGE: ${{ steps.run-performance-test.outputs.perf-message-staging }}
-          STAGING_CHART: ${{ steps.run-performance-test.outputs.perf-chart-staging }}
-          MASTER_MESSAGE: ${{ steps.run-performance-test.outputs.perf-message-master }}
-          MASTER_CHART: ${{ steps.run-performance-test.outputs.perf-chart-master }}
+          RESULT_CHART: ${{ steps.run-performance-test.outputs.perf-chart }}
         run: |
-          echo "DISCORD_EMBEDS=$(jq -nc --arg title "$TITLE" --arg html_url "$HTML_URL" --arg description "$DESCRIPTION" --arg repo_full_name "$REPO_FULL_NAME" --arg staging_message "$STAGING_MESSAGE" --arg master_message "$MASTER_MESSAGE" --arg staging_chart "$STAGING_CHART" --arg master_chart "$MASTER_CHART" "$TEMPLATE")" >> $GITHUB_ENV
+          echo "DISCORD_EMBEDS=$(jq -nc --arg title "$TITLE" --arg html_url "$HTML_URL" --arg description "$DESCRIPTION" --arg repo_full_name "$REPO_FULL_NAME" --arg result_chart "$RESULT_CHART" "$TEMPLATE")" | sed 's/\\\\n/\\n/g' >> $GITHUB_ENV
       - name: Send Discord Notification
         uses: Ilshidur/action-discord@0.3.2
         env:

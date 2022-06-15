@@ -27,6 +27,7 @@ import {
 } from '../../canvas/canvas-strategies/canvas-strategy-types'
 import { isFeatureEnabled } from '../../../utils/feature-switches'
 import { PERFORMANCE_MARKS_ALLOWED } from '../../../common/env-vars'
+import { saveDOMReport } from '../actions/action-creators'
 
 interface HandleStrategiesResult {
   unpatchedEditorState: EditorState
@@ -557,19 +558,89 @@ export function handleStrategies(
   }
 }
 
+function injectNewMetadataToOldEditorState(
+  oldEditorState: EditorState,
+  newEditorState: EditorState,
+): EditorState {
+  if (oldEditorState.canvas.interactionSession != null) {
+    // we expect metadata to live in EditorState.canvas.interactionSession.metadata
+    if (newEditorState.canvas.interactionSession == null) {
+      throw new Error(
+        'Dispatch error: SAVE_DOM_REPORT changed canvas.interactionSession in an illegal way',
+      )
+    } else {
+      return {
+        ...oldEditorState,
+        jsxMetadata: newEditorState.jsxMetadata,
+        domMetadata: newEditorState.domMetadata,
+        spyMetadata: newEditorState.spyMetadata,
+        canvas: {
+          ...oldEditorState.canvas,
+          interactionSession: {
+            ...oldEditorState.canvas.interactionSession,
+            metadata: newEditorState.canvas.interactionSession.metadata, // the fresh metadata from SAVE_DOM_REPORT
+          },
+        },
+      }
+    }
+  } else if (oldEditorState.canvas.dragState != null) {
+    // we expect metadata to live in EditorState.canvas.dragState.metadata
+    if (newEditorState.canvas.dragState == null) {
+      throw new Error('Dispatch error: SAVE_DOM_REPORT changed canvas.dragState in an illegal way')
+    } else {
+      return {
+        ...oldEditorState,
+        jsxMetadata: newEditorState.jsxMetadata,
+        domMetadata: newEditorState.domMetadata,
+        spyMetadata: newEditorState.spyMetadata,
+        canvas: {
+          ...oldEditorState.canvas,
+          dragState: {
+            ...oldEditorState.canvas.dragState,
+            metadata: newEditorState.canvas.dragState.metadata, // the fresh metadata from SAVE_DOM_REPORT
+          },
+        },
+      }
+    }
+  } else {
+    return {
+      ...oldEditorState, // the "old" patched editor from the action dispatch that triggered SAVE_DOM_WALKER
+      jsxMetadata: newEditorState.jsxMetadata, // the fresh metadata from SAVE_DOM_REPORT
+      domMetadata: newEditorState.domMetadata,
+      spyMetadata: newEditorState.spyMetadata,
+    }
+  }
+}
+
 function handleStrategiesInner(
   strategies: Array<CanvasStrategy>,
   dispatchedActions: readonly EditorAction[],
   storedState: EditorStoreFull,
   result: InnerDispatchResult,
 ): HandleStrategiesResult {
+  const isSaveDomReport = dispatchedActions.some((a) => a.action === 'SAVE_DOM_REPORT')
+
   const makeChangesPermanent = dispatchedActions.some(shouldApplyClearInteractionSessionResult)
   const cancelInteraction =
     dispatchedActions.some(isClearInteractionSession) && !makeChangesPermanent
   const isInteractionAction = dispatchedActions.some(isCreateOrUpdateInteractionSession)
     ? 'interaction-create-or-update'
     : 'non-interaction'
-  if (storedState.unpatchedEditor.canvas.interactionSession == null) {
+
+  if (isSaveDomReport) {
+    // SAVE_DOM_REPORT is a special action that is part of the dispatch flow.
+    // here we do not want to re-run strategies at all, just update the jsxMetadata in the patched EditorState
+
+    const oldPatchedEditorWithNewMetadata: EditorState = injectNewMetadataToOldEditorState(
+      storedState.patchedEditor,
+      result.unpatchedEditor,
+    )
+    return {
+      unpatchedEditorState: result.unpatchedEditor, // we return the fresh unpatchedEditor, containing the up-to-date domMetadata and spyMetadata
+      patchedEditorState: oldPatchedEditorWithNewMetadata, // the previous patched editor with updated metadata
+      newStrategyState: storedState.strategyState,
+    }
+  } else if (storedState.unpatchedEditor.canvas.interactionSession == null) {
     if (result.unpatchedEditor.canvas.interactionSession == null) {
       return {
         unpatchedEditorState: result.unpatchedEditor,

@@ -1,7 +1,7 @@
 import type { EditorAction } from '../../components/editor/action-types'
 import type { EditorStoreFull, EditorState } from '../../components/editor/store/editor-state'
 import { isFeatureEnabled } from '../../utils/feature-switches'
-import { pluck } from './array-utils'
+import { mapDropNulls, pluck } from './array-utils'
 import * as EP from './element-path'
 import { ElementInstanceMetadata, ElementInstanceMetadataMap } from './element-template'
 import { objectMap } from './object-utils'
@@ -58,19 +58,15 @@ maybeDevTools?.subscribe((message) => {
   }
 })
 
-const ActionsToOmit: Array<EditorAction['action']> = ['UPDATE_PREVIEW_CONNECTED', 'LOAD']
-const ActionsWithPayload: Array<EditorAction['action']> = [
-  'CREATE_INTERACTION_SESSION',
-  'UPDATE_INTERACTION_SESSION',
-]
-
 let lastDispatchedStore: SanitizedState
 
 const PlaceholderMessage = '<<SANITIZED_FROM_DEVTOOLS>>'
 
-function simplifiedMetadata(elementMetadata: Partial<ElementInstanceMetadata>) {
+function simplifiedMetadata(elementMetadata: ElementInstanceMetadata) {
   return {
+    elementPath: EP.toString(elementMetadata.elementPath),
     globalFrame: elementMetadata.globalFrame,
+    computedStyle: elementMetadata.computedStyle,
   }
 }
 
@@ -81,12 +77,30 @@ function simplifiedMetadataMap(metadata: ElementInstanceMetadataMap) {
   return sanitizedSpyData
 }
 
+function sanitizeEditor(editor: EditorState) {
+  // When you debug something, feel free to add it to the sanitized editor. right now it contains a few keys that I needed.
+  // Be careful about what you add: logging too much stuff chokes the redux devtool
+  return {
+    selectedViews: editor.selectedViews.map(EP.toString) as any, // this is easier for human consumption
+    canvas: {
+      mountCount: editor.canvas.mountCount,
+      domWalkerInvalidateCount: editor.canvas.domWalkerInvalidateCount,
+      canvasContentInvalidateCount: editor.canvas.canvasContentInvalidateCount,
+      interactionSession: {
+        metadata: simplifiedMetadataMap(editor.canvas.interactionSession?.metadata ?? {}) as any,
+      },
+    } as Partial<EditorState['canvas']>,
+    jsxMetadata: simplifiedMetadataMap(editor.jsxMetadata) as any,
+    domMetadata: simplifiedMetadataMap(editor.domMetadata) as any,
+    spyMetadata: simplifiedMetadataMap(editor.spyMetadata) as any,
+  } as Partial<EditorState>
+}
+
 type SanitizedState = ReturnType<typeof sanitizeLoggedState>
 function sanitizeLoggedState(store: EditorStoreFull) {
   return {
-    patchedEditor: {
-      jsxMetadata: simplifiedMetadataMap(store.patchedEditor.jsxMetadata) as any,
-    } as Partial<EditorState>,
+    unpatchedEditor: sanitizeEditor(store.unpatchedEditor),
+    patchedEditor: sanitizeEditor(store.patchedEditor),
   }
 }
 
@@ -100,12 +114,32 @@ export function reduxDevtoolsSendActions(
     isFeatureEnabled('Debug mode – Redux Devtools')
   ) {
     // filter out the actions we are not interested in
-    const filteredActions = actions
-      .flat()
-      .filter((action) => !ActionsToOmit.includes(action.action))
-      .map((action) =>
-        ActionsWithPayload.includes(action.action) ? action : { action: action.action },
-      )
+    const filteredActions = mapDropNulls((action) => {
+      switch (action.action) {
+        //Actions to be completely omitted from logging to redux devtools, to avoid noise
+        case 'UPDATE_PREVIEW_CONNECTED': {
+          return null
+        }
+        // These actions will be logged with all of their payload. Be careful: large payloads choke the Redux Devtool logging
+        case 'CREATE_INTERACTION_SESSION':
+        case 'UPDATE_INTERACTION_SESSION':
+        case 'CLEAR_INTERACTION_SESSION': {
+          return action
+        }
+        // List custom printers for specific actions here
+        case 'SAVE_DOM_REPORT': {
+          return {
+            action: action.action,
+            cachedPaths: action.cachedPaths,
+            elementMetadata: simplifiedMetadataMap(action.elementMetadata),
+          }
+        }
+        // By default, we only log the name of the action, and omit the payload
+        default:
+          return { action: action.action }
+      }
+    }, actions.flat())
+
     if (filteredActions.length > 0) {
       const sanitizedStore = sanitizeLoggedState(newStore)
       const actionNames = pluck(filteredActions, 'action').join(' ')
