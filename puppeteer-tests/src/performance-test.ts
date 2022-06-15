@@ -610,6 +610,10 @@ async function createSummaryPng(
 
   processedData.reverse() // Plotly will produce the box plot in the reverse order
 
+  const chartHeight = 50 * numberOfTests
+  const chartWidth = 720
+  const imagePadding = 80
+
   const layout = {
     margin: {
       l: 50,
@@ -619,8 +623,8 @@ async function createSummaryPng(
       pad: 4,
     },
     showlegend: false,
-    height: 50 * numberOfTests,
-    width: 720,
+    height: chartHeight,
+    width: chartWidth,
     yaxis: {
       automargin: true,
       zeroline: true,
@@ -657,8 +661,8 @@ async function createSummaryPng(
 
   const imgOpts = {
     format: 'png',
-    width: 800,
-    height: 440,
+    width: chartWidth + imagePadding,
+    height: chartHeight + imagePadding,
   }
   const figure = { data: processedData, layout: layout }
 
