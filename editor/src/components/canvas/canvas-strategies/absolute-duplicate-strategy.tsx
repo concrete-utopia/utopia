@@ -70,7 +70,8 @@ export const absoluteDuplicateStrategy: CanvasStrategy = {
 
     let duplicatedElementNewUids = { ...strategyState.customStrategyState.duplicatedElementNewUids }
     let withDuplicatedMetadata: ElementInstanceMetadataMap = { ...strategyState.startingMetadata }
-    let duplicateCommands: Array<{ newPath: ElementPath; commands: DuplicateElement[] }> = []
+    let duplicateCommands: Array<DuplicateElement> = []
+    let newPaths: Array<ElementPath> = []
 
     filteredSelectedElements.forEach((selectedElement) => {
       const selectedElementString = EP.toString(selectedElement)
@@ -86,10 +87,8 @@ export const absoluteDuplicateStrategy: CanvasStrategy = {
         elementPath: newPath,
       }
 
-      duplicateCommands.push({
-        newPath: newPath,
-        commands: [duplicateElement('permanent', selectedElement, newUid)],
-      })
+      duplicateCommands.push(duplicateElement('permanent', selectedElement, newUid))
+      newPaths.push(newPath)
     })
 
     const moveCommands = absoluteMoveStrategy.apply(canvasState, interactionState, {
@@ -99,12 +98,10 @@ export const absoluteDuplicateStrategy: CanvasStrategy = {
 
     return {
       commands: [
-        ...duplicateCommands.flatMap((c) => c.commands),
+        ...duplicateCommands,
         ...moveCommands.commands,
-        setElementsToRerenderCommand([
-          ...canvasState.selectedElements,
-          ...duplicateCommands.map((c) => c.newPath),
-        ]),
+
+        setElementsToRerenderCommand([...canvasState.selectedElements, ...newPaths]),
       ],
       customState: {
         ...strategyState.customStrategyState,
