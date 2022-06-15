@@ -3,7 +3,7 @@ import { ElementInstanceMetadataMap } from '../../../core/shared/element-templat
 import { offsetPoint, rectContainsPoint } from '../../../core/shared/math-utils'
 import { ElementPath } from '../../../core/shared/project-file-types'
 import { reorderElement } from '../commands/reorder-element-command'
-import { CanvasStrategy } from './canvas-strategy-types'
+import { CanvasStrategy, emptyStrategyApplicationResult } from './canvas-strategy-types'
 import {
   CanvasPoint,
   canvasPoint,
@@ -67,10 +67,7 @@ export const flexReorderStrategy: CanvasStrategy = {
       interactionState.interactionData.type !== 'DRAG' ||
       interactionState.interactionData.drag == null
     ) {
-      return {
-        commands: [],
-        customState: null,
-      }
+      return emptyStrategyApplicationResult
     }
 
     const { selectedElements } = canvasState

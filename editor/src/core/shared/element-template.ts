@@ -1456,7 +1456,7 @@ export type ComputedStyle = { [key: string]: string }
 export type StyleAttributeMetadataEntry = { fromStyleSheet: boolean } // TODO rename me to StyleAttributeMetadata, the other one to StyleAttributeMetadataMap
 export type StyleAttributeMetadata = { [key: string]: StyleAttributeMetadataEntry | undefined }
 
-export type ElementInstanceMetadataMap = { [key: string]: ElementInstanceMetadata }
+export type ElementInstanceMetadataMap = { [key: string]: Readonly<ElementInstanceMetadata> }
 export const emptyJsxMetadata: ElementInstanceMetadataMap = {}
 
 export type FoundImportInfo = {

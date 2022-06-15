@@ -71,6 +71,7 @@ import { OutlineHighlightControl } from './select-mode/outline-highlight-control
 import { InsertionControls } from './insertion-plus-button'
 import { DistanceGuidelineControl } from './select-mode/distance-guideline-control'
 import { SceneLabelControl } from './select-mode/scene-label'
+import { PinLines } from './position-outline'
 
 export const CanvasControlsContainerID = 'new-canvas-controls-container'
 
@@ -450,6 +451,11 @@ const NewCanvasControlsInner = (props: NewCanvasControlsInnerProps) => {
           maybeHighlightOnHover={maybeHighlightOnHover}
           maybeClearHighlightsOnHoverEnd={maybeClearHighlightsOnHoverEnd}
         />,
+      )}
+      {when(
+        (isFeatureEnabled('Canvas Strategies') && props.editor.mode.type === 'select') ||
+          props.editor.mode.type === 'select-lite',
+        <PinLines />,
       )}
       {when(
         (isFeatureEnabled('Canvas Strategies') && props.editor.mode.type === 'select') ||

@@ -14,6 +14,7 @@ import * as History from '../history'
 import { DummyPersistenceMachine } from '../persistence/persistence.test-utils'
 import { DispatchResult, editorDispatch } from './dispatch'
 import {
+  handleStrategies,
   interactionCancel,
   interactionHardReset,
   interactionStart,
@@ -23,6 +24,8 @@ import { createEditorState, deriveState, EditorStoreFull } from './editor-state'
 import * as EP from '../../../core/shared/element-path'
 import * as PP from '../../../core/shared/property-path'
 import {
+  ElementInstanceMetadata,
+  elementInstanceMetadata,
   ElementInstanceMetadataMap,
   emptyComments,
   jsxAttributeValue,
@@ -45,6 +48,8 @@ import {
 import { canvasPoint } from '../../../core/shared/math-utils'
 import { wildcardPatch } from '../../canvas/commands/wildcard-patch-command'
 import { runCanvasCommand } from '../../canvas/commands/commands'
+import { saveDOMReport } from '../actions/action-creators'
+import { RegisteredCanvasStrategies } from '../../canvas/canvas-strategies/canvas-strategies'
 
 beforeAll(() => {
   return jest.spyOn(Date, 'now').mockReturnValue(new Date(1000).getTime())
@@ -237,7 +242,6 @@ describe('interactionStart', () => {
           "x": 100,
           "y": 200,
         },
-        "dragThresholdPassed": false,
         "globalTime": 1000,
         "modifiers": Object {
           "alt": false,
@@ -359,7 +363,6 @@ describe('interactionUpdatex', () => {
           "x": 100,
           "y": 200,
         },
-        "dragThresholdPassed": false,
         "globalTime": 1000,
         "modifiers": Object {
           "alt": false,
@@ -512,7 +515,6 @@ describe('interactionHardReset', () => {
           "x": 110,
           "y": 210,
         },
-        "dragThresholdPassed": false,
         "globalTime": 1000,
         "modifiers": Object {
           "alt": false,
@@ -729,7 +731,6 @@ describe('interactionUpdate with user changed strategy', () => {
           "x": 110,
           "y": 210,
         },
-        "dragThresholdPassed": false,
         "globalTime": 1000,
         "modifiers": Object {
           "alt": false,
@@ -778,5 +779,95 @@ describe('interactionUpdate with user changed strategy', () => {
     expect(
       actualResult.patchedEditorState.canvas.interactionSession?.interactionData,
     ).toMatchInlineSnapshot(`undefined`)
+  })
+})
+
+describe('only update metadata on SAVE_DOM_REPORT', () => {
+  // eslint-disable-next-line jest/expect-expect
+  it('no canvas.interactionSession', () => {
+    const oldEditorStore = createEditorStore(null)
+
+    const newMetadata: ElementInstanceMetadataMap = {
+      'new-entry': {
+        elementPath: EP.fromString('new-entry'),
+        specialSizeMeasurements: { position: 'absolute' },
+      } as ElementInstanceMetadata,
+    }
+
+    const newEditorStore: EditorStoreFull = {
+      ...oldEditorStore,
+      unpatchedEditor: { ...oldEditorStore.unpatchedEditor, jsxMetadata: newMetadata },
+      patchedEditor: oldEditorStore.patchedEditor,
+    }
+
+    // when new metadata is dispatched in SAVE_DOM_REPORT, only the unpatchedEditor is updated
+    // we see that newEditorState's unpatchedEditor has the new metadata
+    expect(newEditorStore.unpatchedEditor.jsxMetadata).not.toBe(
+      oldEditorStore.unpatchedEditor.jsxMetadata,
+    )
+    // but newEditorState's patchedEditor has the old metadata
+    expect(newEditorStore.patchedEditor.jsxMetadata).toBe(oldEditorStore.patchedEditor.jsxMetadata)
+
+    // the job of handleStrategies in this case is to update the metadata of patchedEditor, without running any strategies
+    const actualResult = handleStrategies(
+      RegisteredCanvasStrategies,
+      [saveDOMReport(newMetadata, [], [])],
+      oldEditorStore,
+      dispatchResultFromEditorStore(newEditorStore),
+      oldEditorStore.patchedDerived,
+    )
+
+    expect(actualResult.patchedEditorState.jsxMetadata).toBe(
+      newEditorStore.unpatchedEditor.jsxMetadata,
+    )
+  })
+
+  it('has non-null canvas.interactionSession', () => {
+    const oldEditorStore = createEditorStore(
+      createInteractionViaMouse(
+        canvasPoint({ x: 100, y: 200 }),
+        { alt: false, shift: false, ctrl: false, cmd: false },
+        { type: 'BOUNDING_AREA', target: EP.elementPath([['aaa']]) },
+      ),
+    )
+
+    const newMetadata: ElementInstanceMetadataMap = {
+      'new-entry': {
+        elementPath: EP.fromString('new-entry'),
+        specialSizeMeasurements: { position: 'absolute' },
+      } as ElementInstanceMetadata,
+    }
+
+    if (oldEditorStore.unpatchedEditor.canvas.interactionSession == null) {
+      throw new Error('interactionSession cannot be null')
+    }
+
+    const newEditorStore: EditorStoreFull = {
+      ...oldEditorStore,
+      unpatchedEditor: {
+        ...oldEditorStore.unpatchedEditor,
+        canvas: {
+          ...oldEditorStore.unpatchedEditor.canvas,
+          interactionSession: {
+            ...oldEditorStore.unpatchedEditor.canvas.interactionSession,
+            metadata: newMetadata,
+          },
+        },
+      },
+      patchedEditor: oldEditorStore.patchedEditor,
+    }
+
+    // the job of handleStrategies in this case is to update the jsxMetadata of patchedEditor using unpatchedEditor.canvas.interactionSession.metadata, without running any strategies
+    const actualResult = handleStrategies(
+      RegisteredCanvasStrategies,
+      [saveDOMReport(newMetadata, [], [])],
+      oldEditorStore,
+      dispatchResultFromEditorStore(newEditorStore),
+      oldEditorStore.patchedDerived,
+    )
+
+    expect(actualResult.patchedEditorState.jsxMetadata).toBe(
+      newEditorStore.unpatchedEditor.canvas.interactionSession?.metadata,
+    )
   })
 })
