@@ -61,7 +61,7 @@ export const PaddingIndicator = React.memo((props: PaddingIndicatorProps) => {
           key='padding-left'
           className=' roleFlexPaddingIndicator'
           style={{
-            fontSize: 10,
+            fontSize: 10 / props.scale,
             fontWeight: 5,
             textAlign: 'center',
             overflow: 'visible',
@@ -83,7 +83,7 @@ export const PaddingIndicator = React.memo((props: PaddingIndicatorProps) => {
         <div
           key='padding-top'
           style={{
-            fontSize: 10,
+            fontSize: 10 / props.scale,
             fontWeight: 500,
             textAlign: 'center',
             overflow: 'visible',
@@ -105,7 +105,7 @@ export const PaddingIndicator = React.memo((props: PaddingIndicatorProps) => {
         <div
           key='padding-right'
           style={{
-            fontSize: 10,
+            fontSize: 10 / props.scale,
             fontWeight: 500,
             textAlign: 'center',
             overflow: 'visible',
@@ -127,7 +127,7 @@ export const PaddingIndicator = React.memo((props: PaddingIndicatorProps) => {
         <div
           key='padding-bottom'
           style={{
-            fontSize: 10,
+            fontSize: 10 / props.scale,
             fontWeight: 500,
             textAlign: 'center',
             overflow: 'visible',
