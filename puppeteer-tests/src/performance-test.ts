@@ -610,7 +610,7 @@ async function createSummaryPng(
 
   processedData.reverse() // Plotly will produce the box plot in the reverse order
 
-  const chartHeight = 50 * numberOfTests
+  const chartHeight = 30 * numberOfTests
   const chartWidth = 720
   const imagePadding = 80
 
