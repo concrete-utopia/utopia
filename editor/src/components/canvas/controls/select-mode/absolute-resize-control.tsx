@@ -140,14 +140,12 @@ const ResizePoint = React.memo(
         ref={ref}
         style={{
           position: 'absolute',
+          pointerEvents: 'none',
         }}
-        onMouseDown={onPointMouseDown}
-        onMouseMove={onMouseMove}
       >
         <div
           style={{
             position: 'relative',
-            pointerEvents: 'initial',
             width: ResizePointSize / scale,
             height: ResizePointSize / scale,
             top: -ResizePointOffset / scale,
@@ -172,8 +170,11 @@ const ResizePoint = React.memo(
             top: -ResizePointMouseAreaSize / scale,
             left: -ResizePointMouseAreaOffset / scale,
             backgroundColor: 'transparent',
+            pointerEvents: 'initial',
             cursor: props.cursor,
           }}
+          onMouseDown={onPointMouseDown}
+          onMouseMove={onMouseMove}
         />
       </div>
     )
