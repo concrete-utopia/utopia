@@ -99,28 +99,45 @@ export function applyAbsoluteMoveCommon(
   strategyState: StrategyState,
   getMoveCommands: (snappedDragVector: CanvasPoint) => Array<CanvasCommand>,
 ): StrategyApplicationResult {
-  if (interactionState.interactionData.type === 'DRAG') {
+  if (
+    interactionState.interactionData.type === 'DRAG' &&
+    interactionState.interactionData.drag != null
+  ) {
     const drag = interactionState.interactionData.drag
     const shiftKeyPressed = interactionState.interactionData.modifiers.shift
-    const constrainedDragAxis =
-      shiftKeyPressed && drag != null ? determineConstrainedDragAxis(drag) : null
-    const { snappedDragVector, guidelinesWithSnappingVector } = snapDrag(
-      drag,
-      constrainedDragAxis,
-      strategyState.startingMetadata,
-      canvasState.selectedElements,
-      canvasState.scale,
-    )
-    const commandsForSelectedElements = getMoveCommands(snappedDragVector)
-    return {
-      commands: [
-        ...commandsForSelectedElements,
-        updateHighlightedViews('transient', []),
-        setSnappingGuidelines('transient', guidelinesWithSnappingVector),
-        setElementsToRerenderCommand(canvasState.selectedElements),
-        setCursorCommand('transient', CSSCursor.Move),
-      ],
-      customState: null,
+    const cmdKeyPressed = interactionState.interactionData.modifiers.cmd
+    if (cmdKeyPressed) {
+      const commandsForSelectedElements = getMoveCommands(drag)
+      return {
+        commands: [
+          ...commandsForSelectedElements,
+          updateHighlightedViews('transient', []),
+          setElementsToRerenderCommand(canvasState.selectedElements),
+          setCursorCommand('transient', CSSCursor.Move),
+        ],
+        customState: null,
+      }
+    } else {
+      const constrainedDragAxis =
+        shiftKeyPressed && drag != null ? determineConstrainedDragAxis(drag) : null
+      const { snappedDragVector, guidelinesWithSnappingVector } = snapDrag(
+        drag,
+        constrainedDragAxis,
+        strategyState.startingMetadata,
+        canvasState.selectedElements,
+        canvasState.scale,
+      )
+      const commandsForSelectedElements = getMoveCommands(snappedDragVector)
+      return {
+        commands: [
+          ...commandsForSelectedElements,
+          updateHighlightedViews('transient', []),
+          setSnappingGuidelines('transient', guidelinesWithSnappingVector),
+          setElementsToRerenderCommand(canvasState.selectedElements),
+          setCursorCommand('transient', CSSCursor.Move),
+        ],
+        customState: null,
+      }
     }
   } else {
     // Fallback for when the checks above are not satisfied.
