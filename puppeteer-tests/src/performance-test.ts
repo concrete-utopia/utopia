@@ -113,7 +113,7 @@ export const testPerformance = async function () {
     const beforeMedian = targetResult.analytics.percentile50 ?? 1
     const afterMedian = result.analytics.percentile50 ?? 1
     const change = ((afterMedian - beforeMedian) / beforeMedian) * 100
-    const titleLine = `**${result.title} (${Math.round(change)}%):**`
+    const titleLine = `**${result.title} (${Math.round(change)}%)**`
     const spacerLine = ''
     if (Math.abs(change) > 5) {
       return [
