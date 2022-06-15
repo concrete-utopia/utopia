@@ -230,10 +230,17 @@ jobs:
                 }
               },
               {
-                "title": "Chart:",
+                "title": "Frame Tests:",
                 "color": 2369839,
                 "image": {
-                  "url": $result_chart
+                  "url": $result_frames_chart
+                }
+              },
+              {
+                "title": "Interaction Tests:",
+                "color": 14540253,
+                "image": {
+                  "url": $result_interactions_chart
                 }
               }
             ]
@@ -241,9 +248,10 @@ jobs:
           HTML_URL: ${{ github.event.pull_request.html_url }}
           DESCRIPTION: 'Link to test editor: https://${{ secrets.STAGING_SERVER }}/p/?branch_name=${{ steps.extract_branch.outputs.branch }} \n \n Results: \n ${{ steps.run-performance-test.outputs.perf-discord-message }}'
           REPO_FULL_NAME: ${{ github.event.repository.full_name }}
-          RESULT_CHART: ${{ steps.run-performance-test.outputs.perf-chart }}
+          RESULT_FRAMES_CHART: ${{ steps.run-performance-test.outputs.perf-frames-chart }}
+          RESULT_INTERACTIONS_CHART: ${{ steps.run-performance-test.outputs.perf-interactions-chart }}
         run: |
-          echo "DISCORD_EMBEDS=$(jq -nc --arg title "$TITLE" --arg html_url "$HTML_URL" --arg description "$DESCRIPTION" --arg repo_full_name "$REPO_FULL_NAME" --arg result_chart "$RESULT_CHART" "$TEMPLATE")" | sed 's/\\\\n/\\n/g' >> $GITHUB_ENV
+          echo "DISCORD_EMBEDS=$(jq -nc --arg title "$TITLE" --arg html_url "$HTML_URL" --arg description "$DESCRIPTION" --arg repo_full_name "$REPO_FULL_NAME" --arg result_frames_chart "$RESULT_FRAMES_CHART" --arg result_interactions_chart "$RESULT_INTERACTIONS_CHART" "$TEMPLATE")" | sed 's/\\\\n/\\n/g' >> $GITHUB_ENV
       - name: Send Discord Notification
         uses: Ilshidur/action-discord@0.3.2
         env:
