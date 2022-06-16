@@ -141,6 +141,10 @@ export type EditorStateContextData = {
 
 export const EditorStateContext = React.createContext<EditorStateContextData | null>(null)
 EditorStateContext.displayName = 'EditorStateContext'
+export const CanvasStateContext = React.createContext<EditorStateContextData | null>(null)
+CanvasStateContext.displayName = 'CanvasStateContext'
+export const InspectorStateContext = React.createContext<EditorStateContextData | null>(null)
+InspectorStateContext.displayName = 'InspectorStateContext'
 
 export function useSelectorWithCallback<U>(
   selector: StateSelector<EditorStorePatched, U>,

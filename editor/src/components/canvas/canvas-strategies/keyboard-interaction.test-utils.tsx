@@ -9,7 +9,7 @@ import { Modifiers } from '../../../utils/modifiers'
 import { EditorState } from '../../editor/store/editor-state'
 import { foldAndApplyCommands } from '../commands/commands'
 import { pickCanvasStateFromEditorState } from './canvas-strategies'
-import { CanvasStrategy, CustomStrategyState } from './canvas-strategy-types'
+import { CanvasStrategy, defaultCustomStrategyState } from './canvas-strategy-types'
 import {
   createInteractionViaKeyboard,
   InteractionSession,
@@ -29,6 +29,7 @@ export function pressKeys(
       null as any, // the strategy does not use this
     ),
     metadata: null as any, // the strategy does not use this
+    allElementProps: null as any,
   }
 
   const strategyResult = strategy.apply(
@@ -52,7 +53,8 @@ export function pressKeys(
           } as SpecialSizeMeasurements,
         } as ElementInstanceMetadata,
       },
-      customStrategyState: { foo: 'bar' },
+      startingAllElementProps: { 'scene-aaa/app-entity:aaa/bbb': {} },
+      customStrategyState: defaultCustomStrategyState(),
     } as StrategyState,
   )
 

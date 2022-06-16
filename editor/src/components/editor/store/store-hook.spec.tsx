@@ -1,7 +1,7 @@
 import React from 'react'
 import create, { GetState, Mutate, SetState, StoreApi, UseStore } from 'zustand'
 import { subscribeWithSelector } from 'zustand/middleware'
-import { renderHook } from '@testing-library/react-hooks'
+import { renderHook } from '@testing-library/react'
 import { EditorStateContext, useSelectorWithCallback } from './store-hook'
 import { createEditorState, EditorState, EditorStorePatched } from './editor-state'
 import { NO_OP } from '../../../core/shared/utils'
@@ -35,15 +35,15 @@ function createEmptyEditorStoreHook() {
   return storeHook
 }
 
-const ContextProvider: React.FunctionComponent<{
-  storeHook: UseStore<EditorStorePatched>
-}> = ({ storeHook, children }) => {
-  return (
-    <EditorStateContext.Provider value={{ api: storeHook, useStore: storeHook }}>
-      {children}
-    </EditorStateContext.Provider>
-  )
-}
+const ContextProvider =
+  (storeHook: UseStore<EditorStorePatched>) =>
+  ({ children }: { children: React.ReactNode }) => {
+    return (
+      <EditorStateContext.Provider value={{ api: storeHook, useStore: storeHook }}>
+        {children}
+      </EditorStateContext.Provider>
+    )
+  }
 
 describe('useSelectorWithCallback', () => {
   it('The callback is not fired on first call', () => {
@@ -52,7 +52,7 @@ describe('useSelectorWithCallback', () => {
     let hookRenders = 0
     let callCount = 0
 
-    const { result } = renderHook<{ storeHook: UseStore<EditorStorePatched> }, void>(
+    const { result } = renderHook<void, { storeHook: UseStore<EditorStorePatched> }>(
       (props) => {
         hookRenders++
         return useSelectorWithCallback(
@@ -63,7 +63,7 @@ describe('useSelectorWithCallback', () => {
         )
       },
       {
-        wrapper: ContextProvider,
+        wrapper: ContextProvider(storeHook),
         initialProps: {
           storeHook: storeHook,
         },
@@ -80,7 +80,7 @@ describe('useSelectorWithCallback', () => {
     let hookRenders = 0
     let callCount = 0
 
-    const { result } = renderHook<{ storeHook: UseStore<EditorStorePatched> }, void>(
+    const { result } = renderHook<void, { storeHook: UseStore<EditorStorePatched> }>(
       (props) => {
         hookRenders++
         return useSelectorWithCallback(
@@ -91,7 +91,7 @@ describe('useSelectorWithCallback', () => {
         )
       },
       {
-        wrapper: ContextProvider,
+        wrapper: ContextProvider(storeHook),
         initialProps: {
           storeHook: storeHook,
         },
@@ -128,7 +128,7 @@ describe('useSelectorWithCallback', () => {
       },
     )
 
-    const { result, rerender } = renderHook<{ storeHook: UseStore<EditorStorePatched> }, void>(
+    const { result, rerender } = renderHook<void, { storeHook: UseStore<EditorStorePatched> }>(
       (props) => {
         hookRenders++
         return useSelectorWithCallback(
@@ -139,7 +139,7 @@ describe('useSelectorWithCallback', () => {
         )
       },
       {
-        wrapper: ContextProvider,
+        wrapper: ContextProvider(storeHook),
         initialProps: {
           storeHook: storeHook,
         },

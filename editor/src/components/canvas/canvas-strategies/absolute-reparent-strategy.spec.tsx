@@ -3,7 +3,7 @@ import {
   ElementInstanceMetadata,
   SpecialSizeMeasurements,
 } from '../../../core/shared/element-template'
-import { canvasPoint, canvasRectangle } from '../../../core/shared/math-utils'
+import { CanvasPoint, canvasPoint, canvasRectangle } from '../../../core/shared/math-utils'
 import { WindowMousePositionRaw } from '../../../utils/global-positions'
 import { EditorState } from '../../editor/store/editor-state'
 import { foldAndApplyCommands } from '../commands/commands'
@@ -14,6 +14,7 @@ import {
 } from '../ui-jsx.test-utils'
 import { absoluteReparentStrategy } from './absolute-reparent-strategy'
 import { pickCanvasStateFromEditorState } from './canvas-strategies'
+import { defaultCustomStrategyState } from './canvas-strategy-types'
 import { InteractionSession, StrategyState } from './interaction-state'
 import { createMouseInteractionForTests } from './interaction-state.test-utils'
 
@@ -34,15 +35,17 @@ jest.mock('../canvas-utils', () => ({
 function reparentElement(
   editorState: EditorState,
   targetParentWithSpecialContentBox: boolean,
+  dragVector: CanvasPoint = canvasPoint({ x: 15, y: 15 }),
 ): EditorState {
   const interactionSession: InteractionSession = {
     ...createMouseInteractionForTests(
       null as any, // the strategy does not use this
       { cmd: true, alt: false, shift: false, ctrl: false },
       null as any, // the strategy does not use this
-      canvasPoint({ x: 0, y: 0 }),
+      dragVector,
     ),
     metadata: null as any, // the strategy does not use this
+    allElementProps: null as any, // the strategy does not use this
   }
 
   const strategyResult = absoluteReparentStrategy.apply(
@@ -80,7 +83,8 @@ function reparentElement(
           } as SpecialSizeMeasurements,
         } as ElementInstanceMetadata,
       },
-      customStrategyState: { foo: 'bar' },
+      startingAllElementProps: {},
+      customStrategyState: defaultCustomStrategyState(),
     } as StrategyState,
   )
 
@@ -99,6 +103,52 @@ function reparentElement(
 }
 
 describe('Absolute Reparent Strategy', () => {
+  it('does not activate when drag threshold is not reached', async () => {
+    const targetElement = elementPath([
+      ['scene-aaa', 'app-entity'],
+      ['aaa', 'ccc'],
+    ])
+
+    const initialEditor = getEditorStateWithSelectedViews(
+      makeTestProjectCodeWithSnippet(`
+      <div
+        data-uid='aaa'
+        style={{
+          position: 'relative',
+          width: '100%',
+          height: '100%',
+          backgroundColor: '#FFFFFF',
+        }}
+      >
+        <div
+          data-uid='bbb'
+          style={{
+            position: 'absolute',
+            width: 250,
+            height: 200,
+            top: 60,
+            left: 50,
+          }}
+        />
+        <div
+          data-uid='ccc'
+          style={{
+            position: 'absolute',
+            width: 20,
+            height: 30,
+            top: 75,
+            left: 90,
+          }}
+        />
+      </div>
+      `),
+      [targetElement],
+    )
+
+    const finalEditor = reparentElement(initialEditor, false, canvasPoint({ x: 1, y: 1 }))
+
+    expect(finalEditor).toEqual(initialEditor)
+  })
   it('works with a TL pinned absolute element', async () => {
     const targetElement = elementPath([
       ['scene-aaa', 'app-entity'],
@@ -171,8 +221,8 @@ describe('Absolute Reparent Strategy', () => {
                 position: 'absolute',
                 width: 20,
                 height: 30,
-                top: 15,
-                left: 40,
+                top: 30,
+                left: 55,
               }}
             />
           </div>
@@ -251,10 +301,10 @@ describe('Absolute Reparent Strategy', () => {
               data-uid='ccc'
               style={{
                 position: 'absolute',
-                top: 15,
-                left: 40,
-                bottom: 155,
-                right: 190
+                top: 30,
+                left: 55,
+                bottom: 140,
+                right: 175
               }}
             />
           </div>
@@ -333,10 +383,10 @@ describe('Absolute Reparent Strategy', () => {
               data-uid='ccc'
               style={{
                 position: 'absolute',
-                top: 5,
-                left: 30,
-                bottom: 60,
-                right: 100,
+                top: 20,
+                left: 45,
+                bottom: 45,
+                right: 85,
               }}
             />
           </div>
@@ -428,8 +478,8 @@ describe('Absolute Reparent Strategy', () => {
                 position: 'absolute',
                 width: 20,
                 height: 30,
-                top: 15,
-                left: 40,
+                top: 30,
+                left: 55,
               }}
             >
               <div
@@ -537,8 +587,8 @@ describe('Absolute Reparent Strategy', () => {
                 position: 'absolute',
                 width: 20,
                 height: 30,
-                top: 15,
-                left: 40,
+                top: 30,
+                left: 55,
               }}
             />
             <div
@@ -547,8 +597,8 @@ describe('Absolute Reparent Strategy', () => {
                 position: 'absolute',
                 width: 10,
                 height: 10,
-                top: -30,
-                left: -10,
+                top: -15,
+                left: 5,
               }}
             />
           </div>
@@ -645,8 +695,8 @@ describe('Absolute Reparent Strategy', () => {
                 position: 'absolute',
                 width: 20,
                 height: 30,
-                top: 15,
-                left: 40,
+                top: 30,
+                left: 55,
               }}
             >
               <div

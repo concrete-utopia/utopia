@@ -37,10 +37,20 @@ import { canvasPoint } from '../../core/shared/math-utils'
 import { InspectorWidthAtom } from '../inspector/common/inspector-atoms'
 import { useAtom } from 'jotai'
 import { CanvasStrategyInspector } from './canvas-strategies/canvas-strategy-inspector'
+import { getQueryParam } from '../../common/env-vars'
+import { when } from '../../utils/react-conditionals'
 
 interface NumberSize {
   width: number
   height: number
+}
+
+function isCodeEditorEnabled(): boolean {
+  if (typeof window !== 'undefined') {
+    return getQueryParam('code_editor_disabled') !== 'true'
+  } else {
+    return true
+  }
 }
 
 const TopMenuHeight = 35
@@ -153,6 +163,8 @@ const DesignPanelRootInner = React.memo(() => {
     'design panel root',
   )
 
+  const codeEditorEnabled = isCodeEditorEnabled()
+
   const isInsertMenuSelected = rightMenuSelectedTab === RightMenuTab.Insert
 
   const updateDeltaWidth = React.useCallback(
@@ -263,7 +275,7 @@ const DesignPanelRootInner = React.memo(() => {
               borderLeft: `1px solid ${colorTheme.subduedBorder.value}`,
             }}
           >
-            <CodeEditorWrapper />
+            {when(codeEditorEnabled, <CodeEditorWrapper />)}
             <ConsoleAndErrorsPane />
           </Resizable>
         </SimpleFlexColumn>

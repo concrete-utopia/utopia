@@ -1,6 +1,7 @@
 import type { CanvasPoint, CanvasVector } from '../../core/shared/math-utils'
 import { CanvasStrategyId } from './canvas-strategies/canvas-strategy-types'
 import {
+  DragInteractionData,
   InteractionSession,
   InteractionSessionWithoutMetadata,
 } from './canvas-strategies/interaction-state'
@@ -43,6 +44,14 @@ const CanvasActions = {
     return {
       action: 'UPDATE_INTERACTION_SESSION',
       interactionSessionUpdate: interactionSessionUpdate,
+    }
+  },
+  updateDragInteractionData: function (
+    dragInteractionUpdate: Partial<DragInteractionData>,
+  ): CanvasAction {
+    return {
+      action: 'UPDATE_DRAG_INTERACTION_DATA',
+      dragInteractionUpdate: dragInteractionUpdate,
     }
   },
   setSelectionControlsVisibility: function (selectionControlsVisible: boolean): CanvasAction {

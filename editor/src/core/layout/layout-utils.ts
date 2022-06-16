@@ -1,5 +1,5 @@
 import { AllFramePoints, AllFramePointsExceptSize, LayoutSystem } from 'utopia-api/core'
-import { transformElementAtPath } from '../../components/editor/store/editor-state'
+import { AllElementProps, transformElementAtPath } from '../../components/editor/store/editor-state'
 import * as EP from '../shared/element-path'
 import {
   flatMapEither,
@@ -66,6 +66,7 @@ export function maybeSwitchChildrenLayoutProps(
   currentContextMetadata: ElementInstanceMetadataMap,
   components: UtopiaJSXComponent[],
   propertyTarget: ReadonlyArray<string>,
+  allElementProps: AllElementProps,
 ): LayoutPropChangeResult {
   const children = MetadataUtils.getChildren(targetOriginalContextMetadata, target)
   const result = children.reduce<LayoutPropChangeResult>(
@@ -87,6 +88,7 @@ export function maybeSwitchChildrenLayoutProps(
         null,
         null,
         propertyTarget,
+        allElementProps,
       )
       return {
         components: nextComponents,
@@ -132,6 +134,7 @@ export function maybeSwitchLayoutProps(
   parentLayoutSystem: SettableLayoutSystem | null,
   newParentMainAxis: 'horizontal' | 'vertical' | null,
   propertyTarget: ReadonlyArray<string>,
+  allElementProps: AllElementProps,
 ): LayoutPropChangeResult {
   const originalParentPath = EP.parentPath(originalPath)
   const originalParent = MetadataUtils.findElementByElementPath(
@@ -167,6 +170,7 @@ export function maybeSwitchLayoutProps(
       components,
       parentFrame,
       propertyTarget,
+      allElementProps,
     )
 
     const staticTarget = EP.dynamicPathToStaticPath(target)
@@ -180,7 +184,7 @@ export function maybeSwitchLayoutProps(
       componentMetadata: updatedMetadata,
       didSwitch: true,
       toast: createStylePostActionToast(
-        MetadataUtils.getElementLabel(target, targetOriginalContextMetadata),
+        MetadataUtils.getElementLabel(allElementProps, target, targetOriginalContextMetadata),
         originalPropertyPaths,
         updatedPropertyPaths,
       ),
@@ -200,6 +204,7 @@ export function maybeSwitchLayoutProps(
       components,
       parentMainAxis,
       propertyTarget,
+      allElementProps,
     )
     const staticTarget = EP.dynamicPathToStaticPath(target)
     const originalElement = findJSXElementAtStaticPath(components, staticTarget)
@@ -213,7 +218,7 @@ export function maybeSwitchLayoutProps(
       didSwitch: switchLayoutFunction.didSwitch,
       toast: switchLayoutFunction.didSwitch
         ? createStylePostActionToast(
-            MetadataUtils.getElementLabel(target, targetOriginalContextMetadata),
+            MetadataUtils.getElementLabel(allElementProps, target, targetOriginalContextMetadata),
             originalPropertyPaths,
             updatedPropertyPaths,
           )
@@ -236,6 +241,7 @@ function getLayoutFunction(
     components: UtopiaJSXComponent[],
     newParentMainAxis: 'horizontal' | 'vertical' | null,
     propertyTarget: ReadonlyArray<string>,
+    allElementProps: AllElementProps,
   ) => SwitchLayoutTypeResult
   didSwitch: boolean
 } {
@@ -484,19 +490,20 @@ export function switchFlexChildToPinned(
   components: UtopiaJSXComponent[],
   newParentMainAxis: 'horizontal' | 'vertical' | null,
   propertyTarget: ReadonlyArray<string>,
+  allElementProps: AllElementProps,
 ): SwitchLayoutTypeResult {
   const currentFrame = Utils.defaultIfNull(
     zeroLocalRect,
     MetadataUtils.getFrame(target, targetOriginalContextMetadata),
   ) // TODO How should this behave if there is no rendered frame?
-  const element = MetadataUtils.findElementByElementPath(targetOriginalContextMetadata, target)
-  const newParent = MetadataUtils.findElementByElementPath(currentContextMetadata, newParentPath)
+  const elementProps = allElementProps[EP.toString(target)]
+  const newParentProps = allElementProps[EP.toString(newParentPath)]
 
   // When moving flex to pinned, use fixed values or basis values to set width and height
   // FIXME Right now this isn't taking into account groups
   const unstretched = FlexLayoutHelpers.getUnstretchedWidthHeight(
-    element?.props ?? {},
-    newParent?.props ?? {},
+    elementProps ?? {},
+    newParentProps ?? {},
   )
   const width = Utils.defaultIfNull(currentFrame.width, unstretched.width)
   const height = Utils.defaultIfNull(currentFrame.height, unstretched.height)
@@ -539,18 +546,19 @@ export function switchFlexChildToGroup(
   components: UtopiaJSXComponent[],
   newParentMainAxis: 'horizontal' | 'vertical' | null,
   propertyTarget: Array<string>,
+  allElementProps: AllElementProps,
 ): SwitchLayoutTypeResult {
   const currentFrame = Utils.defaultIfNull(
     zeroLocalRect,
     MetadataUtils.getFrame(target, targetOriginalContextMetadata),
   ) // TODO How should this behave if there is no rendered frame?
-  const element = MetadataUtils.findElementByElementPath(targetOriginalContextMetadata, target)
-  const newParent = MetadataUtils.findElementByElementPath(currentContextMetadata, newParentPath)
+  const elementProps = allElementProps[EP.toString(target)]
+  const newParentProps = allElementProps[EP.toString(newParentPath)]
 
   // When moving flex to pinned, use fixed values or basis values to set width and height
   const unstretched = FlexLayoutHelpers.getUnstretchedWidthHeight(
-    element?.props ?? {},
-    newParent?.props ?? {},
+    elementProps ?? {},
+    newParentProps ?? {},
   )
   const width = Utils.defaultIfNull(currentFrame.width, unstretched.width)
   const height = Utils.defaultIfNull(currentFrame.height, unstretched.height)
@@ -592,6 +600,7 @@ export function switchChildToGroupWithParentFrame(
   components: UtopiaJSXComponent[],
   parentFrame: CanvasRectangle,
   propertyTarget: ReadonlyArray<string>,
+  allElementProps: AllElementProps,
 ): SwitchLayoutTypeResult {
   const isParentFlexContainer =
     MetadataUtils.isParentYogaLayoutedContainerAndElementParticipatesInLayout(
@@ -602,7 +611,7 @@ export function switchChildToGroupWithParentFrame(
     zeroLocalRect,
     MetadataUtils.getFrame(originalPath, componentMetadata),
   ) // TODO How should this behave if there is no rendered frame?
-  const element = MetadataUtils.findElementByElementPath(componentMetadata, originalPath)
+  const elementProps = allElementProps[EP.toString(target)]
   const oldParentFrame = Utils.defaultIfNull(
     zeroCanvasRect,
     MetadataUtils.getFrameInCanvasCoords(EP.parentPath(originalPath), componentMetadata),
@@ -612,7 +621,7 @@ export function switchChildToGroupWithParentFrame(
   if (isParentFlexContainer) {
     // When moving flex to pinned, use fixed values or basis values to set width and height
     // TODO LAYOUT unstretched can be different from other switchTo cases, here we don't have access to props from metadata
-    const unstretched = FlexLayoutHelpers.getUnstretchedWidthHeight(element?.props ?? {}, {})
+    const unstretched = FlexLayoutHelpers.getUnstretchedWidthHeight(elementProps ?? {}, {})
     const width = Utils.defaultIfNull(currentFrame.width, unstretched.width)
     const height = Utils.defaultIfNull(currentFrame.height, unstretched.height)
 
@@ -720,12 +729,13 @@ export function switchChildToPinnedWithParentFrame(
   components: UtopiaJSXComponent[],
   parentFrame: CanvasRectangle,
   propertyTarget: ReadonlyArray<string>,
+  allElementProps: AllElementProps,
 ): SwitchLayoutTypeResult {
   const currentFrame = Utils.defaultIfNull(
     zeroLocalRect,
     MetadataUtils.getFrame(originalPath, componentMetadata),
   ) // TODO How should this behave if there is no rendered frame?
-  const element = MetadataUtils.findElementByElementPath(componentMetadata, originalPath)
+  const elementProps = allElementProps[EP.toString(originalPath)]
   const oldParentFrame =
     MetadataUtils.getFrameInCanvasCoords(EP.parentPath(originalPath), componentMetadata) ??
     zeroCanvasRect
@@ -733,7 +743,7 @@ export function switchChildToPinnedWithParentFrame(
 
   // When moving flex to pinned, use fixed values or basis values to set width and height
   // TODO LAYOUT unstretched can be different from other switchTo cases, here we don't have access to props from metadata
-  const unstretched = FlexLayoutHelpers.getUnstretchedWidthHeight(element?.props ?? {}, {})
+  const unstretched = FlexLayoutHelpers.getUnstretchedWidthHeight(elementProps ?? {}, {})
   const width = Utils.defaultIfNull(currentFrame.width, unstretched.width)
   const height = Utils.defaultIfNull(currentFrame.height, unstretched.height)
 

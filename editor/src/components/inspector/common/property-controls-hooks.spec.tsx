@@ -1,11 +1,12 @@
 import React from 'react'
-import { renderHook } from '@testing-library/react-hooks'
+import { renderHook } from '@testing-library/react'
 import { EditorStateContext } from '../../editor/store/store-hook'
 import { useGetPropertyControlsForSelectedComponents } from './property-controls-hooks'
 import { InspectorCallbackContext, InspectorCallbackContextData } from './property-path-hooks'
 import create, { GetState, Mutate, SetState, StoreApi } from 'zustand'
 import { subscribeWithSelector } from 'zustand/middleware'
 import {
+  AllElementProps,
   editorModelFromPersistentModel,
   EditorState,
   EditorStorePatched,
@@ -97,7 +98,6 @@ function callPropertyControlsHook(selectedViews: ElementPath[]) {
     [EP.toString(selectedViews[0])]: elementInstanceMetadata(
       selectedViews[0],
       null as any,
-      { testPropWithoutControl: 'yes' },
       null,
       null,
       true,
@@ -109,12 +109,14 @@ function callPropertyControlsHook(selectedViews: ElementPath[]) {
       null,
     ),
   }
+  let allElementProps: AllElementProps = {
+    [EP.toString(selectedViews[0])]: { testPropWithoutControl: 'yes' },
+  }
 
   if (selectedViews.length > 1) {
     metadata[EP.toString(selectedViews[1])] = elementInstanceMetadata(
       selectedViews[1],
       null as any,
-      { propWithControlButNoValue: 'but there is a value!' },
       null,
       null,
       true,
@@ -125,12 +127,14 @@ function callPropertyControlsHook(selectedViews: ElementPath[]) {
       null,
       null,
     )
+    allElementProps[EP.toString(selectedViews[1])] = {
+      propWithControlButNoValue: 'but there is a value!',
+    }
   }
   if (selectedViews.length > 2) {
     metadata[EP.toString(selectedViews[2])] = elementInstanceMetadata(
-      selectedViews[1],
+      selectedViews[2],
       null as any,
-      { propWithOtherKey: 10 },
       null,
       null,
       true,
@@ -141,6 +145,8 @@ function callPropertyControlsHook(selectedViews: ElementPath[]) {
       null,
       null,
     )
+
+    allElementProps[EP.toString(selectedViews[2])] = { propWithOtherKey: 10 }
   }
 
   const initialEditorState = editorModelFromPersistentModel(persistentModel, NO_OP)
@@ -173,6 +179,7 @@ function callPropertyControlsHook(selectedViews: ElementPath[]) {
       },
     },
     jsxMetadata: metadata,
+    allElementProps: allElementProps,
   }
 
   const initialEditorStore: EditorStorePatched = {

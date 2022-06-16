@@ -193,7 +193,7 @@ export const EditorComponentInner = React.memo((props: EditorProps) => {
   )
 
   const onWindowKeyUp = React.useCallback(
-    (event) => {
+    (event: KeyboardEvent) => {
       if (isFeatureEnabled('Canvas Strategies')) {
         const existingInteractionSession = editorStoreRef.current.editor.canvas.interactionSession
         if (existingInteractionSession != null) {

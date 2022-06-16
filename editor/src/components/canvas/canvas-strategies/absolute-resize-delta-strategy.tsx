@@ -2,15 +2,21 @@ import { MetadataUtils } from '../../../core/model/element-metadata-utils'
 import { ElementInstanceMetadataMap, JSXElement } from '../../../core/shared/element-template'
 import { CanvasVector, offsetPoint } from '../../../core/shared/math-utils'
 import { ElementPath } from '../../../core/shared/project-file-types'
-import { withUnderlyingTarget } from '../../editor/store/editor-state'
+import { AllElementProps, withUnderlyingTarget } from '../../editor/store/editor-state'
 import { EdgePosition } from '../canvas-types'
+import { setCursorCommand } from '../commands/set-cursor-command'
+import { setElementsToRerenderCommand } from '../commands/set-elements-to-rerender-command'
 import { setSnappingGuidelines } from '../commands/set-snapping-guidelines-command'
 import { updateHighlightedViews } from '../commands/update-highlighted-views-command'
+import { ParentBounds } from '../controls/parent-bounds'
+import { ParentOutlines } from '../controls/parent-outlines'
 import { AbsoluteResizeControl } from '../controls/select-mode/absolute-resize-control'
+import { ZeroSizeResizeControlWrapper } from '../controls/zero-sized-element-controls'
 import { GuidelineWithSnappingVector } from '../guideline'
 import { CanvasStrategy, emptyStrategyApplicationResult } from './canvas-strategy-types'
 import { getMultiselectBounds } from './shared-absolute-move-strategy-helpers'
 import {
+  pickCursorFromEdgePosition,
   resizeBoundingBox,
   runLegacyAbsoluteResizeSnapping,
 } from './shared-absolute-resize-strategy-helpers'
@@ -36,12 +42,20 @@ export const absoluteResizeDeltaStrategy: CanvasStrategy = {
   },
   controlsToRender: [
     { control: AbsoluteResizeControl, key: 'absolute-resize-control', show: 'always-visible' },
+    {
+      control: ZeroSizeResizeControlWrapper,
+      key: 'zero-size-resize-control',
+      show: 'always-visible',
+    },
+    { control: ParentOutlines, key: 'parent-outlines-control', show: 'visible-only-while-active' },
+    { control: ParentBounds, key: 'parent-bounds-control', show: 'visible-only-while-active' },
   ],
   fitness: (canvasState, interactionState, sessionState) => {
     return absoluteResizeDeltaStrategy.isApplicable(
       canvasState,
       interactionState,
       sessionState.startingMetadata,
+      sessionState.startingAllElementProps,
     ) &&
       interactionState.interactionData.type === 'DRAG' &&
       interactionState.activeControl.type === 'RESIZE_HANDLE'
@@ -51,55 +65,67 @@ export const absoluteResizeDeltaStrategy: CanvasStrategy = {
   apply: (canvasState, interactionState, sessionState) => {
     if (
       interactionState.interactionData.type === 'DRAG' &&
-      interactionState.interactionData.drag != null &&
       interactionState.activeControl.type === 'RESIZE_HANDLE'
     ) {
-      const drag = interactionState.interactionData.drag
       const edgePosition = interactionState.activeControl.edgePosition
-      const { snappedDragVector, guidelinesWithSnappingVector } = snapDrag(
-        canvasState.selectedElements,
-        sessionState.startingMetadata,
-        drag,
-        edgePosition,
-        canvasState.scale,
-      )
+      if (interactionState.interactionData.drag != null) {
+        const drag = interactionState.interactionData.drag
+        const { snappedDragVector, guidelinesWithSnappingVector } = snapDrag(
+          canvasState.selectedElements,
+          sessionState.startingMetadata,
+          drag,
+          edgePosition,
+          canvasState.scale,
+          sessionState.startingAllElementProps,
+        )
 
-      const commandsForSelectedElements = canvasState.selectedElements.flatMap(
-        (selectedElement) => {
-          const element: JSXElement | null = withUnderlyingTarget(
-            selectedElement,
-            canvasState.projectContents,
-            {},
-            canvasState.openFile,
-            null,
-            (_, e) => e,
-          )
-          const elementParentBounds =
-            MetadataUtils.findElementByElementPath(
-              sessionState.startingMetadata, // TODO should this be using the current metadata?
+        const commandsForSelectedElements = canvasState.selectedElements.flatMap(
+          (selectedElement) => {
+            const element: JSXElement | null = withUnderlyingTarget(
               selectedElement,
-            )?.specialSizeMeasurements.immediateParentBounds ?? null
+              canvasState.projectContents,
+              {},
+              canvasState.openFile,
+              null,
+              (_, e) => e,
+            )
+            const elementParentBounds =
+              MetadataUtils.findElementByElementPath(
+                sessionState.startingMetadata, // TODO should this be using the current metadata?
+                selectedElement,
+              )?.specialSizeMeasurements.immediateParentBounds ?? null
 
-          if (element == null) {
-            return []
-          }
+            if (element == null) {
+              return []
+            }
 
-          return createResizeCommands(
-            element,
-            selectedElement,
-            edgePosition,
-            snappedDragVector,
-            elementParentBounds,
-          )
-        },
-      )
-      return {
-        commands: [
-          ...commandsForSelectedElements,
-          updateHighlightedViews('transient', []),
-          setSnappingGuidelines('transient', guidelinesWithSnappingVector),
-        ],
-        customState: null,
+            return createResizeCommands(
+              element,
+              selectedElement,
+              edgePosition,
+              snappedDragVector,
+              elementParentBounds,
+            )
+          },
+        )
+        return {
+          commands: [
+            ...commandsForSelectedElements,
+            updateHighlightedViews('transient', []),
+            setCursorCommand('transient', pickCursorFromEdgePosition(edgePosition)),
+            setSnappingGuidelines('transient', guidelinesWithSnappingVector),
+            setElementsToRerenderCommand(canvasState.selectedElements),
+          ],
+          customState: null,
+        }
+      } else {
+        return {
+          commands: [
+            setCursorCommand('transient', pickCursorFromEdgePosition(edgePosition)),
+            updateHighlightedViews('transient', []),
+          ],
+          customState: null,
+        }
       }
     }
     // Fallback for when the checks above are not satisfied.
@@ -113,6 +139,7 @@ function snapDrag(
   drag: CanvasVector,
   edgePosition: EdgePosition,
   canvasScale: number,
+  allElementProps: AllElementProps,
 ): {
   snappedDragVector: CanvasVector
   guidelinesWithSnappingVector: Array<GuidelineWithSnappingVector>
@@ -138,6 +165,7 @@ function snapDrag(
     canvasScale,
     null,
     'non-center-based',
+    allElementProps,
   )
   const snappedDragVector = offsetPoint(drag, snapDelta)
 

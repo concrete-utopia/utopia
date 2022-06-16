@@ -34,7 +34,7 @@ const collapsibleExpandedStyle = {
   marginBottom: '0.6em',
 }
 
-type Props = {}
+type Props = { children?: React.ReactNode }
 
 type State = {
   collapsed: boolean

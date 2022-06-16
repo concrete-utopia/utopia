@@ -343,12 +343,10 @@ export function getContentsTreeFileFromElements(
   if (pathElements.length === 0) {
     throw new Error(`Invalid pathElements.`)
   } else {
-    function getFileWithIndex(
-      currentTree: ProjectContentTreeRoot,
-      index: number,
-    ): ProjectFile | null {
+    let workingTree: ProjectContentTreeRoot = tree
+    for (let index = 0; index < pathElements.length; index++) {
       const pathPart = pathElements[index]
-      const treePart = currentTree[pathPart]
+      const treePart = workingTree[pathPart]
       if (treePart == null) {
         return null
       } else {
@@ -356,14 +354,14 @@ export function getContentsTreeFileFromElements(
           return getProjectFileFromTree(treePart)
         } else {
           if (treePart.type === 'PROJECT_CONTENT_DIRECTORY') {
-            return getFileWithIndex(treePart.children, index + 1)
+            workingTree = treePart.children
           } else {
             return null
           }
         }
       }
     }
-    return getFileWithIndex(tree, 0)
+    return null
   }
 }
 

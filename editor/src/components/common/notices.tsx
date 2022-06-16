@@ -35,7 +35,7 @@ const ToastTimeout = 5500
  * **Layout**: use as flex child with fixed height
  * **Level**: see NoticeLevel jsdoc
  */
-export const Toast: React.FunctionComponent<NoticeProps> = (props) => {
+export const Toast: React.FunctionComponent<React.PropsWithChildren<NoticeProps>> = (props) => {
   const dispatch = useEditorState((store) => store.dispatch, 'Toast dispatch')
   const deleteToast = React.useCallback(() => {
     dispatch([EditorActions.removeToast(props.id)])
@@ -112,7 +112,9 @@ interface NotificationBarProps {
  * **Layout**: use as flex child with fixed height
  * **Level**: see NoticeLevel jsdoc
  */
-export const NotificationBar: React.FunctionComponent<NotificationBarProps> = (props) => (
+export const NotificationBar: React.FunctionComponent<
+  React.PropsWithChildren<NotificationBarProps>
+> = (props) => (
   <SimpleFlexRow
     style={{
       flexGrow: 0,
@@ -142,7 +144,7 @@ interface InfoBoxProps {
  * **Layout**: takes full width, sizes itself to height
  * **Level**: see NoticeLevel jsdoc
  */
-export const InfoBox: React.FunctionComponent<InfoBoxProps> = (props) => (
+export const InfoBox: React.FunctionComponent<React.PropsWithChildren<InfoBoxProps>> = (props) => (
   <SimpleFlexColumn
     style={{
       padding: 8,

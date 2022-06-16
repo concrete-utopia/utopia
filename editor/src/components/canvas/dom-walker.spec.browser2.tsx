@@ -1,48 +1,17 @@
-import { act, render } from '@testing-library/react'
-import React from 'react'
-import create, { GetState, Mutate, SetState, StoreApi } from 'zustand'
-import { subscribeWithSelector } from 'zustand/middleware'
-import { notLoggedIn } from '../../common/user'
 import {
   ElementInstanceMetadata,
   ElementInstanceMetadataMap,
 } from '../../core/shared/element-template'
-import {
-  FakeLinterWorker,
-  FakeParserPrinterWorker,
-  FakeWatchdogWorker,
-} from '../../core/workers/test-workers'
-import { UtopiaTsWorkersImplementation } from '../../core/workers/workers'
-import { EditorRoot } from '../../templates/editor'
 import { left } from '../../core/shared/either'
-import { EditorDispatch } from '../editor/action-types'
-import { load } from '../editor/actions/actions'
-import * as History from '../editor/history'
-import { editorDispatch } from '../editor/store/dispatch'
-import {
-  createEditorState,
-  deriveState,
-  EditorStoreFull,
-  EditorStorePatched,
-  patchedStoreFromFullStore,
-} from '../editor/store/editor-state'
-import Utils from '../../utils/utils'
 import { BakedInStoryboardUID } from '../../core/model/scene-utils'
-import { NO_OP } from '../../core/shared/utils'
 import { mapValues } from '../../core/shared/object-utils'
-import { emptyUiJsxCanvasContextData } from './ui-jsx-canvas'
-import { TestAppUID, TestSceneUID } from './ui-jsx.test-utils'
-import { createTestProjectWithCode } from '../../sample-projects/sample-project-utils.test-utils'
-import { DummyPersistenceMachine } from '../editor/persistence/persistence.test-utils'
+import { renderTestEditorWithCode, TestAppUID, TestSceneUID } from './ui-jsx.test-utils'
 import { disableStoredStateforTests } from '../editor/stored-state'
 import { matchInlineSnapshotBrowser } from '../../../test/karma-snapshots'
-import { createBuiltInDependenciesList } from '../../core/es-modules/package-manager/built-in-dependencies-list'
-import { createEmptyStrategyState } from './canvas-strategies/interaction-state'
 
 disableStoredStateforTests()
 
 function sanitizeElementMetadata(element: ElementInstanceMetadata): ElementInstanceMetadata {
-  delete element.props['children']
   return {
     ...element,
     element: left('REMOVED_FROM_TEST'),
@@ -53,67 +22,9 @@ function sanitizeJsxMetadata(metadata: ElementInstanceMetadataMap) {
   return mapValues(sanitizeElementMetadata, metadata)
 }
 
-async function renderTestEditorWithCode(appUiJsFileCode: string) {
-  let emptyEditorState = createEditorState(NO_OP)
-  const derivedState = deriveState(emptyEditorState, null)
-
-  const history = History.init(emptyEditorState, derivedState)
-  const spyCollector = emptyUiJsxCanvasContextData()
-
-  const dispatch: EditorDispatch = (actions) => {
-    const result = editorDispatch(dispatch, actions, editorStore, spyCollector)
-    editorStore = result
-    storeHook.setState(patchedStoreFromFullStore(result))
-  }
-
-  let editorStore: EditorStoreFull = {
-    strategyState: createEmptyStrategyState(),
-    unpatchedEditor: emptyEditorState,
-    patchedEditor: emptyEditorState,
-    unpatchedDerived: derivedState,
-    patchedDerived: derivedState,
-    history: history,
-    userState: {
-      loginState: notLoggedIn,
-      shortcutConfig: {},
-    },
-    workers: new UtopiaTsWorkersImplementation(
-      new FakeParserPrinterWorker(),
-      new FakeLinterWorker(),
-      new FakeWatchdogWorker(),
-    ),
-    persistence: DummyPersistenceMachine,
-    dispatch: dispatch,
-    alreadySaved: false,
-    builtInDependencies: createBuiltInDependenciesList(null),
-  }
-
-  const storeHook = create<
-    EditorStorePatched,
-    SetState<EditorStorePatched>,
-    GetState<EditorStorePatched>,
-    Mutate<StoreApi<EditorStorePatched>, [['zustand/subscribeWithSelector', never]]>
-  >(subscribeWithSelector((set) => patchedStoreFromFullStore(editorStore)))
-
-  render(<EditorRoot api={storeHook} useStore={storeHook} spyCollector={spyCollector} />)
-
-  await act(async () => {
-    await load(
-      dispatch,
-      createTestProjectWithCode(appUiJsFileCode),
-      'Test',
-      '0',
-      editorStore.builtInDependencies,
-      false,
-    )
-  })
-  const sanitizedMetadata = sanitizeJsxMetadata(storeHook.getState().editor.jsxMetadata)
-  return sanitizedMetadata
-}
-
 describe('DOM Walker tests', () => {
   it('Simple Project with one child View', async () => {
-    const sanitizedMetadata = await renderTestEditorWithCode(
+    const renderResult = await renderTestEditorWithCode(
       `
       import * as React from 'react'
       import {
@@ -152,7 +63,9 @@ describe('DOM Walker tests', () => {
         )
       }
       `,
+      'await-first-dom-report',
     )
+    const sanitizedMetadata = sanitizeJsxMetadata(renderResult.getEditorState().editor.jsxMetadata)
     matchInlineSnapshotBrowser(
       sanitizedMetadata,
       `
@@ -194,11 +107,6 @@ describe('DOM Walker tests', () => {
           "width": 0,
           "x": 0,
           "y": 0,
-        },
-        "props": Object {
-          "data-path": "utopia-storyboard-uid",
-          "data-uid": "utopia-storyboard-uid",
-          "skipDeepFreeze": true,
         },
         "specialSizeMeasurements": Object {
           "clientHeight": 0,
@@ -275,19 +183,6 @@ describe('DOM Walker tests', () => {
           "width": 375,
           "x": 0,
           "y": 0,
-        },
-        "props": Object {
-          "data-path": "utopia-storyboard-uid/scene-aaa",
-          "data-uid": "scene-aaa",
-          "data-utopia-scene-id": "utopia-storyboard-uid/scene-aaa",
-          "skipDeepFreeze": true,
-          "style": Object {
-            "height": 812,
-            "left": 0,
-            "position": "relative",
-            "top": 0,
-            "width": 375,
-          },
         },
         "specialSizeMeasurements": Object {
           "clientHeight": 812,
@@ -376,28 +271,6 @@ describe('DOM Walker tests', () => {
           "width": 375,
           "x": 0,
           "y": 0,
-        },
-        "props": Object {
-          "data-path": "utopia-storyboard-uid/scene-aaa/app-entity",
-          "data-uid": "app-entity",
-          "data-utopia-instance-path": Object {
-            "parts": Array [
-              Array [
-                "utopia-storyboard-uid",
-                "scene-aaa",
-                "app-entity",
-              ],
-            ],
-            "type": "elementpath",
-          },
-          "skipDeepFreeze": true,
-          "style": Object {
-            "bottom": 0,
-            "left": 0,
-            "position": "absolute",
-            "right": 0,
-            "top": 0,
-          },
         },
         "specialSizeMeasurements": Object {
           "clientHeight": 812,
@@ -494,19 +367,6 @@ describe('DOM Walker tests', () => {
           "x": 0,
           "y": 0,
         },
-        "props": Object {
-          "data-path": "utopia-storyboard-uid/scene-aaa/app-entity:05c",
-          "data-uid": "05c",
-          "skipDeepFreeze": true,
-          "style": Object {
-            "backgroundColor": "#FFFFFF",
-            "bottom": 0,
-            "left": 0,
-            "position": "absolute",
-            "right": 0,
-            "top": 0,
-          },
-        },
         "specialSizeMeasurements": Object {
           "clientHeight": 812,
           "clientWidth": 375,
@@ -602,19 +462,6 @@ describe('DOM Walker tests', () => {
           "width": 266,
           "x": 55,
           "y": 98,
-        },
-        "props": Object {
-          "data-path": "utopia-storyboard-uid/scene-aaa/app-entity:05c/ef0",
-          "data-uid": "ef0",
-          "skipDeepFreeze": true,
-          "style": Object {
-            "backgroundColor": "#DDDDDD",
-            "height": 124,
-            "left": 55,
-            "position": "absolute",
-            "top": 98,
-            "width": 266,
-          },
         },
         "specialSizeMeasurements": Object {
           "clientHeight": 124,
@@ -713,19 +560,6 @@ describe('DOM Walker tests', () => {
           "x": 71,
           "y": 27,
         },
-        "props": Object {
-          "data-path": "utopia-storyboard-uid/scene-aaa/app-entity:05c/ef0/488",
-          "data-uid": "488",
-          "skipDeepFreeze": true,
-          "style": Object {
-            "backgroundColor": "#DDDDDD",
-            "height": 70,
-            "left": 71,
-            "position": "absolute",
-            "top": 27,
-            "width": 125,
-          },
-        },
         "specialSizeMeasurements": Object {
           "clientHeight": 70,
           "clientWidth": 125,
@@ -784,7 +618,7 @@ describe('DOM Walker tests', () => {
   })
 
   it('Simple Project with divs', async () => {
-    const sanitizedMetadata = await renderTestEditorWithCode(
+    const renderResult = await renderTestEditorWithCode(
       `
       import * as React from 'react'
       import {
@@ -823,7 +657,9 @@ describe('DOM Walker tests', () => {
         )
       }
       `,
+      'await-first-dom-report',
     )
+    const sanitizedMetadata = sanitizeJsxMetadata(renderResult.getEditorState().editor.jsxMetadata)
     matchInlineSnapshotBrowser(
       sanitizedMetadata,
       `
@@ -865,11 +701,6 @@ describe('DOM Walker tests', () => {
           "width": 0,
           "x": 0,
           "y": 0,
-        },
-        "props": Object {
-          "data-path": "utopia-storyboard-uid",
-          "data-uid": "utopia-storyboard-uid",
-          "skipDeepFreeze": true,
         },
         "specialSizeMeasurements": Object {
           "clientHeight": 0,
@@ -946,19 +777,6 @@ describe('DOM Walker tests', () => {
           "width": 375,
           "x": 0,
           "y": 0,
-        },
-        "props": Object {
-          "data-path": "utopia-storyboard-uid/scene-aaa",
-          "data-uid": "scene-aaa",
-          "data-utopia-scene-id": "utopia-storyboard-uid/scene-aaa",
-          "skipDeepFreeze": true,
-          "style": Object {
-            "height": 812,
-            "left": 0,
-            "position": "relative",
-            "top": 0,
-            "width": 375,
-          },
         },
         "specialSizeMeasurements": Object {
           "clientHeight": 812,
@@ -1047,28 +865,6 @@ describe('DOM Walker tests', () => {
           "width": 375,
           "x": 0,
           "y": 0,
-        },
-        "props": Object {
-          "data-path": "utopia-storyboard-uid/scene-aaa/app-entity",
-          "data-uid": "app-entity",
-          "data-utopia-instance-path": Object {
-            "parts": Array [
-              Array [
-                "utopia-storyboard-uid",
-                "scene-aaa",
-                "app-entity",
-              ],
-            ],
-            "type": "elementpath",
-          },
-          "skipDeepFreeze": true,
-          "style": Object {
-            "bottom": 0,
-            "left": 0,
-            "position": "absolute",
-            "right": 0,
-            "top": 0,
-          },
         },
         "specialSizeMeasurements": Object {
           "clientHeight": 812,
@@ -1161,19 +957,6 @@ describe('DOM Walker tests', () => {
           "x": 0,
           "y": 0,
         },
-        "props": Object {
-          "data-path": "utopia-storyboard-uid/scene-aaa/app-entity:05c",
-          "data-uid": "05c",
-          "skipDeepFreeze": true,
-          "style": Object {
-            "backgroundColor": "#FFFFFF",
-            "bottom": 0,
-            "left": 0,
-            "position": "absolute",
-            "right": 0,
-            "top": 0,
-          },
-        },
         "specialSizeMeasurements": Object {
           "clientHeight": 812,
           "clientWidth": 375,
@@ -1265,20 +1048,6 @@ describe('DOM Walker tests', () => {
           "width": 306,
           "x": 55,
           "y": 98,
-        },
-        "props": Object {
-          "data-path": "utopia-storyboard-uid/scene-aaa/app-entity:05c/ef0",
-          "data-uid": "ef0",
-          "skipDeepFreeze": true,
-          "style": Object {
-            "backgroundColor": "#DDDDDD",
-            "height": 124,
-            "left": 55,
-            "padding": 20,
-            "position": "fixed",
-            "top": 98,
-            "width": 266,
-          },
         },
         "specialSizeMeasurements": Object {
           "clientHeight": 164,
@@ -1368,19 +1137,6 @@ describe('DOM Walker tests', () => {
           "x": 71,
           "y": 27,
         },
-        "props": Object {
-          "data-path": "utopia-storyboard-uid/scene-aaa/app-entity:05c/ef0/488",
-          "data-uid": "488",
-          "skipDeepFreeze": true,
-          "style": Object {
-            "backgroundColor": "#DDDDDD",
-            "height": 70,
-            "left": 71,
-            "position": "absolute",
-            "top": 27,
-            "width": 125,
-          },
-        },
         "specialSizeMeasurements": Object {
           "clientHeight": 70,
           "clientWidth": 125,
@@ -1439,7 +1195,7 @@ describe('DOM Walker tests', () => {
   })
 
   it('Simple Project with flex parent', async () => {
-    const sanitizedMetadata = await renderTestEditorWithCode(
+    const renderResult = await renderTestEditorWithCode(
       `
       import * as React from 'react'
       import {
@@ -1478,7 +1234,9 @@ describe('DOM Walker tests', () => {
         )
       }
       `,
+      'await-first-dom-report',
     )
+    const sanitizedMetadata = sanitizeJsxMetadata(renderResult.getEditorState().editor.jsxMetadata)
     matchInlineSnapshotBrowser(
       sanitizedMetadata,
       `
@@ -1520,11 +1278,6 @@ describe('DOM Walker tests', () => {
           "width": 0,
           "x": 0,
           "y": 0,
-        },
-        "props": Object {
-          "data-path": "utopia-storyboard-uid",
-          "data-uid": "utopia-storyboard-uid",
-          "skipDeepFreeze": true,
         },
         "specialSizeMeasurements": Object {
           "clientHeight": 0,
@@ -1601,19 +1354,6 @@ describe('DOM Walker tests', () => {
           "width": 375,
           "x": 0,
           "y": 0,
-        },
-        "props": Object {
-          "data-path": "utopia-storyboard-uid/scene-aaa",
-          "data-uid": "scene-aaa",
-          "data-utopia-scene-id": "utopia-storyboard-uid/scene-aaa",
-          "skipDeepFreeze": true,
-          "style": Object {
-            "height": 812,
-            "left": 0,
-            "position": "relative",
-            "top": 0,
-            "width": 375,
-          },
         },
         "specialSizeMeasurements": Object {
           "clientHeight": 812,
@@ -1702,28 +1442,6 @@ describe('DOM Walker tests', () => {
           "width": 375,
           "x": 0,
           "y": 0,
-        },
-        "props": Object {
-          "data-path": "utopia-storyboard-uid/scene-aaa/app-entity",
-          "data-uid": "app-entity",
-          "data-utopia-instance-path": Object {
-            "parts": Array [
-              Array [
-                "utopia-storyboard-uid",
-                "scene-aaa",
-                "app-entity",
-              ],
-            ],
-            "type": "elementpath",
-          },
-          "skipDeepFreeze": true,
-          "style": Object {
-            "bottom": 0,
-            "left": 0,
-            "position": "absolute",
-            "right": 0,
-            "top": 0,
-          },
         },
         "specialSizeMeasurements": Object {
           "clientHeight": 812,
@@ -1816,20 +1534,6 @@ describe('DOM Walker tests', () => {
           "x": 0,
           "y": 0,
         },
-        "props": Object {
-          "data-path": "utopia-storyboard-uid/scene-aaa/app-entity:05c",
-          "data-uid": "05c",
-          "skipDeepFreeze": true,
-          "style": Object {
-            "backgroundColor": "#FFFFFF",
-            "bottom": 0,
-            "display": "flex",
-            "left": 0,
-            "position": "absolute",
-            "right": 0,
-            "top": 0,
-          },
-        },
         "specialSizeMeasurements": Object {
           "clientHeight": 812,
           "clientWidth": 375,
@@ -1921,20 +1625,6 @@ describe('DOM Walker tests', () => {
           "width": 306,
           "x": 55,
           "y": 98,
-        },
-        "props": Object {
-          "data-path": "utopia-storyboard-uid/scene-aaa/app-entity:05c/ef0",
-          "data-uid": "ef0",
-          "skipDeepFreeze": true,
-          "style": Object {
-            "backgroundColor": "#DDDDDD",
-            "height": 124,
-            "left": 55,
-            "padding": 20,
-            "position": "fixed",
-            "top": 98,
-            "width": 266,
-          },
         },
         "specialSizeMeasurements": Object {
           "clientHeight": 164,
@@ -2024,19 +1714,6 @@ describe('DOM Walker tests', () => {
           "x": 71,
           "y": 27,
         },
-        "props": Object {
-          "data-path": "utopia-storyboard-uid/scene-aaa/app-entity:05c/ef0/488",
-          "data-uid": "488",
-          "skipDeepFreeze": true,
-          "style": Object {
-            "backgroundColor": "#DDDDDD",
-            "height": 70,
-            "left": 71,
-            "position": "absolute",
-            "top": 27,
-            "width": 125,
-          },
-        },
         "specialSizeMeasurements": Object {
           "clientHeight": 70,
           "clientWidth": 125,
@@ -2095,7 +1772,7 @@ describe('DOM Walker tests', () => {
   })
 
   it('Label carried through for normal elements', async () => {
-    const sanitizedMetadata = await renderTestEditorWithCode(
+    const renderResult = await renderTestEditorWithCode(
       `
       import * as React from 'react'
       import {
@@ -2122,7 +1799,9 @@ describe('DOM Walker tests', () => {
         )
       }
       `,
+      'await-first-dom-report',
     )
+    const sanitizedMetadata = sanitizeJsxMetadata(renderResult.getEditorState().editor.jsxMetadata)
     matchInlineSnapshotBrowser(
       sanitizedMetadata,
       `
@@ -2164,11 +1843,6 @@ describe('DOM Walker tests', () => {
           "width": 0,
           "x": 0,
           "y": 0,
-        },
-        "props": Object {
-          "data-path": "utopia-storyboard-uid",
-          "data-uid": "utopia-storyboard-uid",
-          "skipDeepFreeze": true,
         },
         "specialSizeMeasurements": Object {
           "clientHeight": 0,
@@ -2245,19 +1919,6 @@ describe('DOM Walker tests', () => {
           "width": 375,
           "x": 0,
           "y": 0,
-        },
-        "props": Object {
-          "data-path": "utopia-storyboard-uid/scene-aaa",
-          "data-uid": "scene-aaa",
-          "data-utopia-scene-id": "utopia-storyboard-uid/scene-aaa",
-          "skipDeepFreeze": true,
-          "style": Object {
-            "height": 812,
-            "left": 0,
-            "position": "relative",
-            "top": 0,
-            "width": 375,
-          },
         },
         "specialSizeMeasurements": Object {
           "clientHeight": 812,
@@ -2346,28 +2007,6 @@ describe('DOM Walker tests', () => {
           "width": 375,
           "x": 0,
           "y": 0,
-        },
-        "props": Object {
-          "data-path": "utopia-storyboard-uid/scene-aaa/app-entity",
-          "data-uid": "app-entity",
-          "data-utopia-instance-path": Object {
-            "parts": Array [
-              Array [
-                "utopia-storyboard-uid",
-                "scene-aaa",
-                "app-entity",
-              ],
-            ],
-            "type": "elementpath",
-          },
-          "skipDeepFreeze": true,
-          "style": Object {
-            "bottom": 0,
-            "left": 0,
-            "position": "absolute",
-            "right": 0,
-            "top": 0,
-          },
         },
         "specialSizeMeasurements": Object {
           "clientHeight": 812,
@@ -2460,19 +2099,6 @@ describe('DOM Walker tests', () => {
           "x": 0,
           "y": 0,
         },
-        "props": Object {
-          "data-label": "Hat",
-          "data-path": "utopia-storyboard-uid/scene-aaa/app-entity:aaa",
-          "data-uid": "aaa",
-          "skipDeepFreeze": true,
-          "style": Object {
-            "bottom": 0,
-            "left": 0,
-            "position": "absolute",
-            "right": 0,
-            "top": 0,
-          },
-        },
         "specialSizeMeasurements": Object {
           "clientHeight": 812,
           "clientWidth": 375,
@@ -2531,7 +2157,7 @@ describe('DOM Walker tests', () => {
   })
 
   it('Label carried through for generated elements', async () => {
-    const sanitizedMetadata = await renderTestEditorWithCode(
+    const renderResult = await renderTestEditorWithCode(
       `
       import * as React from 'react'
       import {
@@ -2562,7 +2188,9 @@ describe('DOM Walker tests', () => {
         )
       }
       `,
+      'await-first-dom-report',
     )
+    const sanitizedMetadata = sanitizeJsxMetadata(renderResult.getEditorState().editor.jsxMetadata)
     matchInlineSnapshotBrowser(
       sanitizedMetadata,
       `
@@ -2604,11 +2232,6 @@ describe('DOM Walker tests', () => {
           "width": 0,
           "x": 0,
           "y": 0,
-        },
-        "props": Object {
-          "data-path": "utopia-storyboard-uid",
-          "data-uid": "utopia-storyboard-uid",
-          "skipDeepFreeze": true,
         },
         "specialSizeMeasurements": Object {
           "clientHeight": 0,
@@ -2685,19 +2308,6 @@ describe('DOM Walker tests', () => {
           "width": 375,
           "x": 0,
           "y": 0,
-        },
-        "props": Object {
-          "data-path": "utopia-storyboard-uid/scene-aaa",
-          "data-uid": "scene-aaa",
-          "data-utopia-scene-id": "utopia-storyboard-uid/scene-aaa",
-          "skipDeepFreeze": true,
-          "style": Object {
-            "height": 812,
-            "left": 0,
-            "position": "relative",
-            "top": 0,
-            "width": 375,
-          },
         },
         "specialSizeMeasurements": Object {
           "clientHeight": 812,
@@ -2786,28 +2396,6 @@ describe('DOM Walker tests', () => {
           "width": 375,
           "x": 0,
           "y": 0,
-        },
-        "props": Object {
-          "data-path": "utopia-storyboard-uid/scene-aaa/app-entity",
-          "data-uid": "app-entity",
-          "data-utopia-instance-path": Object {
-            "parts": Array [
-              Array [
-                "utopia-storyboard-uid",
-                "scene-aaa",
-                "app-entity",
-              ],
-            ],
-            "type": "elementpath",
-          },
-          "skipDeepFreeze": true,
-          "style": Object {
-            "bottom": 0,
-            "left": 0,
-            "position": "absolute",
-            "right": 0,
-            "top": 0,
-          },
         },
         "specialSizeMeasurements": Object {
           "clientHeight": 812,
@@ -2899,18 +2487,6 @@ describe('DOM Walker tests', () => {
           "width": 375,
           "x": 0,
           "y": 0,
-        },
-        "props": Object {
-          "data-path": "utopia-storyboard-uid/scene-aaa/app-entity:aaa",
-          "data-uid": "aaa",
-          "skipDeepFreeze": true,
-          "style": Object {
-            "bottom": 0,
-            "left": 0,
-            "position": "absolute",
-            "right": 0,
-            "top": 0,
-          },
         },
         "specialSizeMeasurements": Object {
           "clientHeight": 812,
@@ -3004,12 +2580,6 @@ describe('DOM Walker tests', () => {
           "x": 0,
           "y": 0,
         },
-        "props": Object {
-          "data-label": "Plane",
-          "data-path": "utopia-storyboard-uid/scene-aaa/app-entity:aaa/bbb~~~1",
-          "data-uid": "bbb~~~1",
-          "skipDeepFreeze": true,
-        },
         "specialSizeMeasurements": Object {
           "clientHeight": 0,
           "clientWidth": 375,
@@ -3102,12 +2672,6 @@ describe('DOM Walker tests', () => {
           "x": 0,
           "y": 0,
         },
-        "props": Object {
-          "data-label": "Plane",
-          "data-path": "utopia-storyboard-uid/scene-aaa/app-entity:aaa/bbb~~~2",
-          "data-uid": "bbb~~~2",
-          "skipDeepFreeze": true,
-        },
         "specialSizeMeasurements": Object {
           "clientHeight": 0,
           "clientWidth": 375,
@@ -3199,12 +2763,6 @@ describe('DOM Walker tests', () => {
           "width": 375,
           "x": 0,
           "y": 0,
-        },
-        "props": Object {
-          "data-label": "Plane",
-          "data-path": "utopia-storyboard-uid/scene-aaa/app-entity:aaa/bbb~~~3",
-          "data-uid": "bbb~~~3",
-          "skipDeepFreeze": true,
         },
         "specialSizeMeasurements": Object {
           "clientHeight": 0,

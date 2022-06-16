@@ -46,12 +46,13 @@ import { useEditorState, useRefEditorState } from '../../../../editor/store/stor
 import { ExpandableIndicator } from '../../../../navigator/navigator-item/expandable-indicator'
 import { UIGridRow } from '../../../widgets/ui-grid-row'
 
-const IndicatorsContainer: React.FunctionComponent<IndicatorContainerProps<TailWindOption>> = () =>
-  null
+const IndicatorsContainer: React.FunctionComponent<
+  React.PropsWithChildren<IndicatorContainerProps<TailWindOption>>
+> = () => null
 
-const MultiValueRemove: React.FunctionComponent<MultiValueRemoveProps<TailWindOption>> = (
-  props,
-) => <div {...props.innerProps} />
+const MultiValueRemove: React.FunctionComponent<
+  React.PropsWithChildren<MultiValueRemoveProps<TailWindOption>>
+> = (props) => <div {...props.innerProps} />
 
 const valueContainer: styleFn = (base) => ({
   ...base,
@@ -133,7 +134,7 @@ function valueTypeAsArray<T>(valueType: ValueType<T>): ReadonlyArray<T> {
 
 const FooterSection = React.memo((props: { filter: string; options: Array<TailWindOption> }) => {
   const theme = useColorTheme()
-  const focusedOptionValue = usePubSubAtomReadOnly(focusedOptionAtom)
+  const focusedOptionValue = usePubSubAtomReadOnly(focusedOptionAtom, AlwaysTrue)
   const focusedOption =
     focusedOptionValue == null ? null : props.options.find((o) => o.value === focusedOptionValue)
   const joinedAttributes = focusedOption?.attributes?.join(', ')
@@ -281,7 +282,7 @@ const ClassNameControl = React.memo(() => {
   )
 
   const onInputChange = React.useCallback(
-    (newInput) => {
+    (newInput: string) => {
       if (newInput === '') {
         clearFocusedOption()
       }

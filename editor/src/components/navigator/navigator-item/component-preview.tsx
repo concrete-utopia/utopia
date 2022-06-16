@@ -9,28 +9,28 @@ interface ComponentPreviewProps {
   color: IcnProps['color']
 }
 
-export const ComponentPreview: React.FunctionComponent<ComponentPreviewProps> = React.memo(
-  (props) => {
-    const iconProps = useComponentIcon(props.path)
+export const ComponentPreview: React.FunctionComponent<
+  React.PropsWithChildren<ComponentPreviewProps>
+> = React.memo((props) => {
+  const iconProps = useComponentIcon(props.path)
 
-    if (iconProps == null) {
-      return null
-    } else {
-      return (
-        <div
-          style={{
-            width: 18,
-            height: 18,
-            display: 'flex',
-            justifyItems: 'center',
-            alignItems: 'center',
-            position: 'relative',
-            paddingLeft: 8,
-          }}
-        >
-          <Icn {...iconProps} color={props.color} />
-        </div>
-      )
-    }
-  },
-)
+  if (iconProps == null) {
+    return null
+  } else {
+    return (
+      <div
+        style={{
+          width: 18,
+          height: 18,
+          display: 'flex',
+          justifyItems: 'center',
+          alignItems: 'center',
+          position: 'relative',
+          paddingLeft: 8,
+        }}
+      >
+        <Icn {...iconProps} color={props.color} />
+      </div>
+    )
+  }
+})

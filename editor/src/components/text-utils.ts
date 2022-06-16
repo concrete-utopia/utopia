@@ -8,7 +8,7 @@ import { NodeModules, PropertyPath, ElementPath } from '../core/shared/project-f
 import Utils from '../utils/utils'
 import { EditorAction, EditorDispatch, TextFormattingType } from './editor/action-types'
 import * as EditorActions from './editor/actions/action-creators'
-import { EditorState } from './editor/store/editor-state'
+import { EditorState, ElementProps } from './editor/store/editor-state'
 import * as PP from '../core/shared/property-path'
 
 export function italicStyleTransform(value: 'italic' | 'normal'): boolean {
@@ -22,8 +22,8 @@ export function italicStyleReverseTransform(value: boolean): string {
 const ItalicPropertyArray = ['style', 'fontStyle']
 export const ItalicProperty: PropertyPath = PP.create(ItalicPropertyArray)
 
-export function isItalicText(element: ElementInstanceMetadata): boolean {
-  return italicStyleTransform(Utils.pathOr('normal', ItalicPropertyArray, element.props))
+export function isItalicText(elementProps: ElementProps): boolean {
+  return italicStyleTransform(Utils.pathOr('normal', ItalicPropertyArray, elementProps))
 }
 
 const BoldWeight: number = 700
@@ -40,8 +40,8 @@ export function boldStyleReverseTransform(value: boolean): number {
 const BoldPropertyArray = ['style', 'fontWeight']
 export const BoldProperty: PropertyPath = PP.create(BoldPropertyArray)
 
-export function isBoldText(element: ElementInstanceMetadata): boolean {
-  return boldStyleTransform(Utils.pathOr(NormalWeight, BoldPropertyArray, element.props))
+export function isBoldText(elementProps: ElementProps): boolean {
+  return boldStyleTransform(Utils.pathOr(NormalWeight, BoldPropertyArray, elementProps))
 }
 
 export function decorationStyleTransform(value: 'underline' | 'none'): boolean {
@@ -55,8 +55,8 @@ export function decorationStyleReverseTransform(value: boolean): string {
 const UnderlinedPropertyArray = ['style', 'textDecoration']
 export const UnderlinedProperty: PropertyPath = PP.create(UnderlinedPropertyArray)
 
-export function isUnderlinedText(element: ElementInstanceMetadata): boolean {
-  return decorationStyleTransform(Utils.pathOr('none', UnderlinedPropertyArray, element.props))
+export function isUnderlinedText(elementProps: ElementProps): boolean {
+  return decorationStyleTransform(Utils.pathOr('none', UnderlinedPropertyArray, elementProps))
 }
 
 function propertyForTextFormatting(textFormatting: TextFormattingType): PropertyPath {

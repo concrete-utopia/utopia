@@ -22,6 +22,7 @@ import {
   TOGGLE_FOCUSED_OMNIBOX_TAB,
 } from '../../editor/shortcut-definitions'
 import { useInputFocusOnCountIncrease } from '../../editor/hook-utils'
+import { ElementPath } from '../../../core/shared/project-file-types'
 
 interface FormulaBarProps {
   style: React.CSSProperties
@@ -81,7 +82,7 @@ export const FormulaBar = React.memo<FormulaBarProps>((props) => {
   }, [selectedElementTextContent, inputRef])
 
   const dispatchUpdate = React.useCallback(
-    ({ path, text }) => {
+    ({ path, text }: { path: ElementPath; text: string }) => {
       dispatch([EditorActions.updateChildText(path, text.trim())], 'canvas')
       clearTimeout(saveTimerRef.current)
       saveTimerRef.current = null

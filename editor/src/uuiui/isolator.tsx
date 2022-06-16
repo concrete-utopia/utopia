@@ -4,7 +4,9 @@ type IsolatorProps = {
   onAbandonIntent: () => void
 }
 
-export const Isolator: React.FunctionComponent<IsolatorProps> = (props) => {
+export const Isolator: React.FunctionComponent<React.PropsWithChildren<IsolatorProps>> = (
+  props,
+) => {
   const onAbandonIntent = props.onAbandonIntent
   React.useEffect(() => {
     const handleKeyPressed = (e: any) => {

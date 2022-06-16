@@ -7,7 +7,9 @@ import { FontNode } from './google-fonts-utils'
 
 interface GoogleFontsListItemProps extends NodeComponentProps<FontNode> {}
 
-export const GoogleFontsListItem: React.FunctionComponent<GoogleFontsListItemProps> = (props) => {
+export const GoogleFontsListItem: React.FunctionComponent<
+  React.PropsWithChildren<GoogleFontsListItemProps>
+> = (props) => {
   if (props.data.type === 'font-family') {
     return (
       <FontFamilyItem

@@ -372,6 +372,8 @@ import {
   SetIndexedDBFailed,
   ForceParseFile,
   RemoveFromNodeModulesContents,
+  RunEscapeHatch,
+  SetElementsToRerender,
 } from '../action-types'
 import { defaultTransparentViewElement, defaultSceneElement } from '../defaults'
 import {
@@ -512,7 +514,7 @@ import { getTargetParentForPaste } from '../../../utils/clipboard'
 import { emptySet } from '../../../core/shared/set-utils'
 import { absolutePathFromRelativePath, stripLeadingSlash } from '../../../utils/path-utils'
 import { resolveModule } from '../../../core/es-modules/package-manager/module-resolution'
-import { reverse, uniqBy } from '../../../core/shared/array-utils'
+import { mapDropNulls, reverse, uniqBy } from '../../../core/shared/array-utils'
 import { UTOPIA_UID_KEY } from '../../../core/model/utopia-constants'
 import {
   DefaultPostCSSConfig,
@@ -524,6 +526,10 @@ import { uniqToasts } from './toast-helpers'
 import { NavigatorStateKeepDeepEquality } from '../../../utils/deep-equality-instances'
 import type { BuiltInDependencies } from '../../../core/es-modules/package-manager/built-in-dependencies-list'
 import { stylePropPathMappingFn } from '../../inspector/common/property-path-hooks'
+import { getEscapeHatchCommands } from '../../../components/canvas/canvas-strategies/escape-hatch-strategy'
+import { pickCanvasStateFromEditorState } from '../../canvas/canvas-strategies/canvas-strategies'
+import { foldAndApplyCommandsSimple, runCanvasCommand } from '../../canvas/commands/commands'
+import { setElementsToRerenderCommand } from '../../canvas/commands/set-elements-to-rerender-command'
 
 export function updateSelectedLeftMenuTab(editorState: EditorState, tab: LeftMenuTab): EditorState {
   return {
@@ -708,8 +714,8 @@ function switchAndUpdateFrames(
     case 'flex':
       withUpdatedLayoutSystem = {
         ...withUpdatedLayoutSystem,
-        jsxMetadata: MetadataUtils.setPropertyDirectlyIntoMetadata(
-          withUpdatedLayoutSystem.jsxMetadata,
+        allElementProps: MetadataUtils.setPropertyDirectlyIntoMetadata(
+          withUpdatedLayoutSystem.allElementProps,
           target,
           styleDisplayPath, // TODO LAYOUT investigate if we should use also update the DOM walker specialSizeMeasurements
           'flex',
@@ -717,8 +723,8 @@ function switchAndUpdateFrames(
       }
       withUpdatedLayoutSystem = {
         ...withUpdatedLayoutSystem,
-        jsxMetadata: MetadataUtils.setPropertyDirectlyIntoMetadata(
-          withUpdatedLayoutSystem.jsxMetadata,
+        allElementProps: MetadataUtils.setPropertyDirectlyIntoMetadata(
+          withUpdatedLayoutSystem.allElementProps,
           target,
           stylePropPathMappingFn('position', propertyTarget), // TODO LAYOUT investigate if we should use also update the DOM walker specialSizeMeasurements
           'relative',
@@ -728,8 +734,8 @@ function switchAndUpdateFrames(
     case LayoutSystem.PinSystem:
       withUpdatedLayoutSystem = {
         ...withUpdatedLayoutSystem,
-        jsxMetadata: MetadataUtils.setPropertyDirectlyIntoMetadata(
-          withUpdatedLayoutSystem.jsxMetadata,
+        allElementProps: MetadataUtils.setPropertyDirectlyIntoMetadata(
+          withUpdatedLayoutSystem.allElementProps,
           target,
           stylePropPathMappingFn('position', propertyTarget), // TODO LAYOUT investigate if we should use also update the DOM walker specialSizeMeasurements
           'absolute',
@@ -740,16 +746,16 @@ function switchAndUpdateFrames(
     default:
       withUpdatedLayoutSystem = {
         ...withUpdatedLayoutSystem,
-        jsxMetadata: MetadataUtils.unsetPropertyDirectlyIntoMetadata(
-          withUpdatedLayoutSystem.jsxMetadata,
+        allElementProps: MetadataUtils.unsetPropertyDirectlyIntoMetadata(
+          withUpdatedLayoutSystem.allElementProps,
           target,
           styleDisplayPath,
         ),
       }
       withUpdatedLayoutSystem = {
         ...withUpdatedLayoutSystem,
-        jsxMetadata: MetadataUtils.setPropertyDirectlyIntoMetadata(
-          withUpdatedLayoutSystem.jsxMetadata,
+        allElementProps: MetadataUtils.setPropertyDirectlyIntoMetadata(
+          withUpdatedLayoutSystem.allElementProps,
           target,
           styleDisplayPath, // TODO LAYOUT investigate if we should use also update the DOM walker specialSizeMeasurements
           layoutSystem,
@@ -796,6 +802,7 @@ function switchAndUpdateFrames(
         metadata,
         components,
         propertyTarget,
+        editor.allElementProps,
       )
     },
     target,
@@ -922,7 +929,7 @@ function restoreEditorState(currentEditor: EditorModel, history: StateHistory): 
     projectVersion: currentEditor.projectVersion,
     isLoaded: currentEditor.isLoaded,
     spyMetadata: poppedEditor.spyMetadata,
-    domMetadata: [],
+    domMetadata: poppedEditor.domMetadata,
     jsxMetadata: poppedEditor.jsxMetadata,
     projectContents: poppedEditor.projectContents,
     nodeModules: currentEditor.nodeModules,
@@ -957,6 +964,7 @@ function restoreEditorState(currentEditor: EditorModel, history: StateHistory): 
       additionalControls: currentEditor.interfaceDesigner.additionalControls,
     },
     canvas: {
+      elementsToRerender: currentEditor.canvas.elementsToRerender,
       visible: currentEditor.canvas.visible,
       dragState: null,
       interactionSession: null,
@@ -1042,6 +1050,7 @@ function restoreEditorState(currentEditor: EditorModel, history: StateHistory): 
     vscodeLoadingScreenVisible: currentEditor.vscodeLoadingScreenVisible,
     indexedDBFailed: currentEditor.indexedDBFailed,
     forceParseFiles: currentEditor.forceParseFiles,
+    allElementProps: poppedEditor.allElementProps,
   }
 }
 
@@ -1051,15 +1060,12 @@ export function restoreDerivedState(history: StateHistory): DerivedState {
   return {
     navigatorTargets: poppedDerived.navigatorTargets,
     visibleNavigatorTargets: poppedDerived.visibleNavigatorTargets,
-    canvas: {
-      descendantsOfHiddenInstances: poppedDerived.canvas.descendantsOfHiddenInstances,
-      controls: [],
-      transientState: produceCanvasTransientState(
-        poppedDerived.canvas.transientState.selectedViews,
-        history.current.editor,
-        true,
-      ),
-    },
+    controls: [],
+    transientState: produceCanvasTransientState(
+      poppedDerived.transientState.selectedViews,
+      history.current.editor,
+      true,
+    ),
     elementWarnings: poppedDerived.elementWarnings,
   }
 }
@@ -1722,7 +1728,7 @@ export const UPDATE_FNS = {
     dispatch: EditorDispatch,
   ): EditorModel => {
     return toastOnGeneratedElementsSelected(
-      'Generated elements can only be deleted in code. ',
+      'Generated elements can only be deleted in code.',
       editorForAction,
       true,
       (editor) => {
@@ -1734,7 +1740,17 @@ export const UPDATE_FNS = {
           )
           return MetadataUtils.isStaticElement(components, selectedView)
         })
-        return deleteElements(staticSelectedElements, editor)
+        const withElementDeleted = deleteElements(staticSelectedElements, editor)
+        const parentsToSelect = uniqBy(
+          mapDropNulls((view) => {
+            return EP.parentPath(view)
+          }, editor.selectedViews),
+          EP.pathsEqual,
+        )
+        return {
+          ...withElementDeleted,
+          selectedViews: parentsToSelect,
+        }
       },
       dispatch,
     )
@@ -2788,6 +2804,7 @@ export const UPDATE_FNS = {
                 null,
                 null,
                 ['style'],
+                workingEditorState.allElementProps,
               )
               updatedComponents = maybeSwitchResult.components
               toastsAdded.push(...maybeSwitchResult.toast)
@@ -3072,12 +3089,13 @@ export const UPDATE_FNS = {
     } as LocalRectangle
 
     const element = MetadataUtils.findElementByElementPath(editor.jsxMetadata, action.element)
+    const elementProps = editor.allElementProps[EP.toString(action.element)] ?? {}
     if (
       element != null &&
       MetadataUtils.isTextAgainstImports(element) &&
-      element.props.textSizing == 'auto'
+      elementProps.textSizing == 'auto'
     ) {
-      const alignment = element.props.style.textAlign
+      const alignment = elementProps.style.textAlign
       if (alignment === 'center') {
         frame = Utils.setRectCenterX(frame, initialFrame.x + initialFrame.width / 2)
       } else if (alignment === 'right') {
@@ -3968,7 +3986,7 @@ export const UPDATE_FNS = {
         ...editor,
         codeEditorErrors: updatedCodeEditorErrors,
         jsxMetadata: emptyJsxMetadata,
-        domMetadata: [],
+        domMetadata: emptyJsxMetadata,
         spyMetadata: emptyJsxMetadata,
       }
     }
@@ -4011,11 +4029,11 @@ export const UPDATE_FNS = {
     // Calculate the spy metadata given what has been collected.
     const spyResult = spyCollector.current.spyValues.metadata
 
-    const finalDomMetadata = arrayDeepEquality(ElementInstanceMetadataKeepDeepEquality())(
+    const finalDomMetadata = ElementInstanceMetadataMapKeepDeepEquality(
       editor.domMetadata,
-      action.elementMetadata as Array<ElementInstanceMetadata>, // we convert a ReadonlyArray to a regular array – it'd be nice to make more arrays readonly in the future
+      action.elementMetadata,
     ).value
-    const finalSpyMetadata = ElementInstanceMetadataMapKeepDeepEquality()(
+    const finalSpyMetadata = ElementInstanceMetadataMapKeepDeepEquality(
       editor.spyMetadata,
       spyResult,
     ).value
@@ -4030,6 +4048,9 @@ export const UPDATE_FNS = {
         ...editor,
         domMetadata: finalDomMetadata,
         spyMetadata: finalSpyMetadata,
+        allElementProps: {
+          ...spyCollector.current.spyValues.allElementProps,
+        },
       }
     }
   },
@@ -4856,11 +4877,19 @@ export const UPDATE_FNS = {
   SET_INDEXED_DB_FAILED: (action: SetIndexedDBFailed, editor: EditorModel): EditorModel => {
     return { ...editor, indexedDBFailed: action.indexedDBFailed }
   },
-  FORCE_PARSE_FILE: (action: ForceParseFile, editor: EditorModel) => {
+  FORCE_PARSE_FILE: (action: ForceParseFile, editor: EditorModel): EditorModel => {
     return {
       ...editor,
       forceParseFiles: editor.forceParseFiles.concat(action.filePath),
     }
+  },
+  RUN_ESCAPE_HATCH: (action: RunEscapeHatch, editor: EditorModel): EditorModel => {
+    const canvasState = pickCanvasStateFromEditorState(editor)
+    const commands = getEscapeHatchCommands(action.targets, editor.jsxMetadata, canvasState, null)
+    return foldAndApplyCommandsSimple(editor, commands)
+  },
+  SET_ELEMENTS_TO_RERENDER: (action: SetElementsToRerender, editor: EditorModel): EditorModel => {
+    return foldAndApplyCommandsSimple(editor, [setElementsToRerenderCommand(action.value)])
   },
 }
 

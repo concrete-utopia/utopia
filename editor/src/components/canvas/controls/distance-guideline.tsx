@@ -90,8 +90,6 @@ function guidelinesClosestToDragOrFrame(
 interface DistanceGuidelineProps {
   canvasOffset: CanvasVector
   scale: number
-  selectedViews: Array<ElementPath>
-  highlightedViews: Array<ElementPath>
   boundingBox: CanvasRectangle
   guidelines: Array<Guideline>
 }

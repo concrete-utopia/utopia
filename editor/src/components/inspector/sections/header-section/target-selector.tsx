@@ -286,7 +286,7 @@ const TargetListItem = React.memo((props: TargetListItemProps) => {
   const onSelectByMouseCallback = React.useCallback(() => {
     onSelect(fixedItemIndex)
   }, [fixedItemIndex, onSelect])
-  const onSelectByEnterCallback = React.useCallback(
+  const onSelectByEnterCallback: React.MouseEventHandler<HTMLDivElement> = React.useCallback(
     (e) => {
       if (e.buttons === 1) {
         onSelect(fixedItemIndex)

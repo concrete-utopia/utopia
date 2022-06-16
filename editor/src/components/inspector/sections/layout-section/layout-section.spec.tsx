@@ -44,6 +44,7 @@ describe('Layout Section', () => {
           toggleAspectRatioLock={NO_OP}
         />
       </TestInspectorContextProvider>,
+      { legacyRoot: true },
     )
 
     // Component 'W' is picked by the selector

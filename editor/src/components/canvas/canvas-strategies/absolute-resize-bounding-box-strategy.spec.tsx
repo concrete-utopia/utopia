@@ -26,6 +26,7 @@ import { pickCanvasStateFromEditorState } from './canvas-strategies'
 import { StrategyState } from './interaction-state'
 import { createMouseInteractionForTests } from './interaction-state.test-utils'
 import { absoluteResizeBoundingBoxStrategy } from './absolute-resize-bounding-box-strategy'
+import { defaultCustomStrategyState } from './canvas-strategy-types'
 
 function multiselectResizeElements(
   snippet: string,
@@ -49,7 +50,7 @@ function multiselectResizeElements(
 
   const strategyResult = absoluteResizeBoundingBoxStrategy.apply(
     pickCanvasStateFromEditorState(initialEditor),
-    { ...interactionSessionWithoutMetadata, metadata: {} },
+    { ...interactionSessionWithoutMetadata, metadata: {}, allElementProps: {} },
     {
       currentStrategy: null as any, // the strategy does not use this
       currentStrategyFitness: null as any, // the strategy does not use this
@@ -58,7 +59,7 @@ function multiselectResizeElements(
       commandDescriptions: null as any, // the strategy does not use this
       sortedApplicableStrategies: null as any, // the strategy does not use this
       startingMetadata: metadata,
-      customStrategyState: { foo: 'bar' },
+      customStrategyState: defaultCustomStrategyState(),
     } as StrategyState,
   )
 
@@ -95,6 +96,19 @@ const testMetadata: ElementInstanceMetadataMap = {
 
 describe('Absolute Resize Bounding Box Strategy single select', () => {
   it.each([
+    [
+      'top left corner, drag threshold not reached',
+      {
+        edgePosition: { x: 0, y: 0 } as EdgePosition,
+        drag: canvasPoint({
+          x: 1,
+          y: 1,
+        }),
+        modifiers: emptyModifiers,
+        bounding: { left: 50, top: 50, width: 250, height: 300 },
+        expectedBounding: { left: 50, top: 50, width: 250, height: 300 },
+      },
+    ],
     [
       'top left corner',
       {

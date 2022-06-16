@@ -197,9 +197,9 @@ function bgSizeValueToSelectOption(value: CSSBGSizeValue): SelectOption {
   }
 }
 
-export const BGSizeMetadataControl: React.FunctionComponent<BGSizeMetadataControlProps> = (
-  props,
-) => {
+export const BGSizeMetadataControl: React.FunctionComponent<
+  React.PropsWithChildren<BGSizeMetadataControlProps>
+> = (props) => {
   const [onSubmitPopupListValue] = props.useSubmitValueFactory(
     getIndexedUpdateBGSizePopupList(props.index),
   )

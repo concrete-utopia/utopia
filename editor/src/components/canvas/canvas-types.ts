@@ -25,6 +25,7 @@ import {
   LayoutTargetableProp,
 } from '../../core/layout/layout-helpers-new'
 import {
+  DragInteractionData,
   InteractionSession,
   InteractionSessionWithoutMetadata,
 } from './canvas-strategies/interaction-state'
@@ -241,26 +242,26 @@ export type PinOrFlexFrameChange =
 export function pinFrameChange(
   target: ElementPath,
   frame: CanvasRectangle,
-  edgePosition: EdgePosition | null = null,
+  edgePos: EdgePosition | null = null,
 ): PinFrameChange {
   return {
     type: 'PIN_FRAME_CHANGE',
     target: target,
     frame: frame,
-    edgePosition: edgePosition,
+    edgePosition: edgePos,
   }
 }
 
 export function pinSizeChange(
   target: ElementPath,
   frame: CanvasRectangle,
-  edgePosition: EdgePosition | null = null,
+  edgePos: EdgePosition | null = null,
 ): PinSizeChange {
   return {
     type: 'PIN_SIZE_CHANGE',
     target: target,
     frame: frame,
-    edgePosition: edgePosition,
+    edgePosition: edgePos,
   }
 }
 
@@ -295,13 +296,13 @@ export function flexResizeChange(
 
 export function singleResizeChange(
   target: ElementPath,
-  edgePosition: EdgePosition,
+  edgePos: EdgePosition,
   sizeDelta: CanvasVector,
 ): SingleResizeChange {
   return {
     type: 'SINGLE_RESIZE',
     target: target,
-    edgePosition: edgePosition,
+    edgePosition: edgePos,
     sizeDelta: sizeDelta,
   }
 }
@@ -486,7 +487,7 @@ export interface ResizeDragState {
 export function resizeDragState(
   originalSize: CanvasRectangle,
   originalFrames: Array<OriginalCanvasAndLocalFrame>,
-  edgePosition: EdgePosition,
+  edgePos: EdgePosition,
   enabledDirection: EnabledDirection,
   metadata: ElementInstanceMetadataMap,
   draggedElements: ElementPath[],
@@ -497,7 +498,7 @@ export function resizeDragState(
     type: 'RESIZE_DRAG_STATE',
     originalSize: originalSize,
     originalFrames: originalFrames,
-    edgePosition: edgePosition,
+    edgePosition: edgePos,
     enabledDirection: enabledDirection,
     metadata: metadata,
     draggedElements: draggedElements,
@@ -659,6 +660,11 @@ export interface UpdateInteractionSession {
   interactionSessionUpdate: Partial<InteractionSession>
 }
 
+export interface UpdateDragInteractionData {
+  action: 'UPDATE_DRAG_INTERACTION_DATA'
+  dragInteractionUpdate: Partial<DragInteractionData>
+}
+
 type SetSelectionControlsVisibility = {
   action: 'SET_SELECTION_CONTROLS_VISIBILITY'
   selectionControlsVisible: boolean
@@ -688,12 +694,13 @@ export type CanvasAction =
   | CreateInteractionSession
   | ClearInteractionSession
   | UpdateInteractionSession
+  | UpdateDragInteractionData
   | Zoom
   | ZoomUI
   | SetSelectionControlsVisibility
   | SetUsersPreferredStrategy
 
-export type CanvasModel = {
+export interface CanvasModel {
   controls: Array<HigherOrderControl>
   dragState: DragState | null
   keysPressed: KeysPressed
@@ -710,6 +717,13 @@ export type EdgePositionPart = 0 | 0.5 | 1
 
 export type EdgePosition = { x: EdgePositionPart; y: EdgePositionPart }
 
+export function edgePosition(x: EdgePositionPart, y: EdgePositionPart): EdgePosition {
+  return {
+    x: x,
+    y: y,
+  }
+}
+
 export function oppositeEdgePositionPart(part: EdgePositionPart): EdgePositionPart {
   switch (part) {
     case 0:
@@ -724,10 +738,10 @@ export function oppositeEdgePositionPart(part: EdgePositionPart): EdgePositionPa
   }
 }
 
-export function oppositeEdgePosition(edgePosition: EdgePosition): EdgePosition {
+export function oppositeEdgePosition(edgePos: EdgePosition): EdgePosition {
   return {
-    x: oppositeEdgePositionPart(edgePosition.x),
-    y: oppositeEdgePositionPart(edgePosition.y),
+    x: oppositeEdgePositionPart(edgePos.x),
+    y: oppositeEdgePositionPart(edgePos.y),
   }
 }
 

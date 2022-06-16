@@ -1,4 +1,3 @@
-import { ControlProps } from './new-canvas-controls'
 import React from 'react'
 import { MetadataUtils } from '../../../core/model/element-metadata-utils'
 import { useEditorState } from '../../editor/store/store-hook'
@@ -8,6 +7,7 @@ import { ElementPath } from '../../../core/shared/project-file-types'
 import * as EP from '../../../core/shared/element-path'
 import { openFloatingInsertMenu } from '../../editor/actions/action-creators'
 import { useColorTheme } from '../../../uuiui/styles/theme'
+import { CanvasOffsetWrapper } from './canvas-offset-wrapper'
 
 const InsertionButtonOffset = 10
 
@@ -23,26 +23,34 @@ interface ButtonControlProps {
   indexPosition: IndexPosition
 }
 
-export const InsertionControls: React.FunctionComponent<ControlProps> = React.memo(
-  (props: ControlProps): React.ReactElement | null => {
-    if (props.selectedViews.length !== 1) {
+export const InsertionControls: React.FunctionComponent = React.memo(
+  (): React.ReactElement | null => {
+    const isInteractionActive = useEditorState(
+      (store) => store.editor.canvas.interactionSession != null,
+      'DistanceGuidelineControl isInteractionActive',
+    )
+    const selectedViews = useEditorState(
+      (store) => store.editor.selectedViews,
+      'InsertionControls selectedViews',
+    )
+    const jsxMetadata = useEditorState(
+      (store) => store.editor.jsxMetadata,
+      'InsertionControls jsxMetadata',
+    )
+    const scale = useEditorState((store) => store.editor.canvas.scale, 'InsertionControls scale')
+    if (selectedViews.length !== 1 || isInteractionActive) {
       return null
     }
-    const selectedView = props.selectedViews[0]
+    const selectedView = selectedViews[0]
     const parentPath = selectedView
     const parentFrame =
-      parentPath != null
-        ? MetadataUtils.getFrameInCanvasCoords(parentPath, props.componentMetadata)
-        : null
+      parentPath != null ? MetadataUtils.getFrameInCanvasCoords(parentPath, jsxMetadata) : null
 
-    const parentElement = MetadataUtils.findElementByElementPath(
-      props.componentMetadata,
-      selectedView,
-    )
+    const parentElement = MetadataUtils.findElementByElementPath(jsxMetadata, selectedView)
     if (parentPath == null || parentFrame == null || parentElement == null) {
       return null
     }
-    const children = MetadataUtils.getChildren(props.componentMetadata, parentPath)
+    const children = MetadataUtils.getChildren(jsxMetadata, parentPath)
     let controlProps: ButtonControlProps[] = []
 
     if (
@@ -60,27 +68,17 @@ export const InsertionControls: React.FunctionComponent<ControlProps> = React.me
         // Ignore any other values.
       }
 
-      const beforeX =
-        direction == 'column'
-          ? parentFrame.x - InsertionButtonOffset + props.canvasOffset.x
-          : parentFrame.x + props.canvasOffset.x
-      const beforeY =
-        direction == 'column'
-          ? parentFrame.y + props.canvasOffset.y
-          : parentFrame.y - InsertionButtonOffset + props.canvasOffset.y
+      const beforeX = direction == 'column' ? parentFrame.x - InsertionButtonOffset : parentFrame.x
+      const beforeY = direction == 'column' ? parentFrame.y : parentFrame.y - InsertionButtonOffset
       const beforeLineEndX =
-        direction == 'column'
-          ? parentFrame.x + parentFrame.width + props.canvasOffset.x
-          : parentFrame.x + props.canvasOffset.x
+        direction == 'column' ? parentFrame.x + parentFrame.width : parentFrame.x
       const beforeLineEndY =
-        direction == 'column'
-          ? parentFrame.y + props.canvasOffset.y
-          : parentFrame.y + parentFrame.height + props.canvasOffset.y
+        direction == 'column' ? parentFrame.y : parentFrame.y + parentFrame.height
 
       if (direction != null) {
         controlProps.push({
           key: 'parent-0',
-          scale: props.scale,
+          scale: scale,
           positionX: beforeX,
           positionY: beforeY,
           lineEndX: beforeLineEndX,
@@ -96,10 +94,7 @@ export const InsertionControls: React.FunctionComponent<ControlProps> = React.me
     }
 
     children.forEach((child, index) => {
-      const childFrame = MetadataUtils.getFrameInCanvasCoords(
-        child.elementPath,
-        props.componentMetadata,
-      )
+      const childFrame = MetadataUtils.getFrameInCanvasCoords(child.elementPath, jsxMetadata)
       if (child.specialSizeMeasurements.position !== 'absolute' && childFrame != null) {
         let direction: 'row' | 'column' | null = null
         if (child.specialSizeMeasurements.parentLayoutSystem === 'flex') {
@@ -115,24 +110,24 @@ export const InsertionControls: React.FunctionComponent<ControlProps> = React.me
         if (direction != null) {
           const positionX =
             direction == 'column'
-              ? parentFrame.x - InsertionButtonOffset + props.canvasOffset.x
-              : childFrame.x + childFrame.width + props.canvasOffset.x
+              ? parentFrame.x - InsertionButtonOffset
+              : childFrame.x + childFrame.width
           const positionY =
             direction == 'column'
-              ? childFrame.y + childFrame.height + props.canvasOffset.y
-              : parentFrame.y - InsertionButtonOffset + props.canvasOffset.y
+              ? childFrame.y + childFrame.height
+              : parentFrame.y - InsertionButtonOffset
 
           const lineEndX =
             direction == 'column'
-              ? parentFrame.x + parentFrame.width + props.canvasOffset.x
-              : childFrame.x + childFrame.width + props.canvasOffset.x
+              ? parentFrame.x + parentFrame.width
+              : childFrame.x + childFrame.width
           const lineEndY =
             direction == 'column'
-              ? childFrame.y + childFrame.height + props.canvasOffset.y
-              : parentFrame.y + parentFrame.height + props.canvasOffset.y
+              ? childFrame.y + childFrame.height
+              : parentFrame.y + parentFrame.height
           controlProps.push({
             key: EP.toString(child.elementPath),
-            scale: props.scale,
+            scale: scale,
             positionX: positionX,
             positionY: positionY,
             lineEndX: lineEndX,
@@ -147,24 +142,16 @@ export const InsertionControls: React.FunctionComponent<ControlProps> = React.me
           // first element has a plus button before the element too
           if (index === 0) {
             const beforeX =
-              direction == 'column'
-                ? parentFrame.x - InsertionButtonOffset + props.canvasOffset.x
-                : childFrame.x + props.canvasOffset.x
+              direction == 'column' ? parentFrame.x - InsertionButtonOffset : childFrame.x
             const beforeY =
-              direction == 'column'
-                ? childFrame.y + props.canvasOffset.y
-                : parentFrame.y - InsertionButtonOffset + props.canvasOffset.y
+              direction == 'column' ? childFrame.y : parentFrame.y - InsertionButtonOffset
             const beforeLineEndX =
-              direction == 'column'
-                ? parentFrame.x + parentFrame.width + props.canvasOffset.x
-                : childFrame.x + props.canvasOffset.x
+              direction == 'column' ? parentFrame.x + parentFrame.width : childFrame.x
             const beforeLineEndY =
-              direction == 'column'
-                ? childFrame.y + props.canvasOffset.y
-                : parentFrame.y + parentFrame.height + props.canvasOffset.y
+              direction == 'column' ? childFrame.y : parentFrame.y + parentFrame.height
             controlProps.push({
               key: EP.toString(child.elementPath) + '0',
-              scale: props.scale,
+              scale: scale,
               positionX: beforeX,
               positionY: beforeY,
               lineEndX: beforeLineEndX,
@@ -181,11 +168,11 @@ export const InsertionControls: React.FunctionComponent<ControlProps> = React.me
       }
     })
     return (
-      <>
+      <CanvasOffsetWrapper>
         {controlProps.map((control) => (
           <InsertionButtonContainer {...control} key={control.key} />
         ))}
-      </>
+      </CanvasOffsetWrapper>
     )
   },
 )
@@ -252,7 +239,7 @@ const PlusButton = React.memo((props: ButtonControlProps) => {
   const dispatch = useEditorState((store) => store.dispatch, 'PlusButton dispatch')
   const colorTheme = useColorTheme()
   const { parentPath, indexPosition } = props
-  const insertElement = React.useCallback(
+  const insertElement: React.MouseEventHandler<HTMLDivElement> = React.useCallback(
     (event) => {
       event.stopPropagation()
       event.preventDefault()

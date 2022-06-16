@@ -14,7 +14,9 @@ interface FontVariantItemProps {
   }
 }
 
-export const FontVariantItem: React.FunctionComponent<FontVariantItemProps> = ({ style, data }) => {
+export const FontVariantItem: React.FunctionComponent<
+  React.PropsWithChildren<FontVariantItemProps>
+> = ({ style, data }) => {
   const [hovered, setHovered] = React.useState(false)
   const onMouseEnter = React.useCallback(() => setHovered(true), [])
   const onMouseLeave = React.useCallback(() => setHovered(false), [])

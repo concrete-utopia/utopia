@@ -1,6 +1,6 @@
 import { optionalDeepFreeze } from './deep-freeze'
 
-export type Modifiers = {
+export interface Modifiers {
   alt: boolean
   cmd: boolean
   ctrl: boolean

@@ -15,6 +15,7 @@ import {
   TransientCanvasState,
   TransientFilesState,
   ResizeOptions,
+  AllElementProps,
 } from '../../editor/store/editor-state'
 import { ElementPath, NodeModules } from '../../../core/shared/project-file-types'
 import { CanvasPositions, CSSCursor } from '../canvas-types'
@@ -66,6 +67,11 @@ import { MultiSelectOutlineControl } from './select-mode/simple-outline-control'
 import { GuidelineControls } from './guideline-controls'
 import { showContextMenu } from '../../editor/actions/action-creators'
 import { HTML5Backend } from 'react-dnd-html5-backend'
+import { OutlineHighlightControl } from './select-mode/outline-highlight-control'
+import { InsertionControls } from './insertion-plus-button'
+import { DistanceGuidelineControl } from './select-mode/distance-guideline-control'
+import { SceneLabelControl } from './select-mode/scene-label'
+import { PinLines } from './position-outline'
 
 export const CanvasControlsContainerID = 'new-canvas-controls-container'
 
@@ -119,6 +125,7 @@ export interface ControlProps {
   transientState: TransientCanvasState
   resolve: ResolveFn
   resizeOptions: ResizeOptions
+  allElementProps: AllElementProps
 }
 
 interface NewCanvasControlsProps {
@@ -133,11 +140,10 @@ export const NewCanvasControls = React.memo((props: NewCanvasControlsProps) => {
       editor: store.editor,
       derived: store.derived,
       canvasOffset: store.editor.canvas.roundedCanvasOffset,
-
-      controls: store.derived.canvas.controls,
+      controls: store.derived.controls,
       scale: store.editor.canvas.scale,
       focusedPanel: store.editor.focusedPanel,
-      transientCanvasState: store.derived.canvas.transientState,
+      transientCanvasState: store.derived.transientState,
     }),
     'NewCanvasControls',
   )
@@ -213,7 +219,10 @@ export const NewCanvasControls = React.memo((props: NewCanvasControlsProps) => {
               localSelectedViews={localSelectedViews}
               localHighlightedViews={localHighlightedViews}
               setLocalSelectedViews={setSelectedViewsLocally}
-              {...canvasControlProps}
+              editor={canvasControlProps.editor}
+              transientState={canvasControlProps.transientCanvasState}
+              dispatch={canvasControlProps.dispatch}
+              canvasOffset={canvasControlProps.canvasOffset}
             />
           </div>
           <ElementContextMenu contextMenuInstance='context-menu-canvas' />
@@ -226,7 +235,7 @@ NewCanvasControls.displayName = 'NewCanvasControls'
 
 interface NewCanvasControlsInnerProps {
   editor: EditorState
-  derived: DerivedState
+  transientState: TransientCanvasState
   dispatch: EditorDispatch
   canvasOffset: CanvasPoint
   windowToCanvasPosition: (event: MouseEvent) => CanvasPositions
@@ -301,15 +310,17 @@ const NewCanvasControlsInner = (props: NewCanvasControlsInnerProps) => {
   const renderModeControlContainer = () => {
     const elementAspectRatioLocked = localSelectedViews.every((target) => {
       const possibleElement = MetadataUtils.findElementByElementPath(componentMetadata, target)
-      if (possibleElement == null) {
+      const elementProps = props.editor.allElementProps[EP.toString(target)]
+      if (possibleElement == null || elementProps == null) {
         return false
       } else {
-        return isAspectRatioLockedNew(possibleElement)
+        return isAspectRatioLockedNew(possibleElement, elementProps)
       }
     })
     const imageMultiplier: number | null = MetadataUtils.getImageMultiplier(
       componentMetadata,
       localSelectedViews,
+      props.editor.allElementProps,
     )
     const resolveFn = props.editor.codeResultCache.curriedResolveFn(props.editor.projectContents)
     const controlProps: ControlProps = {
@@ -331,9 +342,10 @@ const NewCanvasControlsInner = (props: NewCanvasControlsInnerProps) => {
       projectContents: props.editor.projectContents,
       nodeModules: props.editor.nodeModules.files,
       openFile: props.editor.canvas.openFile?.filename ?? null,
-      transientState: props.derived.canvas.transientState,
+      transientState: props.transientState,
       resolve: resolveFn,
       resizeOptions: props.editor.canvas.resizeOptions,
+      allElementProps: props.editor.allElementProps,
     }
     const dragState = props.editor.canvas.dragState
     switch (props.editor.mode.type) {
@@ -416,6 +428,8 @@ const NewCanvasControlsInner = (props: NewCanvasControlsInnerProps) => {
       : []
   }
 
+  const resizeStatus = getResizeStatus()
+
   return (
     <div
       id={CanvasControlsContainerID}
@@ -432,20 +446,47 @@ const NewCanvasControlsInner = (props: NewCanvasControlsInnerProps) => {
       onMouseMove={onMouseMove}
     >
       {renderModeControlContainer()}
-      {renderHighlightControls()}
-      <LayoutParentControl />
       {when(
-        isFeatureEnabled('Canvas Strategies'),
-        <MultiSelectOutlineControl localSelectedElements={localSelectedViews} />,
-      )}
-      {when(isFeatureEnabled('Canvas Strategies'), <GuidelineControls />)}
-      {when(
-        isFeatureEnabled('Canvas Strategies'),
-        <>{strategyControls.map((c) => React.createElement(c.control, { key: c.key }))}</>,
+        (isFeatureEnabled('Canvas Strategies') && props.editor.mode.type === 'select') ||
+          props.editor.mode.type === 'select-lite',
+        <SceneLabelControl
+          maybeHighlightOnHover={maybeHighlightOnHover}
+          maybeClearHighlightsOnHoverEnd={maybeClearHighlightsOnHoverEnd}
+        />,
       )}
       {when(
-        isFeatureEnabled('Canvas Strategies'),
-        <FlexResizeControl localSelectedElements={localSelectedViews} />,
+        resizeStatus !== 'disabled',
+        <>
+          {when(
+            (isFeatureEnabled('Canvas Strategies') && props.editor.mode.type === 'select') ||
+              props.editor.mode.type === 'select-lite',
+            <PinLines />,
+          )}
+          {when(
+            (isFeatureEnabled('Canvas Strategies') && props.editor.mode.type === 'select') ||
+              props.editor.mode.type === 'select-lite',
+            <DistanceGuidelineControl />,
+          )}
+          {when(
+            (isFeatureEnabled('Canvas Strategies') &&
+              isFeatureEnabled('Insertion Plus Button') &&
+              props.editor.mode.type === 'select') ||
+              props.editor.mode.type === 'select-lite',
+            <InsertionControls />,
+          )}
+          {renderHighlightControls()}
+          <LayoutParentControl />
+          {when(
+            isFeatureEnabled('Canvas Strategies'),
+            <MultiSelectOutlineControl localSelectedElements={localSelectedViews} />,
+          )}
+          {when(isFeatureEnabled('Canvas Strategies'), <GuidelineControls />)}
+          <OutlineHighlightControl />
+          {when(
+            isFeatureEnabled('Canvas Strategies'),
+            <>{strategyControls.map((c) => React.createElement(c.control, { key: c.key }))}</>,
+          )}
+        </>,
       )}
     </div>
   )

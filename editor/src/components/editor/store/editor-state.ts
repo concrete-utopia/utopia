@@ -220,6 +220,13 @@ export interface OriginalPath {
   currentTP: ElementPath
 }
 
+export function originalPath(originalTP: ElementPath, currentTP: ElementPath): OriginalPath {
+  return {
+    originalTP: originalTP,
+    currentTP: currentTP,
+  }
+}
+
 export interface UserConfiguration {
   shortcutConfig: ShortcutConfiguration | null
 }
@@ -275,26 +282,63 @@ export interface FileDeleteModal {
   filePath: string
 }
 
+export function fileDeleteModal(filePath: string): FileDeleteModal {
+  return {
+    type: 'file-delete',
+    filePath: filePath,
+  }
+}
+
 export type ModalDialog = FileDeleteModal
 
 export type CursorImportanceLevel = 'fixed' | 'mouseOver' // only one fixed cursor can exist, mouseover is a bit less important
-export type CursorStackItem = {
+export interface CursorStackItem {
   id: string
   importance: CursorImportanceLevel
   cursor: CSSCursor
 }
+
+export function cursorStackItem(
+  id: string,
+  importance: CursorImportanceLevel,
+  cursor: CSSCursor,
+): CursorStackItem {
+  return {
+    id: id,
+    importance: importance,
+    cursor: cursor,
+  }
+}
+
 export type CursorStack = Array<CursorStackItem>
-export type CanvasCursor = {
+export interface CanvasCursor {
   fixed: CursorStackItem | null
   mouseOver: CursorStack
+}
+
+export function canvasCursor(fixed: CursorStackItem | null, mouseOver: CursorStack): CanvasCursor {
+  return {
+    fixed: fixed,
+    mouseOver: mouseOver,
+  }
 }
 
 export interface DuplicationState {
   duplicateRoots: Array<OriginalPath>
 }
 
+export function duplicationState(duplicateRoots: Array<OriginalPath>): DuplicationState {
+  return {
+    duplicateRoots: duplicateRoots,
+  }
+}
+
 export interface ImageBlob {
   base64: string
+}
+
+export function imageBlob(base64: string): ImageBlob {
+  return { base64: base64 }
 }
 
 export type UIFileBase64Blobs = { [key: string]: ImageBlob }
@@ -310,6 +354,12 @@ export interface ConsoleLog {
 
 export interface DesignerFile {
   filename: string
+}
+
+export function designerFile(filename: string): DesignerFile {
+  return {
+    filename: filename,
+  }
 }
 
 export type Theme = 'light' | 'dark'
@@ -332,18 +382,47 @@ export interface FloatingInsertMenuStateClosed {
   insertMenuMode: 'closed'
 }
 
+export function floatingInsertMenuStateClosed(): FloatingInsertMenuStateClosed {
+  return {
+    insertMenuMode: 'closed',
+  }
+}
+
 export interface FloatingInsertMenuStateInsert {
   insertMenuMode: 'insert'
   parentPath: ElementPath | null
   indexPosition: IndexPosition | null
 }
 
+export function floatingInsertMenuStateInsert(
+  parentPath: ElementPath | null,
+  indexPosition: IndexPosition | null,
+): FloatingInsertMenuStateInsert {
+  return {
+    insertMenuMode: 'insert',
+    parentPath: parentPath,
+    indexPosition: indexPosition,
+  }
+}
+
 export interface FloatingInsertMenuStateConvert {
   insertMenuMode: 'convert'
 }
 
+export function floatingInsertMenuStateConvert(): FloatingInsertMenuStateConvert {
+  return {
+    insertMenuMode: 'convert',
+  }
+}
+
 export interface FloatingInsertMenuStateWrap {
   insertMenuMode: 'wrap'
+}
+
+export function floatingInsertMenuStateWrap(): FloatingInsertMenuStateWrap {
+  return {
+    insertMenuMode: 'wrap',
+  }
 }
 
 export type FloatingInsertMenuState =
@@ -355,6 +434,16 @@ export type FloatingInsertMenuState =
 export interface ResizeOptions {
   propertyTargetOptions: Array<LayoutTargetableProp>
   propertyTargetSelectedIndex: number
+}
+
+export function resizeOptions(
+  propertyTargetOptions: Array<LayoutTargetableProp>,
+  propertyTargetSelectedIndex: number,
+): ResizeOptions {
+  return {
+    propertyTargetOptions: propertyTargetOptions,
+    propertyTargetSelectedIndex: propertyTargetSelectedIndex,
+  }
 }
 
 export interface VSCodeBridgeIdDefault {
@@ -395,6 +484,340 @@ export function getUnderlyingVSCodeBridgeID(bridgeId: VSCodeBridgeId): string {
   }
 }
 
+export interface EditorStateNodeModules {
+  skipDeepFreeze: true // when we evaluate the code files we plan to mutate the content with the eval result
+  files: NodeModules
+  projectFilesBuildResults: MultiFileBuildResult
+  packageStatus: PackageStatusMap
+}
+
+export function editorStateNodeModules(
+  skipDeepFreeze: true,
+  files: NodeModules,
+  projectFilesBuildResults: MultiFileBuildResult,
+  packageStatus: PackageStatusMap,
+): EditorStateNodeModules {
+  return {
+    skipDeepFreeze: skipDeepFreeze,
+    files: files,
+    projectFilesBuildResults: projectFilesBuildResults,
+    packageStatus: packageStatus,
+  }
+}
+
+export interface EditorStateLeftMenu {
+  selectedTab: LeftMenuTab
+  expanded: boolean
+  paneWidth: number
+}
+
+export function editorStateLeftMenu(
+  selectedTab: LeftMenuTab,
+  expanded: boolean,
+  paneWidth: number,
+): EditorStateLeftMenu {
+  return {
+    selectedTab: selectedTab,
+    expanded: expanded,
+    paneWidth: paneWidth,
+  }
+}
+
+export interface EditorStateRightMenu {
+  selectedTab: RightMenuTab
+  expanded: boolean
+}
+
+export function editorStateRightMenu(
+  selectedTab: RightMenuTab,
+  expanded: boolean,
+): EditorStateRightMenu {
+  return {
+    selectedTab: selectedTab,
+    expanded: expanded,
+  }
+}
+
+export interface EditorStateInterfaceDesigner {
+  codePaneWidth: number
+  codePaneVisible: boolean
+  restorableCodePaneWidth: number
+  additionalControls: boolean
+}
+
+export function editorStateInterfaceDesigner(
+  codePaneWidth: number,
+  codePaneVisible: boolean,
+  restorableCodePaneWidth: number,
+  additionalControls: boolean,
+): EditorStateInterfaceDesigner {
+  return {
+    codePaneWidth: codePaneWidth,
+    codePaneVisible: codePaneVisible,
+    restorableCodePaneWidth: restorableCodePaneWidth,
+    additionalControls: additionalControls,
+  }
+}
+
+export interface EditorStateCanvasTextEditor {
+  elementPath: ElementPath
+  triggerMousePosition: WindowPoint | null
+}
+
+export function editorStateCanvasTextEditor(
+  elementPath: ElementPath,
+  triggerMousePosition: WindowPoint | null,
+): EditorStateCanvasTextEditor {
+  return {
+    elementPath: elementPath,
+    triggerMousePosition: triggerMousePosition,
+  }
+}
+
+export interface EditorStateCanvasTransientProperty {
+  elementPath: ElementPath
+  attributesToUpdate: { [key: string]: JSXAttribute }
+}
+
+export function editorStateCanvasTransientProperty(
+  elementPath: ElementPath,
+  attributesToUpdate: { [key: string]: JSXAttribute },
+): EditorStateCanvasTransientProperty {
+  return {
+    elementPath: elementPath,
+    attributesToUpdate: attributesToUpdate,
+  }
+}
+
+export interface EditorStateCanvasControls {
+  // this is where we can put props for the strategy controls
+  snappingGuidelines: Array<GuidelineWithSnappingVector>
+  outlineHighlights: Array<CanvasRectangle>
+}
+
+export function editorStateCanvasControls(
+  snappingGuidelines: Array<GuidelineWithSnappingVector>,
+  outlineHighlights: Array<CanvasRectangle>,
+): EditorStateCanvasControls {
+  return {
+    snappingGuidelines: snappingGuidelines,
+    outlineHighlights: outlineHighlights,
+  }
+}
+
+export type ElementsToRerender = Array<ElementPath> | 'rerender-all-elements'
+
+export interface EditorStateCanvas {
+  elementsToRerender: ElementsToRerender
+  visible: boolean
+  dragState: DragState | null
+  interactionSession: InteractionSession | null
+  scale: number
+  snappingThreshold: number
+  realCanvasOffset: CanvasVector
+  roundedCanvasOffset: CanvasVector
+  textEditor: EditorStateCanvasTextEditor | null
+  selectionControlsVisible: boolean
+  cursor: CSSCursor | null
+  duplicationState: DuplicationState | null
+  base64Blobs: CanvasBase64Blobs
+  mountCount: number
+  canvasContentInvalidateCount: number
+  domWalkerInvalidateCount: number
+  openFile: DesignerFile | null
+  scrollAnimation: boolean
+  transientProperties: { [key: string]: EditorStateCanvasTransientProperty } | null
+  resizeOptions: ResizeOptions
+  domWalkerAdditionalElementsToUpdate: Array<ElementPath>
+  controls: EditorStateCanvasControls
+}
+
+export function editorStateCanvas(
+  elementsToRerender: Array<ElementPath> | 'rerender-all-elements',
+  visible: boolean,
+  dragState: DragState | null,
+  interactionSession: InteractionSession | null,
+  scale: number,
+  snappingThreshold: number,
+  realCanvasOffset: CanvasVector,
+  roundedCanvasOffset: CanvasVector,
+  textEditor: EditorStateCanvasTextEditor | null,
+  selectionControlsVisible: boolean,
+  cursor: CSSCursor | null,
+  dupeState: DuplicationState | null,
+  base64Blobs: CanvasBase64Blobs,
+  mountCount: number,
+  canvasContentInvalidateCount: number,
+  domWalkerInvalidateCount: number,
+  openFile: DesignerFile | null,
+  scrollAnimation: boolean,
+  transientProperties: MapLike<EditorStateCanvasTransientProperty> | null,
+  resizeOpts: ResizeOptions,
+  domWalkerAdditionalElementsToUpdate: Array<ElementPath>,
+  controls: EditorStateCanvasControls,
+): EditorStateCanvas {
+  return {
+    elementsToRerender: elementsToRerender,
+    visible: visible,
+    dragState: dragState,
+    interactionSession: interactionSession,
+    scale: scale,
+    snappingThreshold: snappingThreshold,
+    realCanvasOffset: realCanvasOffset,
+    roundedCanvasOffset: roundedCanvasOffset,
+    textEditor: textEditor,
+    selectionControlsVisible: selectionControlsVisible,
+    cursor: cursor,
+    duplicationState: dupeState,
+    base64Blobs: base64Blobs,
+    mountCount: mountCount,
+    canvasContentInvalidateCount: canvasContentInvalidateCount,
+    domWalkerInvalidateCount: domWalkerInvalidateCount,
+    openFile: openFile,
+    scrollAnimation: scrollAnimation,
+    transientProperties: transientProperties,
+    resizeOptions: resizeOpts,
+    domWalkerAdditionalElementsToUpdate: domWalkerAdditionalElementsToUpdate,
+    controls: controls,
+  }
+}
+
+export interface EditorStateInspector {
+  visible: boolean
+  classnameFocusCounter: number
+  layoutSectionHovered: boolean
+}
+
+export function editorStateInspector(
+  visible: boolean,
+  classnameFocusCounter: number,
+  layoutSectionHovered: boolean,
+): EditorStateInspector {
+  return {
+    visible: visible,
+    classnameFocusCounter: classnameFocusCounter,
+    layoutSectionHovered: layoutSectionHovered,
+  }
+}
+
+export interface EditorStateFileBrowser {
+  minimised: boolean
+  renamingTarget: string | null
+  dropTarget: string | null
+}
+
+export function editorStateFileBrowser(
+  minimised: boolean,
+  renamingTarget: string | null,
+  dropTarget: string | null,
+): EditorStateFileBrowser {
+  return {
+    minimised: minimised,
+    renamingTarget: renamingTarget,
+    dropTarget: dropTarget,
+  }
+}
+
+export interface EditorStateDependencyList {
+  minimised: boolean
+}
+
+export function editorStateDependencyList(minimised: boolean): EditorStateDependencyList {
+  return {
+    minimised: minimised,
+  }
+}
+
+export interface EditorStateGenericExternalResources {
+  minimised: boolean
+}
+
+export function editorStateGenericExternalResources(
+  minimised: boolean,
+): EditorStateGenericExternalResources {
+  return {
+    minimised: minimised,
+  }
+}
+
+export interface EditorStateGoogleFontsResources {
+  minimised: boolean
+}
+
+export function editorStateGoogleFontsResources(
+  minimised: boolean,
+): EditorStateGoogleFontsResources {
+  return {
+    minimised: minimised,
+  }
+}
+
+export interface EditorStateProjectSettings {
+  minimised: boolean
+}
+
+export function editorStateProjectSettings(minimised: boolean): EditorStateProjectSettings {
+  return {
+    minimised: minimised,
+  }
+}
+
+export interface EditorStateTopMenu {
+  formulaBarMode: 'css' | 'content'
+  formulaBarFocusCounter: number
+}
+
+export function editorStateTopMenu(
+  formulaBarMode: 'css' | 'content',
+  formulaBarFocusCounter: number,
+): EditorStateTopMenu {
+  return {
+    formulaBarMode: formulaBarMode,
+    formulaBarFocusCounter: formulaBarFocusCounter,
+  }
+}
+
+export interface EditorStatePreview {
+  visible: boolean
+  connected: boolean
+}
+
+export function editorStatePreview(visible: boolean, connected: boolean): EditorStatePreview {
+  return {
+    visible: visible,
+    connected: connected,
+  }
+}
+
+export interface EditorStateHome {
+  visible: boolean
+}
+
+export function editorStateHome(visible: boolean): EditorStateHome {
+  return {
+    visible: visible,
+  }
+}
+
+export interface EditorStateCodeEditorErrors {
+  buildErrors: ErrorMessages
+  lintErrors: ErrorMessages
+}
+
+export function editorStateCodeEditorErrors(
+  buildErrors: ErrorMessages,
+  lintErrors: ErrorMessages,
+): EditorStateCodeEditorErrors {
+  return {
+    buildErrors: buildErrors,
+    lintErrors: lintErrors,
+  }
+}
+
+export type ElementProps = { [key: string]: any }
+
+export type AllElementProps = { [path: string]: ElementProps }
+
 // FIXME We need to pull out ProjectState from here
 export interface EditorState {
   id: string | null
@@ -406,17 +829,12 @@ export interface EditorState {
   projectVersion: number
   isLoaded: boolean
   spyMetadata: ElementInstanceMetadataMap // this is coming from the canvas spy report.
-  domMetadata: ElementInstanceMetadata[] // this is coming from the dom walking report.
+  domMetadata: ElementInstanceMetadataMap // this is coming from the dom walking report.
   jsxMetadata: ElementInstanceMetadataMap // this is a merged result of the two above.
   projectContents: ProjectContentTreeRoot
   codeResultCache: CodeResultCache
   propertyControlsInfo: PropertyControlsInfo
-  nodeModules: {
-    skipDeepFreeze: true // when we evaluate the code files we plan to mutate the content with the eval result
-    files: NodeModules
-    projectFilesBuildResults: MultiFileBuildResult
-    packageStatus: PackageStatusMap
-  }
+  nodeModules: EditorStateNodeModules
   selectedViews: Array<ElementPath>
   highlightedViews: Array<ElementPath>
   hiddenInstances: Array<ElementPath>
@@ -427,98 +845,28 @@ export interface EditorState {
   openPopupId: string | null
   toasts: ReadonlyArray<Notice>
   cursorStack: CanvasCursor
-  leftMenu: {
-    selectedTab: LeftMenuTab
-    expanded: boolean
-    paneWidth: number
-  }
-  rightMenu: {
-    selectedTab: RightMenuTab
-    expanded: boolean
-  }
-  interfaceDesigner: {
-    codePaneWidth: number
-    codePaneVisible: boolean
-    restorableCodePaneWidth: number
-    additionalControls: boolean
-  }
-  canvas: {
-    visible: boolean
-    dragState: DragState | null
-    interactionSession: InteractionSession | null
-    scale: number
-    snappingThreshold: number
-    realCanvasOffset: CanvasVector
-    roundedCanvasOffset: CanvasVector
-    textEditor: {
-      elementPath: ElementPath
-      triggerMousePosition: WindowPoint | null
-    } | null
-    selectionControlsVisible: boolean
-    cursor: CSSCursor | null
-    duplicationState: DuplicationState | null
-    base64Blobs: CanvasBase64Blobs
-    mountCount: number
-    canvasContentInvalidateCount: number
-    domWalkerInvalidateCount: number
-    openFile: DesignerFile | null
-    scrollAnimation: boolean
-    transientProperties: MapLike<{
-      elementPath: ElementPath
-      attributesToUpdate: MapLike<JSXAttribute>
-    }> | null
-    resizeOptions: ResizeOptions
-    domWalkerAdditionalElementsToUpdate: Array<ElementPath>
-    controls: {
-      // this is where we can put props for the strategy controls
-      snappingGuidelines: Array<GuidelineWithSnappingVector>
-    }
-  }
+  leftMenu: EditorStateLeftMenu
+  rightMenu: EditorStateRightMenu
+  interfaceDesigner: EditorStateInterfaceDesigner
+  canvas: EditorStateCanvas
   floatingInsertMenu: FloatingInsertMenuState
-  inspector: {
-    visible: boolean
-    classnameFocusCounter: number
-    layoutSectionHovered: boolean
-  }
-  fileBrowser: {
-    minimised: boolean
-    renamingTarget: string | null
-    dropTarget: string | null
-  }
-  dependencyList: {
-    minimised: boolean
-  }
-  genericExternalResources: {
-    minimised: boolean
-  }
-  googleFontsResources: {
-    minimised: boolean
-  }
-  projectSettings: {
-    minimised: boolean
-  }
+  inspector: EditorStateInspector
+  fileBrowser: EditorStateFileBrowser
+  dependencyList: EditorStateDependencyList
+  genericExternalResources: EditorStateGenericExternalResources
+  googleFontsResources: EditorStateGoogleFontsResources
+  projectSettings: EditorStateProjectSettings
   navigator: NavigatorState
-  topmenu: {
-    formulaBarMode: 'css' | 'content'
-    formulaBarFocusCounter: number
-  }
-  preview: {
-    visible: boolean
-    connected: boolean
-  }
-  home: {
-    visible: boolean
-  }
+  topmenu: EditorStateTopMenu
+  preview: EditorStatePreview
+  home: EditorStateHome
   lastUsedFont: FontSettings | null
   modal: ModalDialog | null
   localProjectList: Array<ProjectListing>
   projectList: Array<ProjectListing>
   showcaseProjects: Array<ProjectListing>
   codeEditingEnabled: boolean
-  codeEditorErrors: {
-    buildErrors: ErrorMessages
-    lintErrors: ErrorMessages
-  }
+  codeEditorErrors: EditorStateCodeEditorErrors
   thumbnailLastGenerated: number
   pasteTargetsToIgnore: ElementPath[]
   parseOrPrintInFlight: boolean
@@ -532,6 +880,135 @@ export interface EditorState {
   vscodeLoadingScreenVisible: boolean
   indexedDBFailed: boolean
   forceParseFiles: Array<string>
+  allElementProps: AllElementProps // the final, resolved, static props value for each element.
+}
+
+export function editorState(
+  id: string | null,
+  vscodeBridgeId: VSCodeBridgeId,
+  forkedFromProjectId: string | null,
+  appID: string | null,
+  projectName: string,
+  projectDescription: string,
+  projectVersion: number,
+  isLoaded: boolean,
+  spyMetadata: ElementInstanceMetadataMap,
+  domMetadata: ElementInstanceMetadataMap,
+  jsxMetadata: ElementInstanceMetadataMap,
+  projectContents: ProjectContentTreeRoot,
+  codeResultCache: CodeResultCache,
+  propertyControlsInfo: PropertyControlsInfo,
+  nodeModules: EditorStateNodeModules,
+  selectedViews: Array<ElementPath>,
+  highlightedViews: Array<ElementPath>,
+  hiddenInstances: Array<ElementPath>,
+  warnedInstances: Array<ElementPath>,
+  mode: Mode,
+  focusedPanel: EditorPanel | null,
+  keysPressed: KeysPressed,
+  openPopupId: string | null,
+  toasts: ReadonlyArray<Notice>,
+  cursorStack: CanvasCursor,
+  leftMenu: EditorStateLeftMenu,
+  rightMenu: EditorStateRightMenu,
+  interfaceDesigner: EditorStateInterfaceDesigner,
+  canvas: EditorStateCanvas,
+  floatingInsertMenu: FloatingInsertMenuState,
+  inspector: EditorStateInspector,
+  fileBrowser: EditorStateFileBrowser,
+  dependencyList: EditorStateDependencyList,
+  genericExternalResources: EditorStateGenericExternalResources,
+  googleFontsResources: EditorStateGoogleFontsResources,
+  projectSettings: EditorStateProjectSettings,
+  editorStateNavigator: NavigatorState,
+  topmenu: EditorStateTopMenu,
+  preview: EditorStatePreview,
+  home: EditorStateHome,
+  lastUsedFont: FontSettings | null,
+  modal: ModalDialog | null,
+  localProjectList: Array<ProjectListing>,
+  projectList: Array<ProjectListing>,
+  showcaseProjects: Array<ProjectListing>,
+  codeEditingEnabled: boolean,
+  codeEditorErrors: EditorStateCodeEditorErrors,
+  thumbnailLastGenerated: number,
+  pasteTargetsToIgnore: ElementPath[],
+  parseOrPrintInFlight: boolean,
+  safeMode: boolean,
+  saveError: boolean,
+  vscodeBridgeReady: boolean,
+  vscodeReady: boolean,
+  focusedElementPath: ElementPath | null,
+  config: UtopiaVSCodeConfig,
+  theme: Theme,
+  vscodeLoadingScreenVisible: boolean,
+  indexedDBFailed: boolean,
+  forceParseFiles: Array<string>,
+  allElementProps: AllElementProps,
+): EditorState {
+  return {
+    id: id,
+    vscodeBridgeId: vscodeBridgeId,
+    forkedFromProjectId: forkedFromProjectId,
+    appID: appID,
+    projectName: projectName,
+    projectDescription: projectDescription,
+    projectVersion: projectVersion,
+    isLoaded: isLoaded,
+    spyMetadata: spyMetadata,
+    domMetadata: domMetadata,
+    jsxMetadata: jsxMetadata,
+    projectContents: projectContents,
+    codeResultCache: codeResultCache,
+    propertyControlsInfo: propertyControlsInfo,
+    nodeModules: nodeModules,
+    selectedViews: selectedViews,
+    highlightedViews: highlightedViews,
+    hiddenInstances: hiddenInstances,
+    warnedInstances: warnedInstances,
+    mode: mode,
+    focusedPanel: focusedPanel,
+    keysPressed: keysPressed,
+    openPopupId: openPopupId,
+    toasts: toasts,
+    cursorStack: cursorStack,
+    leftMenu: leftMenu,
+    rightMenu: rightMenu,
+    interfaceDesigner: interfaceDesigner,
+    canvas: canvas,
+    floatingInsertMenu: floatingInsertMenu,
+    inspector: inspector,
+    fileBrowser: fileBrowser,
+    dependencyList: dependencyList,
+    genericExternalResources: genericExternalResources,
+    googleFontsResources: googleFontsResources,
+    projectSettings: projectSettings,
+    navigator: editorStateNavigator,
+    topmenu: topmenu,
+    preview: preview,
+    home: home,
+    lastUsedFont: lastUsedFont,
+    modal: modal,
+    localProjectList: localProjectList,
+    projectList: projectList,
+    showcaseProjects: showcaseProjects,
+    codeEditingEnabled: codeEditingEnabled,
+    codeEditorErrors: codeEditorErrors,
+    thumbnailLastGenerated: thumbnailLastGenerated,
+    pasteTargetsToIgnore: pasteTargetsToIgnore,
+    parseOrPrintInFlight: parseOrPrintInFlight,
+    safeMode: safeMode,
+    saveError: saveError,
+    vscodeBridgeReady: vscodeBridgeReady,
+    vscodeReady: vscodeReady,
+    focusedElementPath: focusedElementPath,
+    config: config,
+    theme: theme,
+    vscodeLoadingScreenVisible: vscodeLoadingScreenVisible,
+    indexedDBFailed: indexedDBFailed,
+    forceParseFiles: forceParseFiles,
+    allElementProps: allElementProps,
+  }
 }
 
 export interface StoredEditorState {
@@ -539,22 +1016,22 @@ export interface StoredEditorState {
   mode: PersistedMode | null
 }
 
-export function storedEditorStateFromEditorState(editorState: EditorState): StoredEditorState {
+export function storedEditorStateFromEditorState(editor: EditorState): StoredEditorState {
   return {
-    selectedViews: editorState.selectedViews,
-    mode: convertModeToSavedMode(editorState.mode),
+    selectedViews: editor.selectedViews,
+    mode: convertModeToSavedMode(editor.mode),
   }
 }
 
 export function mergeStoredEditorStateIntoEditorState(
   storedEditorState: StoredEditorState | null,
-  editorState: EditorState,
+  editor: EditorState,
 ): EditorState {
   if (storedEditorState == null) {
-    return editorState
+    return editor
   } else {
     return {
-      ...editorState,
+      ...editor,
       selectedViews: storedEditorState.selectedViews,
       mode: storedEditorState.mode ?? EditorModes.selectLiteMode(),
     }
@@ -866,7 +1343,7 @@ export function getJSXComponentsAndImportsForPathFromState(
     storyboardFilePath,
     model.projectContents,
     model.nodeModules.files,
-    derived.canvas.transientState.filesState,
+    derived.transientState.filesState,
   )
 }
 
@@ -1071,23 +1548,17 @@ export const defaultElementWarnings: ElementWarnings = {
 export interface DerivedState {
   navigatorTargets: Array<ElementPath>
   visibleNavigatorTargets: Array<ElementPath>
-  canvas: {
-    descendantsOfHiddenInstances: Array<ElementPath>
-    controls: Array<HigherOrderControl>
-    transientState: TransientCanvasState
-  }
+  controls: Array<HigherOrderControl>
+  transientState: TransientCanvasState
   elementWarnings: ComplexMap<ElementPath, ElementWarnings>
 }
 
-function emptyDerivedState(editorState: EditorState): DerivedState {
+function emptyDerivedState(editor: EditorState): DerivedState {
   return {
     navigatorTargets: [],
     visibleNavigatorTargets: [],
-    canvas: {
-      descendantsOfHiddenInstances: [],
-      controls: [],
-      transientState: produceCanvasTransientState(editorState.selectedViews, editorState, false),
-    },
+    controls: [],
+    transientState: produceCanvasTransientState(editor.selectedViews, editor, false),
     elementWarnings: emptyComplexMap(),
   }
 }
@@ -1098,7 +1569,7 @@ export interface PersistentModel {
   projectVersion: number
   projectDescription: string
   projectContents: ProjectContentTreeRoot
-  exportsInfo: ReadonlyArray<ExportsInfo>
+  exportsInfo: Array<ExportsInfo>
   lastUsedFont: FontSettings | null
   hiddenInstances: Array<ElementPath>
   codeEditorErrors: {
@@ -1185,7 +1656,7 @@ export function createEditorState(dispatch: EditorDispatch): EditorState {
     projectVersion: CURRENT_PROJECT_VERSION,
     isLoaded: false,
     spyMetadata: emptyJsxMetadata,
-    domMetadata: [],
+    domMetadata: emptyJsxMetadata,
     jsxMetadata: emptyJsxMetadata,
     projectContents: {},
     codeResultCache: generateCodeResultCache({}, {}, [], {}, dispatch, {}, []),
@@ -1225,6 +1696,7 @@ export function createEditorState(dispatch: EditorDispatch): EditorState {
       additionalControls: true,
     },
     canvas: {
+      elementsToRerender: 'rerender-all-elements',
       dragState: null, // TODO change dragState if editorMode changes
       interactionSession: null,
       visible: true,
@@ -1252,6 +1724,7 @@ export function createEditorState(dispatch: EditorDispatch): EditorState {
       domWalkerAdditionalElementsToUpdate: [],
       controls: {
         snappingGuidelines: [],
+        outlineHighlights: [],
       },
     },
     floatingInsertMenu: {
@@ -1322,6 +1795,7 @@ export function createEditorState(dispatch: EditorDispatch): EditorState {
     vscodeLoadingScreenVisible: true,
     indexedDBFailed: false,
     forceParseFiles: [],
+    allElementProps: {},
   }
 }
 
@@ -1337,35 +1811,35 @@ function getElementWarningsInner(
   rootMetadata: ElementInstanceMetadataMap,
 ): ComplexMap<ElementPath, ElementWarnings> {
   let result: ComplexMap<ElementPath, ElementWarnings> = emptyComplexMap()
-  MetadataUtils.walkMetadata(
-    rootMetadata,
-    (elementMetadata: ElementInstanceMetadata, parentMetadata: ElementInstanceMetadata | null) => {
-      // Check to see if this element is collapsed in one dimension.
-      const globalFrame = elementMetadata.globalFrame
-      const widthOrHeightZero =
-        globalFrame != null ? globalFrame.width === 0 || globalFrame.height === 0 : false
+  Object.values(rootMetadata).forEach((elementMetadata) => {
+    // Check to see if this element is collapsed in one dimension.
+    const globalFrame = elementMetadata.globalFrame
+    const widthOrHeightZero =
+      globalFrame != null ? globalFrame.width === 0 || globalFrame.height === 0 : false
 
-      // Identify if this element looks to be trying to position itself with "pins", but
-      // the parent element isn't appropriately configured.
-      let absoluteWithUnpositionedParent: boolean = false
-      if (parentMetadata != null) {
-        if (
-          elementMetadata.specialSizeMeasurements.position === 'absolute' &&
-          !elementMetadata.specialSizeMeasurements.immediateParentProvidesLayout
-        ) {
-          absoluteWithUnpositionedParent = true
-        }
-      }
+    // Identify if this element looks to be trying to position itself with "pins", but
+    // the parent element isn't appropriately configured.
+    let absoluteWithUnpositionedParent: boolean = false
+    if (
+      elementMetadata.specialSizeMeasurements.position === 'absolute' &&
+      !elementMetadata.specialSizeMeasurements.immediateParentProvidesLayout
+    ) {
+      absoluteWithUnpositionedParent = true
+    }
 
-      // Build the warnings object and add it to the map.
+    // Build the warnings object and add it to the map.
+    if (
+      widthOrHeightZero !== defaultElementWarnings.widthOrHeightZero ||
+      absoluteWithUnpositionedParent !== defaultElementWarnings.absoluteWithUnpositionedParent
+    ) {
       const warnings: ElementWarnings = {
         widthOrHeightZero: widthOrHeightZero,
         absoluteWithUnpositionedParent: absoluteWithUnpositionedParent,
         dynamicSceneChildWidthHeightPercentage: false,
       }
       result = addToComplexMap(toString, result, elementMetadata.elementPath, warnings)
-    },
-  )
+    }
+  })
   return result
 }
 
@@ -1415,15 +1889,12 @@ export function deriveState(
   const derived: DerivedState = {
     navigatorTargets: navigatorTargets,
     visibleNavigatorTargets: visibleNavigatorTargets,
-    canvas: {
-      descendantsOfHiddenInstances: editor.hiddenInstances, // FIXME This has been dead for like ever
-      controls: derivedState.canvas.controls,
-      transientState: produceCanvasTransientState(
-        oldDerivedState?.canvas.transientState.selectedViews ?? editor.selectedViews,
-        editor,
-        true,
-      ),
-    },
+    controls: derivedState.controls,
+    transientState: produceCanvasTransientState(
+      oldDerivedState?.transientState.selectedViews ?? editor.selectedViews,
+      editor,
+      true,
+    ),
     elementWarnings: warnings,
   }
 
@@ -1433,20 +1904,20 @@ export function deriveState(
 }
 
 export function createCanvasModelKILLME(
-  editorState: EditorState,
+  editor: EditorState,
   derivedState: DerivedState,
 ): CanvasModel {
   return {
-    controls: derivedState.canvas.controls,
-    dragState: editorState.canvas.dragState,
-    keysPressed: editorState.keysPressed,
-    mode: editorState.mode,
-    scale: editorState.canvas.scale,
-    highlightedviews: editorState.highlightedViews,
-    selectedViews: editorState.selectedViews,
-    canvasOffset: editorState.canvas.roundedCanvasOffset,
-    focusedPanel: editorState.focusedPanel,
-    editorState: editorState,
+    controls: derivedState.controls,
+    dragState: editor.canvas.dragState,
+    keysPressed: editor.keysPressed,
+    mode: editor.mode,
+    scale: editor.canvas.scale,
+    highlightedviews: editor.highlightedViews,
+    selectedViews: editor.selectedViews,
+    canvasOffset: editor.canvas.roundedCanvasOffset,
+    focusedPanel: editor.focusedPanel,
+    editorState: editor,
   }
 }
 
@@ -1464,7 +1935,7 @@ export function editorModelFromPersistentModel(
     projectVersion: persistentModel.projectVersion,
     isLoaded: false,
     spyMetadata: emptyJsxMetadata,
-    domMetadata: [],
+    domMetadata: emptyJsxMetadata,
     jsxMetadata: emptyJsxMetadata,
     codeResultCache: generateCodeResultCache(
       persistentModel.projectContents,
@@ -1512,6 +1983,7 @@ export function editorModelFromPersistentModel(
       additionalControls: true,
     },
     canvas: {
+      elementsToRerender: 'rerender-all-elements',
       dragState: null, // TODO change dragState if editorMode changes
       interactionSession: null,
       visible: true,
@@ -1539,6 +2011,7 @@ export function editorModelFromPersistentModel(
       domWalkerAdditionalElementsToUpdate: [],
       controls: {
         snappingGuidelines: [],
+        outlineHighlights: [],
       },
     },
     floatingInsertMenu: {
@@ -1602,6 +2075,7 @@ export function editorModelFromPersistentModel(
     vscodeLoadingScreenVisible: true,
     indexedDBFailed: false,
     forceParseFiles: [],
+    allElementProps: {},
   }
   return editor
 }
@@ -1920,8 +2394,7 @@ export function reconstructJSXMetadata(editor: EditorState): ElementInstanceMeta
           editor.spyMetadata,
           editor.domMetadata,
         )
-        return ElementInstanceMetadataMapKeepDeepEquality()(editor.jsxMetadata, mergedMetadata)
-          .value
+        return ElementInstanceMetadataMapKeepDeepEquality(editor.jsxMetadata, mergedMetadata).value
       },
       (_) => editor.jsxMetadata,
       uiFile.fileContents.parsed,
@@ -1930,19 +2403,16 @@ export function reconstructJSXMetadata(editor: EditorState): ElementInstanceMeta
 }
 
 export function getStoryboardElementPathFromEditorState(
-  editorState: EditorState,
+  editor: EditorState,
 ): StaticElementPath | null {
-  return getStoryboardElementPath(
-    editorState.projectContents,
-    editorState.canvas.openFile?.filename ?? null,
-  )
+  return getStoryboardElementPath(editor.projectContents, editor.canvas.openFile?.filename ?? null)
 }
 
 export function getHighlightBoundsForFile(
-  editorState: EditorState,
+  editor: EditorState,
   fullPath: string,
 ): HighlightBoundsForUids | null {
-  const file = getContentsTreeFileFromString(editorState.projectContents, fullPath)
+  const file = getContentsTreeFileFromString(editor.projectContents, fullPath)
   if (isTextFile(file)) {
     if (isParseSuccess(file.fileContents.parsed)) {
       return getHighlightBoundsFromParseResult(file.fileContents.parsed)
@@ -1956,11 +2426,11 @@ export function getHighlightBoundsForFile(
 
 export function getHighlightBoundsForElementPath(
   path: ElementPath,
-  editorState: EditorState,
+  editor: EditorState,
 ): HighlightBoundsWithFile | null {
   const staticPath = EP.dynamicPathToStaticPath(path)
   if (staticPath != null) {
-    const highlightBounds = getHighlightBoundsForProject(editorState.projectContents)
+    const highlightBounds = getHighlightBoundsForProject(editor.projectContents)
     if (highlightBounds != null) {
       const highlightedUID = toUid(staticPath)
       return highlightBounds[highlightedUID]
@@ -1972,10 +2442,10 @@ export function getHighlightBoundsForElementPath(
 
 export function getHighlightBoundsForElementPaths(
   paths: Array<ElementPath>,
-  editorState: EditorState,
+  editor: EditorState,
 ): HighlightBoundsWithFileForUids {
   const targetUIDs = paths.map((path) => toUid(EP.dynamicPathToStaticPath(path)))
-  const projectHighlightBounds = getHighlightBoundsForProject(editorState.projectContents)
+  const projectHighlightBounds = getHighlightBoundsForProject(editor.projectContents)
   return pick(targetUIDs, projectHighlightBounds)
 }
 
@@ -2009,17 +2479,17 @@ export function getElementPathsInBounds(
 
 export function modifyParseSuccessAtPath(
   filePath: string,
-  editorState: EditorState,
+  editor: EditorState,
   modifyParseSuccess: (parseSuccess: ParseSuccess) => ParseSuccess,
 ): EditorState {
-  const projectFile = getContentsTreeFileFromString(editorState.projectContents, filePath)
+  const projectFile = getContentsTreeFileFromString(editor.projectContents, filePath)
   if (isTextFile(projectFile)) {
     const parsedFileContents = projectFile.fileContents.parsed
     if (isParseSuccess(parsedFileContents)) {
       const updatedParseSuccess = modifyParseSuccess(parsedFileContents)
       // Try to keep referential equality as much as possible.
       if (updatedParseSuccess === parsedFileContents) {
-        return editorState
+        return editor
       } else {
         const updatedFile = saveTextFileContents(
           projectFile,
@@ -2031,12 +2501,8 @@ export function modifyParseSuccessAtPath(
           false,
         )
         return {
-          ...editorState,
-          projectContents: addFileToProjectContents(
-            editorState.projectContents,
-            filePath,
-            updatedFile,
-          ),
+          ...editor,
+          projectContents: addFileToProjectContents(editor.projectContents, filePath, updatedFile),
         }
       }
     } else {
@@ -2050,7 +2516,7 @@ export function modifyParseSuccessAtPath(
 export function modifyUnderlyingTarget(
   target: ElementPath | null,
   currentFilePath: string,
-  editorState: EditorState,
+  editor: EditorState,
   modifyElement: (
     element: JSXElement,
     underlying: ElementPath,
@@ -2063,8 +2529,8 @@ export function modifyUnderlyingTarget(
   ) => ParseSuccess = (success) => success,
 ): EditorState {
   const underlyingTarget = normalisePathToUnderlyingTarget(
-    editorState.projectContents,
-    editorState.nodeModules.files,
+    editor.projectContents,
+    editor.nodeModules.files,
     currentFilePath,
     target,
   )
@@ -2113,12 +2579,12 @@ export function modifyUnderlyingTarget(
     }
   }
 
-  return modifyParseSuccessAtPath(targetSuccess.filePath, editorState, innerModifyParseSuccess)
+  return modifyParseSuccessAtPath(targetSuccess.filePath, editor, innerModifyParseSuccess)
 }
 
 export function modifyUnderlyingForOpenFile(
   target: ElementPath | null,
-  editorState: EditorState,
+  editor: EditorState,
   modifyElement: (
     element: JSXElement,
     underlying: ElementPath,
@@ -2132,8 +2598,8 @@ export function modifyUnderlyingForOpenFile(
 ): EditorState {
   return modifyUnderlyingTarget(
     target,
-    forceNotNull('Designer file should be open.', editorState.canvas.openFile?.filename),
-    editorState,
+    forceNotNull('Designer file should be open.', editor.canvas.openFile?.filename),
+    editor,
     modifyElement,
     modifyParseSuccess,
   )
@@ -2185,7 +2651,7 @@ export function withUnderlyingTarget<T>(
 
 export function withUnderlyingTargetFromEditorState<T>(
   target: ElementPath | null,
-  editorState: EditorState,
+  editor: EditorState,
   defaultValue: T,
   withTarget: (
     success: ParseSuccess,
@@ -2196,9 +2662,9 @@ export function withUnderlyingTargetFromEditorState<T>(
 ): T {
   return withUnderlyingTarget(
     target,
-    editorState.projectContents,
-    editorState.nodeModules.files,
-    editorState.canvas.openFile?.filename ?? null,
+    editor.projectContents,
+    editor.nodeModules.files,
+    editor.canvas.openFile?.filename ?? null,
     defaultValue,
     withTarget,
   )
@@ -2206,7 +2672,7 @@ export function withUnderlyingTargetFromEditorState<T>(
 
 export function forUnderlyingTargetFromEditorState(
   target: ElementPath | null,
-  editorState: EditorState,
+  editor: EditorState,
   withTarget: (
     success: ParseSuccess,
     element: JSXElement,
@@ -2214,7 +2680,7 @@ export function forUnderlyingTargetFromEditorState(
     underlyingFilePath: string,
   ) => void,
 ): void {
-  withUnderlyingTargetFromEditorState<any>(target, editorState, {}, withTarget)
+  withUnderlyingTargetFromEditorState<any>(target, editor, {}, withTarget)
 }
 
 export function forUnderlyingTarget(
@@ -2244,8 +2710,8 @@ export function getCurrentTheme(editor: EditorState): Theme {
   return editor.theme
 }
 
-export function getNewSceneName(editorState: EditorState): string {
-  const openFile = getOpenUIJSFile(editorState)
+export function getNewSceneName(editor: EditorState): string {
+  const openFile = getOpenUIJSFile(editor)
   if (openFile != null) {
     if (isParseSuccess(openFile.fileContents.parsed)) {
       const success = openFile.fileContents.parsed

@@ -7,7 +7,9 @@ import { Resizable, ResizableProps } from '../../../uuiui-deps'
 
 import { UtopiaStyles } from '../../styles/theme'
 
-export const ResizableFlexColumn: React.FunctionComponent<ResizableProps> = (props) => (
+export const ResizableFlexColumn: React.FunctionComponent<
+  React.PropsWithChildren<ResizableProps>
+> = (props) => (
   <Resizable
     style={UtopiaStyles.flexColumn}
     enable={{

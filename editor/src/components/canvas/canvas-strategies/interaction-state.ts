@@ -10,23 +10,28 @@ import {
 import { ElementPath } from '../../../core/shared/project-file-types'
 import { KeyCharacter } from '../../../utils/keyboard'
 import { Modifiers } from '../../../utils/modifiers'
-import { EditorStatePatch } from '../../editor/store/editor-state'
+import { AllElementProps, EditorStatePatch } from '../../editor/store/editor-state'
 import { EdgePosition } from '../canvas-types'
 import { MoveIntoDragThreshold } from '../canvas-utils'
 import { CanvasCommand } from '../commands/commands'
-import { CanvasStrategy, CanvasStrategyId, CustomStrategyState } from './canvas-strategy-types'
+import {
+  CanvasStrategy,
+  CanvasStrategyId,
+  CustomStrategyState,
+  defaultCustomStrategyState,
+} from './canvas-strategy-types'
 
 export interface DragInteractionData {
   type: 'DRAG'
   dragStart: CanvasPoint
   drag: CanvasVector | null
   prevDrag: CanvasVector | null
-  dragThresholdPassed: boolean
   originalDragStart: CanvasPoint
   modifiers: Modifiers
+  globalTime: number
 }
 
-interface KeyboardInteractionData {
+export interface KeyboardInteractionData {
   type: 'KEYBOARD'
   keysPressed: Array<KeyCharacter>
   // keysPressed also includes modifiers, but we want the separate modifiers array since they are captured and mapped to a specific
@@ -53,6 +58,7 @@ export interface InteractionSession {
   sourceOfUpdate: CanvasControlType
   lastInteractionTime: number
   metadata: ElementInstanceMetadataMap
+  allElementProps: AllElementProps
 
   // To track if the user selected a strategy
   userPreferredStrategy: CanvasStrategyId | null
@@ -60,7 +66,32 @@ export interface InteractionSession {
   startedAt: number
 }
 
-export type InteractionSessionWithoutMetadata = Omit<InteractionSession, 'metadata'>
+export function interactionSession(
+  interactionData: InputData,
+  activeControl: CanvasControlType,
+  sourceOfUpdate: CanvasControlType,
+  lastInteractionTime: number,
+  metadata: ElementInstanceMetadataMap,
+  userPreferredStrategy: CanvasStrategyId | null,
+  startedAt: number,
+  allElementProps: AllElementProps,
+): InteractionSession {
+  return {
+    interactionData: interactionData,
+    activeControl: activeControl,
+    sourceOfUpdate: sourceOfUpdate,
+    lastInteractionTime: lastInteractionTime,
+    metadata: metadata,
+    userPreferredStrategy: userPreferredStrategy,
+    startedAt: startedAt,
+    allElementProps: allElementProps,
+  }
+}
+
+export type InteractionSessionWithoutMetadata = Omit<
+  InteractionSession,
+  'metadata' | 'allElementProps'
+>
 
 export interface CommandDescription {
   description: string
@@ -78,10 +109,14 @@ export interface StrategyState {
 
   // Checkpointed metadata at the point at which a strategy change has occurred.
   startingMetadata: ElementInstanceMetadataMap
-  customStrategyState: CustomStrategyState | null
+  customStrategyState: CustomStrategyState
+  startingAllElementProps: AllElementProps
 }
 
-export function createEmptyStrategyState(metadata?: ElementInstanceMetadataMap): StrategyState {
+export function createEmptyStrategyState(
+  metadata: ElementInstanceMetadataMap,
+  allElementProps: AllElementProps,
+): StrategyState {
   return {
     currentStrategy: null,
     currentStrategyFitness: 0,
@@ -89,8 +124,9 @@ export function createEmptyStrategyState(metadata?: ElementInstanceMetadataMap):
     accumulatedPatches: [],
     commandDescriptions: [],
     sortedApplicableStrategies: [],
-    startingMetadata: metadata ?? {},
-    customStrategyState: null,
+    startingMetadata: metadata,
+    customStrategyState: defaultCustomStrategyState(),
+    startingAllElementProps: allElementProps,
   }
 }
 
@@ -105,9 +141,9 @@ export function createInteractionViaMouse(
       dragStart: mouseDownPoint,
       drag: null,
       prevDrag: null,
-      dragThresholdPassed: false,
       originalDragStart: mouseDownPoint,
       modifiers: modifiers,
+      globalTime: Date.now(),
     },
     activeControl: activeControl,
     sourceOfUpdate: activeControl,
@@ -131,16 +167,16 @@ export function updateInteractionViaMouse(
 ): InteractionSessionWithoutMetadata {
   if (currentState.interactionData.type === 'DRAG') {
     const dragThresholdPassed =
-      currentState.interactionData.dragThresholdPassed || dragExceededThreshold(drag)
+      currentState.interactionData.drag != null || dragExceededThreshold(drag)
     return {
       interactionData: {
         type: 'DRAG',
         dragStart: currentState.interactionData.dragStart,
         drag: dragThresholdPassed ? drag : null,
         prevDrag: currentState.interactionData.drag,
-        dragThresholdPassed: dragThresholdPassed,
         originalDragStart: currentState.interactionData.originalDragStart,
         modifiers: modifiers,
+        globalTime: Date.now(),
       },
       activeControl: currentState.activeControl,
       sourceOfUpdate: sourceOfUpdate ?? currentState.activeControl,
@@ -206,9 +242,9 @@ export function updateInteractionViaKeyboard(
           dragStart: currentState.interactionData.dragStart,
           drag: currentState.interactionData.drag,
           prevDrag: currentState.interactionData.prevDrag,
-          dragThresholdPassed: currentState.interactionData.dragThresholdPassed,
           originalDragStart: currentState.interactionData.originalDragStart,
           modifiers: modifiers,
+          globalTime: Date.now(),
         },
         activeControl: currentState.activeControl,
         sourceOfUpdate: currentState.activeControl,
@@ -270,21 +306,21 @@ export function interactionDataHardReset(interactionData: InputData): InputData 
 }
 
 export function strategySwitchInteractionSessionReset(
-  interactionSession: InteractionSession,
+  interactionSessionToReset: InteractionSession,
 ): InteractionSession {
   return {
-    ...interactionSession,
-    interactionData: strategySwitchInteractionDataReset(interactionSession.interactionData),
+    ...interactionSessionToReset,
+    interactionData: strategySwitchInteractionDataReset(interactionSessionToReset.interactionData),
   }
 }
 
 // Hard reset means we need to ignore everything happening in the interaction until now, and replay all the dragging
 export function interactionSessionHardReset(
-  interactionSession: InteractionSession,
+  interactionSessionToReset: InteractionSession,
 ): InteractionSession {
   return {
-    ...interactionSession,
-    interactionData: interactionDataHardReset(interactionSession.interactionData),
+    ...interactionSessionToReset,
+    interactionData: interactionDataHardReset(interactionSessionToReset.interactionData),
   }
 }
 
@@ -304,22 +340,48 @@ export function hasDragModifiersChanged(
   )
 }
 
-interface BoundingArea {
+export interface BoundingArea {
   type: 'BOUNDING_AREA'
   target: ElementPath
 }
 
-interface ResizeHandle {
+export function boundingArea(target: ElementPath): BoundingArea {
+  return {
+    type: 'BOUNDING_AREA',
+    target: target,
+  }
+}
+
+export interface ResizeHandle {
   type: 'RESIZE_HANDLE'
   edgePosition: EdgePosition
 }
 
-interface FlexGapHandle {
+export function resizeHandle(edgePosition: EdgePosition): ResizeHandle {
+  return {
+    type: 'RESIZE_HANDLE',
+    edgePosition: edgePosition,
+  }
+}
+
+export interface FlexGapHandle {
   type: 'FLEX_GAP_HANDLE'
 }
 
-interface KeyboardCatcherControl {
+export function flexGapHandle(): FlexGapHandle {
+  return {
+    type: 'FLEX_GAP_HANDLE',
+  }
+}
+
+export interface KeyboardCatcherControl {
   type: 'KEYBOARD_CATCHER_CONTROL'
+}
+
+export function keyboardCatcherControl(): KeyboardCatcherControl {
+  return {
+    type: 'KEYBOARD_CATCHER_CONTROL',
+  }
 }
 
 export type CanvasControlType = BoundingArea | ResizeHandle | FlexGapHandle | KeyboardCatcherControl

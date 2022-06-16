@@ -77,7 +77,7 @@ export interface GridRowProps extends React.InputHTMLAttributes<HTMLDivElement> 
   alignItems?: 'start' | 'center'
 }
 
-export const UIGridRow: React.FunctionComponent<GridRowProps> = ({
+export const UIGridRow: React.FunctionComponent<React.PropsWithChildren<GridRowProps>> = ({
   tall,
   variant,
   alignItems,
@@ -97,7 +97,7 @@ export const UIGridRow: React.FunctionComponent<GridRowProps> = ({
       overflow: 'hidden',
       alignItems: alignItems ?? 'center',
       ...gridTemplates[variant],
-      ...style,
+      ...(style as any), // TODO Emotion and React 18 types don't like each other
     }}
   >
     {children}

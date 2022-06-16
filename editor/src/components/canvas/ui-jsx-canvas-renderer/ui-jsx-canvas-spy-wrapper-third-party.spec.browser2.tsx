@@ -1,3 +1,4 @@
+/* eslint-disable jest/expect-expect */
 import * as MockReactThreeFiber from '@react-three/fiber'
 import * as mockWithEditorPackageJSON from '../../../../package.json'
 
@@ -13,18 +14,15 @@ import { emptySet } from '../../../core/shared/set-utils'
 import * as EP from '../../../core/shared/element-path'
 import { lintAndParse } from '../../../core/workers/parser-printer/parser-printer'
 import { defaultProject } from '../../../sample-projects/sample-project-utils'
-import {
-  wait,
-  simplifiedMetadataMap,
-  domWalkerMetadataToSimplifiedMetadataMap,
-} from '../../../utils/utils.test-utils'
+import { wait, simplifiedMetadataMap } from '../../../utils/utils.test-utils'
 import { addFileToProjectContents } from '../../assets'
 import type { EditorStorePatched } from '../../editor/store/editor-state'
 import { StoryboardFilePath } from '../../editor/store/editor-state'
-import { applyUIDMonkeyPatch } from '../../../utils/canvas-react-utils'
 import { matchInlineSnapshotBrowser } from '../../../../test/karma-snapshots'
 import { createBuiltInDependenciesList } from '../../../core/es-modules/package-manager/built-in-dependencies-list'
 import { NO_OP } from '../../../core/shared/utils'
+import CanvasActions from '../canvas-actions'
+import { CanvasVector } from 'src/core/shared/math-utils'
 
 const builtInDependencies = createBuiltInDependenciesList(null)
 builtInDependencies.push({
@@ -105,7 +103,7 @@ const exampleFiles = {
   `,
 }
 
-function renderTestProject() {
+async function renderTestProject() {
   const baseModel = defaultProject()
 
   const updatedProject = Object.keys(exampleFiles).reduce((workingProject, modifiedFilename) => {
@@ -135,7 +133,19 @@ function renderTestProject() {
       projectContents: updatedProjectContents,
     }
   }, baseModel)
-  return renderTestEditorWithModel(updatedProject, 'await-first-dom-report', builtInDependencies)
+  const renderTestResult = await renderTestEditorWithModel(
+    updatedProject,
+    'await-first-dom-report',
+    builtInDependencies,
+  )
+  // Pause to let R3F do what it needs to do.
+  await wait(500)
+  // This is a kludge to get the DOM walker to run after processing the action.
+  await renderTestResult.dispatch(
+    [CanvasActions.scrollCanvas({ x: 1, y: 0 } as CanvasVector)],
+    true,
+  )
+  return renderTestResult
 }
 
 async function waitForFullMetadata(getEditorState: () => EditorStorePatched): Promise<true> {
@@ -226,7 +236,7 @@ describe('Spy Wrapper Tests For React Three Fiber', () => {
     `,
     )
     const domMetadata = getEditorState().editor.domMetadata
-    const sanitizedDomMetadata = domWalkerMetadataToSimplifiedMetadataMap(domMetadata)
+    const sanitizedDomMetadata = simplifiedMetadataMap(domMetadata)
     matchInlineSnapshotBrowser(
       sanitizedDomMetadata,
       `

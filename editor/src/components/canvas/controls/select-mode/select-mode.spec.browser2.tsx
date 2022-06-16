@@ -1,3 +1,4 @@
+/// <reference types="karma-viewport" />
 import { act, fireEvent } from '@testing-library/react'
 import { BakedInStoryboardUID } from '../../../../core/model/scene-utils'
 import { canvasPoint } from '../../../../core/shared/math-utils'
@@ -95,11 +96,22 @@ describe('Select Mode Selection', () => {
 
     const doubleClick = async () => {
       await act(async () => {
-        const domFinished = renderResult.getDomReportDispatched()
-        const dispatchDone = renderResult.getDispatchFollowUpactionsFinished()
+        const dispatchDone = renderResult.getDispatchFollowUpActionsFinished()
         fireEvent(
           canvasControlsLayer,
           new MouseEvent('mousedown', {
+            detail: 1,
+            bubbles: true,
+            cancelable: true,
+            metaKey: false,
+            clientX: areaControlBounds.left + 20,
+            clientY: areaControlBounds.top + 20,
+            buttons: 1,
+          }),
+        )
+        fireEvent(
+          canvasControlsLayer,
+          new MouseEvent('mouseup', {
             detail: 1,
             bubbles: true,
             cancelable: true,
@@ -121,16 +133,21 @@ describe('Select Mode Selection', () => {
             buttons: 1,
           }),
         )
-        await domFinished
+        fireEvent(
+          canvasControlsLayer,
+          new MouseEvent('mouseup', {
+            detail: 1,
+            bubbles: true,
+            cancelable: true,
+            metaKey: false,
+            clientX: areaControlBounds.left + 20,
+            clientY: areaControlBounds.top + 20,
+            buttons: 1,
+          }),
+        )
         await dispatchDone
       })
-      await waitForAnimationFrame()
     }
-
-    await doubleClick()
-
-    const selectedViews1 = renderResult.getEditorState().editor.selectedViews
-    expect(selectedViews1).toEqual([EP.elementPath([[BakedInStoryboardUID, TestSceneUID]])])
 
     await doubleClick()
 
@@ -193,8 +210,7 @@ describe('Select Mode Advanced Cases', () => {
     const canvasControlsLayer = renderResult.renderedDOM.getByTestId(CanvasControlsContainerID)
 
     await act(async () => {
-      const domFinished = renderResult.getDomReportDispatched()
-      const dispatchDone = renderResult.getDispatchFollowUpactionsFinished()
+      const dispatchDone = renderResult.getDispatchFollowUpActionsFinished()
       fireEvent(
         canvasControlsLayer,
         new MouseEvent('mousedown', {
@@ -207,7 +223,6 @@ describe('Select Mode Advanced Cases', () => {
           buttons: 1,
         }),
       )
-      await domFinished
       await dispatchDone
     })
     await waitForAnimationFrame()
@@ -230,8 +245,7 @@ describe('Select Mode Advanced Cases', () => {
 
     const doubleClick = async () => {
       await act(async () => {
-        const domFinished = renderResult.getDomReportDispatched()
-        const dispatchDone = renderResult.getDispatchFollowUpactionsFinished()
+        const dispatchDone = renderResult.getDispatchFollowUpActionsFinished()
         fireEvent(
           canvasControlsLayer,
           new MouseEvent('mousedown', {
@@ -256,7 +270,6 @@ describe('Select Mode Advanced Cases', () => {
             buttons: 1,
           }),
         )
-        await domFinished
         await dispatchDone
       })
       await waitForAnimationFrame()
@@ -301,8 +314,7 @@ describe('Select Mode Advanced Cases', () => {
 
     const doubleClick = async () => {
       await act(async () => {
-        const domFinished = renderResult.getDomReportDispatched()
-        const dispatchDone = renderResult.getDispatchFollowUpactionsFinished()
+        const dispatchDone = renderResult.getDispatchFollowUpActionsFinished()
         fireEvent(
           canvasControlsLayer,
           new MouseEvent('mousedown', {
@@ -327,7 +339,6 @@ describe('Select Mode Advanced Cases', () => {
             buttons: 1,
           }),
         )
-        await domFinished
         await dispatchDone
       })
       await waitForAnimationFrame()
@@ -349,7 +360,6 @@ describe('Select Mode Advanced Cases', () => {
     ])
   })
 })
-
 function waitForAnimationFrame(): Promise<void> {
   return new Promise<void>((resolve, reject) => {
     requestAnimationFrame(() => {

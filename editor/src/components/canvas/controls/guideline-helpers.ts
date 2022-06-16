@@ -162,7 +162,10 @@ export function getSnapDelta(
       return working
     }
   }, Utils.zeroPoint as CanvasPoint)
-  return { delta: Utils.roundPointTo(delta, 0), guidelinesWithSnappingVector: winningGuidelines }
+  return {
+    delta: Utils.roundPointToNearestHalf(delta),
+    guidelinesWithSnappingVector: winningGuidelines,
+  }
 }
 
 export function pointGuidelineToBoundsEdge(

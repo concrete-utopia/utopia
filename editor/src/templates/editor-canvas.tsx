@@ -183,7 +183,7 @@ function handleCanvasEvent(model: CanvasModel, event: CanvasMouseEvent): Array<E
         }
         if (model.editorState.canvas.interactionSession?.interactionData.type === 'DRAG') {
           const applyChanges =
-            model.editorState.canvas.interactionSession?.interactionData.dragThresholdPassed
+            model.editorState.canvas.interactionSession?.interactionData.drag != null
           optionalDragStateAction = [CanvasActions.clearInteractionSession(applyChanges)]
         }
         break
@@ -293,6 +293,7 @@ function on(
   return additionalEvents
 }
 
+let interactionSessionTimerHandle: any = undefined
 export function runLocalCanvasAction(
   dispatch: EditorDispatch,
   model: EditorState,
@@ -366,6 +367,10 @@ export function runLocalCanvasAction(
       }
     }
     case 'CREATE_INTERACTION_SESSION':
+      clearInterval(interactionSessionTimerHandle)
+      interactionSessionTimerHandle = setInterval(() => {
+        dispatch([CanvasActions.updateDragInteractionData({ globalTime: Date.now() })])
+      }, 200)
       return {
         ...model,
         canvas: {
@@ -373,14 +378,13 @@ export function runLocalCanvasAction(
           interactionSession: {
             ...action.interactionSession,
             metadata: model.canvas.interactionSession?.metadata ?? model.jsxMetadata,
+            allElementProps:
+              model.canvas.interactionSession?.allElementProps ?? model.allElementProps,
           },
         },
       }
     case 'CLEAR_INTERACTION_SESSION':
-      const metadataToKeep =
-        action.applyChanges && model.canvas.interactionSession != null
-          ? model.canvas.interactionSession.metadata
-          : model.jsxMetadata
+      clearInterval(interactionSessionTimerHandle)
       return {
         ...model,
         canvas: {
@@ -388,7 +392,9 @@ export function runLocalCanvasAction(
           interactionSession: null,
           domWalkerInvalidateCount: model.canvas.domWalkerInvalidateCount + 1,
         },
-        jsxMetadata: metadataToKeep,
+        jsxMetadata: {},
+        domMetadata: {},
+        spyMetadata: {},
       }
     case 'UPDATE_INTERACTION_SESSION':
       if (model.canvas.interactionSession == null) {
@@ -401,6 +407,27 @@ export function runLocalCanvasAction(
             interactionSession: {
               ...model.canvas.interactionSession,
               ...action.interactionSessionUpdate,
+            },
+          },
+        }
+      }
+    case 'UPDATE_DRAG_INTERACTION_DATA':
+      if (
+        model.canvas.interactionSession == null ||
+        model.canvas.interactionSession.interactionData.type === 'KEYBOARD'
+      ) {
+        return model
+      } else {
+        return {
+          ...model,
+          canvas: {
+            ...model.canvas,
+            interactionSession: {
+              ...model.canvas.interactionSession,
+              interactionData: {
+                ...model.canvas.interactionSession.interactionData,
+                ...action.dragInteractionUpdate,
+              },
             },
           },
         }
@@ -437,7 +464,6 @@ export interface ControlDependencies {
   highlightedviews: Array<ElementPath>
   selectedViews: Array<ElementPath>
   topLevelHiddenInstances: Array<ElementPath>
-  descendantsOfHiddenInstances: Array<ElementPath>
   editorState: EditorState
   derivedState: DerivedState
 }
@@ -461,7 +487,6 @@ export function collectControlsDependencies(
     highlightedviews: editor.highlightedViews,
     selectedViews: editor.selectedViews,
     topLevelHiddenInstances: editor.hiddenInstances,
-    descendantsOfHiddenInstances: derived.canvas.descendantsOfHiddenInstances,
     editorState: editor,
     derivedState: derived,
   }
@@ -889,10 +914,11 @@ export class EditorCanvas extends React.Component<EditorCanvasProps> {
         this.props.editor.jsxMetadata,
         target,
       )
-      if (possibleElement == null) {
+      const elementProps = this.props.editor.allElementProps[EP.toString(target)]
+      if (possibleElement == null || elementProps == null) {
         return false
       } else {
-        return isAspectRatioLockedNew(possibleElement)
+        return isAspectRatioLockedNew(possibleElement, elementProps)
       }
     })
   }

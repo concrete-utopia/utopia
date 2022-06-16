@@ -3454,7 +3454,7 @@ export type CSSFontProperty =
   | CSSLetterSpacing
   | CSSLineHeight
 
-export type FontSettings = {
+export interface FontSettings {
   color: CSSColor
   fontFamily: CSSFontFamily
   fontWeightAndStyle: CSSFontWeightAndStyle
@@ -3463,6 +3463,28 @@ export type FontSettings = {
   textDecorationLine: CSSTextDecorationLine
   letterSpacing: CSSLetterSpacing
   lineHeight: CSSLineHeight
+}
+
+export function fontSettings(
+  color: CSSColor,
+  fontFamily: CSSFontFamily,
+  fontWeightAndStyle: CSSFontWeightAndStyle,
+  fontSize: CSSFontSize,
+  textAlign: CSSTextAlign,
+  textDecorationLine: CSSTextDecorationLine,
+  letterSpacing: CSSLetterSpacing,
+  lineHeight: CSSLineHeight,
+): FontSettings {
+  return {
+    color: color,
+    fontFamily: fontFamily,
+    fontWeightAndStyle: fontWeightAndStyle,
+    fontSize: fontSize,
+    textAlign: textAlign,
+    textDecorationLine: textDecorationLine,
+    letterSpacing: letterSpacing,
+    lineHeight: lineHeight,
+  }
 }
 
 export interface CSSTextShadow {
@@ -4579,6 +4601,13 @@ export const DOMEventHandlerEmptyValues = DOMEventHandlerNames.reduce((current, 
   return current
 }, {} as DOMEventAttributeProperties)
 
+const elementPropertiesEmptyValuesExcludingEvents: UtopianElementProperties &
+  DOMIMGAttributeProperties = {
+  alt: '',
+  src: '/',
+  className: '',
+}
+
 const elementPropertiesEmptyValues: ParsedElementProperties = {
   alt: '',
   src: '/',
@@ -4741,6 +4770,12 @@ export const emptyValues: ParsedProperties = {
   ...layoutEmptyValues,
   ...layoutEmptyValuesNew,
 }
+
+export const computedStyleKeys: Array<string> = Object.keys({
+  ...elementPropertiesEmptyValuesExcludingEvents,
+  ...cssEmptyValues,
+  ...layoutEmptyValuesNew,
+})
 
 type Parser<T> = (simpleValue: unknown, rawValue: ModifiableAttribute | null) => Either<string, T>
 

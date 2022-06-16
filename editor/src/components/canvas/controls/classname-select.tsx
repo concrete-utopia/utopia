@@ -14,6 +14,7 @@ import WindowedSelect, {
   ValueContainerProps,
 } from 'react-windowed-select'
 import {
+  AlwaysTrue,
   atomWithPubSub,
   usePubSubAtomReadOnly,
   usePubSubAtomWriteOnly,
@@ -90,7 +91,7 @@ function formatOptionLabel(
 
 const Menu = React.memo((props: MenuProps<TailWindOption, true>) => {
   const theme = useColorTheme()
-  const focusedOption = usePubSubAtomReadOnly(focusedOptionAtom)
+  const focusedOption = usePubSubAtomReadOnly(focusedOptionAtom, AlwaysTrue)
   const showFooter = props.options.length > 0
   const joinedAttributes = focusedOption?.attributes?.join(', ')
   const attributesText =
@@ -347,7 +348,7 @@ export const ClassNameSelect = React.memo(
     )
 
     const onInputChange = React.useCallback(
-      (newInput, actionMeta: InputActionMeta) => {
+      (newInput: string, actionMeta: InputActionMeta) => {
         if (newInput === '') {
           dispatch([EditorActions.clearTransientProps()], 'canvas')
         }

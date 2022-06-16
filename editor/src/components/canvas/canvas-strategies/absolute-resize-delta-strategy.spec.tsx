@@ -3,7 +3,7 @@ import {
   ElementInstanceMetadata,
   SpecialSizeMeasurements,
 } from '../../../core/shared/element-template'
-import { canvasPoint, canvasRectangle } from '../../../core/shared/math-utils'
+import { CanvasPoint, canvasPoint, canvasRectangle } from '../../../core/shared/math-utils'
 import { emptyModifiers } from '../../../utils/modifiers'
 import { EditorState } from '../../editor/store/editor-state'
 import { EdgePosition } from '../canvas-types'
@@ -15,20 +15,25 @@ import {
 } from '../ui-jsx.test-utils'
 import { absoluteResizeDeltaStrategy } from './absolute-resize-delta-strategy'
 import { pickCanvasStateFromEditorState } from './canvas-strategies'
+import { defaultCustomStrategyState } from './canvas-strategy-types'
 import { StrategyState } from './interaction-state'
 import { createMouseInteractionForTests } from './interaction-state.test-utils'
 
-function resizeElement(editor: EditorState, edgePosition: EdgePosition): EditorState {
+function resizeElement(
+  editor: EditorState,
+  edgePosition: EdgePosition,
+  drag: CanvasPoint = canvasPoint({ x: 15, y: 25 }),
+): EditorState {
   const interactionSessionWithoutMetadata = createMouseInteractionForTests(
     null as any, // the strategy does not use this
     emptyModifiers,
     { type: 'RESIZE_HANDLE', edgePosition: edgePosition },
-    canvasPoint({ x: 15, y: 25 }),
+    drag,
   )
 
   const strategyResult = absoluteResizeDeltaStrategy.apply(
     pickCanvasStateFromEditorState(editor),
-    { ...interactionSessionWithoutMetadata, metadata: {} },
+    { ...interactionSessionWithoutMetadata, metadata: {}, allElementProps: {} },
     {
       currentStrategy: null as any, // the strategy does not use this
       currentStrategyFitness: null as any, // the strategy does not use this
@@ -43,7 +48,10 @@ function resizeElement(editor: EditorState, edgePosition: EdgePosition): EditorS
           } as SpecialSizeMeasurements,
         } as ElementInstanceMetadata,
       },
-      customStrategyState: { foo: 'bar' },
+      startingAllElementProps: {
+        'scene-aaa/app-entity:aaa/bbb': {},
+      },
+      customStrategyState: defaultCustomStrategyState(),
     } as StrategyState,
   )
 
@@ -56,6 +64,7 @@ function resizeElement(editor: EditorState, edgePosition: EdgePosition): EditorS
 function createTestEditorAndResizeElement(
   edgePosition: EdgePosition,
   snippet: string,
+  drag: CanvasPoint = canvasPoint({ x: 15, y: 25 }),
 ): EditorState {
   const targetElement = elementPath([
     ['scene-aaa', 'app-entity'],
@@ -66,10 +75,13 @@ function createTestEditorAndResizeElement(
     targetElement,
   ])
 
-  return resizeElement(initialEditor, edgePosition)
+  return resizeElement(initialEditor, edgePosition, drag)
 }
 
-function resizeTestWithTLWH(edgePosition: EdgePosition): EditorState {
+function resizeTestWithTLWH(
+  edgePosition: EdgePosition,
+  drag: CanvasPoint = canvasPoint({ x: 15, y: 25 }),
+): EditorState {
   const snippet = `
   <View style={{ ...(props.style || {}) }} data-uid='aaa'>
     <View
@@ -78,10 +90,23 @@ function resizeTestWithTLWH(edgePosition: EdgePosition): EditorState {
     />
   </View>
   `
-  return createTestEditorAndResizeElement(edgePosition, snippet)
+  return createTestEditorAndResizeElement(edgePosition, snippet, drag)
 }
 
 describe('Absolute Delta Resize Strategy TLWH', () => {
+  it('does not activate when drag threshold is not reached', async () => {
+    const edgePosition: EdgePosition = { x: 0, y: 0 }
+    const editorAfterStrategy = resizeTestWithTLWH(edgePosition, canvasPoint({ x: 1, y: 1 }))
+    expect(testPrintCodeFromEditorState(editorAfterStrategy)).toEqual(
+      makeTestProjectCodeWithSnippet(`<View style={{ ...(props.style || {}) }} data-uid='aaa'>
+        <View
+          style={{ backgroundColor: '#0091FFAA', position: 'absolute', left: '50px', top: 50, width: 250, height: 300 }}
+          data-uid='bbb'
+        />
+      </View>
+  `),
+    )
+  })
   it('works with element resized from TL corner', async () => {
     const edgePosition: EdgePosition = { x: 0, y: 0 }
     const editorAfterStrategy = resizeTestWithTLWH(edgePosition)

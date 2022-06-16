@@ -68,6 +68,7 @@ import { getLayoutPropertyOr } from '../../../core/layout/getLayoutProperty'
 import {
   ScenePathForTestUiJsFile,
   ScenePath1ForTestUiJsFile,
+  Scene1UID,
 } from '../../../core/model/test-ui-js-file.test-utils'
 import { emptyUiJsxCanvasContextData } from '../../canvas/ui-jsx-canvas'
 import { requestedNpmDependency } from '../../../core/shared/npm-dependency-types'
@@ -91,6 +92,7 @@ import {
 } from '../../../core/es-modules/package-manager/built-in-dependencies-list'
 import { NO_OP } from '../../../core/shared/utils'
 import { cssNumber } from '../../inspector/common/css-utils'
+import { testStaticElementPath } from '../../../core/shared/element-path.test-utils'
 
 const chaiExpect = Chai.expect
 
@@ -216,7 +218,9 @@ describe('action RENAME_COMPONENT', () => {
       builtInDependencies,
     )
     const updatedMetadata = createFakeMetadataForEditor(updatedEditor)
-    chaiExpect(MetadataUtils.getElementLabel(target, updatedMetadata)).to.deep.equal(newName)
+    chaiExpect(
+      MetadataUtils.getElementLabel(editor.allElementProps, target, updatedMetadata),
+    ).to.deep.equal(newName)
 
     const clearNameAction = renameComponent(target, null)
     const clearedNameEditor = runLocalEditorAction(
@@ -231,9 +235,9 @@ describe('action RENAME_COMPONENT', () => {
       builtInDependencies,
     )
     const clearedNameMetadata = createFakeMetadataForEditor(clearedNameEditor)
-    chaiExpect(MetadataUtils.getElementLabel(target, clearedNameMetadata)).to.deep.equal(
-      expectedDefaultName,
-    )
+    chaiExpect(
+      MetadataUtils.getElementLabel(editor.allElementProps, target, clearedNameMetadata),
+    ).to.deep.equal(expectedDefaultName)
   }
 
   it('renames an existing scene', () => checkRename(ScenePathForTestUiJsFile, 'Test'))
@@ -541,6 +545,10 @@ describe('action DELETE_SELECTED', () => {
           secondTargetElementPath,
         ),
       ).toBeNull()
+      expect(updatedEditor.selectedViews).toEqual([
+        EP.appendNewElementPath(ScenePathForTestUiJsFile, EP.staticElementPath(['aaa'])),
+        testStaticElementPath([[BakedInStoryboardUID, Scene1UID]]),
+      ])
     } else {
       chaiExpect.fail('src/app.js file was the wrong type.')
     }
