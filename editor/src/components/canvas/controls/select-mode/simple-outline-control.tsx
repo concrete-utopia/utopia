@@ -57,10 +57,10 @@ const OutlineControl = React.memo<OutlineControlProps>((props) => {
       ref.current.style.display = 'none'
     } else {
       ref.current.style.display = 'block'
-      ref.current.style.left = `${boundingBox.x + 0.5 / canvasScale}px`
-      ref.current.style.top = `${boundingBox.y + 0.5 / canvasScale}px`
-      ref.current.style.width = `${boundingBox.width - (0.5 / canvasScale) * 3}px`
-      ref.current.style.height = `${boundingBox.height - (0.5 / canvasScale) * 3}px`
+      ref.current.style.left = `${boundingBox.x - 0.5 / canvasScale}px`
+      ref.current.style.top = `${boundingBox.y - 0.5 / canvasScale}px`
+      ref.current.style.width = `${boundingBox.width + 1 / canvasScale}px`
+      ref.current.style.height = `${boundingBox.height + 1 / canvasScale}px`
     }
   })
 
@@ -74,8 +74,9 @@ const OutlineControl = React.memo<OutlineControlProps>((props) => {
         className='role-outline'
         style={{
           position: 'absolute',
-          boxSizing: 'border-box',
-          boxShadow: `0px 0px 0px ${1 / scale}px ${color}`,
+          borderColor: color,
+          borderWidth: `${1 / scale}px`,
+          borderStyle: 'solid',
           pointerEvents: 'none',
         }}
       />
