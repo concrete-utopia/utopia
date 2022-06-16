@@ -28,7 +28,7 @@ import { ParentOutlines } from '../controls/parent-outlines'
 import { AbsoluteResizeControl } from '../controls/select-mode/absolute-resize-control'
 import { AbsolutePin, hasAtLeastTwoPinsPerSide } from './absolute-resize-helpers'
 import { CanvasStrategy, emptyStrategyApplicationResult } from './canvas-strategy-types'
-import { getMultiselectBounds } from './shared-absolute-move-strategy-helpers'
+import { getDragTargets, getMultiselectBounds } from './shared-absolute-move-strategy-helpers'
 import {
   pickCursorFromEdgePosition,
   resizeBoundingBox,
@@ -41,9 +41,10 @@ export const absoluteResizeBoundingBoxStrategy: CanvasStrategy = {
   id: 'ABSOLUTE_RESIZE_BOUNDING_BOX',
   name: 'Absolute Resize',
   isApplicable: (canvasState, interactionState, metadata, allElementProps) => {
+    const filteredSelectedElements = getDragTargets(canvasState.selectedElements)
     if (
-      canvasState.selectedElements.length > 1 ||
-      (canvasState.selectedElements.length >= 1 &&
+      filteredSelectedElements.length > 1 ||
+      (filteredSelectedElements.length >= 1 &&
         (interactionState?.interactionData.modifiers.alt ||
           interactionState?.interactionData.modifiers.shift))
     ) {
@@ -89,9 +90,10 @@ export const absoluteResizeBoundingBoxStrategy: CanvasStrategy = {
       const edgePosition = interactionState.activeControl.edgePosition
       if (interactionState.interactionData.drag != null) {
         const drag = interactionState.interactionData.drag
+        const filteredSelectedElements = getDragTargets(canvasState.selectedElements)
         const originalBoundingBox = getMultiselectBounds(
           sessionState.startingMetadata,
-          canvasState.selectedElements,
+          filteredSelectedElements,
         )
         if (originalBoundingBox != null) {
           const keepAspectRatio = interactionState.interactionData.modifiers.shift
@@ -109,7 +111,7 @@ export const absoluteResizeBoundingBoxStrategy: CanvasStrategy = {
             centerBased,
           )
           const { snappedBoundingBox, guidelinesWithSnappingVector } = snapBoundingBox(
-            canvasState.selectedElements,
+            filteredSelectedElements,
             sessionState.startingMetadata,
             edgePosition,
             newBoundingBox,
@@ -118,7 +120,8 @@ export const absoluteResizeBoundingBoxStrategy: CanvasStrategy = {
             centerBased,
             sessionState.startingAllElementProps,
           )
-          const commandsForSelectedElements = canvasState.selectedElements.flatMap(
+
+          const commandsForSelectedElements = filteredSelectedElements.flatMap(
             (selectedElement) => {
               const element = getElementFromProjectContents(
                 selectedElement,

@@ -14,7 +14,7 @@ import { AbsoluteResizeControl } from '../controls/select-mode/absolute-resize-c
 import { ZeroSizeResizeControlWrapper } from '../controls/zero-sized-element-controls'
 import { GuidelineWithSnappingVector } from '../guideline'
 import { CanvasStrategy, emptyStrategyApplicationResult } from './canvas-strategy-types'
-import { getMultiselectBounds } from './shared-absolute-move-strategy-helpers'
+import { getDragTargets, getMultiselectBounds } from './shared-absolute-move-strategy-helpers'
 import {
   pickCursorFromEdgePosition,
   resizeBoundingBox,
@@ -26,12 +26,13 @@ export const absoluteResizeDeltaStrategy: CanvasStrategy = {
   id: 'ABSOLUTE_RESIZE_DELTA',
   name: 'Absolute Resize (Delta-based)',
   isApplicable: (canvasState, interactionState, metadata) => {
+    const filteredSelectedElements = getDragTargets(canvasState.selectedElements)
     if (
-      canvasState.selectedElements.length === 1 &&
+      filteredSelectedElements.length === 1 &&
       !interactionState?.interactionData.modifiers.alt &&
       !interactionState?.interactionData.modifiers.shift // shift is aspect ratio locked resize implemented in absolute-resize-bounding-box-strategy.tsx
     ) {
-      return canvasState.selectedElements.every((element) => {
+      return filteredSelectedElements.every((element) => {
         const elementMetadata = MetadataUtils.findElementByElementPath(metadata, element)
 
         return elementMetadata?.specialSizeMeasurements.position === 'absolute'
@@ -70,8 +71,9 @@ export const absoluteResizeDeltaStrategy: CanvasStrategy = {
       const edgePosition = interactionState.activeControl.edgePosition
       if (interactionState.interactionData.drag != null) {
         const drag = interactionState.interactionData.drag
+        const filteredSelectedElements = getDragTargets(canvasState.selectedElements)
         const { snappedDragVector, guidelinesWithSnappingVector } = snapDrag(
-          canvasState.selectedElements,
+          filteredSelectedElements,
           sessionState.startingMetadata,
           drag,
           edgePosition,
@@ -79,35 +81,33 @@ export const absoluteResizeDeltaStrategy: CanvasStrategy = {
           sessionState.startingAllElementProps,
         )
 
-        const commandsForSelectedElements = canvasState.selectedElements.flatMap(
-          (selectedElement) => {
-            const element: JSXElement | null = withUnderlyingTarget(
+        const commandsForSelectedElements = filteredSelectedElements.flatMap((selectedElement) => {
+          const element: JSXElement | null = withUnderlyingTarget(
+            selectedElement,
+            canvasState.projectContents,
+            {},
+            canvasState.openFile,
+            null,
+            (_, e) => e,
+          )
+          const elementParentBounds =
+            MetadataUtils.findElementByElementPath(
+              sessionState.startingMetadata, // TODO should this be using the current metadata?
               selectedElement,
-              canvasState.projectContents,
-              {},
-              canvasState.openFile,
-              null,
-              (_, e) => e,
-            )
-            const elementParentBounds =
-              MetadataUtils.findElementByElementPath(
-                sessionState.startingMetadata, // TODO should this be using the current metadata?
-                selectedElement,
-              )?.specialSizeMeasurements.immediateParentBounds ?? null
+            )?.specialSizeMeasurements.immediateParentBounds ?? null
 
-            if (element == null) {
-              return []
-            }
+          if (element == null) {
+            return []
+          }
 
-            return createResizeCommands(
-              element,
-              selectedElement,
-              edgePosition,
-              snappedDragVector,
-              elementParentBounds,
-            )
-          },
-        )
+          return createResizeCommands(
+            element,
+            selectedElement,
+            edgePosition,
+            snappedDragVector,
+            elementParentBounds,
+          )
+        })
         return {
           commands: [
             ...commandsForSelectedElements,
