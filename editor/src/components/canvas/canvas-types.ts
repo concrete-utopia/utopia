@@ -56,6 +56,7 @@ export enum CSSCursor {
   Text = 'text',
   TextInsert = 'text',
   BrowserAuto = 'auto',
+  Duplicate = "-webkit-image-set( url( '/editor/cursors/cursor-duplicate.png ') 1x, url( '/editor/cursors/cursor-duplicate@2x.png ') 2x ) 4 4, default",
 }
 
 export type VerticalRectangles = {
