@@ -46,6 +46,7 @@ export const absoluteReparentStrategy: CanvasStrategy = {
   fitness: (canvasState, interactionState) => {
     if (
       canvasState.selectedElements.length > 0 &&
+      interactionState.activeControl.type === 'BOUNDING_AREA' &&
       interactionState.interactionData.modifiers.cmd &&
       interactionState.interactionData.type === 'DRAG' &&
       interactionState.interactionData.drag != null

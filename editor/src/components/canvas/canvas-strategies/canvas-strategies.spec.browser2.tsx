@@ -1,7 +1,7 @@
 import { elementPath } from '../../../core/shared/element-path'
 import { ElementInstanceMetadataMap } from '../../../core/shared/element-template'
 import { canvasPoint } from '../../../core/shared/math-utils'
-import { emptyModifiers } from '../../../utils/modifiers'
+import { cmdModifier, emptyModifiers } from '../../../utils/modifiers'
 import {
   findCanvasStrategy,
   pickCanvasStateFromEditorState,
@@ -216,5 +216,95 @@ describe('Strategy Fitness', () => {
     )
 
     expect(canvasStrategy.strategy?.strategy.id).toEqual('ESCAPE_HATCH_STRATEGY')
+  })
+  it('fits Absolute Resize Strategy when resizing an absolute element without modifiers', async () => {
+    const targetElement = elementPath([
+      ['utopia-storyboard-uid', 'scene-aaa', 'app-entity'],
+      ['aaa', 'bbb'],
+    ])
+
+    const renderResult = await renderTestEditorWithCode(
+      makeTestProjectCodeWithSnippet(`
+      <div style={{ ...(props.style || {}), display: 'flex' }} data-uid='aaa'>
+        <div
+          style={{ backgroundColor: '#0091FFAA', position: 'absolute', top: 10, left: 10, width: 100, height: 120 }}
+          data-uid='bbb'
+        />
+      </div>
+      `),
+      'await-first-dom-report',
+    )
+
+    await act(async () => {
+      const dispatchDone = renderResult.getDispatchFollowUpActionsFinished()
+      await renderResult.dispatch([selectComponents([targetElement], false)], false)
+      await dispatchDone
+    })
+
+    const interactionSession: InteractionSession = {
+      ...createMouseInteractionForTests(
+        canvasPoint({ x: 0, y: 0 }),
+        emptyModifiers,
+        { type: 'RESIZE_HANDLE', edgePosition: { x: 1, y: 0.5 } },
+        canvasPoint({ x: -15, y: -15 }),
+      ),
+      metadata: renderResult.getEditorState().editor.jsxMetadata,
+      allElementProps: renderResult.getEditorState().editor.allElementProps,
+    }
+
+    const canvasStrategy = findCanvasStrategy(
+      RegisteredCanvasStrategies,
+      pickCanvasStateFromEditorState(renderResult.getEditorState().editor),
+      interactionSession,
+      baseStrategyState(renderResult.getEditorState().editor.jsxMetadata),
+      null,
+    )
+
+    expect(canvasStrategy.strategy?.strategy.id).toEqual('ABSOLUTE_RESIZE_DELTA')
+  })
+  it('fits Absolute Resize Strategy when resizing an absolute element with cmd pressed', async () => {
+    const targetElement = elementPath([
+      ['utopia-storyboard-uid', 'scene-aaa', 'app-entity'],
+      ['aaa', 'bbb'],
+    ])
+
+    const renderResult = await renderTestEditorWithCode(
+      makeTestProjectCodeWithSnippet(`
+      <div style={{ ...(props.style || {}), display: 'flex' }} data-uid='aaa'>
+        <div
+          style={{ backgroundColor: '#0091FFAA', position: 'absolute', top: 10, left: 10, width: 100, height: 120 }}
+          data-uid='bbb'
+        />
+      </div>
+      `),
+      'await-first-dom-report',
+    )
+
+    await act(async () => {
+      const dispatchDone = renderResult.getDispatchFollowUpActionsFinished()
+      await renderResult.dispatch([selectComponents([targetElement], false)], false)
+      await dispatchDone
+    })
+
+    const interactionSession: InteractionSession = {
+      ...createMouseInteractionForTests(
+        canvasPoint({ x: 0, y: 0 }),
+        cmdModifier,
+        { type: 'RESIZE_HANDLE', edgePosition: { x: 1, y: 0.5 } },
+        canvasPoint({ x: -15, y: -15 }),
+      ),
+      metadata: renderResult.getEditorState().editor.jsxMetadata,
+      allElementProps: renderResult.getEditorState().editor.allElementProps,
+    }
+
+    const canvasStrategy = findCanvasStrategy(
+      RegisteredCanvasStrategies,
+      pickCanvasStateFromEditorState(renderResult.getEditorState().editor),
+      interactionSession,
+      baseStrategyState(renderResult.getEditorState().editor.jsxMetadata),
+      null,
+    )
+
+    expect(canvasStrategy.strategy?.strategy.id).toEqual('ABSOLUTE_RESIZE_DELTA')
   })
 })
