@@ -13,7 +13,7 @@ import { ParentBounds } from '../controls/parent-bounds'
 import { ParentOutlines } from '../controls/parent-outlines'
 import { absoluteMoveStrategy } from './absolute-move-strategy'
 import { pickCanvasStateFromEditorState } from './canvas-strategies'
-import { CanvasStrategy } from './canvas-strategy-types'
+import { CanvasStrategy, emptyStrategyApplicationResult } from './canvas-strategy-types'
 import { InteractionSession, interactionSession, StrategyState } from './interaction-state'
 import { getDragTargets } from './shared-absolute-move-strategy-helpers'
 
@@ -70,54 +70,63 @@ export const absoluteDuplicateStrategy: CanvasStrategy = {
     return 0
   },
   apply: (canvasState, interactionState, strategyState) => {
-    const { selectedElements } = canvasState
-    const filteredSelectedElements = getDragTargets(selectedElements)
+    if (
+      interactionState.interactionData.type === 'DRAG' &&
+      interactionState.interactionData.drag != null
+    ) {
+      const { selectedElements } = canvasState
+      const filteredSelectedElements = getDragTargets(selectedElements)
 
-    let duplicatedElementNewUids = { ...strategyState.customStrategyState.duplicatedElementNewUids }
-    let withDuplicatedMetadata: ElementInstanceMetadataMap = { ...strategyState.startingMetadata }
-    let duplicateCommands: Array<DuplicateElement> = []
-    let newPaths: Array<ElementPath> = []
-
-    filteredSelectedElements.forEach((selectedElement) => {
-      const selectedElementString = EP.toString(selectedElement)
-      const newUid =
-        duplicatedElementNewUids[selectedElementString] ??
-        generateUidWithExistingComponents(canvasState.projectContents)
-      const newPath = EP.appendToPath(EP.parentPath(selectedElement), newUid)
-      const newPathString = EP.toString(newPath)
-
-      duplicatedElementNewUids[selectedElementString] = newUid
-      withDuplicatedMetadata[newPathString] = {
-        ...withDuplicatedMetadata[EP.toString(selectedElement)],
-        elementPath: newPath,
+      let duplicatedElementNewUids = {
+        ...strategyState.customStrategyState.duplicatedElementNewUids,
       }
+      let withDuplicatedMetadata: ElementInstanceMetadataMap = { ...strategyState.startingMetadata }
+      let duplicateCommands: Array<DuplicateElement> = []
+      let newPaths: Array<ElementPath> = []
 
-      duplicateCommands.push(duplicateElement('permanent', selectedElement, newUid))
-      newPaths.push(newPath)
-    })
+      filteredSelectedElements.forEach((selectedElement) => {
+        const selectedElementString = EP.toString(selectedElement)
+        const newUid =
+          duplicatedElementNewUids[selectedElementString] ??
+          generateUidWithExistingComponents(canvasState.projectContents)
+        const newPath = EP.appendToPath(EP.parentPath(selectedElement), newUid)
+        const newPathString = EP.toString(newPath)
 
-    return {
-      commands: [
-        ...duplicateCommands,
-        setElementsToRerenderCommand([...canvasState.selectedElements, ...newPaths]),
-        updateSelectedViews('permanent', newPaths),
-        updateFunctionCommand('permanent', (editorState, transient) =>
-          runMoveStrategyForFreshlyDuplicatedElements(
-            editorState,
-            {
-              ...strategyState,
-              startingMetadata: withDuplicatedMetadata,
-            },
-            interactionState,
-            transient,
+        duplicatedElementNewUids[selectedElementString] = newUid
+        withDuplicatedMetadata[newPathString] = {
+          ...withDuplicatedMetadata[EP.toString(selectedElement)],
+          elementPath: newPath,
+        }
+
+        duplicateCommands.push(duplicateElement('permanent', selectedElement, newUid))
+        newPaths.push(newPath)
+      })
+
+      return {
+        commands: [
+          ...duplicateCommands,
+          setElementsToRerenderCommand([...canvasState.selectedElements, ...newPaths]),
+          updateSelectedViews('permanent', newPaths),
+          updateFunctionCommand('permanent', (editorState, transient) =>
+            runMoveStrategyForFreshlyDuplicatedElements(
+              editorState,
+              {
+                ...strategyState,
+                startingMetadata: withDuplicatedMetadata,
+              },
+              interactionState,
+              transient,
+            ),
           ),
-        ),
-      ],
-      customState: {
-        ...strategyState.customStrategyState,
-        duplicatedElementNewUids: duplicatedElementNewUids,
-      },
+        ],
+        customState: {
+          ...strategyState.customStrategyState,
+          duplicatedElementNewUids: duplicatedElementNewUids,
+        },
+      }
     }
+    // Fallback for when the checks above are not satisfied.
+    return emptyStrategyApplicationResult
   },
 }
 
