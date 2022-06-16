@@ -65,58 +65,67 @@ export const absoluteResizeDeltaStrategy: CanvasStrategy = {
   apply: (canvasState, interactionState, sessionState) => {
     if (
       interactionState.interactionData.type === 'DRAG' &&
-      interactionState.interactionData.drag != null &&
       interactionState.activeControl.type === 'RESIZE_HANDLE'
     ) {
-      const drag = interactionState.interactionData.drag
       const edgePosition = interactionState.activeControl.edgePosition
-      const { snappedDragVector, guidelinesWithSnappingVector } = snapDrag(
-        canvasState.selectedElements,
-        sessionState.startingMetadata,
-        drag,
-        edgePosition,
-        canvasState.scale,
-        sessionState.startingAllElementProps,
-      )
+      if (interactionState.interactionData.drag != null) {
+        const drag = interactionState.interactionData.drag
+        const { snappedDragVector, guidelinesWithSnappingVector } = snapDrag(
+          canvasState.selectedElements,
+          sessionState.startingMetadata,
+          drag,
+          edgePosition,
+          canvasState.scale,
+          sessionState.startingAllElementProps,
+        )
 
-      const commandsForSelectedElements = canvasState.selectedElements.flatMap(
-        (selectedElement) => {
-          const element: JSXElement | null = withUnderlyingTarget(
-            selectedElement,
-            canvasState.projectContents,
-            {},
-            canvasState.openFile,
-            null,
-            (_, e) => e,
-          )
-          const elementParentBounds =
-            MetadataUtils.findElementByElementPath(
-              sessionState.startingMetadata, // TODO should this be using the current metadata?
+        const commandsForSelectedElements = canvasState.selectedElements.flatMap(
+          (selectedElement) => {
+            const element: JSXElement | null = withUnderlyingTarget(
               selectedElement,
-            )?.specialSizeMeasurements.immediateParentBounds ?? null
+              canvasState.projectContents,
+              {},
+              canvasState.openFile,
+              null,
+              (_, e) => e,
+            )
+            const elementParentBounds =
+              MetadataUtils.findElementByElementPath(
+                sessionState.startingMetadata, // TODO should this be using the current metadata?
+                selectedElement,
+              )?.specialSizeMeasurements.immediateParentBounds ?? null
 
-          if (element == null) {
-            return []
-          }
+            if (element == null) {
+              return []
+            }
 
-          return createResizeCommands(
-            element,
-            selectedElement,
-            edgePosition,
-            snappedDragVector,
-            elementParentBounds,
-          )
-        },
-      )
-      return {
-        commands: [
-          ...commandsForSelectedElements,
-          updateHighlightedViews('transient', []),
-          setCursorCommand('transient', pickCursorFromEdgePosition(edgePosition)),
-          setSnappingGuidelines('transient', guidelinesWithSnappingVector),
-          setElementsToRerenderCommand(canvasState.selectedElements),
-        ],
-        customState: null,
+            return createResizeCommands(
+              element,
+              selectedElement,
+              edgePosition,
+              snappedDragVector,
+              elementParentBounds,
+            )
+          },
+        )
+        return {
+          commands: [
+            ...commandsForSelectedElements,
+            updateHighlightedViews('transient', []),
+            setCursorCommand('transient', pickCursorFromEdgePosition(edgePosition)),
+            setSnappingGuidelines('transient', guidelinesWithSnappingVector),
+            setElementsToRerenderCommand(canvasState.selectedElements),
+          ],
+          customState: null,
+        }
+      } else {
+        return {
+          commands: [
+            setCursorCommand('transient', pickCursorFromEdgePosition(edgePosition)),
+            updateHighlightedViews('transient', []),
+          ],
+          customState: null,
+        }
       }
     }
     // Fallback for when the checks above are not satisfied.
