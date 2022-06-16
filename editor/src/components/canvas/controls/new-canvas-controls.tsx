@@ -428,6 +428,8 @@ const NewCanvasControlsInner = (props: NewCanvasControlsInnerProps) => {
       : []
   }
 
+  const resizeStatus = getResizeStatus()
+
   return (
     <div
       id={CanvasControlsContainerID}
@@ -453,33 +455,38 @@ const NewCanvasControlsInner = (props: NewCanvasControlsInnerProps) => {
         />,
       )}
       {when(
-        (isFeatureEnabled('Canvas Strategies') && props.editor.mode.type === 'select') ||
-          props.editor.mode.type === 'select-lite',
-        <PinLines />,
-      )}
-      {when(
-        (isFeatureEnabled('Canvas Strategies') && props.editor.mode.type === 'select') ||
-          props.editor.mode.type === 'select-lite',
-        <DistanceGuidelineControl />,
-      )}
-      {when(
-        (isFeatureEnabled('Canvas Strategies') &&
-          isFeatureEnabled('Insertion Plus Button') &&
-          props.editor.mode.type === 'select') ||
-          props.editor.mode.type === 'select-lite',
-        <InsertionControls />,
-      )}
-      {renderHighlightControls()}
-      <LayoutParentControl />
-      {when(
-        isFeatureEnabled('Canvas Strategies'),
-        <MultiSelectOutlineControl localSelectedElements={localSelectedViews} />,
-      )}
-      {when(isFeatureEnabled('Canvas Strategies'), <GuidelineControls />)}
-      <OutlineHighlightControl />
-      {when(
-        isFeatureEnabled('Canvas Strategies'),
-        <>{strategyControls.map((c) => React.createElement(c.control, { key: c.key }))}</>,
+        resizeStatus !== 'disabled',
+        <>
+          {when(
+            (isFeatureEnabled('Canvas Strategies') && props.editor.mode.type === 'select') ||
+              props.editor.mode.type === 'select-lite',
+            <PinLines />,
+          )}
+          {when(
+            (isFeatureEnabled('Canvas Strategies') && props.editor.mode.type === 'select') ||
+              props.editor.mode.type === 'select-lite',
+            <DistanceGuidelineControl />,
+          )}
+          {when(
+            (isFeatureEnabled('Canvas Strategies') &&
+              isFeatureEnabled('Insertion Plus Button') &&
+              props.editor.mode.type === 'select') ||
+              props.editor.mode.type === 'select-lite',
+            <InsertionControls />,
+          )}
+          {renderHighlightControls()}
+          <LayoutParentControl />
+          {when(
+            isFeatureEnabled('Canvas Strategies'),
+            <MultiSelectOutlineControl localSelectedElements={localSelectedViews} />,
+          )}
+          {when(isFeatureEnabled('Canvas Strategies'), <GuidelineControls />)}
+          <OutlineHighlightControl />
+          {when(
+            isFeatureEnabled('Canvas Strategies'),
+            <>{strategyControls.map((c) => React.createElement(c.control, { key: c.key }))}</>,
+          )}
+        </>,
       )}
     </div>
   )

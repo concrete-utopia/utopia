@@ -84,84 +84,94 @@ export const absoluteResizeBoundingBoxStrategy: CanvasStrategy = {
   apply: (canvasState, interactionState, sessionState) => {
     if (
       interactionState.interactionData.type === 'DRAG' &&
-      interactionState.interactionData.drag != null &&
       interactionState.activeControl.type === 'RESIZE_HANDLE'
     ) {
-      const drag = interactionState.interactionData.drag
       const edgePosition = interactionState.activeControl.edgePosition
-
-      const originalBoundingBox = getMultiselectBounds(
-        sessionState.startingMetadata,
-        canvasState.selectedElements,
-      )
-      if (originalBoundingBox != null) {
-        const keepAspectRatio = interactionState.interactionData.modifiers.shift
-        const lockedAspectRatio = keepAspectRatio
-          ? originalBoundingBox.width / originalBoundingBox.height
-          : null
-        const centerBased = interactionState.interactionData.modifiers.alt
-          ? 'center-based'
-          : 'non-center-based'
-        const newBoundingBox = resizeBoundingBox(
-          originalBoundingBox,
-          drag,
-          edgePosition,
-          lockedAspectRatio,
-          centerBased,
-        )
-        const { snappedBoundingBox, guidelinesWithSnappingVector } = snapBoundingBox(
-          canvasState.selectedElements,
+      if (interactionState.interactionData.drag != null) {
+        const drag = interactionState.interactionData.drag
+        const originalBoundingBox = getMultiselectBounds(
           sessionState.startingMetadata,
-          edgePosition,
-          newBoundingBox,
-          canvasState.scale,
-          lockedAspectRatio,
-          centerBased,
-          sessionState.startingAllElementProps,
+          canvasState.selectedElements,
         )
-        const commandsForSelectedElements = canvasState.selectedElements.flatMap(
-          (selectedElement) => {
-            const element = getElementFromProjectContents(
-              selectedElement,
-              canvasState.projectContents,
-              canvasState.openFile,
-            )
-            const originalFrame = MetadataUtils.getFrameInCanvasCoords(
-              selectedElement,
-              sessionState.startingMetadata,
-            )
-
-            if (element == null || originalFrame == null) {
-              return []
-            }
-
-            const newFrame = transformFrameUsingBoundingBox(
-              snappedBoundingBox,
-              originalBoundingBox,
-              originalFrame,
-            )
-            const elementParentBounds =
-              MetadataUtils.findElementByElementPath(sessionState.startingMetadata, selectedElement)
-                ?.specialSizeMeasurements.immediateParentBounds ?? null
-
-            return [
-              ...createResizeCommandsFromFrame(
-                element,
+        if (originalBoundingBox != null) {
+          const keepAspectRatio = interactionState.interactionData.modifiers.shift
+          const lockedAspectRatio = keepAspectRatio
+            ? originalBoundingBox.width / originalBoundingBox.height
+            : null
+          const centerBased = interactionState.interactionData.modifiers.alt
+            ? 'center-based'
+            : 'non-center-based'
+          const newBoundingBox = resizeBoundingBox(
+            originalBoundingBox,
+            drag,
+            edgePosition,
+            lockedAspectRatio,
+            centerBased,
+          )
+          const { snappedBoundingBox, guidelinesWithSnappingVector } = snapBoundingBox(
+            canvasState.selectedElements,
+            sessionState.startingMetadata,
+            edgePosition,
+            newBoundingBox,
+            canvasState.scale,
+            lockedAspectRatio,
+            centerBased,
+            sessionState.startingAllElementProps,
+          )
+          const commandsForSelectedElements = canvasState.selectedElements.flatMap(
+            (selectedElement) => {
+              const element = getElementFromProjectContents(
                 selectedElement,
-                newFrame,
+                canvasState.projectContents,
+                canvasState.openFile,
+              )
+              const originalFrame = MetadataUtils.getFrameInCanvasCoords(
+                selectedElement,
+                sessionState.startingMetadata,
+              )
+
+              if (element == null || originalFrame == null) {
+                return []
+              }
+
+              const newFrame = transformFrameUsingBoundingBox(
+                snappedBoundingBox,
+                originalBoundingBox,
                 originalFrame,
-                elementParentBounds,
-              ),
-              setSnappingGuidelines('transient', guidelinesWithSnappingVector),
-            ]
-          },
-        )
+              )
+              const elementParentBounds =
+                MetadataUtils.findElementByElementPath(
+                  sessionState.startingMetadata,
+                  selectedElement,
+                )?.specialSizeMeasurements.immediateParentBounds ?? null
+
+              return [
+                ...createResizeCommandsFromFrame(
+                  element,
+                  selectedElement,
+                  newFrame,
+                  originalFrame,
+                  elementParentBounds,
+                ),
+                setSnappingGuidelines('transient', guidelinesWithSnappingVector),
+              ]
+            },
+          )
+          return {
+            commands: [
+              ...commandsForSelectedElements,
+              updateHighlightedViews('transient', []),
+              setCursorCommand('transient', pickCursorFromEdgePosition(edgePosition)),
+              setElementsToRerenderCommand(canvasState.selectedElements),
+            ],
+            customState: null,
+          }
+        }
+      } else {
         return {
           commands: [
-            ...commandsForSelectedElements,
-            updateHighlightedViews('transient', []),
             setCursorCommand('transient', pickCursorFromEdgePosition(edgePosition)),
-            setElementsToRerenderCommand(canvasState.selectedElements),
+            updateHighlightedViews('transient', []),
           ],
           customState: null,
         }

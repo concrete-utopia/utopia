@@ -86,35 +86,60 @@ function consoleMessageForResult(result: FrameResult, beforeOrAfter: 'Before' | 
   return `${beforeOrAfter}: ${result.analytics.percentile50}ms (${result.analytics.frameMin}-${result.analytics.frameMax}ms)`
 }
 
-type PerformanceResult = { [key: string]: FrameResult }
+type ResultsGroup = { [key: string]: FrameResult }
+type PerformanceResults = {
+  frameTests: ResultsGroup
+  interactionTests: ResultsGroup
+}
 
 export const testPerformance = async function () {
   const stagingResult = await testPerformanceInner(STAGING_EDITOR_URL)
   const masterResult = await testPerformanceInner(MASTER_EDITOR_URL)
 
-  const summaryImage = await uploadSummaryImage(stagingResult, masterResult)
+  const framesSummaryImage = await uploadSummaryImage(
+    stagingResult.frameTests,
+    masterResult.frameTests,
+    100,
+  )
+  const interactionsSummaryImage = await uploadSummaryImage(
+    stagingResult.interactionTests,
+    masterResult.interactionTests,
+    200,
+  )
 
-  const messageParts = Object.entries(stagingResult).flatMap(([k, result]) => {
-    const targetResult = masterResult[k]
+  const combinedStagingResult = { ...stagingResult.frameTests, ...stagingResult.interactionTests }
+  const combinedMasterResult = { ...masterResult.frameTests, ...masterResult.interactionTests }
+
+  const messageParts = Object.entries(combinedStagingResult).flatMap(([k, result]) => {
+    const targetResult = combinedMasterResult[k]
     const beforeMedian = targetResult.analytics.percentile50 ?? 1
     const afterMedian = result.analytics.percentile50 ?? 1
     const change = ((afterMedian - beforeMedian) / beforeMedian) * 100
-    return [
-      `**${result.title} (${Math.round(change)}%):**`,
-      consoleMessageForResult(targetResult, 'Before'),
-      consoleMessageForResult(result, 'After'),
-      '',
-    ]
+    const titleLine = `**${result.title} (${Math.round(change)}%)**`
+    const spacerLine = ''
+    if (Math.abs(change) > 5) {
+      return [
+        titleLine,
+        consoleMessageForResult(targetResult, 'Before'),
+        consoleMessageForResult(result, 'After'),
+        spacerLine,
+      ]
+    } else {
+      return [titleLine, spacerLine]
+    }
   })
 
   const message = messageParts.join('<br />')
   const discordMessage = messageParts.join('\\n')
 
-  console.info(`::set-output name=perf-result:: ${message} <br /> ![(Chart)](${summaryImage})`)
+  console.info(
+    `::set-output name=perf-result:: ${message} <br /> ![(Chart1)](${framesSummaryImage}) <br /> ![(Chart2)](${interactionsSummaryImage})`,
+  )
 
   // Output the individual parts for building a discord message
   console.info(`::set-output name=perf-discord-message:: ${discordMessage}`)
-  console.info(`::set-output name=perf-chart:: ${summaryImage}`)
+  console.info(`::set-output name=perf-frames-chart:: ${framesSummaryImage}`)
+  console.info(`::set-output name=perf-interactions-chart:: ${interactionsSummaryImage}`)
 }
 
 type PageToPromiseResult<T> = (page: puppeteer.Page) => Promise<T>
@@ -166,7 +191,7 @@ function frameObjectSuccess(frameObject: { [key: string]: FrameResult }): boolea
   return Object.values(frameObject).every(frameResultSuccess)
 }
 
-export const testPerformanceInner = async function (url: string): Promise<PerformanceResult> {
+export const testPerformanceInner = async function (url: string): Promise<PerformanceResults> {
   const highlightRegularResult = await retryPageCalls(
     url,
     testHighlightRegularPerformance,
@@ -215,17 +240,21 @@ export const testPerformanceInner = async function (url: string): Promise<Perfor
   )
 
   return {
-    highlightRegularResult: highlightRegularResult,
-    highlightAllElementsResult: highlightAllElementsResult,
-    selectionResult: selectionResult.selection,
-    deselectionResult: selectionResult.deselection,
-    scrollResult: scrollResult,
-    resizeResult: resizeResult,
-    selectionChangeResult: selectionChangeResult,
-    absoluteMoveLargeInteractionResult: absoluteMoveLargeResult.interaction,
-    absoluteMoveLargeMoveResult: absoluteMoveLargeResult.move,
-    absoluteMoveSmallInteractionResult: absoluteMoveSmallResult.interaction,
-    absoluteMoveSmallMoveResult: absoluteMoveSmallResult.move,
+    frameTests: {
+      highlightRegularResult: highlightRegularResult,
+      highlightAllElementsResult: highlightAllElementsResult,
+      selectionResult: selectionResult.selection,
+      deselectionResult: selectionResult.deselection,
+      selectionChangeResult: selectionChangeResult,
+      scrollResult: scrollResult,
+      resizeResult: resizeResult,
+      absoluteMoveLargeMoveResult: absoluteMoveLargeResult.move,
+      absoluteMoveSmallMoveResult: absoluteMoveSmallResult.move,
+    },
+    interactionTests: {
+      absoluteMoveLargeInteractionResult: absoluteMoveLargeResult.interaction,
+      absoluteMoveSmallInteractionResult: absoluteMoveSmallResult.interaction,
+    },
   }
 }
 
@@ -558,11 +587,12 @@ const getFrameData = (
 }
 
 async function uploadSummaryImage(
-  stagingResult: PerformanceResult,
-  masterResult: PerformanceResult,
+  stagingResult: ResultsGroup,
+  masterResult: ResultsGroup,
+  maxXValue: number,
 ): Promise<string> {
   const imageFileName = v4() + '.png'
-  const fileURI = await createSummaryPng(stagingResult, masterResult, imageFileName)
+  const fileURI = await createSummaryPng(stagingResult, masterResult, imageFileName, maxXValue)
 
   if (fileURI != null) {
     const s3FileUrl = await uploadPNGtoAWS(fileURI)
@@ -573,9 +603,10 @@ async function uploadSummaryImage(
 }
 
 async function createSummaryPng(
-  stagingResult: PerformanceResult,
-  masterResult: PerformanceResult,
+  stagingResult: ResultsGroup,
+  masterResult: ResultsGroup,
   testFileName: string,
+  maxXValue: number,
 ): Promise<string | null> {
   if (
     process.env.PERFORMANCE_GRAPHS_PLOTLY_USERNAME == null ||
@@ -620,6 +651,10 @@ async function createSummaryPng(
 
   processedData.reverse() // Plotly will produce the box plot in the reverse order
 
+  const chartHeight = 30 * numberOfTests
+  const chartWidth = 720
+  const imagePadding = 80
+
   const layout = {
     margin: {
       l: 50,
@@ -629,8 +664,8 @@ async function createSummaryPng(
       pad: 4,
     },
     showlegend: false,
-    height: 50 * numberOfTests,
-    width: 720,
+    height: chartHeight,
+    width: chartWidth,
     yaxis: {
       automargin: true,
       zeroline: true,
@@ -653,7 +688,7 @@ async function createSummaryPng(
     ],
     xaxis: {
       title: 'lower is better, ms / frame (16.67 = 60fps), many runs, cutoff 200ms',
-      range: [0, 251],
+      range: [0, maxXValue],
       showgrid: true,
       zeroline: true,
       dtick: 16.67,
@@ -667,8 +702,8 @@ async function createSummaryPng(
 
   const imgOpts = {
     format: 'png',
-    width: 800,
-    height: 440,
+    width: chartWidth + imagePadding,
+    height: chartHeight + imagePadding,
   }
   const figure = { data: processedData, layout: layout }
 

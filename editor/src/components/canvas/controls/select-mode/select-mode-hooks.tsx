@@ -620,13 +620,17 @@ export function useSelectAndHover(
   onMouseDown: (event: React.MouseEvent<HTMLDivElement, MouseEvent>) => void
 } {
   const modeType = useEditorState((store) => store.editor.mode.type, 'useSelectAndHover mode')
+  const isZoomMode = useEditorState(
+    (store) => store.editor.keysPressed['z'] ?? false,
+    'useSelectAndHover isZoomMode',
+  )
   const hasInteractionSession = useEditorState(
     (store) => store.editor.canvas.interactionSession != null,
     'useSelectAndHover hasInteractionSession',
   )
   const selectModeCallbacks = useSelectOrLiveModeSelectAndHover(
-    modeType === 'select' || modeType === 'select-lite' || modeType === 'live',
-    modeType === 'select' || modeType === 'live',
+    (modeType === 'select' || modeType === 'select-lite' || modeType === 'live') && !isZoomMode,
+    (modeType === 'select' || modeType === 'live') && !isZoomMode,
     cmdPressed,
     setSelectedViewsForCanvasControlsOnly,
   )
