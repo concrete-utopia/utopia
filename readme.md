@@ -66,6 +66,18 @@ Limitations:
 
 # Troubleshooting
 
+## I'm on macOS and Nix has suddenly stopped working
+
+Part of the nix installation will add a hook into `/etc/bashrc`, which can be wiped by a macOS update. There is an open bug ticket for that [here](https://github.com/NixOS/nix/issues/3616). If this has happened to you, you'll need to manually add that hook back in, or alternatively add it to your own `~/.zshrc` (where it won't be overwritten), copying and pasting the hook exactly as follows:
+
+```
+# Nix
+if [ -e '/nix/var/nix/profiles/default/etc/profile.d/nix-daemon.sh' ]; then
+  . '/nix/var/nix/profiles/default/etc/profile.d/nix-daemon.sh'
+fi
+# End Nix
+```
+
 ## fsevents
 
 If you notice that 1 or more CPU cores are running 100% because of `node` processes, it is probably webpack-dev-server having trouble with `fsevents` on MacOS. To fix it, run `pnpm install fsevents` in the `utopia/editor` directory. see https://github.com/webpack/webpack/issues/701#issuecomment-216082726
