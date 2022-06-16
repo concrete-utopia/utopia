@@ -106,7 +106,7 @@ jobs:
     name: Deploy Target Editor
     runs-on: ubuntu-latest
     env:
-      UTOPIA_SHA: 09049f2c3b896276091f53ac2c01b4aa66aa993c
+      UTOPIA_SHA: e55437e6ffafde6c4727264812a4d8b78bf33c6d
       AUTH0_CLIENT_ID: KB7euFO46rVYeOaWmrEdktdhAFxEO266
       AUTH0_ENDPOINT: enter.utopia.app
       AUTH0_REDIRECT_URI: https://utopia.pizza/authenticate
