@@ -144,7 +144,8 @@ export function foldAndApplyCommands(
       workingEditorState = updateEditorStateWithPatches(workingEditorState, statePatch)
       // Collate the patches.
       statePatches.push(...statePatch)
-      if (shouldAccumulatePatches) {
+      // Do not accumulate commands that are not permanent.
+      if (shouldAccumulatePatches && command.transient === 'permanent') {
         accumulatedPatches.push(...statePatch)
       }
       workingCommandDescriptions.push({

@@ -24,6 +24,7 @@ import {
   getAbsoluteMoveCommandsForSelectedElement,
   getDragTargets,
   getMultiselectBounds,
+  snapDrag,
 } from './shared-absolute-move-strategy-helpers'
 
 export const absoluteMoveStrategy: CanvasStrategy = {
@@ -143,33 +144,4 @@ export function applyAbsoluteMoveCommon(
     // Fallback for when the checks above are not satisfied.
     return emptyStrategyApplicationResult
   }
-}
-
-function snapDrag(
-  drag: CanvasPoint | null,
-  constrainedDragAxis: ConstrainedDragAxis | null,
-  jsxMetadata: ElementInstanceMetadataMap,
-  selectedElements: Array<ElementPath>,
-  canvasScale: number,
-): {
-  snappedDragVector: CanvasPoint
-  guidelinesWithSnappingVector: Array<GuidelineWithSnappingVector>
-} {
-  if (drag == null) {
-    return { snappedDragVector: zeroCanvasPoint, guidelinesWithSnappingVector: [] }
-  }
-  const multiselectBounds = getMultiselectBounds(jsxMetadata, selectedElements)
-
-  // This is the entry point to extend the list of snapping strategies, if we want to add more
-
-  const { snappedDragVector, guidelinesWithSnappingVector } = runLegacyAbsoluteMoveSnapping(
-    drag,
-    constrainedDragAxis,
-    jsxMetadata,
-    selectedElements,
-    canvasScale,
-    multiselectBounds,
-  )
-
-  return { snappedDragVector, guidelinesWithSnappingVector }
 }
