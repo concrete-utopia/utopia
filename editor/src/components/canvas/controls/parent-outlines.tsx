@@ -34,6 +34,7 @@ export const ParentOutlines = React.memo(() => {
                 outlineStyle: 'dotted',
                 outlineColor: colorTheme.primary.value,
                 outlineWidth: 1 / scale,
+                pointerEvents: 'none',
               }}
             />
           </CanvasOffsetWrapper>
