@@ -131,6 +131,7 @@ describe('interactionCancel', () => {
     editorStore.strategyState.accumulatedPatches = runCanvasCommand(
       editorStore.unpatchedEditor,
       wildcardPatch('permanent', { selectedViews: { $set: [] } }),
+      'permanent',
     ).editorStatePatches
     const actualResult = interactionCancel(editorStore, dispatchResultFromEditorStore(editorStore))
     expect(actualResult.newStrategyState.accumulatedPatches).toHaveLength(0)
@@ -215,6 +216,7 @@ describe('interactionStart', () => {
         ],
         "currentStrategyFitness": 10,
         "customStrategyState": Object {
+          "duplicatedElementNewUids": Object {},
           "escapeHatchActivated": false,
           "lastReorderIdx": null,
         },
@@ -273,6 +275,7 @@ describe('interactionStart', () => {
         "currentStrategyCommands": Array [],
         "currentStrategyFitness": 0,
         "customStrategyState": Object {
+          "duplicatedElementNewUids": Object {},
           "escapeHatchActivated": false,
           "lastReorderIdx": null,
         },
@@ -336,6 +339,7 @@ describe('interactionUpdatex', () => {
         ],
         "currentStrategyFitness": 10,
         "customStrategyState": Object {
+          "duplicatedElementNewUids": Object {},
           "escapeHatchActivated": false,
           "lastReorderIdx": null,
         },
@@ -395,6 +399,7 @@ describe('interactionUpdatex', () => {
         "currentStrategyCommands": Array [],
         "currentStrategyFitness": 0,
         "customStrategyState": Object {
+          "duplicatedElementNewUids": Object {},
           "escapeHatchActivated": false,
           "lastReorderIdx": null,
         },
@@ -424,6 +429,7 @@ describe('interactionUpdate without strategy', () => {
     editorStore.strategyState.accumulatedPatches = runCanvasCommand(
       editorStore.unpatchedEditor,
       wildcardPatch('permanent', { canvas: { scale: { $set: 100 } } }),
+      'permanent',
     ).editorStatePatches
     const actualResult = interactionUpdate(
       [],
@@ -485,6 +491,7 @@ describe('interactionHardReset', () => {
         ],
         "currentStrategyFitness": 10,
         "customStrategyState": Object {
+          "duplicatedElementNewUids": Object {},
           "escapeHatchActivated": false,
           "lastReorderIdx": null,
         },
@@ -549,6 +556,7 @@ describe('interactionHardReset', () => {
         "currentStrategyCommands": Array [],
         "currentStrategyFitness": 0,
         "customStrategyState": Object {
+          "duplicatedElementNewUids": Object {},
           "escapeHatchActivated": false,
           "lastReorderIdx": null,
         },
@@ -583,6 +591,7 @@ describe('interactionUpdate with accumulating keypresses', () => {
     editorStore.strategyState.accumulatedPatches = runCanvasCommand(
       editorStore.unpatchedEditor,
       wildcardPatch('permanent', { focusedPanel: { $set: 'codeEditor' } }),
+      'permanent',
     ).editorStatePatches
 
     const actualResult = interactionUpdate(
@@ -701,6 +710,7 @@ describe('interactionUpdate with user changed strategy', () => {
         ],
         "currentStrategyFitness": 10,
         "customStrategyState": Object {
+          "duplicatedElementNewUids": Object {},
           "escapeHatchActivated": false,
           "lastReorderIdx": null,
         },
@@ -766,6 +776,7 @@ describe('interactionUpdate with user changed strategy', () => {
         "currentStrategyCommands": Array [],
         "currentStrategyFitness": 0,
         "customStrategyState": Object {
+          "duplicatedElementNewUids": Object {},
           "escapeHatchActivated": false,
           "lastReorderIdx": null,
         },

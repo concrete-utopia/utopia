@@ -2560,8 +2560,9 @@ export function duplicate(
   paths: Array<ElementPath>,
   newParentPath: ElementPath | null,
   editor: EditorState,
+  duplicateNewUIDsInjected: ReadonlyArray<DuplicateNewUID> = [],
 ): DuplicateResult | null {
-  let duplicateNewUIDs: Array<DuplicateNewUID> = []
+  let duplicateNewUIDs: ReadonlyArray<DuplicateNewUID> = duplicateNewUIDsInjected
   let newOriginalFrames: Array<CanvasFrameAndTarget> | null = null
   if (
     editor.canvas.dragState != null &&
