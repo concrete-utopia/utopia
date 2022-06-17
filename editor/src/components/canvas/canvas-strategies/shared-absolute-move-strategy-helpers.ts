@@ -8,10 +8,12 @@ import * as EP from '../../../core/shared/element-path'
 import type { ElementInstanceMetadataMap, JSXElement } from '../../../core/shared/element-template'
 import {
   boundingRectangleArray,
+  CanvasPoint,
   canvasPoint,
   CanvasRectangle,
   CanvasVector,
   pointDifference,
+  zeroCanvasPoint,
   zeroCanvasRect,
 } from '../../../core/shared/math-utils'
 import { ElementPath } from '../../../core/shared/project-file-types'
@@ -26,6 +28,8 @@ import {
   adjustCssLengthProperty,
   AdjustCssLengthProperty,
 } from '../commands/adjust-css-length-command'
+import { runLegacyAbsoluteMoveSnapping } from '../controls/guideline-helpers'
+import { ConstrainedDragAxis, GuidelineWithSnappingVector } from '../guideline'
 import { InteractionCanvasState } from './canvas-strategy-types'
 import { StrategyState } from './interaction-state'
 
@@ -205,4 +209,33 @@ export function getDragTargets(selectedViews: Array<ElementPath>): Array<Element
   return selectedViews.filter((view) =>
     selectedViews.every((otherView) => !EP.isDescendantOf(view, otherView)),
   )
+}
+
+export function snapDrag(
+  drag: CanvasPoint | null,
+  constrainedDragAxis: ConstrainedDragAxis | null,
+  jsxMetadata: ElementInstanceMetadataMap,
+  selectedElements: Array<ElementPath>,
+  canvasScale: number,
+): {
+  snappedDragVector: CanvasPoint
+  guidelinesWithSnappingVector: Array<GuidelineWithSnappingVector>
+} {
+  if (drag == null) {
+    return { snappedDragVector: zeroCanvasPoint, guidelinesWithSnappingVector: [] }
+  }
+  const multiselectBounds = getMultiselectBounds(jsxMetadata, selectedElements)
+
+  // This is the entry point to extend the list of snapping strategies, if we want to add more
+
+  const { snappedDragVector, guidelinesWithSnappingVector } = runLegacyAbsoluteMoveSnapping(
+    drag,
+    constrainedDragAxis,
+    jsxMetadata,
+    selectedElements,
+    canvasScale,
+    multiselectBounds,
+  )
+
+  return { snappedDragVector, guidelinesWithSnappingVector }
 }

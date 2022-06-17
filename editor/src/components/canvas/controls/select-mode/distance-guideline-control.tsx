@@ -7,6 +7,7 @@ import { CanvasRectangle } from '../../../../core/shared/math-utils'
 import { ElementPath } from '../../../../core/shared/project-file-types'
 import { fastForEach } from '../../../../core/shared/utils'
 import { useEditorState } from '../../../editor/store/store-hook'
+import { isDragInteractionData } from '../../canvas-strategies/interaction-state'
 import { getMultiselectBounds } from '../../canvas-strategies/shared-absolute-move-strategy-helpers'
 import { Guideline, Guidelines } from '../../guideline'
 import { DistanceGuideline } from '../distance-guideline'
@@ -24,10 +25,12 @@ function getDistanceGuidelines(
 }
 
 export const DistanceGuidelineControl = React.memo(() => {
-  const isInteractionActive = useEditorState(
-    (store) => store.editor.canvas.interactionSession != null,
-    'DistanceGuidelineControl isInteractionActive',
-  )
+  const isDisallowedInteractionActive = useEditorState((store) => {
+    return (
+      store.editor.canvas.interactionSession != null &&
+      isDragInteractionData(store.editor.canvas.interactionSession.interactionData)
+    )
+  }, 'DistanceGuidelineControl isInteractionActive')
   const altKeyPressed = useEditorState(
     (store) => store.editor.keysPressed['alt'],
     'DistanceGuidelineControl altKeyPressed',
@@ -36,7 +39,7 @@ export const DistanceGuidelineControl = React.memo(() => {
     (store) => store.editor.selectedViews,
     'DistanceGuidelineControl selectedElements',
   )
-  if (selectedElements.length > 0 && !isInteractionActive && altKeyPressed) {
+  if (selectedElements.length > 0 && !isDisallowedInteractionActive && altKeyPressed) {
     return <DistanceGuidelineControlInner />
   } else {
     return null

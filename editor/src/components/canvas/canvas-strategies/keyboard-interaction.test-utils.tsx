@@ -1,6 +1,7 @@
 import { elementPath } from '../../../core/shared/element-path'
 import {
   ElementInstanceMetadata,
+  ElementInstanceMetadataMap,
   SpecialSizeMeasurements,
 } from '../../../core/shared/element-template'
 import { canvasRectangle } from '../../../core/shared/math-utils'
@@ -22,13 +23,24 @@ export function pressKeys(
   keys: Array<KeyCharacter>,
   modifiers: Modifiers,
 ): EditorState {
+  const metadata: ElementInstanceMetadataMap = {
+    'scene-aaa/app-entity:aaa/bbb': {
+      elementPath: elementPath([
+        ['scene-aaa', 'app-entity'],
+        ['aaa', 'bbb'],
+      ]),
+      specialSizeMeasurements: {
+        immediateParentBounds: canvasRectangle({ x: 0, y: 0, width: 400, height: 400 }),
+      } as SpecialSizeMeasurements,
+    } as ElementInstanceMetadata,
+  }
   const interactionSession: InteractionSession = {
     ...createInteractionViaKeyboard(
       keys,
       modifiers,
       null as any, // the strategy does not use this
     ),
-    metadata: null as any, // the strategy does not use this
+    metadata: metadata,
     allElementProps: null as any,
   }
 
@@ -42,17 +54,7 @@ export function pressKeys(
       accumulatedPatches: null as any, // the strategy does not use this
       commandDescriptions: null as any, // the strategy does not use this
       sortedApplicableStrategies: null as any, // the strategy does not use this
-      startingMetadata: {
-        'scene-aaa/app-entity:aaa/bbb': {
-          elementPath: elementPath([
-            ['scene-aaa', 'app-entity'],
-            ['aaa', 'bbb'],
-          ]),
-          specialSizeMeasurements: {
-            immediateParentBounds: canvasRectangle({ x: 0, y: 0, width: 400, height: 400 }),
-          } as SpecialSizeMeasurements,
-        } as ElementInstanceMetadata,
-      },
+      startingMetadata: metadata,
       startingAllElementProps: { 'scene-aaa/app-entity:aaa/bbb': {} },
       customStrategyState: defaultCustomStrategyState(),
     } as StrategyState,
