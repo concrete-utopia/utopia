@@ -2,7 +2,6 @@ import React from 'react'
 import { MetadataUtils } from '../../../core/model/element-metadata-utils'
 import { mapDropNulls, stripNulls, uniqBy } from '../../../core/shared/array-utils'
 import * as EP from '../../../core/shared/element-path'
-import { useColorTheme } from '../../../uuiui'
 import { useEditorState } from '../../editor/store/store-hook'
 import { CanvasOffsetWrapper } from './canvas-offset-wrapper'
 import { CenteredCrossSVG } from './outline-control'
@@ -19,40 +18,36 @@ export const ParentBounds = React.memo(() => {
     }, targetParents)
   }, 'ParentBounds frames')
 
-  return (
-    <>
-      {parentFrames.map((frame, i) => {
-        return (
-          <CanvasOffsetWrapper key={`parent-outline-${i}`}>
-            <div style={{ pointerEvents: 'none' }}>
-              <CenteredCrossSVG
-                id='parent-cross-top-left'
-                centerX={frame.x}
-                centerY={frame.y}
-                scale={scale}
-              />
-              <CenteredCrossSVG
-                id='parent-cross-top-right'
-                centerX={frame.x + frame.width}
-                centerY={frame.y}
-                scale={scale}
-              />
-              <CenteredCrossSVG
-                id='parent-cross-bottom-right'
-                centerX={frame.x + frame.width}
-                centerY={frame.y + frame.height}
-                scale={scale}
-              />
-              <CenteredCrossSVG
-                id='parent-cross-bottom-left'
-                centerX={frame.x}
-                centerY={frame.y + frame.height}
-                scale={scale}
-              />
-            </div>
-          </CanvasOffsetWrapper>
-        )
-      })}
-    </>
-  )
+  const frame = parentFrames.length === 1 ? parentFrames[0] : null
+
+  return frame != null ? (
+    <CanvasOffsetWrapper key={`parent-outline`}>
+      <div style={{ pointerEvents: 'none' }}>
+        <CenteredCrossSVG
+          id='parent-cross-top-left'
+          centerX={frame.x}
+          centerY={frame.y}
+          scale={scale}
+        />
+        <CenteredCrossSVG
+          id='parent-cross-top-right'
+          centerX={frame.x + frame.width}
+          centerY={frame.y}
+          scale={scale}
+        />
+        <CenteredCrossSVG
+          id='parent-cross-bottom-right'
+          centerX={frame.x + frame.width}
+          centerY={frame.y + frame.height}
+          scale={scale}
+        />
+        <CenteredCrossSVG
+          id='parent-cross-bottom-left'
+          centerX={frame.x}
+          centerY={frame.y + frame.height}
+          scale={scale}
+        />
+      </div>
+    </CanvasOffsetWrapper>
+  ) : null
 })
