@@ -2,6 +2,7 @@ import { MetadataUtils } from '../../../core/model/element-metadata-utils'
 import * as EP from '../../../core/shared/element-path'
 import { getReparentTarget } from '../canvas-utils'
 import { reparentElement } from '../commands/reparent-element-command'
+import { setElementsToRerenderCommand } from '../commands/set-elements-to-rerender-command'
 import { updateSelectedViews } from '../commands/update-selected-views-command'
 import { ParentBounds } from '../controls/parent-bounds'
 import { ParentOutlines } from '../controls/parent-outlines'
@@ -100,14 +101,14 @@ export const absoluteReparentStrategy: CanvasStrategy = {
         }
       })
 
+      const newPaths = commands.map((c) => c.newPath)
+
       return {
         commands: [
           ...moveCommands.commands,
           ...commands.flatMap((c) => c.commands),
-          updateSelectedViews(
-            'permanent',
-            commands.map((c) => c.newPath),
-          ),
+          updateSelectedViews('permanent', newPaths),
+          setElementsToRerenderCommand(newPaths),
         ],
         customState: null,
       }
