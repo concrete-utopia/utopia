@@ -161,7 +161,7 @@ function isEventFromInput(target: any) {
   return target.tagName?.toLowerCase() === 'input' || target.tagName?.toLowerCase() === 'textarea'
 }
 
-function editorIsTarget(event: KeyboardEvent, editor: EditorState): boolean {
+export function editorIsTarget(event: KeyboardEvent, editor: EditorState): boolean {
   return !isEventFromInput(event.target) && editor.modal == null
 }
 
