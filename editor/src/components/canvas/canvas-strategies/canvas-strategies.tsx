@@ -9,7 +9,6 @@ import { useEditorState } from '../../editor/store/store-hook'
 import { CanvasCommand } from '../commands/commands'
 import { absoluteMoveStrategy } from './absolute-move-strategy'
 import { absoluteReparentStrategy } from './absolute-reparent-strategy'
-import { absoluteResizeDeltaStrategy } from './absolute-resize-delta-strategy'
 import {
   CanvasStrategy,
   CanvasStrategyId,
@@ -32,7 +31,6 @@ export const RegisteredCanvasStrategies: Array<CanvasStrategy> = [
   keyboardAbsoluteMoveStrategy,
   keyboardAbsoluteResizeStrategy,
   absoluteResizeBoundingBoxStrategy,
-  absoluteResizeDeltaStrategy,
   flexReorderStrategy,
   escapeHatchStrategy,
 ]

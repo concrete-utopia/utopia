@@ -26,7 +26,7 @@ import { updateHighlightedViews } from '../commands/update-highlighted-views-com
 import { ParentBounds } from '../controls/parent-bounds'
 import { ParentOutlines } from '../controls/parent-outlines'
 import { AbsoluteResizeControl } from '../controls/select-mode/absolute-resize-control'
-import { AbsolutePin, hasAtLeastTwoPinsPerSide } from './absolute-resize-helpers'
+import { AbsolutePin } from './absolute-resize-helpers'
 import { CanvasStrategy, emptyStrategyApplicationResult } from './canvas-strategy-types'
 import { getDragTargets, getMultiselectBounds } from './shared-absolute-move-strategy-helpers'
 import {
@@ -42,23 +42,10 @@ export const absoluteResizeBoundingBoxStrategy: CanvasStrategy = {
   name: 'Absolute Resize',
   isApplicable: (canvasState, interactionState, metadata, allElementProps) => {
     const filteredSelectedElements = getDragTargets(canvasState.selectedElements)
-    if (
-      filteredSelectedElements.length > 1 ||
-      (filteredSelectedElements.length >= 1 &&
-        (interactionState?.interactionData.modifiers.alt ||
-          interactionState?.interactionData.modifiers.shift))
-    ) {
-      return canvasState.selectedElements.every((element) => {
-        const elementMetadata = MetadataUtils.findElementByElementPath(metadata, element)
-        const elementProps = allElementProps[EP.toString(element)] ?? {}
-        return (
-          elementMetadata?.specialSizeMeasurements.position === 'absolute' &&
-          hasAtLeastTwoPinsPerSide(elementProps) // TODO should this use projectContents?
-        )
-      })
-    } else {
-      return false
-    }
+    return filteredSelectedElements.every((element) => {
+      const elementMetadata = MetadataUtils.findElementByElementPath(metadata, element)
+      return elementMetadata?.specialSizeMeasurements.position === 'absolute'
+    })
   },
   controlsToRender: [
     { control: AbsoluteResizeControl, key: 'absolute-resize-control', show: 'always-visible' },
