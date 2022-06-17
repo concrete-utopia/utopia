@@ -42,11 +42,15 @@ export const absoluteResizeBoundingBoxStrategy: CanvasStrategy = {
   id: 'ABSOLUTE_RESIZE_BOUNDING_BOX',
   name: 'Absolute Resize',
   isApplicable: (canvasState, interactionState, metadata, allElementProps) => {
-    const filteredSelectedElements = getDragTargets(canvasState.selectedElements)
-    return filteredSelectedElements.every((element) => {
-      const elementMetadata = MetadataUtils.findElementByElementPath(metadata, element)
-      return elementMetadata?.specialSizeMeasurements.position === 'absolute'
-    })
+    if (canvasState.selectedElements.length > 0) {
+      const filteredSelectedElements = getDragTargets(canvasState.selectedElements)
+      return filteredSelectedElements.every((element) => {
+        const elementMetadata = MetadataUtils.findElementByElementPath(metadata, element)
+        return elementMetadata?.specialSizeMeasurements.position === 'absolute'
+      })
+    } else {
+      return false
+    }
   },
   controlsToRender: [
     { control: AbsoluteResizeControl, key: 'absolute-resize-control', show: 'always-visible' },
