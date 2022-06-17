@@ -1,11 +1,9 @@
-import { elementPath, parentPath } from '../../../core/shared/element-path'
 import {
   ElementInstanceMetadata,
   SpecialSizeMeasurements,
 } from '../../../core/shared/element-template'
 import { CanvasPoint, canvasPoint, canvasRectangle } from '../../../core/shared/math-utils'
 import { EditorState } from '../../editor/store/editor-state'
-import { EdgePositionKeepDeepEquality } from '../../editor/store/store-deep-equality-instances'
 import { foldAndApplyCommands } from '../commands/commands'
 import {
   getEditorStateWithSelectedViews,
@@ -34,7 +32,7 @@ jest.mock('../canvas-utils', () => ({
 }))
 
 // KEEP THIS IN SYNC WITH THE MOCK ABOVE
-const newParent = elementPath([
+const newParent = EP.elementPath([
   ['scene-aaa', 'app-entity'],
   ['aaa', 'bbb'],
 ])
