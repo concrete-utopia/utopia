@@ -1374,3 +1374,219 @@ describe('Absolute Resize Bounding Box Strategy single select', () => {
     })
   })
 })
+
+describe('Absolute Resize Strategy with missing props', () => {
+  it('works with element (no height, no width) resized from Bottom Right Corner', async () => {
+    const edgePosition: EdgePosition = { x: 1, y: 1 }
+    const snippet = `
+  <div style={{ ...(props.style || {}) }} data-uid='aaa'>
+    <div
+      style={{
+        backgroundColor: '#0091FFAA',
+        position: 'absolute',
+        top: 50,
+        left: 30,
+        display: 'flex',
+       }}
+      data-uid='bbb'
+    >
+      <div data-uid='ccc' style={{width: 100, height: 80}} />
+    </div>
+  </div>
+  `
+    const selectedElements = [
+      elementPath([
+        ['scene-aaa', 'app-entity'],
+        ['aaa', 'bbb'],
+      ]),
+    ]
+    const editorAfterStrategy = multiselectResizeElements(
+      snippet,
+      selectedElements,
+      edgePosition,
+      canvasPoint({
+        x: 15,
+        y: 25,
+      }),
+      emptyModifiers,
+      {
+        'scene-aaa/app-entity:aaa/bbb': {
+          elementPath: fromString('scene-aaa/app-entity:aaa/bbb'),
+          element: left('div'),
+          specialSizeMeasurements: {
+            immediateParentBounds: canvasRectangle({ x: 0, y: 0, width: 400, height: 400 }),
+          } as SpecialSizeMeasurements,
+          globalFrame: { x: 30, y: 50, width: 100, height: 80 },
+        } as ElementInstanceMetadata,
+        'scene-aaa/app-entity:aaa/bbb/ccc': {
+          elementPath: fromString('scene-aaa/app-entity:aaa/bbb/ccc'),
+          element: left('div'),
+          specialSizeMeasurements: {
+            immediateParentBounds: canvasRectangle({ x: 30, y: 50, width: 100, height: 80 }),
+          } as SpecialSizeMeasurements,
+          globalFrame: { x: 30, y: 50, width: 100, height: 80 },
+        } as ElementInstanceMetadata,
+      },
+    )
+    expect(testPrintCodeFromEditorState(editorAfterStrategy)).toEqual(
+      makeTestProjectCodeWithSnippet(
+        `<div style={{ ...(props.style || {}) }} data-uid='aaa'>
+          <div
+            style={{
+              backgroundColor: '#0091FFAA',
+              position: 'absolute',
+              top: 50,
+              left: 30,
+              display: 'flex',
+              width: 115,
+              height: 105,
+            }}
+            data-uid='bbb'
+          >
+            <div data-uid='ccc' style={{width: 100, height: 80}} />
+          </div>
+        </div>`,
+      ),
+    )
+  })
+  it('works with element (no height, no width) resized from Left Edge, only adds width', async () => {
+    const edgePosition: EdgePosition = { x: 0, y: 0.5 }
+    const snippet = `
+  <div style={{ ...(props.style || {}) }} data-uid='aaa'>
+    <div
+      style={{
+        backgroundColor: '#0091FFAA',
+        position: 'absolute',
+        top: 50,
+        left: 30,
+        display: 'flex',
+       }}
+      data-uid='bbb'
+    >
+      <div data-uid='ccc' style={{width: 100, height: 80}} />
+    </div>
+  </div>
+  `
+    const selectedElements = [
+      elementPath([
+        ['scene-aaa', 'app-entity'],
+        ['aaa', 'bbb'],
+      ]),
+    ]
+    const editorAfterStrategy = multiselectResizeElements(
+      snippet,
+      selectedElements,
+      edgePosition,
+      canvasPoint({
+        x: 15,
+        y: 25,
+      }),
+      emptyModifiers,
+      {
+        'scene-aaa/app-entity:aaa/bbb': {
+          elementPath: fromString('scene-aaa/app-entity:aaa/bbb'),
+          element: left('div'),
+          specialSizeMeasurements: {
+            immediateParentBounds: canvasRectangle({ x: 0, y: 0, width: 400, height: 400 }),
+          } as SpecialSizeMeasurements,
+          globalFrame: { x: 30, y: 50, width: 100, height: 80 },
+        } as ElementInstanceMetadata,
+        'scene-aaa/app-entity:aaa/bbb/ccc': {
+          elementPath: fromString('scene-aaa/app-entity:aaa/bbb/ccc'),
+          element: left('div'),
+          specialSizeMeasurements: {
+            immediateParentBounds: canvasRectangle({ x: 30, y: 50, width: 100, height: 80 }),
+          } as SpecialSizeMeasurements,
+          globalFrame: { x: 30, y: 50, width: 100, height: 80 },
+        } as ElementInstanceMetadata,
+      },
+    )
+    expect(testPrintCodeFromEditorState(editorAfterStrategy)).toEqual(
+      makeTestProjectCodeWithSnippet(
+        `<div style={{ ...(props.style || {}) }} data-uid='aaa'>
+          <div
+            style={{
+              backgroundColor: '#0091FFAA',
+              position: 'absolute',
+              top: 50,
+              left: 45,
+              display: 'flex',
+              width: 85,
+            }}
+            data-uid='bbb'
+          >
+            <div data-uid='ccc' style={{width: 100, height: 80}} />
+          </div>
+        </div>`,
+      ),
+    )
+  })
+  it('works with element without props resized from Bottom Edge, only adds height', async () => {
+    const edgePosition: EdgePosition = { x: 0.5, y: 1 }
+    const snippet = `
+  <div style={{ ...(props.style || {}) }} data-uid='aaa'>
+    <div
+      style={{
+        backgroundColor: '#0091FFAA',
+        position: 'absolute',
+        display: 'flex',
+       }}
+      data-uid='bbb'
+    >
+      <div data-uid='ccc' style={{width: 100, height: 80}} />
+    </div>
+  </div>
+  `
+    const selectedElements = [
+      elementPath([
+        ['scene-aaa', 'app-entity'],
+        ['aaa', 'bbb'],
+      ]),
+    ]
+    const editorAfterStrategy = multiselectResizeElements(
+      snippet,
+      selectedElements,
+      edgePosition,
+      canvasPoint({
+        x: 15,
+        y: 25,
+      }),
+      emptyModifiers,
+      {
+        'scene-aaa/app-entity:aaa/bbb': {
+          elementPath: fromString('scene-aaa/app-entity:aaa/bbb'),
+          element: left('div'),
+          specialSizeMeasurements: {
+            immediateParentBounds: canvasRectangle({ x: 0, y: 0, width: 400, height: 400 }),
+          } as SpecialSizeMeasurements,
+          globalFrame: { x: 0, y: 0, width: 100, height: 80 },
+        } as ElementInstanceMetadata,
+        'scene-aaa/app-entity:aaa/bbb/ccc': {
+          elementPath: fromString('scene-aaa/app-entity:aaa/bbb/ccc'),
+          element: left('div'),
+          specialSizeMeasurements: {
+            immediateParentBounds: canvasRectangle({ x: 0, y: 0, width: 100, height: 80 }),
+          } as SpecialSizeMeasurements,
+          globalFrame: { x: 0, y: 0, width: 100, height: 80 },
+        } as ElementInstanceMetadata,
+      },
+    )
+    expect(testPrintCodeFromEditorState(editorAfterStrategy)).toEqual(
+      makeTestProjectCodeWithSnippet(
+        `<div style={{ ...(props.style || {}) }} data-uid='aaa'>
+          <div
+            style={{
+              backgroundColor: '#0091FFAA',
+              position: 'absolute',
+              display: 'flex',
+              height: 105,
+            }}
+            data-uid='bbb'
+          >
+            <div data-uid='ccc' style={{width: 100, height: 80}} />
+          </div>
+        </div>`,
+      ),
+    )
+  })
+})

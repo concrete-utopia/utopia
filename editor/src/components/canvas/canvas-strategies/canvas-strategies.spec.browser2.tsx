@@ -260,7 +260,7 @@ describe('Strategy Fitness', () => {
       null,
     )
 
-    expect(canvasStrategy.strategy?.strategy.id).toEqual('ABSOLUTE_RESIZE_DELTA')
+    expect(canvasStrategy.strategy?.strategy.id).toEqual('ABSOLUTE_RESIZE_BOUNDING_BOX')
   })
   it('fits Absolute Resize Strategy when resizing an absolute element with cmd pressed', async () => {
     const targetElement = elementPath([
@@ -305,6 +305,6 @@ describe('Strategy Fitness', () => {
       null,
     )
 
-    expect(canvasStrategy.strategy?.strategy.id).toEqual('ABSOLUTE_RESIZE_DELTA')
+    expect(canvasStrategy.strategy?.strategy.id).toEqual('ABSOLUTE_RESIZE_BOUNDING_BOX')
   })
 })
