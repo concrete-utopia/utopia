@@ -1,11 +1,11 @@
-import { elementPath } from '../../../core/shared/element-path'
+import { elementPath, parentPath } from '../../../core/shared/element-path'
 import {
   ElementInstanceMetadata,
   SpecialSizeMeasurements,
 } from '../../../core/shared/element-template'
 import { CanvasPoint, canvasPoint, canvasRectangle } from '../../../core/shared/math-utils'
-import { WindowMousePositionRaw } from '../../../utils/global-positions'
 import { EditorState } from '../../editor/store/editor-state'
+import { EdgePositionKeepDeepEquality } from '../../editor/store/store-deep-equality-instances'
 import { foldAndApplyCommands } from '../commands/commands'
 import {
   getEditorStateWithSelectedViews,
@@ -17,6 +17,7 @@ import { pickCanvasStateFromEditorState } from './canvas-strategies'
 import { defaultCustomStrategyState } from './canvas-strategy-types'
 import { InteractionSession, StrategyState } from './interaction-state'
 import { createMouseInteractionForTests } from './interaction-state.test-utils'
+import * as EP from '../../../core/shared/element-path'
 
 jest.mock('../canvas-utils', () => ({
   ...jest.requireActual('../canvas-utils'),
@@ -31,6 +32,12 @@ jest.mock('../canvas-utils', () => ({
     },
   }),
 }))
+
+// KEEP THIS IN SYNC WITH THE MOCK ABOVE
+const newParent = elementPath([
+  ['scene-aaa', 'app-entity'],
+  ['aaa', 'bbb'],
+])
 
 function reparentElement(
   editorState: EditorState,
@@ -89,6 +96,16 @@ function reparentElement(
   )
 
   expect(strategyResult.customState).toBeNull()
+
+  // Check if there are set SetElementsToRerenderCommands with the new parent path
+  expect(
+    strategyResult.commands.find(
+      (c) =>
+        c.type === 'SET_ELEMENTS_TO_RERENDER_COMMAND' &&
+        c.value !== 'rerender-all-elements' &&
+        c.value.every((p) => EP.pathsEqual(EP.parentPath(p), newParent)),
+    ),
+  ).not.toBeNull()
 
   const finalEditor = foldAndApplyCommands(
     editorState,
