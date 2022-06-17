@@ -21,35 +21,33 @@ export const ParentBounds = React.memo(() => {
   const frame = parentFrames.length === 1 ? parentFrames[0] : null
 
   return frame != null ? (
-    <>
-      <CanvasOffsetWrapper key={`parent-outline`}>
-        <div style={{ pointerEvents: 'none' }}>
-          <CenteredCrossSVG
-            id='parent-cross-top-left'
-            centerX={frame.x}
-            centerY={frame.y}
-            scale={scale}
-          />
-          <CenteredCrossSVG
-            id='parent-cross-top-right'
-            centerX={frame.x + frame.width}
-            centerY={frame.y}
-            scale={scale}
-          />
-          <CenteredCrossSVG
-            id='parent-cross-bottom-right'
-            centerX={frame.x + frame.width}
-            centerY={frame.y + frame.height}
-            scale={scale}
-          />
-          <CenteredCrossSVG
-            id='parent-cross-bottom-left'
-            centerX={frame.x}
-            centerY={frame.y + frame.height}
-            scale={scale}
-          />
-        </div>
-      </CanvasOffsetWrapper>
-    </>
+    <CanvasOffsetWrapper key={`parent-outline`}>
+      <div style={{ pointerEvents: 'none' }}>
+        <CenteredCrossSVG
+          id='parent-cross-top-left'
+          centerX={frame.x}
+          centerY={frame.y}
+          scale={scale}
+        />
+        <CenteredCrossSVG
+          id='parent-cross-top-right'
+          centerX={frame.x + frame.width}
+          centerY={frame.y}
+          scale={scale}
+        />
+        <CenteredCrossSVG
+          id='parent-cross-bottom-right'
+          centerX={frame.x + frame.width}
+          centerY={frame.y + frame.height}
+          scale={scale}
+        />
+        <CenteredCrossSVG
+          id='parent-cross-bottom-left'
+          centerX={frame.x}
+          centerY={frame.y + frame.height}
+          scale={scale}
+        />
+      </div>
+    </CanvasOffsetWrapper>
   ) : null
 })
