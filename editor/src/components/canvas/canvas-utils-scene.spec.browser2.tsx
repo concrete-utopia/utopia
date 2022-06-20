@@ -116,7 +116,7 @@ describe('moving a scene/rootview on the canvas', () => {
     )
   })
 
-  it('dragging a scene sets the scene position', async () => {
+  xit('dragging a scene sets the scene position', async () => {
     const testCode = Prettier.format(
       `
         import * as React from 'react'
@@ -258,7 +258,7 @@ describe('moving a scene/rootview on the canvas', () => {
 })
 
 describe('resizing a scene/rootview on the canvas', () => {
-  it('resizing a scene child’s root view sets the root view size', async () => {
+  xit('resizing a scene child’s root view sets the root view size', async () => {
     const testCode = Prettier.format(
       `
         import * as React from 'react'
@@ -382,7 +382,7 @@ describe('resizing a scene/rootview on the canvas', () => {
     )
   })
 
-  it('resizing a scene sets the scene size', async () => {
+  xit('resizing a scene sets the scene size', async () => {
     const testCode = Prettier.format(
       `
       import * as React from 'react'
