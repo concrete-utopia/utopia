@@ -464,7 +464,7 @@ export function editorDispatch(
     builtInDependencies: storedState.builtInDependencies,
   }
 
-  reduxDevtoolsSendActions(actionGroupsToProcess, finalStore)
+  reduxDevtoolsSendActions(actionGroupsToProcess, finalStore, allTransient)
 
   if (storedState.userState.loginState.type !== result.userState.loginState.type) {
     if (isLoggedIn(result.userState.loginState)) {
