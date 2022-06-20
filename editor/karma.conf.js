@@ -21,7 +21,7 @@ module.exports = function (config) {
       'karma-mocha-reporter',
       require('./test/karma-custom-reporter/short-console-messages'),
     ],
-    reporters: ['mocha', 'utopia'],
+    reporters: config.debug ? ['mocha'] : ['mocha', 'utopia'],
     // base path that will be used to resolve all patterns (eg. files, exclude)
     basePath: '',
 
@@ -64,7 +64,7 @@ module.exports = function (config) {
     },
     client: {
       mocha: {
-        timeout: 10000,
+        timeout: config.debug ? 1000000 : 10000,
       },
     },
   })
