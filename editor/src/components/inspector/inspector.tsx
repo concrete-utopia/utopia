@@ -333,6 +333,7 @@ export const Inspector = React.memo<InspectorProps>((props: InspectorProps) => {
           <SettingsPanel />
         </div>
         <div
+          key={selectedViews.map(EP.toString).join(',')}
           style={{
             display: shouldShowInspector ? undefined : 'none',
           }}

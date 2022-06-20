@@ -123,16 +123,12 @@ export const LayoutSubsection = React.memo((props: SelfLayoutSubsectionProps) =>
 export const LayoutSubsectionContent = React.memo((props: SelfLayoutSubsectionProps) => {
   const [activeTab, setActiveTab] = useActiveLayoutTab(props.position, props.parentLayoutSystem)
 
-  const selectedViews = useContextSelector(InspectorPropsContext, (contextData) => {
-    return contextData.selectedViews
-  })
   return (
     <>
       {when(activeTab === 'flex', <FlexInfoBox />)}
       {unless(
         activeTab === 'flex',
         <GiganticSizePinsSubsection
-          key={selectedViews.map(EP.toString).join(',')}
           layoutType={activeTab}
           parentFlexDirection={props.parentFlexDirection}
           aspectRatioLocked={props.aspectRatioLocked}
