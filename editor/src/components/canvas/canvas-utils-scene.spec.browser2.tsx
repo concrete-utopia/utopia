@@ -15,8 +15,12 @@ import { PrettierConfig } from 'utopia-vscode-common'
 import { BakedInStoryboardUID } from '../../core/model/scene-utils'
 import { CanvasControlsContainerID } from './controls/new-canvas-controls'
 import { wait } from '../../utils/utils.test-utils'
+import { setFeatureEnabled } from '../../utils/feature-switches'
 
 describe('moving a scene/rootview on the canvas', () => {
+  beforeEach(() => {
+    setFeatureEnabled('Canvas Strategies', false)
+  })
   // TODO Eni and Balazs look into why is this failing under Karma
   xit('dragging a scene child’s root view sets the root view position', async () => {
     const renderResult = await renderTestEditorWithCode(
@@ -116,7 +120,7 @@ describe('moving a scene/rootview on the canvas', () => {
     )
   })
 
-  xit('dragging a scene sets the scene position', async () => {
+  it('dragging a scene sets the scene position', async () => {
     const testCode = Prettier.format(
       `
         import * as React from 'react'
@@ -258,7 +262,7 @@ describe('moving a scene/rootview on the canvas', () => {
 })
 
 describe('resizing a scene/rootview on the canvas', () => {
-  xit('resizing a scene child’s root view sets the root view size', async () => {
+  it('resizing a scene child’s root view sets the root view size', async () => {
     const testCode = Prettier.format(
       `
         import * as React from 'react'
@@ -382,7 +386,7 @@ describe('resizing a scene/rootview on the canvas', () => {
     )
   })
 
-  xit('resizing a scene sets the scene size', async () => {
+  it('resizing a scene sets the scene size', async () => {
     const testCode = Prettier.format(
       `
       import * as React from 'react'
