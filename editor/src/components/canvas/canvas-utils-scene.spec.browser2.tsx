@@ -18,10 +18,10 @@ import { wait } from '../../utils/utils.test-utils'
 import { setFeatureEnabled } from '../../utils/feature-switches'
 
 describe('moving a scene/rootview on the canvas', () => {
-  beforeEach(() => {
+  before(() => {
     setFeatureEnabled('Canvas Strategies', false)
   })
-  afterEach(() => {
+  after(() => {
     setFeatureEnabled('Canvas Strategies', true)
   })
   // TODO Eni and Balazs look into why is this failing under Karma
@@ -265,6 +265,12 @@ describe('moving a scene/rootview on the canvas', () => {
 })
 
 describe('resizing a scene/rootview on the canvas', () => {
+  before(() => {
+    setFeatureEnabled('Canvas Strategies', false)
+  })
+  after(() => {
+    setFeatureEnabled('Canvas Strategies', true)
+  })
   it('resizing a scene child’s root view sets the root view size', async () => {
     const testCode = Prettier.format(
       `
