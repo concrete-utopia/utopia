@@ -21,6 +21,9 @@ describe('moving a scene/rootview on the canvas', () => {
   beforeEach(() => {
     setFeatureEnabled('Canvas Strategies', false)
   })
+  afterEach(() => {
+    setFeatureEnabled('Canvas Strategies', true)
+  })
   // TODO Eni and Balazs look into why is this failing under Karma
   xit('dragging a scene child’s root view sets the root view position', async () => {
     const renderResult = await renderTestEditorWithCode(
