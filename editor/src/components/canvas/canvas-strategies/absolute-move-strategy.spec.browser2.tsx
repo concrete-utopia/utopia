@@ -8,6 +8,10 @@ import { act, fireEvent } from '@testing-library/react'
 import * as EP from '../../../core/shared/element-path'
 import { selectComponents } from '../../editor/actions/action-creators'
 import { CanvasControlsContainerID } from '../controls/new-canvas-controls'
+import CanvasActions from '../canvas-actions'
+import { createInteractionViaMouse } from './interaction-state'
+import { zeroCanvasPoint } from '../../../core/shared/math-utils'
+import { emptyModifiers } from '../../../utils/modifiers'
 
 describe('Absolute Move Strategy', () => {
   it('moves absolute positioned element', async () => {
@@ -289,5 +293,81 @@ describe('Absolute Move Strategy', () => {
         </div>
       `),
     )
+  })
+})
+
+describe('Absolute Move Strategy Canvas Controls', () => {
+  it('when an absolute positioned element is started to be moved parent outlines become visible', async () => {
+    const renderResult = await renderTestEditorWithCode(
+      makeTestProjectCodeWithSnippet(`
+        <div style={{ width: '100%', height: '100%' }} data-uid='aaa'>
+          <div
+            style={{ backgroundColor: '#0091FFAA', position: 'absolute', left: 40, top: 50, right: 160, bottom: 230 }}
+            data-uid='bbb'
+            data-testid='bbb'
+          />
+        </div>
+      `),
+      'await-first-dom-report',
+    )
+
+    const parentOutlineControlBeforeDrag =
+      renderResult.renderedDOM.queryByTestId('parent-outlines-control')
+    expect(parentOutlineControlBeforeDrag).toBeNull()
+    const parentBoundsControlBeforeDrag =
+      renderResult.renderedDOM.queryByTestId('parent-bounds-control')
+    expect(parentBoundsControlBeforeDrag).toBeNull()
+
+    const target = EP.appendNewElementPath(TestScenePath, ['aaa', 'bbb'])
+    await renderResult.dispatch([selectComponents([target], false)], true)
+
+    await act(async () => {
+      const dispatchDone = renderResult.getDispatchFollowUpActionsFinished()
+      await renderResult.dispatch(
+        [
+          CanvasActions.createInteractionSession(
+            createInteractionViaMouse(zeroCanvasPoint, emptyModifiers, {
+              type: 'BOUNDING_AREA',
+              target: target,
+            }),
+          ),
+        ],
+        false,
+      )
+      await dispatchDone
+    })
+
+    const parentOutlineControl = renderResult.renderedDOM.getByTestId('parent-outlines-control')
+    expect(parentOutlineControl).toBeDefined()
+    const parentBoundsControl = renderResult.renderedDOM.getByTestId('parent-bounds-control')
+    expect(parentBoundsControl).toBeDefined()
+  })
+  it('when an absolute positioned element is selected the pin lines are visible', async () => {
+    const renderResult = await renderTestEditorWithCode(
+      makeTestProjectCodeWithSnippet(`
+        <div style={{ width: '100%', height: '100%' }} data-uid='aaa'>
+          <div
+            style={{ backgroundColor: '#0091FFAA', position: 'absolute', left: 40, top: 50, right: 160, bottom: 230 }}
+            data-uid='bbb'
+            data-testid='bbb'
+          />
+        </div>
+      `),
+      'await-first-dom-report',
+    )
+
+    await renderResult.dispatch(
+      [selectComponents([EP.appendNewElementPath(TestScenePath, ['aaa', 'bbb'])], false)],
+      true,
+    )
+
+    const pinLineLeft = renderResult.renderedDOM.getByTestId('pin-line-left')
+    expect(pinLineLeft).toBeDefined()
+    const pinLineTop = renderResult.renderedDOM.getByTestId('pin-line-top')
+    expect(pinLineTop).toBeDefined()
+    const pinLineRight = renderResult.renderedDOM.getByTestId('pin-line-right')
+    expect(pinLineRight).toBeDefined()
+    const pinLineBottom = renderResult.renderedDOM.getByTestId('pin-line-bottom')
+    expect(pinLineBottom).toBeDefined()
   })
 })
