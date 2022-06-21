@@ -1,5 +1,5 @@
 import localforage from 'localforage'
-import { PRODUCTION_CONFIG } from '../common/env-vars'
+import { IS_TEST_ENVIRONMENT, PRODUCTION_CONFIG } from '../common/env-vars'
 import { fastForEach, isBrowserEnvironment } from '../core/shared/utils'
 
 export type FeatureName =
@@ -51,7 +51,7 @@ function settingKeyForName(featureName: FeatureName): string {
 }
 
 async function loadStoredValue(featureName: FeatureName) {
-  if (isBrowserEnvironment) {
+  if (isBrowserEnvironment && !IS_TEST_ENVIRONMENT) {
     const existing = await localforage.getItem<boolean | null>(settingKeyForName(featureName))
     if (existing != null) {
       FeatureSwitches[featureName] = existing

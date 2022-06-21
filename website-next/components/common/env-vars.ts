@@ -1,3 +1,8 @@
+export let IS_TEST_ENVIRONMENT: boolean = false
+export function setTestEnvironment() {
+  IS_TEST_ENVIRONMENT = true
+}
+
 // you can turn on/off debug features individually here
 
 export const HOST: string = typeof window === 'undefined' ? '' : window.location.host
