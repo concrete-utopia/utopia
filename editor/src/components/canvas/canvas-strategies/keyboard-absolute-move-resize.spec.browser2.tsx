@@ -2,17 +2,23 @@ import { act } from '@testing-library/react'
 import sinon, { SinonFakeTimers } from 'sinon'
 
 import * as EP from '../../../core/shared/element-path'
-import { setFeatureEnabled } from '../../../utils/feature-switches'
+import { isFeatureEnabled, setFeatureEnabled } from '../../../utils/feature-switches'
 import { selectComponents } from '../../editor/actions/action-creators'
 import { getPrintedUiJsCode, renderTestEditorWithCode } from '../ui-jsx.test-utils'
 import { KeyboardInteractionTimeout } from './interaction-state'
 
 describe('Keyboard Absolute Move E2E', () => {
-  let clock: SinonFakeTimers
+  let originalCanvasStrategiesFSValue: boolean
   before(() => {
     viewport.set(2200, 1000)
+    originalCanvasStrategiesFSValue = isFeatureEnabled('Canvas Strategies')
     setFeatureEnabled('Canvas Strategies', true)
   })
+  after(() => {
+    setFeatureEnabled('Canvas Strategies', originalCanvasStrategiesFSValue)
+  })
+
+  let clock: SinonFakeTimers
   beforeEach(function () {
     clock = sinon.useFakeTimers()
   })
@@ -48,6 +54,7 @@ describe('Keyboard Absolute Move E2E', () => {
     // tick the clock so useClearKeyboardInteraction is fired
     clock.tick(KeyboardInteractionTimeout)
 
+    // the follow up action is the UPDATE_FROM_WORKER which prints the new code with the updated coordinates
     await renderResult.getDispatchFollowUpActionsFinished()
 
     expect(getPrintedUiJsCode(renderResult.getEditorState())).toEqual(
