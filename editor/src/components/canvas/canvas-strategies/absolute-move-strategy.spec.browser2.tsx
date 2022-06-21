@@ -28,8 +28,8 @@ describe('Absolute Move Strategy', () => {
       'await-first-dom-report',
     )
 
-    const areaControl = renderResult.renderedDOM.getByTestId('bbb')
-    const areaControlBounds = areaControl.getBoundingClientRect()
+    const targetElement = renderResult.renderedDOM.getByTestId('bbb')
+    const targetElementBounds = targetElement.getBoundingClientRect()
     const canvasControlsLayer = renderResult.renderedDOM.getByTestId(CanvasControlsContainerID)
 
     fireEvent(
@@ -38,8 +38,8 @@ describe('Absolute Move Strategy', () => {
         bubbles: true,
         cancelable: true,
         metaKey: true,
-        clientX: areaControlBounds.left + 5,
-        clientY: areaControlBounds.top + 5,
+        clientX: targetElementBounds.left + 5,
+        clientY: targetElementBounds.top + 5,
         buttons: 1,
       }),
     )
@@ -52,8 +52,8 @@ describe('Absolute Move Strategy', () => {
           bubbles: true,
           cancelable: true,
           metaKey: false,
-          clientX: areaControlBounds.left + 45,
-          clientY: areaControlBounds.top - 20,
+          clientX: targetElementBounds.left + 45,
+          clientY: targetElementBounds.top - 20,
           buttons: 1,
         }),
       )
@@ -68,8 +68,8 @@ describe('Absolute Move Strategy', () => {
           bubbles: true,
           cancelable: true,
           metaKey: false,
-          clientX: areaControlBounds.left + 45,
-          clientY: areaControlBounds.top - 20,
+          clientX: targetElementBounds.left + 45,
+          clientY: targetElementBounds.top - 20,
           buttons: 1,
         }),
       )
@@ -84,8 +84,8 @@ describe('Absolute Move Strategy', () => {
           bubbles: true,
           cancelable: true,
           metaKey: false,
-          clientX: areaControlBounds.left + 45,
-          clientY: areaControlBounds.top - 20,
+          clientX: targetElementBounds.left + 45,
+          clientY: targetElementBounds.top - 20,
         }),
       )
       await dispatchDone
@@ -120,8 +120,8 @@ describe('Absolute Move Strategy', () => {
       'await-first-dom-report',
     )
 
-    const areaControl = renderResult.renderedDOM.getByTestId('bbb')
-    const areaControlBounds = areaControl.getBoundingClientRect()
+    const targetElement = renderResult.renderedDOM.getByTestId('bbb')
+    const targetElementBounds = targetElement.getBoundingClientRect()
     const canvasControlsLayer = renderResult.renderedDOM.getByTestId(CanvasControlsContainerID)
 
     fireEvent(
@@ -130,8 +130,8 @@ describe('Absolute Move Strategy', () => {
         bubbles: true,
         cancelable: true,
         metaKey: true,
-        clientX: areaControlBounds.left + 5,
-        clientY: areaControlBounds.top + 5,
+        clientX: targetElementBounds.left + 5,
+        clientY: targetElementBounds.top + 5,
         buttons: 1,
       }),
     )
@@ -144,8 +144,8 @@ describe('Absolute Move Strategy', () => {
           bubbles: true,
           cancelable: true,
           metaKey: false,
-          clientX: areaControlBounds.left + 14,
-          clientY: areaControlBounds.top - 18,
+          clientX: targetElementBounds.left + 14,
+          clientY: targetElementBounds.top - 18,
           buttons: 1,
         }),
       )
@@ -160,8 +160,8 @@ describe('Absolute Move Strategy', () => {
           bubbles: true,
           cancelable: true,
           metaKey: false,
-          clientX: areaControlBounds.left + 14,
-          clientY: areaControlBounds.top - 18,
+          clientX: targetElementBounds.left + 14,
+          clientY: targetElementBounds.top - 18,
           buttons: 1,
         }),
       )
@@ -176,8 +176,8 @@ describe('Absolute Move Strategy', () => {
           bubbles: true,
           cancelable: true,
           metaKey: false,
-          clientX: areaControlBounds.left + 14,
-          clientY: areaControlBounds.top - 18,
+          clientX: targetElementBounds.left + 14,
+          clientY: targetElementBounds.top - 18,
         }),
       )
       await dispatchDone
@@ -216,8 +216,8 @@ describe('Absolute Move Strategy', () => {
       'await-first-dom-report',
     )
 
-    const areaControl = renderResult.renderedDOM.getByTestId('bbb')
-    const areaControlBounds = areaControl.getBoundingClientRect()
+    const targetElement = renderResult.renderedDOM.getByTestId('bbb')
+    const targetElementBounds = targetElement.getBoundingClientRect()
     const canvasControlsLayer = renderResult.renderedDOM.getByTestId(CanvasControlsContainerID)
 
     fireEvent(
@@ -226,8 +226,8 @@ describe('Absolute Move Strategy', () => {
         bubbles: true,
         cancelable: true,
         metaKey: true,
-        clientX: areaControlBounds.left + 5,
-        clientY: areaControlBounds.top + 5,
+        clientX: targetElementBounds.left + 5,
+        clientY: targetElementBounds.top + 5,
         buttons: 1,
       }),
     )
@@ -240,8 +240,8 @@ describe('Absolute Move Strategy', () => {
           bubbles: true,
           cancelable: true,
           metaKey: true,
-          clientX: areaControlBounds.left + 14,
-          clientY: areaControlBounds.top - 18,
+          clientX: targetElementBounds.left + 14,
+          clientY: targetElementBounds.top - 18,
           buttons: 1,
         }),
       )
@@ -256,8 +256,8 @@ describe('Absolute Move Strategy', () => {
           bubbles: true,
           cancelable: true,
           metaKey: true,
-          clientX: areaControlBounds.left + 14,
-          clientY: areaControlBounds.top - 18,
+          clientX: targetElementBounds.left + 14,
+          clientY: targetElementBounds.top - 18,
           buttons: 1,
         }),
       )
@@ -272,8 +272,8 @@ describe('Absolute Move Strategy', () => {
           bubbles: true,
           cancelable: true,
           metaKey: true,
-          clientX: areaControlBounds.left + 14,
-          clientY: areaControlBounds.top - 18,
+          clientX: targetElementBounds.left + 14,
+          clientY: targetElementBounds.top - 18,
         }),
       )
       await dispatchDone
