@@ -10,8 +10,64 @@ import { selectComponents } from '../../editor/actions/action-creators'
 import { CanvasControlsContainerID } from '../controls/new-canvas-controls'
 import CanvasActions from '../canvas-actions'
 import { createInteractionViaMouse } from './interaction-state'
-import { zeroCanvasPoint } from '../../../core/shared/math-utils'
+import {
+  offsetPoint,
+  windowPoint,
+  WindowPoint,
+  zeroCanvasPoint,
+} from '../../../core/shared/math-utils'
 import { emptyModifiers } from '../../../utils/modifiers'
+
+function dragElement(
+  canvasControl: HTMLElement,
+  startPoint: WindowPoint,
+  dragDelta: WindowPoint,
+  cmdPressed: boolean,
+  altPressed: boolean,
+  shiftPressed: boolean,
+) {
+  const endPoint = offsetPoint(startPoint, dragDelta)
+  fireEvent(
+    canvasControl,
+    new MouseEvent('mousedown', {
+      bubbles: true,
+      cancelable: true,
+      metaKey: true,
+      altKey: altPressed,
+      shiftKey: shiftPressed,
+      clientX: startPoint.x,
+      clientY: startPoint.y,
+      buttons: 1,
+    }),
+  )
+
+  fireEvent(
+    canvasControl,
+    new MouseEvent('mousemove', {
+      bubbles: true,
+      cancelable: true,
+      metaKey: cmdPressed,
+      altKey: altPressed,
+      shiftKey: shiftPressed,
+      clientX: endPoint.x,
+      clientY: endPoint.y,
+      buttons: 1,
+    }),
+  )
+
+  fireEvent(
+    window,
+    new MouseEvent('mouseup', {
+      bubbles: true,
+      cancelable: true,
+      metaKey: cmdPressed,
+      altKey: altPressed,
+      shiftKey: shiftPressed,
+      clientX: endPoint.x,
+      clientY: endPoint.y,
+    }),
+  )
+}
 
 describe('Absolute Move Strategy', () => {
   it('moves absolute positioned element', async () => {
@@ -32,40 +88,11 @@ describe('Absolute Move Strategy', () => {
     const targetElementBounds = targetElement.getBoundingClientRect()
     const canvasControlsLayer = renderResult.renderedDOM.getByTestId(CanvasControlsContainerID)
 
-    fireEvent(
-      canvasControlsLayer,
-      new MouseEvent('mousedown', {
-        bubbles: true,
-        cancelable: true,
-        metaKey: true,
-        clientX: targetElementBounds.left + 5,
-        clientY: targetElementBounds.top + 5,
-        buttons: 1,
-      }),
-    )
+    const startPoint = windowPoint({ x: targetElementBounds.x + 5, y: targetElementBounds.y + 5 })
+    const dragDelta = windowPoint({ x: 40, y: -25 })
 
-    fireEvent(
-      canvasControlsLayer,
-      new MouseEvent('mousemove', {
-        bubbles: true,
-        cancelable: true,
-        metaKey: false,
-        clientX: targetElementBounds.left + 45,
-        clientY: targetElementBounds.top - 20,
-        buttons: 1,
-      }),
-    )
+    act(() => dragElement(canvasControlsLayer, startPoint, dragDelta, false, false, false))
 
-    fireEvent(
-      window,
-      new MouseEvent('mouseup', {
-        bubbles: true,
-        cancelable: true,
-        metaKey: false,
-        clientX: targetElementBounds.left + 45,
-        clientY: targetElementBounds.top - 20,
-      }),
-    )
     await renderResult.getDispatchFollowUpActionsFinished()
     expect(getPrintedUiJsCode(renderResult.getEditorState())).toEqual(
       makeTestProjectCodeWithSnippet(`
@@ -101,40 +128,11 @@ describe('Absolute Move Strategy', () => {
     const targetElementBounds = targetElement.getBoundingClientRect()
     const canvasControlsLayer = renderResult.renderedDOM.getByTestId(CanvasControlsContainerID)
 
-    fireEvent(
-      canvasControlsLayer,
-      new MouseEvent('mousedown', {
-        bubbles: true,
-        cancelable: true,
-        metaKey: true,
-        clientX: targetElementBounds.left + 5,
-        clientY: targetElementBounds.top + 5,
-        buttons: 1,
-      }),
-    )
+    const startPoint = windowPoint({ x: targetElementBounds.x + 5, y: targetElementBounds.y + 5 })
+    const dragDelta = windowPoint({ x: 9, y: -23 })
 
-    fireEvent(
-      canvasControlsLayer,
-      new MouseEvent('mousemove', {
-        bubbles: true,
-        cancelable: true,
-        metaKey: false,
-        clientX: targetElementBounds.left + 14,
-        clientY: targetElementBounds.top - 18,
-        buttons: 1,
-      }),
-    )
+    act(() => dragElement(canvasControlsLayer, startPoint, dragDelta, false, false, false))
 
-    fireEvent(
-      window,
-      new MouseEvent('mouseup', {
-        bubbles: true,
-        cancelable: true,
-        metaKey: false,
-        clientX: targetElementBounds.left + 14,
-        clientY: targetElementBounds.top - 18,
-      }),
-    )
     await renderResult.getDispatchFollowUpActionsFinished()
 
     expect(getPrintedUiJsCode(renderResult.getEditorState())).toEqual(
@@ -175,40 +173,11 @@ describe('Absolute Move Strategy', () => {
     const targetElementBounds = targetElement.getBoundingClientRect()
     const canvasControlsLayer = renderResult.renderedDOM.getByTestId(CanvasControlsContainerID)
 
-    fireEvent(
-      canvasControlsLayer,
-      new MouseEvent('mousedown', {
-        bubbles: true,
-        cancelable: true,
-        metaKey: true,
-        clientX: targetElementBounds.left + 5,
-        clientY: targetElementBounds.top + 5,
-        buttons: 1,
-      }),
-    )
+    const startPoint = windowPoint({ x: targetElementBounds.x + 5, y: targetElementBounds.y + 5 })
+    const dragDelta = windowPoint({ x: 9, y: -23 })
 
-    fireEvent(
-      canvasControlsLayer,
-      new MouseEvent('mousemove', {
-        bubbles: true,
-        cancelable: true,
-        metaKey: true,
-        clientX: targetElementBounds.left + 14,
-        clientY: targetElementBounds.top - 18,
-        buttons: 1,
-      }),
-    )
+    act(() => dragElement(canvasControlsLayer, startPoint, dragDelta, true, false, false))
 
-    fireEvent(
-      window,
-      new MouseEvent('mouseup', {
-        bubbles: true,
-        cancelable: true,
-        metaKey: true,
-        clientX: targetElementBounds.left + 14,
-        clientY: targetElementBounds.top - 18,
-      }),
-    )
     await renderResult.getDispatchFollowUpActionsFinished()
     expect(getPrintedUiJsCode(renderResult.getEditorState())).toEqual(
       makeTestProjectCodeWithSnippet(`
