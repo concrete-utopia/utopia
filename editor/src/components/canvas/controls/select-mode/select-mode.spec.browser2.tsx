@@ -14,6 +14,93 @@ import { setFocusedElement } from '../../../editor/actions/action-creators'
 import CanvasActions from '../../canvas-actions'
 import { CanvasControlsContainerID } from '../new-canvas-controls'
 
+function fireDoubleClickEvents(target: HTMLElement, clientX: number, clientY: number) {
+  fireEvent(
+    target,
+    new MouseEvent('mousedown', {
+      detail: 1,
+      bubbles: true,
+      cancelable: true,
+      metaKey: false,
+      clientX: clientX,
+      clientY: clientY,
+      buttons: 1,
+    }),
+  )
+  fireEvent(
+    target,
+    new MouseEvent('mouseup', {
+      detail: 1,
+      bubbles: true,
+      cancelable: true,
+      metaKey: false,
+      clientX: clientX,
+      clientY: clientY,
+      buttons: 1,
+    }),
+  )
+  fireEvent(
+    target,
+    new MouseEvent('click', {
+      detail: 1,
+      bubbles: true,
+      cancelable: true,
+      metaKey: false,
+      clientX: clientX,
+      clientY: clientY,
+      buttons: 1,
+    }),
+  )
+  fireEvent(
+    target,
+    new MouseEvent('mousedown', {
+      detail: 2,
+      bubbles: true,
+      cancelable: true,
+      metaKey: false,
+      clientX: clientX,
+      clientY: clientY,
+      buttons: 1,
+    }),
+  )
+  fireEvent(
+    target,
+    new MouseEvent('mouseup', {
+      detail: 2,
+      bubbles: true,
+      cancelable: true,
+      metaKey: false,
+      clientX: clientX,
+      clientY: clientY,
+      buttons: 1,
+    }),
+  )
+  fireEvent(
+    target,
+    new MouseEvent('click', {
+      detail: 2,
+      bubbles: true,
+      cancelable: true,
+      metaKey: false,
+      clientX: clientX,
+      clientY: clientY,
+      buttons: 1,
+    }),
+  )
+  fireEvent(
+    target,
+    new MouseEvent('dblclick', {
+      detail: 2,
+      bubbles: true,
+      cancelable: true,
+      metaKey: false,
+      clientX: clientX,
+      clientY: clientY,
+      buttons: 1,
+    }),
+  )
+}
+
 describe('Select Mode Selection', () => {
   before(() => {
     viewport.set(2200, 1000)
@@ -97,54 +184,12 @@ describe('Select Mode Selection', () => {
     const doubleClick = async () => {
       await act(async () => {
         const dispatchDone = renderResult.getDispatchFollowUpActionsFinished()
-        fireEvent(
+        fireDoubleClickEvents(
           canvasControlsLayer,
-          new MouseEvent('mousedown', {
-            detail: 1,
-            bubbles: true,
-            cancelable: true,
-            metaKey: false,
-            clientX: areaControlBounds.left + 20,
-            clientY: areaControlBounds.top + 20,
-            buttons: 1,
-          }),
+          areaControlBounds.left + 20,
+          areaControlBounds.top + 20,
         )
-        fireEvent(
-          canvasControlsLayer,
-          new MouseEvent('mouseup', {
-            detail: 1,
-            bubbles: true,
-            cancelable: true,
-            metaKey: false,
-            clientX: areaControlBounds.left + 20,
-            clientY: areaControlBounds.top + 20,
-            buttons: 1,
-          }),
-        )
-        fireEvent(
-          canvasControlsLayer,
-          new MouseEvent('mousedown', {
-            detail: 2,
-            bubbles: true,
-            cancelable: true,
-            metaKey: false,
-            clientX: areaControlBounds.left + 20,
-            clientY: areaControlBounds.top + 20,
-            buttons: 1,
-          }),
-        )
-        fireEvent(
-          canvasControlsLayer,
-          new MouseEvent('mouseup', {
-            detail: 1,
-            bubbles: true,
-            cancelable: true,
-            metaKey: false,
-            clientX: areaControlBounds.left + 20,
-            clientY: areaControlBounds.top + 20,
-            buttons: 1,
-          }),
-        )
+
         await dispatchDone
       })
     }
@@ -246,29 +291,10 @@ describe('Select Mode Advanced Cases', () => {
     const doubleClick = async () => {
       await act(async () => {
         const dispatchDone = renderResult.getDispatchFollowUpActionsFinished()
-        fireEvent(
+        fireDoubleClickEvents(
           canvasControlsLayer,
-          new MouseEvent('mousedown', {
-            detail: 1,
-            bubbles: true,
-            cancelable: true,
-            metaKey: false,
-            clientX: cardSceneRootBounds.left + 130,
-            clientY: cardSceneRootBounds.top + 220,
-            buttons: 1,
-          }),
-        )
-        fireEvent(
-          canvasControlsLayer,
-          new MouseEvent('mousedown', {
-            detail: 2,
-            bubbles: true,
-            cancelable: true,
-            metaKey: false,
-            clientX: cardSceneRootBounds.left + 130,
-            clientY: cardSceneRootBounds.top + 220,
-            buttons: 1,
-          }),
+          cardSceneRootBounds.left + 130,
+          cardSceneRootBounds.top + 220,
         )
         await dispatchDone
       })
@@ -315,29 +341,10 @@ describe('Select Mode Advanced Cases', () => {
     const doubleClick = async () => {
       await act(async () => {
         const dispatchDone = renderResult.getDispatchFollowUpActionsFinished()
-        fireEvent(
+        fireDoubleClickEvents(
           canvasControlsLayer,
-          new MouseEvent('mousedown', {
-            detail: 1,
-            bubbles: true,
-            cancelable: true,
-            metaKey: false,
-            clientX: cardSceneRootBounds.left + 130,
-            clientY: cardSceneRootBounds.top + 220,
-            buttons: 1,
-          }),
-        )
-        fireEvent(
-          canvasControlsLayer,
-          new MouseEvent('mousedown', {
-            detail: 2,
-            bubbles: true,
-            cancelable: true,
-            metaKey: false,
-            clientX: cardSceneRootBounds.left + 130,
-            clientY: cardSceneRootBounds.top + 220,
-            buttons: 1,
-          }),
+          cardSceneRootBounds.left + 130,
+          cardSceneRootBounds.top + 220,
         )
         await dispatchDone
       })
