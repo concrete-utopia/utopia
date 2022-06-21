@@ -19,27 +19,23 @@ export const ParentOutlines = React.memo(() => {
     }, targetParents)
   }, 'ParentOutlines frames')
 
-  return (
-    <>
-      {parentFrames.map((frame, i) => {
-        return (
-          <CanvasOffsetWrapper key={`parent-outline-${i}`}>
-            <div
-              style={{
-                position: 'absolute',
-                left: frame.x,
-                top: frame.y,
-                width: frame.width,
-                height: frame.height,
-                outlineStyle: 'dotted',
-                outlineColor: colorTheme.primary.value,
-                outlineWidth: 1 / scale,
-                pointerEvents: 'none',
-              }}
-            />
-          </CanvasOffsetWrapper>
-        )
-      })}
-    </>
-  )
+  const frame = parentFrames.length === 1 ? parentFrames[0] : null
+
+  return frame != null ? (
+    <CanvasOffsetWrapper key={`parent-outline`}>
+      <div
+        style={{
+          position: 'absolute',
+          left: frame.x,
+          top: frame.y,
+          width: frame.width,
+          height: frame.height,
+          outlineStyle: 'dotted',
+          outlineColor: colorTheme.primary.value,
+          outlineWidth: 1 / scale,
+          pointerEvents: 'none',
+        }}
+      />
+    </CanvasOffsetWrapper>
+  ) : null
 })

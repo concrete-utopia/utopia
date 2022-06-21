@@ -107,6 +107,7 @@ function sanitizeLoggedState(store: EditorStoreFull) {
 export function reduxDevtoolsSendActions(
   actions: Array<Array<EditorAction>>,
   newStore: EditorStoreFull,
+  isTransient: boolean,
 ): void {
   if (
     maybeDevTools != null &&
@@ -143,7 +144,11 @@ export function reduxDevtoolsSendActions(
     if (filteredActions.length > 0) {
       const sanitizedStore = sanitizeLoggedState(newStore)
       const actionNames = pluck(filteredActions, 'action').join(' ')
-      maybeDevTools.send({ type: `⚫️ ${actionNames}`, actions: filteredActions }, sanitizedStore)
+      const colorBall = isTransient ? `⚪️` : `⚫️`
+      maybeDevTools.send(
+        { type: `${colorBall} ${actionNames}`, actions: filteredActions },
+        sanitizedStore,
+      )
       lastDispatchedStore = sanitizedStore
     }
   }

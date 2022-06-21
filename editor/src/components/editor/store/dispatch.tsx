@@ -401,7 +401,23 @@ export function editorDispatch(
     (action) => action.action === 'UPDATE_FROM_WORKER',
   )
 
-  const editorFilteredForFiles = filterEditorForFiles(result.unpatchedEditor)
+  const { unpatchedEditorState, patchedEditorState, newStrategyState, patchedDerivedState } =
+    isFeatureEnabled('Canvas Strategies')
+      ? handleStrategies(
+          RegisteredCanvasStrategies,
+          dispatchedActions,
+          storedState,
+          result,
+          storedState.patchedDerived,
+        )
+      : {
+          unpatchedEditorState: result.unpatchedEditor,
+          patchedEditorState: result.unpatchedEditor,
+          newStrategyState: result.strategyState,
+          patchedDerivedState: result.unpatchedDerived,
+        }
+
+  const editorFilteredForFiles = filterEditorForFiles(unpatchedEditorState)
 
   const frozenDerivedState = result.unpatchedDerived
 
@@ -420,22 +436,6 @@ export function editorDispatch(
     !isLoadAction &&
     (!transientOrNoChange || anyUndoOrRedo || (anyWorkerUpdates && alreadySaved)) &&
     isBrowserEnvironment
-
-  const { unpatchedEditorState, patchedEditorState, newStrategyState, patchedDerivedState } =
-    isFeatureEnabled('Canvas Strategies')
-      ? handleStrategies(
-          RegisteredCanvasStrategies,
-          dispatchedActions,
-          storedState,
-          result,
-          storedState.patchedDerived,
-        )
-      : {
-          unpatchedEditorState: result.unpatchedEditor,
-          patchedEditorState: result.unpatchedEditor,
-          newStrategyState: result.strategyState,
-          patchedDerivedState: result.unpatchedDerived,
-        }
 
   const editorWithModelChecked =
     !anyUndoOrRedo && transientOrNoChange && !workerUpdatedModel
@@ -464,7 +464,7 @@ export function editorDispatch(
     builtInDependencies: storedState.builtInDependencies,
   }
 
-  reduxDevtoolsSendActions(actionGroupsToProcess, finalStore)
+  reduxDevtoolsSendActions(actionGroupsToProcess, finalStore, allTransient)
 
   if (storedState.userState.loginState.type !== result.userState.loginState.type) {
     if (isLoggedIn(result.userState.loginState)) {

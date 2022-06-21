@@ -26,9 +26,9 @@ import { updateHighlightedViews } from '../commands/update-highlighted-views-com
 import { ParentBounds } from '../controls/parent-bounds'
 import { ParentOutlines } from '../controls/parent-outlines'
 import { AbsoluteResizeControl } from '../controls/select-mode/absolute-resize-control'
-import { AbsolutePin, hasAtLeastTwoPinsPerSide } from './absolute-resize-helpers'
+import { AbsolutePin, ensureAtLeastTwoPinsForEdgePosition } from './absolute-resize-helpers'
 import { CanvasStrategy, emptyStrategyApplicationResult } from './canvas-strategy-types'
-import { getMultiselectBounds } from './shared-absolute-move-strategy-helpers'
+import { getDragTargets, getMultiselectBounds } from './shared-absolute-move-strategy-helpers'
 import {
   pickCursorFromEdgePosition,
   resizeBoundingBox,
@@ -36,24 +36,17 @@ import {
 } from './shared-absolute-resize-strategy-helpers'
 import * as EP from '../../../core/shared/element-path'
 import { ZeroSizeResizeControlWrapper } from '../controls/zero-sized-element-controls'
+import { SetCssLengthProperty, setCssLengthProperty } from '../commands/set-css-length-command'
 
 export const absoluteResizeBoundingBoxStrategy: CanvasStrategy = {
   id: 'ABSOLUTE_RESIZE_BOUNDING_BOX',
   name: 'Absolute Resize',
   isApplicable: (canvasState, interactionState, metadata, allElementProps) => {
-    if (
-      canvasState.selectedElements.length > 1 ||
-      (canvasState.selectedElements.length >= 1 &&
-        (interactionState?.interactionData.modifiers.alt ||
-          interactionState?.interactionData.modifiers.shift))
-    ) {
-      return canvasState.selectedElements.every((element) => {
+    if (canvasState.selectedElements.length > 0) {
+      const filteredSelectedElements = getDragTargets(canvasState.selectedElements)
+      return filteredSelectedElements.every((element) => {
         const elementMetadata = MetadataUtils.findElementByElementPath(metadata, element)
-        const elementProps = allElementProps[EP.toString(element)] ?? {}
-        return (
-          elementMetadata?.specialSizeMeasurements.position === 'absolute' &&
-          hasAtLeastTwoPinsPerSide(elementProps) // TODO should this use projectContents?
-        )
+        return elementMetadata?.specialSizeMeasurements.position === 'absolute'
       })
     } else {
       return false
@@ -89,9 +82,10 @@ export const absoluteResizeBoundingBoxStrategy: CanvasStrategy = {
       const edgePosition = interactionState.activeControl.edgePosition
       if (interactionState.interactionData.drag != null) {
         const drag = interactionState.interactionData.drag
+        const filteredSelectedElements = getDragTargets(canvasState.selectedElements)
         const originalBoundingBox = getMultiselectBounds(
           sessionState.startingMetadata,
-          canvasState.selectedElements,
+          filteredSelectedElements,
         )
         if (originalBoundingBox != null) {
           const keepAspectRatio = interactionState.interactionData.modifiers.shift
@@ -109,7 +103,7 @@ export const absoluteResizeBoundingBoxStrategy: CanvasStrategy = {
             centerBased,
           )
           const { snappedBoundingBox, guidelinesWithSnappingVector } = snapBoundingBox(
-            canvasState.selectedElements,
+            filteredSelectedElements,
             sessionState.startingMetadata,
             edgePosition,
             newBoundingBox,
@@ -118,7 +112,8 @@ export const absoluteResizeBoundingBoxStrategy: CanvasStrategy = {
             centerBased,
             sessionState.startingAllElementProps,
           )
-          const commandsForSelectedElements = canvasState.selectedElements.flatMap(
+
+          const commandsForSelectedElements = filteredSelectedElements.flatMap(
             (selectedElement) => {
               const element = getElementFromProjectContents(
                 selectedElement,
@@ -152,6 +147,7 @@ export const absoluteResizeBoundingBoxStrategy: CanvasStrategy = {
                   newFrame,
                   originalFrame,
                   elementParentBounds,
+                  edgePosition,
                 ),
                 setSnappingGuidelines('transient', guidelinesWithSnappingVector),
               ]
@@ -188,8 +184,12 @@ function createResizeCommandsFromFrame(
   newFrame: CanvasRectangle,
   originalFrame: CanvasRectangle,
   elementParentBounds: CanvasRectangle | null,
-): AdjustCssLengthProperty[] {
-  const pins: Array<AbsolutePin> = ['top', 'left', 'width', 'height', 'bottom', 'right']
+  edgePosition: EdgePosition,
+): (AdjustCssLengthProperty | SetCssLengthProperty)[] {
+  const pins: Array<AbsolutePin> = ensureAtLeastTwoPinsForEdgePosition(
+    right(element.props),
+    edgePosition,
+  )
   return mapDropNulls((pin) => {
     const horizontal = isHorizontalPoint(
       // TODO avoid using the loaded FramePoint enum
@@ -200,15 +200,26 @@ function createResizeCommandsFromFrame(
     const delta = allPinsFromFrame(rectangleDiff)[pin]
     const roundedDelta = roundTo(delta, 0)
     const pinDirection = pin === 'right' || pin === 'bottom' ? -1 : 1
-    if (isRight(value) && value.value != null && roundedDelta !== 0) {
-      return adjustCssLengthProperty(
-        'permanent',
-        selectedElement,
-        stylePropPathMappingFn(pin, ['style']),
-        roundedDelta * pinDirection,
-        horizontal ? elementParentBounds?.width : elementParentBounds?.height,
-        true,
-      )
+    if (roundedDelta !== 0) {
+      if (isRight(value) && value.value != null) {
+        return adjustCssLengthProperty(
+          'permanent',
+          selectedElement,
+          stylePropPathMappingFn(pin, ['style']),
+          roundedDelta * pinDirection,
+          horizontal ? elementParentBounds?.width : elementParentBounds?.height,
+          true,
+        )
+      } else {
+        const valueToSet = allPinsFromFrame(newFrame)[pin]
+        return setCssLengthProperty(
+          'permanent',
+          selectedElement,
+          stylePropPathMappingFn(pin, ['style']),
+          roundTo(valueToSet, 0),
+          horizontal ? elementParentBounds?.width : elementParentBounds?.height,
+        )
+      }
     } else {
       return null
     }
