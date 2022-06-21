@@ -21,6 +21,7 @@ describe('Keyboard Absolute Strategies E2E', () => {
 
   let clock: SinonFakeTimers
   beforeEach(function () {
+    setFeatureEnabled('Canvas Strategies', true)
     clock = sinon.useFakeTimers({
       // the timers will tick so the editor is not totally broken, but we can fast-forward time at will
       // WARNING: the Sinon fake timers will advance in 20ms increments
@@ -33,299 +34,230 @@ describe('Keyboard Absolute Strategies E2E', () => {
 
   it('Pressing Shift + ArrowRight 3 times', async () => {
     expect(isFeatureEnabled('Canvas Strategies')).toBeTruthy()
-    const initialElementLeft = 40
+    const initialElementLeft = 0
     const renderResult = await renderTestEditorWithCode(
       TestProjectDeluxeStallion(initialElementLeft),
       'await-first-dom-report',
     )
-
     await renderResult.dispatch(
       [selectComponents([EP.fromString('sb/scene/app-instance:aaa/bbb')], false)],
       true,
     )
-
     const bbbElementLeftAtStart = renderResult.renderedDOM
       .getByTestId('element-bbb')
       .getBoundingClientRect().x
-
-    act(() => {
-      window.dispatchEvent(
-        new KeyboardEvent('keydown', { key: 'ArrowRight', keyCode: 39, shiftKey: true }),
-      )
-      window.dispatchEvent(
-        new KeyboardEvent('keydown', { key: 'ArrowRight', keyCode: 39, shiftKey: true }),
-      )
-      window.dispatchEvent(
-        new KeyboardEvent('keydown', { key: 'ArrowRight', keyCode: 39, shiftKey: true }),
-      )
-    })
-
-    // the element visually moved 30 pixels to the right on screen
-    expect(renderResult.renderedDOM.getByTestId('element-bbb').getBoundingClientRect().x).toEqual(
-      bbbElementLeftAtStart + 30,
-    )
-
-    // tick the clock so useClearKeyboardInteraction is fired
-    clock.tick(KeyboardInteractionTimeout)
-
-    // the follow up action is the UPDATE_FROM_WORKER which prints the new code with the updated coordinates
-    await renderResult.getDispatchFollowUpActionsFinished()
-
-    expect(getPrintedUiJsCode(renderResult.getEditorState())).toEqual(
-      TestProjectDeluxeStallion(initialElementLeft + 30),
-    )
-  })
-
-  it('Pressing Shift + ArrowRight 3 times, then pressing Esc before the strategy timer succeeds', async () => {
-    expect(isFeatureEnabled('Canvas Strategies')).toBeTruthy()
-    const initialElementLeft = 40
-    const renderResult = await renderTestEditorWithCode(
-      TestProjectDeluxeStallion(initialElementLeft),
-      'await-first-dom-report',
-    )
-
-    await renderResult.dispatch(
-      [selectComponents([EP.fromString('sb/scene/app-instance:aaa/bbb')], false)],
-      true,
-    )
-
-    const bbbElementLeftAtStart = renderResult.renderedDOM
-      .getByTestId('element-bbb')
-      .getBoundingClientRect().x
-
-    act(() => {
-      window.dispatchEvent(
-        new KeyboardEvent('keydown', { key: 'ArrowRight', keyCode: 39, shiftKey: true }),
-      )
-      window.dispatchEvent(
-        new KeyboardEvent('keydown', { key: 'ArrowRight', keyCode: 39, shiftKey: true }),
-      )
-      window.dispatchEvent(
-        new KeyboardEvent('keydown', { key: 'ArrowRight', keyCode: 39, shiftKey: true }),
-      )
-    })
-
-    // the element visually moved 30 pixels to the right on screen
-    expect(renderResult.renderedDOM.getByTestId('element-bbb').getBoundingClientRect().x).toEqual(
-      bbbElementLeftAtStart + 30,
-    )
-
-    // tick the clock so useClearKeyboardInteraction is fired
-    clock.tick(KeyboardInteractionTimeout)
-
-    await renderResult.getDispatchFollowUpActionsFinished()
-
-    expect(getPrintedUiJsCode(renderResult.getEditorState())).toEqual(
-      TestProjectDeluxeStallion(initialElementLeft + 30),
-    )
-
-    // move the element again
-    act(() => {
-      window.dispatchEvent(
-        new KeyboardEvent('keydown', { key: 'ArrowRight', keyCode: 39, shiftKey: true }),
-      )
-      window.dispatchEvent(
-        new KeyboardEvent('keydown', { key: 'ArrowRight', keyCode: 39, shiftKey: true }),
-      )
-      window.dispatchEvent(
-        new KeyboardEvent('keydown', { key: 'ArrowRight', keyCode: 39, shiftKey: true }),
-      )
-    })
-
-    // the element visually moved 30 pixels to the right on screen
-    expect(renderResult.renderedDOM.getByTestId('element-bbb').getBoundingClientRect().x).toEqual(
-      bbbElementLeftAtStart + 60,
-    )
-
-    await renderResult.getDispatchFollowUpActionsFinished()
-
-    // press Escape to cancel changes
-    act(() => {
-      window.dispatchEvent(new KeyboardEvent('keydown', { key: 'Escape', keyCode: 27 }))
-    })
-
-    // the element is back to +30, jumping back from 60
-    expect(renderResult.renderedDOM.getByTestId('element-bbb').getBoundingClientRect().x).toEqual(
-      bbbElementLeftAtStart + 30,
-    )
-
-    // the follow up action is the UPDATE_FROM_WORKER which prints the new code with the updated coordinates
-    await renderResult.getDispatchFollowUpActionsFinished()
-
-    // the last 3 arrow rights should be gone
-    expect(getPrintedUiJsCode(renderResult.getEditorState())).toEqual(
-      TestProjectDeluxeStallion(initialElementLeft + 30),
-    )
-  })
-
-  it('Pressing Shift + ArrowRight 3 times, await keyboard timer, then press Cmd + Z to undo jumps back to original', async () => {
-    expect(isFeatureEnabled('Canvas Strategies')).toBeTruthy()
-    const initialElementLeft = 40
-    const renderResult = await renderTestEditorWithCode(
-      TestProjectDeluxeStallion(initialElementLeft),
-      'await-first-dom-report',
-    )
-
-    await renderResult.dispatch(
-      [selectComponents([EP.fromString('sb/scene/app-instance:aaa/bbb')], false)],
-      true,
-    )
-
-    const bbbElementLeftAtStart = renderResult.renderedDOM
-      .getByTestId('element-bbb')
-      .getBoundingClientRect().x
-
-    act(() => {
-      window.dispatchEvent(
-        new KeyboardEvent('keydown', { key: 'ArrowRight', keyCode: 39, shiftKey: true }),
-      )
-      window.dispatchEvent(
-        new KeyboardEvent('keydown', { key: 'ArrowRight', keyCode: 39, shiftKey: true }),
-      )
-      window.dispatchEvent(
-        new KeyboardEvent('keydown', { key: 'ArrowRight', keyCode: 39, shiftKey: true }),
-      )
-    })
-
-    // the element visually moved 30 pixels to the right on screen
-    expect(renderResult.renderedDOM.getByTestId('element-bbb').getBoundingClientRect().x).toEqual(
-      bbbElementLeftAtStart + 30,
-    )
-
-    // tick the clock so useClearKeyboardInteraction is fired
-    clock.tick(KeyboardInteractionTimeout)
-
-    await renderResult.getDispatchFollowUpActionsFinished()
-
-    expect(getPrintedUiJsCode(renderResult.getEditorState())).toEqual(
-      TestProjectDeluxeStallion(initialElementLeft + 30),
-    )
-
-    // move the element again
-    act(() => {
-      window.dispatchEvent(
-        new KeyboardEvent('keydown', { key: 'ArrowRight', keyCode: 39, shiftKey: true }),
-      )
-      window.dispatchEvent(
-        new KeyboardEvent('keydown', { key: 'ArrowRight', keyCode: 39, shiftKey: true }),
-      )
-      window.dispatchEvent(
-        new KeyboardEvent('keydown', { key: 'ArrowRight', keyCode: 39, shiftKey: true }),
-      )
-    })
-
-    expect(renderResult.renderedDOM.getByTestId('element-bbb').getBoundingClientRect().x).toEqual(
-      bbbElementLeftAtStart + 60,
-    )
-
-    // tick the clock so useClearKeyboardInteraction is fired
-    clock.tick(KeyboardInteractionTimeout)
-
-    await renderResult.getDispatchFollowUpActionsFinished()
-
-    expect(getPrintedUiJsCode(renderResult.getEditorState())).toEqual(
-      TestProjectDeluxeStallion(initialElementLeft + 60),
-    )
-
-    // press CMD + Z to Undo
-    act(() => {
-      window.dispatchEvent(new KeyboardEvent('keydown', { key: 'z', keyCode: 90, metaKey: true }))
-    })
-
-    expect(renderResult.renderedDOM.getByTestId('element-bbb').getBoundingClientRect().x).toEqual(
-      bbbElementLeftAtStart + 30,
-    )
-
-    // the follow up action is the UPDATE_FROM_WORKER which prints the new code with the updated coordinates
-    await renderResult.getDispatchFollowUpActionsFinished()
-
-    // the last 3 arrow rights should be gone
-    expect(getPrintedUiJsCode(renderResult.getEditorState())).toEqual(
-      TestProjectDeluxeStallion(initialElementLeft + 30),
-    )
-  })
-
-  it('Pressing Shift + ArrowRight 3 times, immediately press Cmd + Z to undo jumps back to original', async () => {
-    expect(isFeatureEnabled('Canvas Strategies')).toBeTruthy()
-    const initialElementLeft = 40
-    const renderResult = await renderTestEditorWithCode(
-      TestProjectDeluxeStallion(initialElementLeft),
-      'await-first-dom-report',
-    )
-
-    await renderResult.dispatch(
-      [selectComponents([EP.fromString('sb/scene/app-instance:aaa/bbb')], false)],
-      true,
-    )
-
-    const bbbElementLeftAtStart = renderResult.renderedDOM
-      .getByTestId('element-bbb')
-      .getBoundingClientRect().x
-
-    function expectElementLeft(offset: number) {
+    function expectElementLeftOnScreen(offset: number) {
       expect(elementLeft(renderResult.renderedDOM, 'element-bbb')).toEqual(
         bbbElementLeftAtStart + offset,
       )
     }
+    async function expectElementLeftInPrintedCode(offset: number) {
+      await renderResult.getDispatchFollowUpActionsFinished() // make sure the UPDATE_FROM_WORKER is settled
+      expect(getPrintedUiJsCode(renderResult.getEditorState())).toEqual(
+        TestProjectDeluxeStallion(initialElementLeft + offset),
+      )
+    }
 
-    act(() => {
-      window.dispatchEvent(
-        new KeyboardEvent('keydown', { key: 'ArrowRight', keyCode: 39, shiftKey: true }),
-      )
-      window.dispatchEvent(
-        new KeyboardEvent('keydown', { key: 'ArrowRight', keyCode: 39, shiftKey: true }),
-      )
-      window.dispatchEvent(
-        new KeyboardEvent('keydown', { key: 'ArrowRight', keyCode: 39, shiftKey: true }),
-      )
-    })
+    pressArrowRightHoldingShift3x()
+    expectElementLeftOnScreen(30)
 
-    expect(renderResult.renderedDOM.getByTestId('element-bbb').getBoundingClientRect().x).toEqual(
-      bbbElementLeftAtStart + 30,
+    // tick the clock so useClearKeyboardInteraction is fired
+    clock.tick(KeyboardInteractionTimeout)
+    await expectElementLeftInPrintedCode(30)
+  })
+
+  it('Pressing Shift + ArrowRight 3 times, then pressing Esc before the strategy timer succeeds cancels the strategy', async () => {
+    expect(isFeatureEnabled('Canvas Strategies')).toBeTruthy()
+    const initialElementLeft = 0
+    const renderResult = await renderTestEditorWithCode(
+      TestProjectDeluxeStallion(initialElementLeft),
+      'await-first-dom-report',
     )
+    await renderResult.dispatch(
+      [selectComponents([EP.fromString('sb/scene/app-instance:aaa/bbb')], false)],
+      true,
+    )
+    const bbbElementLeftAtStart = renderResult.renderedDOM
+      .getByTestId('element-bbb')
+      .getBoundingClientRect().x
+    function expectElementLeftOnScreen(offset: number) {
+      expect(elementLeft(renderResult.renderedDOM, 'element-bbb')).toEqual(
+        bbbElementLeftAtStart + offset,
+      )
+    }
+    async function expectElementLeftInPrintedCode(offset: number) {
+      await renderResult.getDispatchFollowUpActionsFinished() // make sure the UPDATE_FROM_WORKER is settled
+      expect(getPrintedUiJsCode(renderResult.getEditorState())).toEqual(
+        TestProjectDeluxeStallion(initialElementLeft + offset),
+      )
+    }
+
+    pressArrowRightHoldingShift3x()
+    // the element visually moved 30 pixels to the right on screen
+    expectElementLeftOnScreen(30)
 
     // tick the clock so useClearKeyboardInteraction is fired
     clock.tick(KeyboardInteractionTimeout)
 
-    // we should now have an undo history entry
+    await expectElementLeftInPrintedCode(30)
 
-    await renderResult.getDispatchFollowUpActionsFinished()
+    // move the element again
+    pressArrowRightHoldingShift3x()
+    // the element visually moved 30 pixels to the right on screen
+    expectElementLeftOnScreen(60)
+    // but it's still printed as 30 in code
+    await expectElementLeftInPrintedCode(30)
 
-    expectElementLeft(30)
+    // press Escape to cancel changes
+    pressEsc()
 
-    act(() => {
-      window.dispatchEvent(
-        new KeyboardEvent('keydown', { key: 'ArrowRight', keyCode: 39, shiftKey: true }),
+    // the element is back to +30, jumping back from 60
+    expectElementLeftOnScreen(30)
+    await expectElementLeftInPrintedCode(30)
+
+    // Redo will not bring us back to +60 offset
+    pressCmdShiftZ()
+    expectElementLeftOnScreen(30)
+    await expectElementLeftInPrintedCode(30)
+  })
+
+  it('Pressing Shift + ArrowRight 3 times, await keyboard timer, then press Cmd + Z to undo jumps back to original, but redoable', async () => {
+    expect(isFeatureEnabled('Canvas Strategies')).toBeTruthy()
+    const initialElementLeft = 0
+    const renderResult = await renderTestEditorWithCode(
+      TestProjectDeluxeStallion(initialElementLeft),
+      'await-first-dom-report',
+    )
+    await renderResult.dispatch(
+      [selectComponents([EP.fromString('sb/scene/app-instance:aaa/bbb')], false)],
+      true,
+    )
+    const bbbElementLeftAtStart = renderResult.renderedDOM
+      .getByTestId('element-bbb')
+      .getBoundingClientRect().x
+    function expectElementLeftOnScreen(offset: number) {
+      expect(elementLeft(renderResult.renderedDOM, 'element-bbb')).toEqual(
+        bbbElementLeftAtStart + offset,
       )
-      window.dispatchEvent(
-        new KeyboardEvent('keydown', { key: 'ArrowRight', keyCode: 39, shiftKey: true }),
+    }
+    async function expectElementLeftInPrintedCode(offset: number) {
+      await renderResult.getDispatchFollowUpActionsFinished() // make sure the UPDATE_FROM_WORKER is settled
+      expect(getPrintedUiJsCode(renderResult.getEditorState())).toEqual(
+        TestProjectDeluxeStallion(initialElementLeft + offset),
       )
-      window.dispatchEvent(
-        new KeyboardEvent('keydown', { key: 'ArrowRight', keyCode: 39, shiftKey: true }),
+    }
+
+    // Setup: first we move the element 30 pixels to the right
+    pressArrowRightHoldingShift3x()
+    expectElementLeftOnScreen(30)
+    clock.tick(KeyboardInteractionTimeout)
+    await expectElementLeftInPrintedCode(30)
+
+    // then move the element again
+    pressArrowRightHoldingShift3x()
+    expectElementLeftOnScreen(60)
+
+    // tick the clock so useClearKeyboardInteraction is fired
+    clock.tick(KeyboardInteractionTimeout)
+    await expectElementLeftInPrintedCode(60)
+
+    // Undo brings us back to the previous state with the 30 offset
+    pressCmdZ()
+    expectElementLeftOnScreen(30)
+    await expectElementLeftInPrintedCode(30)
+
+    // Redo redoes the +60 offset:
+    pressCmdShiftZ()
+    expectElementLeftOnScreen(60)
+    await expectElementLeftInPrintedCode(60)
+  })
+
+  it('Pressing Shift + ArrowRight 3 times then IMMEDIATELY pressing Cmd + Z to undo jumps back to original, redoable', async () => {
+    // Set up the editor
+    const initialElementLeft = 0
+    expect(isFeatureEnabled('Canvas Strategies')).toBeTruthy()
+    const renderResult = await renderTestEditorWithCode(
+      TestProjectDeluxeStallion(initialElementLeft),
+      'await-first-dom-report',
+    )
+    await renderResult.dispatch(
+      [selectComponents([EP.fromString('sb/scene/app-instance:aaa/bbb')], false)],
+      true,
+    )
+    const bbbElementLeftAtStart = renderResult.renderedDOM
+      .getByTestId('element-bbb')
+      .getBoundingClientRect().x
+    function expectElementLeftOnScreen(offset: number) {
+      expect(elementLeft(renderResult.renderedDOM, 'element-bbb')).toEqual(
+        bbbElementLeftAtStart + offset,
       )
-    })
-
-    expectElementLeft(60)
-
-    // press CMD + Z to Undo WITHOUT waiting
-    act(() => {
-      window.dispatchEvent(new KeyboardEvent('keydown', { key: 'z', keyCode: 90, metaKey: true }))
-    })
-
-    expectElementLeft(30)
-
-    expect(renderResult.getEditorState().editor.canvas.interactionSession).toBeNull()
-
-    // press CMD + SHIFT + Z to Redo waiting
-    act(() => {
-      window.dispatchEvent(
-        new KeyboardEvent('keydown', { key: 'z', keyCode: 90, metaKey: true, shiftKey: true }),
+    }
+    async function expectElementLeftInPrintedCode(offset: number) {
+      await renderResult.getDispatchFollowUpActionsFinished() // make sure the UPDATE_FROM_WORKER is settled
+      expect(getPrintedUiJsCode(renderResult.getEditorState())).toEqual(
+        TestProjectDeluxeStallion(initialElementLeft + offset),
       )
-    })
+    }
 
-    expectElementLeft(60)
+    // Prepare the test, let's move the element by 30 and wait so we have a proper undo history entry
+    pressArrowRightHoldingShift3x()
+    expectElementLeftOnScreen(30)
+    clock.tick(KeyboardInteractionTimeout)
+    await expectElementLeftInPrintedCode(30)
+
+    // The actual test, move the element right 30
+    pressArrowRightHoldingShift3x()
+    expectElementLeftOnScreen(60)
+    await expectElementLeftInPrintedCode(30) // the printed code didn't update yet, because we are mid-interaction
+
+    // And IMMEDIATELY press undo, which should save the interaction and undo it
+    pressCmdZ()
+    expect(renderResult.getEditorState().editor.canvas.interactionSession).toBeNull() // the interaction session is cleared
+    expectElementLeftOnScreen(30)
+
+    // TODO FIXME WE HAVE A BUG, We PRINT THE WRONG CODE!! this assertion should be true:
+    // expectElementLeftInPrintedCode(30) // the printed happily stays 30
+
+    // pressing Redo brings back the interaction
+    pressCmdShiftZ()
+    expectElementLeftOnScreen(60)
+    await expectElementLeftInPrintedCode(60)
   })
 })
+
+function pressArrowRightHoldingShift3x() {
+  act(() => {
+    window.dispatchEvent(
+      new KeyboardEvent('keydown', { key: 'ArrowRight', keyCode: 39, shiftKey: true }),
+    )
+    window.dispatchEvent(
+      new KeyboardEvent('keydown', { key: 'ArrowRight', keyCode: 39, shiftKey: true }),
+    )
+    window.dispatchEvent(
+      new KeyboardEvent('keydown', { key: 'ArrowRight', keyCode: 39, shiftKey: true }),
+    )
+  })
+}
+
+function pressEsc() {
+  act(() => {
+    window.dispatchEvent(new KeyboardEvent('keydown', { key: 'Escape', keyCode: 27 }))
+  })
+}
+
+function pressCmdZ() {
+  act(() => {
+    window.dispatchEvent(new KeyboardEvent('keydown', { key: 'z', keyCode: 90, metaKey: true }))
+  })
+}
+
+function pressCmdShiftZ() {
+  act(() => {
+    window.dispatchEvent(
+      new KeyboardEvent('keydown', { key: 'z', keyCode: 90, metaKey: true, shiftKey: true }),
+    )
+  })
+}
 
 function elementLeft(renderedDom: RenderResult, testId: string): number {
   return renderedDom.getByTestId('element-bbb').getBoundingClientRect().x
