@@ -1,3 +1,4 @@
+/* eslint-disable jest/expect-expect */
 import { act, RenderResult } from '@testing-library/react'
 import sinon, { SinonFakeTimers } from 'sinon'
 
@@ -33,30 +34,7 @@ describe('Keyboard Absolute Strategies E2E', () => {
   })
 
   it('Pressing Shift + ArrowRight 3 times', async () => {
-    expect(isFeatureEnabled('Canvas Strategies')).toBeTruthy()
-    const initialElementLeft = 0
-    const renderResult = await renderTestEditorWithCode(
-      TestProjectDeluxeStallion(initialElementLeft),
-      'await-first-dom-report',
-    )
-    await renderResult.dispatch(
-      [selectComponents([EP.fromString('sb/scene/app-instance:aaa/bbb')], false)],
-      true,
-    )
-    const bbbElementLeftAtStart = renderResult.renderedDOM
-      .getByTestId('element-bbb')
-      .getBoundingClientRect().x
-    function expectElementLeftOnScreen(offset: number) {
-      expect(elementLeft(renderResult.renderedDOM, 'element-bbb')).toEqual(
-        bbbElementLeftAtStart + offset,
-      )
-    }
-    async function expectElementLeftInPrintedCode(offset: number) {
-      await renderResult.getDispatchFollowUpActionsFinished() // make sure the UPDATE_FROM_WORKER is settled
-      expect(getPrintedUiJsCode(renderResult.getEditorState())).toEqual(
-        TestProjectDeluxeStallion(initialElementLeft + offset),
-      )
-    }
+    const { expectElementLeftOnScreen, expectElementLeftInPrintedCode } = await setupTest()
 
     pressArrowRightHoldingShift3x()
     expectElementLeftOnScreen(30)
@@ -66,31 +44,8 @@ describe('Keyboard Absolute Strategies E2E', () => {
     await expectElementLeftInPrintedCode(30)
   })
 
-  it('Pressing Shift + ArrowRight 3 times, then pressing Esc before the strategy timer succeeds cancels the strategy', async () => {
-    expect(isFeatureEnabled('Canvas Strategies')).toBeTruthy()
-    const initialElementLeft = 0
-    const renderResult = await renderTestEditorWithCode(
-      TestProjectDeluxeStallion(initialElementLeft),
-      'await-first-dom-report',
-    )
-    await renderResult.dispatch(
-      [selectComponents([EP.fromString('sb/scene/app-instance:aaa/bbb')], false)],
-      true,
-    )
-    const bbbElementLeftAtStart = renderResult.renderedDOM
-      .getByTestId('element-bbb')
-      .getBoundingClientRect().x
-    function expectElementLeftOnScreen(offset: number) {
-      expect(elementLeft(renderResult.renderedDOM, 'element-bbb')).toEqual(
-        bbbElementLeftAtStart + offset,
-      )
-    }
-    async function expectElementLeftInPrintedCode(offset: number) {
-      await renderResult.getDispatchFollowUpActionsFinished() // make sure the UPDATE_FROM_WORKER is settled
-      expect(getPrintedUiJsCode(renderResult.getEditorState())).toEqual(
-        TestProjectDeluxeStallion(initialElementLeft + offset),
-      )
-    }
+  it('Pressing Shift + ArrowRight 3 times, then pressing Esc before the keyboard strategy timer succeeds will cancel the strategy', async () => {
+    const { expectElementLeftOnScreen, expectElementLeftInPrintedCode } = await setupTest()
 
     pressArrowRightHoldingShift3x()
     // the element visually moved 30 pixels to the right on screen
@@ -121,31 +76,8 @@ describe('Keyboard Absolute Strategies E2E', () => {
     await expectElementLeftInPrintedCode(30)
   })
 
-  it('Pressing Shift + ArrowRight 3 times, await keyboard timer, then press Cmd + Z to undo jumps back to original, but redoable', async () => {
-    expect(isFeatureEnabled('Canvas Strategies')).toBeTruthy()
-    const initialElementLeft = 0
-    const renderResult = await renderTestEditorWithCode(
-      TestProjectDeluxeStallion(initialElementLeft),
-      'await-first-dom-report',
-    )
-    await renderResult.dispatch(
-      [selectComponents([EP.fromString('sb/scene/app-instance:aaa/bbb')], false)],
-      true,
-    )
-    const bbbElementLeftAtStart = renderResult.renderedDOM
-      .getByTestId('element-bbb')
-      .getBoundingClientRect().x
-    function expectElementLeftOnScreen(offset: number) {
-      expect(elementLeft(renderResult.renderedDOM, 'element-bbb')).toEqual(
-        bbbElementLeftAtStart + offset,
-      )
-    }
-    async function expectElementLeftInPrintedCode(offset: number) {
-      await renderResult.getDispatchFollowUpActionsFinished() // make sure the UPDATE_FROM_WORKER is settled
-      expect(getPrintedUiJsCode(renderResult.getEditorState())).toEqual(
-        TestProjectDeluxeStallion(initialElementLeft + offset),
-      )
-    }
+  it('Pressing Shift + ArrowRight 3 times, await keyboard strategy timeout, then press Cmd + Z to undo jumps back to original, but redoable', async () => {
+    const { expectElementLeftOnScreen, expectElementLeftInPrintedCode } = await setupTest()
 
     // Setup: first we move the element 30 pixels to the right
     pressArrowRightHoldingShift3x()
@@ -173,31 +105,8 @@ describe('Keyboard Absolute Strategies E2E', () => {
   })
 
   it.skip('Pressing Shift + ArrowRight 3 times then IMMEDIATELY pressing Cmd + Z to undo jumps back to original, redoable', async () => {
-    // Set up the editor
-    const initialElementLeft = 0
-    expect(isFeatureEnabled('Canvas Strategies')).toBeTruthy()
-    const renderResult = await renderTestEditorWithCode(
-      TestProjectDeluxeStallion(initialElementLeft),
-      'await-first-dom-report',
-    )
-    await renderResult.dispatch(
-      [selectComponents([EP.fromString('sb/scene/app-instance:aaa/bbb')], false)],
-      true,
-    )
-    const bbbElementLeftAtStart = renderResult.renderedDOM
-      .getByTestId('element-bbb')
-      .getBoundingClientRect().x
-    function expectElementLeftOnScreen(offset: number) {
-      expect(elementLeft(renderResult.renderedDOM, 'element-bbb')).toEqual(
-        bbbElementLeftAtStart + offset,
-      )
-    }
-    async function expectElementLeftInPrintedCode(offset: number) {
-      await renderResult.getDispatchFollowUpActionsFinished() // make sure the UPDATE_FROM_WORKER is settled
-      expect(getPrintedUiJsCode(renderResult.getEditorState())).toEqual(
-        TestProjectDeluxeStallion(initialElementLeft + offset),
-      )
-    }
+    const { renderResult, expectElementLeftOnScreen, expectElementLeftInPrintedCode } =
+      await setupTest()
 
     // Prepare the test, let's move the element by 30 and wait so we have a proper undo history entry
     pressArrowRightHoldingShift3x()
@@ -224,6 +133,35 @@ describe('Keyboard Absolute Strategies E2E', () => {
     await expectElementLeftInPrintedCode(60)
   })
 })
+
+async function setupTest() {
+  expect(isFeatureEnabled('Canvas Strategies')).toBeTruthy()
+  const initialElementLeft = 0
+  const renderResult = await renderTestEditorWithCode(
+    TestProjectDeluxeStallion(initialElementLeft),
+    'await-first-dom-report',
+  )
+  await renderResult.dispatch(
+    [selectComponents([EP.fromString('sb/scene/app-instance:aaa/bbb')], false)],
+    true,
+  )
+  const bbbElementLeftAtStart = renderResult.renderedDOM
+    .getByTestId('element-bbb')
+    .getBoundingClientRect().x
+  function expectElementLeftOnScreen(offset: number) {
+    expect(elementLeft(renderResult.renderedDOM, 'element-bbb')).toEqual(
+      bbbElementLeftAtStart + offset,
+    )
+  }
+  async function expectElementLeftInPrintedCode(offset: number) {
+    await renderResult.getDispatchFollowUpActionsFinished() // make sure the UPDATE_FROM_WORKER is settled
+    expect(getPrintedUiJsCode(renderResult.getEditorState())).toEqual(
+      TestProjectDeluxeStallion(initialElementLeft + offset),
+    )
+  }
+
+  return { renderResult, expectElementLeftOnScreen, expectElementLeftInPrintedCode }
+}
 
 function pressArrowRightHoldingShift3x() {
   act(() => {
