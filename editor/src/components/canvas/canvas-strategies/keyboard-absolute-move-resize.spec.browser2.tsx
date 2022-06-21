@@ -21,7 +21,6 @@ describe('Keyboard Absolute Strategies E2E', () => {
 
   let clock: SinonFakeTimers
   beforeEach(function () {
-    setFeatureEnabled('Canvas Strategies', true)
     clock = sinon.useFakeTimers({
       // the timers will tick so the editor is not totally broken, but we can fast-forward time at will
       // WARNING: the Sinon fake timers will advance in 20ms increments
