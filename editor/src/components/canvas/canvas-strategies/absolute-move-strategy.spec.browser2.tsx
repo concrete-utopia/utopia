@@ -44,52 +44,29 @@ describe('Absolute Move Strategy', () => {
       }),
     )
 
-    await act(async () => {
-      const dispatchDone = renderResult.getDispatchFollowUpActionsFinished()
-      fireEvent(
-        canvasControlsLayer,
-        new MouseEvent('mousemove', {
-          bubbles: true,
-          cancelable: true,
-          metaKey: false,
-          clientX: targetElementBounds.left + 45,
-          clientY: targetElementBounds.top - 20,
-          buttons: 1,
-        }),
-      )
-      await dispatchDone
-    })
+    fireEvent(
+      canvasControlsLayer,
+      new MouseEvent('mousemove', {
+        bubbles: true,
+        cancelable: true,
+        metaKey: false,
+        clientX: targetElementBounds.left + 45,
+        clientY: targetElementBounds.top - 20,
+        buttons: 1,
+      }),
+    )
 
-    await act(async () => {
-      const dispatchDone = renderResult.getDispatchFollowUpActionsFinished()
-      fireEvent(
-        canvasControlsLayer,
-        new MouseEvent('mousemove', {
-          bubbles: true,
-          cancelable: true,
-          metaKey: false,
-          clientX: targetElementBounds.left + 45,
-          clientY: targetElementBounds.top - 20,
-          buttons: 1,
-        }),
-      )
-      await dispatchDone
-    })
-
-    await act(async () => {
-      const dispatchDone = renderResult.getDispatchFollowUpActionsFinished()
-      fireEvent(
-        window,
-        new MouseEvent('mouseup', {
-          bubbles: true,
-          cancelable: true,
-          metaKey: false,
-          clientX: targetElementBounds.left + 45,
-          clientY: targetElementBounds.top - 20,
-        }),
-      )
-      await dispatchDone
-    })
+    fireEvent(
+      window,
+      new MouseEvent('mouseup', {
+        bubbles: true,
+        cancelable: true,
+        metaKey: false,
+        clientX: targetElementBounds.left + 45,
+        clientY: targetElementBounds.top - 20,
+      }),
+    )
+    await renderResult.getDispatchFollowUpActionsFinished()
     expect(getPrintedUiJsCode(renderResult.getEditorState())).toEqual(
       makeTestProjectCodeWithSnippet(`
         <div style={{ width: '100%', height: '100%' }} data-uid='aaa'>
@@ -102,7 +79,7 @@ describe('Absolute Move Strategy', () => {
       `),
     )
   })
-  it('moves absolute element with snapping', async () => {
+  it('moves absolute element with snapping, `bbb` should snap to `ccc`', async () => {
     const renderResult = await renderTestEditorWithCode(
       makeTestProjectCodeWithSnippet(`
         <div style={{ width: '100%', height: '100%' }} data-uid='aaa'>
@@ -136,52 +113,30 @@ describe('Absolute Move Strategy', () => {
       }),
     )
 
-    await act(async () => {
-      const dispatchDone = renderResult.getDispatchFollowUpActionsFinished()
-      fireEvent(
-        canvasControlsLayer,
-        new MouseEvent('mousemove', {
-          bubbles: true,
-          cancelable: true,
-          metaKey: false,
-          clientX: targetElementBounds.left + 14,
-          clientY: targetElementBounds.top - 18,
-          buttons: 1,
-        }),
-      )
-      await dispatchDone
-    })
+    fireEvent(
+      canvasControlsLayer,
+      new MouseEvent('mousemove', {
+        bubbles: true,
+        cancelable: true,
+        metaKey: false,
+        clientX: targetElementBounds.left + 14,
+        clientY: targetElementBounds.top - 18,
+        buttons: 1,
+      }),
+    )
 
-    await act(async () => {
-      const dispatchDone = renderResult.getDispatchFollowUpActionsFinished()
-      fireEvent(
-        canvasControlsLayer,
-        new MouseEvent('mousemove', {
-          bubbles: true,
-          cancelable: true,
-          metaKey: false,
-          clientX: targetElementBounds.left + 14,
-          clientY: targetElementBounds.top - 18,
-          buttons: 1,
-        }),
-      )
-      await dispatchDone
-    })
+    fireEvent(
+      window,
+      new MouseEvent('mouseup', {
+        bubbles: true,
+        cancelable: true,
+        metaKey: false,
+        clientX: targetElementBounds.left + 14,
+        clientY: targetElementBounds.top - 18,
+      }),
+    )
+    await renderResult.getDispatchFollowUpActionsFinished()
 
-    await act(async () => {
-      const dispatchDone = renderResult.getDispatchFollowUpActionsFinished()
-      fireEvent(
-        window,
-        new MouseEvent('mouseup', {
-          bubbles: true,
-          cancelable: true,
-          metaKey: false,
-          clientX: targetElementBounds.left + 14,
-          clientY: targetElementBounds.top - 18,
-        }),
-      )
-      await dispatchDone
-    })
     expect(getPrintedUiJsCode(renderResult.getEditorState())).toEqual(
       makeTestProjectCodeWithSnippet(`
         <div style={{ width: '100%', height: '100%' }} data-uid='aaa'>
@@ -198,7 +153,7 @@ describe('Absolute Move Strategy', () => {
       `),
     )
   })
-  it('moves absolute element without snapping, pressing cmd', async () => {
+  it('moves absolute element without snapping while pressing cmd `bbb` should not snap to `ccc`', async () => {
     const renderResult = await renderTestEditorWithCode(
       makeTestProjectCodeWithSnippet(`
         <div style={{ width: '100%', height: '100%' }} data-uid='aaa'>
@@ -232,52 +187,29 @@ describe('Absolute Move Strategy', () => {
       }),
     )
 
-    await act(async () => {
-      const dispatchDone = renderResult.getDispatchFollowUpActionsFinished()
-      fireEvent(
-        canvasControlsLayer,
-        new MouseEvent('mousemove', {
-          bubbles: true,
-          cancelable: true,
-          metaKey: true,
-          clientX: targetElementBounds.left + 14,
-          clientY: targetElementBounds.top - 18,
-          buttons: 1,
-        }),
-      )
-      await dispatchDone
-    })
+    fireEvent(
+      canvasControlsLayer,
+      new MouseEvent('mousemove', {
+        bubbles: true,
+        cancelable: true,
+        metaKey: true,
+        clientX: targetElementBounds.left + 14,
+        clientY: targetElementBounds.top - 18,
+        buttons: 1,
+      }),
+    )
 
-    await act(async () => {
-      const dispatchDone = renderResult.getDispatchFollowUpActionsFinished()
-      fireEvent(
-        canvasControlsLayer,
-        new MouseEvent('mousemove', {
-          bubbles: true,
-          cancelable: true,
-          metaKey: true,
-          clientX: targetElementBounds.left + 14,
-          clientY: targetElementBounds.top - 18,
-          buttons: 1,
-        }),
-      )
-      await dispatchDone
-    })
-
-    await act(async () => {
-      const dispatchDone = renderResult.getDispatchFollowUpActionsFinished()
-      fireEvent(
-        window,
-        new MouseEvent('mouseup', {
-          bubbles: true,
-          cancelable: true,
-          metaKey: true,
-          clientX: targetElementBounds.left + 14,
-          clientY: targetElementBounds.top - 18,
-        }),
-      )
-      await dispatchDone
-    })
+    fireEvent(
+      window,
+      new MouseEvent('mouseup', {
+        bubbles: true,
+        cancelable: true,
+        metaKey: true,
+        clientX: targetElementBounds.left + 14,
+        clientY: targetElementBounds.top - 18,
+      }),
+    )
+    await renderResult.getDispatchFollowUpActionsFinished()
     expect(getPrintedUiJsCode(renderResult.getEditorState())).toEqual(
       makeTestProjectCodeWithSnippet(`
         <div style={{ width: '100%', height: '100%' }} data-uid='aaa'>
@@ -321,21 +253,18 @@ describe('Absolute Move Strategy Canvas Controls', () => {
     const target = EP.appendNewElementPath(TestScenePath, ['aaa', 'bbb'])
     await renderResult.dispatch([selectComponents([target], false)], true)
 
-    await act(async () => {
-      const dispatchDone = renderResult.getDispatchFollowUpActionsFinished()
-      await renderResult.dispatch(
-        [
-          CanvasActions.createInteractionSession(
-            createInteractionViaMouse(zeroCanvasPoint, emptyModifiers, {
-              type: 'BOUNDING_AREA',
-              target: target,
-            }),
-          ),
-        ],
-        false,
-      )
-      await dispatchDone
-    })
+    await renderResult.dispatch(
+      [
+        CanvasActions.createInteractionSession(
+          createInteractionViaMouse(zeroCanvasPoint, emptyModifiers, {
+            type: 'BOUNDING_AREA',
+            target: target,
+          }),
+        ),
+      ],
+      false,
+    )
+    await renderResult.getDispatchFollowUpActionsFinished()
 
     const parentOutlineControl = renderResult.renderedDOM.getByTestId('parent-outlines-control')
     expect(parentOutlineControl).toBeDefined()
