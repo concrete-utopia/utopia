@@ -172,7 +172,7 @@ describe('Keyboard Absolute Strategies E2E', () => {
     await expectElementLeftInPrintedCode(60)
   })
 
-  it('Pressing Shift + ArrowRight 3 times then IMMEDIATELY pressing Cmd + Z to undo jumps back to original, redoable', async () => {
+  it.skip('Pressing Shift + ArrowRight 3 times then IMMEDIATELY pressing Cmd + Z to undo jumps back to original, redoable', async () => {
     // Set up the editor
     const initialElementLeft = 0
     expect(isFeatureEnabled('Canvas Strategies')).toBeTruthy()
