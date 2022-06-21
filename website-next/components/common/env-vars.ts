@@ -1,4 +1,5 @@
-export let IS_TEST_ENVIRONMENT: boolean = false
+export let IS_TEST_ENVIRONMENT: boolean = process.env.JEST_WORKER_ID != null // if there's a JEST_WORKER_ID, it means it's a test env
+// we call this function from karma-setup.js
 export function setTestEnvironment() {
   IS_TEST_ENVIRONMENT = true
 }
