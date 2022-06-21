@@ -1,9 +1,3 @@
-export let IS_TEST_ENVIRONMENT: boolean = process.env.JEST_WORKER_ID != null // if there's a JEST_WORKER_ID, it means it's a test env
-// we call this function from karma-setup.js
-export function setTestEnvironment() {
-  IS_TEST_ENVIRONMENT = true
-}
-
 // you can turn on/off debug features individually here
 
 export const HOST: string = typeof window === 'undefined' ? '' : window.location.host
@@ -22,6 +16,9 @@ const SECONDARY_BASE_URL: string = PRODUCTION_CONFIG
   : BARE_HOST === 'localhost:8000'
   ? 'http://localhost:8001'
   : BASE_URL
+
+export const IS_TEST_ENVIRONMENT: boolean =
+  process.env.JEST_WORKER_ID != null || window?.KarmaTestEnvironment != null
 
 export const PROBABLY_ELECTRON: boolean =
   typeof window === 'undefined' || (window as any)?.['process']?.['type'] != null
