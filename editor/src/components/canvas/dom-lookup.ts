@@ -152,16 +152,7 @@ export function getAllTargetsAtPoint(
     }),
   )
 
-  // return getElementsUnderPointFromAABB
-  //   .filter((foundElement) => {
-  //     if (!foundElement.canBeFilteredOut) {
-  //       return true
-  //     } else {
-  //       return elementsFromDOM.some((e) => EP.pathsEqual(e, foundElement.elementPath))
-  //     }
-  //   })
-  //   .map((e) => e.elementPath)
-
+  // TODO FIXME we should take the zero-sized elements from getElementsUnderPointFromAABB, and insert them (in a correct-enough order) here
   return elementsFromDOM
 }
 
