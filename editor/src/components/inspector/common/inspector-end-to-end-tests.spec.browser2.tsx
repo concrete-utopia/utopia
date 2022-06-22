@@ -2075,98 +2075,110 @@ describe('inspector tests with real metadata', () => {
 })
 
 describe('Inspector fields and code remain in sync', () => {
-  const startValue = 200
-  const endValue = 300
+  const propsToTest = [
+    {
+      stylePropKey: 'top',
+      controlTestId: 'position-top-number-input',
+      startValue: '200em',
+      endValue: '300em',
+    },
+    {
+      stylePropKey: 'left',
+      controlTestId: 'position-left-number-input',
+      startValue: '200cm',
+      endValue: '300cm',
+    },
+    {
+      stylePropKey: 'bottom',
+      controlTestId: 'position-bottom-number-input',
+      startValue: '200vw',
+      endValue: '300vw',
+    },
+    {
+      stylePropKey: 'right',
+      controlTestId: 'position-right-number-input',
+      startValue: '200%',
+      endValue: '300%',
+    },
+    {
+      stylePropKey: 'width',
+      controlTestId: 'position-width-number-input',
+      startValue: '200pt',
+      endValue: '300pt',
+    },
+    {
+      stylePropKey: 'height',
+      controlTestId: 'position-height-number-input',
+      startValue: 200,
+      endValue: 300,
+    },
+  ]
 
-  const startCodeSnippet = `
-    <div
-      style={{ ...props.style, position: 'absolute', backgroundColor: '#FFFFFF' }}
-      data-uid='aaa'
-    >
+  function makeCodeSnippetWithKeyValue(stylePropKey: string, value: unknown): string {
+    const printedValue = typeof value === 'number' ? value : JSON.stringify(value)
+
+    return `
       <div
-        style={{
-          position: 'absolute',
-          backgroundColor: '#DDDDDD',
-          left: 10,
-          top: 10,
-          width: ${startValue},
-          height: 100,
-        }}
-        data-uid='bbb'
-      />
-    </div>
-  `
-
-  const endCodeSnippet = `
-    <div
-      style={{ ...props.style, position: 'absolute', backgroundColor: '#FFFFFF' }}
-      data-uid='aaa'
-    >
-      <div
-        style={{
-          position: 'absolute',
-          backgroundColor: '#DDDDDD',
-          left: 10,
-          top: 10,
-          width: ${endValue},
-          height: 100,
-        }}
-        data-uid='bbb'
-      />
-    </div>
-  `
-
+        style={{ ...props.style, position: 'absolute', backgroundColor: '#FFFFFF' }}
+        data-uid='aaa'
+      >
+        <div
+          style={{
+            // Comment to force this onto multiple lines when printing
+            position: 'absolute',
+            ${stylePropKey}: ${printedValue},
+          }}
+          data-uid='bbb'
+        />
+      </div>
+    `
+  }
   const targetPath = EP.appendNewElementPath(TestScenePath, ['aaa', 'bbb'])
-  const targetControlTestId = 'position-width-number-input'
 
-  it('Updating the code updates the Inspector', async () => {
-    const renderResult = await renderTestEditorWithCode(
-      makeTestProjectCodeWithSnippet(startCodeSnippet),
-      'await-first-dom-report',
-    )
+  propsToTest.forEach(({ stylePropKey, controlTestId, startValue, endValue }) => {
+    it(`Updating the code updates the Inspector for prop ${stylePropKey}`, async () => {
+      const startCodeSnippet = makeCodeSnippetWithKeyValue(stylePropKey, startValue)
+      const endCodeSnippet = makeCodeSnippetWithKeyValue(stylePropKey, endValue)
 
-    await selectElement(targetPath, renderResult)
+      const renderResult = await renderTestEditorWithCode(
+        makeTestProjectCodeWithSnippet(startCodeSnippet),
+        'await-first-dom-report',
+      )
 
-    // Ensure the starting control value is correct
-    const startWidthControlValue = await getControlValue(
-      targetControlTestId,
-      renderResult.renderedDOM,
-    )
-    expect(startWidthControlValue).toEqual(`${startValue}`)
+      await selectElement(targetPath, renderResult)
 
-    // Simulate a code change
-    const updateActions = actionsForUpdatedCode(endCodeSnippet)
-    await dispatchActionsAndWaitUntilComplete(updateActions, renderResult)
+      // Capture the starting value
+      const startControlValue = await getControlValue(controlTestId, renderResult.renderedDOM)
 
-    // Ensure the control has been updated with the new value
-    const endWidthControlValue = await getControlValue(
-      targetControlTestId,
-      renderResult.renderedDOM,
-    )
-    expect(endWidthControlValue).toEqual(`${endValue}`)
-  })
+      // Simulate a code change
+      const updateActions = actionsForUpdatedCode(endCodeSnippet)
+      await dispatchActionsAndWaitUntilComplete(updateActions, renderResult)
 
-  it('Updating the Inspector updates the code', async () => {
-    const renderResult = await renderTestEditorWithCode(
-      makeTestProjectCodeWithSnippet(startCodeSnippet),
-      'await-first-dom-report',
-    )
+      // Capture the new value
+      const endControlValue = await getControlValue(controlTestId, renderResult.renderedDOM)
 
-    await selectElement(targetPath, renderResult)
+      expect(startControlValue).toEqual(`${startValue}`)
+      expect(endControlValue).toEqual(`${endValue}`)
+    })
 
-    // Ensure the starting control value is correct
-    const startWidthControlValue = await getControlValue(
-      targetControlTestId,
-      renderResult.renderedDOM,
-    )
-    expect(startWidthControlValue).toEqual(`${startValue}`)
+    it(`Updating the Inspector updates the code for prop ${stylePropKey}`, async () => {
+      const startCodeSnippet = makeCodeSnippetWithKeyValue(stylePropKey, startValue)
+      const endCodeSnippet = makeCodeSnippetWithKeyValue(stylePropKey, endValue)
 
-    // Update the value via the Inspector control
-    await setControlValue(targetControlTestId, `${endValue}`, renderResult.renderedDOM)
+      const renderResult = await renderTestEditorWithCode(
+        makeTestProjectCodeWithSnippet(startCodeSnippet),
+        'await-first-dom-report',
+      )
 
-    // Ensure the resulting code snippet is correct
-    expect(getPrintedUiJsCode(renderResult.getEditorState())).toEqual(
-      makeTestProjectCodeWithSnippet(endCodeSnippet),
-    )
+      await selectElement(targetPath, renderResult)
+
+      // Update the value via the Inspector control
+      await setControlValue(controlTestId, `${endValue}`, renderResult.renderedDOM)
+
+      // Ensure the printed code is as correct
+      expect(getPrintedUiJsCode(renderResult.getEditorState())).toEqual(
+        makeTestProjectCodeWithSnippet(endCodeSnippet),
+      )
+    })
   })
 })
