@@ -51,8 +51,6 @@ export const absoluteResizeBoundingBoxStrategy: CanvasStrategy = {
     } else {
       return false
     }
-
-    return false
   },
   controlsToRender: [
     { control: AbsoluteResizeControl, key: 'absolute-resize-control', show: 'always-visible' },

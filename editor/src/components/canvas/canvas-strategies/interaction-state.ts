@@ -37,13 +37,6 @@ export interface KeyState {
   modifiers: Modifiers
 }
 
-export function keyStatesEqual(first: KeyState, second: KeyState): boolean {
-  return (
-    setsEqual(first.keysPressed, second.keysPressed) &&
-    Modifier.equal(first.modifiers, second.modifiers)
-  )
-}
-
 export interface KeyboardInteractionData {
   type: 'KEYBOARD'
   keyStates: Array<KeyState>
@@ -336,32 +329,6 @@ export function hasDragModifiersChanged(
       interactionData.modifiers.ctrl !== prevInteractionData.modifiers.ctrl ||
       interactionData.modifiers.shift !== prevInteractionData.modifiers.shift)
   )
-}
-
-export function hasKeyboardModifierChanged(
-  prevInteractionData: InputData | null,
-  interactionData: InputData | null,
-): boolean {
-  if (prevInteractionData?.type === 'KEYBOARD' && interactionData?.type === 'KEYBOARD') {
-    const lastKeyState = last(interactionData.keyStates)
-    const secondToLastKeyState = last(prevInteractionData.keyStates)
-    if (lastKeyState == null) {
-      return false
-    } else {
-      if (secondToLastKeyState == null) {
-        return (
-          lastKeyState.modifiers.shift ||
-          lastKeyState.modifiers.ctrl ||
-          lastKeyState.modifiers.cmd ||
-          lastKeyState.modifiers.alt
-        )
-      } else {
-        return !Modifier.equal(lastKeyState.modifiers, secondToLastKeyState.modifiers)
-      }
-    }
-  } else {
-    return false
-  }
 }
 
 export interface BoundingArea {

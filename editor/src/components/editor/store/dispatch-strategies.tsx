@@ -7,7 +7,6 @@ import {
 import {
   createEmptyStrategyState,
   hasDragModifiersChanged,
-  hasKeyboardModifierChanged,
   InteractionSession,
   interactionSessionHardReset,
   isKeyboardInteractionData,
