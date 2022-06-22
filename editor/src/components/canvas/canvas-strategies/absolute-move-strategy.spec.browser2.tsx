@@ -9,14 +9,18 @@ import * as EP from '../../../core/shared/element-path'
 import { selectComponents } from '../../editor/actions/action-creators'
 import { CanvasControlsContainerID } from '../controls/new-canvas-controls'
 import CanvasActions from '../canvas-actions'
-import { createInteractionViaMouse } from './interaction-state'
+import { createInteractionViaMouse, updateInteractionViaMouse } from './interaction-state'
 import {
+  canvasPoint,
+  CanvasVector,
   offsetPoint,
   windowPoint,
   WindowPoint,
   zeroCanvasPoint,
 } from '../../../core/shared/math-utils'
 import { emptyModifiers } from '../../../utils/modifiers'
+import { ElementPath } from '../../../core/shared/project-file-types'
+import { wait } from '../../../utils/utils.test-utils'
 
 function dragElement(
   canvasControl: HTMLElement,
@@ -69,13 +73,45 @@ function dragElement(
   )
 }
 
+// no mouseup here! it starts the interaction and moves it with drag delta
+async function startDragUsingActions(
+  renderResult: any,
+  target: ElementPath,
+  dragDelta: CanvasVector,
+) {
+  await renderResult.dispatch([selectComponents([target], false)], true)
+  const startInteractionSession = createInteractionViaMouse(zeroCanvasPoint, emptyModifiers, {
+    type: 'BOUNDING_AREA',
+    target: target,
+  })
+  await renderResult.dispatch(
+    [CanvasActions.createInteractionSession(startInteractionSession)],
+    false,
+  )
+  await renderResult.getDispatchFollowUpActionsFinished()
+  await renderResult.dispatch(
+    [
+      CanvasActions.updateInteractionSession(
+        updateInteractionViaMouse(startInteractionSession, dragDelta, emptyModifiers, {
+          type: 'BOUNDING_AREA',
+          target: target,
+        }),
+      ),
+    ],
+    false,
+  )
+  await renderResult.getDispatchFollowUpActionsFinished()
+}
+
 describe('Absolute Move Strategy', () => {
   it('moves absolute positioned element', async () => {
+    const startX = 40
+    const startY = 50
     const renderResult = await renderTestEditorWithCode(
       makeTestProjectCodeWithSnippet(`
         <div style={{ width: '100%', height: '100%' }} data-uid='aaa'>
           <div
-            style={{ backgroundColor: '#0091FFAA', position: 'absolute', left: 40, top: 50, width: 200, height: 120 }}
+            style={{ backgroundColor: '#0091FFAA', position: 'absolute', left: ${startX}, top: ${startY}, width: 200, height: 120 }}
             data-uid='bbb'
             data-testid='bbb'
           />
@@ -98,7 +134,9 @@ describe('Absolute Move Strategy', () => {
       makeTestProjectCodeWithSnippet(`
         <div style={{ width: '100%', height: '100%' }} data-uid='aaa'>
           <div
-            style={{ backgroundColor: '#0091FFAA', position: 'absolute', left: 80, top: 25, width: 200, height: 120 }}
+            style={{ backgroundColor: '#0091FFAA', position: 'absolute', left: ${
+              startX + dragDelta.x
+            }, top: ${startY + dragDelta.y}, width: 200, height: 120 }}
             data-uid='bbb'
             data-testid='bbb'
           />
@@ -129,7 +167,7 @@ describe('Absolute Move Strategy', () => {
     const canvasControlsLayer = renderResult.renderedDOM.getByTestId(CanvasControlsContainerID)
 
     const startPoint = windowPoint({ x: targetElementBounds.x + 5, y: targetElementBounds.y + 5 })
-    const dragDelta = windowPoint({ x: 9, y: -23 })
+    const dragDelta = windowPoint({ x: 9, y: -23 }) // 'bbb' will snap to bottom edge and middle of 'ccc'
 
     act(() => dragElement(canvasControlsLayer, startPoint, dragDelta, false, false, false))
 
@@ -220,20 +258,7 @@ describe('Absolute Move Strategy Canvas Controls', () => {
     expect(parentBoundsControlBeforeDrag).toBeNull()
 
     const target = EP.appendNewElementPath(TestScenePath, ['aaa', 'bbb'])
-    await renderResult.dispatch([selectComponents([target], false)], true)
-
-    await renderResult.dispatch(
-      [
-        CanvasActions.createInteractionSession(
-          createInteractionViaMouse(zeroCanvasPoint, emptyModifiers, {
-            type: 'BOUNDING_AREA',
-            target: target,
-          }),
-        ),
-      ],
-      false,
-    )
-    await renderResult.getDispatchFollowUpActionsFinished()
+    await startDragUsingActions(renderResult, target, zeroCanvasPoint)
 
     const parentOutlineControl = renderResult.renderedDOM.getByTestId('parent-outlines-control')
     expect(parentOutlineControl).toBeDefined()
@@ -267,5 +292,31 @@ describe('Absolute Move Strategy Canvas Controls', () => {
     expect(pinLineRight).toBeDefined()
     const pinLineBottom = renderResult.renderedDOM.getByTestId('pin-line-bottom')
     expect(pinLineBottom).toBeDefined()
+  })
+  it('the snap guidelines are visible when an absolute positioned element(bbb) is dragged and snaps to its sibling (ccc)', async () => {
+    const renderResult = await renderTestEditorWithCode(
+      makeTestProjectCodeWithSnippet(`
+        <div style={{ width: '100%', height: '100%' }} data-uid='aaa'>
+          <div
+            style={{ backgroundColor: '#0091FFAA', width: 70, height: 30 }}
+            data-uid='ccc'
+          />
+          <div
+            style={{ backgroundColor: '#0091FFAA', position: 'absolute', left: 40, top: 50, width: 200, height: 120 }}
+            data-uid='bbb'
+            data-testid='bbb'
+          />
+        </div>
+      `),
+      'await-first-dom-report',
+    )
+
+    const target = EP.appendNewElementPath(TestScenePath, ['aaa', 'bbb'])
+    const dragDelta = canvasPoint({ x: 29, y: -23 }) // 'bbb' will snap to bottom right corner of 'ccc'
+
+    await startDragUsingActions(renderResult, target, dragDelta)
+
+    expect(renderResult.renderedDOM.getByTestId('guideline-0').style.display).toEqual('block')
+    expect(renderResult.renderedDOM.getByTestId('guideline-1').style.display).toEqual('block')
   })
 })
