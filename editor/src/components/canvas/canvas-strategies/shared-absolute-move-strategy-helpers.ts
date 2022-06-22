@@ -63,6 +63,14 @@ function createMoveCommandsForElement(
   drag: CanvasVector,
   elementParentBounds: CanvasRectangle | null,
 ): AdjustCssLengthProperty[] {
+  const hasPin = (pin: 'top' | 'bottom' | 'left' | 'right') => {
+    const value = getLayoutProperty(pin, right(element.props), ['style'])
+    return isRight(value) && value.value != null
+  }
+
+  const isHorizontallyDefined = hasPin('left') || hasPin('right')
+  const isVerticallyDefined = hasPin('top') || hasPin('bottom')
+
   return mapDropNulls(
     (pin) => {
       const horizontal = isHorizontalPoint(
@@ -72,7 +80,6 @@ function createMoveCommandsForElement(
       const negative = pin === 'right' || pin === 'bottom'
       const value = getLayoutProperty(pin, right(element.props), ['style'])
       if (isRight(value) && value.value != null) {
-        // TODO what to do about missing properties?
         return adjustCssLengthProperty(
           'permanent',
           selectedElement,
@@ -82,7 +89,28 @@ function createMoveCommandsForElement(
           true,
         )
       } else {
-        return null
+        // if not defined we still try to fix it by adding left and/or top with initial value 0
+        if (pin === 'left' && !isHorizontallyDefined) {
+          return adjustCssLengthProperty(
+            'permanent',
+            selectedElement,
+            stylePropPathMappingFn('left', ['style']),
+            drag.x * (negative ? -1 : 1),
+            elementParentBounds?.width,
+            true,
+          )
+        } else if (pin === 'top' && !isVerticallyDefined) {
+          return adjustCssLengthProperty(
+            'permanent',
+            selectedElement,
+            stylePropPathMappingFn('top', ['style']),
+            drag.y,
+            elementParentBounds?.height,
+            true,
+          )
+        } else {
+          return null
+        }
       }
     },
     ['top', 'bottom', 'left', 'right'] as const,
