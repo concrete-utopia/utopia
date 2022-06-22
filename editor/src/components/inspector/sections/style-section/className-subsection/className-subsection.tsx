@@ -99,7 +99,6 @@ const menu: styleFn = (base) => ({
 })
 
 const AlwaysTrue = () => true
-let queuedDispatchTimeout: number | undefined = undefined
 let queuedFocusTimeout: number | undefined = undefined
 
 const focusedOptionAtom = atomWithPubSub<string | null>({
@@ -260,11 +259,6 @@ const ClassNameControl = React.memo(() => {
 
       const newValue = valueTypeAsArray(newValueType)
       if (elementPath != null) {
-        if (queuedDispatchTimeout != null) {
-          window.clearTimeout(queuedDispatchTimeout)
-          queuedDispatchTimeout = undefined
-        }
-
         dispatch(
           [
             EditorActions.setProp_UNSAFE(
@@ -441,21 +435,16 @@ const ClassNameControl = React.memo(() => {
         const oldClassNameString =
           selectedOptions == null ? '' : selectedOptions.map((v) => v.value).join(' ') + ' '
         const newClassNameString = oldClassNameString + value
-        if (queuedDispatchTimeout != null) {
-          window.clearTimeout(queuedDispatchTimeout)
-        }
-        queuedDispatchTimeout = window.setTimeout(() => {
-          dispatch(
-            [
-              EditorActions.setPropTransient(
-                targets[0],
-                PP.create(['className']),
-                jsxAttributeValue(newClassNameString, emptyComments),
-              ),
-            ],
-            'canvas',
-          )
-        }, 10)
+        dispatch(
+          [
+            EditorActions.setPropTransient(
+              targets[0],
+              PP.create(['className']),
+              jsxAttributeValue(newClassNameString, emptyComments),
+            ),
+          ],
+          'canvas',
+        )
 
         updateFocusedOption(value)
       }
