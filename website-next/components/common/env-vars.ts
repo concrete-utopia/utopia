@@ -19,7 +19,7 @@ const SECONDARY_BASE_URL: string = PRODUCTION_CONFIG
 
 export const IS_TEST_ENVIRONMENT: boolean =
   process.env.JEST_WORKER_ID != null ||
-  (typeof window != 'undefined' && window?.KarmaTestEnvironment != null)
+  (typeof window != 'undefined' && (window as any)?.KarmaTestEnvironment != null)
 
 export const PROBABLY_ELECTRON: boolean =
   typeof window === 'undefined' || (window as any)?.['process']?.['type'] != null
