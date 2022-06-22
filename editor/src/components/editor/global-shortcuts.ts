@@ -711,6 +711,12 @@ export function handleKeyDown(
           : []
       },
       [UNDO_CHANGES_SHORTCUT]: () => {
+        if (editor.canvas.interactionSession?.interactionData.type === 'KEYBOARD') {
+          // if we are in a keyboard interaction session, we want cmd + z to finish the current interaction session, and then immediately undo it
+          // this is desired because the user might want to redo the changes
+          // Warning: Side Effect!
+          dispatch([CanvasActions.clearInteractionSession(true)])
+        }
         return [EditorActions.undo()]
       },
       [REDO_CHANGES_SHORTCUT]: () => {

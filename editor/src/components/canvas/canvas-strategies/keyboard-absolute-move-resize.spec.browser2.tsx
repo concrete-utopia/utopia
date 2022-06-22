@@ -104,7 +104,7 @@ describe('Keyboard Absolute Strategies E2E', () => {
     await expectElementLeftInPrintedCode(60)
   })
 
-  it.skip('Pressing Shift + ArrowRight 3 times then IMMEDIATELY pressing Cmd + Z to undo jumps back to original, redoable', async () => {
+  it('Pressing Shift + ArrowRight 3 times then IMMEDIATELY pressing Cmd + Z to undo jumps back to original, redoable', async () => {
     const { renderResult, expectElementLeftOnScreen, expectElementLeftInPrintedCode } =
       await setupTest()
 
