@@ -135,6 +135,17 @@ const FailJestOnCanvasError = () => {
   return null
 }
 
+export interface EditorRenderResult {
+  dispatch: (actions: ReadonlyArray<EditorAction>, waitForDOMReport: boolean) => Promise<void>
+  getDispatchFollowUpActionsFinished: () => Promise<void>
+  getEditorState: () => EditorStorePatched
+  renderedDOM: RenderResult
+  getNumberOfCommits: () => number
+  getNumberOfRenders: () => number
+  clearRecordedActions: () => void
+  getRecordedActions: () => ReadonlyArray<EditorAction>
+}
+
 export async function renderTestEditorWithCode(
   appUiJsFileCode: string,
   awaitFirstDomReport: 'await-first-dom-report' | 'dont-await-first-dom-report',
@@ -155,16 +166,7 @@ export async function renderTestEditorWithModel(
   model: PersistentModel,
   awaitFirstDomReport: 'await-first-dom-report' | 'dont-await-first-dom-report',
   mockBuiltInDependencies?: BuiltInDependencies,
-): Promise<{
-  dispatch: (actions: ReadonlyArray<EditorAction>, waitForDOMReport: boolean) => Promise<void>
-  getDispatchFollowUpActionsFinished: () => Promise<void>
-  getEditorState: () => EditorStorePatched
-  renderedDOM: RenderResult
-  getNumberOfCommits: () => number
-  getNumberOfRenders: () => number
-  clearRecordedActions: () => void
-  getRecordedActions: () => ReadonlyArray<EditorAction>
-}> {
+): Promise<EditorRenderResult> {
   const renderCountBaseline = renderCount
   let recordedActions: Array<EditorAction> = []
 
