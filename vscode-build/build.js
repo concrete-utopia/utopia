@@ -33,9 +33,10 @@ child_process.execSync(`git apply ../vscode.patch`, {
 })
 
 child_process.execSync('yarn', { stdio: 'inherit' })
+child_process.execSync('npm rebuild', { stdio: 'inherit' })
 
 // Compile
-child_process.execSync('yarn gulp compile-build', { stdio: 'inherit' })
+child_process.execSync('npm run gulp compile-build', { stdio: 'inherit' })
 child_process.execSync('yarn gulp minify-vscode', { stdio: 'inherit' })
 child_process.execSync('yarn compile-web', { stdio: 'inherit' })
 
