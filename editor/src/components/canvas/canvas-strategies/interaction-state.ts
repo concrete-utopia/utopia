@@ -1,4 +1,5 @@
-import { addAllUniquely } from '../../../core/shared/array-utils'
+import { setsEqual } from '../../../core/shared/set-utils'
+import { addAllUniquely, last } from '../../../core/shared/array-utils'
 import { ElementInstanceMetadataMap } from '../../../core/shared/element-template'
 import {
   CanvasPoint,
@@ -9,7 +10,7 @@ import {
 } from '../../../core/shared/math-utils'
 import { ElementPath } from '../../../core/shared/project-file-types'
 import { KeyCharacter } from '../../../utils/keyboard'
-import { Modifiers } from '../../../utils/modifiers'
+import { Modifier, Modifiers } from '../../../utils/modifiers'
 import { AllElementProps, EditorStatePatch } from '../../editor/store/editor-state'
 import { EdgePosition } from '../canvas-types'
 import { MoveIntoDragThreshold } from '../canvas-utils'
@@ -31,12 +32,21 @@ export interface DragInteractionData {
   globalTime: number
 }
 
+export interface KeyState {
+  keysPressed: Set<KeyCharacter>
+  modifiers: Modifiers
+}
+
+export function keyStatesEqual(first: KeyState, second: KeyState): boolean {
+  return (
+    setsEqual(first.keysPressed, second.keysPressed) &&
+    Modifier.equal(first.modifiers, second.modifiers)
+  )
+}
+
 export interface KeyboardInteractionData {
   type: 'KEYBOARD'
-  keysPressed: Array<KeyCharacter>
-  // keysPressed also includes modifiers, but we want the separate modifiers array since they are captured and mapped to a specific
-  // set via modifiersForEvent in keyboard.ts
-  modifiers: Modifiers
+  keyStates: Array<KeyState>
 }
 
 export type InputData = KeyboardInteractionData | DragInteractionData
@@ -197,8 +207,12 @@ export function createInteractionViaKeyboard(
   return {
     interactionData: {
       type: 'KEYBOARD',
-      keysPressed: keysPressed,
-      modifiers: modifiers,
+      keyStates: [
+        {
+          keysPressed: new Set(keysPressed),
+          modifiers: modifiers,
+        },
+      ],
     },
     activeControl: activeControl,
     sourceOfUpdate: activeControl,
@@ -217,16 +231,26 @@ export function updateInteractionViaKeyboard(
 ): InteractionSessionWithoutMetadata {
   switch (currentState.interactionData.type) {
     case 'KEYBOARD': {
-      const withRemovedKeys = currentState.interactionData.keysPressed.filter(
-        (k) => !keysReleased.includes(k),
-      )
-      const newKeysPressed = addAllUniquely(withRemovedKeys, addedKeysPressed)
-
+      const lastKeyState = last(currentState.interactionData.keyStates)
+      let newKeyState: KeyState
+      if (lastKeyState == null) {
+        newKeyState = {
+          keysPressed: new Set(addedKeysPressed),
+          modifiers: modifiers,
+        }
+      } else {
+        let newKeysPressed = new Set(lastKeyState.keysPressed)
+        addedKeysPressed.forEach((key) => newKeysPressed.add(key))
+        keysReleased.forEach((key) => newKeysPressed.delete(key))
+        newKeyState = {
+          keysPressed: newKeysPressed,
+          modifiers: modifiers,
+        }
+      }
       return {
         interactionData: {
           type: 'KEYBOARD',
-          keysPressed: newKeysPressed,
-          modifiers: modifiers,
+          keyStates: [...currentState.interactionData.keyStates, newKeyState],
         },
         activeControl: currentState.activeControl,
         sourceOfUpdate: sourceOfUpdate,
@@ -259,27 +283,6 @@ export function updateInteractionViaKeyboard(
   }
 }
 
-export function strategySwitchInteractionDataReset(interactionData: InputData): InputData {
-  switch (interactionData.type) {
-    case 'DRAG':
-      if (interactionData.drag == null || interactionData.prevDrag == null) {
-        return interactionData
-      } else {
-        return {
-          ...interactionData,
-          dragStart: offsetPoint(interactionData.dragStart, interactionData.prevDrag),
-          drag: pointDifference(interactionData.prevDrag, interactionData.drag),
-          prevDrag: null,
-        }
-      }
-    case 'KEYBOARD':
-      return interactionData
-    default:
-      const _exhaustiveCheck: never = interactionData
-      throw new Error(`Unhandled interaction type ${JSON.stringify(interactionData)}`)
-  }
-}
-
 // Hard reset means we need to ignore everything happening in the interaction until now, and replay all the dragging
 export function interactionDataHardReset(interactionData: InputData): InputData {
   switch (interactionData.type) {
@@ -298,19 +301,14 @@ export function interactionDataHardReset(interactionData: InputData): InputData 
         }
       }
     case 'KEYBOARD':
-      return interactionData
+      const lastKeyState = last(interactionData.keyStates)
+      return {
+        ...interactionData,
+        keyStates: lastKeyState == null ? [] : [lastKeyState],
+      }
     default:
       const _exhaustiveCheck: never = interactionData
       throw new Error(`Unhandled interaction type ${JSON.stringify(interactionData)}`)
-  }
-}
-
-export function strategySwitchInteractionSessionReset(
-  interactionSessionToReset: InteractionSession,
-): InteractionSession {
-  return {
-    ...interactionSessionToReset,
-    interactionData: strategySwitchInteractionDataReset(interactionSessionToReset.interactionData),
   }
 }
 
@@ -338,6 +336,32 @@ export function hasDragModifiersChanged(
       interactionData.modifiers.ctrl !== prevInteractionData.modifiers.ctrl ||
       interactionData.modifiers.shift !== prevInteractionData.modifiers.shift)
   )
+}
+
+export function hasKeyboardModifierChanged(
+  prevInteractionData: InputData | null,
+  interactionData: InputData | null,
+): boolean {
+  if (prevInteractionData?.type === 'KEYBOARD' && interactionData?.type === 'KEYBOARD') {
+    const lastKeyState = last(interactionData.keyStates)
+    const secondToLastKeyState = last(prevInteractionData.keyStates)
+    if (lastKeyState == null) {
+      return false
+    } else {
+      if (secondToLastKeyState == null) {
+        return (
+          lastKeyState.modifiers.shift ||
+          lastKeyState.modifiers.ctrl ||
+          lastKeyState.modifiers.cmd ||
+          lastKeyState.modifiers.alt
+        )
+      } else {
+        return !Modifier.equal(lastKeyState.modifiers, secondToLastKeyState.modifiers)
+      }
+    }
+  } else {
+    return false
+  }
 }
 
 export interface BoundingArea {

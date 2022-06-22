@@ -1,6 +1,6 @@
 import React from 'react'
 import { MetadataUtils } from '../../../../core/model/element-metadata-utils'
-import { uniqBy } from '../../../../core/shared/array-utils'
+import { last, uniqBy } from '../../../../core/shared/array-utils'
 import { ElementInstanceMetadataMap } from '../../../../core/shared/element-template'
 import {
   boundingRectangleArray,
@@ -715,16 +715,16 @@ export function useAutomaticKeyUp(editorStoreRef: { readonly current: EditorStor
         delete keyupTimeoutHandler.current[key]
 
         const { interactionSession } = editorStoreRef.current.editor.canvas
-        if (
-          interactionSession?.interactionData.type === 'KEYBOARD' &&
-          interactionSession?.interactionData.keysPressed.indexOf(key) > -1
-        ) {
-          const action = CanvasActions.createInteractionSession(
-            updateInteractionViaKeyboard(interactionSession, [], [key], modifiers, {
-              type: 'KEYBOARD_CATCHER_CONTROL',
-            }),
-          )
-          editorStoreRef.current.dispatch([action], 'everyone')
+        if (interactionSession?.interactionData.type === 'KEYBOARD') {
+          const latestKeyState = last(interactionSession.interactionData.keyStates)
+          if (latestKeyState != null && latestKeyState.keysPressed.has(key)) {
+            const action = CanvasActions.createInteractionSession(
+              updateInteractionViaKeyboard(interactionSession, [], [key], modifiers, {
+                type: 'KEYBOARD_CATCHER_CONTROL',
+              }),
+            )
+            editorStoreRef.current.dispatch([action], 'everyone')
+          }
         }
       }
 

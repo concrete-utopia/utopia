@@ -327,6 +327,7 @@ import {
   keyboardCatcherControl,
   KeyboardCatcherControl,
   KeyboardInteractionData,
+  KeyState,
   resizeHandle,
   ResizeHandle,
 } from '../../canvas/canvas-strategies/interaction-state'
@@ -1546,17 +1547,27 @@ export const DragInteractionDataKeepDeepEquality: KeepDeepEqualityCall<DragInter
     },
   )
 
+export const KeyStateKeepDeepEquality: KeepDeepEqualityCall<KeyState> = combine2EqualityCalls(
+  (keyState) => keyState.keysPressed,
+  createCallWithDeepEquals(),
+  (keyState) => keyState.modifiers,
+  ModifiersKeepDeepEquality,
+  (keysPressed, modifiers) => {
+    return {
+      keysPressed: keysPressed,
+      modifiers: modifiers,
+    }
+  },
+)
+
 export const KeyboardInteractionDataKeepDeepEquality: KeepDeepEqualityCall<KeyboardInteractionData> =
-  combine2EqualityCalls(
-    (data) => data.keysPressed,
-    arrayDeepEquality(createCallWithTripleEquals()),
-    (data) => data.modifiers,
-    ModifiersKeepDeepEquality,
-    (keysPressed, modifiers) => {
+  combine1EqualityCall(
+    (data) => data.keyStates,
+    arrayDeepEquality(KeyStateKeepDeepEquality),
+    (keyStates) => {
       return {
         type: 'KEYBOARD',
-        keysPressed: keysPressed,
-        modifiers: modifiers,
+        keyStates: keyStates,
       }
     },
   )

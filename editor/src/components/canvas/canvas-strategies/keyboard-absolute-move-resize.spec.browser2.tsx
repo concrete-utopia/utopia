@@ -44,6 +44,34 @@ describe('Keyboard Absolute Strategies E2E', () => {
     await expectElementLeftInPrintedCode(30)
   })
 
+  it('Pressing Shift + ArrowRight 3 times, then pressing ArrowRight 3 times', async () => {
+    const { expectElementLeftOnScreen, expectElementLeftInPrintedCode } = await setupTest()
+
+    pressArrowRightHoldingShift3x()
+    expectElementLeftOnScreen(30)
+
+    pressArrowRight3x()
+    expectElementLeftOnScreen(33)
+
+    // tick the clock so useClearKeyboardInteraction is fired
+    clock.tick(KeyboardInteractionTimeout)
+    await expectElementLeftInPrintedCode(33)
+  })
+
+  it('Pressing Shift + ArrowRight 3 times, then pressing ArrowLeft 3 times', async () => {
+    const { expectElementLeftOnScreen, expectElementLeftInPrintedCode } = await setupTest()
+
+    pressArrowRightHoldingShift3x()
+    expectElementLeftOnScreen(30)
+
+    pressArrowLeft3x()
+    expectElementLeftOnScreen(27)
+
+    // tick the clock so useClearKeyboardInteraction is fired
+    clock.tick(KeyboardInteractionTimeout)
+    await expectElementLeftInPrintedCode(27)
+  })
+
   it('Pressing Shift + ArrowRight 3 times, then pressing Esc before the keyboard strategy timer succeeds will cancel the strategy', async () => {
     const { expectElementLeftOnScreen, expectElementLeftInPrintedCode } = await setupTest()
 
@@ -169,23 +197,56 @@ function pressArrowRightHoldingShift3x() {
       new KeyboardEvent('keydown', { key: 'ArrowRight', keyCode: 39, shiftKey: true }),
     )
     window.dispatchEvent(
-      new KeyboardEvent('keydown', { key: 'ArrowRight', keyCode: 39, shiftKey: true }),
+      new KeyboardEvent('keyup', { key: 'ArrowRight', keyCode: 39, shiftKey: true }),
     )
     window.dispatchEvent(
       new KeyboardEvent('keydown', { key: 'ArrowRight', keyCode: 39, shiftKey: true }),
     )
+    window.dispatchEvent(
+      new KeyboardEvent('keyup', { key: 'ArrowRight', keyCode: 39, shiftKey: true }),
+    )
+    window.dispatchEvent(
+      new KeyboardEvent('keydown', { key: 'ArrowRight', keyCode: 39, shiftKey: true }),
+    )
+    window.dispatchEvent(
+      new KeyboardEvent('keyup', { key: 'ArrowRight', keyCode: 39, shiftKey: true }),
+    )
+  })
+}
+
+function pressArrowRight3x() {
+  act(() => {
+    window.dispatchEvent(new KeyboardEvent('keydown', { key: 'ArrowRight', keyCode: 39 }))
+    window.dispatchEvent(new KeyboardEvent('keyup', { key: 'ArrowRight', keyCode: 39 }))
+    window.dispatchEvent(new KeyboardEvent('keydown', { key: 'ArrowRight', keyCode: 39 }))
+    window.dispatchEvent(new KeyboardEvent('keyup', { key: 'ArrowRight', keyCode: 39 }))
+    window.dispatchEvent(new KeyboardEvent('keydown', { key: 'ArrowRight', keyCode: 39 }))
+    window.dispatchEvent(new KeyboardEvent('keyup', { key: 'ArrowRight', keyCode: 39 }))
+  })
+}
+
+function pressArrowLeft3x() {
+  act(() => {
+    window.dispatchEvent(new KeyboardEvent('keydown', { key: 'ArrowLeft', keyCode: 37 }))
+    window.dispatchEvent(new KeyboardEvent('keyup', { key: 'ArrowLeft', keyCode: 37 }))
+    window.dispatchEvent(new KeyboardEvent('keydown', { key: 'ArrowLeft', keyCode: 37 }))
+    window.dispatchEvent(new KeyboardEvent('keyup', { key: 'ArrowLeft', keyCode: 37 }))
+    window.dispatchEvent(new KeyboardEvent('keydown', { key: 'ArrowLeft', keyCode: 37 }))
+    window.dispatchEvent(new KeyboardEvent('keyup', { key: 'ArrowLeft', keyCode: 37 }))
   })
 }
 
 function pressEsc() {
   act(() => {
     window.dispatchEvent(new KeyboardEvent('keydown', { key: 'Escape', keyCode: 27 }))
+    window.dispatchEvent(new KeyboardEvent('keyup', { key: 'Escape', keyCode: 27 }))
   })
 }
 
 function pressCmdZ() {
   act(() => {
     window.dispatchEvent(new KeyboardEvent('keydown', { key: 'z', keyCode: 90, metaKey: true }))
+    window.dispatchEvent(new KeyboardEvent('keyup', { key: 'z', keyCode: 90, metaKey: true }))
   })
 }
 
@@ -193,6 +254,9 @@ function pressCmdShiftZ() {
   act(() => {
     window.dispatchEvent(
       new KeyboardEvent('keydown', { key: 'z', keyCode: 90, metaKey: true, shiftKey: true }),
+    )
+    window.dispatchEvent(
+      new KeyboardEvent('keyup', { key: 'z', keyCode: 90, metaKey: true, shiftKey: true }),
     )
   })
 }
