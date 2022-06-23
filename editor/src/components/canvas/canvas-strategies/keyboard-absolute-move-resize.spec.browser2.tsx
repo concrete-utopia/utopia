@@ -72,6 +72,20 @@ describe('Keyboard Absolute Strategies E2E', () => {
     await expectElementLeftInPrintedCode(27)
   })
 
+  it('Pressing Cmd + ArrowRight 3 times, then pressing Cmd + ArrowLeft once', async () => {
+    const { expectElementWidthOnScreen, expectElementWidthInPrintedCode } = await setupTest()
+
+    pressArrowRightHoldingCmd(3)
+    expectElementWidthOnScreen(3)
+
+    pressArrowLeftHoldingCmd(1)
+    expectElementWidthOnScreen(2)
+
+    // tick the clock so useClearKeyboardInteraction is fired
+    clock.tick(KeyboardInteractionTimeout)
+    await expectElementWidthInPrintedCode(2)
+  })
+
   it('Pressing Shift + ArrowRight 3 times, then pressing Esc before the keyboard strategy timer succeeds will cancel the strategy', async () => {
     const { expectElementLeftOnScreen, expectElementLeftInPrintedCode } = await setupTest()
 
@@ -162,33 +176,84 @@ describe('Keyboard Absolute Strategies E2E', () => {
   })
 })
 
+function elementLeft(renderedDom: RenderResult, testId: string): number {
+  return renderedDom.getByTestId('element-bbb').getBoundingClientRect().x
+}
+
+function elementWidth(renderedDom: RenderResult, testId: string): number {
+  return renderedDom.getByTestId('element-bbb').getBoundingClientRect().width
+}
+
 async function setupTest() {
   expect(isFeatureEnabled('Canvas Strategies')).toBeTruthy()
   const initialElementLeft = 0
+  const initialElementWidth = 122
   const renderResult = await renderTestEditorWithCode(
-    TestProjectDeluxeStallion(initialElementLeft),
+    TestProjectDeluxeStallion(initialElementLeft, initialElementWidth),
     'await-first-dom-report',
   )
   await renderResult.dispatch(
     [selectComponents([EP.fromString('sb/scene/app-instance:aaa/bbb')], false)],
     true,
   )
-  const bbbElementLeftAtStart = renderResult.renderedDOM
-    .getByTestId('element-bbb')
-    .getBoundingClientRect().x
+  const bbbElementLeftAtStart = elementLeft(renderResult.renderedDOM, 'element-bbb')
+  const bbbElementWidthAtStart = elementWidth(renderResult.renderedDOM, 'element-bbb')
   function expectElementLeftOnScreen(offset: number) {
     expect(elementLeft(renderResult.renderedDOM, 'element-bbb')).toEqual(
       bbbElementLeftAtStart + offset,
     )
   }
+  function expectElementWidthOnScreen(offset: number) {
+    expect(elementWidth(renderResult.renderedDOM, 'element-bbb')).toEqual(
+      bbbElementWidthAtStart + offset,
+    )
+  }
   async function expectElementLeftInPrintedCode(offset: number) {
     await renderResult.getDispatchFollowUpActionsFinished() // make sure the UPDATE_FROM_WORKER is settled
     expect(getPrintedUiJsCode(renderResult.getEditorState())).toEqual(
-      TestProjectDeluxeStallion(initialElementLeft + offset),
+      TestProjectDeluxeStallion(initialElementLeft + offset, initialElementWidth),
+    )
+  }
+  async function expectElementWidthInPrintedCode(offset: number): Promise<void> {
+    await renderResult.getDispatchFollowUpActionsFinished() // make sure the UPDATE_FROM_WORKER is settled
+    expect(getPrintedUiJsCode(renderResult.getEditorState())).toEqual(
+      TestProjectDeluxeStallion(initialElementLeft, initialElementWidth + offset),
     )
   }
 
-  return { renderResult, expectElementLeftOnScreen, expectElementLeftInPrintedCode }
+  return {
+    renderResult,
+    expectElementLeftOnScreen,
+    expectElementLeftInPrintedCode,
+    expectElementWidthOnScreen,
+    expectElementWidthInPrintedCode,
+  }
+}
+
+function pressArrowRightHoldingCmd(count: number) {
+  act(() => {
+    for (let step = 0; step < count; step++) {
+      window.dispatchEvent(
+        new KeyboardEvent('keydown', { key: 'ArrowRight', keyCode: 39, metaKey: true }),
+      )
+      window.dispatchEvent(
+        new KeyboardEvent('keyup', { key: 'ArrowRight', keyCode: 39, metaKey: true }),
+      )
+    }
+  })
+}
+
+function pressArrowLeftHoldingCmd(count: number) {
+  act(() => {
+    for (let step = 0; step < count; step++) {
+      window.dispatchEvent(
+        new KeyboardEvent('keydown', { key: 'ArrowLeft', keyCode: 37, metaKey: true }),
+      )
+      window.dispatchEvent(
+        new KeyboardEvent('keyup', { key: 'ArrowLeft', keyCode: 37, metaKey: true }),
+      )
+    }
+  })
 }
 
 function pressArrowRightHoldingShift3x() {
@@ -261,11 +326,10 @@ function pressCmdShiftZ() {
   })
 }
 
-function elementLeft(renderedDom: RenderResult, testId: string): number {
-  return renderedDom.getByTestId('element-bbb').getBoundingClientRect().x
-}
-
-const TestProjectDeluxeStallion = (bbbLeft: number) => `import * as React from 'react'
+const TestProjectDeluxeStallion = (
+  bbbLeft: number,
+  bbbWidth: number,
+) => `import * as React from 'react'
 import Utopia, {
   Scene,
   View,
@@ -290,7 +354,7 @@ export var App = (props) => {
           position: 'absolute',
           left: ${bbbLeft},
           top: 100,
-          width: 122,
+          width: ${bbbWidth},
           height: 101,
         }}
         data-uid='bbb'
