@@ -51,7 +51,7 @@ const SortButton = styled('div')<sortButtonProps>(
     borderRadius: 3,
     transition: '.2s ease',
     '&:hover': {
-      opacity: .7,
+      opacity: 0.7,
     },
     '&:active': {
       background: colors.mainBlue,
@@ -59,8 +59,18 @@ const SortButton = styled('div')<sortButtonProps>(
     },
   },
   (props) => ({
-    background: props.sortOrder === 0 ? colors.mainPink : props.sortOrder === 1 ? colors.mainBlue : 'undefined',
-    color: props.sortOrder === 0 ? colors.mainBlue : props.sortOrder === 1 ? colors.mainPink : colors.mainBlue,
+    background:
+      props.sortOrder === 0
+        ? colors.mainPink
+        : props.sortOrder === 1
+        ? colors.mainBlue
+        : 'undefined',
+    color:
+      props.sortOrder === 0
+        ? colors.mainBlue
+        : props.sortOrder === 1
+        ? colors.mainPink
+        : colors.mainBlue,
   }),
 )
 
@@ -158,7 +168,7 @@ interface ProjectsState {
   selectedProjectId: string | null
   projectTitleFilter: string | null
   mode: 'projects' | 'filter' | 'docs'
-  sortMode: 'date' | 'title' | 'datereversed' | 'titlereversed'
+  sortMode: 'title' | 'date'
   dateSortOrder: number
   titleSortOrder: number
 }
@@ -178,7 +188,7 @@ export class ProjectsPage extends React.Component<EmptyProps, ProjectsState> {
       selectedProjectId: null,
       projectTitleFilter: null,
       mode: 'projects',
-      sortMode: 'date',
+      sortMode: 'title',
       dateSortOrder: 2,
       titleSortOrder: 2,
     }
@@ -346,9 +356,6 @@ export class ProjectsPage extends React.Component<EmptyProps, ProjectsState> {
   setProjectsMode = () => this.setState({ mode: 'projects' })
   setFilterMode = () => this.setState({ mode: 'filter' })
 
-  setSortByDateMode = () => this.setState({ sortMode: 'date' })
-  setSortByTitleMode = () => this.setState({ sortMode: 'title' })
-
   render() {
     const hasProjects = this.state.filteredProjects.length > 0
     const hasLocalProjects = this.state.filteredLocalProjects.length > 0
@@ -374,33 +381,22 @@ export class ProjectsPage extends React.Component<EmptyProps, ProjectsState> {
     })
 
     const dateSortOrder = this.state.dateSortOrder
-    const handleSortByDate = () => {
-      this.setSortByDateMode()
-      if (dateSortOrder === 2) {
-        this.setState({ filteredProjects: projectsSortedByDate })
-      } else if (dateSortOrder === 0) {
-        this.setState({ filteredProjects: reversedProjects })
-      } else if (dateSortOrder === 1) {
-        this.setState({ filteredProjects: this.state.projects })
-      }
-      this.setState({ dateSortOrder: (dateSortOrder + 1) % 3 })
-      this.setState({ titleSortOrder: 2 })
-      console.log('date sort order: ' + dateSortOrder)
-    }
-
     const titleSortOrder = this.state.titleSortOrder
-    const handleSortByTitle = () => {
-      this.setSortByTitleMode()
-      if (titleSortOrder === 2) {
-        this.setState({ filteredProjects: projectsSortedByTitle })
-      } else if (titleSortOrder === 0) {
+    const handleSort = (so: number, st: ProjectListing[]) => {
+      if (so === 2) {
+        this.setState({ filteredProjects: st })
+      } else if (so === 0) {
         this.setState({ filteredProjects: reversedProjects })
-      } else if (titleSortOrder === 1) {
+      } else if (so === 1) {
         this.setState({ filteredProjects: this.state.projects })
       }
-      this.setState({ titleSortOrder: (titleSortOrder + 1) % 3 })
-      this.setState({ dateSortOrder: 2 })
-      console.log('title sort order: ' + titleSortOrder)
+      if (st === projectsSortedByTitle) {
+        this.setState({ titleSortOrder: (titleSortOrder + 1) % 3 })
+        this.setState({ dateSortOrder: 2 })
+      } else {
+        this.setState({ dateSortOrder: (dateSortOrder + 1) % 3 })
+        this.setState({ titleSortOrder: 2 })
+      }
     }
 
     return (
@@ -425,7 +421,6 @@ export class ProjectsPage extends React.Component<EmptyProps, ProjectsState> {
           onMouseDown={this.clearSelectedProject}
           style={{
             alignItems: 'flex-start',
-
             height: '100vh',
           }}
         >
@@ -475,15 +470,15 @@ export class ProjectsPage extends React.Component<EmptyProps, ProjectsState> {
               <label>Sort:</label>
               <SortButton
                 selected={this.state.sortMode === 'date'}
-                onClick={() => handleSortByDate()}
                 sortOrder={this.state.dateSortOrder}
+                onClick={() => handleSort(dateSortOrder, projectsSortedByDate)}
               >
                 Date Edited
               </SortButton>
               <SortButton
                 selected={this.state.sortMode === 'title'}
-                onClick={() => handleSortByTitle()}
                 sortOrder={this.state.titleSortOrder}
+                onClick={() => handleSort(titleSortOrder, projectsSortedByTitle)}
               >
                 Title
               </SortButton>
