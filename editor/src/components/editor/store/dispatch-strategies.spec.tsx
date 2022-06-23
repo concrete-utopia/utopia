@@ -582,8 +582,7 @@ describe('interactionUpdate with accumulating keypresses', () => {
     )
 
     const editorStore = createEditorStore(interactionSession)
-
-    editorStore.strategyState.currentStrategy = 'TEST_STRATEGY' as CanvasStrategyId
+    editorStore.strategyState.currentStrategy = 'PREVIOUS_STRATEGY' as CanvasStrategyId
     // the currentStrategyCommands should be added to accumulatedCommands
     editorStore.strategyState.currentStrategyCommands = [
       wildcardPatch('permanent', { selectedViews: { $set: [EP.elementPath([['aaa']])] } }),

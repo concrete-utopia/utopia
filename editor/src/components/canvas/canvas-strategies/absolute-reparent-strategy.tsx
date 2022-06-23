@@ -21,6 +21,7 @@ export const absoluteReparentStrategy: CanvasStrategy = {
     if (
       canvasState.selectedElements.length > 0 &&
       interactionState != null &&
+      interactionState.interactionData.type === 'DRAG' &&
       interactionState.interactionData.modifiers.cmd
     ) {
       const filteredSelectedElements = getDragTargets(canvasState.selectedElements)
@@ -48,8 +49,8 @@ export const absoluteReparentStrategy: CanvasStrategy = {
     if (
       canvasState.selectedElements.length > 0 &&
       interactionState.activeControl.type === 'BOUNDING_AREA' &&
-      interactionState.interactionData.modifiers.cmd &&
       interactionState.interactionData.type === 'DRAG' &&
+      interactionState.interactionData.modifiers.cmd &&
       interactionState.interactionData.drag != null
     ) {
       return 2

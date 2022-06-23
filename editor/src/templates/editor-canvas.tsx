@@ -369,9 +369,11 @@ export function runLocalCanvasAction(
     }
     case 'CREATE_INTERACTION_SESSION':
       clearInterval(interactionSessionTimerHandle)
-      interactionSessionTimerHandle = setInterval(() => {
-        dispatch([CanvasActions.updateDragInteractionData({ globalTime: Date.now() })])
-      }, 200)
+      if (action.interactionSession.interactionData.type === 'DRAG') {
+        interactionSessionTimerHandle = setInterval(() => {
+          dispatch([CanvasActions.updateDragInteractionData({ globalTime: Date.now() })])
+        }, 200)
+      }
       return {
         ...model,
         canvas: {
