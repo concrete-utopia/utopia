@@ -16,10 +16,9 @@ export function hasAtLeastTwoPinsPerSide(props: { [key: string]: any }): boolean
   )
 }
 
-// edgePosition parameter is needed for resize, leave it undefined when use it for move
-export function ensureAtLeastTwoPinsPerDimension(
+export function ensureAtLeastTwoPinsForEdgePosition(
   props: PropsOrJSXAttributes,
-  edgePosition?: EdgePosition,
+  edgePosition: EdgePosition,
 ): Array<AbsolutePin> {
   const existingHorizontalPins = horizontalPins.filter((p) => {
     const prop = getLayoutProperty(p, props, ['style'])
@@ -31,7 +30,7 @@ export function ensureAtLeastTwoPinsPerDimension(
   })
 
   const horizontalPinsToAdd: Array<AbsolutePin> = [...existingHorizontalPins]
-  if (edgePosition == null || edgePosition.x !== 0.5) {
+  if (edgePosition.x !== 0.5) {
     if (existingHorizontalPins.length === 0) {
       horizontalPinsToAdd.push('left')
       horizontalPinsToAdd.push('width')
@@ -44,7 +43,7 @@ export function ensureAtLeastTwoPinsPerDimension(
     }
   }
   const verticalPinsToAdd: Array<AbsolutePin> = [...existingVerticalPins]
-  if (edgePosition == null || edgePosition.y !== 0.5) {
+  if (edgePosition.y !== 0.5) {
     if (existingVerticalPins.length === 0) {
       verticalPinsToAdd.push('top')
       verticalPinsToAdd.push('height')

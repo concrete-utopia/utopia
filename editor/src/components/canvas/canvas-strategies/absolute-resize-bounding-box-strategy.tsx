@@ -26,7 +26,7 @@ import { updateHighlightedViews } from '../commands/update-highlighted-views-com
 import { ParentBounds } from '../controls/parent-bounds'
 import { ParentOutlines } from '../controls/parent-outlines'
 import { AbsoluteResizeControl } from '../controls/select-mode/absolute-resize-control'
-import { AbsolutePin, ensureAtLeastTwoPinsPerDimension } from './absolute-resize-helpers'
+import { AbsolutePin, ensureAtLeastTwoPinsForEdgePosition } from './absolute-resize-helpers'
 import { CanvasStrategy, emptyStrategyApplicationResult } from './canvas-strategy-types'
 import { getDragTargets, getMultiselectBounds } from './shared-absolute-move-strategy-helpers'
 import {
@@ -186,7 +186,7 @@ function createResizeCommandsFromFrame(
   elementParentBounds: CanvasRectangle | null,
   edgePosition: EdgePosition,
 ): (AdjustCssLengthProperty | SetCssLengthProperty)[] {
-  const pins: Array<AbsolutePin> = ensureAtLeastTwoPinsPerDimension(
+  const pins: Array<AbsolutePin> = ensureAtLeastTwoPinsForEdgePosition(
     right(element.props),
     edgePosition,
   )
