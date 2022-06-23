@@ -71,28 +71,27 @@ function createMoveCommandsForElement(
       // TODO avoid using the loaded FramePoint enum
       framePointForPinnedProp(pin),
     )
-    const sizePin = pin === 'width' || pin === 'height'
-    // if the pin is width or height, that dimension was not defined so we can set it to 0
-    if (sizePin) {
-      return adjustCssLengthProperty(
-        'permanent',
-        selectedElement,
-        stylePropPathMappingFn(pin, ['style']),
-        0,
-        horizontal ? elementParentBounds?.width : elementParentBounds?.height,
-        true,
-      )
-    } else {
-      const negative = pin === 'right' || pin === 'bottom'
-      return adjustCssLengthProperty(
-        'permanent',
-        selectedElement,
-        stylePropPathMappingFn(pin, ['style']),
-        (horizontal ? drag.x : drag.y) * (negative ? -1 : 1),
-        horizontal ? elementParentBounds?.width : elementParentBounds?.height,
-        true,
-      )
-    }
+
+    const updatedPropValue = (() => {
+      const sizePin = pin === 'width' || pin === 'height'
+      // if the pin is width or height, that dimension was not defined so we can set it to 0
+      if (sizePin) {
+        return 0
+      } else {
+        const negative = pin === 'right' || pin === 'bottom'
+        return (horizontal ? drag.x : drag.y) * (negative ? -1 : 1)
+      }
+    })()
+    const parentDimension = horizontal ? elementParentBounds?.width : elementParentBounds?.height
+
+    return adjustCssLengthProperty(
+      'permanent',
+      selectedElement,
+      stylePropPathMappingFn(pin, ['style']),
+      updatedPropValue,
+      parentDimension,
+      true,
+    )
   }, pins)
 }
 
