@@ -22,7 +22,7 @@ export const ParentBounds = React.memo(() => {
 
   return frame != null ? (
     <CanvasOffsetWrapper key={`parent-outline`}>
-      <div style={{ pointerEvents: 'none' }}>
+      <div style={{ pointerEvents: 'none' }} data-testid='parent-bounds-control'>
         <CenteredCrossSVG
           id='parent-cross-top-left'
           centerX={frame.x}

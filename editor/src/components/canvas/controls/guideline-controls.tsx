@@ -55,6 +55,7 @@ const GuidelineControl = React.memo<GuidelineProps>((props) => {
     <div
       id={key}
       key={key}
+      data-testid={key}
       ref={controlRef}
       style={{
         position: 'absolute',
