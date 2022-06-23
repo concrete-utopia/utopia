@@ -1,11 +1,11 @@
 /** @jsxRuntime classic */
 /** @jsx jsx */
-import React from 'react'
+import React, { useState } from 'react'
 import { jsx } from '@emotion/react'
 import styled from '@emotion/styled'
 
 import { layout, FlexRow, FlexColumn, FlexWrappingList } from './layout'
-import { H2 } from './style'
+import { H2, SortButton } from './style'
 import { colors } from './theme'
 
 import { Global } from '@emotion/react'
@@ -119,6 +119,7 @@ class ProjectCard extends React.Component<ProjectCardProps> {
     )
   }
 }
+
 interface ProjectsState {
   localProjects: Array<ProjectListing>
   filteredLocalProjects: Array<ProjectListing>
@@ -128,6 +129,7 @@ interface ProjectsState {
   selectedProjectId: string | null
   projectTitleFilter: string | null
   mode: 'projects' | 'filter' | 'docs'
+  listOrder: number
 }
 
 interface EmptyProps {}
@@ -141,9 +143,11 @@ export class ProjectsPage extends React.Component<EmptyProps, ProjectsState> {
       projects: [],
       filteredProjects: [],
       showcase: [],
+
       selectedProjectId: null,
       projectTitleFilter: null,
       mode: 'projects',
+      listOrder: 0,
     }
   }
 
@@ -314,6 +318,38 @@ export class ProjectsPage extends React.Component<EmptyProps, ProjectsState> {
     const hasLocalProjects = this.state.filteredLocalProjects.length > 0
     const visibleProjectCount =
       this.state.filteredProjects.length + this.state.filteredLocalProjects.length
+    
+    const reversedProjects = [...this.state.filteredProjects].reverse();
+    const projectsSortedByTitle = [...this.state.filteredProjects].sort(function (a, b) {
+        let x = a.title.toLowerCase();
+        let y = b.title.toLowerCase();
+        if (x < y) {
+          return -1;
+        }
+        if (x > y) {
+          return 1;
+        }
+        return 0;
+      }
+    );
+    const projectsSortedByDate = [...this.state.filteredProjects].sort(function (a, b) {
+      var aDateNumber = new Date(a.modifiedAt).getTime()
+      var bDateNumber = new Date(b.modifiedAt).getTime()
+      return bDateNumber - aDateNumber
+    });
+
+    const listOrder = this.state.listOrder 
+    const handleSort = (c: ProjectListing[]) => {
+      if (listOrder === 0) {
+        this.setState({filteredProjects: c})
+      } else if (listOrder === 1) {
+        this.setState({filteredProjects: reversedProjects})
+      } else if (listOrder === 2) {
+        this.setState({filteredProjects: this.state.projects})
+      }
+      this.setState({listOrder: ((listOrder + 1) % 3)})
+      console.log(listOrder)
+    }
 
     return (
       <React.Fragment>
@@ -374,9 +410,19 @@ export class ProjectsPage extends React.Component<EmptyProps, ProjectsState> {
                 <span style={{ opacity: 0.3 }}>{visibleProjectCount}</span>
               </H2>
             </div>
-            <div style={{ marginTop: layout.margins.regular + 10, fontSize: 12, opacity: 0.7 }}>
-              <span style={{ marginRight: 60 }}>Last Edited ↧</span>
-              <span>Public and Private</span>
+
+            <div
+              style={{
+                marginTop: layout.margins.regular + 10,
+                fontSize: 12,
+                opacity: 0.7,
+                display: 'flex',
+                gap: '10px',
+              }}
+            >
+              <label>Sort:</label>
+              <SortButton onClick={() => handleSort(projectsSortedByDate)}>Date Edited</SortButton>
+              <SortButton onClick={() => handleSort(projectsSortedByTitle)}>Title</SortButton>
             </div>
           </div>
 
