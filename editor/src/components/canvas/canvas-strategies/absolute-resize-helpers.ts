@@ -1,7 +1,6 @@
 import { getLayoutProperty } from '../../../core/layout/getLayoutProperty'
 import { PropsOrJSXAttributes } from '../../../core/model/element-metadata-utils'
 import { isRight } from '../../../core/shared/either'
-import { fastForEach } from '../../../core/shared/utils'
 import { EdgePosition } from '../canvas-types'
 
 export type AbsolutePin = 'left' | 'top' | 'right' | 'bottom' | 'width' | 'height'
@@ -17,9 +16,10 @@ export function hasAtLeastTwoPinsPerSide(props: { [key: string]: any }): boolean
   )
 }
 
-export function ensureAtLeastTwoPinsForEdgePosition(
+// edgePosition parameter is needed for resize, leave it undefined when use it for move
+export function ensureAtLeastTwoPinsPerDimension(
   props: PropsOrJSXAttributes,
-  edgePosition: EdgePosition,
+  edgePosition?: EdgePosition,
 ): Array<AbsolutePin> {
   const existingHorizontalPins = horizontalPins.filter((p) => {
     const prop = getLayoutProperty(p, props, ['style'])
@@ -31,7 +31,7 @@ export function ensureAtLeastTwoPinsForEdgePosition(
   })
 
   const horizontalPinsToAdd: Array<AbsolutePin> = [...existingHorizontalPins]
-  if (edgePosition.x !== 0.5) {
+  if (edgePosition == null || edgePosition.x !== 0.5) {
     if (existingHorizontalPins.length === 0) {
       horizontalPinsToAdd.push('left')
       horizontalPinsToAdd.push('width')
@@ -44,7 +44,7 @@ export function ensureAtLeastTwoPinsForEdgePosition(
     }
   }
   const verticalPinsToAdd: Array<AbsolutePin> = [...existingVerticalPins]
-  if (edgePosition.y !== 0.5) {
+  if (edgePosition == null || edgePosition.y !== 0.5) {
     if (existingVerticalPins.length === 0) {
       verticalPinsToAdd.push('top')
       verticalPinsToAdd.push('height')

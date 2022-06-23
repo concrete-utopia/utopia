@@ -30,6 +30,7 @@ import {
 } from '../commands/adjust-css-length-command'
 import { runLegacyAbsoluteMoveSnapping } from '../controls/guideline-helpers'
 import { ConstrainedDragAxis, GuidelineWithSnappingVector } from '../guideline'
+import { ensureAtLeastTwoPinsPerDimension } from './absolute-resize-helpers'
 import { InteractionCanvasState } from './canvas-strategy-types'
 import { StrategyState } from './interaction-state'
 
@@ -63,58 +64,36 @@ function createMoveCommandsForElement(
   drag: CanvasVector,
   elementParentBounds: CanvasRectangle | null,
 ): AdjustCssLengthProperty[] {
-  const hasPin = (pin: 'top' | 'bottom' | 'left' | 'right') => {
-    const value = getLayoutProperty(pin, right(element.props), ['style'])
-    return isRight(value) && value.value != null
-  }
+  const pins = ensureAtLeastTwoPinsPerDimension(right(element.props))
 
-  const isHorizontallyDefined = hasPin('left') || hasPin('right')
-  const isVerticallyDefined = hasPin('top') || hasPin('bottom')
-
-  return mapDropNulls(
-    (pin) => {
-      const horizontal = isHorizontalPoint(
-        // TODO avoid using the loaded FramePoint enum
-        framePointForPinnedProp(pin),
+  return mapDropNulls((pin) => {
+    const horizontal = isHorizontalPoint(
+      // TODO avoid using the loaded FramePoint enum
+      framePointForPinnedProp(pin),
+    )
+    const sizePin = pin === 'width' || pin === 'height'
+    // if the pin is width or height, that dimension was not defined so we can set it to 0
+    if (sizePin) {
+      return adjustCssLengthProperty(
+        'permanent',
+        selectedElement,
+        stylePropPathMappingFn(pin, ['style']),
+        0,
+        horizontal ? elementParentBounds?.width : elementParentBounds?.height,
+        true,
       )
+    } else {
       const negative = pin === 'right' || pin === 'bottom'
-      const value = getLayoutProperty(pin, right(element.props), ['style'])
-      if (isRight(value) && value.value != null) {
-        return adjustCssLengthProperty(
-          'permanent',
-          selectedElement,
-          stylePropPathMappingFn(pin, ['style']),
-          (horizontal ? drag.x : drag.y) * (negative ? -1 : 1),
-          horizontal ? elementParentBounds?.width : elementParentBounds?.height,
-          true,
-        )
-      } else {
-        // if not defined we still try to fix it by adding left and/or top with initial value 0
-        if (pin === 'left' && !isHorizontallyDefined) {
-          return adjustCssLengthProperty(
-            'permanent',
-            selectedElement,
-            stylePropPathMappingFn('left', ['style']),
-            drag.x * (negative ? -1 : 1),
-            elementParentBounds?.width,
-            true,
-          )
-        } else if (pin === 'top' && !isVerticallyDefined) {
-          return adjustCssLengthProperty(
-            'permanent',
-            selectedElement,
-            stylePropPathMappingFn('top', ['style']),
-            drag.y,
-            elementParentBounds?.height,
-            true,
-          )
-        } else {
-          return null
-        }
-      }
-    },
-    ['top', 'bottom', 'left', 'right'] as const,
-  )
+      return adjustCssLengthProperty(
+        'permanent',
+        selectedElement,
+        stylePropPathMappingFn(pin, ['style']),
+        (horizontal ? drag.x : drag.y) * (negative ? -1 : 1),
+        horizontal ? elementParentBounds?.width : elementParentBounds?.height,
+        true,
+      )
+    }
+  }, pins)
 }
 
 export function getAbsoluteOffsetCommandsForSelectedElement(
