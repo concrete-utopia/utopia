@@ -318,7 +318,7 @@ export function useGetSelectedClasses(): {
             elementPath,
           )
           return {
-            value: allElementProps[EP.toString(elementPath)]['className'],
+            value: allElementProps[EP.toString(elementPath)]?.className,
             isSettable: fromAttributes.isSettable,
           }
         }

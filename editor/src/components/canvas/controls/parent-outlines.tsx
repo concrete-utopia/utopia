@@ -35,6 +35,7 @@ export const ParentOutlines = React.memo(() => {
           outlineWidth: 1 / scale,
           pointerEvents: 'none',
         }}
+        data-testid='parent-outlines-control'
       />
     </CanvasOffsetWrapper>
   ) : null
