@@ -140,25 +140,19 @@ export function resizeBoundingBoxFromCorner(
 
   newBoundingBox = rectFromTwoPoints(oppositeCorner, newCorner)
   if (lockedAspectRatio != null) {
-    let fixedEdge = startingCornerPosition
-    if (centerBased === 'center-based') {
-      fixedEdge = { x: 0.5, y: 0.5 }
-    } else {
-      if (oppositeCorner.x < newCorner.x) {
-        if (oppositeCorner.y < newCorner.y) {
-          fixedEdge = { x: 0, y: 0 }
-        } else {
-          fixedEdge = { x: 0, y: 1 }
-        }
-      } else {
-        if (oppositeCorner.y < newCorner.y) {
-          fixedEdge = { x: 1, y: 0 }
-        } else {
-          fixedEdge = { x: 1, y: 1 }
-        }
-      }
-    }
-    return extendRectangleToAspectRatio(newBoundingBox, fixedEdge, lockedAspectRatio)
+    // When aspect ratio is locked we extend the new bounding box in this way:
+    // 1. the extended bounding box should fully contain the bounding box
+    // 2. the extended rectangle should have the correct locked aspect ratio
+    // 3. there is always a fixed point of the bounding box which should not move:
+    //    - when it is a center based resize that fixed point is the center of the rectangle
+    //    - otherwise it is the opposite point than what we drag
+    const fixedEdgePosition = getFixedEdgePositionForAspectRatioLockResize(
+      centerBased,
+      newCorner,
+      oppositeCorner,
+    )
+
+    return extendRectangleToAspectRatio(newBoundingBox, fixedEdgePosition, lockedAspectRatio)
   } else {
     return newBoundingBox
   }
@@ -384,22 +378,46 @@ export function pickCursorFromEdgePosition(edgePosition: EdgePosition) {
   }
 }
 
+function getFixedEdgePositionForAspectRatioLockResize(
+  centerBased: IsCenterBased,
+  newCorner: CanvasPoint,
+  oppositeCorner: CanvasPoint,
+): EdgePosition {
+  if (centerBased === 'center-based') {
+    return { x: 0.5, y: 0.5 }
+  } else {
+    if (oppositeCorner.x < newCorner.x) {
+      if (oppositeCorner.y < newCorner.y) {
+        return { x: 0, y: 0 }
+      } else {
+        return { x: 0, y: 1 }
+      }
+    } else {
+      if (oppositeCorner.y < newCorner.y) {
+        return { x: 1, y: 0 }
+      } else {
+        return { x: 1, y: 1 }
+      }
+    }
+  }
+}
+
 function extendRectangleToAspectRatio(
   rectangle: CanvasRectangle,
-  fixedEdge: EdgePosition,
+  fixedEdgePosition: EdgePosition,
   aspectRatio: number,
 ): CanvasRectangle {
   const currentAspectRatio = rectangle.width / rectangle.height
   if (currentAspectRatio < aspectRatio) {
     const newWidth = rectangle.height * aspectRatio
-    if (fixedEdge.x === 0) {
+    if (fixedEdgePosition.x === 0) {
       return canvasRectangle({
         x: rectangle.x,
         y: rectangle.y,
         width: newWidth,
         height: rectangle.height,
       })
-    } else if (fixedEdge.x === 0.5) {
+    } else if (fixedEdgePosition.x === 0.5) {
       return canvasRectangle({
         x: rectangle.x + (rectangle.width - newWidth) / 2,
         y: rectangle.y,
@@ -416,14 +434,14 @@ function extendRectangleToAspectRatio(
     }
   } else {
     const newHeight = rectangle.width / aspectRatio
-    if (fixedEdge.y === 0) {
+    if (fixedEdgePosition.y === 0) {
       return canvasRectangle({
         x: rectangle.x,
         y: rectangle.y,
         width: rectangle.width,
         height: newHeight,
       })
-    } else if (fixedEdge.y === 0.5) {
+    } else if (fixedEdgePosition.y === 0.5) {
       return canvasRectangle({
         x: rectangle.x,
         y: rectangle.y + (rectangle.height - newHeight) / 2,
