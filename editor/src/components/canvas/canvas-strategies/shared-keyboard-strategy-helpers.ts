@@ -54,7 +54,7 @@ export function accumulatePresses(keyStates: Array<KeyState>): Array<Accumulated
   return result
 }
 
-export function getDragDeltaFromKey(key: KeyCharacter, modifiers: Modifiers): CanvasVector {
+export function getMovementDeltaFromKey(key: KeyCharacter, modifiers: Modifiers): CanvasVector {
   const step = modifiers.shift ? 10 : 1
   switch (key) {
     case 'left':

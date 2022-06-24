@@ -27,7 +27,7 @@ import { updateHighlightedViews } from '../commands/update-highlighted-views-com
 import { CanvasCommand } from '../commands/commands'
 import {
   accumulatePresses,
-  getDragDeltaFromKey,
+  getMovementDeltaFromKey,
   getKeyboardStrategyGuidelines,
   getLastKeyPressState,
 } from './shared-keyboard-strategy-helpers'
@@ -84,46 +84,46 @@ export const keyboardAbsoluteMoveStrategy: CanvasStrategy = {
     if (interactionState.interactionData.type === 'KEYBOARD') {
       const accumulatedPresses = accumulatePresses(interactionState.interactionData.keyStates)
       let commands: Array<CanvasCommand> = []
-      let drag: CanvasVector = zeroCanvasPoint
+      let keyboardMovement: CanvasVector = zeroCanvasPoint
       accumulatedPresses.forEach((accumulatedPress) => {
         accumulatedPress.keysPressed.forEach((key) => {
-          const keyPressDrag = scaleVector(
-            getDragDeltaFromKey(key, accumulatedPress.modifiers),
+          const keyPressMovement = scaleVector(
+            getMovementDeltaFromKey(key, accumulatedPress.modifiers),
             accumulatedPress.count,
           )
-          drag = offsetPoint(drag, keyPressDrag)
+          keyboardMovement = offsetPoint(keyboardMovement, keyPressMovement)
         })
       })
-      if (drag.x !== 0 || drag.y !== 0) {
+      if (keyboardMovement.x !== 0 || keyboardMovement.y !== 0) {
         const moveCommands = canvasState.selectedElements.flatMap((selectedElement) =>
           getAbsoluteMoveCommandsForSelectedElement(
             selectedElement,
-            drag,
+            keyboardMovement,
             canvasState,
             sessionState,
           ),
         )
-        const multiselectBounds = getMultiselectBounds(
-          sessionState.startingMetadata,
-          canvasState.selectedElements,
-        )
-        const draggedFrame = offsetRect(
-          defaultIfNull(canvasRectangle(zeroRectangle), multiselectBounds),
-          drag,
-        )
-
-        const guidelines = getKeyboardStrategyGuidelines(
-          sessionState,
-          canvasState,
-          interactionState,
-          draggedFrame,
-        )
-
         commands.push(...moveCommands)
-        commands.push(updateHighlightedViews('transient', []))
-        commands.push(setSnappingGuidelines('transient', guidelines))
-        commands.push(setElementsToRerenderCommand(canvasState.selectedElements))
       }
+      const multiselectBounds = getMultiselectBounds(
+        sessionState.startingMetadata,
+        canvasState.selectedElements,
+      )
+      const newFrame = offsetRect(
+        defaultIfNull(canvasRectangle(zeroRectangle), multiselectBounds),
+        keyboardMovement,
+      )
+
+      const guidelines = getKeyboardStrategyGuidelines(
+        sessionState,
+        canvasState,
+        interactionState,
+        newFrame,
+      )
+
+      commands.push(updateHighlightedViews('transient', []))
+      commands.push(setSnappingGuidelines('transient', guidelines))
+      commands.push(setElementsToRerenderCommand(canvasState.selectedElements))
       return {
         commands: commands,
         customState: null,

@@ -23,7 +23,7 @@ import { last } from '../../../core/shared/array-utils'
 import {
   AccumulatedPresses,
   accumulatePresses,
-  getDragDeltaFromKey,
+  getMovementDeltaFromKey,
   getKeyboardStrategyGuidelines,
   getLastKeyPressState,
 } from './shared-keyboard-strategy-helpers'
@@ -31,7 +31,7 @@ import { getMultiselectBounds } from './shared-absolute-move-strategy-helpers'
 import { setSnappingGuidelines } from '../commands/set-snapping-guidelines-command'
 
 interface VectorAndEdge {
-  drag: CanvasVector
+  movement: CanvasVector
   edge: EdgePosition
 }
 
@@ -42,8 +42,8 @@ function pressesToVectorAndEdges(
 
   accumulatedPresses.forEach((accumulatedPress) => {
     accumulatedPress.keysPressed.forEach((key) => {
-      const keyPressDrag = scaleVector(
-        getDragDeltaFromKey(key, accumulatedPress.modifiers),
+      const keyPressMovement = scaleVector(
+        getMovementDeltaFromKey(key, accumulatedPress.modifiers),
         accumulatedPress.count,
       )
       const edgePosition = getEdgePositionFromKey(key)
@@ -56,11 +56,11 @@ function pressesToVectorAndEdges(
         }
         if (foundVectorAndEdge == null) {
           result.push({
-            drag: keyPressDrag,
+            movement: keyPressMovement,
             edge: edgePosition,
           })
         } else {
-          foundVectorAndEdge.drag = offsetPoint(foundVectorAndEdge.drag, keyPressDrag)
+          foundVectorAndEdge.movement = offsetPoint(foundVectorAndEdge.movement, keyPressMovement)
         }
       }
     })
@@ -112,20 +112,20 @@ export const keyboardAbsoluteResizeStrategy: CanvasStrategy = {
   apply: (canvasState, interactionState, sessionState) => {
     if (interactionState.interactionData.type === 'KEYBOARD') {
       const accumulatedPresses = accumulatePresses(interactionState.interactionData.keyStates)
-      const dragsWithEdges = pressesToVectorAndEdges(accumulatedPresses)
+      const movementsWithEdges = pressesToVectorAndEdges(accumulatedPresses)
 
       // Start with the frame as it is at the start of the interaction.
-      let draggedFrame =
+      let newFrame =
         getMultiselectBounds(sessionState.startingMetadata, canvasState.selectedElements) ??
         canvasRectangle(zeroRectangle)
 
       let commands: Array<CanvasCommand> = []
-      dragsWithEdges.forEach((dragWithEdge) => {
-        if (dragWithEdge.drag.x !== 0 || dragWithEdge.drag.y !== 0) {
-          draggedFrame = resizeBoundingBox(
-            draggedFrame,
-            dragWithEdge.drag,
-            dragWithEdge.edge,
+      movementsWithEdges.forEach((movementWithEdge) => {
+        if (movementWithEdge.movement.x !== 0 || movementWithEdge.movement.y !== 0) {
+          newFrame = resizeBoundingBox(
+            newFrame,
+            movementWithEdge.movement,
+            movementWithEdge.edge,
             null,
             'non-center-based',
           )
@@ -147,8 +147,8 @@ export const keyboardAbsoluteResizeStrategy: CanvasStrategy = {
                 ...createResizeCommands(
                   element,
                   selectedElement,
-                  dragWithEdge.edge,
-                  dragWithEdge.drag,
+                  movementWithEdge.edge,
+                  movementWithEdge.movement,
                   elementParentBounds,
                 ),
               )
@@ -160,7 +160,7 @@ export const keyboardAbsoluteResizeStrategy: CanvasStrategy = {
         sessionState,
         canvasState,
         interactionState,
-        draggedFrame,
+        newFrame,
       )
       commands.push(setSnappingGuidelines('transient', guidelines))
       commands.push(setElementsToRerenderCommand(canvasState.selectedElements))
