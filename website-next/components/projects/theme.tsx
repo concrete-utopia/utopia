@@ -7,5 +7,5 @@ export const colors = {
   lightBlue: '#e9f3ff',
   mainBlue: '#007aff',
   mainPink: '#E9C8FF',
-  lightPink: '#F4E2FF'
+  lightPink: '#F4E2FF',
 }
