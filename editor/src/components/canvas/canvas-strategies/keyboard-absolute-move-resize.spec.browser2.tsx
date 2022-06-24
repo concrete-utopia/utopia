@@ -1,3 +1,4 @@
+/* eslint-disable no-unused-expressions */
 /* eslint-disable jest/expect-expect */
 import { act, RenderResult } from '@testing-library/react'
 import sinon, { SinonFakeTimers } from 'sinon'
@@ -16,7 +17,7 @@ const defaultBBBProperties = {
   height: 101,
 }
 
-describe('Keyboard Absolute Strategies E2E', () => {
+function configureSetupTeardown(): { clock: { current: SinonFakeTimers } } {
   let originalCanvasStrategiesFSValue: boolean
   before(() => {
     viewport.set(2200, 1000)
@@ -27,18 +28,23 @@ describe('Keyboard Absolute Strategies E2E', () => {
     setFeatureEnabled('Canvas Strategies', originalCanvasStrategiesFSValue)
   })
 
-  let clock: SinonFakeTimers
+  let clock: { current: SinonFakeTimers } = { current: null as any } // it will be non-null thanks to beforeEach
   beforeEach(function () {
     setFeatureEnabled('Canvas Strategies', true)
-    clock = sinon.useFakeTimers({
+    clock.current = sinon.useFakeTimers({
       // the timers will tick so the editor is not totally broken, but we can fast-forward time at will
       // WARNING: the Sinon fake timers will advance in 20ms increments
       shouldAdvanceTime: true,
     })
   })
   afterEach(function () {
-    clock.restore()
+    clock.current?.restore()
   })
+  return { clock: clock }
+}
+
+describe('Keyboard Absolute Strategies E2E', () => {
+  const { clock } = configureSetupTeardown()
 
   it('Pressing Shift + ArrowRight 3 times', async () => {
     const { expectElementLeftOnScreen, expectElementPropertiesInPrintedCode } = await setupTest(
@@ -49,7 +55,7 @@ describe('Keyboard Absolute Strategies E2E', () => {
     expectElementLeftOnScreen(30)
 
     // tick the clock so useClearKeyboardInteraction is fired
-    clock.tick(KeyboardInteractionTimeout)
+    clock.current.tick(KeyboardInteractionTimeout)
     await expectElementPropertiesInPrintedCode({
       left: 30,
       top: 100,
@@ -70,7 +76,7 @@ describe('Keyboard Absolute Strategies E2E', () => {
     expectElementLeftOnScreen(33)
 
     // tick the clock so useClearKeyboardInteraction is fired
-    clock.tick(KeyboardInteractionTimeout)
+    clock.current.tick(KeyboardInteractionTimeout)
     await expectElementPropertiesInPrintedCode({
       left: 33,
       top: 100,
@@ -91,7 +97,7 @@ describe('Keyboard Absolute Strategies E2E', () => {
     expectElementLeftOnScreen(27)
 
     // tick the clock so useClearKeyboardInteraction is fired
-    clock.tick(KeyboardInteractionTimeout)
+    clock.current.tick(KeyboardInteractionTimeout)
     await expectElementPropertiesInPrintedCode({
       left: 27,
       top: 100,
@@ -112,7 +118,7 @@ describe('Keyboard Absolute Strategies E2E', () => {
     expectElementWidthOnScreen(2)
 
     // tick the clock so useClearKeyboardInteraction is fired
-    clock.tick(KeyboardInteractionTimeout)
+    clock.current.tick(KeyboardInteractionTimeout)
     await expectElementPropertiesInPrintedCode({
       left: 0,
       top: 100,
@@ -132,7 +138,7 @@ describe('Keyboard Absolute Strategies E2E', () => {
     expectElementLeftOnScreen(30)
 
     // tick the clock so useClearKeyboardInteraction is fired
-    clock.tick(KeyboardInteractionTimeout)
+    clock.current.tick(KeyboardInteractionTimeout)
     await expectElementPropertiesInPrintedCode({
       top: 100,
       width: 122,
@@ -151,7 +157,7 @@ describe('Keyboard Absolute Strategies E2E', () => {
     expectElementLeftOnScreen(30)
 
     // tick the clock so useClearKeyboardInteraction is fired
-    clock.tick(KeyboardInteractionTimeout)
+    clock.current.tick(KeyboardInteractionTimeout)
 
     await expectElementPropertiesInPrintedCode({
       left: 30,
@@ -203,7 +209,7 @@ describe('Keyboard Absolute Strategies E2E', () => {
     // Setup: first we move the element 30 pixels to the right
     pressArrowRightHoldingShift3x()
     expectElementLeftOnScreen(30)
-    clock.tick(KeyboardInteractionTimeout)
+    clock.current.tick(KeyboardInteractionTimeout)
     await expectElementPropertiesInPrintedCode({
       left: 30,
       top: 100,
@@ -216,7 +222,7 @@ describe('Keyboard Absolute Strategies E2E', () => {
     expectElementLeftOnScreen(60)
 
     // tick the clock so useClearKeyboardInteraction is fired
-    clock.tick(KeyboardInteractionTimeout)
+    clock.current.tick(KeyboardInteractionTimeout)
     await expectElementPropertiesInPrintedCode({
       left: 60,
       top: 100,
@@ -252,7 +258,7 @@ describe('Keyboard Absolute Strategies E2E', () => {
     // Prepare the test, let's move the element by 30 and wait so we have a proper undo history entry
     pressArrowRightHoldingShift3x()
     expectElementLeftOnScreen(30)
-    clock.tick(KeyboardInteractionTimeout)
+    clock.current.tick(KeyboardInteractionTimeout)
     await expectElementPropertiesInPrintedCode({
       left: 30,
       top: 100,
