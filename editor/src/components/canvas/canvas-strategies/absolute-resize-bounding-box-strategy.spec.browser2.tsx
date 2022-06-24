@@ -18,7 +18,7 @@ import {
   WindowPoint,
   zeroCanvasPoint,
 } from '../../../core/shared/math-utils'
-import { emptyModifiers } from '../../../utils/modifiers'
+import { emptyModifiers, Modifiers } from '../../../utils/modifiers'
 import { ElementPath } from '../../../core/shared/project-file-types'
 import { EdgePosition } from '../canvas-types'
 import { wait } from '../../../utils/utils.test-utils'
@@ -27,9 +27,7 @@ function selectAndResizeElement(
   renderResult: EditorRenderResult,
   dragDelta: WindowPoint,
   edgePosition: EdgePosition,
-  cmdPressed: boolean,
-  altPressed: boolean,
-  shiftPressed: boolean,
+  modifiers: Modifiers,
 ) {
   const canvasControl = renderResult.renderedDOM.getByTestId(
     `absolute-resize-${edgePosition.x}-${edgePosition.y}`,
@@ -48,8 +46,8 @@ function selectAndResizeElement(
       bubbles: true,
       cancelable: true,
       metaKey: true,
-      altKey: altPressed,
-      shiftKey: shiftPressed,
+      altKey: modifiers.alt,
+      shiftKey: modifiers.shift,
       clientX: startPoint.x,
       clientY: startPoint.y,
       buttons: 1,
@@ -61,9 +59,9 @@ function selectAndResizeElement(
     new MouseEvent('mousemove', {
       bubbles: true,
       cancelable: true,
-      metaKey: cmdPressed,
-      altKey: altPressed,
-      shiftKey: shiftPressed,
+      metaKey: modifiers.cmd,
+      altKey: modifiers.alt,
+      shiftKey: modifiers.shift,
       clientX: endPoint.x,
       clientY: endPoint.y,
       buttons: 1,
@@ -75,9 +73,9 @@ function selectAndResizeElement(
     new MouseEvent('mouseup', {
       bubbles: true,
       cancelable: true,
-      metaKey: cmdPressed,
-      altKey: altPressed,
-      shiftKey: shiftPressed,
+      metaKey: modifiers.cmd,
+      altKey: modifiers.alt,
+      shiftKey: modifiers.shift,
       clientX: endPoint.x,
       clientY: endPoint.y,
     }),
@@ -135,7 +133,7 @@ describe('Absolute Resize Strategy', () => {
     const dragDelta = windowPoint({ x: 40, y: -25 })
 
     await renderResult.dispatch([selectComponents([target], false)], true)
-    act(() => selectAndResizeElement(renderResult, dragDelta, edgePosition, false, false, false))
+    act(() => selectAndResizeElement(renderResult, dragDelta, edgePosition, emptyModifiers))
 
     await renderResult.getDispatchFollowUpActionsFinished()
     expect(getPrintedUiJsCode(renderResult.getEditorState())).toEqual(
@@ -173,7 +171,7 @@ describe('Absolute Resize Strategy', () => {
     const dragDelta = windowPoint({ x: 29, y: -23 })
 
     await renderResult.dispatch([selectComponents([target], false)], true)
-    act(() => selectAndResizeElement(renderResult, dragDelta, edgePosition, false, false, false))
+    act(() => selectAndResizeElement(renderResult, dragDelta, edgePosition, emptyModifiers))
     await renderResult.getDispatchFollowUpActionsFinished()
 
     expect(getPrintedUiJsCode(renderResult.getEditorState())).toEqual(

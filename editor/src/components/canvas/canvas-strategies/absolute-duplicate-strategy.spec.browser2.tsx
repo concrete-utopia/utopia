@@ -8,14 +8,13 @@ import { act, fireEvent } from '@testing-library/react'
 import { CanvasControlsContainerID } from '../controls/new-canvas-controls'
 import { FOR_TESTS_setNextGeneratedUid } from '../../../core/model/element-template-utils'
 import { offsetPoint, windowPoint, WindowPoint } from '../../../core/shared/math-utils'
+import { altModifier, Modifiers } from '../../../utils/modifiers'
 
 function dragElement(
   renderResult: EditorRenderResult,
   targetTestId: string,
   dragDelta: WindowPoint,
-  cmdPressed: boolean,
-  altPressed: boolean,
-  shiftPressed: boolean,
+  modifiers: Modifiers,
 ) {
   const targetElement = renderResult.renderedDOM.getByTestId(targetTestId)
   const targetElementBounds = targetElement.getBoundingClientRect()
@@ -29,8 +28,8 @@ function dragElement(
       bubbles: true,
       cancelable: true,
       metaKey: true,
-      altKey: altPressed,
-      shiftKey: shiftPressed,
+      altKey: modifiers.alt,
+      shiftKey: modifiers.shift,
       clientX: startPoint.x,
       clientY: startPoint.y,
       buttons: 1,
@@ -42,9 +41,9 @@ function dragElement(
     new MouseEvent('mousemove', {
       bubbles: true,
       cancelable: true,
-      metaKey: cmdPressed,
-      altKey: altPressed,
-      shiftKey: shiftPressed,
+      metaKey: modifiers.cmd,
+      altKey: modifiers.alt,
+      shiftKey: modifiers.shift,
       clientX: endPoint.x,
       clientY: endPoint.y,
       buttons: 1,
@@ -56,9 +55,9 @@ function dragElement(
     new MouseEvent('mouseup', {
       bubbles: true,
       cancelable: true,
-      metaKey: cmdPressed,
-      altKey: altPressed,
-      shiftKey: shiftPressed,
+      metaKey: modifiers.cmd,
+      altKey: modifiers.alt,
+      shiftKey: modifiers.shift,
       clientX: endPoint.x,
       clientY: endPoint.y,
     }),
@@ -82,7 +81,7 @@ describe('Absolute Duplicate Strategy', () => {
 
     FOR_TESTS_setNextGeneratedUid('hello')
     const dragDelta = windowPoint({ x: 40, y: -25 })
-    act(() => dragElement(renderResult, 'bbb', dragDelta, false, true, false))
+    act(() => dragElement(renderResult, 'bbb', dragDelta, altModifier))
 
     await renderResult.getDispatchFollowUpActionsFinished()
 
