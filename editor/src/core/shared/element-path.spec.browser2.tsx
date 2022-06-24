@@ -1,27 +1,34 @@
-import sinon, { SinonFakeTimers } from 'sinon'
 import * as EP from './element-path'
 import {
   makeTestProjectCodeWithSnippet,
   renderTestEditorWithCode,
   TestScenePath,
 } from '../../components/canvas/ui-jsx.test-utils'
-import { CullElementPathCacheTimeout } from '../../components/editor/actions/actions'
 
 describe('ElementPath Caching', () => {
+  let originalRequestIdleCallback: (
+    callback: IdleRequestCallback,
+    options?: IdleRequestOptions,
+  ) => number
+  let fakeIdle: () => void = () => {
+    throw new Error(`fakeIdle called too early`)
+  }
+
   before(() => {
     viewport.set(2200, 1000)
+    originalRequestIdleCallback = window.requestIdleCallback
+
+    window.requestIdleCallback = (
+      callback: IdleRequestCallback,
+      options?: IdleRequestOptions,
+    ): number => {
+      fakeIdle = () => callback({} as IdleDeadline)
+      return 1
+    }
   })
 
-  let clock: SinonFakeTimers
-  beforeEach(function () {
-    clock = sinon.useFakeTimers({
-      // the timers will tick so the editor is not totally broken, but we can fast-forward time at will
-      // WARNING: the Sinon fake timers will advance in 20ms increments
-      shouldAdvanceTime: true,
-    })
-  })
-  afterEach(function () {
-    clock.restore()
+  after(() => {
+    window.requestIdleCallback = originalRequestIdleCallback
   })
 
   it('Culls the cached element paths when idle', async () => {
@@ -43,8 +50,7 @@ describe('ElementPath Caching', () => {
     expect(EP.appendNewElementPath(TestScenePath, ['aaa', 'bbb'])).toBe(realPath)
     expect(EP.appendNewElementPath(TestScenePath, ['aaa', 'bbb', 'ccc'])).toBe(fakePath)
 
-    // Let's do the time warp
-    clock.tick(CullElementPathCacheTimeout)
+    fakeIdle()
 
     // Now ensure only the fake path has been culled
     expect(EP.appendNewElementPath(TestScenePath, ['aaa', 'bbb'])).toBe(realPath)

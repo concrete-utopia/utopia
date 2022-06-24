@@ -1458,8 +1458,6 @@ function toastOnGeneratedElementsTargeted(
 
 let checkpointTimeoutId: number | undefined = undefined
 let canvasScrollAnimationTimer: number | undefined = undefined
-let cullElementPathCacheTimeoutId: number | undefined = undefined
-export const CullElementPathCacheTimeout = 1000
 
 function updateSelectedComponentsFromEditorPosition(
   derived: DerivedState,
@@ -3720,12 +3718,11 @@ export const UPDATE_FNS = {
     editor: EditorModel,
     dispatch: EditorDispatch,
   ): EditorModel => {
-    // If there haven't been any worker updates for a long enough time period, we can assume the editor is
-    // probably idle, and so should use this opportunity to remove dead paths from the element paths cache
-    clearTimeout(cullElementPathCacheTimeoutId)
-    cullElementPathCacheTimeoutId = window.setTimeout(() => {
+    // Updates from the worker indicate that paths might have changed, so schedule a
+    // cache cull for the next time the browser is idle
+    window.requestIdleCallback((_deadline) => {
       dispatch([cullElementPathCache()], 'everyone')
-    }, CullElementPathCacheTimeout)
+    })
 
     if (editor.parseOrPrintInFlight) {
       let workingProjectContents: ProjectContentTreeRoot = editor.projectContents
