@@ -20,7 +20,7 @@ import {
 } from '../../../core/shared/math-utils'
 import { emptyModifiers, Modifiers } from '../../../utils/modifiers'
 import { ElementPath } from '../../../core/shared/project-file-types'
-import { EdgePosition } from '../canvas-types'
+import { BottomRightEdgePosition, EdgePosition, TopLeftEdgePosition } from '../canvas-types'
 import { wait } from '../../../utils/utils.test-utils'
 
 function selectAndResizeElement(
@@ -128,12 +128,13 @@ describe('Absolute Resize Strategy', () => {
       'await-first-dom-report',
     )
 
-    const edgePosition = { x: 1, y: 1 } as EdgePosition
     const target = EP.appendNewElementPath(TestScenePath, ['aaa', 'bbb'])
     const dragDelta = windowPoint({ x: 40, y: -25 })
 
     await renderResult.dispatch([selectComponents([target], false)], true)
-    act(() => selectAndResizeElement(renderResult, dragDelta, edgePosition, emptyModifiers))
+    act(() =>
+      selectAndResizeElement(renderResult, dragDelta, BottomRightEdgePosition, emptyModifiers),
+    )
 
     await renderResult.getDispatchFollowUpActionsFinished()
     expect(getPrintedUiJsCode(renderResult.getEditorState())).toEqual(
@@ -167,11 +168,10 @@ describe('Absolute Resize Strategy', () => {
     )
 
     const target = EP.appendNewElementPath(TestScenePath, ['aaa', 'bbb'])
-    const edgePosition = { x: 0, y: 0 } as EdgePosition
     const dragDelta = windowPoint({ x: 29, y: -23 })
 
     await renderResult.dispatch([selectComponents([target], false)], true)
-    act(() => selectAndResizeElement(renderResult, dragDelta, edgePosition, emptyModifiers))
+    act(() => selectAndResizeElement(renderResult, dragDelta, TopLeftEdgePosition, emptyModifiers))
     await renderResult.getDispatchFollowUpActionsFinished()
 
     expect(getPrintedUiJsCode(renderResult.getEditorState())).toEqual(

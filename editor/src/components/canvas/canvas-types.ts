@@ -751,3 +751,12 @@ export type EnabledDirection = EdgePosition
 export const DirectionAll: EnabledDirection = { x: 1, y: 1 }
 export const DirectionHorizontal: EnabledDirection = { x: 1, y: 0 }
 export const DirectionVertical: EnabledDirection = { x: 0, y: 1 }
+
+export const TopEdgePosition: EdgePosition = { x: 0.5, y: 0 }
+export const LeftEdgePosition: EdgePosition = { x: 0, y: 0.5 }
+export const BottomEdgePosition: EdgePosition = { x: 0.5, y: 1 }
+export const RightEdgePosition: EdgePosition = { x: 1, y: 0.5 }
+export const TopLeftEdgePosition: EdgePosition = { x: 0, y: 0 }
+export const BottomLeftEdgePosition: EdgePosition = { x: 0, y: 1 }
+export const BottomRightEdgePosition: EdgePosition = { x: 1, y: 1 }
+export const TopRightEdgePosition: EdgePosition = { x: 1, y: 0 }
