@@ -1,14 +1,23 @@
 import { MetadataUtils } from '../../../core/model/element-metadata-utils'
 import { Keyboard, KeyCharacter } from '../../../utils/keyboard'
-import { CanvasStrategy, emptyStrategyApplicationResult } from './canvas-strategy-types'
 import {
+  CanvasStrategy,
+  emptyStrategyApplicationResult,
+  InteractionCanvasState,
+} from './canvas-strategy-types'
+import {
+  CanvasRectangle,
+  canvasRectangle,
   CanvasVector,
   offsetPoint,
+  offsetRect,
   scaleVector,
   zeroCanvasPoint,
+  zeroRectangle,
 } from '../../../core/shared/math-utils'
 import {
   getAbsoluteMoveCommandsForSelectedElement,
+  getMultiselectBounds,
   snapDrag,
 } from './shared-absolute-move-strategy-helpers'
 import { AdjustCssLengthProperty } from '../commands/adjust-css-length-command'
@@ -19,8 +28,18 @@ import { CanvasCommand } from '../commands/commands'
 import {
   accumulatePresses,
   getDragDeltaFromKey,
+  getKeyboardStrategyGuidelines,
   getLastKeyPressState,
 } from './shared-keyboard-strategy-helpers'
+import { mapDropNulls } from '../../../core/shared/array-utils'
+import { defaultIfNull } from '../../../core/shared/optional-utils'
+import {
+  collectParentAndSiblingGuidelines,
+  oneGuidelinePerDimension,
+} from '../controls/guideline-helpers'
+import { GuidelineWithSnappingVector, Guidelines } from '../guideline'
+import Utils from '../../../utils/utils'
+import { StrategyState, InteractionSession } from './interaction-state'
 
 export const keyboardAbsoluteMoveStrategy: CanvasStrategy = {
   id: 'KEYBOARD_ABSOLUTE_MOVE',
@@ -84,20 +103,25 @@ export const keyboardAbsoluteMoveStrategy: CanvasStrategy = {
             sessionState,
           ),
         )
-        const { guidelinesWithSnappingVector } = snapDrag(
-          drag,
-          null,
-          interactionState.metadata,
+        const multiselectBounds = getMultiselectBounds(
+          sessionState.startingMetadata,
           canvasState.selectedElements,
-          canvasState.scale,
         )
-        const justSnappedGuidelines = guidelinesWithSnappingVector.filter((guideline) => {
-          return guideline.activateSnap
-        })
+        const draggedFrame = offsetRect(
+          defaultIfNull(canvasRectangle(zeroRectangle), multiselectBounds),
+          drag,
+        )
+
+        const guidelines = getKeyboardStrategyGuidelines(
+          sessionState,
+          canvasState,
+          interactionState,
+          draggedFrame,
+        )
 
         commands.push(...moveCommands)
         commands.push(updateHighlightedViews('transient', []))
-        commands.push(setSnappingGuidelines('transient', justSnappedGuidelines))
+        commands.push(setSnappingGuidelines('transient', guidelines))
         commands.push(setElementsToRerenderCommand(canvasState.selectedElements))
       }
       return {
