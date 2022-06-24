@@ -22,7 +22,6 @@ export function toVarSafeComponentId(path: ElementPath): string {
 
 interface ElementPathCache {
   cached: ElementPath | null
-  cachedToString: string | null
   childCaches: { [key: string]: ElementPathCache }
   rootElementCaches: { [key: string]: ElementPathCache }
 }
@@ -30,12 +29,12 @@ interface ElementPathCache {
 function emptyElementPathCache(): ElementPathCache {
   return {
     cached: null,
-    cachedToString: null,
     childCaches: {},
     rootElementCaches: {},
   }
 }
 
+let pathToStringCache: WeakMap<ElementPath, string> = new WeakMap()
 let dynamicToStaticPathCache: Map<ElementPath, StaticElementPath> = new Map()
 let dynamicToStaticLastElementPathPartCache: Map<ElementPath, ElementPath> = new Map()
 let dynamicElementPathToStaticElementPathCache: Map<ElementPathPart, StaticElementPathPart> =
@@ -163,12 +162,14 @@ export function elementPathPartToString(path: ElementPathPart): string {
 }
 
 export function toString(target: ElementPath): string {
-  const pathCache = getElementPathCache(target.parts)
-  if (pathCache.cachedToString == null) {
-    pathCache.cachedToString = target.parts.map(elementPathPartToString).join(SceneSeparator)
+  const cachedToString = pathToStringCache.get(target)
+  if (cachedToString == null) {
+    const stringifiedPath = target.parts.map(elementPathPartToString).join(SceneSeparator)
+    pathToStringCache.set(target, stringifiedPath)
+    return stringifiedPath
+  } else {
+    return cachedToString
   }
-
-  return pathCache.cachedToString
 }
 
 export const emptyElementPathPart: StaticElementPathPart = staticElementPath([])
