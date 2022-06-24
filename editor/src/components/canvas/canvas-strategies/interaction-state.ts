@@ -315,7 +315,7 @@ export function interactionSessionHardReset(
   }
 }
 
-export const KeyboardInteractionTimeout = 3000
+export const KeyboardInteractionTimeout = 400
 
 export function hasDragModifiersChanged(
   prevInteractionData: InputData | null,
