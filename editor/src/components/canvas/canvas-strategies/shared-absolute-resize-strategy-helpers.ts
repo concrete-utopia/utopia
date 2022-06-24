@@ -14,7 +14,6 @@ import {
   distance,
   offsetPoint,
   pointDifference,
-  rectangleDifference,
   rectFromTwoPoints,
   zeroCanvasPoint,
 } from '../../../core/shared/math-utils'
