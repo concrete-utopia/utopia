@@ -18,11 +18,11 @@ import {
 import * as timeago from 'timeago.js'
 import { Card, cardLayout, cardLayoutStyle } from './cards'
 
-interface navItemProps {
+interface NavItemProps {
   selected: boolean
 }
 
-const FlexNavItem = styled('div')<navItemProps>(
+const FlexNavItem = styled('div')<NavItemProps>(
   {
     display: 'flex',
     alignItems: 'center',
@@ -36,12 +36,12 @@ const FlexNavItem = styled('div')<navItemProps>(
   }),
 )
 
-interface sortButtonProps {
+interface SortButtonProps {
   selected: boolean
   sortOrder: number
 }
 
-const SortButton = styled('div')<sortButtonProps>(
+const SortButton = styled('div')<SortButtonProps>(
   {
     color: colors.mainBlue,
     textDecoration: 'none',
