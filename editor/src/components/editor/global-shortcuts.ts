@@ -711,12 +711,6 @@ export function handleKeyDown(
           : []
       },
       [UNDO_CHANGES_SHORTCUT]: () => {
-        if (editor.canvas.interactionSession?.interactionData.type === 'KEYBOARD') {
-          // if we are in a keyboard interaction session, we want cmd + z to finish the current interaction session, and then immediately undo it
-          // this is desired because the user might want to redo the changes
-          // Warning: Side Effect!
-          dispatch([CanvasActions.clearInteractionSession(true)])
-        }
         return [EditorActions.undo()]
       },
       [REDO_CHANGES_SHORTCUT]: () => {
@@ -806,7 +800,15 @@ export function handleKeyDown(
   // Build the actions to dispatch.
   let actions: Array<EditorAction> = [updateKeysAction]
   if (editorTargeted) {
-    actions.push(...getShortcutActions())
+    const shortCutActions = getShortcutActions()
+    if (shortCutActions.length > 0) {
+      if (editor.canvas.interactionSession?.interactionData.type === 'KEYBOARD') {
+        // if we are in a keyboard interaction session, we want keyboard shortcuts to finish the current interaction session,
+        // so the effect of the shortcut is not combined into the undo of the interaction
+        dispatch([CanvasActions.clearInteractionSession(true)])
+      }
+      actions.push(...shortCutActions)
+    }
   }
 
   dispatch(actions, 'everyone')
