@@ -387,10 +387,10 @@ export class ProjectsPage extends React.Component<EmptyProps, ProjectsState> {
       } else if (dateSortOrder === 0) {
         this.setState({ filteredProjects: projectsSortedByDate.reverse() })
         this.setState({ dateSortOrder: (dateSortOrder + 1) % 3 })
-      } else if (dateSortOrder === 1 ) {
+      } else if (dateSortOrder === 1) {
         this.setState({ filteredProjects: projectsSortedByDate })
-        this.setState({ dateSortOrder: 0})
-      } 
+        this.setState({ dateSortOrder: 0 })
+      }
       this.setState({ titleSortOrder: 2 })
     }
 
@@ -404,9 +404,9 @@ export class ProjectsPage extends React.Component<EmptyProps, ProjectsState> {
         this.setState({ titleSortOrder: (titleSortOrder + 1) % 3 })
       } else if (titleSortOrder === 1) {
         this.setState({ filteredProjects: projectsSortedByTitle })
-        this.setState({ titleSortOrder: 0})
+        this.setState({ titleSortOrder: 0 })
       }
-      
+
       this.setState({ dateSortOrder: 2 })
     }
 
