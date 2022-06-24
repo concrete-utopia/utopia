@@ -20,7 +20,12 @@ import {
 } from '../../../core/shared/math-utils'
 import { emptyModifiers, Modifiers } from '../../../utils/modifiers'
 import { ElementPath } from '../../../core/shared/project-file-types'
-import { BottomRightEdgePosition, EdgePosition, TopLeftEdgePosition } from '../canvas-types'
+import {
+  EdgePositionBottomRight,
+  EdgePosition,
+  EdgePositionLeft,
+  EdgePositionTopLeft,
+} from '../canvas-types'
 import { wait } from '../../../utils/utils.test-utils'
 
 function selectAndResizeElement(
@@ -133,7 +138,7 @@ describe('Absolute Resize Strategy', () => {
 
     await renderResult.dispatch([selectComponents([target], false)], true)
     act(() =>
-      selectAndResizeElement(renderResult, dragDelta, BottomRightEdgePosition, emptyModifiers),
+      selectAndResizeElement(renderResult, dragDelta, EdgePositionBottomRight, emptyModifiers),
     )
 
     await renderResult.getDispatchFollowUpActionsFinished()
@@ -171,7 +176,7 @@ describe('Absolute Resize Strategy', () => {
     const dragDelta = windowPoint({ x: 29, y: -23 })
 
     await renderResult.dispatch([selectComponents([target], false)], true)
-    act(() => selectAndResizeElement(renderResult, dragDelta, TopLeftEdgePosition, emptyModifiers))
+    act(() => selectAndResizeElement(renderResult, dragDelta, EdgePositionTopLeft, emptyModifiers))
     await renderResult.getDispatchFollowUpActionsFinished()
 
     expect(getPrintedUiJsCode(renderResult.getEditorState())).toEqual(
@@ -215,7 +220,7 @@ describe('Absolute Resize Strategy Canvas Controls', () => {
     expect(parentBoundsControlBeforeDrag).toBeNull()
 
     const target = EP.appendNewElementPath(TestScenePath, ['aaa', 'bbb'])
-    await startDragUsingActions(renderResult, target, { x: 0, y: 0.5 }, zeroCanvasPoint)
+    await startDragUsingActions(renderResult, target, EdgePositionLeft, zeroCanvasPoint)
 
     const parentOutlineControl = renderResult.renderedDOM.getByTestId('parent-outlines-control')
     expect(parentOutlineControl).toBeDefined()
@@ -243,7 +248,7 @@ describe('Absolute Resize Strategy Canvas Controls', () => {
     const target = EP.appendNewElementPath(TestScenePath, ['aaa', 'bbb'])
     const dragDelta = canvasPoint({ x: 29, y: -23 }) // 'bbb' will snap to bottom right corner of 'ccc'
 
-    await startDragUsingActions(renderResult, target, { x: 0, y: 0 }, dragDelta)
+    await startDragUsingActions(renderResult, target, EdgePositionTopLeft, dragDelta)
 
     expect(renderResult.renderedDOM.getByTestId('guideline-0').style.display).toEqual('block')
     expect(renderResult.renderedDOM.getByTestId('guideline-1').style.display).toEqual('block')
