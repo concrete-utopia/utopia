@@ -499,7 +499,6 @@ import {
   setScrollAnimation,
   updatePackageJson,
   removeFromNodeModulesContents,
-  cullElementPathCache,
 } from './action-creators'
 import { getAllTargetsAtPoint } from '../../canvas/dom-lookup'
 import {
@@ -3713,17 +3712,7 @@ export const UPDATE_FNS = {
       },
     }
   },
-  UPDATE_FROM_WORKER: (
-    action: UpdateFromWorker,
-    editor: EditorModel,
-    dispatch: EditorDispatch,
-  ): EditorModel => {
-    // Updates from the worker indicate that paths might have changed, so schedule a
-    // cache cull for the next time the browser is idle
-    window.requestIdleCallback((_deadline) => {
-      dispatch([cullElementPathCache()], 'everyone')
-    })
-
+  UPDATE_FROM_WORKER: (action: UpdateFromWorker, editor: EditorModel): EditorModel => {
     if (editor.parseOrPrintInFlight) {
       let workingProjectContents: ProjectContentTreeRoot = editor.projectContents
       let anyParsedUpdates: boolean = false

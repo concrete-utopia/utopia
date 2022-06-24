@@ -208,7 +208,6 @@ import type {
   ForceParseFile,
   RemoveFromNodeModulesContents,
   RunEscapeHatch,
-  CullElementPathCache,
 } from '../action-types'
 import {
   EditorModes,
@@ -1486,11 +1485,5 @@ export function runEscapeHatch(targets: Array<ElementPath>): RunEscapeHatch {
   return {
     action: 'RUN_ESCAPE_HATCH',
     targets: targets,
-  }
-}
-
-export function cullElementPathCache(): CullElementPathCache {
-  return {
-    action: 'CULL_EDITOR_PATH_CACHE',
   }
 }

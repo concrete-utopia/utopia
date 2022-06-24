@@ -112,7 +112,6 @@ export function isTransientAction(action: EditorAction): boolean {
     case 'UPDATE_DRAG_INTERACTION_DATA':
     case 'SET_USERS_PREFERRED_STRATEGY':
     case 'SET_ELEMENTS_TO_RERENDER':
-    case 'CULL_EDITOR_PATH_CACHE':
       return true
 
     case 'NEW':

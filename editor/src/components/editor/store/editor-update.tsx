@@ -194,7 +194,7 @@ export function runSimpleLocalEditorAction(
     case 'UPDATE_FILE':
       return UPDATE_FNS.UPDATE_FILE(action, state, dispatch, builtInDependencies)
     case 'UPDATE_FROM_WORKER':
-      return UPDATE_FNS.UPDATE_FROM_WORKER(action, state, dispatch)
+      return UPDATE_FNS.UPDATE_FROM_WORKER(action, state)
     case 'UPDATE_FROM_CODE_EDITOR':
       return UPDATE_FNS.UPDATE_FROM_CODE_EDITOR(action, state, dispatch, builtInDependencies)
     case 'CLEAR_PARSE_OR_PRINT_IN_FLIGHT':
@@ -342,11 +342,6 @@ export function runSimpleLocalEditorAction(
       return UPDATE_FNS.FORCE_PARSE_FILE(action, state)
     case 'RUN_ESCAPE_HATCH':
       return UPDATE_FNS.RUN_ESCAPE_HATCH(action, state)
-    case 'CULL_EDITOR_PATH_CACHE':
-      // side effect ☢️
-      const allExistingUids = getAllUniqueUids(state.projectContents, action.action)
-      removePathsWithDeadUIDs(new Set(allExistingUids))
-      return state
     default:
       return state
   }

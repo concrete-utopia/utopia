@@ -20,7 +20,7 @@ describe('ElementPath Caching', () => {
 
     window.requestIdleCallback = (
       callback: IdleRequestCallback,
-      options?: IdleRequestOptions,
+      _options?: IdleRequestOptions,
     ): number => {
       fakeIdle = () => callback({} as IdleDeadline)
       return 1
