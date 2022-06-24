@@ -491,6 +491,10 @@ export function fullElementPathsEqual(l: ElementPathPart[], r: ElementPathPart[]
   return l === r || arrayEquals(l, r, elementPathPartsEqual)
 }
 
+function stringifiedPathsEqual(l: ElementPath, r: ElementPath): boolean {
+  return toString(l) === toString(r)
+}
+
 export function pathsEqual(l: ElementPath | null, r: ElementPath | null): boolean {
   if (l == null) {
     return r == null
@@ -499,7 +503,7 @@ export function pathsEqual(l: ElementPath | null, r: ElementPath | null): boolea
   } else if (l === r) {
     return true
   } else {
-    return fullElementPathsEqual(l.parts, r.parts)
+    return stringifiedPathsEqual(l, r)
   }
 }
 
