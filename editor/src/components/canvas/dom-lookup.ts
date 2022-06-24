@@ -123,17 +123,6 @@ export function getAllTargetsAtPoint(
   if (point == null) {
     return []
   }
-  const pointOnCanvas = windowToCanvasCoordinates(canvasScale, canvasOffset, point)
-  const getElementsUnderPointFromAABB = Canvas.getAllTargetsAtPoint(
-    componentMetadata,
-    selectedViews,
-    hiddenInstances,
-    pointOnCanvas.canvasPositionRaw,
-    [TargetSearchType.All],
-    true,
-    'loose',
-    allElementProps,
-  )
   const elementsUnderPoint = document.elementsFromPoint(point.x, point.y)
   const validPathsSet =
     validElementPathsForLookup == 'no-filter'
@@ -152,15 +141,8 @@ export function getAllTargetsAtPoint(
     }),
   )
 
-  return getElementsUnderPointFromAABB
-    .filter((foundElement) => {
-      if (!foundElement.canBeFilteredOut) {
-        return true
-      } else {
-        return elementsFromDOM.some((e) => EP.pathsEqual(e, foundElement.elementPath))
-      }
-    })
-    .map((e) => e.elementPath)
+  // TODO FIXME we should take the zero-sized elements from Canvas.getAllTargetsAtPoint, and insert them (in a correct-enough order) here. See PR for context https://github.com/concrete-utopia/utopia/pull/2345
+  return elementsFromDOM
 }
 
 export function windowToCanvasCoordinates(

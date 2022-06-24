@@ -73,7 +73,13 @@ export const PropertyTargetSelector = React.memo(
 
     // Update the current options to be the ones listed against this control
     React.useEffect(() => {
-      dispatch([setResizeOptionsTargetOptions(props.options, defaultSelectedOptionIndex)], 'canvas')
+      setTimeout(() => {
+        // wrapping in a setTimeout so we don't dispatch from inside React lifecycle
+        dispatch(
+          [setResizeOptionsTargetOptions(props.options, defaultSelectedOptionIndex)],
+          'canvas',
+        )
+      }, 0)
       // important! the array is empty because it should only run once
       // eslint-disable-next-line react-hooks/exhaustive-deps
     }, [])

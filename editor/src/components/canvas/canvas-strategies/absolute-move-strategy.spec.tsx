@@ -193,6 +193,38 @@ describe('Absolute Move Strategy', () => {
     )
   })
 
+  it('works with a T pinned absolute element, assumes L to 0', async () => {
+    const targetElement = elementPath([
+      ['scene-aaa', 'app-entity'],
+      ['aaa', 'bbb'],
+    ])
+
+    const initialEditor: EditorState = prepareEditorState(
+      `
+    <View style={{ ...(props.style || {}) }} data-uid='aaa'>
+      <View
+        style={{ backgroundColor: '#0091FFAA', position: 'absolute', top: 50, width: 250, height: 300 }}
+        data-uid='bbb'
+      />
+    </View>
+    `,
+      [targetElement],
+    )
+
+    const finalEditor = dragBy15Pixels(initialEditor)
+
+    expect(testPrintCodeFromEditorState(finalEditor)).toEqual(
+      makeTestProjectCodeWithSnippet(
+        `<View style={{ ...(props.style || {}) }} data-uid='aaa'>
+        <View
+          style={{ backgroundColor: '#0091FFAA', position: 'absolute', top: 65, width: 250, height: 300, left: 15 }}
+          data-uid='bbb'
+        />
+      </View>`,
+      ),
+    )
+  })
+
   it('works with a TL pinned absolute element with px values', async () => {
     const targetElement = elementPath([
       ['scene-aaa', 'app-entity'],

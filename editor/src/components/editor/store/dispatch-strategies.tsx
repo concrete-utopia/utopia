@@ -7,9 +7,11 @@ import {
 import {
   createEmptyStrategyState,
   hasDragModifiersChanged,
+  InteractionSession,
   interactionSessionHardReset,
+  isKeyboardInteractionData,
+  KeyboardInteractionData,
   StrategyState,
-  strategySwitchInteractionSessionReset,
 } from '../../canvas/canvas-strategies/interaction-state'
 import { foldAndApplyCommands } from '../../canvas/commands/commands'
 import { strategySwitched } from '../../canvas/commands/strategy-switched-command'
@@ -28,6 +30,7 @@ import {
 import { isFeatureEnabled } from '../../../utils/feature-switches'
 import { PERFORMANCE_MARKS_ALLOWED } from '../../../common/env-vars'
 import { saveDOMReport } from '../actions/action-creators'
+import { last } from '../../../core/shared/array-utils'
 
 interface HandleStrategiesResult {
   unpatchedEditorState: EditorState
@@ -215,7 +218,8 @@ export function interactionUpdate(
 
     if (
       result.unpatchedEditor.canvas.interactionSession?.interactionData.type === 'KEYBOARD' &&
-      actionType === 'interaction-create-or-update'
+      actionType === 'interaction-create-or-update' &&
+      strategy?.strategy !== previousStrategy?.strategy
     ) {
       return handleAccumulatingKeypresses(
         newEditorState,
@@ -406,49 +410,67 @@ function handleAccumulatingKeypresses(
   const canvasState: InteractionCanvasState = pickCanvasStateFromEditorState(newEditorState)
   // If there is a current strategy, produce the commands from it.
   if (newEditorState.canvas.interactionSession != null) {
-    const strategyResult =
-      strategy != null
-        ? applyCanvasStrategy(
-            strategy.strategy,
-            canvasState,
-            newEditorState.canvas.interactionSession,
-            strategyState,
-          )
-        : {
-            commands: [],
-            customState: strategyState.customStrategyState,
-          }
-    const commandResult = foldAndApplyCommands(
-      newEditorState,
-      storedEditorState,
-      strategyState.accumulatedPatches,
-      strategyState.currentStrategyCommands,
-      strategyResult.commands,
-      'transient',
-    )
-    const newStrategyState: StrategyState = {
-      currentStrategy: strategy?.strategy.id ?? null,
-      currentStrategyFitness: strategy?.fitness ?? 0,
-      currentStrategyCommands: strategyResult.commands,
-      accumulatedPatches: commandResult.accumulatedPatches,
-      commandDescriptions: commandResult.commandDescriptions,
-      sortedApplicableStrategies: sortedApplicableStrategies,
-      startingMetadata: strategyState.startingMetadata,
-      customStrategyState: strategyResult.customState ?? strategyState.customStrategyState,
-      startingAllElementProps: strategyState.startingAllElementProps,
-    }
+    const interactionData = newEditorState.canvas.interactionSession.interactionData
+    if (isKeyboardInteractionData(interactionData)) {
+      const lastKeyState = last(interactionData.keyStates)
+      const updatedInteractionData: KeyboardInteractionData = {
+        ...interactionData,
+        keyStates: lastKeyState == null ? [] : [lastKeyState],
+      }
+      const updatedInteractionSession: InteractionSession = {
+        ...newEditorState.canvas.interactionSession,
+        interactionData: updatedInteractionData,
+      }
+      const updatedEditorState = {
+        ...newEditorState,
+        canvas: {
+          ...newEditorState.canvas,
+          interactionSession: updatedInteractionSession,
+        },
+      }
+      const strategyResult =
+        strategy != null
+          ? applyCanvasStrategy(
+              strategy.strategy,
+              canvasState,
+              updatedInteractionSession,
+              strategyState,
+            )
+          : {
+              commands: [],
+              customState: strategyState.customStrategyState,
+            }
+      const commandResult = foldAndApplyCommands(
+        updatedEditorState,
+        storedEditorState,
+        strategyState.accumulatedPatches,
+        strategyState.currentStrategyCommands,
+        strategyResult.commands,
+        'transient',
+      )
+      const newStrategyState: StrategyState = {
+        currentStrategy: strategy?.strategy.id ?? null,
+        currentStrategyFitness: strategy?.fitness ?? 0,
+        currentStrategyCommands: strategyResult.commands,
+        accumulatedPatches: commandResult.accumulatedPatches,
+        commandDescriptions: commandResult.commandDescriptions,
+        sortedApplicableStrategies: sortedApplicableStrategies,
+        startingMetadata: strategyState.startingMetadata,
+        customStrategyState: strategyResult.customState ?? strategyState.customStrategyState,
+        startingAllElementProps: strategyState.startingAllElementProps,
+      }
 
-    return {
-      unpatchedEditorState: newEditorState,
-      patchedEditorState: commandResult.editorState,
-      newStrategyState: newStrategyState,
+      return {
+        unpatchedEditorState: updatedEditorState,
+        patchedEditorState: commandResult.editorState,
+        newStrategyState: newStrategyState,
+      }
     }
-  } else {
-    return {
-      unpatchedEditorState: newEditorState,
-      patchedEditorState: newEditorState,
-      newStrategyState: strategyState,
-    }
+  }
+  return {
+    unpatchedEditorState: newEditorState,
+    patchedEditorState: newEditorState,
+    newStrategyState: strategyState,
   }
 }
 

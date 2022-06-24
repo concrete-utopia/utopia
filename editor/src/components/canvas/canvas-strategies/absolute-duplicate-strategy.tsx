@@ -24,6 +24,7 @@ export const absoluteDuplicateStrategy: CanvasStrategy = {
     if (
       canvasState.selectedElements.length > 0 &&
       interactionState != null &&
+      interactionState.interactionData.type === 'DRAG' &&
       interactionState.interactionData.modifiers.alt
     ) {
       const filteredSelectedElements = getDragTargets(canvasState.selectedElements)
@@ -61,9 +62,9 @@ export const absoluteDuplicateStrategy: CanvasStrategy = {
   fitness: (canvasState, interactionState) => {
     if (
       canvasState.selectedElements.length > 0 &&
-      interactionState.interactionData.modifiers.alt &&
       interactionState.interactionData.type === 'DRAG' &&
       interactionState.activeControl.type === 'BOUNDING_AREA' &&
+      interactionState.interactionData.modifiers.alt &&
       interactionState.interactionData.drag != null
     ) {
       return 2
