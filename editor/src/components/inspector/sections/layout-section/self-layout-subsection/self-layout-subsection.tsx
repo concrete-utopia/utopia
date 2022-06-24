@@ -31,7 +31,7 @@ import {
   useInitialSizeSectionState,
 } from '../flex-element-subsection/flex-element-subsection'
 import { GiganticSizePinsSubsection } from './gigantic-size-pins-subsection'
-import { selectComponents } from '../../../../editor/actions/action-creators'
+import { runEscapeHatch, selectComponents } from '../../../../editor/actions/action-creators'
 import { UIGridRow } from '../../../widgets/ui-grid-row'
 import { unless, when } from '../../../../../utils/react-conditionals'
 import {
@@ -199,25 +199,18 @@ function useDeleteAllSelfLayoutConfig() {
   }, [onUnsetValue, propertyTarget])
 }
 
-function useAddPositionAbsolute() {
-  const propertyTarget = useContextSelector(InspectorPropsContext, (contextData) => {
-    return contextData.targetPath
-  })
-  const { onSubmitValue } = React.useContext(InspectorCallbackContext)
-  return React.useCallback(() => {
-    onSubmitValue(
-      jsxAttributeValue('absolute', emptyComments),
-      stylePropPathMappingFn('position', propertyTarget),
-      false,
-    )
-  }, [onSubmitValue, propertyTarget])
-}
-
 const LayoutSectionHeader = React.memo((props: LayoutSectionHeaderProps) => {
   const colorTheme = useColorTheme()
   const { layoutType, selfLayoutSectionOpen, toggleSection } = props
   const onDeleteAllConfig = useDeleteAllSelfLayoutConfig()
-  const onAbsoluteButtonClick = useAddPositionAbsolute()
+
+  const dispatch = useRefEditorState((store) => store.dispatch)
+  const selectedViews = useContextSelector(InspectorPropsContext, (contextData) => {
+    return contextData.selectedViews
+  })
+  const onAbsoluteButtonClick = React.useCallback(() => {
+    dispatch.current([runEscapeHatch(selectedViews)], 'everyone')
+  }, [dispatch, selectedViews])
 
   return (
     <InspectorSubsectionHeader>
