@@ -13,7 +13,6 @@ export const cardLayout = {
 
 export const cardLayoutStyle = {
   flexBasis: cardLayout.width,
-  // flexGrow: 1,
   flexShrink: 1,
   height: cardLayout.height,
   maxWidth: cardLayout.width + layout.margins.wide,
