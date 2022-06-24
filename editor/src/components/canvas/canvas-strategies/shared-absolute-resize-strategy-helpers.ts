@@ -1,3 +1,4 @@
+import { AllElementProps } from 'src/components/editor/store/editor-state'
 import { isHorizontalPoint } from 'utopia-api/core'
 import { getLayoutProperty } from '../../../core/layout/getLayoutProperty'
 import { framePointForPinnedProp } from '../../../core/layout/layout-helpers-new'
@@ -20,9 +21,10 @@ import {
 import { ElementPath } from '../../../core/shared/project-file-types'
 import Utils from '../../../utils/utils'
 import { stylePropPathMappingFn } from '../../inspector/common/property-path-hooks'
-import { EdgePosition } from '../canvas-types'
+import { CSSCursor, EdgePosition } from '../canvas-types'
 import {
   isEdgePositionAHorizontalEdge,
+  isEdgePositionAVerticalEdge,
   isEdgePositionOnSide,
   pickPointOnRect,
   snapPoint,
@@ -336,6 +338,7 @@ export function runLegacyAbsoluteResizeSnapping(
   canvasScale: number,
   lockedAspectRatio: number | null,
   centerBased: IsCenterBased,
+  allElementProps: AllElementProps,
 ): {
   snapDelta: CanvasVector
   snappedBoundingBox: CanvasRectangle
@@ -362,6 +365,7 @@ export function runLegacyAbsoluteResizeSnapping(
     draggedPointMovedWithoutSnap,
     oppositePoint,
     draggedCorner,
+    allElementProps,
   )
 
   const snapDelta = pointDifference(draggedPointMovedWithoutSnap, snappedPointOnCanvas)
@@ -456,4 +460,19 @@ function getPointOnVerticalLine(p: CanvasPoint) {
     x: p.x,
     y: p.y + 100,
   })
+}
+
+export function pickCursorFromEdgePosition(edgePosition: EdgePosition) {
+  const isTopLeft = edgePosition.x === 0 && edgePosition.y === 0
+  const isBottomRight = edgePosition.x === 1 && edgePosition.y === 1
+
+  if (isEdgePositionAHorizontalEdge(edgePosition)) {
+    return CSSCursor.ResizeNS
+  } else if (isEdgePositionAVerticalEdge(edgePosition)) {
+    return CSSCursor.ResizeEW
+  } else if (isTopLeft || isBottomRight) {
+    return CSSCursor.ResizeNWSE
+  } else {
+    return CSSCursor.ResizeNESW
+  }
 }

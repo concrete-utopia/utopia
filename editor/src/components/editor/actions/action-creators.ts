@@ -207,8 +207,15 @@ import type {
   SetIndexedDBFailed,
   ForceParseFile,
   RemoveFromNodeModulesContents,
+  RunEscapeHatch,
 } from '../action-types'
-import { EditorModes, elementInsertionSubject, Mode, SceneInsertionSubject } from '../editor-modes'
+import {
+  EditorModes,
+  elementInsertionSubject,
+  Mode,
+  sceneInsertionSubject,
+  SceneInsertionSubject,
+} from '../editor-modes'
 import type {
   DuplicationState,
   ErrorMessages,
@@ -433,7 +440,7 @@ export function enableInsertModeForJSXElement(
 }
 
 export function enableInsertModeForScene(name: JSXElementName | 'scene'): SwitchEditorMode {
-  return switchEditorMode(EditorModes.insertMode(false, SceneInsertionSubject()))
+  return switchEditorMode(EditorModes.insertMode(false, sceneInsertionSubject()))
 }
 
 export function addToast(toastContent: Notice): AddToast {
@@ -1008,13 +1015,15 @@ export function setMainUIFile(uiFile: string): SetMainUIFile {
 }
 
 export function saveDOMReport(
-  elementMetadata: ReadonlyArray<ElementInstanceMetadata>,
+  elementMetadata: ElementInstanceMetadataMap,
   cachedPaths: Array<ElementPath>,
+  invalidatedPaths: Array<string>,
 ): SaveDOMReport {
   return {
     action: 'SAVE_DOM_REPORT',
     elementMetadata: elementMetadata,
     cachedPaths: cachedPaths,
+    invalidatedPaths: invalidatedPaths,
   }
 }
 
@@ -1469,5 +1478,12 @@ export function forceParseFile(filePath: string): ForceParseFile {
   return {
     action: 'FORCE_PARSE_FILE',
     filePath: filePath,
+  }
+}
+
+export function runEscapeHatch(targets: Array<ElementPath>): RunEscapeHatch {
+  return {
+    action: 'RUN_ESCAPE_HATCH',
+    targets: targets,
   }
 }

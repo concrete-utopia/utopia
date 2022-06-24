@@ -3,6 +3,7 @@ import { renderTestEditorWithCode, TestAppUID } from '../../components/canvas/ui
 import { BakedInStoryboardUID } from '../model/scene-utils'
 import { TestScene0UID } from '../model/test-ui-js-file.test-utils'
 import * as Prettier from 'prettier/standalone'
+import { wait } from '../model/performance-scripts'
 
 describe('registered property controls', () => {
   it('registered controls are in editor state', async () => {
@@ -64,6 +65,7 @@ describe('registered property controls', () => {
     )
 
     const renderResult = await renderTestEditorWithCode(testCode, 'dont-await-first-dom-report')
+    await wait(10) // this is quite ugly but we want to wait for a timeout(0) in ui-jsx-canvas before calling validateControlsToCheck
     const editorState = renderResult.getEditorState().editor
 
     expect(editorState.propertyControlsInfo['/src/card']).toMatchInlineSnapshot(`

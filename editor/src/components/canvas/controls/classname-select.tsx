@@ -14,6 +14,7 @@ import WindowedSelect, {
   ValueContainerProps,
 } from 'react-windowed-select'
 import {
+  AlwaysTrue,
   atomWithPubSub,
   usePubSubAtomReadOnly,
   usePubSubAtomWriteOnly,
@@ -90,7 +91,7 @@ function formatOptionLabel(
 
 const Menu = React.memo((props: MenuProps<TailWindOption, true>) => {
   const theme = useColorTheme()
-  const focusedOption = usePubSubAtomReadOnly(focusedOptionAtom)
+  const focusedOption = usePubSubAtomReadOnly(focusedOptionAtom, AlwaysTrue)
   const showFooter = props.options.length > 0
   const joinedAttributes = focusedOption?.attributes?.join(', ')
   const attributesText =
@@ -173,7 +174,10 @@ export const ClassNameSelect = React.memo(
 
     React.useEffect(() => {
       return function cleanup() {
-        dispatch([EditorActions.clearTransientProps()], 'canvas')
+        setTimeout(() => {
+          // wrapping in a setTimeout so we don't dispatch from inside React lifecycle
+          dispatch([EditorActions.clearTransientProps()], 'canvas')
+        }, 0)
       }
       /** deps is explicitly empty */
       // eslint-disable-next-line react-hooks/exhaustive-deps
@@ -347,7 +351,7 @@ export const ClassNameSelect = React.memo(
     )
 
     const onInputChange = React.useCallback(
-      (newInput, actionMeta: InputActionMeta) => {
+      (newInput: string, actionMeta: InputActionMeta) => {
         if (newInput === '') {
           dispatch([EditorActions.clearTransientProps()], 'canvas')
         }

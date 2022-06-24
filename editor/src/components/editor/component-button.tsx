@@ -103,7 +103,7 @@ export const ComponentOrInstanceIndicator = React.memo(() => {
       paddingLeft: 4,
       cursor: 'pointer',
       transition: 'background-color .1s ease-in-out',
-      ...editContextStyle,
+      ...(editContextStyle as any), // TODO Emotion and React 18 types don't like each other
       '&:hover': {
         filter: 'brightness(1.02  )',
       },
@@ -150,7 +150,7 @@ export const ComponentOrInstanceIndicator = React.memo(() => {
           flexShrink: 0,
           flexBasis: 14,
           transition: 'background-color .1s ease-in-out',
-          ...editContextStyle,
+          ...(editContextStyle as any), // TODO Emotion and React 18 types don't like each other
           // slightly darker than the button next to it
           filter: 'brightness(.99)',
           borderLeft: `1px dashed ${colorTheme.secondaryBorder.value}`,

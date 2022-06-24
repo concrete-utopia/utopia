@@ -12,13 +12,13 @@ interface NotNullRefObject<T> {
 
 export function useBoundingBox<T = HTMLDivElement>(
   selectedElements: Array<ElementPath>,
-  onChangeCallback: (ref: NotNullRefObject<T>, boundingBox: CanvasRectangle) => void,
+  onChangeCallback: (ref: NotNullRefObject<T>, boundingBox: CanvasRectangle, scale: number) => void,
 ): React.RefObject<T> {
   const controlRef = React.useRef<T>(null)
   const boundingBoxCallback = React.useCallback(
-    (boundingBox: CanvasRectangle | null) => {
+    (boundingBox: CanvasRectangle | null, scale: number) => {
       if (boundingBox != null && controlRef.current != null) {
-        onChangeCallback(controlRef as NotNullRefObject<T>, boundingBox)
+        onChangeCallback(controlRef as NotNullRefObject<T>, boundingBox, scale)
       }
     },
     [onChangeCallback],
@@ -30,9 +30,10 @@ export function useBoundingBox<T = HTMLDivElement>(
 
 function useBoundingBoxFromMetadataRef(
   selectedElements: Array<ElementPath>,
-  boundingBoxCallback: (boundingRectangle: CanvasRectangle | null) => void,
+  boundingBoxCallback: (boundingRectangle: CanvasRectangle | null, scale: number) => void,
 ): void {
   const metadataRef = useRefEditorState((store) => getMetadata(store.editor))
+  const scaleRef = useRefEditorState((store) => store.editor.canvas.scale)
 
   const boundingBoxCallbackRef = React.useRef(boundingBoxCallback)
   boundingBoxCallbackRef.current = boundingBoxCallback
@@ -48,12 +49,18 @@ function useBoundingBoxFromMetadataRef(
 
     const boundingBox = boundingRectangleArray(frames)
 
-    boundingBoxCallbackRef.current(boundingBox)
-  }, [selectedElements, metadataRef])
+    boundingBoxCallbackRef.current(boundingBox, scaleRef.current)
+  }, [selectedElements, metadataRef, scaleRef])
 
   useSelectorWithCallback(
     (store) => getMetadata(store.editor),
     (newMetadata) => {
+      innerCallback()
+    },
+  )
+  useSelectorWithCallback(
+    (store) => store.editor.canvas.scale,
+    (newScale) => {
       innerCallback()
     },
   )

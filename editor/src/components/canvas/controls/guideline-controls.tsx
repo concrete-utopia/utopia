@@ -50,8 +50,12 @@ const GuidelineControl = React.memo<GuidelineProps>((props) => {
       }
     },
   )
+  const key = `guideline-${props.index}`
   return (
     <div
+      id={key}
+      key={key}
+      data-testid={key}
       ref={controlRef}
       style={{
         position: 'absolute',

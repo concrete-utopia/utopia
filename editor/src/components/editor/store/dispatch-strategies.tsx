@@ -7,9 +7,11 @@ import {
 import {
   createEmptyStrategyState,
   hasDragModifiersChanged,
+  InteractionSession,
   interactionSessionHardReset,
+  isKeyboardInteractionData,
+  KeyboardInteractionData,
   StrategyState,
-  strategySwitchInteractionSessionReset,
 } from '../../canvas/canvas-strategies/interaction-state'
 import { foldAndApplyCommands } from '../../canvas/commands/commands'
 import { strategySwitched } from '../../canvas/commands/strategy-switched-command'
@@ -27,6 +29,8 @@ import {
 } from '../../canvas/canvas-strategies/canvas-strategy-types'
 import { isFeatureEnabled } from '../../../utils/feature-switches'
 import { PERFORMANCE_MARKS_ALLOWED } from '../../../common/env-vars'
+import { saveDOMReport } from '../actions/action-creators'
+import { last } from '../../../core/shared/array-utils'
 
 interface HandleStrategiesResult {
   unpatchedEditorState: EditorState
@@ -42,6 +46,7 @@ export function interactionFinished(
   const newEditorState = result.unpatchedEditor
   const withClearedSession = createEmptyStrategyState(
     newEditorState.canvas.interactionSession?.metadata ?? newEditorState.jsxMetadata,
+    newEditorState.canvas.interactionSession?.allElementProps ?? newEditorState.allElementProps,
   )
   const canvasState: InteractionCanvasState = pickCanvasStateFromEditorState(newEditorState)
   const interactionSession = storedState.unpatchedEditor.canvas.interactionSession
@@ -151,7 +156,8 @@ export function interactionHardReset(
         commandDescriptions: commandResult.commandDescriptions,
         sortedApplicableStrategies: sortedApplicableStrategies,
         startingMetadata: resetStrategyState.startingMetadata,
-        customStrategyState: strategyResult.customState,
+        customStrategyState: strategyResult.customState ?? result.strategyState.customStrategyState,
+        startingAllElementProps: resetStrategyState.startingAllElementProps,
       }
 
       return {
@@ -212,7 +218,8 @@ export function interactionUpdate(
 
     if (
       result.unpatchedEditor.canvas.interactionSession?.interactionData.type === 'KEYBOARD' &&
-      actionType === 'interaction-create-or-update'
+      actionType === 'interaction-create-or-update' &&
+      strategy?.strategy !== previousStrategy?.strategy
     ) {
       return handleAccumulatingKeypresses(
         newEditorState,
@@ -242,6 +249,7 @@ export function interactionStart(
   const newEditorState = result.unpatchedEditor
   const withClearedSession = createEmptyStrategyState(
     newEditorState.canvas.interactionSession?.metadata ?? newEditorState.jsxMetadata,
+    newEditorState.canvas.interactionSession?.allElementProps ?? newEditorState.allElementProps,
   )
   const canvasState: InteractionCanvasState = pickCanvasStateFromEditorState(newEditorState)
   const interactionSession = newEditorState.canvas.interactionSession
@@ -286,7 +294,8 @@ export function interactionStart(
         commandDescriptions: commandResult.commandDescriptions,
         sortedApplicableStrategies: sortedApplicableStrategies,
         startingMetadata: newEditorState.canvas.interactionSession.metadata,
-        customStrategyState: strategyResult.customState,
+        customStrategyState: strategyResult.customState ?? result.strategyState.customStrategyState,
+        startingAllElementProps: newEditorState.canvas.interactionSession.allElementProps,
       }
 
       return {
@@ -319,7 +328,7 @@ export function interactionCancel(
   return {
     unpatchedEditorState: updatedEditorState,
     patchedEditorState: updatedEditorState,
-    newStrategyState: createEmptyStrategyState(),
+    newStrategyState: createEmptyStrategyState({}, {}),
   }
 }
 
@@ -372,7 +381,8 @@ function handleUserChangedStrategy(
       commandDescriptions: commandResult.commandDescriptions,
       sortedApplicableStrategies: sortedApplicableStrategies,
       startingMetadata: strategyState.startingMetadata,
-      customStrategyState: strategyResult.customState,
+      customStrategyState: strategyResult.customState ?? strategyState.customStrategyState,
+      startingAllElementProps: strategyState.startingAllElementProps,
     }
 
     return {
@@ -400,48 +410,67 @@ function handleAccumulatingKeypresses(
   const canvasState: InteractionCanvasState = pickCanvasStateFromEditorState(newEditorState)
   // If there is a current strategy, produce the commands from it.
   if (newEditorState.canvas.interactionSession != null) {
-    const strategyResult =
-      strategy != null
-        ? applyCanvasStrategy(
-            strategy.strategy,
-            canvasState,
-            newEditorState.canvas.interactionSession,
-            strategyState,
-          )
-        : {
-            commands: [],
-            customState: strategyState.customStrategyState,
-          }
-    const commandResult = foldAndApplyCommands(
-      newEditorState,
-      storedEditorState,
-      strategyState.accumulatedPatches,
-      strategyState.currentStrategyCommands,
-      strategyResult.commands,
-      'transient',
-    )
-    const newStrategyState: StrategyState = {
-      currentStrategy: strategy?.strategy.id ?? null,
-      currentStrategyFitness: strategy?.fitness ?? 0,
-      currentStrategyCommands: strategyResult.commands,
-      accumulatedPatches: commandResult.accumulatedPatches,
-      commandDescriptions: commandResult.commandDescriptions,
-      sortedApplicableStrategies: sortedApplicableStrategies,
-      startingMetadata: strategyState.startingMetadata,
-      customStrategyState: strategyResult.customState,
-    }
+    const interactionData = newEditorState.canvas.interactionSession.interactionData
+    if (isKeyboardInteractionData(interactionData)) {
+      const lastKeyState = last(interactionData.keyStates)
+      const updatedInteractionData: KeyboardInteractionData = {
+        ...interactionData,
+        keyStates: lastKeyState == null ? [] : [lastKeyState],
+      }
+      const updatedInteractionSession: InteractionSession = {
+        ...newEditorState.canvas.interactionSession,
+        interactionData: updatedInteractionData,
+      }
+      const updatedEditorState = {
+        ...newEditorState,
+        canvas: {
+          ...newEditorState.canvas,
+          interactionSession: updatedInteractionSession,
+        },
+      }
+      const strategyResult =
+        strategy != null
+          ? applyCanvasStrategy(
+              strategy.strategy,
+              canvasState,
+              updatedInteractionSession,
+              strategyState,
+            )
+          : {
+              commands: [],
+              customState: strategyState.customStrategyState,
+            }
+      const commandResult = foldAndApplyCommands(
+        updatedEditorState,
+        storedEditorState,
+        strategyState.accumulatedPatches,
+        strategyState.currentStrategyCommands,
+        strategyResult.commands,
+        'transient',
+      )
+      const newStrategyState: StrategyState = {
+        currentStrategy: strategy?.strategy.id ?? null,
+        currentStrategyFitness: strategy?.fitness ?? 0,
+        currentStrategyCommands: strategyResult.commands,
+        accumulatedPatches: commandResult.accumulatedPatches,
+        commandDescriptions: commandResult.commandDescriptions,
+        sortedApplicableStrategies: sortedApplicableStrategies,
+        startingMetadata: strategyState.startingMetadata,
+        customStrategyState: strategyResult.customState ?? strategyState.customStrategyState,
+        startingAllElementProps: strategyState.startingAllElementProps,
+      }
 
-    return {
-      unpatchedEditorState: newEditorState,
-      patchedEditorState: commandResult.editorState,
-      newStrategyState: newStrategyState,
+      return {
+        unpatchedEditorState: updatedEditorState,
+        patchedEditorState: commandResult.editorState,
+        newStrategyState: newStrategyState,
+      }
     }
-  } else {
-    return {
-      unpatchedEditorState: newEditorState,
-      patchedEditorState: newEditorState,
-      newStrategyState: strategyState,
-    }
+  }
+  return {
+    unpatchedEditorState: newEditorState,
+    patchedEditorState: newEditorState,
+    newStrategyState: strategyState,
   }
 }
 
@@ -484,7 +513,8 @@ function handleUpdate(
       commandDescriptions: commandResult.commandDescriptions,
       sortedApplicableStrategies: sortedApplicableStrategies,
       startingMetadata: strategyState.startingMetadata,
-      customStrategyState: strategyResult.customState,
+      customStrategyState: strategyResult.customState ?? strategyState.customStrategyState,
+      startingAllElementProps: strategyState.startingAllElementProps,
     }
     return {
       unpatchedEditorState: newEditorState,
@@ -550,19 +580,89 @@ export function handleStrategies(
   }
 }
 
+function injectNewMetadataToOldEditorState(
+  oldEditorState: EditorState,
+  newEditorState: EditorState,
+): EditorState {
+  if (oldEditorState.canvas.interactionSession != null) {
+    // we expect metadata to live in EditorState.canvas.interactionSession.metadata
+    if (newEditorState.canvas.interactionSession == null) {
+      throw new Error(
+        'Dispatch error: SAVE_DOM_REPORT changed canvas.interactionSession in an illegal way',
+      )
+    } else {
+      return {
+        ...oldEditorState,
+        jsxMetadata: newEditorState.jsxMetadata,
+        domMetadata: newEditorState.domMetadata,
+        spyMetadata: newEditorState.spyMetadata,
+        canvas: {
+          ...oldEditorState.canvas,
+          interactionSession: {
+            ...oldEditorState.canvas.interactionSession,
+            metadata: newEditorState.canvas.interactionSession.metadata, // the fresh metadata from SAVE_DOM_REPORT
+          },
+        },
+      }
+    }
+  } else if (oldEditorState.canvas.dragState != null) {
+    // we expect metadata to live in EditorState.canvas.dragState.metadata
+    if (newEditorState.canvas.dragState == null) {
+      throw new Error('Dispatch error: SAVE_DOM_REPORT changed canvas.dragState in an illegal way')
+    } else {
+      return {
+        ...oldEditorState,
+        jsxMetadata: newEditorState.jsxMetadata,
+        domMetadata: newEditorState.domMetadata,
+        spyMetadata: newEditorState.spyMetadata,
+        canvas: {
+          ...oldEditorState.canvas,
+          dragState: {
+            ...oldEditorState.canvas.dragState,
+            metadata: newEditorState.canvas.dragState.metadata, // the fresh metadata from SAVE_DOM_REPORT
+          },
+        },
+      }
+    }
+  } else {
+    return {
+      ...oldEditorState, // the "old" patched editor from the action dispatch that triggered SAVE_DOM_WALKER
+      jsxMetadata: newEditorState.jsxMetadata, // the fresh metadata from SAVE_DOM_REPORT
+      domMetadata: newEditorState.domMetadata,
+      spyMetadata: newEditorState.spyMetadata,
+    }
+  }
+}
+
 function handleStrategiesInner(
   strategies: Array<CanvasStrategy>,
   dispatchedActions: readonly EditorAction[],
   storedState: EditorStoreFull,
   result: InnerDispatchResult,
 ): HandleStrategiesResult {
+  const isSaveDomReport = dispatchedActions.some((a) => a.action === 'SAVE_DOM_REPORT')
+
   const makeChangesPermanent = dispatchedActions.some(shouldApplyClearInteractionSessionResult)
   const cancelInteraction =
     dispatchedActions.some(isClearInteractionSession) && !makeChangesPermanent
   const isInteractionAction = dispatchedActions.some(isCreateOrUpdateInteractionSession)
     ? 'interaction-create-or-update'
     : 'non-interaction'
-  if (storedState.unpatchedEditor.canvas.interactionSession == null) {
+
+  if (isSaveDomReport) {
+    // SAVE_DOM_REPORT is a special action that is part of the dispatch flow.
+    // here we do not want to re-run strategies at all, just update the jsxMetadata in the patched EditorState
+
+    const oldPatchedEditorWithNewMetadata: EditorState = injectNewMetadataToOldEditorState(
+      storedState.patchedEditor,
+      result.unpatchedEditor,
+    )
+    return {
+      unpatchedEditorState: result.unpatchedEditor, // we return the fresh unpatchedEditor, containing the up-to-date domMetadata and spyMetadata
+      patchedEditorState: oldPatchedEditorWithNewMetadata, // the previous patched editor with updated metadata
+      newStrategyState: storedState.strategyState,
+    }
+  } else if (storedState.unpatchedEditor.canvas.interactionSession == null) {
     if (result.unpatchedEditor.canvas.interactionSession == null) {
       return {
         unpatchedEditorState: result.unpatchedEditor,

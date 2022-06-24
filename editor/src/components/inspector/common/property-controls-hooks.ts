@@ -46,7 +46,10 @@ import {
   getControlStatusFromPropertyStatus,
   getControlStyles,
 } from './control-status'
-import { useKeepReferenceEqualityIfPossible } from '../../../utils/react-performance'
+import {
+  keepDeepReferenceEqualityIfPossible,
+  useKeepReferenceEqualityIfPossible,
+} from '../../../utils/react-performance'
 import {
   ElementInstanceMetadata,
   isJSXElement,
@@ -66,6 +69,8 @@ import {
 import { arrayDeepEquality } from '../../../utils/deep-equality'
 import { omit } from '../../../core/shared/object-utils'
 import { PropertyControls } from 'utopia-api/core'
+import { AllElementProps } from 'src/components/editor/store/editor-state'
+import * as EP from '../../../core/shared/element-path'
 
 type RawValues = Either<string, ModifiableAttribute>[]
 type RealValues = unknown[]
@@ -136,7 +141,7 @@ export function useInspectorInfoForPropertyControl(
   )
 
   const onTransientSubmitValue = React.useCallback(
-    (newValue) => onSubmitValue(newValue, true),
+    (newValue: any) => onSubmitValue(newValue, true),
     [onSubmitValue],
   )
 
@@ -247,6 +252,21 @@ export function useGetPropertyControlsForSelectedComponents(): Array<FullPropert
     },
   )
 
+  const selectedElementsProps = useEditorState(
+    (store) => {
+      let result: AllElementProps = {}
+      fastForEach(selectedPropertyControls, ({ targets }) => {
+        fastForEach(targets, (target) => {
+          const pathString = EP.toString(target)
+          result[pathString] = store.editor.allElementProps[pathString]
+        })
+      })
+      return result
+    },
+    'useGetPropertyControlsForSelectedComponents selectedElementsProps',
+    (a, b) => keepDeepReferenceEqualityIfPossible(a, b) === a,
+  )
+
   const selectedElementsFIXME = useEditorState(
     (store) => {
       return selectedPropertyControls.map(({ targets }) =>
@@ -258,8 +278,7 @@ export function useGetPropertyControlsForSelectedComponents(): Array<FullPropert
     },
     'useGetPropertyControlsForSelectedComponents selectedElements',
     (a, b) =>
-      arrayDeepEquality(arrayDeepEquality(ElementInstanceMetadataKeepDeepEquality()))(a, b)
-        .areEqual,
+      arrayDeepEquality(arrayDeepEquality(ElementInstanceMetadataKeepDeepEquality))(a, b).areEqual,
   )
 
   const selectedComponentsFIXME = useEditorState(
@@ -302,7 +321,9 @@ export function useGetPropertyControlsForSelectedComponents(): Array<FullPropert
     let detectedPropsWithoutControls: Array<string> = []
     let definedControlsWithoutValues: Set<string> = new Set(propertiesWithControls)
     fastForEach(selectedElements, (element) => {
-      const elementProps = Object.keys(filterUtopiaSpecificProps(element.props))
+      const elementProps = Object.keys(
+        filterUtopiaSpecificProps(selectedElementsProps[EP.toString(element.elementPath)] ?? {}),
+      )
       fastForEach(elementProps, (propName) => {
         if (!propertiesWithControls.includes(propName)) {
           detectedPropsWithoutControls = addUniquely(detectedPropsWithoutControls, propName)
@@ -338,7 +359,9 @@ export function useGetPropertyControlsForSelectedComponents(): Array<FullPropert
 
     let detectedPropsAndValuesWithoutControls: Record<string, unknown> = {}
     fastForEach(selectedElements, (element) => {
-      const elementProps = filterUtopiaSpecificProps(element.props)
+      const elementProps = filterUtopiaSpecificProps(
+        selectedElementsProps[EP.toString(element.elementPath)] ?? {},
+      )
       fastForEach(Object.keys(elementProps), (propName) => {
         if (!propertiesWithControls.includes(propName)) {
           detectedPropsAndValuesWithoutControls[propName] = elementProps[propName]

@@ -1,4 +1,5 @@
 import React from 'react'
+import { ElementProps } from 'src/components/editor/store/editor-state'
 import { useContextSelector } from 'use-context-selector'
 import { LayoutTargetableProp, StyleLayoutProp } from '../../../core/layout/layout-helpers-new'
 import { getSimpleAttributeAtPath } from '../../../core/model/element-metadata-utils'
@@ -20,6 +21,7 @@ interface PropertyTargetSelectorProps {
   top: number
   left: number
   options: Array<LayoutTargetableProp>
+  targetProps: ElementProps | null
 }
 
 export const PropertyTargetSelector = React.memo(
@@ -57,12 +59,12 @@ export const PropertyTargetSelector = React.memo(
       return resizeOptions.propertyTargetOptions.map((option) =>
         eitherToMaybe(
           getSimpleAttributeAtPath(
-            left(props.targetComponentMetadata?.props ?? {}),
+            left(props.targetProps ?? {}),
             stylePropPathMappingFn(option, ['style']),
           ),
         ),
       )
-    }, [resizeOptions.propertyTargetOptions, props.targetComponentMetadata?.props])
+    }, [resizeOptions.propertyTargetOptions, props.targetProps])
 
     const defaultSelectedOptionIndex = React.useMemo(() => {
       const indexOfFirstWithValue = valuesForProp.findIndex((value) => value != null)
@@ -71,7 +73,13 @@ export const PropertyTargetSelector = React.memo(
 
     // Update the current options to be the ones listed against this control
     React.useEffect(() => {
-      dispatch([setResizeOptionsTargetOptions(props.options, defaultSelectedOptionIndex)], 'canvas')
+      setTimeout(() => {
+        // wrapping in a setTimeout so we don't dispatch from inside React lifecycle
+        dispatch(
+          [setResizeOptionsTargetOptions(props.options, defaultSelectedOptionIndex)],
+          'canvas',
+        )
+      }, 0)
       // important! the array is empty because it should only run once
       // eslint-disable-next-line react-hooks/exhaustive-deps
     }, [])

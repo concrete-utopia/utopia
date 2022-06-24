@@ -135,7 +135,9 @@ export const MetadataControlsStyle: React.CSSProperties = {
   gridRowGap: 8,
 }
 
-const LinearGradientControls: React.FunctionComponent<LinearGradientControlsProps> = (props) => {
+const LinearGradientControls: React.FunctionComponent<
+  React.PropsWithChildren<LinearGradientControlsProps>
+> = (props) => {
   const [gradientAngleSubmitValue, gradientAngleTransientSubmitValue] =
     useWrappedSubmitFactoryEmptyOrUnknownOnSubmitValue(
       props.useSubmitValueFactory(
@@ -207,7 +209,9 @@ function getIndexedUpdateRadialGradientHeight(index: number) {
   }
 }
 
-const RadialGradientControls: React.FunctionComponent<RadialGradientControlsProps> = (props) => {
+const RadialGradientControls: React.FunctionComponent<
+  React.PropsWithChildren<RadialGradientControlsProps>
+> = (props) => {
   const [gradientWidthSubmitValue, gradientWidthTransientSubmitValue] =
     useWrappedSubmitFactoryEmptyOrUnknownOnSubmitValue(
       props.useSubmitValueFactory(getIndexedUpdateRadialGradientWidth(props.index)),
@@ -316,7 +320,9 @@ function getIndexedUpdateConicGradientFromAngle(index: number) {
   }
 }
 
-const ConicGradientControls: React.FunctionComponent<ConicGradientControlsProps> = (props) => {
+const ConicGradientControls: React.FunctionComponent<
+  React.PropsWithChildren<ConicGradientControlsProps>
+> = (props) => {
   const [gradientCenterXSubmitValue, gradientCenterXTransientSubmitValue] =
     useWrappedSubmitFactoryEmptyOrUnknownOnSubmitValue(
       props.useSubmitValueFactory(getIndexedUpdateRadialOrConicGradientCenterX(props.index)),
@@ -393,7 +399,9 @@ function setColor(
   return workingStops
 }
 
-export const BackgroundPicker: React.FunctionComponent<BackgroundPickerProps> = (props) => {
+export const BackgroundPicker: React.FunctionComponent<
+  React.PropsWithChildren<BackgroundPickerProps>
+> = (props) => {
   const colorTheme = useColorTheme()
   useHandleCloseOnESCOrEnter(props.closePopup)
   const [showSettings, setShowSettings] = React.useState(false)

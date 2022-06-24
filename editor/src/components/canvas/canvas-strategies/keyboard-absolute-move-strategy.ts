@@ -1,14 +1,30 @@
 import { MetadataUtils } from '../../../core/model/element-metadata-utils'
 import { Keyboard, KeyCharacter } from '../../../utils/keyboard'
 import { CanvasStrategy, emptyStrategyApplicationResult } from './canvas-strategy-types'
-import { Modifiers } from '../../../utils/modifiers'
-import { CanvasVector } from '../../../core/shared/math-utils'
-import { getAbsoluteMoveCommandsForSelectedElement } from './shared-absolute-move-strategy-helpers'
+import {
+  CanvasVector,
+  offsetPoint,
+  scaleVector,
+  zeroCanvasPoint,
+} from '../../../core/shared/math-utils'
+import {
+  getAbsoluteMoveCommandsForSelectedElement,
+  snapDrag,
+} from './shared-absolute-move-strategy-helpers'
 import { AdjustCssLengthProperty } from '../commands/adjust-css-length-command'
+import { setElementsToRerenderCommand } from '../commands/set-elements-to-rerender-command'
+import { setSnappingGuidelines } from '../commands/set-snapping-guidelines-command'
+import { updateHighlightedViews } from '../commands/update-highlighted-views-command'
+import { CanvasCommand } from '../commands/commands'
+import {
+  accumulatePresses,
+  getDragDeltaFromKey,
+  getLastKeyPressState,
+} from './shared-keyboard-strategy-helpers'
 
 export const keyboardAbsoluteMoveStrategy: CanvasStrategy = {
   id: 'KEYBOARD_ABSOLUTE_MOVE',
-  name: 'Keyboard absolute Move',
+  name: 'Keyboard Absolute Move',
   isApplicable: (canvasState, _interactionState, metadata) => {
     if (canvasState.selectedElements.length > 0) {
       return canvasState.selectedElements.every((element) => {
@@ -27,80 +43,69 @@ export const keyboardAbsoluteMoveStrategy: CanvasStrategy = {
         canvasState,
         interactionState,
         sessionState.startingMetadata,
+        sessionState.startingAllElementProps,
       ) &&
       interactionState.interactionData.type === 'KEYBOARD'
     ) {
       const { interactionData } = interactionState
 
-      const arrowKeyPressed = interactionData.keysPressed.some(Keyboard.keyIsArrow)
-      const shiftOrNoModifier =
-        !interactionState.interactionData.modifiers.alt &&
-        !interactionState.interactionData.modifiers.cmd &&
-        !interactionState.interactionData.modifiers.ctrl
+      const lastKeyState = getLastKeyPressState(interactionData.keyStates)
+      if (lastKeyState != null) {
+        // 'Alt' determines if the distance guidelines should be shown.
+        const shiftOrNoModifier = !lastKeyState.modifiers.cmd && !lastKeyState.modifiers.ctrl
 
-      if (arrowKeyPressed && shiftOrNoModifier) {
-        return 1
+        if (shiftOrNoModifier) {
+          return 1
+        }
       }
     }
     return 0
   },
   apply: (canvasState, interactionState, sessionState) => {
     if (interactionState.interactionData.type === 'KEYBOARD') {
+      const accumulatedPresses = accumulatePresses(interactionState.interactionData.keyStates)
+      let commands: Array<CanvasCommand> = []
+      let drag: CanvasVector = zeroCanvasPoint
+      accumulatedPresses.forEach((accumulatedPress) => {
+        accumulatedPress.keysPressed.forEach((key) => {
+          const keyPressDrag = scaleVector(
+            getDragDeltaFromKey(key, accumulatedPress.modifiers),
+            accumulatedPress.count,
+          )
+          drag = offsetPoint(drag, keyPressDrag)
+        })
+      })
+      if (drag.x !== 0 || drag.y !== 0) {
+        const moveCommands = canvasState.selectedElements.flatMap((selectedElement) =>
+          getAbsoluteMoveCommandsForSelectedElement(
+            selectedElement,
+            drag,
+            canvasState,
+            sessionState,
+          ),
+        )
+        const { guidelinesWithSnappingVector } = snapDrag(
+          drag,
+          null,
+          interactionState.metadata,
+          canvasState.selectedElements,
+          canvasState.scale,
+        )
+        const justSnappedGuidelines = guidelinesWithSnappingVector.filter((guideline) => {
+          return guideline.activateSnap
+        })
+
+        commands.push(...moveCommands)
+        commands.push(updateHighlightedViews('transient', []))
+        commands.push(setSnappingGuidelines('transient', justSnappedGuidelines))
+        commands.push(setElementsToRerenderCommand(canvasState.selectedElements))
+      }
       return {
-        commands: interactionState.interactionData.keysPressed.flatMap<AdjustCssLengthProperty>(
-          (key) => {
-            if (key == null) {
-              return []
-            }
-            const drag = getDragDeltaFromKey(key, interactionState.interactionData.modifiers)
-            if (drag.x !== 0 || drag.y !== 0) {
-              return canvasState.selectedElements.flatMap((selectedElement) =>
-                getAbsoluteMoveCommandsForSelectedElement(
-                  selectedElement,
-                  drag,
-                  canvasState,
-                  sessionState,
-                ),
-              )
-            } else {
-              return []
-            }
-          },
-        ),
+        commands: commands,
         customState: null,
       }
+    } else {
+      return emptyStrategyApplicationResult
     }
-    return emptyStrategyApplicationResult
   },
-}
-
-function getDragDeltaFromKey(key: KeyCharacter, modifiers: Modifiers): CanvasVector {
-  const step = modifiers.shift ? 10 : 1
-  switch (key) {
-    case 'left':
-      return {
-        x: -step,
-        y: 0,
-      } as CanvasVector
-    case 'right':
-      return {
-        x: step,
-        y: 0,
-      } as CanvasVector
-    case 'up':
-      return {
-        x: 0,
-        y: -step,
-      } as CanvasVector
-    case 'down':
-      return {
-        x: 0,
-        y: step,
-      } as CanvasVector
-    default:
-      return {
-        x: 0,
-        y: 0,
-      } as CanvasVector
-  }
 }

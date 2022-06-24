@@ -1,3 +1,4 @@
+import { AllElementProps } from 'src/components/editor/store/editor-state'
 import { ElementInstanceMetadataMap } from '../../../core/shared/element-template'
 import { CanvasVector } from '../../../core/shared/math-utils'
 import { ElementPath } from '../../../core/shared/project-file-types'
@@ -6,11 +7,23 @@ import { CanvasCommand } from '../commands/commands'
 import { InteractionSession, StrategyState } from './interaction-state'
 
 // TODO: fill this in, maybe make it an ADT for different strategies
-export interface CustomStrategyState {}
+export interface CustomStrategyState {
+  escapeHatchActivated: boolean
+  lastReorderIdx: number | null
+  duplicatedElementNewUids: { [elementPath: string]: string }
+}
+
+export function defaultCustomStrategyState(): CustomStrategyState {
+  return {
+    escapeHatchActivated: false,
+    lastReorderIdx: null,
+    duplicatedElementNewUids: {},
+  }
+}
 
 export interface StrategyApplicationResult {
   commands: Array<CanvasCommand>
-  customState: CustomStrategyState | null
+  customState: CustomStrategyState | null // null means the previous custom strategy state should be kept
 }
 
 export const emptyStrategyApplicationResult = {
@@ -19,7 +32,7 @@ export const emptyStrategyApplicationResult = {
 }
 
 export interface ControlWithKey {
-  control: React.FC
+  control: React.FC<React.PropsWithChildren<unknown>>
   key: string
   show:
     | 'always-visible'
@@ -38,7 +51,7 @@ export interface InteractionCanvasState {
 export type CanvasStrategyId =
   | 'ABSOLUTE_MOVE'
   | 'ABSOLUTE_REPARENT'
-  | 'ABSOLUTE_RESIZE_DELTA'
+  | 'ABSOLUTE_DUPLICATE'
   | 'ABSOLUTE_RESIZE_BOUNDING_BOX'
   | 'KEYBOARD_ABSOLUTE_MOVE'
   | 'KEYBOARD_ABSOLUTE_RESIZE'
@@ -54,6 +67,7 @@ export interface CanvasStrategy {
     canvasState: InteractionCanvasState,
     interactionSession: InteractionSession | null,
     metadata: ElementInstanceMetadataMap,
+    allElementProps: AllElementProps,
   ) => boolean
 
   // The controls to render when this strategy is applicable, regardless of if it is currently active

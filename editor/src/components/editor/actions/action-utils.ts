@@ -110,7 +110,9 @@ export function isTransientAction(action: EditorAction): boolean {
     case 'FORCE_PARSE_FILE':
     case 'CREATE_INTERACTION_SESSION':
     case 'UPDATE_INTERACTION_SESSION':
+    case 'UPDATE_DRAG_INTERACTION_DATA':
     case 'SET_USERS_PREFERRED_STRATEGY':
+    case 'SET_ELEMENTS_TO_RERENDER':
       return true
 
     case 'NEW':
@@ -167,6 +169,7 @@ export function isTransientAction(action: EditorAction): boolean {
     case 'UPDATE_CHILD_TEXT':
     case 'INSERT_INSERTABLE':
     case 'ADD_TAILWIND_CONFIG':
+    case 'RUN_ESCAPE_HATCH':
       return false
     case 'SAVE_ASSET':
       return (

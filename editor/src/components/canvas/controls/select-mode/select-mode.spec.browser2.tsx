@@ -1,3 +1,4 @@
+/// <reference types="karma-viewport" />
 import { act, fireEvent } from '@testing-library/react'
 import { BakedInStoryboardUID } from '../../../../core/model/scene-utils'
 import { canvasPoint } from '../../../../core/shared/math-utils'
@@ -12,6 +13,93 @@ import {
 import { setFocusedElement } from '../../../editor/actions/action-creators'
 import CanvasActions from '../../canvas-actions'
 import { CanvasControlsContainerID } from '../new-canvas-controls'
+
+function fireDoubleClickEvents(target: HTMLElement, clientX: number, clientY: number) {
+  fireEvent(
+    target,
+    new MouseEvent('mousedown', {
+      detail: 1,
+      bubbles: true,
+      cancelable: true,
+      metaKey: false,
+      clientX: clientX,
+      clientY: clientY,
+      buttons: 1,
+    }),
+  )
+  fireEvent(
+    target,
+    new MouseEvent('mouseup', {
+      detail: 1,
+      bubbles: true,
+      cancelable: true,
+      metaKey: false,
+      clientX: clientX,
+      clientY: clientY,
+      buttons: 1,
+    }),
+  )
+  fireEvent(
+    target,
+    new MouseEvent('click', {
+      detail: 1,
+      bubbles: true,
+      cancelable: true,
+      metaKey: false,
+      clientX: clientX,
+      clientY: clientY,
+      buttons: 1,
+    }),
+  )
+  fireEvent(
+    target,
+    new MouseEvent('mousedown', {
+      detail: 2,
+      bubbles: true,
+      cancelable: true,
+      metaKey: false,
+      clientX: clientX,
+      clientY: clientY,
+      buttons: 1,
+    }),
+  )
+  fireEvent(
+    target,
+    new MouseEvent('mouseup', {
+      detail: 2,
+      bubbles: true,
+      cancelable: true,
+      metaKey: false,
+      clientX: clientX,
+      clientY: clientY,
+      buttons: 1,
+    }),
+  )
+  fireEvent(
+    target,
+    new MouseEvent('click', {
+      detail: 2,
+      bubbles: true,
+      cancelable: true,
+      metaKey: false,
+      clientX: clientX,
+      clientY: clientY,
+      buttons: 1,
+    }),
+  )
+  fireEvent(
+    target,
+    new MouseEvent('dblclick', {
+      detail: 2,
+      bubbles: true,
+      cancelable: true,
+      metaKey: false,
+      clientX: clientX,
+      clientY: clientY,
+      buttons: 1,
+    }),
+  )
+}
 
 describe('Select Mode Selection', () => {
   before(() => {
@@ -95,42 +183,16 @@ describe('Select Mode Selection', () => {
 
     const doubleClick = async () => {
       await act(async () => {
-        const domFinished = renderResult.getDomReportDispatched()
-        const dispatchDone = renderResult.getDispatchFollowUpactionsFinished()
-        fireEvent(
+        const dispatchDone = renderResult.getDispatchFollowUpActionsFinished()
+        fireDoubleClickEvents(
           canvasControlsLayer,
-          new MouseEvent('mousedown', {
-            detail: 1,
-            bubbles: true,
-            cancelable: true,
-            metaKey: false,
-            clientX: areaControlBounds.left + 20,
-            clientY: areaControlBounds.top + 20,
-            buttons: 1,
-          }),
+          areaControlBounds.left + 20,
+          areaControlBounds.top + 20,
         )
-        fireEvent(
-          canvasControlsLayer,
-          new MouseEvent('mousedown', {
-            detail: 2,
-            bubbles: true,
-            cancelable: true,
-            metaKey: false,
-            clientX: areaControlBounds.left + 20,
-            clientY: areaControlBounds.top + 20,
-            buttons: 1,
-          }),
-        )
-        await domFinished
+
         await dispatchDone
       })
-      await waitForAnimationFrame()
     }
-
-    await doubleClick()
-
-    const selectedViews1 = renderResult.getEditorState().editor.selectedViews
-    expect(selectedViews1).toEqual([EP.elementPath([[BakedInStoryboardUID, TestSceneUID]])])
 
     await doubleClick()
 
@@ -193,8 +255,7 @@ describe('Select Mode Advanced Cases', () => {
     const canvasControlsLayer = renderResult.renderedDOM.getByTestId(CanvasControlsContainerID)
 
     await act(async () => {
-      const domFinished = renderResult.getDomReportDispatched()
-      const dispatchDone = renderResult.getDispatchFollowUpactionsFinished()
+      const dispatchDone = renderResult.getDispatchFollowUpActionsFinished()
       fireEvent(
         canvasControlsLayer,
         new MouseEvent('mousedown', {
@@ -207,7 +268,6 @@ describe('Select Mode Advanced Cases', () => {
           buttons: 1,
         }),
       )
-      await domFinished
       await dispatchDone
     })
     await waitForAnimationFrame()
@@ -230,33 +290,12 @@ describe('Select Mode Advanced Cases', () => {
 
     const doubleClick = async () => {
       await act(async () => {
-        const domFinished = renderResult.getDomReportDispatched()
-        const dispatchDone = renderResult.getDispatchFollowUpactionsFinished()
-        fireEvent(
+        const dispatchDone = renderResult.getDispatchFollowUpActionsFinished()
+        fireDoubleClickEvents(
           canvasControlsLayer,
-          new MouseEvent('mousedown', {
-            detail: 1,
-            bubbles: true,
-            cancelable: true,
-            metaKey: false,
-            clientX: cardSceneRootBounds.left + 130,
-            clientY: cardSceneRootBounds.top + 220,
-            buttons: 1,
-          }),
+          cardSceneRootBounds.left + 130,
+          cardSceneRootBounds.top + 220,
         )
-        fireEvent(
-          canvasControlsLayer,
-          new MouseEvent('mousedown', {
-            detail: 2,
-            bubbles: true,
-            cancelable: true,
-            metaKey: false,
-            clientX: cardSceneRootBounds.left + 130,
-            clientY: cardSceneRootBounds.top + 220,
-            buttons: 1,
-          }),
-        )
-        await domFinished
         await dispatchDone
       })
       await waitForAnimationFrame()
@@ -301,33 +340,12 @@ describe('Select Mode Advanced Cases', () => {
 
     const doubleClick = async () => {
       await act(async () => {
-        const domFinished = renderResult.getDomReportDispatched()
-        const dispatchDone = renderResult.getDispatchFollowUpactionsFinished()
-        fireEvent(
+        const dispatchDone = renderResult.getDispatchFollowUpActionsFinished()
+        fireDoubleClickEvents(
           canvasControlsLayer,
-          new MouseEvent('mousedown', {
-            detail: 1,
-            bubbles: true,
-            cancelable: true,
-            metaKey: false,
-            clientX: cardSceneRootBounds.left + 130,
-            clientY: cardSceneRootBounds.top + 220,
-            buttons: 1,
-          }),
+          cardSceneRootBounds.left + 130,
+          cardSceneRootBounds.top + 220,
         )
-        fireEvent(
-          canvasControlsLayer,
-          new MouseEvent('mousedown', {
-            detail: 2,
-            bubbles: true,
-            cancelable: true,
-            metaKey: false,
-            clientX: cardSceneRootBounds.left + 130,
-            clientY: cardSceneRootBounds.top + 220,
-            buttons: 1,
-          }),
-        )
-        await domFinished
         await dispatchDone
       })
       await waitForAnimationFrame()
@@ -349,7 +367,6 @@ describe('Select Mode Advanced Cases', () => {
     ])
   })
 })
-
 function waitForAnimationFrame(): Promise<void> {
   return new Promise<void>((resolve, reject) => {
     requestAnimationFrame(() => {

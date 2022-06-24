@@ -2,7 +2,10 @@ import { MetadataUtils } from '../../../core/model/element-metadata-utils'
 import * as EP from '../../../core/shared/element-path'
 import { getReparentTarget } from '../canvas-utils'
 import { reparentElement } from '../commands/reparent-element-command'
+import { setElementsToRerenderCommand } from '../commands/set-elements-to-rerender-command'
 import { updateSelectedViews } from '../commands/update-selected-views-command'
+import { ParentBounds } from '../controls/parent-bounds'
+import { ParentOutlines } from '../controls/parent-outlines'
 import { absoluteMoveStrategy } from './absolute-move-strategy'
 import { CanvasStrategy, emptyStrategyApplicationResult } from './canvas-strategy-types'
 import {
@@ -18,6 +21,7 @@ export const absoluteReparentStrategy: CanvasStrategy = {
     if (
       canvasState.selectedElements.length > 0 &&
       interactionState != null &&
+      interactionState.interactionData.type === 'DRAG' &&
       interactionState.interactionData.modifiers.cmd
     ) {
       const filteredSelectedElements = getDragTargets(canvasState.selectedElements)
@@ -29,19 +33,38 @@ export const absoluteReparentStrategy: CanvasStrategy = {
     }
     return false
   },
-  controlsToRender: [],
+  controlsToRender: [
+    {
+      control: ParentOutlines,
+      key: 'parent-outlines-control',
+      show: 'visible-only-while-active',
+    },
+    {
+      control: ParentBounds,
+      key: 'parent-bounds-control',
+      show: 'visible-only-while-active',
+    },
+  ],
   fitness: (canvasState, interactionState) => {
     if (
       canvasState.selectedElements.length > 0 &&
-      interactionState.interactionData.modifiers.cmd &&
+      interactionState.activeControl.type === 'BOUNDING_AREA' &&
       interactionState.interactionData.type === 'DRAG' &&
-      interactionState.interactionData.dragThresholdPassed
+      interactionState.interactionData.modifiers.cmd &&
+      interactionState.interactionData.drag != null
     ) {
       return 2
     }
     return 0
   },
   apply: (canvasState, interactionState, strategyState) => {
+    if (
+      interactionState.interactionData.type != 'DRAG' ||
+      interactionState.interactionData.drag == null
+    ) {
+      return emptyStrategyApplicationResult
+    }
+
     const { selectedElements, scale, canvasOffset, projectContents, openFile } = canvasState
     const filteredSelectedElements = getDragTargets(selectedElements)
 
@@ -54,6 +77,7 @@ export const absoluteReparentStrategy: CanvasStrategy = {
       canvasOffset,
       projectContents,
       openFile,
+      strategyState.startingAllElementProps,
     )
     const newParent = reparentResult.newParent
     const moveCommands = absoluteMoveStrategy.apply(canvasState, interactionState, strategyState)
@@ -78,19 +102,19 @@ export const absoluteReparentStrategy: CanvasStrategy = {
         }
       })
 
+      const newPaths = commands.map((c) => c.newPath)
+
       return {
         commands: [
           ...moveCommands.commands,
           ...commands.flatMap((c) => c.commands),
-          updateSelectedViews(
-            'permanent',
-            commands.map((c) => c.newPath),
-          ),
+          updateSelectedViews('permanent', newPaths),
+          setElementsToRerenderCommand(newPaths),
         ],
         customState: null,
       }
     } else {
-      return emptyStrategyApplicationResult
+      return moveCommands
     }
   },
 }

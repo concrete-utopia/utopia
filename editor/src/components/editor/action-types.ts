@@ -36,6 +36,7 @@ import type {
 import {
   DuplicationState,
   EditorState,
+  ElementsToRerender,
   ErrorMessages,
   FloatingInsertMenuState,
   LeftMenuTab,
@@ -70,6 +71,22 @@ export interface ProjectListing {
   createdAt: string
   modifiedAt: string
   thumbnail: string
+}
+
+export function projectListing(
+  id: string,
+  title: string,
+  createdAt: string,
+  modifiedAt: string,
+  thumbnail: string,
+): ProjectListing {
+  return {
+    id: id,
+    title: title,
+    createdAt: createdAt,
+    modifiedAt: modifiedAt,
+    thumbnail: thumbnail,
+  }
 }
 
 export type EditorModel = EditorState
@@ -636,8 +653,9 @@ export interface SendLinterRequestMessage {
 
 export interface SaveDOMReport {
   action: 'SAVE_DOM_REPORT'
-  elementMetadata: ReadonlyArray<ElementInstanceMetadata>
+  elementMetadata: ElementInstanceMetadataMap
   cachedPaths: Array<ElementPath>
+  invalidatedPaths: Array<string>
 }
 
 export interface SetProp {
@@ -916,6 +934,16 @@ export interface ForceParseFile {
   filePath: string
 }
 
+export interface RunEscapeHatch {
+  action: 'RUN_ESCAPE_HATCH'
+  targets: Array<ElementPath>
+}
+
+export interface SetElementsToRerender {
+  action: 'SET_ELEMENTS_TO_RERENDER'
+  value: ElementsToRerender
+}
+
 export type EditorAction =
   | ClearSelection
   | InsertScene
@@ -1068,6 +1096,8 @@ export type EditorAction =
   | HideVSCodeLoadingScreen
   | SetIndexedDBFailed
   | ForceParseFile
+  | RunEscapeHatch
+  | SetElementsToRerender
 
 export type DispatchPriority =
   | 'everyone'

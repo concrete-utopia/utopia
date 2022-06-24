@@ -881,54 +881,54 @@ interface ChainedNumberControlProps {
   setGlobalCursor?: (cursor: CSSCursor | null) => void
 }
 
-export const ChainedNumberInput: React.FunctionComponent<ChainedNumberControlProps> = React.memo(
-  ({ propsArray, idPrefix, style, setGlobalCursor }) => {
-    return (
-      <FlexRow style={style}>
-        {propsArray.map((props, i) => {
-          switch (i) {
-            case 0: {
-              return (
-                <NumberInput
-                  key={`${idPrefix}-${i}`}
-                  id={`${idPrefix}-${i}`}
-                  {...props}
-                  chained='first'
-                  roundCorners='left'
-                  setGlobalCursor={setGlobalCursor}
-                />
-              )
-            }
-            case propsArray.length - 1: {
-              return (
-                <NumberInput
-                  key={`${idPrefix}-${i}`}
-                  id={`${idPrefix}-${i}`}
-                  {...props}
-                  chained='last'
-                  roundCorners='right'
-                  setGlobalCursor={setGlobalCursor}
-                />
-              )
-            }
-            default: {
-              return (
-                <NumberInput
-                  key={`${idPrefix}-${i}`}
-                  id={`${idPrefix}-${i}`}
-                  {...props}
-                  chained='middle'
-                  roundCorners='none'
-                  setGlobalCursor={setGlobalCursor}
-                />
-              )
-            }
+export const ChainedNumberInput: React.FunctionComponent<
+  React.PropsWithChildren<ChainedNumberControlProps>
+> = React.memo(({ propsArray, idPrefix, style, setGlobalCursor }) => {
+  return (
+    <FlexRow style={style}>
+      {propsArray.map((props, i) => {
+        switch (i) {
+          case 0: {
+            return (
+              <NumberInput
+                key={`${idPrefix}-${i}`}
+                id={`${idPrefix}-${i}`}
+                {...props}
+                chained='first'
+                roundCorners='left'
+                setGlobalCursor={setGlobalCursor}
+              />
+            )
           }
-        })}
-      </FlexRow>
-    )
-  },
-)
+          case propsArray.length - 1: {
+            return (
+              <NumberInput
+                key={`${idPrefix}-${i}`}
+                id={`${idPrefix}-${i}`}
+                {...props}
+                chained='last'
+                roundCorners='right'
+                setGlobalCursor={setGlobalCursor}
+              />
+            )
+          }
+          default: {
+            return (
+              <NumberInput
+                key={`${idPrefix}-${i}`}
+                id={`${idPrefix}-${i}`}
+                {...props}
+                chained='middle'
+                roundCorners='none'
+                setGlobalCursor={setGlobalCursor}
+              />
+            )
+          }
+        }
+      })}
+    </FlexRow>
+  )
+})
 
 export function wrappedEmptyOrUnknownOnSubmitValue<T>(
   onSubmitValue: OnSubmitValue<T>,

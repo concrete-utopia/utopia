@@ -149,7 +149,7 @@ export function createEditorStates(selectedViews: ElementPath[] = []): {
       jsxMetadata: componentMetadata,
     },
     derivedState: derivedState,
-    strategyState: createEmptyStrategyState(),
+    strategyState: createEmptyStrategyState({}, {}),
     dispatch: Utils.NO_OP,
   }
 }
@@ -329,7 +329,6 @@ function createFakeMetadataForJSXElement(
     elements.push({
       elementPath: elementPath,
       element: right(element),
-      props: props,
       globalFrame: canvasRectangle(frame),
       localFrame: localRectangle(frame),
       componentInstance: false,
@@ -365,7 +364,6 @@ function createFakeMetadataForStoryboard(elementPath: ElementPath): ElementInsta
     globalFrame: canvasRectangle({ x: 0, y: 0, width: 0, height: 0 }),
     localFrame: localRectangle({ x: 0, y: 0, width: 0, height: 0 }),
     elementPath: elementPath,
-    props: {},
     element: right(jsxTestElement('Storyboard', [], [])),
     componentInstance: true,
     isEmotionOrStyledComponent: false,
@@ -410,14 +408,4 @@ export function simplifiedMetadataMap(metadata: ElementInstanceMetadataMap): Sim
     return simplifiedMetadata(elementMetadata)
   }, metadata)
   return sanitizedSpyData
-}
-
-export function domWalkerMetadataToSimplifiedMetadataMap(
-  metadata: Array<ElementInstanceMetadata>,
-): SimplifiedMetadataMap {
-  return mapArrayToDictionary(
-    metadata,
-    (elementMetadata: ElementInstanceMetadata) => EP.toString(elementMetadata.elementPath),
-    simplifiedMetadata,
-  )
 }

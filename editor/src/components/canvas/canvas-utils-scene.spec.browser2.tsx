@@ -15,8 +15,17 @@ import { PrettierConfig } from 'utopia-vscode-common'
 import { BakedInStoryboardUID } from '../../core/model/scene-utils'
 import { CanvasControlsContainerID } from './controls/new-canvas-controls'
 import { wait } from '../../utils/utils.test-utils'
+import { isFeatureEnabled, setFeatureEnabled } from '../../utils/feature-switches'
 
 describe('moving a scene/rootview on the canvas', () => {
+  let originalValue = isFeatureEnabled('Canvas Strategies')
+  before(() => {
+    originalValue = isFeatureEnabled('Canvas Strategies')
+    setFeatureEnabled('Canvas Strategies', false)
+  })
+  after(() => {
+    setFeatureEnabled('Canvas Strategies', originalValue)
+  })
   // TODO Eni and Balazs look into why is this failing under Karma
   xit('dragging a scene child’s root view sets the root view position', async () => {
     const renderResult = await renderTestEditorWithCode(
@@ -55,8 +64,7 @@ describe('moving a scene/rootview on the canvas', () => {
     )
 
     await act(async () => {
-      const domFinished = renderResult.getDomReportDispatched()
-      const dispatchDone = renderResult.getDispatchFollowUpactionsFinished()
+      const dispatchDone = renderResult.getDispatchFollowUpActionsFinished()
       fireEvent(
         canvasControlsLayer,
         new MouseEvent('mousemove', {
@@ -68,13 +76,11 @@ describe('moving a scene/rootview on the canvas', () => {
           buttons: 1,
         }),
       )
-      await domFinished
       await dispatchDone
     })
 
     await act(async () => {
-      const domFinished = renderResult.getDomReportDispatched()
-      const dispatchDone = renderResult.getDispatchFollowUpactionsFinished()
+      const dispatchDone = renderResult.getDispatchFollowUpActionsFinished()
       fireEvent(
         canvasControlsLayer,
         new MouseEvent('mousemove', {
@@ -86,13 +92,11 @@ describe('moving a scene/rootview on the canvas', () => {
           buttons: 1,
         }),
       )
-      await domFinished
       await dispatchDone
     })
 
     await act(async () => {
-      const domFinished = renderResult.getDomReportDispatched()
-      const dispatchDone = renderResult.getDispatchFollowUpactionsFinished()
+      const dispatchDone = renderResult.getDispatchFollowUpActionsFinished()
       fireEvent(
         window,
         new MouseEvent('mouseup', {
@@ -103,7 +107,6 @@ describe('moving a scene/rootview on the canvas', () => {
           clientY: areaControlBounds.top - 25,
         }),
       )
-      await domFinished
       await dispatchDone
     })
     expect(getPrintedUiJsCode(renderResult.getEditorState())).toEqual(
@@ -180,8 +183,7 @@ describe('moving a scene/rootview on the canvas', () => {
     )
 
     await act(async () => {
-      const domFinished = renderResult.getDomReportDispatched()
-      const dispatchDone = renderResult.getDispatchFollowUpactionsFinished()
+      const dispatchDone = renderResult.getDispatchFollowUpActionsFinished()
       fireEvent(
         areaControl,
         new MouseEvent('mousemove', {
@@ -193,13 +195,11 @@ describe('moving a scene/rootview on the canvas', () => {
           buttons: 1,
         }),
       )
-      await domFinished
       await dispatchDone
     })
 
     await act(async () => {
-      const domFinished = renderResult.getDomReportDispatched()
-      const dispatchDone = renderResult.getDispatchFollowUpactionsFinished()
+      const dispatchDone = renderResult.getDispatchFollowUpActionsFinished()
       fireEvent(
         areaControl,
         new MouseEvent('mousemove', {
@@ -211,13 +211,11 @@ describe('moving a scene/rootview on the canvas', () => {
           buttons: 1,
         }),
       )
-      await domFinished
       await dispatchDone
     })
 
     await act(async () => {
-      const domFinished = renderResult.getDomReportDispatched()
-      const dispatchDone = renderResult.getDispatchFollowUpactionsFinished()
+      const dispatchDone = renderResult.getDispatchFollowUpActionsFinished()
       fireEvent(
         window,
         new MouseEvent('mouseup', {
@@ -228,7 +226,6 @@ describe('moving a scene/rootview on the canvas', () => {
           clientY: areaControlBounds.top - 25,
         }),
       )
-      await domFinished
       await dispatchDone
     })
 
@@ -270,6 +267,14 @@ describe('moving a scene/rootview on the canvas', () => {
 })
 
 describe('resizing a scene/rootview on the canvas', () => {
+  let originalValue = isFeatureEnabled('Canvas Strategies')
+  before(() => {
+    originalValue = isFeatureEnabled('Canvas Strategies')
+    setFeatureEnabled('Canvas Strategies', false)
+  })
+  after(() => {
+    setFeatureEnabled('Canvas Strategies', originalValue)
+  })
   it('resizing a scene child’s root view sets the root view size', async () => {
     const testCode = Prettier.format(
       `
@@ -328,8 +333,7 @@ describe('resizing a scene/rootview on the canvas', () => {
     )
 
     await act(async () => {
-      const domFinished = renderResult.getDomReportDispatched()
-      const dispatchDone = renderResult.getDispatchFollowUpactionsFinished()
+      const dispatchDone = renderResult.getDispatchFollowUpActionsFinished()
       fireEvent(
         areaControl,
         new MouseEvent('mousemove', {
@@ -341,13 +345,11 @@ describe('resizing a scene/rootview on the canvas', () => {
           buttons: 1,
         }),
       )
-      await domFinished
       await dispatchDone
     })
 
     await act(async () => {
-      const domFinished = renderResult.getDomReportDispatched()
-      const dispatchDone = renderResult.getDispatchFollowUpactionsFinished()
+      const dispatchDone = renderResult.getDispatchFollowUpActionsFinished()
       fireEvent(
         window,
         new MouseEvent('mouseup', {
@@ -358,7 +360,6 @@ describe('resizing a scene/rootview on the canvas', () => {
           clientY: areaControlBounds.top - 25,
         }),
       )
-      await domFinished
       await dispatchDone
     })
 
@@ -456,8 +457,7 @@ describe('resizing a scene/rootview on the canvas', () => {
     )
 
     await act(async () => {
-      const domFinished = renderResult.getDomReportDispatched()
-      const dispatchDone = renderResult.getDispatchFollowUpactionsFinished()
+      const dispatchDone = renderResult.getDispatchFollowUpActionsFinished()
       fireEvent(
         areaControl,
         new MouseEvent('mousemove', {
@@ -469,13 +469,11 @@ describe('resizing a scene/rootview on the canvas', () => {
           buttons: 1,
         }),
       )
-      await domFinished
       await dispatchDone
     })
 
     await act(async () => {
-      const domFinished = renderResult.getDomReportDispatched()
-      const dispatchDone = renderResult.getDispatchFollowUpactionsFinished()
+      const dispatchDone = renderResult.getDispatchFollowUpActionsFinished()
       fireEvent(
         window,
         new MouseEvent('mouseup', {
@@ -486,7 +484,6 @@ describe('resizing a scene/rootview on the canvas', () => {
           clientY: areaControlBounds.top - 25,
         }),
       )
-      await domFinished
       await dispatchDone
     })
 

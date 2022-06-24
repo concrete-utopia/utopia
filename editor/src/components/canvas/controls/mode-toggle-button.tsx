@@ -62,7 +62,7 @@ interface ButtonProps {
   onClick: () => void
 }
 
-const Button: React.FunctionComponent<ButtonProps> = (props) => (
+const Button: React.FunctionComponent<React.PropsWithChildren<ButtonProps>> = (props) => (
   <span
     css={{
       fontSize: 9,
@@ -85,7 +85,7 @@ const Button: React.FunctionComponent<ButtonProps> = (props) => (
         transition: 'all .1s linear',
         transitionDelay: '.1s',
       },
-      ...props.style,
+      ...(props.style as any), // TODO Emotion and React 18 types don't like each other
     }}
     onClick={props.onClick}
   >

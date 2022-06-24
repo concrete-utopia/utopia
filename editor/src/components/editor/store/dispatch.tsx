@@ -328,6 +328,11 @@ function maybeRequestModelUpdateOnEditor(
 let accumulatedProjectChanges: ProjectChanges = emptyProjectChanges
 let applyProjectChangesCoordinator: Promise<void> = Promise.resolve()
 
+export function resetDispatchGlobals(): void {
+  accumulatedProjectChanges = emptyProjectChanges
+  applyProjectChangesCoordinator = Promise.resolve()
+}
+
 export function editorDispatch(
   boundDispatch: EditorDispatch,
   dispatchedActions: readonly EditorAction[],
@@ -396,7 +401,23 @@ export function editorDispatch(
     (action) => action.action === 'UPDATE_FROM_WORKER',
   )
 
-  const editorFilteredForFiles = filterEditorForFiles(result.unpatchedEditor)
+  const { unpatchedEditorState, patchedEditorState, newStrategyState, patchedDerivedState } =
+    isFeatureEnabled('Canvas Strategies')
+      ? handleStrategies(
+          RegisteredCanvasStrategies,
+          dispatchedActions,
+          storedState,
+          result,
+          storedState.patchedDerived,
+        )
+      : {
+          unpatchedEditorState: result.unpatchedEditor,
+          patchedEditorState: result.unpatchedEditor,
+          newStrategyState: result.strategyState,
+          patchedDerivedState: result.unpatchedDerived,
+        }
+
+  const editorFilteredForFiles = filterEditorForFiles(unpatchedEditorState)
 
   const frozenDerivedState = result.unpatchedDerived
 
@@ -415,22 +436,6 @@ export function editorDispatch(
     !isLoadAction &&
     (!transientOrNoChange || anyUndoOrRedo || (anyWorkerUpdates && alreadySaved)) &&
     isBrowserEnvironment
-
-  const { unpatchedEditorState, patchedEditorState, newStrategyState, patchedDerivedState } =
-    isFeatureEnabled('Canvas Strategies')
-      ? handleStrategies(
-          RegisteredCanvasStrategies,
-          dispatchedActions,
-          storedState,
-          result,
-          storedState.patchedDerived,
-        )
-      : {
-          unpatchedEditorState: result.unpatchedEditor,
-          patchedEditorState: result.unpatchedEditor,
-          newStrategyState: result.strategyState,
-          patchedDerivedState: result.unpatchedDerived,
-        }
 
   const editorWithModelChecked =
     !anyUndoOrRedo && transientOrNoChange && !workerUpdatedModel
@@ -459,14 +464,7 @@ export function editorDispatch(
     builtInDependencies: storedState.builtInDependencies,
   }
 
-  if (!finalStore.nothingChanged) {
-    /**
-     * Heads up: we do not log dispatches that resulted in a NO_OP. This is to avoid clogging up the
-     * history with a million CLEAR_HIGHLIGHTED_VIEWS and other such actions.
-     *  */
-
-    reduxDevtoolsSendActions(actionGroupsToProcess, finalStore)
-  }
+  reduxDevtoolsSendActions(actionGroupsToProcess, finalStore, allTransient)
 
   if (storedState.userState.loginState.type !== result.userState.loginState.type) {
     if (isLoggedIn(result.userState.loginState)) {

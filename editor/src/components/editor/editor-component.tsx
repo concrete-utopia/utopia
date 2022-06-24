@@ -19,7 +19,7 @@ import { PreviewColumn } from '../preview/preview-pane'
 import { ReleaseNotesContent } from '../documentation/release-notes'
 import { EditorDispatch, LoginState } from './action-types'
 import * as EditorActions from './actions/action-creators'
-import { handleKeyDown, handleKeyUp } from './global-shortcuts'
+import { editorIsTarget, handleKeyDown, handleKeyUp } from './global-shortcuts'
 import { StateHistory } from './history'
 import { LoginStatusBar, BrowserInfoBar } from './notification-bar'
 import {
@@ -143,7 +143,10 @@ export const EditorComponentInner = React.memo((props: EditorProps) => {
 
   const onWindowKeyDown = React.useCallback(
     (event: KeyboardEvent) => {
-      if (isFeatureEnabled('Canvas Strategies')) {
+      if (
+        isFeatureEnabled('Canvas Strategies') &&
+        editorIsTarget(event, editorStoreRef.current.editor)
+      ) {
         const key = Keyboard.keyCharacterForCode(event.keyCode)
         const modifiers = Modifier.modifiersForKeyboardEvent(event)
 
@@ -193,7 +196,7 @@ export const EditorComponentInner = React.memo((props: EditorProps) => {
   )
 
   const onWindowKeyUp = React.useCallback(
-    (event) => {
+    (event: KeyboardEvent) => {
       if (isFeatureEnabled('Canvas Strategies')) {
         const existingInteractionSession = editorStoreRef.current.editor.canvas.interactionSession
         if (existingInteractionSession != null) {

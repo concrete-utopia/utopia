@@ -4,12 +4,11 @@ import { addAllUniquelyBy, mapDropNulls, sortBy } from '../../../core/shared/arr
 import { ElementInstanceMetadataMap } from '../../../core/shared/element-template'
 import { arrayEquals } from '../../../core/shared/utils'
 import { InnerDispatchResult } from '../../editor/store/dispatch'
-import { EditorState, EditorStorePatched } from '../../editor/store/editor-state'
+import { AllElementProps, EditorState, EditorStorePatched } from '../../editor/store/editor-state'
 import { useEditorState } from '../../editor/store/store-hook'
 import { CanvasCommand } from '../commands/commands'
 import { absoluteMoveStrategy } from './absolute-move-strategy'
 import { absoluteReparentStrategy } from './absolute-reparent-strategy'
-import { absoluteResizeDeltaStrategy } from './absolute-resize-delta-strategy'
 import {
   CanvasStrategy,
   CanvasStrategyId,
@@ -23,14 +22,15 @@ import { absoluteResizeBoundingBoxStrategy } from './absolute-resize-bounding-bo
 import { keyboardAbsoluteResizeStrategy } from './keyboard-absolute-resize-strategy'
 import { escapeHatchStrategy } from './escape-hatch-strategy'
 import { flexReorderStrategy } from './flex-reorder-strategy'
+import { absoluteDuplicateStrategy } from './absolute-duplicate-strategy'
 
 export const RegisteredCanvasStrategies: Array<CanvasStrategy> = [
   absoluteMoveStrategy,
   absoluteReparentStrategy,
+  absoluteDuplicateStrategy,
   keyboardAbsoluteMoveStrategy,
   keyboardAbsoluteResizeStrategy,
   absoluteResizeBoundingBoxStrategy,
-  absoluteResizeDeltaStrategy,
   flexReorderStrategy,
   escapeHatchStrategy,
 ]
@@ -50,9 +50,10 @@ function getApplicableStrategies(
   canvasState: InteractionCanvasState,
   interactionSession: InteractionSession | null,
   metadata: ElementInstanceMetadataMap,
+  allElementProps: AllElementProps,
 ): Array<CanvasStrategy> {
   return strategies.filter((strategy) => {
-    return strategy.isApplicable(canvasState, interactionSession, metadata)
+    return strategy.isApplicable(canvasState, interactionSession, metadata, allElementProps)
   })
 }
 
@@ -68,16 +69,19 @@ const getApplicableStrategiesSelector = createSelector(
   },
   (store: EditorStorePatched) => store.editor.canvas.interactionSession,
   (store: EditorStorePatched) => store.editor.jsxMetadata,
+  (store: EditorStorePatched) => store.editor.allElementProps,
   (
     canvasState: InteractionCanvasState,
     interactionSession: InteractionSession | null,
     metadata: ElementInstanceMetadataMap,
+    allElementProps: AllElementProps,
   ): Array<CanvasStrategy> => {
     return getApplicableStrategies(
       RegisteredCanvasStrategies,
       canvasState,
       interactionSession,
       metadata,
+      allElementProps,
     )
   },
 )
@@ -102,6 +106,7 @@ function getApplicableStrategiesOrderedByFitness(
     canvasState,
     interactionSession,
     strategyState.startingMetadata,
+    strategyState.startingAllElementProps,
   )
 
   // Compute the fitness results upfront.

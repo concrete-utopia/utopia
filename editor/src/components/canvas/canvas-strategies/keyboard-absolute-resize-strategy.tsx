@@ -2,12 +2,63 @@ import { MetadataUtils } from '../../../core/model/element-metadata-utils'
 import { Keyboard, KeyCharacter } from '../../../utils/keyboard'
 import { CanvasStrategy, emptyStrategyApplicationResult } from './canvas-strategy-types'
 import { Modifiers } from '../../../utils/modifiers'
-import { CanvasVector } from '../../../core/shared/math-utils'
+import { CanvasVector, offsetPoint, scaleVector } from '../../../core/shared/math-utils'
 import { AdjustCssLengthProperty } from '../commands/adjust-css-length-command'
 import { createResizeCommands } from './shared-absolute-resize-strategy-helpers'
 import { withUnderlyingTarget } from '../../editor/store/editor-state'
 import { EdgePosition } from '../canvas-types'
 import { AbsoluteResizeControl } from '../controls/select-mode/absolute-resize-control'
+import {
+  SetElementsToRerenderCommand,
+  setElementsToRerenderCommand,
+} from '../commands/set-elements-to-rerender-command'
+import { CanvasCommand } from '../commands/commands'
+import { last } from '../../../core/shared/array-utils'
+import {
+  AccumulatedPresses,
+  accumulatePresses,
+  getDragDeltaFromKey,
+  getLastKeyPressState,
+} from './shared-keyboard-strategy-helpers'
+
+interface VectorAndEdge {
+  drag: CanvasVector
+  edge: EdgePosition
+}
+
+function pressesToVectorAndEdges(
+  accumulatedPresses: Array<AccumulatedPresses>,
+): Array<VectorAndEdge> {
+  let result: Array<VectorAndEdge> = []
+
+  accumulatedPresses.forEach((accumulatedPress) => {
+    accumulatedPress.keysPressed.forEach((key) => {
+      const keyPressDrag = scaleVector(
+        getDragDeltaFromKey(key, accumulatedPress.modifiers),
+        accumulatedPress.count,
+      )
+      const edgePosition = getEdgePositionFromKey(key)
+      if (edgePosition != null) {
+        let foundVectorAndEdge: VectorAndEdge | null = null
+        for (let vectorAndEdge of result) {
+          if (vectorAndEdge.edge.x === edgePosition.x && vectorAndEdge.edge.y === edgePosition.y) {
+            foundVectorAndEdge = vectorAndEdge
+          }
+        }
+        if (foundVectorAndEdge == null) {
+          result.push({
+            drag: keyPressDrag,
+            edge: edgePosition,
+          })
+        } else {
+          foundVectorAndEdge.drag = offsetPoint(foundVectorAndEdge.drag, keyPressDrag)
+        }
+      }
+    })
+  })
+
+  return result
+}
 
 export const keyboardAbsoluteResizeStrategy: CanvasStrategy = {
   id: 'KEYBOARD_ABSOLUTE_RESIZE',
@@ -32,101 +83,66 @@ export const keyboardAbsoluteResizeStrategy: CanvasStrategy = {
         canvasState,
         interactionState,
         sessionState.startingMetadata,
+        sessionState.startingAllElementProps,
       ) &&
       interactionState.interactionData.type === 'KEYBOARD'
     ) {
       const { interactionData } = interactionState
+      const lastKeyPress = getLastKeyPressState(interactionData.keyStates)
+      if (lastKeyPress != null) {
+        const cmdAndOptionallyShiftModifier =
+          lastKeyPress.modifiers.cmd && !lastKeyPress.modifiers.alt && !lastKeyPress.modifiers.ctrl
 
-      const arrowKeyPressed = interactionData.keysPressed.some(Keyboard.keyIsArrow)
-      const cmdAndOptionallyShiftModifier =
-        interactionState.interactionData.modifiers.cmd &&
-        !interactionState.interactionData.modifiers.alt &&
-        !interactionState.interactionData.modifiers.ctrl
-
-      if (arrowKeyPressed && cmdAndOptionallyShiftModifier) {
-        return 1
+        if (cmdAndOptionallyShiftModifier) {
+          return 1
+        }
       }
     }
     return 0
   },
   apply: (canvasState, interactionState, sessionState) => {
     if (interactionState.interactionData.type === 'KEYBOARD') {
-      return {
-        commands: interactionState.interactionData.keysPressed.flatMap<AdjustCssLengthProperty>(
-          (key) => {
-            if (key == null) {
-              return []
-            }
-            const drag = getDragDeltaFromKey(key, interactionState.interactionData.modifiers)
-            const edgePosition = getEdgePositionFromKey(key)
-            if (drag.x !== 0 || drag.y !== 0) {
-              return canvasState.selectedElements.flatMap((selectedElement) => {
-                const element = withUnderlyingTarget(
-                  selectedElement,
-                  canvasState.projectContents,
-                  {},
-                  canvasState.openFile,
-                  null,
-                  (_, e) => e,
-                )
-                const elementParentBounds =
-                  MetadataUtils.findElementByElementPath(
-                    sessionState.startingMetadata,
-                    selectedElement,
-                  )?.specialSizeMeasurements.immediateParentBounds ?? null
+      const accumulatedPresses = accumulatePresses(interactionState.interactionData.keyStates)
+      const dragsWithEdges = pressesToVectorAndEdges(accumulatedPresses)
+      let commands: Array<CanvasCommand> = []
+      dragsWithEdges.forEach((dragWithEdge) => {
+        if (dragWithEdge.drag.x !== 0 || dragWithEdge.drag.y !== 0) {
+          canvasState.selectedElements.forEach((selectedElement) => {
+            const element = withUnderlyingTarget(
+              selectedElement,
+              canvasState.projectContents,
+              {},
+              canvasState.openFile,
+              null,
+              (_, e) => e,
+            )
+            const elementParentBounds =
+              MetadataUtils.findElementByElementPath(sessionState.startingMetadata, selectedElement)
+                ?.specialSizeMeasurements.immediateParentBounds ?? null
 
-                if (element == null || edgePosition == null) {
-                  return []
-                }
-                return createResizeCommands(
+            if (element != null) {
+              commands.push(
+                ...createResizeCommands(
                   element,
                   selectedElement,
-                  edgePosition,
-                  drag,
+                  dragWithEdge.edge,
+                  dragWithEdge.drag,
                   elementParentBounds,
-                )
-              })
-            } else {
-              return []
+                ),
+              )
             }
-          },
-        ),
+          })
+        }
+      })
+      commands.push(setElementsToRerenderCommand(canvasState.selectedElements))
+      return {
+        commands: commands,
         customState: null,
       }
+    } else {
+      return emptyStrategyApplicationResult
     }
-    return emptyStrategyApplicationResult
   },
-}
-
-function getDragDeltaFromKey(key: KeyCharacter, modifiers: Modifiers): CanvasVector {
-  const step = modifiers.shift ? 10 : 1
-  switch (key) {
-    case 'left':
-      return {
-        x: -step,
-        y: 0,
-      } as CanvasVector
-    case 'right':
-      return {
-        x: step,
-        y: 0,
-      } as CanvasVector
-    case 'up':
-      return {
-        x: 0,
-        y: -step,
-      } as CanvasVector
-    case 'down':
-      return {
-        x: 0,
-        y: step,
-      } as CanvasVector
-    default:
-      return {
-        x: 0,
-        y: 0,
-      } as CanvasVector
-  }
 }
 
 function getEdgePositionFromKey(key: KeyCharacter): EdgePosition | null {

@@ -39,7 +39,11 @@ import {
   getOpenUtopiaJSXComponentsFromStateMultifile,
   isOpenFileUiJs,
 } from '../editor/store/editor-state'
-import { useEditorState } from '../editor/store/store-hook'
+import {
+  EditorStateContext,
+  InspectorStateContext,
+  useEditorState,
+} from '../editor/store/store-hook'
 import {
   InspectorCallbackContext,
   InspectorPropsContext,
@@ -82,6 +86,7 @@ import { when } from '../../utils/react-conditionals'
 import { createSelector } from 'reselect'
 import { isTwindEnabled } from '../../core/tailwind/tailwind'
 import { isStrategyActive } from '../canvas/canvas-strategies/canvas-strategies'
+import type { StrategyState } from '../canvas/canvas-strategies/interaction-state'
 
 export interface ElementPathElement {
   name?: string
@@ -227,6 +232,10 @@ function buildNonDefaultPositionPaths(propertyTarget: Array<string>): Array<Prop
   ]
 }
 
+export function shouldInspectorUpdate(strategyState: StrategyState): boolean {
+  return !isStrategyActive(strategyState)
+}
+
 export const Inspector = React.memo<InspectorProps>((props: InspectorProps) => {
   const colorTheme = useColorTheme()
   const { selectedViews, setSelectedTarget, targets } = props
@@ -241,7 +250,6 @@ export const Inspector = React.memo<InspectorProps>((props: InspectorProps) => {
     anyUnknownElements,
     hasNonDefaultPositionAttributes,
     aspectRatioLocked,
-    isInteractionActive,
   } = useEditorState((store) => {
     const rootMetadata = store.editor.jsxMetadata
     let anyComponentsInner: boolean = false
@@ -258,10 +266,12 @@ export const Inspector = React.memo<InspectorProps>((props: InspectorProps) => {
       anyComponentsInner =
         anyComponentsInner || MetadataUtils.isComponentInstance(view, rootComponents)
       const possibleElement = MetadataUtils.findElementByElementPath(rootMetadata, view)
-      if (possibleElement != null) {
+      const elementProps = store.editor.allElementProps[EP.toString(view)]
+      if (possibleElement != null && elementProps != null) {
         // Slightly coarse in definition, but element metadata is in a weird little world of
         // its own compared to the props.
-        aspectRatioLockedInner = aspectRatioLockedInner || isAspectRatioLockedNew(possibleElement)
+        aspectRatioLockedInner =
+          aspectRatioLockedInner || isAspectRatioLockedNew(possibleElement, elementProps)
 
         const elementOriginType = MetadataUtils.getElementOriginType(rootComponents, view)
         if (elementOriginType === 'unknown-element') {
@@ -289,7 +299,6 @@ export const Inspector = React.memo<InspectorProps>((props: InspectorProps) => {
       anyUnknownElements: anyUnknownElementsInner,
       hasNonDefaultPositionAttributes: hasNonDefaultPositionAttributesInner,
       aspectRatioLocked: aspectRatioLockedInner,
-      isInteractionActive: isStrategyActive(store.strategyState),
     }
   }, 'Inspector')
 
@@ -309,12 +318,25 @@ export const Inspector = React.memo<InspectorProps>((props: InspectorProps) => {
     dispatch(actions, 'everyone')
   }, [dispatch, selectedViews, aspectRatioLocked])
 
+  const shouldShowInspector = React.useMemo(() => {
+    return props.elementPath.length !== 0 && !anyUnknownElements
+  }, [props.elementPath, anyUnknownElements])
+
   function renderInspectorContents() {
-    if (props.elementPath.length == 0 || anyUnknownElements) {
-      return <SettingsPanel />
-    } else {
-      return (
-        <React.Fragment>
+    return (
+      <React.Fragment>
+        <div
+          style={{
+            display: shouldShowInspector ? 'none' : undefined,
+          }}
+        >
+          <SettingsPanel />
+        </div>
+        <div
+          style={{
+            display: shouldShowInspector ? undefined : 'none',
+          }}
+        >
           <AlignmentButtons numberOfTargets={selectedViews.length} />
           {when(isTwindEnabled(), <ClassNameSubsection />)}
           {anyComponents ? <ComponentSection isScene={false} /> : null}
@@ -335,46 +357,56 @@ export const Inspector = React.memo<InspectorProps>((props: InspectorProps) => {
           <WarningSubsection />
           <ImgSection />
           <EventHandlersSection />
-        </React.Fragment>
-      )
-    }
-  }
-
-  if (isInteractionActive) {
-    return null
-  } else {
-    return (
-      <div
-        id='inspector'
-        style={{
-          width: '100%',
-          position: 'relative',
-          color: colorTheme.neutralForeground.value,
-        }}
-        onFocus={onFocus}
-      >
-        {renderInspectorContents()}
-      </div>
+        </div>
+      </React.Fragment>
     )
   }
+
+  return (
+    <div
+      id='inspector'
+      style={{
+        width: '100%',
+        position: 'relative',
+        color: colorTheme.neutralForeground.value,
+      }}
+      onFocus={onFocus}
+    >
+      {renderInspectorContents()}
+    </div>
+  )
 })
 Inspector.displayName = 'Inspector'
 
 const DefaultStyleTargets: Array<CSSTarget> = [cssTarget(['style'], 0), cssTarget(['css'], 0)]
 
-export const InspectorEntryPoint: React.FunctionComponent = React.memo(() => {
-  const selectedViews = useEditorState(
-    (store) => store.editor.selectedViews,
-    'InspectorEntryPoint selectedViews',
-  )
+export const InspectorEntryPoint: React.FunctionComponent<React.PropsWithChildren<unknown>> =
+  React.memo(() => {
+    const inspectorStore = React.useContext(InspectorStateContext)?.useStore
+    return (
+      <EditorStateContext.Provider
+        value={inspectorStore == null ? null : { api: inspectorStore, useStore: inspectorStore }}
+      >
+        <MultiselectInspector />
+      </EditorStateContext.Provider>
+    )
+  })
 
-  return (
-    <SingleInspectorEntryPoint
-      key={'inspector-entry-selected-views'}
-      selectedViews={selectedViews}
-    />
-  )
-})
+const MultiselectInspector: React.FunctionComponent<React.PropsWithChildren<unknown>> = React.memo(
+  () => {
+    const selectedViews = useEditorState(
+      (store) => store.editor.selectedViews,
+      'InspectorEntryPoint selectedViews',
+    )
+
+    return (
+      <SingleInspectorEntryPoint
+        key={'inspector-entry-selected-views'}
+        selectedViews={selectedViews}
+      />
+    )
+  },
+)
 
 function updateTargets(localJSXElement: JSXElement): Array<CSSTarget> {
   let localTargets: Array<CSSTarget> = []
@@ -409,15 +441,18 @@ function updateTargets(localJSXElement: JSXElement): Array<CSSTarget> {
   return localTargets
 }
 
-export const SingleInspectorEntryPoint: React.FunctionComponent<{
-  selectedViews: Array<ElementPath>
-}> = React.memo((props) => {
+export const SingleInspectorEntryPoint: React.FunctionComponent<
+  React.PropsWithChildren<{
+    selectedViews: Array<ElementPath>
+  }>
+> = React.memo((props) => {
   const { selectedViews } = props
-  const { dispatch, jsxMetadata, isUIJSFile } = useEditorState((store) => {
+  const { dispatch, jsxMetadata, isUIJSFile, allElementProps } = useEditorState((store) => {
     return {
       dispatch: store.dispatch,
       jsxMetadata: store.editor.jsxMetadata,
       isUIJSFile: isOpenFileUiJs(store.editor),
+      allElementProps: store.editor.allElementProps,
     }
   }, 'SingleInspectorEntryPoint')
 
@@ -453,13 +488,13 @@ export const SingleInspectorEntryPoint: React.FunctionComponent<{
         const component = MetadataUtils.findElementByElementPath(jsxMetadata, path)
         if (component != null) {
           elements.push({
-            name: MetadataUtils.getElementLabel(path, jsxMetadata),
+            name: MetadataUtils.getElementLabel(allElementProps, path, jsxMetadata),
             path: path,
           })
         }
       })
       return elements
-    }, [selectedViews, jsxMetadata]),
+    }, [selectedViews, jsxMetadata, allElementProps]),
   )
 
   // Memoized Callbacks
@@ -549,10 +584,11 @@ export const InspectorContextProvider = React.memo<{
   children: React.ReactNode
 }>((props) => {
   const { selectedViews } = props
-  const { dispatch, jsxMetadata } = useEditorState((store) => {
+  const { dispatch, jsxMetadata, allElementProps } = useEditorState((store) => {
     return {
       dispatch: store.dispatch,
       jsxMetadata: store.editor.jsxMetadata,
+      allElementProps: store.editor.allElementProps,
     }
   }, 'InspectorContextProvider')
 
@@ -587,7 +623,7 @@ export const InspectorContextProvider = React.memo<{
 
       const jsxAttributes = isJSXElement(jsxElement) ? jsxElement.props : []
       newEditedMultiSelectedProps.push(jsxAttributes)
-      newSpiedProps.push(elementMetadata.props)
+      newSpiedProps.push(allElementProps[EP.toString(path)] ?? {})
       newComputedStyles.push(elementMetadata.computedStyle)
       newAttributeMetadatas.push(elementMetadata.attributeMetadatada)
     }

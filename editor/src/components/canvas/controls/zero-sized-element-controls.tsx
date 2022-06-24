@@ -5,7 +5,6 @@ import { jsx, css } from '@emotion/react'
 import { MetadataUtils } from '../../../core/model/element-metadata-utils'
 import * as EP from '../../../core/shared/element-path'
 import { useColorTheme } from '../../../uuiui'
-import { ControlProps } from './new-canvas-controls'
 import {
   ElementInstanceMetadata,
   emptyComments,
@@ -22,35 +21,56 @@ import { EditorDispatch } from '../../editor/action-types'
 import { isZeroSizedElement, ZeroControlSize } from './outline-utils'
 import { ElementPath, PropertyPath } from '../../../core/shared/project-file-types'
 import { stylePropPathMappingFn } from '../../inspector/common/property-path-hooks'
+import { useEditorState } from '../../editor/store/store-hook'
+import { mapDropNulls } from '../../../core/shared/array-utils'
+import { useMaybeHighlightElement } from './select-mode/select-mode-hooks'
+import { CanvasOffsetWrapper } from './canvas-offset-wrapper'
 
 const EmptyChildren: ElementInstanceMetadata[] = []
-export const ZeroSizedElementControls = React.memo((props: ControlProps) => {
-  let zeroSizeChildren = EmptyChildren
-  if (props.cmdKeyPressed) {
-    zeroSizeChildren = props.selectedViews.flatMap((view) => {
-      const children = MetadataUtils.getChildren(props.componentMetadata, view)
-      return children.filter((child) => {
-        if (child.globalFrame == null) {
-          return false
-        } else {
-          return isZeroSizedElement(child.globalFrame)
-        }
+export const ZeroSizedElementControls = React.memo(() => {
+  const highlightedViews = useEditorState(
+    (store) => store.editor.highlightedViews,
+    'ZeroSizedElementControls highlightedViews',
+  )
+  const canvasOffset = useEditorState(
+    (store) => store.editor.canvas.realCanvasOffset,
+    'ZeroSizedElementControls canvasOffset',
+  )
+  const scale = useEditorState(
+    (store) => store.editor.canvas.scale,
+    'ZeroSizedElementControls scale',
+  )
+  const dispatch = useEditorState((store) => store.dispatch, 'ZeroSizedElementControls dispatch')
+
+  const zeroSizeChildren = useEditorState((store) => {
+    if (store.editor.keysPressed['cmd']) {
+      return store.editor.selectedViews.flatMap((view) => {
+        const children = MetadataUtils.getChildren(store.editor.jsxMetadata, view)
+        return children.filter((child) => {
+          if (child.globalFrame == null) {
+            return false
+          } else {
+            return isZeroSizedElement(child.globalFrame)
+          }
+        })
       })
-    })
-  }
+    } else {
+      return EmptyChildren
+    }
+  }, 'ZeroSizedElementControls selectedViews')
 
   return (
     <React.Fragment>
       {zeroSizeChildren.map((element) => {
         let isHighlighted =
-          props.highlightedViews.find((view) => EP.pathsEqual(element.elementPath, view)) != null
+          highlightedViews.find((view) => EP.pathsEqual(element.elementPath, view)) != null
         return (
           <ZeroSizeSelectControl
             key={`zero-size-element-${EP.toString(element.elementPath)}`}
             element={element}
-            dispatch={props.dispatch}
-            canvasOffset={props.canvasOffset}
-            scale={props.scale}
+            dispatch={dispatch}
+            canvasOffset={canvasOffset}
+            scale={scale}
             isHighlighted={isHighlighted}
           />
         )
@@ -150,27 +170,82 @@ export const ZeroSizeHighlightControl = React.memo((props: ZeroSizeControlProps)
   )
 })
 
-export const ZeroSizeOutlineControl = React.memo((props: ZeroSizeControlProps) => {
-  const colorTheme = useColorTheme()
-  const controlSize = 1 / props.scale
+export const ZeroSizeOutlineControl = React.memo(
+  (props: Omit<ZeroSizeControlProps, 'canvasOffset'>) => {
+    const colorTheme = useColorTheme()
+    const controlSize = 1 / props.scale
+
+    return (
+      <CanvasOffsetWrapper>
+        <div
+          className='role-outline-no-size'
+          style={{
+            position: 'absolute',
+            left: props.frame.x - ZeroControlSize / 2,
+            top: props.frame.y - ZeroControlSize / 2,
+            width: props.frame.width + ZeroControlSize,
+            height: props.frame.height + ZeroControlSize,
+            borderRadius: ZeroControlSize / 2,
+            boxShadow: `0px 0px 0px ${controlSize}px ${colorTheme.primary.value}, inset 0px 0px 0px ${controlSize}px ${colorTheme.primary.value}`,
+          }}
+        />
+      </CanvasOffsetWrapper>
+    )
+  },
+)
+
+export const ZeroSizeResizeControlWrapper = React.memo(() => {
+  const { maybeHighlightOnHover, maybeClearHighlightsOnHoverEnd } = useMaybeHighlightElement()
+  const zeroSizeElements = useEditorState((store) => {
+    return mapDropNulls((path) => {
+      const element = MetadataUtils.findElementByElementPath(store.editor.jsxMetadata, path)
+      const frame = MetadataUtils.getFrameInCanvasCoords(path, store.editor.jsxMetadata)
+      if (frame != null && isZeroSizedElement(frame)) {
+        return element
+      } else {
+        return null
+      }
+    }, store.editor.selectedViews)
+  }, 'ZeroSizeResizeControlWrapper zeroSizeElements')
+
+  const dispatch = useEditorState(
+    (store) => store.dispatch,
+    'ZeroSizeResizeControlWrapper dispatch',
+  )
+  const scale = useEditorState(
+    (store) => store.editor.canvas.scale,
+    'ZeroSizeResizeControlWrapper scale',
+  )
 
   return (
-    <div
-      className='role-outline-no-size'
-      style={{
-        position: 'absolute',
-        left: props.frame.x + props.canvasOffset.x - ZeroControlSize / 2,
-        top: props.frame.y + props.canvasOffset.y - ZeroControlSize / 2,
-        width: props.frame.width + ZeroControlSize,
-        height: props.frame.height + ZeroControlSize,
-        borderRadius: ZeroControlSize / 2,
-        boxShadow: `0px 0px 0px ${controlSize}px ${colorTheme.primary.value}, inset 0px 0px 0px ${controlSize}px ${colorTheme.primary.value}`,
-      }}
-    />
+    <React.Fragment>
+      {zeroSizeElements.map((element) => {
+        if (element.globalFrame != null) {
+          return (
+            <React.Fragment>
+              <ZeroSizeOutlineControl frame={element.globalFrame} scale={scale} color={null} />
+              <ZeroSizeResizeControl
+                element={element}
+                frame={element.globalFrame}
+                dispatch={dispatch}
+                scale={scale}
+                color={null}
+                maybeClearHighlightsOnHoverEnd={maybeClearHighlightsOnHoverEnd}
+              />
+            </React.Fragment>
+          )
+        } else {
+          return null
+        }
+      })}
+    </React.Fragment>
   )
 })
 
-interface ZeroSizeResizeControlProps extends ZeroSizeControlProps {
+interface ZeroSizeResizeControlProps {
+  frame: CanvasRectangle
+  scale: number
+  color: string | null | undefined
   element: ElementInstanceMetadata | null
   dispatch: EditorDispatch
   maybeClearHighlightsOnHoverEnd: () => void
@@ -247,18 +322,20 @@ export const ZeroSizeResizeControl = React.memo((props: ZeroSizeResizeControlPro
   }, [dispatch, element, props.frame])
 
   return (
-    <div
-      onMouseMove={onControlMouseMove}
-      onMouseDown={onControlStopPropagation}
-      onDoubleClick={onControlDoubleClick}
-      className='role-resize-no-size'
-      style={{
-        position: 'absolute',
-        left: props.frame.x + props.canvasOffset.x - ZeroControlSize / 2,
-        top: props.frame.y + props.canvasOffset.y - ZeroControlSize / 2,
-        width: props.frame.width + ZeroControlSize,
-        height: props.frame.height + ZeroControlSize,
-      }}
-    />
+    <CanvasOffsetWrapper>
+      <div
+        onMouseMove={onControlMouseMove}
+        onMouseDown={onControlStopPropagation}
+        onDoubleClick={onControlDoubleClick}
+        className='role-resize-no-size'
+        style={{
+          position: 'absolute',
+          left: props.frame.x - ZeroControlSize / 2,
+          top: props.frame.y - ZeroControlSize / 2,
+          width: props.frame.width + ZeroControlSize,
+          height: props.frame.height + ZeroControlSize,
+        }}
+      />
+    </CanvasOffsetWrapper>
   )
 })

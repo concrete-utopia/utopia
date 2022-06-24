@@ -1,5 +1,5 @@
 import localforage from 'localforage'
-import { PRODUCTION_CONFIG } from '../common/env-vars'
+import { IS_TEST_ENVIRONMENT, PRODUCTION_CONFIG } from '../common/env-vars'
 import { fastForEach, isBrowserEnvironment } from '../core/shared/utils'
 
 export type FeatureName =
@@ -14,6 +14,7 @@ export type FeatureName =
   | 'Insertion Plus Button'
   | 'Canvas Strategies'
   | 'Keyboard up clears interaction'
+  | 'Canvas Selective Rerender'
 
 export const AllFeatureNames: FeatureName[] = [
   // 'Dragging Reparents By Default', // Removing this option so that we can experiment on this later
@@ -27,6 +28,7 @@ export const AllFeatureNames: FeatureName[] = [
   'Insertion Plus Button',
   'Canvas Strategies',
   'Keyboard up clears interaction',
+  'Canvas Selective Rerender',
 ]
 
 let FeatureSwitches: { [feature in FeatureName]: boolean } = {
@@ -39,8 +41,9 @@ let FeatureSwitches: { [feature in FeatureName]: boolean } = {
   'Performance Test Triggers': !(PRODUCTION_CONFIG as boolean),
   'Click on empty canvas unfocuses': true,
   'Insertion Plus Button': true,
-  'Canvas Strategies': false,
+  'Canvas Strategies': true,
   'Keyboard up clears interaction': false,
+  'Canvas Selective Rerender': true,
 }
 
 function settingKeyForName(featureName: FeatureName): string {
@@ -48,7 +51,7 @@ function settingKeyForName(featureName: FeatureName): string {
 }
 
 async function loadStoredValue(featureName: FeatureName) {
-  if (isBrowserEnvironment) {
+  if (isBrowserEnvironment && !IS_TEST_ENVIRONMENT) {
     const existing = await localforage.getItem<boolean | null>(settingKeyForName(featureName))
     if (existing != null) {
       FeatureSwitches[featureName] = existing

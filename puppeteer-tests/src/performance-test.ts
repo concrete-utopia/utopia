@@ -8,9 +8,12 @@ const fs = require('fs')
 const path = require('path')
 const moveFile = require('move-file')
 
-const BRANCH_NAME = process.env.BRANCH_NAME ? `?branch_name=${process.env.BRANCH_NAME}` : ''
-const STAGING_EDITOR_URL = process.env.EDITOR_URL ?? `https://utopia.pizza/p${BRANCH_NAME}`
-const MASTER_EDITOR_URL = process.env.MASTER_EDITOR_URL ?? `https://utopia.pizza/p`
+const BRANCH_NAME = process.env.BRANCH_NAME ? `&branch_name=${process.env.BRANCH_NAME}` : ''
+const STAGING_EDITOR_URL =
+  process.env.EDITOR_URL ?? `https://utopia.pizza/p?code_editor_disabled=true${BRANCH_NAME}`
+const MASTER_EDITOR_URL =
+  process.env.MASTER_EDITOR_URL ??
+  `https://utopia.pizza/p?code_editor_disabled=true&branch_name=performance-test-target`
 
 export function wait(timeout: number): Promise<void> {
   return new Promise((resolve) => {
@@ -79,31 +82,64 @@ function defer() {
 
 const ResizeButtonXPath = "//a[contains(., 'P R')]"
 
-function consoleMessageForResult(result: FrameResult): string {
-  return `${result.title}: ${result.analytics.percentile50}ms (${result.analytics.frameMin}-${result.analytics.frameMax}ms)`
+function consoleMessageForResult(result: FrameResult, beforeOrAfter: 'Before' | 'After'): string {
+  return `${beforeOrAfter}: ${result.analytics.percentile50}ms (${result.analytics.frameMin}-${result.analytics.frameMax}ms)`
 }
 
-interface PerformanceResult {
-  message: string
-  summaryImageUrl: string
+type ResultsGroup = { [key: string]: FrameResult }
+type PerformanceResults = {
+  frameTests: ResultsGroup
+  interactionTests: ResultsGroup
 }
 
 export const testPerformance = async function () {
   const stagingResult = await testPerformanceInner(STAGING_EDITOR_URL)
   const masterResult = await testPerformanceInner(MASTER_EDITOR_URL)
 
-  const stagingCombined = `${stagingResult.message} | ![(Chart)](${stagingResult.summaryImageUrl})`
-  const masterCombined = `${masterResult.message} | ![(Chart)](${masterResult.summaryImageUrl})`
+  const framesSummaryImage = await uploadSummaryImage(
+    stagingResult.frameTests,
+    masterResult.frameTests,
+    100,
+  )
+  const interactionsSummaryImage = await uploadSummaryImage(
+    stagingResult.interactionTests,
+    masterResult.interactionTests,
+    200,
+  )
+
+  const combinedStagingResult = { ...stagingResult.frameTests, ...stagingResult.interactionTests }
+  const combinedMasterResult = { ...masterResult.frameTests, ...masterResult.interactionTests }
+
+  const messageParts = Object.entries(combinedStagingResult).flatMap(([k, result]) => {
+    const targetResult = combinedMasterResult[k]
+    const beforeMedian = targetResult.analytics.percentile50 ?? 1
+    const afterMedian = result.analytics.percentile50 ?? 1
+    const change = ((afterMedian - beforeMedian) / beforeMedian) * 100
+    const titleLine = `**${result.title} (${Math.round(change)}%)**`
+    const spacerLine = ''
+    if (Math.abs(change) > 5) {
+      return [
+        titleLine,
+        consoleMessageForResult(targetResult, 'Before'),
+        consoleMessageForResult(result, 'After'),
+        spacerLine,
+      ]
+    } else {
+      return [titleLine, spacerLine]
+    }
+  })
+
+  const message = messageParts.join('<br />')
+  const discordMessage = messageParts.join('\\n')
 
   console.info(
-    `::set-output name=perf-result:: This PR: <br /> ${stagingCombined} <br /> Compare with last deployed Master: <br /> ${masterCombined}`,
+    `::set-output name=perf-result:: ${message} <br /> ![(Chart1)](${framesSummaryImage}) <br /> ![(Chart2)](${interactionsSummaryImage})`,
   )
 
   // Output the individual parts for building a discord message
-  console.info(`::set-output name=perf-message-staging:: ${stagingResult.message}`)
-  console.info(`::set-output name=perf-chart-staging:: ${stagingResult.summaryImageUrl}`)
-  console.info(`::set-output name=perf-message-master:: ${masterResult.message}`)
-  console.info(`::set-output name=perf-chart-master:: ${masterResult.summaryImageUrl}`)
+  console.info(`::set-output name=perf-discord-message:: ${discordMessage}`)
+  console.info(`::set-output name=perf-frames-chart:: ${framesSummaryImage}`)
+  console.info(`::set-output name=perf-interactions-chart:: ${interactionsSummaryImage}`)
 }
 
 type PageToPromiseResult<T> = (page: puppeteer.Page) => Promise<T>
@@ -119,6 +155,15 @@ async function retryPageCalls<T>(
     await page.waitForXPath(`//div[contains(@id, "canvas-container")]`)
     await page.waitForXPath('//div[contains(@class, "item-label-container")]')
     try {
+      const iterations = await page.evaluate(() => {
+        try {
+          // @ts-expect-error – page.evaluate remotely calls this function in the running editor!!
+          SetPerformanceScriptNumberOfIterations(100)
+        } catch (e) {
+          // SetPerformanceScriptNumberOfIterations was not on window
+        }
+      })
+
       const result = await call(page)
       // Check the result.
       const success: boolean = checkSucceeded(result)
@@ -142,11 +187,11 @@ function frameResultSuccess(frameResult: FrameResult): boolean {
   return frameResult.succeeded
 }
 
-function frameArraySuccess(frameArray: Array<FrameResult>): boolean {
-  return frameArray.every(frameResultSuccess)
+function frameObjectSuccess(frameObject: { [key: string]: FrameResult }): boolean {
+  return Object.values(frameObject).every(frameResultSuccess)
 }
 
-export const testPerformanceInner = async function (url: string): Promise<PerformanceResult> {
+export const testPerformanceInner = async function (url: string): Promise<PerformanceResults> {
   const highlightRegularResult = await retryPageCalls(
     url,
     testHighlightRegularPerformance,
@@ -159,7 +204,16 @@ export const testPerformanceInner = async function (url: string): Promise<Perfor
     frameResultSuccess,
     EmptyResult,
   )
-  const selectionResult = await retryPageCalls(url, testSelectionPerformance, frameArraySuccess, [])
+  const selectionChangeResult = await retryPageCalls(
+    url,
+    testSelectionChangePerformance,
+    frameResultSuccess,
+    EmptyResult,
+  )
+  const selectionResult = await retryPageCalls(url, testSelectionPerformance, frameObjectSuccess, {
+    selection: EmptyResult,
+    deselection: EmptyResult,
+  })
   const resizeResult = await retryPageCalls(
     url,
     testResizePerformance,
@@ -175,31 +229,32 @@ export const testPerformanceInner = async function (url: string): Promise<Perfor
   const absoluteMoveLargeResult = await retryPageCalls(
     url,
     testAbsoluteMovePerformanceLarge,
-    frameArraySuccess,
-    [],
+    frameObjectSuccess,
+    { interaction: EmptyResult, move: EmptyResult },
   )
   const absoluteMoveSmallResult = await retryPageCalls(
     url,
     testAbsoluteMovePerformanceSmall,
-    frameArraySuccess,
-    [],
+    frameObjectSuccess,
+    { interaction: EmptyResult, move: EmptyResult },
   )
-  const messageParts = [
-    highlightRegularResult,
-    highlightAllElementsResult,
-    ...selectionResult,
-    scrollResult,
-    resizeResult,
-    ...absoluteMoveLargeResult,
-    ...absoluteMoveSmallResult,
-  ]
-  const summaryImage = await uploadSummaryImage(messageParts)
-
-  const message = messageParts.map(consoleMessageForResult).join(` | `)
 
   return {
-    message: message,
-    summaryImageUrl: summaryImage,
+    frameTests: {
+      highlightRegularResult: highlightRegularResult,
+      highlightAllElementsResult: highlightAllElementsResult,
+      selectionResult: selectionResult.selection,
+      deselectionResult: selectionResult.deselection,
+      selectionChangeResult: selectionChangeResult,
+      scrollResult: scrollResult,
+      resizeResult: resizeResult,
+      absoluteMoveLargeMoveResult: absoluteMoveLargeResult.move,
+      absoluteMoveSmallMoveResult: absoluteMoveSmallResult.move,
+    },
+    interactionTests: {
+      absoluteMoveLargeInteractionResult: absoluteMoveLargeResult.interaction,
+      absoluteMoveSmallInteractionResult: absoluteMoveSmallResult.interaction,
+    },
   }
 }
 
@@ -327,9 +382,10 @@ export const testHighlightAllElementsPerformance = async function (
   return getFrameData(traceJson, 'highlight_all-elements', 'Highlight All Elements', succeeded)
 }
 
-export const testSelectionPerformance = async function (
-  page: puppeteer.Page,
-): Promise<Array<FrameResult>> {
+export const testSelectionPerformance = async function (page: puppeteer.Page): Promise<{
+  selection: FrameResult
+  deselection: FrameResult
+}> {
   console.log('Test Selection Performance')
   await page.waitForXPath("//a[contains(., 'P E')]")
   // we run it twice without measurements to warm up the environment
@@ -346,15 +402,48 @@ export const testSelectionPerformance = async function (
   )
   await page.tracing.stop()
   const traceJson = await loadTraceEventsJSON()
-  return [
-    getFrameData(traceJson, 'select', 'Selection', succeeded),
-    getFrameData(traceJson, 'select_deselect', 'De-Selection', succeeded),
-  ]
+  return {
+    selection: getFrameData(traceJson, 'select', 'Selection', succeeded),
+    deselection: getFrameData(traceJson, 'select_deselect', 'De-Selection', succeeded),
+  }
 }
 
-export const testAbsoluteMovePerformanceLarge = async function (
+export const testSelectionChangePerformance = async function (
   page: puppeteer.Page,
-): Promise<Array<FrameResult>> {
+): Promise<FrameResult> {
+  console.log('Test Selection Change Performance')
+  await page.waitForXPath("//a[contains(., 'PSC')]")
+  // we run it twice without measurements to warm up the environment
+  await clickOnce(
+    page,
+    "//a[contains(., 'PSC')]",
+    'SELECTION_CHANGE_TEST_FINISHED',
+    'SELECTION_CHANGE_TEST_ERROR',
+  )
+  await clickOnce(
+    page,
+    "//a[contains(., 'PSC')]",
+    'SELECTION_CHANGE_TEST_FINISHED',
+    'SELECTION_CHANGE_TEST_ERROR',
+  )
+
+  // and then we run the test for a third time, this time running tracing
+  await page.tracing.start({ categories: ['blink.user_timing'], path: 'trace.json' })
+  const succeeded = await clickOnce(
+    page,
+    "//a[contains(., 'PSC')]",
+    'SELECTION_CHANGE_TEST_FINISHED',
+    'SELECTION_CHANGE_TEST_ERROR',
+  )
+  await page.tracing.stop()
+  const traceJson = await loadTraceEventsJSON()
+  return getFrameData(traceJson, 'selection_change', 'Selection Change', succeeded)
+}
+
+export const testAbsoluteMovePerformanceLarge = async function (page: puppeteer.Page): Promise<{
+  interaction: FrameResult
+  move: FrameResult
+}> {
   console.log('Test Absolute Move Performance (Large)')
   await page.waitForXPath("//a[contains(., 'PAML')]")
   // we run it twice without measurements to warm up the environment
@@ -381,20 +470,25 @@ export const testAbsoluteMovePerformanceLarge = async function (
   )
   await page.tracing.stop()
   const traceJson = await loadTraceEventsJSON()
-  return [
-    getFrameData(
+  return {
+    interaction: getFrameData(
       traceJson,
       'absolute_move_interaction',
       'Absolute Move (Interaction, Large)',
       succeeded,
     ),
-    getFrameData(traceJson, 'absolute_move_move', 'Absolute Move (Just Move, Large)', succeeded),
-  ]
+    move: getFrameData(
+      traceJson,
+      'absolute_move_move',
+      'Absolute Move (Just Move, Large)',
+      succeeded,
+    ),
+  }
 }
 
 export const testAbsoluteMovePerformanceSmall = async function (
   page: puppeteer.Page,
-): Promise<Array<FrameResult>> {
+): Promise<{ interaction: FrameResult; move: FrameResult }> {
   console.log('Test Absolute Move Performance (Small)')
   await page.waitForXPath("//a[contains(., 'PAMS')]")
   // we run it twice without measurements to warm up the environment
@@ -421,15 +515,20 @@ export const testAbsoluteMovePerformanceSmall = async function (
   )
   await page.tracing.stop()
   const traceJson = await loadTraceEventsJSON()
-  return [
-    getFrameData(
+  return {
+    interaction: getFrameData(
       traceJson,
       'absolute_move_interaction',
       'Absolute Move (Interaction, Small)',
       succeeded,
     ),
-    getFrameData(traceJson, 'absolute_move_move', 'Absolute Move (Just Move, Small)', succeeded),
-  ]
+    move: getFrameData(
+      traceJson,
+      'absolute_move_move',
+      'Absolute Move (Just Move, Small)',
+      succeeded,
+    ),
+  }
 }
 
 const getFrameData = (
@@ -487,9 +586,13 @@ const getFrameData = (
   }
 }
 
-async function uploadSummaryImage(results: Array<FrameResult>): Promise<string> {
+async function uploadSummaryImage(
+  stagingResult: ResultsGroup,
+  masterResult: ResultsGroup,
+  maxXValue: number,
+): Promise<string> {
   const imageFileName = v4() + '.png'
-  const fileURI = await createSummaryPng(results, imageFileName, results.length)
+  const fileURI = await createSummaryPng(stagingResult, masterResult, imageFileName, maxXValue)
 
   if (fileURI != null) {
     const s3FileUrl = await uploadPNGtoAWS(fileURI)
@@ -500,9 +603,10 @@ async function uploadSummaryImage(results: Array<FrameResult>): Promise<string> 
 }
 
 async function createSummaryPng(
-  results: Array<FrameResult>,
+  stagingResult: ResultsGroup,
+  masterResult: ResultsGroup,
   testFileName: string,
-  numberOfTests: number,
+  maxXValue: number,
 ): Promise<string | null> {
   if (
     process.env.PERFORMANCE_GRAPHS_PLOTLY_USERNAME == null ||
@@ -535,7 +639,21 @@ async function createSummaryPng(
     }
   }
 
-  const processedData = results.map((result) => boxPlotConfig(result.title, result.timeSeries))
+  const numberOfTests = Object.keys(stagingResult).length * 2
+
+  let processedData = Object.entries(stagingResult).flatMap(([k, result]) => {
+    const targetResult = masterResult[k]
+    return [
+      boxPlotConfig(`${targetResult.title} (before)`, targetResult.timeSeries),
+      boxPlotConfig(`${result.title} (after)`, result.timeSeries),
+    ]
+  })
+
+  processedData.reverse() // Plotly will produce the box plot in the reverse order
+
+  const chartHeight = 30 * numberOfTests
+  const chartWidth = 720
+  const imagePadding = 80
 
   const layout = {
     margin: {
@@ -546,8 +664,8 @@ async function createSummaryPng(
       pad: 4,
     },
     showlegend: false,
-    height: 50 * numberOfTests,
-    width: 720,
+    height: chartHeight,
+    width: chartWidth,
     yaxis: {
       automargin: true,
       zeroline: true,
@@ -570,7 +688,7 @@ async function createSummaryPng(
     ],
     xaxis: {
       title: 'lower is better, ms / frame (16.67 = 60fps), many runs, cutoff 200ms',
-      range: [0, 251],
+      range: [0, maxXValue],
       showgrid: true,
       zeroline: true,
       dtick: 16.67,
@@ -584,8 +702,8 @@ async function createSummaryPng(
 
   const imgOpts = {
     format: 'png',
-    width: 800,
-    height: 220,
+    width: chartWidth + imagePadding,
+    height: chartHeight + imagePadding,
   }
   const figure = { data: processedData, layout: layout }
 
@@ -617,9 +735,7 @@ testPerformance().catch((e) => {
   console.info(`::set-output name=perf-result::${errorMessage}`)
 
   // Output the individual parts for building a discord message
-  console.info(`::set-output name=perf-message-staging:: ${errorMessage}`)
-  console.info(`::set-output name=perf-chart-staging:: ""`)
-  console.info(`::set-output name=perf-message-master:: ""`)
-  console.info(`::set-output name=perf-chart-master:: ""`)
+  console.info(`::set-output name=perf-discord-message:: ${errorMessage}`)
+  console.info(`::set-output name=perf-chart:: ""`)
   return
 })

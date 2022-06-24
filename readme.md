@@ -51,7 +51,7 @@ stop-dev
 
 ### Finally, loading the running application
 
-Now the editor should load on [localhost:8000/p](https://localhost:8000/p), or [localhost:8000](https://localhost:8000/) when developing the website itself.
+Now the editor should load on [http://localhost:8000/p](http://localhost:8000/p), or [http://localhost:8000](http://localhost:8000/) when developing the website itself.
 
 ## Pull request bundle support.
 
@@ -65,6 +65,18 @@ Limitations:
 - Anything that isn't editor code will not be changed by this, such as the website code or the server endpoints.
 
 # Troubleshooting
+
+## I'm on macOS and Nix has suddenly stopped working
+
+Part of the nix installation will add a hook into `/etc/bashrc`, which can be wiped by a macOS update. There is an open bug ticket for that [here](https://github.com/NixOS/nix/issues/3616). If this has happened to you, you'll need to manually add that hook back in, or alternatively add it to your own `~/.zshrc` (where it won't be overwritten), copying and pasting the hook exactly as follows:
+
+```
+# Nix
+if [ -e '/nix/var/nix/profiles/default/etc/profile.d/nix-daemon.sh' ]; then
+  . '/nix/var/nix/profiles/default/etc/profile.d/nix-daemon.sh'
+fi
+# End Nix
+```
 
 ## fsevents
 

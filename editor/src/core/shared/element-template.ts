@@ -1456,7 +1456,7 @@ export type ComputedStyle = { [key: string]: string }
 export type StyleAttributeMetadataEntry = { fromStyleSheet: boolean } // TODO rename me to StyleAttributeMetadata, the other one to StyleAttributeMetadataMap
 export type StyleAttributeMetadata = { [key: string]: StyleAttributeMetadataEntry | undefined }
 
-export type ElementInstanceMetadataMap = { [key: string]: ElementInstanceMetadata }
+export type ElementInstanceMetadataMap = { [key: string]: Readonly<ElementInstanceMetadata> }
 export const emptyJsxMetadata: ElementInstanceMetadataMap = {}
 
 export type FoundImportInfo = {
@@ -1486,7 +1486,6 @@ export function createNotImported(): ImportInfo {
 export interface ElementInstanceMetadata {
   elementPath: ElementPath
   element: Either<string, JSXElementChild>
-  props: { [key: string]: any } // the final, resolved, static props value
   globalFrame: CanvasRectangle | null
   localFrame: LocalRectangle | null
   componentInstance: boolean
@@ -1501,7 +1500,6 @@ export interface ElementInstanceMetadata {
 export function elementInstanceMetadata(
   elementPath: ElementPath,
   element: Either<string, JSXElementChild>,
-  props: { [key: string]: any },
   globalFrame: CanvasRectangle | null,
   localFrame: LocalRectangle | null,
   componentInstance: boolean,
@@ -1515,7 +1513,6 @@ export function elementInstanceMetadata(
   return {
     elementPath: elementPath,
     element: element,
-    props: props,
     globalFrame: globalFrame,
     localFrame: localFrame,
     componentInstance: componentInstance,

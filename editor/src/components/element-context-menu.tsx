@@ -25,6 +25,7 @@ import {
   insert,
   convert,
   removeAsFocusedElement,
+  escapeHatch,
 } from './context-menu-items'
 import { MomentumContextMenu } from './context-menu-wrapper'
 import { useRefEditorState, useEditorState } from './editor/store/store-hook'
@@ -59,6 +60,7 @@ const ElementContextMenuItems: Array<ContextMenuItem<CanvasData>> = [
   insert,
   lineSeparator,
   convert,
+  escapeHatch,
   lineSeparator,
   wrapInPicker,
   wrapInView,
@@ -114,6 +116,7 @@ function useCanvasContextMenuItems(
                 WindowMousePositionRaw,
                 data.scale,
                 data.canvasOffset,
+                data.allElementProps,
               )
             }
             return !elementsUnderCursor.some((underCursor: ElementPath) =>
@@ -186,11 +189,12 @@ export const ElementContextMenu = React.memo(({ contextMenuInstance }: ElementCo
       editorDispatch: store.dispatch,
       projectContents: store.editor.projectContents,
       nodeModules: store.editor.nodeModules.files,
-      transientFilesState: store.derived.canvas.transientState.filesState,
+      transientFilesState: store.derived.transientState.filesState,
       resolve: resolveFn,
       hiddenInstances: store.editor.hiddenInstances,
       scale: store.editor.canvas.scale,
       focusedElementPath: store.editor.focusedElementPath,
+      allElementProps: store.editor.allElementProps,
     }
   })
 
@@ -207,6 +211,7 @@ export const ElementContextMenu = React.memo(({ contextMenuInstance }: ElementCo
       hiddenInstances: currentEditor.hiddenInstances,
       scale: currentEditor.scale,
       focusedElementPath: currentEditor.focusedElementPath,
+      allElementProps: currentEditor.allElementProps,
     }
   }, [editorSliceRef])
 

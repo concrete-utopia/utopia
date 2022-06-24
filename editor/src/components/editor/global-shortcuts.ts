@@ -161,7 +161,7 @@ function isEventFromInput(target: any) {
   return target.tagName?.toLowerCase() === 'input' || target.tagName?.toLowerCase() === 'textarea'
 }
 
-function editorIsTarget(event: KeyboardEvent, editor: EditorState): boolean {
+export function editorIsTarget(event: KeyboardEvent, editor: EditorState): boolean {
   return !isEventFromInput(event.target) && editor.modal == null
 }
 
@@ -475,6 +475,7 @@ export function handleKeyDown(
             WindowMousePositionRaw,
             editor.canvas.scale,
             editor.canvas.realCanvasOffset,
+            editor.allElementProps,
           )
           const nextTarget = Canvas.getNextTarget(editor.selectedViews, targetStack)
           if (targetStack.length === 0 || nextTarget === null) {
@@ -710,6 +711,12 @@ export function handleKeyDown(
           : []
       },
       [UNDO_CHANGES_SHORTCUT]: () => {
+        if (editor.canvas.interactionSession?.interactionData.type === 'KEYBOARD') {
+          // if we are in a keyboard interaction session, we want cmd + z to finish the current interaction session, and then immediately undo it
+          // this is desired because the user might want to redo the changes
+          // Warning: Side Effect!
+          dispatch([CanvasActions.clearInteractionSession(true)])
+        }
         return [EditorActions.undo()]
       },
       [REDO_CHANGES_SHORTCUT]: () => {

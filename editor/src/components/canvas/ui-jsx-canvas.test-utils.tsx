@@ -2,11 +2,7 @@ const Prettier = jest != null ? require('prettier') : require('prettier/standalo
 import React from 'react'
 import { applyUIDMonkeyPatch } from '../../utils/canvas-react-utils'
 applyUIDMonkeyPatch()
-import * as ReactDOM from 'react-dom'
 import * as ReactDOMServer from 'react-dom/server'
-import * as UtopiaAPI from 'utopia-api/core'
-import * as UUIUI from '../../uuiui'
-import * as EmotionReact from '@emotion/react'
 
 import { FancyError, processErrorWithSourceMap } from '../../core/shared/code-exec-utils'
 import { Either, isRight, left, right } from '../../core/shared/either'
@@ -109,7 +105,6 @@ function stripUidsFromMetadata(metadata: ElementInstanceMetadata): ElementInstan
 }
 
 function stripUnwantedDataFromMetadata(metadata: ElementInstanceMetadata): ElementInstanceMetadata {
-  delete metadata.props['children']
   return stripUidsFromMetadata(metadata)
 }
 
@@ -218,10 +213,11 @@ export function renderCanvasReturnResultAndError(
       linkTags: '',
       focusedElementPath: null,
       projectContents: storeHookForTest.api.getState().editor.projectContents,
-      transientFilesState: storeHookForTest.api.getState().derived.canvas.transientState.filesState,
+      transientFilesState: storeHookForTest.api.getState().derived.transientState.filesState,
       propertyControlsInfo: {},
       dispatch: NO_OP,
       domWalkerAdditionalElementsToUpdate: [],
+      elementsToRerender: 'rerender-all-elements',
     }
   } else {
     canvasProps = {
@@ -240,10 +236,11 @@ export function renderCanvasReturnResultAndError(
       linkTags: '',
       focusedElementPath: null,
       projectContents: storeHookForTest.api.getState().editor.projectContents,
-      transientFilesState: storeHookForTest.api.getState().derived.canvas.transientState.filesState,
+      transientFilesState: storeHookForTest.api.getState().derived.transientState.filesState,
       propertyControlsInfo: {},
       dispatch: NO_OP,
       domWalkerAdditionalElementsToUpdate: [],
+      elementsToRerender: 'rerender-all-elements',
     }
   }
 
