@@ -944,6 +944,10 @@ export interface SetElementsToRerender {
   value: ElementsToRerender
 }
 
+export interface CullElementPathCache {
+  action: 'CULL_EDITOR_PATH_CACHE'
+}
+
 export type EditorAction =
   | ClearSelection
   | InsertScene
@@ -1098,6 +1102,7 @@ export type EditorAction =
   | ForceParseFile
   | RunEscapeHatch
   | SetElementsToRerender
+  | CullElementPathCache
 
 export type DispatchPriority =
   | 'everyone'

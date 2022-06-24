@@ -499,6 +499,7 @@ import {
   setScrollAnimation,
   updatePackageJson,
   removeFromNodeModulesContents,
+  cullElementPathCache,
 } from './action-creators'
 import { getAllTargetsAtPoint } from '../../canvas/dom-lookup'
 import {
@@ -1457,6 +1458,8 @@ function toastOnGeneratedElementsTargeted(
 
 let checkpointTimeoutId: number | undefined = undefined
 let canvasScrollAnimationTimer: number | undefined = undefined
+let cullElementPathCacheTimeoutId: number | undefined = undefined
+export const CullElementPathCacheTimeout = 1000
 
 function updateSelectedComponentsFromEditorPosition(
   derived: DerivedState,
@@ -3715,8 +3718,15 @@ export const UPDATE_FNS = {
   UPDATE_FROM_WORKER: (
     action: UpdateFromWorker,
     editor: EditorModel,
-    derived: DerivedState,
+    dispatch: EditorDispatch,
   ): EditorModel => {
+    // If there haven't been any worker updates for a long enough time period, we can assume the editor is
+    // probably idle, and so should use this opportunity to remove dead paths from the element paths cache
+    clearTimeout(cullElementPathCacheTimeoutId)
+    cullElementPathCacheTimeoutId = window.setTimeout(() => {
+      dispatch([cullElementPathCache()], 'everyone')
+    }, CullElementPathCacheTimeout)
+
     if (editor.parseOrPrintInFlight) {
       let workingProjectContents: ProjectContentTreeRoot = editor.projectContents
       let anyParsedUpdates: boolean = false
@@ -3785,8 +3795,8 @@ export const UPDATE_FNS = {
       }
       if (anyParsedUpdates) {
         // Clear any cached paths since UIDs will have been regenerated and property paths may no longer exist
+        // FIXME take a similar approach as ElementPath cache culling to the PropertyPath cache culling. Or don't even clear it.
         PP.clearPropertyPathCache()
-        EP.clearElementPathCache()
       }
       return {
         ...editor,
