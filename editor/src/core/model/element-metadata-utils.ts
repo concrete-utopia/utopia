@@ -1295,10 +1295,10 @@ export const MetadataUtils = {
   ): LocalRectangle | null {
     const element = MetadataUtils.findElementByElementPath(metadata, path)
     const globalFrame = element?.globalFrame ?? null
-    const elementParentBounds = element?.specialSizeMeasurements.coordinateSystemBounds ?? null
+    const elementContainerBounds = element?.specialSizeMeasurements.coordinateSystemBounds ?? null
     const localFrame =
-      globalFrame != null && elementParentBounds != null
-        ? canvasRectangleToLocalRectangle(globalFrame, elementParentBounds)
+      globalFrame != null && elementContainerBounds != null
+        ? canvasRectangleToLocalRectangle(globalFrame, elementContainerBounds)
         : null
     return localFrame
   },
