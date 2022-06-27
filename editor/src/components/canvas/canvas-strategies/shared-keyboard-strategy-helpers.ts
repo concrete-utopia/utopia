@@ -1,9 +1,16 @@
-import { KeyState } from './interaction-state'
+import { InteractionSession, KeyState, StrategyState } from './interaction-state'
 import { setsEqual } from '../../../core/shared/set-utils'
-import { last } from '../../../core/shared/array-utils'
+import { last, mapDropNulls } from '../../../core/shared/array-utils'
 import { Modifier, Modifiers } from '../../../utils/modifiers'
-import { CanvasVector } from '../../../core/shared/math-utils'
+import { CanvasRectangle, CanvasVector } from '../../../core/shared/math-utils'
 import Keyboard, { KeyCharacter } from '../../../utils/keyboard'
+import {
+  collectParentAndSiblingGuidelines,
+  oneGuidelinePerDimension,
+} from '../controls/guideline-helpers'
+import { GuidelineWithSnappingVector, Guidelines } from '../guideline'
+import { InteractionCanvasState } from './canvas-strategy-types'
+import Utils from '../../../utils/utils'
 
 export interface AccumulatedPresses extends KeyState {
   count: number
@@ -47,7 +54,7 @@ export function accumulatePresses(keyStates: Array<KeyState>): Array<Accumulated
   return result
 }
 
-export function getDragDeltaFromKey(key: KeyCharacter, modifiers: Modifiers): CanvasVector {
+export function getMovementDeltaFromKey(key: KeyCharacter, modifiers: Modifiers): CanvasVector {
   const step = modifiers.shift ? 10 : 1
   switch (key) {
     case 'left':
@@ -76,4 +83,60 @@ export function getDragDeltaFromKey(key: KeyCharacter, modifiers: Modifiers): Ca
         y: 0,
       } as CanvasVector
   }
+}
+
+export function getKeyboardStrategyGuidelines(
+  sessionState: StrategyState,
+  canvasState: InteractionCanvasState,
+  interactionState: InteractionSession,
+  draggedFrame: CanvasRectangle,
+) {
+  const moveGuidelines = collectParentAndSiblingGuidelines(
+    interactionState.metadata,
+    canvasState.selectedElements,
+  )
+  const { horizontalPoints, verticalPoints } = Utils.getRectPointsAlongAxes(draggedFrame)
+  const closestGuideLines: Array<GuidelineWithSnappingVector> = mapDropNulls((guideline) => {
+    switch (guideline.type) {
+      case 'XAxisGuideline': {
+        const snappingVector = Guidelines.getOffsetToSnapToXGuideline(
+          horizontalPoints,
+          guideline,
+          null,
+        )
+        if (Utils.magnitude(snappingVector) === 0) {
+          return {
+            guideline: guideline,
+            snappingVector: snappingVector,
+            activateSnap: true,
+          }
+        } else {
+          return null
+        }
+      }
+      case 'YAxisGuideline': {
+        const snappingVector = Guidelines.getOffsetToSnapToYGuideline(
+          verticalPoints,
+          guideline,
+          null,
+        )
+        if (Utils.magnitude(snappingVector) === 0) {
+          return {
+            guideline: guideline,
+            snappingVector: snappingVector,
+            activateSnap: true,
+          }
+        } else {
+          return null
+        }
+      }
+      case 'CornerGuideline':
+        return null
+      default:
+        const _exhaustiveCheck: never = guideline
+        throw new Error(`Unexpected value for guideline of type: ${guideline}`)
+    }
+  }, moveGuidelines)
+  const winningGuidelines = oneGuidelinePerDimension(closestGuideLines)
+  return winningGuidelines
 }
