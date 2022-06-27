@@ -334,10 +334,6 @@ export function resetDispatchGlobals(): void {
   applyProjectChangesCoordinator = Promise.resolve()
 }
 
-let cullElementPathCacheTimeoutId: number | undefined = undefined
-const CullElementPathCacheTimeout = 1000
-let lastProjectContents: ProjectContentTreeRoot = {}
-
 export function editorDispatch(
   boundDispatch: EditorDispatch,
   dispatchedActions: readonly EditorAction[],
@@ -512,8 +508,24 @@ export function editorDispatch(
     storedState.workers.initWatchdogWorker(frozenEditorState.id)
   }
 
-  lastProjectContents = storedState.unpatchedEditor.projectContents
-  if (anyWorkerUpdates) {
+  maybeCullElementPathCache(
+    storedState.unpatchedEditor.projectContents,
+    anyWorkerUpdates ? 'schedule-now' : 'dont-schedule',
+  )
+
+  return finalStore
+}
+
+let cullElementPathCacheTimeoutId: number | undefined = undefined
+const CullElementPathCacheTimeout = 1000
+let lastProjectContents: ProjectContentTreeRoot = {}
+
+function maybeCullElementPathCache(
+  projectContents: ProjectContentTreeRoot,
+  scheduleOrNot: 'schedule-now' | 'dont-schedule',
+) {
+  lastProjectContents = projectContents
+  if (scheduleOrNot === 'schedule-now') {
     // Updates from the worker indicate that paths might have changed, so schedule a
     // cache cull for the next time the browser is idle
     if (typeof window.requestIdleCallback !== 'undefined') {
@@ -530,8 +542,6 @@ export function editorDispatch(
       )
     }
   }
-
-  return finalStore
 }
 
 function cullElementPathCache() {
