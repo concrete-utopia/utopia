@@ -43,7 +43,7 @@ function configureSetupTeardown(): { clock: { current: SinonFakeTimers } } {
   return { clock: clock }
 }
 
-describe('Keyboard Absolute Strategies E2E', () => {
+describe('Keyboard Absolute Move E2E', () => {
   const { clock } = configureSetupTeardown()
 
   it('Pressing Shift + ArrowRight 3 times', async () => {
@@ -106,6 +106,30 @@ describe('Keyboard Absolute Strategies E2E', () => {
     })
   })
 
+  it('Pressing Shift + ArrowRight 3 times for element with missing left prop', async () => {
+    const { expectElementLeftOnScreen, expectElementPropertiesInPrintedCode } = await setupTest({
+      top: 100,
+      width: 122,
+      height: 101,
+    })
+
+    pressArrowRightHoldingShift3x()
+    expectElementLeftOnScreen(30)
+
+    // tick the clock so useClearKeyboardInteraction is fired
+    clock.current.tick(KeyboardInteractionTimeout)
+    await expectElementPropertiesInPrintedCode({
+      top: 100,
+      width: 122,
+      height: 101,
+      left: 30,
+    })
+  })
+})
+
+describe('Keyboard Absolute Resize E2E', () => {
+  const { clock } = configureSetupTeardown()
+
   it('Pressing Cmd + ArrowRight 3 times, then pressing Cmd + ArrowLeft once', async () => {
     const { expectElementWidthOnScreen, expectElementPropertiesInPrintedCode } = await setupTest(
       defaultBBBProperties,
@@ -126,27 +150,10 @@ describe('Keyboard Absolute Strategies E2E', () => {
       height: 101,
     })
   })
+})
 
-  it('Pressing Shift + ArrowRight 3 times for element with missing left prop', async () => {
-    const { expectElementLeftOnScreen, expectElementPropertiesInPrintedCode } = await setupTest({
-      top: 100,
-      width: 122,
-      height: 101,
-    })
-
-    pressArrowRightHoldingShift3x()
-    expectElementLeftOnScreen(30)
-
-    // tick the clock so useClearKeyboardInteraction is fired
-    clock.current.tick(KeyboardInteractionTimeout)
-    await expectElementPropertiesInPrintedCode({
-      top: 100,
-      width: 122,
-      height: 101,
-      left: 30,
-    })
-  })
-
+describe('Keyboard Strategies Escape Behavior', () => {
+  const { clock } = configureSetupTeardown()
   it('Pressing Shift + ArrowRight 3 times, then pressing Esc before the keyboard strategy timer succeeds will cancel the strategy', async () => {
     const { expectElementLeftOnScreen, expectElementPropertiesInPrintedCode } = await setupTest(
       defaultBBBProperties,
@@ -200,6 +207,10 @@ describe('Keyboard Absolute Strategies E2E', () => {
       height: 101,
     })
   })
+})
+
+describe('Keyboard Strategies Undo Behavior', () => {
+  const { clock } = configureSetupTeardown()
 
   it('Pressing Shift + ArrowRight 3 times, await keyboard strategy timeout, then press Cmd + Z to undo jumps back to original, but redoable', async () => {
     const { expectElementLeftOnScreen, expectElementPropertiesInPrintedCode } = await setupTest(
