@@ -208,7 +208,7 @@ describe('Keyboard Strategies Escape Behavior', () => {
     expectElementLeftOnScreen(30)
 
     // tick the clock so useClearKeyboardInteraction is fired
-    clock.tick(KeyboardInteractionTimeout)
+    clock.current.tick(KeyboardInteractionTimeout)
 
     await expectElementPropertiesInPrintedCode({
       left: 30,
