@@ -7,6 +7,8 @@ import { setClipboardData, createClipboardDataFromSelection } from '../../../uti
 import { UtopiaTsWorkers } from '../../../core/workers/common/worker-types'
 import { UiJsxCanvasContextData } from '../../canvas/ui-jsx-canvas'
 import type { BuiltInDependencies } from '../../../core/es-modules/package-manager/built-in-dependencies-list'
+import { getAllUniqueUids } from '../../../core/model/element-template-utils'
+import { removePathsWithDeadUIDs } from '../../../core/shared/element-path'
 
 export function runLocalEditorAction(
   state: EditorState,
@@ -192,7 +194,7 @@ export function runSimpleLocalEditorAction(
     case 'UPDATE_FILE':
       return UPDATE_FNS.UPDATE_FILE(action, state, dispatch, builtInDependencies)
     case 'UPDATE_FROM_WORKER':
-      return UPDATE_FNS.UPDATE_FROM_WORKER(action, state, derivedState)
+      return UPDATE_FNS.UPDATE_FROM_WORKER(action, state)
     case 'UPDATE_FROM_CODE_EDITOR':
       return UPDATE_FNS.UPDATE_FROM_CODE_EDITOR(action, state, dispatch, builtInDependencies)
     case 'CLEAR_PARSE_OR_PRINT_IN_FLIGHT':

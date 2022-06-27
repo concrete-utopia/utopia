@@ -57,6 +57,7 @@ import { handleStrategies } from './dispatch-strategies'
 
 import { emptySet } from '../../../core/shared/set-utils'
 import { RegisteredCanvasStrategies } from '../../canvas/canvas-strategies/canvas-strategies'
+import { removePathsWithDeadUIDs } from '../../../core/shared/element-path'
 
 type DispatchResultFields = {
   nothingChanged: boolean
@@ -507,7 +508,45 @@ export function editorDispatch(
     storedState.workers.initWatchdogWorker(frozenEditorState.id)
   }
 
+  maybeCullElementPathCache(
+    storedState.unpatchedEditor.projectContents,
+    anyWorkerUpdates ? 'schedule-now' : 'dont-schedule',
+  )
+
   return finalStore
+}
+
+let cullElementPathCacheTimeoutId: number | undefined = undefined
+const CullElementPathCacheTimeout = 1000
+let lastProjectContents: ProjectContentTreeRoot = {}
+
+function maybeCullElementPathCache(
+  projectContents: ProjectContentTreeRoot,
+  scheduleOrNot: 'schedule-now' | 'dont-schedule',
+) {
+  lastProjectContents = projectContents
+  if (scheduleOrNot === 'schedule-now') {
+    // Updates from the worker indicate that paths might have changed, so schedule a
+    // cache cull for the next time the browser is idle
+    if (typeof window.requestIdleCallback !== 'undefined') {
+      if (cullElementPathCacheTimeoutId != null) {
+        window.cancelIdleCallback(cullElementPathCacheTimeoutId)
+      }
+
+      cullElementPathCacheTimeoutId = window.requestIdleCallback(cullElementPathCache)
+    } else {
+      clearTimeout(cullElementPathCacheTimeoutId)
+      cullElementPathCacheTimeoutId = window.setTimeout(
+        cullElementPathCache,
+        CullElementPathCacheTimeout,
+      )
+    }
+  }
+}
+
+function cullElementPathCache() {
+  const allExistingUids = getAllUniqueUids(lastProjectContents)
+  removePathsWithDeadUIDs(new Set(allExistingUids))
 }
 
 function applyProjectChanges(

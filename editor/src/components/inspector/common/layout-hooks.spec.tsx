@@ -76,4 +76,39 @@ describe('changePin', () => {
     expect(pinsToUnset.length).toEqual(1)
     expect(pinsToUnset[0]?.pin).toEqual('right')
   })
+
+  it('Gracefully falls back if the last set pin is incorrect', () => {
+    const pins = TLWHSimplePins
+    const { pinsToSet, pinsToUnset } = changePin(
+      'width',
+      pinsInfoForPins(pins),
+      [frameInfoForPins(pins)],
+      'right',
+      'top',
+    )
+
+    expect(pinsToSet.length).toEqual(1)
+    expect(pinsToSet[0]?.pin).toEqual('width')
+    expect(pinsToSet[0]?.value).toEqual('100%')
+
+    expect(pinsToUnset.length).toEqual(0)
+  })
+
+  it('Gracefully falls back if the last set pin is incorrect and matches the new pin', () => {
+    const pins = TLWHSimplePins
+    const { pinsToSet, pinsToUnset } = changePin(
+      'right',
+      pinsInfoForPins(pins),
+      [frameInfoForPins(pins)],
+      'right',
+      'top',
+    )
+
+    expect(pinsToSet.length).toEqual(1)
+    expect(pinsToSet[0]?.pin).toEqual('right')
+    expect(pinsToSet[0]?.value).toEqual(-10)
+
+    expect(pinsToUnset.length).toEqual(1)
+    expect(pinsToUnset[0]?.pin).toEqual('width')
+  })
 })

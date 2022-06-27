@@ -7,6 +7,7 @@ import * as EP from '../../../core/shared/element-path'
 import { isFeatureEnabled, setFeatureEnabled } from '../../../utils/feature-switches'
 import { wait } from '../../../utils/utils.test-utils'
 import { selectComponents } from '../../editor/actions/action-creators'
+import { GuidelineWithSnappingVector } from '../guideline'
 import { getPrintedUiJsCode, renderTestEditorWithCode } from '../ui-jsx.test-utils'
 import { KeyboardInteractionTimeout } from './interaction-state'
 
@@ -47,17 +48,45 @@ describe('Keyboard Absolute Move E2E', () => {
   const { clock } = configureSetupTeardown()
 
   it('Pressing Shift + ArrowRight 3 times', async () => {
-    const { expectElementLeftOnScreen, expectElementPropertiesInPrintedCode } = await setupTest(
-      defaultBBBProperties,
-    )
+    const { expectElementLeftOnScreen, expectElementPropertiesInPrintedCode, getCanvasGuidelines } =
+      await setupTest(defaultBBBProperties)
 
     pressArrowRightHoldingShift3x()
     expectElementLeftOnScreen(30)
+    expect(getCanvasGuidelines()).toEqual([])
 
     // tick the clock so useClearKeyboardInteraction is fired
     clock.current.tick(KeyboardInteractionTimeout)
     await expectElementPropertiesInPrintedCode({
       left: 30,
+      top: 100,
+      width: 122,
+      height: 101,
+    })
+  })
+
+  it('Pressing Shift + ArrowRight 3 times, then Shift + ArrowLeft 3 times', async () => {
+    const { expectElementLeftOnScreen, expectElementPropertiesInPrintedCode, getCanvasGuidelines } =
+      await setupTest(defaultBBBProperties)
+
+    pressArrowRightHoldingShift3x()
+    expectElementLeftOnScreen(30)
+    expect(getCanvasGuidelines()).toEqual([])
+
+    pressArrowLeftHoldingShift(3)
+    expectElementLeftOnScreen(0)
+    expect(getCanvasGuidelines()).toEqual([
+      {
+        guideline: { type: 'XAxisGuideline', x: 0, yTop: 0, yBottom: 812 },
+        snappingVector: { x: 0, y: 0 },
+        activateSnap: true,
+      },
+    ])
+
+    // tick the clock so useClearKeyboardInteraction is fired
+    clock.current.tick(KeyboardInteractionTimeout)
+    await expectElementPropertiesInPrintedCode({
+      left: 0,
       top: 100,
       width: 122,
       height: 101,
@@ -131,22 +160,37 @@ describe('Keyboard Absolute Resize E2E', () => {
   const { clock } = configureSetupTeardown()
 
   it('Pressing Cmd + ArrowRight 3 times, then pressing Cmd + ArrowLeft once', async () => {
-    const { expectElementWidthOnScreen, expectElementPropertiesInPrintedCode } = await setupTest(
-      defaultBBBProperties,
-    )
+    const {
+      expectElementWidthOnScreen,
+      expectElementPropertiesInPrintedCode,
+      getCanvasGuidelines,
+    } = await setupTest({
+      left: 10,
+      top: 100,
+      width: 28,
+      height: 101,
+    })
 
     pressArrowRightHoldingCmd(3)
     expectElementWidthOnScreen(3)
+    expect(getCanvasGuidelines()).toEqual([])
 
     pressArrowLeftHoldingCmd(1)
     expectElementWidthOnScreen(2)
+    expect(getCanvasGuidelines()).toEqual([
+      {
+        activateSnap: true,
+        guideline: { type: 'XAxisGuideline', x: 40, yBottom: 396, yTop: 300 },
+        snappingVector: { x: 0, y: 0 },
+      },
+    ])
 
     // tick the clock so useClearKeyboardInteraction is fired
     clock.current.tick(KeyboardInteractionTimeout)
     await expectElementPropertiesInPrintedCode({
-      left: 0,
+      left: 10,
       top: 100,
-      width: 124,
+      width: 30,
       height: 101,
     })
   })
@@ -343,11 +387,15 @@ async function setupTest(initialBBBProperties: { [key: string]: any }) {
       TestProjectDeluxeStallion(bbbProperties),
     )
   }
+  function getCanvasGuidelines(): Array<GuidelineWithSnappingVector> {
+    return renderResult.getEditorState().editor.canvas.controls.snappingGuidelines
+  }
   return {
     renderResult,
     expectElementLeftOnScreen,
     expectElementWidthOnScreen,
     expectElementPropertiesInPrintedCode,
+    getCanvasGuidelines,
   }
 }
 
@@ -372,6 +420,19 @@ function pressArrowLeftHoldingCmd(count: number) {
       )
       window.dispatchEvent(
         new KeyboardEvent('keyup', { key: 'ArrowLeft', keyCode: 37, metaKey: true }),
+      )
+    }
+  })
+}
+
+function pressArrowLeftHoldingShift(count: number) {
+  act(() => {
+    for (let step = 0; step < count; step++) {
+      window.dispatchEvent(
+        new KeyboardEvent('keydown', { key: 'ArrowLeft', keyCode: 37, shiftKey: true }),
+      )
+      window.dispatchEvent(
+        new KeyboardEvent('keyup', { key: 'ArrowLeft', keyCode: 37, shiftKey: true }),
       )
     }
   })

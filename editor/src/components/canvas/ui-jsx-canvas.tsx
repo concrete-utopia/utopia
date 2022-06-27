@@ -319,12 +319,15 @@ export const UiJsxCanvas = React.memo<UiJsxCanvasPropsWithErrorCallback>((props)
   let evaluatedFileNames = React.useRef<Array<string>>([]) // evaluated (i.e. not using a cached evaluation) this render
   evaluatedFileNames.current = [uiFilePath]
   React.useEffect(() => {
-    validateControlsToCheck(
-      dispatch,
-      propertyControlsInfo,
-      resolvedFileNames.current,
-      evaluatedFileNames.current,
-    )
+    setTimeout(() => {
+      // wrapping in a setTimeout so we don't dispatch from inside React lifecycle
+      validateControlsToCheck(
+        dispatch,
+        propertyControlsInfo,
+        resolvedFileNames.current,
+        evaluatedFileNames.current,
+      )
+    }, 0)
   })
 
   // FIXME This is illegal! The two lines below are triggering a re-render

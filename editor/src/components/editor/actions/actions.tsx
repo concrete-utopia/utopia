@@ -3712,11 +3712,7 @@ export const UPDATE_FNS = {
       },
     }
   },
-  UPDATE_FROM_WORKER: (
-    action: UpdateFromWorker,
-    editor: EditorModel,
-    derived: DerivedState,
-  ): EditorModel => {
+  UPDATE_FROM_WORKER: (action: UpdateFromWorker, editor: EditorModel): EditorModel => {
     if (editor.parseOrPrintInFlight) {
       let workingProjectContents: ProjectContentTreeRoot = editor.projectContents
       let anyParsedUpdates: boolean = false
@@ -3785,8 +3781,8 @@ export const UPDATE_FNS = {
       }
       if (anyParsedUpdates) {
         // Clear any cached paths since UIDs will have been regenerated and property paths may no longer exist
+        // FIXME take a similar approach as ElementPath cache culling to the PropertyPath cache culling. Or don't even clear it.
         PP.clearPropertyPathCache()
-        EP.clearElementPathCache()
       }
       return {
         ...editor,

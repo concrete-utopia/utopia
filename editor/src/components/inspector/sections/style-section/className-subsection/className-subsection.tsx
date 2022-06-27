@@ -211,7 +211,10 @@ const ClassNameControl = React.memo(() => {
 
   React.useEffect(() => {
     return function cleanup() {
-      dispatch([EditorActions.clearTransientProps()], 'canvas')
+      setTimeout(() => {
+        // wrapping in a setTimeout so we don't dispatch from inside React lifecycle
+        dispatch([EditorActions.clearTransientProps()], 'canvas')
+      }, 0)
     }
     /** deps is explicitly empty */
     // eslint-disable-next-line react-hooks/exhaustive-deps
