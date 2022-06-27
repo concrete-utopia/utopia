@@ -1,6 +1,7 @@
 // import feature switches so they are loaded before anything else can read them
 import '../utils/feature-switches'
 
+// hello!
 import React from 'react'
 import * as ReactDOM from 'react-dom'
 import { hot } from 'react-hot-loader/root'
