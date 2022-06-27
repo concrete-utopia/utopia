@@ -120,9 +120,10 @@ export function useMaybeHighlightElement(): {
   )
 
   const maybeClearHighlightsOnHoverEnd = React.useCallback((): void => {
-    const { dispatch, dragging, resizing, selectionEnabled, highlightedViews } = stateRef.current
+    const { dispatch, dragging, resizing, selectionEnabled, inserting, highlightedViews } =
+      stateRef.current
 
-    if (selectionEnabled && !dragging && !resizing && highlightedViews.length > 0) {
+    if (selectionEnabled && !dragging && !resizing && !inserting && highlightedViews.length > 0) {
       dispatch([clearHighlightedViews()], 'canvas')
     }
   }, [stateRef])
