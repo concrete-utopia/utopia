@@ -193,7 +193,7 @@ describe('Absolute Move Strategy', () => {
     )
   })
 
-  it('works with a T pinned absolute element, assumes L to 0', async () => {
+  it('works with a T pinned absolute element, assumes L to localframe position in metadata', async () => {
     const targetElement = elementPath([
       ['scene-aaa', 'app-entity'],
       ['aaa', 'bbb'],
@@ -217,7 +217,7 @@ describe('Absolute Move Strategy', () => {
       makeTestProjectCodeWithSnippet(
         `<View style={{ ...(props.style || {}) }} data-uid='aaa'>
         <View
-          style={{ backgroundColor: '#0091FFAA', position: 'absolute', top: 65, width: 250, height: 300, left: 15 }}
+          style={{ backgroundColor: '#0091FFAA', position: 'absolute', top: 65, width: 250, height: 300, left: 65 }}
           data-uid='bbb'
         />
       </View>`,

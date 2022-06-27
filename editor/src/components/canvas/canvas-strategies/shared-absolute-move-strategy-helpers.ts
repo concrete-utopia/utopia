@@ -12,6 +12,8 @@ import {
   canvasPoint,
   CanvasRectangle,
   CanvasVector,
+  localRectangle,
+  LocalRectangle,
   pointDifference,
   zeroCanvasPoint,
   zeroCanvasRect,
@@ -45,26 +47,37 @@ export function getAbsoluteMoveCommandsForSelectedElement(
     canvasState.projectContents,
     canvasState.openFile,
   )
-  const elementParentBounds =
-    MetadataUtils.findElementByElementPath(
-      sessionState.startingMetadata, // TODO should this be using the current metadata?
-      selectedElement,
-    )?.specialSizeMeasurements.immediateParentBounds ?? null // TODO this should probably be coordinateSystemBounds
+
+  const elementMetadata = MetadataUtils.findElementByElementPath(
+    sessionState.startingMetadata, // TODO should this be using the current metadata?
+    selectedElement,
+  )
+
+  const elementParentBounds = elementMetadata?.specialSizeMeasurements.immediateParentBounds ?? null // TODO this should probably be coordinateSystemBounds
+
+  const localFrame = elementMetadata?.localFrame ?? null
 
   if (element == null) {
     return []
   }
 
-  return createMoveCommandsForElement(element, selectedElement, drag, elementParentBounds)
+  return createMoveCommandsForElement(
+    element,
+    selectedElement,
+    drag,
+    localFrame,
+    elementParentBounds,
+  )
 }
 
 function createMoveCommandsForElement(
   element: JSXElement,
   selectedElement: ElementPath,
   drag: CanvasVector,
+  localFrame: LocalRectangle | null,
   elementParentBounds: CanvasRectangle | null,
 ): AdjustCssLengthProperty[] {
-  const pins = ensureAtLeastOnePinPerDimension(right(element.props))
+  const { existingPins, extendedPins } = ensureAtLeastOnePinPerDimension(right(element.props))
 
   return mapDropNulls((pin) => {
     const horizontal = isHorizontalPoint(
@@ -73,7 +86,15 @@ function createMoveCommandsForElement(
     )
     const negative = pin === 'right' || pin === 'bottom'
 
-    const updatedPropValue = (horizontal ? drag.x : drag.y) * (negative ? -1 : 1)
+    // if this is a new pin which was missing, we offset the drag value with the initial value, which is
+    // coming from the localFrame from metadata
+    const isNewPin = !existingPins.includes(pin)
+
+    const offsetX = isNewPin && pin === 'left' ? localFrame?.x ?? 0 : 0
+    const offsetY = isNewPin && pin === 'top' ? localFrame?.y ?? 0 : 0
+
+    const updatedPropValue =
+      (horizontal ? offsetX + drag.x : offsetY + drag.y) * (negative ? -1 : 1)
     const parentDimension = horizontal ? elementParentBounds?.width : elementParentBounds?.height
 
     return adjustCssLengthProperty(
@@ -84,7 +105,7 @@ function createMoveCommandsForElement(
       parentDimension,
       true,
     )
-  }, pins)
+  }, extendedPins)
 }
 
 export function getAbsoluteOffsetCommandsForSelectedElement(
@@ -241,7 +262,7 @@ export function snapDrag(
 const horizontalPins: Array<AbsolutePin> = ['left', 'right']
 const verticalPins: Array<AbsolutePin> = ['top', 'bottom']
 
-function ensureAtLeastOnePinPerDimension(props: PropsOrJSXAttributes): Array<AbsolutePin> {
+function ensureAtLeastOnePinPerDimension(props: PropsOrJSXAttributes) {
   const existingHorizontalPins = horizontalPins.filter((p) => {
     const prop = getLayoutProperty(p, props, ['style'])
     return isRight(prop) && prop.value != null
@@ -261,5 +282,8 @@ function ensureAtLeastOnePinPerDimension(props: PropsOrJSXAttributes): Array<Abs
     verticalPinsToAdd.push('top')
   }
 
-  return [...horizontalPinsToAdd, ...verticalPinsToAdd]
+  return {
+    existingPins: [...existingHorizontalPins, ...existingVerticalPins],
+    extendedPins: [...horizontalPinsToAdd, ...verticalPinsToAdd],
+  }
 }
