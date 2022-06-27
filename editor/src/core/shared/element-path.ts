@@ -22,7 +22,6 @@ export function toVarSafeComponentId(path: ElementPath): string {
 
 interface ElementPathCache {
   cached: ElementPath | null
-  cachedToString: string | null
   childCaches: { [key: string]: ElementPathCache }
   rootElementCaches: { [key: string]: ElementPathCache }
 }
@@ -30,12 +29,12 @@ interface ElementPathCache {
 function emptyElementPathCache(): ElementPathCache {
   return {
     cached: null,
-    cachedToString: null,
     childCaches: {},
     rootElementCaches: {},
   }
 }
 
+let pathToStringCache: WeakMap<ElementPath, string> = new WeakMap()
 let dynamicToStaticPathCache: Map<ElementPath, StaticElementPath> = new Map()
 let dynamicToStaticLastElementPathPartCache: Map<ElementPath, ElementPath> = new Map()
 let dynamicElementPathToStaticElementPathCache: Map<ElementPathPart, StaticElementPathPart> =
@@ -44,11 +43,68 @@ let dynamicElementPathToStaticElementPathCache: Map<ElementPathPart, StaticEleme
 let globalPathStringToPathCache: { [key: string]: ElementPath } = {}
 let globalElementPathCache: ElementPathCache = emptyElementPathCache()
 
-export function clearElementPathCache() {
-  globalPathStringToPathCache = {}
-  globalElementPathCache = emptyElementPathCache()
-  dynamicToStaticPathCache = new Map()
-  dynamicElementPathToStaticElementPathCache = new Map()
+type RemovedPaths = Set<ElementPath>
+
+function removePathsFromElementPathCacheWithDeadUIDs(existingUIDs: Set<string>): RemovedPaths {
+  let removedPaths: Set<ElementPath> = new Set()
+
+  function pushRemovedValues(cacheToRemove: ElementPathCache) {
+    if (cacheToRemove.cached != null) {
+      removedPaths.add(cacheToRemove.cached)
+    }
+  }
+
+  function traverseAndCull(
+    currentCache: ElementPathCache,
+    testBeforeCull: 'test-before-cull' | 'cull-all',
+  ) {
+    fastForEach(Object.entries(currentCache.childCaches), ([key, value]) => {
+      if (testBeforeCull === 'test-before-cull' && existingUIDs.has(key)) {
+        traverseAndCull(value, 'test-before-cull')
+      } else {
+        pushRemovedValues(value)
+        traverseAndCull(value, 'cull-all')
+        delete currentCache.childCaches[key]
+      }
+    })
+
+    fastForEach(Object.entries(currentCache.rootElementCaches), ([key, value]) => {
+      if (testBeforeCull === 'test-before-cull' && existingUIDs.has(key)) {
+        traverseAndCull(value, 'test-before-cull')
+      } else {
+        pushRemovedValues(value)
+        traverseAndCull(value, 'cull-all')
+        delete currentCache.rootElementCaches[key]
+      }
+    })
+  }
+
+  traverseAndCull(globalElementPathCache, 'test-before-cull')
+
+  return removedPaths
+}
+
+export function removePathsWithDeadUIDs(existingUIDs: Set<string>) {
+  const removedPaths = removePathsFromElementPathCacheWithDeadUIDs(existingUIDs)
+
+  fastForEach(Object.keys(globalPathStringToPathCache), (stringifiedPath) => {
+    const pathUIDs = stringifiedPath.split(/[:/]/)
+    if (pathUIDs.some((uid) => !existingUIDs.has(uid))) {
+      delete globalPathStringToPathCache[stringifiedPath]
+    }
+  })
+
+  dynamicToStaticPathCache.forEach((value, key) => {
+    if (removedPaths.has(value)) {
+      dynamicToStaticPathCache.delete(key)
+    }
+  })
+
+  dynamicElementPathToStaticElementPathCache.forEach((value, key) => {
+    if (value.some((uid) => !existingUIDs.has(uid))) {
+      dynamicElementPathToStaticElementPathCache.delete(key)
+    }
+  })
 }
 
 function getElementPathCache(fullElementPath: ElementPathPart[]): ElementPathCache {
@@ -68,8 +124,8 @@ function getElementPathCache(fullElementPath: ElementPathPart[]): ElementPathCac
   return workingPathCache
 }
 
-const SceneSeparator = ':'
-const ElementSeparator = '/'
+export const SceneSeparator = ':'
+export const ElementSeparator = '/'
 
 function getComponentPathStringForPathString(path: string): string | null {
   const indexOfLastSceneSeparator = path.lastIndexOf(SceneSeparator)
@@ -106,12 +162,14 @@ export function elementPathPartToString(path: ElementPathPart): string {
 }
 
 export function toString(target: ElementPath): string {
-  const pathCache = getElementPathCache(target.parts)
-  if (pathCache.cachedToString == null) {
-    pathCache.cachedToString = target.parts.map(elementPathPartToString).join(SceneSeparator)
+  const cachedToString = pathToStringCache.get(target)
+  if (cachedToString == null) {
+    const stringifiedPath = target.parts.map(elementPathPartToString).join(SceneSeparator)
+    pathToStringCache.set(target, stringifiedPath)
+    return stringifiedPath
+  } else {
+    return cachedToString
   }
-
-  return pathCache.cachedToString
 }
 
 export const emptyElementPathPart: StaticElementPathPart = staticElementPath([])
@@ -421,16 +479,12 @@ export function appendPartToPath(path: ElementPath, next: ElementPathPart): Elem
   return elementPath(updatedPathParts)
 }
 
-export function notNullPathsEqual(l: ElementPath, r: ElementPath): boolean {
-  return fullElementPathsEqual(l.parts, r.parts)
-}
-
 function elementPathPartsEqual(l: ElementPathPart, r: ElementPathPart): boolean {
   return arrayEquals(l, r)
 }
 
-export function fullElementPathsEqual(l: ElementPathPart[], r: ElementPathPart[]): boolean {
-  return l === r || arrayEquals(l, r, elementPathPartsEqual)
+function stringifiedPathsEqual(l: ElementPath, r: ElementPath): boolean {
+  return toString(l) === toString(r)
 }
 
 export function pathsEqual(l: ElementPath | null, r: ElementPath | null): boolean {
@@ -441,13 +495,13 @@ export function pathsEqual(l: ElementPath | null, r: ElementPath | null): boolea
   } else if (l === r) {
     return true
   } else {
-    return fullElementPathsEqual(l.parts, r.parts)
+    return stringifiedPathsEqual(l, r)
   }
 }
 
 export function containsPath(path: ElementPath, paths: Array<ElementPath>): boolean {
   for (const toCheck of paths) {
-    if (notNullPathsEqual(toCheck, path)) {
+    if (pathsEqual(toCheck, path)) {
       return true
     }
   }

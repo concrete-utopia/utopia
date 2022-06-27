@@ -123,6 +123,19 @@ describe('Absolute Resize Bounding Box Strategy single select', () => {
       },
     ],
     [
+      'top left corner, flipping over',
+      {
+        edgePosition: { x: 0, y: 0 } as EdgePosition,
+        drag: canvasPoint({
+          x: 350,
+          y: 400,
+        }),
+        modifiers: emptyModifiers,
+        bounding: { left: 50, top: 50, width: 250, height: 300 },
+        expectedBounding: { left: 300, top: 350, width: 100, height: 100 },
+      },
+    ],
+    [
       'bottom left corner',
       {
         edgePosition: { x: 0, y: 1 } as EdgePosition,
@@ -328,6 +341,19 @@ describe('Absolute Resize Bounding Box Strategy single select', () => {
         modifiers: shiftModifier,
         bounding: { left: 50, top: 50, width: 250, height: 300 },
         expectedBounding: { left: 65, top: 68, width: 235, height: 282 },
+      },
+    ],
+    [
+      'top left corner, aspect ratio locked, flipping over',
+      {
+        edgePosition: { x: 0, y: 0 } as EdgePosition,
+        drag: canvasPoint({
+          x: 350,
+          y: 400,
+        }),
+        modifiers: shiftModifier,
+        bounding: { left: 50, top: 50, width: 250, height: 300 },
+        expectedBounding: { left: 300, top: 350, width: 100, height: 120 },
       },
     ],
     [

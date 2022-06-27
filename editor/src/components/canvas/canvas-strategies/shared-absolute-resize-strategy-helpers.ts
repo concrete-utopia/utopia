@@ -8,18 +8,16 @@ import { ElementInstanceMetadataMap, JSXElement } from '../../../core/shared/ele
 import {
   canvasPoint,
   CanvasPoint,
+  canvasRectangle,
   CanvasRectangle,
   CanvasVector,
   distance,
-  lineIntersection,
   offsetPoint,
   pointDifference,
   rectFromTwoPoints,
-  sideOfLine,
   zeroCanvasPoint,
 } from '../../../core/shared/math-utils'
 import { ElementPath } from '../../../core/shared/project-file-types'
-import Utils from '../../../utils/utils'
 import { stylePropPathMappingFn } from '../../inspector/common/property-path-hooks'
 import { CSSCursor, EdgePosition } from '../canvas-types'
 import {
@@ -100,30 +98,22 @@ export function resizeBoundingBox(
   lockedAspectRatio: number | null,
   centerBased: IsCenterBased,
 ): CanvasRectangle {
-  if (!lockedAspectRatio) {
-    if (isEdgePositionOnSide(edgePosition)) {
-      return resizeBoundingBoxFromSide(boundingBox, drag, edgePosition, centerBased)
-    } else {
-      return resizeBoundingBoxFromCorner(boundingBox, drag, edgePosition, centerBased)
-    }
+  if (isEdgePositionOnSide(edgePosition)) {
+    return resizeBoundingBoxFromSide(
+      boundingBox,
+      drag,
+      edgePosition,
+      centerBased,
+      lockedAspectRatio,
+    )
   } else {
-    if (isEdgePositionOnSide(edgePosition)) {
-      return resizeBoundingBoxFromSideAspectRatioLocked(
-        boundingBox,
-        drag,
-        edgePosition,
-        lockedAspectRatio,
-        centerBased,
-      )
-    } else {
-      return resizeBoundingBoxFromCornerAspectRatioLocked(
-        boundingBox,
-        drag,
-        edgePosition,
-        lockedAspectRatio,
-        centerBased,
-      )
-    }
+    return resizeBoundingBoxFromCorner(
+      boundingBox,
+      drag,
+      edgePosition,
+      centerBased,
+      lockedAspectRatio,
+    )
   }
 }
 
@@ -132,76 +122,39 @@ export function resizeBoundingBoxFromCorner(
   drag: CanvasPoint,
   edgePosition: EdgePosition,
   centerBased: IsCenterBased,
+  lockedAspectRatio: number | null,
 ): CanvasRectangle {
   const startingCornerPosition = {
     x: 1 - edgePosition.x,
     y: 1 - edgePosition.y,
   } as EdgePosition
 
-  const oppositeCorner = pickPointOnRect(boundingBox, startingCornerPosition)
+  let oppositeCorner = pickPointOnRect(boundingBox, startingCornerPosition)
   const draggedCorner = pickPointOnRect(boundingBox, edgePosition)
   const newCorner = offsetPoint(draggedCorner, drag)
 
+  let newBoundingBox = boundingBox
   if (centerBased === 'center-based') {
-    const oppositeCornerDragged = offsetPoint(
-      oppositeCorner,
-      pointDifference(drag, zeroCanvasPoint),
-    )
-    return rectFromTwoPoints(oppositeCornerDragged, newCorner)
-  } else {
-    return rectFromTwoPoints(oppositeCorner, newCorner)
+    oppositeCorner = offsetPoint(oppositeCorner, pointDifference(drag, zeroCanvasPoint))
   }
-}
 
-export function resizeBoundingBoxFromCornerAspectRatioLocked(
-  boundingBox: CanvasRectangle,
-  drag: CanvasPoint,
-  edgePosition: EdgePosition,
-  lockedAspectRatio: number,
-  centerBased: IsCenterBased,
-): CanvasRectangle {
-  const startingCornerPosition = {
-    x: 1 - edgePosition.x,
-    y: 1 - edgePosition.y,
-  } as EdgePosition
-
-  const oppositeCorner = pickPointOnRect(boundingBox, startingCornerPosition)
-  const draggedCorner = pickPointOnRect(boundingBox, edgePosition)
-  const newCorner = offsetPoint(draggedCorner, drag)
-
-  // When the aspect ratio is locked, the real new corner is on the horizontal or vertical projection of the mouse position on the diagonal axis of the bounding box
-  const horizontalLineB = getPointOnHorizontalLine(newCorner)
-  const verticalLineB = getPointOnVerticalLine(newCorner)
-  // We could use the oppositeCorner and the draggedCorner to define the diagonal, but that is not safe, because
-  // these are the same points in the extreme case when width and height are both 0
-  // As a solution we need to generate another point on the diagonal using the draggedCorner and the aspect ratio
-  const diagonalA = getPointOnDiagonal(edgePosition, draggedCorner, lockedAspectRatio)
-  // We need to decide whether we want horizontal or vertical projection of the dragged corner to the diagonal
-  // For top/left and bottom/right corner we need horizontal projection if the dragged corner is on the right of the diagonal
-  // For top/right and bottom/left corner we need horizional projection if the dragged corner is on the left side of the diagonal
-  const newCornerOnWhichSideOfDiagonal = sideOfLine(diagonalA, draggedCorner, newCorner)
-  const isTopLeftOrBottomRightCorner = edgePosition.x === edgePosition.y
-  const isHorizontalProjection =
-    (isTopLeftOrBottomRightCorner && newCornerOnWhichSideOfDiagonal === 'right') ||
-    (!isTopLeftOrBottomRightCorner && newCornerOnWhichSideOfDiagonal === 'left')
-  const aspectRatioFixedNewCorner = Utils.forceNotNull(
-    'Can not find projection on diagonal for aspect ratio locked resize',
-    lineIntersection(
-      diagonalA,
-      draggedCorner,
+  newBoundingBox = rectFromTwoPoints(oppositeCorner, newCorner)
+  if (lockedAspectRatio != null) {
+    // When aspect ratio is locked we extend the new bounding box in this way:
+    // 1. the extended bounding box should fully contain the bounding box
+    // 2. the extended rectangle should have the correct locked aspect ratio
+    // 3. there is always a fixed point of the bounding box which should not move:
+    //    - when it is a center based resize that fixed point is the center of the rectangle
+    //    - otherwise it is the opposite point than what we drag
+    const fixedEdgePosition = getFixedEdgePositionForAspectRatioLockResize(
+      centerBased,
       newCorner,
-      isHorizontalProjection ? horizontalLineB : verticalLineB,
-    ),
-  )
-
-  if (centerBased === 'center-based') {
-    const oppositeCornerDragged = offsetPoint(
       oppositeCorner,
-      pointDifference(aspectRatioFixedNewCorner, draggedCorner),
     )
-    return rectFromTwoPoints(oppositeCornerDragged, aspectRatioFixedNewCorner)
+
+    return extendRectangleToAspectRatio(newBoundingBox, fixedEdgePosition, lockedAspectRatio)
   } else {
-    return rectFromTwoPoints(oppositeCorner, aspectRatioFixedNewCorner)
+    return newBoundingBox
   }
 }
 
@@ -210,66 +163,7 @@ export function resizeBoundingBoxFromSide(
   drag: CanvasPoint,
   edgePosition: EdgePosition,
   centerBased: IsCenterBased,
-): CanvasRectangle {
-  const isEdgeHorizontalSide = isEdgePositionAHorizontalEdge(edgePosition)
-
-  const dragToUse = isEdgeHorizontalSide
-    ? canvasPoint({
-        x: 0,
-        y: drag.y,
-      })
-    : canvasPoint({
-        x: drag.x,
-        y: 0,
-      })
-
-  const oppositeSideCenterPosition = isEdgeHorizontalSide
-    ? ({
-        x: edgePosition.x,
-        y: 1 - edgePosition.y,
-      } as EdgePosition)
-    : ({
-        x: 1 - edgePosition.x,
-        y: edgePosition.y,
-      } as EdgePosition)
-
-  const draggedSideCenter = pickPointOnRect(boundingBox, edgePosition)
-  const newSideCenter = offsetPoint(draggedSideCenter, dragToUse)
-
-  let oppositeSideCenter = pickPointOnRect(boundingBox, oppositeSideCenterPosition)
-  if (centerBased === 'center-based') {
-    oppositeSideCenter = offsetPoint(
-      oppositeSideCenter,
-      pointDifference(dragToUse, zeroCanvasPoint),
-    )
-  }
-  const newCorner1 = isEdgeHorizontalSide
-    ? canvasPoint({
-        x: oppositeSideCenter.x - boundingBox.width / 2,
-        y: oppositeSideCenter.y,
-      })
-    : canvasPoint({
-        x: oppositeSideCenter.x,
-        y: oppositeSideCenter.y - boundingBox.height / 2,
-      })
-  const newCorner2 = isEdgeHorizontalSide
-    ? canvasPoint({
-        x: newSideCenter.x + boundingBox.width / 2,
-        y: newSideCenter.y,
-      })
-    : canvasPoint({
-        x: newSideCenter.x,
-        y: newSideCenter.y + boundingBox.height / 2,
-      })
-  return rectFromTwoPoints(newCorner1, newCorner2)
-}
-
-export function resizeBoundingBoxFromSideAspectRatioLocked(
-  boundingBox: CanvasRectangle,
-  drag: CanvasPoint,
-  edgePosition: EdgePosition,
-  lockedAspectRatio: number,
-  centerBased: IsCenterBased,
+  lockedAspectRatio: number | null,
 ): CanvasRectangle {
   const isEdgeHorizontalSide = isEdgePositionAHorizontalEdge(edgePosition)
 
@@ -304,29 +198,51 @@ export function resizeBoundingBoxFromSideAspectRatioLocked(
     )
   }
 
-  const dragDistance = distance(newSideCenter, oppositeSideCenter)
-  if (isEdgeHorizontalSide) {
-    const newWidth = dragDistance * lockedAspectRatio
-    const newCorner1 = canvasPoint({
-      x: oppositeSideCenter.x - newWidth / 2,
-      y: oppositeSideCenter.y,
-    })
-    const newCorner2 = canvasPoint({
-      x: newSideCenter.x + newWidth / 2,
-      y: newSideCenter.y,
-    })
+  if (lockedAspectRatio == null) {
+    const newCorner1 = isEdgeHorizontalSide
+      ? canvasPoint({
+          x: oppositeSideCenter.x - boundingBox.width / 2,
+          y: oppositeSideCenter.y,
+        })
+      : canvasPoint({
+          x: oppositeSideCenter.x,
+          y: oppositeSideCenter.y - boundingBox.height / 2,
+        })
+    const newCorner2 = isEdgeHorizontalSide
+      ? canvasPoint({
+          x: newSideCenter.x + boundingBox.width / 2,
+          y: newSideCenter.y,
+        })
+      : canvasPoint({
+          x: newSideCenter.x,
+          y: newSideCenter.y + boundingBox.height / 2,
+        })
     return rectFromTwoPoints(newCorner1, newCorner2)
   } else {
-    const newHeight = dragDistance / lockedAspectRatio
-    const newCorner1 = canvasPoint({
-      x: oppositeSideCenter.x,
-      y: oppositeSideCenter.y - newHeight / 2,
-    })
-    const newCorner2 = canvasPoint({
-      x: newSideCenter.x,
-      y: newSideCenter.y + newHeight / 2,
-    })
-    return rectFromTwoPoints(newCorner1, newCorner2)
+    const dragDistance = distance(newSideCenter, oppositeSideCenter)
+    if (isEdgeHorizontalSide) {
+      const newWidth = dragDistance * lockedAspectRatio
+      const newCorner1 = canvasPoint({
+        x: oppositeSideCenter.x - newWidth / 2,
+        y: oppositeSideCenter.y,
+      })
+      const newCorner2 = canvasPoint({
+        x: newSideCenter.x + newWidth / 2,
+        y: newSideCenter.y,
+      })
+      return rectFromTwoPoints(newCorner1, newCorner2)
+    } else {
+      const newHeight = dragDistance / lockedAspectRatio
+      const newCorner1 = canvasPoint({
+        x: oppositeSideCenter.x,
+        y: oppositeSideCenter.y - newHeight / 2,
+      })
+      const newCorner2 = canvasPoint({
+        x: newSideCenter.x,
+        y: newSideCenter.y + newHeight / 2,
+      })
+      return rectFromTwoPoints(newCorner1, newCorner2)
+    }
   }
 }
 
@@ -447,21 +363,6 @@ function getPointOnDiagonal(
   throw new Error(`Edge position ${edgePosition} is not a corner position`)
 }
 
-function getPointOnHorizontalLine(p: CanvasPoint) {
-  return canvasPoint({
-    x: p.x + 100,
-    y: p.y,
-  })
-}
-
-// returns a point on the same vertical line as p
-function getPointOnVerticalLine(p: CanvasPoint) {
-  return canvasPoint({
-    x: p.x,
-    y: p.y + 100,
-  })
-}
-
 export function pickCursorFromEdgePosition(edgePosition: EdgePosition) {
   const isTopLeft = edgePosition.x === 0 && edgePosition.y === 0
   const isBottomRight = edgePosition.x === 1 && edgePosition.y === 1
@@ -474,5 +375,86 @@ export function pickCursorFromEdgePosition(edgePosition: EdgePosition) {
     return CSSCursor.ResizeNWSE
   } else {
     return CSSCursor.ResizeNESW
+  }
+}
+
+function getFixedEdgePositionForAspectRatioLockResize(
+  centerBased: IsCenterBased,
+  newCorner: CanvasPoint,
+  oppositeCorner: CanvasPoint,
+): EdgePosition {
+  if (centerBased === 'center-based') {
+    return { x: 0.5, y: 0.5 }
+  } else {
+    if (oppositeCorner.x < newCorner.x) {
+      if (oppositeCorner.y < newCorner.y) {
+        return { x: 0, y: 0 }
+      } else {
+        return { x: 0, y: 1 }
+      }
+    } else {
+      if (oppositeCorner.y < newCorner.y) {
+        return { x: 1, y: 0 }
+      } else {
+        return { x: 1, y: 1 }
+      }
+    }
+  }
+}
+
+function extendRectangleToAspectRatio(
+  rectangle: CanvasRectangle,
+  fixedEdgePosition: EdgePosition,
+  aspectRatio: number,
+): CanvasRectangle {
+  const currentAspectRatio = rectangle.width / rectangle.height
+  if (currentAspectRatio < aspectRatio) {
+    const newWidth = rectangle.height * aspectRatio
+    if (fixedEdgePosition.x === 0) {
+      return canvasRectangle({
+        x: rectangle.x,
+        y: rectangle.y,
+        width: newWidth,
+        height: rectangle.height,
+      })
+    } else if (fixedEdgePosition.x === 0.5) {
+      return canvasRectangle({
+        x: rectangle.x + (rectangle.width - newWidth) / 2,
+        y: rectangle.y,
+        width: newWidth,
+        height: rectangle.height,
+      })
+    } else {
+      return canvasRectangle({
+        x: rectangle.x + rectangle.width - newWidth,
+        y: rectangle.y,
+        width: newWidth,
+        height: rectangle.height,
+      })
+    }
+  } else {
+    const newHeight = rectangle.width / aspectRatio
+    if (fixedEdgePosition.y === 0) {
+      return canvasRectangle({
+        x: rectangle.x,
+        y: rectangle.y,
+        width: rectangle.width,
+        height: newHeight,
+      })
+    } else if (fixedEdgePosition.y === 0.5) {
+      return canvasRectangle({
+        x: rectangle.x,
+        y: rectangle.y + (rectangle.height - newHeight) / 2,
+        width: rectangle.width,
+        height: newHeight,
+      })
+    } else {
+      return canvasRectangle({
+        x: rectangle.x,
+        y: rectangle.y + rectangle.height - newHeight,
+        width: rectangle.width,
+        height: newHeight,
+      })
+    }
   }
 }

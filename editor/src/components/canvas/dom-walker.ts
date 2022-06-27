@@ -356,7 +356,7 @@ function runSelectiveDomWalker(
       }
     })
     const otherElementPaths = Object.keys(rootMetadataInStateRef.current).filter(
-      (path) => !elementsToFocusOn.some((focusPath) => EP.toString(focusPath) === path),
+      (path) => !Object.keys(workingMetadata).includes(path),
     )
     const rootMetadataForOtherElements = pick(otherElementPaths, rootMetadataInStateRef.current)
     mergeMetadataMapsWithFragments_MUTATE(rootMetadataForOtherElements, workingMetadata)

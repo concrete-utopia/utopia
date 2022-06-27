@@ -662,3 +662,100 @@ describe('isParentOf', () => {
     expect(EP.isParentOf(parentPath, childPath)).toBe(false)
   })
 })
+
+describe('removePathsWithDeadUIDs', () => {
+  const uidsToKeep = ['aaa', 'bbb', 'ccc']
+
+  const cachedPathParts1 = [['aaa', 'bbb'], ['ccc']]
+  const cachedPathParts2 = [['aaa'], ['bbb', 'ccc']]
+  const clearedPathParts1 = [
+    ['aaa', 'bbb'],
+    ['ccc', 'ddd'],
+  ]
+  const clearedPathParts2 = [
+    ['aaa', 'ddd'],
+    ['bbb', 'ccc'],
+  ]
+
+  it('removes paths from the cache', () => {
+    // Create all of the paths, which will add them to the cache
+    const cachedPath1 = EP.elementPath(cachedPathParts1)
+    const cachedPath2 = EP.elementPath(cachedPathParts2)
+    const clearedPath1 = EP.elementPath(clearedPathParts1)
+    const clearedPath2 = EP.elementPath(clearedPathParts2)
+
+    // Check that the paths have indeed been added to the cache
+    expect(EP.elementPath(cachedPathParts1)).toBe(cachedPath1)
+    expect(EP.elementPath(cachedPathParts2)).toBe(cachedPath2)
+    expect(EP.elementPath(clearedPathParts1)).toBe(clearedPath1)
+    expect(EP.elementPath(clearedPathParts2)).toBe(clearedPath2)
+
+    // Cull the cache
+    EP.removePathsWithDeadUIDs(new Set(uidsToKeep))
+
+    // Ensure that only the expected paths have been removed from the cache
+    expect(EP.elementPath(cachedPathParts1)).toBe(cachedPath1)
+    expect(EP.elementPath(cachedPathParts2)).toBe(cachedPath2)
+    expect(EP.elementPath(clearedPathParts1)).not.toBe(clearedPath1)
+    expect(EP.elementPath(clearedPathParts2)).not.toBe(clearedPath2)
+  })
+
+  it('removes the cached string to path values', () => {
+    const cachedPath1AsString = cachedPathParts1
+      .map((parts) => parts.join(EP.ElementSeparator))
+      .join(EP.SceneSeparator)
+    const cachedPath2AsString = cachedPathParts2
+      .map((parts) => parts.join(EP.ElementSeparator))
+      .join(EP.SceneSeparator)
+    const clearedPath1AsString = clearedPathParts1
+      .map((parts) => parts.join(EP.ElementSeparator))
+      .join(EP.SceneSeparator)
+    const clearedPath2AsString = clearedPathParts2
+      .map((parts) => parts.join(EP.ElementSeparator))
+      .join(EP.SceneSeparator)
+
+    // Create all of the paths, which will add them to the cache
+    const cachedPath1 = EP.fromString(cachedPath1AsString)
+    const cachedPath2 = EP.fromString(cachedPath2AsString)
+    const clearedPath1 = EP.fromString(clearedPath1AsString)
+    const clearedPath2 = EP.fromString(clearedPath2AsString)
+
+    // Check that the paths have indeed been added to the cache
+    expect(EP.fromString(cachedPath1AsString)).toBe(cachedPath1)
+    expect(EP.fromString(cachedPath2AsString)).toBe(cachedPath2)
+    expect(EP.fromString(clearedPath1AsString)).toBe(clearedPath1)
+    expect(EP.fromString(clearedPath2AsString)).toBe(clearedPath2)
+
+    // Cull the cache
+    EP.removePathsWithDeadUIDs(new Set(uidsToKeep))
+
+    // Ensure that only the expected paths have been removed from the cache
+    expect(EP.fromString(cachedPath1AsString)).toBe(cachedPath1)
+    expect(EP.fromString(cachedPath2AsString)).toBe(cachedPath2)
+    expect(EP.fromString(clearedPath1AsString)).not.toBe(clearedPath1)
+    expect(EP.fromString(clearedPath2AsString)).not.toBe(clearedPath2)
+  })
+
+  it('removes paths from the dynamic to static cache', () => {
+    // Create all of the paths and add them to the cache
+    const cachedPath1 = EP.dynamicPathToStaticPath(EP.elementPath(cachedPathParts1))
+    const cachedPath2 = EP.dynamicPathToStaticPath(EP.elementPath(cachedPathParts2))
+    const clearedPath1 = EP.dynamicPathToStaticPath(EP.elementPath(clearedPathParts1))
+    const clearedPath2 = EP.dynamicPathToStaticPath(EP.elementPath(clearedPathParts2))
+
+    // Check that the paths have indeed been added to the cache
+    expect(EP.dynamicPathToStaticPath(EP.elementPath(cachedPathParts1))).toBe(cachedPath1)
+    expect(EP.dynamicPathToStaticPath(EP.elementPath(cachedPathParts2))).toBe(cachedPath2)
+    expect(EP.dynamicPathToStaticPath(EP.elementPath(clearedPathParts1))).toBe(clearedPath1)
+    expect(EP.dynamicPathToStaticPath(EP.elementPath(clearedPathParts2))).toBe(clearedPath2)
+
+    // Cull the cache
+    EP.removePathsWithDeadUIDs(new Set(uidsToKeep))
+
+    // Ensure that only the expected paths have been removed from the cache
+    expect(EP.dynamicPathToStaticPath(EP.elementPath(cachedPathParts1))).toBe(cachedPath1)
+    expect(EP.dynamicPathToStaticPath(EP.elementPath(cachedPathParts2))).toBe(cachedPath2)
+    expect(EP.dynamicPathToStaticPath(EP.elementPath(clearedPathParts1))).not.toBe(clearedPath1)
+    expect(EP.dynamicPathToStaticPath(EP.elementPath(clearedPathParts2))).not.toBe(clearedPath2)
+  })
+})
