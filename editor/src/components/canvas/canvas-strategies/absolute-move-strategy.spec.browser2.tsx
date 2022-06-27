@@ -20,7 +20,6 @@ import {
 } from '../../../core/shared/math-utils'
 import { emptyModifiers } from '../../../utils/modifiers'
 import { ElementPath } from '../../../core/shared/project-file-types'
-import { wait } from '../../../utils/utils.test-utils'
 
 function dragElement(
   canvasControl: HTMLElement,
@@ -104,6 +103,9 @@ async function startDragUsingActions(
 }
 
 describe('Absolute Move Strategy', () => {
+  before(() => {
+    viewport.set(2200, 1000)
+  })
   it('moves absolute positioned element', async () => {
     const startX = 40
     const startY = 50
@@ -141,6 +143,81 @@ describe('Absolute Move Strategy', () => {
             data-testid='bbb'
           />
         </div>
+      `),
+    )
+  })
+  it('fills in missing props of absolute positioned element', async () => {
+    const parentMargin = 100
+    const renderResult = await renderTestEditorWithCode(
+      makeTestProjectCodeWithSnippet(`
+      <div
+        data-uid='aaa'
+        style={{
+          position: 'absolute',
+          width: '100%',
+          height: '100%',
+          backgroundColor: '#FFFFFF',
+        }}
+      >
+        <div
+          style={{ left: 50, top: 50, margin: ${parentMargin}}}
+          data-uid='ccc'
+        >
+          <div
+            data-uid='bbb'
+            data-testid='bbb'
+            style={{
+              position: 'absolute',
+              width: 200,
+              height: 300,
+              backgroundColor: '#d3d3d3',
+            }}
+          />
+        </div>
+      </div>
+      `),
+      'await-first-dom-report',
+    )
+
+    const targetElement = renderResult.renderedDOM.getByTestId('bbb')
+    const targetElementBounds = targetElement.getBoundingClientRect()
+    const canvasControlsLayer = renderResult.renderedDOM.getByTestId(CanvasControlsContainerID)
+
+    const startPoint = windowPoint({ x: targetElementBounds.x + 5, y: targetElementBounds.y + 5 })
+    const dragDelta = windowPoint({ x: 40, y: -25 })
+
+    act(() => dragElement(canvasControlsLayer, startPoint, dragDelta, false, false, false))
+
+    await renderResult.getDispatchFollowUpActionsFinished()
+    expect(getPrintedUiJsCode(renderResult.getEditorState())).toEqual(
+      makeTestProjectCodeWithSnippet(`
+      <div
+        data-uid='aaa'
+        style={{
+          position: 'absolute',
+          width: '100%',
+          height: '100%',
+          backgroundColor: '#FFFFFF',
+        }}
+      >
+        <div
+          style={{ left: 50, top: 50, margin: ${parentMargin} }}
+          data-uid='ccc'
+        >
+          <div
+            data-uid='bbb'
+            data-testid='bbb'
+            style={{
+              position: 'absolute',
+              width: 200,
+              height: 300,
+              backgroundColor: '#d3d3d3',
+              left: ${parentMargin + dragDelta.x},
+              top: ${parentMargin + dragDelta.y},
+            }}
+          />
+        </div>
+      </div>
       `),
     )
   })
