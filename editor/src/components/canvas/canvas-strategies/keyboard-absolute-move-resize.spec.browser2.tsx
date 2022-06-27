@@ -198,7 +198,7 @@ describe('Keyboard Absolute Resize E2E', () => {
 
 describe('Keyboard Strategies Escape Behavior', () => {
   const { clock } = configureSetupTeardown()
-  it('Pressing Shift + ArrowRight 3 times, then pressing Esc before the keyboard strategy timer succeeds will cancel the strategy', async () => {
+  it('pressing Esc does not cancel the keyboard-based strategy', async () => {
     const { expectElementLeftOnScreen, expectElementPropertiesInPrintedCode } = await setupTest(
       defaultBBBProperties,
     )
@@ -208,7 +208,7 @@ describe('Keyboard Strategies Escape Behavior', () => {
     expectElementLeftOnScreen(30)
 
     // tick the clock so useClearKeyboardInteraction is fired
-    clock.current.tick(KeyboardInteractionTimeout)
+    clock.tick(KeyboardInteractionTimeout)
 
     await expectElementPropertiesInPrintedCode({
       left: 30,
@@ -229,23 +229,12 @@ describe('Keyboard Strategies Escape Behavior', () => {
       height: 101,
     })
 
-    // press Escape to cancel changes
+    // press Escape does not cancel the keyboard-based strategy, instead commits it
     pressEsc()
 
-    // the element is back to +30, jumping back from 60
-    expectElementLeftOnScreen(30)
+    expectElementLeftOnScreen(60)
     await expectElementPropertiesInPrintedCode({
-      left: 30,
-      top: 100,
-      width: 122,
-      height: 101,
-    })
-
-    // Redo will not bring us back to +60 offset
-    pressCmdShiftZ()
-    expectElementLeftOnScreen(30)
-    await expectElementPropertiesInPrintedCode({
-      left: 30,
+      left: 60,
       top: 100,
       width: 122,
       height: 101,

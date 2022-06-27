@@ -351,7 +351,6 @@ function getFullConfig(): UtopiaVSCodeConfig {
 
 let currentDecorations: Array<DecorationRange> = []
 let currentSelection: BoundsInFile | null = null
-let squashNextSelectionChange: boolean = false
 
 function initMessaging(context: vscode.ExtensionContext, workspaceRootUri: vscode.Uri): void {
   function handleMessage(message: ToVSCodeMessage): void {
@@ -396,10 +395,7 @@ function initMessaging(context: vscode.ExtensionContext, workspaceRootUri: vscod
       updateDecorations(currentDecorations)
     }),
     vscode.window.onDidChangeTextEditorSelection((event) => {
-      if (squashNextSelectionChange) {
-        // Ignore selection changes coming from Utopia
-        squashNextSelectionChange = false
-      } else {
+      if (vscode.window.state.focused) {
         cursorPositionChanged(event)
       }
     }),
@@ -433,7 +429,6 @@ async function updateDirtyContent(resource: vscode.Uri): Promise<void> {
   const filePath = fromUtopiaURI(resource)
   const { unsavedContent } = await readFileAsUTF8(filePath)
   if (unsavedContent != null) {
-    squashNextSelectionChange = true
     incomingFileChanges.add(filePath)
     const workspaceEdit = new vscode.WorkspaceEdit()
     workspaceEdit.replace(resource, entireDocRange(), unsavedContent)
@@ -455,7 +450,6 @@ async function openFile(fileUri: vscode.Uri, retries: number = 5): Promise<boole
   const filePath = fromUtopiaURI(fileUri)
   const fileExists = await exists(filePath)
   if (fileExists) {
-    squashNextSelectionChange = true
     await vscode.commands.executeCommand('vscode.open', fileUri, { preserveFocus: true })
     return true
   } else {
@@ -516,7 +510,6 @@ function revealRangeIfPossibleInVisibleEditor(boundsInFile: BoundsInFile): void 
     const selectionRange = getVSCodeRange(boundsInFile)
     const newSelection = new vscode.Selection(selectionRange.start, selectionRange.start) // selectionRange.end?
     if (!visibleEditor.selection.isEqual(newSelection)) {
-      squashNextSelectionChange = true
       visibleEditor.selection = newSelection
     }
 
