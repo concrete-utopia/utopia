@@ -954,3 +954,16 @@ export function clamp(min: number, max: number, value: number): number {
     return value
   }
 }
+
+export function canvasRectangleToLocalRectangle(
+  canvasRect: CanvasRectangle,
+  parentRect: CanvasRectangle,
+): LocalRectangle {
+  const diff = pointDifference(parentRect, canvasRect)
+  return localRectangle({
+    x: diff.x,
+    y: diff.y,
+    width: canvasRect.width,
+    height: canvasRect.height,
+  })
+}

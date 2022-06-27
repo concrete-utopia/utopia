@@ -10,13 +10,17 @@ import {
   boundingRectangleArray,
   CanvasPoint,
   canvasPoint,
+  canvasRectangle,
   CanvasRectangle,
   CanvasVector,
   localRectangle,
   LocalRectangle,
+  offsetRect,
   pointDifference,
+  rectangleDifference,
   zeroCanvasPoint,
   zeroCanvasRect,
+  canvasRectangleToLocalRectangle,
 } from '../../../core/shared/math-utils'
 import { ElementPath } from '../../../core/shared/project-file-types'
 import { ProjectContentTreeRoot } from '../../assets'
@@ -53,9 +57,13 @@ export function getAbsoluteMoveCommandsForSelectedElement(
     selectedElement,
   )
 
-  const elementParentBounds = elementMetadata?.specialSizeMeasurements.immediateParentBounds ?? null // TODO this should probably be coordinateSystemBounds
+  const elementParentBounds =
+    elementMetadata?.specialSizeMeasurements.coordinateSystemBounds ?? null
 
-  const localFrame = elementMetadata?.localFrame ?? null
+  const localFrame = MetadataUtils.getLocalFrameFromSpecialSizeMeasurements(
+    selectedElement,
+    sessionState.startingMetadata,
+  )
 
   if (element == null) {
     return []
