@@ -106,7 +106,6 @@ export function useMaybeHighlightElement(): {
 
   const maybeHighlightOnHover = React.useCallback(
     (target: ElementPath): void => {
-      /// target, parts, array, 0 contains [0: "0cd" 1: "478]
       const { dispatch, dragging, resizing, selectionEnabled, inserting, highlightedViews } =
         stateRef.current
 
