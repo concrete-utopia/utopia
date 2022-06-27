@@ -253,6 +253,41 @@ describe('Keyboard Strategies Escape Behavior', () => {
   })
 })
 
+describe('Keyboard Strategies Deletion Behavior', () => {
+  const { clock } = configureSetupTeardown()
+
+  it('Pressing ArrowRight 3 times, then deleting the element: the element is deleted, but undoable', async () => {
+    const {
+      expectElementLeftOnScreen,
+      expectElementPropertiesInPrintedCode,
+      expectElementDoesntExist,
+      getCanvasGuidelines,
+    } = await setupTest(defaultBBBProperties)
+
+    pressArrowRight3x()
+    expectElementLeftOnScreen(3)
+
+    // delete the element
+    pressBackspace()
+
+    // the element is deleted
+    expectElementDoesntExist()
+    expect(getCanvasGuidelines()).toEqual([])
+
+    // undo the deletion
+    pressCmdZ()
+
+    // the element is back to +3, jumping back from the dead
+    expectElementLeftOnScreen(3)
+
+    // undo the move
+    pressCmdZ()
+
+    // the element is back to 0
+    expectElementLeftOnScreen(0)
+  })
+})
+
 describe('Keyboard Strategies Undo Behavior', () => {
   const { clock } = configureSetupTeardown()
 
@@ -351,12 +386,16 @@ describe('Keyboard Strategies Undo Behavior', () => {
   })
 })
 
+function elementExists(renderedDom: RenderResult, testId: string): boolean {
+  return renderedDom.queryByTestId(testId) != null
+}
+
 function elementLeft(renderedDom: RenderResult, testId: string): number {
-  return renderedDom.getByTestId('element-bbb').getBoundingClientRect().x
+  return renderedDom.getByTestId(testId).getBoundingClientRect().x
 }
 
 function elementWidth(renderedDom: RenderResult, testId: string): number {
-  return renderedDom.getByTestId('element-bbb').getBoundingClientRect().width
+  return renderedDom.getByTestId(testId).getBoundingClientRect().width
 }
 
 async function setupTest(initialBBBProperties: { [key: string]: any }) {
@@ -376,6 +415,11 @@ async function setupTest(initialBBBProperties: { [key: string]: any }) {
       bbbElementLeftAtStart + offset,
     )
   }
+
+  function expectElementDoesntExist() {
+    expect(elementExists(renderResult.renderedDOM, 'element-bbb')).toBeFalsy()
+  }
+
   function expectElementWidthOnScreen(offset: number) {
     expect(elementWidth(renderResult.renderedDOM, 'element-bbb')).toEqual(
       bbbElementWidthAtStart + offset,
@@ -395,6 +439,7 @@ async function setupTest(initialBBBProperties: { [key: string]: any }) {
     expectElementLeftOnScreen,
     expectElementWidthOnScreen,
     expectElementPropertiesInPrintedCode,
+    expectElementDoesntExist,
     getCanvasGuidelines,
   }
 }
@@ -487,6 +532,13 @@ function pressEsc() {
   act(() => {
     window.dispatchEvent(new KeyboardEvent('keydown', { key: 'Escape', keyCode: 27 }))
     window.dispatchEvent(new KeyboardEvent('keyup', { key: 'Escape', keyCode: 27 }))
+  })
+}
+
+function pressBackspace() {
+  act(() => {
+    window.dispatchEvent(new KeyboardEvent('keydown', { key: 'Backspace', keyCode: 8 }))
+    window.dispatchEvent(new KeyboardEvent('keyup', { key: 'Backspace', keyCode: 8 }))
   })
 }
 
