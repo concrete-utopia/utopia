@@ -253,27 +253,32 @@ describe('Keyboard Strategies Deletion Behavior', () => {
       getCanvasGuidelines,
     } = await setupTest(defaultBBBProperties)
 
+    // setting up the project
     pressArrowRight3x()
     expectElementLeftOnScreen(3)
+    clock.current.tick(KeyboardInteractionTimeout)
+
+    // the test begins
+    pressArrowRight3x()
+    expectElementLeftOnScreen(6)
 
     // delete the element
     pressBackspace()
 
     // the element is deleted
     expectElementDoesntExist()
-    expect(getCanvasGuidelines()).toEqual([])
 
     // undo the deletion
     pressCmdZ()
 
     // the element is back to +3, jumping back from the dead
-    expectElementLeftOnScreen(3)
+    expectElementLeftOnScreen(6)
 
     // undo the move
     pressCmdZ()
 
     // the element is back to 0
-    expectElementLeftOnScreen(0)
+    expectElementLeftOnScreen(3)
   })
 })
 
