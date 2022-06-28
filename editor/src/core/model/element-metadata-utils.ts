@@ -69,6 +69,7 @@ import {
   CanvasPoint,
   CanvasRectangle,
   canvasRectangle,
+  canvasRectangleToLocalRectangle,
   LocalRectangle,
   localRectangle,
   SimpleRectangle,
@@ -1286,6 +1287,20 @@ export const MetadataUtils = {
   isEmotionOrStyledComponent(path: ElementPath, metadata: ElementInstanceMetadataMap): boolean {
     const element = MetadataUtils.findElementByElementPath(metadata, path)
     return element?.isEmotionOrStyledComponent ?? false
+  },
+  // localFrame is stored in the metadata root, but it is not correct in all cases. Calculating it from specialSizeMeasurements is more reliable
+  getLocalFrameFromSpecialSizeMeasurements(
+    path: ElementPath,
+    metadata: ElementInstanceMetadataMap,
+  ): LocalRectangle | null {
+    const element = MetadataUtils.findElementByElementPath(metadata, path)
+    const globalFrame = element?.globalFrame ?? null
+    const elementContainerBounds = element?.specialSizeMeasurements.coordinateSystemBounds ?? null
+    const localFrame =
+      globalFrame != null && elementContainerBounds != null
+        ? canvasRectangleToLocalRectangle(globalFrame, elementContainerBounds)
+        : null
+    return localFrame
   },
 }
 
