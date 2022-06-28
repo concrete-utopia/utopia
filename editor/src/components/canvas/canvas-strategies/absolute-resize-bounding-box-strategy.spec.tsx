@@ -81,6 +81,7 @@ const testMetadata: ElementInstanceMetadataMap = {
     element: left('div'),
     specialSizeMeasurements: {
       immediateParentBounds: canvasRectangle({ x: 0, y: 0, width: 400, height: 400 }),
+      coordinateSystemBounds: canvasRectangle({ x: 0, y: 0, width: 400, height: 400 }),
     } as SpecialSizeMeasurements,
     globalFrame: { height: 120, width: 100, x: 30, y: 50 },
   } as ElementInstanceMetadata,
@@ -89,6 +90,7 @@ const testMetadata: ElementInstanceMetadataMap = {
     element: left('div'),
     specialSizeMeasurements: {
       immediateParentBounds: canvasRectangle({ x: 0, y: 0, width: 400, height: 400 }),
+      coordinateSystemBounds: canvasRectangle({ x: 0, y: 0, width: 400, height: 400 }),
     } as SpecialSizeMeasurements,
     globalFrame: { height: 110, width: 100, x: 90, y: 40 },
   } as ElementInstanceMetadata,
@@ -580,6 +582,7 @@ describe('Absolute Resize Bounding Box Strategy single select', () => {
             element: left('div'),
             specialSizeMeasurements: {
               immediateParentBounds: canvasRectangle({ x: 0, y: 0, width: 400, height: 400 }),
+              coordinateSystemBounds: canvasRectangle({ x: 0, y: 0, width: 400, height: 400 }),
             } as SpecialSizeMeasurements,
             globalFrame: {
               height: bounding.height,
@@ -1441,6 +1444,7 @@ describe('Absolute Resize Strategy with missing props', () => {
           element: left('div'),
           specialSizeMeasurements: {
             immediateParentBounds: canvasRectangle({ x: 0, y: 0, width: 400, height: 400 }),
+            coordinateSystemBounds: canvasRectangle({ x: 0, y: 0, width: 400, height: 400 }),
           } as SpecialSizeMeasurements,
           globalFrame: { x: 30, y: 50, width: 100, height: 80 },
         } as ElementInstanceMetadata,
@@ -1449,6 +1453,7 @@ describe('Absolute Resize Strategy with missing props', () => {
           element: left('div'),
           specialSizeMeasurements: {
             immediateParentBounds: canvasRectangle({ x: 30, y: 50, width: 100, height: 80 }),
+            coordinateSystemBounds: canvasRectangle({ x: 30, y: 50, width: 100, height: 80 }),
           } as SpecialSizeMeasurements,
           globalFrame: { x: 30, y: 50, width: 100, height: 80 },
         } as ElementInstanceMetadata,
@@ -1584,6 +1589,7 @@ describe('Absolute Resize Strategy with missing props', () => {
           element: left('div'),
           specialSizeMeasurements: {
             immediateParentBounds: canvasRectangle({ x: 0, y: 0, width: 400, height: 400 }),
+            coordinateSystemBounds: canvasRectangle({ x: 0, y: 0, width: 400, height: 400 }),
           } as SpecialSizeMeasurements,
           globalFrame: { x: 0, y: 0, width: 100, height: 80 },
         } as ElementInstanceMetadata,
@@ -1592,6 +1598,7 @@ describe('Absolute Resize Strategy with missing props', () => {
           element: left('div'),
           specialSizeMeasurements: {
             immediateParentBounds: canvasRectangle({ x: 0, y: 0, width: 100, height: 80 }),
+            coordinateSystemBounds: canvasRectangle({ x: 0, y: 0, width: 100, height: 80 }),
           } as SpecialSizeMeasurements,
           globalFrame: { x: 0, y: 0, width: 100, height: 80 },
         } as ElementInstanceMetadata,

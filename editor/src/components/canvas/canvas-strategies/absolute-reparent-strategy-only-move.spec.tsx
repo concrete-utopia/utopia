@@ -77,6 +77,7 @@ function dragByPixels(
           ]),
           specialSizeMeasurements: {
             immediateParentBounds: canvasRectangle({ x: 0, y: 0, width: 400, height: 400 }),
+            coordinateSystemBounds: canvasRectangle({ x: 0, y: 0, width: 400, height: 400 }),
           } as SpecialSizeMeasurements,
         } as ElementInstanceMetadata,
       },
