@@ -275,7 +275,7 @@ export function interactionStart(
         strategy.strategy,
         canvasState,
         newEditorState.canvas.interactionSession,
-        result.strategyState,
+        withClearedSession,
       )
       const commandResult = foldAndApplyCommands(
         newEditorState,
