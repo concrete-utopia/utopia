@@ -457,9 +457,9 @@ const NewCanvasControlsInner = (props: NewCanvasControlsInnerProps) => {
       {when(
         resizeStatus !== 'disabled',
         <>
-          {when(isCanvasStrategyInSelectOrSelectLiteMode(props.editor.mode), <PinLines />)}
+          {when(isCanvasStrategyOnAndSelectOrSelectLiteMode(props.editor.mode), <PinLines />)}
           {when(
-            isCanvasStrategyInSelectOrSelectLiteMode(props.editor.mode),
+            isCanvasStrategyOnAndSelectOrSelectLiteMode(props.editor.mode),
             <DistanceGuidelineControl />,
           )}
           {when(
@@ -478,7 +478,7 @@ const NewCanvasControlsInner = (props: NewCanvasControlsInnerProps) => {
           {when(isFeatureEnabled('Canvas Strategies'), <GuidelineControls />)}
           <OutlineHighlightControl />
           {when(
-            isCanvasStrategyInSelectOrSelectLiteMode(props.editor.mode),
+            isCanvasStrategyOnAndSelectOrSelectLiteMode(props.editor.mode),
             <>{strategyControls.map((c) => React.createElement(c.control, { key: c.key }))}</>,
           )}
         </>,
@@ -487,7 +487,7 @@ const NewCanvasControlsInner = (props: NewCanvasControlsInnerProps) => {
   )
 }
 
-function isCanvasStrategyInSelectOrSelectLiteMode(mode: Mode): boolean {
+function isCanvasStrategyOnAndSelectOrSelectLiteMode(mode: Mode): boolean {
   return (
     (isFeatureEnabled('Canvas Strategies') && mode.type === 'select') || mode.type === 'select-lite'
   )
