@@ -270,7 +270,10 @@ export function snapDrag(
 const horizontalPins: Array<AbsolutePin> = ['left', 'right']
 const verticalPins: Array<AbsolutePin> = ['top', 'bottom']
 
-function ensureAtLeastOnePinPerDimension(props: PropsOrJSXAttributes) {
+function ensureAtLeastOnePinPerDimension(props: PropsOrJSXAttributes): {
+  existingPins: Array<AbsolutePin>
+  extendedPins: Array<AbsolutePin>
+} {
   const existingHorizontalPins = horizontalPins.filter((p) => {
     const prop = getLayoutProperty(p, props, ['style'])
     return isRight(prop) && prop.value != null
