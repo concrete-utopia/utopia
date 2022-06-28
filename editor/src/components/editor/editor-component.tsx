@@ -60,10 +60,7 @@ import {
   createInteractionViaKeyboard,
   updateInteractionViaKeyboard,
 } from '../canvas/canvas-strategies/interaction-state'
-import {
-  useAutomaticKeyUp,
-  useClearKeyboardInteraction,
-} from '../canvas/controls/select-mode/select-mode-hooks'
+import { useClearKeyboardInteraction } from '../canvas/controls/select-mode/select-mode-hooks'
 
 function pushProjectURLToBrowserHistory(projectId: string, projectName: string): void {
   // Make sure we don't replace the query params
@@ -139,7 +136,6 @@ export const EditorComponentInner = React.memo((props: EditorProps) => {
   }, [editorStoreRef])
 
   const setClearKeyboardInteraction = useClearKeyboardInteraction(editorStoreRef)
-  const automaticKeyUp = useAutomaticKeyUp(editorStoreRef)
 
   const onWindowKeyDown = React.useCallback(
     (event: KeyboardEvent) => {
@@ -180,7 +176,6 @@ export const EditorComponentInner = React.memo((props: EditorProps) => {
           editorStoreRef.current.dispatch([action], 'everyone')
 
           setClearKeyboardInteraction()
-          automaticKeyUp(key, modifiers)
         }
       }
 
@@ -192,7 +187,7 @@ export const EditorComponentInner = React.memo((props: EditorProps) => {
         editorStoreRef.current.dispatch,
       )
     },
-    [editorStoreRef, namesByKey, setClearKeyboardInteraction, automaticKeyUp],
+    [editorStoreRef, namesByKey, setClearKeyboardInteraction],
   )
 
   const onWindowKeyUp = React.useCallback(
