@@ -233,14 +233,8 @@ export function updateInteractionViaKeyboard(
         }
       } else {
         let newKeysPressed = new Set(lastKeyState.keysPressed)
-        if (modifiers.cmd) {
-          // there are no keyup events on osx while cmd is pressed
-          newKeysPressed = new Set()
-          addedKeysPressed.forEach((key) => newKeysPressed.add(key))
-        } else {
-          addedKeysPressed.forEach((key) => newKeysPressed.add(key))
-          keysReleased.forEach((key) => newKeysPressed.delete(key))
-        }
+        addedKeysPressed.forEach((key) => newKeysPressed.add(key))
+        keysReleased.forEach((key) => newKeysPressed.delete(key))
         newKeyState = {
           keysPressed: newKeysPressed,
           modifiers: modifiers,
