@@ -1,4 +1,3 @@
-import { ClearInteractionSession, CreateInteractionSession } from '../../canvas/canvas-types'
 import { EditorAction } from '../action-types'
 
 export function isTransientAction(action: EditorAction): boolean {

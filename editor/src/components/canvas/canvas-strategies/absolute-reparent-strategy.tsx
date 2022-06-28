@@ -1,7 +1,9 @@
 import { MetadataUtils } from '../../../core/model/element-metadata-utils'
 import * as EP from '../../../core/shared/element-path'
+import { CSSCursor } from '../canvas-types'
 import { getReparentTarget } from '../canvas-utils'
 import { reparentElement } from '../commands/reparent-element-command'
+import { setCursorCommand } from '../commands/set-cursor-command'
 import { setElementsToRerenderCommand } from '../commands/set-elements-to-rerender-command'
 import { updateSelectedViews } from '../commands/update-selected-views-command'
 import { ParentBounds } from '../controls/parent-bounds'
@@ -110,6 +112,7 @@ export const absoluteReparentStrategy: CanvasStrategy = {
           ...commands.flatMap((c) => c.commands),
           updateSelectedViews('permanent', newPaths),
           setElementsToRerenderCommand(newPaths),
+          setCursorCommand('transient', CSSCursor.Move),
         ],
         customState: null,
       }

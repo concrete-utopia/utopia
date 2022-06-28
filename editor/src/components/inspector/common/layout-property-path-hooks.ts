@@ -95,18 +95,16 @@ type PinInspectorInfo = InspectorInfo<CSSNumber | undefined>
 
 export type PinsInfo = { [key in LayoutPinnedProp]: PinInspectorInfo }
 
-function getOtherHorizontalPin(
-  newPin: LayoutPinnedProp,
+function getLastSetPinOrNull(
   lastSetPin: LayoutPinnedProp | null,
+  pinsInfo: PinsInfo,
 ): LayoutPinnedProp | null {
-  return lastSetPin
-}
-
-function getOtherVerticalPin(
-  newPin: LayoutPinnedProp,
-  lastSetPin: LayoutPinnedProp | null,
-): LayoutPinnedProp | null {
-  return lastSetPin
+  if (lastSetPin == null) {
+    return null
+  } else {
+    const lastSetPinIsValid = pinsInfo[lastSetPin].value != null
+    return lastSetPinIsValid ? lastSetPin : null
+  }
 }
 
 export function changePin(
@@ -116,14 +114,11 @@ export function changePin(
   lastHorizontalProp: LayoutPinnedProp | null,
   lastVerticalProp: LayoutPinnedProp | null,
 ): ChangePinResult {
-  const otherHorizontalProp: LayoutPinnedProp | null = getOtherHorizontalPin(
-    newFrameProp,
+  const otherHorizontalProp: LayoutPinnedProp | null = getLastSetPinOrNull(
     lastHorizontalProp,
+    pinsInfo,
   )
-  const otherVerticalProp: LayoutPinnedProp | null = getOtherVerticalPin(
-    newFrameProp,
-    lastVerticalProp,
-  )
+  const otherVerticalProp: LayoutPinnedProp | null = getLastSetPinOrNull(lastVerticalProp, pinsInfo)
 
   const newFramePoint = framePointForPinnedProp(newFrameProp)
   const pinInfoForProp = pinsInfo[newFrameProp]
