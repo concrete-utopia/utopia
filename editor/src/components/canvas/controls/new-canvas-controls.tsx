@@ -30,7 +30,7 @@ import {
 import { MetadataUtils } from '../../../core/model/element-metadata-utils'
 import { isAspectRatioLockedNew } from '../../aspect-ratio'
 import { ElementContextMenu } from '../../element-context-menu'
-import { isLiveMode, EditorModes, isSelectLiteMode } from '../../editor/editor-modes'
+import { isLiveMode, EditorModes, isSelectLiteMode, Mode } from '../../editor/editor-modes'
 import { DropTargetHookSpec, ConnectableElement, useDrop, DndProvider } from 'react-dnd'
 import { FileBrowserItemProps } from '../../filebrowser/fileitem'
 import { forceNotNull } from '../../../core/shared/optional-utils'
@@ -457,14 +457,9 @@ const NewCanvasControlsInner = (props: NewCanvasControlsInnerProps) => {
       {when(
         resizeStatus !== 'disabled',
         <>
+          {when(isCanvasStrategyOnAndSelectOrSelectLiteMode(props.editor.mode), <PinLines />)}
           {when(
-            (isFeatureEnabled('Canvas Strategies') && props.editor.mode.type === 'select') ||
-              props.editor.mode.type === 'select-lite',
-            <PinLines />,
-          )}
-          {when(
-            (isFeatureEnabled('Canvas Strategies') && props.editor.mode.type === 'select') ||
-              props.editor.mode.type === 'select-lite',
+            isCanvasStrategyOnAndSelectOrSelectLiteMode(props.editor.mode),
             <DistanceGuidelineControl />,
           )}
           {when(
@@ -483,11 +478,17 @@ const NewCanvasControlsInner = (props: NewCanvasControlsInnerProps) => {
           {when(isFeatureEnabled('Canvas Strategies'), <GuidelineControls />)}
           <OutlineHighlightControl />
           {when(
-            isFeatureEnabled('Canvas Strategies'),
+            isCanvasStrategyOnAndSelectOrSelectLiteMode(props.editor.mode),
             <>{strategyControls.map((c) => React.createElement(c.control, { key: c.key }))}</>,
           )}
         </>,
       )}
     </div>
+  )
+}
+
+function isCanvasStrategyOnAndSelectOrSelectLiteMode(mode: Mode): boolean {
+  return (
+    (isFeatureEnabled('Canvas Strategies') && mode.type === 'select') || mode.type === 'select-lite'
   )
 }

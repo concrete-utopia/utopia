@@ -114,7 +114,7 @@ export function applyAbsoluteMoveCommon(
           ...commandsForSelectedElements,
           updateHighlightedViews('transient', []),
           setElementsToRerenderCommand(canvasState.selectedElements),
-          setCursorCommand('transient', CSSCursor.Move),
+          setCursorCommand('transient', CSSCursor.Select),
         ],
         customState: null,
       }
@@ -135,7 +135,7 @@ export function applyAbsoluteMoveCommon(
           updateHighlightedViews('transient', []),
           setSnappingGuidelines('transient', guidelinesWithSnappingVector),
           setElementsToRerenderCommand(canvasState.selectedElements),
-          setCursorCommand('transient', CSSCursor.Move),
+          setCursorCommand('transient', CSSCursor.Select),
         ],
         customState: null,
       }
