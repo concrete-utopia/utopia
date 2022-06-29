@@ -519,6 +519,9 @@ export function editorDispatch(
 let cullElementPathCacheTimeoutId: number | undefined = undefined
 const CullElementPathCacheTimeout = 1000
 let lastProjectContents: ProjectContentTreeRoot = {}
+export function setLastProjectContentsForTesting(projectContents: ProjectContentTreeRoot) {
+  lastProjectContents = projectContents
+}
 
 function maybeCullElementPathCache(
   projectContents: ProjectContentTreeRoot,
