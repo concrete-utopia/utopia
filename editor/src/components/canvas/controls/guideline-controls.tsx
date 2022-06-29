@@ -38,8 +38,8 @@ const GuidelineControl = React.memo<GuidelineProps>((props) => {
           controlRef.current.style.setProperty('display', 'none')
         } else {
           controlRef.current.style.setProperty('display', 'block')
-          controlRef.current.style.setProperty('left', `${result.frame.x}px`)
-          controlRef.current.style.setProperty('top', `${result.frame.y}px`)
+          controlRef.current.style.setProperty('left', `${result.frame.x - 0.5 / scale}px`)
+          controlRef.current.style.setProperty('top', `${result.frame.y - 0.5 / scale}px`)
           controlRef.current.style.setProperty('width', `${result.frame.width}px`)
           controlRef.current.style.setProperty('height', `${result.frame.height}px`)
           controlRef.current.style.setProperty(
