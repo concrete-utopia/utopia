@@ -28,6 +28,7 @@ import { sampleImportsForTests } from './test-ui-js-file.test-utils'
 import { BakedInStoryboardUID } from './scene-utils'
 import { ElementPath } from '../shared/project-file-types'
 import { AllElementProps, ElementProps } from 'src/components/editor/store/editor-state'
+import { ElementInstanceMetadataMapKeepDeepEquality } from '../../components/editor/store/store-deep-equality-instances'
 
 const TestScenePath = 'scene-aaa'
 
@@ -584,5 +585,88 @@ describe('createOrderedElementPathsFromElements returns all of the ordered navig
       testStoryboardChildElement.elementPath,
       testStoryboardGrandChildElement.elementPath,
     ])
+  })
+})
+
+describe('Re-ordering elements', () => {
+  const oldMetadata: ElementInstanceMetadataMap = {
+    [EP.toString(testComponentMetadataChild1.elementPath)]: testComponentMetadataChild1,
+    [EP.toString(testComponentMetadataChild2.elementPath)]: testComponentMetadataChild2,
+    [EP.toString(testComponentMetadataChild3.elementPath)]: testComponentMetadataChild3,
+    [EP.toString(testComponentRoot1.elementPath)]: testComponentRoot1,
+  }
+  const newMetadata: ElementInstanceMetadataMap = {
+    [EP.toString(testComponentMetadataChild1.elementPath)]: testComponentMetadataChild1,
+    [EP.toString(testComponentMetadataChild3.elementPath)]: testComponentMetadataChild3,
+    [EP.toString(testComponentMetadataChild2.elementPath)]: testComponentMetadataChild2,
+    [EP.toString(testComponentRoot1.elementPath)]: testComponentRoot1,
+  }
+  const keptMetadata = ElementInstanceMetadataMapKeepDeepEquality(oldMetadata, newMetadata).value
+
+  const reorderedElementPath = testComponentMetadataChild2.elementPath
+  const parentPath = testComponentRoot1.elementPath
+
+  it('is correctly reflected in getViewZIndexFromMetadata', () => {
+    expect(MetadataUtils.getViewZIndexFromMetadata(keptMetadata, reorderedElementPath)).toEqual(
+      MetadataUtils.getViewZIndexFromMetadata(newMetadata, reorderedElementPath),
+    )
+  })
+  it('is correctly reflected in getSiblings', () => {
+    expect(MetadataUtils.getSiblings(keptMetadata, reorderedElementPath)).toEqual(
+      MetadataUtils.getSiblings(newMetadata, reorderedElementPath),
+    )
+  })
+  it('is correctly reflected in getChildrenPaths', () => {
+    expect(MetadataUtils.getChildrenPaths(keptMetadata, parentPath)).toEqual(
+      MetadataUtils.getChildrenPaths(newMetadata, parentPath),
+    )
+  })
+  it('is correctly reflected in getChildren', () => {
+    expect(MetadataUtils.getChildren(keptMetadata, parentPath)).toEqual(
+      MetadataUtils.getChildren(newMetadata, parentPath),
+    )
+  })
+  it('is correctly reflected in getImmediateChildrenPaths', () => {
+    expect(MetadataUtils.getImmediateChildrenPaths(keptMetadata, parentPath)).toEqual(
+      MetadataUtils.getImmediateChildrenPaths(newMetadata, parentPath),
+    )
+  })
+  it('is correctly reflected in getImmediateChildren', () => {
+    expect(MetadataUtils.getImmediateChildren(keptMetadata, parentPath)).toEqual(
+      MetadataUtils.getImmediateChildren(newMetadata, parentPath),
+    )
+  })
+  it('is correctly reflected in getAllChildrenIncludingUnfurledFocusedComponents', () => {
+    expect(
+      MetadataUtils.getAllChildrenIncludingUnfurledFocusedComponents(parentPath, keptMetadata),
+    ).toEqual(
+      MetadataUtils.getAllChildrenIncludingUnfurledFocusedComponents(parentPath, newMetadata),
+    )
+  })
+  it('is correctly reflected in getAllChildrenElementsIncludingUnfurledFocusedComponents', () => {
+    expect(
+      MetadataUtils.getAllChildrenElementsIncludingUnfurledFocusedComponents(
+        parentPath,
+        keptMetadata,
+      ),
+    ).toEqual(
+      MetadataUtils.getAllChildrenElementsIncludingUnfurledFocusedComponents(
+        parentPath,
+        newMetadata,
+      ),
+    )
+  })
+  it('is correctly reflected in getAllPaths', () => {
+    expect(MetadataUtils.getAllPaths(keptMetadata)).toEqual(MetadataUtils.getAllPaths(newMetadata))
+  })
+  it('is correctly reflected in getAllPathsIncludingUnfurledFocusedComponents', () => {
+    expect(MetadataUtils.getAllPathsIncludingUnfurledFocusedComponents(keptMetadata)).toEqual(
+      MetadataUtils.getAllPathsIncludingUnfurledFocusedComponents(newMetadata),
+    )
+  })
+  it('is correctly reflected in createOrderedElementPathsFromElements', () => {
+    expect(MetadataUtils.createOrderedElementPathsFromElements(keptMetadata, [])).toEqual(
+      MetadataUtils.createOrderedElementPathsFromElements(newMetadata, []),
+    )
   })
 })
