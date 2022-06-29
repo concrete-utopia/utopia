@@ -191,7 +191,7 @@ const ErrorOverlayComponent = React.memo((props: ErrorOverlayComponentProps) => 
   )
 
   React.useEffect(() => {
-    if (overlay != null) {
+    if (errorRecords.length > 0 || overlayErrors.length > 0) {
       // If this is showing, we need to clear any canvas drag state and apply the changes it would have resulted in,
       // since that might have been the cause of the error being thrown, as well as switching back to select mode
       setTimeout(() => {
@@ -204,7 +204,7 @@ const ErrorOverlayComponent = React.memo((props: ErrorOverlayComponentProps) => 
         ])
       }, 0)
     }
-  }, [dispatch, overlay])
+  }, [dispatch, errorRecords.length, overlayErrors.length])
 
   return overlay
 })
