@@ -84,41 +84,18 @@ export function findFirstParentWithValidElementPath(
 }
 
 export function getValidTargetAtPoint(
-  componentMetadata: ElementInstanceMetadataMap,
-  selectedViews: Array<ElementPath>,
-  hiddenInstances: Array<ElementPath>,
   validElementPathsForLookup: Array<ElementPath> | 'no-filter',
   point: WindowPoint | null,
-  canvasScale: number,
-  canvasOffset: CanvasVector,
-  allElementProps: AllElementProps,
 ): ElementPath | null {
   if (point == null) {
     return null
   }
-  return (
-    getAllTargetsAtPoint(
-      componentMetadata,
-      selectedViews,
-      hiddenInstances,
-      validElementPathsForLookup,
-      point,
-      canvasScale,
-      canvasOffset,
-      allElementProps,
-    )[0] ?? null
-  )
+  return getAllTargetsAtPoint(validElementPathsForLookup, point)[0] ?? null
 }
 
 export function getAllTargetsAtPoint(
-  componentMetadata: ElementInstanceMetadataMap,
-  selectedViews: Array<ElementPath>,
-  hiddenInstances: Array<ElementPath>,
   validElementPathsForLookup: Array<ElementPath> | 'no-filter',
   point: WindowPoint | null,
-  canvasScale: number,
-  canvasOffset: CanvasVector,
-  allElementProps: AllElementProps,
 ): Array<ElementPath> {
   if (point == null) {
     return []
@@ -143,6 +120,61 @@ export function getAllTargetsAtPoint(
 
   // TODO FIXME we should take the zero-sized elements from Canvas.getAllTargetsAtPoint, and insert them (in a correct-enough order) here. See PR for context https://github.com/concrete-utopia/utopia/pull/2345
   return elementsFromDOM
+}
+
+export function getAllTargetsAtPointAABB(
+  componentMetadata: ElementInstanceMetadataMap,
+  selectedViews: Array<ElementPath>,
+  hiddenInstances: Array<ElementPath>,
+  validElementPathsForLookup: Array<ElementPath> | 'no-filter',
+  point: WindowPoint | null,
+  canvasScale: number,
+  canvasOffset: CanvasVector,
+  allElementProps: AllElementProps,
+): Array<ElementPath> {
+  if (point == null) {
+    return []
+  }
+
+  const pointOnCanvas = windowToCanvasCoordinates(canvasScale, canvasOffset, point)
+  const getElementsUnderPointFromAABB = Canvas.getAllTargetsAtPoint(
+    componentMetadata,
+    selectedViews,
+    hiddenInstances,
+    pointOnCanvas.canvasPositionRaw,
+    [TargetSearchType.All],
+    true,
+    'loose',
+    allElementProps,
+  )
+
+  const elementsUnderPoint = document.elementsFromPoint(point.x, point.y)
+  const validPathsSet =
+    validElementPathsForLookup == 'no-filter'
+      ? 'no-filter'
+      : new Set(
+          validElementPathsForLookup.map((path) => EP.toString(EP.makeLastPartOfPathStatic(path))),
+        )
+  const elementsFromDOM = stripNulls(
+    elementsUnderPoint.map((element) => {
+      const foundValidelementPath = findFirstParentWithValidElementPath(validPathsSet, element)
+      if (foundValidelementPath != null) {
+        return foundValidelementPath
+      } else {
+        return null
+      }
+    }),
+  )
+
+  return getElementsUnderPointFromAABB
+    .filter((foundElement) => {
+      if (!foundElement.canBeFilteredOut) {
+        return true
+      } else {
+        return elementsFromDOM.some((e) => EP.pathsEqual(e, foundElement.elementPath))
+      }
+    })
+    .map((e) => e.elementPath)
 }
 
 export function windowToCanvasCoordinates(

@@ -500,7 +500,6 @@ import {
   updatePackageJson,
   removeFromNodeModulesContents,
 } from './action-creators'
-import { getAllTargetsAtPoint } from '../../canvas/dom-lookup'
 import {
   initVSCodeBridge,
   sendCodeEditorDecorations,
