@@ -1,5 +1,6 @@
 import React from 'react'
-import { canvasRectangle, CanvasRectangle } from '../../../core/shared/math-utils'
+import { MetadataUtils } from '../../../core/model/element-metadata-utils'
+import { canvasRectangle, CanvasRectangle, rectanglesEqual } from '../../../core/shared/math-utils'
 import { useColorTheme } from '../../../uuiui'
 import { EditorStorePatched } from '../../editor/store/editor-state'
 import {
@@ -50,23 +51,42 @@ const GuidelineControl = React.memo<GuidelineProps>((props) => {
       }
     },
   )
+
+  const strategyMovedSuccessfully = useEditorState((store) => {
+    return (
+      store.editor.canvas.controls.strategyIntendedBounds.length > 0 &&
+      store.editor.canvas.controls.strategyIntendedBounds.every(({ target, frame }) => {
+        const measuredFrame = MetadataUtils.getFrameInCanvasCoords(target, store.editor.jsxMetadata)
+        if (measuredFrame == null) {
+          return false
+        } else {
+          return rectanglesEqual(measuredFrame, frame)
+        }
+      })
+    )
+  }, 'GuidelineControls strategyMovedSuccessfully')
+
   const key = `guideline-${props.index}`
-  return (
-    <div
-      id={key}
-      key={key}
-      data-testid={key}
-      ref={controlRef}
-      style={{
-        position: 'absolute',
-        pointerEvents: 'none',
-        borderWidth: 0,
-        borderLeftWidth: LineWidth / scale,
-        borderTopWidth: LineWidth / scale,
-        borderColor: colorTheme.canvasLayoutStroke.value,
-      }}
-    />
-  )
+  if (!strategyMovedSuccessfully) {
+    return null
+  } else {
+    return (
+      <div
+        id={key}
+        key={key}
+        data-testid={key}
+        ref={controlRef}
+        style={{
+          position: 'absolute',
+          pointerEvents: 'none',
+          borderWidth: 0,
+          borderLeftWidth: LineWidth / scale,
+          borderTopWidth: LineWidth / scale,
+          borderColor: colorTheme.canvasLayoutStroke.value,
+        }}
+      />
+    )
+  }
 })
 
 function useGuideline<T = HTMLDivElement>(
