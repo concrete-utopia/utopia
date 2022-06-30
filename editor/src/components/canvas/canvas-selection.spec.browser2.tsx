@@ -1,11 +1,11 @@
-import * as EP from '../../../core/shared/element-path'
-import { StoryboardFilePath } from '../../editor/store/editor-state'
-import { EditorRenderResult, renderTestEditorWithModel } from '../ui-jsx.test-utils'
-import { createModifiedProject } from '../../../sample-projects/sample-project-utils.test-utils'
-import { CanvasControlsContainerID } from '../controls/new-canvas-controls'
+import * as EP from '../../core/shared/element-path'
+import { StoryboardFilePath } from '../editor/store/editor-state'
+import { EditorRenderResult, renderTestEditorWithModel } from './ui-jsx.test-utils'
+import { createModifiedProject } from '../../sample-projects/sample-project-utils.test-utils'
+import { CanvasControlsContainerID } from './controls/new-canvas-controls'
 import { act, fireEvent } from '@testing-library/react'
-import { ElementPath } from '../../../core/shared/project-file-types'
-import { setFocusedElement } from '../../../components/editor/actions/action-creators'
+import { ElementPath } from '../../core/shared/project-file-types'
+import { setFocusedElement } from '../../components/editor/actions/action-creators'
 
 function exampleProject(
   positionSetting: string | null,
