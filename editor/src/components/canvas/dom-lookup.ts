@@ -17,10 +17,8 @@ import * as EP from '../../core/shared/element-path'
 import { getPathsOnDomElement } from '../../core/shared/uid-utils'
 import Canvas, { TargetSearchType } from './canvas'
 import { CanvasPositions } from './canvas-types'
-import { CanvasScale, CanvasScrollOffset } from '../../utils/global-positions'
 import { AllElementProps } from '../editor/store/editor-state'
-import { CanvasControlsContainerID } from './controls/new-canvas-controls'
-import { Utils } from '../../uuiui-deps'
+import Utils from '../../utils/utils'
 
 export function findParentSceneValidPaths(target: Element): Array<ElementPath> | null {
   const validPaths = getDOMAttribute(target, 'data-utopia-valid-paths')
