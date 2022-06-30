@@ -146,6 +146,265 @@ describe('Absolute Move Strategy', () => {
       `),
     )
   })
+  it('moves selected element even when it is covered with a non-selected one', async () => {
+    const startX = 40
+    const startY = 50
+    const renderResult = await renderTestEditorWithCode(
+      makeTestProjectCodeWithSnippet(`
+        <div style={{ width: '100%', height: '100%' }} data-uid='aaa'>
+          <div
+            style={{ backgroundColor: '#0091FFAA', position: 'absolute', left: ${startX}, top: ${startY}, width: 200, height: 120 }}
+            data-uid='bbb'
+            data-testid='bbb'
+          />
+          <div
+            style={{ backgroundColor: 'red', position: 'absolute', left: ${startX}, top: ${startY}, width: 200, height: 120 }}
+            data-uid='ccc'
+            data-testid='ccc'
+          />
+        </div>
+      `),
+      'await-first-dom-report',
+    )
+
+    await renderResult.dispatch(
+      [selectComponents([EP.appendNewElementPath(TestScenePath, ['aaa', 'bbb'])], false)],
+      true,
+    )
+
+    const targetElement = renderResult.renderedDOM.getByTestId('bbb')
+    const targetElementBounds = targetElement.getBoundingClientRect()
+    const canvasControlsLayer = renderResult.renderedDOM.getByTestId(CanvasControlsContainerID)
+
+    const startPoint = windowPoint({ x: targetElementBounds.x + 5, y: targetElementBounds.y + 5 })
+    const dragDelta = windowPoint({ x: 40, y: -25 })
+
+    act(() => dragElement(canvasControlsLayer, startPoint, dragDelta, false, false, false))
+
+    await renderResult.getDispatchFollowUpActionsFinished()
+    expect(getPrintedUiJsCode(renderResult.getEditorState())).toEqual(
+      makeTestProjectCodeWithSnippet(`
+        <div style={{ width: '100%', height: '100%' }} data-uid='aaa'>
+          <div
+            style={{ backgroundColor: '#0091FFAA', position: 'absolute', left: ${
+              startX + dragDelta.x
+            }, top: ${startY + dragDelta.y}, width: 200, height: 120 }}
+            data-uid='bbb'
+            data-testid='bbb'
+          />
+          <div
+            style={{ backgroundColor: 'red', position: 'absolute', left: ${startX}, top: ${startY}, width: 200, height: 120 }}
+            data-uid='ccc'
+            data-testid='ccc'
+          />
+        </div>
+      `),
+    )
+  })
+  it('moves multiselection when dragging one of the selected elements', async () => {
+    const startX1 = 40
+    const startY1 = 50
+    const startX2 = 80
+    const startY2 = 100
+    const renderResult = await renderTestEditorWithCode(
+      makeTestProjectCodeWithSnippet(`
+        <div style={{ width: '100%', height: '100%' }} data-uid='aaa'>
+          <div
+            style={{ backgroundColor: '#0091FFAA', position: 'absolute', left: ${startX1}, top: ${startY1}, width: 200, height: 120 }}
+            data-uid='bbb'
+            data-testid='bbb'
+          />
+          <div
+            style={{ backgroundColor: 'red', position: 'absolute', left: ${startX2}, top: ${startY2}, width: 200, height: 120 }}
+            data-uid='ccc'
+            data-testid='ccc'
+          />
+        </div>
+      `),
+      'await-first-dom-report',
+    )
+
+    await renderResult.dispatch(
+      [
+        selectComponents(
+          [
+            EP.appendNewElementPath(TestScenePath, ['aaa', 'bbb']),
+            EP.appendNewElementPath(TestScenePath, ['aaa', 'ccc']),
+          ],
+          false,
+        ),
+      ],
+      true,
+    )
+
+    const targetElement = renderResult.renderedDOM.getByTestId('bbb')
+    const targetElementBounds = targetElement.getBoundingClientRect()
+    const canvasControlsLayer = renderResult.renderedDOM.getByTestId(CanvasControlsContainerID)
+
+    const startPoint = windowPoint({ x: targetElementBounds.x + 5, y: targetElementBounds.y + 5 })
+    const dragDelta = windowPoint({ x: 40, y: -25 })
+
+    act(() => dragElement(canvasControlsLayer, startPoint, dragDelta, false, false, false))
+
+    await renderResult.getDispatchFollowUpActionsFinished()
+    expect(getPrintedUiJsCode(renderResult.getEditorState())).toEqual(
+      makeTestProjectCodeWithSnippet(`
+        <div style={{ width: '100%', height: '100%' }} data-uid='aaa'>
+          <div
+            style={{ backgroundColor: '#0091FFAA', position: 'absolute', left: ${
+              startX1 + dragDelta.x
+            }, top: ${startY1 + dragDelta.y}, width: 200, height: 120 }}
+            data-uid='bbb'
+            data-testid='bbb'
+          />
+          <div
+            style={{ backgroundColor: 'red', position: 'absolute', left: ${
+              startX2 + dragDelta.x
+            }, top: ${startY2 + dragDelta.y}, width: 200, height: 120 }}
+            data-uid='ccc'
+            data-testid='ccc'
+          />
+        </div>
+      `),
+    )
+  })
+  it('moves multiselection when dragging a non-selected element inside the selection area', async () => {
+    const startX1 = 40
+    const startY1 = 50
+    const startX2 = 122
+    const startY2 = 50
+    const startX3 = 122
+    const startY3 = 130
+    const renderResult = await renderTestEditorWithCode(
+      makeTestProjectCodeWithSnippet(`
+        <div style={{ width: '100%', height: '100%' }} data-uid='aaa'>
+          <div
+            style={{ backgroundColor: '#0091FFAA', position: 'absolute', left: ${startX1}, top: ${startY1}, width: 60, height: 60 }}
+            data-uid='bbb'
+            data-testid='bbb'
+          />
+          <div
+            style={{ backgroundColor: 'red', position: 'absolute', left: ${startX2}, top: ${startY2}, width: 60, height: 60 }}
+            data-uid='ccc'
+            data-testid='ccc'
+          />
+          <div
+            style={{ backgroundColor: 'green', position: 'absolute', left: ${startX3}, top: ${startY3}, width: 60, height: 60 }}
+            data-uid='ddd'
+            data-testid='ddd'
+          />
+          
+        </div>
+      `),
+      'await-first-dom-report',
+    )
+
+    await renderResult.dispatch(
+      [
+        selectComponents(
+          [
+            EP.appendNewElementPath(TestScenePath, ['aaa', 'bbb']),
+            EP.appendNewElementPath(TestScenePath, ['aaa', 'ddd']),
+          ],
+          false,
+        ),
+      ],
+      true,
+    )
+
+    const targetElement = renderResult.renderedDOM.getByTestId('ccc')
+    const targetElementBounds = targetElement.getBoundingClientRect()
+    const canvasControlsLayer = renderResult.renderedDOM.getByTestId(CanvasControlsContainerID)
+
+    const startPoint = windowPoint({ x: targetElementBounds.x + 5, y: targetElementBounds.y + 5 })
+    const dragDelta = windowPoint({ x: 41, y: -26 })
+
+    act(() => dragElement(canvasControlsLayer, startPoint, dragDelta, false, false, false))
+
+    await renderResult.getDispatchFollowUpActionsFinished()
+    expect(getPrintedUiJsCode(renderResult.getEditorState())).toEqual(
+      makeTestProjectCodeWithSnippet(`
+        <div style={{ width: '100%', height: '100%' }} data-uid='aaa'>
+          <div
+            style={{ backgroundColor: '#0091FFAA', position: 'absolute', left: ${
+              startX1 + dragDelta.x
+            }, top: ${startY1 + dragDelta.y}, width: 60, height: 60 }}
+            data-uid='bbb'
+            data-testid='bbb'
+          />
+          <div
+            style={{ backgroundColor: 'red', position: 'absolute', left: ${startX2}, top: ${startY2}, width: 60, height: 60 }}
+            data-uid='ccc'
+            data-testid='ccc'
+          />
+          <div
+            style={{ backgroundColor: 'green', position: 'absolute', left: ${
+              startX3 + dragDelta.x
+            }, top: ${startY3 + dragDelta.y}, width: 60, height: 60 }}
+            data-uid='ddd'
+            data-testid='ddd'
+          />
+        </div>
+      `),
+    )
+  })
+  it('ignores selection when dragging element outside of the selection area', async () => {
+    const startX1 = 0
+    const startY1 = 0
+    const startX2 = 210
+    const startY2 = 220
+    const renderResult = await renderTestEditorWithCode(
+      makeTestProjectCodeWithSnippet(`
+        <div style={{ width: '100%', height: '100%' }} data-uid='aaa'>
+          <div
+            style={{ backgroundColor: '#0091FFAA', position: 'absolute', left: ${startX1}, top: ${startY1}, width: 200, height: 120 }}
+            data-uid='bbb'
+            data-testid='bbb'
+          />
+          <div
+            style={{ backgroundColor: 'red', position: 'absolute', left: ${startX2}, top: ${startY2}, width: 200, height: 120 }}
+            data-uid='ccc'
+            data-testid='ccc'
+          />
+        </div>
+      `),
+      'await-first-dom-report',
+    )
+
+    await renderResult.dispatch(
+      [selectComponents([EP.appendNewElementPath(TestScenePath, ['aaa', 'ccc'])], false)],
+      true,
+    )
+
+    const targetElement = renderResult.renderedDOM.getByTestId('bbb')
+    const targetElementBounds = targetElement.getBoundingClientRect()
+    const canvasControlsLayer = renderResult.renderedDOM.getByTestId(CanvasControlsContainerID)
+
+    const startPoint = windowPoint({ x: targetElementBounds.x + 5, y: targetElementBounds.y + 5 })
+    const dragDelta = windowPoint({ x: 40, y: -25 })
+
+    act(() => dragElement(canvasControlsLayer, startPoint, dragDelta, false, false, false))
+
+    await renderResult.getDispatchFollowUpActionsFinished()
+    expect(getPrintedUiJsCode(renderResult.getEditorState())).toEqual(
+      makeTestProjectCodeWithSnippet(`
+        <div style={{ width: '100%', height: '100%' }} data-uid='aaa'>
+          <div
+            style={{ backgroundColor: '#0091FFAA', position: 'absolute', left: ${
+              startX1 + dragDelta.x
+            }, top: ${startY1 + dragDelta.y}, width: 200, height: 120 }}
+            data-uid='bbb'
+            data-testid='bbb'
+          />
+          <div
+            style={{ backgroundColor: 'red', position: 'absolute', left: ${startX2}, top: ${startY2}, width: 200, height: 120 }}
+            data-uid='ccc'
+            data-testid='ccc'
+          />
+        </div>
+      `),
+    )
+  })
   it('fills in missing props of absolute positioned element', async () => {
     const parentMargin = 100
     const renderResult = await renderTestEditorWithCode(
