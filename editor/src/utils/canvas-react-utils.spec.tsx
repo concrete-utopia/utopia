@@ -138,14 +138,14 @@ describe('Monkey Function', () => {
     }
 
     expect(renderToFormattedString(<TestStoryboard data-uid={'test1'} />)).toMatchInlineSnapshot(`
-      "<div data-uid=\\"scene\\">
+      "<div style=\\"overflow: hidden\\" data-uid=\\"scene\\">
         <div data-uid=\\"component-root\\">
           <div data-uid=\\"kutya\\">Hello!</div>
           <div data-uid=\\"majom\\">Hello!</div>
         </div>
       </div>
       "
-`)
+    `)
   })
 
   it('works for simple function components', () => {
