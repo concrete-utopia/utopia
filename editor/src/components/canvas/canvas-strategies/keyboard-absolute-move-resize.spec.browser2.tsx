@@ -1,3 +1,4 @@
+/* eslint-disable no-unused-expressions */
 /* eslint-disable jest/expect-expect */
 import { act, RenderResult } from '@testing-library/react'
 import sinon, { SinonFakeTimers } from 'sinon'
@@ -6,6 +7,7 @@ import * as EP from '../../../core/shared/element-path'
 import { isFeatureEnabled, setFeatureEnabled } from '../../../utils/feature-switches'
 import { wait } from '../../../utils/utils.test-utils'
 import { selectComponents } from '../../editor/actions/action-creators'
+import { GuidelineWithSnappingVector } from '../guideline'
 import { getPrintedUiJsCode, renderTestEditorWithCode } from '../ui-jsx.test-utils'
 import { KeyboardInteractionTimeout } from './interaction-state'
 
@@ -16,7 +18,7 @@ const defaultBBBProperties = {
   height: 101,
 }
 
-describe('Keyboard Absolute Strategies E2E', () => {
+function configureSetupTeardown(): { clock: { current: SinonFakeTimers } } {
   let originalCanvasStrategiesFSValue: boolean
   before(() => {
     viewport.set(2200, 1000)
@@ -27,31 +29,64 @@ describe('Keyboard Absolute Strategies E2E', () => {
     setFeatureEnabled('Canvas Strategies', originalCanvasStrategiesFSValue)
   })
 
-  let clock: SinonFakeTimers
+  let clock: { current: SinonFakeTimers } = { current: null as any } // it will be non-null thanks to beforeEach
   beforeEach(function () {
     setFeatureEnabled('Canvas Strategies', true)
-    clock = sinon.useFakeTimers({
+    clock.current = sinon.useFakeTimers({
       // the timers will tick so the editor is not totally broken, but we can fast-forward time at will
       // WARNING: the Sinon fake timers will advance in 20ms increments
       shouldAdvanceTime: true,
     })
   })
   afterEach(function () {
-    clock.restore()
+    clock.current?.restore()
   })
+  return { clock: clock }
+}
+
+describe('Keyboard Absolute Move E2E', () => {
+  const { clock } = configureSetupTeardown()
 
   it('Pressing Shift + ArrowRight 3 times', async () => {
-    const { expectElementLeftOnScreen, expectElementPropertiesInPrintedCode } = await setupTest(
-      defaultBBBProperties,
-    )
+    const { expectElementLeftOnScreen, expectElementPropertiesInPrintedCode, getCanvasGuidelines } =
+      await setupTest(defaultBBBProperties)
 
     pressArrowRightHoldingShift3x()
     expectElementLeftOnScreen(30)
+    expect(getCanvasGuidelines()).toEqual([])
 
     // tick the clock so useClearKeyboardInteraction is fired
-    clock.tick(KeyboardInteractionTimeout)
+    clock.current.tick(KeyboardInteractionTimeout)
     await expectElementPropertiesInPrintedCode({
       left: 30,
+      top: 100,
+      width: 122,
+      height: 101,
+    })
+  })
+
+  it('Pressing Shift + ArrowRight 3 times, then Shift + ArrowLeft 3 times', async () => {
+    const { expectElementLeftOnScreen, expectElementPropertiesInPrintedCode, getCanvasGuidelines } =
+      await setupTest(defaultBBBProperties)
+
+    pressArrowRightHoldingShift3x()
+    expectElementLeftOnScreen(30)
+    expect(getCanvasGuidelines()).toEqual([])
+
+    pressArrowLeftHoldingShift(3)
+    expectElementLeftOnScreen(0)
+    expect(getCanvasGuidelines()).toEqual([
+      {
+        guideline: { type: 'XAxisGuideline', x: 0, yTop: 0, yBottom: 812 },
+        snappingVector: { x: 0, y: 0 },
+        activateSnap: true,
+      },
+    ])
+
+    // tick the clock so useClearKeyboardInteraction is fired
+    clock.current.tick(KeyboardInteractionTimeout)
+    await expectElementPropertiesInPrintedCode({
+      left: 0,
       top: 100,
       width: 122,
       height: 101,
@@ -70,7 +105,7 @@ describe('Keyboard Absolute Strategies E2E', () => {
     expectElementLeftOnScreen(33)
 
     // tick the clock so useClearKeyboardInteraction is fired
-    clock.tick(KeyboardInteractionTimeout)
+    clock.current.tick(KeyboardInteractionTimeout)
     await expectElementPropertiesInPrintedCode({
       left: 33,
       top: 100,
@@ -91,32 +126,11 @@ describe('Keyboard Absolute Strategies E2E', () => {
     expectElementLeftOnScreen(27)
 
     // tick the clock so useClearKeyboardInteraction is fired
-    clock.tick(KeyboardInteractionTimeout)
+    clock.current.tick(KeyboardInteractionTimeout)
     await expectElementPropertiesInPrintedCode({
       left: 27,
       top: 100,
       width: 122,
-      height: 101,
-    })
-  })
-
-  it('Pressing Cmd + ArrowRight 3 times, then pressing Cmd + ArrowLeft once', async () => {
-    const { expectElementWidthOnScreen, expectElementPropertiesInPrintedCode } = await setupTest(
-      defaultBBBProperties,
-    )
-
-    pressArrowRightHoldingCmd(3)
-    expectElementWidthOnScreen(3)
-
-    pressArrowLeftHoldingCmd(1)
-    expectElementWidthOnScreen(2)
-
-    // tick the clock so useClearKeyboardInteraction is fired
-    clock.tick(KeyboardInteractionTimeout)
-    await expectElementPropertiesInPrintedCode({
-      left: 0,
-      top: 100,
-      width: 124,
       height: 101,
     })
   })
@@ -132,7 +146,7 @@ describe('Keyboard Absolute Strategies E2E', () => {
     expectElementLeftOnScreen(30)
 
     // tick the clock so useClearKeyboardInteraction is fired
-    clock.tick(KeyboardInteractionTimeout)
+    clock.current.tick(KeyboardInteractionTimeout)
     await expectElementPropertiesInPrintedCode({
       top: 100,
       width: 122,
@@ -140,8 +154,51 @@ describe('Keyboard Absolute Strategies E2E', () => {
       left: 30,
     })
   })
+})
 
-  it('Pressing Shift + ArrowRight 3 times, then pressing Esc before the keyboard strategy timer succeeds will cancel the strategy', async () => {
+describe('Keyboard Absolute Resize E2E', () => {
+  const { clock } = configureSetupTeardown()
+
+  it('Pressing Cmd + ArrowRight 3 times, then pressing Cmd + ArrowLeft once', async () => {
+    const {
+      expectElementWidthOnScreen,
+      expectElementPropertiesInPrintedCode,
+      getCanvasGuidelines,
+    } = await setupTest({
+      left: 10,
+      top: 100,
+      width: 28,
+      height: 101,
+    })
+
+    pressArrowRightHoldingCmd(3)
+    expectElementWidthOnScreen(3)
+    expect(getCanvasGuidelines()).toEqual([])
+
+    pressArrowLeftHoldingCmd(1)
+    expectElementWidthOnScreen(2)
+    expect(getCanvasGuidelines()).toEqual([
+      {
+        activateSnap: true,
+        guideline: { type: 'XAxisGuideline', x: 40, yBottom: 396, yTop: 300 },
+        snappingVector: { x: 0, y: 0 },
+      },
+    ])
+
+    // tick the clock so useClearKeyboardInteraction is fired
+    clock.current.tick(KeyboardInteractionTimeout)
+    await expectElementPropertiesInPrintedCode({
+      left: 10,
+      top: 100,
+      width: 30,
+      height: 101,
+    })
+  })
+})
+
+describe('Keyboard Strategies Escape Behavior', () => {
+  const { clock } = configureSetupTeardown()
+  it('pressing Esc does not cancel the keyboard-based strategy', async () => {
     const { expectElementLeftOnScreen, expectElementPropertiesInPrintedCode } = await setupTest(
       defaultBBBProperties,
     )
@@ -151,7 +208,7 @@ describe('Keyboard Absolute Strategies E2E', () => {
     expectElementLeftOnScreen(30)
 
     // tick the clock so useClearKeyboardInteraction is fired
-    clock.tick(KeyboardInteractionTimeout)
+    clock.current.tick(KeyboardInteractionTimeout)
 
     await expectElementPropertiesInPrintedCode({
       left: 30,
@@ -172,28 +229,61 @@ describe('Keyboard Absolute Strategies E2E', () => {
       height: 101,
     })
 
-    // press Escape to cancel changes
+    // press Escape does not cancel the keyboard-based strategy, instead commits it
     pressEsc()
 
-    // the element is back to +30, jumping back from 60
-    expectElementLeftOnScreen(30)
+    expectElementLeftOnScreen(60)
     await expectElementPropertiesInPrintedCode({
-      left: 30,
-      top: 100,
-      width: 122,
-      height: 101,
-    })
-
-    // Redo will not bring us back to +60 offset
-    pressCmdShiftZ()
-    expectElementLeftOnScreen(30)
-    await expectElementPropertiesInPrintedCode({
-      left: 30,
+      left: 60,
       top: 100,
       width: 122,
       height: 101,
     })
   })
+})
+
+describe('Keyboard Strategies Deletion Behavior', () => {
+  const { clock } = configureSetupTeardown()
+
+  it('Pressing ArrowRight 3 times, then immediately deleting the element: the element is deleted, but undoable', async () => {
+    const {
+      expectElementLeftOnScreen,
+      expectElementPropertiesInPrintedCode,
+      expectElementDoesntExist,
+      getCanvasGuidelines,
+    } = await setupTest(defaultBBBProperties)
+
+    // setting up the project
+    pressArrowRight3x()
+    expectElementLeftOnScreen(3)
+    clock.current.tick(KeyboardInteractionTimeout)
+
+    // the test begins
+    pressArrowRight3x()
+    expectElementLeftOnScreen(6)
+
+    // delete the element
+    pressBackspace()
+
+    // the element is deleted
+    expectElementDoesntExist()
+
+    // undo the deletion
+    pressCmdZ()
+
+    // the element is back to +3, jumping back from the dead
+    expectElementLeftOnScreen(6)
+
+    // undo the move
+    pressCmdZ()
+
+    // the element is back to 0
+    expectElementLeftOnScreen(3)
+  })
+})
+
+describe('Keyboard Strategies Undo Behavior', () => {
+  const { clock } = configureSetupTeardown()
 
   it('Pressing Shift + ArrowRight 3 times, await keyboard strategy timeout, then press Cmd + Z to undo jumps back to original, but redoable', async () => {
     const { expectElementLeftOnScreen, expectElementPropertiesInPrintedCode } = await setupTest(
@@ -203,7 +293,7 @@ describe('Keyboard Absolute Strategies E2E', () => {
     // Setup: first we move the element 30 pixels to the right
     pressArrowRightHoldingShift3x()
     expectElementLeftOnScreen(30)
-    clock.tick(KeyboardInteractionTimeout)
+    clock.current.tick(KeyboardInteractionTimeout)
     await expectElementPropertiesInPrintedCode({
       left: 30,
       top: 100,
@@ -216,7 +306,7 @@ describe('Keyboard Absolute Strategies E2E', () => {
     expectElementLeftOnScreen(60)
 
     // tick the clock so useClearKeyboardInteraction is fired
-    clock.tick(KeyboardInteractionTimeout)
+    clock.current.tick(KeyboardInteractionTimeout)
     await expectElementPropertiesInPrintedCode({
       left: 60,
       top: 100,
@@ -252,7 +342,7 @@ describe('Keyboard Absolute Strategies E2E', () => {
     // Prepare the test, let's move the element by 30 and wait so we have a proper undo history entry
     pressArrowRightHoldingShift3x()
     expectElementLeftOnScreen(30)
-    clock.tick(KeyboardInteractionTimeout)
+    clock.current.tick(KeyboardInteractionTimeout)
     await expectElementPropertiesInPrintedCode({
       left: 30,
       top: 100,
@@ -290,12 +380,16 @@ describe('Keyboard Absolute Strategies E2E', () => {
   })
 })
 
+function elementExists(renderedDom: RenderResult, testId: string): boolean {
+  return renderedDom.queryByTestId(testId) != null
+}
+
 function elementLeft(renderedDom: RenderResult, testId: string): number {
-  return renderedDom.getByTestId('element-bbb').getBoundingClientRect().x
+  return renderedDom.getByTestId(testId).getBoundingClientRect().x
 }
 
 function elementWidth(renderedDom: RenderResult, testId: string): number {
-  return renderedDom.getByTestId('element-bbb').getBoundingClientRect().width
+  return renderedDom.getByTestId(testId).getBoundingClientRect().width
 }
 
 async function setupTest(initialBBBProperties: { [key: string]: any }) {
@@ -315,6 +409,11 @@ async function setupTest(initialBBBProperties: { [key: string]: any }) {
       bbbElementLeftAtStart + offset,
     )
   }
+
+  function expectElementDoesntExist() {
+    expect(elementExists(renderResult.renderedDOM, 'element-bbb')).toBeFalsy()
+  }
+
   function expectElementWidthOnScreen(offset: number) {
     expect(elementWidth(renderResult.renderedDOM, 'element-bbb')).toEqual(
       bbbElementWidthAtStart + offset,
@@ -326,11 +425,16 @@ async function setupTest(initialBBBProperties: { [key: string]: any }) {
       TestProjectDeluxeStallion(bbbProperties),
     )
   }
+  function getCanvasGuidelines(): Array<GuidelineWithSnappingVector> {
+    return renderResult.getEditorState().editor.canvas.controls.snappingGuidelines
+  }
   return {
     renderResult,
     expectElementLeftOnScreen,
     expectElementWidthOnScreen,
     expectElementPropertiesInPrintedCode,
+    expectElementDoesntExist,
+    getCanvasGuidelines,
   }
 }
 
@@ -355,6 +459,19 @@ function pressArrowLeftHoldingCmd(count: number) {
       )
       window.dispatchEvent(
         new KeyboardEvent('keyup', { key: 'ArrowLeft', keyCode: 37, metaKey: true }),
+      )
+    }
+  })
+}
+
+function pressArrowLeftHoldingShift(count: number) {
+  act(() => {
+    for (let step = 0; step < count; step++) {
+      window.dispatchEvent(
+        new KeyboardEvent('keydown', { key: 'ArrowLeft', keyCode: 37, shiftKey: true }),
+      )
+      window.dispatchEvent(
+        new KeyboardEvent('keyup', { key: 'ArrowLeft', keyCode: 37, shiftKey: true }),
       )
     }
   })
@@ -409,6 +526,13 @@ function pressEsc() {
   act(() => {
     window.dispatchEvent(new KeyboardEvent('keydown', { key: 'Escape', keyCode: 27 }))
     window.dispatchEvent(new KeyboardEvent('keyup', { key: 'Escape', keyCode: 27 }))
+  })
+}
+
+function pressBackspace() {
+  act(() => {
+    window.dispatchEvent(new KeyboardEvent('keydown', { key: 'Backspace', keyCode: 8 }))
+    window.dispatchEvent(new KeyboardEvent('keyup', { key: 'Backspace', keyCode: 8 }))
   })
 }
 

@@ -92,7 +92,6 @@ import {
   getUtopiaJSXComponentsFromSuccess,
 } from '../../core/model/project-file-utils'
 import { lintAndParse } from '../../core/workers/parser-printer/parser-printer'
-import { defaultProject } from '../../sample-projects/sample-project-utils'
 import {
   eitherToMaybe,
   flatMapEither,
