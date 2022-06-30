@@ -416,9 +416,6 @@ export var Button = ({
   return (
     <button
       {...buttonProps}
-      css={(theme) => ({
-        backgroundColor: theme.colors.primaryBlue,
-      })}
       css={{
         border: 'none',
         borderRadius: '5px',
