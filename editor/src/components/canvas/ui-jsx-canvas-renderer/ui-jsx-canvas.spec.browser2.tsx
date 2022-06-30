@@ -116,11 +116,7 @@ async function checkOverlappingElements(
   const canvasControlsLayer = renderResult.renderedDOM.getByTestId(CanvasControlsContainerID)
 
   if (focusedOn != null) {
-    await act(async () => {
-      const dispatchDone = renderResult.getDispatchFollowUpActionsFinished()
-      await renderResult.dispatch([setFocusedElement(focusedOn)], true)
-      await dispatchDone
-    })
+    await renderResult.dispatch([setFocusedElement(focusedOn)], true)
   }
 
   act(() => {
