@@ -148,11 +148,10 @@ export function getSelectionOrValidTargetAtPoint(
     canvasOffset,
     allElementProps,
   )
-  if (targets.includes('selection')) {
+  if (targets === 'selection') {
     return selectedViews[0] ?? null
   } else {
-    const firstTarget = targets.filter((t): t is ElementPath => t !== 'selection')[0]
-    return firstTarget ?? null
+    return targets[0] ?? null
   }
 }
 
@@ -165,7 +164,7 @@ export function getSelectionOrAllTargetsAtPoint(
   canvasScale: number,
   canvasOffset: CanvasVector,
   allElementProps: AllElementProps,
-): Array<ElementPath | 'selection'> {
+): Array<ElementPath> | 'selection' {
   if (point == null) {
     return []
   }
@@ -187,23 +186,40 @@ export function getSelectionOrAllTargetsAtPoint(
     }),
   )
 
+  const inSelectionRectangle = isPointInSelectionRectangle(
+    canvasScale,
+    canvasOffset,
+    point,
+    allElementProps,
+    componentMetadata,
+    selectedViews,
+    hiddenInstances,
+  )
+
+  return inSelectionRectangle ? 'selection' : elementsFromDOM
+}
+
+function isPointInSelectionRectangle(
+  canvasScale: number,
+  canvasOffset: CanvasVector,
+  point: WindowPoint,
+  allElementProps: AllElementProps,
+  componentMetadata: ElementInstanceMetadataMap,
+  selectedViews: ElementPath[],
+  hiddenInstances: ElementPath[],
+) {
   const pointOnCanvas = windowToCanvasCoordinates(canvasScale, canvasOffset, point)
-  const framesWithPaths = Canvas.getFramesInCanvasContext(allElementProps, componentMetadata, true) // TODO FIXME we should take the zero-sized elements from Canvas.getAllTargetsAtPoint, and insert them (in a correct-enough order) here. See PR for context https://github.com/concrete-utopia/utopia/pull/2345
+  const framesWithPaths = Canvas.getFramesInCanvasContext(allElementProps, componentMetadata, true)
   const selectedFrames = framesWithPaths.filter(
     (f) =>
       selectedViews.some((v) => EP.pathsEqual(f.path, v)) &&
       !hiddenInstances.some((hidden) => EP.isDescendantOfOrEqualTo(f.path, hidden)),
   )
   const selectionRectangle = boundingRectangleArray(selectedFrames.map((f) => f.frame))
-
-  if (
+  return (
     selectionRectangle != null &&
     Utils.rectContainsPoint(selectionRectangle, pointOnCanvas.canvasPositionRaw)
-  ) {
-    return ['selection']
-  }
-
-  return elementsFromDOM
+  )
 }
 
 // export function isSelectionContainerElement(element: Element): boolean {

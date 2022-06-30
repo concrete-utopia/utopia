@@ -531,14 +531,14 @@ function useSelectOrLiveModeSelectAndHover(
     derived: store.derived,
   }))
 
-  const onMouseUp = React.useCallback(
-    (event: React.MouseEvent<HTMLDivElement>) => {
+  const mouseHandler = React.useCallback(
+    (event: React.MouseEvent<HTMLDivElement>, preferAlreadySelected: boolean) => {
       const doubleClick = event.detail > 1 // we interpret a triple click as two double clicks, a quadruple click as three double clicks, etc  // TODO TEST ME
       const selectableViews = getSelectableViewsForSelectMode(event.metaKey, doubleClick)
       const foundTarget = findValidTarget(
         selectableViews,
         windowPoint(point(event.clientX, event.clientY)),
-        true,
+        preferAlreadySelected,
       )
 
       const isMultiselect = event.shiftKey
@@ -619,90 +619,13 @@ function useSelectOrLiveModeSelectAndHover(
   )
 
   const onMouseDown = React.useCallback(
-    (event: React.MouseEvent<HTMLDivElement>) => {
-      const doubleClick = event.detail > 1 // we interpret a triple click as two double clicks, a quadruple click as three double clicks, etc  // TODO TEST ME
-      const selectableViews = getSelectableViewsForSelectMode(event.metaKey, doubleClick)
-      const foundTarget = findValidTarget(
-        selectableViews,
-        windowPoint(point(event.clientX, event.clientY)),
-        false,
-      )
+    (event: React.MouseEvent<HTMLDivElement>) => mouseHandler(event, true),
+    [mouseHandler],
+  )
 
-      const isMultiselect = event.shiftKey
-      const isDeselect = foundTarget == null && !isMultiselect
-      let editorActions: Array<EditorAction> = []
-
-      if (foundTarget != null || isDeselect) {
-        if (foundTarget != null && draggingAllowed) {
-          if (isFeatureEnabled('Canvas Strategies')) {
-            const start = windowToCanvasCoordinates(
-              windowPoint(point(event.clientX, event.clientY)),
-            ).canvasPositionRounded
-            if (event.button !== 2) {
-              editorActions.push(
-                CanvasActions.createInteractionSession(
-                  createInteractionViaMouse(start, Modifier.modifiersForEvent(event), {
-                    type: 'BOUNDING_AREA',
-                    target: foundTarget.elementPath,
-                  }),
-                ),
-              )
-            }
-          } else {
-            startDragStateAfterDragExceedsThreshold(event.nativeEvent, foundTarget.elementPath)
-          }
-        }
-
-        let updatedSelection: Array<ElementPath>
-        if (isMultiselect) {
-          updatedSelection = EP.addPathIfMissing(foundTarget!.elementPath, selectedViewsRef.current)
-        } else {
-          updatedSelection = foundTarget != null ? [foundTarget.elementPath] : []
-        }
-
-        if (foundTarget != null && doubleClick) {
-          // for components without passed children doubleclicking enters focus mode
-          const isFocusableLeaf = MetadataUtils.isFocusableLeafComponent(
-            foundTarget.elementPath,
-            editorStoreRef.current.editor.jsxMetadata,
-          )
-          if (isFocusableLeaf) {
-            editorActions.push(setFocusedElement(foundTarget.elementPath))
-          }
-        }
-
-        if (!(foundTarget?.isSelected ?? false)) {
-          // first we only set the selected views for the canvas controls
-          setSelectedViewsForCanvasControlsOnly(updatedSelection)
-
-          // then we set the selected views for the editor state, 1 frame later
-          if (updatedSelection.length === 0) {
-            const clearFocusedElementIfFeatureSwitchEnabled = isFeatureEnabled(
-              'Click on empty canvas unfocuses',
-            )
-              ? [setFocusedElement(null)]
-              : []
-
-            editorActions.push(clearSelection())
-            editorActions.push(...clearFocusedElementIfFeatureSwitchEnabled)
-          } else {
-            editorActions.push(selectComponents(updatedSelection, event.shiftKey))
-          }
-        }
-      }
-      dispatch(editorActions)
-    },
-    [
-      dispatch,
-      selectedViewsRef,
-      findValidTarget,
-      startDragStateAfterDragExceedsThreshold,
-      setSelectedViewsForCanvasControlsOnly,
-      getSelectableViewsForSelectMode,
-      editorStoreRef,
-      draggingAllowed,
-      windowToCanvasCoordinates,
-    ],
+  const onMouseUp = React.useCallback(
+    (event: React.MouseEvent<HTMLDivElement>) => mouseHandler(event, false),
+    [mouseHandler],
   )
 
   return { onMouseMove, onMouseDown, onMouseUp }
