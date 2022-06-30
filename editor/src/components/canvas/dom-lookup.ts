@@ -2,6 +2,7 @@ import { intersection, last, mapDropNulls, stripNulls } from '../../core/shared/
 import { getDOMAttribute } from '../../core/shared/dom-utils'
 import { ElementInstanceMetadataMap } from '../../core/shared/element-template'
 import {
+  boundingRectangleArray,
   canvasPoint,
   CanvasVector,
   negate,
@@ -18,6 +19,8 @@ import Canvas, { TargetSearchType } from './canvas'
 import { CanvasPositions } from './canvas-types'
 import { CanvasScale, CanvasScrollOffset } from '../../utils/global-positions'
 import { AllElementProps } from '../editor/store/editor-state'
+import { CanvasControlsContainerID } from './controls/new-canvas-controls'
+import { Utils } from '../../uuiui-deps'
 
 export function findParentSceneValidPaths(target: Element): Array<ElementPath> | null {
   const validPaths = getDOMAttribute(target, 'data-utopia-valid-paths')
@@ -121,6 +124,93 @@ export function getAllTargetsAtPoint(
   // TODO FIXME we should take the zero-sized elements from Canvas.getAllTargetsAtPoint, and insert them (in a correct-enough order) here. See PR for context https://github.com/concrete-utopia/utopia/pull/2345
   return elementsFromDOM
 }
+
+export function getSelectionOrValidTargetAtPoint(
+  componentMetadata: ElementInstanceMetadataMap,
+  selectedViews: Array<ElementPath>,
+  hiddenInstances: Array<ElementPath>,
+  validElementPathsForLookup: Array<ElementPath> | 'no-filter',
+  point: WindowPoint | null,
+  canvasScale: number,
+  canvasOffset: CanvasVector,
+  allElementProps: AllElementProps,
+): ElementPath | null {
+  if (point == null) {
+    return null
+  }
+  const targets = getSelectionOrAllTargetsAtPoint(
+    componentMetadata,
+    selectedViews,
+    hiddenInstances,
+    validElementPathsForLookup,
+    point,
+    canvasScale,
+    canvasOffset,
+    allElementProps,
+  )
+  if (targets.includes('selection')) {
+    return selectedViews[0] ?? null
+  } else {
+    const firstTarget = targets.filter((t): t is ElementPath => t !== 'selection')[0]
+    return firstTarget ?? null
+  }
+}
+
+export function getSelectionOrAllTargetsAtPoint(
+  componentMetadata: ElementInstanceMetadataMap,
+  selectedViews: Array<ElementPath>,
+  hiddenInstances: Array<ElementPath>,
+  validElementPathsForLookup: Array<ElementPath> | 'no-filter',
+  point: WindowPoint | null,
+  canvasScale: number,
+  canvasOffset: CanvasVector,
+  allElementProps: AllElementProps,
+): Array<ElementPath | 'selection'> {
+  if (point == null) {
+    return []
+  }
+  const elementsUnderPoint = document.elementsFromPoint(point.x, point.y)
+  const validPathsSet =
+    validElementPathsForLookup == 'no-filter'
+      ? 'no-filter'
+      : new Set(
+          validElementPathsForLookup.map((path) => EP.toString(EP.makeLastPartOfPathStatic(path))),
+        )
+  const elementsFromDOM = stripNulls(
+    elementsUnderPoint.map((element) => {
+      const foundValidelementPath = findFirstParentWithValidElementPath(validPathsSet, element)
+      if (foundValidelementPath != null) {
+        return foundValidelementPath
+      } else {
+        return null
+      }
+    }),
+  )
+
+  const pointOnCanvas = windowToCanvasCoordinates(canvasScale, canvasOffset, point)
+  const framesWithPaths = Canvas.getFramesInCanvasContext(allElementProps, componentMetadata, true) // TODO FIXME we should take the zero-sized elements from Canvas.getAllTargetsAtPoint, and insert them (in a correct-enough order) here. See PR for context https://github.com/concrete-utopia/utopia/pull/2345
+  const selectedFrames = framesWithPaths.filter(
+    (f) =>
+      selectedViews.some((v) => EP.pathsEqual(f.path, v)) &&
+      !hiddenInstances.some((hidden) => EP.isDescendantOfOrEqualTo(f.path, hidden)),
+  )
+  const selectionRectangle = boundingRectangleArray(selectedFrames.map((f) => f.frame))
+
+  if (
+    selectionRectangle != null &&
+    Utils.rectContainsPoint(selectionRectangle, pointOnCanvas.canvasPositionRaw)
+  ) {
+    return ['selection']
+  }
+
+  return elementsFromDOM
+}
+
+// export function isSelectionContainerElement(element: Element): boolean {
+//   const testidAttr = getDOMAttribute(element, 'data-selection')
+//   console.log('testidAttr', testidAttr)
+//   return testidAttr === 'true'
+// }
 
 export function getAllTargetsAtPointAABB(
   componentMetadata: ElementInstanceMetadataMap,
