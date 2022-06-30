@@ -123,8 +123,7 @@ async function checkOverlappingElements(
     })
   }
 
-  await act(async () => {
-    const dispatchDone = renderResult.getDispatchFollowUpActionsFinished()
+  act(() => {
     fireEvent(
       canvasControlsLayer,
       new MouseEvent('mousedown', {
@@ -137,7 +136,6 @@ async function checkOverlappingElements(
         buttons: 1,
       }),
     )
-    await dispatchDone
   })
 
   const newlySelectedElements = renderResult.getEditorState().editor.selectedViews
