@@ -36,6 +36,7 @@ import {
 } from './set-elements-to-rerender-command'
 import { DuplicateElement, runDuplicateElement } from './duplicate-element-command'
 import { runUpdateFunctionCommand, UpdateFunctionCommand } from './update-function-command'
+import { runSetIntendedBounds, SetIntendedBounds } from './set-intended-bounds-command'
 
 export interface CommandFunctionResult {
   editorStatePatches: Array<EditorStatePatch>
@@ -67,6 +68,7 @@ export type CanvasCommand =
   | ShowOutlineHighlight
   | SetCursorCommand
   | SetElementsToRerenderCommand
+  | SetIntendedBounds
 
 export const runCanvasCommand = (
   editorState: EditorState,
@@ -106,6 +108,8 @@ export const runCanvasCommand = (
       return runSetCursor(editorState, command)
     case 'SET_ELEMENTS_TO_RERENDER_COMMAND':
       return runSetElementsToRerender(editorState, command)
+    case 'SET_INTENDED_BOUNDS':
+      return runSetIntendedBounds(editorState, command)
     default:
       const _exhaustiveCheck: never = command
       throw new Error(`Unhandled canvas command ${JSON.stringify(command)}`)

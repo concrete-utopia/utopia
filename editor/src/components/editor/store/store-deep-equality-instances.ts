@@ -169,8 +169,10 @@ import {
 } from '../../../core/shared/element-template'
 import {
   CanvasRectangle,
+  CoordinateMarker,
   LocalPoint,
   LocalRectangle,
+  Rectangle,
   size,
   Size,
 } from '../../../core/shared/math-utils'
@@ -332,7 +334,13 @@ import {
   ResizeHandle,
 } from '../../canvas/canvas-strategies/interaction-state'
 import { Modifiers } from '../../../utils/modifiers'
-import { CSSCursor, DragState, edgePosition, EdgePosition } from '../../canvas/canvas-types'
+import {
+  CSSCursor,
+  DragState,
+  edgePosition,
+  EdgePosition,
+  FrameAndTarget,
+} from '../../canvas/canvas-types'
 import {
   projectContentDirectory,
   ProjectContentDirectory,
@@ -1050,19 +1058,41 @@ export function ParamKeepDeepEquality(): KeepDeepEqualityCall<Param> {
   )
 }
 
-export function CanvasRectangleKeepDeepEquality(
-  oldRect: CanvasRectangle,
-  newRect: CanvasRectangle,
-): KeepDeepEqualityResult<CanvasRectangle> {
+function RectangleKeepDeepEquality<C extends CoordinateMarker>(
+  oldValue: Rectangle<C>,
+  newValue: Rectangle<C>,
+): KeepDeepEqualityResult<Rectangle<C>> {
   if (
-    oldRect.x === newRect.x &&
-    oldRect.y === newRect.y &&
-    oldRect.width === newRect.width &&
-    oldRect.height === newRect.height
+    oldValue.x === newValue.x &&
+    oldValue.y === newValue.y &&
+    oldValue.width === newValue.width &&
+    oldValue.height === newValue.height
   ) {
-    return keepDeepEqualityResult(oldRect, true)
+    return keepDeepEqualityResult(oldValue, true)
   } else {
-    return keepDeepEqualityResult(newRect, false)
+    return keepDeepEqualityResult(newValue, false)
+  }
+}
+
+export const CanvasRectangleKeepDeepEquality: (
+  oldValue: CanvasRectangle,
+  newValue: CanvasRectangle,
+) => KeepDeepEqualityResult<CanvasRectangle> = RectangleKeepDeepEquality
+
+export function FrameAndTargetKeepDeepEquality<C extends CoordinateMarker>(
+  oldFrameAndTarget: FrameAndTarget<C>,
+  newFrameAndTarget: FrameAndTarget<C>,
+): KeepDeepEqualityResult<FrameAndTarget<C>> {
+  if (
+    nullableDeepEquality(RectangleKeepDeepEquality)(
+      oldFrameAndTarget.frame,
+      newFrameAndTarget.frame,
+    ).areEqual &&
+    ElementPathKeepDeepEquality(oldFrameAndTarget.target, newFrameAndTarget.target).areEqual
+  ) {
+    return keepDeepEqualityResult(oldFrameAndTarget, true)
+  } else {
+    return keepDeepEqualityResult(newFrameAndTarget, false)
   }
 }
 
@@ -1493,11 +1523,13 @@ export const GuidelineWithSnappingVectorKeepDeepEquality: KeepDeepEqualityCall<G
   )
 
 export const EditorStateCanvasControlsKeepDeepEquality: KeepDeepEqualityCall<EditorStateCanvasControls> =
-  combine2EqualityCalls(
+  combine3EqualityCalls(
     (controls) => controls.snappingGuidelines,
     arrayDeepEquality(GuidelineWithSnappingVectorKeepDeepEquality),
     (controls) => controls.outlineHighlights,
     arrayDeepEquality(CanvasRectangleKeepDeepEquality),
+    (controls) => controls.strategyIntendedBounds,
+    arrayDeepEquality(FrameAndTargetKeepDeepEquality),
     editorStateCanvasControls,
   )
 

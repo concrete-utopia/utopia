@@ -287,10 +287,12 @@ export function getOriginalCanvasFrames(
       })
       if (!alreadyAdded) {
         const frame = MetadataUtils.getFrameInCanvasCoords(path, componentMetadata)
-        originalFrames.push({
-          target: path,
-          frame: frame,
-        })
+        if (frame != null) {
+          originalFrames.push({
+            target: path,
+            frame: frame,
+          })
+        }
       }
     })
   })
