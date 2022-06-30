@@ -13,6 +13,7 @@ export type FeatureName =
   | 'Click on empty canvas unfocuses'
   | 'Insertion Plus Button'
   | 'Canvas Strategies'
+  | 'Canvas Strategies Debug Panel'
   | 'Keyboard up clears interaction'
   | 'Canvas Selective Rerender'
 
@@ -27,6 +28,7 @@ export const AllFeatureNames: FeatureName[] = [
   'Click on empty canvas unfocuses',
   'Insertion Plus Button',
   'Canvas Strategies',
+  'Canvas Strategies Debug Panel',
   'Keyboard up clears interaction',
   'Canvas Selective Rerender',
 ]
@@ -42,6 +44,7 @@ let FeatureSwitches: { [feature in FeatureName]: boolean } = {
   'Click on empty canvas unfocuses': true,
   'Insertion Plus Button': true,
   'Canvas Strategies': true,
+  'Canvas Strategies Debug Panel': false,
   'Keyboard up clears interaction': false,
   'Canvas Selective Rerender': true,
 }
