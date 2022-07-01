@@ -74,7 +74,7 @@ export function getAbsoluteMoveCommandsForSelectedElement(
     sessionState.startingMetadata,
   )
 
-  if (element == null || globalFrame == null || localFrame == null) {
+  if (element == null) {
     return { commands: [], intendedBounds: [] }
   }
 
@@ -92,8 +92,8 @@ function createMoveCommandsForElement(
   element: JSXElement,
   selectedElement: ElementPath,
   drag: CanvasVector,
-  localFrame: LocalRectangle,
-  globalFrame: CanvasRectangle,
+  localFrame: LocalRectangle | null,
+  globalFrame: CanvasRectangle | null,
   elementParentBounds: CanvasRectangle | null,
 ): {
   commands: Array<AdjustCssLengthProperty>
@@ -112,8 +112,8 @@ function createMoveCommandsForElement(
     // coming from the localFrame from metadata
     const isNewPin = !existingPins.includes(pin)
 
-    const offsetX = isNewPin && pin === 'left' ? localFrame.x : 0
-    const offsetY = isNewPin && pin === 'top' ? localFrame.y : 0
+    const offsetX = isNewPin && pin === 'left' ? localFrame?.x ?? 0 : 0
+    const offsetY = isNewPin && pin === 'top' ? localFrame?.y ?? 0 : 0
 
     const updatedPropValue =
       (horizontal ? offsetX + drag.x : offsetY + drag.y) * (negative ? -1 : 1)
@@ -129,8 +129,14 @@ function createMoveCommandsForElement(
     )
   }, extendedPins)
 
-  const intendedGlobalFrame = offsetRect(globalFrame, drag)
-  const intendedBounds = [{ target: selectedElement, frame: intendedGlobalFrame }]
+  const intendedBounds = (() => {
+    if (globalFrame == null) {
+      return []
+    } else {
+      const intendedGlobalFrame = offsetRect(globalFrame, drag)
+      return [{ target: selectedElement, frame: intendedGlobalFrame }]
+    }
+  })()
 
   return { commands: adjustPinCommands, intendedBounds: intendedBounds }
 }

@@ -150,7 +150,7 @@ export const keyboardAbsoluteResizeStrategy: CanvasStrategy = {
               sessionState.startingMetadata,
             )
 
-            if (element != null && elementGlobalFrame != null) {
+            if (element != null) {
               const elementResult = createResizeCommands(
                 element,
                 selectedElement,

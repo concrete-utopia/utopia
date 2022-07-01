@@ -40,9 +40,9 @@ export function createResizeCommands(
   selectedElement: ElementPath,
   edgePosition: EdgePosition,
   drag: CanvasVector,
-  elementGlobalFrame: CanvasRectangle,
+  elementGlobalFrame: CanvasRectangle | null,
   elementParentBounds: CanvasRectangle | null,
-): { commands: AdjustCssLengthProperty[]; intendedBounds: CanvasFrameAndTarget } {
+): { commands: AdjustCssLengthProperty[]; intendedBounds: CanvasFrameAndTarget | null } {
   const pins = pinsForEdgePosition(edgePosition)
   const commands = mapDropNulls((pin) => {
     const horizontal = isHorizontalPoint(
@@ -70,10 +70,19 @@ export function createResizeCommands(
     }
   }, pins)
 
-  const intendedBounds = {
-    frame: resizeBoundingBox(elementGlobalFrame, drag, edgePosition, null, 'non-center-based'),
-    target: selectedElement,
-  }
+  const intendedBounds: CanvasFrameAndTarget | null =
+    elementGlobalFrame == null
+      ? null
+      : {
+          frame: resizeBoundingBox(
+            elementGlobalFrame,
+            drag,
+            edgePosition,
+            null,
+            'non-center-based',
+          ),
+          target: selectedElement,
+        }
   return { commands, intendedBounds }
 }
 

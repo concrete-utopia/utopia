@@ -247,7 +247,7 @@ function collectSetLayoutPropCommands(
 } {
   const frame = MetadataUtils.getFrame(path, metadata)
   const globalFrame = MetadataUtils.getFrameInCanvasCoords(path, metadata)
-  if (frame != null && globalFrame != null) {
+  if (frame != null) {
     const specialSizeMeasurements = MetadataUtils.findElementByElementPath(
       metadata,
       path,
@@ -260,7 +260,14 @@ function collectSetLayoutPropCommands(
     } as LocalPoint
     const frameWithoutMargin = offsetRect(frame, marginPoint)
     const updatedFrame = offsetRect(frameWithoutMargin, asLocal(dragDelta ?? zeroCanvasRect))
-    const updatedGlobalFrame = offsetRect(globalFrame, dragDelta ?? zeroCanvasRect)
+    const intendedBounds: Array<CanvasFrameAndTarget> = (() => {
+      if (globalFrame == null) {
+        return []
+      } else {
+        const updatedGlobalFrame = offsetRect(globalFrame, dragDelta ?? zeroCanvasRect)
+        return [{ frame: updatedGlobalFrame, target: path }]
+      }
+    })()
     const fullFrame = getFullFrame(updatedFrame)
     const pinsToSet = filterPinsToSet(path, canvasState)
 
@@ -281,7 +288,7 @@ function collectSetLayoutPropCommands(
         ),
       )
     })
-    return { commands: commands, intendedBounds: [{ frame: updatedGlobalFrame, target: path }] }
+    return { commands: commands, intendedBounds: intendedBounds }
   } else {
     return { commands: [], intendedBounds: [] }
   }
