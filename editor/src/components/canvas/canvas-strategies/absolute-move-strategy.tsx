@@ -148,9 +148,9 @@ export function applyAbsoluteMoveCommon(
       return {
         commands: [
           ...commandsForSelectedElements.commands,
-          pushIntendedBounds(commandsForSelectedElements.intendedBounds),
           updateHighlightedViews('transient', []),
           setSnappingGuidelines('transient', guidelinesWithSnappingVector),
+          pushIntendedBounds(commandsForSelectedElements.intendedBounds),
           setElementsToRerenderCommand(canvasState.selectedElements),
           setCursorCommand('transient', CSSCursor.Select),
         ],
