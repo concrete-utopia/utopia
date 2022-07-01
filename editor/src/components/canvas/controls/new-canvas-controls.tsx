@@ -262,7 +262,10 @@ const NewCanvasControlsInner = (props: NewCanvasControlsInnerProps) => {
 
   const { maybeHighlightOnHover, maybeClearHighlightsOnHoverEnd } = useMaybeHighlightElement()
 
-  const { onMouseMove, onMouseDown } = useSelectAndHover(cmdKeyPressed, setLocalSelectedViews)
+  const { onMouseMove, onMouseDown, onMouseUp } = useSelectAndHover(
+    cmdKeyPressed,
+    setLocalSelectedViews,
+  )
 
   const getResizeStatus = () => {
     const selectedViews = localSelectedViews
@@ -444,6 +447,7 @@ const NewCanvasControlsInner = (props: NewCanvasControlsInnerProps) => {
       onContextMenu={onContextMenu}
       onMouseDown={onMouseDown}
       onMouseMove={onMouseMove}
+      onMouseUp={onMouseUp}
     >
       {renderModeControlContainer()}
       {when(
