@@ -106,7 +106,6 @@ export function useMaybeHighlightElement(): {
 
   const maybeHighlightOnHover = React.useCallback(
     (target: ElementPath): void => {
-      /// target, parts, array, 0 contains [0: "0cd" 1: "478]
       const { dispatch, dragging, resizing, selectionEnabled, inserting, highlightedViews } =
         stateRef.current
 
@@ -120,9 +119,10 @@ export function useMaybeHighlightElement(): {
   )
 
   const maybeClearHighlightsOnHoverEnd = React.useCallback((): void => {
-    const { dispatch, dragging, resizing, selectionEnabled, highlightedViews } = stateRef.current
+    const { dispatch, dragging, resizing, selectionEnabled, inserting, highlightedViews } =
+      stateRef.current
 
-    if (selectionEnabled && !dragging && !resizing && highlightedViews.length > 0) {
+    if (selectionEnabled && !dragging && !resizing && !inserting && highlightedViews.length > 0) {
       dispatch([clearHighlightedViews()], 'canvas')
     }
   }, [stateRef])
