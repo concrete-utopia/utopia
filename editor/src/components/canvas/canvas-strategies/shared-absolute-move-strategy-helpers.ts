@@ -30,6 +30,7 @@ import {
   withUnderlyingTarget,
 } from '../../editor/store/editor-state'
 import { stylePropPathMappingFn } from '../../inspector/common/property-path-hooks'
+import { CanvasFrameAndTarget } from '../canvas-types'
 import {
   adjustCssLengthProperty,
   AdjustCssLengthProperty,
@@ -45,7 +46,10 @@ export function getAbsoluteMoveCommandsForSelectedElement(
   drag: CanvasVector,
   canvasState: InteractionCanvasState,
   sessionState: StrategyState,
-): Array<AdjustCssLengthProperty> {
+): {
+  commands: Array<AdjustCssLengthProperty>
+  intendedBounds: Array<CanvasFrameAndTarget>
+} {
   const element: JSXElement | null = getElementFromProjectContents(
     selectedElement,
     canvasState.projectContents,
@@ -65,8 +69,13 @@ export function getAbsoluteMoveCommandsForSelectedElement(
     sessionState.startingMetadata,
   )
 
-  if (element == null) {
-    return []
+  const globalFrame = MetadataUtils.getFrameInCanvasCoords(
+    selectedElement,
+    sessionState.startingMetadata,
+  )
+
+  if (element == null || globalFrame == null || localFrame == null) {
+    return { commands: [], intendedBounds: [] }
   }
 
   return createMoveCommandsForElement(
@@ -74,6 +83,7 @@ export function getAbsoluteMoveCommandsForSelectedElement(
     selectedElement,
     drag,
     localFrame,
+    globalFrame,
     elementParentBounds,
   )
 }
@@ -82,12 +92,16 @@ function createMoveCommandsForElement(
   element: JSXElement,
   selectedElement: ElementPath,
   drag: CanvasVector,
-  localFrame: LocalRectangle | null,
+  localFrame: LocalRectangle,
+  globalFrame: CanvasRectangle,
   elementParentBounds: CanvasRectangle | null,
-): AdjustCssLengthProperty[] {
+): {
+  commands: Array<AdjustCssLengthProperty>
+  intendedBounds: Array<CanvasFrameAndTarget>
+} {
   const { existingPins, extendedPins } = ensureAtLeastOnePinPerDimension(right(element.props))
 
-  return mapDropNulls((pin) => {
+  const adjustPinCommands = mapDropNulls((pin) => {
     const horizontal = isHorizontalPoint(
       // TODO avoid using the loaded FramePoint enum
       framePointForPinnedProp(pin),
@@ -98,8 +112,8 @@ function createMoveCommandsForElement(
     // coming from the localFrame from metadata
     const isNewPin = !existingPins.includes(pin)
 
-    const offsetX = isNewPin && pin === 'left' ? localFrame?.x ?? 0 : 0
-    const offsetY = isNewPin && pin === 'top' ? localFrame?.y ?? 0 : 0
+    const offsetX = isNewPin && pin === 'left' ? localFrame.x : 0
+    const offsetY = isNewPin && pin === 'top' ? localFrame.y : 0
 
     const updatedPropValue =
       (horizontal ? offsetX + drag.x : offsetY + drag.y) * (negative ? -1 : 1)
@@ -114,6 +128,11 @@ function createMoveCommandsForElement(
       true,
     )
   }, extendedPins)
+
+  const intendedGlobalFrame = offsetRect(globalFrame, drag)
+  const intendedBounds = [{ target: selectedElement, frame: intendedGlobalFrame }]
+
+  return { commands: adjustPinCommands, intendedBounds: intendedBounds }
 }
 
 export function getAbsoluteOffsetCommandsForSelectedElement(
@@ -249,7 +268,10 @@ export function snapDrag(
   guidelinesWithSnappingVector: Array<GuidelineWithSnappingVector>
 } {
   if (drag == null) {
-    return { snappedDragVector: zeroCanvasPoint, guidelinesWithSnappingVector: [] }
+    return {
+      snappedDragVector: zeroCanvasPoint,
+      guidelinesWithSnappingVector: [],
+    }
   }
   const multiselectBounds = getMultiselectBounds(jsxMetadata, selectedElements)
 

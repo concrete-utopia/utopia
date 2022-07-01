@@ -23,10 +23,10 @@ import { fastForEach } from '../../../core/shared/utils'
 import { getElementFromProjectContents } from '../../editor/store/editor-state'
 import { FullFrame, getFullFrame } from '../../frame'
 import { stylePropPathMappingFn } from '../../inspector/common/property-path-hooks'
-import { CSSCursor } from '../canvas-types'
+import { CanvasFrameAndTarget, CSSCursor } from '../canvas-types'
 import { CanvasCommand } from '../commands/commands'
-import { convertToAbsolute } from '../commands/convert-to-absolute-command'
-import { setCssLengthProperty } from '../commands/set-css-length-command'
+import { ConvertToAbsolute, convertToAbsolute } from '../commands/convert-to-absolute-command'
+import { SetCssLengthProperty, setCssLengthProperty } from '../commands/set-css-length-command'
 import { setCursorCommand } from '../commands/set-cursor-command'
 import { showOutlineHighlight } from '../commands/show-outline-highlight-command'
 import { ParentBounds } from '../controls/parent-bounds'
@@ -129,7 +129,10 @@ export const escapeHatchStrategy: CanvasStrategy = {
       if (shouldEscapeHatch) {
         const getConversionAndMoveCommands = (
           snappedDragVector: CanvasPoint,
-        ): Array<CanvasCommand> => {
+        ): {
+          commands: Array<CanvasCommand>
+          intendedBounds: Array<CanvasFrameAndTarget>
+        } => {
           return getEscapeHatchCommands(
             canvasState.selectedElements,
             strategyState.startingMetadata,
@@ -174,7 +177,10 @@ export function getEscapeHatchCommands(
   metadata: ElementInstanceMetadataMap,
   canvasState: InteractionCanvasState,
   dragDelta: CanvasVector | null,
-): Array<CanvasCommand> {
+): {
+  commands: Array<CanvasCommand>
+  intendedBounds: Array<CanvasFrameAndTarget>
+} {
   const moveAndPositionCommands = collectMoveCommandsForSelectedElements(
     selectedElements,
     metadata,
@@ -192,28 +198,42 @@ function collectMoveCommandsForSelectedElements(
   metadata: ElementInstanceMetadataMap,
   canvasState: InteractionCanvasState,
   dragDelta: CanvasVector | null,
-): Array<CanvasCommand> {
-  return flatMapArray(
-    (path) => collectSetLayoutPropCommands(path, metadata, canvasState, dragDelta),
-    selectedElements,
-  )
+): {
+  commands: Array<ConvertToAbsolute | SetCssLengthProperty>
+  intendedBounds: Array<CanvasFrameAndTarget>
+} {
+  let commands: Array<ConvertToAbsolute | SetCssLengthProperty> = []
+  let intendedBounds: Array<CanvasFrameAndTarget> = []
+  selectedElements.forEach((path) => {
+    const elementResult = collectSetLayoutPropCommands(path, metadata, canvasState, dragDelta)
+    intendedBounds.push(...elementResult.intendedBounds)
+    commands.push(...elementResult.commands)
+  })
+  return { commands, intendedBounds }
 }
 
 function collectSiblingCommands(
   selectedElements: Array<ElementPath>,
   metadata: ElementInstanceMetadataMap,
   canvasState: InteractionCanvasState,
-): Array<CanvasCommand> {
+): {
+  commands: Array<ConvertToAbsolute | SetCssLengthProperty>
+  intendedBounds: Array<CanvasFrameAndTarget>
+} {
   const siblings = selectedElements
     .flatMap((path) => {
       return MetadataUtils.getSiblings(metadata, path).map((element) => element.elementPath)
     })
     .filter((sibling) => selectedElements.every((path) => !EP.pathsEqual(path, sibling)))
 
-  return flatMapArray(
-    (path) => collectSetLayoutPropCommands(path, metadata, canvasState, null),
-    siblings,
-  )
+  let commands: Array<ConvertToAbsolute | SetCssLengthProperty> = []
+  let intendedBounds: Array<CanvasFrameAndTarget> = []
+  siblings.forEach((path) => {
+    const elementResult = collectSetLayoutPropCommands(path, metadata, canvasState, null)
+    intendedBounds.push(...elementResult.intendedBounds)
+    commands.push(...elementResult.commands)
+  })
+  return { commands, intendedBounds }
 }
 
 function collectSetLayoutPropCommands(
@@ -221,9 +241,13 @@ function collectSetLayoutPropCommands(
   metadata: ElementInstanceMetadataMap,
   canvasState: InteractionCanvasState,
   dragDelta: CanvasVector | null,
-): Array<CanvasCommand> {
+): {
+  commands: Array<ConvertToAbsolute | SetCssLengthProperty>
+  intendedBounds: Array<CanvasFrameAndTarget>
+} {
   const frame = MetadataUtils.getFrame(path, metadata)
-  if (frame != null) {
+  const globalFrame = MetadataUtils.getFrameInCanvasCoords(path, metadata)
+  if (frame != null && globalFrame != null) {
     const specialSizeMeasurements = MetadataUtils.findElementByElementPath(
       metadata,
       path,
@@ -236,10 +260,13 @@ function collectSetLayoutPropCommands(
     } as LocalPoint
     const frameWithoutMargin = offsetRect(frame, marginPoint)
     const updatedFrame = offsetRect(frameWithoutMargin, asLocal(dragDelta ?? zeroCanvasRect))
+    const updatedGlobalFrame = offsetRect(globalFrame, dragDelta ?? zeroCanvasRect)
     const fullFrame = getFullFrame(updatedFrame)
     const pinsToSet = filterPinsToSet(path, canvasState)
 
-    let commands: Array<CanvasCommand> = [convertToAbsolute('permanent', path)]
+    let commands: Array<ConvertToAbsolute | SetCssLengthProperty> = [
+      convertToAbsolute('permanent', path),
+    ]
     fastForEach(pinsToSet, (framePin) => {
       const pinValue = pinValueToSet(framePin, fullFrame, parentFrame)
       commands.push(
@@ -254,9 +281,9 @@ function collectSetLayoutPropCommands(
         ),
       )
     })
-    return commands
+    return { commands: commands, intendedBounds: [{ frame: updatedGlobalFrame, target: path }] }
   } else {
-    return []
+    return { commands: [], intendedBounds: [] }
   }
 }
 

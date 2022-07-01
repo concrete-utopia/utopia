@@ -1,36 +1,36 @@
+import { toString } from '../../../core/shared/element-path'
 import type { EditorState, EditorStatePatch } from '../../editor/store/editor-state'
 import { CanvasFrameAndTarget } from '../canvas-types'
 import type { BaseCommand, CommandFunction, TransientOrNot } from './commands'
 
-export interface SetIntendedBounds extends BaseCommand {
-  type: 'SET_INTENDED_BOUNDS'
+export interface PushIntendedBounds extends BaseCommand {
+  type: 'PUSH_INTENDED_BOUNDS'
   value: Array<CanvasFrameAndTarget>
 }
 
-export function setIntendedBounds(
-  transient: TransientOrNot,
-  value: Array<CanvasFrameAndTarget>,
-): SetIntendedBounds {
+export function pushIntendedBounds(value: Array<CanvasFrameAndTarget>): PushIntendedBounds {
   return {
-    type: 'SET_INTENDED_BOUNDS',
-    transient: transient,
+    type: 'PUSH_INTENDED_BOUNDS',
+    transient: 'transient',
     value: value,
   }
 }
 
-export const runSetIntendedBounds: CommandFunction<SetIntendedBounds> = (
+export const runPushIntendedBounds: CommandFunction<PushIntendedBounds> = (
   _: EditorState,
-  command: SetIntendedBounds,
+  command: PushIntendedBounds,
 ) => {
   const editorStatePatch: EditorStatePatch = {
     canvas: {
       controls: {
-        strategyIntendedBounds: { $set: command.value },
+        strategyIntendedBounds: { $push: command.value },
       },
     },
   }
   return {
     editorStatePatches: [editorStatePatch],
-    commandDescription: `Set Intended Bounds`,
+    commandDescription: `Set Intended Bounds for ${command.value
+      .map((c) => toString(c.target))
+      .join(', ')}`,
   }
 }
