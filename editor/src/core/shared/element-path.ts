@@ -110,14 +110,23 @@ export function removePathsWithDeadUIDs(existingUIDs: Set<string>) {
 function getElementPathCache(fullElementPath: ElementPathPart[]): ElementPathCache {
   let workingPathCache: ElementPathCache = globalElementPathCache
 
+  function shiftWorkingCache(cacheToUse: 'rootElementCaches' | 'childCaches', pathPart: string) {
+    if (workingPathCache[cacheToUse][pathPart] == null) {
+      workingPathCache[cacheToUse][pathPart] = emptyElementPathCache()
+    }
+
+    workingPathCache = workingPathCache[cacheToUse][pathPart]
+  }
+
   fastForEach(fullElementPath, (elementPathPart) => {
+    if (elementPathPart.length === 0) {
+      // Special cased handling for when the path part is empty
+      shiftWorkingCache('rootElementCaches', 'empty-path')
+    }
+
     fastForEach(elementPathPart, (pathPart, index) => {
       const cacheToUse = index === 0 ? 'rootElementCaches' : 'childCaches'
-      if (workingPathCache[cacheToUse][pathPart] == null) {
-        workingPathCache[cacheToUse][pathPart] = emptyElementPathCache()
-      }
-
-      workingPathCache = workingPathCache[cacheToUse][pathPart]
+      shiftWorkingCache(cacheToUse, pathPart)
     })
   })
 

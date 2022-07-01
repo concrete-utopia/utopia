@@ -420,6 +420,10 @@ describe('replaceIfAncestor', () => {
 })
 
 describe('fromString', () => {
+  beforeEach(() => {
+    EP.removePathsWithDeadUIDs(new Set())
+  })
+
   it('parses a simple path correctly', () => {
     const expectedResult = EP.elementPath([
       [BakedInStoryboardUID, 'scene-aaa'],
@@ -427,6 +431,39 @@ describe('fromString', () => {
     ])
     const actualResult = EP.fromString(EP.toComponentId(expectedResult))
     chaiExpect(actualResult).to.deep.equal(expectedResult)
+  })
+  it('Handles an empty path part prefix', () => {
+    const withEmptyPart = EP.elementPath([[], ['one', 'two'], ['three']])
+    const withEmptyPartAsString = EP.toString(withEmptyPart)
+    expect(withEmptyPartAsString).toEqual(':one/two:three')
+    expect(EP.fromString(withEmptyPartAsString)).toEqual(withEmptyPart)
+
+    const withoutEmptyPart = EP.elementPath([['one', 'two'], ['three']])
+    const withoutEmptyPartAsString = EP.toString(withoutEmptyPart)
+    expect(withoutEmptyPartAsString).toEqual('one/two:three')
+    expect(EP.fromString(withoutEmptyPartAsString)).toEqual(withoutEmptyPart)
+  })
+  it('Handles an empty path part in the middle', () => {
+    const withEmptyPart = EP.elementPath([['one', 'two'], [], ['three']])
+    const withEmptyPartAsString = EP.toString(withEmptyPart)
+    expect(withEmptyPartAsString).toEqual('one/two::three')
+    expect(EP.fromString(withEmptyPartAsString)).toEqual(withEmptyPart)
+
+    const withoutEmptyPart = EP.elementPath([['one', 'two'], ['three']])
+    const withoutEmptyPartAsString = EP.toString(withoutEmptyPart)
+    expect(withoutEmptyPartAsString).toEqual('one/two:three')
+    expect(EP.fromString(withoutEmptyPartAsString)).toEqual(withoutEmptyPart)
+  })
+  it('Handles an empty path part suffix', () => {
+    const withEmptyPart = EP.elementPath([['one', 'two'], ['three'], []])
+    const withEmptyPartAsString = EP.toString(withEmptyPart)
+    expect(withEmptyPartAsString).toEqual('one/two:three:')
+    expect(EP.fromString(withEmptyPartAsString)).toEqual(withEmptyPart)
+
+    const withoutEmptyPart = EP.elementPath([['one', 'two'], ['three']])
+    const withoutEmptyPartAsString = EP.toString(withoutEmptyPart)
+    expect(withoutEmptyPartAsString).toEqual('one/two:three')
+    expect(EP.fromString(withoutEmptyPartAsString)).toEqual(withoutEmptyPart)
   })
 })
 
