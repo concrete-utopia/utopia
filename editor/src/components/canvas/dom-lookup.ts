@@ -220,12 +220,6 @@ function isPointInSelectionRectangle(
   )
 }
 
-// export function isSelectionContainerElement(element: Element): boolean {
-//   const testidAttr = getDOMAttribute(element, 'data-selection')
-//   console.log('testidAttr', testidAttr)
-//   return testidAttr === 'true'
-// }
-
 export function getAllTargetsAtPointAABB(
   componentMetadata: ElementInstanceMetadataMap,
   selectedViews: Array<ElementPath>,
