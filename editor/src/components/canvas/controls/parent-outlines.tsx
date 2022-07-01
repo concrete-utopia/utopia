@@ -14,7 +14,7 @@ export const ParentOutlines = React.memo(() => {
       stripNulls(store.editor.selectedViews.map((view) => EP.parentPath(view))),
       EP.pathsEqual,
     )
-    if (targetParents.length === 1) {
+    if (targetParents.length === 1 && !EP.isStoryboardPath(targetParents[0])) {
       return MetadataUtils.findElementByElementPath(
         store.editor.jsxMetadata,
         store.editor.selectedViews[0],
