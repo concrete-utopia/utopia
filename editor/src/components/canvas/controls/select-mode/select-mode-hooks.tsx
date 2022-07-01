@@ -443,7 +443,11 @@ export function useCalculateHighlightedViews(
   return React.useCallback(
     (targetPoint: WindowPoint, eventCmdPressed: boolean) => {
       const selectableViews: Array<ElementPath> = getHighlightableViews(eventCmdPressed, false)
-      const validElementPath = findValidTarget(selectableViews, targetPoint, 'prefer-selected')
+      const validElementPath = findValidTarget(
+        selectableViews,
+        targetPoint,
+        eventCmdPressed ? 'dont-prefer-selected' : 'prefer-selected',
+      )
       if (
         validElementPath == null ||
         (!allowHoverOnSelectedView && validElementPath.isSelected) // we remove highlights if the hovered element is selected
@@ -623,7 +627,8 @@ function useSelectOrLiveModeSelectAndHover(
   )
 
   const onMouseDown = React.useCallback(
-    (event: React.MouseEvent<HTMLDivElement>) => mouseHandler(event, 'prefer-selected'),
+    (event: React.MouseEvent<HTMLDivElement>) =>
+      mouseHandler(event, event.metaKey ? 'dont-prefer-selected' : 'prefer-selected'),
     [mouseHandler],
   )
 
