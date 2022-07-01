@@ -2,9 +2,23 @@ import {
   ComponentDescriptor,
   ComponentDescriptorsForFile,
 } from '../../components/custom-code/code-file'
-import { jsxElementWithoutUID } from '../shared/element-template'
+import {
+  defaultFlexRowOrColStyle,
+  defaultSceneElementStyle,
+  defaultTextElementStyle,
+  defaultViewElementStyle,
+} from '../../components/editor/defaults'
+import {
+  emptyComments,
+  JSXAttribute,
+  jsxAttributesEntry,
+  jsxElementWithoutUID,
+} from '../shared/element-template'
 
-const BasicUtopiaComponentDescriptor = (name: string): ComponentDescriptor => {
+const BasicUtopiaComponentDescriptor = (
+  name: string,
+  styleProp: JSXAttribute,
+): ComponentDescriptor => {
   return {
     properties: {
       style: {
@@ -26,18 +40,22 @@ const BasicUtopiaComponentDescriptor = (name: string): ComponentDescriptor => {
             importedAs: null,
           },
         },
-        elementToInsert: jsxElementWithoutUID(name, [], []),
+        elementToInsert: jsxElementWithoutUID(
+          name,
+          [jsxAttributesEntry('style', styleProp, emptyComments)],
+          [],
+        ),
       },
     ],
   }
 }
 
 export const UtopiaApiComponents: ComponentDescriptorsForFile = {
-  Ellipse: BasicUtopiaComponentDescriptor('Ellipse'),
-  Rectangle: BasicUtopiaComponentDescriptor('Rectangle'),
-  Text: BasicUtopiaComponentDescriptor('Text'),
-  View: BasicUtopiaComponentDescriptor('View'),
-  FlexRow: BasicUtopiaComponentDescriptor('FlexRow'),
-  FlexCol: BasicUtopiaComponentDescriptor('FlexCol'),
-  Scene: BasicUtopiaComponentDescriptor('Scene'),
+  Ellipse: BasicUtopiaComponentDescriptor('Ellipse', defaultViewElementStyle()),
+  Rectangle: BasicUtopiaComponentDescriptor('Rectangle', defaultViewElementStyle()),
+  Text: BasicUtopiaComponentDescriptor('Text', defaultTextElementStyle()),
+  View: BasicUtopiaComponentDescriptor('View', defaultViewElementStyle()),
+  FlexRow: BasicUtopiaComponentDescriptor('FlexRow', defaultFlexRowOrColStyle()),
+  FlexCol: BasicUtopiaComponentDescriptor('FlexCol', defaultFlexRowOrColStyle()),
+  Scene: BasicUtopiaComponentDescriptor('Scene', defaultSceneElementStyle(null)),
 }
