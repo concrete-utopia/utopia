@@ -101,7 +101,7 @@ const usePropsOrJSXAttributes = (path: ElementPath): PropsOrJSXAttributes => {
 const useContainingFrameForElement = (path: ElementPath): CanvasRectangle | null => {
   return useEditorState((store) => {
     const metadata = MetadataUtils.findElementByElementPath(store.editor.jsxMetadata, path)
-    if (metadata != null) {
+    if (metadata != null && !EP.isStoryboardChild(path)) {
       return metadata?.specialSizeMeasurements.coordinateSystemBounds
     } else {
       return null
