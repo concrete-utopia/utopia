@@ -34,6 +34,24 @@ describe('factory function', () => {
   })
 })
 
+describe('he', () => {
+  afterEach(() => {
+    EP.clearCaches()
+  })
+  it('we expect the first path to be stringified as it was read in', () => {
+    const first = EP.fromString(':scene-aaa/VIEW1/VIEW2')
+    const second = EP.fromString('scene-aaa/VIEW1/VIEW2')
+    expect(EP.toString(first)).toBe(':scene-aaa/VIEW1/VIEW2')
+  })
+
+  it('oh my god', () => {
+    const second = EP.fromString('scene-aaa/VIEW1/VIEW2')
+    const first = EP.fromString(':scene-aaa/VIEW1/VIEW2')
+    expect(first === second).toBeTruthy()
+    expect(EP.toString(first)).toBe(':scene-aaa/VIEW1/VIEW2')
+  })
+})
+
 describe('isStoryboardPath', () => {
   it('returns true for the storyboard', () => {
     expect(EP.isStoryboardPath(EP.elementPath([[BakedInStoryboardUID]]))).toBeTruthy()

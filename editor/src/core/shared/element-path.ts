@@ -34,14 +34,24 @@ function emptyElementPathCache(): ElementPathCache {
   }
 }
 
-let pathToStringCache: WeakMap<ElementPath, string> = new WeakMap()
-let dynamicToStaticPathCache: Map<ElementPath, StaticElementPath> = new Map()
-let dynamicToStaticLastElementPathPartCache: Map<ElementPath, ElementPath> = new Map()
-let dynamicElementPathToStaticElementPathCache: Map<ElementPathPart, StaticElementPathPart> =
-  new Map()
+let pathToStringCache: WeakMap<ElementPath, string>
+let dynamicToStaticPathCache: Map<ElementPath, StaticElementPath>
+let dynamicToStaticLastElementPathPartCache: Map<ElementPath, ElementPath>
+let dynamicElementPathToStaticElementPathCache: Map<ElementPathPart, StaticElementPathPart>
 
-let globalPathStringToPathCache: { [key: string]: ElementPath } = {}
+let globalPathStringToPathCache: { [key: string]: ElementPath }
 let globalElementPathCache: ElementPathCache = emptyElementPathCache()
+
+export function clearCaches() {
+  pathToStringCache = new WeakMap()
+  dynamicToStaticPathCache = new Map()
+  dynamicToStaticLastElementPathPartCache = new Map()
+  dynamicElementPathToStaticElementPathCache = new Map()
+
+  globalPathStringToPathCache = {}
+  globalElementPathCache = emptyElementPathCache()
+}
+clearCaches
 
 type RemovedPaths = Set<ElementPath>
 
