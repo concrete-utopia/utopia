@@ -60,7 +60,7 @@ async function setControlValue(
 ): Promise<void> {
   const control = await getControl(controlTestId, renderedDOM)
 
-  act(() => {
+  await act(() => {
     fireEvent.focus(control)
     fireEvent.change(control, { target: { value: newValue } })
     fireEvent.blur(control)
@@ -71,7 +71,7 @@ async function dispatchActionsAndWaitUntilComplete(
   actionsToDispatch: readonly EditorAction[],
   renderResult: EditorRenderResult,
 ): Promise<void> {
-  act(() => renderResult.dispatch(actionsToDispatch, false))
+  await act(() => renderResult.dispatch(actionsToDispatch, false))
   await renderResult.getDispatchFollowUpActionsFinished()
 }
 

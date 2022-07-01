@@ -110,14 +110,23 @@ export function removePathsWithDeadUIDs(existingUIDs: Set<string>) {
 function getElementPathCache(fullElementPath: ElementPathPart[]): ElementPathCache {
   let workingPathCache: ElementPathCache = globalElementPathCache
 
+  function shiftWorkingCache(cacheToUse: 'rootElementCaches' | 'childCaches', pathPart: string) {
+    if (workingPathCache[cacheToUse][pathPart] == null) {
+      workingPathCache[cacheToUse][pathPart] = emptyElementPathCache()
+    }
+
+    workingPathCache = workingPathCache[cacheToUse][pathPart]
+  }
+
   fastForEach(fullElementPath, (elementPathPart) => {
+    if (elementPathPart.length === 0) {
+      // Special cased handling for when the path part is empty
+      shiftWorkingCache('rootElementCaches', 'empty-path')
+    }
+
     fastForEach(elementPathPart, (pathPart, index) => {
       const cacheToUse = index === 0 ? 'rootElementCaches' : 'childCaches'
-      if (workingPathCache[cacheToUse][pathPart] == null) {
-        workingPathCache[cacheToUse][pathPart] = emptyElementPathCache()
-      }
-
-      workingPathCache = workingPathCache[cacheToUse][pathPart]
+      shiftWorkingCache(cacheToUse, pathPart)
     })
   })
 
@@ -629,19 +638,26 @@ export function replaceIfAncestor(
     const suffix = drop(replaceSearch.parts.length, oldParts)
     const lastReplaceSearchPartLength = last(replaceSearch.parts)?.length ?? 0
     const overlappingPart = oldParts[replaceSearch.parts.length - 1]
+    const dropEntireLastPart = overlappingPart.length === lastReplaceSearchPartLength
     const trimmedOverlappingPart =
-      overlappingPart == null ? null : drop(lastReplaceSearchPartLength, overlappingPart)
+      overlappingPart == null || dropEntireLastPart
+        ? null
+        : drop(lastReplaceSearchPartLength, overlappingPart)
 
-    let prefix: ElementPathPart[]
+    let updatedPathParts: ElementPathPart[] = []
     if (trimmedOverlappingPart == null) {
-      prefix = replaceWith == null ? [] : replaceWith.parts
+      if (replaceWith != null) {
+        updatedPathParts.push(...replaceWith.parts)
+      }
     } else if (replaceWith == null) {
-      prefix = [trimmedOverlappingPart]
+      updatedPathParts.push(trimmedOverlappingPart)
     } else {
-      prefix = appendPartToElementPathArray(replaceWith.parts, trimmedOverlappingPart)
+      updatedPathParts.push(
+        ...appendPartToElementPathArray(replaceWith.parts, trimmedOverlappingPart),
+      )
     }
 
-    const updatedPathParts = [...prefix, ...suffix]
+    updatedPathParts.push(...suffix)
     return elementPath(updatedPathParts)
   } else {
     return null

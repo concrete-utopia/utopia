@@ -132,9 +132,7 @@ export const CanvasWrapperComponent = React.memo(() => {
   )
 })
 
-interface ErrorOverlayComponentProps {}
-
-const ErrorOverlayComponent = React.memo((props: ErrorOverlayComponentProps) => {
+const ErrorOverlayComponent = React.memo(() => {
   const dispatch = useEditorState((store) => store.dispatch, 'ErrorOverlayComponent dispatch')
   const utopiaParserErrors = useEditorState((store) => {
     return parseFailureAsErrorMessages(
@@ -178,20 +176,10 @@ const ErrorOverlayComponent = React.memo((props: ErrorOverlayComponentProps) => 
     [dispatch],
   )
 
-  const overlay = React.useMemo(
-    () => (
-      <ReactErrorOverlay
-        currentBuildErrorRecords={errorRecords}
-        currentRuntimeErrorRecords={overlayErrors}
-        onOpenFile={onOpenFile}
-        overlayOffset={0}
-      />
-    ),
-    [errorRecords, overlayErrors, onOpenFile],
-  )
+  const overlayWillShow = errorRecords.length > 0 || overlayErrors.length > 0
 
   React.useEffect(() => {
-    if (overlay != null) {
+    if (overlayWillShow) {
       // If this is showing, we need to clear any canvas drag state and apply the changes it would have resulted in,
       // since that might have been the cause of the error being thrown, as well as switching back to select mode
       setTimeout(() => {
@@ -204,9 +192,16 @@ const ErrorOverlayComponent = React.memo((props: ErrorOverlayComponentProps) => 
         ])
       }, 0)
     }
-  }, [dispatch, overlay])
+  }, [dispatch, overlayWillShow])
 
-  return overlay
+  return (
+    <ReactErrorOverlay
+      currentBuildErrorRecords={errorRecords}
+      currentRuntimeErrorRecords={overlayErrors}
+      onOpenFile={onOpenFile}
+      overlayOffset={0}
+    />
+  )
 })
 
 export const SafeModeErrorOverlay = React.memo(() => {

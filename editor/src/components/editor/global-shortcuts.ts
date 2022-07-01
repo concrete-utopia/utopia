@@ -467,16 +467,7 @@ export function handleKeyDown(
           if (CanvasMousePositionRaw == null) {
             return [EditorActions.clearSelection()]
           }
-          const targetStack = getAllTargetsAtPoint(
-            editor.jsxMetadata,
-            editor.selectedViews,
-            editor.hiddenInstances,
-            'no-filter',
-            WindowMousePositionRaw,
-            editor.canvas.scale,
-            editor.canvas.realCanvasOffset,
-            editor.allElementProps,
-          )
+          const targetStack = getAllTargetsAtPoint('no-filter', WindowMousePositionRaw)
           const nextTarget = Canvas.getNextTarget(editor.selectedViews, targetStack)
           if (targetStack.length === 0 || nextTarget === null) {
             return [EditorActions.clearSelection()]

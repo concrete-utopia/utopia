@@ -35,7 +35,7 @@ import {
   getDragStateDrag,
   getOriginalCanvasFrames,
 } from '../../canvas-utils'
-import { getValidTargetAtPoint } from '../../dom-lookup'
+import { getSelectionOrValidTargetAtPoint, getValidTargetAtPoint } from '../../dom-lookup'
 import { useWindowToCanvasCoordinates } from '../../dom-lookup-hooks'
 import { useInsertModeSelectAndHover } from './insert-mode-hooks'
 import { WindowMousePositionRaw } from '../../../../utils/global-positions'
@@ -106,7 +106,6 @@ export function useMaybeHighlightElement(): {
 
   const maybeHighlightOnHover = React.useCallback(
     (target: ElementPath): void => {
-      /// target, parts, array, 0 contains [0: "0cd" 1: "478]
       const { dispatch, dragging, resizing, selectionEnabled, inserting, highlightedViews } =
         stateRef.current
 
@@ -120,9 +119,10 @@ export function useMaybeHighlightElement(): {
   )
 
   const maybeClearHighlightsOnHoverEnd = React.useCallback((): void => {
-    const { dispatch, dragging, resizing, selectionEnabled, highlightedViews } = stateRef.current
+    const { dispatch, dragging, resizing, selectionEnabled, inserting, highlightedViews } =
+      stateRef.current
 
-    if (selectionEnabled && !dragging && !resizing && highlightedViews.length > 0) {
+    if (selectionEnabled && !dragging && !resizing && !inserting && highlightedViews.length > 0) {
       dispatch([clearHighlightedViews()], 'canvas')
     }
   }, [stateRef])
@@ -199,6 +199,7 @@ export function getSelectableViews(
 function useFindValidTarget(): (
   selectableViews: Array<ElementPath>,
   mousePoint: WindowPoint | null,
+  preferAlreadySelected: 'prefer-selected' | 'dont-prefer-selected',
 ) => {
   elementPath: ElementPath
   isSelected: boolean
@@ -216,7 +217,11 @@ function useFindValidTarget(): (
   })
 
   return React.useCallback(
-    (selectableViews: Array<ElementPath>, mousePoint: WindowPoint | null) => {
+    (
+      selectableViews: Array<ElementPath>,
+      mousePoint: WindowPoint | null,
+      preferAlreadySelected: 'prefer-selected' | 'dont-prefer-selected',
+    ) => {
       const {
         selectedViews,
         componentMetadata,
@@ -225,16 +230,19 @@ function useFindValidTarget(): (
         canvasOffset,
         allElementProps,
       } = storeRef.current
-      const validElementMouseOver: ElementPath | null = getValidTargetAtPoint(
-        componentMetadata,
-        selectedViews,
-        hiddenInstances,
-        selectableViews,
-        mousePoint,
-        canvasScale,
-        canvasOffset,
-        allElementProps,
-      )
+      const validElementMouseOver: ElementPath | null =
+        preferAlreadySelected === 'prefer-selected'
+          ? getSelectionOrValidTargetAtPoint(
+              componentMetadata,
+              selectedViews,
+              hiddenInstances,
+              selectableViews,
+              mousePoint,
+              canvasScale,
+              canvasOffset,
+              allElementProps,
+            )
+          : getValidTargetAtPoint(selectableViews, mousePoint)
       const validElementPath: ElementPath | null =
         validElementMouseOver != null ? validElementMouseOver : null
       if (validElementPath != null) {
@@ -435,7 +443,7 @@ export function useCalculateHighlightedViews(
   return React.useCallback(
     (targetPoint: WindowPoint, eventCmdPressed: boolean) => {
       const selectableViews: Array<ElementPath> = getHighlightableViews(eventCmdPressed, false)
-      const validElementPath = findValidTarget(selectableViews, targetPoint)
+      const validElementPath = findValidTarget(selectableViews, targetPoint, 'prefer-selected')
       if (
         validElementPath == null ||
         (!allowHoverOnSelectedView && validElementPath.isSelected) // we remove highlights if the hovered element is selected
@@ -502,6 +510,7 @@ function useSelectOrLiveModeSelectAndHover(
 ): {
   onMouseMove: (event: React.MouseEvent<HTMLDivElement, MouseEvent>) => void
   onMouseDown: (event: React.MouseEvent<HTMLDivElement, MouseEvent>) => void
+  onMouseUp: (event: React.MouseEvent<HTMLDivElement, MouseEvent>) => void
 } {
   const dispatch = useEditorState((store) => store.dispatch, 'useSelectAndHover dispatch')
   const selectedViewsRef = useRefEditorState((store) => store.editor.selectedViews)
@@ -523,13 +532,17 @@ function useSelectOrLiveModeSelectAndHover(
     derived: store.derived,
   }))
 
-  const onMouseDown = React.useCallback(
-    (event: React.MouseEvent<HTMLDivElement>) => {
+  const mouseHandler = React.useCallback(
+    (
+      event: React.MouseEvent<HTMLDivElement>,
+      preferAlreadySelected: 'prefer-selected' | 'dont-prefer-selected',
+    ) => {
       const doubleClick = event.detail > 1 // we interpret a triple click as two double clicks, a quadruple click as three double clicks, etc  // TODO TEST ME
       const selectableViews = getSelectableViewsForSelectMode(event.metaKey, doubleClick)
       const foundTarget = findValidTarget(
         selectableViews,
         windowPoint(point(event.clientX, event.clientY)),
+        preferAlreadySelected,
       )
 
       const isMultiselect = event.shiftKey
@@ -609,7 +622,17 @@ function useSelectOrLiveModeSelectAndHover(
     ],
   )
 
-  return { onMouseMove, onMouseDown }
+  const onMouseDown = React.useCallback(
+    (event: React.MouseEvent<HTMLDivElement>) => mouseHandler(event, 'prefer-selected'),
+    [mouseHandler],
+  )
+
+  const onMouseUp = React.useCallback(
+    (event: React.MouseEvent<HTMLDivElement>) => mouseHandler(event, 'dont-prefer-selected'),
+    [mouseHandler],
+  )
+
+  return { onMouseMove, onMouseDown, onMouseUp }
 }
 
 export function useSelectAndHover(
@@ -618,6 +641,7 @@ export function useSelectAndHover(
 ): {
   onMouseMove: (event: React.MouseEvent<HTMLDivElement, MouseEvent>) => void
   onMouseDown: (event: React.MouseEvent<HTMLDivElement, MouseEvent>) => void
+  onMouseUp: (event: React.MouseEvent<HTMLDivElement, MouseEvent>) => void
 } {
   const modeType = useEditorState((store) => store.editor.mode.type, 'useSelectAndHover mode')
   const isZoomMode = useEditorState(
@@ -640,6 +664,7 @@ export function useSelectAndHover(
     return {
       onMouseMove: Utils.NO_OP,
       onMouseDown: Utils.NO_OP,
+      onMouseUp: selectModeCallbacks.onMouseUp,
     }
   } else {
     switch (modeType) {
