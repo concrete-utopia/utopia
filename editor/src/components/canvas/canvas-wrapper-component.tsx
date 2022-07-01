@@ -132,9 +132,7 @@ export const CanvasWrapperComponent = React.memo(() => {
   )
 })
 
-interface ErrorOverlayComponentProps {}
-
-const ErrorOverlayComponent = React.memo((props: ErrorOverlayComponentProps) => {
+const ErrorOverlayComponent = React.memo(() => {
   const dispatch = useEditorState((store) => store.dispatch, 'ErrorOverlayComponent dispatch')
   const utopiaParserErrors = useEditorState((store) => {
     return parseFailureAsErrorMessages(
