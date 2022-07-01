@@ -199,7 +199,7 @@ export function getSelectableViews(
 function useFindValidTarget(): (
   selectableViews: Array<ElementPath>,
   mousePoint: WindowPoint | null,
-  preferAlreadySelected: boolean,
+  preferAlreadySelected: 'prefer-selected' | 'dont-prefer-selected',
 ) => {
   elementPath: ElementPath
   isSelected: boolean
@@ -220,7 +220,7 @@ function useFindValidTarget(): (
     (
       selectableViews: Array<ElementPath>,
       mousePoint: WindowPoint | null,
-      preferAlreadySelected: boolean,
+      preferAlreadySelected: 'prefer-selected' | 'dont-prefer-selected',
     ) => {
       const {
         selectedViews,
@@ -230,18 +230,19 @@ function useFindValidTarget(): (
         canvasOffset,
         allElementProps,
       } = storeRef.current
-      const validElementMouseOver: ElementPath | null = preferAlreadySelected
-        ? getSelectionOrValidTargetAtPoint(
-            componentMetadata,
-            selectedViews,
-            hiddenInstances,
-            selectableViews,
-            mousePoint,
-            canvasScale,
-            canvasOffset,
-            allElementProps,
-          )
-        : getValidTargetAtPoint(selectableViews, mousePoint)
+      const validElementMouseOver: ElementPath | null =
+        preferAlreadySelected === 'prefer-selected'
+          ? getSelectionOrValidTargetAtPoint(
+              componentMetadata,
+              selectedViews,
+              hiddenInstances,
+              selectableViews,
+              mousePoint,
+              canvasScale,
+              canvasOffset,
+              allElementProps,
+            )
+          : getValidTargetAtPoint(selectableViews, mousePoint)
       const validElementPath: ElementPath | null =
         validElementMouseOver != null ? validElementMouseOver : null
       if (validElementPath != null) {
@@ -442,7 +443,7 @@ export function useCalculateHighlightedViews(
   return React.useCallback(
     (targetPoint: WindowPoint, eventCmdPressed: boolean) => {
       const selectableViews: Array<ElementPath> = getHighlightableViews(eventCmdPressed, false)
-      const validElementPath = findValidTarget(selectableViews, targetPoint, true)
+      const validElementPath = findValidTarget(selectableViews, targetPoint, 'prefer-selected')
       if (
         validElementPath == null ||
         (!allowHoverOnSelectedView && validElementPath.isSelected) // we remove highlights if the hovered element is selected
@@ -532,7 +533,10 @@ function useSelectOrLiveModeSelectAndHover(
   }))
 
   const mouseHandler = React.useCallback(
-    (event: React.MouseEvent<HTMLDivElement>, preferAlreadySelected: boolean) => {
+    (
+      event: React.MouseEvent<HTMLDivElement>,
+      preferAlreadySelected: 'prefer-selected' | 'dont-prefer-selected',
+    ) => {
       const doubleClick = event.detail > 1 // we interpret a triple click as two double clicks, a quadruple click as three double clicks, etc  // TODO TEST ME
       const selectableViews = getSelectableViewsForSelectMode(event.metaKey, doubleClick)
       const foundTarget = findValidTarget(
@@ -619,12 +623,12 @@ function useSelectOrLiveModeSelectAndHover(
   )
 
   const onMouseDown = React.useCallback(
-    (event: React.MouseEvent<HTMLDivElement>) => mouseHandler(event, true),
+    (event: React.MouseEvent<HTMLDivElement>) => mouseHandler(event, 'prefer-selected'),
     [mouseHandler],
   )
 
   const onMouseUp = React.useCallback(
-    (event: React.MouseEvent<HTMLDivElement>) => mouseHandler(event, false),
+    (event: React.MouseEvent<HTMLDivElement>) => mouseHandler(event, 'dont-prefer-selected'),
     [mouseHandler],
   )
 
