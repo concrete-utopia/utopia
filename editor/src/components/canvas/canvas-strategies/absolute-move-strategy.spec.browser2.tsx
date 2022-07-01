@@ -201,6 +201,61 @@ describe('Absolute Move Strategy', () => {
       `),
     )
   })
+  it('moves top element even when it covers the selected one and cmd is down', async () => {
+    const startX = 40
+    const startY = 50
+    const renderResult = await renderTestEditorWithCode(
+      makeTestProjectCodeWithSnippet(`
+        <div style={{ width: '100%', height: '100%' }} data-uid='aaa'>
+          <div
+            style={{ backgroundColor: '#0091FFAA', position: 'absolute', left: ${startX}, top: ${startY}, width: 200, height: 120 }}
+            data-uid='bbb'
+            data-testid='bbb'
+          />
+          <div
+            style={{ backgroundColor: 'red', position: 'absolute', left: ${startX}, top: ${startY}, width: 200, height: 120 }}
+            data-uid='ccc'
+            data-testid='ccc'
+          />
+        </div>
+      `),
+      'await-first-dom-report',
+    )
+
+    await renderResult.dispatch(
+      [selectComponents([EP.appendNewElementPath(TestScenePath, ['aaa', 'bbb'])], false)],
+      true,
+    )
+
+    const targetElement = renderResult.renderedDOM.getByTestId('bbb')
+    const targetElementBounds = targetElement.getBoundingClientRect()
+    const canvasControlsLayer = renderResult.renderedDOM.getByTestId(CanvasControlsContainerID)
+
+    const startPoint = windowPoint({ x: targetElementBounds.x + 5, y: targetElementBounds.y + 5 })
+    const dragDelta = windowPoint({ x: 40, y: -25 })
+
+    act(() => dragElement(canvasControlsLayer, startPoint, dragDelta, false, false, false))
+
+    await renderResult.getDispatchFollowUpActionsFinished()
+    expect(getPrintedUiJsCode(renderResult.getEditorState())).toEqual(
+      makeTestProjectCodeWithSnippet(`
+        <div style={{ width: '100%', height: '100%' }} data-uid='aaa'>
+          <div
+            style={{ backgroundColor: '#0091FFAA', position: 'absolute', left: ${startX}, top: ${startY}, width: 200, height: 120 }}
+            data-uid='bbb'
+            data-testid='bbb'
+          />
+          <div
+            style={{ backgroundColor: 'red', position: 'absolute', left: ${
+              startX + dragDelta.x
+            }, top: ${startY + dragDelta.y}, width: 200, height: 120 }}
+            data-uid='ccc'
+            data-testid='ccc'
+          />
+        </div>
+      `),
+    )
+  })
   it('moves multiselection when dragging one of the selected elements', async () => {
     const startX1 = 40
     const startY1 = 50
