@@ -8,7 +8,7 @@ import {
   EditorState,
   StoryboardFilePath,
 } from '../../components/editor/store/editor-state'
-import { defaultProject } from '../../sample-projects/sample-project-utils'
+import { complexDefaultProject } from '../../sample-projects/sample-project-utils'
 import { clearTopLevelElementUniqueIDs } from '../shared/element-template'
 import {
   foldParsedTextFile,
@@ -31,7 +31,7 @@ import React from 'react'
 export var App = (props) => {
   return <div style={{ ...props.style}} data-uid={'aaa'} data-label={'Hat'} />
 }`
-  const baseModel = defaultProject()
+  const baseModel = complexDefaultProject()
   const parsedFile = lintAndParse(StoryboardFilePath, appFile, null, emptySet()) as ParsedTextFile
 
   if (!isParseSuccess(parsedFile)) {

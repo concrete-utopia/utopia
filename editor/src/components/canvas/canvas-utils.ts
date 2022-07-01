@@ -92,7 +92,6 @@ import {
   getUtopiaJSXComponentsFromSuccess,
 } from '../../core/model/project-file-utils'
 import { lintAndParse } from '../../core/workers/parser-printer/parser-printer'
-import { defaultProject } from '../../sample-projects/sample-project-utils'
 import {
   eitherToMaybe,
   flatMapEither,
@@ -201,7 +200,7 @@ import {
   getContentsTreeFileFromString,
   ProjectContentTreeRoot,
 } from '../assets'
-import { getAllTargetsAtPoint } from './dom-lookup'
+import { getAllTargetsAtPoint, getAllTargetsAtPointAABB } from './dom-lookup'
 import { CSSNumber, parseCSSLengthPercent, printCSSNumber } from '../inspector/common/css-utils'
 import { normalisePathToUnderlyingTargetForced } from '../custom-code/code-file'
 import { addToMapOfArraysUnique, uniqBy } from '../../core/shared/array-utils'
@@ -1893,7 +1892,7 @@ function getReparentTargetAtPosition(
   canvasOffset: CanvasVector,
   allElementProps: AllElementProps,
 ): ElementPath | undefined {
-  const allTargets = getAllTargetsAtPoint(
+  const allTargets = getAllTargetsAtPointAABB(
     componentMeta,
     selectedViews,
     hiddenInstances,

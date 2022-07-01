@@ -161,7 +161,6 @@ import {
   mergeImports,
 } from '../../../core/workers/common/project-file-utils'
 import { OutgoingWorkerMessage, UtopiaTsWorkers } from '../../../core/workers/common/worker-types'
-import { defaultProject } from '../../../sample-projects/sample-project-utils'
 import { KeysPressed, Key } from '../../../utils/keyboard'
 import Utils, { IndexPosition } from '../../../utils/utils'
 import {
@@ -500,7 +499,6 @@ import {
   updatePackageJson,
   removeFromNodeModulesContents,
 } from './action-creators'
-import { getAllTargetsAtPoint } from '../../canvas/dom-lookup'
 import {
   initVSCodeBridge,
   sendCodeEditorDecorations,

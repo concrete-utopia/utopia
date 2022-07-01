@@ -100,9 +100,9 @@ const usePropsOrJSXAttributes = (path: ElementPath): PropsOrJSXAttributes => {
 
 const useContainingFrameForElement = (path: ElementPath): CanvasRectangle | null => {
   return useEditorState((store) => {
-    const containingBlockPath = MetadataUtils.findContainingBlock(store.editor.jsxMetadata, path)
-    if (containingBlockPath != null && !EP.isStoryboardPath(containingBlockPath)) {
-      return MetadataUtils.getFrameInCanvasCoords(containingBlockPath, store.editor.jsxMetadata)
+    const metadata = MetadataUtils.findElementByElementPath(store.editor.jsxMetadata, path)
+    if (metadata != null) {
+      return metadata?.specialSizeMeasurements.coordinateSystemBounds
     } else {
       return null
     }

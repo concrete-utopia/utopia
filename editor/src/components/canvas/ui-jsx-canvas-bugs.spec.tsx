@@ -83,6 +83,7 @@ export var storyboard = (
             data-utopia-scene-id=\\"sb/scene\\"
             data-path=\\"sb/scene\\"
             style=\\"
+              overflow: hidden;
               position: absolute;
               background-color: rgba(255, 255, 255, 1);
               box-shadow: 0px 0px 1px 0px rgba(26, 26, 26, 0.3);
@@ -147,6 +148,7 @@ export default function App(props) {
             data-utopia-scene-id=\\"sb/scene\\"
             data-path=\\"sb/scene\\"
             style=\\"
+              overflow: hidden;
               position: absolute;
               background-color: rgba(255, 255, 255, 1);
               box-shadow: 0px 0px 1px 0px rgba(26, 26, 26, 0.3);
@@ -244,6 +246,7 @@ export default function App(props) {
             data-utopia-scene-id=\\"storyboard-entity/scene-1-entity\\"
             data-path=\\"storyboard-entity/scene-1-entity\\"
             style=\\"
+              overflow: hidden;
               position: absolute;
               background-color: rgba(255, 255, 255, 1);
               box-shadow: 0px 0px 1px 0px rgba(26, 26, 26, 0.3);
@@ -266,6 +269,7 @@ export default function App(props) {
             data-utopia-scene-id=\\"storyboard-entity/scene-2-entity\\"
             data-path=\\"storyboard-entity/scene-2-entity\\"
             style=\\"
+              overflow: hidden;
               position: absolute;
               background-color: rgba(255, 255, 255, 1);
               box-shadow: 0px 0px 1px 0px rgba(26, 26, 26, 0.3);
@@ -398,6 +402,7 @@ export default function () {
             data-utopia-scene-id=\\"storyboard-entity/scene-1-entity\\"
             data-path=\\"storyboard-entity/scene-1-entity\\"
             style=\\"
+              overflow: hidden;
               position: absolute;
               background-color: rgba(255, 255, 255, 1);
               box-shadow: 0px 0px 1px 0px rgba(26, 26, 26, 0.3);
