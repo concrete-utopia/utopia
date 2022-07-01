@@ -12,14 +12,32 @@ import { CanvasOffsetWrapper } from './canvas-offset-wrapper'
 
 // STRATEGY GUIDELINE CONTROLS
 export const GuidelineControls = React.memo(() => {
-  return (
-    <CanvasOffsetWrapper>
-      <GuidelineControl index={0} />
-      <GuidelineControl index={1} />
-      <GuidelineControl index={2} />
-      <GuidelineControl index={3} />
-    </CanvasOffsetWrapper>
-  )
+  const strategyMovedSuccessfully = useEditorState((store) => {
+    return (
+      store.editor.canvas.controls.strategyIntendedBounds.length > 0 &&
+      store.editor.canvas.controls.strategyIntendedBounds.every(({ target, frame }) => {
+        const measuredFrame = MetadataUtils.getFrameInCanvasCoords(target, store.editor.jsxMetadata)
+        if (measuredFrame == null) {
+          return false
+        } else {
+          return rectanglesEqual(measuredFrame, frame)
+        }
+      })
+    )
+  }, 'GuidelineControls strategyMovedSuccessfully')
+
+  if (!strategyMovedSuccessfully) {
+    return null
+  } else {
+    return (
+      <CanvasOffsetWrapper>
+        <GuidelineControl index={0} />
+        <GuidelineControl index={1} />
+        <GuidelineControl index={2} />
+        <GuidelineControl index={3} />
+      </CanvasOffsetWrapper>
+    )
+  }
 })
 
 interface GuidelineProps {
@@ -52,41 +70,23 @@ const GuidelineControl = React.memo<GuidelineProps>((props) => {
     },
   )
 
-  const strategyMovedSuccessfully = useEditorState((store) => {
-    return (
-      store.editor.canvas.controls.strategyIntendedBounds.length > 0 &&
-      store.editor.canvas.controls.strategyIntendedBounds.every(({ target, frame }) => {
-        const measuredFrame = MetadataUtils.getFrameInCanvasCoords(target, store.editor.jsxMetadata)
-        if (measuredFrame == null) {
-          return false
-        } else {
-          return rectanglesEqual(measuredFrame, frame)
-        }
-      })
-    )
-  }, 'GuidelineControls strategyMovedSuccessfully')
-
   const key = `guideline-${props.index}`
-  if (!strategyMovedSuccessfully) {
-    return null
-  } else {
-    return (
-      <div
-        id={key}
-        key={key}
-        data-testid={key}
-        ref={controlRef}
-        style={{
-          position: 'absolute',
-          pointerEvents: 'none',
-          borderWidth: 0,
-          borderLeftWidth: LineWidth / scale,
-          borderTopWidth: LineWidth / scale,
-          borderColor: colorTheme.canvasLayoutStroke.value,
-        }}
-      />
-    )
-  }
+  return (
+    <div
+      id={key}
+      key={key}
+      data-testid={key}
+      ref={controlRef}
+      style={{
+        position: 'absolute',
+        pointerEvents: 'none',
+        borderWidth: 0,
+        borderLeftWidth: LineWidth / scale,
+        borderTopWidth: LineWidth / scale,
+        borderColor: colorTheme.canvasLayoutStroke.value,
+      }}
+    />
+  )
 })
 
 function useGuideline<T = HTMLDivElement>(
@@ -156,5 +156,8 @@ function useGuideline<T = HTMLDivElement>(
     (store) => store.editor.canvas.controls.snappingGuidelines.length,
     innerCallback,
   )
+  React.useEffect(() => {
+    innerCallback()
+  }, [innerCallback])
   return controlRef
 }
