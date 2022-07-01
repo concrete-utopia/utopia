@@ -175,9 +175,9 @@ export function getSelectionOrAllTargetsAtPoint(
         )
   const elementsFromDOM = stripNulls(
     elementsUnderPoint.map((element) => {
-      const foundValidelementPath = findFirstParentWithValidElementPath(validPathsSet, element)
-      if (foundValidelementPath != null) {
-        return foundValidelementPath
+      const foundValidElementPath = findFirstParentWithValidElementPath(validPathsSet, element)
+      if (foundValidElementPath != null) {
+        return foundValidElementPath
       } else {
         return null
       }
