@@ -4,6 +4,7 @@ import {
   renderTestEditorWithCode,
   TestScenePath,
 } from '../../components/canvas/ui-jsx.test-utils'
+import { setLastProjectContentsForTesting } from '../../components/editor/store/dispatch'
 
 describe('ElementPath Caching', () => {
   let originalRequestIdleCallback: (
@@ -37,7 +38,7 @@ describe('ElementPath Caching', () => {
     const fakePath = EP.appendNewElementPath(TestScenePath, ['aaa', 'bbb', 'ccc'])
 
     // Rendering alone will be enough to trigger the timer for culling the cache
-    await renderTestEditorWithCode(
+    const renderResult = await renderTestEditorWithCode(
       makeTestProjectCodeWithSnippet(`
       <div data-uid='aaa'>
         <div data-uid='bbb' />
@@ -50,6 +51,7 @@ describe('ElementPath Caching', () => {
     expect(EP.appendNewElementPath(TestScenePath, ['aaa', 'bbb'])).toBe(realPath)
     expect(EP.appendNewElementPath(TestScenePath, ['aaa', 'bbb', 'ccc'])).toBe(fakePath)
 
+    setLastProjectContentsForTesting(renderResult.getEditorState().editor.projectContents)
     fakeIdle()
 
     // Now ensure only the fake path has been culled
