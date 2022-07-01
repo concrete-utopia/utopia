@@ -108,16 +108,7 @@ function useCanvasContextMenuItems(
             // Only run this once as the values used are the same for each and every
             // entry and `getAllTargetsAtPoint` is very expensive.
             if (elementsUnderCursor == null) {
-              elementsUnderCursor = getAllTargetsAtPoint(
-                data.jsxMetadata,
-                data.selectedViews,
-                data.hiddenInstances,
-                'no-filter',
-                WindowMousePositionRaw,
-                data.scale,
-                data.canvasOffset,
-                data.allElementProps,
-              )
+              elementsUnderCursor = getAllTargetsAtPoint('no-filter', WindowMousePositionRaw)
             }
             return !elementsUnderCursor.some((underCursor: ElementPath) =>
               EP.pathsEqual(underCursor, path),

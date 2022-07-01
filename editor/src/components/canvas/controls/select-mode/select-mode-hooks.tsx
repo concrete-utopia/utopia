@@ -217,23 +217,10 @@ function useFindValidTarget(): (
 
   return React.useCallback(
     (selectableViews: Array<ElementPath>, mousePoint: WindowPoint | null) => {
-      const {
-        selectedViews,
-        componentMetadata,
-        hiddenInstances,
-        canvasScale,
-        canvasOffset,
-        allElementProps,
-      } = storeRef.current
+      const { selectedViews } = storeRef.current
       const validElementMouseOver: ElementPath | null = getValidTargetAtPoint(
-        componentMetadata,
-        selectedViews,
-        hiddenInstances,
         selectableViews,
         mousePoint,
-        canvasScale,
-        canvasOffset,
-        allElementProps,
       )
       const validElementPath: ElementPath | null =
         validElementMouseOver != null ? validElementMouseOver : null
