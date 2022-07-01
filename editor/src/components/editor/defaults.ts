@@ -118,12 +118,7 @@ export function defaultRectangleElement(uid: string): JSXElement {
     jsxElementName('Rectangle', []),
     uid,
     jsxAttributesFromMap({
-      style: jsxAttributeValue(
-        {
-          backgroundColor: '#0091FFAA',
-        },
-        emptyComments,
-      ),
+      style: defaultViewElementStyle(),
       'data-uid': jsxAttributeValue(uid, emptyComments),
     }),
     [],
@@ -135,12 +130,7 @@ export function defaultEllipseElement(uid: string): JSXElement {
     jsxElementName('Ellipse', []),
     uid,
     jsxAttributesFromMap({
-      style: jsxAttributeValue(
-        {
-          backgroundColor: '#0091FFAA',
-        },
-        emptyComments,
-      ),
+      style: defaultViewElementStyle(),
       'data-uid': jsxAttributeValue(uid, emptyComments),
     }),
     [],
@@ -152,13 +142,7 @@ export function defaultDivElement(uid: string): JSXElement {
     jsxElementName('div', []),
     uid,
     jsxAttributesFromMap({
-      style: jsxAttributeValue(
-        {
-          backgroundColor: '#0091FFAA',
-          position: 'absolute',
-        },
-        emptyComments,
-      ),
+      style: defaultViewElementStyle(),
       'data-uid': jsxAttributeValue(uid, emptyComments),
     }),
     [],
