@@ -12,6 +12,7 @@ exports[`UiJsxCanvas render Label carried through for generated elements 1`] = `
       data-utopia-scene-id=\\"utopia-storyboard-uid/scene-aaa\\"
       data-path=\\"utopia-storyboard-uid/scene-aaa\\"
       style=\\"
+        overflow: hidden;
         position: absolute;
         background-color: rgba(255, 255, 255, 1);
         box-shadow: 0px 0px 1px 0px rgba(26, 26, 26, 0.3);
@@ -952,6 +953,7 @@ exports[`UiJsxCanvas render Label carried through for normal elements 1`] = `
       data-utopia-scene-id=\\"utopia-storyboard-uid/scene-aaa\\"
       data-path=\\"utopia-storyboard-uid/scene-aaa\\"
       style=\\"
+        overflow: hidden;
         position: absolute;
         background-color: rgba(255, 255, 255, 1);
         box-shadow: 0px 0px 1px 0px rgba(26, 26, 26, 0.3);
@@ -1452,6 +1454,7 @@ exports[`UiJsxCanvas render Renders input tag without errors 1`] = `
       data-utopia-scene-id=\\"utopia-storyboard-uid/scene-aaa\\"
       data-path=\\"utopia-storyboard-uid/scene-aaa\\"
       style=\\"
+        overflow: hidden;
         position: absolute;
         background-color: rgba(255, 255, 255, 1);
         box-shadow: 0px 0px 1px 0px rgba(26, 26, 26, 0.3);
@@ -1865,6 +1868,7 @@ exports[`UiJsxCanvas render arbitrary jsx block inside an element inside an arbi
       data-utopia-scene-id=\\"utopia-storyboard-uid/scene-aaa\\"
       data-path=\\"utopia-storyboard-uid/scene-aaa\\"
       style=\\"
+        overflow: hidden;
         position: absolute;
         background-color: rgba(255, 255, 255, 1);
         box-shadow: 0px 0px 1px 0px rgba(26, 26, 26, 0.3);
@@ -2876,6 +2880,7 @@ exports[`UiJsxCanvas render arbitrary jsx block inside an element inside an arbi
       data-utopia-scene-id=\\"utopia-storyboard-uid/scene-aaa\\"
       data-path=\\"utopia-storyboard-uid/scene-aaa\\"
       style=\\"
+        overflow: hidden;
         position: absolute;
         background-color: rgba(255, 255, 255, 1);
         box-shadow: 0px 0px 1px 0px rgba(26, 26, 26, 0.3);
@@ -5746,6 +5751,7 @@ exports[`UiJsxCanvas render class component is available from arbitrary block in
       data-utopia-scene-id=\\"utopia-storyboard-uid/scene-aaa\\"
       data-path=\\"utopia-storyboard-uid/scene-aaa\\"
       style=\\"
+        overflow: hidden;
         position: absolute;
         background-color: rgba(255, 255, 255, 1);
         box-shadow: 0px 0px 1px 0px rgba(26, 26, 26, 0.3);
@@ -6420,6 +6426,7 @@ exports[`UiJsxCanvas render console logging does not do anything bizarre 1`] = `
       data-utopia-scene-id=\\"utopia-storyboard-uid/scene-aaa\\"
       data-path=\\"utopia-storyboard-uid/scene-aaa\\"
       style=\\"
+        overflow: hidden;
         position: absolute;
         background-color: rgba(255, 255, 255, 1);
         box-shadow: 0px 0px 1px 0px rgba(26, 26, 26, 0.3);
@@ -6905,6 +6912,7 @@ exports[`UiJsxCanvas render does not crash if the metadata scenes are not the ap
       data-utopia-scene-id=\\"utopia-storyboard-uid/scene-aaa\\"
       data-path=\\"utopia-storyboard-uid/scene-aaa\\"
       style=\\"
+        overflow: hidden;
         position: absolute;
         background-color: rgba(255, 255, 255, 1);
         box-shadow: 0px 0px 1px 0px rgba(26, 26, 26, 0.3);
@@ -7956,6 +7964,7 @@ exports[`UiJsxCanvas render does not crash if the metadata scenes are undefined 
       data-utopia-scene-id=\\"utopia-storyboard-uid/scene-aaa\\"
       data-path=\\"utopia-storyboard-uid/scene-aaa\\"
       style=\\"
+        overflow: hidden;
         position: absolute;
         background-color: rgba(255, 255, 255, 1);
         box-shadow: 0px 0px 1px 0px rgba(26, 26, 26, 0.3);
@@ -9007,6 +9016,7 @@ exports[`UiJsxCanvas render function component is available from arbitrary block
       data-utopia-scene-id=\\"utopia-storyboard-uid/scene-aaa\\"
       data-path=\\"utopia-storyboard-uid/scene-aaa\\"
       style=\\"
+        overflow: hidden;
         position: absolute;
         background-color: rgba(255, 255, 255, 1);
         box-shadow: 0px 0px 1px 0px rgba(26, 26, 26, 0.3);
@@ -9681,6 +9691,7 @@ exports[`UiJsxCanvas render function component works inside a map 1`] = `
       data-utopia-scene-id=\\"utopia-storyboard-uid/scene-aaa\\"
       data-path=\\"utopia-storyboard-uid/scene-aaa\\"
       style=\\"
+        overflow: hidden;
         position: absolute;
         background-color: rgba(255, 255, 255, 1);
         box-shadow: 0px 0px 1px 0px rgba(26, 26, 26, 0.3);
@@ -10388,6 +10399,7 @@ exports[`UiJsxCanvas render handles a component that destructures its props obje
       data-utopia-scene-id=\\"utopia-storyboard-uid/scene-aaa\\"
       data-path=\\"utopia-storyboard-uid/scene-aaa\\"
       style=\\"
+        overflow: hidden;
         position: absolute;
         background-color: rgba(255, 255, 255, 1);
         box-shadow: 0px 0px 1px 0px rgba(26, 26, 26, 0.3);
@@ -11237,6 +11249,7 @@ exports[`UiJsxCanvas render handles a component that renames its props object 1`
       data-utopia-scene-id=\\"utopia-storyboard-uid/scene-aaa\\"
       data-path=\\"utopia-storyboard-uid/scene-aaa\\"
       style=\\"
+        overflow: hidden;
         position: absolute;
         background-color: rgba(255, 255, 255, 1);
         box-shadow: 0px 0px 1px 0px rgba(26, 26, 26, 0.3);
@@ -12085,6 +12098,7 @@ exports[`UiJsxCanvas render handles a component with a props object written by s
       data-utopia-scene-id=\\"utopia-storyboard-uid/scene-aaa\\"
       data-path=\\"utopia-storyboard-uid/scene-aaa\\"
       style=\\"
+        overflow: hidden;
         position: absolute;
         background-color: rgba(255, 255, 255, 1);
         box-shadow: 0px 0px 1px 0px rgba(26, 26, 26, 0.3);
@@ -13030,6 +13044,7 @@ exports[`UiJsxCanvas render handles a component with a props object written by s
       data-utopia-scene-id=\\"utopia-storyboard-uid/scene-aaa\\"
       data-path=\\"utopia-storyboard-uid/scene-aaa\\"
       style=\\"
+        overflow: hidden;
         position: absolute;
         background-color: rgba(255, 255, 255, 1);
         box-shadow: 0px 0px 1px 0px rgba(26, 26, 26, 0.3);
@@ -13975,6 +13990,7 @@ exports[`UiJsxCanvas render handles chaining dependencies into the appropriate o
       data-utopia-scene-id=\\"utopia-storyboard-uid/scene-aaa\\"
       data-path=\\"utopia-storyboard-uid/scene-aaa\\"
       style=\\"
+        overflow: hidden;
         position: absolute;
         background-color: rgba(255, 255, 255, 1);
         box-shadow: 0px 0px 1px 0px rgba(26, 26, 26, 0.3);
@@ -14387,6 +14403,7 @@ exports[`UiJsxCanvas render handles fragments in an arbitrary block 1`] = `
       data-utopia-scene-id=\\"utopia-storyboard-uid/scene-aaa\\"
       data-path=\\"utopia-storyboard-uid/scene-aaa\\"
       style=\\"
+        overflow: hidden;
         position: absolute;
         background-color: rgba(255, 255, 255, 1);
         box-shadow: 0px 0px 1px 0px rgba(26, 26, 26, 0.3);
@@ -19690,6 +19707,7 @@ exports[`UiJsxCanvas render props can be accessed inside the arbitrary js block 
       data-utopia-scene-id=\\"utopia-storyboard-uid/scene-aaa\\"
       data-path=\\"utopia-storyboard-uid/scene-aaa\\"
       style=\\"
+        overflow: hidden;
         position: absolute;
         background-color: rgba(255, 255, 255, 1);
         box-shadow: 0px 0px 1px 0px rgba(26, 26, 26, 0.3);
@@ -20428,6 +20446,7 @@ exports[`UiJsxCanvas render refs are handled and triggered correctly in a class 
       data-utopia-scene-id=\\"utopia-storyboard-uid/scene-aaa\\"
       data-path=\\"utopia-storyboard-uid/scene-aaa\\"
       style=\\"
+        overflow: hidden;
         position: absolute;
         background-color: rgba(255, 255, 255, 1);
         box-shadow: 0px 0px 1px 0px rgba(26, 26, 26, 0.3);
@@ -20906,6 +20925,7 @@ exports[`UiJsxCanvas render refs are handled and triggered correctly in a functi
       data-utopia-scene-id=\\"utopia-storyboard-uid/scene-aaa\\"
       data-path=\\"utopia-storyboard-uid/scene-aaa\\"
       style=\\"
+        overflow: hidden;
         position: absolute;
         background-color: rgba(255, 255, 255, 1);
         box-shadow: 0px 0px 1px 0px rgba(26, 26, 26, 0.3);
@@ -21448,6 +21468,7 @@ exports[`UiJsxCanvas render renderrs correctly when a component is passed in via
       data-utopia-scene-id=\\"eee/fff\\"
       data-path=\\"eee/fff\\"
       style=\\"
+        overflow: hidden;
         position: absolute;
         background-color: rgba(255, 255, 255, 1);
         box-shadow: 0px 0px 1px 0px rgba(26, 26, 26, 0.3);
@@ -22188,6 +22209,7 @@ exports[`UiJsxCanvas render renders a 1st party component with uids correctly, u
       data-utopia-scene-id=\\"utopia-storyboard-uid/scene-aaa\\"
       data-path=\\"utopia-storyboard-uid/scene-aaa\\"
       style=\\"
+        overflow: hidden;
         position: absolute;
         background-color: rgba(255, 255, 255, 1);
         box-shadow: 0px 0px 1px 0px rgba(26, 26, 26, 0.3);
@@ -23063,6 +23085,7 @@ exports[`UiJsxCanvas render renders a canvas defined by a utopia storyboard comp
       data-utopia-scene-id=\\"utopia-storyboard-uid/scene-aaa\\"
       data-path=\\"utopia-storyboard-uid/scene-aaa\\"
       style=\\"
+        overflow: hidden;
         position: absolute;
         background-color: rgba(255, 255, 255, 1);
         box-shadow: 0px 0px 1px 0px rgba(26, 26, 26, 0.3);
@@ -23797,6 +23820,7 @@ exports[`UiJsxCanvas render renders a canvas reliant on another file that uses m
       data-utopia-scene-id=\\"utopia-storyboard-uid/scene-aaa\\"
       data-path=\\"utopia-storyboard-uid/scene-aaa\\"
       style=\\"
+        overflow: hidden;
         position: absolute;
         background-color: rgba(255, 255, 255, 1);
         box-shadow: 0px 0px 1px 0px rgba(26, 26, 26, 0.3);
@@ -24676,6 +24700,7 @@ exports[`UiJsxCanvas render renders a canvas testing a multitude of export style
       data-utopia-scene-id=\\"utopia-storyboard-uid/scene-aaa\\"
       data-path=\\"utopia-storyboard-uid/scene-aaa\\"
       style=\\"
+        overflow: hidden;
         position: absolute;
         background-color: rgba(255, 255, 255, 1);
         box-shadow: 0px 0px 1px 0px rgba(26, 26, 26, 0.3);
@@ -27788,6 +27813,7 @@ exports[`UiJsxCanvas render renders a component used in an arbitrary block corre
       data-utopia-scene-id=\\"utopia-storyboard-uid/scene-aaa\\"
       data-path=\\"utopia-storyboard-uid/scene-aaa\\"
       style=\\"
+        overflow: hidden;
         position: absolute;
         background-color: rgba(255, 255, 255, 1);
         box-shadow: 0px 0px 1px 0px rgba(26, 26, 26, 0.3);
@@ -28839,6 +28865,7 @@ exports[`UiJsxCanvas render renders a component used in an arbitrary block corre
       data-utopia-scene-id=\\"utopia-storyboard-uid/scene-aaa\\"
       data-path=\\"utopia-storyboard-uid/scene-aaa\\"
       style=\\"
+        overflow: hidden;
         position: absolute;
         background-color: rgba(255, 255, 255, 1);
         box-shadow: 0px 0px 1px 0px rgba(26, 26, 26, 0.3);
@@ -29894,6 +29921,7 @@ exports[`UiJsxCanvas render renders a component used in an arbitrary block with 
       data-utopia-scene-id=\\"utopia-storyboard-uid/scene-aaa\\"
       data-path=\\"utopia-storyboard-uid/scene-aaa\\"
       style=\\"
+        overflow: hidden;
         position: absolute;
         background-color: rgba(255, 255, 255, 1);
         box-shadow: 0px 0px 1px 0px rgba(26, 26, 26, 0.3);
@@ -30952,6 +30980,7 @@ exports[`UiJsxCanvas render renders a component using the spread operator 1`] = 
       data-utopia-scene-id=\\"utopia-storyboard-uid/scene-aaa\\"
       data-path=\\"utopia-storyboard-uid/scene-aaa\\"
       style=\\"
+        overflow: hidden;
         position: absolute;
         background-color: rgba(255, 255, 255, 1);
         box-shadow: 0px 0px 1px 0px rgba(26, 26, 26, 0.3);
@@ -31644,6 +31673,7 @@ exports[`UiJsxCanvas render renders a component with a fragment at the root 1`] 
       data-utopia-scene-id=\\"utopia-storyboard-uid/scene-aaa\\"
       data-path=\\"utopia-storyboard-uid/scene-aaa\\"
       style=\\"
+        overflow: hidden;
         position: absolute;
         background-color: rgba(255, 255, 255, 1);
         box-shadow: 0px 0px 1px 0px rgba(26, 26, 26, 0.3);
@@ -32143,6 +32173,7 @@ exports[`UiJsxCanvas render renders correctly with a context 1`] = `
       data-utopia-scene-id=\\"ccc/ddd\\"
       data-path=\\"ccc/ddd\\"
       style=\\"
+        overflow: hidden;
         position: absolute;
         background-color: rgba(255, 255, 255, 1);
         box-shadow: 0px 0px 1px 0px rgba(26, 26, 26, 0.3);
@@ -32743,6 +32774,7 @@ exports[`UiJsxCanvas render renders correctly with a nested context in another c
       data-utopia-scene-id=\\"ccc/ddd\\"
       data-path=\\"ccc/ddd\\"
       style=\\"
+        overflow: hidden;
         position: absolute;
         background-color: rgba(255, 255, 255, 1);
         box-shadow: 0px 0px 1px 0px rgba(26, 26, 26, 0.3);
@@ -33112,6 +33144,7 @@ exports[`UiJsxCanvas render renders fine with a valid registerModule call 1`] = 
       data-utopia-scene-id=\\"utopia-storyboard-uid/scene-aaa\\"
       data-path=\\"utopia-storyboard-uid/scene-aaa\\"
       style=\\"
+        overflow: hidden;
         position: absolute;
         background-color: rgba(255, 255, 255, 1);
         box-shadow: 0px 0px 1px 0px rgba(26, 26, 26, 0.3);
@@ -33690,6 +33723,7 @@ exports[`UiJsxCanvas render renders fine with two circularly referencing arbitra
       data-utopia-scene-id=\\"utopia-storyboard-uid/scene\\"
       data-path=\\"utopia-storyboard-uid/scene\\"
       style=\\"
+        overflow: hidden;
         position: absolute;
         background-color: rgba(255, 255, 255, 1);
         box-shadow: 0px 0px 1px 0px rgba(26, 26, 26, 0.3);
@@ -34221,6 +34255,7 @@ exports[`UiJsxCanvas render renders fine with two components that reference each
       data-utopia-scene-id=\\"utopia-storyboard-uid/scene\\"
       data-path=\\"utopia-storyboard-uid/scene\\"
       style=\\"
+        overflow: hidden;
         position: absolute;
         background-color: rgba(255, 255, 255, 1);
         box-shadow: 0px 0px 1px 0px rgba(26, 26, 26, 0.3);
@@ -34602,6 +34637,7 @@ exports[`UiJsxCanvas render renders fragments correctly 1`] = `
       data-utopia-scene-id=\\"eee/fff\\"
       data-path=\\"eee/fff\\"
       style=\\"
+        overflow: hidden;
         position: absolute;
         background-color: rgba(255, 255, 255, 1);
         box-shadow: 0px 0px 1px 0px rgba(26, 26, 26, 0.3);
@@ -35794,6 +35830,7 @@ exports[`UiJsxCanvas render renders img tag 1`] = `
       data-utopia-scene-id=\\"utopia-storyboard-uid/scene-aaa\\"
       data-path=\\"utopia-storyboard-uid/scene-aaa\\"
       style=\\"
+        overflow: hidden;
         position: absolute;
         background-color: rgba(255, 255, 255, 1);
         box-shadow: 0px 0px 1px 0px rgba(26, 26, 26, 0.3);
@@ -36374,6 +36411,7 @@ exports[`UiJsxCanvas render respects a jsx pragma 1`] = `
       data-path=\\"utopia-storyboard-uid/scene-aaa\\"
       data-factory-function-works=\\"true\\"
       style=\\"
+        overflow: hidden;
         position: absolute;
         background-color: rgba(255, 255, 255, 1);
         box-shadow: 0px 0px 1px 0px rgba(26, 26, 26, 0.3);
@@ -36789,6 +36827,7 @@ exports[`UiJsxCanvas render supports passing down the scope to children of compo
       data-utopia-scene-id=\\"utopia-storyboard-uid/scene-aaa\\"
       data-path=\\"utopia-storyboard-uid/scene-aaa\\"
       style=\\"
+        overflow: hidden;
         position: absolute;
         background-color: rgba(255, 255, 255, 1);
         box-shadow: 0px 0px 1px 0px rgba(26, 26, 26, 0.3);
@@ -38406,6 +38445,7 @@ exports[`UiJsxCanvas render the canvas supports emotion CSS prop 1`] = `
       data-utopia-scene-id=\\"utopia-storyboard-uid/scene-aaa\\"
       data-path=\\"utopia-storyboard-uid/scene-aaa\\"
       style=\\"
+        overflow: hidden;
         position: absolute;
         background-color: rgba(255, 255, 255, 1);
         box-shadow: 0px 0px 1px 0px rgba(26, 26, 26, 0.3);
@@ -38821,6 +38861,7 @@ exports[`UiJsxCanvas render the spy wrapper is compatible with React.cloneElemen
       data-utopia-scene-id=\\"utopia-storyboard-uid/scene-aaa\\"
       data-path=\\"utopia-storyboard-uid/scene-aaa\\"
       style=\\"
+        overflow: hidden;
         position: absolute;
         background-color: rgba(255, 255, 255, 1);
         box-shadow: 0px 0px 1px 0px rgba(26, 26, 26, 0.3);

@@ -16,7 +16,7 @@ import {
 } from '../core/shared/project-file-types'
 import { emptySet } from '../core/shared/set-utils'
 import { lintAndParse } from '../core/workers/parser-printer/parser-printer'
-import { complexDefaultProject, defaultProject, simpleDefaultProject } from './sample-project-utils'
+import { complexDefaultProject, simpleDefaultProject } from './sample-project-utils'
 
 export function simpleDefaultProjectPreParsed(): PersistentModel {
   const project = simpleDefaultProject()
@@ -63,7 +63,7 @@ export function parseProjectContents(
 }
 
 export function createTestProjectWithCode(appUiJsFile: string): PersistentModel {
-  const baseModel = defaultProject()
+  const baseModel = complexDefaultProject()
   const parsedFile = lintAndParse(
     StoryboardFilePath,
     appUiJsFile,
@@ -91,7 +91,7 @@ export function createTestProjectWithCode(appUiJsFile: string): PersistentModel 
 }
 
 export function createModifiedProject(modifiedFiles: { [filename: string]: string }) {
-  const baseModel = defaultProject()
+  const baseModel = complexDefaultProject()
 
   const updatedProject = Object.keys(modifiedFiles).reduce((workingProject, modifiedFilename) => {
     const parsedFile = lintAndParse(

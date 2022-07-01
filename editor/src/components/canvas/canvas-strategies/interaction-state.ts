@@ -226,7 +226,8 @@ export function updateInteractionViaKeyboard(
     case 'KEYBOARD': {
       const lastKeyState = last(currentState.interactionData.keyStates)
       let newKeyState: KeyState
-      if (lastKeyState == null) {
+      if (lastKeyState == null || modifiers.cmd) {
+        // This is needed only for macbooks, when cmd is down, other keys don't trigger keyup events.
         newKeyState = {
           keysPressed: new Set(addedKeysPressed),
           modifiers: modifiers,
@@ -315,7 +316,7 @@ export function interactionSessionHardReset(
   }
 }
 
-export const KeyboardInteractionTimeout = 400
+export const KeyboardInteractionTimeout = 600
 
 export function hasDragModifiersChanged(
   prevInteractionData: InputData | null,
