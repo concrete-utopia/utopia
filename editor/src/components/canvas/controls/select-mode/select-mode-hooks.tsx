@@ -443,7 +443,7 @@ export function useCalculateHighlightedViews(
   return React.useCallback(
     (targetPoint: WindowPoint, eventCmdPressed: boolean) => {
       const selectableViews: Array<ElementPath> = getHighlightableViews(eventCmdPressed, false)
-      const validElementPath = findValidTarget(selectableViews, targetPoint, 'prefer-selected')
+      const validElementPath = findValidTarget(selectableViews, targetPoint, 'dont-prefer-selected')
       if (
         validElementPath == null ||
         (!allowHoverOnSelectedView && validElementPath.isSelected) // we remove highlights if the hovered element is selected
