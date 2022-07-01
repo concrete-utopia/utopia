@@ -40,7 +40,7 @@ import {
 import { GuidelineWithSnappingVector, Guidelines } from '../guideline'
 import Utils from '../../../utils/utils'
 import { StrategyState, InteractionSession } from './interaction-state'
-import { pushIntendedBounds } from '../commands/set-intended-bounds-command'
+import { pushIntendedBounds } from '../commands/push-intended-bounds-command'
 import { CanvasFrameAndTarget } from '../canvas-types'
 
 export const keyboardAbsoluteMoveStrategy: CanvasStrategy = {

@@ -36,7 +36,7 @@ import {
 } from './set-elements-to-rerender-command'
 import { DuplicateElement, runDuplicateElement } from './duplicate-element-command'
 import { runUpdateFunctionCommand, UpdateFunctionCommand } from './update-function-command'
-import { runPushIntendedBounds, PushIntendedBounds } from './set-intended-bounds-command'
+import { runPushIntendedBounds, PushIntendedBounds } from './push-intended-bounds-command'
 
 export interface CommandFunctionResult {
   editorStatePatches: Array<EditorStatePatch>

@@ -37,7 +37,7 @@ import {
 import * as EP from '../../../core/shared/element-path'
 import { ZeroSizeResizeControlWrapper } from '../controls/zero-sized-element-controls'
 import { SetCssLengthProperty, setCssLengthProperty } from '../commands/set-css-length-command'
-import { pushIntendedBounds } from '../commands/set-intended-bounds-command'
+import { pushIntendedBounds } from '../commands/push-intended-bounds-command'
 
 export const absoluteResizeBoundingBoxStrategy: CanvasStrategy = {
   id: 'ABSOLUTE_RESIZE_BOUNDING_BOX',

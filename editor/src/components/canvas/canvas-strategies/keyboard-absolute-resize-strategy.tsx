@@ -29,7 +29,7 @@ import {
 } from './shared-keyboard-strategy-helpers'
 import { getMultiselectBounds } from './shared-absolute-move-strategy-helpers'
 import { setSnappingGuidelines } from '../commands/set-snapping-guidelines-command'
-import { pushIntendedBounds } from '../commands/set-intended-bounds-command'
+import { pushIntendedBounds } from '../commands/push-intended-bounds-command'
 
 interface VectorAndEdge {
   movement: CanvasVector
