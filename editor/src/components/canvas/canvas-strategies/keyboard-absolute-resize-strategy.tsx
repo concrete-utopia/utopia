@@ -160,7 +160,9 @@ export const keyboardAbsoluteResizeStrategy: CanvasStrategy = {
                 elementParentBounds,
               )
               commands.push(...elementResult.commands)
-              intendedBounds.push(elementResult.intendedBounds)
+              if (elementResult.intendedBounds != null) {
+                intendedBounds.push(elementResult.intendedBounds)
+              }
             }
           })
         }
