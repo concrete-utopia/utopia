@@ -121,6 +121,21 @@ import { CanvasMousePositionRaw, WindowMousePositionRaw } from '../../utils/glob
 import { getDragStateStart } from '../canvas/canvas-utils'
 import { isFeatureEnabled } from '../../utils/feature-switches'
 
+interface ShortcutActions {
+  actions: Array<EditorAction>
+  needsEditorTarget: boolean
+}
+
+function shortcutActions(
+  actions: Array<EditorAction>,
+  needsEditorTarget: boolean = true,
+): ShortcutActions {
+  return {
+    actions: actions,
+    needsEditorTarget: needsEditorTarget,
+  }
+}
+
 function updateKeysPressed(
   keysPressed: KeysPressed,
   updatedCharacter: KeyCharacter,
@@ -161,8 +176,24 @@ function isEventFromInput(target: any) {
   return target.tagName?.toLowerCase() === 'input' || target.tagName?.toLowerCase() === 'textarea'
 }
 
+function isModalOpen(editor: EditorState) {
+  return editor.modal != null
+}
+
 export function editorIsTarget(event: KeyboardEvent, editor: EditorState): boolean {
-  return !isEventFromInput(event.target) && editor.modal == null
+  return !isEventFromInput(event.target) && !isModalOpen(editor)
+}
+
+function shortcutAllowed(
+  shortcut: ShortcutActions,
+  event: KeyboardEvent,
+  editor: EditorState,
+): boolean {
+  if (shortcut.needsEditorTarget) {
+    return editorIsTarget(event, editor)
+  } else {
+    return !isModalOpen(editor)
+  }
 }
 
 function jumpToParentActions(selectedViews: Array<ElementPath>): Array<EditorAction> {
@@ -390,224 +421,280 @@ export function handleKeyDown(
     return [EditorActions.transientActions(adjustmentActions)]
   }
 
-  function getUIFileActions(): Array<EditorAction> {
+  function getUIFileActions(): ShortcutActions {
     if (key === 'tab' && shouldTabBeHandledByBrowser(editor)) {
-      return []
+      return shortcutActions([])
     }
-    return handleShortcuts<Array<EditorAction>>(namesByKey, event, [], {
+    return handleShortcuts<ShortcutActions>(namesByKey, event, shortcutActions([]), {
       [DELETE_SELECTED_SHORTCUT]: () => {
-        return isSelectMode(editor.mode) || isSelectLiteMode(editor.mode)
-          ? [EditorActions.deleteSelected()]
-          : []
+        return shortcutActions(
+          isSelectMode(editor.mode) || isSelectLiteMode(editor.mode)
+            ? [EditorActions.deleteSelected()]
+            : [],
+        )
       },
       [RESET_CANVAS_ZOOM_SHORTCUT]: () => {
-        return [CanvasActions.zoom(1)]
+        return shortcutActions([CanvasActions.zoom(1)])
       },
       [ZOOM_UI_IN_SHORTCUT]: () => {
-        return [CanvasActions.zoomUI(true)]
+        return shortcutActions([CanvasActions.zoomUI(true)])
       },
       [ZOOM_CANVAS_IN_SHORTCUT]: () => {
-        return [CanvasActions.zoom(Utils.increaseScale(editor.canvas.scale))]
+        return shortcutActions([CanvasActions.zoom(Utils.increaseScale(editor.canvas.scale))])
       },
       [ZOOM_UI_OUT_SHORTCUT]: () => {
-        return [CanvasActions.zoomUI(false)]
+        return shortcutActions([CanvasActions.zoomUI(false)])
       },
       [ZOOM_CANVAS_OUT_SHORTCUT]: () => {
-        return [CanvasActions.zoom(Utils.decreaseScale(editor.canvas.scale))]
+        return shortcutActions([CanvasActions.zoom(Utils.decreaseScale(editor.canvas.scale))])
       },
       [FIRST_CHILD_OR_EDIT_TEXT_SHORTCUT]: () => {
         if (isSelectMode(editor.mode) || isSelectLiteMode(editor.mode)) {
           const textTarget = getTextEditorTarget(editor, derived)
           if (textTarget != null && isSelectMode(editor.mode)) {
-            return [EditorActions.focusFormulaBar()]
+            return shortcutActions([EditorActions.focusFormulaBar()])
           } else {
             const childToSelect = Canvas.getFirstChild(editor.selectedViews, editor.jsxMetadata)
             if (childToSelect != null) {
-              return [EditorActions.selectComponents([childToSelect], false)]
+              return shortcutActions([EditorActions.selectComponents([childToSelect], false)])
             }
           }
         }
-        return []
+        return shortcutActions([])
       },
       [JUMP_TO_PARENT_SHORTCUT]: () => {
         if (isSelectMode(editor.mode) || isSelectLiteMode(editor.mode)) {
-          return jumpToParentActions(editor.selectedViews)
+          return shortcutActions(jumpToParentActions(editor.selectedViews))
         } else {
-          return []
+          return shortcutActions([])
         }
       },
       [CANCEL_EVERYTHING_SHORTCUT]: () => {
         if (isInsertMode(editor.mode)) {
-          return [
+          return shortcutActions([
             EditorActions.switchEditorMode(EditorModes.selectMode()),
             CanvasActions.clearDragState(false),
             EditorActions.clearHighlightedViews(),
-          ]
+          ])
         } else if (
           editor.canvas.dragState != null &&
           getDragStateStart(editor.canvas.dragState, editor.canvas.resizeOptions) != null
         ) {
-          return [CanvasActions.clearDragState(false)]
+          return shortcutActions([CanvasActions.clearDragState(false)])
         } else if (editor.canvas.interactionSession != null) {
-          return [CanvasActions.clearInteractionSession(false)]
+          return shortcutActions([CanvasActions.clearInteractionSession(false)])
         } else if (isSelectMode(editor.mode) || isSelectLiteMode(editor.mode)) {
-          return jumpToParentActions(editor.selectedViews)
+          return shortcutActions(jumpToParentActions(editor.selectedViews))
         }
 
         // TODO: Move this around.
         if (isLiveMode(editor.mode)) {
-          return [EditorActions.updateEditorMode(EditorModes.selectMode(editor.mode.controlId))]
+          return shortcutActions([
+            EditorActions.updateEditorMode(EditorModes.selectMode(editor.mode.controlId)),
+          ])
         } else if (isInsertMode(editor.mode)) {
-          return [EditorActions.updateEditorMode(EditorModes.selectMode())]
+          return shortcutActions([EditorActions.updateEditorMode(EditorModes.selectMode())])
         }
-        return []
+        return shortcutActions([])
       },
       [CYCLE_HIERACHY_TARGETS_SHORTCUT]: () => {
         if (isSelectMode(editor.mode) || isSelectLiteMode(editor.mode)) {
           if (CanvasMousePositionRaw == null) {
-            return [EditorActions.clearSelection()]
+            return shortcutActions([EditorActions.clearSelection()])
           }
           const targetStack = getAllTargetsAtPoint('no-filter', WindowMousePositionRaw)
           const nextTarget = Canvas.getNextTarget(editor.selectedViews, targetStack)
           if (targetStack.length === 0 || nextTarget === null) {
-            return [EditorActions.clearSelection()]
+            return shortcutActions([EditorActions.clearSelection()])
           } else {
-            return [EditorActions.selectComponents([nextTarget], false)]
+            return shortcutActions([EditorActions.selectComponents([nextTarget], false)])
           }
         }
-        return []
+        return shortcutActions([])
       },
       [CYCLE_FORWARD_SIBLING_TARGETS_SHORTCUT]: () => {
-        return cycleSiblings(true)
+        return shortcutActions(cycleSiblings(true))
       },
       [CYCLE_BACKWARD_SIBLING_TARGETS_SHORTCUT]: () => {
-        return cycleSiblings(false)
+        return shortcutActions(cycleSiblings(false))
       },
       [RESIZE_ELEMENT_UP_SHORTCUT]: () => {
-        return isSelectMode(editor.mode) ? adjustFrames(true, 'vertical', -1, 1) : []
+        return shortcutActions(
+          isSelectMode(editor.mode) ? adjustFrames(true, 'vertical', -1, 1) : [],
+        )
       },
       [RESIZE_ELEMENT_UP_MORE_SHORTCUT]: () => {
-        return isSelectMode(editor.mode) ? adjustFrames(true, 'vertical', -1, 10) : []
+        return shortcutActions(
+          isSelectMode(editor.mode) ? adjustFrames(true, 'vertical', -1, 10) : [],
+        )
       },
       [MOVE_ELEMENT_UP_SHORTCUT]: () => {
-        return isSelectMode(editor.mode) ? adjustFrames(false, 'vertical', -1, 1) : []
+        return shortcutActions(
+          isSelectMode(editor.mode) ? adjustFrames(false, 'vertical', -1, 1) : [],
+        )
       },
       [MOVE_ELEMENT_UP_MORE_SHORTCUT]: () => {
-        return isSelectMode(editor.mode) ? adjustFrames(false, 'vertical', -1, 10) : []
+        return shortcutActions(
+          isSelectMode(editor.mode) ? adjustFrames(false, 'vertical', -1, 10) : [],
+        )
       },
       [RESIZE_ELEMENT_DOWN_SHORTCUT]: () => {
-        return isSelectMode(editor.mode) ? adjustFrames(true, 'vertical', 1, 1) : []
+        return shortcutActions(
+          isSelectMode(editor.mode) ? adjustFrames(true, 'vertical', 1, 1) : [],
+        )
       },
       [RESIZE_ELEMENT_DOWN_MORE_SHORTCUT]: () => {
-        return isSelectMode(editor.mode) ? adjustFrames(true, 'vertical', 1, 10) : []
+        return shortcutActions(
+          isSelectMode(editor.mode) ? adjustFrames(true, 'vertical', 1, 10) : [],
+        )
       },
       [MOVE_ELEMENT_DOWN_SHORTCUT]: () => {
-        return isSelectMode(editor.mode) ? adjustFrames(false, 'vertical', 1, 1) : []
+        return shortcutActions(
+          isSelectMode(editor.mode) ? adjustFrames(false, 'vertical', 1, 1) : [],
+        )
       },
       [MOVE_ELEMENT_DOWN_MORE_SHORTCUT]: () => {
-        return isSelectMode(editor.mode) ? adjustFrames(false, 'vertical', 1, 10) : []
+        return shortcutActions(
+          isSelectMode(editor.mode) ? adjustFrames(false, 'vertical', 1, 10) : [],
+        )
       },
       [RESIZE_ELEMENT_LEFT_SHORTCUT]: () => {
-        return isSelectMode(editor.mode) ? adjustFrames(true, 'horizontal', -1, 1) : []
+        return shortcutActions(
+          isSelectMode(editor.mode) ? adjustFrames(true, 'horizontal', -1, 1) : [],
+        )
       },
       [RESIZE_ELEMENT_LEFT_MORE_SHORTCUT]: () => {
-        return isSelectMode(editor.mode) ? adjustFrames(true, 'horizontal', -1, 10) : []
+        return shortcutActions(
+          isSelectMode(editor.mode) ? adjustFrames(true, 'horizontal', -1, 10) : [],
+        )
       },
       [MOVE_ELEMENT_LEFT_SHORTCUT]: () => {
-        return isSelectMode(editor.mode) ? adjustFrames(false, 'horizontal', -1, 1) : []
+        return shortcutActions(
+          isSelectMode(editor.mode) ? adjustFrames(false, 'horizontal', -1, 1) : [],
+        )
       },
       [MOVE_ELEMENT_LEFT_MORE_SHORTCUT]: () => {
-        return isSelectMode(editor.mode) ? adjustFrames(false, 'horizontal', -1, 10) : []
+        return shortcutActions(
+          isSelectMode(editor.mode) ? adjustFrames(false, 'horizontal', -1, 10) : [],
+        )
       },
       [RESIZE_ELEMENT_RIGHT_SHORTCUT]: () => {
-        return isSelectMode(editor.mode) ? adjustFrames(true, 'horizontal', 1, 1) : []
+        return shortcutActions(
+          isSelectMode(editor.mode) ? adjustFrames(true, 'horizontal', 1, 1) : [],
+        )
       },
       [RESIZE_ELEMENT_RIGHT_MORE_SHORTCUT]: () => {
-        return isSelectMode(editor.mode) ? adjustFrames(true, 'horizontal', 1, 10) : []
+        return shortcutActions(
+          isSelectMode(editor.mode) ? adjustFrames(true, 'horizontal', 1, 10) : [],
+        )
       },
       [MOVE_ELEMENT_RIGHT_SHORTCUT]: () => {
-        return isSelectMode(editor.mode) ? adjustFrames(false, 'horizontal', 1, 1) : []
+        return shortcutActions(
+          isSelectMode(editor.mode) ? adjustFrames(false, 'horizontal', 1, 1) : [],
+        )
       },
       [MOVE_ELEMENT_RIGHT_MORE_SHORTCUT]: () => {
-        return isSelectMode(editor.mode) ? adjustFrames(false, 'horizontal', 1, 10) : []
+        return shortcutActions(
+          isSelectMode(editor.mode) ? adjustFrames(false, 'horizontal', 1, 10) : [],
+        )
       },
       [SELECT_ALL_SIBLINGS_SHORTCUT]: () => {
-        return [EditorActions.selectAllSiblings()]
+        return shortcutActions([EditorActions.selectAllSiblings()])
       },
       [TOGGLE_TEXT_BOLD_SHORTCUT]: () => {
-        return toggleTextFormatting(editor, dispatch, 'bold')
+        return shortcutActions(toggleTextFormatting(editor, dispatch, 'bold'))
       },
       [TOGGLE_BORDER_SHORTCUT]: () => {
-        return isSelectMode(editor.mode) || isSelectLiteMode(editor.mode)
-          ? editor.selectedViews.map((target) =>
-              EditorActions.toggleProperty(
-                target,
-                toggleStylePropPath(PP.create(['style', 'border']), toggleBorder),
-              ),
-            )
-          : []
+        return shortcutActions(
+          isSelectMode(editor.mode) || isSelectLiteMode(editor.mode)
+            ? editor.selectedViews.map((target) =>
+                EditorActions.toggleProperty(
+                  target,
+                  toggleStylePropPath(PP.create(['style', 'border']), toggleBorder),
+                ),
+              )
+            : [],
+        )
       },
       [COPY_SELECTION_SHORTCUT]: () => {
-        return isSelectMode(editor.mode) || isSelectLiteMode(editor.mode)
-          ? [EditorActions.copySelectionToClipboard()]
-          : []
+        return shortcutActions(
+          isSelectMode(editor.mode) || isSelectLiteMode(editor.mode)
+            ? [EditorActions.copySelectionToClipboard()]
+            : [],
+        )
       },
       [DUPLICATE_SELECTION_SHORTCUT]: () => {
-        return isSelectMode(editor.mode) || isSelectLiteMode(editor.mode)
-          ? [EditorActions.duplicateSelected()]
-          : []
+        return shortcutActions(
+          isSelectMode(editor.mode) || isSelectLiteMode(editor.mode)
+            ? [EditorActions.duplicateSelected()]
+            : [],
+        )
       },
       [TOGGLE_BACKGROUND_SHORTCUT]: () => {
-        return isSelectMode(editor.mode) || isSelectLiteMode(editor.mode)
-          ? editor.selectedViews.map((target) =>
-              EditorActions.toggleProperty(target, toggleStylePropPaths(toggleBackgroundLayers)),
-            )
-          : []
+        return shortcutActions(
+          isSelectMode(editor.mode) || isSelectLiteMode(editor.mode)
+            ? editor.selectedViews.map((target) =>
+                EditorActions.toggleProperty(target, toggleStylePropPaths(toggleBackgroundLayers)),
+              )
+            : [],
+        )
       },
       [UNWRAP_ELEMENT_SHORTCUT]: () => {
-        return isSelectMode(editor.mode) || isSelectLiteMode(editor.mode)
-          ? editor.selectedViews.map((target) => EditorActions.unwrapGroupOrView(target))
-          : []
+        return shortcutActions(
+          isSelectMode(editor.mode) || isSelectLiteMode(editor.mode)
+            ? editor.selectedViews.map((target) => EditorActions.unwrapGroupOrView(target))
+            : [],
+        )
       },
       [WRAP_ELEMENT_DEFAULT_SHORTCUT]: () => {
-        return isSelectMode(editor.mode) || isSelectLiteMode(editor.mode)
-          ? [EditorActions.wrapInView(editor.selectedViews, 'default-empty-div')]
-          : []
+        return shortcutActions(
+          isSelectMode(editor.mode) || isSelectLiteMode(editor.mode)
+            ? [EditorActions.wrapInView(editor.selectedViews, 'default-empty-div')]
+            : [],
+        )
       },
       [WRAP_ELEMENT_PICKER_SHORTCUT]: () => {
-        return isSelectMode(editor.mode) || isSelectLiteMode(editor.mode)
-          ? [EditorActions.openFloatingInsertMenu({ insertMenuMode: 'wrap' })]
-          : []
+        return shortcutActions(
+          isSelectMode(editor.mode) || isSelectLiteMode(editor.mode)
+            ? [EditorActions.openFloatingInsertMenu({ insertMenuMode: 'wrap' })]
+            : [],
+        )
       },
       // For now, the "Group / G" shortcuts do the same as the Wrap Element shortcuts – until we have Grouping working again
       [GROUP_ELEMENT_DEFAULT_SHORTCUT]: () => {
-        return isSelectMode(editor.mode) || isSelectLiteMode(editor.mode)
-          ? [EditorActions.wrapInView(editor.selectedViews, 'default-empty-div')]
-          : []
+        return shortcutActions(
+          isSelectMode(editor.mode) || isSelectLiteMode(editor.mode)
+            ? [EditorActions.wrapInView(editor.selectedViews, 'default-empty-div')]
+            : [],
+        )
       },
       [GROUP_ELEMENT_PICKER_SHORTCUT]: () => {
-        return isSelectMode(editor.mode) || isSelectLiteMode(editor.mode)
-          ? [EditorActions.openFloatingInsertMenu({ insertMenuMode: 'wrap' })]
-          : []
+        return shortcutActions(
+          isSelectMode(editor.mode) || isSelectLiteMode(editor.mode)
+            ? [EditorActions.openFloatingInsertMenu({ insertMenuMode: 'wrap' })]
+            : [],
+        )
       },
       [TOGGLE_HIDDEN_SHORTCUT]: () => {
-        return [EditorActions.toggleHidden()]
+        return shortcutActions([EditorActions.toggleHidden()])
       },
       [TOGGLE_TEXT_ITALIC_SHORTCUT]: () => {
-        return isSelectMode(editor.mode) ? toggleTextFormatting(editor, dispatch, 'italic') : []
+        return shortcutActions(
+          isSelectMode(editor.mode) ? toggleTextFormatting(editor, dispatch, 'italic') : [],
+        )
       },
       [INSERT_IMAGE_SHORTCUT]: () => {
         if (isSelectMode(editor.mode) || isInsertMode(editor.mode)) {
           // FIXME: Side effects.
           insertImage(dispatch)
         }
-        return []
+        return shortcutActions([])
       },
       [TOGGLE_PREVIEW_SHORTCUT]: () => {
-        return [EditorActions.togglePanel('preview')]
+        return shortcutActions([EditorActions.togglePanel('preview')])
       },
       [TOGGLE_LIVE_CANVAS_SHORTCUT]: () => {
-        return [EditorActions.toggleCanvasIsLive()]
+        return shortcutActions([EditorActions.toggleCanvasIsLive()])
       },
       [START_RENAMING_SHORTCUT]: () => {
         const exitInsertModeActions = [
@@ -618,15 +705,18 @@ export function handleKeyDown(
         ]
         if (editor.selectedViews.length === 1) {
           const target = editor.selectedViews[0]
-          return [EditorActions.setNavigatorRenamingTarget(target), ...exitInsertModeActions]
+          return shortcutActions([
+            EditorActions.setNavigatorRenamingTarget(target),
+            ...exitInsertModeActions,
+          ])
         } else {
-          return exitInsertModeActions
+          return shortcutActions(exitInsertModeActions)
         }
       },
       [INSERT_RECTANGLE_SHORTCUT]: () => {
         if (isSelectMode(editor.mode) || isInsertMode(editor.mode)) {
           const newUID = generateUidWithExistingComponents(editor.projectContents)
-          return [
+          return shortcutActions([
             EditorActions.enableInsertModeForJSXElement(
               defaultRectangleElement(newUID),
               newUID,
@@ -635,171 +725,188 @@ export function handleKeyDown(
               },
               null,
             ),
-          ]
+          ])
         } else {
-          return []
+          return shortcutActions([])
         }
       },
       [INSERT_ELLIPSE_SHORTCUT]: () => {
         if (isSelectMode(editor.mode) || isInsertMode(editor.mode)) {
           const newUID = generateUidWithExistingComponents(editor.projectContents)
-          return [
+          return shortcutActions([
             EditorActions.enableInsertModeForJSXElement(
               defaultEllipseElement(newUID),
               newUID,
               { 'utopia-api': importDetails(null, [importAlias('Ellipse')], null) },
               null,
             ),
-          ]
+          ])
         } else {
-          return []
+          return shortcutActions([])
         }
       },
       [SAVE_CURRENT_FILE_SHORTCUT]: () => {
-        return [EditorActions.saveCurrentFile()]
+        return shortcutActions([EditorActions.saveCurrentFile()])
       },
       [TOGGLE_SHADOW_SHORTCUT]: () => {
-        return editor.selectedViews.map((target) =>
-          EditorActions.toggleProperty(
-            target,
-            toggleStylePropPath(PP.create(['style', 'boxShadow']), toggleShadow),
+        return shortcutActions(
+          editor.selectedViews.map((target) =>
+            EditorActions.toggleProperty(
+              target,
+              toggleStylePropPath(PP.create(['style', 'boxShadow']), toggleShadow),
+            ),
           ),
         )
       },
       [INSERT_TEXT_SHORTCUT]: () => {
         if (isSelectMode(editor.mode) || isInsertMode(editor.mode)) {
           const newUID = generateUidWithExistingComponents(editor.projectContents)
-          return [
+          return shortcutActions([
             EditorActions.enableInsertModeForJSXElement(
               defaultTextElement(newUID),
               newUID,
               { 'utopia-api': importDetails(null, [importAlias('Text')], null) },
               null,
             ),
-          ]
+          ])
         } else {
-          return []
+          return shortcutActions([])
         }
       },
       [INSERT_VIEW_SHORTCUT]: () => {
         if (isSelectMode(editor.mode) || isInsertMode(editor.mode)) {
           const newUID = generateUidWithExistingComponents(editor.projectContents)
-          return [
+          return shortcutActions([
             EditorActions.enableInsertModeForJSXElement(
               defaultViewElement(newUID),
               newUID,
               { 'utopia-api': importDetails(null, [importAlias('View')], null) },
               null,
             ),
-          ]
+          ])
         } else {
-          return []
+          return shortcutActions([])
         }
       },
       [CUT_SELECTION_SHORTCUT]: () => {
-        return isSelectMode(editor.mode) || isSelectLiteMode(editor.mode)
-          ? [EditorActions.copySelectionToClipboard(), EditorActions.deleteSelected()]
-          : []
+        return shortcutActions(
+          isSelectMode(editor.mode) || isSelectLiteMode(editor.mode)
+            ? [EditorActions.copySelectionToClipboard(), EditorActions.deleteSelected()]
+            : [],
+        )
       },
       [UNDO_CHANGES_SHORTCUT]: () => {
-        return [EditorActions.undo()]
+        return shortcutActions([EditorActions.undo()], false)
       },
       [REDO_CHANGES_SHORTCUT]: () => {
-        return [EditorActions.redo()]
+        return shortcutActions([EditorActions.redo()], false)
       },
       [MOVE_ELEMENT_BACKWARD_SHORTCUT]: () => {
-        return isSelectMode(editor.mode) || isSelectLiteMode(editor.mode)
-          ? [EditorActions.moveSelectedBackward()]
-          : []
+        return shortcutActions(
+          isSelectMode(editor.mode) || isSelectLiteMode(editor.mode)
+            ? [EditorActions.moveSelectedBackward()]
+            : [],
+        )
       },
       [MOVE_ELEMENT_TO_BACK_SHORTCUT]: () => {
-        return isSelectMode(editor.mode) || isSelectLiteMode(editor.mode)
-          ? [EditorActions.moveSelectedToBack()]
-          : []
+        return shortcutActions(
+          isSelectMode(editor.mode) || isSelectLiteMode(editor.mode)
+            ? [EditorActions.moveSelectedToBack()]
+            : [],
+        )
       },
       [MOVE_ELEMENT_FORWARD_SHORTCUT]: () => {
-        return isSelectMode(editor.mode) || isSelectLiteMode(editor.mode)
-          ? [EditorActions.moveSelectedForward()]
-          : []
+        return shortcutActions(
+          isSelectMode(editor.mode) || isSelectLiteMode(editor.mode)
+            ? [EditorActions.moveSelectedForward()]
+            : [],
+        )
       },
       [MOVE_ELEMENT_TO_FRONT_SHORTCUT]: () => {
-        return isSelectMode(editor.mode) || isSelectLiteMode(editor.mode)
-          ? [EditorActions.moveSelectedToFront()]
-          : []
+        return shortcutActions(
+          isSelectMode(editor.mode) || isSelectLiteMode(editor.mode)
+            ? [EditorActions.moveSelectedToFront()]
+            : [],
+        )
       },
       [FOCUS_CLASS_NAME_INPUT]: () => {
-        return [EditorActions.focusClassNameInput()]
+        return shortcutActions([EditorActions.focusClassNameInput()])
       },
       [TOGGLE_FOCUSED_OMNIBOX_TAB]: () => {
-        return [EditorActions.focusFormulaBar()]
+        return shortcutActions([EditorActions.focusFormulaBar()])
       },
       [TOGGLE_TEXT_UNDERLINE_SHORTCUT]: () => {
-        return isSelectMode(editor.mode) ? toggleTextFormatting(editor, dispatch, 'underline') : []
+        return shortcutActions(
+          isSelectMode(editor.mode) ? toggleTextFormatting(editor, dispatch, 'underline') : [],
+        )
       },
       [TOGGLE_LEFT_MENU_SHORTCUT]: () => {
-        return [EditorActions.togglePanel('leftmenu')]
+        return shortcutActions([EditorActions.togglePanel('leftmenu')])
       },
       [TOGGLE_RIGHT_MENU_SHORTCUT]: () => {
-        return [EditorActions.togglePanel('rightmenu')]
+        return shortcutActions([EditorActions.togglePanel('rightmenu')])
       },
       [TOGGLE_DESIGNER_ADDITIONAL_CONTROLS_SHORTCUT]: () => {
-        return [EditorActions.toggleInterfaceDesignerAdditionalControls()]
+        return shortcutActions([EditorActions.toggleInterfaceDesignerAdditionalControls()])
       },
       [TOGGLE_CODE_EDITOR_SHORTCUT]: () => {
-        return [EditorActions.toggleInterfaceDesignerCodeEditor()]
+        return shortcutActions([EditorActions.toggleInterfaceDesignerCodeEditor()])
       },
       [TOGGLE_INSPECTOR_AND_LEFT_MENU_SHORTCUT]: () => {
-        return [EditorActions.togglePanel('inspector'), EditorActions.togglePanel('leftmenu')]
+        return shortcutActions([
+          EditorActions.togglePanel('inspector'),
+          EditorActions.togglePanel('leftmenu'),
+        ])
       },
       [CONVERT_ELEMENT_SHORTCUT]: () => {
         if (isSelectMode(editor.mode) || isSelectLiteMode(editor.mode)) {
-          return [EditorActions.openFloatingInsertMenu({ insertMenuMode: 'convert' })]
+          return shortcutActions([
+            EditorActions.openFloatingInsertMenu({ insertMenuMode: 'convert' }),
+          ])
         } else {
-          return []
+          return shortcutActions([])
         }
       },
       [ADD_ELEMENT_SHORTCUT]: () => {
         if (isSelectMode(editor.mode) || isSelectLiteMode(editor.mode)) {
-          return [
+          return shortcutActions([
             EditorActions.openFloatingInsertMenu({
               insertMenuMode: 'insert',
               parentPath: null,
               indexPosition: null,
             }),
-          ]
+          ])
         } else {
-          return []
+          return shortcutActions([])
         }
       },
     })
   }
 
-  function getShortcutActions(): Array<EditorAction> {
+  function getShortcutActions(): ShortcutActions {
     const openFile = getOpenFile(editor)
     if (openFile == null) {
-      return []
+      return shortcutActions([])
     } else {
       switch (openFile.type) {
         case 'TEXT_FILE':
           return getUIFileActions()
         default:
-          return []
+          return shortcutActions([])
       }
     }
   }
 
   // Build the actions to dispatch.
   let actions: Array<EditorAction> = [updateKeysAction]
-  if (editorTargeted) {
-    const shortCutActions = getShortcutActions()
-    if (shortCutActions.length > 0) {
-      if (editor.canvas.interactionSession?.interactionData.type === 'KEYBOARD') {
-        // if we are in a keyboard interaction session, we want keyboard shortcuts to finish the current interaction session,
-        // so the effect of the shortcut is not combined into the undo of the interaction
-        dispatch([CanvasActions.clearInteractionSession(true)])
-      }
-      actions.push(...shortCutActions)
+  const shortcut = getShortcutActions()
+  if (shortcutAllowed(shortcut, event, editor) && shortcut.actions.length > 0) {
+    if (editor.canvas.interactionSession?.interactionData.type === 'KEYBOARD') {
+      // if we are in a keyboard interaction session, we want keyboard shortcuts to finish the current interaction session,
+      // so the effect of the shortcut is not combined into the undo of the interaction
+      dispatch([CanvasActions.clearInteractionSession(true)])
     }
+    actions.push(...shortcut.actions)
   }
 
   dispatch(actions, 'everyone')
