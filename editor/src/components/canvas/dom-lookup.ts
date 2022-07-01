@@ -168,7 +168,7 @@ export function getSelectionOrAllTargetsAtPoint(
   }
   const elementsUnderPoint = document.elementsFromPoint(point.x, point.y)
   const validPathsSet =
-    validElementPathsForLookup == 'no-filter'
+    validElementPathsForLookup === 'no-filter'
       ? 'no-filter'
       : new Set(
           validElementPathsForLookup.map((path) => EP.toString(EP.makeLastPartOfPathStatic(path))),
