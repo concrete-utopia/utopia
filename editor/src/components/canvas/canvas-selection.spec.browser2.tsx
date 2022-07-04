@@ -122,7 +122,45 @@ async function checkOverlappingElements(
   act(() => {
     fireEvent(
       canvasControlsLayer,
+      new MouseEvent('mousemove', {
+        detail: 1,
+        bubbles: true,
+        cancelable: true,
+        metaKey: cmdPressed,
+        clientX: targetDivBounds.left + x,
+        clientY: targetDivBounds.top + y,
+        movementX: targetDivBounds.left + x,
+        movementY: targetDivBounds.top + y,
+        buttons: 1,
+      }),
+    )
+    fireEvent(
+      canvasControlsLayer,
       new MouseEvent('mousedown', {
+        detail: 1,
+        bubbles: true,
+        cancelable: true,
+        metaKey: cmdPressed,
+        clientX: targetDivBounds.left + x,
+        clientY: targetDivBounds.top + y,
+        buttons: 1,
+      }),
+    )
+    fireEvent(
+      canvasControlsLayer,
+      new MouseEvent('click', {
+        detail: 1,
+        bubbles: true,
+        cancelable: true,
+        metaKey: cmdPressed,
+        clientX: targetDivBounds.left + x,
+        clientY: targetDivBounds.top + y,
+        buttons: 1,
+      }),
+    )
+    fireEvent(
+      canvasControlsLayer,
+      new MouseEvent('mouseup', {
         detail: 1,
         bubbles: true,
         cancelable: true,
