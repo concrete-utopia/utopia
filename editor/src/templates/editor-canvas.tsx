@@ -110,7 +110,7 @@ function cursorForKeysPressed(keysPressed: KeysPressed): CSSCursor | null {
   if (keysPressed['z']) {
     return keysPressed['alt'] ? CSSCursor.ZoomOut : CSSCursor.ZoomIn
   }
-  if (keysPressed['q']) {
+  if (keysPressed['space']) {
     return CSSCursor.Crosshair
   }
   return null
@@ -237,7 +237,7 @@ function on(
   canvasBounds: WindowRectangle | null,
 ): Array<EditorAction> {
   let additionalEvents: Array<EditorAction> = []
-  if (canvas.keysPressed['q']) {
+  if (canvas.keysPressed['space']) {
     if (event.event === 'MOVE' && event.nativeEvent.buttons === 1) {
       return [
         CanvasActions.scrollCanvas(
@@ -1082,7 +1082,7 @@ export class EditorCanvas extends React.Component<EditorCanvasProps> {
       }
 
       if (event.button === 0) {
-        if (!this.props.model.keysPressed['z'] && !this.props.model.keysPressed['q']) {
+        if (!this.props.model.keysPressed['z'] && !this.props.model.keysPressed['space']) {
           this.handleEvent({
             ...canvasPositions,
             event: 'MOUSE_DOWN',
@@ -1123,7 +1123,7 @@ export class EditorCanvas extends React.Component<EditorCanvasProps> {
   handleMouseMove = (event: MouseEvent) => {
     if (this.canvasSelected()) {
       const canvasPositions = this.getPosition(event)
-      if (this.props.model.keysPressed['q']) {
+      if (this.props.model.keysPressed['space']) {
         this.handleEvent({
           ...canvasPositions,
           event: 'MOVE',

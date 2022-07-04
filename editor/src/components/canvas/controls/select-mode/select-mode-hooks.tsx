@@ -534,8 +534,8 @@ function useSelectOrLiveModeSelectAndHover(
 
   const onMouseMove = React.useCallback(
     (event: React.MouseEvent<HTMLDivElement>) => {
-      // Do not handle the mouse move in the regular style if 'q' is pressed.
-      if (!editorStoreRef.current.editor.keysPressed['q']) {
+      // Do not handle the mouse move in the regular style if 'space' is pressed.
+      if (!editorStoreRef.current.editor.keysPressed['space']) {
         innerOnMouseMove(event)
       }
     },
@@ -547,8 +547,8 @@ function useSelectOrLiveModeSelectAndHover(
       event: React.MouseEvent<HTMLDivElement>,
       preferAlreadySelected: 'prefer-selected' | 'dont-prefer-selected',
     ) => {
-      // Skip all of this handling if 'q' is pressed.
-      if (!editorStoreRef.current.editor.keysPressed['q']) {
+      // Skip all of this handling if 'space' is pressed.
+      if (!editorStoreRef.current.editor.keysPressed['space']) {
         const doubleClick = event.detail > 1 // we interpret a triple click as two double clicks, a quadruple click as three double clicks, etc  // TODO TEST ME
         const selectableViews = getSelectableViewsForSelectMode(event.metaKey, doubleClick)
         const foundTarget = findValidTarget(

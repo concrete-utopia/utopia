@@ -11,15 +11,15 @@ function createExampleProject(): Promise<EditorRenderResult> {
   )
 }
 
-describe(`pan while 'q' is held down`, () => {
-  it(`press 'q' first`, async () => {
+describe(`pan while 'space' is held down`, () => {
+  it(`press 'space' first`, async () => {
     const renderResult = await createExampleProject()
     const canvasControlsLayer = renderResult.renderedDOM.getByTestId(CanvasControlsContainerID)
     const controlsBounds = canvasControlsLayer.getBoundingClientRect()
     const startingCanvasPosition = renderResult.getEditorState().editor.canvas.roundedCanvasOffset
 
     act(() => {
-      window.dispatchEvent(new KeyboardEvent('keydown', { key: 'KeyQ', keyCode: 81 }))
+      window.dispatchEvent(new KeyboardEvent('keydown', { key: 'Space', keyCode: 32 }))
       fireEvent(
         canvasControlsLayer,
         new MouseEvent('mousedown', {
@@ -68,7 +68,7 @@ describe(`pan while 'q' is held down`, () => {
           buttons: 1,
         }),
       )
-      window.dispatchEvent(new KeyboardEvent('keydown', { key: 'KeyQ', keyCode: 81 }))
+      window.dispatchEvent(new KeyboardEvent('keydown', { key: 'Space', keyCode: 32 }))
       fireEvent(
         canvasControlsLayer,
         new MouseEvent('mousemove', {
