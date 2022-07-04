@@ -4879,7 +4879,12 @@ export const UPDATE_FNS = {
   },
   RUN_ESCAPE_HATCH: (action: RunEscapeHatch, editor: EditorModel): EditorModel => {
     const canvasState = pickCanvasStateFromEditorState(editor)
-    const commands = getEscapeHatchCommands(action.targets, editor.jsxMetadata, canvasState, null)
+    const commands = getEscapeHatchCommands(
+      action.targets,
+      editor.jsxMetadata,
+      canvasState,
+      null,
+    ).commands
     return foldAndApplyCommandsSimple(editor, commands)
   },
   SET_ELEMENTS_TO_RERENDER: (action: SetElementsToRerender, editor: EditorModel): EditorModel => {

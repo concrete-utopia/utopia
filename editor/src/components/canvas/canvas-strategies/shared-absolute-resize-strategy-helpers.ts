@@ -19,7 +19,7 @@ import {
 } from '../../../core/shared/math-utils'
 import { ElementPath } from '../../../core/shared/project-file-types'
 import { stylePropPathMappingFn } from '../../inspector/common/property-path-hooks'
-import { CSSCursor, EdgePosition } from '../canvas-types'
+import { CanvasFrameAndTarget, CSSCursor, EdgePosition } from '../canvas-types'
 import {
   isEdgePositionAHorizontalEdge,
   isEdgePositionAVerticalEdge,
@@ -40,10 +40,11 @@ export function createResizeCommands(
   selectedElement: ElementPath,
   edgePosition: EdgePosition,
   drag: CanvasVector,
+  elementGlobalFrame: CanvasRectangle | null,
   elementParentBounds: CanvasRectangle | null,
-): AdjustCssLengthProperty[] {
+): { commands: AdjustCssLengthProperty[]; intendedBounds: CanvasFrameAndTarget | null } {
   const pins = pinsForEdgePosition(edgePosition)
-  return mapDropNulls((pin) => {
+  const commands = mapDropNulls((pin) => {
     const horizontal = isHorizontalPoint(
       // TODO avoid using the loaded FramePoint enum
       framePointForPinnedProp(pin),
@@ -68,6 +69,21 @@ export function createResizeCommands(
       return null
     }
   }, pins)
+
+  const intendedBounds: CanvasFrameAndTarget | null =
+    elementGlobalFrame == null
+      ? null
+      : {
+          frame: resizeBoundingBox(
+            elementGlobalFrame,
+            drag,
+            edgePosition,
+            null,
+            'non-center-based',
+          ),
+          target: selectedElement,
+        }
+  return { commands, intendedBounds }
 }
 
 function pinsForEdgePosition(edgePosition: EdgePosition): AbsolutePin[] {
