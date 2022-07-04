@@ -110,6 +110,9 @@ function cursorForKeysPressed(keysPressed: KeysPressed): CSSCursor | null {
   if (keysPressed['z']) {
     return keysPressed['alt'] ? CSSCursor.ZoomOut : CSSCursor.ZoomIn
   }
+  if (keysPressed['q']) {
+    return CSSCursor.Crosshair
+  }
   return null
 }
 
@@ -234,7 +237,17 @@ function on(
   canvasBounds: WindowRectangle | null,
 ): Array<EditorAction> {
   let additionalEvents: Array<EditorAction> = []
-  if (canvas.keysPressed['z']) {
+  if (canvas.keysPressed['q']) {
+    if (event.event === 'MOVE' && event.nativeEvent.buttons === 1) {
+      return [
+        CanvasActions.scrollCanvas(
+          canvasPoint({ x: event.nativeEvent.movementX, y: event.nativeEvent.movementY }),
+        ),
+      ]
+    } else {
+      return []
+    }
+  } else if (canvas.keysPressed['z']) {
     if (event.event === 'MOUSE_UP' && !isDragging(canvas.editorState)) {
       let scale: number
       if (canvas.keysPressed['alt']) {
@@ -1069,7 +1082,7 @@ export class EditorCanvas extends React.Component<EditorCanvasProps> {
       }
 
       if (event.button === 0) {
-        if (!this.props.model.keysPressed['z']) {
+        if (!this.props.model.keysPressed['z'] && !this.props.model.keysPressed['q']) {
           this.handleEvent({
             ...canvasPositions,
             event: 'MOUSE_DOWN',
@@ -1110,40 +1123,7 @@ export class EditorCanvas extends React.Component<EditorCanvasProps> {
   handleMouseMove = (event: MouseEvent) => {
     if (this.canvasSelected()) {
       const canvasPositions = this.getPosition(event)
-
-      const dragState = this.props.model.dragState
-      const resizeOptions = this.props.editor.canvas.resizeOptions
-      const dragPositions = getDragStatePositions(dragState, resizeOptions)
-      // Check and mark mouse move handling.
-      if (didWeHandleMouseMoveForThisFrame) {
-        return
-      }
-      mouseMoveHandled()
-      const dragStarted = anyDragStarted(dragState)
-      if (
-        this.props.editor.canvas.interactionSession != null &&
-        this.props.editor.canvas.interactionSession.interactionData.type === 'DRAG'
-      ) {
-        const dragStart = this.props.editor.canvas.interactionSession.interactionData.dragStart
-
-        const newDrag = roundPointForScale(
-          Utils.offsetPoint(canvasPositions.canvasPositionRounded, Utils.negate(dragStart)),
-          this.props.model.scale,
-        )
-        this.handleEvent({
-          ...canvasPositions,
-          event: 'MOVE',
-          modifiers: Modifier.modifiersForEvent(event),
-          cursor: null,
-          nativeEvent: event,
-          interactionSession: updateInteractionViaMouse(
-            this.props.editor.canvas.interactionSession,
-            newDrag,
-            Modifier.modifiersForEvent(event),
-            null,
-          ),
-        })
-      } else if (dragState == null || !dragStarted) {
+      if (this.props.model.keysPressed['q']) {
         this.handleEvent({
           ...canvasPositions,
           event: 'MOVE',
@@ -1153,81 +1133,124 @@ export class EditorCanvas extends React.Component<EditorCanvasProps> {
           interactionSession: null,
         })
       } else {
-        const newDrag = roundPointForScale(
-          Utils.offsetPoint(
-            canvasPositions.canvasPositionRounded,
-            dragPositions == null ? zeroCanvasPoint : Utils.negate(dragPositions.start),
-          ),
-          this.props.model.scale,
-        )
-        let exceededThreshold: boolean = dragPositions?.drag != null
-        if (!exceededThreshold && dragPositions != null) {
-          exceededThreshold = dragExceededThreshold(
-            canvasPositions.canvasPositionRounded,
-            dragPositions.start,
+        const dragState = this.props.model.dragState
+        const resizeOptions = this.props.editor.canvas.resizeOptions
+        const dragPositions = getDragStatePositions(dragState, resizeOptions)
+        // Check and mark mouse move handling.
+        if (didWeHandleMouseMoveForThisFrame) {
+          return
+        }
+        mouseMoveHandled()
+        const dragStarted = anyDragStarted(dragState)
+        if (
+          this.props.editor.canvas.interactionSession != null &&
+          this.props.editor.canvas.interactionSession.interactionData.type === 'DRAG'
+        ) {
+          const dragStart = this.props.editor.canvas.interactionSession.interactionData.dragStart
+
+          const newDrag = roundPointForScale(
+            Utils.offsetPoint(canvasPositions.canvasPositionRounded, Utils.negate(dragStart)),
+            this.props.model.scale,
           )
-        }
-
-        let newDragState: DragState | null = null
-        switch (dragState.type) {
-          case 'MOVE_DRAG_STATE': {
-            const enableSnapping = !event.metaKey
-            const constrainAxis = event.shiftKey
-            const duplicate = event.altKey
-            const reparent = event.metaKey
-            newDragState = updateMoveDragState(
-              dragState,
-              exceededThreshold ? newDrag : undefined,
-              exceededThreshold ? dragState.drag : undefined,
-              enableSnapping,
-              constrainAxis,
-              duplicate,
-              reparent,
-              undefined,
+          this.handleEvent({
+            ...canvasPositions,
+            event: 'MOVE',
+            modifiers: Modifier.modifiersForEvent(event),
+            cursor: null,
+            nativeEvent: event,
+            interactionSession: updateInteractionViaMouse(
+              this.props.editor.canvas.interactionSession,
+              newDrag,
+              Modifier.modifiersForEvent(event),
+              null,
+            ),
+          })
+        } else if (dragState == null || !dragStarted) {
+          this.handleEvent({
+            ...canvasPositions,
+            event: 'MOVE',
+            modifiers: Modifier.modifiersForEvent(event),
+            cursor: null,
+            nativeEvent: event,
+            interactionSession: null,
+          })
+        } else {
+          const newDrag = roundPointForScale(
+            Utils.offsetPoint(
               canvasPositions.canvasPositionRounded,
+              dragPositions == null ? zeroCanvasPoint : Utils.negate(dragPositions.start),
+            ),
+            this.props.model.scale,
+          )
+          let exceededThreshold: boolean = dragPositions?.drag != null
+          if (!exceededThreshold && dragPositions != null) {
+            exceededThreshold = dragExceededThreshold(
+              canvasPositions.canvasPositionRounded,
+              dragPositions.start,
             )
-            break
           }
-          case 'RESIZE_DRAG_STATE': {
-            const start: CanvasPoint = dragPositions?.start ?? canvasPositions.canvasPositionRaw
-            const elementAspectRatioLocked = this.getElementAspectRatioLocked()
-            const keepAspectRatio = event.shiftKey || elementAspectRatioLocked
-            const centerBasedResize = event.altKey
-            const enableSnapping = !event.metaKey
 
-            if (!exceededThreshold) {
-              exceededThreshold = dragExceededThreshold(
+          let newDragState: DragState | null = null
+          switch (dragState.type) {
+            case 'MOVE_DRAG_STATE': {
+              const enableSnapping = !event.metaKey
+              const constrainAxis = event.shiftKey
+              const duplicate = event.altKey
+              const reparent = event.metaKey
+              newDragState = updateMoveDragState(
+                dragState,
+                exceededThreshold ? newDrag : undefined,
+                exceededThreshold ? dragState.drag : undefined,
+                enableSnapping,
+                constrainAxis,
+                duplicate,
+                reparent,
+                undefined,
                 canvasPositions.canvasPositionRounded,
-                start,
               )
+              break
             }
-            const targetProperty =
-              resizeOptions.propertyTargetOptions[resizeOptions.propertyTargetSelectedIndex]
-            newDragState = updateResizeDragState(
-              dragState,
-              start,
-              exceededThreshold ? newDrag : null,
-              targetProperty,
-              enableSnapping,
-              centerBasedResize,
-              keepAspectRatio,
-            )
-            break
+            case 'RESIZE_DRAG_STATE': {
+              const start: CanvasPoint = dragPositions?.start ?? canvasPositions.canvasPositionRaw
+              const elementAspectRatioLocked = this.getElementAspectRatioLocked()
+              const keepAspectRatio = event.shiftKey || elementAspectRatioLocked
+              const centerBasedResize = event.altKey
+              const enableSnapping = !event.metaKey
+
+              if (!exceededThreshold) {
+                exceededThreshold = dragExceededThreshold(
+                  canvasPositions.canvasPositionRounded,
+                  start,
+                )
+              }
+              const targetProperty =
+                resizeOptions.propertyTargetOptions[resizeOptions.propertyTargetSelectedIndex]
+              newDragState = updateResizeDragState(
+                dragState,
+                start,
+                exceededThreshold ? newDrag : null,
+                targetProperty,
+                enableSnapping,
+                centerBasedResize,
+                keepAspectRatio,
+              )
+              break
+            }
+            case 'INSERT_DRAG_STATE':
+              break
+            default:
+              const _exhaustiveCheck: never = dragState
+              break
           }
-          case 'INSERT_DRAG_STATE':
-            break
-          default:
-            const _exhaustiveCheck: never = dragState
-            break
+          this.handleEvent({
+            ...canvasPositions,
+            event: 'DRAG',
+            modifiers: Modifier.modifiersForEvent(event),
+            cursor: null, // FIXME: newDragState.cursor,
+            dragState: newDragState,
+            nativeEvent: event,
+          })
         }
-        this.handleEvent({
-          ...canvasPositions,
-          event: 'DRAG',
-          modifiers: Modifier.modifiersForEvent(event),
-          cursor: null, // FIXME: newDragState.cursor,
-          dragState: newDragState,
-          nativeEvent: event,
-        })
       }
     }
   }
