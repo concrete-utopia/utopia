@@ -245,7 +245,7 @@ function collectSetLayoutPropCommands(
   commands: Array<ConvertToAbsolute | SetCssLengthProperty>
   intendedBounds: Array<CanvasFrameAndTarget>
 } {
-  const frame = MetadataUtils.getFrame(path, metadata)
+  const frame = MetadataUtils.getLocalFrameFromSpecialSizeMeasurements(path, metadata)
   const globalFrame = MetadataUtils.getFrameInCanvasCoords(path, metadata)
   if (frame != null) {
     const specialSizeMeasurements = MetadataUtils.findElementByElementPath(
