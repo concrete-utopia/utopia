@@ -828,6 +828,24 @@ export const MetadataUtils = {
       }, Utils.asLocal(frame))
     }
   },
+  getFrameRelativeToContainingBlock: function (
+    targetParent: ElementPath | null,
+    metadata: ElementInstanceMetadataMap,
+    frame: CanvasRectangle,
+  ): LocalRectangle {
+    const parent = this.findElementByElementPath(metadata, targetParent)
+    if (parent != null) {
+      if (parent.specialSizeMeasurements.providesBoundsForAbsoluteChildren) {
+        return this.getFrameRelativeTo(targetParent, metadata, frame)
+      } else {
+        const parentContainerBounds = parent.specialSizeMeasurements.coordinateSystemBounds
+        if (parentContainerBounds != null) {
+          return canvasRectangleToLocalRectangle(frame, parentContainerBounds)
+        }
+      }
+    }
+    return Utils.asLocal(frame)
+  },
   getElementLabelFromProps(allElementProps: AllElementProps, path: ElementPath): string | null {
     const dataLabelProp = allElementProps?.[EP.toString(path)]?.[UTOPIA_LABEL_KEY]
     if (dataLabelProp != null && typeof dataLabelProp === 'string' && dataLabelProp.length > 0) {

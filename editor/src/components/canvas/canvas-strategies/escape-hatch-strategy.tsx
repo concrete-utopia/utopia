@@ -26,9 +26,11 @@ import { stylePropPathMappingFn } from '../../inspector/common/property-path-hoo
 import { CanvasFrameAndTarget, CSSCursor } from '../canvas-types'
 import { CanvasCommand } from '../commands/commands'
 import { ConvertToAbsolute, convertToAbsolute } from '../commands/convert-to-absolute-command'
+import { ReparentElement, reparentElement } from '../commands/reparent-element-command'
 import { SetCssLengthProperty, setCssLengthProperty } from '../commands/set-css-length-command'
 import { setCursorCommand } from '../commands/set-cursor-command'
 import { showOutlineHighlight } from '../commands/show-outline-highlight-command'
+import { updateSelectedViews } from '../commands/update-selected-views-command'
 import { ParentBounds } from '../controls/parent-bounds'
 import { ParentOutlines } from '../controls/parent-outlines'
 import { DragOutlineControl } from '../controls/select-mode/drag-outline-control'
@@ -199,55 +201,80 @@ function collectMoveCommandsForSelectedElements(
   canvasState: InteractionCanvasState,
   dragDelta: CanvasVector | null,
 ): {
-  commands: Array<ConvertToAbsolute | SetCssLengthProperty>
+  commands: Array<CanvasCommand>
   intendedBounds: Array<CanvasFrameAndTarget>
 } {
-  let commands: Array<ConvertToAbsolute | SetCssLengthProperty> = []
+  let commands: Array<CanvasCommand> = []
   let intendedBounds: Array<CanvasFrameAndTarget> = []
-  selectedElements.forEach((path) => {
-    const elementResult = collectSetLayoutPropCommands(path, metadata, canvasState, dragDelta)
+
+  const commonAncestor = EP.getCommonParent(selectedElements, false)
+  const sortedElements = EP.getSortedPathsDescending(selectedElements) // inner elements should be reparented first
+
+  sortedElements.forEach((path) => {
+    const elementResult = collectSetLayoutPropCommands(
+      path,
+      metadata,
+      canvasState,
+      dragDelta,
+      commonAncestor,
+    )
     intendedBounds.push(...elementResult.intendedBounds)
     commands.push(...elementResult.commands)
   })
+  commands.push(
+    updateSelectedViews(
+      'permanent',
+      selectedElements.map((path) => {
+        return commonAncestor != null ? EP.appendToPath(commonAncestor, EP.toUid(path)) : path
+      }),
+    ),
+  )
   return { commands, intendedBounds }
 }
 
-function collectSiblingCommands(
-  selectedElements: Array<ElementPath>,
-  metadata: ElementInstanceMetadataMap,
-  canvasState: InteractionCanvasState,
-): {
-  commands: Array<ConvertToAbsolute | SetCssLengthProperty>
-  intendedBounds: Array<CanvasFrameAndTarget>
-} {
-  const siblings = selectedElements
-    .flatMap((path) => {
-      return MetadataUtils.getSiblings(metadata, path).map((element) => element.elementPath)
-    })
-    .filter((sibling) => selectedElements.every((path) => !EP.pathsEqual(path, sibling)))
+// function collectSiblingCommands(
+//   selectedElements: Array<ElementPath>,
+//   metadata: ElementInstanceMetadataMap,
+//   canvasState: InteractionCanvasState,
+// ): {
+//   commands: Array<ConvertToAbsolute | SetCssLengthProperty>
+//   intendedBounds: Array<CanvasFrameAndTarget>
+// } {
+//   const siblings = selectedElements
+//     .flatMap((path) => {
+//       return MetadataUtils.getSiblings(metadata, path).map((element) => element.elementPath)
+//     })
+//     .filter((sibling) => selectedElements.every((path) => !EP.pathsEqual(path, sibling)))
 
-  let commands: Array<ConvertToAbsolute | SetCssLengthProperty> = []
-  let intendedBounds: Array<CanvasFrameAndTarget> = []
-  siblings.forEach((path) => {
-    const elementResult = collectSetLayoutPropCommands(path, metadata, canvasState, null)
-    intendedBounds.push(...elementResult.intendedBounds)
-    commands.push(...elementResult.commands)
-  })
-  return { commands, intendedBounds }
-}
+//   let commands: Array<ConvertToAbsolute | SetCssLengthProperty> = []
+//   let intendedBounds: Array<CanvasFrameAndTarget> = []
+//   siblings.forEach((path) => {
+//     const elementResult = collectSetLayoutPropCommands(path, metadata, canvasState, null)
+//     intendedBounds.push(...elementResult.intendedBounds)
+//     commands.push(...elementResult.commands)
+//   })
+//   return { commands, intendedBounds }
+// }
 
 function collectSetLayoutPropCommands(
   path: ElementPath,
   metadata: ElementInstanceMetadataMap,
   canvasState: InteractionCanvasState,
   dragDelta: CanvasVector | null,
+  targetParent: ElementPath | null,
 ): {
-  commands: Array<ConvertToAbsolute | SetCssLengthProperty>
+  commands: Array<CanvasCommand>
   intendedBounds: Array<CanvasFrameAndTarget>
 } {
-  const frame = MetadataUtils.getLocalFrameFromSpecialSizeMeasurements(path, metadata)
+  const currentParentPath = EP.parentPath(path)
+  const shouldReparent = targetParent != null && !EP.pathsEqual(targetParent, currentParentPath)
   const globalFrame = MetadataUtils.getFrameInCanvasCoords(path, metadata)
-  if (frame != null) {
+  if (globalFrame != null) {
+    const frame = MetadataUtils.getFrameRelativeToContainingBlock(
+      shouldReparent ? targetParent : currentParentPath,
+      metadata,
+      globalFrame,
+    )
     const specialSizeMeasurements = MetadataUtils.findElementByElementPath(
       metadata,
       path,
@@ -271,9 +298,7 @@ function collectSetLayoutPropCommands(
     const fullFrame = getFullFrame(updatedFrame)
     const pinsToSet = filterPinsToSet(path, canvasState)
 
-    let commands: Array<ConvertToAbsolute | SetCssLengthProperty> = [
-      convertToAbsolute('permanent', path),
-    ]
+    let commands: Array<CanvasCommand> = [convertToAbsolute('permanent', path)]
     fastForEach(pinsToSet, (framePin) => {
       const pinValue = pinValueToSet(framePin, fullFrame, parentFrame)
       commands.push(
@@ -288,6 +313,9 @@ function collectSetLayoutPropCommands(
         ),
       )
     })
+    if (shouldReparent) {
+      commands.push(reparentElement('permanent', path, targetParent))
+    }
     return { commands: commands, intendedBounds: intendedBounds }
   } else {
     return { commands: [], intendedBounds: [] }
