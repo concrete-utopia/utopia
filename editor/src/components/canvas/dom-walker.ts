@@ -96,9 +96,6 @@ function isElementNonStatic(computedStyle: CSSStyleDeclaration | null) {
   if (computedStyle.position != null && computedStyle.position !== 'static') {
     return true
   }
-  if (computedStyle.display != null && computedStyle.display === 'flex') {
-    return true
-  }
 
   return false
 }
@@ -795,7 +792,7 @@ function getSpecialMeasurements(
     element.parentElement == null ? null : window.getComputedStyle(element.parentElement)
   const isParentNonStatic = isElementNonStatic(parentElementStyle)
 
-  const providesBoundsForChildren = isElementNonStatic(elementStyle)
+  const providesBoundsForAbsoluteChildren = isElementNonStatic(elementStyle)
 
   const parentLayoutSystem = elementLayoutSystem(parentElementStyle)
   const parentProvidesLayout = element.parentElement === element.offsetParent
@@ -857,7 +854,7 @@ function getSpecialMeasurements(
     isParentNonStatic,
     parentLayoutSystem,
     layoutSystemForChildren,
-    providesBoundsForChildren,
+    providesBoundsForAbsoluteChildren,
     elementStyle.display,
     position,
     isRight(margin) ? margin.value : sides(undefined, undefined, undefined, undefined),
