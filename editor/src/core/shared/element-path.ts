@@ -980,7 +980,7 @@ export function isFocused(focusedElementPath: ElementPath | null, path: ElementP
   }
 }
 
-export function getSortedPathsDescending(elementPaths: Array<ElementPath>): Array<ElementPath> {
+export function getOrderedPathsByDepth(elementPaths: Array<ElementPath>): Array<ElementPath> {
   return elementPaths.slice().sort((a, b) => {
     if (depth(b) === depth(a)) {
       const aInnerDepth = last(a.parts)?.length ?? 0

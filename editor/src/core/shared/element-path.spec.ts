@@ -797,7 +797,7 @@ describe('removePathsWithDeadUIDs', () => {
   })
 })
 
-describe('getSortedPaths', () => {
+describe('getOrderedPathsByDepth', () => {
   it('sorts elements, the result is from the longest to shortest', () => {
     const unsortedElementPaths = [
       EP.elementPath([['A', '1', '0', 'Z', 'X', 'Y']]),
@@ -827,7 +827,7 @@ describe('getSortedPaths', () => {
       EP.elementPath([['A', '1', '0', 'Z', 'X', 'Y']]),
       EP.elementPath([['A', '1']]),
     ]
-    const result = EP.getSortedPathsDescending(unsortedElementPaths)
+    const result = EP.getOrderedPathsByDepth(unsortedElementPaths)
     expect(result).toEqual(expectedSortedElementPaths)
   })
 })

@@ -208,7 +208,7 @@ function collectMoveCommandsForSelectedElements(
   let intendedBounds: Array<CanvasFrameAndTarget> = []
 
   const commonAncestor = EP.getCommonParent(selectedElements, false)
-  const sortedElements = EP.getSortedPathsDescending(selectedElements) // inner elements should be reparented first
+  const sortedElements = EP.getOrderedPathsByDepth(selectedElements) // inner elements should be reparented first
 
   sortedElements.forEach((path) => {
     const elementResult = collectSetLayoutPropCommands(
