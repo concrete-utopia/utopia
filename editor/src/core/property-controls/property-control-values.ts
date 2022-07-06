@@ -52,6 +52,7 @@ import {
   jsxPropertyAssignment,
   emptyComments,
   JSXArrayValue,
+  isJSXAttributeNotFound,
 } from '../shared/element-template'
 import {
   ModifiableAttribute,
@@ -195,12 +196,23 @@ function unwrapAndParseObjectValues(objectControls: {
         const control = objectControls[key]
         const unwrapperAndParser = unwrapperAndParserForPropertyControl(control)
         const valuesForKey = rawAndRealValueAtKey(rawValue, realValue, key)
-        const innerResult = unwrapperAndParser(valuesForKey.rawValue, valuesForKey.realValue)
-        if (isLeft(innerResult)) {
-          return left(descriptionParseError(`Unable to parse object at key ${key}`))
-        } else {
-          working[key] = innerResult.value
+        const missingKey = foldEither(
+          (_) => false,
+          (attr) => {
+            return isJSXAttributeNotFound(attr)
+          },
+          valuesForKey.rawValue,
+        )
+        if (missingKey) {
           return right(working)
+        } else {
+          const innerResult = unwrapperAndParser(valuesForKey.rawValue, valuesForKey.realValue)
+          if (isLeft(innerResult)) {
+            return left(descriptionParseError(`Unable to parse object at key ${key}`))
+          } else {
+            working[key] = innerResult.value
+            return right(working)
+          }
         }
       },
       {},
