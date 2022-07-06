@@ -149,12 +149,6 @@ export const escapeHatchStrategy: CanvasStrategy = {
           getConversionAndMoveCommands,
         )
 
-        // TEMPORARILY REMOVING SIBLING CONVERSION FOR EXPERIMENTING
-        // const highlightCommand = collectHighlightCommand(
-        //   canvasState,
-        //   interactionState.interactionData,
-        //   strategyState,
-        // )
         return {
           commands: absoluteMoveApplyResult.commands,
           customState: {
@@ -190,9 +184,6 @@ export function getEscapeHatchCommands(
     dragDelta,
   )
   return moveAndPositionCommands
-  // TEMPORARILY REMOVING SIBLING CONVERSION FOR EXPERIMENTING
-  // const siblingCommands = collectSiblingCommands(selectedElements, metadata, canvasState)
-  // return [...moveAndPositionCommands, ...siblingCommands]
 }
 
 function collectMoveCommandsForSelectedElements(
@@ -231,30 +222,6 @@ function collectMoveCommandsForSelectedElements(
   )
   return { commands, intendedBounds }
 }
-
-// function collectSiblingCommands(
-//   selectedElements: Array<ElementPath>,
-//   metadata: ElementInstanceMetadataMap,
-//   canvasState: InteractionCanvasState,
-// ): {
-//   commands: Array<ConvertToAbsolute | SetCssLengthProperty>
-//   intendedBounds: Array<CanvasFrameAndTarget>
-// } {
-//   const siblings = selectedElements
-//     .flatMap((path) => {
-//       return MetadataUtils.getSiblings(metadata, path).map((element) => element.elementPath)
-//     })
-//     .filter((sibling) => selectedElements.every((path) => !EP.pathsEqual(path, sibling)))
-
-//   let commands: Array<ConvertToAbsolute | SetCssLengthProperty> = []
-//   let intendedBounds: Array<CanvasFrameAndTarget> = []
-//   siblings.forEach((path) => {
-//     const elementResult = collectSetLayoutPropCommands(path, metadata, canvasState, null)
-//     intendedBounds.push(...elementResult.intendedBounds)
-//     commands.push(...elementResult.commands)
-//   })
-//   return { commands, intendedBounds }
-// }
 
 function collectSetLayoutPropCommands(
   path: ElementPath,
