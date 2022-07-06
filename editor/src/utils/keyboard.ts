@@ -108,8 +108,8 @@ function getCachedKey(
 }
 
 // please don't add more keycharacters here, use them directly from keyboard events
-export const StoredKeyCharacters = ['alt', 'cmd', 'ctrl', 'shift', 'z']
-export type StoredKeyCharacter = Modifier | 'z'
+export const StoredKeyCharacters = ['alt', 'cmd', 'ctrl', 'shift', 'z', 'space']
+export type StoredKeyCharacter = Modifier | 'z' | 'space'
 export type KeysPressed = { [key in StoredKeyCharacter]?: boolean }
 
 export type KeyDownOrUp = 'keydown' | 'keyup'

@@ -520,7 +520,7 @@ function useSelectOrLiveModeSelectAndHover(
   //const startCanvasModeSession = useStartCanvasSession()
   const windowToCanvasCoordinates = useWindowToCanvasCoordinates()
 
-  const { onMouseMove } = useHighlightCallbacks(
+  const { onMouseMove: innerOnMouseMove } = useHighlightCallbacks(
     active,
     cmdPressed,
     false,
@@ -532,82 +532,98 @@ function useSelectOrLiveModeSelectAndHover(
     derived: store.derived,
   }))
 
+  const onMouseMove = React.useCallback(
+    (event: React.MouseEvent<HTMLDivElement>) => {
+      // Do not handle the mouse move in the regular style if 'space' is pressed.
+      if (!editorStoreRef.current.editor.keysPressed['space']) {
+        innerOnMouseMove(event)
+      }
+    },
+    [innerOnMouseMove, editorStoreRef],
+  )
+
   const mouseHandler = React.useCallback(
     (
       event: React.MouseEvent<HTMLDivElement>,
       preferAlreadySelected: 'prefer-selected' | 'dont-prefer-selected',
     ) => {
-      const doubleClick = event.detail > 1 // we interpret a triple click as two double clicks, a quadruple click as three double clicks, etc  // TODO TEST ME
-      const selectableViews = getSelectableViewsForSelectMode(event.metaKey, doubleClick)
-      const foundTarget = findValidTarget(
-        selectableViews,
-        windowPoint(point(event.clientX, event.clientY)),
-        preferAlreadySelected,
-      )
+      // Skip all of this handling if 'space' is pressed.
+      if (!editorStoreRef.current.editor.keysPressed['space']) {
+        const doubleClick = event.detail > 1 // we interpret a triple click as two double clicks, a quadruple click as three double clicks, etc  // TODO TEST ME
+        const selectableViews = getSelectableViewsForSelectMode(event.metaKey, doubleClick)
+        const foundTarget = findValidTarget(
+          selectableViews,
+          windowPoint(point(event.clientX, event.clientY)),
+          preferAlreadySelected,
+        )
 
-      const isMultiselect = event.shiftKey
-      const isDeselect = foundTarget == null && !isMultiselect
-      let editorActions: Array<EditorAction> = []
+        const isMultiselect = event.shiftKey
+        const isDeselect = foundTarget == null && !isMultiselect
+        let editorActions: Array<EditorAction> = []
 
-      if (foundTarget != null || isDeselect) {
-        if (foundTarget != null && draggingAllowed) {
-          if (isFeatureEnabled('Canvas Strategies')) {
-            const start = windowToCanvasCoordinates(
-              windowPoint(point(event.clientX, event.clientY)),
-            ).canvasPositionRounded
-            if (event.button !== 2) {
-              editorActions.push(
-                CanvasActions.createInteractionSession(
-                  createInteractionViaMouse(start, Modifier.modifiersForEvent(event), {
-                    type: 'BOUNDING_AREA',
-                    target: foundTarget.elementPath,
-                  }),
-                ),
-              )
+        if (foundTarget != null || isDeselect) {
+          if (foundTarget != null && draggingAllowed) {
+            if (isFeatureEnabled('Canvas Strategies')) {
+              const start = windowToCanvasCoordinates(
+                windowPoint(point(event.clientX, event.clientY)),
+              ).canvasPositionRounded
+              if (event.button !== 2) {
+                editorActions.push(
+                  CanvasActions.createInteractionSession(
+                    createInteractionViaMouse(start, Modifier.modifiersForEvent(event), {
+                      type: 'BOUNDING_AREA',
+                      target: foundTarget.elementPath,
+                    }),
+                  ),
+                )
+              }
+            } else {
+              startDragStateAfterDragExceedsThreshold(event.nativeEvent, foundTarget.elementPath)
             }
-          } else {
-            startDragStateAfterDragExceedsThreshold(event.nativeEvent, foundTarget.elementPath)
           }
-        }
 
-        let updatedSelection: Array<ElementPath>
-        if (isMultiselect) {
-          updatedSelection = EP.addPathIfMissing(foundTarget!.elementPath, selectedViewsRef.current)
-        } else {
-          updatedSelection = foundTarget != null ? [foundTarget.elementPath] : []
-        }
-
-        if (foundTarget != null && doubleClick) {
-          // for components without passed children doubleclicking enters focus mode
-          const isFocusableLeaf = MetadataUtils.isFocusableLeafComponent(
-            foundTarget.elementPath,
-            editorStoreRef.current.editor.jsxMetadata,
-          )
-          if (isFocusableLeaf) {
-            editorActions.push(setFocusedElement(foundTarget.elementPath))
-          }
-        }
-
-        if (!(foundTarget?.isSelected ?? false)) {
-          // first we only set the selected views for the canvas controls
-          setSelectedViewsForCanvasControlsOnly(updatedSelection)
-
-          // then we set the selected views for the editor state, 1 frame later
-          if (updatedSelection.length === 0) {
-            const clearFocusedElementIfFeatureSwitchEnabled = isFeatureEnabled(
-              'Click on empty canvas unfocuses',
+          let updatedSelection: Array<ElementPath>
+          if (isMultiselect) {
+            updatedSelection = EP.addPathIfMissing(
+              foundTarget!.elementPath,
+              selectedViewsRef.current,
             )
-              ? [setFocusedElement(null)]
-              : []
-
-            editorActions.push(clearSelection())
-            editorActions.push(...clearFocusedElementIfFeatureSwitchEnabled)
           } else {
-            editorActions.push(selectComponents(updatedSelection, event.shiftKey))
+            updatedSelection = foundTarget != null ? [foundTarget.elementPath] : []
+          }
+
+          if (foundTarget != null && doubleClick) {
+            // for components without passed children doubleclicking enters focus mode
+            const isFocusableLeaf = MetadataUtils.isFocusableLeafComponent(
+              foundTarget.elementPath,
+              editorStoreRef.current.editor.jsxMetadata,
+            )
+            if (isFocusableLeaf) {
+              editorActions.push(setFocusedElement(foundTarget.elementPath))
+            }
+          }
+
+          if (!(foundTarget?.isSelected ?? false)) {
+            // first we only set the selected views for the canvas controls
+            setSelectedViewsForCanvasControlsOnly(updatedSelection)
+
+            // then we set the selected views for the editor state, 1 frame later
+            if (updatedSelection.length === 0) {
+              const clearFocusedElementIfFeatureSwitchEnabled = isFeatureEnabled(
+                'Click on empty canvas unfocuses',
+              )
+                ? [setFocusedElement(null)]
+                : []
+
+              editorActions.push(clearSelection())
+              editorActions.push(...clearFocusedElementIfFeatureSwitchEnabled)
+            } else {
+              editorActions.push(selectComponents(updatedSelection, event.shiftKey))
+            }
           }
         }
+        dispatch(editorActions)
       }
-      dispatch(editorActions)
     },
     [
       dispatch,
