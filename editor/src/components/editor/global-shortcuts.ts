@@ -123,16 +123,16 @@ import { isFeatureEnabled } from '../../utils/feature-switches'
 
 interface ShortcutActions {
   actions: Array<EditorAction>
-  needsEditorTarget: boolean
+  needsCanvasTarget: 'needs-canvas-target' | 'works-globally-in-editor'
 }
 
 function shortcutActions(
   actions: Array<EditorAction>,
-  needsEditorTarget: boolean = true,
+  needsCanvasTarget: 'needs-canvas-target' | 'works-globally-in-editor' = 'needs-canvas-target',
 ): ShortcutActions {
   return {
     actions: actions,
-    needsEditorTarget: needsEditorTarget,
+    needsCanvasTarget: needsCanvasTarget,
   }
 }
 
@@ -189,7 +189,7 @@ function shortcutAllowed(
   event: KeyboardEvent,
   editor: EditorState,
 ): boolean {
-  if (shortcut.needsEditorTarget) {
+  if (shortcut.needsCanvasTarget === 'needs-canvas-target') {
     return editorIsTarget(event, editor)
   } else {
     return !isModalOpen(editor)
@@ -796,10 +796,10 @@ export function handleKeyDown(
         )
       },
       [UNDO_CHANGES_SHORTCUT]: () => {
-        return shortcutActions([EditorActions.undo()], false)
+        return shortcutActions([EditorActions.undo()], 'works-globally-in-editor')
       },
       [REDO_CHANGES_SHORTCUT]: () => {
-        return shortcutActions([EditorActions.redo()], false)
+        return shortcutActions([EditorActions.redo()], 'works-globally-in-editor')
       },
       [MOVE_ELEMENT_BACKWARD_SHORTCUT]: () => {
         return shortcutActions(
