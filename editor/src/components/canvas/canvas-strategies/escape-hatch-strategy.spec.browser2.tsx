@@ -164,7 +164,7 @@ describe('Convert to Absolute/runEscapeHatch action', () => {
   it('Converts multiselect in hierarchy', async () => {
     const renderResult = await renderTestEditorWithCode(
       makeTestProjectCodeWithSnippet(`
-      <div style={{ position: 'absolute', left: 15, width: '100%', height: '100%' }} data-uid='aaa'>
+      <div style={{ width: '100%', height: '100%' }} data-uid='aaa'>
         <div
           style={{ width: 80, height: 80 }}
           data-uid='bbb'
