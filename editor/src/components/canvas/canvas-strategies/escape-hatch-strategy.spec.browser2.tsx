@@ -95,7 +95,7 @@ describe('Convert to Absolute/runEscapeHatch action', () => {
             style={{ backgroundColor: '#0091FFAA', position: 'absolute', top: 45, left: 55, width: 200, height: 120 }}
             data-uid='ccc'
           >
-            <div data-uid='ddd'>
+            <div style={{ lineHeight: '20px' }} data-uid='ddd'>
               hello there
             </div>
           </div>
@@ -115,7 +115,7 @@ describe('Convert to Absolute/runEscapeHatch action', () => {
           style={{ backgroundColor: '#0091FFAA', position: 'absolute', top: 45, left: 55, width: 200, height: 120 }}
           data-uid='ccc'
         >
-          <div data-uid='ddd' style={{ position: 'absolute', left: 0, width: 200, top: 0, height: 18.5 }}>
+          <div style={{ lineHeight: '20px', position: 'absolute', left: 0, width: 200, top: 0, height: 20 }} data-uid='ddd'>
             hello there
           </div>
         </div>
@@ -249,7 +249,7 @@ describe('Convert to Absolute/runEscapeHatch action', () => {
 
     expect(getPrintedUiJsCode(renderResult.getEditorState())).toEqual(
       makeTestProjectCodeWithSnippet(`
-        <div style={{ position: 'absolute', left: 15, width: '100%', height: '100%' }} data-uid='aaa'>
+        <div style={{ width: '100%', height: '100%' }} data-uid='aaa'>
           <div
             style={{ width: 80, height: 80 }}
             data-uid='bbb'
