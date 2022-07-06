@@ -270,7 +270,7 @@ function collectSetLayoutPropCommands(
   const shouldReparent = targetParent != null && !EP.pathsEqual(targetParent, currentParentPath)
   const globalFrame = MetadataUtils.getFrameInCanvasCoords(path, metadata)
   if (globalFrame != null) {
-    const frame = MetadataUtils.getFrameRelativeToContainingBlock(
+    const frame = MetadataUtils.getFrameRelativeToTargetContainingBlock(
       shouldReparent ? targetParent : currentParentPath,
       metadata,
       globalFrame,

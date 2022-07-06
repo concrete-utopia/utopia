@@ -828,21 +828,17 @@ export const MetadataUtils = {
       }, Utils.asLocal(frame))
     }
   },
-  getFrameRelativeToContainingBlock: function (
+  getFrameRelativeToTargetContainingBlock: function (
     targetParent: ElementPath | null,
     metadata: ElementInstanceMetadataMap,
     frame: CanvasRectangle,
   ): LocalRectangle {
     const parent = this.findElementByElementPath(metadata, targetParent)
-    if (parent != null) {
-      if (parent.specialSizeMeasurements.providesBoundsForAbsoluteChildren) {
-        return this.getFrameRelativeTo(targetParent, metadata, frame)
-      } else {
-        const parentContainerBounds = parent.specialSizeMeasurements.coordinateSystemBounds
-        if (parentContainerBounds != null) {
-          return canvasRectangleToLocalRectangle(frame, parentContainerBounds)
-        }
-      }
+    if (parent != null && parent.specialSizeMeasurements.coordinateSystemBounds != null) {
+      return canvasRectangleToLocalRectangle(
+        frame,
+        parent.specialSizeMeasurements.coordinateSystemBounds,
+      )
     }
     return Utils.asLocal(frame)
   },
