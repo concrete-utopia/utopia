@@ -454,7 +454,7 @@ export const StringInputPropertyControl = React.memo(
 
     return (
       <StringControl
-        key={propName}
+        key={controlId}
         id={controlId}
         testId={controlId}
         value={value ?? ''}
