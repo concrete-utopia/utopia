@@ -37,6 +37,7 @@ import {
 import * as EP from '../../../core/shared/element-path'
 import { ZeroSizeResizeControlWrapper } from '../controls/zero-sized-element-controls'
 import { SetCssLengthProperty, setCssLengthProperty } from '../commands/set-css-length-command'
+import { pushIntendedBounds } from '../commands/push-intended-bounds-command'
 
 export const absoluteResizeBoundingBoxStrategy: CanvasStrategy = {
   id: 'ABSOLUTE_RESIZE_BOUNDING_BOX',
@@ -149,7 +150,8 @@ export const absoluteResizeBoundingBoxStrategy: CanvasStrategy = {
                   elementParentBounds,
                   edgePosition,
                 ),
-                setSnappingGuidelines('transient', guidelinesWithSnappingVector),
+                setSnappingGuidelines('transient', guidelinesWithSnappingVector), // TODO I think this will override the previous snapping guidelines
+                pushIntendedBounds([{ target: selectedElement, frame: newFrame }]),
               ]
             },
           )

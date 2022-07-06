@@ -92,6 +92,7 @@ import {
   walkContentsTree,
 } from '../../assets'
 import {
+  CanvasFrameAndTarget,
   CanvasModel,
   CSSCursor,
   DragState,
@@ -593,15 +594,18 @@ export interface EditorStateCanvasControls {
   // this is where we can put props for the strategy controls
   snappingGuidelines: Array<GuidelineWithSnappingVector>
   outlineHighlights: Array<CanvasRectangle>
+  strategyIntendedBounds: Array<CanvasFrameAndTarget>
 }
 
 export function editorStateCanvasControls(
   snappingGuidelines: Array<GuidelineWithSnappingVector>,
   outlineHighlights: Array<CanvasRectangle>,
+  strategyIntendedBounds: Array<CanvasFrameAndTarget>,
 ): EditorStateCanvasControls {
   return {
     snappingGuidelines: snappingGuidelines,
     outlineHighlights: outlineHighlights,
+    strategyIntendedBounds: strategyIntendedBounds,
   }
 }
 
@@ -1725,6 +1729,7 @@ export function createEditorState(dispatch: EditorDispatch): EditorState {
       controls: {
         snappingGuidelines: [],
         outlineHighlights: [],
+        strategyIntendedBounds: [],
       },
     },
     floatingInsertMenu: {
@@ -2012,6 +2017,7 @@ export function editorModelFromPersistentModel(
       controls: {
         snappingGuidelines: [],
         outlineHighlights: [],
+        strategyIntendedBounds: [],
       },
     },
     floatingInsertMenu: {

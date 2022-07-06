@@ -12,7 +12,7 @@ import {
 import { AdjustCssLengthProperty } from '../commands/adjust-css-length-command'
 import { createResizeCommands, resizeBoundingBox } from './shared-absolute-resize-strategy-helpers'
 import { withUnderlyingTarget } from '../../editor/store/editor-state'
-import { EdgePosition } from '../canvas-types'
+import { CanvasFrameAndTarget, EdgePosition } from '../canvas-types'
 import { AbsoluteResizeControl } from '../controls/select-mode/absolute-resize-control'
 import {
   SetElementsToRerenderCommand,
@@ -29,6 +29,7 @@ import {
 } from './shared-keyboard-strategy-helpers'
 import { getMultiselectBounds } from './shared-absolute-move-strategy-helpers'
 import { setSnappingGuidelines } from '../commands/set-snapping-guidelines-command'
+import { pushIntendedBounds } from '../commands/push-intended-bounds-command'
 
 interface VectorAndEdge {
   movement: CanvasVector
@@ -120,6 +121,8 @@ export const keyboardAbsoluteResizeStrategy: CanvasStrategy = {
         canvasRectangle(zeroRectangle)
 
       let commands: Array<CanvasCommand> = []
+      let intendedBounds: Array<CanvasFrameAndTarget> = []
+
       movementsWithEdges.forEach((movementWithEdge) => {
         if (movementWithEdge.movement.x !== 0 || movementWithEdge.movement.y !== 0) {
           newFrame = resizeBoundingBox(
@@ -142,16 +145,24 @@ export const keyboardAbsoluteResizeStrategy: CanvasStrategy = {
               MetadataUtils.findElementByElementPath(sessionState.startingMetadata, selectedElement)
                 ?.specialSizeMeasurements.immediateParentBounds ?? null
 
+            const elementGlobalFrame = MetadataUtils.getFrameInCanvasCoords(
+              selectedElement,
+              sessionState.startingMetadata,
+            )
+
             if (element != null) {
-              commands.push(
-                ...createResizeCommands(
-                  element,
-                  selectedElement,
-                  movementWithEdge.edge,
-                  movementWithEdge.movement,
-                  elementParentBounds,
-                ),
+              const elementResult = createResizeCommands(
+                element,
+                selectedElement,
+                movementWithEdge.edge,
+                movementWithEdge.movement,
+                elementGlobalFrame,
+                elementParentBounds,
               )
+              commands.push(...elementResult.commands)
+              if (elementResult.intendedBounds != null) {
+                intendedBounds.push(elementResult.intendedBounds)
+              }
             }
           })
         }
@@ -163,6 +174,7 @@ export const keyboardAbsoluteResizeStrategy: CanvasStrategy = {
         newFrame,
       )
       commands.push(setSnappingGuidelines('transient', guidelines))
+      commands.push(pushIntendedBounds(intendedBounds))
       commands.push(setElementsToRerenderCommand(canvasState.selectedElements))
       return {
         commands: commands,

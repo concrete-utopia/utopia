@@ -40,6 +40,8 @@ import {
 import { GuidelineWithSnappingVector, Guidelines } from '../guideline'
 import Utils from '../../../utils/utils'
 import { StrategyState, InteractionSession } from './interaction-state'
+import { pushIntendedBounds } from '../commands/push-intended-bounds-command'
+import { CanvasFrameAndTarget } from '../canvas-types'
 
 export const keyboardAbsoluteMoveStrategy: CanvasStrategy = {
   id: 'KEYBOARD_ABSOLUTE_MOVE',
@@ -84,6 +86,7 @@ export const keyboardAbsoluteMoveStrategy: CanvasStrategy = {
     if (interactionState.interactionData.type === 'KEYBOARD') {
       const accumulatedPresses = accumulatePresses(interactionState.interactionData.keyStates)
       let commands: Array<CanvasCommand> = []
+      let intendedBounds: Array<CanvasFrameAndTarget> = []
       let keyboardMovement: CanvasVector = zeroCanvasPoint
       accumulatedPresses.forEach((accumulatedPress) => {
         accumulatedPress.keysPressed.forEach((key) => {
@@ -95,15 +98,16 @@ export const keyboardAbsoluteMoveStrategy: CanvasStrategy = {
         })
       })
       if (keyboardMovement.x !== 0 || keyboardMovement.y !== 0) {
-        const moveCommands = canvasState.selectedElements.flatMap((selectedElement) =>
-          getAbsoluteMoveCommandsForSelectedElement(
+        canvasState.selectedElements.forEach((selectedElement) => {
+          const elementResult = getAbsoluteMoveCommandsForSelectedElement(
             selectedElement,
             keyboardMovement,
             canvasState,
             sessionState,
-          ),
-        )
-        commands.push(...moveCommands)
+          )
+          commands.push(...elementResult.commands)
+          intendedBounds.push(...elementResult.intendedBounds)
+        })
       }
       const multiselectBounds = getMultiselectBounds(
         sessionState.startingMetadata,
@@ -123,6 +127,7 @@ export const keyboardAbsoluteMoveStrategy: CanvasStrategy = {
 
       commands.push(updateHighlightedViews('transient', []))
       commands.push(setSnappingGuidelines('transient', guidelines))
+      commands.push(pushIntendedBounds(intendedBounds))
       commands.push(setElementsToRerenderCommand(canvasState.selectedElements))
       return {
         commands: commands,

@@ -636,12 +636,6 @@ export var ListView = (props) => {
             rating={beach.rating}
           />
         ))}
-        <ListCard
-          name={beach.name}
-          country={beach.country}
-          image={beach.image}
-          rating={beach.rating}
-        />
       </FlexCol>
     </>
   )
