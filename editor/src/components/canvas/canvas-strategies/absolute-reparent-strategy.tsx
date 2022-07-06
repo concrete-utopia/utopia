@@ -83,12 +83,12 @@ export const absoluteReparentStrategy: CanvasStrategy = {
     )
     const newParent = reparentResult.newParent
     const moveCommands = absoluteMoveStrategy.apply(canvasState, interactionState, strategyState)
-    const providesBoundsForChildren = MetadataUtils.findElementByElementPath(
+    const providesBoundsForAbsoluteChildren = MetadataUtils.findElementByElementPath(
       strategyState.startingMetadata,
       newParent,
-    )?.specialSizeMeasurements.providesBoundsForChildren
+    )?.specialSizeMeasurements.providesBoundsForAbsoluteChildren
 
-    if (reparentResult.shouldReparent && newParent != null && providesBoundsForChildren) {
+    if (reparentResult.shouldReparent && newParent != null && providesBoundsForAbsoluteChildren) {
       const commands = filteredSelectedElements.map((selectedElement) => {
         const offsetCommands = getAbsoluteOffsetCommandsForSelectedElement(
           selectedElement,

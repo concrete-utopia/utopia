@@ -979,3 +979,15 @@ export function isFocused(focusedElementPath: ElementPath | null, path: ElementP
     return pathUpToElementPath(focusedElementPath, lastPart, 'dynamic-path') != null
   }
 }
+
+export function getOrderedPathsByDepth(elementPaths: Array<ElementPath>): Array<ElementPath> {
+  return elementPaths.slice().sort((a, b) => {
+    if (depth(b) === depth(a)) {
+      const aInnerDepth = last(a.parts)?.length ?? 0
+      const bInnerDepth = last(b.parts)?.length ?? 0
+      return bInnerDepth - aInnerDepth
+    }
+
+    return depth(b) - depth(a)
+  })
+}
