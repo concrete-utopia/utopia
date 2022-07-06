@@ -100,6 +100,31 @@ function isElementNonStatic(computedStyle: CSSStyleDeclaration | null) {
   return false
 }
 
+function isElementAContainingBlockForAbsolute(computedStyle: CSSStyleDeclaration | null) {
+  // https://developer.mozilla.org/en-US/docs/Web/CSS/Containing_block#identifying_the_containing_block
+  if (computedStyle == null) {
+    return false
+  }
+  if (isElementNonStatic(computedStyle)) {
+    return true
+  }
+  if (computedStyle.transform != null && computedStyle.transform !== 'none') {
+    return true
+  }
+  if (computedStyle.perspective != null && computedStyle.perspective !== 'none') {
+    return true
+  }
+  if (computedStyle.willChange === 'transform' || computedStyle.willChange === 'perspective') {
+    return true
+  }
+  if (computedStyle.filter != null && computedStyle.filter !== 'none') {
+    return true
+  }
+  if (computedStyle.contain === 'paint') {
+    return true
+  }
+}
+
 const applicativeSidesPxTransform = (t: CSSNumber, r: CSSNumber, b: CSSNumber, l: CSSNumber) =>
   sides(
     t.unit === 'px' ? t.value : undefined,
@@ -792,7 +817,7 @@ function getSpecialMeasurements(
     element.parentElement == null ? null : window.getComputedStyle(element.parentElement)
   const isParentNonStatic = isElementNonStatic(parentElementStyle)
 
-  const providesBoundsForAbsoluteChildren = isElementNonStatic(elementStyle)
+  const providesBoundsForAbsoluteChildren = isElementAContainingBlockForAbsolute(elementStyle)
 
   const parentLayoutSystem = elementLayoutSystem(parentElementStyle)
   const parentProvidesLayout = element.parentElement === element.offsetParent
