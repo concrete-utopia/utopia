@@ -2182,3 +2182,82 @@ describe('Inspector fields and code remain in sync', () => {
     })
   })
 })
+
+describe('Undo behavior in inspector', () => {
+  it('Pressing Undo while an inspector field is active triggers Utopia global undo', async () => {
+    const startingCodeSnippet = `
+    <div
+      style={{ ...props.style, position: 'absolute', backgroundColor: '#FFFFFF' }}
+      data-uid={'aaa'}
+    >
+      <div
+        style={{
+          position: 'absolute',
+          backgroundColor: '#DDDDDD',
+          width: 203,
+          height: 102,
+          padding: 16,
+          paddingRight: 12,
+          opacity: 0.5,
+        }}
+        data-uid={'bbb'}
+      ></div>
+    </div>
+  `
+    const renderResult = await renderTestEditorWithCode(
+      makeTestProjectCodeWithSnippet(startingCodeSnippet),
+      'await-first-dom-report',
+    )
+
+    const targetPath = EP.appendNewElementPath(TestScenePath, ['aaa', 'bbb'])
+
+    await act(async () => {
+      await renderResult.dispatch([selectComponents([targetPath], false)], false)
+    })
+
+    const opacityControl = (await renderResult.renderedDOM.findByTestId(
+      'opacity-number-control',
+    )) as HTMLInputElement
+    matchInlineSnapshotBrowser(opacityControl.value, `"0.5"`)
+
+    // change the opacity of the selected element
+    await setControlValue('opacity-number-control', '0.6', renderResult.renderedDOM)
+
+    matchInlineSnapshotBrowser(opacityControl.value, `"0.6"`)
+    matchInlineSnapshotBrowser(
+      opacityControl.attributes.getNamedItemNS(null, 'data-controlstatus')?.value,
+      `"simple"`,
+    )
+
+    // focus on opacityControl
+    await act(async () => {
+      fireEvent.focus(opacityControl)
+    })
+
+    // type a new value '0.8' to opacityControl
+    await act(async () => {
+      fireEvent.change(opacityControl, { target: { value: '0.8' } })
+    })
+
+    // press Cmd + Z on the opacityControl
+    await act(async () => {
+      fireEvent.keyDown(opacityControl, { key: 'z', keyCode: 90, metaKey: true })
+      fireEvent.keyUp(opacityControl, { key: 'z', keyCode: 90, metaKey: true })
+    })
+
+    // the control's value should now be undone
+    matchInlineSnapshotBrowser(
+      ((await renderResult.renderedDOM.findByTestId('opacity-number-control')) as HTMLInputElement)
+        .value,
+      `"0.5"`,
+    )
+
+    // await for the code to be updated
+    await renderResult.getDispatchFollowUpActionsFinished()
+
+    // the code should be the same as the original
+    expect(getPrintedUiJsCode(renderResult.getEditorState())).toEqual(
+      makeTestProjectCodeWithSnippet(startingCodeSnippet),
+    )
+  })
+})
