@@ -800,6 +800,7 @@ describe('removePathsWithDeadUIDs', () => {
 describe('getSortedPaths', () => {
   it('sorts elements, the result is from the longest to shortest', () => {
     const unsortedElementPaths = [
+      EP.elementPath([['A', '1', '0', 'Z', 'X', 'Y']]),
       EP.elementPath([['A', '1']]),
       EP.elementPath([['A', '1'], ['B', '2'], ['C']]),
       EP.elementPath([
@@ -823,6 +824,7 @@ describe('getSortedPaths', () => {
         ['A', '1'],
         ['B', '2'],
       ]),
+      EP.elementPath([['A', '1', '0', 'Z', 'X', 'Y']]),
       EP.elementPath([['A', '1']]),
     ]
     const result = EP.getSortedPathsDescending(unsortedElementPaths)
