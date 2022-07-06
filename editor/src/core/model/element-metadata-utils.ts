@@ -834,11 +834,19 @@ export const MetadataUtils = {
     frame: CanvasRectangle,
   ): LocalRectangle {
     const parent = this.findElementByElementPath(metadata, targetParent)
-    if (parent != null && parent.specialSizeMeasurements.coordinateSystemBounds != null) {
-      return canvasRectangleToLocalRectangle(
-        frame,
-        parent.specialSizeMeasurements.coordinateSystemBounds,
-      )
+    if (parent != null) {
+      if (
+        parent.specialSizeMeasurements.providesBoundsForAbsoluteChildren &&
+        parent.globalFrame != null
+      ) {
+        return canvasRectangleToLocalRectangle(frame, parent.globalFrame)
+      }
+      if (parent.specialSizeMeasurements.coordinateSystemBounds != null) {
+        return canvasRectangleToLocalRectangle(
+          frame,
+          parent.specialSizeMeasurements.coordinateSystemBounds,
+        )
+      }
     }
     return Utils.asLocal(frame)
   },

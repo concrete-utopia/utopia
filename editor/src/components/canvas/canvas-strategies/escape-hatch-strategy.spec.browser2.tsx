@@ -87,6 +87,42 @@ describe('Convert to Absolute/runEscapeHatch action', () => {
       `),
     )
   })
+  it('Converts a static element to absolute where the parent is absolute', async () => {
+    const renderResult = await renderTestEditorWithCode(
+      makeTestProjectCodeWithSnippet(`
+        <div style={{ position: 'relative', width: '100%', height: '100%' }} data-uid='aaa'>
+          <div
+            style={{ backgroundColor: '#0091FFAA', position: 'absolute', top: 45, left: 55, width: 200, height: 120 }}
+            data-uid='ccc'
+          >
+            <div data-uid='ddd'>
+              hello there
+            </div>
+          </div>
+        </div>
+      `),
+      'await-first-dom-report',
+    )
+
+    const target = EP.appendNewElementPath(TestScenePath, ['aaa', 'ccc', 'ddd'])
+
+    await renderResult.dispatch([runEscapeHatch([target])], true)
+
+    expect(getPrintedUiJsCode(renderResult.getEditorState())).toEqual(
+      makeTestProjectCodeWithSnippet(`
+      <div style={{ position: 'relative', width: '100%', height: '100%' }} data-uid='aaa'>
+        <div
+          style={{ backgroundColor: '#0091FFAA', position: 'absolute', top: 45, left: 55, width: 200, height: 120 }}
+          data-uid='ccc'
+        >
+          <div data-uid='ddd' style={{ position: 'absolute', left: 0, width: 200, top: 0, height: 18.5 }}>
+            hello there
+          </div>
+        </div>
+      </div>
+      `),
+    )
+  })
   it('Converts multiselected static siblings to absolute', async () => {
     const renderResult = await renderTestEditorWithCode(
       makeTestProjectCodeWithSnippet(`
@@ -128,7 +164,7 @@ describe('Convert to Absolute/runEscapeHatch action', () => {
   it('Converts multiselect in hierarchy', async () => {
     const renderResult = await renderTestEditorWithCode(
       makeTestProjectCodeWithSnippet(`
-      <div style={{ width: '100%', height: '100%' }} data-uid='aaa'>
+      <div style={{ position: 'absolute', left: 15, width: '100%', height: '100%' }} data-uid='aaa'>
         <div
           style={{ width: 80, height: 80 }}
           data-uid='bbb'
@@ -213,7 +249,7 @@ describe('Convert to Absolute/runEscapeHatch action', () => {
 
     expect(getPrintedUiJsCode(renderResult.getEditorState())).toEqual(
       makeTestProjectCodeWithSnippet(`
-        <div style={{ width: '100%', height: '100%' }} data-uid='aaa'>
+        <div style={{ position: 'absolute', left: 15, width: '100%', height: '100%' }} data-uid='aaa'>
           <div
             style={{ width: 80, height: 80 }}
             data-uid='bbb'
