@@ -123,6 +123,7 @@ function isElementAContainingBlockForAbsolute(computedStyle: CSSStyleDeclaration
   if (computedStyle.contain === 'paint') {
     return true
   }
+  return false
 }
 
 const applicativeSidesPxTransform = (t: CSSNumber, r: CSSNumber, b: CSSNumber, l: CSSNumber) =>
