@@ -7,13 +7,14 @@ import { RerenderUtopiaCtxAtom } from './ui-jsx-canvas-contexts'
 import { DomWalkerInvalidatePathsCtxAtom, UiJsxCanvasCtxAtom } from '../ui-jsx-canvas'
 import { UTOPIA_SCENE_ID_KEY } from '../../../core/model/utopia-constants'
 import { AlwaysTrue, usePubSubAtomReadOnly } from '../../../core/shared/atom-with-pub-sub'
+import { unless, when } from '../../../utils/react-conditionals'
 
 type ExtendedSceneProps = SceneProps & { [UTOPIA_SCENE_ID_KEY]: string }
 
 export const SceneComponent = React.memo(
   (props: React.PropsWithChildren<ExtendedSceneProps>) => {
     const colorTheme = useColorTheme()
-    const canvasIsLive = false
+    const canvasIsLive = usePubSubAtomReadOnly(RerenderUtopiaCtxAtom, AlwaysTrue).canvasIsLive
     const updateInvalidatedPaths = usePubSubAtomReadOnly(
       DomWalkerInvalidatePathsCtxAtom,
       AlwaysTrue,
@@ -34,9 +35,27 @@ export const SceneComponent = React.memo(
     updateInvalidatedPaths((current) => current)
 
     return (
-      <Scene {...remainingProps} style={sceneStyle}>
-        {props.children}
-      </Scene>
+      <React.Fragment>
+        {canvasIsLive ? null : (
+          <div
+            style={{
+              position: 'absolute',
+              width: style!.width,
+              left: style!.left,
+              top: (style!.top as number) - 28,
+              bottom: -(style!.top as number),
+              boxShadow: canvasIsLive
+                ? UtopiaStyles.scene.live.boxShadow
+                : UtopiaStyles.scene.editing.boxShadow,
+              borderRadius: '6px 6px 0 0',
+              backgroundColor: colorTheme.secondaryBackground.value,
+            }}
+          />
+        )}
+        <Scene {...remainingProps} style={sceneStyle}>
+          {props.children}
+        </Scene>
+      </React.Fragment>
     )
   },
   (

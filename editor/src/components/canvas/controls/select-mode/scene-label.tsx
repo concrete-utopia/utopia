@@ -5,7 +5,7 @@ import { windowPoint } from '../../../../core/shared/math-utils'
 import { ElementPath } from '../../../../core/shared/project-file-types'
 import { NO_OP } from '../../../../core/shared/utils'
 import { Modifier } from '../../../../utils/modifiers'
-import { useColorTheme } from '../../../../uuiui'
+import { useColorTheme, UtopiaStyles } from '../../../../uuiui'
 import { clearHighlightedViews, selectComponents } from '../../../editor/actions/action-creators'
 import { useEditorState } from '../../../editor/store/store-hook'
 import CanvasActions from '../../canvas-actions'
@@ -73,8 +73,8 @@ const SceneLabel = React.memo<SceneLabelProps>((props) => {
   )
   const scale = useEditorState((store) => store.editor.canvas.scale, 'SceneLabel scale')
   const scaledFontSize = ControlFontSize / scale
-  const offsetY = -(scaledFontSize * 1.5)
-  const offsetX = 3 / scale
+  const paddingY = scaledFontSize * 0.5
+  const offsetX = paddingY * 2
 
   const isSelected = useEditorState(
     (store) => store.editor.selectedViews.some((view) => EP.pathsEqual(props.target, view)),
@@ -145,10 +145,12 @@ const SceneLabel = React.memo<SceneLabelProps>((props) => {
             color: colorTheme.subduedForeground.value,
             position: 'absolute',
             fontWeight: 500,
-            left: frame.x + offsetX,
-            top: frame.y + offsetY,
-            maxWidth: frame.width,
-            paddingBottom: '0px',
+            left: frame.x,
+            bottom: -frame.y,
+            width: frame.width,
+            paddingLeft: offsetX,
+            paddingTop: paddingY,
+            paddingBottom: paddingY,
             fontFamily:
               '-apple-system, BlinkMacSystemFont, Helvetica, "Segoe UI", Roboto,  Arial, sans-serif, "Apple Color Emoji", "Segoe UI Emoji", "Segoe UI Symbol"',
             fontSize: scaledFontSize,

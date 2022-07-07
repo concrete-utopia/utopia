@@ -90,7 +90,7 @@ const light = {
   leftMenuBackground: lightPrimitives.neutralBackground,
   leftPaneBackground: lightPrimitives.neutralBackground,
   inspectorBackground: lightPrimitives.neutralBackground,
-  canvasBackground: lightPrimitives.secondaryBackground,
+  canvasBackground: lightPrimitives.emphasizedBackground,
   canvasLiveBackground: lightPrimitives.secondaryBackground.shade(30),
   canvasLiveBorder: lightBase.primary,
 
@@ -383,10 +383,10 @@ const canvas = {
 
 const scene = {
   live: {
-    boxShadow: `0px 0px 1px 0px ${lightPrimitives.neutralInvertedBackground.o(20).value}`,
+    boxShadow: `0px 2px 4px 0px ${lightPrimitives.neutralInvertedBackground.o(20).value}`,
   },
   editing: {
-    boxShadow: `0px 0px 1px 0px ${lightPrimitives.neutralInvertedBackground.o(30).value}`,
+    boxShadow: `0px 2px 4px 0px ${lightPrimitives.neutralInvertedBackground.o(30).value}`,
   },
 }
 
