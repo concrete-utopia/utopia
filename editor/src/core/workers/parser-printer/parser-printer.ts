@@ -135,6 +135,7 @@ import { applyPrettier } from 'utopia-vscode-common'
 import { BakedInStoryboardVariableName } from '../../model/scene-utils'
 import { stripExtension } from '../../../components/custom-code/custom-code-utils'
 import { absolutePathFromRelativePath } from '../../../utils/path-utils'
+import { v4 as UUID } from 'uuid'
 
 function buildPropertyCallingFunction(
   functionName: string,
@@ -1860,6 +1861,10 @@ function withJSXElementAttributes(
 }
 
 type HighlightBoundsWithoutUid = Omit<HighlightBounds, 'uid'>
+const InvalidBoundsMarker = 'INVALID'
+export function boundsAreValid(uid: string): boolean {
+  return !uid.startsWith(InvalidBoundsMarker)
+}
 
 export function getHighlightBoundsWithUID(
   filename: string,
@@ -1879,20 +1884,27 @@ export function getHighlightBoundsWithUID(
     withJSXElementAttributes(
       sourceFile,
       (boundingElement: TS.Node, attributes: TS.JsxAttributes) => {
-        withUID(undefined, attributes, undefined, (uid) => {
+        const highlightBoundsForUid = (uid: string) => {
           const startPosition = TS.getLineAndCharacterOfPosition(
             sourceFile,
             boundingElement.getStart(sourceFile, false),
           )
           const endPosition = TS.getLineAndCharacterOfPosition(sourceFile, boundingElement.getEnd())
-          result.push({
+          return {
             startCol: startPosition.character,
             startLine: startPosition.line,
             endCol: endPosition.character,
             endLine: endPosition.line,
             uid: uid,
-          })
-        })
+          }
+        }
+        const newBounds = withUID(
+          undefined,
+          attributes,
+          highlightBoundsForUid(`${InvalidBoundsMarker}-${UUID()}`),
+          highlightBoundsForUid,
+        )
+        result.push(newBounds)
       },
     )
   }

@@ -50,6 +50,8 @@ import {
   printCode,
   printCodeOptions,
   getHighlightBoundsWithoutUID,
+  getHighlightBoundsWithUID,
+  boundsAreValid,
 } from './parser-printer'
 import { applyPrettier } from 'utopia-vscode-common'
 import { transpileJavascriptFromCode } from './parser-printer-transpiling'
@@ -4906,5 +4908,60 @@ export var App = (props) => {
     expect(
       transpileJavascriptFromCode('test.js', file, code, sourceMap, [], false),
     ).toMatchSnapshot()
+  })
+})
+
+describe('Getting highlight bounds', () => {
+  it('should return the same number of bounds with and without UIDs', () => {
+    const filename = 'app.js'
+    const sourceText = `
+    import * as React from 'react'
+    import Utopia, {
+      Scene,
+      Storyboard,
+    } from 'utopia-api'
+
+    const Thing = (props) => {
+      return <div data-uid='root' style={props.style}>
+        {props.inner}
+      </div>
+    }
+
+    export var storyboard = (
+      <Storyboard data-uid='sb'>
+        <Scene
+          data-uid='scene'
+          style={{
+            position: 'absolute',
+            left: 0,
+            top: 0,
+            width: 400,
+            height: 400,
+          }}
+        >
+          <Thing
+            data-uid='thing'
+            style={{
+              position: 'absolute',
+              left: 100,
+              top: 100,
+              width: 200,
+              height: 200,
+            }}
+            inner={<div>Inner Thing</div>}
+          />
+        </Scene>
+      </Storyboard>
+    )
+    `
+
+    const boundsWithUIDs = getHighlightBoundsWithUID(filename, sourceText)
+    const boundsWithoutUIDs = getHighlightBoundsWithoutUID(filename, sourceText)
+
+    expect(boundsWithUIDs.length).toEqual(boundsWithoutUIDs.length)
+
+    // One of the JSX elements has no UID, so we expect the bounds for that to be invalid
+    const invalidBounds = boundsWithUIDs.find((bounds) => !boundsAreValid(bounds.uid))
+    expect(invalidBounds).not.toBeUndefined()
   })
 })
