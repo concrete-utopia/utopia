@@ -47,8 +47,8 @@ describe(`pan while 'space' is held down`, () => {
     })
 
     const endingCanvasPosition = renderResult.getEditorState().editor.canvas.roundedCanvasOffset
-    expect(endingCanvasPosition.x - startingCanvasPosition.x).toEqual(-100)
-    expect(endingCanvasPosition.y - startingCanvasPosition.y).toEqual(-100)
+    expect(endingCanvasPosition.x - startingCanvasPosition.x).toEqual(100)
+    expect(endingCanvasPosition.y - startingCanvasPosition.y).toEqual(100)
   })
   it(`start drag first`, async () => {
     const renderResult = await createExampleProject()
@@ -85,7 +85,7 @@ describe(`pan while 'space' is held down`, () => {
     })
 
     const endingCanvasPosition = renderResult.getEditorState().editor.canvas.roundedCanvasOffset
-    expect(endingCanvasPosition.x - startingCanvasPosition.x).toEqual(-100)
-    expect(endingCanvasPosition.y - startingCanvasPosition.y).toEqual(-100)
+    expect(endingCanvasPosition.x - startingCanvasPosition.x).toEqual(100)
+    expect(endingCanvasPosition.y - startingCanvasPosition.y).toEqual(100)
   })
 })
