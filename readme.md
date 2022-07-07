@@ -51,7 +51,7 @@ stop-dev
 
 ### Finally, loading the running application
 
-Now the editor should load on [localhost:8000/p](https://localhost:8000/p), or [localhost:8000](https://localhost:8000/) when developing the website itself.
+Now the editor should load on [http://localhost:8000/p](http://localhost:8000/p), or [http://localhost:8000](http://localhost:8000/) when developing the website itself.
 
 ## Pull request bundle support.
 

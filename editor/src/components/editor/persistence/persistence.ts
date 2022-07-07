@@ -10,7 +10,6 @@ import {
 import type { Model } from 'xstate/lib/model.types'
 import { ProjectFile } from '../../../core/shared/project-file-types'
 import { projectURLForProject } from '../../../core/shared/utils'
-import { defaultProject } from '../../../sample-projects/sample-project-utils'
 import { notice } from '../../common/notice'
 import { EditorAction, EditorDispatch } from '../action-types'
 import {

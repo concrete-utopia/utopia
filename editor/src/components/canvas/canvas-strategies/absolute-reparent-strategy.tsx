@@ -1,7 +1,9 @@
 import { MetadataUtils } from '../../../core/model/element-metadata-utils'
 import * as EP from '../../../core/shared/element-path'
+import { CSSCursor } from '../canvas-types'
 import { getReparentTarget } from '../canvas-utils'
 import { reparentElement } from '../commands/reparent-element-command'
+import { setCursorCommand } from '../commands/set-cursor-command'
 import { setElementsToRerenderCommand } from '../commands/set-elements-to-rerender-command'
 import { updateSelectedViews } from '../commands/update-selected-views-command'
 import { ParentBounds } from '../controls/parent-bounds'
@@ -21,6 +23,7 @@ export const absoluteReparentStrategy: CanvasStrategy = {
     if (
       canvasState.selectedElements.length > 0 &&
       interactionState != null &&
+      interactionState.interactionData.type === 'DRAG' &&
       interactionState.interactionData.modifiers.cmd
     ) {
       const filteredSelectedElements = getDragTargets(canvasState.selectedElements)
@@ -48,8 +51,8 @@ export const absoluteReparentStrategy: CanvasStrategy = {
     if (
       canvasState.selectedElements.length > 0 &&
       interactionState.activeControl.type === 'BOUNDING_AREA' &&
-      interactionState.interactionData.modifiers.cmd &&
       interactionState.interactionData.type === 'DRAG' &&
+      interactionState.interactionData.modifiers.cmd &&
       interactionState.interactionData.drag != null
     ) {
       return 2
@@ -80,12 +83,12 @@ export const absoluteReparentStrategy: CanvasStrategy = {
     )
     const newParent = reparentResult.newParent
     const moveCommands = absoluteMoveStrategy.apply(canvasState, interactionState, strategyState)
-    const providesBoundsForChildren = MetadataUtils.findElementByElementPath(
+    const providesBoundsForAbsoluteChildren = MetadataUtils.findElementByElementPath(
       strategyState.startingMetadata,
       newParent,
-    )?.specialSizeMeasurements.providesBoundsForChildren
+    )?.specialSizeMeasurements.providesBoundsForAbsoluteChildren
 
-    if (reparentResult.shouldReparent && newParent != null && providesBoundsForChildren) {
+    if (reparentResult.shouldReparent && newParent != null && providesBoundsForAbsoluteChildren) {
       const commands = filteredSelectedElements.map((selectedElement) => {
         const offsetCommands = getAbsoluteOffsetCommandsForSelectedElement(
           selectedElement,
@@ -109,6 +112,7 @@ export const absoluteReparentStrategy: CanvasStrategy = {
           ...commands.flatMap((c) => c.commands),
           updateSelectedViews('permanent', newPaths),
           setElementsToRerenderCommand(newPaths),
+          setCursorCommand('transient', CSSCursor.Move),
         ],
         customState: null,
       }

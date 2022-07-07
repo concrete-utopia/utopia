@@ -77,7 +77,7 @@ export const PositionOutline = React.memo((props: PositionOutlineProps) => {
     return (
       <CanvasOffsetWrapper>
         {pins.map((pin) => (
-          <PinOutline {...pin} key={pin.key} />
+          <PinOutline {...pin} key={pin.name} />
         ))}
       </CanvasOffsetWrapper>
     )
@@ -100,9 +100,9 @@ const usePropsOrJSXAttributes = (path: ElementPath): PropsOrJSXAttributes => {
 
 const useContainingFrameForElement = (path: ElementPath): CanvasRectangle | null => {
   return useEditorState((store) => {
-    const containingBlockPath = MetadataUtils.findContainingBlock(store.editor.jsxMetadata, path)
-    if (containingBlockPath != null && !EP.isStoryboardPath(containingBlockPath)) {
-      return MetadataUtils.getFrameInCanvasCoords(containingBlockPath, store.editor.jsxMetadata)
+    const metadata = MetadataUtils.findElementByElementPath(store.editor.jsxMetadata, path)
+    if (metadata != null && !EP.isStoryboardChild(path)) {
+      return metadata?.specialSizeMeasurements.coordinateSystemBounds
     } else {
       return null
     }
@@ -122,7 +122,7 @@ const collectPinOutlines = (
   let pins: PinOutlineProps[] = []
   if (pinLeft != null) {
     pins.push({
-      key: 'left',
+      name: 'left',
       isHorizontalLine: true,
       size: frame.x - containingFrame.x,
       startX: containingFrame.x,
@@ -132,7 +132,7 @@ const collectPinOutlines = (
   }
   if (pinTop != null) {
     pins.push({
-      key: 'top',
+      name: 'top',
       isHorizontalLine: false,
       size: frame.y - containingFrame.y,
       startX: frame.x + frame.width / 2,
@@ -142,7 +142,7 @@ const collectPinOutlines = (
   }
   if (pinRight != null) {
     pins.push({
-      key: 'right',
+      name: 'right',
       isHorizontalLine: true,
       size: containingFrame.x + containingFrame.width - (frame.x + frame.width),
       startX: frame.width + frame.x,
@@ -152,7 +152,7 @@ const collectPinOutlines = (
   }
   if (pinBottom != null) {
     pins.push({
-      key: 'bottom',
+      name: 'bottom',
       isHorizontalLine: false,
       size: containingFrame.y + containingFrame.height - (frame.y + frame.height),
       startX: frame.x + frame.width / 2,
@@ -164,7 +164,7 @@ const collectPinOutlines = (
 }
 
 interface PinOutlineProps {
-  key: string
+  name: string
   isHorizontalLine: boolean
   startX: number
   startY: number
@@ -194,6 +194,7 @@ const PinOutline = React.memo((props: PinOutlineProps): JSX.Element => {
         borderLeft: borderLeft,
         pointerEvents: 'none',
       }}
+      data-testid={`pin-line-${props.name}`}
     />
   )
 })

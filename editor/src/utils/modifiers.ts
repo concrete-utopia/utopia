@@ -77,4 +77,16 @@ export const Modifier = {
   none: function (modifiers: Modifiers): boolean {
     return !(modifiers.alt || modifiers.cmd || modifiers.ctrl || modifiers.shift)
   },
+  equal: function (first: Modifiers, second: Modifiers): boolean {
+    if (first === second) {
+      return true
+    } else {
+      return (
+        first.shift === second.shift &&
+        first.ctrl === second.ctrl &&
+        first.cmd === second.cmd &&
+        first.alt === second.alt
+      )
+    }
+  },
 }

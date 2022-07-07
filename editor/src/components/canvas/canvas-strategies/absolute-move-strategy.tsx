@@ -2,10 +2,12 @@ import { MetadataUtils } from '../../../core/model/element-metadata-utils'
 import { ElementInstanceMetadataMap } from '../../../core/shared/element-template'
 import { CanvasPoint, offsetPoint, zeroCanvasPoint } from '../../../core/shared/math-utils'
 import { ElementPath } from '../../../core/shared/project-file-types'
-import { CSSCursor } from '../canvas-types'
+import { CanvasFrameAndTarget, CSSCursor } from '../canvas-types'
+import { AdjustCssLengthProperty } from '../commands/adjust-css-length-command'
 import { CanvasCommand } from '../commands/commands'
 import { setCursorCommand } from '../commands/set-cursor-command'
 import { setElementsToRerenderCommand } from '../commands/set-elements-to-rerender-command'
+import { pushIntendedBounds } from '../commands/push-intended-bounds-command'
 import { setSnappingGuidelines } from '../commands/set-snapping-guidelines-command'
 import { updateHighlightedViews } from '../commands/update-highlighted-views-command'
 import { runLegacyAbsoluteMoveSnapping } from '../controls/guideline-helpers'
@@ -71,16 +73,26 @@ export const absoluteMoveStrategy: CanvasStrategy = {
       interactionState.interactionData.type === 'DRAG' &&
       interactionState.interactionData.drag != null
     ) {
-      const getAdjustMoveCommands = (snappedDragVector: CanvasPoint): Array<CanvasCommand> => {
+      const getAdjustMoveCommands = (
+        snappedDragVector: CanvasPoint,
+      ): {
+        commands: Array<AdjustCssLengthProperty>
+        intendedBounds: Array<CanvasFrameAndTarget>
+      } => {
         const filteredSelectedElements = getDragTargets(canvasState.selectedElements)
-        return filteredSelectedElements.flatMap((selectedElement) =>
-          getAbsoluteMoveCommandsForSelectedElement(
+        let commands: Array<AdjustCssLengthProperty> = []
+        let intendedBounds: Array<CanvasFrameAndTarget> = []
+        filteredSelectedElements.forEach((selectedElement) => {
+          const elementResult = getAbsoluteMoveCommandsForSelectedElement(
             selectedElement,
             snappedDragVector,
             canvasState,
             sessionState,
-          ),
-        )
+          )
+          commands.push(...elementResult.commands)
+          intendedBounds.push(...elementResult.intendedBounds)
+        })
+        return { commands, intendedBounds }
       }
       return applyAbsoluteMoveCommon(
         canvasState,
@@ -98,7 +110,10 @@ export function applyAbsoluteMoveCommon(
   canvasState: InteractionCanvasState,
   interactionState: InteractionSession,
   strategyState: StrategyState,
-  getMoveCommands: (snappedDragVector: CanvasPoint) => Array<CanvasCommand>,
+  getMoveCommands: (snappedDragVector: CanvasPoint) => {
+    commands: Array<CanvasCommand>
+    intendedBounds: Array<CanvasFrameAndTarget>
+  },
 ): StrategyApplicationResult {
   if (
     interactionState.interactionData.type === 'DRAG' &&
@@ -111,10 +126,11 @@ export function applyAbsoluteMoveCommon(
       const commandsForSelectedElements = getMoveCommands(drag)
       return {
         commands: [
-          ...commandsForSelectedElements,
+          ...commandsForSelectedElements.commands,
+          pushIntendedBounds(commandsForSelectedElements.intendedBounds),
           updateHighlightedViews('transient', []),
           setElementsToRerenderCommand(canvasState.selectedElements),
-          setCursorCommand('transient', CSSCursor.Move),
+          setCursorCommand('transient', CSSCursor.Select),
         ],
         customState: null,
       }
@@ -131,11 +147,12 @@ export function applyAbsoluteMoveCommon(
       const commandsForSelectedElements = getMoveCommands(snappedDragVector)
       return {
         commands: [
-          ...commandsForSelectedElements,
+          ...commandsForSelectedElements.commands,
           updateHighlightedViews('transient', []),
           setSnappingGuidelines('transient', guidelinesWithSnappingVector),
+          pushIntendedBounds(commandsForSelectedElements.intendedBounds),
           setElementsToRerenderCommand(canvasState.selectedElements),
-          setCursorCommand('transient', CSSCursor.Move),
+          setCursorCommand('transient', CSSCursor.Select),
         ],
         customState: null,
       }

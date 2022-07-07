@@ -741,24 +741,6 @@ export function lineIntersection<C extends CoordinateMarker>(
   } as Point<C>
 }
 
-// Returns which side of the line is point b. If looking from lineA to lineB it is on the left, it returns the value 'left', etc.
-export function sideOfLine<C extends CoordinateMarker>(
-  lineA: Point<C>,
-  lineB: Point<C>,
-  p: Point<C>,
-): 'left' | 'right' | 'on-line' {
-  // For explanation see: https://math.stackexchange.com/questions/274712/calculate-on-which-side-of-a-straight-line-is-a-given-point-located
-  const d = (p.x - lineA.x) * (lineB.y - lineA.y) - (p.y - lineA.y) * (lineB.x - lineA.x)
-  if (d == 0) {
-    return 'on-line'
-  } else if (d < 0) {
-    return 'right'
-  } else {
-    // d > 0
-    return 'left'
-  }
-}
-
 export function roundPointTo<C extends CoordinateMarker>(p: Point<C>, precision: number): Point<C> {
   return {
     x: roundTo(p.x, precision),
@@ -953,4 +935,17 @@ export function clamp(min: number, max: number, value: number): number {
   } else {
     return value
   }
+}
+
+export function canvasRectangleToLocalRectangle(
+  canvasRect: CanvasRectangle,
+  parentRect: CanvasRectangle,
+): LocalRectangle {
+  const diff = pointDifference(parentRect, canvasRect)
+  return localRectangle({
+    x: diff.x,
+    y: diff.y,
+    width: canvasRect.width,
+    height: canvasRect.height,
+  })
 }

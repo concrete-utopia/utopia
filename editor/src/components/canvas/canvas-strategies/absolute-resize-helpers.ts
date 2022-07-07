@@ -1,7 +1,6 @@
 import { getLayoutProperty } from '../../../core/layout/getLayoutProperty'
 import { PropsOrJSXAttributes } from '../../../core/model/element-metadata-utils'
 import { isRight } from '../../../core/shared/either'
-import { fastForEach } from '../../../core/shared/utils'
 import { EdgePosition } from '../canvas-types'
 
 export type AbsolutePin = 'left' | 'top' | 'right' | 'bottom' | 'width' | 'height'

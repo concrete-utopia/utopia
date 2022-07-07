@@ -1,11 +1,14 @@
+/* eslint-disable jest/expect-expect */
 import React from 'react'
-import { fireEvent, screen } from '@testing-library/react'
+import { fireEvent, RenderResult, screen } from '@testing-library/react'
 import {
   BakedInStoryboardUID,
   BakedInStoryboardVariableName,
 } from '../../../core/model/scene-utils'
 import * as EP from '../../../core/shared/element-path'
 import {
+  EditorRenderResult,
+  getPrintedUiJsCode,
   makeTestProjectCodeWithSnippet,
   makeTestProjectCodeWithSnippetStyledComponents,
   renderTestEditorWithCode,
@@ -14,12 +17,17 @@ import {
   TestScenePath,
   TestSceneUID,
 } from '../../canvas/ui-jsx.test-utils'
-import { selectComponents } from '../../editor/actions/action-creators'
+import {
+  selectComponents,
+  sendLinterRequestMessage,
+  updateFromCodeEditor,
+} from '../../editor/actions/action-creators'
 import { PrettierConfig } from 'utopia-vscode-common'
 import * as Prettier from 'prettier/standalone'
 import { act } from '@testing-library/react'
 import { contentsToTree } from '../../assets'
 import {
+  ElementPath,
   ProjectContents,
   RevisionsState,
   textFile,
@@ -30,6 +38,56 @@ import { directory } from '../../../core/model/project-file-utils'
 import { DefaultPackageJson, StoryboardFilePath } from '../../editor/store/editor-state'
 import { createCodeFile } from '../../custom-code/code-file.test-utils'
 import { matchInlineSnapshotBrowser } from '../../../../test/karma-snapshots'
+import { EditorAction } from '../../editor/action-types'
+
+async function getControl(
+  controlTestId: string,
+  renderedDOM: RenderResult,
+): Promise<HTMLInputElement> {
+  return (await renderedDOM.findByTestId(controlTestId)) as HTMLInputElement
+}
+
+async function getControlValue(controlTestId: string, renderedDOM: RenderResult): Promise<string> {
+  const control = await getControl(controlTestId, renderedDOM)
+
+  return control.value
+}
+
+async function setControlValue(
+  controlTestId: string,
+  newValue: string,
+  renderedDOM: RenderResult,
+): Promise<void> {
+  const control = await getControl(controlTestId, renderedDOM)
+
+  await act(() => {
+    fireEvent.focus(control)
+    fireEvent.change(control, { target: { value: newValue } })
+    fireEvent.blur(control)
+  })
+}
+
+async function dispatchActionsAndWaitUntilComplete(
+  actionsToDispatch: readonly EditorAction[],
+  renderResult: EditorRenderResult,
+): Promise<void> {
+  await act(() => renderResult.dispatch(actionsToDispatch, false))
+  await renderResult.getDispatchFollowUpActionsFinished()
+}
+
+async function selectElement(
+  targetPath: ElementPath,
+  renderResult: EditorRenderResult,
+): Promise<void> {
+  return dispatchActionsAndWaitUntilComplete([selectComponents([targetPath], false)], renderResult)
+}
+
+function actionsForUpdatedCode(updatedCodeSnippet: string) {
+  const fullCode = makeTestProjectCodeWithSnippet(updatedCodeSnippet)
+  const updateAction = updateFromCodeEditor(StoryboardFilePath, fullCode, null)
+  const requestLintAction = sendLinterRequestMessage(StoryboardFilePath, fullCode)
+  return [updateAction, requestLintAction]
+}
 
 describe('inspector tests with real metadata', () => {
   it('padding controls', async () => {
@@ -2013,5 +2071,114 @@ describe('inspector tests with real metadata', () => {
       paddingLeftControl.attributes.getNamedItemNS(null, 'data-controlstatus')?.value,
       `"simple"`,
     )
+  })
+})
+
+describe('Inspector fields and code remain in sync', () => {
+  const propsToTest = [
+    {
+      stylePropKey: 'top',
+      controlTestId: 'position-top-number-input',
+      startValue: '200em',
+      endValue: '300em',
+    },
+    {
+      stylePropKey: 'left',
+      controlTestId: 'position-left-number-input',
+      startValue: '200cm',
+      endValue: '300cm',
+    },
+    {
+      stylePropKey: 'bottom',
+      controlTestId: 'position-bottom-number-input',
+      startValue: '200vw',
+      endValue: '300vw',
+    },
+    {
+      stylePropKey: 'right',
+      controlTestId: 'position-right-number-input',
+      startValue: '200%',
+      endValue: '300%',
+    },
+    {
+      stylePropKey: 'width',
+      controlTestId: 'position-width-number-input',
+      startValue: '200pt',
+      endValue: '300pt',
+    },
+    {
+      stylePropKey: 'height',
+      controlTestId: 'position-height-number-input',
+      startValue: 200,
+      endValue: 300,
+    },
+  ]
+
+  function makeCodeSnippetWithKeyValue(stylePropKey: string, value: unknown): string {
+    const printedValue = typeof value === 'number' ? value : JSON.stringify(value)
+
+    return `
+      <div
+        style={{ ...props.style, position: 'absolute', backgroundColor: '#FFFFFF' }}
+        data-uid='aaa'
+      >
+        <div
+          style={{
+            // Comment to force this onto multiple lines when printing
+            position: 'absolute',
+            ${stylePropKey}: ${printedValue},
+          }}
+          data-uid='bbb'
+        />
+      </div>
+    `
+  }
+  const targetPath = EP.appendNewElementPath(TestScenePath, ['aaa', 'bbb'])
+
+  propsToTest.forEach(({ stylePropKey, controlTestId, startValue, endValue }) => {
+    it(`Updating the code updates the Inspector for prop ${stylePropKey}`, async () => {
+      const startCodeSnippet = makeCodeSnippetWithKeyValue(stylePropKey, startValue)
+      const endCodeSnippet = makeCodeSnippetWithKeyValue(stylePropKey, endValue)
+
+      const renderResult = await renderTestEditorWithCode(
+        makeTestProjectCodeWithSnippet(startCodeSnippet),
+        'await-first-dom-report',
+      )
+
+      await selectElement(targetPath, renderResult)
+
+      // Capture the starting value
+      const startControlValue = await getControlValue(controlTestId, renderResult.renderedDOM)
+
+      // Simulate a code change
+      const updateActions = actionsForUpdatedCode(endCodeSnippet)
+      await dispatchActionsAndWaitUntilComplete(updateActions, renderResult)
+
+      // Capture the new value
+      const endControlValue = await getControlValue(controlTestId, renderResult.renderedDOM)
+
+      expect(startControlValue).toEqual(`${startValue}`)
+      expect(endControlValue).toEqual(`${endValue}`)
+    })
+
+    it(`Updating the Inspector updates the code for prop ${stylePropKey}`, async () => {
+      const startCodeSnippet = makeCodeSnippetWithKeyValue(stylePropKey, startValue)
+      const endCodeSnippet = makeCodeSnippetWithKeyValue(stylePropKey, endValue)
+
+      const renderResult = await renderTestEditorWithCode(
+        makeTestProjectCodeWithSnippet(startCodeSnippet),
+        'await-first-dom-report',
+      )
+
+      await selectElement(targetPath, renderResult)
+
+      // Update the value via the Inspector control
+      await setControlValue(controlTestId, `${endValue}`, renderResult.renderedDOM)
+
+      // Ensure the printed code is as correct
+      expect(getPrintedUiJsCode(renderResult.getEditorState())).toEqual(
+        makeTestProjectCodeWithSnippet(endCodeSnippet),
+      )
+    })
   })
 })

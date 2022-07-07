@@ -1573,8 +1573,10 @@ describe('RUN_ESCAPE_HATCH', () => {
           ['aaa', 'bbb'],
         ]),
         localFrame: { x: 0, y: 0, width: 250, height: 300 },
+        globalFrame: { x: 0, y: 0, width: 250, height: 300 },
         specialSizeMeasurements: {
           immediateParentBounds: canvasRectangle({ x: 0, y: 0, width: 400, height: 400 }),
+          coordinateSystemBounds: canvasRectangle({ x: 0, y: 0, width: 400, height: 400 }),
         } as SpecialSizeMeasurements,
       } as ElementInstanceMetadata,
     } as ElementInstanceMetadataMap

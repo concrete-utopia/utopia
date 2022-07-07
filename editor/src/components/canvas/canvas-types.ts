@@ -191,7 +191,7 @@ export type ControlOrHigherOrderControl = SvgFragmentControl | HigherOrderContro
 
 export interface FrameAndTarget<C extends CoordinateMarker> {
   target: ElementPath
-  frame: Rectangle<C> | null
+  frame: Rectangle<C>
 }
 
 export type CanvasFrameAndTarget = FrameAndTarget<CanvasRectangle>
@@ -751,3 +751,12 @@ export type EnabledDirection = EdgePosition
 export const DirectionAll: EnabledDirection = { x: 1, y: 1 }
 export const DirectionHorizontal: EnabledDirection = { x: 1, y: 0 }
 export const DirectionVertical: EnabledDirection = { x: 0, y: 1 }
+
+export const EdgePositionTop: EdgePosition = { x: 0.5, y: 0 }
+export const EdgePositionLeft: EdgePosition = { x: 0, y: 0.5 }
+export const EdgePositionBottom: EdgePosition = { x: 0.5, y: 1 }
+export const EdgePositionRight: EdgePosition = { x: 1, y: 0.5 }
+export const EdgePositionTopLeft: EdgePosition = { x: 0, y: 0 }
+export const EdgePositionBottomLeft: EdgePosition = { x: 0, y: 1 }
+export const EdgePositionBottomRight: EdgePosition = { x: 1, y: 1 }
+export const EdgePositionTopRight: EdgePosition = { x: 1, y: 0 }

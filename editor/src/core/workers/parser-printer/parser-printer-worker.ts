@@ -9,6 +9,7 @@ import {
   lintAndParse,
   getHighlightBoundsWithUID,
   getHighlightBoundsWithoutUID,
+  boundsAreValid,
 } from './parser-printer'
 import { fastForEach } from '../../shared/utils'
 import { emptySet } from '../../shared/set-utils'
@@ -114,10 +115,12 @@ function getPrintCodeResult(
   let newHighlightBounds: HighlightBoundsForUids = {}
   if (highlightBoundsWithUID.length === highlightBoundsWithoutUID.length) {
     fastForEach(highlightBoundsWithUID, (withUID, index) => {
-      const withoutUID = highlightBoundsWithoutUID[index]
-      newHighlightBounds[withUID.uid] = {
-        ...withoutUID,
-        uid: withUID.uid,
+      if (boundsAreValid(withUID.uid)) {
+        const withoutUID = highlightBoundsWithoutUID[index]
+        newHighlightBounds[withUID.uid] = {
+          ...withoutUID,
+          uid: withUID.uid,
+        }
       }
     })
   }

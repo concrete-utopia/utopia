@@ -238,7 +238,7 @@ describe('SpecialSizeMeasurementsKeepDeepEquality', () => {
     usesParentBounds: false,
     parentLayoutSystem: 'flex',
     layoutSystemForChildren: 'flex',
-    providesBoundsForChildren: true,
+    providesBoundsForAbsoluteChildren: true,
     display: 'flex',
     position: 'absolute',
     margin: {
@@ -290,7 +290,7 @@ describe('SpecialSizeMeasurementsKeepDeepEquality', () => {
     usesParentBounds: false,
     parentLayoutSystem: 'flex',
     layoutSystemForChildren: 'flex',
-    providesBoundsForChildren: true,
+    providesBoundsForAbsoluteChildren: true,
     display: 'flex',
     position: 'absolute',
     margin: {
@@ -337,7 +337,9 @@ describe('SpecialSizeMeasurementsKeepDeepEquality', () => {
     expect(result.value.usesParentBounds).toBe(oldValue.usesParentBounds)
     expect(result.value.parentLayoutSystem).toBe(oldValue.parentLayoutSystem)
     expect(result.value.layoutSystemForChildren).toBe(oldValue.layoutSystemForChildren)
-    expect(result.value.providesBoundsForChildren).toBe(oldValue.providesBoundsForChildren)
+    expect(result.value.providesBoundsForAbsoluteChildren).toBe(
+      oldValue.providesBoundsForAbsoluteChildren,
+    )
     expect(result.value.display).toBe(oldValue.display)
     expect(result.value.position).toBe(oldValue.position)
     expect(result.value.margin).toBe(oldValue.margin)
@@ -394,7 +396,7 @@ describe('ElementInstanceMetadataKeepDeepEquality', () => {
       usesParentBounds: false,
       parentLayoutSystem: 'flex',
       layoutSystemForChildren: 'flex',
-      providesBoundsForChildren: true,
+      providesBoundsForAbsoluteChildren: true,
       display: 'flex',
       position: 'absolute',
       margin: {
@@ -474,7 +476,7 @@ describe('ElementInstanceMetadataKeepDeepEquality', () => {
       usesParentBounds: false,
       parentLayoutSystem: 'flex',
       layoutSystemForChildren: 'flex',
-      providesBoundsForChildren: true,
+      providesBoundsForAbsoluteChildren: true,
       display: 'flex',
       position: 'absolute',
       margin: {
@@ -580,7 +582,7 @@ describe('ElementInstanceMetadataMapKeepDeepEquality', () => {
         usesParentBounds: false,
         parentLayoutSystem: 'flex',
         layoutSystemForChildren: 'flex',
-        providesBoundsForChildren: true,
+        providesBoundsForAbsoluteChildren: true,
         display: 'flex',
         position: 'absolute',
         margin: {
@@ -662,7 +664,7 @@ describe('ElementInstanceMetadataMapKeepDeepEquality', () => {
         usesParentBounds: false,
         parentLayoutSystem: 'flex',
         layoutSystemForChildren: 'flex',
-        providesBoundsForChildren: true,
+        providesBoundsForAbsoluteChildren: true,
         display: 'flex',
         position: 'absolute',
         margin: {
@@ -744,7 +746,7 @@ describe('ElementInstanceMetadataMapKeepDeepEquality', () => {
         usesParentBounds: false,
         parentLayoutSystem: 'flex',
         layoutSystemForChildren: 'flex',
-        providesBoundsForChildren: true,
+        providesBoundsForAbsoluteChildren: true,
         display: 'flex',
         position: 'absolute',
         margin: {

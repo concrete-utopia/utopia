@@ -4,8 +4,10 @@ import * as EP from '../../../core/shared/element-path'
 import { ElementInstanceMetadataMap } from '../../../core/shared/element-template'
 import { ElementPath } from '../../../core/shared/project-file-types'
 import { EditorState, EditorStatePatch } from '../../editor/store/editor-state'
+import { CSSCursor } from '../canvas-types'
 import { foldAndApplyCommandsInner, TransientOrNot } from '../commands/commands'
 import { DuplicateElement, duplicateElement } from '../commands/duplicate-element-command'
+import { setCursorCommand } from '../commands/set-cursor-command'
 import { setElementsToRerenderCommand } from '../commands/set-elements-to-rerender-command'
 import { updateFunctionCommand } from '../commands/update-function-command'
 import { updateSelectedViews } from '../commands/update-selected-views-command'
@@ -24,6 +26,7 @@ export const absoluteDuplicateStrategy: CanvasStrategy = {
     if (
       canvasState.selectedElements.length > 0 &&
       interactionState != null &&
+      interactionState.interactionData.type === 'DRAG' &&
       interactionState.interactionData.modifiers.alt
     ) {
       const filteredSelectedElements = getDragTargets(canvasState.selectedElements)
@@ -61,9 +64,9 @@ export const absoluteDuplicateStrategy: CanvasStrategy = {
   fitness: (canvasState, interactionState) => {
     if (
       canvasState.selectedElements.length > 0 &&
-      interactionState.interactionData.modifiers.alt &&
       interactionState.interactionData.type === 'DRAG' &&
       interactionState.activeControl.type === 'BOUNDING_AREA' &&
+      interactionState.interactionData.modifiers.alt &&
       interactionState.interactionData.drag != null
     ) {
       return 2
@@ -119,6 +122,7 @@ export const absoluteDuplicateStrategy: CanvasStrategy = {
               transient,
             ),
           ),
+          setCursorCommand('transient', CSSCursor.Duplicate),
         ],
         customState: {
           ...strategyState.customStrategyState,

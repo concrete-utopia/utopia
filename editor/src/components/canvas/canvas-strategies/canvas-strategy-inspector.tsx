@@ -1,4 +1,5 @@
 import React from 'react'
+import { isFeatureEnabled } from '../../../utils/feature-switches'
 import { when } from '../../../utils/react-conditionals'
 import { useColorTheme } from '../../../uuiui'
 import { useEditorState } from '../../editor/store/store-hook'
@@ -15,7 +16,7 @@ export const CanvasStrategyInspector = React.memo(() => {
     'CanvasStrategyInspector accumulatedCommands',
   )
 
-  if (activeStrategy) {
+  if (activeStrategy && isFeatureEnabled('Canvas Strategies Debug Panel')) {
     return (
       <div
         style={{

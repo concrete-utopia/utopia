@@ -299,11 +299,7 @@ export function useGetSelectedClasses(): {
     'ClassNameSelect elementPaths',
   )
 
-  const allElementProps = useEditorState(
-    (store) => store.editor.allElementProps,
-    'ClassNameSelect allElementProps',
-    (oldProps, newProps) => oldProps === newProps,
-  )
+  const allElementPropsRef = useRefEditorState((store) => store.editor.allElementProps)
 
   const classNamesFromAttributesOrProps = React.useMemo(
     () =>
@@ -318,12 +314,12 @@ export function useGetSelectedClasses(): {
             elementPath,
           )
           return {
-            value: allElementProps[EP.toString(elementPath)]['className'],
+            value: allElementPropsRef.current[EP.toString(elementPath)]?.className,
             isSettable: fromAttributes.isSettable,
           }
         }
       }),
-    [elements, elementPaths, metadataRef, allElementProps],
+    [elements, elementPaths, metadataRef, allElementPropsRef],
   )
 
   const isSettable =

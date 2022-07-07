@@ -60,10 +60,7 @@ import {
   createInteractionViaKeyboard,
   updateInteractionViaKeyboard,
 } from '../canvas/canvas-strategies/interaction-state'
-import {
-  useAutomaticKeyUp,
-  useClearKeyboardInteraction,
-} from '../canvas/controls/select-mode/select-mode-hooks'
+import { useClearKeyboardInteraction } from '../canvas/controls/select-mode/select-mode-hooks'
 
 function pushProjectURLToBrowserHistory(projectId: string, projectName: string): void {
   // Make sure we don't replace the query params
@@ -139,7 +136,6 @@ export const EditorComponentInner = React.memo((props: EditorProps) => {
   }, [editorStoreRef])
 
   const setClearKeyboardInteraction = useClearKeyboardInteraction(editorStoreRef)
-  const automaticKeyUp = useAutomaticKeyUp(editorStoreRef)
 
   const onWindowKeyDown = React.useCallback(
     (event: KeyboardEvent) => {
@@ -152,7 +148,16 @@ export const EditorComponentInner = React.memo((props: EditorProps) => {
 
         // TODO: maybe we should not whitelist keys, just check if Keyboard.keyIsModifer(key) is false
         const existingInteractionSession = editorStoreRef.current.editor.canvas.interactionSession
-        if (Keyboard.keyIsModifier(key) && existingInteractionSession != null) {
+        if (key === 'space') {
+          if (existingInteractionSession != null) {
+            editorStoreRef.current.dispatch(
+              [CanvasActions.clearInteractionSession(false)],
+              'everyone',
+            )
+          }
+          event.preventDefault()
+          event.stopPropagation()
+        } else if (Keyboard.keyIsModifier(key) && existingInteractionSession != null) {
           editorStoreRef.current.dispatch(
             [
               CanvasActions.createInteractionSession(
@@ -180,7 +185,6 @@ export const EditorComponentInner = React.memo((props: EditorProps) => {
           editorStoreRef.current.dispatch([action], 'everyone')
 
           setClearKeyboardInteraction()
-          automaticKeyUp(key, modifiers)
         }
       }
 
@@ -192,7 +196,7 @@ export const EditorComponentInner = React.memo((props: EditorProps) => {
         editorStoreRef.current.dispatch,
       )
     },
-    [editorStoreRef, namesByKey, setClearKeyboardInteraction, automaticKeyUp],
+    [editorStoreRef, namesByKey, setClearKeyboardInteraction],
   )
 
   const onWindowKeyUp = React.useCallback(

@@ -467,16 +467,7 @@ export function handleKeyDown(
           if (CanvasMousePositionRaw == null) {
             return [EditorActions.clearSelection()]
           }
-          const targetStack = getAllTargetsAtPoint(
-            editor.jsxMetadata,
-            editor.selectedViews,
-            editor.hiddenInstances,
-            'no-filter',
-            WindowMousePositionRaw,
-            editor.canvas.scale,
-            editor.canvas.realCanvasOffset,
-            editor.allElementProps,
-          )
+          const targetStack = getAllTargetsAtPoint('no-filter', WindowMousePositionRaw)
           const nextTarget = Canvas.getNextTarget(editor.selectedViews, targetStack)
           if (targetStack.length === 0 || nextTarget === null) {
             return [EditorActions.clearSelection()]
@@ -800,7 +791,15 @@ export function handleKeyDown(
   // Build the actions to dispatch.
   let actions: Array<EditorAction> = [updateKeysAction]
   if (editorTargeted) {
-    actions.push(...getShortcutActions())
+    const shortCutActions = getShortcutActions()
+    if (shortCutActions.length > 0) {
+      if (editor.canvas.interactionSession?.interactionData.type === 'KEYBOARD') {
+        // if we are in a keyboard interaction session, we want keyboard shortcuts to finish the current interaction session,
+        // so the effect of the shortcut is not combined into the undo of the interaction
+        dispatch([CanvasActions.clearInteractionSession(true)])
+      }
+      actions.push(...shortCutActions)
+    }
   }
 
   dispatch(actions, 'everyone')

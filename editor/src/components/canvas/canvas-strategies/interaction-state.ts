@@ -1,4 +1,5 @@
-import { addAllUniquely } from '../../../core/shared/array-utils'
+import { setsEqual } from '../../../core/shared/set-utils'
+import { addAllUniquely, last } from '../../../core/shared/array-utils'
 import { ElementInstanceMetadataMap } from '../../../core/shared/element-template'
 import {
   CanvasPoint,
@@ -9,7 +10,7 @@ import {
 } from '../../../core/shared/math-utils'
 import { ElementPath } from '../../../core/shared/project-file-types'
 import { KeyCharacter } from '../../../utils/keyboard'
-import { Modifiers } from '../../../utils/modifiers'
+import { Modifier, Modifiers } from '../../../utils/modifiers'
 import { AllElementProps, EditorStatePatch } from '../../editor/store/editor-state'
 import { EdgePosition } from '../canvas-types'
 import { MoveIntoDragThreshold } from '../canvas-utils'
@@ -31,12 +32,14 @@ export interface DragInteractionData {
   globalTime: number
 }
 
+export interface KeyState {
+  keysPressed: Set<KeyCharacter>
+  modifiers: Modifiers
+}
+
 export interface KeyboardInteractionData {
   type: 'KEYBOARD'
-  keysPressed: Array<KeyCharacter>
-  // keysPressed also includes modifiers, but we want the separate modifiers array since they are captured and mapped to a specific
-  // set via modifiersForEvent in keyboard.ts
-  modifiers: Modifiers
+  keyStates: Array<KeyState>
 }
 
 export type InputData = KeyboardInteractionData | DragInteractionData
@@ -197,8 +200,12 @@ export function createInteractionViaKeyboard(
   return {
     interactionData: {
       type: 'KEYBOARD',
-      keysPressed: keysPressed,
-      modifiers: modifiers,
+      keyStates: [
+        {
+          keysPressed: new Set(keysPressed),
+          modifiers: modifiers,
+        },
+      ],
     },
     activeControl: activeControl,
     sourceOfUpdate: activeControl,
@@ -217,16 +224,27 @@ export function updateInteractionViaKeyboard(
 ): InteractionSessionWithoutMetadata {
   switch (currentState.interactionData.type) {
     case 'KEYBOARD': {
-      const withRemovedKeys = currentState.interactionData.keysPressed.filter(
-        (k) => !keysReleased.includes(k),
-      )
-      const newKeysPressed = addAllUniquely(withRemovedKeys, addedKeysPressed)
-
+      const lastKeyState = last(currentState.interactionData.keyStates)
+      let newKeyState: KeyState
+      if (lastKeyState == null || modifiers.cmd) {
+        // This is needed only for macbooks, when cmd is down, other keys don't trigger keyup events.
+        newKeyState = {
+          keysPressed: new Set(addedKeysPressed),
+          modifiers: modifiers,
+        }
+      } else {
+        let newKeysPressed = new Set(lastKeyState.keysPressed)
+        addedKeysPressed.forEach((key) => newKeysPressed.add(key))
+        keysReleased.forEach((key) => newKeysPressed.delete(key))
+        newKeyState = {
+          keysPressed: newKeysPressed,
+          modifiers: modifiers,
+        }
+      }
       return {
         interactionData: {
           type: 'KEYBOARD',
-          keysPressed: newKeysPressed,
-          modifiers: modifiers,
+          keyStates: [...currentState.interactionData.keyStates, newKeyState],
         },
         activeControl: currentState.activeControl,
         sourceOfUpdate: sourceOfUpdate,
@@ -259,27 +277,6 @@ export function updateInteractionViaKeyboard(
   }
 }
 
-export function strategySwitchInteractionDataReset(interactionData: InputData): InputData {
-  switch (interactionData.type) {
-    case 'DRAG':
-      if (interactionData.drag == null || interactionData.prevDrag == null) {
-        return interactionData
-      } else {
-        return {
-          ...interactionData,
-          dragStart: offsetPoint(interactionData.dragStart, interactionData.prevDrag),
-          drag: pointDifference(interactionData.prevDrag, interactionData.drag),
-          prevDrag: null,
-        }
-      }
-    case 'KEYBOARD':
-      return interactionData
-    default:
-      const _exhaustiveCheck: never = interactionData
-      throw new Error(`Unhandled interaction type ${JSON.stringify(interactionData)}`)
-  }
-}
-
 // Hard reset means we need to ignore everything happening in the interaction until now, and replay all the dragging
 export function interactionDataHardReset(interactionData: InputData): InputData {
   switch (interactionData.type) {
@@ -298,19 +295,14 @@ export function interactionDataHardReset(interactionData: InputData): InputData 
         }
       }
     case 'KEYBOARD':
-      return interactionData
+      const lastKeyState = last(interactionData.keyStates)
+      return {
+        ...interactionData,
+        keyStates: lastKeyState == null ? [] : [lastKeyState],
+      }
     default:
       const _exhaustiveCheck: never = interactionData
       throw new Error(`Unhandled interaction type ${JSON.stringify(interactionData)}`)
-  }
-}
-
-export function strategySwitchInteractionSessionReset(
-  interactionSessionToReset: InteractionSession,
-): InteractionSession {
-  return {
-    ...interactionSessionToReset,
-    interactionData: strategySwitchInteractionDataReset(interactionSessionToReset.interactionData),
   }
 }
 
@@ -324,7 +316,7 @@ export function interactionSessionHardReset(
   }
 }
 
-export const KeyboardInteractionTimeout = 3000
+export const KeyboardInteractionTimeout = 600
 
 export function hasDragModifiersChanged(
   prevInteractionData: InputData | null,

@@ -69,6 +69,7 @@ import {
   CanvasPoint,
   CanvasRectangle,
   canvasRectangle,
+  canvasRectangleToLocalRectangle,
   LocalRectangle,
   localRectangle,
   SimpleRectangle,
@@ -827,6 +828,28 @@ export const MetadataUtils = {
       }, Utils.asLocal(frame))
     }
   },
+  getFrameRelativeToTargetContainingBlock: function (
+    targetParent: ElementPath | null,
+    metadata: ElementInstanceMetadataMap,
+    frame: CanvasRectangle,
+  ): LocalRectangle {
+    const parent = this.findElementByElementPath(metadata, targetParent)
+    if (parent != null) {
+      if (
+        parent.specialSizeMeasurements.providesBoundsForAbsoluteChildren &&
+        parent.globalFrame != null
+      ) {
+        return canvasRectangleToLocalRectangle(frame, parent.globalFrame)
+      }
+      if (parent.specialSizeMeasurements.coordinateSystemBounds != null) {
+        return canvasRectangleToLocalRectangle(
+          frame,
+          parent.specialSizeMeasurements.coordinateSystemBounds,
+        )
+      }
+    }
+    return Utils.asLocal(frame)
+  },
   getElementLabelFromProps(allElementProps: AllElementProps, path: ElementPath): string | null {
     const dataLabelProp = allElementProps?.[EP.toString(path)]?.[UTOPIA_LABEL_KEY]
     if (dataLabelProp != null && typeof dataLabelProp === 'string' && dataLabelProp.length > 0) {
@@ -1286,6 +1309,20 @@ export const MetadataUtils = {
   isEmotionOrStyledComponent(path: ElementPath, metadata: ElementInstanceMetadataMap): boolean {
     const element = MetadataUtils.findElementByElementPath(metadata, path)
     return element?.isEmotionOrStyledComponent ?? false
+  },
+  // localFrame is stored in the metadata root, but it is not correct in all cases. Calculating it from specialSizeMeasurements is more reliable
+  getLocalFrameFromSpecialSizeMeasurements(
+    path: ElementPath,
+    metadata: ElementInstanceMetadataMap,
+  ): LocalRectangle | null {
+    const element = MetadataUtils.findElementByElementPath(metadata, path)
+    const globalFrame = element?.globalFrame ?? null
+    const elementContainerBounds = element?.specialSizeMeasurements.coordinateSystemBounds ?? null
+    const localFrame =
+      globalFrame != null && elementContainerBounds != null
+        ? canvasRectangleToLocalRectangle(globalFrame, elementContainerBounds)
+        : null
+    return localFrame
   },
 }
 

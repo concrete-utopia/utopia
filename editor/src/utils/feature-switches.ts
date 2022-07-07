@@ -1,5 +1,5 @@
 import localforage from 'localforage'
-import { PRODUCTION_CONFIG } from '../common/env-vars'
+import { IS_TEST_ENVIRONMENT, PRODUCTION_CONFIG } from '../common/env-vars'
 import { fastForEach, isBrowserEnvironment } from '../core/shared/utils'
 
 export type FeatureName =
@@ -13,6 +13,7 @@ export type FeatureName =
   | 'Click on empty canvas unfocuses'
   | 'Insertion Plus Button'
   | 'Canvas Strategies'
+  | 'Canvas Strategies Debug Panel'
   | 'Keyboard up clears interaction'
   | 'Canvas Selective Rerender'
 
@@ -27,6 +28,7 @@ export const AllFeatureNames: FeatureName[] = [
   'Click on empty canvas unfocuses',
   'Insertion Plus Button',
   'Canvas Strategies',
+  'Canvas Strategies Debug Panel',
   'Keyboard up clears interaction',
   'Canvas Selective Rerender',
 ]
@@ -42,6 +44,7 @@ let FeatureSwitches: { [feature in FeatureName]: boolean } = {
   'Click on empty canvas unfocuses': true,
   'Insertion Plus Button': true,
   'Canvas Strategies': true,
+  'Canvas Strategies Debug Panel': false,
   'Keyboard up clears interaction': false,
   'Canvas Selective Rerender': true,
 }
@@ -51,7 +54,7 @@ function settingKeyForName(featureName: FeatureName): string {
 }
 
 async function loadStoredValue(featureName: FeatureName) {
-  if (isBrowserEnvironment) {
+  if (isBrowserEnvironment && !IS_TEST_ENVIRONMENT) {
     const existing = await localforage.getItem<boolean | null>(settingKeyForName(featureName))
     if (existing != null) {
       FeatureSwitches[featureName] = existing

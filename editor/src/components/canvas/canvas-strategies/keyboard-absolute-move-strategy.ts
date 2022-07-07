@@ -1,10 +1,23 @@
 import { MetadataUtils } from '../../../core/model/element-metadata-utils'
 import { Keyboard, KeyCharacter } from '../../../utils/keyboard'
-import { CanvasStrategy, emptyStrategyApplicationResult } from './canvas-strategy-types'
-import { Modifiers } from '../../../utils/modifiers'
-import { CanvasVector } from '../../../core/shared/math-utils'
+import {
+  CanvasStrategy,
+  emptyStrategyApplicationResult,
+  InteractionCanvasState,
+} from './canvas-strategy-types'
+import {
+  CanvasRectangle,
+  canvasRectangle,
+  CanvasVector,
+  offsetPoint,
+  offsetRect,
+  scaleVector,
+  zeroCanvasPoint,
+  zeroRectangle,
+} from '../../../core/shared/math-utils'
 import {
   getAbsoluteMoveCommandsForSelectedElement,
+  getMultiselectBounds,
   snapDrag,
 } from './shared-absolute-move-strategy-helpers'
 import { AdjustCssLengthProperty } from '../commands/adjust-css-length-command'
@@ -12,10 +25,27 @@ import { setElementsToRerenderCommand } from '../commands/set-elements-to-rerend
 import { setSnappingGuidelines } from '../commands/set-snapping-guidelines-command'
 import { updateHighlightedViews } from '../commands/update-highlighted-views-command'
 import { CanvasCommand } from '../commands/commands'
+import {
+  accumulatePresses,
+  getMovementDeltaFromKey,
+  getKeyboardStrategyGuidelines,
+  getLastKeyPressState,
+} from './shared-keyboard-strategy-helpers'
+import { mapDropNulls } from '../../../core/shared/array-utils'
+import { defaultIfNull } from '../../../core/shared/optional-utils'
+import {
+  collectParentAndSiblingGuidelines,
+  oneGuidelinePerDimension,
+} from '../controls/guideline-helpers'
+import { GuidelineWithSnappingVector, Guidelines } from '../guideline'
+import Utils from '../../../utils/utils'
+import { StrategyState, InteractionSession } from './interaction-state'
+import { pushIntendedBounds } from '../commands/push-intended-bounds-command'
+import { CanvasFrameAndTarget } from '../canvas-types'
 
 export const keyboardAbsoluteMoveStrategy: CanvasStrategy = {
   id: 'KEYBOARD_ABSOLUTE_MOVE',
-  name: 'Keyboard absolute Move',
+  name: 'Keyboard Absolute Move',
   isApplicable: (canvasState, _interactionState, metadata) => {
     if (canvasState.selectedElements.length > 0) {
       return canvasState.selectedElements.every((element) => {
@@ -40,89 +70,71 @@ export const keyboardAbsoluteMoveStrategy: CanvasStrategy = {
     ) {
       const { interactionData } = interactionState
 
-      const arrowKeyPressed = interactionData.keysPressed.some(Keyboard.keyIsArrow)
-      // 'Alt' determines if the distance guidelines should be shown.
-      const shiftOrNoModifier =
-        !interactionState.interactionData.modifiers.cmd &&
-        !interactionState.interactionData.modifiers.ctrl
+      const lastKeyState = getLastKeyPressState(interactionData.keyStates)
+      if (lastKeyState != null) {
+        // 'Alt' determines if the distance guidelines should be shown.
+        const shiftOrNoModifier = !lastKeyState.modifiers.cmd && !lastKeyState.modifiers.ctrl
 
-      if (arrowKeyPressed && shiftOrNoModifier) {
-        return 1
+        if (shiftOrNoModifier) {
+          return 1
+        }
       }
     }
     return 0
   },
   apply: (canvasState, interactionState, sessionState) => {
     if (interactionState.interactionData.type === 'KEYBOARD') {
-      return {
-        commands: interactionState.interactionData.keysPressed.flatMap((key) => {
-          if (key == null) {
-            return []
-          }
-          const drag = getDragDeltaFromKey(key, interactionState.interactionData.modifiers)
-          if (drag.x !== 0 || drag.y !== 0) {
-            const moveCommands = canvasState.selectedElements.flatMap((selectedElement) =>
-              getAbsoluteMoveCommandsForSelectedElement(
-                selectedElement,
-                drag,
-                canvasState,
-                sessionState,
-              ),
-            )
-            const { guidelinesWithSnappingVector } = snapDrag(
-              drag,
-              null,
-              interactionState.metadata,
-              canvasState.selectedElements,
-              canvasState.scale,
-            )
-            const justSnappedGuidelines = guidelinesWithSnappingVector.filter((guideline) => {
-              return guideline.activateSnap
-            })
+      const accumulatedPresses = accumulatePresses(interactionState.interactionData.keyStates)
+      let commands: Array<CanvasCommand> = []
+      let intendedBounds: Array<CanvasFrameAndTarget> = []
+      let keyboardMovement: CanvasVector = zeroCanvasPoint
+      accumulatedPresses.forEach((accumulatedPress) => {
+        accumulatedPress.keysPressed.forEach((key) => {
+          const keyPressMovement = scaleVector(
+            getMovementDeltaFromKey(key, accumulatedPress.modifiers),
+            accumulatedPress.count,
+          )
+          keyboardMovement = offsetPoint(keyboardMovement, keyPressMovement)
+        })
+      })
+      if (keyboardMovement.x !== 0 || keyboardMovement.y !== 0) {
+        canvasState.selectedElements.forEach((selectedElement) => {
+          const elementResult = getAbsoluteMoveCommandsForSelectedElement(
+            selectedElement,
+            keyboardMovement,
+            canvasState,
+            sessionState,
+          )
+          commands.push(...elementResult.commands)
+          intendedBounds.push(...elementResult.intendedBounds)
+        })
+      }
+      const multiselectBounds = getMultiselectBounds(
+        sessionState.startingMetadata,
+        canvasState.selectedElements,
+      )
+      const newFrame = offsetRect(
+        defaultIfNull(canvasRectangle(zeroRectangle), multiselectBounds),
+        keyboardMovement,
+      )
 
-            return [
-              ...moveCommands,
-              updateHighlightedViews('transient', []),
-              setSnappingGuidelines('transient', justSnappedGuidelines),
-            ]
-          } else {
-            return []
-          }
-        }),
+      const guidelines = getKeyboardStrategyGuidelines(
+        sessionState,
+        canvasState,
+        interactionState,
+        newFrame,
+      )
+
+      commands.push(updateHighlightedViews('transient', []))
+      commands.push(setSnappingGuidelines('transient', guidelines))
+      commands.push(pushIntendedBounds(intendedBounds))
+      commands.push(setElementsToRerenderCommand(canvasState.selectedElements))
+      return {
+        commands: commands,
         customState: null,
       }
+    } else {
+      return emptyStrategyApplicationResult
     }
-    return emptyStrategyApplicationResult
   },
-}
-
-function getDragDeltaFromKey(key: KeyCharacter, modifiers: Modifiers): CanvasVector {
-  const step = modifiers.shift ? 10 : 1
-  switch (key) {
-    case 'left':
-      return {
-        x: -step,
-        y: 0,
-      } as CanvasVector
-    case 'right':
-      return {
-        x: step,
-        y: 0,
-      } as CanvasVector
-    case 'up':
-      return {
-        x: 0,
-        y: -step,
-      } as CanvasVector
-    case 'down':
-      return {
-        x: 0,
-        y: step,
-      } as CanvasVector
-    default:
-      return {
-        x: 0,
-        y: 0,
-      } as CanvasVector
-  }
 }

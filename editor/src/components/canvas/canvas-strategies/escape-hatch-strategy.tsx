@@ -23,12 +23,14 @@ import { fastForEach } from '../../../core/shared/utils'
 import { getElementFromProjectContents } from '../../editor/store/editor-state'
 import { FullFrame, getFullFrame } from '../../frame'
 import { stylePropPathMappingFn } from '../../inspector/common/property-path-hooks'
-import { CSSCursor } from '../canvas-types'
+import { CanvasFrameAndTarget, CSSCursor } from '../canvas-types'
 import { CanvasCommand } from '../commands/commands'
-import { convertToAbsolute } from '../commands/convert-to-absolute-command'
-import { setCssLengthProperty } from '../commands/set-css-length-command'
+import { ConvertToAbsolute, convertToAbsolute } from '../commands/convert-to-absolute-command'
+import { ReparentElement, reparentElement } from '../commands/reparent-element-command'
+import { SetCssLengthProperty, setCssLengthProperty } from '../commands/set-css-length-command'
 import { setCursorCommand } from '../commands/set-cursor-command'
 import { showOutlineHighlight } from '../commands/show-outline-highlight-command'
+import { updateSelectedViews } from '../commands/update-selected-views-command'
 import { ParentBounds } from '../controls/parent-bounds'
 import { ParentOutlines } from '../controls/parent-outlines'
 import { DragOutlineControl } from '../controls/select-mode/drag-outline-control'
@@ -129,7 +131,10 @@ export const escapeHatchStrategy: CanvasStrategy = {
       if (shouldEscapeHatch) {
         const getConversionAndMoveCommands = (
           snappedDragVector: CanvasPoint,
-        ): Array<CanvasCommand> => {
+        ): {
+          commands: Array<CanvasCommand>
+          intendedBounds: Array<CanvasFrameAndTarget>
+        } => {
           return getEscapeHatchCommands(
             canvasState.selectedElements,
             strategyState.startingMetadata,
@@ -144,12 +149,6 @@ export const escapeHatchStrategy: CanvasStrategy = {
           getConversionAndMoveCommands,
         )
 
-        // TEMPORARILY REMOVING SIBLING CONVERSION FOR EXPERIMENTING
-        // const highlightCommand = collectHighlightCommand(
-        //   canvasState,
-        //   interactionState.interactionData,
-        //   strategyState,
-        // )
         return {
           commands: absoluteMoveApplyResult.commands,
           customState: {
@@ -174,7 +173,10 @@ export function getEscapeHatchCommands(
   metadata: ElementInstanceMetadataMap,
   canvasState: InteractionCanvasState,
   dragDelta: CanvasVector | null,
-): Array<CanvasCommand> {
+): {
+  commands: Array<CanvasCommand>
+  intendedBounds: Array<CanvasFrameAndTarget>
+} {
   const moveAndPositionCommands = collectMoveCommandsForSelectedElements(
     selectedElements,
     metadata,
@@ -182,9 +184,6 @@ export function getEscapeHatchCommands(
     dragDelta,
   )
   return moveAndPositionCommands
-  // TEMPORARILY REMOVING SIBLING CONVERSION FOR EXPERIMENTING
-  // const siblingCommands = collectSiblingCommands(selectedElements, metadata, canvasState)
-  // return [...moveAndPositionCommands, ...siblingCommands]
 }
 
 function collectMoveCommandsForSelectedElements(
@@ -192,28 +191,36 @@ function collectMoveCommandsForSelectedElements(
   metadata: ElementInstanceMetadataMap,
   canvasState: InteractionCanvasState,
   dragDelta: CanvasVector | null,
-): Array<CanvasCommand> {
-  return flatMapArray(
-    (path) => collectSetLayoutPropCommands(path, metadata, canvasState, dragDelta),
-    selectedElements,
-  )
-}
+): {
+  commands: Array<CanvasCommand>
+  intendedBounds: Array<CanvasFrameAndTarget>
+} {
+  let commands: Array<CanvasCommand> = []
+  let intendedBounds: Array<CanvasFrameAndTarget> = []
 
-function collectSiblingCommands(
-  selectedElements: Array<ElementPath>,
-  metadata: ElementInstanceMetadataMap,
-  canvasState: InteractionCanvasState,
-): Array<CanvasCommand> {
-  const siblings = selectedElements
-    .flatMap((path) => {
-      return MetadataUtils.getSiblings(metadata, path).map((element) => element.elementPath)
-    })
-    .filter((sibling) => selectedElements.every((path) => !EP.pathsEqual(path, sibling)))
+  const commonAncestor = EP.getCommonParent(selectedElements, false)
+  const sortedElements = EP.getOrderedPathsByDepth(selectedElements) // inner elements should be reparented first
 
-  return flatMapArray(
-    (path) => collectSetLayoutPropCommands(path, metadata, canvasState, null),
-    siblings,
+  sortedElements.forEach((path) => {
+    const elementResult = collectSetLayoutPropCommands(
+      path,
+      metadata,
+      canvasState,
+      dragDelta,
+      commonAncestor,
+    )
+    intendedBounds.push(...elementResult.intendedBounds)
+    commands.push(...elementResult.commands)
+  })
+  commands.push(
+    updateSelectedViews(
+      'permanent',
+      selectedElements.map((path) => {
+        return commonAncestor != null ? EP.appendToPath(commonAncestor, EP.toUid(path)) : path
+      }),
+    ),
   )
+  return { commands, intendedBounds }
 }
 
 function collectSetLayoutPropCommands(
@@ -221,9 +228,20 @@ function collectSetLayoutPropCommands(
   metadata: ElementInstanceMetadataMap,
   canvasState: InteractionCanvasState,
   dragDelta: CanvasVector | null,
-): Array<CanvasCommand> {
-  const frame = MetadataUtils.getFrame(path, metadata)
-  if (frame != null) {
+  targetParent: ElementPath | null,
+): {
+  commands: Array<CanvasCommand>
+  intendedBounds: Array<CanvasFrameAndTarget>
+} {
+  const currentParentPath = EP.parentPath(path)
+  const shouldReparent = targetParent != null && !EP.pathsEqual(targetParent, currentParentPath)
+  const globalFrame = MetadataUtils.getFrameInCanvasCoords(path, metadata)
+  if (globalFrame != null) {
+    const frame = MetadataUtils.getFrameRelativeToTargetContainingBlock(
+      shouldReparent ? targetParent : currentParentPath,
+      metadata,
+      globalFrame,
+    )
     const specialSizeMeasurements = MetadataUtils.findElementByElementPath(
       metadata,
       path,
@@ -236,6 +254,14 @@ function collectSetLayoutPropCommands(
     } as LocalPoint
     const frameWithoutMargin = offsetRect(frame, marginPoint)
     const updatedFrame = offsetRect(frameWithoutMargin, asLocal(dragDelta ?? zeroCanvasRect))
+    const intendedBounds: Array<CanvasFrameAndTarget> = (() => {
+      if (globalFrame == null) {
+        return []
+      } else {
+        const updatedGlobalFrame = offsetRect(globalFrame, dragDelta ?? zeroCanvasRect)
+        return [{ frame: updatedGlobalFrame, target: path }]
+      }
+    })()
     const fullFrame = getFullFrame(updatedFrame)
     const pinsToSet = filterPinsToSet(path, canvasState)
 
@@ -254,9 +280,12 @@ function collectSetLayoutPropCommands(
         ),
       )
     })
-    return commands
+    if (shouldReparent) {
+      commands.push(reparentElement('permanent', path, targetParent))
+    }
+    return { commands: commands, intendedBounds: intendedBounds }
   } else {
-    return []
+    return { commands: [], intendedBounds: [] }
   }
 }
 

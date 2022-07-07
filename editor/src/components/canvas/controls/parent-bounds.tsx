@@ -8,43 +8,46 @@ import { CenteredCrossSVG } from './outline-control'
 
 export const ParentBounds = React.memo(() => {
   const scale = useEditorState((store) => store.editor.canvas.scale, 'ParentBounds canvas scale')
-  const parentFrames = useEditorState((store) => {
+  const parentFrame = useEditorState((store) => {
     const targetParents = uniqBy(
       stripNulls(store.editor.selectedViews.map((view) => EP.parentPath(view))),
       EP.pathsEqual,
     )
-    return mapDropNulls((parentPath) => {
-      return MetadataUtils.getFrameInCanvasCoords(parentPath, store.editor.jsxMetadata)
-    }, targetParents)
-  }, 'ParentBounds frames')
+    if (targetParents.length === 1 && !EP.isStoryboardPath(targetParents[0])) {
+      return MetadataUtils.findElementByElementPath(
+        store.editor.jsxMetadata,
+        store.editor.selectedViews[0],
+      )?.specialSizeMeasurements.immediateParentBounds
+    } else {
+      return null
+    }
+  }, 'ParentOutlines frame')
 
-  const frame = parentFrames.length === 1 ? parentFrames[0] : null
-
-  return frame != null ? (
+  return parentFrame != null ? (
     <CanvasOffsetWrapper key={`parent-outline`}>
-      <div style={{ pointerEvents: 'none' }}>
+      <div style={{ pointerEvents: 'none' }} data-testid='parent-bounds-control'>
         <CenteredCrossSVG
           id='parent-cross-top-left'
-          centerX={frame.x}
-          centerY={frame.y}
+          centerX={parentFrame.x}
+          centerY={parentFrame.y}
           scale={scale}
         />
         <CenteredCrossSVG
           id='parent-cross-top-right'
-          centerX={frame.x + frame.width}
-          centerY={frame.y}
+          centerX={parentFrame.x + parentFrame.width}
+          centerY={parentFrame.y}
           scale={scale}
         />
         <CenteredCrossSVG
           id='parent-cross-bottom-right'
-          centerX={frame.x + frame.width}
-          centerY={frame.y + frame.height}
+          centerX={parentFrame.x + parentFrame.width}
+          centerY={parentFrame.y + parentFrame.height}
           scale={scale}
         />
         <CenteredCrossSVG
           id='parent-cross-bottom-left'
-          centerX={frame.x}
-          centerY={frame.y + frame.height}
+          centerX={parentFrame.x}
+          centerY={parentFrame.y + parentFrame.height}
           scale={scale}
         />
       </div>

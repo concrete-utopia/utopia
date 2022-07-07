@@ -12,6 +12,7 @@ exports[`UiJsxCanvas #747 - DOM object constructor cannot be called as a functio
       data-utopia-scene-id=\\"sb/scene\\"
       data-path=\\"sb/scene\\"
       style=\\"
+        overflow: hidden;
         position: absolute;
         background-color: rgba(255, 255, 255, 1);
         box-shadow: 0px 0px 1px 0px rgba(26, 26, 26, 0.3);
@@ -172,7 +173,7 @@ Object {
       "parentFlexDirection": null,
       "parentLayoutSystem": "flow",
       "position": "static",
-      "providesBoundsForChildren": false,
+      "providesBoundsForAbsoluteChildren": false,
       "renderedChildrenCount": 0,
       "usesParentBounds": false,
     },
@@ -263,7 +264,7 @@ Object {
       "parentFlexDirection": null,
       "parentLayoutSystem": "flow",
       "position": "static",
-      "providesBoundsForChildren": false,
+      "providesBoundsForAbsoluteChildren": false,
       "renderedChildrenCount": 0,
       "usesParentBounds": false,
     },

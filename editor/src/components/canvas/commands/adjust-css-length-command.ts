@@ -116,6 +116,10 @@ export const runAdjustCssLengthProperty: CommandFunction<AdjustCssLengthProperty
     )
   }
 
+  if (command.createIfNonExistant) {
+    return setPixelValue(editorState, command.target, command.property, command.valuePx)
+  }
+
   // fallback return
   return {
     editorStatePatches: [],
@@ -124,6 +128,40 @@ export const runAdjustCssLengthProperty: CommandFunction<AdjustCssLengthProperty
     )} not applied as the property is in a CSS unit we do not support. (${
       simpleValueResult.value
     })`,
+  }
+}
+
+function setPixelValue(
+  editorState: EditorState,
+  targetElement: ElementPath,
+  targetProperty: PropertyPath,
+  value: number,
+) {
+  const newValueCssNumber: CSSNumber = {
+    value: value,
+    unit: null,
+  }
+  const newValue = printCSSNumber(newValueCssNumber, null)
+
+  const propsToUpdate: Array<ValueAtPath> = [
+    {
+      path: targetProperty,
+      value: jsxAttributeValue(newValue, emptyComments),
+    },
+  ]
+
+  // Apply the update to the properties.
+  const { editorStatePatch: propertyUpdatePatch } = applyValuesAtPath(
+    editorState,
+    targetElement,
+    propsToUpdate,
+  )
+
+  return {
+    editorStatePatches: [propertyUpdatePatch],
+    commandDescription: `Set css Length Prop: ${EP.toUid(targetElement)}/${PP.toString(
+      targetProperty,
+    )} by ${value}`,
   }
 }
 

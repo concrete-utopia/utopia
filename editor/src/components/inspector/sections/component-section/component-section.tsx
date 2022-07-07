@@ -71,7 +71,7 @@ import {
 } from './property-control-controls'
 import { ComponentInfoBox } from './component-info-box'
 import { ExpandableIndicator } from '../../../navigator/navigator-item/expandable-indicator'
-import { when } from '../../../../utils/react-conditionals'
+import { unless, when } from '../../../../utils/react-conditionals'
 import { PropertyControlsSection } from './property-controls-section'
 import type { ReactEventHandlers } from 'react-use-gesture/dist/types'
 
@@ -263,6 +263,27 @@ const RowForBaseControl = React.memo((props: RowForBaseControlProps) => {
   )
 })
 
+function getSectionHeight(controlDescription: ArrayControlDescription): number {
+  const rowHeight = UtopiaTheme.layout.rowHeight.normal
+  return getSectionHeightFromPropControl(rowHeight, rowHeight, controlDescription.propertyControl)
+}
+
+function getSectionHeightFromPropControl(
+  accumulatedHeight: number,
+  baseHeight: number,
+  propertyControl: RegularControlDescription,
+): number {
+  if (propertyControl.control === 'object') {
+    return Object.values(propertyControl.object).reduce<number>(
+      (workingHeight, innerPropControl) =>
+        getSectionHeightFromPropControl(workingHeight + baseHeight, baseHeight, innerPropControl),
+      accumulatedHeight,
+    )
+  } else {
+    return accumulatedHeight
+  }
+}
+
 interface RowForArrayControlProps extends AbstractRowForControlProps {
   controlDescription: ArrayControlDescription
 }
@@ -276,13 +297,39 @@ const RowForArrayControl = React.memo((props: RowForArrayControlProps) => {
     controlDescription,
   )
 
-  const rowHeight = UtopiaTheme.layout.rowHeight.normal
-  const transformedValue = Array.isArray(value) ? value : [value]
-  const { springs, bind } = useArraySuperControl(transformedValue, onSubmitValue, rowHeight, false)
+  const sectionHeight = React.useMemo(
+    () => getSectionHeight(controlDescription),
+    [controlDescription],
+  )
+
   const [insertingRow, setInsertingRow] = React.useState(false)
   const toggleInsertRow = React.useCallback(() => setInsertingRow((current) => !current), [])
 
-  React.useEffect(() => setInsertingRow(false), [springs.length])
+  // Ensure the value is an array, just in case.
+  const transformedValue = React.useMemo(() => {
+    return Array.isArray(value) ? value : [value]
+  }, [value])
+
+  // If we are inserting, extend the array with an `undefined` value and
+  // then let the handling of the elements cater for that, so that there
+  // is no need for special handling of the value(s) being inserted.
+  const valueWithInsertingEntry = React.useMemo(() => {
+    if (insertingRow) {
+      return [...transformedValue, undefined]
+    } else {
+      return transformedValue
+    }
+  }, [transformedValue, insertingRow])
+  React.useEffect(() => {
+    setInsertingRow(false)
+  }, [transformedValue.length])
+
+  const { springs, bind } = useArraySuperControl(
+    valueWithInsertingEntry,
+    onSubmitValue,
+    sectionHeight,
+    false,
+  )
 
   return (
     <React.Fragment>
@@ -292,7 +339,11 @@ const RowForArrayControl = React.memo((props: RowForArrayControlProps) => {
             {title}
           </PropertyLabel>
           {propertyStatus.overwritable ? (
-            <SquareButton highlight onMouseDown={toggleInsertRow}>
+            <SquareButton
+              highlight
+              onMouseDown={toggleInsertRow}
+              data-testid={`toggle-insert-${PP.toString(propPath)}`}
+            >
               {insertingRow ? (
                 <Icons.Minus
                   style={{ paddingTop: 1 }}
@@ -314,7 +365,7 @@ const RowForArrayControl = React.memo((props: RowForArrayControlProps) => {
       </InspectorSectionHeader>
       <div
         style={{
-          height: rowHeight * springs.length,
+          height: sectionHeight * springs.length,
         }}
       >
         {springs.map((springStyle, index) => (
@@ -331,16 +382,6 @@ const RowForArrayControl = React.memo((props: RowForArrayControlProps) => {
           />
         ))}
       </div>
-      {insertingRow ? (
-        <RowForControl
-          controlDescription={controlDescription.propertyControl}
-          isScene={isScene}
-          propPath={PP.appendPropertyPathElems(propPath, [springs.length])}
-          setGlobalCursor={props.setGlobalCursor}
-          indentationLevel={1}
-          focusOnMount={false}
-        />
-      ) : null}
     </React.Fragment>
   )
 })
@@ -366,13 +407,13 @@ const ArrayControlItem = React.memo((props: ArrayControlItemProps) => {
   )
   const contextMenuItems = Utils.stripNulls([addOnUnsetValues([index], propMetadata.onUnsetValues)])
 
-  const rowHeight = UtopiaTheme.layout.rowHeight.normal
+  const contextMenuId = `context-menu-for-${PP.toString(propPathWithIndex)}`
   return (
     <InspectorContextMenuWrapper
-      id={`context-menu-for-${PP.toString(propPathWithIndex)}`}
+      id={contextMenuId}
       items={contextMenuItems}
       data={null}
-      key={index}
+      key={contextMenuId}
     >
       <animated.div
         {...bind(index)}
@@ -380,7 +421,6 @@ const ArrayControlItem = React.memo((props: ArrayControlItemProps) => {
           ...springStyle,
           width: '100%',
           position: 'absolute',
-          height: rowHeight,
         }}
         css={{
           '& > .handle': {
@@ -398,6 +438,7 @@ const ArrayControlItem = React.memo((props: ArrayControlItemProps) => {
           setGlobalCursor={props.setGlobalCursor}
           indentationLevel={1}
           focusOnMount={props.focusOnMount && index === 0}
+          disableToggling={true}
         />
         <div
           style={{
@@ -539,11 +580,16 @@ const ObjectIndicator = (props: ObjectIndicatorProps) => {
 
 interface RowForObjectControlProps extends AbstractRowForControlProps {
   controlDescription: ObjectControlDescription
+  disableToggling: boolean
 }
 
 const RowForObjectControl = React.memo((props: RowForObjectControlProps) => {
   const [open, setOpen] = React.useState(true)
-  const handleOnClick = React.useCallback(() => setOpen(!open), [setOpen, open])
+  const handleOnClick = React.useCallback(() => {
+    if (!props.disableToggling) {
+      setOpen(!open)
+    }
+  }, [setOpen, open, props.disableToggling])
   const { propPath, controlDescription, isScene } = props
   const title = labelForControl(propPath, controlDescription)
   const indentation = props.indentationLevel * 8
@@ -556,8 +602,6 @@ const RowForObjectControl = React.memo((props: RowForObjectControlProps) => {
   return (
     <div
       css={{
-        marginTop: 8,
-        marginBottom: 8,
         '&:hover': {
           boxShadow: 'inset 1px 0px 0px 0px hsla(0,0%,0%,20%)',
           background: 'hsl(0,0%,0%,1%)',
@@ -585,11 +629,11 @@ const RowForObjectControl = React.memo((props: RowForObjectControlProps) => {
                 height: 34,
                 fontWeight: 500,
                 gap: 4,
-                cursor: 'pointer',
+                cursor: props.disableToggling ? 'default' : 'pointer',
               }}
             >
               {title}
-              <ObjectIndicator open={open} />
+              {unless(props.disableToggling, <ObjectIndicator open={open} />)}
             </PropertyLabel>
           </SimpleFlexRow>
         </InspectorContextMenuWrapper>
@@ -607,6 +651,7 @@ const RowForObjectControl = React.memo((props: RowForObjectControlProps) => {
               setGlobalCursor={props.setGlobalCursor}
               indentationLevel={props.indentationLevel + 1}
               focusOnMount={props.focusOnMount && index === 0}
+              disableToggling={props.disableToggling}
             />
           )
         }, controlDescription.object),
@@ -690,10 +735,11 @@ const RowForUnionControl = React.memo((props: RowForUnionControlProps) => {
 
 interface RowForControlProps extends AbstractRowForControlProps {
   controlDescription: RegularControlDescription
+  disableToggling?: boolean
 }
 
 export const RowForControl = React.memo((props: RowForControlProps) => {
-  const { controlDescription } = props
+  const { controlDescription, disableToggling } = props
   if (isBaseControlDescription(controlDescription)) {
     return <RowForBaseControl {...props} controlDescription={controlDescription} />
   } else {
@@ -701,7 +747,13 @@ export const RowForControl = React.memo((props: RowForControlProps) => {
       case 'array':
         return <RowForArrayControl {...props} controlDescription={controlDescription} />
       case 'object':
-        return <RowForObjectControl {...props} controlDescription={controlDescription} />
+        return (
+          <RowForObjectControl
+            {...props}
+            controlDescription={controlDescription}
+            disableToggling={disableToggling ?? false}
+          />
+        )
       case 'tuple':
         return <RowForTupleControl {...props} controlDescription={controlDescription} />
       case 'union':

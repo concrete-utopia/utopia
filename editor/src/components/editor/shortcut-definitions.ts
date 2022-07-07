@@ -116,7 +116,7 @@ const shortcutDetailsWithDefaults: ShortcutDetails = {
   ),
   [CYCLE_HIERACHY_TARGETS_SHORTCUT]: shortcut(
     'Cycle up and down the hierarchy of the currently selected element.',
-    key('space', []),
+    key('q', []),
   ),
   [CYCLE_FORWARD_SIBLING_TARGETS_SHORTCUT]: shortcut(
     'Cycle forward between siblings of the currently selected element.',
