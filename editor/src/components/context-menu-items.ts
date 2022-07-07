@@ -55,10 +55,14 @@ export function requireDispatch(dispatch: EditorDispatch | null | undefined): Ed
 
 export const duplicateElement: ContextMenuItem<CanvasData> = {
   name: 'Duplicate Element',
-  enabled: true,
   shortcut: '⌘D',
   action: (data, dispatch?: EditorDispatch) => {
     requireDispatch(dispatch)([duplicateSelected()], 'everyone')
+  },
+  enabled: (data) => {
+    return data.selectedViews.every((view) => {
+      return !EP.isRootElementOfInstance(view)
+    })
   },
 }
 
