@@ -301,17 +301,35 @@ const RowForArrayControl = React.memo((props: RowForArrayControlProps) => {
     () => getSectionHeight(controlDescription),
     [controlDescription],
   )
-  const transformedValue = Array.isArray(value) ? value : [value]
+
+  const [insertingRow, setInsertingRow] = React.useState(false)
+  const toggleInsertRow = React.useCallback(() => setInsertingRow((current) => !current), [])
+
+  // Ensure the value is an array, just in case.
+  const transformedValue = React.useMemo(() => {
+    return Array.isArray(value) ? value : [value]
+  }, [value])
+
+  // If we are inserting, extend the array with an `undefined` value and
+  // then let the handling of the elements cater for that, so that there
+  // is no need for special handling of the value(s) being inserted.
+  const valueWithInsertingEntry = React.useMemo(() => {
+    if (insertingRow) {
+      return [...transformedValue, undefined]
+    } else {
+      return transformedValue
+    }
+  }, [transformedValue, insertingRow])
+  React.useEffect(() => {
+    setInsertingRow(false)
+  }, [transformedValue.length])
+
   const { springs, bind } = useArraySuperControl(
-    transformedValue,
+    valueWithInsertingEntry,
     onSubmitValue,
     sectionHeight,
     false,
   )
-  const [insertingRow, setInsertingRow] = React.useState(false)
-  const toggleInsertRow = React.useCallback(() => setInsertingRow((current) => !current), [])
-
-  React.useEffect(() => setInsertingRow(false), [springs.length])
 
   return (
     <React.Fragment>
@@ -321,7 +339,11 @@ const RowForArrayControl = React.memo((props: RowForArrayControlProps) => {
             {title}
           </PropertyLabel>
           {propertyStatus.overwritable ? (
-            <SquareButton highlight onMouseDown={toggleInsertRow}>
+            <SquareButton
+              highlight
+              onMouseDown={toggleInsertRow}
+              data-testid={`toggle-insert-${PP.toString(propPath)}`}
+            >
               {insertingRow ? (
                 <Icons.Minus
                   style={{ paddingTop: 1 }}
@@ -360,16 +382,6 @@ const RowForArrayControl = React.memo((props: RowForArrayControlProps) => {
           />
         ))}
       </div>
-      {insertingRow ? (
-        <RowForControl
-          controlDescription={controlDescription.propertyControl}
-          isScene={isScene}
-          propPath={PP.appendPropertyPathElems(propPath, [springs.length])}
-          setGlobalCursor={props.setGlobalCursor}
-          indentationLevel={1}
-          focusOnMount={false}
-        />
-      ) : null}
     </React.Fragment>
   )
 })
@@ -395,12 +407,13 @@ const ArrayControlItem = React.memo((props: ArrayControlItemProps) => {
   )
   const contextMenuItems = Utils.stripNulls([addOnUnsetValues([index], propMetadata.onUnsetValues)])
 
+  const contextMenuId = `context-menu-for-${PP.toString(propPathWithIndex)}`
   return (
     <InspectorContextMenuWrapper
-      id={`context-menu-for-${PP.toString(propPathWithIndex)}`}
+      id={contextMenuId}
       items={contextMenuItems}
       data={null}
-      key={index}
+      key={contextMenuId}
     >
       <animated.div
         {...bind(index)}

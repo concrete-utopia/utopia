@@ -796,3 +796,38 @@ describe('removePathsWithDeadUIDs', () => {
     expect(EP.dynamicPathToStaticPath(EP.elementPath(clearedPathParts2))).not.toBe(clearedPath2)
   })
 })
+
+describe('getOrderedPathsByDepth', () => {
+  it('sorts elements, the result is from the longest to shortest', () => {
+    const unsortedElementPaths = [
+      EP.elementPath([['A', '1', '0', 'Z', 'X', 'Y']]),
+      EP.elementPath([['A', '1']]),
+      EP.elementPath([['A', '1'], ['B', '2'], ['C']]),
+      EP.elementPath([
+        ['A', '1'],
+        ['B', '2'],
+      ]),
+      EP.elementPath([
+        ['A', '1'],
+        ['B', '2'],
+        ['D', 'E'],
+      ]),
+    ]
+    const expectedSortedElementPaths = [
+      EP.elementPath([
+        ['A', '1'],
+        ['B', '2'],
+        ['D', 'E'],
+      ]),
+      EP.elementPath([['A', '1'], ['B', '2'], ['C']]),
+      EP.elementPath([
+        ['A', '1'],
+        ['B', '2'],
+      ]),
+      EP.elementPath([['A', '1', '0', 'Z', 'X', 'Y']]),
+      EP.elementPath([['A', '1']]),
+    ]
+    const result = EP.getOrderedPathsByDepth(unsortedElementPaths)
+    expect(result).toEqual(expectedSortedElementPaths)
+  })
+})

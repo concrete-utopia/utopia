@@ -85,7 +85,7 @@ export const LayoutSystemSubsection = React.memo<LayoutSystemSubsectionProps>((p
             <LayoutSystemControl
               layoutSystem={props.specialSizeMeasurements.layoutSystemForChildren}
               providesCoordinateSystemForChildren={
-                props.specialSizeMeasurements.providesBoundsForChildren
+                props.specialSizeMeasurements.providesBoundsForAbsoluteChildren
               }
             />
           </UIGridRow>

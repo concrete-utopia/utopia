@@ -1178,8 +1178,8 @@ export function SpecialSizeMeasurementsKeepDeepEquality(): KeepDeepEqualityCall<
     const parentLayoutSystemResult = oldSize.parentLayoutSystem === newSize.parentLayoutSystem
     const layoutSystemForChildrenResult =
       oldSize.layoutSystemForChildren === newSize.layoutSystemForChildren
-    const providesBoundsForChildrenResult =
-      oldSize.providesBoundsForChildren === newSize.providesBoundsForChildren
+    const providesBoundsForAbsoluteChildrenResult =
+      oldSize.providesBoundsForAbsoluteChildren === newSize.providesBoundsForAbsoluteChildren
     const positionResult = oldSize.position === newSize.position
     const marginResult = SidesKeepDeepEquality(oldSize.margin, newSize.margin)
     const paddingResult = SidesKeepDeepEquality(oldSize.padding, newSize.padding)
@@ -1204,7 +1204,7 @@ export function SpecialSizeMeasurementsKeepDeepEquality(): KeepDeepEqualityCall<
       usesParentBoundsResult &&
       parentLayoutSystemResult &&
       layoutSystemForChildrenResult &&
-      providesBoundsForChildrenResult &&
+      providesBoundsForAbsoluteChildrenResult &&
       positionResult &&
       marginResult.areEqual &&
       paddingResult.areEqual &&
@@ -1229,7 +1229,7 @@ export function SpecialSizeMeasurementsKeepDeepEquality(): KeepDeepEqualityCall<
         newSize.usesParentBounds,
         newSize.parentLayoutSystem,
         newSize.layoutSystemForChildren,
-        newSize.providesBoundsForChildren,
+        newSize.providesBoundsForAbsoluteChildren,
         newSize.display,
         newSize.position,
         marginResult.value,
