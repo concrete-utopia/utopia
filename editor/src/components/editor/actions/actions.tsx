@@ -3711,94 +3711,89 @@ export const UPDATE_FNS = {
     }
   },
   UPDATE_FROM_WORKER: (action: UpdateFromWorker, editor: EditorModel): EditorModel => {
-    if (editor.parseOrPrintInFlight) {
-      let workingProjectContents: ProjectContentTreeRoot = editor.projectContents
-      let anyParsedUpdates: boolean = false
+    let workingProjectContents: ProjectContentTreeRoot = editor.projectContents
+    let anyParsedUpdates: boolean = false
 
-      for (const fileUpdate of action.updates) {
-        const existing = getContentsTreeFileFromString(editor.projectContents, fileUpdate.filePath)
-        if (existing != null && isTextFile(existing)) {
-          let updatedFile: TextFile
-          let updatedContents: ParsedTextFile
-          let code: string
-          switch (fileUpdate.type) {
-            case 'WORKER_CODE_UPDATE': {
-              // we use the new highlightBounds coming from the action
-              code = fileUpdate.code
-              updatedContents = updateParsedTextFileHighlightBounds(
-                existing.fileContents.parsed,
-                fileUpdate.highlightBounds,
-              )
-              break
-            }
-            case 'WORKER_PARSED_UPDATE': {
-              anyParsedUpdates = true
-
-              // we use the new highlightBounds coming from the action
-              code = existing.fileContents.code
-              const highlightBounds = getHighlightBoundsFromParseResult(fileUpdate.parsed)
-              updatedContents = updateParsedTextFileHighlightBounds(
-                fileUpdate.parsed,
-                highlightBounds,
-              )
-              break
-            }
-            default:
-              const _exhaustiveCheck: never = fileUpdate
-              throw new Error(`Invalid file update: ${fileUpdate}`)
-          }
-
-          if (fileUpdate.lastRevisedTime < existing.lastRevisedTime) {
-            // if the received file is older than the existing, we still allow it to update the other side,
-            // but we don't bump the revision state or the lastRevisedTime.
-            updatedFile = textFile(
-              textFileContents(code, updatedContents, existing.fileContents.revisionsState),
-              existing.lastSavedContents,
-              isParseSuccess(updatedContents) ? updatedContents : existing.lastParseSuccess,
-              existing.lastRevisedTime,
+    for (const fileUpdate of action.updates) {
+      const existing = getContentsTreeFileFromString(editor.projectContents, fileUpdate.filePath)
+      if (existing != null && isTextFile(existing)) {
+        let updatedFile: TextFile
+        let updatedContents: ParsedTextFile
+        let code: string
+        switch (fileUpdate.type) {
+          case 'WORKER_CODE_UPDATE': {
+            // we use the new highlightBounds coming from the action
+            code = fileUpdate.code
+            updatedContents = updateParsedTextFileHighlightBounds(
+              existing.fileContents.parsed,
+              fileUpdate.highlightBounds,
             )
-          } else {
-            updatedFile = textFile(
-              textFileContents(code, updatedContents, RevisionsState.BothMatch),
-              existing.lastSavedContents,
-              isParseSuccess(updatedContents) ? updatedContents : existing.lastParseSuccess,
-              Date.now(),
-            )
+            break
           }
+          case 'WORKER_PARSED_UPDATE': {
+            anyParsedUpdates = true
 
-          workingProjectContents = addFileToProjectContents(
-            workingProjectContents,
-            fileUpdate.filePath,
-            updatedFile,
+            // we use the new highlightBounds coming from the action
+            code = existing.fileContents.code
+            const highlightBounds = getHighlightBoundsFromParseResult(fileUpdate.parsed)
+            updatedContents = updateParsedTextFileHighlightBounds(
+              fileUpdate.parsed,
+              highlightBounds,
+            )
+            break
+          }
+          default:
+            const _exhaustiveCheck: never = fileUpdate
+            throw new Error(`Invalid file update: ${fileUpdate}`)
+        }
+
+        if (fileUpdate.lastRevisedTime < existing.lastRevisedTime) {
+          // if the received file is older than the existing, we still allow it to update the other side,
+          // but we don't bump the revision state or the lastRevisedTime.
+          updatedFile = textFile(
+            textFileContents(code, updatedContents, existing.fileContents.revisionsState),
+            existing.lastSavedContents,
+            isParseSuccess(updatedContents) ? updatedContents : existing.lastParseSuccess,
+            existing.lastRevisedTime,
           )
         } else {
-          // The worker shouldn't be recreating deleted files or reformated files
-          console.error(`Worker thread is trying to update an invalid file ${fileUpdate.filePath}`)
-          return editor
+          updatedFile = textFile(
+            textFileContents(code, updatedContents, RevisionsState.BothMatch),
+            existing.lastSavedContents,
+            isParseSuccess(updatedContents) ? updatedContents : existing.lastParseSuccess,
+            Date.now(),
+          )
         }
+
+        workingProjectContents = addFileToProjectContents(
+          workingProjectContents,
+          fileUpdate.filePath,
+          updatedFile,
+        )
+      } else {
+        // The worker shouldn't be recreating deleted files or reformated files
+        console.error(`Worker thread is trying to update an invalid file ${fileUpdate.filePath}`)
+        return editor
       }
-      if (anyParsedUpdates) {
-        // Clear any cached paths since UIDs will have been regenerated and property paths may no longer exist
-        // FIXME take a similar approach as ElementPath cache culling to the PropertyPath cache culling. Or don't even clear it.
-        PP.clearPropertyPathCache()
-      }
-      return {
-        ...editor,
-        projectContents: workingProjectContents,
-        canvas: {
-          ...editor.canvas,
-          canvasContentInvalidateCount: anyParsedUpdates
-            ? editor.canvas.canvasContentInvalidateCount + 1
-            : editor.canvas.canvasContentInvalidateCount,
-          domWalkerInvalidateCount: anyParsedUpdates
-            ? editor.canvas.domWalkerInvalidateCount + 1
-            : editor.canvas.domWalkerInvalidateCount,
-        },
-        parseOrPrintInFlight: false, // only ever clear it here
-      }
-    } else {
-      // We've received this update after an editor undo action, so we should discard it
-      return editor
+    }
+    if (anyParsedUpdates) {
+      // Clear any cached paths since UIDs will have been regenerated and property paths may no longer exist
+      // FIXME take a similar approach as ElementPath cache culling to the PropertyPath cache culling. Or don't even clear it.
+      PP.clearPropertyPathCache()
+    }
+    return {
+      ...editor,
+      projectContents: workingProjectContents,
+      canvas: {
+        ...editor.canvas,
+        canvasContentInvalidateCount: anyParsedUpdates
+          ? editor.canvas.canvasContentInvalidateCount + 1
+          : editor.canvas.canvasContentInvalidateCount,
+        domWalkerInvalidateCount: anyParsedUpdates
+          ? editor.canvas.domWalkerInvalidateCount + 1
+          : editor.canvas.domWalkerInvalidateCount,
+      },
+      parseOrPrintInFlight: false, // only ever clear it here
     }
   },
   UPDATE_FROM_CODE_EDITOR: (

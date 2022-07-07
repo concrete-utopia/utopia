@@ -365,13 +365,12 @@ describe('Keyboard Strategies Undo Behavior', () => {
     expect(renderResult.getEditorState().editor.canvas.interactionSession).toBeNull() // the interaction session is cleared
     expectElementLeftOnScreen(30)
 
-    // TODO FIXME WE HAVE A BUG, We PRINT THE WRONG CODE!! this assertion should be true:
-    // await expectElementPropertiesInPrintedCode({
-    //   left: 30, // the printed happily stays 30
-    //   top: 100,
-    //   width: 122,
-    //   height: 101,
-    // })
+    await expectElementPropertiesInPrintedCode({
+      left: 30, // the printed happily stays 30
+      top: 100,
+      width: 122,
+      height: 101,
+    })
 
     // pressing Redo brings back the interaction
     pressCmdShiftZ()
