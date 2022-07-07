@@ -8,6 +8,7 @@ import { DomWalkerInvalidatePathsCtxAtom, UiJsxCanvasCtxAtom } from '../ui-jsx-c
 import { UTOPIA_SCENE_ID_KEY } from '../../../core/model/utopia-constants'
 import { AlwaysTrue, usePubSubAtomReadOnly } from '../../../core/shared/atom-with-pub-sub'
 import { unless, when } from '../../../utils/react-conditionals'
+import { checkerboardBackground } from '../../inspector/common/inspector-utils'
 
 type ExtendedSceneProps = SceneProps & { [UTOPIA_SCENE_ID_KEY]: string }
 
@@ -28,6 +29,7 @@ export const SceneComponent = React.memo(
       boxShadow: canvasIsLive
         ? UtopiaStyles.scene.live.boxShadow
         : UtopiaStyles.scene.editing.boxShadow,
+      ...checkerboardBackground,
       ...style,
     }
 
