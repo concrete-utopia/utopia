@@ -1,5 +1,7 @@
 import { act, fireEvent } from '@testing-library/react'
+import { MetadataUtils } from '../../../core/model/element-metadata-utils'
 import * as EP from '../../../core/shared/element-path'
+import { localRectangle, LocalRectangle } from '../../../core/shared/math-utils'
 import { runEscapeHatch } from '../../editor/actions/action-creators'
 import {
   getPrintedUiJsCode,
@@ -7,6 +9,60 @@ import {
   renderTestEditorWithCode,
   TestScenePath,
 } from '../ui-jsx.test-utils'
+
+const absoluteDescendantProject = (absoluteFrame: LocalRectangle) => {
+  return `
+    <div
+      style={{
+        position: 'absolute',
+        width: 100,
+        height: 200,
+        left: 10,
+        top: 20,
+      }}
+      data-uid='aaa'
+    >
+      <div
+        style={{
+          backgroundColor: '#FF00BFAB',
+          width: 80,
+          height: 80,
+        }}
+        data-uid='bbb'
+      />
+      <div
+        style={{
+          display: 'flex',
+          padding: 8,
+          flexDirection: 'column',
+        }}
+        data-uid='ccc'
+      >
+        <div style={{ display: 'flex' }} data-uid='ddd'>
+          <div
+            data-uid='eee'
+            style={{
+              position: 'absolute',
+              width: ${absoluteFrame.width},
+              top: ${absoluteFrame.y},
+              height: ${absoluteFrame.height},
+              left: ${absoluteFrame.x},
+            }}
+          >
+            Hello Text
+          </div>
+          <div
+            style={{
+              flexBasis: 100,
+              height: 150,
+              backgroundColor: '#6CF8C0',
+            }}
+            data-uid='fff'
+          />
+        </div>
+      </div>
+    </div>`
+}
 
 describe('Convert to Absolute/runEscapeHatch action', () => {
   it('Converts 1 element to absolute', async () => {
@@ -340,246 +396,42 @@ describe('Convert to Absolute/runEscapeHatch action', () => {
     )
   })
   it('Converts element with absolute descendants, the absolute descedants are moved to keep their visual position to the new containing block', async () => {
+    const startingAbsoluteFrame = localRectangle({ x: 42, y: 218, width: 100, height: 20 })
     const renderResult = await renderTestEditorWithCode(
-      makeTestProjectCodeWithSnippet(`
-      <div
-        style={{
-          position: 'absolute',
-          width: 100,
-          height: 200,
-          left: 10,
-          top: 20,
-        }}
-        data-uid='aaa'
-      >
-        <div
-          style={{
-            backgroundColor: '#FF00BFAB',
-            width: 80,
-            height: 80,
-          }}
-          data-uid='bbb'
-        />
-        <div
-          style={{
-            display: 'flex',
-            padding: 8,
-            flexDirection: 'column',
-          }}
-          data-uid='ccc'
-        >
-          <div style={{ display: 'flex' }} data-uid='ddd'>
-            <div
-              data-uid='eee'
-              style={{
-                position: 'absolute',
-                width: 100,
-                top: 218,
-                height: 20,
-                left: 42,
-              }}
-            >
-              Hello Text
-            </div>
-            <div
-              style={{
-                flexBasis: 100,
-                height: 150,
-                backgroundColor: '#6CF8C0',
-              }}
-              data-uid='fff'
-            />
-          </div>
-        </div>
-      </div>`),
+      makeTestProjectCodeWithSnippet(absoluteDescendantProject(startingAbsoluteFrame)),
       'await-first-dom-report',
     )
 
-    const targets = [EP.appendNewElementPath(TestScenePath, ['aaa', 'ccc'])]
-    await renderResult.dispatch([runEscapeHatch(targets)], true)
+    const target = [EP.appendNewElementPath(TestScenePath, ['aaa', 'ccc'])]
+    await renderResult.dispatch([runEscapeHatch(target)], true)
 
-    expect(getPrintedUiJsCode(renderResult.getEditorState())).toEqual(
-      makeTestProjectCodeWithSnippet(`
-        <div
-          style={{
-            position: 'absolute',
-            width: 100,
-            height: 200,
-            left: 10,
-            top: 20,
-          }}
-          data-uid='aaa'
-        >
-          <div
-            style={{
-              backgroundColor: '#FF00BFAB',
-              width: 80,
-              height: 80,
-            }}
-            data-uid='bbb'
-          />
-          <div
-            style={{
-              display: 'flex',
-              padding: 8,
-              flexDirection: 'column',
-              position: 'absolute',
-              left: 0,
-              width: 100,
-              top: 80,
-              height: 166,
-            }}
-            data-uid='ccc'
-          >
-            <div style={{ display: 'flex' }} data-uid='ddd'>
-              <div
-                data-uid='eee'
-                style={{
-                  position: 'absolute',
-                  width: 100,
-                  top: 138,
-                  height: 20,
-                  left: 42,
-                }}
-              >
-                Hello Text
-              </div>
-              <div
-                style={{
-                  flexBasis: 100,
-                  height: 150,
-                  backgroundColor: '#6CF8C0',
-                }}
-                data-uid='fff'
-              />
-            </div>
-          </div>
-        </div>
-      `),
+    const absoluteElementPath = EP.appendNewElementPath(TestScenePath, ['aaa', 'ccc', 'ddd', 'eee'])
+    const absoluteFrame = MetadataUtils.getFrame(
+      absoluteElementPath,
+      renderResult.getEditorState().editor.jsxMetadata,
     )
+    const expectedFrame = localRectangle({ x: 34, y: 130, width: 100, height: 20 })
+    expect(absoluteFrame).toEqual(expectedFrame)
   })
-  it('Converts multiple elements with absolute descendant that has all frame pins, it is moved to keep their visual position to the new containing block', async () => {
+  it('Converts multiple elements with absolute descendant, it is moved to keep their visual position to the new containing block', async () => {
+    const startingAbsoluteFrame = localRectangle({ x: 42, y: 218, width: 100, height: 20 })
     const renderResult = await renderTestEditorWithCode(
-      makeTestProjectCodeWithSnippet(`
-      <div
-        style={{ position: 'absolute', left: 10, top: 20 }}
-        data-uid='aaa'
-      >
-        <div
-          style={{
-            display: 'flex',
-            padding: 8,
-            flexDirection: 'column',
-          }}
-          data-uid='ccc'
-        >
-          <div
-            style={{
-              backgroundColor: '#FF00BFAB',
-              width: 80,
-              height: 80,
-            }}
-            data-uid='bbb'
-          />
-          <div style={{ display: 'flex' }} data-uid='ddd'>
-            <div
-              data-uid='eee'
-              style={{
-                position: 'absolute',
-                width: 100,
-                top: 218,
-                height: 20,
-                left: 42,
-                bottom: 8,
-                right: -46,
-              }}
-            >
-              Hello Text
-            </div>
-            <div
-              style={{
-                flexBasis: 100,
-                height: 150,
-                backgroundColor: '#6CF8C0',
-              }}
-              data-uid='fff'
-            />
-          </div>
-        </div>
-      </div>`),
+      makeTestProjectCodeWithSnippet(absoluteDescendantProject(startingAbsoluteFrame)),
       'await-first-dom-report',
     )
 
     const targets = [
-      EP.appendNewElementPath(TestScenePath, ['aaa', 'ccc', 'ddd']),
       EP.appendNewElementPath(TestScenePath, ['aaa', 'ccc']),
+      EP.appendNewElementPath(TestScenePath, ['aaa', 'ccc', 'ddd']),
     ]
     await renderResult.dispatch([runEscapeHatch(targets)], true)
 
-    expect(getPrintedUiJsCode(renderResult.getEditorState())).toEqual(
-      makeTestProjectCodeWithSnippet(`
-        <div
-          style={{ position: 'absolute', left: 10, top: 20 }}
-          data-uid='aaa'
-        >
-          <div
-            style={{
-              display: 'flex',
-              padding: 8,
-              flexDirection: 'column',
-              position: 'absolute',
-              left: 0,
-              width: 96,
-              top: 0,
-              height: 246,
-            }}
-            data-uid='ccc'
-          >
-            <div
-              style={{
-                backgroundColor: '#FF00BFAB',
-                width: 80,
-                height: 80,
-              }}
-              data-uid='bbb'
-            />
-          </div>
-          <div
-            style={{
-              display: 'flex',
-              position: 'absolute',
-              left: 8,
-              width: 80,
-              top: 88,
-              height: 150,
-            }}
-            data-uid='ddd'
-          >
-            <div
-              data-uid='eee'
-              style={{
-                position: 'absolute',
-                width: 100,
-                top: 130,
-                height: 20,
-                left: 34,
-                bottom: 0,
-                right: -54,
-              }}
-            >
-              Hello Text
-            </div>
-            <div
-              style={{
-                flexBasis: 100,
-                height: 150,
-                backgroundColor: '#6CF8C0',
-              }}
-              data-uid='fff'
-            />
-          </div>
-        </div>
-      `),
+    const absoluteElementPath = EP.appendNewElementPath(TestScenePath, ['aaa', 'ddd', 'eee'])
+    const absoluteFrame = MetadataUtils.getFrame(
+      absoluteElementPath,
+      renderResult.getEditorState().editor.jsxMetadata,
     )
+    const expectedFrame = localRectangle({ x: 34, y: 130, width: 100, height: 20 })
+    expect(absoluteFrame).toEqual(expectedFrame)
   })
 })
