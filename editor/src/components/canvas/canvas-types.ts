@@ -30,6 +30,7 @@ import {
   InteractionSessionWithoutMetadata,
 } from './canvas-strategies/interaction-state'
 import { CanvasStrategyId } from './canvas-strategies/canvas-strategy-types'
+import { MouseButtonsPressed } from 'src/utils/mouse'
 
 export const CanvasContainerID = 'canvas-container'
 
@@ -57,6 +58,7 @@ export enum CSSCursor {
   TextInsert = 'text',
   BrowserAuto = 'auto',
   Duplicate = "-webkit-image-set( url( '/editor/cursors/cursor-duplicate.png ') 1x, url( '/editor/cursors/cursor-duplicate@2x.png ') 2x ) 4 4, default",
+  OpenHand = "-webkit-image-set( url( '/editor/cursors/cursor-open-hand.png ') 1x, url( '/editor/cursors/cursor-open-hand@2x.png ') 2x ) 4 4, default",
 }
 
 export type VerticalRectangles = {
@@ -705,6 +707,7 @@ export interface CanvasModel {
   controls: Array<HigherOrderControl>
   dragState: DragState | null
   keysPressed: KeysPressed
+  mouseButtonsPressed: MouseButtonsPressed
   mode: Mode
   scale: number
   highlightedviews: Array<ElementPath>
