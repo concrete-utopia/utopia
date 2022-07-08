@@ -53,12 +53,26 @@ const absoluteDescendantProject = (absoluteFrame: LocalRectangle) => {
           </div>
           <div
             style={{
+              position: 'relative',
               flexBasis: 100,
               height: 150,
               backgroundColor: '#6CF8C0',
             }}
             data-uid='fff'
-          />
+          >
+            <span
+              data-uid='ggg'
+              style={{
+                position: 'absolute',
+                width: ${absoluteFrame.width},
+                top: ${absoluteFrame.y},
+                height: ${absoluteFrame.height},
+                left: ${absoluteFrame.x},
+              }}
+            >
+              Hello absolute with relative parent
+            </span>
+          </div>
         </div>
       </div>
     </div>`
@@ -412,6 +426,19 @@ describe('Convert to Absolute/runEscapeHatch action', () => {
     )
     const expectedFrame = localRectangle({ x: 34, y: 130, width: 100, height: 20 })
     expect(absoluteFrame).toEqual(expectedFrame)
+
+    const absoluteFromRelativeElementPath = EP.appendNewElementPath(TestScenePath, [
+      'aaa',
+      'ccc',
+      'ddd',
+      'fff',
+      'ggg',
+    ])
+    const absoluteFromRelativeFrame = MetadataUtils.getFrame(
+      absoluteFromRelativeElementPath,
+      renderResult.getEditorState().editor.jsxMetadata,
+    )
+    expect(absoluteFromRelativeFrame).toEqual(startingAbsoluteFrame)
   })
   it('Converts multiple elements with absolute descendant, it is moved to keep their visual position to the new containing block', async () => {
     const startingAbsoluteFrame = localRectangle({ x: 42, y: 218, width: 100, height: 20 })
