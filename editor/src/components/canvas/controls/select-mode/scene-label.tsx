@@ -72,16 +72,16 @@ const SceneLabel = React.memo<SceneLabelProps>((props) => {
     'SceneLabel canvasOffset',
   )
   const scale = useEditorState((store) => store.editor.canvas.scale, 'SceneLabel scale')
-  const scaledFontSize = ControlFontSize / scale
-  const paddingY = scaledFontSize * 0.5
-  const offsetX = paddingY * 2
+  const scaledFontSize = 9 / scale
+  const paddingY = 0.5
+  const offsetX = scaledFontSize
 
   const isSelected = useEditorState(
     (store) => store.editor.selectedViews.some((view) => EP.pathsEqual(props.target, view)),
     'SceneLabel isSelected',
   )
   const isHighlighted = useEditorState(
-    (store) => store.editor.selectedViews.some((view) => EP.pathsEqual(props.target, view)),
+    (store) => store.editor.highlightedViews.some((view) => EP.pathsEqual(props.target, view)),
     'SceneLabel isHighlighted',
   )
 
@@ -142,22 +142,24 @@ const SceneLabel = React.memo<SceneLabelProps>((props) => {
           className='roleComponentName'
           style={{
             pointerEvents: labelSelectable ? 'initial' : 'none',
+            // color: isHighlighted
+            // ? colorTheme.canvasBackground.value
+            // : colorTheme.subduedForeground.value,
             color: colorTheme.subduedForeground.value,
             position: 'absolute',
-            fontWeight: 500,
+            fontWeight: 600,
             left: frame.x,
-            bottom: -frame.y,
+            bottom: -frame.y + 10,
             width: frame.width,
             paddingLeft: offsetX,
-            paddingTop: paddingY,
-            paddingBottom: paddingY,
+            // paddingTop: paddingY,
+            paddingBottom: 1,
             fontFamily:
               '-apple-system, BlinkMacSystemFont, Helvetica, "Segoe UI", Roboto,  Arial, sans-serif, "Apple Color Emoji", "Segoe UI Emoji", "Segoe UI Symbol"',
             fontSize: scaledFontSize,
             whiteSpace: 'nowrap',
             overflow: 'hidden',
             textOverflow: 'ellipsis',
-            textDecoration: isSelected || isHighlighted ? 'underline' : undefined,
           }}
         >
           {label}

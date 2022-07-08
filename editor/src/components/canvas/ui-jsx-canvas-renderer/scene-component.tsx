@@ -5,10 +5,12 @@ import { Scene, SceneProps } from 'utopia-api'
 import { useColorTheme, UtopiaStyles } from '../../../uuiui'
 import { RerenderUtopiaCtxAtom } from './ui-jsx-canvas-contexts'
 import { DomWalkerInvalidatePathsCtxAtom, UiJsxCanvasCtxAtom } from '../ui-jsx-canvas'
-import { UTOPIA_SCENE_ID_KEY } from '../../../core/model/utopia-constants'
+import { UTOPIA_PATH_KEY, UTOPIA_SCENE_ID_KEY } from '../../../core/model/utopia-constants'
 import { AlwaysTrue, usePubSubAtomReadOnly } from '../../../core/shared/atom-with-pub-sub'
 import { unless, when } from '../../../utils/react-conditionals'
 import { checkerboardBackground } from '../../inspector/common/inspector-utils'
+import { useEditorState } from '../../editor/store/store-hook'
+import { fromString, pathsEqual } from '../../../core/shared/element-path'
 
 type ExtendedSceneProps = SceneProps & { [UTOPIA_SCENE_ID_KEY]: string }
 
@@ -20,6 +22,33 @@ export const SceneComponent = React.memo(
       DomWalkerInvalidatePathsCtxAtom,
       AlwaysTrue,
     )
+
+    const scenePathString = (props as any)[UTOPIA_PATH_KEY]
+    const scenePath = scenePathString == null ? null : fromString(scenePathString)
+    const isSelected = useEditorState((store) => {
+      if (scenePath == null) {
+        return false
+      } else {
+        const selectedViews = store.editor.selectedViews
+        return selectedViews.some((p) => pathsEqual(p, scenePath))
+      }
+    }, 'SceneComponent isSelected')
+    const isHighlighted = useEditorState((store) => {
+      if (scenePath == null) {
+        return false
+      } else {
+        const highlightedViews = store.editor.highlightedViews
+        return highlightedViews.some((p) => pathsEqual(p, scenePath))
+      }
+    }, 'SceneComponent isSelected')
+    const renderHeader = (isSelected || isHighlighted) && !canvasIsLive
+
+    const highlightColor = colorTheme.secondaryBackground.value
+    // const highlightColor = colorTheme.neutralBackground.value
+    // const highlightColor = colorTheme.canvasSelectionPrimaryOutline.value
+
+    const outlineColor = isSelected ? colorTheme.secondaryBackground.value : highlightColor
+    const boxShadow = ` 0px 0px 0px 1.5px ${outlineColor}` //, ${UtopiaStyles.scene.editing.boxShadow}`
 
     const { style, ...remainingProps } = props
 
@@ -38,22 +67,20 @@ export const SceneComponent = React.memo(
 
     return (
       <React.Fragment>
-        {canvasIsLive ? null : (
+        {renderHeader ? (
           <div
             style={{
               position: 'absolute',
-              width: style!.width,
-              left: style!.left,
+              width: style!.width as number,
+              left: style!.left as number,
               top: (style!.top as number) - 28,
-              bottom: -(style!.top as number),
-              boxShadow: canvasIsLive
-                ? UtopiaStyles.scene.live.boxShadow
-                : UtopiaStyles.scene.editing.boxShadow,
-              borderRadius: '6px 6px 0 0',
-              backgroundColor: colorTheme.secondaryBackground.value,
+              bottom: -(style!.top as number) + 10,
+              boxShadow: boxShadow,
+              borderRadius: '3px',
+              backgroundColor: isSelected ? colorTheme.secondaryBackground.value : highlightColor,
             }}
           />
-        )}
+        ) : null}
         <Scene {...remainingProps} style={sceneStyle}>
           {props.children}
         </Scene>
