@@ -200,9 +200,17 @@ function collectMoveCommandsForSelectedElements(
   let commands: Array<CanvasCommand> = []
   let intendedBounds: Array<CanvasFrameAndTarget> = []
 
+  /**
+   * Multiselect reparents the selection to a common ancestor
+   * starting from the inner elements
+   */
   const commonAncestor = EP.getCommonParent(selectedElements, false)
-  const sortedElements = EP.getOrderedPathsByDepth(selectedElements) // inner elements should be reparented first
+  const sortedElements = EP.getOrderedPathsByDepth(selectedElements)
 
+  /**
+   * It's possible to have descendants where the layout is defined by an ancestor
+   * these are offset here as the new layout parents will be the selected elements
+   */
   const descendantsInNewContainingBlock = moveDescendantsToNewContainingBlock(
     metadata,
     selectedElements,
