@@ -2645,19 +2645,22 @@ export function duplicate(
             })
           }
 
-          utopiaComponents = insertElementAtPath(
-            workingEditorState.projectContents,
-            workingEditorState.canvas.openFile?.filename ?? null,
-            newParentPath,
-            newElement,
-            utopiaComponents,
-            null,
-          )
+          // Where the parent is a different component to the element being duplicated.
+          const duplicatingComponentRootElement = EP.isRootElementOfInstance(path)
 
-          if (newElement == null) {
+          if (newElement == null || duplicatingComponentRootElement) {
             console.warn(`Could not duplicate ${EP.toVarSafeComponentId(path)}`)
             return success
           } else {
+            utopiaComponents = insertElementAtPath(
+              workingEditorState.projectContents,
+              workingEditorState.canvas.openFile?.filename ?? null,
+              newParentPath,
+              newElement,
+              utopiaComponents,
+              null,
+            )
+
             newSelectedViews.push(newPath)
             // duplicating and inserting the metadata to ensure we're not working with stale metadata
             // this is used for drag + duplicate on the canvas

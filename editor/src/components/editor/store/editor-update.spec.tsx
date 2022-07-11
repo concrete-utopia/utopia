@@ -473,6 +473,23 @@ describe('action DUPLICATE_SPECIFIC_ELEMENTS', () => {
       chaiExpect.fail('src/app.js file was the wrong type.')
     }
   })
+  it('does not duplicate a root element of an instance', () => {
+    const element1 = EP.appendNewElementPath(ScenePathForTestUiJsFile, ['aaa'])
+    const { editor, derivedState, dispatch } = createEditorStates([element1])
+    const duplicateAction = duplicateSelected()
+    const updatedEditor = runLocalEditorAction(
+      editor,
+      derivedState,
+      defaultUserState,
+      workers,
+      duplicateAction,
+      History.init(editor, derivedState),
+      dispatch,
+      emptyUiJsxCanvasContextData(),
+      builtInDependencies,
+    )
+    expect(updatedEditor.projectContents).toEqual(editor.projectContents)
+  })
 })
 
 describe('action DELETE_SELECTED', () => {
