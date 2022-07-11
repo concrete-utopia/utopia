@@ -488,9 +488,11 @@ function findNearestSelectedAncestor(
   target: ElementPath,
   selectedElements: Array<ElementPath>,
 ): ElementPath | null {
-  return EP.getOrderedPathsByDepth(selectedElements).filter((selection) =>
-    EP.isDescendantOf(target, selection),
-  )[0]
+  return (
+    EP.getOrderedPathsByDepth(selectedElements).find((selection) =>
+      EP.isDescendantOf(target, selection),
+    ) ?? null
+  )
 }
 
 function createUpdatePinsCommands(
