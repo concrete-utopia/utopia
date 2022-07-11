@@ -419,6 +419,7 @@ import {
 } from '../../inspector/common/css-utils'
 import { projectListing, ProjectListing } from '../action-types'
 import { UtopiaVSCodeConfig } from 'utopia-vscode-common'
+import { MouseButtonsPressed } from 'src/utils/mouse'
 
 export function TransientCanvasStateFilesStateKeepDeepEquality(
   oldValue: TransientFilesState,
@@ -2990,6 +2991,10 @@ export const EditorStateKeepDeepEquality: KeepDeepEqualityCall<EditorState> = (
     oldValue.keysPressed,
     newValue.keysPressed,
   )
+  const mouseButtonsPressedResult = createCallFromIntrospectiveKeepDeep<MouseButtonsPressed>()(
+    oldValue.mouseButtonsPressed,
+    newValue.mouseButtonsPressed,
+  )
   const openPopupIdResult = NullableStringKeepDeepEquality(
     oldValue.openPopupId,
     newValue.openPopupId,
@@ -3137,6 +3142,7 @@ export const EditorStateKeepDeepEquality: KeepDeepEqualityCall<EditorState> = (
     modeResult.areEqual &&
     focusedPanelResult.areEqual &&
     keysPressedResult.areEqual &&
+    mouseButtonsPressedResult.areEqual &&
     openPopupIdResult.areEqual &&
     toastsResults.areEqual &&
     canvasCursorResults.areEqual &&
@@ -3203,6 +3209,7 @@ export const EditorStateKeepDeepEquality: KeepDeepEqualityCall<EditorState> = (
       modeResult.value,
       focusedPanelResult.value,
       keysPressedResult.value,
+      mouseButtonsPressedResult.value,
       openPopupIdResult.value,
       toastsResults.value,
       canvasCursorResults.value,

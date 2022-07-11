@@ -145,6 +145,8 @@ export function runSimpleLocalEditorAction(
       return UPDATE_FNS.CLEAR_HIGHLIGHTED_VIEWS(action, state)
     case 'UPDATE_KEYS_PRESSED':
       return UPDATE_FNS.UPDATE_KEYS_PRESSED(action, state)
+    case 'UPDATE_MOUSE_BUTTONS_PRESSED':
+      return UPDATE_FNS.UPDATE_MOUSE_BUTTONS_PRESSED(action, state)
     case 'HIDE_MODAL':
       return UPDATE_FNS.HIDE_MODAL(action, state)
     case 'SHOW_MODAL':

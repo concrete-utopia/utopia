@@ -373,6 +373,7 @@ import {
   RemoveFromNodeModulesContents,
   RunEscapeHatch,
   SetElementsToRerender,
+  UpdateMouseButtonsPressed,
 } from '../action-types'
 import { defaultTransparentViewElement, defaultSceneElement } from '../defaults'
 import {
@@ -528,6 +529,7 @@ import { getEscapeHatchCommands } from '../../../components/canvas/canvas-strate
 import { pickCanvasStateFromEditorState } from '../../canvas/canvas-strategies/canvas-strategies'
 import { foldAndApplyCommandsSimple, runCanvasCommand } from '../../canvas/commands/commands'
 import { setElementsToRerenderCommand } from '../../canvas/commands/set-elements-to-rerender-command'
+import { addButtonPressed, MouseButtonsPressed, removeButtonPressed } from '../../../utils/mouse'
 
 export function updateSelectedLeftMenuTab(editorState: EditorState, tab: LeftMenuTab): EditorState {
   return {
@@ -940,6 +942,7 @@ function restoreEditorState(currentEditor: EditorModel, history: StateHistory): 
     mode: EditorModes.selectMode(),
     focusedPanel: currentEditor.focusedPanel,
     keysPressed: {},
+    mouseButtonsPressed: emptySet(),
     openPopupId: null,
     toasts: currentEditor.toasts,
     cursorStack: {
@@ -2921,6 +2924,22 @@ export const UPDATE_FNS = {
     return update(editor, {
       keysPressed: { $set: action.keys },
     })
+  },
+  UPDATE_MOUSE_BUTTONS_PRESSED: (
+    action: UpdateMouseButtonsPressed,
+    editor: EditorModel,
+  ): EditorModel => {
+    let mouseButtonsPressed: MouseButtonsPressed = editor.mouseButtonsPressed
+    if (action.added != null) {
+      mouseButtonsPressed = addButtonPressed(mouseButtonsPressed, action.added)
+    }
+    if (action.removed != null) {
+      mouseButtonsPressed = removeButtonPressed(mouseButtonsPressed, action.removed)
+    }
+    return {
+      ...editor,
+      mouseButtonsPressed: mouseButtonsPressed,
+    }
   },
   HIDE_MODAL: (action: HideModal, editor: EditorModel): EditorModel => {
     return update(editor, {

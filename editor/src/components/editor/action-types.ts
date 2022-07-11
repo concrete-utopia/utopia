@@ -387,6 +387,12 @@ export type UpdateKeysPressed = {
   keys: KeysPressed
 }
 
+export interface UpdateMouseButtonsPressed {
+  action: 'UPDATE_MOUSE_BUTTONS_PRESSED'
+  added: number | null
+  removed: number | null
+}
+
 export type HideModal = {
   action: 'HIDE_MODAL'
 }
@@ -994,6 +1000,7 @@ export type EditorAction =
   | SetHighlightedView
   | ClearHighlightedViews
   | UpdateKeysPressed
+  | UpdateMouseButtonsPressed
   | HideModal
   | ShowModal
   | ResizeInterfaceDesignerCodePane

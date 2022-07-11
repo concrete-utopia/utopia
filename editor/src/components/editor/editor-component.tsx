@@ -99,8 +99,21 @@ function useDelayedValueHook(inputValue: boolean, delayMs: number): boolean {
 export const EditorComponentInner = React.memo((props: EditorProps) => {
   const editorStoreRef = useRefEditorState((store) => store)
   const colorTheme = useColorTheme()
+  const onWindowMouseUp = React.useCallback(
+    (event: MouseEvent) => {
+      editorStoreRef.current.dispatch(
+        [EditorActions.updateMouseButtonsPressed(null, event.button)],
+        'everyone',
+      )
+    },
+    [editorStoreRef],
+  )
   const onWindowMouseDown = React.useCallback(
     (event: MouseEvent) => {
+      editorStoreRef.current.dispatch(
+        [EditorActions.updateMouseButtonsPressed(event.button, null)],
+        'everyone',
+      )
       const popupId = editorStoreRef.current.editor.openPopupId
       if (popupId != null) {
         const popupElement = document.getElementById(popupId)
@@ -233,16 +246,18 @@ export const EditorComponentInner = React.memo((props: EditorProps) => {
 
   React.useEffect(() => {
     window.addEventListener('mousedown', onWindowMouseDown, true)
+    window.addEventListener('mouseup', onWindowMouseUp, true)
     window.addEventListener('keydown', onWindowKeyDown)
     window.addEventListener('keyup', onWindowKeyUp)
     window.addEventListener('contextmenu', preventDefault)
     return function cleanup() {
       window.removeEventListener('mousedown', onWindowMouseDown, true)
+      window.removeEventListener('mouseup', onWindowMouseUp, true)
       window.removeEventListener('keydown', onWindowKeyDown)
       window.removeEventListener('keyup', onWindowKeyUp)
       window.removeEventListener('contextmenu', preventDefault)
     }
-  }, [onWindowMouseDown, onWindowKeyDown, onWindowKeyUp, preventDefault])
+  }, [onWindowMouseDown, onWindowMouseUp, onWindowKeyDown, onWindowKeyUp, preventDefault])
 
   const dispatch = useEditorState((store) => store.dispatch, 'EditorComponentInner dispatch')
   const projectName = useEditorState(
