@@ -172,19 +172,31 @@ export function getSelectableViews(
       return !rootElementsToFilter.some((path) => EP.pathsEqual(rootPath, path))
     })
     let siblings: Array<ElementPath> = []
+
     Utils.fastForEach(selectedViews, (view) => {
+      function addChildrenAndUnfurledFocusedComponents(paths: Array<ElementPath>) {
+        Utils.fastForEach(paths, (ancestor) => {
+          const { children, unfurledComponents } =
+            MetadataUtils.getAllChildrenIncludingUnfurledFocusedComponents(
+              ancestor,
+              componentMetadata,
+            )
+          siblings.push(ancestor)
+          const ancestorChildren = [...children, ...unfurledComponents]
+          fastForEach(ancestorChildren, (child) => siblings.push(child))
+
+          if (EP.pathsEqual(ancestor, view) && unfurledComponents.length > 0) {
+            // Special case handling for when an instance is selected
+            addChildrenAndUnfurledFocusedComponents(unfurledComponents)
+          }
+        })
+      }
+
       const allPaths = childrenSelectable
         ? EP.allPathsForLastPart(view)
         : EP.allPathsForLastPart(EP.parentPath(view))
-      Utils.fastForEach(allPaths, (ancestor) => {
-        const { children, unfurledComponents } =
-          MetadataUtils.getAllChildrenIncludingUnfurledFocusedComponents(
-            ancestor,
-            componentMetadata,
-          )
-        const ancestorChildren = [...children, ...unfurledComponents]
-        fastForEach(ancestorChildren, (child) => siblings.push(child))
-      })
+
+      addChildrenAndUnfurledFocusedComponents(allPaths)
     })
 
     const selectableViews = [...dynamicScenesWithFragmentRootViews, ...allRoots, ...siblings]
@@ -193,7 +205,8 @@ export function getSelectableViews(
     candidateViews = uniqueSelectableViews
   }
 
-  return filterHiddenInstances(hiddenInstances, candidateViews)
+  const withoutRootViews = candidateViews.filter((v) => !EP.isRootElementOfInstance(v))
+  return filterHiddenInstances(hiddenInstances, withoutRootViews)
 }
 
 function useFindValidTarget(): (
