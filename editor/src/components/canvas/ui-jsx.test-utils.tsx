@@ -414,6 +414,10 @@ export const TestSceneElementPaths = [[BakedInStoryboardUID, TestSceneUID, TestA
 export const TestScenePath = elementPath(TestSceneElementPaths)
 export const TestStaticScenePath = testStaticElementPath(TestSceneElementPaths)
 
+export function formatTestProjectCode(code: string): string {
+  return Prettier.format(code, PrettierConfig)
+}
+
 export function makeTestProjectCodeWithComponentInnards(componentInnards: string): string {
   const code = `
   import * as React from 'react'
@@ -439,7 +443,7 @@ ${componentInnards}
     )
   }
 `
-  return Prettier.format(code, PrettierConfig)
+  return formatTestProjectCode(code)
 }
 
 export function makeTestProjectCodeWithSnippet(snippet: string): string {
@@ -479,7 +483,7 @@ ${snippet}
     )
   }
 `
-  return Prettier.format(code, PrettierConfig)
+  return formatTestProjectCode(code)
 }
 
 export function getTestParseSuccess(fileContents: string): ParseSuccess {

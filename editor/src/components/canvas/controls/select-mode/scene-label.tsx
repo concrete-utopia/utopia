@@ -23,6 +23,8 @@ interface SceneLabelProps extends SceneLabelControlProps {
   target: ElementPath
 }
 
+export const SceneLabelTestID = 'scene-label'
+
 export const SceneLabelControl = React.memo<SceneLabelControlProps>((props) => {
   const sceneTargets = useEditorState(
     (store) =>
@@ -131,6 +133,14 @@ const SceneLabel = React.memo<SceneLabelProps>((props) => {
     [dispatch, scale, canvasOffset, props.target],
   )
 
+  const onMouseUp = React.useCallback(
+    (event: React.MouseEvent<HTMLDivElement>) => {
+      event.stopPropagation()
+      dispatch([CanvasActions.clearInteractionSession(true)], 'canvas')
+    },
+    [dispatch],
+  )
+
   if (frame != null) {
     return (
       <CanvasOffsetWrapper>
@@ -138,7 +148,9 @@ const SceneLabel = React.memo<SceneLabelProps>((props) => {
           onMouseOver={labelSelectable ? onMouseOver : NO_OP}
           onMouseOut={labelSelectable ? onMouseLeave : NO_OP}
           onMouseDown={labelSelectable ? onMouseDown : NO_OP}
+          onMouseUp={labelSelectable ? onMouseUp : NO_OP}
           onMouseMove={labelSelectable ? onMouseMove : NO_OP}
+          data-testid={SceneLabelTestID}
           className='roleComponentName'
           style={{
             pointerEvents: labelSelectable ? 'initial' : 'none',
