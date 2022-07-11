@@ -1958,21 +1958,24 @@ export function getReparentTarget(
     toReparent.map((view) => MetadataUtils.getParent(componentMeta, view)),
   )
   let parentSupportsChild = true
-  if (possibleNewParent != null) {
-    parentSupportsChild = MetadataUtils.targetSupportsChildren(componentMeta, possibleNewParent)
-  } else {
+  if (possibleNewParent == null) {
     // a null template path means Canvas, let's translate that to the storyboard component
     const storyboardComponent = getStoryboardElementPath(projectContents, openFile ?? null)
     return {
       shouldReparent: storyboardComponent != null,
       newParent: storyboardComponent,
     }
+  } else {
+    parentSupportsChild = MetadataUtils.targetSupportsChildren(componentMeta, possibleNewParent)
   }
+  const hasNoCurrentParentsButHasANewParent =
+    currentParents.length === 0 && possibleNewParent != null
+  const newParentIsAChangeFromTheExistingOnes =
+    currentParents.length > 0 &&
+    currentParents.every((parent) => !EP.pathsEqual(possibleNewParent, parent.elementPath))
   if (
     parentSupportsChild &&
-    ((currentParents.length === 0 && possibleNewParent != null) ||
-      (currentParents.length > 0 &&
-        currentParents.every((parent) => !EP.pathsEqual(possibleNewParent, parent.elementPath))))
+    (hasNoCurrentParentsButHasANewParent || newParentIsAChangeFromTheExistingOnes)
   ) {
     return {
       shouldReparent: true,
@@ -2642,19 +2645,22 @@ export function duplicate(
             })
           }
 
-          utopiaComponents = insertElementAtPath(
-            workingEditorState.projectContents,
-            workingEditorState.canvas.openFile?.filename ?? null,
-            newParentPath,
-            newElement,
-            utopiaComponents,
-            null,
-          )
+          // Where the parent is a different component to the element being duplicated.
+          const duplicatingComponentRootElement = EP.isRootElementOfInstance(path)
 
-          if (newElement == null) {
+          if (newElement == null || duplicatingComponentRootElement) {
             console.warn(`Could not duplicate ${EP.toVarSafeComponentId(path)}`)
             return success
           } else {
+            utopiaComponents = insertElementAtPath(
+              workingEditorState.projectContents,
+              workingEditorState.canvas.openFile?.filename ?? null,
+              newParentPath,
+              newElement,
+              utopiaComponents,
+              null,
+            )
+
             newSelectedViews.push(newPath)
             // duplicating and inserting the metadata to ensure we're not working with stale metadata
             // this is used for drag + duplicate on the canvas

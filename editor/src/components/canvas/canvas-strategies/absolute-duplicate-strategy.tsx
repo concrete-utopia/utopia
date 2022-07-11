@@ -43,7 +43,8 @@ export const absoluteDuplicateStrategy: CanvasStrategy = {
 
         return (
           elementMetadata?.specialSizeMeasurements.position === 'absolute' &&
-          allDraggedElementsHaveTheSameParent
+          allDraggedElementsHaveTheSameParent &&
+          !EP.isRootElementOfInstance(element)
         )
       })
     }
