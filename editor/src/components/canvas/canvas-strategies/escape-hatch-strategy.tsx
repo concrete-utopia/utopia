@@ -406,36 +406,36 @@ function collectHighlightCommand(
   return showOutlineHighlight('transient', [...siblingFrames, ...draggedFrames])
 }
 
-function findAbsoluteDescendants(
+function findAbsoluteDescendantsToMove(
   selectedElements: Array<ElementPath>,
   metadata: ElementInstanceMetadataMap,
 ): Array<ElementPath> {
-  const isSelectionInsideFocusedComponent = selectedElements.every((path) =>
-    EP.isInsideFocusedComponent(path),
-  )
+  /**
+   * Collecting all absolute descendants that have their containing block outside of the converted element.
+   * The containing block element is the layout parent that provides the bounds for the top/left/bottom/right of the position absolute element.
+   * The absolute conversion creates a new containing block, these child elements are moved to keep their position in place.
+   * Not all absolute elements will change their containing block here: for example relative positioned descendant with absolute children, the relative positioned element defines the containing block.
+   * And component children are changed only when the selected element is inside a focused component.
+   */
   return mapDropNulls((element) => {
-    const elementPath = element.elementPath
-    const isInsideFocusedComponent = EP.isInsideFocusedComponent(elementPath)
-    const allInsideComponentOrOutside =
-      isInsideFocusedComponent === isSelectionInsideFocusedComponent // if the selection and the children are both inside of the focused component
-
-    const sortedSelectedAncestors = EP.getOrderedPathsByDepth(selectedElements).filter(
-      (selection) => EP.isDescendantOf(elementPath, selection),
-    )
+    const path = element.elementPath
+    const nearestSelectedAncestor = findNearestSelectedAncestor(path, selectedElements)
     if (
       MetadataUtils.isPositionAbsolute(element) &&
-      !EP.isRootElementOfInstance(elementPath) &&
-      sortedSelectedAncestors.length > 0 &&
-      allInsideComponentOrOutside
+      nearestSelectedAncestor != null &&
+      EP.isFromSameInstanceAs(path, nearestSelectedAncestor) &&
+      !EP.isRootElementOfInstance(path)
     ) {
-      const closestSelectedAncestor = sortedSelectedAncestors[0]
-      const containingBlockPath = MetadataUtils.findContainingBlock(metadata, elementPath)
-      const closestAncestorContainingBlockPath = MetadataUtils.findContainingBlock(
-        metadata,
-        closestSelectedAncestor,
-      )
-      if (EP.pathsEqual(containingBlockPath, closestAncestorContainingBlockPath)) {
-        return elementPath
+      const containingBlockPath = MetadataUtils.findContainingBlock(metadata, path)
+      /**
+       * With the conversion the nearest selected ancestor will receive absolute position,
+       * checking if the containing block element is somewhere outside of the selection.
+       */
+      if (
+        containingBlockPath != null &&
+        EP.isDescendantOf(nearestSelectedAncestor, containingBlockPath)
+      ) {
+        return path
       } else {
         return null
       }
@@ -447,25 +447,42 @@ function findAbsoluteDescendants(
 
 function moveDescendantsToNewContainingBlock(
   metadata: ElementInstanceMetadataMap,
-  selectedElementsThatWillBeAbsolute: Array<ElementPath>,
+  selectedElements: Array<ElementPath>,
   canvasState: InteractionCanvasState,
 ): Array<CanvasCommand> {
-  const absoluteDescendants = findAbsoluteDescendants(selectedElementsThatWillBeAbsolute, metadata)
+  const absoluteDescendants = findAbsoluteDescendantsToMove(selectedElements, metadata)
   return absoluteDescendants.flatMap((path) => {
-    const nearestSelectedAncestor = EP.getOrderedPathsByDepth(
-      selectedElementsThatWillBeAbsolute,
-    ).filter((selection) => EP.isDescendantOf(path, selection))[0]
     const canvasFrame = MetadataUtils.getFrameInCanvasCoords(path, metadata)
-    const selectedElementFrame = MetadataUtils.getFrameInCanvasCoords(
-      nearestSelectedAncestor,
-      metadata,
-    )
-    if (canvasFrame != null && selectedElementFrame != null) {
-      const newLocalFrame = canvasRectangleToLocalRectangle(canvasFrame, selectedElementFrame)
-      return createUpdatePinsCommands(path, metadata, canvasState, zeroCanvasPoint, newLocalFrame)
+
+    const nearestSelectedAncestor = findNearestSelectedAncestor(path, selectedElements)
+    if (nearestSelectedAncestor != null) {
+      const nearestSelectedAncestorFrame = MetadataUtils.getFrameInCanvasCoords(
+        nearestSelectedAncestor,
+        metadata,
+      )
+      if (canvasFrame != null && nearestSelectedAncestorFrame != null) {
+        /**
+         * after conversion selected elements define the containing block,
+         * descendants are offset to the new layout ancestor
+         */
+        const newLocalFrame = canvasRectangleToLocalRectangle(
+          canvasFrame,
+          nearestSelectedAncestorFrame,
+        )
+        return createUpdatePinsCommands(path, metadata, canvasState, zeroCanvasPoint, newLocalFrame)
+      }
     }
     return []
   })
+}
+
+function findNearestSelectedAncestor(
+  target: ElementPath,
+  selectedElements: Array<ElementPath>,
+): ElementPath | null {
+  return EP.getOrderedPathsByDepth(selectedElements).filter((selection) =>
+    EP.isDescendantOf(target, selection),
+  )[0]
 }
 
 function createUpdatePinsCommands(
