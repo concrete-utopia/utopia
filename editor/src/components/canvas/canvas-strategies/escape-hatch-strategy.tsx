@@ -419,20 +419,20 @@ function findAbsoluteDescendants(
     const allInsideComponentOrOutside =
       isInsideFocusedComponent === isSelectionInsideFocusedComponent // if the selection and the children are both inside of the focused component
 
-    const sortedAncestors = EP.getOrderedPathsByDepth(selectedElements).filter((selection) =>
-      EP.isDescendantOf(elementPath, selection),
+    const sortedSelectedAncestors = EP.getOrderedPathsByDepth(selectedElements).filter(
+      (selection) => EP.isDescendantOf(elementPath, selection),
     )
     if (
       MetadataUtils.isPositionAbsolute(element) &&
       !EP.isRootElementOfInstance(elementPath) &&
-      sortedAncestors.length > 0 &&
+      sortedSelectedAncestors.length > 0 &&
       allInsideComponentOrOutside
     ) {
-      const closestAncestor = sortedAncestors[0]
+      const closestSelectedAncestor = sortedSelectedAncestors[0]
       const containingBlockPath = MetadataUtils.findContainingBlock(metadata, elementPath)
       const closestAncestorContainingBlockPath = MetadataUtils.findContainingBlock(
         metadata,
-        closestAncestor,
+        closestSelectedAncestor,
       )
       if (EP.pathsEqual(containingBlockPath, closestAncestorContainingBlockPath)) {
         return elementPath
