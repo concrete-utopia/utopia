@@ -142,6 +142,9 @@ export function complexDefaultProject(): PersistentModel {
 }
 
 function createBeachesProjectContents(): ProjectContentTreeRoot {
+  // to update the default project here, just delete the big object that is returned here, access the new project's contents.json
+  // using the link https://utopia.pizza/v1/project/<project-id>/contents.json and paste the contents of projectContents down below
+
   return {
     src: {
       directory: {
