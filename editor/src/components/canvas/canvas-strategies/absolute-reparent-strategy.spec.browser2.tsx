@@ -128,4 +128,58 @@ describe('Absolute Reparent Strategy', () => {
       ),
     )
   })
+  it('referencing a value from outside the element prevents reparenting', async () => {
+    function createCodeForProject(left: number, top: number) {
+      return Prettier.format(
+        `
+  import * as React from 'react'
+  import { Scene, Storyboard, View } from 'utopia-api'
+
+  export var App = (props) => {
+    const elementWidth = 200
+    return (
+      <div style={{ width: '100%', height: '100%' }} data-uid='aaa'>
+        <div
+          style={{ backgroundColor: '#0091FFAA', position: 'absolute', left: ${left}, top: ${top}, width: elementWidth, height: 120 }}
+          data-uid='bbb'
+          data-testid='bbb'
+        />
+      </div>
+    )
+  }
+
+  export var ${BakedInStoryboardVariableName} = (props) => {
+    return (
+      <Storyboard data-uid='${BakedInStoryboardUID}'>
+        <Scene
+          style={{ left: 0, top: 0, width: 400, height: 400 }}
+          data-uid='${TestSceneUID}'
+        >
+          <App
+            data-uid='${TestAppUID}'
+            style={{ position: 'absolute', bottom: 0, left: 0, right: 0, top: 0 }}
+          />
+        </Scene>
+      </Storyboard>
+    )
+  }
+`,
+        PrettierConfig,
+      )
+    }
+
+    const renderResult = await renderTestEditorWithCode(
+      createCodeForProject(40, 50),
+      'await-first-dom-report',
+    )
+
+    const dragDelta = windowPoint({ x: -1000, y: -1000 })
+    act(() => dragElement(renderResult, 'bbb', dragDelta, cmdModifier))
+
+    await renderResult.getDispatchFollowUpActionsFinished()
+
+    expect(getPrintedUiJsCode(renderResult.getEditorState())).toEqual(
+      createCodeForProject(-960, -950),
+    )
+  })
 })

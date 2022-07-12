@@ -1,9 +1,17 @@
 import {
+  attributeReferencesElsewhere,
   deleteJSXAttribute,
   emptyComments,
+  jsxArrayValue,
+  jsxAttributeFunctionCall,
+  jsxAttributeNestedArray,
+  jsxAttributeNestedObject,
+  jsxAttributeOtherJavaScript,
   jsxAttributesEntry,
   jsxAttributesSpread,
   jsxAttributeValue,
+  jsxElement,
+  jsxPropertyAssignment,
   setJSXAttributesAttribute,
 } from './element-template'
 
@@ -61,5 +69,158 @@ describe('deleteJSXAttribute', () => {
     const expected = [startingAttributesSpread]
     const actual = deleteJSXAttribute(startingAttributes, existingKey)
     expect(actual).toEqual(expected)
+  })
+})
+
+describe('attributeReferencesElsewhere', () => {
+  it('ATTRIBUTE_VALUE always returns false', () => {
+    expect(attributeReferencesElsewhere(jsxAttributeValue(12, emptyComments))).toEqual(false)
+  })
+  it('ATTRIBUTE_OTHER_JAVASCRIPT returns true if it has a definedElsewhere entry', () => {
+    expect(
+      attributeReferencesElsewhere(
+        jsxAttributeOtherJavaScript('otherThing', 'return otherThing', ['otherThing'], null, {}),
+      ),
+    ).toEqual(true)
+  })
+  it('ATTRIBUTE_OTHER_JAVASCRIPT returns false if it does not have a definedElsewhere entry', () => {
+    expect(
+      attributeReferencesElsewhere(jsxAttributeOtherJavaScript('5', 'return 5', [], null, {})),
+    ).toEqual(false)
+  })
+  it('ATTRIBUTE_OTHER_JAVASCRIPT returns true if the elementsWithin contain a definedElsewhere entry', () => {
+    expect(
+      attributeReferencesElsewhere(
+        jsxAttributeOtherJavaScript('5', 'return 5', [], null, {
+          aaa: jsxElement(
+            'div',
+            'aaa',
+            [
+              jsxAttributesEntry(
+                'style',
+                jsxAttributeOtherJavaScript(
+                  'otherThing',
+                  'return otherThing',
+                  ['otherThing'],
+                  null,
+                  {},
+                ),
+                emptyComments,
+              ),
+            ],
+            [],
+          ),
+        }),
+      ),
+    ).toEqual(true)
+  })
+  it('ATTRIBUTE_OTHER_JAVASCRIPT returns false if the elementsWithin do not contain a definedElsewhere entry', () => {
+    expect(
+      attributeReferencesElsewhere(
+        jsxAttributeOtherJavaScript('5', 'return 5', [], null, {
+          aaa: jsxElement(
+            'div',
+            'aaa',
+            [jsxAttributesEntry('style', jsxAttributeValue({}, emptyComments), emptyComments)],
+            [],
+          ),
+        }),
+      ),
+    ).toEqual(false)
+  })
+  it('ATTRIBUTE_NESTED_ARRAY returns true if it has a definedElsewhere entry', () => {
+    expect(
+      attributeReferencesElsewhere(
+        jsxAttributeNestedArray(
+          [
+            jsxArrayValue(
+              jsxAttributeOtherJavaScript(
+                'otherThing',
+                'return otherThing',
+                ['otherThing'],
+                null,
+                {},
+              ),
+              emptyComments,
+            ),
+          ],
+          emptyComments,
+        ),
+      ),
+    ).toEqual(true)
+  })
+  it('ATTRIBUTE_NESTED_ARRAY returns false if it does not have a definedElsewhere entry', () => {
+    expect(
+      attributeReferencesElsewhere(
+        jsxAttributeNestedArray(
+          [
+            jsxArrayValue(
+              jsxAttributeOtherJavaScript('5', 'return 5', [], null, {}),
+              emptyComments,
+            ),
+          ],
+          emptyComments,
+        ),
+      ),
+    ).toEqual(false)
+  })
+  it('ATTRIBUTE_NESTED_OBJECT returns true if it has a definedElsewhere entry', () => {
+    expect(
+      attributeReferencesElsewhere(
+        jsxAttributeNestedObject(
+          [
+            jsxPropertyAssignment(
+              'someKey',
+              jsxAttributeOtherJavaScript(
+                'otherThing',
+                'return otherThing',
+                ['otherThing'],
+                null,
+                {},
+              ),
+              emptyComments,
+              emptyComments,
+            ),
+          ],
+          emptyComments,
+        ),
+      ),
+    ).toEqual(true)
+  })
+  it('ATTRIBUTE_NESTED_OBJECT returns false if it does not have a definedElsewhere entry', () => {
+    expect(
+      attributeReferencesElsewhere(
+        jsxAttributeNestedObject(
+          [
+            jsxPropertyAssignment(
+              'someKey',
+              jsxAttributeOtherJavaScript('5', 'return 5', [], null, {}),
+              emptyComments,
+              emptyComments,
+            ),
+          ],
+          emptyComments,
+        ),
+      ),
+    ).toEqual(false)
+  })
+
+  it('ATTRIBUTE_FUNCTION_CALL returns true if it has a definedElsewhere entry', () => {
+    expect(
+      attributeReferencesElsewhere(
+        jsxAttributeFunctionCall('someFn', [
+          jsxAttributeOtherJavaScript('otherThing', 'return otherThing', ['otherThing'], null, {}),
+        ]),
+      ),
+    ).toEqual(true)
+  })
+  it('ATTRIBUTE_FUNCTION_CALL returns false if it does not have a definedElsewhere entry', () => {
+    expect(
+      attributeReferencesElsewhere(
+        jsxAttributeFunctionCall('someFn', [
+          jsxAttributeOtherJavaScript('5', 'return 5', [], null, {}),
+        ]),
+      ),
+    ).toEqual(false)
   })
 })
