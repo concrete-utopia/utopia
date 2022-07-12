@@ -12,6 +12,7 @@ import {
   ImportAlias,
   isParseSuccess,
   ExportsDetail,
+  RevisionsStateType,
 } from '../../shared/project-file-types'
 import { fastForEach } from '../../shared/utils'
 import { defaultIfNull } from '../../shared/optional-utils'
@@ -22,11 +23,11 @@ import { emptySet } from '../../shared/set-utils'
 import { absolutePathFromRelativePath } from '../../../utils/path-utils'
 import { stripExtension } from '../../../components/custom-code/custom-code-utils'
 
-export function codeNeedsPrinting(revisionsState: RevisionsState): boolean {
+export function codeNeedsPrinting(revisionsState: RevisionsStateType): boolean {
   return revisionsState === RevisionsState.ParsedAhead
 }
 
-export function codeNeedsParsing(revisionsState: RevisionsState): boolean {
+export function codeNeedsParsing(revisionsState: RevisionsStateType): boolean {
   return revisionsState === RevisionsState.CodeAhead
 }
 

@@ -51,6 +51,7 @@ import {
   ReexportWildcard,
   reexportWildcard,
   RevisionsState,
+  RevisionsStateType,
   textFile,
   TextFile,
   TextFileContents,
@@ -2173,7 +2174,7 @@ export const TextFileContentsKeepDeepEquality: KeepDeepEqualityCall<TextFileCont
     (contents) => contents.parsed,
     ParsedTextFileKeepDeepEquality,
     (contents) => contents.revisionsState,
-    createCallWithTripleEquals<RevisionsState>(),
+    createCallWithTripleEquals<RevisionsStateType>(),
     textFileContents,
   )
 
