@@ -5,7 +5,10 @@ import { MetadataUtils } from '../../../core/model/element-metadata-utils'
 import { flatMapArray, mapDropNulls, stripNulls } from '../../../core/shared/array-utils'
 import { isRight, right } from '../../../core/shared/either'
 import * as EP from '../../../core/shared/element-path'
-import { ElementInstanceMetadataMap } from '../../../core/shared/element-template'
+import {
+  ElementInstanceMetadataMap,
+  SpecialSizeMeasurements,
+} from '../../../core/shared/element-template'
 import {
   asLocal,
   CanvasPoint,
@@ -507,12 +510,7 @@ function createUpdatePinsCommands(
     path,
   )?.specialSizeMeasurements
   const parentFrame = specialSizeMeasurements?.immediateParentBounds ?? null
-  const margin = specialSizeMeasurements?.margin
-  const marginPoint: LocalPoint = {
-    x: -(margin?.left ?? 0),
-    y: -(margin?.top ?? 0),
-  } as LocalPoint
-  const frameWithoutMargin = offsetRect(frame, marginPoint)
+  const frameWithoutMargin = getFrameWithoutMargin(frame, specialSizeMeasurements)
   const updatedFrame = offsetRect(frameWithoutMargin, asLocal(dragDelta ?? zeroCanvasRect))
   const fullFrame = getFullFrame(updatedFrame)
   const pinsToSet = filterPinsToSet(path, canvasState)
@@ -533,4 +531,17 @@ function createUpdatePinsCommands(
     )
   })
   return commands
+}
+
+function getFrameWithoutMargin(
+  frame: LocalRectangle,
+  specialSizeMeasurements: SpecialSizeMeasurements | undefined,
+) {
+  // TODO fix bottom and right margins
+  const margin = specialSizeMeasurements?.margin
+  const marginPoint: LocalPoint = {
+    x: -(margin?.left ?? 0),
+    y: -(margin?.top ?? 0),
+  } as LocalPoint
+  return offsetRect(frame, marginPoint)
 }
