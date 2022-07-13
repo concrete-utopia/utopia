@@ -88,46 +88,6 @@ describe('attributeReferencesElsewhere', () => {
       attributeReferencesElsewhere(jsxAttributeOtherJavaScript('5', 'return 5', [], null, {})),
     ).toEqual(false)
   })
-  it('ATTRIBUTE_OTHER_JAVASCRIPT returns true if the elementsWithin contain a definedElsewhere entry', () => {
-    expect(
-      attributeReferencesElsewhere(
-        jsxAttributeOtherJavaScript('5', 'return 5', [], null, {
-          aaa: jsxElement(
-            'div',
-            'aaa',
-            [
-              jsxAttributesEntry(
-                'style',
-                jsxAttributeOtherJavaScript(
-                  'otherThing',
-                  'return otherThing',
-                  ['otherThing'],
-                  null,
-                  {},
-                ),
-                emptyComments,
-              ),
-            ],
-            [],
-          ),
-        }),
-      ),
-    ).toEqual(true)
-  })
-  it('ATTRIBUTE_OTHER_JAVASCRIPT returns false if the elementsWithin do not contain a definedElsewhere entry', () => {
-    expect(
-      attributeReferencesElsewhere(
-        jsxAttributeOtherJavaScript('5', 'return 5', [], null, {
-          aaa: jsxElement(
-            'div',
-            'aaa',
-            [jsxAttributesEntry('style', jsxAttributeValue({}, emptyComments), emptyComments)],
-            [],
-          ),
-        }),
-      ),
-    ).toEqual(false)
-  })
   it('ATTRIBUTE_NESTED_ARRAY returns true if it has a definedElsewhere entry', () => {
     expect(
       attributeReferencesElsewhere(

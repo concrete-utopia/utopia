@@ -768,12 +768,7 @@ export function attributeReferencesElsewhere(attribute: JSXAttribute): boolean {
     case 'ATTRIBUTE_VALUE':
       return false
     case 'ATTRIBUTE_OTHER_JAVASCRIPT':
-      return (
-        attribute.definedElsewhere.length > 0 ||
-        Object.values(attribute.elementsWithin).some((element) => {
-          return elementReferencesElsewhere(element)
-        })
-      )
+      return attribute.definedElsewhere.length > 0
     case 'ATTRIBUTE_NESTED_OBJECT':
       return attribute.content.some((subAttr) => {
         return attributeReferencesElsewhere(subAttr.value)
