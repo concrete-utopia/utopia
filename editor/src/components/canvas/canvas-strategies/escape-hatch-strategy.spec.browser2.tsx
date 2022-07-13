@@ -1,344 +1,344 @@
-import { act, fireEvent } from '@testing-library/react'
-import * as EP from '../../../core/shared/element-path'
-import { runEscapeHatch } from '../../editor/actions/action-creators'
 import {
-  getPrintedUiJsCode,
-  makeTestProjectCodeWithSnippet,
   renderTestEditorWithCode,
+  TestAppUID,
   TestScenePath,
+  TestSceneUID,
 } from '../ui-jsx.test-utils'
 
-describe('Convert to Absolute/runEscapeHatch action', () => {
-  it('Converts 1 element to absolute', async () => {
-    const renderResult = await renderTestEditorWithCode(
-      makeTestProjectCodeWithSnippet(`
-        <div style={{ width: '100%', height: '100%' }} data-uid='aaa'>
-          <div
-            style={{ backgroundColor: '#0091FFAA', width: 200, height: 80 }}
-            data-uid='bbb'
-          />
-          <div
-            style={{ backgroundColor: '#0091FFAA', width: 200, height: 120 }}
-            data-uid='ccc'
-          />
-        </div>
-      `),
-      'await-first-dom-report',
-    )
+import * as Prettier from 'prettier/standalone'
+import { PrettierConfig } from 'utopia-vscode-common'
+import { MetadataUtils } from '../../../core/model/element-metadata-utils'
+import * as EP from '../../../core/shared/element-path'
+import { localRectangle, LocalRectangle } from '../../../core/shared/math-utils'
+import { fastForEach } from '../../../core/shared/utils'
+import { runEscapeHatch, setFocusedElement } from '../../editor/actions/action-creators'
+import {
+  BakedInStoryboardUID,
+  BakedInStoryboardVariableName,
+} from '../../../core/model/scene-utils'
+import { ElementPath } from '../../../core/shared/project-file-types'
+import { mapArrayToDictionary } from '../../../core/shared/array-utils'
 
-    const target = EP.appendNewElementPath(TestScenePath, ['aaa', 'ccc'])
+const complexProject = () => {
+  const code = `
+  import * as React from 'react'
+  import { Scene, Storyboard, View } from 'utopia-api'
 
-    await renderResult.dispatch([runEscapeHatch([target])], true)
-
-    expect(getPrintedUiJsCode(renderResult.getEditorState())).toEqual(
-      makeTestProjectCodeWithSnippet(`
-        <div style={{ width: '100%', height: '100%' }} data-uid='aaa'>
-          <div
-            style={{ backgroundColor: '#0091FFAA', width: 200, height: 80 }}
-            data-uid='bbb'
-          />
-          <div
-            style={{ backgroundColor: '#0091FFAA', width: 200, height: 120, position: 'absolute', left: 0, top: 80 }}
-            data-uid='ccc'
-          />
-        </div>
-      `),
-    )
-  })
-  it('Converts 1 element to absolute from flex containers, keeping the visual position', async () => {
-    const renderResult = await renderTestEditorWithCode(
-      makeTestProjectCodeWithSnippet(`
-        <div style={{ width: '100%', height: '100%', position: 'relative', display: 'flex' }} data-uid='aaa'>
-          <div
-            style={{ backgroundColor: '#0091FFAA', width: 200, height: 80 }}
-            data-uid='bbb'
-          />
-          <div
-            style={{ display: 'flex', flexDirection: 'column' }}
-            data-uid='ccc'
-          >
-            <div style={{ width: 100, height: 100, backgroundColor: 'hotpink'}} data-uid='ddd' />
-            <div style={{ width: 100, height: 100, backgroundColor: 'yellow'}} data-uid='eee' />
-          </div>
-        </div>
-      `),
-      'await-first-dom-report',
-    )
-
-    const target = EP.appendNewElementPath(TestScenePath, ['aaa', 'ccc', 'eee'])
-
-    await renderResult.dispatch([runEscapeHatch([target])], true)
-
-    expect(getPrintedUiJsCode(renderResult.getEditorState())).toEqual(
-      makeTestProjectCodeWithSnippet(`
-      <div style={{ width: '100%', height: '100%', position: 'relative', display: 'flex' }} data-uid='aaa'>
+  export const Card = (props) => {
+    return (
+      <div
+        data-uid='card-inner'
+        style={{
+          ...props.style,
+          display: 'flex',
+          flexDirection: 'column',
+        }}
+      >
         <div
-          style={{ backgroundColor: '#0091FFAA', width: 200, height: 80 }}
-          data-uid='bbb'
+          data-uid='card-title'
+          style={{ alignSelf: 'center' }}
+        >
+          Card Title
+        </div>
+        <div
+          data-uid='card-content'
+          style={{ flexGrow: 1, backgroundColor: 'orange' }}
         />
         <div
-          style={{ display: 'flex', flexDirection: 'column' }}
-          data-uid='ccc'
+          data-uid='card-close-X'
+          style={{
+            position: 'absolute',
+            left: 340,
+            top: 108,
+          }}
         >
-          <div style={{ width: 100, height: 100, backgroundColor: 'hotpink'}} data-uid='ddd' />
-          <div style={{ width: 100, height: 100, backgroundColor: 'yellow', position: 'absolute', left: 200, top: 100 }} data-uid='eee' />
+          X
         </div>
       </div>
-      `),
     )
-  })
-  it('Converts a static element to absolute where the parent is absolute', async () => {
-    const renderResult = await renderTestEditorWithCode(
-      makeTestProjectCodeWithSnippet(`
-        <div style={{ position: 'relative', width: '100%', height: '100%' }} data-uid='aaa'>
-          <div
-            style={{ backgroundColor: '#0091FFAA', position: 'absolute', top: 45, left: 55, width: 200, height: 120 }}
-            data-uid='ccc'
-          >
-            <div style={{ lineHeight: '20px' }} data-uid='ddd'>
-              hello there
-            </div>
-          </div>
-        </div>
-      `),
-      'await-first-dom-report',
-    )
-
-    const target = EP.appendNewElementPath(TestScenePath, ['aaa', 'ccc', 'ddd'])
-
-    await renderResult.dispatch([runEscapeHatch([target])], true)
-
-    expect(getPrintedUiJsCode(renderResult.getEditorState())).toEqual(
-      makeTestProjectCodeWithSnippet(`
-      <div style={{ position: 'relative', width: '100%', height: '100%' }} data-uid='aaa'>
+  }
+  
+  export var App = (props) => {
+    return (
+      <div
+        style={{
+          position: 'absolute',
+          width: 380,
+          left: 10,
+          top: 20,
+        }}
+        data-uid='app-inner'
+      >
         <div
-          style={{ backgroundColor: '#0091FFAA', position: 'absolute', top: 45, left: 55, width: 200, height: 120 }}
-          data-uid='ccc'
-        >
-          <div style={{ lineHeight: '20px', position: 'absolute', left: 0, width: 200, top: 0, height: 20 }} data-uid='ddd'>
-            hello there
-          </div>
-        </div>
-      </div>
-      `),
-    )
-  })
-  it('Converts multiselected static siblings to absolute', async () => {
-    const renderResult = await renderTestEditorWithCode(
-      makeTestProjectCodeWithSnippet(`
-        <div style={{ width: '100%', height: '100%' }} data-uid='aaa'>
-          <div
-            style={{ backgroundColor: '#0091FFAA', width: 200, height: 80 }}
-            data-uid='bbb'
-          />
-          <div
-            style={{ backgroundColor: '#0091FFAA', width: 200, height: 120 }}
-            data-uid='ccc'
-          />
-        </div>
-      `),
-      'await-first-dom-report',
-    )
-
-    const targets = [
-      EP.appendNewElementPath(TestScenePath, ['aaa', 'ccc']),
-      EP.appendNewElementPath(TestScenePath, ['aaa', 'bbb']),
-    ]
-    await renderResult.dispatch([runEscapeHatch(targets)], true)
-
-    expect(getPrintedUiJsCode(renderResult.getEditorState())).toEqual(
-      makeTestProjectCodeWithSnippet(`
-        <div style={{ width: '100%', height: '100%' }} data-uid='aaa'>
-          <div
-            style={{ backgroundColor: '#0091FFAA', width: 200, height: 80, position: 'absolute', left: 0, top: 0 }}
-            data-uid='bbb'
-          />
-          <div
-            style={{ backgroundColor: '#0091FFAA', width: 200, height: 120, position: 'absolute', left: 0, top: 80 }}
-            data-uid='ccc'
-          />
-        </div>
-      `),
-    )
-  })
-  it('Converts multiselect in hierarchy', async () => {
-    const renderResult = await renderTestEditorWithCode(
-      makeTestProjectCodeWithSnippet(`
-      <div style={{ width: '100%', height: '100%' }} data-uid='aaa'>
-        <div
-          style={{ width: 80, height: 80 }}
-          data-uid='bbb'
+          style={{
+            backgroundColor: 'hotpink',
+            width: '100%',
+            height: 80,
+            marginBottom: 20,
+          }}
+          data-uid='pink-static-div'
         />
         <div
           style={{
             display: 'flex',
             padding: 8,
-            gap: 8,
             flexDirection: 'column',
           }}
-          data-uid='ccc'
+          data-uid='flex-column'
         >
           <div
-            style={{
-              display: 'flex',
-              gap: 70,
-              flexDirection: 'row',
-              justifyContent: 'space-between',
-              alignItems: 'baseline',
-            }}
-            data-uid='ddd'
+            style={{ display: 'flex' }}
+            data-uid='flex-row'
           >
-            <div data-uid='eee'>Hello Text</div>
+            <div
+              data-uid='absolute-div-in-flex'
+              style={{
+                position: 'absolute',
+                width: 100,
+                top: 82,
+                height: 20,
+                left: 140,
+              }}
+            >
+              Absolute Text
+            </div>
             <div
               style={{
-                display: 'flex',
-                flexDirection: 'row',
-                gap: 15,
+                position: 'relative',
+                flexBasis: 25,
+                height: 150,
+                backgroundColor: '#6CF8C0',
               }}
-              data-uid='fff'
+              data-uid='relative-container-green'
             >
-              <div
-                style={{
-                  height: 57,
-                  width: 54,
-                  border: '1px solid rgb(0, 0, 0, 1)',
-                }}
-                data-uid='ggg'
-              />
-                <div
+              <div data-uid='static-wrapper-div'>
+                <span
+                  data-uid='absolute-div'
                   style={{
-                    display: 'flex',
-                    flexDirection: 'row',
-                    gap: 15,
+                    position: 'absolute',
+                    width: 19,
+                    top: 58,
+                    height: 22,
+                    left: 6,
                   }}
-                  data-uid='hhh'
                 >
-                <div
-                  style={{
-                    backgroundColor: '#0091FFAA',
-                    height: 15,
-                    width: 15,
-                    border: '1px solid rgb(0, 0, 0, 1)',
-                  }}
-                  data-uid='iii'
-                />
-                <div
-                  style={{
-                    backgroundColor: '#0091FFAA',
-                    border: '1px solid rgb(0, 0, 0, 1)',
-                    width: 15,
-                    height: 15,
-                  }}
-                  data-uid='jjj'
-                />
+                  {'<'}
+                </span>
               </div>
             </div>
+            <Card
+              style={{ flexGrow: 1, paddingRight: 20 }}
+              data-uid='card-component'
+            />
           </div>
         </div>
       </div>
-      `),
-      'await-first-dom-report',
     )
+  }
 
-    const targets = [
-      EP.appendNewElementPath(TestScenePath, ['aaa', 'ccc', 'ddd']),
-      EP.appendNewElementPath(TestScenePath, ['aaa', 'ccc', 'ddd', 'fff', 'hhh']),
-      EP.appendNewElementPath(TestScenePath, ['aaa', 'ccc', 'ddd', 'fff']),
-    ]
-    await renderResult.dispatch([runEscapeHatch(targets)], true)
-
-    expect(getPrintedUiJsCode(renderResult.getEditorState())).toEqual(
-      makeTestProjectCodeWithSnippet(`
-        <div style={{ width: '100%', height: '100%' }} data-uid='aaa'>
-          <div
-            style={{ width: 80, height: 80 }}
-            data-uid='bbb'
+  export var ${BakedInStoryboardVariableName} = (props) => {
+    return (
+      <Storyboard data-uid='${BakedInStoryboardUID}'>
+        <style>{\`
+div,
+span,
+img,
+ul,
+li,
+label {
+  box-sizing: border-box !important;
+}\`
+        }</style>
+        <Scene
+          style={{ left: 0, top: 0, width: 400, height: 400 }}
+          data-uid='${TestSceneUID}'
+        >
+          <App
+            data-uid='${TestAppUID}'
+            style={{ position: 'absolute', bottom: 0, left: 0, right: 0, top: 0 }}
           />
-          <div
-            style={{
-              display: 'flex',
-              padding: 8,
-              gap: 8,
-              flexDirection: 'column',
-            }}
-            data-uid='ccc'
-          >
-            <div
-              style={{
-                display: 'flex',
-                gap: 70,
-                flexDirection: 'row',
-                justifyContent: 'space-between',
-                alignItems: 'baseline',
-                position: 'absolute',
-                left: 8,
-                width: 384,
-                top: 88,
-                height: 63,
-              }}
-              data-uid='ddd'
-            >
-              <div data-uid='eee'>Hello Text</div>
-            </div>
-            <div
-              style={{
-                display: 'flex',
-                flexDirection: 'row',
-                gap: 15,
-                position: 'absolute',
-                left: 343,
-                width: 49,
-                top: 88,
-                height: 59,
-              }}
-              data-uid='hhh'
-            >
-              <div
-                style={{
-                  backgroundColor: '#0091FFAA',
-                  height: 15,
-                  width: 15,
-                  border: '1px solid rgb(0, 0, 0, 1)',
-                }}
-                data-uid='iii'
-              />
-              <div
-                style={{
-                  backgroundColor: '#0091FFAA',
-                  border: '1px solid rgb(0, 0, 0, 1)',
-                  width: 15,
-                  height: 15,
-                }}
-                data-uid='jjj'
-              />
-            </div>
-            <div
-              style={{
-                display: 'flex',
-                flexDirection: 'row',
-                gap: 15,
-                position: 'absolute',
-                left: 272,
-                width: 120,
-                top: 88,
-                height: 59
-              }}
-              data-uid='fff'
-            >
-              <div
-                style={{
-                  height: 57,
-                  width: 54,
-                  border: '1px solid rgb(0, 0, 0, 1)',
-                }}
-                data-uid='ggg'
-              />
-            </div>
-        </div>
-      </div>
-      `),
+        </Scene>
+      </Storyboard>
     )
-  })
-  /* eslint-disable @typescript-eslint/no-empty-function */
-  xit('Converts element with absolute descendants', async () => {})
+  }`
+
+  return Prettier.format(code, PrettierConfig)
+}
+
+const AppRoot = EP.appendNewElementPath(TestScenePath, ['app-inner'])
+const FlexContainer = EP.appendNewElementPath(TestScenePath, ['app-inner', 'flex-column'])
+const FlexRow = EP.appendNewElementPath(TestScenePath, ['app-inner', 'flex-column', 'flex-row'])
+const AbsoluteDivInFlex = EP.appendNewElementPath(TestScenePath, [
+  'app-inner',
+  'flex-column',
+  'flex-row',
+  'absolute-div-in-flex',
+])
+const CardInstance = EP.appendNewElementPath(TestScenePath, [
+  'app-inner',
+  'flex-column',
+  'flex-row',
+  'card-component',
+])
+const CardInner = EP.appendNewElementPath(CardInstance, ['card-inner'])
+const CardCloseX = EP.appendNewElementPath(CardInstance, ['card-inner', 'card-close-X'])
+const CardContent = EP.appendNewElementPath(CardInstance, ['card-inner', 'card-content'])
+const CardTitle = EP.appendNewElementPath(CardInstance, ['card-inner', 'card-title'])
+
+const RelativeContainer = EP.appendNewElementPath(TestScenePath, [
+  'app-inner',
+  'flex-column',
+  'flex-row',
+  'relative-container-green',
+])
+const AbsoluteDivInRelative = EP.appendNewElementPath(TestScenePath, [
+  'app-inner',
+  'flex-column',
+  'flex-row',
+  'relative-container-green',
+  'static-wrapper-div',
+  'absolute-div-in-relative',
+])
+
+interface EscapeHatchTestCases {
+  targetsToConvert: Array<ElementPath>
+  focusedElement: ElementPath | null
+  globalFrameUnchangedForElements: Array<{
+    path: ElementPath
+    pathAfter?: ElementPath
+  }> // check resulting frame shifts, maybe new path after a possible reparent in multiselect
+  expectedAbsoluteElements: Array<ElementPath> // new path after a possible reparent in multiselect
+}
+
+const escapeHatchTestCases: Array<EscapeHatchTestCases> = [
+  {
+    targetsToConvert: [FlexContainer],
+    focusedElement: null,
+    globalFrameUnchangedForElements: [
+      { path: FlexContainer },
+      { path: FlexRow },
+      { path: AbsoluteDivInFlex },
+      { path: RelativeContainer },
+      { path: AbsoluteDivInRelative },
+      { path: CardInstance },
+    ],
+    expectedAbsoluteElements: [FlexContainer],
+  },
+  {
+    targetsToConvert: [RelativeContainer],
+    focusedElement: null,
+    globalFrameUnchangedForElements: [
+      { path: AbsoluteDivInFlex },
+      { path: RelativeContainer },
+      { path: AbsoluteDivInRelative },
+    ],
+    expectedAbsoluteElements: [RelativeContainer],
+  },
+  {
+    targetsToConvert: [RelativeContainer, CardInstance],
+    focusedElement: null,
+    globalFrameUnchangedForElements: [
+      { path: RelativeContainer },
+      { path: CardInstance },
+      { path: AbsoluteDivInFlex },
+      { path: AbsoluteDivInRelative },
+    ],
+    expectedAbsoluteElements: [RelativeContainer, CardInstance],
+  },
+  {
+    targetsToConvert: [FlexContainer, FlexRow],
+    focusedElement: null,
+    globalFrameUnchangedForElements: [
+      {
+        path: AbsoluteDivInFlex,
+        pathAfter: EP.appendToPath(
+          EP.appendToPath(AppRoot, EP.toUid(FlexRow)),
+          EP.toUid(AbsoluteDivInFlex),
+        ),
+      },
+      {
+        path: RelativeContainer,
+        pathAfter: EP.appendToPath(
+          EP.appendToPath(AppRoot, EP.toUid(FlexRow)),
+          EP.toUid(RelativeContainer),
+        ),
+      },
+      {
+        path: AbsoluteDivInRelative,
+        pathAfter: EP.appendToPath(
+          EP.appendToPath(AppRoot, EP.toUid(FlexRow)),
+          EP.toUid(AbsoluteDivInRelative),
+        ),
+      },
+    ],
+    expectedAbsoluteElements: [FlexContainer, EP.appendToPath(AppRoot, EP.toUid(FlexRow))],
+  },
+  {
+    targetsToConvert: [CardInner],
+    focusedElement: CardInstance,
+    globalFrameUnchangedForElements: [
+      { path: CardCloseX },
+      { path: CardContent },
+      { path: CardTitle },
+    ],
+    expectedAbsoluteElements: [CardInner],
+  },
+]
+
+describe('Convert to Absolute/runEscapeHatch action', () => {
+  fastForEach(
+    escapeHatchTestCases,
+    ({
+      targetsToConvert,
+      focusedElement,
+      globalFrameUnchangedForElements,
+      expectedAbsoluteElements,
+    }) => {
+      const focusedElementInTitle =
+        focusedElement != null ? `, focused element is${EP.toUid(focusedElement)}` : ''
+      it(`Converts ${targetsToConvert
+        .map(EP.toUid)
+        .join(', ')} element(s) to absolute ${focusedElementInTitle}`, async () => {
+        const renderResult = await renderTestEditorWithCode(
+          complexProject(),
+          'await-first-dom-report',
+        )
+
+        if (focusedElement != null) {
+          await renderResult.dispatch([setFocusedElement(focusedElement)], true)
+        }
+
+        const canvasFramesBeforeConversion = mapArrayToDictionary(
+          globalFrameUnchangedForElements,
+          ({ path, pathAfter }) => EP.toString(pathAfter ?? path),
+          ({ path, pathAfter }) => {
+            return MetadataUtils.getFrameInCanvasCoords(
+              path,
+              renderResult.getEditorState().editor.jsxMetadata,
+            )
+          },
+        )
+
+        // CONVERT TO ABSOLUTE
+        await renderResult.dispatch([runEscapeHatch(targetsToConvert)], true)
+
+        fastForEach(expectedAbsoluteElements, (target) => {
+          const result = MetadataUtils.isPositionAbsolute(
+            MetadataUtils.findElementByElementPath(
+              renderResult.getEditorState().editor.jsxMetadata,
+              target,
+            ),
+          )
+          expect(result).toEqual(true)
+        })
+        fastForEach(Object.keys(canvasFramesBeforeConversion), (target) => {
+          const resultFrame = MetadataUtils.getFrameInCanvasCoords(
+            EP.fromString(target),
+            renderResult.getEditorState().editor.jsxMetadata,
+          )
+          expect(resultFrame).toEqual(canvasFramesBeforeConversion[target])
+        })
+      })
+    },
+  )
 })
