@@ -28,6 +28,7 @@ import {
   HighlightBoundsWithFileForUids,
   forEachParseSuccess,
   isParseSuccess,
+  RevisionsStateType,
 } from '../shared/project-file-types'
 import {
   isJSXElement,
@@ -442,8 +443,8 @@ export function updateParsedTextFileHighlightBounds(
 }
 
 export function canUpdateRevisionsState(
-  updated: RevisionsState,
-  existing: RevisionsState,
+  updated: RevisionsStateType,
+  existing: RevisionsStateType,
 ): boolean {
   switch (existing) {
     case RevisionsState.BothMatch:

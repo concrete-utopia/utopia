@@ -515,23 +515,25 @@ export function isParsedJSONFailure(result: ParsedJSONResult): result is ParsedJ
 
 export type ParsedJSONResult = ParsedJSONSuccess | ParsedJSONFailure
 
-export enum RevisionsState {
-  ParsedAhead = 'PARSED_AHEAD',
-  CodeAhead = 'CODE_AHEAD',
-  BothMatch = 'BOTH_MATCH',
-}
+export type RevisionsStateType = 'PARSED_AHEAD' | 'CODE_AHEAD' | 'BOTH_MATCH'
+
+export const RevisionsState = {
+  ParsedAhead: 'PARSED_AHEAD',
+  CodeAhead: 'CODE_AHEAD',
+  BothMatch: 'BOTH_MATCH',
+} as const
 
 // Ensure this is kept up to date with server/src/Utopia/Web/ClientModel.hs.
 export interface TextFileContents {
   code: string
   parsed: ParsedTextFile
-  revisionsState: RevisionsState
+  revisionsState: RevisionsStateType
 }
 
 export function textFileContents(
   code: string,
   parsed: ParsedTextFile,
-  revisionsState: RevisionsState,
+  revisionsState: RevisionsStateType,
 ): TextFileContents {
   return {
     code: code,
