@@ -437,7 +437,8 @@ function findAbsoluteDescendantsToMove(
       EP.isFromSameInstanceAs(path, nearestSelectedAncestor) &&
       !EP.isRootElementOfInstance(path)
     ) {
-      const containingBlockPath = MetadataUtils.findContainingBlock(metadata, path)
+      const elementMetadata = MetadataUtils.findElementByElementPath(metadata, path)
+      const containingBlockPath = elementMetadata?.specialSizeMeasurements.closestOffsetParentPath
       /**
        * With the conversion the nearest selected ancestor will receive absolute position,
        * checking if the containing block element is somewhere outside of the selection.

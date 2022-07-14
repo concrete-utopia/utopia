@@ -1533,6 +1533,7 @@ export interface SpecialSizeMeasurements {
   coordinateSystemBounds: CanvasRectangle | null
   immediateParentBounds: CanvasRectangle | null
   immediateParentProvidesLayout: boolean
+  closestOffsetParentPath: ElementPath
   usesParentBounds: boolean
   parentLayoutSystem: DetectedLayoutSystem // TODO make a specific boolean prop that tells us the parent is flex or not
   layoutSystemForChildren: DetectedLayoutSystem
@@ -1557,6 +1558,7 @@ export function specialSizeMeasurements(
   coordinateSystemBounds: CanvasRectangle | null,
   immediateParentBounds: CanvasRectangle | null,
   immediateParentProvidesLayout: boolean,
+  closestOffsetParentPath: ElementPath,
   usesParentBounds: boolean,
   parentLayoutSystem: DetectedLayoutSystem,
   layoutSystemForChildren: DetectedLayoutSystem,
@@ -1580,6 +1582,7 @@ export function specialSizeMeasurements(
     coordinateSystemBounds,
     immediateParentBounds,
     immediateParentProvidesLayout,
+    closestOffsetParentPath,
     usesParentBounds,
     parentLayoutSystem,
     layoutSystemForChildren,
@@ -1608,6 +1611,7 @@ export const emptySpecialSizeMeasurements = specialSizeMeasurements(
   zeroCanvasRect,
   zeroCanvasRect,
   true,
+  EP.emptyElementPath,
   false,
   'flow',
   'flow',

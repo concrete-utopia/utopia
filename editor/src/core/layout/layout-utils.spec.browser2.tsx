@@ -99,6 +99,7 @@ describe('maybeSwitchLayoutProps', () => {
           null,
           null,
           true,
+          EP.emptyElementPath,
           true,
           'none',
           'none',

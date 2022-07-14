@@ -4,10 +4,12 @@ import {
 } from '../../core/shared/element-template'
 import { left } from '../../core/shared/either'
 import { BakedInStoryboardUID } from '../../core/model/scene-utils'
-import { mapValues } from '../../core/shared/object-utils'
+import { mapValues, pick } from '../../core/shared/object-utils'
 import { renderTestEditorWithCode, TestAppUID, TestSceneUID } from './ui-jsx.test-utils'
 import { disableStoredStateforTests } from '../editor/stored-state'
 import { matchInlineSnapshotBrowser } from '../../../test/karma-snapshots'
+import { MetadataUtils } from '../../core/model/element-metadata-utils'
+import * as EP from '../../core/shared/element-path'
 
 disableStoredStateforTests()
 
@@ -2819,5 +2821,64 @@ describe('DOM Walker tests', () => {
     }
     `,
     )
+  })
+})
+
+describe('Capturing closest offset parent', () => {
+  it('offset comes from inside the parent component', async () => {
+    const renderResult = await renderTestEditorWithCode(
+      `
+      import * as React from 'react'
+      import { Scene, Storyboard } from 'utopia-api'
+      
+      export var App = (props) => {
+        return (
+          <div data-uid='app-root'>
+            <div
+              data-uid='inner-div'
+              style={{ position: 'absolute', top: 100 }}
+            >
+              <div data-uid='immediate-parent'>
+                {props.children}
+              </div>
+            </div>
+          </div>
+        )
+      }
+      
+      export var storyboard = (
+        <Storyboard data-uid='sb'>
+          <Scene
+            data-uid='scene'
+            style={{
+              position: 'absolute',
+              width: 375,
+              height: 812,
+            }}
+          >
+            <App data-uid='app'>
+              <div
+                data-uid='child'
+                style={{
+                  position: 'absolute',
+                  width: 200,
+                  height: 200,
+                  backgroundColor: '#d3d3d3',
+                }}
+              />
+            </App>
+          </Scene>
+        </Storyboard>
+      )
+      `,
+      'await-first-dom-report',
+    )
+
+    const metadataOfInnerElement =
+      renderResult.getEditorState().editor.jsxMetadata['sb/scene/app/child']
+    const expectedClosestOffsetParent = 'sb/scene/app:app-root/inner-div'
+    expect(
+      EP.toString(metadataOfInnerElement.specialSizeMeasurements.closestOffsetParentPath),
+    ).toBe(expectedClosestOffsetParent)
   })
 })
