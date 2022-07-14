@@ -525,7 +525,10 @@ import { uniqToasts } from './toast-helpers'
 import { NavigatorStateKeepDeepEquality } from '../../../utils/deep-equality-instances'
 import type { BuiltInDependencies } from '../../../core/es-modules/package-manager/built-in-dependencies-list'
 import { stylePropPathMappingFn } from '../../inspector/common/property-path-hooks'
-import { getEscapeHatchCommands } from '../../../components/canvas/canvas-strategies/escape-hatch-strategy'
+import {
+  escapeHatchStrategy,
+  getEscapeHatchCommands,
+} from '../../../components/canvas/canvas-strategies/escape-hatch-strategy'
 import { pickCanvasStateFromEditorState } from '../../canvas/canvas-strategies/canvas-strategies'
 import { foldAndApplyCommandsSimple, runCanvasCommand } from '../../canvas/commands/commands'
 import { setElementsToRerenderCommand } from '../../canvas/commands/set-elements-to-rerender-command'
@@ -4893,13 +4896,24 @@ export const UPDATE_FNS = {
   },
   RUN_ESCAPE_HATCH: (action: RunEscapeHatch, editor: EditorModel): EditorModel => {
     const canvasState = pickCanvasStateFromEditorState(editor)
-    const commands = getEscapeHatchCommands(
-      action.targets,
-      editor.jsxMetadata,
-      canvasState,
-      null,
-    ).commands
-    return foldAndApplyCommandsSimple(editor, commands)
+    if (
+      escapeHatchStrategy.isApplicable(
+        canvasState,
+        null,
+        editor.jsxMetadata,
+        editor.allElementProps,
+      )
+    ) {
+      const commands = getEscapeHatchCommands(
+        action.targets,
+        editor.jsxMetadata,
+        canvasState,
+        null,
+      ).commands
+      return foldAndApplyCommandsSimple(editor, commands)
+    } else {
+      return editor
+    }
   },
   SET_ELEMENTS_TO_RERENDER: (action: SetElementsToRerender, editor: EditorModel): EditorModel => {
     return foldAndApplyCommandsSimple(editor, [setElementsToRerenderCommand(action.value)])

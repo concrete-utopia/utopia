@@ -56,13 +56,7 @@ export const escapeHatchStrategy: CanvasStrategy = {
     if (canvasState.selectedElements.length > 0) {
       return canvasState.selectedElements.every((element) => {
         const elementMetadata = MetadataUtils.findElementByElementPath(metadata, element)
-        return (
-          elementMetadata?.specialSizeMeasurements.position === 'static' ||
-          MetadataUtils.isParentYogaLayoutedContainerAndElementParticipatesInLayout(
-            element,
-            metadata,
-          )
-        )
+        return !MetadataUtils.isPositionAbsolute(elementMetadata)
       })
     } else {
       return false
