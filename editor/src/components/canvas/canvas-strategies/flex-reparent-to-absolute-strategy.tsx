@@ -75,10 +75,11 @@ export const flexReparentToAbsoluteStrategy: CanvasStrategy = {
         parentElementBounds != null && rectContainsPoint(parentElementBounds, pointOnCanvas)
 
       if (!isPointInParentBounds) {
+        // todo only return 2 if the target parent is absolute, create new FLEX_TO_FLEX_REPARENT strategy
         return 2 // 2 here to beat flexReorderStrategy
       }
     }
-    return 0
+    return 0 // fix fallback return 0
   },
   apply: (canvasState, interactionState, strategyState) => {
     if (
