@@ -48,6 +48,7 @@ import {
   InteractionCanvasState,
 } from './canvas-strategy-types'
 import { DragInteractionData, InteractionSession, StrategyState } from './interaction-state'
+import { areAllSelectedElementsNonAbsolute } from './shared-absolute-move-strategy-helpers'
 
 export const escapeHatchStrategy: CanvasStrategy = {
   id: 'ESCAPE_HATCH_STRATEGY',
@@ -531,18 +532,4 @@ function getFrameWithoutMargin(
     y: -(margin?.top ?? 0),
   } as LocalPoint
   return offsetRect(frame, marginPoint)
-}
-
-export function areAllSelectedElementsNonAbsolute(
-  selectedElements: Array<ElementPath>,
-  metadata: ElementInstanceMetadataMap,
-) {
-  if (selectedElements.length > 0) {
-    return selectedElements.every((element) => {
-      const elementMetadata = MetadataUtils.findElementByElementPath(metadata, element)
-      return !MetadataUtils.isPositionAbsolute(elementMetadata)
-    })
-  } else {
-    return false
-  }
 }
