@@ -51,7 +51,7 @@ import { DragInteractionData, InteractionSession, StrategyState } from './intera
 
 export const escapeHatchStrategy: CanvasStrategy = {
   id: 'ESCAPE_HATCH_STRATEGY',
-  name: 'Absolute Move',
+  name: 'Absolute Move (convert to absolute)',
   isApplicable: (canvasState, _interactionState, metadata) => {
     if (canvasState.selectedElements.length > 0) {
       return canvasState.selectedElements.every((element) => {
