@@ -113,6 +113,10 @@ describe('DOM Walker tests', () => {
         "specialSizeMeasurements": Object {
           "clientHeight": 0,
           "clientWidth": 0,
+          "closestOffsetParentPath": Object {
+            "parts": Array [],
+            "type": "elementpath",
+          },
           "coordinateSystemBounds": Object {
             "height": 0,
             "width": 0,
@@ -189,6 +193,15 @@ describe('DOM Walker tests', () => {
         "specialSizeMeasurements": Object {
           "clientHeight": 812,
           "clientWidth": 375,
+          "closestOffsetParentPath": Object {
+            "parts": Array [
+              Array [
+                "utopia-storyboard-uid",
+                "scene-aaa",
+              ],
+            ],
+            "type": "elementpath",
+          },
           "coordinateSystemBounds": Object {
             "height": 812,
             "width": 375,
@@ -277,6 +290,15 @@ describe('DOM Walker tests', () => {
         "specialSizeMeasurements": Object {
           "clientHeight": 812,
           "clientWidth": 375,
+          "closestOffsetParentPath": Object {
+            "parts": Array [
+              Array [
+                "utopia-storyboard-uid",
+                "scene-aaa",
+              ],
+            ],
+            "type": "elementpath",
+          },
           "coordinateSystemBounds": Object {
             "height": 812,
             "width": 375,
@@ -372,6 +394,15 @@ describe('DOM Walker tests', () => {
         "specialSizeMeasurements": Object {
           "clientHeight": 812,
           "clientWidth": 375,
+          "closestOffsetParentPath": Object {
+            "parts": Array [
+              Array [
+                "utopia-storyboard-uid",
+                "scene-aaa",
+              ],
+            ],
+            "type": "elementpath",
+          },
           "coordinateSystemBounds": Object {
             "height": 812,
             "width": 375,
@@ -468,6 +499,19 @@ describe('DOM Walker tests', () => {
         "specialSizeMeasurements": Object {
           "clientHeight": 124,
           "clientWidth": 266,
+          "closestOffsetParentPath": Object {
+            "parts": Array [
+              Array [
+                "utopia-storyboard-uid",
+                "scene-aaa",
+                "app-entity",
+              ],
+              Array [
+                "05c",
+              ],
+            ],
+            "type": "elementpath",
+          },
           "coordinateSystemBounds": Object {
             "height": 812,
             "width": 375,
@@ -565,6 +609,20 @@ describe('DOM Walker tests', () => {
         "specialSizeMeasurements": Object {
           "clientHeight": 70,
           "clientWidth": 125,
+          "closestOffsetParentPath": Object {
+            "parts": Array [
+              Array [
+                "utopia-storyboard-uid",
+                "scene-aaa",
+                "app-entity",
+              ],
+              Array [
+                "05c",
+                "ef0",
+              ],
+            ],
+            "type": "elementpath",
+          },
           "coordinateSystemBounds": Object {
             "height": 124,
             "width": 266,
@@ -707,6 +765,10 @@ describe('DOM Walker tests', () => {
         "specialSizeMeasurements": Object {
           "clientHeight": 0,
           "clientWidth": 0,
+          "closestOffsetParentPath": Object {
+            "parts": Array [],
+            "type": "elementpath",
+          },
           "coordinateSystemBounds": Object {
             "height": 0,
             "width": 0,
@@ -783,6 +845,15 @@ describe('DOM Walker tests', () => {
         "specialSizeMeasurements": Object {
           "clientHeight": 812,
           "clientWidth": 375,
+          "closestOffsetParentPath": Object {
+            "parts": Array [
+              Array [
+                "utopia-storyboard-uid",
+                "scene-aaa",
+              ],
+            ],
+            "type": "elementpath",
+          },
           "coordinateSystemBounds": Object {
             "height": 812,
             "width": 375,
@@ -871,6 +942,15 @@ describe('DOM Walker tests', () => {
         "specialSizeMeasurements": Object {
           "clientHeight": 812,
           "clientWidth": 375,
+          "closestOffsetParentPath": Object {
+            "parts": Array [
+              Array [
+                "utopia-storyboard-uid",
+                "scene-aaa",
+              ],
+            ],
+            "type": "elementpath",
+          },
           "coordinateSystemBounds": Object {
             "height": 812,
             "width": 375,
@@ -962,6 +1042,15 @@ describe('DOM Walker tests', () => {
         "specialSizeMeasurements": Object {
           "clientHeight": 812,
           "clientWidth": 375,
+          "closestOffsetParentPath": Object {
+            "parts": Array [
+              Array [
+                "utopia-storyboard-uid",
+                "scene-aaa",
+              ],
+            ],
+            "type": "elementpath",
+          },
           "coordinateSystemBounds": Object {
             "height": 812,
             "width": 375,
@@ -1054,6 +1143,19 @@ describe('DOM Walker tests', () => {
         "specialSizeMeasurements": Object {
           "clientHeight": 164,
           "clientWidth": 306,
+          "closestOffsetParentPath": Object {
+            "parts": Array [
+              Array [
+                "utopia-storyboard-uid",
+                "scene-aaa",
+                "app-entity",
+              ],
+              Array [
+                "05c",
+              ],
+            ],
+            "type": "elementpath",
+          },
           "coordinateSystemBounds": null,
           "display": "block",
           "flexDirection": "row",
@@ -1142,6 +1244,20 @@ describe('DOM Walker tests', () => {
         "specialSizeMeasurements": Object {
           "clientHeight": 70,
           "clientWidth": 125,
+          "closestOffsetParentPath": Object {
+            "parts": Array [
+              Array [
+                "utopia-storyboard-uid",
+                "scene-aaa",
+                "app-entity",
+              ],
+              Array [
+                "05c",
+                "ef0",
+              ],
+            ],
+            "type": "elementpath",
+          },
           "coordinateSystemBounds": Object {
             "height": 164,
             "width": 306,
@@ -1284,6 +1400,10 @@ describe('DOM Walker tests', () => {
         "specialSizeMeasurements": Object {
           "clientHeight": 0,
           "clientWidth": 0,
+          "closestOffsetParentPath": Object {
+            "parts": Array [],
+            "type": "elementpath",
+          },
           "coordinateSystemBounds": Object {
             "height": 0,
             "width": 0,
@@ -1360,6 +1480,15 @@ describe('DOM Walker tests', () => {
         "specialSizeMeasurements": Object {
           "clientHeight": 812,
           "clientWidth": 375,
+          "closestOffsetParentPath": Object {
+            "parts": Array [
+              Array [
+                "utopia-storyboard-uid",
+                "scene-aaa",
+              ],
+            ],
+            "type": "elementpath",
+          },
           "coordinateSystemBounds": Object {
             "height": 812,
             "width": 375,
@@ -1448,6 +1577,15 @@ describe('DOM Walker tests', () => {
         "specialSizeMeasurements": Object {
           "clientHeight": 812,
           "clientWidth": 375,
+          "closestOffsetParentPath": Object {
+            "parts": Array [
+              Array [
+                "utopia-storyboard-uid",
+                "scene-aaa",
+              ],
+            ],
+            "type": "elementpath",
+          },
           "coordinateSystemBounds": Object {
             "height": 812,
             "width": 375,
@@ -1539,6 +1677,15 @@ describe('DOM Walker tests', () => {
         "specialSizeMeasurements": Object {
           "clientHeight": 812,
           "clientWidth": 375,
+          "closestOffsetParentPath": Object {
+            "parts": Array [
+              Array [
+                "utopia-storyboard-uid",
+                "scene-aaa",
+              ],
+            ],
+            "type": "elementpath",
+          },
           "coordinateSystemBounds": Object {
             "height": 812,
             "width": 375,
@@ -1631,6 +1778,19 @@ describe('DOM Walker tests', () => {
         "specialSizeMeasurements": Object {
           "clientHeight": 164,
           "clientWidth": 306,
+          "closestOffsetParentPath": Object {
+            "parts": Array [
+              Array [
+                "utopia-storyboard-uid",
+                "scene-aaa",
+                "app-entity",
+              ],
+              Array [
+                "05c",
+              ],
+            ],
+            "type": "elementpath",
+          },
           "coordinateSystemBounds": null,
           "display": "block",
           "flexDirection": "row",
@@ -1719,6 +1879,20 @@ describe('DOM Walker tests', () => {
         "specialSizeMeasurements": Object {
           "clientHeight": 70,
           "clientWidth": 125,
+          "closestOffsetParentPath": Object {
+            "parts": Array [
+              Array [
+                "utopia-storyboard-uid",
+                "scene-aaa",
+                "app-entity",
+              ],
+              Array [
+                "05c",
+                "ef0",
+              ],
+            ],
+            "type": "elementpath",
+          },
           "coordinateSystemBounds": Object {
             "height": 164,
             "width": 306,
@@ -1849,6 +2023,10 @@ describe('DOM Walker tests', () => {
         "specialSizeMeasurements": Object {
           "clientHeight": 0,
           "clientWidth": 0,
+          "closestOffsetParentPath": Object {
+            "parts": Array [],
+            "type": "elementpath",
+          },
           "coordinateSystemBounds": Object {
             "height": 0,
             "width": 0,
@@ -1925,6 +2103,15 @@ describe('DOM Walker tests', () => {
         "specialSizeMeasurements": Object {
           "clientHeight": 812,
           "clientWidth": 375,
+          "closestOffsetParentPath": Object {
+            "parts": Array [
+              Array [
+                "utopia-storyboard-uid",
+                "scene-aaa",
+              ],
+            ],
+            "type": "elementpath",
+          },
           "coordinateSystemBounds": Object {
             "height": 812,
             "width": 375,
@@ -2013,6 +2200,15 @@ describe('DOM Walker tests', () => {
         "specialSizeMeasurements": Object {
           "clientHeight": 812,
           "clientWidth": 375,
+          "closestOffsetParentPath": Object {
+            "parts": Array [
+              Array [
+                "utopia-storyboard-uid",
+                "scene-aaa",
+              ],
+            ],
+            "type": "elementpath",
+          },
           "coordinateSystemBounds": Object {
             "height": 812,
             "width": 375,
@@ -2104,6 +2300,15 @@ describe('DOM Walker tests', () => {
         "specialSizeMeasurements": Object {
           "clientHeight": 812,
           "clientWidth": 375,
+          "closestOffsetParentPath": Object {
+            "parts": Array [
+              Array [
+                "utopia-storyboard-uid",
+                "scene-aaa",
+              ],
+            ],
+            "type": "elementpath",
+          },
           "coordinateSystemBounds": Object {
             "height": 812,
             "width": 375,
@@ -2238,6 +2443,10 @@ describe('DOM Walker tests', () => {
         "specialSizeMeasurements": Object {
           "clientHeight": 0,
           "clientWidth": 0,
+          "closestOffsetParentPath": Object {
+            "parts": Array [],
+            "type": "elementpath",
+          },
           "coordinateSystemBounds": Object {
             "height": 0,
             "width": 0,
@@ -2314,6 +2523,15 @@ describe('DOM Walker tests', () => {
         "specialSizeMeasurements": Object {
           "clientHeight": 812,
           "clientWidth": 375,
+          "closestOffsetParentPath": Object {
+            "parts": Array [
+              Array [
+                "utopia-storyboard-uid",
+                "scene-aaa",
+              ],
+            ],
+            "type": "elementpath",
+          },
           "coordinateSystemBounds": Object {
             "height": 812,
             "width": 375,
@@ -2402,6 +2620,15 @@ describe('DOM Walker tests', () => {
         "specialSizeMeasurements": Object {
           "clientHeight": 812,
           "clientWidth": 375,
+          "closestOffsetParentPath": Object {
+            "parts": Array [
+              Array [
+                "utopia-storyboard-uid",
+                "scene-aaa",
+              ],
+            ],
+            "type": "elementpath",
+          },
           "coordinateSystemBounds": Object {
             "height": 812,
             "width": 375,
@@ -2493,6 +2720,15 @@ describe('DOM Walker tests', () => {
         "specialSizeMeasurements": Object {
           "clientHeight": 812,
           "clientWidth": 375,
+          "closestOffsetParentPath": Object {
+            "parts": Array [
+              Array [
+                "utopia-storyboard-uid",
+                "scene-aaa",
+              ],
+            ],
+            "type": "elementpath",
+          },
           "coordinateSystemBounds": Object {
             "height": 812,
             "width": 375,
@@ -2585,6 +2821,19 @@ describe('DOM Walker tests', () => {
         "specialSizeMeasurements": Object {
           "clientHeight": 0,
           "clientWidth": 375,
+          "closestOffsetParentPath": Object {
+            "parts": Array [
+              Array [
+                "utopia-storyboard-uid",
+                "scene-aaa",
+                "app-entity",
+              ],
+              Array [
+                "aaa",
+              ],
+            ],
+            "type": "elementpath",
+          },
           "coordinateSystemBounds": Object {
             "height": 812,
             "width": 375,
@@ -2677,6 +2926,19 @@ describe('DOM Walker tests', () => {
         "specialSizeMeasurements": Object {
           "clientHeight": 0,
           "clientWidth": 375,
+          "closestOffsetParentPath": Object {
+            "parts": Array [
+              Array [
+                "utopia-storyboard-uid",
+                "scene-aaa",
+                "app-entity",
+              ],
+              Array [
+                "aaa",
+              ],
+            ],
+            "type": "elementpath",
+          },
           "coordinateSystemBounds": Object {
             "height": 812,
             "width": 375,
@@ -2769,6 +3031,19 @@ describe('DOM Walker tests', () => {
         "specialSizeMeasurements": Object {
           "clientHeight": 0,
           "clientWidth": 375,
+          "closestOffsetParentPath": Object {
+            "parts": Array [
+              Array [
+                "utopia-storyboard-uid",
+                "scene-aaa",
+                "app-entity",
+              ],
+              Array [
+                "aaa",
+              ],
+            ],
+            "type": "elementpath",
+          },
           "coordinateSystemBounds": Object {
             "height": 812,
             "width": 375,
