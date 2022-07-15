@@ -526,7 +526,7 @@ import { NavigatorStateKeepDeepEquality } from '../../../utils/deep-equality-ins
 import type { BuiltInDependencies } from '../../../core/es-modules/package-manager/built-in-dependencies-list'
 import { stylePropPathMappingFn } from '../../inspector/common/property-path-hooks'
 import {
-  escapeHatchStrategy,
+  areAllSelectedElementsNonAbsolute,
   getEscapeHatchCommands,
 } from '../../../components/canvas/canvas-strategies/escape-hatch-strategy'
 import { pickCanvasStateFromEditorState } from '../../canvas/canvas-strategies/canvas-strategies'
@@ -4896,14 +4896,7 @@ export const UPDATE_FNS = {
   },
   RUN_ESCAPE_HATCH: (action: RunEscapeHatch, editor: EditorModel): EditorModel => {
     const canvasState = pickCanvasStateFromEditorState(editor)
-    if (
-      escapeHatchStrategy.isApplicable(
-        canvasState,
-        null,
-        editor.jsxMetadata,
-        editor.allElementProps,
-      )
-    ) {
+    if (areAllSelectedElementsNonAbsolute(editor.selectedViews, editor.jsxMetadata)) {
       const commands = getEscapeHatchCommands(
         action.targets,
         editor.jsxMetadata,
