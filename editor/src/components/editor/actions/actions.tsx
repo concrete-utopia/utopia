@@ -4894,7 +4894,7 @@ export const UPDATE_FNS = {
   },
   RUN_ESCAPE_HATCH: (action: RunEscapeHatch, editor: EditorModel): EditorModel => {
     const canvasState = pickCanvasStateFromEditorState(editor)
-    if (areAllSelectedElementsNonAbsolute(editor.selectedViews, editor.jsxMetadata)) {
+    if (areAllSelectedElementsNonAbsolute(action.targets, editor.jsxMetadata)) {
       const commands = getEscapeHatchCommands(
         action.targets,
         editor.jsxMetadata,
