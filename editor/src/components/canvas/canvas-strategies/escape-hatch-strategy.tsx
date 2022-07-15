@@ -53,14 +53,7 @@ export const escapeHatchStrategy: CanvasStrategy = {
   id: 'ESCAPE_HATCH_STRATEGY',
   name: 'Absolute Move',
   isApplicable: (canvasState, _interactionState, metadata) => {
-    if (canvasState.selectedElements.length > 0) {
-      return canvasState.selectedElements.every((element) => {
-        const elementMetadata = MetadataUtils.findElementByElementPath(metadata, element)
-        return !MetadataUtils.isPositionAbsolute(elementMetadata)
-      })
-    } else {
-      return false
-    }
+    return areAllSelectedElementsNonAbsolute(canvasState.selectedElements, metadata)
   },
   controlsToRender: [
     {
@@ -538,4 +531,18 @@ function getFrameWithoutMargin(
     y: -(margin?.top ?? 0),
   } as LocalPoint
   return offsetRect(frame, marginPoint)
+}
+
+export function areAllSelectedElementsNonAbsolute(
+  selectedElements: Array<ElementPath>,
+  metadata: ElementInstanceMetadataMap,
+) {
+  if (selectedElements.length > 0) {
+    return selectedElements.every((element) => {
+      const elementMetadata = MetadataUtils.findElementByElementPath(metadata, element)
+      return !MetadataUtils.isPositionAbsolute(elementMetadata)
+    })
+  } else {
+    return false
+  }
 }
