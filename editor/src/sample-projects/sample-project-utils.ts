@@ -430,7 +430,7 @@ function beachesDefaultProject(): PersistentModel {
 
 export function defaultProject(): PersistentModel {
   if (process.env.NODE_ENV === 'production') {
-    return simpleDefaultProject()
+    return beachesDefaultProject()
   } else {
     return beachesDefaultProject()
   }
