@@ -422,6 +422,29 @@ export function editorDispatch(
 
   const frozenDerivedState = result.unpatchedDerived
 
+  // NOTE:
+  // We add the current editor state to undo history synchronously, although the parsed state can be out of date, and
+  // will be only fixed after the next UPDATE_FROM_WORKER action (which is transient and will not modify the
+  // undo history).
+  // This causes two known bugs:
+  // 1. the first undo step after load is unparsed, so if you undo till the beginning, the canvas is unmounted,
+  //    only mounted back after the worker is ready with the parsing (which causes a blink)
+  // 2. If you modify the code in the code editor, the undo history is going to contain out of date parse results,
+  //    so if you undo back until a code change, the canvas content will briefly contain the position from one
+  //    step earlier. How to reproduce?
+  //    1 - left is initially set to 50
+  //    2 - Change left to 100 via code - undo history now stores CODE_AHEAD version of the model, with the parsed
+  //        model still containing 50 until the workers return the new value (at which point the canvas updates)
+  //    3 - Drag the element on the canvas to update left to 200
+  //    4 - Undo the drag. Canvas renders with left: 50 briefly whilst the worker re-parses, then updates to left: 100
+  //
+  // All these issues are eventually fixed after the worker reparses the code, but they cause visual glitches.
+  //
+  // Potential solution:
+  //    Adding something with CODE_AHEAD or PARSED_AHEAD to the undo stack triggers its own worker request, that then
+  //    only updates that undo stack entry (i.e. that doesn't feed into the rest of the editor at all)
+  //    This worker could get an undo stack item id and only update that item in the undo history after it is ready
+
   let newHistory: StateHistory
   if (transientOrNoChange) {
     newHistory = result.history
