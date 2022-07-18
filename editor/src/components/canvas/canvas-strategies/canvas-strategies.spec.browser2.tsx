@@ -261,7 +261,7 @@ describe('Strategy Fitness', () => {
 
     expect(canvasStrategy.strategy?.strategy.id).toEqual('FLEX_REORDER')
   })
-  it('fits Escape Hatch Strategy when dragging a flex element with siblings the cursor is outside of the parent', async () => {
+  it('fits Flex Reparent to Absolute Strategy when dragging a flex element with siblings the cursor is outside of the parent', async () => {
     const targetElement = elementPath([
       ['utopia-storyboard-uid', 'scene-aaa', 'app-entity'],
       ['aaa', 'bbb'],
@@ -308,7 +308,7 @@ describe('Strategy Fitness', () => {
       null,
     )
 
-    expect(canvasStrategy.strategy?.strategy.id).toEqual('ESCAPE_HATCH_STRATEGY')
+    expect(canvasStrategy.strategy?.strategy.id).toEqual('FLEX_REPARENT_TO_ABSOLUTE')
   })
   it('fits Absolute Resize Strategy when resizing an absolute element without modifiers', async () => {
     const targetElement = elementPath([
