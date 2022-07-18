@@ -208,6 +208,7 @@ import type {
   ForceParseFile,
   RemoveFromNodeModulesContents,
   RunEscapeHatch,
+  UpdateMouseButtonsPressed,
 } from '../action-types'
 import {
   EditorModes,
@@ -518,6 +519,17 @@ export function updateKeys(keys: KeysPressed): UpdateKeysPressed {
   return {
     action: 'UPDATE_KEYS_PRESSED',
     keys: keys,
+  }
+}
+
+export function updateMouseButtonsPressed(
+  added: number | null,
+  removed: number | null,
+): UpdateMouseButtonsPressed {
+  return {
+    action: 'UPDATE_MOUSE_BUTTONS_PRESSED',
+    added: added,
+    removed: removed,
   }
 }
 

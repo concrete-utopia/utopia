@@ -1,8 +1,11 @@
 import {
+  formatTestProjectCode,
   getPrintedUiJsCode,
   makeTestProjectCodeWithSnippet,
   renderTestEditorWithCode,
+  TestAppUID,
   TestScenePath,
+  TestSceneUID,
 } from '../ui-jsx.test-utils'
 import { act, fireEvent } from '@testing-library/react'
 import * as EP from '../../../core/shared/element-path'
@@ -20,6 +23,8 @@ import {
 } from '../../../core/shared/math-utils'
 import { emptyModifiers } from '../../../utils/modifiers'
 import { ElementPath } from '../../../core/shared/project-file-types'
+import { BakedInStoryboardUID } from '../../../core/model/scene-utils'
+import { SceneLabelTestID } from '../controls/select-mode/scene-label'
 
 function dragElement(
   canvasControl: HTMLElement,
@@ -144,6 +149,82 @@ describe('Absolute Move Strategy', () => {
           />
         </div>
       `),
+    )
+  })
+  it('moves absolute positioned scene', async () => {
+    const startX = 40
+    const startY = 50
+    const renderResult = await renderTestEditorWithCode(
+      `
+        import * as React from 'react'
+        import {
+          Scene,
+          Storyboard,
+        } from 'utopia-api'
+        export var App = (props) => {
+          return (
+            <div data-uid='aaa' />
+          )
+        }
+        export var storyboard = (props) => {
+          return (
+            <Storyboard data-uid='${BakedInStoryboardUID}'>
+              <Scene
+                style={{ position: 'absolute', left: ${startX}, top: ${startY}, width: 375, height: 812 }}
+                data-uid='${TestSceneUID}'
+              >
+                <App
+                  data-uid='${TestAppUID}'
+                  style={{ position: 'absolute', bottom: 0, left: 0, right: 0, top: 0 }}
+                />
+              </Scene>
+            </Storyboard>
+          )
+        }
+      `,
+      'await-first-dom-report',
+    )
+
+    const sceneLabel = renderResult.renderedDOM.getByTestId(SceneLabelTestID)
+    const sceneLabelBounds = sceneLabel.getBoundingClientRect()
+
+    const startPoint = windowPoint({ x: sceneLabelBounds.x + 5, y: sceneLabelBounds.y + 5 })
+    const dragDelta = windowPoint({ x: 40, y: -25 })
+
+    act(() => dragElement(sceneLabel, startPoint, dragDelta, false, false, false))
+
+    await renderResult.getDispatchFollowUpActionsFinished()
+
+    expect(getPrintedUiJsCode(renderResult.getEditorState())).toEqual(
+      formatTestProjectCode(`
+        import * as React from 'react'
+        import {
+          Scene,
+          Storyboard,
+        } from 'utopia-api'
+        export var App = (props) => {
+          return (
+            <div data-uid='aaa' />
+          )
+        }
+        export var storyboard = (props) => {
+          return (
+            <Storyboard data-uid='${BakedInStoryboardUID}'>
+              <Scene
+                style={{ position: 'absolute', left: ${startX + dragDelta.x}, top: ${
+        startY + dragDelta.y
+      }, width: 375, height: 812 }}
+                data-uid='${TestSceneUID}'
+              >
+                <App
+                  data-uid='${TestAppUID}'
+                  style={{ position: 'absolute', bottom: 0, left: 0, right: 0, top: 0 }}
+                />
+              </Scene>
+            </Storyboard>
+          )
+        }
+    `),
     )
   })
   it('moves selected element even when it is covered with a non-selected one', async () => {

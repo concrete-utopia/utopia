@@ -94,6 +94,7 @@ import {
 } from '../utils/global-positions'
 import { last, reverse } from '../core/shared/array-utils'
 import { updateInteractionViaMouse } from '../components/canvas/canvas-strategies/interaction-state'
+import { MouseButtonsPressed } from '../utils/mouse'
 
 const webFrame = PROBABLY_ELECTRON ? requireElectron().webFrame : null
 
@@ -106,12 +107,20 @@ let unhandledWheelDeltaY = 0
 
 resetMouseStatus()
 
-function cursorForKeysPressed(keysPressed: KeysPressed): CSSCursor | null {
+function cursorForKeysPressed(
+  keysPressed: KeysPressed,
+  mouseButtonsPressed: MouseButtonsPressed,
+): CSSCursor | null {
   if (keysPressed['z']) {
     return keysPressed['alt'] ? CSSCursor.ZoomOut : CSSCursor.ZoomIn
   }
   if (keysPressed['space']) {
-    return CSSCursor.Crosshair
+    // Primary button pressed.
+    if (mouseButtonsPressed.has(0)) {
+      return CSSCursor.Move
+    } else {
+      return CSSCursor.OpenHand
+    }
   }
   return null
 }
@@ -241,7 +250,7 @@ function on(
     if (event.event === 'MOVE' && event.nativeEvent.buttons === 1) {
       return [
         CanvasActions.scrollCanvas(
-          canvasPoint({ x: event.nativeEvent.movementX, y: event.nativeEvent.movementY }),
+          canvasPoint({ x: -event.nativeEvent.movementX, y: -event.nativeEvent.movementY }),
         ),
       ]
     } else {
@@ -475,6 +484,7 @@ export interface ControlDependencies {
   dragState: DragState | null
   mode: Mode
   keysPressed: KeysPressed
+  mouseButtonsPressed: MouseButtonsPressed
   scale: number
   snappingThreshold: number
   componentMetadata: ElementInstanceMetadataMap
@@ -498,6 +508,7 @@ export function collectControlsDependencies(
     dragState: editor.canvas.dragState,
     mode: editor.mode,
     keysPressed: editor.keysPressed,
+    mouseButtonsPressed: editor.mouseButtonsPressed,
     scale: editor.canvas.scale,
     snappingThreshold: editor.canvas.snappingThreshold,
     componentMetadata: editor.jsxMetadata,
@@ -779,7 +790,7 @@ export class EditorCanvas extends React.Component<EditorCanvasProps> {
     const cursor =
       modeOverrideCursor ??
       dragStateCursor ??
-      cursorForKeysPressed(this.props.model.keysPressed) ??
+      cursorForKeysPressed(this.props.model.keysPressed, this.props.model.mouseButtonsPressed) ??
       cursorForHoveredControl(this.props.model.controls, CanvasMousePositionRaw) ??
       getNewCanvasControlsCursor(this.props.editor.cursorStack) ??
       getDefaultCursorForMode(this.props.editor.mode)

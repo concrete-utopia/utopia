@@ -326,3 +326,17 @@ function ensureAtLeastOnePinPerDimension(props: PropsOrJSXAttributes): {
     extendedPins: [...horizontalPinsToAdd, ...verticalPinsToAdd],
   }
 }
+
+export function areAllSelectedElementsNonAbsolute(
+  selectedElements: Array<ElementPath>,
+  metadata: ElementInstanceMetadataMap,
+) {
+  if (selectedElements.length > 0) {
+    return selectedElements.every((element) => {
+      const elementMetadata = MetadataUtils.findElementByElementPath(metadata, element)
+      return !MetadataUtils.isPositionAbsolute(elementMetadata)
+    })
+  } else {
+    return false
+  }
+}

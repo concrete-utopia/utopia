@@ -51,6 +51,7 @@ import {
   ReexportWildcard,
   reexportWildcard,
   RevisionsState,
+  RevisionsStateType,
   textFile,
   TextFile,
   TextFileContents,
@@ -419,6 +420,7 @@ import {
 } from '../../inspector/common/css-utils'
 import { projectListing, ProjectListing } from '../action-types'
 import { UtopiaVSCodeConfig } from 'utopia-vscode-common'
+import { MouseButtonsPressed } from 'src/utils/mouse'
 
 export function TransientCanvasStateFilesStateKeepDeepEquality(
   oldValue: TransientFilesState,
@@ -1174,6 +1176,10 @@ export function SpecialSizeMeasurementsKeepDeepEquality(): KeepDeepEqualityCall<
     )
     const immediateParentProvidesLayoutResult =
       oldSize.immediateParentProvidesLayout === newSize.immediateParentProvidesLayout
+    const closestOffsetParentPathResult = ElementPathKeepDeepEquality(
+      oldSize.closestOffsetParentPath,
+      newSize.closestOffsetParentPath,
+    )
     const usesParentBoundsResult = oldSize.usesParentBounds === newSize.usesParentBounds
     const parentLayoutSystemResult = oldSize.parentLayoutSystem === newSize.parentLayoutSystem
     const layoutSystemForChildrenResult =
@@ -1201,6 +1207,7 @@ export function SpecialSizeMeasurementsKeepDeepEquality(): KeepDeepEqualityCall<
       coordinateSystemBoundsResult.areEqual &&
       immediateParentBoundsResult.areEqual &&
       immediateParentProvidesLayoutResult &&
+      closestOffsetParentPathResult.areEqual &&
       usesParentBoundsResult &&
       parentLayoutSystemResult &&
       layoutSystemForChildrenResult &&
@@ -1226,6 +1233,7 @@ export function SpecialSizeMeasurementsKeepDeepEquality(): KeepDeepEqualityCall<
         coordinateSystemBoundsResult.value,
         immediateParentBoundsResult.value,
         newSize.immediateParentProvidesLayout,
+        newSize.closestOffsetParentPath,
         newSize.usesParentBounds,
         newSize.parentLayoutSystem,
         newSize.layoutSystemForChildren,
@@ -2172,7 +2180,7 @@ export const TextFileContentsKeepDeepEquality: KeepDeepEqualityCall<TextFileCont
     (contents) => contents.parsed,
     ParsedTextFileKeepDeepEquality,
     (contents) => contents.revisionsState,
-    createCallWithTripleEquals<RevisionsState>(),
+    createCallWithTripleEquals<RevisionsStateType>(),
     textFileContents,
   )
 
@@ -2990,6 +2998,10 @@ export const EditorStateKeepDeepEquality: KeepDeepEqualityCall<EditorState> = (
     oldValue.keysPressed,
     newValue.keysPressed,
   )
+  const mouseButtonsPressedResult = createCallFromIntrospectiveKeepDeep<MouseButtonsPressed>()(
+    oldValue.mouseButtonsPressed,
+    newValue.mouseButtonsPressed,
+  )
   const openPopupIdResult = NullableStringKeepDeepEquality(
     oldValue.openPopupId,
     newValue.openPopupId,
@@ -3137,6 +3149,7 @@ export const EditorStateKeepDeepEquality: KeepDeepEqualityCall<EditorState> = (
     modeResult.areEqual &&
     focusedPanelResult.areEqual &&
     keysPressedResult.areEqual &&
+    mouseButtonsPressedResult.areEqual &&
     openPopupIdResult.areEqual &&
     toastsResults.areEqual &&
     canvasCursorResults.areEqual &&
@@ -3203,6 +3216,7 @@ export const EditorStateKeepDeepEquality: KeepDeepEqualityCall<EditorState> = (
       modeResult.value,
       focusedPanelResult.value,
       keysPressedResult.value,
+      mouseButtonsPressedResult.value,
       openPopupIdResult.value,
       toastsResults.value,
       canvasCursorResults.value,

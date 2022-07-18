@@ -13,8 +13,66 @@ import {
 import { setFocusedElement } from '../../../editor/actions/action-creators'
 import CanvasActions from '../../canvas-actions'
 import { CanvasControlsContainerID } from '../new-canvas-controls'
+import { SceneLabelTestID } from './scene-label'
+
+function fireSingleClickEvents(target: HTMLElement, clientX: number, clientY: number) {
+  fireEvent(
+    target,
+    new MouseEvent('mousemove', {
+      bubbles: true,
+      cancelable: true,
+      clientX: clientX,
+      clientY: clientY,
+    }),
+  )
+  fireEvent(
+    target,
+    new MouseEvent('mousedown', {
+      detail: 1,
+      bubbles: true,
+      cancelable: true,
+      metaKey: false,
+      clientX: clientX,
+      clientY: clientY,
+      buttons: 1,
+    }),
+  )
+  fireEvent(
+    target,
+    new MouseEvent('mouseup', {
+      detail: 1,
+      bubbles: true,
+      cancelable: true,
+      metaKey: false,
+      clientX: clientX,
+      clientY: clientY,
+      buttons: 1,
+    }),
+  )
+  fireEvent(
+    target,
+    new MouseEvent('click', {
+      detail: 1,
+      bubbles: true,
+      cancelable: true,
+      metaKey: false,
+      clientX: clientX,
+      clientY: clientY,
+      buttons: 1,
+    }),
+  )
+}
 
 function fireDoubleClickEvents(target: HTMLElement, clientX: number, clientY: number) {
+  fireEvent(
+    target,
+    new MouseEvent('mousemove', {
+      bubbles: true,
+      cancelable: true,
+      clientX: clientX,
+      clientY: clientY,
+    }),
+  )
   fireEvent(
     target,
     new MouseEvent('mousedown', {
@@ -234,6 +292,53 @@ describe('Select Mode Selection', () => {
     const selectedViews8 = renderResult.getEditorState().editor.selectedViews
     expect(selectedViews8).toEqual([
       EP.appendNewElementPath(TestScenePath, ['a', 'b', 'c', 'd', 'e', 'targetdiv']),
+    ])
+  })
+
+  it('Clicking a scene label selects the scene', async () => {
+    const renderResult = await renderTestEditorWithCode(
+      `
+        import * as React from 'react'
+        import {
+          Scene,
+          Storyboard,
+        } from 'utopia-api'
+        export var App = (props) => {
+          return (
+            <div />
+          )
+        }
+        export var storyboard = (props) => {
+          return (
+            <Storyboard data-uid={'${BakedInStoryboardUID}'}>
+              <Scene
+                style={{ position: 'relative', left: 0, top: 0, width: 375, height: 812 }}
+                data-uid={'${TestSceneUID}'}
+              >
+                <App
+                  data-uid='${TestAppUID}' 
+                  style={{ position: 'absolute', bottom: 0, left: 0, right: 0, top: 0 }}
+                />
+              </Scene>
+            </Storyboard>
+          )
+        }
+      `,
+      'await-first-dom-report',
+    )
+
+    const sceneLabel = renderResult.renderedDOM.getByTestId(SceneLabelTestID)
+    const sceneLabelBounds = sceneLabel.getBoundingClientRect()
+
+    await act(async () => {
+      const dispatchDone = renderResult.getDispatchFollowUpActionsFinished()
+      fireSingleClickEvents(sceneLabel, sceneLabelBounds.left + 5, sceneLabelBounds.top + 5)
+      await dispatchDone
+    })
+    await waitForAnimationFrame()
+
+    expect(renderResult.getEditorState().editor.selectedViews).toEqual([
+      EP.fromString(`${BakedInStoryboardUID}/${TestSceneUID}`),
     ])
   })
 })

@@ -1577,6 +1577,7 @@ describe('RUN_ESCAPE_HATCH', () => {
         specialSizeMeasurements: {
           immediateParentBounds: canvasRectangle({ x: 0, y: 0, width: 400, height: 400 }),
           coordinateSystemBounds: canvasRectangle({ x: 0, y: 0, width: 400, height: 400 }),
+          position: 'static',
         } as SpecialSizeMeasurements,
       } as ElementInstanceMetadata,
     } as ElementInstanceMetadataMap

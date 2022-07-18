@@ -1,3 +1,5 @@
+import { foldEither } from '../../../core/shared/either'
+import { elementReferencesElsewhere } from '../../../core/shared/element-template'
 import { MetadataUtils } from '../../../core/model/element-metadata-utils'
 import * as EP from '../../../core/shared/element-path'
 import { CSSCursor } from '../canvas-types'
@@ -30,7 +32,19 @@ export const absoluteReparentStrategy: CanvasStrategy = {
       return filteredSelectedElements.every((element) => {
         const elementMetadata = MetadataUtils.findElementByElementPath(metadata, element)
 
-        return elementMetadata?.specialSizeMeasurements.position === 'absolute'
+        const referencesExternalValue =
+          elementMetadata == null
+            ? false
+            : foldEither(
+                (_) => false,
+                (elementFromMetadata) => elementReferencesElsewhere(elementFromMetadata),
+                elementMetadata.element,
+              )
+
+        return (
+          elementMetadata?.specialSizeMeasurements.position === 'absolute' &&
+          !referencesExternalValue
+        )
       })
     }
     return false
@@ -83,12 +97,16 @@ export const absoluteReparentStrategy: CanvasStrategy = {
     )
     const newParent = reparentResult.newParent
     const moveCommands = absoluteMoveStrategy.apply(canvasState, interactionState, strategyState)
-    const providesBoundsForAbsoluteChildren = MetadataUtils.findElementByElementPath(
-      strategyState.startingMetadata,
-      newParent,
-    )?.specialSizeMeasurements.providesBoundsForAbsoluteChildren
+    const providesBoundsForAbsoluteChildren =
+      MetadataUtils.findElementByElementPath(strategyState.startingMetadata, newParent)
+        ?.specialSizeMeasurements.providesBoundsForAbsoluteChildren ?? false
+    const parentIsStoryboard = newParent == null ? false : EP.isStoryboardPath(newParent)
 
-    if (reparentResult.shouldReparent && newParent != null && providesBoundsForAbsoluteChildren) {
+    if (
+      reparentResult.shouldReparent &&
+      newParent != null &&
+      (providesBoundsForAbsoluteChildren || parentIsStoryboard)
+    ) {
       const commands = filteredSelectedElements.map((selectedElement) => {
         const offsetCommands = getAbsoluteOffsetCommandsForSelectedElement(
           selectedElement,

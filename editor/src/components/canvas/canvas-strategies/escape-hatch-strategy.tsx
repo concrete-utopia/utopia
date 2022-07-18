@@ -5,13 +5,18 @@ import { MetadataUtils } from '../../../core/model/element-metadata-utils'
 import { flatMapArray, mapDropNulls, stripNulls } from '../../../core/shared/array-utils'
 import { isRight, right } from '../../../core/shared/either'
 import * as EP from '../../../core/shared/element-path'
-import { ElementInstanceMetadataMap } from '../../../core/shared/element-template'
+import {
+  ElementInstanceMetadataMap,
+  SpecialSizeMeasurements,
+} from '../../../core/shared/element-template'
 import {
   asLocal,
   CanvasPoint,
   CanvasRectangle,
+  canvasRectangleToLocalRectangle,
   CanvasVector,
   LocalPoint,
+  LocalRectangle,
   offsetPoint,
   offsetRect,
   rectContainsPoint,
@@ -43,25 +48,13 @@ import {
   InteractionCanvasState,
 } from './canvas-strategy-types'
 import { DragInteractionData, InteractionSession, StrategyState } from './interaction-state'
+import { areAllSelectedElementsNonAbsolute } from './shared-absolute-move-strategy-helpers'
 
 export const escapeHatchStrategy: CanvasStrategy = {
   id: 'ESCAPE_HATCH_STRATEGY',
   name: 'Absolute Move',
   isApplicable: (canvasState, _interactionState, metadata) => {
-    if (canvasState.selectedElements.length > 0) {
-      return canvasState.selectedElements.every((element) => {
-        const elementMetadata = MetadataUtils.findElementByElementPath(metadata, element)
-        return (
-          elementMetadata?.specialSizeMeasurements.position === 'static' ||
-          MetadataUtils.isParentYogaLayoutedContainerAndElementParticipatesInLayout(
-            element,
-            metadata,
-          )
-        )
-      })
-    } else {
-      return false
-    }
+    return areAllSelectedElementsNonAbsolute(canvasState.selectedElements, metadata)
   },
   controlsToRender: [
     {
@@ -198,8 +191,23 @@ function collectMoveCommandsForSelectedElements(
   let commands: Array<CanvasCommand> = []
   let intendedBounds: Array<CanvasFrameAndTarget> = []
 
+  /**
+   * Multiselect reparents the selection to a common ancestor
+   * starting from the inner elements
+   */
   const commonAncestor = EP.getCommonParent(selectedElements, false)
-  const sortedElements = EP.getOrderedPathsByDepth(selectedElements) // inner elements should be reparented first
+  const sortedElements = EP.getOrderedPathsByDepth(selectedElements)
+
+  /**
+   * It's possible to have descendants where the layout is defined by an ancestor
+   * these are offset here as the new layout parents will be the selected elements
+   */
+  const descendantsInNewContainingBlock = moveDescendantsToNewContainingBlock(
+    metadata,
+    selectedElements,
+    canvasState,
+  )
+  commands.push(...descendantsInNewContainingBlock)
 
   sortedElements.forEach((path) => {
     const elementResult = collectSetLayoutPropCommands(
@@ -237,23 +245,11 @@ function collectSetLayoutPropCommands(
   const shouldReparent = targetParent != null && !EP.pathsEqual(targetParent, currentParentPath)
   const globalFrame = MetadataUtils.getFrameInCanvasCoords(path, metadata)
   if (globalFrame != null) {
-    const frame = MetadataUtils.getFrameRelativeToTargetContainingBlock(
+    const newLocalFrame = MetadataUtils.getFrameRelativeToTargetContainingBlock(
       shouldReparent ? targetParent : currentParentPath,
       metadata,
       globalFrame,
     )
-    const specialSizeMeasurements = MetadataUtils.findElementByElementPath(
-      metadata,
-      path,
-    )?.specialSizeMeasurements
-    const parentFrame = specialSizeMeasurements?.immediateParentBounds ?? null
-    const margin = specialSizeMeasurements?.margin
-    const marginPoint: LocalPoint = {
-      x: -(margin?.left ?? 0),
-      y: -(margin?.top ?? 0),
-    } as LocalPoint
-    const frameWithoutMargin = offsetRect(frame, marginPoint)
-    const updatedFrame = offsetRect(frameWithoutMargin, asLocal(dragDelta ?? zeroCanvasRect))
     const intendedBounds: Array<CanvasFrameAndTarget> = (() => {
       if (globalFrame == null) {
         return []
@@ -262,24 +258,16 @@ function collectSetLayoutPropCommands(
         return [{ frame: updatedGlobalFrame, target: path }]
       }
     })()
-    const fullFrame = getFullFrame(updatedFrame)
-    const pinsToSet = filterPinsToSet(path, canvasState)
 
     let commands: Array<CanvasCommand> = [convertToAbsolute('permanent', path)]
-    fastForEach(pinsToSet, (framePin) => {
-      const pinValue = pinValueToSet(framePin, fullFrame, parentFrame)
-      commands.push(
-        setCssLengthProperty(
-          'permanent',
-          path,
-          stylePropPathMappingFn(framePin, ['style']),
-          pinValue,
-          isHorizontalPoint(framePointForPinnedProp(framePin))
-            ? parentFrame?.width
-            : parentFrame?.height,
-        ),
-      )
-    })
+    const updatePinsCommands = createUpdatePinsCommands(
+      path,
+      metadata,
+      canvasState,
+      dragDelta,
+      newLocalFrame,
+    )
+    commands.push(...updatePinsCommands)
     if (shouldReparent) {
       commands.push(reparentElement('permanent', path, targetParent))
     }
@@ -415,4 +403,134 @@ function collectHighlightCommand(
     }
   }, canvasState.selectedElements)
   return showOutlineHighlight('transient', [...siblingFrames, ...draggedFrames])
+}
+
+function findAbsoluteDescendantsToMove(
+  selectedElements: Array<ElementPath>,
+  metadata: ElementInstanceMetadataMap,
+): Array<ElementPath> {
+  /**
+   * Collecting all absolute descendants that have their containing block outside of the converted element.
+   * The containing block element is the layout parent that provides the bounds for the top/left/bottom/right of the position absolute element.
+   * The absolute conversion creates a new containing block, these child elements are moved to keep their position in place.
+   * Not all absolute elements will change their containing block here: for example relative positioned descendant with absolute children, the relative positioned element defines the containing block.
+   * And component children are changed only when the selected element is inside a focused component.
+   */
+  return mapDropNulls((element) => {
+    const path = element.elementPath
+    const nearestSelectedAncestor = findNearestSelectedAncestor(path, selectedElements)
+    if (
+      MetadataUtils.isPositionAbsolute(element) &&
+      nearestSelectedAncestor != null &&
+      EP.isFromSameInstanceAs(path, nearestSelectedAncestor) &&
+      !EP.isRootElementOfInstance(path)
+    ) {
+      const elementMetadata = MetadataUtils.findElementByElementPath(metadata, path)
+      const containingBlockPath = elementMetadata?.specialSizeMeasurements.closestOffsetParentPath
+      /**
+       * With the conversion the nearest selected ancestor will receive absolute position,
+       * checking if the containing block element is somewhere outside of the selection.
+       */
+      if (
+        containingBlockPath != null &&
+        EP.isDescendantOf(nearestSelectedAncestor, containingBlockPath)
+      ) {
+        return path
+      } else {
+        return null
+      }
+    } else {
+      return null
+    }
+  }, Object.values(metadata))
+}
+
+function moveDescendantsToNewContainingBlock(
+  metadata: ElementInstanceMetadataMap,
+  selectedElements: Array<ElementPath>,
+  canvasState: InteractionCanvasState,
+): Array<CanvasCommand> {
+  const absoluteDescendants = findAbsoluteDescendantsToMove(selectedElements, metadata)
+  return absoluteDescendants.flatMap((path) => {
+    const canvasFrame = MetadataUtils.getFrameInCanvasCoords(path, metadata)
+
+    const nearestSelectedAncestor = findNearestSelectedAncestor(path, selectedElements)
+    if (nearestSelectedAncestor != null) {
+      const nearestSelectedAncestorFrame = MetadataUtils.getFrameInCanvasCoords(
+        nearestSelectedAncestor,
+        metadata,
+      )
+      if (canvasFrame != null && nearestSelectedAncestorFrame != null) {
+        /**
+         * after conversion selected elements define the containing block,
+         * descendants are offset to the new layout ancestor
+         */
+        const newLocalFrame = canvasRectangleToLocalRectangle(
+          canvasFrame,
+          nearestSelectedAncestorFrame,
+        )
+        return createUpdatePinsCommands(path, metadata, canvasState, zeroCanvasPoint, newLocalFrame)
+      }
+    }
+    return []
+  })
+}
+
+function findNearestSelectedAncestor(
+  target: ElementPath,
+  selectedElements: Array<ElementPath>,
+): ElementPath | null {
+  return (
+    EP.getOrderedPathsByDepth(selectedElements).find((selection) =>
+      EP.isDescendantOf(target, selection),
+    ) ?? null
+  )
+}
+
+function createUpdatePinsCommands(
+  path: ElementPath,
+  metadata: ElementInstanceMetadataMap,
+  canvasState: InteractionCanvasState,
+  dragDelta: CanvasVector | null,
+  frame: LocalRectangle,
+) {
+  const specialSizeMeasurements = MetadataUtils.findElementByElementPath(
+    metadata,
+    path,
+  )?.specialSizeMeasurements
+  const parentFrame = specialSizeMeasurements?.immediateParentBounds ?? null
+  const frameWithoutMargin = getFrameWithoutMargin(frame, specialSizeMeasurements)
+  const updatedFrame = offsetRect(frameWithoutMargin, asLocal(dragDelta ?? zeroCanvasRect))
+  const fullFrame = getFullFrame(updatedFrame)
+  const pinsToSet = filterPinsToSet(path, canvasState)
+
+  let commands: Array<SetCssLengthProperty> = []
+  fastForEach(pinsToSet, (framePin) => {
+    const pinValue = pinValueToSet(framePin, fullFrame, parentFrame)
+    commands.push(
+      setCssLengthProperty(
+        'permanent',
+        path,
+        stylePropPathMappingFn(framePin, ['style']),
+        pinValue,
+        isHorizontalPoint(framePointForPinnedProp(framePin))
+          ? parentFrame?.width
+          : parentFrame?.height,
+      ),
+    )
+  })
+  return commands
+}
+
+function getFrameWithoutMargin(
+  frame: LocalRectangle,
+  specialSizeMeasurements: SpecialSizeMeasurements | undefined,
+) {
+  // TODO fix bottom and right margins
+  const margin = specialSizeMeasurements?.margin
+  const marginPoint: LocalPoint = {
+    x: -(margin?.left ?? 0),
+    y: -(margin?.top ?? 0),
+  } as LocalPoint
+  return offsetRect(frame, marginPoint)
 }

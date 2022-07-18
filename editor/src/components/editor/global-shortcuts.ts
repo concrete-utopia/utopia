@@ -774,7 +774,7 @@ export function handleKeyDown(
     })
   }
 
-  function getShortcutActions(): Array<EditorAction> {
+  function getCanvasShortcutActions(): Array<EditorAction> {
     const openFile = getOpenFile(editor)
     if (openFile == null) {
       return []
@@ -788,18 +788,37 @@ export function handleKeyDown(
     }
   }
 
+  function getGlobalShortcutActions(): Array<EditorAction> {
+    const openFile = getOpenFile(editor)
+    if (openFile != null && openFile.type === 'TEXT_FILE') {
+      return handleShortcuts<Array<EditorAction>>(namesByKey, event, [], {
+        [UNDO_CHANGES_SHORTCUT]: () => {
+          return [EditorActions.undo()]
+        },
+        [REDO_CHANGES_SHORTCUT]: () => {
+          return [EditorActions.redo()]
+        },
+      })
+    } else {
+      return []
+    }
+  }
+
   // Build the actions to dispatch.
   let actions: Array<EditorAction> = [updateKeysAction]
+  let shortCutActions: EditorAction[]
   if (editorTargeted) {
-    const shortCutActions = getShortcutActions()
-    if (shortCutActions.length > 0) {
-      if (editor.canvas.interactionSession?.interactionData.type === 'KEYBOARD') {
-        // if we are in a keyboard interaction session, we want keyboard shortcuts to finish the current interaction session,
-        // so the effect of the shortcut is not combined into the undo of the interaction
-        dispatch([CanvasActions.clearInteractionSession(true)])
-      }
-      actions.push(...shortCutActions)
+    shortCutActions = getCanvasShortcutActions()
+  } else {
+    shortCutActions = getGlobalShortcutActions()
+  }
+  if (shortCutActions.length > 0) {
+    if (editor.canvas.interactionSession?.interactionData.type === 'KEYBOARD') {
+      // if we are in a keyboard interaction session, we want keyboard shortcuts to finish the current interaction session,
+      // so the effect of the shortcut is not combined into the undo of the interaction
+      dispatch([CanvasActions.clearInteractionSession(true)])
     }
+    actions.push(...shortCutActions)
   }
 
   dispatch(actions, 'everyone')

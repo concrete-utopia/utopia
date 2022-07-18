@@ -161,6 +161,9 @@ import { Spec } from 'immutability-helper'
 import { memoize } from '../../../core/shared/memoize'
 import { InteractionSession, StrategyState } from '../../canvas/canvas-strategies/interaction-state'
 import { Guideline, GuidelineWithSnappingVector } from '../../canvas/guideline'
+import { MouseButtonsPressed } from '../../../utils/mouse'
+import { emptySet } from '../../../core/shared/set-utils'
+import { UTOPIA_LABEL_KEY } from '../../../core/model/utopia-constants'
 
 const ObjectPathImmutable: any = OPI
 
@@ -846,6 +849,7 @@ export interface EditorState {
   mode: Mode
   focusedPanel: EditorPanel | null
   keysPressed: KeysPressed
+  mouseButtonsPressed: MouseButtonsPressed
   openPopupId: string | null
   toasts: ReadonlyArray<Notice>
   cursorStack: CanvasCursor
@@ -910,6 +914,7 @@ export function editorState(
   mode: Mode,
   focusedPanel: EditorPanel | null,
   keysPressed: KeysPressed,
+  mouseButtonsPressed: MouseButtonsPressed,
   openPopupId: string | null,
   toasts: ReadonlyArray<Notice>,
   cursorStack: CanvasCursor,
@@ -973,6 +978,7 @@ export function editorState(
     mode: mode,
     focusedPanel: focusedPanel,
     keysPressed: keysPressed,
+    mouseButtonsPressed: mouseButtonsPressed,
     openPopupId: openPopupId,
     toasts: toasts,
     cursorStack: cursorStack,
@@ -1678,6 +1684,7 @@ export function createEditorState(dispatch: EditorDispatch): EditorState {
     mode: EditorModes.selectLiteMode(),
     focusedPanel: 'canvas',
     keysPressed: {},
+    mouseButtonsPressed: emptySet(),
     openPopupId: null,
     toasts: [],
     cursorStack: {
@@ -1916,6 +1923,7 @@ export function createCanvasModelKILLME(
     controls: derivedState.controls,
     dragState: editor.canvas.dragState,
     keysPressed: editor.keysPressed,
+    mouseButtonsPressed: editor.mouseButtonsPressed,
     mode: editor.mode,
     scale: editor.canvas.scale,
     highlightedviews: editor.highlightedViews,
@@ -1966,6 +1974,7 @@ export function editorModelFromPersistentModel(
     mode: EditorModes.selectLiteMode(),
     focusedPanel: 'canvas',
     keysPressed: {},
+    mouseButtonsPressed: emptySet(),
     openPopupId: null,
     toasts: [],
     cursorStack: {
@@ -2725,8 +2734,14 @@ export function getNewSceneName(editor: EditorState): string {
         let exists: boolean = false
         const sceneName = `Scene ${sceneN}`
         walkElements(success.topLevelElements, (elementChild) => {
-          if (isJSXElement(elementChild) && elementChild.name.baseVariable === sceneName) {
-            exists = true
+          if (!exists && isJSXElement(elementChild)) {
+            exists = elementChild.props.some(
+              (prop) =>
+                prop.type === 'JSX_ATTRIBUTES_ENTRY' &&
+                prop.key === UTOPIA_LABEL_KEY &&
+                prop.value.type === 'ATTRIBUTE_VALUE' &&
+                prop.value.value === sceneName,
+            )
           }
         })
         if (exists) {
