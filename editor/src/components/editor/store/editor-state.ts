@@ -163,6 +163,7 @@ import { InteractionSession, StrategyState } from '../../canvas/canvas-strategie
 import { Guideline, GuidelineWithSnappingVector } from '../../canvas/guideline'
 import { MouseButtonsPressed } from '../../../utils/mouse'
 import { emptySet } from '../../../core/shared/set-utils'
+import { UTOPIA_LABEL_KEY } from '../../../core/model/utopia-constants'
 
 const ObjectPathImmutable: any = OPI
 
@@ -2733,8 +2734,14 @@ export function getNewSceneName(editor: EditorState): string {
         let exists: boolean = false
         const sceneName = `Scene ${sceneN}`
         walkElements(success.topLevelElements, (elementChild) => {
-          if (isJSXElement(elementChild) && elementChild.name.baseVariable === sceneName) {
-            exists = true
+          if (!exists && isJSXElement(elementChild)) {
+            exists = elementChild.props.some(
+              (prop) =>
+                prop.type === 'JSX_ATTRIBUTES_ENTRY' &&
+                prop.key === UTOPIA_LABEL_KEY &&
+                prop.value.type === 'ATTRIBUTE_VALUE' &&
+                prop.value.value === sceneName,
+            )
           }
         })
         if (exists) {
