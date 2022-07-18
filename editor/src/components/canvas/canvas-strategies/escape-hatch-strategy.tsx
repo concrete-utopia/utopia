@@ -48,25 +48,13 @@ import {
   InteractionCanvasState,
 } from './canvas-strategy-types'
 import { DragInteractionData, InteractionSession, StrategyState } from './interaction-state'
+import { areAllSelectedElementsNonAbsolute } from './shared-absolute-move-strategy-helpers'
 
 export const escapeHatchStrategy: CanvasStrategy = {
   id: 'ESCAPE_HATCH_STRATEGY',
   name: 'Absolute Move',
   isApplicable: (canvasState, _interactionState, metadata) => {
-    if (canvasState.selectedElements.length > 0) {
-      return canvasState.selectedElements.every((element) => {
-        const elementMetadata = MetadataUtils.findElementByElementPath(metadata, element)
-        return (
-          elementMetadata?.specialSizeMeasurements.position === 'static' ||
-          MetadataUtils.isParentYogaLayoutedContainerAndElementParticipatesInLayout(
-            element,
-            metadata,
-          )
-        )
-      })
-    } else {
-      return false
-    }
+    return areAllSelectedElementsNonAbsolute(canvasState.selectedElements, metadata)
   },
   controlsToRender: [
     {

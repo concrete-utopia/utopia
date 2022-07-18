@@ -24,6 +24,7 @@ import {
   toggleStylePropPath,
   toggleStylePropPaths,
 } from './inspector/common/css-utils'
+import { areAllSelectedElementsNonAbsolute } from './canvas/canvas-strategies/shared-absolute-move-strategy-helpers'
 
 export interface ContextMenuItem<T> {
   name: string | React.ReactNode
@@ -344,7 +345,9 @@ export const rename: ContextMenuItem<CanvasData> = {
 
 export const escapeHatch: ContextMenuItem<CanvasData> = {
   name: 'Convert to Absolute Layout',
-  enabled: true,
+  enabled: (data) => {
+    return areAllSelectedElementsNonAbsolute(data.selectedViews, data.jsxMetadata)
+  },
   action: (data, dispatch?: EditorDispatch) => {
     if (data.selectedViews.length > 0) {
       requireDispatch(dispatch)([EditorActions.runEscapeHatch(data.selectedViews)], 'everyone')
