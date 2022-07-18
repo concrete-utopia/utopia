@@ -186,6 +186,10 @@ Object {
     "specialSizeMeasurements": Object {
       "clientHeight": 0,
       "clientWidth": 0,
+      "closestOffsetParentPath": Object {
+        "parts": Array [],
+        "type": "elementpath",
+      },
       "coordinateSystemBounds": Object {
         "height": 0,
         "width": 0,
@@ -299,6 +303,10 @@ Object {
     "specialSizeMeasurements": Object {
       "clientHeight": 0,
       "clientWidth": 0,
+      "closestOffsetParentPath": Object {
+        "parts": Array [],
+        "type": "elementpath",
+      },
       "coordinateSystemBounds": Object {
         "height": 0,
         "width": 0,
@@ -571,6 +579,10 @@ Object {
     "specialSizeMeasurements": Object {
       "clientHeight": 0,
       "clientWidth": 0,
+      "closestOffsetParentPath": Object {
+        "parts": Array [],
+        "type": "elementpath",
+      },
       "coordinateSystemBounds": Object {
         "height": 0,
         "width": 0,
@@ -682,6 +694,10 @@ Object {
     "specialSizeMeasurements": Object {
       "clientHeight": 0,
       "clientWidth": 0,
+      "closestOffsetParentPath": Object {
+        "parts": Array [],
+        "type": "elementpath",
+      },
       "coordinateSystemBounds": Object {
         "height": 0,
         "width": 0,
@@ -793,6 +809,10 @@ Object {
     "specialSizeMeasurements": Object {
       "clientHeight": 0,
       "clientWidth": 0,
+      "closestOffsetParentPath": Object {
+        "parts": Array [],
+        "type": "elementpath",
+      },
       "coordinateSystemBounds": Object {
         "height": 0,
         "width": 0,
@@ -904,6 +924,10 @@ Object {
     "specialSizeMeasurements": Object {
       "clientHeight": 0,
       "clientWidth": 0,
+      "closestOffsetParentPath": Object {
+        "parts": Array [],
+        "type": "elementpath",
+      },
       "coordinateSystemBounds": Object {
         "height": 0,
         "width": 0,
@@ -1112,6 +1136,10 @@ Object {
     "specialSizeMeasurements": Object {
       "clientHeight": 0,
       "clientWidth": 0,
+      "closestOffsetParentPath": Object {
+        "parts": Array [],
+        "type": "elementpath",
+      },
       "coordinateSystemBounds": Object {
         "height": 0,
         "width": 0,
@@ -1225,6 +1253,10 @@ Object {
     "specialSizeMeasurements": Object {
       "clientHeight": 0,
       "clientWidth": 0,
+      "closestOffsetParentPath": Object {
+        "parts": Array [],
+        "type": "elementpath",
+      },
       "coordinateSystemBounds": Object {
         "height": 0,
         "width": 0,
@@ -1405,6 +1437,10 @@ Object {
     "specialSizeMeasurements": Object {
       "clientHeight": 0,
       "clientWidth": 0,
+      "closestOffsetParentPath": Object {
+        "parts": Array [],
+        "type": "elementpath",
+      },
       "coordinateSystemBounds": Object {
         "height": 0,
         "width": 0,
@@ -1612,6 +1648,10 @@ Object {
     "specialSizeMeasurements": Object {
       "clientHeight": 0,
       "clientWidth": 0,
+      "closestOffsetParentPath": Object {
+        "parts": Array [],
+        "type": "elementpath",
+      },
       "coordinateSystemBounds": Object {
         "height": 0,
         "width": 0,
@@ -1725,6 +1765,10 @@ Object {
     "specialSizeMeasurements": Object {
       "clientHeight": 0,
       "clientWidth": 0,
+      "closestOffsetParentPath": Object {
+        "parts": Array [],
+        "type": "elementpath",
+      },
       "coordinateSystemBounds": Object {
         "height": 0,
         "width": 0,
@@ -1819,6 +1863,10 @@ Object {
     "specialSizeMeasurements": Object {
       "clientHeight": 0,
       "clientWidth": 0,
+      "closestOffsetParentPath": Object {
+        "parts": Array [],
+        "type": "elementpath",
+      },
       "coordinateSystemBounds": Object {
         "height": 0,
         "width": 0,
@@ -2044,6 +2092,10 @@ Object {
     "specialSizeMeasurements": Object {
       "clientHeight": 0,
       "clientWidth": 0,
+      "closestOffsetParentPath": Object {
+        "parts": Array [],
+        "type": "elementpath",
+      },
       "coordinateSystemBounds": Object {
         "height": 0,
         "width": 0,
@@ -2157,6 +2209,10 @@ Object {
     "specialSizeMeasurements": Object {
       "clientHeight": 0,
       "clientWidth": 0,
+      "closestOffsetParentPath": Object {
+        "parts": Array [],
+        "type": "elementpath",
+      },
       "coordinateSystemBounds": Object {
         "height": 0,
         "width": 0,
@@ -2393,6 +2449,10 @@ Object {
     "specialSizeMeasurements": Object {
       "clientHeight": 0,
       "clientWidth": 0,
+      "closestOffsetParentPath": Object {
+        "parts": Array [],
+        "type": "elementpath",
+      },
       "coordinateSystemBounds": Object {
         "height": 0,
         "width": 0,
@@ -2539,6 +2599,10 @@ Object {
     "specialSizeMeasurements": Object {
       "clientHeight": 0,
       "clientWidth": 0,
+      "closestOffsetParentPath": Object {
+        "parts": Array [],
+        "type": "elementpath",
+      },
       "coordinateSystemBounds": Object {
         "height": 0,
         "width": 0,
@@ -2685,6 +2749,10 @@ Object {
     "specialSizeMeasurements": Object {
       "clientHeight": 0,
       "clientWidth": 0,
+      "closestOffsetParentPath": Object {
+        "parts": Array [],
+        "type": "elementpath",
+      },
       "coordinateSystemBounds": Object {
         "height": 0,
         "width": 0,
@@ -2831,6 +2899,10 @@ Object {
     "specialSizeMeasurements": Object {
       "clientHeight": 0,
       "clientWidth": 0,
+      "closestOffsetParentPath": Object {
+        "parts": Array [],
+        "type": "elementpath",
+      },
       "coordinateSystemBounds": Object {
         "height": 0,
         "width": 0,
@@ -3107,6 +3179,10 @@ Object {
     "specialSizeMeasurements": Object {
       "clientHeight": 0,
       "clientWidth": 0,
+      "closestOffsetParentPath": Object {
+        "parts": Array [],
+        "type": "elementpath",
+      },
       "coordinateSystemBounds": Object {
         "height": 0,
         "width": 0,
@@ -3220,6 +3296,10 @@ Object {
     "specialSizeMeasurements": Object {
       "clientHeight": 0,
       "clientWidth": 0,
+      "closestOffsetParentPath": Object {
+        "parts": Array [],
+        "type": "elementpath",
+      },
       "coordinateSystemBounds": Object {
         "height": 0,
         "width": 0,
@@ -3575,6 +3655,10 @@ Object {
     "specialSizeMeasurements": Object {
       "clientHeight": 0,
       "clientWidth": 0,
+      "closestOffsetParentPath": Object {
+        "parts": Array [],
+        "type": "elementpath",
+      },
       "coordinateSystemBounds": Object {
         "height": 0,
         "width": 0,
@@ -3825,6 +3909,10 @@ Object {
     "specialSizeMeasurements": Object {
       "clientHeight": 0,
       "clientWidth": 0,
+      "closestOffsetParentPath": Object {
+        "parts": Array [],
+        "type": "elementpath",
+      },
       "coordinateSystemBounds": Object {
         "height": 0,
         "width": 0,
@@ -3978,6 +4066,10 @@ Object {
     "specialSizeMeasurements": Object {
       "clientHeight": 0,
       "clientWidth": 0,
+      "closestOffsetParentPath": Object {
+        "parts": Array [],
+        "type": "elementpath",
+      },
       "coordinateSystemBounds": Object {
         "height": 0,
         "width": 0,
@@ -4131,6 +4223,10 @@ Object {
     "specialSizeMeasurements": Object {
       "clientHeight": 0,
       "clientWidth": 0,
+      "closestOffsetParentPath": Object {
+        "parts": Array [],
+        "type": "elementpath",
+      },
       "coordinateSystemBounds": Object {
         "height": 0,
         "width": 0,
@@ -4284,6 +4380,10 @@ Object {
     "specialSizeMeasurements": Object {
       "clientHeight": 0,
       "clientWidth": 0,
+      "closestOffsetParentPath": Object {
+        "parts": Array [],
+        "type": "elementpath",
+      },
       "coordinateSystemBounds": Object {
         "height": 0,
         "width": 0,
@@ -4534,6 +4634,10 @@ Object {
     "specialSizeMeasurements": Object {
       "clientHeight": 0,
       "clientWidth": 0,
+      "closestOffsetParentPath": Object {
+        "parts": Array [],
+        "type": "elementpath",
+      },
       "coordinateSystemBounds": Object {
         "height": 0,
         "width": 0,
@@ -4687,6 +4791,10 @@ Object {
     "specialSizeMeasurements": Object {
       "clientHeight": 0,
       "clientWidth": 0,
+      "closestOffsetParentPath": Object {
+        "parts": Array [],
+        "type": "elementpath",
+      },
       "coordinateSystemBounds": Object {
         "height": 0,
         "width": 0,
@@ -4840,6 +4948,10 @@ Object {
     "specialSizeMeasurements": Object {
       "clientHeight": 0,
       "clientWidth": 0,
+      "closestOffsetParentPath": Object {
+        "parts": Array [],
+        "type": "elementpath",
+      },
       "coordinateSystemBounds": Object {
         "height": 0,
         "width": 0,
@@ -4993,6 +5105,10 @@ Object {
     "specialSizeMeasurements": Object {
       "clientHeight": 0,
       "clientWidth": 0,
+      "closestOffsetParentPath": Object {
+        "parts": Array [],
+        "type": "elementpath",
+      },
       "coordinateSystemBounds": Object {
         "height": 0,
         "width": 0,
@@ -5243,6 +5359,10 @@ Object {
     "specialSizeMeasurements": Object {
       "clientHeight": 0,
       "clientWidth": 0,
+      "closestOffsetParentPath": Object {
+        "parts": Array [],
+        "type": "elementpath",
+      },
       "coordinateSystemBounds": Object {
         "height": 0,
         "width": 0,
@@ -5396,6 +5516,10 @@ Object {
     "specialSizeMeasurements": Object {
       "clientHeight": 0,
       "clientWidth": 0,
+      "closestOffsetParentPath": Object {
+        "parts": Array [],
+        "type": "elementpath",
+      },
       "coordinateSystemBounds": Object {
         "height": 0,
         "width": 0,
@@ -5549,6 +5673,10 @@ Object {
     "specialSizeMeasurements": Object {
       "clientHeight": 0,
       "clientWidth": 0,
+      "closestOffsetParentPath": Object {
+        "parts": Array [],
+        "type": "elementpath",
+      },
       "coordinateSystemBounds": Object {
         "height": 0,
         "width": 0,
@@ -5702,6 +5830,10 @@ Object {
     "specialSizeMeasurements": Object {
       "clientHeight": 0,
       "clientWidth": 0,
+      "closestOffsetParentPath": Object {
+        "parts": Array [],
+        "type": "elementpath",
+      },
       "coordinateSystemBounds": Object {
         "height": 0,
         "width": 0,
@@ -5921,6 +6053,10 @@ Object {
     "specialSizeMeasurements": Object {
       "clientHeight": 0,
       "clientWidth": 0,
+      "closestOffsetParentPath": Object {
+        "parts": Array [],
+        "type": "elementpath",
+      },
       "coordinateSystemBounds": Object {
         "height": 0,
         "width": 0,
@@ -6034,6 +6170,10 @@ Object {
     "specialSizeMeasurements": Object {
       "clientHeight": 0,
       "clientWidth": 0,
+      "closestOffsetParentPath": Object {
+        "parts": Array [],
+        "type": "elementpath",
+      },
       "coordinateSystemBounds": Object {
         "height": 0,
         "width": 0,
@@ -6187,6 +6327,10 @@ Object {
     "specialSizeMeasurements": Object {
       "clientHeight": 0,
       "clientWidth": 0,
+      "closestOffsetParentPath": Object {
+        "parts": Array [],
+        "type": "elementpath",
+      },
       "coordinateSystemBounds": Object {
         "height": 0,
         "width": 0,
@@ -6282,6 +6426,10 @@ Object {
     "specialSizeMeasurements": Object {
       "clientHeight": 0,
       "clientWidth": 0,
+      "closestOffsetParentPath": Object {
+        "parts": Array [],
+        "type": "elementpath",
+      },
       "coordinateSystemBounds": Object {
         "height": 0,
         "width": 0,
@@ -6377,6 +6525,10 @@ Object {
     "specialSizeMeasurements": Object {
       "clientHeight": 0,
       "clientWidth": 0,
+      "closestOffsetParentPath": Object {
+        "parts": Array [],
+        "type": "elementpath",
+      },
       "coordinateSystemBounds": Object {
         "height": 0,
         "width": 0,
@@ -6584,6 +6736,10 @@ Object {
     "specialSizeMeasurements": Object {
       "clientHeight": 0,
       "clientWidth": 0,
+      "closestOffsetParentPath": Object {
+        "parts": Array [],
+        "type": "elementpath",
+      },
       "coordinateSystemBounds": Object {
         "height": 0,
         "width": 0,
@@ -6697,6 +6853,10 @@ Object {
     "specialSizeMeasurements": Object {
       "clientHeight": 0,
       "clientWidth": 0,
+      "closestOffsetParentPath": Object {
+        "parts": Array [],
+        "type": "elementpath",
+      },
       "coordinateSystemBounds": Object {
         "height": 0,
         "width": 0,
@@ -6863,6 +7023,10 @@ Object {
     "specialSizeMeasurements": Object {
       "clientHeight": 0,
       "clientWidth": 0,
+      "closestOffsetParentPath": Object {
+        "parts": Array [],
+        "type": "elementpath",
+      },
       "coordinateSystemBounds": Object {
         "height": 0,
         "width": 0,
@@ -7088,6 +7252,10 @@ Object {
     "specialSizeMeasurements": Object {
       "clientHeight": 0,
       "clientWidth": 0,
+      "closestOffsetParentPath": Object {
+        "parts": Array [],
+        "type": "elementpath",
+      },
       "coordinateSystemBounds": Object {
         "height": 0,
         "width": 0,
@@ -7201,6 +7369,10 @@ Object {
     "specialSizeMeasurements": Object {
       "clientHeight": 0,
       "clientWidth": 0,
+      "closestOffsetParentPath": Object {
+        "parts": Array [],
+        "type": "elementpath",
+      },
       "coordinateSystemBounds": Object {
         "height": 0,
         "width": 0,
@@ -7450,6 +7622,10 @@ Object {
     "specialSizeMeasurements": Object {
       "clientHeight": 0,
       "clientWidth": 0,
+      "closestOffsetParentPath": Object {
+        "parts": Array [],
+        "type": "elementpath",
+      },
       "coordinateSystemBounds": Object {
         "height": 0,
         "width": 0,
@@ -7605,6 +7781,10 @@ Object {
     "specialSizeMeasurements": Object {
       "clientHeight": 0,
       "clientWidth": 0,
+      "closestOffsetParentPath": Object {
+        "parts": Array [],
+        "type": "elementpath",
+      },
       "coordinateSystemBounds": Object {
         "height": 0,
         "width": 0,
@@ -7760,6 +7940,10 @@ Object {
     "specialSizeMeasurements": Object {
       "clientHeight": 0,
       "clientWidth": 0,
+      "closestOffsetParentPath": Object {
+        "parts": Array [],
+        "type": "elementpath",
+      },
       "coordinateSystemBounds": Object {
         "height": 0,
         "width": 0,
@@ -7915,6 +8099,10 @@ Object {
     "specialSizeMeasurements": Object {
       "clientHeight": 0,
       "clientWidth": 0,
+      "closestOffsetParentPath": Object {
+        "parts": Array [],
+        "type": "elementpath",
+      },
       "coordinateSystemBounds": Object {
         "height": 0,
         "width": 0,
@@ -8140,6 +8328,10 @@ Object {
     "specialSizeMeasurements": Object {
       "clientHeight": 0,
       "clientWidth": 0,
+      "closestOffsetParentPath": Object {
+        "parts": Array [],
+        "type": "elementpath",
+      },
       "coordinateSystemBounds": Object {
         "height": 0,
         "width": 0,
@@ -8253,6 +8445,10 @@ Object {
     "specialSizeMeasurements": Object {
       "clientHeight": 0,
       "clientWidth": 0,
+      "closestOffsetParentPath": Object {
+        "parts": Array [],
+        "type": "elementpath",
+      },
       "coordinateSystemBounds": Object {
         "height": 0,
         "width": 0,
@@ -8502,6 +8698,10 @@ Object {
     "specialSizeMeasurements": Object {
       "clientHeight": 0,
       "clientWidth": 0,
+      "closestOffsetParentPath": Object {
+        "parts": Array [],
+        "type": "elementpath",
+      },
       "coordinateSystemBounds": Object {
         "height": 0,
         "width": 0,
@@ -8657,6 +8857,10 @@ Object {
     "specialSizeMeasurements": Object {
       "clientHeight": 0,
       "clientWidth": 0,
+      "closestOffsetParentPath": Object {
+        "parts": Array [],
+        "type": "elementpath",
+      },
       "coordinateSystemBounds": Object {
         "height": 0,
         "width": 0,
@@ -8812,6 +9016,10 @@ Object {
     "specialSizeMeasurements": Object {
       "clientHeight": 0,
       "clientWidth": 0,
+      "closestOffsetParentPath": Object {
+        "parts": Array [],
+        "type": "elementpath",
+      },
       "coordinateSystemBounds": Object {
         "height": 0,
         "width": 0,
@@ -8967,6 +9175,10 @@ Object {
     "specialSizeMeasurements": Object {
       "clientHeight": 0,
       "clientWidth": 0,
+      "closestOffsetParentPath": Object {
+        "parts": Array [],
+        "type": "elementpath",
+      },
       "coordinateSystemBounds": Object {
         "height": 0,
         "width": 0,
@@ -9186,6 +9398,10 @@ Object {
     "specialSizeMeasurements": Object {
       "clientHeight": 0,
       "clientWidth": 0,
+      "closestOffsetParentPath": Object {
+        "parts": Array [],
+        "type": "elementpath",
+      },
       "coordinateSystemBounds": Object {
         "height": 0,
         "width": 0,
@@ -9299,6 +9515,10 @@ Object {
     "specialSizeMeasurements": Object {
       "clientHeight": 0,
       "clientWidth": 0,
+      "closestOffsetParentPath": Object {
+        "parts": Array [],
+        "type": "elementpath",
+      },
       "coordinateSystemBounds": Object {
         "height": 0,
         "width": 0,
@@ -9452,6 +9672,10 @@ Object {
     "specialSizeMeasurements": Object {
       "clientHeight": 0,
       "clientWidth": 0,
+      "closestOffsetParentPath": Object {
+        "parts": Array [],
+        "type": "elementpath",
+      },
       "coordinateSystemBounds": Object {
         "height": 0,
         "width": 0,
@@ -9547,6 +9771,10 @@ Object {
     "specialSizeMeasurements": Object {
       "clientHeight": 0,
       "clientWidth": 0,
+      "closestOffsetParentPath": Object {
+        "parts": Array [],
+        "type": "elementpath",
+      },
       "coordinateSystemBounds": Object {
         "height": 0,
         "width": 0,
@@ -9642,6 +9870,10 @@ Object {
     "specialSizeMeasurements": Object {
       "clientHeight": 0,
       "clientWidth": 0,
+      "closestOffsetParentPath": Object {
+        "parts": Array [],
+        "type": "elementpath",
+      },
       "coordinateSystemBounds": Object {
         "height": 0,
         "width": 0,
@@ -9861,6 +10093,10 @@ Object {
     "specialSizeMeasurements": Object {
       "clientHeight": 0,
       "clientWidth": 0,
+      "closestOffsetParentPath": Object {
+        "parts": Array [],
+        "type": "elementpath",
+      },
       "coordinateSystemBounds": Object {
         "height": 0,
         "width": 0,
@@ -9974,6 +10210,10 @@ Object {
     "specialSizeMeasurements": Object {
       "clientHeight": 0,
       "clientWidth": 0,
+      "closestOffsetParentPath": Object {
+        "parts": Array [],
+        "type": "elementpath",
+      },
       "coordinateSystemBounds": Object {
         "height": 0,
         "width": 0,
@@ -10160,6 +10400,10 @@ Object {
     "specialSizeMeasurements": Object {
       "clientHeight": 0,
       "clientWidth": 0,
+      "closestOffsetParentPath": Object {
+        "parts": Array [],
+        "type": "elementpath",
+      },
       "coordinateSystemBounds": Object {
         "height": 0,
         "width": 0,
@@ -10255,6 +10499,10 @@ Object {
     "specialSizeMeasurements": Object {
       "clientHeight": 0,
       "clientWidth": 0,
+      "closestOffsetParentPath": Object {
+        "parts": Array [],
+        "type": "elementpath",
+      },
       "coordinateSystemBounds": Object {
         "height": 0,
         "width": 0,
@@ -10350,6 +10598,10 @@ Object {
     "specialSizeMeasurements": Object {
       "clientHeight": 0,
       "clientWidth": 0,
+      "closestOffsetParentPath": Object {
+        "parts": Array [],
+        "type": "elementpath",
+      },
       "coordinateSystemBounds": Object {
         "height": 0,
         "width": 0,
@@ -10584,6 +10836,10 @@ Object {
     "specialSizeMeasurements": Object {
       "clientHeight": 0,
       "clientWidth": 0,
+      "closestOffsetParentPath": Object {
+        "parts": Array [],
+        "type": "elementpath",
+      },
       "coordinateSystemBounds": Object {
         "height": 0,
         "width": 0,
@@ -10711,6 +10967,10 @@ Object {
     "specialSizeMeasurements": Object {
       "clientHeight": 0,
       "clientWidth": 0,
+      "closestOffsetParentPath": Object {
+        "parts": Array [],
+        "type": "elementpath",
+      },
       "coordinateSystemBounds": Object {
         "height": 0,
         "width": 0,
@@ -11022,6 +11282,10 @@ Object {
     "specialSizeMeasurements": Object {
       "clientHeight": 0,
       "clientWidth": 0,
+      "closestOffsetParentPath": Object {
+        "parts": Array [],
+        "type": "elementpath",
+      },
       "coordinateSystemBounds": Object {
         "height": 0,
         "width": 0,
@@ -11200,6 +11464,10 @@ Object {
     "specialSizeMeasurements": Object {
       "clientHeight": 0,
       "clientWidth": 0,
+      "closestOffsetParentPath": Object {
+        "parts": Array [],
+        "type": "elementpath",
+      },
       "coordinateSystemBounds": Object {
         "height": 0,
         "width": 0,
@@ -11433,6 +11701,10 @@ Object {
     "specialSizeMeasurements": Object {
       "clientHeight": 0,
       "clientWidth": 0,
+      "closestOffsetParentPath": Object {
+        "parts": Array [],
+        "type": "elementpath",
+      },
       "coordinateSystemBounds": Object {
         "height": 0,
         "width": 0,
@@ -11560,6 +11832,10 @@ Object {
     "specialSizeMeasurements": Object {
       "clientHeight": 0,
       "clientWidth": 0,
+      "closestOffsetParentPath": Object {
+        "parts": Array [],
+        "type": "elementpath",
+      },
       "coordinateSystemBounds": Object {
         "height": 0,
         "width": 0,
@@ -11871,6 +12147,10 @@ Object {
     "specialSizeMeasurements": Object {
       "clientHeight": 0,
       "clientWidth": 0,
+      "closestOffsetParentPath": Object {
+        "parts": Array [],
+        "type": "elementpath",
+      },
       "coordinateSystemBounds": Object {
         "height": 0,
         "width": 0,
@@ -12049,6 +12329,10 @@ Object {
     "specialSizeMeasurements": Object {
       "clientHeight": 0,
       "clientWidth": 0,
+      "closestOffsetParentPath": Object {
+        "parts": Array [],
+        "type": "elementpath",
+      },
       "coordinateSystemBounds": Object {
         "height": 0,
         "width": 0,
@@ -12283,6 +12567,10 @@ Object {
     "specialSizeMeasurements": Object {
       "clientHeight": 0,
       "clientWidth": 0,
+      "closestOffsetParentPath": Object {
+        "parts": Array [],
+        "type": "elementpath",
+      },
       "coordinateSystemBounds": Object {
         "height": 0,
         "width": 0,
@@ -12410,6 +12698,10 @@ Object {
     "specialSizeMeasurements": Object {
       "clientHeight": 0,
       "clientWidth": 0,
+      "closestOffsetParentPath": Object {
+        "parts": Array [],
+        "type": "elementpath",
+      },
       "coordinateSystemBounds": Object {
         "height": 0,
         "width": 0,
@@ -12769,6 +13061,10 @@ Object {
     "specialSizeMeasurements": Object {
       "clientHeight": 0,
       "clientWidth": 0,
+      "closestOffsetParentPath": Object {
+        "parts": Array [],
+        "type": "elementpath",
+      },
       "coordinateSystemBounds": Object {
         "height": 0,
         "width": 0,
@@ -12995,6 +13291,10 @@ Object {
     "specialSizeMeasurements": Object {
       "clientHeight": 0,
       "clientWidth": 0,
+      "closestOffsetParentPath": Object {
+        "parts": Array [],
+        "type": "elementpath",
+      },
       "coordinateSystemBounds": Object {
         "height": 0,
         "width": 0,
@@ -13229,6 +13529,10 @@ Object {
     "specialSizeMeasurements": Object {
       "clientHeight": 0,
       "clientWidth": 0,
+      "closestOffsetParentPath": Object {
+        "parts": Array [],
+        "type": "elementpath",
+      },
       "coordinateSystemBounds": Object {
         "height": 0,
         "width": 0,
@@ -13356,6 +13660,10 @@ Object {
     "specialSizeMeasurements": Object {
       "clientHeight": 0,
       "clientWidth": 0,
+      "closestOffsetParentPath": Object {
+        "parts": Array [],
+        "type": "elementpath",
+      },
       "coordinateSystemBounds": Object {
         "height": 0,
         "width": 0,
@@ -13715,6 +14023,10 @@ Object {
     "specialSizeMeasurements": Object {
       "clientHeight": 0,
       "clientWidth": 0,
+      "closestOffsetParentPath": Object {
+        "parts": Array [],
+        "type": "elementpath",
+      },
       "coordinateSystemBounds": Object {
         "height": 0,
         "width": 0,
@@ -13941,6 +14253,10 @@ Object {
     "specialSizeMeasurements": Object {
       "clientHeight": 0,
       "clientWidth": 0,
+      "closestOffsetParentPath": Object {
+        "parts": Array [],
+        "type": "elementpath",
+      },
       "coordinateSystemBounds": Object {
         "height": 0,
         "width": 0,
@@ -14147,6 +14463,10 @@ Object {
     "specialSizeMeasurements": Object {
       "clientHeight": 0,
       "clientWidth": 0,
+      "closestOffsetParentPath": Object {
+        "parts": Array [],
+        "type": "elementpath",
+      },
       "coordinateSystemBounds": Object {
         "height": 0,
         "width": 0,
@@ -14260,6 +14580,10 @@ Object {
     "specialSizeMeasurements": Object {
       "clientHeight": 0,
       "clientWidth": 0,
+      "closestOffsetParentPath": Object {
+        "parts": Array [],
+        "type": "elementpath",
+      },
       "coordinateSystemBounds": Object {
         "height": 0,
         "width": 0,
@@ -14354,6 +14678,10 @@ Object {
     "specialSizeMeasurements": Object {
       "clientHeight": 0,
       "clientWidth": 0,
+      "closestOffsetParentPath": Object {
+        "parts": Array [],
+        "type": "elementpath",
+      },
       "coordinateSystemBounds": Object {
         "height": 0,
         "width": 0,
@@ -14683,6 +15011,10 @@ Object {
     "specialSizeMeasurements": Object {
       "clientHeight": 0,
       "clientWidth": 0,
+      "closestOffsetParentPath": Object {
+        "parts": Array [],
+        "type": "elementpath",
+      },
       "coordinateSystemBounds": Object {
         "height": 0,
         "width": 0,
@@ -14796,6 +15128,10 @@ Object {
     "specialSizeMeasurements": Object {
       "clientHeight": 0,
       "clientWidth": 0,
+      "closestOffsetParentPath": Object {
+        "parts": Array [],
+        "type": "elementpath",
+      },
       "coordinateSystemBounds": Object {
         "height": 0,
         "width": 0,
@@ -15968,6 +16304,10 @@ export var storyboard = (props) => {
     "specialSizeMeasurements": Object {
       "clientHeight": 0,
       "clientWidth": 0,
+      "closestOffsetParentPath": Object {
+        "parts": Array [],
+        "type": "elementpath",
+      },
       "coordinateSystemBounds": Object {
         "height": 0,
         "width": 0,
@@ -16804,6 +17144,10 @@ export var storyboard = (props) => {
     "specialSizeMeasurements": Object {
       "clientHeight": 0,
       "clientWidth": 0,
+      "closestOffsetParentPath": Object {
+        "parts": Array [],
+        "type": "elementpath",
+      },
       "coordinateSystemBounds": Object {
         "height": 0,
         "width": 0,
@@ -17148,6 +17492,10 @@ export var storyboard = (props) => {
     "specialSizeMeasurements": Object {
       "clientHeight": 0,
       "clientWidth": 0,
+      "closestOffsetParentPath": Object {
+        "parts": Array [],
+        "type": "elementpath",
+      },
       "coordinateSystemBounds": Object {
         "height": 0,
         "width": 0,
@@ -17492,6 +17840,10 @@ export var storyboard = (props) => {
     "specialSizeMeasurements": Object {
       "clientHeight": 0,
       "clientWidth": 0,
+      "closestOffsetParentPath": Object {
+        "parts": Array [],
+        "type": "elementpath",
+      },
       "coordinateSystemBounds": Object {
         "height": 0,
         "width": 0,
@@ -17836,6 +18188,10 @@ export var storyboard = (props) => {
     "specialSizeMeasurements": Object {
       "clientHeight": 0,
       "clientWidth": 0,
+      "closestOffsetParentPath": Object {
+        "parts": Array [],
+        "type": "elementpath",
+      },
       "coordinateSystemBounds": Object {
         "height": 0,
         "width": 0,
@@ -18216,6 +18572,10 @@ export var storyboard = (props) => {
     "specialSizeMeasurements": Object {
       "clientHeight": 0,
       "clientWidth": 0,
+      "closestOffsetParentPath": Object {
+        "parts": Array [],
+        "type": "elementpath",
+      },
       "coordinateSystemBounds": Object {
         "height": 0,
         "width": 0,
@@ -18440,6 +18800,10 @@ export var storyboard = (props) => {
     "specialSizeMeasurements": Object {
       "clientHeight": 0,
       "clientWidth": 0,
+      "closestOffsetParentPath": Object {
+        "parts": Array [],
+        "type": "elementpath",
+      },
       "coordinateSystemBounds": Object {
         "height": 0,
         "width": 0,
@@ -18820,6 +19184,10 @@ export var storyboard = (props) => {
     "specialSizeMeasurements": Object {
       "clientHeight": 0,
       "clientWidth": 0,
+      "closestOffsetParentPath": Object {
+        "parts": Array [],
+        "type": "elementpath",
+      },
       "coordinateSystemBounds": Object {
         "height": 0,
         "width": 0,
@@ -19044,6 +19412,10 @@ export var storyboard = (props) => {
     "specialSizeMeasurements": Object {
       "clientHeight": 0,
       "clientWidth": 0,
+      "closestOffsetParentPath": Object {
+        "parts": Array [],
+        "type": "elementpath",
+      },
       "coordinateSystemBounds": Object {
         "height": 0,
         "width": 0,
@@ -19424,6 +19796,10 @@ export var storyboard = (props) => {
     "specialSizeMeasurements": Object {
       "clientHeight": 0,
       "clientWidth": 0,
+      "closestOffsetParentPath": Object {
+        "parts": Array [],
+        "type": "elementpath",
+      },
       "coordinateSystemBounds": Object {
         "height": 0,
         "width": 0,
@@ -19648,6 +20024,10 @@ export var storyboard = (props) => {
     "specialSizeMeasurements": Object {
       "clientHeight": 0,
       "clientWidth": 0,
+      "closestOffsetParentPath": Object {
+        "parts": Array [],
+        "type": "elementpath",
+      },
       "coordinateSystemBounds": Object {
         "height": 0,
         "width": 0,
@@ -19877,6 +20257,10 @@ Object {
     "specialSizeMeasurements": Object {
       "clientHeight": 0,
       "clientWidth": 0,
+      "closestOffsetParentPath": Object {
+        "parts": Array [],
+        "type": "elementpath",
+      },
       "coordinateSystemBounds": Object {
         "height": 0,
         "width": 0,
@@ -19990,6 +20374,10 @@ Object {
     "specialSizeMeasurements": Object {
       "clientHeight": 0,
       "clientWidth": 0,
+      "closestOffsetParentPath": Object {
+        "parts": Array [],
+        "type": "elementpath",
+      },
       "coordinateSystemBounds": Object {
         "height": 0,
         "width": 0,
@@ -20175,6 +20563,10 @@ Object {
     "specialSizeMeasurements": Object {
       "clientHeight": 0,
       "clientWidth": 0,
+      "closestOffsetParentPath": Object {
+        "parts": Array [],
+        "type": "elementpath",
+      },
       "coordinateSystemBounds": Object {
         "height": 0,
         "width": 0,
@@ -20286,6 +20678,10 @@ Object {
     "specialSizeMeasurements": Object {
       "clientHeight": 0,
       "clientWidth": 0,
+      "closestOffsetParentPath": Object {
+        "parts": Array [],
+        "type": "elementpath",
+      },
       "coordinateSystemBounds": Object {
         "height": 0,
         "width": 0,
@@ -20397,6 +20793,10 @@ Object {
     "specialSizeMeasurements": Object {
       "clientHeight": 0,
       "clientWidth": 0,
+      "closestOffsetParentPath": Object {
+        "parts": Array [],
+        "type": "elementpath",
+      },
       "coordinateSystemBounds": Object {
         "height": 0,
         "width": 0,
@@ -20605,6 +21005,10 @@ Object {
     "specialSizeMeasurements": Object {
       "clientHeight": 0,
       "clientWidth": 0,
+      "closestOffsetParentPath": Object {
+        "parts": Array [],
+        "type": "elementpath",
+      },
       "coordinateSystemBounds": Object {
         "height": 0,
         "width": 0,
@@ -20718,6 +21122,10 @@ Object {
     "specialSizeMeasurements": Object {
       "clientHeight": 0,
       "clientWidth": 0,
+      "closestOffsetParentPath": Object {
+        "parts": Array [],
+        "type": "elementpath",
+      },
       "coordinateSystemBounds": Object {
         "height": 0,
         "width": 0,
@@ -20876,6 +21284,10 @@ Object {
     "specialSizeMeasurements": Object {
       "clientHeight": 0,
       "clientWidth": 0,
+      "closestOffsetParentPath": Object {
+        "parts": Array [],
+        "type": "elementpath",
+      },
       "coordinateSystemBounds": Object {
         "height": 0,
         "width": 0,
@@ -21083,6 +21495,10 @@ Object {
     "specialSizeMeasurements": Object {
       "clientHeight": 0,
       "clientWidth": 0,
+      "closestOffsetParentPath": Object {
+        "parts": Array [],
+        "type": "elementpath",
+      },
       "coordinateSystemBounds": Object {
         "height": 0,
         "width": 0,
@@ -21196,6 +21612,10 @@ Object {
     "specialSizeMeasurements": Object {
       "clientHeight": 0,
       "clientWidth": 0,
+      "closestOffsetParentPath": Object {
+        "parts": Array [],
+        "type": "elementpath",
+      },
       "coordinateSystemBounds": Object {
         "height": 0,
         "width": 0,
@@ -21419,6 +21839,10 @@ Object {
     "specialSizeMeasurements": Object {
       "clientHeight": 0,
       "clientWidth": 0,
+      "closestOffsetParentPath": Object {
+        "parts": Array [],
+        "type": "elementpath",
+      },
       "coordinateSystemBounds": Object {
         "height": 0,
         "width": 0,
@@ -21615,6 +22039,10 @@ Object {
     "specialSizeMeasurements": Object {
       "clientHeight": 0,
       "clientWidth": 0,
+      "closestOffsetParentPath": Object {
+        "parts": Array [],
+        "type": "elementpath",
+      },
       "coordinateSystemBounds": Object {
         "height": 0,
         "width": 0,
@@ -21706,6 +22134,10 @@ Object {
     "specialSizeMeasurements": Object {
       "clientHeight": 0,
       "clientWidth": 0,
+      "closestOffsetParentPath": Object {
+        "parts": Array [],
+        "type": "elementpath",
+      },
       "coordinateSystemBounds": Object {
         "height": 0,
         "width": 0,
@@ -21961,6 +22393,10 @@ export var storyboard = (
     "specialSizeMeasurements": Object {
       "clientHeight": 0,
       "clientWidth": 0,
+      "closestOffsetParentPath": Object {
+        "parts": Array [],
+        "type": "elementpath",
+      },
       "coordinateSystemBounds": Object {
         "height": 0,
         "width": 0,
@@ -22160,6 +22596,10 @@ export var storyboard = (
     "specialSizeMeasurements": Object {
       "clientHeight": 0,
       "clientWidth": 0,
+      "closestOffsetParentPath": Object {
+        "parts": Array [],
+        "type": "elementpath",
+      },
       "coordinateSystemBounds": Object {
         "height": 0,
         "width": 0,
@@ -22413,6 +22853,10 @@ Object {
     "specialSizeMeasurements": Object {
       "clientHeight": 0,
       "clientWidth": 0,
+      "closestOffsetParentPath": Object {
+        "parts": Array [],
+        "type": "elementpath",
+      },
       "coordinateSystemBounds": Object {
         "height": 0,
         "width": 0,
@@ -22526,6 +22970,10 @@ Object {
     "specialSizeMeasurements": Object {
       "clientHeight": 0,
       "clientWidth": 0,
+      "closestOffsetParentPath": Object {
+        "parts": Array [],
+        "type": "elementpath",
+      },
       "coordinateSystemBounds": Object {
         "height": 0,
         "width": 0,
@@ -22746,6 +23194,10 @@ Object {
     "specialSizeMeasurements": Object {
       "clientHeight": 0,
       "clientWidth": 0,
+      "closestOffsetParentPath": Object {
+        "parts": Array [],
+        "type": "elementpath",
+      },
       "coordinateSystemBounds": Object {
         "height": 0,
         "width": 0,
@@ -22914,6 +23366,10 @@ Object {
     "specialSizeMeasurements": Object {
       "clientHeight": 0,
       "clientWidth": 0,
+      "closestOffsetParentPath": Object {
+        "parts": Array [],
+        "type": "elementpath",
+      },
       "coordinateSystemBounds": Object {
         "height": 0,
         "width": 0,
@@ -23036,6 +23492,10 @@ Object {
     "specialSizeMeasurements": Object {
       "clientHeight": 0,
       "clientWidth": 0,
+      "closestOffsetParentPath": Object {
+        "parts": Array [],
+        "type": "elementpath",
+      },
       "coordinateSystemBounds": Object {
         "height": 0,
         "width": 0,
@@ -23270,6 +23730,10 @@ Object {
     "specialSizeMeasurements": Object {
       "clientHeight": 0,
       "clientWidth": 0,
+      "closestOffsetParentPath": Object {
+        "parts": Array [],
+        "type": "elementpath",
+      },
       "coordinateSystemBounds": Object {
         "height": 0,
         "width": 0,
@@ -23397,6 +23861,10 @@ Object {
     "specialSizeMeasurements": Object {
       "clientHeight": 0,
       "clientWidth": 0,
+      "closestOffsetParentPath": Object {
+        "parts": Array [],
+        "type": "elementpath",
+      },
       "coordinateSystemBounds": Object {
         "height": 0,
         "width": 0,
@@ -23648,6 +24116,10 @@ Object {
     "specialSizeMeasurements": Object {
       "clientHeight": 0,
       "clientWidth": 0,
+      "closestOffsetParentPath": Object {
+        "parts": Array [],
+        "type": "elementpath",
+      },
       "coordinateSystemBounds": Object {
         "height": 0,
         "width": 0,
@@ -23771,6 +24243,10 @@ Object {
     "specialSizeMeasurements": Object {
       "clientHeight": 0,
       "clientWidth": 0,
+      "closestOffsetParentPath": Object {
+        "parts": Array [],
+        "type": "elementpath",
+      },
       "coordinateSystemBounds": Object {
         "height": 0,
         "width": 0,
@@ -24149,6 +24625,10 @@ Object {
     "specialSizeMeasurements": Object {
       "clientHeight": 0,
       "clientWidth": 0,
+      "closestOffsetParentPath": Object {
+        "parts": Array [],
+        "type": "elementpath",
+      },
       "coordinateSystemBounds": Object {
         "height": 0,
         "width": 0,
@@ -24276,6 +24756,10 @@ Object {
     "specialSizeMeasurements": Object {
       "clientHeight": 0,
       "clientWidth": 0,
+      "closestOffsetParentPath": Object {
+        "parts": Array [],
+        "type": "elementpath",
+      },
       "coordinateSystemBounds": Object {
         "height": 0,
         "width": 0,
@@ -24528,6 +25012,10 @@ Object {
     "specialSizeMeasurements": Object {
       "clientHeight": 0,
       "clientWidth": 0,
+      "closestOffsetParentPath": Object {
+        "parts": Array [],
+        "type": "elementpath",
+      },
       "coordinateSystemBounds": Object {
         "height": 0,
         "width": 0,
@@ -24651,6 +25139,10 @@ Object {
     "specialSizeMeasurements": Object {
       "clientHeight": 0,
       "clientWidth": 0,
+      "closestOffsetParentPath": Object {
+        "parts": Array [],
+        "type": "elementpath",
+      },
       "coordinateSystemBounds": Object {
         "height": 0,
         "width": 0,
@@ -24970,6 +25462,10 @@ Object {
     "specialSizeMeasurements": Object {
       "clientHeight": 0,
       "clientWidth": 0,
+      "closestOffsetParentPath": Object {
+        "parts": Array [],
+        "type": "elementpath",
+      },
       "coordinateSystemBounds": Object {
         "height": 0,
         "width": 0,
@@ -25085,6 +25581,10 @@ Object {
     "specialSizeMeasurements": Object {
       "clientHeight": 0,
       "clientWidth": 0,
+      "closestOffsetParentPath": Object {
+        "parts": Array [],
+        "type": "elementpath",
+      },
       "coordinateSystemBounds": Object {
         "height": 0,
         "width": 0,
@@ -25809,6 +26309,10 @@ export var App = (props) => {
     "specialSizeMeasurements": Object {
       "clientHeight": 0,
       "clientWidth": 0,
+      "closestOffsetParentPath": Object {
+        "parts": Array [],
+        "type": "elementpath",
+      },
       "coordinateSystemBounds": Object {
         "height": 0,
         "width": 0,
@@ -25908,6 +26412,10 @@ export var App = (props) => {
     "specialSizeMeasurements": Object {
       "clientHeight": 0,
       "clientWidth": 0,
+      "closestOffsetParentPath": Object {
+        "parts": Array [],
+        "type": "elementpath",
+      },
       "coordinateSystemBounds": Object {
         "height": 0,
         "width": 0,
@@ -26007,6 +26515,10 @@ export var App = (props) => {
     "specialSizeMeasurements": Object {
       "clientHeight": 0,
       "clientWidth": 0,
+      "closestOffsetParentPath": Object {
+        "parts": Array [],
+        "type": "elementpath",
+      },
       "coordinateSystemBounds": Object {
         "height": 0,
         "width": 0,
@@ -26106,6 +26618,10 @@ export var App = (props) => {
     "specialSizeMeasurements": Object {
       "clientHeight": 0,
       "clientWidth": 0,
+      "closestOffsetParentPath": Object {
+        "parts": Array [],
+        "type": "elementpath",
+      },
       "coordinateSystemBounds": Object {
         "height": 0,
         "width": 0,
@@ -26205,6 +26721,10 @@ export var App = (props) => {
     "specialSizeMeasurements": Object {
       "clientHeight": 0,
       "clientWidth": 0,
+      "closestOffsetParentPath": Object {
+        "parts": Array [],
+        "type": "elementpath",
+      },
       "coordinateSystemBounds": Object {
         "height": 0,
         "width": 0,
@@ -26304,6 +26824,10 @@ export var App = (props) => {
     "specialSizeMeasurements": Object {
       "clientHeight": 0,
       "clientWidth": 0,
+      "closestOffsetParentPath": Object {
+        "parts": Array [],
+        "type": "elementpath",
+      },
       "coordinateSystemBounds": Object {
         "height": 0,
         "width": 0,
@@ -26403,6 +26927,10 @@ export var App = (props) => {
     "specialSizeMeasurements": Object {
       "clientHeight": 0,
       "clientWidth": 0,
+      "closestOffsetParentPath": Object {
+        "parts": Array [],
+        "type": "elementpath",
+      },
       "coordinateSystemBounds": Object {
         "height": 0,
         "width": 0,
@@ -26572,6 +27100,10 @@ export var App = (props) => {
     "specialSizeMeasurements": Object {
       "clientHeight": 0,
       "clientWidth": 0,
+      "closestOffsetParentPath": Object {
+        "parts": Array [],
+        "type": "elementpath",
+      },
       "coordinateSystemBounds": Object {
         "height": 0,
         "width": 0,
@@ -26671,6 +27203,10 @@ export var App = (props) => {
     "specialSizeMeasurements": Object {
       "clientHeight": 0,
       "clientWidth": 0,
+      "closestOffsetParentPath": Object {
+        "parts": Array [],
+        "type": "elementpath",
+      },
       "coordinateSystemBounds": Object {
         "height": 0,
         "width": 0,
@@ -26770,6 +27306,10 @@ export var App = (props) => {
     "specialSizeMeasurements": Object {
       "clientHeight": 0,
       "clientWidth": 0,
+      "closestOffsetParentPath": Object {
+        "parts": Array [],
+        "type": "elementpath",
+      },
       "coordinateSystemBounds": Object {
         "height": 0,
         "width": 0,
@@ -26869,6 +27409,10 @@ export var App = (props) => {
     "specialSizeMeasurements": Object {
       "clientHeight": 0,
       "clientWidth": 0,
+      "closestOffsetParentPath": Object {
+        "parts": Array [],
+        "type": "elementpath",
+      },
       "coordinateSystemBounds": Object {
         "height": 0,
         "width": 0,
@@ -26968,6 +27512,10 @@ export var App = (props) => {
     "specialSizeMeasurements": Object {
       "clientHeight": 0,
       "clientWidth": 0,
+      "closestOffsetParentPath": Object {
+        "parts": Array [],
+        "type": "elementpath",
+      },
       "coordinateSystemBounds": Object {
         "height": 0,
         "width": 0,
@@ -27067,6 +27615,10 @@ export var App = (props) => {
     "specialSizeMeasurements": Object {
       "clientHeight": 0,
       "clientWidth": 0,
+      "closestOffsetParentPath": Object {
+        "parts": Array [],
+        "type": "elementpath",
+      },
       "coordinateSystemBounds": Object {
         "height": 0,
         "width": 0,
@@ -27168,6 +27720,10 @@ export var App = (props) => {
     "specialSizeMeasurements": Object {
       "clientHeight": 0,
       "clientWidth": 0,
+      "closestOffsetParentPath": Object {
+        "parts": Array [],
+        "type": "elementpath",
+      },
       "coordinateSystemBounds": Object {
         "height": 0,
         "width": 0,
@@ -27267,6 +27823,10 @@ export var App = (props) => {
     "specialSizeMeasurements": Object {
       "clientHeight": 0,
       "clientWidth": 0,
+      "closestOffsetParentPath": Object {
+        "parts": Array [],
+        "type": "elementpath",
+      },
       "coordinateSystemBounds": Object {
         "height": 0,
         "width": 0,
@@ -27366,6 +27926,10 @@ export var App = (props) => {
     "specialSizeMeasurements": Object {
       "clientHeight": 0,
       "clientWidth": 0,
+      "closestOffsetParentPath": Object {
+        "parts": Array [],
+        "type": "elementpath",
+      },
       "coordinateSystemBounds": Object {
         "height": 0,
         "width": 0,
@@ -27465,6 +28029,10 @@ export var App = (props) => {
     "specialSizeMeasurements": Object {
       "clientHeight": 0,
       "clientWidth": 0,
+      "closestOffsetParentPath": Object {
+        "parts": Array [],
+        "type": "elementpath",
+      },
       "coordinateSystemBounds": Object {
         "height": 0,
         "width": 0,
@@ -27564,6 +28132,10 @@ export var App = (props) => {
     "specialSizeMeasurements": Object {
       "clientHeight": 0,
       "clientWidth": 0,
+      "closestOffsetParentPath": Object {
+        "parts": Array [],
+        "type": "elementpath",
+      },
       "coordinateSystemBounds": Object {
         "height": 0,
         "width": 0,
@@ -27663,6 +28235,10 @@ export var App = (props) => {
     "specialSizeMeasurements": Object {
       "clientHeight": 0,
       "clientWidth": 0,
+      "closestOffsetParentPath": Object {
+        "parts": Array [],
+        "type": "elementpath",
+      },
       "coordinateSystemBounds": Object {
         "height": 0,
         "width": 0,
@@ -27764,6 +28340,10 @@ export var App = (props) => {
     "specialSizeMeasurements": Object {
       "clientHeight": 0,
       "clientWidth": 0,
+      "closestOffsetParentPath": Object {
+        "parts": Array [],
+        "type": "elementpath",
+      },
       "coordinateSystemBounds": Object {
         "height": 0,
         "width": 0,
@@ -27989,6 +28569,10 @@ Object {
     "specialSizeMeasurements": Object {
       "clientHeight": 0,
       "clientWidth": 0,
+      "closestOffsetParentPath": Object {
+        "parts": Array [],
+        "type": "elementpath",
+      },
       "coordinateSystemBounds": Object {
         "height": 0,
         "width": 0,
@@ -28102,6 +28686,10 @@ Object {
     "specialSizeMeasurements": Object {
       "clientHeight": 0,
       "clientWidth": 0,
+      "closestOffsetParentPath": Object {
+        "parts": Array [],
+        "type": "elementpath",
+      },
       "coordinateSystemBounds": Object {
         "height": 0,
         "width": 0,
@@ -28351,6 +28939,10 @@ Object {
     "specialSizeMeasurements": Object {
       "clientHeight": 0,
       "clientWidth": 0,
+      "closestOffsetParentPath": Object {
+        "parts": Array [],
+        "type": "elementpath",
+      },
       "coordinateSystemBounds": Object {
         "height": 0,
         "width": 0,
@@ -28506,6 +29098,10 @@ Object {
     "specialSizeMeasurements": Object {
       "clientHeight": 0,
       "clientWidth": 0,
+      "closestOffsetParentPath": Object {
+        "parts": Array [],
+        "type": "elementpath",
+      },
       "coordinateSystemBounds": Object {
         "height": 0,
         "width": 0,
@@ -28661,6 +29257,10 @@ Object {
     "specialSizeMeasurements": Object {
       "clientHeight": 0,
       "clientWidth": 0,
+      "closestOffsetParentPath": Object {
+        "parts": Array [],
+        "type": "elementpath",
+      },
       "coordinateSystemBounds": Object {
         "height": 0,
         "width": 0,
@@ -28816,6 +29416,10 @@ Object {
     "specialSizeMeasurements": Object {
       "clientHeight": 0,
       "clientWidth": 0,
+      "closestOffsetParentPath": Object {
+        "parts": Array [],
+        "type": "elementpath",
+      },
       "coordinateSystemBounds": Object {
         "height": 0,
         "width": 0,
@@ -29041,6 +29645,10 @@ Object {
     "specialSizeMeasurements": Object {
       "clientHeight": 0,
       "clientWidth": 0,
+      "closestOffsetParentPath": Object {
+        "parts": Array [],
+        "type": "elementpath",
+      },
       "coordinateSystemBounds": Object {
         "height": 0,
         "width": 0,
@@ -29154,6 +29762,10 @@ Object {
     "specialSizeMeasurements": Object {
       "clientHeight": 0,
       "clientWidth": 0,
+      "closestOffsetParentPath": Object {
+        "parts": Array [],
+        "type": "elementpath",
+      },
       "coordinateSystemBounds": Object {
         "height": 0,
         "width": 0,
@@ -29404,6 +30016,10 @@ Object {
     "specialSizeMeasurements": Object {
       "clientHeight": 0,
       "clientWidth": 0,
+      "closestOffsetParentPath": Object {
+        "parts": Array [],
+        "type": "elementpath",
+      },
       "coordinateSystemBounds": Object {
         "height": 0,
         "width": 0,
@@ -29560,6 +30176,10 @@ Object {
     "specialSizeMeasurements": Object {
       "clientHeight": 0,
       "clientWidth": 0,
+      "closestOffsetParentPath": Object {
+        "parts": Array [],
+        "type": "elementpath",
+      },
       "coordinateSystemBounds": Object {
         "height": 0,
         "width": 0,
@@ -29716,6 +30336,10 @@ Object {
     "specialSizeMeasurements": Object {
       "clientHeight": 0,
       "clientWidth": 0,
+      "closestOffsetParentPath": Object {
+        "parts": Array [],
+        "type": "elementpath",
+      },
       "coordinateSystemBounds": Object {
         "height": 0,
         "width": 0,
@@ -29872,6 +30496,10 @@ Object {
     "specialSizeMeasurements": Object {
       "clientHeight": 0,
       "clientWidth": 0,
+      "closestOffsetParentPath": Object {
+        "parts": Array [],
+        "type": "elementpath",
+      },
       "coordinateSystemBounds": Object {
         "height": 0,
         "width": 0,
@@ -30097,6 +30725,10 @@ Object {
     "specialSizeMeasurements": Object {
       "clientHeight": 0,
       "clientWidth": 0,
+      "closestOffsetParentPath": Object {
+        "parts": Array [],
+        "type": "elementpath",
+      },
       "coordinateSystemBounds": Object {
         "height": 0,
         "width": 0,
@@ -30210,6 +30842,10 @@ Object {
     "specialSizeMeasurements": Object {
       "clientHeight": 0,
       "clientWidth": 0,
+      "closestOffsetParentPath": Object {
+        "parts": Array [],
+        "type": "elementpath",
+      },
       "coordinateSystemBounds": Object {
         "height": 0,
         "width": 0,
@@ -30466,6 +31102,10 @@ Object {
     "specialSizeMeasurements": Object {
       "clientHeight": 0,
       "clientWidth": 0,
+      "closestOffsetParentPath": Object {
+        "parts": Array [],
+        "type": "elementpath",
+      },
       "coordinateSystemBounds": Object {
         "height": 0,
         "width": 0,
@@ -30621,6 +31261,10 @@ Object {
     "specialSizeMeasurements": Object {
       "clientHeight": 0,
       "clientWidth": 0,
+      "closestOffsetParentPath": Object {
+        "parts": Array [],
+        "type": "elementpath",
+      },
       "coordinateSystemBounds": Object {
         "height": 0,
         "width": 0,
@@ -30776,6 +31420,10 @@ Object {
     "specialSizeMeasurements": Object {
       "clientHeight": 0,
       "clientWidth": 0,
+      "closestOffsetParentPath": Object {
+        "parts": Array [],
+        "type": "elementpath",
+      },
       "coordinateSystemBounds": Object {
         "height": 0,
         "width": 0,
@@ -30931,6 +31579,10 @@ Object {
     "specialSizeMeasurements": Object {
       "clientHeight": 0,
       "clientWidth": 0,
+      "closestOffsetParentPath": Object {
+        "parts": Array [],
+        "type": "elementpath",
+      },
       "coordinateSystemBounds": Object {
         "height": 0,
         "width": 0,
@@ -31161,6 +31813,10 @@ Object {
     "specialSizeMeasurements": Object {
       "clientHeight": 0,
       "clientWidth": 0,
+      "closestOffsetParentPath": Object {
+        "parts": Array [],
+        "type": "elementpath",
+      },
       "coordinateSystemBounds": Object {
         "height": 0,
         "width": 0,
@@ -31288,6 +31944,10 @@ Object {
     "specialSizeMeasurements": Object {
       "clientHeight": 0,
       "clientWidth": 0,
+      "closestOffsetParentPath": Object {
+        "parts": Array [],
+        "type": "elementpath",
+      },
       "coordinateSystemBounds": Object {
         "height": 0,
         "width": 0,
@@ -31501,6 +32161,10 @@ Object {
     "specialSizeMeasurements": Object {
       "clientHeight": 0,
       "clientWidth": 0,
+      "closestOffsetParentPath": Object {
+        "parts": Array [],
+        "type": "elementpath",
+      },
       "coordinateSystemBounds": Object {
         "height": 0,
         "width": 0,
@@ -31624,6 +32288,10 @@ Object {
     "specialSizeMeasurements": Object {
       "clientHeight": 0,
       "clientWidth": 0,
+      "closestOffsetParentPath": Object {
+        "parts": Array [],
+        "type": "elementpath",
+      },
       "coordinateSystemBounds": Object {
         "height": 0,
         "width": 0,
@@ -31833,6 +32501,10 @@ Object {
     "specialSizeMeasurements": Object {
       "clientHeight": 0,
       "clientWidth": 0,
+      "closestOffsetParentPath": Object {
+        "parts": Array [],
+        "type": "elementpath",
+      },
       "coordinateSystemBounds": Object {
         "height": 0,
         "width": 0,
@@ -31924,6 +32596,10 @@ Object {
     "specialSizeMeasurements": Object {
       "clientHeight": 0,
       "clientWidth": 0,
+      "closestOffsetParentPath": Object {
+        "parts": Array [],
+        "type": "elementpath",
+      },
       "coordinateSystemBounds": Object {
         "height": 0,
         "width": 0,
@@ -32024,6 +32700,10 @@ Object {
     "specialSizeMeasurements": Object {
       "clientHeight": 0,
       "clientWidth": 0,
+      "closestOffsetParentPath": Object {
+        "parts": Array [],
+        "type": "elementpath",
+      },
       "coordinateSystemBounds": Object {
         "height": 0,
         "width": 0,
@@ -32124,6 +32804,10 @@ Object {
     "specialSizeMeasurements": Object {
       "clientHeight": 0,
       "clientWidth": 0,
+      "closestOffsetParentPath": Object {
+        "parts": Array [],
+        "type": "elementpath",
+      },
       "coordinateSystemBounds": Object {
         "height": 0,
         "width": 0,
@@ -32309,6 +32993,10 @@ Object {
     "specialSizeMeasurements": Object {
       "clientHeight": 0,
       "clientWidth": 0,
+      "closestOffsetParentPath": Object {
+        "parts": Array [],
+        "type": "elementpath",
+      },
       "coordinateSystemBounds": Object {
         "height": 0,
         "width": 0,
@@ -32400,6 +33088,10 @@ Object {
     "specialSizeMeasurements": Object {
       "clientHeight": 0,
       "clientWidth": 0,
+      "closestOffsetParentPath": Object {
+        "parts": Array [],
+        "type": "elementpath",
+      },
       "coordinateSystemBounds": Object {
         "height": 0,
         "width": 0,
@@ -32610,6 +33302,10 @@ export var storyboard = (
     "specialSizeMeasurements": Object {
       "clientHeight": 0,
       "clientWidth": 0,
+      "closestOffsetParentPath": Object {
+        "parts": Array [],
+        "type": "elementpath",
+      },
       "coordinateSystemBounds": Object {
         "height": 0,
         "width": 0,
@@ -32725,6 +33421,10 @@ export var storyboard = (
     "specialSizeMeasurements": Object {
       "clientHeight": 0,
       "clientWidth": 0,
+      "closestOffsetParentPath": Object {
+        "parts": Array [],
+        "type": "elementpath",
+      },
       "coordinateSystemBounds": Object {
         "height": 0,
         "width": 0,
@@ -32910,6 +33610,10 @@ Object {
     "specialSizeMeasurements": Object {
       "clientHeight": 0,
       "clientWidth": 0,
+      "closestOffsetParentPath": Object {
+        "parts": Array [],
+        "type": "elementpath",
+      },
       "coordinateSystemBounds": Object {
         "height": 0,
         "width": 0,
@@ -33001,6 +33705,10 @@ Object {
     "specialSizeMeasurements": Object {
       "clientHeight": 0,
       "clientWidth": 0,
+      "closestOffsetParentPath": Object {
+        "parts": Array [],
+        "type": "elementpath",
+      },
       "coordinateSystemBounds": Object {
         "height": 0,
         "width": 0,
@@ -33095,6 +33803,10 @@ Object {
     "specialSizeMeasurements": Object {
       "clientHeight": 0,
       "clientWidth": 0,
+      "closestOffsetParentPath": Object {
+        "parts": Array [],
+        "type": "elementpath",
+      },
       "coordinateSystemBounds": Object {
         "height": 0,
         "width": 0,
@@ -33288,6 +34000,10 @@ Object {
     "specialSizeMeasurements": Object {
       "clientHeight": 0,
       "clientWidth": 0,
+      "closestOffsetParentPath": Object {
+        "parts": Array [],
+        "type": "elementpath",
+      },
       "coordinateSystemBounds": Object {
         "height": 0,
         "width": 0,
@@ -33379,6 +34095,10 @@ Object {
     "specialSizeMeasurements": Object {
       "clientHeight": 0,
       "clientWidth": 0,
+      "closestOffsetParentPath": Object {
+        "parts": Array [],
+        "type": "elementpath",
+      },
       "coordinateSystemBounds": Object {
         "height": 0,
         "width": 0,
@@ -33551,6 +34271,10 @@ Object {
     "specialSizeMeasurements": Object {
       "clientHeight": 0,
       "clientWidth": 0,
+      "closestOffsetParentPath": Object {
+        "parts": Array [],
+        "type": "elementpath",
+      },
       "coordinateSystemBounds": Object {
         "height": 0,
         "width": 0,
@@ -33674,6 +34398,10 @@ Object {
     "specialSizeMeasurements": Object {
       "clientHeight": 0,
       "clientWidth": 0,
+      "closestOffsetParentPath": Object {
+        "parts": Array [],
+        "type": "elementpath",
+      },
       "coordinateSystemBounds": Object {
         "height": 0,
         "width": 0,
@@ -33861,6 +34589,10 @@ Object {
     "specialSizeMeasurements": Object {
       "clientHeight": 0,
       "clientWidth": 0,
+      "closestOffsetParentPath": Object {
+        "parts": Array [],
+        "type": "elementpath",
+      },
       "coordinateSystemBounds": Object {
         "height": 0,
         "width": 0,
@@ -33952,6 +34684,10 @@ Object {
     "specialSizeMeasurements": Object {
       "clientHeight": 0,
       "clientWidth": 0,
+      "closestOffsetParentPath": Object {
+        "parts": Array [],
+        "type": "elementpath",
+      },
       "coordinateSystemBounds": Object {
         "height": 0,
         "width": 0,
@@ -34206,6 +34942,10 @@ export var storyboard = (
     "specialSizeMeasurements": Object {
       "clientHeight": 0,
       "clientWidth": 0,
+      "closestOffsetParentPath": Object {
+        "parts": Array [],
+        "type": "elementpath",
+      },
       "coordinateSystemBounds": Object {
         "height": 0,
         "width": 0,
@@ -34387,6 +35127,10 @@ Object {
     "specialSizeMeasurements": Object {
       "clientHeight": 0,
       "clientWidth": 0,
+      "closestOffsetParentPath": Object {
+        "parts": Array [],
+        "type": "elementpath",
+      },
       "coordinateSystemBounds": Object {
         "height": 0,
         "width": 0,
@@ -34478,6 +35222,10 @@ Object {
     "specialSizeMeasurements": Object {
       "clientHeight": 0,
       "clientWidth": 0,
+      "closestOffsetParentPath": Object {
+        "parts": Array [],
+        "type": "elementpath",
+      },
       "coordinateSystemBounds": Object {
         "height": 0,
         "width": 0,
@@ -34588,6 +35336,10 @@ Object {
     "specialSizeMeasurements": Object {
       "clientHeight": 0,
       "clientWidth": 0,
+      "closestOffsetParentPath": Object {
+        "parts": Array [],
+        "type": "elementpath",
+      },
       "coordinateSystemBounds": Object {
         "height": 0,
         "width": 0,
@@ -34818,6 +35570,10 @@ Object {
     "specialSizeMeasurements": Object {
       "clientHeight": 0,
       "clientWidth": 0,
+      "closestOffsetParentPath": Object {
+        "parts": Array [],
+        "type": "elementpath",
+      },
       "coordinateSystemBounds": Object {
         "height": 0,
         "width": 0,
@@ -34931,6 +35687,10 @@ Object {
     "specialSizeMeasurements": Object {
       "clientHeight": 0,
       "clientWidth": 0,
+      "closestOffsetParentPath": Object {
+        "parts": Array [],
+        "type": "elementpath",
+      },
       "coordinateSystemBounds": Object {
         "height": 0,
         "width": 0,
@@ -35342,6 +36102,10 @@ export var storyboard = (
     "specialSizeMeasurements": Object {
       "clientHeight": 0,
       "clientWidth": 0,
+      "closestOffsetParentPath": Object {
+        "parts": Array [],
+        "type": "elementpath",
+      },
       "coordinateSystemBounds": Object {
         "height": 0,
         "width": 0,
@@ -35549,6 +36313,10 @@ export var storyboard = (
     "specialSizeMeasurements": Object {
       "clientHeight": 0,
       "clientWidth": 0,
+      "closestOffsetParentPath": Object {
+        "parts": Array [],
+        "type": "elementpath",
+      },
       "coordinateSystemBounds": Object {
         "height": 0,
         "width": 0,
@@ -35680,6 +36448,10 @@ export var storyboard = (
     "specialSizeMeasurements": Object {
       "clientHeight": 0,
       "clientWidth": 0,
+      "closestOffsetParentPath": Object {
+        "parts": Array [],
+        "type": "elementpath",
+      },
       "coordinateSystemBounds": Object {
         "height": 0,
         "width": 0,
@@ -35781,6 +36553,10 @@ export var storyboard = (
     "specialSizeMeasurements": Object {
       "clientHeight": 0,
       "clientWidth": 0,
+      "closestOffsetParentPath": Object {
+        "parts": Array [],
+        "type": "elementpath",
+      },
       "coordinateSystemBounds": Object {
         "height": 0,
         "width": 0,
@@ -35993,6 +36769,10 @@ Object {
     "specialSizeMeasurements": Object {
       "clientHeight": 0,
       "clientWidth": 0,
+      "closestOffsetParentPath": Object {
+        "parts": Array [],
+        "type": "elementpath",
+      },
       "coordinateSystemBounds": Object {
         "height": 0,
         "width": 0,
@@ -36106,6 +36886,10 @@ Object {
     "specialSizeMeasurements": Object {
       "clientHeight": 0,
       "clientWidth": 0,
+      "closestOffsetParentPath": Object {
+        "parts": Array [],
+        "type": "elementpath",
+      },
       "coordinateSystemBounds": Object {
         "height": 0,
         "width": 0,
@@ -36250,6 +37034,10 @@ Object {
     "specialSizeMeasurements": Object {
       "clientHeight": 0,
       "clientWidth": 0,
+      "closestOffsetParentPath": Object {
+        "parts": Array [],
+        "type": "elementpath",
+      },
       "coordinateSystemBounds": Object {
         "height": 0,
         "width": 0,
@@ -36361,6 +37149,10 @@ Object {
     "specialSizeMeasurements": Object {
       "clientHeight": 0,
       "clientWidth": 0,
+      "closestOffsetParentPath": Object {
+        "parts": Array [],
+        "type": "elementpath",
+      },
       "coordinateSystemBounds": Object {
         "height": 0,
         "width": 0,
@@ -36571,6 +37363,10 @@ Object {
     "specialSizeMeasurements": Object {
       "clientHeight": 0,
       "clientWidth": 0,
+      "closestOffsetParentPath": Object {
+        "parts": Array [],
+        "type": "elementpath",
+      },
       "coordinateSystemBounds": Object {
         "height": 0,
         "width": 0,
@@ -36684,6 +37480,10 @@ Object {
     "specialSizeMeasurements": Object {
       "clientHeight": 0,
       "clientWidth": 0,
+      "closestOffsetParentPath": Object {
+        "parts": Array [],
+        "type": "elementpath",
+      },
       "coordinateSystemBounds": Object {
         "height": 0,
         "width": 0,
@@ -36778,6 +37578,10 @@ Object {
     "specialSizeMeasurements": Object {
       "clientHeight": 0,
       "clientWidth": 0,
+      "closestOffsetParentPath": Object {
+        "parts": Array [],
+        "type": "elementpath",
+      },
       "coordinateSystemBounds": Object {
         "height": 0,
         "width": 0,
@@ -37018,6 +37822,10 @@ Object {
     "specialSizeMeasurements": Object {
       "clientHeight": 0,
       "clientWidth": 0,
+      "closestOffsetParentPath": Object {
+        "parts": Array [],
+        "type": "elementpath",
+      },
       "coordinateSystemBounds": Object {
         "height": 0,
         "width": 0,
@@ -37131,6 +37939,10 @@ Object {
     "specialSizeMeasurements": Object {
       "clientHeight": 0,
       "clientWidth": 0,
+      "closestOffsetParentPath": Object {
+        "parts": Array [],
+        "type": "elementpath",
+      },
       "coordinateSystemBounds": Object {
         "height": 0,
         "width": 0,
@@ -37409,6 +38221,10 @@ Object {
     "specialSizeMeasurements": Object {
       "clientHeight": 0,
       "clientWidth": 0,
+      "closestOffsetParentPath": Object {
+        "parts": Array [],
+        "type": "elementpath",
+      },
       "coordinateSystemBounds": Object {
         "height": 0,
         "width": 0,
@@ -37588,6 +38404,10 @@ Object {
     "specialSizeMeasurements": Object {
       "clientHeight": 0,
       "clientWidth": 0,
+      "closestOffsetParentPath": Object {
+        "parts": Array [],
+        "type": "elementpath",
+      },
       "coordinateSystemBounds": Object {
         "height": 0,
         "width": 0,
@@ -37738,6 +38558,10 @@ Object {
     "specialSizeMeasurements": Object {
       "clientHeight": 0,
       "clientWidth": 0,
+      "closestOffsetParentPath": Object {
+        "parts": Array [],
+        "type": "elementpath",
+      },
       "coordinateSystemBounds": Object {
         "height": 0,
         "width": 0,
@@ -37917,6 +38741,10 @@ Object {
     "specialSizeMeasurements": Object {
       "clientHeight": 0,
       "clientWidth": 0,
+      "closestOffsetParentPath": Object {
+        "parts": Array [],
+        "type": "elementpath",
+      },
       "coordinateSystemBounds": Object {
         "height": 0,
         "width": 0,
@@ -38067,6 +38895,10 @@ Object {
     "specialSizeMeasurements": Object {
       "clientHeight": 0,
       "clientWidth": 0,
+      "closestOffsetParentPath": Object {
+        "parts": Array [],
+        "type": "elementpath",
+      },
       "coordinateSystemBounds": Object {
         "height": 0,
         "width": 0,
@@ -38246,6 +39078,10 @@ Object {
     "specialSizeMeasurements": Object {
       "clientHeight": 0,
       "clientWidth": 0,
+      "closestOffsetParentPath": Object {
+        "parts": Array [],
+        "type": "elementpath",
+      },
       "coordinateSystemBounds": Object {
         "height": 0,
         "width": 0,
@@ -38396,6 +39232,10 @@ Object {
     "specialSizeMeasurements": Object {
       "clientHeight": 0,
       "clientWidth": 0,
+      "closestOffsetParentPath": Object {
+        "parts": Array [],
+        "type": "elementpath",
+      },
       "coordinateSystemBounds": Object {
         "height": 0,
         "width": 0,
@@ -38605,6 +39445,10 @@ Object {
     "specialSizeMeasurements": Object {
       "clientHeight": 0,
       "clientWidth": 0,
+      "closestOffsetParentPath": Object {
+        "parts": Array [],
+        "type": "elementpath",
+      },
       "coordinateSystemBounds": Object {
         "height": 0,
         "width": 0,
@@ -38718,6 +39562,10 @@ Object {
     "specialSizeMeasurements": Object {
       "clientHeight": 0,
       "clientWidth": 0,
+      "closestOffsetParentPath": Object {
+        "parts": Array [],
+        "type": "elementpath",
+      },
       "coordinateSystemBounds": Object {
         "height": 0,
         "width": 0,
@@ -38812,6 +39660,10 @@ Object {
     "specialSizeMeasurements": Object {
       "clientHeight": 0,
       "clientWidth": 0,
+      "closestOffsetParentPath": Object {
+        "parts": Array [],
+        "type": "elementpath",
+      },
       "coordinateSystemBounds": Object {
         "height": 0,
         "width": 0,
@@ -39031,6 +39883,10 @@ Object {
     "specialSizeMeasurements": Object {
       "clientHeight": 0,
       "clientWidth": 0,
+      "closestOffsetParentPath": Object {
+        "parts": Array [],
+        "type": "elementpath",
+      },
       "coordinateSystemBounds": Object {
         "height": 0,
         "width": 0,
@@ -39144,6 +40000,10 @@ Object {
     "specialSizeMeasurements": Object {
       "clientHeight": 0,
       "clientWidth": 0,
+      "closestOffsetParentPath": Object {
+        "parts": Array [],
+        "type": "elementpath",
+      },
       "coordinateSystemBounds": Object {
         "height": 0,
         "width": 0,
@@ -39304,6 +40164,10 @@ Object {
     "specialSizeMeasurements": Object {
       "clientHeight": 0,
       "clientWidth": 0,
+      "closestOffsetParentPath": Object {
+        "parts": Array [],
+        "type": "elementpath",
+      },
       "coordinateSystemBounds": Object {
         "height": 0,
         "width": 0,
@@ -39435,6 +40299,10 @@ Object {
     "specialSizeMeasurements": Object {
       "clientHeight": 0,
       "clientWidth": 0,
+      "closestOffsetParentPath": Object {
+        "parts": Array [],
+        "type": "elementpath",
+      },
       "coordinateSystemBounds": Object {
         "height": 0,
         "width": 0,
@@ -39537,6 +40405,10 @@ Object {
     "specialSizeMeasurements": Object {
       "clientHeight": 0,
       "clientWidth": 0,
+      "closestOffsetParentPath": Object {
+        "parts": Array [],
+        "type": "elementpath",
+      },
       "coordinateSystemBounds": Object {
         "height": 0,
         "width": 0,

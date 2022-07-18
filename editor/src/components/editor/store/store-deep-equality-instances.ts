@@ -1176,6 +1176,10 @@ export function SpecialSizeMeasurementsKeepDeepEquality(): KeepDeepEqualityCall<
     )
     const immediateParentProvidesLayoutResult =
       oldSize.immediateParentProvidesLayout === newSize.immediateParentProvidesLayout
+    const closestOffsetParentPathResult = ElementPathKeepDeepEquality(
+      oldSize.closestOffsetParentPath,
+      newSize.closestOffsetParentPath,
+    )
     const usesParentBoundsResult = oldSize.usesParentBounds === newSize.usesParentBounds
     const parentLayoutSystemResult = oldSize.parentLayoutSystem === newSize.parentLayoutSystem
     const layoutSystemForChildrenResult =
@@ -1203,6 +1207,7 @@ export function SpecialSizeMeasurementsKeepDeepEquality(): KeepDeepEqualityCall<
       coordinateSystemBoundsResult.areEqual &&
       immediateParentBoundsResult.areEqual &&
       immediateParentProvidesLayoutResult &&
+      closestOffsetParentPathResult.areEqual &&
       usesParentBoundsResult &&
       parentLayoutSystemResult &&
       layoutSystemForChildrenResult &&
@@ -1228,6 +1233,7 @@ export function SpecialSizeMeasurementsKeepDeepEquality(): KeepDeepEqualityCall<
         coordinateSystemBoundsResult.value,
         immediateParentBoundsResult.value,
         newSize.immediateParentProvidesLayout,
+        newSize.closestOffsetParentPath,
         newSize.usesParentBounds,
         newSize.parentLayoutSystem,
         newSize.layoutSystemForChildren,
