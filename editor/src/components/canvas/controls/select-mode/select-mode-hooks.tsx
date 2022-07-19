@@ -547,9 +547,15 @@ function useSelectOrLiveModeSelectAndHover(
       event: React.MouseEvent<HTMLDivElement>,
       preferAlreadySelected: 'prefer-selected' | 'dont-prefer-selected',
     ) => {
-      // Skip all of this handling if 'space' is pressed.
-      if (!editorStoreRef.current.editor.keysPressed['space']) {
-        const doubleClick = event.detail > 1 // we interpret a triple click as two double clicks, a quadruple click as three double clicks, etc  // TODO TEST ME
+      const doubleClick = event.detail > 1 // we interpret a triple click as two double clicks, a quadruple click as three double clicks, etc  // TODO TEST ME
+      const isSpacePressed = editorStoreRef.current.editor.keysPressed['space']
+      const hasInteractionSessionWithMouseMoved =
+        editorStoreRef.current.editor.canvas.interactionSession?.interactionData?.type === 'DRAG'
+          ? editorStoreRef.current.editor.canvas.interactionSession?.interactionData?.drag != null
+          : false
+
+      // Skip all of this handling if 'space' is pressed or a mousemove happened in an interaction
+      if (!(isSpacePressed || hasInteractionSessionWithMouseMoved)) {
         const selectableViews = getSelectableViewsForSelectMode(event.metaKey, doubleClick)
         const foundTarget = findValidTarget(
           selectableViews,
