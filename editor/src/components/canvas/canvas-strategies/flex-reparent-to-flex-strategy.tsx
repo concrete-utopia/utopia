@@ -1,8 +1,15 @@
 import { MetadataUtils } from '../../../core/model/element-metadata-utils'
+import * as EP from '../../../core/shared/element-path'
 import { canvasPoint, offsetPoint, rectContainsPoint } from '../../../core/shared/math-utils'
 import { EditorState, EditorStatePatch } from '../../editor/store/editor-state'
+import { CSSCursor } from '../canvas-types'
+import { getReparentTarget } from '../canvas-utils'
 import { foldAndApplyCommandsInner, TransientOrNot } from '../commands/commands'
+import { reparentElement } from '../commands/reparent-element-command'
+import { setCursorCommand } from '../commands/set-cursor-command'
+import { setElementsToRerenderCommand } from '../commands/set-elements-to-rerender-command'
 import { updateFunctionCommand } from '../commands/update-function-command'
+import { updateSelectedViews } from '../commands/update-selected-views-command'
 import { ParentBounds } from '../controls/parent-bounds'
 import { ParentOutlines } from '../controls/parent-outlines'
 import { DragOutlineControl } from '../controls/select-mode/drag-outline-control'
@@ -17,10 +24,14 @@ import {
 import { getEscapeHatchCommands } from './escape-hatch-strategy'
 import { InteractionSession, StrategyState } from './interaction-state'
 import { findReparentStrategy } from './reparent-strategy-helpers'
+import {
+  getDragTargets,
+  getAbsoluteOffsetCommandsForSelectedElement,
+} from './shared-absolute-move-strategy-helpers'
 
-export const flexReparentToAbsoluteStrategy: CanvasStrategy = {
-  id: 'FLEX_REPARENT_TO_ABSOLUTE',
-  name: 'Flex Reparent to Absolute',
+export const flexReparentToFlexStrategy: CanvasStrategy = {
+  id: 'FLEX_REPARENT_TO_FLEX',
+  name: 'Flex Reparent to Flex',
   isApplicable: (canvasState, _interactionState, metadata) => {
     if (canvasState.selectedElements.length == 1) {
       return MetadataUtils.isParentYogaLayoutedContainerAndElementParticipatesInLayout(
@@ -50,7 +61,7 @@ export const flexReparentToAbsoluteStrategy: CanvasStrategy = {
   ],
   fitness: (canvasState, interactionState, strategyState) => {
     if (
-      flexReparentToAbsoluteStrategy.isApplicable(
+      flexReparentToFlexStrategy.isApplicable(
         canvasState,
         interactionState,
         strategyState.startingMetadata,
@@ -77,7 +88,7 @@ export const flexReparentToAbsoluteStrategy: CanvasStrategy = {
 
       const reparentStrategy = findReparentStrategy(canvasState, interactionState, strategyState)
 
-      if (!isPointInParentBounds && reparentStrategy === 'FLEX_REPARENT_TO_ABSOLUTE') {
+      if (!isPointInParentBounds && reparentStrategy === 'FLEX_REPARENT_TO_FLEX') {
         return 2 // 2 here to beat flexReorderStrategy
       }
     }
@@ -85,49 +96,57 @@ export const flexReparentToAbsoluteStrategy: CanvasStrategy = {
   },
   apply: (canvasState, interactionState, strategyState) => {
     if (
-      interactionState.interactionData.type !== 'DRAG' ||
+      interactionState.interactionData.type != 'DRAG' ||
       interactionState.interactionData.drag == null
     ) {
       return emptyStrategyApplicationResult
     }
 
-    const escapeHatchCommands = getEscapeHatchCommands(
-      canvasState.selectedElements,
-      strategyState.startingMetadata,
-      canvasState,
-      canvasPoint({ x: 0, y: 0 }),
-    ).commands
+    const { selectedElements, scale, canvasOffset, projectContents, openFile } = canvasState
+    const filteredSelectedElements = getDragTargets(selectedElements)
 
-    return {
-      commands: [
-        ...escapeHatchCommands,
-        updateFunctionCommand('permanent', (editorState, transient): Array<EditorStatePatch> => {
-          return runAbsoluteReparentStrategyForFreshlyConvertedElement(
-            editorState,
-            strategyState,
-            interactionState,
-            transient,
-          )
-        }),
-      ],
-      customState: null,
+    const reparentResult = getReparentTarget(
+      filteredSelectedElements,
+      filteredSelectedElements,
+      strategyState.startingMetadata,
+      [],
+      scale,
+      canvasOffset,
+      projectContents,
+      openFile,
+      strategyState.startingAllElementProps,
+    )
+    const newParent = reparentResult.newParent
+
+    if (reparentResult.shouldReparent && newParent != null) {
+      const commands = filteredSelectedElements.map((selectedElement) => {
+        const offsetCommands = getAbsoluteOffsetCommandsForSelectedElement(
+          selectedElement,
+          newParent,
+          strategyState,
+          canvasState,
+        )
+
+        const newPath = EP.appendToPath(newParent, EP.toUid(selectedElement))
+        return {
+          newPath: newPath,
+          commands: [...offsetCommands, reparentElement('permanent', selectedElement, newParent)],
+        }
+      })
+
+      const newPaths = commands.map((c) => c.newPath)
+
+      return {
+        commands: [
+          ...commands.flatMap((c) => c.commands),
+          updateSelectedViews('permanent', newPaths),
+          setElementsToRerenderCommand(newPaths),
+          setCursorCommand('transient', CSSCursor.Move),
+        ],
+        customState: null,
+      }
+    } else {
+      return emptyStrategyApplicationResult
     }
   },
-}
-
-function runAbsoluteReparentStrategyForFreshlyConvertedElement(
-  editorState: EditorState,
-  strategyState: StrategyState,
-  interactionState: InteractionSession,
-  transient: TransientOrNot,
-): Array<EditorStatePatch> {
-  const canvasState = pickCanvasStateFromEditorState(editorState)
-
-  const reparentCommands = absoluteReparentStrategy.apply(
-    canvasState,
-    interactionState,
-    strategyState,
-  ).commands
-
-  return foldAndApplyCommandsInner(editorState, [], [], reparentCommands, transient).statePatches
 }
