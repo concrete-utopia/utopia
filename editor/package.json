@@ -17,7 +17,7 @@
     "lint": "pnpx eslint \"src/**/*.{js,ts,tsx}\" --quiet",
     "lint-loud": "pnpx eslint \"src/**/*.{js,ts,tsx}\"",
     "check-dependency-cruiser": "depcruise --config .dependency-cruiser.js src",
-    "test": "jest --config ./jest.config.js",
+    "test": "jest --config ./jest.config.js --maxWorkers '50%'",
     "test-ci": "NODE_OPTIONS=--max_old_space_size=6656 xvfb-run -a pnpm run test -- --maxWorkers=1",
     "test-debug": "NODE_OPTIONS='--inspect-brk' jest --config ./jest.config.js --runInBand",
     "test-watch": "pnpm run test -- --watch",
