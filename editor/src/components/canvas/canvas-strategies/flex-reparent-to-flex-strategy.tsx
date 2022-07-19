@@ -22,6 +22,7 @@ import {
   StrategyApplicationResult,
 } from './canvas-strategy-types'
 import { getEscapeHatchCommands } from './escape-hatch-strategy'
+import { flexReorderStrategy } from './flex-reorder-strategy'
 import { InteractionSession, StrategyState } from './interaction-state'
 import { findReparentStrategy } from './reparent-strategy-helpers'
 import {
@@ -142,6 +143,14 @@ export const flexReparentToFlexStrategy: CanvasStrategy = {
           updateSelectedViews('permanent', newPaths),
           setElementsToRerenderCommand(newPaths),
           setCursorCommand('transient', CSSCursor.Move),
+          updateFunctionCommand('permanent', (editorState, transient): Array<EditorStatePatch> => {
+            return runFlexReorderStrategyForFreshlyReparentedElement(
+              editorState,
+              strategyState,
+              interactionState,
+              transient,
+            )
+          }),
         ],
         customState: null,
       }
@@ -149,4 +158,21 @@ export const flexReparentToFlexStrategy: CanvasStrategy = {
       return emptyStrategyApplicationResult
     }
   },
+}
+
+function runFlexReorderStrategyForFreshlyReparentedElement(
+  editorState: EditorState,
+  strategyState: StrategyState,
+  interactionState: InteractionSession,
+  transient: TransientOrNot,
+): Array<EditorStatePatch> {
+  const canvasState = pickCanvasStateFromEditorState(editorState)
+
+  const reorderCommands = flexReorderStrategy.apply(
+    canvasState,
+    interactionState,
+    strategyState,
+  ).commands
+
+  return foldAndApplyCommandsInner(editorState, [], [], reorderCommands, transient).statePatches
 }
