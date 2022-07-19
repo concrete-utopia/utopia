@@ -72,6 +72,7 @@ import { InsertionControls } from './insertion-plus-button'
 import { DistanceGuidelineControl } from './select-mode/distance-guideline-control'
 import { SceneLabelControl } from './select-mode/scene-label'
 import { PinLines } from './position-outline'
+import { EditorCursorComponent } from '../../editor/editor-component'
 
 export const CanvasControlsContainerID = 'new-canvas-controls-container'
 
@@ -487,6 +488,7 @@ const NewCanvasControlsInner = (props: NewCanvasControlsInnerProps) => {
           )}
         </>,
       )}
+      <EditorCursorComponent />
     </div>
   )
 }
