@@ -4,7 +4,6 @@
 import { jsx } from '@emotion/react'
 import { ResizeDirection } from 're-resizable'
 import React from 'react'
-import * as ReactDOM from 'react-dom'
 import { DndProvider } from 'react-dnd'
 import { HTML5Backend } from 'react-dnd-html5-backend'
 import Utils from '../../utils/utils'
@@ -421,6 +420,7 @@ export const EditorComponentInner = React.memo((props: EditorProps) => {
         </SimpleFlexColumn>
         <ModalComponent />
         <ToastRenderer />
+        <EditorCursorComponent />
       </SimpleFlexRow>
     </>
   )
@@ -456,7 +456,7 @@ export function EditorComponent(props: EditorProps) {
   )
 }
 
-export const EditorCursorComponent = React.memo(() => {
+const EditorCursorComponent = React.memo(() => {
   const cursor = useEditorState((store) => {
     return Utils.defaultIfNull(store.editor.canvas.cursor, getCursorFromDragState(store.editor))
   }, 'EditorCursorComponent cursor')
@@ -477,14 +477,8 @@ export const EditorCursorComponent = React.memo(() => {
     }
     return workingStyleProps
   }, [cursor])
-  const portalDiv = document.getElementById('cursor-overlay-portal')
-  if (portalDiv == null) {
-    return null
-  }
-  return ReactDOM.createPortal(
-    <div key='cursor-area' id='cursor-overlay' style={styleProps} />,
-    portalDiv,
-  )
+
+  return <div key='cursor-area' id='cursor-overlay' style={styleProps} />
 })
 
 const ToastRenderer = React.memo(() => {
