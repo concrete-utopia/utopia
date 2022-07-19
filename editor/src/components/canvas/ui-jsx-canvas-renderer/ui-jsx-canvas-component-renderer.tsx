@@ -269,6 +269,9 @@ export function createComponentRendererComponent(params: {
 }
 
 // Checks if the element with the given elementPath is rendered in the props.children subtree
+// LIMITATION: this function only checks props.children, so if the given element is rendered, but from a
+// different prop, isElementInChildrenPropTree will return false
+// If we will support renderProps, this should be updated to check other props which receive react elements
 function isElementInChildrenPropTree(elementPath: string, props: any): boolean {
   const childrenArr = React.Children.toArray(props.children).filter(React.isValidElement)
 
