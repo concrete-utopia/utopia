@@ -99,10 +99,7 @@ export function createComponentRendererComponent(params: {
         !isFeatureEnabled('Canvas Selective Rerender') ||
         ElementsToRerenderGLOBAL.current === 'rerender-all-elements' ||
         ElementsToRerenderGLOBAL.current.some((er) => {
-          return (
-            instancePath != null &&
-            (EP.pathsEqual(instancePath, er) || EP.isParentComponentOf(instancePath, er))
-          )
+          return instancePath != null && EP.isDescendantOfOrEqualTo(er, instancePath)
         })
       )
     }
@@ -181,7 +178,7 @@ export function createComponentRendererComponent(params: {
       })
     }
 
-    if (utopiaJsxComponent.arbitraryJSBlock != null && shouldUpdate) {
+    if (utopiaJsxComponent.arbitraryJSBlock != null && shouldUpdate()) {
       const lookupRenderer = createLookupRender(
         rootElementPath,
         scope,
