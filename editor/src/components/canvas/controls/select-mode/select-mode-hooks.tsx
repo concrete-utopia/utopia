@@ -565,12 +565,11 @@ function useSelectOrLiveModeSelectAndHover(
           ? editorStoreRef.current.editor.canvas.interactionSession?.interactionData?.drag != null
           : false
 
-      const doubleClick = event.detail > 1 // we interpret a triple click as two double clicks, a quadruple click as three double clicks, etc
-      const preferAlreadySelected = getPreferredSelectionForEvent(event.type, doubleClick)
-
       // Skip all of this handling if 'space' is pressed or a mousemove happened in an interaction
       if (!(isSpacePressed || hasInteractionSessionWithMouseMoved)) {
+        const doubleClick = event.detail > 1 // we interpret a triple click as two double clicks, a quadruple click as three double clicks, etc
         const selectableViews = getSelectableViewsForSelectMode(event.metaKey, doubleClick)
+        const preferAlreadySelected = getPreferredSelectionForEvent(event.type, doubleClick)
         const foundTarget = findValidTarget(
           selectableViews,
           windowPoint(point(event.clientX, event.clientY)),
