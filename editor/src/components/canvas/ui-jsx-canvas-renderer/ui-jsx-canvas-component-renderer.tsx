@@ -95,25 +95,6 @@ export function createComponentRendererComponent(params: {
     const instancePath: ElementPath | null = tryToGetInstancePath(instancePathAny, pathsString)
 
     function shouldUpdate() {
-      // Checks if the element with the given elementPath is rendered in the props.children subtree
-      function isElementRenderedAsChildPropRecursive(elementPath: string, props: any): boolean {
-        const childrenArr = React.Children.toArray(props.children).filter(React.isValidElement)
-
-        if (childrenArr.length === 0) {
-          return false
-        }
-        const elementIsChild = childrenArr.some(
-          (c) => (c.props as any)[UTOPIA_PATH_KEY] === elementPath,
-        )
-        if (elementIsChild) {
-          return true
-        } else {
-          return childrenArr.some((c) =>
-            isElementRenderedAsChildPropRecursive(elementPath, c.props),
-          )
-        }
-      }
-
       return (
         !isFeatureEnabled('Canvas Selective Rerender') ||
         ElementsToRerenderGLOBAL.current === 'rerender-all-elements' ||
@@ -121,7 +102,7 @@ export function createComponentRendererComponent(params: {
           return (
             (instancePath != null &&
               (EP.pathsEqual(er, instancePath) || EP.isParentComponentOf(instancePath, er))) ||
-            isElementRenderedAsChildPropRecursive(EP.toString(er), realPassedProps)
+            isElementInChildrenPropTree(EP.toString(er), realPassedProps)
           )
         })
       )
@@ -285,4 +266,19 @@ export function createComponentRendererComponent(params: {
   Component.topLevelElementName = params.topLevelElementName
   Component.utopiaType = 'UTOPIA_COMPONENT_RENDERER_COMPONENT' as const
   return Component
+}
+
+// Checks if the element with the given elementPath is rendered in the props.children subtree
+function isElementInChildrenPropTree(elementPath: string, props: any): boolean {
+  const childrenArr = React.Children.toArray(props.children).filter(React.isValidElement)
+
+  if (childrenArr.length === 0) {
+    return false
+  }
+  const elementIsChild = childrenArr.some((c) => (c.props as any)[UTOPIA_PATH_KEY] === elementPath)
+  if (elementIsChild) {
+    return true
+  } else {
+    return childrenArr.some((c) => isElementInChildrenPropTree(elementPath, c.props))
+  }
 }
