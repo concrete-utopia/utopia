@@ -502,6 +502,22 @@ export function useHighlightCallbacks(
   return { onMouseMove }
 }
 
+function getPreferredSelectionForEvent(
+  eventType: 'mousedown' | 'mouseup' | string,
+  isDoubleClick: boolean,
+): 'prefer-selected' | 'dont-prefer-selected' {
+  // mousedown keeps selection on a single click to allow dragging overlapping elements and selection happens on mouseup
+  // with continuous clicking mousedown should select
+  switch (eventType) {
+    case 'mousedown':
+      return isDoubleClick ? 'dont-prefer-selected' : 'prefer-selected'
+    case 'mouseup':
+      return isDoubleClick ? 'prefer-selected' : 'dont-prefer-selected'
+    default:
+      return 'prefer-selected'
+  }
+}
+
 function useSelectOrLiveModeSelectAndHover(
   active: boolean,
   draggingAllowed: boolean,
@@ -541,18 +557,16 @@ function useSelectOrLiveModeSelectAndHover(
     },
     [innerOnMouseMove, editorStoreRef],
   )
-
   const mouseHandler = React.useCallback(
-    (
-      event: React.MouseEvent<HTMLDivElement>,
-      preferAlreadySelected: 'prefer-selected' | 'dont-prefer-selected',
-    ) => {
-      const doubleClick = event.detail > 1 // we interpret a triple click as two double clicks, a quadruple click as three double clicks, etc  // TODO TEST ME
+    (event: React.MouseEvent<HTMLDivElement>) => {
       const isSpacePressed = editorStoreRef.current.editor.keysPressed['space']
       const hasInteractionSessionWithMouseMoved =
         editorStoreRef.current.editor.canvas.interactionSession?.interactionData?.type === 'DRAG'
           ? editorStoreRef.current.editor.canvas.interactionSession?.interactionData?.drag != null
           : false
+
+      const doubleClick = event.detail > 1 // we interpret a triple click as two double clicks, a quadruple click as three double clicks, etc
+      const preferAlreadySelected = getPreferredSelectionForEvent(event.type, doubleClick)
 
       // Skip all of this handling if 'space' is pressed or a mousemove happened in an interaction
       if (!(isSpacePressed || hasInteractionSessionWithMouseMoved)) {
@@ -645,12 +659,12 @@ function useSelectOrLiveModeSelectAndHover(
   )
 
   const onMouseDown = React.useCallback(
-    (event: React.MouseEvent<HTMLDivElement>) => mouseHandler(event, 'prefer-selected'),
+    (event: React.MouseEvent<HTMLDivElement>) => mouseHandler(event),
     [mouseHandler],
   )
 
   const onMouseUp = React.useCallback(
-    (event: React.MouseEvent<HTMLDivElement>) => mouseHandler(event, 'dont-prefer-selected'),
+    (event: React.MouseEvent<HTMLDivElement>) => mouseHandler(event),
     [mouseHandler],
   )
 
