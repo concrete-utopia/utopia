@@ -9,10 +9,7 @@ import {
   orderStops,
   printLinearGradientBackgroundLayer,
 } from '../../../common/css-utils'
-import {
-  checkerboardBackground,
-  OnSubmitValueAndUpdateLocalState,
-} from '../../../common/inspector-utils'
+import { OnSubmitValueAndUpdateLocalState } from '../../../common/inspector-utils'
 import { UseSubmitValueFactory } from '../../../common/property-path-hooks'
 import {
   GradientPickerWidth,
@@ -22,7 +19,9 @@ import {
 } from '../../../controls/color-picker'
 import { inspectorEdgePadding } from './background-picker'
 import { clampValue } from '../../../../../core/shared/math-utils'
-import { useColorTheme, FlexColumn, UtopiaTheme } from '../../../../../uuiui'
+import { useColorTheme, FlexColumn, UtopiaStyles } from '../../../../../uuiui'
+
+const checkerboardBackground = UtopiaStyles.backgrounds.checkerboardBackground
 
 interface GradientStopProps {
   stop: CSSGradientStop
