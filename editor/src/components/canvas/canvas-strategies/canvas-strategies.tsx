@@ -37,7 +37,7 @@ export const RegisteredCanvasStrategies: Array<CanvasStrategy> = [
   flexReorderStrategy,
   flexReparentToAbsoluteStrategy,
   flexReparentToFlexStrategy,
-  escapeHatchStrategy,
+  // escapeHatchStrategy,  // TODO re-enable once reparent is not tied to cmd
   absoluteReparentToFlexStrategy,
 ]
 
