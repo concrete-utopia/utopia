@@ -52,7 +52,10 @@ import {
 import { PERFORMANCE_MARKS_ALLOWED } from '../../common/env-vars'
 import { CanvasContainerID } from './canvas-types'
 import { emptySet } from '../../core/shared/set-utils'
-import { getPathWithStringsOnDomElement } from '../../core/shared/uid-utils'
+import {
+  getDeepestPathOnDomElement,
+  getPathWithStringsOnDomElement,
+} from '../../core/shared/uid-utils'
 import { pluck, uniqBy } from '../../core/shared/array-utils'
 import { forceNotNull, optionalMap } from '../../core/shared/optional-utils'
 import { fastForEach } from '../../core/shared/utils'
@@ -367,6 +370,7 @@ function runSelectiveDomWalker(
         const { collectedMetadata } = collectAndCreateMetadataForElement(
           element,
           parentPoint,
+          path, // TODO is this good enough?
           scale,
           containerRectLazy,
           foundValidPaths.map((p) => p.path),
@@ -593,6 +597,7 @@ export function useDomWalkerInvalidateCallbacks(): [UpdateMutableCallback<Set<st
 function collectMetadataForElement(
   element: HTMLElement,
   parentPoint: CanvasPoint,
+  closestOffsetParentPath: ElementPath,
   scale: number,
   containerRectLazy: () => CanvasRectangle,
 ): {
@@ -605,7 +610,12 @@ function collectMetadataForElement(
   const globalFrame = globalFrameForElement(element, scale, containerRectLazy)
   const localFrame = localRectangle(Utils.offsetRect(globalFrame, Utils.negate(parentPoint)))
 
-  const specialSizeMeasurementsObject = getSpecialMeasurements(element, scale, containerRectLazy)
+  const specialSizeMeasurementsObject = getSpecialMeasurements(
+    element,
+    closestOffsetParentPath,
+    scale,
+    containerRectLazy,
+  )
 
   return {
     tagName: tagName,
@@ -627,6 +637,7 @@ function collectMetadata(
   pathsForElement: Array<ElementPath>,
   stringPathsForElement: Array<string>,
   parentPoint: CanvasPoint,
+  closestOffsetParentPath: ElementPath,
   allUnfilteredChildrenPaths: Array<ElementPath>,
   scale: number,
   containerRectLazy: () => CanvasRectangle,
@@ -660,6 +671,7 @@ function collectMetadata(
     return collectAndCreateMetadataForElement(
       element,
       parentPoint,
+      closestOffsetParentPath,
       scale,
       containerRectLazy,
       pathsForElement,
@@ -683,6 +695,7 @@ function collectMetadata(
         pathsForElement,
         stringPathsForElement,
         parentPoint,
+        closestOffsetParentPath,
         allUnfilteredChildrenPaths,
         scale,
         containerRectLazy,
@@ -700,6 +713,7 @@ function collectMetadata(
 function collectAndCreateMetadataForElement(
   element: HTMLElement,
   parentPoint: CanvasPoint,
+  closestOffsetParentPath: ElementPath,
   scale: number,
   containerRectLazy: () => CanvasRectangle,
   pathsForElement: ElementPath[],
@@ -708,7 +722,13 @@ function collectAndCreateMetadataForElement(
   invalidatedPaths: Set<string>,
 ) {
   const { tagName, globalFrame, localFrame, specialSizeMeasurementsObject } =
-    collectMetadataForElement(element, parentPoint, scale, containerRectLazy)
+    collectMetadataForElement(
+      element,
+      parentPoint,
+      closestOffsetParentPath,
+      scale,
+      containerRectLazy,
+    )
 
   const { computedStyle, attributeMetadata } = getComputedStyle(
     element,
@@ -792,6 +812,7 @@ function getComputedStyle(
 
 function getSpecialMeasurements(
   element: HTMLElement,
+  closestOffsetParentPath: ElementPath,
   scale: number,
   containerRectLazy: () => CanvasRectangle,
 ): SpecialSizeMeasurements {
@@ -877,6 +898,7 @@ function getSpecialMeasurements(
     coordinateSystemBounds,
     immediateParentBounds,
     parentProvidesLayout,
+    closestOffsetParentPath,
     isParentNonStatic,
     parentLayoutSystem,
     layoutSystemForChildren,
@@ -952,6 +974,7 @@ function walkCanvasRootFragment(
   } else {
     const { rootMetadata, cachedPaths } = walkSceneInner(
       canvasRoot,
+      canvasRootPath,
       validPaths,
       rootMetadataInStateRef,
       invalidatedPaths,
@@ -1020,6 +1043,7 @@ function walkScene(
         cachedPaths,
       } = walkSceneInner(
         scene,
+        instancePath,
         validPaths,
         rootMetadataInStateRef,
         invalidatedPaths,
@@ -1036,6 +1060,7 @@ function walkScene(
         [instancePath],
         [sceneID],
         canvasPoint({ x: 0, y: 0 }),
+        instancePath,
         rootElements,
         scale,
         containerRectLazy,
@@ -1060,6 +1085,7 @@ function walkScene(
 
 function walkSceneInner(
   scene: HTMLElement,
+  closestOffsetParentPath: ElementPath,
   validPaths: Array<ElementPath>,
   rootMetadataInStateRef: React.MutableRefObject<ElementInstanceMetadataMap>,
   invalidatedPaths: Set<string>,
@@ -1088,6 +1114,7 @@ function walkSceneInner(
     } = walkElements(
       childNode,
       globalFrame,
+      closestOffsetParentPath,
       validPaths,
       rootMetadataInStateRef,
       invalidatedPaths,
@@ -1115,6 +1142,7 @@ function walkSceneInner(
 function walkElements(
   element: Node,
   parentPoint: CanvasPoint,
+  closestOffsetParentPath: ElementPath,
   validPaths: Array<ElementPath>,
   rootMetadataInStateRef: React.MutableRefObject<ElementInstanceMetadataMap>,
   invalidatedPaths: Set<string>,
@@ -1152,7 +1180,15 @@ function walkElements(
     return result
   }
   if (element instanceof HTMLElement) {
-    // Determine the uid of this element if it has one.
+    let closestOffsetParentPathInner: ElementPath = closestOffsetParentPath
+    // If this element provides bounds for absolute children, we want to update the closest offset parent path
+    if (isElementAContainingBlockForAbsolute(window.getComputedStyle(element))) {
+      const deepestPath = getDeepestPathOnDomElement(element)
+      if (deepestPath != null) {
+        closestOffsetParentPathInner = deepestPath
+      }
+    }
+
     const pathsWithStrings = getPathWithStringsOnDomElement(element)
     for (const pathWithString of pathsWithStrings) {
       invalidatedPaths.delete(pathWithString.asString) // mutation!
@@ -1187,6 +1223,7 @@ function walkElements(
         } = walkElements(
           child,
           globalFrame,
+          closestOffsetParentPathInner,
           validPaths,
           rootMetadataInStateRef,
           invalidatedPaths,
@@ -1210,6 +1247,7 @@ function walkElements(
       pluck(foundValidPaths, 'path'),
       pluck(foundValidPaths, 'asString'),
       parentPoint,
+      closestOffsetParentPath,
       uniqueChildPaths,
       scale,
       containerRectLazy,

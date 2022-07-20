@@ -247,6 +247,11 @@ export function getPathsOnDomElement(element: Element): Array<ElementPath> {
   return getPathsFromString(pathsAttribute)
 }
 
+export function getDeepestPathOnDomElement(element: Element): ElementPath | null {
+  const pathAttribute = getDOMAttribute(element, UTOPIA_PATH_KEY)
+  return pathAttribute == null ? null : EP.fromString(pathAttribute)
+}
+
 export function findElementWithUID(
   topLevelElement: TopLevelElement,
   targetUID: string,

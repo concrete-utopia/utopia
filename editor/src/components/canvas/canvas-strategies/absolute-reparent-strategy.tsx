@@ -1,3 +1,5 @@
+import { foldEither } from '../../../core/shared/either'
+import { elementReferencesElsewhere } from '../../../core/shared/element-template'
 import { MetadataUtils } from '../../../core/model/element-metadata-utils'
 import * as EP from '../../../core/shared/element-path'
 import { CSSCursor } from '../canvas-types'
@@ -30,7 +32,19 @@ export const absoluteReparentStrategy: CanvasStrategy = {
       return filteredSelectedElements.every((element) => {
         const elementMetadata = MetadataUtils.findElementByElementPath(metadata, element)
 
-        return elementMetadata?.specialSizeMeasurements.position === 'absolute'
+        const referencesExternalValue =
+          elementMetadata == null
+            ? false
+            : foldEither(
+                (_) => false,
+                (elementFromMetadata) => elementReferencesElsewhere(elementFromMetadata),
+                elementMetadata.element,
+              )
+
+        return (
+          elementMetadata?.specialSizeMeasurements.position === 'absolute' &&
+          !referencesExternalValue
+        )
       })
     }
     return false

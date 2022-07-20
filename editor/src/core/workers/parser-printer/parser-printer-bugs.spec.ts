@@ -18,8 +18,74 @@ import {
 import { objectMap, omit } from '../../shared/object-utils'
 import { BakedInStoryboardVariableName, BakedInStoryboardUID } from '../../model/scene-utils'
 import { isParseSuccess } from '../../shared/project-file-types'
+import { findJSXElementAtStaticPath } from '../../model/element-template-utils'
+import { getUtopiaJSXComponentsFromSuccess } from '../..//model/project-file-utils'
+import * as EP from '../../shared/element-path'
 
 describe('JSX parser', () => {
+  it('definedElsewhere values in a block including those from elementsWithin', () => {
+    const code = `import * as React from "react";
+
+const cake = 'chocolate'
+
+export var App = props => {
+  return <div style={{ "backgroundColor": "green", "position": "absolute" }} data-uid="aaa">
+    {[1, 2, 3].map(n => {
+      return <div data-uid="bbb">{n} - {cake}</div>
+    })}
+  </div>
+};`
+    const parsedCode = testParseCode(code)
+    if (isParseSuccess(parsedCode)) {
+      expect(elementsStructure(parsedCode.topLevelElements)).toMatchInlineSnapshot(`
+        "IMPORT_STATEMENT
+        UNPARSED_CODE
+        ARBITRARY_JS_BLOCK
+        UNPARSED_CODE
+        UTOPIA_JSX_COMPONENT - App
+          JSX_ELEMENT - div - aaa
+            JSX_ARBITRARY_BLOCK
+              JSX_ELEMENT - div - bbb
+                JSX_ARBITRARY_BLOCK
+                JSX_TEXT_BLOCK
+                JSX_ARBITRARY_BLOCK"
+      `)
+
+      const aaaElement = findJSXElementAtStaticPath(
+        getUtopiaJSXComponentsFromSuccess(parsedCode),
+        EP.dynamicPathToStaticPath(EP.elementPath([['App'], ['aaa']])),
+      )
+      const aaaJSXArbBlock = aaaElement?.children[0]
+      if (aaaJSXArbBlock?.type === 'JSX_ARBITRARY_BLOCK') {
+        expect(aaaJSXArbBlock.definedElsewhere).toMatchInlineSnapshot(`
+          Array [
+            "cake",
+            "React",
+            "utopiaCanvasJSXLookup",
+          ]
+        `)
+      } else {
+        throw new Error('Was not a JSX_ARBITRARY_BLOCK as expected.')
+      }
+
+      const bbbElement = findJSXElementAtStaticPath(
+        getUtopiaJSXComponentsFromSuccess(parsedCode),
+        EP.dynamicPathToStaticPath(EP.elementPath([['App'], ['aaa', 'bbb']])),
+      )
+      const bbbJSXArbBlock = bbbElement?.children[2]
+      if (bbbJSXArbBlock?.type === 'JSX_ARBITRARY_BLOCK') {
+        expect(bbbJSXArbBlock.definedElsewhere).toMatchInlineSnapshot(`
+          Array [
+            "cake",
+          ]
+        `)
+      } else {
+        throw new Error('Was not a JSX_ARBITRARY_BLOCK as expected.')
+      }
+    } else {
+      throw new Error(JSON.stringify(parsedCode))
+    }
+  })
   it('adds in data-uid attributes for elements in arbitrary code', () => {
     const code = `import * as React from "react";
 import { Ellipse, UtopiaUtils, Image, Rectangle, Text, View } from "utopia-api";

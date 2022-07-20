@@ -100,8 +100,9 @@ export function createComponentRendererComponent(params: {
         ElementsToRerenderGLOBAL.current === 'rerender-all-elements' ||
         ElementsToRerenderGLOBAL.current.some((er) => {
           return (
-            instancePath != null &&
-            (EP.pathsEqual(instancePath, er) || EP.isParentComponentOf(instancePath, er))
+            (instancePath != null &&
+              (EP.pathsEqual(er, instancePath) || EP.isParentComponentOf(instancePath, er))) ||
+            isElementInChildrenPropTree(EP.toString(er), realPassedProps)
           )
         })
       )
@@ -181,7 +182,7 @@ export function createComponentRendererComponent(params: {
       })
     }
 
-    if (utopiaJsxComponent.arbitraryJSBlock != null && shouldUpdate) {
+    if (utopiaJsxComponent.arbitraryJSBlock != null && shouldUpdate()) {
       const lookupRenderer = createLookupRender(
         rootElementPath,
         scope,
@@ -265,4 +266,22 @@ export function createComponentRendererComponent(params: {
   Component.topLevelElementName = params.topLevelElementName
   Component.utopiaType = 'UTOPIA_COMPONENT_RENDERER_COMPONENT' as const
   return Component
+}
+
+// Checks if the element with the given elementPath is rendered in the props.children subtree
+// LIMITATION: this function only checks props.children, so if the given element is rendered, but from a
+// different prop, isElementInChildrenPropTree will return false
+// If we will support renderProps, this should be updated to check other props which receive react elements
+function isElementInChildrenPropTree(elementPath: string, props: any): boolean {
+  const childrenArr = React.Children.toArray(props.children).filter(React.isValidElement)
+
+  if (childrenArr.length === 0) {
+    return false
+  }
+  const elementIsChild = childrenArr.some((c) => (c.props as any)[UTOPIA_PATH_KEY] === elementPath)
+  if (elementIsChild) {
+    return true
+  } else {
+    return childrenArr.some((c) => isElementInChildrenPropTree(elementPath, c.props))
+  }
 }

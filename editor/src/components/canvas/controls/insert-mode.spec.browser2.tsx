@@ -72,7 +72,7 @@ async function fireDragEvent(
   })
 }
 
-xdescribe('Inserting', () => {
+describe('Inserting', () => {
   before(() => {
     viewport.set(2200, 1000)
   })

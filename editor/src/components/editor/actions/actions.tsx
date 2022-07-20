@@ -530,6 +530,7 @@ import { pickCanvasStateFromEditorState } from '../../canvas/canvas-strategies/c
 import { foldAndApplyCommandsSimple, runCanvasCommand } from '../../canvas/commands/commands'
 import { setElementsToRerenderCommand } from '../../canvas/commands/set-elements-to-rerender-command'
 import { addButtonPressed, MouseButtonsPressed, removeButtonPressed } from '../../../utils/mouse'
+import { areAllSelectedElementsNonAbsolute } from '../../canvas/canvas-strategies/shared-absolute-move-strategy-helpers'
 
 export function updateSelectedLeftMenuTab(editorState: EditorState, tab: LeftMenuTab): EditorState {
   return {
@@ -4893,13 +4894,17 @@ export const UPDATE_FNS = {
   },
   RUN_ESCAPE_HATCH: (action: RunEscapeHatch, editor: EditorModel): EditorModel => {
     const canvasState = pickCanvasStateFromEditorState(editor)
-    const commands = getEscapeHatchCommands(
-      action.targets,
-      editor.jsxMetadata,
-      canvasState,
-      null,
-    ).commands
-    return foldAndApplyCommandsSimple(editor, commands)
+    if (areAllSelectedElementsNonAbsolute(action.targets, editor.jsxMetadata)) {
+      const commands = getEscapeHatchCommands(
+        action.targets,
+        editor.jsxMetadata,
+        canvasState,
+        null,
+      ).commands
+      return foldAndApplyCommandsSimple(editor, commands)
+    } else {
+      return editor
+    }
   },
   SET_ELEMENTS_TO_RERENDER: (action: SetElementsToRerender, editor: EditorModel): EditorModel => {
     return foldAndApplyCommandsSimple(editor, [setElementsToRerenderCommand(action.value)])

@@ -763,6 +763,58 @@ export function setJSXAttributesAttribute(
   return result
 }
 
+export function attributeReferencesElsewhere(attribute: JSXAttribute): boolean {
+  switch (attribute.type) {
+    case 'ATTRIBUTE_VALUE':
+      return false
+    case 'ATTRIBUTE_OTHER_JAVASCRIPT':
+      return attribute.definedElsewhere.length > 0
+    case 'ATTRIBUTE_NESTED_OBJECT':
+      return attribute.content.some((subAttr) => {
+        return attributeReferencesElsewhere(subAttr.value)
+      })
+    case 'ATTRIBUTE_NESTED_ARRAY':
+      return attribute.content.some((subAttr) => {
+        return attributeReferencesElsewhere(subAttr.value)
+      })
+    case 'ATTRIBUTE_FUNCTION_CALL':
+      return attribute.parameters.some((parameter) => {
+        return attributeReferencesElsewhere(parameter)
+      })
+    default:
+      const _exhaustiveCheck: never = attribute
+      throw new Error(`Unhandled attribute type ${JSON.stringify(attribute)}`)
+  }
+}
+
+export function jsxAttributesPartReferencesElsewhere(attrPart: JSXAttributesPart): boolean {
+  switch (attrPart.type) {
+    case 'JSX_ATTRIBUTES_ENTRY':
+      return attributeReferencesElsewhere(attrPart.value)
+    case 'JSX_ATTRIBUTES_SPREAD':
+      return attributeReferencesElsewhere(attrPart.spreadValue)
+    default:
+      const _exhaustiveCheck: never = attrPart
+      throw new Error(`Unhandled attribute type ${JSON.stringify(attrPart)}`)
+  }
+}
+
+export function elementReferencesElsewhere(element: JSXElementChild): boolean {
+  switch (element.type) {
+    case 'JSX_ELEMENT':
+      return element.props.some(jsxAttributesPartReferencesElsewhere)
+    case 'JSX_ARBITRARY_BLOCK':
+      return element.definedElsewhere.length > 0
+    case 'JSX_TEXT_BLOCK':
+      return false
+    case 'JSX_FRAGMENT':
+      return element.children.some(elementReferencesElsewhere)
+    default:
+      const _exhaustiveCheck: never = element
+      throw new Error(`Unhandled element type ${JSON.stringify(element)}`)
+  }
+}
+
 export function getDefinedElsewhereFromAttribute(attribute: JSXAttribute): Array<string> {
   if (isJSXAttributeOtherJavaScript(attribute)) {
     return attribute.definedElsewhere
@@ -1533,6 +1585,7 @@ export interface SpecialSizeMeasurements {
   coordinateSystemBounds: CanvasRectangle | null
   immediateParentBounds: CanvasRectangle | null
   immediateParentProvidesLayout: boolean
+  closestOffsetParentPath: ElementPath
   usesParentBounds: boolean
   parentLayoutSystem: DetectedLayoutSystem // TODO make a specific boolean prop that tells us the parent is flex or not
   layoutSystemForChildren: DetectedLayoutSystem
@@ -1557,6 +1610,7 @@ export function specialSizeMeasurements(
   coordinateSystemBounds: CanvasRectangle | null,
   immediateParentBounds: CanvasRectangle | null,
   immediateParentProvidesLayout: boolean,
+  closestOffsetParentPath: ElementPath,
   usesParentBounds: boolean,
   parentLayoutSystem: DetectedLayoutSystem,
   layoutSystemForChildren: DetectedLayoutSystem,
@@ -1580,6 +1634,7 @@ export function specialSizeMeasurements(
     coordinateSystemBounds,
     immediateParentBounds,
     immediateParentProvidesLayout,
+    closestOffsetParentPath,
     usesParentBounds,
     parentLayoutSystem,
     layoutSystemForChildren,
@@ -1608,6 +1663,7 @@ export const emptySpecialSizeMeasurements = specialSizeMeasurements(
   zeroCanvasRect,
   zeroCanvasRect,
   true,
+  EP.emptyElementPath,
   false,
   'flow',
   'flow',

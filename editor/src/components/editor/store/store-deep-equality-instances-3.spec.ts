@@ -235,6 +235,7 @@ describe('SpecialSizeMeasurementsKeepDeepEquality', () => {
       height: 2000,
     }),
     immediateParentProvidesLayout: false,
+    closestOffsetParentPath: EP.fromString('some/dummy/path'),
     usesParentBounds: false,
     parentLayoutSystem: 'flex',
     layoutSystemForChildren: 'flex',
@@ -287,6 +288,7 @@ describe('SpecialSizeMeasurementsKeepDeepEquality', () => {
       height: 2000,
     }),
     immediateParentProvidesLayout: true,
+    closestOffsetParentPath: EP.fromString('some/dummy/path'),
     usesParentBounds: false,
     parentLayoutSystem: 'flex',
     layoutSystemForChildren: 'flex',
@@ -334,6 +336,7 @@ describe('SpecialSizeMeasurementsKeepDeepEquality', () => {
     expect(result.value.immediateParentProvidesLayout).toBe(
       newDifferentValue.immediateParentProvidesLayout,
     )
+    expect(result.value.closestOffsetParentPath).toBe(oldValue.closestOffsetParentPath)
     expect(result.value.usesParentBounds).toBe(oldValue.usesParentBounds)
     expect(result.value.parentLayoutSystem).toBe(oldValue.parentLayoutSystem)
     expect(result.value.layoutSystemForChildren).toBe(oldValue.layoutSystemForChildren)
@@ -393,6 +396,7 @@ describe('ElementInstanceMetadataKeepDeepEquality', () => {
         height: 2000,
       }),
       immediateParentProvidesLayout: false,
+      closestOffsetParentPath: EP.fromString('some/dummy/path'),
       usesParentBounds: false,
       parentLayoutSystem: 'flex',
       layoutSystemForChildren: 'flex',
@@ -473,6 +477,7 @@ describe('ElementInstanceMetadataKeepDeepEquality', () => {
         height: 2000,
       }),
       immediateParentProvidesLayout: false,
+      closestOffsetParentPath: EP.fromString('some/dummy/path'),
       usesParentBounds: false,
       parentLayoutSystem: 'flex',
       layoutSystemForChildren: 'flex',
@@ -579,6 +584,7 @@ describe('ElementInstanceMetadataMapKeepDeepEquality', () => {
           height: 2000,
         }),
         immediateParentProvidesLayout: false,
+        closestOffsetParentPath: EP.fromString('some/dummy/path'),
         usesParentBounds: false,
         parentLayoutSystem: 'flex',
         layoutSystemForChildren: 'flex',
@@ -661,6 +667,7 @@ describe('ElementInstanceMetadataMapKeepDeepEquality', () => {
           height: 2000,
         }),
         immediateParentProvidesLayout: false,
+        closestOffsetParentPath: EP.fromString('some/dummy/path'),
         usesParentBounds: false,
         parentLayoutSystem: 'flex',
         layoutSystemForChildren: 'flex',
@@ -743,6 +750,7 @@ describe('ElementInstanceMetadataMapKeepDeepEquality', () => {
           height: 2000,
         }),
         immediateParentProvidesLayout: false,
+        closestOffsetParentPath: EP.fromString('some/dummy/path'),
         usesParentBounds: false,
         parentLayoutSystem: 'flex',
         layoutSystemForChildren: 'flex',

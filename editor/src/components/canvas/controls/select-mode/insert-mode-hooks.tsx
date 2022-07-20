@@ -26,18 +26,19 @@ function useGetHighlightableViewsForInsertMode() {
   })
   return React.useCallback(() => {
     const { componentMetadata, mode } = storeRef.current
-    if (!isInsertMode(mode)) {
-      throw new Error('insert highlight callback was called oustide of insert mode')
+    if (isInsertMode(mode)) {
+      const allPaths = MetadataUtils.getAllPaths(componentMetadata)
+      const insertTargets = allPaths.filter((path) => {
+        return (
+          (insertionSubjectIsJSXElement(mode.subject) ||
+            insertionSubjectIsDragAndDrop(mode.subject)) &&
+          MetadataUtils.targetSupportsChildren(componentMetadata, path)
+        )
+      })
+      return insertTargets
+    } else {
+      return []
     }
-    const allPaths = MetadataUtils.getAllPaths(componentMetadata)
-    const insertTargets = allPaths.filter((path) => {
-      return (
-        (insertionSubjectIsJSXElement(mode.subject) ||
-          insertionSubjectIsDragAndDrop(mode.subject)) &&
-        MetadataUtils.targetSupportsChildren(componentMetadata, path)
-      )
-    })
-    return insertTargets
   }, [storeRef])
 }
 
