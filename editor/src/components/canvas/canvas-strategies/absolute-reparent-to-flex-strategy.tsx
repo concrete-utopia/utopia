@@ -27,71 +27,7 @@ import { updateHighlightedViews } from '../commands/update-highlighted-views-com
 import { CanvasCommand, foldAndApplyCommandsInner } from '../commands/commands'
 import { deleteProperties } from '../commands/delete-properties-command'
 import { updateSelectedViews } from '../commands/update-selected-views-command'
-
-function reparentTargetFromInteractionSession(
-  filteredSelectedElements: Array<ElementPath>,
-  interactionSession: InteractionSession,
-  canvasState: InteractionCanvasState,
-  strategyState: StrategyState,
-): {
-  shouldReparent: boolean
-  newParent: ElementPath | null
-  shouldReorder: boolean
-} {
-  const reparentResult = getReparentTarget(
-    filteredSelectedElements,
-    filteredSelectedElements,
-    strategyState.startingMetadata,
-    [],
-    canvasState.scale,
-    canvasState.canvasOffset,
-    canvasState.projectContents,
-    canvasState.openFile,
-    strategyState.startingAllElementProps,
-  )
-  if (reparentResult.newParent == null) {
-    return {
-      ...reparentResult,
-      shouldReorder: false,
-    }
-  } else {
-    // The target is in a flex container, so we want the parent of the target to reparent
-    // into and reordering should be triggered because the pointer is over an existing flex element.
-    if (
-      MetadataUtils.isParentYogaLayoutedContainerAndElementParticipatesInLayout(
-        reparentResult.newParent,
-        strategyState.startingMetadata,
-      )
-    ) {
-      return {
-        shouldReparent: true,
-        newParent: EP.parentPath(reparentResult.newParent),
-        shouldReorder: true,
-      }
-    } else {
-      const metadata = MetadataUtils.findElementByElementPath(
-        strategyState.startingMetadata,
-        reparentResult.newParent,
-      )
-      // The target is a flex container, so we want to use the target directly.
-      // But in this case no re-ordering should be triggered, the element should just be
-      // added to the end.
-      if (MetadataUtils.isFlexLayoutedContainer(metadata)) {
-        return {
-          shouldReparent: true,
-          newParent: reparentResult.newParent,
-          shouldReorder: false,
-        }
-      } else {
-        return {
-          shouldReparent: false,
-          newParent: null,
-          shouldReorder: false,
-        }
-      }
-    }
-  }
-}
+import { getReparentTargetForFlexElement } from './reparent-strategy-helpers'
 
 const propertiesToRemove: Array<PropertyPath> = [
   PP.create(['style', 'position']),
@@ -160,7 +96,7 @@ export const absoluteReparentToFlexStrategy: CanvasStrategy = {
       interactionSession.activeControl.type === 'BOUNDING_AREA'
     ) {
       const filteredSelectedElements = getDragTargets(canvasState.selectedElements)
-      const reparentResult = reparentTargetFromInteractionSession(
+      const reparentResult = getReparentTargetForFlexElement(
         filteredSelectedElements,
         interactionSession,
         canvasState,
@@ -183,7 +119,7 @@ export const absoluteReparentToFlexStrategy: CanvasStrategy = {
       interactionSession.interactionData.drag != null
     ) {
       const filteredSelectedElements = getDragTargets(canvasState.selectedElements)
-      const reparentResult = reparentTargetFromInteractionSession(
+      const reparentResult = getReparentTargetForFlexElement(
         filteredSelectedElements,
         interactionSession,
         canvasState,

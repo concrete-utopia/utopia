@@ -1,5 +1,6 @@
 import { MetadataUtils } from '../../../core/model/element-metadata-utils'
 import * as EP from '../../../core/shared/element-path'
+import { ElementPath } from '../../../core/shared/project-file-types'
 import { getReparentTarget } from '../canvas-utils'
 import { absoluteMoveStrategy } from './absolute-move-strategy'
 import { InteractionCanvasState, emptyStrategyApplicationResult } from './canvas-strategy-types'
@@ -80,4 +81,69 @@ export function findReparentStrategy(
     }
   }
   return 'do-not-reparent'
+}
+
+export function getReparentTargetForFlexElement(
+  filteredSelectedElements: Array<ElementPath>,
+  interactionSession: InteractionSession,
+  canvasState: InteractionCanvasState,
+  strategyState: StrategyState,
+): {
+  shouldReparent: boolean
+  newParent: ElementPath | null
+  shouldReorder: boolean
+} {
+  const reparentResult = getReparentTarget(
+    filteredSelectedElements,
+    filteredSelectedElements,
+    strategyState.startingMetadata,
+    [],
+    canvasState.scale,
+    canvasState.canvasOffset,
+    canvasState.projectContents,
+    canvasState.openFile,
+    strategyState.startingAllElementProps,
+  )
+  if (reparentResult.newParent == null) {
+    return {
+      ...reparentResult,
+      shouldReorder: false,
+    }
+  } else {
+    // The target is in a flex container, so we want the parent of the target to reparent
+    // into and reordering should be triggered because the pointer is over an existing flex element.
+    if (
+      MetadataUtils.isParentYogaLayoutedContainerAndElementParticipatesInLayout(
+        reparentResult.newParent,
+        strategyState.startingMetadata,
+      )
+    ) {
+      return {
+        shouldReparent: true,
+        newParent: EP.parentPath(reparentResult.newParent),
+        shouldReorder: true,
+      }
+    } else {
+      const metadata = MetadataUtils.findElementByElementPath(
+        strategyState.startingMetadata,
+        reparentResult.newParent,
+      )
+      // The target is a flex container, so we want to use the target directly.
+      // But in this case no re-ordering should be triggered, the element should just be
+      // added to the end.
+      if (MetadataUtils.isFlexLayoutedContainer(metadata)) {
+        return {
+          shouldReparent: true,
+          newParent: reparentResult.newParent,
+          shouldReorder: false,
+        }
+      } else {
+        return {
+          shouldReparent: false,
+          newParent: null,
+          shouldReorder: false,
+        }
+      }
+    }
+  }
 }
