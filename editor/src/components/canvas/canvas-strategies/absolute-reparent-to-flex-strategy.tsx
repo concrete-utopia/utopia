@@ -41,7 +41,7 @@ function reparentTargetFromInteractionSession(
   const reparentResult = getReparentTarget(
     filteredSelectedElements,
     filteredSelectedElements,
-    interactionSession.metadata,
+    strategyState.startingMetadata,
     [],
     canvasState.scale,
     canvasState.canvasOffset,
@@ -59,7 +59,7 @@ function reparentTargetFromInteractionSession(
     if (
       MetadataUtils.isParentYogaLayoutedContainerAndElementParticipatesInLayout(
         reparentResult.newParent,
-        interactionSession.metadata,
+        strategyState.startingMetadata,
       )
     ) {
       return {
@@ -69,7 +69,7 @@ function reparentTargetFromInteractionSession(
       }
     } else {
       const metadata = MetadataUtils.findElementByElementPath(
-        interactionSession.metadata,
+        strategyState.startingMetadata,
         reparentResult.newParent,
       )
       // The target is a flex container.

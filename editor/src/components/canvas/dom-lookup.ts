@@ -246,28 +246,19 @@ export function getAllTargetsAtPointAABB(
     allElementProps,
   )
 
-  const elementsUnderPoint = document.elementsFromPoint(point.x, point.y)
   const validPathsSet =
     validElementPathsForLookup == 'no-filter'
       ? 'no-filter'
       : new Set(
           validElementPathsForLookup.map((path) => EP.toString(EP.makeLastPartOfPathStatic(path))),
         )
-  const elementsFromDOM = stripNulls(
-    elementsUnderPoint.map((element) => {
-      const foundValidElementPath = findFirstParentWithValidElementPath(validPathsSet, element)
-      if (foundValidElementPath != null) {
-        return foundValidElementPath
-      } else {
-        return null
-      }
-    }),
-  )
 
   return getElementsUnderPointFromAABB
     .filter((foundElement) => {
       if (foundElement.canBeFilteredOut) {
-        return elementsFromDOM.some((e) => EP.pathsEqual(e, foundElement.elementPath))
+        return (
+          validPathsSet === 'no-filter' || validPathsSet.has(EP.toString(foundElement.elementPath))
+        )
       } else {
         return true
       }
