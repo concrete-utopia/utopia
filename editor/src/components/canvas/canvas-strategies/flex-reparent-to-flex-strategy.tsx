@@ -4,11 +4,13 @@ import { canvasPoint, offsetPoint, rectContainsPoint } from '../../../core/share
 import { EditorState, EditorStatePatch } from '../../editor/store/editor-state'
 import { CSSCursor } from '../canvas-types'
 import { getReparentTarget } from '../canvas-utils'
-import { foldAndApplyCommandsInner, TransientOrNot } from '../commands/commands'
+import { CanvasCommand, foldAndApplyCommandsInner, TransientOrNot } from '../commands/commands'
+import { reorderElement } from '../commands/reorder-element-command'
 import { reparentElement } from '../commands/reparent-element-command'
 import { setCursorCommand } from '../commands/set-cursor-command'
 import { setElementsToRerenderCommand } from '../commands/set-elements-to-rerender-command'
 import { updateFunctionCommand } from '../commands/update-function-command'
+import { updateHighlightedViews } from '../commands/update-highlighted-views-command'
 import { updateSelectedViews } from '../commands/update-selected-views-command'
 import { ParentBounds } from '../controls/parent-bounds'
 import { ParentOutlines } from '../controls/parent-outlines'
@@ -22,9 +24,9 @@ import {
   StrategyApplicationResult,
 } from './canvas-strategy-types'
 import { getEscapeHatchCommands } from './escape-hatch-strategy'
-import { flexReorderStrategy } from './flex-reorder-strategy'
+import { flexReorderStrategy, getReorderIndex } from './flex-reorder-strategy'
 import { InteractionSession, StrategyState } from './interaction-state'
-import { findReparentStrategy } from './reparent-strategy-helpers'
+import { findReparentStrategy, getReparentTargetForFlexElement } from './reparent-strategy-helpers'
 import {
   getDragTargets,
   getAbsoluteOffsetCommandsForSelectedElement,
@@ -95,84 +97,71 @@ export const flexReparentToFlexStrategy: CanvasStrategy = {
     }
     return 0 // fix fallback return 0
   },
-  apply: (canvasState, interactionState, strategyState) => {
+  apply: (canvasState, interactionSession, strategyState) => {
     if (
-      interactionState.interactionData.type != 'DRAG' ||
-      interactionState.interactionData.drag == null
+      interactionSession.interactionData.type == 'DRAG' &&
+      interactionSession.interactionData.drag != null
     ) {
-      return emptyStrategyApplicationResult
-    }
+      const filteredSelectedElements = getDragTargets(canvasState.selectedElements)
+      const reparentResult = getReparentTargetForFlexElement(
+        filteredSelectedElements,
+        interactionSession,
+        canvasState,
+        strategyState,
+      )
 
-    const { selectedElements, scale, canvasOffset, projectContents, openFile } = canvasState
-    const filteredSelectedElements = getDragTargets(selectedElements)
+      if (
+        reparentResult.shouldReparent &&
+        reparentResult.newParent != null &&
+        filteredSelectedElements.length === 1
+      ) {
+        const target = filteredSelectedElements[0]
+        const newParent = reparentResult.newParent
+        // Reparent the element.
+        const newPath = EP.appendToPath(reparentResult.newParent, EP.toUid(target))
+        const reparentCommand = reparentElement('permanent', target, reparentResult.newParent)
 
-    const reparentResult = getReparentTarget(
-      filteredSelectedElements,
-      filteredSelectedElements,
-      strategyState.startingMetadata,
-      [],
-      scale,
-      canvasOffset,
-      projectContents,
-      openFile,
-      strategyState.startingAllElementProps,
-    )
-    const newParent = reparentResult.newParent
+        const commandsBeforeReorder = [reparentCommand, updateSelectedViews('permanent', [newPath])]
 
-    if (reparentResult.shouldReparent && newParent != null) {
-      const commands = filteredSelectedElements.map((selectedElement) => {
-        const offsetCommands = getAbsoluteOffsetCommandsForSelectedElement(
-          selectedElement,
-          newParent,
-          strategyState,
-          canvasState,
-        )
-
-        const newPath = EP.appendToPath(newParent, EP.toUid(selectedElement))
-        return {
-          newPath: newPath,
-          commands: [...offsetCommands, reparentElement('permanent', selectedElement, newParent)],
-        }
-      })
-
-      const newPaths = commands.map((c) => c.newPath)
-
-      return {
-        commands: [
-          ...commands.flatMap((c) => c.commands),
-          updateSelectedViews('permanent', newPaths),
-          setElementsToRerenderCommand(newPaths),
+        const commandsAfterReorder = [
+          setElementsToRerenderCommand([newPath]),
+          updateHighlightedViews('transient', []),
           setCursorCommand('transient', CSSCursor.Move),
-          updateFunctionCommand('permanent', (editorState, transient): Array<EditorStatePatch> => {
-            return runFlexReorderStrategyForFreshlyReparentedElement(
-              editorState,
-              strategyState,
-              interactionState,
-              transient,
-            )
-          }),
-        ],
-        customState: null,
+        ]
+
+        let commands: Array<CanvasCommand>
+        if (reparentResult.shouldReorder) {
+          // Reorder the newly reparented element into the flex ordering.
+          const pointOnCanvas = offsetPoint(
+            interactionSession.interactionData.dragStart,
+            interactionSession.interactionData.drag,
+          )
+
+          const siblingsOfTarget = MetadataUtils.getChildrenPaths(
+            strategyState.startingMetadata,
+            newParent,
+          )
+
+          const newIndex = getReorderIndex(
+            strategyState.startingMetadata,
+            siblingsOfTarget,
+            pointOnCanvas,
+          )
+          commands = [
+            ...commandsBeforeReorder,
+            reorderElement('permanent', newPath, newIndex),
+            ...commandsAfterReorder,
+          ]
+        } else {
+          commands = [...commandsBeforeReorder, ...commandsAfterReorder]
+        }
+
+        return {
+          commands: commands,
+          customState: strategyState.customStrategyState,
+        }
       }
-    } else {
-      return emptyStrategyApplicationResult
     }
+    return emptyStrategyApplicationResult
   },
-}
-
-function runFlexReorderStrategyForFreshlyReparentedElement(
-  editorState: EditorState,
-  strategyState: StrategyState,
-  interactionState: InteractionSession,
-  transient: TransientOrNot,
-): Array<EditorStatePatch> {
-  const canvasState = pickCanvasStateFromEditorState(editorState)
-
-  const reorderCommands = flexReorderStrategy.apply(
-    canvasState,
-    interactionState,
-    strategyState,
-  ).commands
-
-  return foldAndApplyCommandsInner(editorState, [], [], reorderCommands, transient).statePatches
 }
