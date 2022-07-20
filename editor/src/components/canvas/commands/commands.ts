@@ -37,6 +37,7 @@ import {
 import { DuplicateElement, runDuplicateElement } from './duplicate-element-command'
 import { runUpdateFunctionCommand, UpdateFunctionCommand } from './update-function-command'
 import { runPushIntendedBounds, PushIntendedBounds } from './push-intended-bounds-command'
+import { DeleteProperties, runDeleteProperties } from './delete-properties-command'
 
 export interface CommandFunctionResult {
   editorStatePatches: Array<EditorStatePatch>
@@ -69,6 +70,7 @@ export type CanvasCommand =
   | SetCursorCommand
   | SetElementsToRerenderCommand
   | PushIntendedBounds
+  | DeleteProperties
 
 export const runCanvasCommand = (
   editorState: EditorState,
@@ -110,6 +112,8 @@ export const runCanvasCommand = (
       return runSetElementsToRerender(editorState, command)
     case 'PUSH_INTENDED_BOUNDS':
       return runPushIntendedBounds(editorState, command)
+    case 'DELETE_PROPERTIES':
+      return runDeleteProperties(editorState, command)
     default:
       const _exhaustiveCheck: never = command
       throw new Error(`Unhandled canvas command ${JSON.stringify(command)}`)
