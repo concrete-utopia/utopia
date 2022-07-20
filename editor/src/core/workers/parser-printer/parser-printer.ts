@@ -1638,6 +1638,7 @@ export function parseCode(
     const fixedParseSuccess = fixParseSuccessUIDs(
       oldParseResultForUIDComparison,
       unfixedParseSuccess,
+      alreadyExistingUIDs_MUTABLE,
     )
     return fixedParseSuccess
   }
