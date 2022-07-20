@@ -49,39 +49,16 @@ export const flexReparentToAbsoluteStrategy: CanvasStrategy = {
     },
   ],
   fitness: (canvasState, interactionState, strategyState) => {
-    if (
-      flexReparentToAbsoluteStrategy.isApplicable(
-        canvasState,
-        interactionState,
-        strategyState.startingMetadata,
-        strategyState.startingAllElementProps,
-      ) &&
-      interactionState.interactionData.type === 'DRAG' &&
-      interactionState.activeControl.type === 'BOUNDING_AREA' &&
-      interactionState.interactionData.drag != null
-    ) {
-      const pointOnCanvas = offsetPoint(
-        interactionState.interactionData.dragStart,
-        interactionState.interactionData.drag,
-      )
-
-      const target = canvasState.selectedElements[0]
-
-      const parentElementBounds = MetadataUtils.getParent(
-        strategyState.startingMetadata,
-        target,
-      )?.globalFrame
-
-      const isPointInParentBounds =
-        parentElementBounds != null && rectContainsPoint(parentElementBounds, pointOnCanvas)
-
-      const reparentStrategy = findReparentStrategy(canvasState, interactionState, strategyState)
-
-      if (!isPointInParentBounds && reparentStrategy === 'FLEX_REPARENT_TO_ABSOLUTE') {
-        return 2 // 2 here to beat flexReorderStrategy
-      }
+    // All 4 reparent strategies use the same fitness function findReparentStrategy
+    const reparentStrategy = findReparentStrategy(
+      canvasState,
+      interactionState,
+      strategyState,
+    ).strategy
+    if (reparentStrategy === 'FLEX_REPARENT_TO_ABSOLUTE') {
+      return 3
     }
-    return 0 // fix fallback return 0
+    return 0
   },
   apply: (canvasState, interactionState, strategyState) => {
     if (

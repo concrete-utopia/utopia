@@ -1,36 +1,21 @@
 import { MetadataUtils } from '../../../core/model/element-metadata-utils'
 import * as EP from '../../../core/shared/element-path'
-import { canvasPoint, offsetPoint, rectContainsPoint } from '../../../core/shared/math-utils'
-import { EditorState, EditorStatePatch } from '../../editor/store/editor-state'
+import { offsetPoint } from '../../../core/shared/math-utils'
 import { CSSCursor } from '../canvas-types'
-import { getReparentTarget } from '../canvas-utils'
-import { CanvasCommand, foldAndApplyCommandsInner, TransientOrNot } from '../commands/commands'
+import { CanvasCommand } from '../commands/commands'
 import { reorderElement } from '../commands/reorder-element-command'
 import { reparentElement } from '../commands/reparent-element-command'
 import { setCursorCommand } from '../commands/set-cursor-command'
 import { setElementsToRerenderCommand } from '../commands/set-elements-to-rerender-command'
-import { updateFunctionCommand } from '../commands/update-function-command'
 import { updateHighlightedViews } from '../commands/update-highlighted-views-command'
 import { updateSelectedViews } from '../commands/update-selected-views-command'
 import { ParentBounds } from '../controls/parent-bounds'
 import { ParentOutlines } from '../controls/parent-outlines'
 import { DragOutlineControl } from '../controls/select-mode/drag-outline-control'
-import { absoluteReparentStrategy } from './absolute-reparent-strategy'
-import { pickCanvasStateFromEditorState } from './canvas-strategies'
-import {
-  CanvasStrategy,
-  emptyStrategyApplicationResult,
-  InteractionCanvasState,
-  StrategyApplicationResult,
-} from './canvas-strategy-types'
-import { getEscapeHatchCommands } from './escape-hatch-strategy'
-import { flexReorderStrategy, getReorderIndex } from './flex-reorder-strategy'
-import { InteractionSession, StrategyState } from './interaction-state'
+import { CanvasStrategy, emptyStrategyApplicationResult } from './canvas-strategy-types'
+import { getReorderIndex } from './flex-reorder-strategy'
 import { findReparentStrategy, getReparentTargetForFlexElement } from './reparent-strategy-helpers'
-import {
-  getDragTargets,
-  getAbsoluteOffsetCommandsForSelectedElement,
-} from './shared-absolute-move-strategy-helpers'
+import { getDragTargets } from './shared-absolute-move-strategy-helpers'
 
 export const flexReparentToFlexStrategy: CanvasStrategy = {
   id: 'FLEX_REPARENT_TO_FLEX',
@@ -63,39 +48,16 @@ export const flexReparentToFlexStrategy: CanvasStrategy = {
     },
   ],
   fitness: (canvasState, interactionState, strategyState) => {
-    if (
-      flexReparentToFlexStrategy.isApplicable(
-        canvasState,
-        interactionState,
-        strategyState.startingMetadata,
-        strategyState.startingAllElementProps,
-      ) &&
-      interactionState.interactionData.type === 'DRAG' &&
-      interactionState.activeControl.type === 'BOUNDING_AREA' &&
-      interactionState.interactionData.drag != null
-    ) {
-      const pointOnCanvas = offsetPoint(
-        interactionState.interactionData.dragStart,
-        interactionState.interactionData.drag,
-      )
-
-      const target = canvasState.selectedElements[0]
-
-      const parentElementBounds = MetadataUtils.getParent(
-        strategyState.startingMetadata,
-        target,
-      )?.globalFrame
-
-      const isPointInParentBounds =
-        parentElementBounds != null && rectContainsPoint(parentElementBounds, pointOnCanvas)
-
-      const reparentStrategy = findReparentStrategy(canvasState, interactionState, strategyState)
-
-      if (!isPointInParentBounds && reparentStrategy === 'FLEX_REPARENT_TO_FLEX') {
-        return 2 // 2 here to beat flexReorderStrategy
-      }
+    // All 4 reparent strategies use the same fitness function findReparentStrategy
+    const reparentStrategy = findReparentStrategy(
+      canvasState,
+      interactionState,
+      strategyState,
+    ).strategy
+    if (reparentStrategy === 'FLEX_REPARENT_TO_FLEX') {
+      return 3
     }
-    return 0 // fix fallback return 0
+    return 0
   },
   apply: (canvasState, interactionSession, strategyState) => {
     if (

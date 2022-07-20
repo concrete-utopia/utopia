@@ -27,7 +27,7 @@ import { updateHighlightedViews } from '../commands/update-highlighted-views-com
 import { CanvasCommand, foldAndApplyCommandsInner } from '../commands/commands'
 import { deleteProperties } from '../commands/delete-properties-command'
 import { updateSelectedViews } from '../commands/update-selected-views-command'
-import { getReparentTargetForFlexElement } from './reparent-strategy-helpers'
+import { findReparentStrategy, getReparentTargetForFlexElement } from './reparent-strategy-helpers'
 
 const propertiesToRemove: Array<PropertyPath> = [
   PP.create(['style', 'position']),
@@ -83,29 +83,17 @@ export const absoluteReparentToFlexStrategy: CanvasStrategy = {
   ],
   fitness: function (
     canvasState: InteractionCanvasState,
-    interactionSession: InteractionSession,
+    interactionState: InteractionSession,
     strategyState: StrategyState,
   ): number {
-    if (
-      absoluteReparentToFlexStrategy.isApplicable(
-        canvasState,
-        interactionSession,
-        strategyState.startingMetadata,
-        strategyState.startingAllElementProps,
-      ) &&
-      interactionSession.activeControl.type === 'BOUNDING_AREA'
-    ) {
-      const filteredSelectedElements = getDragTargets(canvasState.selectedElements)
-      const reparentResult = getReparentTargetForFlexElement(
-        filteredSelectedElements,
-        interactionSession,
-        canvasState,
-        strategyState,
-      )
-      if (reparentResult.shouldReparent && reparentResult.newParent) {
-        // Should exceed regular absolute strategy fitnesses.
-        return 5
-      }
+    // All 4 reparent strategies use the same fitness function findReparentStrategy
+    const reparentStrategy = findReparentStrategy(
+      canvasState,
+      interactionState,
+      strategyState,
+    ).strategy
+    if (reparentStrategy === 'ABSOLUTE_REPARENT_TO_FLEX') {
+      return 3
     }
     return 0
   },

@@ -12,19 +12,20 @@ type ReparentStrategy =
   | 'FLEX_REPARENT_TO_FLEX'
   | 'ABSOLUTE_REPARENT_TO_ABSOLUTE'
   | 'ABSOLUTE_REPARENT_TO_FLEX'
-  | 'do-not-reparent'
 
 export function findReparentStrategy(
   canvasState: InteractionCanvasState,
   interactionState: InteractionSession,
   strategyState: StrategyState,
-): ReparentStrategy {
+): { strategy: ReparentStrategy; newParent: ElementPath } | { strategy: 'do-not-reparent' } {
   if (
-    interactionState.interactionData.type !== 'DRAG' ||
+    canvasState.selectedElements.length === 0 ||
     interactionState.activeControl.type !== 'BOUNDING_AREA' ||
-    interactionState.interactionData.drag == null
+    interactionState.interactionData.type !== 'DRAG' ||
+    !interactionState.interactionData.modifiers.cmd ||
+    interactionState.interactionData.drag == null // TODO delete this drag nullcheck? do we start the reparent on mouse down or mouse move beyond threshold?
   ) {
-    return 'do-not-reparent'
+    return { strategy: 'do-not-reparent' }
   }
 
   const { selectedElements, scale, canvasOffset, projectContents, openFile } = canvasState
@@ -43,17 +44,13 @@ export function findReparentStrategy(
     ),
   )
 
-  const reparentResult = getReparentTarget(
+  const reparentResult = getReparentTargetForFlexElement(
     filteredSelectedElements,
-    filteredSelectedElements,
-    startingMetadata,
-    [],
-    scale,
-    canvasOffset,
-    projectContents,
-    openFile,
-    strategyState.startingAllElementProps,
+    interactionState,
+    canvasState,
+    strategyState,
   )
+
   const newParentPath = reparentResult.newParent
   const newParentMetadata = MetadataUtils.findElementByElementPath(startingMetadata, newParentPath)
   const parentProvidesBoundsForAbsoluteChildren =
@@ -64,23 +61,23 @@ export function findReparentStrategy(
 
   if (reparentResult.shouldReparent && newParentPath != null) {
     if (allDraggedElementsAbsolute) {
-      if (parentProvidesBoundsForAbsoluteChildren || parentIsStoryboard) {
-        return 'ABSOLUTE_REPARENT_TO_ABSOLUTE'
-      }
       if (parentIsFlexLayout) {
-        return 'ABSOLUTE_REPARENT_TO_FLEX'
+        return { strategy: 'ABSOLUTE_REPARENT_TO_FLEX', newParent: newParentPath }
+      }
+      if (parentProvidesBoundsForAbsoluteChildren || parentIsStoryboard) {
+        return { strategy: 'ABSOLUTE_REPARENT_TO_ABSOLUTE', newParent: newParentPath }
       }
     }
     if (allDraggedElementsFlex) {
       if (parentIsFlexLayout) {
-        return 'FLEX_REPARENT_TO_FLEX'
+        return { strategy: 'FLEX_REPARENT_TO_FLEX', newParent: newParentPath }
       }
       if (parentProvidesBoundsForAbsoluteChildren || parentIsStoryboard) {
-        return 'FLEX_REPARENT_TO_ABSOLUTE'
+        return { strategy: 'FLEX_REPARENT_TO_ABSOLUTE', newParent: newParentPath }
       }
     }
   }
-  return 'do-not-reparent'
+  return { strategy: 'do-not-reparent' }
 }
 
 export function getReparentTargetForFlexElement(
@@ -124,25 +121,13 @@ export function getReparentTargetForFlexElement(
         shouldReorder: true,
       }
     } else {
-      const metadata = MetadataUtils.findElementByElementPath(
-        strategyState.startingMetadata,
-        reparentResult.newParent,
-      )
-      // The target is a flex container, so we want to use the target directly.
+      // Otherwise we want to use the target directly.
       // But in this case no re-ordering should be triggered, the element should just be
       // added to the end.
-      if (MetadataUtils.isFlexLayoutedContainer(metadata)) {
-        return {
-          shouldReparent: true,
-          newParent: reparentResult.newParent,
-          shouldReorder: false,
-        }
-      } else {
-        return {
-          shouldReparent: false,
-          newParent: null,
-          shouldReorder: false,
-        }
+      return {
+        shouldReparent: true,
+        newParent: reparentResult.newParent,
+        shouldReorder: false,
       }
     }
   }
