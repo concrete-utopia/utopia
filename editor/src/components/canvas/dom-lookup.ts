@@ -255,9 +255,9 @@ export function getAllTargetsAtPointAABB(
         )
   const elementsFromDOM = stripNulls(
     elementsUnderPoint.map((element) => {
-      const foundValidelementPath = findFirstParentWithValidElementPath(validPathsSet, element)
-      if (foundValidelementPath != null) {
-        return foundValidelementPath
+      const foundValidElementPath = findFirstParentWithValidElementPath(validPathsSet, element)
+      if (foundValidElementPath != null) {
+        return foundValidElementPath
       } else {
         return null
       }
@@ -266,10 +266,10 @@ export function getAllTargetsAtPointAABB(
 
   return getElementsUnderPointFromAABB
     .filter((foundElement) => {
-      if (!foundElement.canBeFilteredOut) {
-        return true
-      } else {
+      if (foundElement.canBeFilteredOut) {
         return elementsFromDOM.some((e) => EP.pathsEqual(e, foundElement.elementPath))
+      } else {
+        return true
       }
     })
     .map((e) => e.elementPath)

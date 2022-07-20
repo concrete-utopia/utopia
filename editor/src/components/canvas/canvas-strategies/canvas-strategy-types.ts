@@ -57,6 +57,7 @@ export type CanvasStrategyId =
   | 'KEYBOARD_ABSOLUTE_RESIZE'
   | 'ESCAPE_HATCH_STRATEGY'
   | 'FLEX_REORDER'
+  | 'ABSOLUTE_REPARENT_TO_FLEX'
 
 export interface CanvasStrategy {
   id: CanvasStrategyId // We'd need to do something to guarantee uniqueness here if using this for the commands' reason

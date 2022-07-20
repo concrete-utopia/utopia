@@ -121,7 +121,7 @@ export const flexReorderStrategy: CanvasStrategy = {
   },
 }
 
-function getReorderIndex(
+export function getReorderIndex(
   metadata: ElementInstanceMetadataMap,
   siblings: Array<ElementPath>,
   point: CanvasVector,
