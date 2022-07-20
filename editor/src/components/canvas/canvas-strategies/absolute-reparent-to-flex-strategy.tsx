@@ -55,7 +55,8 @@ function reparentTargetFromInteractionSession(
       shouldReorder: false,
     }
   } else {
-    // The target is in a flex container.
+    // The target is in a flex container, so we want the parent of the target to reparent
+    // into and reordering should be triggered because the pointer is over an existing flex element.
     if (
       MetadataUtils.isParentYogaLayoutedContainerAndElementParticipatesInLayout(
         reparentResult.newParent,
@@ -72,7 +73,9 @@ function reparentTargetFromInteractionSession(
         strategyState.startingMetadata,
         reparentResult.newParent,
       )
-      // The target is a flex container.
+      // The target is a flex container, so we want to use the target directly.
+      // But in this case no re-ordering should be triggered, the element should just be
+      // added to the end.
       if (MetadataUtils.isFlexLayoutedContainer(metadata)) {
         return {
           shouldReparent: true,
