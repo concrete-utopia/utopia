@@ -341,6 +341,10 @@ export function parentPath(path: ElementPath): ElementPath {
   }
 }
 
+export function parentComponentPath(path: ElementPath): ElementPath {
+  return dropLastPathPart(path)
+}
+
 export function isParentComponentOf(maybeParent: ElementPath, maybeChild: ElementPath): boolean {
   return pathsEqual(maybeParent, dropLastPathPart(maybeChild))
 }

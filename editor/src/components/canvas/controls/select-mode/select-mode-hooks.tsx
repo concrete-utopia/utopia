@@ -172,19 +172,36 @@ export function getSelectableViews(
       return !rootElementsToFilter.some((path) => EP.pathsEqual(rootPath, path))
     })
     let siblings: Array<ElementPath> = []
+
     Utils.fastForEach(selectedViews, (view) => {
+      function addChildrenAndUnfurledFocusedComponents(paths: Array<ElementPath>) {
+        Utils.fastForEach(paths, (ancestor) => {
+          const { children, unfurledComponents } =
+            MetadataUtils.getAllChildrenIncludingUnfurledFocusedComponents(
+              ancestor,
+              componentMetadata,
+            )
+
+          siblings.push(ancestor)
+
+          const ancestorChildren = [...children, ...unfurledComponents]
+          fastForEach(ancestorChildren, (child) => {
+            siblings.push(child)
+
+            // Hacky check if this element is also a focused component
+            const rootViewsOfChild = MetadataUtils.getRootViewPaths(componentMetadata, child)
+            if (rootViewsOfChild.length > 0) {
+              addChildrenAndUnfurledFocusedComponents(rootViewsOfChild)
+            }
+          })
+        })
+      }
+
       const allPaths = childrenSelectable
         ? EP.allPathsForLastPart(view)
         : EP.allPathsForLastPart(EP.parentPath(view))
-      Utils.fastForEach(allPaths, (ancestor) => {
-        const { children, unfurledComponents } =
-          MetadataUtils.getAllChildrenIncludingUnfurledFocusedComponents(
-            ancestor,
-            componentMetadata,
-          )
-        const ancestorChildren = [...children, ...unfurledComponents]
-        fastForEach(ancestorChildren, (child) => siblings.push(child))
-      })
+
+      addChildrenAndUnfurledFocusedComponents(allPaths)
     })
 
     const selectableViews = [...dynamicScenesWithFragmentRootViews, ...allRoots, ...siblings]
@@ -193,7 +210,13 @@ export function getSelectableViews(
     candidateViews = uniqueSelectableViews
   }
 
-  return filterHiddenInstances(hiddenInstances, candidateViews)
+  // Super hacky way to filter out focused components and their root elements
+  const rootElementPaths = candidateViews.filter(EP.isRootElementOfInstance)
+  const focusedComponentPaths = candidateViews.map(EP.parentComponentPath)
+  const pathsToFilter = [...rootElementPaths, ...focusedComponentPaths]
+
+  const withoutRootViews = candidateViews.filter((path) => !pathsToFilter.includes(path))
+  return filterHiddenInstances(hiddenInstances, withoutRootViews)
 }
 
 function useFindValidTarget(): (
