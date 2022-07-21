@@ -19,14 +19,30 @@ export const SceneComponent = React.memo(
 
     const { style, ...remainingProps } = props
 
+    const { top, height, left, width } = style!
+    const headerAreaHeight = 29
+
+    const sceneTop: number = (top as number) - headerAreaHeight
+    const sceneHeight: number = (height as number) + headerAreaHeight
+
     const sceneStyle: React.CSSProperties = {
-      position: 'relative',
+      position: 'absolute',
+      top: sceneTop,
+      height: sceneHeight,
+      left: left,
+      width: width,
+    }
+
+    const innerDivStyle: React.CSSProperties = {
+      position: 'absolute',
       backgroundColor: colorTheme.emphasizedBackground.value,
       boxShadow: canvasIsLive
         ? UtopiaStyles.scene.live.boxShadow
         : UtopiaStyles.scene.editing.boxShadow,
       ...UtopiaStyles.backgrounds.checkerboardBackground,
       ...style,
+      top: headerAreaHeight,
+      left: 0,
     }
 
     // TODO right now we don't actually change the invalidated paths, just let the dom-walker know it should walk again
@@ -34,7 +50,7 @@ export const SceneComponent = React.memo(
 
     return (
       <Scene {...remainingProps} style={sceneStyle}>
-        {props.children}
+        <div style={innerDivStyle}>{props.children}</div>
       </Scene>
     )
   },

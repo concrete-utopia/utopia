@@ -146,8 +146,6 @@ const SceneLabel = React.memo<SceneLabelProps>((props) => {
   const highlightColor = colorTheme.fg9.value
   const selectedColor = colorTheme.verySubduedForeground.value
   const backgroundColor = isSelected ? selectedColor : highlightColor
-  const boxShadowWidth = 1.5 / scale
-  const boxShadow = `0px 0px 0px ${boxShadowWidth}px ${backgroundColor}`
 
   if (frame != null) {
     return (
@@ -166,17 +164,17 @@ const SceneLabel = React.memo<SceneLabelProps>((props) => {
             position: 'absolute',
             fontWeight: 600,
             left: frame.x,
-            bottom: -frame.y + offsetY,
+            top: frame.y,
             width: frame.width,
             paddingLeft: offsetX,
-            paddingBottom: paddingY,
+            paddingBottom: 2,
+            paddingTop: 2,
             fontFamily:
               '-apple-system, BlinkMacSystemFont, Helvetica, "Segoe UI", Roboto,  Arial, sans-serif, "Apple Color Emoji", "Segoe UI Emoji", "Segoe UI Symbol"',
             fontSize: scaledFontSize,
             whiteSpace: 'nowrap',
             overflow: 'hidden',
             textOverflow: 'ellipsis',
-            boxShadow: boxShadow,
             borderRadius: borderRadius,
             backgroundColor: backgroundColor,
           }}
