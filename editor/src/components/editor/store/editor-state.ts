@@ -846,6 +846,7 @@ export interface EditorState {
   highlightedViews: Array<ElementPath>
   hiddenInstances: Array<ElementPath>
   warnedInstances: Array<ElementPath>
+  lockedElements: Array<ElementPath>
   mode: Mode
   focusedPanel: EditorPanel | null
   keysPressed: KeysPressed
@@ -911,6 +912,7 @@ export function editorState(
   highlightedViews: Array<ElementPath>,
   hiddenInstances: Array<ElementPath>,
   warnedInstances: Array<ElementPath>,
+  lockedElements: Array<ElementPath>,
   mode: Mode,
   focusedPanel: EditorPanel | null,
   keysPressed: KeysPressed,
@@ -975,6 +977,7 @@ export function editorState(
     highlightedViews: highlightedViews,
     hiddenInstances: hiddenInstances,
     warnedInstances: warnedInstances,
+    lockedElements: lockedElements,
     mode: mode,
     focusedPanel: focusedPanel,
     keysPressed: keysPressed,
@@ -1681,6 +1684,7 @@ export function createEditorState(dispatch: EditorDispatch): EditorState {
     highlightedViews: [],
     hiddenInstances: [],
     warnedInstances: [],
+    lockedElements: [],
     mode: EditorModes.selectMode(),
     focusedPanel: 'canvas',
     keysPressed: {},
@@ -1971,6 +1975,7 @@ export function editorModelFromPersistentModel(
     highlightedViews: [],
     hiddenInstances: persistentModel.hiddenInstances,
     warnedInstances: [],
+    lockedElements: [],
     mode: EditorModes.selectMode(),
     focusedPanel: 'canvas',
     keysPressed: {},

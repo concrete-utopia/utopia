@@ -209,6 +209,7 @@ import type {
   RemoveFromNodeModulesContents,
   RunEscapeHatch,
   UpdateMouseButtonsPressed,
+  ToggleSelectionLock,
 } from '../action-types'
 import {
   EditorModes,
@@ -278,6 +279,12 @@ export function unsetProperty(element: ElementPath, property: PropertyPath): Uns
 export function toggleHidden(targets: Array<ElementPath> = []): ToggleHidden {
   return {
     action: 'TOGGLE_HIDDEN',
+    targets: targets,
+  }
+}
+export function toggleSelectionLock(targets: Array<ElementPath> = []): ToggleSelectionLock {
+  return {
+    action: 'TOGGLE_SELECTION_LOCK',
     targets: targets,
   }
 }

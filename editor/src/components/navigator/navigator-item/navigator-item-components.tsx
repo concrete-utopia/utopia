@@ -7,6 +7,7 @@ import { EditorDispatch } from '../../editor/action-types'
 import * as EditorActions from '../../editor/actions/action-creators'
 import * as EP from '../../../core/shared/element-path'
 import { useColorTheme, Button, Icons, SectionActionSheet } from '../../../uuiui'
+import { useEditorState } from '../../editor/store/store-hook'
 
 interface NavigatorHintProps {
   shouldBeShown: boolean
@@ -92,6 +93,30 @@ export const VisibilityIndicator: React.FunctionComponent<
   )
 })
 
+export const SelectionLockedIndicator: React.FunctionComponent<
+  React.PropsWithChildren<VisiblityIndicatorProps>
+> = React.memo((props) => {
+  const color = props.selected ? 'on-highlight-main' : 'subdued'
+
+  return (
+    <Button
+      onClick={props.onClick}
+      style={{
+        marginRight: 4,
+        height: 18,
+        width: 18,
+        opacity: props.shouldShow ? 1 : 0,
+      }}
+    >
+      {props.visibilityEnabled ? (
+        <Icons.LockOpen color={color} style={{ transform: 'scale(.85)' }} />
+      ) : (
+        <Icons.LockClosed color={color} />
+      )}
+    </Button>
+  )
+})
+
 interface OriginalComponentNameLabelProps {
   selected: boolean
   instanceOriginalComponentName: string | null
@@ -134,11 +159,26 @@ export const NavigatorItemActionSheet: React.FunctionComponent<
   const toggleHidden = React.useCallback(() => {
     dispatch([EditorActions.toggleHidden([elementPath])], 'everyone')
   }, [dispatch, elementPath])
+
+  const toggleSelectable = React.useCallback(() => {
+    dispatch([EditorActions.toggleSelectionLock([elementPath])], 'everyone')
+  }, [dispatch, elementPath])
+  const isLockedElement = useEditorState((store) => {
+    return store.editor.lockedElements.some((path) => EP.pathsEqual(elementPath, path))
+  }, 'NavigatorItemActionSheet isSelectable')
+
   return (
     <SectionActionSheet>
       <OriginalComponentNameLabel
         selected={props.selected}
         instanceOriginalComponentName={props.instanceOriginalComponentName}
+      />
+      <SelectionLockedIndicator
+        key={`selection-locked-indicator-${EP.toVarSafeComponentId(elementPath)}`}
+        shouldShow={props.highlighted || props.selected || isLockedElement}
+        visibilityEnabled={!isLockedElement}
+        selected={props.selected}
+        onClick={toggleSelectable}
       />
       <VisibilityIndicator
         key={`visibility-indicator-${EP.toVarSafeComponentId(elementPath)}`}

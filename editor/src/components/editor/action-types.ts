@@ -175,6 +175,10 @@ export type ToggleHidden = {
   action: 'TOGGLE_HIDDEN'
   targets: Array<ElementPath>
 }
+export type ToggleSelectionLock = {
+  action: 'TOGGLE_SELECTION_LOCK'
+  targets: Array<ElementPath>
+}
 
 export type UnsetProperty = {
   action: 'UNSET_PROPERTY'
@@ -1105,6 +1109,7 @@ export type EditorAction =
   | ForceParseFile
   | RunEscapeHatch
   | SetElementsToRerender
+  | ToggleSelectionLock
 
 export type DispatchPriority =
   | 'everyone'

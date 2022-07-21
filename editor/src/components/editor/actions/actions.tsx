@@ -374,6 +374,7 @@ import {
   RunEscapeHatch,
   SetElementsToRerender,
   UpdateMouseButtonsPressed,
+  ToggleSelectionLock,
 } from '../action-types'
 import { defaultTransparentViewElement, defaultSceneElement } from '../defaults'
 import {
@@ -940,6 +941,7 @@ function restoreEditorState(currentEditor: EditorModel, history: StateHistory): 
     highlightedViews: currentEditor.highlightedViews,
     hiddenInstances: poppedEditor.hiddenInstances,
     warnedInstances: poppedEditor.warnedInstances,
+    lockedElements: poppedEditor.lockedElements,
     mode: EditorModes.selectMode(),
     focusedPanel: currentEditor.focusedPanel,
     keysPressed: {},
@@ -4908,6 +4910,22 @@ export const UPDATE_FNS = {
   },
   SET_ELEMENTS_TO_RERENDER: (action: SetElementsToRerender, editor: EditorModel): EditorModel => {
     return foldAndApplyCommandsSimple(editor, [setElementsToRerenderCommand(action.value)])
+  },
+  TOGGLE_SELECTION_LOCK: (action: ToggleSelectionLock, editor: EditorModel): EditorModel => {
+    const targets = action.targets.length > 0 ? action.targets : editor.selectedViews
+    return targets.reduce((working, target) => {
+      if (working.lockedElements.some((element) => EP.pathsEqual(element, target))) {
+        return update(working, {
+          lockedElements: {
+            $set: working.lockedElements.filter((element) => !EP.pathsEqual(element, target)),
+          },
+        })
+      } else {
+        return update(working, {
+          lockedElements: { $set: working.lockedElements.concat(target) },
+        })
+      }
+    }, editor)
   },
 }
 
