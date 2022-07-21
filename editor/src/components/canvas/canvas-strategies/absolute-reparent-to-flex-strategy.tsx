@@ -38,13 +38,27 @@ function reparentTargetFromInteractionSession(
   newParent: ElementPath | null
   shouldReorder: boolean
 } {
+  if (
+    interactionSession.interactionData.type !== 'DRAG' ||
+    interactionSession.interactionData.drag == null
+  ) {
+    return {
+      shouldReparent: false,
+      newParent: null,
+      shouldReorder: false,
+    }
+  }
+
+  const pointOnCanvas = offsetPoint(
+    interactionSession.interactionData.originalDragStart,
+    interactionSession.interactionData.drag,
+  )
   const reparentResult = getReparentTarget(
     filteredSelectedElements,
     filteredSelectedElements,
     strategyState.startingMetadata,
     [],
-    canvasState.scale,
-    canvasState.canvasOffset,
+    pointOnCanvas,
     canvasState.projectContents,
     canvasState.openFile,
     strategyState.startingAllElementProps,
