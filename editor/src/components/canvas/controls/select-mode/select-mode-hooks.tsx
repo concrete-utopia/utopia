@@ -669,7 +669,7 @@ export function useSelectAndHover(
     'useSelectAndHover hasInteractionSession',
   )
   const selectModeCallbacks = useSelectOrLiveModeSelectAndHover(
-    (modeType === 'select' || modeType === 'select-lite' || modeType === 'live') && !isZoomMode,
+    (modeType === 'select' || modeType === 'live') && !isZoomMode,
     (modeType === 'select' || modeType === 'live') && !isZoomMode,
     cmdPressed,
     setSelectedViewsForCanvasControlsOnly,
@@ -685,8 +685,6 @@ export function useSelectAndHover(
   } else {
     switch (modeType) {
       case 'select':
-        return selectModeCallbacks
-      case 'select-lite':
         return selectModeCallbacks
       case 'insert':
         return insertModeCallbacks

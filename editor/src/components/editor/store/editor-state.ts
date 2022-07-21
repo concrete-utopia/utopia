@@ -1043,7 +1043,7 @@ export function mergeStoredEditorStateIntoEditorState(
     return {
       ...editor,
       selectedViews: storedEditorState.selectedViews,
-      mode: storedEditorState.mode ?? EditorModes.selectLiteMode(),
+      mode: storedEditorState.mode ?? EditorModes.selectMode(),
     }
   }
 }
