@@ -50,7 +50,7 @@ function dragByPixels(
 ): EditorState {
   const interactionSession: InteractionSession = {
     ...createMouseInteractionForTests(
-      null as any, // the strategy does not use this
+      canvasPoint({ x: 0, y: 0 }),
       modifiers,
       null as any, // the strategy does not use this
       vector,

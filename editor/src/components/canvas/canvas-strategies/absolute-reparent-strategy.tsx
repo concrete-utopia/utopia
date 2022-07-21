@@ -18,6 +18,7 @@ import {
   getFileOfElement,
 } from './shared-absolute-move-strategy-helpers'
 import { ifAllowedToReparent } from './reparent-helpers'
+import { offsetPoint } from '../../../core/shared/math-utils'
 
 export const absoluteReparentStrategy: CanvasStrategy = {
   id: 'ABSOLUTE_REPARENT',
@@ -82,7 +83,12 @@ export const absoluteReparentStrategy: CanvasStrategy = {
       return emptyStrategyApplicationResult
     }
 
-    const { selectedElements, scale, canvasOffset, projectContents, openFile } = canvasState
+    const pointOnCanvas = offsetPoint(
+      interactionState.interactionData.dragStart,
+      interactionState.interactionData.drag,
+    )
+
+    const { selectedElements, projectContents, openFile } = canvasState
     const filteredSelectedElements = getDragTargets(selectedElements)
 
     return ifAllowedToReparent(canvasState, filteredSelectedElements, () => {
@@ -91,8 +97,7 @@ export const absoluteReparentStrategy: CanvasStrategy = {
         filteredSelectedElements,
         strategyState.startingMetadata,
         [],
-        scale,
-        canvasOffset,
+        pointOnCanvas,
         projectContents,
         openFile,
         strategyState.startingAllElementProps,
