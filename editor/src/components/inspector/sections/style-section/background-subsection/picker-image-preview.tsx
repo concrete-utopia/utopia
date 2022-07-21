@@ -1,8 +1,16 @@
 import React from 'react'
-import { useColorTheme, FlexRow, Icn, UtopiaTheme, SimpleFlexRow } from '../../../../../uuiui'
+import {
+  useColorTheme,
+  FlexRow,
+  Icn,
+  UtopiaTheme,
+  SimpleFlexRow,
+  UtopiaStyles,
+} from '../../../../../uuiui'
 import { MetadataEditorModalPreviewHeight } from '../../../controls/color-picker'
 import { CSSURLFunctionBackgroundLayer } from '../../../common/css-utils'
-import { checkerboardBackground } from '../../../common/inspector-utils'
+
+const checkerboardBackground = UtopiaStyles.backgrounds.checkerboardBackground
 
 interface PickerImagePreviewProps {
   value: CSSURLFunctionBackgroundLayer
