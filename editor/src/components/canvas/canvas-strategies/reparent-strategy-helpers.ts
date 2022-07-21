@@ -1,5 +1,6 @@
 import { MetadataUtils } from '../../../core/model/element-metadata-utils'
 import * as EP from '../../../core/shared/element-path'
+import { offsetPoint } from '../../../core/shared/math-utils'
 import { ElementPath } from '../../../core/shared/project-file-types'
 import { getReparentTarget } from '../canvas-utils'
 import { absoluteMoveStrategy } from './absolute-move-strategy'
@@ -90,13 +91,28 @@ export function getReparentTargetForFlexElement(
   newParent: ElementPath | null
   shouldReorder: boolean
 } {
+  if (
+    interactionSession.interactionData.type !== 'DRAG' ||
+    interactionSession.interactionData.drag == null
+  ) {
+    return {
+      shouldReparent: false,
+      newParent: null,
+      shouldReorder: false,
+    }
+  }
+
+  const pointOnCanvas = offsetPoint(
+    interactionSession.interactionData.originalDragStart,
+    interactionSession.interactionData.drag,
+  )
+
   const reparentResult = getReparentTarget(
     filteredSelectedElements,
     filteredSelectedElements,
     strategyState.startingMetadata,
     [],
-    canvasState.scale,
-    canvasState.canvasOffset,
+    pointOnCanvas,
     canvasState.projectContents,
     canvasState.openFile,
     strategyState.startingAllElementProps,
