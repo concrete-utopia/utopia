@@ -194,11 +194,11 @@ describe('Flex Reparent To Absolute Strategy', () => {
       'await-first-dom-report',
     )
 
-    const absoluteChild = await renderResult.renderedDOM.findByTestId('absolutechild')
-    const absoluteChildRect = absoluteChild.getBoundingClientRect()
-    const absoluteChildCenter = {
-      x: absoluteChildRect.x + absoluteChildRect.width / 2,
-      y: absoluteChildRect.y + absoluteChildRect.height / 2,
+    const targetAbsoluteParent = await renderResult.renderedDOM.findByTestId('absolutechild')
+    const targetAbsoluteParentRect = targetAbsoluteParent.getBoundingClientRect()
+    const targetAbsoluteParentCenter = {
+      x: targetAbsoluteParentRect.x + targetAbsoluteParentRect.width / 2,
+      y: targetAbsoluteParentRect.y + targetAbsoluteParentRect.height / 2,
     }
     const firstFlexChild = await renderResult.renderedDOM.findByTestId('flexchild1')
     const firstFlexChildRect = firstFlexChild.getBoundingClientRect()
@@ -209,8 +209,8 @@ describe('Flex Reparent To Absolute Strategy', () => {
 
     await renderResult.getDispatchFollowUpActionsFinished()
     const dragDelta = windowPoint({
-      x: absoluteChildCenter.x - firstFlexChildCenter.x,
-      y: absoluteChildCenter.y - firstFlexChildCenter.y,
+      x: targetAbsoluteParentCenter.x - firstFlexChildCenter.x,
+      y: targetAbsoluteParentCenter.y - firstFlexChildCenter.y,
     })
     act(() => dragElement(renderResult, 'flexchild1', dragDelta, cmdModifier))
 
