@@ -4,7 +4,6 @@ import { PropertyControls } from 'utopia-api/core'
 import { getUtopiaID } from '../../../core/model/element-template-utils'
 import {
   JSXElementChild,
-  isJSXFragment,
   isUtopiaJSXComponent,
   UtopiaJSXComponent,
 } from '../../../core/shared/element-template'
@@ -217,42 +216,38 @@ export function createComponentRendererComponent(params: {
     }
 
     function buildComponentRenderResult(element: JSXElementChild): React.ReactElement {
-      if (isJSXFragment(element)) {
-        return <>{element.children.map(buildComponentRenderResult)}</>
+      const ownElementPath = optionalMap(
+        (path) => EP.appendNewElementPath(path, getUtopiaID(element)),
+        instancePath,
+      )
+
+      const renderedCoreElement = renderCoreElement(
+        element,
+        ownElementPath,
+        mutableContext.rootScope,
+        scope,
+        realPassedProps,
+        mutableContext.requireResult,
+        hiddenInstances,
+        mutableContext.fileBlobs,
+        sceneContext.validPaths,
+        realPassedProps['data-uid'],
+        undefined,
+        metadataContext,
+        updateInvalidatedPaths,
+        mutableContext.jsxFactoryFunctionName,
+        codeError,
+        shouldIncludeCanvasRootInTheSpy,
+        params.filePath,
+        imports,
+        code,
+        highlightBounds,
+      )
+
+      if (typeof renderedCoreElement === 'string' || typeof renderedCoreElement === 'number') {
+        return <>{renderedCoreElement}</>
       } else {
-        const ownElementPath = optionalMap(
-          (path) => EP.appendNewElementPath(path, getUtopiaID(element)),
-          instancePath,
-        )
-
-        const renderedCoreElement = renderCoreElement(
-          element,
-          ownElementPath,
-          mutableContext.rootScope,
-          scope,
-          realPassedProps,
-          mutableContext.requireResult,
-          hiddenInstances,
-          mutableContext.fileBlobs,
-          sceneContext.validPaths,
-          realPassedProps['data-uid'],
-          undefined,
-          metadataContext,
-          updateInvalidatedPaths,
-          mutableContext.jsxFactoryFunctionName,
-          codeError,
-          shouldIncludeCanvasRootInTheSpy,
-          params.filePath,
-          imports,
-          code,
-          highlightBounds,
-        )
-
-        if (typeof renderedCoreElement === 'string' || typeof renderedCoreElement === 'number') {
-          return <>{renderedCoreElement}</>
-        } else {
-          return renderedCoreElement
-        }
+        return renderedCoreElement
       }
     }
 

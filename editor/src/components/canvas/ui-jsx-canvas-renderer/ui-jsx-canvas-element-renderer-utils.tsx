@@ -272,7 +272,7 @@ export function renderCoreElement(
       let renderedChildren: Array<React.ReactChild> = []
       fastForEach(element.children, (child) => {
         const childPath = optionalMap(
-          (path) => EP.appendToPath(EP.parentPath(path), getUtopiaID(child)),
+          (path) => EP.appendToPath(path, getUtopiaID(child)),
           elementPath,
         )
         const renderResult = renderCoreElement(
@@ -299,7 +299,11 @@ export function renderCoreElement(
         )
         renderedChildren.push(renderResult)
       })
-      return <>{renderedChildren}</>
+      return (
+        <Fragment data-uid={element.uniqueID} data-path={elementPath}>
+          {renderedChildren}
+        </Fragment>
+      )
     }
     case 'JSX_TEXT_BLOCK': {
       return element.text
@@ -308,6 +312,10 @@ export function renderCoreElement(
       const _exhaustiveCheck: never = element
       throw new Error(`Unhandled type ${JSON.stringify(element)}`)
   }
+}
+
+export var Fragment: React.FunctionComponent<React.PropsWithChildren<any>> = ({ children }) => {
+  return <>{children}</>
 }
 
 function renderJSXElement(
