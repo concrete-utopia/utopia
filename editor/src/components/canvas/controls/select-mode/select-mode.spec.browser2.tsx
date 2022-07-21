@@ -10,10 +10,15 @@ import {
   TestScenePath,
   TestSceneUID,
 } from '../../ui-jsx.test-utils'
-import { setFocusedElement } from '../../../editor/actions/action-creators'
+import {
+  selectComponents,
+  setCursorOverlay,
+  setFocusedElement,
+} from '../../../editor/actions/action-creators'
 import CanvasActions from '../../canvas-actions'
 import { CanvasControlsContainerID } from '../new-canvas-controls'
 import { SceneLabelTestID } from './scene-label'
+import { CSSCursor } from '../../../../uuiui-deps'
 
 function fireSingleClickEvents(target: HTMLElement, clientX: number, clientY: number) {
   fireEvent(
@@ -340,6 +345,43 @@ describe('Select Mode Selection', () => {
     expect(renderResult.getEditorState().editor.selectedViews).toEqual([
       EP.fromString(`${BakedInStoryboardUID}/${TestSceneUID}`),
     ])
+  })
+  it('Doubleclick on a child element selects it, with custom cursors set', async () => {
+    const targetElementUid = 'aaa'
+    const renderResult = await renderTestEditorWithCode(
+      makeTestProjectCodeWithSnippet(`
+        <div data-uid='aaa' data-testid='${targetElementUid}' style={{ position: 'absolute', width: 200, height: 200 }}>
+          <div data-uid='bbb' data-testid='bbb' style={{ width: 100, height: 100 }}></div>
+        </div>
+      `),
+      'await-first-dom-report',
+    )
+
+    const appElementPath = EP.elementPath([[BakedInStoryboardUID, TestSceneUID, TestAppUID]])
+    await renderResult.dispatch(
+      [setCursorOverlay(CSSCursor.Move), selectComponents([appElementPath], false)],
+      true,
+    )
+
+    const areaControl = renderResult.renderedDOM.getByTestId(targetElementUid)
+    const areaControlBounds = areaControl.getBoundingClientRect()
+
+    const canvasControlsLayer = renderResult.renderedDOM.getByTestId(CanvasControlsContainerID)
+
+    await act(async () => {
+      const dispatchDone = renderResult.getDispatchFollowUpActionsFinished()
+      fireDoubleClickEvents(
+        canvasControlsLayer,
+        areaControlBounds.left + 20,
+        areaControlBounds.top + 20,
+      )
+
+      await dispatchDone
+    })
+    await waitForAnimationFrame()
+
+    const selectedViews = renderResult.getEditorState().editor.selectedViews
+    expect(selectedViews).toEqual([EP.appendNewElementPath(appElementPath, [targetElementUid])])
   })
 })
 
