@@ -167,7 +167,7 @@ describe('Strategy Fitness', () => {
 
     expect(canvasStrategy.strategy?.strategy.id).toEqual('ESCAPE_HATCH_STRATEGY')
   })
-  it('fits Escape Hatch Strategy when dragging a flex element without siblings', async () => {
+  xit('fits Escape Hatch Strategy when dragging a flex element without siblings', async () => {
     const targetElement = elementPath([
       ['utopia-storyboard-uid', 'scene-aaa', 'app-entity'],
       ['aaa', 'bbb'],
