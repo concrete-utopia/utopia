@@ -9,7 +9,6 @@ import { useColorTheme } from '../../../../uuiui'
 import { clearHighlightedViews, selectComponents } from '../../../editor/actions/action-creators'
 import { useEditorState } from '../../../editor/store/store-hook'
 import CanvasActions from '../../canvas-actions'
-import { ControlFontSize } from '../../canvas-controls-frame'
 import { boundingArea, createInteractionViaMouse } from '../../canvas-strategies/interaction-state'
 import { windowToCanvasCoordinates } from '../../dom-lookup'
 import { CanvasOffsetWrapper } from '../canvas-offset-wrapper'
@@ -74,16 +73,19 @@ const SceneLabel = React.memo<SceneLabelProps>((props) => {
     'SceneLabel canvasOffset',
   )
   const scale = useEditorState((store) => store.editor.canvas.scale, 'SceneLabel scale')
-  const scaledFontSize = ControlFontSize / scale
-  const offsetY = -(scaledFontSize * 1.5)
-  const offsetX = 3 / scale
+  const baseFontSize = 9
+  const scaledFontSize = baseFontSize / scale
+  const paddingY = scaledFontSize / 9
+  const offsetY = scaledFontSize
+  const offsetX = scaledFontSize
+  const borderRadius = 3 / scale
 
   const isSelected = useEditorState(
     (store) => store.editor.selectedViews.some((view) => EP.pathsEqual(props.target, view)),
     'SceneLabel isSelected',
   )
   const isHighlighted = useEditorState(
-    (store) => store.editor.selectedViews.some((view) => EP.pathsEqual(props.target, view)),
+    (store) => store.editor.highlightedViews.some((view) => EP.pathsEqual(props.target, view)),
     'SceneLabel isHighlighted',
   )
 
@@ -141,6 +143,12 @@ const SceneLabel = React.memo<SceneLabelProps>((props) => {
     [dispatch],
   )
 
+  const highlightColor = colorTheme.fg9.value
+  const selectedColor = colorTheme.verySubduedForeground.value
+  const backgroundColor = isSelected ? selectedColor : highlightColor
+  const boxShadowWidth = 1.5 / scale
+  const boxShadow = `0px 0px 0px ${boxShadowWidth}px ${backgroundColor}`
+
   if (frame != null) {
     return (
       <CanvasOffsetWrapper>
@@ -156,18 +164,21 @@ const SceneLabel = React.memo<SceneLabelProps>((props) => {
             pointerEvents: labelSelectable ? 'initial' : 'none',
             color: colorTheme.subduedForeground.value,
             position: 'absolute',
-            fontWeight: 500,
-            left: frame.x + offsetX,
-            top: frame.y + offsetY,
-            maxWidth: frame.width,
-            paddingBottom: '0px',
+            fontWeight: 600,
+            left: frame.x,
+            bottom: -frame.y + offsetY,
+            width: frame.width,
+            paddingLeft: offsetX,
+            paddingBottom: paddingY,
             fontFamily:
               '-apple-system, BlinkMacSystemFont, Helvetica, "Segoe UI", Roboto,  Arial, sans-serif, "Apple Color Emoji", "Segoe UI Emoji", "Segoe UI Symbol"',
             fontSize: scaledFontSize,
             whiteSpace: 'nowrap',
             overflow: 'hidden',
             textOverflow: 'ellipsis',
-            textDecoration: isSelected || isHighlighted ? 'underline' : undefined,
+            boxShadow: boxShadow,
+            borderRadius: borderRadius,
+            backgroundColor: backgroundColor,
           }}
         >
           {label}

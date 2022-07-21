@@ -472,9 +472,23 @@ const popup: React.CSSProperties = {
   borderRadius: 4,
 }
 
+const checkerboardBackground: Pick<
+  React.CSSProperties,
+  'backgroundImage' | 'backgroundSize' | 'backgroundPosition'
+> = {
+  backgroundImage: `
+    linear-gradient(to bottom left,   #e7e7e7 25%,  transparent 25%),
+    linear-gradient(to bottom left,   transparent 75%,  #e7e7e7 75%),
+    linear-gradient(to bottom right,  #e7e7e7 25%,  transparent 25%),
+    linear-gradient(to bottom right,  transparent 75%,  #e7e7e7 75%)`,
+  backgroundSize: '12px 12px, 12px 12px, 12px 12px, 12px 12px',
+  backgroundPosition: '-9px 0px, -3px -6px, 3px 6px, -3px 0',
+}
+
 export const UtopiaStyles = {
   backgrounds: {
     ...backgroundURLs,
+    checkerboardBackground,
   },
   noticeStyles,
   textNoticeStyles,
