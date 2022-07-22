@@ -1277,6 +1277,11 @@ export const MetadataUtils = {
       return this.findNearestAncestorFlexDirectionChange(elementMap, parentPath)
     }
   },
+  isComponent(path: ElementPath, metadata: ElementInstanceMetadataMap): boolean {
+    const element = MetadataUtils.findElementByElementPath(metadata, path)
+    const elementName = MetadataUtils.getJSXElementName(maybeEitherToMaybe(element?.element))
+    return elementName != null && !isIntrinsicElement(elementName)
+  },
   isFocusableComponentFromMetadata(element: ElementInstanceMetadata | null): boolean {
     const elementName = MetadataUtils.getJSXElementName(maybeEitherToMaybe(element?.element))
     if (element?.isEmotionOrStyledComponent) {

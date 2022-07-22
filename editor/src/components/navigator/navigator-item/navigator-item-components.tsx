@@ -9,6 +9,8 @@ import * as EP from '../../../core/shared/element-path'
 import * as PP from '../../../core/shared/property-path'
 import { useColorTheme, Button, Icons, SectionActionSheet } from '../../../uuiui'
 import { emptyComments, jsxAttributeValue } from '../../../core/shared/element-template'
+import { useEditorState } from '../../editor/store/store-hook'
+import { MetadataUtils } from '../../../core/model/element-metadata-utils'
 
 interface NavigatorHintProps {
   shouldBeShown: boolean
@@ -95,6 +97,7 @@ export const VisibilityIndicator: React.FunctionComponent<
 })
 
 interface FocusIndicatorProps {
+  canBeFocused: boolean
   explicitlyFocused: boolean | undefined
   selected: boolean
   onClick: () => void
@@ -102,6 +105,7 @@ interface FocusIndicatorProps {
 
 export const FocusIndicator: React.FunctionComponent<React.PropsWithChildren<FocusIndicatorProps>> =
   React.memo((props) => {
+    const shouldShow = props.canBeFocused || props.explicitlyFocused != undefined
     const color = props.selected ? 'on-highlight-main' : 'secondary'
 
     return (
@@ -111,6 +115,7 @@ export const FocusIndicator: React.FunctionComponent<React.PropsWithChildren<Foc
           marginRight: 4,
           height: 18,
           width: 18,
+          opacity: shouldShow ? 1 : 0,
         }}
       >
         {props.explicitlyFocused ? (
@@ -183,6 +188,13 @@ export const NavigatorItemActionSheet: React.FunctionComponent<
     )
   }, [dispatch, props.explicitlyFocused, elementPath])
 
+  const canBeFocused = useEditorState(
+    (store) =>
+      !MetadataUtils.isProbablyScene(store.editor.jsxMetadata, elementPath) &&
+      MetadataUtils.isComponent(elementPath, store.editor.jsxMetadata),
+    'NavigatorItemActionSheet canBeFocused',
+  )
+
   return (
     <SectionActionSheet>
       <OriginalComponentNameLabel
@@ -198,6 +210,7 @@ export const NavigatorItemActionSheet: React.FunctionComponent<
       />
       <FocusIndicator
         key={`focus-indicator-${EP.toVarSafeComponentId(elementPath)}`}
+        canBeFocused={canBeFocused}
         explicitlyFocused={props.explicitlyFocused}
         selected={props.selected}
         onClick={toggleFocused}
