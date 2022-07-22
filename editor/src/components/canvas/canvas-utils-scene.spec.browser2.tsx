@@ -198,6 +198,8 @@ describe('moving a scene/rootview on the canvas', () => {
       await dispatchDone
     })
 
+    await wait(5)
+
     await act(async () => {
       const dispatchDone = renderResult.getDispatchFollowUpActionsFinished()
       fireEvent(
