@@ -1,68 +1,34 @@
-import * as EP from '../../../core/shared/element-path'
-import * as PP from '../../../core/shared/property-path'
-import { AllElementProps } from '../../editor/store/editor-state'
-import { ElementInstanceMetadataMap } from '../../../core/shared/element-template'
-import {
-  CanvasStrategy,
-  emptyStrategyApplicationResult,
-  InteractionCanvasState,
-  StrategyApplicationResult,
-} from './canvas-strategy-types'
-import { InteractionSession, StrategyState } from './interaction-state'
-import { ParentBounds } from '../controls/parent-bounds'
-import { ParentOutlines } from '../controls/parent-outlines'
-import { DragOutlineControl } from '../controls/select-mode/drag-outline-control'
 import { MetadataUtils } from '../../../core/model/element-metadata-utils'
-import { getDragTargets } from './shared-absolute-move-strategy-helpers'
-import { getReparentTarget } from '../canvas-utils'
-import { ElementPath, PropertyPath } from '../../../core/shared/project-file-types'
-import { reparentElement } from '../commands/reparent-element-command'
-import { getReorderIndex } from './flex-reorder-strategy'
+import * as EP from '../../../core/shared/element-path'
 import { offsetPoint } from '../../../core/shared/math-utils'
-import { reorderElement } from '../commands/reorder-element-command'
 import { CSSCursor } from '../canvas-types'
+import { CanvasCommand } from '../commands/commands'
+import { reorderElement } from '../commands/reorder-element-command'
+import { reparentElement } from '../commands/reparent-element-command'
 import { setCursorCommand } from '../commands/set-cursor-command'
 import { setElementsToRerenderCommand } from '../commands/set-elements-to-rerender-command'
 import { updateHighlightedViews } from '../commands/update-highlighted-views-command'
-import { CanvasCommand, foldAndApplyCommandsInner } from '../commands/commands'
-import { deleteProperties } from '../commands/delete-properties-command'
 import { updateSelectedViews } from '../commands/update-selected-views-command'
+import { ParentBounds } from '../controls/parent-bounds'
+import { ParentOutlines } from '../controls/parent-outlines'
+import { DragOutlineControl } from '../controls/select-mode/drag-outline-control'
+import { CanvasStrategy, emptyStrategyApplicationResult } from './canvas-strategy-types'
+import { getReorderIndex } from './flex-reorder-strategy'
 import { findReparentStrategy, getReparentTargetForFlexElement } from './reparent-strategy-helpers'
+import { getDragTargets } from './shared-absolute-move-strategy-helpers'
 
-const propertiesToRemove: Array<PropertyPath> = [
-  PP.create(['style', 'position']),
-  PP.create(['style', 'left']),
-  PP.create(['style', 'top']),
-  PP.create(['style', 'right']),
-  PP.create(['style', 'bottom']),
-]
-
-export const absoluteReparentToFlexStrategy: CanvasStrategy = {
-  id: 'ABSOLUTE_REPARENT_TO_FLEX',
-  name: 'Absolute Reparent to Flex',
-  isApplicable: function (
-    canvasState: InteractionCanvasState,
-    interactionSession: InteractionSession | null,
-    metadata: ElementInstanceMetadataMap,
-    allElementProps: AllElementProps,
-  ): boolean {
-    if (
-      canvasState.selectedElements.length === 1 &&
-      interactionSession != null &&
-      interactionSession.interactionData.type === 'DRAG' &&
-      interactionSession.interactionData.modifiers.cmd
-    ) {
-      const filteredSelectedElements = getDragTargets(canvasState.selectedElements)
-      if (filteredSelectedElements.length === 1) {
-        const elementMetadata = MetadataUtils.findElementByElementPath(
-          metadata,
-          filteredSelectedElements[0],
-        )
-
-        return elementMetadata?.specialSizeMeasurements.position === 'absolute'
-      }
+export const flexReparentToFlexStrategy: CanvasStrategy = {
+  id: 'FLEX_REPARENT_TO_FLEX',
+  name: 'Flex Reparent to Flex',
+  isApplicable: (canvasState, _interactionState, metadata) => {
+    if (canvasState.selectedElements.length == 1) {
+      return MetadataUtils.isParentYogaLayoutedContainerAndElementParticipatesInLayout(
+        canvasState.selectedElements[0],
+        metadata,
+      )
+    } else {
+      return false
     }
-    return false
   },
   controlsToRender: [
     {
@@ -81,27 +47,19 @@ export const absoluteReparentToFlexStrategy: CanvasStrategy = {
       show: 'visible-only-while-active',
     },
   ],
-  fitness: function (
-    canvasState: InteractionCanvasState,
-    interactionState: InteractionSession,
-    strategyState: StrategyState,
-  ): number {
+  fitness: (canvasState, interactionState, strategyState) => {
     // All 4 reparent strategies use the same fitness function findReparentStrategy
     const reparentStrategy = findReparentStrategy(
       canvasState,
       interactionState,
       strategyState,
     ).strategy
-    if (reparentStrategy === 'ABSOLUTE_REPARENT_TO_FLEX') {
+    if (reparentStrategy === 'FLEX_REPARENT_TO_FLEX') {
       return 3
     }
     return 0
   },
-  apply: function (
-    canvasState: InteractionCanvasState,
-    interactionSession: InteractionSession,
-    strategyState: StrategyState,
-  ): StrategyApplicationResult {
+  apply: (canvasState, interactionSession, strategyState) => {
     if (
       interactionSession.interactionData.type == 'DRAG' &&
       interactionSession.interactionData.drag != null
@@ -125,13 +83,9 @@ export const absoluteReparentToFlexStrategy: CanvasStrategy = {
         const newPath = EP.appendToPath(reparentResult.newParent, EP.toUid(target))
         const reparentCommand = reparentElement('permanent', target, reparentResult.newParent)
 
-        // Strip the `position`, positional and dimension properties.
-        const commandToRemoveProperties = deleteProperties('permanent', newPath, propertiesToRemove)
-
         const commandsBeforeReorder = [reparentCommand, updateSelectedViews('permanent', [newPath])]
 
         const commandsAfterReorder = [
-          commandToRemoveProperties,
           setElementsToRerenderCommand([newPath]),
           updateHighlightedViews('transient', []),
           setCursorCommand('transient', CSSCursor.Move),
