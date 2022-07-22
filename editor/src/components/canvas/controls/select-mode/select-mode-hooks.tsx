@@ -592,7 +592,7 @@ function useSelectOrLiveModeSelectAndHover(
 
       // Skip all of this handling if 'space' is pressed or a mousemove happened in an interaction
       if (!(isSpacePressed || hasInteractionSessionWithMouseMoved)) {
-        const doubleClick = event.type === 'mousedown' && event.detail % 2 === 0
+        const doubleClick = event.type === 'mousedown' && event.detail > 0 && event.detail % 2 === 0
         const selectableViews = getSelectableViewsForSelectMode(event.metaKey, doubleClick)
         const preferAlreadySelected = getPreferredSelectionForEvent(event.type, doubleClick)
         const foundTarget = findValidTarget(
