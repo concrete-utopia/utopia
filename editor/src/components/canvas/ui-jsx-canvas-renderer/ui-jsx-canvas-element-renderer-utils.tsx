@@ -383,8 +383,8 @@ function renderJSXElement(
     elementFromImport === elementInScope // Ensures this is not a user defined component with the same name.
   const elementOrScene = elementIsScene ? SceneComponent : elementFromScopeOrImport
 
-  const FinalElement =
-    elementIsIntrinsic || elementIsFragment ? jsx.name.baseVariable : elementOrScene
+  const FinalElement = elementIsIntrinsic ? jsx.name.baseVariable : elementOrScene
+  const FinalElementOrFragment = elementIsFragment ? Fragment : FinalElement
   const elementPropsWithScenePath = isComponentRendererComponent(FinalElement)
     ? { ...elementProps, [UTOPIA_INSTANCE_PATH]: elementPath }
     : elementProps
@@ -404,7 +404,7 @@ function renderJSXElement(
     [UTOPIA_PATH_KEY]: optionalMap(EP.toString, elementPath),
   }
 
-  if (FinalElement == null) {
+  if (FinalElementOrFragment == null) {
     throw canvasMissingJSXElementError(jsxFactoryFunctionName, code, jsx, filePath, highlightBounds)
   }
 
@@ -416,7 +416,7 @@ function renderJSXElement(
       metadataContext,
       updateInvalidatedPaths,
       childrenElements,
-      FinalElement,
+      FinalElementOrFragment,
       inScope,
       jsxFactoryFunctionName,
       shouldIncludeCanvasRootInTheSpy,
@@ -426,7 +426,7 @@ function renderJSXElement(
     return renderComponentUsingJsxFactoryFunction(
       inScope,
       jsxFactoryFunctionName,
-      FinalElement,
+      FinalElementOrFragment,
       finalPropsIcludingElementPath,
       ...childrenElements,
     )
