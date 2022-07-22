@@ -8,6 +8,7 @@ import {
   emptyComputedStyle,
   emptySpecialSizeMeasurements,
   JSXElement,
+  JSXFragment,
 } from '../../../core/shared/element-template'
 import { ElementPath, Imports } from '../../../core/shared/project-file-types'
 import { makeCanvasElementPropsSafe } from '../../../utils/canvas-react-utils'
@@ -18,7 +19,7 @@ import { importInfoFromImportDetails } from '../../../core/model/project-file-ut
 import { fastForEach } from '../../../core/shared/utils'
 
 export function buildSpyWrappedElement(
-  jsx: JSXElement,
+  jsx: JSXElement | JSXFragment,
   finalProps: any,
   elementPath: ElementPath,
   metadataContext: UiJsxCanvasContextData,

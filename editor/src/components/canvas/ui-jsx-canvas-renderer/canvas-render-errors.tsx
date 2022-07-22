@@ -1,5 +1,5 @@
 import { FancyError } from '../../../core/shared/code-exec-utils'
-import { JSXElement } from '../../../core/shared/element-template'
+import { JSXElement, JSXFragment } from '../../../core/shared/element-template'
 import { HighlightBoundsForUids } from '../../../core/shared/project-file-types'
 import { getUtopiaIDFromJSXElement } from '../../../core/shared/uid-utils'
 import StackFrame, { ScriptLine } from '../../../third-party/react-error-overlay/utils/stack-frame'
@@ -7,7 +7,7 @@ import StackFrame, { ScriptLine } from '../../../third-party/react-error-overlay
 export function canvasMissingJSXElementError(
   factoryFunctionName: string | null,
   sourceCode: string,
-  jsxElement: JSXElement,
+  jsxElement: JSXElement | JSXFragment,
   filePath: string,
   highlightBounds: HighlightBoundsForUids | null,
 ): FancyError {

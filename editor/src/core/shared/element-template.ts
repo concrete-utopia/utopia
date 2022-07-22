@@ -25,6 +25,7 @@ import { firstLetterIsLowerCase } from './string-utils'
 import { intrinsicHTMLElementNamesAsStrings } from './dom-utils'
 import type { MapLike } from 'typescript'
 import { forceNotNull } from './optional-utils'
+import { JSXElementNameKeepDeepEqualityCall } from '../../utils/deep-equality-instances'
 
 export interface ParsedComments {
   leadingComments: Array<Comment>
@@ -1027,16 +1028,18 @@ export function jsxTextBlock(text: string): JSXTextBlock {
 
 export interface JSXFragment {
   type: 'JSX_FRAGMENT'
+  uid: string
+  name: JSXElementName
   children: JSXElementChildren
-  uniqueID: string
   longForm: boolean // When true, <React.Fragment> instead of <>.
 }
 
 export function jsxFragment(children: JSXElementChildren, longForm: boolean): JSXFragment {
   return {
     type: 'JSX_FRAGMENT',
+    uid: UUID(),
+    name: jsxElementName('Fragment', []),
     children: children,
-    uniqueID: UUID(),
     longForm: longForm,
   }
 }

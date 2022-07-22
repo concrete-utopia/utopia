@@ -169,7 +169,7 @@ export function getUtopiaID(element: JSXElementChild | ElementInstanceMetadata):
   } else if (isElementInstanceMetadata(element)) {
     return EP.toUid(element.elementPath)
   } else if (isJSXFragment(element)) {
-    return element.uniqueID
+    return element.uid
   }
   throw new Error(`Cannot recognize element ${JSON.stringify(element)}`)
 }

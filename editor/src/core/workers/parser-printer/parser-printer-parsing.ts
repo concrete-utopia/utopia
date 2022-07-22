@@ -1853,6 +1853,7 @@ export function parseOutJSXElements(
     const parsedChildren = mapEither((children) => {
       return children.map((c) => c.value)
     }, innerParse(nodeArrayToArray(fragment.children)))
+
     // Create the containing fragment.
     return mapEither((children) => {
       return successfullyParsedElement(sourceFile, fragment, jsxFragment(children, false))

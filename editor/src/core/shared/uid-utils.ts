@@ -13,6 +13,7 @@ import {
   TopLevelElement,
   jsxElement,
   emptyComments,
+  JSXFragment,
 } from './element-template'
 import { shallowEqual } from './equality-utils'
 import {
@@ -145,7 +146,7 @@ export function parseUID(attributes: JSXAttributes): Either<string, string> {
   }, uidValue)
 }
 
-export function getUtopiaIDFromJSXElement(element: JSXElement): string {
+export function getUtopiaIDFromJSXElement(element: JSXElement | JSXFragment): string {
   return element.uid
 }
 

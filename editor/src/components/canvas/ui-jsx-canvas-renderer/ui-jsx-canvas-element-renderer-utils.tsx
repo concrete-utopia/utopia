@@ -20,6 +20,8 @@ import {
   JSXArbitraryBlock,
   getJSXAttribute,
   emptyComments,
+  JSXFragment,
+  isJSXFragment,
 } from '../../../core/shared/element-template'
 import {
   getAccumulatedElementsWithin,
@@ -269,40 +271,29 @@ export function renderCoreElement(
       return runJSXArbitraryBlock(filePath, requireResult, element, blockScope)
     }
     case 'JSX_FRAGMENT': {
-      let renderedChildren: Array<React.ReactChild> = []
-      fastForEach(element.children, (child) => {
-        const childPath = optionalMap(
-          (path) => EP.appendToPath(path, getUtopiaID(child)),
-          elementPath,
-        )
-        const renderResult = renderCoreElement(
-          child,
-          childPath,
-          rootScope,
-          inScope,
-          parentComponentInputProps,
-          requireResult,
-          hiddenInstances,
-          fileBlobs,
-          validPaths,
-          uid,
-          reactChildren,
-          metadataContext,
-          updateInvalidatedPaths,
-          jsxFactoryFunctionName,
-          codeError,
-          shouldIncludeCanvasRootInTheSpy,
-          filePath,
-          imports,
-          code,
-          highlightBounds,
-        )
-        renderedChildren.push(renderResult)
-      })
-      return (
-        <Fragment data-uid={element.uniqueID} data-path={elementPath}>
-          {renderedChildren}
-        </Fragment>
+      const key = optionalMap(EP.toString, elementPath) ?? element.uid
+
+      return renderJSXElement(
+        key,
+        element,
+        elementPath,
+        parentComponentInputProps,
+        requireResult,
+        rootScope,
+        inScope,
+        hiddenInstances,
+        fileBlobs,
+        validPaths,
+        [],
+        metadataContext,
+        updateInvalidatedPaths,
+        jsxFactoryFunctionName,
+        null,
+        shouldIncludeCanvasRootInTheSpy,
+        filePath,
+        imports,
+        code,
+        highlightBounds,
       )
     }
     case 'JSX_TEXT_BLOCK': {
@@ -320,7 +311,7 @@ export var Fragment: React.FunctionComponent<React.PropsWithChildren<any>> = ({ 
 
 function renderJSXElement(
   key: string,
-  jsx: JSXElement,
+  jsx: JSXElement | JSXFragment,
   elementPath: ElementPath | null,
   parentComponentInputProps: MapLike<any>,
   requireResult: MapLike<any>,
@@ -374,6 +365,7 @@ function renderJSXElement(
 
   const childrenElements = jsx.children.map(createChildrenElement)
   const elementIsIntrinsic = isIntrinsicElement(jsx.name)
+  const elementIsFragment = isJSXFragment(jsx)
   const elementIsBaseHTML = elementIsIntrinsic && isIntrinsicHTMLElement(jsx.name)
   const elementInScope = elementIsIntrinsic ? null : getElementFromScope(jsx, inScope)
   const elementFromImport = elementIsIntrinsic ? null : getElementFromScope(jsx, requireResult)
@@ -391,7 +383,8 @@ function renderJSXElement(
     elementFromImport === elementInScope // Ensures this is not a user defined component with the same name.
   const elementOrScene = elementIsScene ? SceneComponent : elementFromScopeOrImport
 
-  const FinalElement = elementIsIntrinsic ? jsx.name.baseVariable : elementOrScene
+  const FinalElement =
+    elementIsIntrinsic || elementIsFragment ? jsx.name.baseVariable : elementOrScene
   const elementPropsWithScenePath = isComponentRendererComponent(FinalElement)
     ? { ...elementProps, [UTOPIA_INSTANCE_PATH]: elementPath }
     : elementProps
@@ -480,7 +473,10 @@ function runJSXArbitraryBlock(
   return resolveParamsAndRunJsCode(filePath, block, requireResult, currentScope)
 }
 
-function getElementFromScope(jsxElementToLookup: JSXElement, scope: MapLike<any> | null): any {
+function getElementFromScope(
+  jsxElementToLookup: JSXElement | JSXFragment,
+  scope: MapLike<any> | null,
+): any {
   if (scope == null) {
     return undefined
   } else {
