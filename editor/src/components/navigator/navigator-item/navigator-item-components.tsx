@@ -6,7 +6,9 @@ import { ElementPath } from '../../../core/shared/project-file-types'
 import { EditorDispatch } from '../../editor/action-types'
 import * as EditorActions from '../../editor/actions/action-creators'
 import * as EP from '../../../core/shared/element-path'
+import * as PP from '../../../core/shared/property-path'
 import { useColorTheme, Button, Icons, SectionActionSheet } from '../../../uuiui'
+import { emptyComments, jsxAttributeValue } from '../../../core/shared/element-template'
 
 interface NavigatorHintProps {
   shouldBeShown: boolean
@@ -92,6 +94,36 @@ export const VisibilityIndicator: React.FunctionComponent<
   )
 })
 
+interface FocusIndicatorProps {
+  explicitlyFocused: boolean | undefined
+  selected: boolean
+  onClick: () => void
+}
+
+export const FocusIndicator: React.FunctionComponent<React.PropsWithChildren<FocusIndicatorProps>> =
+  React.memo((props) => {
+    const color = props.selected ? 'on-highlight-main' : 'secondary'
+
+    return (
+      <Button
+        onClick={props.onClick}
+        style={{
+          marginRight: 4,
+          height: 18,
+          width: 18,
+        }}
+      >
+        {props.explicitlyFocused ? (
+          <Icons.EditPencil color={color} />
+        ) : props.explicitlyFocused == undefined ? (
+          <Icons.Smiangle color={color} style={{ transform: 'scale(.85)' }} />
+        ) : (
+          <Icons.Cross color={color} />
+        )}
+      </Button>
+    )
+  })
+
 interface OriginalComponentNameLabelProps {
   selected: boolean
   instanceOriginalComponentName: string | null
@@ -122,6 +154,7 @@ interface NavigatorItemActionSheetProps {
   highlighted: boolean
   elementPath: ElementPath
   isVisibleOnCanvas: boolean // TODO FIXME bad name, also, use state
+  explicitlyFocused: boolean | undefined
   instanceOriginalComponentName: string | null
   dispatch: EditorDispatch
 }
@@ -134,6 +167,22 @@ export const NavigatorItemActionSheet: React.FunctionComponent<
   const toggleHidden = React.useCallback(() => {
     dispatch([EditorActions.toggleHidden([elementPath])], 'everyone')
   }, [dispatch, elementPath])
+
+  const toggleFocused = React.useCallback(() => {
+    const nextValue =
+      props.explicitlyFocused == undefined ? true : props.explicitlyFocused ? false : undefined
+    dispatch(
+      [
+        EditorActions.setProp_UNSAFE(
+          elementPath,
+          PP.create(['data-focused']),
+          jsxAttributeValue(nextValue, emptyComments),
+        ),
+      ],
+      'everyone',
+    )
+  }, [dispatch, props.explicitlyFocused, elementPath])
+
   return (
     <SectionActionSheet>
       <OriginalComponentNameLabel
@@ -146,6 +195,12 @@ export const NavigatorItemActionSheet: React.FunctionComponent<
         visibilityEnabled={props.isVisibleOnCanvas}
         selected={props.selected}
         onClick={toggleHidden}
+      />
+      <FocusIndicator
+        key={`focus-indicator-${EP.toVarSafeComponentId(elementPath)}`}
+        explicitlyFocused={props.explicitlyFocused}
+        selected={props.selected}
+        onClick={toggleFocused}
       />
     </SectionActionSheet>
   )

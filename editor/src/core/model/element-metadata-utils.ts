@@ -60,6 +60,7 @@ import {
   ElementInstanceMetadataMap,
   isIntrinsicHTMLElement,
   getJSXAttribute,
+  isJSXAttributeValue,
 } from '../shared/element-template'
 import {
   getModifiableJSXAttributeAtPath,
@@ -1299,6 +1300,30 @@ export const MetadataUtils = {
   isFocusableComponent(path: ElementPath, metadata: ElementInstanceMetadataMap): boolean {
     const element = MetadataUtils.findElementByElementPath(metadata, path)
     return MetadataUtils.isFocusableComponentFromMetadata(element)
+  },
+  getExplicitFocusPropValue(
+    path: ElementPath,
+    metadata: ElementInstanceMetadataMap,
+  ): boolean | undefined {
+    const elementMetadata = MetadataUtils.findElementByElementPath(metadata, path)
+    if (elementMetadata == null) {
+      return undefined
+    } else {
+      return foldEither(
+        () => undefined,
+        (element) => {
+          if (isJSXElement(element)) {
+            const focusedProp = getJSXAttribute(element.props, 'data-focused')
+            if (focusedProp != null && isJSXAttributeValue(focusedProp)) {
+              return focusedProp.value
+            }
+          }
+
+          return undefined
+        },
+        elementMetadata.element,
+      )
+    }
   },
   isFocusableLeafComponent(path: ElementPath, metadata: ElementInstanceMetadataMap): boolean {
     return (

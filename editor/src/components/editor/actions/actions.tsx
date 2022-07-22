@@ -4431,28 +4431,28 @@ export const UPDATE_FNS = {
     }
   },
   SET_FOCUSED_ELEMENT: (action: SetFocusedElement, editor: EditorModel): EditorModel => {
-    let shouldApplyChange: boolean = false
-    if (action.focusedElementPath == null) {
-      shouldApplyChange = true
-    } else if (MetadataUtils.isFocusableComponent(action.focusedElementPath, editor.jsxMetadata)) {
-      shouldApplyChange = true
-    }
-    if (EP.pathsEqual(editor.focusedElementPath, action.focusedElementPath)) {
-      shouldApplyChange = false
-    }
+    // let shouldApplyChange: boolean = false
+    // if (action.focusedElementPath == null) {
+    //   shouldApplyChange = true
+    // } else if (MetadataUtils.isFocusableComponent(action.focusedElementPath, editor.jsxMetadata)) {
+    //   shouldApplyChange = true
+    // }
+    // if (EP.pathsEqual(editor.focusedElementPath, action.focusedElementPath)) {
+    //   shouldApplyChange = false
+    // }
 
-    if (shouldApplyChange) {
-      return {
-        ...editor,
-        focusedElementPath: action.focusedElementPath,
-        canvas: {
-          ...editor.canvas,
-          domWalkerInvalidateCount: editor.canvas.domWalkerInvalidateCount + 1,
-        },
-      }
-    } else {
-      return editor
-    }
+    // if (shouldApplyChange) {
+    //   return {
+    //     ...editor,
+    //     focusedElementPath: action.focusedElementPath,
+    //     canvas: {
+    //       ...editor.canvas,
+    //       domWalkerInvalidateCount: editor.canvas.domWalkerInvalidateCount + 1,
+    //     },
+    //   }
+    // } else {
+    return editor
+    // }
   },
   SCROLL_TO_ELEMENT: (
     action: ScrollToElement,

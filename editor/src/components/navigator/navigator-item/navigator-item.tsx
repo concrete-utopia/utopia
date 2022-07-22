@@ -268,6 +268,10 @@ export const NavigatorItem: React.FunctionComponent<
     return MetadataUtils.isFocusableComponent(elementPath, store.editor.jsxMetadata)
   }, 'NavigatorItem isFocusable')
 
+  const explicitlyFocused = useEditorState((store) => {
+    return MetadataUtils.getExplicitFocusPropValue(elementPath, store.editor.jsxMetadata)
+  }, 'NavigatorItem explicitlyFocused')
+
   const childComponentCount = props.noOfChildren
 
   const isDynamic =
@@ -365,6 +369,7 @@ export const NavigatorItem: React.FunctionComponent<
         selected={selected}
         highlighted={isHighlighted}
         isVisibleOnCanvas={isElementVisible}
+        explicitlyFocused={explicitlyFocused}
         instanceOriginalComponentName={null}
         dispatch={dispatch}
       />

@@ -51,6 +51,17 @@ import {
 import { getStoryboardElementPath } from './scene-utils'
 import { TransientFilesState } from '../../components/editor/store/editor-state'
 
+export function getFocusedPropValue(element: JSXElementChild): boolean | undefined {
+  if (isJSXElement(element)) {
+    const focusedProp = getJSXAttribute(element.props, 'data-focused')
+    if (focusedProp != null && isJSXAttributeValue(focusedProp)) {
+      return focusedProp.value
+    }
+  }
+
+  return undefined
+}
+
 function getAllUniqueUidsInner(
   projectContents: ProjectContentTreeRoot,
   throwErrorWithSuspiciousActions?: string,

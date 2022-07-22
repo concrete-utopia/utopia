@@ -57,6 +57,7 @@ import {
   findJSXElementChildAtPath,
   transformJSXComponentAtElementPath,
   isSceneElement,
+  getFocusedPropValue,
 } from '../../core/model/element-template-utils'
 import { generateUID } from '../../core/shared/uid-utils'
 import {
@@ -2876,7 +2877,11 @@ export function getValidElementPathsFromElement(
         ? null
         : EP.pathUpToElementPath(focusedElementPath, lastElementPathPart, 'static-path')
 
-    const isFocused = parentIsScene || matchingFocusedPathPart != null
+    const focusedPropValue = getFocusedPropValue(element)
+    const isExplicitlyFocused = focusedPropValue
+    const isImplicitlyFocused = parentIsScene && focusedPropValue === undefined
+
+    const isFocused = isExplicitlyFocused || isImplicitlyFocused || matchingFocusedPathPart != null
     if (isFocused) {
       paths.push(
         ...getValidElementPaths(
