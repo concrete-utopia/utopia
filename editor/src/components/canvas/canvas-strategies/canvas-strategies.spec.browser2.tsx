@@ -127,7 +127,7 @@ async function getGuidelineRenderResult(scale: number) {
 }
 
 describe('Strategy Fitness', () => {
-  it('fits Escape Hatch Strategy when dragging a flow element', async () => {
+  xit('fits Escape Hatch Strategy when dragging a flow element', async () => {
     const targetElement = elementPath([
       ['utopia-storyboard-uid', 'scene-aaa', 'app-entity'],
       ['aaa', 'bbb'],
