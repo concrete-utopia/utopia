@@ -68,100 +68,106 @@ function fireSingleClickEvents(target: HTMLElement, clientX: number, clientY: nu
   )
 }
 
-function fireDoubleClickEvents(target: HTMLElement, clientX: number, clientY: number) {
-  fireEvent(
-    target,
-    new MouseEvent('mousemove', {
-      bubbles: true,
-      cancelable: true,
-      clientX: clientX,
-      clientY: clientY,
-    }),
-  )
-  fireEvent(
-    target,
-    new MouseEvent('mousedown', {
-      detail: 1,
-      bubbles: true,
-      cancelable: true,
-      metaKey: false,
-      clientX: clientX,
-      clientY: clientY,
-      buttons: 1,
-    }),
-  )
-  fireEvent(
-    target,
-    new MouseEvent('mouseup', {
-      detail: 1,
-      bubbles: true,
-      cancelable: true,
-      metaKey: false,
-      clientX: clientX,
-      clientY: clientY,
-      buttons: 1,
-    }),
-  )
-  fireEvent(
-    target,
-    new MouseEvent('click', {
-      detail: 1,
-      bubbles: true,
-      cancelable: true,
-      metaKey: false,
-      clientX: clientX,
-      clientY: clientY,
-      buttons: 1,
-    }),
-  )
-  fireEvent(
-    target,
-    new MouseEvent('mousedown', {
-      detail: 2,
-      bubbles: true,
-      cancelable: true,
-      metaKey: false,
-      clientX: clientX,
-      clientY: clientY,
-      buttons: 1,
-    }),
-  )
-  fireEvent(
-    target,
-    new MouseEvent('mouseup', {
-      detail: 2,
-      bubbles: true,
-      cancelable: true,
-      metaKey: false,
-      clientX: clientX,
-      clientY: clientY,
-      buttons: 1,
-    }),
-  )
-  fireEvent(
-    target,
-    new MouseEvent('click', {
-      detail: 2,
-      bubbles: true,
-      cancelable: true,
-      metaKey: false,
-      clientX: clientX,
-      clientY: clientY,
-      buttons: 1,
-    }),
-  )
-  fireEvent(
-    target,
-    new MouseEvent('dblclick', {
-      detail: 2,
-      bubbles: true,
-      cancelable: true,
-      metaKey: false,
-      clientX: clientX,
-      clientY: clientY,
-      buttons: 1,
-    }),
-  )
+function createDoubleClicker(): (target: HTMLElement, clientX: number, clientY: number) => void {
+  let clickCount = 0
+
+  return (target: HTMLElement, clientX: number, clientY: number) => {
+    fireEvent(
+      target,
+      new MouseEvent('mousemove', {
+        bubbles: true,
+        cancelable: true,
+        clientX: clientX,
+        clientY: clientY,
+      }),
+    )
+    fireEvent(
+      target,
+      new MouseEvent('mousedown', {
+        detail: clickCount + 1,
+        bubbles: true,
+        cancelable: true,
+        metaKey: false,
+        clientX: clientX,
+        clientY: clientY,
+        buttons: 1,
+      }),
+    )
+    fireEvent(
+      target,
+      new MouseEvent('mouseup', {
+        detail: clickCount + 1,
+        bubbles: true,
+        cancelable: true,
+        metaKey: false,
+        clientX: clientX,
+        clientY: clientY,
+        buttons: 1,
+      }),
+    )
+    fireEvent(
+      target,
+      new MouseEvent('click', {
+        detail: clickCount + 1,
+        bubbles: true,
+        cancelable: true,
+        metaKey: false,
+        clientX: clientX,
+        clientY: clientY,
+        buttons: 1,
+      }),
+    )
+    fireEvent(
+      target,
+      new MouseEvent('mousedown', {
+        detail: clickCount + 2,
+        bubbles: true,
+        cancelable: true,
+        metaKey: false,
+        clientX: clientX,
+        clientY: clientY,
+        buttons: 1,
+      }),
+    )
+    fireEvent(
+      target,
+      new MouseEvent('mouseup', {
+        detail: clickCount + 2,
+        bubbles: true,
+        cancelable: true,
+        metaKey: false,
+        clientX: clientX,
+        clientY: clientY,
+        buttons: 1,
+      }),
+    )
+    fireEvent(
+      target,
+      new MouseEvent('click', {
+        detail: clickCount + 2,
+        bubbles: true,
+        cancelable: true,
+        metaKey: false,
+        clientX: clientX,
+        clientY: clientY,
+        buttons: 1,
+      }),
+    )
+    fireEvent(
+      target,
+      new MouseEvent('dblclick', {
+        detail: clickCount + 2,
+        bubbles: true,
+        cancelable: true,
+        metaKey: false,
+        clientX: clientX,
+        clientY: clientY,
+        buttons: 1,
+      }),
+    )
+
+    clickCount += 2
+  }
 }
 
 describe('Select Mode Selection', () => {
@@ -244,16 +250,18 @@ describe('Select Mode Selection', () => {
 
     const canvasControlsLayer = renderResult.renderedDOM.getByTestId(CanvasControlsContainerID)
 
+    const fireDoubleClickEvents = createDoubleClicker()
+
     const doubleClick = async () => {
       await act(async () => {
-        const dispatchDone = renderResult.getDispatchFollowUpActionsFinished()
+        // const dispatchDone = renderResult.getDispatchFollowUpActionsFinished()
         fireDoubleClickEvents(
           canvasControlsLayer,
           areaControlBounds.left + 20,
           areaControlBounds.top + 20,
         )
 
-        await dispatchDone
+        // await dispatchDone
       })
     }
 
@@ -336,11 +344,8 @@ describe('Select Mode Selection', () => {
     const sceneLabelBounds = sceneLabel.getBoundingClientRect()
 
     await act(async () => {
-      const dispatchDone = renderResult.getDispatchFollowUpActionsFinished()
       fireSingleClickEvents(sceneLabel, sceneLabelBounds.left + 5, sceneLabelBounds.top + 5)
-      await dispatchDone
     })
-    await waitForAnimationFrame()
 
     expect(renderResult.getEditorState().editor.selectedViews).toEqual([
       EP.fromString(`${BakedInStoryboardUID}/${TestSceneUID}`),
@@ -368,17 +373,15 @@ describe('Select Mode Selection', () => {
 
     const canvasControlsLayer = renderResult.renderedDOM.getByTestId(CanvasControlsContainerID)
 
+    const fireDoubleClickEvents = createDoubleClicker()
+
     await act(async () => {
-      const dispatchDone = renderResult.getDispatchFollowUpActionsFinished()
       fireDoubleClickEvents(
         canvasControlsLayer,
         areaControlBounds.left + 20,
         areaControlBounds.top + 20,
       )
-
-      await dispatchDone
     })
-    await waitForAnimationFrame()
 
     const selectedViews = renderResult.getEditorState().editor.selectedViews
     expect(selectedViews).toEqual([EP.appendNewElementPath(appElementPath, [targetElementUid])])
@@ -402,7 +405,6 @@ describe('Select Mode Advanced Cases', () => {
     const canvasControlsLayer = renderResult.renderedDOM.getByTestId(CanvasControlsContainerID)
 
     await act(async () => {
-      const dispatchDone = renderResult.getDispatchFollowUpActionsFinished()
       fireEvent(
         canvasControlsLayer,
         new MouseEvent('mousedown', {
@@ -415,16 +417,34 @@ describe('Select Mode Advanced Cases', () => {
           buttons: 1,
         }),
       )
-      await dispatchDone
     })
-    await waitForAnimationFrame()
 
     expect(renderResult.getEditorState().editor.selectedViews).toEqual([
       EP.fromString('sb/scene-2/Card-instance:Card-Root/Card-Row-Buttons/Card-Button-3'),
     ])
   })
+})
 
-  it('Five double clicks to select Button on a Card Scene Root', async () => {
+describe('Select Mode Double Clicking', () => {
+  // The below tests are to ensure we're not inadvertently handling clicks too many times,
+  // which could either mean focusing something that wasn't meant to be focused, or skipping
+  // over the target element and selecting something further down the hierarchy.
+  // Each double click should _either_ select the next element down the hierarchy, _or_ focus
+  // the currently selected element. Also, we specifically skip over Scenes, meaning a single
+  // double click with nothing selected will select the first child of a Scene
+
+  before(() => {
+    viewport.set(2200, 1000)
+  })
+
+  it('One double clicks to select Card Instance', async () => {
+    // prettier-ignore
+    const desiredPath = EP.fromString(
+      'sb' +            // Skipped as it's the storyboard
+      '/scene-2' +      // Skipped because we skip over Scenes
+      '/Card-instance', // <- First double click
+    )
+
     const renderResult = await renderTestEditorWithCode(
       TestProjectAlpineClimb,
       'await-first-dom-report',
@@ -435,31 +455,113 @@ describe('Select Mode Advanced Cases', () => {
 
     const canvasControlsLayer = renderResult.renderedDOM.getByTestId(CanvasControlsContainerID)
 
+    const fireDoubleClickEvents = createDoubleClicker()
+
     const doubleClick = async () => {
       await act(async () => {
-        const dispatchDone = renderResult.getDispatchFollowUpActionsFinished()
         fireDoubleClickEvents(
           canvasControlsLayer,
           cardSceneRootBounds.left + 130,
           cardSceneRootBounds.top + 220,
         )
-        await dispatchDone
       })
-      await waitForAnimationFrame()
+    }
+
+    await doubleClick()
+
+    expect(renderResult.getEditorState().editor.selectedViews).toEqual([desiredPath])
+  })
+
+  it('Two double clicks to select Card Scene Root', async () => {
+    // prettier-ignore
+    const desiredPath = EP.fromString(
+      'sb' +             // Skipped as it's the storyboard
+      '/scene-2' +       // Skipped because we skip over Scenes
+      '/Card-instance' + // <- First double click
+      ':Card-Root',      // <- Second double click, as the instance is automatically focused by the scene
+    )
+
+    const renderResult = await renderTestEditorWithCode(
+      TestProjectAlpineClimb,
+      'await-first-dom-report',
+    )
+
+    const cardSceneRoot = renderResult.renderedDOM.getByTestId('card-scene')
+    const cardSceneRootBounds = cardSceneRoot.getBoundingClientRect()
+
+    const canvasControlsLayer = renderResult.renderedDOM.getByTestId(CanvasControlsContainerID)
+
+    const fireDoubleClickEvents = createDoubleClicker()
+
+    const doubleClick = async () => {
+      await act(async () => {
+        fireDoubleClickEvents(
+          canvasControlsLayer,
+          cardSceneRootBounds.left + 130,
+          cardSceneRootBounds.top + 220,
+        )
+      })
+    }
+
+    await doubleClick()
+    await doubleClick()
+
+    expect(renderResult.getEditorState().editor.selectedViews).toEqual([desiredPath])
+  })
+
+  it('Four double clicks to select Button on a Card Scene Root', async () => {
+    // prettier-ignore
+    const desiredPath = EP.fromString(
+      'sb' +                // Skipped as it's the storyboard
+      '/scene-2' +          // Skipped because we skip over Scenes
+      '/Card-instance' +    // <- First double click
+      ':Card-Root' +        // <- Second double click, as the instance is automatically focused by the scene
+      '/Card-Row-Buttons' + // <- Third double click
+      '/Card-Button-3',     // <- Fourth double click
+    )
+
+    const renderResult = await renderTestEditorWithCode(
+      TestProjectAlpineClimb,
+      'await-first-dom-report',
+    )
+
+    const cardSceneRoot = renderResult.renderedDOM.getByTestId('card-scene')
+    const cardSceneRootBounds = cardSceneRoot.getBoundingClientRect()
+
+    const canvasControlsLayer = renderResult.renderedDOM.getByTestId(CanvasControlsContainerID)
+
+    const fireDoubleClickEvents = createDoubleClicker()
+
+    const doubleClick = async () => {
+      await act(async () => {
+        fireDoubleClickEvents(
+          canvasControlsLayer,
+          cardSceneRootBounds.left + 130,
+          cardSceneRootBounds.top + 220,
+        )
+      })
     }
 
     await doubleClick()
     await doubleClick()
     await doubleClick()
     await doubleClick()
-    await doubleClick()
 
-    expect(renderResult.getEditorState().editor.selectedViews).toEqual([
-      EP.fromString('sb/scene-2/Card-instance:Card-Root/Card-Row-Buttons/Card-Button-3'),
-    ])
+    expect(renderResult.getEditorState().editor.selectedViews).toEqual([desiredPath])
   })
 
-  it('Keep double clicking to select Button inside a focused generated Card', async () => {
+  it('Six double clicks will focus a generated Card and select its root element', async () => {
+    // prettier-ignore
+    const desiredPath = EP.fromString(
+      'sb' +                 // Skipped as it's the storyboard
+      '/scene-CardList' +    // Skipped because we skip over Scenes
+      '/CardList-instance' + // <- First double click
+      ':CardList-Root' +     // <- Second double click, as the instance is automatically focused by the scene
+      '/CardList-Col' +      // <- Third double click
+      '/CardList-Card~~~1' + // <- Fourth *and* Fifth double click, as the Fifth is required to focus it
+      ':Card-Root',          // <- Sixth double click
+    )
+
     const renderResult = await renderTestEditorWithCode(
       TestProjectAlpineClimb,
       'await-first-dom-report',
@@ -467,35 +569,65 @@ describe('Select Mode Advanced Cases', () => {
 
     const canvasControlsLayer = renderResult.renderedDOM.getByTestId(CanvasControlsContainerID)
 
-    await act(async () => {
-      await renderResult.dispatch(
-        [
-          setFocusedElement(
-            EP.elementPath([
-              ['sb', 'scene-CardList', 'CardList-instance'],
-              ['CardList-Root', 'CardList-Col', 'CardList-Card~~~1'],
-            ]),
-          ),
-          CanvasActions.scrollCanvas(canvasPoint({ x: 430, y: 390 })),
-        ],
-        true,
-      )
-    })
-
     const cardSceneRoot = renderResult.renderedDOM.getByTestId('generated-card-1')
     const cardSceneRootBounds = cardSceneRoot.getBoundingClientRect()
 
+    const fireDoubleClickEvents = createDoubleClicker()
+
     const doubleClick = async () => {
       await act(async () => {
-        const dispatchDone = renderResult.getDispatchFollowUpActionsFinished()
         fireDoubleClickEvents(
           canvasControlsLayer,
           cardSceneRootBounds.left + 130,
           cardSceneRootBounds.top + 220,
         )
-        await dispatchDone
       })
-      await waitForAnimationFrame()
+    }
+
+    await doubleClick()
+    await doubleClick()
+    await doubleClick()
+    await doubleClick()
+    await doubleClick()
+    await doubleClick()
+
+    expect(renderResult.getEditorState().editor.selectedViews).toEqual([desiredPath])
+  })
+
+  it('Eight double clicks will focus a generated Card and select the Button inside', async () => {
+    // prettier-ignore
+    const desiredPath = EP.fromString(
+      'sb' +                 // Skipped as it's the storyboard
+      '/scene-CardList' +    // Skipped because we skip over Scenes
+      '/CardList-instance' + // <- First double click
+      ':CardList-Root' +     // <- Second double click, as the instance is automatically focused by the scene
+      '/CardList-Col' +      // <- Third double click
+      '/CardList-Card~~~1' + // <- Fourth *and* Fifth double click, as the Fifth is required to focus it
+      ':Card-Root' +         // <- Sixth double click
+      '/Card-Row-Buttons' +  // <- Seventh double click
+      '/Card-Button-3',      // <- Eight double click
+    )
+
+    const renderResult = await renderTestEditorWithCode(
+      TestProjectAlpineClimb,
+      'await-first-dom-report',
+    )
+
+    const canvasControlsLayer = renderResult.renderedDOM.getByTestId(CanvasControlsContainerID)
+
+    const cardSceneRoot = renderResult.renderedDOM.getByTestId('generated-card-1')
+    const cardSceneRootBounds = cardSceneRoot.getBoundingClientRect()
+
+    const fireDoubleClickEvents = createDoubleClicker()
+
+    const doubleClick = async () => {
+      await act(async () => {
+        fireDoubleClickEvents(
+          canvasControlsLayer,
+          cardSceneRootBounds.left + 130,
+          cardSceneRootBounds.top + 220,
+        )
+      })
     }
 
     await doubleClick()
@@ -507,24 +639,9 @@ describe('Select Mode Advanced Cases', () => {
     await doubleClick()
     await doubleClick()
 
-    expect(renderResult.getEditorState().editor.selectedViews).toEqual([
-      EP.fromString(
-        'sb/scene-CardList/CardList-instance:CardList-Root/CardList-Col/CardList-Card~~~1:Card-Root/Card-Row-Buttons/Card-Button-3',
-      ),
-    ])
+    expect(renderResult.getEditorState().editor.selectedViews).toEqual([desiredPath])
   })
 })
-function waitForAnimationFrame(): Promise<void> {
-  return new Promise<void>((resolve, reject) => {
-    requestAnimationFrame(() => {
-      requestAnimationFrame(() => {
-        requestAnimationFrame(() => {
-          resolve()
-        })
-      })
-    })
-  })
-}
 
 const TestProjectAlpineClimb = `
 import * as React from "react";
