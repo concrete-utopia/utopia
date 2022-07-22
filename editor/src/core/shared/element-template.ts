@@ -5,27 +5,21 @@ import type {
   ElementPath,
 } from './project-file-types'
 import { CanvasRectangle, LocalRectangle, LocalPoint, zeroCanvasRect } from './math-utils'
-import { Either, foldEither, isLeft, left, right } from './either'
+import { Either, left, right } from './either'
 import { v4 as UUID } from 'uuid'
 import { RawSourceMap } from '../workers/ts/ts-typings/RawSourceMap'
 import * as PP from './property-path'
-import { Sides, sides, NormalisedFrame, LayoutSystem } from 'utopia-api/core'
+import { Sides, sides, LayoutSystem } from 'utopia-api/core'
 import { fastForEach, unknownObjectProperty } from './utils'
 import { addAllUniquely, mapDropNulls, reverse } from './array-utils'
 import { objectMap } from './object-utils'
 import { CSSPosition } from '../../components/inspector/common/css-utils'
-import {
-  dropKeyFromNestedObject,
-  getJSXAttributeAtPathInner,
-  ModifiableAttribute,
-  setJSXValueInAttributeAtPath,
-} from './jsx-attributes'
+import { ModifiableAttribute } from './jsx-attributes'
 import * as EP from './element-path'
 import { firstLetterIsLowerCase } from './string-utils'
 import { intrinsicHTMLElementNamesAsStrings } from './dom-utils'
 import type { MapLike } from 'typescript'
 import { forceNotNull } from './optional-utils'
-import { JSXElementNameKeepDeepEqualityCall } from '../../utils/deep-equality-instances'
 
 export interface ParsedComments {
   leadingComments: Array<Comment>
