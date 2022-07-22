@@ -52,7 +52,7 @@ import { areAllSelectedElementsNonAbsolute } from './shared-absolute-move-strate
 
 export const escapeHatchStrategy: CanvasStrategy = {
   id: 'ESCAPE_HATCH_STRATEGY',
-  name: 'Absolute Move',
+  name: 'Absolute Move (convert to absolute)',
   isApplicable: (canvasState, _interactionState, metadata) => {
     return areAllSelectedElementsNonAbsolute(canvasState.selectedElements, metadata)
   },
