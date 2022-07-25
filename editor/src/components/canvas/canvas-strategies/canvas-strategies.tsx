@@ -24,6 +24,8 @@ import { escapeHatchStrategy } from './escape-hatch-strategy'
 import { flexReorderStrategy } from './flex-reorder-strategy'
 import { absoluteDuplicateStrategy } from './absolute-duplicate-strategy'
 import { absoluteReparentToFlexStrategy } from './absolute-reparent-to-flex-strategy'
+import { flexReparentToAbsoluteStrategy } from './flex-reparent-to-absolute-strategy'
+import { flexReparentToFlexStrategy } from './flex-reparent-to-flex-strategy'
 
 export const RegisteredCanvasStrategies: Array<CanvasStrategy> = [
   absoluteMoveStrategy,
@@ -33,7 +35,9 @@ export const RegisteredCanvasStrategies: Array<CanvasStrategy> = [
   keyboardAbsoluteResizeStrategy,
   absoluteResizeBoundingBoxStrategy,
   flexReorderStrategy,
-  escapeHatchStrategy,
+  flexReparentToAbsoluteStrategy,
+  flexReparentToFlexStrategy,
+  // escapeHatchStrategy,  // TODO re-enable once reparent is not tied to cmd
   absoluteReparentToFlexStrategy,
 ]
 
