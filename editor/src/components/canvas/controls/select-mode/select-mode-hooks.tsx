@@ -174,18 +174,33 @@ export function getSelectableViews(
     })
     let siblings: Array<ElementPath> = []
     Utils.fastForEach(selectedViews, (view) => {
+      function addChildrenAndUnfurledFocusedComponents(paths: Array<ElementPath>) {
+        Utils.fastForEach(paths, (ancestor) => {
+          const { children, unfurledComponents } =
+            MetadataUtils.getAllChildrenIncludingUnfurledFocusedComponents(
+              ancestor,
+              componentMetadata,
+            )
+
+          siblings.push(ancestor)
+
+          const ancestorChildren = [...children, ...unfurledComponents]
+          fastForEach(ancestorChildren, (child) => {
+            siblings.push(child)
+
+            // If this element is locked we want to recurse the children
+            if (lockedElements.some((path) => EP.pathsEqual(path, child))) {
+              addChildrenAndUnfurledFocusedComponents([child])
+            }
+          })
+        })
+      }
+
       const allPaths = childrenSelectable
         ? EP.allPathsForLastPart(view)
         : EP.allPathsForLastPart(EP.parentPath(view))
-      Utils.fastForEach(allPaths, (ancestor) => {
-        const { children, unfurledComponents } =
-          MetadataUtils.getAllChildrenIncludingUnfurledFocusedComponents(
-            ancestor,
-            componentMetadata,
-          )
-        const ancestorChildren = [...children, ...unfurledComponents]
-        fastForEach(ancestorChildren, (child) => siblings.push(child))
-      })
+
+      addChildrenAndUnfurledFocusedComponents(allPaths)
     })
 
     const selectableViews = [...dynamicScenesWithFragmentRootViews, ...allRoots, ...siblings]
