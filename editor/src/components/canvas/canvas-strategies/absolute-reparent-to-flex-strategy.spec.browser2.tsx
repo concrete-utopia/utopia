@@ -235,7 +235,7 @@ describe('Absolute Reparent To Flex Strategy', () => {
       x: flexParentCenter.x - absoluteChildCenter.x,
       y: flexParentCenter.y - absoluteChildCenter.y,
     })
-    act(() => dragElement(renderResult, 'absolutechild', dragDelta, cmdModifier))
+    await act(() => dragElement(renderResult, 'absolutechild', dragDelta, cmdModifier))
 
     await renderResult.getDispatchFollowUpActionsFinished()
 
@@ -359,7 +359,7 @@ describe('Absolute Reparent To Flex Strategy', () => {
       x: firstFlexChildCenter.x - absoluteChildCenter.x,
       y: firstFlexChildCenter.y - absoluteChildCenter.y,
     })
-    act(() => dragElement(renderResult, 'absolutechild', dragDelta, cmdModifier))
+    await act(() => dragElement(renderResult, 'absolutechild', dragDelta, cmdModifier))
 
     await renderResult.getDispatchFollowUpActionsFinished()
 
@@ -486,7 +486,7 @@ describe('Absolute Reparent To Flex Strategy', () => {
       x: firstFlexChildCenter.x - absoluteChildCenter.x,
       y: firstFlexChildCenter.y - absoluteChildCenter.y,
     })
-    act(() => dragElement(renderResult, 'generatedabsolutechild', dragDelta, cmdModifier))
+    await act(() => dragElement(renderResult, 'generatedabsolutechild', dragDelta, cmdModifier))
 
     await renderResult.getDispatchFollowUpActionsFinished()
 
