@@ -1370,7 +1370,7 @@ function parseElementProps(
   let definedElsewhere = []
   // Maintain this so that we can still use early returns.
   let propIndex: number = 0
-  for (const prop of attributes.properties) {
+  for (const prop of attributes?.properties ?? []) {
     let propComments = getComments(sourceText, prop)
     if (propIndex === attributes.properties.length - 1) {
       propComments = parsedComments(propComments.leadingComments, [
@@ -1450,10 +1450,8 @@ function parseElementProps(
 }
 
 type TSTextOrExpression = TS.JsxText | TS.JsxExpression
-type TSJSXElement = TS.JsxElement | TS.JsxSelfClosingElement
-type ElementsToParse = Array<
-  TSJSXElement | TSTextOrExpression | TS.JsxOpeningFragment | TS.JsxClosingFragment | TS.JsxFragment
->
+type TSJSXElement = TS.JsxElement | TS.JsxSelfClosingElement | TS.JsxFragment
+type ElementsToParse = Array<TSJSXElement | TSTextOrExpression>
 
 function pullOutElementsToParse(nodes: Array<TS.Node>): Either<string, ElementsToParse> {
   let result: ElementsToParse = []
@@ -1556,6 +1554,9 @@ function parseJSXElementName(
   sourceFile: TS.SourceFile,
   tagName: TS.JsxTagNameExpression,
 ): Either<string, JSXElementName> {
+  if (tagName == null) {
+    return right(jsxElementName('Fragment', []))
+  }
   if (TS.isIdentifier(tagName)) {
     return right(jsxElementName(tagName.getText(sourceFile), []))
   } else if (TS.isPropertyAccessExpression(tagName)) {
@@ -1646,6 +1647,7 @@ function createJSXElementAllocatingUID(
   children: JSXElementChildren,
   existingHighlightBounds: Readonly<HighlightBoundsForUids>,
   alreadyExistingUIDs: Set<string>,
+  imports: Imports,
 ): WithParserMetadata<SuccessfullyParsedElement> {
   const dataUIDAttribute = parseUID(props)
   const { uid: newUID, attributes: updatedProps } = foldEither(
@@ -1693,7 +1695,9 @@ function createJSXElementAllocatingUID(
   )
   return withParserMetadata(
     {
-      value: jsxElement(name, newUID, updatedProps.value, children),
+      value: isReactFragmentName(name as JSXElementName, imports)
+        ? jsxFragment(newUID, children, true)
+        : jsxElement(name, newUID, updatedProps.value, children),
       startLine: startPosition.line,
       startColumn: startPosition.character,
     },
@@ -1725,7 +1729,6 @@ export function parseOutJSXElements(
       let parsedNodes: Array<SuccessfullyParsedElement> = []
       let fragmentDepth: number = 0
       let fragmentChildren: { [key: number]: Array<JSXElementChild> } = {}
-      let fragmentStart: { [key: number]: TS.JsxOpeningFragment } = {}
 
       function addParsedElement(addElement: SuccessfullyParsedElement): void {
         if (fragmentDepth === 0) {
@@ -1740,49 +1743,16 @@ export function parseOutJSXElements(
           }
         }
       }
-
       for (const elem of toParse) {
         switch (elem.kind) {
-          case TS.SyntaxKind.JsxFragment: {
-            const possibleFragment = produceFragmentFromJsxFragment(elem)
-            if (isLeft(possibleFragment)) {
-              return possibleFragment
-            } else {
-              addParsedElement(possibleFragment.value)
-            }
-            break
-          }
-          case TS.SyntaxKind.JsxElement: {
-            const possibleElement = produceElementFromTSElement(elem)
-            if (isLeft(possibleElement)) {
-              return possibleElement
-            } else {
-              const parsedElement = possibleElement.value.value
-              if (isJSXElement(parsedElement) && isReactFragmentName(parsedElement.name, imports)) {
-                addParsedElement({
-                  ...possibleElement.value,
-                  value: jsxFragment(parsedElement.children, true),
-                })
-              } else {
-                addParsedElement(possibleElement.value)
-              }
-            }
-            break
-          }
+          case TS.SyntaxKind.JsxFragment:
+          case TS.SyntaxKind.JsxElement:
           case TS.SyntaxKind.JsxSelfClosingElement: {
-            const possibleElement = produceElementFromTSElement(elem)
+            const possibleElement = produceElementOrFragmentFromTSElement(elem)
             if (isLeft(possibleElement)) {
               return possibleElement
             } else {
-              const parsedElement = possibleElement.value.value
-              if (isJSXElement(parsedElement) && isReactFragmentName(parsedElement.name, imports)) {
-                addParsedElement({
-                  ...possibleElement.value,
-                  value: jsxFragment(parsedElement.children, true),
-                })
-              } else {
-                addParsedElement(possibleElement.value)
-              }
+              addParsedElement(possibleElement.value)
             }
             break
           }
@@ -1804,34 +1774,6 @@ export function parseOutJSXElements(
             }
             break
           }
-          case TS.SyntaxKind.JsxOpeningFragment: {
-            fragmentDepth += 1
-            fragmentStart[fragmentDepth] = elem
-            break
-          }
-          case TS.SyntaxKind.JsxClosingFragment: {
-            if (fragmentDepth === 0) {
-              return left('Too many closed fragments.')
-            } else {
-              const childrenOfFragment: Array<JSXElementChild> =
-                fragmentChildren[fragmentDepth] ?? []
-              const start = forceNotNull(
-                'Fragment start should exist.',
-                fragmentStart[fragmentDepth],
-              )
-              delete fragmentChildren[fragmentDepth]
-              delete fragmentStart[fragmentDepth]
-              fragmentDepth -= 1
-              addParsedElement(
-                successfullyParsedElement(
-                  sourceFile,
-                  start,
-                  jsxFragment(childrenOfFragment, false),
-                ),
-              )
-            }
-            break
-          }
           default:
             const _exhaustiveCheck: never = elem
             throw new Error(`Unhandled elem type ${JSON.stringify(elem)}`)
@@ -1844,20 +1786,6 @@ export function parseOutJSXElements(
         return left('Not enough closed fragments.')
       }
     }, pullOutElementsToParse(nodes))
-  }
-
-  function produceFragmentFromJsxFragment(
-    fragment: TS.JsxFragment,
-  ): Either<string, SuccessfullyParsedElement> {
-    // Parse the children.
-    const parsedChildren = mapEither((children) => {
-      return children.map((c) => c.value)
-    }, innerParse(nodeArrayToArray(fragment.children)))
-
-    // Create the containing fragment.
-    return mapEither((children) => {
-      return successfullyParsedElement(sourceFile, fragment, jsxFragment(children, false))
-    }, parsedChildren)
   }
 
   function produceTextFromJsxText(tsText: TS.JsxText): Either<string, SuccessfullyParsedElement> {
@@ -1890,7 +1818,7 @@ export function parseOutJSXElements(
     )
   }
 
-  function produceElementFromTSElement(
+  function produceElementOrFragmentFromTSElement(
     tsElement: TSJSXElement,
   ): Either<string, SuccessfullyParsedElement> {
     let attributes: TS.JsxAttributes
@@ -1907,6 +1835,17 @@ export function parseOutJSXElements(
         }, innerParse(nodeArrayToArray(tsElement.children)))
         // Capture comments against '>' as that should follow the attributes.
         tsElement.openingElement.getChildren(sourceFile).forEach((child) => {
+          if (child.kind === TS.SyntaxKind.GreaterThanToken) {
+            commentsFromAfterAttributes = getComments(sourceText, child)
+          }
+        })
+        break
+      case TS.SyntaxKind.JsxFragment:
+        children = mapEither((parsedChildren) => {
+          return parsedChildren.map((c) => c.value)
+        }, innerParse(nodeArrayToArray(tsElement.children)))
+        // Capture comments against '>' as that should follow the attributes.
+        tsElement.openingFragment.getChildren(sourceFile).forEach((child) => {
           if (child.kind === TS.SyntaxKind.GreaterThanToken) {
             commentsFromAfterAttributes = getComments(sourceText, child)
           }
@@ -1955,6 +1894,7 @@ export function parseOutJSXElements(
               childElems,
               highlightBounds,
               alreadyExistingUIDs,
+              imports,
             )
             highlightBounds = parsedElement.highlightBounds
             return right(parsedElement.value)
@@ -2004,12 +1944,16 @@ function isJsxNameKnown(
       ),
     )
     const knownNames = knownElements.concat(knownImportedNames as string[])
-    const result = knownNames.includes(name.baseVariable)
+    const result = [...knownNames, 'Fragment'].includes(name.baseVariable)
     return result
   }
 }
 
 function isReactFragmentName(name: JSXElementName, imports: Imports): boolean {
+  // TODO: spike only stupid
+  if (name.baseVariable === 'Fragment' && name.propertyPath.propertyElements.length === 0) {
+    return true
+  }
   const possibleReactImport = imports['react']
   if (possibleReactImport == null) {
     return false

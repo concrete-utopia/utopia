@@ -1028,11 +1028,15 @@ export interface JSXFragment {
   longForm: boolean // When true, <React.Fragment> instead of <>.
 }
 
-export function jsxFragment(children: JSXElementChildren, longForm: boolean): JSXFragment {
+export function jsxFragment(
+  uid: string,
+  children: JSXElementChildren,
+  longForm: boolean,
+): JSXFragment {
   return {
     type: 'JSX_FRAGMENT',
-    uid: UUID(),
-    name: jsxElementName('Fragment', []),
+    uid: uid,
+    name: jsxElementName('Fragment', []), // TODO: spike only stupid name
     children: children,
     longForm: longForm,
   }
