@@ -147,6 +147,7 @@ export function getSelectableViews(
   allElementsDirectlySelectable: boolean,
   childrenSelectable: boolean,
   allElementProps: AllElementProps,
+  lockedElements: Array<ElementPath>,
 ): ElementPath[] {
   let candidateViews: Array<ElementPath>
 
@@ -193,7 +194,8 @@ export function getSelectableViews(
     candidateViews = uniqueSelectableViews
   }
 
-  return filterHiddenInstances(hiddenInstances, candidateViews)
+  const nonSelectableElements = [...hiddenInstances, ...lockedElements]
+  return filterHiddenInstances(nonSelectableElements, candidateViews)
 }
 
 function useFindValidTarget(): (
@@ -410,12 +412,13 @@ export function useGetSelectableViewsForSelectMode() {
       hiddenInstances: store.editor.hiddenInstances,
       focusedElementPath: store.editor.focusedElementPath,
       allElementProps: store.editor.allElementProps,
+      lockedElements: store.editor.lockedElements,
     }
   })
 
   return React.useCallback(
     (allElementsDirectlySelectable: boolean, childrenSelectable: boolean) => {
-      const { componentMetadata, selectedViews, hiddenInstances, allElementProps } =
+      const { componentMetadata, selectedViews, hiddenInstances, allElementProps, lockedElements } =
         storeRef.current
       const selectableViews = getSelectableViews(
         componentMetadata,
@@ -424,6 +427,7 @@ export function useGetSelectableViewsForSelectMode() {
         allElementsDirectlySelectable,
         childrenSelectable,
         allElementProps,
+        lockedElements,
       )
       return selectableViews
     },
