@@ -58,6 +58,8 @@ export type CanvasStrategyId =
   | 'ESCAPE_HATCH_STRATEGY'
   | 'FLEX_REORDER'
   | 'ABSOLUTE_REPARENT_TO_FLEX'
+  | 'FLEX_REPARENT_TO_ABSOLUTE'
+  | 'FLEX_REPARENT_TO_FLEX'
 
 export interface CanvasStrategy {
   id: CanvasStrategyId // We'd need to do something to guarantee uniqueness here if using this for the commands' reason

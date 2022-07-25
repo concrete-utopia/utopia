@@ -18,6 +18,7 @@ import {
   getFileOfElement,
 } from './shared-absolute-move-strategy-helpers'
 import { ifAllowedToReparent } from './reparent-helpers'
+import { findReparentStrategy } from './reparent-strategy-helpers'
 import { offsetPoint } from '../../../core/shared/math-utils'
 
 export const absoluteReparentStrategy: CanvasStrategy = {
@@ -63,15 +64,15 @@ export const absoluteReparentStrategy: CanvasStrategy = {
       show: 'visible-only-while-active',
     },
   ],
-  fitness: (canvasState, interactionState) => {
-    if (
-      canvasState.selectedElements.length > 0 &&
-      interactionState.activeControl.type === 'BOUNDING_AREA' &&
-      interactionState.interactionData.type === 'DRAG' &&
-      interactionState.interactionData.modifiers.cmd &&
-      interactionState.interactionData.drag != null
-    ) {
-      return 2
+  fitness: (canvasState, interactionState, strategyState) => {
+    // All 4 reparent strategies use the same fitness function findReparentStrategy
+    const reparentStrategy = findReparentStrategy(
+      canvasState,
+      interactionState,
+      strategyState,
+    ).strategy
+    if (reparentStrategy === 'ABSOLUTE_REPARENT_TO_ABSOLUTE') {
+      return 3
     }
     return 0
   },
