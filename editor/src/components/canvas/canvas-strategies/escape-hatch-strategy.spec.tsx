@@ -192,6 +192,7 @@ function dragByPixels(
         escapeHatchActivated: true,
       },
     } as StrategyState,
+    'mid-interaction',
   )
 
   const finalEditor = foldAndApplyCommands(

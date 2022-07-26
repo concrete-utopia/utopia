@@ -61,6 +61,7 @@ function multiselectResizeElements(
       startingMetadata: metadata,
       customStrategyState: defaultCustomStrategyState(),
     } as StrategyState,
+    'mid-interaction',
   )
 
   expect(strategyResult.customState).toBeNull()

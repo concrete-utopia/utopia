@@ -59,6 +59,7 @@ export function pressKeys(
       startingAllElementProps: { 'scene-aaa/app-entity:aaa/bbb': {} },
       customStrategyState: defaultCustomStrategyState(),
     } as StrategyState,
+    'mid-interaction',
   )
 
   expect(strategyResult.customState).toBeNull()

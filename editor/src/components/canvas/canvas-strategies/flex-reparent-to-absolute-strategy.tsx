@@ -60,7 +60,7 @@ export const flexReparentToAbsoluteStrategy: CanvasStrategy = {
     }
     return 0
   },
-  apply: (canvasState, interactionState, strategyState) => {
+  apply: (canvasState, interactionState, strategyState, lifecycle) => {
     if (
       interactionState.interactionData.type !== 'DRAG' ||
       interactionState.interactionData.drag == null
@@ -84,6 +84,7 @@ export const flexReparentToAbsoluteStrategy: CanvasStrategy = {
             strategyState,
             interactionState,
             transient,
+            lifecycle,
           )
         }),
       ],
@@ -97,6 +98,7 @@ function runAbsoluteReparentStrategyForFreshlyConvertedElement(
   strategyState: StrategyState,
   interactionState: InteractionSession,
   transient: TransientOrNot,
+  lifecycle: 'mid-interaction' | 'end-interaction',
 ): Array<EditorStatePatch> {
   const canvasState = pickCanvasStateFromEditorState(editorState)
 
@@ -104,6 +106,7 @@ function runAbsoluteReparentStrategyForFreshlyConvertedElement(
     canvasState,
     interactionState,
     strategyState,
+    lifecycle,
   ).commands
 
   return foldAndApplyCommandsInner(editorState, [], [], reparentCommands, transient).statePatches

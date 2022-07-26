@@ -124,6 +124,7 @@ function dragByPixels(
       startingAllElementProps: {},
       customStrategyState: defaultCustomStrategyState(),
     } as StrategyState,
+    'mid-interaction',
   )
 
   expect(strategyResult.customState).toBeNull()

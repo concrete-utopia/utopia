@@ -186,6 +186,7 @@ function reorderElement(
       startingMetadata: metadata,
       customStrategyState: defaultCustomStrategyState(),
     } as StrategyState,
+    'mid-interaction',
   )
 
   expect(strategyResult.customState?.lastReorderIdx).toEqual(newIndex)

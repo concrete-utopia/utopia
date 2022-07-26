@@ -75,7 +75,7 @@ export const absoluteReparentStrategy: CanvasStrategy = {
     }
     return 0
   },
-  apply: (canvasState, interactionState, strategyState) => {
+  apply: (canvasState, interactionState, strategyState, lifecycle) => {
     if (
       interactionState.interactionData.type != 'DRAG' ||
       interactionState.interactionData.drag == null
@@ -102,7 +102,12 @@ export const absoluteReparentStrategy: CanvasStrategy = {
       strategyState.startingAllElementProps,
     )
     const newParent = reparentResult.newParent
-    const moveCommands = absoluteMoveStrategy.apply(canvasState, interactionState, strategyState)
+    const moveCommands = absoluteMoveStrategy.apply(
+      canvasState,
+      interactionState,
+      strategyState,
+      lifecycle,
+    )
     const providesBoundsForAbsoluteChildren =
       MetadataUtils.findElementByElementPath(strategyState.startingMetadata, newParent)
         ?.specialSizeMeasurements.providesBoundsForAbsoluteChildren ?? false

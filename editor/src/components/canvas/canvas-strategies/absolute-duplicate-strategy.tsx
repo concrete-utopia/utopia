@@ -73,7 +73,7 @@ export const absoluteDuplicateStrategy: CanvasStrategy = {
     }
     return 0
   },
-  apply: (canvasState, interactionState, strategyState) => {
+  apply: (canvasState, interactionState, strategyState, lifecycle) => {
     if (
       interactionState.interactionData.type === 'DRAG' &&
       interactionState.interactionData.drag != null
@@ -120,6 +120,7 @@ export const absoluteDuplicateStrategy: CanvasStrategy = {
               },
               interactionState,
               transient,
+              lifecycle,
             ),
           ),
           setCursorCommand('transient', CSSCursor.Duplicate),
@@ -144,6 +145,7 @@ function runMoveStrategyForFreshlyDuplicatedElements(
   strategyState: StrategyState,
   interactionState: InteractionSession,
   transient: TransientOrNot,
+  lifecycle: 'mid-interaction' | 'end-interaction',
 ): Array<EditorStatePatch> {
   const canvasState = pickCanvasStateFromEditorState(editorState)
 
@@ -151,6 +153,7 @@ function runMoveStrategyForFreshlyDuplicatedElements(
     canvasState,
     interactionState,
     strategyState,
+    lifecycle,
   ).commands
 
   return foldAndApplyCommandsInner(editorState, [], [], moveCommands, transient).statePatches
