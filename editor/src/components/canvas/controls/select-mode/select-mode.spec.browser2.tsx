@@ -254,14 +254,11 @@ describe('Select Mode Selection', () => {
 
     const doubleClick = async () => {
       await act(async () => {
-        // const dispatchDone = renderResult.getDispatchFollowUpActionsFinished()
         fireDoubleClickEvents(
           canvasControlsLayer,
           areaControlBounds.left + 20,
           areaControlBounds.top + 20,
         )
-
-        // await dispatchDone
       })
     }
 
