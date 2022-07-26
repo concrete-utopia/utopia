@@ -12,6 +12,7 @@ import { updateSelectedViews } from '../commands/update-selected-views-command'
 import { ParentBounds } from '../controls/parent-bounds'
 import { ParentOutlines } from '../controls/parent-outlines'
 import { DragOutlineControl } from '../controls/select-mode/drag-outline-control'
+import { FlexReparentTargetIndicator } from '../controls/select-mode/flex-reparent-target-indicator'
 import { CanvasStrategy, emptyStrategyApplicationResult } from './canvas-strategy-types'
 import { getReorderIndex } from './flex-reorder-strategy'
 import {
@@ -48,6 +49,11 @@ export const flexReparentToFlexStrategy: CanvasStrategy = {
     {
       control: ParentBounds,
       key: 'parent-bounds-control',
+      show: 'visible-only-while-active',
+    },
+    {
+      control: FlexReparentTargetIndicator,
+      key: 'flex-reparent-target-indicator',
       show: 'visible-only-while-active',
     },
   ],

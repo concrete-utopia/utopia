@@ -32,6 +32,7 @@ import {
   findReparentStrategy,
   getReparentTargetForFlexElement,
 } from './reparent-strategy-helpers'
+import { FlexReparentTargetIndicator } from '../controls/select-mode/flex-reparent-target-indicator'
 
 const propertiesToRemove: Array<PropertyPath> = [
   PP.create(['style', 'position']),
@@ -82,6 +83,11 @@ export const absoluteReparentToFlexStrategy: CanvasStrategy = {
     {
       control: ParentBounds,
       key: 'parent-bounds-control',
+      show: 'visible-only-while-active',
+    },
+    {
+      control: FlexReparentTargetIndicator,
+      key: 'flex-reparent-target-indicator',
       show: 'visible-only-while-active',
     },
   ],

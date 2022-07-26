@@ -228,16 +228,21 @@ export function applyFlexReparent(
       let interactionFinishCommadns: Array<CanvasCommand>
       let midInteractionCommands: Array<CanvasCommand>
 
+      const siblingsOfTarget = MetadataUtils.getChildrenPaths(
+        strategyState.startingMetadata,
+        newParent,
+      )
+
+      const parentRect = MetadataUtils.getFrameInCanvasCoords(
+        newParent,
+        strategyState.startingMetadata,
+      )
+
       if (reparentResult.shouldReorder) {
         // Reorder the newly reparented element into the flex ordering.
         const pointOnCanvas = offsetPoint(
           interactionSession.interactionData.dragStart,
           interactionSession.interactionData.drag,
-        )
-
-        const siblingsOfTarget = MetadataUtils.getChildrenPaths(
-          strategyState.startingMetadata,
-          newParent,
         )
 
         const newIndex = getReorderIndex(
@@ -248,13 +253,13 @@ export function applyFlexReparent(
 
         const siblingPosition: CanvasRectangle =
           [
-            MetadataUtils.getFrameInCanvasCoords(newParent, strategyState.startingMetadata), // we add the parent as the first element
+            // parentRect, // we add the parent as the first element
             ...siblingsOfTarget.map((sibling) => {
               return MetadataUtils.getFrameInCanvasCoords(sibling, strategyState.startingMetadata)
             }),
           ][newIndex] ?? zeroCanvasRect
 
-        const targetLine: CanvasRectangle =
+        const targetLineBeforeSibling: CanvasRectangle =
           newParentFlexDirection === 'row'
             ? canvasRectangle({
                 x: siblingPosition?.x,
@@ -271,7 +276,7 @@ export function applyFlexReparent(
 
         midInteractionCommands = [
           wildcardPatch('transient', {
-            canvas: { controls: { flexReparentTargetLines: { $set: [targetLine] } } },
+            canvas: { controls: { flexReparentTargetLines: { $set: [targetLineBeforeSibling] } } },
           }),
         ]
 
@@ -281,7 +286,60 @@ export function applyFlexReparent(
           ...commandsAfterReorder,
         ]
       } else {
-        midInteractionCommands = []
+        const siblingPosition = MetadataUtils.getFrameInCanvasCoords(
+          siblingsOfTarget[siblingsOfTarget.length - 1],
+          strategyState.startingMetadata,
+        )
+
+        if (siblingPosition != null) {
+          const targetLineAfterSibling: CanvasRectangle =
+            newParentFlexDirection === 'row'
+              ? canvasRectangle({
+                  x: siblingPosition.x + siblingPosition.width,
+                  y: siblingPosition.y,
+                  height: siblingPosition.height,
+                  width: 2,
+                })
+              : canvasRectangle({
+                  x: siblingPosition.x,
+                  y: siblingPosition.y + siblingPosition.height,
+                  width: siblingPosition?.width,
+                  height: 2,
+                })
+
+          midInteractionCommands = [
+            wildcardPatch('transient', {
+              canvas: { controls: { flexReparentTargetLines: { $set: [targetLineAfterSibling] } } },
+            }),
+          ]
+        } else if (parentRect != null) {
+          const targetLineBeginningOfParent: CanvasRectangle =
+            newParentFlexDirection === 'row'
+              ? canvasRectangle({
+                  x: parentRect.x,
+                  y: parentRect.y,
+                  height: parentRect.height,
+                  width: 2,
+                })
+              : canvasRectangle({
+                  x: parentRect.x,
+                  y: parentRect.y,
+                  width: parentRect.width,
+                  height: 2,
+                })
+
+          midInteractionCommands = [
+            wildcardPatch('transient', {
+              canvas: {
+                controls: { flexReparentTargetLines: { $set: [targetLineBeginningOfParent] } },
+              },
+            }),
+          ]
+        } else {
+          // this should be an error because parentRect should never be null
+          midInteractionCommands = []
+        }
+
         interactionFinishCommadns = [...commandsBeforeReorder, ...commandsAfterReorder]
       }
 
