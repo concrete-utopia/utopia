@@ -421,7 +421,14 @@ export class Editor {
         ReactDOM.flushSync(() => {
           ReactDOM.unstable_batchedUpdates(() => {
             this.updateStore(patchedStoreFromFullStore(dispatchResultWithMetadata))
-            if (shouldInspectorUpdate(dispatchResultWithMetadata.strategyState)) {
+            // Spike - show selection changes immediately in the inspector
+            const selectedViewsChanged =
+              oldEditorState.patchedEditor.selectedViews !==
+              dispatchResultWithMetadata.patchedEditor.selectedViews
+            if (
+              selectedViewsChanged ||
+              shouldInspectorUpdate(dispatchResultWithMetadata.strategyState)
+            ) {
               this.updateInspectorStore(patchedStoreFromFullStore(dispatchResultWithMetadata))
             }
           })

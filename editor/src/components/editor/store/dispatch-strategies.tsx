@@ -505,6 +505,13 @@ function handleUpdate(
       strategyResult.commands,
       'transient',
     )
+
+    // Spike - Apply selection changes immediately to highlight that the drag is affecting something else
+    const newEditorStateWithSelectionChanges: EditorState = {
+      ...newEditorState,
+      selectedViews: commandResult.editorState.selectedViews,
+    }
+
     const newStrategyState: StrategyState = {
       currentStrategy: strategy?.strategy.id ?? null,
       currentStrategyFitness: strategy?.fitness ?? 0,
@@ -517,7 +524,7 @@ function handleUpdate(
       startingAllElementProps: strategyState.startingAllElementProps,
     }
     return {
-      unpatchedEditorState: newEditorState,
+      unpatchedEditorState: newEditorStateWithSelectionChanges,
       patchedEditorState: commandResult.editorState,
       newStrategyState: newStrategyState,
     }

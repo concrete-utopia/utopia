@@ -28,6 +28,7 @@ import {
   getMultiselectBounds,
   snapDrag,
 } from './shared-absolute-move-strategy-helpers'
+import { updateSelectedViews } from '../commands/update-selected-views-command'
 
 export const absoluteMoveStrategy: CanvasStrategy = {
   id: 'ABSOLUTE_MOVE',
@@ -76,11 +77,14 @@ export const absoluteMoveStrategy: CanvasStrategy = {
       const getAdjustMoveCommands = (
         snappedDragVector: CanvasPoint,
       ): {
-        commands: Array<AdjustCssLengthProperty>
+        commands: Array<CanvasCommand>
         intendedBounds: Array<CanvasFrameAndTarget>
       } => {
         const filteredSelectedElements = getDragTargets(canvasState.selectedElements)
-        let commands: Array<AdjustCssLengthProperty> = []
+        let commands: Array<CanvasCommand> = [
+          // Spike - try selecting the parent instance to make it clear what has actually been updated
+          updateSelectedViews('permanent', filteredSelectedElements),
+        ]
         let intendedBounds: Array<CanvasFrameAndTarget> = []
         filteredSelectedElements.forEach((selectedElement) => {
           const elementResult = getAbsoluteMoveCommandsForSelectedElement(
@@ -122,6 +126,7 @@ export function applyAbsoluteMoveCommon(
     const drag = interactionState.interactionData.drag
     const shiftKeyPressed = interactionState.interactionData.modifiers.shift
     const cmdKeyPressed = interactionState.interactionData.modifiers.cmd
+    const filteredSelectedElements = getDragTargets(canvasState.selectedElements)
     if (cmdKeyPressed) {
       const commandsForSelectedElements = getMoveCommands(drag)
       return {
@@ -129,7 +134,7 @@ export function applyAbsoluteMoveCommon(
           ...commandsForSelectedElements.commands,
           pushIntendedBounds(commandsForSelectedElements.intendedBounds),
           updateHighlightedViews('transient', []),
-          setElementsToRerenderCommand(canvasState.selectedElements),
+          setElementsToRerenderCommand(filteredSelectedElements),
           setCursorCommand('transient', CSSCursor.Select),
         ],
         customState: null,
@@ -141,7 +146,7 @@ export function applyAbsoluteMoveCommon(
         drag,
         constrainedDragAxis,
         strategyState.startingMetadata,
-        canvasState.selectedElements,
+        filteredSelectedElements,
         canvasState.scale,
       )
       const commandsForSelectedElements = getMoveCommands(snappedDragVector)
@@ -151,7 +156,7 @@ export function applyAbsoluteMoveCommon(
           updateHighlightedViews('transient', []),
           setSnappingGuidelines('transient', guidelinesWithSnappingVector),
           pushIntendedBounds(commandsForSelectedElements.intendedBounds),
-          setElementsToRerenderCommand(canvasState.selectedElements),
+          setElementsToRerenderCommand(filteredSelectedElements),
           setCursorCommand('transient', CSSCursor.Select),
         ],
         customState: null,
