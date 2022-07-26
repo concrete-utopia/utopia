@@ -172,8 +172,15 @@ export function getSelectableViews(
     const allRoots = MetadataUtils.getAllCanvasRootPaths(componentMetadata).filter((rootPath) => {
       return !rootElementsToFilter.some((path) => EP.pathsEqual(rootPath, path))
     })
+
+    // So we can support locking scenes
+    const lockedRoots = allRoots.filter((path) =>
+      lockedElements.some((lockedPath) => EP.pathsEqual(path, lockedPath)),
+    )
+    const pathsToIterate = [...selectedViews, ...lockedRoots]
+
     let siblings: Array<ElementPath> = []
-    Utils.fastForEach(selectedViews, (view) => {
+    Utils.fastForEach(pathsToIterate, (view) => {
       function addChildrenAndUnfurledFocusedComponents(paths: Array<ElementPath>) {
         Utils.fastForEach(paths, (ancestor) => {
           const { children, unfurledComponents } =
