@@ -598,17 +598,20 @@ export interface EditorStateCanvasControls {
   snappingGuidelines: Array<GuidelineWithSnappingVector>
   outlineHighlights: Array<CanvasRectangle>
   strategyIntendedBounds: Array<CanvasFrameAndTarget>
+  flexReparentTargetLines: Array<CanvasRectangle>
 }
 
 export function editorStateCanvasControls(
   snappingGuidelines: Array<GuidelineWithSnappingVector>,
   outlineHighlights: Array<CanvasRectangle>,
   strategyIntendedBounds: Array<CanvasFrameAndTarget>,
+  flexReparentTargetLines: Array<CanvasRectangle>,
 ): EditorStateCanvasControls {
   return {
     snappingGuidelines: snappingGuidelines,
     outlineHighlights: outlineHighlights,
     strategyIntendedBounds: strategyIntendedBounds,
+    flexReparentTargetLines: flexReparentTargetLines,
   }
 }
 
@@ -1737,6 +1740,7 @@ export function createEditorState(dispatch: EditorDispatch): EditorState {
         snappingGuidelines: [],
         outlineHighlights: [],
         strategyIntendedBounds: [],
+        flexReparentTargetLines: [],
       },
     },
     floatingInsertMenu: {
@@ -2027,6 +2031,7 @@ export function editorModelFromPersistentModel(
         snappingGuidelines: [],
         outlineHighlights: [],
         strategyIntendedBounds: [],
+        flexReparentTargetLines: [],
       },
     },
     floatingInsertMenu: {

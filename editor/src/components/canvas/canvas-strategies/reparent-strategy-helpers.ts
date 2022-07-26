@@ -1,6 +1,11 @@
 import { MetadataUtils } from '../../../core/model/element-metadata-utils'
 import * as EP from '../../../core/shared/element-path'
-import { offsetPoint } from '../../../core/shared/math-utils'
+import {
+  canvasRectangle,
+  CanvasRectangle,
+  offsetPoint,
+  zeroCanvasRect,
+} from '../../../core/shared/math-utils'
 import { ElementPath, PropertyPath } from '../../../core/shared/project-file-types'
 import * as PP from '../../../core/shared/property-path'
 import { CSSCursor } from '../canvas-types'
@@ -13,6 +18,7 @@ import { setCursorCommand } from '../commands/set-cursor-command'
 import { setElementsToRerenderCommand } from '../commands/set-elements-to-rerender-command'
 import { updateHighlightedViews } from '../commands/update-highlighted-views-command'
 import { updateSelectedViews } from '../commands/update-selected-views-command'
+import { wildcardPatch } from '../commands/wildcard-patch-command'
 import {
   emptyStrategyApplicationResult,
   InteractionCanvasState,
@@ -176,6 +182,7 @@ export function applyFlexReparent(
   canvasState: InteractionCanvasState,
   interactionSession: InteractionSession,
   strategyState: StrategyState,
+  lifecycle: 'mid-interaction' | 'end-interaction',
 ): StrategyApplicationResult {
   if (
     interactionSession.interactionData.type == 'DRAG' &&
@@ -214,7 +221,13 @@ export function applyFlexReparent(
         setCursorCommand('transient', CSSCursor.Move),
       ]
 
-      let commands: Array<CanvasCommand>
+      const newParentFlexDirection = MetadataUtils.getFlexDirection(
+        MetadataUtils.findElementByElementPath(strategyState.startingMetadata, newParent),
+      )
+
+      let interactionFinishCommadns: Array<CanvasCommand>
+      let midInteractionCommands: Array<CanvasCommand>
+
       if (reparentResult.shouldReorder) {
         // Reorder the newly reparented element into the flex ordering.
         const pointOnCanvas = offsetPoint(
@@ -232,17 +245,53 @@ export function applyFlexReparent(
           siblingsOfTarget,
           pointOnCanvas,
         )
-        commands = [
+
+        const siblingPosition: CanvasRectangle =
+          [
+            MetadataUtils.getFrameInCanvasCoords(newParent, strategyState.startingMetadata), // we add the parent as the first element
+            ...siblingsOfTarget.map((sibling) => {
+              return MetadataUtils.getFrameInCanvasCoords(sibling, strategyState.startingMetadata)
+            }),
+          ][newIndex] ?? zeroCanvasRect
+
+        const targetLine: CanvasRectangle =
+          newParentFlexDirection === 'row'
+            ? canvasRectangle({
+                x: siblingPosition?.x,
+                y: siblingPosition?.y,
+                height: siblingPosition?.height,
+                width: 2,
+              })
+            : canvasRectangle({
+                x: siblingPosition?.x,
+                y: siblingPosition?.y,
+                width: siblingPosition?.width,
+                height: 2,
+              })
+
+        midInteractionCommands = [
+          wildcardPatch('transient', {
+            canvas: { controls: { flexReparentTargetLines: { $set: [targetLine] } } },
+          }),
+        ]
+
+        interactionFinishCommadns = [
           ...commandsBeforeReorder,
           reorderElement('permanent', newPath, newIndex),
           ...commandsAfterReorder,
         ]
       } else {
-        commands = [...commandsBeforeReorder, ...commandsAfterReorder]
+        midInteractionCommands = []
+        interactionFinishCommadns = [...commandsBeforeReorder, ...commandsAfterReorder]
+      }
+
+      if (lifecycle === 'mid-interaction') {
+        // do nothing
+        return { commands: midInteractionCommands, customState: null }
       }
 
       return {
-        commands: commands,
+        commands: interactionFinishCommadns,
         customState: strategyState.customStrategyState,
       }
     }

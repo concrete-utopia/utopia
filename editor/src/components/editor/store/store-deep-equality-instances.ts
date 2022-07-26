@@ -1531,13 +1531,15 @@ export const GuidelineWithSnappingVectorKeepDeepEquality: KeepDeepEqualityCall<G
   )
 
 export const EditorStateCanvasControlsKeepDeepEquality: KeepDeepEqualityCall<EditorStateCanvasControls> =
-  combine3EqualityCalls(
+  combine4EqualityCalls(
     (controls) => controls.snappingGuidelines,
     arrayDeepEquality(GuidelineWithSnappingVectorKeepDeepEquality),
     (controls) => controls.outlineHighlights,
     arrayDeepEquality(CanvasRectangleKeepDeepEquality),
     (controls) => controls.strategyIntendedBounds,
     arrayDeepEquality(FrameAndTargetKeepDeepEquality),
+    (controls) => controls.flexReparentTargetLines,
+    arrayDeepEquality(CanvasRectangleKeepDeepEquality),
     editorStateCanvasControls,
   )
 
