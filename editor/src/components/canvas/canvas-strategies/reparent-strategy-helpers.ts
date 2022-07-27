@@ -1,13 +1,20 @@
 import { MetadataUtils } from '../../../core/model/element-metadata-utils'
 import * as EP from '../../../core/shared/element-path'
+import { ElementInstanceMetadataMap } from '../../../core/shared/element-template'
 import {
+  canvasPoint,
+  CanvasPoint,
   canvasRectangle,
   CanvasRectangle,
+  normalizeRect,
   offsetPoint,
+  rectContainsPoint,
+  rectFromTwoPoints,
   zeroCanvasRect,
 } from '../../../core/shared/math-utils'
 import { ElementPath, PropertyPath } from '../../../core/shared/project-file-types'
 import * as PP from '../../../core/shared/property-path'
+import { AllElementProps } from '../../editor/store/editor-state'
 import { CSSCursor } from '../canvas-types'
 import { getReparentTarget } from '../canvas-utils'
 import { CanvasCommand } from '../commands/commands'
@@ -19,6 +26,7 @@ import { setElementsToRerenderCommand } from '../commands/set-elements-to-rerend
 import { updateHighlightedViews } from '../commands/update-highlighted-views-command'
 import { updateSelectedViews } from '../commands/update-selected-views-command'
 import { wildcardPatch } from '../commands/wildcard-patch-command'
+import { getAllTargetsAtPointAABB } from '../dom-lookup'
 import {
   emptyStrategyApplicationResult,
   InteractionCanvasState,
@@ -110,6 +118,7 @@ export function getReparentTargetForFlexElement(
   shouldReparent: boolean
   newParent: ElementPath | null
   shouldReorder: boolean
+  newIndex: number
 } {
   if (
     interactionSession.interactionData.type !== 'DRAG' ||
@@ -119,6 +128,7 @@ export function getReparentTargetForFlexElement(
       shouldReparent: false,
       newParent: null,
       shouldReorder: false,
+      newIndex: -1,
     }
   }
 
@@ -126,6 +136,18 @@ export function getReparentTargetForFlexElement(
     interactionSession.interactionData.originalDragStart,
     interactionSession.interactionData.drag,
   )
+
+  const flexReparentResult = findFlexReparentTarget(
+    strategyState.startingMetadata,
+    strategyState.startingAllElementProps,
+    pointOnCanvas,
+  )
+
+  if (flexReparentResult.shouldReparent) {
+    return flexReparentResult
+  }
+
+  // fallback to what is essentially an absolute reparent, TODO enforce Absolute
 
   const reparentResult = getReparentTarget(
     filteredSelectedElements,
@@ -141,31 +163,131 @@ export function getReparentTargetForFlexElement(
     return {
       ...reparentResult,
       shouldReorder: false,
+      newIndex: -1,
     }
   } else {
-    // The target is in a flex container, so we want the parent of the target to reparent
-    // into and reordering should be triggered because the pointer is over an existing flex element.
-    if (
-      MetadataUtils.isParentYogaLayoutedContainerAndElementParticipatesInLayout(
-        reparentResult.newParent,
-        strategyState.startingMetadata,
-      )
-    ) {
-      return {
-        shouldReparent: true,
-        newParent: EP.parentPath(reparentResult.newParent),
-        shouldReorder: true,
+    return {
+      shouldReparent: true,
+      newParent: reparentResult.newParent,
+      shouldReorder: false,
+      newIndex: -1,
+    }
+  }
+}
+
+function findFlexReparentTarget(
+  metadata: ElementInstanceMetadataMap,
+  allElementProps: AllElementProps,
+  point: CanvasPoint,
+): {
+  shouldReparent: boolean
+  newParent: ElementPath | null
+  shouldReorder: boolean
+  newIndex: number
+} {
+  const flexElementsUnderPoint = getAllTargetsAtPointAABB(
+    metadata,
+    [],
+    [],
+    'no-filter',
+    point,
+    allElementProps,
+  ).filter((element) =>
+    MetadataUtils.isFlexLayoutedContainer(
+      MetadataUtils.findElementByElementPath(metadata, element),
+    ),
+  )
+
+  for (const flexElementPath of flexElementsUnderPoint) {
+    const flexElement = MetadataUtils.findElementByElementPath(metadata, flexElementPath)
+    const targets: Array<CanvasRectangle> = (() => {
+      const flexDirection = MetadataUtils.getFlexDirection(flexElement)
+      const parentBounds = MetadataUtils.getFrameInCanvasCoords(flexElementPath, metadata)
+
+      if (parentBounds == null) {
+        // TODO should we throw an error?
+        return []
       }
-    } else {
-      // Otherwise we want to use the target directly.
-      // But in this case no re-ordering should be triggered, the element should just be
-      // added to the end.
+
+      const leftOrTop = flexDirection === 'row' ? 'x' : 'y'
+      const leftOrTopComplement = flexDirection === 'row' ? 'y' : 'x'
+      const widthOrHeight = flexDirection === 'row' ? 'width' : 'height'
+      const widthOrHeightComplement = flexDirection === 'row' ? 'height' : 'width'
+
+      const pseudoElementBefore = { start: parentBounds[leftOrTop], end: parentBounds[leftOrTop] }
+      const pseudoElementAfter = {
+        start: parentBounds[leftOrTop] + parentBounds[widthOrHeight],
+        end: parentBounds[leftOrTop] + parentBounds[widthOrHeight],
+      }
+
+      const childrenBounds: Array<{ start: number; end: number }> = MetadataUtils.getChildrenPaths(
+        metadata,
+        flexElementPath,
+      ).map((childPath) => {
+        const bounds = MetadataUtils.getFrameInCanvasCoords(childPath, metadata)!
+        return {
+          start: bounds[leftOrTop],
+          end: bounds[leftOrTop] + bounds[widthOrHeight],
+        }
+      })
+
+      const childrenBoundsAlongAxis: Array<{ start: number; end: number }> = [
+        pseudoElementBefore,
+        ...childrenBounds,
+        pseudoElementAfter,
+      ]
+
+      let flexInsertionTargets: Array<CanvasRectangle> = []
+      for (let index = 0; index < childrenBoundsAlongAxis.length - 1; index++) {
+        const start = childrenBoundsAlongAxis[index].end + (index === 0 ? 0 : -5)
+        const end = childrenBoundsAlongAxis[index + 1].start
+
+        const normalizedStart = Math.min(start, end)
+        const normalizedEnd = Math.max(start, end)
+
+        const ExtraPadding = 5
+
+        const paddedStart = normalizedStart - ExtraPadding
+        const paddedEnd = normalizedEnd + ExtraPadding
+
+        flexInsertionTargets.push(
+          rectFromTwoPoints(
+            {
+              [leftOrTop]: paddedStart,
+              [leftOrTopComplement]: parentBounds[leftOrTopComplement],
+            } as any as CanvasPoint, // TODO Atone
+            {
+              [leftOrTop]: paddedEnd,
+              [leftOrTopComplement]:
+                parentBounds[leftOrTopComplement] + parentBounds[widthOrHeightComplement],
+            } as any as CanvasPoint, // TODO Apologize to Sean
+          ),
+        )
+      }
+      return flexInsertionTargets
+    })()
+
+    const targetUnderMouseIndex = targets.findIndex((target) => {
+      return rectContainsPoint(target, point)
+    })
+
+    if (targetUnderMouseIndex > -1) {
+      // we found a target!
       return {
         shouldReparent: true,
-        newParent: reparentResult.newParent,
-        shouldReorder: false,
+        shouldReorder: true,
+        newParent: flexElementPath,
+        newIndex: targetUnderMouseIndex,
       }
     }
+  }
+
+  // none of the targets were under the mouse, fallback return
+  return {
+    shouldReparent: false,
+    shouldReorder: false,
+    newParent: null,
+    newIndex: -1,
   }
 }
 
