@@ -276,6 +276,9 @@ export function applyFlexReparent(
 
         midInteractionCommands = [
           wildcardPatch('transient', {
+            canvas: { controls: { parentHighlightPaths: { $set: [newParent] } } },
+          }),
+          wildcardPatch('transient', {
             canvas: { controls: { flexReparentTargetLines: { $set: [targetLineBeforeSibling] } } },
           }),
         ]
@@ -309,6 +312,9 @@ export function applyFlexReparent(
 
           midInteractionCommands = [
             wildcardPatch('transient', {
+              canvas: { controls: { parentHighlightPaths: { $set: [newParent] } } },
+            }),
+            wildcardPatch('transient', {
               canvas: { controls: { flexReparentTargetLines: { $set: [targetLineAfterSibling] } } },
             }),
           ]
@@ -329,6 +335,9 @@ export function applyFlexReparent(
                 })
 
           midInteractionCommands = [
+            wildcardPatch('transient', {
+              canvas: { controls: { parentHighlightPaths: { $set: [newParent] } } },
+            }),
             wildcardPatch('transient', {
               canvas: {
                 controls: { flexReparentTargetLines: { $set: [targetLineBeginningOfParent] } },
