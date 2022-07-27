@@ -357,14 +357,14 @@ export async function renderTestEditorWithModel(
 
   await act(async () => {
     await asyncTestDispatch(
-      [switchEditorMode(EditorModes.selectMode()), setPanelVisibility('codeEditor', false)],
+      [
+        switchEditorMode(EditorModes.selectMode()),
+        setPanelVisibility('codeEditor', false),
+        updateNodeModulesContents(SampleNodeModules),
+      ],
       undefined,
       true,
     )
-  })
-
-  await act(async () => {
-    await asyncTestDispatch([updateNodeModulesContents(SampleNodeModules)], undefined, true)
   })
 
   return {
