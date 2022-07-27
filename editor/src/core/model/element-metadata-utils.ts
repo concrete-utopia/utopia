@@ -158,10 +158,10 @@ export const MetadataUtils = {
         nodeModules,
         openFile,
         'unknown-element',
-        (success, element, underlyingTarget, underlyingFilePath) => {
+        (success, element, underlyingTarget, underlyingFilePath, underlyingDynamicTarget) => {
           return MetadataUtils.getElementOriginType(
             getUtopiaJSXComponentsFromSuccess(success),
-            underlyingTarget,
+            underlyingDynamicTarget,
           )
         },
       )
