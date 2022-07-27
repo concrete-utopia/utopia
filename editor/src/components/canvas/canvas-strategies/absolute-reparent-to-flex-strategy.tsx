@@ -28,6 +28,7 @@ import { CanvasCommand, foldAndApplyCommandsInner } from '../commands/commands'
 import { deleteProperties } from '../commands/delete-properties-command'
 import { updateSelectedViews } from '../commands/update-selected-views-command'
 import { findReparentStrategy, getReparentTargetForFlexElement } from './reparent-strategy-helpers'
+import { getReparentCommands } from './reparent-utils'
 
 const propertiesToRemove: Array<PropertyPath> = [
   PP.create(['style', 'position']),
@@ -123,12 +124,21 @@ export const absoluteReparentToFlexStrategy: CanvasStrategy = {
         const newParent = reparentResult.newParent
         // Reparent the element.
         const newPath = EP.appendToPath(reparentResult.newParent, EP.toUid(target))
-        const reparentCommand = reparentElement('permanent', target, reparentResult.newParent)
+        const reparentCommands = getReparentCommands(
+          canvasState.projectContents,
+          canvasState.nodeModules,
+          canvasState.openFile,
+          target,
+          reparentResult.newParent,
+        )
 
         // Strip the `position`, positional and dimension properties.
         const commandToRemoveProperties = deleteProperties('permanent', newPath, propertiesToRemove)
 
-        const commandsBeforeReorder = [reparentCommand, updateSelectedViews('permanent', [newPath])]
+        const commandsBeforeReorder = [
+          ...reparentCommands,
+          updateSelectedViews('permanent', [newPath]),
+        ]
 
         const commandsAfterReorder = [
           commandToRemoveProperties,

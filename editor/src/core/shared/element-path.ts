@@ -991,3 +991,7 @@ export function getOrderedPathsByDepth(elementPaths: Array<ElementPath>): Array<
     return depth(b) - depth(a)
   })
 }
+
+export function emptyStaticElementPathPart(): StaticElementPathPart {
+  return [] as unknown as StaticElementPathPart
+}

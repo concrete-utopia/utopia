@@ -15,6 +15,7 @@ import { DragOutlineControl } from '../controls/select-mode/drag-outline-control
 import { CanvasStrategy, emptyStrategyApplicationResult } from './canvas-strategy-types'
 import { getReorderIndex } from './flex-reorder-strategy'
 import { findReparentStrategy, getReparentTargetForFlexElement } from './reparent-strategy-helpers'
+import { getReparentCommands } from './reparent-utils'
 import { getDragTargets } from './shared-absolute-move-strategy-helpers'
 
 export const flexReparentToFlexStrategy: CanvasStrategy = {
@@ -81,9 +82,18 @@ export const flexReparentToFlexStrategy: CanvasStrategy = {
         const newParent = reparentResult.newParent
         // Reparent the element.
         const newPath = EP.appendToPath(reparentResult.newParent, EP.toUid(target))
-        const reparentCommand = reparentElement('permanent', target, reparentResult.newParent)
+        const reparentCommands = getReparentCommands(
+          canvasState.projectContents,
+          canvasState.nodeModules,
+          canvasState.openFile,
+          target,
+          reparentResult.newParent,
+        )
 
-        const commandsBeforeReorder = [reparentCommand, updateSelectedViews('permanent', [newPath])]
+        const commandsBeforeReorder = [
+          ...reparentCommands,
+          updateSelectedViews('permanent', [newPath]),
+        ]
 
         const commandsAfterReorder = [
           setElementsToRerenderCommand([newPath]),
