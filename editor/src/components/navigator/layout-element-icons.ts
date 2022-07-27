@@ -135,7 +135,7 @@ export function createElementIconPropsFromMetadata(
   if (isFragment) {
     return {
       category: 'element',
-      type: 'placeholder',
+      type: 'group-open',
       width: 18,
       height: 18,
     }
