@@ -113,14 +113,7 @@ import {
   PropertyControlsInfo,
   ResolveFn,
 } from '../../custom-code/code-file'
-import {
-  convertModeToSavedMode,
-  EditorModes,
-  isLiveMode,
-  isSelectMode,
-  Mode,
-  PersistedMode,
-} from '../editor-modes'
+import { convertModeToSavedMode, EditorModes, Mode, PersistedMode } from '../editor-modes'
 import { FontSettings } from '../../inspector/common/css-utils'
 import { DebugDispatch, EditorDispatch, LoginState, ProjectListing } from '../action-types'
 import { CURRENT_PROJECT_VERSION } from '../actions/migrations/migrations'
@@ -1047,16 +1040,10 @@ export function mergeStoredEditorStateIntoEditorState(
   if (storedEditorState == null) {
     return editor
   } else {
-    // for unknown mode types, like select-lite
-    const mode =
-      storedEditorState.mode == null ||
-      !(isSelectMode(storedEditorState.mode) || isLiveMode(storedEditorState.mode))
-        ? EditorModes.selectMode()
-        : storedEditorState.mode
     return {
       ...editor,
       selectedViews: storedEditorState.selectedViews,
-      mode: mode,
+      mode: storedEditorState.mode ?? EditorModes.selectMode(),
     }
   }
 }
