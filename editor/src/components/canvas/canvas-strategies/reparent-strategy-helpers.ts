@@ -250,6 +250,8 @@ function findFlexReparentTarget(
         const paddedStart = normalizedStart - ExtraPadding
         const paddedEnd = normalizedEnd + ExtraPadding
 
+        // TODO for tomorrow this code doesn't find the drop zone _after_ the last element
+
         flexInsertionTargets.push(
           rectFromTwoPoints(
             {
