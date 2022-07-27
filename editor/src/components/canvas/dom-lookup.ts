@@ -3,6 +3,7 @@ import { getDOMAttribute } from '../../core/shared/dom-utils'
 import { ElementInstanceMetadataMap } from '../../core/shared/element-template'
 import {
   boundingRectangleArray,
+  CanvasPoint,
   canvasPoint,
   CanvasVector,
   negate,
@@ -225,21 +226,19 @@ export function getAllTargetsAtPointAABB(
   selectedViews: Array<ElementPath>,
   hiddenInstances: Array<ElementPath>,
   validElementPathsForLookup: Array<ElementPath> | 'no-filter',
-  point: WindowPoint | null,
-  canvasScale: number,
-  canvasOffset: CanvasVector,
+  pointOnCanvas: CanvasPoint | null,
   allElementProps: AllElementProps,
 ): Array<ElementPath> {
-  if (point == null) {
+  if (pointOnCanvas == null) {
     return []
   }
 
-  const pointOnCanvas = windowToCanvasCoordinates(canvasScale, canvasOffset, point)
+  const canvasPositionRaw = pointOnCanvas
   const getElementsUnderPointFromAABB = Canvas.getAllTargetsAtPoint(
     componentMetadata,
     selectedViews,
     hiddenInstances,
-    pointOnCanvas.canvasPositionRaw,
+    canvasPositionRaw,
     [TargetSearchType.All],
     true,
     'loose',

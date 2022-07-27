@@ -67,8 +67,7 @@ export const absoluteDuplicateStrategy: CanvasStrategy = {
       canvasState.selectedElements.length > 0 &&
       interactionState.interactionData.type === 'DRAG' &&
       interactionState.activeControl.type === 'BOUNDING_AREA' &&
-      interactionState.interactionData.modifiers.alt &&
-      interactionState.interactionData.drag != null
+      interactionState.interactionData.modifiers.alt
     ) {
       return 2
     }
@@ -130,9 +129,13 @@ export const absoluteDuplicateStrategy: CanvasStrategy = {
           duplicatedElementNewUids: duplicatedElementNewUids,
         },
       }
+    } else {
+      // Fallback for when the checks above are not satisfied.
+      return {
+        commands: [setCursorCommand('transient', CSSCursor.Duplicate)],
+        customState: null,
+      }
     }
-    // Fallback for when the checks above are not satisfied.
-    return emptyStrategyApplicationResult
   },
 }
 
