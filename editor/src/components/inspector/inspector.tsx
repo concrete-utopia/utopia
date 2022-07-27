@@ -322,6 +322,10 @@ export const Inspector = React.memo<InspectorProps>((props: InspectorProps) => {
     return props.elementPath.length !== 0 && !anyUnknownElements
   }, [props.elementPath, anyUnknownElements])
 
+  const shouldShowLayoutSection = props.selectedViews.every(
+    (path) => !EP.isRootElementOfInstance(path),
+  )
+
   function renderInspectorContents() {
     return (
       <React.Fragment>
@@ -348,11 +352,14 @@ export const Inspector = React.memo<InspectorProps>((props: InspectorProps) => {
             onStyleSelectorDelete={props.onStyleSelectorDelete}
             onStyleSelectorInsert={props.onStyleSelectorInsert}
           />
-          <LayoutSection
-            hasNonDefaultPositionAttributes={hasNonDefaultPositionAttributes}
-            aspectRatioLocked={aspectRatioLocked}
-            toggleAspectRatioLock={toggleAspectRatioLock}
-          />
+          {when(
+            shouldShowLayoutSection,
+            <LayoutSection
+              hasNonDefaultPositionAttributes={hasNonDefaultPositionAttributes}
+              aspectRatioLocked={aspectRatioLocked}
+              toggleAspectRatioLock={toggleAspectRatioLock}
+            />,
+          )}
           <StyleSection />
           <WarningSubsection />
           <ImgSection />
