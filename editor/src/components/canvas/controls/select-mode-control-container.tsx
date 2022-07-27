@@ -54,7 +54,6 @@ interface SelectModeControlContainerProps extends ControlProps {
   isDragging: boolean // set only when user already moves a cursor a little after a mousedown
   isResizing: boolean
   selectionEnabled: boolean
-  draggingEnabled: boolean
   contextMenuEnabled: boolean
   maybeHighlightOnHover: (target: ElementPath) => void
   maybeClearHighlightsOnHoverEnd: () => void
@@ -140,9 +139,7 @@ export class SelectModeControlContainer extends React.Component<
     _start: CanvasPoint,
     originalEvent: React.MouseEvent<HTMLDivElement>,
   ): void => {
-    if (this.props.draggingEnabled) {
-      this.props.startDragStateAfterDragExceedsThreshold(originalEvent.nativeEvent, target)
-    }
+    this.props.startDragStateAfterDragExceedsThreshold(originalEvent.nativeEvent, target)
   }
 
   onContextMenu = (event: React.MouseEvent<HTMLDivElement>): void => {
@@ -272,7 +269,6 @@ export class SelectModeControlContainer extends React.Component<
     if (
       this.props.selectedViews.length > 0 &&
       this.props.isDragging &&
-      this.props.draggingEnabled &&
       !areYogaChildren(this.props.componentMetadata, this.props.selectedViews) &&
       !this.props.keysPressed['cmd']
     ) {
@@ -454,10 +450,6 @@ export class SelectModeControlContainer extends React.Component<
     return this.props.selectedViews.some((et) => EP.pathsEqual(et, tp))
   }
 
-  canResizeElements(): boolean {
-    return this.props.draggingEnabled
-  }
-
   render(): JSX.Element {
     const cmdPressed = this.props.keysPressed['cmd'] || false
     const allElementsDirectlySelectable = cmdPressed && !this.props.isDragging
@@ -499,20 +491,15 @@ export class SelectModeControlContainer extends React.Component<
         {this.props.selectionEnabled ? (
           <>
             <OutlineControls {...this.props} />
-            {this.canResizeElements() ? (
-              <>
-                <ConstraintsControls {...this.props} />
-                <YogaControls
-                  {...this.props}
-                  dragState={
-                    this.props.dragState != null &&
-                    this.props.dragState.type === 'RESIZE_DRAG_STATE'
-                      ? this.props.dragState
-                      : null
-                  }
-                />
-              </>
-            ) : null}
+            <ConstraintsControls {...this.props} />
+            <YogaControls
+              {...this.props}
+              dragState={
+                this.props.dragState != null && this.props.dragState.type === 'RESIZE_DRAG_STATE'
+                  ? this.props.dragState
+                  : null
+              }
+            />
             <ZeroSizedElementControls />
           </>
         ) : null}

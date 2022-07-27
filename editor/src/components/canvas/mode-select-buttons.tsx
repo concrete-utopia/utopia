@@ -4,7 +4,7 @@ import { jsx } from '@emotion/react'
 import React from 'react'
 import { useColorTheme, FlexRow, UtopiaStyles } from '../../uuiui'
 import { switchEditorMode } from '../editor/actions/action-creators'
-import { EditorModes, isLiveMode, isSelectLiteMode, isSelectMode } from '../editor/editor-modes'
+import { EditorModes, isLiveMode, isSelectMode } from '../editor/editor-modes'
 import { useEditorState } from '../editor/store/store-hook'
 
 interface ModeSelectButtonProps {
@@ -60,10 +60,6 @@ export const ModeSelectButtons = React.memo(() => {
     () => dispatch([switchEditorMode(EditorModes.selectMode())]),
     [dispatch],
   )
-  const switchToSelectLiteMode = React.useCallback(
-    () => dispatch([switchEditorMode(EditorModes.selectLiteMode())]),
-    [dispatch],
-  )
   const switchToLiveMode = React.useCallback(
     () => dispatch([switchEditorMode(EditorModes.liveMode())]),
     [dispatch],
@@ -98,11 +94,6 @@ export const ModeSelectButtons = React.memo(() => {
             selected={isSelectMode(currentMode)}
             title={'Edit ᵝ'}
             onMouseDown={switchToSelectMode}
-          />
-          <ModeSelectButton
-            selected={isSelectLiteMode(currentMode)}
-            title={'Select'}
-            onMouseDown={switchToSelectLiteMode}
           />
           <ModeSelectButton
             selected={isLiveMode(currentMode)}

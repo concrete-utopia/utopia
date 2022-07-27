@@ -122,17 +122,13 @@ export interface SelectMode {
   controlId: string | null
 }
 
-export interface SelectLiteMode {
-  type: 'select-lite'
-}
-
 export interface LiveCanvasMode {
   type: 'live'
   controlId: string | null
 }
 
-export type Mode = InsertMode | SelectMode | SelectLiteMode | LiveCanvasMode
-export type PersistedMode = SelectMode | SelectLiteMode | LiveCanvasMode
+export type Mode = InsertMode | SelectMode | LiveCanvasMode
+export type PersistedMode = SelectMode | LiveCanvasMode
 
 export const EditorModes = {
   insertMode: function (insertionStarted: boolean, subject: InsertionSubject): InsertMode {
@@ -146,11 +142,6 @@ export const EditorModes = {
     return {
       type: 'select',
       controlId: controlId,
-    }
-  },
-  selectLiteMode: function (): SelectLiteMode {
-    return {
-      type: 'select-lite',
     }
   },
   liveMode: function (controlId: string | null = null): LiveCanvasMode {
@@ -167,9 +158,6 @@ export function isInsertMode(value: Mode): value is InsertMode {
 export function isSelectMode(value: Mode): value is SelectMode {
   return value.type === 'select'
 }
-export function isSelectLiteMode(value: Mode): value is SelectLiteMode {
-  return value.type === 'select-lite'
-}
 export function isLiveMode(value: Mode): value is LiveCanvasMode {
   return value.type === 'live'
 }
@@ -178,8 +166,6 @@ export function convertModeToSavedMode(mode: Mode): PersistedMode {
   switch (mode.type) {
     case 'live':
       return EditorModes.liveMode()
-    case 'select-lite':
-      return EditorModes.selectLiteMode()
     case 'select':
     case 'insert':
       return EditorModes.selectMode()

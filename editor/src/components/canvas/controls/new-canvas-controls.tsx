@@ -30,7 +30,7 @@ import {
 import { MetadataUtils } from '../../../core/model/element-metadata-utils'
 import { isAspectRatioLockedNew } from '../../aspect-ratio'
 import { ElementContextMenu } from '../../element-context-menu'
-import { isLiveMode, EditorModes, isSelectLiteMode, Mode } from '../../editor/editor-modes'
+import { isLiveMode, EditorModes, Mode } from '../../editor/editor-modes'
 import { DropTargetHookSpec, ConnectableElement, useDrop, DndProvider } from 'react-dnd'
 import { FileBrowserItemProps } from '../../filebrowser/fileitem'
 import { forceNotNull } from '../../../core/shared/optional-utils'
@@ -258,7 +258,6 @@ const NewCanvasControlsInner = (props: NewCanvasControlsInnerProps) => {
   const resizing = isResizing(props.editor)
   const dragging = isDragging(props.editor)
   const selectionEnabled = pickSelectionEnabled(props.editor.canvas, props.editor.keysPressed)
-  const draggingEnabled = !isSelectLiteMode(props.editor.mode)
   const contextMenuEnabled = !isLiveMode(props.editor.mode)
 
   const { maybeHighlightOnHover, maybeClearHighlightsOnHoverEnd } = useMaybeHighlightElement()
@@ -294,7 +293,6 @@ const NewCanvasControlsInner = (props: NewCanvasControlsInnerProps) => {
       if (isFeatureEnabled('Canvas Strategies')) {
         switch (props.editor.mode.type) {
           case 'select':
-          case 'select-lite':
           case 'live': {
             event.stopPropagation()
             event.preventDefault()
@@ -354,7 +352,6 @@ const NewCanvasControlsInner = (props: NewCanvasControlsInnerProps) => {
     const dragState = props.editor.canvas.dragState
     switch (props.editor.mode.type) {
       case 'select':
-      case 'select-lite':
       case 'live': {
         if (isFeatureEnabled('Canvas Strategies')) {
           return null
@@ -369,7 +366,6 @@ const NewCanvasControlsInner = (props: NewCanvasControlsInnerProps) => {
               isDragging={dragging}
               isResizing={resizing}
               selectionEnabled={selectionEnabled}
-              draggingEnabled={draggingEnabled}
               contextMenuEnabled={contextMenuEnabled}
               maybeHighlightOnHover={maybeHighlightOnHover}
               maybeClearHighlightsOnHoverEnd={maybeClearHighlightsOnHoverEnd}
@@ -452,8 +448,7 @@ const NewCanvasControlsInner = (props: NewCanvasControlsInnerProps) => {
     >
       {renderModeControlContainer()}
       {when(
-        (isFeatureEnabled('Canvas Strategies') && props.editor.mode.type === 'select') ||
-          props.editor.mode.type === 'select-lite',
+        isFeatureEnabled('Canvas Strategies') && props.editor.mode.type === 'select',
         <SceneLabelControl
           maybeHighlightOnHover={maybeHighlightOnHover}
           maybeClearHighlightsOnHoverEnd={maybeClearHighlightsOnHoverEnd}
@@ -462,16 +457,12 @@ const NewCanvasControlsInner = (props: NewCanvasControlsInnerProps) => {
       {when(
         resizeStatus !== 'disabled',
         <>
-          {when(isCanvasStrategyOnAndSelectOrSelectLiteMode(props.editor.mode), <PinLines />)}
+          {when(isCanvasStrategyOnAndSelectMode(props.editor.mode), <PinLines />)}
+          {when(isCanvasStrategyOnAndSelectMode(props.editor.mode), <DistanceGuidelineControl />)}
           {when(
-            isCanvasStrategyOnAndSelectOrSelectLiteMode(props.editor.mode),
-            <DistanceGuidelineControl />,
-          )}
-          {when(
-            (isFeatureEnabled('Canvas Strategies') &&
+            isFeatureEnabled('Canvas Strategies') &&
               isFeatureEnabled('Insertion Plus Button') &&
-              props.editor.mode.type === 'select') ||
-              props.editor.mode.type === 'select-lite',
+              props.editor.mode.type === 'select',
             <InsertionControls />,
           )}
           {renderHighlightControls()}
@@ -483,7 +474,7 @@ const NewCanvasControlsInner = (props: NewCanvasControlsInnerProps) => {
           {when(isFeatureEnabled('Canvas Strategies'), <GuidelineControls />)}
           <OutlineHighlightControl />
           {when(
-            isCanvasStrategyOnAndSelectOrSelectLiteMode(props.editor.mode),
+            isCanvasStrategyOnAndSelectMode(props.editor.mode),
             <>{strategyControls.map((c) => React.createElement(c.control, { key: c.key }))}</>,
           )}
         </>,
@@ -493,8 +484,6 @@ const NewCanvasControlsInner = (props: NewCanvasControlsInnerProps) => {
   )
 }
 
-function isCanvasStrategyOnAndSelectOrSelectLiteMode(mode: Mode): boolean {
-  return (
-    (isFeatureEnabled('Canvas Strategies') && mode.type === 'select') || mode.type === 'select-lite'
-  )
+function isCanvasStrategyOnAndSelectMode(mode: Mode): boolean {
+  return isFeatureEnabled('Canvas Strategies') && mode.type === 'select'
 }
