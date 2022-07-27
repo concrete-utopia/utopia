@@ -73,7 +73,7 @@ describe('fixParseSuccessUIDs', () => {
     expect(getUidTree(fileWithFragmentUpdated)).toMatchInlineSnapshot(`
       "4ed
         random-uuid
-      4be
+      a61
         001
         f6d
       storyboard

@@ -35909,7 +35909,7 @@ exports[`UiJsxCanvas render renders fragments correctly 1`] = `
   <div
     id=\\"canvas-container\\"
     style=\\"position: absolute\\"
-    data-utopia-valid-paths=\\"eee eee/fff eee/fff/app eee/fff/app:aaa eee/fff/app:aaa/ggg eee/fff/app:aaa/ggg/bbb eee/fff/app:aaa/ggg/bbb/09a eee/fff/app:aaa/ggg/bbb/09a/ccc eee/fff/app:aaa/ddd\\"
+    data-utopia-valid-paths=\\"eee eee/fff eee/fff/app eee/fff/app:aaa eee/fff/app:aaa/ggg eee/fff/app:aaa/ggg/bbb eee/fff/app:aaa/ggg/bbb/33e eee/fff/app:aaa/ggg/bbb/33e/ccc eee/fff/app:aaa/ddd\\"
     data-utopia-root-element-path=\\"eee\\"
   >
     <div
@@ -35960,7 +35960,7 @@ exports[`UiJsxCanvas render renders fragments correctly 1`] = `
             data-label=\\"some-other-div\\"
             style=\\"width: 100px; height: 100px\\"
             data-uid=\\"ccc\\"
-            data-path=\\"eee/fff/app:aaa/ggg/bbb/09a/ccc\\"
+            data-path=\\"eee/fff/app:aaa/ggg/bbb/33e/ccc\\"
           ></div>
         </div>
         <div data-uid=\\"ddd\\" data-path=\\"eee/fff/app:aaa/ddd\\">World</div>
@@ -36347,7 +36347,7 @@ Object {
                       },
                     ],
                     "type": "JSX_FRAGMENT",
-                    "uid": "09a",
+                    "uid": "33e",
                     "uniqueID": "",
                   },
                 ],
@@ -36878,7 +36878,7 @@ export var storyboard = (
                   },
                 ],
                 "type": "JSX_FRAGMENT",
-                "uid": "09a",
+                "uid": "33e",
                 "uniqueID": "",
               },
             ],
@@ -37123,7 +37123,7 @@ export var storyboard = (
               },
             ],
             "type": "JSX_FRAGMENT",
-            "uid": "09a",
+            "uid": "33e",
             "uniqueID": "",
           },
         ],
@@ -37254,7 +37254,7 @@ export var storyboard = (
       "usesParentBounds": false,
     },
   },
-  "eee/fff/app:aaa/ggg/bbb/09a": Object {
+  "eee/fff/app:aaa/ggg/bbb/33e": Object {
     "attributeMetadatada": Object {},
     "componentInstance": false,
     "computedStyle": Object {},
@@ -37328,7 +37328,7 @@ export var storyboard = (
           },
         ],
         "type": "JSX_FRAGMENT",
-        "uid": "09a",
+        "uid": "33e",
         "uniqueID": "",
       },
     },
@@ -37343,7 +37343,7 @@ export var storyboard = (
           "aaa",
           "ggg",
           "bbb",
-          "09a",
+          "33e",
         ],
       ],
       "type": "elementpath",
@@ -37394,7 +37394,7 @@ export var storyboard = (
       "usesParentBounds": false,
     },
   },
-  "eee/fff/app:aaa/ggg/bbb/09a/ccc": Object {
+  "eee/fff/app:aaa/ggg/bbb/33e/ccc": Object {
     "attributeMetadatada": Object {},
     "componentInstance": false,
     "computedStyle": Object {},
@@ -37476,7 +37476,7 @@ export var storyboard = (
           "aaa",
           "ggg",
           "bbb",
-          "09a",
+          "33e",
           "ccc",
         ],
       ],
