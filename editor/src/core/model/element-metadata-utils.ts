@@ -60,6 +60,8 @@ import {
   ElementInstanceMetadataMap,
   isIntrinsicHTMLElement,
   getJSXAttribute,
+  isJSXFragment,
+  ImportInfo,
 } from '../shared/element-template'
 import {
   getModifiableJSXAttributeAtPath,
@@ -920,7 +922,7 @@ export const MetadataUtils = {
             case 'JSX_ARBITRARY_BLOCK':
               return '(code)'
             case 'JSX_FRAGMENT':
-              return '(fragment)'
+              return 'Fragment'
             default:
               const _exhaustiveCheck: never = jsxElement
               throw new Error(`Unexpected element type ${jsxElement}`)
@@ -1323,6 +1325,9 @@ export const MetadataUtils = {
         ? canvasRectangleToLocalRectangle(globalFrame, elementContainerBounds)
         : null
     return localFrame
+  },
+  isFragmentFromMetadata(element: ElementInstanceMetadata | null): boolean {
+    return element != null && isRight(element.element) && isJSXFragment(element.element.value)
   },
 }
 

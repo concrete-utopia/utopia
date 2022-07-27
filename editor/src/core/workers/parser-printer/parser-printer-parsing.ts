@@ -1950,44 +1950,6 @@ function isJsxNameKnown(
   }
 }
 
-function isReactFragmentName(name: JSXElementName, imports: Imports): boolean {
-  // TODO: spike only stupid
-  if (name.baseVariable === 'Fragment' && name.propertyPath.propertyElements.length === 0) {
-    return true
-  }
-  const possibleReactImport = imports['react']
-  if (possibleReactImport == null) {
-    return false
-  } else {
-    if (possibleReactImport.importedAs != null) {
-      if (
-        jsxElementNameEquals(name, jsxElementName(possibleReactImport.importedAs, ['Fragment']))
-      ) {
-        return true
-      }
-    }
-    if (possibleReactImport.importedWithName != null) {
-      if (
-        jsxElementNameEquals(
-          name,
-          jsxElementName(possibleReactImport.importedWithName, ['Fragment']),
-        )
-      ) {
-        return true
-      }
-    }
-    const fromWithin = possibleReactImport.importedFromWithin.find(
-      (within) => within.name === 'Fragment',
-    )
-    if (fromWithin != null) {
-      if (jsxElementNameEquals(name, jsxElementName(fromWithin.alias, []))) {
-        return true
-      }
-    }
-    return false
-  }
-}
-
 export function flattenOutAnnoyingContainers(
   sourceFile: TS.SourceFile,
   node: TS.Node,
