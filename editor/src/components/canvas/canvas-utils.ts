@@ -46,6 +46,7 @@ import {
   isUtopiaJSXComponent,
   SettableLayoutSystem,
   emptyComments,
+  isJSXElementLikeWithChildren,
 } from '../../core/shared/element-template'
 import {
   getAllUniqueUids,
@@ -2846,7 +2847,7 @@ export function getValidElementPathsFromElement(
   transientFilesState: TransientFilesState | null,
   resolve: (importOrigin: string, toImport: string) => Either<string, string>,
 ): Array<ElementPath> {
-  if (isJSXElement(element) || isJSXFragment(element)) {
+  if (isJSXElementLikeWithChildren(element)) {
     const isScene = isSceneElement(element, filePath, projectContents)
     const uid = getUtopiaID(element)
     const path = parentIsInstance

@@ -15,6 +15,7 @@ import {
   foldEither,
   forEachRight,
   isLeft,
+  isRight,
   left,
   mapEither,
   right,
@@ -1554,9 +1555,9 @@ function clearUnnecessarySpacingElements(
 function parseJSXElementName(
   sourceFile: TS.SourceFile,
   tagName: TS.JsxTagNameExpression,
-): Either<string, JSXElementName> {
+): Either<string, JSXElementName | null> {
   if (tagName == null) {
-    return right(jsxElementName('Fragment', []))
+    return right(null)
   }
   if (TS.isIdentifier(tagName)) {
     return right(jsxElementName(tagName.getText(sourceFile), []))
@@ -1609,7 +1610,7 @@ interface UpdateUIDResult {
 function forciblyUpdateDataUID(
   sourceFile: TS.SourceFile,
   originatingElement: TS.Node,
-  name: JSXElementName | string,
+  name: JSXElementName | string | null,
   props: JSXAttributes,
   existingHighlightBounds: Readonly<HighlightBoundsForUids>,
   alreadyExistingUIDs: Set<string>,
@@ -1640,15 +1641,14 @@ function forciblyUpdateDataUID(
   }
 }
 
-function createJSXElementAllocatingUID(
+function createJSXElementOrFragmentAllocatingUID(
   sourceFile: TS.SourceFile,
   originatingElement: TS.Node,
-  name: JSXElementName | string,
+  name: JSXElementName | null, // if name is null we create a fragment
   props: JSXAttributes,
   children: JSXElementChildren,
   existingHighlightBounds: Readonly<HighlightBoundsForUids>,
   alreadyExistingUIDs: Set<string>,
-  isFragment: boolean,
 ): WithParserMetadata<SuccessfullyParsedElement> {
   const dataUIDAttribute = parseUID(props)
   const { uid: newUID, attributes: updatedProps } = foldEither(
@@ -1696,9 +1696,10 @@ function createJSXElementAllocatingUID(
   )
   return withParserMetadata(
     {
-      value: isFragment
-        ? jsxFragment(newUID, children, true)
-        : jsxElement(name, newUID, updatedProps.value, children),
+      value:
+        name == null
+          ? jsxFragment(newUID, children, true)
+          : jsxElement(name, newUID, updatedProps.value, children),
       startLine: startPosition.line,
       startColumn: startPosition.character,
     },
@@ -1885,9 +1886,15 @@ export function parseOutJSXElements(
         highlightBounds = attrs.highlightBounds
         propsUsed.push(...attrs.propsUsed)
         definedElsewhere.push(...attrs.definedElsewhere)
+        const isFragment = TS.isJsxFragment(tsElement)
         return flatMapEither((elementName) => {
-          if (isJsxNameKnown(elementName, topLevelNames, imports)) {
-            const parsedElement = createJSXElementAllocatingUID(
+          if (
+            (isFragment && elementName == null) ||
+            (!isFragment &&
+              elementName != null &&
+              isJsxNameKnown(elementName, topLevelNames, imports))
+          ) {
+            const parsedElement = createJSXElementOrFragmentAllocatingUID(
               sourceFile,
               tsElement,
               elementName,
@@ -1895,7 +1902,6 @@ export function parseOutJSXElements(
               childElems,
               highlightBounds,
               alreadyExistingUIDs,
-              TS.isJsxFragment(tsElement),
             )
             highlightBounds = parsedElement.highlightBounds
             return right(parsedElement.value)
