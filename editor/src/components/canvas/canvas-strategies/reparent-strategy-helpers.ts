@@ -367,11 +367,7 @@ export function applyFlexReparent(
           interactionSession.interactionData.drag,
         )
 
-        const newIndex = getReorderIndex(
-          strategyState.startingMetadata,
-          siblingsOfTarget,
-          pointOnCanvas,
-        )
+        const newIndex = reparentResult.newIndex
 
         const siblingPosition: CanvasRectangle =
           [
