@@ -9,7 +9,7 @@ export var App = (props) => {
       style={{ ...props.style, position: 'relative', backgroundColor: '#FFFFFF' }}
       data-uid={'aaa'}
     >
-      <React.Fragment>
+      <React.Fragment data-uid={'ggg'}>
         <div data-label="random-div" style={{ width: 100, height: 100 }} data-uid={'bbb'}>Hello<>
           <div data-label="some-other-div" style={{ width: 100, height: 100 }} data-uid={'ccc'} />
         </></div>
