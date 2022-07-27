@@ -1021,13 +1021,17 @@ export function editorState(
   }
 }
 
+export const StoredStateVersion = 1
+
 export interface StoredEditorState {
+  version: number
   selectedViews: Array<ElementPath>
   mode: PersistedMode | null
 }
 
 export function storedEditorStateFromEditorState(editor: EditorState): StoredEditorState {
   return {
+    version: StoredStateVersion,
     selectedViews: editor.selectedViews,
     mode: convertModeToSavedMode(editor.mode),
   }
