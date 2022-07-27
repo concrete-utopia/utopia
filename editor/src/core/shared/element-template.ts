@@ -1023,9 +1023,7 @@ export function jsxTextBlock(text: string): JSXTextBlock {
 export interface JSXFragment {
   type: 'JSX_FRAGMENT'
   uid: string
-  name: JSXElementName
   children: JSXElementChildren
-  longForm: boolean // When true, <React.Fragment> instead of <>.
 }
 
 export function jsxFragment(
@@ -1036,12 +1034,11 @@ export function jsxFragment(
   return {
     type: 'JSX_FRAGMENT',
     uid: uid,
-    name: jsxElementName('Fragment', []), // TODO: spike only stupid name
     children: children,
-    longForm: longForm,
   }
 }
 
+export type JSXElementLike = JSXElement | JSXFragment
 export type JSXElementChild = JSXElement | JSXArbitraryBlock | JSXTextBlock | JSXFragment
 
 export function isJSXElement(element: JSXElementChild): element is JSXElement {
@@ -1060,9 +1057,7 @@ export function isJSXFragment(element: JSXElementChild): element is JSXFragment 
   return element.type === 'JSX_FRAGMENT'
 }
 
-export function isJSXElementLikeWithChildren(
-  element: JSXElementChild,
-): element is JSXElement | JSXFragment {
+export function isJSXElementLikeWithChildren(element: JSXElementChild): element is JSXElementLike {
   return isJSXElement(element) || isJSXFragment(element)
 }
 

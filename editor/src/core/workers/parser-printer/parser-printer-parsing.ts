@@ -66,6 +66,7 @@ import {
   emptyComments,
   ParsedComments,
   parsedComments,
+  isJSXFragment,
 } from '../../shared/element-template'
 import { maybeToArray, forceNotNull } from '../../shared/optional-utils'
 import {
@@ -1647,7 +1648,7 @@ function createJSXElementAllocatingUID(
   children: JSXElementChildren,
   existingHighlightBounds: Readonly<HighlightBoundsForUids>,
   alreadyExistingUIDs: Set<string>,
-  imports: Imports,
+  isFragment: boolean,
 ): WithParserMetadata<SuccessfullyParsedElement> {
   const dataUIDAttribute = parseUID(props)
   const { uid: newUID, attributes: updatedProps } = foldEither(
@@ -1695,7 +1696,7 @@ function createJSXElementAllocatingUID(
   )
   return withParserMetadata(
     {
-      value: isReactFragmentName(name as JSXElementName, imports)
+      value: isFragment
         ? jsxFragment(newUID, children, true)
         : jsxElement(name, newUID, updatedProps.value, children),
       startLine: startPosition.line,
@@ -1894,7 +1895,7 @@ export function parseOutJSXElements(
               childElems,
               highlightBounds,
               alreadyExistingUIDs,
-              imports,
+              TS.isJsxFragment(tsElement),
             )
             highlightBounds = parsedElement.highlightBounds
             return right(parsedElement.value)

@@ -18,10 +18,9 @@ import {
   isIntrinsicElement,
   isIntrinsicHTMLElement,
   JSXArbitraryBlock,
-  getJSXAttribute,
   emptyComments,
-  JSXFragment,
   isJSXFragment,
+  JSXElementLike,
 } from '../../../core/shared/element-template'
 import {
   getAccumulatedElementsWithin,
@@ -311,7 +310,7 @@ export var Fragment: React.FunctionComponent<React.PropsWithChildren<any>> = ({ 
 
 function renderJSXElement(
   key: string,
-  jsx: JSXElement | JSXFragment,
+  jsx: JSXElementLike,
   elementPath: ElementPath | null,
   parentComponentInputProps: MapLike<any>,
   requireResult: MapLike<any>,
@@ -364,7 +363,7 @@ function renderJSXElement(
   }
 
   const childrenElements = jsx.children.map(createChildrenElement)
-  const elementIsIntrinsic = isIntrinsicElement(jsx.name)
+  const elementIsIntrinsic = isJSXElement(jsx) && isIntrinsicElement(jsx.name)
   const elementIsFragment = isJSXFragment(jsx)
   const elementIsBaseHTML = elementIsIntrinsic && isIntrinsicHTMLElement(jsx.name)
   const elementInScope = elementIsIntrinsic ? null : getElementFromScope(jsx, inScope)
@@ -373,7 +372,9 @@ function renderJSXElement(
 
   // Not necessary to check the top level elements, as we'll use a comparison of the
   // elements from scope and import to confirm it's not a top level element.
-  const importedFrom = importedFromWhere(filePath, jsx.name.baseVariable, [], imports)
+  const importedFrom = elementIsFragment
+    ? null
+    : importedFromWhere(filePath, jsx.name.baseVariable, [], imports)
   const elementIsScene =
     !elementIsIntrinsic &&
     importedFrom != null &&
@@ -404,7 +405,7 @@ function renderJSXElement(
     [UTOPIA_PATH_KEY]: optionalMap(EP.toString, elementPath),
   }
 
-  if (FinalElementOrFragment == null) {
+  if (!elementIsFragment && FinalElement == null) {
     throw canvasMissingJSXElementError(jsxFactoryFunctionName, code, jsx, filePath, highlightBounds)
   }
 
@@ -473,11 +474,8 @@ function runJSXArbitraryBlock(
   return resolveParamsAndRunJsCode(filePath, block, requireResult, currentScope)
 }
 
-function getElementFromScope(
-  jsxElementToLookup: JSXElement | JSXFragment,
-  scope: MapLike<any> | null,
-): any {
-  if (scope == null) {
+function getElementFromScope(jsxElementToLookup: JSXElementLike, scope: MapLike<any> | null): any {
+  if (scope == null || isJSXFragment(jsxElementToLookup)) {
     return undefined
   } else {
     if (jsxElementToLookup.name.baseVariable in scope) {

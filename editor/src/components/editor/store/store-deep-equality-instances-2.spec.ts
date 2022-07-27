@@ -316,7 +316,6 @@ describe('JSXTextBlockKeepDeepEquality', () => {
 describe('JSXFragmentKeepDeepEquality', () => {
   const oldValue: JSXFragment = {
     type: 'JSX_FRAGMENT',
-    name: jsxElementName('Fragment', []),
     children: [
       {
         type: 'JSX_TEXT_BLOCK',
@@ -325,11 +324,9 @@ describe('JSXFragmentKeepDeepEquality', () => {
       },
     ],
     uid: 'uid',
-    longForm: false,
   }
   const newSameValue: JSXFragment = {
     type: 'JSX_FRAGMENT',
-    name: jsxElementName('Fragment', []),
     children: [
       {
         type: 'JSX_TEXT_BLOCK',
@@ -338,11 +335,9 @@ describe('JSXFragmentKeepDeepEquality', () => {
       },
     ],
     uid: 'uid',
-    longForm: false,
   }
   const newDifferentValue: JSXFragment = {
     type: 'JSX_FRAGMENT',
-    name: jsxElementName('Fragment', []),
     children: [
       {
         type: 'JSX_TEXT_BLOCK',
@@ -351,7 +346,6 @@ describe('JSXFragmentKeepDeepEquality', () => {
       },
     ],
     uid: 'new-uid',
-    longForm: false,
   }
 
   it('same reference returns the same reference', () => {
@@ -369,7 +363,6 @@ describe('JSXFragmentKeepDeepEquality', () => {
     expect(result.value.type).toBe(oldValue.type)
     expect(result.value.children).toBe(oldValue.children)
     expect(result.value.uid).toBe(newDifferentValue.uid)
-    expect(result.value.longForm).toBe(oldValue.longForm)
     expect(result.value).toEqual(newDifferentValue)
     expect(result.areEqual).toEqual(false)
   })
