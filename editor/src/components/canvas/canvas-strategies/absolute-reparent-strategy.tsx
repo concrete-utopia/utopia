@@ -20,6 +20,7 @@ import {
 import { ifAllowedToReparent } from './reparent-helpers'
 import { findReparentStrategy } from './reparent-strategy-helpers'
 import { offsetPoint } from '../../../core/shared/math-utils'
+import { getReparentCommands } from './reparent-utils'
 
 export const absoluteReparentStrategy: CanvasStrategy = {
   id: 'ABSOLUTE_REPARENT',
@@ -89,7 +90,7 @@ export const absoluteReparentStrategy: CanvasStrategy = {
       interactionState.interactionData.drag,
     )
 
-    const { selectedElements, projectContents, openFile } = canvasState
+    const { selectedElements, projectContents, openFile, nodeModules } = canvasState
     const filteredSelectedElements = getDragTargets(selectedElements)
 
     return ifAllowedToReparent(canvasState, filteredSelectedElements, () => {
@@ -126,7 +127,16 @@ export const absoluteReparentStrategy: CanvasStrategy = {
           const newPath = EP.appendToPath(newParent, EP.toUid(selectedElement))
           return {
             newPath: newPath,
-            commands: [...offsetCommands, reparentElement('permanent', selectedElement, newParent)],
+            commands: [
+              ...offsetCommands,
+              ...getReparentCommands(
+                projectContents,
+                nodeModules,
+                openFile,
+                selectedElement,
+                newParent,
+              ),
+            ],
           }
         })
 
