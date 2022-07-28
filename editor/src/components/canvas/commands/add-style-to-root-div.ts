@@ -35,51 +35,29 @@ export const runAddStyleToRootDiv: CommandFunction<AddStyleToRootDiv> = (
   editorState: EditorState,
   command: AddStyleToRootDiv,
 ) => {
-  const isComponentOrScene =
-    EP.pathsEqual(command.target, editorState.focusedElementPath) ||
-    MetadataUtils.isProbablyScene(editorState.jsxMetadata, command.target)
-  const targetRoot = isComponentOrScene
-    ? Object.values(editorState.jsxMetadata).filter((possibleRoot) =>
-        EP.isRootElementOf(possibleRoot.elementPath, command.target),
-      )
-    : []
+  const propsToUpdate: Array<ValueAtPath> = [
+    {
+      path: PP.create(['style']),
+      value: jsxAttributeNestedObject(
+        [
+          jsxSpreadAssignment(
+            jsxAttributeOtherJavaScript('props.style', 'return props.style;', ['props'], null, {}),
+            emptyComments,
+          ),
+        ],
+        emptyComments,
+      ),
+    },
+  ]
 
-  if (targetRoot.length > 0) {
-    const propsToUpdate: Array<ValueAtPath> = [
-      {
-        path: PP.create(['style']),
-        value: jsxAttributeNestedObject(
-          [
-            jsxSpreadAssignment(
-              jsxAttributeOtherJavaScript(
-                'props.style',
-                'return props.style;',
-                ['props'],
-                null,
-                {},
-              ),
-              emptyComments,
-            ),
-          ],
-          emptyComments,
-        ),
-      },
-    ]
+  const { editorStatePatch: propertyUpdatePatch } = applyValuesAtPath(
+    editorState,
+    command.target,
+    propsToUpdate,
+  )
 
-    const { editorStatePatch: propertyUpdatePatch } = applyValuesAtPath(
-      editorState,
-      targetRoot[0].elementPath,
-      propsToUpdate,
-    )
-
-    return {
-      editorStatePatches: [propertyUpdatePatch],
-      commandDescription: 'Add Style to Root Div',
-    }
-  } else {
-    return {
-      editorStatePatches: [],
-      commandDescription: 'Add Style to Root Div',
-    }
+  return {
+    editorStatePatches: [propertyUpdatePatch],
+    commandDescription: 'Add Style to Root Div',
   }
 }

@@ -29,6 +29,7 @@ import { getElementFromProjectContents } from '../../editor/store/editor-state'
 import { FullFrame, getFullFrame } from '../../frame'
 import { stylePropPathMappingFn } from '../../inspector/common/property-path-hooks'
 import { CanvasFrameAndTarget, CSSCursor } from '../canvas-types'
+import { addStyleToRootDiv, runAddStyleToRootDiv } from '../commands/add-style-to-root-div'
 import { CanvasCommand } from '../commands/commands'
 import { ConvertToAbsolute, convertToAbsolute } from '../commands/convert-to-absolute-command'
 import { ReparentElement, reparentElement } from '../commands/reparent-element-command'
@@ -48,7 +49,10 @@ import {
   InteractionCanvasState,
 } from './canvas-strategy-types'
 import { DragInteractionData, InteractionSession, StrategyState } from './interaction-state'
-import { areAllSelectedElementsNonAbsolute } from './shared-absolute-move-strategy-helpers'
+import {
+  areAllSelectedElementsNonAbsolute,
+  rootDivStyleCommand,
+} from './shared-absolute-move-strategy-helpers'
 
 export const escapeHatchStrategy: CanvasStrategy = {
   id: 'ESCAPE_HATCH_STRATEGY',
@@ -208,7 +212,9 @@ function collectMoveCommandsForSelectedElements(
     canvasState,
   )
   commands.push(...descendantsInNewContainingBlock)
-
+  selectedElements.map((selected) => {
+    return commands.push(...rootDivStyleCommand(selected, canvasState.focusedElement, metadata))
+  })
   sortedElements.forEach((path) => {
     const elementResult = collectSetLayoutPropCommands(
       path,

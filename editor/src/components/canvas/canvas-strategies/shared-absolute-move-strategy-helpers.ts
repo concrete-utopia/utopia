@@ -31,10 +31,12 @@ import {
 } from '../../editor/store/editor-state'
 import { stylePropPathMappingFn } from '../../inspector/common/property-path-hooks'
 import { CanvasFrameAndTarget } from '../canvas-types'
+import { addStyleToRootDiv } from '../commands/add-style-to-root-div'
 import {
   adjustCssLengthProperty,
   AdjustCssLengthProperty,
 } from '../commands/adjust-css-length-command'
+import { CanvasCommand } from '../commands/commands'
 import { runLegacyAbsoluteMoveSnapping } from '../controls/guideline-helpers'
 import { ConstrainedDragAxis, GuidelineWithSnappingVector } from '../guideline'
 import { AbsolutePin } from './absolute-resize-helpers'
@@ -338,5 +340,25 @@ export function areAllSelectedElementsNonAbsolute(
     })
   } else {
     return false
+  }
+}
+
+export function rootDivStyleCommand(
+  target: ElementPath,
+  focusedElementPath: ElementPath | null,
+  jsxMetadata: ElementInstanceMetadataMap,
+): CanvasCommand[] {
+  const isComponentOrScene =
+    EP.pathsEqual(target, focusedElementPath) || MetadataUtils.isProbablyScene(jsxMetadata, target)
+  const targetRoot = isComponentOrScene
+    ? Object.values(jsxMetadata).filter((possibleRoot) =>
+        EP.isRootElementOf(possibleRoot.elementPath, target),
+      )
+    : []
+
+  if (targetRoot.length > 0) {
+    return [addStyleToRootDiv('permanent', targetRoot[0].elementPath)]
+  } else {
+    return []
   }
 }

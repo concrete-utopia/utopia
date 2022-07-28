@@ -26,20 +26,26 @@ import {
   getAbsoluteMoveCommandsForSelectedElement,
   getDragTargets,
   getMultiselectBounds,
+  rootDivStyleCommand,
   snapDrag,
 } from './shared-absolute-move-strategy-helpers'
 import { AddStyleToRootDiv, addStyleToRootDiv } from '../commands/add-style-to-root-div'
+import * as EP from '../../../core/shared/element-path'
 
 export const absoluteMoveStrategy: CanvasStrategy = {
   id: 'ABSOLUTE_MOVE',
   name: 'Absolute Move (Delta-based)',
-  isApplicable: (canvasState, _interactionState, metadata) => {
+  isApplicable: (canvasState, _interactionState, metadata, allElementProps) => {
     if (canvasState.selectedElements.length > 0) {
       const filteredSelectedElements = getDragTargets(canvasState.selectedElements)
       return filteredSelectedElements.every((element) => {
         const elementMetadata = MetadataUtils.findElementByElementPath(metadata, element)
+        const elementProps = allElementProps[EP.toString(element)] ?? null
 
-        return elementMetadata?.specialSizeMeasurements.position === 'absolute'
+        return (
+          elementProps?.style?.position === 'absolute' ||
+          elementMetadata?.specialSizeMeasurements.position === 'absolute'
+        )
       })
     } else {
       return false
@@ -91,7 +97,13 @@ export const absoluteMoveStrategy: CanvasStrategy = {
             sessionState,
           )
           commands.push(...elementResult.commands)
-          commands.push(addStyleToRootDiv('permanent', selectedElement))
+          commands.push(
+            ...rootDivStyleCommand(
+              selectedElement,
+              canvasState.focusedElement,
+              sessionState.startingMetadata,
+            ),
+          )
           intendedBounds.push(...elementResult.intendedBounds)
         })
         return { commands, intendedBounds }

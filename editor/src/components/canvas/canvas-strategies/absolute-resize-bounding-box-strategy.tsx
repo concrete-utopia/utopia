@@ -28,7 +28,11 @@ import { ParentOutlines } from '../controls/parent-outlines'
 import { AbsoluteResizeControl } from '../controls/select-mode/absolute-resize-control'
 import { AbsolutePin, ensureAtLeastTwoPinsForEdgePosition } from './absolute-resize-helpers'
 import { CanvasStrategy, emptyStrategyApplicationResult } from './canvas-strategy-types'
-import { getDragTargets, getMultiselectBounds } from './shared-absolute-move-strategy-helpers'
+import {
+  getDragTargets,
+  getMultiselectBounds,
+  rootDivStyleCommand,
+} from './shared-absolute-move-strategy-helpers'
 import {
   pickCursorFromEdgePosition,
   resizeBoundingBox,
@@ -38,6 +42,7 @@ import * as EP from '../../../core/shared/element-path'
 import { ZeroSizeResizeControlWrapper } from '../controls/zero-sized-element-controls'
 import { SetCssLengthProperty, setCssLengthProperty } from '../commands/set-css-length-command'
 import { pushIntendedBounds } from '../commands/push-intended-bounds-command'
+import { addStyleToRootDiv } from '../commands/add-style-to-root-div'
 
 export const absoluteResizeBoundingBoxStrategy: CanvasStrategy = {
   id: 'ABSOLUTE_RESIZE_BOUNDING_BOX',
@@ -47,7 +52,12 @@ export const absoluteResizeBoundingBoxStrategy: CanvasStrategy = {
       const filteredSelectedElements = getDragTargets(canvasState.selectedElements)
       return filteredSelectedElements.every((element) => {
         const elementMetadata = MetadataUtils.findElementByElementPath(metadata, element)
-        return elementMetadata?.specialSizeMeasurements.position === 'absolute'
+        const elementProps = allElementProps[EP.toString(element)] ?? null
+
+        return (
+          elementProps?.style?.position === 'absolute' ||
+          elementMetadata?.specialSizeMeasurements.position === 'absolute'
+        )
       })
     } else {
       return false
@@ -155,11 +165,19 @@ export const absoluteResizeBoundingBoxStrategy: CanvasStrategy = {
               ]
             },
           )
+          const rootDivStyleCommands = filteredSelectedElements.flatMap((selected) => {
+            return rootDivStyleCommand(
+              selected,
+              canvasState.focusedElement,
+              sessionState.startingMetadata,
+            )
+          })
           return {
             commands: [
               ...commandsForSelectedElements,
               updateHighlightedViews('transient', []),
               setCursorCommand('transient', pickCursorFromEdgePosition(edgePosition)),
+              ...rootDivStyleCommands,
               setElementsToRerenderCommand(canvasState.selectedElements),
             ],
             customState: null,

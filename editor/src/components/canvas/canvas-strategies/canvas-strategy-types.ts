@@ -46,6 +46,7 @@ export interface InteractionCanvasState {
   openFile: string | null | undefined
   scale: number
   canvasOffset: CanvasVector
+  focusedElement: ElementPath | null
 }
 
 export type CanvasStrategyId =

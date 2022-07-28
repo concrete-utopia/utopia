@@ -48,6 +48,7 @@ export function pickCanvasStateFromEditorState(editorState: EditorState): Intera
     openFile: editorState.canvas.openFile?.filename,
     scale: editorState.canvas.scale,
     canvasOffset: editorState.canvas.roundedCanvasOffset,
+    focusedElement: editorState.focusedElementPath,
   }
 }
 
@@ -71,6 +72,7 @@ const getApplicableStrategiesSelector = createSelector(
       openFile: store.editor.canvas.openFile?.filename,
       scale: store.editor.canvas.scale,
       canvasOffset: store.editor.canvas.roundedCanvasOffset,
+      focusedElement: store.editor.focusedElementPath,
     }
   },
   (store: EditorStorePatched) => store.editor.canvas.interactionSession,
