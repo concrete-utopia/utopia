@@ -42,8 +42,9 @@ export const absoluteMoveStrategy: CanvasStrategy = {
         const elementMetadata = MetadataUtils.findElementByElementPath(metadata, element)
         const elementProps = allElementProps[EP.toString(element)] ?? null
 
+        const isFocusedComponent = EP.pathsEqual(element, canvasState.focusedElement)
         return (
-          elementProps?.style?.position === 'absolute' ||
+          (elementProps?.style?.position === 'absolute' && isFocusedComponent) ||
           elementMetadata?.specialSizeMeasurements.position === 'absolute'
         )
       })
