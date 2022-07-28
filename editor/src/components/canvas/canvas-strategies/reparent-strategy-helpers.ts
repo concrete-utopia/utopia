@@ -147,6 +147,14 @@ export function getReparentTargetForFlexElement(
     return flexReparentResult
   }
 
+  // TODO temporary, delete me
+  return {
+    shouldReparent: false,
+    newParent: null,
+    shouldReorder: false,
+    newIndex: -1,
+  }
+
   // fallback to what is essentially an absolute reparent, TODO enforce Absolute
 
   const reparentResult = getReparentTarget(
@@ -192,11 +200,13 @@ function findFlexReparentTarget(
     'no-filter',
     point,
     allElementProps,
-  ).filter((element) =>
-    MetadataUtils.isFlexLayoutedContainer(
-      MetadataUtils.findElementByElementPath(metadata, element),
-    ),
   )
+    .reverse()
+    .filter((element) =>
+      MetadataUtils.isFlexLayoutedContainer(
+        MetadataUtils.findElementByElementPath(metadata, element),
+      ),
+    )
 
   for (const flexElementPath of flexElementsUnderPoint) {
     const flexElement = MetadataUtils.findElementByElementPath(metadata, flexElementPath)
@@ -362,14 +372,14 @@ export function applyFlexReparent(
         strategyState.startingMetadata,
       )
 
-      if (reparentResult.shouldReorder) {
+      const newIndex = reparentResult.newIndex
+
+      if (reparentResult.shouldReorder && newIndex < siblingsOfTarget.length) {
         // Reorder the newly reparented element into the flex ordering.
         const pointOnCanvas = offsetPoint(
           interactionSession.interactionData.dragStart,
           interactionSession.interactionData.drag,
         )
-
-        const newIndex = reparentResult.newIndex
 
         const siblingPosition: CanvasRectangle =
           [
