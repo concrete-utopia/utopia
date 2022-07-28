@@ -28,6 +28,7 @@ import {
   getMultiselectBounds,
   snapDrag,
 } from './shared-absolute-move-strategy-helpers'
+import { AddStyleToRootDiv, addStyleToRootDiv } from '../commands/add-style-to-root-div'
 
 export const absoluteMoveStrategy: CanvasStrategy = {
   id: 'ABSOLUTE_MOVE',
@@ -76,11 +77,11 @@ export const absoluteMoveStrategy: CanvasStrategy = {
       const getAdjustMoveCommands = (
         snappedDragVector: CanvasPoint,
       ): {
-        commands: Array<AdjustCssLengthProperty>
+        commands: Array<CanvasCommand>
         intendedBounds: Array<CanvasFrameAndTarget>
       } => {
         const filteredSelectedElements = getDragTargets(canvasState.selectedElements)
-        let commands: Array<AdjustCssLengthProperty> = []
+        let commands: Array<CanvasCommand> = []
         let intendedBounds: Array<CanvasFrameAndTarget> = []
         filteredSelectedElements.forEach((selectedElement) => {
           const elementResult = getAbsoluteMoveCommandsForSelectedElement(
@@ -90,6 +91,7 @@ export const absoluteMoveStrategy: CanvasStrategy = {
             sessionState,
           )
           commands.push(...elementResult.commands)
+          commands.push(addStyleToRootDiv('permanent', selectedElement))
           intendedBounds.push(...elementResult.intendedBounds)
         })
         return { commands, intendedBounds }

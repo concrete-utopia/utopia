@@ -38,6 +38,7 @@ import { DuplicateElement, runDuplicateElement } from './duplicate-element-comma
 import { runUpdateFunctionCommand, UpdateFunctionCommand } from './update-function-command'
 import { runPushIntendedBounds, PushIntendedBounds } from './push-intended-bounds-command'
 import { DeleteProperties, runDeleteProperties } from './delete-properties-command'
+import { AddStyleToRootDiv, runAddStyleToRootDiv } from './add-style-to-root-div'
 
 export interface CommandFunctionResult {
   editorStatePatches: Array<EditorStatePatch>
@@ -71,6 +72,7 @@ export type CanvasCommand =
   | SetElementsToRerenderCommand
   | PushIntendedBounds
   | DeleteProperties
+  | AddStyleToRootDiv
 
 export const runCanvasCommand = (
   editorState: EditorState,
@@ -114,6 +116,8 @@ export const runCanvasCommand = (
       return runPushIntendedBounds(editorState, command)
     case 'DELETE_PROPERTIES':
       return runDeleteProperties(editorState, command)
+    case 'ADD_STYLE_TO_ROOT_DIV':
+      return runAddStyleToRootDiv(editorState, command)
     default:
       const _exhaustiveCheck: never = command
       throw new Error(`Unhandled canvas command ${JSON.stringify(command)}`)
