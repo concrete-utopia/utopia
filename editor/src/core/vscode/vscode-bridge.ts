@@ -182,6 +182,8 @@ export async function initVSCodeBridge(
       await initMailbox(UtopiaInbox, parseFromVSCodeMessage, (message: FromVSCodeMessage) => {
         switch (message.type) {
           case 'SEND_INITIAL_DATA':
+            // If the extension is activated after the bridge has been initialised, we must now send the code editor
+            // initialisation data
             dispatch([sendCodeEditorInitialisation()], 'everyone')
             break
           case 'EDITOR_CURSOR_POSITION_CHANGED':
@@ -214,6 +216,10 @@ export async function initVSCodeBridge(
         dispatch([hideVSCodeLoadingScreen()], 'everyone')
       }
     }
+
+    // Because the extension might have already been activated by now, we attempt to send the code editor
+    // initialisation data straight away
+    dispatch([sendCodeEditorInitialisation()], 'everyone')
     dispatch([markVSCodeBridgeReady(true)], 'everyone')
   }
 
