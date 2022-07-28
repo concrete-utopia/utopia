@@ -66,6 +66,7 @@ import {
   jsxSimpleAttributeToValue,
 } from '../shared/jsx-attributes'
 import {
+  boundingRectangle,
   CanvasPoint,
   CanvasRectangle,
   canvasRectangle,
@@ -74,6 +75,8 @@ import {
   localRectangle,
   SimpleRectangle,
   Size,
+  zeroCanvasRect,
+  zeroLocalRect,
 } from '../shared/math-utils'
 import { optionalMap } from '../shared/optional-utils'
 import {
@@ -1062,6 +1065,46 @@ export const MetadataUtils = {
         }
         workingElements[EP.toString(domElem.elementPath)] = elem
       }
+    })
+
+    const findChildrenInDom = (pathStr: string): Array<ElementInstanceMetadata> => {
+      const spyElem = fromSpy[pathStr]
+      const childrenFromSpy = MetadataUtils.getChildren(fromSpy, spyElem.elementPath)
+      const childrenFromDom = MetadataUtils.getChildren(fromDOM, spyElem.elementPath)
+      const childrenNotInDom = childrenFromSpy.filter((childNotInDom) =>
+        childrenFromDom.every(
+          (childInDom) => !EP.pathsEqual(childNotInDom.elementPath, childInDom.elementPath),
+        ),
+      )
+      const recursiveChildren = childrenNotInDom.flatMap((c) => {
+        return findChildrenInDom(EP.toString(c.elementPath))
+      })
+      return [...childrenFromDom, ...recursiveChildren]
+    }
+
+    const elementsWithoutDomMetadata = Object.keys(fromSpy).filter((p) => fromDOM[p] == null)
+    fastForEach(elementsWithoutDomMetadata, (pathStr) => {
+      const spyElem = fromSpy[pathStr]
+      const children = findChildrenInDom(pathStr)
+      if (children.length === 0) {
+        return
+      }
+      let metadata = { ...spyElem }
+
+      fastForEach(children, (childMetadata) => {
+        metadata = {
+          ...metadata,
+          globalFrame: boundingRectangle(
+            metadata.globalFrame ?? zeroCanvasRect,
+            childMetadata.globalFrame ?? zeroCanvasRect,
+          ),
+          localFrame: boundingRectangle(
+            metadata.localFrame ?? zeroLocalRect,
+            childMetadata.localFrame ?? zeroLocalRect,
+          ),
+        }
+        workingElements[pathStr] = metadata
+      })
     })
 
     return workingElements
