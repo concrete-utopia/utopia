@@ -137,7 +137,7 @@ export function getReparentTargetForFlexElement(
     interactionSession.interactionData.drag,
   )
 
-  const flexReparentResult = findFlexReparentTarget(
+  const flexReparentResult = newGetReparentTarget(
     strategyState.startingMetadata,
     strategyState.startingAllElementProps,
     pointOnCanvas,
@@ -183,7 +183,7 @@ export function getReparentTargetForFlexElement(
   }
 }
 
-function findFlexReparentTarget(
+function newGetReparentTarget(
   metadata: ElementInstanceMetadataMap,
   allElementProps: AllElementProps,
   point: CanvasPoint,
@@ -193,7 +193,7 @@ function findFlexReparentTarget(
   shouldReorder: boolean
   newIndex: number
 } {
-  const flexElementsUnderPoint = getAllTargetsAtPointAABB(
+  const elementsUnderPoint = getAllTargetsAtPointAABB(
     metadata,
     [],
     [],
@@ -201,6 +201,8 @@ function findFlexReparentTarget(
     point,
     allElementProps,
   )
+
+  const flexElementsUnderPoint = [...elementsUnderPoint]
     .reverse()
     .filter((element) =>
       MetadataUtils.isFlexLayoutedContainer(
@@ -208,6 +210,7 @@ function findFlexReparentTarget(
       ),
     )
 
+  // first try to find a flex element insertion area
   for (const flexElementPath of flexElementsUnderPoint) {
     const flexElement = MetadataUtils.findElementByElementPath(metadata, flexElementPath)
     const targets: Array<CanvasRectangle> = (() => {
@@ -290,6 +293,30 @@ function findFlexReparentTarget(
         shouldReorder: true,
         newParent: flexElementPath,
         newIndex: targetUnderMouseIndex,
+      }
+    }
+  }
+
+  // fall back to trying to find an absolute element, or the "background" area of a flex element
+  for (const elementPath of elementsUnderPoint) {
+    const element = MetadataUtils.findElementByElementPath(metadata, elementPath)
+    const isFlex = MetadataUtils.isFlexLayoutedContainer(element)
+    if (!isFlex) {
+      // TODO we now assume this is "absolute", but this is too vauge
+      // TODO check if element accepts children
+      return {
+        shouldReparent: true,
+        newParent: elementPath,
+        shouldReorder: false,
+        newIndex: -1,
+      }
+    } else {
+      // found flex element, todo index
+      return {
+        shouldReparent: true,
+        newParent: elementPath,
+        shouldReorder: false,
+        newIndex: -1,
       }
     }
   }
