@@ -43,6 +43,7 @@ export function findFirstParentWithValidElementPath(
   const staticAndDynamicTargetElementPaths = dynamicElementPaths.map((p) => {
     return {
       static: EP.toString(EP.makeLastPartOfPathStatic(p)),
+      staticPath: EP.makeLastPartOfPathStatic(p),
       dynamic: p,
     }
   })
@@ -61,16 +62,26 @@ export function findFirstParentWithValidElementPath(
 
   const filteredValidPathsMappedToDynamic = mapDropNulls(
     (validPath: string) => {
-      return staticAndDynamicTargetElementPaths.find(
-        (staticAndDynamic) => staticAndDynamic.static === validPath,
-      )?.dynamic
+      for (const staticAndDynamic of staticAndDynamicTargetElementPaths) {
+        if (EP.isDescendantOfOrEqualTo(staticAndDynamic.staticPath, EP.fromString(validPath))) {
+          const depthDiff =
+            EP.navigatorDepth(staticAndDynamic.staticPath) -
+            EP.navigatorDepth(EP.fromString(validPath))
+          let ancestor = staticAndDynamic.dynamic
+          for (let i = 0; i < depthDiff; i++) {
+            ancestor = EP.parentPath(ancestor)
+          }
+          return ancestor
+        }
+      }
+
+      return null
     },
     [...validStaticElementPaths],
   )
-
   if (filteredValidPathsMappedToDynamic.length > 0) {
     const sortedFilteredPaths = filteredValidPathsMappedToDynamic.sort(
-      (l, r) => EP.depth(l) - EP.depth(r),
+      (l, r) => EP.navigatorDepth(l) - EP.navigatorDepth(r),
     )
     return last(sortedFilteredPaths) ?? null
   } else {
