@@ -101,6 +101,7 @@ export const absoluteReparentStrategy: CanvasStrategy = {
         [],
         pointOnCanvas,
         projectContents,
+        nodeModules,
         openFile,
         strategyState.startingAllElementProps,
       )

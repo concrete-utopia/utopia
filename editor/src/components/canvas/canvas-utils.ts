@@ -85,6 +85,7 @@ import {
   isTextFile,
   HighlightBoundsForUids,
   ExportsDetail,
+  NodeModules,
 } from '../../core/shared/project-file-types'
 import {
   applyUtopiaJSXComponentsChanges,
@@ -1921,6 +1922,7 @@ export function getReparentTargetFromState(
     editorState.hiddenInstances,
     position,
     editorState.projectContents,
+    editorState.nodeModules.files,
     editorState.canvas.openFile?.filename,
     editorState.allElementProps,
   )
@@ -1933,6 +1935,7 @@ export function getReparentTarget(
   hiddenInstances: Array<ElementPath>,
   pointOnCanvas: CanvasPoint,
   projectContents: ProjectContentTreeRoot,
+  nodeModules: NodeModules,
   openFile: string | null | undefined,
   allElementProps: AllElementProps,
 ): {
@@ -1960,7 +1963,13 @@ export function getReparentTarget(
       newParent: storyboardComponent,
     }
   } else {
-    parentSupportsChild = MetadataUtils.targetSupportsChildren(componentMeta, possibleNewParent)
+    parentSupportsChild = MetadataUtils.targetSupportsChildren(
+      projectContents,
+      nodeModules,
+      openFile ?? null,
+      componentMeta,
+      possibleNewParent,
+    )
   }
   const hasNoCurrentParentsButHasANewParent =
     currentParents.length === 0 && possibleNewParent != null

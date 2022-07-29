@@ -86,7 +86,12 @@ import {
 } from '../shared/project-file-types'
 import * as PP from '../shared/property-path'
 import * as EP from '../shared/element-path'
-import { findJSXElementChildAtPath, getUtopiaID, isSceneElement } from './element-template-utils'
+import {
+  componentUsesProperty,
+  findJSXElementChildAtPath,
+  getUtopiaID,
+  isSceneElement,
+} from './element-template-utils'
 import {
   isImportedComponent,
   isAnimatedElement,
@@ -107,6 +112,8 @@ import { AllElementProps, withUnderlyingTarget } from '../../components/editor/s
 import { ProjectContentTreeRoot } from '../../components/assets'
 import { memoize } from '../shared/memoize'
 import { buildTree, ElementPathTree, getSubTree } from '../shared/element-path-tree'
+import { findUnderlyingTargetComponentImplementation } from '../../components/custom-code/code-file'
+
 const ObjectPathImmutable: any = OPI
 
 export const getChildrenOfCollapsedViews = (
@@ -622,7 +629,12 @@ export const MetadataUtils = {
       return false
     }
   },
-  targetElementSupportsChildren(instance: ElementInstanceMetadata): boolean {
+  targetElementSupportsChildren(
+    projectContents: ProjectContentTreeRoot,
+    nodeModules: NodeModules,
+    openFile: string | null,
+    instance: ElementInstanceMetadata,
+  ): boolean {
     return foldEither(
       (elementString) => intrinsicHTMLElementNamesThatSupportChildren.includes(elementString),
       (element) => {
@@ -636,6 +648,23 @@ export const MetadataUtils = {
               isSceneFromMetadata(instance) ||
               isGivenUtopiaElementFromMetadata(instance, 'Text')
             )
+          } else {
+            if (openFile == null) {
+              return false
+            } else {
+              const underlyingComponent = findUnderlyingTargetComponentImplementation(
+                projectContents,
+                nodeModules,
+                openFile,
+                instance.elementPath,
+              )
+              if (underlyingComponent == null) {
+                // Could be an external third party component, assuming true for now.
+                return true
+              } else {
+                return componentUsesProperty(underlyingComponent, 'children')
+              }
+            }
           }
         }
         // We don't know at this stage
@@ -644,9 +673,22 @@ export const MetadataUtils = {
       instance.element,
     )
   },
-  targetSupportsChildren(metadata: ElementInstanceMetadataMap, target: ElementPath): boolean {
+  targetSupportsChildren(
+    projectContents: ProjectContentTreeRoot,
+    nodeModules: NodeModules,
+    openFile: string | null,
+    metadata: ElementInstanceMetadataMap,
+    target: ElementPath,
+  ): boolean {
     const instance = MetadataUtils.findElementByElementPath(metadata, target)
-    return instance == null ? false : MetadataUtils.targetElementSupportsChildren(instance)
+    return instance == null
+      ? false
+      : MetadataUtils.targetElementSupportsChildren(
+          projectContents,
+          nodeModules,
+          openFile,
+          instance,
+        )
   },
   getTextContentOfElement(element: ElementInstanceMetadata): string | null {
     if (isRight(element.element) && isJSXElement(element.element.value)) {
