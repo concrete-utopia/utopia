@@ -1,4 +1,5 @@
 import { MetadataUtils } from '../../../core/model/element-metadata-utils'
+import { getStoryboardElementPath } from '../../../core/model/scene-utils'
 import * as EP from '../../../core/shared/element-path'
 import { ElementInstanceMetadataMap } from '../../../core/shared/element-template'
 import {
@@ -14,6 +15,7 @@ import {
 } from '../../../core/shared/math-utils'
 import { ElementPath, PropertyPath } from '../../../core/shared/project-file-types'
 import * as PP from '../../../core/shared/property-path'
+import { ProjectContentTreeRoot } from '../../assets'
 import { AllElementProps } from '../../editor/store/editor-state'
 import { CSSCursor } from '../canvas-types'
 import { getReparentTarget } from '../canvas-utils'
@@ -140,52 +142,19 @@ export function getReparentTargetForFlexElement(
   const flexReparentResult = newGetReparentTarget(
     strategyState.startingMetadata,
     strategyState.startingAllElementProps,
-    pointOnCanvas,
-  )
-
-  if (flexReparentResult.shouldReparent) {
-    return flexReparentResult
-  }
-
-  // TODO temporary, delete me
-  return {
-    shouldReparent: false,
-    newParent: null,
-    shouldReorder: false,
-    newIndex: -1,
-  }
-
-  // fallback to what is essentially an absolute reparent, TODO enforce Absolute
-
-  const reparentResult = getReparentTarget(
-    filteredSelectedElements,
-    filteredSelectedElements,
-    strategyState.startingMetadata,
-    [],
-    pointOnCanvas,
     canvasState.projectContents,
-    canvasState.openFile,
-    strategyState.startingAllElementProps,
+    canvasState.openFile ?? null,
+    pointOnCanvas,
   )
-  if (reparentResult.newParent == null) {
-    return {
-      ...reparentResult,
-      shouldReorder: false,
-      newIndex: -1,
-    }
-  } else {
-    return {
-      shouldReparent: true,
-      newParent: reparentResult.newParent,
-      shouldReorder: false,
-      newIndex: -1,
-    }
-  }
+
+  return flexReparentResult
 }
 
 function newGetReparentTarget(
   metadata: ElementInstanceMetadataMap,
   allElementProps: AllElementProps,
+  projectContents: ProjectContentTreeRoot,
+  openFile: string | null,
   point: CanvasPoint,
 ): {
   shouldReparent: boolean
@@ -201,6 +170,17 @@ function newGetReparentTarget(
     point,
     allElementProps,
   )
+
+  // if the mouse is over the canvas, return the canvas root as the target path
+  if (elementsUnderPoint.length === 0) {
+    const storyboardComponent = getStoryboardElementPath(projectContents, openFile)
+    return {
+      shouldReparent: storyboardComponent != null,
+      newParent: storyboardComponent,
+      shouldReorder: false,
+      newIndex: -1,
+    }
+  }
 
   const flexElementsUnderPoint = [...elementsUnderPoint]
     .reverse()
