@@ -25,6 +25,13 @@ import {
   isJSXFragment,
   getJSXAttribute,
   getJSXElementNameAsString,
+  Param,
+  JSXAttributes,
+  JSXAttributesPart,
+  JSXAttribute,
+  JSXAttributesSpread,
+  JSXArrayElement,
+  JSXProperty,
 } from '../shared/element-template'
 import {
   Imports,
@@ -484,4 +491,132 @@ export function getZIndexOfElement(
 
 export function elementOnlyHasSingleTextChild(jsxElement: JSXElement): boolean {
   return jsxElement.children.length === 1 && isJSXTextBlock(jsxElement.children[0])
+}
+
+export function codeUsesProperty(javascript: string, propsParam: Param, property: string): boolean {
+  switch (propsParam.boundParam.type) {
+    case 'REGULAR_PARAM':
+      return javascript.includes(`${propsParam.boundParam.paramName}.${property}`)
+    case 'DESTRUCTURED_OBJECT':
+      return propsParam.boundParam.parts.some((part) => {
+        const partBoundParam = part.param.boundParam
+        if (partBoundParam.type === 'REGULAR_PARAM') {
+          // This handles the aliasing that may be applied to the destructured field.
+          const propertyToCheck = part.propertyName ?? partBoundParam.paramName
+          if (propertyToCheck === property) {
+            // This is the aliased name or if there's no alias the field name.
+            const propertyToLookFor = partBoundParam.paramName
+            return javascript.includes(propertyToLookFor)
+          }
+        }
+        return false
+      })
+    case 'DESTRUCTURED_ARRAY':
+      return false
+    default:
+      const _exhaustiveCheck: never = propsParam.boundParam
+      throw new Error(`Unhandled param type: ${JSON.stringify(propsParam.boundParam)}`)
+  }
+}
+
+export function componentUsesProperty(component: UtopiaJSXComponent, property: string): boolean {
+  if (component.param == null) {
+    return false
+  } else {
+    return elementUsesProperty(component.rootElement, component.param, property)
+  }
+}
+
+export function elementUsesProperty(
+  element: JSXElementChild,
+  propsParam: Param,
+  property: string,
+): boolean {
+  switch (element.type) {
+    case 'JSX_ELEMENT':
+      const fromChildren = element.children.some((child) => {
+        return elementUsesProperty(child, propsParam, property)
+      })
+      const fromAttributes = attributesUseProperty(element.props, propsParam, property)
+      return fromChildren || fromAttributes
+    case 'JSX_ARBITRARY_BLOCK':
+      return codeUsesProperty(element.originalJavascript, propsParam, property)
+    case 'JSX_TEXT_BLOCK':
+      return false
+    case 'JSX_FRAGMENT':
+      return element.children.some((child) => {
+        return elementUsesProperty(child, propsParam, property)
+      })
+    default:
+      const _exhaustiveCheck: never = element
+      throw new Error(`Unhandled element type: ${JSON.stringify(element)}`)
+  }
+}
+
+export function attributesUseProperty(
+  attributes: JSXAttributes,
+  propsParam: Param,
+  property: string,
+): boolean {
+  return attributes.some((part) => attributePartUsesProperty(part, propsParam, property))
+}
+
+export function arrayElementUsesProperty(
+  arrayElement: JSXArrayElement,
+  propsParam: Param,
+  property: string,
+): boolean {
+  return attributeUsesProperty(arrayElement.value, propsParam, property)
+}
+
+export function jsxPropertyUsesProperty(
+  jsxProperty: JSXProperty,
+  propsParam: Param,
+  property: string,
+): boolean {
+  return attributeUsesProperty(jsxProperty.value, propsParam, property)
+}
+
+export function attributeUsesProperty(
+  attribute: JSXAttribute,
+  propsParam: Param,
+  property: string,
+): boolean {
+  switch (attribute.type) {
+    case 'ATTRIBUTE_VALUE':
+      return false
+    case 'ATTRIBUTE_OTHER_JAVASCRIPT':
+      return codeUsesProperty(attribute.javascript, propsParam, property)
+    case 'ATTRIBUTE_NESTED_ARRAY':
+      return attribute.content.some((elem) => {
+        return arrayElementUsesProperty(elem, propsParam, property)
+      })
+    case 'ATTRIBUTE_NESTED_OBJECT':
+      return attribute.content.some((elem) => {
+        return jsxPropertyUsesProperty(elem, propsParam, property)
+      })
+    case 'ATTRIBUTE_FUNCTION_CALL':
+      return attribute.parameters.some((parameter) => {
+        return attributeUsesProperty(parameter, propsParam, property)
+      })
+    default:
+      const _exhaustiveCheck: never = attribute
+      throw new Error(`Unhandled attribute type: ${JSON.stringify(attribute)}`)
+  }
+}
+
+export function attributePartUsesProperty(
+  attributesPart: JSXAttributesPart,
+  propsParam: Param,
+  property: string,
+): boolean {
+  switch (attributesPart.type) {
+    case 'JSX_ATTRIBUTES_ENTRY':
+      return attributeUsesProperty(attributesPart.value, propsParam, property)
+    case 'JSX_ATTRIBUTES_SPREAD':
+      return attributeUsesProperty(attributesPart.spreadValue, propsParam, property)
+    default:
+      const _exhaustiveCheck: never = attributesPart
+      throw new Error(`Unhandled attribute part: ${JSON.stringify(attributesPart)}`)
+  }
 }

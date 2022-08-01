@@ -71,6 +71,8 @@ export function setClipboardData(
 }
 
 export function getActionsForClipboardItems(
+  projectContents: ProjectContentTreeRoot,
+  openFile: string | null,
   clipboardData: Array<CopyData>,
   pastedFiles: Array<FileResult>,
   selectedViews: Array<ElementPath>,
@@ -85,7 +87,13 @@ export function getActionsForClipboardItems(
     }, clipboardData)
     let insertImageActions: EditorAction[] = []
     if (pastedFiles.length > 0 && componentMetadata != null) {
-      const target = getTargetParentForPaste(selectedViews, componentMetadata, pasteTargetsToIgnore)
+      const target = getTargetParentForPaste(
+        projectContents,
+        openFile,
+        selectedViews,
+        componentMetadata,
+        pasteTargetsToIgnore,
+      )
       const parentFrame =
         target != null ? MetadataUtils.getFrameInCanvasCoords(target, componentMetadata) : null
       const parentCenter =
@@ -226,6 +234,8 @@ function filterMetadataForCopy(
 }
 
 export function getTargetParentForPaste(
+  projectContents: ProjectContentTreeRoot,
+  openFile: string | null,
   selectedViews: Array<ElementPath>,
   metadata: ElementInstanceMetadataMap,
   pasteTargetsToIgnore: ElementPath[],
@@ -238,17 +248,28 @@ export function getTargetParentForPaste(
       // we should not paste the source into itself
       const insertingSourceIntoItself = EP.containsPath(parentTarget, pasteTargetsToIgnore)
 
-      if (
-        MetadataUtils.targetSupportsChildren(metadata, parentTarget) &&
-        !insertingSourceIntoItself
-      ) {
-        return parentTarget
+      if (openFile == null) {
+        return null
       } else {
-        const parentOfSelected = EP.parentPath(parentTarget)
-        if (MetadataUtils.targetSupportsChildren(metadata, parentOfSelected)) {
-          return parentOfSelected
+        if (
+          MetadataUtils.targetSupportsChildren(projectContents, openFile, metadata, parentTarget) &&
+          !insertingSourceIntoItself
+        ) {
+          return parentTarget
         } else {
-          return null
+          const parentOfSelected = EP.parentPath(parentTarget)
+          if (
+            MetadataUtils.targetSupportsChildren(
+              projectContents,
+              openFile,
+              metadata,
+              parentOfSelected,
+            )
+          ) {
+            return parentOfSelected
+          } else {
+            return null
+          }
         }
       }
     }
