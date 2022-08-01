@@ -197,6 +197,7 @@ function newGetReparentTarget(
     const targets: Array<CanvasRectangle> = drawTargetRectanglesForChildrenOfElement(
       metadata,
       flexElementPath,
+      'padded-edge',
     )
 
     const targetUnderMouseIndex = targets.findIndex((target) => {
@@ -228,6 +229,11 @@ function newGetReparentTarget(
         newIndex: -1,
       }
     } else {
+      const targets: Array<CanvasRectangle> = drawTargetRectanglesForChildrenOfElement(
+        metadata,
+        elementPath,
+        'full-size',
+      )
       // found flex element, todo index
       return {
         shouldReparent: true,
@@ -258,6 +264,7 @@ const propertiesToRemove: Array<PropertyPath> = [
 function drawTargetRectanglesForChildrenOfElement(
   metadata: ElementInstanceMetadataMap,
   flexElementPath: ElementPath,
+  targetRectangleSize: 'padded-edge' | 'full-size',
 ) {
   const flexElement = MetadataUtils.findElementByElementPath(metadata, flexElementPath)
   const flexDirection = MetadataUtils.getFlexDirection(flexElement)
@@ -297,33 +304,39 @@ function drawTargetRectanglesForChildrenOfElement(
   ]
 
   let flexInsertionTargets: Array<CanvasRectangle> = []
-  for (let index = 0; index < childrenBoundsAlongAxis.length - 1; index++) {
-    const start = childrenBoundsAlongAxis[index].end + (index === 0 ? 0 : -5)
-    const end = childrenBoundsAlongAxis[index + 1].start
 
-    const normalizedStart = Math.min(start, end)
-    const normalizedEnd = Math.max(start, end)
+  if (targetRectangleSize === 'padded-edge') {
+    for (let index = 0; index < childrenBoundsAlongAxis.length - 1; index++) {
+      const start = childrenBoundsAlongAxis[index].end + (index === 0 ? 0 : -5) // TODO I'm pretty sure I should delete this -5 from here
+      const end = childrenBoundsAlongAxis[index + 1].start
 
-    const ExtraPadding = 5
+      const normalizedStart = Math.min(start, end)
+      const normalizedEnd = Math.max(start, end)
 
-    const paddedStart = normalizedStart - ExtraPadding
-    const paddedEnd = normalizedEnd + ExtraPadding
+      const ExtraPadding = 5
 
-    // TODO for tomorrow this code doesn't find the drop zone _after_ the last element
-    flexInsertionTargets.push(
-      rectFromTwoPoints(
-        {
-          [leftOrTop]: paddedStart,
-          [leftOrTopComplement]: parentBounds[leftOrTopComplement],
-        } as any as CanvasPoint,
-        {
-          [leftOrTop]: paddedEnd,
-          [leftOrTopComplement]:
-            parentBounds[leftOrTopComplement] + parentBounds[widthOrHeightComplement],
-        } as any as CanvasPoint,
-      ),
-    )
+      const paddedStart = normalizedStart - ExtraPadding
+      const paddedEnd = normalizedEnd + ExtraPadding
+
+      // TODO for tomorrow this code doesn't find the drop zone _after_ the last element
+      flexInsertionTargets.push(
+        rectFromTwoPoints(
+          {
+            [leftOrTop]: paddedStart,
+            [leftOrTopComplement]: parentBounds[leftOrTopComplement],
+          } as any as CanvasPoint,
+          {
+            [leftOrTop]: paddedEnd,
+            [leftOrTopComplement]:
+              parentBounds[leftOrTopComplement] + parentBounds[widthOrHeightComplement],
+          } as any as CanvasPoint,
+        ),
+      )
+    }
+  } else {
+    // full size target rectangles, covering the entire flex element
   }
+
   return flexInsertionTargets
 }
 
