@@ -194,75 +194,10 @@ function newGetReparentTarget(
 
   // first try to find a flex element insertion area
   for (const flexElementPath of flexElementsUnderPoint) {
-    const flexElement = MetadataUtils.findElementByElementPath(metadata, flexElementPath)
-    const targets: Array<CanvasRectangle> = (() => {
-      const flexDirection = MetadataUtils.getFlexDirection(flexElement)
-      const parentBounds = MetadataUtils.getFrameInCanvasCoords(flexElementPath, metadata)
-
-      if (parentBounds == null) {
-        // TODO should we throw an error?
-        return []
-      }
-
-      const leftOrTop = flexDirection === 'row' ? 'x' : 'y'
-      const leftOrTopComplement = flexDirection === 'row' ? 'y' : 'x'
-      const widthOrHeight = flexDirection === 'row' ? 'width' : 'height'
-      const widthOrHeightComplement = flexDirection === 'row' ? 'height' : 'width'
-
-      const pseudoElementBefore = { start: parentBounds[leftOrTop], end: parentBounds[leftOrTop] }
-      const pseudoElementAfter = {
-        start: parentBounds[leftOrTop] + parentBounds[widthOrHeight],
-        end: parentBounds[leftOrTop] + parentBounds[widthOrHeight],
-      }
-
-      const childrenBounds: Array<{ start: number; end: number }> = MetadataUtils.getChildrenPaths(
-        metadata,
-        flexElementPath,
-      ).map((childPath) => {
-        const bounds = MetadataUtils.getFrameInCanvasCoords(childPath, metadata)!
-        return {
-          start: bounds[leftOrTop],
-          end: bounds[leftOrTop] + bounds[widthOrHeight],
-        }
-      })
-
-      const childrenBoundsAlongAxis: Array<{ start: number; end: number }> = [
-        pseudoElementBefore,
-        ...childrenBounds,
-        pseudoElementAfter,
-      ]
-
-      let flexInsertionTargets: Array<CanvasRectangle> = []
-      for (let index = 0; index < childrenBoundsAlongAxis.length - 1; index++) {
-        const start = childrenBoundsAlongAxis[index].end + (index === 0 ? 0 : -5)
-        const end = childrenBoundsAlongAxis[index + 1].start
-
-        const normalizedStart = Math.min(start, end)
-        const normalizedEnd = Math.max(start, end)
-
-        const ExtraPadding = 5
-
-        const paddedStart = normalizedStart - ExtraPadding
-        const paddedEnd = normalizedEnd + ExtraPadding
-
-        // TODO for tomorrow this code doesn't find the drop zone _after_ the last element
-
-        flexInsertionTargets.push(
-          rectFromTwoPoints(
-            {
-              [leftOrTop]: paddedStart,
-              [leftOrTopComplement]: parentBounds[leftOrTopComplement],
-            } as any as CanvasPoint, // TODO Atone
-            {
-              [leftOrTop]: paddedEnd,
-              [leftOrTopComplement]:
-                parentBounds[leftOrTopComplement] + parentBounds[widthOrHeightComplement],
-            } as any as CanvasPoint, // TODO Apologize to Sean
-          ),
-        )
-      }
-      return flexInsertionTargets
-    })()
+    const targets: Array<CanvasRectangle> = drawTargetRectanglesForChildrenOfElement(
+      metadata,
+      flexElementPath,
+    )
 
     const targetUnderMouseIndex = targets.findIndex((target) => {
       return rectContainsPoint(target, point)
@@ -319,6 +254,78 @@ const propertiesToRemove: Array<PropertyPath> = [
   PP.create(['style', 'right']),
   PP.create(['style', 'bottom']),
 ]
+
+function drawTargetRectanglesForChildrenOfElement(
+  metadata: ElementInstanceMetadataMap,
+  flexElementPath: ElementPath,
+) {
+  const flexElement = MetadataUtils.findElementByElementPath(metadata, flexElementPath)
+  const flexDirection = MetadataUtils.getFlexDirection(flexElement)
+  const parentBounds = MetadataUtils.getFrameInCanvasCoords(flexElementPath, metadata)
+
+  if (parentBounds == null) {
+    // TODO should we throw an error?
+    return []
+  }
+
+  const leftOrTop = flexDirection === 'row' ? 'x' : 'y'
+  const leftOrTopComplement = flexDirection === 'row' ? 'y' : 'x'
+  const widthOrHeight = flexDirection === 'row' ? 'width' : 'height'
+  const widthOrHeightComplement = flexDirection === 'row' ? 'height' : 'width'
+
+  const pseudoElementBefore = { start: parentBounds[leftOrTop], end: parentBounds[leftOrTop] }
+  const pseudoElementAfter = {
+    start: parentBounds[leftOrTop] + parentBounds[widthOrHeight],
+    end: parentBounds[leftOrTop] + parentBounds[widthOrHeight],
+  }
+
+  const childrenBounds: Array<{ start: number; end: number }> = MetadataUtils.getChildrenPaths(
+    metadata,
+    flexElementPath,
+  ).map((childPath) => {
+    const bounds = MetadataUtils.getFrameInCanvasCoords(childPath, metadata)!
+    return {
+      start: bounds[leftOrTop],
+      end: bounds[leftOrTop] + bounds[widthOrHeight],
+    }
+  })
+
+  const childrenBoundsAlongAxis: Array<{ start: number; end: number }> = [
+    pseudoElementBefore,
+    ...childrenBounds,
+    pseudoElementAfter,
+  ]
+
+  let flexInsertionTargets: Array<CanvasRectangle> = []
+  for (let index = 0; index < childrenBoundsAlongAxis.length - 1; index++) {
+    const start = childrenBoundsAlongAxis[index].end + (index === 0 ? 0 : -5)
+    const end = childrenBoundsAlongAxis[index + 1].start
+
+    const normalizedStart = Math.min(start, end)
+    const normalizedEnd = Math.max(start, end)
+
+    const ExtraPadding = 5
+
+    const paddedStart = normalizedStart - ExtraPadding
+    const paddedEnd = normalizedEnd + ExtraPadding
+
+    // TODO for tomorrow this code doesn't find the drop zone _after_ the last element
+    flexInsertionTargets.push(
+      rectFromTwoPoints(
+        {
+          [leftOrTop]: paddedStart,
+          [leftOrTopComplement]: parentBounds[leftOrTopComplement],
+        } as any as CanvasPoint,
+        {
+          [leftOrTop]: paddedEnd,
+          [leftOrTopComplement]:
+            parentBounds[leftOrTopComplement] + parentBounds[widthOrHeightComplement],
+        } as any as CanvasPoint,
+      ),
+    )
+  }
+  return flexInsertionTargets
+}
 
 export function applyFlexReparent(
   stripAbsoluteProperties: 'strip-absolute-props' | 'do-not-strip-props',
