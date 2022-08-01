@@ -137,7 +137,6 @@ function cursorForHoveredControl(
 function getDefaultCursorForMode(mode: Mode): CSSCursor {
   switch (mode.type) {
     case 'select':
-    case 'select-lite':
       return CSSCursor.Select
     case 'insert':
       return CSSCursor.Insert

@@ -158,10 +158,10 @@ export const MetadataUtils = {
         nodeModules,
         openFile,
         'unknown-element',
-        (success, element, underlyingTarget, underlyingFilePath) => {
+        (success, element, underlyingTarget, underlyingFilePath, underlyingDynamicTarget) => {
           return MetadataUtils.getElementOriginType(
             getUtopiaJSXComponentsFromSuccess(success),
-            underlyingTarget,
+            underlyingDynamicTarget,
           )
         },
       )
@@ -623,25 +623,26 @@ export const MetadataUtils = {
     }
   },
   targetElementSupportsChildren(instance: ElementInstanceMetadata): boolean {
-    // FIXME Replace with a property controls check
-    const elementEither = instance.element
-
-    if (isLeft(elementEither)) {
-      return intrinsicHTMLElementNamesThatSupportChildren.includes(elementEither.value)
-    } else {
-      const element = elementEither.value
-      if (isJSXElement(element) && isUtopiaAPIComponentFromMetadata(instance)) {
-        // Explicitly prevent components / elements that we *know* don't support children
-        return (
-          isViewLikeFromMetadata(instance) ||
-          isSceneFromMetadata(instance) ||
-          isGivenUtopiaElementFromMetadata(instance, 'Text')
-        )
-      } else {
+    return foldEither(
+      (elementString) => intrinsicHTMLElementNamesThatSupportChildren.includes(elementString),
+      (element) => {
+        if (isJSXElement(element)) {
+          if (isIntrinsicElement(element.name)) {
+            return intrinsicHTMLElementNamesThatSupportChildren.includes(element.name.baseVariable)
+          } else if (isUtopiaAPIComponentFromMetadata(instance)) {
+            // Explicitly prevent components / elements that we *know* don't support children
+            return (
+              isViewLikeFromMetadata(instance) ||
+              isSceneFromMetadata(instance) ||
+              isGivenUtopiaElementFromMetadata(instance, 'Text')
+            )
+          }
+        }
         // We don't know at this stage
         return true
-      }
-    }
+      },
+      instance.element,
+    )
   },
   targetSupportsChildren(metadata: ElementInstanceMetadataMap, target: ElementPath): boolean {
     const instance = MetadataUtils.findElementByElementPath(metadata, target)

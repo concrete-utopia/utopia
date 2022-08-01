@@ -33,6 +33,8 @@ import {
   getReparentTargetForFlexElement,
 } from './reparent-strategy-helpers'
 import { FlexReparentTargetIndicator } from '../controls/select-mode/flex-reparent-target-indicator'
+import { getReparentCommands } from './reparent-utils'
+import { ifAllowedToReparent } from './reparent-helpers'
 
 const propertiesToRemove: Array<PropertyPath> = [
   PP.create(['style', 'position']),

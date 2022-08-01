@@ -1,5 +1,5 @@
 import localforage from 'localforage'
-import type { StoredEditorState } from './store/editor-state'
+import { StoredEditorState, StoredStateVersion } from './store/editor-state'
 
 const StoredStateKey = 'stored-state'
 
@@ -19,7 +19,7 @@ export async function loadStoredState(projectId: string): Promise<StoredEditorSt
     if (asStored == null) {
       return Promise.resolve(null)
     } else {
-      if (asStored.projectId === projectId) {
+      if (asStored.projectId === projectId && asStored.storedState.version === StoredStateVersion) {
         return Promise.resolve(asStored.storedState)
       } else {
         return Promise.resolve(null)

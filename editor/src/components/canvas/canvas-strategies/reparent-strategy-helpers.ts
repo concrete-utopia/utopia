@@ -36,6 +36,7 @@ import {
 } from './canvas-strategy-types'
 import { getReorderIndex } from './flex-reorder-strategy'
 import { InteractionSession, StrategyState } from './interaction-state'
+import { ifAllowedToReparent } from './reparent-helpers'
 import { getDragTargets } from './shared-absolute-move-strategy-helpers'
 
 type ReparentStrategy =
@@ -325,124 +326,89 @@ export function applyFlexReparent(
   strategyState: StrategyState,
   lifecycle: 'mid-interaction' | 'end-interaction',
 ): StrategyApplicationResult {
-  if (
-    interactionSession.interactionData.type == 'DRAG' &&
-    interactionSession.interactionData.drag != null
-  ) {
-    const filteredSelectedElements = getDragTargets(canvasState.selectedElements)
-    const reparentResult = getReparentTargetForFlexElement(
-      filteredSelectedElements,
-      interactionSession,
-      canvasState,
-      strategyState,
-    )
-
+  const filteredSelectedElements = getDragTargets(canvasState.selectedElements)
+  return ifAllowedToReparent(canvasState, filteredSelectedElements, () => {
     if (
-      reparentResult.shouldReparent &&
-      reparentResult.newParent != null &&
-      filteredSelectedElements.length === 1
+      interactionSession.interactionData.type == 'DRAG' &&
+      interactionSession.interactionData.drag != null
     ) {
-      const target = filteredSelectedElements[0]
-      const newParent = reparentResult.newParent
-      // Reparent the element.
-      const newPath = EP.appendToPath(reparentResult.newParent, EP.toUid(target))
-      const reparentCommand = reparentElement('permanent', target, reparentResult.newParent)
-
-      // Strip the `position`, positional and dimension properties.
-      const commandToRemoveProperties = stripAbsoluteProperties
-        ? [deleteProperties('permanent', newPath, propertiesToRemove)]
-        : []
-
-      const commandsBeforeReorder = [reparentCommand, updateSelectedViews('permanent', [newPath])]
-
-      const commandsAfterReorder = [
-        ...commandToRemoveProperties,
-        setElementsToRerenderCommand([newPath]),
-        updateHighlightedViews('transient', []),
-        setCursorCommand('transient', CSSCursor.Move),
-      ]
-
-      const newParentFlexDirection = MetadataUtils.getFlexDirection(
-        MetadataUtils.findElementByElementPath(strategyState.startingMetadata, newParent),
+      const reparentResult = getReparentTargetForFlexElement(
+        filteredSelectedElements,
+        interactionSession,
+        canvasState,
+        strategyState,
       )
 
-      let interactionFinishCommadns: Array<CanvasCommand>
-      let midInteractionCommands: Array<CanvasCommand>
+      if (
+        reparentResult.shouldReparent &&
+        reparentResult.newParent != null &&
+        filteredSelectedElements.length === 1
+      ) {
+        const target = filteredSelectedElements[0]
+        const newParent = reparentResult.newParent
+        // Reparent the element.
+        const newPath = EP.appendToPath(reparentResult.newParent, EP.toUid(target))
+        const reparentCommand = reparentElement('permanent', target, reparentResult.newParent)
 
-      const siblingsOfTarget = MetadataUtils.getChildrenPaths(
-        strategyState.startingMetadata,
-        newParent,
-      )
+        // Strip the `position`, positional and dimension properties.
+        const commandToRemoveProperties = stripAbsoluteProperties
+          ? [deleteProperties('permanent', newPath, propertiesToRemove)]
+          : []
 
-      const parentRect = MetadataUtils.getFrameInCanvasCoords(
-        newParent,
-        strategyState.startingMetadata,
-      )
+        const commandsBeforeReorder = [reparentCommand, updateSelectedViews('permanent', [newPath])]
 
-      const newIndex = reparentResult.newIndex
+        const commandsAfterReorder = [
+          ...commandToRemoveProperties,
+          setElementsToRerenderCommand([newPath]),
+          updateHighlightedViews('transient', []),
+          setCursorCommand('transient', CSSCursor.Move),
+        ]
 
-      if (reparentResult.shouldReorder && newIndex < siblingsOfTarget.length) {
-        // Reorder the newly reparented element into the flex ordering.
-        const pointOnCanvas = offsetPoint(
-          interactionSession.interactionData.dragStart,
-          interactionSession.interactionData.drag,
+        const newParentFlexDirection = MetadataUtils.getFlexDirection(
+          MetadataUtils.findElementByElementPath(strategyState.startingMetadata, newParent),
         )
 
-        const siblingPosition: CanvasRectangle =
-          [
-            // parentRect, // we add the parent as the first element
-            ...siblingsOfTarget.map((sibling) => {
-              return MetadataUtils.getFrameInCanvasCoords(sibling, strategyState.startingMetadata)
-            }),
-          ][newIndex] ?? zeroCanvasRect
+        let interactionFinishCommadns: Array<CanvasCommand>
+        let midInteractionCommands: Array<CanvasCommand>
 
-        const targetLineBeforeSibling: CanvasRectangle =
-          newParentFlexDirection === 'row'
-            ? canvasRectangle({
-                x: siblingPosition?.x,
-                y: siblingPosition?.y,
-                height: siblingPosition?.height,
-                width: 2,
-              })
-            : canvasRectangle({
-                x: siblingPosition?.x,
-                y: siblingPosition?.y,
-                width: siblingPosition?.width,
-                height: 2,
-              })
+        const siblingsOfTarget = MetadataUtils.getChildrenPaths(
+          strategyState.startingMetadata,
+          newParent,
+        )
 
-        midInteractionCommands = [
-          wildcardPatch('transient', {
-            canvas: { controls: { parentHighlightPaths: { $set: [newParent] } } },
-          }),
-          wildcardPatch('transient', {
-            canvas: { controls: { flexReparentTargetLines: { $set: [targetLineBeforeSibling] } } },
-          }),
-        ]
-
-        interactionFinishCommadns = [
-          ...commandsBeforeReorder,
-          reorderElement('permanent', newPath, newIndex),
-          ...commandsAfterReorder,
-        ]
-      } else {
-        const siblingPosition = MetadataUtils.getFrameInCanvasCoords(
-          siblingsOfTarget[siblingsOfTarget.length - 1],
+        const parentRect = MetadataUtils.getFrameInCanvasCoords(
+          newParent,
           strategyState.startingMetadata,
         )
 
-        if (siblingPosition != null) {
-          const targetLineAfterSibling: CanvasRectangle =
+        const newIndex = reparentResult.newIndex
+
+        if (reparentResult.shouldReorder && newIndex < siblingsOfTarget.length) {
+          // Reorder the newly reparented element into the flex ordering.
+          const pointOnCanvas = offsetPoint(
+            interactionSession.interactionData.dragStart,
+            interactionSession.interactionData.drag,
+          )
+
+          const siblingPosition: CanvasRectangle =
+            [
+              // parentRect, // we add the parent as the first element
+              ...siblingsOfTarget.map((sibling) => {
+                return MetadataUtils.getFrameInCanvasCoords(sibling, strategyState.startingMetadata)
+              }),
+            ][newIndex] ?? zeroCanvasRect
+
+          const targetLineBeforeSibling: CanvasRectangle =
             newParentFlexDirection === 'row'
               ? canvasRectangle({
-                  x: siblingPosition.x + siblingPosition.width,
-                  y: siblingPosition.y,
-                  height: siblingPosition.height,
+                  x: siblingPosition?.x,
+                  y: siblingPosition?.y,
+                  height: siblingPosition?.height,
                   width: 2,
                 })
               : canvasRectangle({
-                  x: siblingPosition.x,
-                  y: siblingPosition.y + siblingPosition.height,
+                  x: siblingPosition?.x,
+                  y: siblingPosition?.y,
                   width: siblingPosition?.width,
                   height: 2,
                 })
@@ -452,53 +418,94 @@ export function applyFlexReparent(
               canvas: { controls: { parentHighlightPaths: { $set: [newParent] } } },
             }),
             wildcardPatch('transient', {
-              canvas: { controls: { flexReparentTargetLines: { $set: [targetLineAfterSibling] } } },
-            }),
-          ]
-        } else if (parentRect != null) {
-          const targetLineBeginningOfParent: CanvasRectangle =
-            newParentFlexDirection === 'row'
-              ? canvasRectangle({
-                  x: parentRect.x,
-                  y: parentRect.y,
-                  height: parentRect.height,
-                  width: 2,
-                })
-              : canvasRectangle({
-                  x: parentRect.x,
-                  y: parentRect.y,
-                  width: parentRect.width,
-                  height: 2,
-                })
-
-          midInteractionCommands = [
-            wildcardPatch('transient', {
-              canvas: { controls: { parentHighlightPaths: { $set: [newParent] } } },
-            }),
-            wildcardPatch('transient', {
               canvas: {
-                controls: { flexReparentTargetLines: { $set: [targetLineBeginningOfParent] } },
+                controls: { flexReparentTargetLines: { $set: [targetLineBeforeSibling] } },
               },
             }),
           ]
+
+          interactionFinishCommadns = [
+            ...commandsBeforeReorder,
+            reorderElement('permanent', newPath, newIndex),
+            ...commandsAfterReorder,
+          ]
         } else {
-          // this should be an error because parentRect should never be null
-          midInteractionCommands = []
+          const siblingPosition = MetadataUtils.getFrameInCanvasCoords(
+            siblingsOfTarget[siblingsOfTarget.length - 1],
+            strategyState.startingMetadata,
+          )
+
+          if (siblingPosition != null) {
+            const targetLineAfterSibling: CanvasRectangle =
+              newParentFlexDirection === 'row'
+                ? canvasRectangle({
+                    x: siblingPosition.x + siblingPosition.width,
+                    y: siblingPosition.y,
+                    height: siblingPosition.height,
+                    width: 2,
+                  })
+                : canvasRectangle({
+                    x: siblingPosition.x,
+                    y: siblingPosition.y + siblingPosition.height,
+                    width: siblingPosition?.width,
+                    height: 2,
+                  })
+
+            midInteractionCommands = [
+              wildcardPatch('transient', {
+                canvas: { controls: { parentHighlightPaths: { $set: [newParent] } } },
+              }),
+              wildcardPatch('transient', {
+                canvas: {
+                  controls: { flexReparentTargetLines: { $set: [targetLineAfterSibling] } },
+                },
+              }),
+            ]
+          } else if (parentRect != null) {
+            const targetLineBeginningOfParent: CanvasRectangle =
+              newParentFlexDirection === 'row'
+                ? canvasRectangle({
+                    x: parentRect.x,
+                    y: parentRect.y,
+                    height: parentRect.height,
+                    width: 2,
+                  })
+                : canvasRectangle({
+                    x: parentRect.x,
+                    y: parentRect.y,
+                    width: parentRect.width,
+                    height: 2,
+                  })
+
+            midInteractionCommands = [
+              wildcardPatch('transient', {
+                canvas: { controls: { parentHighlightPaths: { $set: [newParent] } } },
+              }),
+              wildcardPatch('transient', {
+                canvas: {
+                  controls: { flexReparentTargetLines: { $set: [targetLineBeginningOfParent] } },
+                },
+              }),
+            ]
+          } else {
+            // this should be an error because parentRect should never be null
+            midInteractionCommands = []
+          }
+
+          interactionFinishCommadns = [...commandsBeforeReorder, ...commandsAfterReorder]
         }
 
-        interactionFinishCommadns = [...commandsBeforeReorder, ...commandsAfterReorder]
-      }
+        if (lifecycle === 'mid-interaction') {
+          // do nothing
+          return { commands: midInteractionCommands, customState: null }
+        }
 
-      if (lifecycle === 'mid-interaction') {
-        // do nothing
-        return { commands: midInteractionCommands, customState: null }
-      }
-
-      return {
-        commands: interactionFinishCommadns,
-        customState: strategyState.customStrategyState,
+        return {
+          commands: interactionFinishCommadns,
+          customState: strategyState.customStrategyState,
+        }
       }
     }
-  }
-  return emptyStrategyApplicationResult
+    return emptyStrategyApplicationResult
+  })
 }

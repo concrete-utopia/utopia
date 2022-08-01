@@ -317,30 +317,55 @@ describe('targetElementSupportsChildren', () => {
     }
   }
 
-  it('Returns true for a utopia-api View', () => {
+  it('returns true for a utopia-api View', () => {
     const element = dummyInstanceDataForElementType('View')
     const actualResult = MetadataUtils.targetElementSupportsChildren(element)
-    expect(actualResult).toBeTruthy()
+    expect(actualResult).toEqual(true)
   })
-  it('Returns true for a button', () => {
+  it('returns true for an unparsed button', () => {
     const element = dummyInstanceDataForElementType('button')
     const actualResult = MetadataUtils.targetElementSupportsChildren(element)
-    expect(actualResult).toBeTruthy()
+    expect(actualResult).toEqual(true)
   })
-  it('Returns true for a div', () => {
+  it('returns true for a parsed button', () => {
+    const element = dummyInstanceDataForElementType(jsxElementName('button', []))
+    const actualResult = MetadataUtils.targetElementSupportsChildren(element)
+    expect(actualResult).toEqual(true)
+  })
+  it('returns true for an unparsed div', () => {
     const element = dummyInstanceDataForElementType('div')
     const actualResult = MetadataUtils.targetElementSupportsChildren(element)
-    expect(actualResult).toBeTruthy()
+    expect(actualResult).toEqual(true)
   })
-  it('Returns true for a span', () => {
+  it('returns true for a parsed div', () => {
+    const element = dummyInstanceDataForElementType(jsxElementName('div', []))
+    const actualResult = MetadataUtils.targetElementSupportsChildren(element)
+    expect(actualResult).toEqual(true)
+  })
+  it('returns true for an unparsed span', () => {
     const element = dummyInstanceDataForElementType('span')
     const actualResult = MetadataUtils.targetElementSupportsChildren(element)
-    expect(actualResult).toBeTruthy()
+    expect(actualResult).toEqual(true)
   })
-  it('Returns true for an animated.div', () => {
+  it('returns true for a parsed span', () => {
+    const element = dummyInstanceDataForElementType(jsxElementName('span', []))
+    const actualResult = MetadataUtils.targetElementSupportsChildren(element)
+    expect(actualResult).toEqual(true)
+  })
+  it('returns true for an animated.div', () => {
     const element = dummyInstanceDataForElementType(jsxElementName('animated', ['div']))
     const actualResult = MetadataUtils.targetElementSupportsChildren(element)
-    expect(actualResult).toBeTruthy()
+    expect(actualResult).toEqual(true)
+  })
+  it('returns false for an unparsed img', () => {
+    const element = dummyInstanceDataForElementType('img')
+    const actualResult = MetadataUtils.targetElementSupportsChildren(element)
+    expect(actualResult).toEqual(false)
+  })
+  it('returns false for a parsed img', () => {
+    const element = dummyInstanceDataForElementType(jsxElementName('img', []))
+    const actualResult = MetadataUtils.targetElementSupportsChildren(element)
+    expect(actualResult).toEqual(false)
   })
 })
 

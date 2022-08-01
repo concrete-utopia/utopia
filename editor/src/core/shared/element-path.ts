@@ -938,13 +938,11 @@ export function pathUpToElementPath(
 }
 
 export interface DropFirstPathElementResultType {
-  newPath: StaticElementPath | null
-  droppedPathElements: StaticElementPathPart | null
+  newPath: ElementPath | null
+  droppedPathElements: ElementPathPart | null
 }
 
-export function dropFirstPathElement(
-  path: StaticElementPath | null,
-): DropFirstPathElementResultType {
+export function dropFirstPathElement(path: ElementPath | null): DropFirstPathElementResultType {
   if (path == null) {
     return {
       newPath: null,
@@ -990,4 +988,8 @@ export function getOrderedPathsByDepth(elementPaths: Array<ElementPath>): Array<
 
     return depth(b) - depth(a)
   })
+}
+
+export function emptyStaticElementPathPart(): StaticElementPathPart {
+  return [] as unknown as StaticElementPathPart
 }
