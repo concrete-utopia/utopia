@@ -42,13 +42,13 @@ export function findFirstParentWithValidElementPath(
   const firstParentFromDom = findFirstParentWithValidElementPathInner(
     validDynamicElementPathsForLookup,
     target,
-    false,
+    'search-dom-only',
   )
 
   const firstParentFromPath = findFirstParentWithValidElementPathInner(
     validDynamicElementPathsForLookup,
     target,
-    true,
+    'allow-descendants-from-path',
   )
 
   if (firstParentFromDom == null || firstParentFromPath == null) {
@@ -64,7 +64,7 @@ export function findFirstParentWithValidElementPath(
 export function findFirstParentWithValidElementPathInner(
   validDynamicElementPathsForLookup: Set<string> | 'no-filter',
   target: Element,
-  allowDescendantsFromPath: boolean,
+  allowDescendantsFromPath: 'allow-descendants-from-path' | 'search-dom-only',
 ): ElementPath | null {
   const dynamicElementPaths = getPathsOnDomElement(target)
   const staticAndDynamicTargetElementPaths = dynamicElementPaths.map((p) => {
@@ -89,26 +89,30 @@ export function findFirstParentWithValidElementPathInner(
 
   const filteredValidPathsMappedToDynamic = mapDropNulls(
     (validPath: string) => {
-      if (allowDescendantsFromPath) {
-        for (const staticAndDynamic of staticAndDynamicTargetElementPaths) {
-          if (EP.isDescendantOfOrEqualTo(staticAndDynamic.staticPath, EP.fromString(validPath))) {
-            const depthDiff =
-              EP.navigatorDepth(staticAndDynamic.staticPath) -
-              EP.navigatorDepth(EP.fromString(validPath))
-            let ancestor = staticAndDynamic.dynamic
-            for (let i = 0; i < depthDiff; i++) {
-              ancestor = EP.parentPath(ancestor)
+      switch (allowDescendantsFromPath) {
+        case 'allow-descendants-from-path':
+          for (const staticAndDynamic of staticAndDynamicTargetElementPaths) {
+            if (EP.isDescendantOfOrEqualTo(staticAndDynamic.staticPath, EP.fromString(validPath))) {
+              const depthDiff =
+                EP.navigatorDepth(staticAndDynamic.staticPath) -
+                EP.navigatorDepth(EP.fromString(validPath))
+              let ancestor = staticAndDynamic.dynamic
+              for (let i = 0; i < depthDiff; i++) {
+                ancestor = EP.parentPath(ancestor)
+              }
+              return ancestor
             }
-            return ancestor
           }
-        }
 
-        return null
-      } else {
-        return staticAndDynamicTargetElementPaths.find(
-          (staticAndDynamic) => staticAndDynamic.static === validPath,
-        )?.dynamic
+          return null
+        case 'search-dom-only':
+          return staticAndDynamicTargetElementPaths.find(
+            (staticAndDynamic) => staticAndDynamic.static === validPath,
+          )?.dynamic
+        default:
+          const _exhaustiveCheck: never = allowDescendantsFromPath
       }
+      return null
     },
     [...validStaticElementPaths],
   )
