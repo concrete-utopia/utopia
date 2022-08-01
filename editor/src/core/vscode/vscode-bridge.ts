@@ -54,6 +54,7 @@ import {
   setFollowSelectionConfig,
   UpdateDecorationsMessage,
   SelectedElementChanged,
+  utopiaReady,
 } from 'utopia-vscode-common'
 import { isTextFile, ProjectFile, ElementPath, TextFile } from '../shared/project-file-types'
 import { isBrowserEnvironment } from '../shared/utils'
@@ -181,11 +182,6 @@ export async function initVSCodeBridge(
       await writeProjectContents(projectContents)
       await initMailbox(UtopiaInbox, parseFromVSCodeMessage, (message: FromVSCodeMessage) => {
         switch (message.type) {
-          case 'SEND_INITIAL_DATA':
-            // If the extension is activated after the bridge has been initialised, we must now send the code editor
-            // initialisation data
-            dispatch([sendCodeEditorInitialisation()], 'everyone')
-            break
           case 'EDITOR_CURSOR_POSITION_CHANGED':
             dispatch(
               [selectFromFileAndPosition(message.filePath, message.line, message.column)],
@@ -195,8 +191,10 @@ export async function initVSCodeBridge(
           case 'UTOPIA_VSCODE_CONFIG_VALUES':
             dispatch([updateConfigFromVSCode(message.config)], 'everyone')
             break
-          case 'FILE_OPENED':
-          case 'FAILED_TO_OPEN_FILE':
+          case 'VSCODE_READY':
+            dispatch([sendCodeEditorInitialisation()], 'everyone')
+            break
+          case 'CLEAR_LOADING_SCREEN':
             if (!loadingScreenHidden) {
               loadingScreenHidden = true
               dispatch([hideVSCodeLoadingScreen()], 'everyone')
@@ -207,6 +205,7 @@ export async function initVSCodeBridge(
             throw new Error(`Unhandled message type${JSON.stringify(message)}`)
         }
       })
+      await sendUtopiaReadyMessage()
       await sendGetUtopiaVSCodeConfigMessage()
       watchForChanges(dispatch)
       if (openFilePath != null) {
@@ -216,10 +215,6 @@ export async function initVSCodeBridge(
         dispatch([hideVSCodeLoadingScreen()], 'everyone')
       }
     }
-
-    // Because the extension might have already been activated by now, we attempt to send the code editor
-    // initialisation data straight away
-    dispatch([sendCodeEditorInitialisation()], 'everyone')
     dispatch([markVSCodeBridgeReady(true)], 'everyone')
   }
 
@@ -249,6 +244,10 @@ export async function sendSetFollowSelectionEnabledMessage(enabled: boolean): Pr
 
 export async function sendGetUtopiaVSCodeConfigMessage(): Promise<void> {
   return sendMessage(getUtopiaVSCodeConfig())
+}
+
+async function sendUtopiaReadyMessage(): Promise<void> {
+  return sendMessage(utopiaReady())
 }
 
 export async function applyProjectChanges(changes: Array<ProjectFileChange>): Promise<void> {
