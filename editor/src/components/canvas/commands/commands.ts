@@ -39,6 +39,7 @@ import { runUpdateFunctionCommand, UpdateFunctionCommand } from './update-functi
 import { runPushIntendedBounds, PushIntendedBounds } from './push-intended-bounds-command'
 import { DeleteProperties, runDeleteProperties } from './delete-properties-command'
 import { AddStyleToRootDiv, runAddStyleToRootDiv } from './add-style-to-root-div'
+import { AddImportsToFile, runAddImportsToFile } from './add-imports-to-file-command'
 
 export interface CommandFunctionResult {
   editorStatePatches: Array<EditorStatePatch>
@@ -73,6 +74,7 @@ export type CanvasCommand =
   | PushIntendedBounds
   | DeleteProperties
   | AddStyleToRootDiv
+  | AddImportsToFile
 
 export const runCanvasCommand = (
   editorState: EditorState,
@@ -118,6 +120,8 @@ export const runCanvasCommand = (
       return runDeleteProperties(editorState, command)
     case 'ADD_STYLE_TO_ROOT_DIV':
       return runAddStyleToRootDiv(editorState, command)
+    case 'ADD_IMPORTS_TO_FILE':
+      return runAddImportsToFile(editorState, command)
     default:
       const _exhaustiveCheck: never = command
       throw new Error(`Unhandled canvas command ${JSON.stringify(command)}`)

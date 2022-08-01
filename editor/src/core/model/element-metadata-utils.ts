@@ -86,7 +86,12 @@ import {
 } from '../shared/project-file-types'
 import * as PP from '../shared/property-path'
 import * as EP from '../shared/element-path'
-import { findJSXElementChildAtPath, getUtopiaID, isSceneElement } from './element-template-utils'
+import {
+  componentUsesProperty,
+  findJSXElementChildAtPath,
+  getUtopiaID,
+  isSceneElement,
+} from './element-template-utils'
 import {
   isImportedComponent,
   isAnimatedElement,
@@ -107,6 +112,8 @@ import { AllElementProps, withUnderlyingTarget } from '../../components/editor/s
 import { ProjectContentTreeRoot } from '../../components/assets'
 import { memoize } from '../shared/memoize'
 import { buildTree, ElementPathTree, getSubTree } from '../shared/element-path-tree'
+import { findUnderlyingTargetComponentImplementation } from '../../components/custom-code/code-file'
+
 const ObjectPathImmutable: any = OPI
 
 export const getChildrenOfCollapsedViews = (
@@ -622,30 +629,59 @@ export const MetadataUtils = {
       return false
     }
   },
-  targetElementSupportsChildren(instance: ElementInstanceMetadata): boolean {
-    // FIXME Replace with a property controls check
-    const elementEither = instance.element
-
-    if (isLeft(elementEither)) {
-      return intrinsicHTMLElementNamesThatSupportChildren.includes(elementEither.value)
-    } else {
-      const element = elementEither.value
-      if (isJSXElement(element) && isUtopiaAPIComponentFromMetadata(instance)) {
-        // Explicitly prevent components / elements that we *know* don't support children
-        return (
-          isViewLikeFromMetadata(instance) ||
-          isSceneFromMetadata(instance) ||
-          isGivenUtopiaElementFromMetadata(instance, 'Text')
-        )
-      } else {
+  targetElementSupportsChildren(
+    projectContents: ProjectContentTreeRoot,
+    openFile: string | null,
+    instance: ElementInstanceMetadata,
+  ): boolean {
+    return foldEither(
+      (elementString) => intrinsicHTMLElementNamesThatSupportChildren.includes(elementString),
+      (element) => {
+        if (isJSXElement(element)) {
+          if (isIntrinsicElement(element.name)) {
+            return intrinsicHTMLElementNamesThatSupportChildren.includes(element.name.baseVariable)
+          } else if (isUtopiaAPIComponentFromMetadata(instance)) {
+            // Explicitly prevent components / elements that we *know* don't support children
+            return (
+              isViewLikeFromMetadata(instance) ||
+              isSceneFromMetadata(instance) ||
+              isGivenUtopiaElementFromMetadata(instance, 'Text')
+            )
+          } else {
+            if (openFile == null) {
+              return false
+            } else {
+              const underlyingComponent = findUnderlyingTargetComponentImplementation(
+                projectContents,
+                {},
+                openFile,
+                instance.elementPath,
+              )
+              if (underlyingComponent == null) {
+                // Could be an external third party component, assuming true for now.
+                return true
+              } else {
+                return componentUsesProperty(underlyingComponent, 'children')
+              }
+            }
+          }
+        }
         // We don't know at this stage
         return true
-      }
-    }
+      },
+      instance.element,
+    )
   },
-  targetSupportsChildren(metadata: ElementInstanceMetadataMap, target: ElementPath): boolean {
+  targetSupportsChildren(
+    projectContents: ProjectContentTreeRoot,
+    openFile: string | null,
+    metadata: ElementInstanceMetadataMap,
+    target: ElementPath,
+  ): boolean {
     const instance = MetadataUtils.findElementByElementPath(metadata, target)
-    return instance == null ? false : MetadataUtils.targetElementSupportsChildren(instance)
+    return instance == null
+      ? false
+      : MetadataUtils.targetElementSupportsChildren(projectContents, openFile, instance)
   },
   getTextContentOfElement(element: ElementInstanceMetadata): string | null {
     if (isRight(element.element) && isJSXElement(element.element.value)) {

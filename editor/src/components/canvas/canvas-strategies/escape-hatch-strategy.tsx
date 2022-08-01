@@ -53,6 +53,7 @@ import {
   areAllSelectedElementsNonAbsolute,
   rootDivStyleCommand,
 } from './shared-absolute-move-strategy-helpers'
+import { getReparentCommands } from './reparent-utils'
 
 export const escapeHatchStrategy: CanvasStrategy = {
   id: 'ESCAPE_HATCH_STRATEGY',
@@ -275,7 +276,15 @@ function collectSetLayoutPropCommands(
     )
     commands.push(...updatePinsCommands)
     if (shouldReparent) {
-      commands.push(reparentElement('permanent', path, targetParent))
+      commands.push(
+        ...getReparentCommands(
+          canvasState.projectContents,
+          canvasState.nodeModules,
+          canvasState.openFile,
+          path,
+          targetParent,
+        ),
+      )
     }
     return { commands: commands, intendedBounds: intendedBounds }
   } else {
