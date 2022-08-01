@@ -16,7 +16,9 @@ import {
 } from './canvas-strategy-types'
 import { getEscapeHatchCommands } from './escape-hatch-strategy'
 import { InteractionSession, StrategyState } from './interaction-state'
+import { ifAllowedToReparent } from './reparent-helpers'
 import { findReparentStrategy } from './reparent-strategy-helpers'
+import { getDragTargets } from './shared-absolute-move-strategy-helpers'
 
 export const flexReparentToAbsoluteStrategy: CanvasStrategy = {
   id: 'FLEX_REPARENT_TO_ABSOLUTE',
@@ -61,34 +63,37 @@ export const flexReparentToAbsoluteStrategy: CanvasStrategy = {
     return 0
   },
   apply: (canvasState, interactionState, strategyState) => {
-    if (
-      interactionState.interactionData.type !== 'DRAG' ||
-      interactionState.interactionData.drag == null
-    ) {
-      return emptyStrategyApplicationResult
-    }
+    const filteredSelectedElements = getDragTargets(canvasState.selectedElements)
+    return ifAllowedToReparent(canvasState, strategyState, filteredSelectedElements, () => {
+      if (
+        interactionState.interactionData.type !== 'DRAG' ||
+        interactionState.interactionData.drag == null
+      ) {
+        return emptyStrategyApplicationResult
+      }
 
-    const escapeHatchCommands = getEscapeHatchCommands(
-      canvasState.selectedElements,
-      strategyState.startingMetadata,
-      canvasState,
-      canvasPoint({ x: 0, y: 0 }),
-    ).commands
+      const escapeHatchCommands = getEscapeHatchCommands(
+        filteredSelectedElements,
+        strategyState.startingMetadata,
+        canvasState,
+        canvasPoint({ x: 0, y: 0 }),
+      ).commands
 
-    return {
-      commands: [
-        ...escapeHatchCommands,
-        updateFunctionCommand('permanent', (editorState, transient): Array<EditorStatePatch> => {
-          return runAbsoluteReparentStrategyForFreshlyConvertedElement(
-            editorState,
-            strategyState,
-            interactionState,
-            transient,
-          )
-        }),
-      ],
-      customState: null,
-    }
+      return {
+        commands: [
+          ...escapeHatchCommands,
+          updateFunctionCommand('permanent', (editorState, transient): Array<EditorStatePatch> => {
+            return runAbsoluteReparentStrategyForFreshlyConvertedElement(
+              editorState,
+              strategyState,
+              interactionState,
+              transient,
+            )
+          }),
+        ],
+        customState: null,
+      }
+    })
   },
 }
 
