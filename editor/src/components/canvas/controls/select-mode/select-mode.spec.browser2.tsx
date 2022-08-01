@@ -811,11 +811,11 @@ describe('Select Mode Double Clicking With Fragments', () => {
       'sb' +                 // Skipped as it's the storyboard
       '/scene-CardList' +    // Skipped because we skip over Scenes
       '/CardList-instance' + // <- First double click
-      ':CardList-Col' +      // <- Third double click
-      '/CardList-Card~~~1' + // <- Fourth *and* Fifth double click, as the Fifth is required to focus it
-      ':Card-Root' +         // <- Sixth double click
-      '/Card-Row-Buttons' +  // <- Seventh double click
-      '/Card-Button-3',      // <- Eight double click
+      ':CardList-Col' +      // <- Second double click
+      '/CardList-Card~~~1' + // <- Third *and* Fourth double click, as the Fifth is required to focus it
+      ':Card-Root' +         // <- Fifth double click
+      '/Card-Row-Buttons' +  // <- Sixth double click
+      '/Card-Button-3',      // <- Seventh double click
     )
 
     const renderResult = await renderTestEditorWithCode(
