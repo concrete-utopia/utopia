@@ -121,6 +121,8 @@ async function waitForPathToExist(path: string, maxWaitTime: number = 5000): Pro
 async function checkAndResetIfMailboxCleared(mailbox: Mailbox): Promise<void> {
   const mailboxClearedAtTimestamp = await getMailboxClearedAtTimestamp(inbox)
   if (mailboxClearedAtTimestamp > mailboxLastClearedTimestamp) {
+    // The mailbox was cleared since we last polled it, meaning our last consumed message
+    // count is now invalid, and we need to start consuming messages from the beginning again.
     lastConsumedMessage = -1
     mailboxLastClearedTimestamp = mailboxClearedAtTimestamp
   }
@@ -132,6 +134,9 @@ async function pollInbox<T>(parseMessage: (msg: string) => T): Promise<void> {
   const mailboxPath = pathForMailbox(inbox)
   waitForPathToExist(mailboxPath)
   const allMessages = await readDirectory(mailboxPath)
+
+  // Filter messages to only those that haven't been processed yet. We do this rather than deleting processed
+  // messages so that multiple instances in different browser tabs won't drive over eachother.
   const messagesToProcess = allMessages.filter(
     (messageName) => Number.parseInt(messageName) > lastConsumedMessage,
   )
