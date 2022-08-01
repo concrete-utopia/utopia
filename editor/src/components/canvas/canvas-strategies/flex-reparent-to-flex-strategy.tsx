@@ -20,6 +20,7 @@ import {
   findReparentStrategy,
   getReparentTargetForFlexElement,
 } from './reparent-strategy-helpers'
+import { ifAllowedToReparent } from './reparent-helpers'
 import { getReparentCommands } from './reparent-utils'
 import { getDragTargets } from './shared-absolute-move-strategy-helpers'
 

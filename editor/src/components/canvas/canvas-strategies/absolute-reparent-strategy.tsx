@@ -1,10 +1,7 @@
-import { foldEither } from '../../../core/shared/either'
-import { elementReferencesElsewhere } from '../../../core/shared/element-template'
 import { MetadataUtils } from '../../../core/model/element-metadata-utils'
 import * as EP from '../../../core/shared/element-path'
 import { CSSCursor } from '../canvas-types'
 import { getReparentTarget } from '../canvas-utils'
-import { reparentElement } from '../commands/reparent-element-command'
 import { setCursorCommand } from '../commands/set-cursor-command'
 import { setElementsToRerenderCommand } from '../commands/set-elements-to-rerender-command'
 import { updateSelectedViews } from '../commands/update-selected-views-command'
@@ -15,9 +12,8 @@ import { CanvasStrategy, emptyStrategyApplicationResult } from './canvas-strateg
 import {
   getAbsoluteOffsetCommandsForSelectedElement,
   getDragTargets,
-  getFileOfElement,
 } from './shared-absolute-move-strategy-helpers'
-import { ifAllowedToReparent } from './reparent-helpers'
+import { ifAllowedToReparent, isAllowedToReparent } from './reparent-helpers'
 import { findReparentStrategy } from './reparent-strategy-helpers'
 import { offsetPoint } from '../../../core/shared/math-utils'
 import { getReparentCommands } from './reparent-utils'
@@ -36,19 +32,7 @@ export const absoluteReparentStrategy: CanvasStrategy = {
       return filteredSelectedElements.every((element) => {
         const elementMetadata = MetadataUtils.findElementByElementPath(metadata, element)
 
-        const referencesExternalValue =
-          elementMetadata == null
-            ? false
-            : foldEither(
-                (_) => false,
-                (elementFromMetadata) => elementReferencesElsewhere(elementFromMetadata),
-                elementMetadata.element,
-              )
-
-        return (
-          elementMetadata?.specialSizeMeasurements.position === 'absolute' &&
-          !referencesExternalValue
-        )
+        return elementMetadata?.specialSizeMeasurements.position === 'absolute'
       })
     }
     return false
@@ -93,73 +77,75 @@ export const absoluteReparentStrategy: CanvasStrategy = {
     const { selectedElements, projectContents, openFile, nodeModules } = canvasState
     const filteredSelectedElements = getDragTargets(selectedElements)
 
-    return ifAllowedToReparent(canvasState, filteredSelectedElements, () => {
-      const reparentResult = getReparentTarget(
-        filteredSelectedElements,
-        filteredSelectedElements,
-        strategyState.startingMetadata,
-        [],
-        pointOnCanvas,
-        projectContents,
-        openFile,
-        strategyState.startingAllElementProps,
-      )
-      const newParent = reparentResult.newParent
-      const moveCommands = absoluteMoveStrategy.apply(
-        canvasState,
-        interactionState,
-        strategyState,
-        lifecycle,
-      )
-      const providesBoundsForAbsoluteChildren =
-        MetadataUtils.findElementByElementPath(strategyState.startingMetadata, newParent)
-          ?.specialSizeMeasurements.providesBoundsForAbsoluteChildren ?? false
-      const parentIsStoryboard = newParent == null ? false : EP.isStoryboardPath(newParent)
-
-      if (
-        reparentResult.shouldReparent &&
-        newParent != null &&
-        (providesBoundsForAbsoluteChildren || parentIsStoryboard)
-      ) {
-        const commands = filteredSelectedElements.map((selectedElement) => {
-          const offsetCommands = getAbsoluteOffsetCommandsForSelectedElement(
-            selectedElement,
-            newParent,
-            strategyState,
-            canvasState,
-          )
-
-          const newPath = EP.appendToPath(newParent, EP.toUid(selectedElement))
-          return {
-            newPath: newPath,
-            commands: [
-              ...offsetCommands,
-              ...getReparentCommands(
-                projectContents,
-                nodeModules,
-                openFile,
-                selectedElement,
-                newParent,
-              ),
-            ],
-          }
-        })
-
-        const newPaths = commands.map((c) => c.newPath)
-
-        return {
-          commands: [
-            ...moveCommands.commands,
-            ...commands.flatMap((c) => c.commands),
-            updateSelectedViews('permanent', newPaths),
-            setElementsToRerenderCommand(newPaths),
-            setCursorCommand('transient', CSSCursor.Move),
-          ],
-          customState: null,
-        }
-      } else {
-        return moveCommands
-      }
+    const reparentResult = getReparentTarget(
+      filteredSelectedElements,
+      filteredSelectedElements,
+      strategyState.startingMetadata,
+      [],
+      pointOnCanvas,
+      projectContents,
+      openFile,
+      strategyState.startingAllElementProps,
+    )
+    const newParent = reparentResult.newParent
+    const moveCommands = absoluteMoveStrategy.apply(
+      canvasState,
+      interactionState,
+      strategyState,
+      lifecycle,
+    )
+    const providesBoundsForAbsoluteChildren =
+      MetadataUtils.findElementByElementPath(strategyState.startingMetadata, newParent)
+        ?.specialSizeMeasurements.providesBoundsForAbsoluteChildren ?? false
+    const parentIsStoryboard = newParent == null ? false : EP.isStoryboardPath(newParent)
+    const allowedToReparent = filteredSelectedElements.every((selectedElement) => {
+      return isAllowedToReparent(canvasState, strategyState, selectedElement)
     })
+
+    if (
+      reparentResult.shouldReparent &&
+      newParent != null &&
+      (providesBoundsForAbsoluteChildren || parentIsStoryboard) &&
+      allowedToReparent
+    ) {
+      const commands = filteredSelectedElements.map((selectedElement) => {
+        const offsetCommands = getAbsoluteOffsetCommandsForSelectedElement(
+          selectedElement,
+          newParent,
+          strategyState,
+          canvasState,
+        )
+
+        const newPath = EP.appendToPath(newParent, EP.toUid(selectedElement))
+        return {
+          newPath: newPath,
+          commands: [
+            ...offsetCommands,
+            ...getReparentCommands(
+              projectContents,
+              nodeModules,
+              openFile,
+              selectedElement,
+              newParent,
+            ),
+          ],
+        }
+      })
+
+      const newPaths = commands.map((c) => c.newPath)
+
+      return {
+        commands: [
+          ...moveCommands.commands,
+          ...commands.flatMap((c) => c.commands),
+          updateSelectedViews('permanent', newPaths),
+          setElementsToRerenderCommand(newPaths),
+          setCursorCommand('transient', CSSCursor.Move),
+        ],
+        customState: null,
+      }
+    } else {
+      return moveCommands
+    }
   },
 }

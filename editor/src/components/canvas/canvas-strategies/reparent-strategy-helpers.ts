@@ -327,7 +327,7 @@ export function applyFlexReparent(
   lifecycle: 'mid-interaction' | 'end-interaction',
 ): StrategyApplicationResult {
   const filteredSelectedElements = getDragTargets(canvasState.selectedElements)
-  return ifAllowedToReparent(canvasState, filteredSelectedElements, () => {
+  return ifAllowedToReparent(canvasState, strategyState, filteredSelectedElements, () => {
     if (
       interactionSession.interactionData.type == 'DRAG' &&
       interactionSession.interactionData.drag != null
