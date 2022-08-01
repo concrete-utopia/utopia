@@ -96,11 +96,7 @@ export function findFirstParentWithValidElementPathInner(
               const depthDiff =
                 EP.navigatorDepth(staticAndDynamic.staticPath) -
                 EP.navigatorDepth(EP.fromString(validPath))
-              let ancestor = staticAndDynamic.dynamic
-              for (let i = 0; i < depthDiff; i++) {
-                ancestor = EP.parentPath(ancestor)
-              }
-              return ancestor
+              return EP.nthParentPath(staticAndDynamic.dynamic, depthDiff)
             }
           }
 
