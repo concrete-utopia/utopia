@@ -49,6 +49,7 @@ export function findReparentStrategy(
   canvasState: InteractionCanvasState,
   interactionState: InteractionSession,
   strategyState: StrategyState,
+  log = false, // DELETE ME BEFORE MERGE
 ): { strategy: ReparentStrategy; newParent: ElementPath } | { strategy: 'do-not-reparent' } {
   if (
     canvasState.selectedElements.length === 0 ||

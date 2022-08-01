@@ -55,6 +55,7 @@ export const absoluteReparentStrategy: CanvasStrategy = {
       canvasState,
       interactionState,
       strategyState,
+      true,
     ).strategy
     if (reparentStrategy === 'ABSOLUTE_REPARENT_TO_ABSOLUTE') {
       return 3
