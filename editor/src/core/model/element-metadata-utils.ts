@@ -631,7 +631,6 @@ export const MetadataUtils = {
   },
   targetElementSupportsChildren(
     projectContents: ProjectContentTreeRoot,
-    nodeModules: NodeModules,
     openFile: string | null,
     instance: ElementInstanceMetadata,
   ): boolean {
@@ -654,7 +653,7 @@ export const MetadataUtils = {
             } else {
               const underlyingComponent = findUnderlyingTargetComponentImplementation(
                 projectContents,
-                nodeModules,
+                {},
                 openFile,
                 instance.elementPath,
               )
@@ -675,7 +674,6 @@ export const MetadataUtils = {
   },
   targetSupportsChildren(
     projectContents: ProjectContentTreeRoot,
-    nodeModules: NodeModules,
     openFile: string | null,
     metadata: ElementInstanceMetadataMap,
     target: ElementPath,
@@ -683,12 +681,7 @@ export const MetadataUtils = {
     const instance = MetadataUtils.findElementByElementPath(metadata, target)
     return instance == null
       ? false
-      : MetadataUtils.targetElementSupportsChildren(
-          projectContents,
-          nodeModules,
-          openFile,
-          instance,
-        )
+      : MetadataUtils.targetElementSupportsChildren(projectContents, openFile, instance)
   },
   getTextContentOfElement(element: ElementInstanceMetadata): string | null {
     if (isRight(element.element) && isJSXElement(element.element.value)) {

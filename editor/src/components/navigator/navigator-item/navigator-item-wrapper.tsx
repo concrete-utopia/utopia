@@ -113,7 +113,6 @@ const navigatorItemWrapperSelectorFactory = (elementPath: ElementPath) =>
         noOfChildrenInner = MetadataUtils.getImmediateChildren(jsxMetadata, elementPath).length
         supportsChildren = MetadataUtils.targetSupportsChildren(
           projectContents,
-          nodeModules,
           currentFilePath,
           jsxMetadata,
           elementPath,

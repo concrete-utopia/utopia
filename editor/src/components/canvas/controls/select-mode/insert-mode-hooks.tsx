@@ -25,20 +25,14 @@ function useGetHighlightableViewsForInsertMode() {
     }
   })
   return React.useCallback(() => {
-    const { componentMetadata, mode, projectContents, nodeModules, openFile } = storeRef.current
+    const { componentMetadata, mode, projectContents, openFile } = storeRef.current
     if (isInsertMode(mode)) {
       const allPaths = MetadataUtils.getAllPaths(componentMetadata)
       const insertTargets = allPaths.filter((path) => {
         return (
           (insertionSubjectIsJSXElement(mode.subject) ||
             insertionSubjectIsDragAndDrop(mode.subject)) &&
-          MetadataUtils.targetSupportsChildren(
-            projectContents,
-            nodeModules,
-            openFile,
-            componentMetadata,
-            path,
-          )
+          MetadataUtils.targetSupportsChildren(projectContents, openFile, componentMetadata, path)
         )
       })
       return insertTargets

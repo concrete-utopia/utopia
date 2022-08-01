@@ -349,7 +349,6 @@ describe('targetElementSupportsChildren', () => {
     )
     const actualResult = MetadataUtils.targetElementSupportsChildren(
       {},
-      {},
       StoryboardFilePath,
       element,
     )
@@ -364,7 +363,6 @@ describe('targetElementSupportsChildren', () => {
       ]),
     )
     const actualResult = MetadataUtils.targetElementSupportsChildren(
-      {},
       {},
       StoryboardFilePath,
       element,
@@ -381,7 +379,6 @@ describe('targetElementSupportsChildren', () => {
     )
     const actualResult = MetadataUtils.targetElementSupportsChildren(
       {},
-      {},
       StoryboardFilePath,
       element,
     )
@@ -396,7 +393,6 @@ describe('targetElementSupportsChildren', () => {
       ]),
     )
     const actualResult = MetadataUtils.targetElementSupportsChildren(
-      {},
       {},
       StoryboardFilePath,
       element,
@@ -413,7 +409,6 @@ describe('targetElementSupportsChildren', () => {
     )
     const actualResult = MetadataUtils.targetElementSupportsChildren(
       {},
-      {},
       StoryboardFilePath,
       element,
     )
@@ -428,7 +423,6 @@ describe('targetElementSupportsChildren', () => {
       ]),
     )
     const actualResult = MetadataUtils.targetElementSupportsChildren(
-      {},
       {},
       StoryboardFilePath,
       element,
@@ -445,7 +439,6 @@ describe('targetElementSupportsChildren', () => {
     )
     const actualResult = MetadataUtils.targetElementSupportsChildren(
       {},
-      {},
       StoryboardFilePath,
       element,
     )
@@ -460,7 +453,6 @@ describe('targetElementSupportsChildren', () => {
       ]),
     )
     const actualResult = MetadataUtils.targetElementSupportsChildren(
-      {},
       {},
       StoryboardFilePath,
       element,
@@ -477,7 +469,6 @@ describe('targetElementSupportsChildren', () => {
     )
     const actualResult = MetadataUtils.targetElementSupportsChildren(
       {},
-      {},
       StoryboardFilePath,
       element,
     )
@@ -492,7 +483,6 @@ describe('targetElementSupportsChildren', () => {
       ]),
     )
     const actualResult = MetadataUtils.targetElementSupportsChildren(
-      {},
       {},
       StoryboardFilePath,
       element,
@@ -540,7 +530,6 @@ export const App = (props) => {
     )
     const actualResult = MetadataUtils.targetElementSupportsChildren(
       projectContents,
-      SampleNodeModules,
       StoryboardFilePath,
       element,
     )
@@ -587,7 +576,6 @@ export const App = (props) => {
     )
     const actualResult = MetadataUtils.targetElementSupportsChildren(
       projectContents,
-      SampleNodeModules,
       StoryboardFilePath,
       element,
     )

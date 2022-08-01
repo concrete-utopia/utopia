@@ -114,7 +114,6 @@ export function getReparentTargetForFlexElement(
     [],
     pointOnCanvas,
     canvasState.projectContents,
-    canvasState.nodeModules,
     canvasState.openFile,
     strategyState.startingAllElementProps,
   )

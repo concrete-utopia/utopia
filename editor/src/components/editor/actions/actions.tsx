@@ -2741,7 +2741,6 @@ export const UPDATE_FNS = {
   ): EditorModel => {
     const targetParent = getTargetParentForPaste(
       editor.projectContents,
-      editor.nodeModules.files,
       editor.canvas.openFile?.filename ?? null,
       editor.selectedViews,
       editor.jsxMetadata,

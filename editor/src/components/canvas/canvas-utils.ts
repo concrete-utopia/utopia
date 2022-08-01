@@ -1922,7 +1922,6 @@ export function getReparentTargetFromState(
     editorState.hiddenInstances,
     position,
     editorState.projectContents,
-    editorState.nodeModules.files,
     editorState.canvas.openFile?.filename,
     editorState.allElementProps,
   )
@@ -1935,7 +1934,6 @@ export function getReparentTarget(
   hiddenInstances: Array<ElementPath>,
   pointOnCanvas: CanvasPoint,
   projectContents: ProjectContentTreeRoot,
-  nodeModules: NodeModules,
   openFile: string | null | undefined,
   allElementProps: AllElementProps,
 ): {
@@ -1965,7 +1963,6 @@ export function getReparentTarget(
   } else {
     parentSupportsChild = MetadataUtils.targetSupportsChildren(
       projectContents,
-      nodeModules,
       openFile ?? null,
       componentMeta,
       possibleNewParent,

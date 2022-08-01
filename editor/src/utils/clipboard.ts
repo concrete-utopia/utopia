@@ -72,7 +72,6 @@ export function setClipboardData(
 
 export function getActionsForClipboardItems(
   projectContents: ProjectContentTreeRoot,
-  nodeModules: NodeModules,
   openFile: string | null,
   clipboardData: Array<CopyData>,
   pastedFiles: Array<FileResult>,
@@ -90,7 +89,6 @@ export function getActionsForClipboardItems(
     if (pastedFiles.length > 0 && componentMetadata != null) {
       const target = getTargetParentForPaste(
         projectContents,
-        nodeModules,
         openFile,
         selectedViews,
         componentMetadata,
@@ -237,7 +235,6 @@ function filterMetadataForCopy(
 
 export function getTargetParentForPaste(
   projectContents: ProjectContentTreeRoot,
-  nodeModules: NodeModules,
   openFile: string | null,
   selectedViews: Array<ElementPath>,
   metadata: ElementInstanceMetadataMap,
@@ -255,13 +252,7 @@ export function getTargetParentForPaste(
         return null
       } else {
         if (
-          MetadataUtils.targetSupportsChildren(
-            projectContents,
-            nodeModules,
-            openFile,
-            metadata,
-            parentTarget,
-          ) &&
+          MetadataUtils.targetSupportsChildren(projectContents, openFile, metadata, parentTarget) &&
           !insertingSourceIntoItself
         ) {
           return parentTarget
@@ -270,7 +261,6 @@ export function getTargetParentForPaste(
           if (
             MetadataUtils.targetSupportsChildren(
               projectContents,
-              nodeModules,
               openFile,
               metadata,
               parentOfSelected,
