@@ -641,12 +641,10 @@ describe('Select Mode Double Clicking', () => {
 })
 
 describe('Select Mode Double Clicking With Fragments', () => {
-  // The below tests are to ensure we're not inadvertently handling clicks too many times,
-  // which could either mean focusing something that wasn't meant to be focused, or skipping
-  // over the target element and selecting something further down the hierarchy.
-  // Each double click should _either_ select the next element down the hierarchy, _or_ focus
-  // the currently selected element. Also, we specifically skip over Scenes, meaning a single
-  // double click with nothing selected will select the first child of a Scene
+  // The below tests are similar to tests in 'Select Mode Double Clicking', but
+  // they use a test project which contain components which renders fragment root
+  // elements. These are special cases because these fragments and their components
+  // do not appear in the dom.
 
   before(() => {
     viewport.set(2200, 1000)
