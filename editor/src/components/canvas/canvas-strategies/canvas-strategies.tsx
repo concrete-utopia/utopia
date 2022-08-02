@@ -45,6 +45,7 @@ export function pickCanvasStateFromEditorState(editorState: EditorState): Intera
   return {
     selectedElements: editorState.selectedViews,
     projectContents: editorState.projectContents,
+    nodeModules: editorState.nodeModules.files,
     openFile: editorState.canvas.openFile?.filename,
     scale: editorState.canvas.scale,
     canvasOffset: editorState.canvas.roundedCanvasOffset,
@@ -65,13 +66,7 @@ function getApplicableStrategies(
 
 const getApplicableStrategiesSelector = createSelector(
   (store: EditorStorePatched): InteractionCanvasState => {
-    return {
-      selectedElements: store.editor.selectedViews,
-      projectContents: store.editor.projectContents,
-      openFile: store.editor.canvas.openFile?.filename,
-      scale: store.editor.canvas.scale,
-      canvasOffset: store.editor.canvas.roundedCanvasOffset,
-    }
+    return pickCanvasStateFromEditorState(store.editor)
   },
   (store: EditorStorePatched) => store.editor.canvas.interactionSession,
   (store: EditorStorePatched) => store.editor.jsxMetadata,

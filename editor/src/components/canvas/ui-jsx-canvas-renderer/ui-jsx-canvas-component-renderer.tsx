@@ -182,7 +182,7 @@ export function createComponentRendererComponent(params: {
       })
     }
 
-    if (utopiaJsxComponent.arbitraryJSBlock != null && shouldUpdate()) {
+    if (utopiaJsxComponent.arbitraryJSBlock != null) {
       const lookupRenderer = createLookupRender(
         rootElementPath,
         scope,

@@ -599,6 +599,7 @@ export function findUnderlyingTargetComponentImplementation(
           parseResult,
           { droppedPathElements: null, newPath: null },
         )
+
         if (
           innerUnderlyingTarget.type === 'NORMALISE_PATH_SUCCESS' &&
           isParseSuccess(innerUnderlyingTarget.textFile.fileContents.parsed)
