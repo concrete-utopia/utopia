@@ -18,13 +18,14 @@ import {
 } from '../../../core/model/scene-utils'
 import { wait } from '../../../core/model/performance-scripts'
 
-function dragElement(
+async function dragElement(
   renderResult: EditorRenderResult,
   targetTestId: string,
   dragDelta: WindowPoint,
   modifiers: Modifiers,
-) {
-  const targetElement = renderResult.renderedDOM.getByTestId(targetTestId)
+): Promise<void> {
+  const targetElements = await renderResult.renderedDOM.findAllByTestId(targetTestId)
+  const targetElement = targetElements[0]
   const targetElementBounds = targetElement.getBoundingClientRect()
   const canvasControl = renderResult.renderedDOM.getByTestId(CanvasControlsContainerID)
 
@@ -97,6 +98,23 @@ const defaultTestCode = `
       data-uid='absoluteparent'
       data-testid='absoluteparent'
     >
+      {[1, 2].map((n) => (
+        <div
+          style={{
+            position: 'absolute',
+            left: 20 + (n * 100),
+            top: 150,
+            width: 100,
+            height: 100,
+            borderWidth: 10,
+            borderColor: 'black',
+            borderStyle: 'solid',
+            backgroundColor: 'yellow',
+          }}
+          data-uid='generatedabsolutechild'
+          data-testid='generatedabsolutechild'
+        />
+      ))}
       <div
         style={{
           position: 'absolute',
@@ -217,7 +235,7 @@ describe('Absolute Reparent To Flex Strategy', () => {
       x: flexParentCenter.x - absoluteChildCenter.x,
       y: flexParentCenter.y - absoluteChildCenter.y,
     })
-    act(() => dragElement(renderResult, 'absolutechild', dragDelta, cmdModifier))
+    await act(() => dragElement(renderResult, 'absolutechild', dragDelta, cmdModifier))
 
     await renderResult.getDispatchFollowUpActionsFinished()
 
@@ -243,7 +261,25 @@ describe('Absolute Reparent To Flex Strategy', () => {
       }}
       data-uid='absoluteparent'
       data-testid='absoluteparent'
-    />
+    >
+      {[1, 2].map((n) => (
+        <div
+          style={{
+            position: 'absolute',
+            left: 20 + (n * 100),
+            top: 150,
+            width: 100,
+            height: 100,
+            borderWidth: 10,
+            borderColor: 'black',
+            borderStyle: 'solid',
+            backgroundColor: 'yellow',
+          }}
+          data-uid='generatedabsolutechild'
+          data-testid='generatedabsolutechild'
+        />
+      ))}
+    </div>
     <div
       style={{
         display: 'flex',
@@ -323,7 +359,7 @@ describe('Absolute Reparent To Flex Strategy', () => {
       x: firstFlexChildCenter.x - absoluteChildCenter.x,
       y: firstFlexChildCenter.y - absoluteChildCenter.y,
     })
-    act(() => dragElement(renderResult, 'absolutechild', dragDelta, cmdModifier))
+    await act(() => dragElement(renderResult, 'absolutechild', dragDelta, cmdModifier))
 
     await renderResult.getDispatchFollowUpActionsFinished()
 
@@ -349,7 +385,25 @@ describe('Absolute Reparent To Flex Strategy', () => {
       }}
       data-uid='absoluteparent'
       data-testid='absoluteparent'
-    />
+    >
+      {[1, 2].map((n) => (
+        <div
+          style={{
+            position: 'absolute',
+            left: 20 + (n * 100),
+            top: 150,
+            width: 100,
+            height: 100,
+            borderWidth: 10,
+            borderColor: 'black',
+            borderStyle: 'solid',
+            backgroundColor: 'yellow',
+          }}
+          data-uid='generatedabsolutechild'
+          data-testid='generatedabsolutechild'
+        />
+      ))}
+    </div>
     <div
       style={{
         display: 'flex',
@@ -402,6 +456,42 @@ describe('Absolute Reparent To Flex Strategy', () => {
       />
     </div>
   </div>`),
+    )
+  })
+  it('cannot reparent a generated element', async () => {
+    const renderResult = await renderTestEditorWithCode(
+      makeTestProjectCodeWithSnippet(defaultTestCode),
+      'await-first-dom-report',
+    )
+
+    const generatedAbsolutechildren = await renderResult.renderedDOM.findAllByTestId(
+      'generatedabsolutechild',
+    )
+    const absoluteChild = generatedAbsolutechildren[0]
+    const absoluteChildRect = absoluteChild.getBoundingClientRect()
+    const absoluteChildCenter = {
+      x: absoluteChildRect.x + absoluteChildRect.width / 2,
+      y: absoluteChildRect.y + absoluteChildRect.height / 2,
+    }
+    const firstFlexChild = await renderResult.renderedDOM.findByTestId('flexchild1')
+    const firstFlexChildRect = firstFlexChild.getBoundingClientRect()
+    const firstFlexChildCenter = {
+      x: firstFlexChildRect.x + firstFlexChildRect.width / 2,
+      y: firstFlexChildRect.y + firstFlexChildRect.height / 2,
+    }
+
+    await renderResult.getDispatchFollowUpActionsFinished()
+
+    const dragDelta = windowPoint({
+      x: firstFlexChildCenter.x - absoluteChildCenter.x,
+      y: firstFlexChildCenter.y - absoluteChildCenter.y,
+    })
+    await act(() => dragElement(renderResult, 'generatedabsolutechild', dragDelta, cmdModifier))
+
+    await renderResult.getDispatchFollowUpActionsFinished()
+
+    expect(getPrintedUiJsCode(renderResult.getEditorState())).toEqual(
+      makeTestProjectCodeWithSnippet(defaultTestCode),
     )
   })
 })

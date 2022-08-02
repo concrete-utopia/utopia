@@ -83,6 +83,7 @@ import {
   saveDOMReport,
   setPanelVisibility,
   switchEditorMode,
+  updateNodeModulesContents,
 } from '../editor/actions/action-creators'
 import { EditorModes } from '../editor/editor-modes'
 import { useUpdateOnRuntimeErrors } from '../../core/shared/runtime-report-logs'
@@ -102,6 +103,7 @@ import {
 } from './dom-walker'
 import { flushSync } from 'react-dom'
 import { shouldInspectorUpdate } from '../inspector/inspector'
+import { SampleNodeModules } from '../custom-code/code-file.test-utils'
 
 // eslint-disable-next-line no-unused-expressions
 typeof process !== 'undefined' &&
@@ -355,7 +357,11 @@ export async function renderTestEditorWithModel(
 
   await act(async () => {
     await asyncTestDispatch(
-      [switchEditorMode(EditorModes.selectMode()), setPanelVisibility('codeEditor', false)],
+      [
+        switchEditorMode(EditorModes.selectMode()),
+        setPanelVisibility('codeEditor', false),
+        updateNodeModulesContents(SampleNodeModules),
+      ],
       undefined,
       true,
     )
