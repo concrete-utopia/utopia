@@ -20,12 +20,11 @@ import {
   exists,
   writeFileUnsavedContentAsUTF8,
   clearFileUnsavedContent,
-  sendInitialData,
   applyPrettier,
   UtopiaVSCodeConfig,
   utopiaVSCodeConfigValues,
-  fileOpened,
-  failedToOpenFile,
+  vsCodeReady,
+  clearLoadingScreen,
 } from 'utopia-vscode-common'
 import { UtopiaFSExtension } from './utopia-fs'
 import { fromUtopiaURI } from './path-utils'
@@ -46,7 +45,9 @@ export async function activate(context: vscode.ExtensionContext): Promise<void> 
   watchForUnsavedContentChangesFromFS(utopiaFS)
   watchForChangesFromVSCode(context, projectID)
 
-  sendMessage(sendInitialData())
+  // Send a VSCodeReady message on activation as this might be triggered by an iframe reload,
+  // meaning no new UtopiaReady message will have been sent
+  sendMessage(vsCodeReady())
 
   watchForFileDeletions()
 }
@@ -155,24 +156,8 @@ function didClose(path: string): DidClose {
     path: path,
   }
 }
-interface DidOpen {
-  type: 'DID_OPEN'
-  path: string
-}
 
-function didOpen(path: string): DidOpen {
-  return {
-    type: 'DID_OPEN',
-    path: path,
-  }
-}
-
-type SubscriptionWork =
-  | UpdateDirtyContentChange
-  | DidChangeTextChange
-  | WillSaveText
-  | DidClose
-  | DidOpen
+type SubscriptionWork = UpdateDirtyContentChange | DidChangeTextChange | WillSaveText | DidClose
 let pendingWork: Array<SubscriptionWork> = []
 
 function minimisePendingWork(): void {
@@ -239,11 +224,6 @@ async function doSubscriptionWork(work: SubscriptionWork): Promise<void> {
 
       break
     }
-    case 'DID_OPEN': {
-      const { path } = work
-      sendMessage(fileOpened(path))
-      break
-    }
     default:
       const _exhaustiveCheck: never = work
       console.error(`Unhandled work type ${JSON.stringify(work)}`)
@@ -267,16 +247,6 @@ setTimeout(runPendingSubscriptionChanges, SUBSCRIPTION_POLLING_TIMEOUT)
 function watchForChangesFromVSCode(context: vscode.ExtensionContext, projectID: string) {
   function isUtopiaDocument(document: vscode.TextDocument): boolean {
     return document.uri.scheme === projectID
-  }
-
-  // Capture files that are _already_ open, so that the bridge
-  // becomes aware that they have been opened from something like
-  // a session restore.
-  for (const document of vscode.workspace.textDocuments) {
-    if (isUtopiaDocument(document)) {
-      const path = fromUtopiaURI(document.uri)
-      pendingWork.push(didOpen(path))
-    }
   }
 
   context.subscriptions.push(
@@ -310,7 +280,6 @@ function watchForChangesFromVSCode(context: vscode.ExtensionContext, projectID: 
       if (isUtopiaDocument(document)) {
         const path = fromUtopiaURI(document.uri)
         pendingWork.push(updateDirtyContentChange(path, document.uri))
-        pendingWork.push(didOpen(path))
       }
     }),
   )
@@ -382,6 +351,9 @@ function initMessaging(context: vscode.ExtensionContext, workspaceRootUri: vscod
           handleMessage(innerMessage)
         }
         break
+      case 'UTOPIA_READY':
+        sendMessage(vsCodeReady())
+        break
       default:
         const _exhaustiveCheck: never = message
         console.error(`Unhandled message type ${JSON.stringify(message)}`)
@@ -451,6 +423,7 @@ async function openFile(fileUri: vscode.Uri, retries: number = 5): Promise<boole
   const fileExists = await exists(filePath)
   if (fileExists) {
     await vscode.commands.executeCommand('vscode.open', fileUri, { preserveFocus: true })
+    sendMessage(clearLoadingScreen())
     return true
   } else {
     // Just in case the message is processed before the file has been written to the FS
@@ -458,8 +431,7 @@ async function openFile(fileUri: vscode.Uri, retries: number = 5): Promise<boole
       await new Promise<void>((resolve) => setTimeout(() => resolve(), 100))
       return openFile(fileUri, retries - 1)
     } else {
-      const path = fromUtopiaURI(fileUri)
-      sendMessage(failedToOpenFile(path))
+      sendMessage(clearLoadingScreen())
       return false
     }
   }
