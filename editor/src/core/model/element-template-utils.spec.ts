@@ -11,11 +11,19 @@ import {
   getJSXAttribute,
   isJSXElement,
   emptyComments,
+  isUtopiaJSXComponent,
 } from '../shared/element-template'
-import { getUtopiaID, guaranteeUniqueUids, removeJSXElementChild } from './element-template-utils'
+import {
+  componentUsesProperty,
+  getUtopiaID,
+  guaranteeUniqueUids,
+  removeJSXElementChild,
+} from './element-template-utils'
 import Utils from '../../utils/utils'
 import { BakedInStoryboardUID } from './scene-utils'
 import { testStaticElementPath } from '../shared/element-path.test-utils'
+import { parseCode } from '../workers/parser-printer/parser-printer'
+import { isParseSuccess } from '../shared/project-file-types'
 
 describe('guaranteeUniqueUids', () => {
   it('if two siblings have the same ID, one will be replaced', () => {
@@ -206,5 +214,151 @@ describe('removeJSXElementChild', () => {
       }
     })
     expect(updatedElements).toEqual(expectedResult)
+  })
+})
+
+function getComponentFromCode(componentName: string, code: string): UtopiaJSXComponent {
+  const parseResult = parseCode('test.jsx', code, null, new Set())
+  if (isParseSuccess(parseResult)) {
+    for (const topLevelElement of parseResult.topLevelElements) {
+      if (isUtopiaJSXComponent(topLevelElement) && topLevelElement.name === componentName) {
+        return topLevelElement
+      }
+    }
+    throw new Error(`Could not find component ${componentName}`)
+  } else {
+    throw new Error(`Not a parse success: ${parseResult.type}`)
+  }
+}
+
+describe('componentUsesProperty', () => {
+  it('returns false for a component that in no way uses the children property', () => {
+    const component = getComponentFromCode(
+      'TestComponent',
+      `
+export const TestComponent = (props) => {
+  return <div>The Best Test Component</div>
+}
+    `,
+    )
+    const result = componentUsesProperty(component, 'children')
+    expect(result).toEqual(false)
+  })
+  it('returns true for a component that uses the children property', () => {
+    const component = getComponentFromCode(
+      'TestComponent',
+      `
+export const TestComponent = (props) => {
+  return <div>{props.children}</div>
+}
+    `,
+    )
+    const result = componentUsesProperty(component, 'children')
+    expect(result).toEqual(true)
+  })
+  it('returns true for a component that uses the children property from a spread version of the props', () => {
+    const component = getComponentFromCode(
+      'TestComponent',
+      `
+export const TestComponent = ({children}) => {
+  return <div>{children}</div>
+}
+    `,
+    )
+    const result = componentUsesProperty(component, 'children')
+    expect(result).toEqual(true)
+  })
+  it('returns true for a component that uses the children property from a spread version of the props with children aliased', () => {
+    const component = getComponentFromCode(
+      'TestComponent',
+      `
+export const TestComponent = ({children: alias}) => {
+  return <div>{alias}</div>
+}
+    `,
+    )
+    const result = componentUsesProperty(component, 'children')
+    expect(result).toEqual(true)
+  })
+  it('returns false for a component that in no way uses the children property (deeply structured)', () => {
+    const component = getComponentFromCode(
+      'TestComponent',
+      `
+export const TestComponent = (props) => {
+  return <div>
+    <h2>
+      <div>The Best Test Component</div>
+    <h2>
+  </div>
+}
+    `,
+    )
+    const result = componentUsesProperty(component, 'children')
+    expect(result).toEqual(false)
+  })
+  it('returns true for a component that uses the children property (deeply structured)', () => {
+    const component = getComponentFromCode(
+      'TestComponent',
+      `
+export const TestComponent = (props) => {
+  return <div>
+    <h2>
+      <div>{props.children}</div>
+    <h2>
+  </div>
+}
+    `,
+    )
+    const result = componentUsesProperty(component, 'children')
+    expect(result).toEqual(true)
+  })
+  it('returns true for a component that uses the children property from a spread version of the props (deeply structured)', () => {
+    const component = getComponentFromCode(
+      'TestComponent',
+      `
+export const TestComponent = ({children}) => {
+  return <div>
+    <h2>
+      <div>{children}</div>
+    <h2>
+  </div>
+}
+    `,
+    )
+    const result = componentUsesProperty(component, 'children')
+    expect(result).toEqual(true)
+  })
+  it('returns true for a component that uses the children property from a spread version of the props with children aliased (deeply structured)', () => {
+    const component = getComponentFromCode(
+      'TestComponent',
+      `
+export const TestComponent = ({children: alias}) => {
+  return <div>
+    <h2>
+      <div>{alias}</div>
+    <h2>
+  </div>
+}
+    `,
+    )
+    const result = componentUsesProperty(component, 'children')
+    expect(result).toEqual(true)
+  })
+  it('returns true for a component that uses the children property in an element property', () => {
+    const component = getComponentFromCode(
+      'TestComponent',
+      `
+import { LayoutElement } from './layoutelement'
+export const TestComponent = (props) => {
+  return <div>
+    <h2>
+      <LayoutElement toLayout={props.children} />
+    <h2>
+  </div>
+}
+    `,
+    )
+    const result = componentUsesProperty(component, 'children')
+    expect(result).toEqual(true)
   })
 })

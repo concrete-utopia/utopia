@@ -1329,6 +1329,8 @@ export class EditorCanvas extends React.Component<EditorCanvasProps> {
       } else {
         parseClipboardData(event.clipboardData).then((result) => {
           const actions = getActionsForClipboardItems(
+            editor.projectContents,
+            editor.canvas.openFile?.filename ?? null,
             result.utopiaData,
             result.files,
             selectedViews,
