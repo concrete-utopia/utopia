@@ -308,10 +308,6 @@ export const EditorComponentInner = React.memo((props: EditorProps) => {
     [dispatch],
   )
 
-  const vscodeBridgeReady = useEditorState((store) => {
-    return store.editor.vscodeBridgeReady
-  }, 'EditorComponentInner vscodeBridgeReady')
-
   return (
     <>
       <SimpleFlexRow
