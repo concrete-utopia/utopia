@@ -1105,7 +1105,7 @@ export const MetadataUtils = {
 
     const childrenInDomCache: { [pathStr: string]: Array<ElementInstanceMetadata> } = {}
 
-    const findChildrenInDom = (pathStr: string): Array<ElementInstanceMetadata> => {
+    const findChildrenInDomRecursively = (pathStr: string): Array<ElementInstanceMetadata> => {
       const existing = childrenInDomCache[pathStr]
 
       if (existing != null) {
@@ -1121,7 +1121,7 @@ export const MetadataUtils = {
         ),
       )
       const recursiveChildren = childrenNotInDom.flatMap((c) => {
-        return findChildrenInDom(EP.toString(c.elementPath))
+        return findChildrenInDomRecursively(EP.toString(c.elementPath))
       })
       const children = [...childrenFromDom, ...recursiveChildren]
 
@@ -1130,38 +1130,38 @@ export const MetadataUtils = {
       return children
     }
 
+    // those elements which are not in the dom need calculated localFrame and globalFrame
+    // from their children (or deeper descendants)
     const elementsWithoutDomMetadata = Object.keys(fromSpy).filter((p) => fromDOM[p] == null)
     fastForEach(elementsWithoutDomMetadata, (pathStr) => {
       const spyElem = fromSpy[pathStr]
-      const children = findChildrenInDom(pathStr)
+      const children = findChildrenInDomRecursively(pathStr)
       if (children.length === 0) {
         return
       }
-      let metadata = { ...spyElem }
-      metadata.globalFrame = null
-      metadata.localFrame = null
+      let workingMetadata: ElementInstanceMetadata = { ...spyElem }
 
       fastForEach(children, (childMetadata) => {
         const globalFrame =
-          metadata.globalFrame != null
+          workingMetadata.globalFrame != null
             ? boundingRectangle(
-                metadata.globalFrame ?? zeroCanvasRect,
+                workingMetadata.globalFrame ?? zeroCanvasRect,
                 childMetadata.globalFrame ?? zeroCanvasRect,
               )
             : childMetadata.globalFrame ?? zeroCanvasRect
         const localFrame =
-          metadata.localFrame != null
+          workingMetadata.localFrame != null
             ? boundingRectangle(
-                metadata.localFrame ?? zeroLocalRect,
+                workingMetadata.localFrame ?? zeroLocalRect,
                 childMetadata.localFrame ?? zeroLocalRect,
               )
             : childMetadata.localFrame ?? zeroLocalRect
-        metadata = {
-          ...metadata,
+        workingMetadata = {
+          ...workingMetadata,
           globalFrame: globalFrame,
           localFrame: localFrame,
         }
-        workingElements[pathStr] = metadata
+        workingElements[pathStr] = workingMetadata
       })
     })
 
