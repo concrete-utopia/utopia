@@ -5,7 +5,7 @@ import type { PageEventObject } from 'puppeteer'
 import { ONE_MINUTE_IN_MS, setupBrowser, timeLimitPromise } from './utils'
 
 const BRANCH_NAME = process.env.BRANCH_NAME ? `?branch_name=${process.env.BRANCH_NAME}` : ''
-const STAGING_EDITOR_URL = 'http://localhost:8000/p' //process.env.EDITOR_URL ?? `https://utopia.pizza/p${BRANCH_NAME}`
+const STAGING_EDITOR_URL = process.env.EDITOR_URL ?? `https://utopia.pizza/p${BRANCH_NAME}`
 
 async function clickOnce(
   page: puppeteer.Page,
