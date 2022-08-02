@@ -86,6 +86,7 @@ import {
   isTextFile,
   HighlightBoundsForUids,
   ExportsDetail,
+  NodeModules,
 } from '../../core/shared/project-file-types'
 import {
   applyUtopiaJSXComponentsChanges,
@@ -1961,7 +1962,12 @@ export function getReparentTarget(
       newParent: storyboardComponent,
     }
   } else {
-    parentSupportsChild = MetadataUtils.targetSupportsChildren(componentMeta, possibleNewParent)
+    parentSupportsChild = MetadataUtils.targetSupportsChildren(
+      projectContents,
+      openFile ?? null,
+      componentMeta,
+      possibleNewParent,
+    )
   }
   const hasNoCurrentParentsButHasANewParent =
     currentParents.length === 0 && possibleNewParent != null

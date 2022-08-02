@@ -1724,7 +1724,7 @@ export function walkElements(
   topLevelElements: Array<TopLevelElement>,
   forEach: (element: JSXElementChild, path: StaticElementPathPart) => void,
 ): void {
-  const emptyPath = [] as any as StaticElementPathPart // Oh my word
+  const emptyPath = EP.emptyStaticElementPathPart()
   fastForEach(topLevelElements, (rootComponent) => {
     if (isUtopiaJSXComponent(rootComponent)) {
       walkElement(rootComponent.rootElement, emptyPath, 0, forEach)

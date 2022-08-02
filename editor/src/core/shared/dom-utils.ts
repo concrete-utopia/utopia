@@ -200,6 +200,7 @@ export const intrinsicHTMLElementNamesThatSupportChildren: Array<string> = [
   'menu',
   'nav',
   'section',
+  'span',
 ]
 
 export function getDOMAttribute(element: Element, attributeName: string): string | null {

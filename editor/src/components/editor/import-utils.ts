@@ -1,6 +1,16 @@
+import { resolveModulePath } from '../../core/es-modules/package-manager/module-resolution'
+import { foldEither } from '../../core/shared/either'
+import { emptyImports } from '../../core/workers/common/project-file-utils'
 import { TopLevelElement } from '../../core/shared/element-template'
-import { Imports, isParseSuccess, isTextFile } from '../../core/shared/project-file-types'
-import { getContentsTreeFileFromString, ProjectContentTreeRoot } from '../assets'
+import {
+  importAlias,
+  importDetails,
+  Imports,
+  isParseSuccess,
+  isTextFile,
+  NodeModules,
+} from '../../core/shared/project-file-types'
+import { ProjectContentTreeRoot } from '../assets'
 
 interface SameFileOrigin {
   type: 'SAME_FILE_ORIGIN'
@@ -87,4 +97,46 @@ export function getTopLevelName(
       const _exhaustiveCheck: never = fromWhere
       throw new Error(`Unhandled type ${JSON.stringify(fromWhere)}`)
   }
+}
+
+export function getImportsFor(
+  currentImports: Imports,
+  projectContents: ProjectContentTreeRoot,
+  nodeModules: NodeModules,
+  importOrigin: string,
+  importedName: string,
+): Imports {
+  for (const fileKey of Object.keys(currentImports)) {
+    const details = currentImports[fileKey]
+    const importPath = resolveModulePath(projectContents, nodeModules, importOrigin, fileKey)
+    const resolvedImportPath = foldEither(
+      (failure) => {
+        throw new Error(`Could not resolve ${fileKey} to a path because: ${failure}`)
+      },
+      (success) => {
+        return success
+      },
+      importPath,
+    )
+
+    if (details.importedAs === importedName) {
+      return { [resolvedImportPath]: importDetails(null, [], importedName) }
+    }
+    if (details.importedWithName === importedName) {
+      return { [resolvedImportPath]: importDetails(importedName, [], null) }
+    }
+    for (const fromWithin of details.importedFromWithin) {
+      if (fromWithin.alias === importedName) {
+        return {
+          [resolvedImportPath]: importDetails(
+            null,
+            [importAlias(importedName, importedName)],
+            null,
+          ),
+        }
+      }
+    }
+  }
+
+  return emptyImports()
 }
