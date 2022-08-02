@@ -234,12 +234,17 @@ function newGetReparentTarget(
         elementPath,
         'full-size',
       )
+
+      const targetUnderMouseIndex = targets.findIndex((target) => {
+        return rectContainsPoint(target, point)
+      })
+
       // found flex element, todo index
       return {
         shouldReparent: true,
         newParent: elementPath,
-        shouldReorder: false,
-        newIndex: -1,
+        shouldReorder: targetUnderMouseIndex > -1,
+        newIndex: targetUnderMouseIndex,
       }
     }
   }
@@ -280,24 +285,28 @@ function drawTargetRectanglesForChildrenOfElement(
   const widthOrHeight = flexDirection === 'row' ? 'width' : 'height'
   const widthOrHeightComplement = flexDirection === 'row' ? 'height' : 'width'
 
-  const pseudoElementBefore = { start: parentBounds[leftOrTop], end: parentBounds[leftOrTop] }
+  const pseudoElementBefore = {
+    start: parentBounds[leftOrTop],
+    size: 0,
+    end: parentBounds[leftOrTop],
+  }
   const pseudoElementAfter = {
     start: parentBounds[leftOrTop] + parentBounds[widthOrHeight],
+    size: 0,
     end: parentBounds[leftOrTop] + parentBounds[widthOrHeight],
   }
 
-  const childrenBounds: Array<{ start: number; end: number }> = MetadataUtils.getChildrenPaths(
-    metadata,
-    flexElementPath,
-  ).map((childPath) => {
-    const bounds = MetadataUtils.getFrameInCanvasCoords(childPath, metadata)!
-    return {
-      start: bounds[leftOrTop],
-      end: bounds[leftOrTop] + bounds[widthOrHeight],
-    }
-  })
+  const childrenBounds: Array<{ start: number; size: number; end: number }> =
+    MetadataUtils.getChildrenPaths(metadata, flexElementPath).map((childPath) => {
+      const bounds = MetadataUtils.getFrameInCanvasCoords(childPath, metadata)!
+      return {
+        start: bounds[leftOrTop],
+        size: bounds[widthOrHeight],
+        end: bounds[leftOrTop] + bounds[widthOrHeight],
+      }
+    })
 
-  const childrenBoundsAlongAxis: Array<{ start: number; end: number }> = [
+  const childrenBoundsAlongAxis: Array<{ start: number; size: number; end: number }> = [
     pseudoElementBefore,
     ...childrenBounds,
     pseudoElementAfter,
@@ -335,6 +344,29 @@ function drawTargetRectanglesForChildrenOfElement(
     }
   } else {
     // full size target rectangles, covering the entire flex element
+    for (let index = 0; index < childrenBoundsAlongAxis.length - 1; index++) {
+      const start = childrenBoundsAlongAxis[index].start + childrenBoundsAlongAxis[index].size / 2
+      const end =
+        childrenBoundsAlongAxis[index + 1].start + childrenBoundsAlongAxis[index + 1].size / 2
+
+      const normalizedStart = Math.min(start, end)
+      const normalizedEnd = Math.max(start, end)
+
+      // TODO for tomorrow this code doesn't find the drop zone _after_ the last element
+      flexInsertionTargets.push(
+        rectFromTwoPoints(
+          {
+            [leftOrTop]: normalizedStart,
+            [leftOrTopComplement]: parentBounds[leftOrTopComplement],
+          } as any as CanvasPoint,
+          {
+            [leftOrTop]: normalizedEnd,
+            [leftOrTopComplement]:
+              parentBounds[leftOrTopComplement] + parentBounds[widthOrHeightComplement],
+          } as any as CanvasPoint,
+        ),
+      )
+    }
   }
 
   return flexInsertionTargets
