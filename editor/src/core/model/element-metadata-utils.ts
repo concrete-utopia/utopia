@@ -1103,69 +1103,12 @@ export const MetadataUtils = {
       }
     })
 
-    const childrenInDomCache: { [pathStr: string]: Array<ElementInstanceMetadata> } = {}
+    const spyOnlyElements = fillSpyOnlyMetadataWithFramesFromChildren(fromSpy, fromDOM)
 
-    const findChildrenInDomRecursively = (pathStr: string): Array<ElementInstanceMetadata> => {
-      const existing = childrenInDomCache[pathStr]
-
-      if (existing != null) {
-        return existing
-      }
-
-      const spyElem = fromSpy[pathStr]
-      const childrenFromSpy = MetadataUtils.getChildren(fromSpy, spyElem.elementPath)
-      const childrenFromDom = MetadataUtils.getChildren(fromDOM, spyElem.elementPath)
-      const childrenNotInDom = childrenFromSpy.filter((childNotInDom) =>
-        childrenFromDom.every(
-          (childInDom) => !EP.pathsEqual(childNotInDom.elementPath, childInDom.elementPath),
-        ),
-      )
-      const recursiveChildren = childrenNotInDom.flatMap((c) => {
-        return findChildrenInDomRecursively(EP.toString(c.elementPath))
-      })
-      const children = [...childrenFromDom, ...recursiveChildren]
-
-      childrenInDomCache[pathStr] = children
-
-      return children
+    return {
+      ...workingElements,
+      ...spyOnlyElements,
     }
-
-    // those elements which are not in the dom need calculated localFrame and globalFrame
-    // from their children (or deeper descendants)
-    const elementsWithoutDomMetadata = Object.keys(fromSpy).filter((p) => fromDOM[p] == null)
-    fastForEach(elementsWithoutDomMetadata, (pathStr) => {
-      const spyElem = fromSpy[pathStr]
-      const children = findChildrenInDomRecursively(pathStr)
-      if (children.length === 0) {
-        return
-      }
-      let workingMetadata: ElementInstanceMetadata = { ...spyElem }
-
-      fastForEach(children, (childMetadata) => {
-        const globalFrame =
-          workingMetadata.globalFrame != null
-            ? boundingRectangle(
-                workingMetadata.globalFrame ?? zeroCanvasRect,
-                childMetadata.globalFrame ?? zeroCanvasRect,
-              )
-            : childMetadata.globalFrame ?? zeroCanvasRect
-        const localFrame =
-          workingMetadata.localFrame != null
-            ? boundingRectangle(
-                workingMetadata.localFrame ?? zeroLocalRect,
-                childMetadata.localFrame ?? zeroLocalRect,
-              )
-            : childMetadata.localFrame ?? zeroLocalRect
-        workingMetadata = {
-          ...workingMetadata,
-          globalFrame: globalFrame,
-          localFrame: localFrame,
-        }
-        workingElements[pathStr] = workingMetadata
-      })
-    })
-
-    return workingElements
   },
   isStaticElement(elements: Array<UtopiaJSXComponent>, target: ElementPath): boolean {
     const originType = this.getElementOriginType(elements, target)
@@ -1425,6 +1368,78 @@ export const MetadataUtils = {
         : null
     return localFrame
   },
+}
+
+function fillSpyOnlyMetadataWithFramesFromChildren(
+  fromSpy: ElementInstanceMetadataMap,
+  fromDOM: ElementInstanceMetadataMap,
+) {
+  const childrenInDomCache: { [pathStr: string]: Array<ElementInstanceMetadata> } = {}
+
+  const findChildrenInDomRecursively = (pathStr: string): Array<ElementInstanceMetadata> => {
+    const existing = childrenInDomCache[pathStr]
+
+    if (existing != null) {
+      return existing
+    }
+
+    const spyElem = fromSpy[pathStr]
+    const childrenFromSpy = MetadataUtils.getChildren(fromSpy, spyElem.elementPath)
+    const childrenFromDom = MetadataUtils.getChildren(fromDOM, spyElem.elementPath)
+    const childrenNotInDom = childrenFromSpy.filter((childNotInDom) =>
+      childrenFromDom.every(
+        (childInDom) => !EP.pathsEqual(childNotInDom.elementPath, childInDom.elementPath),
+      ),
+    )
+    const recursiveChildren = childrenNotInDom.flatMap((c) => {
+      return findChildrenInDomRecursively(EP.toString(c.elementPath))
+    })
+    const children = [...childrenFromDom, ...recursiveChildren]
+
+    childrenInDomCache[pathStr] = children
+
+    return children
+  }
+
+  // those elements which are not in the dom need calculated localFrame and globalFrame
+  // from their children (or deeper descendants)
+  const elementsWithoutDomMetadata = Object.keys(fromSpy).filter((p) => fromDOM[p] == null)
+
+  const workingElements: ElementInstanceMetadataMap = {}
+
+  fastForEach(elementsWithoutDomMetadata, (pathStr) => {
+    const spyElem = fromSpy[pathStr]
+    const children = findChildrenInDomRecursively(pathStr)
+    if (children.length === 0) {
+      return
+    }
+    let workingMetadata: ElementInstanceMetadata = { ...spyElem }
+
+    fastForEach(children, (childMetadata) => {
+      const globalFrame =
+        workingMetadata.globalFrame != null
+          ? boundingRectangle(
+              workingMetadata.globalFrame ?? zeroCanvasRect,
+              childMetadata.globalFrame ?? zeroCanvasRect,
+            )
+          : childMetadata.globalFrame ?? zeroCanvasRect
+      const localFrame =
+        workingMetadata.localFrame != null
+          ? boundingRectangle(
+              workingMetadata.localFrame ?? zeroLocalRect,
+              childMetadata.localFrame ?? zeroLocalRect,
+            )
+          : childMetadata.localFrame ?? zeroLocalRect
+      workingMetadata = {
+        ...workingMetadata,
+        globalFrame: globalFrame,
+        localFrame: localFrame,
+      }
+      workingElements[pathStr] = workingMetadata
+    })
+  })
+
+  return workingElements
 }
 
 export function findElementAtPath(
