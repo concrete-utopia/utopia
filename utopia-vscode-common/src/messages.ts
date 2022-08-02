@@ -111,12 +111,23 @@ export function setFollowSelectionConfig(enabled: boolean): SetFollowSelectionCo
   }
 }
 
+export interface UtopiaReady {
+  type: 'UTOPIA_READY'
+}
+
+export function utopiaReady(): UtopiaReady {
+  return {
+    type: 'UTOPIA_READY',
+  }
+}
+
 export type ToVSCodeMessageNoAccumulated =
   | OpenFileMessage
   | UpdateDecorationsMessage
   | SelectedElementChanged
   | GetUtopiaVSCodeConfig
   | SetFollowSelectionConfig
+  | UtopiaReady
 
 export interface AccumulatedToVSCodeMessage {
   type: 'ACCUMULATED_TO_VSCODE_MESSAGE'
@@ -136,7 +147,9 @@ export type ToVSCodeMessage = ToVSCodeMessageNoAccumulated | AccumulatedToVSCode
 
 export function isOpenFileMessage(message: unknown): message is OpenFileMessage {
   return (
-    typeof message === 'object' && !Array.isArray(message) && (message as any).type === 'OPEN_FILE'
+    typeof message === 'object' &&
+    !Array.isArray(message) &&
+    (message as OpenFileMessage).type === 'OPEN_FILE'
   )
 }
 
@@ -144,7 +157,7 @@ export function isUpdateDecorationsMessage(message: unknown): message is UpdateD
   return (
     typeof message === 'object' &&
     !Array.isArray(message) &&
-    (message as any).type === 'UPDATE_DECORATIONS'
+    (message as UpdateDecorationsMessage).type === 'UPDATE_DECORATIONS'
   )
 }
 
@@ -152,7 +165,7 @@ export function isSelectedElementChanged(message: unknown): message is SelectedE
   return (
     typeof message === 'object' &&
     !Array.isArray(message) &&
-    (message as any).type === 'SELECTED_ELEMENT_CHANGED'
+    (message as SelectedElementChanged).type === 'SELECTED_ELEMENT_CHANGED'
   )
 }
 
@@ -160,7 +173,7 @@ export function isGetUtopiaVSCodeConfig(message: unknown): message is GetUtopiaV
   return (
     typeof message === 'object' &&
     !Array.isArray(message) &&
-    (message as any).type === 'GET_UTOPIA_VSCODE_CONFIG'
+    (message as GetUtopiaVSCodeConfig).type === 'GET_UTOPIA_VSCODE_CONFIG'
   )
 }
 
@@ -168,7 +181,15 @@ export function isSetFollowSelectionConfig(message: unknown): message is SetFoll
   return (
     typeof message === 'object' &&
     !Array.isArray(message) &&
-    (message as any).type === 'SET_FOLLOW_SELECTION_CONFIG'
+    (message as SetFollowSelectionConfig).type === 'SET_FOLLOW_SELECTION_CONFIG'
+  )
+}
+
+export function isUtopiaReadyMessage(message: unknown): message is UtopiaReady {
+  return (
+    typeof message === 'object' &&
+    !Array.isArray(message) &&
+    (message as UtopiaReady).type === 'UTOPIA_READY'
   )
 }
 
@@ -178,9 +199,10 @@ export function isAccumulatedToVSCodeMessage(
   return (
     typeof message === 'object' &&
     !Array.isArray(message) &&
-    (message as any).type === 'ACCUMULATED_TO_VSCODE_MESSAGE'
+    (message as AccumulatedToVSCodeMessage).type === 'ACCUMULATED_TO_VSCODE_MESSAGE'
   )
 }
+
 export function parseToVSCodeMessage(unparsed: string): ToVSCodeMessage {
   const message = JSON.parse(unparsed)
   if (
@@ -189,6 +211,7 @@ export function parseToVSCodeMessage(unparsed: string): ToVSCodeMessage {
     isSelectedElementChanged(message) ||
     isGetUtopiaVSCodeConfig(message) ||
     isSetFollowSelectionConfig(message) ||
+    isUtopiaReadyMessage(message) ||
     isAccumulatedToVSCodeMessage(message)
   ) {
     return message
@@ -218,16 +241,6 @@ export function editorCursorPositionChanged(
   }
 }
 
-export interface SendInitialData {
-  type: 'SEND_INITIAL_DATA'
-}
-
-export function sendInitialData(): SendInitialData {
-  return {
-    type: 'SEND_INITIAL_DATA',
-  }
-}
-
 export interface UtopiaVSCodeConfigValues {
   type: 'UTOPIA_VSCODE_CONFIG_VALUES'
   config: UtopiaVSCodeConfig
@@ -240,35 +253,31 @@ export function utopiaVSCodeConfigValues(config: UtopiaVSCodeConfig): UtopiaVSCo
   }
 }
 
-export interface FileOpened {
-  type: 'FILE_OPENED'
-  path: string
+export interface VSCodeReady {
+  type: 'VSCODE_READY'
 }
 
-export function fileOpened(path: string): FileOpened {
+export function vsCodeReady(): VSCodeReady {
   return {
-    type: 'FILE_OPENED',
-    path: path,
+    type: 'VSCODE_READY',
   }
 }
-export interface FailedToOpenFile {
-  type: 'FAILED_TO_OPEN_FILE'
-  path: string
+
+export interface ClearLoadingScreen {
+  type: 'CLEAR_LOADING_SCREEN'
 }
 
-export function failedToOpenFile(path: string): FailedToOpenFile {
+export function clearLoadingScreen(): ClearLoadingScreen {
   return {
-    type: 'FAILED_TO_OPEN_FILE',
-    path: path,
+    type: 'CLEAR_LOADING_SCREEN',
   }
 }
 
 export type FromVSCodeMessage =
   | EditorCursorPositionChanged
-  | SendInitialData
   | UtopiaVSCodeConfigValues
-  | FileOpened
-  | FailedToOpenFile
+  | VSCodeReady
+  | ClearLoadingScreen
 
 export function isEditorCursorPositionChanged(
   message: unknown,
@@ -276,15 +285,7 @@ export function isEditorCursorPositionChanged(
   return (
     typeof message === 'object' &&
     !Array.isArray(message) &&
-    (message as any).type === 'EDITOR_CURSOR_POSITION_CHANGED'
-  )
-}
-
-export function isSendInitialData(message: unknown): message is SendInitialData {
-  return (
-    typeof message === 'object' &&
-    !Array.isArray(message) &&
-    (message as any).type === 'SEND_INITIAL_DATA'
+    (message as EditorCursorPositionChanged).type === 'EDITOR_CURSOR_POSITION_CHANGED'
   )
 }
 
@@ -292,23 +293,23 @@ export function isUtopiaVSCodeConfigValues(message: unknown): message is UtopiaV
   return (
     typeof message === 'object' &&
     !Array.isArray(message) &&
-    (message as any).type === 'UTOPIA_VSCODE_CONFIG_VALUES'
+    (message as UtopiaVSCodeConfigValues).type === 'UTOPIA_VSCODE_CONFIG_VALUES'
   )
 }
 
-export function isFileOpened(message: unknown): message is FileOpened {
+export function isVSCodeReady(message: unknown): message is VSCodeReady {
   return (
     typeof message === 'object' &&
     !Array.isArray(message) &&
-    (message as any).type === 'FILE_OPENED'
+    (message as VSCodeReady).type === 'VSCODE_READY'
   )
 }
 
-export function isFailedToOpenFile(message: unknown): message is FailedToOpenFile {
+export function isClearLoadingScreen(message: unknown): message is ClearLoadingScreen {
   return (
     typeof message === 'object' &&
     !Array.isArray(message) &&
-    (message as any).type === 'FAILED_TO_OPEN_FILE'
+    (message as ClearLoadingScreen).type === 'CLEAR_LOADING_SCREEN'
   )
 }
 
@@ -316,10 +317,9 @@ export function parseFromVSCodeMessage(unparsed: string): FromVSCodeMessage {
   const message = JSON.parse(unparsed)
   if (
     isEditorCursorPositionChanged(message) ||
-    isSendInitialData(message) ||
     isUtopiaVSCodeConfigValues(message) ||
-    isFileOpened(message) ||
-    isFailedToOpenFile(message)
+    isVSCodeReady(message) ||
+    isClearLoadingScreen(message)
   ) {
     return message
   } else {

@@ -19,6 +19,7 @@ let outbox: Mailbox
 let onMessageCallback: (message: any) => void
 let lastSentMessage: number = 0
 let lastConsumedMessage: number = -1
+let mailboxLastClearedTimestamp: number = Date.now()
 let queuedMessages: Array<ToVSCodeMessage | FromVSCodeMessage> = []
 const MIN_POLLING_TIMEOUT = 8
 const MAX_POLLING_TIMEOUT = MIN_POLLING_TIMEOUT * Math.pow(2, 6) // Max out at 512ms
@@ -44,6 +45,10 @@ function resetPollingFrequency() {
 
 function lastConsumedMessageKey(mailbox: Mailbox): string {
   return `/${mailbox}_LAST_CONSUMED`
+}
+
+function mailboxClearedAtTimestampKey(mailbox: Mailbox): string {
+  return `/${mailbox}_CLEARED`
 }
 
 function pathForMailbox(mailbox: Mailbox): string {
@@ -113,10 +118,25 @@ async function waitForPathToExist(path: string, maxWaitTime: number = 5000): Pro
   }
 }
 
+async function checkAndResetIfMailboxCleared(mailbox: Mailbox): Promise<void> {
+  const mailboxClearedAtTimestamp = await getMailboxClearedAtTimestamp(inbox)
+  if (mailboxClearedAtTimestamp > mailboxLastClearedTimestamp) {
+    // The mailbox was cleared since we last polled it, meaning our last consumed message
+    // count is now invalid, and we need to start consuming messages from the beginning again.
+    lastConsumedMessage = -1
+    mailboxLastClearedTimestamp = mailboxClearedAtTimestamp
+  }
+}
+
 async function pollInbox<T>(parseMessage: (msg: string) => T): Promise<void> {
+  await checkAndResetIfMailboxCleared(inbox)
+
   const mailboxPath = pathForMailbox(inbox)
   waitForPathToExist(mailboxPath)
   const allMessages = await readDirectory(mailboxPath)
+
+  // Filter messages to only those that haven't been processed yet. We do this rather than deleting processed
+  // messages so that multiple instances in different browser tabs won't drive over eachother.
   const messagesToProcess = allMessages.filter(
     (messageName) => Number.parseInt(messageName) > lastConsumedMessage,
   )
@@ -141,6 +161,7 @@ async function initInbox<T>(
 ): Promise<void> {
   inbox = inboxToUse
   await ensureMailboxExists(inboxToUse)
+  mailboxLastClearedTimestamp = await getMailboxClearedAtTimestamp(inbox)
   lastConsumedMessage = await getLastConsumedMessageNumber(inbox)
   onMessageCallback = onMessage
   pollInbox(parseMessage)
@@ -175,6 +196,22 @@ async function getLastConsumedMessageNumber(mailbox: Mailbox): Promise<number> {
   }
 }
 
+async function updateMailboxClearedAtTimestamp(mailbox: Mailbox, timestamp: number): Promise<void> {
+  await writeFileSavedContentAsUTF8(mailboxClearedAtTimestampKey(mailbox), `${timestamp}`)
+}
+
+async function getMailboxClearedAtTimestamp(mailbox: Mailbox): Promise<number> {
+  const mailboxClearedAtTimestampExists = await exists(mailboxClearedAtTimestampKey(mailbox))
+  if (mailboxClearedAtTimestampExists) {
+    const mailboxClearedAtTimestamp = await readFileSavedContentAsUTF8(
+      mailboxClearedAtTimestampKey(mailbox),
+    )
+    return Number.parseInt(mailboxClearedAtTimestamp)
+  } else {
+    return -1
+  }
+}
+
 export async function clearBothMailboxes(): Promise<void> {
   await ensureMailboxExists(UtopiaInbox)
   await clearMailbox(UtopiaInbox)
@@ -182,6 +219,8 @@ export async function clearBothMailboxes(): Promise<void> {
   await clearMailbox(VSCodeInbox)
   await clearLastConsumedMessageFile(UtopiaInbox)
   await clearLastConsumedMessageFile(VSCodeInbox)
+  await updateMailboxClearedAtTimestamp(UtopiaInbox, Date.now())
+  await updateMailboxClearedAtTimestamp(VSCodeInbox, Date.now())
 }
 
 export function stopPollingMailbox(): void {
