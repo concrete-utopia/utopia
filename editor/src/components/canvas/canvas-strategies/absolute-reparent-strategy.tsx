@@ -1,10 +1,7 @@
-import { foldEither } from '../../../core/shared/either'
-import { elementReferencesElsewhere } from '../../../core/shared/element-template'
 import { MetadataUtils } from '../../../core/model/element-metadata-utils'
 import * as EP from '../../../core/shared/element-path'
 import { CSSCursor } from '../canvas-types'
 import { getReparentTarget } from '../canvas-utils'
-import { reparentElement } from '../commands/reparent-element-command'
 import { setCursorCommand } from '../commands/set-cursor-command'
 import { setElementsToRerenderCommand } from '../commands/set-elements-to-rerender-command'
 import { updateSelectedViews } from '../commands/update-selected-views-command'
@@ -15,9 +12,11 @@ import { CanvasStrategy, emptyStrategyApplicationResult } from './canvas-strateg
 import {
   getAbsoluteOffsetCommandsForSelectedElement,
   getDragTargets,
-  getFileOfElement,
 } from './shared-absolute-move-strategy-helpers'
+import { ifAllowedToReparent, isAllowedToReparent } from './reparent-helpers'
+import { findReparentStrategy } from './reparent-strategy-helpers'
 import { offsetPoint } from '../../../core/shared/math-utils'
+import { getReparentCommands } from './reparent-utils'
 
 export const absoluteReparentStrategy: CanvasStrategy = {
   id: 'ABSOLUTE_REPARENT',
@@ -33,19 +32,7 @@ export const absoluteReparentStrategy: CanvasStrategy = {
       return filteredSelectedElements.every((element) => {
         const elementMetadata = MetadataUtils.findElementByElementPath(metadata, element)
 
-        const referencesExternalValue =
-          elementMetadata == null
-            ? false
-            : foldEither(
-                (_) => false,
-                (elementFromMetadata) => elementReferencesElsewhere(elementFromMetadata),
-                elementMetadata.element,
-              )
-
-        return (
-          elementMetadata?.specialSizeMeasurements.position === 'absolute' &&
-          !referencesExternalValue
-        )
+        return elementMetadata?.specialSizeMeasurements.position === 'absolute'
       })
     }
     return false
@@ -62,15 +49,15 @@ export const absoluteReparentStrategy: CanvasStrategy = {
       show: 'visible-only-while-active',
     },
   ],
-  fitness: (canvasState, interactionState) => {
-    if (
-      canvasState.selectedElements.length > 0 &&
-      interactionState.activeControl.type === 'BOUNDING_AREA' &&
-      interactionState.interactionData.type === 'DRAG' &&
-      interactionState.interactionData.modifiers.cmd &&
-      interactionState.interactionData.drag != null
-    ) {
-      return 2
+  fitness: (canvasState, interactionState, strategyState) => {
+    // All 4 reparent strategies use the same fitness function findReparentStrategy
+    const reparentStrategy = findReparentStrategy(
+      canvasState,
+      interactionState,
+      strategyState,
+    ).strategy
+    if (reparentStrategy === 'ABSOLUTE_REPARENT_TO_ABSOLUTE') {
+      return 3
     }
     return 0
   },
@@ -87,7 +74,7 @@ export const absoluteReparentStrategy: CanvasStrategy = {
       interactionState.interactionData.drag,
     )
 
-    const { selectedElements, projectContents, openFile } = canvasState
+    const { selectedElements, projectContents, openFile, nodeModules } = canvasState
     const filteredSelectedElements = getDragTargets(selectedElements)
 
     const reparentResult = getReparentTarget(
@@ -106,11 +93,15 @@ export const absoluteReparentStrategy: CanvasStrategy = {
       MetadataUtils.findElementByElementPath(strategyState.startingMetadata, newParent)
         ?.specialSizeMeasurements.providesBoundsForAbsoluteChildren ?? false
     const parentIsStoryboard = newParent == null ? false : EP.isStoryboardPath(newParent)
+    const allowedToReparent = filteredSelectedElements.every((selectedElement) => {
+      return isAllowedToReparent(canvasState, strategyState, selectedElement)
+    })
 
     if (
       reparentResult.shouldReparent &&
       newParent != null &&
-      (providesBoundsForAbsoluteChildren || parentIsStoryboard)
+      (providesBoundsForAbsoluteChildren || parentIsStoryboard) &&
+      allowedToReparent
     ) {
       const commands = filteredSelectedElements.map((selectedElement) => {
         const offsetCommands = getAbsoluteOffsetCommandsForSelectedElement(
@@ -123,7 +114,16 @@ export const absoluteReparentStrategy: CanvasStrategy = {
         const newPath = EP.appendToPath(newParent, EP.toUid(selectedElement))
         return {
           newPath: newPath,
-          commands: [...offsetCommands, reparentElement('permanent', selectedElement, newParent)],
+          commands: [
+            ...offsetCommands,
+            ...getReparentCommands(
+              projectContents,
+              nodeModules,
+              openFile,
+              selectedElement,
+              newParent,
+            ),
+          ],
         }
       })
 

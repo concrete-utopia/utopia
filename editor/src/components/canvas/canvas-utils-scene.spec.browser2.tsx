@@ -198,6 +198,10 @@ describe('moving a scene/rootview on the canvas', () => {
       await dispatchDone
     })
 
+    // Ensures that the two mouse moves are handled without the check against
+    // didWeHandleMouseMoveForThisFrame not triggering.
+    await wait(5)
+
     await act(async () => {
       const dispatchDone = renderResult.getDispatchFollowUpActionsFinished()
       fireEvent(

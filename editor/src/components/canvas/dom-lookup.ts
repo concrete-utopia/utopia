@@ -39,10 +39,38 @@ export function findFirstParentWithValidElementPath(
   validDynamicElementPathsForLookup: Set<string> | 'no-filter',
   target: Element,
 ): ElementPath | null {
+  const firstParentFromDom = findFirstParentWithValidElementPathInner(
+    validDynamicElementPathsForLookup,
+    target,
+    'search-dom-only',
+  )
+
+  const firstParentFromPath = findFirstParentWithValidElementPathInner(
+    validDynamicElementPathsForLookup,
+    target,
+    'allow-descendants-from-path',
+  )
+
+  if (firstParentFromDom == null || firstParentFromPath == null) {
+    return firstParentFromDom ?? firstParentFromPath ?? null
+  }
+
+  return EP.navigatorDepth(firstParentFromDom) < EP.navigatorDepth(firstParentFromPath)
+    ? firstParentFromPath
+    : firstParentFromDom
+}
+
+// Take a DOM element, and try to find the nearest selectable path for it
+export function findFirstParentWithValidElementPathInner(
+  validDynamicElementPathsForLookup: Set<string> | 'no-filter',
+  target: Element,
+  allowDescendantsFromPath: 'allow-descendants-from-path' | 'search-dom-only',
+): ElementPath | null {
   const dynamicElementPaths = getPathsOnDomElement(target)
   const staticAndDynamicTargetElementPaths = dynamicElementPaths.map((p) => {
     return {
       static: EP.toString(EP.makeLastPartOfPathStatic(p)),
+      staticPath: EP.makeLastPartOfPathStatic(p),
       dynamic: p,
     }
   })
@@ -61,25 +89,43 @@ export function findFirstParentWithValidElementPath(
 
   const filteredValidPathsMappedToDynamic = mapDropNulls(
     (validPath: string) => {
-      return staticAndDynamicTargetElementPaths.find(
-        (staticAndDynamic) => staticAndDynamic.static === validPath,
-      )?.dynamic
+      switch (allowDescendantsFromPath) {
+        case 'allow-descendants-from-path':
+          for (const staticAndDynamic of staticAndDynamicTargetElementPaths) {
+            if (EP.isDescendantOfOrEqualTo(staticAndDynamic.staticPath, EP.fromString(validPath))) {
+              const depthDiff =
+                EP.navigatorDepth(staticAndDynamic.staticPath) -
+                EP.navigatorDepth(EP.fromString(validPath))
+              return EP.nthParentPath(staticAndDynamic.dynamic, depthDiff)
+            }
+          }
+
+          return null
+        case 'search-dom-only':
+          return staticAndDynamicTargetElementPaths.find(
+            (staticAndDynamic) => staticAndDynamic.static === validPath,
+          )?.dynamic
+        default:
+          const _exhaustiveCheck: never = allowDescendantsFromPath
+      }
+      return null
     },
     [...validStaticElementPaths],
   )
 
   if (filteredValidPathsMappedToDynamic.length > 0) {
     const sortedFilteredPaths = filteredValidPathsMappedToDynamic.sort(
-      (l, r) => EP.depth(l) - EP.depth(r),
+      (l, r) => EP.navigatorDepth(l) - EP.navigatorDepth(r),
     )
     return last(sortedFilteredPaths) ?? null
   } else {
     if (target.parentElement == null) {
       return null
     } else {
-      return findFirstParentWithValidElementPath(
+      return findFirstParentWithValidElementPathInner(
         validDynamicElementPathsForLookup,
         target.parentElement,
+        allowDescendantsFromPath,
       )
     }
   }

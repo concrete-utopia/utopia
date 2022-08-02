@@ -1,7 +1,7 @@
 import { AllElementProps } from 'src/components/editor/store/editor-state'
 import { ElementInstanceMetadataMap } from '../../../core/shared/element-template'
 import { CanvasVector } from '../../../core/shared/math-utils'
-import { ElementPath } from '../../../core/shared/project-file-types'
+import { ElementPath, NodeModules } from '../../../core/shared/project-file-types'
 import { ProjectContentTreeRoot } from '../../assets'
 import { CanvasCommand } from '../commands/commands'
 import { InteractionSession, StrategyState } from './interaction-state'
@@ -43,6 +43,7 @@ export interface ControlWithKey {
 export interface InteractionCanvasState {
   selectedElements: Array<ElementPath>
   projectContents: ProjectContentTreeRoot
+  nodeModules: NodeModules
   openFile: string | null | undefined
   scale: number
   canvasOffset: CanvasVector
@@ -58,6 +59,8 @@ export type CanvasStrategyId =
   | 'ESCAPE_HATCH_STRATEGY'
   | 'FLEX_REORDER'
   | 'ABSOLUTE_REPARENT_TO_FLEX'
+  | 'FLEX_REPARENT_TO_ABSOLUTE'
+  | 'FLEX_REPARENT_TO_FLEX'
 
 export interface CanvasStrategy {
   id: CanvasStrategyId // We'd need to do something to guarantee uniqueness here if using this for the commands' reason
