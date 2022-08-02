@@ -345,6 +345,16 @@ export function parentComponentPath(path: ElementPath): ElementPath {
   return dropLastPathPart(path)
 }
 
+export function nthParentPath(path: StaticElementPath, n: number): StaticElementPath
+export function nthParentPath(path: ElementPath, n: number): ElementPath
+export function nthParentPath(path: ElementPath, n: number): ElementPath {
+  let working = path
+  for (let i = 0; i < n; i++) {
+    working = parentPath(working)
+  }
+  return working
+}
+
 export function isParentComponentOf(maybeParent: ElementPath, maybeChild: ElementPath): boolean {
   return pathsEqual(maybeParent, dropLastPathPart(maybeChild))
 }
