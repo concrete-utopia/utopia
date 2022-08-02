@@ -593,7 +593,7 @@ function useSelectOrLiveModeSelectAndHover(
 
       // Skip all of this handling if 'space' is pressed or a mousemove happened in an interaction
       if (!(isSpacePressed || hasInteractionSessionWithMouseMoved)) {
-        const doubleClick = event.detail > 1 // we interpret a triple click as two double clicks, a quadruple click as three double clicks, etc
+        const doubleClick = event.type === 'mousedown' && event.detail > 0 && event.detail % 2 === 0
         const selectableViews = getSelectableViewsForSelectMode(event.metaKey, doubleClick)
         const preferAlreadySelected = getPreferredSelectionForEvent(event.type, doubleClick)
         const foundTarget = findValidTarget(
@@ -637,7 +637,9 @@ function useSelectOrLiveModeSelectAndHover(
             updatedSelection = foundTarget != null ? [foundTarget.elementPath] : []
           }
 
-          if (foundTarget != null && doubleClick) {
+          const foundTargetIsSelected = foundTarget?.isSelected ?? false
+
+          if (foundTarget != null && foundTargetIsSelected && doubleClick) {
             // for components without passed children doubleclicking enters focus mode
             const isFocusableLeaf = MetadataUtils.isFocusableLeafComponent(
               foundTarget.elementPath,
@@ -648,7 +650,7 @@ function useSelectOrLiveModeSelectAndHover(
             }
           }
 
-          if (!(foundTarget?.isSelected ?? false)) {
+          if (!foundTargetIsSelected) {
             // first we only set the selected views for the canvas controls
             setSelectedViewsForCanvasControlsOnly(updatedSelection)
 
@@ -714,7 +716,7 @@ export function useSelectAndHover(
     'useSelectAndHover hasInteractionSession',
   )
   const selectModeCallbacks = useSelectOrLiveModeSelectAndHover(
-    (modeType === 'select' || modeType === 'select-lite' || modeType === 'live') && !isZoomMode,
+    (modeType === 'select' || modeType === 'live') && !isZoomMode,
     (modeType === 'select' || modeType === 'live') && !isZoomMode,
     cmdPressed,
     setSelectedViewsForCanvasControlsOnly,
@@ -730,8 +732,6 @@ export function useSelectAndHover(
   } else {
     switch (modeType) {
       case 'select':
-        return selectModeCallbacks
-      case 'select-lite':
         return selectModeCallbacks
       case 'insert':
         return insertModeCallbacks

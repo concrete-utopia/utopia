@@ -48,11 +48,12 @@ import {
   InteractionCanvasState,
 } from './canvas-strategy-types'
 import { DragInteractionData, InteractionSession, StrategyState } from './interaction-state'
+import { getReparentCommands } from './reparent-utils'
 import { areAllSelectedElementsNonAbsolute } from './shared-absolute-move-strategy-helpers'
 
 export const escapeHatchStrategy: CanvasStrategy = {
   id: 'ESCAPE_HATCH_STRATEGY',
-  name: 'Absolute Move',
+  name: 'Absolute Move (convert to absolute)',
   isApplicable: (canvasState, _interactionState, metadata) => {
     return areAllSelectedElementsNonAbsolute(canvasState.selectedElements, metadata)
   },
@@ -269,7 +270,15 @@ function collectSetLayoutPropCommands(
     )
     commands.push(...updatePinsCommands)
     if (shouldReparent) {
-      commands.push(reparentElement('permanent', path, targetParent))
+      commands.push(
+        ...getReparentCommands(
+          canvasState.projectContents,
+          canvasState.nodeModules,
+          canvasState.openFile,
+          path,
+          targetParent,
+        ),
+      )
     }
     return { commands: commands, intendedBounds: intendedBounds }
   } else {

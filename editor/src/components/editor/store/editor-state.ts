@@ -1024,13 +1024,17 @@ export function editorState(
   }
 }
 
+export const StoredStateVersion = 1
+
 export interface StoredEditorState {
+  version: number
   selectedViews: Array<ElementPath>
   mode: PersistedMode | null
 }
 
 export function storedEditorStateFromEditorState(editor: EditorState): StoredEditorState {
   return {
+    version: StoredStateVersion,
     selectedViews: editor.selectedViews,
     mode: convertModeToSavedMode(editor.mode),
   }
@@ -1046,7 +1050,7 @@ export function mergeStoredEditorStateIntoEditorState(
     return {
       ...editor,
       selectedViews: storedEditorState.selectedViews,
-      mode: storedEditorState.mode ?? EditorModes.selectLiteMode(),
+      mode: storedEditorState.mode ?? EditorModes.selectMode(),
     }
   }
 }
@@ -2636,6 +2640,7 @@ export function withUnderlyingTarget<T>(
     element: JSXElement,
     underlyingTarget: StaticElementPath,
     underlyingFilePath: string,
+    underlyingDynamicTarget: ElementPath,
   ) => T,
 ): T {
   const underlyingTarget = normalisePathToUnderlyingTarget(
@@ -2647,7 +2652,8 @@ export function withUnderlyingTarget<T>(
 
   if (
     underlyingTarget.type === 'NORMALISE_PATH_SUCCESS' &&
-    underlyingTarget.normalisedPath != null
+    underlyingTarget.normalisedPath != null &&
+    underlyingTarget.normalisedDynamicPath != null
   ) {
     const parsed = underlyingTarget.textFile.fileContents.parsed
     if (isParseSuccess(parsed)) {
@@ -2661,6 +2667,7 @@ export function withUnderlyingTarget<T>(
           element,
           underlyingTarget.normalisedPath,
           underlyingTarget.filePath,
+          underlyingTarget.normalisedDynamicPath,
         )
       }
     }

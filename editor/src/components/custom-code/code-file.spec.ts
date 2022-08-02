@@ -489,6 +489,7 @@ describe('normalisePathToUnderlyingTarget', () => {
       EP.dynamicPathToStaticPath(EP.fromString('same-file-app-div')),
       StoryboardFilePath,
       getTextFileByPath(projectContents, StoryboardFilePath),
+      EP.fromString('same-file-app-div'),
     )
     expect(actualResult).toEqual(expectedResult)
   })
@@ -505,6 +506,7 @@ describe('normalisePathToUnderlyingTarget', () => {
       EP.dynamicPathToStaticPath(EP.fromString('card-outer-div/card-inner-div')),
       '/src/card.js',
       getTextFileByPath(projectContents, '/src/card.js'),
+      EP.fromString('card-outer-div/card-inner-div'),
     )
     expect(actualResult).toEqual(expectedResult)
   })
@@ -519,6 +521,7 @@ describe('normalisePathToUnderlyingTarget', () => {
       EP.dynamicPathToStaticPath(EP.fromString('card-outer-div/card-inner-div')),
       '/src/card.js',
       getTextFileByPath(projectContents, '/src/card.js'),
+      EP.fromString('card-outer-div/card-inner-div'),
     )
     expect(actualResult).toEqual(expectedResult)
   })

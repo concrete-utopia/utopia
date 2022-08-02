@@ -85,6 +85,7 @@ import {
   isTextFile,
   HighlightBoundsForUids,
   ExportsDetail,
+  NodeModules,
 } from '../../core/shared/project-file-types'
 import {
   applyUtopiaJSXComponentsChanges,
@@ -1890,8 +1891,7 @@ function getReparentTargetAtPosition(
   componentMeta: ElementInstanceMetadataMap,
   selectedViews: Array<ElementPath>,
   hiddenInstances: Array<ElementPath>,
-  canvasScale: number,
-  canvasOffset: CanvasVector,
+  pointOnCanvas: CanvasPoint,
   allElementProps: AllElementProps,
 ): ElementPath | undefined {
   const allTargets = getAllTargetsAtPointAABB(
@@ -1899,9 +1899,7 @@ function getReparentTargetAtPosition(
     selectedViews,
     hiddenInstances,
     'no-filter',
-    WindowMousePositionRaw,
-    canvasScale,
-    canvasOffset,
+    pointOnCanvas,
     allElementProps,
   )
   // filtering for non-selected views from alltargets
@@ -1922,8 +1920,7 @@ export function getReparentTargetFromState(
     toReparent,
     editorState.jsxMetadata,
     editorState.hiddenInstances,
-    editorState.canvas.scale,
-    editorState.canvas.realCanvasOffset,
+    position,
     editorState.projectContents,
     editorState.canvas.openFile?.filename,
     editorState.allElementProps,
@@ -1935,8 +1932,7 @@ export function getReparentTarget(
   toReparent: Array<ElementPath>,
   componentMeta: ElementInstanceMetadataMap,
   hiddenInstances: Array<ElementPath>,
-  canvasScale: number,
-  canvasOffset: CanvasVector,
+  pointOnCanvas: CanvasPoint,
   projectContents: ProjectContentTreeRoot,
   openFile: string | null | undefined,
   allElementProps: AllElementProps,
@@ -1948,8 +1944,7 @@ export function getReparentTarget(
     componentMeta,
     selectedViews,
     hiddenInstances,
-    canvasScale,
-    canvasOffset,
+    pointOnCanvas,
     allElementProps,
   )
 
@@ -1966,7 +1961,12 @@ export function getReparentTarget(
       newParent: storyboardComponent,
     }
   } else {
-    parentSupportsChild = MetadataUtils.targetSupportsChildren(componentMeta, possibleNewParent)
+    parentSupportsChild = MetadataUtils.targetSupportsChildren(
+      projectContents,
+      openFile ?? null,
+      componentMeta,
+      possibleNewParent,
+    )
   }
   const hasNoCurrentParentsButHasANewParent =
     currentParents.length === 0 && possibleNewParent != null
