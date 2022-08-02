@@ -79,7 +79,7 @@ async function checkCodeEditor(page: puppeteer.Page): Promise<boolean> {
     loadingScreenVisible: false,
   }
 
-  const maxRetries = 6
+  const maxRetries = 15
   for (let retryCount: number = 1; retryCount <= maxRetries; retryCount++) {
     const result = await clickOnce(
       page,
