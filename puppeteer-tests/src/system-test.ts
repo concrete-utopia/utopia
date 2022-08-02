@@ -91,7 +91,7 @@ async function checkCodeEditor(page: puppeteer.Page): Promise<boolean> {
     if (result || retryCount === maxRetries) {
       return result
     } else {
-      await wait(10000) // wait 10 seconds and try again
+      await wait(ONE_MINUTE_IN_MS) // wait 1 minute and try again
     }
   }
 
