@@ -1370,6 +1370,8 @@ export const MetadataUtils = {
   },
 }
 
+// Those elements which are not in the dom have empty globalFrame and localFrame
+// This function calculates the frames from their children (or deeper descendants), which appear in the dom
 function fillSpyOnlyMetadataWithFramesFromChildren(
   fromSpy: ElementInstanceMetadataMap,
   fromDOM: ElementInstanceMetadataMap,
@@ -1401,8 +1403,6 @@ function fillSpyOnlyMetadataWithFramesFromChildren(
     return children
   }
 
-  // those elements which are not in the dom need calculated localFrame and globalFrame
-  // from their children (or deeper descendants)
   const elementsWithoutDomMetadata = Object.keys(fromSpy).filter((p) => fromDOM[p] == null)
 
   const workingElements: ElementInstanceMetadataMap = {}
