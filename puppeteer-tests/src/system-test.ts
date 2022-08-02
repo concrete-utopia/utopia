@@ -2,7 +2,7 @@
 require('dotenv').config({ path: 'src/.env' })
 import * as puppeteer from 'puppeteer'
 import type { PageEventObject } from 'puppeteer'
-import { ONE_MINUTE_IN_MS, setupBrowser, timeLimitPromise } from './utils'
+import { initialiseTests, ONE_MINUTE_IN_MS, setupBrowser, timeLimitPromise } from './utils'
 
 const PROJECT_ID = process.env.PROJECT_ID ?? '258a98d6'
 const BRANCH_NAME = process.env.BRANCH_NAME ? `?branch_name=${process.env.BRANCH_NAME}` : ''
@@ -57,8 +57,7 @@ async function testCodeEditor() {
   console.info('Checking Code Editor')
 
   const { page, browser } = await setupBrowser(STAGING_EDITOR_URL, 120000)
-  await page.waitForXPath(`//div[contains(@id, "canvas-container")]`)
-  await page.waitForXPath('//div[contains(@class, "item-label-container")]')
+  await initialiseTests(page)
 
   let result: boolean = false
   try {
