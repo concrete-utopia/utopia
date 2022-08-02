@@ -316,13 +316,13 @@ function drawTargetRectanglesForChildrenOfElement(
 
   if (targetRectangleSize === 'padded-edge') {
     for (let index = 0; index < childrenBoundsAlongAxis.length - 1; index++) {
-      const start = childrenBoundsAlongAxis[index].end + (index === 0 ? 0 : -5) // TODO I'm pretty sure I should delete this -5 from here
+      const start = childrenBoundsAlongAxis[index].end
       const end = childrenBoundsAlongAxis[index + 1].start
 
       const normalizedStart = Math.min(start, end)
       const normalizedEnd = Math.max(start, end)
 
-      const ExtraPadding = 5
+      const ExtraPadding = 10
 
       const paddedStart = normalizedStart - ExtraPadding
       const paddedEnd = normalizedEnd + ExtraPadding
