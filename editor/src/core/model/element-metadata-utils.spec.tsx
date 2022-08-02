@@ -26,8 +26,23 @@ import {
 } from '../shared/element-template'
 import { sampleImportsForTests } from './test-ui-js-file.test-utils'
 import { BakedInStoryboardUID } from './scene-utils'
-import { ElementPath } from '../shared/project-file-types'
-import { AllElementProps, ElementProps } from 'src/components/editor/store/editor-state'
+import {
+  ElementPath,
+  isParseSuccess,
+  ParsedTextFile,
+  RevisionsState,
+  textFile,
+  textFileContents,
+} from '../shared/project-file-types'
+import {
+  AllElementProps,
+  ElementProps,
+  StoryboardFilePath,
+} from '../../components/editor/store/editor-state'
+import { parseCode } from '../workers/parser-printer/parser-printer'
+import { TestAppUID, TestSceneUID } from '../../components/canvas/ui-jsx.test-utils'
+import { contentsToTree } from '../../components/assets'
+import { SampleNodeModules } from '../../components/custom-code/code-file.test-utils'
 
 const TestScenePath = 'scene-aaa'
 
@@ -295,52 +310,276 @@ describe('findElementByElementPath', () => {
   })
 })
 
+function dummyInstanceDataForElementType(
+  elementName: JSXElementName | string,
+  elementPath: ElementPath,
+): ElementInstanceMetadata {
+  return {
+    globalFrame: canvasRectangle({ x: 0, y: 0, width: 100, height: 100 }),
+    localFrame: localRectangle({ x: 0, y: 0, width: 100, height: 100 }),
+    elementPath: elementPath,
+    element: right(jsxTestElement(elementName, [], [])),
+    componentInstance: false,
+    isEmotionOrStyledComponent: false,
+    specialSizeMeasurements: emptySpecialSizeMeasurements,
+    computedStyle: emptyComputedStyle,
+    attributeMetadatada: emptyAttributeMetadatada,
+    label: null,
+    importInfo: null,
+  }
+}
+
+function parseResultFromCode(filename: string, code: string): ParsedTextFile {
+  const parseResult = parseCode(filename, code, null, new Set())
+  if (isParseSuccess(parseResult)) {
+    return parseResult
+  } else {
+    throw new Error(`Not a parse success: ${parseResult.type}`)
+  }
+}
+
 describe('targetElementSupportsChildren', () => {
-  const dummyInstanceDataForElementType = (
-    elementName: JSXElementName | string,
-  ): ElementInstanceMetadata => {
-    return {
-      globalFrame: canvasRectangle({ x: 0, y: 0, width: 100, height: 100 }),
-      localFrame: localRectangle({ x: 0, y: 0, width: 100, height: 100 }),
-      elementPath: EP.elementPath([
+  it('returns true for a utopia-api View', () => {
+    const element = dummyInstanceDataForElementType(
+      'View',
+      EP.elementPath([
         [BakedInStoryboardUID, TestScenePath],
         ['Dummy', 'Element'],
       ]),
-      element: right(jsxTestElement(elementName, [], [])),
-      componentInstance: false,
-      isEmotionOrStyledComponent: false,
-      specialSizeMeasurements: emptySpecialSizeMeasurements,
-      computedStyle: emptyComputedStyle,
-      attributeMetadatada: emptyAttributeMetadatada,
-      label: null,
-      importInfo: null,
-    }
-  }
-
-  it('Returns true for a utopia-api View', () => {
-    const element = dummyInstanceDataForElementType('View')
-    const actualResult = MetadataUtils.targetElementSupportsChildren(element)
-    expect(actualResult).toBeTruthy()
+    )
+    const actualResult = MetadataUtils.targetElementSupportsChildren(
+      {},
+      StoryboardFilePath,
+      element,
+    )
+    expect(actualResult).toEqual(true)
   })
-  it('Returns true for a button', () => {
-    const element = dummyInstanceDataForElementType('button')
-    const actualResult = MetadataUtils.targetElementSupportsChildren(element)
-    expect(actualResult).toBeTruthy()
+  it('returns true for an unparsed button', () => {
+    const element = dummyInstanceDataForElementType(
+      'button',
+      EP.elementPath([
+        [BakedInStoryboardUID, TestScenePath],
+        ['Dummy', 'Element'],
+      ]),
+    )
+    const actualResult = MetadataUtils.targetElementSupportsChildren(
+      {},
+      StoryboardFilePath,
+      element,
+    )
+    expect(actualResult).toEqual(true)
   })
-  it('Returns true for a div', () => {
-    const element = dummyInstanceDataForElementType('div')
-    const actualResult = MetadataUtils.targetElementSupportsChildren(element)
-    expect(actualResult).toBeTruthy()
+  it('returns true for a parsed button', () => {
+    const element = dummyInstanceDataForElementType(
+      jsxElementName('button', []),
+      EP.elementPath([
+        [BakedInStoryboardUID, TestScenePath],
+        ['Dummy', 'Element'],
+      ]),
+    )
+    const actualResult = MetadataUtils.targetElementSupportsChildren(
+      {},
+      StoryboardFilePath,
+      element,
+    )
+    expect(actualResult).toEqual(true)
   })
-  it('Returns true for a span', () => {
-    const element = dummyInstanceDataForElementType('span')
-    const actualResult = MetadataUtils.targetElementSupportsChildren(element)
-    expect(actualResult).toBeTruthy()
+  it('returns true for an unparsed div', () => {
+    const element = dummyInstanceDataForElementType(
+      'div',
+      EP.elementPath([
+        [BakedInStoryboardUID, TestScenePath],
+        ['Dummy', 'Element'],
+      ]),
+    )
+    const actualResult = MetadataUtils.targetElementSupportsChildren(
+      {},
+      StoryboardFilePath,
+      element,
+    )
+    expect(actualResult).toEqual(true)
   })
-  it('Returns true for an animated.div', () => {
-    const element = dummyInstanceDataForElementType(jsxElementName('animated', ['div']))
-    const actualResult = MetadataUtils.targetElementSupportsChildren(element)
-    expect(actualResult).toBeTruthy()
+  it('returns true for a parsed div', () => {
+    const element = dummyInstanceDataForElementType(
+      jsxElementName('div', []),
+      EP.elementPath([
+        [BakedInStoryboardUID, TestScenePath],
+        ['Dummy', 'Element'],
+      ]),
+    )
+    const actualResult = MetadataUtils.targetElementSupportsChildren(
+      {},
+      StoryboardFilePath,
+      element,
+    )
+    expect(actualResult).toEqual(true)
+  })
+  it('returns true for an unparsed span', () => {
+    const element = dummyInstanceDataForElementType(
+      'span',
+      EP.elementPath([
+        [BakedInStoryboardUID, TestScenePath],
+        ['Dummy', 'Element'],
+      ]),
+    )
+    const actualResult = MetadataUtils.targetElementSupportsChildren(
+      {},
+      StoryboardFilePath,
+      element,
+    )
+    expect(actualResult).toEqual(true)
+  })
+  it('returns true for a parsed span', () => {
+    const element = dummyInstanceDataForElementType(
+      jsxElementName('span', []),
+      EP.elementPath([
+        [BakedInStoryboardUID, TestScenePath],
+        ['Dummy', 'Element'],
+      ]),
+    )
+    const actualResult = MetadataUtils.targetElementSupportsChildren(
+      {},
+      StoryboardFilePath,
+      element,
+    )
+    expect(actualResult).toEqual(true)
+  })
+  it('returns true for an animated.div', () => {
+    const element = dummyInstanceDataForElementType(
+      jsxElementName('animated', ['div']),
+      EP.elementPath([
+        [BakedInStoryboardUID, TestScenePath],
+        ['Dummy', 'Element'],
+      ]),
+    )
+    const actualResult = MetadataUtils.targetElementSupportsChildren(
+      {},
+      StoryboardFilePath,
+      element,
+    )
+    expect(actualResult).toEqual(true)
+  })
+  it('returns false for an unparsed img', () => {
+    const element = dummyInstanceDataForElementType(
+      'img',
+      EP.elementPath([
+        [BakedInStoryboardUID, TestScenePath],
+        ['Dummy', 'Element'],
+      ]),
+    )
+    const actualResult = MetadataUtils.targetElementSupportsChildren(
+      {},
+      StoryboardFilePath,
+      element,
+    )
+    expect(actualResult).toEqual(false)
+  })
+  it('returns false for a parsed img', () => {
+    const element = dummyInstanceDataForElementType(
+      jsxElementName('img', []),
+      EP.elementPath([
+        [BakedInStoryboardUID, TestScenePath],
+        ['Dummy', 'Element'],
+      ]),
+    )
+    const actualResult = MetadataUtils.targetElementSupportsChildren(
+      {},
+      StoryboardFilePath,
+      element,
+    )
+    expect(actualResult).toEqual(false)
+  })
+  it('returns true for a component used from a different file that uses props.children', () => {
+    const storyboardCode = `import React from 'react'
+import { Scene, Storyboard } from 'utopia-api'
+import { App } from '/src/app.js'
+export var storyboard = (
+  <Storyboard data-uid='${BakedInStoryboardUID}'>
+    <Scene
+      data-uid='${TestSceneUID}'
+      style={{ position: 'absolute', left: 0, top: 0, width: 375, height: 812 }}
+    >
+      <App data-uid='${TestAppUID}' />
+    </Scene>
+  </Storyboard>
+`
+    const storyboardJS = parseResultFromCode(StoryboardFilePath, storyboardCode)
+    const appCode = `import React from 'react'
+export const App = (props) => {
+  return <div>{props.children}</div>
+}
+`
+    const appJS = parseResultFromCode('/src/app.js', appCode)
+    const projectContents = contentsToTree({
+      [StoryboardFilePath]: textFile(
+        textFileContents(storyboardCode, storyboardJS, RevisionsState.BothMatch),
+        null,
+        null,
+        Date.now(),
+      ),
+      ['/src/app.js']: textFile(
+        textFileContents(appCode, appJS, RevisionsState.BothMatch),
+        null,
+        null,
+        Date.now(),
+      ),
+    })
+    const element = dummyInstanceDataForElementType(
+      jsxElementName('App', []),
+      EP.elementPath([[BakedInStoryboardUID, TestScenePath, TestAppUID]]),
+    )
+    const actualResult = MetadataUtils.targetElementSupportsChildren(
+      projectContents,
+      StoryboardFilePath,
+      element,
+    )
+    expect(actualResult).toEqual(true)
+  })
+  it('returns false for a component used from a different file that does not use props.children', () => {
+    const storyboardCode = `import React from 'react'
+import { Scene, Storyboard } from 'utopia-api'
+import { App } from '/src/app.js'
+export var storyboard = (
+  <Storyboard data-uid='${BakedInStoryboardUID}'>
+    <Scene
+      data-uid='${TestSceneUID}'
+      style={{ position: 'absolute', left: 0, top: 0, width: 375, height: 812 }}
+    >
+      <App data-uid='${TestAppUID}' />
+    </Scene>
+  </Storyboard>
+`
+    const storyboardJS = parseResultFromCode(StoryboardFilePath, storyboardCode)
+    const appCode = `import React from 'react'
+export const App = (props) => {
+  return <div>A REALLY NICE BANNER</div>
+}
+`
+    const appJS = parseResultFromCode('/src/app.js', appCode)
+    const projectContents = contentsToTree({
+      [StoryboardFilePath]: textFile(
+        textFileContents(storyboardCode, storyboardJS, RevisionsState.BothMatch),
+        null,
+        null,
+        Date.now(),
+      ),
+      ['/src/app.js']: textFile(
+        textFileContents(appCode, appJS, RevisionsState.BothMatch),
+        null,
+        null,
+        Date.now(),
+      ),
+    })
+    const element = dummyInstanceDataForElementType(
+      jsxElementName('App', []),
+      EP.elementPath([[BakedInStoryboardUID, TestScenePath, TestAppUID]]),
+    )
+    const actualResult = MetadataUtils.targetElementSupportsChildren(
+      projectContents,
+      StoryboardFilePath,
+      element,
+    )
+    expect(actualResult).toEqual(false)
   })
 })
 

@@ -137,7 +137,6 @@ function cursorForHoveredControl(
 function getDefaultCursorForMode(mode: Mode): CSSCursor {
   switch (mode.type) {
     case 'select':
-    case 'select-lite':
       return CSSCursor.Select
     case 'insert':
       return CSSCursor.Insert
@@ -1330,6 +1329,8 @@ export class EditorCanvas extends React.Component<EditorCanvasProps> {
       } else {
         parseClipboardData(event.clipboardData).then((result) => {
           const actions = getActionsForClipboardItems(
+            editor.projectContents,
+            editor.canvas.openFile?.filename ?? null,
             result.utopiaData,
             result.files,
             selectedViews,

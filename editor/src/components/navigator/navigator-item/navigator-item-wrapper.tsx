@@ -111,7 +111,12 @@ const navigatorItemWrapperSelectorFactory = (elementPath: ElementPath) =>
       let supportsChildren: boolean = false
       if (isInNavigatorTargets) {
         noOfChildrenInner = MetadataUtils.getImmediateChildren(jsxMetadata, elementPath).length
-        supportsChildren = MetadataUtils.targetSupportsChildren(jsxMetadata, elementPath)
+        supportsChildren = MetadataUtils.targetSupportsChildren(
+          projectContents,
+          currentFilePath,
+          jsxMetadata,
+          elementPath,
+        )
       }
 
       const elementWarningsInner = getValueFromComplexMap(EP.toString, elementWarnings, elementPath)
