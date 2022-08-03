@@ -193,10 +193,15 @@ function newGetReparentTargetInner(
 
   const filteredElementsUnderPoint = allElementsUnderPoint.filter(
     (target) =>
-      MetadataUtils.targetSupportsChildren(projectContents, openFile, metadata, target) && // simply skip elements that do not support children
-      (cmdPressed || // cmd + reparent means we skip the size check
+      // any of the dragged elements and their descendants are not game for reparenting
+      filteredSelectedElements.findIndex((maybeAncestorOrEqual) =>
+        EP.isDescendantOfOrEqualTo(target, maybeAncestorOrEqual),
+      ) === -1 &&
+      // simply skip elements that do not support children
+      MetadataUtils.targetSupportsChildren(projectContents, openFile, metadata, target) &&
+      // if cmd is not pressed, we only allow reparent to parents that are larger than the multiselect bounds
+      (cmdPressed ||
         sizeFitsInTarget(
-          // if cmd is not pressed, we only allow reparent to parents that are larger than the multiselect bounds
           multiselectBounds,
           MetadataUtils.getFrameInCanvasCoords(target, metadata) ?? size(0, 0),
         )),
