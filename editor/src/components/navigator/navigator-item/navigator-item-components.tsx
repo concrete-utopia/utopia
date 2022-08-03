@@ -101,6 +101,7 @@ interface SelectionLockedIndicatorProps {
   shouldShow: boolean
   value: SelectionLocked
   selected: boolean
+  isDescendantOfLocked: boolean
   onClick: (value: SelectionLocked) => void
 }
 
@@ -136,9 +137,10 @@ export const SelectionLockedIndicator: React.FunctionComponent<
       {when(props.value === 'locked', <Icons.LockClosed color={color} />)}
       {when(props.value === 'locked-and-descendants-locked-too', <Icons.Gear color={color} />)}
       {when(
-        props.value === 'selectable',
+        props.value === 'selectable' && !props.isDescendantOfLocked,
         <Icons.LockOpen color={color} style={{ transform: 'scale(.85)' }} />,
       )}
+      {when(props.value === 'selectable' && props.isDescendantOfLocked, <span>·</span>)}
     </Button>
   )
 })
@@ -207,6 +209,12 @@ export const NavigatorItemActionSheet: React.FunctionComponent<
     [elementPath, jsxMetadataRef],
   )
 
+  const isDescendantOfLocked = useEditorState((store) => {
+    return store.editor.lockedElementsAndDescendants.some((path) =>
+      EP.isDescendantOf(elementPath, path),
+    )
+  }, 'NavigatorItemActionSheet descendant of locked ·')
+
   return (
     <SectionActionSheet>
       <OriginalComponentNameLabel
@@ -217,7 +225,11 @@ export const NavigatorItemActionSheet: React.FunctionComponent<
         key={`selection-locked-indicator-${EP.toVarSafeComponentId(elementPath)}`}
         shouldShow={
           !isSceneElement &&
-          (props.highlighted || props.selected || isLockedElement || isLockedAndDescendants)
+          (props.highlighted ||
+            props.selected ||
+            isLockedElement ||
+            isLockedAndDescendants ||
+            isDescendantOfLocked)
         }
         value={
           isLockedElement
@@ -226,6 +238,7 @@ export const NavigatorItemActionSheet: React.FunctionComponent<
             ? 'locked-and-descendants-locked-too'
             : 'selectable'
         }
+        isDescendantOfLocked={isDescendantOfLocked}
         selected={props.selected}
         onClick={toggleSelectable}
       />
