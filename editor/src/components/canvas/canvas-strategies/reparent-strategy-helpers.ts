@@ -351,7 +351,6 @@ function drawTargetRectanglesForChildrenOfElement(
       const normalizedStart = Math.min(start, end)
       const normalizedEnd = Math.max(start, end)
 
-      // TODO for tomorrow this code doesn't find the drop zone _after_ the last element
       flexInsertionTargets.push(
         rectFromTwoPoints(
           {
