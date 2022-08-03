@@ -322,7 +322,7 @@ export async function renderTestEditorWithModel(
         numberOfCommits++
       }}
     >
-      {/* <FailJestOnCanvasError /> */}
+      <FailJestOnCanvasError />
       <EditorRoot
         api={storeHook}
         useStore={storeHook}
