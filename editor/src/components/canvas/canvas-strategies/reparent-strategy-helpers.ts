@@ -73,7 +73,7 @@ export function findReparentStrategy(
     ),
   )
 
-  const reparentResult = getReparentTargetForFlexElement(
+  const reparentResult = newGetReparentTarget(
     filteredSelectedElements,
     interactionState,
     canvasState,
@@ -109,7 +109,7 @@ export function findReparentStrategy(
   return { strategy: 'do-not-reparent' }
 }
 
-function getReparentTargetForFlexElement(
+function newGetReparentTarget(
   filteredSelectedElements: Array<ElementPath>,
   interactionSession: InteractionSession,
   canvasState: InteractionCanvasState,
@@ -137,7 +137,7 @@ function getReparentTargetForFlexElement(
     interactionSession.interactionData.drag,
   )
 
-  const flexReparentResult = newGetReparentTarget(
+  const flexReparentResult = newGetReparentTargetInner(
     strategyState.startingMetadata,
     strategyState.startingAllElementProps,
     canvasState.projectContents,
@@ -148,7 +148,7 @@ function getReparentTargetForFlexElement(
   return flexReparentResult
 }
 
-function newGetReparentTarget(
+function newGetReparentTargetInner(
   metadata: ElementInstanceMetadataMap,
   allElementProps: AllElementProps,
   projectContents: ProjectContentTreeRoot,
@@ -401,7 +401,7 @@ export function applyFlexReparent(
       interactionSession.interactionData.type == 'DRAG' &&
       interactionSession.interactionData.drag != null
     ) {
-      const reparentResult = getReparentTargetForFlexElement(
+      const reparentResult = newGetReparentTarget(
         filteredSelectedElements,
         interactionSession,
         canvasState,
