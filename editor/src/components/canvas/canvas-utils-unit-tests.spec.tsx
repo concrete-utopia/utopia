@@ -18,7 +18,7 @@ describe('updateFramesOfScenesAndComponents - multi-file', () => {
     const targetPath = EP.elementPath([
       ['storyboard-entity', 'scene-1-entity', 'app-entity'],
       ['app-outer-div', 'card-instance'],
-      ['card-outer-div', 'card-inner-rectangle'],
+      ['card-outer-div', 'card-inner-spring'],
     ])
 
     const pinChange = singleResizeChange(
@@ -31,7 +31,7 @@ describe('updateFramesOfScenesAndComponents - multi-file', () => {
 
     expect(testPrintCodeFromEditorState(updatedProject, '/src/card.js')).toMatchInlineSnapshot(`
       "import * as React from 'react'
-      import { Rectangle } from 'utopia-api'
+      import { Spring } from 'react-spring'
       export var Card = (props) => {
         return (
           <div
@@ -49,9 +49,9 @@ describe('updateFramesOfScenesAndComponents - multi-file', () => {
                 backgroundColor: 'red',
               }}
             />
-            <Rectangle
-              data-uid='card-inner-rectangle'
-              data-testid='rectangle'
+            <Spring
+              data-uid='card-inner-spring'
+              data-testid='spring'
               style={{
                 position: 'absolute',
                 left: 100,
@@ -73,7 +73,7 @@ describe('updateFramesOfScenesAndComponents - multi-file', () => {
     const targetPath = EP.elementPath([
       ['storyboard-entity', 'scene-1-entity', 'app-entity'],
       ['app-outer-div', 'card-instance'],
-      ['card-outer-div', 'card-inner-rectangle'],
+      ['card-outer-div', 'card-inner-spring'],
     ])
 
     const pinChange = pinMoveChange(targetPath, { x: 60, y: 40 } as CanvasVector)
@@ -82,7 +82,7 @@ describe('updateFramesOfScenesAndComponents - multi-file', () => {
 
     expect(testPrintCodeFromEditorState(updatedProject, '/src/card.js')).toMatchInlineSnapshot(`
       "import * as React from 'react'
-      import { Rectangle } from 'utopia-api'
+      import { Spring } from 'react-spring'
       export var Card = (props) => {
         return (
           <div
@@ -100,9 +100,9 @@ describe('updateFramesOfScenesAndComponents - multi-file', () => {
                 backgroundColor: 'red',
               }}
             />
-            <Rectangle
-              data-uid='card-inner-rectangle'
-              data-testid='rectangle'
+            <Spring
+              data-uid='card-inner-spring'
+              data-testid='spring'
               style={{
                 position: 'absolute',
                 left: 160,

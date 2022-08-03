@@ -129,6 +129,7 @@ import { forceNotNull } from '../../../core/shared/optional-utils'
 import { complexDefaultProjectPreParsed } from '../../../sample-projects/sample-project-utils.test-utils'
 import { DefaultThirdPartyControlDefinitions } from '../../../core/third-party/third-party-controls'
 import { cssNumber } from '../../inspector/common/css-utils'
+import { createBuiltInDependenciesList } from '../../../core/es-modules/package-manager/built-in-dependencies-list'
 const chaiExpect = Chai.expect
 
 function storyboardComponent(numberOfScenes: number): UtopiaJSXComponent {
@@ -983,7 +984,7 @@ describe('UPDATE_FILE_PATH', () => {
         ],
         "/src2/card.js": Array [
           "react",
-          "utopia-api",
+          "react-spring",
         ],
         "/src2/index.js": Array [
           "./app.js",
@@ -1054,7 +1055,7 @@ describe('INSERT_INSERTABLE', () => {
         )
         expect(printedCode).toMatchInlineSnapshot(`
           "import * as React from 'react'
-          import { Rectangle } from 'utopia-api'
+          import { Spring } from 'react-spring'
           import { Menu } from 'antd'
           import 'antd/dist/antd.css'
           export var Card = (props) => {
@@ -1070,8 +1071,8 @@ describe('INSERT_INSERTABLE', () => {
                     backgroundColor: 'red',
                   }}
                 />
-                <Rectangle
-                  data-testid='rectangle'
+                <Spring
+                  data-testid='spring'
                   style={{
                     position: 'absolute',
                     left: 100,
@@ -1158,7 +1159,7 @@ describe('INSERT_INSERTABLE', () => {
         )
         expect(printedCode).toMatchInlineSnapshot(`
           "import * as React from 'react'
-          import { Rectangle } from 'utopia-api'
+          import { Spring } from 'react-spring'
           import { Menu } from 'antd'
           import 'antd/dist/antd.css'
           export var Card = (props) => {
@@ -1174,8 +1175,8 @@ describe('INSERT_INSERTABLE', () => {
                     backgroundColor: 'red',
                   }}
                 />
-                <Rectangle
-                  data-testid='rectangle'
+                <Spring
+                  data-testid='spring'
                   style={{
                     position: 'absolute',
                     left: 100,
@@ -1261,7 +1262,7 @@ describe('INSERT_INSERTABLE', () => {
         )
         expect(printedCode).toMatchInlineSnapshot(`
           "import * as React from 'react'
-          import { Rectangle } from 'utopia-api'
+          import { Spring } from 'react-spring'
           export var Card = (props) => {
             return (
               <div style={{ ...props.style }}>
@@ -1275,8 +1276,8 @@ describe('INSERT_INSERTABLE', () => {
                     backgroundColor: 'red',
                   }}
                 />
-                <Rectangle
-                  data-testid='rectangle'
+                <Spring
+                  data-testid='spring'
                   style={{
                     position: 'absolute',
                     left: 100,
@@ -1350,7 +1351,7 @@ describe('INSERT_INSERTABLE', () => {
         )
         expect(printedCode).toMatchInlineSnapshot(`
           "import * as React from 'react'
-          import { Rectangle } from 'utopia-api'
+          import { Spring } from 'react-spring'
           export var Card = (props) => {
             return (
               <div style={{ ...props.style }}>
@@ -1368,8 +1369,8 @@ describe('INSERT_INSERTABLE', () => {
                     backgroundColor: 'red',
                   }}
                 />
-                <Rectangle
-                  data-testid='rectangle'
+                <Spring
+                  data-testid='spring'
                   style={{
                     position: 'absolute',
                     left: 100,
@@ -1437,7 +1438,7 @@ describe('INSERT_INSERTABLE', () => {
         )
         expect(printedCode).toMatchInlineSnapshot(`
           "import * as React from 'react'
-          import { Rectangle } from 'utopia-api'
+          import { Spring } from 'react-spring'
           export var Card = (props) => {
             return (
               <div style={{ ...props.style }}>
@@ -1452,8 +1453,8 @@ describe('INSERT_INSERTABLE', () => {
                       backgroundColor: 'red',
                     }}
                   />
-                  <Rectangle
-                    data-testid='rectangle'
+                  <Spring
+                    data-testid='spring'
                     style={{
                       position: 'absolute',
                       left: 100,
@@ -1584,7 +1585,11 @@ describe('RUN_ESCAPE_HATCH', () => {
 
     const action = runEscapeHatch([targetElement])
 
-    const updatedEditorState = UPDATE_FNS.RUN_ESCAPE_HATCH(action, editorState)
+    const updatedEditorState = UPDATE_FNS.RUN_ESCAPE_HATCH(
+      action,
+      editorState,
+      createBuiltInDependenciesList(null),
+    )
 
     expect(testPrintCodeFromEditorState(updatedEditorState)).toEqual(
       makeTestProjectCodeWithSnippet(

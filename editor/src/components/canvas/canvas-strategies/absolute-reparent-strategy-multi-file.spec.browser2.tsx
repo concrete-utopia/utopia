@@ -85,6 +85,7 @@ function dragElement(
 }
 
 const defaultAbsoluteChildCode = `
+import * as React from 'react'
 export const AbsoluteChild = () => {
   return (
     <div
@@ -106,6 +107,7 @@ export const AbsoluteChild = () => {
 }`
 
 const defaultAbsoluteParentCode = `
+import * as React from 'react'
 import { AbsoluteChild } from './absolutechild'
 export const AbsoluteParent = () => {
   return (
@@ -127,6 +129,7 @@ export const AbsoluteParent = () => {
 }`
 
 const defaultAppCode = `
+import * as React from 'react'
 import { AbsoluteParent } from './absoluteparent'
 import { FlexParent } from './flexparent'
 
@@ -149,6 +152,7 @@ export var App = () => {
 }`
 
 const defaultFlexChildCode = `
+import * as React from 'react'
 export const FlexChild1 = () => {
   return (
     <div
@@ -184,6 +188,7 @@ export const FlexChild2 = () => {
 }`
 
 const defaultFlexParentCode = `
+import * as React from 'react'
 import { FlexChild1, FlexChild2 } from './flexchild'
 export const FlexParent = () => {
   return (
@@ -336,7 +341,8 @@ describe('Absolute Reparent Strategy (Multi-File)', () => {
     await renderResult.getDispatchFollowUpActionsFinished()
     expect(getFileCode(renderResult, '/src/absolutechild.js')).toEqual(defaultAbsoluteChildCode)
     expect(getFileCode(renderResult, '/src/absoluteparent.js')).toEqual(
-      `import { AbsoluteChild } from './absolutechild'
+      `import * as React from 'react'
+import { AbsoluteChild } from './absolutechild'
 export const AbsoluteParent = () => {
   return (
     <div
@@ -356,7 +362,8 @@ export const AbsoluteParent = () => {
 `,
     )
     expect(getFileCode(renderResult, '/src/app.js')).toEqual(
-      `import { AbsoluteParent } from './absoluteparent'
+      `import * as React from 'react'
+import { AbsoluteParent } from './absoluteparent'
 import { FlexParent } from './flexparent'
 import { AbsoluteChild } from '/src/absolutechild.js'
 

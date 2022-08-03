@@ -17,7 +17,7 @@ describe('updateSelectedViews', () => {
     const targetPath = EP.elementPath([
       ['storyboard-entity', 'scene-1-entity', 'app-entity'],
       ['app-outer-div', 'card-instance'],
-      ['card-outer-div', 'card-inner-rectangle'],
+      ['card-outer-div', 'card-inner-spring'],
     ])
 
     const originalEditorState = renderResult.getEditorState().editor

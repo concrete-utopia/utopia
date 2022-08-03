@@ -22,45 +22,28 @@ import { emptySet } from '../../core/shared/set-utils'
 import { parseProjectContents } from '../../sample-projects/sample-project-utils.test-utils'
 
 export const SampleNodeModules: NodeModules = {
-  '/node_modules/utopia-api/index.js': esCodeFile(
-    `export {}`,
+  '/node_modules/react-spring/index.js': esCodeFile(
+    `import * as React from 'react'
+export const Spring = (props) => {
+  return <div {...props} />
+}`,
     'NODE_MODULES',
-    '/node_modules/utopia-api/index.js',
+    '/node_modules/react-spring/index.js',
   ),
-  '/node_modules/utopia-api/package.json': esCodeFile(
+  '/node_modules/react-spring/package.json': esCodeFile(
     JSON.stringify({ main: './index.js' }),
     'NODE_MODULES',
-    '/node_modules/utopia-api/package.json',
+    '/node_modules/react-spring/package.json',
   ),
-  '/node_modules/uuiui/index.js': esCodeFile(
+  '/node_modules/@emotion/react/index.js': esCodeFile(
     `export {}`,
     'NODE_MODULES',
-    '/node_modules/uuiui/index.js',
+    '/node_modules/@emotion/react/index.js',
   ),
-  '/node_modules/uuiui/package.json': esCodeFile(
+  '/node_modules/@emotion/react/package.json': esCodeFile(
     JSON.stringify({ main: './index.js' }),
     'NODE_MODULES',
-    '/node_modules/uuiui/package.json',
-  ),
-  '/node_modules/react/index.js': esCodeFile(
-    `export {}`,
-    'NODE_MODULES',
-    '/node_modules/react/index.js',
-  ),
-  '/node_modules/react/package.json': esCodeFile(
-    JSON.stringify({ main: './index.js' }),
-    'NODE_MODULES',
-    '/node_modules/react/package.json',
-  ),
-  '/node_modules/react-dom/index.js': esCodeFile(
-    `export {}`,
-    'NODE_MODULES',
-    '/node_modules/react-dom/index.js',
-  ),
-  '/node_modules/react-dom/package.json': esCodeFile(
-    JSON.stringify({ main: './index.js' }),
-    'NODE_MODULES',
-    '/node_modules/react-dom/package.json',
+    '/node_modules/@emotion/react/package.json',
   ),
 }
 

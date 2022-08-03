@@ -322,7 +322,7 @@ export async function renderTestEditorWithModel(
         numberOfCommits++
       }}
     >
-      <FailJestOnCanvasError />
+      {/* <FailJestOnCanvasError /> */}
       <EditorRoot
         api={storeHook}
         useStore={storeHook}
@@ -340,7 +340,16 @@ export async function renderTestEditorWithModel(
       load(
         async (actions) => {
           try {
-            await asyncTestDispatch(actions, undefined, true)
+            await asyncTestDispatch(
+              [
+                ...actions,
+                switchEditorMode(EditorModes.selectMode()),
+                setPanelVisibility('codeEditor', false),
+                updateNodeModulesContents(SampleNodeModules),
+              ],
+              undefined,
+              true,
+            )
             resolve()
           } catch (e) {
             reject(e)
@@ -353,18 +362,6 @@ export async function renderTestEditorWithModel(
         false,
       )
     })
-  })
-
-  await act(async () => {
-    await asyncTestDispatch(
-      [
-        switchEditorMode(EditorModes.selectMode()),
-        setPanelVisibility('codeEditor', false),
-        updateNodeModulesContents(SampleNodeModules),
-      ],
-      undefined,
-      true,
-    )
   })
 
   return {

@@ -391,6 +391,8 @@ export var App = (props) => {
 }`,
         '/src/card.js': `import * as React from 'react'
 import { Rectangle } from 'utopia-api'
+import { Spring } from 'react-spring'
+console.log('Spring', Spring)
 export var Card = (props) => {
   return (
     <div
@@ -408,8 +410,8 @@ export var Card = (props) => {
           backgroundColor: 'red',
         }}
       />
-      <Rectangle
-        data-uid='card-inner-rectangle'
+      <Spring
+        data-uid='card-inner-spring'
         style={{
           position: 'absolute',
           left: 100,
@@ -498,6 +500,7 @@ export default function () {
                   data-path=\\"storyboard-entity/scene-1-entity/app-entity:app-outer-div/card-instance:card-outer-div/card-inner-div\\"
                 ></div>
                 <div
+                  data-uid=\\"card-inner-spring\\"
                   style=\\"
                     position: absolute;
                     left: 100px;
@@ -506,9 +509,7 @@ export default function () {
                     height: 50px;
                     background-color: blue;
                   \\"
-                  data-path=\\"storyboard-entity/scene-1-entity/app-entity:app-outer-div/card-instance:card-outer-div/card-inner-rectangle\\"
-                  data-uid=\\"card-inner-rectangle\\"
-                  data-utopia-do-not-traverse=\\"true\\"
+                  data-path=\\"storyboard-entity/scene-1-entity/app-entity:app-outer-div/card-instance:card-outer-div/card-inner-spring\\"
                 ></div>
               </div>
               hello
