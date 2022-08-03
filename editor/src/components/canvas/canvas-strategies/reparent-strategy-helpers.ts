@@ -221,12 +221,27 @@ function newGetReparentTarget(
     const isFlex = MetadataUtils.isFlexLayoutedContainer(element)
     if (!isFlex) {
       // TODO we now assume this is "absolute", but this is too vauge
-      // TODO check if element accepts children
-      return {
-        shouldReparent: true,
-        newParent: elementPath,
-        shouldReorder: false,
-        newIndex: -1,
+      const acceptsChildren = MetadataUtils.targetSupportsChildren(
+        projectContents,
+        openFile,
+        metadata,
+        elementPath,
+      )
+      const providesBoundsForAbsoluteChildren =
+        MetadataUtils.findElementByElementPath(metadata, elementPath)?.specialSizeMeasurements
+          .providesBoundsForAbsoluteChildren ?? false
+
+      const elementAcceptsAbsoluteChildren = acceptsChildren && providesBoundsForAbsoluteChildren
+      if (elementAcceptsAbsoluteChildren) {
+        return {
+          shouldReparent: true,
+          newParent: elementPath,
+          shouldReorder: false,
+          newIndex: -1,
+        }
+      } else {
+        // this element did not support children, so let's continue the lookup
+        continue
       }
     } else {
       const targets: Array<CanvasRectangle> = drawTargetRectanglesForChildrenOfElement(
