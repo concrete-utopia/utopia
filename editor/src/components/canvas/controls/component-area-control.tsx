@@ -12,7 +12,7 @@ import { ControlFontSize } from '../canvas-controls-frame'
 import { CanvasPositions } from '../canvas-types'
 //TODO: switch to functional component and make use of 'useColorTheme':
 import { UtopiaTheme, colorTheme } from '../../../uuiui'
-import { AllElementProps } from 'src/components/editor/store/editor-state'
+import { AllElementProps } from '../../../components/editor/store/editor-state'
 
 interface ComponentAreaControlProps {
   mouseEnabled: boolean

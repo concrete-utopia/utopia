@@ -419,7 +419,7 @@ import {
 } from '../../inspector/common/css-utils'
 import { projectListing, ProjectListing } from '../action-types'
 import { UtopiaVSCodeConfig } from 'utopia-vscode-common'
-import { MouseButtonsPressed } from 'src/utils/mouse'
+import { MouseButtonsPressed } from '../../../utils/mouse'
 
 export function TransientCanvasStateFilesStateKeepDeepEquality(
   oldValue: TransientFilesState,

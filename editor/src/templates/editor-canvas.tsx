@@ -44,7 +44,6 @@ import {
 import {
   BaseSnappingThreshold,
   CanvasCursor,
-  ConsoleLog,
   DerivedState,
   EditorState,
   editorStateCanvasControls,

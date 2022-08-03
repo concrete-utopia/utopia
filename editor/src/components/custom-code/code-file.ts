@@ -546,7 +546,9 @@ function lookupElementImport(
             }
           }
         case 'RESOLVE_NOT_PRESENT':
-          return normalisePathError(`Unable to find resolve path at ${importedFrom}`)
+          return normalisePathError(
+            `Unable to find resolve path at ${JSON.stringify(importedFrom)}`,
+          )
         case 'RESOLVE_SUCCESS_IGNORE_MODULE':
           return normalisePathEndsAtIgnoredDependency(importedFrom.filePath)
         default:
