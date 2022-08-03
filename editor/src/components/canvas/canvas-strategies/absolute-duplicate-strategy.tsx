@@ -1,3 +1,4 @@
+import { BuiltInDependencies } from '../../../core/es-modules/package-manager/built-in-dependencies-list'
 import { MetadataUtils } from '../../../core/model/element-metadata-utils'
 import { generateUidWithExistingComponents } from '../../../core/model/element-template-utils'
 import * as EP from '../../../core/shared/element-path'
@@ -113,6 +114,7 @@ export const absoluteDuplicateStrategy: CanvasStrategy = {
           updateSelectedViews('permanent', newPaths),
           updateFunctionCommand('permanent', (editorState, transient) =>
             runMoveStrategyForFreshlyDuplicatedElements(
+              canvasState.builtInDependencies,
               editorState,
               {
                 ...strategyState,
@@ -140,12 +142,13 @@ export const absoluteDuplicateStrategy: CanvasStrategy = {
 }
 
 function runMoveStrategyForFreshlyDuplicatedElements(
+  builtInDependencies: BuiltInDependencies,
   editorState: EditorState,
   strategyState: StrategyState,
   interactionState: InteractionSession,
   transient: TransientOrNot,
 ): Array<EditorStatePatch> {
-  const canvasState = pickCanvasStateFromEditorState(editorState)
+  const canvasState = pickCanvasStateFromEditorState(editorState, builtInDependencies)
 
   const moveCommands = absoluteMoveStrategy.apply(
     canvasState,

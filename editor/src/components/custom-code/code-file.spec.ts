@@ -553,10 +553,10 @@ describe('normalisePathToUnderlyingTarget', () => {
       SampleNodeModules,
       StoryboardFilePath,
       EP.fromString(
-        'storyboard-entity/scene-1-entity/app-entity:app-outer-div/card-instance:card-outer-div/card-inner-rectangle:rectangle-inner-div',
+        'storyboard-entity/scene-1-entity/app-entity:app-outer-div/card-instance:card-outer-div/card-inner-spring:spring-inner-div',
       ),
     )
-    const expectedResult = normalisePathEndsAtDependency('utopia-api')
+    const expectedResult = normalisePathEndsAtDependency('non-existant-dummy-library')
     expect(actualResult).toEqual(expectedResult)
   })
 })
