@@ -219,19 +219,26 @@ function newGetReparentTarget(
   for (const elementPath of elementsUnderPoint) {
     const element = MetadataUtils.findElementByElementPath(metadata, elementPath)
     const isFlex = MetadataUtils.isFlexLayoutedContainer(element)
+
+    const acceptsChildren = MetadataUtils.targetSupportsChildren(
+      projectContents,
+      openFile,
+      metadata,
+      elementPath,
+    )
+
+    if (!acceptsChildren) {
+      // this element did not support children, so let's continue the lookup
+      continue
+    }
+
     if (!isFlex) {
       // TODO we now assume this is "absolute", but this is too vauge
-      const acceptsChildren = MetadataUtils.targetSupportsChildren(
-        projectContents,
-        openFile,
-        metadata,
-        elementPath,
-      )
       const providesBoundsForAbsoluteChildren =
         MetadataUtils.findElementByElementPath(metadata, elementPath)?.specialSizeMeasurements
           .providesBoundsForAbsoluteChildren ?? false
 
-      const elementAcceptsAbsoluteChildren = acceptsChildren && providesBoundsForAbsoluteChildren
+      const elementAcceptsAbsoluteChildren = providesBoundsForAbsoluteChildren
       if (elementAcceptsAbsoluteChildren) {
         return {
           shouldReparent: true,
