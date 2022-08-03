@@ -243,6 +243,18 @@ export function rectContainsPoint<C extends CoordinateMarker>(
   )
 }
 
+export function rectContainsPointInclusive<C extends CoordinateMarker>(
+  rectangle: Rectangle<C>,
+  p: Point<C>,
+): boolean {
+  return (
+    rectangle.x <= p.x &&
+    rectangle.y <= p.y &&
+    rectangle.x + rectangle.width >= p.x &&
+    rectangle.y + rectangle.height >= p.y
+  )
+}
+
 export function circleContainsPoint<C extends CoordinateMarker>(
   circle: Circle,
   p: Point<C>,

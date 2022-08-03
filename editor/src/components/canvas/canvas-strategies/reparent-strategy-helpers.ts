@@ -3,13 +3,12 @@ import { getStoryboardElementPath } from '../../../core/model/scene-utils'
 import * as EP from '../../../core/shared/element-path'
 import { ElementInstanceMetadataMap } from '../../../core/shared/element-template'
 import {
-  canvasPoint,
   CanvasPoint,
   canvasRectangle,
   CanvasRectangle,
-  normalizeRect,
   offsetPoint,
   rectContainsPoint,
+  rectContainsPointInclusive,
   rectFromTwoPoints,
   zeroCanvasRect,
 } from '../../../core/shared/math-utils'
@@ -18,7 +17,6 @@ import * as PP from '../../../core/shared/property-path'
 import { ProjectContentTreeRoot } from '../../assets'
 import { AllElementProps } from '../../editor/store/editor-state'
 import { CSSCursor } from '../canvas-types'
-import { getReparentTarget } from '../canvas-utils'
 import { CanvasCommand } from '../commands/commands'
 import { deleteProperties } from '../commands/delete-properties-command'
 import { reorderElement } from '../commands/reorder-element-command'
@@ -34,7 +32,6 @@ import {
   InteractionCanvasState,
   StrategyApplicationResult,
 } from './canvas-strategy-types'
-import { getReorderIndex } from './flex-reorder-strategy'
 import { InteractionSession, StrategyState } from './interaction-state'
 import { ifAllowedToReparent } from './reparent-helpers'
 import { getDragTargets } from './shared-absolute-move-strategy-helpers'
@@ -258,7 +255,7 @@ function newGetReparentTarget(
       )
 
       const targetUnderMouseIndex = targets.findIndex((target) => {
-        return rectContainsPoint(target, point)
+        return rectContainsPointInclusive(target, point)
       })
 
       // found flex element, todo index
