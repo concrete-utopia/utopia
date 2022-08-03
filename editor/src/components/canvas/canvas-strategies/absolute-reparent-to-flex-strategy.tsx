@@ -27,11 +27,7 @@ import { updateHighlightedViews } from '../commands/update-highlighted-views-com
 import { CanvasCommand, foldAndApplyCommandsInner } from '../commands/commands'
 import { deleteProperties } from '../commands/delete-properties-command'
 import { updateSelectedViews } from '../commands/update-selected-views-command'
-import {
-  applyFlexReparent,
-  findReparentStrategy,
-  getReparentTargetForFlexElement,
-} from './reparent-strategy-helpers'
+import { applyFlexReparent, findReparentStrategy } from './reparent-strategy-helpers'
 import { FlexReparentTargetIndicator } from '../controls/select-mode/flex-reparent-target-indicator'
 import { getReparentCommands } from './reparent-utils'
 import { ifAllowedToReparent } from './reparent-helpers'

@@ -109,7 +109,7 @@ export function findReparentStrategy(
   return { strategy: 'do-not-reparent' }
 }
 
-export function getReparentTargetForFlexElement(
+function getReparentTargetForFlexElement(
   filteredSelectedElements: Array<ElementPath>,
   interactionSession: InteractionSession,
   canvasState: InteractionCanvasState,
