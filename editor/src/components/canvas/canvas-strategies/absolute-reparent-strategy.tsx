@@ -14,7 +14,7 @@ import {
   getDragTargets,
 } from './shared-absolute-move-strategy-helpers'
 import { ifAllowedToReparent, isAllowedToReparent } from './reparent-helpers'
-import { findReparentStrategy } from './reparent-strategy-helpers'
+import { findReparentStrategy, newGetReparentTarget } from './reparent-strategy-helpers'
 import { offsetPoint } from '../../../core/shared/math-utils'
 import { getReparentCommands } from './reparent-utils'
 
@@ -69,23 +69,14 @@ export const absoluteReparentStrategy: CanvasStrategy = {
       return emptyStrategyApplicationResult
     }
 
-    const pointOnCanvas = offsetPoint(
-      interactionState.interactionData.dragStart,
-      interactionState.interactionData.drag,
-    )
-
     const { selectedElements, projectContents, openFile, nodeModules } = canvasState
     const filteredSelectedElements = getDragTargets(selectedElements)
 
-    const reparentResult = getReparentTarget(
+    const reparentResult = newGetReparentTarget(
       filteredSelectedElements,
-      filteredSelectedElements,
-      strategyState.startingMetadata,
-      [],
-      pointOnCanvas,
-      projectContents,
-      openFile,
-      strategyState.startingAllElementProps,
+      interactionState,
+      canvasState,
+      strategyState,
     )
     const newParent = reparentResult.newParent
     const moveCommands = absoluteMoveStrategy.apply(
