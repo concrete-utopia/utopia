@@ -228,7 +228,7 @@ function makeTestProjectContents(): ProjectContentTreeRoot {
     "react": "16.13.1",
     "react-dom": "16.13.1",
     "utopia-api": "0.4.1",
-    "react-spring": "8.0.27",
+    "non-existant-dummy-library": "8.0.27",
     "@heroicons/react": "1.0.1",
     "@emotion/react": "11.9.3"
   }

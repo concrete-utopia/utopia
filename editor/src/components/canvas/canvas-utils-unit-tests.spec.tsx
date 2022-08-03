@@ -31,7 +31,7 @@ describe('updateFramesOfScenesAndComponents - multi-file', () => {
 
     expect(testPrintCodeFromEditorState(updatedProject, '/src/card.js')).toMatchInlineSnapshot(`
       "import * as React from 'react'
-      import { Spring } from 'react-spring'
+      import { Spring } from 'non-existant-dummy-library'
       export var Card = (props) => {
         return (
           <div
@@ -82,7 +82,7 @@ describe('updateFramesOfScenesAndComponents - multi-file', () => {
 
     expect(testPrintCodeFromEditorState(updatedProject, '/src/card.js')).toMatchInlineSnapshot(`
       "import * as React from 'react'
-      import { Spring } from 'react-spring'
+      import { Spring } from 'non-existant-dummy-library'
       export var Card = (props) => {
         return (
           <div

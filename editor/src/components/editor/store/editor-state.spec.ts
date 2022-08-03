@@ -118,7 +118,7 @@ describe('modifyUnderlyingTarget', () => {
       expect(parsed.imports).toEqual(
         addImport(
           '',
-          'react-spring',
+          'non-existant-dummy-library',
           null,
           [importAlias('Spring')],
           null,
@@ -149,7 +149,7 @@ describe('modifyUnderlyingTarget', () => {
     const resultingCode = getCodeForFile(actualResult, '/src/card.js')
     expect(resultingCode).toMatchInlineSnapshot(`
       "import * as React from 'react'
-      import { Spring } from 'react-spring'
+      import { Spring } from 'non-existant-dummy-library'
       export var Card = (props) => {
         return (
           <div style={{ ...props.style }}>

@@ -983,8 +983,8 @@ describe('UPDATE_FILE_PATH', () => {
           "react",
         ],
         "/src2/card.js": Array [
+          "non-existant-dummy-library",
           "react",
-          "react-spring",
         ],
         "/src2/index.js": Array [
           "./app.js",
@@ -1055,7 +1055,7 @@ describe('INSERT_INSERTABLE', () => {
         )
         expect(printedCode).toMatchInlineSnapshot(`
           "import * as React from 'react'
-          import { Spring } from 'react-spring'
+          import { Spring } from 'non-existant-dummy-library'
           import { Menu } from 'antd'
           import 'antd/dist/antd.css'
           export var Card = (props) => {
@@ -1159,7 +1159,7 @@ describe('INSERT_INSERTABLE', () => {
         )
         expect(printedCode).toMatchInlineSnapshot(`
           "import * as React from 'react'
-          import { Spring } from 'react-spring'
+          import { Spring } from 'non-existant-dummy-library'
           import { Menu } from 'antd'
           import 'antd/dist/antd.css'
           export var Card = (props) => {
@@ -1262,7 +1262,7 @@ describe('INSERT_INSERTABLE', () => {
         )
         expect(printedCode).toMatchInlineSnapshot(`
           "import * as React from 'react'
-          import { Spring } from 'react-spring'
+          import { Spring } from 'non-existant-dummy-library'
           export var Card = (props) => {
             return (
               <div style={{ ...props.style }}>
@@ -1351,7 +1351,7 @@ describe('INSERT_INSERTABLE', () => {
         )
         expect(printedCode).toMatchInlineSnapshot(`
           "import * as React from 'react'
-          import { Spring } from 'react-spring'
+          import { Spring } from 'non-existant-dummy-library'
           export var Card = (props) => {
             return (
               <div style={{ ...props.style }}>
@@ -1438,7 +1438,7 @@ describe('INSERT_INSERTABLE', () => {
         )
         expect(printedCode).toMatchInlineSnapshot(`
           "import * as React from 'react'
-          import { Spring } from 'react-spring'
+          import { Spring } from 'non-existant-dummy-library'
           export var Card = (props) => {
             return (
               <div style={{ ...props.style }}>

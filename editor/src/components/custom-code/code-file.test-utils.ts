@@ -22,18 +22,18 @@ import { emptySet } from '../../core/shared/set-utils'
 import { parseProjectContents } from '../../sample-projects/sample-project-utils.test-utils'
 
 export const SampleNodeModules: NodeModules = {
-  '/node_modules/react-spring/index.js': esCodeFile(
+  '/node_modules/non-existant-dummy-library/index.js': esCodeFile(
     `import * as React from 'react'
 export const Spring = (props) => {
   return <div {...props} />
 }`,
     'NODE_MODULES',
-    '/node_modules/react-spring/index.js',
+    '/node_modules/non-existant-dummy-library/index.js',
   ),
-  '/node_modules/react-spring/package.json': esCodeFile(
+  '/node_modules/non-existant-dummy-library/package.json': esCodeFile(
     JSON.stringify({ main: './index.js' }),
     'NODE_MODULES',
-    '/node_modules/react-spring/package.json',
+    '/node_modules/non-existant-dummy-library/package.json',
   ),
   '/node_modules/@emotion/react/index.js': esCodeFile(
     `export {}`,

@@ -556,7 +556,7 @@ describe('normalisePathToUnderlyingTarget', () => {
         'storyboard-entity/scene-1-entity/app-entity:app-outer-div/card-instance:card-outer-div/card-inner-spring:spring-inner-div',
       ),
     )
-    const expectedResult = normalisePathEndsAtDependency('react-spring')
+    const expectedResult = normalisePathEndsAtDependency('non-existant-dummy-library')
     expect(actualResult).toEqual(expectedResult)
   })
 })
