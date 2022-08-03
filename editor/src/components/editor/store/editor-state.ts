@@ -846,6 +846,7 @@ export interface EditorState {
   highlightedViews: Array<ElementPath>
   hiddenInstances: Array<ElementPath>
   warnedInstances: Array<ElementPath>
+  lockedElementsAndDescendants: Array<ElementPath>
   lockedElements: Array<ElementPath>
   mode: Mode
   focusedPanel: EditorPanel | null
@@ -912,6 +913,7 @@ export function editorState(
   highlightedViews: Array<ElementPath>,
   hiddenInstances: Array<ElementPath>,
   warnedInstances: Array<ElementPath>,
+  lockedElementsAndDescendants: Array<ElementPath>,
   lockedElements: Array<ElementPath>,
   mode: Mode,
   focusedPanel: EditorPanel | null,
@@ -977,6 +979,7 @@ export function editorState(
     highlightedViews: highlightedViews,
     hiddenInstances: hiddenInstances,
     warnedInstances: warnedInstances,
+    lockedElementsAndDescendants: lockedElementsAndDescendants,
     lockedElements: lockedElements,
     mode: mode,
     focusedPanel: focusedPanel,
@@ -1688,6 +1691,7 @@ export function createEditorState(dispatch: EditorDispatch): EditorState {
     highlightedViews: [],
     hiddenInstances: [],
     warnedInstances: [],
+    lockedElementsAndDescendants: [],
     lockedElements: [],
     mode: EditorModes.selectMode(),
     focusedPanel: 'canvas',
@@ -1979,6 +1983,7 @@ export function editorModelFromPersistentModel(
     highlightedViews: [],
     hiddenInstances: persistentModel.hiddenInstances,
     warnedInstances: [],
+    lockedElementsAndDescendants: [],
     lockedElements: [],
     mode: EditorModes.selectMode(),
     focusedPanel: 'canvas',

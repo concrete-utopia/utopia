@@ -941,6 +941,7 @@ function restoreEditorState(currentEditor: EditorModel, history: StateHistory): 
     highlightedViews: currentEditor.highlightedViews,
     hiddenInstances: poppedEditor.hiddenInstances,
     warnedInstances: poppedEditor.warnedInstances,
+    lockedElementsAndDescendants: poppedEditor.lockedElementsAndDescendants,
     lockedElements: poppedEditor.lockedElements,
     mode: EditorModes.selectMode(),
     focusedPanel: currentEditor.focusedPanel,
@@ -4914,18 +4915,39 @@ export const UPDATE_FNS = {
     return foldAndApplyCommandsSimple(editor, [setElementsToRerenderCommand(action.value)])
   },
   TOGGLE_SELECTION_LOCK: (action: ToggleSelectionLock, editor: EditorModel): EditorModel => {
-    const targets = action.targets.length > 0 ? action.targets : editor.selectedViews
+    const targets = action.targets
     return targets.reduce((working, target) => {
-      if (working.lockedElements.some((element) => EP.pathsEqual(element, target))) {
-        return update(working, {
-          lockedElements: {
-            $set: working.lockedElements.filter((element) => !EP.pathsEqual(element, target)),
-          },
-        })
-      } else {
-        return update(working, {
-          lockedElements: { $set: working.lockedElements.concat(target) },
-        })
+      switch (action.newValue) {
+        case 'locked':
+          return update(working, {
+            lockedElements: { $set: working.lockedElements.concat(target) },
+            lockedElementsAndDescendants: {
+              $set: working.lockedElementsAndDescendants.filter(
+                (element) => !EP.pathsEqual(element, target),
+              ),
+            },
+          })
+        case 'locked-and-descendants-locked-too':
+          return update(working, {
+            lockedElements: {
+              $set: working.lockedElements.filter((element) => !EP.pathsEqual(element, target)),
+            },
+            lockedElementsAndDescendants: {
+              $set: working.lockedElementsAndDescendants.concat(target),
+            },
+          })
+        case 'selectable':
+        default:
+          return update(working, {
+            lockedElements: {
+              $set: working.lockedElements.filter((element) => !EP.pathsEqual(element, target)),
+            },
+            lockedElementsAndDescendants: {
+              $set: working.lockedElementsAndDescendants.filter(
+                (element) => !EP.pathsEqual(element, target),
+              ),
+            },
+          })
       }
     }, editor)
   },

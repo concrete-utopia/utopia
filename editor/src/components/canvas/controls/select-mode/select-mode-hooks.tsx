@@ -148,6 +148,7 @@ export function getSelectableViews(
   childrenSelectable: boolean,
   allElementProps: AllElementProps,
   lockedElements: Array<ElementPath>,
+  lockedElementsAndDescendants: Array<ElementPath>,
 ): ElementPath[] {
   let candidateViews: Array<ElementPath>
 
@@ -177,6 +178,7 @@ export function getSelectableViews(
     const lockedRoots = allRoots.filter((path) =>
       lockedElements.some((lockedPath) => EP.pathsEqual(path, lockedPath)),
     )
+    const lockedElementsWithScenes = [...lockedElements, ...allRoots]
     const pathsToIterate = [...selectedViews, ...lockedRoots]
 
     let siblings: Array<ElementPath> = []
@@ -196,7 +198,7 @@ export function getSelectableViews(
             siblings.push(child)
 
             // If this element is locked we want to recurse the children
-            if (lockedElements.some((path) => EP.pathsEqual(path, child))) {
+            if (lockedElementsWithScenes.some((path) => EP.pathsEqual(path, child))) {
               addChildrenAndUnfurledFocusedComponents([child])
             }
           })
@@ -216,7 +218,11 @@ export function getSelectableViews(
     candidateViews = uniqueSelectableViews
   }
 
-  const nonSelectableElements = [...hiddenInstances, ...lockedElements]
+  const nonSelectableElements = [
+    ...hiddenInstances,
+    ...lockedElements,
+    ...lockedElementsAndDescendants,
+  ]
   return filterHiddenInstances(nonSelectableElements, candidateViews)
 }
 
@@ -435,13 +441,20 @@ export function useGetSelectableViewsForSelectMode() {
       focusedElementPath: store.editor.focusedElementPath,
       allElementProps: store.editor.allElementProps,
       lockedElements: store.editor.lockedElements,
+      lockedElementsAndDescendants: store.editor.lockedElementsAndDescendants,
     }
   })
 
   return React.useCallback(
     (allElementsDirectlySelectable: boolean, childrenSelectable: boolean) => {
-      const { componentMetadata, selectedViews, hiddenInstances, allElementProps, lockedElements } =
-        storeRef.current
+      const {
+        componentMetadata,
+        selectedViews,
+        hiddenInstances,
+        allElementProps,
+        lockedElements,
+        lockedElementsAndDescendants,
+      } = storeRef.current
       const selectableViews = getSelectableViews(
         componentMetadata,
         selectedViews,
@@ -450,6 +463,7 @@ export function useGetSelectableViewsForSelectMode() {
         childrenSelectable,
         allElementProps,
         lockedElements,
+        lockedElementsAndDescendants,
       )
       return selectableViews
     },

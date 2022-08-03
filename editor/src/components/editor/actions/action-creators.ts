@@ -282,10 +282,14 @@ export function toggleHidden(targets: Array<ElementPath> = []): ToggleHidden {
     targets: targets,
   }
 }
-export function toggleSelectionLock(targets: Array<ElementPath> = []): ToggleSelectionLock {
+export function toggleSelectionLock(
+  targets: Array<ElementPath>,
+  newValue: 'locked' | 'locked-and-descendants-locked-too' | 'selectable',
+): ToggleSelectionLock {
   return {
     action: 'TOGGLE_SELECTION_LOCK',
     targets: targets,
+    newValue: newValue,
   }
 }
 

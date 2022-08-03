@@ -2978,6 +2978,10 @@ export const EditorStateKeepDeepEquality: KeepDeepEqualityCall<EditorState> = (
     oldValue.lockedElements,
     newValue.lockedElements,
   )
+  const lockedElementsAndDescendantsResult = ElementPathArrayKeepDeepEquality(
+    oldValue.lockedElementsAndDescendants,
+    newValue.lockedElementsAndDescendants,
+  )
   const modeResult = ModeKeepDeepEquality(oldValue.mode, newValue.mode)
   const focusedPanelResult = createCallWithTripleEquals<EditorPanel | null>()(
     oldValue.focusedPanel,
@@ -3136,6 +3140,7 @@ export const EditorStateKeepDeepEquality: KeepDeepEqualityCall<EditorState> = (
     hiddenInstancesResult.areEqual &&
     warnedInstancesResult.areEqual &&
     lockedElementsResult.areEqual &&
+    lockedElementsAndDescendantsResult.areEqual &&
     modeResult.areEqual &&
     focusedPanelResult.areEqual &&
     keysPressedResult.areEqual &&
@@ -3204,6 +3209,7 @@ export const EditorStateKeepDeepEquality: KeepDeepEqualityCall<EditorState> = (
       hiddenInstancesResult.value,
       warnedInstancesResult.value,
       lockedElementsResult.value,
+      lockedElementsAndDescendantsResult.value,
       modeResult.value,
       focusedPanelResult.value,
       keysPressedResult.value,

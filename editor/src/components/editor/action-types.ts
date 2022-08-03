@@ -178,6 +178,7 @@ export type ToggleHidden = {
 export type ToggleSelectionLock = {
   action: 'TOGGLE_SELECTION_LOCK'
   targets: Array<ElementPath>
+  newValue: 'locked' | 'locked-and-descendants-locked-too' | 'selectable'
 }
 
 export type UnsetProperty = {
