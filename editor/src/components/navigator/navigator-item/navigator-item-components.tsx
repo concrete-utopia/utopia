@@ -7,7 +7,8 @@ import { EditorDispatch } from '../../editor/action-types'
 import * as EditorActions from '../../editor/actions/action-creators'
 import * as EP from '../../../core/shared/element-path'
 import { useColorTheme, Button, Icons, SectionActionSheet } from '../../../uuiui'
-import { useEditorState } from '../../editor/store/store-hook'
+import { useEditorState, useRefEditorState } from '../../editor/store/store-hook'
+import { MetadataUtils } from '../../../core/model/element-metadata-utils'
 
 interface NavigatorHintProps {
   shouldBeShown: boolean
@@ -72,7 +73,7 @@ interface VisiblityIndicatorProps {
 export const VisibilityIndicator: React.FunctionComponent<
   React.PropsWithChildren<VisiblityIndicatorProps>
 > = React.memo((props) => {
-  const color = props.selected ? 'on-highlight-main' : 'subdued'
+  const color = props.selected ? 'on-highlight-main' : 'main'
 
   return (
     <Button
@@ -96,7 +97,7 @@ export const VisibilityIndicator: React.FunctionComponent<
 export const SelectionLockedIndicator: React.FunctionComponent<
   React.PropsWithChildren<VisiblityIndicatorProps>
 > = React.memo((props) => {
-  const color = props.selected ? 'on-highlight-main' : 'subdued'
+  const color = props.selected ? 'on-highlight-main' : 'main'
 
   return (
     <Button
@@ -167,6 +168,12 @@ export const NavigatorItemActionSheet: React.FunctionComponent<
     return store.editor.lockedElements.some((path) => EP.pathsEqual(elementPath, path))
   }, 'NavigatorItemActionSheet isSelectable')
 
+  const jsxMetadataRef = useRefEditorState((store) => store.editor.jsxMetadata)
+  const isSceneElement = React.useMemo(
+    () => MetadataUtils.isProbablyScene(jsxMetadataRef.current, elementPath),
+    [elementPath, jsxMetadataRef],
+  )
+
   return (
     <SectionActionSheet>
       <OriginalComponentNameLabel
@@ -175,7 +182,7 @@ export const NavigatorItemActionSheet: React.FunctionComponent<
       />
       <SelectionLockedIndicator
         key={`selection-locked-indicator-${EP.toVarSafeComponentId(elementPath)}`}
-        shouldShow={props.highlighted || props.selected || isLockedElement}
+        shouldShow={!isSceneElement && (props.highlighted || props.selected || isLockedElement)}
         visibilityEnabled={!isLockedElement}
         selected={props.selected}
         onClick={toggleSelectable}
