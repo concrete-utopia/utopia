@@ -10,6 +10,10 @@ import {
   rectContainsPoint,
   rectContainsPointInclusive,
   rectFromTwoPoints,
+  rectSize,
+  size,
+  Size,
+  sizeFitsInTarget,
   zeroCanvasRect,
 } from '../../../core/shared/math-utils'
 import { ElementPath, PropertyPath } from '../../../core/shared/project-file-types'
@@ -109,7 +113,7 @@ export function findReparentStrategy(
   return { strategy: 'do-not-reparent' }
 }
 
-function newGetReparentTarget(
+export function newGetReparentTarget(
   filteredSelectedElements: Array<ElementPath>,
   interactionSession: InteractionSession,
   canvasState: InteractionCanvasState,
@@ -138,29 +142,37 @@ function newGetReparentTarget(
   )
 
   const flexReparentResult = newGetReparentTargetInner(
+    interactionSession.interactionData.modifiers.cmd,
     strategyState.startingMetadata,
     strategyState.startingAllElementProps,
     canvasState.projectContents,
     canvasState.openFile ?? null,
     pointOnCanvas,
+    filteredSelectedElements,
   )
 
   return flexReparentResult
 }
 
 function newGetReparentTargetInner(
+  cmdPressed: boolean,
   metadata: ElementInstanceMetadataMap,
   allElementProps: AllElementProps,
   projectContents: ProjectContentTreeRoot,
   openFile: string | null,
   point: CanvasPoint,
+  filteredSelectedElements: Array<ElementPath>,
 ): {
   shouldReparent: boolean
   newParent: ElementPath | null
   shouldReorder: boolean
   newIndex: number
 } {
-  const elementsUnderPoint = getAllTargetsAtPointAABB(
+  const multiselectBounds: Size =
+    MetadataUtils.getBoundingRectangleInCanvasCoords(filteredSelectedElements, metadata) ??
+    size(0, 0)
+
+  const allElementsUnderPoint = getAllTargetsAtPointAABB(
     metadata,
     [],
     [],
@@ -169,8 +181,7 @@ function newGetReparentTargetInner(
     allElementProps,
   )
 
-  // if the mouse is over the canvas, return the canvas root as the target path
-  if (elementsUnderPoint.length === 0) {
+  if (allElementsUnderPoint.length === 0) {
     const storyboardComponent = getStoryboardElementPath(projectContents, openFile)
     return {
       shouldReparent: storyboardComponent != null,
@@ -180,7 +191,20 @@ function newGetReparentTargetInner(
     }
   }
 
-  const flexElementsUnderPoint = [...elementsUnderPoint]
+  const filteredElementsUnderPoint = allElementsUnderPoint.filter(
+    (target) =>
+      MetadataUtils.targetSupportsChildren(projectContents, openFile, metadata, target) && // simply skip elements that do not support children
+      (cmdPressed || // cmd + reparent means we skip the size check
+        sizeFitsInTarget(
+          // if cmd is not pressed, we only allow reparent to parents that are larger than the multiselect bounds
+          multiselectBounds,
+          MetadataUtils.getFrameInCanvasCoords(target, metadata) ?? size(0, 0),
+        )),
+  )
+
+  // if the mouse is over the canvas, return the canvas root as the target path
+
+  const flexElementsUnderPoint = [...filteredElementsUnderPoint]
     .reverse()
     .filter((element) =>
       MetadataUtils.isFlexLayoutedContainer(
@@ -212,21 +236,9 @@ function newGetReparentTargetInner(
   }
 
   // fall back to trying to find an absolute element, or the "background" area of a flex element
-  for (const elementPath of elementsUnderPoint) {
+  for (const elementPath of filteredElementsUnderPoint) {
     const element = MetadataUtils.findElementByElementPath(metadata, elementPath)
     const isFlex = MetadataUtils.isFlexLayoutedContainer(element)
-
-    const acceptsChildren = MetadataUtils.targetSupportsChildren(
-      projectContents,
-      openFile,
-      metadata,
-      elementPath,
-    )
-
-    if (!acceptsChildren) {
-      // this element did not support children, so let's continue the lookup
-      continue
-    }
 
     if (!isFlex) {
       // TODO we now assume this is "absolute", but this is too vauge

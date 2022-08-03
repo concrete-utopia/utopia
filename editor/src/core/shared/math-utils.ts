@@ -231,6 +231,10 @@ export function setRectSize<C extends CoordinateMarker>(
   } as Rectangle<C>
 }
 
+export function sizeFitsInTarget(sizeToCheck: Size, target: Size): boolean {
+  return sizeToCheck.width <= target.width && sizeToCheck.height <= target.height
+}
+
 export function rectContainsPoint<C extends CoordinateMarker>(
   rectangle: Rectangle<C>,
   p: Point<C>,
