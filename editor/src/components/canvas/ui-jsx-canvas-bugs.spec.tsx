@@ -392,7 +392,6 @@ export var App = (props) => {
         '/src/card.js': `import * as React from 'react'
 import { Rectangle } from 'utopia-api'
 import { Spring } from 'react-spring'
-console.log('Spring', Spring)
 export var Card = (props) => {
   return (
     <div
