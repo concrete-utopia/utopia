@@ -56,8 +56,7 @@ export const absoluteReparentToFlexStrategy: CanvasStrategy = {
     if (
       canvasState.selectedElements.length === 1 &&
       interactionSession != null &&
-      interactionSession.interactionData.type === 'DRAG' &&
-      interactionSession.interactionData.modifiers.cmd
+      interactionSession.interactionData.type === 'DRAG'
     ) {
       const filteredSelectedElements = getDragTargets(canvasState.selectedElements)
       if (filteredSelectedElements.length === 1) {

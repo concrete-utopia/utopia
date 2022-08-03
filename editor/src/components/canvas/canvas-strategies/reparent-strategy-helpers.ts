@@ -52,7 +52,6 @@ export function findReparentStrategy(
     canvasState.selectedElements.length === 0 ||
     interactionState.activeControl.type !== 'BOUNDING_AREA' ||
     interactionState.interactionData.type !== 'DRAG' ||
-    !interactionState.interactionData.modifiers.cmd ||
     interactionState.interactionData.drag == null // TODO delete this drag nullcheck? do we start the reparent on mouse down or mouse move beyond threshold?
   ) {
     return { strategy: 'do-not-reparent' }
