@@ -112,12 +112,12 @@ export const SelectionLockedIndicator: React.FunctionComponent<
   const handleClick = React.useCallback(() => {
     switch (props.value) {
       case 'selectable':
-        props.onClick('locked')
-        break
-      case 'locked':
         props.onClick('locked-and-descendants-locked-too')
         break
       case 'locked-and-descendants-locked-too':
+        props.onClick('locked')
+        break
+      case 'locked':
       default:
         props.onClick('selectable')
         break
