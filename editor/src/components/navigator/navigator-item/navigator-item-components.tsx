@@ -140,7 +140,10 @@ export const SelectionLockedIndicator: React.FunctionComponent<
         props.value === 'selectable' && !props.isDescendantOfLocked,
         <Icons.LockOpen color={color} style={{ transform: 'scale(.85)' }} />,
       )}
-      {when(props.value === 'selectable' && props.isDescendantOfLocked, <span>·</span>)}
+      {when(
+        props.value === 'selectable' && props.isDescendantOfLocked,
+        <span style={{ fontSize: '20px', fontWeight: 'bold' }}>·</span>,
+      )}
     </Button>
   )
 })
