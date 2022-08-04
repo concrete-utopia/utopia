@@ -76,7 +76,8 @@ export const absoluteReparentStrategy: CanvasStrategy = {
       filteredSelectedElements,
       interactionState,
       canvasState,
-      strategyState,
+      strategyState.startingMetadata,
+      strategyState.startingAllElementProps,
     )
     const newParent = reparentResult.newParent
     const moveCommands = absoluteMoveStrategy.apply(

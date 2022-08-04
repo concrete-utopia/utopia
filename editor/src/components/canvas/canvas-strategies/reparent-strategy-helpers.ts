@@ -82,7 +82,8 @@ export function findReparentStrategy(
     filteredSelectedElements,
     interactionState,
     canvasState,
-    strategyState,
+    strategyState.startingMetadata,
+    strategyState.startingAllElementProps,
   )
 
   const newParentPath = reparentResult.newParent
@@ -118,7 +119,8 @@ export function newGetReparentTarget(
   filteredSelectedElements: Array<ElementPath>,
   interactionSession: InteractionSession,
   canvasState: InteractionCanvasState,
-  strategyState: StrategyState,
+  metadata: ElementInstanceMetadataMap,
+  allElementProps: AllElementProps,
 ): {
   shouldReparent: boolean
   newParent: ElementPath | null
@@ -144,8 +146,8 @@ export function newGetReparentTarget(
 
   const flexReparentResult = newGetReparentTargetInner(
     interactionSession.interactionData.modifiers.cmd,
-    strategyState.startingMetadata,
-    strategyState.startingAllElementProps,
+    metadata,
+    allElementProps,
     canvasState.projectContents,
     canvasState.openFile ?? null,
     pointOnCanvas,
@@ -423,7 +425,8 @@ export function applyFlexReparent(
         filteredSelectedElements,
         interactionSession,
         canvasState,
-        strategyState,
+        strategyState.startingMetadata,
+        strategyState.startingAllElementProps,
       )
 
       if (
