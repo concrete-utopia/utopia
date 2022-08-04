@@ -18,7 +18,7 @@ import {
 import { objectMap, omit } from '../../shared/object-utils'
 import { BakedInStoryboardVariableName, BakedInStoryboardUID } from '../../model/scene-utils'
 import { isParseSuccess } from '../../shared/project-file-types'
-import { findJSXElementAtStaticPath } from '../../model/element-template-utils'
+import { findJSXElementLikeAtStaticPath } from '../../model/element-template-utils'
 import { getUtopiaJSXComponentsFromSuccess } from '../..//model/project-file-utils'
 import * as EP from '../../shared/element-path'
 
@@ -51,7 +51,7 @@ export var App = props => {
                 JSX_ARBITRARY_BLOCK"
       `)
 
-      const aaaElement = findJSXElementAtStaticPath(
+      const aaaElement = findJSXElementLikeAtStaticPath(
         getUtopiaJSXComponentsFromSuccess(parsedCode),
         EP.dynamicPathToStaticPath(EP.elementPath([['App'], ['aaa']])),
       )
@@ -68,7 +68,7 @@ export var App = props => {
         throw new Error('Was not a JSX_ARBITRARY_BLOCK as expected.')
       }
 
-      const bbbElement = findJSXElementAtStaticPath(
+      const bbbElement = findJSXElementLikeAtStaticPath(
         getUtopiaJSXComponentsFromSuccess(parsedCode),
         EP.dynamicPathToStaticPath(EP.elementPath([['App'], ['aaa', 'bbb']])),
       )

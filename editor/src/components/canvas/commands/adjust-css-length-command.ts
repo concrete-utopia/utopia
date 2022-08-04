@@ -1,6 +1,10 @@
 import { isLeft, isRight, left } from '../../../core/shared/either'
 import * as EP from '../../../core/shared/element-path'
-import { emptyComments, jsxAttributeValue } from '../../../core/shared/element-template'
+import {
+  emptyComments,
+  jsxAttributeValue,
+  propsOfJSXElementLike,
+} from '../../../core/shared/element-template'
 import {
   GetModifiableAttributeResult,
   getModifiableJSXAttributeAtPath,
@@ -57,7 +61,7 @@ export const runAdjustCssLengthProperty: CommandFunction<AdjustCssLengthProperty
     editorState,
     left(`no target element was found at path ${EP.toString(command.target)}`),
     (_, element) => {
-      return getModifiableJSXAttributeAtPath(element.props, command.property)
+      return getModifiableJSXAttributeAtPath(propsOfJSXElementLike(element), command.property)
     },
   )
   if (isLeft(currentValue)) {

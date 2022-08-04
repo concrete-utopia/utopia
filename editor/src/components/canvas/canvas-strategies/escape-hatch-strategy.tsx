@@ -7,6 +7,8 @@ import { isRight, right } from '../../../core/shared/either'
 import * as EP from '../../../core/shared/element-path'
 import {
   ElementInstanceMetadataMap,
+  isJSXFragment,
+  propsOfJSXElementLike,
   SpecialSizeMeasurements,
 } from '../../../core/shared/element-template'
 import {
@@ -297,6 +299,8 @@ function filterPinsToSet(
   )
   if (element == null) {
     return ['top', 'left', 'width', 'height']
+  } else if (isJSXFragment(element)) {
+    return []
   } else {
     const horizontalProps = (['left', 'right', 'width'] as Array<LayoutPinnedProp>).filter((p) => {
       const prop = getLayoutProperty(p, right(element.props), ['style'])

@@ -47,6 +47,8 @@ import {
   SettableLayoutSystem,
   emptyComments,
   isJSXElementLikeWithChildren,
+  nameOfJSXElementLike,
+  propsOfJSXElementLike,
 } from '../../core/shared/element-template'
 import {
   getAllUniqueUids,
@@ -558,7 +560,7 @@ export function updateFramesOfScenesAndComponents(
               elementProps,
             )
             const valueFromAttributes = eitherToMaybe(
-              getSimpleAttributeAtPath(right(element.props), targetPropertyPath),
+              getSimpleAttributeAtPath(right(propsOfJSXElementLike(element)), targetPropertyPath),
             )
             // Defer through these in order: observable value >>> value from attribute >>> 0.
             const currentAttributeToChange = valueFromDOM ?? valueFromAttributes ?? 0
@@ -630,7 +632,7 @@ export function updateFramesOfScenesAndComponents(
             const currentLocalFrame = MetadataUtils.getFrame(target, workingEditorState.jsxMetadata)
             const currentFullFrame = optionalMap(Frame.getFullFrame, currentLocalFrame)
             const fullFrame = Frame.getFullFrame(newLocalFrame)
-            const elementAttributes = element.props
+            const elementAttributes = propsOfJSXElementLike(element)
 
             // Pinning layout.
             const frameProps = LayoutPinnedProps.filter((p) => {
@@ -707,7 +709,7 @@ export function updateFramesOfScenesAndComponents(
           let frameProps: { [k: string]: string | number | undefined } = {}
           Utils.fastForEach(LayoutPinnedProps, (p) => {
             if (p !== 'width' && p !== 'height') {
-              const value = getLayoutProperty(p, right(element.props), ['style'])
+              const value = getLayoutProperty(p, right(propsOfJSXElementLike(element)), ['style'])
               if (isLeft(value) || value.value != null) {
                 frameProps[p] = cssNumberAsNumberIfPossible(value.value)
                 propsToSkip.push(stylePropPathMappingFn(p, ['style']))
@@ -744,7 +746,7 @@ export function updateFramesOfScenesAndComponents(
           let frameProps: { [k: string]: string | number | undefined } = {}
           Utils.fastForEach(LayoutPinnedProps, (p) => {
             const framePoint = framePointForPinnedProp(p)
-            const value = getLayoutProperty(p, right(element.props), ['style'])
+            const value = getLayoutProperty(p, right(propsOfJSXElementLike(element)), ['style'])
             if (isLeft(value) || value.value != null) {
               frameProps[framePoint] = cssNumberAsNumberIfPossible(value.value)
               propsToSkip.push(stylePropPathMappingFn(p, ['style']))
@@ -2876,7 +2878,9 @@ export function getValidElementPathsFromElement(
       ),
     )
 
-    const name = isJSXElement(element) ? getJSXElementNameAsString(element.name) : 'Fragment'
+    const name = isJSXElement(element)
+      ? getJSXElementNameAsString(nameOfJSXElementLike(element))
+      : 'Fragment'
     const lastElementPathPart = EP.lastElementPathForPath(path)
     const matchingFocusedPathPart =
       focusedElementPath == null || lastElementPathPart == null

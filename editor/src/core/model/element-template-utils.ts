@@ -32,6 +32,8 @@ import {
   JSXAttributesSpread,
   JSXArrayElement,
   JSXProperty,
+  isJSXElementLikeWithChildren,
+  JSXElementLike,
 } from '../shared/element-template'
 import {
   Imports,
@@ -229,10 +231,10 @@ function transformAtPathOptionally(
     workingPath: string[],
   ): JSXElementChild | null {
     const [firstUIDOrIndex, ...tailPath] = workingPath
-    if (isJSXElement(element)) {
+    if (isJSXElementLikeWithChildren(element)) {
       if (getUtopiaID(element) === firstUIDOrIndex) {
         // transform
-        if (tailPath.length === 0) {
+        if (tailPath.length === 0 && isJSXElement(element)) {
           return transform(element)
         } else {
           // we will want to transform one of our children
@@ -269,21 +271,6 @@ function transformAtPathOptionally(
           }
         }
       }
-    } else if (isJSXFragment(element)) {
-      let childrenUpdated: boolean = false
-      const updatedChildren = element.children.map((child) => {
-        const possibleUpdate = findAndTransformAtPathInner(child, workingPath)
-        if (possibleUpdate != null) {
-          childrenUpdated = true
-        }
-        return Utils.defaultIfNull(child, possibleUpdate)
-      })
-      if (childrenUpdated) {
-        return {
-          ...element,
-          children: updatedChildren,
-        }
-      }
     }
     return null
   }
@@ -318,7 +305,7 @@ export function findJSXElementChildAtPath(
     workingPath: Array<string>,
   ): JSXElementChild | null {
     const firstUIDOrIndex = workingPath[0]
-    if (isJSXElement(element)) {
+    if (isJSXElementLikeWithChildren(element)) {
       const uid = getUtopiaID(element)
       if (uid === firstUIDOrIndex) {
         const tailPath = workingPath.slice(1)
@@ -344,14 +331,6 @@ export function findJSXElementChildAtPath(
           return withinResult
         }
       }
-    } else if (isJSXFragment(element)) {
-      const children = element.children
-      for (const child of children) {
-        const childResult = findAtPathInner(child, workingPath)
-        if (childResult != null) {
-          return childResult
-        }
-      }
     }
     return null
   }
@@ -368,12 +347,12 @@ export function findJSXElementChildAtPath(
   return null
 }
 
-export function findJSXElementAtStaticPath(
+export function findJSXElementLikeAtStaticPath(
   components: Array<UtopiaJSXComponent>,
   path: StaticElementPath,
-): JSXElement | null {
+): JSXElementLike | null {
   const foundElement = findJSXElementChildAtPath(components, path)
-  if (foundElement != null && isJSXElement(foundElement)) {
+  if (foundElement != null && isJSXElementLikeWithChildren(foundElement)) {
     return foundElement
   } else {
     return null
@@ -475,7 +454,7 @@ export function getZIndexOfElement(
   target: StaticElementPath,
 ): number {
   const parentPath = EP.parentPath(target)
-  const parentElement = findJSXElementAtStaticPath(
+  const parentElement = findJSXElementLikeAtStaticPath(
     getComponentsFromTopLevelElements(topLevelElements),
     parentPath,
   )

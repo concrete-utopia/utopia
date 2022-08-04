@@ -1,6 +1,7 @@
 import update from 'immutability-helper'
 import { createBuiltInDependenciesList } from '../../../core/es-modules/package-manager/built-in-dependencies-list'
 import * as EP from '../../../core/shared/element-path'
+import { propsOfJSXElementLike } from '../../../core/shared/element-template'
 import { getNumberPropertyFromProps } from '../../../core/shared/jsx-attributes'
 import { complexDefaultProjectPreParsed } from '../../../sample-projects/sample-project-utils.test-utils'
 import { withUnderlyingTargetFromEditorState } from '../../editor/store/editor-state'
@@ -33,7 +34,10 @@ describe('adjustNumberProperty', () => {
       originalEditorState,
       null,
       (success, element, underlyingTarget, underlyingFilePath) => {
-        return getNumberPropertyFromProps(element.props, stylePropPathMappingFn('left', ['style']))
+        return getNumberPropertyFromProps(
+          propsOfJSXElementLike(element),
+          stylePropPathMappingFn('left', ['style']),
+        )
       },
     )!
 
@@ -61,7 +65,10 @@ describe('adjustNumberProperty', () => {
       patchedEditor,
       null,
       (success, element, underlyingTarget, underlyingFilePath) => {
-        return getNumberPropertyFromProps(element.props, stylePropPathMappingFn('left', ['style']))
+        return getNumberPropertyFromProps(
+          propsOfJSXElementLike(element),
+          stylePropPathMappingFn('left', ['style']),
+        )
       },
     )
 
@@ -108,7 +115,10 @@ describe('adjustNumberProperty', () => {
       patchedEditor,
       null,
       (success, element, underlyingTarget, underlyingFilePath) => {
-        return getNumberPropertyFromProps(element.props, stylePropPathMappingFn('left', ['style']))
+        return getNumberPropertyFromProps(
+          propsOfJSXElementLike(element),
+          stylePropPathMappingFn('left', ['style']),
+        )
       },
     )
 

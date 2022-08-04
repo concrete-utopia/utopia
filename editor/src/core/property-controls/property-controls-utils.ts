@@ -9,6 +9,8 @@ import {
   isIntrinsicHTMLElement,
   JSXElement,
   isIntrinsicElement,
+  JSXElementLike,
+  nameOfJSXElementLike,
 } from '../shared/element-template'
 import {
   NodeModules,
@@ -66,21 +68,23 @@ export function getPropertyControlsForTarget(
     null,
     (
       success: ParseSuccess,
-      element: JSXElement,
+      element: JSXElementLike,
       underlyingTarget: StaticElementPath,
       underlyingFilePath: string,
     ) => {
+      const elementName = nameOfJSXElementLike(element)
+
       const importedFrom = importedFromWhere(
         underlyingFilePath,
-        element.name.baseVariable,
+        elementName.baseVariable,
         success.topLevelElements,
         success.imports,
       )
 
       let filenameForLookup: string | null = null
       if (importedFrom == null) {
-        if (isIntrinsicElement(element.name)) {
-          if (isIntrinsicHTMLElement(element.name)) {
+        if (isIntrinsicElement(elementName)) {
+          if (isIntrinsicHTMLElement(elementName)) {
             /**
              * We detected an intrinsic HTML Element (such as div, a, span, etc...)
              * for the sake of simplicity, we assume here that they all support the style prop. if we need more detailed
@@ -91,7 +95,7 @@ export function getPropertyControlsForTarget(
           } else {
             // you can add more intrinsic (ie not imported) element types here
             return getThirdPartyControlsIntrinsic(
-              element.name.baseVariable,
+              elementName.baseVariable,
               propertyControlsInfo,
               projectContents,
             )
@@ -118,7 +122,8 @@ export function getPropertyControlsForTarget(
 
         const originalName =
           importedFrom?.type === 'IMPORTED_ORIGIN' ? importedFrom.exportedName : null
-        const nameAsString = originalName ?? getJSXElementNameAsString(element.name)
+        const nameAsString =
+          originalName ?? getJSXElementNameAsString(nameOfJSXElementLike(element))
         return propertyControlsInfo[trimmedPath]?.[nameAsString]?.properties
       }
     },

@@ -13,13 +13,14 @@ import {
   emptyJsxMetadata,
   JSXAttribute,
   walkElements,
+  JSXElementLike,
 } from '../../../core/shared/element-template'
 import {
   insertJSXElementChild,
   removeJSXElementChild,
   transformJSXComponentAtPath,
   getUtopiaID,
-  findJSXElementAtStaticPath,
+  findJSXElementLikeAtStaticPath,
 } from '../../../core/model/element-template-utils'
 import {
   correctProjectContentsPath,
@@ -2632,7 +2633,7 @@ export function withUnderlyingTarget<T>(
   defaultValue: T,
   withTarget: (
     success: ParseSuccess,
-    element: JSXElement,
+    element: JSXElementLike,
     underlyingTarget: StaticElementPath,
     underlyingFilePath: string,
     underlyingDynamicTarget: ElementPath,
@@ -2652,7 +2653,7 @@ export function withUnderlyingTarget<T>(
   ) {
     const parsed = underlyingTarget.textFile.fileContents.parsed
     if (isParseSuccess(parsed)) {
-      const element = findJSXElementAtStaticPath(
+      const element = findJSXElementLikeAtStaticPath(
         getUtopiaJSXComponentsFromSuccess(parsed),
         underlyingTarget.normalisedPath,
       )
@@ -2677,7 +2678,7 @@ export function withUnderlyingTargetFromEditorState<T>(
   defaultValue: T,
   withTarget: (
     success: ParseSuccess,
-    element: JSXElement,
+    element: JSXElementLike,
     underlyingTarget: StaticElementPath,
     underlyingFilePath: string,
   ) => T,
@@ -2697,7 +2698,7 @@ export function forUnderlyingTargetFromEditorState(
   editor: EditorState,
   withTarget: (
     success: ParseSuccess,
-    element: JSXElement,
+    element: JSXElementLike,
     underlyingTarget: StaticElementPath,
     underlyingFilePath: string,
   ) => void,
@@ -2712,7 +2713,7 @@ export function forUnderlyingTarget(
   openFile: string | null | undefined,
   withTarget: (
     success: ParseSuccess,
-    element: JSXElement,
+    element: JSXElementLike,
     underlyingTarget: StaticElementPath,
     underlyingFilePath: string,
   ) => void,
@@ -2724,7 +2725,7 @@ export function getElementFromProjectContents(
   target: ElementPath | null,
   projectContents: ProjectContentTreeRoot,
   openFile: string | null | undefined,
-): JSXElement | null {
+): JSXElementLike | null {
   return withUnderlyingTarget(target, projectContents, {}, openFile, null, (_, element) => element)
 }
 

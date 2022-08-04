@@ -1,5 +1,6 @@
 import { createBuiltInDependenciesList } from '../../../core/es-modules/package-manager/built-in-dependencies-list'
 import * as EP from '../../../core/shared/element-path'
+import { propsOfJSXElementLike } from '../../../core/shared/element-template'
 import { getNumberPropertyFromProps } from '../../../core/shared/jsx-attributes'
 import { complexDefaultProjectPreParsed } from '../../../sample-projects/sample-project-utils.test-utils'
 import { withUnderlyingTargetFromEditorState } from '../../editor/store/editor-state'
@@ -45,7 +46,7 @@ describe('setCssLengthProperty', () => {
       null,
       (success, element, underlyingTarget, underlyingFilePath) => {
         return getNumberPropertyFromProps(
-          element.props,
+          propsOfJSXElementLike(element),
           stylePropPathMappingFn('height', ['style']),
         )
       },

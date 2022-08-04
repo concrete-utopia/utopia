@@ -1,6 +1,7 @@
 import { createBuiltInDependenciesList } from '../../../core/es-modules/package-manager/built-in-dependencies-list'
 import { isRight } from '../../../core/shared/either'
 import * as EP from '../../../core/shared/element-path'
+import { propsOfJSXElementLike } from '../../../core/shared/element-template'
 import {
   getJSXAttributeAtPath,
   jsxSimpleAttributeToValue,
@@ -41,7 +42,7 @@ describe('convertToAbsolute', () => {
       null,
       (success, element, underlyingTarget, underlyingFilePath) => {
         const jsxAttributeResult = getJSXAttributeAtPath(
-          element.props,
+          propsOfJSXElementLike(element),
           stylePropPathMappingFn('position', ['style']),
         )
         const currentValue = jsxSimpleAttributeToValue(jsxAttributeResult.attribute)
@@ -59,7 +60,7 @@ describe('convertToAbsolute', () => {
       null,
       (success, element, underlyingTarget, underlyingFilePath) => {
         const jsxAttributeResult = getJSXAttributeAtPath(
-          element.props,
+          propsOfJSXElementLike(element),
           stylePropPathMappingFn('position', ['style']),
         )
         const currentValue = jsxSimpleAttributeToValue(jsxAttributeResult.attribute)

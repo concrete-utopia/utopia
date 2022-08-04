@@ -2,7 +2,10 @@ import React from 'react'
 import { FlexStretch, Sides } from 'utopia-api/core'
 import { FlexLayoutHelpers, LayoutHelpers } from '../../../core/layout/layout-helpers'
 import { findJSXElementAtPath, MetadataUtils } from '../../../core/model/element-metadata-utils'
-import { ElementInstanceMetadata } from '../../../core/shared/element-template'
+import {
+  ElementInstanceMetadata,
+  propsOfJSXElementLike,
+} from '../../../core/shared/element-template'
 import { ElementPath } from '../../../core/shared/project-file-types'
 import {
   defaultEither,
@@ -93,7 +96,7 @@ class YogaResizeControl extends React.Component<YogaResizeControlProps> {
     let flexDirection: 'horizontal' | 'vertical' | null = null
     if (parentElement != null) {
       forEachRight(
-        FlexLayoutHelpers.getMainAxis(['style'], right(parentElement.props)),
+        FlexLayoutHelpers.getMainAxis(['style'], right(propsOfJSXElementLike(parentElement))),
         (direction) => {
           flexDirection = direction
         },

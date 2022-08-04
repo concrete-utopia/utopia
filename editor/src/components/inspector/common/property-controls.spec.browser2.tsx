@@ -13,6 +13,7 @@ import {
   emptyComments,
   getJSXAttribute,
   jsxAttributeValue,
+  propsOfJSXElementLike,
 } from '../../../core/shared/element-template'
 
 function exampleProject(): string {
@@ -166,7 +167,7 @@ describe('Automatically derived property controls', () => {
     if (element == null) {
       throw new Error('Element could not be found.')
     } else {
-      const cardsAttribute = getJSXAttribute(element.props, 'cards')
+      const cardsAttribute = getJSXAttribute(propsOfJSXElementLike(element), 'cards')
       if (cardsAttribute == null) {
         throw new Error("The 'cards' attribute does not exist.")
       } else {

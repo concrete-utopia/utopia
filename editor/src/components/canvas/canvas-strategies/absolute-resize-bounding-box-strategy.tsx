@@ -4,7 +4,11 @@ import { framePointForPinnedProp } from '../../../core/layout/layout-helpers-new
 import { MetadataUtils } from '../../../core/model/element-metadata-utils'
 import { mapDropNulls } from '../../../core/shared/array-utils'
 import { isRight, right } from '../../../core/shared/either'
-import { ElementInstanceMetadataMap, JSXElement } from '../../../core/shared/element-template'
+import {
+  ElementInstanceMetadataMap,
+  isJSXFragment,
+  JSXElement,
+} from '../../../core/shared/element-template'
 import {
   CanvasRectangle,
   rectangleDifference,
@@ -126,7 +130,7 @@ export const absoluteResizeBoundingBoxStrategy: CanvasStrategy = {
                 sessionState.startingMetadata,
               )
 
-              if (element == null || originalFrame == null) {
+              if (element == null || originalFrame == null || isJSXFragment(element)) {
                 return []
               }
 

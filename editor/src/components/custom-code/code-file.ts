@@ -33,7 +33,10 @@ import {
   isJSXAttributeOtherJavaScript,
   isUtopiaJSXComponent,
   JSXElement,
+  JSXElementLike,
   JSXElementWithoutUID,
+  nameOfJSXElementLike,
+  propsOfJSXElementLike,
   UtopiaJSXComponent,
 } from '../../core/shared/element-template'
 import { findElementWithUID } from '../../core/shared/uid-utils'
@@ -44,7 +47,7 @@ import {
 } from '../../core/es-modules/package-manager/module-resolution'
 import { getTransitiveReverseDependencies } from '../../core/shared/project-contents-dependencies'
 import { optionalMap } from '../../core/shared/optional-utils'
-import { findJSXElementAtStaticPath } from '../../core/model/element-template-utils'
+import { findJSXElementLikeAtStaticPath } from '../../core/model/element-template-utils'
 import { getUtopiaJSXComponentsFromSuccess } from '../../core/model/project-file-utils'
 import {
   ExportsInfo,
@@ -474,7 +477,7 @@ function lookupElementImport(
   currentFilePath: string,
   projectContents: ProjectContentTreeRoot,
   nodeModules: NodeModules,
-  nonNullTargetElement: JSXElement,
+  nonNullTargetElement: JSXElementLike,
   elementPath: ElementPath | null,
   parsedContent: ParseSuccess,
   potentiallyDroppedFirstPathElementResult: EP.DropFirstPathElementResultType,
@@ -494,7 +497,10 @@ function lookupElementImport(
       importedFrom.exportedName === 'Scene'
     ) {
       // Navigate around the scene with the special case handling.
-      const componentAttr = getJSXAttribute(nonNullTargetElement.props, 'component')
+      const componentAttr = getJSXAttribute(
+        propsOfJSXElementLike(nonNullTargetElement),
+        'component',
+      )
       if (componentAttr != null && isJSXAttributeOtherJavaScript(componentAttr)) {
         return lookupElementImport(
           componentAttr.javascript,
@@ -583,11 +589,11 @@ export function findUnderlyingTargetComponentImplementation(
   if (underlyingTarget.type === 'NORMALISE_PATH_SUCCESS') {
     const parseResult = underlyingTarget.textFile.fileContents.parsed
     if (isParseSuccess(parseResult) && underlyingTarget.normalisedPath != null) {
-      const element = findJSXElementAtStaticPath(
+      const element = findJSXElementLikeAtStaticPath(
         getUtopiaJSXComponentsFromSuccess(parseResult),
         underlyingTarget.normalisedPath,
       )
-      const elementName = element?.name.baseVariable
+      const elementName = optionalMap(nameOfJSXElementLike, element)?.baseVariable
       if (element != null && elementName != null) {
         const innerUnderlyingTarget = lookupElementImport(
           elementName,

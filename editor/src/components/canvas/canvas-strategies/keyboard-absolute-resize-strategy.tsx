@@ -30,6 +30,7 @@ import {
 import { getMultiselectBounds } from './shared-absolute-move-strategy-helpers'
 import { setSnappingGuidelines } from '../commands/set-snapping-guidelines-command'
 import { pushIntendedBounds } from '../commands/push-intended-bounds-command'
+import { isJSXElement } from '../../../core/shared/element-template'
 
 interface VectorAndEdge {
   movement: CanvasVector
@@ -150,7 +151,7 @@ export const keyboardAbsoluteResizeStrategy: CanvasStrategy = {
               sessionState.startingMetadata,
             )
 
-            if (element != null) {
+            if (element != null && isJSXElement(element)) {
               const elementResult = createResizeCommands(
                 element,
                 selectedElement,

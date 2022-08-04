@@ -20,6 +20,7 @@ import { firstLetterIsLowerCase } from './string-utils'
 import { intrinsicHTMLElementNamesAsStrings } from './dom-utils'
 import type { MapLike } from 'typescript'
 import { forceNotNull } from './optional-utils'
+import { elementsStructure } from '../workers/parser-printer/parser-printer.test-utils'
 
 export interface ParsedComments {
   leadingComments: Array<Comment>
@@ -1062,6 +1063,22 @@ export function isJSXElementLikeWithChildren(element: JSXElementChild): element 
 }
 
 export type JSXElementChildren = Array<JSXElementChild>
+
+export function propsOfJSXElementLike(element: JSXElementLike): JSXAttributes {
+  if (isJSXElement(element)) {
+    return element.props
+  } else {
+    return []
+  }
+}
+
+export function nameOfJSXElementLike(element: JSXElementLike): JSXElementName {
+  if (isJSXElement(element)) {
+    return element.name
+  } else {
+    return jsxElementName('React', ['fragment'])
+  }
+}
 
 export function clearJSXElementUniqueIDs<T extends JSXElementChild>(element: T): T {
   if (isJSXElement(element)) {

@@ -35,8 +35,9 @@ import {
   JSXElementChild,
   ElementInstanceMetadata,
   emptyComments,
+  propsOfJSXElementLike,
 } from '../shared/element-template'
-import { findJSXElementAtStaticPath } from '../model/element-template-utils'
+import { findJSXElementLikeAtStaticPath } from '../model/element-template-utils'
 import {
   setJSXValuesAtPaths,
   unsetJSXValuesAtPaths,
@@ -52,6 +53,7 @@ import { CSSPosition } from '../../components/inspector/common/css-utils'
 import type { Notice } from '../../components/common/notice'
 import { createStylePostActionToast } from './layout-notice'
 import { stylePropPathMappingFn } from '../../components/inspector/common/property-path-hooks'
+import { optionalMap } from '../shared/optional-utils'
 
 interface LayoutPropChangeResult {
   components: UtopiaJSXComponent[]
@@ -174,10 +176,14 @@ export function maybeSwitchLayoutProps(
     )
 
     const staticTarget = EP.dynamicPathToStaticPath(target)
-    const originalElement = findJSXElementAtStaticPath(components, staticTarget)
-    const originalPropertyPaths = getAllPathsFromAttributes(originalElement?.props ?? [])
-    const updatedelement = findJSXElementAtStaticPath(updatedComponents, staticTarget)
-    const updatedPropertyPaths = getAllPathsFromAttributes(updatedelement?.props ?? [])
+    const originalElement = findJSXElementLikeAtStaticPath(components, staticTarget)
+    const originalPropertyPaths = getAllPathsFromAttributes(
+      optionalMap(propsOfJSXElementLike, originalElement) ?? [],
+    )
+    const updatedElement = findJSXElementLikeAtStaticPath(updatedComponents, staticTarget)
+    const updatedPropertyPaths = getAllPathsFromAttributes(
+      optionalMap(propsOfJSXElementLike, updatedElement) ?? [],
+    )
 
     return {
       components: updatedComponents,
@@ -207,10 +213,14 @@ export function maybeSwitchLayoutProps(
       allElementProps,
     )
     const staticTarget = EP.dynamicPathToStaticPath(target)
-    const originalElement = findJSXElementAtStaticPath(components, staticTarget)
-    const originalPropertyPaths = getAllPathsFromAttributes(originalElement?.props ?? [])
-    const updatedelement = findJSXElementAtStaticPath(updatedComponents, staticTarget)
-    const updatedPropertyPaths = getAllPathsFromAttributes(updatedelement?.props ?? [])
+    const originalElement = findJSXElementLikeAtStaticPath(components, staticTarget)
+    const originalPropertyPaths = getAllPathsFromAttributes(
+      optionalMap(propsOfJSXElementLike, originalElement) ?? [],
+    )
+    const updatedelement = findJSXElementLikeAtStaticPath(updatedComponents, staticTarget)
+    const updatedPropertyPaths = getAllPathsFromAttributes(
+      optionalMap(propsOfJSXElementLike, updatedelement) ?? [],
+    )
 
     return {
       components: updatedComponents,

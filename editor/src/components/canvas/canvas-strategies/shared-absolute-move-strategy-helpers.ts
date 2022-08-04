@@ -5,7 +5,13 @@ import { MetadataUtils, PropsOrJSXAttributes } from '../../../core/model/element
 import { mapDropNulls } from '../../../core/shared/array-utils'
 import { isRight, right } from '../../../core/shared/either'
 import * as EP from '../../../core/shared/element-path'
-import type { ElementInstanceMetadataMap, JSXElement } from '../../../core/shared/element-template'
+import {
+  ElementInstanceMetadataMap,
+  isJSXFragment,
+  JSXElement,
+  JSXElementLike,
+  propsOfJSXElementLike,
+} from '../../../core/shared/element-template'
 import {
   boundingRectangleArray,
   CanvasPoint,
@@ -50,11 +56,14 @@ export function getAbsoluteMoveCommandsForSelectedElement(
   commands: Array<AdjustCssLengthProperty>
   intendedBounds: Array<CanvasFrameAndTarget>
 } {
-  const element: JSXElement | null = getElementFromProjectContents(
+  const element: JSXElementLike | null = getElementFromProjectContents(
     selectedElement,
     canvasState.projectContents,
     canvasState.openFile,
   )
+  if (element == null || isJSXFragment(element)) {
+    return { commands: [], intendedBounds: [] }
+  }
 
   const elementMetadata = MetadataUtils.findElementByElementPath(
     sessionState.startingMetadata, // TODO should this be using the current metadata?
@@ -73,10 +82,6 @@ export function getAbsoluteMoveCommandsForSelectedElement(
     selectedElement,
     sessionState.startingMetadata,
   )
-
-  if (element == null) {
-    return { commands: [], intendedBounds: [] }
-  }
 
   return createMoveCommandsForElement(
     element,
@@ -147,7 +152,7 @@ export function getAbsoluteOffsetCommandsForSelectedElement(
   strategyState: StrategyState,
   canvasState: InteractionCanvasState,
 ): Array<AdjustCssLengthProperty> {
-  const element: JSXElement | null = getElementFromProjectContents(
+  const element: JSXElementLike | null = getElementFromProjectContents(
     target,
     canvasState.projectContents,
     canvasState.openFile,
@@ -182,7 +187,7 @@ export function getAbsoluteOffsetCommandsForSelectedElement(
     newValue: number,
     parentDimension: number | undefined,
   ): AdjustCssLengthProperty | null => {
-    const value = getLayoutProperty(pin, right(element.props), ['style'])
+    const value = getLayoutProperty(pin, right(propsOfJSXElementLike(element)), ['style'])
     if (isRight(value) && value.value != null) {
       // TODO what to do about missing properties?
       return adjustCssLengthProperty(
