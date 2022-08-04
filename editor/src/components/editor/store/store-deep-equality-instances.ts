@@ -209,6 +209,7 @@ import {
   NumberKeepDeepEquality,
   NullableNumberKeepDeepEquality,
   unionDeepEquality,
+  combine9EqualityCalls,
 } from '../../../utils/deep-equality'
 import {
   ElementPathArrayKeepDeepEquality,
@@ -420,6 +421,10 @@ import {
 import { projectListing, ProjectListing } from '../action-types'
 import { UtopiaVSCodeConfig } from 'utopia-vscode-common'
 import { MouseButtonsPressed } from '../../../utils/mouse'
+import {
+  reparentTarget,
+  ReparentTarget,
+} from '../../canvas/canvas-strategies/reparent-strategy-helpers'
 
 export function TransientCanvasStateFilesStateKeepDeepEquality(
   oldValue: TransientFilesState,
@@ -1698,8 +1703,21 @@ export const CanvasControlTypeKeepDeepEquality: KeepDeepEqualityCall<CanvasContr
   return keepDeepEqualityResult(newValue, false)
 }
 
+export const ReparentTargetKeepDeepEquality: KeepDeepEqualityCall<ReparentTarget> =
+  combine4EqualityCalls(
+    (target) => target.shouldReparent,
+    BooleanKeepDeepEquality,
+    (target) => target.newParent,
+    nullableDeepEquality(ElementPathKeepDeepEquality),
+    (target) => target.shouldReorder,
+    BooleanKeepDeepEquality,
+    (target) => target.newIndex,
+    NumberKeepDeepEquality,
+    reparentTarget,
+  )
+
 export const InteractionSessionKeepDeepEquality: KeepDeepEqualityCall<InteractionSession> =
-  combine8EqualityCalls(
+  combine9EqualityCalls(
     (session) => session.interactionData,
     InputDataKeepDeepEquality,
     (session) => session.activeControl,
@@ -1716,6 +1734,8 @@ export const InteractionSessionKeepDeepEquality: KeepDeepEqualityCall<Interactio
     createCallWithTripleEquals(),
     (session) => session.allElementProps,
     createCallFromIntrospectiveKeepDeep(),
+    (session) => session.startingTargetParentToFilterOut,
+    nullableDeepEquality(ReparentTargetKeepDeepEquality),
     interactionSession,
   )
 

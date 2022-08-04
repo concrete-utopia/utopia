@@ -70,6 +70,7 @@ function createEditorStore(
       ...interactionSession,
       metadata: {},
       allElementProps: {},
+      startingTargetParentToFilterOut: null,
     }
   }
 

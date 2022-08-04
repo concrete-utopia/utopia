@@ -51,7 +51,12 @@ function multiselectResizeElements(
 
   const strategyResult = absoluteResizeBoundingBoxStrategy.apply(
     pickCanvasStateFromEditorState(initialEditor, createBuiltInDependenciesList(null)),
-    { ...interactionSessionWithoutMetadata, metadata: {}, allElementProps: {} },
+    {
+      ...interactionSessionWithoutMetadata,
+      metadata: {},
+      allElementProps: {},
+      startingTargetParentToFilterOut: null,
+    },
     {
       currentStrategy: null as any, // the strategy does not use this
       currentStrategyFitness: null as any, // the strategy does not use this

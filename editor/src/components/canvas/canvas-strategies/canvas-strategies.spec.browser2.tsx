@@ -116,6 +116,7 @@ async function getGuidelineRenderResult(scale: number) {
     ),
     metadata: renderResult.getEditorState().editor.jsxMetadata,
     allElementProps: renderResult.getEditorState().editor.allElementProps,
+    startingTargetParentToFilterOut: null,
   }
 
   await act(async () => {
@@ -160,6 +161,7 @@ describe('Strategy Fitness', () => {
       ),
       metadata: renderResult.getEditorState().editor.jsxMetadata,
       allElementProps: renderResult.getEditorState().editor.allElementProps,
+      startingTargetParentToFilterOut: null,
     }
 
     const canvasStrategy = findCanvasStrategy(
@@ -211,6 +213,7 @@ describe('Strategy Fitness', () => {
       ),
       metadata: renderResult.getEditorState().editor.jsxMetadata,
       allElementProps: renderResult.getEditorState().editor.allElementProps,
+      startingTargetParentToFilterOut: null,
     }
 
     const canvasStrategy = findCanvasStrategy(
@@ -266,6 +269,7 @@ describe('Strategy Fitness', () => {
       ),
       metadata: renderResult.getEditorState().editor.jsxMetadata,
       allElementProps: renderResult.getEditorState().editor.allElementProps,
+      startingTargetParentToFilterOut: null,
     }
 
     const canvasStrategy = findCanvasStrategy(
@@ -321,6 +325,7 @@ describe('Strategy Fitness', () => {
       ),
       metadata: renderResult.getEditorState().editor.jsxMetadata,
       allElementProps: renderResult.getEditorState().editor.allElementProps,
+      startingTargetParentToFilterOut: null,
     }
 
     const canvasStrategy = findCanvasStrategy(
@@ -372,6 +377,7 @@ describe('Strategy Fitness', () => {
       ),
       metadata: renderResult.getEditorState().editor.jsxMetadata,
       allElementProps: renderResult.getEditorState().editor.allElementProps,
+      startingTargetParentToFilterOut: null,
     }
 
     const canvasStrategy = findCanvasStrategy(
@@ -423,6 +429,7 @@ describe('Strategy Fitness', () => {
       ),
       metadata: renderResult.getEditorState().editor.jsxMetadata,
       allElementProps: renderResult.getEditorState().editor.allElementProps,
+      startingTargetParentToFilterOut: null,
     }
 
     const canvasStrategy = findCanvasStrategy(

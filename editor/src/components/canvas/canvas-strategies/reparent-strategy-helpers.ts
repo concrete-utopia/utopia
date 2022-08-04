@@ -115,18 +115,34 @@ export function findReparentStrategy(
   return { strategy: 'do-not-reparent' }
 }
 
+export interface ReparentTarget {
+  shouldReparent: boolean
+  newParent: ElementPath | null
+  shouldReorder: boolean
+  newIndex: number
+}
+
+export function reparentTarget(
+  shouldReparent: boolean,
+  newParent: ElementPath | null,
+  shouldReorder: boolean,
+  newIndex: number,
+): ReparentTarget {
+  return {
+    shouldReparent: shouldReparent,
+    newParent: newParent,
+    shouldReorder: shouldReorder,
+    newIndex: newIndex,
+  }
+}
+
 export function newGetReparentTarget(
   filteredSelectedElements: Array<ElementPath>,
   interactionData: InputData,
   canvasState: InteractionCanvasState,
   metadata: ElementInstanceMetadataMap,
   allElementProps: AllElementProps,
-): {
-  shouldReparent: boolean
-  newParent: ElementPath | null
-  shouldReorder: boolean
-  newIndex: number
-} {
+): ReparentTarget {
   if (interactionData.type !== 'DRAG' || interactionData.drag == null) {
     return {
       shouldReparent: false,

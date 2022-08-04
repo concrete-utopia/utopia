@@ -21,6 +21,7 @@ import {
   CustomStrategyState,
   defaultCustomStrategyState,
 } from './canvas-strategy-types'
+import type { ReparentTarget } from './reparent-strategy-helpers'
 
 export interface DragInteractionData {
   type: 'DRAG'
@@ -67,6 +68,8 @@ export interface InteractionSession {
   userPreferredStrategy: CanvasStrategyId | null
 
   startedAt: number
+
+  startingTargetParentToFilterOut: ReparentTarget | null
 }
 
 export function interactionSession(
@@ -78,6 +81,7 @@ export function interactionSession(
   userPreferredStrategy: CanvasStrategyId | null,
   startedAt: number,
   allElementProps: AllElementProps,
+  startingTargetParentToFilterOut: ReparentTarget | null,
 ): InteractionSession {
   return {
     interactionData: interactionData,
@@ -88,12 +92,13 @@ export function interactionSession(
     userPreferredStrategy: userPreferredStrategy,
     startedAt: startedAt,
     allElementProps: allElementProps,
+    startingTargetParentToFilterOut: startingTargetParentToFilterOut,
   }
 }
 
 export type InteractionSessionWithoutMetadata = Omit<
   InteractionSession,
-  'metadata' | 'allElementProps'
+  'metadata' | 'allElementProps' | 'startingTargetParentToFilterOut'
 >
 
 export interface CommandDescription {
