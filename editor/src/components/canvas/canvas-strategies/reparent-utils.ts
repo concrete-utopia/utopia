@@ -124,19 +124,6 @@ export function getReparentCommands(
   return result
 }
 
-export function removeReparentedToPaths(
-  customStrategyState: CustomStrategyState,
-): CustomStrategyState {
-  if (customStrategyState.reparentedToPaths.length > 0) {
-    return {
-      ...customStrategyState,
-      reparentedToPaths: [],
-    }
-  } else {
-    return customStrategyState
-  }
-}
-
 export function cursorForMissingReparentedItems(
   customStrategyState: CustomStrategyState,
   spyMetadata: ElementInstanceMetadataMap,
