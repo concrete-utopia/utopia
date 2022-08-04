@@ -38,6 +38,7 @@ import {
 } from './canvas-strategy-types'
 import { InteractionSession, StrategyState } from './interaction-state'
 import { ifAllowedToReparent } from './reparent-helpers'
+import { getReparentCommands } from './reparent-utils'
 import { getDragTargets } from './shared-absolute-move-strategy-helpers'
 
 type ReparentStrategy =
@@ -434,14 +435,24 @@ export function applyFlexReparent(
         const newParent = reparentResult.newParent
         // Reparent the element.
         const newPath = EP.appendToPath(reparentResult.newParent, EP.toUid(target))
-        const reparentCommand = reparentElement('permanent', target, reparentResult.newParent)
+        const reparentCommands = getReparentCommands(
+          canvasState.builtInDependencies,
+          canvasState.projectContents,
+          canvasState.nodeModules,
+          canvasState.openFile,
+          target,
+          newParent,
+        )
 
         // Strip the `position`, positional and dimension properties.
         const commandToRemoveProperties = stripAbsoluteProperties
           ? [deleteProperties('permanent', newPath, propertiesToRemove)]
           : []
 
-        const commandsBeforeReorder = [reparentCommand, updateSelectedViews('permanent', [newPath])]
+        const commandsBeforeReorder = [
+          ...reparentCommands,
+          updateSelectedViews('permanent', [newPath]),
+        ]
 
         const commandsAfterReorder = [
           ...commandToRemoveProperties,
