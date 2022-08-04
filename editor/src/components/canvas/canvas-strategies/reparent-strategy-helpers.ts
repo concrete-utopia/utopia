@@ -36,7 +36,12 @@ import {
   InteractionCanvasState,
   StrategyApplicationResult,
 } from './canvas-strategy-types'
-import { InputData, InteractionSession, StrategyState } from './interaction-state'
+import {
+  DragInteractionData,
+  InputData,
+  InteractionSession,
+  StrategyState,
+} from './interaction-state'
 import { ifAllowedToReparent } from './reparent-helpers'
 import { getReparentCommands } from './reparent-utils'
 import { getDragTargets } from './shared-absolute-move-strategy-helpers'
@@ -78,9 +83,15 @@ export function findReparentStrategy(
     ),
   )
 
+  const pointOnCanvas = offsetPoint(
+    interactionState.interactionData.originalDragStart,
+    interactionState.interactionData.drag,
+  )
+
   const reparentResult = newGetReparentTarget(
     filteredSelectedElements,
-    interactionState.interactionData,
+    pointOnCanvas,
+    interactionState.interactionData.modifiers.cmd,
     canvasState,
     strategyState.startingMetadata,
     strategyState.startingAllElementProps,
@@ -94,7 +105,11 @@ export function findReparentStrategy(
   const parentIsFlexLayout = MetadataUtils.isFlexLayoutedContainer(newParentMetadata)
   const parentIsStoryboard = newParentPath == null ? false : EP.isStoryboardPath(newParentPath)
 
-  if (reparentResult.shouldReparent && newParentPath != null) {
+  if (
+    reparentResult.shouldReparent &&
+    newParentPath != null &&
+    newParentPath !== interactionState.startingTargetParentToFilterOut?.newParent
+  ) {
     if (allDraggedElementsAbsolute) {
       if (parentIsFlexLayout) {
         return { strategy: 'ABSOLUTE_REPARENT_TO_FLEX', newParent: newParentPath }
@@ -138,24 +153,14 @@ export function reparentTarget(
 
 export function newGetReparentTarget(
   filteredSelectedElements: Array<ElementPath>,
-  interactionData: InputData,
+  pointOnCanvas: CanvasPoint,
+  cmdPressed: boolean,
   canvasState: InteractionCanvasState,
   metadata: ElementInstanceMetadataMap,
   allElementProps: AllElementProps,
 ): ReparentTarget {
-  if (interactionData.type !== 'DRAG' || interactionData.drag == null) {
-    return {
-      shouldReparent: false,
-      newParent: null,
-      shouldReorder: false,
-      newIndex: -1,
-    }
-  }
-
-  const pointOnCanvas = offsetPoint(interactionData.originalDragStart, interactionData.drag)
-
   const flexReparentResult = newGetReparentTargetInner(
-    interactionData.modifiers.cmd,
+    cmdPressed,
     metadata,
     allElementProps,
     canvasState.projectContents,
@@ -431,9 +436,14 @@ export function applyFlexReparent(
       interactionSession.interactionData.type == 'DRAG' &&
       interactionSession.interactionData.drag != null
     ) {
+      const pointOnCanvas = offsetPoint(
+        interactionSession.interactionData.originalDragStart,
+        interactionSession.interactionData.drag,
+      )
       const reparentResult = newGetReparentTarget(
         filteredSelectedElements,
-        interactionSession.interactionData,
+        pointOnCanvas,
+        interactionSession.interactionData.modifiers.cmd,
         canvasState,
         strategyState.startingMetadata,
         strategyState.startingAllElementProps,
@@ -495,11 +505,6 @@ export function applyFlexReparent(
 
         if (reparentResult.shouldReorder && newIndex < siblingsOfTarget.length) {
           // Reorder the newly reparented element into the flex ordering.
-          const pointOnCanvas = offsetPoint(
-            interactionSession.interactionData.dragStart,
-            interactionSession.interactionData.drag,
-          )
-
           const siblingPosition: CanvasRectangle =
             [
               // parentRect, // we add the parent as the first element

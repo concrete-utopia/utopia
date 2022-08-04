@@ -72,9 +72,15 @@ export const absoluteReparentStrategy: CanvasStrategy = {
     const { selectedElements, projectContents, openFile, nodeModules } = canvasState
     const filteredSelectedElements = getDragTargets(selectedElements)
 
+    const pointOnCanvas = offsetPoint(
+      interactionState.interactionData.originalDragStart,
+      interactionState.interactionData.drag,
+    )
+
     const reparentResult = newGetReparentTarget(
       filteredSelectedElements,
-      interactionState.interactionData,
+      pointOnCanvas,
+      interactionState.interactionData.modifiers.cmd,
       canvasState,
       strategyState.startingMetadata,
       strategyState.startingAllElementProps,

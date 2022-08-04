@@ -75,6 +75,7 @@ import {
   CanvasRectangle,
   CanvasVector,
   CoordinateMarker,
+  offsetPoint,
   Point,
   RawPoint,
   WindowPoint,
@@ -402,6 +403,27 @@ export function runLocalCanvasAction(
       const metadata = model.canvas.interactionSession?.metadata ?? model.jsxMetadata
       const allElementProps =
         model.canvas.interactionSession?.allElementProps ?? model.allElementProps
+
+      const startingTargetParentToFilterOut =
+        model.canvas.interactionSession?.startingTargetParentToFilterOut ??
+        (() => {
+          if (action.interactionSession.interactionData.type !== 'DRAG') {
+            return null
+          }
+          const pointOnCanvas = offsetPoint(
+            action.interactionSession.interactionData.originalDragStart,
+            action.interactionSession.interactionData.drag ?? zeroCanvasPoint,
+          )
+          return newGetReparentTarget(
+            getDragTargets(model.selectedViews),
+            pointOnCanvas,
+            action.interactionSession.interactionData.modifiers.cmd,
+            pickCanvasStateFromEditorState(model, builtinDependencies),
+            metadata,
+            allElementProps,
+          )
+        })()
+
       return {
         ...model,
         canvas: {
@@ -410,15 +432,7 @@ export function runLocalCanvasAction(
             ...action.interactionSession,
             metadata: metadata,
             allElementProps: allElementProps,
-            startingTargetParentToFilterOut:
-              model.canvas.interactionSession?.startingTargetParentToFilterOut ??
-              newGetReparentTarget(
-                getDragTargets(model.selectedViews),
-                action.interactionSession.interactionData,
-                pickCanvasStateFromEditorState(model, builtinDependencies),
-                metadata,
-                allElementProps,
-              ),
+            startingTargetParentToFilterOut: startingTargetParentToFilterOut,
           },
         },
       }
