@@ -151,7 +151,7 @@ export function getSelectableViews(
   lockedElementsAndDescendants: Array<ElementPath>,
 ): ElementPath[] {
   let candidateViews: Array<ElementPath>
-
+  let allRoots: Array<ElementPath> = []
   if (allElementsDirectlySelectable) {
     candidateViews = MetadataUtils.getAllPathsIncludingUnfurledFocusedComponents(componentMetadata)
   } else {
@@ -170,7 +170,7 @@ export function getSelectableViews(
         dynamicScenesWithFragmentRootViews.push(path)
       }
     })
-    const allRoots = MetadataUtils.getAllCanvasRootPaths(componentMetadata).filter((rootPath) => {
+    allRoots = MetadataUtils.getAllCanvasRootPaths(componentMetadata).filter((rootPath) => {
       return !rootElementsToFilter.some((path) => EP.pathsEqual(rootPath, path))
     })
 
@@ -179,7 +179,7 @@ export function getSelectableViews(
       lockedElements.some((lockedPath) => EP.pathsEqual(path, lockedPath)),
     )
     const lockedElementsWithScenes = [...lockedElements, ...allRoots]
-    const pathsToIterate = [...selectedViews, ...lockedRoots]
+    const pathsToIterate = [...selectedViews, ...allRoots]
 
     let siblings: Array<ElementPath> = []
     Utils.fastForEach(pathsToIterate, (view) => {
@@ -212,7 +212,7 @@ export function getSelectableViews(
       addChildrenAndUnfurledFocusedComponents(allPaths)
     })
 
-    const selectableViews = [...dynamicScenesWithFragmentRootViews, ...allRoots, ...siblings]
+    const selectableViews = [...dynamicScenesWithFragmentRootViews, ...siblings]
     const uniqueSelectableViews = uniqBy<ElementPath>(selectableViews, EP.pathsEqual)
 
     candidateViews = uniqueSelectableViews
@@ -222,8 +222,11 @@ export function getSelectableViews(
     ...hiddenInstances,
     ...lockedElements,
     ...lockedElementsAndDescendants,
+    ...allRoots,
   ]
-  return filterHiddenInstances(nonSelectableElements, candidateViews)
+  return filterHiddenInstances(nonSelectableElements, candidateViews).filter(
+    (filteredPath) => !EP.isStoryboardPath(filteredPath),
+  )
 }
 
 function useFindValidTarget(): (
