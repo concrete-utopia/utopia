@@ -128,6 +128,7 @@ export const absoluteReparentToFlexStrategy: CanvasStrategy = {
           // Reparent the element.
           const newPath = EP.appendToPath(reparentResult.newParent, EP.toUid(target))
           const reparentCommands = getReparentCommands(
+            canvasState.builtInDependencies,
             canvasState.projectContents,
             canvasState.nodeModules,
             canvasState.openFile,
