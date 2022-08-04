@@ -410,11 +410,6 @@ const NavigatorRowLabel = React.memo((props: NavigatorRowLabelProps) => {
         inputVisible={EP.pathsEqual(props.renamingTarget, props.elementPath)}
         elementOriginType={props.elementOriginType}
       />
-      <ComponentPreview
-        key={`preview-${props.label}`}
-        path={props.elementPath}
-        color={props.iconColor}
-      />
     </React.Fragment>
   )
 })

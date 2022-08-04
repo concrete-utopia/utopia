@@ -75,6 +75,14 @@ interface VisiblityIndicatorProps {
   onClick: () => void
 }
 
+const IndicatorButtonStyle = {
+  marginRight: 2,
+  marginLeft: 0,
+  height: 14,
+  width: 14,
+  transform: 'scale(.85)',
+}
+
 export const VisibilityIndicator: React.FunctionComponent<
   React.PropsWithChildren<VisiblityIndicatorProps>
 > = React.memo((props) => {
@@ -84,9 +92,7 @@ export const VisibilityIndicator: React.FunctionComponent<
     <Button
       onClick={props.onClick}
       style={{
-        marginRight: 4,
-        height: 18,
-        width: 18,
+        ...IndicatorButtonStyle,
         opacity: props.shouldShow ? 1 : 0,
       }}
     >
@@ -115,9 +121,7 @@ export const FocusIndicator: React.FunctionComponent<React.PropsWithChildren<Foc
       <Button
         onClick={props.onClick}
         style={{
-          marginRight: 4,
-          height: 18,
-          width: 18,
+          ...IndicatorButtonStyle,
           opacity: shouldShow ? 1 : 0,
         }}
       >
@@ -175,9 +179,7 @@ export const SelectionLockedIndicator: React.FunctionComponent<
       onClick={handleClick}
       onMouseDown={stopPropagation}
       style={{
-        marginRight: 4,
-        height: 18,
-        width: 18,
+        ...IndicatorButtonStyle,
         opacity: props.shouldShow ? 1 : 0,
       }}
     >
@@ -302,6 +304,13 @@ export const NavigatorItemActionSheet: React.FunctionComponent<
         selected={props.selected}
         instanceOriginalComponentName={props.instanceOriginalComponentName}
       />
+      <VisibilityIndicator
+        key={`visibility-indicator-${EP.toVarSafeComponentId(elementPath)}`}
+        shouldShow={props.highlighted || props.selected || !props.isVisibleOnCanvas}
+        visibilityEnabled={props.isVisibleOnCanvas}
+        selected={props.selected}
+        onClick={toggleHidden}
+      />
       <SelectionLockedIndicator
         key={`selection-locked-indicator-${EP.toVarSafeComponentId(elementPath)}`}
         shouldShow={
@@ -322,13 +331,6 @@ export const NavigatorItemActionSheet: React.FunctionComponent<
         isDescendantOfLocked={isDescendantOfLocked}
         selected={props.selected}
         onClick={toggleSelectable}
-      />
-      <VisibilityIndicator
-        key={`visibility-indicator-${EP.toVarSafeComponentId(elementPath)}`}
-        shouldShow={props.highlighted || props.selected || !props.isVisibleOnCanvas}
-        visibilityEnabled={props.isVisibleOnCanvas}
-        selected={props.selected}
-        onClick={toggleHidden}
       />
       <FocusIndicator
         key={`focus-indicator-${EP.toVarSafeComponentId(elementPath)}`}
