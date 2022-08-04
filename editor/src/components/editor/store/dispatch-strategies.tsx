@@ -31,6 +31,7 @@ import { isFeatureEnabled } from '../../../utils/feature-switches'
 import { PERFORMANCE_MARKS_ALLOWED } from '../../../common/env-vars'
 import { saveDOMReport } from '../actions/action-creators'
 import { last } from '../../../core/shared/array-utils'
+import { BuiltInDependencies } from '../../../core/es-modules/package-manager/built-in-dependencies-list'
 
 interface HandleStrategiesResult {
   unpatchedEditorState: EditorState
@@ -48,7 +49,10 @@ export function interactionFinished(
     newEditorState.canvas.interactionSession?.metadata ?? newEditorState.jsxMetadata,
     newEditorState.canvas.interactionSession?.allElementProps ?? newEditorState.allElementProps,
   )
-  const canvasState: InteractionCanvasState = pickCanvasStateFromEditorState(newEditorState)
+  const canvasState: InteractionCanvasState = pickCanvasStateFromEditorState(
+    newEditorState,
+    result.builtInDependencies,
+  )
   const interactionSession = storedState.unpatchedEditor.canvas.interactionSession
   if (interactionSession == null) {
     return {
@@ -109,7 +113,10 @@ export function interactionHardReset(
     ...storedState.strategyState,
     startingMetadata: storedState.unpatchedEditor.jsxMetadata,
   }
-  const canvasState: InteractionCanvasState = pickCanvasStateFromEditorState(newEditorState)
+  const canvasState: InteractionCanvasState = pickCanvasStateFromEditorState(
+    newEditorState,
+    result.builtInDependencies,
+  )
   const interactionSession = newEditorState.canvas.interactionSession
   if (interactionSession == null) {
     return {
@@ -182,7 +189,10 @@ export function interactionUpdate(
   actionType: 'interaction-create-or-update' | 'non-interaction',
 ): HandleStrategiesResult {
   const newEditorState = result.unpatchedEditor
-  const canvasState: InteractionCanvasState = pickCanvasStateFromEditorState(newEditorState)
+  const canvasState: InteractionCanvasState = pickCanvasStateFromEditorState(
+    newEditorState,
+    result.builtInDependencies,
+  )
   const interactionSession = newEditorState.canvas.interactionSession
   if (interactionSession == null) {
     return {
@@ -206,6 +216,7 @@ export function interactionUpdate(
         storedState.unpatchedEditor.canvas.interactionSession?.userPreferredStrategy
       if (userChangedStrategy) {
         return handleUserChangedStrategy(
+          result.builtInDependencies,
           newEditorState,
           storedState.patchedEditor,
           result.strategyState,
@@ -222,6 +233,7 @@ export function interactionUpdate(
       strategy?.strategy !== previousStrategy?.strategy
     ) {
       return handleAccumulatingKeypresses(
+        result.builtInDependencies,
         newEditorState,
         storedState.patchedEditor,
         result.strategyState,
@@ -231,6 +243,7 @@ export function interactionUpdate(
       )
     }
     return handleUpdate(
+      result.builtInDependencies,
       newEditorState,
       storedState.patchedEditor,
       result.strategyState,
@@ -251,7 +264,10 @@ export function interactionStart(
     newEditorState.canvas.interactionSession?.metadata ?? newEditorState.jsxMetadata,
     newEditorState.canvas.interactionSession?.allElementProps ?? newEditorState.allElementProps,
   )
-  const canvasState: InteractionCanvasState = pickCanvasStateFromEditorState(newEditorState)
+  const canvasState: InteractionCanvasState = pickCanvasStateFromEditorState(
+    newEditorState,
+    result.builtInDependencies,
+  )
   const interactionSession = newEditorState.canvas.interactionSession
   if (interactionSession == null) {
     return {
@@ -333,6 +349,7 @@ export function interactionCancel(
 }
 
 function handleUserChangedStrategy(
+  builtInDependencies: BuiltInDependencies,
   newEditorState: EditorState,
   storedEditorState: EditorState,
   strategyState: StrategyState,
@@ -340,7 +357,10 @@ function handleUserChangedStrategy(
   previousStrategy: StrategyWithFitness | null,
   sortedApplicableStrategies: Array<CanvasStrategy>,
 ): HandleStrategiesResult {
-  const canvasState: InteractionCanvasState = pickCanvasStateFromEditorState(newEditorState)
+  const canvasState: InteractionCanvasState = pickCanvasStateFromEditorState(
+    newEditorState,
+    builtInDependencies,
+  )
 
   // If there is a current strategy, produce the commands from it.
   if (strategy != null && newEditorState.canvas.interactionSession != null) {
@@ -400,6 +420,7 @@ function handleUserChangedStrategy(
 }
 
 function handleAccumulatingKeypresses(
+  builtInDependencies: BuiltInDependencies,
   newEditorState: EditorState,
   storedEditorState: EditorState,
   strategyState: StrategyState,
@@ -407,7 +428,10 @@ function handleAccumulatingKeypresses(
   previousStrategy: StrategyWithFitness | null,
   sortedApplicableStrategies: Array<CanvasStrategy>,
 ): HandleStrategiesResult {
-  const canvasState: InteractionCanvasState = pickCanvasStateFromEditorState(newEditorState)
+  const canvasState: InteractionCanvasState = pickCanvasStateFromEditorState(
+    newEditorState,
+    builtInDependencies,
+  )
   // If there is a current strategy, produce the commands from it.
   if (newEditorState.canvas.interactionSession != null) {
     const interactionData = newEditorState.canvas.interactionSession.interactionData
@@ -475,6 +499,7 @@ function handleAccumulatingKeypresses(
 }
 
 function handleUpdate(
+  builtInDependencies: BuiltInDependencies,
   newEditorState: EditorState,
   storedEditorState: EditorState,
   strategyState: StrategyState,
@@ -482,7 +507,10 @@ function handleUpdate(
   previousStrategy: StrategyWithFitness | null,
   sortedApplicableStrategies: Array<CanvasStrategy>,
 ): HandleStrategiesResult {
-  const canvasState: InteractionCanvasState = pickCanvasStateFromEditorState(newEditorState)
+  const canvasState: InteractionCanvasState = pickCanvasStateFromEditorState(
+    newEditorState,
+    builtInDependencies,
+  )
   // If there is a current strategy, produce the commands from it.
   if (newEditorState.canvas.interactionSession != null) {
     const strategyResult =

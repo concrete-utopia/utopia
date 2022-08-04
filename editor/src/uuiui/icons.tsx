@@ -178,11 +178,12 @@ export const Icons = {
   LinkClosed: makeIcon({ type: 'link-closed', color: 'main' }),
   LinkStrikethrough: makeIcon({ type: 'link-strikethrough', color: 'main' }),
   LockClosed: makeIcon({ type: 'lockclosed', color: 'main' }),
+  LockClosedDot: makeIcon({ type: 'lockcloseddot', color: 'main' }),
   LockOpen: makeIcon({ type: 'lockopen', color: 'main' }),
+  Dot: makeIcon({ type: 'dot', color: 'main' }),
   Minus: makeIcon({ type: 'minus', color: 'main' }),
   Plus: makeIcon({ type: 'plus', color: 'main' }),
   Play: makeIcon({ type: 'play', color: 'main' }),
-
   React: makeIcon({ type: 'react', color: 'primary' }),
   Refresh: makeIcon({ type: 'refresh', color: 'main' }),
   SmallCross: makeIcon({ type: 'cross-small', color: 'main' }),

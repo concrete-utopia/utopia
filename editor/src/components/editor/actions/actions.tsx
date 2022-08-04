@@ -2,7 +2,6 @@ import { produce } from 'immer'
 import update from 'immutability-helper'
 import React from 'react'
 import localforage from 'localforage'
-import { CursorPosition } from 'src/components/code-editor/code-editor-utils'
 import { FramePoint, LayoutSystem } from 'utopia-api/core'
 import {
   SampleFileBuildResult,
@@ -374,6 +373,7 @@ import {
   RunEscapeHatch,
   SetElementsToRerender,
   UpdateMouseButtonsPressed,
+  ToggleSelectionLock,
 } from '../action-types'
 import { defaultTransparentViewElement, defaultSceneElement } from '../defaults'
 import {
@@ -940,6 +940,8 @@ function restoreEditorState(currentEditor: EditorModel, history: StateHistory): 
     highlightedViews: currentEditor.highlightedViews,
     hiddenInstances: poppedEditor.hiddenInstances,
     warnedInstances: poppedEditor.warnedInstances,
+    lockedElementsAndDescendants: poppedEditor.lockedElementsAndDescendants,
+    lockedElements: poppedEditor.lockedElements,
     mode: EditorModes.selectMode(),
     focusedPanel: currentEditor.focusedPanel,
     keysPressed: {},
@@ -4942,8 +4944,12 @@ export const UPDATE_FNS = {
       forceParseFiles: editor.forceParseFiles.concat(action.filePath),
     }
   },
-  RUN_ESCAPE_HATCH: (action: RunEscapeHatch, editor: EditorModel): EditorModel => {
-    const canvasState = pickCanvasStateFromEditorState(editor)
+  RUN_ESCAPE_HATCH: (
+    action: RunEscapeHatch,
+    editor: EditorModel,
+    builtInDependencies: BuiltInDependencies,
+  ): EditorModel => {
+    const canvasState = pickCanvasStateFromEditorState(editor, builtInDependencies)
     if (areAllSelectedElementsNonAbsolute(action.targets, editor.jsxMetadata)) {
       const commands = getEscapeHatchCommands(
         action.targets,
@@ -4958,6 +4964,43 @@ export const UPDATE_FNS = {
   },
   SET_ELEMENTS_TO_RERENDER: (action: SetElementsToRerender, editor: EditorModel): EditorModel => {
     return foldAndApplyCommandsSimple(editor, [setElementsToRerenderCommand(action.value)])
+  },
+  TOGGLE_SELECTION_LOCK: (action: ToggleSelectionLock, editor: EditorModel): EditorModel => {
+    const targets = action.targets
+    return targets.reduce((working, target) => {
+      switch (action.newValue) {
+        case 'locked':
+          return update(working, {
+            lockedElements: { $set: working.lockedElements.concat(target) },
+            lockedElementsAndDescendants: {
+              $set: working.lockedElementsAndDescendants.filter(
+                (element) => !EP.pathsEqual(element, target),
+              ),
+            },
+          })
+        case 'locked-and-descendants-locked-too':
+          return update(working, {
+            lockedElements: {
+              $set: working.lockedElements.filter((element) => !EP.pathsEqual(element, target)),
+            },
+            lockedElementsAndDescendants: {
+              $set: working.lockedElementsAndDescendants.concat(target),
+            },
+          })
+        case 'selectable':
+        default:
+          return update(working, {
+            lockedElements: {
+              $set: working.lockedElements.filter((element) => !EP.pathsEqual(element, target)),
+            },
+            lockedElementsAndDescendants: {
+              $set: working.lockedElementsAndDescendants.filter(
+                (element) => !EP.pathsEqual(element, target),
+              ),
+            },
+          })
+      }
+    }, editor)
   },
 }
 

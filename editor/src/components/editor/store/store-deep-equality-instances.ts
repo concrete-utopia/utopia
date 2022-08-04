@@ -419,7 +419,7 @@ import {
 } from '../../inspector/common/css-utils'
 import { projectListing, ProjectListing } from '../action-types'
 import { UtopiaVSCodeConfig } from 'utopia-vscode-common'
-import { MouseButtonsPressed } from 'src/utils/mouse'
+import { MouseButtonsPressed } from '../../../utils/mouse'
 
 export function TransientCanvasStateFilesStateKeepDeepEquality(
   oldValue: TransientFilesState,
@@ -2974,6 +2974,14 @@ export const EditorStateKeepDeepEquality: KeepDeepEqualityCall<EditorState> = (
     oldValue.warnedInstances,
     newValue.warnedInstances,
   )
+  const lockedElementsResult = ElementPathArrayKeepDeepEquality(
+    oldValue.lockedElements,
+    newValue.lockedElements,
+  )
+  const lockedElementsAndDescendantsResult = ElementPathArrayKeepDeepEquality(
+    oldValue.lockedElementsAndDescendants,
+    newValue.lockedElementsAndDescendants,
+  )
   const modeResult = ModeKeepDeepEquality(oldValue.mode, newValue.mode)
   const focusedPanelResult = createCallWithTripleEquals<EditorPanel | null>()(
     oldValue.focusedPanel,
@@ -3131,6 +3139,8 @@ export const EditorStateKeepDeepEquality: KeepDeepEqualityCall<EditorState> = (
     highlightedViewsResult.areEqual &&
     hiddenInstancesResult.areEqual &&
     warnedInstancesResult.areEqual &&
+    lockedElementsResult.areEqual &&
+    lockedElementsAndDescendantsResult.areEqual &&
     modeResult.areEqual &&
     focusedPanelResult.areEqual &&
     keysPressedResult.areEqual &&
@@ -3198,6 +3208,8 @@ export const EditorStateKeepDeepEquality: KeepDeepEqualityCall<EditorState> = (
       highlightedViewsResult.value,
       hiddenInstancesResult.value,
       warnedInstancesResult.value,
+      lockedElementsAndDescendantsResult.value,
+      lockedElementsResult.value,
       modeResult.value,
       focusedPanelResult.value,
       keysPressedResult.value,

@@ -30,7 +30,7 @@ import {
   InteractionSessionWithoutMetadata,
 } from './canvas-strategies/interaction-state'
 import { CanvasStrategyId } from './canvas-strategies/canvas-strategy-types'
-import { MouseButtonsPressed } from 'src/utils/mouse'
+import { MouseButtonsPressed } from '../../utils/mouse'
 
 export const CanvasContainerID = 'canvas-container'
 

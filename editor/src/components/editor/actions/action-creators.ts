@@ -209,6 +209,7 @@ import type {
   RemoveFromNodeModulesContents,
   RunEscapeHatch,
   UpdateMouseButtonsPressed,
+  ToggleSelectionLock,
 } from '../action-types'
 import {
   EditorModes,
@@ -279,6 +280,16 @@ export function toggleHidden(targets: Array<ElementPath> = []): ToggleHidden {
   return {
     action: 'TOGGLE_HIDDEN',
     targets: targets,
+  }
+}
+export function toggleSelectionLock(
+  targets: Array<ElementPath>,
+  newValue: 'locked' | 'locked-and-descendants-locked-too' | 'selectable',
+): ToggleSelectionLock {
+  return {
+    action: 'TOGGLE_SELECTION_LOCK',
+    targets: targets,
+    newValue: newValue,
   }
 }
 
