@@ -1835,6 +1835,28 @@ export const UPDATE_FNS = {
     } else {
       newlySelectedPaths = action.target
     }
+
+    let updateDataFocusedFor: ElementPath[] = []
+    fastForEach(newlySelectedPaths, (path, index) => {
+      if (!EP.isInsideFocusedComponent(path)) {
+        Object.values(editor.jsxMetadata).map((element) => {
+          const focusedComponentValue = MetadataUtils.getExplicitFocusPropValue(
+            element.elementPath,
+            editor.jsxMetadata,
+          )
+          if (
+            focusedComponentValue === 'focused' &&
+            !newlySelectedPaths.every((selected) =>
+              EP.isDescendantOf(selected, element.elementPath),
+            )
+          ) {
+            updateDataFocusedFor.push(element.elementPath)
+          }
+        })
+      }
+    })
+    updateDataFocusedFor = uniqBy(updateDataFocusedFor, EP.pathsEqual)
+
     const newHighlightedViews = editor.highlightedViews.filter(
       (path) => !EP.containsPath(path, newlySelectedPaths),
     )
@@ -1851,7 +1873,18 @@ export const UPDATE_FNS = {
       pasteTargetsToIgnore: [],
     }
     if (filteredNewlySelectedPaths === newlySelectedPaths) {
-      return updatedEditor
+      return updateDataFocusedFor.reduce((working, path) => {
+        return UPDATE_FNS.SET_PROP(
+          {
+            action: 'SET_PROP',
+            target: path,
+            propertyPath: PP.create(['data-focused']),
+            value: jsxAttributeValue(false, emptyComments),
+          },
+          working,
+        )
+      }, updatedEditor)
+      // return updatedEditor
     } else {
       const showToastAction = showToast(notice(`Only one scene can be selected`, 'WARNING'))
       return UPDATE_FNS.ADD_TOAST(showToastAction, updatedEditor, dispatch)
@@ -4453,8 +4486,21 @@ export const UPDATE_FNS = {
     //     },
     //   }
     // } else {
-    return editor
+    // return editor
     // }
+    if (action.focusedElementPath) {
+      return UPDATE_FNS.SET_PROP(
+        {
+          action: 'SET_PROP',
+          target: action.focusedElementPath,
+          propertyPath: PP.create(['data-focused']),
+          value: jsxAttributeValue('focused', emptyComments),
+        },
+        editor,
+      )
+    } else {
+      return editor
+    }
   },
   SCROLL_TO_ELEMENT: (
     action: ScrollToElement,

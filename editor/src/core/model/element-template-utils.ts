@@ -58,7 +58,9 @@ import {
 import { getStoryboardElementPath } from './scene-utils'
 import { TransientFilesState } from '../../components/editor/store/editor-state'
 
-export function getFocusedPropValue(element: JSXElementChild): boolean | undefined {
+export function getFocusedPropValue(
+  element: JSXElementChild,
+): 'pinned' | 'focused' | false | undefined {
   if (isJSXElement(element)) {
     const focusedProp = getJSXAttribute(element.props, 'data-focused')
     if (focusedProp != null && isJSXAttributeValue(focusedProp)) {

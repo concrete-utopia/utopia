@@ -98,7 +98,7 @@ export const VisibilityIndicator: React.FunctionComponent<
 
 interface FocusIndicatorProps {
   canBeFocused: boolean
-  explicitlyFocused: boolean | undefined
+  explicitlyFocused: 'pinned' | 'focused' | false | undefined
   selected: boolean
   onClick: () => void
 }
@@ -118,12 +118,18 @@ export const FocusIndicator: React.FunctionComponent<React.PropsWithChildren<Foc
           opacity: shouldShow ? 1 : 0,
         }}
       >
-        {props.explicitlyFocused ? (
+        {props.explicitlyFocused === 'pinned' ? (
           <Icons.EditPencil color={color} />
-        ) : props.explicitlyFocused == undefined ? (
-          <Icons.Smiangle color={color} style={{ transform: 'scale(.85)' }} />
+        ) : props.explicitlyFocused == 'focused' ? (
+          <Icons.Component
+            color={props.selected ? 'on-highlight-main' : 'primary'}
+            style={{ transform: 'scale(.85)' }}
+          />
         ) : (
-          <Icons.Cross color={color} />
+          <Icons.Component
+            color={props.selected ? 'on-highlight-main' : 'main'}
+            style={{ transform: 'scale(.85)' }}
+          />
         )}
       </Button>
     )
@@ -159,7 +165,7 @@ interface NavigatorItemActionSheetProps {
   highlighted: boolean
   elementPath: ElementPath
   isVisibleOnCanvas: boolean // TODO FIXME bad name, also, use state
-  explicitlyFocused: boolean | undefined
+  explicitlyFocused: 'pinned' | 'focused' | false | undefined
   instanceOriginalComponentName: string | null
   dispatch: EditorDispatch
 }
@@ -175,7 +181,11 @@ export const NavigatorItemActionSheet: React.FunctionComponent<
 
   const toggleFocused = React.useCallback(() => {
     const nextValue =
-      props.explicitlyFocused == undefined ? true : props.explicitlyFocused ? false : undefined
+      props.explicitlyFocused === 'focused'
+        ? 'pinned'
+        : props.explicitlyFocused === 'pinned'
+        ? false
+        : 'focused'
     dispatch(
       [
         EditorActions.setProp_UNSAFE(

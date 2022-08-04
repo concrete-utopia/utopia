@@ -2884,8 +2884,8 @@ export function getValidElementPathsFromElement(
         : EP.pathUpToElementPath(focusedElementPath, lastElementPathPart, 'static-path')
 
     const focusedPropValue = getFocusedPropValue(element)
-    const isExplicitlyFocused = focusedPropValue
-    const isImplicitlyFocused = parentIsScene && focusedPropValue === undefined
+    const isExplicitlyFocused = focusedPropValue === 'pinned'
+    const isImplicitlyFocused = parentIsScene || focusedPropValue === 'focused'
 
     const isFocused = isExplicitlyFocused || isImplicitlyFocused || matchingFocusedPathPart != null
     if (isFocused) {

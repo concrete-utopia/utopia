@@ -1345,7 +1345,7 @@ export const MetadataUtils = {
   getExplicitFocusPropValue(
     path: ElementPath,
     metadata: ElementInstanceMetadataMap,
-  ): boolean | undefined {
+  ): 'pinned' | 'focused' | false | undefined {
     const elementMetadata = MetadataUtils.findElementByElementPath(metadata, path)
     if (elementMetadata == null) {
       return undefined
