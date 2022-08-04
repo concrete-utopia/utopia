@@ -9,6 +9,7 @@ import { ElementPath, Imports, NodeModules } from '../../../core/shared/project-
 import { CanvasCommand } from '../commands/commands'
 import { reparentElement } from '../commands/reparent-element-command'
 import {
+  ElementInstanceMetadataMap,
   isIntrinsicElement,
   isJSXElement,
   walkElement,
@@ -18,6 +19,8 @@ import { getImportsFor, importedFromWhere } from '../../../components/editor/imp
 import { forceNotNull } from '../../../core/shared/optional-utils'
 import { addImportsToFile } from '../commands/add-imports-to-file-command'
 import { BuiltInDependencies } from '../../../core/es-modules/package-manager/built-in-dependencies-list'
+import { CustomStrategyState } from './canvas-strategy-types'
+import { CSSCursor } from '../canvas-types'
 
 export function getReparentCommands(
   builtInDependencies: BuiltInDependencies,
@@ -119,4 +122,30 @@ export function getReparentCommands(
   result.push(reparentElement('permanent', selectedElement, newParent))
   result.push(...commandsToAddImports)
   return result
+}
+
+export function removeReparentedToPaths(
+  customStrategyState: CustomStrategyState,
+): CustomStrategyState {
+  if (customStrategyState.reparentedToPaths.length > 0) {
+    return {
+      ...customStrategyState,
+      reparentedToPaths: [],
+    }
+  } else {
+    return customStrategyState
+  }
+}
+
+export function cursorForMissingReparentedItems(
+  customStrategyState: CustomStrategyState,
+  spyMetadata: ElementInstanceMetadataMap,
+): CSSCursor | null {
+  for (const reparentedToPath of customStrategyState.reparentedToPaths) {
+    if (!(EP.toString(reparentedToPath) in spyMetadata)) {
+      return CSSCursor.ReparentNotPermitted
+    }
+  }
+
+  return null
 }

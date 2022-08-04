@@ -16,7 +16,11 @@ import { ParentBounds } from '../controls/parent-bounds'
 import { ParentOutlines } from '../controls/parent-outlines'
 import { absoluteMoveStrategy } from './absolute-move-strategy'
 import { pickCanvasStateFromEditorState } from './canvas-strategies'
-import { CanvasStrategy, emptyStrategyApplicationResult } from './canvas-strategy-types'
+import {
+  CanvasStrategy,
+  defaultCustomStrategyState,
+  emptyStrategyApplicationResult,
+} from './canvas-strategy-types'
 import { InteractionSession, interactionSession, StrategyState } from './interaction-state'
 import { getDragTargets } from './shared-absolute-move-strategy-helpers'
 
@@ -135,7 +139,7 @@ export const absoluteDuplicateStrategy: CanvasStrategy = {
       // Fallback for when the checks above are not satisfied.
       return {
         commands: [setCursorCommand('transient', CSSCursor.Duplicate)],
-        customState: null,
+        customState: defaultCustomStrategyState,
       }
     }
   },

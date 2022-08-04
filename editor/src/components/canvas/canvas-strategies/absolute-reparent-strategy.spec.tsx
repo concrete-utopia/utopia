@@ -23,6 +23,7 @@ import { createMouseInteractionForTests } from './interaction-state.test-utils'
 import * as EP from '../../../core/shared/element-path'
 import { right } from '../../../core/shared/either'
 import { createBuiltInDependenciesList } from '../../../core/es-modules/package-manager/built-in-dependencies-list'
+import { ElementPath } from 'src/core/shared/project-file-types'
 
 jest.mock('../canvas-utils', () => ({
   ...jest.requireActual('../canvas-utils'),
@@ -48,6 +49,12 @@ function reparentElement(
   editorState: EditorState,
   targetParentWithSpecialContentBox: boolean,
   dragVector: CanvasPoint = canvasPoint({ x: 15, y: 15 }),
+  reparentedToPaths: Array<ElementPath> = [
+    EP.elementPath([
+      ['scene-aaa', 'app-entity'],
+      ['aaa', 'bbb', 'ccc'],
+    ]),
+  ],
 ): EditorState {
   const interactionSession: InteractionSession = {
     ...createMouseInteractionForTests(
@@ -164,11 +171,14 @@ function reparentElement(
         } as ElementInstanceMetadata,
       },
       startingAllElementProps: {},
-      customStrategyState: defaultCustomStrategyState(),
+      customStrategyState: defaultCustomStrategyState,
     } as StrategyState,
   )
 
-  expect(strategyResult.customState).toBeNull()
+  expect(strategyResult.customState).toEqual({
+    ...defaultCustomStrategyState,
+    reparentedToPaths: reparentedToPaths,
+  })
 
   // Check if there are set SetElementsToRerenderCommands with the new parent path
   expect(
@@ -235,7 +245,7 @@ describe('Absolute Reparent Strategy', () => {
       [targetElement],
     )
 
-    const finalEditor = reparentElement(initialEditor, false, canvasPoint({ x: 1, y: 1 }))
+    const finalEditor = reparentElement(initialEditor, false, canvasPoint({ x: 1, y: 1 }), [])
 
     expect(finalEditor).toEqual(initialEditor)
   })
@@ -647,7 +657,16 @@ describe('Absolute Reparent Strategy', () => {
       [targetElement1, targetElement2],
     )
 
-    const finalEditor = reparentElement(initialEditor, false)
+    const finalEditor = reparentElement(initialEditor, false, canvasPoint({ x: 15, y: 15 }), [
+      EP.elementPath([
+        ['scene-aaa', 'app-entity'],
+        ['aaa', 'bbb', 'ccc'],
+      ]),
+      EP.elementPath([
+        ['scene-aaa', 'app-entity'],
+        ['aaa', 'bbb', 'ddd'],
+      ]),
+    ])
 
     expect(testPrintCodeFromEditorState(finalEditor)).toEqual(
       makeTestProjectCodeWithSnippet(

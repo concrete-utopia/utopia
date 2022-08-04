@@ -133,7 +133,10 @@ export const flexReparentToFlexStrategy: CanvasStrategy = {
 
           return {
             commands: commands,
-            customState: strategyState.customStrategyState,
+            customState: {
+              ...strategyState.customStrategyState,
+              reparentedToPaths: [newPath],
+            },
           }
         }
       }

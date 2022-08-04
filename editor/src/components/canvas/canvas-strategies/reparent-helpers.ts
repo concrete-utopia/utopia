@@ -4,7 +4,11 @@ import { MetadataUtils } from '../../../core/model/element-metadata-utils'
 import { ElementPath } from '../../../core/shared/project-file-types'
 import { CSSCursor } from '../canvas-types'
 import { setCursorCommand } from '../commands/set-cursor-command'
-import { InteractionCanvasState, StrategyApplicationResult } from './canvas-strategy-types'
+import {
+  defaultCustomStrategyState,
+  InteractionCanvasState,
+  StrategyApplicationResult,
+} from './canvas-strategy-types'
 import { StrategyState } from './interaction-state'
 import * as EP from '../../../core/shared/element-path'
 
@@ -53,7 +57,7 @@ export function ifAllowedToReparent(
   } else {
     return {
       commands: [setCursorCommand('transient', CSSCursor.ReparentNotPermitted)],
-      customState: null,
+      customState: defaultCustomStrategyState,
     }
   }
 }

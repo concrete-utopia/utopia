@@ -3,7 +3,11 @@ import { ElementInstanceMetadataMap } from '../../../core/shared/element-templat
 import { offsetPoint, rectContainsPoint } from '../../../core/shared/math-utils'
 import { ElementPath } from '../../../core/shared/project-file-types'
 import { reorderElement } from '../commands/reorder-element-command'
-import { CanvasStrategy, emptyStrategyApplicationResult } from './canvas-strategy-types'
+import {
+  CanvasStrategy,
+  defaultCustomStrategyState,
+  emptyStrategyApplicationResult,
+} from './canvas-strategy-types'
 import {
   CanvasPoint,
   canvasPoint,
@@ -121,7 +125,7 @@ export const flexReorderStrategy: CanvasStrategy = {
       // Fallback for when the checks above are not satisfied.
       return {
         commands: [setCursorCommand('transient', CSSCursor.Move)],
-        customState: null,
+        customState: defaultCustomStrategyState,
       }
     }
   },

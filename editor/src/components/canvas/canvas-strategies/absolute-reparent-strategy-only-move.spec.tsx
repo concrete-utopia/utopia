@@ -83,11 +83,11 @@ function dragByPixels(
         } as ElementInstanceMetadata,
       },
       startingAllElementProps: {},
-      customStrategyState: defaultCustomStrategyState(),
+      customStrategyState: defaultCustomStrategyState,
     } as StrategyState,
   )
 
-  expect(strategyResult.customState).toBeNull()
+  expect(strategyResult.customState).toEqual(defaultCustomStrategyState)
 
   const finalEditor = foldAndApplyCommands(
     editorState,

@@ -12,24 +12,24 @@ export interface CustomStrategyState {
   escapeHatchActivated: boolean
   lastReorderIdx: number | null
   duplicatedElementNewUids: { [elementPath: string]: string }
+  reparentedToPaths: Array<ElementPath>
 }
 
-export function defaultCustomStrategyState(): CustomStrategyState {
-  return {
-    escapeHatchActivated: false,
-    lastReorderIdx: null,
-    duplicatedElementNewUids: {},
-  }
+export const defaultCustomStrategyState: CustomStrategyState = {
+  escapeHatchActivated: false,
+  lastReorderIdx: null,
+  duplicatedElementNewUids: {},
+  reparentedToPaths: [],
 }
 
 export interface StrategyApplicationResult {
   commands: Array<CanvasCommand>
-  customState: CustomStrategyState | null // null means the previous custom strategy state should be kept
+  customState: CustomStrategyState
 }
 
-export const emptyStrategyApplicationResult = {
+export const emptyStrategyApplicationResult: StrategyApplicationResult = {
   commands: [],
-  customState: null,
+  customState: defaultCustomStrategyState,
 }
 
 export interface ControlWithKey {

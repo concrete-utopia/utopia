@@ -58,11 +58,11 @@ export function pressKeys(
       sortedApplicableStrategies: null as any, // the strategy does not use this
       startingMetadata: metadata,
       startingAllElementProps: { 'scene-aaa/app-entity:aaa/bbb': {} },
-      customStrategyState: defaultCustomStrategyState(),
+      customStrategyState: defaultCustomStrategyState,
     } as StrategyState,
   )
 
-  expect(strategyResult.customState).toBeNull()
+  expect(strategyResult.customState).toEqual(defaultCustomStrategyState)
 
   const finalEditor = foldAndApplyCommands(
     editorState,

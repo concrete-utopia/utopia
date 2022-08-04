@@ -128,7 +128,7 @@ export function createEmptyStrategyState(
     commandDescriptions: [],
     sortedApplicableStrategies: [],
     startingMetadata: metadata,
-    customStrategyState: defaultCustomStrategyState(),
+    customStrategyState: defaultCustomStrategyState,
     startingAllElementProps: allElementProps,
   }
 }

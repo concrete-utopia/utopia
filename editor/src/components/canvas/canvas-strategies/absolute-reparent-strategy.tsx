@@ -8,7 +8,11 @@ import { updateSelectedViews } from '../commands/update-selected-views-command'
 import { ParentBounds } from '../controls/parent-bounds'
 import { ParentOutlines } from '../controls/parent-outlines'
 import { absoluteMoveStrategy } from './absolute-move-strategy'
-import { CanvasStrategy, emptyStrategyApplicationResult } from './canvas-strategy-types'
+import {
+  CanvasStrategy,
+  defaultCustomStrategyState,
+  emptyStrategyApplicationResult,
+} from './canvas-strategy-types'
 import {
   getAbsoluteOffsetCommandsForSelectedElement,
   getDragTargets,
@@ -138,7 +142,10 @@ export const absoluteReparentStrategy: CanvasStrategy = {
           setElementsToRerenderCommand(newPaths),
           setCursorCommand('transient', CSSCursor.Move),
         ],
-        customState: null,
+        customState: {
+          ...defaultCustomStrategyState,
+          reparentedToPaths: newPaths,
+        },
       }
     } else {
       return moveCommands

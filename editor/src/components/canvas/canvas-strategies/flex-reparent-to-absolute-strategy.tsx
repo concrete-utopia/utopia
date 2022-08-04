@@ -11,6 +11,7 @@ import { absoluteReparentStrategy } from './absolute-reparent-strategy'
 import { pickCanvasStateFromEditorState } from './canvas-strategies'
 import {
   CanvasStrategy,
+  defaultCustomStrategyState,
   emptyStrategyApplicationResult,
   InteractionCanvasState,
   StrategyApplicationResult,
@@ -93,7 +94,7 @@ export const flexReparentToAbsoluteStrategy: CanvasStrategy = {
             )
           }),
         ],
-        customState: null,
+        customState: defaultCustomStrategyState,
       }
     })
   },

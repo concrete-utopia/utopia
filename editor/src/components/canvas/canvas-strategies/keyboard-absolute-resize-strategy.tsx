@@ -1,6 +1,10 @@
 import { MetadataUtils } from '../../../core/model/element-metadata-utils'
 import { Keyboard, KeyCharacter } from '../../../utils/keyboard'
-import { CanvasStrategy, emptyStrategyApplicationResult } from './canvas-strategy-types'
+import {
+  CanvasStrategy,
+  defaultCustomStrategyState,
+  emptyStrategyApplicationResult,
+} from './canvas-strategy-types'
 import { Modifiers } from '../../../utils/modifiers'
 import {
   canvasRectangle,
@@ -178,7 +182,7 @@ export const keyboardAbsoluteResizeStrategy: CanvasStrategy = {
       commands.push(setElementsToRerenderCommand(canvasState.selectedElements))
       return {
         commands: commands,
-        customState: null,
+        customState: defaultCustomStrategyState,
       }
     } else {
       return emptyStrategyApplicationResult

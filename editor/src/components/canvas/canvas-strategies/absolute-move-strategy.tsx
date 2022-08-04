@@ -17,6 +17,7 @@ import { determineConstrainedDragAxis } from '../controls/select-mode/move-utils
 import { ConstrainedDragAxis, GuidelineWithSnappingVector } from '../guideline'
 import {
   CanvasStrategy,
+  defaultCustomStrategyState,
   emptyStrategyApplicationResult,
   InteractionCanvasState,
   StrategyApplicationResult,
@@ -132,7 +133,7 @@ export function applyAbsoluteMoveCommon(
           setElementsToRerenderCommand(canvasState.selectedElements),
           setCursorCommand('transient', CSSCursor.Select),
         ],
-        customState: null,
+        customState: defaultCustomStrategyState,
       }
     } else {
       const constrainedDragAxis =
@@ -154,7 +155,7 @@ export function applyAbsoluteMoveCommon(
           setElementsToRerenderCommand(canvasState.selectedElements),
           setCursorCommand('transient', CSSCursor.Select),
         ],
-        customState: null,
+        customState: defaultCustomStrategyState,
       }
     }
   } else {

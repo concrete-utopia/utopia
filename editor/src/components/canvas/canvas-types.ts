@@ -28,6 +28,7 @@ import {
   DragInteractionData,
   InteractionSession,
   InteractionSessionWithoutMetadata,
+  StrategyState,
 } from './canvas-strategies/interaction-state'
 import { CanvasStrategyId } from './canvas-strategies/canvas-strategy-types'
 import { MouseButtonsPressed } from '../../utils/mouse'

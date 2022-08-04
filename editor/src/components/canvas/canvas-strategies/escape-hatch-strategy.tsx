@@ -44,6 +44,7 @@ import { ZeroSizeResizeControlWrapper } from '../controls/zero-sized-element-con
 import { applyAbsoluteMoveCommon } from './absolute-move-strategy'
 import {
   CanvasStrategy,
+  defaultCustomStrategyState,
   emptyStrategyApplicationResult,
   InteractionCanvasState,
 } from './canvas-strategy-types'
@@ -153,7 +154,7 @@ export const escapeHatchStrategy: CanvasStrategy = {
       } else {
         return {
           commands: [setCursorCommand('transient', CSSCursor.Move)],
-          customState: null,
+          customState: defaultCustomStrategyState,
         }
       }
     }

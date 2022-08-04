@@ -51,6 +51,7 @@ function reparentElement(
   editorState: EditorState,
   targetParentWithSpecialContentBox: boolean,
   dragVector: CanvasPoint = canvasPoint({ x: 15, y: 15 }),
+  reparentedToPaths: Array<ElementPath> = [],
 ): EditorState {
   const interactionSession: InteractionSession = {
     ...createMouseInteractionForTests(
@@ -134,11 +135,14 @@ function reparentElement(
         } as ElementInstanceMetadata,
       },
       startingAllElementProps: {},
-      customStrategyState: defaultCustomStrategyState(),
+      customStrategyState: defaultCustomStrategyState,
     } as StrategyState,
   )
 
-  expect(strategyResult.customState).toBeNull()
+  expect(strategyResult.customState).toEqual({
+    ...defaultCustomStrategyState,
+    reparentedToPaths: reparentedToPaths,
+  })
 
   // Check if there are set SetElementsToRerenderCommands with the new parent path
   expect(
@@ -205,7 +209,9 @@ describe('Absolute Reparent Strategy', () => {
       [targetElement],
     )
 
-    const finalEditor = reparentElement(initialEditor, false, canvasPoint({ x: -1000, y: -1000 }))
+    const finalEditor = reparentElement(initialEditor, false, canvasPoint({ x: -1000, y: -1000 }), [
+      EP.elementPath([['utopia-storyboard-uid', 'ccc']]),
+    ])
 
     expect(testPrintCodeFromEditorState(finalEditor)).toEqual(
       Prettier.format(

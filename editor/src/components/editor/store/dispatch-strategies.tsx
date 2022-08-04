@@ -163,7 +163,7 @@ export function interactionHardReset(
         commandDescriptions: commandResult.commandDescriptions,
         sortedApplicableStrategies: sortedApplicableStrategies,
         startingMetadata: resetStrategyState.startingMetadata,
-        customStrategyState: strategyResult.customState ?? result.strategyState.customStrategyState,
+        customStrategyState: strategyResult.customState,
         startingAllElementProps: resetStrategyState.startingAllElementProps,
       }
 
@@ -310,7 +310,7 @@ export function interactionStart(
         commandDescriptions: commandResult.commandDescriptions,
         sortedApplicableStrategies: sortedApplicableStrategies,
         startingMetadata: newEditorState.canvas.interactionSession.metadata,
-        customStrategyState: strategyResult.customState ?? result.strategyState.customStrategyState,
+        customStrategyState: strategyResult.customState,
         startingAllElementProps: newEditorState.canvas.interactionSession.allElementProps,
       }
 
@@ -401,7 +401,7 @@ function handleUserChangedStrategy(
       commandDescriptions: commandResult.commandDescriptions,
       sortedApplicableStrategies: sortedApplicableStrategies,
       startingMetadata: strategyState.startingMetadata,
-      customStrategyState: strategyResult.customState ?? strategyState.customStrategyState,
+      customStrategyState: strategyResult.customState,
       startingAllElementProps: strategyState.startingAllElementProps,
     }
 
@@ -480,7 +480,7 @@ function handleAccumulatingKeypresses(
         commandDescriptions: commandResult.commandDescriptions,
         sortedApplicableStrategies: sortedApplicableStrategies,
         startingMetadata: strategyState.startingMetadata,
-        customStrategyState: strategyResult.customState ?? strategyState.customStrategyState,
+        customStrategyState: strategyResult.customState,
         startingAllElementProps: strategyState.startingAllElementProps,
       }
 
@@ -541,7 +541,7 @@ function handleUpdate(
       commandDescriptions: commandResult.commandDescriptions,
       sortedApplicableStrategies: sortedApplicableStrategies,
       startingMetadata: strategyState.startingMetadata,
-      customStrategyState: strategyResult.customState ?? strategyState.customStrategyState,
+      customStrategyState: strategyResult.customState,
       startingAllElementProps: strategyState.startingAllElementProps,
     }
     return {

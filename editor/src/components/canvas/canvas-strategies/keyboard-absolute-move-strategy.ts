@@ -2,6 +2,7 @@ import { MetadataUtils } from '../../../core/model/element-metadata-utils'
 import { Keyboard, KeyCharacter } from '../../../utils/keyboard'
 import {
   CanvasStrategy,
+  defaultCustomStrategyState,
   emptyStrategyApplicationResult,
   InteractionCanvasState,
 } from './canvas-strategy-types'
@@ -131,7 +132,7 @@ export const keyboardAbsoluteMoveStrategy: CanvasStrategy = {
       commands.push(setElementsToRerenderCommand(canvasState.selectedElements))
       return {
         commands: commands,
-        customState: null,
+        customState: defaultCustomStrategyState,
       }
     } else {
       return emptyStrategyApplicationResult

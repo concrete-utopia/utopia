@@ -2,11 +2,20 @@ import * as React from 'react'
 import * as ReactDOM from 'react-dom'
 import { Utils } from '../../../../uuiui-deps'
 import { useEditorState } from '../../../editor/store/store-hook'
+import { cursorForMissingReparentedItems } from '../../canvas-strategies/reparent-utils'
 import { getCursorFromDragState } from '../../canvas-utils'
 
 export const CursorOverlay = React.memo(() => {
   const cursor = useEditorState((store) => {
-    return Utils.defaultIfNull(store.editor.canvas.cursor, getCursorFromDragState(store.editor))
+    const forMissingReparentedItems = cursorForMissingReparentedItems(
+      store.strategyState.customStrategyState,
+      store.editor.spyMetadata,
+    )
+    return (
+      forMissingReparentedItems ??
+      store.editor.canvas.cursor ??
+      getCursorFromDragState(store.editor)
+    )
   }, 'CursorOverlay cursor')
 
   const styleProps = React.useMemo(() => {

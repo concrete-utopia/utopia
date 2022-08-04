@@ -60,11 +60,11 @@ function multiselectResizeElements(
       commandDescriptions: null as any, // the strategy does not use this
       sortedApplicableStrategies: null as any, // the strategy does not use this
       startingMetadata: metadata,
-      customStrategyState: defaultCustomStrategyState(),
+      customStrategyState: defaultCustomStrategyState,
     } as StrategyState,
   )
 
-  expect(strategyResult.customState).toBeNull()
+  expect(strategyResult.customState).toEqual(defaultCustomStrategyState)
 
   return foldAndApplyCommands(
     initialEditor,

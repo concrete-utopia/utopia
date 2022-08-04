@@ -161,7 +161,7 @@ function reorderElement(
   dragStart: CanvasPoint,
   drag: CanvasPoint,
   metadata: ElementInstanceMetadataMap,
-  newIndex?: number,
+  newIndex: number | null = null,
 ): EditorState {
   const interactionSession: InteractionSession = {
     ...createMouseInteractionForTests(
@@ -185,7 +185,7 @@ function reorderElement(
       commandDescriptions: null as any, // the strategy does not use this
       sortedApplicableStrategies: null as any, // the strategy does not use this
       startingMetadata: metadata,
-      customStrategyState: defaultCustomStrategyState(),
+      customStrategyState: defaultCustomStrategyState,
     } as StrategyState,
   )
 

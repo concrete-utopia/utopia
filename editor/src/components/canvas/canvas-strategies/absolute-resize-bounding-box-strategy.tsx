@@ -27,7 +27,11 @@ import { ParentBounds } from '../controls/parent-bounds'
 import { ParentOutlines } from '../controls/parent-outlines'
 import { AbsoluteResizeControl } from '../controls/select-mode/absolute-resize-control'
 import { AbsolutePin, ensureAtLeastTwoPinsForEdgePosition } from './absolute-resize-helpers'
-import { CanvasStrategy, emptyStrategyApplicationResult } from './canvas-strategy-types'
+import {
+  CanvasStrategy,
+  defaultCustomStrategyState,
+  emptyStrategyApplicationResult,
+} from './canvas-strategy-types'
 import { getDragTargets, getMultiselectBounds } from './shared-absolute-move-strategy-helpers'
 import {
   pickCursorFromEdgePosition,
@@ -162,7 +166,7 @@ export const absoluteResizeBoundingBoxStrategy: CanvasStrategy = {
               setCursorCommand('transient', pickCursorFromEdgePosition(edgePosition)),
               setElementsToRerenderCommand(canvasState.selectedElements),
             ],
-            customState: null,
+            customState: defaultCustomStrategyState,
           }
         }
       } else {
@@ -171,7 +175,7 @@ export const absoluteResizeBoundingBoxStrategy: CanvasStrategy = {
             setCursorCommand('transient', pickCursorFromEdgePosition(edgePosition)),
             updateHighlightedViews('transient', []),
           ],
-          customState: null,
+          customState: defaultCustomStrategyState,
         }
       }
     }

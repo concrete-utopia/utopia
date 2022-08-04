@@ -123,11 +123,11 @@ function dragByPixels(
       sortedApplicableStrategies: null as any, // the strategy does not use this
       startingMetadata: metadata ?? defaultMetadata,
       startingAllElementProps: {},
-      customStrategyState: defaultCustomStrategyState(),
+      customStrategyState: defaultCustomStrategyState,
     } as StrategyState,
   )
 
-  expect(strategyResult.customState).toBeNull()
+  expect(strategyResult.customState).toEqual(defaultCustomStrategyState)
 
   const finalEditor = foldAndApplyCommands(
     editorState,
