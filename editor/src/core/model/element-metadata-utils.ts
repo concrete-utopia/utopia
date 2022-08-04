@@ -1,28 +1,10 @@
 import * as OPI from 'object-path-immutable'
-import { FlexLength, LayoutSystem, Sides } from 'utopia-api/core'
+import { FlexLength, Sides } from 'utopia-api/core'
 import { getReorderDirection } from '../../components/canvas/controls/select-mode/yoga-utils'
 import { getImageSize, scaleImageDimensions } from '../../components/images'
-import {
-  foldThese,
-  makeThat,
-  makeThis,
-  makeThisAndThat,
-  mergeThese,
-  setThat,
-  These,
-} from '../../utils/these'
-import Utils, { IndexPosition } from '../../utils/utils'
+import Utils from '../../utils/utils'
 import { getLayoutProperty } from '../layout/getLayoutProperty'
-import { FlexLayoutHelpers, LayoutHelpers } from '../layout/layout-helpers'
-import {
-  flattenArray,
-  mapDropNulls,
-  pluck,
-  stripNulls,
-  flatMapArray,
-  uniqBy,
-  reverse,
-} from '../shared/array-utils'
+import { mapDropNulls, pluck, stripNulls, flatMapArray, uniqBy } from '../shared/array-utils'
 import { intrinsicHTMLElementNamesThatSupportChildren } from '../shared/dom-utils'
 import {
   alternativeEither,
@@ -31,21 +13,14 @@ import {
   flatMapEither,
   foldEither,
   forEachRight,
-  isLeft,
   isRight,
-  left,
-  mapEither,
   right,
-  traverseEither,
-  Left,
-  Right,
   maybeEitherToMaybe,
 } from '../shared/either'
 import {
   ElementInstanceMetadata,
   ElementsByUID,
   getJSXElementNameLastPart,
-  getJSXElementNameNoPathName,
   isJSXArbitraryBlock,
   isJSXElement,
   isJSXTextBlock,
@@ -56,27 +31,19 @@ import {
   JSXElementName,
   getJSXElementNameAsString,
   isIntrinsicElement,
-  jsxElementName,
   ElementInstanceMetadataMap,
   isIntrinsicHTMLElement,
-  getJSXAttribute,
 } from '../shared/element-template'
 import {
   getModifiableJSXAttributeAtPath,
   jsxSimpleAttributeToValue,
 } from '../shared/jsx-attributes'
 import {
-  boundingRectangle,
-  CanvasPoint,
+  boundingRectangleArray,
   CanvasRectangle,
-  canvasRectangle,
   canvasRectangleToLocalRectangle,
   LocalRectangle,
-  localRectangle,
-  SimpleRectangle,
   Size,
-  zeroCanvasRect,
-  zeroLocalRect,
 } from '../shared/math-utils'
 import { optionalMap } from '../shared/optional-utils'
 import {
@@ -93,19 +60,16 @@ import {
   componentUsesProperty,
   findJSXElementChildAtPath,
   getUtopiaID,
-  isSceneElement,
 } from './element-template-utils'
 import {
   isImportedComponent,
   isAnimatedElement,
-  isGivenUtopiaAPIElement,
   isUtopiaAPIComponent,
   getUtopiaJSXComponentsFromSuccess,
   isViewLikeFromMetadata,
   isSceneFromMetadata,
   isUtopiaAPIComponentFromMetadata,
   isGivenUtopiaElementFromMetadata,
-  isImportedComponentNPM,
 } from './project-file-utils'
 import { ResizesContentProp } from './scene-utils'
 import { fastForEach } from '../shared/utils'
@@ -1413,30 +1377,12 @@ function fillSpyOnlyMetadataWithFramesFromChildren(
     if (children.length === 0) {
       return
     }
-    let workingMetadata: ElementInstanceMetadata = { ...spyElem }
 
-    fastForEach(children, (childMetadata) => {
-      const globalFrame =
-        workingMetadata.globalFrame != null
-          ? boundingRectangle(
-              workingMetadata.globalFrame ?? zeroCanvasRect,
-              childMetadata.globalFrame ?? zeroCanvasRect,
-            )
-          : childMetadata.globalFrame ?? zeroCanvasRect
-      const localFrame =
-        workingMetadata.localFrame != null
-          ? boundingRectangle(
-              workingMetadata.localFrame ?? zeroLocalRect,
-              childMetadata.localFrame ?? zeroLocalRect,
-            )
-          : childMetadata.localFrame ?? zeroLocalRect
-      workingMetadata = {
-        ...workingMetadata,
-        globalFrame: globalFrame,
-        localFrame: localFrame,
-      }
-      workingElements[pathStr] = workingMetadata
-    })
+    workingElements[pathStr] = {
+      ...spyElem,
+      globalFrame: boundingRectangleArray(pluck(children, 'globalFrame')),
+      localFrame: boundingRectangleArray(pluck(children, 'localFrame')),
+    }
   })
 
   return workingElements
