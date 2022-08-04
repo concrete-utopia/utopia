@@ -201,7 +201,8 @@ export const NavigatorItemActionSheet: React.FunctionComponent<
   const canBeFocused = useEditorState(
     (store) =>
       !MetadataUtils.isProbablyScene(store.editor.jsxMetadata, elementPath) &&
-      MetadataUtils.isComponent(elementPath, store.editor.jsxMetadata),
+      !MetadataUtils.isProbablyScene(store.editor.jsxMetadata, EP.parentPath(elementPath)) &&
+      MetadataUtils.isFocusableComponent(elementPath, store.editor.jsxMetadata),
     'NavigatorItemActionSheet canBeFocused',
   )
 
