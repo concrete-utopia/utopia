@@ -28,7 +28,6 @@ import {
   getMultiselectBounds,
   snapDrag,
 } from './shared-absolute-move-strategy-helpers'
-import { ConsoleAndErrorsPane } from '../../code-editor/console-and-errors-pane'
 
 export const absoluteMoveStrategy: CanvasStrategy = {
   id: 'ABSOLUTE_MOVE',
