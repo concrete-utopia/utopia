@@ -122,7 +122,7 @@ export const FocusIndicator: React.FunctionComponent<React.PropsWithChildren<Foc
           <Icons.EditPencil color={color} />
         ) : props.explicitlyFocused == 'focused' ? (
           <Icons.Component
-            color={props.selected ? 'on-highlight-main' : 'primary'}
+            color={props.selected ? 'on-highlight-main' : 'component'}
             style={{ transform: 'scale(.85)' }}
           />
         ) : (

@@ -1846,8 +1846,10 @@ export const UPDATE_FNS = {
           )
           if (
             focusedComponentValue === 'focused' &&
-            !newlySelectedPaths.every((selected) =>
-              EP.isDescendantOf(selected, element.elementPath),
+            !newlySelectedPaths.every(
+              (selected) =>
+                EP.isDescendantOf(selected, element.elementPath) ||
+                EP.pathsEqual(selected, element.elementPath),
             )
           ) {
             updateDataFocusedFor.push(element.elementPath)
