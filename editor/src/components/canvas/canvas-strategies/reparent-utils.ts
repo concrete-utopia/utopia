@@ -17,8 +17,10 @@ import * as EP from '../../../core/shared/element-path'
 import { getImportsFor, importedFromWhere } from '../../../components/editor/import-utils'
 import { forceNotNull } from '../../../core/shared/optional-utils'
 import { addImportsToFile } from '../commands/add-imports-to-file-command'
+import { BuiltInDependencies } from '../../../core/es-modules/package-manager/built-in-dependencies-list'
 
 export function getReparentCommands(
+  builtInDependencies: BuiltInDependencies,
   projectContents: ProjectContentTreeRoot,
   nodeModules: NodeModules,
   openFile: string | null | undefined,
@@ -74,6 +76,7 @@ export function getReparentCommands(
                     newTargetPath,
                     importsToAdd,
                     getImportsFor(
+                      builtInDependencies,
                       importsInOriginFile,
                       projectContents,
                       nodeModules,
@@ -88,6 +91,7 @@ export function getReparentCommands(
                       newTargetPath,
                       importsToAdd,
                       getImportsFor(
+                        builtInDependencies,
                         importsInOriginFile,
                         projectContents,
                         nodeModules,

@@ -17,6 +17,7 @@ import {
 } from '../../../core/shared/element-template'
 import { printCode, printCodeOptions } from '../../../core/workers/parser-printer/parser-printer'
 import {
+  importAlias,
   Imports,
   isParseSuccess,
   parseSuccess,
@@ -114,7 +115,16 @@ describe('modifyUnderlyingTarget', () => {
     const codeFile = getTextFileByPath(actualResult.projectContents, '/src/card.js')
     const parsed = codeFile.fileContents.parsed
     if (isParseSuccess(parsed)) {
-      expect(parsed.imports).toEqual(addImport('', 'react', null, [], 'React', emptyImports()))
+      expect(parsed.imports).toEqual(
+        addImport(
+          '',
+          'non-existant-dummy-library',
+          null,
+          [importAlias('Spring')],
+          null,
+          addImport('', 'react', null, [], 'React', emptyImports()),
+        ),
+      )
     } else {
       throw new Error('No parsed version of the file.')
     }
@@ -139,7 +149,7 @@ describe('modifyUnderlyingTarget', () => {
     const resultingCode = getCodeForFile(actualResult, '/src/card.js')
     expect(resultingCode).toMatchInlineSnapshot(`
       "import * as React from 'react'
-      import { Rectangle } from 'utopia-api'
+      import { Spring } from 'non-existant-dummy-library'
       export var Card = (props) => {
         return (
           <div style={{ ...props.style }}>
@@ -154,8 +164,8 @@ describe('modifyUnderlyingTarget', () => {
               }}
               data-thing='a thing'
             />
-            <Rectangle
-              data-testid='rectangle'
+            <Spring
+              data-testid='spring'
               style={{
                 position: 'absolute',
                 left: 100,

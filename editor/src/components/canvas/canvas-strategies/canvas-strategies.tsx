@@ -26,6 +26,7 @@ import { absoluteDuplicateStrategy } from './absolute-duplicate-strategy'
 import { absoluteReparentToFlexStrategy } from './absolute-reparent-to-flex-strategy'
 import { flexReparentToAbsoluteStrategy } from './flex-reparent-to-absolute-strategy'
 import { flexReparentToFlexStrategy } from './flex-reparent-to-flex-strategy'
+import { BuiltInDependencies } from '../../../core/es-modules/package-manager/built-in-dependencies-list'
 
 export const RegisteredCanvasStrategies: Array<CanvasStrategy> = [
   absoluteMoveStrategy,
@@ -41,8 +42,12 @@ export const RegisteredCanvasStrategies: Array<CanvasStrategy> = [
   absoluteReparentToFlexStrategy,
 ]
 
-export function pickCanvasStateFromEditorState(editorState: EditorState): InteractionCanvasState {
+export function pickCanvasStateFromEditorState(
+  editorState: EditorState,
+  builtInDependencies: BuiltInDependencies,
+): InteractionCanvasState {
   return {
+    builtInDependencies: builtInDependencies,
     selectedElements: editorState.selectedViews,
     projectContents: editorState.projectContents,
     nodeModules: editorState.nodeModules.files,
@@ -66,7 +71,7 @@ function getApplicableStrategies(
 
 const getApplicableStrategiesSelector = createSelector(
   (store: EditorStorePatched): InteractionCanvasState => {
-    return pickCanvasStateFromEditorState(store.editor)
+    return pickCanvasStateFromEditorState(store.editor, store.builtInDependencies)
   },
   (store: EditorStorePatched) => store.editor.canvas.interactionSession,
   (store: EditorStorePatched) => store.editor.jsxMetadata,
@@ -133,7 +138,7 @@ function getApplicableStrategiesOrderedByFitness(
 
 const getApplicableStrategiesOrderedByFitnessSelector = createSelector(
   (store: EditorStorePatched): InteractionCanvasState => {
-    return pickCanvasStateFromEditorState(store.editor)
+    return pickCanvasStateFromEditorState(store.editor, store.builtInDependencies)
   },
   (store: EditorStorePatched) => store.editor.canvas.interactionSession,
   (store: EditorStorePatched) => store.strategyState,

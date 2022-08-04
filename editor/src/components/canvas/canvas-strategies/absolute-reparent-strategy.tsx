@@ -113,6 +113,7 @@ export const absoluteReparentStrategy: CanvasStrategy = {
           commands: [
             ...offsetCommands,
             ...getReparentCommands(
+              canvasState.builtInDependencies,
               projectContents,
               nodeModules,
               openFile,

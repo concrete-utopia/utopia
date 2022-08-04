@@ -1,3 +1,4 @@
+import { createBuiltInDependenciesList } from '../../../core/es-modules/package-manager/built-in-dependencies-list'
 import { elementPath } from '../../../core/shared/element-path'
 import {
   ElementInstanceMetadata,
@@ -174,7 +175,7 @@ function reorderElement(
   }
 
   const strategyResult = flexReorderStrategy.apply(
-    pickCanvasStateFromEditorState(editorState),
+    pickCanvasStateFromEditorState(editorState, createBuiltInDependenciesList(null)),
     interactionSession,
     {
       currentStrategy: null as any, // the strategy does not use this

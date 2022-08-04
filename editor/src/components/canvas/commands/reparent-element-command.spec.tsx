@@ -17,7 +17,7 @@ describe('runReparentElement', () => {
     const targetPath = EP.elementPath([
       ['storyboard-entity', 'scene-1-entity', 'app-entity'],
       ['app-outer-div', 'card-instance'],
-      ['card-outer-div', 'card-inner-rectangle'],
+      ['card-outer-div', 'card-inner-spring'],
     ])
 
     const newParentPath = EP.elementPath([
@@ -68,7 +68,7 @@ describe('runReparentElement', () => {
     const targetPath = EP.elementPath([
       ['storyboard-entity', 'scene-1-entity', 'app-entity'],
       ['app-outer-div', 'card-instance'],
-      ['card-outer-div', 'card-inner-rectangle'],
+      ['card-outer-div', 'card-inner-spring'],
     ])
 
     const newParentPath = EP.elementPath([

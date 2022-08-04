@@ -31,6 +31,7 @@ import {
 import { PrettierConfig } from 'utopia-vscode-common'
 import * as Prettier from 'prettier/standalone'
 import { right } from '../../../core/shared/either'
+import { createBuiltInDependenciesList } from '../../../core/es-modules/package-manager/built-in-dependencies-list'
 
 jest.mock('../canvas-utils', () => ({
   ...jest.requireActual('../canvas-utils'),
@@ -63,7 +64,7 @@ function reparentElement(
   }
 
   const strategyResult = absoluteReparentStrategy.apply(
-    pickCanvasStateFromEditorState(editorState),
+    pickCanvasStateFromEditorState(editorState, createBuiltInDependenciesList(null)),
     interactionSession,
     {
       currentStrategy: null as any, // the strategy does not use this

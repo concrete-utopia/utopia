@@ -1,4 +1,5 @@
-import { AllElementProps } from 'src/components/editor/store/editor-state'
+import { AllElementProps } from '../../../components/editor/store/editor-state'
+import { BuiltInDependencies } from '../../../core/es-modules/package-manager/built-in-dependencies-list'
 import { ElementInstanceMetadataMap } from '../../../core/shared/element-template'
 import { CanvasVector } from '../../../core/shared/math-utils'
 import { ElementPath, NodeModules } from '../../../core/shared/project-file-types'
@@ -44,6 +45,7 @@ export interface InteractionCanvasState {
   selectedElements: Array<ElementPath>
   projectContents: ProjectContentTreeRoot
   nodeModules: NodeModules
+  builtInDependencies: BuiltInDependencies
   openFile: string | null | undefined
   scale: number
   canvasOffset: CanvasVector

@@ -1,4 +1,4 @@
-import { resolveModulePath } from '../../core/es-modules/package-manager/module-resolution'
+import { resolveModulePathIncludingBuiltIns } from '../../core/es-modules/package-manager/module-resolution'
 import { foldEither } from '../../core/shared/either'
 import { emptyImports } from '../../core/workers/common/project-file-utils'
 import { TopLevelElement } from '../../core/shared/element-template'
@@ -11,6 +11,7 @@ import {
   NodeModules,
 } from '../../core/shared/project-file-types'
 import { ProjectContentTreeRoot } from '../assets'
+import { BuiltInDependencies } from '../../core/es-modules/package-manager/built-in-dependencies-list'
 
 interface SameFileOrigin {
   type: 'SAME_FILE_ORIGIN'
@@ -100,6 +101,7 @@ export function getTopLevelName(
 }
 
 export function getImportsFor(
+  builtInDependencies: BuiltInDependencies,
   currentImports: Imports,
   projectContents: ProjectContentTreeRoot,
   nodeModules: NodeModules,
@@ -108,7 +110,13 @@ export function getImportsFor(
 ): Imports {
   for (const fileKey of Object.keys(currentImports)) {
     const details = currentImports[fileKey]
-    const importPath = resolveModulePath(projectContents, nodeModules, importOrigin, fileKey)
+    const importPath = resolveModulePathIncludingBuiltIns(
+      builtInDependencies,
+      projectContents,
+      nodeModules,
+      importOrigin,
+      fileKey,
+    )
     const resolvedImportPath = foldEither(
       (failure) => {
         throw new Error(`Could not resolve ${fileKey} to a path because: ${failure}`)

@@ -1,3 +1,4 @@
+import { BuiltInDependencies } from '../../../core/es-modules/package-manager/built-in-dependencies-list'
 import { MetadataUtils } from '../../../core/model/element-metadata-utils'
 import { canvasPoint, offsetPoint, rectContainsPoint } from '../../../core/shared/math-utils'
 import { EditorState, EditorStatePatch } from '../../editor/store/editor-state'
@@ -84,6 +85,7 @@ export const flexReparentToAbsoluteStrategy: CanvasStrategy = {
           ...escapeHatchCommands,
           updateFunctionCommand('permanent', (editorState, transient): Array<EditorStatePatch> => {
             return runAbsoluteReparentStrategyForFreshlyConvertedElement(
+              canvasState.builtInDependencies,
               editorState,
               strategyState,
               interactionState,
@@ -99,13 +101,14 @@ export const flexReparentToAbsoluteStrategy: CanvasStrategy = {
 }
 
 function runAbsoluteReparentStrategyForFreshlyConvertedElement(
+  builtInDependencies: BuiltInDependencies,
   editorState: EditorState,
   strategyState: StrategyState,
   interactionState: InteractionSession,
   transient: TransientOrNot,
   lifecycle: 'mid-interaction' | 'end-interaction',
 ): Array<EditorStatePatch> {
-  const canvasState = pickCanvasStateFromEditorState(editorState)
+  const canvasState = pickCanvasStateFromEditorState(editorState, builtInDependencies)
 
   const reparentCommands = absoluteReparentStrategy.apply(
     canvasState,

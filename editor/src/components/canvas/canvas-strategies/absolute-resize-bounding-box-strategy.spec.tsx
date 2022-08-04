@@ -27,6 +27,7 @@ import { StrategyState } from './interaction-state'
 import { createMouseInteractionForTests } from './interaction-state.test-utils'
 import { absoluteResizeBoundingBoxStrategy } from './absolute-resize-bounding-box-strategy'
 import { defaultCustomStrategyState } from './canvas-strategy-types'
+import { createBuiltInDependenciesList } from '../../../core/es-modules/package-manager/built-in-dependencies-list'
 
 function multiselectResizeElements(
   snippet: string,
@@ -49,7 +50,7 @@ function multiselectResizeElements(
   )
 
   const strategyResult = absoluteResizeBoundingBoxStrategy.apply(
-    pickCanvasStateFromEditorState(initialEditor),
+    pickCanvasStateFromEditorState(initialEditor, createBuiltInDependenciesList(null)),
     { ...interactionSessionWithoutMetadata, metadata: {}, allElementProps: {} },
     {
       currentStrategy: null as any, // the strategy does not use this
