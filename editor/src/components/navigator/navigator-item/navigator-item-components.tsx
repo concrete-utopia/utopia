@@ -11,6 +11,7 @@ import { useEditorState, useRefEditorState } from '../../editor/store/store-hook
 import { MetadataUtils } from '../../../core/model/element-metadata-utils'
 import { when } from '../../../utils/react-conditionals'
 import { getMetadata } from '../../editor/store/editor-state'
+import { stopPropagation } from '../../inspector/common/inspector-utils'
 
 interface NavigatorHintProps {
   shouldBeShown: boolean
@@ -110,23 +111,28 @@ export const SelectionLockedIndicator: React.FunctionComponent<
 > = React.memo((props) => {
   const color = props.selected ? 'on-highlight-main' : 'main'
 
-  const handleClick = React.useCallback(() => {
-    switch (props.value) {
-      case 'selectable':
-        props.onClick('locked-and-descendants-locked-too')
-        break
-      case 'locked-and-descendants-locked-too':
-        props.onClick('locked')
-        break
-      case 'locked':
-      default:
-        props.onClick('selectable')
-        break
-    }
-  }, [props])
+  const handleClick = React.useCallback(
+    (event: React.MouseEvent<HTMLDivElement>) => {
+      event.stopPropagation()
+      switch (props.value) {
+        case 'selectable':
+          props.onClick('locked-and-descendants-locked-too')
+          break
+        case 'locked-and-descendants-locked-too':
+          props.onClick('locked')
+          break
+        case 'locked':
+        default:
+          props.onClick('selectable')
+          break
+      }
+    },
+    [props],
+  )
   return (
     <Button
       onClick={handleClick}
+      onMouseDown={stopPropagation}
       style={{
         marginRight: 4,
         height: 18,
