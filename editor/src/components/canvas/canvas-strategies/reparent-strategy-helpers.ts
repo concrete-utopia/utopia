@@ -36,7 +36,7 @@ import {
   InteractionCanvasState,
   StrategyApplicationResult,
 } from './canvas-strategy-types'
-import { InteractionSession, StrategyState } from './interaction-state'
+import { InputData, InteractionSession, StrategyState } from './interaction-state'
 import { ifAllowedToReparent } from './reparent-helpers'
 import { getReparentCommands } from './reparent-utils'
 import { getDragTargets } from './shared-absolute-move-strategy-helpers'
@@ -80,7 +80,7 @@ export function findReparentStrategy(
 
   const reparentResult = newGetReparentTarget(
     filteredSelectedElements,
-    interactionState,
+    interactionState.interactionData,
     canvasState,
     strategyState.startingMetadata,
     strategyState.startingAllElementProps,
@@ -117,7 +117,7 @@ export function findReparentStrategy(
 
 export function newGetReparentTarget(
   filteredSelectedElements: Array<ElementPath>,
-  interactionSession: InteractionSession,
+  interactionData: InputData,
   canvasState: InteractionCanvasState,
   metadata: ElementInstanceMetadataMap,
   allElementProps: AllElementProps,
@@ -127,10 +127,7 @@ export function newGetReparentTarget(
   shouldReorder: boolean
   newIndex: number
 } {
-  if (
-    interactionSession.interactionData.type !== 'DRAG' ||
-    interactionSession.interactionData.drag == null
-  ) {
+  if (interactionData.type !== 'DRAG' || interactionData.drag == null) {
     return {
       shouldReparent: false,
       newParent: null,
@@ -139,13 +136,10 @@ export function newGetReparentTarget(
     }
   }
 
-  const pointOnCanvas = offsetPoint(
-    interactionSession.interactionData.originalDragStart,
-    interactionSession.interactionData.drag,
-  )
+  const pointOnCanvas = offsetPoint(interactionData.originalDragStart, interactionData.drag)
 
   const flexReparentResult = newGetReparentTargetInner(
-    interactionSession.interactionData.modifiers.cmd,
+    interactionData.modifiers.cmd,
     metadata,
     allElementProps,
     canvasState.projectContents,
@@ -423,7 +417,7 @@ export function applyFlexReparent(
     ) {
       const reparentResult = newGetReparentTarget(
         filteredSelectedElements,
-        interactionSession,
+        interactionSession.interactionData,
         canvasState,
         strategyState.startingMetadata,
         strategyState.startingAllElementProps,

@@ -74,7 +74,7 @@ export const absoluteReparentStrategy: CanvasStrategy = {
 
     const reparentResult = newGetReparentTarget(
       filteredSelectedElements,
-      interactionState,
+      interactionState.interactionData,
       canvasState,
       strategyState.startingMetadata,
       strategyState.startingAllElementProps,
