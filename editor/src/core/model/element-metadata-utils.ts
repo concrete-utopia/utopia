@@ -1,28 +1,10 @@
 import * as OPI from 'object-path-immutable'
-import { FlexLength, LayoutSystem, Sides } from 'utopia-api/core'
+import { FlexLength, Sides } from 'utopia-api/core'
 import { getReorderDirection } from '../../components/canvas/controls/select-mode/yoga-utils'
 import { getImageSize, scaleImageDimensions } from '../../components/images'
-import {
-  foldThese,
-  makeThat,
-  makeThis,
-  makeThisAndThat,
-  mergeThese,
-  setThat,
-  These,
-} from '../../utils/these'
-import Utils, { IndexPosition } from '../../utils/utils'
+import Utils from '../../utils/utils'
 import { getLayoutProperty } from '../layout/getLayoutProperty'
-import { FlexLayoutHelpers, LayoutHelpers } from '../layout/layout-helpers'
-import {
-  flattenArray,
-  mapDropNulls,
-  pluck,
-  stripNulls,
-  flatMapArray,
-  uniqBy,
-  reverse,
-} from '../shared/array-utils'
+import { mapDropNulls, pluck, stripNulls, flatMapArray, uniqBy } from '../shared/array-utils'
 import { intrinsicHTMLElementNamesThatSupportChildren } from '../shared/dom-utils'
 import {
   alternativeEither,
@@ -31,21 +13,14 @@ import {
   flatMapEither,
   foldEither,
   forEachRight,
-  isLeft,
   isRight,
-  left,
-  mapEither,
   right,
-  traverseEither,
-  Left,
-  Right,
   maybeEitherToMaybe,
 } from '../shared/either'
 import {
   ElementInstanceMetadata,
   ElementsByUID,
   getJSXElementNameLastPart,
-  getJSXElementNameNoPathName,
   isJSXArbitraryBlock,
   isJSXElement,
   isJSXTextBlock,
@@ -56,30 +31,20 @@ import {
   JSXElementName,
   getJSXElementNameAsString,
   isIntrinsicElement,
-  jsxElementName,
   ElementInstanceMetadataMap,
   isIntrinsicHTMLElement,
-  getJSXAttribute,
   isJSXFragment,
-  ImportInfo,
-  elementInstanceMetadata,
 } from '../shared/element-template'
 import {
   getModifiableJSXAttributeAtPath,
   jsxSimpleAttributeToValue,
 } from '../shared/jsx-attributes'
 import {
-  boundingRectangle,
-  CanvasPoint,
+  boundingRectangleArray,
   CanvasRectangle,
-  canvasRectangle,
   canvasRectangleToLocalRectangle,
   LocalRectangle,
-  localRectangle,
-  SimpleRectangle,
   Size,
-  zeroCanvasRect,
-  zeroLocalRect,
 } from '../shared/math-utils'
 import { optionalMap } from '../shared/optional-utils'
 import {
@@ -96,19 +61,16 @@ import {
   componentUsesProperty,
   findJSXElementChildAtPath,
   getUtopiaID,
-  isSceneElement,
 } from './element-template-utils'
 import {
   isImportedComponent,
   isAnimatedElement,
-  isGivenUtopiaAPIElement,
   isUtopiaAPIComponent,
   getUtopiaJSXComponentsFromSuccess,
   isViewLikeFromMetadata,
   isSceneFromMetadata,
   isUtopiaAPIComponentFromMetadata,
   isGivenUtopiaElementFromMetadata,
-  isImportedComponentNPM,
 } from './project-file-utils'
 import { ResizesContentProp } from './scene-utils'
 import { fastForEach } from '../shared/utils'
@@ -1106,47 +1068,12 @@ export const MetadataUtils = {
       }
     })
 
-    const findChildrenInDom = (pathStr: string): Array<ElementInstanceMetadata> => {
-      const spyElem = fromSpy[pathStr]
-      const childrenFromSpy = MetadataUtils.getChildren(fromSpy, spyElem.elementPath)
-      const childrenFromDom = MetadataUtils.getChildren(fromDOM, spyElem.elementPath)
-      const childrenNotInDom = childrenFromSpy.filter((childNotInDom) =>
-        childrenFromDom.every(
-          (childInDom) => !EP.pathsEqual(childNotInDom.elementPath, childInDom.elementPath),
-        ),
-      )
-      const recursiveChildren = childrenNotInDom.flatMap((c) => {
-        return findChildrenInDom(EP.toString(c.elementPath))
-      })
-      return [...childrenFromDom, ...recursiveChildren]
+    const spyOnlyElements = fillSpyOnlyMetadataWithFramesFromChildren(fromSpy, fromDOM)
+
+    return {
+      ...workingElements,
+      ...spyOnlyElements,
     }
-
-    const elementsWithoutDomMetadata = Object.keys(fromSpy).filter((p) => fromDOM[p] == null)
-    fastForEach(elementsWithoutDomMetadata, (pathStr) => {
-      const spyElem = fromSpy[pathStr]
-      const children = findChildrenInDom(pathStr)
-      if (children.length === 0) {
-        return
-      }
-      let metadata = { ...spyElem }
-
-      fastForEach(children, (childMetadata) => {
-        metadata = {
-          ...metadata,
-          globalFrame: boundingRectangle(
-            metadata.globalFrame ?? zeroCanvasRect,
-            childMetadata.globalFrame ?? zeroCanvasRect,
-          ),
-          localFrame: boundingRectangle(
-            metadata.localFrame ?? zeroLocalRect,
-            childMetadata.localFrame ?? zeroLocalRect,
-          ),
-        }
-        workingElements[pathStr] = metadata
-      })
-    })
-
-    return workingElements
   },
   isStaticElement(elements: Array<UtopiaJSXComponent>, target: ElementPath): boolean {
     const originType = this.getElementOriginType(elements, target)
@@ -1409,6 +1336,60 @@ export const MetadataUtils = {
   isFragmentFromMetadata(element: ElementInstanceMetadata | null): boolean {
     return element != null && isRight(element.element) && isJSXFragment(element.element.value)
   },
+}
+
+// Those elements which are not in the dom have empty globalFrame and localFrame
+// This function calculates the frames from their children (or deeper descendants), which appear in the dom
+function fillSpyOnlyMetadataWithFramesFromChildren(
+  fromSpy: ElementInstanceMetadataMap,
+  fromDOM: ElementInstanceMetadataMap,
+) {
+  const childrenInDomCache: { [pathStr: string]: Array<ElementInstanceMetadata> } = {}
+
+  const findChildrenInDomRecursively = (pathStr: string): Array<ElementInstanceMetadata> => {
+    const existing = childrenInDomCache[pathStr]
+
+    if (existing != null) {
+      return existing
+    }
+
+    const spyElem = fromSpy[pathStr]
+    const childrenFromSpy = MetadataUtils.getChildren(fromSpy, spyElem.elementPath)
+    const childrenFromDom = MetadataUtils.getChildren(fromDOM, spyElem.elementPath)
+    const childrenNotInDom = childrenFromSpy.filter((childNotInDom) =>
+      childrenFromDom.every(
+        (childInDom) => !EP.pathsEqual(childNotInDom.elementPath, childInDom.elementPath),
+      ),
+    )
+    const recursiveChildren = childrenNotInDom.flatMap((c) => {
+      return findChildrenInDomRecursively(EP.toString(c.elementPath))
+    })
+    const children = [...childrenFromDom, ...recursiveChildren]
+
+    childrenInDomCache[pathStr] = children
+
+    return children
+  }
+
+  const elementsWithoutDomMetadata = Object.keys(fromSpy).filter((p) => fromDOM[p] == null)
+
+  const workingElements: ElementInstanceMetadataMap = {}
+
+  fastForEach(elementsWithoutDomMetadata, (pathStr) => {
+    const spyElem = fromSpy[pathStr]
+    const children = findChildrenInDomRecursively(pathStr)
+    if (children.length === 0) {
+      return
+    }
+
+    workingElements[pathStr] = {
+      ...spyElem,
+      globalFrame: boundingRectangleArray(pluck(children, 'globalFrame')),
+      localFrame: boundingRectangleArray(pluck(children, 'localFrame')),
+    }
+  })
+
+  return workingElements
 }
 
 export function findElementAtPath(

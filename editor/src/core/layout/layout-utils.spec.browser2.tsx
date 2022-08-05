@@ -22,7 +22,6 @@ import {
 import { FOR_TESTS_setNextGeneratedUid } from '../model/element-template-utils'
 import { left, right } from '../shared/either'
 import { CanvasRectangle, LocalRectangle } from '../shared/math-utils'
-import { ElementProps } from 'src/components/editor/store/editor-state'
 
 const NewUID = 'catdog'
 

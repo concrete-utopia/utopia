@@ -274,6 +274,7 @@ function collectSetLayoutPropCommands(
     if (shouldReparent) {
       commands.push(
         ...getReparentCommands(
+          canvasState.builtInDependencies,
           canvasState.projectContents,
           canvasState.nodeModules,
           canvasState.openFile,

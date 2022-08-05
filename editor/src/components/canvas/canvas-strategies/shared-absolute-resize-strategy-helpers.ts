@@ -1,4 +1,4 @@
-import { AllElementProps } from 'src/components/editor/store/editor-state'
+import { AllElementProps } from '../../../components/editor/store/editor-state'
 import { isHorizontalPoint } from 'utopia-api/core'
 import { getLayoutProperty } from '../../../core/layout/getLayoutProperty'
 import { framePointForPinnedProp } from '../../../core/layout/layout-helpers-new'
