@@ -33,10 +33,13 @@ function selectAndResizeElement(
   dragDelta: WindowPoint,
   edgePosition: EdgePosition,
   modifiers: Modifiers,
-) {
-  const canvasControl = renderResult.renderedDOM.getByTestId(
+): void {
+  const canvasControl = renderResult.renderedDOM.queryByTestId(
     `absolute-resize-${edgePosition.x}-${edgePosition.y}`,
   )
+  if (canvasControl == null) {
+    return
+  }
 
   const resizeCornerBounds = canvasControl.getBoundingClientRect()
   const startPoint = windowPoint({
@@ -118,6 +121,85 @@ async function startDragUsingActions(
   await renderResult.getDispatchFollowUpActionsFinished()
 }
 
+const doesOrNotSupportStyleCode = `import * as React from 'react'
+import { Scene, Storyboard } from 'utopia-api'
+
+export const SupportsStyle = (props) => {
+  return (
+    <div
+      style={{
+        backgroundColor: 'teal',
+        position: 'absolute',
+        left: 0,
+        top: 200,
+        width: 100,
+        height: 100,
+        ...props.style,
+      }}
+      data-uid='supports-style-component'
+      data-testid='supports-style-component'
+    >
+      DOES
+    </div>
+  )
+}
+
+export const DoesNotSupportStyle = (props) => {
+  return (
+    <div
+      style={{
+        backgroundColor: 'lightgreen',
+        position: 'absolute',
+        left: 100,
+        top: 200,
+        width: 100,
+        height: 100,
+      }}
+      data-uid='does-not-support-style-component'
+      data-testid='does-not-support-style-component'
+    >
+      DOES NOT
+    </div>
+  )
+}
+
+export var storyboard = (
+  <Storyboard data-uid='storyboard'>
+    <Scene
+      style={{
+        backgroundColor: 'white',
+        position: 'absolute',
+        left: 0,
+        top: 0,
+        width: 400,
+        height: 700,
+      }}
+      data-uid='scene'
+    >
+      <div
+        style={{
+          backgroundColor: 'white',
+          position: 'absolute',
+          left: 0,
+          top: 0,
+          width: 400,
+          height: 700,
+        }}
+        data-uid='containing-div'
+      >
+        <SupportsStyle
+          data-uid='supports-style'
+          data-testid='supports-style'
+        />
+        <DoesNotSupportStyle
+          data-uid='does-not-support-style'
+          data-testid='does-not-support-style'
+        />
+      </div>
+    </Scene>
+  </Storyboard>
+)`
+
 describe('Absolute Resize Strategy', () => {
   it('resizes absolute positioned element from bottom right edge', async () => {
     const renderResult = await renderTestEditorWithCode(
@@ -194,6 +276,48 @@ describe('Absolute Resize Strategy', () => {
         </div>
       `),
     )
+  })
+  it('handles checking if a component supports the style property (for those that do)', async () => {
+    const renderResult = await renderTestEditorWithCode(
+      doesOrNotSupportStyleCode,
+      'await-first-dom-report',
+    )
+
+    const target = EP.fromString('storyboard/scene/containing-div/supports-style')
+    const dragDelta = windowPoint({ x: 25, y: 25 })
+
+    await renderResult.dispatch([selectComponents([target], false)], true)
+    act(() =>
+      selectAndResizeElement(renderResult, dragDelta, EdgePositionBottomRight, emptyModifiers),
+    )
+    await renderResult.getDispatchFollowUpActionsFinished()
+
+    const supportsStyleDiv = renderResult.renderedDOM.getByTestId('supports-style-component')
+    const supportsStyleRect = supportsStyleDiv.getBoundingClientRect()
+    expect(supportsStyleRect.width).toEqual(125)
+    expect(supportsStyleRect.height).toEqual(125)
+  })
+  it('handles checking if a component supports the style property (for those that do not)', async () => {
+    const renderResult = await renderTestEditorWithCode(
+      doesOrNotSupportStyleCode,
+      'await-first-dom-report',
+    )
+
+    const target = EP.fromString('storyboard/scene/containing-div/does-not-support-style')
+    const dragDelta = windowPoint({ x: 25, y: 25 })
+
+    await renderResult.dispatch([selectComponents([target], false)], true)
+    act(() =>
+      selectAndResizeElement(renderResult, dragDelta, EdgePositionBottomRight, emptyModifiers),
+    )
+    await renderResult.getDispatchFollowUpActionsFinished()
+
+    const supportsStyleDiv = renderResult.renderedDOM.getByTestId(
+      'does-not-support-style-component',
+    )
+    const supportsStyleRect = supportsStyleDiv.getBoundingClientRect()
+    expect(supportsStyleRect.width).toEqual(100)
+    expect(supportsStyleRect.height).toEqual(100)
   })
 })
 

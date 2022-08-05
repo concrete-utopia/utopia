@@ -615,22 +615,12 @@ export const MetadataUtils = {
               isGivenUtopiaElementFromMetadata(instance, 'Text')
             )
           } else {
-            if (openFile == null) {
-              return false
-            } else {
-              const underlyingComponent = findUnderlyingTargetComponentImplementation(
-                projectContents,
-                {},
-                openFile,
-                instance.elementPath,
-              )
-              if (underlyingComponent == null) {
-                // Could be an external third party component, assuming true for now.
-                return true
-              } else {
-                return componentUsesProperty(underlyingComponent, 'children')
-              }
-            }
+            return MetadataUtils.targetUsesProperty(
+              projectContents,
+              openFile,
+              instance.elementPath,
+              'children',
+            )
           }
         }
         // We don't know at this stage
@@ -649,6 +639,29 @@ export const MetadataUtils = {
     return instance == null
       ? false
       : MetadataUtils.targetElementSupportsChildren(projectContents, openFile, instance)
+  },
+  targetUsesProperty(
+    projectContents: ProjectContentTreeRoot,
+    openFile: string | null | undefined,
+    target: ElementPath,
+    property: string,
+  ): boolean {
+    if (openFile == null) {
+      return false
+    } else {
+      const underlyingComponent = findUnderlyingTargetComponentImplementation(
+        projectContents,
+        {},
+        openFile,
+        target,
+      )
+      if (underlyingComponent == null) {
+        // Could be an external third party component, assuming true for now.
+        return true
+      } else {
+        return componentUsesProperty(underlyingComponent, property)
+      }
+    }
   },
   getTextContentOfElement(element: ElementInstanceMetadata): string | null {
     if (isRight(element.element) && isJSXElement(element.element.value)) {
