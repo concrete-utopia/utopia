@@ -26,10 +26,12 @@ import {
   getComponentsFromTopLevelElements,
 } from '../../model/project-file-utils'
 import { mapArrayToDictionary } from '../../shared/array-utils'
+import { fastForEach } from '../../shared/utils'
 
 export function fixParseSuccessUIDs(
   oldParsed: ParseSuccess | null,
   newParsed: ParsedTextFile,
+  alreadyExistingUIDs: Set<string>,
 ): ParsedTextFile {
   if (oldParsed == null || !isParseSuccess(newParsed)) {
     // we won't try to fix parse failures
@@ -54,8 +56,8 @@ export function fixParseSuccessUIDs(
       oldPathToRestore: StaticElementPathPart,
       newPath: StaticElementPathPart,
     ) => {
-      if (oldUID !== newUID) {
-        // we have a UID mismatch
+      if (oldUID !== newUID && !alreadyExistingUIDs.has(oldUID)) {
+        // we have a UID mismatch and have confirmed that UID doesn't exist elsewhere
         newToOldUidMapping[newUID] = {
           oldUID: oldUID,
           newUID: newUID,

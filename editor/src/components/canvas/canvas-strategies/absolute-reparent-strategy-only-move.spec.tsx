@@ -1,3 +1,4 @@
+import { createBuiltInDependenciesList } from '../../../core/es-modules/package-manager/built-in-dependencies-list'
 import { elementPath } from '../../../core/shared/element-path'
 import {
   ElementInstanceMetadata,
@@ -50,7 +51,7 @@ function dragByPixels(
 ): EditorState {
   const interactionSession: InteractionSession = {
     ...createMouseInteractionForTests(
-      null as any, // the strategy does not use this
+      canvasPoint({ x: 0, y: 0 }),
       modifiers,
       null as any, // the strategy does not use this
       vector,
@@ -60,7 +61,7 @@ function dragByPixels(
   }
 
   const strategyResult = absoluteMoveStrategy.apply(
-    pickCanvasStateFromEditorState(editorState),
+    pickCanvasStateFromEditorState(editorState, createBuiltInDependenciesList(null)),
     interactionSession,
     {
       currentStrategy: null as any, // the strategy does not use this

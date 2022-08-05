@@ -598,17 +598,20 @@ export interface EditorStateCanvasControls {
   snappingGuidelines: Array<GuidelineWithSnappingVector>
   outlineHighlights: Array<CanvasRectangle>
   strategyIntendedBounds: Array<CanvasFrameAndTarget>
+  reparentedToPaths: Array<ElementPath>
 }
 
 export function editorStateCanvasControls(
   snappingGuidelines: Array<GuidelineWithSnappingVector>,
   outlineHighlights: Array<CanvasRectangle>,
   strategyIntendedBounds: Array<CanvasFrameAndTarget>,
+  reparentedToPaths: Array<ElementPath>,
 ): EditorStateCanvasControls {
   return {
     snappingGuidelines: snappingGuidelines,
     outlineHighlights: outlineHighlights,
     strategyIntendedBounds: strategyIntendedBounds,
+    reparentedToPaths: reparentedToPaths,
   }
 }
 
@@ -1021,13 +1024,17 @@ export function editorState(
   }
 }
 
+export const StoredStateVersion = 1
+
 export interface StoredEditorState {
+  version: number
   selectedViews: Array<ElementPath>
   mode: PersistedMode | null
 }
 
 export function storedEditorStateFromEditorState(editor: EditorState): StoredEditorState {
   return {
+    version: StoredStateVersion,
     selectedViews: editor.selectedViews,
     mode: convertModeToSavedMode(editor.mode),
   }
@@ -1043,7 +1050,7 @@ export function mergeStoredEditorStateIntoEditorState(
     return {
       ...editor,
       selectedViews: storedEditorState.selectedViews,
-      mode: storedEditorState.mode ?? EditorModes.selectLiteMode(),
+      mode: storedEditorState.mode ?? EditorModes.selectMode(),
     }
   }
 }
@@ -1681,7 +1688,7 @@ export function createEditorState(dispatch: EditorDispatch): EditorState {
     highlightedViews: [],
     hiddenInstances: [],
     warnedInstances: [],
-    mode: EditorModes.selectLiteMode(),
+    mode: EditorModes.selectMode(),
     focusedPanel: 'canvas',
     keysPressed: {},
     mouseButtonsPressed: emptySet(),
@@ -1737,6 +1744,7 @@ export function createEditorState(dispatch: EditorDispatch): EditorState {
         snappingGuidelines: [],
         outlineHighlights: [],
         strategyIntendedBounds: [],
+        reparentedToPaths: [],
       },
     },
     floatingInsertMenu: {
@@ -1971,7 +1979,7 @@ export function editorModelFromPersistentModel(
     highlightedViews: [],
     hiddenInstances: persistentModel.hiddenInstances,
     warnedInstances: [],
-    mode: EditorModes.selectLiteMode(),
+    mode: EditorModes.selectMode(),
     focusedPanel: 'canvas',
     keysPressed: {},
     mouseButtonsPressed: emptySet(),
@@ -2027,6 +2035,7 @@ export function editorModelFromPersistentModel(
         snappingGuidelines: [],
         outlineHighlights: [],
         strategyIntendedBounds: [],
+        reparentedToPaths: [],
       },
     },
     floatingInsertMenu: {
@@ -2631,6 +2640,7 @@ export function withUnderlyingTarget<T>(
     element: JSXElement,
     underlyingTarget: StaticElementPath,
     underlyingFilePath: string,
+    underlyingDynamicTarget: ElementPath,
   ) => T,
 ): T {
   const underlyingTarget = normalisePathToUnderlyingTarget(
@@ -2642,7 +2652,8 @@ export function withUnderlyingTarget<T>(
 
   if (
     underlyingTarget.type === 'NORMALISE_PATH_SUCCESS' &&
-    underlyingTarget.normalisedPath != null
+    underlyingTarget.normalisedPath != null &&
+    underlyingTarget.normalisedDynamicPath != null
   ) {
     const parsed = underlyingTarget.textFile.fileContents.parsed
     if (isParseSuccess(parsed)) {
@@ -2656,6 +2667,7 @@ export function withUnderlyingTarget<T>(
           element,
           underlyingTarget.normalisedPath,
           underlyingTarget.filePath,
+          underlyingTarget.normalisedDynamicPath,
         )
       }
     }

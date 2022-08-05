@@ -69,7 +69,7 @@ import {
 import { arrayDeepEquality } from '../../../utils/deep-equality'
 import { omit } from '../../../core/shared/object-utils'
 import { PropertyControls } from 'utopia-api/core'
-import { AllElementProps } from 'src/components/editor/store/editor-state'
+import { AllElementProps } from '../../../components/editor/store/editor-state'
 import * as EP from '../../../core/shared/element-path'
 
 type RawValues = Either<string, ModifiableAttribute>[]

@@ -1,3 +1,4 @@
+import { BuiltInDependencies } from '../../../core/es-modules/package-manager/built-in-dependencies-list'
 import { MetadataUtils } from '../../../core/model/element-metadata-utils'
 import { generateUidWithExistingComponents } from '../../../core/model/element-template-utils'
 import * as EP from '../../../core/shared/element-path'
@@ -67,8 +68,7 @@ export const absoluteDuplicateStrategy: CanvasStrategy = {
       canvasState.selectedElements.length > 0 &&
       interactionState.interactionData.type === 'DRAG' &&
       interactionState.activeControl.type === 'BOUNDING_AREA' &&
-      interactionState.interactionData.modifiers.alt &&
-      interactionState.interactionData.drag != null
+      interactionState.interactionData.modifiers.alt
     ) {
       return 2
     }
@@ -114,6 +114,7 @@ export const absoluteDuplicateStrategy: CanvasStrategy = {
           updateSelectedViews('permanent', newPaths),
           updateFunctionCommand('permanent', (editorState, transient) =>
             runMoveStrategyForFreshlyDuplicatedElements(
+              canvasState.builtInDependencies,
               editorState,
               {
                 ...strategyState,
@@ -130,19 +131,24 @@ export const absoluteDuplicateStrategy: CanvasStrategy = {
           duplicatedElementNewUids: duplicatedElementNewUids,
         },
       }
+    } else {
+      // Fallback for when the checks above are not satisfied.
+      return {
+        commands: [setCursorCommand('transient', CSSCursor.Duplicate)],
+        customState: null,
+      }
     }
-    // Fallback for when the checks above are not satisfied.
-    return emptyStrategyApplicationResult
   },
 }
 
 function runMoveStrategyForFreshlyDuplicatedElements(
+  builtInDependencies: BuiltInDependencies,
   editorState: EditorState,
   strategyState: StrategyState,
   interactionState: InteractionSession,
   transient: TransientOrNot,
 ): Array<EditorStatePatch> {
-  const canvasState = pickCanvasStateFromEditorState(editorState)
+  const canvasState = pickCanvasStateFromEditorState(editorState, builtInDependencies)
 
   const moveCommands = absoluteMoveStrategy.apply(
     canvasState,

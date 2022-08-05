@@ -37,6 +37,12 @@ import {
 import { DuplicateElement, runDuplicateElement } from './duplicate-element-command'
 import { runUpdateFunctionCommand, UpdateFunctionCommand } from './update-function-command'
 import { runPushIntendedBounds, PushIntendedBounds } from './push-intended-bounds-command'
+import { DeleteProperties, runDeleteProperties } from './delete-properties-command'
+import { AddImportsToFile, runAddImportsToFile } from './add-imports-to-file-command'
+import {
+  runAddToReparentedToPaths,
+  addToReparentedToPaths,
+} from '../canvas-strategies/add-to-reparented-to-paths-command'
 
 export interface CommandFunctionResult {
   editorStatePatches: Array<EditorStatePatch>
@@ -69,6 +75,9 @@ export type CanvasCommand =
   | SetCursorCommand
   | SetElementsToRerenderCommand
   | PushIntendedBounds
+  | DeleteProperties
+  | AddImportsToFile
+  | addToReparentedToPaths
 
 export const runCanvasCommand = (
   editorState: EditorState,
@@ -110,6 +119,12 @@ export const runCanvasCommand = (
       return runSetElementsToRerender(editorState, command)
     case 'PUSH_INTENDED_BOUNDS':
       return runPushIntendedBounds(editorState, command)
+    case 'DELETE_PROPERTIES':
+      return runDeleteProperties(editorState, command)
+    case 'ADD_IMPORTS_TO_FILE':
+      return runAddImportsToFile(editorState, command)
+    case 'ADD_TO_REPARENTED_TO_PATHS':
+      return runAddToReparentedToPaths(editorState, command)
     default:
       const _exhaustiveCheck: never = command
       throw new Error(`Unhandled canvas command ${JSON.stringify(command)}`)

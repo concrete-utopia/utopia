@@ -1,10 +1,8 @@
 import React from 'react'
 import fastDeepEquals from 'fast-deep-equal'
-import { useContextSelector } from 'use-context-selector'
 import { Scene, SceneProps } from 'utopia-api'
 import { useColorTheme, UtopiaStyles } from '../../../uuiui'
-import { RerenderUtopiaCtxAtom } from './ui-jsx-canvas-contexts'
-import { DomWalkerInvalidatePathsCtxAtom, UiJsxCanvasCtxAtom } from '../ui-jsx-canvas'
+import { DomWalkerInvalidatePathsCtxAtom } from '../ui-jsx-canvas'
 import { UTOPIA_SCENE_ID_KEY } from '../../../core/model/utopia-constants'
 import { AlwaysTrue, usePubSubAtomReadOnly } from '../../../core/shared/atom-with-pub-sub'
 
@@ -27,6 +25,7 @@ export const SceneComponent = React.memo(
       boxShadow: canvasIsLive
         ? UtopiaStyles.scene.live.boxShadow
         : UtopiaStyles.scene.editing.boxShadow,
+      ...UtopiaStyles.backgrounds.checkerboardBackground,
       ...style,
     }
 

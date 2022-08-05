@@ -23,6 +23,10 @@ import { keyboardAbsoluteResizeStrategy } from './keyboard-absolute-resize-strat
 import { escapeHatchStrategy } from './escape-hatch-strategy'
 import { flexReorderStrategy } from './flex-reorder-strategy'
 import { absoluteDuplicateStrategy } from './absolute-duplicate-strategy'
+import { absoluteReparentToFlexStrategy } from './absolute-reparent-to-flex-strategy'
+import { flexReparentToAbsoluteStrategy } from './flex-reparent-to-absolute-strategy'
+import { flexReparentToFlexStrategy } from './flex-reparent-to-flex-strategy'
+import { BuiltInDependencies } from '../../../core/es-modules/package-manager/built-in-dependencies-list'
 
 export const RegisteredCanvasStrategies: Array<CanvasStrategy> = [
   absoluteMoveStrategy,
@@ -32,13 +36,21 @@ export const RegisteredCanvasStrategies: Array<CanvasStrategy> = [
   keyboardAbsoluteResizeStrategy,
   absoluteResizeBoundingBoxStrategy,
   flexReorderStrategy,
-  escapeHatchStrategy,
+  flexReparentToAbsoluteStrategy,
+  flexReparentToFlexStrategy,
+  // escapeHatchStrategy,  // TODO re-enable once reparent is not tied to cmd
+  absoluteReparentToFlexStrategy,
 ]
 
-export function pickCanvasStateFromEditorState(editorState: EditorState): InteractionCanvasState {
+export function pickCanvasStateFromEditorState(
+  editorState: EditorState,
+  builtInDependencies: BuiltInDependencies,
+): InteractionCanvasState {
   return {
+    builtInDependencies: builtInDependencies,
     selectedElements: editorState.selectedViews,
     projectContents: editorState.projectContents,
+    nodeModules: editorState.nodeModules.files,
     openFile: editorState.canvas.openFile?.filename,
     scale: editorState.canvas.scale,
     canvasOffset: editorState.canvas.roundedCanvasOffset,
@@ -59,13 +71,7 @@ function getApplicableStrategies(
 
 const getApplicableStrategiesSelector = createSelector(
   (store: EditorStorePatched): InteractionCanvasState => {
-    return {
-      selectedElements: store.editor.selectedViews,
-      projectContents: store.editor.projectContents,
-      openFile: store.editor.canvas.openFile?.filename,
-      scale: store.editor.canvas.scale,
-      canvasOffset: store.editor.canvas.roundedCanvasOffset,
-    }
+    return pickCanvasStateFromEditorState(store.editor, store.builtInDependencies)
   },
   (store: EditorStorePatched) => store.editor.canvas.interactionSession,
   (store: EditorStorePatched) => store.editor.jsxMetadata,
@@ -132,7 +138,7 @@ function getApplicableStrategiesOrderedByFitness(
 
 const getApplicableStrategiesOrderedByFitnessSelector = createSelector(
   (store: EditorStorePatched): InteractionCanvasState => {
-    return pickCanvasStateFromEditorState(store.editor)
+    return pickCanvasStateFromEditorState(store.editor, store.builtInDependencies)
   },
   (store: EditorStorePatched) => store.editor.canvas.interactionSession,
   (store: EditorStorePatched) => store.strategyState,

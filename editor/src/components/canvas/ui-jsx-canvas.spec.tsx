@@ -1281,6 +1281,16 @@ export var ${BakedInStoryboardVariableName} = (props) => {
               position: absolute;
               background-color: rgba(255, 255, 255, 1);
               box-shadow: 0px 0px 1px 0px rgba(26, 26, 26, 0.3);
+              background-image: linear-gradient(
+                  to bottom left,
+                  #e7e7e7 25%,
+                  transparent 25%
+                ),
+                linear-gradient(to bottom left, transparent 75%, #e7e7e7 75%),
+                linear-gradient(to bottom right, #e7e7e7 25%, transparent 25%),
+                linear-gradient(to bottom right, transparent 75%, #e7e7e7 75%);
+              background-size: 12px 12px, 12px 12px, 12px 12px, 12px 12px;
+              background-position: -9px 0px, -3px -6px, 3px 6px, -3px 0;
               left: 0;
               top: 0;
               width: 400px;
@@ -1380,6 +1390,16 @@ export var ${BakedInStoryboardVariableName} = (props) => {
               position: absolute;
               background-color: rgba(255, 255, 255, 1);
               box-shadow: 0px 0px 1px 0px rgba(26, 26, 26, 0.3);
+              background-image: linear-gradient(
+                  to bottom left,
+                  #e7e7e7 25%,
+                  transparent 25%
+                ),
+                linear-gradient(to bottom left, transparent 75%, #e7e7e7 75%),
+                linear-gradient(to bottom right, #e7e7e7 25%, transparent 25%),
+                linear-gradient(to bottom right, transparent 75%, #e7e7e7 75%);
+              background-size: 12px 12px, 12px 12px, 12px 12px, 12px 12px;
+              background-position: -9px 0px, -3px -6px, 3px 6px, -3px 0;
               left: 0;
               top: 0;
               width: 400px;
@@ -1888,6 +1908,16 @@ describe('UiJsxCanvas render multifile projects', () => {
               position: absolute;
               background-color: rgba(255, 255, 255, 1);
               box-shadow: 0px 0px 1px 0px rgba(26, 26, 26, 0.3);
+              background-image: linear-gradient(
+                  to bottom left,
+                  #e7e7e7 25%,
+                  transparent 25%
+                ),
+                linear-gradient(to bottom left, transparent 75%, #e7e7e7 75%),
+                linear-gradient(to bottom right, #e7e7e7 25%, transparent 25%),
+                linear-gradient(to bottom right, transparent 75%, #e7e7e7 75%);
+              background-size: 12px 12px, 12px 12px, 12px 12px, 12px 12px;
+              background-position: -9px 0px, -3px -6px, 3px 6px, -3px 0;
               height: 200px;
               left: 59px;
               width: 200px;
@@ -1973,6 +2003,16 @@ describe('UiJsxCanvas render multifile projects', () => {
               position: absolute;
               background-color: rgba(255, 255, 255, 1);
               box-shadow: 0px 0px 1px 0px rgba(26, 26, 26, 0.3);
+              background-image: linear-gradient(
+                  to bottom left,
+                  #e7e7e7 25%,
+                  transparent 25%
+                ),
+                linear-gradient(to bottom left, transparent 75%, #e7e7e7 75%),
+                linear-gradient(to bottom right, #e7e7e7 25%, transparent 25%),
+                linear-gradient(to bottom right, transparent 75%, #e7e7e7 75%);
+              background-size: 12px 12px, 12px 12px, 12px 12px, 12px 12px;
+              background-position: -9px 0px, -3px -6px, 3px 6px, -3px 0;
               height: 200px;
               left: 59px;
               width: 200px;
@@ -2060,6 +2100,16 @@ describe('UiJsxCanvas render multifile projects', () => {
               position: absolute;
               background-color: rgba(255, 255, 255, 1);
               box-shadow: 0px 0px 1px 0px rgba(26, 26, 26, 0.3);
+              background-image: linear-gradient(
+                  to bottom left,
+                  #e7e7e7 25%,
+                  transparent 25%
+                ),
+                linear-gradient(to bottom left, transparent 75%, #e7e7e7 75%),
+                linear-gradient(to bottom right, #e7e7e7 25%, transparent 25%),
+                linear-gradient(to bottom right, transparent 75%, #e7e7e7 75%);
+              background-size: 12px 12px, 12px 12px, 12px 12px, 12px 12px;
+              background-position: -9px 0px, -3px -6px, 3px 6px, -3px 0;
               height: 200px;
               left: 59px;
               width: 200px;
@@ -2132,6 +2182,16 @@ describe('UiJsxCanvas render multifile projects', () => {
               position: absolute;
               background-color: rgba(255, 255, 255, 1);
               box-shadow: 0px 0px 1px 0px rgba(26, 26, 26, 0.3);
+              background-image: linear-gradient(
+                  to bottom left,
+                  #e7e7e7 25%,
+                  transparent 25%
+                ),
+                linear-gradient(to bottom left, transparent 75%, #e7e7e7 75%),
+                linear-gradient(to bottom right, #e7e7e7 25%, transparent 25%),
+                linear-gradient(to bottom right, transparent 75%, #e7e7e7 75%);
+              background-size: 12px 12px, 12px 12px, 12px 12px, 12px 12px;
+              background-position: -9px 0px, -3px -6px, 3px 6px, -3px 0;
               height: 200px;
               left: 59px;
               width: 200px;
@@ -2217,6 +2277,16 @@ describe('UiJsxCanvas render multifile projects', () => {
               position: absolute;
               background-color: rgba(255, 255, 255, 1);
               box-shadow: 0px 0px 1px 0px rgba(26, 26, 26, 0.3);
+              background-image: linear-gradient(
+                  to bottom left,
+                  #e7e7e7 25%,
+                  transparent 25%
+                ),
+                linear-gradient(to bottom left, transparent 75%, #e7e7e7 75%),
+                linear-gradient(to bottom right, #e7e7e7 25%, transparent 25%),
+                linear-gradient(to bottom right, transparent 75%, #e7e7e7 75%);
+              background-size: 12px 12px, 12px 12px, 12px 12px, 12px 12px;
+              background-position: -9px 0px, -3px -6px, 3px 6px, -3px 0;
               left: 0;
               top: 0;
               width: 400px;

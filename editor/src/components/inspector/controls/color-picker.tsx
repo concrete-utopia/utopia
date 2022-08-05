@@ -10,13 +10,14 @@ import {
   isHSL,
   isKeyword,
 } from '../common/css-utils'
-import { checkerboardBackground } from '../common/inspector-utils'
 import { inspectorEdgePadding } from '../sections/style-section/background-subsection/background-picker'
 import { InspectorModal } from '../widgets/inspector-modal'
 import { StringControl } from './string-control'
 import React from 'react'
 //TODO: switch to functional component and make use of 'useColorTheme':
 import { colorTheme, SimpleNumberInput, SimplePercentInput, UtopiaStyles } from '../../../uuiui'
+
+const checkerboardBackground = UtopiaStyles.backgrounds.checkerboardBackground
 
 export interface ColorPickerProps extends ColorPickerInnerProps {
   closePopup: () => void

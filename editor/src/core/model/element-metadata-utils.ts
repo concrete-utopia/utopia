@@ -1,28 +1,10 @@
 import * as OPI from 'object-path-immutable'
-import { FlexLength, LayoutSystem, Sides } from 'utopia-api/core'
+import { FlexLength, Sides } from 'utopia-api/core'
 import { getReorderDirection } from '../../components/canvas/controls/select-mode/yoga-utils'
 import { getImageSize, scaleImageDimensions } from '../../components/images'
-import {
-  foldThese,
-  makeThat,
-  makeThis,
-  makeThisAndThat,
-  mergeThese,
-  setThat,
-  These,
-} from '../../utils/these'
-import Utils, { IndexPosition } from '../../utils/utils'
+import Utils from '../../utils/utils'
 import { getLayoutProperty } from '../layout/getLayoutProperty'
-import { FlexLayoutHelpers, LayoutHelpers } from '../layout/layout-helpers'
-import {
-  flattenArray,
-  mapDropNulls,
-  pluck,
-  stripNulls,
-  flatMapArray,
-  uniqBy,
-  reverse,
-} from '../shared/array-utils'
+import { mapDropNulls, pluck, stripNulls, flatMapArray, uniqBy } from '../shared/array-utils'
 import { intrinsicHTMLElementNamesThatSupportChildren } from '../shared/dom-utils'
 import {
   alternativeEither,
@@ -31,21 +13,14 @@ import {
   flatMapEither,
   foldEither,
   forEachRight,
-  isLeft,
   isRight,
-  left,
-  mapEither,
   right,
-  traverseEither,
-  Left,
-  Right,
   maybeEitherToMaybe,
 } from '../shared/either'
 import {
   ElementInstanceMetadata,
   ElementsByUID,
   getJSXElementNameLastPart,
-  getJSXElementNameNoPathName,
   isJSXArbitraryBlock,
   isJSXElement,
   isJSXTextBlock,
@@ -56,23 +31,18 @@ import {
   JSXElementName,
   getJSXElementNameAsString,
   isIntrinsicElement,
-  jsxElementName,
   ElementInstanceMetadataMap,
   isIntrinsicHTMLElement,
-  getJSXAttribute,
 } from '../shared/element-template'
 import {
   getModifiableJSXAttributeAtPath,
   jsxSimpleAttributeToValue,
 } from '../shared/jsx-attributes'
 import {
-  CanvasPoint,
+  boundingRectangleArray,
   CanvasRectangle,
-  canvasRectangle,
   canvasRectangleToLocalRectangle,
   LocalRectangle,
-  localRectangle,
-  SimpleRectangle,
   Size,
 } from '../shared/math-utils'
 import { optionalMap } from '../shared/optional-utils'
@@ -86,18 +56,20 @@ import {
 } from '../shared/project-file-types'
 import * as PP from '../shared/property-path'
 import * as EP from '../shared/element-path'
-import { findJSXElementChildAtPath, getUtopiaID, isSceneElement } from './element-template-utils'
+import {
+  componentUsesProperty,
+  findJSXElementChildAtPath,
+  getUtopiaID,
+} from './element-template-utils'
 import {
   isImportedComponent,
   isAnimatedElement,
-  isGivenUtopiaAPIElement,
   isUtopiaAPIComponent,
   getUtopiaJSXComponentsFromSuccess,
   isViewLikeFromMetadata,
   isSceneFromMetadata,
   isUtopiaAPIComponentFromMetadata,
   isGivenUtopiaElementFromMetadata,
-  isImportedComponentNPM,
 } from './project-file-utils'
 import { ResizesContentProp } from './scene-utils'
 import { fastForEach } from '../shared/utils'
@@ -107,6 +79,8 @@ import { AllElementProps, withUnderlyingTarget } from '../../components/editor/s
 import { ProjectContentTreeRoot } from '../../components/assets'
 import { memoize } from '../shared/memoize'
 import { buildTree, ElementPathTree, getSubTree } from '../shared/element-path-tree'
+import { findUnderlyingTargetComponentImplementation } from '../../components/custom-code/code-file'
+
 const ObjectPathImmutable: any = OPI
 
 export const getChildrenOfCollapsedViews = (
@@ -158,10 +132,10 @@ export const MetadataUtils = {
         nodeModules,
         openFile,
         'unknown-element',
-        (success, element, underlyingTarget, underlyingFilePath) => {
+        (success, element, underlyingTarget, underlyingFilePath, underlyingDynamicTarget) => {
           return MetadataUtils.getElementOriginType(
             getUtopiaJSXComponentsFromSuccess(success),
-            underlyingTarget,
+            underlyingDynamicTarget,
           )
         },
       )
@@ -622,30 +596,59 @@ export const MetadataUtils = {
       return false
     }
   },
-  targetElementSupportsChildren(instance: ElementInstanceMetadata): boolean {
-    // FIXME Replace with a property controls check
-    const elementEither = instance.element
-
-    if (isLeft(elementEither)) {
-      return intrinsicHTMLElementNamesThatSupportChildren.includes(elementEither.value)
-    } else {
-      const element = elementEither.value
-      if (isJSXElement(element) && isUtopiaAPIComponentFromMetadata(instance)) {
-        // Explicitly prevent components / elements that we *know* don't support children
-        return (
-          isViewLikeFromMetadata(instance) ||
-          isSceneFromMetadata(instance) ||
-          isGivenUtopiaElementFromMetadata(instance, 'Text')
-        )
-      } else {
+  targetElementSupportsChildren(
+    projectContents: ProjectContentTreeRoot,
+    openFile: string | null,
+    instance: ElementInstanceMetadata,
+  ): boolean {
+    return foldEither(
+      (elementString) => intrinsicHTMLElementNamesThatSupportChildren.includes(elementString),
+      (element) => {
+        if (isJSXElement(element)) {
+          if (isIntrinsicElement(element.name)) {
+            return intrinsicHTMLElementNamesThatSupportChildren.includes(element.name.baseVariable)
+          } else if (isUtopiaAPIComponentFromMetadata(instance)) {
+            // Explicitly prevent components / elements that we *know* don't support children
+            return (
+              isViewLikeFromMetadata(instance) ||
+              isSceneFromMetadata(instance) ||
+              isGivenUtopiaElementFromMetadata(instance, 'Text')
+            )
+          } else {
+            if (openFile == null) {
+              return false
+            } else {
+              const underlyingComponent = findUnderlyingTargetComponentImplementation(
+                projectContents,
+                {},
+                openFile,
+                instance.elementPath,
+              )
+              if (underlyingComponent == null) {
+                // Could be an external third party component, assuming true for now.
+                return true
+              } else {
+                return componentUsesProperty(underlyingComponent, 'children')
+              }
+            }
+          }
+        }
         // We don't know at this stage
         return true
-      }
-    }
+      },
+      instance.element,
+    )
   },
-  targetSupportsChildren(metadata: ElementInstanceMetadataMap, target: ElementPath): boolean {
+  targetSupportsChildren(
+    projectContents: ProjectContentTreeRoot,
+    openFile: string | null,
+    metadata: ElementInstanceMetadataMap,
+    target: ElementPath,
+  ): boolean {
     const instance = MetadataUtils.findElementByElementPath(metadata, target)
-    return instance == null ? false : MetadataUtils.targetElementSupportsChildren(instance)
+    return instance == null
+      ? false
+      : MetadataUtils.targetElementSupportsChildren(projectContents, openFile, instance)
   },
   getTextContentOfElement(element: ElementInstanceMetadata): string | null {
     if (isRight(element.element) && isJSXElement(element.element.value)) {
@@ -1064,7 +1067,12 @@ export const MetadataUtils = {
       }
     })
 
-    return workingElements
+    const spyOnlyElements = fillSpyOnlyMetadataWithFramesFromChildren(fromSpy, fromDOM)
+
+    return {
+      ...workingElements,
+      ...spyOnlyElements,
+    }
   },
   isStaticElement(elements: Array<UtopiaJSXComponent>, target: ElementPath): boolean {
     const originType = this.getElementOriginType(elements, target)
@@ -1324,6 +1332,60 @@ export const MetadataUtils = {
         : null
     return localFrame
   },
+}
+
+// Those elements which are not in the dom have empty globalFrame and localFrame
+// This function calculates the frames from their children (or deeper descendants), which appear in the dom
+function fillSpyOnlyMetadataWithFramesFromChildren(
+  fromSpy: ElementInstanceMetadataMap,
+  fromDOM: ElementInstanceMetadataMap,
+) {
+  const childrenInDomCache: { [pathStr: string]: Array<ElementInstanceMetadata> } = {}
+
+  const findChildrenInDomRecursively = (pathStr: string): Array<ElementInstanceMetadata> => {
+    const existing = childrenInDomCache[pathStr]
+
+    if (existing != null) {
+      return existing
+    }
+
+    const spyElem = fromSpy[pathStr]
+    const childrenFromSpy = MetadataUtils.getChildren(fromSpy, spyElem.elementPath)
+    const childrenFromDom = MetadataUtils.getChildren(fromDOM, spyElem.elementPath)
+    const childrenNotInDom = childrenFromSpy.filter((childNotInDom) =>
+      childrenFromDom.every(
+        (childInDom) => !EP.pathsEqual(childNotInDom.elementPath, childInDom.elementPath),
+      ),
+    )
+    const recursiveChildren = childrenNotInDom.flatMap((c) => {
+      return findChildrenInDomRecursively(EP.toString(c.elementPath))
+    })
+    const children = [...childrenFromDom, ...recursiveChildren]
+
+    childrenInDomCache[pathStr] = children
+
+    return children
+  }
+
+  const elementsWithoutDomMetadata = Object.keys(fromSpy).filter((p) => fromDOM[p] == null)
+
+  const workingElements: ElementInstanceMetadataMap = {}
+
+  fastForEach(elementsWithoutDomMetadata, (pathStr) => {
+    const spyElem = fromSpy[pathStr]
+    const children = findChildrenInDomRecursively(pathStr)
+    if (children.length === 0) {
+      return
+    }
+
+    workingElements[pathStr] = {
+      ...spyElem,
+      globalFrame: boundingRectangleArray(pluck(children, 'globalFrame')),
+      localFrame: boundingRectangleArray(pluck(children, 'localFrame')),
+    }
+  })
+
+  return workingElements
 }
 
 export function findElementAtPath(

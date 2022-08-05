@@ -489,6 +489,7 @@ describe('normalisePathToUnderlyingTarget', () => {
       EP.dynamicPathToStaticPath(EP.fromString('same-file-app-div')),
       StoryboardFilePath,
       getTextFileByPath(projectContents, StoryboardFilePath),
+      EP.fromString('same-file-app-div'),
     )
     expect(actualResult).toEqual(expectedResult)
   })
@@ -505,6 +506,7 @@ describe('normalisePathToUnderlyingTarget', () => {
       EP.dynamicPathToStaticPath(EP.fromString('card-outer-div/card-inner-div')),
       '/src/card.js',
       getTextFileByPath(projectContents, '/src/card.js'),
+      EP.fromString('card-outer-div/card-inner-div'),
     )
     expect(actualResult).toEqual(expectedResult)
   })
@@ -519,6 +521,7 @@ describe('normalisePathToUnderlyingTarget', () => {
       EP.dynamicPathToStaticPath(EP.fromString('card-outer-div/card-inner-div')),
       '/src/card.js',
       getTextFileByPath(projectContents, '/src/card.js'),
+      EP.fromString('card-outer-div/card-inner-div'),
     )
     expect(actualResult).toEqual(expectedResult)
   })
@@ -550,10 +553,10 @@ describe('normalisePathToUnderlyingTarget', () => {
       SampleNodeModules,
       StoryboardFilePath,
       EP.fromString(
-        'storyboard-entity/scene-1-entity/app-entity:app-outer-div/card-instance:card-outer-div/card-inner-rectangle:rectangle-inner-div',
+        'storyboard-entity/scene-1-entity/app-entity:app-outer-div/card-instance:card-outer-div/card-inner-spring:spring-inner-div',
       ),
     )
-    const expectedResult = normalisePathEndsAtDependency('utopia-api')
+    const expectedResult = normalisePathEndsAtDependency('non-existant-dummy-library')
     expect(actualResult).toEqual(expectedResult)
   })
 })

@@ -32,6 +32,7 @@ import { getPartsFromPath, makePathFromParts, normalizePath } from '../../../uti
 import type { MapLike } from 'typescript'
 
 import LRU from 'lru-cache'
+import { BuiltInDependencies } from './built-in-dependencies-list'
 
 const partialPackageJsonCache: LRU<string, ParseResult<PartialPackageJsonDefinition>> = new LRU({
   max: 20,
@@ -514,4 +515,20 @@ export function resolveModulePath(
   } else {
     return left(`Cannot find module ${toImport}`)
   }
+}
+
+export function resolveModulePathIncludingBuiltIns(
+  builtInDependencies: BuiltInDependencies,
+  projectContents: ProjectContentTreeRoot,
+  nodeModules: NodeModules,
+  importOrigin: string,
+  toImport: string,
+): Either<string, string> {
+  // Resolve against the built in dependencies before falling back to `resolveModulePath`.
+  for (const builtInDependency of builtInDependencies) {
+    if (builtInDependency.moduleName === toImport) {
+      return right(builtInDependency.moduleName)
+    }
+  }
+  return resolveModulePath(projectContents, nodeModules, importOrigin, toImport)
 }

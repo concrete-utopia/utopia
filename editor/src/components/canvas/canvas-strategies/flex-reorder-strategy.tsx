@@ -63,65 +63,71 @@ export const flexReorderStrategy: CanvasStrategy = {
       : 0
   },
   apply: (canvasState, interactionState, strategyState) => {
-    if (
-      interactionState.interactionData.type !== 'DRAG' ||
-      interactionState.interactionData.drag == null
-    ) {
+    if (interactionState.interactionData.type !== 'DRAG') {
       return emptyStrategyApplicationResult
     }
 
-    const { selectedElements } = canvasState
-    const target = selectedElements[0]
+    if (interactionState.interactionData.drag != null) {
+      const { selectedElements } = canvasState
+      const target = selectedElements[0]
 
-    const siblingsOfTarget = MetadataUtils.getSiblings(strategyState.startingMetadata, target).map(
-      (element) => element.elementPath,
-    )
+      const siblingsOfTarget = MetadataUtils.getSiblings(
+        strategyState.startingMetadata,
+        target,
+      ).map((element) => element.elementPath)
 
-    const pointOnCanvas = offsetPoint(
-      interactionState.interactionData.dragStart,
-      interactionState.interactionData.drag,
-    )
+      const pointOnCanvas = offsetPoint(
+        interactionState.interactionData.dragStart,
+        interactionState.interactionData.drag,
+      )
 
-    const unpatchedIndex = siblingsOfTarget.findIndex((sibling) => EP.pathsEqual(sibling, target))
-    const lastReorderIdx = strategyState.customStrategyState.lastReorderIdx ?? unpatchedIndex
+      const unpatchedIndex = siblingsOfTarget.findIndex((sibling) => EP.pathsEqual(sibling, target))
+      const lastReorderIdx = strategyState.customStrategyState.lastReorderIdx ?? unpatchedIndex
 
-    const newIndex = getReorderIndex(
-      strategyState.startingMetadata,
-      siblingsOfTarget,
-      pointOnCanvas,
-    )
+      const newIndex = getReorderIndex(
+        strategyState.startingMetadata,
+        siblingsOfTarget,
+        pointOnCanvas,
+      )
 
-    const realNewIndex = newIndex > -1 ? newIndex : lastReorderIdx
+      const realNewIndex = newIndex > -1 ? newIndex : lastReorderIdx
 
-    if (realNewIndex === unpatchedIndex) {
-      return {
-        commands: [
-          updateHighlightedViews('transient', []),
-          setCursorCommand('transient', CSSCursor.Move),
-        ],
-        customState: {
-          ...strategyState.customStrategyState,
-          lastReorderIdx: realNewIndex,
-        },
+      if (realNewIndex === unpatchedIndex) {
+        return {
+          commands: [
+            updateHighlightedViews('transient', []),
+            setCursorCommand('transient', CSSCursor.Move),
+          ],
+          customState: {
+            ...strategyState.customStrategyState,
+            lastReorderIdx: realNewIndex,
+          },
+        }
+      } else {
+        return {
+          commands: [
+            reorderElement('permanent', target, realNewIndex),
+            setElementsToRerenderCommand([target]),
+            updateHighlightedViews('transient', []),
+            setCursorCommand('transient', CSSCursor.Move),
+          ],
+          customState: {
+            ...strategyState.customStrategyState,
+            lastReorderIdx: realNewIndex,
+          },
+        }
       }
     } else {
+      // Fallback for when the checks above are not satisfied.
       return {
-        commands: [
-          reorderElement('permanent', target, realNewIndex),
-          setElementsToRerenderCommand([target]),
-          updateHighlightedViews('transient', []),
-          setCursorCommand('transient', CSSCursor.Move),
-        ],
-        customState: {
-          ...strategyState.customStrategyState,
-          lastReorderIdx: realNewIndex,
-        },
+        commands: [setCursorCommand('transient', CSSCursor.Move)],
+        customState: null,
       }
     }
   },
 }
 
-function getReorderIndex(
+export function getReorderIndex(
   metadata: ElementInstanceMetadataMap,
   siblings: Array<ElementPath>,
   point: CanvasVector,

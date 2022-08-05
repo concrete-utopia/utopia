@@ -283,18 +283,21 @@ export interface NormalisePathSuccess {
   normalisedPath: StaticElementPath | null
   filePath: string
   textFile: TextFile
+  normalisedDynamicPath: ElementPath | null
 }
 
 export function normalisePathSuccess(
   normalisedPath: StaticElementPath | null,
   filePath: string,
   textFile: TextFile,
+  normalisedDynamicPath: ElementPath | null,
 ): NormalisePathSuccess {
   return {
     type: 'NORMALISE_PATH_SUCCESS',
     normalisedPath: normalisedPath,
     filePath: filePath,
     textFile: textFile,
+    normalisedDynamicPath: normalisedDynamicPath,
   }
 }
 
@@ -402,10 +405,10 @@ export function normalisePathToUnderlyingTarget(
   if (isTextFile(currentFile)) {
     if (isParseSuccess(currentFile.fileContents.parsed)) {
       const staticPath = elementPath == null ? null : EP.dynamicPathToStaticPath(elementPath)
-      const potentiallyDroppedFirstPathElementResult = EP.dropFirstPathElement(staticPath)
+      const potentiallyDroppedFirstPathElementResult = EP.dropFirstPathElement(elementPath)
       if (potentiallyDroppedFirstPathElementResult.droppedPathElements == null) {
         // As the scene path is empty, there's no more traversing to do, the target is in this file.
-        return normalisePathSuccess(staticPath, currentFilePath, currentFile)
+        return normalisePathSuccess(staticPath, currentFilePath, currentFile, elementPath)
       } else {
         const droppedPathPart = potentiallyDroppedFirstPathElementResult.droppedPathElements
         if (droppedPathPart.length === 0) {
@@ -441,6 +444,7 @@ export function normalisePathToUnderlyingTarget(
                   : EP.dynamicPathToStaticPath(potentiallyDroppedFirstPathElementResult.newPath),
                 currentFilePath,
                 currentFile,
+                potentiallyDroppedFirstPathElementResult.newPath,
               )
             } else {
               return lookupElementImport(
@@ -542,7 +546,9 @@ function lookupElementImport(
             }
           }
         case 'RESOLVE_NOT_PRESENT':
-          return normalisePathError(`Unable to find resolve path at ${importedFrom}`)
+          return normalisePathError(
+            `Unable to find resolve path at ${JSON.stringify(importedFrom)}`,
+          )
         case 'RESOLVE_SUCCESS_IGNORE_MODULE':
           return normalisePathEndsAtIgnoredDependency(importedFrom.filePath)
         default:
@@ -595,6 +601,7 @@ export function findUnderlyingTargetComponentImplementation(
           parseResult,
           { droppedPathElements: null, newPath: null },
         )
+
         if (
           innerUnderlyingTarget.type === 'NORMALISE_PATH_SUCCESS' &&
           isParseSuccess(innerUnderlyingTarget.textFile.fileContents.parsed)

@@ -1,5 +1,5 @@
 import React from 'react'
-import { ElementPath } from 'src/core/shared/project-file-types'
+import { ElementPath } from '../../../core/shared/project-file-types'
 import * as EP from '../../../core/shared/element-path'
 import { fastForEach } from '../../../core/shared/utils'
 import { useColorTheme } from '../../../uuiui'
@@ -170,19 +170,6 @@ export const useHandleCloseOnESCOrEnter = (closePopup: (key: 'Escape' | 'Enter')
       document.removeEventListener('keydown', handleCloseOnESCOrEnter)
     }
   }, [handleCloseOnESCOrEnter])
-}
-
-export const checkerboardBackground: Pick<
-  React.CSSProperties,
-  'backgroundImage' | 'backgroundSize' | 'backgroundPosition'
-> = {
-  backgroundImage: `
-    linear-gradient(to bottom left,   #e7e7e7 25%,  transparent 25%),
-    linear-gradient(to bottom left,   transparent 75%,  #e7e7e7 75%),
-    linear-gradient(to bottom right,  #e7e7e7 25%,  transparent 25%),
-    linear-gradient(to bottom right,  transparent 75%,  #e7e7e7 75%)`,
-  backgroundSize: '12px 12px, 12px 12px, 12px 12px, 12px 12px',
-  backgroundPosition: '-9px 0px, -3px -6px, 3px 6px, -3px 0',
 }
 
 export function clampString(value: string, maxLength: number) {

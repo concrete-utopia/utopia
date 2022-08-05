@@ -2,7 +2,6 @@ import { produce } from 'immer'
 import update from 'immutability-helper'
 import React from 'react'
 import localforage from 'localforage'
-import { CursorPosition } from 'src/components/code-editor/code-editor-utils'
 import { FramePoint, LayoutSystem } from 'utopia-api/core'
 import {
   SampleFileBuildResult,
@@ -2740,6 +2739,8 @@ export const UPDATE_FNS = {
     dispatch: EditorDispatch,
   ): EditorModel => {
     const targetParent = getTargetParentForPaste(
+      editor.projectContents,
+      editor.canvas.openFile?.filename ?? null,
       editor.selectedViews,
       editor.jsxMetadata,
       editor.pasteTargetsToIgnore,
@@ -4892,8 +4893,12 @@ export const UPDATE_FNS = {
       forceParseFiles: editor.forceParseFiles.concat(action.filePath),
     }
   },
-  RUN_ESCAPE_HATCH: (action: RunEscapeHatch, editor: EditorModel): EditorModel => {
-    const canvasState = pickCanvasStateFromEditorState(editor)
+  RUN_ESCAPE_HATCH: (
+    action: RunEscapeHatch,
+    editor: EditorModel,
+    builtInDependencies: BuiltInDependencies,
+  ): EditorModel => {
+    const canvasState = pickCanvasStateFromEditorState(editor, builtInDependencies)
     if (areAllSelectedElementsNonAbsolute(action.targets, editor.jsxMetadata)) {
       const commands = getEscapeHatchCommands(
         action.targets,

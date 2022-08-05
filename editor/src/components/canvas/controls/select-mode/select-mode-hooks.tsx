@@ -47,7 +47,7 @@ import {
 } from '../../canvas-strategies/interaction-state'
 import { Modifier, Modifiers } from '../../../../utils/modifiers'
 import { pathsEqual } from '../../../../core/shared/element-path'
-import { EditorAction } from 'src/components/editor/action-types'
+import { EditorAction } from '../../../../components/editor/action-types'
 
 const DRAG_START_THRESHOLD = 2
 
@@ -502,6 +502,22 @@ export function useHighlightCallbacks(
   return { onMouseMove }
 }
 
+function getPreferredSelectionForEvent(
+  eventType: 'mousedown' | 'mouseup' | string,
+  isDoubleClick: boolean,
+): 'prefer-selected' | 'dont-prefer-selected' {
+  // mousedown keeps selection on a single click to allow dragging overlapping elements and selection happens on mouseup
+  // with continuous clicking mousedown should select
+  switch (eventType) {
+    case 'mousedown':
+      return isDoubleClick ? 'dont-prefer-selected' : 'prefer-selected'
+    case 'mouseup':
+      return isDoubleClick ? 'prefer-selected' : 'dont-prefer-selected'
+    default:
+      return 'prefer-selected'
+  }
+}
+
 function useSelectOrLiveModeSelectAndHover(
   active: boolean,
   draggingAllowed: boolean,
@@ -541,16 +557,19 @@ function useSelectOrLiveModeSelectAndHover(
     },
     [innerOnMouseMove, editorStoreRef],
   )
-
   const mouseHandler = React.useCallback(
-    (
-      event: React.MouseEvent<HTMLDivElement>,
-      preferAlreadySelected: 'prefer-selected' | 'dont-prefer-selected',
-    ) => {
-      // Skip all of this handling if 'space' is pressed.
-      if (!editorStoreRef.current.editor.keysPressed['space']) {
-        const doubleClick = event.detail > 1 // we interpret a triple click as two double clicks, a quadruple click as three double clicks, etc  // TODO TEST ME
+    (event: React.MouseEvent<HTMLDivElement>) => {
+      const isSpacePressed = editorStoreRef.current.editor.keysPressed['space']
+      const hasInteractionSessionWithMouseMoved =
+        editorStoreRef.current.editor.canvas.interactionSession?.interactionData?.type === 'DRAG'
+          ? editorStoreRef.current.editor.canvas.interactionSession?.interactionData?.drag != null
+          : false
+
+      // Skip all of this handling if 'space' is pressed or a mousemove happened in an interaction
+      if (!(isSpacePressed || hasInteractionSessionWithMouseMoved)) {
+        const doubleClick = event.type === 'mousedown' && event.detail > 0 && event.detail % 2 === 0
         const selectableViews = getSelectableViewsForSelectMode(event.metaKey, doubleClick)
+        const preferAlreadySelected = getPreferredSelectionForEvent(event.type, doubleClick)
         const foundTarget = findValidTarget(
           selectableViews,
           windowPoint(point(event.clientX, event.clientY)),
@@ -567,7 +586,7 @@ function useSelectOrLiveModeSelectAndHover(
               const start = windowToCanvasCoordinates(
                 windowPoint(point(event.clientX, event.clientY)),
               ).canvasPositionRounded
-              if (event.button !== 2) {
+              if (event.button !== 2 && event.type !== 'mouseup') {
                 editorActions.push(
                   CanvasActions.createInteractionSession(
                     createInteractionViaMouse(start, Modifier.modifiersForEvent(event), {
@@ -592,7 +611,9 @@ function useSelectOrLiveModeSelectAndHover(
             updatedSelection = foundTarget != null ? [foundTarget.elementPath] : []
           }
 
-          if (foundTarget != null && doubleClick) {
+          const foundTargetIsSelected = foundTarget?.isSelected ?? false
+
+          if (foundTarget != null && foundTargetIsSelected && doubleClick) {
             // for components without passed children doubleclicking enters focus mode
             const isFocusableLeaf = MetadataUtils.isFocusableLeafComponent(
               foundTarget.elementPath,
@@ -603,7 +624,7 @@ function useSelectOrLiveModeSelectAndHover(
             }
           }
 
-          if (!(foundTarget?.isSelected ?? false)) {
+          if (!foundTargetIsSelected) {
             // first we only set the selected views for the canvas controls
             setSelectedViewsForCanvasControlsOnly(updatedSelection)
 
@@ -639,12 +660,12 @@ function useSelectOrLiveModeSelectAndHover(
   )
 
   const onMouseDown = React.useCallback(
-    (event: React.MouseEvent<HTMLDivElement>) => mouseHandler(event, 'prefer-selected'),
+    (event: React.MouseEvent<HTMLDivElement>) => mouseHandler(event),
     [mouseHandler],
   )
 
   const onMouseUp = React.useCallback(
-    (event: React.MouseEvent<HTMLDivElement>) => mouseHandler(event, 'dont-prefer-selected'),
+    (event: React.MouseEvent<HTMLDivElement>) => mouseHandler(event),
     [mouseHandler],
   )
 
@@ -669,7 +690,7 @@ export function useSelectAndHover(
     'useSelectAndHover hasInteractionSession',
   )
   const selectModeCallbacks = useSelectOrLiveModeSelectAndHover(
-    (modeType === 'select' || modeType === 'select-lite' || modeType === 'live') && !isZoomMode,
+    (modeType === 'select' || modeType === 'live') && !isZoomMode,
     (modeType === 'select' || modeType === 'live') && !isZoomMode,
     cmdPressed,
     setSelectedViewsForCanvasControlsOnly,
@@ -685,8 +706,6 @@ export function useSelectAndHover(
   } else {
     switch (modeType) {
       case 'select':
-        return selectModeCallbacks
-      case 'select-lite':
         return selectModeCallbacks
       case 'insert':
         return insertModeCallbacks

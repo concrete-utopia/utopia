@@ -4,6 +4,7 @@
 import { jsx } from '@emotion/react'
 import { ResizeDirection } from 're-resizable'
 import React from 'react'
+import * as ReactDOM from 'react-dom'
 import { DndProvider } from 'react-dnd'
 import { HTML5Backend } from 'react-dnd-html5-backend'
 import Utils from '../../utils/utils'
@@ -307,10 +308,6 @@ export const EditorComponentInner = React.memo((props: EditorProps) => {
     [dispatch],
   )
 
-  const vscodeBridgeReady = useEditorState((store) => {
-    return store.editor.vscodeBridgeReady
-  }, 'EditorComponentInner vscodeBridgeReady')
-
   return (
     <>
       <SimpleFlexRow
@@ -420,7 +417,6 @@ export const EditorComponentInner = React.memo((props: EditorProps) => {
         </SimpleFlexColumn>
         <ModalComponent />
         <ToastRenderer />
-        <EditorCursorComponent />
       </SimpleFlexRow>
     </>
   )
@@ -455,31 +451,6 @@ export function EditorComponent(props: EditorProps) {
     </DndProvider>
   )
 }
-
-const EditorCursorComponent = React.memo(() => {
-  const cursor = useEditorState((store) => {
-    return Utils.defaultIfNull(store.editor.canvas.cursor, getCursorFromDragState(store.editor))
-  }, 'EditorCursorComponent cursor')
-
-  const styleProps = React.useMemo(() => {
-    let workingStyleProps: React.CSSProperties = {
-      position: 'fixed',
-      left: 0,
-      top: 0,
-      width: '100vw',
-      height: '100vh',
-      pointerEvents: 'none',
-      zIndex: 9999999,
-    }
-    if (cursor != null) {
-      workingStyleProps.cursor = cursor
-      workingStyleProps.pointerEvents = 'all'
-    }
-    return workingStyleProps
-  }, [cursor])
-
-  return <div key='cursor-area' id='cursor-overlay' style={styleProps} />
-})
 
 const ToastRenderer = React.memo(() => {
   const toasts = useEditorState((store) => store.editor.toasts, 'ToastRenderer')

@@ -386,7 +386,6 @@ import {
   Mode,
   sceneInsertionSubject,
   SceneInsertionSubject,
-  SelectLiteMode,
   SelectMode,
   targetedInsertionParent,
   TargetedInsertionParent,
@@ -420,7 +419,7 @@ import {
 } from '../../inspector/common/css-utils'
 import { projectListing, ProjectListing } from '../action-types'
 import { UtopiaVSCodeConfig } from 'utopia-vscode-common'
-import { MouseButtonsPressed } from 'src/utils/mouse'
+import { MouseButtonsPressed } from '../../../utils/mouse'
 
 export function TransientCanvasStateFilesStateKeepDeepEquality(
   oldValue: TransientFilesState,
@@ -1531,13 +1530,15 @@ export const GuidelineWithSnappingVectorKeepDeepEquality: KeepDeepEqualityCall<G
   )
 
 export const EditorStateCanvasControlsKeepDeepEquality: KeepDeepEqualityCall<EditorStateCanvasControls> =
-  combine3EqualityCalls(
+  combine4EqualityCalls(
     (controls) => controls.snappingGuidelines,
     arrayDeepEquality(GuidelineWithSnappingVectorKeepDeepEquality),
     (controls) => controls.outlineHighlights,
     arrayDeepEquality(CanvasRectangleKeepDeepEquality),
     (controls) => controls.strategyIntendedBounds,
     arrayDeepEquality(FrameAndTargetKeepDeepEquality),
+    (controls) => controls.reparentedToPaths,
+    ElementPathArrayKeepDeepEquality,
     editorStateCanvasControls,
   )
 
@@ -2509,15 +2510,6 @@ export const SelectModeKeepDeepEquality: KeepDeepEqualityCall<SelectMode> = comb
   EditorModes.selectMode,
 )
 
-// Here to trigger failure in the case of `SelectLiteMode` changing it's definition.
-EditorModes.selectLiteMode()
-export const SelectLiteModeKeepDeepEquality: KeepDeepEqualityCall<SelectLiteMode> = (
-  oldValue,
-  newValue,
-) => {
-  return keepDeepEqualityResult(oldValue, true)
-}
-
 export const LiveCanvasModeKeepDeepEquality: KeepDeepEqualityCall<LiveCanvasMode> =
   combine1EqualityCall(
     (mode) => mode.controlId,
@@ -2535,11 +2527,6 @@ export const ModeKeepDeepEquality: KeepDeepEqualityCall<Mode> = (oldValue, newVa
     case 'select':
       if (newValue.type === oldValue.type) {
         return SelectModeKeepDeepEquality(oldValue, newValue)
-      }
-      break
-    case 'select-lite':
-      if (newValue.type === oldValue.type) {
-        return SelectLiteModeKeepDeepEquality(oldValue, newValue)
       }
       break
     case 'live':

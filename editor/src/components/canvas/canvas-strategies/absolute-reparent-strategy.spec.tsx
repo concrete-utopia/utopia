@@ -1,5 +1,10 @@
 import {
   ElementInstanceMetadata,
+  emptyComments,
+  jsxAttributesFromMap,
+  jsxAttributeValue,
+  jsxElement,
+  jsxElementName,
   SpecialSizeMeasurements,
 } from '../../../core/shared/element-template'
 import { CanvasPoint, canvasPoint, canvasRectangle } from '../../../core/shared/math-utils'
@@ -16,6 +21,8 @@ import { defaultCustomStrategyState } from './canvas-strategy-types'
 import { InteractionSession, StrategyState } from './interaction-state'
 import { createMouseInteractionForTests } from './interaction-state.test-utils'
 import * as EP from '../../../core/shared/element-path'
+import { right } from '../../../core/shared/either'
+import { createBuiltInDependenciesList } from '../../../core/es-modules/package-manager/built-in-dependencies-list'
 
 jest.mock('../canvas-utils', () => ({
   ...jest.requireActual('../canvas-utils'),
@@ -44,7 +51,7 @@ function reparentElement(
 ): EditorState {
   const interactionSession: InteractionSession = {
     ...createMouseInteractionForTests(
-      null as any, // the strategy does not use this
+      canvasPoint({ x: 0, y: 0 }),
       { cmd: true, alt: false, shift: false, ctrl: false },
       null as any, // the strategy does not use this
       dragVector,
@@ -54,7 +61,7 @@ function reparentElement(
   }
 
   const strategyResult = absoluteReparentStrategy.apply(
-    pickCanvasStateFromEditorState(editorState),
+    pickCanvasStateFromEditorState(editorState, createBuiltInDependenciesList(null)),
     interactionSession,
     {
       currentStrategy: null as any, // the strategy does not use this
@@ -87,6 +94,72 @@ function reparentElement(
             globalContentBox: targetParentWithSpecialContentBox
               ? canvasRectangle({ x: 90, y: 100, width: 170, height: 120 })
               : canvasRectangle({ x: 50, y: 60, width: 250, height: 200 }),
+          } as SpecialSizeMeasurements,
+        } as ElementInstanceMetadata,
+        'scene-aaa/app-entity:aaa/ccc': {
+          elementPath: EP.elementPath([
+            ['scene-aaa', 'app-entity'],
+            ['aaa', 'ccc'],
+          ]),
+          element: right(
+            jsxElement(
+              jsxElementName('div', []),
+              'ccc',
+              jsxAttributesFromMap({
+                style: jsxAttributeValue(
+                  {
+                    position: 'absolute',
+                    width: 20,
+                    height: 30,
+                    top: 75,
+                    left: 90,
+                  },
+                  emptyComments,
+                ),
+                'data-uid': jsxAttributeValue('ccc', emptyComments),
+              }),
+              [],
+            ),
+          ),
+          globalFrame: canvasRectangle({ x: 150, y: 160, width: 250, height: 200 }),
+          specialSizeMeasurements: {
+            immediateParentBounds: canvasRectangle({ x: 0, y: 0, width: 400, height: 400 }),
+            coordinateSystemBounds: canvasRectangle({ x: 0, y: 0, width: 400, height: 400 }),
+            providesBoundsForAbsoluteChildren: true,
+            globalContentBox: canvasRectangle({ x: 150, y: 160, width: 250, height: 200 }),
+          } as SpecialSizeMeasurements,
+        } as ElementInstanceMetadata,
+        'scene-aaa/app-entity:aaa/ddd': {
+          elementPath: EP.elementPath([
+            ['scene-aaa', 'app-entity'],
+            ['aaa', 'ddd'],
+          ]),
+          element: right(
+            jsxElement(
+              jsxElementName('div', []),
+              'ddd',
+              jsxAttributesFromMap({
+                style: jsxAttributeValue(
+                  {
+                    position: 'absolute',
+                    width: 20,
+                    height: 30,
+                    top: 75,
+                    left: 90,
+                  },
+                  emptyComments,
+                ),
+                'data-uid': jsxAttributeValue('ddd', emptyComments),
+              }),
+              [],
+            ),
+          ),
+          globalFrame: canvasRectangle({ x: 150, y: 160, width: 250, height: 200 }),
+          specialSizeMeasurements: {
+            immediateParentBounds: canvasRectangle({ x: 0, y: 0, width: 400, height: 400 }),
+            coordinateSystemBounds: canvasRectangle({ x: 0, y: 0, width: 400, height: 400 }),
+            providesBoundsForAbsoluteChildren: true,
+            globalContentBox: canvasRectangle({ x: 150, y: 160, width: 250, height: 200 }),
           } as SpecialSizeMeasurements,
         } as ElementInstanceMetadata,
       },

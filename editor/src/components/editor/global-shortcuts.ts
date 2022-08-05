@@ -36,13 +36,7 @@ import {
   defaultTextElement,
   defaultViewElement,
 } from './defaults'
-import {
-  EditorModes,
-  isInsertMode,
-  isLiveMode,
-  isSelectLiteMode,
-  isSelectMode,
-} from './editor-modes'
+import { EditorModes, isInsertMode, isLiveMode, isSelectMode } from './editor-modes'
 import { insertImage } from './image-insert'
 import {
   CANCEL_EVERYTHING_SHORTCUT,
@@ -358,7 +352,7 @@ export function handleKeyDown(
   const updateKeysAction = EditorActions.updateKeys(updatedKeysPressed)
 
   function cycleSiblings(forwards: boolean): Array<EditorAction> {
-    if (isSelectMode(editor.mode) || isSelectLiteMode(editor.mode)) {
+    if (isSelectMode(editor.mode)) {
       const tabbedTo = Canvas.jumpToSibling(editor.selectedViews, editor.jsxMetadata, forwards)
       if (tabbedTo != null) {
         return [EditorActions.selectComponents([tabbedTo], false)]
@@ -396,9 +390,7 @@ export function handleKeyDown(
     }
     return handleShortcuts<Array<EditorAction>>(namesByKey, event, [], {
       [DELETE_SELECTED_SHORTCUT]: () => {
-        return isSelectMode(editor.mode) || isSelectLiteMode(editor.mode)
-          ? [EditorActions.deleteSelected()]
-          : []
+        return isSelectMode(editor.mode) ? [EditorActions.deleteSelected()] : []
       },
       [RESET_CANVAS_ZOOM_SHORTCUT]: () => {
         return [CanvasActions.zoom(1)]
@@ -416,7 +408,7 @@ export function handleKeyDown(
         return [CanvasActions.zoom(Utils.decreaseScale(editor.canvas.scale))]
       },
       [FIRST_CHILD_OR_EDIT_TEXT_SHORTCUT]: () => {
-        if (isSelectMode(editor.mode) || isSelectLiteMode(editor.mode)) {
+        if (isSelectMode(editor.mode)) {
           const textTarget = getTextEditorTarget(editor, derived)
           if (textTarget != null && isSelectMode(editor.mode)) {
             return [EditorActions.focusFormulaBar()]
@@ -430,7 +422,7 @@ export function handleKeyDown(
         return []
       },
       [JUMP_TO_PARENT_SHORTCUT]: () => {
-        if (isSelectMode(editor.mode) || isSelectLiteMode(editor.mode)) {
+        if (isSelectMode(editor.mode)) {
           return jumpToParentActions(editor.selectedViews)
         } else {
           return []
@@ -450,7 +442,7 @@ export function handleKeyDown(
           return [CanvasActions.clearDragState(false)]
         } else if (editor.canvas.interactionSession != null) {
           return [CanvasActions.clearInteractionSession(false)]
-        } else if (isSelectMode(editor.mode) || isSelectLiteMode(editor.mode)) {
+        } else if (isSelectMode(editor.mode)) {
           return jumpToParentActions(editor.selectedViews)
         }
 
@@ -463,7 +455,7 @@ export function handleKeyDown(
         return []
       },
       [CYCLE_HIERACHY_TARGETS_SHORTCUT]: () => {
-        if (isSelectMode(editor.mode) || isSelectLiteMode(editor.mode)) {
+        if (isSelectMode(editor.mode)) {
           if (CanvasMousePositionRaw == null) {
             return [EditorActions.clearSelection()]
           }
@@ -538,7 +530,7 @@ export function handleKeyDown(
         return toggleTextFormatting(editor, dispatch, 'bold')
       },
       [TOGGLE_BORDER_SHORTCUT]: () => {
-        return isSelectMode(editor.mode) || isSelectLiteMode(editor.mode)
+        return isSelectMode(editor.mode)
           ? editor.selectedViews.map((target) =>
               EditorActions.toggleProperty(
                 target,
@@ -548,45 +540,41 @@ export function handleKeyDown(
           : []
       },
       [COPY_SELECTION_SHORTCUT]: () => {
-        return isSelectMode(editor.mode) || isSelectLiteMode(editor.mode)
-          ? [EditorActions.copySelectionToClipboard()]
-          : []
+        return isSelectMode(editor.mode) ? [EditorActions.copySelectionToClipboard()] : []
       },
       [DUPLICATE_SELECTION_SHORTCUT]: () => {
-        return isSelectMode(editor.mode) || isSelectLiteMode(editor.mode)
-          ? [EditorActions.duplicateSelected()]
-          : []
+        return isSelectMode(editor.mode) ? [EditorActions.duplicateSelected()] : []
       },
       [TOGGLE_BACKGROUND_SHORTCUT]: () => {
-        return isSelectMode(editor.mode) || isSelectLiteMode(editor.mode)
+        return isSelectMode(editor.mode)
           ? editor.selectedViews.map((target) =>
               EditorActions.toggleProperty(target, toggleStylePropPaths(toggleBackgroundLayers)),
             )
           : []
       },
       [UNWRAP_ELEMENT_SHORTCUT]: () => {
-        return isSelectMode(editor.mode) || isSelectLiteMode(editor.mode)
+        return isSelectMode(editor.mode)
           ? editor.selectedViews.map((target) => EditorActions.unwrapGroupOrView(target))
           : []
       },
       [WRAP_ELEMENT_DEFAULT_SHORTCUT]: () => {
-        return isSelectMode(editor.mode) || isSelectLiteMode(editor.mode)
+        return isSelectMode(editor.mode)
           ? [EditorActions.wrapInView(editor.selectedViews, 'default-empty-div')]
           : []
       },
       [WRAP_ELEMENT_PICKER_SHORTCUT]: () => {
-        return isSelectMode(editor.mode) || isSelectLiteMode(editor.mode)
+        return isSelectMode(editor.mode)
           ? [EditorActions.openFloatingInsertMenu({ insertMenuMode: 'wrap' })]
           : []
       },
       // For now, the "Group / G" shortcuts do the same as the Wrap Element shortcuts – until we have Grouping working again
       [GROUP_ELEMENT_DEFAULT_SHORTCUT]: () => {
-        return isSelectMode(editor.mode) || isSelectLiteMode(editor.mode)
+        return isSelectMode(editor.mode)
           ? [EditorActions.wrapInView(editor.selectedViews, 'default-empty-div')]
           : []
       },
       [GROUP_ELEMENT_PICKER_SHORTCUT]: () => {
-        return isSelectMode(editor.mode) || isSelectLiteMode(editor.mode)
+        return isSelectMode(editor.mode)
           ? [EditorActions.openFloatingInsertMenu({ insertMenuMode: 'wrap' })]
           : []
       },
@@ -697,7 +685,7 @@ export function handleKeyDown(
         }
       },
       [CUT_SELECTION_SHORTCUT]: () => {
-        return isSelectMode(editor.mode) || isSelectLiteMode(editor.mode)
+        return isSelectMode(editor.mode)
           ? [EditorActions.copySelectionToClipboard(), EditorActions.deleteSelected()]
           : []
       },
@@ -708,24 +696,16 @@ export function handleKeyDown(
         return [EditorActions.redo()]
       },
       [MOVE_ELEMENT_BACKWARD_SHORTCUT]: () => {
-        return isSelectMode(editor.mode) || isSelectLiteMode(editor.mode)
-          ? [EditorActions.moveSelectedBackward()]
-          : []
+        return isSelectMode(editor.mode) ? [EditorActions.moveSelectedBackward()] : []
       },
       [MOVE_ELEMENT_TO_BACK_SHORTCUT]: () => {
-        return isSelectMode(editor.mode) || isSelectLiteMode(editor.mode)
-          ? [EditorActions.moveSelectedToBack()]
-          : []
+        return isSelectMode(editor.mode) ? [EditorActions.moveSelectedToBack()] : []
       },
       [MOVE_ELEMENT_FORWARD_SHORTCUT]: () => {
-        return isSelectMode(editor.mode) || isSelectLiteMode(editor.mode)
-          ? [EditorActions.moveSelectedForward()]
-          : []
+        return isSelectMode(editor.mode) ? [EditorActions.moveSelectedForward()] : []
       },
       [MOVE_ELEMENT_TO_FRONT_SHORTCUT]: () => {
-        return isSelectMode(editor.mode) || isSelectLiteMode(editor.mode)
-          ? [EditorActions.moveSelectedToFront()]
-          : []
+        return isSelectMode(editor.mode) ? [EditorActions.moveSelectedToFront()] : []
       },
       [FOCUS_CLASS_NAME_INPUT]: () => {
         return [EditorActions.focusClassNameInput()]
@@ -752,14 +732,14 @@ export function handleKeyDown(
         return [EditorActions.togglePanel('inspector'), EditorActions.togglePanel('leftmenu')]
       },
       [CONVERT_ELEMENT_SHORTCUT]: () => {
-        if (isSelectMode(editor.mode) || isSelectLiteMode(editor.mode)) {
+        if (isSelectMode(editor.mode)) {
           return [EditorActions.openFloatingInsertMenu({ insertMenuMode: 'convert' })]
         } else {
           return []
         }
       },
       [ADD_ELEMENT_SHORTCUT]: () => {
-        if (isSelectMode(editor.mode) || isSelectLiteMode(editor.mode)) {
+        if (isSelectMode(editor.mode)) {
           return [
             EditorActions.openFloatingInsertMenu({
               insertMenuMode: 'insert',

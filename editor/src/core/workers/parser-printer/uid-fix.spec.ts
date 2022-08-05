@@ -183,6 +183,27 @@ describe('fixParseSuccessUIDs', () => {
     )
     expect(getUidTree(firstResult)).toEqual(getUidTree(secondResult))
   })
+
+  it('handles newly inserted duplicate elements without duplicating uids', () => {
+    const firstResult = lintAndParse('test.js', fileWithBasicDiv, null, emptySet())
+    const secondResult = lintAndParse(
+      'test.js',
+      fileWithBasicDivDuplicated,
+      asParseSuccessOrNull(firstResult),
+      emptySet(),
+    )
+    expect(getUidTree(secondResult)).toMatchInlineSnapshot(`
+      "4ed
+        random-uuid
+      001
+        593
+          c85
+            random-uuid
+      storyboard
+        scene
+          component"
+    `)
+  })
 })
 
 const baseFileContents = createFileText(`
@@ -438,6 +459,30 @@ export var SameFileApp = (props) => {
         }}
       />
       })}
+    </div>
+  )
+}
+`)
+
+const fileWithBasicDiv = createFileText(`
+export var SameFileApp = (props) => {
+  return (
+    <div
+      style={{ position: 'relative', width: '100%', height: '100%', backgroundColor: '#FFFFFF' }}
+    >
+      <div>Hello</div>
+    </div>
+  )
+}
+`)
+
+const fileWithBasicDivDuplicated = createFileText(`
+export var SameFileApp = (props) => {
+  return (
+    <div
+      style={{ position: 'relative', width: '100%', height: '100%', backgroundColor: '#FFFFFF' }}
+    >
+      <div><div>Hello</div></div>
     </div>
   )
 }
