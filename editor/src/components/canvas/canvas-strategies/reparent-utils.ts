@@ -20,6 +20,7 @@ import { forceNotNull } from '../../../core/shared/optional-utils'
 import { addImportsToFile } from '../commands/add-imports-to-file-command'
 import { BuiltInDependencies } from '../../../core/es-modules/package-manager/built-in-dependencies-list'
 import { CSSCursor } from '../canvas-types'
+import { addToReparentedToPaths } from './add-to-reparented-to-paths-command'
 
 export function getReparentCommands(
   builtInDependencies: BuiltInDependencies,
@@ -119,6 +120,9 @@ export function getReparentCommands(
   )
 
   result.push(reparentElement('permanent', selectedElement, newParent))
+
+  const newPath = EP.appendToPath(newParent, EP.toUid(selectedElement))
+  result.push(addToReparentedToPaths('transient', [newPath]))
   result.push(...commandsToAddImports)
   return result
 }

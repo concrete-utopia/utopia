@@ -17,7 +17,6 @@ import { getReorderIndex } from './flex-reorder-strategy'
 import { ifAllowedToReparent } from './reparent-helpers'
 import { findReparentStrategy, getReparentTargetForFlexElement } from './reparent-strategy-helpers'
 import { getReparentCommands } from './reparent-utils'
-import { setReparentedToPaths } from './set-reparented-to-paths-command'
 import { getDragTargets } from './shared-absolute-move-strategy-helpers'
 
 export const flexReparentToFlexStrategy: CanvasStrategy = {
@@ -103,7 +102,6 @@ export const flexReparentToFlexStrategy: CanvasStrategy = {
             setElementsToRerenderCommand([newPath]),
             updateHighlightedViews('transient', []),
             setCursorCommand('transient', CSSCursor.Move),
-            setReparentedToPaths('transient', [newPath]),
           ]
 
           let commands: Array<CanvasCommand>

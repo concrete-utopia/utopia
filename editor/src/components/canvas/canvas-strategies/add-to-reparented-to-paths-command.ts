@@ -8,31 +8,31 @@ import {
   TransientOrNot,
 } from '../commands/commands'
 
-export interface SetReparentedToPaths extends BaseCommand {
-  type: 'SET_REPARENTED_TO_PATHS'
+export interface addToReparentedToPaths extends BaseCommand {
+  type: 'ADD_TO_REPARENTED_TO_PATHS'
   reparentedToPaths: Array<ElementPath>
 }
 
-export function setReparentedToPaths(
+export function addToReparentedToPaths(
   transient: TransientOrNot,
   reparentedToPaths: Array<ElementPath>,
-): SetReparentedToPaths {
+): addToReparentedToPaths {
   return {
-    type: 'SET_REPARENTED_TO_PATHS',
+    type: 'ADD_TO_REPARENTED_TO_PATHS',
     transient: transient,
     reparentedToPaths: reparentedToPaths,
   }
 }
 
-export const runSetReparentedToPaths: CommandFunction<SetReparentedToPaths> = (
+export const runAddToReparentedToPaths: CommandFunction<addToReparentedToPaths> = (
   editorState: EditorState,
-  command: SetReparentedToPaths,
+  command: addToReparentedToPaths,
 ): CommandFunctionResult => {
   const editorStatePatch: Spec<EditorState> = {
     canvas: {
       controls: {
         reparentedToPaths: {
-          $set: command.reparentedToPaths,
+          $push: command.reparentedToPaths,
         },
       },
     },
