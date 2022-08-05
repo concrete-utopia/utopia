@@ -243,11 +243,14 @@ export function useGetApplicableStrategyControls(): Array<ControlWithKey> {
   )
   return React.useMemo(() => {
     return applicableStrategies.reduce<ControlWithKey[]>((working, s) => {
-      const filteredControls = s.controlsToRender.filter(
-        (control) =>
+      const filteredControls = s.controlsToRender.filter((control) => {
+        return (
           control.show === 'always-visible' ||
-          (control.show === 'visible-only-while-active' && s.id === currentStrategy),
-      )
+          (control.show === 'visible-only-while-active' && s.id === currentStrategy) ||
+          (control.show === 'visible-except-when-other-strategy-is-active' &&
+            (currentStrategy == null || s.id === currentStrategy))
+        )
+      })
       return addAllUniquelyBy(working, filteredControls, (l, r) => l.control === r.control)
     }, [])
   }, [applicableStrategies, currentStrategy])
