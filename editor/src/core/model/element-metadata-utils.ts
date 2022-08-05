@@ -33,6 +33,7 @@ import {
   isIntrinsicElement,
   ElementInstanceMetadataMap,
   isIntrinsicHTMLElement,
+  isJSXFragment,
 } from '../shared/element-template'
 import {
   getModifiableJSXAttributeAtPath,
