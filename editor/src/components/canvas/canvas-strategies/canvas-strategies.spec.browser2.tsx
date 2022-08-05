@@ -164,7 +164,10 @@ describe('Strategy Fitness', () => {
 
     const canvasStrategy = findCanvasStrategy(
       RegisteredCanvasStrategies,
-      pickCanvasStateFromEditorState(renderResult.getEditorState().editor),
+      pickCanvasStateFromEditorState(
+        renderResult.getEditorState().editor,
+        renderResult.getEditorState().builtInDependencies,
+      ),
       interactionSession,
       baseStrategyState(
         renderResult.getEditorState().editor.jsxMetadata,
@@ -212,7 +215,10 @@ describe('Strategy Fitness', () => {
 
     const canvasStrategy = findCanvasStrategy(
       RegisteredCanvasStrategies,
-      pickCanvasStateFromEditorState(renderResult.getEditorState().editor),
+      pickCanvasStateFromEditorState(
+        renderResult.getEditorState().editor,
+        renderResult.getEditorState().builtInDependencies,
+      ),
       interactionSession,
       baseStrategyState(
         renderResult.getEditorState().editor.jsxMetadata,
@@ -264,7 +270,10 @@ describe('Strategy Fitness', () => {
 
     const canvasStrategy = findCanvasStrategy(
       RegisteredCanvasStrategies,
-      pickCanvasStateFromEditorState(renderResult.getEditorState().editor),
+      pickCanvasStateFromEditorState(
+        renderResult.getEditorState().editor,
+        renderResult.getEditorState().builtInDependencies,
+      ),
       interactionSession,
       baseStrategyState(
         renderResult.getEditorState().editor.jsxMetadata,
@@ -316,7 +325,10 @@ describe('Strategy Fitness', () => {
 
     const canvasStrategy = findCanvasStrategy(
       RegisteredCanvasStrategies,
-      pickCanvasStateFromEditorState(renderResult.getEditorState().editor),
+      pickCanvasStateFromEditorState(
+        renderResult.getEditorState().editor,
+        renderResult.getEditorState().builtInDependencies,
+      ),
       interactionSession,
       baseStrategyState(
         renderResult.getEditorState().editor.jsxMetadata,
@@ -364,7 +376,10 @@ describe('Strategy Fitness', () => {
 
     const canvasStrategy = findCanvasStrategy(
       RegisteredCanvasStrategies,
-      pickCanvasStateFromEditorState(renderResult.getEditorState().editor),
+      pickCanvasStateFromEditorState(
+        renderResult.getEditorState().editor,
+        renderResult.getEditorState().builtInDependencies,
+      ),
       interactionSession,
       baseStrategyState(
         renderResult.getEditorState().editor.jsxMetadata,
@@ -412,7 +427,10 @@ describe('Strategy Fitness', () => {
 
     const canvasStrategy = findCanvasStrategy(
       RegisteredCanvasStrategies,
-      pickCanvasStateFromEditorState(renderResult.getEditorState().editor),
+      pickCanvasStateFromEditorState(
+        renderResult.getEditorState().editor,
+        renderResult.getEditorState().builtInDependencies,
+      ),
       interactionSession,
       baseStrategyState(
         renderResult.getEditorState().editor.jsxMetadata,

@@ -28,7 +28,7 @@ import { emptyImports } from '../../core/workers/common/project-file-utils'
 import { testParseCode } from '../../core/workers/parser-printer/parser-printer.test-utils'
 import { Utils } from '../../uuiui-deps'
 import { normalizeName } from '../custom-code/custom-code-utils'
-import { ConsoleLog, deriveState } from '../editor/store/editor-state'
+import { ConsoleLog, deriveState, EditorState } from '../editor/store/editor-state'
 import {
   UiJsxCanvasProps,
   UiJsxCanvasContextData,
@@ -49,6 +49,9 @@ import { getRequireFn } from '../../core/es-modules/package-manager/package-mana
 import type { ScriptLine } from '../../third-party/react-error-overlay/utils/stack-frame'
 import type { CurriedResolveFn } from '../custom-code/code-file'
 import * as path from 'path'
+import { SampleNodeModules } from '../custom-code/code-file.test-utils'
+import { UPDATE_FNS } from '../editor/actions/actions'
+import { updateNodeModulesContents } from '../editor/actions/action-creators'
 
 export interface PartialCanvasProps {
   hiddenInstances: UiJsxCanvasProps['hiddenInstances']
@@ -165,13 +168,13 @@ export function renderCanvasReturnResultAndError(
     getRequireFn(
       NO_OP,
       innerProjectContents,
-      {},
+      SampleNodeModules,
       {},
       storeHookForTest.useStore().builtInDependencies,
     )
 
   storeHookForTest.updateStore((store) => {
-    const updatedEditor = {
+    let updatedEditor: EditorState = {
       ...store.editor,
       canvas: {
         ...store.editor.canvas,
@@ -181,6 +184,12 @@ export function renderCanvasReturnResultAndError(
       },
       projectContents: updatedContents,
     }
+    updatedEditor = UPDATE_FNS.UPDATE_NODE_MODULES_CONTENTS(
+      updateNodeModulesContents(SampleNodeModules),
+      updatedEditor,
+      store.dispatch,
+      store.builtInDependencies,
+    )
     return {
       ...store,
       editor: updatedEditor,

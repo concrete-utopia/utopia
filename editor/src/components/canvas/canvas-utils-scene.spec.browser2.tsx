@@ -16,6 +16,7 @@ import { BakedInStoryboardUID } from '../../core/model/scene-utils'
 import { CanvasControlsContainerID } from './controls/new-canvas-controls'
 import { wait } from '../../utils/utils.test-utils'
 import { isFeatureEnabled, setFeatureEnabled } from '../../utils/feature-switches'
+import { resetMouseStatus } from '../mouse-move'
 
 describe('moving a scene/rootview on the canvas', () => {
   let originalValue = isFeatureEnabled('Canvas Strategies')
@@ -200,7 +201,7 @@ describe('moving a scene/rootview on the canvas', () => {
 
     // Ensures that the two mouse moves are handled without the check against
     // didWeHandleMouseMoveForThisFrame not triggering.
-    await wait(5)
+    resetMouseStatus()
 
     await act(async () => {
       const dispatchDone = renderResult.getDispatchFollowUpActionsFinished()

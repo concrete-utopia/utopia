@@ -13,8 +13,21 @@ export function mouseWheelHandled() {
   didWeHandleWheelForThisFrame = true
 }
 
-export function resetMouseStatus() {
+let resetMouseStatusCallbackIdentifier: number | null = null
+
+export function resetMouseStatus(): void {
+  stopResettingMouseStatus()
+  innerResetMouseStatus()
+}
+
+export function stopResettingMouseStatus(): void {
+  if (resetMouseStatusCallbackIdentifier != null) {
+    cancelAnimationFrame(resetMouseStatusCallbackIdentifier)
+  }
+}
+
+function innerResetMouseStatus(): void {
   didWeHandleMouseMoveForThisFrame = false
   didWeHandleWheelForThisFrame = false
-  requestAnimationFrame(resetMouseStatus)
+  resetMouseStatusCallbackIdentifier = requestAnimationFrame(innerResetMouseStatus)
 }
