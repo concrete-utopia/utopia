@@ -79,6 +79,10 @@ import {
   UtopiaTheme,
   FlexRow,
   Button,
+  Section,
+  FlexColumn,
+  H1,
+  SquareButton,
 } from '../../uuiui'
 import { getElementsToTarget } from './common/inspector-utils'
 import { ElementPath, PropertyPath } from '../../core/shared/project-file-types'
@@ -88,6 +92,7 @@ import { isTwindEnabled } from '../../core/tailwind/tailwind'
 import { isStrategyActive } from '../canvas/canvas-strategies/canvas-strategies'
 import type { StrategyState } from '../canvas/canvas-strategies/interaction-state'
 import { usePrevious } from '../editor/hook-utils'
+import { ExpandableIndicator } from '../navigator/navigator-item/expandable-indicator'
 
 export interface ElementPathElement {
   name?: string
@@ -331,26 +336,19 @@ export const Inspector = React.memo<InspectorProps>((props: InspectorProps) => {
     [shouldShowInspector, props.selectedViews],
   )
 
-  const [showConfigStyleButton, setShowConfigStyleButton] = React.useState(
-    shouldShowConfigStyleButton,
-  )
+  const [isOpen, setIsOpen] = React.useState(shouldShowConfigStyleButton)
 
   const prevShouldShowConfigValue = usePrevious(shouldShowConfigStyleButton)
 
   React.useEffect(() => {
     if (prevShouldShowConfigValue !== shouldShowConfigStyleButton) {
-      setShowConfigStyleButton(shouldShowConfigStyleButton)
+      setIsOpen(!shouldShowConfigStyleButton)
     }
-  }, [
-    shouldShowConfigStyleButton,
-    shouldShowInspector,
-    setShowConfigStyleButton,
-    prevShouldShowConfigValue,
-  ])
+  }, [shouldShowConfigStyleButton, shouldShowInspector, setIsOpen, prevShouldShowConfigValue])
 
   const onButtonClicked = React.useCallback(() => {
-    setShowConfigStyleButton(false)
-  }, [setShowConfigStyleButton])
+    setIsOpen(!isOpen)
+  }, [setIsOpen, isOpen])
 
   function renderInspectorContents() {
     return (
@@ -371,7 +369,7 @@ export const Inspector = React.memo<InspectorProps>((props: InspectorProps) => {
           {when(isTwindEnabled(), <ClassNameSubsection />)}
           {anyComponents ? <ComponentSection isScene={false} /> : null}
           {when(
-            showConfigStyleButton,
+            !isOpen,
             <div>
               <Button
                 highlight
@@ -388,17 +386,34 @@ export const Inspector = React.memo<InspectorProps>((props: InspectorProps) => {
               </Button>
             </div>,
           )}
+          <Section className={props.className}>
+            <FlexColumn className='titledSectionContentColumn'>
+              <FlexRow
+                style={{
+                  paddingLeft: 8,
+                  paddingRight: 8,
+                  cursor: 'pointer',
+                  height: 42,
+                }}
+              >
+                <H1 style={{ flexGrow: 1, display: 'inline', overflow: 'hidden' }}>STYLE</H1>
+                <SquareButton highlight onClick={onButtonClicked}>
+                  <ExpandableIndicator visible collapsed={!isOpen} selected={false} />
+                </SquareButton>
+              </FlexRow>
+            </FlexColumn>
+          </Section>
           {when(
-            !showConfigStyleButton,
+            isOpen,
             <>
-              <TargetSelectorSection
+              {/* <TargetSelectorSection
                 targets={props.targets}
                 selectedTargetPath={props.selectedTargetPath}
                 onSelectTarget={props.onSelectTarget}
                 onStyleSelectorRename={props.onStyleSelectorRename}
                 onStyleSelectorDelete={props.onStyleSelectorDelete}
                 onStyleSelectorInsert={props.onStyleSelectorInsert}
-              />
+              /> */}
               <LayoutSection
                 hasNonDefaultPositionAttributes={hasNonDefaultPositionAttributes}
                 aspectRatioLocked={aspectRatioLocked}
