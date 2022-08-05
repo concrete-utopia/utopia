@@ -32,6 +32,7 @@ import {
   JSXAttributesSpread,
   JSXArrayElement,
   JSXProperty,
+  isJSXElementLikeWithChildren,
 } from '../shared/element-template'
 import {
   Imports,
@@ -229,11 +230,11 @@ function transformAtPathOptionally(
     workingPath: string[],
   ): JSXElementChild | null {
     const [firstUIDOrIndex, ...tailPath] = workingPath
-    if (isJSXElement(element)) {
+    if (isJSXElementLikeWithChildren(element)) {
       if (getUtopiaID(element) === firstUIDOrIndex) {
         // transform
         if (tailPath.length === 0) {
-          return transform(element)
+          return isJSXElement(element) ? transform(element) : element
         } else {
           // we will want to transform one of our children
           let childrenUpdated: boolean = false
@@ -267,21 +268,6 @@ function transformAtPathOptionally(
             ...element,
             elementsWithin: newElementsWithin,
           }
-        }
-      }
-    } else if (isJSXFragment(element)) {
-      let childrenUpdated: boolean = false
-      const updatedChildren = element.children.map((child) => {
-        const possibleUpdate = findAndTransformAtPathInner(child, workingPath)
-        if (possibleUpdate != null) {
-          childrenUpdated = true
-        }
-        return Utils.defaultIfNull(child, possibleUpdate)
-      })
-      if (childrenUpdated) {
-        return {
-          ...element,
-          children: updatedChildren,
         }
       }
     }
@@ -318,7 +304,7 @@ export function findJSXElementChildAtPath(
     workingPath: Array<string>,
   ): JSXElementChild | null {
     const firstUIDOrIndex = workingPath[0]
-    if (isJSXElement(element)) {
+    if (isJSXElementLikeWithChildren(element)) {
       const uid = getUtopiaID(element)
       if (uid === firstUIDOrIndex) {
         const tailPath = workingPath.slice(1)
@@ -342,14 +328,6 @@ export function findJSXElementChildAtPath(
         const withinResult = findAtPathInner(elementWithin, workingPath)
         if (withinResult != null) {
           return withinResult
-        }
-      }
-    } else if (isJSXFragment(element)) {
-      const children = element.children
-      for (const child of children) {
-        const childResult = findAtPathInner(child, workingPath)
-        if (childResult != null) {
-          return childResult
         }
       }
     }
