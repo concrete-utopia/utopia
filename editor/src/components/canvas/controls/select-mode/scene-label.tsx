@@ -175,7 +175,7 @@ const SceneLabel = React.memo<SceneLabelProps>((props) => {
             whiteSpace: 'nowrap',
             overflow: 'hidden',
             textOverflow: 'ellipsis',
-            borderRadius: borderRadius,
+            borderRadius: `${borderRadius}px ${borderRadius}px 0 0`,
             backgroundColor: backgroundColor,
           }}
         >

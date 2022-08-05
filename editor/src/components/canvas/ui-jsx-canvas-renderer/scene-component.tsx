@@ -6,7 +6,20 @@ import { DomWalkerInvalidatePathsCtxAtom } from '../ui-jsx-canvas'
 import { UTOPIA_SCENE_ID_KEY } from '../../../core/model/utopia-constants'
 import { AlwaysTrue, usePubSubAtomReadOnly } from '../../../core/shared/atom-with-pub-sub'
 
-type ExtendedSceneProps = SceneProps & { [UTOPIA_SCENE_ID_KEY]: string }
+type ExtendedSceneProps = SceneProps & {
+  [UTOPIA_SCENE_ID_KEY]: string
+  border: boolean
+  background: string
+}
+
+const backgroundOptions: { [key: string]: any } = {
+  White: { backgroundColor: '#ffffff' },
+  Checkerboard: UtopiaStyles.backgrounds.checkerboardBackground,
+  'Light Grey': { backgroundColor: '#f4f4f4' },
+  'Mid Grey': { backgroundColor: '#888888' },
+  'Dark Grey': { backgroundColor: '#333' },
+  Black: { backgroundColor: '#000' },
+}
 
 export const SceneComponent = React.memo(
   (props: React.PropsWithChildren<ExtendedSceneProps>) => {
@@ -17,10 +30,10 @@ export const SceneComponent = React.memo(
       AlwaysTrue,
     )
 
-    const { style, ...remainingProps } = props
+    const { style, border, background: backgroundProp, ...remainingProps } = props
 
     const { top, height, left, width } = style!
-    const headerAreaHeight = 29
+    const headerAreaHeight = 21
 
     const sceneTop: number = (top as number) - headerAreaHeight
     const sceneHeight: number = (height as number) + headerAreaHeight
@@ -33,16 +46,20 @@ export const SceneComponent = React.memo(
       width: width,
     }
 
+    const background = backgroundOptions[backgroundProp] ?? {
+      backgroundColor: colorTheme.emphasizedBackground.value,
+    }
+
     const innerDivStyle: React.CSSProperties = {
       position: 'absolute',
-      backgroundColor: colorTheme.emphasizedBackground.value,
       boxShadow: canvasIsLive
         ? UtopiaStyles.scene.live.boxShadow
         : UtopiaStyles.scene.editing.boxShadow,
-      ...UtopiaStyles.backgrounds.checkerboardBackground,
+      ...background,
       ...style,
       top: headerAreaHeight,
       left: 0,
+      border: border ? `1px solid ${colorTheme.fg9.value}` : undefined,
     }
 
     // TODO right now we don't actually change the invalidated paths, just let the dom-walker know it should walk again
