@@ -30,6 +30,7 @@ import { updateSelectedViews } from '../commands/update-selected-views-command'
 import { findReparentStrategy, getReparentTargetForFlexElement } from './reparent-strategy-helpers'
 import { getReparentCommands } from './reparent-utils'
 import { ifAllowedToReparent } from './reparent-helpers'
+import { setReparentedToPaths } from './set-reparented-to-paths-command'
 
 const propertiesToRemove: Array<PropertyPath> = [
   PP.create(['style', 'position']),
@@ -153,6 +154,7 @@ export const absoluteReparentToFlexStrategy: CanvasStrategy = {
             setElementsToRerenderCommand([newPath]),
             updateHighlightedViews('transient', []),
             setCursorCommand('transient', CSSCursor.Move),
+            setReparentedToPaths('transient', [newPath]),
           ]
 
           let commands: Array<CanvasCommand>

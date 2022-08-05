@@ -17,6 +17,7 @@ import { ifAllowedToReparent, isAllowedToReparent } from './reparent-helpers'
 import { findReparentStrategy } from './reparent-strategy-helpers'
 import { offsetPoint } from '../../../core/shared/math-utils'
 import { getReparentCommands } from './reparent-utils'
+import { setReparentedToPaths } from './set-reparented-to-paths-command'
 
 export const absoluteReparentStrategy: CanvasStrategy = {
   id: 'ABSOLUTE_REPARENT',
@@ -137,6 +138,7 @@ export const absoluteReparentStrategy: CanvasStrategy = {
           updateSelectedViews('permanent', newPaths),
           setElementsToRerenderCommand(newPaths),
           setCursorCommand('transient', CSSCursor.Move),
+          setReparentedToPaths('transient', newPaths),
         ],
         customState: null,
       }

@@ -9,6 +9,7 @@ import { ElementPath, Imports, NodeModules } from '../../../core/shared/project-
 import { CanvasCommand } from '../commands/commands'
 import { reparentElement } from '../commands/reparent-element-command'
 import {
+  ElementInstanceMetadataMap,
   isIntrinsicElement,
   isJSXElement,
   walkElement,
@@ -18,6 +19,7 @@ import { getImportsFor, importedFromWhere } from '../../../components/editor/imp
 import { forceNotNull } from '../../../core/shared/optional-utils'
 import { addImportsToFile } from '../commands/add-imports-to-file-command'
 import { BuiltInDependencies } from '../../../core/es-modules/package-manager/built-in-dependencies-list'
+import { CSSCursor } from '../canvas-types'
 
 export function getReparentCommands(
   builtInDependencies: BuiltInDependencies,
@@ -119,4 +121,17 @@ export function getReparentCommands(
   result.push(reparentElement('permanent', selectedElement, newParent))
   result.push(...commandsToAddImports)
   return result
+}
+
+export function cursorForMissingReparentedItems(
+  reparentedToPaths: Array<ElementPath>,
+  spyMetadata: ElementInstanceMetadataMap,
+): CSSCursor | null {
+  for (const reparentedToPath of reparentedToPaths) {
+    if (!(EP.toString(reparentedToPath) in spyMetadata)) {
+      return CSSCursor.ReparentNotPermitted
+    }
+  }
+
+  return null
 }
