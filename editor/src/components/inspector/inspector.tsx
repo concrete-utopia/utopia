@@ -87,6 +87,7 @@ import { createSelector } from 'reselect'
 import { isTwindEnabled } from '../../core/tailwind/tailwind'
 import { isStrategyActive } from '../canvas/canvas-strategies/canvas-strategies'
 import type { StrategyState } from '../canvas/canvas-strategies/interaction-state'
+import { usePrevious } from '../editor/hook-utils'
 
 export interface ElementPathElement {
   name?: string
@@ -322,6 +323,35 @@ export const Inspector = React.memo<InspectorProps>((props: InspectorProps) => {
     return props.elementPath.length !== 0 && !anyUnknownElements
   }, [props.elementPath, anyUnknownElements])
 
+  const shouldShowConfigStyleButton = React.useMemo(
+    () =>
+      props.selectedViews.length > 0 &&
+      props.selectedViews.every((path) => EP.isRootElementOfInstance(path)) &&
+      shouldShowInspector,
+    [shouldShowInspector, props.selectedViews],
+  )
+
+  const [showConfigStyleButton, setShowConfigStyleButton] = React.useState(
+    shouldShowConfigStyleButton,
+  )
+
+  const prevShouldShowConfigValue = usePrevious(shouldShowConfigStyleButton)
+
+  React.useEffect(() => {
+    if (prevShouldShowConfigValue !== shouldShowConfigStyleButton) {
+      setShowConfigStyleButton(shouldShowConfigStyleButton)
+    }
+  }, [
+    shouldShowConfigStyleButton,
+    shouldShowInspector,
+    setShowConfigStyleButton,
+    prevShouldShowConfigValue,
+  ])
+
+  const onButtonClicked = React.useCallback(() => {
+    setShowConfigStyleButton(false)
+  }, [setShowConfigStyleButton])
+
   function renderInspectorContents() {
     return (
       <React.Fragment>
@@ -340,23 +370,46 @@ export const Inspector = React.memo<InspectorProps>((props: InspectorProps) => {
           <AlignmentButtons numberOfTargets={selectedViews.length} />
           {when(isTwindEnabled(), <ClassNameSubsection />)}
           {anyComponents ? <ComponentSection isScene={false} /> : null}
-          <TargetSelectorSection
-            targets={props.targets}
-            selectedTargetPath={props.selectedTargetPath}
-            onSelectTarget={props.onSelectTarget}
-            onStyleSelectorRename={props.onStyleSelectorRename}
-            onStyleSelectorDelete={props.onStyleSelectorDelete}
-            onStyleSelectorInsert={props.onStyleSelectorInsert}
-          />
-          <LayoutSection
-            hasNonDefaultPositionAttributes={hasNonDefaultPositionAttributes}
-            aspectRatioLocked={aspectRatioLocked}
-            toggleAspectRatioLock={toggleAspectRatioLock}
-          />
-          <StyleSection />
-          <WarningSubsection />
-          <ImgSection />
-          <EventHandlersSection />
+          {when(
+            showConfigStyleButton,
+            <div>
+              <Button
+                highlight
+                outline
+                spotlight
+                style={{
+                  margin: 8,
+                  height: 24,
+                  borderRadius: 2,
+                }}
+                onClick={onButtonClicked}
+              >
+                Configure Style and Position
+              </Button>
+            </div>,
+          )}
+          {when(
+            !showConfigStyleButton,
+            <>
+              <TargetSelectorSection
+                targets={props.targets}
+                selectedTargetPath={props.selectedTargetPath}
+                onSelectTarget={props.onSelectTarget}
+                onStyleSelectorRename={props.onStyleSelectorRename}
+                onStyleSelectorDelete={props.onStyleSelectorDelete}
+                onStyleSelectorInsert={props.onStyleSelectorInsert}
+              />
+              <LayoutSection
+                hasNonDefaultPositionAttributes={hasNonDefaultPositionAttributes}
+                aspectRatioLocked={aspectRatioLocked}
+                toggleAspectRatioLock={toggleAspectRatioLock}
+              />
+              <StyleSection />
+              <WarningSubsection />
+              <ImgSection />
+              <EventHandlersSection />
+            </>,
+          )}
         </div>
       </React.Fragment>
     )
