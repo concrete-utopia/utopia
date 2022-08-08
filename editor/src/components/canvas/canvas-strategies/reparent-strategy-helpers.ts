@@ -27,6 +27,7 @@ import { reorderElement } from '../commands/reorder-element-command'
 import { reparentElement } from '../commands/reparent-element-command'
 import { setCursorCommand } from '../commands/set-cursor-command'
 import { setElementsToRerenderCommand } from '../commands/set-elements-to-rerender-command'
+import { setProperty } from '../commands/set-property-command'
 import { updateHighlightedViews } from '../commands/update-highlighted-views-command'
 import { updateSelectedViews } from '../commands/update-selected-views-command'
 import { wildcardPatch } from '../commands/wildcard-patch-command'
@@ -469,7 +470,10 @@ export function applyFlexReparent(
 
         // Strip the `position`, positional and dimension properties.
         const commandToRemoveProperties = stripAbsoluteProperties
-          ? [deleteProperties('permanent', newPath, propertiesToRemove)]
+          ? [
+              deleteProperties('permanent', newPath, propertiesToRemove),
+              setProperty('permanent', newPath, PP.create(['style', 'position']), 'relative'), // SPIKE TODO only insert position: relative if there was a position nonstatic prop before
+            ]
           : []
 
         const commandsBeforeReorder = [

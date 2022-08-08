@@ -39,6 +39,7 @@ import { runUpdateFunctionCommand, UpdateFunctionCommand } from './update-functi
 import { runPushIntendedBounds, PushIntendedBounds } from './push-intended-bounds-command'
 import { DeleteProperties, runDeleteProperties } from './delete-properties-command'
 import { AddImportsToFile, runAddImportsToFile } from './add-imports-to-file-command'
+import { runSettProperty as runSetProperty, SetProperty } from './set-property-command'
 
 export interface CommandFunctionResult {
   editorStatePatches: Array<EditorStatePatch>
@@ -72,6 +73,7 @@ export type CanvasCommand =
   | SetElementsToRerenderCommand
   | PushIntendedBounds
   | DeleteProperties
+  | SetProperty
   | AddImportsToFile
 
 export const runCanvasCommand = (
@@ -116,6 +118,8 @@ export const runCanvasCommand = (
       return runPushIntendedBounds(editorState, command)
     case 'DELETE_PROPERTIES':
       return runDeleteProperties(editorState, command)
+    case 'SET_PROPERTY':
+      return runSetProperty(editorState, command)
     case 'ADD_IMPORTS_TO_FILE':
       return runAddImportsToFile(editorState, command)
     default:
