@@ -419,7 +419,7 @@ import {
 } from '../../inspector/common/css-utils'
 import { projectListing, ProjectListing } from '../action-types'
 import { UtopiaVSCodeConfig } from 'utopia-vscode-common'
-import { MouseButtonsPressed } from 'src/utils/mouse'
+import { MouseButtonsPressed } from '../../../utils/mouse'
 
 export function TransientCanvasStateFilesStateKeepDeepEquality(
   oldValue: TransientFilesState,
@@ -1530,13 +1530,15 @@ export const GuidelineWithSnappingVectorKeepDeepEquality: KeepDeepEqualityCall<G
   )
 
 export const EditorStateCanvasControlsKeepDeepEquality: KeepDeepEqualityCall<EditorStateCanvasControls> =
-  combine3EqualityCalls(
+  combine4EqualityCalls(
     (controls) => controls.snappingGuidelines,
     arrayDeepEquality(GuidelineWithSnappingVectorKeepDeepEquality),
     (controls) => controls.outlineHighlights,
     arrayDeepEquality(CanvasRectangleKeepDeepEquality),
     (controls) => controls.strategyIntendedBounds,
     arrayDeepEquality(FrameAndTargetKeepDeepEquality),
+    (controls) => controls.reparentedToPaths,
+    ElementPathArrayKeepDeepEquality,
     editorStateCanvasControls,
   )
 

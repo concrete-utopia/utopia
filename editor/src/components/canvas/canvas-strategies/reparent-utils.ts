@@ -9,6 +9,7 @@ import { ElementPath, Imports, NodeModules } from '../../../core/shared/project-
 import { CanvasCommand } from '../commands/commands'
 import { reparentElement } from '../commands/reparent-element-command'
 import {
+  ElementInstanceMetadataMap,
   isIntrinsicElement,
   isJSXElement,
   walkElement,
@@ -17,8 +18,12 @@ import * as EP from '../../../core/shared/element-path'
 import { getImportsFor, importedFromWhere } from '../../../components/editor/import-utils'
 import { forceNotNull } from '../../../core/shared/optional-utils'
 import { addImportsToFile } from '../commands/add-imports-to-file-command'
+import { BuiltInDependencies } from '../../../core/es-modules/package-manager/built-in-dependencies-list'
+import { CSSCursor } from '../canvas-types'
+import { addToReparentedToPaths } from './add-to-reparented-to-paths-command'
 
 export function getReparentCommands(
+  builtInDependencies: BuiltInDependencies,
   projectContents: ProjectContentTreeRoot,
   nodeModules: NodeModules,
   openFile: string | null | undefined,
@@ -74,6 +79,7 @@ export function getReparentCommands(
                     newTargetPath,
                     importsToAdd,
                     getImportsFor(
+                      builtInDependencies,
                       importsInOriginFile,
                       projectContents,
                       nodeModules,
@@ -88,6 +94,7 @@ export function getReparentCommands(
                       newTargetPath,
                       importsToAdd,
                       getImportsFor(
+                        builtInDependencies,
                         importsInOriginFile,
                         projectContents,
                         nodeModules,
@@ -113,6 +120,22 @@ export function getReparentCommands(
   )
 
   result.push(reparentElement('permanent', selectedElement, newParent))
+
+  const newPath = EP.appendToPath(newParent, EP.toUid(selectedElement))
+  result.push(addToReparentedToPaths('transient', [newPath]))
   result.push(...commandsToAddImports)
   return result
+}
+
+export function cursorForMissingReparentedItems(
+  reparentedToPaths: Array<ElementPath>,
+  spyMetadata: ElementInstanceMetadataMap,
+): CSSCursor | null {
+  for (const reparentedToPath of reparentedToPaths) {
+    if (!(EP.toString(reparentedToPath) in spyMetadata)) {
+      return CSSCursor.ReparentNotPermitted
+    }
+  }
+
+  return null
 }

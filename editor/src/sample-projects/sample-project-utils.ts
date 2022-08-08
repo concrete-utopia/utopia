@@ -124,11 +124,11 @@ export var App = (props) => {
     '/src/card.js': createCodeFile(
       '/src/card.js',
       `import * as React from 'react'
-import { Rectangle } from 'utopia-api'
+import { Spring } from 'non-existant-dummy-library'
 export var Card = (props) => {
   return <div data-uid='card-outer-div' style={{...props.style}}>
     <div data-uid='card-inner-div' style={{ position: 'absolute', left: 0, top: 0, width: 50, height: 50, backgroundColor: 'red' }} />
-    <Rectangle data-uid='card-inner-rectangle' data-testid='rectangle' style={{ position: 'absolute', left: 100, top: 200, width: 50, height: 50, backgroundColor: 'blue' }} />
+    <Spring data-uid='card-inner-spring' data-testid='spring' style={{ position: 'absolute', left: 100, top: 200, width: 50, height: 50, backgroundColor: 'blue' }} />
   </div>
 }`,
     ),

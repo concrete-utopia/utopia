@@ -22,7 +22,7 @@ import { matchInlineSnapshotBrowser } from '../../../../test/karma-snapshots'
 import { createBuiltInDependenciesList } from '../../../core/es-modules/package-manager/built-in-dependencies-list'
 import { NO_OP } from '../../../core/shared/utils'
 import CanvasActions from '../canvas-actions'
-import { CanvasVector } from 'src/core/shared/math-utils'
+import { CanvasVector } from '../../../core/shared/math-utils'
 
 const builtInDependencies = createBuiltInDependenciesList(null)
 builtInDependencies.push({

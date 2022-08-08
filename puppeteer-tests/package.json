@@ -5,6 +5,7 @@
   "scripts": {
     "performance-test": "ts-node --files src/performance-test.ts",
     "screenshot-test": "ts-node --files src/screenshot-test.ts",
+    "system-test": "ts-node --files src/system-test.ts",
     "preinstall": "npx only-allow pnpm",
     "build": "tsc"
   },
