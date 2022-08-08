@@ -50,6 +50,7 @@ import {
 } from './insert-element-insertion-subject'
 import { AddElement, runAddElement } from './add-element-command'
 import { runUpdatePropIfExists, UpdatePropIfExists } from './update-prop-if-exists-command'
+import { HighlightElementsCommand, runHighlightElementsCommand } from './highlight-element-command'
 
 export interface CommandFunctionResult {
   editorStatePatches: Array<EditorStatePatch>
@@ -89,6 +90,7 @@ export type CanvasCommand =
   | AddToReparentedToPaths
   | InsertElementInsertionSubject
   | AddElement
+  | HighlightElementsCommand
 
 export const runCanvasCommand = (
   editorState: EditorState,
@@ -144,6 +146,8 @@ export const runCanvasCommand = (
       return runInsertElementInsertionSubject(editorState, command)
     case 'ADD_ELEMENT':
       return runAddElement(editorState, command)
+    case 'HIGHLIGHT_ELEMENTS_COMMAND':
+      return runHighlightElementsCommand(editorState, command)
     default:
       const _exhaustiveCheck: never = command
       throw new Error(`Unhandled canvas command ${JSON.stringify(command)}`)
