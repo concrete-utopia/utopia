@@ -70,6 +70,7 @@ function getApplicableStrategies(
 }
 
 const getApplicableStrategiesSelector = createSelector(
+  (store: EditorStorePatched) => store.strategyState.sortedApplicableStrategies,
   (store: EditorStorePatched): InteractionCanvasState => {
     return pickCanvasStateFromEditorState(store.editor, store.builtInDependencies)
   },
@@ -77,18 +78,23 @@ const getApplicableStrategiesSelector = createSelector(
   (store: EditorStorePatched) => store.editor.jsxMetadata,
   (store: EditorStorePatched) => store.editor.allElementProps,
   (
+    applicableStrategiesFromStrategyState: Array<CanvasStrategy>,
     canvasState: InteractionCanvasState,
     interactionSession: InteractionSession | null,
     metadata: ElementInstanceMetadataMap,
     allElementProps: AllElementProps,
   ): Array<CanvasStrategy> => {
-    return getApplicableStrategies(
-      RegisteredCanvasStrategies,
-      canvasState,
-      interactionSession,
-      metadata,
-      allElementProps,
-    )
+    if (applicableStrategiesFromStrategyState.length > 0) {
+      return applicableStrategiesFromStrategyState
+    } else {
+      return getApplicableStrategies(
+        RegisteredCanvasStrategies,
+        canvasState,
+        interactionSession,
+        metadata,
+        allElementProps,
+      )
+    }
   },
 )
 
