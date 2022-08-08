@@ -537,6 +537,9 @@ export function applyFlexReparent(
                 controls: { flexReparentTargetLines: { $set: [targetLineBeforeSibling] } },
               },
             }),
+            wildcardPatch('transient', {
+              hiddenInstances: { $push: [target] },
+            }),
           ]
 
           interactionFinishCommadns = [
@@ -575,6 +578,9 @@ export function applyFlexReparent(
                   controls: { flexReparentTargetLines: { $set: [targetLineAfterSibling] } },
                 },
               }),
+              wildcardPatch('transient', {
+                hiddenInstances: { $push: [target] },
+              }),
             ]
           } else if (parentRect != null) {
             const targetLineBeginningOfParent: CanvasRectangle =
@@ -600,6 +606,9 @@ export function applyFlexReparent(
                 canvas: {
                   controls: { flexReparentTargetLines: { $set: [targetLineBeginningOfParent] } },
                 },
+              }),
+              wildcardPatch('transient', {
+                hiddenInstances: { $push: [target] },
               }),
             ]
           } else {

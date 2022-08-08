@@ -14,7 +14,13 @@ interface MultiSelectOutlineControlProps {
 }
 
 export const MultiSelectOutlineControl = React.memo<MultiSelectOutlineControlProps>((props) => {
-  const localSelectedElements = props.localSelectedElements
+  const hiddenInstances = useEditorState(
+    (store) => store.editor.hiddenInstances,
+    'MultiSelectOutlineControl hiddenInstances',
+  )
+  const localSelectedElements = props.localSelectedElements.filter(
+    (sv) => !hiddenInstances.includes(sv),
+  )
   return (
     <CanvasOffsetWrapper>
       {[
