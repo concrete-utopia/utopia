@@ -1,5 +1,6 @@
 import { MetadataUtils } from '../../../core/model/element-metadata-utils'
 import { getStoryboardElementPath } from '../../../core/model/scene-utils'
+import { mapDropNulls } from '../../../core/shared/array-utils'
 import * as EP from '../../../core/shared/element-path'
 import { ElementInstanceMetadataMap } from '../../../core/shared/element-template'
 import {
@@ -210,11 +211,20 @@ function newGetReparentTargetInner(
     }
   }
 
+  const filteredSelectedElementsMetadata = mapDropNulls(
+    (path) => MetadataUtils.findElementByElementPath(metadata, path),
+    filteredSelectedElements,
+  )
+
   const filteredElementsUnderPoint = allElementsUnderPoint.filter(
     (target) =>
-      // any of the dragged elements and their descendants are not game for reparenting
-      filteredSelectedElements.findIndex((maybeAncestorOrEqual) =>
-        EP.isDescendantOfOrEqualTo(target, maybeAncestorOrEqual),
+      // any of the dragged elements (or their flex parents) and their descendants are not game for reparenting
+      filteredSelectedElementsMetadata.findIndex((maybeAncestorOrEqual) =>
+        maybeAncestorOrEqual.specialSizeMeasurements.parentLayoutSystem === 'flex'
+          ? // for Flex children, we also want to filter out all their siblings to force a Flex Reorder strategy
+            EP.isDescendantOf(target, EP.parentPath(maybeAncestorOrEqual.elementPath))
+          : // for non-flex elements, we filter out their descendants and themselves
+            EP.isDescendantOfOrEqualTo(target, maybeAncestorOrEqual.elementPath),
       ) === -1 &&
       // simply skip elements that do not support children
       MetadataUtils.targetSupportsChildren(projectContents, openFile, metadata, target) &&
