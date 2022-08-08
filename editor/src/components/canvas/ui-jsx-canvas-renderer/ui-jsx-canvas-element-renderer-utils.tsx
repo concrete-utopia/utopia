@@ -442,7 +442,7 @@ function hideElement(props: any): any {
     ...props,
     style: {
       ...styleProps,
-      display: 'none',
+      display: 'none', // WARNING WARNING SPIKE SPIKE
     },
   } as any
 }
