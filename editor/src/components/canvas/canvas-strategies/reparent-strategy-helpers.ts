@@ -493,7 +493,7 @@ export function applyFlexReparent(
 
         const commandsAfterReorder = [
           ...commandToRemoveProperties,
-          setElementsToRerenderCommand([newPath]),
+          setElementsToRerenderCommand([target, newPath]),
           updateHighlightedViews('transient', []),
           setCursorCommand('transient', CSSCursor.Move),
         ]
