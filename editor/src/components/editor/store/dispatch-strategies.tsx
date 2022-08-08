@@ -70,11 +70,6 @@ export function interactionFinished(
       result.strategyState.currentStrategy,
     )
 
-    const newStrategyState = {
-      ...withClearedSession,
-      sortedApplicableStrategies: sortedApplicableStrategies,
-    }
-
     const strategyResult =
       strategy != null
         ? applyCanvasStrategy(
@@ -99,7 +94,7 @@ export function interactionFinished(
     return {
       unpatchedEditorState: commandResult.editorState,
       patchedEditorState: commandResult.editorState,
-      newStrategyState: newStrategyState,
+      newStrategyState: withClearedSession,
     }
   }
 }

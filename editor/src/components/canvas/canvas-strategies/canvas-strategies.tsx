@@ -78,13 +78,13 @@ const getApplicableStrategiesSelector = createSelector(
   (store: EditorStorePatched) => store.editor.jsxMetadata,
   (store: EditorStorePatched) => store.editor.allElementProps,
   (
-    applicableStrategiesFromStrategyState: Array<CanvasStrategy>,
+    applicableStrategiesFromStrategyState: Array<CanvasStrategy> | null,
     canvasState: InteractionCanvasState,
     interactionSession: InteractionSession | null,
     metadata: ElementInstanceMetadataMap,
     allElementProps: AllElementProps,
   ): Array<CanvasStrategy> => {
-    if (applicableStrategiesFromStrategyState.length > 0) {
+    if (applicableStrategiesFromStrategyState != null) {
       return applicableStrategiesFromStrategyState
     } else {
       return getApplicableStrategies(

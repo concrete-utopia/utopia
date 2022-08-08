@@ -113,7 +113,7 @@ export interface StrategyState {
   currentStrategyCommands: Array<CanvasCommand>
   accumulatedPatches: Array<EditorStatePatch>
   commandDescriptions: Array<CommandDescription>
-  sortedApplicableStrategies: Array<CanvasStrategy>
+  sortedApplicableStrategies: Array<CanvasStrategy> | null
 
   // Checkpointed metadata at the point at which a strategy change has occurred.
   startingMetadata: ElementInstanceMetadataMap
@@ -131,7 +131,7 @@ export function createEmptyStrategyState(
     currentStrategyCommands: [],
     accumulatedPatches: [],
     commandDescriptions: [],
-    sortedApplicableStrategies: [],
+    sortedApplicableStrategies: null,
     startingMetadata: metadata,
     customStrategyState: defaultCustomStrategyState(),
     startingAllElementProps: allElementProps,
