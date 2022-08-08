@@ -29,6 +29,9 @@ import {
   snapDrag,
 } from './shared-absolute-move-strategy-helpers'
 import { updateSelectedViews } from '../commands/update-selected-views-command'
+import * as EP from '../../../core/shared/element-path'
+import { mapDropNulls } from '../../../core/shared/array-utils'
+import { highlightElementsCommand } from '../commands/highlight-element-command'
 
 export const absoluteMoveStrategy: CanvasStrategy = {
   id: 'ABSOLUTE_MOVE',
@@ -81,9 +84,15 @@ export const absoluteMoveStrategy: CanvasStrategy = {
         intendedBounds: Array<CanvasFrameAndTarget>
       } => {
         const filteredSelectedElements = getDragTargets(canvasState.selectedElements)
+        const componentInstances = mapDropNulls((path) => {
+          return EP.isRootElementOfInstance(path) ? EP.parentPath(path) : null
+        }, canvasState.selectedElements)
+
         let commands: Array<CanvasCommand> = [
           // Spike - try selecting the parent instance to make it clear what has actually been updated
-          updateSelectedViews('permanent', filteredSelectedElements),
+          // updateSelectedViews('permanent', filteredSelectedElements),
+          // Spike second version: instead of selection the real target is highlighted in the navigator
+          highlightElementsCommand(componentInstances),
         ]
         let intendedBounds: Array<CanvasFrameAndTarget> = []
         filteredSelectedElements.forEach((selectedElement) => {

@@ -380,6 +380,7 @@ export interface NavigatorState {
   dropTargetHint: DropTargetHint
   collapsedViews: ElementPath[]
   renamingTarget: ElementPath | null
+  highlightedTargets: ElementPath[]
 }
 
 export interface FloatingInsertMenuStateClosed {
@@ -1780,6 +1781,7 @@ export function createEditorState(dispatch: EditorDispatch): EditorState {
       },
       collapsedViews: [],
       renamingTarget: null,
+      highlightedTargets: [],
     },
     topmenu: {
       formulaBarMode: 'content',
@@ -2084,6 +2086,7 @@ export function editorModelFromPersistentModel(
       collapsedViews: [],
       renamingTarget: null,
       minimised: persistentModel.navigator.minimised,
+      highlightedTargets: [],
     },
     fileBrowser: {
       renamingTarget: null,
