@@ -142,6 +142,7 @@ const computeResultingStyle = (
   fullyVisible: boolean,
   isFocusedComponent: boolean,
   isFocusableComponent: boolean,
+  isHighlightedForInteraction: boolean,
   colorTheme: any,
 ) => {
   let result = defaultUnselected(colorTheme)
@@ -160,7 +161,25 @@ const computeResultingStyle = (
     }
   } else {
     // unselected
-    if (isInsideComponent) {
+    if (isHighlightedForInteraction) {
+      if (isFocusedComponent) {
+        result = {
+          style: {
+            background: colorTheme.componentChild.o(10).value,
+            color: colorTheme.neutralForeground.value,
+          },
+          iconColor: 'warning',
+        }
+      } else {
+        result = {
+          style: {
+            background: colorTheme.primary.o(10).value,
+            color: colorTheme.neutralForeground.value,
+          },
+          iconColor: 'main',
+        }
+      }
+    } else if (isInsideComponent) {
       result = componentUnselected(colorTheme)
     } else if (isDynamic) {
       result = dynamicUnselected(colorTheme)
@@ -279,6 +298,12 @@ export const NavigatorItem: React.FunctionComponent<
   const fullyVisible = useStyleFullyVisible(elementPath)
   const isProbablyScene = useIsProbablyScene(elementPath)
 
+  const isHighlightedForInteraction = useEditorState((store) => {
+    return store.editor.navigator.highlightedTargets.some((target) =>
+      EP.pathsEqual(target, props.elementPath),
+    )
+  }, 'isreallyhighlighted')
+
   const resultingStyle = computeResultingStyle(
     selected,
     isInsideComponent,
@@ -287,6 +312,7 @@ export const NavigatorItem: React.FunctionComponent<
     fullyVisible,
     isFocusedComponent,
     isFocusableComponent,
+    isHighlightedForInteraction,
     colorTheme,
   )
 
