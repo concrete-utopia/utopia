@@ -1535,7 +1535,7 @@ export const GuidelineWithSnappingVectorKeepDeepEquality: KeepDeepEqualityCall<G
   )
 
 export const EditorStateCanvasControlsKeepDeepEquality: KeepDeepEqualityCall<EditorStateCanvasControls> =
-  combine5EqualityCalls(
+  combine6EqualityCalls(
     (controls) => controls.snappingGuidelines,
     arrayDeepEquality(GuidelineWithSnappingVectorKeepDeepEquality),
     (controls) => controls.outlineHighlights,
@@ -1546,6 +1546,8 @@ export const EditorStateCanvasControlsKeepDeepEquality: KeepDeepEqualityCall<Edi
     arrayDeepEquality(CanvasRectangleKeepDeepEquality),
     (controls) => controls.parentHighlightPaths,
     nullableDeepEquality(arrayDeepEquality(ElementPathKeepDeepEquality)),
+    (controls) => controls.reparentedToPaths,
+    ElementPathArrayKeepDeepEquality,
     editorStateCanvasControls,
   )
 
