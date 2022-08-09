@@ -938,6 +938,7 @@ function restoreEditorState(currentEditor: EditorModel, history: StateHistory): 
     selectedViews: currentEditor.selectedViews,
     highlightedViews: currentEditor.highlightedViews,
     hiddenInstances: poppedEditor.hiddenInstances,
+    displayNoneInstances: poppedEditor.displayNoneInstances,
     warnedInstances: poppedEditor.warnedInstances,
     mode: EditorModes.selectMode(),
     focusedPanel: currentEditor.focusedPanel,

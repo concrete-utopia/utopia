@@ -56,6 +56,7 @@ export function createLookupRender(
   parentComponentInputProps: MapLike<any>,
   requireResult: MapLike<any>,
   hiddenInstances: Array<ElementPath>,
+  displayNoneInstances: Array<ElementPath>,
   fileBlobs: UIFileBase64Blobs,
   validPaths: Set<ElementPath>,
   reactChildren: React.ReactNode | undefined,
@@ -106,6 +107,7 @@ export function createLookupRender(
       parentComponentInputProps,
       requireResult,
       hiddenInstances,
+      displayNoneInstances,
       fileBlobs,
       validPaths,
       generatedUID,
@@ -149,6 +151,7 @@ export function renderCoreElement(
   parentComponentInputProps: MapLike<any>,
   requireResult: MapLike<any>,
   hiddenInstances: Array<ElementPath>,
+  displayNoneInstances: Array<ElementPath>,
   fileBlobs: UIFileBase64Blobs,
   validPaths: Set<ElementPath>,
   uid: string | undefined,
@@ -179,6 +182,7 @@ export function renderCoreElement(
             parentComponentInputProps,
             requireResult,
             hiddenInstances,
+            displayNoneInstances,
             fileBlobs,
             validPaths,
             reactChildren,
@@ -224,6 +228,7 @@ export function renderCoreElement(
         rootScope,
         inScope,
         hiddenInstances,
+        displayNoneInstances,
         fileBlobs,
         validPaths,
         passthroughProps,
@@ -245,6 +250,7 @@ export function renderCoreElement(
         parentComponentInputProps,
         requireResult,
         hiddenInstances,
+        displayNoneInstances,
         fileBlobs,
         validPaths,
         reactChildren,
@@ -283,6 +289,7 @@ export function renderCoreElement(
           parentComponentInputProps,
           requireResult,
           hiddenInstances,
+          displayNoneInstances,
           fileBlobs,
           validPaths,
           uid,
@@ -319,6 +326,7 @@ function renderJSXElement(
   rootScope: MapLike<any>,
   inScope: MapLike<any>,
   hiddenInstances: Array<ElementPath>,
+  displayNoneInstances: Array<ElementPath>,
   fileBlobs: UIFileBase64Blobs,
   validPaths: Set<ElementPath>,
   passthroughProps: MapLike<any>,
@@ -336,6 +344,9 @@ function renderJSXElement(
   if (isHidden(hiddenInstances, elementPath)) {
     elementProps = hideElement(elementProps)
   }
+  if (isDisplayNoned(displayNoneInstances, elementPath)) {
+    elementProps = displayNoneElement(elementProps)
+  }
   elementProps = streamlineInFileBlobs(elementProps, fileBlobs)
 
   const createChildrenElement = (child: JSXElementChild): React.ReactChild => {
@@ -348,6 +359,7 @@ function renderJSXElement(
       parentComponentInputProps,
       requireResult,
       hiddenInstances,
+      displayNoneInstances,
       fileBlobs,
       validPaths,
       undefined,
@@ -435,6 +447,14 @@ function renderJSXElement(
 function isHidden(hiddenInstances: ElementPath[], elementPath: ElementPath | null): boolean {
   return elementPath != null && hiddenInstances.some((path) => EP.pathsEqual(path, elementPath))
 }
+function isDisplayNoned(
+  displayNoneInstances: ElementPath[],
+  elementPath: ElementPath | null,
+): boolean {
+  return (
+    elementPath != null && displayNoneInstances.some((path) => EP.pathsEqual(path, elementPath))
+  )
+}
 
 function hideElement(props: any): any {
   const styleProps = Utils.propOr({}, 'style', props as any)
@@ -442,7 +462,18 @@ function hideElement(props: any): any {
     ...props,
     style: {
       ...styleProps,
-      display: 'none', // WARNING WARNING SPIKE SPIKE
+      visibility: 'hidden',
+    },
+  } as any
+}
+
+function displayNoneElement(props: any): any {
+  const styleProps = Utils.propOr({}, 'style', props as any)
+  return {
+    ...props,
+    style: {
+      ...styleProps,
+      display: 'none',
     },
   } as any
 }

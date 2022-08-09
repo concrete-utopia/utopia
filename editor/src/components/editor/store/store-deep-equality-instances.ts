@@ -2996,6 +2996,12 @@ export const EditorStateKeepDeepEquality: KeepDeepEqualityCall<EditorState> = (
     oldValue.hiddenInstances,
     newValue.hiddenInstances,
   )
+
+  const displayNoneInstancesResult = ElementPathArrayKeepDeepEquality(
+    oldValue.displayNoneInstances,
+    newValue.displayNoneInstances,
+  )
+
   const warnedInstancesResult = ElementPathArrayKeepDeepEquality(
     oldValue.warnedInstances,
     newValue.warnedInstances,
@@ -3156,6 +3162,7 @@ export const EditorStateKeepDeepEquality: KeepDeepEqualityCall<EditorState> = (
     selectedViewsResult.areEqual &&
     highlightedViewsResult.areEqual &&
     hiddenInstancesResult.areEqual &&
+    displayNoneInstancesResult.areEqual &&
     warnedInstancesResult.areEqual &&
     modeResult.areEqual &&
     focusedPanelResult.areEqual &&
@@ -3223,6 +3230,7 @@ export const EditorStateKeepDeepEquality: KeepDeepEqualityCall<EditorState> = (
       selectedViewsResult.value,
       highlightedViewsResult.value,
       hiddenInstancesResult.value,
+      displayNoneInstancesResult.value,
       warnedInstancesResult.value,
       modeResult.value,
       focusedPanelResult.value,

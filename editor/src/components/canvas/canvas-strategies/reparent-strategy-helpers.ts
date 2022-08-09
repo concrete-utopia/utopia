@@ -552,7 +552,7 @@ export function applyFlexReparent(
               },
             }),
             wildcardPatch('transient', {
-              hiddenInstances: { $push: [target] },
+              displayNoneInstances: { $push: [target] },
             }),
           ]
 
