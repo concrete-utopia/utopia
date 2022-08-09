@@ -892,9 +892,6 @@ export const MetadataUtils = {
                   if (isJSXTextBlock(firstChild)) {
                     return firstChild.text
                   }
-                  if (isJSXArbitraryBlock(firstChild)) {
-                    return `{${firstChild.originalJavascript}}`
-                  }
                 }
               }
               // With images, take their alt and src properties as possible names first.
