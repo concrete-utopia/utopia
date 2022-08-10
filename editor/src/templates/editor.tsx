@@ -370,10 +370,10 @@ export class Editor {
         if (PerformanceMarks) {
           performance.mark(`update canvas ${updateId}`)
         }
-        ElementsToRerenderGLOBAL.current = dispatchResult.patchedEditor.canvas.elementsToRerender // Mutation!
+        ElementsToRerenderGLOBAL.current = this.storedState.patchedEditor.canvas.elementsToRerender // Mutation!
         ReactDOM.flushSync(() => {
           ReactDOM.unstable_batchedUpdates(() => {
-            this.updateCanvasStore(patchedStoreFromFullStore(dispatchResult))
+            this.updateCanvasStore(patchedStoreFromFullStore(this.storedState))
           })
         })
         if (PerformanceMarks) {
