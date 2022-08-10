@@ -146,7 +146,7 @@ function runMoveStrategyForFreshlyDuplicatedElements(
   editorState: EditorState,
   strategyState: StrategyState,
   interactionState: InteractionSession,
-  transient: WhenToRun,
+  commandLifecycle: 'mid-interaction' | 'end-interaction',
 ): Array<EditorStatePatch> {
   const canvasState = pickCanvasStateFromEditorState(editorState, builtInDependencies)
 
@@ -156,5 +156,5 @@ function runMoveStrategyForFreshlyDuplicatedElements(
     strategyState,
   ).commands
 
-  return foldAndApplyCommandsInner(editorState, [], [], moveCommands, transient).statePatches
+  return foldAndApplyCommandsInner(editorState, [], [], moveCommands, commandLifecycle).statePatches
 }

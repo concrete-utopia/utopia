@@ -92,7 +92,7 @@ export function interactionFinished(
       result.strategyState.accumulatedPatches,
       [],
       strategyResult.commands,
-      'always',
+      'end-interaction',
     )
 
     return {

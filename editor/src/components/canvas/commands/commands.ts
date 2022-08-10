@@ -82,7 +82,7 @@ export type CanvasCommand =
 export const runCanvasCommand = (
   editorState: EditorState,
   command: CanvasCommand,
-  commandLifecycle: WhenToRun,
+  commandLifecycle: 'mid-interaction' | 'end-interaction',
 ): CommandFunctionResult => {
   switch (command.type) {
     case 'WILDCARD_PATCH':
@@ -136,7 +136,7 @@ export function foldAndApplyCommandsSimple(
   commands: Array<CanvasCommand>,
 ): EditorState {
   const updatedEditorState = commands.reduce((workingEditorState, command) => {
-    const patches = runCanvasCommand(workingEditorState, command, 'always')
+    const patches = runCanvasCommand(workingEditorState, command, 'end-interaction')
     return updateEditorStateWithPatches(workingEditorState, patches.editorStatePatches)
   }, editorState)
 
@@ -148,7 +148,7 @@ export function foldAndApplyCommandsInner(
   patches: Array<EditorStatePatch>,
   commandsToAccumulate: Array<CanvasCommand>,
   commands: Array<CanvasCommand>,
-  transient: WhenToRun,
+  commandLifecycle: 'mid-interaction' | 'end-interaction',
 ): {
   statePatches: EditorStatePatch[]
   updatedEditorState: EditorState
@@ -163,9 +163,17 @@ export function foldAndApplyCommandsInner(
   let workingCommandDescriptions: Array<CommandDescription> = []
 
   const runCommand = (command: CanvasCommand, shouldAccumulatePatches: boolean) => {
-    if (transient === 'mid-interaction' || command.whenToRun === 'always') {
+    const shouldRunCommand: boolean = (() => {
+      if (commandLifecycle === 'mid-interaction') {
+        return command.whenToRun === 'always' || command.whenToRun === 'mid-interaction'
+      } else {
+        return command.whenToRun === 'always' || command.whenToRun === 'on-complete'
+      }
+    })()
+
+    if (shouldRunCommand) {
       // Run the command with our current states.
-      const commandResult = runCanvasCommand(workingEditorState, command, transient)
+      const commandResult = runCanvasCommand(workingEditorState, command, commandLifecycle)
       // Capture values from the result.
       const statePatch = commandResult.editorStatePatches
       // Apply the update to the editor state.
@@ -200,14 +208,20 @@ export function foldAndApplyCommands(
   patches: Array<EditorStatePatch>,
   commandsToAccumulate: Array<CanvasCommand>,
   commands: Array<CanvasCommand>,
-  transient: WhenToRun,
+  commandLifecycle: 'mid-interaction' | 'end-interaction',
 ): {
   editorState: EditorState
   accumulatedPatches: Array<EditorStatePatch>
   commandDescriptions: Array<CommandDescription>
 } {
   const { statePatches, accumulatedPatches, updatedEditorState, commandDescriptions } =
-    foldAndApplyCommandsInner(editorState, patches, commandsToAccumulate, commands, transient)
+    foldAndApplyCommandsInner(
+      editorState,
+      patches,
+      commandsToAccumulate,
+      commands,
+      commandLifecycle,
+    )
 
   let workingEditorState = updatedEditorState
   if (statePatches.length === 0) {

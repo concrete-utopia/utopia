@@ -131,7 +131,7 @@ describe('interactionCancel', () => {
     editorStore.strategyState.accumulatedPatches = runCanvasCommand(
       editorStore.unpatchedEditor,
       wildcardPatch('always', { selectedViews: { $set: [] } }),
-      'always',
+      'end-interaction',
     ).editorStatePatches
     const actualResult = interactionCancel(editorStore, dispatchResultFromEditorStore(editorStore))
     expect(actualResult.newStrategyState.accumulatedPatches).toHaveLength(0)
@@ -210,8 +210,8 @@ describe('interactionStart', () => {
                 },
               },
             },
-            "transient": "permanent",
             "type": "WILDCARD_PATCH",
+            "whenToRun": "always",
           },
         ],
         "currentStrategyFitness": 10,
@@ -333,8 +333,8 @@ describe('interactionUpdatex', () => {
                 },
               },
             },
-            "transient": "permanent",
             "type": "WILDCARD_PATCH",
+            "whenToRun": "always",
           },
         ],
         "currentStrategyFitness": 10,
@@ -429,7 +429,7 @@ describe('interactionUpdate without strategy', () => {
     editorStore.strategyState.accumulatedPatches = runCanvasCommand(
       editorStore.unpatchedEditor,
       wildcardPatch('always', { canvas: { scale: { $set: 100 } } }),
-      'always',
+      'end-interaction',
     ).editorStatePatches
     const actualResult = interactionUpdate(
       [],
@@ -485,8 +485,8 @@ describe('interactionHardReset', () => {
                 },
               },
             },
-            "transient": "permanent",
             "type": "WILDCARD_PATCH",
+            "whenToRun": "always",
           },
         ],
         "currentStrategyFitness": 10,
@@ -590,7 +590,7 @@ describe('interactionUpdate with accumulating keypresses', () => {
     editorStore.strategyState.accumulatedPatches = runCanvasCommand(
       editorStore.unpatchedEditor,
       wildcardPatch('always', { focusedPanel: { $set: 'codeEditor' } }),
-      'always',
+      'end-interaction',
     ).editorStatePatches
 
     const actualResult = interactionUpdate(
@@ -703,8 +703,8 @@ describe('interactionUpdate with user changed strategy', () => {
                 },
               },
             },
-            "transient": "permanent",
             "type": "WILDCARD_PATCH",
+            "whenToRun": "always",
           },
         ],
         "currentStrategyFitness": 10,

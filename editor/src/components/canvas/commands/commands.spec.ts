@@ -13,7 +13,7 @@ describe('foldAndApplyCommands', () => {
       [],
       [setCursorCommand('always', CSSCursor.Move)],
       [],
-      'always',
+      'end-interaction',
     )
     expect(result.accumulatedPatches).toMatchInlineSnapshot(`
       Array [
@@ -35,7 +35,7 @@ describe('foldAndApplyCommands', () => {
       [],
       [setCursorCommand('mid-interaction', CSSCursor.Move)],
       [],
-      'always',
+      'end-interaction',
     )
     expect(result.accumulatedPatches).toMatchInlineSnapshot(`Array []`)
   })

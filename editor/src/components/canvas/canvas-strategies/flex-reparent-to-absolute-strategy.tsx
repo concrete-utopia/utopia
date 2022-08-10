@@ -104,7 +104,7 @@ function runAbsoluteReparentStrategyForFreshlyConvertedElement(
   editorState: EditorState,
   strategyState: StrategyState,
   interactionState: InteractionSession,
-  transient: WhenToRun,
+  commandLifecycle: 'mid-interaction' | 'end-interaction',
 ): Array<EditorStatePatch> {
   const canvasState = pickCanvasStateFromEditorState(editorState, builtInDependencies)
 
@@ -114,5 +114,6 @@ function runAbsoluteReparentStrategyForFreshlyConvertedElement(
     strategyState,
   ).commands
 
-  return foldAndApplyCommandsInner(editorState, [], [], reparentCommands, transient).statePatches
+  return foldAndApplyCommandsInner(editorState, [], [], reparentCommands, commandLifecycle)
+    .statePatches
 }

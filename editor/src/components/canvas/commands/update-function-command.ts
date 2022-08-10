@@ -17,12 +17,18 @@ import {
 
 export interface UpdateFunctionCommand extends BaseCommand {
   type: 'UPDATE_FUNCTION_COMMAND'
-  updateFunction: (editorState: EditorState, transient: WhenToRun) => Array<EditorStatePatch>
+  updateFunction: (
+    editorState: EditorState,
+    commandLifecycle: 'mid-interaction' | 'end-interaction',
+  ) => Array<EditorStatePatch>
 }
 
 export function updateFunctionCommand(
   whenToRun: WhenToRun,
-  updateFunction: (editorState: EditorState, transient: WhenToRun) => Array<EditorStatePatch>,
+  updateFunction: (
+    editorState: EditorState,
+    commandLifecycle: 'mid-interaction' | 'end-interaction',
+  ) => Array<EditorStatePatch>,
 ): UpdateFunctionCommand {
   return {
     type: 'UPDATE_FUNCTION_COMMAND',
@@ -34,7 +40,7 @@ export function updateFunctionCommand(
 export const runUpdateFunctionCommand = (
   editorState: EditorState,
   command: UpdateFunctionCommand,
-  commandLifecycle: WhenToRun,
+  commandLifecycle: 'mid-interaction' | 'end-interaction',
 ): CommandFunctionResult => {
   return {
     editorStatePatches: command.updateFunction(editorState, commandLifecycle),
