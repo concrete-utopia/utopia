@@ -1,8 +1,21 @@
 import * as React from 'react'
 import * as ReactDOM from 'react-dom'
-import { Utils } from '../../../../uuiui-deps'
+import { EditorState } from 'src/components/editor/store/editor-state'
 import { useEditorState } from '../../../editor/store/store-hook'
+import { cursorForMissingReparentedItems } from '../../canvas-strategies/reparent-utils'
+import { CSSCursor } from '../../canvas-types'
 import { getCursorFromDragState } from '../../canvas-utils'
+import Utils from '../../../../utils/utils'
+
+export function getCursorForOverlay(editorState: EditorState): CSSCursor | null {
+  const forMissingReparentedItems = cursorForMissingReparentedItems(
+    editorState.canvas.controls.reparentedToPaths,
+    editorState.spyMetadata,
+  )
+  return (
+    forMissingReparentedItems ?? getCursorFromDragState(editorState) ?? editorState.canvas.cursor
+  )
+}
 
 export const CursorOverlay = React.memo(() => {
   const cursor = useEditorState((store) => {
