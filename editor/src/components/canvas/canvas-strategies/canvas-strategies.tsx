@@ -240,35 +240,36 @@ const useDelayedCurrentStrategy = () => {
     null,
   )
   const [timer, setTimer] = React.useState<number | null>(null)
-  const currentStrategy = useEditorState(
-    (store) => store.strategyState.currentStrategy,
-    'getCurrentStrategyDelayed',
+
+  const delayedCallback = React.useCallback(
+    (currentStrategy: CanvasStrategyId | 'empty') => {
+      if (currentStrategy != 'empty' && currentStrategyValue == null) {
+        if (timer == null) {
+          setTimer(
+            window.setTimeout(() => {
+              setCurrentStrategyValue(currentStrategy)
+              setTimer(null)
+            }, ControlDelay),
+          )
+        }
+      } else {
+        const strategyValueToSet = currentStrategy === 'empty' ? null : currentStrategy
+        setCurrentStrategyValue(strategyValueToSet)
+        if (timer != null) {
+          window.clearTimeout(timer)
+          setTimer(null)
+        }
+      }
+    },
+    [currentStrategyValue, timer, setTimer, setCurrentStrategyValue],
   )
-
-  React.useEffect(() => {
-    if (currentStrategy != null && currentStrategyValue == null) {
-      if (timer == null) {
-        setTimer(
-          window.setTimeout(() => {
-            setCurrentStrategyValue(currentStrategy)
-            setTimer(null)
-          }, ControlDelay),
-        )
-      }
+  useSelectorWithCallback((store) => {
+    if (store.strategyState.currentStrategy != null) {
+      return store.strategyState.currentStrategy
     } else {
-      setCurrentStrategyValue(currentStrategy)
-      if (timer != null) {
-        window.clearTimeout(timer)
-        setTimer(null)
-      }
+      return 'empty' // be careful `useSelectorWithCallback` skips the callback with null value
     }
-
-    return function cleanup() {
-      if (timer != null) {
-        window.clearTimeout(timer)
-      }
-    }
-  }, [currentStrategy, currentStrategyValue, timer])
+  }, delayedCallback)
 
   return currentStrategyValue
 }
