@@ -42,6 +42,7 @@ import Utils from '../../../utils/utils'
 import { StrategyState, InteractionSession } from './interaction-state'
 import { pushIntendedBounds } from '../commands/push-intended-bounds-command'
 import { CanvasFrameAndTarget } from '../canvas-types'
+import { supportsStyle } from './absolute-utils'
 
 export const keyboardAbsoluteMoveStrategy: CanvasStrategy = {
   id: 'KEYBOARD_ABSOLUTE_MOVE',
@@ -50,8 +51,10 @@ export const keyboardAbsoluteMoveStrategy: CanvasStrategy = {
     if (canvasState.selectedElements.length > 0) {
       return canvasState.selectedElements.every((element) => {
         const elementMetadata = MetadataUtils.findElementByElementPath(metadata, element)
-
-        return elementMetadata?.specialSizeMeasurements.position === 'absolute'
+        return (
+          elementMetadata?.specialSizeMeasurements.position === 'absolute' &&
+          supportsStyle(canvasState, element)
+        )
       })
     } else {
       return false
