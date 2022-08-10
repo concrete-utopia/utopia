@@ -90,10 +90,12 @@ export function findReparentStrategy(
     interactionState.interactionData.drag,
   )
 
+  const cmdPressed = interactionState.interactionData.modifiers.cmd
+
   const reparentResult = newGetReparentTarget(
     filteredSelectedElements,
     pointOnCanvas,
-    interactionState.interactionData.modifiers.cmd,
+    cmdPressed,
     canvasState,
     strategyState.startingMetadata,
     strategyState.startingAllElementProps,
@@ -128,6 +130,9 @@ export function findReparentStrategy(
         return { strategy: 'FLEX_REPARENT_TO_ABSOLUTE', newParent: newParentPath }
       }
     }
+  }
+  if (parentIsFlexLayout && cmdPressed && newParentPath != null) {
+    return { strategy: 'FLEX_REPARENT_TO_FLEX', newParent: newParentPath }
   }
   return { strategy: 'do-not-reparent' }
 }
@@ -220,7 +225,7 @@ function newGetReparentTargetInner(
     (target) =>
       // any of the dragged elements (or their flex parents) and their descendants are not game for reparenting
       filteredSelectedElementsMetadata.findIndex((maybeAncestorOrEqual) =>
-        maybeAncestorOrEqual.specialSizeMeasurements.parentLayoutSystem === 'flex'
+        !cmdPressed && maybeAncestorOrEqual.specialSizeMeasurements.parentLayoutSystem === 'flex'
           ? // for Flex children, we also want to filter out all their siblings to force a Flex Reorder strategy
             EP.isDescendantOf(target, EP.parentPath(maybeAncestorOrEqual.elementPath))
           : // for non-flex elements, we filter out their descendants and themselves
@@ -467,6 +472,10 @@ export function applyFlexReparent(
       ) {
         const target = filteredSelectedElements[0]
         const newParent = reparentResult.newParent
+        const newParentADescendantOfCurrentParent = EP.isDescendantOfOrEqualTo(
+          newParent,
+          EP.parentPath(target),
+        )
         // Reparent the element.
         const newPath = EP.appendToPath(reparentResult.newParent, EP.toUid(target))
         const reparentCommands = getReparentCommands(
@@ -551,9 +560,13 @@ export function applyFlexReparent(
                 controls: { flexReparentTargetLines: { $set: [targetLineBeforeSibling] } },
               },
             }),
-            wildcardPatch('transient', {
-              displayNoneInstances: { $push: [target] },
-            }),
+            newParentADescendantOfCurrentParent
+              ? wildcardPatch('transient', {
+                  hiddenInstances: { $push: [target] },
+                })
+              : wildcardPatch('transient', {
+                  displayNoneInstances: { $push: [target] },
+                }),
           ]
 
           interactionFinishCommadns = [
@@ -592,9 +605,13 @@ export function applyFlexReparent(
                   controls: { flexReparentTargetLines: { $set: [targetLineAfterSibling] } },
                 },
               }),
-              wildcardPatch('transient', {
-                hiddenInstances: { $push: [target] },
-              }),
+              newParentADescendantOfCurrentParent
+                ? wildcardPatch('transient', {
+                    hiddenInstances: { $push: [target] },
+                  })
+                : wildcardPatch('transient', {
+                    displayNoneInstances: { $push: [target] },
+                  }),
             ]
           } else if (parentRect != null) {
             const targetLineBeginningOfParent: CanvasRectangle =
@@ -621,9 +638,13 @@ export function applyFlexReparent(
                   controls: { flexReparentTargetLines: { $set: [targetLineBeginningOfParent] } },
                 },
               }),
-              wildcardPatch('transient', {
-                hiddenInstances: { $push: [target] },
-              }),
+              newParentADescendantOfCurrentParent
+                ? wildcardPatch('transient', {
+                    hiddenInstances: { $push: [target] },
+                  })
+                : wildcardPatch('transient', {
+                    displayNoneInstances: { $push: [target] },
+                  }),
             ]
           } else {
             // this should be an error because parentRect should never be null
