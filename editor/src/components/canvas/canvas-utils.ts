@@ -2914,17 +2914,21 @@ export function getValidElementPathsFromElement(
     //     <AppAsVariable />
     //   </div>
     // }
-    let paths: Array<ElementPath> = []
+    const uid = getUtopiaID(element)
+    const path = parentIsInstance
+      ? EP.appendNewElementPath(parentPath, uid)
+      : EP.appendToPath(parentPath, uid)
+    let paths = [path]
     fastForEach(Object.values(element.elementsWithin), (e) =>
       paths.push(
         ...getValidElementPathsFromElement(
           focusedElementPath,
           e,
-          parentPath,
+          path,
           projectContents,
           filePath,
-          parentIsScene,
-          parentIsInstance,
+          false,
+          false,
           transientFilesState,
           resolve,
         ),

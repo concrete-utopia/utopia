@@ -22,7 +22,11 @@ import {
   EditorStorePatched,
   TransientFileState,
 } from '../../editor/store/editor-state'
-import { UtopiaJSXComponent, isUtopiaJSXComponent } from '../../../core/shared/element-template'
+import {
+  UtopiaJSXComponent,
+  isUtopiaJSXComponent,
+  isJSXArbitraryBlock,
+} from '../../../core/shared/element-template'
 import { getValueFromComplexMap } from '../../../utils/map'
 import { createSelector } from 'reselect'
 import { nullableDeepEquality } from '../../../utils/deep-equality'
@@ -35,6 +39,7 @@ import {
 import { forceNotNull, optionalMap } from '../../../core/shared/optional-utils'
 import { getContentsTreeFileFromString } from '../../assets'
 import { emptyImports } from '../../../core/workers/common/project-file-utils'
+import { findJSXElementChildAtPath } from '../../../core/model/element-template-utils'
 
 interface NavigatorItemWrapperProps {
   index: number
@@ -98,12 +103,19 @@ const navigatorItemWrapperSelectorFactory = (elementPath: ElementPath) =>
         elementPath,
       )
       const staticName = MetadataUtils.getStaticElementName(elementPath, componentsIncludingScenes)
-      const labelInner = MetadataUtils.getElementLabel(
-        allElementProps,
-        elementPath,
-        jsxMetadata,
-        staticName,
+
+      const staticPath = EP.dynamicPathToStaticPath(elementPath)
+
+      const jsxElement = optionalMap(
+        (p) => findJSXElementChildAtPath(componentsIncludingScenes, p),
+        staticPath,
       )
+
+      const labelInner =
+        jsxElement != null && isJSXArbitraryBlock(jsxElement)
+          ? jsxElement.originalJavascript
+          : MetadataUtils.getElementLabel(allElementProps, elementPath, jsxMetadata, staticName)
+
       // FIXME: This is a mitigation for a situation where somehow this component re-renders
       // when the navigatorTargets indicate it shouldn't exist...
       const isInNavigatorTargets = EP.containsPath(elementPath, navigatorTargets)

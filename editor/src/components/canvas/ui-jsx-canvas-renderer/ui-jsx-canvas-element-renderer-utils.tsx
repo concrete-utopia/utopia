@@ -80,16 +80,7 @@ export function createLookupRender(
       jsxAttributeValue(generatedUID, emptyComments),
     )
 
-    // TODO BALAZS should this be here? or should the arbitrary block never have a template path with that last generated element?
-    const elementPathWithoutTheLastElementBecauseThatsAWeirdGeneratedUID = optionalMap(
-      EP.parentPath,
-      elementPath,
-    )
-
-    const innerPath = optionalMap(
-      (path) => EP.appendToPath(path, generatedUID),
-      elementPathWithoutTheLastElementBecauseThatsAWeirdGeneratedUID,
-    )
+    const innerPath = optionalMap((path) => EP.appendToPath(path, generatedUID), elementPath)
 
     let augmentedInnerElement = element
     forEachRight(withGeneratedUID, (attrs) => {

@@ -253,6 +253,29 @@ function transformAtPathOptionally(
         }
       }
     } else if (isJSXArbitraryBlock(element)) {
+      if (getUtopiaID(element) === firstUIDOrIndex) {
+        let childrenUpdated: boolean = false
+        const updatedChildren = Object.values(element.elementsWithin).reduce(
+          (acc, child): ElementsWithin => {
+            const updated = findAndTransformAtPathInner(child, tailPath)
+            if (updated != null && isJSXElement(updated)) {
+              childrenUpdated = true
+              return {
+                ...acc,
+                [child.uid]: updated,
+              }
+            }
+            return acc
+          },
+          element.elementsWithin,
+        )
+        if (childrenUpdated) {
+          return {
+            ...element,
+            elementsWithin: updatedChildren,
+          }
+        }
+      }
       if (firstUIDOrIndex in element.elementsWithin) {
         const updated = findAndTransformAtPathInner(
           element.elementsWithin[firstUIDOrIndex],
@@ -337,6 +360,23 @@ export function findJSXElementChildAtPath(
         }
       }
     } else if (isJSXArbitraryBlock(element)) {
+      const uid = getUtopiaID(element)
+      if (uid === firstUIDOrIndex) {
+        const tailPath = workingPath.slice(1)
+        if (tailPath.length === 0) {
+          // this is the element we want
+          return element
+        } else {
+          // we will want to delve into the children
+          const children = Object.values(element.elementsWithin)
+          for (const child of children) {
+            const childResult = findAtPathInner(child, tailPath)
+            if (childResult != null) {
+              return childResult
+            }
+          }
+        }
+      }
       if (firstUIDOrIndex in element.elementsWithin) {
         const elementWithin = element.elementsWithin[firstUIDOrIndex]
         const withinResult = findAtPathInner(elementWithin, workingPath)
