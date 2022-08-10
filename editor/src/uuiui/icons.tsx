@@ -181,6 +181,7 @@ export const Icons = {
   LockClosedDot: makeIcon({ type: 'lockcloseddot', color: 'main' }),
   LockOpen: makeIcon({ type: 'lockopen', color: 'main' }),
   Dot: makeIcon({ type: 'dot', color: 'main' }),
+  Pin: makeIcon({ type: 'pin', color: 'main' }),
   Minus: makeIcon({ type: 'minus', color: 'main' }),
   Plus: makeIcon({ type: 'plus', color: 'main' }),
   Play: makeIcon({ type: 'play', color: 'main' }),
