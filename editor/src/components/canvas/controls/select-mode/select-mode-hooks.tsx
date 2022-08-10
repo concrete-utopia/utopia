@@ -140,6 +140,13 @@ function filterHiddenInstances(
   return paths.filter((path) => hiddenInstances.every((hidden) => !EP.pathsEqual(path, hidden)))
 }
 
+function filterViewsWithoutMetadata(
+  views: Array<ElementPath>,
+  metadata: ElementInstanceMetadataMap,
+): Array<ElementPath> {
+  return views.filter((view) => MetadataUtils.findElementByElementPath(metadata, view) != null)
+}
+
 export function getSelectableViews(
   componentMetadata: ElementInstanceMetadataMap,
   selectedViews: Array<ElementPath>,
@@ -178,7 +185,7 @@ export function getSelectableViews(
         : EP.allPathsForLastPart(EP.parentPath(view))
       Utils.fastForEach(allPaths, (ancestor) => {
         const { children, unfurledComponents } =
-          MetadataUtils.getAllChildrenIncludingUnfurledFocusedComponents(
+          MetadataUtils.getAllChildrenIncludingUnfurledFocusedComponentsSkippingNoMetadataElements(
             ancestor,
             componentMetadata,
           )
@@ -193,7 +200,11 @@ export function getSelectableViews(
     candidateViews = uniqueSelectableViews
   }
 
-  return filterHiddenInstances(hiddenInstances, candidateViews)
+  const candidateViewsWithoutHiddenInstances = filterHiddenInstances(
+    hiddenInstances,
+    candidateViews,
+  )
+  return filterViewsWithoutMetadata(candidateViewsWithoutHiddenInstances, componentMetadata)
 }
 
 function useFindValidTarget(): (

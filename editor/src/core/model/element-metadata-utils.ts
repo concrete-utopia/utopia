@@ -428,6 +428,25 @@ export const MetadataUtils = {
     }, Object.keys(elements))
     return possibleChildren
   },
+  getChildrenPathsSkippingNoMetadataElements(
+    elements: ElementInstanceMetadataMap,
+    target: ElementPath,
+  ): Array<ElementPath> {
+    const possibleChildren = mapDropNulls((elementPathString) => {
+      const elementPath = EP.fromString(elementPathString)
+      if (EP.isChildOf(elementPath, target) && !EP.isRootElementOfInstance(elementPath)) {
+        return elementPath
+      }
+      if (EP.isDescendantOf(elementPath, target)) {
+        const parent = MetadataUtils.getClosestParentWithMetadata(elements, elementPath)
+        if (parent != null && EP.pathsEqual(parent.elementPath, target)) {
+          return elementPath
+        }
+      }
+      return null
+    }, Object.keys(elements))
+    return possibleChildren
+  },
   getChildren(
     elements: ElementInstanceMetadataMap,
     target: ElementPath,
@@ -721,6 +740,15 @@ export const MetadataUtils = {
   ): { children: Array<ElementPath>; unfurledComponents: Array<ElementPath> } {
     return {
       children: MetadataUtils.getChildrenPaths(metadata, path),
+      unfurledComponents: MetadataUtils.getRootViewPaths(metadata, path),
+    }
+  },
+  getAllChildrenIncludingUnfurledFocusedComponentsSkippingNoMetadataElements(
+    path: ElementPath,
+    metadata: ElementInstanceMetadataMap,
+  ): { children: Array<ElementPath>; unfurledComponents: Array<ElementPath> } {
+    return {
+      children: MetadataUtils.getChildrenPathsSkippingNoMetadataElements(metadata, path),
       unfurledComponents: MetadataUtils.getRootViewPaths(metadata, path),
     }
   },
