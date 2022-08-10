@@ -5,13 +5,14 @@ import { ElementInstanceMetadataMap } from '../../../core/shared/element-templat
 import { arrayEquals } from '../../../core/shared/utils'
 import { InnerDispatchResult } from '../../editor/store/dispatch'
 import { AllElementProps, EditorState, EditorStorePatched } from '../../editor/store/editor-state'
-import { useEditorState } from '../../editor/store/store-hook'
+import { useEditorState, useSelectorWithCallback } from '../../editor/store/store-hook'
 import { CanvasCommand } from '../commands/commands'
 import { absoluteMoveStrategy } from './absolute-move-strategy'
 import { absoluteReparentStrategy } from './absolute-reparent-strategy'
 import {
   CanvasStrategy,
   CanvasStrategyId,
+  ControlDelay,
   ControlWithKey,
   InteractionCanvasState,
   StrategyApplicationResult,
@@ -234,12 +235,47 @@ export function applyCanvasStrategy(
   return strategy.apply(canvasState, interactionSession, strategyState)
 }
 
-export function useGetApplicableStrategyControls(): Array<ControlWithKey> {
-  const applicableStrategies = useGetApplicableStrategies()
+const useDelayedCurrentStrategy = () => {
+  const [currentStrategyValue, setCurrentStrategyValue] = React.useState<CanvasStrategyId | null>(
+    null,
+  )
+  const [timer, setTimer] = React.useState<number | null>(null)
   const currentStrategy = useEditorState(
     (store) => store.strategyState.currentStrategy,
-    'currentStrategy',
+    'getCurrentStrategyDelayed',
   )
+
+  React.useEffect(() => {
+    if (currentStrategy != null && currentStrategyValue == null) {
+      if (timer == null) {
+        setTimer(
+          window.setTimeout(() => {
+            setCurrentStrategyValue(currentStrategy)
+            setTimer(null)
+          }, ControlDelay),
+        )
+      }
+    } else {
+      setCurrentStrategyValue(currentStrategy)
+      if (timer != null) {
+        window.clearTimeout(timer)
+        setTimer(null)
+      }
+    }
+
+    return function cleanup() {
+      if (timer != null) {
+        window.clearTimeout(timer)
+      }
+    }
+  }, [currentStrategy, currentStrategyValue, timer])
+
+  return currentStrategyValue
+}
+
+export function useGetApplicableStrategyControls(): Array<ControlWithKey> {
+  const applicableStrategies = useGetApplicableStrategies()
+  const currentStrategy = useDelayedCurrentStrategy()
   return React.useMemo(() => {
     return applicableStrategies.reduce<ControlWithKey[]>((working, s) => {
       const filteredControls = s.controlsToRender.filter(

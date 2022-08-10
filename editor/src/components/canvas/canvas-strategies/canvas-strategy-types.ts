@@ -93,3 +93,5 @@ export interface CanvasStrategy {
     strategyState: StrategyState,
   ) => StrategyApplicationResult
 }
+
+export const ControlDelay = 300
