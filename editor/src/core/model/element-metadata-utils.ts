@@ -192,6 +192,20 @@ export const MetadataUtils = {
     const parentPath = EP.parentPath(target)
     return MetadataUtils.findElementByElementPath(metadata, parentPath)
   },
+  getClosestParentWithMetadata(
+    metadata: ElementInstanceMetadataMap,
+    target: ElementPath | null,
+  ): ElementInstanceMetadata | null {
+    if (target == null) {
+      return null
+    }
+    const parentPath = EP.parentPath(target)
+    const parent = MetadataUtils.findElementByElementPath(metadata, parentPath)
+    if (parent == null) {
+      return this.getClosestParentWithMetadata(metadata, parentPath)
+    }
+    return parent
+  },
   getSiblings(
     metadata: ElementInstanceMetadataMap,
     target: ElementPath | null,
