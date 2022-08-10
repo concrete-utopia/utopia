@@ -30,7 +30,7 @@ import {
 } from './shared-absolute-move-strategy-helpers'
 import { updateSelectedViews } from '../commands/update-selected-views-command'
 import * as EP from '../../../core/shared/element-path'
-import { mapDropNulls } from '../../../core/shared/array-utils'
+import { mapDropNulls, stripNulls } from '../../../core/shared/array-utils'
 import { highlightElementsCommand } from '../commands/highlight-element-command'
 
 export const absoluteMoveStrategy: CanvasStrategy = {
@@ -94,6 +94,9 @@ export const absoluteMoveStrategy: CanvasStrategy = {
           // Spike second version: instead of selection the real target is highlighted in the navigator
           highlightElementsCommand(componentInstances),
         ]
+        if (componentInstances.length > 0) {
+          commands.push(setCursorCommand('transient', CSSCursor.MagicHand))
+        }
         let intendedBounds: Array<CanvasFrameAndTarget> = []
         filteredSelectedElements.forEach((selectedElement) => {
           const elementResult = getAbsoluteMoveCommandsForSelectedElement(
@@ -159,15 +162,18 @@ export function applyAbsoluteMoveCommon(
         canvasState.scale,
       )
       const commandsForSelectedElements = getMoveCommands(snappedDragVector)
+      const hasCustomCursor = commandsForSelectedElements.commands.some(
+        (c) => c.type === 'SET_CURSOR_COMMAND',
+      )
       return {
-        commands: [
+        commands: stripNulls([
           ...commandsForSelectedElements.commands,
           updateHighlightedViews('transient', []),
           setSnappingGuidelines('transient', guidelinesWithSnappingVector),
           pushIntendedBounds(commandsForSelectedElements.intendedBounds),
           setElementsToRerenderCommand(filteredSelectedElements),
-          setCursorCommand('transient', CSSCursor.Select),
-        ],
+          hasCustomCursor ? null : setCursorCommand('transient', CSSCursor.Select),
+        ]),
         customState: null,
       }
     }
