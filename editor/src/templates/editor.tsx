@@ -361,7 +361,8 @@ export class Editor {
         dispatchResult.patchedEditor,
       )
 
-      let dispatchResultWithMetadata = dispatchResult
+      this.storedState = dispatchResult
+      let entireUpdateFinished = dispatchResult.entireUpdateFinished
 
       if (!dispatchResult.nothingChanged) {
         const updateId = canvasUpdateId++
@@ -369,10 +370,10 @@ export class Editor {
         if (PerformanceMarks) {
           performance.mark(`update canvas ${updateId}`)
         }
-        ElementsToRerenderGLOBAL.current = dispatchResult.patchedEditor.canvas.elementsToRerender // Mutation!
+        ElementsToRerenderGLOBAL.current = this.storedState.patchedEditor.canvas.elementsToRerender // Mutation!
         ReactDOM.flushSync(() => {
           ReactDOM.unstable_batchedUpdates(() => {
-            this.updateCanvasStore(patchedStoreFromFullStore(dispatchResult))
+            this.updateCanvasStore(patchedStoreFromFullStore(this.storedState))
           })
         })
         if (PerformanceMarks) {
@@ -390,18 +391,18 @@ export class Editor {
 
         const domWalkerResult = runDomWalker({
           domWalkerMutableState: this.domWalkerMutableState,
-          selectedViews: dispatchResult.patchedEditor.selectedViews,
-          elementsToFocusOn: dispatchResult.patchedEditor.canvas.elementsToRerender,
-          scale: dispatchResult.patchedEditor.canvas.scale,
+          selectedViews: this.storedState.patchedEditor.selectedViews,
+          elementsToFocusOn: this.storedState.patchedEditor.canvas.elementsToRerender,
+          scale: this.storedState.patchedEditor.canvas.scale,
           additionalElementsToUpdate:
-            dispatchResult.patchedEditor.canvas.domWalkerAdditionalElementsToUpdate,
+            this.storedState.patchedEditor.canvas.domWalkerAdditionalElementsToUpdate,
           rootMetadataInStateRef: {
-            current: dispatchResult.patchedEditor.domMetadata,
+            current: this.storedState.patchedEditor.domMetadata,
           },
         })
 
         if (domWalkerResult != null) {
-          dispatchResultWithMetadata = editorDispatch(
+          const dispatchResultWithMetadata = editorDispatch(
             this.boundDispatch,
             [
               EditorActions.saveDOMReport(
@@ -410,9 +411,14 @@ export class Editor {
                 domWalkerResult.invalidatedPaths,
               ),
             ],
-            dispatchResult,
+            this.storedState,
             this.spyCollector,
           )
+          this.storedState = dispatchResultWithMetadata
+          entireUpdateFinished = Promise.all([
+            entireUpdateFinished,
+            dispatchResultWithMetadata.entireUpdateFinished,
+          ])
         }
 
         if (PerformanceMarks) {
@@ -420,9 +426,9 @@ export class Editor {
         }
         ReactDOM.flushSync(() => {
           ReactDOM.unstable_batchedUpdates(() => {
-            this.updateStore(patchedStoreFromFullStore(dispatchResultWithMetadata))
-            if (shouldInspectorUpdate(dispatchResultWithMetadata.strategyState)) {
-              this.updateInspectorStore(patchedStoreFromFullStore(dispatchResultWithMetadata))
+            this.updateStore(patchedStoreFromFullStore(this.storedState))
+            if (shouldInspectorUpdate(this.storedState.strategyState)) {
+              this.updateInspectorStore(patchedStoreFromFullStore(this.storedState))
             }
           })
         })
@@ -436,13 +442,8 @@ export class Editor {
         }
       }
 
-      this.storedState = dispatchResultWithMetadata
-
       return {
-        entireUpdateFinished: Promise.all([
-          dispatchResult.entireUpdateFinished,
-          dispatchResultWithMetadata.entireUpdateFinished,
-        ]),
+        entireUpdateFinished: entireUpdateFinished,
       }
     }
     if (PRODUCTION_ENV) {
