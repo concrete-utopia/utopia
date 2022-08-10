@@ -126,7 +126,7 @@ export const FocusIndicator: React.FunctionComponent<React.PropsWithChildren<Foc
         }}
       >
         {props.explicitlyFocused === 'pinned' ? (
-          <Icons.EditPencil color={color} />
+          <Icons.Pin color={color} />
         ) : props.explicitlyFocused == 'focused' ? (
           <Icons.Component
             color={props.selected ? 'on-highlight-main' : 'component'}
