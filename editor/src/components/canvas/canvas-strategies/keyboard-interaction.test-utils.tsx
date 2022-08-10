@@ -70,7 +70,7 @@ export function pressKeys(
     [],
     [],
     strategyResult.commands,
-    'permanent',
+    'always',
   ).editorState
 
   return finalEditor

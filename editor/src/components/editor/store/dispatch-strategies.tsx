@@ -92,7 +92,7 @@ export function interactionFinished(
       result.strategyState.accumulatedPatches,
       [],
       strategyResult.commands,
-      'permanent',
+      'always',
     )
 
     return {
@@ -153,7 +153,7 @@ export function interactionHardReset(
         [],
         [],
         strategyResult.commands,
-        'transient',
+        'mid-interaction',
       )
       const newStrategyState: StrategyState = {
         currentStrategy: strategy.strategy.id,
@@ -299,7 +299,7 @@ export function interactionStart(
         [],
         [],
         strategyResult.commands,
-        'transient',
+        'mid-interaction',
       )
 
       const newStrategyState: StrategyState = {
@@ -391,7 +391,7 @@ function handleUserChangedStrategy(
       strategyState.accumulatedPatches,
       strategyChangedLogCommands.flatMap((c) => c.commands),
       strategyResult.commands,
-      'transient',
+      'mid-interaction',
     )
     const newStrategyState: StrategyState = {
       currentStrategy: strategy.strategy.id,
@@ -470,7 +470,7 @@ function handleAccumulatingKeypresses(
         strategyState.accumulatedPatches,
         strategyState.currentStrategyCommands,
         strategyResult.commands,
-        'transient',
+        'mid-interaction',
       )
       const newStrategyState: StrategyState = {
         currentStrategy: strategy?.strategy.id ?? null,
@@ -531,7 +531,7 @@ function handleUpdate(
       strategyState.accumulatedPatches,
       [],
       strategyResult.commands,
-      'transient',
+      'mid-interaction',
     )
     const newStrategyState: StrategyState = {
       currentStrategy: strategy?.strategy.id ?? null,

@@ -51,10 +51,10 @@ export interface CommandFunctionResult {
 
 export type CommandFunction<T> = (editorState: EditorState, command: T) => CommandFunctionResult
 
-export type TransientOrNot = 'transient' | 'permanent'
+export type WhenToRun = 'mid-interaction' | 'always' | 'on-complete'
 
 export interface BaseCommand {
-  transient: TransientOrNot
+  whenToRun: WhenToRun
 }
 
 export type CanvasCommand =
@@ -82,13 +82,13 @@ export type CanvasCommand =
 export const runCanvasCommand = (
   editorState: EditorState,
   command: CanvasCommand,
-  runningAsTransient: TransientOrNot,
+  commandLifecycle: WhenToRun,
 ): CommandFunctionResult => {
   switch (command.type) {
     case 'WILDCARD_PATCH':
       return runWildcardPatch(editorState, command)
     case 'UPDATE_FUNCTION_COMMAND':
-      return runUpdateFunctionCommand(editorState, command, runningAsTransient)
+      return runUpdateFunctionCommand(editorState, command, commandLifecycle)
     case 'STRATEGY_SWITCHED':
       return runStrategySwitchedCommand(command)
     case 'ADJUST_NUMBER_PROPERTY':
@@ -136,7 +136,7 @@ export function foldAndApplyCommandsSimple(
   commands: Array<CanvasCommand>,
 ): EditorState {
   const updatedEditorState = commands.reduce((workingEditorState, command) => {
-    const patches = runCanvasCommand(workingEditorState, command, 'permanent')
+    const patches = runCanvasCommand(workingEditorState, command, 'always')
     return updateEditorStateWithPatches(workingEditorState, patches.editorStatePatches)
   }, editorState)
 
@@ -148,7 +148,7 @@ export function foldAndApplyCommandsInner(
   patches: Array<EditorStatePatch>,
   commandsToAccumulate: Array<CanvasCommand>,
   commands: Array<CanvasCommand>,
-  transient: TransientOrNot,
+  transient: WhenToRun,
 ): {
   statePatches: EditorStatePatch[]
   updatedEditorState: EditorState
@@ -163,7 +163,7 @@ export function foldAndApplyCommandsInner(
   let workingCommandDescriptions: Array<CommandDescription> = []
 
   const runCommand = (command: CanvasCommand, shouldAccumulatePatches: boolean) => {
-    if (transient === 'transient' || command.transient === 'permanent') {
+    if (transient === 'mid-interaction' || command.whenToRun === 'always') {
       // Run the command with our current states.
       const commandResult = runCanvasCommand(workingEditorState, command, transient)
       // Capture values from the result.
@@ -173,12 +173,12 @@ export function foldAndApplyCommandsInner(
       // Collate the patches.
       statePatches.push(...statePatch)
       // Do not accumulate commands that are not permanent.
-      if (shouldAccumulatePatches && command.transient === 'permanent') {
+      if (shouldAccumulatePatches && command.whenToRun === 'always') {
         accumulatedPatches.push(...statePatch)
       }
       workingCommandDescriptions.push({
         description: commandResult.commandDescription,
-        transient: command.transient === 'transient',
+        transient: command.whenToRun === 'mid-interaction',
       })
     }
   }
@@ -200,7 +200,7 @@ export function foldAndApplyCommands(
   patches: Array<EditorStatePatch>,
   commandsToAccumulate: Array<CanvasCommand>,
   commands: Array<CanvasCommand>,
-  transient: TransientOrNot,
+  transient: WhenToRun,
 ): {
   editorState: EditorState
   accumulatedPatches: Array<EditorStatePatch>

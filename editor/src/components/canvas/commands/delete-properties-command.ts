@@ -16,7 +16,7 @@ import { drop } from '../../../core/shared/array-utils'
 import { foldEither } from '../../../core/shared/either'
 import { unsetJSXValuesAtPaths } from '../../../core/shared/jsx-attributes'
 import { ElementPath, PropertyPath, RevisionsState } from '../../../core/shared/project-file-types'
-import { BaseCommand, CommandFunction, TransientOrNot } from './commands'
+import { BaseCommand, CommandFunction, WhenToRun } from './commands'
 import * as EP from '../../../core/shared/element-path'
 import * as PP from '../../../core/shared/property-path'
 
@@ -27,13 +27,13 @@ export interface DeleteProperties extends BaseCommand {
 }
 
 export function deleteProperties(
-  transient: TransientOrNot,
+  whenToRun: WhenToRun,
   element: ElementPath,
   properties: Array<PropertyPath>,
 ): DeleteProperties {
   return {
     type: 'DELETE_PROPERTIES',
-    transient: transient,
+    whenToRun: whenToRun,
     element: element,
     properties: properties,
   }

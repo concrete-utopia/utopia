@@ -1,7 +1,7 @@
 import * as EP from '../../../core/shared/element-path'
 import type { ElementPath } from '../../../core/shared/project-file-types'
 import type { EditorState, EditorStatePatch } from '../../editor/store/editor-state'
-import type { BaseCommand, CommandFunction, TransientOrNot } from './commands'
+import type { BaseCommand, CommandFunction, WhenToRun } from './commands'
 
 export interface UpdateHighlightedViews extends BaseCommand {
   type: 'UPDATE_HIGHLIGHTED_VIEWS'
@@ -9,12 +9,12 @@ export interface UpdateHighlightedViews extends BaseCommand {
 }
 
 export function updateHighlightedViews(
-  transient: TransientOrNot,
+  whenToRun: WhenToRun,
   value: Array<ElementPath>,
 ): UpdateHighlightedViews {
   return {
     type: 'UPDATE_HIGHLIGHTED_VIEWS',
-    transient: transient,
+    whenToRun: whenToRun,
     value: value,
   }
 }

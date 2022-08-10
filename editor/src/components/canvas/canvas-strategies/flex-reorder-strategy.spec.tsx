@@ -197,7 +197,7 @@ function reorderElement(
     [],
     [],
     strategyResult.commands,
-    'permanent',
+    'always',
   ).editorState
 
   return finalEditor

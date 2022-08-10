@@ -73,7 +73,7 @@ describe('runReorderElement', () => {
 
       const parent = EP.parentPath(target)
 
-      const reorderCommand = reorderElement('permanent', target, newIdx)
+      const reorderCommand = reorderElement('always', target, newIdx)
 
       const result = runReorderElement(originalEditorState, reorderCommand)
 

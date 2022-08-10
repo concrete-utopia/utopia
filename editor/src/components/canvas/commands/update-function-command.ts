@@ -12,21 +12,21 @@ import {
   CommandFunction,
   CommandFunctionResult,
   getPatchForComponentChange,
-  TransientOrNot,
+  WhenToRun,
 } from './commands'
 
 export interface UpdateFunctionCommand extends BaseCommand {
   type: 'UPDATE_FUNCTION_COMMAND'
-  updateFunction: (editorState: EditorState, transient: TransientOrNot) => Array<EditorStatePatch>
+  updateFunction: (editorState: EditorState, transient: WhenToRun) => Array<EditorStatePatch>
 }
 
 export function updateFunctionCommand(
-  transient: TransientOrNot,
-  updateFunction: (editorState: EditorState, transient: TransientOrNot) => Array<EditorStatePatch>,
+  whenToRun: WhenToRun,
+  updateFunction: (editorState: EditorState, transient: WhenToRun) => Array<EditorStatePatch>,
 ): UpdateFunctionCommand {
   return {
     type: 'UPDATE_FUNCTION_COMMAND',
-    transient: transient,
+    whenToRun: whenToRun,
     updateFunction: updateFunction,
   }
 }
@@ -34,10 +34,10 @@ export function updateFunctionCommand(
 export const runUpdateFunctionCommand = (
   editorState: EditorState,
   command: UpdateFunctionCommand,
-  runningAsTransient: TransientOrNot,
+  commandLifecycle: WhenToRun,
 ): CommandFunctionResult => {
   return {
-    editorStatePatches: command.updateFunction(editorState, runningAsTransient),
+    editorStatePatches: command.updateFunction(editorState, commandLifecycle),
     commandDescription: `Update Callback`,
   }
 }

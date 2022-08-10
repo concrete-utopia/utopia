@@ -137,22 +137,18 @@ export const absoluteReparentToFlexStrategy: CanvasStrategy = {
           )
 
           // Strip the `position`, positional and dimension properties.
-          const commandToRemoveProperties = deleteProperties(
-            'permanent',
-            newPath,
-            propertiesToRemove,
-          )
+          const commandToRemoveProperties = deleteProperties('always', newPath, propertiesToRemove)
 
           const commandsBeforeReorder = [
             ...reparentCommands,
-            updateSelectedViews('permanent', [newPath]),
+            updateSelectedViews('always', [newPath]),
           ]
 
           const commandsAfterReorder = [
             commandToRemoveProperties,
             setElementsToRerenderCommand([newPath]),
-            updateHighlightedViews('transient', []),
-            setCursorCommand('transient', CSSCursor.Move),
+            updateHighlightedViews('mid-interaction', []),
+            setCursorCommand('mid-interaction', CSSCursor.Move),
           ]
 
           let commands: Array<CanvasCommand>
@@ -175,7 +171,7 @@ export const absoluteReparentToFlexStrategy: CanvasStrategy = {
             )
             commands = [
               ...commandsBeforeReorder,
-              reorderElement('permanent', newPath, newIndex),
+              reorderElement('always', newPath, newIndex),
               ...commandsAfterReorder,
             ]
           } else {

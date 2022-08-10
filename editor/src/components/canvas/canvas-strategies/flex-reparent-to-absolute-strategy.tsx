@@ -2,7 +2,7 @@ import { BuiltInDependencies } from '../../../core/es-modules/package-manager/bu
 import { MetadataUtils } from '../../../core/model/element-metadata-utils'
 import { canvasPoint, offsetPoint, rectContainsPoint } from '../../../core/shared/math-utils'
 import { EditorState, EditorStatePatch } from '../../editor/store/editor-state'
-import { foldAndApplyCommandsInner, TransientOrNot } from '../commands/commands'
+import { foldAndApplyCommandsInner, WhenToRun } from '../commands/commands'
 import { updateFunctionCommand } from '../commands/update-function-command'
 import { ParentBounds } from '../controls/parent-bounds'
 import { ParentOutlines } from '../controls/parent-outlines'
@@ -83,7 +83,7 @@ export const flexReparentToAbsoluteStrategy: CanvasStrategy = {
       return {
         commands: [
           ...escapeHatchCommands,
-          updateFunctionCommand('permanent', (editorState, transient): Array<EditorStatePatch> => {
+          updateFunctionCommand('always', (editorState, transient): Array<EditorStatePatch> => {
             return runAbsoluteReparentStrategyForFreshlyConvertedElement(
               canvasState.builtInDependencies,
               editorState,
@@ -104,7 +104,7 @@ function runAbsoluteReparentStrategyForFreshlyConvertedElement(
   editorState: EditorState,
   strategyState: StrategyState,
   interactionState: InteractionSession,
-  transient: TransientOrNot,
+  transient: WhenToRun,
 ): Array<EditorStatePatch> {
   const canvasState = pickCanvasStateFromEditorState(editorState, builtInDependencies)
 

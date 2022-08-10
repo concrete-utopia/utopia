@@ -154,7 +154,7 @@ export const absoluteResizeBoundingBoxStrategy: CanvasStrategy = {
                   elementParentBounds,
                   edgePosition,
                 ),
-                setSnappingGuidelines('transient', guidelinesWithSnappingVector), // TODO I think this will override the previous snapping guidelines
+                setSnappingGuidelines('mid-interaction', guidelinesWithSnappingVector), // TODO I think this will override the previous snapping guidelines
                 pushIntendedBounds([{ target: selectedElement, frame: newFrame }]),
               ]
             },
@@ -162,8 +162,8 @@ export const absoluteResizeBoundingBoxStrategy: CanvasStrategy = {
           return {
             commands: [
               ...commandsForSelectedElements,
-              updateHighlightedViews('transient', []),
-              setCursorCommand('transient', pickCursorFromEdgePosition(edgePosition)),
+              updateHighlightedViews('mid-interaction', []),
+              setCursorCommand('mid-interaction', pickCursorFromEdgePosition(edgePosition)),
               setElementsToRerenderCommand(canvasState.selectedElements),
             ],
             customState: null,
@@ -172,8 +172,8 @@ export const absoluteResizeBoundingBoxStrategy: CanvasStrategy = {
       } else {
         return {
           commands: [
-            setCursorCommand('transient', pickCursorFromEdgePosition(edgePosition)),
-            updateHighlightedViews('transient', []),
+            setCursorCommand('mid-interaction', pickCursorFromEdgePosition(edgePosition)),
+            updateHighlightedViews('mid-interaction', []),
           ],
           customState: null,
         }
@@ -209,7 +209,7 @@ function createResizeCommandsFromFrame(
     if (roundedDelta !== 0) {
       if (isRight(value) && value.value != null) {
         return adjustCssLengthProperty(
-          'permanent',
+          'always',
           selectedElement,
           stylePropPathMappingFn(pin, ['style']),
           roundedDelta * pinDirection,
@@ -219,7 +219,7 @@ function createResizeCommandsFromFrame(
       } else {
         const valueToSet = allPinsFromFrame(newFrame)[pin]
         return setCssLengthProperty(
-          'permanent',
+          'always',
           selectedElement,
           stylePropPathMappingFn(pin, ['style']),
           roundTo(valueToSet, 0),

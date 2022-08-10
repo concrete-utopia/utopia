@@ -120,7 +120,7 @@ function createMoveCommandsForElement(
     const parentDimension = horizontal ? elementParentBounds?.width : elementParentBounds?.height
 
     return adjustCssLengthProperty(
-      'permanent',
+      'always',
       selectedElement,
       stylePropPathMappingFn(pin, ['style']),
       updatedPropValue,
@@ -186,7 +186,7 @@ export function getAbsoluteOffsetCommandsForSelectedElement(
     if (isRight(value) && value.value != null) {
       // TODO what to do about missing properties?
       return adjustCssLengthProperty(
-        'permanent',
+        'always',
         target,
         stylePropPathMappingFn(pin, ['style']),
         newValue,

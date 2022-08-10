@@ -115,14 +115,14 @@ export function getReparentCommands(
         }
       })
 
-      return [addImportsToFile('permanent', newTargetPath, importsToAdd)]
+      return [addImportsToFile('always', newTargetPath, importsToAdd)]
     },
   )
 
-  result.push(reparentElement('permanent', selectedElement, newParent))
+  result.push(reparentElement('always', selectedElement, newParent))
 
   const newPath = EP.appendToPath(newParent, EP.toUid(selectedElement))
-  result.push(addToReparentedToPaths('transient', [newPath]))
+  result.push(addToReparentedToPaths('mid-interaction', [newPath]))
   result.push(...commandsToAddImports)
   return result
 }

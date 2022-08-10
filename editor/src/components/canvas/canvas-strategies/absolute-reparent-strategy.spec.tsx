@@ -186,7 +186,7 @@ function reparentElement(
     [],
     [],
     strategyResult.commands,
-    'permanent',
+    'always',
   ).editorState
 
   return finalEditor

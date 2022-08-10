@@ -11,9 +11,9 @@ describe('foldAndApplyCommands', () => {
       editorState,
       editorState,
       [],
-      [setCursorCommand('permanent', CSSCursor.Move)],
+      [setCursorCommand('always', CSSCursor.Move)],
       [],
-      'permanent',
+      'always',
     )
     expect(result.accumulatedPatches).toMatchInlineSnapshot(`
       Array [
@@ -33,9 +33,9 @@ describe('foldAndApplyCommands', () => {
       editorState,
       editorState,
       [],
-      [setCursorCommand('transient', CSSCursor.Move)],
+      [setCursorCommand('mid-interaction', CSSCursor.Move)],
       [],
-      'permanent',
+      'always',
     )
     expect(result.accumulatedPatches).toMatchInlineSnapshot(`Array []`)
   })

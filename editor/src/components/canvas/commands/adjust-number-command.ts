@@ -28,7 +28,7 @@ import {
   modifyUnderlyingForOpenFile,
   withUnderlyingTargetFromEditorState,
 } from '../../editor/store/editor-state'
-import type { BaseCommand, CommandFunction, TransientOrNot } from './commands'
+import type { BaseCommand, CommandFunction, WhenToRun } from './commands'
 
 export interface AdjustNumberProperty extends BaseCommand {
   type: 'ADJUST_NUMBER_PROPERTY'
@@ -39,7 +39,7 @@ export interface AdjustNumberProperty extends BaseCommand {
 }
 
 export function adjustNumberProperty(
-  transient: TransientOrNot,
+  whenToRun: WhenToRun,
   target: ElementPath,
   property: PropertyPath,
   value: number | AdjustNumberInequalityCondition,
@@ -47,7 +47,7 @@ export function adjustNumberProperty(
 ): AdjustNumberProperty {
   return {
     type: 'ADJUST_NUMBER_PROPERTY',
-    transient: transient,
+    whenToRun: whenToRun,
     target: target,
     property: property,
     value: value,
