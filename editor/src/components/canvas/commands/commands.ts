@@ -163,13 +163,12 @@ export function foldAndApplyCommandsInner(
   let workingCommandDescriptions: Array<CommandDescription> = []
 
   const runCommand = (command: CanvasCommand, shouldAccumulatePatches: boolean) => {
-    const shouldRunCommand: boolean = (() => {
-      if (commandLifecycle === 'mid-interaction') {
-        return command.whenToRun === 'always' || command.whenToRun === 'mid-interaction'
-      } else {
-        return command.whenToRun === 'always' || command.whenToRun === 'on-complete'
-      }
-    })()
+    let shouldRunCommand: boolean
+    if (commandLifecycle === 'mid-interaction') {
+      shouldRunCommand = command.whenToRun === 'always' || command.whenToRun === 'mid-interaction'
+    } else {
+      shouldRunCommand = command.whenToRun === 'always' || command.whenToRun === 'on-complete'
+    }
 
     if (shouldRunCommand) {
       // Run the command with our current states.
