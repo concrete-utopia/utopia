@@ -245,7 +245,9 @@ export function useGetApplicableStrategyControls(): Array<ControlWithKey> {
       const filteredControls = s.controlsToRender.filter(
         (control) =>
           control.show === 'always-visible' ||
-          (control.show === 'visible-only-while-active' && s.id === currentStrategy),
+          (control.show === 'visible-only-while-active' && s.id === currentStrategy) ||
+          (control.show === 'visible-except-when-other-strategy-is-active' &&
+            (currentStrategy == null || s.id === currentStrategy)),
       )
       return addAllUniquelyBy(working, filteredControls, (l, r) => l.control === r.control)
     }, [])
