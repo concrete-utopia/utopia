@@ -57,6 +57,8 @@ import {
 import * as PP from '../shared/property-path'
 import * as EP from '../shared/element-path'
 import {
+  componentHonoursPropsPosition,
+  componentHonoursPropsSize,
   componentUsesProperty,
   findJSXElementChildAtPath,
   getUtopiaID,
@@ -660,6 +662,50 @@ export const MetadataUtils = {
         return true
       } else {
         return componentUsesProperty(underlyingComponent, property)
+      }
+    }
+  },
+  targetHonoursPropsSize(
+    projectContents: ProjectContentTreeRoot,
+    openFile: string | null | undefined,
+    target: ElementPath,
+  ): boolean {
+    if (openFile == null) {
+      return false
+    } else {
+      const underlyingComponent = findUnderlyingTargetComponentImplementation(
+        projectContents,
+        {},
+        openFile,
+        target,
+      )
+      if (underlyingComponent == null) {
+        // Could be an external third party component, assuming true for now.
+        return true
+      } else {
+        return componentHonoursPropsSize(underlyingComponent)
+      }
+    }
+  },
+  targetHonoursPropsPosition(
+    projectContents: ProjectContentTreeRoot,
+    openFile: string | null | undefined,
+    target: ElementPath,
+  ): boolean {
+    if (openFile == null) {
+      return false
+    } else {
+      const underlyingComponent = findUnderlyingTargetComponentImplementation(
+        projectContents,
+        {},
+        openFile,
+        target,
+      )
+      if (underlyingComponent == null) {
+        // Could be an external third party component, assuming true for now.
+        return true
+      } else {
+        return componentHonoursPropsPosition(underlyingComponent)
       }
     }
   },

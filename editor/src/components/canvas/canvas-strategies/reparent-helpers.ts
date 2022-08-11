@@ -7,6 +7,7 @@ import { setCursorCommand } from '../commands/set-cursor-command'
 import { InteractionCanvasState, StrategyApplicationResult } from './canvas-strategy-types'
 import { StrategyState } from './interaction-state'
 import * as EP from '../../../core/shared/element-path'
+import { honoursPropsPosition } from './absolute-utils'
 
 export function isGeneratedElement(
   canvasState: InteractionCanvasState,
@@ -34,7 +35,12 @@ export function isAllowedToReparent(
     } else {
       return foldEither(
         (_) => true,
-        (elementFromMetadata) => !elementReferencesElsewhere(elementFromMetadata),
+        (elementFromMetadata) => {
+          return (
+            !elementReferencesElsewhere(elementFromMetadata) &&
+            honoursPropsPosition(canvasState, target)
+          )
+        },
         metadata.element,
       )
     }

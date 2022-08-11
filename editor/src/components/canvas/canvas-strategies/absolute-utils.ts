@@ -10,3 +10,25 @@ export function supportsStyle(canvasState: InteractionCanvasState, element: Elem
     'style',
   )
 }
+
+export function honoursPropsSize(
+  canvasState: InteractionCanvasState,
+  element: ElementPath,
+): boolean {
+  return MetadataUtils.targetHonoursPropsSize(
+    canvasState.projectContents,
+    canvasState.openFile,
+    element,
+  )
+}
+
+export function honoursPropsPosition(
+  canvasState: InteractionCanvasState,
+  element: ElementPath,
+): boolean {
+  return MetadataUtils.targetHonoursPropsPosition(
+    canvasState.projectContents,
+    canvasState.openFile,
+    element,
+  )
+}
