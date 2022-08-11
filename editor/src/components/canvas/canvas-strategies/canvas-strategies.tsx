@@ -242,8 +242,8 @@ const useDelayedCurrentStrategy = () => {
   const [timer, setTimer] = React.useState<number | null>(null)
 
   const delayedCallback = React.useCallback(
-    (currentStrategy: CanvasStrategyId | 'empty') => {
-      if (currentStrategy != 'empty' && currentStrategyValue == null) {
+    (currentStrategy: CanvasStrategyId | null) => {
+      if (currentStrategy != null && currentStrategyValue == null) {
         if (timer == null) {
           setTimer(
             window.setTimeout(() => {
@@ -253,8 +253,7 @@ const useDelayedCurrentStrategy = () => {
           )
         }
       } else {
-        const strategyValueToSet = currentStrategy === 'empty' ? null : currentStrategy
-        setCurrentStrategyValue(strategyValueToSet)
+        setCurrentStrategyValue(currentStrategy)
         if (timer != null) {
           window.clearTimeout(timer)
           setTimer(null)
@@ -263,13 +262,7 @@ const useDelayedCurrentStrategy = () => {
     },
     [currentStrategyValue, timer, setTimer, setCurrentStrategyValue],
   )
-  useSelectorWithCallback((store) => {
-    if (store.strategyState.currentStrategy != null) {
-      return store.strategyState.currentStrategy
-    } else {
-      return 'empty' // be careful `useSelectorWithCallback` skips the callback with null value
-    }
-  }, delayedCallback)
+  useSelectorWithCallback((store) => store.strategyState.currentStrategy, delayedCallback)
 
   return currentStrategyValue
 }
