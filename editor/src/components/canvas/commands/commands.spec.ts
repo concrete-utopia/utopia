@@ -39,4 +39,26 @@ describe('foldAndApplyCommands', () => {
     )
     expect(result.accumulatedPatches).toMatchInlineSnapshot(`Array []`)
   })
+  it('should accumulate commands that are running on-complete', () => {
+    const editorState = createEditorState(NO_OP)
+    const result = foldAndApplyCommands(
+      editorState,
+      editorState,
+      [],
+      [setCursorCommand('on-complete', CSSCursor.Move)],
+      [],
+      'end-interaction',
+    )
+    expect(result.accumulatedPatches).toMatchInlineSnapshot(`
+    Array [
+      Object {
+        "canvas": Object {
+          "cursor": Object {
+            "$set": "-webkit-image-set( url( '/editor/cursors/cursor-moving.png ') 1x, url( '/editor/cursors/cursor-moving@2x.png ') 2x ) 4 4, default",
+          },
+        },
+      },
+    ]
+  `)
+  })
 })

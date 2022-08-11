@@ -181,7 +181,10 @@ export function foldAndApplyCommandsInner(
       // Collate the patches.
       statePatches.push(...statePatch)
       // Do not accumulate commands that are not permanent.
-      if (shouldAccumulatePatches && command.whenToRun === 'always') {
+      if (
+        shouldAccumulatePatches &&
+        (command.whenToRun === 'always' || command.whenToRun === 'on-complete')
+      ) {
         accumulatedPatches.push(...statePatch)
       }
       workingCommandDescriptions.push({
