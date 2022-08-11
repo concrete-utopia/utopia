@@ -27,6 +27,7 @@ import {
   EdgePositionTopLeft,
 } from '../canvas-types'
 import { wait } from '../../../utils/utils.test-utils'
+import { ControlDelay } from './canvas-strategy-types'
 
 function selectAndResizeElement(
   renderResult: EditorRenderResult,
@@ -346,6 +347,7 @@ describe('Absolute Resize Strategy Canvas Controls', () => {
     const target = EP.appendNewElementPath(TestScenePath, ['aaa', 'bbb'])
     await startDragUsingActions(renderResult, target, EdgePositionLeft, zeroCanvasPoint)
 
+    await wait(ControlDelay + 10)
     const parentOutlineControl = renderResult.renderedDOM.getByTestId('parent-outlines-control')
     expect(parentOutlineControl).toBeDefined()
     const parentBoundsControl = renderResult.renderedDOM.getByTestId('parent-bounds-control')
