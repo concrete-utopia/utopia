@@ -476,7 +476,7 @@ const NewCanvasControlsInner = (props: NewCanvasControlsInnerProps) => {
           {renderHighlightControls()}
           <LayoutParentControl />
           {when(
-            isFeatureEnabled('Canvas Strategies') && !anyStrategyActive,
+            isFeatureEnabled('Canvas Strategies'),
             <MultiSelectOutlineControl localSelectedElements={localSelectedViews} />,
           )}
           {when(isFeatureEnabled('Canvas Strategies'), <GuidelineControls />)}
