@@ -19,6 +19,7 @@ import { ParentOutlines } from '../controls/parent-outlines'
 import { updateHighlightedViews } from '../commands/update-highlighted-views-command'
 import { setElementsToRerenderCommand } from '../commands/set-elements-to-rerender-command'
 import { ParentBounds } from '../controls/parent-bounds'
+import { getReorderIndex } from './reparent-strategy-helpers'
 
 export const flexReorderStrategy: CanvasStrategy = {
   id: 'FLEX_REORDER',
@@ -125,21 +126,4 @@ export const flexReorderStrategy: CanvasStrategy = {
       }
     }
   },
-}
-
-export function getReorderIndex(
-  metadata: ElementInstanceMetadataMap,
-  siblings: Array<ElementPath>,
-  point: CanvasVector,
-) {
-  const targetSiblingIdx = siblings.findIndex((sibling) => {
-    const frame = MetadataUtils.getFrameInCanvasCoords(sibling, metadata)
-    return (
-      frame != null &&
-      rectContainsPoint(frame, point) &&
-      MetadataUtils.isParentYogaLayoutedContainerAndElementParticipatesInLayout(sibling, metadata)
-    )
-  })
-
-  return targetSiblingIdx
 }
