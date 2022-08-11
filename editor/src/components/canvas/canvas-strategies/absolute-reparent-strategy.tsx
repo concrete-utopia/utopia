@@ -134,9 +134,9 @@ export const absoluteReparentStrategy: CanvasStrategy = {
         commands: [
           ...moveCommands.commands,
           ...commands.flatMap((c) => c.commands),
-          updateSelectedViews('permanent', newPaths),
+          updateSelectedViews('always', newPaths),
           setElementsToRerenderCommand(newPaths),
-          setCursorCommand('transient', CSSCursor.Move),
+          setCursorCommand('mid-interaction', CSSCursor.Move),
         ],
         customState: null,
       }

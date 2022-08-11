@@ -95,13 +95,13 @@ export const flexReparentToFlexStrategy: CanvasStrategy = {
 
           const commandsBeforeReorder = [
             ...reparentCommands,
-            updateSelectedViews('permanent', [newPath]),
+            updateSelectedViews('always', [newPath]),
           ]
 
           const commandsAfterReorder = [
             setElementsToRerenderCommand([newPath]),
-            updateHighlightedViews('transient', []),
-            setCursorCommand('transient', CSSCursor.Move),
+            updateHighlightedViews('mid-interaction', []),
+            setCursorCommand('mid-interaction', CSSCursor.Move),
           ]
 
           let commands: Array<CanvasCommand>
@@ -124,7 +124,7 @@ export const flexReparentToFlexStrategy: CanvasStrategy = {
             )
             commands = [
               ...commandsBeforeReorder,
-              reorderElement('permanent', newPath, newIndex),
+              reorderElement('always', newPath, newIndex),
               ...commandsAfterReorder,
             ]
           } else {

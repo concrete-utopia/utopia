@@ -132,9 +132,9 @@ export function applyAbsoluteMoveCommon(
         commands: [
           ...commandsForSelectedElements.commands,
           pushIntendedBounds(commandsForSelectedElements.intendedBounds),
-          updateHighlightedViews('transient', []),
+          updateHighlightedViews('mid-interaction', []),
           setElementsToRerenderCommand(canvasState.selectedElements),
-          setCursorCommand('transient', CSSCursor.Select),
+          setCursorCommand('mid-interaction', CSSCursor.Select),
         ],
         customState: null,
       }
@@ -152,11 +152,11 @@ export function applyAbsoluteMoveCommon(
       return {
         commands: [
           ...commandsForSelectedElements.commands,
-          updateHighlightedViews('transient', []),
-          setSnappingGuidelines('transient', guidelinesWithSnappingVector),
+          updateHighlightedViews('mid-interaction', []),
+          setSnappingGuidelines('mid-interaction', guidelinesWithSnappingVector),
           pushIntendedBounds(commandsForSelectedElements.intendedBounds),
           setElementsToRerenderCommand(canvasState.selectedElements),
-          setCursorCommand('transient', CSSCursor.Select),
+          setCursorCommand('mid-interaction', CSSCursor.Select),
         ],
         customState: null,
       }

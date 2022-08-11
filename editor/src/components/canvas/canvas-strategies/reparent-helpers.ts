@@ -52,7 +52,7 @@ export function ifAllowedToReparent(
     return ifAllowed()
   } else {
     return {
-      commands: [setCursorCommand('transient', CSSCursor.ReparentNotPermitted)],
+      commands: [setCursorCommand('mid-interaction', CSSCursor.ReparentNotPermitted)],
       customState: null,
     }
   }

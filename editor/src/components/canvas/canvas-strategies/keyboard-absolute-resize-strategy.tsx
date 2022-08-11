@@ -176,7 +176,7 @@ export const keyboardAbsoluteResizeStrategy: CanvasStrategy = {
         interactionState,
         newFrame,
       )
-      commands.push(setSnappingGuidelines('transient', guidelines))
+      commands.push(setSnappingGuidelines('mid-interaction', guidelines))
       commands.push(pushIntendedBounds(intendedBounds))
       commands.push(setElementsToRerenderCommand(canvasState.selectedElements))
       return {

@@ -3,12 +3,7 @@ import * as EP from '../../../core/shared/element-path'
 import { ElementPath } from '../../../core/shared/project-file-types'
 import { EditorState, withUnderlyingTargetFromEditorState } from '../../editor/store/editor-state'
 import { reorderComponent } from '../canvas-utils'
-import {
-  BaseCommand,
-  CommandFunction,
-  getPatchForComponentChange,
-  TransientOrNot,
-} from './commands'
+import { BaseCommand, CommandFunction, getPatchForComponentChange, WhenToRun } from './commands'
 
 export interface ReorderElement extends BaseCommand {
   type: 'REORDER_ELEMENT'
@@ -17,13 +12,13 @@ export interface ReorderElement extends BaseCommand {
 }
 
 export function reorderElement(
-  transient: TransientOrNot,
+  whenToRun: WhenToRun,
   target: ElementPath,
   newIndex: number,
 ): ReorderElement {
   return {
     type: 'REORDER_ELEMENT',
-    transient: transient,
+    whenToRun: whenToRun,
     target: target,
     newIndex: newIndex,
   }

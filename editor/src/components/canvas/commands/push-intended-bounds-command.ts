@@ -1,7 +1,7 @@
 import { toString } from '../../../core/shared/element-path'
 import type { EditorState, EditorStatePatch } from '../../editor/store/editor-state'
 import { CanvasFrameAndTarget } from '../canvas-types'
-import type { BaseCommand, CommandFunction, TransientOrNot } from './commands'
+import type { BaseCommand, CommandFunction, WhenToRun } from './commands'
 
 export interface PushIntendedBounds extends BaseCommand {
   type: 'PUSH_INTENDED_BOUNDS'
@@ -11,7 +11,7 @@ export interface PushIntendedBounds extends BaseCommand {
 export function pushIntendedBounds(value: Array<CanvasFrameAndTarget>): PushIntendedBounds {
   return {
     type: 'PUSH_INTENDED_BOUNDS',
-    transient: 'transient',
+    whenToRun: 'mid-interaction',
     value: value,
   }
 }

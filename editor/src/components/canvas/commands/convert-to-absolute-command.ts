@@ -5,20 +5,17 @@ import { ElementPath } from '../../../core/shared/project-file-types'
 import { EditorState } from '../../editor/store/editor-state'
 import { stylePropPathMappingFn } from '../../inspector/common/property-path-hooks'
 import { applyValuesAtPath } from './adjust-number-command'
-import { BaseCommand, CommandFunction, TransientOrNot } from './commands'
+import { BaseCommand, CommandFunction, WhenToRun } from './commands'
 
 export interface ConvertToAbsolute extends BaseCommand {
   type: 'CONVERT_TO_ABSOLUTE'
   target: ElementPath
 }
 
-export function convertToAbsolute(
-  transient: TransientOrNot,
-  target: ElementPath,
-): ConvertToAbsolute {
+export function convertToAbsolute(transient: WhenToRun, target: ElementPath): ConvertToAbsolute {
   return {
     type: 'CONVERT_TO_ABSOLUTE',
-    transient: transient,
+    whenToRun: transient,
     target: target,
   }
 }

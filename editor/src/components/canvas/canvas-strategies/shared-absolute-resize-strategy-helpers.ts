@@ -58,7 +58,7 @@ export function createResizeCommands(
     if (isRight(value) && value.value != null) {
       // TODO what to do about missing properties?
       return adjustCssLengthProperty(
-        'permanent',
+        'always',
         selectedElement,
         stylePropPathMappingFn(pin, ['style']),
         (horizontal ? drag.x : drag.y) * (negative ? -1 : 1),

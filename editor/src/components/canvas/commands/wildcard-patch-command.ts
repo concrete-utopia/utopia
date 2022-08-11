@@ -1,15 +1,15 @@
 import type { EditorState, EditorStatePatch } from '../../editor/store/editor-state'
-import type { BaseCommand, CommandFunction, TransientOrNot } from './commands'
+import type { BaseCommand, CommandFunction, WhenToRun } from './commands'
 
 export interface WildcardPatch extends BaseCommand {
   type: 'WILDCARD_PATCH'
   patch: EditorStatePatch
 }
 
-export function wildcardPatch(transient: TransientOrNot, patch: EditorStatePatch): WildcardPatch {
+export function wildcardPatch(whenToRun: WhenToRun, patch: EditorStatePatch): WildcardPatch {
   return {
     type: 'WILDCARD_PATCH',
-    transient: transient,
+    whenToRun: whenToRun,
     patch: patch,
   }
 }

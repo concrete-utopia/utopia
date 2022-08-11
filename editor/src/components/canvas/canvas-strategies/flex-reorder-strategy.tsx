@@ -95,8 +95,8 @@ export const flexReorderStrategy: CanvasStrategy = {
       if (realNewIndex === unpatchedIndex) {
         return {
           commands: [
-            updateHighlightedViews('transient', []),
-            setCursorCommand('transient', CSSCursor.Move),
+            updateHighlightedViews('mid-interaction', []),
+            setCursorCommand('mid-interaction', CSSCursor.Move),
           ],
           customState: {
             ...strategyState.customStrategyState,
@@ -106,10 +106,10 @@ export const flexReorderStrategy: CanvasStrategy = {
       } else {
         return {
           commands: [
-            reorderElement('permanent', target, realNewIndex),
+            reorderElement('always', target, realNewIndex),
             setElementsToRerenderCommand([target]),
-            updateHighlightedViews('transient', []),
-            setCursorCommand('transient', CSSCursor.Move),
+            updateHighlightedViews('mid-interaction', []),
+            setCursorCommand('mid-interaction', CSSCursor.Move),
           ],
           customState: {
             ...strategyState.customStrategyState,
@@ -120,7 +120,7 @@ export const flexReorderStrategy: CanvasStrategy = {
     } else {
       // Fallback for when the checks above are not satisfied.
       return {
-        commands: [setCursorCommand('transient', CSSCursor.Move)],
+        commands: [setCursorCommand('mid-interaction', CSSCursor.Move)],
         customState: null,
       }
     }

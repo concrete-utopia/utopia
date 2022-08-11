@@ -8,12 +8,7 @@ import {
   insertElementAtPath,
   removeElementAtPath,
 } from '../../editor/store/editor-state'
-import {
-  BaseCommand,
-  CommandFunction,
-  getPatchForComponentChange,
-  TransientOrNot,
-} from './commands'
+import { BaseCommand, CommandFunction, getPatchForComponentChange, WhenToRun } from './commands'
 
 export interface ReparentElement extends BaseCommand {
   type: 'REPARENT_ELEMENT'
@@ -22,13 +17,13 @@ export interface ReparentElement extends BaseCommand {
 }
 
 export function reparentElement(
-  transient: TransientOrNot,
+  whenToRun: WhenToRun,
   target: ElementPath,
   newParent: ElementPath,
 ): ReparentElement {
   return {
     type: 'REPARENT_ELEMENT',
-    transient: transient,
+    whenToRun: whenToRun,
     target: target,
     newParent: newParent,
   }

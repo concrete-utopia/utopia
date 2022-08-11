@@ -40,7 +40,7 @@ describe('adjustNumberProperty', () => {
     const delta = 10
 
     const adjustNumberPropertyCommand = adjustNumberProperty(
-      'permanent',
+      'always',
       cardInstancePath,
       stylePropPathMappingFn('left', ['style']),
       delta,
@@ -87,7 +87,7 @@ describe('adjustNumberProperty', () => {
 
     // left prop is missing, it should be just set to the delta value
     const adjustNumberPropertyCommand = adjustNumberProperty(
-      'permanent',
+      'always',
       elementPath,
       stylePropPathMappingFn('left', ['style']),
       delta,

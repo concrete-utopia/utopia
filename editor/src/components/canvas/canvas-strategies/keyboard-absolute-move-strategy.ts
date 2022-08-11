@@ -128,8 +128,8 @@ export const keyboardAbsoluteMoveStrategy: CanvasStrategy = {
         newFrame,
       )
 
-      commands.push(updateHighlightedViews('transient', []))
-      commands.push(setSnappingGuidelines('transient', guidelines))
+      commands.push(updateHighlightedViews('mid-interaction', []))
+      commands.push(setSnappingGuidelines('mid-interaction', guidelines))
       commands.push(pushIntendedBounds(intendedBounds))
       commands.push(setElementsToRerenderCommand(canvasState.selectedElements))
       return {

@@ -5,7 +5,7 @@ import {
   BaseCommand,
   CommandFunction,
   CommandFunctionResult,
-  TransientOrNot,
+  WhenToRun,
 } from '../commands/commands'
 
 export interface addToReparentedToPaths extends BaseCommand {
@@ -14,12 +14,12 @@ export interface addToReparentedToPaths extends BaseCommand {
 }
 
 export function addToReparentedToPaths(
-  transient: TransientOrNot,
+  whenToRun: WhenToRun,
   reparentedToPaths: Array<ElementPath>,
 ): addToReparentedToPaths {
   return {
     type: 'ADD_TO_REPARENTED_TO_PATHS',
-    transient: transient,
+    whenToRun: whenToRun,
     reparentedToPaths: reparentedToPaths,
   }
 }
