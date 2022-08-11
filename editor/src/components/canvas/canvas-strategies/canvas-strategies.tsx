@@ -236,35 +236,35 @@ export function applyCanvasStrategy(
 }
 
 const useDelayedCurrentStrategy = () => {
-  const [currentStrategyValue, setCurrentStrategyValue] = React.useState<CanvasStrategyId | null>(
+  const [delayedStrategyValue, setDelayedStrategyValue] = React.useState<CanvasStrategyId | null>(
     null,
   )
   const [timer, setTimer] = React.useState<number | null>(null)
 
   const delayedCallback = React.useCallback(
     (currentStrategy: CanvasStrategyId | null) => {
-      if (currentStrategy != null && currentStrategyValue == null) {
+      if (currentStrategy != null && delayedStrategyValue == null) {
         if (timer == null) {
           setTimer(
             window.setTimeout(() => {
-              setCurrentStrategyValue(currentStrategy)
+              setDelayedStrategyValue(currentStrategy)
               setTimer(null)
             }, ControlDelay),
           )
         }
       } else {
-        setCurrentStrategyValue(currentStrategy)
+        setDelayedStrategyValue(currentStrategy)
         if (timer != null) {
           window.clearTimeout(timer)
           setTimer(null)
         }
       }
     },
-    [currentStrategyValue, timer, setTimer, setCurrentStrategyValue],
+    [delayedStrategyValue, timer, setTimer, setDelayedStrategyValue],
   )
   useSelectorWithCallback((store) => store.strategyState.currentStrategy, delayedCallback)
 
-  return currentStrategyValue
+  return delayedStrategyValue
 }
 
 export function useGetApplicableStrategyControls(): Array<ControlWithKey> {
