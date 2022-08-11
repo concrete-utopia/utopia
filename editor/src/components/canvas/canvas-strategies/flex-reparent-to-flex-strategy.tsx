@@ -15,7 +15,11 @@ import { DragOutlineControl } from '../controls/select-mode/drag-outline-control
 import { CanvasStrategy, emptyStrategyApplicationResult } from './canvas-strategy-types'
 import { getReorderIndex } from './flex-reorder-strategy'
 import { ifAllowedToReparent } from './reparent-helpers'
-import { findReparentStrategy, getReparentTargetForFlexElement } from './reparent-strategy-helpers'
+import {
+  applyFlexReparent,
+  findReparentStrategy,
+  getReparentTargetForFlexElement,
+} from './reparent-strategy-helpers'
 import { getReparentCommands } from './reparent-utils'
 import { getDragTargets } from './shared-absolute-move-strategy-helpers'
 
@@ -62,82 +66,6 @@ export const flexReparentToFlexStrategy: CanvasStrategy = {
     return 0
   },
   apply: (canvasState, interactionSession, strategyState) => {
-    const filteredSelectedElements = getDragTargets(canvasState.selectedElements)
-    return ifAllowedToReparent(canvasState, strategyState, filteredSelectedElements, () => {
-      if (
-        interactionSession.interactionData.type == 'DRAG' &&
-        interactionSession.interactionData.drag != null
-      ) {
-        const reparentResult = getReparentTargetForFlexElement(
-          filteredSelectedElements,
-          interactionSession,
-          canvasState,
-          strategyState,
-        )
-
-        if (
-          reparentResult.shouldReparent &&
-          reparentResult.newParent != null &&
-          filteredSelectedElements.length === 1
-        ) {
-          const target = filteredSelectedElements[0]
-          const newParent = reparentResult.newParent
-          // Reparent the element.
-          const newPath = EP.appendToPath(reparentResult.newParent, EP.toUid(target))
-          const reparentCommands = getReparentCommands(
-            canvasState.builtInDependencies,
-            canvasState.projectContents,
-            canvasState.nodeModules,
-            canvasState.openFile,
-            target,
-            reparentResult.newParent,
-          )
-
-          const commandsBeforeReorder = [
-            ...reparentCommands,
-            updateSelectedViews('always', [newPath]),
-          ]
-
-          const commandsAfterReorder = [
-            setElementsToRerenderCommand([newPath]),
-            updateHighlightedViews('mid-interaction', []),
-            setCursorCommand('mid-interaction', CSSCursor.Move),
-          ]
-
-          let commands: Array<CanvasCommand>
-          if (reparentResult.shouldReorder) {
-            // Reorder the newly reparented element into the flex ordering.
-            const pointOnCanvas = offsetPoint(
-              interactionSession.interactionData.dragStart,
-              interactionSession.interactionData.drag,
-            )
-
-            const siblingsOfTarget = MetadataUtils.getChildrenPaths(
-              strategyState.startingMetadata,
-              newParent,
-            )
-
-            const newIndex = getReorderIndex(
-              strategyState.startingMetadata,
-              siblingsOfTarget,
-              pointOnCanvas,
-            )
-            commands = [
-              ...commandsBeforeReorder,
-              reorderElement('always', newPath, newIndex),
-              ...commandsAfterReorder,
-            ]
-          } else {
-            commands = [...commandsBeforeReorder, ...commandsAfterReorder]
-          }
-
-          return {
-            commands: commands,
-            customState: strategyState.customStrategyState,
-          }
-        }
-      }
-      return emptyStrategyApplicationResult
-    })
+    return applyFlexReparent('do-not-strip-props', canvasState, interactionSession, strategyState)
   },
 }
