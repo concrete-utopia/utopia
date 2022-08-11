@@ -25,6 +25,8 @@ import { emptyModifiers } from '../../../utils/modifiers'
 import { ElementPath } from '../../../core/shared/project-file-types'
 import { BakedInStoryboardUID } from '../../../core/model/scene-utils'
 import { SceneLabelTestID } from '../controls/select-mode/scene-label'
+import { wait } from '../../../utils/utils.test-utils'
+import { ControlDelay } from './canvas-strategy-types'
 
 function dragElement(
   canvasControl: HTMLElement,
@@ -677,6 +679,7 @@ describe('Absolute Move Strategy Canvas Controls', () => {
     const target = EP.appendNewElementPath(TestScenePath, ['aaa', 'bbb'])
     await startDragUsingActions(renderResult, target, zeroCanvasPoint)
 
+    await wait(ControlDelay + 10)
     const parentOutlineControl = renderResult.renderedDOM.getByTestId('parent-outlines-control')
     expect(parentOutlineControl).toBeDefined()
     const parentBoundsControl = renderResult.renderedDOM.getByTestId('parent-bounds-control')
