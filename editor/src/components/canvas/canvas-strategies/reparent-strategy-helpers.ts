@@ -164,7 +164,7 @@ export function getReparentTargetForFlexElement(
   }
 }
 
-const propertiesToRemove: Array<PropertyPath> = [
+const absolutePropsToRemove: Array<PropertyPath> = [
   PP.create(['style', 'position']),
   PP.create(['style', 'left']),
   PP.create(['style', 'top']),
@@ -213,7 +213,7 @@ export function applyFlexReparent(
         // Strip the `position`, positional and dimension properties.
         const commandToRemoveProperties =
           stripAbsoluteProperties === 'strip-absolute-props'
-            ? [deleteProperties('always', newPath, propertiesToRemove)]
+            ? [deleteProperties('always', newPath, absolutePropsToRemove)]
             : []
 
         const commandsBeforeReorder = [
