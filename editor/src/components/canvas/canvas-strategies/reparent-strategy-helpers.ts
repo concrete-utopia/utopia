@@ -1,6 +1,7 @@
 import { MetadataUtils } from '../../../core/model/element-metadata-utils'
 import * as EP from '../../../core/shared/element-path'
-import { offsetPoint } from '../../../core/shared/math-utils'
+import { ElementInstanceMetadataMap } from '../../../core/shared/element-template'
+import { CanvasVector, offsetPoint, rectContainsPoint } from '../../../core/shared/math-utils'
 import { ElementPath, PropertyPath } from '../../../core/shared/project-file-types'
 import * as PP from '../../../core/shared/property-path'
 import { CSSCursor } from '../canvas-types'
@@ -17,11 +18,27 @@ import {
   InteractionCanvasState,
   StrategyApplicationResult,
 } from './canvas-strategy-types'
-import { getReorderIndex } from './flex-reorder-strategy'
 import { InteractionSession, StrategyState } from './interaction-state'
 import { ifAllowedToReparent } from './reparent-helpers'
 import { getReparentCommands } from './reparent-utils'
 import { getDragTargets } from './shared-absolute-move-strategy-helpers'
+
+export function getReorderIndex(
+  metadata: ElementInstanceMetadataMap,
+  siblings: Array<ElementPath>,
+  point: CanvasVector,
+): number {
+  const targetSiblingIdx = siblings.findIndex((sibling) => {
+    const frame = MetadataUtils.getFrameInCanvasCoords(sibling, metadata)
+    return (
+      frame != null &&
+      rectContainsPoint(frame, point) &&
+      MetadataUtils.isParentYogaLayoutedContainerAndElementParticipatesInLayout(sibling, metadata)
+    )
+  })
+
+  return targetSiblingIdx
+}
 
 type ReparentStrategy =
   | 'FLEX_REPARENT_TO_ABSOLUTE'
