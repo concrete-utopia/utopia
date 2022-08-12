@@ -259,6 +259,7 @@ export const useDelayedCurrentStrategy = () => {
   const maybeDelayedCallback = React.useCallback(
     (currentStrategy: CanvasStrategyId | null) => {
       if (currentStrategy != null && delayedStrategyValue == null) {
+        // timer reset is not needed because the hierarchy selection mouseup clears interactionsession and activestrategy
         if (timer == null) {
           setTimer(
             window.setTimeout(() => {

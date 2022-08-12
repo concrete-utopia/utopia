@@ -70,6 +70,7 @@ import {
   createEmptyStrategyState,
   StrategyState,
 } from '../components/canvas/canvas-strategies/interaction-state'
+import sinon, { SinonFakeTimers } from 'sinon'
 
 export function delay(time: number): Promise<void> {
   return new Promise((resolve) => setTimeout(resolve, time))
@@ -408,4 +409,19 @@ export function simplifiedMetadataMap(metadata: ElementInstanceMetadataMap): Sim
     return simplifiedMetadata(elementMetadata)
   }, metadata)
   return sanitizedSpyData
+}
+
+export const setupTearDownClock = (): { clock: { current: SinonFakeTimers } } => {
+  let clock: { current: SinonFakeTimers } = { current: null as any } // it will be non-null thanks to beforeEach
+  beforeEach(function () {
+    clock.current = sinon.useFakeTimers({
+      // the timers will tick so the editor is not totally broken, but we can fast-forward time at will
+      // WARNING: the Sinon fake timers will advance in 20ms increments
+      shouldAdvanceTime: true,
+    })
+  })
+  afterEach(function () {
+    clock.current?.restore()
+  })
+  return { clock: clock }
 }
