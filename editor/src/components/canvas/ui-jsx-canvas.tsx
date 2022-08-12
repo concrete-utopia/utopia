@@ -496,11 +496,6 @@ export const UiJsxCanvas = React.memo<UiJsxCanvasPropsWithErrorCallback>((props)
     resolve: resolve,
   })
 
-  const storyboardChildPathsToRerender =
-    props.elementsToRerender === 'rerender-all-elements'
-      ? []
-      : props.elementsToRerender.filter(EP.isStoryboardChild)
-
   const StoryboardRoot = React.useMemo(() => {
     return StoryboardRootComponent == null ? null : (
       <StoryboardRootComponent {...{ [UTOPIA_INSTANCE_PATH]: rootInstancePath }} />
@@ -512,7 +507,7 @@ export const UiJsxCanvas = React.memo<UiJsxCanvasPropsWithErrorCallback>((props)
     props.domWalkerInvalidateCount,
     props.mountCount,
     // eslint-disable-next-line react-hooks/exhaustive-deps
-    ...storyboardChildPathsToRerender,
+    props.elementsToRerender,
   ])
 
   return (
