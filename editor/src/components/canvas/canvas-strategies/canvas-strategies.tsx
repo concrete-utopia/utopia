@@ -236,12 +236,27 @@ export function applyCanvasStrategy(
 }
 
 const useDelayedCurrentStrategy = () => {
+  /**
+   * onMouseDown selection shows canvas controls that are active when a strategy runs with a delay (double click selection in hierarchy)
+   * but when a drag threshold passes before the timer ends it shows up without delay
+   */
   const [delayedStrategyValue, setDelayedStrategyValue] = React.useState<CanvasStrategyId | null>(
     null,
   )
   const [timer, setTimer] = React.useState<number | null>(null)
 
-  const delayedCallback = React.useCallback(
+  const immediateCallback = React.useCallback(
+    (currentStrategy: CanvasStrategyId | null) => {
+      setDelayedStrategyValue(currentStrategy)
+      if (timer != null) {
+        window.clearTimeout(timer)
+        setTimer(null)
+      }
+    },
+    [timer, setTimer, setDelayedStrategyValue],
+  )
+
+  const maybeDelayedCallback = React.useCallback(
     (currentStrategy: CanvasStrategyId | null) => {
       if (currentStrategy != null && delayedStrategyValue == null) {
         if (timer == null) {
@@ -253,16 +268,23 @@ const useDelayedCurrentStrategy = () => {
           )
         }
       } else {
-        setDelayedStrategyValue(currentStrategy)
-        if (timer != null) {
-          window.clearTimeout(timer)
-          setTimer(null)
-        }
+        immediateCallback(currentStrategy)
       }
     },
-    [delayedStrategyValue, timer, setTimer, setDelayedStrategyValue],
+    [immediateCallback, delayedStrategyValue, timer, setTimer, setDelayedStrategyValue],
   )
-  useSelectorWithCallback((store) => store.strategyState.currentStrategy, delayedCallback)
+
+  useSelectorWithCallback((store) => store.strategyState.currentStrategy, maybeDelayedCallback)
+  useSelectorWithCallback((store) => {
+    if (
+      store.editor.canvas.interactionSession?.interactionData.type === 'DRAG' &&
+      store.editor.canvas.interactionSession?.interactionData.drag != null
+    ) {
+      return store.strategyState.currentStrategy
+    } else {
+      return null
+    }
+  }, immediateCallback)
 
   return delayedStrategyValue
 }
