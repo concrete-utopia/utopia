@@ -204,21 +204,21 @@ describe('Flex Reparent To Flex Strategy', () => {
 
     const targetFlexParent = await renderResult.renderedDOM.findByTestId('flexparent1')
     const targetFlexParentRect = targetFlexParent.getBoundingClientRect()
-    const targetFlexParentCenter = {
-      x: targetFlexParentRect.x + targetFlexParentRect.width / 2,
+    const targetFlexParentEnd = {
+      x: targetFlexParentRect.x + targetFlexParentRect.width - 15,
       y: targetFlexParentRect.y + targetFlexParentRect.height / 2,
     }
-    const firstFlexChild = await renderResult.renderedDOM.findByTestId('flexchild3')
-    const firstFlexChildRect = firstFlexChild.getBoundingClientRect()
-    const firstFlexChildCenter = {
-      x: firstFlexChildRect.x + firstFlexChildRect.width / 2,
-      y: firstFlexChildRect.y + firstFlexChildRect.height / 2,
+    const flexChildToReparent = await renderResult.renderedDOM.findByTestId('flexchild3')
+    const flexChildToReparentRect = flexChildToReparent.getBoundingClientRect()
+    const flexChildToReparentCenter = {
+      x: flexChildToReparentRect.x + flexChildToReparentRect.width / 2,
+      y: flexChildToReparentRect.y + flexChildToReparentRect.height / 2,
     }
 
     await renderResult.getDispatchFollowUpActionsFinished()
     const dragDelta = windowPoint({
-      x: targetFlexParentCenter.x - firstFlexChildCenter.x,
-      y: targetFlexParentCenter.y - firstFlexChildCenter.y,
+      x: targetFlexParentEnd.x - flexChildToReparentCenter.x,
+      y: targetFlexParentEnd.y - flexChildToReparentCenter.y,
     })
     act(() => dragElement(renderResult, 'flexchild3', dragDelta, cmdModifier))
 
@@ -272,6 +272,7 @@ describe('Flex Reparent To Flex Strategy', () => {
             width: 100,
             height: 100,
             backgroundColor: 'teal',
+            position: 'relative',
           }}
           data-uid='flexchild3'
           data-testid='flexchild3'
@@ -306,7 +307,7 @@ describe('Flex Reparent To Flex Strategy', () => {
     )
   })
 
-  it('reparents flex as first child when moving the mouse over the current first child', async () => {
+  it('reparents flex as first child when moving the mouse to the left edge of the first child', async () => {
     const renderResult = await renderTestEditorWithCode(
       makeTestProjectCodeWithSnippet(defaultTestCode),
       'await-first-dom-report',
@@ -315,7 +316,7 @@ describe('Flex Reparent To Flex Strategy', () => {
     const targetFlexChild = await renderResult.renderedDOM.findByTestId('flexchild1')
     const targetFlexChildRect = targetFlexChild.getBoundingClientRect()
     const targetFlexChildCenter = {
-      x: targetFlexChildRect.x + targetFlexChildRect.width / 2,
+      x: targetFlexChildRect.x + 10,
       y: targetFlexChildRect.y + targetFlexChildRect.height / 2,
     }
     const flexChildToReparent = await renderResult.renderedDOM.findByTestId('flexchild3')
@@ -364,6 +365,7 @@ describe('Flex Reparent To Flex Strategy', () => {
             width: 100,
             height: 100,
             backgroundColor: 'teal',
+            position: 'relative',
           }}
           data-uid='flexchild3'
           data-testid='flexchild3'
