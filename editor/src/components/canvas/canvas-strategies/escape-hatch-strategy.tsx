@@ -278,6 +278,7 @@ function collectSetLayoutPropCommands(
           canvasState.openFile,
           path,
           targetParent,
+          'always',
         ),
       )
     }

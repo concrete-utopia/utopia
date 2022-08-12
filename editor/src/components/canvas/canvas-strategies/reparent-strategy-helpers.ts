@@ -495,33 +495,34 @@ export function applyFlexReparent(
           canvasState.openFile,
           target,
           newParent,
+          'on-complete',
         )
 
         // Strip the `position`, positional and dimension properties.
         const commandToRemoveProperties = stripAbsoluteProperties
           ? [
-              deleteProperties('always', newPath, propertiesToRemove),
-              setProperty('always', newPath, PP.create(['style', 'position']), 'relative'), // SPIKE TODO only insert position: relative if there was a position nonstatic prop before
+              deleteProperties('on-complete', newPath, propertiesToRemove),
+              setProperty('on-complete', newPath, PP.create(['style', 'position']), 'relative'), // SPIKE TODO only insert position: relative if there was a position nonstatic prop before
             ]
           : []
 
         const commandsBeforeReorder = [
           ...reparentCommands,
-          updateSelectedViews('always', [newPath]),
+          updateSelectedViews('on-complete', [newPath]),
         ]
 
         const commandsAfterReorder = [
           ...commandToRemoveProperties,
           setElementsToRerenderCommand([target, newPath]),
-          updateHighlightedViews('always', []),
-          setCursorCommand('always', CSSCursor.Move),
+          // updateHighlightedViews('on-complete', []), // TODO WELP
+          setCursorCommand('on-complete', CSSCursor.Move),
         ]
 
         const newParentFlexDirection = MetadataUtils.getFlexDirection(
           MetadataUtils.findElementByElementPath(strategyState.startingMetadata, newParent),
         )
 
-        let interactionFinishCommadns: Array<CanvasCommand>
+        let interactionFinishCommands: Array<CanvasCommand>
         let midInteractionCommands: Array<CanvasCommand>
 
         const siblingsOfTarget = MetadataUtils.getChildrenPaths(
@@ -579,7 +580,7 @@ export function applyFlexReparent(
                 }),
           ]
 
-          interactionFinishCommadns = [
+          interactionFinishCommands = [
             ...commandsBeforeReorder,
             reorderElement('on-complete', newPath, newIndex),
             ...commandsAfterReorder,
@@ -661,11 +662,11 @@ export function applyFlexReparent(
             midInteractionCommands = []
           }
 
-          interactionFinishCommadns = [...commandsBeforeReorder, ...commandsAfterReorder]
+          interactionFinishCommands = [...commandsBeforeReorder, ...commandsAfterReorder]
         }
 
         return {
-          commands: [...midInteractionCommands, ...interactionFinishCommadns], // TODO REVIEW
+          commands: [...midInteractionCommands, ...interactionFinishCommands], // TODO REVIEW
           customState: strategyState.customStrategyState,
         }
       }

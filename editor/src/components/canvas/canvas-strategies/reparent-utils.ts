@@ -29,6 +29,7 @@ export function getReparentCommands(
   openFile: string | null | undefined,
   selectedElement: ElementPath,
   newParent: ElementPath,
+  whenToRun: 'always' | 'on-complete',
 ): Array<CanvasCommand> {
   let result: Array<CanvasCommand> = []
 
@@ -115,14 +116,16 @@ export function getReparentCommands(
         }
       })
 
-      return [addImportsToFile('always', newTargetPath, importsToAdd)]
+      return [addImportsToFile(whenToRun, newTargetPath, importsToAdd)]
     },
   )
 
-  result.push(reparentElement('always', selectedElement, newParent))
+  result.push(reparentElement(whenToRun, selectedElement, newParent))
 
-  const newPath = EP.appendToPath(newParent, EP.toUid(selectedElement))
-  result.push(addToReparentedToPaths('mid-interaction', [newPath]))
+  if (whenToRun === 'always') {
+    const newPath = EP.appendToPath(newParent, EP.toUid(selectedElement))
+    result.push(addToReparentedToPaths('mid-interaction', [newPath]))
+  }
   result.push(...commandsToAddImports)
   return result
 }

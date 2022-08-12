@@ -121,6 +121,7 @@ export const absoluteReparentStrategy: CanvasStrategy = {
               openFile,
               selectedElement,
               newParent,
+              'always',
             ),
           ],
         }
