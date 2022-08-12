@@ -928,14 +928,14 @@ export const MetadataUtils = {
             case 'JSX_ELEMENT':
               const lastNamePart = getJSXElementNameLastPart(jsxElement.name)
               // Check for certain elements and check if they have text content within them.
-              if (ElementsToDrillIntoForTextContent.includes(lastNamePart)) {
-                const firstChild = jsxElement.children[0]
-                if (firstChild != null) {
-                  if (isJSXTextBlock(firstChild)) {
-                    return firstChild.text
-                  }
-                }
-              }
+              // if (ElementsToDrillIntoForTextContent.includes(lastNamePart)) {
+              //   const firstChild = jsxElement.children[0]
+              //   if (firstChild != null) {
+              //     if (isJSXTextBlock(firstChild)) {
+              //       return firstChild.text
+              //     }
+              //   }
+              // }
               // With images, take their alt and src properties as possible names first.
               const elementProps = allElementProps[EP.toString(element.elementPath)] ?? {}
               if (lastNamePart === 'img') {
@@ -963,6 +963,8 @@ export const MetadataUtils = {
               return '(code)'
             case 'JSX_FRAGMENT':
               return '(fragment)'
+            case 'JSX_CONDITIONAL_EXPRESSION':
+              return '(conditional)'
             default:
               const _exhaustiveCheck: never = jsxElement
               throw new Error(`Unexpected element type ${jsxElement}`)

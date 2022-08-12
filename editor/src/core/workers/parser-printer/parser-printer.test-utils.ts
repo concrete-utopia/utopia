@@ -704,6 +704,10 @@ function walkElements(
         walkElements(child, walkWith)
       })
       break
+    case 'JSX_CONDITIONAL_EXPRESSION':
+      walkElements(jsxElementChild.whenTrue, walkWith)
+      walkElements(jsxElementChild.whenFalse, walkWith)
+      break
     default:
       const _exhaustiveCheck: never = jsxElementChild
       throw new Error(`Unhandled type ${JSON.stringify(jsxElementChild)}`)
@@ -733,6 +737,10 @@ function walkAllJSXElementChilds(
       fastForEach(jsxElementChild.children, (child) => {
         walkAllJSXElementChilds(child, walkWith)
       })
+      break
+    case 'JSX_CONDITIONAL_EXPRESSION':
+      walkAllJSXElementChilds(jsxElementChild.whenTrue, walkWith)
+      walkAllJSXElementChilds(jsxElementChild.whenFalse, walkWith)
       break
     default:
       const _exhaustiveCheck: never = jsxElementChild

@@ -281,6 +281,8 @@ export function findElementWithUID(
           }
         }
         return null
+      case 'JSX_CONDITIONAL_EXPRESSION':
+        return findForJSXElementChild(element.whenTrue) ?? findForJSXElementChild(element.whenFalse)
       default:
         const _exhaustiveCheck: never = element
         throw new Error(`Unhandled element type ${JSON.stringify(element)}`)

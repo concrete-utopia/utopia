@@ -17,6 +17,7 @@ import {
 } from './navigator-item-dnd-container'
 import { MetadataUtils } from '../../../core/model/element-metadata-utils'
 import {
+  AllElementProps,
   defaultElementWarnings,
   DropTargetHint,
   EditorStorePatched,
@@ -26,6 +27,11 @@ import {
   UtopiaJSXComponent,
   isUtopiaJSXComponent,
   isJSXArbitraryBlock,
+  JSXElementChild,
+  isJSXConditionalExpression,
+  ElementInstanceMetadataMap,
+  ElementInstanceMetadata,
+  JSXElementName,
 } from '../../../core/shared/element-template'
 import { getValueFromComplexMap } from '../../../utils/map'
 import { createSelector } from 'reselect'
@@ -111,10 +117,13 @@ const navigatorItemWrapperSelectorFactory = (elementPath: ElementPath) =>
         staticPath,
       )
 
-      const labelInner =
-        jsxElement != null && isJSXArbitraryBlock(jsxElement)
-          ? jsxElement.originalJavascript
-          : MetadataUtils.getElementLabel(allElementProps, elementPath, jsxMetadata, staticName)
+      const labelInner = getElementLabel(
+        jsxElement,
+        allElementProps,
+        elementPath,
+        jsxMetadata,
+        staticName,
+      )
 
       // FIXME: This is a mitigation for a situation where somehow this component re-renders
       // when the navigatorTargets indicate it shouldn't exist...
@@ -222,3 +231,20 @@ export const NavigatorItemWrapper: React.FunctionComponent<
   return <NavigatorItemContainer {...navigatorItemProps} />
 })
 NavigatorItemWrapper.displayName = 'NavigatorItemWrapper'
+
+function getElementLabel(
+  jsxElement: JSXElementChild | null,
+  allElementProps: AllElementProps,
+  elementPath: ElementPath,
+  jsxMetadata: ElementInstanceMetadataMap,
+  staticName: JSXElementName | null,
+) {
+  if (jsxElement != null) {
+    if (isJSXArbitraryBlock(jsxElement)) {
+      return jsxElement.originalJavascript
+    } else if (isJSXConditionalExpression(jsxElement)) {
+      return 'CONDITION'
+    }
+  }
+  return MetadataUtils.getElementLabel(allElementProps, elementPath, jsxMetadata, staticName)
+}

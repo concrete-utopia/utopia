@@ -46,6 +46,7 @@ import {
   isUtopiaJSXComponent,
   SettableLayoutSystem,
   emptyComments,
+  isJSXConditionalExpression,
 } from '../../core/shared/element-template'
 import {
   getAllUniqueUids,
@@ -2947,6 +2948,28 @@ export function getValidElementPathsFromElement(
           filePath,
           parentIsScene,
           parentIsInstance,
+          transientFilesState,
+          resolve,
+        ),
+      ),
+    )
+    return paths
+  } else if (isJSXConditionalExpression(element)) {
+    const uid = getUtopiaID(element)
+    const path = parentIsInstance
+      ? EP.appendNewElementPath(parentPath, uid)
+      : EP.appendToPath(parentPath, uid)
+    let paths = [path]
+    fastForEach([element.whenTrue, element.whenFalse], (e) =>
+      paths.push(
+        ...getValidElementPathsFromElement(
+          focusedElementPath,
+          e,
+          path,
+          projectContents,
+          filePath,
+          false,
+          false,
           transientFilesState,
           resolve,
         ),

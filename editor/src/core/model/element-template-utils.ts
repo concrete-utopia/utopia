@@ -32,6 +32,7 @@ import {
   JSXAttributesSpread,
   JSXArrayElement,
   JSXProperty,
+  isJSXConditionalExpression,
 } from '../shared/element-template'
 import {
   Imports,
@@ -177,6 +178,8 @@ export function getUtopiaID(element: JSXElementChild | ElementInstanceMetadata):
     return EP.toUid(element.elementPath)
   } else if (isJSXFragment(element)) {
     return element.uniqueID
+  } else if (isJSXConditionalExpression(element)) {
+    return element.uniqueID
   }
   throw new Error(`Cannot recognize element ${JSON.stringify(element)}`)
 }
@@ -307,6 +310,41 @@ function transformAtPathOptionally(
           children: updatedChildren,
         }
       }
+    } else if (isJSXConditionalExpression(element)) {
+      if (getUtopiaID(element) === firstUIDOrIndex) {
+        const updatedWhenTrue = findAndTransformAtPathInner(element.whenTrue, tailPath)
+        const updatedWhenFalse = findAndTransformAtPathInner(element.whenFalse, tailPath)
+        if (updatedWhenTrue != null) {
+          return {
+            ...element,
+            whenTrue: updatedWhenTrue,
+          }
+        }
+        if (updatedWhenFalse) {
+          return {
+            ...element,
+            whenFalse: updatedWhenFalse,
+          }
+        }
+      }
+      if (getUtopiaID(element.whenTrue) === firstUIDOrIndex) {
+        const updated = findAndTransformAtPathInner(element.whenTrue, workingPath)
+        if (updated != null && isJSXElement(updated)) {
+          return {
+            ...element,
+            whenTrue: updated,
+          }
+        }
+      }
+      if (getUtopiaID(element.whenFalse) === firstUIDOrIndex) {
+        const updated = findAndTransformAtPathInner(element.whenFalse, workingPath)
+        if (updated != null && isJSXElement(updated)) {
+          return {
+            ...element,
+            whenFalse: updated,
+          }
+        }
+      }
     }
     return null
   }
@@ -390,6 +428,23 @@ export function findJSXElementChildAtPath(
         const childResult = findAtPathInner(child, workingPath)
         if (childResult != null) {
           return childResult
+        }
+      }
+    } else if (isJSXConditionalExpression(element)) {
+      const uid = getUtopiaID(element)
+      if (uid === firstUIDOrIndex) {
+        const tailPath = workingPath.slice(1)
+        if (tailPath.length === 0) {
+          // this is the element we want
+          return element
+        } else {
+          const children = [element.whenTrue, element.whenFalse]
+          for (const child of children) {
+            const childResult = findAtPathInner(child, workingPath)
+            if (childResult != null) {
+              return childResult
+            }
+          }
         }
       }
     }
@@ -587,6 +642,12 @@ export function elementUsesProperty(
       return element.children.some((child) => {
         return elementUsesProperty(child, propsParam, property)
       })
+    case 'JSX_CONDITIONAL_EXPRESSION':
+      return (
+        elementUsesProperty(element.condition, propsParam, property) ||
+        elementUsesProperty(element.whenTrue, propsParam, property) ||
+        elementUsesProperty(element.whenFalse, propsParam, property)
+      )
     default:
       const _exhaustiveCheck: never = element
       throw new Error(`Unhandled element type: ${JSON.stringify(element)}`)

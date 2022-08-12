@@ -24,6 +24,7 @@ import {
 import {
   getAccumulatedElementsWithin,
   jsxAttributesToProps,
+  jsxAttributeToValue,
   setJSXValueAtPath,
 } from '../../../core/shared/jsx-attributes'
 import {
@@ -294,6 +295,44 @@ export function renderCoreElement(
     }
     case 'JSX_TEXT_BLOCK': {
       return element.text
+    }
+    case 'JSX_CONDITIONAL_EXPRESSION': {
+      const conditionValue = runJSXArbitraryBlock(
+        filePath,
+        inScope,
+        element.condition,
+        requireResult,
+      ) as boolean
+
+      const actualElement = conditionValue ? element.whenTrue : element.whenFalse
+
+      const childPath = optionalMap(
+        (path) => EP.appendToPath(path, getUtopiaID(actualElement)),
+        elementPath,
+      )
+
+      return renderCoreElement(
+        actualElement,
+        childPath,
+        rootScope,
+        inScope,
+        parentComponentInputProps,
+        requireResult,
+        hiddenInstances,
+        fileBlobs,
+        validPaths,
+        uid,
+        reactChildren,
+        metadataContext,
+        updateInvalidatedPaths,
+        jsxFactoryFunctionName,
+        codeError,
+        shouldIncludeCanvasRootInTheSpy,
+        filePath,
+        imports,
+        code,
+        highlightBounds,
+      )
     }
     default:
       const _exhaustiveCheck: never = element
