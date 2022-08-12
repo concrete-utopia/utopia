@@ -120,9 +120,14 @@ export function findReparentStrategy(
   const parentIsFlexLayout = MetadataUtils.isFlexLayoutedContainer(newParentMetadata)
   const parentIsStoryboard = newParentPath == null ? false : EP.isStoryboardPath(newParentPath)
 
+  const parentStayedTheSame = filteredSelectedElements.some(
+    (e) => EP.parentPath(e) === newParentPath,
+  )
+
   if (
     reparentResult.shouldReparent &&
     newParentPath != null &&
+    !parentStayedTheSame &&
     // holding cmd forces a reparent even if the target parent was under the mouse at the interaction start
     (cmdPressed || newParentPath !== interactionState.startingTargetParentToFilterOut?.newParent)
   ) {
