@@ -21,7 +21,7 @@ import { defaultCustomStrategyState } from './canvas-strategy-types'
 import { InteractionSession, StrategyState } from './interaction-state'
 import { createMouseInteractionForTests } from './interaction-state.test-utils'
 import * as EP from '../../../core/shared/element-path'
-import { right } from '../../../core/shared/either'
+import { left, right } from '../../../core/shared/either'
 import { createBuiltInDependenciesList } from '../../../core/es-modules/package-manager/built-in-dependencies-list'
 
 jest.mock('../canvas-utils', () => ({
@@ -31,7 +31,7 @@ jest.mock('../canvas-utils', () => ({
     newParent: {
       type: 'elementpath',
       parts: [
-        ['scene-aaa', 'app-entity'],
+        ['sb', 'scene-aaa', 'app-entity'],
         ['aaa', 'bbb'],
       ],
     },
@@ -40,7 +40,7 @@ jest.mock('../canvas-utils', () => ({
 
 // KEEP THIS IN SYNC WITH THE MOCK ABOVE
 const newParent = EP.elementPath([
-  ['scene-aaa', 'app-entity'],
+  ['sb', 'scene-aaa', 'app-entity'],
   ['aaa', 'bbb'],
 ])
 
@@ -51,7 +51,7 @@ function reparentElement(
 ): EditorState {
   const interactionSession: InteractionSession = {
     ...createMouseInteractionForTests(
-      canvasPoint({ x: 0, y: 0 }),
+      canvasPoint({ x: 95, y: 80 }),
       { cmd: true, alt: false, shift: false, ctrl: false },
       null as any, // the strategy does not use this
       dragVector,
@@ -72,8 +72,9 @@ function reparentElement(
       commandDescriptions: null as any, // the strategy does not use this
       sortedApplicableStrategies: null as any, // the strategy does not use this
       startingMetadata: {
-        'scene-aaa/app-entity:aaa': {
-          elementPath: EP.elementPath([['scene-aaa', 'app-entity'], ['aaa']]),
+        sb: {
+          elementPath: EP.elementPath([['sb']]),
+          element: left('storyboard'),
           globalFrame: canvasRectangle({ x: 0, y: 0, width: 400, height: 400 }),
           specialSizeMeasurements: {
             immediateParentBounds: canvasRectangle({ x: 0, y: 0, width: 400, height: 400 }),
@@ -82,11 +83,45 @@ function reparentElement(
             globalContentBox: canvasRectangle({ x: 0, y: 0, width: 400, height: 400 }),
           } as SpecialSizeMeasurements,
         } as ElementInstanceMetadata,
-        'scene-aaa/app-entity:aaa/bbb': {
+        'sb/scene-aaa': {
+          elementPath: EP.elementPath([['sb', 'scene-aaa']]),
+          element: left('div'),
+          globalFrame: canvasRectangle({ x: 0, y: 0, width: 400, height: 400 }),
+          specialSizeMeasurements: {
+            immediateParentBounds: canvasRectangle({ x: 0, y: 0, width: 400, height: 400 }),
+            coordinateSystemBounds: canvasRectangle({ x: 0, y: 0, width: 400, height: 400 }),
+            providesBoundsForAbsoluteChildren: true,
+            globalContentBox: canvasRectangle({ x: 0, y: 0, width: 400, height: 400 }),
+          } as SpecialSizeMeasurements,
+        } as ElementInstanceMetadata,
+        'sb/scene-aaa/app-entity': {
+          elementPath: EP.elementPath([['sb', 'scene-aaa', 'app-entity']]),
+          element: left('div'),
+          globalFrame: canvasRectangle({ x: 0, y: 0, width: 400, height: 400 }),
+          specialSizeMeasurements: {
+            immediateParentBounds: canvasRectangle({ x: 0, y: 0, width: 400, height: 400 }),
+            coordinateSystemBounds: canvasRectangle({ x: 0, y: 0, width: 400, height: 400 }),
+            providesBoundsForAbsoluteChildren: true,
+            globalContentBox: canvasRectangle({ x: 0, y: 0, width: 400, height: 400 }),
+          } as SpecialSizeMeasurements,
+        } as ElementInstanceMetadata,
+        'sb/scene-aaa/app-entity:aaa': {
+          elementPath: EP.elementPath([['sb', 'scene-aaa', 'app-entity'], ['aaa']]),
+          element: left('div'),
+          globalFrame: canvasRectangle({ x: 0, y: 0, width: 400, height: 400 }),
+          specialSizeMeasurements: {
+            immediateParentBounds: canvasRectangle({ x: 0, y: 0, width: 400, height: 400 }),
+            coordinateSystemBounds: canvasRectangle({ x: 0, y: 0, width: 400, height: 400 }),
+            providesBoundsForAbsoluteChildren: true,
+            globalContentBox: canvasRectangle({ x: 0, y: 0, width: 400, height: 400 }),
+          } as SpecialSizeMeasurements,
+        } as ElementInstanceMetadata,
+        'sb/scene-aaa/app-entity:aaa/bbb': {
           elementPath: EP.elementPath([
-            ['scene-aaa', 'app-entity'],
+            ['sb', 'scene-aaa', 'app-entity'],
             ['aaa', 'bbb'],
           ]),
+          element: left('div'),
           globalFrame: canvasRectangle({ x: 50, y: 60, width: 250, height: 200 }),
           specialSizeMeasurements: {
             immediateParentBounds: canvasRectangle({ x: 0, y: 0, width: 400, height: 400 }),
@@ -97,9 +132,9 @@ function reparentElement(
               : canvasRectangle({ x: 50, y: 60, width: 250, height: 200 }),
           } as SpecialSizeMeasurements,
         } as ElementInstanceMetadata,
-        'scene-aaa/app-entity:aaa/ccc': {
+        'sb/scene-aaa/app-entity:aaa/ccc': {
           elementPath: EP.elementPath([
-            ['scene-aaa', 'app-entity'],
+            ['sb', 'scene-aaa', 'app-entity'],
             ['aaa', 'ccc'],
           ]),
           element: right(
@@ -130,9 +165,9 @@ function reparentElement(
             globalContentBox: canvasRectangle({ x: 150, y: 160, width: 250, height: 200 }),
           } as SpecialSizeMeasurements,
         } as ElementInstanceMetadata,
-        'scene-aaa/app-entity:aaa/ddd': {
+        'sb/scene-aaa/app-entity:aaa/ddd': {
           elementPath: EP.elementPath([
-            ['scene-aaa', 'app-entity'],
+            ['sb', 'scene-aaa', 'app-entity'],
             ['aaa', 'ddd'],
           ]),
           element: right(
@@ -196,7 +231,7 @@ function reparentElement(
 describe('Absolute Reparent Strategy', () => {
   it('does not activate when drag threshold is not reached', async () => {
     const targetElement = EP.elementPath([
-      ['scene-aaa', 'app-entity'],
+      ['sb', 'scene-aaa', 'app-entity'],
       ['aaa', 'ccc'],
     ])
 
@@ -242,7 +277,7 @@ describe('Absolute Reparent Strategy', () => {
   })
   it('works with a TL pinned absolute element', async () => {
     const targetElement = EP.elementPath([
-      ['scene-aaa', 'app-entity'],
+      ['sb', 'scene-aaa', 'app-entity'],
       ['aaa', 'ccc'],
     ])
 
@@ -325,7 +360,7 @@ describe('Absolute Reparent Strategy', () => {
 
   it('works with a TLBR pinned absolute element', async () => {
     const targetElement = EP.elementPath([
-      ['scene-aaa', 'app-entity'],
+      ['sb', 'scene-aaa', 'app-entity'],
       ['aaa', 'ccc'],
     ])
 
@@ -405,7 +440,7 @@ describe('Absolute Reparent Strategy', () => {
   })
   it('works with a TLBR pinned absolute element when the parent has padding and border', async () => {
     const targetElement = EP.elementPath([
-      ['scene-aaa', 'app-entity'],
+      ['sb', 'scene-aaa', 'app-entity'],
       ['aaa', 'ccc'],
     ])
 
@@ -488,7 +523,7 @@ describe('Absolute Reparent Strategy', () => {
 
   it('works with a TL pinned absolute element with child', async () => {
     const targetElement = EP.elementPath([
-      ['scene-aaa', 'app-entity'],
+      ['sb', 'scene-aaa', 'app-entity'],
       ['aaa', 'ccc'],
     ])
 
@@ -593,12 +628,12 @@ describe('Absolute Reparent Strategy', () => {
 
   it('works with TL pinned absolute elements in multiselection', async () => {
     const targetElement1 = EP.elementPath([
-      ['scene-aaa', 'app-entity'],
+      ['sb', 'scene-aaa', 'app-entity'],
       ['aaa', 'ccc'],
     ])
 
     const targetElement2 = EP.elementPath([
-      ['scene-aaa', 'app-entity'],
+      ['sb', 'scene-aaa', 'app-entity'],
       ['aaa', 'ddd'],
     ])
 
@@ -701,11 +736,11 @@ describe('Absolute Reparent Strategy', () => {
 
   it('works with a TL pinned absolute elements in multiselection with descendant', async () => {
     const targetElement = EP.elementPath([
-      ['scene-aaa', 'app-entity'],
+      ['sb', 'scene-aaa', 'app-entity'],
       ['aaa', 'ccc'],
     ])
     const targetElement2 = EP.elementPath([
-      ['scene-aaa', 'app-entity'],
+      ['sb', 'scene-aaa', 'app-entity'],
       ['aaa', 'ccc', 'ddd'],
     ])
 
