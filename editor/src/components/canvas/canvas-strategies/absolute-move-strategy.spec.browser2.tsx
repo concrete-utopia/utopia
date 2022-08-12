@@ -461,7 +461,7 @@ describe('Absolute Move Strategy', () => {
     const targetElementBounds = targetElement.getBoundingClientRect()
     const canvasControlsLayer = renderResult.renderedDOM.getByTestId(CanvasControlsContainerID)
 
-    const startPoint = windowPoint({ x: targetElementBounds.x + 5, y: targetElementBounds.y + 5 })
+    const startPoint = windowPoint({ x: targetElementBounds.x + 50, y: targetElementBounds.y + 50 })
     const dragDelta = windowPoint({ x: 40, y: -25 })
 
     act(() => dragElement(canvasControlsLayer, startPoint, dragDelta, false, false, false))
@@ -500,7 +500,7 @@ describe('Absolute Move Strategy', () => {
         }}
       >
         <div
-          style={{ left: 50, top: 50, margin: ${parentMargin}}}
+          style={{ left: 50, top: 50, height: 150, width: 150, margin: ${parentMargin}}}
           data-uid='ccc'
         >
           <div
@@ -524,7 +524,7 @@ describe('Absolute Move Strategy', () => {
     const canvasControlsLayer = renderResult.renderedDOM.getByTestId(CanvasControlsContainerID)
 
     const startPoint = windowPoint({ x: targetElementBounds.x + 5, y: targetElementBounds.y + 5 })
-    const dragDelta = windowPoint({ x: 40, y: -25 })
+    const dragDelta = windowPoint({ x: 40, y: 25 })
 
     act(() => dragElement(canvasControlsLayer, startPoint, dragDelta, false, false, false))
 
@@ -541,7 +541,7 @@ describe('Absolute Move Strategy', () => {
         }}
       >
         <div
-          style={{ left: 50, top: 50, margin: ${parentMargin} }}
+          style={{ left: 50, top: 50, height: 150, width: 150, margin: ${parentMargin} }}
           data-uid='ccc'
         >
           <div
