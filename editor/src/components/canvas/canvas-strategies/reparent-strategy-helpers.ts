@@ -123,7 +123,8 @@ export function findReparentStrategy(
   if (
     reparentResult.shouldReparent &&
     newParentPath != null &&
-    newParentPath !== interactionState.startingTargetParentToFilterOut?.newParent
+    // holding cmd forces a reparent even if the target parent was under the mouse at the interaction start
+    (cmdPressed || newParentPath !== interactionState.startingTargetParentToFilterOut?.newParent)
   ) {
     if (allDraggedElementsAbsolute) {
       if (parentIsFlexLayout) {
@@ -141,9 +142,6 @@ export function findReparentStrategy(
         return { strategy: 'FLEX_REPARENT_TO_ABSOLUTE', newParent: newParentPath }
       }
     }
-  }
-  if (parentIsFlexLayout && cmdPressed && newParentPath != null) {
-    return { strategy: 'FLEX_REPARENT_TO_FLEX', newParent: newParentPath }
   }
   return { strategy: 'do-not-reparent' }
 }
