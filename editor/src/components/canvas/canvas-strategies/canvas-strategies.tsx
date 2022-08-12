@@ -235,7 +235,7 @@ export function applyCanvasStrategy(
   return strategy.apply(canvasState, interactionSession, strategyState)
 }
 
-const useDelayedCurrentStrategy = () => {
+export const useDelayedCurrentStrategy = () => {
   /**
    * onMouseDown selection shows canvas controls that are active when a strategy runs with a delay (double click selection in hierarchy)
    * but when a drag threshold passes before the timer ends it shows up without delay
