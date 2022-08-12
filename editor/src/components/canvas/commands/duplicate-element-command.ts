@@ -7,12 +7,7 @@ import {
   withUnderlyingTargetFromEditorState,
 } from '../../editor/store/editor-state'
 import { duplicate } from '../canvas-utils'
-import {
-  BaseCommand,
-  CommandFunction,
-  getPatchForComponentChange,
-  TransientOrNot,
-} from './commands'
+import { BaseCommand, CommandFunction, getPatchForComponentChange, WhenToRun } from './commands'
 
 export interface DuplicateElement extends BaseCommand {
   type: 'DUPLICATE_ELEMENT'
@@ -21,13 +16,13 @@ export interface DuplicateElement extends BaseCommand {
 }
 
 export function duplicateElement(
-  transient: TransientOrNot,
+  whenToRun: WhenToRun,
   target: ElementPath,
   newUid: string,
 ): DuplicateElement {
   return {
     type: 'DUPLICATE_ELEMENT',
-    transient: transient,
+    whenToRun: whenToRun,
     target: target,
     newUid: newUid,
   }

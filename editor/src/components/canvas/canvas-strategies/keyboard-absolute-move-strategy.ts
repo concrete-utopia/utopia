@@ -42,6 +42,7 @@ import Utils from '../../../utils/utils'
 import { StrategyState, InteractionSession } from './interaction-state'
 import { pushIntendedBounds } from '../commands/push-intended-bounds-command'
 import { CanvasFrameAndTarget } from '../canvas-types'
+import { supportsStyle } from './absolute-utils'
 
 export const keyboardAbsoluteMoveStrategy: CanvasStrategy = {
   id: 'KEYBOARD_ABSOLUTE_MOVE',
@@ -50,8 +51,10 @@ export const keyboardAbsoluteMoveStrategy: CanvasStrategy = {
     if (canvasState.selectedElements.length > 0) {
       return canvasState.selectedElements.every((element) => {
         const elementMetadata = MetadataUtils.findElementByElementPath(metadata, element)
-
-        return elementMetadata?.specialSizeMeasurements.position === 'absolute'
+        return (
+          elementMetadata?.specialSizeMeasurements.position === 'absolute' &&
+          supportsStyle(canvasState, element)
+        )
       })
     } else {
       return false
@@ -125,8 +128,8 @@ export const keyboardAbsoluteMoveStrategy: CanvasStrategy = {
         newFrame,
       )
 
-      commands.push(updateHighlightedViews('transient', []))
-      commands.push(setSnappingGuidelines('transient', guidelines))
+      commands.push(updateHighlightedViews('mid-interaction', []))
+      commands.push(setSnappingGuidelines('mid-interaction', guidelines))
       commands.push(pushIntendedBounds(intendedBounds))
       commands.push(setElementsToRerenderCommand(canvasState.selectedElements))
       return {

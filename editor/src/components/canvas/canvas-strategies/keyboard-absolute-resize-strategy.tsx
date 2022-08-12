@@ -30,6 +30,7 @@ import {
 import { getMultiselectBounds } from './shared-absolute-move-strategy-helpers'
 import { setSnappingGuidelines } from '../commands/set-snapping-guidelines-command'
 import { pushIntendedBounds } from '../commands/push-intended-bounds-command'
+import { supportsStyle } from './absolute-utils'
 
 interface VectorAndEdge {
   movement: CanvasVector
@@ -77,8 +78,10 @@ export const keyboardAbsoluteResizeStrategy: CanvasStrategy = {
     if (canvasState.selectedElements.length > 0) {
       return canvasState.selectedElements.every((element) => {
         const elementMetadata = MetadataUtils.findElementByElementPath(metadata, element)
-
-        return elementMetadata?.specialSizeMeasurements.position === 'absolute'
+        return (
+          elementMetadata?.specialSizeMeasurements.position === 'absolute' &&
+          supportsStyle(canvasState, element)
+        )
       })
     } else {
       return false
@@ -177,7 +180,7 @@ export const keyboardAbsoluteResizeStrategy: CanvasStrategy = {
         interactionState,
         newFrame,
       )
-      commands.push(setSnappingGuidelines('transient', guidelines))
+      commands.push(setSnappingGuidelines('mid-interaction', guidelines))
       commands.push(pushIntendedBounds(intendedBounds))
       commands.push(setElementsToRerenderCommand(canvasState.selectedElements))
       return {

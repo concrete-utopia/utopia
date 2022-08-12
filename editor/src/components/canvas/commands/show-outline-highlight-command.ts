@@ -1,6 +1,6 @@
 import { CanvasRectangle } from '../../../core/shared/math-utils'
 import type { EditorState, EditorStatePatch } from '../../editor/store/editor-state'
-import type { BaseCommand, CommandFunction, TransientOrNot } from './commands'
+import type { BaseCommand, CommandFunction, WhenToRun } from './commands'
 
 export interface ShowOutlineHighlight extends BaseCommand {
   type: 'SHOW_OUTLINE_HIGHLIGHT'
@@ -8,12 +8,12 @@ export interface ShowOutlineHighlight extends BaseCommand {
 }
 
 export function showOutlineHighlight(
-  transient: TransientOrNot,
+  whenToRun: WhenToRun,
   value: Array<CanvasRectangle>,
 ): ShowOutlineHighlight {
   return {
     type: 'SHOW_OUTLINE_HIGHLIGHT',
-    transient: transient,
+    whenToRun: whenToRun,
     value: value,
   }
 }

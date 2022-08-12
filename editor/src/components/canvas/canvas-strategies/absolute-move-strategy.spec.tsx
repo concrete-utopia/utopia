@@ -126,7 +126,6 @@ function dragByPixels(
       startingAllElementProps: {},
       customStrategyState: defaultCustomStrategyState(),
     } as StrategyState,
-    'mid-interaction',
   )
 
   expect(strategyResult.customState).toBeNull()
@@ -137,7 +136,7 @@ function dragByPixels(
     [],
     [],
     strategyResult.commands,
-    'permanent',
+    'end-interaction',
   ).editorState
 
   return finalEditor

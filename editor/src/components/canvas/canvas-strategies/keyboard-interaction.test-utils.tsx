@@ -61,7 +61,6 @@ export function pressKeys(
       startingAllElementProps: { 'scene-aaa/app-entity:aaa/bbb': {} },
       customStrategyState: defaultCustomStrategyState(),
     } as StrategyState,
-    'mid-interaction',
   )
 
   expect(strategyResult.customState).toBeNull()
@@ -72,7 +71,7 @@ export function pressKeys(
     [],
     [],
     strategyResult.commands,
-    'permanent',
+    'end-interaction',
   ).editorState
 
   return finalEditor

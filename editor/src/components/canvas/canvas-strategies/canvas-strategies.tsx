@@ -236,9 +236,8 @@ export function applyCanvasStrategy(
   canvasState: InteractionCanvasState,
   interactionSession: InteractionSession,
   strategyState: StrategyState,
-  lifecycle: 'mid-interaction' | 'end-interaction',
 ): StrategyApplicationResult {
-  return strategy.apply(canvasState, interactionSession, strategyState, lifecycle)
+  return strategy.apply(canvasState, interactionSession, strategyState)
 }
 
 export function useGetApplicableStrategyControls(): Array<ControlWithKey> {
@@ -249,14 +248,13 @@ export function useGetApplicableStrategyControls(): Array<ControlWithKey> {
   )
   return React.useMemo(() => {
     return applicableStrategies.reduce<ControlWithKey[]>((working, s) => {
-      const filteredControls = s.controlsToRender.filter((control) => {
-        return (
+      const filteredControls = s.controlsToRender.filter(
+        (control) =>
           control.show === 'always-visible' ||
           (control.show === 'visible-only-while-active' && s.id === currentStrategy) ||
           (control.show === 'visible-except-when-other-strategy-is-active' &&
-            (currentStrategy == null || s.id === currentStrategy))
-        )
-      })
+            (currentStrategy == null || s.id === currentStrategy)),
+      )
       return addAllUniquelyBy(working, filteredControls, (l, r) => l.control === r.control)
     }, [])
   }, [applicableStrategies, currentStrategy])

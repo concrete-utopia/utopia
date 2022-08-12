@@ -250,6 +250,11 @@ const NewCanvasControlsInner = (props: NewCanvasControlsInnerProps) => {
   const startDragStateAfterDragExceedsThreshold = useStartDragStateAfterDragExceedsThreshold()
   const strategyControls = useGetApplicableStrategyControls()
 
+  const anyStrategyActive = useEditorState(
+    (store) => store.strategyState.currentStrategy != null,
+    'currentStrategy',
+  )
+
   const { localSelectedViews, localHighlightedViews, setLocalSelectedViews } = props
   const cmdKeyPressed = props.editor.keysPressed['cmd'] ?? false
 
@@ -457,7 +462,10 @@ const NewCanvasControlsInner = (props: NewCanvasControlsInnerProps) => {
       {when(
         resizeStatus !== 'disabled',
         <>
-          {when(isCanvasStrategyOnAndSelectMode(props.editor.mode), <PinLines />)}
+          {when(
+            isCanvasStrategyOnAndSelectMode(props.editor.mode) && !anyStrategyActive,
+            <PinLines />,
+          )}
           {when(isCanvasStrategyOnAndSelectMode(props.editor.mode), <DistanceGuidelineControl />)}
           {when(
             isFeatureEnabled('Canvas Strategies') &&

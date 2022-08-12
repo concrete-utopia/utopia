@@ -188,7 +188,6 @@ function reorderElement(
       startingMetadata: metadata,
       customStrategyState: defaultCustomStrategyState(),
     } as StrategyState,
-    'mid-interaction',
   )
 
   expect(strategyResult.customState?.lastReorderIdx).toEqual(newIndex)
@@ -199,7 +198,7 @@ function reorderElement(
     [],
     [],
     strategyResult.commands,
-    'permanent',
+    'end-interaction',
   ).editorState
 
   return finalEditor

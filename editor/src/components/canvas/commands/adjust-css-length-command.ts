@@ -17,7 +17,7 @@ import {
   printCSSNumber,
 } from '../../inspector/common/css-utils'
 import { applyValuesAtPath } from './adjust-number-command'
-import { BaseCommand, CommandFunction, CommandFunctionResult, TransientOrNot } from './commands'
+import { BaseCommand, CommandFunction, CommandFunctionResult, WhenToRun } from './commands'
 
 export interface AdjustCssLengthProperty extends BaseCommand {
   type: 'ADJUST_CSS_LENGTH_PROPERTY'
@@ -29,7 +29,7 @@ export interface AdjustCssLengthProperty extends BaseCommand {
 }
 
 export function adjustCssLengthProperty(
-  transient: TransientOrNot,
+  whenToRun: WhenToRun,
   target: ElementPath,
   property: PropertyPath,
   valuePx: number,
@@ -38,7 +38,7 @@ export function adjustCssLengthProperty(
 ): AdjustCssLengthProperty {
   return {
     type: 'ADJUST_CSS_LENGTH_PROPERTY',
-    transient: transient,
+    whenToRun: whenToRun,
     target: target,
     property: property,
     valuePx: valuePx,

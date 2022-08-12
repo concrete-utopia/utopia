@@ -1,44 +1,18 @@
-import * as EP from '../../../core/shared/element-path'
-import * as PP from '../../../core/shared/property-path'
-import { AllElementProps } from '../../editor/store/editor-state'
+import { MetadataUtils } from '../../../core/model/element-metadata-utils'
 import { ElementInstanceMetadataMap } from '../../../core/shared/element-template'
+import { AllElementProps } from '../../editor/store/editor-state'
+import { ParentBounds } from '../controls/parent-bounds'
+import { ParentOutlines } from '../controls/parent-outlines'
+import { DragOutlineControl } from '../controls/select-mode/drag-outline-control'
+import { FlexReparentTargetIndicator } from '../controls/select-mode/flex-reparent-target-indicator'
 import {
   CanvasStrategy,
-  emptyStrategyApplicationResult,
   InteractionCanvasState,
   StrategyApplicationResult,
 } from './canvas-strategy-types'
 import { InteractionSession, StrategyState } from './interaction-state'
-import { ParentBounds } from '../controls/parent-bounds'
-import { ParentOutlines } from '../controls/parent-outlines'
-import { DragOutlineControl } from '../controls/select-mode/drag-outline-control'
-import { MetadataUtils } from '../../../core/model/element-metadata-utils'
-import { getDragTargets } from './shared-absolute-move-strategy-helpers'
-import { getReparentTarget } from '../canvas-utils'
-import { ElementPath, PropertyPath } from '../../../core/shared/project-file-types'
-import { reparentElement } from '../commands/reparent-element-command'
-import { getReorderIndex } from './flex-reorder-strategy'
-import { offsetPoint } from '../../../core/shared/math-utils'
-import { reorderElement } from '../commands/reorder-element-command'
-import { CSSCursor } from '../canvas-types'
-import { setCursorCommand } from '../commands/set-cursor-command'
-import { setElementsToRerenderCommand } from '../commands/set-elements-to-rerender-command'
-import { updateHighlightedViews } from '../commands/update-highlighted-views-command'
-import { CanvasCommand, foldAndApplyCommandsInner } from '../commands/commands'
-import { deleteProperties } from '../commands/delete-properties-command'
-import { updateSelectedViews } from '../commands/update-selected-views-command'
 import { applyFlexReparent, findReparentStrategy } from './reparent-strategy-helpers'
-import { FlexReparentTargetIndicator } from '../controls/select-mode/flex-reparent-target-indicator'
-import { getReparentCommands } from './reparent-utils'
-import { ifAllowedToReparent } from './reparent-helpers'
-
-const propertiesToRemove: Array<PropertyPath> = [
-  PP.create(['style', 'position']),
-  PP.create(['style', 'left']),
-  PP.create(['style', 'top']),
-  PP.create(['style', 'right']),
-  PP.create(['style', 'bottom']),
-]
+import { getDragTargets } from './shared-absolute-move-strategy-helpers'
 
 export const absoluteReparentToFlexStrategy: CanvasStrategy = {
   id: 'ABSOLUTE_REPARENT_TO_FLEX',
@@ -108,14 +82,7 @@ export const absoluteReparentToFlexStrategy: CanvasStrategy = {
     canvasState: InteractionCanvasState,
     interactionSession: InteractionSession,
     strategyState: StrategyState,
-    lifecycle, // todo type annotate
   ): StrategyApplicationResult {
-    return applyFlexReparent(
-      'strip-absolute-props',
-      canvasState,
-      interactionSession,
-      strategyState,
-      lifecycle,
-    )
+    return applyFlexReparent('strip-absolute-props', canvasState, interactionSession, strategyState)
   },
 }

@@ -4,7 +4,7 @@ import { ElementPath, PropertyPath } from '../../../core/shared/project-file-typ
 import * as PP from '../../../core/shared/property-path'
 import { EditorState } from '../../editor/store/editor-state'
 import { applyValuesAtPath } from './adjust-number-command'
-import { BaseCommand, CommandFunction, TransientOrNot } from './commands'
+import { BaseCommand, CommandFunction, WhenToRun } from './commands'
 
 export interface SetProperty extends BaseCommand {
   type: 'SET_PROPERTY'
@@ -14,14 +14,14 @@ export interface SetProperty extends BaseCommand {
 }
 
 export function setProperty(
-  transient: TransientOrNot,
+  whenToRun: WhenToRun,
   element: ElementPath,
   property: PropertyPath,
   value: string,
 ): SetProperty {
   return {
     type: 'SET_PROPERTY',
-    transient: transient,
+    whenToRun: whenToRun,
     element: element,
     property: property,
     value: value,

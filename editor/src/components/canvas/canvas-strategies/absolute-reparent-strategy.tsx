@@ -61,7 +61,7 @@ export const absoluteReparentStrategy: CanvasStrategy = {
     }
     return 0
   },
-  apply: (canvasState, interactionState, strategyState, lifecycle) => {
+  apply: (canvasState, interactionState, strategyState) => {
     if (
       interactionState.interactionData.type != 'DRAG' ||
       interactionState.interactionData.drag == null
@@ -86,12 +86,7 @@ export const absoluteReparentStrategy: CanvasStrategy = {
       strategyState.startingAllElementProps,
     )
     const newParent = reparentResult.newParent
-    const moveCommands = absoluteMoveStrategy.apply(
-      canvasState,
-      interactionState,
-      strategyState,
-      lifecycle,
-    )
+    const moveCommands = absoluteMoveStrategy.apply(canvasState, interactionState, strategyState)
     const providesBoundsForAbsoluteChildren =
       MetadataUtils.findElementByElementPath(strategyState.startingMetadata, newParent)
         ?.specialSizeMeasurements.providesBoundsForAbsoluteChildren ?? false
@@ -137,9 +132,9 @@ export const absoluteReparentStrategy: CanvasStrategy = {
         commands: [
           ...moveCommands.commands,
           ...commands.flatMap((c) => c.commands),
-          updateSelectedViews('permanent', newPaths),
+          updateSelectedViews('always', newPaths),
           setElementsToRerenderCommand([...newPaths, ...filteredSelectedElements]),
-          setCursorCommand('transient', CSSCursor.Move),
+          setCursorCommand('mid-interaction', CSSCursor.Move),
         ],
         customState: null,
       }

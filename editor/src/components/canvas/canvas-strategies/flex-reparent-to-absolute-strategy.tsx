@@ -9,7 +9,7 @@ import {
 } from '../../../core/shared/element-path'
 import { canvasPoint, offsetPoint, rectContainsPoint } from '../../../core/shared/math-utils'
 import { EditorState, EditorStatePatch } from '../../editor/store/editor-state'
-import { foldAndApplyCommandsInner, TransientOrNot } from '../commands/commands'
+import { foldAndApplyCommandsInner, WhenToRun } from '../commands/commands'
 import { duplicateElement } from '../commands/duplicate-element-command'
 import { updateFunctionCommand } from '../commands/update-function-command'
 import { wildcardPatch } from '../commands/wildcard-patch-command'
@@ -72,7 +72,7 @@ export const flexReparentToAbsoluteStrategy: CanvasStrategy = {
     }
     return 0
   },
-  apply: (canvasState, interactionState, strategyState, lifecycle) => {
+  apply: (canvasState, interactionState, strategyState) => {
     const filteredSelectedElements = getDragTargets(canvasState.selectedElements)
     return ifAllowedToReparent(canvasState, strategyState, filteredSelectedElements, () => {
       if (
@@ -115,8 +115,8 @@ export const flexReparentToAbsoluteStrategy: CanvasStrategy = {
           const newPath = appendToPath(parentPath(element), newUid)
 
           return [
-            duplicateElement('transient', element, newUid),
-            wildcardPatch('transient', {
+            duplicateElement('mid-interaction', element, newUid),
+            wildcardPatch('mid-interaction', {
               hiddenInstances: { $push: [newPath] },
             }),
           ]
@@ -136,13 +136,12 @@ export const flexReparentToAbsoluteStrategy: CanvasStrategy = {
         commands: [
           ...placeholderCloneCommands,
           ...escapeHatchCommands,
-          updateFunctionCommand('permanent', (editorState, transient): Array<EditorStatePatch> => {
+          updateFunctionCommand('always', (editorState, lifecycle): Array<EditorStatePatch> => {
             return runAbsoluteReparentStrategyForFreshlyConvertedElement(
               canvasState.builtInDependencies,
               editorState,
               strategyState,
               interactionState,
-              transient,
               lifecycle,
             )
           }),
@@ -158,8 +157,7 @@ function runAbsoluteReparentStrategyForFreshlyConvertedElement(
   editorState: EditorState,
   strategyState: StrategyState,
   interactionState: InteractionSession,
-  transient: TransientOrNot,
-  lifecycle: 'mid-interaction' | 'end-interaction',
+  commandLifecycle: 'mid-interaction' | 'end-interaction',
 ): Array<EditorStatePatch> {
   const canvasState = pickCanvasStateFromEditorState(editorState, builtInDependencies)
 
@@ -167,8 +165,8 @@ function runAbsoluteReparentStrategyForFreshlyConvertedElement(
     canvasState,
     interactionState,
     strategyState,
-    lifecycle,
   ).commands
 
-  return foldAndApplyCommandsInner(editorState, [], [], reparentCommands, transient).statePatches
+  return foldAndApplyCommandsInner(editorState, [], [], reparentCommands, commandLifecycle)
+    .statePatches
 }

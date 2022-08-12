@@ -5,15 +5,15 @@ import * as EP from '../../../core/shared/element-path'
 import { ElementInstanceMetadataMap } from '../../../core/shared/element-template'
 import {
   CanvasPoint,
-  canvasRectangle,
   CanvasRectangle,
+  canvasRectangle,
+  CanvasVector,
   offsetPoint,
   rectContainsPoint,
   rectContainsPointInclusive,
   rectFromTwoPoints,
-  rectSize,
-  size,
   Size,
+  size,
   sizeFitsInTarget,
   zeroCanvasRect,
 } from '../../../core/shared/math-utils'
@@ -25,7 +25,6 @@ import { CSSCursor } from '../canvas-types'
 import { CanvasCommand } from '../commands/commands'
 import { deleteProperties } from '../commands/delete-properties-command'
 import { reorderElement } from '../commands/reorder-element-command'
-import { reparentElement } from '../commands/reparent-element-command'
 import { setCursorCommand } from '../commands/set-cursor-command'
 import { setElementsToRerenderCommand } from '../commands/set-elements-to-rerender-command'
 import { setProperty } from '../commands/set-property-command'
@@ -38,15 +37,27 @@ import {
   InteractionCanvasState,
   StrategyApplicationResult,
 } from './canvas-strategy-types'
-import {
-  DragInteractionData,
-  InputData,
-  InteractionSession,
-  StrategyState,
-} from './interaction-state'
+import { InteractionSession, StrategyState } from './interaction-state'
 import { ifAllowedToReparent } from './reparent-helpers'
 import { getReparentCommands } from './reparent-utils'
 import { getDragTargets } from './shared-absolute-move-strategy-helpers'
+
+export function getReorderIndex(
+  metadata: ElementInstanceMetadataMap,
+  siblings: Array<ElementPath>,
+  point: CanvasVector,
+): number {
+  const targetSiblingIdx = siblings.findIndex((sibling) => {
+    const frame = MetadataUtils.getFrameInCanvasCoords(sibling, metadata)
+    return (
+      frame != null &&
+      rectContainsPoint(frame, point) &&
+      MetadataUtils.isParentYogaLayoutedContainerAndElementParticipatesInLayout(sibling, metadata)
+    )
+  })
+
+  return targetSiblingIdx
+}
 
 type ReparentStrategy =
   | 'FLEX_REPARENT_TO_ABSOLUTE'
@@ -444,7 +455,6 @@ export function applyFlexReparent(
   canvasState: InteractionCanvasState,
   interactionSession: InteractionSession,
   strategyState: StrategyState,
-  lifecycle: 'mid-interaction' | 'end-interaction',
 ): StrategyApplicationResult {
   const filteredSelectedElements = getDragTargets(canvasState.selectedElements)
   return ifAllowedToReparent(canvasState, strategyState, filteredSelectedElements, () => {
@@ -490,21 +500,21 @@ export function applyFlexReparent(
         // Strip the `position`, positional and dimension properties.
         const commandToRemoveProperties = stripAbsoluteProperties
           ? [
-              deleteProperties('permanent', newPath, propertiesToRemove),
-              setProperty('permanent', newPath, PP.create(['style', 'position']), 'relative'), // SPIKE TODO only insert position: relative if there was a position nonstatic prop before
+              deleteProperties('always', newPath, propertiesToRemove),
+              setProperty('always', newPath, PP.create(['style', 'position']), 'relative'), // SPIKE TODO only insert position: relative if there was a position nonstatic prop before
             ]
           : []
 
         const commandsBeforeReorder = [
           ...reparentCommands,
-          updateSelectedViews('permanent', [newPath]),
+          updateSelectedViews('always', [newPath]),
         ]
 
         const commandsAfterReorder = [
           ...commandToRemoveProperties,
           setElementsToRerenderCommand([target, newPath]),
-          updateHighlightedViews('transient', []),
-          setCursorCommand('transient', CSSCursor.Move),
+          updateHighlightedViews('always', []),
+          setCursorCommand('always', CSSCursor.Move),
         ]
 
         const newParentFlexDirection = MetadataUtils.getFlexDirection(
@@ -552,26 +562,26 @@ export function applyFlexReparent(
                 })
 
           midInteractionCommands = [
-            wildcardPatch('transient', {
+            wildcardPatch('mid-interaction', {
               canvas: { controls: { parentHighlightPaths: { $set: [newParent] } } },
             }),
-            wildcardPatch('transient', {
+            wildcardPatch('mid-interaction', {
               canvas: {
                 controls: { flexReparentTargetLines: { $set: [targetLineBeforeSibling] } },
               },
             }),
             newParentADescendantOfCurrentParent
-              ? wildcardPatch('transient', {
+              ? wildcardPatch('mid-interaction', {
                   hiddenInstances: { $push: [target] },
                 })
-              : wildcardPatch('transient', {
+              : wildcardPatch('mid-interaction', {
                   displayNoneInstances: { $push: [target] },
                 }),
           ]
 
           interactionFinishCommadns = [
             ...commandsBeforeReorder,
-            reorderElement('permanent', newPath, newIndex),
+            reorderElement('on-complete', newPath, newIndex),
             ...commandsAfterReorder,
           ]
         } else {
@@ -597,19 +607,19 @@ export function applyFlexReparent(
                   })
 
             midInteractionCommands = [
-              wildcardPatch('transient', {
+              wildcardPatch('mid-interaction', {
                 canvas: { controls: { parentHighlightPaths: { $set: [newParent] } } },
               }),
-              wildcardPatch('transient', {
+              wildcardPatch('mid-interaction', {
                 canvas: {
                   controls: { flexReparentTargetLines: { $set: [targetLineAfterSibling] } },
                 },
               }),
               newParentADescendantOfCurrentParent
-                ? wildcardPatch('transient', {
+                ? wildcardPatch('mid-interaction', {
                     hiddenInstances: { $push: [target] },
                   })
-                : wildcardPatch('transient', {
+                : wildcardPatch('mid-interaction', {
                     displayNoneInstances: { $push: [target] },
                   }),
             ]
@@ -630,19 +640,19 @@ export function applyFlexReparent(
                   })
 
             midInteractionCommands = [
-              wildcardPatch('transient', {
+              wildcardPatch('mid-interaction', {
                 canvas: { controls: { parentHighlightPaths: { $set: [newParent] } } },
               }),
-              wildcardPatch('transient', {
+              wildcardPatch('mid-interaction', {
                 canvas: {
                   controls: { flexReparentTargetLines: { $set: [targetLineBeginningOfParent] } },
                 },
               }),
               newParentADescendantOfCurrentParent
-                ? wildcardPatch('transient', {
+                ? wildcardPatch('mid-interaction', {
                     hiddenInstances: { $push: [target] },
                   })
-                : wildcardPatch('transient', {
+                : wildcardPatch('mid-interaction', {
                     displayNoneInstances: { $push: [target] },
                   }),
             ]
@@ -654,13 +664,8 @@ export function applyFlexReparent(
           interactionFinishCommadns = [...commandsBeforeReorder, ...commandsAfterReorder]
         }
 
-        if (lifecycle === 'mid-interaction') {
-          // do nothing
-          return { commands: midInteractionCommands, customState: null }
-        }
-
         return {
-          commands: interactionFinishCommadns,
+          commands: [...midInteractionCommands, ...interactionFinishCommadns], // TODO REVIEW
           customState: strategyState.customStrategyState,
         }
       }
@@ -668,3 +673,104 @@ export function applyFlexReparent(
     return emptyStrategyApplicationResult
   })
 }
+
+// const absolutePropsToRemove: Array<PropertyPath> = [
+//   PP.create(['style', 'position']),
+//   PP.create(['style', 'left']),
+//   PP.create(['style', 'top']),
+//   PP.create(['style', 'right']),
+//   PP.create(['style', 'bottom']),
+// ]
+
+// export function applyFlexReparent(
+//   stripAbsoluteProperties: 'strip-absolute-props' | 'do-not-strip-props',
+//   canvasState: InteractionCanvasState,
+//   interactionSession: InteractionSession,
+//   strategyState: StrategyState,
+// ): StrategyApplicationResult {
+//   const filteredSelectedElements = getDragTargets(canvasState.selectedElements)
+
+//   return ifAllowedToReparent(canvasState, strategyState, filteredSelectedElements, () => {
+//     if (
+//       interactionSession.interactionData.type == 'DRAG' &&
+//       interactionSession.interactionData.drag != null
+//     ) {
+//       const reparentResult = getReparentTargetForFlexElement(
+//         filteredSelectedElements,
+//         interactionSession,
+//         canvasState,
+//         strategyState,
+//       )
+
+//       if (
+//         reparentResult.shouldReparent &&
+//         reparentResult.newParent != null &&
+//         filteredSelectedElements.length === 1
+//       ) {
+//         const target = filteredSelectedElements[0]
+//         const newParent = reparentResult.newParent
+//         // Reparent the element.
+//         const newPath = EP.appendToPath(reparentResult.newParent, EP.toUid(target))
+//         const reparentCommands = getReparentCommands(
+//           canvasState.builtInDependencies,
+//           canvasState.projectContents,
+//           canvasState.nodeModules,
+//           canvasState.openFile,
+//           target,
+//           reparentResult.newParent,
+//         )
+
+//         // Strip the `position`, positional and dimension properties.
+//         const commandToRemoveProperties =
+//           stripAbsoluteProperties === 'strip-absolute-props'
+//             ? [deleteProperties('always', newPath, absolutePropsToRemove)]
+//             : []
+
+//         const commandsBeforeReorder = [
+//           ...reparentCommands,
+//           updateSelectedViews('always', [newPath]),
+//         ]
+
+//         const commandsAfterReorder = [
+//           ...commandToRemoveProperties,
+//           setElementsToRerenderCommand([newPath]),
+//           updateHighlightedViews('mid-interaction', []),
+//           setCursorCommand('mid-interaction', CSSCursor.Move),
+//         ]
+
+//         let commands: Array<CanvasCommand>
+//         if (reparentResult.shouldReorder) {
+//           // Reorder the newly reparented element into the flex ordering.
+//           const pointOnCanvas = offsetPoint(
+//             interactionSession.interactionData.dragStart,
+//             interactionSession.interactionData.drag,
+//           )
+
+//           const siblingsOfTarget = MetadataUtils.getChildrenPaths(
+//             strategyState.startingMetadata,
+//             newParent,
+//           )
+
+//           const newIndex = getReorderIndex(
+//             strategyState.startingMetadata,
+//             siblingsOfTarget,
+//             pointOnCanvas,
+//           )
+//           commands = [
+//             ...commandsBeforeReorder,
+//             reorderElement('always', newPath, newIndex),
+//             ...commandsAfterReorder,
+//           ]
+//         } else {
+//           commands = [...commandsBeforeReorder, ...commandsAfterReorder]
+//         }
+
+//         return {
+//           commands: commands,
+//           customState: strategyState.customStrategyState,
+//         }
+//       }
+//     }
+//     return emptyStrategyApplicationResult
+//   })
+// }
