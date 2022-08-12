@@ -26,7 +26,7 @@ import {
   EdgePositionLeft,
   EdgePositionTopLeft,
 } from '../canvas-types'
-import { setupTearDownClock, wait } from '../../../utils/utils.test-utils'
+import { wait } from '../../../utils/utils.test-utils'
 import { ControlDelay } from './canvas-strategy-types'
 
 function selectAndResizeElement(
@@ -323,7 +323,6 @@ describe('Absolute Resize Strategy', () => {
 })
 
 describe('Absolute Resize Strategy Canvas Controls', () => {
-  const { clock } = setupTearDownClock()
   it('when an absolute positioned element is resized the parent outlines become visible', async () => {
     const renderResult = await renderTestEditorWithCode(
       makeTestProjectCodeWithSnippet(`
@@ -348,7 +347,7 @@ describe('Absolute Resize Strategy Canvas Controls', () => {
     const target = EP.appendNewElementPath(TestScenePath, ['aaa', 'bbb'])
     await startDragUsingActions(renderResult, target, EdgePositionLeft, zeroCanvasPoint)
 
-    clock.current.tick(ControlDelay + 10)
+    await wait(ControlDelay + 10)
     const parentOutlineControl = renderResult.renderedDOM.getByTestId('parent-outlines-control')
     expect(parentOutlineControl).toBeDefined()
     const parentBoundsControl = renderResult.renderedDOM.getByTestId('parent-bounds-control')
