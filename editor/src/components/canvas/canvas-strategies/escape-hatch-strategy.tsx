@@ -61,7 +61,7 @@ export const escapeHatchStrategy: CanvasStrategy = {
     {
       control: ZeroSizeResizeControlWrapper,
       key: 'zero-size-resize-control',
-      show: 'always-visible',
+      show: 'visible-except-when-other-strategy-is-active',
     },
     {
       control: DragOutlineControl,

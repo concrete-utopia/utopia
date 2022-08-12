@@ -88,7 +88,11 @@ export const keyboardAbsoluteResizeStrategy: CanvasStrategy = {
     }
   },
   controlsToRender: [
-    { control: AbsoluteResizeControl, key: 'absolute-resize-control', show: 'always-visible' },
+    {
+      control: AbsoluteResizeControl,
+      key: 'absolute-resize-control',
+      show: 'visible-except-when-other-strategy-is-active',
+    },
   ],
   fitness: (canvasState, interactionState, sessionState) => {
     if (
