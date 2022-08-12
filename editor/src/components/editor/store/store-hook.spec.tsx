@@ -99,11 +99,79 @@ describe('useSelectorWithCallback', () => {
     )
 
     storeHook.setState({
-      editor: { selectedViews: [EP.fromString('sb/scene:aaa')] } as EditorState,
+      editor: {
+        ...storeHook.getState().editor,
+        selectedViews: [EP.fromString('sb/scene:aaa')],
+      } as EditorState,
     })
 
     expect(hookRenders).toEqual(1)
     expect(callCount).toEqual(1)
+  })
+
+  it('The callback is fired when the store changes (nullable value)', () => {
+    const storeHook = createEmptyEditorStoreHook()
+
+    let hookRenders = 0
+    let callCount = 0
+
+    const { result } = renderHook<void, { storeHook: UseStore<EditorStorePatched> }>(
+      (props) => {
+        hookRenders++
+        return useSelectorWithCallback(
+          (store) => store.editor.focusedElementPath,
+          (newFocusedElementPath) => {
+            callCount++
+          },
+        )
+      },
+      {
+        wrapper: ContextProvider(storeHook),
+        initialProps: {
+          storeHook: storeHook,
+        },
+      },
+    )
+
+    expect(hookRenders).toEqual(1)
+    expect(callCount).toEqual(0)
+
+    storeHook.setState({
+      editor: {
+        ...storeHook.getState().editor,
+        focusedElementPath: EP.fromString('sb/scene:aaa'),
+      } as EditorState,
+    })
+
+    expect(hookRenders).toEqual(1)
+    expect(callCount).toEqual(1)
+
+    storeHook.setState({
+      editor: { ...storeHook.getState().editor, focusedElementPath: null } as EditorState,
+    })
+
+    expect(hookRenders).toEqual(1)
+    expect(callCount).toEqual(2)
+
+    storeHook.setState({
+      editor: {
+        ...storeHook.getState().editor,
+        selectedViews: [EP.fromString('sb/scene:aaa')],
+      } as EditorState,
+    })
+
+    expect(hookRenders).toEqual(1)
+    expect(callCount).toEqual(2)
+
+    storeHook.setState({
+      editor: {
+        ...storeHook.getState().editor,
+        focusedElementPath: EP.fromString('sb/scene:aaa/bbb'),
+      } as EditorState,
+    })
+
+    expect(hookRenders).toEqual(1)
+    expect(callCount).toEqual(3)
   })
 
   it('The callback is fired if the hook is rerendered in a race condition and happens earlier than the zustand subscriber could be notified', () => {
@@ -151,7 +219,10 @@ describe('useSelectorWithCallback', () => {
     }
 
     storeHook.setState({
-      editor: { selectedViews: [EP.fromString('sb/scene:aaa')] } as EditorState,
+      editor: {
+        ...storeHook.getState().editor,
+        selectedViews: [EP.fromString('sb/scene:aaa')],
+      } as EditorState,
     })
 
     storeHook.destroy()

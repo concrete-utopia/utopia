@@ -167,22 +167,20 @@ export function useSelectorWithCallback<U>(
   const callbackRef = React.useRef(callback)
   callbackRef.current = callback // the callback function is possibly a new function instance every time this hook is called, but we don't want to re-subscribe because of that
 
-  const previouslySelectedStateRef = React.useRef(selectorRef.current(api.getState()))
+  const previouslySelectedStateRef = React.useRef<U>(selectorRef.current(api.getState()))
 
-  const innerCallback = React.useCallback<(newSlice: U | null) => void>(
+  const innerCallback = React.useCallback<(newSlice: U) => void>(
     (newSlice) => {
-      if (newSlice != null) {
-        // innerCallback is called by Zustand and also by us, to make sure everything is correct we run our own equality check before calling the user's callback here
-        if (!equalityFnRef.current(previouslySelectedStateRef.current, newSlice)) {
-          if (explainMe) {
-            console.info(
-              'selected state has a new value according to the provided equalityFn, notifying callback',
-              newSlice,
-            )
-          }
-          callbackRef.current(newSlice)
-          previouslySelectedStateRef.current = newSlice
+      // innerCallback is called by Zustand and also by us, to make sure everything is correct we run our own equality check before calling the user's callback here
+      if (!equalityFnRef.current(previouslySelectedStateRef.current, newSlice)) {
+        if (explainMe) {
+          console.info(
+            'selected state has a new value according to the provided equalityFn, notifying callback',
+            newSlice,
+          )
         }
+        callbackRef.current(newSlice)
+        previouslySelectedStateRef.current = newSlice
       }
     },
     [explainMe],
