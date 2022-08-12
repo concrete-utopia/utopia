@@ -440,11 +440,23 @@ export function findJSXElementChildAtPath(
         } else {
           const children = [element.whenTrue, element.whenFalse]
           for (const child of children) {
-            const childResult = findAtPathInner(child, workingPath)
+            const childResult = findAtPathInner(child, tailPath)
             if (childResult != null) {
               return childResult
             }
           }
+        }
+      }
+      if (firstUIDOrIndex === getUtopiaID(element.whenTrue)) {
+        const whenTrueResult = findAtPathInner(element.whenTrue, workingPath)
+        if (whenTrueResult != null) {
+          return whenTrueResult
+        }
+      }
+      if (firstUIDOrIndex === getUtopiaID(element.whenFalse)) {
+        const whenFalseResult = findAtPathInner(element.whenFalse, workingPath)
+        if (whenFalseResult != null) {
+          return whenFalseResult
         }
       }
     }
