@@ -226,14 +226,14 @@ describe('Absolute Reparent To Flex Strategy', () => {
     }
     const flexParent = await renderResult.renderedDOM.findByTestId('flexparent')
     const flexParentRect = flexParent.getBoundingClientRect()
-    const flexParentCenter = {
-      x: flexParentRect.x + flexParentRect.width / 2,
+    const flexParentEnd = {
+      x: flexParentRect.x + flexParentRect.width - 15,
       y: flexParentRect.y + flexParentRect.height / 2,
     }
 
     const dragDelta = windowPoint({
-      x: flexParentCenter.x - absoluteChildCenter.x,
-      y: flexParentCenter.y - absoluteChildCenter.y,
+      x: flexParentEnd.x - absoluteChildCenter.x,
+      y: flexParentEnd.y - absoluteChildCenter.y,
     })
     await act(() => dragElement(renderResult, 'absolutechild', dragDelta, cmdModifier))
 
@@ -326,6 +326,7 @@ describe('Absolute Reparent To Flex Strategy', () => {
           borderColor: 'black',
           borderStyle: 'solid',
           backgroundColor: 'yellow',
+          position: 'relative',
         }}
         data-uid='absolutechild'
         data-testid='absolutechild'
@@ -348,16 +349,16 @@ describe('Absolute Reparent To Flex Strategy', () => {
     }
     const firstFlexChild = await renderResult.renderedDOM.findByTestId('flexchild1')
     const firstFlexChildRect = firstFlexChild.getBoundingClientRect()
-    const firstFlexChildCenter = {
-      x: firstFlexChildRect.x + firstFlexChildRect.width / 2,
+    const firstFlexChildEnd = {
+      x: firstFlexChildRect.x + firstFlexChildRect.width - 5,
       y: firstFlexChildRect.y + firstFlexChildRect.height / 2,
     }
 
     await renderResult.getDispatchFollowUpActionsFinished()
 
     const dragDelta = windowPoint({
-      x: firstFlexChildCenter.x - absoluteChildCenter.x,
-      y: firstFlexChildCenter.y - absoluteChildCenter.y,
+      x: firstFlexChildEnd.x - absoluteChildCenter.x,
+      y: firstFlexChildEnd.y - absoluteChildCenter.y,
     })
     await act(() => dragElement(renderResult, 'absolutechild', dragDelta, cmdModifier))
 
@@ -425,10 +426,10 @@ describe('Absolute Reparent To Flex Strategy', () => {
           borderWidth: 10,
           borderColor: 'black',
           borderStyle: 'solid',
-          backgroundColor: 'yellow',
+          backgroundColor: 'teal',
         }}
-        data-uid='absolutechild'
-        data-testid='absolutechild'
+        data-uid='flexchild1'
+        data-testid='flexchild1'
       />
       <div
         style={{
@@ -437,10 +438,11 @@ describe('Absolute Reparent To Flex Strategy', () => {
           borderWidth: 10,
           borderColor: 'black',
           borderStyle: 'solid',
-          backgroundColor: 'teal',
+          backgroundColor: 'yellow',
+          position: 'relative',
         }}
-        data-uid='flexchild1'
-        data-testid='flexchild1'
+        data-uid='absolutechild'
+        data-testid='absolutechild'
       />
       <div
         style={{
