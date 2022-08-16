@@ -14,6 +14,8 @@ import {
   isUtopiaJSXComponent,
 } from '../shared/element-template'
 import {
+  componentHonoursPropsPosition,
+  componentHonoursPropsSize,
   componentUsesProperty,
   getUtopiaID,
   guaranteeUniqueUids,
@@ -359,6 +361,216 @@ export const TestComponent = (props) => {
     `,
     )
     const result = componentUsesProperty(component, 'children')
+    expect(result).toEqual(true)
+  })
+})
+
+describe('componentHonoursPropsPosition', () => {
+  it('returns true for a component that uses top and left directly', () => {
+    const component = getComponentFromCode(
+      'TestComponent',
+      `
+export const TestComponent = (props) => {
+  return <div style={{position: 'absolute', left: props.style.left, top: props.style.top}}>The Best Test Component</div>
+}
+    `,
+    )
+    const result = componentHonoursPropsPosition(component)
+    expect(result).toEqual(true)
+  })
+  it('returns true for a component that uses top and right directly', () => {
+    const component = getComponentFromCode(
+      'TestComponent',
+      `
+export const TestComponent = (props) => {
+  return <div style={{position: 'absolute', right: props.style.right, top: props.style.top}}>The Best Test Component</div>
+}
+    `,
+    )
+    const result = componentHonoursPropsPosition(component)
+    expect(result).toEqual(true)
+  })
+  it('returns false for a component that uses left and right only', () => {
+    const component = getComponentFromCode(
+      'TestComponent',
+      `
+export const TestComponent = (props) => {
+  return <div style={{position: 'absolute', left: props.style.left, right: props.style.right}}>The Best Test Component</div>
+}
+    `,
+    )
+    const result = componentHonoursPropsPosition(component)
+    expect(result).toEqual(false)
+  })
+  it('returns false for a component that uses top only', () => {
+    const component = getComponentFromCode(
+      'TestComponent',
+      `
+export const TestComponent = (props) => {
+  return <div style={{position: 'absolute', top: props.style.top}}>The Best Test Component</div>
+}
+    `,
+    )
+    const result = componentHonoursPropsPosition(component)
+    expect(result).toEqual(false)
+  })
+  it('returns false for a component that uses nothing from props', () => {
+    const component = getComponentFromCode(
+      'TestComponent',
+      `
+export const TestComponent = (props) => {
+  return <div style={{position: 'absolute'}}>The Best Test Component</div>
+}
+    `,
+    )
+    const result = componentHonoursPropsPosition(component)
+    expect(result).toEqual(false)
+  })
+  it('returns false for a component that has no props parameter', () => {
+    const component = getComponentFromCode(
+      'TestComponent',
+      `
+export const TestComponent = () => {
+  return <div style={{position: 'absolute'}}>The Best Test Component</div>
+}
+    `,
+    )
+    const result = componentHonoursPropsPosition(component)
+    expect(result).toEqual(false)
+  })
+  it('returns true for a component that uses top and left directly with destructuring', () => {
+    const component = getComponentFromCode(
+      'TestComponent',
+      `
+export const TestComponent = ({style}) => {
+  return <div style={{position: 'absolute', left: style.left, top: style.top}}>The Best Test Component</div>
+}
+    `,
+    )
+    const result = componentHonoursPropsPosition(component)
+    expect(result).toEqual(true)
+  })
+  it('returns true for a component that uses bottom and right directly', () => {
+    const component = getComponentFromCode(
+      'TestComponent',
+      `
+export const TestComponent = (props) => {
+  return <div style={{position: 'absolute', right: props.style.right, bottom: props.style.bottom}}>The Best Test Component</div>
+}
+    `,
+    )
+    const result = componentHonoursPropsPosition(component)
+    expect(result).toEqual(true)
+  })
+  it('returns true for a component that spreads style into the props', () => {
+    const component = getComponentFromCode(
+      'TestComponent',
+      `
+export const TestComponent = (props) => {
+  return <div style={{position: 'absolute', ...props.style}}>The Best Test Component</div>
+}
+    `,
+    )
+    const result = componentHonoursPropsPosition(component)
+    expect(result).toEqual(true)
+  })
+  it('returns true for a component that spreads style into the props with destructuring', () => {
+    const component = getComponentFromCode(
+      'TestComponent',
+      `
+export const TestComponent = ({style}) => {
+  return <div style={{position: 'absolute', ...style}}>The Best Test Component</div>
+}
+    `,
+    )
+    const result = componentHonoursPropsPosition(component)
+    expect(result).toEqual(true)
+  })
+})
+
+describe('componentHonoursPropsSize', () => {
+  it('returns true for a component that uses width and height directly', () => {
+    const component = getComponentFromCode(
+      'TestComponent',
+      `
+export const TestComponent = (props) => {
+  return <div style={{position: 'absolute', width: props.style.width, height: props.style.height}}>The Best Test Component</div>
+}
+    `,
+    )
+    const result = componentHonoursPropsSize(component)
+    expect(result).toEqual(true)
+  })
+  it('returns false for a component that uses width only', () => {
+    const component = getComponentFromCode(
+      'TestComponent',
+      `
+export const TestComponent = (props) => {
+  return <div style={{position: 'absolute', width: props.style.width}}>The Best Test Component</div>
+}
+    `,
+    )
+    const result = componentHonoursPropsSize(component)
+    expect(result).toEqual(false)
+  })
+  it('returns false for a component that do not use anything from props', () => {
+    const component = getComponentFromCode(
+      'TestComponent',
+      `
+export const TestComponent = (props) => {
+  return <div style={{position: 'absolute'}}>The Best Test Component</div>
+}
+    `,
+    )
+    const result = componentHonoursPropsSize(component)
+    expect(result).toEqual(false)
+  })
+  it('returns false for a component that has no props parameter', () => {
+    const component = getComponentFromCode(
+      'TestComponent',
+      `
+export const TestComponent = () => {
+  return <div style={{position: 'absolute'}}>The Best Test Component</div>
+}
+    `,
+    )
+    const result = componentHonoursPropsSize(component)
+    expect(result).toEqual(false)
+  })
+  it('returns true for a component that uses width and height directly with destructuring', () => {
+    const component = getComponentFromCode(
+      'TestComponent',
+      `
+export const TestComponent = ({style}) => {
+  return <div style={{position: 'absolute', width: style.width, height: style.height}}>The Best Test Component</div>
+}
+    `,
+    )
+    const result = componentHonoursPropsSize(component)
+    expect(result).toEqual(true)
+  })
+  it('returns true for a component that spreads style into the props', () => {
+    const component = getComponentFromCode(
+      'TestComponent',
+      `
+export const TestComponent = (props) => {
+  return <div style={{position: 'absolute', ...props.style}}>The Best Test Component</div>
+}
+    `,
+    )
+    const result = componentHonoursPropsSize(component)
+    expect(result).toEqual(true)
+  })
+  it('returns true for a component that spreads style into the props with destructuring', () => {
+    const component = getComponentFromCode(
+      'TestComponent',
+      `
+export const TestComponent = ({style}) => {
+  return <div style={{position: 'absolute', ...style}}>The Best Test Component</div>
+}
+    `,
+    )
+    const result = componentHonoursPropsSize(component)
     expect(result).toEqual(true)
   })
 })
