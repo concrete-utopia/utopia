@@ -20,13 +20,14 @@ import { flexReorderStrategy } from './flex-reorder-strategy'
 import { InteractionSession, StrategyState } from './interaction-state'
 import { createMouseInteractionForTests } from './interaction-state.test-utils'
 
-function getDefaultMetadata(): ElementInstanceMetadataMap {
+function getDefaultMetadata(flexDirection: string): ElementInstanceMetadataMap {
   return {
     'scene-aaa/app-entity:app-outer-div': {
       elementPath: elementPath([['scene-aaa', 'app-entity'], ['app-outer-div']]),
       globalFrame: canvasRectangle({ x: 0, y: 0, width: 375, height: 50 }),
       specialSizeMeasurements: {
-        flexDirection: 'row',
+        flexDirection: flexDirection,
+        layoutSystemForChildren: 'flex',
       } as SpecialSizeMeasurements,
     } as ElementInstanceMetadata,
     'scene-aaa/app-entity:app-outer-div/child-0': {
@@ -37,6 +38,7 @@ function getDefaultMetadata(): ElementInstanceMetadataMap {
       globalFrame: canvasRectangle({ x: 0, y: 0, width: 50, height: 50 }),
       specialSizeMeasurements: {
         parentLayoutSystem: 'flex',
+        parentFlexDirection: flexDirection,
       } as SpecialSizeMeasurements,
     } as ElementInstanceMetadata,
     'scene-aaa/app-entity:app-outer-div/child-1': {
@@ -47,6 +49,7 @@ function getDefaultMetadata(): ElementInstanceMetadataMap {
       globalFrame: canvasRectangle({ x: 60, y: 0, width: 50, height: 50 }),
       specialSizeMeasurements: {
         parentLayoutSystem: 'flex',
+        parentFlexDirection: flexDirection,
       } as SpecialSizeMeasurements,
     } as ElementInstanceMetadata,
     'scene-aaa/app-entity:app-outer-div/child-2': {
@@ -57,6 +60,7 @@ function getDefaultMetadata(): ElementInstanceMetadataMap {
       globalFrame: canvasRectangle({ x: 120, y: 0, width: 50, height: 50 }),
       specialSizeMeasurements: {
         parentLayoutSystem: 'flex',
+        parentFlexDirection: flexDirection,
       } as SpecialSizeMeasurements,
     } as ElementInstanceMetadata,
   }
@@ -69,16 +73,18 @@ function getMetadataWithAbsoluteChild(flexDirection: string): ElementInstanceMet
       globalFrame: canvasRectangle({ x: 0, y: 0, width: 375, height: 50 }),
       specialSizeMeasurements: {
         flexDirection: flexDirection,
+        layoutSystemForChildren: 'flex',
       } as SpecialSizeMeasurements,
     } as ElementInstanceMetadata,
     'scene-aaa/app-entity:app-outer-div/absolute-child': {
       elementPath: elementPath([
         ['scene-aaa', 'app-entity'],
-        ['app-outer-div', 'child-0'],
+        ['app-outer-div', 'absolute-child'],
       ]),
       globalFrame: canvasRectangle({ x: 0, y: 0, width: 50, height: 50 }),
       specialSizeMeasurements: {
         parentLayoutSystem: 'flex',
+        parentFlexDirection: flexDirection,
       } as SpecialSizeMeasurements,
     } as ElementInstanceMetadata,
     'scene-aaa/app-entity:app-outer-div/child-0': {
@@ -89,6 +95,7 @@ function getMetadataWithAbsoluteChild(flexDirection: string): ElementInstanceMet
       globalFrame: canvasRectangle({ x: 0, y: 0, width: 50, height: 50 }),
       specialSizeMeasurements: {
         parentLayoutSystem: 'flex',
+        parentFlexDirection: flexDirection,
       } as SpecialSizeMeasurements,
     } as ElementInstanceMetadata,
     'scene-aaa/app-entity:app-outer-div/child-1': {
@@ -99,6 +106,7 @@ function getMetadataWithAbsoluteChild(flexDirection: string): ElementInstanceMet
       globalFrame: canvasRectangle({ x: 60, y: 0, width: 50, height: 50 }),
       specialSizeMeasurements: {
         parentLayoutSystem: 'flex',
+        parentFlexDirection: flexDirection,
       } as SpecialSizeMeasurements,
     } as ElementInstanceMetadata,
     'scene-aaa/app-entity:app-outer-div/child-2': {
@@ -109,18 +117,20 @@ function getMetadataWithAbsoluteChild(flexDirection: string): ElementInstanceMet
       globalFrame: canvasRectangle({ x: 120, y: 0, width: 50, height: 50 }),
       specialSizeMeasurements: {
         parentLayoutSystem: 'flex',
+        parentFlexDirection: flexDirection,
       } as SpecialSizeMeasurements,
     } as ElementInstanceMetadata,
   }
 }
 
-function getReverseMetadata(): ElementInstanceMetadataMap {
+function getReverseMetadata(flexDirection: string): ElementInstanceMetadataMap {
   return {
     'scene-aaa/app-entity:app-outer-div': {
       elementPath: elementPath([['scene-aaa', 'app-entity'], ['app-outer-div']]),
       globalFrame: canvasRectangle({ x: 0, y: 0, width: 375, height: 50 }),
       specialSizeMeasurements: {
-        flexDirection: 'row-reverse',
+        flexDirection: flexDirection,
+        layoutSystemForChildren: 'flex',
       } as SpecialSizeMeasurements,
     } as ElementInstanceMetadata,
     'scene-aaa/app-entity:app-outer-div/child-0': {
@@ -131,6 +141,7 @@ function getReverseMetadata(): ElementInstanceMetadataMap {
       globalFrame: canvasRectangle({ x: 120, y: 0, width: 50, height: 50 }),
       specialSizeMeasurements: {
         parentLayoutSystem: 'flex',
+        parentFlexDirection: flexDirection,
       } as SpecialSizeMeasurements,
     } as ElementInstanceMetadata,
     'scene-aaa/app-entity:app-outer-div/child-1': {
@@ -141,6 +152,7 @@ function getReverseMetadata(): ElementInstanceMetadataMap {
       globalFrame: canvasRectangle({ x: 60, y: 0, width: 50, height: 50 }),
       specialSizeMeasurements: {
         parentLayoutSystem: 'flex',
+        parentFlexDirection: flexDirection,
       } as SpecialSizeMeasurements,
     } as ElementInstanceMetadata,
     'scene-aaa/app-entity:app-outer-div/child-2': {
@@ -151,6 +163,7 @@ function getReverseMetadata(): ElementInstanceMetadataMap {
       globalFrame: canvasRectangle({ x: 0, y: 0, width: 50, height: 50 }),
       specialSizeMeasurements: {
         parentLayoutSystem: 'flex',
+        parentFlexDirection: flexDirection,
       } as SpecialSizeMeasurements,
     } as ElementInstanceMetadata,
   }
@@ -248,7 +261,7 @@ describe('Flex Reorder Strategy', () => {
       initialEditor,
       canvasPoint({ x: 89, y: 27 }),
       canvasPoint({ x: 1, y: 1 }),
-      getDefaultMetadata(),
+      getDefaultMetadata('row'),
     )
 
     expect(finalEditor).toEqual(initialEditor)
@@ -297,7 +310,7 @@ describe('Flex Reorder Strategy', () => {
       initialEditor,
       canvasPoint({ x: 89, y: 27 }),
       canvasPoint({ x: 52, y: 0 }),
-      getDefaultMetadata(),
+      getDefaultMetadata('row'),
       2,
     )
 
@@ -481,7 +494,7 @@ describe('Flex Reorder Strategy', () => {
       initialEditor,
       canvasPoint({ x: 89, y: 27 }),
       canvasPoint({ x: 52, y: 0 }),
-      getReverseMetadata(),
+      getReverseMetadata('row-reverse'),
       0,
     )
 

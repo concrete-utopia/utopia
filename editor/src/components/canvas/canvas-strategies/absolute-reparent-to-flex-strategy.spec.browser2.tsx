@@ -232,7 +232,7 @@ describe('Absolute Reparent To Flex Strategy', () => {
     }
 
     const dragDelta = windowPoint({
-      x: flexParentCenter.x - absoluteChildCenter.x,
+      x: flexParentCenter.x - absoluteChildCenter.x + 100,
       y: flexParentCenter.y - absoluteChildCenter.y,
     })
     await act(() => dragElement(renderResult, 'absolutechild', dragDelta, cmdModifier))
@@ -356,7 +356,7 @@ describe('Absolute Reparent To Flex Strategy', () => {
     await renderResult.getDispatchFollowUpActionsFinished()
 
     const dragDelta = windowPoint({
-      x: firstFlexChildCenter.x - absoluteChildCenter.x,
+      x: firstFlexChildCenter.x - absoluteChildCenter.x + 50,
       y: firstFlexChildCenter.y - absoluteChildCenter.y,
     })
     await act(() => dragElement(renderResult, 'absolutechild', dragDelta, cmdModifier))
@@ -425,10 +425,10 @@ describe('Absolute Reparent To Flex Strategy', () => {
           borderWidth: 10,
           borderColor: 'black',
           borderStyle: 'solid',
-          backgroundColor: 'yellow',
+          backgroundColor: 'teal',
         }}
-        data-uid='absolutechild'
-        data-testid='absolutechild'
+        data-uid='flexchild1'
+        data-testid='flexchild1'
       />
       <div
         style={{
@@ -437,10 +437,10 @@ describe('Absolute Reparent To Flex Strategy', () => {
           borderWidth: 10,
           borderColor: 'black',
           borderStyle: 'solid',
-          backgroundColor: 'teal',
+          backgroundColor: 'yellow',
         }}
-        data-uid='flexchild1'
-        data-testid='flexchild1'
+        data-uid='absolutechild'
+        data-testid='absolutechild'
       />
       <div
         style={{
