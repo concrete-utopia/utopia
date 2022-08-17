@@ -23,7 +23,10 @@ import {
 } from '../../../core/shared/math-utils'
 import { emptyModifiers } from '../../../utils/modifiers'
 import { ElementPath } from '../../../core/shared/project-file-types'
-import { BakedInStoryboardUID } from '../../../core/model/scene-utils'
+import {
+  BakedInStoryboardUID,
+  BakedInStoryboardVariableName,
+} from '../../../core/model/scene-utils'
 import { SceneLabelTestID } from '../controls/select-mode/scene-label'
 import { wait } from '../../../utils/utils.test-utils'
 import { ControlDelay } from './canvas-strategy-types'
@@ -109,9 +112,137 @@ async function startDragUsingActions(
   await renderResult.getDispatchFollowUpActionsFinished()
 }
 
+const projectDoesNotHonourPositionProperties = `
+import * as React from 'react'
+import { Scene, Storyboard, View } from 'utopia-api'
+
+export const App2 = (props) => {
+  return (
+    <div
+      style={{
+        position: 'absolute',
+        top: 5,
+        left: 5,
+        width: 350,
+        height: 400,
+      }}
+      data-uid='aaa'
+      data-testid='aaa'
+    />
+  )
+}
+
+export var App = (props) => {
+  return (
+    <App2
+      data-uid='app2'
+      style={{ left: 20, top: 20, width: 300, height: 400 }}
+    />
+  )
+}
+
+export var ${BakedInStoryboardVariableName} = (props) => {
+  return (
+    <Storyboard data-uid='${BakedInStoryboardUID}'>
+      <Scene
+        style={{ left: 0, top: 0, width: 400, height: 400 }}
+        data-uid='${TestSceneUID}'
+      >
+        <App
+          data-uid='${TestAppUID}'
+          style={{ position: 'absolute', bottom: 0, left: 0, right: 0, top: 0 }}
+        />
+      </Scene>
+    </Storyboard>
+  )
+}
+`
+
+function projectDoesHonourPositionProperties(left: number, top: number): string {
+  return `import * as React from 'react'
+import { Scene, Storyboard, View } from 'utopia-api'
+
+export const App2 = (props) => {
+  return (
+    <div
+      style={{
+        position: 'absolute',
+        top: props.style.top,
+        left: props.style.left,
+        width: props.style.width,
+        height: props.style.height,
+      }}
+      data-uid='aaa'
+      data-testid='aaa'
+    />
+  )
+}
+
+export var App = (props) => {
+  return (
+    <App2
+      data-uid='app2'
+      style={{ left: ${left}, top: ${top}, width: 300, height: 400 }}
+    />
+  )
+}
+
+export var ${BakedInStoryboardVariableName} = (props) => {
+  return (
+    <Storyboard data-uid='${BakedInStoryboardUID}'>
+      <Scene
+        style={{ left: 0, top: 0, width: 400, height: 400 }}
+        data-uid='${TestSceneUID}'
+      >
+        <App data-uid='${TestAppUID}' />
+      </Scene>
+    </Storyboard>
+  )
+}
+`
+}
+
 describe('Absolute Move Strategy', () => {
   before(() => {
     viewport.set(2200, 1000)
+  })
+  it('moves component instances that honour the position properties', async () => {
+    const renderResult = await renderTestEditorWithCode(
+      projectDoesHonourPositionProperties(20, 20),
+      'await-first-dom-report',
+    )
+    const targetElement = renderResult.renderedDOM.getByTestId('aaa')
+    const targetElementBounds = targetElement.getBoundingClientRect()
+    const canvasControlsLayer = renderResult.renderedDOM.getByTestId(CanvasControlsContainerID)
+
+    const startPoint = windowPoint({ x: targetElementBounds.x + 5, y: targetElementBounds.y + 5 })
+    const dragDelta = windowPoint({ x: 40, y: -25 })
+
+    act(() => dragElement(canvasControlsLayer, startPoint, dragDelta, false, false, false))
+
+    await renderResult.getDispatchFollowUpActionsFinished()
+    expect(getPrintedUiJsCode(renderResult.getEditorState())).toEqual(
+      projectDoesHonourPositionProperties(60, -5),
+    )
+  })
+  it('does not move a component instance that does not honour the position properties', async () => {
+    const renderResult = await renderTestEditorWithCode(
+      projectDoesNotHonourPositionProperties,
+      'await-first-dom-report',
+    )
+    const targetElement = renderResult.renderedDOM.getByTestId('aaa')
+    const targetElementBounds = targetElement.getBoundingClientRect()
+    const canvasControlsLayer = renderResult.renderedDOM.getByTestId(CanvasControlsContainerID)
+
+    const startPoint = windowPoint({ x: targetElementBounds.x + 5, y: targetElementBounds.y + 5 })
+    const dragDelta = windowPoint({ x: 40, y: -25 })
+
+    act(() => dragElement(canvasControlsLayer, startPoint, dragDelta, false, false, false))
+
+    await renderResult.getDispatchFollowUpActionsFinished()
+    expect(getPrintedUiJsCode(renderResult.getEditorState())).toEqual(
+      projectDoesNotHonourPositionProperties,
+    )
   })
   it('moves absolute positioned element', async () => {
     const startX = 40
