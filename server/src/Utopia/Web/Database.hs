@@ -19,6 +19,8 @@ import           Control.Monad.Catch
 import           Control.Monad.Fail
 import           Data.Aeson
 import qualified Data.ByteString.Lazy            as BL
+import           Data.Generics.Product
+import           Data.Generics.Sum
 import           Data.Pool
 import           Data.Profunctor.Product.Default
 import           Data.String
@@ -35,8 +37,6 @@ import           System.Posix.User
 import           Utopia.ClientModel
 import           Utopia.Web.Database.Types
 import           Utopia.Web.Metrics              hiding (count)
-import           Data.Generics.Product
-import           Data.Generics.Sum
 
 data DatabaseMetrics = DatabaseMetrics
                      { _generateUniqueIDMetrics         :: InvocationMetric

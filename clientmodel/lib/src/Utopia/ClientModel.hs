@@ -8,18 +8,18 @@ import           Control.Monad.Fail
 import           Data.Aeson
 import           Data.Aeson.Lens
 import           Data.Aeson.Types
+import           Data.Data
 import           Data.Generics.Product
 import           Data.Generics.Sum
-import qualified Data.HashMap.Strict       as M
-import           Data.Text                 hiding (foldl', reverse)
-import           Relude 
-import           Data.Data
+import qualified Data.HashMap.Strict   as M
+import           Data.Text             hiding (foldl', reverse)
 import           Data.Typeable
+import           Relude
 
 textToJSON :: Text -> Value
 textToJSON = toJSON
 
-type ElementPathPart = [Text] 
+type ElementPathPart = [Text]
 
 data ElementPath = ElementPath
                  { parts :: [ElementPathPart]
@@ -42,21 +42,21 @@ instance FromJSON RevisionsState where
     let possibleString = firstOf _String value
     in  case possibleString of
           (Just "PARSED_AHEAD") -> pure ParsedAhead
-          (Just "CODE_AHEAD") -> pure CodeAhead
-          (Just "BOTH_MATCH") -> pure BothMatch
-          (Just unknownType)  -> fail ("Unknown type: " <> unpack unknownType)
-          _                   -> fail "Unexpected value for RevisionsState."
+          (Just "CODE_AHEAD")   -> pure CodeAhead
+          (Just "BOTH_MATCH")   -> pure BothMatch
+          (Just unknownType)    -> fail ("Unknown type: " <> unpack unknownType)
+          _                     -> fail "Unexpected value for RevisionsState."
 
 instance ToJSON RevisionsState where
   toJSON ParsedAhead = textToJSON "PARSED_AHEAD"
-  toJSON CodeAhead = textToJSON "CODE_AHEAD"
-  toJSON BothMatch = textToJSON "BOTH_MATCH"
+  toJSON CodeAhead   = textToJSON "CODE_AHEAD"
+  toJSON BothMatch   = textToJSON "BOTH_MATCH"
 
 data ParseFailure = ParseFailure
-                  { diagnostics         :: Maybe [Value]
-                  , parsedJSON          :: Maybe Value
-                  , errorMessage        :: Maybe Text
-                  , errorMessages       :: [Value]
+                  { diagnostics   :: Maybe [Value]
+                  , parsedJSON    :: Maybe Value
+                  , errorMessage  :: Maybe Text
+                  , errorMessages :: [Value]
                   }
                   deriving (Eq, Show, Generic, Data, Typeable)
 
@@ -67,12 +67,12 @@ instance ToJSON ParseFailure where
   toJSON = genericToJSON defaultOptions
 
 data ParseSuccess = ParseSuccess
-                  { imports                           :: Value
-                  , topLevelElements                  :: [Value]
-                  , highlightBounds                   :: Value
-                  , jsxFactoryFunction                :: Maybe Text
-                  , combinedTopLevelArbitraryBlock    :: Maybe Value
-                  , exportsDetail                     :: Value
+                  { imports                        :: Value
+                  , topLevelElements               :: [Value]
+                  , highlightBounds                :: Value
+                  , jsxFactoryFunction             :: Maybe Text
+                  , combinedTopLevelArbitraryBlock :: Maybe Value
+                  , exportsDetail                  :: Value
                   }
                   deriving (Eq, Show, Generic, Data, Typeable)
 
@@ -86,10 +86,10 @@ data Unparsed = Unparsed
               deriving (Eq, Show, Generic, Data, Typeable)
 
 instance FromJSON Unparsed where
-  parseJSON = const $ pure Unparsed 
+  parseJSON = const $ pure Unparsed
 
 instance ToJSON Unparsed where
-  toJSON = const $ object [] 
+  toJSON = const $ object []
 
 data ParsedTextFile = ParsedTextFileFailure ParseFailure
                     | ParsedTextFileSuccess ParseSuccess
@@ -108,15 +108,15 @@ instance FromJSON ParsedTextFile where
 
 instance ToJSON ParsedTextFile where
   toJSON (ParsedTextFileFailure parseFailure) = over _Object (M.insert "type" "PARSE_FAILURE") $ toJSON parseFailure
-  toJSON (ParsedTextFileSuccess parseSuccess) = over _Object (M.insert "type" "PARSE_SUCCESS") $ toJSON parseSuccess 
+  toJSON (ParsedTextFileSuccess parseSuccess) = over _Object (M.insert "type" "PARSE_SUCCESS") $ toJSON parseSuccess
   toJSON (ParsedTextFileUnparsed unparsed) = over _Object (M.insert "type" "UNPARSED") $ toJSON unparsed
 
 -- This for the moment excludes the `parsed` field as
 -- that is a very deep and wide structure.
 data TextFileContents = TextFileContents
-                      { code            :: Text
-                      , parsed          :: ParsedTextFile
-                      , revisionsState  :: RevisionsState
+                      { code           :: Text
+                      , parsed         :: ParsedTextFile
+                      , revisionsState :: RevisionsState
                       }
                       deriving (Eq, Show, Generic, Data, Typeable)
 

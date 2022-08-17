@@ -29,7 +29,7 @@ import           System.IO.Temp
 import           System.Log.FastLogger
 import           System.Process
 import           Utopia.ClientModel
-import           Utopia.Web.Database (projectContentTreeFromDecodedProject)
+import           Utopia.Web.Database       (projectContentTreeFromDecodedProject)
 import qualified Utopia.Web.Database.Types as DB
 import           Utopia.Web.Logging
 import           Utopia.Web.Metrics

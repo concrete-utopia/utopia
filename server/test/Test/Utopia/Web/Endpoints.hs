@@ -22,8 +22,8 @@ import           Network.HTTP.Media.MediaType
 import           Network.HTTP.Types             (Status, badRequest400,
                                                  notFound404)
 import qualified Network.Socket.Wait            as W
+import           Prelude                        (String)
 import           Protolude
-import           Prelude (String)
 import           Servant
 import           Servant.Client
 import           Servant.Client.Core

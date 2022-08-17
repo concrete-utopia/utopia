@@ -13,7 +13,6 @@
   All the endpoints defined in "Utopia.Web.Types" are implemented here.
 -}
 module Utopia.Web.Endpoints where
-import qualified Data.HashMap.Strict       as M
 import           Control.Arrow                   ((&&&))
 import           Control.Lens
 import           Data.Aeson
@@ -21,6 +20,7 @@ import           Data.Aeson.Lens
 import qualified Data.ByteString.Lazy            as BL
 import           Data.CaseInsensitive            hiding (traverse)
 import           Data.Generics.Product
+import qualified Data.HashMap.Strict             as M
 import qualified Data.Text                       as T
 import           Data.Text.Encoding
 import           Data.Time
@@ -41,9 +41,9 @@ import qualified Text.Blaze.Html5.Attributes     as HA
 import           Text.HTML.TagSoup
 import           Text.URI                        hiding (unRText, uriPath)
 import           Text.URI.Lens
-import           Utopia.Web.Assets
 import           Utopia.ClientModel
-import           Utopia.Web.Database (projectContentTreeFromDecodedProject)
+import           Utopia.Web.Assets
+import           Utopia.Web.Database             (projectContentTreeFromDecodedProject)
 import           Utopia.Web.Database.Types
 import qualified Utopia.Web.Database.Types       as DB
 import           Utopia.Web.Executors.Common
