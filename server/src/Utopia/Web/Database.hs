@@ -32,8 +32,11 @@ import           Opaleye.Trans
 import           Protolude                       hiding (get)
 import           System.Environment
 import           System.Posix.User
+import           Utopia.ClientModel
 import           Utopia.Web.Database.Types
 import           Utopia.Web.Metrics              hiding (count)
+import           Data.Generics.Product
+import           Data.Generics.Sum
 
 data DatabaseMetrics = DatabaseMetrics
                      { _generateUniqueIDMetrics         :: InvocationMetric
@@ -378,3 +381,8 @@ checkIfProjectIDReserved metrics pool projectId = invokeAndMeasure (_checkIfProj
     rowProjectId <- projectIDSelect
     where_ $ rowProjectId .== toFields projectId
   pure $ Protolude.not $ Protolude.null entries
+
+projectContentTreeFromDecodedProject :: DecodedProject -> Either Text ProjectContentTreeRoot
+projectContentTreeFromDecodedProject decodedProject = do
+  let contentOfProject = view (field @"content") decodedProject
+  fmap (view (field @"projectContents")) $ persistentModelFromJSON contentOfProject

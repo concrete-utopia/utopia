@@ -361,8 +361,8 @@ let
       #!/usr/bin/env bash
       set -e
       cabal-update
-      cd $(${pkgs.git}/bin/git rev-parse --show-toplevel)/server
-      ${pkgs.nodePackages.nodemon}/bin/nodemon --delay 200ms -e hs,yaml --watch src --watch package.yaml --exec run-server-inner
+      cd $(${pkgs.git}/bin/git rev-parse --show-toplevel)/
+      ${pkgs.nodePackages.nodemon}/bin/nodemon --delay 200ms -e hs,yaml --watch server/src --watch server/package.yaml --watch clientmodel/lib/src --watch clientmodel/lib/package.yaml --exec run-server-inner
     '')
   ];
 

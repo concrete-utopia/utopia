@@ -1,0 +1,43 @@
+version: 0.1.0.0
+license: AllRightsReserved
+author: Momentum Works 
+build-type: Simple
+name: utopia-clientmodel 
+
+ghc-options:
+  - -Wall
+  - -Werror
+  - -threaded
+  - -fno-warn-orphans
+  - -Wno-unused-imports
+
+default-extensions:
+  - NoImplicitPrelude
+  - OverloadedStrings
+  - DeriveGeneric
+  - DuplicateRecordFields
+  - FlexibleContexts
+  - MonoLocalBinds
+  - OverloadedStrings
+  - RankNTypes
+  - RecordWildCards
+  - TemplateHaskell
+  - TypeApplications
+  - TypeOperators
+  - DeriveDataTypeable
+  - DataKinds
+
+dependencies:
+  - base
+  - aeson
+  - generic-lens
+  - lens-aeson
+  - relude
+  - lens
+  - tasty
+  - unordered-containers
+  - text
+
+library:
+  source-dirs:
+    - src

@@ -1,11 +1,11 @@
 cabal-version: 1.12
 
--- This file has been generated from package.yaml by hpack version 0.34.4.
+-- This file has been generated from package.yaml by hpack version 0.34.6.
 --
 -- see: https://github.com/sol/hpack
 
 name:           utopia-web
-version:        0.1.0.4
+version:        0.1.1.0
 synopsis:       Utopia Web
 description:    Utopia Web
 category:       Development
@@ -30,7 +30,6 @@ executable utopia-web
       Utopia.Web.Auth
       Utopia.Web.Auth.Session
       Utopia.Web.Auth.Types
-      Utopia.Web.ClientModel
       Utopia.Web.Database
       Utopia.Web.Database.Migrations
       Utopia.Web.Database.Types
@@ -130,6 +129,7 @@ executable utopia-web
     , transformers
     , unix
     , unordered-containers
+    , utopia-clientmodel
     , uuid
     , vector
     , wai
@@ -155,7 +155,6 @@ test-suite utopia-web-test
       Utopia.Web.Auth
       Utopia.Web.Auth.Session
       Utopia.Web.Auth.Types
-      Utopia.Web.ClientModel
       Utopia.Web.Database
       Utopia.Web.Database.Migrations
       Utopia.Web.Database.Types
@@ -265,6 +264,7 @@ test-suite utopia-web-test
     , transformers
     , unix
     , unordered-containers
+    , utopia-clientmodel
     , uuid
     , vector
     , wai

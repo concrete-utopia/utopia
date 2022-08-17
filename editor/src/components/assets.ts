@@ -40,10 +40,10 @@ export function getAllProjectAssetFiles(
   return allProjectAssets
 }
 
-// Ensure this is kept up to date with server/src/Utopia/Web/ClientModel.hs.
+// Ensure this is kept up to date with clientmodel/lib/src/Utopia/ClientModel.hs.
 export type ProjectContentTreeRoot = { [key: string]: ProjectContentsTree }
 
-// Ensure this is kept up to date with server/src/Utopia/Web/ClientModel.hs.
+// Ensure this is kept up to date with clientmodel/lib/src/Utopia/ClientModel.hs
 export interface ProjectContentDirectory {
   type: 'PROJECT_CONTENT_DIRECTORY'
   fullPath: string
@@ -64,7 +64,7 @@ export function projectContentDirectory(
   }
 }
 
-// Ensure this is kept up to date with server/src/Utopia/Web/ClientModel.hs.
+// Ensure this is kept up to date with clientmodel/lib/src/Utopia/ClientModel.hs.
 export interface ProjectContentFile {
   type: 'PROJECT_CONTENT_FILE'
   fullPath: string
@@ -82,7 +82,7 @@ export function projectContentFile(
   }
 }
 
-// Ensure this is kept up to date with server/src/Utopia/Web/ClientModel.hs.
+// Ensure this is kept up to date with clientmodel/lib/src/Utopia/ClientModel.hs.
 export type ProjectContentsTree = ProjectContentDirectory | ProjectContentFile
 
 export function isProjectContentDirectory(
