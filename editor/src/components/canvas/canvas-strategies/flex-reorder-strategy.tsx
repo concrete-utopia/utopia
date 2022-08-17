@@ -89,6 +89,7 @@ export const flexReorderStrategy: CanvasStrategy = {
         strategyState.startingMetadata,
         siblingsOfTarget,
         pointOnCanvas,
+        target,
       )
 
       const realNewIndex = newIndex > -1 ? newIndex : lastReorderIdx
