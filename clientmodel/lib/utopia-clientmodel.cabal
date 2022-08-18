@@ -1,0 +1,47 @@
+cabal-version: 1.12
+
+-- This file has been generated from package.yaml by hpack version 0.34.6.
+--
+-- see: https://github.com/sol/hpack
+
+name:           utopia-clientmodel
+version:        0.1.0.0
+author:         Momentum Works
+maintainer:     Momentum Works
+license:        AllRightsReserved
+build-type:     Simple
+
+library
+  exposed-modules:
+      Utopia.ClientModel
+  other-modules:
+      Paths_utopia_clientmodel
+  hs-source-dirs:
+      src
+  default-extensions:
+      NoImplicitPrelude
+      OverloadedStrings
+      DeriveGeneric
+      DuplicateRecordFields
+      FlexibleContexts
+      MonoLocalBinds
+      OverloadedStrings
+      RankNTypes
+      RecordWildCards
+      TemplateHaskell
+      TypeApplications
+      TypeOperators
+      DeriveDataTypeable
+      DataKinds
+  ghc-options: -Wall -Werror -threaded -fno-warn-orphans -Wno-unused-imports
+  build-depends:
+      aeson
+    , base
+    , generic-lens
+    , lens
+    , lens-aeson
+    , relude
+    , tasty
+    , text
+    , unordered-containers
+  default-language: Haskell2010

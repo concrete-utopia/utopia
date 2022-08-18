@@ -199,6 +199,8 @@ let
   serverBaseScripts = [
     (pkgs.writeScriptBin "rebuild-cabal" ''
       #!/usr/bin/env bash
+      cd $(${pkgs.git}/bin/git rev-parse --show-toplevel)/clientmodel/lib
+      ${pkgs.haskellPackages.hpack}/bin/hpack
       cd $(${pkgs.git}/bin/git rev-parse --show-toplevel)/server
       ${pkgs.haskellPackages.hpack}/bin/hpack
     '')
