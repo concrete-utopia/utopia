@@ -61,7 +61,7 @@ executable utopia-web
   extra-libraries:
       z
   build-depends:
-      aeson
+      aeson <2.1
     , aeson-pretty
     , amazonka ==1.6.1
     , amazonka-core ==1.6.1
@@ -187,7 +187,7 @@ test-suite utopia-web-test
   extra-libraries:
       z
   build-depends:
-      aeson
+      aeson <2.1
     , aeson-pretty
     , amazonka ==1.6.1
     , amazonka-core ==1.6.1

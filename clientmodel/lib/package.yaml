@@ -29,7 +29,7 @@ default-extensions:
 
 dependencies:
   - base
-  - aeson
+  - aeson <2.1
   - generic-lens
   - lens-aeson
   - relude

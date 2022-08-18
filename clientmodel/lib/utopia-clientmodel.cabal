@@ -35,7 +35,7 @@ library
       DataKinds
   ghc-options: -Wall -Werror -threaded -fno-warn-orphans -Wno-unused-imports
   build-depends:
-      aeson
+      aeson <2.1
     , base
     , generic-lens
     , lens

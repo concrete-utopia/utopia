@@ -12,7 +12,7 @@ flags:
     manual: true
     default: true
 dependencies:
-  - aeson
+  - aeson <2.1
   - aeson-pretty
   - amazonka ==1.6.1
   - amazonka-core ==1.6.1
