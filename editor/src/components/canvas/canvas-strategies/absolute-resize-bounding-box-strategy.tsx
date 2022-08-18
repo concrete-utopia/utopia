@@ -38,7 +38,7 @@ import * as EP from '../../../core/shared/element-path'
 import { ZeroSizeResizeControlWrapper } from '../controls/zero-sized-element-controls'
 import { SetCssLengthProperty, setCssLengthProperty } from '../commands/set-css-length-command'
 import { pushIntendedBounds } from '../commands/push-intended-bounds-command'
-import { supportsStyle } from './absolute-utils'
+import { honoursPropsPosition, honoursPropsSize } from './absolute-utils'
 
 export const absoluteResizeBoundingBoxStrategy: CanvasStrategy = {
   id: 'ABSOLUTE_RESIZE_BOUNDING_BOX',
@@ -50,7 +50,8 @@ export const absoluteResizeBoundingBoxStrategy: CanvasStrategy = {
         const elementMetadata = MetadataUtils.findElementByElementPath(metadata, element)
         return (
           elementMetadata?.specialSizeMeasurements.position === 'absolute' &&
-          supportsStyle(canvasState, element)
+          honoursPropsPosition(canvasState, element) &&
+          honoursPropsSize(canvasState, element)
         )
       })
     } else {

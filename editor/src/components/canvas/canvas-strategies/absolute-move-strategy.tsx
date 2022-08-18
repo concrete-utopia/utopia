@@ -28,7 +28,7 @@ import {
   getMultiselectBounds,
   snapDrag,
 } from './shared-absolute-move-strategy-helpers'
-import { supportsStyle } from './absolute-utils'
+import { honoursPropsPosition } from './absolute-utils'
 
 export const absoluteMoveStrategy: CanvasStrategy = {
   id: 'ABSOLUTE_MOVE',
@@ -38,10 +38,9 @@ export const absoluteMoveStrategy: CanvasStrategy = {
       const filteredSelectedElements = getDragTargets(canvasState.selectedElements)
       return filteredSelectedElements.every((element) => {
         const elementMetadata = MetadataUtils.findElementByElementPath(metadata, element)
-
         return (
           elementMetadata?.specialSizeMeasurements.position === 'absolute' &&
-          supportsStyle(canvasState, element)
+          honoursPropsPosition(canvasState, element)
         )
       })
     } else {

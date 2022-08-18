@@ -30,7 +30,7 @@ import {
 import { getMultiselectBounds } from './shared-absolute-move-strategy-helpers'
 import { setSnappingGuidelines } from '../commands/set-snapping-guidelines-command'
 import { pushIntendedBounds } from '../commands/push-intended-bounds-command'
-import { supportsStyle } from './absolute-utils'
+import { honoursPropsPosition, honoursPropsSize } from './absolute-utils'
 
 interface VectorAndEdge {
   movement: CanvasVector
@@ -80,7 +80,8 @@ export const keyboardAbsoluteResizeStrategy: CanvasStrategy = {
         const elementMetadata = MetadataUtils.findElementByElementPath(metadata, element)
         return (
           elementMetadata?.specialSizeMeasurements.position === 'absolute' &&
-          supportsStyle(canvasState, element)
+          honoursPropsPosition(canvasState, element) &&
+          honoursPropsSize(canvasState, element)
         )
       })
     } else {
