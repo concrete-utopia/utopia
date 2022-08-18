@@ -12,7 +12,7 @@ interface ItemLabelProps {
   dispatch: EditorDispatch
   target: ElementPath
   isDynamic: boolean
-  canRename: boolean
+  selected: boolean
   name: string
   suffix?: string
   inputVisible: boolean
@@ -90,8 +90,8 @@ export class ItemLabel extends Component<ItemLabelProps, ItemLabelState> {
           textOverflow: 'ellipsis',
           whiteSpace: 'nowrap',
         }}
-        onDoubleClick={(e) => {
-          if (!this.props.isDynamic) {
+        onDoubleClick={(event) => {
+          if (!this.props.isDynamic && event.altKey) {
             this.props.dispatch(
               [EditorActions.setNavigatorRenamingTarget(this.props.target)],
               'leftpane',
