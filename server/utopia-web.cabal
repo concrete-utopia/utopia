@@ -90,7 +90,7 @@ executable utopia-web
     , http-media
     , http-types
     , lens
-    , lens-aeson
+    , lens-aeson <1.2
     , lifted-base
     , mime-types
     , modern-uri
@@ -218,7 +218,7 @@ test-suite utopia-web-test
     , http-media
     , http-types
     , lens
-    , lens-aeson
+    , lens-aeson <1.2
     , lifted-base
     , mime-types
     , modern-uri

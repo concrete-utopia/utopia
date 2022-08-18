@@ -39,7 +39,7 @@ library
     , base
     , generic-lens
     , lens
-    , lens-aeson
+    , lens-aeson <1.2
     , relude
     , tasty
     , text

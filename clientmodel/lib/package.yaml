@@ -31,7 +31,7 @@ dependencies:
   - base
   - aeson <2.1
   - generic-lens
-  - lens-aeson
+  - lens-aeson <1.2
   - relude
   - lens
   - tasty
