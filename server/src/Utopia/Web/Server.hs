@@ -5,6 +5,7 @@
 
 module Utopia.Web.Server where
 
+import           Control.Concurrent              (ThreadId)
 import qualified Data.ByteString                 as B
 import qualified Data.ByteString.Char8           as S8
 import qualified Data.HashMap.Strict             as H
@@ -26,7 +27,6 @@ import           Utopia.Web.Logging
 import           Utopia.Web.ServantMonitoring
 import           Utopia.Web.Types
 import           Utopia.Web.Utils.Files
-import Control.Concurrent (ThreadId)
 
 data RequestTooLargeException = RequestTooLargeException
   deriving (Eq, Show)

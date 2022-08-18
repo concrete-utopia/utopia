@@ -15,7 +15,7 @@ main = do
   defaultMain tree
 
 enableExternalTests :: Bool
-enableExternalTests = ENABLE_EXTERNAL_TESTS 
+enableExternalTests = ENABLE_EXTERNAL_TESTS
 
 tests :: IO TestTree
 tests = do

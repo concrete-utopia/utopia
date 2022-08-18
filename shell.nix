@@ -342,6 +342,8 @@ let
       find . -name '*.hs' | xargs ${pkgs.haskellPackages.stylish-haskell}/bin/stylish-haskell -i
       cd $(${pkgs.git}/bin/git rev-parse --show-toplevel)/server/test
       find . -name '*.hs' | xargs ${pkgs.haskellPackages.stylish-haskell}/bin/stylish-haskell -i
+      cd $(${pkgs.git}/bin/git rev-parse --show-toplevel)/clientmodel/lib/src
+      find . -name '*.hs' | xargs ${pkgs.haskellPackages.stylish-haskell}/bin/stylish-haskell -i
     '')
     (pkgs.writeScriptBin "run-server-inner" ''
       #!/usr/bin/env bash
@@ -361,8 +363,8 @@ let
       #!/usr/bin/env bash
       set -e
       cabal-update
-      cd $(${pkgs.git}/bin/git rev-parse --show-toplevel)/server
-      ${pkgs.nodePackages.nodemon}/bin/nodemon --delay 200ms -e hs,yaml --watch src --watch package.yaml --exec run-server-inner
+      cd $(${pkgs.git}/bin/git rev-parse --show-toplevel)/
+      ${pkgs.nodePackages.nodemon}/bin/nodemon --delay 200ms -e hs,yaml --watch server/src --watch server/package.yaml --watch clientmodel/lib/src --watch clientmodel/lib/package.yaml --exec run-server-inner
     '')
   ];
 
