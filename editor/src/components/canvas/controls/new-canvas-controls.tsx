@@ -51,7 +51,7 @@ import { NO_OP } from '../../../core/shared/utils'
 import { usePropControlledStateV2 } from '../../inspector/common/inspector-utils'
 import { ProjectContentTreeRoot } from '../../assets'
 import { LayoutParentControl } from './layout-parent-control'
-import { when } from '../../../utils/react-conditionals'
+import { unless, when } from '../../../utils/react-conditionals'
 import { isFeatureEnabled } from '../../../utils/feature-switches'
 import { shallowEqual } from '../../../core/shared/equality-utils'
 import { KeysPressed } from '../../../utils/keyboard'
@@ -474,7 +474,7 @@ const NewCanvasControlsInner = (props: NewCanvasControlsInnerProps) => {
             <InsertionControls />,
           )}
           {renderHighlightControls()}
-          <LayoutParentControl />
+          {unless(dragging, <LayoutParentControl />)}
           {when(
             isFeatureEnabled('Canvas Strategies'),
             <MultiSelectOutlineControl localSelectedElements={localSelectedViews} />,
