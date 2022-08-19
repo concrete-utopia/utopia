@@ -48,7 +48,7 @@ import {
   InteractionCanvasState,
 } from './canvas-strategy-types'
 import { DragInteractionData, InteractionSession, StrategyState } from './interaction-state'
-import { getReparentCommands } from './reparent-utils'
+import { getReparentOutcome } from './reparent-utils'
 import { areAllSelectedElementsNonAbsolute } from './shared-absolute-move-strategy-helpers'
 
 export const escapeHatchStrategy: CanvasStrategy = {
@@ -271,14 +271,14 @@ function collectSetLayoutPropCommands(
     commands.push(...updatePinsCommands)
     if (shouldReparent) {
       commands.push(
-        ...getReparentCommands(
+        ...getReparentOutcome(
           canvasState.builtInDependencies,
           canvasState.projectContents,
           canvasState.nodeModules,
           canvasState.openFile,
           path,
           targetParent,
-        ),
+        ).commands,
       )
     }
     return { commands: commands, intendedBounds: intendedBounds }

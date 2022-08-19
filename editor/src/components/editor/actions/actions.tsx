@@ -530,6 +530,8 @@ import { foldAndApplyCommandsSimple, runCanvasCommand } from '../../canvas/comma
 import { setElementsToRerenderCommand } from '../../canvas/commands/set-elements-to-rerender-command'
 import { addButtonPressed, MouseButtonsPressed, removeButtonPressed } from '../../../utils/mouse'
 import { areAllSelectedElementsNonAbsolute } from '../../canvas/canvas-strategies/shared-absolute-move-strategy-helpers'
+import { getReparentOutcome } from '../../canvas/canvas-strategies/reparent-utils'
+import { reorderElement } from '../../../components/canvas/commands/reorder-element-command'
 
 export function updateSelectedLeftMenuTab(editorState: EditorState, tab: LeftMenuTab): EditorState {
   return {
@@ -837,13 +839,12 @@ function switchAndUpdateFrames(
 }
 
 export function editorMoveMultiSelectedTemplates(
+  builtInDependencies: BuiltInDependencies,
   targets: ElementPath[],
   indexPosition: IndexPosition,
   newParentPath: ElementPath | null,
   parentFrame: CanvasRectangle | null,
   editor: EditorModel,
-  newParentLayoutType: SettableLayoutSystem | null,
-  newParentMainAxis: 'horizontal' | 'vertical' | null,
 ): {
   editor: EditorModel
   newPaths: Array<ElementPath>
@@ -854,27 +855,30 @@ export function editorMoveMultiSelectedTemplates(
     const frame = MetadataUtils.getFrameInCanvasCoords(target, editor.jsxMetadata)
 
     let templateToMove = updatedTargets[i]
-    const { editor: updatedTemplates, newPath } = editorMoveTemplate(
-      templateToMove,
-      target,
-      frame,
-      indexPosition,
-      newParentPath,
-      parentFrame,
-      working,
-      newParentLayoutType,
-      newParentMainAxis,
-    )
-    if (newPath != null) {
-      // when moving multiselected elements that are in a hierarchy the editor has the ancestor with a new path
-      updatedTargets = updatedTargets.map((path) => {
-        const newChildPath = EP.replaceIfAncestor(path, templateToMove, newPath)
-        return Utils.defaultIfNull(path, newChildPath)
-      })
-      newPaths.push(newPath)
-    }
 
-    return updatedTemplates
+    const { commands: reparentCommands, newPath } = getReparentOutcome(
+      builtInDependencies,
+      editor.projectContents,
+      editor.nodeModules.files,
+      editor.canvas.openFile?.filename,
+      target,
+      newParentPath,
+    )
+    const reorderCommand = reorderElement('on-complete', newPath, indexPosition)
+
+    const withCommandsApplied = foldAndApplyCommandsSimple(working, [
+      ...reparentCommands,
+      reorderCommand,
+    ])
+
+    // when moving multiselected elements that are in a hierarchy the editor has the ancestor with a new path
+    updatedTargets = updatedTargets.map((path) => {
+      const newChildPath = EP.replaceIfAncestor(path, templateToMove, newPath)
+      return Utils.defaultIfNull(path, newChildPath)
+    })
+    newPaths.push(newPath)
+
+    return withCommandsApplied
   }, editor)
   return {
     editor: updatedEditor,
@@ -1645,6 +1649,7 @@ export const UPDATE_FNS = {
     action: NavigatorReorder,
     editor: EditorModel,
     derived: DerivedState,
+    builtInDependencies: BuiltInDependencies,
   ): EditorModel => {
     const dragSources = action.dragSources
     const dropTarget = action.dropTarget
@@ -1690,13 +1695,12 @@ export const UPDATE_FNS = {
         ? null
         : MetadataUtils.getFrameInCanvasCoords(newParentPath, editor.jsxMetadata)
     const { editor: withMovedTemplate, newPaths } = editorMoveMultiSelectedTemplates(
+      builtInDependencies,
       reverse(getZIndexOrderedViewsWithoutDirectChildren(dragSources, derived)),
       indexPosition,
       newParentPath,
       newParentSize,
       editor,
-      null,
-      null,
     )
 
     return {
@@ -2063,6 +2067,7 @@ export const UPDATE_FNS = {
     editorForAction: EditorModel,
     derived: DerivedState,
     dispatch: EditorDispatch,
+    builtInDependencies: BuiltInDependencies,
   ): EditorModel => {
     // FIXME This and WRAP_IN_ELEMENT are very similar, the only difference being that this attempts to maintain
     // the positioning. The two handlers should probably be combined, or perhaps have core shared logic extracted
@@ -2239,13 +2244,12 @@ export const UPDATE_FNS = {
           }
 
           const withElementsAdded = editorMoveMultiSelectedTemplates(
+            builtInDependencies,
             orderedActionTargets,
             indexPosition,
             viewPath,
             parentBounds,
             withWrapperViewAdded,
-            action.layoutSystem,
-            action.newParentMainAxis,
           ).editor
 
           return {

@@ -21,6 +21,9 @@ import { BasePaddingUnit, getElementPadding, NavigatorItem } from './navigator-i
 import { NavigatorHintBottom, NavigatorHintTop } from './navigator-item-components'
 import { JSXElementName } from '../../../core/shared/element-template'
 import { DropTargetHint, ElementWarnings } from '../../editor/store/editor-state'
+import { useRefEditorState } from '../../../components/editor/store/store-hook'
+import { isAllowedToReparent } from '../../../components/canvas/canvas-strategies/reparent-helpers'
+import { MetadataUtils } from '../../../core/model/element-metadata-utils'
 
 const BaseRowHeight = 35
 const PreviewIconSize = BaseRowHeight
@@ -134,13 +137,7 @@ function onHover(
     const targetAction = propsOfDraggedItem.highlighted
       ? []
       : [EditorActions.setHighlightedView(propsOfDraggedItem.elementPath)]
-    const canReparent = propsOfDraggedItem
-      .getDragSelections()
-      .every(
-        (dragSelectedItem: DragSelection) =>
-          !EP.pathsEqual(propsOfDraggedItem.elementPath, dragSelectedItem.elementPath) &&
-          propsOfDraggedItem.supportsChildren,
-      )
+    const canReparent = propsOfDropTargetItem.supportsChildren
     const numberOfAreasToCut = canReparent ? 3 : 2
 
     if (cursor == null) {
@@ -293,6 +290,7 @@ interface DropCollectedProps {
 }
 
 export const NavigatorItemContainer = React.memo((props: NavigatorItemDragAndDropWrapperProps) => {
+  const editorStateRef = useRefEditorState((store) => store.editor)
   const [{ isDragging }, drag] = useDrag(
     () => ({
       type: 'NAVIGATOR_ITEM',
@@ -301,6 +299,15 @@ export const NavigatorItemContainer = React.memo((props: NavigatorItemDragAndDro
       }),
       item: props,
       beginDrag: beginDrag,
+      canDrag: (monitor) => {
+        const editorState = editorStateRef.current
+        return isAllowedToReparent(
+          editorState.projectContents,
+          editorState.canvas.openFile?.filename,
+          editorState.jsxMetadata,
+          props.elementPath,
+        )
+      },
     }),
     [props],
   )
@@ -323,6 +330,15 @@ export const NavigatorItemContainer = React.memo((props: NavigatorItemDragAndDro
       },
       drop: (item: NavigatorItemDragAndDropWrapperProps, monitor) => {
         onDrop(item, props, monitor, dropRef.current)
+      },
+      canDrop: (item: NavigatorItemDragAndDropWrapperProps, monitor) => {
+        const editorState = editorStateRef.current
+        return MetadataUtils.targetSupportsChildren(
+          editorState.projectContents,
+          editorState.canvas.openFile?.filename,
+          editorState.jsxMetadata,
+          item.elementPath,
+        )
       },
     }),
     [props],
