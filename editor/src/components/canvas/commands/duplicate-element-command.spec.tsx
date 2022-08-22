@@ -29,7 +29,7 @@ describe('runDuplicateElement', () => {
     const newUid = 'new-uid'
     const newPath = EP.appendToPath(EP.parentPath(targetPath), newUid)
 
-    const duplicateCommand = duplicateElement('permanent', targetPath, newUid)
+    const duplicateCommand = duplicateElement('always', targetPath, newUid)
 
     const result = runDuplicateElement(originalEditorState, duplicateCommand)
 
@@ -65,7 +65,7 @@ describe('runDuplicateElement', () => {
     const newUid = 'new-uid'
     const newPath = EP.appendToPath(EP.parentPath(targetPath), newUid)
 
-    const duplicateCommand = duplicateElement('permanent', targetPath, newUid)
+    const duplicateCommand = duplicateElement('always', targetPath, newUid)
 
     const result = runDuplicateElement(originalEditorState, duplicateCommand)
 
@@ -134,7 +134,7 @@ describe('runDuplicateElement', () => {
     const newUid = 'new-uid'
     const newPath = EP.appendToPath(EP.parentPath(targetPath), newUid)
 
-    const duplicateCommand = duplicateElement('permanent', targetPath, newUid)
+    const duplicateCommand = duplicateElement('always', targetPath, newUid)
 
     const result = runDuplicateElement(originalEditorState, duplicateCommand)
 

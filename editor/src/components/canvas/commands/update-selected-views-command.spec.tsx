@@ -22,7 +22,7 @@ describe('updateSelectedViews', () => {
 
     const originalEditorState = renderResult.getEditorState().editor
 
-    const updateSelectedViewsCommand = updateSelectedViews('permanent', [targetPath])
+    const updateSelectedViewsCommand = updateSelectedViews('always', [targetPath])
 
     const result = runUpdateSelectedViews(originalEditorState, updateSelectedViewsCommand)
 

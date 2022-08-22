@@ -18,7 +18,7 @@ export function strategySwitched(
 ): StrategySwitched {
   return {
     type: 'STRATEGY_SWITCHED',
-    transient: 'transient',
+    whenToRun: 'mid-interaction',
     reason,
     newStrategy,
     dataReset,

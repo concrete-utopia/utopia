@@ -2,7 +2,7 @@ import * as EP from '../../../core/shared/element-path'
 import type { ElementPath } from '../../../core/shared/project-file-types'
 import type { EditorState, EditorStatePatch } from '../../editor/store/editor-state'
 import type { GuidelineWithSnappingVector } from '../guideline'
-import type { BaseCommand, CommandFunction, TransientOrNot } from './commands'
+import type { BaseCommand, CommandFunction, WhenToRun } from './commands'
 
 export interface SetSnappingGuidelines extends BaseCommand {
   type: 'SET_SNAPPING_GUIDELINES'
@@ -10,12 +10,12 @@ export interface SetSnappingGuidelines extends BaseCommand {
 }
 
 export function setSnappingGuidelines(
-  transient: TransientOrNot,
+  whenToRun: WhenToRun,
   value: Array<GuidelineWithSnappingVector>,
 ): SetSnappingGuidelines {
   return {
     type: 'SET_SNAPPING_GUIDELINES',
-    transient: transient,
+    whenToRun: whenToRun,
     value: value,
   }
 }

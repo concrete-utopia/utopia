@@ -318,11 +318,14 @@ export const NavigatorItem: React.FunctionComponent<
     () => highlightItem(dispatch, elementPath, selected, isHighlighted),
     [dispatch, elementPath, selected, isHighlighted],
   )
-  const focusComponent = React.useCallback(() => {
-    if (isFocusableComponent) {
-      dispatch([EditorActions.setFocusedElement(elementPath)])
-    }
-  }, [dispatch, elementPath, isFocusableComponent])
+  const focusComponent = React.useCallback(
+    (event: React.MouseEvent) => {
+      if (isFocusableComponent && !event.altKey) {
+        dispatch([EditorActions.setFocusedElement(elementPath)])
+      }
+    },
+    [dispatch, elementPath, isFocusableComponent],
+  )
 
   const containerStyle: React.CSSProperties = React.useMemo(() => {
     return {
@@ -407,7 +410,7 @@ const NavigatorRowLabel = React.memo((props: NavigatorRowLabelProps) => {
         name={props.label}
         isDynamic={props.isDynamic}
         target={props.elementPath}
-        canRename={props.selected}
+        selected={props.selected}
         dispatch={props.dispatch}
         inputVisible={EP.pathsEqual(props.renamingTarget, props.elementPath)}
         elementOriginType={props.elementOriginType}

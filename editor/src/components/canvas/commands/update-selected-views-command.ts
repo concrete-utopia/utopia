@@ -1,7 +1,7 @@
 import * as EP from '../../../core/shared/element-path'
 import type { ElementPath } from '../../../core/shared/project-file-types'
 import type { EditorState, EditorStatePatch } from '../../editor/store/editor-state'
-import type { BaseCommand, CommandFunction, TransientOrNot } from './commands'
+import type { BaseCommand, CommandFunction, WhenToRun } from './commands'
 
 export interface UpdateSelectedViews extends BaseCommand {
   type: 'UPDATE_SELECTED_VIEWS'
@@ -9,12 +9,12 @@ export interface UpdateSelectedViews extends BaseCommand {
 }
 
 export function updateSelectedViews(
-  transient: TransientOrNot,
+  whenToRun: WhenToRun,
   value: Array<ElementPath>,
 ): UpdateSelectedViews {
   return {
     type: 'UPDATE_SELECTED_VIEWS',
-    transient: transient,
+    whenToRun: whenToRun,
     value: value,
   }
 }

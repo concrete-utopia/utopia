@@ -38,6 +38,7 @@ import { useNamesAndIconsAllPaths } from './inspector/common/name-and-icon-hook'
 import { FlexRow, Icn, IcnProps, useColorTheme } from '../uuiui'
 import { getAllTargetsAtPoint } from './canvas/dom-lookup'
 import { WindowMousePositionRaw } from '../utils/global-positions'
+import { pointsEqual, WindowPoint } from '../core/shared/math-utils'
 
 export type ElementContextMenuInstance =
   | 'context-menu-navigator'
@@ -86,7 +87,8 @@ function useCanvasContextMenuItems(
   const elementNamesAndIcons = useNamesAndIconsAllPaths()
 
   if (contextMenuInstance === 'context-menu-canvas') {
-    let elementsUnderCursor: Array<ElementPath> | null = null
+    let elementsUnderCursor: Array<ElementPath> = []
+    let lastMousePosition: WindowPoint | null = null
     const elementListSubmenu: Array<ContextMenuItem<CanvasData>> = elementNamesAndIcons.map(
       ({ label, path, iconProps }) => {
         return {
@@ -107,8 +109,13 @@ function useCanvasContextMenuItems(
           isHidden: (data: CanvasData) => {
             // Only run this once as the values used are the same for each and every
             // entry and `getAllTargetsAtPoint` is very expensive.
-            if (elementsUnderCursor == null) {
+            if (
+              lastMousePosition == null ||
+              WindowMousePositionRaw == null ||
+              !pointsEqual(lastMousePosition, WindowMousePositionRaw)
+            ) {
               elementsUnderCursor = getAllTargetsAtPoint('no-filter', WindowMousePositionRaw)
+              lastMousePosition = WindowMousePositionRaw
             }
             return !elementsUnderCursor.some((underCursor: ElementPath) =>
               EP.pathsEqual(underCursor, path),

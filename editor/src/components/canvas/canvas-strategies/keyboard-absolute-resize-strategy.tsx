@@ -30,6 +30,7 @@ import {
 import { getMultiselectBounds } from './shared-absolute-move-strategy-helpers'
 import { setSnappingGuidelines } from '../commands/set-snapping-guidelines-command'
 import { pushIntendedBounds } from '../commands/push-intended-bounds-command'
+import { honoursPropsPosition, honoursPropsSize } from './absolute-utils'
 
 interface VectorAndEdge {
   movement: CanvasVector
@@ -77,15 +78,22 @@ export const keyboardAbsoluteResizeStrategy: CanvasStrategy = {
     if (canvasState.selectedElements.length > 0) {
       return canvasState.selectedElements.every((element) => {
         const elementMetadata = MetadataUtils.findElementByElementPath(metadata, element)
-
-        return elementMetadata?.specialSizeMeasurements.position === 'absolute'
+        return (
+          elementMetadata?.specialSizeMeasurements.position === 'absolute' &&
+          honoursPropsPosition(canvasState, element) &&
+          honoursPropsSize(canvasState, element)
+        )
       })
     } else {
       return false
     }
   },
   controlsToRender: [
-    { control: AbsoluteResizeControl, key: 'absolute-resize-control', show: 'always-visible' },
+    {
+      control: AbsoluteResizeControl,
+      key: 'absolute-resize-control',
+      show: 'visible-except-when-other-strategy-is-active',
+    },
   ],
   fitness: (canvasState, interactionState, sessionState) => {
     if (
@@ -173,7 +181,7 @@ export const keyboardAbsoluteResizeStrategy: CanvasStrategy = {
         interactionState,
         newFrame,
       )
-      commands.push(setSnappingGuidelines('transient', guidelines))
+      commands.push(setSnappingGuidelines('mid-interaction', guidelines))
       commands.push(pushIntendedBounds(intendedBounds))
       commands.push(setElementsToRerenderCommand(canvasState.selectedElements))
       return {

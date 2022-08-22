@@ -61,7 +61,7 @@ export const escapeHatchStrategy: CanvasStrategy = {
     {
       control: ZeroSizeResizeControlWrapper,
       key: 'zero-size-resize-control',
-      show: 'always-visible',
+      show: 'visible-except-when-other-strategy-is-active',
     },
     {
       control: DragOutlineControl,
@@ -152,7 +152,7 @@ export const escapeHatchStrategy: CanvasStrategy = {
         }
       } else {
         return {
-          commands: [setCursorCommand('transient', CSSCursor.Move)],
+          commands: [setCursorCommand('mid-interaction', CSSCursor.Move)],
           customState: null,
         }
       }
@@ -223,7 +223,7 @@ function collectMoveCommandsForSelectedElements(
   })
   commands.push(
     updateSelectedViews(
-      'permanent',
+      'always',
       selectedElements.map((path) => {
         return commonAncestor != null ? EP.appendToPath(commonAncestor, EP.toUid(path)) : path
       }),
@@ -260,7 +260,7 @@ function collectSetLayoutPropCommands(
       }
     })()
 
-    let commands: Array<CanvasCommand> = [convertToAbsolute('permanent', path)]
+    let commands: Array<CanvasCommand> = [convertToAbsolute('always', path)]
     const updatePinsCommands = createUpdatePinsCommands(
       path,
       metadata,
@@ -412,7 +412,7 @@ function collectHighlightCommand(
       return null
     }
   }, canvasState.selectedElements)
-  return showOutlineHighlight('transient', [...siblingFrames, ...draggedFrames])
+  return showOutlineHighlight('mid-interaction', [...siblingFrames, ...draggedFrames])
 }
 
 function findAbsoluteDescendantsToMove(
@@ -519,7 +519,7 @@ function createUpdatePinsCommands(
     const pinValue = pinValueToSet(framePin, fullFrame, parentFrame)
     commands.push(
       setCssLengthProperty(
-        'permanent',
+        'always',
         path,
         stylePropPathMappingFn(framePin, ['style']),
         pinValue,

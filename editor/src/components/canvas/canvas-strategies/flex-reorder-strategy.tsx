@@ -19,6 +19,7 @@ import { ParentOutlines } from '../controls/parent-outlines'
 import { updateHighlightedViews } from '../commands/update-highlighted-views-command'
 import { setElementsToRerenderCommand } from '../commands/set-elements-to-rerender-command'
 import { ParentBounds } from '../controls/parent-bounds'
+import { getReorderIndex } from './reparent-strategy-helpers'
 
 export const flexReorderStrategy: CanvasStrategy = {
   id: 'FLEX_REORDER',
@@ -88,6 +89,7 @@ export const flexReorderStrategy: CanvasStrategy = {
         strategyState.startingMetadata,
         siblingsOfTarget,
         pointOnCanvas,
+        target,
       )
 
       const realNewIndex = newIndex > -1 ? newIndex : lastReorderIdx
@@ -95,8 +97,8 @@ export const flexReorderStrategy: CanvasStrategy = {
       if (realNewIndex === unpatchedIndex) {
         return {
           commands: [
-            updateHighlightedViews('transient', []),
-            setCursorCommand('transient', CSSCursor.Move),
+            updateHighlightedViews('mid-interaction', []),
+            setCursorCommand('mid-interaction', CSSCursor.Move),
           ],
           customState: {
             ...strategyState.customStrategyState,
@@ -106,10 +108,10 @@ export const flexReorderStrategy: CanvasStrategy = {
       } else {
         return {
           commands: [
-            reorderElement('permanent', target, realNewIndex),
+            reorderElement('always', target, realNewIndex),
             setElementsToRerenderCommand([target]),
-            updateHighlightedViews('transient', []),
-            setCursorCommand('transient', CSSCursor.Move),
+            updateHighlightedViews('mid-interaction', []),
+            setCursorCommand('mid-interaction', CSSCursor.Move),
           ],
           customState: {
             ...strategyState.customStrategyState,
@@ -120,26 +122,9 @@ export const flexReorderStrategy: CanvasStrategy = {
     } else {
       // Fallback for when the checks above are not satisfied.
       return {
-        commands: [setCursorCommand('transient', CSSCursor.Move)],
+        commands: [setCursorCommand('mid-interaction', CSSCursor.Move)],
         customState: null,
       }
     }
   },
-}
-
-export function getReorderIndex(
-  metadata: ElementInstanceMetadataMap,
-  siblings: Array<ElementPath>,
-  point: CanvasVector,
-) {
-  const targetSiblingIdx = siblings.findIndex((sibling) => {
-    const frame = MetadataUtils.getFrameInCanvasCoords(sibling, metadata)
-    return (
-      frame != null &&
-      rectContainsPoint(frame, point) &&
-      MetadataUtils.isParentYogaLayoutedContainerAndElementParticipatesInLayout(sibling, metadata)
-    )
-  })
-
-  return targetSiblingIdx
 }

@@ -22,8 +22,8 @@ import           Network.HTTP.Media.MediaType
 import           Network.HTTP.Types             (Status, badRequest400,
                                                  notFound404)
 import qualified Network.Socket.Wait            as W
+import           Prelude                        (String)
 import           Protolude
-import           Prelude (String)
 import           Servant
 import           Servant.Client
 import           Servant.Client.Core
@@ -31,7 +31,7 @@ import           Servant.RawM.Client
 import           System.Timeout
 import           Test.Hspec
 import           Test.Utopia.Web.Executors.Test
-import           Utopia.Web.ClientModel
+import           Utopia.ClientModel
 import           Utopia.Web.Database.Types
 import           Utopia.Web.Executors.Common
 import           Utopia.Web.Servant
@@ -214,7 +214,7 @@ deleteAssetSpec enableExternalTests = databaseAround enableExternalTests $ \desc
                           $ ProjectContentsTreeFile
                           $ ProjectContentFile "/storyboard.js"
                           $ ProjectTextFile
-                          $ TextFile (TextFileContents "// Valid JS") Nothing 0.0
+                          $ TextFile (TextFileContents "// Valid JS" (ParsedTextFileUnparsed Unparsed) BothMatch) Nothing 0.0
       let persistentModel = object ["projectContents" .= projectContents]
       -- Create a project, save an asset, rename it and try to load it from the new path.
       loadedFromPath <- withClientEnv clientEnv $ do

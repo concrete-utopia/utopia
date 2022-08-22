@@ -23,7 +23,7 @@ describe('setCssLengthProperty', () => {
 
     const valueToSet = 321
     const setCSSPropertyCommand = setCssLengthProperty(
-      'permanent',
+      'always',
       cardInstancePath,
       stylePropPathMappingFn('height', ['style']),
       valueToSet,

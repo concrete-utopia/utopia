@@ -11,7 +11,7 @@ import {
   RevisionsState,
   TextFile,
 } from '../../../core/shared/project-file-types'
-import { BaseCommand, TransientOrNot, CommandFunction, CommandFunctionResult } from './commands'
+import { BaseCommand, WhenToRun, CommandFunction, CommandFunctionResult } from './commands'
 import { Spec } from 'immutability-helper'
 import { ProjectContentTreeRoot } from '../../../components/assets'
 import { createProjectContentsPatch } from './patch-utils'
@@ -23,13 +23,13 @@ export interface AddImportsToFile extends BaseCommand {
 }
 
 export function addImportsToFile(
-  transient: TransientOrNot,
+  whenToRun: WhenToRun,
   targetFile: string,
   imports: Imports,
 ): AddImportsToFile {
   return {
     type: 'ADD_IMPORTS_TO_FILE',
-    transient: transient,
+    whenToRun: whenToRun,
     targetFile: targetFile,
     imports: imports,
   }

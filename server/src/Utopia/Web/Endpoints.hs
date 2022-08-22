@@ -13,7 +13,6 @@
   All the endpoints defined in "Utopia.Web.Types" are implemented here.
 -}
 module Utopia.Web.Endpoints where
-
 import           Control.Arrow                   ((&&&))
 import           Control.Lens
 import           Data.Aeson
@@ -21,6 +20,7 @@ import           Data.Aeson.Lens
 import qualified Data.ByteString.Lazy            as BL
 import           Data.CaseInsensitive            hiding (traverse)
 import           Data.Generics.Product
+import qualified Data.HashMap.Strict             as M
 import qualified Data.Text                       as T
 import           Data.Text.Encoding
 import           Data.Time
@@ -41,8 +41,9 @@ import qualified Text.Blaze.Html5.Attributes     as HA
 import           Text.HTML.TagSoup
 import           Text.URI                        hiding (unRText, uriPath)
 import           Text.URI.Lens
+import           Utopia.ClientModel
 import           Utopia.Web.Assets
-import           Utopia.Web.ClientModel
+import           Utopia.Web.Database             (projectContentTreeFromDecodedProject)
 import           Utopia.Web.Database.Types
 import qualified Utopia.Web.Database.Types       as DB
 import           Utopia.Web.Executors.Common
@@ -56,6 +57,22 @@ import           WaiAppStatic.Storage.Filesystem
 import           WaiAppStatic.Types
 
 type TagSoupTags = [Tag Text]
+
+projectContentTreeFromSaveProjectRequest :: SaveProjectRequest -> Maybe (Either Text ProjectContentTreeRoot)
+projectContentTreeFromSaveProjectRequest saveProjectRequest =
+  let possiblePersistentModel = firstOf (field @"_content" . _Just) saveProjectRequest
+      possibleParsedPersistentModel = fmap persistentModelFromJSON possiblePersistentModel
+   in over (_Just . _Right) (view (field @"projectContents")) possibleParsedPersistentModel
+
+validateSaveRequest :: SaveProjectRequest -> Bool
+validateSaveRequest saveProjectRequest =
+  case projectContentTreeFromSaveProjectRequest saveProjectRequest of
+    -- Contents not included, so nothing to validate.
+    Nothing                      -> True
+    -- Cannot parse JSON content.
+    Just (Left _)                -> False
+    -- Parsed content, need to validate the contents tree is not empty.
+    Just (Right projectContents) -> not $ M.null projectContents
 
 checkForUser :: Maybe Text -> (Maybe SessionUser -> ServerMonad a) -> ServerMonad a
 checkForUser (Just sessionCookie) action = do
@@ -419,7 +436,7 @@ deleteProjectEndpoint cookie (ProjectIdWithSuffix projectID _) = requireUser coo
 
 loadProjectFileContents :: DecodedProject -> [[Text]] -> Either Text (Maybe (ProjectFile, [Text]))
 loadProjectFileContents decodedProject pathsToCheck = do
-  projectContentsTree <- projectContentsTreeFromDecodedProject decodedProject
+  projectContentsTree <- projectContentTreeFromDecodedProject decodedProject
   let projectFile = getFirst $ foldMap (\path -> First $ fmap (\c -> (c, path)) $ getProjectContentsTreeFile projectContentsTree path) pathsToCheck
   pure projectFile
 

@@ -38,6 +38,7 @@ import * as EP from '../../../core/shared/element-path'
 import { ZeroSizeResizeControlWrapper } from '../controls/zero-sized-element-controls'
 import { SetCssLengthProperty, setCssLengthProperty } from '../commands/set-css-length-command'
 import { pushIntendedBounds } from '../commands/push-intended-bounds-command'
+import { honoursPropsPosition, honoursPropsSize } from './absolute-utils'
 
 export const absoluteResizeBoundingBoxStrategy: CanvasStrategy = {
   id: 'ABSOLUTE_RESIZE_BOUNDING_BOX',
@@ -47,18 +48,26 @@ export const absoluteResizeBoundingBoxStrategy: CanvasStrategy = {
       const filteredSelectedElements = getDragTargets(canvasState.selectedElements)
       return filteredSelectedElements.every((element) => {
         const elementMetadata = MetadataUtils.findElementByElementPath(metadata, element)
-        return elementMetadata?.specialSizeMeasurements.position === 'absolute'
+        return (
+          elementMetadata?.specialSizeMeasurements.position === 'absolute' &&
+          honoursPropsPosition(canvasState, element) &&
+          honoursPropsSize(canvasState, element)
+        )
       })
     } else {
       return false
     }
   },
   controlsToRender: [
-    { control: AbsoluteResizeControl, key: 'absolute-resize-control', show: 'always-visible' },
+    {
+      control: AbsoluteResizeControl,
+      key: 'absolute-resize-control',
+      show: 'visible-except-when-other-strategy-is-active',
+    },
     {
       control: ZeroSizeResizeControlWrapper,
       key: 'zero-size-resize-control',
-      show: 'always-visible',
+      show: 'visible-except-when-other-strategy-is-active',
     },
     { control: ParentOutlines, key: 'parent-outlines-control', show: 'visible-only-while-active' },
     { control: ParentBounds, key: 'parent-bounds-control', show: 'visible-only-while-active' },
@@ -150,7 +159,7 @@ export const absoluteResizeBoundingBoxStrategy: CanvasStrategy = {
                   elementParentBounds,
                   edgePosition,
                 ),
-                setSnappingGuidelines('transient', guidelinesWithSnappingVector), // TODO I think this will override the previous snapping guidelines
+                setSnappingGuidelines('mid-interaction', guidelinesWithSnappingVector), // TODO I think this will override the previous snapping guidelines
                 pushIntendedBounds([{ target: selectedElement, frame: newFrame }]),
               ]
             },
@@ -158,8 +167,8 @@ export const absoluteResizeBoundingBoxStrategy: CanvasStrategy = {
           return {
             commands: [
               ...commandsForSelectedElements,
-              updateHighlightedViews('transient', []),
-              setCursorCommand('transient', pickCursorFromEdgePosition(edgePosition)),
+              updateHighlightedViews('mid-interaction', []),
+              setCursorCommand('mid-interaction', pickCursorFromEdgePosition(edgePosition)),
               setElementsToRerenderCommand(canvasState.selectedElements),
             ],
             customState: null,
@@ -168,8 +177,8 @@ export const absoluteResizeBoundingBoxStrategy: CanvasStrategy = {
       } else {
         return {
           commands: [
-            setCursorCommand('transient', pickCursorFromEdgePosition(edgePosition)),
-            updateHighlightedViews('transient', []),
+            setCursorCommand('mid-interaction', pickCursorFromEdgePosition(edgePosition)),
+            updateHighlightedViews('mid-interaction', []),
           ],
           customState: null,
         }
@@ -205,7 +214,7 @@ function createResizeCommandsFromFrame(
     if (roundedDelta !== 0) {
       if (isRight(value) && value.value != null) {
         return adjustCssLengthProperty(
-          'permanent',
+          'always',
           selectedElement,
           stylePropPathMappingFn(pin, ['style']),
           roundedDelta * pinDirection,
@@ -215,7 +224,7 @@ function createResizeCommandsFromFrame(
       } else {
         const valueToSet = allPinsFromFrame(newFrame)[pin]
         return setCssLengthProperty(
-          'permanent',
+          'always',
           selectedElement,
           stylePropPathMappingFn(pin, ['style']),
           roundTo(valueToSet, 0),

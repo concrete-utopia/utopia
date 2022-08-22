@@ -28,6 +28,7 @@ import {
   getMultiselectBounds,
   snapDrag,
 } from './shared-absolute-move-strategy-helpers'
+import { honoursPropsPosition } from './absolute-utils'
 
 export const absoluteMoveStrategy: CanvasStrategy = {
   id: 'ABSOLUTE_MOVE',
@@ -37,8 +38,10 @@ export const absoluteMoveStrategy: CanvasStrategy = {
       const filteredSelectedElements = getDragTargets(canvasState.selectedElements)
       return filteredSelectedElements.every((element) => {
         const elementMetadata = MetadataUtils.findElementByElementPath(metadata, element)
-
-        return elementMetadata?.specialSizeMeasurements.position === 'absolute'
+        return (
+          elementMetadata?.specialSizeMeasurements.position === 'absolute' &&
+          honoursPropsPosition(canvasState, element)
+        )
       })
     } else {
       return false
@@ -128,9 +131,9 @@ export function applyAbsoluteMoveCommon(
         commands: [
           ...commandsForSelectedElements.commands,
           pushIntendedBounds(commandsForSelectedElements.intendedBounds),
-          updateHighlightedViews('transient', []),
+          updateHighlightedViews('mid-interaction', []),
           setElementsToRerenderCommand(canvasState.selectedElements),
-          setCursorCommand('transient', CSSCursor.Select),
+          setCursorCommand('mid-interaction', CSSCursor.Select),
         ],
         customState: null,
       }
@@ -148,11 +151,11 @@ export function applyAbsoluteMoveCommon(
       return {
         commands: [
           ...commandsForSelectedElements.commands,
-          updateHighlightedViews('transient', []),
-          setSnappingGuidelines('transient', guidelinesWithSnappingVector),
+          updateHighlightedViews('mid-interaction', []),
+          setSnappingGuidelines('mid-interaction', guidelinesWithSnappingVector),
           pushIntendedBounds(commandsForSelectedElements.intendedBounds),
           setElementsToRerenderCommand(canvasState.selectedElements),
-          setCursorCommand('transient', CSSCursor.Select),
+          setCursorCommand('mid-interaction', CSSCursor.Select),
         ],
         customState: null,
       }

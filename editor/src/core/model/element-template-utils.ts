@@ -6,7 +6,7 @@ import {
 } from '../../components/assets'
 import { importedFromWhere } from '../../components/editor/import-utils'
 import Utils, { IndexPosition } from '../../utils/utils'
-import { Either, isRight } from '../shared/either'
+import { Either, isRight, right } from '../shared/either'
 import {
   ElementInstanceMetadata,
   ElementsWithin,
@@ -33,6 +33,8 @@ import {
   JSXArrayElement,
   JSXProperty,
   isJSXConditionalExpression,
+  isSpreadAssignment,
+  isJSXAttributeOtherJavaScript,
 } from '../shared/element-template'
 import {
   Imports,
@@ -43,6 +45,7 @@ import {
   ElementPath,
 } from '../shared/project-file-types'
 import * as EP from '../shared/element-path'
+import * as PP from '../shared/property-path'
 import {
   fixUtopiaElement,
   generateUID,
@@ -58,6 +61,8 @@ import {
 } from './project-file-utils'
 import { getStoryboardElementPath } from './scene-utils'
 import { TransientFilesState } from '../../components/editor/store/editor-state'
+import { getSimpleAttributeAtPath } from './element-metadata-utils'
+import { getJSXAttributeAtPath, GetJSXAttributeResult } from '../shared/jsx-attributes'
 
 function getAllUniqueUidsInner(
   projectContents: ProjectContentTreeRoot,
@@ -631,6 +636,202 @@ export function componentUsesProperty(component: UtopiaJSXComponent, property: s
     return false
   } else {
     return elementUsesProperty(component.rootElement, component.param, property)
+  }
+}
+
+export function componentHonoursPropsPosition(component: UtopiaJSXComponent): boolean {
+  if (component.param == null) {
+    return false
+  } else {
+    const rootElement = component.rootElement
+    if (isJSXElement(rootElement)) {
+      const leftStyleAttr = getJSXAttributeAtPath(rootElement.props, PP.create(['style', 'left']))
+      const topStyleAttr = getJSXAttributeAtPath(rootElement.props, PP.create(['style', 'top']))
+      const rightStyleAttr = getJSXAttributeAtPath(rootElement.props, PP.create(['style', 'right']))
+      const bottomStyleAttr = getJSXAttributeAtPath(
+        rootElement.props,
+        PP.create(['style', 'bottom']),
+      )
+      return (
+        ((propertyComesFromPropsStyle(component.param, leftStyleAttr, 'left') ||
+          propertyComesFromPropsStyle(component.param, rightStyleAttr, 'right')) &&
+          (propertyComesFromPropsStyle(component.param, topStyleAttr, 'top') ||
+            propertyComesFromPropsStyle(component.param, bottomStyleAttr, 'bottom'))) ||
+        propsStyleIsSpreadInto(component.param, rootElement.props)
+      )
+    } else {
+      return false
+    }
+  }
+}
+
+export function componentHonoursPropsSize(component: UtopiaJSXComponent): boolean {
+  if (component.param == null) {
+    return false
+  } else {
+    const rootElement = component.rootElement
+    if (isJSXElement(rootElement)) {
+      const widthStyleAttr = getJSXAttributeAtPath(rootElement.props, PP.create(['style', 'width']))
+      const heightStyleAttr = getJSXAttributeAtPath(
+        rootElement.props,
+        PP.create(['style', 'height']),
+      )
+      return (
+        (propertyComesFromPropsStyle(component.param, widthStyleAttr, 'width') &&
+          propertyComesFromPropsStyle(component.param, heightStyleAttr, 'height')) ||
+        propsStyleIsSpreadInto(component.param, rootElement.props)
+      )
+    } else {
+      return false
+    }
+  }
+}
+
+export function propsStyleIsSpreadInto(propsParam: Param, attributes: JSXAttributes): boolean {
+  const boundParam = propsParam.boundParam
+  switch (boundParam.type) {
+    case 'REGULAR_PARAM': {
+      const styleProp = getJSXAttributeAtPath(attributes, PP.create(['style']))
+      const styleAttribute = styleProp.attribute
+      switch (styleAttribute.type) {
+        case 'ATTRIBUTE_NOT_FOUND':
+          return false
+        case 'ATTRIBUTE_VALUE':
+          return false
+        case 'ATTRIBUTE_OTHER_JAVASCRIPT':
+          return false
+        case 'ATTRIBUTE_NESTED_ARRAY':
+          return false
+        case 'ATTRIBUTE_NESTED_OBJECT':
+          return styleAttribute.content.some((attributePart) => {
+            if (isSpreadAssignment(attributePart)) {
+              const spreadPart = attributePart.value
+              if (isJSXAttributeOtherJavaScript(spreadPart)) {
+                return (
+                  spreadPart.definedElsewhere.includes(boundParam.paramName) &&
+                  spreadPart.transpiledJavascript.includes(`${boundParam.paramName}.style`)
+                )
+              }
+            }
+            return false
+          })
+        case 'ATTRIBUTE_FUNCTION_CALL':
+          return false
+        case 'PART_OF_ATTRIBUTE_VALUE':
+          return false
+        default:
+          const _exhaustiveCheck: never = styleAttribute
+          throw new Error(`Unhandled attribute type: ${JSON.stringify(styleAttribute)}`)
+      }
+    }
+    case 'DESTRUCTURED_OBJECT': {
+      return boundParam.parts.some((part) => {
+        const partBoundParam = part.param.boundParam
+        if (partBoundParam.type === 'REGULAR_PARAM') {
+          // This handles the aliasing that may be applied to the destructured field.
+          const propertyToCheck = part.propertyName ?? partBoundParam.paramName
+          if (propertyToCheck === 'style') {
+            // This is the aliased name or if there's no alias the field name.
+            const propertyToLookFor = partBoundParam.paramName
+
+            const styleProp = getJSXAttributeAtPath(attributes, PP.create(['style']))
+            const styleAttribute = styleProp.attribute
+            switch (styleAttribute.type) {
+              case 'ATTRIBUTE_NOT_FOUND':
+                return false
+              case 'ATTRIBUTE_VALUE':
+                return false
+              case 'ATTRIBUTE_OTHER_JAVASCRIPT':
+                return false
+              case 'ATTRIBUTE_NESTED_ARRAY':
+                return false
+              case 'ATTRIBUTE_NESTED_OBJECT':
+                return styleAttribute.content.some((attributePart) => {
+                  if (isSpreadAssignment(attributePart)) {
+                    const spreadPart = attributePart.value
+                    if (isJSXAttributeOtherJavaScript(spreadPart)) {
+                      return (
+                        spreadPart.definedElsewhere.includes(propertyToLookFor) &&
+                        spreadPart.transpiledJavascript.includes(propertyToLookFor)
+                      )
+                    }
+                  }
+                  return false
+                })
+              case 'ATTRIBUTE_FUNCTION_CALL':
+                return false
+              case 'PART_OF_ATTRIBUTE_VALUE':
+                return false
+              default:
+                const _exhaustiveCheck: never = styleAttribute
+                throw new Error(`Unhandled attribute type: ${JSON.stringify(styleAttribute)}`)
+            }
+          }
+        }
+        return false
+      })
+    }
+    case 'DESTRUCTURED_ARRAY':
+      return false
+    default:
+      const _exhaustiveCheck: never = boundParam
+      throw new Error(`Unhandled param type: ${JSON.stringify(boundParam)}`)
+  }
+}
+
+export function propertyComesFromPropsStyle(
+  propsParam: Param,
+  result: GetJSXAttributeResult,
+  propName: string,
+): boolean {
+  const attribute = result.attribute
+  switch (attribute.type) {
+    case 'ATTRIBUTE_NOT_FOUND':
+      return false
+    case 'ATTRIBUTE_VALUE':
+      return false
+    case 'ATTRIBUTE_OTHER_JAVASCRIPT':
+      const boundParam = propsParam.boundParam
+      switch (boundParam.type) {
+        case 'REGULAR_PARAM':
+          return (
+            attribute.definedElsewhere.includes(boundParam.paramName) &&
+            attribute.javascript.includes(`${boundParam.paramName}.style.${propName}`)
+          )
+        case 'DESTRUCTURED_OBJECT':
+          return boundParam.parts.some((part) => {
+            const partBoundParam = part.param.boundParam
+            if (partBoundParam.type === 'REGULAR_PARAM') {
+              // This handles the aliasing that may be applied to the destructured field.
+              const propertyToCheck = part.propertyName ?? partBoundParam.paramName
+              if (propertyToCheck === 'style') {
+                // This is the aliased name or if there's no alias the field name.
+                const propertyToLookFor = partBoundParam.paramName
+                return (
+                  attribute.definedElsewhere.includes(propertyToLookFor) &&
+                  attribute.transpiledJavascript.includes(`${propertyToLookFor}.${propName}`)
+                )
+              } else {
+                return false
+              }
+            } else {
+              return false
+            }
+          })
+        default:
+          return false
+      }
+    case 'ATTRIBUTE_NESTED_ARRAY':
+      return false
+    case 'ATTRIBUTE_NESTED_OBJECT':
+      return false
+    case 'ATTRIBUTE_FUNCTION_CALL':
+      return false
+    case 'PART_OF_ATTRIBUTE_VALUE':
+      return false
+    default:
+      const _exhaustiveCheck: never = attribute
+      throw new Error(`Unhandled attribute type: ${JSON.stringify(attribute)}`)
   }
 }
 
