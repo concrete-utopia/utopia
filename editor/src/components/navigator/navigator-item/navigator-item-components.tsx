@@ -7,6 +7,12 @@ import { EditorDispatch } from '../../editor/action-types'
 import * as EditorActions from '../../editor/actions/action-creators'
 import * as EP from '../../../core/shared/element-path'
 import { useColorTheme, Button, Icons, SectionActionSheet } from '../../../uuiui'
+import { stopPropagation } from '../../inspector/common/inspector-utils'
+import { when } from '../../../utils/react-conditionals'
+import { useEditorState, useRefEditorState } from '../../editor/store/store-hook'
+import { MetadataUtils } from '../../../core/model/element-metadata-utils'
+import { getMetadata } from '../../editor/store/editor-state'
+import { SelectionLocked } from '../../canvas/canvas-types'
 
 interface NavigatorHintProps {
   shouldBeShown: boolean
@@ -92,6 +98,60 @@ export const VisibilityIndicator: React.FunctionComponent<
   )
 })
 
+interface SelectionLockedIndicatorProps {
+  shouldShow: boolean
+  value: SelectionLocked
+  selected: boolean
+  isDescendantOfLocked: boolean
+  onClick: (value: SelectionLocked) => void
+}
+
+export const SelectionLockedIndicator: React.FunctionComponent<
+  React.PropsWithChildren<SelectionLockedIndicatorProps>
+> = React.memo((props) => {
+  const { shouldShow, value, selected, isDescendantOfLocked, onClick } = props
+  const color = selected ? 'on-highlight-main' : 'main'
+
+  const handleClick = React.useCallback(
+    (event: React.MouseEvent<HTMLDivElement>) => {
+      event.stopPropagation()
+      switch (value) {
+        case 'selectable':
+          onClick('locked-hierarchy')
+          break
+        case 'locked-hierarchy':
+          onClick('locked')
+          break
+        case 'locked':
+        default:
+          onClick('selectable')
+          break
+      }
+    },
+    [onClick, value],
+  )
+  return (
+    <Button
+      onClick={handleClick}
+      onMouseDown={stopPropagation}
+      style={{
+        marginRight: 4,
+        height: 18,
+        width: 18,
+        opacity: shouldShow ? 1 : 0,
+      }}
+    >
+      {when(value === 'locked', <Icons.LockClosed color={color} />)}
+      {when(value === 'locked-hierarchy', <Icons.LockClosedDot color={color} />)}
+      {when(
+        value === 'selectable' && !isDescendantOfLocked,
+        <Icons.LockOpen color={color} style={{ transform: 'scale(.85)' }} />,
+      )}
+      {when(value === 'selectable' && isDescendantOfLocked, <Icons.Dot color={color} />)}
+    </Button>
+  )
+})
+
 interface OriginalComponentNameLabelProps {
   selected: boolean
   instanceOriginalComponentName: string | null
@@ -134,11 +194,58 @@ export const NavigatorItemActionSheet: React.FunctionComponent<
   const toggleHidden = React.useCallback(() => {
     dispatch([EditorActions.toggleHidden([elementPath])], 'everyone')
   }, [dispatch, elementPath])
+
+  const toggleSelectable = React.useCallback(
+    (newValue: SelectionLocked) => {
+      dispatch([EditorActions.toggleSelectionLock([elementPath], newValue)], 'everyone')
+    },
+    [dispatch, elementPath],
+  )
+
+  // move this to the navigator item selector???
+  const isLockedElement = useEditorState((store) => {
+    return store.editor.lockedElements.simpleLock.some((path) => EP.pathsEqual(elementPath, path))
+  }, 'NavigatorItemActionSheet isLockedElement')
+  const isLockedWithHierarchy = useEditorState((store) => {
+    return store.editor.lockedElements.withHierarchy.some((path) =>
+      EP.pathsEqual(elementPath, path),
+    )
+  }, 'NavigatorItemActionSheet isLockedWithHierarchy')
+
+  const jsxMetadataRef = useRefEditorState((store) => getMetadata(store.editor))
+  const isSceneElement = React.useMemo(
+    () => MetadataUtils.isProbablyScene(jsxMetadataRef.current, elementPath),
+    [elementPath, jsxMetadataRef],
+  )
+
+  const isDescendantOfLocked = useEditorState((store) => {
+    return store.editor.lockedElements.withHierarchy.some((path) =>
+      EP.isDescendantOf(elementPath, path),
+    )
+  }, 'NavigatorItemActionSheet descendant of locked')
+
   return (
     <SectionActionSheet>
       <OriginalComponentNameLabel
         selected={props.selected}
         instanceOriginalComponentName={props.instanceOriginalComponentName}
+      />
+      <SelectionLockedIndicator
+        key={`selection-locked-indicator-${EP.toVarSafeComponentId(elementPath)}`}
+        shouldShow={
+          !isSceneElement &&
+          (props.highlighted ||
+            props.selected ||
+            isLockedElement ||
+            isLockedWithHierarchy ||
+            isDescendantOfLocked)
+        }
+        value={
+          isLockedElement ? 'locked' : isLockedWithHierarchy ? 'locked-hierarchy' : 'selectable'
+        }
+        isDescendantOfLocked={isDescendantOfLocked}
+        selected={props.selected}
+        onClick={toggleSelectable}
       />
       <VisibilityIndicator
         key={`visibility-indicator-${EP.toVarSafeComponentId(elementPath)}`}

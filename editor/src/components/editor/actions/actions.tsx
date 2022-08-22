@@ -373,6 +373,7 @@ import {
   RunEscapeHatch,
   SetElementsToRerender,
   UpdateMouseButtonsPressed,
+  ToggleSelectionLock,
 } from '../action-types'
 import { defaultTransparentViewElement, defaultSceneElement } from '../defaults'
 import {
@@ -939,6 +940,7 @@ function restoreEditorState(currentEditor: EditorModel, history: StateHistory): 
     highlightedViews: currentEditor.highlightedViews,
     hiddenInstances: poppedEditor.hiddenInstances,
     warnedInstances: poppedEditor.warnedInstances,
+    lockedElements: poppedEditor.lockedElements,
     mode: EditorModes.selectMode(),
     focusedPanel: currentEditor.focusedPanel,
     keysPressed: {},
@@ -4913,6 +4915,51 @@ export const UPDATE_FNS = {
   },
   SET_ELEMENTS_TO_RERENDER: (action: SetElementsToRerender, editor: EditorModel): EditorModel => {
     return foldAndApplyCommandsSimple(editor, [setElementsToRerenderCommand(action.value)])
+  },
+  TOGGLE_SELECTION_LOCK: (action: ToggleSelectionLock, editor: EditorModel): EditorModel => {
+    const targets = action.targets
+    return targets.reduce((working, target) => {
+      switch (action.newValue) {
+        case 'locked':
+          return update(working, {
+            lockedElements: {
+              simpleLock: { $set: working.lockedElements.simpleLock.concat(target) },
+              withHierarchy: {
+                $set: working.lockedElements.withHierarchy.filter(
+                  (element) => !EP.pathsEqual(element, target),
+                ),
+              },
+            },
+          })
+        case 'locked-hierarchy':
+          return update(working, {
+            lockedElements: {
+              simpleLock: {
+                $set: working.lockedElements.simpleLock.filter(
+                  (element) => !EP.pathsEqual(element, target),
+                ),
+              },
+              withHierarchy: { $set: working.lockedElements.withHierarchy.concat(target) },
+            },
+          })
+        case 'selectable':
+        default:
+          return update(working, {
+            lockedElements: {
+              simpleLock: {
+                $set: working.lockedElements.simpleLock.filter(
+                  (element) => !EP.pathsEqual(element, target),
+                ),
+              },
+              withHierarchy: {
+                $set: working.lockedElements.withHierarchy.filter(
+                  (element) => !EP.pathsEqual(element, target),
+                ),
+              },
+            },
+          })
+      }
+    }, editor)
   },
 }
 

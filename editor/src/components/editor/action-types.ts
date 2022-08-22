@@ -9,7 +9,12 @@ import {
 import { KeysPressed, Key } from '../../utils/keyboard'
 import { IndexPosition } from '../../utils/utils'
 import { CanvasRectangle, Size, WindowPoint, CanvasPoint } from '../../core/shared/math-utils'
-import { CanvasAction, CSSCursor, PinOrFlexFrameChange } from '../canvas/canvas-types'
+import {
+  CanvasAction,
+  CSSCursor,
+  PinOrFlexFrameChange,
+  SelectionLocked,
+} from '../canvas/canvas-types'
 import { CursorPosition } from '../code-editor/code-editor-utils'
 import { EditorPane, EditorPanel, ResizeLeftPane, SetFocus } from '../common/actions'
 import {
@@ -950,6 +955,12 @@ export interface SetElementsToRerender {
   value: ElementsToRerender
 }
 
+export type ToggleSelectionLock = {
+  action: 'TOGGLE_SELECTION_LOCK'
+  targets: Array<ElementPath>
+  newValue: SelectionLocked
+}
+
 export type EditorAction =
   | ClearSelection
   | InsertScene
@@ -1105,6 +1116,7 @@ export type EditorAction =
   | ForceParseFile
   | RunEscapeHatch
   | SetElementsToRerender
+  | ToggleSelectionLock
 
 export type DispatchPriority =
   | 'everyone'

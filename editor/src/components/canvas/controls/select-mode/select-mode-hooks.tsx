@@ -193,7 +193,14 @@ export function getSelectableViews(
     candidateViews = uniqueSelectableViews
   }
 
-  return filterHiddenInstances(hiddenInstances, candidateViews)
+  const nonSelectableElements = [
+    ...hiddenInstances,
+    // ...lockedElements,
+    // ...lockedElementsWithHierarchy,
+  ]
+  return filterHiddenInstances(nonSelectableElements, candidateViews).filter(
+    (filteredPath) => !EP.isStoryboardPath(filteredPath),
+  )
 }
 
 function useFindValidTarget(): (
