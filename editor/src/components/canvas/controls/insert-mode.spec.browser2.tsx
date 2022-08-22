@@ -182,7 +182,7 @@ describe('Inserting', () => {
                 position: 'absolute',
                 left: 5,
                 top: 5,
-                width: 100,
+                width: 20,
                 height: 300,
               }}
             />
