@@ -297,13 +297,12 @@ export function renderCoreElement(
       return element.text
     }
     case 'JSX_CONDITIONAL_EXPRESSION': {
-      const conditionValue = runJSXArbitraryBlock(
+      const conditionValue = jsxAttributeToValue(
         filePath,
         inScope,
-        element.condition,
         requireResult,
-      ) as boolean
-
+        element.condition,
+      )
       const actualElement = conditionValue ? element.whenTrue : element.whenFalse
 
       const childPath = optionalMap(

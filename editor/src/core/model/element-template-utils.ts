@@ -857,7 +857,7 @@ export function elementUsesProperty(
       })
     case 'JSX_CONDITIONAL_EXPRESSION':
       return (
-        elementUsesProperty(element.condition, propsParam, property) ||
+        attributeUsesProperty(element.condition, propsParam, property) ||
         elementUsesProperty(element.whenTrue, propsParam, property) ||
         elementUsesProperty(element.whenFalse, propsParam, property)
       )

@@ -1048,14 +1048,14 @@ export function jsxFragment(children: JSXElementChildren, longForm: boolean): JS
 
 export interface JSXConditionalExpression {
   type: 'JSX_CONDITIONAL_EXPRESSION'
-  condition: JSXArbitraryBlock
+  condition: JSXAttribute
   whenTrue: JSXElementChild
   whenFalse: JSXElementChild
   uniqueID: string
 }
 
 export function jsxConditionalExpression(
-  condition: JSXArbitraryBlock,
+  condition: JSXAttribute,
   whenTrue: JSXElementChild,
   whenFalse: JSXElementChild,
 ): JSXConditionalExpression {

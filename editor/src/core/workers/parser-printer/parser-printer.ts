@@ -491,11 +491,7 @@ function jsxElementToExpression(
       return TS.createJsxText(element.text)
     }
     case 'JSX_CONDITIONAL_EXPRESSION': {
-      const condition = jsxElementToExpression(
-        element.condition,
-        imports,
-        stripUIDs,
-      ) as TS.Expression
+      const condition = jsxAttributeToExpression(element.condition)
       const whenTrue = jsxElementToExpression(element.whenTrue, imports, stripUIDs) as TS.Expression
       const whenFalse = jsxElementToExpression(
         element.whenFalse,

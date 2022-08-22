@@ -2005,17 +2005,22 @@ export function parseOutJSXElements(
   function produceConditionalFromExpression(
     expression: TS.ConditionalExpression,
   ): Either<string, WithParserMetadata<SuccessfullyParsedElement>> {
-    const condBlock = parseJSXArbitraryBlock(
-      sourceFile,
-      sourceText,
-      filename,
-      imports,
-      topLevelNames,
-      propsObjectName,
-      expression.condition,
-      existingHighlightBounds,
-      alreadyExistingUIDs,
-    )
+    function parseAttribute(
+      attributeExpression: TS.Expression,
+    ): Either<string, WithParserMetadata<JSXAttribute>> {
+      return parseAttributeExpression(
+        sourceFile,
+        sourceText,
+        filename,
+        imports,
+        topLevelNames,
+        propsObjectName,
+        attributeExpression,
+        existingHighlightBounds,
+        alreadyExistingUIDs,
+        [],
+      )
+    }
 
     const innerWhenTrue = TS.isParenthesizedExpression(expression.whenTrue)
       ? expression.whenTrue.expression
@@ -2028,7 +2033,7 @@ export function parseOutJSXElements(
 
     return applicative3Either<
       string,
-      WithParserMetadata<JSXArbitraryBlock>,
+      WithParserMetadata<JSXAttribute>,
       SuccessfullyParsedElement[],
       SuccessfullyParsedElement[],
       WithParserMetadata<SuccessfullyParsedElement>
@@ -2046,7 +2051,7 @@ export function parseOutJSXElements(
           definedElsewhere,
         )
       },
-      condBlock,
+      parseAttribute(expression.condition),
       whenTrueBlock,
       whenFalseBlock,
     )
