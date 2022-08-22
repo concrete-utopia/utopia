@@ -54,6 +54,9 @@ import { isSceneFromMetadata } from '../../../core/model/project-file-utils'
 import { RightMenuTab } from '../../editor/store/editor-state'
 import { stylePropPathMappingFn } from '../../inspector/common/property-path-hooks'
 
+const DefaultWidth = 100
+const DefaultHeight = 100
+
 // I feel comfortable having this function confined to this file only, since we absolutely shouldn't be trying
 // to set values that would fail whilst inserting elements. If that ever changes, this function should be binned
 // and we should handle those failures explicitly
@@ -249,6 +252,11 @@ export class InsertModeControlContainer extends React.Component<
     )
     const localFrame = Utils.getLocalRectangleInNewParentContext(parentOrigin, dragFrame)
 
+    if (localFrame.width === 0 && localFrame.height === 0) {
+      localFrame.width = DefaultWidth
+      localFrame.height = DefaultHeight
+    }
+
     return {
       [FramePoint.Left]: localFrame.x,
       [FramePoint.Top]: localFrame.y,
@@ -417,24 +425,7 @@ export class InsertModeControlContainer extends React.Component<
         getStoryboardElementPath(this.props.projectContents, this.props.openFile)
       let extraActions: EditorAction[] = []
 
-      if (
-        this.props.dragState != null &&
-        this.props.dragState.drag != null &&
-        Utils.distance(this.props.dragState.drag, Utils.zeroPoint as CanvasPoint) === 0
-      ) {
-        // image and text insertion with single click
-        if (
-          this.isImageInsertion(insertionElement, insertionSubject.importsToAdd) &&
-          this.state.dragFrame != null
-        ) {
-          element = this.getImageElementWithSize()
-        } else if (this.isTextInsertion(insertionElement, insertionSubject.importsToAdd)) {
-          element = insertionElement
-        }
-      } else {
-        // TODO Hidden Instances
-        element = this.elementWithDragFrame(insertionElement)
-      }
+      element = this.elementWithDragFrame(insertionElement)
 
       if (element == null) {
         this.props.dispatch(baseActions, 'everyone')

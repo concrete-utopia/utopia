@@ -182,8 +182,76 @@ describe('Inserting', () => {
                 position: 'absolute',
                 left: 5,
                 top: 5,
-                width: 20,
+                width: 100,
                 height: 300,
+              }}
+            />
+          </div>
+          <div
+            data-uid='ccc'
+            style={{
+              position: 'absolute',
+              left: 10,
+              top: 200,
+              width: 380,
+              height: 190,
+              backgroundColor: '#FF0000',
+            }}
+          />
+        </div>
+      `),
+    )
+  })
+
+  it('Click to insert with default size', async () => {
+    const renderResult = await renderTestEditorWithCode(inputCode, 'await-first-dom-report')
+    await startInsertMode(renderResult.dispatch)
+
+    const targetElement = renderResult.renderedDOM.getByTestId('bbb')
+    const targetElementBounds = targetElement.getBoundingClientRect()
+    const canvasControlsLayer = renderResult.renderedDOM.getByTestId(CanvasControlsContainerID)
+
+    const startPoint = slightlyOffsetWindowPointBecauseVeryWeirdIssue({
+      x: targetElementBounds.x + 5,
+      y: targetElementBounds.y + 5,
+    })
+    const endPoint = startPoint
+
+    // Drag from inside bbb to inside ccc
+    await fireDragEvent(canvasControlsLayer, startPoint, endPoint)
+
+    // Check that the inserted element is a child of bbb
+    expect(getPrintedUiJsCode(renderResult.getEditorState())).toEqual(
+      makeTestProjectCodeWithSnippet(`
+        <div
+          data-uid='aaa'
+          style={{
+            width: '100%',
+            height: '100%',
+            backgroundColor: '#FFFFFF',
+            position: 'relative',
+          }}
+        >
+          <div
+            data-uid='bbb'
+            data-testid='bbb'
+            style={{
+              position: 'absolute',
+              left: 10,
+              top: 10,
+              width: 380,
+              height: 180,
+              backgroundColor: '#d3d3d3',
+            }}
+          >
+            <div
+              data-uid='ddd'
+              style={{
+                position: 'absolute',
+                left: 5,
+                top: 5,
+                width: 100,
+                height: 100,
               }}
             />
           </div>
