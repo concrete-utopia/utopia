@@ -425,7 +425,26 @@ export class InsertModeControlContainer extends React.Component<
         getStoryboardElementPath(this.props.projectContents, this.props.openFile)
       let extraActions: EditorAction[] = []
 
-      element = this.elementWithDragFrame(insertionElement)
+      if (
+        this.props.dragState != null &&
+        this.props.dragState.drag != null &&
+        Utils.distance(this.props.dragState.drag, Utils.zeroPoint as CanvasPoint) === 0
+      ) {
+        // image and text insertion with single click
+        if (
+          this.isImageInsertion(insertionElement, insertionSubject.importsToAdd) &&
+          this.state.dragFrame != null
+        ) {
+          element = this.getImageElementWithSize()
+        } else if (this.isTextInsertion(insertionElement, insertionSubject.importsToAdd)) {
+          element = insertionElement
+        } else {
+          element = this.elementWithDragFrame(insertionElement)
+        }
+      } else {
+        // TODO Hidden Instances
+        element = this.elementWithDragFrame(insertionElement)
+      }
 
       if (element == null) {
         this.props.dispatch(baseActions, 'everyone')
