@@ -1,24 +1,15 @@
 import { MetadataUtils } from '../../../core/model/element-metadata-utils'
-import { ElementInstanceMetadataMap } from '../../../core/shared/element-template'
-import { offsetPoint, rectContainsPoint } from '../../../core/shared/math-utils'
-import { ElementPath } from '../../../core/shared/project-file-types'
-import { reorderElement } from '../commands/reorder-element-command'
-import { CanvasStrategy, emptyStrategyApplicationResult } from './canvas-strategy-types'
-import {
-  CanvasPoint,
-  canvasPoint,
-  CanvasVector,
-  CanvasRectangle,
-} from '../../../core/shared/math-utils'
 import * as EP from '../../../core/shared/element-path'
-import { reverse, stripNulls } from '../../../core/shared/array-utils'
-import { DragOutlineControl } from '../controls/select-mode/drag-outline-control'
+import { offsetPoint } from '../../../core/shared/math-utils'
 import { CSSCursor } from '../canvas-types'
+import { reorderElement } from '../commands/reorder-element-command'
 import { setCursorCommand } from '../commands/set-cursor-command'
-import { ParentOutlines } from '../controls/parent-outlines'
-import { updateHighlightedViews } from '../commands/update-highlighted-views-command'
 import { setElementsToRerenderCommand } from '../commands/set-elements-to-rerender-command'
+import { updateHighlightedViews } from '../commands/update-highlighted-views-command'
 import { ParentBounds } from '../controls/parent-bounds'
+import { ParentOutlines } from '../controls/parent-outlines'
+import { DragOutlineControl } from '../controls/select-mode/drag-outline-control'
+import { CanvasStrategy, emptyStrategyApplicationResult } from './canvas-strategy-types'
 import { getReorderIndex } from './reparent-strategy-helpers'
 
 export const flexReorderStrategy: CanvasStrategy = {

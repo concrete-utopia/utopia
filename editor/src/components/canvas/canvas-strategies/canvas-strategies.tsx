@@ -28,6 +28,7 @@ import { absoluteReparentToFlexStrategy } from './absolute-reparent-to-flex-stra
 import { flexReparentToAbsoluteStrategy } from './flex-reparent-to-absolute-strategy'
 import { flexReparentToFlexStrategy } from './flex-reparent-to-flex-strategy'
 import { BuiltInDependencies } from '../../../core/es-modules/package-manager/built-in-dependencies-list'
+import { flowReorderStategy } from './flow-reorder-strategy'
 
 export const RegisteredCanvasStrategies: Array<CanvasStrategy> = [
   absoluteMoveStrategy,
@@ -39,6 +40,7 @@ export const RegisteredCanvasStrategies: Array<CanvasStrategy> = [
   flexReorderStrategy,
   flexReparentToAbsoluteStrategy,
   flexReparentToFlexStrategy,
+  flowReorderStategy,
   // escapeHatchStrategy,  // TODO re-enable once reparent is not tied to cmd
   absoluteReparentToFlexStrategy,
 ]
