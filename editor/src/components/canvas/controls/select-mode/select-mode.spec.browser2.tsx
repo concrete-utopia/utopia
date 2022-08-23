@@ -14,6 +14,7 @@ import {
   selectComponents,
   setCursorOverlay,
   setFocusedElement,
+  toggleSelectionLock,
 } from '../../../editor/actions/action-creators'
 import CanvasActions from '../../canvas-actions'
 import { CanvasControlsContainerID } from '../new-canvas-controls'
@@ -844,6 +845,57 @@ describe('Select Mode Double Clicking With Fragments', () => {
     await doubleClick()
     await doubleClick()
     await doubleClick()
+    await doubleClick()
+    await doubleClick()
+    await doubleClick()
+
+    expect(renderResult.getEditorState().editor.selectedViews).toEqual([desiredPath])
+  })
+
+  it('Double click selection skips locked elements', async () => {
+    // prettier-ignore
+    const desiredPath = EP.fromString(
+      'sb' +                // Skipped as it's the storyboard
+      '/scene-2' +          // Skipped because we skip over Scenes
+      '/Card-instance' +    // <- First double click
+      ':Card-Root' +        // <- Second double click, as the instance is automatically focused by the scene
+      '/Card-Row-Buttons' + // <- Locked element is skipped
+      '/Card-Button-3',     // <- Third double click
+    )
+
+    const renderResult = await renderTestEditorWithCode(
+      TestProjectAlpineClimbWithFragments,
+      'await-first-dom-report',
+    )
+
+    // Lock element
+    renderResult.dispatch(
+      [
+        toggleSelectionLock(
+          [EP.fromString('sb/scene-2/Card-instance:Card-Root/Card-Row-Buttons')],
+          'locked',
+        ),
+      ],
+      true,
+    )
+
+    const cardSceneRoot = renderResult.renderedDOM.getByTestId('card-scene')
+    const cardSceneRootBounds = cardSceneRoot.getBoundingClientRect()
+
+    const canvasControlsLayer = renderResult.renderedDOM.getByTestId(CanvasControlsContainerID)
+
+    const fireDoubleClickEvents = createDoubleClicker()
+
+    const doubleClick = async () => {
+      await act(async () => {
+        fireDoubleClickEvents(
+          canvasControlsLayer,
+          cardSceneRootBounds.left + 130,
+          cardSceneRootBounds.top + 220,
+        )
+      })
+    }
+
     await doubleClick()
     await doubleClick()
     await doubleClick()
