@@ -67,7 +67,7 @@ function onDrop(
   propsOfDropTargetItem: NavigatorItemDragAndDropWrapperProps,
   monitor: DropTargetMonitor,
   component: HTMLDivElement | null,
-) {
+): void {
   if (monitor != null && component != null) {
     const dragSelections = propsOfDraggedItem.getDragSelections()
     const filteredSelections = dragSelections.filter((selection) =>
@@ -79,22 +79,26 @@ function onDrop(
 
     switch (propsOfDropTargetItem.appropriateDropTargetHint?.type) {
       case 'before':
-        return propsOfDraggedItem.editorDispatch(
+        propsOfDraggedItem.editorDispatch(
           [placeComponentsBefore(draggedElements, target), clearHintAction],
           'everyone',
         )
+        break
       case 'after':
-        return propsOfDraggedItem.editorDispatch(
+        propsOfDraggedItem.editorDispatch(
           [placeComponentsAfter(draggedElements, target), clearHintAction],
           'everyone',
         )
+        break
       case 'reparent':
-        return propsOfDraggedItem.editorDispatch(
+        propsOfDraggedItem.editorDispatch(
           [reparentComponents(draggedElements, target), clearHintAction],
           'everyone',
         )
+        break
       default:
-        return propsOfDraggedItem.editorDispatch([clearHintAction], 'everyone')
+        propsOfDraggedItem.editorDispatch([clearHintAction], 'everyone')
+        break
     }
   }
 }
@@ -242,11 +246,13 @@ export class NavigatorItemDndWrapper extends PureComponent<
 
   render(): React.ReactElement {
     const props = this.props
+    const safeComponentId = EP.toVarSafeComponentId(this.props.elementPath)
 
     return (
       <div
         key='navigatorItem'
-        id={`navigator-item-${EP.toVarSafeComponentId(this.props.elementPath)}`}
+        id={`navigator-item-${safeComponentId}`}
+        data-testid={`navigator-item-${safeComponentId}`}
         style={{
           ...props.windowStyle,
         }}
@@ -301,12 +307,13 @@ export const NavigatorItemContainer = React.memo((props: NavigatorItemDragAndDro
       beginDrag: beginDrag,
       canDrag: (monitor) => {
         const editorState = editorStateRef.current
-        return isAllowedToReparent(
+        const result = isAllowedToReparent(
           editorState.projectContents,
           editorState.canvas.openFile?.filename,
           editorState.jsxMetadata,
           props.elementPath,
         )
+        return result
       },
     }),
     [props],
@@ -333,12 +340,13 @@ export const NavigatorItemContainer = React.memo((props: NavigatorItemDragAndDro
       },
       canDrop: (item: NavigatorItemDragAndDropWrapperProps, monitor) => {
         const editorState = editorStateRef.current
-        return MetadataUtils.targetSupportsChildren(
+        const result = MetadataUtils.targetSupportsChildren(
           editorState.projectContents,
           editorState.canvas.openFile?.filename,
           editorState.jsxMetadata,
           item.elementPath,
         )
+        return result
       },
     }),
     [props],
@@ -351,10 +359,11 @@ export const NavigatorItemContainer = React.memo((props: NavigatorItemDragAndDro
     },
     [drop, dropRef],
   )
+  const safeComponentId = EP.toVarSafeComponentId(props.elementPath)
 
   return (
-    <div ref={attachDrop}>
-      <div ref={drag}>
+    <div ref={attachDrop} data-testid={`navigator-item-drop-${safeComponentId}`}>
+      <div ref={drag} data-testid={`navigator-item-drag-${safeComponentId}`}>
         <NavigatorItemDndWrapper {...props} isOver={isOver} isDragging={isDragging} />
       </div>
     </div>
