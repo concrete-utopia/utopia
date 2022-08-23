@@ -74,7 +74,7 @@ export function runSimpleLocalEditorAction(
     case 'MOVE_SELECTED_FORWARD':
       return UPDATE_FNS.MOVE_SELECTED_FORWARD(state)
     case 'NAVIGATOR_REORDER':
-      return UPDATE_FNS.NAVIGATOR_REORDER(action, state, derivedState)
+      return UPDATE_FNS.NAVIGATOR_REORDER(action, state, derivedState, builtInDependencies)
     case 'UNSET_PROPERTY':
       return UPDATE_FNS.UNSET_PROPERTY(action, state, dispatch)
     case 'UNDO':
@@ -234,7 +234,7 @@ export function runSimpleLocalEditorAction(
     case 'DELETE_SELECTED':
       return UPDATE_FNS.DELETE_SELECTED(action, state, derivedState, dispatch)
     case 'WRAP_IN_VIEW':
-      return UPDATE_FNS.WRAP_IN_VIEW(action, state, derivedState, dispatch)
+      return UPDATE_FNS.WRAP_IN_VIEW(action, state, derivedState, dispatch, builtInDependencies)
     case 'WRAP_IN_ELEMENT':
       return UPDATE_FNS.WRAP_IN_ELEMENT(action, state, derivedState, dispatch)
     case 'OPEN_FLOATING_INSERT_MENU':

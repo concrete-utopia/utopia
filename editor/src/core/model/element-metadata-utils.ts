@@ -600,7 +600,7 @@ export const MetadataUtils = {
   },
   targetElementSupportsChildren(
     projectContents: ProjectContentTreeRoot,
-    openFile: string | null,
+    openFile: string | null | undefined,
     instance: ElementInstanceMetadata,
   ): boolean {
     return foldEither(
@@ -633,7 +633,7 @@ export const MetadataUtils = {
   },
   targetSupportsChildren(
     projectContents: ProjectContentTreeRoot,
-    openFile: string | null,
+    openFile: string | null | undefined,
     metadata: ElementInstanceMetadataMap,
     target: ElementPath,
   ): boolean {

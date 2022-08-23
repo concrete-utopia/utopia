@@ -1,3 +1,4 @@
+import { absolute } from '../../../utils/utils'
 import * as EP from '../../../core/shared/element-path'
 import { EditorState, withUnderlyingTargetFromEditorState } from '../../editor/store/editor-state'
 import { getEditorState, makeTestProjectCodeWithSnippet } from '../ui-jsx.test-utils'
@@ -73,7 +74,7 @@ describe('runReorderElement', () => {
 
       const parent = EP.parentPath(target)
 
-      const reorderCommand = reorderElement('always', target, newIdx)
+      const reorderCommand = reorderElement('always', target, absolute(newIdx))
 
       const result = runReorderElement(originalEditorState, reorderCommand)
 

@@ -208,6 +208,33 @@ export function before(index: number): Before {
 
 export type IndexPosition = Front | Back | Absolute | After | Before
 
+export function shiftIndexPositionForRemovedElement(
+  indexPosition: IndexPosition,
+  removedElementIndex: number,
+): IndexPosition {
+  switch (indexPosition.type) {
+    case 'front':
+    case 'back':
+    case 'absolute':
+      return indexPosition
+    case 'before':
+      if (removedElementIndex < indexPosition.index) {
+        return before(indexPosition.index - 1)
+      } else {
+        return indexPosition
+      }
+    case 'after':
+      if (removedElementIndex < indexPosition.index) {
+        return after(indexPosition.index - 1)
+      } else {
+        return indexPosition
+      }
+    default:
+      const _exhaustiveCheck: never = indexPosition
+      throw new Error(`Unhandled index position ${JSON.stringify(indexPosition)}`)
+  }
+}
+
 export type Axis = 'x' | 'y'
 
 export type DiagonalAxis = 'TopLeftToBottomRight' | 'BottomLeftToTopRight'

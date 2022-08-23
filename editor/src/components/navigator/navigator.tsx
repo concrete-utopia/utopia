@@ -170,6 +170,7 @@ export const NavigatorComponent = React.memo(() => {
       onMouseLeave={onMouseLeave}
       onContextMenu={onContextMenu}
       id={NavigatorContainerId}
+      data-testid={NavigatorContainerId}
       tabIndex={-1}
       style={{
         zIndex: 1,
