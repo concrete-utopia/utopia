@@ -16,7 +16,7 @@ import {
 import { ifAllowedToReparent, isAllowedToReparent } from './reparent-helpers'
 import { findReparentStrategy } from './reparent-strategy-helpers'
 import { offsetPoint } from '../../../core/shared/math-utils'
-import { getReparentCommands } from './reparent-utils'
+import { getReparentOutcome } from './reparent-utils'
 
 export const absoluteReparentStrategy: CanvasStrategy = {
   id: 'ABSOLUTE_REPARENT',
@@ -94,7 +94,12 @@ export const absoluteReparentStrategy: CanvasStrategy = {
         ?.specialSizeMeasurements.providesBoundsForAbsoluteChildren ?? false
     const parentIsStoryboard = newParent == null ? false : EP.isStoryboardPath(newParent)
     const allowedToReparent = filteredSelectedElements.every((selectedElement) => {
-      return isAllowedToReparent(canvasState, strategyState, selectedElement)
+      return isAllowedToReparent(
+        canvasState.projectContents,
+        canvasState.openFile,
+        strategyState.startingMetadata,
+        selectedElement,
+      )
     })
 
     if (
@@ -111,20 +116,17 @@ export const absoluteReparentStrategy: CanvasStrategy = {
           canvasState,
         )
 
-        const newPath = EP.appendToPath(newParent, EP.toUid(selectedElement))
+        const { commands: reparentCommands, newPath } = getReparentOutcome(
+          canvasState.builtInDependencies,
+          projectContents,
+          nodeModules,
+          openFile,
+          selectedElement,
+          newParent,
+        )
         return {
           newPath: newPath,
-          commands: [
-            ...offsetCommands,
-            ...getReparentCommands(
-              canvasState.builtInDependencies,
-              projectContents,
-              nodeModules,
-              openFile,
-              selectedElement,
-              newParent,
-            ),
-          ],
+          commands: [...offsetCommands, ...reparentCommands],
         }
       })
 

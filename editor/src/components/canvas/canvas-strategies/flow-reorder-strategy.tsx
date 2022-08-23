@@ -22,6 +22,7 @@ import { DragOutlineControl } from '../controls/select-mode/drag-outline-control
 import { CanvasStrategy, emptyStrategyApplicationResult } from './canvas-strategy-types'
 import { getRectCenter, distance as euclideanDistance } from '../../../core/shared/math-utils'
 import { AllElementProps, ElementProps } from '../../editor/store/editor-state'
+import { absolute } from '../../../utils/utils'
 
 export const flowReorderStategy: CanvasStrategy = {
   id: 'FLOW_REORDER',
@@ -116,7 +117,7 @@ export const flowReorderStategy: CanvasStrategy = {
       } else {
         return {
           commands: [
-            reorderElement('always', target, realNewIndex),
+            reorderElement('always', target, absolute(realNewIndex)),
             setElementsToRerenderCommand([target]),
             updateHighlightedViews('mid-interaction', []),
             setCursorCommand('mid-interaction', CSSCursor.Move),

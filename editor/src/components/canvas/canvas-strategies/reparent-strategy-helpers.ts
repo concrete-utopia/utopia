@@ -25,9 +25,9 @@ import {
 } from './canvas-strategy-types'
 import { InteractionSession, StrategyState } from './interaction-state'
 import { ifAllowedToReparent } from './reparent-helpers'
-import { getReparentCommands } from './reparent-utils'
+import { getReparentOutcome } from './reparent-utils'
 import { getDragTargets } from './shared-absolute-move-strategy-helpers'
-import Utils from '../../../utils/utils'
+import Utils, { absolute } from '../../../utils/utils'
 import { reverse } from '../../../core/shared/array-utils'
 
 interface ReorderElement {
@@ -288,8 +288,7 @@ export function applyFlexReparent(
         const target = filteredSelectedElements[0]
         const newParent = reparentResult.newParent
         // Reparent the element.
-        const newPath = EP.appendToPath(reparentResult.newParent, EP.toUid(target))
-        const reparentCommands = getReparentCommands(
+        const { commands: reparentCommands, newPath } = getReparentOutcome(
           canvasState.builtInDependencies,
           canvasState.projectContents,
           canvasState.nodeModules,
@@ -337,7 +336,7 @@ export function applyFlexReparent(
           )
           commands = [
             ...commandsBeforeReorder,
-            reorderElement('always', newPath, newIndex),
+            reorderElement('always', newPath, absolute(newIndex)),
             ...commandsAfterReorder,
           ]
         } else {

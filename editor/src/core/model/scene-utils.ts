@@ -286,7 +286,7 @@ export function getStoryboardUID(openComponents: UtopiaJSXComponent[]): string |
 
 export function getStoryboardElementPath(
   projectContents: ProjectContentTreeRoot,
-  openFile: string | null,
+  openFile: string | null | undefined,
 ): StaticElementPath | null {
   if (openFile != null) {
     const file = getContentsTreeFileFromString(projectContents, openFile)
