@@ -56,10 +56,7 @@ export interface NavigatorItemDragAndDropWrapperProps {
 }
 
 function canDrop(props: NavigatorItemDragAndDropWrapperProps, dropSource: ElementPath): boolean {
-  return (
-    EP.pathsEqual(props.elementPath, dropSource) ||
-    !EP.isDescendantOfOrEqualTo(props.elementPath, dropSource)
-  )
+  return !EP.isDescendantOfOrEqualTo(props.elementPath, dropSource)
 }
 
 function onDrop(
@@ -71,7 +68,7 @@ function onDrop(
   if (monitor != null && component != null) {
     const dragSelections = propsOfDraggedItem.getDragSelections()
     const filteredSelections = dragSelections.filter((selection) =>
-      canDrop(propsOfDraggedItem, selection.elementPath),
+      canDrop(propsOfDropTargetItem, selection.elementPath),
     )
     const draggedElements = filteredSelections.map((selection) => selection.elementPath)
     const clearHintAction = showNavigatorDropTargetHint(null, null)
@@ -126,7 +123,7 @@ function onHover(
     component != null &&
     propsOfDraggedItem
       .getDragSelections()
-      .some((selection) => canDrop(propsOfDraggedItem, selection.elementPath))
+      .every((selection) => canDrop(propsOfDropTargetItem, selection.elementPath))
   ) {
     // React DnD necessitates the two divs around the actual navigator item,
     // so we need to drill down to the navigator elements themselves which have real dimensions.
@@ -340,13 +337,16 @@ export const NavigatorItemContainer = React.memo((props: NavigatorItemDragAndDro
       },
       canDrop: (item: NavigatorItemDragAndDropWrapperProps, monitor) => {
         const editorState = editorStateRef.current
-        const result = MetadataUtils.targetSupportsChildren(
+        const supportsChildren = MetadataUtils.targetSupportsChildren(
           editorState.projectContents,
           editorState.canvas.openFile?.filename,
           editorState.jsxMetadata,
           item.elementPath,
         )
-        return result
+        const notSelectedItem = item.getDragSelections().every((selection) => {
+          return canDrop(props, selection.elementPath)
+        })
+        return supportsChildren && notSelectedItem
       },
     }),
     [props],
