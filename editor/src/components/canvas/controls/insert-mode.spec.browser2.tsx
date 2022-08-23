@@ -212,8 +212,8 @@ describe('Inserting', () => {
     const canvasControlsLayer = renderResult.renderedDOM.getByTestId(CanvasControlsContainerID)
 
     const startPoint = slightlyOffsetWindowPointBecauseVeryWeirdIssue({
-      x: targetElementBounds.x + 5,
-      y: targetElementBounds.y + 5,
+      x: targetElementBounds.x + 65,
+      y: targetElementBounds.y + 55,
     })
     const endPoint = startPoint
 
@@ -248,7 +248,7 @@ describe('Inserting', () => {
               data-uid='ddd'
               style={{
                 position: 'absolute',
-                left: 5,
+                left: 15,
                 top: 5,
                 width: 100,
                 height: 100,
