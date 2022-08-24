@@ -800,28 +800,40 @@ export const MetadataUtils = {
       navigatorTargets: Array<ElementPath>
       visibleNavigatorTargets: Array<ElementPath>
     } => {
-      // Note: This will not necessarily be representative of the structured ordering in
-      // the code that produced these elements.
-      const projectTree = buildTree(objectValues(metadata).map((m) => m.elementPath))
-
       // This function exists separately from getAllPaths because the Navigator handles collapsed views
       let navigatorTargets: Array<ElementPath> = []
       let visibleNavigatorTargets: Array<ElementPath> = []
 
-      function walkAndAddKeys(subTree: ElementPathTree | null, collapsedAncestor: boolean): void {
-        if (subTree != null) {
-          const path = subTree.path
-          navigatorTargets.push(path)
-          if (!collapsedAncestor) {
-            visibleNavigatorTargets.push(path)
-          }
+      function walkAndAddKeys(path: ElementPath, collapsedAncestor: boolean): void {
+        navigatorTargets.push(path)
+        if (!collapsedAncestor) {
+          visibleNavigatorTargets.push(path)
+        }
 
-          const isCollapsed = EP.containsPath(path, collapsedViews)
-          const newCollapsedAncestor = collapsedAncestor || isCollapsed
+        const isCollapsed = EP.containsPath(path, collapsedViews)
+        const newCollapsedAncestor = collapsedAncestor || isCollapsed
 
-          let unfurledComponents: Array<ElementPathTree> = []
-          fastForEach(subTree.children, (child) => {
-            if (EP.isRootElementOfInstance(child.path)) {
+        const elementMetadata = MetadataUtils.findElementByElementPath(metadata, path)
+        if (elementMetadata != null) {
+          const children = foldEither(
+            () => MetadataUtils.getImmediateChildrenPaths(metadata, path),
+            (element) => {
+              if (isJSXElement(element)) {
+                const rootPaths = MetadataUtils.getRootViewPaths(metadata, path)
+                const childrenPaths = element.children.map((child) =>
+                  EP.appendToPath(path, getUtopiaID(child)),
+                )
+                return [...rootPaths, ...childrenPaths]
+              } else {
+                return MetadataUtils.getImmediateChildrenPaths(metadata, path)
+              }
+            },
+            elementMetadata.element,
+          )
+
+          let unfurledComponents: Array<ElementPath> = []
+          fastForEach(children, (child) => {
+            if (EP.isRootElementOfInstance(child)) {
               unfurledComponents.push(child)
             } else {
               walkAndAddKeys(child, newCollapsedAncestor)
@@ -835,11 +847,7 @@ export const MetadataUtils = {
       }
 
       const canvasRoots = MetadataUtils.getAllStoryboardChildrenPaths(metadata)
-      fastForEach(canvasRoots, (childElement) => {
-        const subTree = getSubTree(projectTree, childElement)
-
-        walkAndAddKeys(subTree, false)
-      })
+      fastForEach(canvasRoots, (childElement) => walkAndAddKeys(childElement, false))
 
       return {
         navigatorTargets: navigatorTargets,
