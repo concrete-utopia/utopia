@@ -83,7 +83,7 @@ export const VisibilityIndicator: React.FunctionComponent<
     <Button
       onClick={props.onClick}
       style={{
-        marginRight: 4,
+        marginRight: 2,
         height: 18,
         width: 18,
         opacity: props.shouldShow ? 1 : 0,
@@ -135,7 +135,7 @@ export const SelectionLockedIndicator: React.FunctionComponent<
       onClick={handleClick}
       onMouseDown={stopPropagation}
       style={{
-        marginRight: 4,
+        marginRight: 2,
         height: 18,
         width: 18,
         display: shouldShow ? 'block' : 'none',
@@ -202,7 +202,6 @@ export const NavigatorItemActionSheet: React.FunctionComponent<
     [dispatch, elementPath],
   )
 
-  // move this to the navigator item selector???
   const isLockedElement = useEditorState((store) => {
     return store.editor.lockedElements.simpleLock.some((path) => EP.pathsEqual(elementPath, path))
   }, 'NavigatorItemActionSheet isLockedElement')
