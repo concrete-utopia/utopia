@@ -23,6 +23,7 @@ import { getRectCenter, distance as euclideanDistance } from '../../../core/shar
 import { AllElementProps, ElementProps } from '../../editor/store/editor-state'
 import { absolute } from '../../../utils/utils'
 import { FlowPositionMarker } from '../controls/flow-position-marker'
+import { convertInlineBlock } from '../commands/convert-inline-block-command'
 
 export const flowReorderStategy: CanvasStrategy = {
   id: 'FLOW_REORDER',
@@ -98,13 +99,15 @@ export const flowReorderStategy: CanvasStrategy = {
       const unpatchedIndex = siblingsOfTarget.findIndex((sibling) => EP.pathsEqual(sibling, target))
       const lastReorderIdx = strategyState.customStrategyState.lastReorderIdx ?? unpatchedIndex
 
-      const newIndex = getReorderIndex(
+      const reorderResult = getReorderIndex(
         strategyState.startingMetadata,
         siblingsOfTarget,
         pointOnCanvas,
         target,
         interactionState.allElementProps,
       )
+
+      const { newIndex, newDisplayType } = reorderResult
 
       const realNewIndex = newIndex > -1 ? newIndex : lastReorderIdx
 
@@ -120,12 +123,16 @@ export const flowReorderStategy: CanvasStrategy = {
           },
         }
       } else {
+        const newDisplayTypeCommands =
+          newDisplayType == null ? [] : [convertInlineBlock('always', target, newDisplayType)]
+
         return {
           commands: [
             reorderElement('always', target, absolute(realNewIndex)),
             setElementsToRerenderCommand([target]),
             updateHighlightedViews('mid-interaction', []),
             setCursorCommand('mid-interaction', CSSCursor.Move),
+            ...newDisplayTypeCommands,
           ],
           customState: {
             ...strategyState.customStrategyState,
@@ -143,11 +150,22 @@ export const flowReorderStategy: CanvasStrategy = {
   },
 }
 
+type FlowDirection = 'vertical' | 'horizontal'
+
+function flowDirectionForDisplayValue(displayValue: string): FlowDirection {
+  if (displayValue === 'inline' || displayValue === 'inline-block') {
+    return 'horizontal'
+  } else {
+    return 'vertical'
+  }
+}
+
 interface ReorderElement {
   distance: number
   centerPoint: CanvasPoint
   closestSibling: ElementPath
   siblingIndex: number
+  direction: FlowDirection
 }
 
 function getRelativeOffset(
@@ -174,20 +192,31 @@ function getCenterPositionInFlow(
   return offsetPoint(rawCenter, relativeOffset)
 }
 
-export function getReorderIndex(
+function getReorderIndex(
   metadata: ElementInstanceMetadataMap,
   siblings: Array<ElementPath>,
   point: CanvasVector,
   existingElement: ElementPath | null,
   allElementProps: AllElementProps,
-): number {
+): {
+  newIndex: number
+  newDisplayType?: 'block' | 'inline-block'
+} {
+  if (existingElement === null) {
+    return {
+      newIndex: -1,
+    }
+  }
+
   let reorderResult: ReorderElement | null = null
   let siblingIndex: number = 0
+  let displayValues: Array<string> = []
 
-  // TODO For relative elements we need to negatively offset them based on their top / bottom and left / right
-  // TODO For sticky elements we need to do that plus... err... how the hell do we figure out how much to offset based on the scroll?
-  // TODO What are all of the ways of achieving a horizontal layout in flow? float, display: inline-block, inline (when there is content), ...
-  // TODO How should wrapping be handled here?
+  // TODO stick elements?
+  // TODO float?
+  // TODO wrapping
+
+  const existingElementMetadata = MetadataUtils.findElementByElementPath(metadata, existingElement)
 
   for (const sibling of siblings) {
     const siblingMetadata = MetadataUtils.findElementByElementPath(metadata, sibling)
@@ -207,24 +236,53 @@ export function getReorderIndex(
           centerPoint: centerPoint,
           closestSibling: sibling,
           siblingIndex: siblingIndex,
+          direction: flowDirectionForDisplayValue(siblingMetadata.specialSizeMeasurements.display),
         }
       }
     }
+    displayValues.push(siblingMetadata?.specialSizeMeasurements.display || 'block')
     siblingIndex++
   }
 
   if (reorderResult == null) {
     // We were unable to find an appropriate entry.
-    return -1
+    return {
+      newIndex: -1,
+    }
   } else if (EP.pathsEqual(reorderResult.closestSibling, existingElement)) {
     // Reparenting to the same position that the existing element started in.
-    return reorderResult.siblingIndex
+    return {
+      newIndex: reorderResult.siblingIndex,
+    }
   } else {
     // Check which "side" of the target this falls on.
     let newIndex = reorderResult.siblingIndex
-    if (point.y > reorderResult.centerPoint.y) {
+    if (reorderResult.direction === 'vertical' && point.y > reorderResult.centerPoint.y) {
+      newIndex++
+    } else if (reorderResult.direction === 'horizontal' && point.x > reorderResult.centerPoint.x) {
       newIndex++
     }
-    return newIndex
+
+    const displayTypeOfPrevSibling = displayValues[newIndex - 1]
+    const displayTypeOfNextSibling = displayValues[newIndex]
+
+    let newDisplayType: 'block' | 'inline-block' | undefined = undefined
+    if (
+      displayTypeOfPrevSibling === 'inline-block' &&
+      displayTypeOfNextSibling === 'inline-block'
+    ) {
+      newDisplayType = 'inline-block'
+    } else if (displayTypeOfPrevSibling === 'block' && displayTypeOfNextSibling === 'block') {
+      newDisplayType = 'block'
+    }
+
+    if (newDisplayType === existingElementMetadata?.specialSizeMeasurements.display) {
+      newDisplayType = undefined
+    }
+
+    return {
+      newIndex: newIndex,
+      newDisplayType: newDisplayType,
+    }
   }
 }

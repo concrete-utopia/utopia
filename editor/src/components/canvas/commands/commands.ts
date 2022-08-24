@@ -43,6 +43,7 @@ import {
   runAddToReparentedToPaths,
   addToReparentedToPaths,
 } from '../canvas-strategies/add-to-reparented-to-paths-command'
+import { ConvertInlineBlock, runConvertInlineBlock } from './convert-inline-block-command'
 
 export interface CommandFunctionResult {
   editorStatePatches: Array<EditorStatePatch>
@@ -68,6 +69,7 @@ export type CanvasCommand =
   | UpdateSelectedViews
   | UpdateHighlightedViews
   | SetSnappingGuidelines
+  | ConvertInlineBlock
   | ConvertToAbsolute
   | SetCssLengthProperty
   | ReorderElement
@@ -105,6 +107,8 @@ export const runCanvasCommand = (
       return runUpdateHighlightedViews(editorState, command)
     case 'SET_SNAPPING_GUIDELINES':
       return runSetSnappingGuidelines(editorState, command)
+    case 'CONVERT_INLINE_BLOCK':
+      return runConvertInlineBlock(editorState, command)
     case 'CONVERT_TO_ABSOLUTE':
       return runConvertToAbsolute(editorState, command)
     case 'SET_CSS_LENGTH_PROPERTY':
