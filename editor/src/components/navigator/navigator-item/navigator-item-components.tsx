@@ -138,7 +138,7 @@ export const SelectionLockedIndicator: React.FunctionComponent<
         marginRight: 4,
         height: 18,
         width: 18,
-        opacity: shouldShow ? 1 : 0,
+        display: shouldShow ? 'block' : 'none',
       }}
     >
       {when(value === 'locked', <Icons.LockClosed color={color} />)}
