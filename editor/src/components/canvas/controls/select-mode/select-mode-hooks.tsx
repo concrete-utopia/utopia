@@ -134,11 +134,13 @@ export function useMaybeHighlightElement(): {
   }
 }
 
-function filterHiddenInstances(
-  hiddenInstances: Array<ElementPath>,
+function filterNonSelectableElements(
+  nonSelectablePaths: Array<ElementPath>,
   paths: Array<ElementPath>,
 ): Array<ElementPath> {
-  return paths.filter((path) => hiddenInstances.every((hidden) => !EP.pathsEqual(path, hidden)))
+  return paths.filter((path) =>
+    nonSelectablePaths.every((nonSelectablePath) => !EP.pathsEqual(path, nonSelectablePath)),
+  )
 }
 
 function collectSelectableSiblings(
@@ -225,7 +227,7 @@ export function getSelectableViews(
     ...hiddenInstances,
     ...getAllLockedElementPaths(componentMetadata, lockedElements),
   ]
-  return filterHiddenInstances(nonSelectableElements, candidateViews)
+  return filterNonSelectableElements(nonSelectableElements, candidateViews)
 }
 
 function useFindValidTarget(): (
