@@ -180,6 +180,22 @@ function getSelectableSiblings(
   return siblings
 }
 
+function getAllLockedElementPaths(
+  componentMetadata: ElementInstanceMetadataMap,
+  lockedElements: LockedElements,
+): Array<ElementPath> {
+  const descendantsOfHierarchyLocked = MetadataUtils.getAllPaths(componentMetadata).filter(
+    (path) => {
+      lockedElements.hierarchyLock.some((lockedPath) => EP.isDescendantOf(path, lockedPath))
+    },
+  )
+  return [
+    ...lockedElements.simpleLock,
+    ...lockedElements.hierarchyLock,
+    ...descendantsOfHierarchyLocked,
+  ]
+}
+
 export function getSelectableViews(
   componentMetadata: ElementInstanceMetadataMap,
   selectedViews: Array<ElementPath>,
@@ -209,12 +225,9 @@ export function getSelectableViews(
 
   const nonSelectableElements = [
     ...hiddenInstances,
-    ...lockedElements.simpleLock,
-    ...lockedElements.hierarchyLock,
+    ...getAllLockedElementPaths(componentMetadata, lockedElements),
   ]
-  return filterHiddenInstances(nonSelectableElements, candidateViews).filter(
-    (filteredPath) => !EP.isStoryboardPath(filteredPath),
-  )
+  return filterHiddenInstances(nonSelectableElements, candidateViews)
 }
 
 function useFindValidTarget(): (
