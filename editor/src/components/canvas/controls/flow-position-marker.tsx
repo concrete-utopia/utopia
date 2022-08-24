@@ -3,7 +3,7 @@ import { MetadataUtils } from '../../../core/model/element-metadata-utils'
 import { mapDropNulls, stripNulls, uniqBy } from '../../../core/shared/array-utils'
 import * as EP from '../../../core/shared/element-path'
 import { ElementInstanceMetadata } from '../../../core/shared/element-template'
-import { CanvasPoint, offsetRect } from '../../../core/shared/math-utils'
+import { CanvasPoint, magnitude, offsetRect } from '../../../core/shared/math-utils'
 import { useColorTheme } from '../../../uuiui'
 import { ElementProps } from '../../editor/store/editor-state'
 import { useEditorState } from '../../editor/store/store-hook'
@@ -39,7 +39,9 @@ export const FlowPositionMarker = React.memo(() => {
       const elementProps = store.editor.allElementProps[EP.toString(path)] ?? {}
       const relativeOffset = getRelativeOffset(element, elementProps)
 
-      return frame == null ? null : offsetRect(frame, relativeOffset)
+      const relativeOffsetSize = magnitude(relativeOffset)
+
+      return frame == null || relativeOffsetSize < 10 ? null : offsetRect(frame, relativeOffset)
     } else {
       return null
     }
