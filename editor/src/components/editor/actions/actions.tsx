@@ -4924,8 +4924,8 @@ export const UPDATE_FNS = {
           return update(working, {
             lockedElements: {
               simpleLock: { $set: working.lockedElements.simpleLock.concat(target) },
-              withHierarchy: {
-                $set: working.lockedElements.withHierarchy.filter(
+              hierarchyLock: {
+                $set: working.lockedElements.hierarchyLock.filter(
                   (element) => !EP.pathsEqual(element, target),
                 ),
               },
@@ -4939,7 +4939,7 @@ export const UPDATE_FNS = {
                   (element) => !EP.pathsEqual(element, target),
                 ),
               },
-              withHierarchy: { $set: working.lockedElements.withHierarchy.concat(target) },
+              hierarchyLock: { $set: working.lockedElements.hierarchyLock.concat(target) },
             },
           })
         case 'selectable':
@@ -4951,8 +4951,8 @@ export const UPDATE_FNS = {
                   (element) => !EP.pathsEqual(element, target),
                 ),
               },
-              withHierarchy: {
-                $set: working.lockedElements.withHierarchy.filter(
+              hierarchyLock: {
+                $set: working.lockedElements.hierarchyLock.filter(
                   (element) => !EP.pathsEqual(element, target),
                 ),
               },

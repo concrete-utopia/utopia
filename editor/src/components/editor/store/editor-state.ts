@@ -830,7 +830,7 @@ export type AllElementProps = { [path: string]: ElementProps }
 
 export type LockedElements = {
   simpleLock: Array<ElementPath>
-  withHierarchy: Array<ElementPath>
+  hierarchyLock: Array<ElementPath>
 }
 
 // FIXME We need to pull out ProjectState from here
@@ -1698,7 +1698,7 @@ export function createEditorState(dispatch: EditorDispatch): EditorState {
     warnedInstances: [],
     lockedElements: {
       simpleLock: [],
-      withHierarchy: [],
+      hierarchyLock: [],
     },
     mode: EditorModes.selectMode(),
     focusedPanel: 'canvas',
@@ -1993,7 +1993,7 @@ export function editorModelFromPersistentModel(
     warnedInstances: [],
     lockedElements: {
       simpleLock: [],
-      withHierarchy: [],
+      hierarchyLock: [],
     },
     mode: EditorModes.selectMode(),
     focusedPanel: 'canvas',

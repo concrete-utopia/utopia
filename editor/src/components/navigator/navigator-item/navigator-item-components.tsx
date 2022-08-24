@@ -205,11 +205,11 @@ export const NavigatorItemActionSheet: React.FunctionComponent<
   const isLockedElement = useEditorState((store) => {
     return store.editor.lockedElements.simpleLock.some((path) => EP.pathsEqual(elementPath, path))
   }, 'NavigatorItemActionSheet isLockedElement')
-  const isLockedWithHierarchy = useEditorState((store) => {
-    return store.editor.lockedElements.withHierarchy.some((path) =>
+  const isLockedHierarchy = useEditorState((store) => {
+    return store.editor.lockedElements.hierarchyLock.some((path) =>
       EP.pathsEqual(elementPath, path),
     )
-  }, 'NavigatorItemActionSheet isLockedWithHierarchy')
+  }, 'NavigatorItemActionSheet isLockedHierarchy')
 
   const jsxMetadataRef = useRefEditorState((store) => getMetadata(store.editor))
   const isSceneElement = React.useMemo(
@@ -218,7 +218,7 @@ export const NavigatorItemActionSheet: React.FunctionComponent<
   )
 
   const isDescendantOfLocked = useEditorState((store) => {
-    return store.editor.lockedElements.withHierarchy.some((path) =>
+    return store.editor.lockedElements.hierarchyLock.some((path) =>
       EP.isDescendantOf(elementPath, path),
     )
   }, 'NavigatorItemActionSheet descendant of locked')
@@ -236,12 +236,10 @@ export const NavigatorItemActionSheet: React.FunctionComponent<
           (props.highlighted ||
             props.selected ||
             isLockedElement ||
-            isLockedWithHierarchy ||
+            isLockedHierarchy ||
             isDescendantOfLocked)
         }
-        value={
-          isLockedElement ? 'locked' : isLockedWithHierarchy ? 'locked-hierarchy' : 'selectable'
-        }
+        value={isLockedElement ? 'locked' : isLockedHierarchy ? 'locked-hierarchy' : 'selectable'}
         isDescendantOfLocked={isDescendantOfLocked}
         selected={props.selected}
         onClick={toggleSelectable}

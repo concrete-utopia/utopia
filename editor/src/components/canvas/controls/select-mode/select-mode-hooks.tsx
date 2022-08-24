@@ -210,7 +210,7 @@ export function getSelectableViews(
   const nonSelectableElements = [
     ...hiddenInstances,
     ...lockedElements.simpleLock,
-    ...lockedElements.withHierarchy,
+    ...lockedElements.hierarchyLock,
   ]
   return filterHiddenInstances(nonSelectableElements, candidateViews).filter(
     (filteredPath) => !EP.isStoryboardPath(filteredPath),

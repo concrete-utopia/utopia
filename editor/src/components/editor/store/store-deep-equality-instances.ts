@@ -2781,11 +2781,11 @@ export const EditorStateLockedElementsDeepEquality: KeepDeepEqualityCall<LockedE
   combine2EqualityCalls(
     (locked) => locked.simpleLock,
     ElementPathArrayKeepDeepEquality,
-    (locked) => locked.withHierarchy,
+    (locked) => locked.hierarchyLock,
     ElementPathArrayKeepDeepEquality,
-    (simpleLock: Array<ElementPath>, withHierarchy: Array<ElementPath>) => ({
+    (simpleLock: Array<ElementPath>, hierarchyLock: Array<ElementPath>) => ({
       simpleLock: simpleLock,
-      withHierarchy: withHierarchy,
+      hierarchyLock: hierarchyLock,
     }),
   )
 
