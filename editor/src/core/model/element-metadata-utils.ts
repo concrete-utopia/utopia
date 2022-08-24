@@ -820,8 +820,10 @@ export const MetadataUtils = {
             (element) => {
               if (isJSXElement(element)) {
                 const rootPaths = MetadataUtils.getRootViewPaths(metadata, path)
-                const childrenPaths = element.children.map((child) =>
-                  EP.appendToPath(path, getUtopiaID(child)),
+                const childrenPaths = mapDropNulls(
+                  (child) =>
+                    isJSXElement(child) ? EP.appendToPath(path, getUtopiaID(child)) : null,
+                  element.children,
                 )
                 return [...rootPaths, ...childrenPaths]
               } else {
