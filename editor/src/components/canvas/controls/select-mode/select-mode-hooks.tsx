@@ -141,7 +141,7 @@ function filterHiddenInstances(
   return paths.filter((path) => hiddenInstances.every((hidden) => !EP.pathsEqual(path, hidden)))
 }
 
-function getSelectableSiblings(
+function collectSelectableSiblings(
   componentMetadata: ElementInstanceMetadataMap,
   selectedViews: Array<ElementPath>,
   childrenSelectable: boolean,
@@ -210,7 +210,7 @@ export function getSelectableViews(
     candidateViews = MetadataUtils.getAllPathsIncludingUnfurledFocusedComponents(componentMetadata)
   } else {
     const allRoots = MetadataUtils.getAllCanvasRootPaths(componentMetadata)
-    const siblings = getSelectableSiblings(
+    const siblings = collectSelectableSiblings(
       componentMetadata,
       selectedViews,
       childrenSelectable,
