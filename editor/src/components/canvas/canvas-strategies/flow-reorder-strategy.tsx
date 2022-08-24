@@ -18,11 +18,11 @@ import { setElementsToRerenderCommand } from '../commands/set-elements-to-rerend
 import { updateHighlightedViews } from '../commands/update-highlighted-views-command'
 import { ParentBounds } from '../controls/parent-bounds'
 import { ParentOutlines } from '../controls/parent-outlines'
-import { DragOutlineControl } from '../controls/select-mode/drag-outline-control'
 import { CanvasStrategy, emptyStrategyApplicationResult } from './canvas-strategy-types'
 import { getRectCenter, distance as euclideanDistance } from '../../../core/shared/math-utils'
 import { AllElementProps, ElementProps } from '../../editor/store/editor-state'
 import { absolute } from '../../../utils/utils'
+import { FlowPositionMarker } from '../controls/flow-position-marker'
 
 export const flowReorderStategy: CanvasStrategy = {
   id: 'FLOW_REORDER',
@@ -47,6 +47,11 @@ export const flowReorderStategy: CanvasStrategy = {
     {
       control: ParentBounds,
       key: 'parent-bounds-control',
+      show: 'visible-only-while-active',
+    },
+    {
+      control: FlowPositionMarker,
+      key: 'flow-position-marker-control',
       show: 'visible-only-while-active',
     },
   ], // Uses existing hooks in select-mode-hooks.tsx
