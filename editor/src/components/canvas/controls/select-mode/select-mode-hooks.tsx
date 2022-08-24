@@ -141,13 +141,51 @@ function filterHiddenInstances(
   return paths.filter((path) => hiddenInstances.every((hidden) => !EP.pathsEqual(path, hidden)))
 }
 
+function getSelectableSiblings(
+  componentMetadata: ElementInstanceMetadataMap,
+  selectedViews: Array<ElementPath>,
+  childrenSelectable: boolean,
+  lockedElements: LockedElements,
+): Array<ElementPath> {
+  let siblings: Array<ElementPath> = []
+  Utils.fastForEach(selectedViews, (view) => {
+    function addChildrenAndUnfurledFocusedComponents(paths: Array<ElementPath>) {
+      Utils.fastForEach(paths, (ancestor) => {
+        const { children, unfurledComponents } =
+          MetadataUtils.getAllChildrenIncludingUnfurledFocusedComponents(
+            ancestor,
+            componentMetadata,
+          )
+
+        siblings.push(ancestor)
+
+        const ancestorChildren = [...children, ...unfurledComponents]
+        fastForEach(ancestorChildren, (child) => {
+          siblings.push(child)
+
+          // If this element is locked we want to recurse the children
+          if (lockedElements.simpleLock.some((path) => EP.pathsEqual(path, child))) {
+            addChildrenAndUnfurledFocusedComponents([child])
+          }
+        })
+      })
+    }
+
+    const allPaths = childrenSelectable
+      ? EP.allPathsForLastPart(view)
+      : EP.allPathsForLastPart(EP.parentPath(view))
+
+    addChildrenAndUnfurledFocusedComponents(allPaths)
+  })
+  return siblings
+}
+
 export function getSelectableViews(
   componentMetadata: ElementInstanceMetadataMap,
   selectedViews: Array<ElementPath>,
   hiddenInstances: Array<ElementPath>,
   allElementsDirectlySelectable: boolean,
   childrenSelectable: boolean,
-  allElementProps: AllElementProps,
   lockedElements: LockedElements,
 ): ElementPath[] {
   let candidateViews: Array<ElementPath>
@@ -155,65 +193,15 @@ export function getSelectableViews(
   if (allElementsDirectlySelectable) {
     candidateViews = MetadataUtils.getAllPathsIncludingUnfurledFocusedComponents(componentMetadata)
   } else {
-    const scenes = MetadataUtils.getAllStoryboardChildrenPaths(componentMetadata)
-    let rootElementsToFilter: ElementPath[] = []
-    let dynamicScenesWithFragmentRootViews: ElementPath[] = []
-    Utils.fastForEach(scenes, (path) => {
-      const scene = MetadataUtils.findElementByElementPath(componentMetadata, path)
-      const rootElements = MetadataUtils.getRootViewPaths(componentMetadata, path)
-      if (
-        MetadataUtils.isSceneTreatedAsGroup(allElementProps, path) &&
-        rootElements != null &&
-        rootElements.length > 1
-      ) {
-        rootElementsToFilter.push(...rootElements)
-        dynamicScenesWithFragmentRootViews.push(path)
-      }
-    })
-    const allRoots = MetadataUtils.getAllCanvasRootPaths(componentMetadata).filter((rootPath) => {
-      return !rootElementsToFilter.some((path) => EP.pathsEqual(rootPath, path))
-    })
-    let siblings: Array<ElementPath> = []
-    Utils.fastForEach(selectedViews, (view) => {
-      function addChildrenAndUnfurledFocusedComponents(paths: Array<ElementPath>) {
-        Utils.fastForEach(paths, (ancestor) => {
-          const { children, unfurledComponents } =
-            MetadataUtils.getAllChildrenIncludingUnfurledFocusedComponents(
-              ancestor,
-              componentMetadata,
-            )
+    const allRoots = MetadataUtils.getAllCanvasRootPaths(componentMetadata)
+    const siblings = getSelectableSiblings(
+      componentMetadata,
+      selectedViews,
+      childrenSelectable,
+      lockedElements,
+    )
 
-          siblings.push(ancestor)
-
-          const ancestorChildren = [...children, ...unfurledComponents]
-          fastForEach(ancestorChildren, (child) => {
-            siblings.push(child)
-
-            // If this element is locked we want to recurse the children
-            if (lockedElements.simpleLock.some((path) => EP.pathsEqual(path, child))) {
-              addChildrenAndUnfurledFocusedComponents([child])
-            }
-          })
-        })
-      }
-
-      const allPaths = childrenSelectable
-        ? EP.allPathsForLastPart(view)
-        : EP.allPathsForLastPart(EP.parentPath(view))
-
-      addChildrenAndUnfurledFocusedComponents(allPaths)
-      // Utils.fastForEach(allPaths, (ancestor) => {
-      //   const { children, unfurledComponents } =
-      //     MetadataUtils.getAllChildrenIncludingUnfurledFocusedComponents(
-      //       ancestor,
-      //       componentMetadata,
-      //     )
-      //   const ancestorChildren = [...children, ...unfurledComponents]
-      //   fastForEach(ancestorChildren, (child) => siblings.push(child))
-      // })
-    })
-
-    const selectableViews = [...dynamicScenesWithFragmentRootViews, ...allRoots, ...siblings]
+    const selectableViews = [...allRoots, ...siblings]
     const uniqueSelectableViews = uniqBy<ElementPath>(selectableViews, EP.pathsEqual)
 
     candidateViews = uniqueSelectableViews
@@ -442,22 +430,19 @@ export function useGetSelectableViewsForSelectMode() {
       selectedViews: store.editor.selectedViews,
       hiddenInstances: store.editor.hiddenInstances,
       focusedElementPath: store.editor.focusedElementPath,
-      allElementProps: store.editor.allElementProps,
       lockedElements: store.editor.lockedElements,
     }
   })
 
   return React.useCallback(
     (allElementsDirectlySelectable: boolean, childrenSelectable: boolean) => {
-      const { componentMetadata, selectedViews, hiddenInstances, allElementProps, lockedElements } =
-        storeRef.current
+      const { componentMetadata, selectedViews, hiddenInstances, lockedElements } = storeRef.current
       const selectableViews = getSelectableViews(
         componentMetadata,
         selectedViews,
         hiddenInstances,
         allElementsDirectlySelectable,
         childrenSelectable,
-        allElementProps,
         lockedElements,
       )
       return selectableViews
