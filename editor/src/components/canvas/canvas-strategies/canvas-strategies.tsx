@@ -137,36 +137,6 @@ function getApplicableStrategiesOrderedByFitness(
   return sortedStrategies
 }
 
-const getApplicableStrategiesOrderedByFitnessSelector = createSelector(
-  (store: EditorStorePatched): InteractionCanvasState => {
-    return pickCanvasStateFromEditorState(store.editor, store.builtInDependencies)
-  },
-  (store: EditorStorePatched) => store.editor.canvas.interactionSession,
-  (store: EditorStorePatched) => store.strategyState,
-  (
-    canvasState: InteractionCanvasState,
-    interactionSession: InteractionSession | null,
-    strategyState: StrategyState,
-  ): Array<CanvasStrategy> => {
-    if (interactionSession == null) {
-      return []
-    }
-    return getApplicableStrategiesOrderedByFitness(
-      RegisteredCanvasStrategies,
-      canvasState,
-      interactionSession,
-      strategyState,
-    ).map((s) => s.strategy)
-  },
-)
-
-export function useGetApplicableStrategiesOrderedByFitness(): Array<CanvasStrategy> {
-  return useEditorState(
-    getApplicableStrategiesOrderedByFitnessSelector,
-    'useGetApplicableStrategiesOrderedByFitness',
-  )
-}
-
 function pickDefaultCanvasStrategy(
   sortedApplicableStrategies: Array<StrategyWithFitness>,
   previousStrategyId: string | null,
