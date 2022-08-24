@@ -58,10 +58,7 @@ import { KeysPressed } from '../../../utils/keyboard'
 import { usePrevious } from '../../editor/hook-utils'
 import { LayoutTargetableProp } from '../../../core/layout/layout-helpers-new'
 import { getDragStateStart } from '../canvas-utils'
-import {
-  useGetApplicableStrategiesOrderedByFitness,
-  useGetApplicableStrategyControls,
-} from '../canvas-strategies/canvas-strategies'
+import { useGetApplicableStrategyControls } from '../canvas-strategies/canvas-strategies'
 import { FlexResizeControl } from './select-mode/flex-resize-control'
 import { MultiSelectOutlineControl } from './select-mode/simple-outline-control'
 import { GuidelineControls } from './guideline-controls'
