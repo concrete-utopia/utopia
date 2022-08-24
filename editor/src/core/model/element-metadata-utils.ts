@@ -73,7 +73,6 @@ import {
   isUtopiaAPIComponentFromMetadata,
   isGivenUtopiaElementFromMetadata,
 } from './project-file-utils'
-import { ResizesContentProp } from './scene-utils'
 import { fastForEach } from '../shared/utils'
 import { objectValues, omit } from '../shared/object-utils'
 import { UTOPIA_LABEL_KEY } from './utopia-constants'
@@ -159,9 +158,6 @@ export const MetadataUtils = {
     paths: Array<ElementPath>,
   ): Array<ElementInstanceMetadata> {
     return stripNulls(paths.map((path) => MetadataUtils.findElementByElementPath(elementMap, path)))
-  },
-  isSceneTreatedAsGroup(allElementProps: AllElementProps, path: ElementPath): boolean {
-    return allElementProps?.[EP.toString(path)]?.[ResizesContentProp] ?? false
   },
   isProbablySceneFromMetadata(element: ElementInstanceMetadata | null): boolean {
     return (
