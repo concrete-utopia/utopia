@@ -184,10 +184,8 @@ function getAllLockedElementPaths(
   componentMetadata: ElementInstanceMetadataMap,
   lockedElements: LockedElements,
 ): Array<ElementPath> {
-  const descendantsOfHierarchyLocked = MetadataUtils.getAllPaths(componentMetadata).filter(
-    (path) => {
-      lockedElements.hierarchyLock.some((lockedPath) => EP.isDescendantOf(path, lockedPath))
-    },
+  const descendantsOfHierarchyLocked = MetadataUtils.getAllPaths(componentMetadata).filter((path) =>
+    MetadataUtils.isDescendantOfHierarchyLockedElement(path, lockedElements),
   )
   return [
     ...lockedElements.simpleLock,

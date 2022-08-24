@@ -76,7 +76,11 @@ import {
 import { fastForEach } from '../shared/utils'
 import { objectValues, omit } from '../shared/object-utils'
 import { UTOPIA_LABEL_KEY } from './utopia-constants'
-import { AllElementProps, withUnderlyingTarget } from '../../components/editor/store/editor-state'
+import {
+  AllElementProps,
+  LockedElements,
+  withUnderlyingTarget,
+} from '../../components/editor/store/editor-state'
 import { ProjectContentTreeRoot } from '../../components/assets'
 import { memoize } from '../shared/memoize'
 import { buildTree, ElementPathTree, getSubTree } from '../shared/element-path-tree'
@@ -1386,6 +1390,9 @@ export const MetadataUtils = {
         ? canvasRectangleToLocalRectangle(globalFrame, elementContainerBounds)
         : null
     return localFrame
+  },
+  isDescendantOfHierarchyLockedElement(path: ElementPath, lockedElements: LockedElements): boolean {
+    return lockedElements.hierarchyLock.some((lockedPath) => EP.isDescendantOf(path, lockedPath))
   },
 }
 

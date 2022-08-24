@@ -218,8 +218,9 @@ export const NavigatorItemActionSheet: React.FunctionComponent<
   )
 
   const isDescendantOfLocked = useEditorState((store) => {
-    return store.editor.lockedElements.hierarchyLock.some((path) =>
-      EP.isDescendantOf(elementPath, path),
+    return MetadataUtils.isDescendantOfHierarchyLockedElement(
+      elementPath,
+      store.editor.lockedElements,
     )
   }, 'NavigatorItemActionSheet descendant of locked')
 
