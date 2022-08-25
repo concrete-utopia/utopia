@@ -32,18 +32,6 @@ export const useEditorState = <U>(
   return context.useStore(wrappedSelector, equalityFn as EqualityChecker<U>)
 }
 
-export const useEditorStateFull = <U>(
-  selector: StateSelector<EditorStoreFull, U>,
-  equalityFn: (oldSlice: U, newSlice: U) => boolean = shallowEqual,
-): U => {
-  const context = React.useContext(EditorStateFullContext)
-
-  if (context == null) {
-    throw new Error('useEditorStateFull is missing from editor context')
-  }
-  return context.useStore(selector, equalityFn as EqualityChecker<U>)
-}
-
 function useWrapSelectorInPerformanceMeasureBlock<U>(
   selector: StateSelector<EditorStorePatched, U>,
   selectorName: string,
@@ -157,21 +145,6 @@ export const CanvasStateContext = React.createContext<EditorStateContextData | n
 CanvasStateContext.displayName = 'CanvasStateContext'
 export const InspectorStateContext = React.createContext<EditorStateContextData | null>(null)
 InspectorStateContext.displayName = 'InspectorStateContext'
-
-export type FullUtopiaStoreHook = UseBoundStore<EditorStoreFull>
-
-// This is how to officially type the store with a subscribeWithSelector middleware as of Zustand 3.6.0 https://github.com/pmndrs/zustand#using-subscribe-with-selector
-export type FullUtopiaStoreAPI = Mutate<
-  StoreApi<EditorStoreFull>,
-  [['zustand/subscribeWithSelector', never]]
->
-
-export type EditorStateFullContextData = {
-  api: FullUtopiaStoreAPI
-  useStore: FullUtopiaStoreHook
-}
-export const EditorStateFullContext = React.createContext<EditorStateFullContextData | null>(null)
-EditorStateFullContext.displayName = 'EditorStateFullContext'
 
 export function useSelectorWithCallback<U>(
   selector: StateSelector<EditorStorePatched, U>,

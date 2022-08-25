@@ -6,7 +6,7 @@ import { ElementInstanceMetadata } from '../../../core/shared/element-template'
 import { CanvasPoint, magnitude, offsetRect } from '../../../core/shared/math-utils'
 import { useColorTheme } from '../../../uuiui'
 import { ElementProps } from '../../editor/store/editor-state'
-import { useEditorState, useEditorStateFull } from '../../editor/store/store-hook'
+import { useEditorState } from '../../editor/store/store-hook'
 import { CanvasOffsetWrapper } from './canvas-offset-wrapper'
 
 function getRelativeOffset(
@@ -70,21 +70,22 @@ export const FlowStartingPositionMarker = React.memo(() => {
   const colorTheme = useColorTheme()
   const scale = useEditorState(
     (store) => store.editor.canvas.scale,
-    'FlowPositionMarker canvas scale',
+    'FlowStartingPositionMarker canvas scale',
   )
 
-  const framesInFlowPosition = useEditorStateFull((store) => {
-    if (store.unpatchedEditor.selectedViews.length === 1) {
-      const target = store.unpatchedEditor.selectedViews[0]
-      const siblings = MetadataUtils.getSiblingPaths(store.unpatchedEditor.jsxMetadata, target)
+  const framesInFlowPosition = useEditorState((store) => {
+    if (store.editor.selectedViews.length === 1) {
+      const target = store.editor.selectedViews[0]
+      const metadata =
+        store.editor.canvas.interactionSession == null
+          ? store.editor.jsxMetadata
+          : store.strategyState.startingMetadata
+      const siblings = MetadataUtils.getSiblingPaths(metadata, target)
       return mapDropNulls((path) => {
-        const frame = MetadataUtils.getFrameInCanvasCoords(path, store.unpatchedEditor.jsxMetadata)
+        const frame = MetadataUtils.getFrameInCanvasCoords(path, metadata)
 
-        const element = MetadataUtils.findElementByElementPath(
-          store.unpatchedEditor.jsxMetadata,
-          path,
-        )
-        const elementProps = store.unpatchedEditor.allElementProps[EP.toString(path)] ?? {}
+        const element = MetadataUtils.findElementByElementPath(metadata, path)
+        const elementProps = store.editor.allElementProps[EP.toString(path)] ?? {}
         const relativeOffset = getRelativeOffset(element, elementProps)
 
         return frame == null ? null : offsetRect(frame, relativeOffset)
@@ -92,7 +93,7 @@ export const FlowStartingPositionMarker = React.memo(() => {
     } else {
       return null
     }
-  })
+  }, 'FlowStartingPositionMarker framesInFlowPosition')
 
   const lineColor = colorTheme.subduedForeground.o(20).value
   const lineWidth = 1 / scale
