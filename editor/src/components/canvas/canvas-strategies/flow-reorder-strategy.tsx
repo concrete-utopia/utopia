@@ -119,6 +119,7 @@ export const flowReorderStategy: CanvasStrategy = {
         return {
           commands: [
             updateHighlightedViews('mid-interaction', []),
+            setElementsToRerenderCommand(siblingsOfTarget),
             setCursorCommand('mid-interaction', CSSCursor.Move),
           ],
           customState: {
