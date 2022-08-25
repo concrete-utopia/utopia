@@ -43,7 +43,7 @@ import type {
   ProjectContentTreeRoot,
 } from '../../assets'
 import CanvasActions from '../../canvas/canvas-actions'
-import type { PinOrFlexFrameChange } from '../../canvas/canvas-types'
+import type { PinOrFlexFrameChange, SelectionLocked } from '../../canvas/canvas-types'
 import type { CursorPosition } from '../../code-editor/code-editor-utils'
 import type { EditorPane, EditorPanel } from '../../common/actions'
 import { Notice } from '../../common/notice'
@@ -209,6 +209,7 @@ import type {
   RemoveFromNodeModulesContents,
   RunEscapeHatch,
   UpdateMouseButtonsPressed,
+  ToggleSelectionLock,
 } from '../action-types'
 import {
   EditorModes,
@@ -1497,5 +1498,16 @@ export function runEscapeHatch(targets: Array<ElementPath>): RunEscapeHatch {
   return {
     action: 'RUN_ESCAPE_HATCH',
     targets: targets,
+  }
+}
+
+export function toggleSelectionLock(
+  targets: Array<ElementPath>,
+  newValue: SelectionLocked,
+): ToggleSelectionLock {
+  return {
+    action: 'TOGGLE_SELECTION_LOCK',
+    targets: targets,
+    newValue: newValue,
   }
 }
