@@ -17,7 +17,9 @@ export const DisplayTypeOutline = () => {
         store.editor.jsxMetadata,
         path,
       )?.specialSizeMeasurements.display
-      const siblings = MetadataUtils.getSiblings(store.editor.jsxMetadata, path)
+      const siblings = MetadataUtils.getSiblings(store.editor.jsxMetadata, path).filter(
+        (element) => !EP.pathsEqual(element.elementPath, path),
+      )
       const frames = mapDropNulls((sibling) => {
         const frame = MetadataUtils.getFrameInCanvasCoords(
           sibling.elementPath,

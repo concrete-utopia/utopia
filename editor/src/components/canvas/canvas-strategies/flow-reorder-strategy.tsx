@@ -25,6 +25,7 @@ import { absolute } from '../../../utils/utils'
 import { FlowPositionMarker } from '../controls/flow-position-marker'
 import { convertInlineBlock } from '../commands/convert-inline-block-command'
 import { DisplayTypeOutline } from '../controls/display-type-outline'
+import { DragOutlineControl } from '../controls/select-mode/drag-outline-control'
 
 export const flowReorderStategy: CanvasStrategy = {
   id: 'FLOW_REORDER',
@@ -59,6 +60,11 @@ export const flowReorderStategy: CanvasStrategy = {
     {
       control: DisplayTypeOutline,
       key: 'display-type-outline',
+      show: 'visible-only-while-active',
+    },
+    {
+      control: DragOutlineControl,
+      key: 'ghost-outline-control',
       show: 'visible-only-while-active',
     },
   ], // Uses existing hooks in select-mode-hooks.tsx
