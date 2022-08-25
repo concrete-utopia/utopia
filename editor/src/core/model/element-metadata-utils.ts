@@ -194,10 +194,7 @@ export const MetadataUtils = {
     const parentPath = EP.parentPath(target)
     return MetadataUtils.findElementByElementPath(metadata, parentPath)
   },
-  getSiblings(
-    metadata: ElementInstanceMetadataMap,
-    target: ElementPath | null,
-  ): ElementInstanceMetadata[] {
+  getSiblingPaths(metadata: ElementInstanceMetadataMap, target: ElementPath | null): ElementPath[] {
     if (target == null) {
       return []
     }
@@ -206,7 +203,13 @@ export const MetadataUtils = {
     const siblingPathsOrNull = EP.isRootElementOfInstance(target)
       ? MetadataUtils.getRootViewPaths(metadata, parentPath)
       : MetadataUtils.getChildrenPaths(metadata, parentPath)
-    const siblingPaths = siblingPathsOrNull ?? []
+    return siblingPathsOrNull ?? []
+  },
+  getSiblings(
+    metadata: ElementInstanceMetadataMap,
+    target: ElementPath | null,
+  ): ElementInstanceMetadata[] {
+    const siblingPaths = MetadataUtils.getSiblingPaths(metadata, target)
     return MetadataUtils.findElementsByElementPath(metadata, siblingPaths)
   },
   isParentYogaLayoutedContainerAndElementParticipatesInLayout(

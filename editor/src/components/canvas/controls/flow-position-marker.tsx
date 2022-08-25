@@ -6,7 +6,7 @@ import { ElementInstanceMetadata } from '../../../core/shared/element-template'
 import { CanvasPoint, magnitude, offsetRect } from '../../../core/shared/math-utils'
 import { useColorTheme } from '../../../uuiui'
 import { ElementProps } from '../../editor/store/editor-state'
-import { useEditorState } from '../../editor/store/store-hook'
+import { useEditorState, useEditorStateFull } from '../../editor/store/store-hook'
 import { CanvasOffsetWrapper } from './canvas-offset-wrapper'
 
 function getRelativeOffset(
@@ -62,6 +62,62 @@ export const FlowPositionMarker = React.memo(() => {
           pointerEvents: 'none',
         }}
       />
+    </CanvasOffsetWrapper>
+  )
+})
+
+export const FlowStartingPositionMarker = React.memo(() => {
+  const colorTheme = useColorTheme()
+  const scale = useEditorState(
+    (store) => store.editor.canvas.scale,
+    'FlowPositionMarker canvas scale',
+  )
+
+  const framesInFlowPosition = useEditorStateFull((store) => {
+    if (store.unpatchedEditor.selectedViews.length === 1) {
+      const target = store.unpatchedEditor.selectedViews[0]
+      const siblings = MetadataUtils.getSiblingPaths(store.unpatchedEditor.jsxMetadata, target)
+      return mapDropNulls((path) => {
+        const frame = MetadataUtils.getFrameInCanvasCoords(path, store.unpatchedEditor.jsxMetadata)
+
+        const element = MetadataUtils.findElementByElementPath(
+          store.unpatchedEditor.jsxMetadata,
+          path,
+        )
+        const elementProps = store.unpatchedEditor.allElementProps[EP.toString(path)] ?? {}
+        const relativeOffset = getRelativeOffset(element, elementProps)
+
+        return frame == null ? null : offsetRect(frame, relativeOffset)
+      }, siblings)
+    } else {
+      return null
+    }
+  })
+
+  const lineColor = colorTheme.subduedForeground.o(20).value
+  const lineWidth = 1 / scale
+
+  return (
+    <CanvasOffsetWrapper key={`flow-starting-position-marker`}>
+      {framesInFlowPosition?.map((frameInFlowPosition, i) => (
+        <div
+          key={`frame-in-flow-position-${i}`}
+          style={{
+            position: 'absolute',
+            left: frameInFlowPosition.x,
+            top: frameInFlowPosition.y,
+            width: frameInFlowPosition.width,
+            height: frameInFlowPosition.height,
+            outlineStyle: 'solid',
+            outlineColor: lineColor,
+            outlineWidth: lineWidth,
+            pointerEvents: 'none',
+            background: `repeating-linear-gradient(45deg, #00000000 0px, #00000000 ${
+              lineWidth * 10
+            }px, ${lineColor} ${lineWidth * 10}px, ${lineColor} ${lineWidth * 10 + lineWidth}px)`,
+          }}
+        />
+      ))}
     </CanvasOffsetWrapper>
   )
 })

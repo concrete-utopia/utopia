@@ -252,6 +252,7 @@ export async function renderTestEditorWithModel(
 
     flushSync(() => {
       storeHook.setState(patchedStoreFromFullStore(workingEditorState))
+      fullStoreHook.setState(workingEditorState)
       if (shouldInspectorUpdate(workingEditorState.strategyState)) {
         inspectorStoreHook.setState(patchedStoreFromFullStore(workingEditorState))
       }
@@ -309,6 +310,13 @@ export async function renderTestEditorWithModel(
     Mutate<StoreApi<EditorStorePatched>, [['zustand/subscribeWithSelector', never]]>
   >(subscribeWithSelector((set) => patchedStoreFromFullStore(initialEditorStore)))
 
+  const fullStoreHook = create<
+    EditorStoreFull,
+    SetState<EditorStoreFull>,
+    GetState<EditorStoreFull>,
+    Mutate<StoreApi<EditorStoreFull>, [['zustand/subscribeWithSelector', never]]>
+  >(subscribeWithSelector((set) => initialEditorStore))
+
   // initializing the local editor state
   workingEditorState = initialEditorStore
 
@@ -328,6 +336,8 @@ export async function renderTestEditorWithModel(
         useStore={storeHook}
         canvasStore={canvasStoreHook}
         spyCollector={spyCollector}
+        fullStoreApi={fullStoreHook}
+        fullStore={fullStoreHook}
         inspectorStore={inspectorStoreHook}
         domWalkerMutableState={domWalkerMutableState}
       />

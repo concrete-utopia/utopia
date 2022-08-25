@@ -9,6 +9,7 @@ import {
   CanvasRectangle,
   CanvasVector,
   offsetPoint,
+  pointIsClockwiseFromLine,
 } from '../../../core/shared/math-utils'
 import { ElementPath } from '../../../core/shared/project-file-types'
 import { CSSCursor } from '../canvas-types'
@@ -22,8 +23,9 @@ import { CanvasStrategy, emptyStrategyApplicationResult } from './canvas-strateg
 import { getRectCenter, distance as euclideanDistance } from '../../../core/shared/math-utils'
 import { AllElementProps, ElementProps } from '../../editor/store/editor-state'
 import { absolute } from '../../../utils/utils'
-import { FlowPositionMarker } from '../controls/flow-position-marker'
+import { FlowPositionMarker, FlowStartingPositionMarker } from '../controls/flow-position-marker'
 import { convertInlineBlock } from '../commands/convert-inline-block-command'
+import { DragOutlineControl } from '../controls/select-mode/drag-outline-control'
 
 export const flowReorderStategy: CanvasStrategy = {
   id: 'FLOW_REORDER',
@@ -53,6 +55,16 @@ export const flowReorderStategy: CanvasStrategy = {
     {
       control: FlowPositionMarker,
       key: 'flow-position-marker-control',
+      show: 'visible-only-while-active',
+    },
+    {
+      control: FlowStartingPositionMarker,
+      key: 'flow-starting-position-marker-control',
+      show: 'visible-only-while-active',
+    },
+    {
+      control: DragOutlineControl,
+      key: 'drag-outline-control',
       show: 'visible-only-while-active',
     },
   ], // Uses existing hooks in select-mode-hooks.tsx
@@ -87,14 +99,7 @@ export const flowReorderStategy: CanvasStrategy = {
         interactionState.interactionData.drag,
       )
 
-      const targetMetadata = MetadataUtils.findElementByElementPath(
-        interactionState.metadata,
-        target,
-      )
-      const targetProps = interactionState.allElementProps[EP.toString(target)] ?? {}
-      const relativeOffset = getRelativeOffset(targetMetadata, targetProps)
-
-      const pointOnCanvas = offsetPoint(rawPointOnCanvas, relativeOffset)
+      const pointOnCanvas = rawPointOnCanvas
 
       const unpatchedIndex = siblingsOfTarget.findIndex((sibling) => EP.pathsEqual(sibling, target))
       const lastReorderIdx = strategyState.customStrategyState.lastReorderIdx ?? unpatchedIndex
@@ -163,6 +168,7 @@ function flowDirectionForDisplayValue(displayValue: string): FlowDirection {
 interface ReorderElement {
   distance: number
   centerPoint: CanvasPoint
+  bottomLeft: CanvasPoint
   closestSibling: ElementPath
   siblingIndex: number
   direction: FlowDirection
@@ -209,7 +215,8 @@ function getReorderIndex(
   }
 
   let reorderResult: ReorderElement | null = null
-  let siblingIndex: number = 0
+  let existingIndex: number = -1
+  let workingIndex: number = 0
   let displayValues: Array<string> = []
 
   // TODO stick elements?
@@ -219,7 +226,12 @@ function getReorderIndex(
   const existingElementMetadata = MetadataUtils.findElementByElementPath(metadata, existingElement)
 
   for (const sibling of siblings) {
+    if (EP.pathsEqual(sibling, existingElement)) {
+      existingIndex = workingIndex
+    }
+
     const siblingMetadata = MetadataUtils.findElementByElementPath(metadata, sibling)
+    displayValues.push(siblingMetadata?.specialSizeMeasurements.display || 'block')
     const frame = MetadataUtils.getFrameInCanvasCoords(sibling, metadata)
     if (
       frame != null &&
@@ -228,20 +240,24 @@ function getReorderIndex(
     ) {
       const siblingProps = allElementProps[EP.toString(sibling)] ?? {}
       const centerPoint = getCenterPositionInFlow(frame, siblingMetadata, siblingProps)
+      const bottomLeft = offsetPoint(centerPoint, {
+        x: -frame.width / 2,
+        y: frame.height / 2,
+      } as CanvasPoint)
       const distance = euclideanDistance(point, centerPoint)
       // First one that has been found or if it's closer than a previously found entry.
       if (reorderResult == null || distance < reorderResult.distance) {
         reorderResult = {
           distance: distance,
           centerPoint: centerPoint,
+          bottomLeft: bottomLeft,
           closestSibling: sibling,
-          siblingIndex: siblingIndex,
+          siblingIndex: workingIndex,
           direction: flowDirectionForDisplayValue(siblingMetadata.specialSizeMeasurements.display),
         }
       }
     }
-    displayValues.push(siblingMetadata?.specialSizeMeasurements.display || 'block')
-    siblingIndex++
+    workingIndex++
   }
 
   if (reorderResult == null) {
@@ -256,29 +272,51 @@ function getReorderIndex(
     }
   } else {
     // Check which "side" of the target this falls on.
-    let newIndex = reorderResult.siblingIndex
-    if (reorderResult.direction === 'vertical' && point.y > reorderResult.centerPoint.y) {
+    const siblingIndex = reorderResult.siblingIndex
+    const movedForward = siblingIndex > existingIndex
+
+    const displayTypeBeforeIndex = (i: number): 'block' | 'inline-block' | undefined => {
+      const prevSiblingIndex = movedForward ? i : i - 1
+
+      const displayTypeOfPrevSibling = displayValues[prevSiblingIndex]
+      const displayTypeOfNextSibling = displayValues[prevSiblingIndex + 1]
+
+      if (
+        displayTypeOfPrevSibling === 'inline-block' &&
+        displayTypeOfNextSibling === 'inline-block'
+      ) {
+        return 'inline-block'
+      } else if (displayTypeOfPrevSibling === 'block' && displayTypeOfNextSibling === 'block') {
+        return 'block'
+      } else {
+        return undefined
+      }
+    }
+
+    let newIndex = movedForward ? siblingIndex - 1 : siblingIndex
+
+    const displayTypeForElementAtStart =
+      displayTypeBeforeIndex(newIndex) ??
+      existingElementMetadata?.specialSizeMeasurements.display ??
+      'block'
+    const directionForElement = flowDirectionForDisplayValue(displayTypeForElementAtStart)
+
+    if (directionForElement !== reorderResult.direction) {
+      // The directions don't match up, so check both the x and y based on a diagonal through the element
+      if (pointIsClockwiseFromLine(point, reorderResult.bottomLeft, reorderResult.centerPoint)) {
+        newIndex++
+      }
+    } else if (reorderResult.direction === 'vertical' && point.y > reorderResult.centerPoint.y) {
       newIndex++
     } else if (reorderResult.direction === 'horizontal' && point.x > reorderResult.centerPoint.x) {
       newIndex++
     }
 
-    const displayTypeOfPrevSibling = displayValues[newIndex - 1]
-    const displayTypeOfNextSibling = displayValues[newIndex]
+    const newDisplayType = displayTypeBeforeIndex(newIndex)
 
-    let newDisplayType: 'block' | 'inline-block' | undefined = undefined
-    if (
-      displayTypeOfPrevSibling === 'inline-block' &&
-      displayTypeOfNextSibling === 'inline-block'
-    ) {
-      newDisplayType = 'inline-block'
-    } else if (displayTypeOfPrevSibling === 'block' && displayTypeOfNextSibling === 'block') {
-      newDisplayType = 'block'
-    }
-
-    if (newDisplayType === existingElementMetadata?.specialSizeMeasurements.display) {
-      newDisplayType = undefined
-    }
+    // if (newDisplayType === existingElementMetadata?.specialSizeMeasurements.display) {
+    //   newDisplayType = undefined
+    // }
 
     return {
       newIndex: newIndex,
