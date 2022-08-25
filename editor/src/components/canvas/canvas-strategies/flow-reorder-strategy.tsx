@@ -99,15 +99,13 @@ export const flowReorderStategy: CanvasStrategy = {
       const unpatchedIndex = siblingsOfTarget.findIndex((sibling) => EP.pathsEqual(sibling, target))
       const lastReorderIdx = strategyState.customStrategyState.lastReorderIdx ?? unpatchedIndex
 
-      const reorderResult = getReorderIndex(
+      const { newIndex } = getReorderIndex(
         strategyState.startingMetadata,
         siblingsOfTarget,
         pointOnCanvas,
         target,
         interactionState.allElementProps,
       )
-
-      const { newIndex, newDisplayType } = reorderResult
 
       const realNewIndex = newIndex > -1 ? newIndex : lastReorderIdx
 
@@ -123,8 +121,8 @@ export const flowReorderStategy: CanvasStrategy = {
           },
         }
       } else {
-        const newDisplayTypeCommands =
-          newDisplayType == null ? [] : [convertInlineBlock('always', target, newDisplayType)]
+        // const newDisplayTypeCommands =
+        //   newDisplayType == null ? [] : [convertInlineBlock('always', target, newDisplayType)]
 
         return {
           commands: [
@@ -132,7 +130,7 @@ export const flowReorderStategy: CanvasStrategy = {
             setElementsToRerenderCommand([target]),
             updateHighlightedViews('mid-interaction', []),
             setCursorCommand('mid-interaction', CSSCursor.Move),
-            ...newDisplayTypeCommands,
+            // ...newDisplayTypeCommands,
           ],
           customState: {
             ...strategyState.customStrategyState,
