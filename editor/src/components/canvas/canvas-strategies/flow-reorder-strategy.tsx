@@ -24,6 +24,7 @@ import { AllElementProps, ElementProps } from '../../editor/store/editor-state'
 import { absolute } from '../../../utils/utils'
 import { FlowPositionMarker } from '../controls/flow-position-marker'
 import { convertInlineBlock } from '../commands/convert-inline-block-command'
+import { DisplayTypeOutline } from '../controls/display-type-outline'
 
 export const flowReorderStategy: CanvasStrategy = {
   id: 'FLOW_REORDER',
@@ -53,6 +54,11 @@ export const flowReorderStategy: CanvasStrategy = {
     {
       control: FlowPositionMarker,
       key: 'flow-position-marker-control',
+      show: 'visible-only-while-active',
+    },
+    {
+      control: DisplayTypeOutline,
+      key: 'display-type-outline',
       show: 'visible-only-while-active',
     },
   ], // Uses existing hooks in select-mode-hooks.tsx
@@ -127,7 +133,7 @@ export const flowReorderStategy: CanvasStrategy = {
         return {
           commands: [
             reorderElement('always', target, absolute(realNewIndex)),
-            setElementsToRerenderCommand([target]),
+            setElementsToRerenderCommand(siblingsOfTarget),
             updateHighlightedViews('mid-interaction', []),
             setCursorCommand('mid-interaction', CSSCursor.Move),
             // ...newDisplayTypeCommands,
