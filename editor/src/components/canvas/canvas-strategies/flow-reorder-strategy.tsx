@@ -52,11 +52,11 @@ export const flowReorderStategy: CanvasStrategy = {
       key: 'parent-bounds-control',
       show: 'visible-only-while-active',
     },
-    {
-      control: FlowPositionMarker,
-      key: 'flow-position-marker-control',
-      show: 'visible-only-while-active',
-    },
+    // {
+    //   control: FlowPositionMarker,
+    //   key: 'flow-position-marker-control',
+    //   show: 'visible-only-while-active',
+    // },
     {
       control: DisplayTypeOutline,
       key: 'display-type-outline',
