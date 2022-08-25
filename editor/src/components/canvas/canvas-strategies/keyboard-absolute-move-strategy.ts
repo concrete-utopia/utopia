@@ -3,6 +3,7 @@ import { Keyboard, KeyCharacter } from '../../../utils/keyboard'
 import {
   CanvasStrategy,
   emptyStrategyApplicationResult,
+  getSelectedElementsFromInteractionTarget,
   InteractionCanvasState,
 } from './canvas-strategy-types'
 import {
@@ -48,8 +49,9 @@ export const keyboardAbsoluteMoveStrategy: CanvasStrategy = {
   id: 'KEYBOARD_ABSOLUTE_MOVE',
   name: 'Keyboard Absolute Move',
   isApplicable: (canvasState, _interactionState, metadata) => {
-    if (canvasState.selectedElements.length > 0) {
-      return canvasState.selectedElements.every((element) => {
+    const selectedElements = getSelectedElementsFromInteractionTarget(canvasState.interactionTarget)
+    if (selectedElements.length > 0) {
+      return selectedElements.every((element) => {
         const elementMetadata = MetadataUtils.findElementByElementPath(metadata, element)
         return (
           elementMetadata?.specialSizeMeasurements.position === 'absolute' &&
@@ -86,6 +88,7 @@ export const keyboardAbsoluteMoveStrategy: CanvasStrategy = {
     return 0
   },
   apply: (canvasState, interactionState, sessionState) => {
+    const selectedElements = getSelectedElementsFromInteractionTarget(canvasState.interactionTarget)
     if (interactionState.interactionData.type === 'KEYBOARD') {
       const accumulatedPresses = accumulatePresses(interactionState.interactionData.keyStates)
       let commands: Array<CanvasCommand> = []
@@ -101,7 +104,7 @@ export const keyboardAbsoluteMoveStrategy: CanvasStrategy = {
         })
       })
       if (keyboardMovement.x !== 0 || keyboardMovement.y !== 0) {
-        canvasState.selectedElements.forEach((selectedElement) => {
+        selectedElements.forEach((selectedElement) => {
           const elementResult = getAbsoluteMoveCommandsForSelectedElement(
             selectedElement,
             keyboardMovement,
@@ -114,7 +117,7 @@ export const keyboardAbsoluteMoveStrategy: CanvasStrategy = {
       }
       const multiselectBounds = getMultiselectBounds(
         sessionState.startingMetadata,
-        canvasState.selectedElements,
+        selectedElements,
       )
       const newFrame = offsetRect(
         defaultIfNull(canvasRectangle(zeroRectangle), multiselectBounds),
@@ -131,7 +134,7 @@ export const keyboardAbsoluteMoveStrategy: CanvasStrategy = {
       commands.push(updateHighlightedViews('mid-interaction', []))
       commands.push(setSnappingGuidelines('mid-interaction', guidelines))
       commands.push(pushIntendedBounds(intendedBounds))
-      commands.push(setElementsToRerenderCommand(canvasState.selectedElements))
+      commands.push(setElementsToRerenderCommand(selectedElements))
       return {
         commands: commands,
         customState: null,

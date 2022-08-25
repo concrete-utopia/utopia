@@ -3,7 +3,11 @@ import { ElementInstanceMetadataMap } from '../../../core/shared/element-templat
 import { offsetPoint, rectContainsPoint } from '../../../core/shared/math-utils'
 import { ElementPath } from '../../../core/shared/project-file-types'
 import { reorderElement } from '../commands/reorder-element-command'
-import { CanvasStrategy, emptyStrategyApplicationResult } from './canvas-strategy-types'
+import {
+  CanvasStrategy,
+  emptyStrategyApplicationResult,
+  getSelectedElementsFromInteractionTarget,
+} from './canvas-strategy-types'
 import {
   CanvasPoint,
   canvasPoint,
@@ -26,9 +30,10 @@ export const flexReorderStrategy: CanvasStrategy = {
   id: 'FLEX_REORDER',
   name: 'Flex Reorder',
   isApplicable: (canvasState, _interactionState, metadata) => {
-    if (canvasState.selectedElements.length == 1) {
+    const selectedElements = getSelectedElementsFromInteractionTarget(canvasState.interactionTarget)
+    if (selectedElements.length == 1) {
       return MetadataUtils.isParentYogaLayoutedContainerAndElementParticipatesInLayout(
-        canvasState.selectedElements[0],
+        selectedElements[0],
         metadata,
       )
     } else {
@@ -68,9 +73,11 @@ export const flexReorderStrategy: CanvasStrategy = {
     if (interactionState.interactionData.type !== 'DRAG') {
       return emptyStrategyApplicationResult
     }
-
     if (interactionState.interactionData.drag != null) {
-      const { selectedElements } = canvasState
+      const selectedElements = getSelectedElementsFromInteractionTarget(
+        canvasState.interactionTarget,
+      )
+
       const target = selectedElements[0]
 
       const siblingsOfTarget = MetadataUtils.getSiblings(

@@ -20,6 +20,7 @@ import { updateHighlightedViews } from '../commands/update-highlighted-views-com
 import { updateSelectedViews } from '../commands/update-selected-views-command'
 import {
   emptyStrategyApplicationResult,
+  getSelectedElementsFromInteractionTarget,
   InteractionCanvasState,
   StrategyApplicationResult,
 } from './canvas-strategy-types'
@@ -122,8 +123,9 @@ export function findReparentStrategy(
   interactionState: InteractionSession,
   strategyState: StrategyState,
 ): { strategy: ReparentStrategy; newParent: ElementPath } | { strategy: 'do-not-reparent' } {
+  const selectedElements = getSelectedElementsFromInteractionTarget(canvasState.interactionTarget)
   if (
-    canvasState.selectedElements.length === 0 ||
+    selectedElements.length === 0 ||
     interactionState.activeControl.type !== 'BOUNDING_AREA' ||
     interactionState.interactionData.type !== 'DRAG' ||
     !interactionState.interactionData.modifiers.cmd ||
@@ -132,7 +134,6 @@ export function findReparentStrategy(
     return { strategy: 'do-not-reparent' }
   }
 
-  const { selectedElements, scale, canvasOffset, projectContents, openFile } = canvasState
   const startingMetadata = strategyState.startingMetadata
   const filteredSelectedElements = getDragTargets(selectedElements)
 
@@ -266,7 +267,8 @@ export function applyFlexReparent(
   interactionSession: InteractionSession,
   strategyState: StrategyState,
 ): StrategyApplicationResult {
-  const filteredSelectedElements = getDragTargets(canvasState.selectedElements)
+  const selectedElements = getSelectedElementsFromInteractionTarget(canvasState.interactionTarget)
+  const filteredSelectedElements = getDragTargets(selectedElements)
 
   return ifAllowedToReparent(canvasState, strategyState, filteredSelectedElements, () => {
     if (

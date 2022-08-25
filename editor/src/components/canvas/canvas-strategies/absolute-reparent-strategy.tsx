@@ -8,7 +8,11 @@ import { updateSelectedViews } from '../commands/update-selected-views-command'
 import { ParentBounds } from '../controls/parent-bounds'
 import { ParentOutlines } from '../controls/parent-outlines'
 import { absoluteMoveStrategy } from './absolute-move-strategy'
-import { CanvasStrategy, emptyStrategyApplicationResult } from './canvas-strategy-types'
+import {
+  CanvasStrategy,
+  emptyStrategyApplicationResult,
+  getSelectedElementsFromInteractionTarget,
+} from './canvas-strategy-types'
 import {
   getAbsoluteOffsetCommandsForSelectedElement,
   getDragTargets,
@@ -22,13 +26,14 @@ export const absoluteReparentStrategy: CanvasStrategy = {
   id: 'ABSOLUTE_REPARENT',
   name: 'Reparent Absolute Elements',
   isApplicable: (canvasState, interactionState, metadata) => {
+    const selectedElements = getSelectedElementsFromInteractionTarget(canvasState.interactionTarget)
     if (
-      canvasState.selectedElements.length > 0 &&
+      selectedElements.length > 0 &&
       interactionState != null &&
       interactionState.interactionData.type === 'DRAG' &&
       interactionState.interactionData.modifiers.cmd
     ) {
-      const filteredSelectedElements = getDragTargets(canvasState.selectedElements)
+      const filteredSelectedElements = getDragTargets(selectedElements)
       return filteredSelectedElements.every((element) => {
         const elementMetadata = MetadataUtils.findElementByElementPath(metadata, element)
 
@@ -74,7 +79,8 @@ export const absoluteReparentStrategy: CanvasStrategy = {
       interactionState.interactionData.drag,
     )
 
-    const { selectedElements, projectContents, openFile, nodeModules } = canvasState
+    const { interactionTarget, projectContents, openFile, nodeModules } = canvasState
+    const selectedElements = getSelectedElementsFromInteractionTarget(interactionTarget)
     const filteredSelectedElements = getDragTargets(selectedElements)
 
     const reparentResult = getReparentTarget(

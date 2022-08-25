@@ -1,6 +1,10 @@
 import { MetadataUtils } from '../../../core/model/element-metadata-utils'
 import { Keyboard, KeyCharacter } from '../../../utils/keyboard'
-import { CanvasStrategy, emptyStrategyApplicationResult } from './canvas-strategy-types'
+import {
+  CanvasStrategy,
+  emptyStrategyApplicationResult,
+  getSelectedElementsFromInteractionTarget,
+} from './canvas-strategy-types'
 import { Modifiers } from '../../../utils/modifiers'
 import {
   canvasRectangle,
@@ -75,8 +79,9 @@ export const keyboardAbsoluteResizeStrategy: CanvasStrategy = {
   id: 'KEYBOARD_ABSOLUTE_RESIZE',
   name: 'Keyboard absolute resize',
   isApplicable: (canvasState, interactionState, metadata) => {
-    if (canvasState.selectedElements.length > 0) {
-      return canvasState.selectedElements.every((element) => {
+    const selectedElements = getSelectedElementsFromInteractionTarget(canvasState.interactionTarget)
+    if (selectedElements.length > 0) {
+      return selectedElements.every((element) => {
         const elementMetadata = MetadataUtils.findElementByElementPath(metadata, element)
         return (
           elementMetadata?.specialSizeMeasurements.position === 'absolute' &&
@@ -119,13 +124,14 @@ export const keyboardAbsoluteResizeStrategy: CanvasStrategy = {
     return 0
   },
   apply: (canvasState, interactionState, sessionState) => {
+    const selectedElements = getSelectedElementsFromInteractionTarget(canvasState.interactionTarget)
     if (interactionState.interactionData.type === 'KEYBOARD') {
       const accumulatedPresses = accumulatePresses(interactionState.interactionData.keyStates)
       const movementsWithEdges = pressesToVectorAndEdges(accumulatedPresses)
 
       // Start with the frame as it is at the start of the interaction.
       let newFrame =
-        getMultiselectBounds(sessionState.startingMetadata, canvasState.selectedElements) ??
+        getMultiselectBounds(sessionState.startingMetadata, selectedElements) ??
         canvasRectangle(zeroRectangle)
 
       let commands: Array<CanvasCommand> = []
@@ -140,7 +146,7 @@ export const keyboardAbsoluteResizeStrategy: CanvasStrategy = {
             null,
             'non-center-based',
           )
-          canvasState.selectedElements.forEach((selectedElement) => {
+          selectedElements.forEach((selectedElement) => {
             const element = withUnderlyingTarget(
               selectedElement,
               canvasState.projectContents,
@@ -183,7 +189,7 @@ export const keyboardAbsoluteResizeStrategy: CanvasStrategy = {
       )
       commands.push(setSnappingGuidelines('mid-interaction', guidelines))
       commands.push(pushIntendedBounds(intendedBounds))
-      commands.push(setElementsToRerenderCommand(canvasState.selectedElements))
+      commands.push(setElementsToRerenderCommand(selectedElements))
       return {
         commands: commands,
         customState: null,

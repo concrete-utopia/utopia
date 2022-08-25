@@ -6,6 +6,7 @@ import { ParentOutlines } from '../controls/parent-outlines'
 import { DragOutlineControl } from '../controls/select-mode/drag-outline-control'
 import {
   CanvasStrategy,
+  getSelectedElementsFromInteractionTarget,
   InteractionCanvasState,
   StrategyApplicationResult,
 } from './canvas-strategy-types'
@@ -22,13 +23,14 @@ export const absoluteReparentToFlexStrategy: CanvasStrategy = {
     metadata: ElementInstanceMetadataMap,
     allElementProps: AllElementProps,
   ): boolean {
+    const selectedElements = getSelectedElementsFromInteractionTarget(canvasState.interactionTarget)
     if (
-      canvasState.selectedElements.length === 1 &&
+      selectedElements.length === 1 &&
       interactionSession != null &&
       interactionSession.interactionData.type === 'DRAG' &&
       interactionSession.interactionData.modifiers.cmd
     ) {
-      const filteredSelectedElements = getDragTargets(canvasState.selectedElements)
+      const filteredSelectedElements = getDragTargets(selectedElements)
       if (filteredSelectedElements.length === 1) {
         const elementMetadata = MetadataUtils.findElementByElementPath(
           metadata,

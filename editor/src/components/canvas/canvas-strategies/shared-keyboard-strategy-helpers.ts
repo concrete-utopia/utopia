@@ -9,7 +9,10 @@ import {
   oneGuidelinePerDimension,
 } from '../controls/guideline-helpers'
 import { GuidelineWithSnappingVector, Guidelines } from '../guideline'
-import { InteractionCanvasState } from './canvas-strategy-types'
+import {
+  getSelectedElementsFromInteractionTarget,
+  InteractionCanvasState,
+} from './canvas-strategy-types'
 import Utils from '../../../utils/utils'
 
 export interface AccumulatedPresses extends KeyState {
@@ -90,10 +93,11 @@ export function getKeyboardStrategyGuidelines(
   canvasState: InteractionCanvasState,
   interactionState: InteractionSession,
   draggedFrame: CanvasRectangle,
-) {
+): Array<GuidelineWithSnappingVector> {
+  const selectedElements = getSelectedElementsFromInteractionTarget(canvasState.interactionTarget)
   const moveGuidelines = collectParentAndSiblingGuidelines(
     interactionState.metadata,
-    canvasState.selectedElements,
+    selectedElements,
   )
   const { horizontalPoints, verticalPoints } = Utils.getRectPointsAlongAxes(draggedFrame)
   const closestGuideLines: Array<GuidelineWithSnappingVector> = mapDropNulls((guideline) => {

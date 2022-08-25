@@ -4,6 +4,7 @@ import { ElementInstanceMetadataMap } from '../../../core/shared/element-templat
 import { CanvasVector } from '../../../core/shared/math-utils'
 import { ElementPath, NodeModules } from '../../../core/shared/project-file-types'
 import { ProjectContentTreeRoot } from '../../assets'
+import { InsertionSubject } from '../../editor/editor-modes'
 import { CanvasCommand } from '../commands/commands'
 import { InteractionSession, StrategyState } from './interaction-state'
 
@@ -42,13 +43,57 @@ export interface ControlWithKey {
 }
 
 export interface InteractionCanvasState {
-  selectedElements: Array<ElementPath>
+  interactionTarget: InteractionTarget
   projectContents: ProjectContentTreeRoot
   nodeModules: NodeModules
   builtInDependencies: BuiltInDependencies
   openFile: string | null | undefined
   scale: number
   canvasOffset: CanvasVector
+}
+
+export type InteractionTarget = SelectedElements | InsertionSubjects
+
+interface SelectedElements {
+  type: 'selection'
+  elements: Array<ElementPath>
+}
+
+export function selectedElements(elements: Array<ElementPath>): SelectedElements {
+  return {
+    type: 'selection',
+    elements: elements,
+  }
+}
+
+interface InsertionSubjects {
+  type: 'insertion'
+  subjects: Array<InsertionSubject>
+}
+
+export function insertionSubjects(subjects: Array<InsertionSubject>): InsertionSubjects {
+  return {
+    type: 'insertion',
+    subjects: subjects,
+  }
+}
+
+export function getSelectedElementsFromInteractionTarget(
+  target: InteractionTarget,
+): Array<ElementPath> {
+  if (target.type === 'selection') {
+    return target.elements
+  }
+  return []
+}
+
+export function getInsertionSubjectsFromInteractionTarget(
+  target: InteractionTarget,
+): Array<InsertionSubject> {
+  if (target.type === 'insertion') {
+    return target.subjects
+  }
+  return []
 }
 
 export type CanvasStrategyId =
