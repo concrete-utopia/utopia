@@ -190,6 +190,13 @@ function getCenterPositionInFlow(
   return offsetPoint(rawCenter, relativeOffset)
 }
 
+function isSameDisplayType(
+  displayType: string | undefined,
+  siblingMetadata: ElementInstanceMetadata | null,
+): boolean {
+  return displayType === siblingMetadata?.specialSizeMeasurements.display
+}
+
 function getReorderIndex(
   metadata: ElementInstanceMetadataMap,
   siblings: Array<ElementPath>,
@@ -215,6 +222,7 @@ function getReorderIndex(
   // TODO wrapping
 
   const existingElementMetadata = MetadataUtils.findElementByElementPath(metadata, existingElement)
+  const displayType = existingElementMetadata?.specialSizeMeasurements.display
 
   for (const sibling of siblings) {
     const siblingMetadata = MetadataUtils.findElementByElementPath(metadata, sibling)
@@ -222,7 +230,8 @@ function getReorderIndex(
     if (
       frame != null &&
       siblingMetadata != null &&
-      MetadataUtils.isPositionedByFlow(siblingMetadata)
+      MetadataUtils.isPositionedByFlow(siblingMetadata) &&
+      isSameDisplayType(displayType, siblingMetadata)
     ) {
       const siblingProps = allElementProps[EP.toString(sibling)] ?? {}
       const centerPoint = getCenterPositionInFlow(frame, siblingMetadata, siblingProps)
