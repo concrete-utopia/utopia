@@ -57,16 +57,16 @@ export const flowReorderStategy: CanvasStrategy = {
       key: 'flow-position-marker-control',
       show: 'visible-only-while-active',
     },
-    {
-      control: FlowStartingPositionMarker,
-      key: 'flow-starting-position-marker-control',
-      show: 'visible-only-while-active',
-    },
-    {
-      control: DragOutlineControl,
-      key: 'drag-outline-control',
-      show: 'visible-only-while-active',
-    },
+    // {
+    //   control: FlowStartingPositionMarker,
+    //   key: 'flow-starting-position-marker-control',
+    //   show: 'visible-only-while-active',
+    // },
+    // {
+    //   control: DragOutlineControl,
+    //   key: 'drag-outline-control',
+    //   show: 'visible-only-while-active',
+    // },
   ], // Uses existing hooks in select-mode-hooks.tsx
   fitness: (canvasState, interactionState, strategyState) => {
     return flowReorderStategy.isApplicable(
@@ -129,11 +129,11 @@ export const flowReorderStategy: CanvasStrategy = {
         }
       } else {
         const newDisplayTypeCommands =
-          newDisplayType == null ? [] : [convertInlineBlock('always', target, newDisplayType)]
+          newDisplayType == null ? [] : [convertInlineBlock('on-complete', target, newDisplayType)]
 
         return {
           commands: [
-            reorderElement('always', target, absolute(realNewIndex)),
+            reorderElement('on-complete', target, absolute(realNewIndex)),
             setElementsToRerenderCommand([target]),
             updateHighlightedViews('mid-interaction', []),
             setCursorCommand('mid-interaction', CSSCursor.Move),
