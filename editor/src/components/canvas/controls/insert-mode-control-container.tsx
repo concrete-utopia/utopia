@@ -348,225 +348,214 @@ export class InsertModeControlContainer extends React.Component<
   }
 
   onMouseDown = (e: MouseEvent) => {
-    const mousePoint = this.props.windowToCanvasPosition(e).canvasPositionRounded
-    const snappedMousePoint = applySnappingToPoint(mousePoint, this.state.guidelines)
-    const updateDragStateAction = CanvasActions.createDragState(
-      insertDragState(
-        snappedMousePoint,
-        { x: 0, y: 0 } as CanvasVector,
-        this.props.componentMetadata,
-      ),
-    )
-    const setFocusAction = setFocus('canvas')
-
-    if (
-      insertionSubjectIsJSXElement(this.props.mode.subject) &&
-      !this.props.mode.insertionStarted
-    ) {
-      const insertionSubject = this.props.mode.subject
-      const parent = safeIndex(this.props.highlightedViews, 0) ?? null
-      const staticParent = parent == null ? null : EP.dynamicPathToStaticPath(parent)
-
-      let { element } = this.props.mode.subject
-      if (this.parentIsFlex(this.props.highlightedViews[0])) {
-        element = {
-          ...element,
-          props:
-            eitherToMaybe(
-              setJSXValueAtPath(
-                element.props,
-                stylePropPathMappingFn('position', ['style']),
-                jsxAttributeValue('relative', emptyComments),
-              ),
-            ) ?? element.props,
-        }
-      }
-      this.props.dispatch(
-        [
-          EditorActions.updateEditorMode(
-            EditorModes.insertMode(
-              true,
-              elementInsertionSubject(
-                insertionSubject.uid,
-                element,
-                insertionSubject.size,
-                insertionSubject.importsToAdd,
-                insertionParent(parent, staticParent),
-              ),
-            ),
-          ),
-          updateDragStateAction,
-          setFocusAction,
-        ],
-        'everyone',
-      )
-    } else {
-      this.props.dispatch(
-        [
-          EditorActions.updateEditorMode({
-            ...this.props.mode,
-            insertionStarted: true,
-          }),
-          updateDragStateAction,
-          setFocusAction,
-        ],
-        'everyone',
-      )
-    }
+    // const mousePoint = this.props.windowToCanvasPosition(e).canvasPositionRounded
+    // const snappedMousePoint = applySnappingToPoint(mousePoint, this.state.guidelines)
+    // const updateDragStateAction = CanvasActions.createDragState(
+    //   insertDragState(
+    //     snappedMousePoint,
+    //     { x: 0, y: 0 } as CanvasVector,
+    //     this.props.componentMetadata,
+    //   ),
+    // )
+    // const setFocusAction = setFocus('canvas')
+    // if (
+    //   insertionSubjectIsJSXElement(this.props.mode.subject) &&
+    //   !this.props.mode.insertionStarted
+    // ) {
+    //   const insertionSubject = this.props.mode.subject
+    //   const parent = safeIndex(this.props.highlightedViews, 0) ?? null
+    //   const staticParent = parent == null ? null : EP.dynamicPathToStaticPath(parent)
+    //   let { element } = this.props.mode.subject
+    //   if (this.parentIsFlex(this.props.highlightedViews[0])) {
+    //     element = {
+    //       ...element,
+    //       props:
+    //         eitherToMaybe(
+    //           setJSXValueAtPath(
+    //             element.props,
+    //             stylePropPathMappingFn('position', ['style']),
+    //             jsxAttributeValue('relative', emptyComments),
+    //           ),
+    //         ) ?? element.props,
+    //     }
+    //   }
+    //   this.props.dispatch(
+    //     [
+    //       EditorActions.updateEditorMode(
+    //         EditorModes.insertMode(
+    //           true,
+    //           elementInsertionSubject(
+    //             insertionSubject.uid,
+    //             element,
+    //             insertionSubject.size,
+    //             insertionSubject.importsToAdd,
+    //             insertionParent(parent, staticParent),
+    //           ),
+    //         ),
+    //       ),
+    //       updateDragStateAction,
+    //       setFocusAction,
+    //     ],
+    //     'everyone',
+    //   )
+    // } else {
+    //   this.props.dispatch(
+    //     [
+    //       EditorActions.updateEditorMode({
+    //         ...this.props.mode,
+    //         insertionStarted: true,
+    //       }),
+    //       updateDragStateAction,
+    //       setFocusAction,
+    //     ],
+    //     'everyone',
+    //   )
+    // }
   }
 
   onMouseUp = (event: MouseEvent) => {
-    if (!this.props.mode.insertionStarted) {
-      return
-    }
-
-    const baseActions: EditorAction[] = [
-      EditorActions.updateEditorMode(EditorModes.selectMode()),
-      EditorActions.setRightMenuTab(RightMenuTab.Inspector),
-      EditorActions.clearHighlightedViews(),
-      CanvasActions.clearDragState(false),
-    ]
-
-    if (insertionSubjectIsJSXElement(this.props.mode.subject)) {
-      const insertionSubject = this.props.mode.subject
-      const insertionElement = insertionSubject.element
-      let element = null
-      const parentPath =
-        safeIndex(this.props.highlightedViews, 0) ??
-        getStoryboardElementPath(this.props.projectContents, this.props.openFile)
-      let extraActions: EditorAction[] = []
-
-      if (
-        this.props.dragState != null &&
-        this.props.dragState.drag != null &&
-        Utils.distance(this.props.dragState.drag, Utils.zeroPoint as CanvasPoint) === 0
-      ) {
-        // image and text insertion with single click
-        if (
-          this.isImageInsertion(insertionElement, insertionSubject.importsToAdd) &&
-          this.state.dragFrame != null
-        ) {
-          element = this.getImageElementWithSize()
-        } else if (this.isTextInsertion(insertionElement, insertionSubject.importsToAdd)) {
-          element = insertionElement
-        } else {
-          element = this.elementWithDragFrame(insertionElement)
-        }
-      } else {
-        // TODO Hidden Instances
-        element = this.elementWithDragFrame(insertionElement)
-      }
-
-      if (element == null) {
-        this.props.dispatch(baseActions, 'everyone')
-      } else {
-        this.props.dispatch(
-          [
-            EditorActions.insertJSXElement(
-              element,
-              parentPath ?? null,
-              insertionSubject.importsToAdd,
-            ),
-            ...baseActions,
-            ...extraActions,
-          ],
-          'everyone',
-        )
-      }
-    } else if (insertionSubjectIsScene(this.props.mode.subject)) {
-      const actions =
-        this.state.dragFrame == null
-          ? baseActions
-          : baseActions.concat(EditorActions.insertScene(this.state.dragFrame))
-      this.props.dispatch(actions, 'everyone')
-    } else {
-      this.props.dispatch(baseActions, 'everyone')
-    }
+    this.props.dispatch([CanvasActions.clearInteractionSession(true)])
+    // if (!this.props.mode.insertionStarted) {
+    //   return
+    // }
+    // const baseActions: EditorAction[] = [
+    //   EditorActions.updateEditorMode(EditorModes.selectMode()),
+    //   EditorActions.setRightMenuTab(RightMenuTab.Inspector),
+    //   EditorActions.clearHighlightedViews(),
+    //   CanvasActions.clearDragState(false),
+    // ]
+    // if (insertionSubjectIsJSXElement(this.props.mode.subject)) {
+    //   const insertionSubject = this.props.mode.subject
+    //   const insertionElement = insertionSubject.element
+    //   let element = null
+    //   const parentPath =
+    //     safeIndex(this.props.highlightedViews, 0) ??
+    //     getStoryboardElementPath(this.props.projectContents, this.props.openFile)
+    //   let extraActions: EditorAction[] = []
+    //   if (
+    //     this.props.dragState != null &&
+    //     this.props.dragState.drag != null &&
+    //     Utils.distance(this.props.dragState.drag, Utils.zeroPoint as CanvasPoint) === 0
+    //   ) {
+    //     // image and text insertion with single click
+    //     if (
+    //       this.isImageInsertion(insertionElement, insertionSubject.importsToAdd) &&
+    //       this.state.dragFrame != null
+    //     ) {
+    //       element = this.getImageElementWithSize()
+    //     } else if (this.isTextInsertion(insertionElement, insertionSubject.importsToAdd)) {
+    //       element = insertionElement
+    //     } else {
+    //       element = this.elementWithDragFrame(insertionElement)
+    //     }
+    //   } else {
+    //     // TODO Hidden Instances
+    //     element = this.elementWithDragFrame(insertionElement)
+    //   }
+    //   if (element == null) {
+    //     this.props.dispatch(baseActions, 'everyone')
+    //   } else {
+    //     this.props.dispatch(
+    //       [
+    //         EditorActions.insertJSXElement(
+    //           element,
+    //           parentPath ?? null,
+    //           insertionSubject.importsToAdd,
+    //         ),
+    //         ...baseActions,
+    //         ...extraActions,
+    //       ],
+    //       'everyone',
+    //     )
+    //   }
+    // } else if (insertionSubjectIsScene(this.props.mode.subject)) {
+    //   const actions =
+    //     this.state.dragFrame == null
+    //       ? baseActions
+    //       : baseActions.concat(EditorActions.insertScene(this.state.dragFrame))
+    //   this.props.dispatch(actions, 'everyone')
+    // } else {
+    //   this.props.dispatch(baseActions, 'everyone')
+    // }
   }
 
   onMouseMove = (e: MouseEvent) => {
-    const mousePoint = this.props.windowToCanvasPosition(e).canvasPositionRounded
-    const keepAspectRatio = this.props.keysPressed['shift'] || false
-
-    if (insertionSubjectIsJSXElement(this.props.mode.subject)) {
-      const insertionSubject = this.props.mode.subject
-      const guidelines = collectSelfAndChildrenGuidelines(
-        this.props.componentMetadata,
-        this.props.highlightedViews,
-        this.props.mode.subject.uid,
-      )
-
-      const closestGuidelines = getSnappedGuidelinesForPoint(
-        guidelines,
-        null,
-        mousePoint,
-        this.props.scale,
-      )
-
-      if (
-        this.props.mode.insertionStarted &&
-        this.props.dragState != null &&
-        this.props.dragState.start != null
-      ) {
-        const parent = this.props.highlightedViews[0]
-        const staticParent = parent == null ? null : EP.dynamicPathToStaticPath(parent)
-        let element = this.elementWithDragFrame(insertionSubject.element)
-
-        const aspectRatioCorrectedMousePoint =
-          this.state.aspectRatio != null
-            ? correctToAspectRatio(this.props.dragState.start, mousePoint, this.state.aspectRatio)
-            : mousePoint
-        const snappedMousePoint = applySnappingToPoint(
-          aspectRatioCorrectedMousePoint,
-          closestGuidelines,
-        )
-        const dragVector = Utils.vectorFromPoints(this.props.dragState.start, snappedMousePoint)
-        this.props.dispatch(
-          [
-            EditorActions.updateEditorMode(
-              EditorModes.insertMode(
-                true,
-                elementInsertionSubject(
-                  insertionSubject.uid,
-                  element,
-                  insertionSubject.size,
-                  insertionSubject.importsToAdd,
-                  insertionParent(parent, staticParent),
-                ),
-              ),
-            ),
-            CanvasActions.createDragState(
-              insertDragState(this.props.dragState.start, dragVector, this.props.componentMetadata),
-            ),
-          ],
-          'everyone',
-        )
-      }
-
-      this.setState({
-        guidelines: closestGuidelines,
-        mousePoint: mousePoint,
-        aspectRatio: keepAspectRatio ? getDefaultAspectRatio(this.props.mode.subject) : null,
-      })
-    } else if (
-      this.props.mode.insertionStarted &&
-      this.props.dragState != null &&
-      this.props.dragState.start != null
-    ) {
-      const dragVector = Utils.vectorFromPoints(this.props.dragState.start, mousePoint)
-      this.props.dispatch(
-        [
-          CanvasActions.createDragState(
-            insertDragState(this.props.dragState.start, dragVector, this.props.componentMetadata),
-          ),
-        ],
-        'everyone',
-      )
-
-      this.setState({
-        mousePoint: mousePoint,
-      })
-    }
+    // const mousePoint = this.props.windowToCanvasPosition(e).canvasPositionRounded
+    // const keepAspectRatio = this.props.keysPressed['shift'] || false
+    // if (insertionSubjectIsJSXElement(this.props.mode.subject)) {
+    //   const insertionSubject = this.props.mode.subject
+    //   const guidelines = collectSelfAndChildrenGuidelines(
+    //     this.props.componentMetadata,
+    //     this.props.highlightedViews,
+    //     this.props.mode.subject.uid,
+    //   )
+    //   const closestGuidelines = getSnappedGuidelinesForPoint(
+    //     guidelines,
+    //     null,
+    //     mousePoint,
+    //     this.props.scale,
+    //   )
+    //   if (
+    //     this.props.mode.insertionStarted &&
+    //     this.props.dragState != null &&
+    //     this.props.dragState.start != null
+    //   ) {
+    //     const parent = this.props.highlightedViews[0]
+    //     const staticParent = parent == null ? null : EP.dynamicPathToStaticPath(parent)
+    //     let element = this.elementWithDragFrame(insertionSubject.element)
+    //     const aspectRatioCorrectedMousePoint =
+    //       this.state.aspectRatio != null
+    //         ? correctToAspectRatio(this.props.dragState.start, mousePoint, this.state.aspectRatio)
+    //         : mousePoint
+    //     const snappedMousePoint = applySnappingToPoint(
+    //       aspectRatioCorrectedMousePoint,
+    //       closestGuidelines,
+    //     )
+    //     const dragVector = Utils.vectorFromPoints(this.props.dragState.start, snappedMousePoint)
+    //     this.props.dispatch(
+    //       [
+    //         EditorActions.updateEditorMode(
+    //           EditorModes.insertMode(
+    //             true,
+    //             elementInsertionSubject(
+    //               insertionSubject.uid,
+    //               element,
+    //               insertionSubject.size,
+    //               insertionSubject.importsToAdd,
+    //               insertionParent(parent, staticParent),
+    //             ),
+    //           ),
+    //         ),
+    //         CanvasActions.createDragState(
+    //           insertDragState(this.props.dragState.start, dragVector, this.props.componentMetadata),
+    //         ),
+    //       ],
+    //       'everyone',
+    //     )
+    //   }
+    //   this.setState({
+    //     guidelines: closestGuidelines,
+    //     mousePoint: mousePoint,
+    //     aspectRatio: keepAspectRatio ? getDefaultAspectRatio(this.props.mode.subject) : null,
+    //   })
+    // } else if (
+    //   this.props.mode.insertionStarted &&
+    //   this.props.dragState != null &&
+    //   this.props.dragState.start != null
+    // ) {
+    //   const dragVector = Utils.vectorFromPoints(this.props.dragState.start, mousePoint)
+    //   this.props.dispatch(
+    //     [
+    //       CanvasActions.createDragState(
+    //         insertDragState(this.props.dragState.start, dragVector, this.props.componentMetadata),
+    //       ),
+    //     ],
+    //     'everyone',
+    //   )
+    //   this.setState({
+    //     mousePoint: mousePoint,
+    //   })
+    // }
   }
 
   renderGuidelines() {

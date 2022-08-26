@@ -1,0 +1,92 @@
+import { getUtopiaID } from '../../../core/model/element-template-utils'
+import { getUtopiaJSXComponentsFromSuccess } from '../../../core/model/project-file-utils'
+import { getStoryboardElementPath } from '../../../core/model/scene-utils'
+import * as EP from '../../../core/shared/element-path'
+import { optionalMap } from '../../../core/shared/optional-utils'
+import { ElementPath } from '../../../core/shared/project-file-types'
+import { mergeImports } from '../../../core/workers/common/project-file-utils'
+import { ElementInsertionSubject } from '../../editor/editor-modes'
+import {
+  EditorState,
+  EditorStatePatch,
+  forUnderlyingTargetFromEditorState,
+  insertElementAtPath,
+} from '../../editor/store/editor-state'
+import { BaseCommand, CommandFunction, getPatchForComponentChange, WhenToRun } from './commands'
+
+export interface InsertElement extends BaseCommand {
+  type: 'INSERT_ELEMENT'
+  subject: ElementInsertionSubject
+}
+
+export function insertElement(
+  whenToRun: WhenToRun,
+  subject: ElementInsertionSubject,
+): InsertElement {
+  return {
+    type: 'INSERT_ELEMENT',
+    whenToRun: whenToRun,
+    subject: subject,
+  }
+}
+
+export const runInsertElement: CommandFunction<InsertElement> = (
+  editor: EditorState,
+  command: InsertElement,
+) => {
+  let editorStatePatches: Array<EditorStatePatch> = []
+  const { subject } = command
+  const parent =
+    subject.parent?.target == null
+      ? // action.parent == null means Canvas, which means storyboard root element
+        getStoryboardElementPath(editor.projectContents, editor.canvas.openFile?.filename ?? null)
+      : subject.parent.target ?? null
+
+  forUnderlyingTargetFromEditorState(
+    parent,
+    editor,
+    (success, _element, _underlyingTarget, underlyingFilePath) => {
+      const utopiaComponents = getUtopiaJSXComponentsFromSuccess(success)
+      const targetParent =
+        parent == null
+          ? // action.parent == null means Canvas, which means storyboard root element
+            getStoryboardElementPath(
+              editor.projectContents,
+              editor.canvas.openFile?.filename ?? null,
+            )
+          : parent
+
+      if (targetParent == null) {
+        return
+      }
+
+      const withElementInserted = insertElementAtPath(
+        editor.projectContents,
+        editor.canvas.openFile?.filename ?? null,
+        targetParent,
+        subject.element,
+        utopiaComponents,
+        null,
+      )
+
+      const updatedImports = mergeImports(underlyingFilePath, success.imports, subject.importsToAdd)
+
+      editorStatePatches.push(
+        getPatchForComponentChange(
+          success.topLevelElements,
+          withElementInserted,
+          updatedImports,
+          underlyingFilePath,
+        ),
+      )
+    },
+  )
+
+  return {
+    editorStatePatches: editorStatePatches,
+    commandDescription: `Insert element ${subject.element.uid} to parent ${optionalMap(
+      EP.toUid,
+      parent,
+    )}`,
+  }
+}

@@ -32,6 +32,7 @@ import { flexReparentToAbsoluteStrategy } from './flex-reparent-to-absolute-stra
 import { flexReparentToFlexStrategy } from './flex-reparent-to-flex-strategy'
 import { BuiltInDependencies } from '../../../core/es-modules/package-manager/built-in-dependencies-list'
 import { isInsertMode } from '../../editor/editor-modes'
+import { absoluteInsertStrategy } from './absolute-insert-strategy'
 
 export const RegisteredCanvasStrategies: Array<CanvasStrategy> = [
   absoluteMoveStrategy,
@@ -45,6 +46,7 @@ export const RegisteredCanvasStrategies: Array<CanvasStrategy> = [
   flexReparentToFlexStrategy,
   // escapeHatchStrategy,  // TODO re-enable once reparent is not tied to cmd
   absoluteReparentToFlexStrategy,
+  absoluteInsertStrategy,
 ]
 
 export function pickCanvasStateFromEditorState(
