@@ -24,10 +24,11 @@ import { AllElementProps, ElementProps } from '../../editor/store/editor-state'
 import { absolute } from '../../../utils/utils'
 import { FlowPositionMarker } from '../controls/flow-position-marker'
 import { convertInlineBlock } from '../commands/convert-inline-block-command'
+import { DragOutlineControl } from '../controls/select-mode/drag-outline-control'
 
-export const flowReorderStategy: CanvasStrategy = {
-  id: 'FLOW_REORDER',
-  name: 'Flow Reorder',
+export const flowBlockReorderStategy: CanvasStrategy = {
+  id: 'FLOW_BLOCK_REORDER',
+  name: 'Reorder(Block)',
   isApplicable: (canvasState, _interactionState, metadata) => {
     if (canvasState.selectedElements.length == 1) {
       const elementMetadata = MetadataUtils.findElementByElementPath(
@@ -55,18 +56,34 @@ export const flowReorderStategy: CanvasStrategy = {
       key: 'flow-position-marker-control',
       show: 'visible-only-while-active',
     },
+    {
+      control: DragOutlineControl,
+      key: 'ghost-outline-control',
+      show: 'visible-only-while-active',
+    },
   ], // Uses existing hooks in select-mode-hooks.tsx
   fitness: (canvasState, interactionState, strategyState) => {
-    return flowReorderStategy.isApplicable(
-      canvasState,
-      interactionState,
-      strategyState.startingMetadata,
-      strategyState.startingAllElementProps,
-    ) &&
+    if (
+      flowBlockReorderStategy.isApplicable(
+        canvasState,
+        interactionState,
+        strategyState.startingMetadata,
+        strategyState.startingAllElementProps,
+      ) &&
       interactionState.interactionData.type === 'DRAG' &&
       interactionState.activeControl.type === 'BOUNDING_AREA'
-      ? 1
-      : 0
+    ) {
+      const target = canvasState.selectedElements[0]
+      if (
+        MetadataUtils.findElementByElementPath(strategyState.startingMetadata, target)
+          ?.specialSizeMeasurements.display === 'block'
+      ) {
+        return 5
+      }
+      return 1
+    } else {
+      return 0
+    }
   },
   apply: (canvasState, interactionState, strategyState) => {
     if (interactionState.interactionData.type !== 'DRAG') {
@@ -107,7 +124,7 @@ export const flowReorderStategy: CanvasStrategy = {
         interactionState.allElementProps,
       )
 
-      const { newIndex, newDisplayType } = reorderResult
+      const { newIndex } = reorderResult
 
       const realNewIndex = newIndex > -1 ? newIndex : lastReorderIdx
 
@@ -116,6 +133,7 @@ export const flowReorderStategy: CanvasStrategy = {
           commands: [
             updateHighlightedViews('mid-interaction', []),
             setCursorCommand('mid-interaction', CSSCursor.Move),
+            convertInlineBlock('always', target, 'block'),
           ],
           customState: {
             ...strategyState.customStrategyState,
@@ -123,16 +141,13 @@ export const flowReorderStategy: CanvasStrategy = {
           },
         }
       } else {
-        const newDisplayTypeCommands =
-          newDisplayType == null ? [] : [convertInlineBlock('always', target, newDisplayType)]
-
         return {
           commands: [
             reorderElement('always', target, absolute(realNewIndex)),
             setElementsToRerenderCommand([target]),
             updateHighlightedViews('mid-interaction', []),
             setCursorCommand('mid-interaction', CSSCursor.Move),
-            ...newDisplayTypeCommands,
+            convertInlineBlock('always', target, 'block'),
           ],
           customState: {
             ...strategyState.customStrategyState,
@@ -200,7 +215,6 @@ function getReorderIndex(
   allElementProps: AllElementProps,
 ): {
   newIndex: number
-  newDisplayType?: 'block' | 'inline-block'
 } {
   if (existingElement === null) {
     return {
@@ -263,26 +277,6 @@ function getReorderIndex(
       newIndex++
     }
 
-    const displayTypeOfPrevSibling = displayValues[newIndex - 1]
-    const displayTypeOfNextSibling = displayValues[newIndex]
-
-    let newDisplayType: 'block' | 'inline-block' | undefined = undefined
-    if (
-      displayTypeOfPrevSibling === 'inline-block' &&
-      displayTypeOfNextSibling === 'inline-block'
-    ) {
-      newDisplayType = 'inline-block'
-    } else if (displayTypeOfPrevSibling === 'block' && displayTypeOfNextSibling === 'block') {
-      newDisplayType = 'block'
-    }
-
-    if (newDisplayType === existingElementMetadata?.specialSizeMeasurements.display) {
-      newDisplayType = undefined
-    }
-
-    return {
-      newIndex: newIndex,
-      newDisplayType: newDisplayType,
-    }
+    return { newIndex }
   }
 }
