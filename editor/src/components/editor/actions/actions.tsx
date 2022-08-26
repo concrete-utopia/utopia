@@ -16,7 +16,6 @@ import {
 } from '../../../core/layout/layout-helpers'
 import {
   maybeSwitchChildrenLayoutProps,
-  maybeSwitchLayoutProps,
   roundAttributeLayoutValues,
   switchLayoutMetadata,
 } from '../../../core/layout/layout-utils'
@@ -509,7 +508,11 @@ import {
 } from '../../../core/vscode/vscode-bridge'
 import utils from '../../../utils/utils'
 import { defaultConfig } from 'utopia-vscode-common'
-import { getTargetParentForPaste } from '../../../utils/clipboard'
+import {
+  createClipboardDataFromSelection,
+  getTargetParentForPaste,
+  setClipboardData,
+} from '../../../utils/clipboard'
 import { emptySet } from '../../../core/shared/set-utils'
 import { absolutePathFromRelativePath, stripLeadingSlash } from '../../../utils/path-utils'
 import { resolveModule } from '../../../core/es-modules/package-manager/module-resolution'
@@ -531,8 +534,18 @@ import { foldAndApplyCommandsSimple, runCanvasCommand } from '../../canvas/comma
 import { setElementsToRerenderCommand } from '../../canvas/commands/set-elements-to-rerender-command'
 import { addButtonPressed, MouseButtonsPressed, removeButtonPressed } from '../../../utils/mouse'
 import { areAllSelectedElementsNonAbsolute } from '../../canvas/canvas-strategies/shared-absolute-move-strategy-helpers'
-import { getReparentOutcome } from '../../canvas/canvas-strategies/reparent-utils'
+import {
+  elementToReparent,
+  getReparentOutcome,
+  pathToReparent,
+} from '../../canvas/canvas-strategies/reparent-utils'
 import { reorderElement } from '../../../components/canvas/commands/reorder-element-command'
+import { isAllowedToReparent } from '../../../components/canvas/canvas-strategies/reparent-helpers'
+import { fixUtopiaElement } from '../../../core/shared/uid-utils'
+import {
+  getReparentPropertyChanges,
+  reparentStrategyForParent,
+} from '../../../components/canvas/canvas-strategies/reparent-strategy-helpers'
 
 export function updateSelectedLeftMenuTab(editorState: EditorState, tab: LeftMenuTab): EditorState {
   return {
@@ -857,29 +870,34 @@ export function editorMoveMultiSelectedTemplates(
 
     let templateToMove = updatedTargets[i]
 
-    const { commands: reparentCommands, newPath } = getReparentOutcome(
+    const outcomeResult = getReparentOutcome(
       builtInDependencies,
       editor.projectContents,
       editor.nodeModules.files,
       editor.canvas.openFile?.filename,
-      target,
+      pathToReparent(target),
       newParentPath,
     )
-    const reorderCommand = reorderElement('on-complete', newPath, indexPosition)
+    if (outcomeResult == null) {
+      return working
+    } else {
+      const { commands: reparentCommands, newPath } = outcomeResult
+      const reorderCommand = reorderElement('on-complete', newPath, indexPosition)
 
-    const withCommandsApplied = foldAndApplyCommandsSimple(working, [
-      ...reparentCommands,
-      reorderCommand,
-    ])
+      const withCommandsApplied = foldAndApplyCommandsSimple(working, [
+        ...reparentCommands,
+        reorderCommand,
+      ])
 
-    // when moving multiselected elements that are in a hierarchy the editor has the ancestor with a new path
-    updatedTargets = updatedTargets.map((path) => {
-      const newChildPath = EP.replaceIfAncestor(path, templateToMove, newPath)
-      return Utils.defaultIfNull(path, newChildPath)
-    })
-    newPaths.push(newPath)
+      // when moving multiselected elements that are in a hierarchy the editor has the ancestor with a new path
+      updatedTargets = updatedTargets.map((path) => {
+        const newChildPath = EP.replaceIfAncestor(path, templateToMove, newPath)
+        return Utils.defaultIfNull(path, newChildPath)
+      })
+      newPaths.push(newPath)
 
-    return withCommandsApplied
+      return withCommandsApplied
+    }
   }, editor)
   return {
     editor: updatedEditor,
@@ -1456,6 +1474,52 @@ function toastOnGeneratedElementsTargeted(
   }
 
   if (!generatedElementsTargeted || allowActionRegardless) {
+    result = actionOtherwise(result)
+  }
+
+  return result
+}
+
+function toastOnUncopyableElementsSelected(
+  message: string,
+  editor: EditorState,
+  allowActionRegardless: boolean,
+  actionOtherwise: (e: EditorState) => EditorState,
+  dispatch: EditorDispatch,
+): EditorState {
+  return toastOnUncopyableElementsTargeted(
+    message,
+    editor.selectedViews,
+    editor,
+    allowActionRegardless,
+    actionOtherwise,
+    dispatch,
+  )
+}
+
+function toastOnUncopyableElementsTargeted(
+  message: string,
+  targets: ElementPath[],
+  editor: EditorState,
+  allowActionRegardless: boolean,
+  actionOtherwise: (e: EditorState) => EditorState,
+  dispatch: EditorDispatch,
+): EditorState {
+  const isReparentable = targets.every((target) => {
+    return isAllowedToReparent(
+      editor.projectContents,
+      editor.canvas.openFile?.filename,
+      editor.jsxMetadata,
+      target,
+    )
+  })
+  let result: EditorState = editor
+  if (!isReparentable) {
+    const showToastAction = showToast(notice(message))
+    result = UPDATE_FNS.ADD_TOAST(showToastAction, result, dispatch)
+  }
+
+  if (isReparentable || allowActionRegardless) {
     result = actionOtherwise(result)
   }
 
@@ -2743,25 +2807,19 @@ export const UPDATE_FNS = {
     action: PasteJSXElements,
     editor: EditorModel,
     dispatch: EditorDispatch,
+    builtInDependencies: BuiltInDependencies,
   ): EditorModel => {
-    const targetParent = getTargetParentForPaste(
-      editor.projectContents,
-      editor.canvas.openFile?.filename ?? null,
-      editor.selectedViews,
-      editor.jsxMetadata,
-      editor.pasteTargetsToIgnore,
-    )
-
     let insertionAllowed: boolean = true
-    if (targetParent != null) {
+    if (action.pasteInto != null) {
+      const pasteInto = action.pasteInto
       const parentOriginType = withUnderlyingTargetFromEditorState(
-        targetParent,
+        action.pasteInto,
         editor,
         'unknown-element',
         (targetParentSuccess) => {
           return MetadataUtils.getElementOriginType(
             getUtopiaJSXComponentsFromSuccess(targetParentSuccess),
-            targetParent,
+            pasteInto,
           )
         },
       )
@@ -2774,63 +2832,47 @@ export const UPDATE_FNS = {
       }
     }
     if (insertionAllowed) {
-      const elements = guaranteeUniqueUids(
-        action.elements,
-        getAllUniqueUids(editor.projectContents),
-      )
-      return elements.reduce((workingEditorState, currentValue, index) => {
-        let toastsAdded: Array<Notice> = []
-        const modifyResult = modifyUnderlyingForOpenFile(
-          targetParent,
-          workingEditorState,
-          (elem) => elem,
-          (underlyingSuccess) => {
-            const originalComponents = getUtopiaJSXComponentsFromSuccess(underlyingSuccess)
-            const newUID = generateUidWithExistingComponents(workingEditorState.projectContents)
-            const elementToAdd = setUtopiaID(currentValue, newUID)
-            const originalPath = action.originalElementPaths[index]
-            let updatedComponents: Array<UtopiaJSXComponent>
-            const components = insertElementAtPath(
-              workingEditorState.projectContents,
-              workingEditorState.canvas.openFile?.filename ?? null,
-              targetParent,
-              elementToAdd,
-              originalComponents,
-              null,
-            )
-            if (targetParent == null) {
-              updatedComponents = components
-            } else {
-              const newPath = EP.appendToPath(targetParent, newUID)
-              const maybeSwitchResult = maybeSwitchLayoutProps(
-                newPath,
-                originalPath,
-                targetParent,
-                action.targetOriginalContextMetadata,
-                workingEditorState.jsxMetadata,
-                components,
-                null,
-                null,
-                null,
-                ['style'],
-                workingEditorState.allElementProps,
-              )
-              updatedComponents = maybeSwitchResult.components
-              toastsAdded.push(...maybeSwitchResult.toast)
-            }
-
-            return {
-              ...underlyingSuccess,
-              topLevelElements: applyUtopiaJSXComponentsChanges(
-                underlyingSuccess.topLevelElements,
-                updatedComponents,
-              ),
-            }
-          },
+      const existingIDs = getAllUniqueUids(editor.projectContents)
+      return action.elements.reduce((workingEditorState, currentValue, index) => {
+        const elementWithUniqueUID = fixUtopiaElement(currentValue.element, existingIDs)
+        const outcomeResult = getReparentOutcome(
+          builtInDependencies,
+          workingEditorState.projectContents,
+          workingEditorState.nodeModules.files,
+          workingEditorState.canvas.openFile?.filename,
+          elementToReparent(elementWithUniqueUID, currentValue.importsToAdd),
+          action.pasteInto,
         )
-        return {
-          ...modifyResult,
-          toasts: uniqToasts([...modifyResult.toasts, ...toastsAdded]),
+
+        if (outcomeResult == null) {
+          return workingEditorState
+        } else {
+          const { commands: reparentCommands, newPath } = outcomeResult
+
+          const reparentStrategy = reparentStrategyForParent(
+            action.targetOriginalContextMetadata,
+            workingEditorState.jsxMetadata,
+            [currentValue.originalElementPath],
+            action.pasteInto,
+          )
+
+          if (reparentStrategy.strategy === 'do-not-reparent') {
+            return workingEditorState
+          } else {
+            const propertyChangeCommands = getReparentPropertyChanges(
+              reparentStrategy.strategy,
+              newPath,
+              action.pasteInto,
+              action.targetOriginalContextMetadata,
+              workingEditorState.jsxMetadata,
+              workingEditorState.projectContents,
+              workingEditorState.canvas.openFile?.filename,
+            )
+
+            const allCommands = [...reparentCommands, ...propertyChangeCommands]
+
+            return foldAndApplyCommandsSimple(workingEditorState, allCommands)
+          }
         }
       }, editor)
     } else {
@@ -2845,11 +2887,13 @@ export const UPDATE_FNS = {
     editorForAction: EditorModel,
     dispatch: EditorDispatch,
   ): EditorModel => {
-    return toastOnGeneratedElementsSelected(
-      'Cannot copy generated elements.',
+    return toastOnUncopyableElementsSelected(
+      'Cannot copy these elements.',
       editorForAction,
       false,
       (editor) => {
+        // side effect 😟
+        setClipboardData(createClipboardDataFromSelection(editorForAction))
         return {
           ...editor,
           pasteTargetsToIgnore: editor.selectedViews,

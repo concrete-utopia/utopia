@@ -9,14 +9,15 @@ import { ParentBounds } from '../controls/parent-bounds'
 import { ParentOutlines } from '../controls/parent-outlines'
 import { absoluteMoveStrategy } from './absolute-move-strategy'
 import { CanvasStrategy, emptyStrategyApplicationResult } from './canvas-strategy-types'
-import {
-  getAbsoluteOffsetCommandsForSelectedElement,
-  getDragTargets,
-} from './shared-absolute-move-strategy-helpers'
+import { getDragTargets } from './shared-absolute-move-strategy-helpers'
 import { ifAllowedToReparent, isAllowedToReparent } from './reparent-helpers'
-import { findReparentStrategy } from './reparent-strategy-helpers'
+import {
+  findReparentStrategy,
+  getAbsoluteReparentPropertyChanges,
+} from './reparent-strategy-helpers'
 import { offsetPoint } from '../../../core/shared/math-utils'
-import { getReparentOutcome } from './reparent-utils'
+import { getReparentOutcome, pathToReparent } from './reparent-utils'
+import { mapDropNulls } from '../../../core/shared/array-utils'
 
 export const absoluteReparentStrategy: CanvasStrategy = {
   id: 'ABSOLUTE_REPARENT',
@@ -77,7 +78,7 @@ export const absoluteReparentStrategy: CanvasStrategy = {
     const { selectedElements, projectContents, openFile, nodeModules } = canvasState
     const filteredSelectedElements = getDragTargets(selectedElements)
 
-    const reparentResult = getReparentTarget(
+    const reparentTarget = getReparentTarget(
       filteredSelectedElements,
       filteredSelectedElements,
       strategyState.startingMetadata,
@@ -87,7 +88,7 @@ export const absoluteReparentStrategy: CanvasStrategy = {
       openFile,
       strategyState.startingAllElementProps,
     )
-    const newParent = reparentResult.newParent
+    const newParent = reparentTarget.newParent
     const moveCommands = absoluteMoveStrategy.apply(canvasState, interactionState, strategyState)
     const providesBoundsForAbsoluteChildren =
       MetadataUtils.findElementByElementPath(strategyState.startingMetadata, newParent)
@@ -103,32 +104,40 @@ export const absoluteReparentStrategy: CanvasStrategy = {
     })
 
     if (
-      reparentResult.shouldReparent &&
+      reparentTarget.shouldReparent &&
       newParent != null &&
       (providesBoundsForAbsoluteChildren || parentIsStoryboard) &&
       allowedToReparent
     ) {
-      const commands = filteredSelectedElements.map((selectedElement) => {
-        const offsetCommands = getAbsoluteOffsetCommandsForSelectedElement(
-          selectedElement,
-          newParent,
-          strategyState,
-          canvasState,
-        )
-
-        const { commands: reparentCommands, newPath } = getReparentOutcome(
+      const commands = mapDropNulls((selectedElement) => {
+        const reparentResult = getReparentOutcome(
           canvasState.builtInDependencies,
           projectContents,
           nodeModules,
           openFile,
-          selectedElement,
+          pathToReparent(selectedElement),
           newParent,
         )
-        return {
-          newPath: newPath,
-          commands: [...offsetCommands, ...reparentCommands],
+
+        if (reparentResult == null) {
+          return null
+        } else {
+          const offsetCommands = getAbsoluteReparentPropertyChanges(
+            selectedElement,
+            newParent,
+            strategyState.startingMetadata,
+            strategyState.startingMetadata,
+            canvasState.projectContents,
+            canvasState.openFile,
+          )
+
+          const { commands: reparentCommands, newPath } = reparentResult
+          return {
+            newPath: newPath,
+            commands: [...offsetCommands, ...reparentCommands],
+          }
         }
-      })
+      }, filteredSelectedElements)
 
       const newPaths = commands.map((c) => c.newPath)
 

@@ -5,6 +5,7 @@ import {
   JSXElementName,
   ElementInstanceMetadataMap,
   SettableLayoutSystem,
+  JSXElementChild,
 } from '../../core/shared/element-template'
 import { KeysPressed, Key } from '../../utils/keyboard'
 import { IndexPosition } from '../../utils/utils'
@@ -311,10 +312,16 @@ export interface ClosePopup {
   action: 'CLOSE_POPUP'
 }
 
+export interface ElementPaste {
+  element: JSXElementChild
+  importsToAdd: Imports
+  originalElementPath: ElementPath
+}
+
 export interface PasteJSXElements {
   action: 'PASTE_JSX_ELEMENTS'
-  elements: JSXElement[]
-  originalElementPaths: ElementPath[]
+  pasteInto: ElementPath
+  elements: Array<ElementPaste>
   targetOriginalContextMetadata: ElementInstanceMetadataMap
 }
 
