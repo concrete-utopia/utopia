@@ -31,6 +31,7 @@ import { BuiltInDependencies } from '../../../core/es-modules/package-manager/bu
 import {
   flowReorderAutoConversionStategy,
   flowReorderNoConversionStategy,
+  flowReorderSameTypeOnlyStategy,
 } from './flow-reorder-strategy'
 
 export const RegisteredCanvasStrategies: Array<CanvasStrategy> = [
@@ -45,6 +46,7 @@ export const RegisteredCanvasStrategies: Array<CanvasStrategy> = [
   flexReparentToFlexStrategy,
   flowReorderAutoConversionStategy,
   flowReorderNoConversionStategy,
+  flowReorderSameTypeOnlyStategy,
   // escapeHatchStrategy,  // TODO re-enable once reparent is not tied to cmd
   absoluteReparentToFlexStrategy,
 ]

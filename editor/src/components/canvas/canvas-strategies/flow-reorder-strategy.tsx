@@ -26,6 +26,7 @@ import { absolute } from '../../../utils/utils'
 import { FlowPositionMarker, FlowStartingPositionMarker } from '../controls/flow-position-marker'
 import { convertInlineBlock } from '../commands/convert-inline-block-command'
 import { DragOutlineControl } from '../controls/select-mode/drag-outline-control'
+import { DisplayTypeOutline } from '../controls/display-type-outline'
 
 export const flowReorderAutoConversionStategy: CanvasStrategy = {
   id: 'FLOW_REORDER_AUTO_CONVERSION',
@@ -77,7 +78,7 @@ export const flowReorderAutoConversionStategy: CanvasStrategy = {
     ) &&
       interactionState.interactionData.type === 'DRAG' &&
       interactionState.activeControl.type === 'BOUNDING_AREA'
-      ? 2
+      ? 3
       : 0
   },
   apply: (canvasState, interactionState, strategyState) => {
@@ -119,6 +120,7 @@ export const flowReorderAutoConversionStategy: CanvasStrategy = {
       if (realNewIndex === unpatchedIndex) {
         return {
           commands: [
+            setElementsToRerenderCommand(siblingsOfTarget),
             updateHighlightedViews('mid-interaction', []),
             setCursorCommand('mid-interaction', CSSCursor.Move),
           ],
@@ -134,7 +136,7 @@ export const flowReorderAutoConversionStategy: CanvasStrategy = {
         return {
           commands: [
             reorderElement('always', target, absolute(realNewIndex)),
-            setElementsToRerenderCommand([target]),
+            setElementsToRerenderCommand(siblingsOfTarget),
             updateHighlightedViews('mid-interaction', []),
             setCursorCommand('mid-interaction', CSSCursor.Move),
             ...newDisplayTypeCommands,
@@ -205,7 +207,7 @@ export const flowReorderNoConversionStategy: CanvasStrategy = {
     ) &&
       interactionState.interactionData.type === 'DRAG' &&
       interactionState.activeControl.type === 'BOUNDING_AREA'
-      ? 1
+      ? 2
       : 0
   },
   apply: (canvasState, interactionState, strategyState) => {
@@ -247,6 +249,7 @@ export const flowReorderNoConversionStategy: CanvasStrategy = {
       if (realNewIndex === unpatchedIndex) {
         return {
           commands: [
+            setElementsToRerenderCommand(siblingsOfTarget),
             updateHighlightedViews('mid-interaction', []),
             setCursorCommand('mid-interaction', CSSCursor.Move),
           ],
@@ -259,7 +262,138 @@ export const flowReorderNoConversionStategy: CanvasStrategy = {
         return {
           commands: [
             reorderElement('always', target, absolute(realNewIndex)),
-            setElementsToRerenderCommand([target]),
+            setElementsToRerenderCommand(siblingsOfTarget),
+            updateHighlightedViews('mid-interaction', []),
+            setCursorCommand('mid-interaction', CSSCursor.Move),
+          ],
+          customState: {
+            ...strategyState.customStrategyState,
+            lastReorderIdx: realNewIndex,
+          },
+        }
+      }
+    } else {
+      // Fallback for when the checks above are not satisfied.
+      return {
+        commands: [setCursorCommand('mid-interaction', CSSCursor.Move)],
+        customState: null,
+      }
+    }
+  },
+}
+
+export const flowReorderSameTypeOnlyStategy: CanvasStrategy = {
+  id: 'FLOW_REORDER_SAME_TYPE_ONLY',
+  name: 'Flow Reorder (Same Display Type Only)',
+  isApplicable: (canvasState, _interactionState, metadata) => {
+    if (canvasState.selectedElements.length == 1) {
+      const elementMetadata = MetadataUtils.findElementByElementPath(
+        metadata,
+        canvasState.selectedElements[0],
+      )
+      return MetadataUtils.isPositionedByFlow(elementMetadata)
+    } else {
+      return false
+    }
+  },
+  controlsToRender: [
+    {
+      control: ParentOutlines,
+      key: 'parent-outlines-control',
+      show: 'visible-only-while-active',
+    },
+    {
+      control: ParentBounds,
+      key: 'parent-bounds-control',
+      show: 'visible-only-while-active',
+    },
+    {
+      control: FlowPositionMarker,
+      key: 'flow-position-marker-control',
+      show: 'visible-only-while-active',
+    },
+    {
+      control: FlowStartingPositionMarker,
+      key: 'flow-starting-position-marker-control',
+      show: 'visible-only-while-active',
+    },
+    {
+      control: DragOutlineControl,
+      key: 'drag-outline-control',
+      show: 'visible-only-while-active',
+    },
+    {
+      control: DisplayTypeOutline,
+      key: 'display-type-outline-control',
+      show: 'visible-only-while-active',
+    },
+  ], // Uses existing hooks in select-mode-hooks.tsx
+  fitness: (canvasState, interactionState, strategyState) => {
+    return flowReorderNoConversionStategy.isApplicable(
+      canvasState,
+      interactionState,
+      strategyState.startingMetadata,
+      strategyState.startingAllElementProps,
+    ) &&
+      interactionState.interactionData.type === 'DRAG' &&
+      interactionState.activeControl.type === 'BOUNDING_AREA'
+      ? 1
+      : 0
+  },
+  apply: (canvasState, interactionState, strategyState) => {
+    if (interactionState.interactionData.type !== 'DRAG') {
+      return emptyStrategyApplicationResult
+    }
+
+    if (interactionState.interactionData.drag != null) {
+      const { selectedElements } = canvasState
+      const target = selectedElements[0]
+
+      const siblingsOfTarget = MetadataUtils.getSiblings(
+        strategyState.startingMetadata,
+        target,
+      ).map((element) => element.elementPath)
+
+      const rawPointOnCanvas = offsetPoint(
+        interactionState.interactionData.dragStart,
+        interactionState.interactionData.drag,
+      )
+
+      const pointOnCanvas = rawPointOnCanvas
+
+      const unpatchedIndex = siblingsOfTarget.findIndex((sibling) => EP.pathsEqual(sibling, target))
+      const lastReorderIdx = strategyState.customStrategyState.lastReorderIdx ?? unpatchedIndex
+
+      const reorderResult = getReorderIndex(
+        strategyState.startingMetadata,
+        siblingsOfTarget,
+        pointOnCanvas,
+        target,
+        interactionState.allElementProps,
+        'same-display-type-only',
+      )
+
+      const { newIndex } = reorderResult
+
+      const realNewIndex = newIndex > -1 ? newIndex : lastReorderIdx
+
+      if (realNewIndex === unpatchedIndex) {
+        return {
+          commands: [
+            setElementsToRerenderCommand(siblingsOfTarget),
+            updateHighlightedViews('mid-interaction', []),
+            setCursorCommand('mid-interaction', CSSCursor.Move),
+          ],
+          customState: {
+            ...strategyState.customStrategyState,
+            lastReorderIdx: realNewIndex,
+          },
+        }
+      } else {
+        return {
+          commands: [
+            reorderElement('always', target, absolute(realNewIndex)),
+            setElementsToRerenderCommand(siblingsOfTarget),
             updateHighlightedViews('mid-interaction', []),
             setCursorCommand('mid-interaction', CSSCursor.Move),
           ],
@@ -328,6 +462,9 @@ function getReorderIndex(
   point: CanvasVector,
   existingElement: ElementPath | null,
   allElementProps: AllElementProps,
+  displayTypeFiltering:
+    | 'same-display-type-only'
+    | 'dont-restrict-display-type' = 'dont-restrict-display-type',
 ): {
   newIndex: number
   newDisplayType?: 'block' | 'inline-block'
@@ -348,6 +485,7 @@ function getReorderIndex(
   // TODO wrapping
 
   const existingElementMetadata = MetadataUtils.findElementByElementPath(metadata, existingElement)
+  const displayType = existingElementMetadata?.specialSizeMeasurements.display || 'block'
 
   for (const sibling of siblings) {
     if (EP.pathsEqual(sibling, existingElement)) {
@@ -355,9 +493,13 @@ function getReorderIndex(
     }
 
     const siblingMetadata = MetadataUtils.findElementByElementPath(metadata, sibling)
-    displayValues.push(siblingMetadata?.specialSizeMeasurements.display || 'block')
+    const siblingDisplayType = siblingMetadata?.specialSizeMeasurements.display || 'block'
+    displayValues.push(siblingDisplayType)
     const frame = MetadataUtils.getFrameInCanvasCoords(sibling, metadata)
+    const isValidSibling =
+      displayTypeFiltering === 'dont-restrict-display-type' || siblingDisplayType === displayType
     if (
+      isValidSibling &&
       frame != null &&
       siblingMetadata != null &&
       MetadataUtils.isPositionedByFlow(siblingMetadata)
