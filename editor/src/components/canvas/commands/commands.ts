@@ -43,6 +43,7 @@ import {
   runAddToReparentedToPaths,
   addToReparentedToPaths,
 } from '../canvas-strategies/add-to-reparented-to-paths-command'
+import { ConvertInlineBlock, runConvertInlineBlock } from './convert-inline-block-command'
 
 export interface CommandFunctionResult {
   editorStatePatches: Array<EditorStatePatch>
@@ -78,6 +79,7 @@ export type CanvasCommand =
   | DeleteProperties
   | AddImportsToFile
   | addToReparentedToPaths
+  | ConvertInlineBlock
 
 export const runCanvasCommand = (
   editorState: EditorState,
@@ -125,6 +127,8 @@ export const runCanvasCommand = (
       return runAddImportsToFile(editorState, command)
     case 'ADD_TO_REPARENTED_TO_PATHS':
       return runAddToReparentedToPaths(editorState, command)
+    case 'CONVERT_INLINE_BLOCK':
+      return runConvertInlineBlock(editorState, command)
     default:
       const _exhaustiveCheck: never = command
       throw new Error(`Unhandled canvas command ${JSON.stringify(command)}`)
