@@ -267,3 +267,10 @@ export function addScriptToPage(
 }
 
 export const JSX_CANVAS_LOOKUP_FUNCTION_NAME = 'utopiaCanvasJSXLookup'
+
+export function getDomRectCenter(rect: DOMRect): { x: number; y: number } {
+  return {
+    x: rect.x + rect.width / 2,
+    y: rect.y + rect.height / 2,
+  }
+}

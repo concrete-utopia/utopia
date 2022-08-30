@@ -765,3 +765,5 @@ export const EdgePositionTopLeft: EdgePosition = { x: 0, y: 0 }
 export const EdgePositionBottomLeft: EdgePosition = { x: 0, y: 1 }
 export const EdgePositionBottomRight: EdgePosition = { x: 1, y: 1 }
 export const EdgePositionTopRight: EdgePosition = { x: 1, y: 0 }
+
+export type SelectionLocked = 'locked' | 'locked-hierarchy' | 'selectable'

@@ -9,6 +9,7 @@ import {
   assetFile,
   AssetFile,
   Directory,
+  ElementPath,
   esCodeFile,
   ESCodeFile,
   esRemoteDependencyPlaceholder,
@@ -306,6 +307,7 @@ import {
   Theme,
   editorState,
   AllElementProps,
+  LockedElements,
 } from './editor-state'
 import {
   CornerGuideline,
@@ -2799,6 +2801,18 @@ export const EditorStatePreviewKeepDeepEquality: KeepDeepEqualityCall<EditorStat
 export const EditorStateHomeKeepDeepEquality: KeepDeepEqualityCall<EditorStateHome> =
   combine1EqualityCall((preview) => preview.visible, BooleanKeepDeepEquality, editorStateHome)
 
+export const EditorStateLockedElementsDeepEquality: KeepDeepEqualityCall<LockedElements> =
+  combine2EqualityCalls(
+    (locked) => locked.simpleLock,
+    ElementPathArrayKeepDeepEquality,
+    (locked) => locked.hierarchyLock,
+    ElementPathArrayKeepDeepEquality,
+    (simpleLock: Array<ElementPath>, hierarchyLock: Array<ElementPath>) => ({
+      simpleLock: simpleLock,
+      hierarchyLock: hierarchyLock,
+    }),
+  )
+
 export function CSSColorKeepDeepEquality(
   oldValue: CSSColor,
   newValue: CSSColor,
@@ -3006,6 +3020,10 @@ export const EditorStateKeepDeepEquality: KeepDeepEqualityCall<EditorState> = (
     oldValue.warnedInstances,
     newValue.warnedInstances,
   )
+  const lockedElementsResult = EditorStateLockedElementsDeepEquality(
+    oldValue.lockedElements,
+    newValue.lockedElements,
+  )
   const modeResult = ModeKeepDeepEquality(oldValue.mode, newValue.mode)
   const focusedPanelResult = createCallWithTripleEquals<EditorPanel | null>()(
     oldValue.focusedPanel,
@@ -3164,6 +3182,7 @@ export const EditorStateKeepDeepEquality: KeepDeepEqualityCall<EditorState> = (
     hiddenInstancesResult.areEqual &&
     displayNoneInstancesResult.areEqual &&
     warnedInstancesResult.areEqual &&
+    lockedElementsResult.areEqual &&
     modeResult.areEqual &&
     focusedPanelResult.areEqual &&
     keysPressedResult.areEqual &&
@@ -3232,6 +3251,7 @@ export const EditorStateKeepDeepEquality: KeepDeepEqualityCall<EditorState> = (
       hiddenInstancesResult.value,
       displayNoneInstancesResult.value,
       warnedInstancesResult.value,
+      lockedElementsResult.value,
       modeResult.value,
       focusedPanelResult.value,
       keysPressedResult.value,

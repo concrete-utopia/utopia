@@ -834,6 +834,11 @@ export type ElementProps = { [key: string]: any }
 
 export type AllElementProps = { [path: string]: ElementProps }
 
+export type LockedElements = {
+  simpleLock: Array<ElementPath>
+  hierarchyLock: Array<ElementPath>
+}
+
 // FIXME We need to pull out ProjectState from here
 export interface EditorState {
   id: string | null
@@ -856,6 +861,7 @@ export interface EditorState {
   hiddenInstances: Array<ElementPath>
   displayNoneInstances: Array<ElementPath>
   warnedInstances: Array<ElementPath>
+  lockedElements: LockedElements
   mode: Mode
   focusedPanel: EditorPanel | null
   keysPressed: KeysPressed
@@ -922,6 +928,7 @@ export function editorState(
   hiddenInstances: Array<ElementPath>,
   displayNoneInstances: Array<ElementPath>,
   warnedInstances: Array<ElementPath>,
+  lockedElements: LockedElements,
   mode: Mode,
   focusedPanel: EditorPanel | null,
   keysPressed: KeysPressed,
@@ -987,6 +994,7 @@ export function editorState(
     hiddenInstances: hiddenInstances,
     displayNoneInstances: displayNoneInstances,
     warnedInstances: warnedInstances,
+    lockedElements: lockedElements,
     mode: mode,
     focusedPanel: focusedPanel,
     keysPressed: keysPressed,
@@ -1698,6 +1706,10 @@ export function createEditorState(dispatch: EditorDispatch): EditorState {
     hiddenInstances: [],
     displayNoneInstances: [],
     warnedInstances: [],
+    lockedElements: {
+      simpleLock: [],
+      hierarchyLock: [],
+    },
     mode: EditorModes.selectMode(),
     focusedPanel: 'canvas',
     keysPressed: {},
@@ -1992,6 +2004,10 @@ export function editorModelFromPersistentModel(
     hiddenInstances: persistentModel.hiddenInstances,
     displayNoneInstances: [],
     warnedInstances: [],
+    lockedElements: {
+      simpleLock: [],
+      hierarchyLock: [],
+    },
     mode: EditorModes.selectMode(),
     focusedPanel: 'canvas',
     keysPressed: {},

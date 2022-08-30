@@ -39,24 +39,90 @@ import {
 } from './canvas-strategy-types'
 import { InteractionSession, StrategyState } from './interaction-state'
 import { ifAllowedToReparent } from './reparent-helpers'
-import { getReparentCommands } from './reparent-utils'
+import { getReparentOutcome } from './reparent-utils'
 import { getDragTargets } from './shared-absolute-move-strategy-helpers'
+import Utils, { absolute } from '../../../utils/utils'
+import { reverse } from '../../../core/shared/array-utils'
+
+interface ReorderElement {
+  distance: number
+  centerPoint: CanvasPoint
+  closestSibling: ElementPath
+  siblingIndex: number
+}
 
 export function getReorderIndex(
   metadata: ElementInstanceMetadataMap,
   siblings: Array<ElementPath>,
   point: CanvasVector,
+  existingElement: ElementPath | null,
 ): number {
-  const targetSiblingIdx = siblings.findIndex((sibling) => {
-    const frame = MetadataUtils.getFrameInCanvasCoords(sibling, metadata)
-    return (
-      frame != null &&
-      rectContainsPoint(frame, point) &&
-      MetadataUtils.isParentYogaLayoutedContainerAndElementParticipatesInLayout(sibling, metadata)
-    )
-  })
+  let rowOrColumn: 'row' | 'column' | null = null
 
-  return targetSiblingIdx
+  const first = siblings[0]
+  if (first != null) {
+    const parentPath = EP.parentPath(first)
+    if (parentPath != null) {
+      const parentMetadata = MetadataUtils.findElementByElementPath(metadata, parentPath)
+      if (parentMetadata?.specialSizeMeasurements.layoutSystemForChildren != 'flex') {
+        throw new Error(`Element ${EP.toString(parentPath)} is not a flex container`)
+      }
+
+      const flexDirection = parentMetadata?.specialSizeMeasurements.flexDirection
+      if (flexDirection != null) {
+        if (flexDirection.includes('row')) {
+          rowOrColumn = 'row'
+        } else if (flexDirection.includes('col')) {
+          rowOrColumn = 'column'
+        }
+      }
+    }
+  }
+
+  let reorderResult: ReorderElement | null = null
+  let siblingIndex: number = 0
+
+  for (const sibling of siblings) {
+    const frame = MetadataUtils.getFrameInCanvasCoords(sibling, metadata)
+    if (
+      frame != null &&
+      MetadataUtils.isParentYogaLayoutedContainerAndElementParticipatesInLayout(sibling, metadata)
+    ) {
+      const centerPoint = Utils.getRectCenter(frame)
+      const distance = Utils.distance(point, centerPoint)
+      // First one that has been found or if it's closer than a previously found entry.
+      if (reorderResult == null || distance < reorderResult.distance) {
+        reorderResult = {
+          distance: distance,
+          centerPoint: centerPoint,
+          closestSibling: sibling,
+          siblingIndex: siblingIndex,
+        }
+      }
+    }
+    siblingIndex++
+  }
+
+  if (reorderResult == null) {
+    // We were unable to find an appropriate entry.
+    return -1
+  } else if (EP.pathsEqual(reorderResult.closestSibling, existingElement)) {
+    // Reparenting to the same position that the existing element started in.
+    return reorderResult.siblingIndex
+  } else {
+    // Check which "side" of the target this falls on.
+    let newIndex = reorderResult.siblingIndex
+    if (rowOrColumn === 'row') {
+      if (point.x > reorderResult.centerPoint.x) {
+        newIndex++
+      }
+    } else if (rowOrColumn === 'column') {
+      if (point.y > reorderResult.centerPoint.y) {
+        newIndex++
+      }
+    }
+    return newIndex
+  }
 }
 
 type ReparentStrategy =
@@ -489,8 +555,7 @@ export function applyFlexReparent(
           EP.parentPath(target),
         )
         // Reparent the element.
-        const newPath = EP.appendToPath(reparentResult.newParent, EP.toUid(target))
-        const reparentCommands = getReparentCommands(
+        const { commands: reparentCommands, newPath } = getReparentOutcome(
           canvasState.builtInDependencies,
           canvasState.projectContents,
           canvasState.nodeModules,
@@ -584,7 +649,7 @@ export function applyFlexReparent(
 
           interactionFinishCommands = [
             ...commandsBeforeReorder,
-            reorderElement('on-complete', newPath, newIndex),
+            reorderElement('on-complete', newPath, absolute(newIndex)),
             ...commandsAfterReorder,
           ]
         } else {

@@ -104,7 +104,12 @@ import {
   isLeft,
   Either,
 } from '../../core/shared/either'
-import Utils, { after, IndexPosition } from '../../utils/utils'
+import Utils, {
+  absolute,
+  after,
+  IndexPosition,
+  shiftIndexPositionForRemovedElement,
+} from '../../utils/utils'
 import {
   CanvasPoint,
   canvasPoint,
@@ -528,7 +533,7 @@ export function updateFramesOfScenesAndComponents(
                   workingEditorState.canvas.openFile?.filename ?? null,
                   components,
                   underlyingTarget,
-                  frameAndTarget.newIndex,
+                  absolute(frameAndTarget.newIndex),
                 )
                 return {
                   ...success,
@@ -2710,20 +2715,24 @@ export function reorderComponent(
   openFile: string | null,
   components: Array<UtopiaJSXComponent>,
   target: ElementPath,
-  newIndex: number,
+  indexPosition: IndexPosition,
 ): Array<UtopiaJSXComponent> {
   let workingComponents = [...components]
 
-  const parentPath = EP.parentPath(target)
   const jsxElement = findElementAtPath(target, workingComponents)
+  const parentPath = EP.parentPath(target)
+  const parentElement = findJSXElementAtPath(parentPath, workingComponents)
 
-  if (jsxElement != null) {
-    const newPosition: IndexPosition = {
-      type: 'absolute',
-      index: newIndex,
+  if (jsxElement != null && parentElement != null) {
+    const indexOfRemovedElement = parentElement.children.indexOf(jsxElement)
+    if (indexOfRemovedElement < 0) {
+      throw new Error(`Unable to determine old element index.`)
     }
-
     workingComponents = removeElementAtPath(target, workingComponents)
+    const adjustedIndexPosition = shiftIndexPositionForRemovedElement(
+      indexPosition,
+      indexOfRemovedElement,
+    )
 
     workingComponents = insertElementAtPath(
       projectContents,
@@ -2731,7 +2740,7 @@ export function reorderComponent(
       parentPath,
       jsxElement,
       workingComponents,
-      newPosition,
+      adjustedIndexPosition,
     )
   }
 

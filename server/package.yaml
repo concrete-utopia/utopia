@@ -1,5 +1,5 @@
 name: utopia-web
-version: 0.1.0.4
+version: 0.1.1.0
 synopsis: Utopia Web
 description: Utopia Web
 github: concrete-utopia/utopia
@@ -12,7 +12,7 @@ flags:
     manual: true
     default: true
 dependencies:
-  - aeson
+  - aeson <2.1
   - aeson-pretty
   - amazonka ==1.6.1
   - amazonka-core ==1.6.1
@@ -42,7 +42,7 @@ dependencies:
   - http-types
   - generic-lens
   - lens
-  - lens-aeson
+  - lens-aeson <1.2
   - lifted-base
   - mime-types
   - modern-uri
@@ -81,6 +81,7 @@ dependencies:
   - transformers
   - unix
   - unordered-containers
+  - utopia-clientmodel
   - uuid
   - vector
   - wai

@@ -51,17 +51,14 @@ import { NO_OP } from '../../../core/shared/utils'
 import { usePropControlledStateV2 } from '../../inspector/common/inspector-utils'
 import { ProjectContentTreeRoot } from '../../assets'
 import { LayoutParentControl } from './layout-parent-control'
-import { when } from '../../../utils/react-conditionals'
+import { unless, when } from '../../../utils/react-conditionals'
 import { isFeatureEnabled } from '../../../utils/feature-switches'
 import { shallowEqual } from '../../../core/shared/equality-utils'
 import { KeysPressed } from '../../../utils/keyboard'
 import { usePrevious } from '../../editor/hook-utils'
 import { LayoutTargetableProp } from '../../../core/layout/layout-helpers-new'
 import { getDragStateStart } from '../canvas-utils'
-import {
-  useGetApplicableStrategiesOrderedByFitness,
-  useGetApplicableStrategyControls,
-} from '../canvas-strategies/canvas-strategies'
+import { useGetApplicableStrategyControls } from '../canvas-strategies/canvas-strategies'
 import { FlexResizeControl } from './select-mode/flex-resize-control'
 import { MultiSelectOutlineControl } from './select-mode/simple-outline-control'
 import { GuidelineControls } from './guideline-controls'
@@ -474,7 +471,7 @@ const NewCanvasControlsInner = (props: NewCanvasControlsInnerProps) => {
             <InsertionControls />,
           )}
           {renderHighlightControls()}
-          <LayoutParentControl />
+          {unless(dragging, <LayoutParentControl />)}
           {when(
             isFeatureEnabled('Canvas Strategies'),
             <MultiSelectOutlineControl localSelectedElements={localSelectedViews} />,

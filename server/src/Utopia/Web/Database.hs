@@ -19,6 +19,8 @@ import           Control.Monad.Catch
 import           Control.Monad.Fail
 import           Data.Aeson
 import qualified Data.ByteString.Lazy            as BL
+import           Data.Generics.Product
+import           Data.Generics.Sum
 import           Data.Pool
 import           Data.Profunctor.Product.Default
 import           Data.String
@@ -32,6 +34,7 @@ import           Opaleye.Trans
 import           Protolude                       hiding (get)
 import           System.Environment
 import           System.Posix.User
+import           Utopia.ClientModel
 import           Utopia.Web.Database.Types
 import           Utopia.Web.Metrics              hiding (count)
 
@@ -378,3 +381,8 @@ checkIfProjectIDReserved metrics pool projectId = invokeAndMeasure (_checkIfProj
     rowProjectId <- projectIDSelect
     where_ $ rowProjectId .== toFields projectId
   pure $ Protolude.not $ Protolude.null entries
+
+projectContentTreeFromDecodedProject :: DecodedProject -> Either Text ProjectContentTreeRoot
+projectContentTreeFromDecodedProject decodedProject = do
+  let contentOfProject = view (field @"content") decodedProject
+  fmap (view (field @"projectContents")) $ persistentModelFromJSON contentOfProject

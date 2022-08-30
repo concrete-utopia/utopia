@@ -19,7 +19,12 @@ import { PropertyPath, ElementPath, Imports } from '../../../core/shared/project
 import { Either, eitherToMaybe, isLeft, isRight, right } from '../../../core/shared/either'
 import { KeysPressed } from '../../../utils/keyboard'
 import Utils from '../../../utils/utils'
-import { CanvasPoint, CanvasRectangle, CanvasVector } from '../../../core/shared/math-utils'
+import {
+  CanvasPoint,
+  CanvasRectangle,
+  CanvasVector,
+  localRectangle,
+} from '../../../core/shared/math-utils'
 import { setFocus } from '../../common/actions'
 import { EditorAction } from '../../editor/action-types'
 import * as EditorActions from '../../editor/actions/action-creators'
@@ -53,6 +58,9 @@ import { getStoryboardElementPath } from '../../../core/model/scene-utils'
 import { isSceneFromMetadata } from '../../../core/model/project-file-utils'
 import { RightMenuTab } from '../../editor/store/editor-state'
 import { stylePropPathMappingFn } from '../../inspector/common/property-path-hooks'
+
+const DefaultWidth = 100
+const DefaultHeight = 100
 
 // I feel comfortable having this function confined to this file only, since we absolutely shouldn't be trying
 // to set values that would fail whilst inserting elements. If that ever changes, this function should be binned
@@ -249,11 +257,22 @@ export class InsertModeControlContainer extends React.Component<
     )
     const localFrame = Utils.getLocalRectangleInNewParentContext(parentOrigin, dragFrame)
 
+    const frameIsZero = localFrame.width === 0 && localFrame.height === 0
+
+    const nonZeroLocalFrame = frameIsZero
+      ? localRectangle({
+          x: localFrame.x - DefaultWidth / 2,
+          y: localFrame.y - DefaultHeight / 2,
+          width: DefaultWidth,
+          height: DefaultHeight,
+        })
+      : localFrame
+
     return {
-      [FramePoint.Left]: localFrame.x,
-      [FramePoint.Top]: localFrame.y,
-      [FramePoint.Width]: localFrame.width,
-      [FramePoint.Height]: localFrame.height,
+      [FramePoint.Left]: nonZeroLocalFrame.x,
+      [FramePoint.Top]: nonZeroLocalFrame.y,
+      [FramePoint.Width]: nonZeroLocalFrame.width,
+      [FramePoint.Height]: nonZeroLocalFrame.height,
     }
   }
 
@@ -430,6 +449,8 @@ export class InsertModeControlContainer extends React.Component<
           element = this.getImageElementWithSize()
         } else if (this.isTextInsertion(insertionElement, insertionSubject.importsToAdd)) {
           element = insertionElement
+        } else {
+          element = this.elementWithDragFrame(insertionElement)
         }
       } else {
         // TODO Hidden Instances

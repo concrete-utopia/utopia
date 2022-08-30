@@ -779,13 +779,13 @@ describe('action MOVE_SELECTED_BACKWARD', () => {
       ...editor,
       selectedViews: [EP.appendNewElementPath(ScenePathForTestUiJsFile, ['aaa', 'ddd'])],
     }
-    const reparentAction = moveSelectedBackward()
+    const actionToRun = moveSelectedBackward()
     const updatedEditor = runLocalEditorAction(
       editorWithSelectedView,
       derivedState,
       defaultUserState,
       workers,
-      reparentAction,
+      actionToRun,
       History.init(editor, derivedState),
       dispatch,
       emptyUiJsxCanvasContextData(),

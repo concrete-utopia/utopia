@@ -28,7 +28,8 @@ import           System.IO.Error
 import           System.IO.Temp
 import           System.Log.FastLogger
 import           System.Process
-import           Utopia.Web.ClientModel
+import           Utopia.ClientModel
+import           Utopia.Web.Database       (projectContentTreeFromDecodedProject)
 import qualified Utopia.Web.Database.Types as DB
 import           Utopia.Web.Logging
 import           Utopia.Web.Metrics
@@ -176,7 +177,7 @@ providedDependencies = ["utopia-api", "uuiui", "uuiui-deps", "react/jsx-runtime"
 
 getProjectDependenciesFromPackageJSON :: DB.DecodedProject -> [ProjectDependency]
 getProjectDependenciesFromPackageJSON decodedProject = either (const []) identity $ do
-  contentsTreeRoot <- first toS $ projectContentsTreeFromDecodedProject decodedProject
+  contentsTreeRoot <- first toS $ projectContentTreeFromDecodedProject decodedProject
   packageJsonFile <- maybe (Left "No package.json found.") pure $ getProjectContentsTreeFile contentsTreeRoot ["package.json"]
   packageJsonCode <- maybe (Left "package.json not a text file.") pure $ firstOf projectFileToCodeLens packageJsonFile
   MinimalPackageJSON{..} <- eitherDecode' $ BL.fromStrict $ encodeUtf8 packageJsonCode

@@ -57,6 +57,8 @@ import {
 import * as PP from '../shared/property-path'
 import * as EP from '../shared/element-path'
 import {
+  componentHonoursPropsPosition,
+  componentHonoursPropsSize,
   componentUsesProperty,
   findJSXElementChildAtPath,
   getUtopiaID,
@@ -71,11 +73,14 @@ import {
   isUtopiaAPIComponentFromMetadata,
   isGivenUtopiaElementFromMetadata,
 } from './project-file-utils'
-import { ResizesContentProp } from './scene-utils'
 import { fastForEach } from '../shared/utils'
 import { objectValues, omit } from '../shared/object-utils'
 import { UTOPIA_LABEL_KEY } from './utopia-constants'
-import { AllElementProps, withUnderlyingTarget } from '../../components/editor/store/editor-state'
+import {
+  AllElementProps,
+  LockedElements,
+  withUnderlyingTarget,
+} from '../../components/editor/store/editor-state'
 import { ProjectContentTreeRoot } from '../../components/assets'
 import { memoize } from '../shared/memoize'
 import { buildTree, ElementPathTree, getSubTree } from '../shared/element-path-tree'
@@ -157,9 +162,6 @@ export const MetadataUtils = {
     paths: Array<ElementPath>,
   ): Array<ElementInstanceMetadata> {
     return stripNulls(paths.map((path) => MetadataUtils.findElementByElementPath(elementMap, path)))
-  },
-  isSceneTreatedAsGroup(allElementProps: AllElementProps, path: ElementPath): boolean {
-    return allElementProps?.[EP.toString(path)]?.[ResizesContentProp] ?? false
   },
   isProbablySceneFromMetadata(element: ElementInstanceMetadata | null): boolean {
     return (
@@ -598,7 +600,7 @@ export const MetadataUtils = {
   },
   targetElementSupportsChildren(
     projectContents: ProjectContentTreeRoot,
-    openFile: string | null,
+    openFile: string | null | undefined,
     instance: ElementInstanceMetadata,
   ): boolean {
     return foldEither(
@@ -631,7 +633,7 @@ export const MetadataUtils = {
   },
   targetSupportsChildren(
     projectContents: ProjectContentTreeRoot,
-    openFile: string | null,
+    openFile: string | null | undefined,
     metadata: ElementInstanceMetadataMap,
     target: ElementPath,
   ): boolean {
@@ -660,6 +662,50 @@ export const MetadataUtils = {
         return true
       } else {
         return componentUsesProperty(underlyingComponent, property)
+      }
+    }
+  },
+  targetHonoursPropsSize(
+    projectContents: ProjectContentTreeRoot,
+    openFile: string | null | undefined,
+    target: ElementPath,
+  ): boolean {
+    if (openFile == null) {
+      return false
+    } else {
+      const underlyingComponent = findUnderlyingTargetComponentImplementation(
+        projectContents,
+        {},
+        openFile,
+        target,
+      )
+      if (underlyingComponent == null) {
+        // Could be an external third party component, assuming true for now.
+        return true
+      } else {
+        return componentHonoursPropsSize(underlyingComponent)
+      }
+    }
+  },
+  targetHonoursPropsPosition(
+    projectContents: ProjectContentTreeRoot,
+    openFile: string | null | undefined,
+    target: ElementPath,
+  ): boolean {
+    if (openFile == null) {
+      return false
+    } else {
+      const underlyingComponent = findUnderlyingTargetComponentImplementation(
+        projectContents,
+        {},
+        openFile,
+        target,
+      )
+      if (underlyingComponent == null) {
+        // Could be an external third party component, assuming true for now.
+        return true
+      } else {
+        return componentHonoursPropsPosition(underlyingComponent)
       }
     }
   },
@@ -1352,6 +1398,9 @@ export const MetadataUtils = {
         ? canvasRectangleToLocalRectangle(globalFrame, elementContainerBounds)
         : null
     return localFrame
+  },
+  isDescendantOfHierarchyLockedElement(path: ElementPath, lockedElements: LockedElements): boolean {
+    return lockedElements.hierarchyLock.some((lockedPath) => EP.isDescendantOf(path, lockedPath))
   },
 }
 

@@ -21,20 +21,50 @@ import { addImportsToFile } from '../commands/add-imports-to-file-command'
 import { BuiltInDependencies } from '../../../core/es-modules/package-manager/built-in-dependencies-list'
 import { CSSCursor } from '../canvas-types'
 import { addToReparentedToPaths } from './add-to-reparented-to-paths-command'
+import { getStoryboardElementPath } from '../../../core/model/scene-utils'
 
-export function getReparentCommands(
+interface GetReparentOutcomeResult {
+  commands: Array<CanvasCommand>
+  newPath: ElementPath
+}
+
+export function getReparentOutcome(
   builtInDependencies: BuiltInDependencies,
   projectContents: ProjectContentTreeRoot,
   nodeModules: NodeModules,
   openFile: string | null | undefined,
   selectedElement: ElementPath,
-  newParent: ElementPath,
+  targetParent: ElementPath | null,
   whenToRun: 'always' | 'on-complete',
-): Array<CanvasCommand> {
-  let result: Array<CanvasCommand> = []
+): GetReparentOutcomeResult {
+  // Cater for something being reparented to the canvas.
+  let newParent: ElementPath
+  if (targetParent == null) {
+    const storyboardElementPath = getStoryboardElementPath(projectContents, openFile)
+    if (storyboardElementPath == null) {
+      console.warn(`Unable to find storyboard path.`)
+      return {
+        commands: [],
+        newPath: selectedElement,
+      }
+    } else {
+      newParent = storyboardElementPath
+    }
+  } else {
+    newParent = targetParent
+  }
 
-  const newTargetPath = forceNotNull(
-    `Unable to determine target path for ${EP.toString(newParent)}`,
+  // Early exit if there's no need to make any change.
+  if (EP.pathsEqual(newParent, EP.parentPath(selectedElement))) {
+    return {
+      commands: [],
+      newPath: selectedElement,
+    }
+  }
+
+  // Lookup the filename that will be added to.
+  const newTargetFilePath = forceNotNull(
+    `Unable to determine target path for ${newParent == null ? null : EP.toString(newParent)}`,
     withUnderlyingTarget(
       newParent,
       projectContents,
@@ -77,7 +107,7 @@ export function getReparentCommands(
               switch (importedFromResult.type) {
                 case 'SAME_FILE_ORIGIN':
                   importsToAdd = mergeImports(
-                    newTargetPath,
+                    newTargetFilePath,
                     importsToAdd,
                     getImportsFor(
                       builtInDependencies,
@@ -92,7 +122,7 @@ export function getReparentCommands(
                 case 'IMPORTED_ORIGIN':
                   if (importedFromResult.exportedName != null) {
                     importsToAdd = mergeImports(
-                      newTargetPath,
+                      newTargetFilePath,
                       importsToAdd,
                       getImportsFor(
                         builtInDependencies,
@@ -116,18 +146,23 @@ export function getReparentCommands(
         }
       })
 
-      return [addImportsToFile(whenToRun, newTargetPath, importsToAdd)]
+      return [addImportsToFile(whenToRun, newTargetFilePath, importsToAdd)]
     },
   )
 
-  result.push(reparentElement(whenToRun, selectedElement, newParent))
+  let commands: Array<CanvasCommand> = []
+  commands.push(reparentElement(whenToRun, selectedElement, newParent))
 
+  const newPath = EP.appendToPath(newParent, EP.toUid(selectedElement))
   if (whenToRun === 'always') {
-    const newPath = EP.appendToPath(newParent, EP.toUid(selectedElement))
-    result.push(addToReparentedToPaths('mid-interaction', [newPath]))
+    commands.push(addToReparentedToPaths('mid-interaction', [newPath]))
   }
-  result.push(...commandsToAddImports)
-  return result
+  commands.push(...commandsToAddImports)
+
+  return {
+    commands: commands,
+    newPath: newPath,
+  }
 }
 
 export function cursorForMissingReparentedItems(

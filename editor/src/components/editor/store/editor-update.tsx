@@ -74,7 +74,7 @@ export function runSimpleLocalEditorAction(
     case 'MOVE_SELECTED_FORWARD':
       return UPDATE_FNS.MOVE_SELECTED_FORWARD(state)
     case 'NAVIGATOR_REORDER':
-      return UPDATE_FNS.NAVIGATOR_REORDER(action, state, derivedState)
+      return UPDATE_FNS.NAVIGATOR_REORDER(action, state, derivedState, builtInDependencies)
     case 'UNSET_PROPERTY':
       return UPDATE_FNS.UNSET_PROPERTY(action, state, dispatch)
     case 'UNDO':
@@ -234,7 +234,7 @@ export function runSimpleLocalEditorAction(
     case 'DELETE_SELECTED':
       return UPDATE_FNS.DELETE_SELECTED(action, state, derivedState, dispatch)
     case 'WRAP_IN_VIEW':
-      return UPDATE_FNS.WRAP_IN_VIEW(action, state, derivedState, dispatch)
+      return UPDATE_FNS.WRAP_IN_VIEW(action, state, derivedState, dispatch, builtInDependencies)
     case 'WRAP_IN_ELEMENT':
       return UPDATE_FNS.WRAP_IN_ELEMENT(action, state, derivedState, dispatch)
     case 'OPEN_FLOATING_INSERT_MENU':
@@ -344,6 +344,8 @@ export function runSimpleLocalEditorAction(
       return UPDATE_FNS.FORCE_PARSE_FILE(action, state)
     case 'RUN_ESCAPE_HATCH':
       return UPDATE_FNS.RUN_ESCAPE_HATCH(action, state, builtInDependencies)
+    case 'TOGGLE_SELECTION_LOCK':
+      return UPDATE_FNS.TOGGLE_SELECTION_LOCK(action, state)
     default:
       return state
   }

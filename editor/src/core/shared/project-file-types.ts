@@ -449,6 +449,7 @@ export function isUnparsed(parsed: ParsedTextFile): parsed is Unparsed {
   return parsed.type === 'UNPARSED'
 }
 
+// Ensure this is kept up to date with clientmodel/lib/src/Utopia/ClientModel.hs.
 export type ParsedTextFile = ParseFailure | ParseSuccess | Unparsed
 
 export function foldParsedTextFile<X>(
@@ -490,6 +491,7 @@ export function forEachParseSuccess(
   }
 }
 
+// Ensure this is kept up to date with clientmodel/lib/src/Utopia/ClientModel.hs.
 export interface ParsedJSONSuccess {
   type: 'SUCCESS'
   value: any
@@ -499,6 +501,7 @@ export function isParsedJSONSuccess(result: ParsedJSONResult): result is ParsedJ
   return result.type === 'SUCCESS'
 }
 
+// Ensure this is kept up to date with clientmodel/lib/src/Utopia/ClientModel.hs.
 export interface ParsedJSONFailure {
   type: 'FAILURE'
   codeSnippet: string
@@ -513,8 +516,10 @@ export function isParsedJSONFailure(result: ParsedJSONResult): result is ParsedJ
   return result.type === 'FAILURE'
 }
 
+// Ensure this is kept up to date with clientmodel/lib/src/Utopia/ClientModel.hs.
 export type ParsedJSONResult = ParsedJSONSuccess | ParsedJSONFailure
 
+// Ensure this is kept up to date with clientmodel/lib/src/Utopia/ClientModel.hs.
 export type RevisionsStateType = 'PARSED_AHEAD' | 'CODE_AHEAD' | 'BOTH_MATCH'
 
 export const RevisionsState = {
@@ -523,7 +528,7 @@ export const RevisionsState = {
   BothMatch: 'BOTH_MATCH',
 } as const
 
-// Ensure this is kept up to date with server/src/Utopia/Web/ClientModel.hs.
+// Ensure this is kept up to date with clientmodel/lib/src/Utopia/ClientModel.hs.
 export interface TextFileContents {
   code: string
   parsed: ParsedTextFile
@@ -542,7 +547,7 @@ export function textFileContents(
   }
 }
 
-// Ensure this is kept up to date with server/src/Utopia/Web/ClientModel.hs.
+// Ensure this is kept up to date with clientmodel/lib/src/Utopia/ClientModel.hs.
 export interface TextFile {
   type: 'TEXT_FILE'
   fileContents: TextFileContents
@@ -640,7 +645,7 @@ export function isEsRemoteDependencyPlaceholder(
   return projectFile != null && projectFile.type === 'ES_REMOTE_DEPENDENCY_PLACEHOLDER'
 }
 
-// Ensure this is kept up to date with server/src/Utopia/Web/ClientModel.hs.
+// Ensure this is kept up to date with clientmodel/lib/src/Utopia/ClientModel.hs.
 export interface ImageFile {
   type: 'IMAGE_FILE'
   imageType?: string
@@ -667,7 +672,7 @@ export function imageFile(
   }
 }
 
-// Ensure this is kept up to date with server/src/Utopia/Web/ClientModel.hs.
+// Ensure this is kept up to date with clientmodel/lib/src/Utopia/ClientModel.hs.
 export interface AssetFile {
   type: 'ASSET_FILE'
   base64?: string

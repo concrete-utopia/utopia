@@ -5,13 +5,14 @@ import { ElementInstanceMetadataMap } from '../../../core/shared/element-templat
 import { arrayEquals } from '../../../core/shared/utils'
 import { InnerDispatchResult } from '../../editor/store/dispatch'
 import { AllElementProps, EditorState, EditorStorePatched } from '../../editor/store/editor-state'
-import { useEditorState } from '../../editor/store/store-hook'
+import { useEditorState, useSelectorWithCallback } from '../../editor/store/store-hook'
 import { CanvasCommand } from '../commands/commands'
 import { absoluteMoveStrategy } from './absolute-move-strategy'
 import { absoluteReparentStrategy } from './absolute-reparent-strategy'
 import {
   CanvasStrategy,
   CanvasStrategyId,
+  ControlDelay,
   ControlWithKey,
   InteractionCanvasState,
   StrategyApplicationResult,
@@ -142,36 +143,6 @@ function getApplicableStrategiesOrderedByFitness(
   return sortedStrategies
 }
 
-const getApplicableStrategiesOrderedByFitnessSelector = createSelector(
-  (store: EditorStorePatched): InteractionCanvasState => {
-    return pickCanvasStateFromEditorState(store.editor, store.builtInDependencies)
-  },
-  (store: EditorStorePatched) => store.editor.canvas.interactionSession,
-  (store: EditorStorePatched) => store.strategyState,
-  (
-    canvasState: InteractionCanvasState,
-    interactionSession: InteractionSession | null,
-    strategyState: StrategyState,
-  ): Array<CanvasStrategy> => {
-    if (interactionSession == null) {
-      return []
-    }
-    return getApplicableStrategiesOrderedByFitness(
-      RegisteredCanvasStrategies,
-      canvasState,
-      interactionSession,
-      strategyState,
-    ).map((s) => s.strategy)
-  },
-)
-
-export function useGetApplicableStrategiesOrderedByFitness(): Array<CanvasStrategy> {
-  return useEditorState(
-    getApplicableStrategiesOrderedByFitnessSelector,
-    'useGetApplicableStrategiesOrderedByFitness',
-  )
-}
-
 function pickDefaultCanvasStrategy(
   sortedApplicableStrategies: Array<StrategyWithFitness>,
   previousStrategyId: string | null,
@@ -240,12 +211,63 @@ export function applyCanvasStrategy(
   return strategy.apply(canvasState, interactionSession, strategyState)
 }
 
+export const useDelayedCurrentStrategy = () => {
+  /**
+   * onMouseDown selection shows canvas controls that are active when a strategy runs with a delay (double click selection in hierarchy)
+   * but when a drag threshold passes before the timer ends it shows up without delay
+   */
+  const [delayedStrategyValue, setDelayedStrategyValue] = React.useState<CanvasStrategyId | null>(
+    null,
+  )
+  const [timer, setTimer] = React.useState<number | null>(null)
+
+  const immediateCallback = React.useCallback(
+    (currentStrategy: CanvasStrategyId | null) => {
+      setDelayedStrategyValue(currentStrategy)
+      if (timer != null) {
+        window.clearTimeout(timer)
+        setTimer(null)
+      }
+    },
+    [timer, setTimer, setDelayedStrategyValue],
+  )
+
+  const maybeDelayedCallback = React.useCallback(
+    (currentStrategy: CanvasStrategyId | null) => {
+      if (currentStrategy != null && delayedStrategyValue == null) {
+        if (timer == null) {
+          setTimer(
+            window.setTimeout(() => {
+              setDelayedStrategyValue(currentStrategy)
+              setTimer(null)
+            }, ControlDelay),
+          )
+        }
+      } else {
+        immediateCallback(currentStrategy)
+      }
+    },
+    [immediateCallback, delayedStrategyValue, timer, setTimer, setDelayedStrategyValue],
+  )
+
+  useSelectorWithCallback((store) => store.strategyState.currentStrategy, maybeDelayedCallback)
+  useSelectorWithCallback((store) => {
+    if (
+      store.editor.canvas.interactionSession?.interactionData.type === 'DRAG' &&
+      store.editor.canvas.interactionSession?.interactionData.drag != null
+    ) {
+      return store.strategyState.currentStrategy
+    } else {
+      return null
+    }
+  }, immediateCallback)
+
+  return delayedStrategyValue
+}
+
 export function useGetApplicableStrategyControls(): Array<ControlWithKey> {
   const applicableStrategies = useGetApplicableStrategies()
-  const currentStrategy = useEditorState(
-    (store) => store.strategyState.currentStrategy,
-    'currentStrategy',
-  )
+  const currentStrategy = useDelayedCurrentStrategy()
   return React.useMemo(() => {
     return applicableStrategies.reduce<ControlWithKey[]>((working, s) => {
       const filteredControls = s.controlsToRender.filter(

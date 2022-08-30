@@ -217,7 +217,7 @@ describe('Flex Reparent To Flex Strategy', () => {
 
     await renderResult.getDispatchFollowUpActionsFinished()
     const dragDelta = windowPoint({
-      x: targetFlexParentEnd.x - flexChildToReparentCenter.x,
+      x: targetFlexParentEnd.x - flexChildToReparentCenter.x + 50,
       y: targetFlexParentEnd.y - flexChildToReparentCenter.y,
     })
     act(() => dragElement(renderResult, 'flexchild3', dragDelta, cmdModifier))
@@ -328,7 +328,7 @@ describe('Flex Reparent To Flex Strategy', () => {
 
     await renderResult.getDispatchFollowUpActionsFinished()
     const dragDelta = windowPoint({
-      x: targetFlexChildCenter.x - flexChildToReparentCenter.x,
+      x: targetFlexChildCenter.x - flexChildToReparentCenter.x - 5,
       y: targetFlexChildCenter.y - flexChildToReparentCenter.y,
     })
     act(() => dragElement(renderResult, 'flexchild3', dragDelta, cmdModifier))

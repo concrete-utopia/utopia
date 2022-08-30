@@ -20,6 +20,7 @@ import { updateHighlightedViews } from '../commands/update-highlighted-views-com
 import { setElementsToRerenderCommand } from '../commands/set-elements-to-rerender-command'
 import { ParentBounds } from '../controls/parent-bounds'
 import { getReorderIndex } from './reparent-strategy-helpers'
+import { absolute } from '../../../utils/utils'
 
 export const flexReorderStrategy: CanvasStrategy = {
   id: 'FLEX_REORDER',
@@ -89,6 +90,7 @@ export const flexReorderStrategy: CanvasStrategy = {
         strategyState.startingMetadata,
         siblingsOfTarget,
         pointOnCanvas,
+        target,
       )
 
       const realNewIndex = newIndex > -1 ? newIndex : lastReorderIdx
@@ -107,7 +109,7 @@ export const flexReorderStrategy: CanvasStrategy = {
       } else {
         return {
           commands: [
-            reorderElement('always', target, realNewIndex),
+            reorderElement('always', target, absolute(realNewIndex)),
             setElementsToRerenderCommand([target]),
             updateHighlightedViews('mid-interaction', []),
             setCursorCommand('mid-interaction', CSSCursor.Move),

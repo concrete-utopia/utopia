@@ -1,39 +1,124 @@
-{-# LANGUAGE DataKinds             #-}
-{-# LANGUAGE DeriveGeneric         #-}
-{-# LANGUAGE DuplicateRecordFields #-}
-{-# LANGUAGE FlexibleContexts      #-}
-{-# LANGUAGE MonoLocalBinds        #-}
-{-# LANGUAGE OverloadedStrings     #-}
-{-# LANGUAGE RankNTypes            #-}
-{-# LANGUAGE RecordWildCards       #-}
-{-# LANGUAGE TemplateHaskell       #-}
-{-# LANGUAGE TypeApplications      #-}
-{-# LANGUAGE TypeOperators         #-}
-
 {-|
   Functionality for manipulating the data held in `PersistentModel` in the client.
 -}
-module Utopia.Web.ClientModel where
+module Utopia.ClientModel where
 
 import           Control.Lens
 import           Control.Monad.Fail
 import           Data.Aeson
 import           Data.Aeson.Lens
 import           Data.Aeson.Types
+import           Data.Data
 import           Data.Generics.Product
 import           Data.Generics.Sum
-import qualified Data.HashMap.Strict       as M
-import           Data.Text                 hiding (foldl', reverse)
-import           Protolude
-import           Utopia.Web.Database.Types
-import           Utopia.Web.ServiceTypes
+import qualified Data.HashMap.Strict   as M
+import           Data.Text             hiding (foldl', reverse)
+import           Data.Typeable
+import           Relude
 
--- This is very specifically designed to be limited to what
--- we need on the server side.
+textToJSON :: Text -> Value
+textToJSON = toJSON
+
+type ElementPathPart = [Text]
+
+data ElementPath = ElementPath
+                 { parts :: [ElementPathPart]
+                 }
+                 deriving (Eq, Show, Generic, Data, Typeable)
+
+instance FromJSON ElementPath where
+  parseJSON = genericParseJSON defaultOptions
+
+instance ToJSON ElementPath where
+  toJSON = genericToJSON defaultOptions
+
+data RevisionsState = ParsedAhead
+                    | CodeAhead
+                    | BothMatch
+                    deriving (Eq, Show, Generic, Data, Typeable)
+
+instance FromJSON RevisionsState where
+  parseJSON value =
+    let possibleString = firstOf _String value
+    in  case possibleString of
+          (Just "PARSED_AHEAD") -> pure ParsedAhead
+          (Just "CODE_AHEAD")   -> pure CodeAhead
+          (Just "BOTH_MATCH")   -> pure BothMatch
+          (Just unknownType)    -> fail ("Unknown type: " <> unpack unknownType)
+          _                     -> fail "Unexpected value for RevisionsState."
+
+instance ToJSON RevisionsState where
+  toJSON ParsedAhead = textToJSON "PARSED_AHEAD"
+  toJSON CodeAhead   = textToJSON "CODE_AHEAD"
+  toJSON BothMatch   = textToJSON "BOTH_MATCH"
+
+data ParseFailure = ParseFailure
+                  { diagnostics   :: Maybe [Value]
+                  , parsedJSON    :: Maybe Value
+                  , errorMessage  :: Maybe Text
+                  , errorMessages :: [Value]
+                  }
+                  deriving (Eq, Show, Generic, Data, Typeable)
+
+instance FromJSON ParseFailure where
+  parseJSON = genericParseJSON defaultOptions
+
+instance ToJSON ParseFailure where
+  toJSON = genericToJSON defaultOptions
+
+data ParseSuccess = ParseSuccess
+                  { imports                        :: Value
+                  , topLevelElements               :: [Value]
+                  , highlightBounds                :: Value
+                  , jsxFactoryFunction             :: Maybe Text
+                  , combinedTopLevelArbitraryBlock :: Maybe Value
+                  , exportsDetail                  :: Value
+                  }
+                  deriving (Eq, Show, Generic, Data, Typeable)
+
+instance FromJSON ParseSuccess where
+  parseJSON = genericParseJSON defaultOptions
+
+instance ToJSON ParseSuccess where
+  toJSON = genericToJSON defaultOptions
+
+data Unparsed = Unparsed
+              deriving (Eq, Show, Generic, Data, Typeable)
+
+instance FromJSON Unparsed where
+  parseJSON = const $ pure Unparsed
+
+instance ToJSON Unparsed where
+  toJSON = const $ object []
+
+data ParsedTextFile = ParsedTextFileFailure ParseFailure
+                    | ParsedTextFileSuccess ParseSuccess
+                    | ParsedTextFileUnparsed Unparsed
+                    deriving (Eq, Show, Generic, Data, Typeable)
+
+instance FromJSON ParsedTextFile where
+  parseJSON value =
+    let fileType = firstOf (key "type" . _String) value
+     in case fileType of
+          (Just "PARSE_FAILURE")  -> fmap ParsedTextFileFailure $ parseJSON value
+          (Just "PARSE_SUCCESS")  -> fmap ParsedTextFileSuccess $ parseJSON value
+          (Just "UNPARSED")       -> fmap ParsedTextFileUnparsed $ parseJSON value
+          (Just unknownType)      -> fail ("Unknown type: " <> unpack unknownType)
+          _                       -> fail "No type for ParsedTextFile specified."
+
+instance ToJSON ParsedTextFile where
+  toJSON (ParsedTextFileFailure parseFailure) = over _Object (M.insert "type" "PARSE_FAILURE") $ toJSON parseFailure
+  toJSON (ParsedTextFileSuccess parseSuccess) = over _Object (M.insert "type" "PARSE_SUCCESS") $ toJSON parseSuccess
+  toJSON (ParsedTextFileUnparsed unparsed) = over _Object (M.insert "type" "UNPARSED") $ toJSON unparsed
+
+-- This for the moment excludes the `parsed` field as
+-- that is a very deep and wide structure.
 data TextFileContents = TextFileContents
-                      { code       :: Text
+                      { code           :: Text
+                      , parsed         :: ParsedTextFile
+                      , revisionsState :: RevisionsState
                       }
-                      deriving (Eq, Show, Generic)
+                      deriving (Eq, Show, Generic, Data, Typeable)
 
 instance FromJSON TextFileContents where
   parseJSON = genericParseJSON defaultOptions
@@ -46,7 +131,7 @@ data TextFile = TextFile
               , lastSavedContents :: Maybe TextFileContents
               , lastRevisedTime   :: Double
               }
-              deriving (Eq, Show, Generic)
+              deriving (Eq, Show, Generic, Data, Typeable)
 
 instance FromJSON TextFile where
   parseJSON = genericParseJSON defaultOptions
@@ -61,7 +146,7 @@ data ImageFile = ImageFile
                , height    :: Maybe Double
                , hash      :: Integer
                }
-               deriving (Eq, Show, Generic)
+               deriving (Eq, Show, Generic, Data, Typeable)
 
 instance FromJSON ImageFile where
   parseJSON = genericParseJSON defaultOptions
@@ -70,7 +155,7 @@ instance ToJSON ImageFile where
   toJSON = genericToJSON defaultOptions
 
 data AssetFile = AssetFile
-                 deriving (Eq, Show, Generic)
+                 deriving (Eq, Show, Generic, Data, Typeable)
 
 instance FromJSON AssetFile where
   parseJSON = const $ pure AssetFile
@@ -81,7 +166,7 @@ instance ToJSON AssetFile where
 data ProjectFile = ProjectTextFile TextFile
                  | ProjectImageFile ImageFile
                  | ProjectAssetFile AssetFile
-                 deriving (Eq, Show, Generic)
+                 deriving (Eq, Show, Generic, Data, Typeable)
 
 instance FromJSON ProjectFile where
   parseJSON value =
@@ -98,13 +183,13 @@ instance ToJSON ProjectFile where
   toJSON (ProjectImageFile imageFile) = over _Object (M.insert "type" "IMAGE_FILE") $ toJSON imageFile
   toJSON (ProjectAssetFile assetFile) = over _Object (M.insert "type" "ASSET_FILE") $ toJSON assetFile
 
-type ProjectContentsTreeRoot = M.HashMap Text ProjectContentsTree
+type ProjectContentTreeRoot = M.HashMap Text ProjectContentsTree
 
 data ProjectContentDirectory = ProjectContentDirectory
                              { fullPath :: Text
-                             , children :: ProjectContentsTreeRoot
+                             , children :: ProjectContentTreeRoot
                              }
-                             deriving (Eq, Show, Generic)
+                             deriving (Eq, Show, Generic, Data, Typeable)
 
 instance FromJSON ProjectContentDirectory where
   parseJSON = genericParseJSON defaultOptions
@@ -116,7 +201,7 @@ data ProjectContentFile = ProjectContentFile
                         { fullPath :: Text
                         , content  :: ProjectFile
                         }
-                        deriving (Eq, Show, Generic)
+                        deriving (Eq, Show, Generic, Data, Typeable)
 
 instance FromJSON ProjectContentFile where
   parseJSON = genericParseJSON defaultOptions
@@ -126,7 +211,7 @@ instance ToJSON ProjectContentFile where
 
 data ProjectContentsTree = ProjectContentsTreeDirectory ProjectContentDirectory
                          | ProjectContentsTreeFile ProjectContentFile
-                         deriving (Eq, Show, Generic)
+                         deriving (Eq, Show, Generic, Data, Typeable)
 
 instance FromJSON ProjectContentsTree where
   parseJSON value =
@@ -144,9 +229,9 @@ instance ToJSON ProjectContentsTree where
 -- This is currently not a comprehensive definition for the persistent model the
 -- front-end can supply, so round tripping via this type is guaranteed to lose data.
 data PartialPersistentModel = PartialPersistentModel
-                            { projectContents :: ProjectContentsTreeRoot
+                            { projectContents :: ProjectContentTreeRoot
                             }
-                            deriving (Eq, Show, Generic)
+                            deriving (Eq, Show, Generic, Data, Typeable)
 
 instance FromJSON PartialPersistentModel where
   parseJSON = genericParseJSON defaultOptions
@@ -154,7 +239,7 @@ instance FromJSON PartialPersistentModel where
 instance ToJSON PartialPersistentModel where
   toJSON = genericToJSON defaultOptions
 
-getProjectContentsTreeFile :: ProjectContentsTreeRoot -> [Text] -> Maybe ProjectFile
+getProjectContentsTreeFile :: ProjectContentTreeRoot -> [Text] -> Maybe ProjectFile
 getProjectContentsTreeFile _ [] = Nothing
 getProjectContentsTreeFile projectContentsTree pathElements =
   let directoryContentLens filename = ix filename . _Ctor @"ProjectContentsTreeDirectory" . field @"children"
@@ -167,24 +252,4 @@ getProjectContentsTreeFile projectContentsTree pathElements =
 persistentModelFromJSON :: Value -> Either Text PartialPersistentModel
 persistentModelFromJSON value = first pack $ parseEither parseJSON value
 
-projectContentsTreeFromDecodedProject :: DecodedProject -> Either Text ProjectContentsTreeRoot
-projectContentsTreeFromDecodedProject decodedProject = do
-  let contentOfProject = view (field @"content") decodedProject
-  fmap (view (field @"projectContents")) $ persistentModelFromJSON contentOfProject
-
-projectContentsTreeFromSaveProjectRequest :: SaveProjectRequest -> Maybe (Either Text ProjectContentsTreeRoot)
-projectContentsTreeFromSaveProjectRequest saveProjectRequest =
-  let possiblePersistentModel = firstOf (field @"_content" . _Just) saveProjectRequest
-      possibleParsedPersistentModel = fmap persistentModelFromJSON possiblePersistentModel
-   in over (_Just . _Right) (view (field @"projectContents")) possibleParsedPersistentModel
-
-validateSaveRequest :: SaveProjectRequest -> Bool
-validateSaveRequest saveProjectRequest =
-  case projectContentsTreeFromSaveProjectRequest saveProjectRequest of
-    -- Contents not included, so nothing to validate.
-    Nothing                      -> True
-    -- Cannot parse JSON content.
-    Just (Left _)                -> False
-    -- Parsed content, need to validate the contents tree is not empty.
-    Just (Right projectContents) -> not $ M.null projectContents
 

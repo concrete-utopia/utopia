@@ -86,7 +86,7 @@ function dragElement(
 
 const defaultAbsoluteChildCode = `
 import * as React from 'react'
-export const AbsoluteChild = () => {
+export const AbsoluteChild = (absoluteChildProps) => {
   return (
     <div
       style={{
@@ -99,6 +99,7 @@ export const AbsoluteChild = () => {
         borderColor: 'black',
         borderStyle: 'solid',
         backgroundColor: 'yellow',
+        ...absoluteChildProps.style
       }}
       data-uid='absolutechild'
       data-testid='absolutechild'

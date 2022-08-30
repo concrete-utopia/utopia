@@ -3,7 +3,9 @@ import {
   getPrintedUiJsCode,
   makeTestProjectCodeWithSnippet,
   renderTestEditorWithCode,
+  TestAppUID,
   TestScenePath,
+  TestSceneUID,
 } from '../ui-jsx.test-utils'
 import { act, fireEvent } from '@testing-library/react'
 import * as EP from '../../../core/shared/element-path'
@@ -27,6 +29,11 @@ import {
   EdgePositionTopLeft,
 } from '../canvas-types'
 import { wait } from '../../../utils/utils.test-utils'
+import { ControlDelay } from './canvas-strategy-types'
+import {
+  BakedInStoryboardVariableName,
+  BakedInStoryboardUID,
+} from '../../../core/model/scene-utils'
 
 function selectAndResizeElement(
   renderResult: EditorRenderResult,
@@ -200,7 +207,135 @@ export var storyboard = (
   </Storyboard>
 )`
 
+const projectDoesNotHonourSizeProperties = `
+import * as React from 'react'
+import { Scene, Storyboard, View } from 'utopia-api'
+
+export const App2 = (props) => {
+  return (
+    <div
+      style={{
+        position: 'absolute',
+        top: 5,
+        left: 5,
+        width: 350,
+        height: 400,
+      }}
+      data-uid='aaa'
+      data-testid='aaa'
+    />
+  )
+}
+
+export var App = (props) => {
+  return (
+    <App2
+      data-uid='app2'
+      style={{ left: 20, top: 20, width: 300, height: 400 }}
+    />
+  )
+}
+
+export var ${BakedInStoryboardVariableName} = (props) => {
+  return (
+    <Storyboard data-uid='${BakedInStoryboardUID}'>
+      <Scene
+        style={{ left: 0, top: 0, width: 400, height: 400 }}
+        data-uid='${TestSceneUID}'
+      >
+        <App
+          data-uid='${TestAppUID}'
+          style={{ position: 'absolute', bottom: 0, left: 0, right: 0, top: 0 }}
+        />
+      </Scene>
+    </Storyboard>
+  )
+}
+`
+
+function projectDoesHonourSizeProperties(width: number, height: number): string {
+  return `import * as React from 'react'
+import { Scene, Storyboard, View } from 'utopia-api'
+
+export const App2 = (props) => {
+  return (
+    <div
+      style={{
+        position: 'absolute',
+        top: props.style.top,
+        left: props.style.left,
+        width: props.style.width,
+        height: props.style.height,
+      }}
+      data-uid='aaa'
+      data-testid='aaa'
+    />
+  )
+}
+
+export var App = (props) => {
+  return (
+    <App2
+      data-uid='app2'
+      style={{ left: 20, top: 20, width: ${width}, height: ${height} }}
+    />
+  )
+}
+
+export var ${BakedInStoryboardVariableName} = (props) => {
+  return (
+    <Storyboard data-uid='${BakedInStoryboardUID}'>
+      <Scene
+        style={{ left: 0, top: 0, width: 400, height: 400 }}
+        data-uid='${TestSceneUID}'
+      >
+        <App data-uid='${TestAppUID}' />
+      </Scene>
+    </Storyboard>
+  )
+}
+`
+}
+
 describe('Absolute Resize Strategy', () => {
+  it('resizes component instances that honour the size properties', async () => {
+    const renderResult = await renderTestEditorWithCode(
+      projectDoesHonourSizeProperties(300, 300),
+      'await-first-dom-report',
+    )
+
+    const target = EP.appendNewElementPath(TestScenePath, ['app2'])
+    const dragDelta = windowPoint({ x: 40, y: -25 })
+
+    await renderResult.dispatch([selectComponents([target], false)], true)
+    act(() =>
+      selectAndResizeElement(renderResult, dragDelta, EdgePositionBottomRight, emptyModifiers),
+    )
+
+    await renderResult.getDispatchFollowUpActionsFinished()
+    expect(getPrintedUiJsCode(renderResult.getEditorState())).toEqual(
+      projectDoesHonourSizeProperties(340, 275),
+    )
+  })
+  it('does not resize a component instance that does not honour the size properties', async () => {
+    const renderResult = await renderTestEditorWithCode(
+      projectDoesNotHonourSizeProperties,
+      'await-first-dom-report',
+    )
+
+    const target = EP.appendNewElementPath(TestScenePath, ['app2'])
+    const dragDelta = windowPoint({ x: 40, y: -25 })
+
+    await renderResult.dispatch([selectComponents([target], false)], true)
+    act(() =>
+      selectAndResizeElement(renderResult, dragDelta, EdgePositionBottomRight, emptyModifiers),
+    )
+
+    await renderResult.getDispatchFollowUpActionsFinished()
+    expect(getPrintedUiJsCode(renderResult.getEditorState())).toEqual(
+      projectDoesNotHonourSizeProperties,
+    )
+  })
   it('resizes absolute positioned element from bottom right edge', async () => {
     const renderResult = await renderTestEditorWithCode(
       makeTestProjectCodeWithSnippet(`
@@ -346,6 +481,7 @@ describe('Absolute Resize Strategy Canvas Controls', () => {
     const target = EP.appendNewElementPath(TestScenePath, ['aaa', 'bbb'])
     await startDragUsingActions(renderResult, target, EdgePositionLeft, zeroCanvasPoint)
 
+    await wait(ControlDelay + 10)
     const parentOutlineControl = renderResult.renderedDOM.getByTestId('parent-outlines-control')
     expect(parentOutlineControl).toBeDefined()
     const parentBoundsControl = renderResult.renderedDOM.getByTestId('parent-bounds-control')
