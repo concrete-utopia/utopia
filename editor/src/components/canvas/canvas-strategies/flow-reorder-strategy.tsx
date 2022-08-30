@@ -20,6 +20,8 @@ import { DragOutlineControl } from '../controls/select-mode/drag-outline-control
 import { InteractionSession } from './interaction-state'
 import { ElementInstanceMetadataMap } from '../../../core/shared/element-template'
 import { getFlowReorderIndex } from './flow-reorder-helpers'
+import { deleteProperties } from '../commands/delete-properties-command'
+import { stylePropPathMappingFn } from '../../inspector/common/property-path-hooks'
 
 function isFlowReorderConversionApplicable(
   canvasState: InteractionCanvasState,
@@ -120,8 +122,14 @@ export const flowReorderAutoConversionStategy: CanvasStrategy = {
           },
         }
       } else {
-        const newDisplayTypeCommands =
-          newDisplayType == null ? [] : [convertInlineBlock('always', target, newDisplayType)]
+        const newDisplayPropCommands =
+          newDisplayType?.type === 'add'
+            ? [convertInlineBlock('always', target, newDisplayType.display)]
+            : []
+        const removeDisplayPropCommand =
+          newDisplayType?.type === 'remove'
+            ? [deleteProperties('always', target, [stylePropPathMappingFn('display', ['style'])])]
+            : []
 
         return {
           commands: [
@@ -129,7 +137,8 @@ export const flowReorderAutoConversionStategy: CanvasStrategy = {
             setElementsToRerenderCommand(siblingsOfTarget),
             updateHighlightedViews('mid-interaction', []),
             setCursorCommand('mid-interaction', CSSCursor.Move),
-            ...newDisplayTypeCommands,
+            ...newDisplayPropCommands,
+            ...removeDisplayPropCommand,
           ],
           customState: {
             ...strategyState.customStrategyState,

@@ -32,7 +32,7 @@ interface ReorderElement {
   distance: number
   centerPoint: CanvasPoint
   bottomLeft: CanvasPoint
-  closestSibling: ElementPath
+  siblingPath: ElementPath
   siblingIndex: number
   direction: FlowDirection
 }
@@ -61,18 +61,51 @@ function getCenterPositionInFlow(
   return offsetPoint(rawCenter, relativeOffset)
 }
 
-function shouldRemoveDisplayType(
+function shouldRemoveDisplayProp(
   element: ElementInstanceMetadata | null,
-  newDisplayType: 'block' | 'inline-block' | undefined,
+  newDisplayValue: 'block' | 'inline-block' | undefined,
 ): boolean {
   if (element == null || element.specialSizeMeasurements.htmlElementName == null) {
     return false
   } else {
     return (
       defaultDisplayTypeForHTMLElement(element.specialSizeMeasurements.htmlElementName) ===
-      newDisplayType
+      newDisplayValue
     )
   }
+}
+
+function getNewDisplayType(
+  element: ElementInstanceMetadata | null,
+  newDisplayValue: 'block' | 'inline-block' | undefined,
+): AddDisplayBlockOrOnline | RemoveDisplayProp | null {
+  if (shouldRemoveDisplayProp(element, newDisplayValue)) {
+    return removeDisplayProp()
+  } else if (newDisplayValue != null) {
+    return addDisplayProp(newDisplayValue)
+  } else {
+    return null
+  }
+}
+
+interface AddDisplayBlockOrOnline {
+  type: 'add'
+  display: 'block' | 'inline-block'
+}
+
+export function addDisplayProp(display: 'inline-block' | 'block'): AddDisplayBlockOrOnline {
+  return {
+    type: 'add',
+    display: display,
+  }
+}
+
+interface RemoveDisplayProp {
+  type: 'remove'
+}
+
+export function removeDisplayProp(): RemoveDisplayProp {
+  return { type: 'remove' }
 }
 
 export function getFlowReorderIndex(
@@ -86,7 +119,7 @@ export function getFlowReorderIndex(
     | 'allow-mixed-display-type' = 'allow-mixed-display-type',
 ): {
   newIndex: number
-  newDisplayType?: 'block' | 'inline-block'
+  newDisplayType?: AddDisplayBlockOrOnline | RemoveDisplayProp | null
 } {
   if (target === null) {
     return {
@@ -102,7 +135,7 @@ export function getFlowReorderIndex(
   // TODO wrapping
 
   const targetElementMetadata = MetadataUtils.findElementByElementPath(metadata, target)
-  const displayType = targetElementMetadata?.specialSizeMeasurements.display
+  const targetDisplayType = targetElementMetadata?.specialSizeMeasurements.display
   const targetIndex = siblings.findIndex((path) => EP.pathsEqual(path, target))
 
   for (const [index, sibling] of siblings.entries()) {
@@ -111,7 +144,8 @@ export function getFlowReorderIndex(
     displayValues.push(siblingDisplayType)
     const frame = MetadataUtils.getFrameInCanvasCoords(sibling, metadata)
     const isValidSibling =
-      displayTypeFiltering === 'allow-mixed-display-type' ?? siblingDisplayType === displayType
+      displayTypeFiltering === 'allow-mixed-display-type' ??
+      siblingDisplayType === targetDisplayType
     if (
       isValidSibling &&
       frame != null &&
@@ -132,7 +166,7 @@ export function getFlowReorderIndex(
           distance: distance,
           centerPoint: centerPoint,
           bottomLeft: bottomLeft,
-          closestSibling: sibling,
+          siblingPath: sibling,
           siblingIndex: index,
           direction: flowDirectionForDisplayValue(siblingMetadata.specialSizeMeasurements.display),
         }
@@ -145,7 +179,7 @@ export function getFlowReorderIndex(
     return {
       newIndex: -1,
     }
-  } else if (EP.pathsEqual(reorderResult.closestSibling, target)) {
+  } else if (EP.pathsEqual(reorderResult.siblingPath, target)) {
     // Reparenting to the same position that the existing element started in.
     return {
       newIndex: reorderResult.siblingIndex,
@@ -192,11 +226,9 @@ export function getFlowReorderIndex(
       newIndex++
     }
 
-    const newDisplayType = displayTypeBeforeIndex(newIndex)
-
     return {
       newIndex: newIndex,
-      newDisplayType: newDisplayType,
+      newDisplayType: getNewDisplayType(targetElementMetadata, displayTypeBeforeIndex(newIndex)),
     }
   }
 }
