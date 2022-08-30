@@ -1,4 +1,5 @@
 import { MetadataUtils } from '../../../core/model/element-metadata-utils'
+import { defaultDisplayTypeForHTMLElement } from '../../../core/shared/dom-utils'
 import * as EP from '../../../core/shared/element-path'
 import {
   ElementInstanceMetadata,
@@ -58,6 +59,20 @@ function getCenterPositionInFlow(
   const rawCenter = getRectCenter(frame)
   const relativeOffset = getRelativeOffset(element, elementProps)
   return offsetPoint(rawCenter, relativeOffset)
+}
+
+function shouldRemoveDisplayType(
+  element: ElementInstanceMetadata | null,
+  newDisplayType: 'block' | 'inline-block' | undefined,
+): boolean {
+  if (element == null || element.specialSizeMeasurements.htmlElementName == null) {
+    return false
+  } else {
+    return (
+      defaultDisplayTypeForHTMLElement(element.specialSizeMeasurements.htmlElementName) ===
+      newDisplayType
+    )
+  }
 }
 
 export function getFlowReorderIndex(
