@@ -42,8 +42,9 @@ import { AddImportsToFile, runAddImportsToFile } from './add-imports-to-file-com
 import { runSettProperty as runSetProperty, SetProperty } from './set-property-command'
 import {
   runAddToReparentedToPaths,
-  addToReparentedToPaths,
+  AddToReparentedToPaths,
 } from '../canvas-strategies/add-to-reparented-to-paths-command'
+import { AddElement, runAddElement } from './add-element-command'
 
 export interface CommandFunctionResult {
   editorStatePatches: Array<EditorStatePatch>
@@ -79,7 +80,8 @@ export type CanvasCommand =
   | DeleteProperties
   | SetProperty
   | AddImportsToFile
-  | addToReparentedToPaths
+  | AddToReparentedToPaths
+  | AddElement
 
 export const runCanvasCommand = (
   editorState: EditorState,
@@ -129,6 +131,8 @@ export const runCanvasCommand = (
       return runAddImportsToFile(editorState, command)
     case 'ADD_TO_REPARENTED_TO_PATHS':
       return runAddToReparentedToPaths(editorState, command)
+    case 'ADD_ELEMENT':
+      return runAddElement(editorState, command)
     default:
       const _exhaustiveCheck: never = command
       throw new Error(`Unhandled canvas command ${JSON.stringify(command)}`)

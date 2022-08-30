@@ -2,13 +2,15 @@ import { MetadataUtils } from '../../../core/model/element-metadata-utils'
 import { getStoryboardElementPath } from '../../../core/model/scene-utils'
 import { mapDropNulls } from '../../../core/shared/array-utils'
 import * as EP from '../../../core/shared/element-path'
-import { ElementInstanceMetadataMap } from '../../../core/shared/element-template'
+import { ElementInstanceMetadataMap, JSXElement } from '../../../core/shared/element-template'
 import {
+  canvasPoint,
   CanvasPoint,
   CanvasRectangle,
   canvasRectangle,
   CanvasVector,
   offsetPoint,
+  pointDifference,
   rectContainsPoint,
   rectContainsPointInclusive,
   rectFromTwoPoints,
@@ -39,10 +41,19 @@ import {
 } from './canvas-strategy-types'
 import { InteractionSession, StrategyState } from './interaction-state'
 import { ifAllowedToReparent } from './reparent-helpers'
-import { getReparentOutcome } from './reparent-utils'
+import { getReparentOutcome, pathToReparent } from './reparent-utils'
 import { getDragTargets } from './shared-absolute-move-strategy-helpers'
 import Utils, { absolute } from '../../../utils/utils'
-import { reverse } from '../../../core/shared/array-utils'
+import { getElementFromProjectContents } from '../../../components/editor/store/editor-state'
+import { stylePropPathMappingFn } from '../../../components/inspector/common/property-path-hooks'
+import { getLayoutProperty } from '../../../core/layout/getLayoutProperty'
+import { LayoutPinnedProp, framePointForPinnedProp } from '../../../core/layout/layout-helpers-new'
+import { isRight, right } from '../../../core/shared/either'
+import { isHorizontalPoint } from 'utopia-api/core'
+import {
+  AdjustCssLengthProperty,
+  adjustCssLengthProperty,
+} from '../commands/adjust-css-length-command'
 
 interface ReorderElement {
   distance: number
@@ -125,18 +136,66 @@ export function getReorderIndex(
   }
 }
 
-type ReparentStrategy =
+export type ReparentStrategy =
   | 'FLEX_REPARENT_TO_ABSOLUTE'
   | 'FLEX_REPARENT_TO_FLEX'
   | 'ABSOLUTE_REPARENT_TO_ABSOLUTE'
   | 'ABSOLUTE_REPARENT_TO_FLEX'
+
+export type FindReparentStrategyResult =
+  | { strategy: ReparentStrategy; newParent: ElementPath }
+  | { strategy: 'do-not-reparent' }
+
+export function reparentStrategyForParent(
+  originalMetadata: ElementInstanceMetadataMap,
+  targetMetadata: ElementInstanceMetadataMap,
+  elements: Array<ElementPath>,
+  newParent: ElementPath,
+): FindReparentStrategyResult {
+  const allDraggedElementsFlex = elements.every((element) =>
+    MetadataUtils.isParentYogaLayoutedContainerAndElementParticipatesInLayout(
+      element,
+      originalMetadata,
+    ),
+  )
+  const allDraggedElementsAbsolute = elements.every((element) =>
+    MetadataUtils.isPositionAbsolute(
+      MetadataUtils.findElementByElementPath(originalMetadata, element),
+    ),
+  )
+
+  const newParentMetadata = MetadataUtils.findElementByElementPath(targetMetadata, newParent)
+  const parentProvidesBoundsForAbsoluteChildren =
+    newParentMetadata?.specialSizeMeasurements.providesBoundsForAbsoluteChildren ?? false
+
+  const parentIsFlexLayout = MetadataUtils.isFlexLayoutedContainer(newParentMetadata)
+  const parentIsStoryboard = EP.isStoryboardPath(newParent)
+
+  if (allDraggedElementsAbsolute) {
+    if (parentIsFlexLayout) {
+      return { strategy: 'ABSOLUTE_REPARENT_TO_FLEX', newParent: newParent }
+    }
+    if (parentProvidesBoundsForAbsoluteChildren || parentIsStoryboard) {
+      return { strategy: 'ABSOLUTE_REPARENT_TO_ABSOLUTE', newParent: newParent }
+    }
+  }
+  if (allDraggedElementsFlex) {
+    if (parentIsFlexLayout) {
+      return { strategy: 'FLEX_REPARENT_TO_FLEX', newParent: newParent }
+    }
+    if (parentProvidesBoundsForAbsoluteChildren || parentIsStoryboard) {
+      return { strategy: 'FLEX_REPARENT_TO_ABSOLUTE', newParent: newParent }
+    }
+  }
+  return { strategy: 'do-not-reparent' }
+}
 
 export function findReparentStrategy(
   canvasState: InteractionCanvasState,
   interactionState: InteractionSession,
   strategyState: StrategyState,
   log = false, // DELETE ME BEFORE MERGE
-): { strategy: ReparentStrategy; newParent: ElementPath } | { strategy: 'do-not-reparent' } {
+): FindReparentStrategyResult {
   if (
     canvasState.selectedElements.length === 0 ||
     interactionState.activeControl.type !== 'BOUNDING_AREA' ||
@@ -146,21 +205,7 @@ export function findReparentStrategy(
     return { strategy: 'do-not-reparent' }
   }
 
-  const { selectedElements, scale, canvasOffset, projectContents, openFile } = canvasState
-  const startingMetadata = strategyState.startingMetadata
-  const filteredSelectedElements = getDragTargets(selectedElements)
-
-  const allDraggedElementsFlex = filteredSelectedElements.every((element) =>
-    MetadataUtils.isParentYogaLayoutedContainerAndElementParticipatesInLayout(
-      element,
-      startingMetadata,
-    ),
-  )
-  const allDraggedElementsAbsolute = filteredSelectedElements.every((element) =>
-    MetadataUtils.isPositionAbsolute(
-      MetadataUtils.findElementByElementPath(startingMetadata, element),
-    ),
-  )
+  const filteredSelectedElements = getDragTargets(canvasState.selectedElements)
 
   const pointOnCanvas = offsetPoint(
     interactionState.interactionData.originalDragStart,
@@ -179,41 +224,32 @@ export function findReparentStrategy(
   )
 
   const newParentPath = reparentResult.newParent
-  const newParentMetadata = MetadataUtils.findElementByElementPath(startingMetadata, newParentPath)
-  const parentProvidesBoundsForAbsoluteChildren =
-    newParentMetadata?.specialSizeMeasurements.providesBoundsForAbsoluteChildren ?? false
-
-  const parentIsFlexLayout = MetadataUtils.isFlexLayoutedContainer(newParentMetadata)
-  const parentIsStoryboard = newParentPath == null ? false : EP.isStoryboardPath(newParentPath)
 
   const parentStayedTheSame = filteredSelectedElements.some(
     (e) => EP.parentPath(e) === newParentPath,
   )
+  const newParentMetadata = MetadataUtils.findElementByElementPath(
+    strategyState.startingMetadata,
+    newParentPath,
+  )
+  const parentIsFlexLayout = MetadataUtils.isFlexLayoutedContainer(newParentMetadata)
 
   if (
     reparentResult.shouldReparent &&
     newParentPath != null &&
     // holding cmd forces a reparent even if the target parent was under the mouse at the interaction start
-    (cmdPressed || newParentPath !== interactionState.startingTargetParentToFilterOut?.newParent)
+    (cmdPressed || newParentPath !== interactionState.startingTargetParentToFilterOut?.newParent) &&
+    (parentIsFlexLayout || !parentStayedTheSame) // TODO review this, as it is a result of a merge with master
   ) {
-    if (allDraggedElementsAbsolute) {
-      if (parentIsFlexLayout) {
-        return { strategy: 'ABSOLUTE_REPARENT_TO_FLEX', newParent: newParentPath }
-      }
-      if (!parentStayedTheSame && (parentProvidesBoundsForAbsoluteChildren || parentIsStoryboard)) {
-        return { strategy: 'ABSOLUTE_REPARENT_TO_ABSOLUTE', newParent: newParentPath }
-      }
-    }
-    if (allDraggedElementsFlex) {
-      if (parentIsFlexLayout) {
-        return { strategy: 'FLEX_REPARENT_TO_FLEX', newParent: newParentPath }
-      }
-      if (!parentStayedTheSame && (parentProvidesBoundsForAbsoluteChildren || parentIsStoryboard)) {
-        return { strategy: 'FLEX_REPARENT_TO_ABSOLUTE', newParent: newParentPath }
-      }
-    }
+    return reparentStrategyForParent(
+      strategyState.startingMetadata,
+      strategyState.startingMetadata,
+      filteredSelectedElements,
+      newParentPath,
+    )
+  } else {
+    return { strategy: 'do-not-reparent' }
   }
-  return { strategy: 'do-not-reparent' }
 }
 
 export interface ReparentTarget {
@@ -518,8 +554,10 @@ function drawTargetRectanglesForChildrenOfElement(
   return flexInsertionTargets
 }
 
+export type StripAbsoluteProperties = 'strip-absolute-props' | 'do-not-strip-props'
+
 export function applyFlexReparent(
-  stripAbsoluteProperties: 'strip-absolute-props' | 'do-not-strip-props',
+  stripAbsoluteProperties: StripAbsoluteProperties,
   canvasState: InteractionCanvasState,
   interactionSession: InteractionSession,
   strategyState: StrategyState,
@@ -555,121 +593,80 @@ export function applyFlexReparent(
           EP.parentPath(target),
         )
         // Reparent the element.
-        const { commands: reparentCommands, newPath } = getReparentOutcome(
+        const outcomeResult = getReparentOutcome(
           canvasState.builtInDependencies,
           canvasState.projectContents,
           canvasState.nodeModules,
           canvasState.openFile,
-          target,
+          pathToReparent(target),
           newParent,
           'on-complete',
         )
 
-        // Strip the `position`, positional and dimension properties.
-        const commandToRemoveProperties = stripAbsoluteProperties
-          ? [
-              deleteProperties('on-complete', newPath, propertiesToRemove),
-              setProperty('on-complete', newPath, PP.create(['style', 'position']), 'relative'), // SPIKE TODO only insert position: relative if there was a position nonstatic prop before
-            ]
-          : []
+        if (outcomeResult != null) {
+          const { commands: reparentCommands, newPath } = outcomeResult
 
-        const commandsBeforeReorder = [
-          ...reparentCommands,
-          updateSelectedViews('on-complete', [newPath]),
-        ]
+          // Strip the `position`, positional and dimension properties.
+          const propertyChangeCommands = getFlexReparentPropertyChanges(
+            stripAbsoluteProperties,
+            newPath,
+          )
 
-        const commandsAfterReorder = [
-          ...commandToRemoveProperties,
-          setElementsToRerenderCommand([target, newPath]),
-          // updateHighlightedViews('on-complete', []), // TODO WELP
-          setCursorCommand('on-complete', CSSCursor.Move),
-        ]
-
-        const newParentFlexDirection = MetadataUtils.getFlexDirection(
-          MetadataUtils.findElementByElementPath(strategyState.startingMetadata, newParent),
-        )
-
-        let interactionFinishCommands: Array<CanvasCommand>
-        let midInteractionCommands: Array<CanvasCommand>
-
-        const siblingsOfTarget = MetadataUtils.getChildrenPaths(
-          strategyState.startingMetadata,
-          newParent,
-        )
-
-        const parentRect = MetadataUtils.getFrameInCanvasCoords(
-          newParent,
-          strategyState.startingMetadata,
-        )
-
-        const newIndex = reparentResult.newIndex
-
-        if (reparentResult.shouldReorder && newIndex < siblingsOfTarget.length) {
-          // Reorder the newly reparented element into the flex ordering.
-          const siblingPosition: CanvasRectangle =
-            [
-              // parentRect, // we add the parent as the first element
-              ...siblingsOfTarget.map((sibling) => {
-                return MetadataUtils.getFrameInCanvasCoords(sibling, strategyState.startingMetadata)
-              }),
-            ][newIndex] ?? zeroCanvasRect
-
-          const targetLineBeforeSibling: CanvasRectangle =
-            newParentFlexDirection === 'row'
-              ? canvasRectangle({
-                  x: siblingPosition?.x,
-                  y: siblingPosition?.y,
-                  height: siblingPosition?.height,
-                  width: 2,
-                })
-              : canvasRectangle({
-                  x: siblingPosition?.x,
-                  y: siblingPosition?.y,
-                  width: siblingPosition?.width,
-                  height: 2,
-                })
-
-          midInteractionCommands = [
-            wildcardPatch('mid-interaction', {
-              canvas: { controls: { parentHighlightPaths: { $set: [newParent] } } },
-            }),
-            wildcardPatch('mid-interaction', {
-              canvas: {
-                controls: { flexReparentTargetLines: { $set: [targetLineBeforeSibling] } },
-              },
-            }),
-            newParentADescendantOfCurrentParent
-              ? wildcardPatch('mid-interaction', {
-                  hiddenInstances: { $push: [target] },
-                })
-              : wildcardPatch('mid-interaction', {
-                  displayNoneInstances: { $push: [target] },
-                }),
+          const commandsBeforeReorder = [
+            ...reparentCommands,
+            updateSelectedViews('on-complete', [newPath]),
           ]
 
-          interactionFinishCommands = [
-            ...commandsBeforeReorder,
-            reorderElement('on-complete', newPath, absolute(newIndex)),
-            ...commandsAfterReorder,
+          const commandsAfterReorder = [
+            ...propertyChangeCommands,
+            setElementsToRerenderCommand([target, newPath]),
+            // updateHighlightedViews('on-complete', []), // TODO WELP
+            setCursorCommand('on-complete', CSSCursor.Move),
           ]
-        } else {
-          const siblingPosition = MetadataUtils.getFrameInCanvasCoords(
-            siblingsOfTarget[siblingsOfTarget.length - 1],
+
+          const newParentFlexDirection = MetadataUtils.getFlexDirection(
+            MetadataUtils.findElementByElementPath(strategyState.startingMetadata, newParent),
+          )
+
+          let interactionFinishCommands: Array<CanvasCommand>
+          let midInteractionCommands: Array<CanvasCommand>
+
+          const siblingsOfTarget = MetadataUtils.getChildrenPaths(
+            strategyState.startingMetadata,
+            newParent,
+          )
+
+          const parentRect = MetadataUtils.getFrameInCanvasCoords(
+            newParent,
             strategyState.startingMetadata,
           )
 
-          if (siblingPosition != null) {
-            const targetLineAfterSibling: CanvasRectangle =
+          const newIndex = reparentResult.newIndex
+
+          if (reparentResult.shouldReorder && newIndex < siblingsOfTarget.length) {
+            // Reorder the newly reparented element into the flex ordering.
+            const siblingPosition: CanvasRectangle =
+              [
+                // parentRect, // we add the parent as the first element
+                ...siblingsOfTarget.map((sibling) => {
+                  return MetadataUtils.getFrameInCanvasCoords(
+                    sibling,
+                    strategyState.startingMetadata,
+                  )
+                }),
+              ][newIndex] ?? zeroCanvasRect
+
+            const targetLineBeforeSibling: CanvasRectangle =
               newParentFlexDirection === 'row'
                 ? canvasRectangle({
-                    x: siblingPosition.x + siblingPosition.width,
-                    y: siblingPosition.y,
-                    height: siblingPosition.height,
+                    x: siblingPosition?.x,
+                    y: siblingPosition?.y,
+                    height: siblingPosition?.height,
                     width: 2,
                   })
                 : canvasRectangle({
-                    x: siblingPosition.x,
-                    y: siblingPosition.y + siblingPosition.height,
+                    x: siblingPosition?.x,
+                    y: siblingPosition?.y,
                     width: siblingPosition?.width,
                     height: 2,
                   })
@@ -680,7 +677,7 @@ export function applyFlexReparent(
               }),
               wildcardPatch('mid-interaction', {
                 canvas: {
-                  controls: { flexReparentTargetLines: { $set: [targetLineAfterSibling] } },
+                  controls: { flexReparentTargetLines: { $set: [targetLineBeforeSibling] } },
                 },
               }),
               newParentADescendantOfCurrentParent
@@ -691,50 +688,96 @@ export function applyFlexReparent(
                     displayNoneInstances: { $push: [target] },
                   }),
             ]
-          } else if (parentRect != null) {
-            const targetLineBeginningOfParent: CanvasRectangle =
-              newParentFlexDirection === 'row'
-                ? canvasRectangle({
-                    x: parentRect.x,
-                    y: parentRect.y,
-                    height: parentRect.height,
-                    width: 2,
-                  })
-                : canvasRectangle({
-                    x: parentRect.x,
-                    y: parentRect.y,
-                    width: parentRect.width,
-                    height: 2,
-                  })
 
-            midInteractionCommands = [
-              wildcardPatch('mid-interaction', {
-                canvas: { controls: { parentHighlightPaths: { $set: [newParent] } } },
-              }),
-              wildcardPatch('mid-interaction', {
-                canvas: {
-                  controls: { flexReparentTargetLines: { $set: [targetLineBeginningOfParent] } },
-                },
-              }),
-              newParentADescendantOfCurrentParent
-                ? wildcardPatch('mid-interaction', {
-                    hiddenInstances: { $push: [target] },
-                  })
-                : wildcardPatch('mid-interaction', {
-                    displayNoneInstances: { $push: [target] },
-                  }),
+            interactionFinishCommands = [
+              ...commandsBeforeReorder,
+              reorderElement('on-complete', newPath, absolute(newIndex)),
+              ...commandsAfterReorder,
             ]
           } else {
-            // this should be an error because parentRect should never be null
-            midInteractionCommands = []
+            const siblingPosition = MetadataUtils.getFrameInCanvasCoords(
+              siblingsOfTarget[siblingsOfTarget.length - 1],
+              strategyState.startingMetadata,
+            )
+
+            if (siblingPosition != null) {
+              const targetLineAfterSibling: CanvasRectangle =
+                newParentFlexDirection === 'row'
+                  ? canvasRectangle({
+                      x: siblingPosition.x + siblingPosition.width,
+                      y: siblingPosition.y,
+                      height: siblingPosition.height,
+                      width: 2,
+                    })
+                  : canvasRectangle({
+                      x: siblingPosition.x,
+                      y: siblingPosition.y + siblingPosition.height,
+                      width: siblingPosition?.width,
+                      height: 2,
+                    })
+
+              midInteractionCommands = [
+                wildcardPatch('mid-interaction', {
+                  canvas: { controls: { parentHighlightPaths: { $set: [newParent] } } },
+                }),
+                wildcardPatch('mid-interaction', {
+                  canvas: {
+                    controls: { flexReparentTargetLines: { $set: [targetLineAfterSibling] } },
+                  },
+                }),
+                newParentADescendantOfCurrentParent
+                  ? wildcardPatch('mid-interaction', {
+                      hiddenInstances: { $push: [target] },
+                    })
+                  : wildcardPatch('mid-interaction', {
+                      displayNoneInstances: { $push: [target] },
+                    }),
+              ]
+            } else if (parentRect != null) {
+              const targetLineBeginningOfParent: CanvasRectangle =
+                newParentFlexDirection === 'row'
+                  ? canvasRectangle({
+                      x: parentRect.x,
+                      y: parentRect.y,
+                      height: parentRect.height,
+                      width: 2,
+                    })
+                  : canvasRectangle({
+                      x: parentRect.x,
+                      y: parentRect.y,
+                      width: parentRect.width,
+                      height: 2,
+                    })
+
+              midInteractionCommands = [
+                wildcardPatch('mid-interaction', {
+                  canvas: { controls: { parentHighlightPaths: { $set: [newParent] } } },
+                }),
+                wildcardPatch('mid-interaction', {
+                  canvas: {
+                    controls: { flexReparentTargetLines: { $set: [targetLineBeginningOfParent] } },
+                  },
+                }),
+                newParentADescendantOfCurrentParent
+                  ? wildcardPatch('mid-interaction', {
+                      hiddenInstances: { $push: [target] },
+                    })
+                  : wildcardPatch('mid-interaction', {
+                      displayNoneInstances: { $push: [target] },
+                    }),
+              ]
+            } else {
+              // this should be an error because parentRect should never be null
+              midInteractionCommands = []
+            }
+
+            interactionFinishCommands = [...commandsBeforeReorder, ...commandsAfterReorder]
           }
 
-          interactionFinishCommands = [...commandsBeforeReorder, ...commandsAfterReorder]
-        }
-
-        return {
-          commands: [...midInteractionCommands, ...interactionFinishCommands], // TODO REVIEW
-          customState: strategyState.customStrategyState,
+          return {
+            commands: [...midInteractionCommands, ...interactionFinishCommands], // TODO REVIEW
+            customState: strategyState.customStrategyState,
+          }
         }
       }
     }
@@ -842,3 +885,129 @@ export function applyFlexReparent(
 //     return emptyStrategyApplicationResult
 //   })
 // }
+
+export function getAbsoluteReparentPropertyChanges(
+  target: ElementPath,
+  newParent: ElementPath,
+  targetStartingMetadata: ElementInstanceMetadataMap,
+  newParentStartingMetadata: ElementInstanceMetadataMap,
+  projectContents: ProjectContentTreeRoot,
+  openFile: string | null | undefined,
+): Array<AdjustCssLengthProperty> {
+  const element: JSXElement | null = getElementFromProjectContents(
+    target,
+    projectContents,
+    openFile,
+  )
+
+  if (element == null) {
+    return []
+  }
+
+  const currentParentContentBox =
+    MetadataUtils.findElementByElementPath(targetStartingMetadata, EP.parentPath(target))
+      ?.specialSizeMeasurements.globalContentBox ?? zeroCanvasRect
+
+  const newParentContentBox =
+    MetadataUtils.findElementByElementPath(newParentStartingMetadata, newParent)
+      ?.specialSizeMeasurements.globalContentBox ?? zeroCanvasRect
+
+  const offsetTL = pointDifference(newParentContentBox, currentParentContentBox)
+  const offsetBR = pointDifference(
+    canvasPoint({
+      x: currentParentContentBox.x + currentParentContentBox.width,
+      y: currentParentContentBox.y + currentParentContentBox.height,
+    }),
+    canvasPoint({
+      x: newParentContentBox.x + newParentContentBox.width,
+      y: newParentContentBox.y + newParentContentBox.height,
+    }),
+  )
+
+  const createAdjustCssLengthProperty = (
+    pin: LayoutPinnedProp,
+    newValue: number,
+    parentDimension: number | undefined,
+  ): AdjustCssLengthProperty | null => {
+    const value = getLayoutProperty(pin, right(element.props), ['style'])
+    if (isRight(value) && value.value != null) {
+      // TODO what to do about missing properties?
+      return adjustCssLengthProperty(
+        'always',
+        target,
+        stylePropPathMappingFn(pin, ['style']),
+        newValue,
+        parentDimension,
+        true,
+      )
+    } else {
+      return null
+    }
+  }
+
+  const newParentFrame = MetadataUtils.getFrameInCanvasCoords(newParent, newParentStartingMetadata)
+
+  return [
+    ...mapDropNulls(
+      (pin) => {
+        const horizontal = isHorizontalPoint(framePointForPinnedProp(pin))
+        return createAdjustCssLengthProperty(
+          pin,
+          horizontal ? offsetTL.x : offsetTL.y,
+          horizontal ? newParentFrame?.width : newParentFrame?.height,
+        )
+      },
+      ['top', 'left'] as const,
+    ),
+    ...mapDropNulls(
+      (pin) => {
+        const horizontal = isHorizontalPoint(framePointForPinnedProp(pin))
+        return createAdjustCssLengthProperty(
+          pin,
+          horizontal ? offsetBR.x : offsetBR.y,
+          horizontal ? newParentFrame?.width : newParentFrame?.height,
+        )
+      },
+      ['bottom', 'right'] as const,
+    ),
+  ]
+}
+
+export function getFlexReparentPropertyChanges(
+  stripAbsoluteProperties: StripAbsoluteProperties,
+  newPath: ElementPath,
+) {
+  return stripAbsoluteProperties
+    ? [
+        deleteProperties('on-complete', newPath, propertiesToRemove),
+        setProperty('on-complete', newPath, PP.create(['style', 'position']), 'relative'), // SPIKE TODO only insert position: relative if there was a position nonstatic prop before
+      ]
+    : []
+}
+
+export function getReparentPropertyChanges(
+  reparentStrategy: ReparentStrategy,
+  target: ElementPath,
+  newParent: ElementPath,
+  targetStartingMetadata: ElementInstanceMetadataMap,
+  newParentStartingMetadata: ElementInstanceMetadataMap,
+  projectContents: ProjectContentTreeRoot,
+  openFile: string | null | undefined,
+): Array<CanvasCommand> {
+  switch (reparentStrategy) {
+    case 'FLEX_REPARENT_TO_ABSOLUTE':
+    case 'ABSOLUTE_REPARENT_TO_ABSOLUTE':
+      return getAbsoluteReparentPropertyChanges(
+        target,
+        newParent,
+        targetStartingMetadata,
+        newParentStartingMetadata,
+        projectContents,
+        openFile,
+      )
+    case 'ABSOLUTE_REPARENT_TO_FLEX':
+    case 'FLEX_REPARENT_TO_FLEX':
+      const newPath = EP.appendToPath(newParent, EP.toUid(target))
+      return getFlexReparentPropertyChanges('strip-absolute-props', newPath)
+  }
+}
