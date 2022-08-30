@@ -1,3 +1,4 @@
+import { StrategyState } from '../../components/canvas/canvas-strategies/interaction-state'
 import type { EditorAction } from '../../components/editor/action-types'
 import type { EditorStoreFull, EditorState } from '../../components/editor/store/editor-state'
 import { isFeatureEnabled } from '../../utils/feature-switches'
@@ -96,11 +97,20 @@ function sanitizeEditor(editor: EditorState) {
   } as Partial<EditorState>
 }
 
+function sanitizeStrategyState(strategyState: StrategyState) {
+  return {
+    currentStrategy: strategyState.currentStrategy,
+    currentStrategyFitness: strategyState.currentStrategyFitness,
+    currentStrategyCommands: strategyState.currentStrategyCommands,
+  }
+}
+
 type SanitizedState = ReturnType<typeof sanitizeLoggedState>
 function sanitizeLoggedState(store: EditorStoreFull) {
   return {
     unpatchedEditor: sanitizeEditor(store.unpatchedEditor),
     patchedEditor: sanitizeEditor(store.patchedEditor),
+    strategyState: sanitizeStrategyState(store.strategyState),
   }
 }
 
