@@ -39,7 +39,7 @@ import { runUpdateFunctionCommand, UpdateFunctionCommand } from './update-functi
 import { runPushIntendedBounds, PushIntendedBounds } from './push-intended-bounds-command'
 import { DeleteProperties, runDeleteProperties } from './delete-properties-command'
 import { AddImportsToFile, runAddImportsToFile } from './add-imports-to-file-command'
-import { runSettProperty as runSetProperty, SetProperty } from './set-property-command'
+import { runSetProperty, SetProperty } from './set-property-command'
 import {
   runAddToReparentedToPaths,
   AddToReparentedToPaths,

@@ -28,7 +28,7 @@ export function setProperty(
   }
 }
 
-export const runSettProperty: CommandFunction<SetProperty> = (
+export const runSetProperty: CommandFunction<SetProperty> = (
   editorState: EditorState,
   command: SetProperty,
 ) => {
