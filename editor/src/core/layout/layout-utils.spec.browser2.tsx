@@ -5,7 +5,11 @@ import {
   renderTestEditorWithCode,
   TestScenePath,
 } from '../../components/canvas/ui-jsx.test-utils'
-import { pasteJSXElements, selectComponents } from '../../components/editor/actions/action-creators'
+import {
+  elementPaste,
+  pasteJSXElements,
+  selectComponents,
+} from '../../components/editor/actions/action-creators'
 import * as EP from '../shared/element-path'
 import {
   jsxAttributeNestedObjectSimple,
@@ -22,10 +26,11 @@ import {
 import { FOR_TESTS_setNextGeneratedUid } from '../model/element-template-utils'
 import { left, right } from '../shared/either'
 import { CanvasRectangle, LocalRectangle } from '../shared/math-utils'
+import { emptyImports } from '../workers/common/project-file-utils'
 
 const NewUID = 'catdog'
 
-describe('maybeSwitchLayoutProps', () => {
+describe('pasteJSXElements', () => {
   it('removes pin related layout props when pasting to flex element', async () => {
     // Code kept commented for any future person who needs it.
     //const currentWindow = require('electron').remote.getCurrentWindow()
@@ -125,8 +130,14 @@ describe('maybeSwitchLayoutProps', () => {
     }
 
     const pasteElements = pasteJSXElements(
-      [elementToPaste],
-      [EP.appendNewElementPath(TestScenePath, [NewUID])],
+      EP.appendNewElementPath(TestScenePath, ['aaa', 'bbb']),
+      [
+        elementPaste(
+          elementToPaste,
+          emptyImports(),
+          EP.appendNewElementPath(TestScenePath, [NewUID]),
+        ),
+      ],
       metadata,
     )
     await renderResult.dispatch([pasteElements], true)
@@ -141,7 +152,7 @@ describe('maybeSwitchLayoutProps', () => {
             style={{ backgroundColor: '#DDDDDD', left: 52, top: 61, width: 256, height: 202, display: 'flex' }}
             data-uid='bbb'
           >
-            <View style={{ position: 'relative' }} data-uid='catdog' />
+            <View style={{ width: 100, height: 100 }} data-uid='catdog' />
           </View>
         </View>`,
       ),

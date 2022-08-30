@@ -11,6 +11,7 @@ import type {
   JSXElementName,
   ElementInstanceMetadataMap,
   SettableLayoutSystem,
+  JSXElementChild,
 } from '../../../core/shared/element-template'
 import type {
   CanvasPoint,
@@ -210,6 +211,7 @@ import type {
   RunEscapeHatch,
   UpdateMouseButtonsPressed,
   ToggleSelectionLock,
+  ElementPaste,
 } from '../action-types'
 import {
   EditorModes,
@@ -387,15 +389,27 @@ export function closePopup(): ClosePopup {
   }
 }
 
+export function elementPaste(
+  element: JSXElementChild,
+  importsToAdd: Imports,
+  originalElementPath: ElementPath,
+): ElementPaste {
+  return {
+    element: element,
+    importsToAdd: importsToAdd,
+    originalElementPath: originalElementPath,
+  }
+}
+
 export function pasteJSXElements(
-  elements: Array<JSXElement>,
-  originalElementPaths: Array<ElementPath>,
+  pasteInto: ElementPath,
+  elements: Array<ElementPaste>,
   targetOriginalContextMetadata: ElementInstanceMetadataMap,
 ): PasteJSXElements {
   return {
     action: 'PASTE_JSX_ELEMENTS',
+    pasteInto: pasteInto,
     elements: elements,
-    originalElementPaths: originalElementPaths,
     targetOriginalContextMetadata: targetOriginalContextMetadata,
   }
 }
