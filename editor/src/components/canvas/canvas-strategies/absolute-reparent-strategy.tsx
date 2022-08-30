@@ -19,6 +19,7 @@ import {
 import { offsetPoint } from '../../../core/shared/math-utils'
 import { getReparentOutcome, pathToReparent } from './reparent-utils'
 import { mapDropNulls } from '../../../core/shared/array-utils'
+import { honoursPropsPosition } from './absolute-utils'
 
 export const absoluteReparentStrategy: CanvasStrategy = {
   id: 'ABSOLUTE_REPARENT',
@@ -33,7 +34,10 @@ export const absoluteReparentStrategy: CanvasStrategy = {
       return filteredSelectedElements.every((element) => {
         const elementMetadata = MetadataUtils.findElementByElementPath(metadata, element)
 
-        return elementMetadata?.specialSizeMeasurements.position === 'absolute'
+        return (
+          elementMetadata?.specialSizeMeasurements.position === 'absolute' &&
+          honoursPropsPosition(canvasState, element)
+        )
       })
     }
     return false
