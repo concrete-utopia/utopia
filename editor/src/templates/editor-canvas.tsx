@@ -48,6 +48,7 @@ import {
   EditorState,
   editorStateCanvasControls,
   isOpenFileUiJs,
+  RightMenuTab,
 } from '../components/editor/store/editor-state'
 import {
   didWeHandleMouseMoveForThisFrame,
@@ -173,7 +174,17 @@ function handleCanvasEvent(model: CanvasModel, event: CanvasMouseEvent): Array<E
   }
 
   const insertMode = model.mode.type === 'insert'
-  if (!(insertMode && isOpenFileUiJs(model.editorState))) {
+  if (
+    insertMode &&
+    event.event === 'MOUSE_UP' &&
+    model.editorState.canvas.interactionSession?.interactionData.type === 'DRAG'
+  ) {
+    const applyChanges = model.editorState.canvas.interactionSession?.interactionData.drag != null
+    optionalDragStateAction = [
+      CanvasActions.clearInteractionSession(applyChanges),
+      // EditorActions.switchEditorMode(EditorModes.selectMode()),
+    ]
+  } else if (!(insertMode && isOpenFileUiJs(model.editorState))) {
     switch (event.event) {
       case 'DRAG':
         if (event.dragState != null) {

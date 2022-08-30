@@ -344,6 +344,12 @@ class InsertMenuInner extends React.Component<InsertMenuProps> {
                   'everyone',
                 )
               }
+              const insertItemOnMouseUp = () => {
+                this.props.editorDispatch(
+                  [CanvasActions.clearInteractionSession(false)],
+                  'everyone',
+                )
+              }
               return (
                 <InsertItem
                   key={`insert-item-third-party-${groupIndex}-${componentIndex}`}
@@ -359,6 +365,8 @@ class InsertMenuInner extends React.Component<InsertMenuProps> {
                   )}
                   // eslint-disable-next-line react/jsx-no-bind
                   onMouseDown={insertItemOnMouseDown}
+                  // eslint-disable-next-line react/jsx-no-bind
+                  onMouseUp={insertItemOnMouseUp}
                 />
               )
             })}
@@ -409,6 +417,7 @@ interface InsertItemProps {
   selected: boolean
   type: string
   onMouseDown?: (event: React.MouseEvent<HTMLDivElement>) => void
+  onMouseUp?: (event: React.MouseEvent<HTMLDivElement>) => void
   category?: string
   disabled?: boolean
   warningMessage?: string
@@ -443,6 +452,7 @@ export const InsertItem: React.FunctionComponent<React.PropsWithChildren<InsertI
         },
       }}
       onMouseDown={props.disabled ? Utils.NO_OP : props.onMouseDown}
+      onMouseUp={props.disabled ? Utils.NO_OP : props.onMouseUp}
     >
       {resultingIcon}
       <span>{props.label}</span>
