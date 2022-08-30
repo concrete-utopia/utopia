@@ -232,7 +232,7 @@ describe('Absolute Reparent To Flex Strategy', () => {
     }
 
     const dragDelta = windowPoint({
-      x: flexParentEnd.x - absoluteChildCenter.x + 100,
+      x: flexParentEnd.x - absoluteChildCenter.x,
       y: flexParentEnd.y - absoluteChildCenter.y,
     })
     await act(() => dragElement(renderResult, 'absolutechild', dragDelta, cmdModifier))
