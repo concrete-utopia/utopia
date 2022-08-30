@@ -1487,25 +1487,7 @@ function toastOnUncopyableElementsSelected(
   actionOtherwise: (e: EditorState) => EditorState,
   dispatch: EditorDispatch,
 ): EditorState {
-  return toastOnUncopyableElementsTargeted(
-    message,
-    editor.selectedViews,
-    editor,
-    allowActionRegardless,
-    actionOtherwise,
-    dispatch,
-  )
-}
-
-function toastOnUncopyableElementsTargeted(
-  message: string,
-  targets: ElementPath[],
-  editor: EditorState,
-  allowActionRegardless: boolean,
-  actionOtherwise: (e: EditorState) => EditorState,
-  dispatch: EditorDispatch,
-): EditorState {
-  const isReparentable = targets.every((target) => {
+  const isReparentable = editor.selectedViews.every((target) => {
     return isAllowedToReparent(
       editor.projectContents,
       editor.canvas.openFile?.filename,
