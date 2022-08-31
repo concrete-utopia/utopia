@@ -17,7 +17,6 @@ import {
 import { absolute } from '../../../utils/utils'
 // import { FlowPositionMarker, FlowStartingPositionMarker } from '../controls/flow-position-marker'
 import { convertInlineBlock } from '../commands/convert-inline-block-command'
-import { DragOutlineControl } from '../controls/select-mode/drag-outline-control'
 import { InteractionSession, StrategyState } from './interaction-state'
 import { ElementInstanceMetadataMap } from '../../../core/shared/element-template'
 import { getFlowReorderIndex } from './flow-reorder-helpers'
@@ -27,16 +26,33 @@ import {
   FlowReorderAreaIndicator,
   FlowReorderDragOutline,
 } from '../controls/flow-reorder-indicators'
+import { AllElementProps } from '../../editor/store/editor-state'
 
 function isFlowReorderConversionApplicable(
   canvasState: InteractionCanvasState,
   interactionSession: InteractionSession | null,
   metadata: ElementInstanceMetadataMap,
+  allElementProps: AllElementProps,
+  displayTypeFiltering: 'no-filter' | 'requires-mixed-display-type' = 'requires-mixed-display-type',
 ) {
   if (canvasState.selectedElements.length === 1) {
     const target = canvasState.selectedElements[0]
     const elementMetadata = MetadataUtils.findElementByElementPath(metadata, target)
-    return MetadataUtils.isPositionedByFlow(elementMetadata)
+    const siblings = MetadataUtils.getSiblings(metadata, target)
+    if (siblings.length > 1 && MetadataUtils.isPositionedByFlow(elementMetadata)) {
+      if (displayTypeFiltering === 'requires-mixed-display-type') {
+        const targetDisplayType = elementMetadata?.specialSizeMeasurements.display
+        return siblings.some(
+          (sibling) =>
+            MetadataUtils.isPositionedByFlow(sibling) &&
+            sibling.specialSizeMeasurements.display !== targetDisplayType,
+        )
+      } else {
+        return true
+      }
+    } else {
+      return false
+    }
   } else {
     return false
   }
@@ -203,7 +219,15 @@ export const flowReorderNoConversionStategy: CanvasStrategy = {
 export const flowReorderSameTypeOnlyStategy: CanvasStrategy = {
   id: 'FLOW_REORDER_SAME_TYPE_ONLY',
   name: 'Flow Reorder (Same Display Type)',
-  isApplicable: isFlowReorderConversionApplicable, // TODO FIX THE OTHER STRATEGY TO SHOW ONLY WHEN MIXED DISPLAY TYPES
+  isApplicable: (canvasState, interactionState, strategyState, allElementProps) => {
+    return isFlowReorderConversionApplicable(
+      canvasState,
+      interactionState,
+      strategyState,
+      allElementProps,
+      'no-filter',
+    )
+  },
   controlsToRender: [
     ...flowReorderAutoConversionStategy.controlsToRender,
     {
@@ -213,7 +237,7 @@ export const flowReorderSameTypeOnlyStategy: CanvasStrategy = {
     },
   ],
   fitness: (canvasState, interactionState, strategyState) => {
-    return flowReorderNoConversionStategy.isApplicable(
+    return flowReorderSameTypeOnlyStategy.isApplicable(
       canvasState,
       interactionState,
       strategyState.startingMetadata,
@@ -221,7 +245,7 @@ export const flowReorderSameTypeOnlyStategy: CanvasStrategy = {
     ) &&
       interactionState.interactionData.type === 'DRAG' &&
       interactionState.activeControl.type === 'BOUNDING_AREA'
-      ? 2
+      ? 1
       : 0
   },
   apply: (canvasState, interactionState, strategyState) => {
