@@ -54,6 +54,7 @@ import {
   AdjustCssLengthProperty,
   adjustCssLengthProperty,
 } from '../commands/adjust-css-length-command'
+import { updatePropIfExists } from '../commands/update-prop-if-exists-command'
 
 interface ReorderElement {
   distance: number
@@ -443,7 +444,6 @@ function newGetReparentTargetInner(
 }
 
 const propertiesToRemove: Array<PropertyPath> = [
-  PP.create(['style', 'position']),
   PP.create(['style', 'left']),
   PP.create(['style', 'top']),
   PP.create(['style', 'right']),
@@ -980,7 +980,7 @@ export function getFlexReparentPropertyChanges(
   return stripAbsoluteProperties
     ? [
         deleteProperties('on-complete', newPath, propertiesToRemove),
-        setProperty('on-complete', newPath, PP.create(['style', 'position']), 'relative'), // SPIKE TODO only insert position: relative if there was a position nonstatic prop before
+        updatePropIfExists('on-complete', newPath, PP.create(['style', 'position']), 'relative'), // SPIKE TODO only insert position: relative if there was a position nonstatic prop before
       ]
     : []
 }

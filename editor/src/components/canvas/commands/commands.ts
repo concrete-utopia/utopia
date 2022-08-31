@@ -45,6 +45,7 @@ import {
   AddToReparentedToPaths,
 } from '../canvas-strategies/add-to-reparented-to-paths-command'
 import { AddElement, runAddElement } from './add-element-command'
+import { runUpdatePropIfExists, UpdatePropIfExists } from './update-prop-if-exists-command'
 
 export interface CommandFunctionResult {
   editorStatePatches: Array<EditorStatePatch>
@@ -79,6 +80,7 @@ export type CanvasCommand =
   | PushIntendedBounds
   | DeleteProperties
   | SetProperty
+  | UpdatePropIfExists
   | AddImportsToFile
   | AddToReparentedToPaths
   | AddElement
@@ -127,6 +129,8 @@ export const runCanvasCommand = (
       return runDeleteProperties(editorState, command)
     case 'SET_PROPERTY':
       return runSetProperty(editorState, command)
+    case 'UPDATE_PROP_IF_EXISTS':
+      return runUpdatePropIfExists(editorState, command)
     case 'ADD_IMPORTS_TO_FILE':
       return runAddImportsToFile(editorState, command)
     case 'ADD_TO_REPARENTED_TO_PATHS':
