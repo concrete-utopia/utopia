@@ -15,7 +15,7 @@ import {
   pointIsClockwiseFromLine,
 } from '../../../core/shared/math-utils'
 import { ElementPath } from '../../../core/shared/project-file-types'
-import { Utils } from '../../../uuiui-deps'
+import { fastForEach } from '../../../core/shared/utils'
 import { AllElementProps, ElementProps } from '../../editor/store/editor-state'
 
 type FlowDirection = 'vertical' | 'horizontal'
@@ -61,35 +61,49 @@ function getCenterPositionInFlow(
   return offsetPoint(rawCenter, relativeOffset)
 }
 
-function collectClosestSibling(
+function getSiblingDisplayValues(
   metadata: ElementInstanceMetadataMap,
   siblings: Array<ElementPath>,
+): Array<string | null> {
+  let displayValues: Array<string | null> = []
+  fastForEach(siblings, (sibling) => {
+    const siblingMetadata = MetadataUtils.findElementByElementPath(metadata, sibling)
+    displayValues.push(siblingMetadata?.specialSizeMeasurements.display ?? null)
+  })
+  return displayValues
+}
+
+function isValidSibling(
+  targetElementMetadata: ElementInstanceMetadata | null,
+  siblingMetadata: ElementInstanceMetadata | null,
+  displayTypeFiltering: 'same-display-type-only' | 'allow-mixed-display-type',
+): boolean {
+  const targetDisplayType = targetElementMetadata?.specialSizeMeasurements.display
+  const siblingDisplayType = siblingMetadata?.specialSizeMeasurements.display
+
+  return (
+    displayTypeFiltering === 'allow-mixed-display-type' || siblingDisplayType === targetDisplayType
+  )
+}
+
+function findClosestSibling(
   point: CanvasVector,
   target: ElementPath | null,
+  siblings: Array<ElementPath>,
+  metadata: ElementInstanceMetadataMap,
   allElementProps: AllElementProps,
   displayTypeFiltering:
     | 'same-display-type-only'
     | 'allow-mixed-display-type' = 'allow-mixed-display-type',
-): {
-  reorderResult: ReorderElement | null
-  displayValues: Array<string | null>
-} {
+): ReorderElement | null {
   let reorderResult: ReorderElement | null = null
-  let displayValues: Array<string | null> = []
   const targetElementMetadata = MetadataUtils.findElementByElementPath(metadata, target)
-  const targetDisplayType = targetElementMetadata?.specialSizeMeasurements.display
 
   for (const [index, sibling] of siblings.entries()) {
     const siblingMetadata = MetadataUtils.findElementByElementPath(metadata, sibling)
-    const siblingDisplayType = siblingMetadata?.specialSizeMeasurements.display ?? null
-    displayValues.push(siblingDisplayType)
     const frame = MetadataUtils.getFrameInCanvasCoords(sibling, metadata)
-    const isValidSibling =
-      siblingDisplayType === targetDisplayType ??
-      displayTypeFiltering === 'allow-mixed-display-type'
-
     if (
-      isValidSibling &&
+      isValidSibling(targetElementMetadata, siblingMetadata, displayTypeFiltering) &&
       frame != null &&
       siblingMetadata != null &&
       MetadataUtils.isPositionedByFlow(siblingMetadata)
@@ -115,17 +129,14 @@ function collectClosestSibling(
       }
     }
   }
-  return {
-    reorderResult: reorderResult,
-    displayValues: displayValues,
-  }
+  return reorderResult
 }
 
 function displayTypeBeforeIndex(
   displayValues: Array<string | null>,
   index: number,
 ): 'block' | 'inline-block' | undefined {
-  const prevSiblingIndex = index - 1
+  const prevSiblingIndex = index
 
   const displayTypeOfPrevSibling = displayValues[prevSiblingIndex]
   const displayTypeOfNextSibling = displayValues[prevSiblingIndex + 1]
@@ -140,26 +151,23 @@ function displayTypeBeforeIndex(
 }
 
 function findNewIndexAndDisplayType(
-  metadata: ElementInstanceMetadataMap,
-  siblings: Array<ElementPath>,
   point: CanvasVector,
   target: ElementPath | null,
+  siblings: Array<ElementPath>,
+  metadata: ElementInstanceMetadataMap,
   reorderResult: ReorderElement,
   displayValues: Array<string | null>,
 ): { newIndex: number; newDisplayType: AddDisplayBlockOrOnline | RemoveDisplayProp | null } {
+  // Check which "side" of the target this falls on.
   const originalIndex = siblings.findIndex((path) => EP.pathsEqual(path, target))
   const newTargetIndex = reorderResult.siblingIndex
-  const movedForward = newTargetIndex > originalIndex
-
-  let newIndex = movedForward ? newTargetIndex - 1 : newTargetIndex
+  const insertForward = newTargetIndex > originalIndex
 
   const targetElementMetadata = MetadataUtils.findElementByElementPath(metadata, target)
-  const displayTypeForElementAtStart =
-    displayTypeBeforeIndex(displayValues, newTargetIndex) ??
-    targetElementMetadata?.specialSizeMeasurements.display ?? // TODO EZMI ?????
-    'block'
+  const originalDisplayType = targetElementMetadata?.specialSizeMeasurements.display ?? 'block'
 
-  const directionForElement = flowDirectionForDisplayValue(displayTypeForElementAtStart)
+  let newIndex = insertForward ? newTargetIndex - 1 : newTargetIndex
+  const directionForElement = flowDirectionForDisplayValue(originalDisplayType)
   if (directionForElement !== reorderResult.direction) {
     // The directions don't match up, so check both the x and y based on a diagonal through the element
     if (pointIsClockwiseFromLine(point, reorderResult.bottomLeft, reorderResult.centerPoint)) {
@@ -175,7 +183,7 @@ function findNewIndexAndDisplayType(
     newIndex: newIndex,
     newDisplayType: getNewDisplayType(
       targetElementMetadata,
-      displayTypeBeforeIndex(displayValues, movedForward ? newIndex : newIndex - 1),
+      displayTypeBeforeIndex(displayValues, insertForward ? newIndex : newIndex - 1),
     ),
   }
 }
@@ -246,15 +254,12 @@ export function getFlowReorderIndex(
     }
   }
 
-  // TODO stick elements?
-  // TODO float?
-  // TODO wrapping
-
-  const { reorderResult, displayValues } = collectClosestSibling(
-    metadata,
-    siblings,
+  const displayValues = getSiblingDisplayValues(metadata, siblings)
+  const reorderResult = findClosestSibling(
     point,
     target,
+    siblings,
+    metadata,
     allElementProps,
     displayTypeFiltering,
   )
@@ -270,12 +275,12 @@ export function getFlowReorderIndex(
       newIndex: reorderResult.siblingIndex,
     }
   } else {
-    // Check which "side" of the target this falls on.
+    // Convert display type, maybe shift index
     const { newIndex, newDisplayType } = findNewIndexAndDisplayType(
-      metadata,
-      siblings,
       point,
       target,
+      siblings,
+      metadata,
       reorderResult,
       displayValues,
     )
