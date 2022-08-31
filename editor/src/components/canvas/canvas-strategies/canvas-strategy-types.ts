@@ -63,6 +63,9 @@ export type CanvasStrategyId =
   | 'ABSOLUTE_REPARENT_TO_FLEX'
   | 'FLEX_REPARENT_TO_ABSOLUTE'
   | 'FLEX_REPARENT_TO_FLEX'
+  | 'FLOW_REORDER_AUTO_CONVERSION'
+  | 'FLOW_REORDER_NO_CONVERSION'
+  | 'FLOW_REORDER_SAME_TYPE_ONLY'
 
 export interface CanvasStrategy {
   id: CanvasStrategyId // We'd need to do something to guarantee uniqueness here if using this for the commands' reason

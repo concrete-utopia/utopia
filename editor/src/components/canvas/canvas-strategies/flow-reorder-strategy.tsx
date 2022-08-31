@@ -12,12 +12,13 @@ import {
   CanvasStrategy,
   emptyStrategyApplicationResult,
   InteractionCanvasState,
+  StrategyApplicationResult,
 } from './canvas-strategy-types'
 import { absolute } from '../../../utils/utils'
 // import { FlowPositionMarker, FlowStartingPositionMarker } from '../controls/flow-position-marker'
 import { convertInlineBlock } from '../commands/convert-inline-block-command'
 import { DragOutlineControl } from '../controls/select-mode/drag-outline-control'
-import { InteractionSession } from './interaction-state'
+import { InteractionSession, StrategyState } from './interaction-state'
 import { ElementInstanceMetadataMap } from '../../../core/shared/element-template'
 import { getFlowReorderIndex } from './flow-reorder-helpers'
 import { deleteProperties } from '../commands/delete-properties-command'
@@ -34,6 +35,92 @@ function isFlowReorderConversionApplicable(
     return MetadataUtils.isPositionedByFlow(elementMetadata)
   } else {
     return false
+  }
+}
+
+function flowReorderApplyCommon(
+  canvasState: InteractionCanvasState,
+  interactionState: InteractionSession,
+  strategyState: StrategyState,
+  withAutoConversion: 'with-auto-conversion' | 'no-conversion',
+  displayTypeFiltering: 'same-display-type-only' | 'allow-mixed-display-type',
+): StrategyApplicationResult {
+  if (interactionState.interactionData.type !== 'DRAG') {
+    return emptyStrategyApplicationResult
+  }
+
+  if (interactionState.interactionData.drag != null) {
+    const { selectedElements } = canvasState
+    const target = selectedElements[0] // TODO MULTISELECT??
+
+    const siblingsOfTarget = MetadataUtils.getSiblings(strategyState.startingMetadata, target).map(
+      (element) => element.elementPath,
+    )
+
+    const rawPointOnCanvas = offsetPoint(
+      interactionState.interactionData.dragStart,
+      interactionState.interactionData.drag,
+    )
+
+    const unpatchedIndex = siblingsOfTarget.findIndex((sibling) => EP.pathsEqual(sibling, target))
+    const lastReorderIdx = strategyState.customStrategyState.lastReorderIdx ?? unpatchedIndex
+
+    const reorderResult = getFlowReorderIndex(
+      strategyState.startingMetadata,
+      siblingsOfTarget,
+      rawPointOnCanvas,
+      target,
+      interactionState.allElementProps,
+      displayTypeFiltering,
+    )
+
+    const { newIndex, newDisplayType } = reorderResult
+
+    const realNewIndex = newIndex > -1 ? newIndex : lastReorderIdx
+
+    if (realNewIndex === unpatchedIndex) {
+      return {
+        commands: [
+          setElementsToRerenderCommand(siblingsOfTarget),
+          updateHighlightedViews('mid-interaction', []),
+          setCursorCommand('mid-interaction', CSSCursor.Move),
+        ],
+        customState: {
+          ...strategyState.customStrategyState,
+          lastReorderIdx: realNewIndex,
+        },
+      }
+    } else {
+      const newDisplayPropCommands =
+        withAutoConversion === 'with-auto-conversion' && newDisplayType?.type === 'add'
+          ? [convertInlineBlock('always', target, newDisplayType.display)]
+          : []
+      const removeDisplayPropCommand =
+        withAutoConversion === 'with-auto-conversion' && newDisplayType?.type === 'remove'
+          ? [deleteProperties('always', target, [stylePropPathMappingFn('display', ['style'])])]
+          : []
+
+      return {
+        commands: [
+          reorderElement('always', target, absolute(realNewIndex)),
+          setElementsToRerenderCommand(siblingsOfTarget),
+          updateHighlightedViews('mid-interaction', []),
+          setCursorCommand('mid-interaction', CSSCursor.Move),
+          ...newDisplayPropCommands,
+          ...removeDisplayPropCommand,
+        ],
+        customState: {
+          ...strategyState.customStrategyState,
+          lastReorderIdx: realNewIndex,
+        },
+      }
+    }
+  } else {
+    // Fallback for when the checks above are not satisfied.
+    return {
+      commands: [setCursorCommand('mid-interaction', CSSCursor.Move)],
+      customState: null,
+    }
   }
 }
 
@@ -76,83 +163,13 @@ export const flowReorderAutoConversionStategy: CanvasStrategy = {
       : 0
   },
   apply: (canvasState, interactionState, strategyState) => {
-    if (interactionState.interactionData.type !== 'DRAG') {
-      return emptyStrategyApplicationResult
-    }
-
-    if (interactionState.interactionData.drag != null) {
-      const { selectedElements } = canvasState
-      const target = selectedElements[0] // TODO MULTISELECT??
-
-      const siblingsOfTarget = MetadataUtils.getSiblings(
-        strategyState.startingMetadata,
-        target,
-      ).map((element) => element.elementPath)
-
-      const rawPointOnCanvas = offsetPoint(
-        interactionState.interactionData.dragStart,
-        interactionState.interactionData.drag,
-      )
-
-      const unpatchedIndex = siblingsOfTarget.findIndex((sibling) => EP.pathsEqual(sibling, target))
-      const lastReorderIdx = strategyState.customStrategyState.lastReorderIdx ?? unpatchedIndex
-
-      const reorderResult = getFlowReorderIndex(
-        strategyState.startingMetadata,
-        siblingsOfTarget,
-        rawPointOnCanvas,
-        target,
-        interactionState.allElementProps,
-      )
-
-      const { newIndex, newDisplayType } = reorderResult
-
-      const realNewIndex = newIndex > -1 ? newIndex : lastReorderIdx
-
-      if (realNewIndex === unpatchedIndex) {
-        return {
-          commands: [
-            setElementsToRerenderCommand(siblingsOfTarget),
-            updateHighlightedViews('mid-interaction', []),
-            setCursorCommand('mid-interaction', CSSCursor.Move),
-          ],
-          customState: {
-            ...strategyState.customStrategyState,
-            lastReorderIdx: realNewIndex,
-          },
-        }
-      } else {
-        const newDisplayPropCommands =
-          newDisplayType?.type === 'add'
-            ? [convertInlineBlock('always', target, newDisplayType.display)]
-            : []
-        const removeDisplayPropCommand =
-          newDisplayType?.type === 'remove'
-            ? [deleteProperties('always', target, [stylePropPathMappingFn('display', ['style'])])]
-            : []
-
-        return {
-          commands: [
-            reorderElement('always', target, absolute(realNewIndex)),
-            setElementsToRerenderCommand(siblingsOfTarget),
-            updateHighlightedViews('mid-interaction', []),
-            setCursorCommand('mid-interaction', CSSCursor.Move),
-            ...newDisplayPropCommands,
-            ...removeDisplayPropCommand,
-          ],
-          customState: {
-            ...strategyState.customStrategyState,
-            lastReorderIdx: realNewIndex,
-          },
-        }
-      }
-    } else {
-      // Fallback for when the checks above are not satisfied.
-      return {
-        commands: [setCursorCommand('mid-interaction', CSSCursor.Move)],
-        customState: null,
-      }
-    }
+    return flowReorderApplyCommon(
+      canvasState,
+      interactionState,
+      strategyState,
+      'with-auto-conversion',
+      'allow-mixed-display-type',
+    )
   },
 }
 
@@ -174,17 +191,43 @@ export const flowReorderNoConversionStategy: CanvasStrategy = {
       : 0
   },
   apply: (canvasState, interactionState, strategyState) => {
-    const flowReorderResult = flowReorderAutoConversionStategy.apply(
+    return flowReorderApplyCommon(
       canvasState,
       interactionState,
       strategyState,
+      'no-conversion',
+      'allow-mixed-display-type',
     )
-    const filteredCommands = flowReorderResult.commands.filter(
-      (command) => command.type === 'CONVERT_INLINE_BLOCK',
+  },
+}
+
+export const flowReorderSameTypeOnlyStategy: CanvasStrategy = {
+  id: 'FLOW_REORDER_SAME_TYPE_ONLY',
+  name: 'Flow Reorder (Same Display Type)',
+  isApplicable: isFlowReorderConversionApplicable, // TODO FIX THE OTHER STRATEGY TO SHOW ONLY WHEN MIXED DISPLAY TYPES
+  controlsToRender: [
+    ...flowReorderAutoConversionStategy.controlsToRender,
+    // {control: RestrictedAreaIndicator, key: '', show: 'visible-only-while-active'},
+  ],
+  fitness: (canvasState, interactionState, strategyState) => {
+    return flowReorderNoConversionStategy.isApplicable(
+      canvasState,
+      interactionState,
+      strategyState.startingMetadata,
+      strategyState.startingAllElementProps,
+    ) &&
+      interactionState.interactionData.type === 'DRAG' &&
+      interactionState.activeControl.type === 'BOUNDING_AREA'
+      ? 2
+      : 0
+  },
+  apply: (canvasState, interactionState, strategyState) => {
+    return flowReorderApplyCommon(
+      canvasState,
+      interactionState,
+      strategyState,
+      'no-conversion',
+      'same-display-type-only',
     )
-    return {
-      commands: filteredCommands,
-      customState: flowReorderResult.customState,
-    }
   },
 }

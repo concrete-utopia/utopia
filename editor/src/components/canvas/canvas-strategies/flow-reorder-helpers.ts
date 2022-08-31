@@ -61,6 +61,125 @@ function getCenterPositionInFlow(
   return offsetPoint(rawCenter, relativeOffset)
 }
 
+function collectClosestSibling(
+  metadata: ElementInstanceMetadataMap,
+  siblings: Array<ElementPath>,
+  point: CanvasVector,
+  target: ElementPath | null,
+  allElementProps: AllElementProps,
+  displayTypeFiltering:
+    | 'same-display-type-only'
+    | 'allow-mixed-display-type' = 'allow-mixed-display-type',
+): {
+  reorderResult: ReorderElement | null
+  displayValues: Array<string | null>
+} {
+  let reorderResult: ReorderElement | null = null
+  let displayValues: Array<string | null> = []
+  const targetElementMetadata = MetadataUtils.findElementByElementPath(metadata, target)
+  const targetDisplayType = targetElementMetadata?.specialSizeMeasurements.display
+
+  for (const [index, sibling] of siblings.entries()) {
+    const siblingMetadata = MetadataUtils.findElementByElementPath(metadata, sibling)
+    const siblingDisplayType = siblingMetadata?.specialSizeMeasurements.display ?? null
+    displayValues.push(siblingDisplayType)
+    const frame = MetadataUtils.getFrameInCanvasCoords(sibling, metadata)
+    const isValidSibling =
+      siblingDisplayType === targetDisplayType ??
+      displayTypeFiltering === 'allow-mixed-display-type'
+
+    if (
+      isValidSibling &&
+      frame != null &&
+      siblingMetadata != null &&
+      MetadataUtils.isPositionedByFlow(siblingMetadata)
+    ) {
+      const siblingProps = allElementProps[EP.toString(siblingMetadata.elementPath)] ?? {}
+      const centerPoint = getCenterPositionInFlow(frame, siblingMetadata, siblingProps)
+      const bottomLeft = offsetPoint(centerPoint, {
+        x: -frame.width / 2,
+        y: frame.height / 2,
+      } as CanvasPoint)
+
+      // First one that has been found or if it's closer than a previously found entry.
+      const distance = euclideanDistance(point, centerPoint)
+      if (reorderResult == null || distance < reorderResult.distance) {
+        reorderResult = {
+          distance: distance,
+          centerPoint: centerPoint,
+          bottomLeft: bottomLeft,
+          siblingPath: sibling,
+          siblingIndex: index,
+          direction: flowDirectionForDisplayValue(siblingMetadata.specialSizeMeasurements.display),
+        }
+      }
+    }
+  }
+  return {
+    reorderResult: reorderResult,
+    displayValues: displayValues,
+  }
+}
+
+function displayTypeBeforeIndex(
+  displayValues: Array<string | null>,
+  index: number,
+): 'block' | 'inline-block' | undefined {
+  const prevSiblingIndex = index - 1
+
+  const displayTypeOfPrevSibling = displayValues[prevSiblingIndex]
+  const displayTypeOfNextSibling = displayValues[prevSiblingIndex + 1]
+
+  if (displayTypeOfPrevSibling === 'inline-block' && displayTypeOfNextSibling === 'inline-block') {
+    return 'inline-block'
+  } else if (displayTypeOfPrevSibling === 'block' && displayTypeOfNextSibling === 'block') {
+    return 'block'
+  } else {
+    return undefined
+  }
+}
+
+function findNewIndexAndDisplayType(
+  metadata: ElementInstanceMetadataMap,
+  siblings: Array<ElementPath>,
+  point: CanvasVector,
+  target: ElementPath | null,
+  reorderResult: ReorderElement,
+  displayValues: Array<string | null>,
+): { newIndex: number; newDisplayType: AddDisplayBlockOrOnline | RemoveDisplayProp | null } {
+  const originalIndex = siblings.findIndex((path) => EP.pathsEqual(path, target))
+  const newTargetIndex = reorderResult.siblingIndex
+  const movedForward = newTargetIndex > originalIndex
+
+  let newIndex = movedForward ? newTargetIndex - 1 : newTargetIndex
+
+  const targetElementMetadata = MetadataUtils.findElementByElementPath(metadata, target)
+  const displayTypeForElementAtStart =
+    displayTypeBeforeIndex(displayValues, newTargetIndex) ??
+    targetElementMetadata?.specialSizeMeasurements.display ?? // TODO EZMI ?????
+    'block'
+
+  const directionForElement = flowDirectionForDisplayValue(displayTypeForElementAtStart)
+  if (directionForElement !== reorderResult.direction) {
+    // The directions don't match up, so check both the x and y based on a diagonal through the element
+    if (pointIsClockwiseFromLine(point, reorderResult.bottomLeft, reorderResult.centerPoint)) {
+      newIndex++
+    }
+  } else if (reorderResult.direction === 'vertical' && point.y > reorderResult.centerPoint.y) {
+    newIndex++
+  } else if (reorderResult.direction === 'horizontal' && point.x > reorderResult.centerPoint.x) {
+    newIndex++
+  }
+
+  return {
+    newIndex: newIndex,
+    newDisplayType: getNewDisplayType(
+      targetElementMetadata,
+      displayTypeBeforeIndex(displayValues, movedForward ? newIndex : newIndex - 1),
+    ),
+  }
+}
+
 function shouldRemoveDisplayProp(
   element: ElementInstanceMetadata | null,
   newDisplayValue: 'block' | 'inline-block' | undefined,
@@ -127,52 +246,18 @@ export function getFlowReorderIndex(
     }
   }
 
-  let reorderResult: ReorderElement | null = null
-  let displayValues: Array<string | undefined> = []
-
   // TODO stick elements?
   // TODO float?
   // TODO wrapping
 
-  const targetElementMetadata = MetadataUtils.findElementByElementPath(metadata, target)
-  const targetDisplayType = targetElementMetadata?.specialSizeMeasurements.display
-  const targetIndex = siblings.findIndex((path) => EP.pathsEqual(path, target))
-
-  for (const [index, sibling] of siblings.entries()) {
-    const siblingMetadata = MetadataUtils.findElementByElementPath(metadata, sibling)
-    const siblingDisplayType = siblingMetadata?.specialSizeMeasurements.display
-    displayValues.push(siblingDisplayType)
-    const frame = MetadataUtils.getFrameInCanvasCoords(sibling, metadata)
-    const isValidSibling =
-      displayTypeFiltering === 'allow-mixed-display-type' ??
-      siblingDisplayType === targetDisplayType
-    if (
-      isValidSibling &&
-      frame != null &&
-      siblingMetadata != null &&
-      MetadataUtils.isPositionedByFlow(siblingMetadata)
-    ) {
-      const siblingProps = allElementProps[EP.toString(siblingMetadata.elementPath)] ?? {}
-      const centerPoint = getCenterPositionInFlow(frame, siblingMetadata, siblingProps)
-      const bottomLeft = offsetPoint(centerPoint, {
-        x: -frame.width / 2,
-        y: frame.height / 2,
-      } as CanvasPoint)
-
-      // First one that has been found or if it's closer than a previously found entry.
-      const distance = euclideanDistance(point, centerPoint)
-      if (reorderResult == null || distance < reorderResult.distance) {
-        reorderResult = {
-          distance: distance,
-          centerPoint: centerPoint,
-          bottomLeft: bottomLeft,
-          siblingPath: sibling,
-          siblingIndex: index,
-          direction: flowDirectionForDisplayValue(siblingMetadata.specialSizeMeasurements.display),
-        }
-      }
-    }
-  }
+  const { reorderResult, displayValues } = collectClosestSibling(
+    metadata,
+    siblings,
+    point,
+    target,
+    allElementProps,
+    displayTypeFiltering,
+  )
 
   if (reorderResult == null) {
     // We were unable to find an appropriate entry.
@@ -186,49 +271,18 @@ export function getFlowReorderIndex(
     }
   } else {
     // Check which "side" of the target this falls on.
-    const siblingIndex = reorderResult.siblingIndex
-    const movedForward = siblingIndex > targetIndex
-
-    const displayTypeBeforeIndex = (i: number): 'block' | 'inline-block' | undefined => {
-      const prevSiblingIndex = movedForward ? i : i - 1
-
-      const displayTypeOfPrevSibling = displayValues[prevSiblingIndex]
-      const displayTypeOfNextSibling = displayValues[prevSiblingIndex + 1]
-
-      if (
-        displayTypeOfPrevSibling === 'inline-block' &&
-        displayTypeOfNextSibling === 'inline-block'
-      ) {
-        return 'inline-block'
-      } else if (displayTypeOfPrevSibling === 'block' && displayTypeOfNextSibling === 'block') {
-        return 'block'
-      } else {
-        return undefined
-      }
-    }
-
-    let newIndex = movedForward ? siblingIndex - 1 : siblingIndex
-
-    const displayTypeForElementAtStart =
-      displayTypeBeforeIndex(newIndex) ??
-      targetElementMetadata?.specialSizeMeasurements.display ??
-      'block'
-    const directionForElement = flowDirectionForDisplayValue(displayTypeForElementAtStart)
-
-    if (directionForElement !== reorderResult.direction) {
-      // The directions don't match up, so check both the x and y based on a diagonal through the element
-      if (pointIsClockwiseFromLine(point, reorderResult.bottomLeft, reorderResult.centerPoint)) {
-        newIndex++
-      }
-    } else if (reorderResult.direction === 'vertical' && point.y > reorderResult.centerPoint.y) {
-      newIndex++
-    } else if (reorderResult.direction === 'horizontal' && point.x > reorderResult.centerPoint.x) {
-      newIndex++
-    }
+    const { newIndex, newDisplayType } = findNewIndexAndDisplayType(
+      metadata,
+      siblings,
+      point,
+      target,
+      reorderResult,
+      displayValues,
+    )
 
     return {
       newIndex: newIndex,
-      newDisplayType: getNewDisplayType(targetElementMetadata, displayTypeBeforeIndex(newIndex)),
+      newDisplayType: newDisplayType,
     }
   }
 }
