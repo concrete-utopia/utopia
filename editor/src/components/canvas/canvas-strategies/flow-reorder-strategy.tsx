@@ -23,6 +23,10 @@ import { ElementInstanceMetadataMap } from '../../../core/shared/element-templat
 import { getFlowReorderIndex } from './flow-reorder-helpers'
 import { deleteProperties } from '../commands/delete-properties-command'
 import { stylePropPathMappingFn } from '../../inspector/common/property-path-hooks'
+import {
+  FlowReorderAreaIndicator,
+  FlowReorderDragOutline,
+} from '../controls/flow-reorder-indicators'
 
 function isFlowReorderConversionApplicable(
   canvasState: InteractionCanvasState,
@@ -139,14 +143,9 @@ export const flowReorderAutoConversionStategy: CanvasStrategy = {
       key: 'parent-bounds-control',
       show: 'visible-only-while-active',
     },
-    // {
-    //   control: FlowPositionMarker,
-    //   key: 'flow-position-marker-control',
-    //   show: 'visible-only-while-active',
-    // }, // TODO new controls ?
     {
-      control: DragOutlineControl,
-      key: 'drag-outline-control',
+      control: FlowReorderDragOutline,
+      key: 'flow-reorder-drag-outline',
       show: 'visible-only-while-active',
     },
   ], // Uses existing hooks in select-mode-hooks.tsx
@@ -207,7 +206,11 @@ export const flowReorderSameTypeOnlyStategy: CanvasStrategy = {
   isApplicable: isFlowReorderConversionApplicable, // TODO FIX THE OTHER STRATEGY TO SHOW ONLY WHEN MIXED DISPLAY TYPES
   controlsToRender: [
     ...flowReorderAutoConversionStategy.controlsToRender,
-    // {control: RestrictedAreaIndicator, key: '', show: 'visible-only-while-active'},
+    {
+      control: FlowReorderAreaIndicator,
+      key: 'flow-reorder-area-indicator',
+      show: 'visible-only-while-active',
+    },
   ],
   fitness: (canvasState, interactionState, strategyState) => {
     return flowReorderNoConversionStategy.isApplicable(

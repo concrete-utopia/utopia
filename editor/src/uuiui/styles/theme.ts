@@ -117,6 +117,8 @@ const light = {
   canvasSelectionSecondaryOutline: base.almostBlack.o(50),
   CanvasSelectionNotFocusable: base.darkgray,
   canvasDraggingPlaceholderYoga: base.neonpink.o(30),
+  canvasDragOutlineBlock: lightBase.primary,
+  canvasDragOutlineInline: base.red,
 
   canvasSelectionFocusable: base.purple,
   canvasSelectionIsolatedComponent: base.purple,
