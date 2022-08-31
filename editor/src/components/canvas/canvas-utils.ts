@@ -1907,6 +1907,7 @@ function getReparentTargetAtPosition(
     'no-filter',
     pointOnCanvas,
     allElementProps,
+    true, // this is how it was historically, but I think it should be false?
   )
   // filtering for non-selected views from alltargets
   return allTargets.find((target) => selectedViews.every((view) => !EP.pathsEqual(view, target)))

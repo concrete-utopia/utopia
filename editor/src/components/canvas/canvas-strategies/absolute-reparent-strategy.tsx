@@ -1,7 +1,6 @@
 import { MetadataUtils } from '../../../core/model/element-metadata-utils'
 import * as EP from '../../../core/shared/element-path'
 import { CSSCursor } from '../canvas-types'
-import { getReparentTarget } from '../canvas-utils'
 import { setCursorCommand } from '../commands/set-cursor-command'
 import { setElementsToRerenderCommand } from '../commands/set-elements-to-rerender-command'
 import { updateSelectedViews } from '../commands/update-selected-views-command'

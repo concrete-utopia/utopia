@@ -320,6 +320,7 @@ function newGetReparentTargetInner(
     'no-filter',
     point,
     allElementProps,
+    false,
   )
 
   if (allElementsUnderPoint.length === 0) {

@@ -274,6 +274,7 @@ export function getAllTargetsAtPointAABB(
   validElementPathsForLookup: Array<ElementPath> | 'no-filter',
   pointOnCanvas: CanvasPoint | null,
   allElementProps: AllElementProps,
+  useBoundingFrames: boolean,
 ): Array<ElementPath> {
   if (pointOnCanvas == null) {
     return []
@@ -286,7 +287,7 @@ export function getAllTargetsAtPointAABB(
     hiddenInstances,
     canvasPositionRaw,
     [TargetSearchType.All],
-    true,
+    useBoundingFrames,
     'loose',
     allElementProps,
   )
