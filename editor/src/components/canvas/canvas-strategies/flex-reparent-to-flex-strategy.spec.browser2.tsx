@@ -272,7 +272,6 @@ describe('Flex Reparent To Flex Strategy', () => {
             width: 100,
             height: 100,
             backgroundColor: 'teal',
-            position: 'relative',
           }}
           data-uid='flexchild3'
           data-testid='flexchild3'
@@ -365,7 +364,6 @@ describe('Flex Reparent To Flex Strategy', () => {
             width: 100,
             height: 100,
             backgroundColor: 'teal',
-            position: 'relative',
           }}
           data-uid='flexchild3'
           data-testid='flexchild3'
