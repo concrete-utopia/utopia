@@ -8,15 +8,18 @@ import {
   selectedElements,
 } from './canvas-strategy-types'
 import { InteractionSession, StrategyState } from './interaction-state'
-import { ElementInsertionSubject, InsertionSubject } from '../../editor/editor-modes'
+import { InsertionSubject } from '../../editor/editor-modes'
 import { LayoutHelpers } from '../../../core/layout/layout-helpers'
 import { isLeft, right } from '../../../core/shared/either'
 import { InsertElement, insertElement } from '../commands/insert-element-command'
 import { BuiltInDependencies } from '../../../core/es-modules/package-manager/built-in-dependencies-list'
 import { EditorState, EditorStatePatch } from '../../editor/store/editor-state'
-import { pickCanvasStateFromEditorState } from './canvas-strategies'
+import {
+  findCanvasStrategy,
+  pickCanvasStateFromEditorState,
+  RegisteredCanvasStrategies,
+} from './canvas-strategies'
 import { foldAndApplyCommandsInner } from '../commands/commands'
-import { absoluteReparentStrategy } from './absolute-reparent-strategy'
 import { updateFunctionCommand } from '../commands/update-function-command'
 import { MetadataUtils } from '../../../core/model/element-metadata-utils'
 import { elementPath } from '../../../core/shared/element-path'
@@ -27,10 +30,11 @@ import {
   ElementInstanceMetadataMap,
   emptySpecialSizeMeasurements,
 } from '../../../core/shared/element-template'
+import { cmdModifier } from '../../../utils/modifiers'
 
-export const absoluteInsertStrategy: CanvasStrategy = {
-  id: 'ABSOLUTE_INSERT',
-  name: 'Absolute Insert (Delta-based)',
+export const dragToInsertStrategy: CanvasStrategy = {
+  id: 'DRAG_TO_INSERT',
+  name: 'Drag to Insert',
   isApplicable: (canvasState, _interactionState, metadata) => {
     const insertionSubjects = getInsertionSubjectsFromInteractionTarget(
       canvasState.interactionTarget,
@@ -51,7 +55,7 @@ export const absoluteInsertStrategy: CanvasStrategy = {
     },
   ], // Uses existing hooks in select-mode-hooks.tsx
   fitness: (canvasState, interactionState, strategyState) => {
-    return absoluteInsertStrategy.isApplicable(
+    return dragToInsertStrategy.isApplicable(
       canvasState,
       interactionState,
       strategyState.startingMetadata,
@@ -98,6 +102,9 @@ export const absoluteInsertStrategy: CanvasStrategy = {
   },
 }
 
+const DefaultWidth = 100
+const DefaultHeight = 100
+
 function getInsertionCommands(
   subject: InsertionSubject,
   interactionState: InteractionSession,
@@ -112,10 +119,10 @@ function getInsertionCommands(
   ) {
     const pointOnCanvas = interactionState.interactionData.dragStart
     const rect = canvasRectangle({
-      x: pointOnCanvas.x - 50,
-      y: pointOnCanvas.y - 50,
-      width: 100,
-      height: 100,
+      x: pointOnCanvas.x - DefaultWidth / 2,
+      y: pointOnCanvas.y - DefaultHeight / 2,
+      width: DefaultWidth,
+      height: DefaultHeight,
     })
     const updatedAttributes = LayoutHelpers.updateLayoutPropsWithFrame(
       false,
@@ -172,6 +179,8 @@ function runAbsoluteReparentStrategyForFreshlyConvertedElement(
     ): ElementInstanceMetadataMap => {
       const element = curr.command.subject.element
       const path = EP.appendToPath(rootPath, element.uid)
+      const specialSizeMeasurements = { ...emptySpecialSizeMeasurements }
+      specialSizeMeasurements.position = 'absolute'
       return {
         ...acc,
         [EP.toString(path)]: elementInstanceMetadata(
@@ -181,7 +190,7 @@ function runAbsoluteReparentStrategyForFreshlyConvertedElement(
           localRectangle(curr.frame),
           false,
           false,
-          emptySpecialSizeMeasurements,
+          specialSizeMeasurements,
           null,
           null,
           null,
@@ -204,12 +213,36 @@ function runAbsoluteReparentStrategyForFreshlyConvertedElement(
     ),
   }
 
-  const reparentCommands = absoluteReparentStrategy.apply(
-    patchedCanvasState,
-    interactionState,
-    patchedStrategyState,
-  ).commands
+  const interactionData = interactionState.interactionData
+  // patching the interaction with the cmd modifier is just temporarily needed because reparenting is not default without
+  const patchedInteractionData =
+    interactionData.type === 'DRAG'
+      ? { ...interactionData, modifiers: cmdModifier }
+      : interactionData
 
-  return foldAndApplyCommandsInner(editorState, [], [], reparentCommands, commandLifecycle)
-    .statePatches
+  const patchedInteractionState = {
+    ...interactionState,
+    interactionData: patchedInteractionData,
+  }
+
+  const { strategy } = findCanvasStrategy(
+    RegisteredCanvasStrategies,
+    patchedCanvasState,
+    patchedInteractionState,
+    patchedStrategyState,
+    null,
+  )
+
+  if (strategy == null) {
+    return []
+  } else {
+    const reparentCommands = strategy.strategy.apply(
+      patchedCanvasState,
+      interactionState,
+      patchedStrategyState,
+    ).commands
+
+    return foldAndApplyCommandsInner(editorState, [], [], reparentCommands, commandLifecycle)
+      .statePatches
+  }
 }
