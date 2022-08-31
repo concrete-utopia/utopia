@@ -5,11 +5,17 @@ import {
   JSXElementName,
   ElementInstanceMetadataMap,
   SettableLayoutSystem,
+  JSXElementChild,
 } from '../../core/shared/element-template'
 import { KeysPressed, Key } from '../../utils/keyboard'
 import { IndexPosition } from '../../utils/utils'
 import { CanvasRectangle, Size, WindowPoint, CanvasPoint } from '../../core/shared/math-utils'
-import { CanvasAction, CSSCursor, PinOrFlexFrameChange } from '../canvas/canvas-types'
+import {
+  CanvasAction,
+  CSSCursor,
+  PinOrFlexFrameChange,
+  SelectionLocked,
+} from '../canvas/canvas-types'
 import { CursorPosition } from '../code-editor/code-editor-utils'
 import { EditorPane, EditorPanel, ResizeLeftPane, SetFocus } from '../common/actions'
 import {
@@ -306,10 +312,16 @@ export interface ClosePopup {
   action: 'CLOSE_POPUP'
 }
 
+export interface ElementPaste {
+  element: JSXElementChild
+  importsToAdd: Imports
+  originalElementPath: ElementPath
+}
+
 export interface PasteJSXElements {
   action: 'PASTE_JSX_ELEMENTS'
-  elements: JSXElement[]
-  originalElementPaths: ElementPath[]
+  pasteInto: ElementPath
+  elements: Array<ElementPaste>
   targetOriginalContextMetadata: ElementInstanceMetadataMap
 }
 
@@ -950,6 +962,12 @@ export interface SetElementsToRerender {
   value: ElementsToRerender
 }
 
+export type ToggleSelectionLock = {
+  action: 'TOGGLE_SELECTION_LOCK'
+  targets: Array<ElementPath>
+  newValue: SelectionLocked
+}
+
 export type EditorAction =
   | ClearSelection
   | InsertScene
@@ -1105,6 +1123,7 @@ export type EditorAction =
   | ForceParseFile
   | RunEscapeHatch
   | SetElementsToRerender
+  | ToggleSelectionLock
 
 export type DispatchPriority =
   | 'everyone'

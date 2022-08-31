@@ -73,11 +73,14 @@ import {
   isUtopiaAPIComponentFromMetadata,
   isGivenUtopiaElementFromMetadata,
 } from './project-file-utils'
-import { ResizesContentProp } from './scene-utils'
 import { fastForEach } from '../shared/utils'
 import { objectValues, omit } from '../shared/object-utils'
 import { UTOPIA_LABEL_KEY } from './utopia-constants'
-import { AllElementProps, withUnderlyingTarget } from '../../components/editor/store/editor-state'
+import {
+  AllElementProps,
+  LockedElements,
+  withUnderlyingTarget,
+} from '../../components/editor/store/editor-state'
 import { ProjectContentTreeRoot } from '../../components/assets'
 import { memoize } from '../shared/memoize'
 import { buildTree, ElementPathTree, getSubTree } from '../shared/element-path-tree'
@@ -159,9 +162,6 @@ export const MetadataUtils = {
     paths: Array<ElementPath>,
   ): Array<ElementInstanceMetadata> {
     return stripNulls(paths.map((path) => MetadataUtils.findElementByElementPath(elementMap, path)))
-  },
-  isSceneTreatedAsGroup(allElementProps: AllElementProps, path: ElementPath): boolean {
-    return allElementProps?.[EP.toString(path)]?.[ResizesContentProp] ?? false
   },
   isProbablySceneFromMetadata(element: ElementInstanceMetadata | null): boolean {
     return (
@@ -635,12 +635,17 @@ export const MetadataUtils = {
     projectContents: ProjectContentTreeRoot,
     openFile: string | null | undefined,
     metadata: ElementInstanceMetadataMap,
-    target: ElementPath,
+    target: ElementPath | null,
   ): boolean {
-    const instance = MetadataUtils.findElementByElementPath(metadata, target)
-    return instance == null
-      ? false
-      : MetadataUtils.targetElementSupportsChildren(projectContents, openFile, instance)
+    if (target == null) {
+      // Assumed to be reparenting to the canvas root.
+      return true
+    } else {
+      const instance = MetadataUtils.findElementByElementPath(metadata, target)
+      return instance == null
+        ? false
+        : MetadataUtils.targetElementSupportsChildren(projectContents, openFile, instance)
+    }
   },
   targetUsesProperty(
     projectContents: ProjectContentTreeRoot,
@@ -1390,6 +1395,9 @@ export const MetadataUtils = {
         ? canvasRectangleToLocalRectangle(globalFrame, elementContainerBounds)
         : null
     return localFrame
+  },
+  isDescendantOfHierarchyLockedElement(path: ElementPath, lockedElements: LockedElements): boolean {
+    return lockedElements.hierarchyLock.some((lockedPath) => EP.isDescendantOf(path, lockedPath))
   },
 }
 

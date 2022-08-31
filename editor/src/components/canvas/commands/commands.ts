@@ -41,9 +41,10 @@ import { DeleteProperties, runDeleteProperties } from './delete-properties-comma
 import { AddImportsToFile, runAddImportsToFile } from './add-imports-to-file-command'
 import {
   runAddToReparentedToPaths,
-  addToReparentedToPaths,
+  AddToReparentedToPaths,
 } from '../canvas-strategies/add-to-reparented-to-paths-command'
 import { InsertElement, runInsertElement } from './insert-element-command'
+import { AddElement, runAddElement } from './add-element-command'
 
 export interface CommandFunctionResult {
   editorStatePatches: Array<EditorStatePatch>
@@ -78,8 +79,9 @@ export type CanvasCommand =
   | PushIntendedBounds
   | DeleteProperties
   | AddImportsToFile
-  | addToReparentedToPaths
+  | AddToReparentedToPaths
   | InsertElement
+  | AddElement
 
 export const runCanvasCommand = (
   editorState: EditorState,
@@ -129,6 +131,8 @@ export const runCanvasCommand = (
       return runAddToReparentedToPaths(editorState, command)
     case 'INSERT_ELEMENT':
       return runInsertElement(editorState, command)
+    case 'ADD_ELEMENT':
+      return runAddElement(editorState, command)
     default:
       const _exhaustiveCheck: never = command
       throw new Error(`Unhandled canvas command ${JSON.stringify(command)}`)

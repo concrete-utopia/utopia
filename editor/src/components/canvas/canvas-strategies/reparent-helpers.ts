@@ -9,7 +9,7 @@ import { CSSCursor } from '../canvas-types'
 import { setCursorCommand } from '../commands/set-cursor-command'
 import { InteractionCanvasState, StrategyApplicationResult } from './canvas-strategy-types'
 import { StrategyState } from './interaction-state'
-import { ProjectContentTreeRoot } from 'src/components/assets'
+import { ProjectContentTreeRoot } from '../../../components/assets'
 
 export function isGeneratedElement(
   projectContents: ProjectContentTreeRoot,

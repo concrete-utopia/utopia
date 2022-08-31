@@ -116,10 +116,8 @@ export function runSimpleLocalEditorAction(
     case 'CLOSE_POPUP':
       return UPDATE_FNS.CLOSE_POPUP(action, state)
     case 'PASTE_JSX_ELEMENTS':
-      return UPDATE_FNS.PASTE_JSX_ELEMENTS(action, state, dispatch)
+      return UPDATE_FNS.PASTE_JSX_ELEMENTS(action, state, dispatch, builtInDependencies)
     case 'COPY_SELECTION_TO_CLIPBOARD':
-      // side effect 😟
-      setClipboardData(createClipboardDataFromSelection(state))
       return UPDATE_FNS.COPY_SELECTION_TO_CLIPBOARD(action, state, dispatch)
     case 'OPEN_TEXT_EDITOR':
       return UPDATE_FNS.OPEN_TEXT_EDITOR(action, state)
@@ -344,6 +342,8 @@ export function runSimpleLocalEditorAction(
       return UPDATE_FNS.FORCE_PARSE_FILE(action, state)
     case 'RUN_ESCAPE_HATCH':
       return UPDATE_FNS.RUN_ESCAPE_HATCH(action, state, builtInDependencies)
+    case 'TOGGLE_SELECTION_LOCK':
+      return UPDATE_FNS.TOGGLE_SELECTION_LOCK(action, state)
     default:
       return state
   }
