@@ -182,7 +182,10 @@ function handleCanvasEvent(model: CanvasModel, event: CanvasMouseEvent): Array<E
     const applyChanges = model.editorState.canvas.interactionSession?.interactionData.drag != null
     optionalDragStateAction = [
       CanvasActions.clearInteractionSession(applyChanges),
-      // EditorActions.switchEditorMode(EditorModes.selectMode()),
+      EditorActions.updateEditorMode(EditorModes.selectMode()),
+      EditorActions.setRightMenuTab(RightMenuTab.Inspector),
+      EditorActions.clearHighlightedViews(),
+      CanvasActions.clearDragState(false),
     ]
   } else if (!(insertMode && isOpenFileUiJs(model.editorState))) {
     switch (event.event) {
@@ -761,9 +764,23 @@ export class EditorCanvas extends React.Component<EditorCanvasProps> {
 
     const realActions = actions.filter((action) => action.action !== 'TRANSIENT_ACTIONS')
     const transientActions = actions.filter((action) => action.action === 'TRANSIENT_ACTIONS')
+
     if (realActions.length > 0) {
-      this.props.dispatch(realActions, 'canvas')
+      // if there is a clearInteractionSession action, dispatch the later actions separately
+      const clearInteractionSessionIdx = realActions.findIndex(
+        (a) => a.action === 'CLEAR_INTERACTION_SESSION',
+      )
+      if (
+        clearInteractionSessionIdx === -1 ||
+        clearInteractionSessionIdx === realActions.length - 1
+      ) {
+        this.props.dispatch(realActions, 'canvas')
+      } else {
+        this.props.dispatch(realActions.slice(0, clearInteractionSessionIdx + 1), 'canvas')
+        this.props.dispatch(realActions.slice(clearInteractionSessionIdx), 'canvas')
+      }
     }
+
     if (transientActions.length > 0) {
       this.props.dispatch(transientActions, 'canvas')
     }
