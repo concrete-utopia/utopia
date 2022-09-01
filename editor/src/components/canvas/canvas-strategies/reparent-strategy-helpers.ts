@@ -340,22 +340,27 @@ function newGetReparentTargetInner(
 
   const filteredElementsUnderPoint = allElementsUnderPoint.filter(
     (target) =>
+      // TODO BEFORE MERGE consider multiselect!!!!!
+      // the current parent should be included in the array of valid targets
+      filteredSelectedElementsMetadata.some((maybeChild) =>
+        EP.isChildOf(maybeChild.elementPath, target),
+      ) ||
       // any of the dragged elements (or their flex parents) and their descendants are not game for reparenting
-      filteredSelectedElementsMetadata.findIndex((maybeAncestorOrEqual) =>
+      (filteredSelectedElementsMetadata.findIndex((maybeAncestorOrEqual) =>
         !cmdPressed && maybeAncestorOrEqual.specialSizeMeasurements.parentLayoutSystem === 'flex'
           ? // for Flex children, we also want to filter out all their siblings to force a Flex Reorder strategy
             EP.isDescendantOf(target, EP.parentPath(maybeAncestorOrEqual.elementPath))
           : // for non-flex elements, we filter out their descendants and themselves
             EP.isDescendantOfOrEqualTo(target, maybeAncestorOrEqual.elementPath),
       ) === -1 &&
-      // simply skip elements that do not support children
-      MetadataUtils.targetSupportsChildren(projectContents, openFile, metadata, target) &&
-      // if cmd is not pressed, we only allow reparent to parents that are larger than the multiselect bounds
-      (cmdPressed ||
-        sizeFitsInTarget(
-          multiselectBounds,
-          MetadataUtils.getFrameInCanvasCoords(target, metadata) ?? size(0, 0),
-        )),
+        // simply skip elements that do not support children
+        MetadataUtils.targetSupportsChildren(projectContents, openFile, metadata, target) &&
+        // if cmd is not pressed, we only allow reparent to parents that are larger than the multiselect bounds
+        (cmdPressed ||
+          sizeFitsInTarget(
+            multiselectBounds,
+            MetadataUtils.getFrameInCanvasCoords(target, metadata) ?? size(0, 0),
+          ))),
   )
 
   // if the mouse is over the canvas, return the canvas root as the target path
