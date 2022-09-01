@@ -19,7 +19,7 @@ import { pickCanvasStateFromEditorState } from './canvas-strategies'
 import {
   CanvasStrategy,
   emptyStrategyApplicationResult,
-  getSelectedElementsFromInteractionTarget,
+  getTargetPathsFromInteractionTarget,
 } from './canvas-strategy-types'
 import { InteractionSession, interactionSession, StrategyState } from './interaction-state'
 import { getDragTargets } from './shared-absolute-move-strategy-helpers'
@@ -28,7 +28,7 @@ export const absoluteDuplicateStrategy: CanvasStrategy = {
   id: 'ABSOLUTE_DUPLICATE',
   name: 'Duplicate Absolute Elements',
   isApplicable: (canvasState, interactionState, metadata) => {
-    const selectedElements = getSelectedElementsFromInteractionTarget(canvasState.interactionTarget)
+    const selectedElements = getTargetPathsFromInteractionTarget(canvasState.interactionTarget)
     if (
       selectedElements.length > 0 &&
       interactionState != null &&
@@ -69,7 +69,7 @@ export const absoluteDuplicateStrategy: CanvasStrategy = {
     },
   ],
   fitness: (canvasState, interactionState) => {
-    const selectedElements = getSelectedElementsFromInteractionTarget(canvasState.interactionTarget)
+    const selectedElements = getTargetPathsFromInteractionTarget(canvasState.interactionTarget)
     if (
       selectedElements.length > 0 &&
       interactionState.interactionData.type === 'DRAG' &&
@@ -81,7 +81,7 @@ export const absoluteDuplicateStrategy: CanvasStrategy = {
     return 0
   },
   apply: (canvasState, interactionState, strategyState) => {
-    const selectedElements = getSelectedElementsFromInteractionTarget(canvasState.interactionTarget)
+    const selectedElements = getTargetPathsFromInteractionTarget(canvasState.interactionTarget)
     if (
       interactionState.interactionData.type === 'DRAG' &&
       interactionState.interactionData.drag != null

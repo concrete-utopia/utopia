@@ -45,7 +45,7 @@ import { applyAbsoluteMoveCommon } from './absolute-move-strategy'
 import {
   CanvasStrategy,
   emptyStrategyApplicationResult,
-  getSelectedElementsFromInteractionTarget,
+  getTargetPathsFromInteractionTarget,
   InteractionCanvasState,
 } from './canvas-strategy-types'
 import { DragInteractionData, InteractionSession, StrategyState } from './interaction-state'
@@ -56,7 +56,7 @@ export const escapeHatchStrategy: CanvasStrategy = {
   id: 'ESCAPE_HATCH_STRATEGY',
   name: 'Absolute Move (convert to absolute)',
   isApplicable: (canvasState, _interactionState, metadata) => {
-    const selectedElements = getSelectedElementsFromInteractionTarget(canvasState.interactionTarget)
+    const selectedElements = getTargetPathsFromInteractionTarget(canvasState.interactionTarget)
     return areAllSelectedElementsNonAbsolute(selectedElements, metadata)
   },
   controlsToRender: [
@@ -132,7 +132,7 @@ export const escapeHatchStrategy: CanvasStrategy = {
           intendedBounds: Array<CanvasFrameAndTarget>
         } => {
           return getEscapeHatchCommands(
-            getSelectedElementsFromInteractionTarget(canvasState.interactionTarget),
+            getTargetPathsFromInteractionTarget(canvasState.interactionTarget),
             strategyState.startingMetadata,
             canvasState,
             snappedDragVector,
@@ -365,7 +365,7 @@ function escapeHatchAllowed(
   if (strategyState.customStrategyState.escapeHatchActivated) {
     return true
   }
-  const selectedElements = getSelectedElementsFromInteractionTarget(canvasState.interactionTarget)
+  const selectedElements = getTargetPathsFromInteractionTarget(canvasState.interactionTarget)
   const selectedElementsHaveSiblingsAndFlex = selectedElements.some((path) => {
     return (
       MetadataUtils.isParentYogaLayoutedContainerAndElementParticipatesInLayout(
@@ -394,7 +394,7 @@ function collectHighlightCommand(
   interactionData: DragInteractionData,
   strategyState: StrategyState,
 ): CanvasCommand {
-  const selectedElements = getSelectedElementsFromInteractionTarget(canvasState.interactionTarget)
+  const selectedElements = getTargetPathsFromInteractionTarget(canvasState.interactionTarget)
   const siblingFrames = stripNulls(
     selectedElements.flatMap((path) => {
       return MetadataUtils.getSiblings(strategyState.startingMetadata, path)

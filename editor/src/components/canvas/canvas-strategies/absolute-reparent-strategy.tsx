@@ -11,7 +11,7 @@ import { absoluteMoveStrategy } from './absolute-move-strategy'
 import {
   CanvasStrategy,
   emptyStrategyApplicationResult,
-  getSelectedElementsFromInteractionTarget,
+  getTargetPathsFromInteractionTarget,
 } from './canvas-strategy-types'
 import { getDragTargets } from './shared-absolute-move-strategy-helpers'
 import { ifAllowedToReparent, isAllowedToReparent } from './reparent-helpers'
@@ -27,7 +27,7 @@ export const absoluteReparentStrategy: CanvasStrategy = {
   id: 'ABSOLUTE_REPARENT',
   name: 'Reparent Absolute Elements',
   isApplicable: (canvasState, interactionState, metadata) => {
-    const selectedElements = getSelectedElementsFromInteractionTarget(canvasState.interactionTarget)
+    const selectedElements = getTargetPathsFromInteractionTarget(canvasState.interactionTarget)
     if (
       selectedElements.length > 0 &&
       interactionState != null &&
@@ -81,7 +81,7 @@ export const absoluteReparentStrategy: CanvasStrategy = {
     )
 
     const { interactionTarget, projectContents, openFile, nodeModules } = canvasState
-    const selectedElements = getSelectedElementsFromInteractionTarget(interactionTarget)
+    const selectedElements = getTargetPathsFromInteractionTarget(interactionTarget)
     const filteredSelectedElements = getDragTargets(selectedElements)
 
     const reparentTarget = getReparentTarget(

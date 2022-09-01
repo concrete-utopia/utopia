@@ -10,7 +10,7 @@ import {
 } from '../controls/guideline-helpers'
 import { GuidelineWithSnappingVector, Guidelines } from '../guideline'
 import {
-  getSelectedElementsFromInteractionTarget,
+  getTargetPathsFromInteractionTarget,
   InteractionCanvasState,
 } from './canvas-strategy-types'
 import Utils from '../../../utils/utils'
@@ -94,7 +94,7 @@ export function getKeyboardStrategyGuidelines(
   interactionState: InteractionSession,
   draggedFrame: CanvasRectangle,
 ): Array<GuidelineWithSnappingVector> {
-  const selectedElements = getSelectedElementsFromInteractionTarget(canvasState.interactionTarget)
+  const selectedElements = getTargetPathsFromInteractionTarget(canvasState.interactionTarget)
   const moveGuidelines = collectParentAndSiblingGuidelines(
     interactionState.metadata,
     selectedElements,

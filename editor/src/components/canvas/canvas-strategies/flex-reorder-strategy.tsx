@@ -6,7 +6,7 @@ import { reorderElement } from '../commands/reorder-element-command'
 import {
   CanvasStrategy,
   emptyStrategyApplicationResult,
-  getSelectedElementsFromInteractionTarget,
+  getTargetPathsFromInteractionTarget,
 } from './canvas-strategy-types'
 import {
   CanvasPoint,
@@ -30,7 +30,7 @@ export const flexReorderStrategy: CanvasStrategy = {
   id: 'FLEX_REORDER',
   name: 'Flex Reorder',
   isApplicable: (canvasState, _interactionState, metadata) => {
-    const selectedElements = getSelectedElementsFromInteractionTarget(canvasState.interactionTarget)
+    const selectedElements = getTargetPathsFromInteractionTarget(canvasState.interactionTarget)
     if (selectedElements.length == 1) {
       return MetadataUtils.isParentYogaLayoutedContainerAndElementParticipatesInLayout(
         selectedElements[0],
@@ -74,9 +74,7 @@ export const flexReorderStrategy: CanvasStrategy = {
       return emptyStrategyApplicationResult
     }
     if (interactionState.interactionData.drag != null) {
-      const selectedElements = getSelectedElementsFromInteractionTarget(
-        canvasState.interactionTarget,
-      )
+      const selectedElements = getTargetPathsFromInteractionTarget(canvasState.interactionTarget)
 
       const target = selectedElements[0]
 

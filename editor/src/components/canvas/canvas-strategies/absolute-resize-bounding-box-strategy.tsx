@@ -30,7 +30,7 @@ import { AbsolutePin, ensureAtLeastTwoPinsForEdgePosition } from './absolute-res
 import {
   CanvasStrategy,
   emptyStrategyApplicationResult,
-  getSelectedElementsFromInteractionTarget,
+  getTargetPathsFromInteractionTarget,
 } from './canvas-strategy-types'
 import { getDragTargets, getMultiselectBounds } from './shared-absolute-move-strategy-helpers'
 import {
@@ -48,7 +48,7 @@ export const absoluteResizeBoundingBoxStrategy: CanvasStrategy = {
   id: 'ABSOLUTE_RESIZE_BOUNDING_BOX',
   name: 'Absolute Resize',
   isApplicable: (canvasState, interactionState, metadata, allElementProps) => {
-    const selectedElements = getSelectedElementsFromInteractionTarget(canvasState.interactionTarget)
+    const selectedElements = getTargetPathsFromInteractionTarget(canvasState.interactionTarget)
     if (selectedElements.length > 0) {
       const filteredSelectedElements = getDragTargets(selectedElements)
       return filteredSelectedElements.every((element) => {
@@ -95,9 +95,7 @@ export const absoluteResizeBoundingBoxStrategy: CanvasStrategy = {
       interactionState.activeControl.type === 'RESIZE_HANDLE'
     ) {
       const edgePosition = interactionState.activeControl.edgePosition
-      const selectedElements = getSelectedElementsFromInteractionTarget(
-        canvasState.interactionTarget,
-      )
+      const selectedElements = getTargetPathsFromInteractionTarget(canvasState.interactionTarget)
       if (interactionState.interactionData.drag != null) {
         const drag = interactionState.interactionData.drag
         const filteredSelectedElements = getDragTargets(selectedElements)

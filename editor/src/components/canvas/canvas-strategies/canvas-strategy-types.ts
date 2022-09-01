@@ -52,36 +52,34 @@ export interface InteractionCanvasState {
   canvasOffset: CanvasVector
 }
 
-export type InteractionTarget = SelectedElements | InsertionSubjects
+export type InteractionTarget = TargetPaths | InsertionSubjects
 
-interface SelectedElements {
-  type: 'selection'
+interface TargetPaths {
+  type: 'TARGET_PATHS'
   elements: Array<ElementPath>
 }
 
-export function selectedElements(elements: Array<ElementPath>): SelectedElements {
+export function targetPaths(elements: Array<ElementPath>): TargetPaths {
   return {
-    type: 'selection',
+    type: 'TARGET_PATHS',
     elements: elements,
   }
 }
 
 interface InsertionSubjects {
-  type: 'insertion'
+  type: 'INSERTION_SUBJECTS'
   subjects: Array<InsertionSubject>
 }
 
 export function insertionSubjects(subjects: Array<InsertionSubject>): InsertionSubjects {
   return {
-    type: 'insertion',
+    type: 'INSERTION_SUBJECTS',
     subjects: subjects,
   }
 }
 
-export function getSelectedElementsFromInteractionTarget(
-  target: InteractionTarget,
-): Array<ElementPath> {
-  if (target.type === 'selection') {
+export function getTargetPathsFromInteractionTarget(target: InteractionTarget): Array<ElementPath> {
+  if (target.type === 'TARGET_PATHS') {
     return target.elements
   }
   return []
@@ -90,7 +88,7 @@ export function getSelectedElementsFromInteractionTarget(
 export function getInsertionSubjectsFromInteractionTarget(
   target: InteractionTarget,
 ): Array<InsertionSubject> {
-  if (target.type === 'insertion') {
+  if (target.type === 'INSERTION_SUBJECTS') {
     return target.subjects
   }
   return []

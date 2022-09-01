@@ -5,7 +5,7 @@ import {
   emptyStrategyApplicationResult,
   getInsertionSubjectsFromInteractionTarget,
   InteractionCanvasState,
-  selectedElements,
+  targetPaths,
 } from './canvas-strategy-types'
 import { InteractionSession, StrategyState } from './interaction-state'
 import { InsertionSubject } from '../../editor/editor-modes'
@@ -208,7 +208,7 @@ function runAbsoluteReparentStrategyForFreshlyConvertedElement(
 
   const patchedCanvasState: InteractionCanvasState = {
     ...canvasState,
-    interactionTarget: selectedElements(
+    interactionTarget: targetPaths(
       insertionSubjects.map((s) => EP.appendToPath(rootPath, s.command.subject.uid)),
     ),
   }

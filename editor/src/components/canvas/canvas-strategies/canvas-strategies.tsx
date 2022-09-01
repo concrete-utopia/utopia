@@ -17,7 +17,7 @@ import {
   insertionSubjects,
   InteractionCanvasState,
   InteractionTarget,
-  selectedElements,
+  targetPaths,
   StrategyApplicationResult,
 } from './canvas-strategy-types'
 import { InteractionSession, StrategyState } from './interaction-state'
@@ -68,7 +68,7 @@ function getInteractionTargetFromEditorState(editor: EditorState): InteractionTa
   if (isInsertMode(editor.mode)) {
     return insertionSubjects([editor.mode.subject])
   } else {
-    return selectedElements(editor.selectedViews)
+    return targetPaths(editor.selectedViews)
   }
 }
 

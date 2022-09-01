@@ -18,7 +18,7 @@ import { ConstrainedDragAxis, GuidelineWithSnappingVector } from '../guideline'
 import {
   CanvasStrategy,
   emptyStrategyApplicationResult,
-  getSelectedElementsFromInteractionTarget,
+  getTargetPathsFromInteractionTarget,
   InteractionCanvasState,
   StrategyApplicationResult,
 } from './canvas-strategy-types'
@@ -35,7 +35,7 @@ export const absoluteMoveStrategy: CanvasStrategy = {
   id: 'ABSOLUTE_MOVE',
   name: 'Absolute Move (Delta-based)',
   isApplicable: (canvasState, _interactionState, metadata) => {
-    const selectedElements = getSelectedElementsFromInteractionTarget(canvasState.interactionTarget)
+    const selectedElements = getTargetPathsFromInteractionTarget(canvasState.interactionTarget)
     if (selectedElements.length > 0) {
       const filteredSelectedElements = getDragTargets(selectedElements)
       return filteredSelectedElements.every((element) => {
@@ -84,9 +84,7 @@ export const absoluteMoveStrategy: CanvasStrategy = {
         commands: Array<AdjustCssLengthProperty>
         intendedBounds: Array<CanvasFrameAndTarget>
       } => {
-        const selectedElements = getSelectedElementsFromInteractionTarget(
-          canvasState.interactionTarget,
-        )
+        const selectedElements = getTargetPathsFromInteractionTarget(canvasState.interactionTarget)
         const filteredSelectedElements = getDragTargets(selectedElements)
         let commands: Array<AdjustCssLengthProperty> = []
         let intendedBounds: Array<CanvasFrameAndTarget> = []
@@ -130,7 +128,7 @@ export function applyAbsoluteMoveCommon(
     const drag = interactionState.interactionData.drag
     const shiftKeyPressed = interactionState.interactionData.modifiers.shift
     const cmdKeyPressed = interactionState.interactionData.modifiers.cmd
-    const selectedElements = getSelectedElementsFromInteractionTarget(canvasState.interactionTarget)
+    const selectedElements = getTargetPathsFromInteractionTarget(canvasState.interactionTarget)
     if (cmdKeyPressed) {
       const commandsForSelectedElements = getMoveCommands(drag)
 

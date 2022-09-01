@@ -3,7 +3,7 @@ import { Keyboard, KeyCharacter } from '../../../utils/keyboard'
 import {
   CanvasStrategy,
   emptyStrategyApplicationResult,
-  getSelectedElementsFromInteractionTarget,
+  getTargetPathsFromInteractionTarget,
   InteractionCanvasState,
 } from './canvas-strategy-types'
 import {
@@ -49,7 +49,7 @@ export const keyboardAbsoluteMoveStrategy: CanvasStrategy = {
   id: 'KEYBOARD_ABSOLUTE_MOVE',
   name: 'Keyboard Absolute Move',
   isApplicable: (canvasState, _interactionState, metadata) => {
-    const selectedElements = getSelectedElementsFromInteractionTarget(canvasState.interactionTarget)
+    const selectedElements = getTargetPathsFromInteractionTarget(canvasState.interactionTarget)
     if (selectedElements.length > 0) {
       return selectedElements.every((element) => {
         const elementMetadata = MetadataUtils.findElementByElementPath(metadata, element)
@@ -88,7 +88,7 @@ export const keyboardAbsoluteMoveStrategy: CanvasStrategy = {
     return 0
   },
   apply: (canvasState, interactionState, sessionState) => {
-    const selectedElements = getSelectedElementsFromInteractionTarget(canvasState.interactionTarget)
+    const selectedElements = getTargetPathsFromInteractionTarget(canvasState.interactionTarget)
     if (interactionState.interactionData.type === 'KEYBOARD') {
       const accumulatedPresses = accumulatePresses(interactionState.interactionData.keyStates)
       let commands: Array<CanvasCommand> = []

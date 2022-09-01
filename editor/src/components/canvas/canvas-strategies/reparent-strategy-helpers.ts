@@ -23,7 +23,7 @@ import { updateHighlightedViews } from '../commands/update-highlighted-views-com
 import { updateSelectedViews } from '../commands/update-selected-views-command'
 import {
   emptyStrategyApplicationResult,
-  getSelectedElementsFromInteractionTarget,
+  getTargetPathsFromInteractionTarget,
   InteractionCanvasState,
   StrategyApplicationResult,
 } from './canvas-strategy-types'
@@ -185,7 +185,7 @@ export function findReparentStrategy(
   interactionState: InteractionSession,
   strategyState: StrategyState,
 ): FindReparentStrategyResult {
-  const selectedElements = getSelectedElementsFromInteractionTarget(canvasState.interactionTarget)
+  const selectedElements = getTargetPathsFromInteractionTarget(canvasState.interactionTarget)
   if (
     selectedElements.length === 0 ||
     interactionState.activeControl.type !== 'BOUNDING_AREA' ||
@@ -301,7 +301,7 @@ export function applyFlexReparent(
   interactionSession: InteractionSession,
   strategyState: StrategyState,
 ): StrategyApplicationResult {
-  const selectedElements = getSelectedElementsFromInteractionTarget(canvasState.interactionTarget)
+  const selectedElements = getTargetPathsFromInteractionTarget(canvasState.interactionTarget)
   const filteredSelectedElements = getDragTargets(selectedElements)
 
   return ifAllowedToReparent(canvasState, strategyState, filteredSelectedElements, () => {
