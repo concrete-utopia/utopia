@@ -8,7 +8,7 @@ import {
   targetPaths,
 } from './canvas-strategy-types'
 import { InteractionSession, StrategyState } from './interaction-state'
-import { InsertionSubject } from '../../editor/editor-modes'
+import { ElementInsertionSubject, InsertionSubject } from '../../editor/editor-modes'
 import { LayoutHelpers } from '../../../core/layout/layout-helpers'
 import { isLeft, right } from '../../../core/shared/either'
 import {
@@ -27,13 +27,19 @@ import { updateFunctionCommand } from '../commands/update-function-command'
 import { MetadataUtils } from '../../../core/model/element-metadata-utils'
 import { elementPath } from '../../../core/shared/element-path'
 import * as EP from '../../../core/shared/element-path'
+import * as PP from '../../../core/shared/property-path'
 import { CanvasRectangle, canvasRectangle, localRectangle } from '../../../core/shared/math-utils'
 import {
   elementInstanceMetadata,
   ElementInstanceMetadataMap,
+  emptyComments,
   emptySpecialSizeMeasurements,
+  getJSXAttribute,
+  jsxAttributeValue,
+  setJSXAttributesAttribute,
 } from '../../../core/shared/element-template'
 import { cmdModifier } from '../../../utils/modifiers'
+import { setJSXValueInAttributeAtPath } from '../../../core/shared/jsx-attributes'
 
 export const dragToInsertStrategy: CanvasStrategy = {
   id: 'DRAG_TO_INSERT',
@@ -84,7 +90,7 @@ export const dragToInsertStrategy: CanvasStrategy = {
       const reparentCommand = updateFunctionCommand(
         'always',
         (editorState, transient): Array<EditorStatePatch> => {
-          return runAbsoluteReparentStrategyForFreshlyConvertedElement(
+          return runTargetStrategiesForFreshlyInsertedElement(
             canvasState.builtInDependencies,
             editorState,
             strategyState,
@@ -121,48 +127,84 @@ function getInsertionCommands(
     interactionState.interactionData.drag != null
   ) {
     const pointOnCanvas = interactionState.interactionData.dragStart
-    const rect = canvasRectangle({
+
+    const frame = canvasRectangle({
       x: pointOnCanvas.x - DefaultWidth / 2,
       y: pointOnCanvas.y - DefaultHeight / 2,
       width: DefaultWidth,
       height: DefaultHeight,
     })
-    const updatedAttributes = LayoutHelpers.updateLayoutPropsWithFrame(
-      false,
-      null,
-      subject.element.props,
-      {
-        left: rect.x,
-        top: rect.y,
-        width: rect.width,
-        height: rect.height,
-      },
-      ['style'],
-    )
 
-    if (isLeft(updatedAttributes)) {
-      throw new Error(`Problem setting drag frame on an element we just created.`)
-    }
+    const updatedAttributesWithPosition = getStyleAttributesForFrameInAbsolutePosition(
+      subject,
+      frame,
+    )
 
     const updatedInsertionSubject = {
       ...subject,
       element: {
         ...subject.element,
-        props: updatedAttributes.value,
+        props: updatedAttributesWithPosition,
       },
     }
 
     return [
       {
         command: insertElementInsertionSubject('always', updatedInsertionSubject),
-        frame: rect,
+        frame: frame,
       },
     ]
   }
   return []
 }
 
-function runAbsoluteReparentStrategyForFreshlyConvertedElement(
+function getStyleAttributesForFrameInAbsolutePosition(
+  subject: ElementInsertionSubject,
+  frame: CanvasRectangle,
+) {
+  const updatedAttributes = LayoutHelpers.updateLayoutPropsWithFrame(
+    false,
+    null,
+    subject.element.props,
+    {
+      left: frame.x,
+      top: frame.y,
+      width: frame.width,
+      height: frame.height,
+    },
+    ['style'],
+  )
+
+  if (isLeft(updatedAttributes)) {
+    throw new Error(`Problem setting drag frame on an element we just created.`)
+  }
+
+  // we need to add position absolute, so in the storyboard root the element can be absolutely positioned initially
+  const styleAttributes = getJSXAttribute(updatedAttributes.value, 'style')
+
+  if (styleAttributes == null) {
+    throw new Error(`Problem getting style props from element we just created`)
+  }
+
+  const updatedStyleAttrs = setJSXValueInAttributeAtPath(
+    styleAttributes,
+    PP.fromString('position'),
+    jsxAttributeValue('absolute', emptyComments),
+  )
+
+  if (isLeft(updatedStyleAttrs)) {
+    throw new Error(`Problem setting position absolute on an element we just created.`)
+  }
+
+  const updatedAttributesWithPosition = setJSXAttributesAttribute(
+    updatedAttributes.value,
+    'style',
+    updatedStyleAttrs.value,
+  )
+  return updatedAttributesWithPosition
+}
+
+function runTargetStrategiesForFreshlyInsertedElement(
   builtInDependencies: BuiltInDependencies,
   editorState: EditorState,
   strategyState: StrategyState,
