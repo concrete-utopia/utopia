@@ -11,7 +11,10 @@ import { InteractionSession, StrategyState } from './interaction-state'
 import { InsertionSubject } from '../../editor/editor-modes'
 import { LayoutHelpers } from '../../../core/layout/layout-helpers'
 import { isLeft, right } from '../../../core/shared/either'
-import { InsertElement, insertElement } from '../commands/insert-element-command'
+import {
+  InsertElementInsertionSubject,
+  insertElementInsertionSubject,
+} from '../commands/insert-element-insertion-subject'
 import { BuiltInDependencies } from '../../../core/es-modules/package-manager/built-in-dependencies-list'
 import { EditorState, EditorStatePatch } from '../../editor/store/editor-state'
 import {
@@ -108,7 +111,7 @@ const DefaultHeight = 100
 function getInsertionCommands(
   subject: InsertionSubject,
   interactionState: InteractionSession,
-): Array<{ command: InsertElement; frame: CanvasRectangle }> {
+): Array<{ command: InsertElementInsertionSubject; frame: CanvasRectangle }> {
   if (subject.type !== 'Element') {
     // non-element subjects are not supported
     return []
@@ -151,7 +154,7 @@ function getInsertionCommands(
 
     return [
       {
-        command: insertElement('always', updatedInsertionSubject),
+        command: insertElementInsertionSubject('always', updatedInsertionSubject),
         frame: rect,
       },
     ]
@@ -165,7 +168,7 @@ function runAbsoluteReparentStrategyForFreshlyConvertedElement(
   strategyState: StrategyState,
   interactionState: InteractionSession,
   commandLifecycle: 'mid-interaction' | 'end-interaction',
-  insertionSubjects: Array<{ command: InsertElement; frame: CanvasRectangle }>,
+  insertionSubjects: Array<{ command: InsertElementInsertionSubject; frame: CanvasRectangle }>,
 ): Array<EditorStatePatch> {
   const canvasState = pickCanvasStateFromEditorState(editorState, builtInDependencies)
 
@@ -175,7 +178,7 @@ function runAbsoluteReparentStrategyForFreshlyConvertedElement(
   const patchedMetadata = insertionSubjects.reduce(
     (
       acc: ElementInstanceMetadataMap,
-      curr: { command: InsertElement; frame: CanvasRectangle },
+      curr: { command: InsertElementInsertionSubject; frame: CanvasRectangle },
     ): ElementInstanceMetadataMap => {
       const element = curr.command.subject.element
       const path = EP.appendToPath(rootPath, element.uid)

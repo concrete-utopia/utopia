@@ -1,9 +1,7 @@
-import { getUtopiaID } from '../../../core/model/element-template-utils'
 import { getUtopiaJSXComponentsFromSuccess } from '../../../core/model/project-file-utils'
 import { getStoryboardElementPath } from '../../../core/model/scene-utils'
 import * as EP from '../../../core/shared/element-path'
 import { optionalMap } from '../../../core/shared/optional-utils'
-import { ElementPath } from '../../../core/shared/project-file-types'
 import { mergeImports } from '../../../core/workers/common/project-file-utils'
 import { ElementInsertionSubject } from '../../editor/editor-modes'
 import {
@@ -14,25 +12,25 @@ import {
 } from '../../editor/store/editor-state'
 import { BaseCommand, CommandFunction, getPatchForComponentChange, WhenToRun } from './commands'
 
-export interface InsertElement extends BaseCommand {
-  type: 'INSERT_ELEMENT'
+export interface InsertElementInsertionSubject extends BaseCommand {
+  type: 'INSERT_ELEMENT_INSERTION_SUBJECT'
   subject: ElementInsertionSubject
 }
 
-export function insertElement(
+export function insertElementInsertionSubject(
   whenToRun: WhenToRun,
   subject: ElementInsertionSubject,
-): InsertElement {
+): InsertElementInsertionSubject {
   return {
-    type: 'INSERT_ELEMENT',
+    type: 'INSERT_ELEMENT_INSERTION_SUBJECT',
     whenToRun: whenToRun,
     subject: subject,
   }
 }
 
-export const runInsertElement: CommandFunction<InsertElement> = (
+export const runInsertElementInsertionSubject: CommandFunction<InsertElementInsertionSubject> = (
   editor: EditorState,
-  command: InsertElement,
+  command: InsertElementInsertionSubject,
 ) => {
   let editorStatePatches: Array<EditorStatePatch> = []
   const { subject } = command
