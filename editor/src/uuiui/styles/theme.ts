@@ -260,6 +260,8 @@ const dark: typeof light = {
   canvasSelectionSecondaryOutline: base.almostBlack.o(50),
   CanvasSelectionNotFocusable: base.darkgray,
   canvasDraggingPlaceholderYoga: base.neonpink.o(30),
+  canvasDragOutlineBlock: darkBase.primary,
+  canvasDragOutlineInline: base.red,
 
   canvasSelectionFocusable: base.purple,
   canvasSelectionIsolatedComponent: base.purple,
