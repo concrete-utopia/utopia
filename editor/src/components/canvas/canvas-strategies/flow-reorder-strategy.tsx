@@ -15,13 +15,9 @@ import {
   StrategyApplicationResult,
 } from './canvas-strategy-types'
 import { absolute } from '../../../utils/utils'
-// import { FlowPositionMarker, FlowStartingPositionMarker } from '../controls/flow-position-marker'
-import { convertInlineBlock } from '../commands/convert-inline-block-command'
 import { InteractionSession, StrategyState } from './interaction-state'
 import { ElementInstanceMetadataMap } from '../../../core/shared/element-template'
-import { getFlowReorderIndex } from './flow-reorder-helpers'
-import { deleteProperties } from '../commands/delete-properties-command'
-import { stylePropPathMappingFn } from '../../inspector/common/property-path-hooks'
+import { getFlowReorderIndex, getOptionalDisplayPropCommands } from './flow-reorder-helpers'
 import {
   FlowReorderAreaIndicator,
   FlowReorderDragOutline,
@@ -40,6 +36,7 @@ function isFlowReorderConversionApplicable(
     const elementMetadata = MetadataUtils.findElementByElementPath(metadata, target)
     const siblings = MetadataUtils.getSiblings(metadata, target)
     if (siblings.length > 1 && MetadataUtils.isPositionedByFlow(elementMetadata)) {
+      // Strategies that might convert while reordering between 'block' and 'inline-block' are shown only if there is a possibilty of conversion
       if (displayTypeFiltering === 'requires-mixed-display-type') {
         const targetDisplayType = elementMetadata?.specialSizeMeasurements.display
         return siblings.some(
@@ -63,7 +60,7 @@ function flowReorderApplyCommon(
   interactionState: InteractionSession,
   strategyState: StrategyState,
   withAutoConversion: 'with-auto-conversion' | 'no-conversion',
-  displayTypeFiltering: 'same-display-type-only' | 'allow-mixed-display-type',
+  displayTypeFiltering: 'allow-mixed-display-type' | 'same-display-type-only',
 ): StrategyApplicationResult {
   if (interactionState.interactionData.type !== 'DRAG') {
     return emptyStrategyApplicationResult
@@ -111,23 +108,13 @@ function flowReorderApplyCommon(
         },
       }
     } else {
-      const newDisplayPropCommands =
-        withAutoConversion === 'with-auto-conversion' && newDisplayType?.type === 'add'
-          ? [convertInlineBlock('always', target, newDisplayType.display)]
-          : []
-      const removeDisplayPropCommand =
-        withAutoConversion === 'with-auto-conversion' && newDisplayType?.type === 'remove'
-          ? [deleteProperties('always', target, [stylePropPathMappingFn('display', ['style'])])]
-          : []
-
       return {
         commands: [
           reorderElement('always', target, absolute(realNewIndex)),
           setElementsToRerenderCommand(siblingsOfTarget),
           updateHighlightedViews('mid-interaction', []),
           setCursorCommand('mid-interaction', CSSCursor.Move),
-          ...newDisplayPropCommands,
-          ...removeDisplayPropCommand,
+          ...getOptionalDisplayPropCommands(target, newDisplayType, withAutoConversion),
         ],
         customState: {
           ...strategyState.customStrategyState,

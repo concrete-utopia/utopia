@@ -17,6 +17,9 @@ import {
 import { ElementPath } from '../../../core/shared/project-file-types'
 import { fastForEach } from '../../../core/shared/utils'
 import { AllElementProps, ElementProps } from '../../editor/store/editor-state'
+import { stylePropPathMappingFn } from '../../inspector/common/property-path-hooks'
+import { ConvertInlineBlock, convertInlineBlock } from '../commands/convert-inline-block-command'
+import { DeleteProperties, deleteProperties } from '../commands/delete-properties-command'
 
 type FlowDirection = 'vertical' | 'horizontal'
 
@@ -246,11 +249,12 @@ export function getFlowReorderIndex(
     | 'allow-mixed-display-type' = 'allow-mixed-display-type',
 ): {
   newIndex: number
-  newDisplayType?: AddDisplayBlockOrOnline | RemoveDisplayProp | null
+  newDisplayType: AddDisplayBlockOrOnline | RemoveDisplayProp | null
 } {
   if (target === null) {
     return {
       newIndex: -1,
+      newDisplayType: null,
     }
   }
 
@@ -268,11 +272,13 @@ export function getFlowReorderIndex(
     // We were unable to find an appropriate entry.
     return {
       newIndex: -1,
+      newDisplayType: null,
     }
   } else if (EP.pathsEqual(reorderResult.siblingPath, target)) {
     // Reparenting to the same position that the existing element started in.
     return {
       newIndex: reorderResult.siblingIndex,
+      newDisplayType: null,
     }
   } else {
     // Convert display type, maybe shift index
@@ -288,6 +294,24 @@ export function getFlowReorderIndex(
     return {
       newIndex: newIndex,
       newDisplayType: newDisplayType,
+    }
+  }
+}
+
+export function getOptionalDisplayPropCommands(
+  target: ElementPath,
+  newDisplayType: AddDisplayBlockOrOnline | RemoveDisplayProp | null,
+  withAutoConversion: 'with-auto-conversion' | 'no-conversion',
+): Array<ConvertInlineBlock | DeleteProperties> {
+  if (withAutoConversion === 'no-conversion') {
+    return []
+  } else {
+    if (newDisplayType?.type === 'add') {
+      return [convertInlineBlock('always', target, newDisplayType.display)]
+    } else if (newDisplayType?.type === 'remove') {
+      return [deleteProperties('always', target, [stylePropPathMappingFn('display', ['style'])])]
+    } else {
+      return []
     }
   }
 }
