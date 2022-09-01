@@ -78,6 +78,10 @@ function dragElement(
 }
 
 describe('Reparent Spike Tests', () => {
+  beforeEach(() => {
+    viewport.set(2200, 1000)
+  })
+
   it('if an element is larger than its parent, we still allow reparent to its grandparent, if the reparenting starts from the area of the original parent', async () => {
     const renderResult = await renderTestEditorWithCode(
       makeTestProjectCodeWithSnippet(`
@@ -157,6 +161,93 @@ describe('Reparent Spike Tests', () => {
               top: 40,
               width: 200,
               height: 200,
+            }}
+            data-uid='ccc'
+            data-testid='ccc'
+          />
+        </div>
+      `),
+    )
+  })
+
+  it('if an element is larger than its parent, we still allow reparent to its grandparent, if the reparenting starts from the area of the original parent, even if the original parent is not a viable parent', async () => {
+    const renderResult = await renderTestEditorWithCode(
+      makeTestProjectCodeWithSnippet(`
+        <div
+          style={{
+            backgroundColor: 'white',
+            position: 'absolute',
+            width: '100%',
+            height: '100%',
+          }}
+          data-uid='aaa'
+        >
+          <div
+            style={{
+              backgroundColor: '#0091FFAA',
+              left: 40,
+              top: 40,
+              width: 100,
+              height: 100,
+            }}
+            data-uid='bbb'
+          >
+            <div
+              style={{
+                backgroundColor: '#0091FFAA',
+                position: 'absolute',
+                left: 0,
+                top: 0,
+                width: 50,
+                height: 50,
+              }}
+              data-uid='ccc'
+              data-testid='ccc'
+            />
+          </div>
+        </div>
+      `),
+      'await-first-dom-report',
+    )
+
+    const dragDelta = windowPoint({ x: 120, y: 0 })
+
+    const targetPath = EP.appendNewElementPath(TestScenePath, ['aaa', 'bbb', 'ccc'])
+    await renderResult.dispatch([selectComponents([targetPath], false)], false)
+
+    act(() => dragElement(renderResult, 'ccc', dragDelta, emptyModifiers))
+
+    await renderResult.getDispatchFollowUpActionsFinished()
+
+    expect(getPrintedUiJsCode(renderResult.getEditorState())).toEqual(
+      makeTestProjectCodeWithSnippet(`
+        <div
+          style={{
+            backgroundColor: 'white',
+            position: 'absolute',
+            width: '100%',
+            height: '100%',
+          }}
+          data-uid='aaa'
+        >
+          <div
+            style={{
+              backgroundColor: '#0091FFAA',
+              left: 40,
+              top: 40,
+              width: 100,
+              height: 100,
+            }}
+            data-uid='bbb'
+          />
+          <div
+            style={{
+              backgroundColor: '#0091FFAA',
+              position: 'absolute',
+              left: 120,
+              top: 0,
+              width: 50,
+              height: 50,
             }}
             data-uid='ccc'
             data-testid='ccc'
