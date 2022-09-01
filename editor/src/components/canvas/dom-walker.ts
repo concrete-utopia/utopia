@@ -403,14 +403,23 @@ function runSelectiveDomWalker(
 // If the elements to focus on have specific paths in 2 consecutive passes, but those paths differ, then
 // for this pass treat it as `rerender-all-elements`, to ensure that the metadata gets cleaned up as
 // the previously focused elements may not now exist.
+// Also as some canvas strategies may not supply a specific set of elements to focus on, if
+// `rerender-all-elements` switches to a specific set of paths, ignore the specific set of paths
+// for the very first pass to get another `rerender-all-elements`.
 let lastElementsToFocusOn: ElementsToRerender = 'rerender-all-elements'
 function fixElementsToFocusOn(currentElementsToFocusOn: ElementsToRerender): ElementsToRerender {
   let elementsToFocusOn: ElementsToRerender = currentElementsToFocusOn
-  switch (currentElementsToFocusOn) {
+  switch (lastElementsToFocusOn) {
     case 'rerender-all-elements':
+      switch (currentElementsToFocusOn) {
+        case 'rerender-all-elements':
+          break
+        default:
+          elementsToFocusOn = 'rerender-all-elements'
+      }
       break
     default:
-      switch (lastElementsToFocusOn) {
+      switch (currentElementsToFocusOn) {
         case 'rerender-all-elements':
           break
         default:
