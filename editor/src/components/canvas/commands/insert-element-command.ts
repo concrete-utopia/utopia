@@ -50,10 +50,7 @@ export const runInsertElement: CommandFunction<InsertElement> = (
       const targetParent =
         parent == null
           ? // action.parent == null means Canvas, which means storyboard root element
-            getStoryboardElementPath(
-              editor.projectContents,
-              editor.canvas.openFile?.filename ?? null,
-            )
+            getStoryboardElementPath(editor.projectContents, underlyingFilePath)
           : parent
 
       if (targetParent == null) {
@@ -62,7 +59,7 @@ export const runInsertElement: CommandFunction<InsertElement> = (
 
       const withElementInserted = insertElementAtPath(
         editor.projectContents,
-        editor.canvas.openFile?.filename ?? null,
+        underlyingFilePath,
         targetParent,
         subject.element,
         utopiaComponents,
