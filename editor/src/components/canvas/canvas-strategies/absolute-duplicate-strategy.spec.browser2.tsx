@@ -103,8 +103,7 @@ describe('Absolute Duplicate Strategy', () => {
     )
   })
 
-  // TODO BEFORE MERGE unxit
-  xit('duplicates the selected absolute element when pressing alt, even if the parent is static', async () => {
+  it('duplicates the selected absolute element when pressing alt, even if the parent is static', async () => {
     const renderResult = await renderTestEditorWithCode(
       makeTestProjectCodeWithSnippet(`
         <div style={{ width: '100%', height: '100%' }} data-uid='aaa'>

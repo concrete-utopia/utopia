@@ -285,8 +285,7 @@ describe('Absolute Move Strategy', () => {
     )
   })
 
-  // TODO BEFORE MERGE unxit
-  xit('moves absolute positioned element even if it has a static parent', async () => {
+  it('moves absolute positioned element even if it has a static parent', async () => {
     const startX = 40
     const startY = 50
     const renderResult = await renderTestEditorWithCode(
@@ -663,8 +662,7 @@ describe('Absolute Move Strategy', () => {
     )
   })
 
-  // TODO BEFORE MERGE unxit
-  xit('fills in missing props of absolute positioned element', async () => {
+  it('fills in missing props of absolute positioned element', async () => {
     const parentMargin = 100
     const renderResult = await renderTestEditorWithCode(
       makeTestProjectCodeWithSnippet(`
