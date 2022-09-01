@@ -1,4 +1,4 @@
-import { IndexPosition } from 'src/utils/utils'
+import { IndexPosition } from '../../../utils/utils'
 import { getUtopiaJSXComponentsFromSuccess } from '../../../core/model/project-file-utils'
 import * as EP from '../../../core/shared/element-path'
 import { ElementPath } from '../../../core/shared/project-file-types'

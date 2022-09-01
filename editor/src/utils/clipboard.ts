@@ -1,4 +1,4 @@
-import { EditorAction } from '../components/editor/action-types'
+import { EditorAction, ElementPaste } from '../components/editor/action-types'
 import * as EditorActions from '../components/editor/actions/action-creators'
 import { EditorModes } from '../components/editor/editor-modes'
 import {
@@ -33,13 +33,12 @@ import {
 } from '../components/custom-code/code-file'
 import { mapDropNulls } from '../core/shared/array-utils'
 import ClipboardPolyfill from 'clipboard-polyfill'
-import { mapValues, omit, pick } from '../core/shared/object-utils'
-import { metaProperty } from '@babel/types'
+import { mapValues, pick } from '../core/shared/object-utils'
+import { getStoryboardElementPath } from '../core/model/scene-utils'
 
 interface JSXElementCopyData {
   type: 'ELEMENT_COPY'
   elements: JSXElementsJson
-  originalElementPaths: ElementPath[]
   targetOriginalContextMetadata: ElementInstanceMetadataMap
 }
 
@@ -60,7 +59,6 @@ export function setClipboardData(
 ): void {
   // we also set the local clipboard here, used for style copy paste
   setLocalClipboardData(copyData)
-
   if (copyData != null) {
     const utopiaDataHtml = encodeUtopiaDataToHtml(copyData.data)
     const dt = new ClipboardPolyfill.DT()
@@ -80,20 +78,30 @@ export function getActionsForClipboardItems(
   componentMetadata: ElementInstanceMetadataMap,
 ): Array<EditorAction> {
   try {
-    const utopiaActions = Utils.flatMapArray((data: CopyData, i: number) => {
+    const possibleTarget = getTargetParentForPaste(
+      projectContents,
+      openFile,
+      selectedViews,
+      componentMetadata,
+      pasteTargetsToIgnore,
+    )
+    const target =
+      possibleTarget == null ? getStoryboardElementPath(projectContents, openFile) : possibleTarget
+    if (target == null) {
+      console.warn(`Unable to find the storyboard path.`)
+      return []
+    }
+
+    // Create the actions for inserting JSX elements into the hierarchy.
+    const utopiaActions = Utils.flatMapArray((data: CopyData) => {
       const elements = json5.parse(data.elements)
       const metadata = data.targetOriginalContextMetadata
-      return [EditorActions.pasteJSXElements(elements, data.originalElementPaths, metadata)]
+      return [EditorActions.pasteJSXElements(target, elements, metadata)]
     }, clipboardData)
+
+    // Handle adding files into the project like pasted images.
     let insertImageActions: EditorAction[] = []
     if (pastedFiles.length > 0 && componentMetadata != null) {
-      const target = getTargetParentForPaste(
-        projectContents,
-        openFile,
-        selectedViews,
-        componentMetadata,
-        pasteTargetsToIgnore,
-      )
       const parentFrame =
         target != null ? MetadataUtils.getFrameInCanvasCoords(target, componentMetadata) : null
       const parentCenter =
@@ -168,7 +176,7 @@ export function createClipboardDataFromSelection(editor: EditorState): {
   const filteredSelectedViews = editor.selectedViews.filter((view) => {
     return editor.selectedViews.every((otherView) => !EP.isDescendantOf(view, otherView))
   })
-  const jsxElements = mapDropNulls((target) => {
+  const jsxElements: Array<ElementPaste> = mapDropNulls((target) => {
     const underlyingTarget = normalisePathToUnderlyingTarget(
       editor.projectContents,
       editor.nodeModules.files,
@@ -182,7 +190,16 @@ export function createClipboardDataFromSelection(editor: EditorState): {
     )
     if (isTextFile(projectFile) && isParseSuccess(projectFile.fileContents.parsed)) {
       const components = getUtopiaJSXComponentsFromSuccess(projectFile.fileContents.parsed)
-      return findElementAtPath(target, components)
+      const elementToPaste = findElementAtPath(target, components)
+      if (elementToPaste == null) {
+        return null
+      } else {
+        return EditorActions.elementPaste(
+          elementToPaste,
+          projectFile.fileContents.parsed.imports,
+          target,
+        )
+      }
     } else {
       return null
     }
@@ -193,7 +210,6 @@ export function createClipboardDataFromSelection(editor: EditorState): {
       {
         type: 'ELEMENT_COPY',
         elements: json5.stringify(jsxElements),
-        originalElementPaths: editor.selectedViews,
         targetOriginalContextMetadata: filterMetadataForCopy(
           editor.selectedViews,
           editor.jsxMetadata,
@@ -215,7 +231,9 @@ function filterMetadataForCopy(
     // only those element paths are relevant which are descendants or ascentors of at least one selected view
     return selectedViews.some(
       (selected) =>
-        EP.isDescendantOf(selected, elementPath) || EP.isDescendantOf(elementPath, selected),
+        EP.isDescendantOf(selected, elementPath) ||
+        EP.isDescendantOf(elementPath, selected) ||
+        EP.pathsEqual(selected, elementPath),
     )
   })
   const filteredMetadata = pick(necessaryPaths, jsxMetadata)

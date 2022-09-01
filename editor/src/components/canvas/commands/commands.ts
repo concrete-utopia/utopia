@@ -41,9 +41,10 @@ import { DeleteProperties, runDeleteProperties } from './delete-properties-comma
 import { AddImportsToFile, runAddImportsToFile } from './add-imports-to-file-command'
 import {
   runAddToReparentedToPaths,
-  addToReparentedToPaths,
+  AddToReparentedToPaths,
 } from '../canvas-strategies/add-to-reparented-to-paths-command'
 import { ConvertInlineBlock, runConvertInlineBlock } from './convert-inline-block-command'
+import { AddElement, runAddElement } from './add-element-command'
 
 export interface CommandFunctionResult {
   editorStatePatches: Array<EditorStatePatch>
@@ -78,7 +79,8 @@ export type CanvasCommand =
   | PushIntendedBounds
   | DeleteProperties
   | AddImportsToFile
-  | addToReparentedToPaths
+  | AddToReparentedToPaths
+  | AddElement
   | ConvertInlineBlock
 
 export const runCanvasCommand = (
@@ -127,6 +129,8 @@ export const runCanvasCommand = (
       return runAddImportsToFile(editorState, command)
     case 'ADD_TO_REPARENTED_TO_PATHS':
       return runAddToReparentedToPaths(editorState, command)
+    case 'ADD_ELEMENT':
+      return runAddElement(editorState, command)
     case 'CONVERT_INLINE_BLOCK':
       return runConvertInlineBlock(editorState, command)
     default:

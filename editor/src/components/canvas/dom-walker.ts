@@ -58,7 +58,7 @@ import {
 } from '../../core/shared/uid-utils'
 import { pluck, uniqBy } from '../../core/shared/array-utils'
 import { forceNotNull, optionalMap } from '../../core/shared/optional-utils'
-import { fastForEach } from '../../core/shared/utils'
+import { arrayEquals, fastForEach } from '../../core/shared/utils'
 import { MapLike } from 'typescript'
 import { isFeatureEnabled } from '../../utils/feature-switches'
 import type {
@@ -400,6 +400,38 @@ function runSelectiveDomWalker(
   }
 }
 
+// If the elements to focus on have specific paths in 2 consecutive passes, but those paths differ, then
+// for this pass treat it as `rerender-all-elements`, to ensure that the metadata gets cleaned up as
+// the previously focused elements may not now exist.
+// Also as some canvas strategies may not supply a specific set of elements to focus on, if
+// `rerender-all-elements` switches to a specific set of paths, ignore the specific set of paths
+// for the very first pass to get another `rerender-all-elements`.
+let lastElementsToFocusOn: ElementsToRerender = 'rerender-all-elements'
+function fixElementsToFocusOn(currentElementsToFocusOn: ElementsToRerender): ElementsToRerender {
+  let elementsToFocusOn: ElementsToRerender = currentElementsToFocusOn
+  switch (lastElementsToFocusOn) {
+    case 'rerender-all-elements':
+      switch (currentElementsToFocusOn) {
+        case 'rerender-all-elements':
+          break
+        default:
+          elementsToFocusOn = 'rerender-all-elements'
+      }
+      break
+    default:
+      switch (currentElementsToFocusOn) {
+        case 'rerender-all-elements':
+          break
+        default:
+          if (!arrayEquals(lastElementsToFocusOn, currentElementsToFocusOn, EP.pathsEqual)) {
+            elementsToFocusOn = 'rerender-all-elements'
+          }
+      }
+  }
+  lastElementsToFocusOn = currentElementsToFocusOn
+  return elementsToFocusOn
+}
+
 // Dom walker has 3 modes for performance reasons:
 // Fastest is the selective mode, this runs when elementsToFocusOn is not 'rerender-all-elements'. In this case it only collects the metadata of the elements in elementsToFocusOn
 // Middle speed is when initComplete is true, in this case it traverses the full dom but only collects the metadata for the not invalidated elements (stored in invalidatedPaths)
@@ -407,7 +439,7 @@ function runSelectiveDomWalker(
 export function runDomWalker({
   domWalkerMutableState,
   selectedViews,
-  elementsToFocusOn,
+  elementsToFocusOn: currentElementsToFocusOn,
   scale,
   additionalElementsToUpdate,
   rootMetadataInStateRef,
@@ -418,6 +450,8 @@ export function runDomWalker({
 } | null {
   const needsWalk =
     !domWalkerMutableState.initComplete || domWalkerMutableState.invalidatedPaths.size > 0
+
+  const elementsToFocusOn: ElementsToRerender = fixElementsToFocusOn(currentElementsToFocusOn)
 
   if (!needsWalk) {
     return null // early return to save performance

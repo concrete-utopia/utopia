@@ -1,6 +1,6 @@
 import * as React from 'react'
 import * as ReactDOM from 'react-dom'
-import { EditorState } from 'src/components/editor/store/editor-state'
+import { EditorState } from '../../../editor/store/editor-state'
 import { useEditorState } from '../../../editor/store/store-hook'
 import { cursorForMissingReparentedItems } from '../../canvas-strategies/reparent-utils'
 import { CSSCursor } from '../../canvas-types'

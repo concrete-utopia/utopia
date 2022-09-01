@@ -646,12 +646,17 @@ export const MetadataUtils = {
     projectContents: ProjectContentTreeRoot,
     openFile: string | null | undefined,
     metadata: ElementInstanceMetadataMap,
-    target: ElementPath,
+    target: ElementPath | null,
   ): boolean {
-    const instance = MetadataUtils.findElementByElementPath(metadata, target)
-    return instance == null
-      ? false
-      : MetadataUtils.targetElementSupportsChildren(projectContents, openFile, instance)
+    if (target == null) {
+      // Assumed to be reparenting to the canvas root.
+      return true
+    } else {
+      const instance = MetadataUtils.findElementByElementPath(metadata, target)
+      return instance == null
+        ? false
+        : MetadataUtils.targetElementSupportsChildren(projectContents, openFile, instance)
+    }
   },
   targetUsesProperty(
     projectContents: ProjectContentTreeRoot,
