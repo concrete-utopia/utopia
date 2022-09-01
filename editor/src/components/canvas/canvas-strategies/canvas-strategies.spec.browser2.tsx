@@ -1,7 +1,14 @@
-import { elementPath } from '../../../core/shared/element-path'
+import { elementPath, parentPath } from '../../../core/shared/element-path'
 import { ElementInstanceMetadataMap } from '../../../core/shared/element-template'
-import { canvasPoint, Rectangle, SimpleRectangle } from '../../../core/shared/math-utils'
-import { cmdModifier, emptyModifiers } from '../../../utils/modifiers'
+import {
+  canvasPoint,
+  offsetPoint,
+  Rectangle,
+  SimpleRectangle,
+  WindowPoint,
+  windowPoint,
+} from '../../../core/shared/math-utils'
+import { cmdModifier, emptyModifiers, Modifiers } from '../../../utils/modifiers'
 import {
   findCanvasStrategy,
   pickCanvasStateFromEditorState,
@@ -9,7 +16,7 @@ import {
 } from './canvas-strategies'
 import { InteractionSession, StrategyState } from './interaction-state'
 import { createMouseInteractionForTests } from './interaction-state.test-utils'
-import { act } from '@testing-library/react'
+import { act, fireEvent } from '@testing-library/react'
 import {
   EditorRenderResult,
   makeTestProjectCodeWithSnippet,
@@ -18,6 +25,8 @@ import {
 import { selectComponents } from '../../editor/actions/action-creators'
 import CanvasActions from '../canvas-actions'
 import { AllElementProps } from '../../editor/store/editor-state'
+import { wait } from '../../../utils/utils.test-utils'
+import { CanvasControlsContainerID } from '../controls/new-canvas-controls'
 
 const baseStrategyState = (
   metadata: ElementInstanceMetadataMap,
@@ -127,6 +136,47 @@ async function getGuidelineRenderResult(scale: number) {
   return renderResult
 }
 
+function startElementDragNoMouseUp(
+  renderResult: EditorRenderResult,
+  targetTestId: string,
+  dragDelta: WindowPoint,
+  modifiers: Modifiers,
+) {
+  const targetElement = renderResult.renderedDOM.getByTestId(targetTestId)
+  const targetElementBounds = targetElement.getBoundingClientRect()
+  const canvasControl = renderResult.renderedDOM.getByTestId(CanvasControlsContainerID)
+
+  const startPoint = windowPoint({ x: targetElementBounds.x + 20, y: targetElementBounds.y + 20 })
+  const endPoint = offsetPoint(startPoint, dragDelta)
+  fireEvent(
+    canvasControl,
+    new MouseEvent('mousedown', {
+      bubbles: true,
+      cancelable: true,
+      metaKey: modifiers.cmd,
+      altKey: modifiers.alt,
+      shiftKey: modifiers.shift,
+      clientX: startPoint.x,
+      clientY: startPoint.y,
+      buttons: 1,
+    }),
+  )
+
+  fireEvent(
+    canvasControl,
+    new MouseEvent('mousemove', {
+      bubbles: true,
+      cancelable: true,
+      metaKey: modifiers.cmd,
+      altKey: modifiers.alt,
+      shiftKey: modifiers.shift,
+      clientX: endPoint.x,
+      clientY: endPoint.y,
+      buttons: 1,
+    }),
+  )
+}
+
 describe('Strategy Fitness', () => {
   xit('fits Escape Hatch Strategy when dragging a flow element', async () => {
     const targetElement = elementPath([
@@ -233,8 +283,7 @@ describe('Strategy Fitness', () => {
     expect(canvasStrategy.strategy?.strategy.id).toEqual('ESCAPE_HATCH_STRATEGY')
   })
 
-  // TODO BEFORE MERGE unxit
-  xit('fits Flex Reorder Strategy when dragging a flex element with siblings', async () => {
+  it('fits Flex Reorder Strategy when dragging a flex element with siblings', async () => {
     const targetElement = elementPath([
       ['utopia-storyboard-uid', 'scene-aaa', 'app-entity'],
       ['aaa', 'bbb'],
@@ -246,6 +295,7 @@ describe('Strategy Fitness', () => {
         <div
           style={{ backgroundColor: '#0091FFAA', width: 100, height: 200 }}
           data-uid='bbb'
+          data-testid='bbb'
         />
         <div
           style={{ backgroundColor: '#0091FFAA', width: 100, height: 50 }}
@@ -256,39 +306,13 @@ describe('Strategy Fitness', () => {
       'await-first-dom-report',
     )
 
-    await act(async () => {
-      const dispatchDone = renderResult.getDispatchFollowUpActionsFinished()
-      await renderResult.dispatch([selectComponents([targetElement], false)], false)
-      await dispatchDone
-    })
+    await renderResult.dispatch([selectComponents([targetElement], false)], false)
 
-    const interactionSession: InteractionSession = {
-      ...createMouseInteractionForTests(
-        canvasPoint({ x: 0, y: 0 }),
-        emptyModifiers,
-        { type: 'BOUNDING_AREA', target: targetElement },
-        canvasPoint({ x: 15, y: 15 }),
-      ),
-      metadata: renderResult.getEditorState().editor.jsxMetadata,
-      allElementProps: renderResult.getEditorState().editor.allElementProps,
-      startingTargetParentToFilterOut: null,
-    }
+    // we don't want to mouse up to avoid clearInteractionSession
+    startElementDragNoMouseUp(renderResult, 'bbb', windowPoint({ x: 15, y: 15 }), emptyModifiers)
 
-    const canvasStrategy = findCanvasStrategy(
-      RegisteredCanvasStrategies,
-      pickCanvasStateFromEditorState(
-        renderResult.getEditorState().editor,
-        renderResult.getEditorState().builtInDependencies,
-      ),
-      interactionSession,
-      baseStrategyState(
-        renderResult.getEditorState().editor.jsxMetadata,
-        renderResult.getEditorState().editor.allElementProps,
-      ),
-      null,
-    )
-
-    expect(canvasStrategy.strategy?.strategy.id).toEqual('FLEX_REORDER')
+    const canvasStrategy = renderResult.getEditorState().strategyState.currentStrategy
+    expect(canvasStrategy).toEqual('FLEX_REORDER')
   })
   it('fits Flex Reparent to Absolute Strategy when cmd-dragging a flex element with siblings the cursor is outside of the parent', async () => {
     const targetElement = elementPath([
