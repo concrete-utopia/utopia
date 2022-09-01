@@ -89,6 +89,8 @@ function sanitizeEditor(editor: EditorState) {
       canvasContentInvalidateCount: editor.canvas.canvasContentInvalidateCount,
       interactionSession: {
         metadata: simplifiedMetadataMap(editor.canvas.interactionSession?.metadata ?? {}) as any,
+        startingTargetParentToFilterOut:
+          editor.canvas.interactionSession?.startingTargetParentToFilterOut,
       },
     } as Partial<EditorState['canvas']>,
     jsxMetadata: simplifiedMetadataMap(editor.jsxMetadata) as any,
@@ -132,6 +134,7 @@ export function reduxDevtoolsSendActions(
           return null
         }
         // These actions will be logged with all of their payload. Be careful: large payloads choke the Redux Devtool logging
+        case 'SELECT_COMPONENTS':
         case 'CREATE_INTERACTION_SESSION':
         case 'UPDATE_INTERACTION_SESSION':
         case 'CLEAR_INTERACTION_SESSION': {
