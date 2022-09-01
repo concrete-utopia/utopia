@@ -338,10 +338,18 @@ function newGetReparentTargetInner(
     filteredSelectedElements,
   )
 
-  const filteredElementsUnderPoint = allElementsUnderPoint.filter(
-    (target) =>
-      // TODO BEFORE MERGE consider multiselect!!!!!
-      // the current parent should be included in the array of valid targets
+  const filteredElementsUnderPoint = allElementsUnderPoint.filter((target) => {
+    const targetMetadata = MetadataUtils.findElementByElementPath(metadata, target)
+    const isFlex = MetadataUtils.isFlexLayoutedContainer(targetMetadata)
+    const providesBoundsForAbsoluteChildren =
+      targetMetadata?.specialSizeMeasurements.providesBoundsForAbsoluteChildren ?? false
+
+    // TODO extend here when we implement static layout support
+    const validParentForFlexOrAbsolute = isFlex || providesBoundsForAbsoluteChildren
+
+    // TODO BEFORE MERGE consider multiselect!!!!!
+    // the current parent should be included in the array of valid targets
+    return (
       filteredSelectedElementsMetadata.some((maybeChild) =>
         EP.isChildOf(maybeChild.elementPath, target),
       ) ||
@@ -360,8 +368,10 @@ function newGetReparentTargetInner(
           sizeFitsInTarget(
             multiselectBounds,
             MetadataUtils.getFrameInCanvasCoords(target, metadata) ?? size(0, 0),
-          ))),
-  )
+          )) &&
+        validParentForFlexOrAbsolute)
+    )
+  })
 
   // if the mouse is over the canvas, return the canvas root as the target path
 
@@ -397,55 +407,45 @@ function newGetReparentTargetInner(
   }
 
   // fall back to trying to find an absolute element, or the "background" area of a flex element
-  for (const elementPath of filteredElementsUnderPoint) {
-    const element = MetadataUtils.findElementByElementPath(metadata, elementPath)
-    const isFlex = MetadataUtils.isFlexLayoutedContainer(element)
-
-    if (!isFlex) {
-      // TODO we now assume this is "absolute", but this is too vauge
-      const providesBoundsForAbsoluteChildren =
-        MetadataUtils.findElementByElementPath(metadata, elementPath)?.specialSizeMeasurements
-          .providesBoundsForAbsoluteChildren ?? false
-
-      const elementAcceptsAbsoluteChildren = providesBoundsForAbsoluteChildren
-      if (elementAcceptsAbsoluteChildren) {
-        return {
-          shouldReparent: true,
-          newParent: elementPath,
-          shouldReorder: false,
-          newIndex: -1,
-        }
-      } else {
-        // this element did not support children, so let's continue the lookup
-        continue
-      }
-    } else {
-      const targets: Array<CanvasRectangle> = drawTargetRectanglesForChildrenOfElement(
-        metadata,
-        elementPath,
-        'full-size',
-      )
-
-      const targetUnderMouseIndex = targets.findIndex((target) => {
-        return rectContainsPointInclusive(target, point)
-      })
-
-      // found flex element, todo index
-      return {
-        shouldReparent: true,
-        newParent: elementPath,
-        shouldReorder: targetUnderMouseIndex > -1,
-        newIndex: targetUnderMouseIndex,
-      }
+  const targetParentPath = filteredElementsUnderPoint[0]
+  if (targetParentPath == null) {
+    // none of the targets were under the mouse, fallback return
+    return {
+      shouldReparent: false,
+      shouldReorder: false,
+      newParent: null,
+      newIndex: -1,
     }
   }
+  const element = MetadataUtils.findElementByElementPath(metadata, targetParentPath)
+  const isFlex = MetadataUtils.isFlexLayoutedContainer(element)
 
-  // none of the targets were under the mouse, fallback return
-  return {
-    shouldReparent: false,
-    shouldReorder: false,
-    newParent: null,
-    newIndex: -1,
+  if (!isFlex) {
+    // TODO we now assume this is "absolute", but this is too vauge
+    return {
+      shouldReparent: true,
+      newParent: targetParentPath,
+      shouldReorder: false,
+      newIndex: -1,
+    }
+  } else {
+    const targets: Array<CanvasRectangle> = drawTargetRectanglesForChildrenOfElement(
+      metadata,
+      targetParentPath,
+      'full-size',
+    )
+
+    const targetUnderMouseIndex = targets.findIndex((target) => {
+      return rectContainsPointInclusive(target, point)
+    })
+
+    // found flex element, todo index
+    return {
+      shouldReparent: true,
+      newParent: targetParentPath,
+      shouldReorder: targetUnderMouseIndex > -1,
+      newIndex: targetUnderMouseIndex,
+    }
   }
 }
 
