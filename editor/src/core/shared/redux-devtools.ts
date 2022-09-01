@@ -88,6 +88,7 @@ function sanitizeEditor(editor: EditorState) {
       domWalkerInvalidateCount: editor.canvas.domWalkerInvalidateCount,
       canvasContentInvalidateCount: editor.canvas.canvasContentInvalidateCount,
       interactionSession: {
+        interactionData: editor.canvas.interactionSession?.interactionData,
         metadata: simplifiedMetadataMap(editor.canvas.interactionSession?.metadata ?? {}) as any,
         startingTargetParentToFilterOut:
           editor.canvas.interactionSession?.startingTargetParentToFilterOut,
@@ -137,6 +138,7 @@ export function reduxDevtoolsSendActions(
         case 'SELECT_COMPONENTS':
         case 'CREATE_INTERACTION_SESSION':
         case 'UPDATE_INTERACTION_SESSION':
+        case 'UPDATE_DRAG_INTERACTION_DATA':
         case 'CLEAR_INTERACTION_SESSION': {
           return action
         }
