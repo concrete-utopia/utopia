@@ -215,7 +215,7 @@ export function findReparentStrategy(
 
   const cmdPressed = interactionState.interactionData.modifiers.cmd
 
-  const reparentResult = newGetReparentTarget(
+  const reparentResult = getReparentTargetUnified(
     filteredSelectedElements,
     pointOnCanvas,
     cmdPressed,
@@ -274,7 +274,7 @@ export function reparentTarget(
   }
 }
 
-export function newGetReparentTarget(
+export function getReparentTargetUnified(
   filteredSelectedElements: Array<ElementPath>,
   pointOnCanvas: CanvasPoint,
   cmdPressed: boolean,
@@ -554,7 +554,7 @@ export function applyFlexReparent(
         interactionSession.interactionData.originalDragStart,
         interactionSession.interactionData.drag,
       )
-      const reparentResult = newGetReparentTarget(
+      const reparentResult = getReparentTargetUnified(
         filteredSelectedElements,
         pointOnCanvas,
         interactionSession.interactionData.modifiers.cmd,

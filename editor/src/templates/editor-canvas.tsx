@@ -95,7 +95,7 @@ import {
 import { last, reverse } from '../core/shared/array-utils'
 import { updateInteractionViaMouse } from '../components/canvas/canvas-strategies/interaction-state'
 import { MouseButtonsPressed } from '../utils/mouse'
-import { newGetReparentTarget } from '../components/canvas/canvas-strategies/reparent-strategy-helpers'
+import { getReparentTargetUnified } from '../components/canvas/canvas-strategies/reparent-strategy-helpers'
 import { getDragTargets } from '../components/canvas/canvas-strategies/shared-absolute-move-strategy-helpers'
 import { pickCanvasStateFromEditorState } from '../components/canvas/canvas-strategies/canvas-strategies'
 import { BuiltInDependencies } from '../core/es-modules/package-manager/built-in-dependencies-list'
@@ -414,7 +414,7 @@ export function runLocalCanvasAction(
             action.interactionSession.interactionData.originalDragStart,
             action.interactionSession.interactionData.drag ?? zeroCanvasPoint,
           )
-          return newGetReparentTarget(
+          return getReparentTargetUnified(
             getDragTargets(model.selectedViews),
             pointOnCanvas,
             action.interactionSession.interactionData.modifiers.cmd,

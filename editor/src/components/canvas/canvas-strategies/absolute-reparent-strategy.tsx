@@ -13,7 +13,7 @@ import { ifAllowedToReparent, isAllowedToReparent } from './reparent-helpers'
 import {
   findReparentStrategy,
   getAbsoluteReparentPropertyChanges,
-  newGetReparentTarget,
+  getReparentTargetUnified,
 } from './reparent-strategy-helpers'
 import { offsetPoint } from '../../../core/shared/math-utils'
 import { getReparentOutcome, pathToReparent } from './reparent-utils'
@@ -82,7 +82,7 @@ export const absoluteReparentStrategy: CanvasStrategy = {
       interactionState.interactionData.drag,
     )
 
-    const reparentTarget = newGetReparentTarget(
+    const reparentTarget = getReparentTargetUnified(
       filteredSelectedElements,
       pointOnCanvas,
       interactionState.interactionData.modifiers.cmd,

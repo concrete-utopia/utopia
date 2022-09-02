@@ -27,7 +27,7 @@ import {
 import { getEscapeHatchCommands } from './escape-hatch-strategy'
 import { InteractionSession, StrategyState } from './interaction-state'
 import { ifAllowedToReparent } from './reparent-helpers'
-import { findReparentStrategy, newGetReparentTarget } from './reparent-strategy-helpers'
+import { findReparentStrategy, getReparentTargetUnified } from './reparent-strategy-helpers'
 import { getDragTargets } from './shared-absolute-move-strategy-helpers'
 
 export const flexReparentToAbsoluteStrategy: CanvasStrategy = {
@@ -87,7 +87,7 @@ export const flexReparentToAbsoluteStrategy: CanvasStrategy = {
         interactionState.interactionData.drag,
       )
 
-      const { newParent } = newGetReparentTarget(
+      const { newParent } = getReparentTargetUnified(
         filteredSelectedElements,
         pointOnCanvas,
         interactionState.interactionData.modifiers.cmd,
