@@ -15,7 +15,7 @@ import {
   PRODUCTION_ENV,
   requireElectron,
 } from '../common/env-vars'
-import { EditorID } from '../core/shared/utils'
+import { arrayEquals, EditorID } from '../core/shared/utils'
 import CanvasActions from '../components/canvas/canvas-actions'
 import { DispatchPriority, EditorAction, isLoggedIn } from '../components/editor/action-types'
 import * as EditorActions from '../components/editor/actions/action-creators'
@@ -52,6 +52,7 @@ import {
   persistentModelForProjectContents,
   EditorStorePatched,
   patchedStoreFromFullStore,
+  ElementsToRerender,
 } from '../components/editor/store/editor-state'
 import {
   CanvasStateContext,
@@ -114,6 +115,38 @@ function replaceLoadingMessage(newMessage: string) {
   if (loadingMessageElement != null) {
     loadingMessageElement.innerHTML = newMessage
   }
+}
+
+// If the elements to re-render have specific paths in 2 consecutive passes, but those paths differ, then
+// for this pass treat it as `rerender-all-elements`, to ensure that the metadata gets cleaned up as
+// the previously focused elements may not now exist.
+// Also as some canvas strategies may not supply a specific set of elements to re-render, if
+// `rerender-all-elements` switches to a specific set of paths, ignore the specific set of paths
+// for the very first pass to get another `rerender-all-elements`.
+let lastElementsToRerender: ElementsToRerender = 'rerender-all-elements'
+function fixElementsToRerender(currentElementsToRerender: ElementsToRerender): ElementsToRerender {
+  let elementsToRerender: ElementsToRerender = currentElementsToRerender
+  switch (lastElementsToRerender) {
+    case 'rerender-all-elements':
+      switch (currentElementsToRerender) {
+        case 'rerender-all-elements':
+          break
+        default:
+          elementsToRerender = 'rerender-all-elements'
+      }
+      break
+    default:
+      switch (currentElementsToRerender) {
+        case 'rerender-all-elements':
+          break
+        default:
+          if (!arrayEquals(lastElementsToRerender, currentElementsToRerender, EP.pathsEqual)) {
+            elementsToRerender = 'rerender-all-elements'
+          }
+      }
+  }
+  lastElementsToRerender = currentElementsToRerender
+  return elementsToRerender
 }
 
 export class Editor {
@@ -370,7 +403,10 @@ export class Editor {
         if (PerformanceMarks) {
           performance.mark(`update canvas ${updateId}`)
         }
-        ElementsToRerenderGLOBAL.current = this.storedState.patchedEditor.canvas.elementsToRerender // Mutation!
+        const currentElementsToRender = fixElementsToRerender(
+          this.storedState.patchedEditor.canvas.elementsToRerender,
+        )
+        ElementsToRerenderGLOBAL.current = currentElementsToRender // Mutation!
         ReactDOM.flushSync(() => {
           ReactDOM.unstable_batchedUpdates(() => {
             this.updateCanvasStore(patchedStoreFromFullStore(this.storedState))
@@ -392,7 +428,7 @@ export class Editor {
         const domWalkerResult = runDomWalker({
           domWalkerMutableState: this.domWalkerMutableState,
           selectedViews: this.storedState.patchedEditor.selectedViews,
-          elementsToFocusOn: this.storedState.patchedEditor.canvas.elementsToRerender,
+          elementsToFocusOn: currentElementsToRender,
           scale: this.storedState.patchedEditor.canvas.scale,
           additionalElementsToUpdate:
             this.storedState.patchedEditor.canvas.domWalkerAdditionalElementsToUpdate,
