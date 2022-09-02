@@ -1288,7 +1288,11 @@ describe('INSERT_INSERTABLE', () => {
                   }}
                 />
                 <img
-                  style={{ width: 100, height: 100 }}
+                  style={{
+                    width: 100,
+                    height: 100,
+                    position: 'absolute',
+                  }}
                   src='/editor/icons/favicons/favicon-128.png?hash=nocommit'
                 />
               </div>
@@ -1356,7 +1360,11 @@ describe('INSERT_INSERTABLE', () => {
             return (
               <div style={{ ...props.style }}>
                 <img
-                  style={{ width: 100, height: 100 }}
+                  style={{
+                    width: 100,
+                    height: 100,
+                    position: 'absolute',
+                  }}
                   src='/editor/icons/favicons/favicon-128.png?hash=nocommit'
                 />
                 <div
@@ -1442,7 +1450,7 @@ describe('INSERT_INSERTABLE', () => {
           export var Card = (props) => {
             return (
               <div style={{ ...props.style }}>
-                <div>
+                <div style={{ position: 'absolute' }}>
                   <div
                     style={{
                       position: 'absolute',
