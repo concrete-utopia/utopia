@@ -14,6 +14,7 @@ import {
   right,
 } from '../../core/shared/either'
 import {
+  absolutePositionStyle,
   emptyComments,
   isIntrinsicElementFromString,
   JSXAttributes,
@@ -22,6 +23,7 @@ import {
   jsxElementName,
   jsxElementWithoutUID,
   JSXElementWithoutUID,
+  parsedComments,
   simpleAttribute,
 } from '../../core/shared/element-template'
 import { dropFileExtension } from '../../core/shared/file-utils'
@@ -227,13 +229,13 @@ function makeHTMLDescriptor(
 }
 
 const basicHTMLElementsDescriptors = {
-  div: makeHTMLDescriptor('div', {}),
+  div: makeHTMLDescriptor('div', {}, absolutePositionStyle),
   span: makeHTMLDescriptor('span', {}),
-  h1: makeHTMLDescriptor('h1', {}),
-  h2: makeHTMLDescriptor('h2', {}),
+  h1: makeHTMLDescriptor('h1', {}, absolutePositionStyle),
+  h2: makeHTMLDescriptor('h2', {}, absolutePositionStyle),
   p: makeHTMLDescriptor('p', {}),
-  button: makeHTMLDescriptor('button', {}),
-  input: makeHTMLDescriptor('input', {}),
+  button: makeHTMLDescriptor('button', {}, absolutePositionStyle),
+  input: makeHTMLDescriptor('input', {}, absolutePositionStyle),
   video: makeHTMLDescriptor(
     'video',
     {
@@ -257,6 +259,7 @@ const basicHTMLElementsDescriptors = {
       simpleAttribute('style', {
         width: '250px',
         height: '120px',
+        position: 'absolute',
       }),
       simpleAttribute('controls', true),
       simpleAttribute('autoPlay', true),
@@ -278,6 +281,7 @@ const basicHTMLElementsDescriptors = {
       simpleAttribute('style', {
         width: '64px',
         height: '64px',
+        position: 'absolute',
       }),
       simpleAttribute('src', `/editor/icons/favicons/favicon-128.png?hash=${URL_HASH}`),
     ],
