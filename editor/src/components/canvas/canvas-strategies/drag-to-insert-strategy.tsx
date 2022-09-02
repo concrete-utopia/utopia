@@ -40,6 +40,8 @@ import {
 } from '../../../core/shared/element-template'
 import { cmdModifier } from '../../../utils/modifiers'
 import { setJSXValueInAttributeAtPath } from '../../../core/shared/jsx-attributes'
+import { DragOutlineControl } from '../controls/select-mode/drag-outline-control'
+import { FlexReparentTargetIndicator } from '../controls/select-mode/flex-reparent-target-indicator'
 
 export const dragToInsertStrategy: CanvasStrategy = {
   id: 'DRAG_TO_INSERT',
@@ -52,6 +54,7 @@ export const dragToInsertStrategy: CanvasStrategy = {
     return insertionElementSubjects.length > 0
   },
   controlsToRender: [
+    // TODO the controlsToRender should instead use the controls of the actual canvas strategy -> to achieve that, this should be a function of the StrategyState here
     {
       control: ParentOutlines,
       key: 'parent-outlines-control',
@@ -60,6 +63,26 @@ export const dragToInsertStrategy: CanvasStrategy = {
     {
       control: ParentBounds,
       key: 'parent-bounds-control',
+      show: 'visible-only-while-active',
+    },
+    {
+      control: DragOutlineControl,
+      key: 'ghost-outline-control',
+      show: 'visible-only-while-active',
+    },
+    {
+      control: ParentOutlines,
+      key: 'parent-outlines-control',
+      show: 'visible-only-while-active',
+    },
+    {
+      control: ParentBounds,
+      key: 'parent-bounds-control',
+      show: 'visible-only-while-active',
+    },
+    {
+      control: FlexReparentTargetIndicator,
+      key: 'flex-reparent-target-indicator',
       show: 'visible-only-while-active',
     },
   ], // Uses existing hooks in select-mode-hooks.tsx

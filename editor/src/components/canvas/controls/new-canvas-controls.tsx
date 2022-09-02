@@ -70,6 +70,7 @@ import { DistanceGuidelineControl } from './select-mode/distance-guideline-contr
 import { SceneLabelControl } from './select-mode/scene-label'
 import { PinLines } from './position-outline'
 import { CursorOverlay } from './select-mode/cursor-overlay'
+import { FlexReparentTargetIndicator } from './select-mode/flex-reparent-target-indicator'
 
 export const CanvasControlsContainerID = 'new-canvas-controls-container'
 
@@ -479,7 +480,7 @@ const NewCanvasControlsInner = (props: NewCanvasControlsInnerProps) => {
           {when(isFeatureEnabled('Canvas Strategies'), <GuidelineControls />)}
           <OutlineHighlightControl />
           {when(
-            isCanvasStrategyOnAndSelectMode(props.editor.mode),
+            isCanvasStrategyOnAndSelectOrInsertMode(props.editor.mode),
             <>{strategyControls.map((c) => React.createElement(c.control, { key: c.key }))}</>,
           )}
         </>,
@@ -491,4 +492,8 @@ const NewCanvasControlsInner = (props: NewCanvasControlsInnerProps) => {
 
 function isCanvasStrategyOnAndSelectMode(mode: Mode): boolean {
   return isFeatureEnabled('Canvas Strategies') && mode.type === 'select'
+}
+
+function isCanvasStrategyOnAndSelectOrInsertMode(mode: Mode): boolean {
+  return isFeatureEnabled('Canvas Strategies') && (mode.type === 'select' || mode.type === 'insert')
 }

@@ -87,6 +87,9 @@ function sanitizeEditor(editor: EditorState) {
       mountCount: editor.canvas.mountCount,
       domWalkerInvalidateCount: editor.canvas.domWalkerInvalidateCount,
       canvasContentInvalidateCount: editor.canvas.canvasContentInvalidateCount,
+      controls: {
+        ...editor.canvas.controls,
+      },
       interactionSession: {
         interactionData: editor.canvas.interactionSession?.interactionData,
         metadata: simplifiedMetadataMap(editor.canvas.interactionSession?.metadata ?? {}) as any,
