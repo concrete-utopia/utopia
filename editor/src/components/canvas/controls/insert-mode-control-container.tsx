@@ -246,6 +246,7 @@ export class InsertModeControlContainer extends React.Component<
   getInsertedElementFrameProps(
     parentPath: ElementPath | null,
     dragFrame: CanvasRectangle,
+    allowZeroSize: 'allow-zero-size' | 'set-zero-size-to-default',
   ): TopLeftWidthHeight {
     const parentFrame =
       parentPath == null
@@ -259,14 +260,15 @@ export class InsertModeControlContainer extends React.Component<
 
     const frameIsZero = localFrame.width === 0 && localFrame.height === 0
 
-    const nonZeroLocalFrame = frameIsZero
-      ? localRectangle({
-          x: localFrame.x - DefaultWidth / 2,
-          y: localFrame.y - DefaultHeight / 2,
-          width: DefaultWidth,
-          height: DefaultHeight,
-        })
-      : localFrame
+    const nonZeroLocalFrame =
+      frameIsZero && allowZeroSize === 'set-zero-size-to-default'
+        ? localRectangle({
+            x: localFrame.x - DefaultWidth / 2,
+            y: localFrame.y - DefaultHeight / 2,
+            width: DefaultWidth,
+            height: DefaultHeight,
+          })
+        : localFrame
 
     return {
       [FramePoint.Left]: nonZeroLocalFrame.x,
@@ -276,12 +278,16 @@ export class InsertModeControlContainer extends React.Component<
     }
   }
 
-  elementWithDragFrame = (insertionSubject: JSXElement): JSXElement => {
+  elementWithDragFrame = (
+    insertionSubject: JSXElement,
+    allowZeroSize: 'allow-zero-size' | 'set-zero-size-to-default',
+  ): JSXElement => {
     if (this.props.mode.insertionStarted && this.state.dragFrame != null) {
       const attributes = insertionSubject.props
       const frame = this.getInsertedElementFrameProps(
         this.props.highlightedViews[0],
         this.state.dragFrame,
+        allowZeroSize,
       )
 
       const parentAttributes = this.getParentAttributes(this.props.highlightedViews[0])
@@ -306,7 +312,9 @@ export class InsertModeControlContainer extends React.Component<
     }
   }
 
-  getImageElementWithSize = (): JSXElement => {
+  getImageElementWithSize = (
+    allowZeroSize: 'allow-zero-size' | 'set-zero-size-to-default',
+  ): JSXElement => {
     if (insertionSubjectIsJSXElement(this.props.mode.subject)) {
       const element = this.props.mode.subject.element
       if (this.props.mode.insertionStarted && this.state.dragFrame != null) {
@@ -319,7 +327,11 @@ export class InsertModeControlContainer extends React.Component<
           height: height,
         } as CanvasRectangle
 
-        const frame = this.getInsertedElementFrameProps(this.props.highlightedViews[0], canvasFrame)
+        const frame = this.getInsertedElementFrameProps(
+          this.props.highlightedViews[0],
+          canvasFrame,
+          allowZeroSize,
+        )
 
         const attributes = element.props
         const parentAttributes = this.getParentAttributes(this.props.highlightedViews[0])
@@ -446,15 +458,15 @@ export class InsertModeControlContainer extends React.Component<
           this.isImageInsertion(insertionElement, insertionSubject.importsToAdd) &&
           this.state.dragFrame != null
         ) {
-          element = this.getImageElementWithSize()
+          element = this.getImageElementWithSize('set-zero-size-to-default')
         } else if (this.isTextInsertion(insertionElement, insertionSubject.importsToAdd)) {
           element = insertionElement
         } else {
-          element = this.elementWithDragFrame(insertionElement)
+          element = this.elementWithDragFrame(insertionElement, 'set-zero-size-to-default')
         }
       } else {
         // TODO Hidden Instances
-        element = this.elementWithDragFrame(insertionElement)
+        element = this.elementWithDragFrame(insertionElement, 'set-zero-size-to-default')
       }
 
       if (element == null) {
@@ -510,7 +522,7 @@ export class InsertModeControlContainer extends React.Component<
       ) {
         const parent = this.props.highlightedViews[0]
         const staticParent = parent == null ? null : EP.dynamicPathToStaticPath(parent)
-        let element = this.elementWithDragFrame(insertionSubject.element)
+        let element = this.elementWithDragFrame(insertionSubject.element, 'allow-zero-size')
 
         const aspectRatioCorrectedMousePoint =
           this.state.aspectRatio != null
