@@ -11,6 +11,7 @@ import { ParentOutlines } from '../controls/parent-outlines'
 import {
   CanvasStrategy,
   emptyStrategyApplicationResult,
+  getTargetPathsFromInteractionTarget,
   InteractionCanvasState,
   StrategyApplicationResult,
 } from './canvas-strategy-types'
@@ -31,8 +32,9 @@ function isFlowReorderConversionApplicable(
   allElementProps: AllElementProps,
   displayTypeFiltering: 'no-filter' | 'requires-mixed-display-type' = 'requires-mixed-display-type',
 ) {
-  if (canvasState.selectedElements.length === 1) {
-    const target = canvasState.selectedElements[0]
+  const selectedElements = getTargetPathsFromInteractionTarget(canvasState.interactionTarget)
+  if (selectedElements.length === 1) {
+    const target = selectedElements[0]
     const elementMetadata = MetadataUtils.findElementByElementPath(metadata, target)
     const siblings = MetadataUtils.getSiblings(metadata, target)
     if (siblings.length > 1 && MetadataUtils.isPositionedByFlow(elementMetadata)) {
@@ -67,7 +69,7 @@ function flowReorderApplyCommon(
   }
 
   if (interactionState.interactionData.drag != null) {
-    const { selectedElements } = canvasState
+    const selectedElements = getTargetPathsFromInteractionTarget(canvasState.interactionTarget)
     const target = selectedElements[0] // TODO MULTISELECT??
 
     const siblingsOfTarget = MetadataUtils.getSiblings(strategyState.startingMetadata, target).map(
