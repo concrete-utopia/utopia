@@ -15,7 +15,6 @@ import {
   pointIsClockwiseFromLine,
 } from '../../../core/shared/math-utils'
 import { ElementPath } from '../../../core/shared/project-file-types'
-import { fastForEach } from '../../../core/shared/utils'
 import { AllElementProps, ElementProps } from '../../editor/store/editor-state'
 import { stylePropPathMappingFn } from '../../inspector/common/property-path-hooks'
 import { ConvertInlineBlock, convertInlineBlock } from '../commands/convert-inline-block-command'
@@ -68,12 +67,10 @@ function getSiblingDisplayValues(
   metadata: ElementInstanceMetadataMap,
   siblings: Array<ElementPath>,
 ): Array<string | null> {
-  let displayValues: Array<string | null> = []
-  fastForEach(siblings, (sibling) => {
+  return siblings.map((sibling) => {
     const siblingMetadata = MetadataUtils.findElementByElementPath(metadata, sibling)
-    displayValues.push(siblingMetadata?.specialSizeMeasurements.display ?? null)
+    return siblingMetadata?.specialSizeMeasurements.display ?? null
   })
-  return displayValues
 }
 
 function isValidSibling(
