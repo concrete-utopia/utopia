@@ -344,7 +344,7 @@ function renderJSXElement(
   if (isHidden(hiddenInstances, elementPath)) {
     elementProps = hideElement(elementProps)
   }
-  if (isDisplayNoned(displayNoneInstances, elementPath)) {
+  if (elementIsDisplayNone(displayNoneInstances, elementPath)) {
     elementProps = displayNoneElement(elementProps)
   }
   elementProps = streamlineInFileBlobs(elementProps, fileBlobs)
@@ -447,7 +447,7 @@ function renderJSXElement(
 function isHidden(hiddenInstances: ElementPath[], elementPath: ElementPath | null): boolean {
   return elementPath != null && hiddenInstances.some((path) => EP.pathsEqual(path, elementPath))
 }
-function isDisplayNoned(
+function elementIsDisplayNone(
   displayNoneInstances: ElementPath[],
   elementPath: ElementPath | null,
 ): boolean {
