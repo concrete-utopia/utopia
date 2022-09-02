@@ -3,16 +3,17 @@ import { ParentBounds } from '../controls/parent-bounds'
 import { ParentOutlines } from '../controls/parent-outlines'
 import { DragOutlineControl } from '../controls/select-mode/drag-outline-control'
 import { FlexReparentTargetIndicator } from '../controls/select-mode/flex-reparent-target-indicator'
-import { CanvasStrategy } from './canvas-strategy-types'
+import { CanvasStrategy, getTargetPathsFromInteractionTarget } from './canvas-strategy-types'
 import { applyFlexReparent, findReparentStrategy } from './reparent-strategy-helpers'
 
 export const flexReparentToFlexStrategy: CanvasStrategy = {
   id: 'FLEX_REPARENT_TO_FLEX',
   name: 'Flex Reparent to Flex',
   isApplicable: (canvasState, _interactionState, metadata) => {
-    if (canvasState.selectedElements.length == 1) {
+    const selectedElements = getTargetPathsFromInteractionTarget(canvasState.interactionTarget)
+    if (selectedElements.length == 1) {
       return MetadataUtils.isParentYogaLayoutedContainerAndElementParticipatesInLayout(
-        canvasState.selectedElements[0],
+        selectedElements[0],
         metadata,
       )
     } else {

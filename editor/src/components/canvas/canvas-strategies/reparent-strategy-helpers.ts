@@ -36,6 +36,7 @@ import { wildcardPatch } from '../commands/wildcard-patch-command'
 import { getAllTargetsAtPointAABB } from '../dom-lookup'
 import {
   emptyStrategyApplicationResult,
+  getTargetPathsFromInteractionTarget,
   InteractionCanvasState,
   StrategyApplicationResult,
 } from './canvas-strategy-types'
@@ -197,8 +198,9 @@ export function findReparentStrategy(
   strategyState: StrategyState,
   log = false, // DELETE ME BEFORE MERGE
 ): FindReparentStrategyResult {
+  const selectedElements = getTargetPathsFromInteractionTarget(canvasState.interactionTarget)
   if (
-    canvasState.selectedElements.length === 0 ||
+    selectedElements.length === 0 ||
     interactionState.activeControl.type !== 'BOUNDING_AREA' ||
     interactionState.interactionData.type !== 'DRAG' ||
     interactionState.interactionData.drag == null // TODO delete this drag nullcheck? do we start the reparent on mouse down or mouse move beyond threshold?
@@ -206,7 +208,7 @@ export function findReparentStrategy(
     return { strategy: 'do-not-reparent' }
   }
 
-  const filteredSelectedElements = getDragTargets(canvasState.selectedElements)
+  const filteredSelectedElements = getDragTargets(selectedElements)
 
   const pointOnCanvas = offsetPoint(
     interactionState.interactionData.originalDragStart,
@@ -544,7 +546,9 @@ export function applyFlexReparent(
   interactionSession: InteractionSession,
   strategyState: StrategyState,
 ): StrategyApplicationResult {
-  const filteredSelectedElements = getDragTargets(canvasState.selectedElements)
+  const selectedElements = getTargetPathsFromInteractionTarget(canvasState.interactionTarget)
+  const filteredSelectedElements = getDragTargets(selectedElements)
+
   return ifAllowedToReparent(canvasState, strategyState, filteredSelectedElements, () => {
     if (
       interactionSession.interactionData.type == 'DRAG' &&

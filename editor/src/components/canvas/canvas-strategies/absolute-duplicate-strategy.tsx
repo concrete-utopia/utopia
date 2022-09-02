@@ -16,7 +16,11 @@ import { ParentBounds } from '../controls/parent-bounds'
 import { ParentOutlines } from '../controls/parent-outlines'
 import { absoluteMoveStrategy } from './absolute-move-strategy'
 import { pickCanvasStateFromEditorState } from './canvas-strategies'
-import { CanvasStrategy, emptyStrategyApplicationResult } from './canvas-strategy-types'
+import {
+  CanvasStrategy,
+  emptyStrategyApplicationResult,
+  getTargetPathsFromInteractionTarget,
+} from './canvas-strategy-types'
 import { InteractionSession, interactionSession, StrategyState } from './interaction-state'
 import { getDragTargets } from './shared-absolute-move-strategy-helpers'
 
@@ -24,13 +28,14 @@ export const absoluteDuplicateStrategy: CanvasStrategy = {
   id: 'ABSOLUTE_DUPLICATE',
   name: 'Duplicate Absolute Elements',
   isApplicable: (canvasState, interactionState, metadata) => {
+    const selectedElements = getTargetPathsFromInteractionTarget(canvasState.interactionTarget)
     if (
-      canvasState.selectedElements.length > 0 &&
+      selectedElements.length > 0 &&
       interactionState != null &&
       interactionState.interactionData.type === 'DRAG' &&
       interactionState.interactionData.modifiers.alt
     ) {
-      const filteredSelectedElements = getDragTargets(canvasState.selectedElements)
+      const filteredSelectedElements = getDragTargets(selectedElements)
       return filteredSelectedElements.every((element) => {
         const elementMetadata = MetadataUtils.findElementByElementPath(metadata, element)
 
@@ -64,8 +69,9 @@ export const absoluteDuplicateStrategy: CanvasStrategy = {
     },
   ],
   fitness: (canvasState, interactionState) => {
+    const selectedElements = getTargetPathsFromInteractionTarget(canvasState.interactionTarget)
     if (
-      canvasState.selectedElements.length > 0 &&
+      selectedElements.length > 0 &&
       interactionState.interactionData.type === 'DRAG' &&
       interactionState.activeControl.type === 'BOUNDING_AREA' &&
       interactionState.interactionData.modifiers.alt
@@ -75,11 +81,11 @@ export const absoluteDuplicateStrategy: CanvasStrategy = {
     return 0
   },
   apply: (canvasState, interactionState, strategyState) => {
+    const selectedElements = getTargetPathsFromInteractionTarget(canvasState.interactionTarget)
     if (
       interactionState.interactionData.type === 'DRAG' &&
       interactionState.interactionData.drag != null
     ) {
-      const { selectedElements } = canvasState
       const filteredSelectedElements = getDragTargets(selectedElements)
 
       let duplicatedElementNewUids = {
@@ -110,7 +116,7 @@ export const absoluteDuplicateStrategy: CanvasStrategy = {
       return {
         commands: [
           ...duplicateCommands,
-          setElementsToRerenderCommand([...canvasState.selectedElements, ...newPaths]),
+          setElementsToRerenderCommand([...selectedElements, ...newPaths]),
           updateSelectedViews('always', newPaths),
           updateFunctionCommand('always', (editorState, lifecycle) =>
             runMoveStrategyForFreshlyDuplicatedElements(

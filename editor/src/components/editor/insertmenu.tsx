@@ -77,6 +77,11 @@ import {
 import { ProjectContentTreeRoot } from '../assets'
 import { generateUidWithExistingComponents } from '../../core/model/element-template-utils'
 import { UTOPIA_UID_KEY } from '../../core/model/utopia-constants'
+import CanvasActions from '../canvas/canvas-actions'
+import { createInteractionViaMouse } from '../canvas/canvas-strategies/interaction-state'
+import { CanvasMousePositionRaw } from '../../utils/global-positions'
+import { emptyModifiers, Modifier } from '../../utils/modifiers'
+import * as EP from '../../core/shared/element-path'
 
 interface InsertMenuProps {
   lastFontSettings: FontSettings | null
@@ -327,7 +332,21 @@ class InsertMenuInner extends React.Component<InsertMenuProps> {
                   component.element.children,
                 )
                 this.props.editorDispatch(
-                  [enableInsertModeForJSXElement(newElement, newUID, component.importsToAdd, null)],
+                  [
+                    enableInsertModeForJSXElement(newElement, newUID, component.importsToAdd, null),
+                    CanvasActions.createInteractionSession(
+                      createInteractionViaMouse(CanvasMousePositionRaw!, emptyModifiers, {
+                        type: 'BOUNDING_AREA',
+                        target: EP.fromString(newUID),
+                      }),
+                    ),
+                  ],
+                  'everyone',
+                )
+              }
+              const insertItemOnMouseUp = () => {
+                this.props.editorDispatch(
+                  [CanvasActions.clearInteractionSession(false)],
                   'everyone',
                 )
               }
@@ -346,6 +365,8 @@ class InsertMenuInner extends React.Component<InsertMenuProps> {
                   )}
                   // eslint-disable-next-line react/jsx-no-bind
                   onMouseDown={insertItemOnMouseDown}
+                  // eslint-disable-next-line react/jsx-no-bind
+                  onMouseUp={insertItemOnMouseUp}
                 />
               )
             })}
@@ -396,6 +417,7 @@ interface InsertItemProps {
   selected: boolean
   type: string
   onMouseDown?: (event: React.MouseEvent<HTMLDivElement>) => void
+  onMouseUp?: (event: React.MouseEvent<HTMLDivElement>) => void
   category?: string
   disabled?: boolean
   warningMessage?: string
@@ -430,6 +452,7 @@ export const InsertItem: React.FunctionComponent<React.PropsWithChildren<InsertI
         },
       }}
       onMouseDown={props.disabled ? Utils.NO_OP : props.onMouseDown}
+      onMouseUp={props.disabled ? Utils.NO_OP : props.onMouseUp}
     >
       {resultingIcon}
       <span>{props.label}</span>

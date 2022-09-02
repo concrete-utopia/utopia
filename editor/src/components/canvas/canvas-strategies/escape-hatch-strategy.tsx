@@ -45,6 +45,7 @@ import { applyAbsoluteMoveCommon } from './absolute-move-strategy'
 import {
   CanvasStrategy,
   emptyStrategyApplicationResult,
+  getTargetPathsFromInteractionTarget,
   InteractionCanvasState,
 } from './canvas-strategy-types'
 import { DragInteractionData, InteractionSession, StrategyState } from './interaction-state'
@@ -55,7 +56,8 @@ export const escapeHatchStrategy: CanvasStrategy = {
   id: 'ESCAPE_HATCH_STRATEGY',
   name: 'Absolute Move (convert to absolute)',
   isApplicable: (canvasState, _interactionState, metadata) => {
-    return areAllSelectedElementsNonAbsolute(canvasState.selectedElements, metadata)
+    const selectedElements = getTargetPathsFromInteractionTarget(canvasState.interactionTarget)
+    return areAllSelectedElementsNonAbsolute(selectedElements, metadata)
   },
   controlsToRender: [
     {
@@ -130,7 +132,7 @@ export const escapeHatchStrategy: CanvasStrategy = {
           intendedBounds: Array<CanvasFrameAndTarget>
         } => {
           return getEscapeHatchCommands(
-            canvasState.selectedElements,
+            getTargetPathsFromInteractionTarget(canvasState.interactionTarget),
             strategyState.startingMetadata,
             canvasState,
             snappedDragVector,
@@ -364,7 +366,8 @@ function escapeHatchAllowed(
   if (strategyState.customStrategyState.escapeHatchActivated) {
     return true
   }
-  const selectedElementsHaveSiblingsAndFlex = canvasState.selectedElements.some((path) => {
+  const selectedElements = getTargetPathsFromInteractionTarget(canvasState.interactionTarget)
+  const selectedElementsHaveSiblingsAndFlex = selectedElements.some((path) => {
     return (
       MetadataUtils.isParentYogaLayoutedContainerAndElementParticipatesInLayout(
         path,
@@ -380,7 +383,7 @@ function escapeHatchAllowed(
     const parentBounds = mapDropNulls((path) => {
       return MetadataUtils.findElementByElementPath(strategyState.startingMetadata, path)
         ?.specialSizeMeasurements.immediateParentBounds
-    }, canvasState.selectedElements)
+    }, selectedElements)
     return parentBounds.some((frame) => !rectContainsPoint(frame, cursorPosition))
   } else {
     return true
@@ -392,13 +395,12 @@ function collectHighlightCommand(
   interactionData: DragInteractionData,
   strategyState: StrategyState,
 ): CanvasCommand {
+  const selectedElements = getTargetPathsFromInteractionTarget(canvasState.interactionTarget)
   const siblingFrames = stripNulls(
-    canvasState.selectedElements.flatMap((path) => {
+    selectedElements.flatMap((path) => {
       return MetadataUtils.getSiblings(strategyState.startingMetadata, path)
         .filter((sibling) =>
-          canvasState.selectedElements.every(
-            (selected) => !EP.pathsEqual(selected, sibling.elementPath),
-          ),
+          selectedElements.every((selected) => !EP.pathsEqual(selected, sibling.elementPath)),
         )
         .map((element) =>
           MetadataUtils.getFrameInCanvasCoords(element.elementPath, strategyState.startingMetadata),
@@ -413,7 +415,7 @@ function collectHighlightCommand(
     } else {
       return null
     }
-  }, canvasState.selectedElements)
+  }, selectedElements)
   return showOutlineHighlight('mid-interaction', [...siblingFrames, ...draggedFrames])
 }
 

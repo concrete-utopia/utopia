@@ -44,6 +44,10 @@ import {
   runAddToReparentedToPaths,
   AddToReparentedToPaths,
 } from '../canvas-strategies/add-to-reparented-to-paths-command'
+import {
+  InsertElementInsertionSubject,
+  runInsertElementInsertionSubject,
+} from './insert-element-insertion-subject'
 import { AddElement, runAddElement } from './add-element-command'
 import { runUpdatePropIfExists, UpdatePropIfExists } from './update-prop-if-exists-command'
 
@@ -83,6 +87,7 @@ export type CanvasCommand =
   | UpdatePropIfExists
   | AddImportsToFile
   | AddToReparentedToPaths
+  | InsertElementInsertionSubject
   | AddElement
 
 export const runCanvasCommand = (
@@ -135,6 +140,8 @@ export const runCanvasCommand = (
       return runAddImportsToFile(editorState, command)
     case 'ADD_TO_REPARENTED_TO_PATHS':
       return runAddToReparentedToPaths(editorState, command)
+    case 'INSERT_ELEMENT_INSERTION_SUBJECT':
+      return runInsertElementInsertionSubject(editorState, command)
     case 'ADD_ELEMENT':
       return runAddElement(editorState, command)
     default:
