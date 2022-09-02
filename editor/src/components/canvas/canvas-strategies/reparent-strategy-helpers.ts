@@ -498,12 +498,12 @@ function drawTargetRectanglesForChildrenOfElement(
           {
             [leftOrTop]: paddedStart,
             [leftOrTopComplement]: parentBounds[leftOrTopComplement],
-          } as any as CanvasPoint,
+          } as any as CanvasPoint, // TODO improve my type
           {
             [leftOrTop]: paddedEnd,
             [leftOrTopComplement]:
               parentBounds[leftOrTopComplement] + parentBounds[widthOrHeightComplement],
-          } as any as CanvasPoint,
+          } as any as CanvasPoint, // TODO improve my type
         ),
       )
     }
@@ -522,12 +522,12 @@ function drawTargetRectanglesForChildrenOfElement(
           {
             [leftOrTop]: normalizedStart,
             [leftOrTopComplement]: parentBounds[leftOrTopComplement],
-          } as any as CanvasPoint,
+          } as any as CanvasPoint, // TODO improve my type
           {
             [leftOrTop]: normalizedEnd,
             [leftOrTopComplement]:
               parentBounds[leftOrTopComplement] + parentBounds[widthOrHeightComplement],
-          } as any as CanvasPoint,
+          } as any as CanvasPoint, // TODO improve my type
         ),
       )
     }
