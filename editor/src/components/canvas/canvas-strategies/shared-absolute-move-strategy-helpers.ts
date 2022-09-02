@@ -242,7 +242,7 @@ function ensureAtLeastOnePinPerDimension(props: PropsOrJSXAttributes): {
 export function areAllSelectedElementsNonAbsolute(
   selectedElements: Array<ElementPath>,
   metadata: ElementInstanceMetadataMap,
-) {
+): boolean {
   if (selectedElements.length > 0) {
     return selectedElements.every((element) => {
       const elementMetadata = MetadataUtils.findElementByElementPath(metadata, element)

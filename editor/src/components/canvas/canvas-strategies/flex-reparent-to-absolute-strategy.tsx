@@ -12,6 +12,7 @@ import { pickCanvasStateFromEditorState } from './canvas-strategies'
 import {
   CanvasStrategy,
   emptyStrategyApplicationResult,
+  getTargetPathsFromInteractionTarget,
   InteractionCanvasState,
   StrategyApplicationResult,
 } from './canvas-strategy-types'
@@ -25,9 +26,10 @@ export const flexReparentToAbsoluteStrategy: CanvasStrategy = {
   id: 'FLEX_REPARENT_TO_ABSOLUTE',
   name: 'Flex Reparent to Absolute',
   isApplicable: (canvasState, _interactionState, metadata) => {
-    if (canvasState.selectedElements.length == 1) {
+    const selectedElements = getTargetPathsFromInteractionTarget(canvasState.interactionTarget)
+    if (selectedElements.length == 1) {
       return MetadataUtils.isParentYogaLayoutedContainerAndElementParticipatesInLayout(
-        canvasState.selectedElements[0],
+        selectedElements[0],
         metadata,
       )
     } else {
@@ -64,7 +66,8 @@ export const flexReparentToAbsoluteStrategy: CanvasStrategy = {
     return 0
   },
   apply: (canvasState, interactionState, strategyState) => {
-    const filteredSelectedElements = getDragTargets(canvasState.selectedElements)
+    const selectedElements = getTargetPathsFromInteractionTarget(canvasState.interactionTarget)
+    const filteredSelectedElements = getDragTargets(selectedElements)
     return ifAllowedToReparent(canvasState, strategyState, filteredSelectedElements, () => {
       if (
         interactionState.interactionData.type !== 'DRAG' ||

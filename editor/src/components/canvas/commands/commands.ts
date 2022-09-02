@@ -44,6 +44,10 @@ import {
   AddToReparentedToPaths,
 } from '../canvas-strategies/add-to-reparented-to-paths-command'
 import { ConvertInlineBlock, runConvertInlineBlock } from './convert-inline-block-command'
+import {
+  InsertElementInsertionSubject,
+  runInsertElementInsertionSubject,
+} from './insert-element-insertion-subject'
 import { AddElement, runAddElement } from './add-element-command'
 
 export interface CommandFunctionResult {
@@ -80,6 +84,7 @@ export type CanvasCommand =
   | DeleteProperties
   | AddImportsToFile
   | AddToReparentedToPaths
+  | InsertElementInsertionSubject
   | AddElement
   | ConvertInlineBlock
 
@@ -129,6 +134,8 @@ export const runCanvasCommand = (
       return runAddImportsToFile(editorState, command)
     case 'ADD_TO_REPARENTED_TO_PATHS':
       return runAddToReparentedToPaths(editorState, command)
+    case 'INSERT_ELEMENT_INSERTION_SUBJECT':
+      return runInsertElementInsertionSubject(editorState, command)
     case 'ADD_ELEMENT':
       return runAddElement(editorState, command)
     case 'CONVERT_INLINE_BLOCK':

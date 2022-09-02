@@ -4,6 +4,7 @@ import { ElementInstanceMetadataMap } from '../../../core/shared/element-templat
 import { CanvasVector } from '../../../core/shared/math-utils'
 import { ElementPath, NodeModules } from '../../../core/shared/project-file-types'
 import { ProjectContentTreeRoot } from '../../assets'
+import { InsertionSubject } from '../../editor/editor-modes'
 import { CanvasCommand } from '../commands/commands'
 import { InteractionSession, StrategyState } from './interaction-state'
 
@@ -42,13 +43,55 @@ export interface ControlWithKey {
 }
 
 export interface InteractionCanvasState {
-  selectedElements: Array<ElementPath>
+  interactionTarget: InteractionTarget
   projectContents: ProjectContentTreeRoot
   nodeModules: NodeModules
   builtInDependencies: BuiltInDependencies
   openFile: string | null | undefined
   scale: number
   canvasOffset: CanvasVector
+}
+
+export type InteractionTarget = TargetPaths | InsertionSubjects
+
+interface TargetPaths {
+  type: 'TARGET_PATHS'
+  elements: Array<ElementPath>
+}
+
+export function targetPaths(elements: Array<ElementPath>): TargetPaths {
+  return {
+    type: 'TARGET_PATHS',
+    elements: elements,
+  }
+}
+
+interface InsertionSubjects {
+  type: 'INSERTION_SUBJECTS'
+  subjects: Array<InsertionSubject>
+}
+
+export function insertionSubjects(subjects: Array<InsertionSubject>): InsertionSubjects {
+  return {
+    type: 'INSERTION_SUBJECTS',
+    subjects: subjects,
+  }
+}
+
+export function getTargetPathsFromInteractionTarget(target: InteractionTarget): Array<ElementPath> {
+  if (target.type === 'TARGET_PATHS') {
+    return target.elements
+  }
+  return []
+}
+
+export function getInsertionSubjectsFromInteractionTarget(
+  target: InteractionTarget,
+): Array<InsertionSubject> {
+  if (target.type === 'INSERTION_SUBJECTS') {
+    return target.subjects
+  }
+  return []
 }
 
 export type CanvasStrategyId =
@@ -63,6 +106,7 @@ export type CanvasStrategyId =
   | 'ABSOLUTE_REPARENT_TO_FLEX'
   | 'FLEX_REPARENT_TO_ABSOLUTE'
   | 'FLEX_REPARENT_TO_FLEX'
+  | 'DRAG_TO_INSERT'
   | 'FLOW_REORDER_AUTO_CONVERSION'
   | 'FLOW_REORDER_NO_CONVERSION'
   | 'FLOW_REORDER_SAME_TYPE_ONLY'
