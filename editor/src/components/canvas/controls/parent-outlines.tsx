@@ -10,6 +10,11 @@ export const ParentOutlines = React.memo(() => {
   const colorTheme = useColorTheme()
   const scale = useEditorState((store) => store.editor.canvas.scale, 'ParentOutlines canvas scale')
   const parentFrame = useEditorState((store) => {
+    const parentHighlightPaths = store.editor.canvas.controls.parentHighlightPaths
+    if (parentHighlightPaths != null && parentHighlightPaths.length === 1) {
+      return MetadataUtils.getFrameInCanvasCoords(parentHighlightPaths[0], store.editor.jsxMetadata)
+    }
+
     const targetParents = uniqBy(
       stripNulls(store.editor.selectedViews.map((view) => EP.parentPath(view))),
       EP.pathsEqual,

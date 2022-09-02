@@ -17,6 +17,9 @@ export const PinLines = React.memo(() => {
   const scale = useEditorState((store) => store.editor.canvas.scale, 'PinLines scale')
   const elementsAndFrames = useEditorState(
     (store) => {
+      const selectedViewsNotHidden = store.editor.selectedViews.filter(
+        (sv) => !store.editor.hiddenInstances.includes(sv),
+      )
       return mapDropNulls((path) => {
         const element = MetadataUtils.findElementByElementPath(store.editor.jsxMetadata, path)
         const isAbsolute = MetadataUtils.isPositionAbsolute(element)
@@ -29,7 +32,7 @@ export const PinLines = React.memo(() => {
         } else {
           return null
         }
-      }, store.editor.selectedViews)
+      }, selectedViewsNotHidden)
     },
     'PinLines',
     (oldValue, newValue) => {

@@ -1,7 +1,6 @@
 import { MetadataUtils } from '../../../core/model/element-metadata-utils'
 import * as EP from '../../../core/shared/element-path'
 import { CSSCursor } from '../canvas-types'
-import { getReparentTarget } from '../canvas-utils'
 import { setCursorCommand } from '../commands/set-cursor-command'
 import { setElementsToRerenderCommand } from '../commands/set-elements-to-rerender-command'
 import { updateSelectedViews } from '../commands/update-selected-views-command'
@@ -18,10 +17,12 @@ import { ifAllowedToReparent, isAllowedToReparent } from './reparent-helpers'
 import {
   findReparentStrategy,
   getAbsoluteReparentPropertyChanges,
+  getReparentTargetUnified,
 } from './reparent-strategy-helpers'
 import { offsetPoint } from '../../../core/shared/math-utils'
 import { getReparentOutcome, pathToReparent } from './reparent-utils'
 import { mapDropNulls } from '../../../core/shared/array-utils'
+import { honoursPropsPosition } from './absolute-utils'
 
 export const absoluteReparentStrategy: CanvasStrategy = {
   id: 'ABSOLUTE_REPARENT',
@@ -31,14 +32,16 @@ export const absoluteReparentStrategy: CanvasStrategy = {
     if (
       selectedElements.length > 0 &&
       interactionState != null &&
-      interactionState.interactionData.type === 'DRAG' &&
-      interactionState.interactionData.modifiers.cmd
+      interactionState.interactionData.type === 'DRAG'
     ) {
       const filteredSelectedElements = getDragTargets(selectedElements)
       return filteredSelectedElements.every((element) => {
         const elementMetadata = MetadataUtils.findElementByElementPath(metadata, element)
 
-        return elementMetadata?.specialSizeMeasurements.position === 'absolute'
+        return (
+          elementMetadata?.specialSizeMeasurements.position === 'absolute' &&
+          honoursPropsPosition(canvasState, element)
+        )
       })
     }
     return false
@@ -61,6 +64,7 @@ export const absoluteReparentStrategy: CanvasStrategy = {
       canvasState,
       interactionState,
       strategyState,
+      true,
     ).strategy
     if (reparentStrategy === 'ABSOLUTE_REPARENT_TO_ABSOLUTE') {
       return 3
@@ -75,23 +79,21 @@ export const absoluteReparentStrategy: CanvasStrategy = {
       return emptyStrategyApplicationResult
     }
 
-    const pointOnCanvas = offsetPoint(
-      interactionState.interactionData.dragStart,
-      interactionState.interactionData.drag,
-    )
-
     const { interactionTarget, projectContents, openFile, nodeModules } = canvasState
     const selectedElements = getTargetPathsFromInteractionTarget(interactionTarget)
     const filteredSelectedElements = getDragTargets(selectedElements)
 
-    const reparentTarget = getReparentTarget(
+    const pointOnCanvas = offsetPoint(
+      interactionState.interactionData.originalDragStart,
+      interactionState.interactionData.drag,
+    )
+
+    const reparentTarget = getReparentTargetUnified(
       filteredSelectedElements,
-      filteredSelectedElements,
-      strategyState.startingMetadata,
-      [],
       pointOnCanvas,
-      projectContents,
-      openFile,
+      interactionState.interactionData.modifiers.cmd,
+      canvasState,
+      strategyState.startingMetadata,
       strategyState.startingAllElementProps,
     )
     const newParent = reparentTarget.newParent
@@ -123,6 +125,7 @@ export const absoluteReparentStrategy: CanvasStrategy = {
           openFile,
           pathToReparent(selectedElement),
           newParent,
+          'always',
         )
 
         if (reparentResult == null) {
@@ -152,7 +155,7 @@ export const absoluteReparentStrategy: CanvasStrategy = {
           ...moveCommands.commands,
           ...commands.flatMap((c) => c.commands),
           updateSelectedViews('always', newPaths),
-          setElementsToRerenderCommand(newPaths),
+          setElementsToRerenderCommand([...newPaths, ...filteredSelectedElements]),
           setCursorCommand('mid-interaction', CSSCursor.Move),
         ],
         customState: null,

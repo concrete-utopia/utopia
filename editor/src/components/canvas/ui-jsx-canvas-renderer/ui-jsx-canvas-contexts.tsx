@@ -27,6 +27,7 @@ export function updateMutableUtopiaCtxRefWithNewProps(
 
 interface RerenderUtopiaContextProps {
   hiddenInstances: Array<ElementPath>
+  displayNoneInstances: Array<ElementPath>
   canvasIsLive: boolean
   shouldIncludeCanvasRootInTheSpy: boolean
 }
@@ -35,6 +36,7 @@ export const RerenderUtopiaCtxAtom = atomWithPubSub<RerenderUtopiaContextProps>(
   key: 'RerenderUtopiaCtxAtom',
   defaultValue: {
     hiddenInstances: [],
+    displayNoneInstances: [],
     canvasIsLive: false,
     shouldIncludeCanvasRootInTheSpy: false,
   },

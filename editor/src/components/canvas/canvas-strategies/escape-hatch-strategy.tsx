@@ -279,6 +279,7 @@ function collectSetLayoutPropCommands(
         canvasState.openFile,
         pathToReparent(path),
         targetParent,
+        'always',
       )
       if (outcomeResult != null) {
         commands.push(...outcomeResult.commands)

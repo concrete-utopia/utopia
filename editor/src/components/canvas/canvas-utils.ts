@@ -57,6 +57,7 @@ import {
   findJSXElementChildAtPath,
   transformJSXComponentAtElementPath,
   isSceneElement,
+  getZIndexOfElement,
 } from '../../core/model/element-template-utils'
 import { generateUID } from '../../core/shared/uid-utils'
 import {
@@ -105,6 +106,7 @@ import {
 } from '../../core/shared/either'
 import Utils, {
   absolute,
+  after,
   IndexPosition,
   shiftIndexPositionForRemovedElement,
 } from '../../utils/utils'
@@ -1905,6 +1907,7 @@ function getReparentTargetAtPosition(
     'no-filter',
     pointOnCanvas,
     allElementProps,
+    true, // this is how it was historically, but I think it should be false?
   )
   // filtering for non-selected views from alltargets
   return allTargets.find((target) => selectedViews.every((view) => !EP.pathsEqual(view, target)))
@@ -2569,6 +2572,7 @@ export function duplicate(
   newParentPath: ElementPath | null,
   editor: EditorState,
   duplicateNewUIDsInjected: ReadonlyArray<DuplicateNewUID> = [],
+  insertAfterCurrentElement: boolean = false,
 ): DuplicateResult | null {
   let duplicateNewUIDs: ReadonlyArray<DuplicateNewUID> = duplicateNewUIDsInjected
   let newOriginalFrames: Array<CanvasFrameAndTarget> | null = null
@@ -2598,6 +2602,10 @@ export function duplicate(
         let jsxElement: JSXElementChild | null = findElementAtPath(
           underlyingInstancePath,
           utopiaComponents,
+        )
+        const elementIndex = getZIndexOfElement(
+          success.topLevelElements,
+          EP.dynamicPathToStaticPath(path),
         )
         let uid: string
         if (jsxElement == null) {
@@ -2662,7 +2670,7 @@ export function duplicate(
               newParentPath,
               newElement,
               utopiaComponents,
-              null,
+              after(elementIndex),
             )
 
             newSelectedViews.push(newPath)

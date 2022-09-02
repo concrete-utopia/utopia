@@ -76,6 +76,7 @@ import {
   CanvasRectangle,
   CanvasVector,
   CoordinateMarker,
+  offsetPoint,
   Point,
   RawPoint,
   WindowPoint,
@@ -95,6 +96,10 @@ import {
 import { last, reverse } from '../core/shared/array-utils'
 import { updateInteractionViaMouse } from '../components/canvas/canvas-strategies/interaction-state'
 import { MouseButtonsPressed } from '../utils/mouse'
+import { getReparentTargetUnified } from '../components/canvas/canvas-strategies/reparent-strategy-helpers'
+import { getDragTargets } from '../components/canvas/canvas-strategies/shared-absolute-move-strategy-helpers'
+import { pickCanvasStateFromEditorState } from '../components/canvas/canvas-strategies/canvas-strategies'
+import { BuiltInDependencies } from '../core/es-modules/package-manager/built-in-dependencies-list'
 
 const webFrame = PROBABLY_ELECTRON ? requireElectron().webFrame : null
 
@@ -333,6 +338,7 @@ export function runLocalCanvasAction(
   dispatch: EditorDispatch,
   model: EditorState,
   derivedState: DerivedState,
+  builtinDependencies: BuiltInDependencies,
   action: CanvasAction,
 ): EditorState {
   // TODO BB horrorshow performance
@@ -408,15 +414,39 @@ export function runLocalCanvasAction(
           dispatch([CanvasActions.updateDragInteractionData({ globalTime: Date.now() })])
         }, 200)
       }
+      const metadata = model.canvas.interactionSession?.metadata ?? model.jsxMetadata
+      const allElementProps =
+        model.canvas.interactionSession?.allElementProps ?? model.allElementProps
+
+      const startingTargetParentToFilterOut =
+        model.canvas.interactionSession?.startingTargetParentToFilterOut ??
+        (() => {
+          if (action.interactionSession.interactionData.type !== 'DRAG') {
+            return null
+          }
+          const pointOnCanvas = offsetPoint(
+            action.interactionSession.interactionData.originalDragStart,
+            action.interactionSession.interactionData.drag ?? zeroCanvasPoint,
+          )
+          return getReparentTargetUnified(
+            getDragTargets(model.selectedViews),
+            pointOnCanvas,
+            action.interactionSession.interactionData.modifiers.cmd,
+            pickCanvasStateFromEditorState(model, builtinDependencies),
+            metadata,
+            allElementProps,
+          )
+        })()
+
       return {
         ...model,
         canvas: {
           ...model.canvas,
           interactionSession: {
             ...action.interactionSession,
-            metadata: model.canvas.interactionSession?.metadata ?? model.jsxMetadata,
-            allElementProps:
-              model.canvas.interactionSession?.allElementProps ?? model.allElementProps,
+            metadata: metadata,
+            allElementProps: allElementProps,
+            startingTargetParentToFilterOut: startingTargetParentToFilterOut,
           },
         },
       }
@@ -428,7 +458,7 @@ export function runLocalCanvasAction(
           ...model.canvas,
           interactionSession: null,
           domWalkerInvalidateCount: model.canvas.domWalkerInvalidateCount + 1,
-          controls: editorStateCanvasControls([], [], [], []),
+          controls: editorStateCanvasControls([], [], [], [], null, []),
         },
         jsxMetadata: {},
         domMetadata: {},

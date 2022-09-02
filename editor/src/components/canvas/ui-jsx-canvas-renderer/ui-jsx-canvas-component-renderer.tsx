@@ -124,6 +124,7 @@ export function createComponentRendererComponent(params: {
     const shouldIncludeCanvasRootInTheSpy = rerenderUtopiaContext.shouldIncludeCanvasRootInTheSpy
 
     const hiddenInstances = rerenderUtopiaContext.hiddenInstances
+    const displayNoneInstances = rerenderUtopiaContext.displayNoneInstances
     const sceneContext = usePubSubAtomReadOnly(SceneLevelUtopiaCtxAtom, shouldUpdate)
 
     let metadataContext: UiJsxCanvasContextData = usePubSubAtomReadOnly(
@@ -189,6 +190,7 @@ export function createComponentRendererComponent(params: {
         realPassedProps,
         mutableContext.requireResult,
         hiddenInstances,
+        displayNoneInstances,
         mutableContext.fileBlobs,
         sceneContext.validPaths,
         undefined,
@@ -233,6 +235,7 @@ export function createComponentRendererComponent(params: {
           realPassedProps,
           mutableContext.requireResult,
           hiddenInstances,
+          displayNoneInstances,
           mutableContext.fileBlobs,
           sceneContext.validPaths,
           realPassedProps['data-uid'],

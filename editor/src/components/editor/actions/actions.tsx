@@ -877,6 +877,7 @@ export function editorMoveMultiSelectedTemplates(
       editor.canvas.openFile?.filename,
       pathToReparent(target),
       newParentPath,
+      'on-complete', // TODO make sure this is the right pick here
     )
     if (outcomeResult == null) {
       return working
@@ -961,6 +962,7 @@ function restoreEditorState(currentEditor: EditorModel, history: StateHistory): 
     selectedViews: currentEditor.selectedViews,
     highlightedViews: currentEditor.highlightedViews,
     hiddenInstances: poppedEditor.hiddenInstances,
+    displayNoneInstances: poppedEditor.displayNoneInstances,
     warnedInstances: poppedEditor.warnedInstances,
     lockedElements: poppedEditor.lockedElements,
     mode: EditorModes.selectMode(),
@@ -2824,6 +2826,7 @@ export const UPDATE_FNS = {
           workingEditorState.canvas.openFile?.filename,
           elementToReparent(elementWithUniqueUID, currentValue.importsToAdd),
           action.pasteInto,
+          'always', // TODO Before merge make sure this is the right pick here
         )
 
         if (outcomeResult == null) {

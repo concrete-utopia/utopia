@@ -226,14 +226,14 @@ describe('Absolute Reparent To Flex Strategy', () => {
     }
     const flexParent = await renderResult.renderedDOM.findByTestId('flexparent')
     const flexParentRect = flexParent.getBoundingClientRect()
-    const flexParentCenter = {
-      x: flexParentRect.x + flexParentRect.width / 2,
+    const flexParentEnd = {
+      x: flexParentRect.x + flexParentRect.width - 15,
       y: flexParentRect.y + flexParentRect.height / 2,
     }
 
     const dragDelta = windowPoint({
-      x: flexParentCenter.x - absoluteChildCenter.x + 100,
-      y: flexParentCenter.y - absoluteChildCenter.y,
+      x: flexParentEnd.x - absoluteChildCenter.x,
+      y: flexParentEnd.y - absoluteChildCenter.y,
     })
     await act(() => dragElement(renderResult, 'absolutechild', dragDelta, cmdModifier))
 
@@ -320,6 +320,7 @@ describe('Absolute Reparent To Flex Strategy', () => {
       />
       <div
         style={{
+          position: 'relative',
           width: 100,
           height: 100,
           borderWidth: 10,
@@ -348,16 +349,16 @@ describe('Absolute Reparent To Flex Strategy', () => {
     }
     const firstFlexChild = await renderResult.renderedDOM.findByTestId('flexchild1')
     const firstFlexChildRect = firstFlexChild.getBoundingClientRect()
-    const firstFlexChildCenter = {
-      x: firstFlexChildRect.x + firstFlexChildRect.width / 2,
+    const firstFlexChildEnd = {
+      x: firstFlexChildRect.x + firstFlexChildRect.width - 5,
       y: firstFlexChildRect.y + firstFlexChildRect.height / 2,
     }
 
     await renderResult.getDispatchFollowUpActionsFinished()
 
     const dragDelta = windowPoint({
-      x: firstFlexChildCenter.x - absoluteChildCenter.x + 50,
-      y: firstFlexChildCenter.y - absoluteChildCenter.y,
+      x: firstFlexChildEnd.x - absoluteChildCenter.x + 50,
+      y: firstFlexChildEnd.y - absoluteChildCenter.y,
     })
     await act(() => dragElement(renderResult, 'absolutechild', dragDelta, cmdModifier))
 
@@ -432,6 +433,7 @@ describe('Absolute Reparent To Flex Strategy', () => {
       />
       <div
         style={{
+          position: 'relative',
           width: 100,
           height: 100,
           borderWidth: 10,

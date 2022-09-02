@@ -598,6 +598,8 @@ export interface EditorStateCanvasControls {
   snappingGuidelines: Array<GuidelineWithSnappingVector>
   outlineHighlights: Array<CanvasRectangle>
   strategyIntendedBounds: Array<CanvasFrameAndTarget>
+  flexReparentTargetLines: Array<CanvasRectangle>
+  parentHighlightPaths: Array<ElementPath> | null
   reparentedToPaths: Array<ElementPath>
 }
 
@@ -605,12 +607,16 @@ export function editorStateCanvasControls(
   snappingGuidelines: Array<GuidelineWithSnappingVector>,
   outlineHighlights: Array<CanvasRectangle>,
   strategyIntendedBounds: Array<CanvasFrameAndTarget>,
+  flexReparentTargetLines: Array<CanvasRectangle>,
+  parentHighlightPaths: Array<ElementPath> | null,
   reparentedToPaths: Array<ElementPath>,
 ): EditorStateCanvasControls {
   return {
     snappingGuidelines: snappingGuidelines,
     outlineHighlights: outlineHighlights,
     strategyIntendedBounds: strategyIntendedBounds,
+    flexReparentTargetLines: flexReparentTargetLines,
+    parentHighlightPaths: parentHighlightPaths,
     reparentedToPaths: reparentedToPaths,
   }
 }
@@ -853,6 +859,7 @@ export interface EditorState {
   selectedViews: Array<ElementPath>
   highlightedViews: Array<ElementPath>
   hiddenInstances: Array<ElementPath>
+  displayNoneInstances: Array<ElementPath>
   warnedInstances: Array<ElementPath>
   lockedElements: LockedElements
   mode: Mode
@@ -919,6 +926,7 @@ export function editorState(
   selectedViews: Array<ElementPath>,
   highlightedViews: Array<ElementPath>,
   hiddenInstances: Array<ElementPath>,
+  displayNoneInstances: Array<ElementPath>,
   warnedInstances: Array<ElementPath>,
   lockedElements: LockedElements,
   mode: Mode,
@@ -984,6 +992,7 @@ export function editorState(
     selectedViews: selectedViews,
     highlightedViews: highlightedViews,
     hiddenInstances: hiddenInstances,
+    displayNoneInstances: displayNoneInstances,
     warnedInstances: warnedInstances,
     lockedElements: lockedElements,
     mode: mode,
@@ -1695,6 +1704,7 @@ export function createEditorState(dispatch: EditorDispatch): EditorState {
     selectedViews: [],
     highlightedViews: [],
     hiddenInstances: [],
+    displayNoneInstances: [],
     warnedInstances: [],
     lockedElements: {
       simpleLock: [],
@@ -1756,6 +1766,8 @@ export function createEditorState(dispatch: EditorDispatch): EditorState {
         snappingGuidelines: [],
         outlineHighlights: [],
         strategyIntendedBounds: [],
+        flexReparentTargetLines: [],
+        parentHighlightPaths: null,
         reparentedToPaths: [],
       },
     },
@@ -1990,6 +2002,7 @@ export function editorModelFromPersistentModel(
     selectedViews: [],
     highlightedViews: [],
     hiddenInstances: persistentModel.hiddenInstances,
+    displayNoneInstances: [],
     warnedInstances: [],
     lockedElements: {
       simpleLock: [],
@@ -2051,6 +2064,8 @@ export function editorModelFromPersistentModel(
         snappingGuidelines: [],
         outlineHighlights: [],
         strategyIntendedBounds: [],
+        flexReparentTargetLines: [],
+        parentHighlightPaths: null,
         reparentedToPaths: [],
       },
     },
