@@ -282,33 +282,9 @@ export function newGetReparentTarget(
   metadata: ElementInstanceMetadataMap,
   allElementProps: AllElementProps,
 ): ReparentTarget {
-  const flexReparentResult = newGetReparentTargetInner(
-    cmdPressed,
-    metadata,
-    allElementProps,
-    canvasState.projectContents,
-    canvasState.openFile ?? null,
-    pointOnCanvas,
-    filteredSelectedElements,
-  )
+  const projectContents = canvasState.projectContents
+  const openFile = canvasState.openFile ?? null
 
-  return flexReparentResult
-}
-
-function newGetReparentTargetInner(
-  cmdPressed: boolean,
-  metadata: ElementInstanceMetadataMap,
-  allElementProps: AllElementProps,
-  projectContents: ProjectContentTreeRoot,
-  openFile: string | null,
-  point: CanvasPoint,
-  filteredSelectedElements: Array<ElementPath>,
-): {
-  shouldReparent: boolean
-  newParent: ElementPath | null
-  shouldReorder: boolean
-  newIndex: number
-} {
   const multiselectBounds: Size =
     MetadataUtils.getBoundingRectangleInCanvasCoords(filteredSelectedElements, metadata) ??
     size(0, 0)
@@ -318,7 +294,7 @@ function newGetReparentTargetInner(
     [],
     [],
     'no-filter',
-    point,
+    pointOnCanvas,
     allElementProps,
     false,
   )
@@ -392,7 +368,7 @@ function newGetReparentTargetInner(
     )
 
     const targetUnderMouseIndex = targets.findIndex((target) => {
-      return rectContainsPoint(target, point)
+      return rectContainsPoint(target, pointOnCanvas)
     })
 
     if (targetUnderMouseIndex > -1) {
@@ -436,7 +412,7 @@ function newGetReparentTargetInner(
     )
 
     const targetUnderMouseIndex = targets.findIndex((target) => {
-      return rectContainsPointInclusive(target, point)
+      return rectContainsPointInclusive(target, pointOnCanvas)
     })
 
     // found flex element, todo index
