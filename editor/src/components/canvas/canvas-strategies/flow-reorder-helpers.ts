@@ -196,6 +196,7 @@ function shouldRemoveDisplayProp(
     return false
   } else {
     return (
+      // TODO global css overrides can change these defaults
       defaultDisplayTypeForHTMLElement(element.specialSizeMeasurements.htmlElementName) ===
       newDisplayValue
     )

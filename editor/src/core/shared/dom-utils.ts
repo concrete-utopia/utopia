@@ -277,6 +277,7 @@ export function getDomRectCenter(rect: DOMRect): { x: number; y: number } {
 }
 
 export function defaultDisplayTypeForHTMLElement(elementName: string): 'inline' | 'block' | null {
+  // TODO global css overrides can change these defaults
   if (inlineHtmlElements.includes(elementName)) {
     return 'inline'
   } else if (blockLevelHtmlElements.includes(elementName)) {
