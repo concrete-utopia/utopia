@@ -14,7 +14,10 @@ import {
   CanvasStrategyId,
   ControlDelay,
   ControlWithKey,
+  insertionSubjects,
   InteractionCanvasState,
+  InteractionTarget,
+  targetPaths,
   StrategyApplicationResult,
 } from './canvas-strategy-types'
 import { InteractionSession, StrategyState } from './interaction-state'
@@ -28,6 +31,8 @@ import { absoluteReparentToFlexStrategy } from './absolute-reparent-to-flex-stra
 import { flexReparentToAbsoluteStrategy } from './flex-reparent-to-absolute-strategy'
 import { flexReparentToFlexStrategy } from './flex-reparent-to-flex-strategy'
 import { BuiltInDependencies } from '../../../core/es-modules/package-manager/built-in-dependencies-list'
+import { isInsertMode } from '../../editor/editor-modes'
+import { dragToInsertStrategy } from './drag-to-insert-strategy'
 
 export const RegisteredCanvasStrategies: Array<CanvasStrategy> = [
   absoluteMoveStrategy,
@@ -41,6 +46,7 @@ export const RegisteredCanvasStrategies: Array<CanvasStrategy> = [
   flexReparentToFlexStrategy,
   // escapeHatchStrategy,  // TODO re-enable once reparent is not tied to cmd
   absoluteReparentToFlexStrategy,
+  dragToInsertStrategy,
 ]
 
 export function pickCanvasStateFromEditorState(
@@ -49,12 +55,20 @@ export function pickCanvasStateFromEditorState(
 ): InteractionCanvasState {
   return {
     builtInDependencies: builtInDependencies,
-    selectedElements: editorState.selectedViews,
+    interactionTarget: getInteractionTargetFromEditorState(editorState),
     projectContents: editorState.projectContents,
     nodeModules: editorState.nodeModules.files,
     openFile: editorState.canvas.openFile?.filename,
     scale: editorState.canvas.scale,
     canvasOffset: editorState.canvas.roundedCanvasOffset,
+  }
+}
+
+function getInteractionTargetFromEditorState(editor: EditorState): InteractionTarget {
+  if (isInsertMode(editor.mode)) {
+    return insertionSubjects([editor.mode.subject])
+  } else {
+    return targetPaths(editor.selectedViews)
   }
 }
 

@@ -370,7 +370,6 @@ export class InsertModeControlContainer extends React.Component<
       ),
     )
     const setFocusAction = setFocus('canvas')
-
     if (
       insertionSubjectIsJSXElement(this.props.mode.subject) &&
       !this.props.mode.insertionStarted
@@ -378,7 +377,6 @@ export class InsertModeControlContainer extends React.Component<
       const insertionSubject = this.props.mode.subject
       const parent = safeIndex(this.props.highlightedViews, 0) ?? null
       const staticParent = parent == null ? null : EP.dynamicPathToStaticPath(parent)
-
       let { element } = this.props.mode.subject
       if (this.parentIsFlex(this.props.highlightedViews[0])) {
         element = {
@@ -431,14 +429,12 @@ export class InsertModeControlContainer extends React.Component<
     if (!this.props.mode.insertionStarted) {
       return
     }
-
     const baseActions: EditorAction[] = [
       EditorActions.updateEditorMode(EditorModes.selectMode()),
       EditorActions.setRightMenuTab(RightMenuTab.Inspector),
       EditorActions.clearHighlightedViews(),
       CanvasActions.clearDragState(false),
     ]
-
     if (insertionSubjectIsJSXElement(this.props.mode.subject)) {
       const insertionSubject = this.props.mode.subject
       const insertionElement = insertionSubject.element
@@ -447,7 +443,6 @@ export class InsertModeControlContainer extends React.Component<
         safeIndex(this.props.highlightedViews, 0) ??
         getStoryboardElementPath(this.props.projectContents, this.props.openFile)
       let extraActions: EditorAction[] = []
-
       if (
         this.props.dragState != null &&
         this.props.dragState.drag != null &&
@@ -468,7 +463,6 @@ export class InsertModeControlContainer extends React.Component<
         // TODO Hidden Instances
         element = this.elementWithDragFrame(insertionElement, 'set-zero-size-to-default')
       }
-
       if (element == null) {
         this.props.dispatch(baseActions, 'everyone')
       } else {
@@ -499,7 +493,6 @@ export class InsertModeControlContainer extends React.Component<
   onMouseMove = (e: MouseEvent) => {
     const mousePoint = this.props.windowToCanvasPosition(e).canvasPositionRounded
     const keepAspectRatio = this.props.keysPressed['shift'] || false
-
     if (insertionSubjectIsJSXElement(this.props.mode.subject)) {
       const insertionSubject = this.props.mode.subject
       const guidelines = collectSelfAndChildrenGuidelines(
@@ -507,14 +500,12 @@ export class InsertModeControlContainer extends React.Component<
         this.props.highlightedViews,
         this.props.mode.subject.uid,
       )
-
       const closestGuidelines = getSnappedGuidelinesForPoint(
         guidelines,
         null,
         mousePoint,
         this.props.scale,
       )
-
       if (
         this.props.mode.insertionStarted &&
         this.props.dragState != null &&
@@ -523,7 +514,6 @@ export class InsertModeControlContainer extends React.Component<
         const parent = this.props.highlightedViews[0]
         const staticParent = parent == null ? null : EP.dynamicPathToStaticPath(parent)
         let element = this.elementWithDragFrame(insertionSubject.element, 'allow-zero-size')
-
         const aspectRatioCorrectedMousePoint =
           this.state.aspectRatio != null
             ? correctToAspectRatio(this.props.dragState.start, mousePoint, this.state.aspectRatio)
@@ -554,7 +544,6 @@ export class InsertModeControlContainer extends React.Component<
           'everyone',
         )
       }
-
       this.setState({
         guidelines: closestGuidelines,
         mousePoint: mousePoint,
@@ -574,7 +563,6 @@ export class InsertModeControlContainer extends React.Component<
         ],
         'everyone',
       )
-
       this.setState({
         mousePoint: mousePoint,
       })
