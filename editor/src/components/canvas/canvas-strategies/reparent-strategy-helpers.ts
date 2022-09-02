@@ -626,8 +626,8 @@ export function applyFlexReparent(
           const commandsAfterReorder = [
             ...propertyChangeCommands,
             setElementsToRerenderCommand([target, newPath]),
-            // updateHighlightedViews('on-complete', []), // TODO WELP
-            setCursorCommand('on-complete', CSSCursor.Move),
+            updateHighlightedViews('mid-interaction', []),
+            setCursorCommand('mid-interaction', CSSCursor.Move),
           ]
 
           const newParentFlexDirection = MetadataUtils.getFlexDirection(
@@ -781,7 +781,7 @@ export function applyFlexReparent(
           }
 
           return {
-            commands: [...midInteractionCommands, ...interactionFinishCommands], // TODO REVIEW
+            commands: [...midInteractionCommands, ...interactionFinishCommands],
             customState: strategyState.customStrategyState,
           }
         }
