@@ -49,26 +49,20 @@ const scaleSelector = (store: EditorStorePatched) => store.editor.canvas.scale
 const GuidelineControl = React.memo<GuidelineProps>((props) => {
   const colorTheme = useColorTheme()
   const scale = useEditorState(scaleSelector, 'Guideline scale')
-  const controlRef = useGuideline(
-    props.index,
-    (result: { frame: CanvasRectangle; activateSnap: boolean } | null) => {
-      if (controlRef.current != null) {
-        if (result == null) {
-          controlRef.current.style.setProperty('display', 'none')
-        } else {
-          controlRef.current.style.setProperty('display', 'block')
-          controlRef.current.style.setProperty('left', `${result.frame.x - 0.5 / scale}px`)
-          controlRef.current.style.setProperty('top', `${result.frame.y - 0.5 / scale}px`)
-          controlRef.current.style.setProperty('width', `${result.frame.width}px`)
-          controlRef.current.style.setProperty('height', `${result.frame.height}px`)
-          controlRef.current.style.setProperty(
-            'border-style',
-            `${result.activateSnap ? 'solid' : 'dashed'}`,
-          )
-        }
+  const controlRef = useGuideline(props.index, (result: { frame: CanvasRectangle } | null) => {
+    if (controlRef.current != null) {
+      if (result == null) {
+        controlRef.current.style.setProperty('display', 'none')
+      } else {
+        controlRef.current.style.setProperty('display', 'block')
+        controlRef.current.style.setProperty('left', `${result.frame.x - 0.5 / scale}px`)
+        controlRef.current.style.setProperty('top', `${result.frame.y - 0.5 / scale}px`)
+        controlRef.current.style.setProperty('width', `${result.frame.width}px`)
+        controlRef.current.style.setProperty('height', `${result.frame.height}px`)
+        controlRef.current.style.setProperty('border-style', 'solid')
       }
-    },
-  )
+    }
+  })
 
   const key = `guideline-${props.index}`
   return (
@@ -91,12 +85,12 @@ const GuidelineControl = React.memo<GuidelineProps>((props) => {
 
 function useGuideline<T = HTMLDivElement>(
   index: number,
-  onChangeCallback: (result: { frame: CanvasRectangle; activateSnap: boolean } | null) => void,
+  onChangeCallback: (result: { frame: CanvasRectangle } | null) => void,
 ): React.RefObject<T> {
   const controlRef = React.useRef<T>(null)
 
   const guidelineCallback = React.useCallback(
-    (result: { frame: CanvasRectangle; activateSnap: boolean } | null) => {
+    (result: { frame: CanvasRectangle } | null) => {
       if (controlRef.current != null) {
         onChangeCallback(result)
       }
@@ -123,7 +117,6 @@ function useGuideline<T = HTMLDivElement>(
           })
           guidelineCallbackRef.current({
             frame: frame,
-            activateSnap: guidelineWithSnapping.activateSnap,
           })
           break
         }
@@ -136,7 +129,6 @@ function useGuideline<T = HTMLDivElement>(
           })
           guidelineCallbackRef.current({
             frame: frame,
-            activateSnap: guidelineWithSnapping.activateSnap,
           })
           break
         }
