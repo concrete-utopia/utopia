@@ -56,6 +56,7 @@ import {
   adjustCssLengthProperty,
 } from '../commands/adjust-css-length-command'
 import { updatePropIfExists } from '../commands/update-prop-if-exists-command'
+import { FlexReparentIndicatorSize } from '../controls/select-mode/flex-reparent-target-indicator'
 
 interface ReorderElement {
   distance: number
@@ -570,14 +571,36 @@ export function applyFlexReparent(
       if (
         reparentResult.shouldReparent &&
         reparentResult.newParent != null &&
-        filteredSelectedElements.length === 1
+        filteredSelectedElements.length === 1 // TODO remove the restriction of single select
       ) {
         const target = filteredSelectedElements[0]
+        const targetSize =
+          MetadataUtils.getFrameInCanvasCoords(target, strategyState.startingMetadata) ??
+          zeroCanvasRect
+
+        const newIndex = reparentResult.newIndex
         const newParent = reparentResult.newParent
+        const newParentMetadata = MetadataUtils.findElementByElementPath(
+          strategyState.startingMetadata,
+          newParent,
+        )
+        const parentRect = MetadataUtils.getFrameInCanvasCoords(
+          newParent,
+          strategyState.startingMetadata,
+        )
+        const newParentFlexDirection = MetadataUtils.getFlexDirection(newParentMetadata)
+        const parentFlexGap = newParentMetadata?.specialSizeMeasurements.flexGap ?? 0
+
         const newParentADescendantOfCurrentParent = EP.isDescendantOfOrEqualTo(
           newParent,
           EP.parentPath(target),
         )
+
+        const siblingsOfTarget = MetadataUtils.getChildrenPaths(
+          strategyState.startingMetadata,
+          newParent,
+        )
+
         // Reparent the element.
         const outcomeResult = getReparentOutcome(
           canvasState.builtInDependencies,
@@ -610,24 +633,8 @@ export function applyFlexReparent(
             setCursorCommand('mid-interaction', CSSCursor.Move),
           ]
 
-          const newParentFlexDirection = MetadataUtils.getFlexDirection(
-            MetadataUtils.findElementByElementPath(strategyState.startingMetadata, newParent),
-          )
-
           let interactionFinishCommands: Array<CanvasCommand>
           let midInteractionCommands: Array<CanvasCommand>
-
-          const siblingsOfTarget = MetadataUtils.getChildrenPaths(
-            strategyState.startingMetadata,
-            newParent,
-          )
-
-          const parentRect = MetadataUtils.getFrameInCanvasCoords(
-            newParent,
-            strategyState.startingMetadata,
-          )
-
-          const newIndex = reparentResult.newIndex
 
           if (reparentResult.shouldReorder && newIndex < siblingsOfTarget.length) {
             // Reorder the newly reparented element into the flex ordering.
@@ -643,18 +650,18 @@ export function applyFlexReparent(
               ][newIndex] ?? zeroCanvasRect
 
             const targetLineBeforeSibling: CanvasRectangle =
-              newParentFlexDirection === 'row'
+              newParentFlexDirection === 'row' // TODO handle row-reverse and col-reverse
                 ? canvasRectangle({
-                    x: siblingPosition?.x,
-                    y: siblingPosition?.y,
-                    height: siblingPosition?.height,
-                    width: 2,
+                    x: siblingPosition.x - parentFlexGap / 2 - FlexReparentIndicatorSize / 2,
+                    y: siblingPosition.y,
+                    height: targetSize.height,
+                    width: FlexReparentIndicatorSize,
                   })
                 : canvasRectangle({
-                    x: siblingPosition?.x,
-                    y: siblingPosition?.y,
-                    width: siblingPosition?.width,
-                    height: 2,
+                    x: siblingPosition.x,
+                    y: siblingPosition.y - parentFlexGap / 2 - FlexReparentIndicatorSize / 2,
+                    width: targetSize.width,
+                    height: FlexReparentIndicatorSize,
                   })
 
             midInteractionCommands = [
@@ -690,16 +697,24 @@ export function applyFlexReparent(
               const targetLineAfterSibling: CanvasRectangle =
                 newParentFlexDirection === 'row'
                   ? canvasRectangle({
-                      x: siblingPosition.x + siblingPosition.width,
+                      x:
+                        siblingPosition.x +
+                        siblingPosition.width +
+                        parentFlexGap / 2 +
+                        FlexReparentIndicatorSize / 2,
                       y: siblingPosition.y,
-                      height: siblingPosition.height,
-                      width: 2,
+                      height: targetSize.height,
+                      width: FlexReparentIndicatorSize,
                     })
                   : canvasRectangle({
                       x: siblingPosition.x,
-                      y: siblingPosition.y + siblingPosition.height,
-                      width: siblingPosition?.width,
-                      height: 2,
+                      y:
+                        siblingPosition.y +
+                        siblingPosition.height +
+                        parentFlexGap / 2 +
+                        FlexReparentIndicatorSize / 2,
+                      width: targetSize?.width,
+                      height: FlexReparentIndicatorSize,
                     })
 
               midInteractionCommands = [
@@ -723,16 +738,16 @@ export function applyFlexReparent(
               const targetLineBeginningOfParent: CanvasRectangle =
                 newParentFlexDirection === 'row'
                   ? canvasRectangle({
-                      x: parentRect.x,
+                      x: parentRect.x, // TODO offset the insert line by half the flex gap?
                       y: parentRect.y,
-                      height: parentRect.height,
-                      width: 2,
+                      height: targetSize.height,
+                      width: FlexReparentIndicatorSize,
                     })
                   : canvasRectangle({
                       x: parentRect.x,
                       y: parentRect.y,
-                      width: parentRect.width,
-                      height: 2,
+                      width: targetSize.width,
+                      height: FlexReparentIndicatorSize,
                     })
 
               midInteractionCommands = [
