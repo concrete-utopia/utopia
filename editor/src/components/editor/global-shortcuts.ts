@@ -110,10 +110,20 @@ import {
   TOGGLE_FOCUSED_OMNIBOX_TAB,
   FOCUS_CLASS_NAME_INPUT,
 } from './shortcut-definitions'
-import { DerivedState, EditorState, getOpenFile } from './store/editor-state'
+import { DerivedState, EditorState, getOpenFile, RightMenuTab } from './store/editor-state'
 import { CanvasMousePositionRaw, WindowMousePositionRaw } from '../../utils/global-positions'
 import { getDragStateStart } from '../canvas/canvas-utils'
 import { isFeatureEnabled } from '../../utils/feature-switches'
+
+function cancelInsertModeActions(): Array<EditorAction> {
+  return [
+    EditorActions.switchEditorMode(EditorModes.selectMode()),
+    CanvasActions.clearDragState(false),
+    EditorActions.clearHighlightedViews(),
+    CanvasActions.clearInteractionSession(false),
+    EditorActions.setRightMenuTab(RightMenuTab.Inspector),
+  ]
+}
 
 function updateKeysPressed(
   keysPressed: KeysPressed,
@@ -429,12 +439,8 @@ export function handleKeyDown(
         }
       },
       [CANCEL_EVERYTHING_SHORTCUT]: () => {
-        if (isInsertMode(editor.mode)) {
-          return [
-            EditorActions.switchEditorMode(EditorModes.selectMode()),
-            CanvasActions.clearDragState(false),
-            EditorActions.clearHighlightedViews(),
-          ]
+        if (isInsertMode(editor.mode) || editor.rightMenu.selectedTab === RightMenuTab.Insert) {
+          return cancelInsertModeActions()
         } else if (
           editor.canvas.dragState != null &&
           getDragStateStart(editor.canvas.dragState, editor.canvas.resizeOptions) != null
@@ -449,8 +455,6 @@ export function handleKeyDown(
         // TODO: Move this around.
         if (isLiveMode(editor.mode)) {
           return [EditorActions.updateEditorMode(EditorModes.selectMode(editor.mode.controlId))]
-        } else if (isInsertMode(editor.mode)) {
-          return [EditorActions.updateEditorMode(EditorModes.selectMode())]
         }
         return []
       },
