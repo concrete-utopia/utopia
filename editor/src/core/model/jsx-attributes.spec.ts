@@ -651,10 +651,10 @@ describe('getModifiableJSXAttributeAtPath', () => {
       PP.create(['bad', 'path']),
     )
     expect(isRight(impossibleAttribute)).toBeTruthy()
-    expect((impossibleAttribute.value as any).value).toEqual(undefined)
+    expect(impossibleAttribute.value as any).toEqual(jsxAttributeNotFound())
 
     // this is an interesting case. we actually drilled into a found value object, but then did not find anything for this path
-    // so now we return a right(undefined),
+    // so now we return a right(JSXAttributeNotFound),
     // where the meaning is: you can dispatch an action to set this path, but right now it
     // does not contain any real value
     const impossibleAttributeInsideAValue = getModifiableJSXAttributeAtPath(
@@ -662,7 +662,7 @@ describe('getModifiableJSXAttributeAtPath', () => {
       PP.create(['top', 'what']),
     )
     expect(isRight(impossibleAttributeInsideAValue)).toBeTruthy()
-    expect((impossibleAttributeInsideAValue.value as any).value).toEqual(undefined)
+    expect(impossibleAttributeInsideAValue.value).toEqual(jsxAttributeNotFound())
   })
 })
 

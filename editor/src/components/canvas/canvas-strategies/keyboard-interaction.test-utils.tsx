@@ -44,6 +44,7 @@ export function pressKeys(
     ),
     metadata: metadata,
     allElementProps: null as any,
+    startingTargetParentToFilterOut: null,
   }
 
   const strategyResult = strategy.apply(

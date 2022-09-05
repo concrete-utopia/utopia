@@ -69,6 +69,7 @@ function dragByPixelsIsApplicable(
     ),
     metadata: null as any, // the strategy does not use this
     allElementProps: null as any, // the strategy does not use this
+    startingTargetParentToFilterOut: null,
   }
 
   return absoluteDuplicateStrategy.isApplicable(

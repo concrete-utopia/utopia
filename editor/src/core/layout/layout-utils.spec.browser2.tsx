@@ -32,114 +32,16 @@ const NewUID = 'catdog'
 
 describe('pasteJSXElements', () => {
   it('removes pin related layout props when pasting to flex element', async () => {
-    // Code kept commented for any future person who needs it.
-    //const currentWindow = require('electron').remote.getCurrentWindow()
-    //currentWindow.show()
-    //currentWindow.setPosition(500, 200)
-    //currentWindow.setSize(2200, 1000)
-    //currentWindow.openDevTools()
-    // This is necessary because the test code races against the Electron process
-    // opening the window it would appear.
-    //await wait(20000)
-    const renderResult = await renderTestEditorWithCode(
-      makeTestProjectCodeWithSnippet(`
-      <View style={{ ...props.style }} data-uid='aaa'>
-        <View
-          style={{ backgroundColor: '#DDDDDD', left: 52, top: 61, width: 256, height: 202, display: 'flex' }}
-          data-uid='bbb'
-        />
-      </View>
-      `),
-      'await-first-dom-report',
-    )
+    const renderResult = await createStarterEditor()
 
     await renderResult.dispatch(
       [selectComponents([EP.appendNewElementPath(TestScenePath, ['aaa', 'bbb'])], false)],
       false,
     )
     FOR_TESTS_setNextGeneratedUid(NewUID)
-    const elementToPaste = jsxElement(
-      'View',
-      NewUID,
-      jsxAttributesFromMap({
-        style: jsxAttributeNestedObjectSimple(
-          jsxAttributesFromMap({
-            bottom: jsxAttributeValue(50, emptyComments),
-            right: jsxAttributeValue(50, emptyComments),
-            width: jsxAttributeValue(100, emptyComments),
-            height: jsxAttributeValue(100, emptyComments),
-          }),
-          emptyComments,
-        ),
-        'data-uid': jsxAttributeValue(NewUID, emptyComments),
-      }),
-      [],
-    )
-    const elementPath = EP.appendNewElementPath(TestScenePath, [NewUID])
 
-    const metadata: ElementInstanceMetadataMap = {
-      [EP.toString(TestScenePath)]: {
-        elementPath: TestScenePath,
-        element: left('Scene'),
-        globalFrame: { x: 0, y: 0, width: 375, height: 812 } as CanvasRectangle,
-        localFrame: { x: 0, y: 0, width: 375, height: 812 } as LocalRectangle,
-        componentInstance: false,
-        isEmotionOrStyledComponent: false,
-        specialSizeMeasurements: emptySpecialSizeMeasurements,
-        computedStyle: emptyComputedStyle,
-        attributeMetadatada: emptyAttributeMetadatada,
-        label: null,
-        importInfo: null,
-      },
-      [EP.toString(elementPath)]: {
-        elementPath: elementPath,
-        element: right(elementToPaste),
-        globalFrame: { x: 0, y: 0, width: 375, height: 812 } as CanvasRectangle,
-        localFrame: { x: 0, y: 0, width: 375, height: 812 } as LocalRectangle,
-        componentInstance: true,
-        isEmotionOrStyledComponent: false,
-        specialSizeMeasurements: specialSizeMeasurements(
-          { x: 0, y: 0 } as any,
-          null,
-          null,
-          true,
-          EP.emptyElementPath,
-          true,
-          'none',
-          'none',
-          false,
-          'block',
-          'absolute',
-          sides(undefined, undefined, undefined, undefined),
-          sides(undefined, undefined, undefined, undefined),
-          null,
-          null,
-          0,
-          0,
-          null,
-          null,
-          'div',
-          0,
-          null,
-        ),
-        computedStyle: emptyComputedStyle,
-        attributeMetadatada: emptyAttributeMetadatada,
-        label: null,
-        importInfo: null,
-      },
-    }
+    const pasteElements = createPasteElementAction('element-with-no-position')
 
-    const pasteElements = pasteJSXElements(
-      EP.appendNewElementPath(TestScenePath, ['aaa', 'bbb']),
-      [
-        elementPaste(
-          elementToPaste,
-          emptyImports(),
-          EP.appendNewElementPath(TestScenePath, [NewUID]),
-        ),
-      ],
-      metadata,
-    )
     await renderResult.dispatch([pasteElements], true)
 
     expect(getPrintedUiJsCode(renderResult.getEditorState())).toEqual(
@@ -158,4 +60,141 @@ describe('pasteJSXElements', () => {
       ),
     )
   })
+
+  it('removes pin related layout props when pasting to flex element, turns position absolute into relative', async () => {
+    const renderResult = await createStarterEditor()
+
+    await renderResult.dispatch(
+      [selectComponents([EP.appendNewElementPath(TestScenePath, ['aaa', 'bbb'])], false)],
+      false,
+    )
+    FOR_TESTS_setNextGeneratedUid(NewUID)
+
+    const pasteElements = createPasteElementAction('element-with-position-absolute')
+
+    await renderResult.dispatch([pasteElements], true)
+
+    expect(getPrintedUiJsCode(renderResult.getEditorState())).toEqual(
+      makeTestProjectCodeWithSnippet(
+        `<View
+          style={{ ...props.style }}
+          data-uid='aaa'
+        >
+          <View
+            style={{ backgroundColor: '#DDDDDD', left: 52, top: 61, width: 256, height: 202, display: 'flex' }}
+            data-uid='bbb'
+          >
+            <View style={{ width: 100, height: 100, position: 'relative' }} data-uid='catdog' />
+          </View>
+        </View>`,
+      ),
+    )
+  })
 })
+
+async function createStarterEditor() {
+  const renderResult = await renderTestEditorWithCode(
+    makeTestProjectCodeWithSnippet(`
+    <View style={{ ...props.style }} data-uid='aaa'>
+      <View
+        style={{ backgroundColor: '#DDDDDD', left: 52, top: 61, width: 256, height: 202, display: 'flex' }}
+        data-uid='bbb'
+      />
+    </View>
+    `),
+    'await-first-dom-report',
+  )
+  return renderResult
+}
+
+function createPasteElementAction(
+  positionProp: 'element-with-position-absolute' | 'element-with-no-position',
+) {
+  const elementToPaste = jsxElement(
+    'View',
+    NewUID,
+    jsxAttributesFromMap({
+      style: jsxAttributeNestedObjectSimple(
+        jsxAttributesFromMap({
+          bottom: jsxAttributeValue(50, emptyComments),
+          right: jsxAttributeValue(50, emptyComments),
+          width: jsxAttributeValue(100, emptyComments),
+          height: jsxAttributeValue(100, emptyComments),
+          ...(positionProp === 'element-with-position-absolute'
+            ? { position: jsxAttributeValue('absolute', emptyComments) }
+            : {}),
+        }),
+        emptyComments,
+      ),
+      'data-uid': jsxAttributeValue(NewUID, emptyComments),
+    }),
+    [],
+  )
+  const elementPath = EP.appendNewElementPath(TestScenePath, [NewUID])
+
+  const metadata: ElementInstanceMetadataMap = {
+    [EP.toString(TestScenePath)]: {
+      elementPath: TestScenePath,
+      element: left('Scene'),
+      globalFrame: { x: 0, y: 0, width: 375, height: 812 } as CanvasRectangle,
+      localFrame: { x: 0, y: 0, width: 375, height: 812 } as LocalRectangle,
+      componentInstance: false,
+      isEmotionOrStyledComponent: false,
+      specialSizeMeasurements: emptySpecialSizeMeasurements,
+      computedStyle: emptyComputedStyle,
+      attributeMetadatada: emptyAttributeMetadatada,
+      label: null,
+      importInfo: null,
+    },
+    [EP.toString(elementPath)]: {
+      elementPath: elementPath,
+      element: right(elementToPaste),
+      globalFrame: { x: 0, y: 0, width: 375, height: 812 } as CanvasRectangle,
+      localFrame: { x: 0, y: 0, width: 375, height: 812 } as LocalRectangle,
+      componentInstance: true,
+      isEmotionOrStyledComponent: false,
+      specialSizeMeasurements: specialSizeMeasurements(
+        { x: 0, y: 0 } as any,
+        null,
+        null,
+        true,
+        EP.emptyElementPath,
+        true,
+        'none',
+        'none',
+        false,
+        'block',
+        'absolute',
+        sides(undefined, undefined, undefined, undefined),
+        sides(undefined, undefined, undefined, undefined),
+        null,
+        null,
+        0,
+        0,
+        null,
+        null,
+        'div',
+        0,
+        null,
+      ),
+      computedStyle: emptyComputedStyle,
+      attributeMetadatada: emptyAttributeMetadatada,
+      label: null,
+      importInfo: null,
+    },
+  }
+
+  const pasteElements = pasteJSXElements(
+    EP.appendNewElementPath(TestScenePath, ['aaa', 'bbb']),
+    [
+      elementPaste(
+        elementToPaste,
+        emptyImports(),
+        EP.appendNewElementPath(TestScenePath, [NewUID]),
+      ),
+    ],
+    metadata,
+  )
+
+  return pasteElements
+}

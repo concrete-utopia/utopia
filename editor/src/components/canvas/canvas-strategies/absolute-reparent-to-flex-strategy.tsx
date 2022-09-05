@@ -4,6 +4,7 @@ import { AllElementProps } from '../../editor/store/editor-state'
 import { ParentBounds } from '../controls/parent-bounds'
 import { ParentOutlines } from '../controls/parent-outlines'
 import { DragOutlineControl } from '../controls/select-mode/drag-outline-control'
+import { FlexReparentTargetIndicator } from '../controls/select-mode/flex-reparent-target-indicator'
 import {
   CanvasStrategy,
   getTargetPathsFromInteractionTarget,
@@ -27,8 +28,7 @@ export const absoluteReparentToFlexStrategy: CanvasStrategy = {
     if (
       selectedElements.length === 1 &&
       interactionSession != null &&
-      interactionSession.interactionData.type === 'DRAG' &&
-      interactionSession.interactionData.modifiers.cmd
+      interactionSession.interactionData.type === 'DRAG'
     ) {
       const filteredSelectedElements = getDragTargets(selectedElements)
       if (filteredSelectedElements.length === 1) {
@@ -56,6 +56,11 @@ export const absoluteReparentToFlexStrategy: CanvasStrategy = {
     {
       control: ParentBounds,
       key: 'parent-bounds-control',
+      show: 'visible-only-while-active',
+    },
+    {
+      control: FlexReparentTargetIndicator,
+      key: 'flex-reparent-target-indicator',
       show: 'visible-only-while-active',
     },
   ],

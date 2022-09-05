@@ -67,6 +67,7 @@ export function getReparentOutcome(
   openFile: string | null | undefined,
   toReparent: ToReparent,
   targetParent: ElementPath | null,
+  whenToRun: 'always' | 'on-complete',
 ): GetReparentOutcomeResult | null {
   // Cater for something being reparented to the canvas.
   let newParent: ElementPath
@@ -121,21 +122,23 @@ export function getReparentOutcome(
         newTargetFilePath,
         builtInDependencies,
       )
-      commands.push(addImportsToFile('always', newTargetFilePath, importsToAdd))
-      commands.push(reparentElement('always', toReparent.target, newParent))
+      commands.push(addImportsToFile(whenToRun, newTargetFilePath, importsToAdd))
+      commands.push(reparentElement(whenToRun, toReparent.target, newParent))
       newPath = EP.appendToPath(newParent, EP.toUid(toReparent.target))
       break
     case 'ELEMENT_TO_REPARENT':
       newPath = EP.appendToPath(newParent, getUtopiaID(toReparent.element))
-      commands.push(addImportsToFile('always', newTargetFilePath, toReparent.imports))
-      commands.push(addElement('always', newParent, toReparent.element))
+      commands.push(addImportsToFile(whenToRun, newTargetFilePath, toReparent.imports))
+      commands.push(addElement(whenToRun, newParent, toReparent.element))
       break
     default:
       const _exhaustiveCheck: never = toReparent
       throw new Error(`Unhandled to reparent value ${JSON.stringify(toReparent)}`)
   }
 
-  commands.push(addToReparentedToPaths('mid-interaction', [newPath]))
+  if (whenToRun === 'always') {
+    commands.push(addToReparentedToPaths('mid-interaction', [newPath]))
+  }
 
   return {
     commands: commands,

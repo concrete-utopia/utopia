@@ -70,6 +70,7 @@ function createEditorStore(
       ...interactionSession,
       metadata: {},
       allElementProps: {},
+      startingTargetParentToFilterOut: null,
     }
   }
 
@@ -279,7 +280,7 @@ describe('interactionStart', () => {
           "escapeHatchActivated": false,
           "lastReorderIdx": null,
         },
-        "sortedApplicableStrategies": Array [],
+        "sortedApplicableStrategies": null,
         "startingAllElementProps": Object {},
         "startingMetadata": Object {},
       }
@@ -403,7 +404,7 @@ describe('interactionUpdatex', () => {
           "escapeHatchActivated": false,
           "lastReorderIdx": null,
         },
-        "sortedApplicableStrategies": Array [],
+        "sortedApplicableStrategies": null,
         "startingAllElementProps": Object {},
         "startingMetadata": Object {},
       }
@@ -560,7 +561,7 @@ describe('interactionHardReset', () => {
           "escapeHatchActivated": false,
           "lastReorderIdx": null,
         },
-        "sortedApplicableStrategies": Array [],
+        "sortedApplicableStrategies": null,
         "startingAllElementProps": Object {},
         "startingMetadata": Object {},
       }
@@ -779,7 +780,7 @@ describe('interactionUpdate with user changed strategy', () => {
           "escapeHatchActivated": false,
           "lastReorderIdx": null,
         },
-        "sortedApplicableStrategies": Array [],
+        "sortedApplicableStrategies": null,
         "startingAllElementProps": Object {},
         "startingMetadata": Object {},
       }

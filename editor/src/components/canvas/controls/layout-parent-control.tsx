@@ -42,6 +42,7 @@ export const LayoutParentControl = React.memo((): JSX.Element | null => {
   const { parentTarget, parentLayout, parentFrame, flexWrap, flexDirection, alignItems } =
     useEditorState((store) => {
       if (
+        store.editor.canvas.controls.flexReparentTargetLines != null ||
         store.editor.selectedViews.length !== 1 ||
         store.editor.selectedViews.some((path) => EP.isStoryboardChild(path))
       ) {

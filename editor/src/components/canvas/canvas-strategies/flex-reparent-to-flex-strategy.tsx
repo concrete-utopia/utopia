@@ -2,6 +2,7 @@ import { MetadataUtils } from '../../../core/model/element-metadata-utils'
 import { ParentBounds } from '../controls/parent-bounds'
 import { ParentOutlines } from '../controls/parent-outlines'
 import { DragOutlineControl } from '../controls/select-mode/drag-outline-control'
+import { FlexReparentTargetIndicator } from '../controls/select-mode/flex-reparent-target-indicator'
 import { CanvasStrategy, getTargetPathsFromInteractionTarget } from './canvas-strategy-types'
 import { applyFlexReparent, findReparentStrategy } from './reparent-strategy-helpers'
 
@@ -33,6 +34,11 @@ export const flexReparentToFlexStrategy: CanvasStrategy = {
     {
       control: ParentBounds,
       key: 'parent-bounds-control',
+      show: 'visible-only-while-active',
+    },
+    {
+      control: FlexReparentTargetIndicator,
+      key: 'flex-reparent-target-indicator',
       show: 'visible-only-while-active',
     },
   ],

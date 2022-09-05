@@ -118,7 +118,7 @@ export const absoluteDuplicateStrategy: CanvasStrategy = {
           ...duplicateCommands,
           setElementsToRerenderCommand([...selectedElements, ...newPaths]),
           updateSelectedViews('always', newPaths),
-          updateFunctionCommand('always', (editorState, transient) =>
+          updateFunctionCommand('always', (editorState, lifecycle) =>
             runMoveStrategyForFreshlyDuplicatedElements(
               canvasState.builtInDependencies,
               editorState,
@@ -127,7 +127,7 @@ export const absoluteDuplicateStrategy: CanvasStrategy = {
                 startingMetadata: withDuplicatedMetadata,
               },
               interactionState,
-              transient,
+              lifecycle,
             ),
           ),
           setCursorCommand('mid-interaction', CSSCursor.Duplicate),

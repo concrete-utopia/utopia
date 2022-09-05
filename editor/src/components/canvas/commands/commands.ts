@@ -39,6 +39,7 @@ import { runUpdateFunctionCommand, UpdateFunctionCommand } from './update-functi
 import { runPushIntendedBounds, PushIntendedBounds } from './push-intended-bounds-command'
 import { DeleteProperties, runDeleteProperties } from './delete-properties-command'
 import { AddImportsToFile, runAddImportsToFile } from './add-imports-to-file-command'
+import { runSetProperty, SetProperty } from './set-property-command'
 import {
   runAddToReparentedToPaths,
   AddToReparentedToPaths,
@@ -49,6 +50,7 @@ import {
   runInsertElementInsertionSubject,
 } from './insert-element-insertion-subject'
 import { AddElement, runAddElement } from './add-element-command'
+import { runUpdatePropIfExists, UpdatePropIfExists } from './update-prop-if-exists-command'
 
 export interface CommandFunctionResult {
   editorStatePatches: Array<EditorStatePatch>
@@ -82,6 +84,8 @@ export type CanvasCommand =
   | SetElementsToRerenderCommand
   | PushIntendedBounds
   | DeleteProperties
+  | SetProperty
+  | UpdatePropIfExists
   | AddImportsToFile
   | AddToReparentedToPaths
   | InsertElementInsertionSubject
@@ -130,6 +134,10 @@ export const runCanvasCommand = (
       return runPushIntendedBounds(editorState, command)
     case 'DELETE_PROPERTIES':
       return runDeleteProperties(editorState, command)
+    case 'SET_PROPERTY':
+      return runSetProperty(editorState, command)
+    case 'UPDATE_PROP_IF_EXISTS':
+      return runUpdatePropIfExists(editorState, command)
     case 'ADD_IMPORTS_TO_FILE':
       return runAddImportsToFile(editorState, command)
     case 'ADD_TO_REPARENTED_TO_PATHS':

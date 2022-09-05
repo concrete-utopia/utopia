@@ -151,6 +151,7 @@ export interface UiJsxCanvasProps {
   curriedRequireFn: CurriedUtopiaRequireFn
   curriedResolveFn: CurriedResolveFn
   hiddenInstances: ElementPath[]
+  displayNoneInstances: Array<ElementPath>
   editedTextElement: ElementPath | null
   base64FileBlobs: CanvasBase64Blobs
   mountCount: number
@@ -224,6 +225,7 @@ export function pickUiJsxCanvasProps(
       curriedRequireFn: editor.codeResultCache.curriedRequireFn,
       curriedResolveFn: editor.codeResultCache.curriedResolveFn,
       hiddenInstances: hiddenInstances,
+      displayNoneInstances: editor.displayNoneInstances,
       editedTextElement: editedTextElement,
       base64FileBlobs: editor.canvas.base64Blobs,
       mountCount: editor.canvas.mountCount,
@@ -298,6 +300,7 @@ export const UiJsxCanvas = React.memo<UiJsxCanvasPropsWithErrorCallback>((props)
     curriedRequireFn,
     curriedResolveFn,
     hiddenInstances,
+    displayNoneInstances,
     imports_KILLME: imports, // FIXME this is the storyboard imports object used only for the cssimport
     clearErrors,
     clearConsoleLogs,
@@ -399,6 +402,7 @@ export const UiJsxCanvas = React.memo<UiJsxCanvasPropsWithErrorCallback>((props)
         transientFilesState,
         base64FileBlobs,
         hiddenInstances,
+        displayNoneInstances,
         metadataContext,
         updateInvalidatedPaths,
         shouldIncludeCanvasRootInTheSpy,
@@ -425,6 +429,7 @@ export const UiJsxCanvas = React.memo<UiJsxCanvasPropsWithErrorCallback>((props)
       uiFilePath,
       base64FileBlobs,
       hiddenInstances,
+      displayNoneInstances,
       metadataContext,
       updateInvalidatedPaths,
       shouldIncludeCanvasRootInTheSpy,
@@ -441,6 +446,7 @@ export const UiJsxCanvas = React.memo<UiJsxCanvasPropsWithErrorCallback>((props)
     props.transientFilesState,
     base64FileBlobs,
     hiddenInstances,
+    displayNoneInstances,
     metadataContext,
     updateInvalidatedPaths,
     props.shouldIncludeCanvasRootInTheSpy,
@@ -478,6 +484,7 @@ export const UiJsxCanvas = React.memo<UiJsxCanvasPropsWithErrorCallback>((props)
 
   const rerenderUtopiaContextValue = useKeepShallowReferenceEquality({
     hiddenInstances: hiddenInstances,
+    displayNoneInstances: displayNoneInstances,
     canvasIsLive: canvasIsLive,
     shouldIncludeCanvasRootInTheSpy: props.shouldIncludeCanvasRootInTheSpy,
   })
@@ -494,7 +501,14 @@ export const UiJsxCanvas = React.memo<UiJsxCanvasPropsWithErrorCallback>((props)
       <StoryboardRootComponent {...{ [UTOPIA_INSTANCE_PATH]: rootInstancePath }} />
     )
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [StoryboardRootComponent, rootInstancePath, props.domWalkerInvalidateCount, props.mountCount])
+  }, [
+    StoryboardRootComponent,
+    rootInstancePath,
+    props.domWalkerInvalidateCount,
+    props.mountCount,
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+    props.elementsToRerender,
+  ])
 
   return (
     <div
@@ -532,6 +546,7 @@ function attemptToResolveParsedComponents(
   transientFilesState: TransientFilesState | null,
   base64FileBlobs: CanvasBase64Blobs,
   hiddenInstances: ElementPath[],
+  displayNoneInstances: Array<ElementPath>,
   metadataContext: UiJsxCanvasContextData,
   updateInvalidatedPaths: UpdateMutableCallback<Set<string>>,
   shouldIncludeCanvasRootInTheSpy: boolean,
@@ -562,6 +577,7 @@ function attemptToResolveParsedComponents(
           transientFilesState,
           base64FileBlobs,
           hiddenInstances,
+          displayNoneInstances,
           metadataContext,
           updateInvalidatedPaths,
           shouldIncludeCanvasRootInTheSpy,

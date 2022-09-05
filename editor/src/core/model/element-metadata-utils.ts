@@ -882,6 +882,14 @@ export const MetadataUtils = {
     const element = MetadataUtils.findElementByElementPath(metadata, path)
     return Utils.optionalMap((e) => e.globalFrame, element)
   },
+  getBoundingRectangleInCanvasCoords(
+    paths: Array<ElementPath>,
+    metadata: ElementInstanceMetadataMap,
+  ): CanvasRectangle | null {
+    return boundingRectangleArray(
+      paths.map((path) => MetadataUtils.getFrameInCanvasCoords(path, metadata)),
+    )
+  },
   getFrame(path: ElementPath, metadata: ElementInstanceMetadataMap): LocalRectangle | null {
     const element = MetadataUtils.findElementByElementPath(metadata, path)
     return Utils.optionalMap((e) => e.localFrame, element)
