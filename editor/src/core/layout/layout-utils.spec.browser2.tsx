@@ -176,6 +176,7 @@ function createPasteElementAction(
         'div',
         0,
         null,
+        null,
       ),
       computedStyle: emptyComputedStyle,
       attributeMetadatada: emptyAttributeMetadatada,

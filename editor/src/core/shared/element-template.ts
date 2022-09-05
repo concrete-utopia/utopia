@@ -1607,6 +1607,7 @@ export interface SpecialSizeMeasurements {
   htmlElementName: string
   renderedChildrenCount: number
   globalContentBox: CanvasRectangle | null
+  flexGap: number | null
 }
 
 export function specialSizeMeasurements(
@@ -1632,6 +1633,7 @@ export function specialSizeMeasurements(
   htmlElementName: string,
   renderedChildrenCount: number,
   globalContentBox: CanvasRectangle | null,
+  flexGap: number | null,
 ): SpecialSizeMeasurements {
   return {
     offset,
@@ -1656,6 +1658,7 @@ export function specialSizeMeasurements(
     htmlElementName,
     renderedChildrenCount,
     globalContentBox,
+    flexGap,
   }
 }
 
@@ -1684,6 +1687,7 @@ export const emptySpecialSizeMeasurements = specialSizeMeasurements(
   null,
   'div',
   0,
+  null,
   null,
 )
 

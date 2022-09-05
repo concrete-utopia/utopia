@@ -1208,6 +1208,7 @@ export function SpecialSizeMeasurementsKeepDeepEquality(): KeepDeepEqualityCall<
       oldSize.globalContentBox,
       newSize.globalContentBox,
     ).areEqual
+    const flexGapEquals = oldSize.flexGap === newSize.flexGap
     const areEqual =
       offsetResult.areEqual &&
       coordinateSystemBoundsResult.areEqual &&
@@ -1230,7 +1231,8 @@ export function SpecialSizeMeasurementsKeepDeepEquality(): KeepDeepEqualityCall<
       displayEquals &&
       htmlElementNameEquals &&
       renderedChildrenCount &&
-      globalContentBoxEquals
+      globalContentBoxEquals &&
+      flexGapEquals
     if (areEqual) {
       return keepDeepEqualityResult(oldSize, true)
     } else {
@@ -1257,6 +1259,7 @@ export function SpecialSizeMeasurementsKeepDeepEquality(): KeepDeepEqualityCall<
         newSize.htmlElementName,
         newSize.renderedChildrenCount,
         newSize.globalContentBox,
+        newSize.flexGap,
       )
       return keepDeepEqualityResult(sizeMeasurements, false)
     }

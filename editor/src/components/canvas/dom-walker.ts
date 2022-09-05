@@ -19,7 +19,7 @@ import {
 } from '../../core/shared/element-template'
 import { ElementPath } from '../../core/shared/project-file-types'
 import { getCanvasRectangleFromElement, getDOMAttribute } from '../../core/shared/dom-utils'
-import { applicative4Either, isRight, left } from '../../core/shared/either'
+import { applicative4Either, foldEither, isRight, left, mapEither } from '../../core/shared/either'
 import Utils from '../../utils/utils'
 import {
   canvasPoint,
@@ -893,6 +893,13 @@ function getSpecialMeasurements(
     height: globalFrame.height - border.top - border.bottom,
   })
 
+  // TODO is there a nicer way to get the number only if it's in pixels, and otherwise set it to null?
+  const flexGapPx: number | null = foldEither(
+    () => null,
+    (v) => (v.unit === 'px' ? v.value : null),
+    parseCSSLength(elementStyle.gap),
+  )
+
   return specialSizeMeasurements(
     offset,
     coordinateSystemBounds,
@@ -916,6 +923,7 @@ function getSpecialMeasurements(
     element.localName,
     childrenCount,
     globalContentBox,
+    flexGapPx,
   )
 }
 
