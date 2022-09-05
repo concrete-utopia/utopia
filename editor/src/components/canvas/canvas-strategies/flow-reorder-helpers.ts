@@ -17,8 +17,8 @@ import {
 import { ElementPath } from '../../../core/shared/project-file-types'
 import { AllElementProps, ElementProps } from '../../editor/store/editor-state'
 import { stylePropPathMappingFn } from '../../inspector/common/property-path-hooks'
-import { ConvertInlineBlock, convertInlineBlock } from '../commands/convert-inline-block-command'
 import { DeleteProperties, deleteProperties } from '../commands/delete-properties-command'
+import { SetProperty, setProperty } from '../commands/set-property-command'
 
 type FlowDirection = 'vertical' | 'horizontal'
 
@@ -296,18 +296,19 @@ export function getFlowReorderIndex(
   }
 }
 
+const StyleDisplayProp = stylePropPathMappingFn('display', ['style'])
 export function getOptionalDisplayPropCommands(
   target: ElementPath,
   newDisplayType: AddDisplayBlockOrOnline | RemoveDisplayProp | null,
   withAutoConversion: 'with-auto-conversion' | 'no-conversion',
-): Array<ConvertInlineBlock | DeleteProperties> {
+): Array<SetProperty | DeleteProperties> {
   if (withAutoConversion === 'no-conversion') {
     return []
   } else {
     if (newDisplayType?.type === 'add') {
-      return [convertInlineBlock('always', target, newDisplayType.display)]
+      return [setProperty('always', target, StyleDisplayProp, newDisplayType.display)]
     } else if (newDisplayType?.type === 'remove') {
-      return [deleteProperties('always', target, [stylePropPathMappingFn('display', ['style'])])]
+      return [deleteProperties('always', target, [StyleDisplayProp])]
     } else {
       return []
     }

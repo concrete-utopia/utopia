@@ -44,7 +44,6 @@ import {
   runAddToReparentedToPaths,
   AddToReparentedToPaths,
 } from '../canvas-strategies/add-to-reparented-to-paths-command'
-import { ConvertInlineBlock, runConvertInlineBlock } from './convert-inline-block-command'
 import {
   InsertElementInsertionSubject,
   runInsertElementInsertionSubject,
@@ -90,7 +89,6 @@ export type CanvasCommand =
   | AddToReparentedToPaths
   | InsertElementInsertionSubject
   | AddElement
-  | ConvertInlineBlock
 
 export const runCanvasCommand = (
   editorState: EditorState,
@@ -146,8 +144,6 @@ export const runCanvasCommand = (
       return runInsertElementInsertionSubject(editorState, command)
     case 'ADD_ELEMENT':
       return runAddElement(editorState, command)
-    case 'CONVERT_INLINE_BLOCK':
-      return runConvertInlineBlock(editorState, command)
     default:
       const _exhaustiveCheck: never = command
       throw new Error(`Unhandled canvas command ${JSON.stringify(command)}`)
