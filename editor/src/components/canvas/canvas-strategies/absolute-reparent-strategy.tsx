@@ -23,6 +23,7 @@ import { offsetPoint } from '../../../core/shared/math-utils'
 import { getReparentOutcome, pathToReparent } from './reparent-utils'
 import { mapDropNulls } from '../../../core/shared/array-utils'
 import { honoursPropsPosition } from './absolute-utils'
+import { ElementPath } from '../../../core/shared/project-file-types'
 
 export const absoluteReparentStrategy: CanvasStrategy = {
   id: 'ABSOLUTE_REPARENT',
@@ -141,19 +142,26 @@ export const absoluteReparentStrategy: CanvasStrategy = {
 
           const { commands: reparentCommands, newPath } = reparentResult
           return {
+            oldPath: selectedElement,
             newPath: newPath,
             commands: [...offsetCommands, ...reparentCommands],
           }
         }
       }, filteredSelectedElements)
 
-      const newPaths = commands.map((c) => c.newPath)
+      let newPaths: Array<ElementPath> = []
+      let pathMap = new Map<ElementPath, ElementPath>()
+
+      commands.forEach((c) => {
+        newPaths.push(c.newPath)
+        pathMap.set(c.oldPath, c.newPath)
+      })
 
       const moveCommands = absoluteMoveStrategy.apply(canvasState, interactionState, {
         ...strategyState,
         customStrategyState: {
           ...strategyState.customStrategyState,
-          updatedTargetPaths: newPaths, // Slip the new paths into the custom state for the sake of snapping guidelines
+          updatedTargetPaths: pathMap,
         },
       })
 

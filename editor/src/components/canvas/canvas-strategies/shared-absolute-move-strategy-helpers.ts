@@ -78,9 +78,13 @@ export function getAbsoluteMoveCommandsForSelectedElement(
     return { commands: [], intendedBounds: [] }
   }
 
+  const mappedPath =
+    sessionState.customStrategyState.updatedTargetPaths.get(selectedElement) ?? selectedElement
+
   return createMoveCommandsForElement(
     element,
     selectedElement,
+    mappedPath,
     drag,
     localFrame,
     globalFrame,
@@ -91,6 +95,7 @@ export function getAbsoluteMoveCommandsForSelectedElement(
 function createMoveCommandsForElement(
   element: JSXElement,
   selectedElement: ElementPath,
+  mappedPath: ElementPath,
   drag: CanvasVector,
   localFrame: LocalRectangle | null,
   globalFrame: CanvasRectangle | null,
@@ -134,7 +139,7 @@ function createMoveCommandsForElement(
       return []
     } else {
       const intendedGlobalFrame = offsetRect(globalFrame, drag)
-      return [{ target: selectedElement, frame: intendedGlobalFrame }]
+      return [{ target: mappedPath, frame: intendedGlobalFrame }]
     }
   })()
 

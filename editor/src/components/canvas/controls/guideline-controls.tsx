@@ -18,8 +18,7 @@ export const GuidelineControls = React.memo(() => {
       store.editor.canvas.controls.strategyIntendedBounds.every(({ target, frame }) => {
         const measuredFrame = MetadataUtils.getFrameInCanvasCoords(target, store.editor.jsxMetadata)
         if (measuredFrame == null) {
-          // TODO Is this right? We need this during reparenting because of stale element paths here
-          return true
+          return false
         } else {
           return rectanglesEqual(measuredFrame, frame)
         }

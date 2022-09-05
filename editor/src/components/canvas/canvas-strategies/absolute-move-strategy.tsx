@@ -146,9 +146,9 @@ export function applyAbsoluteMoveCommon(
       const constrainedDragAxis =
         shiftKeyPressed && drag != null ? determineConstrainedDragAxis(drag) : null
 
-      const targetsForSnapping =
-        strategyState.customStrategyState.updatedTargetPaths ??
-        getTargetPathsFromInteractionTarget(canvasState.interactionTarget)
+      const targetsForSnapping = selectedElements.map(
+        (path) => strategyState.customStrategyState.updatedTargetPaths.get(path) ?? path,
+      )
       const moveGuidelines = collectParentAndSiblingGuidelines(
         strategyState.startingMetadata,
         targetsForSnapping,
