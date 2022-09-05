@@ -6,6 +6,7 @@ import {
   MetadataUtils,
 } from '../../../core/model/element-metadata-utils'
 import {
+  ElementInstanceMetadataMap,
   emptyComments,
   isJSXElement,
   JSXAttributes,
@@ -21,6 +22,7 @@ import Utils from '../../../utils/utils'
 import {
   canvasPoint,
   CanvasPoint,
+  canvasRectangle,
   CanvasRectangle,
   CanvasVector,
   localRectangle,
@@ -76,26 +78,46 @@ interface InsertModeControlContainerState {
   aspectRatio: number | null
 }
 
+function focusPoint(rect: CanvasRectangle): CanvasPoint {
+  return canvasPoint({ x: rect.x + rect.width, y: rect.y + rect.height })
+}
+
+function parentIsFlex(
+  parentPath: ElementPath | null | undefined,
+  componentMetadata: ElementInstanceMetadataMap,
+): boolean {
+  const parentInstance = MetadataUtils.findElementByElementPath(
+    componentMetadata,
+    parentPath ?? null,
+  )
+  return MetadataUtils.isFlexLayoutedContainer(parentInstance)
+}
+
+function pathInFlexParent(dragState: InsertDragState, mode: InsertMode): ElementPath | null {
+  if (!insertionSubjectIsJSXElement(mode.subject)) {
+    return null
+  }
+
+  const { parent, uid } = mode.subject
+  if (parent == null) {
+    return null
+  }
+
+  if (!parentIsFlex(parent.target, dragState.metadata)) {
+    return null
+  }
+
+  return EP.appendToPath(parent.target, uid)
+}
+
 type MkDragFrameForFlex = (drag: CanvasVector, isCentered: boolean) => CanvasRectangle
 
 function dragFrameForFlexParent(
   dragState: InsertDragState,
   mode: InsertMode,
 ): MkDragFrameForFlex | null {
-  const metadata = dragState.metadata
-  const isParentInYoga = (parentPath: ElementPath) =>
-    MetadataUtils.isParentYogaLayoutedContainerAndElementParticipatesInLayout(parentPath, metadata)
-
-  if (!insertionSubjectIsJSXElement(mode.subject)) {
-    return null
-  }
-  const { parent, uid } = mode.subject
-  if (parent == null) {
-    return null
-  }
-
-  const path = EP.appendToPath(parent.target, uid)
-  if (!isParentInYoga(path)) {
+  const path = pathInFlexParent(dragState, mode)
+  if (path == null) {
     return null
   }
 
@@ -163,14 +185,6 @@ export class InsertModeControlContainer extends React.Component<
     } else {
       return getScenePropsOrElementAttributes(parentPath, this.props.componentMetadata)
     }
-  }
-
-  parentIsFlex = (parentPath: ElementPath | null | undefined): boolean => {
-    const parentInstance = MetadataUtils.findElementByElementPath(
-      this.props.componentMetadata,
-      parentPath ?? null,
-    )
-    return MetadataUtils.isFlexLayoutedContainer(parentInstance)
   }
 
   onHover = (target: ElementPath) => {
@@ -318,7 +332,7 @@ export class InsertModeControlContainer extends React.Component<
 
       const parentAttributes = this.getParentAttributes(this.props.highlightedViews[0])
       const updatedAttributes = LayoutHelpers.updateLayoutPropsWithFrame(
-        this.parentIsFlex(this.props.highlightedViews[0]),
+        parentIsFlex(this.props.highlightedViews[0], this.props.componentMetadata),
         parentAttributes,
         attributes,
         frame,
@@ -362,7 +376,7 @@ export class InsertModeControlContainer extends React.Component<
         const attributes = element.props
         const parentAttributes = this.getParentAttributes(this.props.highlightedViews[0])
         const updatedAttributes = LayoutHelpers.updateLayoutPropsWithFrame(
-          this.parentIsFlex(this.props.highlightedViews[0]),
+          parentIsFlex(this.props.highlightedViews[0], this.props.componentMetadata),
           parentAttributes,
           attributes,
           frame,
@@ -404,7 +418,7 @@ export class InsertModeControlContainer extends React.Component<
       const parent = safeIndex(this.props.highlightedViews, 0) ?? null
       const staticParent = parent == null ? null : EP.dynamicPathToStaticPath(parent)
       let { element } = this.props.mode.subject
-      if (this.parentIsFlex(this.props.highlightedViews[0])) {
+      if (parentIsFlex(this.props.highlightedViews[0], this.props.componentMetadata)) {
         element = {
           ...element,
           props:
@@ -526,10 +540,19 @@ export class InsertModeControlContainer extends React.Component<
         this.props.highlightedViews,
         this.props.mode.subject.uid,
       )
+
+      const isMousingInFlexParent =
+        Utils.optionalMap((ds) => pathInFlexParent(ds, this.props.mode), this.props.dragState) !=
+        null
+
+      const point = isMousingInFlexParent
+        ? Utils.defaultIfNull(mousePoint, Utils.optionalMap(focusPoint, this.state.dragFrame))
+        : mousePoint
+
       const closestGuidelines = getSnappedGuidelinesForPoint(
         guidelines,
         null,
-        mousePoint,
+        point,
         this.props.scale,
       )
       if (
