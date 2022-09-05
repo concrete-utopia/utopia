@@ -244,6 +244,17 @@ export const MetadataUtils = {
   isPositionAbsolute(instance: ElementInstanceMetadata | null): boolean {
     return instance?.specialSizeMeasurements.position === 'absolute'
   },
+  isPositionedByFlow(instance: ElementInstanceMetadata | null): boolean {
+    if (instance === null) {
+      return false
+    }
+
+    const containerLayoutSystem = instance.specialSizeMeasurements.parentLayoutSystem
+    const position = instance.specialSizeMeasurements.position
+    const participatesInFlow =
+      position === 'relative' || position === 'static' || position === 'sticky'
+    return containerLayoutSystem === 'flow' && participatesInFlow
+  },
   isButtonFromMetadata(element: ElementInstanceMetadata | null): boolean {
     const elementName = MetadataUtils.getJSXElementName(maybeEitherToMaybe(element?.element))
     if (
