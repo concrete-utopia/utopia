@@ -307,6 +307,19 @@ export function product<C extends CoordinateMarker>(a: Point<C>, b: Point<C>): n
   return a.x * b.x + a.y * b.y
 }
 
+export function pointIsClockwiseFromLine<C extends CoordinateMarker>(
+  targetPoint: Point<C>,
+  linePointA: Point<C>,
+  linePointB: Point<C>,
+): boolean {
+  // The order of line points a and b are important, as they determine which direction the line is pointing in,
+  // and therefore which direction is clockwise from it
+  return (
+    (linePointB.x - linePointA.x) * (targetPoint.y - linePointA.y) >
+    (linePointB.y - linePointA.y) * (targetPoint.x - linePointA.x)
+  )
+}
+
 export function vectorFromPoints<C extends CoordinateMarker>(
   p1: Point<C>,
   p2: Point<C>,
