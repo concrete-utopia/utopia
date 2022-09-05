@@ -585,10 +585,9 @@ export function applyFlexReparent(
           strategyState.startingMetadata,
           newParent,
         )
-        const parentRect = MetadataUtils.getFrameInCanvasCoords(
-          newParent,
-          strategyState.startingMetadata,
-        )
+        const parentRect =
+          MetadataUtils.getFrameInCanvasCoords(newParent, strategyState.startingMetadata) ??
+          zeroCanvasRect
         const newParentFlexDirection = MetadataUtils.getFlexDirection(newParentMetadata)
         const parentFlexGap = newParentMetadata?.specialSizeMeasurements.flexGap ?? 0
 
@@ -637,31 +636,76 @@ export function applyFlexReparent(
           let interactionFinishCommands: Array<CanvasCommand>
           let midInteractionCommands: Array<CanvasCommand>
 
-          if (reparentResult.shouldReorder && newIndex < siblingsOfTarget.length) {
+          const pseudoElementBefore: CanvasRectangle =
+            newParentFlexDirection === 'row' // TODO handle row-reverse or col-reverse
+              ? canvasRectangle({
+                  x: parentRect.x,
+                  y: parentRect.y,
+                  width: 0,
+                  height: parentRect.height,
+                })
+              : canvasRectangle({
+                  x: parentRect.x,
+                  y: parentRect.y,
+                  height: 0,
+                  width: parentRect.width,
+                })
+
+          const pseudoElementAfter: CanvasRectangle =
+            newParentFlexDirection === 'row' // TODO handle row-reverse or col-reverse
+              ? canvasRectangle({
+                  x: parentRect.x + parentRect.width,
+                  y: parentRect.y,
+                  width: 0,
+                  height: parentRect.height,
+                })
+              : canvasRectangle({
+                  x: parentRect.x,
+                  y: parentRect.y + parentRect.height,
+                  height: 0,
+                  width: parentRect.width,
+                })
+
+          const siblingPositions: Array<CanvasRectangle> = [
+            pseudoElementBefore,
+            ...siblingsOfTarget.map((sibling) => {
+              return (
+                MetadataUtils.getFrameInCanvasCoords(sibling, strategyState.startingMetadata) ??
+                zeroCanvasRect
+              )
+            }),
+            pseudoElementAfter,
+          ]
+
+          if (reparentResult.shouldReorder && siblingsOfTarget.length > 0) {
             // Reorder the newly reparented element into the flex ordering.
-            const siblingPosition: CanvasRectangle =
-              [
-                // parentRect, // we add the parent as the first element
-                ...siblingsOfTarget.map((sibling) => {
-                  return MetadataUtils.getFrameInCanvasCoords(
-                    sibling,
-                    strategyState.startingMetadata,
-                  )
-                }),
-              ][newIndex] ?? zeroCanvasRect
+
+            const precedingSiblingPosition: CanvasRectangle = siblingPositions[newIndex]
+            const succeedingSiblingPosition: CanvasRectangle = siblingPositions[newIndex + 1]
 
             const targetLineBeforeSibling: CanvasRectangle =
               newParentFlexDirection === 'row' // TODO handle row-reverse and col-reverse
                 ? canvasRectangle({
-                    x: siblingPosition.x - parentFlexGap / 2 - FlexReparentIndicatorSize / 2,
-                    y: siblingPosition.y,
-                    height: siblingPosition.height,
+                    x:
+                      (precedingSiblingPosition.x +
+                        precedingSiblingPosition.width +
+                        succeedingSiblingPosition.x -
+                        FlexReparentIndicatorSize) /
+                      2,
+                    y: (precedingSiblingPosition.y + succeedingSiblingPosition.y) / 2,
+                    height:
+                      (precedingSiblingPosition.height + succeedingSiblingPosition.height) / 2,
                     width: FlexReparentIndicatorSize,
                   })
                 : canvasRectangle({
-                    x: siblingPosition.x,
-                    y: siblingPosition.y - parentFlexGap / 2 - FlexReparentIndicatorSize / 2,
-                    width: siblingPosition.width,
+                    x: (precedingSiblingPosition.x + succeedingSiblingPosition.x) / 2,
+                    y:
+                      (precedingSiblingPosition.y +
+                        precedingSiblingPosition.height +
+                        succeedingSiblingPosition.y -
+                        FlexReparentIndicatorSize) /
+                      2,
+                    width: (precedingSiblingPosition.width + succeedingSiblingPosition.width) / 2,
                     height: FlexReparentIndicatorSize,
                   })
 
@@ -689,53 +733,7 @@ export function applyFlexReparent(
               ...commandsAfterReorder,
             ]
           } else {
-            const siblingPosition = MetadataUtils.getFrameInCanvasCoords(
-              siblingsOfTarget[siblingsOfTarget.length - 1],
-              strategyState.startingMetadata,
-            )
-
-            if (siblingPosition != null) {
-              const targetLineAfterSibling: CanvasRectangle =
-                newParentFlexDirection === 'row'
-                  ? canvasRectangle({
-                      x:
-                        siblingPosition.x +
-                        siblingPosition.width +
-                        parentFlexGap / 2 +
-                        FlexReparentIndicatorSize / 2,
-                      y: siblingPosition.y,
-                      height: siblingPosition.height,
-                      width: FlexReparentIndicatorSize,
-                    })
-                  : canvasRectangle({
-                      x: siblingPosition.x,
-                      y:
-                        siblingPosition.y +
-                        siblingPosition.height +
-                        parentFlexGap / 2 +
-                        FlexReparentIndicatorSize / 2,
-                      width: siblingPosition.width,
-                      height: FlexReparentIndicatorSize,
-                    })
-
-              midInteractionCommands = [
-                wildcardPatch('mid-interaction', {
-                  canvas: { controls: { parentHighlightPaths: { $set: [newParent] } } },
-                }),
-                wildcardPatch('mid-interaction', {
-                  canvas: {
-                    controls: { flexReparentTargetLines: { $set: [targetLineAfterSibling] } },
-                  },
-                }),
-                newParentADescendantOfCurrentParent
-                  ? wildcardPatch('mid-interaction', {
-                      hiddenInstances: { $push: [target] },
-                    })
-                  : wildcardPatch('mid-interaction', {
-                      displayNoneInstances: { $push: [target] },
-                    }),
-              ]
-            } else if (parentRect != null) {
+            if (parentRect != null) {
               const targetLineBeginningOfParent: CanvasRectangle =
                 newParentFlexDirection === 'row'
                   ? canvasRectangle({
