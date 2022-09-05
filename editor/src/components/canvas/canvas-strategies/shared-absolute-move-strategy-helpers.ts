@@ -36,7 +36,7 @@ import {
   AdjustCssLengthProperty,
 } from '../commands/adjust-css-length-command'
 import { runLegacyAbsoluteMoveSnapping } from '../controls/guideline-helpers'
-import { ConstrainedDragAxis, GuidelineWithSnappingVector } from '../guideline'
+import { ConstrainedDragAxis, Guideline, GuidelineWithSnappingVector } from '../guideline'
 import { AbsolutePin } from './absolute-resize-helpers'
 import { InteractionCanvasState } from './canvas-strategy-types'
 import { StrategyState } from './interaction-state'
@@ -180,6 +180,7 @@ export function snapDrag(
   constrainedDragAxis: ConstrainedDragAxis | null,
   jsxMetadata: ElementInstanceMetadataMap,
   selectedElements: Array<ElementPath>,
+  moveGuidelines: Array<Guideline>,
   canvasScale: number,
 ): {
   snappedDragVector: CanvasPoint
@@ -198,8 +199,7 @@ export function snapDrag(
   const { snappedDragVector, guidelinesWithSnappingVector } = runLegacyAbsoluteMoveSnapping(
     drag,
     constrainedDragAxis,
-    jsxMetadata,
-    selectedElements,
+    moveGuidelines,
     canvasScale,
     multiselectBounds,
   )

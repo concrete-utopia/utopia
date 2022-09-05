@@ -10,7 +10,6 @@ import { setElementsToRerenderCommand } from '../commands/set-elements-to-rerend
 import { pushIntendedBounds } from '../commands/push-intended-bounds-command'
 import { setSnappingGuidelines } from '../commands/set-snapping-guidelines-command'
 import { updateHighlightedViews } from '../commands/update-highlighted-views-command'
-import { runLegacyAbsoluteMoveSnapping } from '../controls/guideline-helpers'
 import { ParentBounds } from '../controls/parent-bounds'
 import { ParentOutlines } from '../controls/parent-outlines'
 import { determineConstrainedDragAxis } from '../controls/select-mode/move-utils'
@@ -30,6 +29,7 @@ import {
   snapDrag,
 } from './shared-absolute-move-strategy-helpers'
 import { honoursPropsPosition } from './absolute-utils'
+import { collectParentAndSiblingGuidelines } from '../controls/guideline-helpers'
 
 export const absoluteMoveStrategy: CanvasStrategy = {
   id: 'ABSOLUTE_MOVE',
@@ -145,11 +145,21 @@ export function applyAbsoluteMoveCommon(
     } else {
       const constrainedDragAxis =
         shiftKeyPressed && drag != null ? determineConstrainedDragAxis(drag) : null
+
+      const targetsForSnapping =
+        strategyState.customStrategyState.updatedTargetPaths ??
+        getTargetPathsFromInteractionTarget(canvasState.interactionTarget)
+      const moveGuidelines = collectParentAndSiblingGuidelines(
+        strategyState.startingMetadata,
+        targetsForSnapping,
+      )
+
       const { snappedDragVector, guidelinesWithSnappingVector } = snapDrag(
         drag,
         constrainedDragAxis,
         strategyState.startingMetadata,
         selectedElements,
+        moveGuidelines,
         canvasState.scale,
       )
       const commandsForSelectedElements = getMoveCommands(snappedDragVector)
@@ -159,7 +169,7 @@ export function applyAbsoluteMoveCommon(
           updateHighlightedViews('mid-interaction', []),
           setSnappingGuidelines('mid-interaction', guidelinesWithSnappingVector),
           pushIntendedBounds(commandsForSelectedElements.intendedBounds),
-          setElementsToRerenderCommand(selectedElements),
+          setElementsToRerenderCommand([...selectedElements, ...targetsForSnapping]),
           setCursorCommand('mid-interaction', CSSCursor.Select),
         ],
         customState: null,

@@ -97,7 +97,6 @@ export const absoluteReparentStrategy: CanvasStrategy = {
       strategyState.startingAllElementProps,
     )
     const newParent = reparentTarget.newParent
-    const moveCommands = absoluteMoveStrategy.apply(canvasState, interactionState, strategyState)
     const providesBoundsForAbsoluteChildren =
       MetadataUtils.findElementByElementPath(strategyState.startingMetadata, newParent)
         ?.specialSizeMeasurements.providesBoundsForAbsoluteChildren ?? false
@@ -150,6 +149,14 @@ export const absoluteReparentStrategy: CanvasStrategy = {
 
       const newPaths = commands.map((c) => c.newPath)
 
+      const moveCommands = absoluteMoveStrategy.apply(canvasState, interactionState, {
+        ...strategyState,
+        customStrategyState: {
+          ...strategyState.customStrategyState,
+          updatedTargetPaths: newPaths, // Slip the new paths into the custom state for the sake of snapping guidelines
+        },
+      })
+
       return {
         commands: [
           ...moveCommands.commands,
@@ -161,7 +168,12 @@ export const absoluteReparentStrategy: CanvasStrategy = {
         customState: null,
       }
     } else {
-      return moveCommands
+      const moveCommands = absoluteMoveStrategy.apply(canvasState, interactionState, strategyState)
+
+      return {
+        commands: moveCommands.commands,
+        customState: null,
+      }
     }
   },
 }
