@@ -52,34 +52,39 @@ interface ReorderElement {
   siblingIndex: number
 }
 
-export function getReorderIndex(
+type ElementFlexDirection = 'row' | 'column' | 'none'
+
+function flexDirectionFrom(
   metadata: ElementInstanceMetadataMap,
   siblings: Array<ElementPath>,
-  point: CanvasVector,
-  existingElement: ElementPath | null,
-): number {
-  let rowOrColumn: 'row' | 'column' | null = null
-
+): ElementFlexDirection {
   const first = siblings[0]
   if (first != null) {
     const parentPath = EP.parentPath(first)
     if (parentPath != null) {
       const parentMetadata = MetadataUtils.findElementByElementPath(metadata, parentPath)
       if (parentMetadata?.specialSizeMeasurements.layoutSystemForChildren != 'flex') {
-        throw new Error(`Element ${EP.toString(parentPath)} is not a flex container`)
+        return 'none'
       }
 
       const flexDirection = parentMetadata?.specialSizeMeasurements.flexDirection
       if (flexDirection != null) {
         if (flexDirection.includes('row')) {
-          rowOrColumn = 'row'
+          return 'row'
         } else if (flexDirection.includes('col')) {
-          rowOrColumn = 'column'
+          return 'column'
         }
       }
     }
   }
+  return 'none'
+}
 
+function closestSibling(
+  metadata: ElementInstanceMetadataMap,
+  siblings: Array<ElementPath>,
+  point: CanvasVector,
+): ReorderElement | null {
   let reorderResult: ReorderElement | null = null
   let siblingIndex: number = 0
 
@@ -104,6 +109,17 @@ export function getReorderIndex(
     siblingIndex++
   }
 
+  return reorderResult
+}
+
+export function reorderIndexForReparent(
+  metadata: ElementInstanceMetadataMap,
+  siblings: Array<ElementPath>,
+  point: CanvasVector,
+  existingElement: ElementPath | null,
+): number {
+  let rowOrColumn: ElementFlexDirection = flexDirectionFrom(metadata, siblings)
+  let reorderResult: ReorderElement | null = closestSibling(metadata, siblings, point)
   if (reorderResult == null) {
     // We were unable to find an appropriate entry.
     return -1
@@ -124,6 +140,22 @@ export function getReorderIndex(
     }
     return newIndex
   }
+}
+
+export function reorderIndexForReorder(
+  metadata: ElementInstanceMetadataMap,
+  siblings: Array<ElementPath>,
+  point: CanvasVector,
+): number {
+  const targetSiblingIdx = siblings.findIndex((sibling) => {
+    const frame = MetadataUtils.getFrameInCanvasCoords(sibling, metadata)
+    return (
+      frame != null &&
+      rectContainsPoint(frame, point) &&
+      MetadataUtils.isParentYogaLayoutedContainerAndElementParticipatesInLayout(sibling, metadata)
+    )
+  })
+  return targetSiblingIdx
 }
 
 export type ReparentStrategy =
@@ -367,7 +399,7 @@ export function applyFlexReparent(
               newParent,
             )
 
-            const newIndex = getReorderIndex(
+            const newIndex = reorderIndexForReparent(
               strategyState.startingMetadata,
               siblingsOfTarget,
               pointOnCanvas,
