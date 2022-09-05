@@ -654,13 +654,13 @@ export function applyFlexReparent(
                 ? canvasRectangle({
                     x: siblingPosition.x - parentFlexGap / 2 - FlexReparentIndicatorSize / 2,
                     y: siblingPosition.y,
-                    height: targetSize.height,
+                    height: siblingPosition.height,
                     width: FlexReparentIndicatorSize,
                   })
                 : canvasRectangle({
                     x: siblingPosition.x,
                     y: siblingPosition.y - parentFlexGap / 2 - FlexReparentIndicatorSize / 2,
-                    width: targetSize.width,
+                    width: siblingPosition.width,
                     height: FlexReparentIndicatorSize,
                   })
 
@@ -703,7 +703,7 @@ export function applyFlexReparent(
                         parentFlexGap / 2 +
                         FlexReparentIndicatorSize / 2,
                       y: siblingPosition.y,
-                      height: targetSize.height,
+                      height: siblingPosition.height,
                       width: FlexReparentIndicatorSize,
                     })
                   : canvasRectangle({
@@ -713,7 +713,7 @@ export function applyFlexReparent(
                         siblingPosition.height +
                         parentFlexGap / 2 +
                         FlexReparentIndicatorSize / 2,
-                      width: targetSize?.width,
+                      width: siblingPosition.width,
                       height: FlexReparentIndicatorSize,
                     })
 
@@ -740,13 +740,13 @@ export function applyFlexReparent(
                   ? canvasRectangle({
                       x: parentRect.x, // TODO offset the insert line by half the flex gap?
                       y: parentRect.y,
-                      height: targetSize.height,
+                      height: parentRect.height,
                       width: FlexReparentIndicatorSize,
                     })
                   : canvasRectangle({
                       x: parentRect.x,
                       y: parentRect.y,
-                      width: targetSize.width,
+                      width: parentRect.width,
                       height: FlexReparentIndicatorSize,
                     })
 
