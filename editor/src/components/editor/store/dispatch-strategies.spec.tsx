@@ -220,6 +220,7 @@ describe('interactionStart', () => {
           "duplicatedElementNewUids": Object {},
           "escapeHatchActivated": false,
           "lastReorderIdx": null,
+          "updatedTargetPaths": Map {},
         },
         "sortedApplicableStrategies": Array [
           Object {
@@ -279,6 +280,7 @@ describe('interactionStart', () => {
           "duplicatedElementNewUids": Object {},
           "escapeHatchActivated": false,
           "lastReorderIdx": null,
+          "updatedTargetPaths": Map {},
         },
         "sortedApplicableStrategies": null,
         "startingAllElementProps": Object {},
@@ -343,6 +345,7 @@ describe('interactionUpdatex', () => {
           "duplicatedElementNewUids": Object {},
           "escapeHatchActivated": false,
           "lastReorderIdx": null,
+          "updatedTargetPaths": Map {},
         },
         "sortedApplicableStrategies": Array [
           Object {
@@ -403,6 +406,7 @@ describe('interactionUpdatex', () => {
           "duplicatedElementNewUids": Object {},
           "escapeHatchActivated": false,
           "lastReorderIdx": null,
+          "updatedTargetPaths": Map {},
         },
         "sortedApplicableStrategies": null,
         "startingAllElementProps": Object {},
@@ -495,6 +499,7 @@ describe('interactionHardReset', () => {
           "duplicatedElementNewUids": Object {},
           "escapeHatchActivated": false,
           "lastReorderIdx": null,
+          "updatedTargetPaths": Map {},
         },
         "sortedApplicableStrategies": Array [
           Object {
@@ -560,6 +565,7 @@ describe('interactionHardReset', () => {
           "duplicatedElementNewUids": Object {},
           "escapeHatchActivated": false,
           "lastReorderIdx": null,
+          "updatedTargetPaths": Map {},
         },
         "sortedApplicableStrategies": null,
         "startingAllElementProps": Object {},
@@ -713,6 +719,7 @@ describe('interactionUpdate with user changed strategy', () => {
           "duplicatedElementNewUids": Object {},
           "escapeHatchActivated": false,
           "lastReorderIdx": null,
+          "updatedTargetPaths": Map {},
         },
         "sortedApplicableStrategies": Array [
           Object {
@@ -779,6 +786,7 @@ describe('interactionUpdate with user changed strategy', () => {
           "duplicatedElementNewUids": Object {},
           "escapeHatchActivated": false,
           "lastReorderIdx": null,
+          "updatedTargetPaths": Map {},
         },
         "sortedApplicableStrategies": null,
         "startingAllElementProps": Object {},
