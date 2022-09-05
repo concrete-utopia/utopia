@@ -57,22 +57,6 @@ import {
 } from '../commands/adjust-css-length-command'
 import { updatePropIfExists } from '../commands/update-prop-if-exists-command'
 
-export function reorderIndexForReorder(
-  metadata: ElementInstanceMetadataMap,
-  siblings: Array<ElementPath>,
-  point: CanvasVector,
-): number {
-  const targetSiblingIdx = siblings.findIndex((sibling) => {
-    const frame = MetadataUtils.getFrameInCanvasCoords(sibling, metadata)
-    return (
-      frame != null &&
-      rectContainsPoint(frame, point) &&
-      MetadataUtils.isParentYogaLayoutedContainerAndElementParticipatesInLayout(sibling, metadata)
-    )
-  })
-  return targetSiblingIdx
-}
-
 export type ReparentStrategy =
   | 'FLEX_REPARENT_TO_ABSOLUTE'
   | 'FLEX_REPARENT_TO_FLEX'
