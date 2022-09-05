@@ -738,7 +738,7 @@ export function applyFlexReparent(
               const targetLineBeginningOfParent: CanvasRectangle =
                 newParentFlexDirection === 'row'
                   ? canvasRectangle({
-                      x: parentRect.x, // TODO offset the insert line by half the flex gap?
+                      x: parentRect.x,
                       y: parentRect.y,
                       height: parentRect.height,
                       width: FlexReparentIndicatorSize,
