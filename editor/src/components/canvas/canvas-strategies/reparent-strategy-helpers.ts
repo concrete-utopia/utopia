@@ -203,7 +203,8 @@ export function findReparentStrategy(
     selectedElements.length === 0 ||
     interactionState.activeControl.type !== 'BOUNDING_AREA' ||
     interactionState.interactionData.type !== 'DRAG' ||
-    interactionState.interactionData.drag == null // TODO delete this drag nullcheck? do we start the reparent on mouse down or mouse move beyond threshold?
+    interactionState.interactionData.drag == null || // TODO delete this drag nullcheck? do we start the reparent on mouse down or mouse move beyond threshold?
+    interactionState.interactionData.modifiers.alt
   ) {
     return { strategy: 'do-not-reparent' }
   }
