@@ -2,8 +2,6 @@ import React from 'react'
 import { useEditorState } from '../../../editor/store/store-hook'
 import { CanvasOffsetWrapper } from '../canvas-offset-wrapper'
 
-export const FlexReparentIndicatorSize = 2
-
 export const FlexReparentTargetIndicator = React.memo(() => {
   const reparentTargetLines = useEditorState(
     (store) => store.editor.canvas.controls.flexReparentTargetLines,

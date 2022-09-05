@@ -56,7 +56,8 @@ import {
   adjustCssLengthProperty,
 } from '../commands/adjust-css-length-command'
 import { updatePropIfExists } from '../commands/update-prop-if-exists-command'
-import { FlexReparentIndicatorSize } from '../controls/select-mode/flex-reparent-target-indicator'
+
+const FlexReparentIndicatorSize = 2
 
 interface ReorderElement {
   distance: number
