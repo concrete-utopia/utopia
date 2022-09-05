@@ -10,6 +10,7 @@ import {
 import { ElementOriginType, ElementPath } from '../../../core/shared/project-file-types'
 import { EditorDispatch } from '../../editor/action-types'
 import * as EditorActions from '../../editor/actions/action-creators'
+import * as MetaActions from '../../editor/actions/meta-actions'
 import * as EP from '../../../core/shared/element-path'
 import { ExpandableIndicator } from './expandable-indicator'
 import { ItemLabel } from './item-label'
@@ -62,13 +63,13 @@ function selectItem(
   if (!selected) {
     if (event.metaKey && !event.shiftKey) {
       // adds to selection
-      dispatch([EditorActions.selectComponents([elementPath], true)], 'leftpane')
+      dispatch(MetaActions.selectComponents([elementPath], true), 'leftpane')
     } else if (event.shiftKey) {
       // selects range of items
       const targets = getSelectedViewsInRange(index)
-      dispatch([EditorActions.selectComponents(targets, false)], 'leftpane')
+      dispatch(MetaActions.selectComponents(targets, false), 'leftpane')
     } else {
-      dispatch([EditorActions.selectComponents([elementPath], false)], 'leftpane')
+      dispatch(MetaActions.selectComponents([elementPath], false), 'leftpane')
     }
   }
 }

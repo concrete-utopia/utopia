@@ -12,10 +12,10 @@ import {
 } from '../../../core/shared/element-template'
 import {
   clearHighlightedViews,
-  selectComponents,
   setHighlightedView,
   setProp_UNSAFE,
 } from '../../editor/actions/action-creators'
+import { selectComponents } from '../../editor/actions/meta-actions'
 import { CanvasPoint, CanvasRectangle } from '../../../core/shared/math-utils'
 import { EditorDispatch } from '../../editor/action-types'
 import { isZeroSizedElement, ZeroControlSize } from './outline-utils'
@@ -94,7 +94,7 @@ const ZeroSizeSelectControl = React.memo((props: ZeroSizeSelectControlProps) => 
   const onControlMouseDown = React.useCallback(
     (event: React.MouseEvent<HTMLDivElement>) => {
       event.stopPropagation()
-      dispatch([selectComponents([element.elementPath], false)], 'everyone')
+      dispatch(selectComponents([element.elementPath], false), 'everyone')
     },
     [dispatch, element.elementPath],
   )

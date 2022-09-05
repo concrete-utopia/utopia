@@ -56,8 +56,8 @@ import { getLayoutPropertyOr } from '../../../core/layout/getLayoutProperty'
 import { mapDropNulls, safeIndex } from '../../../core/shared/array-utils'
 import { getStoryboardElementPath } from '../../../core/model/scene-utils'
 import { isSceneFromMetadata } from '../../../core/model/project-file-utils'
-import { RightMenuTab } from '../../editor/store/editor-state'
 import { stylePropPathMappingFn } from '../../inspector/common/property-path-hooks'
+import { cancelInsertModeActions } from '../../../components/editor/actions/meta-actions'
 
 const DefaultWidth = 100
 const DefaultHeight = 100
@@ -429,12 +429,7 @@ export class InsertModeControlContainer extends React.Component<
     if (!this.props.mode.insertionStarted) {
       return
     }
-    const baseActions: EditorAction[] = [
-      EditorActions.updateEditorMode(EditorModes.selectMode()),
-      EditorActions.setRightMenuTab(RightMenuTab.Inspector),
-      EditorActions.clearHighlightedViews(),
-      CanvasActions.clearDragState(false),
-    ]
+    const baseActions: EditorAction[] = cancelInsertModeActions('ignore-it-completely')
     if (insertionSubjectIsJSXElement(this.props.mode.subject)) {
       const insertionSubject = this.props.mode.subject
       const insertionElement = insertionSubject.element
