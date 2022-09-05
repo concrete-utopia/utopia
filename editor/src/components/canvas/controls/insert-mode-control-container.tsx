@@ -8,18 +8,18 @@ import {
 import {
   emptyComments,
   isJSXElement,
-  JSXAttribute,
   JSXAttributes,
   jsxAttributeValue,
   JSXElement,
   JSXElementChild,
 } from '../../../core/shared/element-template'
 import { setJSXValueAtPath } from '../../../core/shared/jsx-attributes'
-import { PropertyPath, ElementPath, Imports } from '../../../core/shared/project-file-types'
+import { ElementPath, Imports } from '../../../core/shared/project-file-types'
 import { Either, eitherToMaybe, isLeft, isRight, right } from '../../../core/shared/either'
 import { KeysPressed } from '../../../utils/keyboard'
 import Utils from '../../../utils/utils'
 import {
+  canvasPoint,
   CanvasPoint,
   CanvasRectangle,
   CanvasVector,
@@ -36,12 +36,11 @@ import {
   insertionSubjectIsJSXElement,
   insertionSubjectIsScene,
   InsertMode,
-  insertionSubjectIsDragAndDrop,
 } from '../../editor/editor-modes'
 import * as PP from '../../../core/shared/property-path'
 import * as EP from '../../../core/shared/element-path'
 import CanvasActions from '../canvas-actions'
-import { CanvasContainerID, InsertDragState, insertDragState } from '../canvas-types'
+import { InsertDragState, insertDragState } from '../canvas-types'
 import { GuidelineWithSnappingVector } from '../guideline'
 import { ComponentLabelControl } from './component-area-control'
 import { GuidelineControl } from './guideline-control'
@@ -62,22 +61,6 @@ import { stylePropPathMappingFn } from '../../inspector/common/property-path-hoo
 const DefaultWidth = 100
 const DefaultHeight = 100
 
-// I feel comfortable having this function confined to this file only, since we absolutely shouldn't be trying
-// to set values that would fail whilst inserting elements. If that ever changes, this function should be binned
-// and we should handle those failures explicitly
-function forceSetValueAtPath(
-  attributes: JSXAttributes,
-  path: PropertyPath,
-  value: JSXAttribute,
-): JSXAttributes {
-  const result = setJSXValueAtPath(attributes, path, value)
-  if (isLeft(result)) {
-    throw new Error(`Failed to set value at path ${PP.toString(path)}: ${result.value}`)
-  } else {
-    return result.value
-  }
-}
-
 interface InsertModeControlContainerProps extends ControlProps {
   mode: InsertMode
   keysPressed: KeysPressed
@@ -93,6 +76,40 @@ interface InsertModeControlContainerState {
   aspectRatio: number | null
 }
 
+type MkDragFrameForFlex = (drag: CanvasVector, isCentered: boolean) => CanvasRectangle
+
+function dragFrameForFlexParent(
+  dragState: InsertDragState,
+  mode: InsertMode,
+): MkDragFrameForFlex | null {
+  const metadata = dragState.metadata
+  const isParentInYoga = (parentPath: ElementPath) =>
+    MetadataUtils.isParentYogaLayoutedContainerAndElementParticipatesInLayout(parentPath, metadata)
+
+  if (!insertionSubjectIsJSXElement(mode.subject)) {
+    return null
+  }
+  const { parent, uid } = mode.subject
+  if (parent == null) {
+    return null
+  }
+
+  const path = EP.appendToPath(parent.target, uid)
+  if (!isParentInYoga(path)) {
+    return null
+  }
+
+  const pathString = EP.toString(path)
+  const frame = dragState.metadata[pathString]?.globalFrame ?? null
+  if (frame == null) {
+    return null
+  }
+
+  const { x, y } = frame
+  const start = canvasPoint({ x, y })
+  return (drag, isCentered) => Utils.rectFromPointVector(start, drag, isCentered)
+}
+
 function getDragFrame(props: InsertModeControlContainerProps): CanvasRectangle | null {
   if (
     props.mode.insertionStarted &&
@@ -101,9 +118,16 @@ function getDragFrame(props: InsertModeControlContainerProps): CanvasRectangle |
     props.dragState.start != null &&
     props.dragState.drag != null
   ) {
-    const start = Utils.forceNotNull('Drag start should not be null', props.dragState.start)
     const drag = Utils.forceNotNull('Drag should not be null', props.dragState.drag)
-    return Utils.rectFromPointVector(start, drag, props.keysPressed['alt'] || false)
+    const isCentered = props.keysPressed['alt'] || false
+
+    const dragFrameForFlex = dragFrameForFlexParent(props.dragState, props.mode)
+    if (dragFrameForFlex != null) {
+      return dragFrameForFlex(drag, isCentered)
+    }
+
+    const start = Utils.forceNotNull('Drag start should not be null', props.dragState.start)
+    return Utils.rectFromPointVector(start, drag, isCentered)
   } else {
     return null
   }
@@ -123,7 +147,9 @@ export class InsertModeControlContainer extends React.Component<
     }
   }
 
-  static getDerivedStateFromProps(props: InsertModeControlContainerProps) {
+  static getDerivedStateFromProps(
+    props: InsertModeControlContainerProps,
+  ): Partial<InsertModeControlContainerState> {
     return {
       dragFrame: getDragFrame(props),
     }
