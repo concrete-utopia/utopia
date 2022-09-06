@@ -922,10 +922,19 @@ export const MetadataUtils = {
   ): LocalRectangle {
     const parent = this.findElementByElementPath(metadata, targetParent)
     if (parent != null) {
-      if (parent.specialSizeMeasurements.globalContentBox != null) {
+      if (
+        parent.specialSizeMeasurements.providesBoundsForAbsoluteChildren &&
+        parent.specialSizeMeasurements.globalContentBox != null
+      ) {
         return canvasRectangleToLocalRectangle(
           frame,
           parent.specialSizeMeasurements.globalContentBox,
+        )
+      }
+      if (parent.specialSizeMeasurements.coordinateSystemBounds != null) {
+        return canvasRectangleToLocalRectangle(
+          frame,
+          parent.specialSizeMeasurements.coordinateSystemBounds,
         )
       }
     }
