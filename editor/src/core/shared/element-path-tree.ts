@@ -1,7 +1,7 @@
 import { ElementPath, ElementPathPart } from './project-file-types'
 import * as EP from './element-path'
 import { fastForEach } from './utils'
-import { ElementInstanceMetadataMap } from './element-template'
+import { ElementInstanceMetadataMap, isJSXElement } from './element-template'
 import { MetadataUtils } from '../model/element-metadata-utils'
 import { foldEither } from './either'
 import { getUtopiaID } from '../model/element-template-utils'
@@ -74,25 +74,30 @@ export function reorderTree(
       (elementChild) => {
         switch (elementChild.type) {
           case 'JSX_ELEMENT': {
-            const updatedChildren = elementChild.children.reduce(
-              (workingTreeChildren, child, childIndex) => {
-                const uid = getUtopiaID(child)
-                const workingTreeIndex = workingTreeChildren.findIndex((workingTreeChild) => {
-                  return EP.toUid(workingTreeChild.path) === uid
-                })
-                if (workingTreeIndex === childIndex) {
-                  return workingTreeChildren
-                } else {
-                  return move(workingTreeIndex, childIndex, workingTreeChildren)
-                }
-              },
-              tree.children.map((child) => {
-                return reorderTree(child, metadata)
-              }),
-            )
-            return {
-              ...tree,
-              children: updatedChildren,
+            const allChildrenAreElements = elementChild.children.every(isJSXElement)
+            if (allChildrenAreElements) {
+              const updatedChildren = elementChild.children.reduce(
+                (workingTreeChildren, child, childIndex) => {
+                  const uid = getUtopiaID(child)
+                  const workingTreeIndex = workingTreeChildren.findIndex((workingTreeChild) => {
+                    return EP.toUid(workingTreeChild.path) === uid
+                  })
+                  if (workingTreeIndex === childIndex) {
+                    return workingTreeChildren
+                  } else {
+                    return move(workingTreeIndex, childIndex, workingTreeChildren)
+                  }
+                },
+                tree.children.map((child) => {
+                  return reorderTree(child, metadata)
+                }),
+              )
+              return {
+                ...tree,
+                children: updatedChildren,
+              }
+            } else {
+              return tree
             }
           }
           default:
