@@ -246,6 +246,7 @@ describe('interactionStart', () => {
           "y": 200,
         },
         "globalTime": 1000,
+        "hasMouseMoved": false,
         "modifiers": Object {
           "alt": false,
           "cmd": false,
@@ -369,6 +370,7 @@ describe('interactionUpdatex', () => {
           "y": 200,
         },
         "globalTime": 1000,
+        "hasMouseMoved": false,
         "modifiers": Object {
           "alt": false,
           "cmd": false,
@@ -524,6 +526,7 @@ describe('interactionHardReset', () => {
           "y": 210,
         },
         "globalTime": 1000,
+        "hasMouseMoved": false,
         "modifiers": Object {
           "alt": false,
           "cmd": false,
@@ -742,6 +745,7 @@ describe('interactionUpdate with user changed strategy', () => {
           "y": 210,
         },
         "globalTime": 1000,
+        "hasMouseMoved": false,
         "modifiers": Object {
           "alt": false,
           "cmd": false,
