@@ -1526,13 +1526,11 @@ export const GuidelineKeepDeepEquality: KeepDeepEqualityCall<Guideline> = (oldVa
 }
 
 export const GuidelineWithSnappingVectorKeepDeepEquality: KeepDeepEqualityCall<GuidelineWithSnappingVector> =
-  combine3EqualityCalls(
+  combine2EqualityCalls(
     (guideline) => guideline.guideline,
     GuidelineKeepDeepEquality,
     (guideline) => guideline.snappingVector,
     CanvasPointKeepDeepEquality,
-    (guideline) => guideline.activateSnap,
-    createCallWithTripleEquals(),
     guidelineWithSnappingVector,
   )
 

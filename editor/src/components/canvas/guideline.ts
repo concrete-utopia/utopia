@@ -75,18 +75,15 @@ type GuidelineWithDistance = {
 export interface GuidelineWithSnappingVector {
   guideline: Guideline
   snappingVector: CanvasVector
-  activateSnap: boolean
 }
 
 export function guidelineWithSnappingVector(
   guideline: Guideline,
   snappingVector: CanvasVector,
-  activateSnap: boolean,
 ): GuidelineWithSnappingVector {
   return {
     guideline: guideline,
     snappingVector: snappingVector,
-    activateSnap: activateSnap,
   }
 }
 
@@ -430,6 +427,9 @@ export const Guidelines = {
   newSnappingVectorIsEqual<C extends CoordinateMarker>(l: Point<C>, r: Point<C>): boolean {
     return Utils.magnitude(l) === Utils.magnitude(r)
   },
+  shouldSnap(snappingVector: Vector<any>, snappingThreshold: number, scale: number): boolean {
+    return Utils.magnitude(snappingVector) < snappingThreshold / scale
+  },
   getClosestGuidelinesAndOffsets(
     xs: Array<number>,
     ys: Array<number>,
@@ -448,27 +448,30 @@ export const Guidelines = {
           guideline,
           constrainedDragAxis,
         )
-        const guidelineAndOffset = {
-          guideline: guideline,
-          snappingVector: snappingVector,
-          activateSnap: Utils.magnitude(snappingVector) < snappingThreshold / scale,
-        }
+        const activateSnap = this.shouldSnap(snappingVector, snappingThreshold, scale)
+        if (activateSnap) {
+          const guidelineAndOffset = {
+            guideline: guideline,
+            snappingVector: snappingVector,
+            activateSnap: true,
+          }
 
-        if (
-          xGuidelinesAndOffsets.length === 0 ||
-          Guidelines.newSnappingVectorIsSmallest(
-            snappingVector,
-            xGuidelinesAndOffsets[0].snappingVector,
-          )
-        ) {
-          xGuidelinesAndOffsets = [guidelineAndOffset]
-        } else if (
-          Guidelines.newSnappingVectorIsEqual(
-            snappingVector,
-            xGuidelinesAndOffsets[0].snappingVector,
-          )
-        ) {
-          xGuidelinesAndOffsets.push(guidelineAndOffset)
+          if (
+            xGuidelinesAndOffsets.length === 0 ||
+            Guidelines.newSnappingVectorIsSmallest(
+              snappingVector,
+              xGuidelinesAndOffsets[0].snappingVector,
+            )
+          ) {
+            xGuidelinesAndOffsets = [guidelineAndOffset]
+          } else if (
+            Guidelines.newSnappingVectorIsEqual(
+              snappingVector,
+              xGuidelinesAndOffsets[0].snappingVector,
+            )
+          ) {
+            xGuidelinesAndOffsets.push(guidelineAndOffset)
+          }
         }
       } else if (guideline.type === 'YAxisGuideline' && constrainedDragAxis !== 'x') {
         const snappingVector = Guidelines.getOffsetToSnapToYGuideline(
@@ -476,70 +479,76 @@ export const Guidelines = {
           guideline,
           constrainedDragAxis,
         )
-        const guidelineAndOffset = {
-          guideline: guideline,
-          snappingVector: snappingVector,
-          activateSnap: Utils.magnitude(snappingVector) < snappingThreshold / scale,
-        }
+        const activateSnap = this.shouldSnap(snappingVector, snappingThreshold, scale)
+        if (activateSnap) {
+          const guidelineAndOffset = {
+            guideline: guideline,
+            snappingVector: snappingVector,
+            activateSnap: true,
+          }
 
-        if (
-          yGuidelinesAndOffsets.length === 0 ||
-          Guidelines.newSnappingVectorIsSmallest(
-            snappingVector,
-            yGuidelinesAndOffsets[0].snappingVector,
-          )
-        ) {
-          yGuidelinesAndOffsets = [guidelineAndOffset]
-        } else if (
-          Guidelines.newSnappingVectorIsEqual(
-            snappingVector,
-            yGuidelinesAndOffsets[0].snappingVector,
-          )
-        ) {
-          yGuidelinesAndOffsets.push(guidelineAndOffset)
+          if (
+            yGuidelinesAndOffsets.length === 0 ||
+            Guidelines.newSnappingVectorIsSmallest(
+              snappingVector,
+              yGuidelinesAndOffsets[0].snappingVector,
+            )
+          ) {
+            yGuidelinesAndOffsets = [guidelineAndOffset]
+          } else if (
+            Guidelines.newSnappingVectorIsEqual(
+              snappingVector,
+              yGuidelinesAndOffsets[0].snappingVector,
+            )
+          ) {
+            yGuidelinesAndOffsets.push(guidelineAndOffset)
+          }
         }
       }
     }
     Utils.fastForEach(guidelines, (guideline) => {
       if (guideline.type === 'CornerGuideline') {
         const snappingVector = Guidelines.getOffsetToSnapToCornerGuideline(corners, guideline)
-        const guidelineAndOffset = {
-          guideline: guideline,
-          snappingVector: snappingVector,
-          activateSnap: Utils.magnitude(snappingVector) < snappingThreshold / scale,
-        }
+        const activateSnap = this.shouldSnap(snappingVector, snappingThreshold, scale)
+        if (activateSnap) {
+          const guidelineAndOffset = {
+            guideline: guideline,
+            snappingVector: snappingVector,
+            activateSnap: true,
+          }
 
-        if (
-          xGuidelinesAndOffsets.length === 0 ||
-          Guidelines.newSnappingVectorIsSmallest(
-            snappingVector,
-            xGuidelinesAndOffsets[0].snappingVector,
-          )
-        ) {
-          xGuidelinesAndOffsets = [guidelineAndOffset]
-        } else if (
-          Guidelines.newSnappingVectorIsEqual(
-            snappingVector,
-            xGuidelinesAndOffsets[0].snappingVector,
-          )
-        ) {
-          xGuidelinesAndOffsets.push(guidelineAndOffset)
-        }
-        if (
-          yGuidelinesAndOffsets.length === 0 ||
-          Guidelines.newSnappingVectorIsSmallest(
-            snappingVector,
-            yGuidelinesAndOffsets[0].snappingVector,
-          )
-        ) {
-          yGuidelinesAndOffsets = [guidelineAndOffset]
-        } else if (
-          Guidelines.newSnappingVectorIsEqual(
-            snappingVector,
-            yGuidelinesAndOffsets[0].snappingVector,
-          )
-        ) {
-          yGuidelinesAndOffsets.push(guidelineAndOffset)
+          if (
+            xGuidelinesAndOffsets.length === 0 ||
+            Guidelines.newSnappingVectorIsSmallest(
+              snappingVector,
+              xGuidelinesAndOffsets[0].snappingVector,
+            )
+          ) {
+            xGuidelinesAndOffsets = [guidelineAndOffset]
+          } else if (
+            Guidelines.newSnappingVectorIsEqual(
+              snappingVector,
+              xGuidelinesAndOffsets[0].snappingVector,
+            )
+          ) {
+            xGuidelinesAndOffsets.push(guidelineAndOffset)
+          }
+          if (
+            yGuidelinesAndOffsets.length === 0 ||
+            Guidelines.newSnappingVectorIsSmallest(
+              snappingVector,
+              yGuidelinesAndOffsets[0].snappingVector,
+            )
+          ) {
+            yGuidelinesAndOffsets = [guidelineAndOffset]
+          } else if (
+            Guidelines.newSnappingVectorIsEqual(
+              snappingVector,
+              yGuidelinesAndOffsets[0].snappingVector,
+            )
+          ) {
+            yGuidelinesAndOffsets.push(guidelineAndOffset)
+          }
         }
       }
     })
