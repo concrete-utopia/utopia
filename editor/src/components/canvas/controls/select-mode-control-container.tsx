@@ -5,6 +5,7 @@ import { CanvasPoint, CanvasRectangle, CanvasVector } from '../../../core/shared
 import { ElementPath } from '../../../core/shared/project-file-types'
 import { EditorAction } from '../../editor/action-types'
 import * as EditorActions from '../../editor/actions/action-creators'
+import * as MetaActions from '../../editor/actions/meta-actions'
 import { DuplicationState, RightMenuTab } from '../../editor/store/editor-state'
 import * as EP from '../../../core/shared/element-path'
 import { CanvasPositions, MoveDragState, ResizeDragState } from '../canvas-types'
@@ -120,12 +121,7 @@ export class SelectModeControlContainer extends React.Component<
        */
       requestAnimationFrame(() => {
         requestAnimationFrame(() => {
-          let selectActions = [
-            EditorActions.clearHighlightedViews(),
-            EditorActions.selectComponents(updatedSelection, false),
-            EditorActions.setRightMenuTab(RightMenuTab.Inspector),
-          ]
-          this.props.dispatch(selectActions, 'canvas')
+          this.props.dispatch(MetaActions.selectComponents(updatedSelection, false), 'canvas')
         })
       })
 

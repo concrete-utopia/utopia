@@ -30,6 +30,7 @@ import {
 import { toggleTextFormatting } from '../text-utils'
 import { EditorAction, EditorDispatch } from './action-types'
 import * as EditorActions from './actions/action-creators'
+import * as MetaActions from './actions/meta-actions'
 import {
   defaultEllipseElement,
   defaultRectangleElement,
@@ -115,16 +116,6 @@ import { CanvasMousePositionRaw, WindowMousePositionRaw } from '../../utils/glob
 import { getDragStateStart } from '../canvas/canvas-utils'
 import { isFeatureEnabled } from '../../utils/feature-switches'
 
-function cancelInsertModeActions(): Array<EditorAction> {
-  return [
-    EditorActions.switchEditorMode(EditorModes.selectMode()),
-    CanvasActions.clearDragState(false),
-    EditorActions.clearHighlightedViews(),
-    CanvasActions.clearInteractionSession(false),
-    EditorActions.setRightMenuTab(RightMenuTab.Inspector),
-  ]
-}
-
 function updateKeysPressed(
   keysPressed: KeysPressed,
   updatedCharacter: KeyCharacter,
@@ -177,7 +168,7 @@ function jumpToParentActions(selectedViews: Array<ElementPath>): Array<EditorAct
     case 'CLEAR':
       return [EditorActions.clearSelection()]
     default:
-      return [EditorActions.selectComponents([jumpResult], false)]
+      return MetaActions.selectComponents([jumpResult], false)
   }
 }
 
@@ -365,7 +356,7 @@ export function handleKeyDown(
     if (isSelectMode(editor.mode)) {
       const tabbedTo = Canvas.jumpToSibling(editor.selectedViews, editor.jsxMetadata, forwards)
       if (tabbedTo != null) {
-        return [EditorActions.selectComponents([tabbedTo], false)]
+        return MetaActions.selectComponents([tabbedTo], false)
       }
     }
     return []
@@ -425,7 +416,7 @@ export function handleKeyDown(
           } else {
             const childToSelect = Canvas.getFirstChild(editor.selectedViews, editor.jsxMetadata)
             if (childToSelect != null) {
-              return [EditorActions.selectComponents([childToSelect], false)]
+              return MetaActions.selectComponents([childToSelect], false)
             }
           }
         }
@@ -440,7 +431,7 @@ export function handleKeyDown(
       },
       [CANCEL_EVERYTHING_SHORTCUT]: () => {
         if (isInsertMode(editor.mode) || editor.rightMenu.selectedTab === RightMenuTab.Insert) {
-          return cancelInsertModeActions()
+          return MetaActions.cancelInsertModeActions('do-not-apply-changes')
         } else if (
           editor.canvas.dragState != null &&
           getDragStateStart(editor.canvas.dragState, editor.canvas.resizeOptions) != null
@@ -468,7 +459,7 @@ export function handleKeyDown(
           if (targetStack.length === 0 || nextTarget === null) {
             return [EditorActions.clearSelection()]
           } else {
-            return [EditorActions.selectComponents([nextTarget], false)]
+            return MetaActions.selectComponents([nextTarget], false)
           }
         }
         return []

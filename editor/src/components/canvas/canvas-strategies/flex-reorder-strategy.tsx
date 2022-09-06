@@ -23,7 +23,6 @@ import { ParentOutlines } from '../controls/parent-outlines'
 import { updateHighlightedViews } from '../commands/update-highlighted-views-command'
 import { setElementsToRerenderCommand } from '../commands/set-elements-to-rerender-command'
 import { ParentBounds } from '../controls/parent-bounds'
-import { getReorderIndex } from './reparent-strategy-helpers'
 import { absolute } from '../../../utils/utils'
 
 export const flexReorderStrategy: CanvasStrategy = {
@@ -91,11 +90,10 @@ export const flexReorderStrategy: CanvasStrategy = {
       const unpatchedIndex = siblingsOfTarget.findIndex((sibling) => EP.pathsEqual(sibling, target))
       const lastReorderIdx = strategyState.customStrategyState.lastReorderIdx ?? unpatchedIndex
 
-      const newIndex = getReorderIndex(
+      const newIndex = reorderIndexForReorder(
         strategyState.startingMetadata,
         siblingsOfTarget,
         pointOnCanvas,
-        target,
       )
 
       const realNewIndex = newIndex > -1 ? newIndex : lastReorderIdx
@@ -133,4 +131,20 @@ export const flexReorderStrategy: CanvasStrategy = {
       }
     }
   },
+}
+
+function reorderIndexForReorder(
+  metadata: ElementInstanceMetadataMap,
+  siblings: Array<ElementPath>,
+  point: CanvasVector,
+): number {
+  const targetSiblingIdx = siblings.findIndex((sibling) => {
+    const frame = MetadataUtils.getFrameInCanvasCoords(sibling, metadata)
+    return (
+      frame != null &&
+      rectContainsPoint(frame, point) &&
+      MetadataUtils.isParentYogaLayoutedContainerAndElementParticipatesInLayout(sibling, metadata)
+    )
+  })
+  return targetSiblingIdx
 }
