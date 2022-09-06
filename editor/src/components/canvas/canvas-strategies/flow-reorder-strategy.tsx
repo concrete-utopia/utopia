@@ -24,6 +24,8 @@ import {
   FlowReorderDragOutline,
 } from '../controls/flow-reorder-indicators'
 import { AllElementProps } from '../../editor/store/editor-state'
+import { isGeneratedElement } from './reparent-helpers'
+import { isReorderAllowed } from './reorder-utils'
 
 function isFlowReorderConversionApplicable(
   canvasState: InteractionCanvasState,
@@ -75,6 +77,13 @@ function flowReorderApplyCommon(
     const siblingsOfTarget = MetadataUtils.getSiblings(strategyState.startingMetadata, target).map(
       (element) => element.elementPath,
     )
+
+    if (!isReorderAllowed(siblingsOfTarget)) {
+      return {
+        commands: [setCursorCommand('mid-interaction', CSSCursor.NotPermitted)],
+        customState: null,
+      }
+    }
 
     const rawPointOnCanvas = offsetPoint(
       interactionState.interactionData.dragStart,

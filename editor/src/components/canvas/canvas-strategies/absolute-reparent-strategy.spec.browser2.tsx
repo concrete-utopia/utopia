@@ -272,7 +272,7 @@ describe('Absolute Reparent Strategy', () => {
     const dragDelta = windowPoint({ x: 0, y: -150 })
     act(() =>
       dragElement(renderResult, 'child-to-reparent', dragDelta, cmdModifier, {
-        cursor: CSSCursor.ReparentNotPermitted,
+        cursor: CSSCursor.NotPermitted,
       }),
     )
 

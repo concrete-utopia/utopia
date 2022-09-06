@@ -1,6 +1,6 @@
 import { MetadataUtils } from '../../../core/model/element-metadata-utils'
 import { ElementInstanceMetadataMap } from '../../../core/shared/element-template'
-import { offsetPoint, rectContainsPoint } from '../../../core/shared/math-utils'
+import { CanvasVector, offsetPoint, rectContainsPoint } from '../../../core/shared/math-utils'
 import { ElementPath } from '../../../core/shared/project-file-types'
 import { reorderElement } from '../commands/reorder-element-command'
 import {
@@ -8,14 +8,7 @@ import {
   emptyStrategyApplicationResult,
   getTargetPathsFromInteractionTarget,
 } from './canvas-strategy-types'
-import {
-  CanvasPoint,
-  canvasPoint,
-  CanvasVector,
-  CanvasRectangle,
-} from '../../../core/shared/math-utils'
 import * as EP from '../../../core/shared/element-path'
-import { reverse, stripNulls } from '../../../core/shared/array-utils'
 import { DragOutlineControl } from '../controls/select-mode/drag-outline-control'
 import { CSSCursor } from '../canvas-types'
 import { setCursorCommand } from '../commands/set-cursor-command'
@@ -24,6 +17,7 @@ import { updateHighlightedViews } from '../commands/update-highlighted-views-com
 import { setElementsToRerenderCommand } from '../commands/set-elements-to-rerender-command'
 import { ParentBounds } from '../controls/parent-bounds'
 import { absolute } from '../../../utils/utils'
+import { isReorderAllowed } from './reorder-utils'
 
 export const flexReorderStrategy: CanvasStrategy = {
   id: 'FLEX_REORDER',
@@ -76,11 +70,17 @@ export const flexReorderStrategy: CanvasStrategy = {
       const selectedElements = getTargetPathsFromInteractionTarget(canvasState.interactionTarget)
 
       const target = selectedElements[0]
-
       const siblingsOfTarget = MetadataUtils.getSiblings(
         strategyState.startingMetadata,
         target,
       ).map((element) => element.elementPath)
+
+      if (!isReorderAllowed(siblingsOfTarget)) {
+        return {
+          commands: [setCursorCommand('mid-interaction', CSSCursor.NotPermitted)],
+          customState: null,
+        }
+      }
 
       const pointOnCanvas = offsetPoint(
         interactionState.interactionData.dragStart,
