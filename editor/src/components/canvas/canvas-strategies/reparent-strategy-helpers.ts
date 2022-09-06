@@ -206,6 +206,7 @@ export function getReparentTargetUnified(
 ): ReparentTarget {
   const projectContents = canvasState.projectContents
   const openFile = canvasState.openFile ?? null
+  const canvasScale = canvasState.scale
 
   const multiselectBounds: Size =
     MetadataUtils.getBoundingRectangleInCanvasCoords(filteredSelectedElements, metadata) ??
@@ -287,6 +288,7 @@ export function getReparentTargetUnified(
       metadata,
       flexElementPath,
       'padded-edge',
+      canvasScale,
     )
 
     const targetUnderMouseIndex = targets.findIndex((target) => {
@@ -331,6 +333,7 @@ export function getReparentTargetUnified(
       metadata,
       targetParentPath,
       'full-size',
+      canvasScale,
     )
 
     const targetUnderMouseIndex = targets.findIndex((target) => {
@@ -358,7 +361,10 @@ function drawTargetRectanglesForChildrenOfElement(
   metadata: ElementInstanceMetadataMap,
   flexElementPath: ElementPath,
   targetRectangleSize: 'padded-edge' | 'full-size',
+  canvasScale: number,
 ) {
+  const ExtraPadding = 10 / canvasScale
+
   const flexElement = MetadataUtils.findElementByElementPath(metadata, flexElementPath)
   const flexDirection = MetadataUtils.getFlexDirection(flexElement)
   const parentBounds = MetadataUtils.getFrameInCanvasCoords(flexElementPath, metadata)
@@ -409,8 +415,6 @@ function drawTargetRectanglesForChildrenOfElement(
 
       const normalizedStart = Math.min(start, end)
       const normalizedEnd = Math.max(start, end)
-
-      const ExtraPadding = 10
 
       const paddedStart = normalizedStart - ExtraPadding
       const paddedEnd = normalizedEnd + ExtraPadding
