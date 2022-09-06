@@ -507,7 +507,7 @@ export function applyFlexReparent(
           canvasState.openFile,
           pathToReparent(target),
           newParent,
-          'on-complete',
+          'always',
         )
 
         if (outcomeResult != null) {

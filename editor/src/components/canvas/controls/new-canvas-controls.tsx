@@ -433,6 +433,8 @@ const NewCanvasControlsInner = (props: NewCanvasControlsInnerProps) => {
 
   const resizeStatus = getResizeStatus()
 
+  console.log('strategyControls', strategyControls)
+
   return (
     <div
       id={CanvasControlsContainerID}

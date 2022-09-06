@@ -3,10 +3,14 @@ import { useEditorState } from '../../../editor/store/store-hook'
 import { CanvasOffsetWrapper } from '../canvas-offset-wrapper'
 
 export const FlexReparentTargetIndicator = React.memo(() => {
-  const reparentTargetLines = useEditorState(
-    (store) => store.editor.canvas.controls.flexReparentTargetLines,
-    'FlexReparentTargetIndicator lines',
-  )
+  const reparentTargetLines = useEditorState((store) => {
+    console.log(
+      'store.editor.canvas.controls.flexReparentTargetLines',
+      store.editor.canvas.controls.flexReparentTargetLines,
+    )
+    return store.editor.canvas.controls.flexReparentTargetLines
+  }, 'FlexReparentTargetIndicator lines')
+  console.log('reparentTargetLines', reparentTargetLines)
   return (
     <CanvasOffsetWrapper>
       <div style={{ display: 'block' }}>
