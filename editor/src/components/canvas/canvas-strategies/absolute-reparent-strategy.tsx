@@ -24,6 +24,7 @@ import { getReparentOutcome, pathToReparent } from './reparent-utils'
 import { mapDropNulls } from '../../../core/shared/array-utils'
 import { honoursPropsPosition } from './absolute-utils'
 import { ElementPath } from '../../../core/shared/project-file-types'
+import { UpdatedPathMap } from './interaction-state'
 
 export const absoluteReparentStrategy: CanvasStrategy = {
   id: 'ABSOLUTE_REPARENT',
@@ -150,20 +151,21 @@ export const absoluteReparentStrategy: CanvasStrategy = {
       }, filteredSelectedElements)
 
       let newPaths: Array<ElementPath> = []
-      let pathMap = new Map<ElementPath, ElementPath>()
+      let updatedTargetPaths: UpdatedPathMap = {}
 
       commands.forEach((c) => {
         newPaths.push(c.newPath)
-        pathMap.set(c.oldPath, c.newPath)
+        updatedTargetPaths[EP.toString(c.oldPath)] = c.newPath
       })
 
-      const moveCommands = absoluteMoveStrategy.apply(canvasState, interactionState, {
-        ...strategyState,
-        customStrategyState: {
-          ...strategyState.customStrategyState,
-          updatedTargetPaths: pathMap,
+      const moveCommands = absoluteMoveStrategy.apply(
+        canvasState,
+        {
+          ...interactionState,
+          updatedTargetPaths: updatedTargetPaths,
         },
-      })
+        strategyState,
+      )
 
       return {
         commands: [

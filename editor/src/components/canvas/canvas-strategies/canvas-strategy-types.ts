@@ -13,7 +13,6 @@ export interface CustomStrategyState {
   escapeHatchActivated: boolean
   lastReorderIdx: number | null
   duplicatedElementNewUids: { [elementPath: string]: string }
-  updatedTargetPaths: Map<ElementPath, ElementPath>
 }
 
 export function defaultCustomStrategyState(): CustomStrategyState {
@@ -21,7 +20,6 @@ export function defaultCustomStrategyState(): CustomStrategyState {
     escapeHatchActivated: false,
     lastReorderIdx: null,
     duplicatedElementNewUids: {},
-    updatedTargetPaths: new Map(),
   }
 }
 

@@ -192,7 +192,6 @@ function dragByPixels(
       startingMetadata: metadata,
       customStrategyState: {
         escapeHatchActivated: true,
-        updatedTargetPaths: new Map(),
       },
     } as StrategyState,
   )

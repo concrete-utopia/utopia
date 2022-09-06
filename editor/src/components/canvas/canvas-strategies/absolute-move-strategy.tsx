@@ -1,4 +1,5 @@
 import { MetadataUtils } from '../../../core/model/element-metadata-utils'
+import * as EP from '../../../core/shared/element-path'
 import { ElementInstanceMetadataMap } from '../../../core/shared/element-template'
 import { CanvasPoint, offsetPoint, zeroCanvasPoint } from '../../../core/shared/math-utils'
 import { ElementPath } from '../../../core/shared/project-file-types'
@@ -93,6 +94,7 @@ export const absoluteMoveStrategy: CanvasStrategy = {
             selectedElement,
             snappedDragVector,
             canvasState,
+            interactionState,
             sessionState,
           )
           commands.push(...elementResult.commands)
@@ -147,7 +149,7 @@ export function applyAbsoluteMoveCommon(
         shiftKeyPressed && drag != null ? determineConstrainedDragAxis(drag) : null
 
       const targetsForSnapping = selectedElements.map(
-        (path) => strategyState.customStrategyState.updatedTargetPaths.get(path) ?? path,
+        (path) => interactionState.updatedTargetPaths[EP.toString(path)] ?? path,
       )
       const moveGuidelines = collectParentAndSiblingGuidelines(
         strategyState.startingMetadata,

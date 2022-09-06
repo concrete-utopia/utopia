@@ -108,6 +108,7 @@ export const keyboardAbsoluteMoveStrategy: CanvasStrategy = {
             selectedElement,
             keyboardMovement,
             canvasState,
+            interactionState,
             sessionState,
           )
           commands.push(...elementResult.commands)

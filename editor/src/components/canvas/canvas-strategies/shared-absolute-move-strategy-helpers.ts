@@ -39,12 +39,13 @@ import { runLegacyAbsoluteMoveSnapping } from '../controls/guideline-helpers'
 import { ConstrainedDragAxis, Guideline, GuidelineWithSnappingVector } from '../guideline'
 import { AbsolutePin } from './absolute-resize-helpers'
 import { InteractionCanvasState } from './canvas-strategy-types'
-import { StrategyState } from './interaction-state'
+import { InteractionSession, StrategyState } from './interaction-state'
 
 export function getAbsoluteMoveCommandsForSelectedElement(
   selectedElement: ElementPath,
   drag: CanvasVector,
   canvasState: InteractionCanvasState,
+  interactionState: InteractionSession,
   sessionState: StrategyState,
 ): {
   commands: Array<AdjustCssLengthProperty>
@@ -79,7 +80,7 @@ export function getAbsoluteMoveCommandsForSelectedElement(
   }
 
   const mappedPath =
-    sessionState.customStrategyState.updatedTargetPaths.get(selectedElement) ?? selectedElement
+    interactionState.updatedTargetPaths[EP.toString(selectedElement)] ?? selectedElement
 
   return createMoveCommandsForElement(
     element,
