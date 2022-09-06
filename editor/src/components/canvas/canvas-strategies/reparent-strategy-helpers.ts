@@ -151,18 +151,13 @@ export function findReparentStrategy(
   const parentStayedTheSame = filteredSelectedElements.some(
     (e) => EP.parentPath(e) === newParentPath,
   )
-  const newParentMetadata = MetadataUtils.findElementByElementPath(
-    strategyState.startingMetadata,
-    newParentPath,
-  )
-  const parentIsFlexLayout = MetadataUtils.isFlexLayoutedContainer(newParentMetadata)
 
   if (
     reparentResult.shouldReparent &&
     newParentPath != null &&
     // holding cmd forces a reparent even if the target parent was under the mouse at the interaction start
     (cmdPressed || newParentPath !== interactionState.startingTargetParentToFilterOut?.newParent) &&
-    (parentIsFlexLayout || !parentStayedTheSame) // TODO review this, as it is a result of a merge with master
+    !parentStayedTheSame
   ) {
     return reparentStrategyForParent(
       strategyState.startingMetadata,
