@@ -25,6 +25,7 @@ import { setElementsToRerenderCommand } from '../commands/set-elements-to-rerend
 import { ParentBounds } from '../controls/parent-bounds'
 import { getReorderIndex } from './reparent-strategy-helpers'
 import { absolute } from '../../../utils/utils'
+import { isGeneratedElement } from './reparent-helpers'
 
 export const flexReorderStrategy: CanvasStrategy = {
   id: 'FLEX_REORDER',
@@ -77,6 +78,13 @@ export const flexReorderStrategy: CanvasStrategy = {
       const selectedElements = getTargetPathsFromInteractionTarget(canvasState.interactionTarget)
 
       const target = selectedElements[0]
+
+      if (isGeneratedElement(canvasState.projectContents, canvasState.openFile, target)) {
+        return {
+          commands: [setCursorCommand('mid-interaction', CSSCursor.NotPermitted)],
+          customState: null,
+        }
+      }
 
       const siblingsOfTarget = MetadataUtils.getSiblings(
         strategyState.startingMetadata,

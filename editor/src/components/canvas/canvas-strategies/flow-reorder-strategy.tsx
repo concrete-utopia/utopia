@@ -24,6 +24,7 @@ import {
   FlowReorderDragOutline,
 } from '../controls/flow-reorder-indicators'
 import { AllElementProps } from '../../editor/store/editor-state'
+import { isGeneratedElement } from './reparent-helpers'
 
 function isFlowReorderConversionApplicable(
   canvasState: InteractionCanvasState,
@@ -71,6 +72,13 @@ function flowReorderApplyCommon(
   if (interactionState.interactionData.drag != null) {
     const selectedElements = getTargetPathsFromInteractionTarget(canvasState.interactionTarget)
     const target = selectedElements[0] // TODO MULTISELECT??
+
+    if (isGeneratedElement(canvasState.projectContents, canvasState.openFile, target)) {
+      return {
+        commands: [setCursorCommand('mid-interaction', CSSCursor.NotPermitted)],
+        customState: null,
+      }
+    }
 
     const siblingsOfTarget = MetadataUtils.getSiblings(strategyState.startingMetadata, target).map(
       (element) => element.elementPath,

@@ -59,7 +59,7 @@ export enum CSSCursor {
   BrowserAuto = 'auto',
   Duplicate = "-webkit-image-set( url( '/editor/cursors/cursor-duplicate.png ') 1x, url( '/editor/cursors/cursor-duplicate@2x.png ') 2x ) 4 4, default",
   OpenHand = "-webkit-image-set( url( '/editor/cursors/cursor-open-hand.png ') 1x, url( '/editor/cursors/cursor-open-hand@2x.png ') 2x ) 4 4, default",
-  ReparentNotPermitted = "-webkit-image-set( url( '/editor/cursors/cursor-no-reparent.png ') 1x, url( '/editor/cursors/cursor-no-reparent@2x.png ') 2x ) 4 4, default",
+  NotPermitted = "-webkit-image-set( url( '/editor/cursors/cursor-no-reparent.png ') 1x, url( '/editor/cursors/cursor-no-reparent@2x.png ') 2x ) 4 4, default",
   MagicHand = "-webkit-image-set( url( '/editor/cursors/cursor-magic-hand.png ') 1x, url( '/editor/cursors/cursor-magic-move@2x.png ') 2x ) 4 4, default",
 }
 
