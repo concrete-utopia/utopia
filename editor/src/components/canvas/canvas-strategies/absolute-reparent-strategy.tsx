@@ -23,6 +23,8 @@ import { offsetPoint } from '../../../core/shared/math-utils'
 import { getReparentOutcome, pathToReparent } from './reparent-utils'
 import { mapDropNulls } from '../../../core/shared/array-utils'
 import { honoursPropsPosition } from './absolute-utils'
+import { ElementPath } from '../../../core/shared/project-file-types'
+import { UpdatedPathMap } from './interaction-state'
 
 export const absoluteReparentStrategy: CanvasStrategy = {
   id: 'ABSOLUTE_REPARENT',
@@ -97,7 +99,6 @@ export const absoluteReparentStrategy: CanvasStrategy = {
       strategyState.startingAllElementProps,
     )
     const newParent = reparentTarget.newParent
-    const moveCommands = absoluteMoveStrategy.apply(canvasState, interactionState, strategyState)
     const providesBoundsForAbsoluteChildren =
       MetadataUtils.findElementByElementPath(strategyState.startingMetadata, newParent)
         ?.specialSizeMeasurements.providesBoundsForAbsoluteChildren ?? false
@@ -142,13 +143,29 @@ export const absoluteReparentStrategy: CanvasStrategy = {
 
           const { commands: reparentCommands, newPath } = reparentResult
           return {
+            oldPath: selectedElement,
             newPath: newPath,
             commands: [...offsetCommands, ...reparentCommands],
           }
         }
       }, filteredSelectedElements)
 
-      const newPaths = commands.map((c) => c.newPath)
+      let newPaths: Array<ElementPath> = []
+      let updatedTargetPaths: UpdatedPathMap = {}
+
+      commands.forEach((c) => {
+        newPaths.push(c.newPath)
+        updatedTargetPaths[EP.toString(c.oldPath)] = c.newPath
+      })
+
+      const moveCommands = absoluteMoveStrategy.apply(
+        canvasState,
+        {
+          ...interactionState,
+          updatedTargetPaths: updatedTargetPaths,
+        },
+        strategyState,
+      )
 
       return {
         commands: [
@@ -161,7 +178,12 @@ export const absoluteReparentStrategy: CanvasStrategy = {
         customState: null,
       }
     } else {
-      return moveCommands
+      const moveCommands = absoluteMoveStrategy.apply(canvasState, interactionState, strategyState)
+
+      return {
+        commands: moveCommands.commands,
+        customState: null,
+      }
     }
   },
 }

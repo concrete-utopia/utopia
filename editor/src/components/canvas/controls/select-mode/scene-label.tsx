@@ -75,6 +75,7 @@ const SceneLabel = React.memo<SceneLabelProps>((props) => {
   const scale = useEditorState((store) => store.editor.canvas.scale, 'SceneLabel scale')
   const baseFontSize = 9
   const scaledFontSize = baseFontSize / scale
+  const scaledLineHeight = 17 / scale
   const paddingY = scaledFontSize / 9
   const offsetY = scaledFontSize
   const offsetX = scaledFontSize
@@ -173,6 +174,7 @@ const SceneLabel = React.memo<SceneLabelProps>((props) => {
             fontFamily:
               '-apple-system, BlinkMacSystemFont, Helvetica, "Segoe UI", Roboto,  Arial, sans-serif, "Apple Color Emoji", "Segoe UI Emoji", "Segoe UI Symbol"',
             fontSize: scaledFontSize,
+            lineHeight: `${scaledLineHeight}px`,
             whiteSpace: 'nowrap',
             overflow: 'hidden',
             textOverflow: 'ellipsis',

@@ -36,15 +36,16 @@ import {
   AdjustCssLengthProperty,
 } from '../commands/adjust-css-length-command'
 import { runLegacyAbsoluteMoveSnapping } from '../controls/guideline-helpers'
-import { ConstrainedDragAxis, GuidelineWithSnappingVector } from '../guideline'
+import { ConstrainedDragAxis, Guideline, GuidelineWithSnappingVector } from '../guideline'
 import { AbsolutePin } from './absolute-resize-helpers'
 import { InteractionCanvasState } from './canvas-strategy-types'
-import { StrategyState } from './interaction-state'
+import { InteractionSession, StrategyState } from './interaction-state'
 
 export function getAbsoluteMoveCommandsForSelectedElement(
   selectedElement: ElementPath,
   drag: CanvasVector,
   canvasState: InteractionCanvasState,
+  interactionState: InteractionSession,
   sessionState: StrategyState,
 ): {
   commands: Array<AdjustCssLengthProperty>
@@ -78,9 +79,13 @@ export function getAbsoluteMoveCommandsForSelectedElement(
     return { commands: [], intendedBounds: [] }
   }
 
+  const mappedPath =
+    interactionState.updatedTargetPaths[EP.toString(selectedElement)] ?? selectedElement
+
   return createMoveCommandsForElement(
     element,
     selectedElement,
+    mappedPath,
     drag,
     localFrame,
     globalFrame,
@@ -91,6 +96,7 @@ export function getAbsoluteMoveCommandsForSelectedElement(
 function createMoveCommandsForElement(
   element: JSXElement,
   selectedElement: ElementPath,
+  mappedPath: ElementPath,
   drag: CanvasVector,
   localFrame: LocalRectangle | null,
   globalFrame: CanvasRectangle | null,
@@ -134,7 +140,7 @@ function createMoveCommandsForElement(
       return []
     } else {
       const intendedGlobalFrame = offsetRect(globalFrame, drag)
-      return [{ target: selectedElement, frame: intendedGlobalFrame }]
+      return [{ target: mappedPath, frame: intendedGlobalFrame }]
     }
   })()
 
@@ -180,6 +186,7 @@ export function snapDrag(
   constrainedDragAxis: ConstrainedDragAxis | null,
   jsxMetadata: ElementInstanceMetadataMap,
   selectedElements: Array<ElementPath>,
+  moveGuidelines: Array<Guideline>,
   canvasScale: number,
 ): {
   snappedDragVector: CanvasPoint
@@ -198,8 +205,7 @@ export function snapDrag(
   const { snappedDragVector, guidelinesWithSnappingVector } = runLegacyAbsoluteMoveSnapping(
     drag,
     constrainedDragAxis,
-    jsxMetadata,
-    selectedElements,
+    moveGuidelines,
     canvasScale,
     multiselectBounds,
   )

@@ -18,10 +18,11 @@ import Utils from '../../../../utils/utils'
 import {
   clearHighlightedViews,
   clearSelection,
-  selectComponents,
   setFocusedElement,
   setHighlightedView,
+  selectComponents,
 } from '../../../editor/actions/action-creators'
+import { cancelInsertModeActions } from '../../../editor/actions/meta-actions'
 import {
   AllElementProps,
   EditorState,
@@ -660,6 +661,9 @@ function useSelectOrLiveModeSelectAndHover(
           if (!foundTargetIsSelected) {
             // first we only set the selected views for the canvas controls
             setSelectedViewsForCanvasControlsOnly(updatedSelection)
+
+            // In either case cancel insert mode.
+            editorActions.push(...cancelInsertModeActions('ignore-it-completely'))
 
             // then we set the selected views for the editor state, 1 frame later
             if (updatedSelection.length === 0) {

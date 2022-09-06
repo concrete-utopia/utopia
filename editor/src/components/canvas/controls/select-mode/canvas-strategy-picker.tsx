@@ -6,14 +6,14 @@ import CanvasActions from '../../canvas-actions'
 import { useDelayedCurrentStrategy } from '../../canvas-strategies/canvas-strategies'
 import { CanvasStrategy } from '../../canvas-strategies/canvas-strategy-types'
 
-export const CanvasStrategyIndicator = React.memo(() => {
+export const CanvasStrategyPicker = React.memo(() => {
   const colorTheme = useColorTheme()
-  const dispatch = useEditorState((store) => store.dispatch, 'CanvasStrategyIndicator dispatch')
+  const dispatch = useEditorState((store) => store.dispatch, 'CanvasStrategyPicker dispatch')
   const { otherPossibleStrategies } = useEditorState(
     (store) => ({
       otherPossibleStrategies: store.strategyState.sortedApplicableStrategies,
     }),
-    'CanvasStrategyIndicator strategyState.currentStrategy',
+    'CanvasStrategyPicker strategyState.currentStrategy',
   )
   const activeStrategy = useDelayedCurrentStrategy()
 

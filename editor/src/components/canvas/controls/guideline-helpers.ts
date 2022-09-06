@@ -156,11 +156,7 @@ export function getSnapDelta(
   )
   const winningGuidelines = oneGuidelinePerDimension(closestGuideLines)
   const delta = winningGuidelines.reduce((working, guideline) => {
-    if (guideline.activateSnap) {
-      return Utils.offsetPoint(working, guideline.snappingVector)
-    } else {
-      return working
-    }
+    return Utils.offsetPoint(working, guideline.snappingVector)
   }, Utils.zeroPoint as CanvasPoint)
   return {
     delta: Utils.roundPointToNearestHalf(delta),
@@ -205,16 +201,13 @@ export function pointGuidelineToBoundsEdge(
 export function runLegacyAbsoluteMoveSnapping(
   drag: CanvasPoint,
   constrainedDragAxis: ConstrainedDragAxis | null,
-  jsxMetadata: ElementInstanceMetadataMap,
-  selectedElements: Array<ElementPath>,
+  moveGuidelines: Array<Guideline>,
   canvasScale: number,
   multiselectBounds: CanvasRectangle | null,
 ): {
   snappedDragVector: CanvasPoint
   guidelinesWithSnappingVector: Array<GuidelineWithSnappingVector>
 } {
-  const moveGuidelines = collectParentAndSiblingGuidelines(jsxMetadata, selectedElements)
-
   const { delta, guidelinesWithSnappingVector } = getSnapDelta(
     moveGuidelines,
     constrainedDragAxis,
@@ -261,10 +254,6 @@ export function applySnappingToPoint(
   guidelines: Array<GuidelineWithSnappingVector>,
 ): CanvasPoint {
   return oneGuidelinePerDimension(guidelines).reduce((p, guidelineResult) => {
-    if (guidelineResult.activateSnap) {
-      return Utils.offsetPoint(p, guidelineResult.snappingVector)
-    } else {
-      return p
-    }
+    return Utils.offsetPoint(p, guidelineResult.snappingVector)
   }, point)
 }

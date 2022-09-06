@@ -14,6 +14,7 @@ import {
   rectContainsPoint,
   rectContainsPointInclusive,
   rectFromTwoPoints,
+  roundPointToNearestHalf,
   Size,
   size,
   sizeFitsInTarget,
@@ -56,87 +57,6 @@ import {
   adjustCssLengthProperty,
 } from '../commands/adjust-css-length-command'
 import { updatePropIfExists } from '../commands/update-prop-if-exists-command'
-
-interface ReorderElement {
-  distance: number
-  centerPoint: CanvasPoint
-  closestSibling: ElementPath
-  siblingIndex: number
-}
-
-export function getReorderIndex(
-  metadata: ElementInstanceMetadataMap,
-  siblings: Array<ElementPath>,
-  point: CanvasVector,
-  existingElement: ElementPath | null,
-): number {
-  let rowOrColumn: 'row' | 'column' | null = null
-
-  const first = siblings[0]
-  if (first != null) {
-    const parentPath = EP.parentPath(first)
-    if (parentPath != null) {
-      const parentMetadata = MetadataUtils.findElementByElementPath(metadata, parentPath)
-      if (parentMetadata?.specialSizeMeasurements.layoutSystemForChildren != 'flex') {
-        throw new Error(`Element ${EP.toString(parentPath)} is not a flex container`)
-      }
-
-      const flexDirection = parentMetadata?.specialSizeMeasurements.flexDirection
-      if (flexDirection != null) {
-        if (flexDirection.includes('row')) {
-          rowOrColumn = 'row'
-        } else if (flexDirection.includes('col')) {
-          rowOrColumn = 'column'
-        }
-      }
-    }
-  }
-
-  let reorderResult: ReorderElement | null = null
-  let siblingIndex: number = 0
-
-  for (const sibling of siblings) {
-    const frame = MetadataUtils.getFrameInCanvasCoords(sibling, metadata)
-    if (
-      frame != null &&
-      MetadataUtils.isParentYogaLayoutedContainerAndElementParticipatesInLayout(sibling, metadata)
-    ) {
-      const centerPoint = Utils.getRectCenter(frame)
-      const distance = Utils.distance(point, centerPoint)
-      // First one that has been found or if it's closer than a previously found entry.
-      if (reorderResult == null || distance < reorderResult.distance) {
-        reorderResult = {
-          distance: distance,
-          centerPoint: centerPoint,
-          closestSibling: sibling,
-          siblingIndex: siblingIndex,
-        }
-      }
-    }
-    siblingIndex++
-  }
-
-  if (reorderResult == null) {
-    // We were unable to find an appropriate entry.
-    return -1
-  } else if (EP.pathsEqual(reorderResult.closestSibling, existingElement)) {
-    // Reparenting to the same position that the existing element started in.
-    return reorderResult.siblingIndex
-  } else {
-    // Check which "side" of the target this falls on.
-    let newIndex = reorderResult.siblingIndex
-    if (rowOrColumn === 'row') {
-      if (point.x > reorderResult.centerPoint.x) {
-        newIndex++
-      }
-    } else if (rowOrColumn === 'column') {
-      if (point.y > reorderResult.centerPoint.y) {
-        newIndex++
-      }
-    }
-    return newIndex
-  }
-}
 
 export type ReparentStrategy =
   | 'FLEX_REPARENT_TO_ABSOLUTE'
@@ -798,16 +718,20 @@ export function getAbsoluteReparentPropertyChanges(
     MetadataUtils.findElementByElementPath(newParentStartingMetadata, newParent)
       ?.specialSizeMeasurements.globalContentBox ?? zeroCanvasRect
 
-  const offsetTL = pointDifference(newParentContentBox, currentParentContentBox)
-  const offsetBR = pointDifference(
-    canvasPoint({
-      x: currentParentContentBox.x + currentParentContentBox.width,
-      y: currentParentContentBox.y + currentParentContentBox.height,
-    }),
-    canvasPoint({
-      x: newParentContentBox.x + newParentContentBox.width,
-      y: newParentContentBox.y + newParentContentBox.height,
-    }),
+  const offsetTL = roundPointToNearestHalf(
+    pointDifference(newParentContentBox, currentParentContentBox),
+  )
+  const offsetBR = roundPointToNearestHalf(
+    pointDifference(
+      canvasPoint({
+        x: currentParentContentBox.x + currentParentContentBox.width,
+        y: currentParentContentBox.y + currentParentContentBox.height,
+      }),
+      canvasPoint({
+        x: newParentContentBox.x + newParentContentBox.width,
+        y: newParentContentBox.y + newParentContentBox.height,
+      }),
+    ),
   )
 
   const createAdjustCssLengthProperty = (
