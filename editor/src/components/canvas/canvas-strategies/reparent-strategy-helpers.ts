@@ -57,8 +57,6 @@ import {
 } from '../commands/adjust-css-length-command'
 import { updatePropIfExists } from '../commands/update-prop-if-exists-command'
 
-const FlexReparentIndicatorSize = 2
-
 export type ReparentStrategy =
   | 'FLEX_REPARENT_TO_ABSOLUTE'
   | 'FLEX_REPARENT_TO_FLEX'
@@ -468,6 +466,8 @@ export function applyFlexReparent(
   interactionSession: InteractionSession,
   strategyState: StrategyState,
 ): StrategyApplicationResult {
+  const FlexReparentIndicatorSize = 2 / canvasState.scale
+
   const selectedElements = getTargetPathsFromInteractionTarget(canvasState.interactionTarget)
   const filteredSelectedElements = getDragTargets(selectedElements)
 
