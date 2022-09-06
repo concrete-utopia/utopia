@@ -31,6 +31,7 @@ export interface DragInteractionData {
   originalDragStart: CanvasPoint
   modifiers: Modifiers
   globalTime: number
+  hasMouseMoved: boolean
 }
 
 export interface KeyState {
@@ -157,6 +158,7 @@ export function createInteractionViaMouse(
       originalDragStart: mouseDownPoint,
       modifiers: modifiers,
       globalTime: Date.now(),
+      hasMouseMoved: false,
     },
     activeControl: activeControl,
     sourceOfUpdate: activeControl,
@@ -191,6 +193,7 @@ export function updateInteractionViaMouse(
         originalDragStart: currentState.interactionData.originalDragStart,
         modifiers: modifiers,
         globalTime: Date.now(),
+        hasMouseMoved: true,
       },
       activeControl: currentState.activeControl,
       sourceOfUpdate: sourceOfUpdate ?? currentState.activeControl,
@@ -277,6 +280,7 @@ export function updateInteractionViaKeyboard(
           originalDragStart: currentState.interactionData.originalDragStart,
           modifiers: modifiers,
           globalTime: Date.now(),
+          hasMouseMoved: currentState.interactionData.hasMouseMoved,
         },
         activeControl: currentState.activeControl,
         sourceOfUpdate: currentState.activeControl,

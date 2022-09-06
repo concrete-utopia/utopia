@@ -276,7 +276,7 @@ export const useDelayedCurrentStrategy = () => {
   useSelectorWithCallback((store) => {
     if (
       store.editor.canvas.interactionSession?.interactionData.type === 'DRAG' &&
-      store.editor.canvas.interactionSession?.interactionData.drag != null
+      store.editor.canvas.interactionSession?.interactionData.hasMouseMoved
     ) {
       return store.strategyState.currentStrategy
     } else {

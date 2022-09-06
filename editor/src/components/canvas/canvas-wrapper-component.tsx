@@ -30,7 +30,7 @@ import { AlwaysTrue, usePubSubAtomReadOnly } from '../../core/shared/atom-with-p
 import { ErrorMessage } from '../../core/shared/error-messages'
 import CanvasActions from './canvas-actions'
 import { EditorModes } from '../editor/editor-modes'
-import { CanvasStrategyIndicator } from './controls/select-mode/canvas-strategy-indicator'
+import { CanvasStrategyPicker } from './controls/select-mode/canvas-strategy-picker'
 import { when } from '../../utils/react-conditionals'
 import { isFeatureEnabled } from '../../utils/feature-switches'
 
@@ -125,7 +125,7 @@ export const CanvasWrapperComponent = React.memo(() => {
         >
           {safeMode ? <SafeModeErrorOverlay /> : <ErrorOverlayComponent />}
           <ModeSelectButtons />
-          {when(isFeatureEnabled('Canvas Strategies'), <CanvasStrategyIndicator />)}
+          {when(isFeatureEnabled('Canvas Strategies'), <CanvasStrategyPicker />)}
         </FlexColumn>
       </FlexRow>
     </FlexColumn>
