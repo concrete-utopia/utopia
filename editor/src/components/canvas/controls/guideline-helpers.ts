@@ -201,16 +201,13 @@ export function pointGuidelineToBoundsEdge(
 export function runLegacyAbsoluteMoveSnapping(
   drag: CanvasPoint,
   constrainedDragAxis: ConstrainedDragAxis | null,
-  jsxMetadata: ElementInstanceMetadataMap,
-  selectedElements: Array<ElementPath>,
+  moveGuidelines: Array<Guideline>,
   canvasScale: number,
   multiselectBounds: CanvasRectangle | null,
 ): {
   snappedDragVector: CanvasPoint
   guidelinesWithSnappingVector: Array<GuidelineWithSnappingVector>
 } {
-  const moveGuidelines = collectParentAndSiblingGuidelines(jsxMetadata, selectedElements)
-
   const { delta, guidelinesWithSnappingVector } = getSnapDelta(
     moveGuidelines,
     constrainedDragAxis,

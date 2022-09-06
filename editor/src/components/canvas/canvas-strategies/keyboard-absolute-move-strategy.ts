@@ -19,7 +19,6 @@ import {
 import {
   getAbsoluteMoveCommandsForSelectedElement,
   getMultiselectBounds,
-  snapDrag,
 } from './shared-absolute-move-strategy-helpers'
 import { AdjustCssLengthProperty } from '../commands/adjust-css-length-command'
 import { setElementsToRerenderCommand } from '../commands/set-elements-to-rerender-command'
@@ -109,6 +108,7 @@ export const keyboardAbsoluteMoveStrategy: CanvasStrategy = {
             selectedElement,
             keyboardMovement,
             canvasState,
+            interactionState,
             sessionState,
           )
           commands.push(...elementResult.commands)
