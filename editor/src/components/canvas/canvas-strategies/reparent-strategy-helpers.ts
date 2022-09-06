@@ -14,6 +14,7 @@ import {
   rectContainsPoint,
   rectContainsPointInclusive,
   rectFromTwoPoints,
+  roundPointToNearestHalf,
   Size,
   size,
   sizeFitsInTarget,
@@ -717,16 +718,20 @@ export function getAbsoluteReparentPropertyChanges(
     MetadataUtils.findElementByElementPath(newParentStartingMetadata, newParent)
       ?.specialSizeMeasurements.globalContentBox ?? zeroCanvasRect
 
-  const offsetTL = pointDifference(newParentContentBox, currentParentContentBox)
-  const offsetBR = pointDifference(
-    canvasPoint({
-      x: currentParentContentBox.x + currentParentContentBox.width,
-      y: currentParentContentBox.y + currentParentContentBox.height,
-    }),
-    canvasPoint({
-      x: newParentContentBox.x + newParentContentBox.width,
-      y: newParentContentBox.y + newParentContentBox.height,
-    }),
+  const offsetTL = roundPointToNearestHalf(
+    pointDifference(newParentContentBox, currentParentContentBox),
+  )
+  const offsetBR = roundPointToNearestHalf(
+    pointDifference(
+      canvasPoint({
+        x: currentParentContentBox.x + currentParentContentBox.width,
+        y: currentParentContentBox.y + currentParentContentBox.height,
+      }),
+      canvasPoint({
+        x: newParentContentBox.x + newParentContentBox.width,
+        y: newParentContentBox.y + newParentContentBox.height,
+      }),
+    ),
   )
 
   const createAdjustCssLengthProperty = (

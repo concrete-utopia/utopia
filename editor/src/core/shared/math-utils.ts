@@ -970,7 +970,7 @@ export function canvasRectangleToLocalRectangle(
   canvasRect: CanvasRectangle,
   parentRect: CanvasRectangle,
 ): LocalRectangle {
-  const diff = pointDifference(parentRect, canvasRect)
+  const diff = roundPointToNearestHalf(pointDifference(parentRect, canvasRect))
   return localRectangle({
     x: diff.x,
     y: diff.y,
