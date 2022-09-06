@@ -124,7 +124,6 @@ export const CanvasWrapperComponent = React.memo(() => {
           }}
         >
           {safeMode ? <SafeModeErrorOverlay /> : <ErrorOverlayComponent />}
-          <ModeSelectButtons />
           {when(isFeatureEnabled('Canvas Strategies'), <CanvasStrategyPicker />)}
         </FlexColumn>
       </FlexRow>
