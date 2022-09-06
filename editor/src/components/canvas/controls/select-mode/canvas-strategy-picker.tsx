@@ -59,13 +59,14 @@ export const CanvasStrategyPicker = React.memo(() => {
           style={{
             pointerEvents: 'initial',
             position: 'absolute',
-            bottom: 4,
-            left: 4,
+            top: 4,
+            right: 4,
           }}
         >
           <FlexColumn
             style={{
-              minHeight: 29,
+              minHeight: 95,
+              width: 180,
               display: 'flex',
               alignItems: 'stretch',
               padding: 4,
@@ -80,21 +81,34 @@ export const CanvasStrategyPicker = React.memo(() => {
                 <FlexRow
                   key={strategy.id}
                   style={{
-                    height: 29,
+                    height: 24,
                     paddingLeft: 4,
                     paddingRight: 4,
                     backgroundColor:
-                      strategy.id === activeStrategy ? colorTheme.primary.value : undefined,
-                    color:
-                      strategy.id === activeStrategy
-                        ? colorTheme.white.value
-                        : colorTheme.textColor.value,
+                      strategy.id === activeStrategy ? colorTheme.bg5.value : undefined,
+                    color: colorTheme.textColor.value,
                   }}
                 >
                   {strategy.name}
                 </FlexRow>
               )
             })}
+            <div
+              style={{
+                fontSize: 9,
+                alignSelf: 'center',
+                marginTop: 'auto',
+                color: colorTheme.fg8.value,
+              }}
+            >
+              Press{' '}
+              <span
+                style={{ padding: 2, borderRadius: 2, border: `1px solid ${colorTheme.fg8.value}` }}
+              >
+                Tab
+              </span>{' '}
+              to switch
+            </div>
           </FlexColumn>
         </div>,
       )}

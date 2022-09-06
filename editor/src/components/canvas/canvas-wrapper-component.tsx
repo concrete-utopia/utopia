@@ -25,7 +25,6 @@ import Header from '../../third-party/react-error-overlay/components/Header'
 import { FlexColumn, Button, UtopiaTheme, FlexRow } from '../../uuiui'
 import { useReadOnlyRuntimeErrors } from '../../core/shared/runtime-report-logs'
 import StackFrame from '../../third-party/react-error-overlay/utils/stack-frame'
-import { ModeSelectButtons } from './mode-select-buttons'
 import { AlwaysTrue, usePubSubAtomReadOnly } from '../../core/shared/atom-with-pub-sub'
 import { ErrorMessage } from '../../core/shared/error-messages'
 import CanvasActions from './canvas-actions'
@@ -124,7 +123,6 @@ export const CanvasWrapperComponent = React.memo(() => {
           }}
         >
           {safeMode ? <SafeModeErrorOverlay /> : <ErrorOverlayComponent />}
-          <ModeSelectButtons />
           {when(isFeatureEnabled('Canvas Strategies'), <CanvasStrategyPicker />)}
         </FlexColumn>
       </FlexRow>
