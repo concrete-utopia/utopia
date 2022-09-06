@@ -1,6 +1,17 @@
 import React from 'react'
+import { mapDropNulls } from 'src/core/shared/array-utils'
 import { MetadataUtils } from '../../../core/model/element-metadata-utils'
-import { canvasRectangle, CanvasRectangle, rectanglesEqual } from '../../../core/shared/math-utils'
+import {
+  canvasPoint,
+  CanvasPoint,
+  canvasRectangle,
+  CanvasRectangle,
+  CanvasVector,
+  CoordinateMarker,
+  lineIntersection,
+  Point,
+  rectanglesEqual,
+} from '../../../core/shared/math-utils'
 import { useColorTheme } from '../../../uuiui'
 import { EditorStorePatched } from '../../editor/store/editor-state'
 import {
@@ -8,6 +19,7 @@ import {
   useRefEditorState,
   useSelectorWithCallback,
 } from '../../editor/store/store-hook'
+import { Guideline } from '../guideline'
 import { CanvasOffsetWrapper } from './canvas-offset-wrapper'
 
 // STRATEGY GUIDELINE CONTROLS
@@ -152,4 +164,47 @@ function useGuideline<T = HTMLDivElement>(
     innerCallback()
   }, [innerCallback])
   return controlRef
+}
+
+interface CanvasLine {
+  a: CanvasPoint
+  b: CanvasPoint
+}
+
+function guidelineToLinee(guideline: Guideline): CanvasLine | null {
+  switch (guideline.type) {
+    case 'XAxisGuideline':
+      return {
+        a: canvasPoint({ x: guideline.x, y: guideline.yBottom }),
+        b: canvasPoint({ x: guideline.x, y: guideline.yTop }),
+      }
+    case 'YAxisGuideline':
+      return {
+        a: canvasPoint({ x: guideline.xLeft, y: guideline.y }),
+        b: canvasPoint({ x: guideline.xRight, y: guideline.y }),
+      }
+    case 'CornerGuideline':
+      return null
+    default:
+      const _: never = guideline
+      throw new Error(`Unknown guideline found`)
+  }
+}
+
+function rectangleBoundingLines(rectangle: CanvasRectangle): CanvasLine[] {
+  return [
+    // top
+    // right
+    // left
+    // bottom
+  ]
+}
+
+function lineRectangleIntersections(line: CanvasLine, rectangle: CanvasRectangle): CanvasPoint[] {
+  const boundingLines = rectangleBoundingLines(rectangle)
+  const intersectionPoints = mapDropNulls(
+    (boundingLine) => lineIntersection(line.a, line.b, boundingLine.a, boundingLine.b),
+    boundingLines,
+  )
+  return intersectionPoints
 }
