@@ -1,5 +1,7 @@
 import { MetadataUtils } from '../../../core/model/element-metadata-utils'
-import { offsetPoint } from '../../../core/shared/math-utils'
+import { ElementInstanceMetadataMap } from '../../../core/shared/element-template'
+import { CanvasVector, offsetPoint, rectContainsPoint } from '../../../core/shared/math-utils'
+import { ElementPath } from '../../../core/shared/project-file-types'
 import { reorderElement } from '../commands/reorder-element-command'
 import {
   CanvasStrategy,
