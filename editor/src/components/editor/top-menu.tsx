@@ -20,6 +20,7 @@ import { IconToggleButton } from '../../uuiui/icon-toggle-button'
 import { LeftPaneDefaultWidth, RightMenuTab, NavigatorWidthAtom } from './store/editor-state'
 import { CanvasVector } from '../../core/shared/math-utils'
 import { AlwaysTrue, usePubSubAtomReadOnly } from '../../core/shared/atom-with-pub-sub'
+import { EditorModes } from './editor-modes'
 
 function useShouldResetCanvas(invalidateCount: number): [boolean, (value: boolean) => void] {
   const [shouldResetCanvas, setShouldResetCanvas] = React.useState(false)
@@ -104,6 +105,18 @@ const TopMenuRightControls = React.memo(() => {
     setShouldResetCanvas(false)
   }, [dispatch, setShouldResetCanvas])
 
+  const isLiveMode = useEditorState(
+    (store) => store.editor.mode.type === 'live',
+    'TopMenu isLiveMode',
+  )
+  const toggleLiveMode = React.useCallback(() => {
+    if (isLiveMode) {
+      dispatch([EditorActions.switchEditorMode(EditorModes.selectMode())])
+    } else {
+      dispatch([EditorActions.switchEditorMode(EditorModes.liveMode())])
+    }
+  }, [dispatch, isLiveMode])
+
   const zoom100pct = React.useCallback(() => dispatch([CanvasActions.zoom(1)]), [dispatch])
 
   const rightMenuSelectedTab = useEditorState(
@@ -167,6 +180,14 @@ const TopMenuRightControls = React.memo(() => {
             <LargerIcons.Refresh />
           </SquareButton>
         </span>
+      </Tooltip>
+      <Tooltip title='Toggle between Live and Edit mode' placement='left'>
+        <IconToggleButton
+          onToggle={toggleLiveMode}
+          value={isLiveMode}
+          srcOn={UNSAFE_getIconURL('playbutton-larger', 'blue', 'semantic', 18, 18)}
+          srcOff={UNSAFE_getIconURL('playbutton-larger', 'darkgray', 'semantic', 18, 18)}
+        />
       </Tooltip>
 
       <Tooltip title={'Insert'} placement='left'>
