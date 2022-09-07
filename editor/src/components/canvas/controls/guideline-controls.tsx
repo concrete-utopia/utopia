@@ -50,7 +50,7 @@ export const GuidelineControls = React.memo(() => {
 
   const parentAndSiblings = collectParentsAndSiblings(
     metadata,
-    strategyIntendedBounds.map((_) => _.target),
+    strategyIntendedBounds.map((bound) => bound.target),
   )
 
   const intersectionFrames = [
