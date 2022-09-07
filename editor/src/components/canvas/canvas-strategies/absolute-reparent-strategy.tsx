@@ -28,7 +28,7 @@ import { UpdatedPathMap } from './interaction-state'
 
 export const absoluteReparentStrategy: CanvasStrategy = {
   id: 'ABSOLUTE_REPARENT',
-  name: 'Reparent Absolute Elements',
+  name: 'Reparent',
   isApplicable: (canvasState, interactionState, metadata) => {
     const selectedElements = getTargetPathsFromInteractionTarget(canvasState.interactionTarget)
     if (

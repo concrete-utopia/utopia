@@ -21,7 +21,7 @@ import { isReorderAllowed } from './reorder-utils'
 
 export const flexReorderStrategy: CanvasStrategy = {
   id: 'FLEX_REORDER',
-  name: 'Flex Reorder',
+  name: 'Reorder (Flex)',
   isApplicable: (canvasState, _interactionState, metadata) => {
     const selectedElements = getTargetPathsFromInteractionTarget(canvasState.interactionTarget)
     if (selectedElements.length == 1) {

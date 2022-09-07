@@ -45,7 +45,7 @@ import { FlexReparentTargetIndicator } from '../controls/select-mode/flex-repare
 
 export const dragToInsertStrategy: CanvasStrategy = {
   id: 'DRAG_TO_INSERT',
-  name: 'Drag to Insert',
+  name: 'Insert',
   isApplicable: (canvasState, _interactionState, metadata) => {
     const insertionSubjects = getInsertionSubjectsFromInteractionTarget(
       canvasState.interactionTarget,

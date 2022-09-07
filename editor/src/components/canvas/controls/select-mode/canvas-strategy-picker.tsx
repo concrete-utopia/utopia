@@ -61,12 +61,13 @@ export const CanvasStrategyPicker = React.memo(() => {
             position: 'absolute',
             top: 4,
             right: 4,
+            fontSize: 9,
           }}
         >
           <FlexColumn
             style={{
-              minHeight: 95,
-              width: 180,
+              minHeight: 84,
+              width: 120,
               display: 'flex',
               alignItems: 'stretch',
               padding: 4,
@@ -81,7 +82,7 @@ export const CanvasStrategyPicker = React.memo(() => {
                 <FlexRow
                   key={strategy.id}
                   style={{
-                    height: 24,
+                    height: 19,
                     paddingLeft: 4,
                     paddingRight: 4,
                     backgroundColor:
@@ -95,7 +96,6 @@ export const CanvasStrategyPicker = React.memo(() => {
             })}
             <div
               style={{
-                fontSize: 9,
                 alignSelf: 'center',
                 marginTop: 'auto',
                 color: colorTheme.fg8.value,
