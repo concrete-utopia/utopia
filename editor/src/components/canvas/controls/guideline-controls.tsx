@@ -290,7 +290,15 @@ function rectangleBoundingLines(rectangle: CanvasRectangle): CanvasSpan[] {
 // https://stackoverflow.com/a/9997374
 function spansIntersect(a: CanvasSpan, b: CanvasSpan): boolean {
   function ccw(p1: CanvasPoint, p2: CanvasPoint, p3: CanvasPoint): boolean {
-    return (p2.y - p1.y) * (p3.x - p1.x) - (p3.y - p1.y) * (p2.x - p1.x) >= 0
+    return (p3.y - p1.y) * (p2.x - p1.x) <= (p2.y - p1.y) * (p3.x - p1.x)
+  }
+
+  return ccw(a.a, b.a, b.b) !== ccw(a.b, b.a, b.b) && ccw(a.a, a.b, b.a) !== ccw(a.a, a.b, b.b)
+}
+
+function spansIntersect2(a: CanvasSpan, b: CanvasSpan): boolean {
+  function ccw(p1: CanvasPoint, p2: CanvasPoint, p3: CanvasPoint): boolean {
+    return (p3.y - p1.y) * (p2.x - p1.x) >= (p2.y - p1.y) * (p3.x - p1.x)
   }
 
   return ccw(a.a, b.a, b.b) !== ccw(a.b, b.a, b.b) && ccw(a.a, a.b, b.a) !== ccw(a.a, a.b, b.b)
@@ -298,7 +306,7 @@ function spansIntersect(a: CanvasSpan, b: CanvasSpan): boolean {
 
 function spanIntersection(left: CanvasSpan, right: CanvasSpan): CanvasPoint | null {
   const point = lineIntersection(left.a, left.b, right.a, right.b)
-  if (spansIntersect(left, right)) {
+  if (spansIntersect(left, right) || spansIntersect2(left, right)) {
     return point
   }
   return null
