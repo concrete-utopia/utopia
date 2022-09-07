@@ -22,6 +22,7 @@ import { CanvasOffsetWrapper } from './canvas-offset-wrapper'
 
 // STRATEGY GUIDELINE CONTROLS
 export const GuidelineControls = React.memo(() => {
+  const scale = useEditorState(scaleSelector, 'Guideline scale')
   const strategyMovedSuccessfully = useEditorState((store) => {
     return (
       store.editor.canvas.controls.strategyIntendedBounds.length > 0 &&
@@ -63,7 +64,7 @@ export const GuidelineControls = React.memo(() => {
         <GuidelineControl index={2} />
         <GuidelineControl index={3} />
         {intersectionPoints.map((point, idx) => (
-          <XMarkControl data-testid={`xmark-${idx}`} key={idx} point={point} />
+          <XMarkControl data-testid={`xmark-${idx}`} key={idx} point={point} scale={scale} />
         ))}
       </CanvasOffsetWrapper>
     )
@@ -244,20 +245,29 @@ function lineRectangleIntersections(line: CanvasLine, rectangle: CanvasRectangle
   return intersectionPoints
 }
 
-const XMarkControl = React.memo<{ point: CanvasPoint }>(({ point }) => {
-  const scale = useEditorState(scaleSelector, 'Guideline scale')
+interface XMarkControlProps {
+  point: CanvasPoint
+  scale: number
+}
+
+const XMarkControlSize = 5
+
+const XMarkControl = React.memo<XMarkControlProps>(({ point, scale }) => {
+  const width = XMarkControlSize
+  const height = XMarkControlSize
+
   return (
     <div
-      key={`${point.x}-${point.y}`}
       style={{
         position: 'absolute',
         display: 'flex',
         justifyContent: 'center',
         alignItems: 'center',
-        left: point.x - 2.5 / scale,
-        top: point.y - 2.5 / scale,
-        width: 5,
-        height: 5,
+        left: point.x - width / 2,
+        top: point.y - height / 2,
+        width,
+        height,
+        transform: `scale(${1 / scale})`,
       }}
     >
       <XMark />
