@@ -916,24 +916,16 @@ export const MetadataUtils = {
       }, Utils.asLocal(frame))
     }
   },
-  getClosestParentCoordinateSystemBounds: function (
+  getParentCoordinateSystemBounds: function (
     targetParent: ElementPath | null,
     metadata: ElementInstanceMetadataMap,
   ): CanvasRectangle {
     const parent = MetadataUtils.findElementByElementPath(metadata, targetParent)
     if (parent != null) {
-      if (parent.specialSizeMeasurements.providesBoundsForAbsoluteChildren) {
-        if (parent.specialSizeMeasurements.globalContentBox != null) {
-          return parent.specialSizeMeasurements.globalContentBox
-        } else if (parent.specialSizeMeasurements.coordinateSystemBounds != null) {
-          return parent.specialSizeMeasurements.coordinateSystemBounds
-        }
-      } else {
-        const closestOffsetParentPath = parent.specialSizeMeasurements.closestOffsetParentPath
-        return MetadataUtils.getClosestParentCoordinateSystemBounds(
-          closestOffsetParentPath,
-          metadata,
-        )
+      if (parent.specialSizeMeasurements.globalContentBox != null) {
+        return parent.specialSizeMeasurements.globalContentBox
+      } else if (parent.specialSizeMeasurements.coordinateSystemBounds != null) {
+        return parent.specialSizeMeasurements.coordinateSystemBounds
       }
     }
 
@@ -944,8 +936,10 @@ export const MetadataUtils = {
     metadata: ElementInstanceMetadataMap,
     frame: CanvasRectangle,
   ): LocalRectangle {
-    const closestParentCoordinateSystemBounds =
-      MetadataUtils.getClosestParentCoordinateSystemBounds(targetParent, metadata)
+    const closestParentCoordinateSystemBounds = MetadataUtils.getParentCoordinateSystemBounds(
+      targetParent,
+      metadata,
+    )
     return canvasRectangleToLocalRectangle(frame, closestParentCoordinateSystemBounds)
   },
   getElementLabelFromProps(allElementProps: AllElementProps, path: ElementPath): string | null {

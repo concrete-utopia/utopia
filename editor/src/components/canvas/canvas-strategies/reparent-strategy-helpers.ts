@@ -719,11 +719,11 @@ export function getAbsoluteReparentPropertyChanges(
     return []
   }
 
-  const currentParentContentBox = MetadataUtils.getClosestParentCoordinateSystemBounds(
+  const currentParentContentBox = MetadataUtils.getParentCoordinateSystemBounds(
     EP.parentPath(target),
     targetStartingMetadata,
   )
-  const newParentContentBox = MetadataUtils.getClosestParentCoordinateSystemBounds(
+  const newParentContentBox = MetadataUtils.getParentCoordinateSystemBounds(
     newParent,
     newParentStartingMetadata,
   )
