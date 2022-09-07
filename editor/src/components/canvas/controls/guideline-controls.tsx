@@ -1,15 +1,13 @@
 import React from 'react'
-import { mapDropNulls } from 'src/core/shared/array-utils'
+import { mapDropNulls } from '../../../core/shared/array-utils'
+import { Utils } from '../../../uuiui-deps'
 import { MetadataUtils } from '../../../core/model/element-metadata-utils'
 import {
   canvasPoint,
   CanvasPoint,
   canvasRectangle,
   CanvasRectangle,
-  CanvasVector,
-  CoordinateMarker,
   lineIntersection,
-  Point,
   rectanglesEqual,
 } from '../../../core/shared/math-utils'
 import { useColorTheme } from '../../../uuiui'
@@ -38,6 +36,23 @@ export const GuidelineControls = React.memo(() => {
     )
   }, 'GuidelineControls strategyMovedSuccessfully')
 
+  const { strategyIntendedBounds, snappingGuidelines } = useEditorState(
+    (store) => store.editor.canvas.controls,
+    'Strategy intended bounds and snapping guidelines',
+  )
+
+  const intersectionPoints = strategyIntendedBounds.flatMap((bound) =>
+    snappingGuidelines
+      .slice(0, 4)
+      .flatMap(
+        (guideLine) =>
+          Utils.optionalMap(
+            (line) => lineRectangleIntersections(line, bound.frame),
+            guidelineToLine(guideLine.guideline),
+          ) ?? [],
+      ),
+  )
+
   if (!strategyMovedSuccessfully) {
     return null
   } else {
@@ -47,6 +62,9 @@ export const GuidelineControls = React.memo(() => {
         <GuidelineControl index={1} />
         <GuidelineControl index={2} />
         <GuidelineControl index={3} />
+        {intersectionPoints.map((point, idx) => (
+          <XMarkControl data-testid={`xmark-${idx}`} key={idx} point={point} />
+        ))}
       </CanvasOffsetWrapper>
     )
   }
@@ -58,6 +76,7 @@ interface GuidelineProps {
 
 const LineWidth = 1
 const scaleSelector = (store: EditorStorePatched) => store.editor.canvas.scale
+
 const GuidelineControl = React.memo<GuidelineProps>((props) => {
   const colorTheme = useColorTheme()
   const scale = useEditorState(scaleSelector, 'Guideline scale')
@@ -171,7 +190,11 @@ interface CanvasLine {
   b: CanvasPoint
 }
 
-function guidelineToLinee(guideline: Guideline): CanvasLine | null {
+function canvasLine(a: CanvasPoint, b: CanvasPoint): CanvasLine {
+  return { a, b }
+}
+
+function guidelineToLine(guideline: Guideline): CanvasLine | null {
   switch (guideline.type) {
     case 'XAxisGuideline':
       return {
@@ -193,10 +216,22 @@ function guidelineToLinee(guideline: Guideline): CanvasLine | null {
 
 function rectangleBoundingLines(rectangle: CanvasRectangle): CanvasLine[] {
   return [
-    // top
-    // right
-    // left
-    // bottom
+    canvasLine(
+      canvasPoint({ x: rectangle.x, y: rectangle.y }),
+      canvasPoint({ x: rectangle.x, y: rectangle.y + rectangle.height }),
+    ),
+    canvasLine(
+      canvasPoint({ x: rectangle.x, y: rectangle.y }),
+      canvasPoint({ x: rectangle.x + rectangle.width, y: rectangle.y }),
+    ),
+    canvasLine(
+      canvasPoint({ x: rectangle.x + rectangle.width, y: rectangle.y }),
+      canvasPoint({ x: rectangle.x + rectangle.width, y: rectangle.y + rectangle.height }),
+    ),
+    canvasLine(
+      canvasPoint({ x: rectangle.x, y: rectangle.y + rectangle.height }),
+      canvasPoint({ x: rectangle.x + rectangle.width, y: rectangle.y + rectangle.height }),
+    ),
   ]
 }
 
@@ -208,3 +243,37 @@ function lineRectangleIntersections(line: CanvasLine, rectangle: CanvasRectangle
   )
   return intersectionPoints
 }
+
+const XMarkControl = React.memo<{ point: CanvasPoint }>(({ point }) => {
+  const scale = useEditorState(scaleSelector, 'Guideline scale')
+  return (
+    <div
+      key={`${point.x}-${point.y}`}
+      style={{
+        position: 'absolute',
+        display: 'flex',
+        justifyContent: 'center',
+        alignItems: 'center',
+        left: point.x - 2.5 / scale,
+        top: point.y - 2.5 / scale,
+        width: 5,
+        height: 5,
+      }}
+    >
+      <XMark />
+    </div>
+  )
+})
+
+const XMark = React.memo(() => (
+  <svg
+    width='5px'
+    height='5px'
+    viewBox='0 0 5.0 5.0'
+    version='1.1'
+    xmlns='http://www.w3.org/2000/svg'
+  >
+    <path d='M0.5,4.5 L4.5,0.5' stroke='#FF00aa' strokeWidth='0.66' fill='none' />
+    <path d='M0.5,0.5 L4.5,4.5' stroke='#FF00aa' strokeWidth='0.66' fill='none' />
+  </svg>
+))
