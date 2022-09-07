@@ -235,7 +235,7 @@ describe('interactionStart', () => {
         ],
         "startingAllElementProps": Object {},
         "startingMetadata": Object {},
-        "status": "failure",
+        "status": "success",
       }
     `)
     expect(actualResult.patchedEditorState.canvas.scale).toEqual(100)
@@ -516,7 +516,7 @@ describe('interactionHardReset', () => {
         ],
         "startingAllElementProps": Object {},
         "startingMetadata": Object {},
-        "status": "failure",
+        "status": "success",
       }
     `)
     expect(actualResult.patchedEditorState.canvas.scale).toEqual(100)
@@ -737,7 +737,7 @@ describe('interactionUpdate with user changed strategy', () => {
         ],
         "startingAllElementProps": Object {},
         "startingMetadata": Object {},
-        "status": "failure",
+        "status": "success",
       }
     `)
     expect(actualResult.patchedEditorState.canvas.scale).toEqual(100)
