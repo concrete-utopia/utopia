@@ -236,7 +236,7 @@ export function applyCanvasStrategy(
 }
 
 export function useDelayedStrategyWithCallback<T>(
-  innerCallback: StateSelector<EditorStorePatched, T | null>,
+  selector: StateSelector<EditorStorePatched, T | null>,
 ): T | null {
   /**
    * onMouseDown selection shows canvas controls that are active when a strategy runs with a delay (double click selection in hierarchy)
@@ -275,13 +275,13 @@ export function useDelayedStrategyWithCallback<T>(
     [immediateCallback, delayedValue, timer, setTimer, setDelayedValue],
   )
 
-  useSelectorWithCallback(innerCallback, maybeDelayedCallback)
+  useSelectorWithCallback(selector, maybeDelayedCallback)
   useSelectorWithCallback((store) => {
     if (
       store.editor.canvas.interactionSession?.interactionData.type === 'DRAG' &&
       store.editor.canvas.interactionSession?.interactionData.hasMouseMoved
     ) {
-      return innerCallback(store)
+      return selector(store)
     } else {
       return null
     }
@@ -291,13 +291,13 @@ export function useDelayedStrategyWithCallback<T>(
 }
 
 export const useDelayedCurrentStrategy = () => {
-  const innerCallback = (store: EditorStorePatched) => store.strategyState.currentStrategy
-  return useDelayedStrategyWithCallback<CanvasStrategyId | null>(innerCallback)
+  const selector = (store: EditorStorePatched) => store.strategyState.currentStrategy
+  return useDelayedStrategyWithCallback<CanvasStrategyId | null>(selector)
 }
 
 export const useDelayedStrategyCursor = () => {
-  const innerCallback = (store: EditorStorePatched) => store.editor.canvas.cursor
-  return useDelayedStrategyWithCallback<CSSCursor | null>(innerCallback)
+  const selector = (store: EditorStorePatched) => store.editor.canvas.cursor
+  return useDelayedStrategyWithCallback<CSSCursor | null>(selector)
 }
 
 export function useGetApplicableStrategyControls(): Array<ControlWithKey> {
