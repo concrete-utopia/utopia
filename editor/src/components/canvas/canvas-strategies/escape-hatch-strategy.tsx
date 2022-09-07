@@ -150,6 +150,7 @@ export const escapeHatchStrategy: CanvasStrategy = {
           customState: {
             ...strategyState.customStrategyState,
             escapeHatchActivated,
+            success: 'success',
           },
         }
       } else {

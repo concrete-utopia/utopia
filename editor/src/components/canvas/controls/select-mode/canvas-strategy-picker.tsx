@@ -16,6 +16,10 @@ export const CanvasStrategyPicker = React.memo(() => {
     'CanvasStrategyPicker strategyState.currentStrategy',
   )
   const activeStrategy = useDelayedCurrentStrategy()
+  const isStrategyFailure = useEditorState(
+    (store) => store.strategyState?.customStrategyState.success === 'failure',
+    'Strategy success',
+  )
 
   const onTabPressed = React.useCallback(
     (newStrategy: CanvasStrategy) => {
@@ -87,6 +91,7 @@ export const CanvasStrategyPicker = React.memo(() => {
                     backgroundColor:
                       strategy.id === activeStrategy ? colorTheme.bg5.value : undefined,
                     color: colorTheme.textColor.value,
+                    opacity: isStrategyFailure && strategy.id === activeStrategy ? 0.5 : 1,
                   }}
                 >
                   {strategy.name}
