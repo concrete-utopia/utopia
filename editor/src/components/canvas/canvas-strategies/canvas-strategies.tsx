@@ -235,7 +235,7 @@ export function applyCanvasStrategy(
   return strategy.apply(canvasState, interactionSession, strategyState)
 }
 
-export function useDelayedStrategyWithCallback<T>(
+export function useDelayedStrategy<T>(
   selector: StateSelector<EditorStorePatched, T | null>,
 ): T | null {
   /**
@@ -292,12 +292,12 @@ export function useDelayedStrategyWithCallback<T>(
 
 export const useDelayedCurrentStrategy = () => {
   const selector = (store: EditorStorePatched) => store.strategyState.currentStrategy
-  return useDelayedStrategyWithCallback<CanvasStrategyId | null>(selector)
+  return useDelayedStrategy<CanvasStrategyId | null>(selector)
 }
 
 export const useDelayedStrategyCursor = () => {
   const selector = (store: EditorStorePatched) => store.editor.canvas.cursor
-  return useDelayedStrategyWithCallback<CSSCursor | null>(selector)
+  return useDelayedStrategy<CSSCursor | null>(selector)
 }
 
 export function useGetApplicableStrategyControls(): Array<ControlWithKey> {
