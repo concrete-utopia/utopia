@@ -722,13 +722,14 @@ export function getAbsoluteReparentPropertyChanges(
     return []
   }
 
-  const currentParentContentBox =
-    MetadataUtils.findElementByElementPath(targetStartingMetadata, EP.parentPath(target))
-      ?.specialSizeMeasurements.globalContentBox ?? zeroCanvasRect
-
-  const newParentContentBox =
-    MetadataUtils.findElementByElementPath(newParentStartingMetadata, newParent)
-      ?.specialSizeMeasurements.globalContentBox ?? zeroCanvasRect
+  const currentParentContentBox = MetadataUtils.getParentCoordinateSystemBounds(
+    EP.parentPath(target),
+    targetStartingMetadata,
+  )
+  const newParentContentBox = MetadataUtils.getParentCoordinateSystemBounds(
+    newParent,
+    newParentStartingMetadata,
+  )
 
   const offsetTL = roundPointToNearestHalf(
     pointDifference(newParentContentBox, currentParentContentBox),

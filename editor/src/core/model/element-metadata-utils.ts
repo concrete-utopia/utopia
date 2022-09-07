@@ -45,6 +45,7 @@ import {
   LocalRectangle,
   roundPointToNearestHalf,
   Size,
+  zeroCanvasRect,
 } from '../shared/math-utils'
 import { optionalMap } from '../shared/optional-utils'
 import {
@@ -919,30 +920,31 @@ export const MetadataUtils = {
       }, Utils.asLocal(frame))
     }
   },
+  getParentCoordinateSystemBounds: function (
+    targetParent: ElementPath | null,
+    metadata: ElementInstanceMetadataMap,
+  ): CanvasRectangle {
+    const parent = MetadataUtils.findElementByElementPath(metadata, targetParent)
+    if (parent != null) {
+      if (parent.specialSizeMeasurements.globalContentBox != null) {
+        return parent.specialSizeMeasurements.globalContentBox
+      } else if (parent.specialSizeMeasurements.coordinateSystemBounds != null) {
+        return parent.specialSizeMeasurements.coordinateSystemBounds
+      }
+    }
+
+    return zeroCanvasRect
+  },
   getFrameRelativeToTargetContainingBlock: function (
     targetParent: ElementPath | null,
     metadata: ElementInstanceMetadataMap,
     frame: CanvasRectangle,
   ): LocalRectangle {
-    const parent = this.findElementByElementPath(metadata, targetParent)
-    if (parent != null) {
-      if (
-        parent.specialSizeMeasurements.providesBoundsForAbsoluteChildren &&
-        parent.specialSizeMeasurements.globalContentBox != null
-      ) {
-        return canvasRectangleToLocalRectangle(
-          frame,
-          parent.specialSizeMeasurements.globalContentBox,
-        )
-      }
-      if (parent.specialSizeMeasurements.coordinateSystemBounds != null) {
-        return canvasRectangleToLocalRectangle(
-          frame,
-          parent.specialSizeMeasurements.coordinateSystemBounds,
-        )
-      }
-    }
-    return Utils.asLocal(frame)
+    const closestParentCoordinateSystemBounds = MetadataUtils.getParentCoordinateSystemBounds(
+      targetParent,
+      metadata,
+    )
+    return canvasRectangleToLocalRectangle(frame, closestParentCoordinateSystemBounds)
   },
   getElementLabelFromProps(allElementProps: AllElementProps, path: ElementPath): string | null {
     const dataLabelProp = allElementProps?.[EP.toString(path)]?.[UTOPIA_LABEL_KEY]
