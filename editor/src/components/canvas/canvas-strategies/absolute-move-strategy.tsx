@@ -142,7 +142,7 @@ export function applyAbsoluteMoveCommon(
           setElementsToRerenderCommand(selectedElements),
           setCursorCommand('mid-interaction', CSSCursor.Select),
         ],
-        customState: null,
+        customStatePatch: {},
       }
     } else {
       const constrainedDragAxis =
@@ -174,7 +174,7 @@ export function applyAbsoluteMoveCommon(
           setElementsToRerenderCommand([...selectedElements, ...targetsForSnapping]),
           setCursorCommand('mid-interaction', CSSCursor.Select),
         ],
-        customState: null,
+        customStatePatch: {},
       }
     }
   } else {

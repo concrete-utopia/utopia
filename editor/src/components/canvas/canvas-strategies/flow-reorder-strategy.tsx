@@ -81,10 +81,8 @@ function flowReorderApplyCommon(
     if (!isReorderAllowed(siblingsOfTarget)) {
       return {
         commands: [setCursorCommand('mid-interaction', CSSCursor.NotPermitted)],
-        customState: {
-          ...strategyState.customStrategyState,
-          success: 'failure',
-        },
+        customStatePatch: {},
+        hasFailed: true,
       }
     }
 
@@ -116,10 +114,8 @@ function flowReorderApplyCommon(
           updateHighlightedViews('mid-interaction', []),
           setCursorCommand('mid-interaction', CSSCursor.Move),
         ],
-        customState: {
-          ...strategyState.customStrategyState,
+        customStatePatch: {
           lastReorderIdx: realNewIndex,
-          success: 'success',
         },
       }
     } else {
@@ -131,10 +127,8 @@ function flowReorderApplyCommon(
           setCursorCommand('mid-interaction', CSSCursor.Move),
           ...getOptionalDisplayPropCommands(target, newDisplayType, withAutoConversion),
         ],
-        customState: {
-          ...strategyState.customStrategyState,
+        customStatePatch: {
           lastReorderIdx: realNewIndex,
-          success: 'success',
         },
       }
     }
@@ -142,7 +136,7 @@ function flowReorderApplyCommon(
     // Fallback for when the checks above are not satisfied.
     return {
       commands: [setCursorCommand('mid-interaction', CSSCursor.Move)],
-      customState: null,
+      customStatePatch: {},
     }
   }
 }

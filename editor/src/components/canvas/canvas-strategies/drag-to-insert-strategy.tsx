@@ -116,7 +116,7 @@ export const dragToInsertStrategy: CanvasStrategy = {
 
       return {
         commands: [...insertionCommands.map((c) => c.command), reparentCommand],
-        customState: null,
+        customStatePatch: {},
       }
     }
     // Fallback for when the checks above are not satisfied.

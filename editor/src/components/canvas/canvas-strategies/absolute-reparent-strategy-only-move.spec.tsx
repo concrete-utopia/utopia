@@ -71,6 +71,7 @@ function dragByPixels(
       accumulatedPatches: null as any, // the strategy does not use this
       commandDescriptions: null as any, // the strategy does not use this
       sortedApplicableStrategies: null as any, // the strategy does not use this
+      status: 'success',
       startingMetadata: {
         'scene-aaa/app-entity:aaa/bbb': {
           elementPath: elementPath([
@@ -88,7 +89,7 @@ function dragByPixels(
     } as StrategyState,
   )
 
-  expect(strategyResult.customState).toBeNull()
+  expect(strategyResult.customStatePatch).toEqual({})
 
   const finalEditor = foldAndApplyCommands(
     editorState,

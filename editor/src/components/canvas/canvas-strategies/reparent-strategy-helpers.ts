@@ -692,10 +692,7 @@ export function applyFlexReparent(
 
           return {
             commands: [...midInteractionCommands, ...interactionFinishCommands],
-            customState: {
-              ...strategyState.customStrategyState,
-              success: 'success',
-            },
+            customStatePatch: {},
           }
         }
       }

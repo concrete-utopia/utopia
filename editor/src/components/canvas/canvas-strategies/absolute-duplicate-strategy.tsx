@@ -132,17 +132,15 @@ export const absoluteDuplicateStrategy: CanvasStrategy = {
           ),
           setCursorCommand('mid-interaction', CSSCursor.Duplicate),
         ],
-        customState: {
-          ...strategyState.customStrategyState,
+        customStatePatch: {
           duplicatedElementNewUids: duplicatedElementNewUids,
-          success: 'success',
         },
       }
     } else {
       // Fallback for when the checks above are not satisfied.
       return {
         commands: [setCursorCommand('mid-interaction', CSSCursor.Duplicate)],
-        customState: null,
+        customStatePatch: {},
       }
     }
   },

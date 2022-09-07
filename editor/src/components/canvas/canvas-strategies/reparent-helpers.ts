@@ -67,10 +67,8 @@ export function ifAllowedToReparent(
   } else {
     return {
       commands: [setCursorCommand('mid-interaction', CSSCursor.NotPermitted)],
-      customState: {
-        ...strategyState.customStrategyState,
-        success: 'failure',
-      },
+      customStatePatch: {},
+      hasFailed: true,
     }
   }
 }

@@ -175,14 +175,14 @@ export const absoluteReparentStrategy: CanvasStrategy = {
           setElementsToRerenderCommand([...newPaths, ...filteredSelectedElements]),
           setCursorCommand('mid-interaction', CSSCursor.Move),
         ],
-        customState: null,
+        customStatePatch: {},
       }
     } else {
       const moveCommands = absoluteMoveStrategy.apply(canvasState, interactionState, strategyState)
 
       return {
         commands: moveCommands.commands,
-        customState: null,
+        customStatePatch: {},
       }
     }
   },

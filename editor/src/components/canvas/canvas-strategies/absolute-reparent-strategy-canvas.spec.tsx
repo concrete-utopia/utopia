@@ -74,6 +74,7 @@ function reparentElement(
       accumulatedPatches: null as any, // the strategy does not use this
       commandDescriptions: null as any, // the strategy does not use this
       sortedApplicableStrategies: null as any, // the strategy does not use this
+      status: 'success',
       startingMetadata: {
         'scene-aaa/app-entity:aaa': {
           elementPath: EP.elementPath([['scene-aaa', 'app-entity'], ['aaa']]),
@@ -139,7 +140,7 @@ function reparentElement(
     } as StrategyState,
   )
 
-  expect(strategyResult.customState).toBeNull()
+  expect(strategyResult.customStatePatch).toEqual({})
 
   // Check if there are set SetElementsToRerenderCommands with the new parent path
   expect(

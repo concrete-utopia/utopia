@@ -13,26 +13,27 @@ export interface CustomStrategyState {
   escapeHatchActivated: boolean
   lastReorderIdx: number | null
   duplicatedElementNewUids: { [elementPath: string]: string }
-  success: 'success' | 'failure'
 }
+
+export type CustomStrategyStatePatch = Partial<CustomStrategyState>
 
 export function defaultCustomStrategyState(): CustomStrategyState {
   return {
     escapeHatchActivated: false,
     lastReorderIdx: null,
     duplicatedElementNewUids: {},
-    success: 'success',
   }
 }
 
 export interface StrategyApplicationResult {
   commands: Array<CanvasCommand>
-  customState: CustomStrategyState | null // null means the previous custom strategy state should be kept
+  customStatePatch: CustomStrategyStatePatch
+  hasFailed?: boolean
 }
 
-export const emptyStrategyApplicationResult = {
+export const emptyStrategyApplicationResult: StrategyApplicationResult = {
   commands: [],
-  customState: null,
+  customStatePatch: {},
 }
 
 export interface ControlWithKey {

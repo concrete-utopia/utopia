@@ -149,7 +149,7 @@ export const flexReparentToAbsoluteStrategy: CanvasStrategy = {
             )
           }),
         ],
-        customState: null,
+        customStatePatch: {},
       }
     })
   },

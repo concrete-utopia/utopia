@@ -147,16 +147,14 @@ export const escapeHatchStrategy: CanvasStrategy = {
 
         return {
           commands: absoluteMoveApplyResult.commands,
-          customState: {
-            ...strategyState.customStrategyState,
+          customStatePatch: {
             escapeHatchActivated,
-            success: 'success',
           },
         }
       } else {
         return {
           commands: [setCursorCommand('mid-interaction', CSSCursor.Move)],
-          customState: null,
+          customStatePatch: {},
         }
       }
     }

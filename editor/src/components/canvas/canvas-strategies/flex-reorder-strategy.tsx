@@ -78,10 +78,8 @@ export const flexReorderStrategy: CanvasStrategy = {
       if (!isReorderAllowed(siblingsOfTarget)) {
         return {
           commands: [setCursorCommand('mid-interaction', CSSCursor.NotPermitted)],
-          customState: {
-            ...strategyState.customStrategyState,
-            success: 'failure',
-          },
+          customStatePatch: {},
+          hasFailed: true,
         }
       }
 
@@ -107,10 +105,8 @@ export const flexReorderStrategy: CanvasStrategy = {
             updateHighlightedViews('mid-interaction', []),
             setCursorCommand('mid-interaction', CSSCursor.Move),
           ],
-          customState: {
-            ...strategyState.customStrategyState,
+          customStatePatch: {
             lastReorderIdx: realNewIndex,
-            success: 'success',
           },
         }
       } else {
@@ -121,10 +117,8 @@ export const flexReorderStrategy: CanvasStrategy = {
             updateHighlightedViews('mid-interaction', []),
             setCursorCommand('mid-interaction', CSSCursor.Move),
           ],
-          customState: {
-            ...strategyState.customStrategyState,
+          customStatePatch: {
             lastReorderIdx: realNewIndex,
-            success: 'success',
           },
         }
       }
@@ -132,7 +126,7 @@ export const flexReorderStrategy: CanvasStrategy = {
       // Fallback for when the checks above are not satisfied.
       return {
         commands: [setCursorCommand('mid-interaction', CSSCursor.Move)],
-        customState: null,
+        customStatePatch: {},
       }
     }
   },

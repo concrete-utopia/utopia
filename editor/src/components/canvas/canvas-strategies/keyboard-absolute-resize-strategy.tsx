@@ -192,7 +192,7 @@ export const keyboardAbsoluteResizeStrategy: CanvasStrategy = {
       commands.push(setElementsToRerenderCommand(selectedElements))
       return {
         commands: commands,
-        customState: null,
+        customStatePatch: {},
       }
     } else {
       return emptyStrategyApplicationResult

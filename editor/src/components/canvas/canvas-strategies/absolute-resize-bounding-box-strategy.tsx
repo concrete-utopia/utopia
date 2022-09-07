@@ -177,7 +177,7 @@ export const absoluteResizeBoundingBoxStrategy: CanvasStrategy = {
               setCursorCommand('mid-interaction', pickCursorFromEdgePosition(edgePosition)),
               setElementsToRerenderCommand(selectedElements),
             ],
-            customState: null,
+            customStatePatch: {},
           }
         }
       } else {
@@ -186,7 +186,7 @@ export const absoluteResizeBoundingBoxStrategy: CanvasStrategy = {
             setCursorCommand('mid-interaction', pickCursorFromEdgePosition(edgePosition)),
             updateHighlightedViews('mid-interaction', []),
           ],
-          customState: null,
+          customStatePatch: {},
         }
       }
     }
