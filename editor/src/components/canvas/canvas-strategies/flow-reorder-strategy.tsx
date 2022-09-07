@@ -81,7 +81,10 @@ function flowReorderApplyCommon(
     if (!isReorderAllowed(siblingsOfTarget)) {
       return {
         commands: [setCursorCommand('mid-interaction', CSSCursor.NotPermitted)],
-        customState: null,
+        customState: {
+          ...strategyState.customStrategyState,
+          success: 'failure',
+        },
       }
     }
 
@@ -116,6 +119,7 @@ function flowReorderApplyCommon(
         customState: {
           ...strategyState.customStrategyState,
           lastReorderIdx: realNewIndex,
+          success: 'success',
         },
       }
     } else {
@@ -130,6 +134,7 @@ function flowReorderApplyCommon(
         customState: {
           ...strategyState.customStrategyState,
           lastReorderIdx: realNewIndex,
+          success: 'success',
         },
       }
     }

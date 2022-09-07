@@ -135,6 +135,7 @@ export const absoluteDuplicateStrategy: CanvasStrategy = {
         customState: {
           ...strategyState.customStrategyState,
           duplicatedElementNewUids: duplicatedElementNewUids,
+          success: 'success',
         },
       }
     } else {
