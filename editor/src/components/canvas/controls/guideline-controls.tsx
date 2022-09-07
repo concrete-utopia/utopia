@@ -69,6 +69,14 @@ export const GuidelineControls = React.memo(() => {
     ),
   )
 
+  const guidelineEndpointss = snappingGuidelines.flatMap(({ guideline }) =>
+    guidelineEndpoints(guideline),
+  )
+  const xMarkPoints = Utils.deduplicateBy(
+    ({ x, y }) => `${x}${y}`,
+    [...guidelineEndpointss, ...intersectionPoints],
+  )
+
   if (!strategyMovedSuccessfully) {
     return null
   } else {
@@ -78,7 +86,7 @@ export const GuidelineControls = React.memo(() => {
         <GuidelineControl index={1} />
         <GuidelineControl index={2} />
         <GuidelineControl index={3} />
-        {intersectionPoints.map((point, idx) => (
+        {xMarkPoints.map((point, idx) => (
           <XMarkControl data-testid={`xmark-${idx}`} key={idx} point={point} scale={scale} />
         ))}
       </CanvasOffsetWrapper>
@@ -234,6 +242,25 @@ function guidelineToSpan(guideline: Guideline): CanvasSpan | null {
     }
     case 'CornerGuideline':
       return null
+    default:
+      return Utils.assertNever(guideline)
+  }
+}
+
+function guidelineEndpoints(guideline: Guideline): Array<CanvasPoint> {
+  switch (guideline.type) {
+    case 'XAxisGuideline': {
+      const a = canvasPoint({ x: guideline.x, y: guideline.yBottom })
+      const b = canvasPoint({ x: guideline.x, y: guideline.yTop })
+      return [a, b]
+    }
+    case 'YAxisGuideline': {
+      const a = canvasPoint({ x: guideline.xLeft, y: guideline.y })
+      const b = canvasPoint({ x: guideline.xRight, y: guideline.y })
+      return [a, b]
+    }
+    case 'CornerGuideline':
+      return []
     default:
       return Utils.assertNever(guideline)
   }
