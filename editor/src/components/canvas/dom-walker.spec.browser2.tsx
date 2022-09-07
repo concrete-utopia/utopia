@@ -2843,7 +2843,7 @@ describe('DOM Walker tests', () => {
           "display": "block",
           "flexDirection": "row",
           "globalContentBox": Object {
-            "height": 0,
+            "height": 812,
             "width": 375,
             "x": 0,
             "y": 0,
@@ -2948,7 +2948,7 @@ describe('DOM Walker tests', () => {
           "display": "block",
           "flexDirection": "row",
           "globalContentBox": Object {
-            "height": 0,
+            "height": 812,
             "width": 375,
             "x": 0,
             "y": 0,
@@ -3053,7 +3053,7 @@ describe('DOM Walker tests', () => {
           "display": "block",
           "flexDirection": "row",
           "globalContentBox": Object {
-            "height": 0,
+            "height": 812,
             "width": 375,
             "x": 0,
             "y": 0,
