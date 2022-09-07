@@ -43,6 +43,7 @@ import {
   CanvasRectangle,
   canvasRectangleToLocalRectangle,
   LocalRectangle,
+  roundPointToNearestHalf,
   Size,
 } from '../shared/math-utils'
 import { optionalMap } from '../shared/optional-utils'
@@ -923,9 +924,12 @@ export const MetadataUtils = {
     if (parent != null) {
       if (
         parent.specialSizeMeasurements.providesBoundsForAbsoluteChildren &&
-        parent.globalFrame != null
+        parent.specialSizeMeasurements.globalContentBox != null
       ) {
-        return canvasRectangleToLocalRectangle(frame, parent.globalFrame)
+        return canvasRectangleToLocalRectangle(
+          frame,
+          parent.specialSizeMeasurements.globalContentBox,
+        )
       }
       if (parent.specialSizeMeasurements.coordinateSystemBounds != null) {
         return canvasRectangleToLocalRectangle(

@@ -66,7 +66,7 @@ export function ifAllowedToReparent(
     return ifAllowed()
   } else {
     return {
-      commands: [setCursorCommand('mid-interaction', CSSCursor.ReparentNotPermitted)],
+      commands: [setCursorCommand('mid-interaction', CSSCursor.NotPermitted)],
       customState: null,
     }
   }

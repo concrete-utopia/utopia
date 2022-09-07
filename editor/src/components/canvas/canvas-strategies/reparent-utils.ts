@@ -233,7 +233,7 @@ export function cursorForMissingReparentedItems(
 ): CSSCursor | null {
   for (const reparentedToPath of reparentedToPaths) {
     if (!(EP.toString(reparentedToPath) in spyMetadata)) {
-      return CSSCursor.ReparentNotPermitted
+      return CSSCursor.NotPermitted
     }
   }
 

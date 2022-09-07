@@ -111,13 +111,31 @@ const Item = React.memo(({ index, style }: ItemProps) => {
 export const NavigatorContainerId = 'navigator'
 
 export const NavigatorComponent = React.memo(() => {
-  const { dispatch, minimised, visibleNavigatorTargets } = useEditorState((store) => {
-    return {
-      dispatch: store.dispatch,
-      minimised: store.editor.navigator.minimised,
-      visibleNavigatorTargets: store.derived.visibleNavigatorTargets,
+  const { dispatch, minimised, visibleNavigatorTargets, selectionIndex } = useEditorState(
+    (store) => {
+      const selectedViews = store.editor.selectedViews
+      const innerVisibleNavigatorTargets = store.derived.visibleNavigatorTargets
+      const innerSelectionIndex =
+        selectedViews == null
+          ? -1
+          : innerVisibleNavigatorTargets.findIndex((path) => EP.pathsEqual(path, selectedViews[0]))
+      return {
+        dispatch: store.dispatch,
+        minimised: store.editor.navigator.minimised,
+        visibleNavigatorTargets: innerVisibleNavigatorTargets,
+        selectionIndex: innerSelectionIndex,
+      }
+    },
+    'NavigatorComponent',
+  )
+
+  const itemListRef = React.createRef<FixedSizeList>()
+
+  React.useEffect(() => {
+    if (selectionIndex > 0) {
+      itemListRef.current?.scrollToItem(selectionIndex)
     }
-  }, 'NavigatorComponent')
+  }, [selectionIndex, itemListRef])
 
   const onFocus = React.useCallback(
     (e: React.FocusEvent<HTMLElement>) => {
@@ -150,6 +168,7 @@ export const NavigatorComponent = React.memo(() => {
     } else {
       return (
         <FixedSizeList
+          ref={itemListRef}
           width={'100%'}
           height={size.height}
           itemSize={UtopiaTheme.layout.rowHeight.smaller}
