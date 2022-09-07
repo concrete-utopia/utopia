@@ -84,7 +84,7 @@ import {
 } from '../../components/editor/store/editor-state'
 import { ProjectContentTreeRoot } from '../../components/assets'
 import { memoize } from '../shared/memoize'
-import { buildTree, ElementPathTree, getSubTree } from '../shared/element-path-tree'
+import { buildTree, ElementPathTree, getSubTree, reorderTree } from '../shared/element-path-tree'
 import { findUnderlyingTargetComponentImplementation } from '../../components/custom-code/code-file'
 
 const ObjectPathImmutable: any = OPI
@@ -808,7 +808,11 @@ export const MetadataUtils = {
     } => {
       // Note: This will not necessarily be representative of the structured ordering in
       // the code that produced these elements.
-      const projectTree = buildTree(objectValues(metadata).map((m) => m.elementPath))
+      const projectTree = buildTree(objectValues(metadata).map((m) => m.elementPath)).map(
+        (subTree) => {
+          return reorderTree(subTree, metadata)
+        },
+      )
 
       // This function exists separately from getAllPaths because the Navigator handles collapsed views
       let navigatorTargets: Array<ElementPath> = []
