@@ -18,8 +18,8 @@ import { absoluteMoveStrategy } from './absolute-move-strategy'
 import { pickCanvasStateFromEditorState } from './canvas-strategies'
 import {
   CanvasStrategy,
-  emptyStrategyApplicationResult,
   getTargetPathsFromInteractionTarget,
+  strategyApplicationResult,
 } from './canvas-strategy-types'
 import { InteractionSession, interactionSession, StrategyState } from './interaction-state'
 import { getDragTargets } from './shared-absolute-move-strategy-helpers'
@@ -113,8 +113,8 @@ export const absoluteDuplicateStrategy: CanvasStrategy = {
         newPaths.push(newPath)
       })
 
-      return {
-        commands: [
+      return strategyApplicationResult(
+        [
           ...duplicateCommands,
           setElementsToRerenderCommand([...selectedElements, ...newPaths]),
           updateSelectedViews('always', newPaths),
@@ -132,16 +132,13 @@ export const absoluteDuplicateStrategy: CanvasStrategy = {
           ),
           setCursorCommand('mid-interaction', CSSCursor.Duplicate),
         ],
-        customStatePatch: {
+        {
           duplicatedElementNewUids: duplicatedElementNewUids,
         },
-      }
+      )
     } else {
       // Fallback for when the checks above are not satisfied.
-      return {
-        commands: [setCursorCommand('mid-interaction', CSSCursor.Duplicate)],
-        customStatePatch: {},
-      }
+      return strategyApplicationResult([setCursorCommand('mid-interaction', CSSCursor.Duplicate)])
     }
   },
 }

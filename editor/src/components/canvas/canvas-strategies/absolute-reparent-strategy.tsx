@@ -9,8 +9,9 @@ import { ParentOutlines } from '../controls/parent-outlines'
 import { absoluteMoveStrategy } from './absolute-move-strategy'
 import {
   CanvasStrategy,
-  emptyStrategyApplicationResult,
+  failedStrategyApplicationResult,
   getTargetPathsFromInteractionTarget,
+  strategyApplicationResult,
 } from './canvas-strategy-types'
 import { getDragTargets } from './shared-absolute-move-strategy-helpers'
 import { ifAllowedToReparent, isAllowedToReparent } from './reparent-helpers'
@@ -78,7 +79,7 @@ export const absoluteReparentStrategy: CanvasStrategy = {
       interactionState.interactionData.type != 'DRAG' ||
       interactionState.interactionData.drag == null
     ) {
-      return emptyStrategyApplicationResult
+      return failedStrategyApplicationResult
     }
 
     const { interactionTarget, projectContents, openFile, nodeModules } = canvasState
@@ -167,23 +168,17 @@ export const absoluteReparentStrategy: CanvasStrategy = {
         strategyState,
       )
 
-      return {
-        commands: [
-          ...moveCommands.commands,
-          ...commands.flatMap((c) => c.commands),
-          updateSelectedViews('always', newPaths),
-          setElementsToRerenderCommand([...newPaths, ...filteredSelectedElements]),
-          setCursorCommand('mid-interaction', CSSCursor.Move),
-        ],
-        customStatePatch: {},
-      }
+      return strategyApplicationResult([
+        ...moveCommands.commands,
+        ...commands.flatMap((c) => c.commands),
+        updateSelectedViews('always', newPaths),
+        setElementsToRerenderCommand([...newPaths, ...filteredSelectedElements]),
+        setCursorCommand('mid-interaction', CSSCursor.Move),
+      ])
     } else {
       const moveCommands = absoluteMoveStrategy.apply(canvasState, interactionState, strategyState)
 
-      return {
-        commands: moveCommands.commands,
-        customStatePatch: {},
-      }
+      return strategyApplicationResult(moveCommands.commands)
     }
   },
 }

@@ -10,9 +10,10 @@ import { ParentBounds } from '../controls/parent-bounds'
 import { ParentOutlines } from '../controls/parent-outlines'
 import {
   CanvasStrategy,
-  emptyStrategyApplicationResult,
+  failedStrategyApplicationResult,
   getTargetPathsFromInteractionTarget,
   InteractionCanvasState,
+  strategyApplicationResult,
   StrategyApplicationResult,
 } from './canvas-strategy-types'
 import { absolute } from '../../../utils/utils'
@@ -33,7 +34,7 @@ function isFlowReorderConversionApplicable(
   metadata: ElementInstanceMetadataMap,
   allElementProps: AllElementProps,
   displayTypeFiltering: 'no-filter' | 'requires-mixed-display-type' = 'requires-mixed-display-type',
-) {
+): boolean {
   const selectedElements = getTargetPathsFromInteractionTarget(canvasState.interactionTarget)
   if (selectedElements.length === 1) {
     const target = selectedElements[0]
@@ -67,7 +68,7 @@ function flowReorderApplyCommon(
   displayTypeFiltering: 'allow-mixed-display-type' | 'same-display-type-only',
 ): StrategyApplicationResult {
   if (interactionState.interactionData.type !== 'DRAG') {
-    return emptyStrategyApplicationResult
+    return failedStrategyApplicationResult
   }
 
   if (interactionState.interactionData.drag != null) {
@@ -79,11 +80,11 @@ function flowReorderApplyCommon(
     )
 
     if (!isReorderAllowed(siblingsOfTarget)) {
-      return {
-        commands: [setCursorCommand('mid-interaction', CSSCursor.NotPermitted)],
-        customStatePatch: {},
-        hasFailed: true,
-      }
+      return strategyApplicationResult(
+        [setCursorCommand('mid-interaction', CSSCursor.NotPermitted)],
+        {},
+        'failure',
+      )
     }
 
     const rawPointOnCanvas = offsetPoint(
@@ -108,36 +109,33 @@ function flowReorderApplyCommon(
     const realNewIndex = newIndex > -1 ? newIndex : lastReorderIdx
 
     if (realNewIndex === unpatchedIndex) {
-      return {
-        commands: [
+      return strategyApplicationResult(
+        [
           setElementsToRerenderCommand(siblingsOfTarget),
           updateHighlightedViews('mid-interaction', []),
           setCursorCommand('mid-interaction', CSSCursor.Move),
         ],
-        customStatePatch: {
+        {
           lastReorderIdx: realNewIndex,
         },
-      }
+      )
     } else {
-      return {
-        commands: [
+      return strategyApplicationResult(
+        [
           reorderElement('always', target, absolute(realNewIndex)),
           setElementsToRerenderCommand(siblingsOfTarget),
           updateHighlightedViews('mid-interaction', []),
           setCursorCommand('mid-interaction', CSSCursor.Move),
           ...getOptionalDisplayPropCommands(target, newDisplayType, withAutoConversion),
         ],
-        customStatePatch: {
+        {
           lastReorderIdx: realNewIndex,
         },
-      }
+      )
     }
   } else {
     // Fallback for when the checks above are not satisfied.
-    return {
-      commands: [setCursorCommand('mid-interaction', CSSCursor.Move)],
-      customStatePatch: {},
-    }
+    return strategyApplicationResult([setCursorCommand('mid-interaction', CSSCursor.Move)])
   }
 }
 

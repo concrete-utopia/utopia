@@ -44,6 +44,7 @@ import {
   CanvasStrategyId,
   defaultCustomStrategyState,
   InteractionCanvasState,
+  strategyApplicationResult,
   StrategyApplicationResult,
 } from '../../canvas/canvas-strategies/canvas-strategy-types'
 import { canvasPoint } from '../../../core/shared/math-utils'
@@ -167,10 +168,9 @@ const testStrategy: CanvasStrategy = {
     interactionSession: InteractionSession,
     strategyState: StrategyState,
   ): StrategyApplicationResult {
-    return {
-      commands: [wildcardPatch('always', { canvas: { scale: { $set: 100 } } })],
-      customStatePatch: defaultCustomStrategyState(),
-    }
+    return strategyApplicationResult([
+      wildcardPatch('always', { canvas: { scale: { $set: 100 } } }),
+    ])
   },
 }
 
@@ -235,7 +235,7 @@ describe('interactionStart', () => {
         ],
         "startingAllElementProps": Object {},
         "startingMetadata": Object {},
-        "status": "success",
+        "status": "failure",
       }
     `)
     expect(actualResult.patchedEditorState.canvas.scale).toEqual(100)
@@ -361,7 +361,7 @@ describe('interactionUpdatex', () => {
         ],
         "startingAllElementProps": Object {},
         "startingMetadata": Object {},
-        "status": "success",
+        "status": "failure",
       }
     `)
     expect(actualResult.patchedEditorState.canvas.scale).toEqual(100)
@@ -516,7 +516,7 @@ describe('interactionHardReset', () => {
         ],
         "startingAllElementProps": Object {},
         "startingMetadata": Object {},
-        "status": "success",
+        "status": "failure",
       }
     `)
     expect(actualResult.patchedEditorState.canvas.scale).toEqual(100)
@@ -737,7 +737,7 @@ describe('interactionUpdate with user changed strategy', () => {
         ],
         "startingAllElementProps": Object {},
         "startingMetadata": Object {},
-        "status": "success",
+        "status": "failure",
       }
     `)
     expect(actualResult.patchedEditorState.canvas.scale).toEqual(100)

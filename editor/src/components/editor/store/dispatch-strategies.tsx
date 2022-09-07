@@ -28,8 +28,8 @@ import {
   CanvasStrategy,
   CustomStrategyState,
   CustomStrategyStatePatch,
-  emptyStrategyApplicationResult,
   InteractionCanvasState,
+  strategyApplicationResult,
   StrategyApplicationResult,
 } from '../../canvas/canvas-strategies/canvas-strategy-types'
 import { isFeatureEnabled } from '../../../utils/feature-switches'
@@ -472,7 +472,7 @@ function handleAccumulatingKeypresses(
               updatedInteractionSession,
               strategyState,
             )
-          : emptyStrategyApplicationResult
+          : strategyApplicationResult([])
       const commandResult = foldAndApplyCommands(
         updatedEditorState,
         storedEditorState,
@@ -534,7 +534,7 @@ function handleUpdate(
             newEditorState.canvas.interactionSession,
             strategyState,
           )
-        : emptyStrategyApplicationResult
+        : strategyApplicationResult([])
     const commandResult = foldAndApplyCommands(
       newEditorState,
       storedEditorState,
@@ -550,7 +550,7 @@ function handleUpdate(
       accumulatedPatches: strategyState.accumulatedPatches,
       commandDescriptions: commandResult.commandDescriptions,
       sortedApplicableStrategies: sortedApplicableStrategies,
-      status: strategyResult.hasFailed ? 'failure' : 'success',
+      status: strategyResult.status ? 'failure' : 'success',
       startingMetadata: strategyState.startingMetadata,
       customStrategyState: patchCustomStrategyState(
         strategyState.customStrategyState,
@@ -746,5 +746,5 @@ function patchCustomStrategyState(
 function getStatusFromStrategyResult(
   strategyResult: StrategyApplicationResult,
 ): StrategyApplicationStatus {
-  return strategyResult.hasFailed ? 'failure' : 'success'
+  return strategyResult.status ? 'failure' : 'success'
 }

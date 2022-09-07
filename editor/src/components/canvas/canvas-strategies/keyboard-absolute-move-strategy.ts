@@ -2,9 +2,10 @@ import { MetadataUtils } from '../../../core/model/element-metadata-utils'
 import { Keyboard, KeyCharacter } from '../../../utils/keyboard'
 import {
   CanvasStrategy,
-  emptyStrategyApplicationResult,
+  failedStrategyApplicationResult,
   getTargetPathsFromInteractionTarget,
   InteractionCanvasState,
+  strategyApplicationResult,
 } from './canvas-strategy-types'
 import {
   CanvasRectangle,
@@ -135,12 +136,9 @@ export const keyboardAbsoluteMoveStrategy: CanvasStrategy = {
       commands.push(setSnappingGuidelines('mid-interaction', guidelines))
       commands.push(pushIntendedBounds(intendedBounds))
       commands.push(setElementsToRerenderCommand(selectedElements))
-      return {
-        commands: commands,
-        customStatePatch: {},
-      }
+      return strategyApplicationResult(commands)
     } else {
-      return emptyStrategyApplicationResult
+      return failedStrategyApplicationResult
     }
   },
 }

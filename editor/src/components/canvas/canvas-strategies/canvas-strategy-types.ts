@@ -6,7 +6,7 @@ import { ElementPath, NodeModules } from '../../../core/shared/project-file-type
 import { ProjectContentTreeRoot } from '../../assets'
 import { InsertionSubject } from '../../editor/editor-modes'
 import { CanvasCommand } from '../commands/commands'
-import { InteractionSession, StrategyState } from './interaction-state'
+import { InteractionSession, StrategyApplicationStatus, StrategyState } from './interaction-state'
 
 // TODO: fill this in, maybe make it an ADT for different strategies
 export interface CustomStrategyState {
@@ -28,12 +28,25 @@ export function defaultCustomStrategyState(): CustomStrategyState {
 export interface StrategyApplicationResult {
   commands: Array<CanvasCommand>
   customStatePatch: CustomStrategyStatePatch
-  hasFailed?: boolean
+  status: StrategyApplicationStatus
 }
 
-export const emptyStrategyApplicationResult: StrategyApplicationResult = {
+export const failedStrategyApplicationResult: StrategyApplicationResult = {
   commands: [],
   customStatePatch: {},
+  status: 'failure',
+}
+
+export function strategyApplicationResult(
+  commands: Array<CanvasCommand>,
+  customStatePatch: CustomStrategyStatePatch = {},
+  status: StrategyApplicationStatus = 'success',
+): StrategyApplicationResult {
+  return {
+    commands: commands,
+    customStatePatch: customStatePatch,
+    status: status,
+  }
 }
 
 export interface ControlWithKey {

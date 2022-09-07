@@ -44,9 +44,10 @@ import { ZeroSizeResizeControlWrapper } from '../controls/zero-sized-element-con
 import { applyAbsoluteMoveCommon } from './absolute-move-strategy'
 import {
   CanvasStrategy,
-  emptyStrategyApplicationResult,
+  failedStrategyApplicationResult,
   getTargetPathsFromInteractionTarget,
   InteractionCanvasState,
+  strategyApplicationResult,
 } from './canvas-strategy-types'
 import { DragInteractionData, InteractionSession, StrategyState } from './interaction-state'
 import { getReparentOutcome, pathToReparent } from './reparent-utils'
@@ -145,21 +146,15 @@ export const escapeHatchStrategy: CanvasStrategy = {
           getConversionAndMoveCommands,
         )
 
-        return {
-          commands: absoluteMoveApplyResult.commands,
-          customStatePatch: {
-            escapeHatchActivated,
-          },
-        }
+        return strategyApplicationResult(absoluteMoveApplyResult.commands, {
+          escapeHatchActivated,
+        })
       } else {
-        return {
-          commands: [setCursorCommand('mid-interaction', CSSCursor.Move)],
-          customStatePatch: {},
-        }
+        return strategyApplicationResult([setCursorCommand('mid-interaction', CSSCursor.Move)])
       }
     }
     // Fallback for when the checks above are not satisfied.
-    return emptyStrategyApplicationResult
+    return failedStrategyApplicationResult
   },
 }
 

@@ -29,8 +29,9 @@ import { AbsoluteResizeControl } from '../controls/select-mode/absolute-resize-c
 import { AbsolutePin, ensureAtLeastTwoPinsForEdgePosition } from './absolute-resize-helpers'
 import {
   CanvasStrategy,
-  emptyStrategyApplicationResult,
+  failedStrategyApplicationResult,
   getTargetPathsFromInteractionTarget,
+  strategyApplicationResult,
 } from './canvas-strategy-types'
 import { getDragTargets, getMultiselectBounds } from './shared-absolute-move-strategy-helpers'
 import {
@@ -170,28 +171,22 @@ export const absoluteResizeBoundingBoxStrategy: CanvasStrategy = {
               ]
             },
           )
-          return {
-            commands: [
-              ...commandsForSelectedElements,
-              updateHighlightedViews('mid-interaction', []),
-              setCursorCommand('mid-interaction', pickCursorFromEdgePosition(edgePosition)),
-              setElementsToRerenderCommand(selectedElements),
-            ],
-            customStatePatch: {},
-          }
+          return strategyApplicationResult([
+            ...commandsForSelectedElements,
+            updateHighlightedViews('mid-interaction', []),
+            setCursorCommand('mid-interaction', pickCursorFromEdgePosition(edgePosition)),
+            setElementsToRerenderCommand(selectedElements),
+          ])
         }
       } else {
-        return {
-          commands: [
-            setCursorCommand('mid-interaction', pickCursorFromEdgePosition(edgePosition)),
-            updateHighlightedViews('mid-interaction', []),
-          ],
-          customStatePatch: {},
-        }
+        return strategyApplicationResult([
+          setCursorCommand('mid-interaction', pickCursorFromEdgePosition(edgePosition)),
+          updateHighlightedViews('mid-interaction', []),
+        ])
       }
     }
     // Fallback for when the checks above are not satisfied.
-    return emptyStrategyApplicationResult
+    return failedStrategyApplicationResult
   },
 }
 

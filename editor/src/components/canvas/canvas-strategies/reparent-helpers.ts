@@ -7,7 +7,11 @@ import { MetadataUtils } from '../../../core/model/element-metadata-utils'
 import { ElementPath } from '../../../core/shared/project-file-types'
 import { CSSCursor } from '../canvas-types'
 import { setCursorCommand } from '../commands/set-cursor-command'
-import { InteractionCanvasState, StrategyApplicationResult } from './canvas-strategy-types'
+import {
+  InteractionCanvasState,
+  strategyApplicationResult,
+  StrategyApplicationResult,
+} from './canvas-strategy-types'
 import { StrategyState } from './interaction-state'
 import { ProjectContentTreeRoot } from '../../../components/assets'
 
@@ -65,10 +69,10 @@ export function ifAllowedToReparent(
   if (allowed) {
     return ifAllowed()
   } else {
-    return {
-      commands: [setCursorCommand('mid-interaction', CSSCursor.NotPermitted)],
-      customStatePatch: {},
-      hasFailed: true,
-    }
+    return strategyApplicationResult(
+      [setCursorCommand('mid-interaction', CSSCursor.NotPermitted)],
+      {},
+      'failure',
+    )
   }
 }

@@ -20,9 +20,10 @@ import { absoluteReparentStrategy } from './absolute-reparent-strategy'
 import { pickCanvasStateFromEditorState } from './canvas-strategies'
 import {
   CanvasStrategy,
-  emptyStrategyApplicationResult,
+  failedStrategyApplicationResult,
   getTargetPathsFromInteractionTarget,
   InteractionCanvasState,
+  strategyApplicationResult,
   StrategyApplicationResult,
 } from './canvas-strategy-types'
 import { getEscapeHatchCommands } from './escape-hatch-strategy'
@@ -82,7 +83,7 @@ export const flexReparentToAbsoluteStrategy: CanvasStrategy = {
         interactionState.interactionData.type !== 'DRAG' ||
         interactionState.interactionData.drag == null
       ) {
-        return emptyStrategyApplicationResult
+        return failedStrategyApplicationResult
       }
 
       const pointOnCanvas = offsetPoint(
@@ -135,22 +136,19 @@ export const flexReparentToAbsoluteStrategy: CanvasStrategy = {
         canvasPoint({ x: 0, y: 0 }),
       ).commands
 
-      return {
-        commands: [
-          ...placeholderCloneCommands,
-          ...escapeHatchCommands,
-          updateFunctionCommand('always', (editorState, lifecycle): Array<EditorStatePatch> => {
-            return runAbsoluteReparentStrategyForFreshlyConvertedElement(
-              canvasState.builtInDependencies,
-              editorState,
-              strategyState,
-              interactionState,
-              lifecycle,
-            )
-          }),
-        ],
-        customStatePatch: {},
-      }
+      return strategyApplicationResult([
+        ...placeholderCloneCommands,
+        ...escapeHatchCommands,
+        updateFunctionCommand('always', (editorState, lifecycle): Array<EditorStatePatch> => {
+          return runAbsoluteReparentStrategyForFreshlyConvertedElement(
+            canvasState.builtInDependencies,
+            editorState,
+            strategyState,
+            interactionState,
+            lifecycle,
+          )
+        }),
+      ])
     })
   },
 }
