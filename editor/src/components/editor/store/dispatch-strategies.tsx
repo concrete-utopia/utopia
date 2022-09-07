@@ -162,7 +162,7 @@ export function interactionHardReset(
         accumulatedPatches: [],
         commandDescriptions: commandResult.commandDescriptions,
         sortedApplicableStrategies: sortedApplicableStrategies,
-        status: getStatusFromStrategyResult(strategyResult),
+        status: strategyResult.status,
         startingMetadata: resetStrategyState.startingMetadata,
         customStrategyState: patchCustomStrategyState(
           result.strategyState.customStrategyState,
@@ -313,7 +313,7 @@ export function interactionStart(
         accumulatedPatches: [],
         commandDescriptions: commandResult.commandDescriptions,
         sortedApplicableStrategies: sortedApplicableStrategies,
-        status: getStatusFromStrategyResult(strategyResult),
+        status: strategyResult.status,
         startingMetadata: newEditorState.canvas.interactionSession.metadata,
         customStrategyState: patchCustomStrategyState(
           result.strategyState.customStrategyState,
@@ -408,7 +408,7 @@ function handleUserChangedStrategy(
       accumulatedPatches: commandResult.accumulatedPatches,
       commandDescriptions: commandResult.commandDescriptions,
       sortedApplicableStrategies: sortedApplicableStrategies,
-      status: getStatusFromStrategyResult(strategyResult),
+      status: strategyResult.status,
       startingMetadata: strategyState.startingMetadata,
       customStrategyState: patchCustomStrategyState(
         strategyState.customStrategyState,
@@ -488,7 +488,7 @@ function handleAccumulatingKeypresses(
         accumulatedPatches: commandResult.accumulatedPatches,
         commandDescriptions: commandResult.commandDescriptions,
         sortedApplicableStrategies: sortedApplicableStrategies,
-        status: getStatusFromStrategyResult(strategyResult),
+        status: strategyResult.status,
         startingMetadata: strategyState.startingMetadata,
         customStrategyState: patchCustomStrategyState(
           strategyState.customStrategyState,
@@ -741,10 +741,4 @@ function patchCustomStrategyState(
     ...existingState,
     ...patch,
   }
-}
-
-function getStatusFromStrategyResult(
-  strategyResult: StrategyApplicationResult,
-): StrategyApplicationStatus {
-  return strategyResult.status ? 'failure' : 'success'
 }
