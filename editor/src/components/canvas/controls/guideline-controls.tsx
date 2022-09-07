@@ -21,10 +21,7 @@ import {
 import { Guideline } from '../guideline'
 import { CanvasOffsetWrapper } from './canvas-offset-wrapper'
 import { collectParentsAndSiblings } from './guideline-helpers'
-import {
-  ElementInstanceMetadata,
-  ElementInstanceMetadataMap,
-} from '../../../core/shared/element-template'
+import { ElementInstanceMetadataMap } from '../../../core/shared/element-template'
 import { ElementPath } from '../../../core/shared/project-file-types'
 
 // STRATEGY GUIDELINE CONTROLS
@@ -67,8 +64,8 @@ export const GuidelineControls = React.memo(() => {
       .flatMap(
         (guideLine) =>
           Utils.optionalMap(
-            (line) => lineRectangleIntersections(line, bound),
-            guidelineToLine(guideLine.guideline),
+            (line) => spanRectangleIntersections(line, bound),
+            guidelineToSpan(guideLine.guideline),
           ) ?? [],
       ),
   )
@@ -212,27 +209,27 @@ function framesFromMetadata(
   return mapDropNulls((path) => metadata[EP.toString(path)]?.globalFrame ?? null, paths)
 }
 
-interface CanvasLine {
+interface CanvasSpan {
   a: CanvasPoint
   b: CanvasPoint
 }
 
-function canvasLine(a: CanvasPoint, b: CanvasPoint): CanvasLine {
+function canvasSpan(a: CanvasPoint, b: CanvasPoint): CanvasSpan {
   return { a, b }
 }
 
-function guidelineToLine(guideline: Guideline): CanvasLine | null {
+function guidelineToSpan(guideline: Guideline): CanvasSpan | null {
   switch (guideline.type) {
-    case 'XAxisGuideline':
-      return {
-        a: canvasPoint({ x: guideline.x, y: guideline.yBottom }),
-        b: canvasPoint({ x: guideline.x, y: guideline.yTop }),
-      }
-    case 'YAxisGuideline':
-      return {
-        a: canvasPoint({ x: guideline.xLeft, y: guideline.y }),
-        b: canvasPoint({ x: guideline.xRight, y: guideline.y }),
-      }
+    case 'XAxisGuideline': {
+      const a = canvasPoint({ x: guideline.x, y: guideline.yBottom })
+      const b = canvasPoint({ x: guideline.x, y: guideline.yTop })
+      return canvasSpan(a, b)
+    }
+    case 'YAxisGuideline': {
+      const a = canvasPoint({ x: guideline.xLeft, y: guideline.y })
+      const b = canvasPoint({ x: guideline.xRight, y: guideline.y })
+      return canvasSpan(a, b)
+    }
     case 'CornerGuideline':
       return null
     default:
@@ -241,31 +238,48 @@ function guidelineToLine(guideline: Guideline): CanvasLine | null {
   }
 }
 
-function rectangleBoundingLines(rectangle: CanvasRectangle): CanvasLine[] {
+function rectangleBoundingLines(rectangle: CanvasRectangle): CanvasSpan[] {
   return [
-    canvasLine(
+    canvasSpan(
       canvasPoint({ x: rectangle.x, y: rectangle.y }),
       canvasPoint({ x: rectangle.x, y: rectangle.y + rectangle.height }),
     ),
-    canvasLine(
+    canvasSpan(
       canvasPoint({ x: rectangle.x, y: rectangle.y }),
       canvasPoint({ x: rectangle.x + rectangle.width, y: rectangle.y }),
     ),
-    canvasLine(
+    canvasSpan(
       canvasPoint({ x: rectangle.x + rectangle.width, y: rectangle.y }),
       canvasPoint({ x: rectangle.x + rectangle.width, y: rectangle.y + rectangle.height }),
     ),
-    canvasLine(
+    canvasSpan(
       canvasPoint({ x: rectangle.x, y: rectangle.y + rectangle.height }),
       canvasPoint({ x: rectangle.x + rectangle.width, y: rectangle.y + rectangle.height }),
     ),
   ]
 }
 
-function lineRectangleIntersections(line: CanvasLine, rectangle: CanvasRectangle): CanvasPoint[] {
+// https://stackoverflow.com/a/9997374
+function spansIntersect(a: CanvasSpan, b: CanvasSpan): boolean {
+  function ccw(p1: CanvasPoint, p2: CanvasPoint, p3: CanvasPoint): boolean {
+    return (p3.y - p1.y) * (p2.x - p1.x) >= (p2.y - p1.y) * (p3.x - p1.x)
+  }
+
+  return ccw(a.a, b.a, b.b) !== ccw(a.b, b.a, b.b) && ccw(a.a, a.b, b.a) !== ccw(a.a, a.b, b.b)
+}
+
+function spanIntersection(left: CanvasSpan, right: CanvasSpan): CanvasPoint | null {
+  const point = lineIntersection(left.a, left.b, right.a, right.b)
+  if (point == null || !spansIntersect(left, right)) {
+    return null
+  }
+  return point
+}
+
+function spanRectangleIntersections(line: CanvasSpan, rectangle: CanvasRectangle): CanvasPoint[] {
   const boundingLines = rectangleBoundingLines(rectangle)
   const intersectionPoints = mapDropNulls(
-    (boundingLine) => lineIntersection(line.a, line.b, boundingLine.a, boundingLine.b),
+    (boundingLine) => spanIntersection(line, boundingLine),
     boundingLines,
   )
   return intersectionPoints
