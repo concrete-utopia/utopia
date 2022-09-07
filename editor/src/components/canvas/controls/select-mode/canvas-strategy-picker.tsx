@@ -67,7 +67,7 @@ export const CanvasStrategyPicker = React.memo(() => {
           <FlexColumn
             style={{
               minHeight: 84,
-              width: 134,
+              width: 120,
               display: 'flex',
               alignItems: 'stretch',
               padding: 4,
