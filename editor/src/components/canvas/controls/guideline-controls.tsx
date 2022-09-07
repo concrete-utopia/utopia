@@ -57,16 +57,16 @@ export const GuidelineControls = React.memo(() => {
     ...framesFromMetadata(metadata, parentAndSiblings),
   ]
 
+  const snappingGuidelinesPrefix = snappingGuidelines.slice(0, 4)
+
   const intersectionPoints = intersectionFrames.flatMap((bound) =>
-    snappingGuidelines
-      .slice(0, 4)
-      .flatMap(
-        (guideLine) =>
-          Utils.optionalMap(
-            (line) => spanRectangleIntersections(line, bound),
-            guidelineToSpan(guideLine.guideline),
-          ) ?? [],
-      ),
+    snappingGuidelinesPrefix.flatMap(
+      (guideLine) =>
+        Utils.optionalMap(
+          (line) => spanRectangleIntersections(line, bound),
+          guidelineToSpan(guideLine.guideline),
+        ) ?? [],
+    ),
   )
 
   if (!strategyMovedSuccessfully) {
@@ -217,7 +217,7 @@ interface CanvasSpan {
 }
 
 function canvasSpan(a: CanvasPoint, b: CanvasPoint): CanvasSpan {
-  return { a, b }
+  return { a: a, b: b }
 }
 
 function guidelineToSpan(guideline: Guideline): CanvasSpan | null {
@@ -235,8 +235,7 @@ function guidelineToSpan(guideline: Guideline): CanvasSpan | null {
     case 'CornerGuideline':
       return null
     default:
-      const _: never = guideline
-      throw new Error(`Unknown guideline found`)
+      return Utils.assertNever(guideline)
   }
 }
 
@@ -261,35 +260,18 @@ function rectangleBoundingLines(rectangle: CanvasRectangle): CanvasSpan[] {
   ]
 }
 
-function between(value: number, min: number, max: number): boolean {
-  return min <= value && value <= max
-}
-
 // https://stackoverflow.com/a/9997374
 function spansIntersect(a: CanvasSpan, b: CanvasSpan): boolean {
   function ccw(p1: CanvasPoint, p2: CanvasPoint, p3: CanvasPoint): boolean {
-    const contained = between(p2.x, p1.x, p3.x) && between(p2.y, p1.y, p3.y)
-    if (!contained) {
-      return false
-    }
-    return (p3.y - p1.y) * (p2.x - p1.x) >= (p2.y - p1.y) * (p3.x - p1.x)
+    return (p2.y - p1.y) * (p3.x - p1.x) - (p3.y - p1.y) * (p2.x - p1.x) >= 0
   }
 
   return ccw(a.a, b.a, b.b) !== ccw(a.b, b.a, b.b) && ccw(a.a, a.b, b.a) !== ccw(a.a, a.b, b.b)
 }
 
-// https://www.geeksforgeeks.org/program-check-three-points-collinear/
-function spansCollinear(left: CanvasSpan, right: CanvasSpan): boolean {
-  function collinearI(p1: CanvasPoint, p2: CanvasPoint, p3: CanvasPoint): boolean {
-    return p1.x * (p2.y - p3.y) + p2.x * (p3.y - p1.y) + p3.x * (p1.y - p2.y) < 0.001
-  }
-
-  return collinearI(left.a, right.a, left.b) || collinearI(right.a, left.a, right.b)
-}
-
 function spanIntersection(left: CanvasSpan, right: CanvasSpan): CanvasPoint | null {
   const point = lineIntersection(left.a, left.b, right.a, right.b)
-  if (spansCollinear(left, right) || spansIntersect(left, right)) {
+  if (spansIntersect(left, right)) {
     return point
   }
   return null

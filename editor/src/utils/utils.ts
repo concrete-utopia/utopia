@@ -626,6 +626,10 @@ function assert(errorMessage: string, predicate: boolean | (() => boolean)): voi
   throw new Error(`Assert failed: ${errorMessage}`)
 }
 
+function assertNever(n: never): never {
+  throw new Error(`Expected \`never\`, got ${JSON.stringify(n)}`)
+}
+
 export interface Annotations {
   _signature: string
   _description: string
@@ -923,6 +927,7 @@ export function isOptionsType<T extends OptionTypeBase>(
 export default {
   generateUUID: generateUUID,
   assert: assert,
+  assertNever: assertNever,
   roundTo: roundTo,
   roundToNearestHalf: roundToNearestHalf,
   roundPointToNearestHalf: roundPointToNearestHalf,
