@@ -1,5 +1,4 @@
 import React from 'react'
-import * as EP from '../../../core/shared/element-path'
 import { mapDropNulls } from '../../../core/shared/array-utils'
 import { Utils } from '../../../uuiui-deps'
 import { MetadataUtils } from '../../../core/model/element-metadata-utils'
@@ -203,10 +202,13 @@ function useGuideline<T = HTMLDivElement>(
 }
 
 function framesFromMetadata(
-  metadata: ElementInstanceMetadataMap,
+  metadataMap: ElementInstanceMetadataMap,
   paths: Array<ElementPath>,
 ): Array<CanvasRectangle> {
-  return mapDropNulls((path) => metadata[EP.toString(path)]?.globalFrame ?? null, paths)
+  return mapDropNulls(
+    (path) => MetadataUtils.findElementByElementPath(metadataMap, path)?.globalFrame ?? null,
+    paths,
+  )
 }
 
 interface CanvasSpan {
