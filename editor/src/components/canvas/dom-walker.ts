@@ -885,7 +885,11 @@ function getSpecialMeasurements(
     left: isRight(borderLeftWidth) ? borderLeftWidth.value.value : 0,
   }
 
-  const globalFrame = globalFrameForElement(element, scale, containerRectLazy)
+  const elementOrContainingParent = providesBoundsForAbsoluteChildren
+    ? element
+    : (element.offsetParent as HTMLElement)
+
+  const globalFrame = globalFrameForElement(elementOrContainingParent, scale, containerRectLazy)
   const globalContentBox = canvasRectangle({
     x: globalFrame.x + border.left,
     y: globalFrame.y + border.top,

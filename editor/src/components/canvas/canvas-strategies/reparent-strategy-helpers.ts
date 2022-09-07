@@ -96,16 +96,14 @@ export function reparentStrategyForParent(
   if (allDraggedElementsAbsolute) {
     if (parentIsFlexLayout) {
       return { strategy: 'ABSOLUTE_REPARENT_TO_FLEX', newParent: newParent }
-    }
-    if (parentProvidesBoundsForAbsoluteChildren || parentIsStoryboard) {
+    } else {
       return { strategy: 'ABSOLUTE_REPARENT_TO_ABSOLUTE', newParent: newParent }
     }
   }
   if (allDraggedElementsFlex) {
     if (parentIsFlexLayout) {
       return { strategy: 'FLEX_REPARENT_TO_FLEX', newParent: newParent }
-    }
-    if (parentProvidesBoundsForAbsoluteChildren || parentIsStoryboard) {
+    } else {
       return { strategy: 'FLEX_REPARENT_TO_ABSOLUTE', newParent: newParent }
     }
   }
@@ -237,7 +235,8 @@ export function getReparentTargetUnified(
     const targetMetadata = MetadataUtils.findElementByElementPath(metadata, target)
     const isFlex = MetadataUtils.isFlexLayoutedContainer(targetMetadata)
     const providesBoundsForAbsoluteChildren =
-      targetMetadata?.specialSizeMeasurements.providesBoundsForAbsoluteChildren ?? false
+      cmdPressed || // holding cmd removes this filter and pretends that any element is good for absolute children!!!
+      (targetMetadata?.specialSizeMeasurements.providesBoundsForAbsoluteChildren ?? false)
 
     // TODO extend here when we implement static layout support
     const validParentForFlexOrAbsolute = isFlex || providesBoundsForAbsoluteChildren
@@ -256,7 +255,7 @@ export function getReparentTargetUnified(
           : // for non-flex elements, we filter out their descendants and themselves
             EP.isDescendantOfOrEqualTo(target, maybeAncestorOrEqual.elementPath),
       ) === -1 &&
-        // simply skip elements that do not support children
+        // simply skip elements that do not support the children prop
         MetadataUtils.targetSupportsChildren(projectContents, openFile, metadata, target) &&
         // if cmd is not pressed, we only allow reparent to parents that are larger than the multiselect bounds
         (cmdPressed ||

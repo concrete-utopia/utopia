@@ -112,12 +112,7 @@ export const absoluteReparentStrategy: CanvasStrategy = {
       )
     })
 
-    if (
-      reparentTarget.shouldReparent &&
-      newParent != null &&
-      (providesBoundsForAbsoluteChildren || parentIsStoryboard) &&
-      allowedToReparent
-    ) {
+    if (reparentTarget.shouldReparent && newParent != null && allowedToReparent) {
       const commands = mapDropNulls((selectedElement) => {
         const reparentResult = getReparentOutcome(
           canvasState.builtInDependencies,
