@@ -1,4 +1,5 @@
 import React from 'react'
+import * as EP from '../../../core/shared/element-path'
 import { mapDropNulls } from '../../../core/shared/array-utils'
 import { Utils } from '../../../uuiui-deps'
 import { MetadataUtils } from '../../../core/model/element-metadata-utils'
@@ -19,6 +20,12 @@ import {
 } from '../../editor/store/store-hook'
 import { Guideline } from '../guideline'
 import { CanvasOffsetWrapper } from './canvas-offset-wrapper'
+import { collectParentsAndSiblings } from './guideline-helpers'
+import {
+  ElementInstanceMetadata,
+  ElementInstanceMetadataMap,
+} from '../../../core/shared/element-template'
+import { ElementPath } from '../../../core/shared/project-file-types'
 
 // STRATEGY GUIDELINE CONTROLS
 export const GuidelineControls = React.memo(() => {
@@ -37,18 +44,30 @@ export const GuidelineControls = React.memo(() => {
     )
   }, 'GuidelineControls strategyMovedSuccessfully')
 
+  const metadata = useEditorState((store) => store.editor.jsxMetadata, 'JSX metadata')
+
   const { strategyIntendedBounds, snappingGuidelines } = useEditorState(
     (store) => store.editor.canvas.controls,
     'Strategy intended bounds and snapping guidelines',
   )
 
-  const intersectionPoints = strategyIntendedBounds.flatMap((bound) =>
+  const parentAndSiblings = collectParentsAndSiblings(
+    metadata,
+    strategyIntendedBounds.map((_) => _.target),
+  )
+
+  const intersectionFrames = [
+    ...strategyIntendedBounds.map((_) => _.frame),
+    ...framesFromMetadata(metadata, parentAndSiblings),
+  ]
+
+  const intersectionPoints = intersectionFrames.flatMap((bound) =>
     snappingGuidelines
       .slice(0, 4)
       .flatMap(
         (guideLine) =>
           Utils.optionalMap(
-            (line) => lineRectangleIntersections(line, bound.frame),
+            (line) => lineRectangleIntersections(line, bound),
             guidelineToLine(guideLine.guideline),
           ) ?? [],
       ),
@@ -184,6 +203,13 @@ function useGuideline<T = HTMLDivElement>(
     innerCallback()
   }, [innerCallback])
   return controlRef
+}
+
+function framesFromMetadata(
+  metadata: ElementInstanceMetadataMap,
+  paths: Array<ElementPath>,
+): Array<CanvasRectangle> {
+  return mapDropNulls((path) => metadata[EP.toString(path)]?.globalFrame ?? null, paths)
 }
 
 interface CanvasLine {
