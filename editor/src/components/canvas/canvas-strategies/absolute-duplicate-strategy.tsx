@@ -26,7 +26,7 @@ import { getDragTargets } from './shared-absolute-move-strategy-helpers'
 
 export const absoluteDuplicateStrategy: CanvasStrategy = {
   id: 'ABSOLUTE_DUPLICATE',
-  name: 'Duplicate Absolute Elements',
+  name: 'Duplicate',
   isApplicable: (canvasState, interactionState, metadata) => {
     const selectedElements = getTargetPathsFromInteractionTarget(canvasState.interactionTarget)
     if (
