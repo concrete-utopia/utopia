@@ -160,7 +160,7 @@ import { DefaultThirdPartyControlDefinitions } from '../../../core/third-party/t
 import { Spec } from 'immutability-helper'
 import { memoize } from '../../../core/shared/memoize'
 import { InteractionSession, StrategyState } from '../../canvas/canvas-strategies/interaction-state'
-import { Guideline, GuidelineWithSnappingVector } from '../../canvas/guideline'
+import { Guideline, GuidelineWithSnappingVectorAndPointsOfRelevance } from '../../canvas/guideline'
 import { MouseButtonsPressed } from '../../../utils/mouse'
 import { emptySet } from '../../../core/shared/set-utils'
 import { UTOPIA_LABEL_KEY } from '../../../core/model/utopia-constants'
@@ -595,7 +595,7 @@ export function editorStateCanvasTransientProperty(
 
 export interface EditorStateCanvasControls {
   // this is where we can put props for the strategy controls
-  snappingGuidelines: Array<GuidelineWithSnappingVector>
+  snappingGuidelines: Array<GuidelineWithSnappingVectorAndPointsOfRelevance>
   outlineHighlights: Array<CanvasRectangle>
   strategyIntendedBounds: Array<CanvasFrameAndTarget>
   flexReparentTargetLines: Array<CanvasRectangle>
@@ -604,7 +604,7 @@ export interface EditorStateCanvasControls {
 }
 
 export function editorStateCanvasControls(
-  snappingGuidelines: Array<GuidelineWithSnappingVector>,
+  snappingGuidelines: Array<GuidelineWithSnappingVectorAndPointsOfRelevance>,
   outlineHighlights: Array<CanvasRectangle>,
   strategyIntendedBounds: Array<CanvasFrameAndTarget>,
   flexReparentTargetLines: Array<CanvasRectangle>,

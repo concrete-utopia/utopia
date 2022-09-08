@@ -1,5 +1,4 @@
 import React from 'react'
-import { mapDropNulls } from '../../../core/shared/array-utils'
 import { Utils } from '../../../uuiui-deps'
 import { MetadataUtils } from '../../../core/model/element-metadata-utils'
 import {
@@ -7,20 +6,21 @@ import {
   CanvasPoint,
   canvasRectangle,
   CanvasRectangle,
-  lineIntersection,
+  canvasSegment,
+  CanvasSegment,
   rectanglesEqual,
+  segmentIntersection,
 } from '../../../core/shared/math-utils'
-import { useColorTheme } from '../../../uuiui'
+import { bold, useColorTheme } from '../../../uuiui'
 import { EditorStorePatched } from '../../editor/store/editor-state'
 import {
   useEditorState,
   useRefEditorState,
   useSelectorWithCallback,
 } from '../../editor/store/store-hook'
-import { Guideline } from '../guideline'
 import { CanvasOffsetWrapper } from './canvas-offset-wrapper'
-import { ElementInstanceMetadataMap } from '../../../core/shared/element-template'
-import { ElementPath } from '../../../core/shared/project-file-types'
+import { Guideline } from '../guideline'
+import { mapDropNulls } from '../../../core/shared/array-utils'
 
 // STRATEGY GUIDELINE CONTROLS
 export const GuidelineControls = React.memo(() => {
@@ -39,41 +39,26 @@ export const GuidelineControls = React.memo(() => {
     )
   }, 'GuidelineControls strategyMovedSuccessfully')
 
-  const metadata = useEditorState((store) => store.editor.jsxMetadata, 'JSX metadata')
-
   const { strategyIntendedBounds, snappingGuidelines } = useEditorState(
     (store) => store.editor.canvas.controls,
     'Strategy intended bounds and snapping guidelines',
   )
 
-  const parentAndSiblings = MetadataUtils.collectParentsAndSiblings(
-    metadata,
-    strategyIntendedBounds.map((bound) => bound.target),
-  )
-
-  const intersectionFrames = [
-    ...strategyIntendedBounds.map((bound) => bound.frame),
-    ...framesFromMetadata(metadata, parentAndSiblings),
-  ]
-
   const snappingGuidelinesPrefix = snappingGuidelines.slice(0, 4)
-
-  const intersectionPoints = intersectionFrames.flatMap((bound) =>
-    snappingGuidelinesPrefix.flatMap(
-      (guideLine) =>
-        Utils.optionalMap(
-          (line) => segmentRectangleIntersections(line, bound),
-          guidelineToSegment(guideLine.guideline),
-        ) ?? [],
-    ),
+  const intersectionPoints = mapDropNulls(
+    (guideline) => guidelineToSegment(guideline.guideline),
+    snappingGuidelines,
+  ).flatMap((segment) =>
+    strategyIntendedBounds.flatMap((bound) => segmentRectangleIntersections(segment, bound.frame)),
   )
 
-  const guidelineEndpointss = snappingGuidelines.flatMap(({ guideline }) =>
-    guidelineEndpoints(guideline),
+  const pointsOfRelevance = snappingGuidelinesPrefix.flatMap(
+    (guideline) => guideline.pointsOfRelevance,
   )
+
   const xMarkPoints = Utils.deduplicateBy(
     ({ x, y }) => `${x}${y}`,
-    [...guidelineEndpointss, ...intersectionPoints],
+    [...pointsOfRelevance, ...intersectionPoints],
   )
 
   if (!strategyMovedSuccessfully) {
@@ -208,25 +193,6 @@ function useGuideline<T = HTMLDivElement>(
   return controlRef
 }
 
-function framesFromMetadata(
-  metadataMap: ElementInstanceMetadataMap,
-  paths: Array<ElementPath>,
-): Array<CanvasRectangle> {
-  return mapDropNulls(
-    (path) => MetadataUtils.findElementByElementPath(metadataMap, path)?.globalFrame ?? null,
-    paths,
-  )
-}
-
-interface CanvasSegment {
-  a: CanvasPoint
-  b: CanvasPoint
-}
-
-function canvasSegment(a: CanvasPoint, b: CanvasPoint): CanvasSegment {
-  return { a: a, b: b }
-}
-
 function guidelineToSegment(guideline: Guideline): CanvasSegment | null {
   switch (guideline.type) {
     case 'XAxisGuideline': {
@@ -241,25 +207,6 @@ function guidelineToSegment(guideline: Guideline): CanvasSegment | null {
     }
     case 'CornerGuideline':
       return null
-    default:
-      return Utils.assertNever(guideline)
-  }
-}
-
-function guidelineEndpoints(guideline: Guideline): Array<CanvasPoint> {
-  switch (guideline.type) {
-    case 'XAxisGuideline': {
-      const a = canvasPoint({ x: guideline.x, y: guideline.yBottom })
-      const b = canvasPoint({ x: guideline.x, y: guideline.yTop })
-      return [a, b]
-    }
-    case 'YAxisGuideline': {
-      const a = canvasPoint({ x: guideline.xLeft, y: guideline.y })
-      const b = canvasPoint({ x: guideline.xRight, y: guideline.y })
-      return [a, b]
-    }
-    case 'CornerGuideline':
-      return []
     default:
       return Utils.assertNever(guideline)
   }
@@ -284,30 +231,6 @@ function rectangleBoundingLines(rectangle: CanvasRectangle): CanvasSegment[] {
       canvasPoint({ x: rectangle.x + rectangle.width, y: rectangle.y + rectangle.height }),
     ),
   ]
-}
-
-// https://algs4.cs.princeton.edu/91primitives/
-function segmentsIntersect(a: CanvasSegment, b: CanvasSegment): boolean {
-  function counterClockwise(p1: CanvasPoint, p2: CanvasPoint, p3: CanvasPoint): number {
-    return (p2.y - p1.y) * (p3.x - p1.x) - (p3.y - p1.y) * (p2.x - p1.x)
-  }
-
-  if (counterClockwise(a.a, a.b, b.a) * counterClockwise(a.a, a.b, b.b) > 0) {
-    return false
-  }
-  if (counterClockwise(b.a, b.b, a.a) * counterClockwise(b.a, b.b, a.b) > 0) {
-    return false
-  }
-
-  return true
-}
-
-function segmentIntersection(left: CanvasSegment, right: CanvasSegment): CanvasPoint | null {
-  const point = lineIntersection(left.a, left.b, right.a, right.b)
-  if (segmentsIntersect(left, right)) {
-    return point
-  }
-  return null
 }
 
 function segmentRectangleIntersections(

@@ -36,7 +36,12 @@ import {
   AdjustCssLengthProperty,
 } from '../commands/adjust-css-length-command'
 import { runLegacyAbsoluteMoveSnapping } from '../controls/guideline-helpers'
-import { ConstrainedDragAxis, Guideline, GuidelineWithSnappingVector } from '../guideline'
+import {
+  ConstrainedDragAxis,
+  Guideline,
+  GuidelineWithRelevantPoints,
+  GuidelineWithSnappingVectorAndPointsOfRelevance,
+} from '../guideline'
 import { AbsolutePin } from './absolute-resize-helpers'
 import { InteractionCanvasState } from './canvas-strategy-types'
 import { InteractionSession, StrategyState } from './interaction-state'
@@ -186,11 +191,11 @@ export function snapDrag(
   constrainedDragAxis: ConstrainedDragAxis | null,
   jsxMetadata: ElementInstanceMetadataMap,
   selectedElements: Array<ElementPath>,
-  moveGuidelines: Array<Guideline>,
+  moveGuidelines: Array<GuidelineWithRelevantPoints>,
   canvasScale: number,
 ): {
   snappedDragVector: CanvasPoint
-  guidelinesWithSnappingVector: Array<GuidelineWithSnappingVector>
+  guidelinesWithSnappingVector: Array<GuidelineWithSnappingVectorAndPointsOfRelevance>
 } {
   if (drag == null) {
     return {
@@ -198,6 +203,7 @@ export function snapDrag(
       guidelinesWithSnappingVector: [],
     }
   }
+
   const multiselectBounds = getMultiselectBounds(jsxMetadata, selectedElements)
 
   // This is the entry point to extend the list of snapping strategies, if we want to add more

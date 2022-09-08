@@ -12,7 +12,8 @@ import {
   ConstrainedDragAxis,
   Guideline,
   Guidelines,
-  GuidelineWithSnappingVector,
+  GuidelineWithRelevantPoints,
+  GuidelineWithSnappingVectorAndPointsOfRelevance,
 } from '../guideline'
 import { ElementInstanceMetadataMap } from '../../../core/shared/element-template'
 import { MetadataUtils } from '../../../core/model/element-metadata-utils'
@@ -24,9 +25,9 @@ export const SnappingThreshold = 5
 export function collectParentAndSiblingGuidelines(
   componentMetadata: ElementInstanceMetadataMap,
   targets: Array<ElementPath>,
-): Array<Guideline> {
+): Array<GuidelineWithRelevantPoints> {
   const allPaths = MetadataUtils.getAllPaths(componentMetadata)
-  const result: Array<Guideline> = []
+  const result: Array<GuidelineWithRelevantPoints> = []
   Utils.fastForEach(targets, (target) => {
     const pinnedAndNotAbsolutePositioned = MetadataUtils.isPinnedAndNotAbsolutePositioned(
       componentMetadata,
@@ -44,7 +45,7 @@ export function collectParentAndSiblingGuidelines(
         if ((isSibling || isParent) && notSelectedOrDescendantOfSelected) {
           const frame = MetadataUtils.getFrameInCanvasCoords(maybeTarget, componentMetadata)
           if (frame != null) {
-            result.push(...Guidelines.guidelinesForFrame(frame, true))
+            result.push(...Guidelines.guidelinesWithRelevantPointsForFrame(frame, 'include'))
           }
         }
       })
@@ -87,12 +88,13 @@ export function collectSelfAndChildrenGuidelines(
 }
 
 export function getSnappedGuidelines(
-  guidelines: Array<Guideline>,
+  guidelines: Array<GuidelineWithRelevantPoints>,
   constrainedDragAxis: ConstrainedDragAxis | null,
   draggedFrame: CanvasRectangle,
   scale: number,
-) {
+): Array<GuidelineWithSnappingVectorAndPointsOfRelevance> {
   const { horizontalPoints, verticalPoints } = Utils.getRectPointsAlongAxes(draggedFrame)
+
   // TODO constrained drag axis
   return Guidelines.getClosestGuidelinesAndOffsets(
     horizontalPoints,
@@ -105,17 +107,25 @@ export function getSnappedGuidelines(
   )
 }
 
+// TODO: called form insert-mode-control-container.tsx
 export function getSnappedGuidelinesForPoint(
   guidelines: Array<Guideline>,
   constrainedDragAxis: ConstrainedDragAxis | null,
   point: CanvasPoint,
   scale: number,
-) {
+): Array<GuidelineWithSnappingVectorAndPointsOfRelevance> {
+  const guidelinesWithDummyPoints: Array<GuidelineWithRelevantPoints> = guidelines.map(
+    (guideline) => ({
+      guideline,
+      pointsOfRelevance: [], // TODO: figma shows the xmarks when inserting as well, include xmarks here too
+    }),
+  )
+
   return Guidelines.getClosestGuidelinesAndOffsets(
     [point.x],
     [point.y],
     [point],
-    guidelines,
+    guidelinesWithDummyPoints,
     constrainedDragAxis,
     SnappingThreshold,
     scale,
@@ -123,10 +133,10 @@ export function getSnappedGuidelinesForPoint(
 }
 
 export function oneGuidelinePerDimension(
-  guidelines: Array<GuidelineWithSnappingVector>,
-): Array<GuidelineWithSnappingVector> {
-  let xAxisGuideline: GuidelineWithSnappingVector | null = null
-  let yAxisGuideline: GuidelineWithSnappingVector | null = null
+  guidelines: Array<GuidelineWithSnappingVectorAndPointsOfRelevance>,
+): Array<GuidelineWithSnappingVectorAndPointsOfRelevance> {
+  let xAxisGuideline: GuidelineWithSnappingVectorAndPointsOfRelevance | null = null
+  let yAxisGuideline: GuidelineWithSnappingVectorAndPointsOfRelevance | null = null
 
   for (const guideline of guidelines) {
     if (guideline.guideline.type === 'CornerGuideline') {
@@ -138,15 +148,21 @@ export function oneGuidelinePerDimension(
     }
   }
 
-  return Utils.stripNulls<GuidelineWithSnappingVector>([xAxisGuideline, yAxisGuideline])
+  return Utils.stripNulls<GuidelineWithSnappingVectorAndPointsOfRelevance>([
+    xAxisGuideline,
+    yAxisGuideline,
+  ])
 }
 
 export function getSnapDelta(
-  guidelines: Array<Guideline>,
+  guidelines: Array<GuidelineWithRelevantPoints>,
   constrainedDragAxis: ConstrainedDragAxis | null,
   draggedFrame: CanvasRectangle,
   scale: number,
-): { delta: CanvasPoint; guidelinesWithSnappingVector: Array<GuidelineWithSnappingVector> } {
+): {
+  delta: CanvasPoint
+  guidelinesWithSnappingVector: Array<GuidelineWithSnappingVectorAndPointsOfRelevance>
+} {
   const closestGuideLines = getSnappedGuidelines(
     guidelines,
     constrainedDragAxis,
@@ -164,9 +180,9 @@ export function getSnapDelta(
 }
 
 export function pointGuidelineToBoundsEdge(
-  guidelinesWithSnappingVector: Array<GuidelineWithSnappingVector>,
+  guidelinesWithSnappingVector: Array<GuidelineWithSnappingVectorAndPointsOfRelevance>,
   multiselectBounds: CanvasRectangle,
-): Array<GuidelineWithSnappingVector> {
+): Array<GuidelineWithSnappingVectorAndPointsOfRelevance> {
   return guidelinesWithSnappingVector.map((guidelineWithSnappingVector) => {
     const guideline = guidelineWithSnappingVector.guideline
     switch (guideline.type) {
@@ -200,12 +216,12 @@ export function pointGuidelineToBoundsEdge(
 export function runLegacyAbsoluteMoveSnapping(
   drag: CanvasPoint,
   constrainedDragAxis: ConstrainedDragAxis | null,
-  moveGuidelines: Array<Guideline>,
+  moveGuidelines: Array<GuidelineWithRelevantPoints>,
   canvasScale: number,
   multiselectBounds: CanvasRectangle | null,
 ): {
   snappedDragVector: CanvasPoint
-  guidelinesWithSnappingVector: Array<GuidelineWithSnappingVector>
+  guidelinesWithSnappingVector: Array<GuidelineWithSnappingVectorAndPointsOfRelevance>
 } {
   const { delta, guidelinesWithSnappingVector } = getSnapDelta(
     moveGuidelines,
@@ -235,22 +251,23 @@ export function runLegacyAbsoluteMoveSnapping(
   }
 }
 
-export function filterGuidelinesStaticAxis(
-  guidelines: Array<Guideline>,
+export function filterGuidelinesStaticAxis<T>(
+  fn: (t: T) => Guideline,
+  guidelineLikes: Array<T>,
   resizingFromPosition: EdgePosition,
-) {
+): Array<T> {
   // when resizing on vertical side horizontal guidelines are not visible
-  return guidelines.filter((guideline) => {
+  return guidelineLikes.filter((guideline) => {
     return !(
-      (resizingFromPosition.x === 0.5 && guideline.type === 'XAxisGuideline') ||
-      (resizingFromPosition.y === 0.5 && guideline.type === 'YAxisGuideline')
+      (resizingFromPosition.x === 0.5 && fn(guideline).type === 'XAxisGuideline') ||
+      (resizingFromPosition.y === 0.5 && fn(guideline).type === 'YAxisGuideline')
     )
   })
 }
 
 export function applySnappingToPoint(
   point: CanvasPoint,
-  guidelines: Array<GuidelineWithSnappingVector>,
+  guidelines: Array<GuidelineWithSnappingVectorAndPointsOfRelevance>,
 ): CanvasPoint {
   return oneGuidelinePerDimension(guidelines).reduce((p, guidelineResult) => {
     return Utils.offsetPoint(p, guidelineResult.snappingVector)

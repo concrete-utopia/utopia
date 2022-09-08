@@ -7,7 +7,7 @@ import * as EP from '../../../core/shared/element-path'
 import { isFeatureEnabled, setFeatureEnabled } from '../../../utils/feature-switches'
 import { wait } from '../../../utils/utils.test-utils'
 import { selectComponents } from '../../editor/actions/action-creators'
-import { GuidelineWithSnappingVector } from '../guideline'
+import { GuidelineWithSnappingVectorAndPointsOfRelevance } from '../guideline'
 import { getPrintedUiJsCode, renderTestEditorWithCode } from '../ui-jsx.test-utils'
 import { KeyboardInteractionTimeout } from './interaction-state'
 
@@ -429,7 +429,7 @@ async function setupTest(initialBBBProperties: { [key: string]: any }) {
       TestProjectDeluxeStallion(bbbProperties),
     )
   }
-  function getCanvasGuidelines(): Array<GuidelineWithSnappingVector> {
+  function getCanvasGuidelines(): Array<GuidelineWithSnappingVectorAndPointsOfRelevance> {
     return renderResult.getEditorState().editor.canvas.controls.snappingGuidelines
   }
   return {

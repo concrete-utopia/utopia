@@ -33,11 +33,8 @@ import {
 } from './shared-keyboard-strategy-helpers'
 import { mapDropNulls } from '../../../core/shared/array-utils'
 import { defaultIfNull } from '../../../core/shared/optional-utils'
-import {
-  collectParentAndSiblingGuidelines,
-  oneGuidelinePerDimension,
-} from '../controls/guideline-helpers'
-import { GuidelineWithSnappingVector, Guidelines } from '../guideline'
+import { oneGuidelinePerDimension } from '../controls/guideline-helpers'
+import { GuidelineWithSnappingVectorAndPointsOfRelevance, Guidelines } from '../guideline'
 import Utils from '../../../utils/utils'
 import { StrategyState, InteractionSession } from './interaction-state'
 import { pushIntendedBounds } from '../commands/push-intended-bounds-command'

@@ -2,12 +2,12 @@ import React from 'react'
 
 import { CanvasPoint, CanvasRectangle } from '../../../core/shared/math-utils'
 import { useColorTheme } from '../../../uuiui'
-import { GuidelineWithSnappingVector } from '../guideline'
+import { GuidelineWithSnappingVectorAndPointsOfRelevance } from '../guideline'
 
 interface ResizeEdgeProps {
   canvasOffset: CanvasPoint
   scale: number
-  guidelineWithSnapping: GuidelineWithSnappingVector
+  guidelineWithSnapping: GuidelineWithSnappingVectorAndPointsOfRelevance
   targetFrame: CanvasRectangle
 }
 

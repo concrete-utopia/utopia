@@ -96,7 +96,8 @@ export class SelectModeControlContainer extends React.Component<
     const guidelines = collectParentAndSiblingGuidelines(
       props.componentMetadata,
       props.selectedViews,
-    )
+    ).map((g) => g.guideline)
+
     return {
       moveGuidelines: keepDeepReferenceEqualityIfPossible(previousState.moveGuidelines, guidelines),
     }
