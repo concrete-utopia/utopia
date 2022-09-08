@@ -286,26 +286,25 @@ function rectangleBoundingLines(rectangle: CanvasRectangle): CanvasSegment[] {
   ]
 }
 
-// https://stackoverflow.com/a/9997374
+// https://algs4.cs.princeton.edu/91primitives/
 function segmentsIntersect(a: CanvasSegment, b: CanvasSegment): boolean {
-  function ccw(p1: CanvasPoint, p2: CanvasPoint, p3: CanvasPoint): boolean {
-    return (p3.y - p1.y) * (p2.x - p1.x) <= (p2.y - p1.y) * (p3.x - p1.x)
+  function counterClockwise(p1: CanvasPoint, p2: CanvasPoint, p3: CanvasPoint): number {
+    return (p2.y - p1.y) * (p3.x - p1.x) - (p3.y - p1.y) * (p2.x - p1.x)
   }
 
-  return ccw(a.a, b.a, b.b) !== ccw(a.b, b.a, b.b) && ccw(a.a, a.b, b.a) !== ccw(a.a, a.b, b.b)
-}
-
-function segmentsIntersectBiasedClockwise(a: CanvasSegment, b: CanvasSegment): boolean {
-  function ccw(p1: CanvasPoint, p2: CanvasPoint, p3: CanvasPoint): boolean {
-    return (p3.y - p1.y) * (p2.x - p1.x) >= (p2.y - p1.y) * (p3.x - p1.x)
+  if (counterClockwise(a.a, a.b, b.a) * counterClockwise(a.a, a.b, b.b) > 0) {
+    return false
+  }
+  if (counterClockwise(b.a, b.b, a.a) * counterClockwise(b.a, b.b, a.b) > 0) {
+    return false
   }
 
-  return ccw(a.a, b.a, b.b) !== ccw(a.b, b.a, b.b) && ccw(a.a, a.b, b.a) !== ccw(a.a, a.b, b.b)
+  return true
 }
 
 function segmentIntersection(left: CanvasSegment, right: CanvasSegment): CanvasPoint | null {
   const point = lineIntersection(left.a, left.b, right.a, right.b)
-  if (segmentsIntersect(left, right) || segmentsIntersectBiasedClockwise(left, right)) {
+  if (segmentsIntersect(left, right)) {
     return point
   }
   return null
