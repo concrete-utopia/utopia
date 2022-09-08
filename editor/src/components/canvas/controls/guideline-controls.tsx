@@ -53,7 +53,7 @@ export const GuidelineControls = React.memo(() => {
   )
 
   const intersectionFrames = [
-    ...strategyIntendedBounds.map((_) => _.frame),
+    ...strategyIntendedBounds.map((bound) => bound.frame),
     ...framesFromMetadata(metadata, parentAndSiblings),
   ]
 
@@ -63,8 +63,8 @@ export const GuidelineControls = React.memo(() => {
     snappingGuidelinesPrefix.flatMap(
       (guideLine) =>
         Utils.optionalMap(
-          (line) => spanRectangleIntersections(line, bound),
-          guidelineToSpan(guideLine.guideline),
+          (line) => segmentRectangleIntersections(line, bound),
+          guidelineToSegment(guideLine.guideline),
         ) ?? [],
     ),
   )
@@ -219,26 +219,26 @@ function framesFromMetadata(
   )
 }
 
-interface CanvasSpan {
+interface CanvasSegment {
   a: CanvasPoint
   b: CanvasPoint
 }
 
-function canvasSpan(a: CanvasPoint, b: CanvasPoint): CanvasSpan {
+function canvasSegment(a: CanvasPoint, b: CanvasPoint): CanvasSegment {
   return { a: a, b: b }
 }
 
-function guidelineToSpan(guideline: Guideline): CanvasSpan | null {
+function guidelineToSegment(guideline: Guideline): CanvasSegment | null {
   switch (guideline.type) {
     case 'XAxisGuideline': {
       const a = canvasPoint({ x: guideline.x, y: guideline.yBottom })
       const b = canvasPoint({ x: guideline.x, y: guideline.yTop })
-      return canvasSpan(a, b)
+      return canvasSegment(a, b)
     }
     case 'YAxisGuideline': {
       const a = canvasPoint({ x: guideline.xLeft, y: guideline.y })
       const b = canvasPoint({ x: guideline.xRight, y: guideline.y })
-      return canvasSpan(a, b)
+      return canvasSegment(a, b)
     }
     case 'CornerGuideline':
       return null
@@ -266,21 +266,21 @@ function guidelineEndpoints(guideline: Guideline): Array<CanvasPoint> {
   }
 }
 
-function rectangleBoundingLines(rectangle: CanvasRectangle): CanvasSpan[] {
+function rectangleBoundingLines(rectangle: CanvasRectangle): CanvasSegment[] {
   return [
-    canvasSpan(
+    canvasSegment(
       canvasPoint({ x: rectangle.x, y: rectangle.y }),
       canvasPoint({ x: rectangle.x, y: rectangle.y + rectangle.height }),
     ),
-    canvasSpan(
+    canvasSegment(
       canvasPoint({ x: rectangle.x, y: rectangle.y }),
       canvasPoint({ x: rectangle.x + rectangle.width, y: rectangle.y }),
     ),
-    canvasSpan(
+    canvasSegment(
       canvasPoint({ x: rectangle.x + rectangle.width, y: rectangle.y }),
       canvasPoint({ x: rectangle.x + rectangle.width, y: rectangle.y + rectangle.height }),
     ),
-    canvasSpan(
+    canvasSegment(
       canvasPoint({ x: rectangle.x, y: rectangle.y + rectangle.height }),
       canvasPoint({ x: rectangle.x + rectangle.width, y: rectangle.y + rectangle.height }),
     ),
@@ -288,7 +288,7 @@ function rectangleBoundingLines(rectangle: CanvasRectangle): CanvasSpan[] {
 }
 
 // https://stackoverflow.com/a/9997374
-function spansIntersect(a: CanvasSpan, b: CanvasSpan): boolean {
+function segmentsIntersect(a: CanvasSegment, b: CanvasSegment): boolean {
   function ccw(p1: CanvasPoint, p2: CanvasPoint, p3: CanvasPoint): boolean {
     return (p3.y - p1.y) * (p2.x - p1.x) <= (p2.y - p1.y) * (p3.x - p1.x)
   }
@@ -296,7 +296,7 @@ function spansIntersect(a: CanvasSpan, b: CanvasSpan): boolean {
   return ccw(a.a, b.a, b.b) !== ccw(a.b, b.a, b.b) && ccw(a.a, a.b, b.a) !== ccw(a.a, a.b, b.b)
 }
 
-function spansIntersect2(a: CanvasSpan, b: CanvasSpan): boolean {
+function segmentsIntersectBiasedClockwise(a: CanvasSegment, b: CanvasSegment): boolean {
   function ccw(p1: CanvasPoint, p2: CanvasPoint, p3: CanvasPoint): boolean {
     return (p3.y - p1.y) * (p2.x - p1.x) >= (p2.y - p1.y) * (p3.x - p1.x)
   }
@@ -304,18 +304,21 @@ function spansIntersect2(a: CanvasSpan, b: CanvasSpan): boolean {
   return ccw(a.a, b.a, b.b) !== ccw(a.b, b.a, b.b) && ccw(a.a, a.b, b.a) !== ccw(a.a, a.b, b.b)
 }
 
-function spanIntersection(left: CanvasSpan, right: CanvasSpan): CanvasPoint | null {
+function segmentIntersection(left: CanvasSegment, right: CanvasSegment): CanvasPoint | null {
   const point = lineIntersection(left.a, left.b, right.a, right.b)
-  if (spansIntersect(left, right) || spansIntersect2(left, right)) {
+  if (segmentsIntersect(left, right) || segmentsIntersectBiasedClockwise(left, right)) {
     return point
   }
   return null
 }
 
-function spanRectangleIntersections(line: CanvasSpan, rectangle: CanvasRectangle): CanvasPoint[] {
+function segmentRectangleIntersections(
+  line: CanvasSegment,
+  rectangle: CanvasRectangle,
+): CanvasPoint[] {
   const boundingLines = rectangleBoundingLines(rectangle)
   const intersectionPoints = mapDropNulls(
-    (boundingLine) => spanIntersection(line, boundingLine),
+    (boundingLine) => segmentIntersection(line, boundingLine),
     boundingLines,
   )
   return intersectionPoints
