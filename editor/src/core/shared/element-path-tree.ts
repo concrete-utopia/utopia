@@ -1,6 +1,11 @@
 import { ElementPath, ElementPathPart } from './project-file-types'
 import * as EP from './element-path'
 import { fastForEach } from './utils'
+import { ElementInstanceMetadataMap, isJSXElement } from './element-template'
+import { MetadataUtils } from '../model/element-metadata-utils'
+import { foldEither } from './either'
+import { getUtopiaID } from '../model/element-template-utils'
+import { move } from './array-utils'
 
 export interface ElementPathTree {
   path: ElementPath
@@ -52,6 +57,56 @@ export function buildTree(elementPaths: Array<ElementPath>): ElementPathTreeRoot
     }
   }
   return result
+}
+
+export function reorderTree(
+  tree: ElementPathTree,
+  metadata: ElementInstanceMetadataMap,
+): ElementPathTree {
+  const element = MetadataUtils.findElementByElementPath(metadata, tree.path)
+  if (element == null) {
+    return tree
+  } else {
+    return foldEither(
+      () => {
+        return tree
+      },
+      (elementChild) => {
+        switch (elementChild.type) {
+          case 'JSX_ELEMENT': {
+            const allChildrenAreElements = elementChild.children.every(isJSXElement)
+            if (allChildrenAreElements) {
+              const updatedChildren = elementChild.children.reduce(
+                (workingTreeChildren, child, childIndex) => {
+                  const uid = getUtopiaID(child)
+                  const workingTreeIndex = workingTreeChildren.findIndex((workingTreeChild) => {
+                    return EP.toUid(workingTreeChild.path) === uid
+                  })
+                  if (workingTreeIndex === childIndex) {
+                    return workingTreeChildren
+                  } else {
+                    return move(workingTreeIndex, childIndex, workingTreeChildren)
+                  }
+                },
+                tree.children.map((child) => {
+                  return reorderTree(child, metadata)
+                }),
+              )
+              return {
+                ...tree,
+                children: updatedChildren,
+              }
+            } else {
+              return tree
+            }
+          }
+          default:
+            return tree
+        }
+      },
+      element.element,
+    )
+  }
 }
 
 export function printTree(treeRoot: ElementPathTreeRoot): string {

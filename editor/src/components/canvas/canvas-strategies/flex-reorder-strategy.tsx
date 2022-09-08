@@ -21,7 +21,7 @@ import { isReorderAllowed } from './reorder-utils'
 
 export const flexReorderStrategy: CanvasStrategy = {
   id: 'FLEX_REORDER',
-  name: 'Flex Reorder',
+  name: 'Reorder (Flex)',
   isApplicable: (canvasState, _interactionState, metadata) => {
     const selectedElements = getTargetPathsFromInteractionTarget(canvasState.interactionTarget)
     if (selectedElements.length == 1) {
@@ -78,7 +78,10 @@ export const flexReorderStrategy: CanvasStrategy = {
       if (!isReorderAllowed(siblingsOfTarget)) {
         return {
           commands: [setCursorCommand('mid-interaction', CSSCursor.NotPermitted)],
-          customState: null,
+          customState: {
+            ...strategyState.customStrategyState,
+            success: 'failure',
+          },
         }
       }
 
@@ -107,6 +110,7 @@ export const flexReorderStrategy: CanvasStrategy = {
           customState: {
             ...strategyState.customStrategyState,
             lastReorderIdx: realNewIndex,
+            success: 'success',
           },
         }
       } else {
@@ -120,6 +124,7 @@ export const flexReorderStrategy: CanvasStrategy = {
           customState: {
             ...strategyState.customStrategyState,
             lastReorderIdx: realNewIndex,
+            success: 'success',
           },
         }
       }

@@ -16,6 +16,10 @@ export const CanvasStrategyPicker = React.memo(() => {
     'CanvasStrategyPicker strategyState.currentStrategy',
   )
   const activeStrategy = useDelayedCurrentStrategy()
+  const isStrategyFailure = useEditorState(
+    (store) => store.strategyState?.customStrategyState.success === 'failure',
+    'Strategy success',
+  )
 
   const onTabPressed = React.useCallback(
     (newStrategy: CanvasStrategy) => {
@@ -61,12 +65,13 @@ export const CanvasStrategyPicker = React.memo(() => {
             position: 'absolute',
             top: 4,
             right: 4,
+            fontSize: 9,
           }}
         >
           <FlexColumn
             style={{
-              minHeight: 95,
-              width: 180,
+              minHeight: 84,
+              width: 120,
               display: 'flex',
               alignItems: 'stretch',
               padding: 4,
@@ -81,12 +86,13 @@ export const CanvasStrategyPicker = React.memo(() => {
                 <FlexRow
                   key={strategy.id}
                   style={{
-                    height: 24,
+                    height: 19,
                     paddingLeft: 4,
                     paddingRight: 4,
                     backgroundColor:
                       strategy.id === activeStrategy ? colorTheme.bg5.value : undefined,
                     color: colorTheme.textColor.value,
+                    opacity: isStrategyFailure && strategy.id === activeStrategy ? 0.5 : 1,
                   }}
                 >
                   {strategy.name}
@@ -95,7 +101,6 @@ export const CanvasStrategyPicker = React.memo(() => {
             })}
             <div
               style={{
-                fontSize: 9,
                 alignSelf: 'center',
                 marginTop: 'auto',
                 color: colorTheme.fg8.value,

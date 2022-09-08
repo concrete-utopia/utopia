@@ -34,7 +34,7 @@ import { collectParentAndSiblingGuidelines } from '../controls/guideline-helpers
 
 export const absoluteMoveStrategy: CanvasStrategy = {
   id: 'ABSOLUTE_MOVE',
-  name: 'Absolute Move (Delta-based)',
+  name: 'Move',
   isApplicable: (canvasState, _interactionState, metadata) => {
     const selectedElements = getTargetPathsFromInteractionTarget(canvasState.interactionTarget)
     if (selectedElements.length > 0) {

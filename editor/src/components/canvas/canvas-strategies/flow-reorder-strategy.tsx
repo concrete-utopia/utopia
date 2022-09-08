@@ -81,7 +81,10 @@ function flowReorderApplyCommon(
     if (!isReorderAllowed(siblingsOfTarget)) {
       return {
         commands: [setCursorCommand('mid-interaction', CSSCursor.NotPermitted)],
-        customState: null,
+        customState: {
+          ...strategyState.customStrategyState,
+          success: 'failure',
+        },
       }
     }
 
@@ -116,6 +119,7 @@ function flowReorderApplyCommon(
         customState: {
           ...strategyState.customStrategyState,
           lastReorderIdx: realNewIndex,
+          success: 'success',
         },
       }
     } else {
@@ -130,6 +134,7 @@ function flowReorderApplyCommon(
         customState: {
           ...strategyState.customStrategyState,
           lastReorderIdx: realNewIndex,
+          success: 'success',
         },
       }
     }
@@ -144,7 +149,7 @@ function flowReorderApplyCommon(
 
 export const flowReorderAutoConversionStategy: CanvasStrategy = {
   id: 'FLOW_REORDER_AUTO_CONVERSION',
-  name: 'Flow Reorder (Auto Conversion)',
+  name: 'Reorder (Flow, Auto)',
   isApplicable: isFlowReorderConversionApplicable,
   controlsToRender: [
     {
@@ -188,7 +193,7 @@ export const flowReorderAutoConversionStategy: CanvasStrategy = {
 
 export const flowReorderNoConversionStategy: CanvasStrategy = {
   id: 'FLOW_REORDER_NO_CONVERSION',
-  name: 'Flow Reorder (No Conversion)',
+  name: 'Reorder (Flow)',
   isApplicable: isFlowReorderConversionApplicable,
   controlsToRender: flowReorderAutoConversionStategy.controlsToRender,
   fitness: (canvasState, interactionState, strategyState) => {
@@ -216,7 +221,7 @@ export const flowReorderNoConversionStategy: CanvasStrategy = {
 
 export const flowReorderSameTypeOnlyStategy: CanvasStrategy = {
   id: 'FLOW_REORDER_SAME_TYPE_ONLY',
-  name: 'Flow Reorder (Same Display Type)',
+  name: 'Reorder (Same)',
   isApplicable: (canvasState, interactionState, strategyState, allElementProps) => {
     return isFlowReorderConversionApplicable(
       canvasState,

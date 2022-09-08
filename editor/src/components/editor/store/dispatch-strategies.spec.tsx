@@ -29,6 +29,7 @@ import {
   ElementInstanceMetadataMap,
   emptyComments,
   jsxAttributeValue,
+  jsxElement,
 } from '../../../core/shared/element-template'
 import {
   createEmptyStrategyState,
@@ -50,6 +51,7 @@ import { wildcardPatch } from '../../canvas/commands/wildcard-patch-command'
 import { runCanvasCommand } from '../../canvas/commands/commands'
 import { saveDOMReport } from '../actions/action-creators'
 import { RegisteredCanvasStrategies } from '../../canvas/canvas-strategies/canvas-strategies'
+import { right } from '../../../core/shared/either'
 
 beforeAll(() => {
   return jest.spyOn(Date, 'now').mockReturnValue(new Date(1000).getTime())
@@ -220,6 +222,7 @@ describe('interactionStart', () => {
           "duplicatedElementNewUids": Object {},
           "escapeHatchActivated": false,
           "lastReorderIdx": null,
+          "success": "success",
         },
         "sortedApplicableStrategies": Array [
           Object {
@@ -280,6 +283,7 @@ describe('interactionStart', () => {
           "duplicatedElementNewUids": Object {},
           "escapeHatchActivated": false,
           "lastReorderIdx": null,
+          "success": "success",
         },
         "sortedApplicableStrategies": null,
         "startingAllElementProps": Object {},
@@ -344,6 +348,7 @@ describe('interactionUpdatex', () => {
           "duplicatedElementNewUids": Object {},
           "escapeHatchActivated": false,
           "lastReorderIdx": null,
+          "success": "success",
         },
         "sortedApplicableStrategies": Array [
           Object {
@@ -405,6 +410,7 @@ describe('interactionUpdatex', () => {
           "duplicatedElementNewUids": Object {},
           "escapeHatchActivated": false,
           "lastReorderIdx": null,
+          "success": "success",
         },
         "sortedApplicableStrategies": null,
         "startingAllElementProps": Object {},
@@ -497,6 +503,7 @@ describe('interactionHardReset', () => {
           "duplicatedElementNewUids": Object {},
           "escapeHatchActivated": false,
           "lastReorderIdx": null,
+          "success": "success",
         },
         "sortedApplicableStrategies": Array [
           Object {
@@ -563,6 +570,7 @@ describe('interactionHardReset', () => {
           "duplicatedElementNewUids": Object {},
           "escapeHatchActivated": false,
           "lastReorderIdx": null,
+          "success": "success",
         },
         "sortedApplicableStrategies": null,
         "startingAllElementProps": Object {},
@@ -716,6 +724,7 @@ describe('interactionUpdate with user changed strategy', () => {
           "duplicatedElementNewUids": Object {},
           "escapeHatchActivated": false,
           "lastReorderIdx": null,
+          "success": "success",
         },
         "sortedApplicableStrategies": Array [
           Object {
@@ -783,6 +792,7 @@ describe('interactionUpdate with user changed strategy', () => {
           "duplicatedElementNewUids": Object {},
           "escapeHatchActivated": false,
           "lastReorderIdx": null,
+          "success": "success",
         },
         "sortedApplicableStrategies": null,
         "startingAllElementProps": Object {},
@@ -806,6 +816,7 @@ describe('only update metadata on SAVE_DOM_REPORT', () => {
       'new-entry': {
         elementPath: EP.fromString('new-entry'),
         specialSizeMeasurements: { position: 'absolute' },
+        element: right(jsxElement('div', 'aaa', [], [])),
       } as ElementInstanceMetadata,
     }
 
@@ -850,6 +861,7 @@ describe('only update metadata on SAVE_DOM_REPORT', () => {
       'new-entry': {
         elementPath: EP.fromString('new-entry'),
         specialSizeMeasurements: { position: 'absolute' },
+        element: right(jsxElement('div', 'aaa', [], [])),
       } as ElementInstanceMetadata,
     }
 

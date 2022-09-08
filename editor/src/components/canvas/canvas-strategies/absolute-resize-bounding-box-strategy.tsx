@@ -46,7 +46,7 @@ import { honoursPropsPosition, honoursPropsSize } from './absolute-utils'
 
 export const absoluteResizeBoundingBoxStrategy: CanvasStrategy = {
   id: 'ABSOLUTE_RESIZE_BOUNDING_BOX',
-  name: 'Absolute Resize',
+  name: 'Resize',
   isApplicable: (canvasState, interactionState, metadata, allElementProps) => {
     const selectedElements = getTargetPathsFromInteractionTarget(canvasState.interactionTarget)
     if (selectedElements.length > 0) {

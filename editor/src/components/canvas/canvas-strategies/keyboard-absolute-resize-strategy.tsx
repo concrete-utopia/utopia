@@ -77,7 +77,7 @@ function pressesToVectorAndEdges(
 
 export const keyboardAbsoluteResizeStrategy: CanvasStrategy = {
   id: 'KEYBOARD_ABSOLUTE_RESIZE',
-  name: 'Keyboard absolute resize',
+  name: 'Resize',
   isApplicable: (canvasState, interactionState, metadata) => {
     const selectedElements = getTargetPathsFromInteractionTarget(canvasState.interactionTarget)
     if (selectedElements.length > 0) {
