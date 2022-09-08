@@ -361,7 +361,7 @@ describe('interactionUpdatex', () => {
         ],
         "startingAllElementProps": Object {},
         "startingMetadata": Object {},
-        "status": "failure",
+        "status": "success",
       }
     `)
     expect(actualResult.patchedEditorState.canvas.scale).toEqual(100)
