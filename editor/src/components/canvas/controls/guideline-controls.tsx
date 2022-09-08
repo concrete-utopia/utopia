@@ -19,7 +19,6 @@ import {
 } from '../../editor/store/store-hook'
 import { Guideline } from '../guideline'
 import { CanvasOffsetWrapper } from './canvas-offset-wrapper'
-import { collectParentsAndSiblings } from './guideline-helpers'
 import { ElementInstanceMetadataMap } from '../../../core/shared/element-template'
 import { ElementPath } from '../../../core/shared/project-file-types'
 
@@ -47,7 +46,7 @@ export const GuidelineControls = React.memo(() => {
     'Strategy intended bounds and snapping guidelines',
   )
 
-  const parentAndSiblings = collectParentsAndSiblings(
+  const parentAndSiblings = MetadataUtils.collectParentsAndSiblings(
     metadata,
     strategyIntendedBounds.map((bound) => bound.target),
   )

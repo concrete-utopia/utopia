@@ -19,29 +19,6 @@ import { MetadataUtils } from '../../../core/model/element-metadata-utils'
 import { EdgePosition } from '../canvas-types'
 import { defaultIfNull } from '../../../core/shared/optional-utils'
 
-export function collectParentsAndSiblings(
-  componentMetadata: ElementInstanceMetadataMap,
-  targets: Array<ElementPath>,
-): Array<ElementPath> {
-  const allPaths = MetadataUtils.getAllPaths(componentMetadata)
-  const result: Array<ElementPath> = []
-  Utils.fastForEach(targets, (target) => {
-    const parent = EP.parentPath(target)
-    Utils.fastForEach(allPaths, (maybeTarget) => {
-      const isSibling = EP.isSiblingOf(maybeTarget, target)
-      const isParent = EP.pathsEqual(parent, maybeTarget)
-      const notSelectedOrDescendantOfSelected = targets.every(
-        (view) => !EP.isDescendantOfOrEqualTo(maybeTarget, view),
-      )
-      if ((isSibling || isParent) && notSelectedOrDescendantOfSelected) {
-        result.push(maybeTarget)
-      }
-    })
-  })
-
-  return result
-}
-
 export const SnappingThreshold = 5
 
 export function collectParentAndSiblingGuidelines(
