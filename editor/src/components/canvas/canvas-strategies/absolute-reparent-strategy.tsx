@@ -11,6 +11,7 @@ import {
   CanvasStrategy,
   emptyStrategyApplicationResult,
   getTargetPathsFromInteractionTarget,
+  strategyApplicationResult,
 } from './canvas-strategy-types'
 import { getDragTargets } from './shared-absolute-move-strategy-helpers'
 import { ifAllowedToReparent, isAllowedToReparent } from './reparent-helpers'
@@ -167,23 +168,17 @@ export const absoluteReparentStrategy: CanvasStrategy = {
         strategyState,
       )
 
-      return {
-        commands: [
-          ...moveCommands.commands,
-          ...commands.flatMap((c) => c.commands),
-          updateSelectedViews('always', newPaths),
-          setElementsToRerenderCommand([...newPaths, ...filteredSelectedElements]),
-          setCursorCommand('mid-interaction', CSSCursor.Move),
-        ],
-        customState: null,
-      }
+      return strategyApplicationResult([
+        ...moveCommands.commands,
+        ...commands.flatMap((c) => c.commands),
+        updateSelectedViews('always', newPaths),
+        setElementsToRerenderCommand([...newPaths, ...filteredSelectedElements]),
+        setCursorCommand('mid-interaction', CSSCursor.Move),
+      ])
     } else {
       const moveCommands = absoluteMoveStrategy.apply(canvasState, interactionState, strategyState)
 
-      return {
-        commands: moveCommands.commands,
-        customState: null,
-      }
+      return strategyApplicationResult(moveCommands.commands)
     }
   },
 }

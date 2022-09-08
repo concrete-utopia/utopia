@@ -7,6 +7,7 @@ import {
   CanvasStrategy,
   emptyStrategyApplicationResult,
   getTargetPathsFromInteractionTarget,
+  strategyApplicationResult,
 } from './canvas-strategy-types'
 import * as EP from '../../../core/shared/element-path'
 import { DragOutlineControl } from '../controls/select-mode/drag-outline-control'
@@ -76,13 +77,11 @@ export const flexReorderStrategy: CanvasStrategy = {
       ).map((element) => element.elementPath)
 
       if (!isReorderAllowed(siblingsOfTarget)) {
-        return {
-          commands: [setCursorCommand('mid-interaction', CSSCursor.NotPermitted)],
-          customState: {
-            ...strategyState.customStrategyState,
-            success: 'failure',
-          },
-        }
+        return strategyApplicationResult(
+          [setCursorCommand('mid-interaction', CSSCursor.NotPermitted)],
+          {},
+          'failure',
+        )
       }
 
       const pointOnCanvas = offsetPoint(
@@ -102,38 +101,31 @@ export const flexReorderStrategy: CanvasStrategy = {
       const realNewIndex = newIndex > -1 ? newIndex : lastReorderIdx
 
       if (realNewIndex === unpatchedIndex) {
-        return {
-          commands: [
+        return strategyApplicationResult(
+          [
             updateHighlightedViews('mid-interaction', []),
             setCursorCommand('mid-interaction', CSSCursor.Move),
           ],
-          customState: {
-            ...strategyState.customStrategyState,
+          {
             lastReorderIdx: realNewIndex,
-            success: 'success',
           },
-        }
+        )
       } else {
-        return {
-          commands: [
+        return strategyApplicationResult(
+          [
             reorderElement('always', target, absolute(realNewIndex)),
             setElementsToRerenderCommand([target]),
             updateHighlightedViews('mid-interaction', []),
             setCursorCommand('mid-interaction', CSSCursor.Move),
           ],
-          customState: {
-            ...strategyState.customStrategyState,
+          {
             lastReorderIdx: realNewIndex,
-            success: 'success',
           },
-        }
+        )
       }
     } else {
       // Fallback for when the checks above are not satisfied.
-      return {
-        commands: [setCursorCommand('mid-interaction', CSSCursor.Move)],
-        customState: null,
-      }
+      return strategyApplicationResult([setCursorCommand('mid-interaction', CSSCursor.Move)])
     }
   },
 }

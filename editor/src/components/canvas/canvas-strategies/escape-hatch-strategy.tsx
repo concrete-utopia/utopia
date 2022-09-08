@@ -47,6 +47,7 @@ import {
   emptyStrategyApplicationResult,
   getTargetPathsFromInteractionTarget,
   InteractionCanvasState,
+  strategyApplicationResult,
 } from './canvas-strategy-types'
 import { DragInteractionData, InteractionSession, StrategyState } from './interaction-state'
 import { getReparentOutcome, pathToReparent } from './reparent-utils'
@@ -145,19 +146,11 @@ export const escapeHatchStrategy: CanvasStrategy = {
           getConversionAndMoveCommands,
         )
 
-        return {
-          commands: absoluteMoveApplyResult.commands,
-          customState: {
-            ...strategyState.customStrategyState,
-            escapeHatchActivated,
-            success: 'success',
-          },
-        }
+        return strategyApplicationResult(absoluteMoveApplyResult.commands, {
+          escapeHatchActivated,
+        })
       } else {
-        return {
-          commands: [setCursorCommand('mid-interaction', CSSCursor.Move)],
-          customState: null,
-        }
+        return strategyApplicationResult([setCursorCommand('mid-interaction', CSSCursor.Move)])
       }
     }
     // Fallback for when the checks above are not satisfied.

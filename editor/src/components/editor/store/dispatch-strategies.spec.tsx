@@ -44,6 +44,7 @@ import {
   CanvasStrategyId,
   defaultCustomStrategyState,
   InteractionCanvasState,
+  strategyApplicationResult,
   StrategyApplicationResult,
 } from '../../canvas/canvas-strategies/canvas-strategy-types'
 import { canvasPoint } from '../../../core/shared/math-utils'
@@ -167,10 +168,9 @@ const testStrategy: CanvasStrategy = {
     interactionSession: InteractionSession,
     strategyState: StrategyState,
   ): StrategyApplicationResult {
-    return {
-      commands: [wildcardPatch('always', { canvas: { scale: { $set: 100 } } })],
-      customState: defaultCustomStrategyState(),
-    }
+    return strategyApplicationResult([
+      wildcardPatch('always', { canvas: { scale: { $set: 100 } } }),
+    ])
   },
 }
 
@@ -222,7 +222,6 @@ describe('interactionStart', () => {
           "duplicatedElementNewUids": Object {},
           "escapeHatchActivated": false,
           "lastReorderIdx": null,
-          "success": "success",
         },
         "sortedApplicableStrategies": Array [
           Object {
@@ -236,6 +235,7 @@ describe('interactionStart', () => {
         ],
         "startingAllElementProps": Object {},
         "startingMetadata": Object {},
+        "status": "success",
       }
     `)
     expect(actualResult.patchedEditorState.canvas.scale).toEqual(100)
@@ -283,11 +283,11 @@ describe('interactionStart', () => {
           "duplicatedElementNewUids": Object {},
           "escapeHatchActivated": false,
           "lastReorderIdx": null,
-          "success": "success",
         },
         "sortedApplicableStrategies": null,
         "startingAllElementProps": Object {},
         "startingMetadata": Object {},
+        "status": "success",
       }
     `)
     expect(actualResult.patchedEditorState.canvas.scale).toEqual(1)
@@ -348,7 +348,6 @@ describe('interactionUpdatex', () => {
           "duplicatedElementNewUids": Object {},
           "escapeHatchActivated": false,
           "lastReorderIdx": null,
-          "success": "success",
         },
         "sortedApplicableStrategies": Array [
           Object {
@@ -362,6 +361,7 @@ describe('interactionUpdatex', () => {
         ],
         "startingAllElementProps": Object {},
         "startingMetadata": Object {},
+        "status": "success",
       }
     `)
     expect(actualResult.patchedEditorState.canvas.scale).toEqual(100)
@@ -410,11 +410,11 @@ describe('interactionUpdatex', () => {
           "duplicatedElementNewUids": Object {},
           "escapeHatchActivated": false,
           "lastReorderIdx": null,
-          "success": "success",
         },
         "sortedApplicableStrategies": null,
         "startingAllElementProps": Object {},
         "startingMetadata": Object {},
+        "status": "success",
       }
     `)
     expect(actualResult.patchedEditorState.canvas.scale).toEqual(1)
@@ -503,7 +503,6 @@ describe('interactionHardReset', () => {
           "duplicatedElementNewUids": Object {},
           "escapeHatchActivated": false,
           "lastReorderIdx": null,
-          "success": "success",
         },
         "sortedApplicableStrategies": Array [
           Object {
@@ -517,6 +516,7 @@ describe('interactionHardReset', () => {
         ],
         "startingAllElementProps": Object {},
         "startingMetadata": Object {},
+        "status": "success",
       }
     `)
     expect(actualResult.patchedEditorState.canvas.scale).toEqual(100)
@@ -570,11 +570,11 @@ describe('interactionHardReset', () => {
           "duplicatedElementNewUids": Object {},
           "escapeHatchActivated": false,
           "lastReorderIdx": null,
-          "success": "success",
         },
         "sortedApplicableStrategies": null,
         "startingAllElementProps": Object {},
         "startingMetadata": Object {},
+        "status": "success",
       }
     `)
     expect(actualResult.patchedEditorState.canvas.scale).toEqual(1)
@@ -724,7 +724,6 @@ describe('interactionUpdate with user changed strategy', () => {
           "duplicatedElementNewUids": Object {},
           "escapeHatchActivated": false,
           "lastReorderIdx": null,
-          "success": "success",
         },
         "sortedApplicableStrategies": Array [
           Object {
@@ -738,6 +737,7 @@ describe('interactionUpdate with user changed strategy', () => {
         ],
         "startingAllElementProps": Object {},
         "startingMetadata": Object {},
+        "status": "success",
       }
     `)
     expect(actualResult.patchedEditorState.canvas.scale).toEqual(100)
@@ -792,11 +792,11 @@ describe('interactionUpdate with user changed strategy', () => {
           "duplicatedElementNewUids": Object {},
           "escapeHatchActivated": false,
           "lastReorderIdx": null,
-          "success": "success",
         },
         "sortedApplicableStrategies": null,
         "startingAllElementProps": Object {},
         "startingMetadata": Object {},
+        "status": "success",
       }
     `)
     expect(actualResult.patchedEditorState.canvas.scale).toEqual(1)
