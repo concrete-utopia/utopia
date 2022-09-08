@@ -2871,6 +2871,7 @@ export const UPDATE_FNS = {
     action: CopySelectionToClipboard,
     editorForAction: EditorModel,
     dispatch: EditorDispatch,
+    builtInDependencies: BuiltInDependencies,
   ): EditorModel => {
     return toastOnUncopyableElementsSelected(
       'Cannot copy these elements.',
@@ -2878,7 +2879,7 @@ export const UPDATE_FNS = {
       false,
       (editor) => {
         // side effect 😟
-        setClipboardData(createClipboardDataFromSelection(editorForAction))
+        setClipboardData(createClipboardDataFromSelection(editorForAction, builtInDependencies))
         return {
           ...editor,
           pasteTargetsToIgnore: editor.selectedViews,
