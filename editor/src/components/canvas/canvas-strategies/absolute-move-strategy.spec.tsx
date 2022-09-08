@@ -129,6 +129,7 @@ function dragByPixels(
   )
 
   expect(strategyResult.customStatePatch).toEqual({})
+  expect(strategyResult.status).toEqual('success')
 
   const finalEditor = foldAndApplyCommands(
     editorState,

@@ -10,7 +10,7 @@ import { ParentBounds } from '../controls/parent-bounds'
 import { ParentOutlines } from '../controls/parent-outlines'
 import {
   CanvasStrategy,
-  failedStrategyApplicationResult,
+  emptyStrategyApplicationResult,
   getTargetPathsFromInteractionTarget,
   InteractionCanvasState,
   strategyApplicationResult,
@@ -68,7 +68,7 @@ function flowReorderApplyCommon(
   displayTypeFiltering: 'allow-mixed-display-type' | 'same-display-type-only',
 ): StrategyApplicationResult {
   if (interactionState.interactionData.type !== 'DRAG') {
-    return failedStrategyApplicationResult
+    return emptyStrategyApplicationResult
   }
 
   if (interactionState.interactionData.drag != null) {

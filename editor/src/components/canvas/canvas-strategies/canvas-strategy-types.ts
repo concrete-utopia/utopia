@@ -31,10 +31,10 @@ export interface StrategyApplicationResult {
   status: StrategyApplicationStatus
 }
 
-export const failedStrategyApplicationResult: StrategyApplicationResult = {
+export const emptyStrategyApplicationResult: StrategyApplicationResult = {
   commands: [],
   customStatePatch: {},
-  status: 'failure',
+  status: 'success',
 }
 
 export function strategyApplicationResult(

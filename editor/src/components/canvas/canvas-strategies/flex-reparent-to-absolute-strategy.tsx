@@ -20,7 +20,7 @@ import { absoluteReparentStrategy } from './absolute-reparent-strategy'
 import { pickCanvasStateFromEditorState } from './canvas-strategies'
 import {
   CanvasStrategy,
-  failedStrategyApplicationResult,
+  emptyStrategyApplicationResult,
   getTargetPathsFromInteractionTarget,
   InteractionCanvasState,
   strategyApplicationResult,
@@ -83,7 +83,7 @@ export const flexReparentToAbsoluteStrategy: CanvasStrategy = {
         interactionState.interactionData.type !== 'DRAG' ||
         interactionState.interactionData.drag == null
       ) {
-        return failedStrategyApplicationResult
+        return emptyStrategyApplicationResult
       }
 
       const pointOnCanvas = offsetPoint(

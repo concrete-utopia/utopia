@@ -2,7 +2,7 @@ import { MetadataUtils } from '../../../core/model/element-metadata-utils'
 import { Keyboard, KeyCharacter } from '../../../utils/keyboard'
 import {
   CanvasStrategy,
-  failedStrategyApplicationResult,
+  emptyStrategyApplicationResult,
   getTargetPathsFromInteractionTarget,
   strategyApplicationResult,
 } from './canvas-strategy-types'
@@ -193,7 +193,7 @@ export const keyboardAbsoluteResizeStrategy: CanvasStrategy = {
       commands.push(setElementsToRerenderCommand(selectedElements))
       return strategyApplicationResult(commands)
     } else {
-      return failedStrategyApplicationResult
+      return emptyStrategyApplicationResult
     }
   },
 }

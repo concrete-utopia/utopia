@@ -44,7 +44,7 @@ import { ZeroSizeResizeControlWrapper } from '../controls/zero-sized-element-con
 import { applyAbsoluteMoveCommon } from './absolute-move-strategy'
 import {
   CanvasStrategy,
-  failedStrategyApplicationResult,
+  emptyStrategyApplicationResult,
   getTargetPathsFromInteractionTarget,
   InteractionCanvasState,
   strategyApplicationResult,
@@ -154,7 +154,7 @@ export const escapeHatchStrategy: CanvasStrategy = {
       }
     }
     // Fallback for when the checks above are not satisfied.
-    return failedStrategyApplicationResult
+    return emptyStrategyApplicationResult
   },
 }
 

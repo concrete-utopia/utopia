@@ -206,6 +206,7 @@ function reparentElement(
   )
 
   expect(strategyResult.customStatePatch).toEqual({})
+  expect(strategyResult.status).toEqual('success')
 
   // Check if there are set SetElementsToRerenderCommands with the new parent path
   expect(

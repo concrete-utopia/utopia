@@ -36,7 +36,7 @@ import { updateSelectedViews } from '../commands/update-selected-views-command'
 import { wildcardPatch } from '../commands/wildcard-patch-command'
 import { getAllTargetsAtPointAABB } from '../dom-lookup'
 import {
-  failedStrategyApplicationResult,
+  emptyStrategyApplicationResult,
   getTargetPathsFromInteractionTarget,
   InteractionCanvasState,
   StrategyApplicationResult,
@@ -698,7 +698,7 @@ export function applyFlexReparent(
         }
       }
     }
-    return failedStrategyApplicationResult
+    return emptyStrategyApplicationResult
   })
 }
 

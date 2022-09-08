@@ -5,7 +5,7 @@ import { ElementPath } from '../../../core/shared/project-file-types'
 import { reorderElement } from '../commands/reorder-element-command'
 import {
   CanvasStrategy,
-  failedStrategyApplicationResult,
+  emptyStrategyApplicationResult,
   getTargetPathsFromInteractionTarget,
   strategyApplicationResult,
 } from './canvas-strategy-types'
@@ -65,7 +65,7 @@ export const flexReorderStrategy: CanvasStrategy = {
   },
   apply: (canvasState, interactionState, strategyState) => {
     if (interactionState.interactionData.type !== 'DRAG') {
-      return failedStrategyApplicationResult
+      return emptyStrategyApplicationResult
     }
     if (interactionState.interactionData.drag != null) {
       const selectedElements = getTargetPathsFromInteractionTarget(canvasState.interactionTarget)

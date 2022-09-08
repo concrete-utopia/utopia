@@ -17,7 +17,7 @@ import { determineConstrainedDragAxis } from '../controls/select-mode/move-utils
 import { ConstrainedDragAxis, GuidelineWithSnappingVector } from '../guideline'
 import {
   CanvasStrategy,
-  failedStrategyApplicationResult,
+  emptyStrategyApplicationResult,
   getTargetPathsFromInteractionTarget,
   InteractionCanvasState,
   strategyApplicationResult,
@@ -111,7 +111,7 @@ export const absoluteMoveStrategy: CanvasStrategy = {
       )
     }
     // Fallback for when the checks above are not satisfied.
-    return failedStrategyApplicationResult
+    return emptyStrategyApplicationResult
   },
 }
 
@@ -174,6 +174,6 @@ export function applyAbsoluteMoveCommon(
     }
   } else {
     // Fallback for when the checks above are not satisfied.
-    return failedStrategyApplicationResult
+    return emptyStrategyApplicationResult
   }
 }

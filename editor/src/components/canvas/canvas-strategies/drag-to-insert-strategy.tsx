@@ -2,7 +2,7 @@ import { ParentBounds } from '../controls/parent-bounds'
 import { ParentOutlines } from '../controls/parent-outlines'
 import {
   CanvasStrategy,
-  failedStrategyApplicationResult,
+  emptyStrategyApplicationResult,
   getInsertionSubjectsFromInteractionTarget,
   InteractionCanvasState,
   strategyApplicationResult,
@@ -121,7 +121,7 @@ export const dragToInsertStrategy: CanvasStrategy = {
       ])
     }
     // Fallback for when the checks above are not satisfied.
-    return failedStrategyApplicationResult
+    return emptyStrategyApplicationResult
   },
 }
 

@@ -9,7 +9,7 @@ import { ParentOutlines } from '../controls/parent-outlines'
 import { absoluteMoveStrategy } from './absolute-move-strategy'
 import {
   CanvasStrategy,
-  failedStrategyApplicationResult,
+  emptyStrategyApplicationResult,
   getTargetPathsFromInteractionTarget,
   strategyApplicationResult,
 } from './canvas-strategy-types'
@@ -79,7 +79,7 @@ export const absoluteReparentStrategy: CanvasStrategy = {
       interactionState.interactionData.type != 'DRAG' ||
       interactionState.interactionData.drag == null
     ) {
-      return failedStrategyApplicationResult
+      return emptyStrategyApplicationResult
     }
 
     const { interactionTarget, projectContents, openFile, nodeModules } = canvasState

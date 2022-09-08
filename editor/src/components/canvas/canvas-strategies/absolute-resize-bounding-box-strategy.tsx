@@ -29,7 +29,7 @@ import { AbsoluteResizeControl } from '../controls/select-mode/absolute-resize-c
 import { AbsolutePin, ensureAtLeastTwoPinsForEdgePosition } from './absolute-resize-helpers'
 import {
   CanvasStrategy,
-  failedStrategyApplicationResult,
+  emptyStrategyApplicationResult,
   getTargetPathsFromInteractionTarget,
   strategyApplicationResult,
 } from './canvas-strategy-types'
@@ -186,7 +186,7 @@ export const absoluteResizeBoundingBoxStrategy: CanvasStrategy = {
       }
     }
     // Fallback for when the checks above are not satisfied.
-    return failedStrategyApplicationResult
+    return emptyStrategyApplicationResult
   },
 }
 
