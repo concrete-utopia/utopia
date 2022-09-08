@@ -86,7 +86,7 @@ export const GuidelineControls = React.memo(() => {
         <GuidelineControl index={2} />
         <GuidelineControl index={3} />
         {xMarkPoints.map((point, idx) => (
-          <XMarkControl data-testid={`xmark-${idx}`} key={idx} point={point} scale={scale} />
+          <XMarkControl key={idx} point={point} scale={scale} index={idx} />
         ))}
       </CanvasOffsetWrapper>
     )
@@ -325,16 +325,18 @@ function segmentRectangleIntersections(
 interface XMarkControlProps {
   point: CanvasPoint
   scale: number
+  index: number
 }
 
 const XMarkControlSize = 5
 
-const XMarkControl = React.memo<XMarkControlProps>(({ point, scale }) => {
+const XMarkControl = React.memo<XMarkControlProps>(({ point, scale, index }) => {
   const width = XMarkControlSize
   const height = XMarkControlSize
 
   return (
     <div
+      data-testid={`xmark-${index}`}
       style={{
         position: 'absolute',
         display: 'flex',

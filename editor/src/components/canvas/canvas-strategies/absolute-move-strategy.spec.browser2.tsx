@@ -887,6 +887,7 @@ describe('Absolute Move Strategy Canvas Controls', () => {
     const pinLineBottom = renderResult.renderedDOM.getByTestId('pin-line-bottom')
     expect(pinLineBottom).toBeDefined()
   })
+
   it('the snap guidelines are visible when an absolute positioned element(bbb) is dragged and snaps to its sibling (ccc)', async () => {
     const renderResult = await renderTestEditorWithCode(
       makeTestProjectCodeWithSnippet(`
@@ -912,5 +913,35 @@ describe('Absolute Move Strategy Canvas Controls', () => {
 
     expect(renderResult.renderedDOM.getByTestId('guideline-0').style.display).toEqual('block')
     expect(renderResult.renderedDOM.getByTestId('guideline-1').style.display).toEqual('block')
+  })
+
+  it('the xmarks are visible when the an absolute positioned element(bbb) is dragged and snaps to its sibling (ccc)', async () => {
+    const renderResult = await renderTestEditorWithCode(
+      makeTestProjectCodeWithSnippet(`
+          <div style={{ width: '100%', height: '100%' }} data-uid='aaa'>
+            <div
+              style={{ backgroundColor: '#0091FFAA', width: 70, height: 30 }}
+              data-uid='ccc'
+            />
+            <div
+              style={{ backgroundColor: '#0091FFAA', position: 'absolute', left: 40, top: 50, width: 200, height: 120 }}
+              data-uid='bbb'
+              data-testid='bbb'
+            />
+          </div>
+        `),
+      'await-first-dom-report',
+    )
+
+    const target = EP.appendNewElementPath(TestScenePath, ['aaa', 'bbb'])
+    const dragDelta = canvasPoint({ x: 29, y: -23 }) // 'bbb' will snap to bottom right corner of 'ccc'
+
+    await startDragUsingActions(renderResult, target, dragDelta)
+
+    expect(renderResult.renderedDOM.getByTestId('xmark-0').style.display).toBeTruthy()
+    expect(renderResult.renderedDOM.getByTestId('xmark-1').style.display).toBeTruthy()
+    expect(renderResult.renderedDOM.getByTestId('xmark-2').style.display).toBeTruthy()
+    expect(renderResult.renderedDOM.getByTestId('xmark-3').style.display).toBeTruthy()
+    expect(renderResult.renderedDOM.getByTestId('xmark-4').style.display).toBeTruthy()
   })
 })
