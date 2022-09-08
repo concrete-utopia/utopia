@@ -18,7 +18,7 @@ export const CanvasStrategyPicker = React.memo(() => {
   const activeStrategy = useDelayedCurrentStrategy()
   const isStrategyFailure = useEditorState(
     (store) => store.strategyState?.status === 'failure',
-    'Strategy success',
+    'Strategy failure',
   )
 
   const onTabPressed = React.useCallback(

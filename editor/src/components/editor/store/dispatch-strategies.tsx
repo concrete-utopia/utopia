@@ -550,7 +550,7 @@ function handleUpdate(
       accumulatedPatches: strategyState.accumulatedPatches,
       commandDescriptions: commandResult.commandDescriptions,
       sortedApplicableStrategies: sortedApplicableStrategies,
-      status: strategyResult.status ? 'failure' : 'success',
+      status: strategyResult.status,
       startingMetadata: strategyState.startingMetadata,
       customStrategyState: patchCustomStrategyState(
         strategyState.customStrategyState,
