@@ -202,8 +202,8 @@ export var ${BakedInStoryboardVariableName} = (props) => {
 `
 }
 
-function positioningFromCss({ left, top }: CSSStyleDeclaration) {
-  return { left, top }
+function positioningFromCss(css: CSSStyleDeclaration) {
+  return { left: css.left, top: css.top }
 }
 
 describe('Absolute Move Strategy', () => {
