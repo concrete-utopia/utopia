@@ -59,27 +59,45 @@ function findSiblingIndexUnderPoint(
   return { newIndex: newIndex, targetSiblingUnderMouse: siblings[newIndex] }
 }
 
-function findNewDisplayType(
+function displayTypeBeforeIndex(
+  displayValues: Array<string | null>,
+  index: number,
+): 'block' | 'inline-block' | undefined {
+  const prevSiblingIndex = index - 1
+
+  const displayTypeOfPrevSibling = displayValues[prevSiblingIndex]
+  const displayTypeOfNextSibling = displayValues[prevSiblingIndex + 1]
+
+  // TODO handle inline too
+  if (displayTypeOfPrevSibling === 'inline-block' && displayTypeOfNextSibling === 'inline-block') {
+    return 'inline-block'
+  } else if (displayTypeOfPrevSibling === 'block' && displayTypeOfNextSibling === 'block') {
+    return 'block'
+  } else {
+    return undefined
+  }
+}
+
+function findNewIndexAndDisplayType(
   target: ElementPath | null,
   metadata: ElementInstanceMetadataMap,
   newIndex: number,
   displayValues: Array<string | null>,
-): AddDisplayBlockOrOnline | RemoveDisplayProp | null {
-  const element = MetadataUtils.findElementByElementPath(metadata, target)
-  const newValue = displayValues[newIndex]
+): { newIndex: number; newDisplayType: AddDisplayBlockOrOnline | RemoveDisplayProp | null } {
+  const targetElementMetadata = MetadataUtils.findElementByElementPath(metadata, target)
 
-  if (shouldRemoveDisplayProp(element, newValue)) {
-    return removeDisplayProp()
-  } else if (newValue != null && (newValue === 'block' || newValue === 'inline-block')) {
-    return addDisplayProp(newValue)
-  } else {
-    return null
+  return {
+    newIndex: newIndex,
+    newDisplayType: getNewDisplayType(
+      targetElementMetadata,
+      displayTypeBeforeIndex(displayValues, newIndex),
+    ),
   }
 }
 
 function shouldRemoveDisplayProp(
   element: ElementInstanceMetadata | null,
-  newDisplayValue: string | null,
+  newDisplayValue: 'block' | 'inline-block' | undefined,
 ): boolean {
   if (element == null || element.specialSizeMeasurements.htmlElementName == null) {
     return false
@@ -89,6 +107,19 @@ function shouldRemoveDisplayProp(
       defaultDisplayTypeForHTMLElement(element.specialSizeMeasurements.htmlElementName) ===
       newDisplayValue
     )
+  }
+}
+
+function getNewDisplayType(
+  element: ElementInstanceMetadata | null,
+  newDisplayValue: 'block' | 'inline-block' | undefined,
+): AddDisplayBlockOrOnline | RemoveDisplayProp | null {
+  if (shouldRemoveDisplayProp(element, newDisplayValue)) {
+    return removeDisplayProp()
+  } else if (newDisplayValue != null) {
+    return addDisplayProp(newDisplayValue)
+  } else {
+    return null
   }
 }
 
@@ -161,7 +192,7 @@ export function getFlowReorderIndex(
     }
   } else {
     // Convert display type if needed
-    const newDisplayType = findNewDisplayType(
+    const { newDisplayType } = findNewIndexAndDisplayType(
       target,
       latestMetadata,
       reorderResult.newIndex,
