@@ -597,7 +597,7 @@ function useSelectOrLiveModeSelectAndHover(
   const mouseHandler = React.useCallback(
     (event: React.MouseEvent<HTMLDivElement>) => {
       const isDragIntention =
-        editorStoreRef.current.editor.keysPressed['space'] || event.buttons === 4
+        editorStoreRef.current.editor.keysPressed['space'] || event.button === 1
       const hasInteractionSessionWithMouseMoved =
         editorStoreRef.current.editor.canvas.interactionSession?.interactionData?.type === 'DRAG'
           ? editorStoreRef.current.editor.canvas.interactionSession?.interactionData?.drag != null
