@@ -110,8 +110,18 @@ const SceneLabel = React.memo<SceneLabelProps>((props) => {
     }
   }, [dispatch, isHighlighted])
 
+  const onMouseUp = React.useCallback(
+    (event: MouseEvent) => {
+      event.stopPropagation()
+      window.removeEventListener('mouseup', onMouseUp, true)
+      dispatch([CanvasActions.clearInteractionSession(true)], 'canvas')
+    },
+    [dispatch],
+  )
+
   const onMouseDown = React.useCallback(
     (event: React.MouseEvent<HTMLDivElement>) => {
+      window.addEventListener('mouseup', onMouseUp, true)
       if (event.buttons === 1 && event.button !== 2) {
         event.stopPropagation()
 
@@ -133,16 +143,14 @@ const SceneLabel = React.memo<SceneLabelProps>((props) => {
         dispatch([selectAction, dragAction], 'canvas')
       }
     },
-    [dispatch, scale, canvasOffset, props.target],
+    [dispatch, scale, canvasOffset, props.target, onMouseUp],
   )
 
-  const onMouseUp = React.useCallback(
-    (event: React.MouseEvent<HTMLDivElement>) => {
-      event.stopPropagation()
-      dispatch([CanvasActions.clearInteractionSession(true)], 'canvas')
-    },
-    [dispatch],
-  )
+  React.useEffect(() => {
+    return () => {
+      window.removeEventListener('mouseup', onMouseUp, true)
+    }
+  }, [onMouseUp])
 
   const highlightColor = colorTheme.fg9.value
   const selectedColor = colorTheme.verySubduedForeground.value
@@ -157,7 +165,6 @@ const SceneLabel = React.memo<SceneLabelProps>((props) => {
           onMouseOver={labelSelectable ? onMouseOver : NO_OP}
           onMouseOut={labelSelectable ? onMouseLeave : NO_OP}
           onMouseDown={labelSelectable ? onMouseDown : NO_OP}
-          onMouseUp={labelSelectable ? onMouseUp : NO_OP}
           onMouseMove={labelSelectable ? onMouseMove : NO_OP}
           data-testid={SceneLabelTestID}
           className='roleComponentName'

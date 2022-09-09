@@ -5,6 +5,7 @@ import {
   emptyStrategyApplicationResult,
   getInsertionSubjectsFromInteractionTarget,
   InteractionCanvasState,
+  strategyApplicationResult,
   targetPaths,
 } from './canvas-strategy-types'
 import { InteractionSession, StrategyState } from './interaction-state'
@@ -114,10 +115,10 @@ export const dragToInsertStrategy: CanvasStrategy = {
         },
       )
 
-      return {
-        commands: [...insertionCommands.map((c) => c.command), reparentCommand],
-        customState: null,
-      }
+      return strategyApplicationResult([
+        ...insertionCommands.map((c) => c.command),
+        reparentCommand,
+      ])
     }
     // Fallback for when the checks above are not satisfied.
     return emptyStrategyApplicationResult

@@ -5,6 +5,7 @@ import {
   emptyStrategyApplicationResult,
   getTargetPathsFromInteractionTarget,
   InteractionCanvasState,
+  strategyApplicationResult,
 } from './canvas-strategy-types'
 import {
   CanvasRectangle,
@@ -132,10 +133,7 @@ export const keyboardAbsoluteMoveStrategy: CanvasStrategy = {
       commands.push(setSnappingGuidelines('mid-interaction', guidelines))
       commands.push(pushIntendedBounds(intendedBounds))
       commands.push(setElementsToRerenderCommand(selectedElements))
-      return {
-        commands: commands,
-        customState: null,
-      }
+      return strategyApplicationResult(commands)
     } else {
       return emptyStrategyApplicationResult
     }

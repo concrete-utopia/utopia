@@ -3,7 +3,6 @@ import { EditorAction, EditorDispatch } from '../action-types'
 import { UPDATE_FNS } from '../actions/actions'
 
 import { StateHistory } from '../history'
-import { setClipboardData, createClipboardDataFromSelection } from '../../../utils/clipboard'
 import { UtopiaTsWorkers } from '../../../core/workers/common/worker-types'
 import { UiJsxCanvasContextData } from '../../canvas/ui-jsx-canvas'
 import type { BuiltInDependencies } from '../../../core/es-modules/package-manager/built-in-dependencies-list'
@@ -118,7 +117,7 @@ export function runSimpleLocalEditorAction(
     case 'PASTE_JSX_ELEMENTS':
       return UPDATE_FNS.PASTE_JSX_ELEMENTS(action, state, dispatch, builtInDependencies)
     case 'COPY_SELECTION_TO_CLIPBOARD':
-      return UPDATE_FNS.COPY_SELECTION_TO_CLIPBOARD(action, state, dispatch)
+      return UPDATE_FNS.COPY_SELECTION_TO_CLIPBOARD(action, state, dispatch, builtInDependencies)
     case 'OPEN_TEXT_EDITOR':
       return UPDATE_FNS.OPEN_TEXT_EDITOR(action, state)
     case 'CLOSE_TEXT_EDITOR':

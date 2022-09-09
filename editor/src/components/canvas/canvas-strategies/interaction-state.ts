@@ -112,6 +112,8 @@ export interface CommandDescription {
   transient: boolean
 }
 
+export type StrategyApplicationStatus = 'success' | 'failure'
+
 export interface StrategyState {
   // Need to track here which strategy is being applied.
   currentStrategy: CanvasStrategyId | null
@@ -120,6 +122,7 @@ export interface StrategyState {
   accumulatedPatches: Array<EditorStatePatch>
   commandDescriptions: Array<CommandDescription>
   sortedApplicableStrategies: Array<CanvasStrategy> | null
+  status: StrategyApplicationStatus
 
   // Checkpointed metadata at the point at which a strategy change has occurred.
   startingMetadata: ElementInstanceMetadataMap
@@ -138,6 +141,7 @@ export function createEmptyStrategyState(
     accumulatedPatches: [],
     commandDescriptions: [],
     sortedApplicableStrategies: null,
+    status: 'success',
     startingMetadata: metadata,
     customStrategyState: defaultCustomStrategyState(),
     startingAllElementProps: allElementProps,
