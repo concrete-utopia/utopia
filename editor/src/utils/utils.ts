@@ -931,8 +931,8 @@ function deduplicateBy<T>(key: (t: T) => string, ts: Array<T>): Array<T> {
     const k = key(t)
     if (!seen.has(k)) {
       results.push(t)
+      seen.add(k)
     }
-    seen.add(k)
   }
   return results
 }
