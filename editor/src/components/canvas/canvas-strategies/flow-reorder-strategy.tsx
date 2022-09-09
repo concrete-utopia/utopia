@@ -96,7 +96,7 @@ function flowReorderApplyCommon(
     const unpatchedIndex = siblingsOfTarget.findIndex((sibling) => EP.pathsEqual(sibling, target))
     const lastReorderIdx = strategyState.customStrategyState.lastReorderIdx ?? unpatchedIndex
 
-    const reorderResult = getFlowReorderIndex(
+    const { newIndex, newDisplayType, targetSiblingUnderMouse } = getFlowReorderIndex(
       strategyState.startingMetadata,
       interactionState.metadata,
       rawPointOnCanvas,
@@ -104,9 +104,14 @@ function flowReorderApplyCommon(
       displayTypeFiltering,
     )
 
-    const { newIndex, newDisplayType } = reorderResult
+    const newIndexFound = newIndex > -1
+    const mouseStillOverPreviousTargetSibling = EP.pathsEqual(
+      targetSiblingUnderMouse,
+      strategyState.customStrategyState.previousReorderTargetSiblingUnderMouse,
+    )
 
-    const newResultOrLastIndex = newIndex > -1 ? newIndex : lastReorderIdx
+    const newResultOrLastIndex =
+      !mouseStillOverPreviousTargetSibling && newIndexFound ? newIndex : lastReorderIdx
 
     // console.log(
     //   'RESULT',
@@ -146,6 +151,7 @@ function flowReorderApplyCommon(
         ...strategyState.customStrategyState,
         lastReorderIdx: newResultOrLastIndex,
         success: 'success',
+        previousReorderTargetSiblingUnderMouse: targetSiblingUnderMouse,
       },
     }
     // }

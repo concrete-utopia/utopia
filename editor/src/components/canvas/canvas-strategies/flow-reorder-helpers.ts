@@ -42,10 +42,10 @@ function findSiblingIndexUnderPoint(
   displayTypeFiltering:
     | 'same-display-type-only'
     | 'allow-mixed-display-type' = 'allow-mixed-display-type',
-): number {
+): { newIndex: number; targetSiblingUnderMouse: ElementPath | null } {
   const targetElementMetadata = MetadataUtils.findElementByElementPath(metadata, target)
 
-  return siblings.findIndex((sibling) => {
+  const newIndex = siblings.findIndex((sibling) => {
     const siblingMetadata = MetadataUtils.findElementByElementPath(metadata, sibling)
     const frame = MetadataUtils.getFrameInCanvasCoords(sibling, metadata)
     return (
@@ -56,6 +56,7 @@ function findSiblingIndexUnderPoint(
       !EP.pathsEqual(target, sibling)
     )
   })
+  return { newIndex: newIndex, targetSiblingUnderMouse: siblings[newIndex] }
 }
 
 function displayTypeBeforeIndex(
@@ -67,6 +68,7 @@ function displayTypeBeforeIndex(
   const displayTypeOfPrevSibling = displayValues[prevSiblingIndex]
   const displayTypeOfNextSibling = displayValues[prevSiblingIndex + 1]
 
+  // TODO handle inline too
   if (displayTypeOfPrevSibling === 'inline-block' && displayTypeOfNextSibling === 'inline-block') {
     return 'inline-block'
   } else if (displayTypeOfPrevSibling === 'block' && displayTypeOfNextSibling === 'block') {
@@ -151,11 +153,13 @@ export function getFlowReorderIndex(
     | 'allow-mixed-display-type' = 'allow-mixed-display-type',
 ): {
   newIndex: number
+  targetSiblingUnderMouse: ElementPath | null
   newDisplayType: AddDisplayBlockOrOnline | RemoveDisplayProp | null
 } {
   if (target === null) {
     return {
       newIndex: -1,
+      targetSiblingUnderMouse: null,
       newDisplayType: null,
     }
   }
@@ -168,6 +172,7 @@ export function getFlowReorderIndex(
   const siblings = MetadataUtils.getSiblings(latestMetadata, target).map(
     (element) => element.elementPath,
   )
+
   const displayValues = getSiblingDisplayValues(latestMetadata, siblings)
 
   // FRAME RESULT FROM FRESH METADATA
@@ -178,10 +183,11 @@ export function getFlowReorderIndex(
     latestMetadata,
     displayTypeFiltering,
   )
-  if (reorderResult === -1) {
+  if (reorderResult.newIndex === -1) {
     // We were unable to find an appropriate entry.
     return {
       newIndex: -1,
+      targetSiblingUnderMouse: null,
       newDisplayType: null,
     }
   } else {
@@ -189,12 +195,13 @@ export function getFlowReorderIndex(
     const { newIndex, newDisplayType } = findNewIndexAndDisplayType(
       target,
       latestMetadata,
-      reorderResult,
+      reorderResult.newIndex,
       displayValues,
     )
 
     return {
       newIndex: newIndex,
+      targetSiblingUnderMouse: reorderResult.targetSiblingUnderMouse,
       newDisplayType: newDisplayType,
     }
   }

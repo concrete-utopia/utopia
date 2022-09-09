@@ -14,6 +14,7 @@ export interface CustomStrategyState {
   lastReorderIdx: number | null
   duplicatedElementNewUids: { [elementPath: string]: string }
   success: 'success' | 'failure'
+  previousReorderTargetSiblingUnderMouse: ElementPath | null
 }
 
 export function defaultCustomStrategyState(): CustomStrategyState {
@@ -22,6 +23,7 @@ export function defaultCustomStrategyState(): CustomStrategyState {
     lastReorderIdx: null,
     duplicatedElementNewUids: {},
     success: 'success',
+    previousReorderTargetSiblingUnderMouse: null,
   }
 }
 
