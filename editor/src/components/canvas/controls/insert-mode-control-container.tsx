@@ -43,7 +43,7 @@ import * as PP from '../../../core/shared/property-path'
 import * as EP from '../../../core/shared/element-path'
 import CanvasActions from '../canvas-actions'
 import { InsertDragState, insertDragState } from '../canvas-types'
-import { GuidelineWithSnappingVector } from '../guideline'
+import { GuidelineWithSnappingVectorAndPointsOfRelevance } from '../guideline'
 import { ComponentLabelControl } from './component-area-control'
 import { GuidelineControl } from './guideline-control'
 import {
@@ -72,7 +72,7 @@ interface InsertModeControlContainerProps extends ControlProps {
 }
 
 interface InsertModeControlContainerState {
-  guidelines: Array<GuidelineWithSnappingVector>
+  guidelines: Array<GuidelineWithSnappingVectorAndPointsOfRelevance>
   dragFrame: CanvasRectangle | null
   mousePoint: CanvasPoint | null
   aspectRatio: number | null

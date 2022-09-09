@@ -1428,6 +1428,28 @@ export const MetadataUtils = {
   isDescendantOfHierarchyLockedElement(path: ElementPath, lockedElements: LockedElements): boolean {
     return lockedElements.hierarchyLock.some((lockedPath) => EP.isDescendantOf(path, lockedPath))
   },
+  collectParentsAndSiblings(
+    componentMetadata: ElementInstanceMetadataMap,
+    targets: Array<ElementPath>,
+  ): Array<ElementPath> {
+    const allPaths = MetadataUtils.getAllPaths(componentMetadata)
+    const result: Array<ElementPath> = []
+    Utils.fastForEach(targets, (target) => {
+      const parent = EP.parentPath(target)
+      Utils.fastForEach(allPaths, (maybeTarget) => {
+        const isSibling = EP.isSiblingOf(maybeTarget, target)
+        const isParent = EP.pathsEqual(parent, maybeTarget)
+        const notSelectedOrDescendantOfSelected = targets.every(
+          (view) => !EP.isDescendantOfOrEqualTo(maybeTarget, view),
+        )
+        if ((isSibling || isParent) && notSelectedOrDescendantOfSelected) {
+          result.push(maybeTarget)
+        }
+      })
+    })
+
+    return result
+  },
 }
 
 // Those elements which are not in the dom have empty globalFrame and localFrame

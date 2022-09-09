@@ -1,17 +1,15 @@
-import * as EP from '../../../core/shared/element-path'
-import type { ElementPath } from '../../../core/shared/project-file-types'
 import type { EditorState, EditorStatePatch } from '../../editor/store/editor-state'
-import type { GuidelineWithSnappingVector } from '../guideline'
+import type { GuidelineWithSnappingVectorAndPointsOfRelevance } from '../guideline'
 import type { BaseCommand, CommandFunction, WhenToRun } from './commands'
 
 export interface SetSnappingGuidelines extends BaseCommand {
   type: 'SET_SNAPPING_GUIDELINES'
-  value: Array<GuidelineWithSnappingVector>
+  value: Array<GuidelineWithSnappingVectorAndPointsOfRelevance>
 }
 
 export function setSnappingGuidelines(
   whenToRun: WhenToRun,
-  value: Array<GuidelineWithSnappingVector>,
+  value: Array<GuidelineWithSnappingVectorAndPointsOfRelevance>,
 ): SetSnappingGuidelines {
   return {
     type: 'SET_SNAPPING_GUIDELINES',

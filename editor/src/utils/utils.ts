@@ -626,6 +626,10 @@ function assert(errorMessage: string, predicate: boolean | (() => boolean)): voi
   throw new Error(`Assert failed: ${errorMessage}`)
 }
 
+function assertNever(n: never): never {
+  throw new Error(`Expected \`never\`, got ${JSON.stringify(n)}`)
+}
+
 export interface Annotations {
   _signature: string
   _description: string
@@ -920,9 +924,23 @@ export function isOptionsType<T extends OptionTypeBase>(
   return Array.isArray(value)
 }
 
+function deduplicateBy<T>(key: (t: T) => string, ts: Array<T>): Array<T> {
+  const seen = new Set<string>()
+  const results: Array<T> = []
+  for (const t of ts) {
+    const k = key(t)
+    if (!seen.has(k)) {
+      results.push(t)
+      seen.add(k)
+    }
+  }
+  return results
+}
+
 export default {
   generateUUID: generateUUID,
   assert: assert,
+  assertNever: assertNever,
   roundTo: roundTo,
   roundToNearestHalf: roundToNearestHalf,
   roundPointToNearestHalf: roundPointToNearestHalf,
@@ -1080,4 +1098,5 @@ export default {
   processErrorWithSourceMap: processErrorWithSourceMap,
   findLastIndex: findLastIndex,
   timeLimitPromise: timeLimitPromise,
+  deduplicateBy: deduplicateBy,
 }

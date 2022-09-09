@@ -1,13 +1,6 @@
-import { elementPath, parentPath } from '../../../core/shared/element-path'
+import { elementPath } from '../../../core/shared/element-path'
 import { ElementInstanceMetadataMap } from '../../../core/shared/element-template'
-import {
-  canvasPoint,
-  offsetPoint,
-  Rectangle,
-  SimpleRectangle,
-  WindowPoint,
-  windowPoint,
-} from '../../../core/shared/math-utils'
+import { canvasPoint, offsetPoint, WindowPoint, windowPoint } from '../../../core/shared/math-utils'
 import { cmdModifier, emptyModifiers, Modifiers } from '../../../utils/modifiers'
 import {
   findCanvasStrategy,
@@ -25,7 +18,6 @@ import {
 import { selectComponents } from '../../editor/actions/action-creators'
 import CanvasActions from '../canvas-actions'
 import { AllElementProps } from '../../editor/store/editor-state'
-import { wait } from '../../../utils/utils.test-utils'
 import { CanvasControlsContainerID } from '../controls/new-canvas-controls'
 
 const baseStrategyState = (
@@ -507,7 +499,6 @@ describe('Snapping guidelines for absolutely moved element', () => {
 
     expect(renderResult.getEditorState().editor.canvas.controls.snappingGuidelines).toEqual([
       {
-        activateSnap: true,
         guideline: {
           type: 'XAxisGuideline',
           x: 110.5,
@@ -518,9 +509,18 @@ describe('Snapping guidelines for absolutely moved element', () => {
           x: 0,
           y: 0,
         },
+        pointsOfRelevance: [
+          {
+            x: 110.5,
+            y: 206.5,
+          },
+          {
+            x: 110.5,
+            y: 215.5,
+          },
+        ],
       },
       {
-        activateSnap: true,
         guideline: {
           type: 'YAxisGuideline',
           xLeft: 60.5,
@@ -531,6 +531,16 @@ describe('Snapping guidelines for absolutely moved element', () => {
           x: 0,
           y: 0,
         },
+        pointsOfRelevance: [
+          {
+            x: 110.5,
+            y: 206.5,
+          },
+          {
+            x: 117.5,
+            y: 206.5,
+          },
+        ],
       },
     ])
   })
@@ -565,7 +575,6 @@ describe('Snapping guidelines for absolutely moved element', () => {
 
     expect(renderResult.getEditorState().editor.canvas.controls.snappingGuidelines).toEqual([
       {
-        activateSnap: true,
         guideline: {
           type: 'XAxisGuideline',
           x: 110.5,
@@ -576,9 +585,18 @@ describe('Snapping guidelines for absolutely moved element', () => {
           x: 0,
           y: 0,
         },
+        pointsOfRelevance: [
+          {
+            x: 110.5,
+            y: 206.5,
+          },
+          {
+            x: 110.5,
+            y: 215.5,
+          },
+        ],
       },
       {
-        activateSnap: true,
         guideline: {
           type: 'YAxisGuideline',
           xLeft: 60.5,
@@ -589,6 +607,16 @@ describe('Snapping guidelines for absolutely moved element', () => {
           x: 0,
           y: 0,
         },
+        pointsOfRelevance: [
+          {
+            x: 110.5,
+            y: 206.5,
+          },
+          {
+            x: 117.5,
+            y: 206.5,
+          },
+        ],
       },
     ])
   })
@@ -623,7 +651,6 @@ describe('Snapping guidelines for absolutely moved element', () => {
 
     expect(renderResult.getEditorState().editor.canvas.controls.snappingGuidelines).toEqual([
       {
-        activateSnap: true,
         guideline: {
           type: 'XAxisGuideline',
           x: 110,
@@ -634,9 +661,18 @@ describe('Snapping guidelines for absolutely moved element', () => {
           x: 0,
           y: 0,
         },
+        pointsOfRelevance: [
+          {
+            x: 110,
+            y: 206,
+          },
+          {
+            x: 110,
+            y: 216,
+          },
+        ],
       },
       {
-        activateSnap: true,
         guideline: {
           type: 'YAxisGuideline',
           xLeft: 60,
@@ -647,6 +683,16 @@ describe('Snapping guidelines for absolutely moved element', () => {
           x: 0,
           y: 0,
         },
+        pointsOfRelevance: [
+          {
+            x: 110,
+            y: 206,
+          },
+          {
+            x: 118,
+            y: 206,
+          },
+        ],
       },
     ])
   })

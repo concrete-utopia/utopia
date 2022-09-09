@@ -7,7 +7,7 @@ import * as EP from '../../../core/shared/element-path'
 import { isFeatureEnabled, setFeatureEnabled } from '../../../utils/feature-switches'
 import { wait } from '../../../utils/utils.test-utils'
 import { selectComponents } from '../../editor/actions/action-creators'
-import { GuidelineWithSnappingVector } from '../guideline'
+import { GuidelineWithSnappingVectorAndPointsOfRelevance } from '../guideline'
 import { getPrintedUiJsCode, renderTestEditorWithCode } from '../ui-jsx.test-utils'
 import { KeyboardInteractionTimeout } from './interaction-state'
 
@@ -79,7 +79,7 @@ describe('Keyboard Absolute Move E2E', () => {
       {
         guideline: { type: 'XAxisGuideline', x: 0, yTop: 0, yBottom: 812 },
         snappingVector: { x: 0, y: 0 },
-        activateSnap: true,
+        pointsOfRelevance: [],
       },
     ])
 
@@ -179,8 +179,8 @@ describe('Keyboard Absolute Resize E2E', () => {
     expectElementWidthOnScreen(2)
     expect(getCanvasGuidelines()).toEqual([
       {
-        activateSnap: true,
         guideline: { type: 'XAxisGuideline', x: 40, yBottom: 396, yTop: 300 },
+        pointsOfRelevance: [],
         snappingVector: { x: 0, y: 0 },
       },
     ])
@@ -429,7 +429,7 @@ async function setupTest(initialBBBProperties: { [key: string]: any }) {
       TestProjectDeluxeStallion(bbbProperties),
     )
   }
-  function getCanvasGuidelines(): Array<GuidelineWithSnappingVector> {
+  function getCanvasGuidelines(): Array<GuidelineWithSnappingVectorAndPointsOfRelevance> {
     return renderResult.getEditorState().editor.canvas.controls.snappingGuidelines
   }
   return {

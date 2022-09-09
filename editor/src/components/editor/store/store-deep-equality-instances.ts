@@ -170,6 +170,7 @@ import {
   jsxElementWithoutUID,
 } from '../../../core/shared/element-template'
 import {
+  canvasPoint,
   CanvasRectangle,
   CoordinateMarker,
   LocalPoint,
@@ -317,8 +318,8 @@ import {
   YAxisGuideline,
   cornerGuideline,
   Guideline,
-  GuidelineWithSnappingVector,
-  guidelineWithSnappingVector,
+  GuidelineWithSnappingVectorAndPointsOfRelevance,
+  guidelineWithSnappingVectorAndPointsOfRelevance,
 } from '../../canvas/guideline'
 import {
   boundingArea,
@@ -1525,19 +1526,21 @@ export const GuidelineKeepDeepEquality: KeepDeepEqualityCall<Guideline> = (oldVa
   return keepDeepEqualityResult(newValue, false)
 }
 
-export const GuidelineWithSnappingVectorKeepDeepEquality: KeepDeepEqualityCall<GuidelineWithSnappingVector> =
-  combine2EqualityCalls(
+export const GuidelineWithSnappingVectorAndPointsOfRelevanceKeepDeepEquality: KeepDeepEqualityCall<GuidelineWithSnappingVectorAndPointsOfRelevance> =
+  combine3EqualityCalls(
     (guideline) => guideline.guideline,
     GuidelineKeepDeepEquality,
     (guideline) => guideline.snappingVector,
     CanvasPointKeepDeepEquality,
-    guidelineWithSnappingVector,
+    (guideline) => guideline.pointsOfRelevance,
+    arrayDeepEquality(CanvasPointKeepDeepEquality),
+    guidelineWithSnappingVectorAndPointsOfRelevance,
   )
 
 export const EditorStateCanvasControlsKeepDeepEquality: KeepDeepEqualityCall<EditorStateCanvasControls> =
   combine6EqualityCalls(
     (controls) => controls.snappingGuidelines,
-    arrayDeepEquality(GuidelineWithSnappingVectorKeepDeepEquality),
+    arrayDeepEquality(GuidelineWithSnappingVectorAndPointsOfRelevanceKeepDeepEquality),
     (controls) => controls.outlineHighlights,
     arrayDeepEquality(CanvasRectangleKeepDeepEquality),
     (controls) => controls.strategyIntendedBounds,

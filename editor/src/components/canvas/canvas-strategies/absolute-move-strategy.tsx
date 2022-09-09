@@ -14,7 +14,7 @@ import { updateHighlightedViews } from '../commands/update-highlighted-views-com
 import { ParentBounds } from '../controls/parent-bounds'
 import { ParentOutlines } from '../controls/parent-outlines'
 import { determineConstrainedDragAxis } from '../controls/select-mode/move-utils'
-import { ConstrainedDragAxis, GuidelineWithSnappingVector } from '../guideline'
+import { ConstrainedDragAxis, GuidelineWithSnappingVectorAndPointsOfRelevance } from '../guideline'
 import {
   CanvasStrategy,
   emptyStrategyApplicationResult,
