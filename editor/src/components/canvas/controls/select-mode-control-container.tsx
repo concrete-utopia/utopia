@@ -6,10 +6,10 @@ import { ElementPath } from '../../../core/shared/project-file-types'
 import { EditorAction } from '../../editor/action-types'
 import * as EditorActions from '../../editor/actions/action-creators'
 import * as MetaActions from '../../editor/actions/meta-actions'
-import { DuplicationState, RightMenuTab } from '../../editor/store/editor-state'
+import { DuplicationState } from '../../editor/store/editor-state'
 import * as EP from '../../../core/shared/element-path'
 import { CanvasPositions, MoveDragState, ResizeDragState } from '../canvas-types'
-import { Guidelines, Guideline } from '../guideline'
+import { Guidelines, Guideline, GuidelineWithRelevantPoints } from '../guideline'
 import { ConstraintsControls } from './constraints-control'
 import { DistanceGuideline } from './distance-guideline'
 import { GuidelineControl } from './guideline-control'
@@ -20,13 +20,12 @@ import { YogaControls } from './yoga-control'
 import { MetadataUtils } from '../../../core/model/element-metadata-utils'
 import { keepDeepReferenceEqualityIfPossible } from '../../../utils/react-performance'
 import { OutlineControls } from './outline-control'
-import { RepositionableControl } from './repositionable-control'
 import { areYogaChildren } from './select-mode/yoga-utils'
 import { ElementInstanceMetadataMap } from '../../../core/shared/element-template'
 import { BoundingMarks } from './parent-bounding-marks'
 import { mapDropNulls } from '../../../core/shared/array-utils'
-import { isSceneAgainstImports, isSceneFromMetadata } from '../../../core/model/project-file-utils'
-import { foldEither, isRight } from '../../../core/shared/either'
+import { isSceneFromMetadata } from '../../../core/model/project-file-utils'
+import { foldEither } from '../../../core/shared/either'
 import { when } from '../../../utils/react-conditionals'
 import { InsertionControls } from './insertion-plus-button'
 import { isFeatureEnabled } from '../../../utils/feature-switches'
@@ -63,7 +62,7 @@ interface SelectModeControlContainerProps extends ControlProps {
 }
 
 interface SelectModeControlContainerState {
-  moveGuidelines: Array<Guideline>
+  moveGuidelines: Array<GuidelineWithRelevantPoints>
   lastHovered: ElementPath | null
 }
 
@@ -96,7 +95,7 @@ export class SelectModeControlContainer extends React.Component<
     const guidelines = collectParentAndSiblingGuidelines(
       props.componentMetadata,
       props.selectedViews,
-    ).map((g) => g.guideline)
+    )
 
     return {
       moveGuidelines: keepDeepReferenceEqualityIfPossible(previousState.moveGuidelines, guidelines),
