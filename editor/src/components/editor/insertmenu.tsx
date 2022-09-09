@@ -13,6 +13,8 @@ import {
   JSXAttributes,
   JSXAttributesPart,
   isJSXAttributesEntry,
+  getJSXAttribute,
+  simpleAttribute,
 } from '../../core/shared/element-template'
 import { generateUID } from '../../core/shared/uid-utils'
 import {
@@ -46,7 +48,7 @@ import { getOpenFilename, getOpenUIJSFile } from './store/editor-state'
 import { useEditorState } from './store/store-hook'
 import { last } from '../../core/shared/array-utils'
 import { defaultIfNull } from '../../core/shared/optional-utils'
-import { forEachRight } from '../../core/shared/either'
+import { forEachRight, isLeft } from '../../core/shared/either'
 import { dropFileExtension } from '../../core/shared/file-utils'
 import { objectMap } from '../../core/shared/object-utils'
 import { WarningIcon } from '../../uuiui/warning-icon'
@@ -82,6 +84,8 @@ import { createInteractionViaMouse } from '../canvas/canvas-strategies/interacti
 import { CanvasMousePositionRaw } from '../../utils/global-positions'
 import { emptyModifiers, Modifier } from '../../utils/modifiers'
 import * as EP from '../../core/shared/element-path'
+import * as PP from '../../core/shared/property-path'
+import { setJSXValueInAttributeAtPath } from '../../core/shared/jsx-attributes'
 
 interface InsertMenuProps {
   lastFontSettings: FontSettings | null
@@ -321,11 +325,14 @@ class InsertMenuInner extends React.Component<InsertMenuProps> {
             {insertableGroup.insertableComponents.map((component, componentIndex) => {
               const insertItemOnMouseDown = () => {
                 const newUID = this.getNewUID()
+
+                const updatedPropsWithPosition = addPositionAbsoluteToProps(component.element.props)
+
                 const newElement = jsxElement(
                   component.element.name,
                   newUID,
                   setJSXAttributesAttribute(
-                    component.element.props,
+                    updatedPropsWithPosition,
                     'data-uid',
                     jsxAttributeValue(newUID, emptyComments),
                   ),
@@ -375,6 +382,22 @@ class InsertMenuInner extends React.Component<InsertMenuProps> {
       }),
     ]
   }
+}
+
+function addPositionAbsoluteToProps(props: JSXAttributes) {
+  const styleAttributes = getJSXAttribute(props, 'style') ?? jsxAttributeValue({}, emptyComments)
+
+  const updatedStyleAttrs = setJSXValueInAttributeAtPath(
+    styleAttributes,
+    PP.fromString('position'),
+    jsxAttributeValue('absolute', emptyComments),
+  )
+
+  if (isLeft(updatedStyleAttrs)) {
+    throw new Error(`Problem setting position absolute on an element we just created.`)
+  }
+
+  return setJSXAttributesAttribute(props, 'style', updatedStyleAttrs.value)
 }
 
 interface InsertGroupProps {

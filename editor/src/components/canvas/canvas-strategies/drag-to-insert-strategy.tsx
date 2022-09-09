@@ -193,29 +193,7 @@ function getStyleAttributesForFrameInAbsolutePosition(
     throw new Error(`Problem setting drag frame on an element we just created.`)
   }
 
-  // we need to add position absolute, so in the storyboard root the element can be absolutely positioned initially
-  const styleAttributes = getJSXAttribute(updatedAttributes.value, 'style')
-
-  if (styleAttributes == null) {
-    throw new Error(`Problem getting style props from element we just created`)
-  }
-
-  const updatedStyleAttrs = setJSXValueInAttributeAtPath(
-    styleAttributes,
-    PP.fromString('position'),
-    jsxAttributeValue('absolute', emptyComments),
-  )
-
-  if (isLeft(updatedStyleAttrs)) {
-    throw new Error(`Problem setting position absolute on an element we just created.`)
-  }
-
-  const updatedAttributesWithPosition = setJSXAttributesAttribute(
-    updatedAttributes.value,
-    'style',
-    updatedStyleAttrs.value,
-  )
-  return updatedAttributesWithPosition
+  return updatedAttributes.value
 }
 
 function runTargetStrategiesForFreshlyInsertedElement(
