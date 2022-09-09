@@ -161,7 +161,7 @@ export function getFlowReorderIndex(
     }
   } else {
     // Convert display type if needed
-    const { newIndex, newDisplayType } = findNewDisplayType(
+    const newDisplayType = findNewDisplayType(
       target,
       latestMetadata,
       reorderResult.newIndex,
@@ -169,7 +169,7 @@ export function getFlowReorderIndex(
     )
 
     return {
-      newIndex: newIndex,
+      newIndex: reorderResult.newIndex,
       targetSiblingUnderMouse: reorderResult.targetSiblingUnderMouse,
       newDisplayType: newDisplayType,
     }
