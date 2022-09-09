@@ -20,6 +20,7 @@ import {
   emptyStrategyApplicationResult,
   getTargetPathsFromInteractionTarget,
   InteractionCanvasState,
+  strategyApplicationResult,
   StrategyApplicationResult,
 } from './canvas-strategy-types'
 import { DragInteractionData, InteractionSession, StrategyState } from './interaction-state'
@@ -134,16 +135,13 @@ export function applyAbsoluteMoveCommon(
     if (cmdKeyPressed) {
       const commandsForSelectedElements = getMoveCommands(drag)
 
-      return {
-        commands: [
-          ...commandsForSelectedElements.commands,
-          pushIntendedBounds(commandsForSelectedElements.intendedBounds),
-          updateHighlightedViews('mid-interaction', []),
-          setElementsToRerenderCommand(selectedElements),
-          setCursorCommand('mid-interaction', CSSCursor.Select),
-        ],
-        customState: null,
-      }
+      return strategyApplicationResult([
+        ...commandsForSelectedElements.commands,
+        pushIntendedBounds(commandsForSelectedElements.intendedBounds),
+        updateHighlightedViews('mid-interaction', []),
+        setElementsToRerenderCommand(selectedElements),
+        setCursorCommand('mid-interaction', CSSCursor.Select),
+      ])
     } else {
       const constrainedDragAxis =
         shiftKeyPressed && drag != null ? determineConstrainedDragAxis(drag) : null
@@ -165,17 +163,14 @@ export function applyAbsoluteMoveCommon(
         canvasState.scale,
       )
       const commandsForSelectedElements = getMoveCommands(snappedDragVector)
-      return {
-        commands: [
-          ...commandsForSelectedElements.commands,
-          updateHighlightedViews('mid-interaction', []),
-          setSnappingGuidelines('mid-interaction', guidelinesWithSnappingVector),
-          pushIntendedBounds(commandsForSelectedElements.intendedBounds),
-          setElementsToRerenderCommand([...selectedElements, ...targetsForSnapping]),
-          setCursorCommand('mid-interaction', CSSCursor.Select),
-        ],
-        customState: null,
-      }
+      return strategyApplicationResult([
+        ...commandsForSelectedElements.commands,
+        updateHighlightedViews('mid-interaction', []),
+        setSnappingGuidelines('mid-interaction', guidelinesWithSnappingVector),
+        pushIntendedBounds(commandsForSelectedElements.intendedBounds),
+        setElementsToRerenderCommand([...selectedElements, ...targetsForSnapping]),
+        setCursorCommand('mid-interaction', CSSCursor.Select),
+      ])
     }
   } else {
     // Fallback for when the checks above are not satisfied.

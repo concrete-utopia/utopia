@@ -13,6 +13,7 @@ import {
   emptyStrategyApplicationResult,
   getTargetPathsFromInteractionTarget,
   InteractionCanvasState,
+  strategyApplicationResult,
   StrategyApplicationResult,
 } from './canvas-strategy-types'
 import { absolute } from '../../../utils/utils'
@@ -33,7 +34,7 @@ function isFlowReorderConversionApplicable(
   metadata: ElementInstanceMetadataMap,
   allElementProps: AllElementProps,
   displayTypeFiltering: 'no-filter' | 'requires-mixed-display-type' = 'requires-mixed-display-type',
-) {
+): boolean {
   const selectedElements = getTargetPathsFromInteractionTarget(canvasState.interactionTarget)
   if (selectedElements.length === 1) {
     const target = selectedElements[0]
@@ -79,13 +80,11 @@ function flowReorderApplyCommon(
     )
 
     if (!isReorderAllowed(siblingsOfTarget)) {
-      return {
-        commands: [setCursorCommand('mid-interaction', CSSCursor.NotPermitted)],
-        customState: {
-          ...strategyState.customStrategyState,
-          success: 'failure',
-        },
-      }
+      return strategyApplicationResult(
+        [setCursorCommand('mid-interaction', CSSCursor.NotPermitted)],
+        {},
+        'failure',
+      )
     }
 
     const rawPointOnCanvas = offsetPoint(
@@ -139,28 +138,24 @@ function flowReorderApplyCommon(
     //   }
     // } else {
 
-    return {
-      commands: [
+    return strategyApplicationResult(
+      [
         reorderElement('always', target, absolute(newResultOrLastIndex)),
         setElementsToRerenderCommand(siblingsOfTarget),
         updateHighlightedViews('mid-interaction', []),
         setCursorCommand('mid-interaction', CSSCursor.Move),
         ...getOptionalDisplayPropCommands(target, newDisplayType, withAutoConversion),
       ],
-      customState: {
-        ...strategyState.customStrategyState,
+      {
         lastReorderIdx: newResultOrLastIndex,
-        success: 'success',
         previousReorderTargetSiblingUnderMouse: targetSiblingUnderMouse,
       },
-    }
+    )
+
     // }
   } else {
     // Fallback for when the checks above are not satisfied.
-    return {
-      commands: [setCursorCommand('mid-interaction', CSSCursor.Move)],
-      customState: null,
-    }
+    return strategyApplicationResult([setCursorCommand('mid-interaction', CSSCursor.Move)])
   }
 }
 
