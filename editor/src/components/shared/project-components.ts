@@ -14,7 +14,6 @@ import {
   right,
 } from '../../core/shared/either'
 import {
-  absolutePositionStyle,
   emptyComments,
   isIntrinsicElementFromString,
   JSXAttributes,
@@ -229,13 +228,13 @@ function makeHTMLDescriptor(
 }
 
 const basicHTMLElementsDescriptors = {
-  div: makeHTMLDescriptor('div', {}, absolutePositionStyle),
+  div: makeHTMLDescriptor('div', {}),
   span: makeHTMLDescriptor('span', {}),
-  h1: makeHTMLDescriptor('h1', {}, absolutePositionStyle),
-  h2: makeHTMLDescriptor('h2', {}, absolutePositionStyle),
+  h1: makeHTMLDescriptor('h1', {}),
+  h2: makeHTMLDescriptor('h2', {}),
   p: makeHTMLDescriptor('p', {}),
-  button: makeHTMLDescriptor('button', {}, absolutePositionStyle),
-  input: makeHTMLDescriptor('input', {}, absolutePositionStyle),
+  button: makeHTMLDescriptor('button', {}),
+  input: makeHTMLDescriptor('input', {}),
   video: makeHTMLDescriptor(
     'video',
     {

@@ -36,10 +36,6 @@ export const emptyComments: ParsedComments = {
   trailingComments: [],
 }
 
-export const absolutePositionStyle: JSXAttributes = [
-  simpleAttribute('style', { position: 'absolute' }),
-]
-
 export function isParsedCommentsEmpty(comments: ParsedComments): boolean {
   return comments.leadingComments.length === 0 && comments.trailingComments.length === 0
 }

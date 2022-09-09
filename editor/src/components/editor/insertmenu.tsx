@@ -14,7 +14,6 @@ import {
   JSXAttributesPart,
   isJSXAttributesEntry,
   getJSXAttribute,
-  simpleAttribute,
 } from '../../core/shared/element-template'
 import { generateUID } from '../../core/shared/uid-utils'
 import {
