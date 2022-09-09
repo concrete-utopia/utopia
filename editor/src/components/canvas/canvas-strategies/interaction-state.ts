@@ -31,6 +31,7 @@ export interface DragInteractionData {
   originalDragStart: CanvasPoint
   modifiers: Modifiers
   globalTime: number
+  hasMouseMoved: boolean
 }
 
 export interface KeyState {
@@ -55,6 +56,8 @@ export function isKeyboardInteractionData(
   return inputData.type === 'KEYBOARD'
 }
 
+export type UpdatedPathMap = { [oldPathString: string]: ElementPath }
+
 export interface InteractionSession {
   // This represents an actual interaction that has started as the result of a key press or a drag
   interactionData: InputData
@@ -70,6 +73,7 @@ export interface InteractionSession {
   startedAt: number
 
   startingTargetParentToFilterOut: ReparentTarget | null
+  updatedTargetPaths: UpdatedPathMap
 }
 
 export function interactionSession(
@@ -82,6 +86,7 @@ export function interactionSession(
   startedAt: number,
   allElementProps: AllElementProps,
   startingTargetParentToFilterOut: ReparentTarget | null,
+  updatedTargetPaths: UpdatedPathMap,
 ): InteractionSession {
   return {
     interactionData: interactionData,
@@ -93,6 +98,7 @@ export function interactionSession(
     startedAt: startedAt,
     allElementProps: allElementProps,
     startingTargetParentToFilterOut: startingTargetParentToFilterOut,
+    updatedTargetPaths: updatedTargetPaths,
   }
 }
 
@@ -106,6 +112,8 @@ export interface CommandDescription {
   transient: boolean
 }
 
+export type StrategyApplicationStatus = 'success' | 'failure'
+
 export interface StrategyState {
   // Need to track here which strategy is being applied.
   currentStrategy: CanvasStrategyId | null
@@ -114,6 +122,7 @@ export interface StrategyState {
   accumulatedPatches: Array<EditorStatePatch>
   commandDescriptions: Array<CommandDescription>
   sortedApplicableStrategies: Array<CanvasStrategy> | null
+  status: StrategyApplicationStatus
 
   // Checkpointed metadata at the point at which a strategy change has occurred.
   startingMetadata: ElementInstanceMetadataMap
@@ -132,6 +141,7 @@ export function createEmptyStrategyState(
     accumulatedPatches: [],
     commandDescriptions: [],
     sortedApplicableStrategies: null,
+    status: 'success',
     startingMetadata: metadata,
     customStrategyState: defaultCustomStrategyState(),
     startingAllElementProps: allElementProps,
@@ -152,12 +162,14 @@ export function createInteractionViaMouse(
       originalDragStart: mouseDownPoint,
       modifiers: modifiers,
       globalTime: Date.now(),
+      hasMouseMoved: false,
     },
     activeControl: activeControl,
     sourceOfUpdate: activeControl,
     lastInteractionTime: Date.now(),
     userPreferredStrategy: null,
     startedAt: Date.now(),
+    updatedTargetPaths: {},
   }
 }
 
@@ -185,12 +197,14 @@ export function updateInteractionViaMouse(
         originalDragStart: currentState.interactionData.originalDragStart,
         modifiers: modifiers,
         globalTime: Date.now(),
+        hasMouseMoved: true,
       },
       activeControl: currentState.activeControl,
       sourceOfUpdate: sourceOfUpdate ?? currentState.activeControl,
       lastInteractionTime: Date.now(),
       userPreferredStrategy: currentState.userPreferredStrategy,
       startedAt: currentState.startedAt,
+      updatedTargetPaths: currentState.updatedTargetPaths,
     }
   } else {
     return currentState
@@ -217,6 +231,7 @@ export function createInteractionViaKeyboard(
     lastInteractionTime: Date.now(),
     userPreferredStrategy: null,
     startedAt: Date.now(),
+    updatedTargetPaths: {},
   }
 }
 
@@ -256,6 +271,7 @@ export function updateInteractionViaKeyboard(
         lastInteractionTime: Date.now(),
         userPreferredStrategy: currentState.userPreferredStrategy,
         startedAt: currentState.startedAt,
+        updatedTargetPaths: currentState.updatedTargetPaths,
       }
     }
     case 'DRAG': {
@@ -268,12 +284,14 @@ export function updateInteractionViaKeyboard(
           originalDragStart: currentState.interactionData.originalDragStart,
           modifiers: modifiers,
           globalTime: Date.now(),
+          hasMouseMoved: currentState.interactionData.hasMouseMoved,
         },
         activeControl: currentState.activeControl,
         sourceOfUpdate: currentState.activeControl,
         lastInteractionTime: Date.now(),
         userPreferredStrategy: currentState.userPreferredStrategy,
         startedAt: currentState.startedAt,
+        updatedTargetPaths: currentState.updatedTargetPaths,
       }
     }
     default:

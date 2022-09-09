@@ -1526,13 +1526,11 @@ export const GuidelineKeepDeepEquality: KeepDeepEqualityCall<Guideline> = (oldVa
 }
 
 export const GuidelineWithSnappingVectorKeepDeepEquality: KeepDeepEqualityCall<GuidelineWithSnappingVector> =
-  combine3EqualityCalls(
+  combine2EqualityCalls(
     (guideline) => guideline.guideline,
     GuidelineKeepDeepEquality,
     (guideline) => guideline.snappingVector,
     CanvasPointKeepDeepEquality,
-    (guideline) => guideline.activateSnap,
-    createCallWithTripleEquals(),
     guidelineWithSnappingVector,
   )
 
@@ -1573,7 +1571,7 @@ export const ModifiersKeepDeepEquality: KeepDeepEqualityCall<Modifiers> = combin
 )
 
 export const DragInteractionDataKeepDeepEquality: KeepDeepEqualityCall<DragInteractionData> =
-  combine6EqualityCalls(
+  combine7EqualityCalls(
     (data) => data.dragStart,
     CanvasPointKeepDeepEquality,
     (data) => data.drag,
@@ -1586,7 +1584,9 @@ export const DragInteractionDataKeepDeepEquality: KeepDeepEqualityCall<DragInter
     ModifiersKeepDeepEquality,
     (data) => data.globalTime,
     createCallWithTripleEquals(),
-    (dragStart, drag, prevDrag, originalDragStart, modifiers, globalTime) => {
+    (data) => data.hasMouseMoved,
+    BooleanKeepDeepEquality,
+    (dragStart, drag, prevDrag, originalDragStart, modifiers, globalTime, hasMouseMoved) => {
       return {
         type: 'DRAG',
         dragStart: dragStart,
@@ -1595,6 +1595,7 @@ export const DragInteractionDataKeepDeepEquality: KeepDeepEqualityCall<DragInter
         originalDragStart: originalDragStart,
         modifiers: modifiers,
         globalTime: globalTime,
+        hasMouseMoved: hasMouseMoved,
       }
     },
   )
@@ -1721,7 +1722,7 @@ export const ReparentTargetKeepDeepEquality: KeepDeepEqualityCall<ReparentTarget
   )
 
 export const InteractionSessionKeepDeepEquality: KeepDeepEqualityCall<InteractionSession> =
-  combine9EqualityCalls(
+  combine10EqualityCalls(
     (session) => session.interactionData,
     InputDataKeepDeepEquality,
     (session) => session.activeControl,
@@ -1740,6 +1741,8 @@ export const InteractionSessionKeepDeepEquality: KeepDeepEqualityCall<Interactio
     createCallFromIntrospectiveKeepDeep(),
     (session) => session.startingTargetParentToFilterOut,
     nullableDeepEquality(ReparentTargetKeepDeepEquality),
+    (session) => session.updatedTargetPaths,
+    objectDeepEquality(ElementPathKeepDeepEquality),
     interactionSession,
   )
 

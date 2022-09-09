@@ -17,7 +17,11 @@ import {
   walkElement,
 } from '../../../core/shared/element-template'
 import * as EP from '../../../core/shared/element-path'
-import { getImportsFor, importedFromWhere } from '../../../components/editor/import-utils'
+import {
+  getImportsFor,
+  getRequiredImportsForElement,
+  importedFromWhere,
+} from '../../../components/editor/import-utils'
 import { forceNotNull } from '../../../core/shared/optional-utils'
 import { addImportsToFile } from '../commands/add-imports-to-file-command'
 import { BuiltInDependencies } from '../../../core/es-modules/package-manager/built-in-dependencies-list'
@@ -114,7 +118,7 @@ export function getReparentOutcome(
 
   switch (toReparent.type) {
     case 'PATH_TO_REPARENT':
-      const importsToAdd = getReparentImports(
+      const importsToAdd = getRequiredImportsForElement(
         toReparent.target,
         projectContents,
         nodeModules,
@@ -146,94 +150,13 @@ export function getReparentOutcome(
   }
 }
 
-function getReparentImports(
-  target: ElementPath,
-  projectContents: ProjectContentTreeRoot,
-  nodeModules: NodeModules,
-  openFile: string | null | undefined,
-  newTargetFilePath: string,
-  builtInDependencies: BuiltInDependencies,
-): Imports {
-  return withUnderlyingTarget<Imports>(
-    target,
-    projectContents,
-    nodeModules,
-    openFile,
-    emptyImports(),
-    (success, element, underlyingTarget, underlyingFilePath) => {
-      const importsInOriginFile = success.imports
-      const topLevelElementsInOriginFile = success.topLevelElements
-      const lastPathPart =
-        EP.lastElementPathForPath(underlyingTarget) ?? EP.emptyStaticElementPathPart()
-
-      let importsToAdd: Imports = emptyImports()
-      // Walk down through the elements as elements within the element being reparented might also be imported.
-      walkElement(element, lastPathPart, 0, (elem, subPath, depth) => {
-        if (isJSXElement(elem)) {
-          // Straight up ignore intrinsic elements as they wont be imported.
-          if (!isIntrinsicElement(elem.name)) {
-            const importedFromResult = importedFromWhere(
-              underlyingFilePath,
-              elem.name.baseVariable,
-              topLevelElementsInOriginFile,
-              importsInOriginFile,
-            )
-
-            if (importedFromResult != null) {
-              switch (importedFromResult.type) {
-                case 'SAME_FILE_ORIGIN':
-                  importsToAdd = mergeImports(
-                    newTargetFilePath,
-                    importsToAdd,
-                    getImportsFor(
-                      builtInDependencies,
-                      importsInOriginFile,
-                      projectContents,
-                      nodeModules,
-                      underlyingFilePath,
-                      elem.name.baseVariable,
-                    ),
-                  )
-                  break
-                case 'IMPORTED_ORIGIN':
-                  if (importedFromResult.exportedName != null) {
-                    importsToAdd = mergeImports(
-                      newTargetFilePath,
-                      importsToAdd,
-                      getImportsFor(
-                        builtInDependencies,
-                        importsInOriginFile,
-                        projectContents,
-                        nodeModules,
-                        underlyingFilePath,
-                        importedFromResult.exportedName,
-                      ),
-                    )
-                  }
-                  break
-                default:
-                  const _exhaustiveCheck: never = importedFromResult
-                  throw new Error(
-                    `Unhandled imported from result ${JSON.stringify(importedFromResult)}`,
-                  )
-              }
-            }
-          }
-        }
-      })
-
-      return importsToAdd
-    },
-  )
-}
-
 export function cursorForMissingReparentedItems(
   reparentedToPaths: Array<ElementPath>,
   spyMetadata: ElementInstanceMetadataMap,
 ): CSSCursor | null {
   for (const reparentedToPath of reparentedToPaths) {
     if (!(EP.toString(reparentedToPath) in spyMetadata)) {
-      return CSSCursor.ReparentNotPermitted
+      return CSSCursor.NotPermitted
     }
   }
 

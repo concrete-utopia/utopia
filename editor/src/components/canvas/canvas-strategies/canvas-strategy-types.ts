@@ -6,7 +6,7 @@ import { ElementPath, NodeModules } from '../../../core/shared/project-file-type
 import { ProjectContentTreeRoot } from '../../assets'
 import { InsertionSubject } from '../../editor/editor-modes'
 import { CanvasCommand } from '../commands/commands'
-import { InteractionSession, StrategyState } from './interaction-state'
+import { InteractionSession, StrategyApplicationStatus, StrategyState } from './interaction-state'
 
 // TODO: fill this in, maybe make it an ADT for different strategies
 export interface CustomStrategyState {
@@ -14,6 +14,8 @@ export interface CustomStrategyState {
   lastReorderIdx: number | null
   duplicatedElementNewUids: { [elementPath: string]: string }
 }
+
+export type CustomStrategyStatePatch = Partial<CustomStrategyState>
 
 export function defaultCustomStrategyState(): CustomStrategyState {
   return {
@@ -25,12 +27,26 @@ export function defaultCustomStrategyState(): CustomStrategyState {
 
 export interface StrategyApplicationResult {
   commands: Array<CanvasCommand>
-  customState: CustomStrategyState | null // null means the previous custom strategy state should be kept
+  customStatePatch: CustomStrategyStatePatch
+  status: StrategyApplicationStatus
 }
 
-export const emptyStrategyApplicationResult = {
+export const emptyStrategyApplicationResult: StrategyApplicationResult = {
   commands: [],
-  customState: null,
+  customStatePatch: {},
+  status: 'success',
+}
+
+export function strategyApplicationResult(
+  commands: Array<CanvasCommand>,
+  customStatePatch: CustomStrategyStatePatch = {},
+  status: StrategyApplicationStatus = 'success',
+): StrategyApplicationResult {
+  return {
+    commands: commands,
+    customStatePatch: customStatePatch,
+    status: status,
+  }
 }
 
 export interface ControlWithKey {
@@ -141,4 +157,4 @@ export interface CanvasStrategy {
   ) => StrategyApplicationResult
 }
 
-export const ControlDelay = 300
+export const ControlDelay = 600

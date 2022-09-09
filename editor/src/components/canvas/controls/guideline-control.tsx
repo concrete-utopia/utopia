@@ -84,7 +84,7 @@ export function GuidelineControl(props: ResizeEdgeProps) {
         borderWidth: 0,
         borderLeftWidth: lineSize,
         borderTopWidth: lineSize,
-        borderStyle: props.guidelineWithSnapping.activateSnap ? 'solid' : 'dashed',
+        borderStyle: 'solid',
         borderColor: colorTheme.canvasLayoutStroke.value,
       }}
     />

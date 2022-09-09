@@ -4,6 +4,7 @@ import {
   CanvasStrategy,
   emptyStrategyApplicationResult,
   getTargetPathsFromInteractionTarget,
+  strategyApplicationResult,
 } from './canvas-strategy-types'
 import { Modifiers } from '../../../utils/modifiers'
 import {
@@ -77,7 +78,7 @@ function pressesToVectorAndEdges(
 
 export const keyboardAbsoluteResizeStrategy: CanvasStrategy = {
   id: 'KEYBOARD_ABSOLUTE_RESIZE',
-  name: 'Keyboard absolute resize',
+  name: 'Resize',
   isApplicable: (canvasState, interactionState, metadata) => {
     const selectedElements = getTargetPathsFromInteractionTarget(canvasState.interactionTarget)
     if (selectedElements.length > 0) {
@@ -190,10 +191,7 @@ export const keyboardAbsoluteResizeStrategy: CanvasStrategy = {
       commands.push(setSnappingGuidelines('mid-interaction', guidelines))
       commands.push(pushIntendedBounds(intendedBounds))
       commands.push(setElementsToRerenderCommand(selectedElements))
-      return {
-        commands: commands,
-        customState: null,
-      }
+      return strategyApplicationResult(commands)
     } else {
       return emptyStrategyApplicationResult
     }

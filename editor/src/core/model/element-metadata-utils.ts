@@ -43,7 +43,9 @@ import {
   CanvasRectangle,
   canvasRectangleToLocalRectangle,
   LocalRectangle,
+  roundPointToNearestHalf,
   Size,
+  zeroCanvasRect,
 } from '../shared/math-utils'
 import { optionalMap } from '../shared/optional-utils'
 import {
@@ -83,7 +85,7 @@ import {
 } from '../../components/editor/store/editor-state'
 import { ProjectContentTreeRoot } from '../../components/assets'
 import { memoize } from '../shared/memoize'
-import { buildTree, ElementPathTree, getSubTree } from '../shared/element-path-tree'
+import { buildTree, ElementPathTree, getSubTree, reorderTree } from '../shared/element-path-tree'
 import { findUnderlyingTargetComponentImplementation } from '../../components/custom-code/code-file'
 
 const ObjectPathImmutable: any = OPI
@@ -807,7 +809,11 @@ export const MetadataUtils = {
     } => {
       // Note: This will not necessarily be representative of the structured ordering in
       // the code that produced these elements.
-      const projectTree = buildTree(objectValues(metadata).map((m) => m.elementPath))
+      const projectTree = buildTree(objectValues(metadata).map((m) => m.elementPath)).map(
+        (subTree) => {
+          return reorderTree(subTree, metadata)
+        },
+      )
 
       // This function exists separately from getAllPaths because the Navigator handles collapsed views
       let navigatorTargets: Array<ElementPath> = []
@@ -914,27 +920,31 @@ export const MetadataUtils = {
       }, Utils.asLocal(frame))
     }
   },
+  getParentCoordinateSystemBounds: function (
+    targetParent: ElementPath | null,
+    metadata: ElementInstanceMetadataMap,
+  ): CanvasRectangle {
+    const parent = MetadataUtils.findElementByElementPath(metadata, targetParent)
+    if (parent != null) {
+      if (parent.specialSizeMeasurements.globalContentBox != null) {
+        return parent.specialSizeMeasurements.globalContentBox
+      } else if (parent.specialSizeMeasurements.coordinateSystemBounds != null) {
+        return parent.specialSizeMeasurements.coordinateSystemBounds
+      }
+    }
+
+    return zeroCanvasRect
+  },
   getFrameRelativeToTargetContainingBlock: function (
     targetParent: ElementPath | null,
     metadata: ElementInstanceMetadataMap,
     frame: CanvasRectangle,
   ): LocalRectangle {
-    const parent = this.findElementByElementPath(metadata, targetParent)
-    if (parent != null) {
-      if (
-        parent.specialSizeMeasurements.providesBoundsForAbsoluteChildren &&
-        parent.globalFrame != null
-      ) {
-        return canvasRectangleToLocalRectangle(frame, parent.globalFrame)
-      }
-      if (parent.specialSizeMeasurements.coordinateSystemBounds != null) {
-        return canvasRectangleToLocalRectangle(
-          frame,
-          parent.specialSizeMeasurements.coordinateSystemBounds,
-        )
-      }
-    }
-    return Utils.asLocal(frame)
+    const closestParentCoordinateSystemBounds = MetadataUtils.getParentCoordinateSystemBounds(
+      targetParent,
+      metadata,
+    )
+    return canvasRectangleToLocalRectangle(frame, closestParentCoordinateSystemBounds)
   },
   getElementLabelFromProps(allElementProps: AllElementProps, path: ElementPath): string | null {
     const dataLabelProp = allElementProps?.[EP.toString(path)]?.[UTOPIA_LABEL_KEY]

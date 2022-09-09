@@ -1269,10 +1269,8 @@ function innerSnapPoint(
   let snappedGuideline: GuidelineWithSnappingVector | null = null
 
   guidelines.forEach((guideline) => {
-    if (guideline.activateSnap) {
-      snappedPoint = Utils.offsetPoint(snappedPoint, guideline.snappingVector)
-      snappedGuideline = guideline
-    }
+    snappedPoint = Utils.offsetPoint(snappedPoint, guideline.snappingVector)
+    snappedGuideline = guideline
   })
   return {
     point: snappedPoint,

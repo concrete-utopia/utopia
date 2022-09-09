@@ -100,6 +100,7 @@ import { getReparentTargetUnified } from '../components/canvas/canvas-strategies
 import { getDragTargets } from '../components/canvas/canvas-strategies/shared-absolute-move-strategy-helpers'
 import { pickCanvasStateFromEditorState } from '../components/canvas/canvas-strategies/canvas-strategies'
 import { BuiltInDependencies } from '../core/es-modules/package-manager/built-in-dependencies-list'
+import { cancelInsertModeActions } from '../components/editor/actions/meta-actions'
 
 const webFrame = PROBABLY_ELECTRON ? requireElectron().webFrame : null
 
@@ -185,13 +186,9 @@ function handleCanvasEvent(model: CanvasModel, event: CanvasMouseEvent): Array<E
     model.editorState.canvas.interactionSession?.interactionData.type === 'DRAG'
   ) {
     const applyChanges = model.editorState.canvas.interactionSession?.interactionData.drag != null
-    optionalDragStateAction = [
-      CanvasActions.clearInteractionSession(applyChanges),
-      EditorActions.updateEditorMode(EditorModes.selectMode()),
-      EditorActions.setRightMenuTab(RightMenuTab.Inspector),
-      EditorActions.clearHighlightedViews(),
-      CanvasActions.clearDragState(false),
-    ]
+    optionalDragStateAction = cancelInsertModeActions(
+      applyChanges ? 'apply-changes' : 'do-not-apply-changes',
+    )
   } else if (!(insertMode && isOpenFileUiJs(model.editorState))) {
     switch (event.event) {
       case 'DRAG':

@@ -5,6 +5,7 @@ import {
   emptyStrategyApplicationResult,
   getTargetPathsFromInteractionTarget,
   InteractionCanvasState,
+  strategyApplicationResult,
 } from './canvas-strategy-types'
 import {
   CanvasRectangle,
@@ -19,7 +20,6 @@ import {
 import {
   getAbsoluteMoveCommandsForSelectedElement,
   getMultiselectBounds,
-  snapDrag,
 } from './shared-absolute-move-strategy-helpers'
 import { AdjustCssLengthProperty } from '../commands/adjust-css-length-command'
 import { setElementsToRerenderCommand } from '../commands/set-elements-to-rerender-command'
@@ -47,7 +47,7 @@ import { honoursPropsPosition } from './absolute-utils'
 
 export const keyboardAbsoluteMoveStrategy: CanvasStrategy = {
   id: 'KEYBOARD_ABSOLUTE_MOVE',
-  name: 'Keyboard Absolute Move',
+  name: 'Move',
   isApplicable: (canvasState, _interactionState, metadata) => {
     const selectedElements = getTargetPathsFromInteractionTarget(canvasState.interactionTarget)
     if (selectedElements.length > 0) {
@@ -109,6 +109,7 @@ export const keyboardAbsoluteMoveStrategy: CanvasStrategy = {
             selectedElement,
             keyboardMovement,
             canvasState,
+            interactionState,
             sessionState,
           )
           commands.push(...elementResult.commands)
@@ -135,10 +136,7 @@ export const keyboardAbsoluteMoveStrategy: CanvasStrategy = {
       commands.push(setSnappingGuidelines('mid-interaction', guidelines))
       commands.push(pushIntendedBounds(intendedBounds))
       commands.push(setElementsToRerenderCommand(selectedElements))
-      return {
-        commands: commands,
-        customState: null,
-      }
+      return strategyApplicationResult(commands)
     } else {
       return emptyStrategyApplicationResult
     }

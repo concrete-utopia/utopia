@@ -38,6 +38,8 @@ import {
 } from './flow-reorder-strategy'
 import { isInsertMode } from '../../editor/editor-modes'
 import { dragToInsertStrategy } from './drag-to-insert-strategy'
+import { CSSCursor } from '../../../uuiui-deps'
+import { StateSelector } from 'zustand'
 
 export const RegisteredCanvasStrategies: Array<CanvasStrategy> = [
   absoluteMoveStrategy,
@@ -233,58 +235,69 @@ export function applyCanvasStrategy(
   return strategy.apply(canvasState, interactionSession, strategyState)
 }
 
-export const useDelayedCurrentStrategy = () => {
+export function useDelayedStrategy<T>(
+  selector: StateSelector<EditorStorePatched, T | null>,
+): T | null {
   /**
    * onMouseDown selection shows canvas controls that are active when a strategy runs with a delay (double click selection in hierarchy)
    * but when a drag threshold passes before the timer ends it shows up without delay
    */
-  const [delayedStrategyValue, setDelayedStrategyValue] = React.useState<CanvasStrategyId | null>(
-    null,
-  )
+
+  const [delayedValue, setDelayedValue] = React.useState<T | null>(null)
   const [timer, setTimer] = React.useState<number | null>(null)
 
   const immediateCallback = React.useCallback(
-    (currentStrategy: CanvasStrategyId | null) => {
-      setDelayedStrategyValue(currentStrategy)
+    (currentValue: T | null) => {
+      setDelayedValue(currentValue)
       if (timer != null) {
         window.clearTimeout(timer)
         setTimer(null)
       }
     },
-    [timer, setTimer, setDelayedStrategyValue],
+    [timer, setTimer, setDelayedValue],
   )
 
   const maybeDelayedCallback = React.useCallback(
-    (currentStrategy: CanvasStrategyId | null) => {
-      if (currentStrategy != null && delayedStrategyValue == null) {
+    (currentValue: T | null) => {
+      if (currentValue != null && delayedValue == null) {
         if (timer == null) {
           setTimer(
             window.setTimeout(() => {
-              setDelayedStrategyValue(currentStrategy)
+              setDelayedValue(currentValue)
               setTimer(null)
             }, ControlDelay),
           )
         }
       } else {
-        immediateCallback(currentStrategy)
+        immediateCallback(currentValue)
       }
     },
-    [immediateCallback, delayedStrategyValue, timer, setTimer, setDelayedStrategyValue],
+    [immediateCallback, delayedValue, timer, setTimer, setDelayedValue],
   )
 
-  useSelectorWithCallback((store) => store.strategyState.currentStrategy, maybeDelayedCallback)
+  useSelectorWithCallback(selector, maybeDelayedCallback)
   useSelectorWithCallback((store) => {
     if (
       store.editor.canvas.interactionSession?.interactionData.type === 'DRAG' &&
-      store.editor.canvas.interactionSession?.interactionData.drag != null
+      store.editor.canvas.interactionSession?.interactionData.hasMouseMoved
     ) {
-      return store.strategyState.currentStrategy
+      return selector(store)
     } else {
       return null
     }
   }, immediateCallback)
 
-  return delayedStrategyValue
+  return delayedValue
+}
+
+export const useDelayedCurrentStrategy = () => {
+  const selector = (store: EditorStorePatched) => store.strategyState.currentStrategy
+  return useDelayedStrategy<CanvasStrategyId | null>(selector)
+}
+
+export const useDelayedStrategyCursor = () => {
+  const selector = (store: EditorStorePatched) => store.editor.canvas.cursor
+  return useDelayedStrategy<CSSCursor | null>(selector)
 }
 
 export function useGetApplicableStrategyControls(): Array<ControlWithKey> {

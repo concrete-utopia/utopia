@@ -11,6 +11,7 @@ import {
   CanvasStrategy,
   emptyStrategyApplicationResult,
   getTargetPathsFromInteractionTarget,
+  strategyApplicationResult,
 } from './canvas-strategy-types'
 import { getDragTargets } from './shared-absolute-move-strategy-helpers'
 import { ifAllowedToReparent, isAllowedToReparent } from './reparent-helpers'
@@ -23,10 +24,12 @@ import { offsetPoint } from '../../../core/shared/math-utils'
 import { getReparentOutcome, pathToReparent } from './reparent-utils'
 import { mapDropNulls } from '../../../core/shared/array-utils'
 import { honoursPropsPosition } from './absolute-utils'
+import { ElementPath } from '../../../core/shared/project-file-types'
+import { UpdatedPathMap } from './interaction-state'
 
 export const absoluteReparentStrategy: CanvasStrategy = {
   id: 'ABSOLUTE_REPARENT',
-  name: 'Reparent Absolute Elements',
+  name: 'Reparent',
   isApplicable: (canvasState, interactionState, metadata) => {
     const selectedElements = getTargetPathsFromInteractionTarget(canvasState.interactionTarget)
     if (
@@ -97,7 +100,6 @@ export const absoluteReparentStrategy: CanvasStrategy = {
       strategyState.startingAllElementProps,
     )
     const newParent = reparentTarget.newParent
-    const moveCommands = absoluteMoveStrategy.apply(canvasState, interactionState, strategyState)
     const providesBoundsForAbsoluteChildren =
       MetadataUtils.findElementByElementPath(strategyState.startingMetadata, newParent)
         ?.specialSizeMeasurements.providesBoundsForAbsoluteChildren ?? false
@@ -142,26 +144,41 @@ export const absoluteReparentStrategy: CanvasStrategy = {
 
           const { commands: reparentCommands, newPath } = reparentResult
           return {
+            oldPath: selectedElement,
             newPath: newPath,
             commands: [...offsetCommands, ...reparentCommands],
           }
         }
       }, filteredSelectedElements)
 
-      const newPaths = commands.map((c) => c.newPath)
+      let newPaths: Array<ElementPath> = []
+      let updatedTargetPaths: UpdatedPathMap = {}
 
-      return {
-        commands: [
-          ...moveCommands.commands,
-          ...commands.flatMap((c) => c.commands),
-          updateSelectedViews('always', newPaths),
-          setElementsToRerenderCommand([...newPaths, ...filteredSelectedElements]),
-          setCursorCommand('mid-interaction', CSSCursor.Move),
-        ],
-        customState: null,
-      }
+      commands.forEach((c) => {
+        newPaths.push(c.newPath)
+        updatedTargetPaths[EP.toString(c.oldPath)] = c.newPath
+      })
+
+      const moveCommands = absoluteMoveStrategy.apply(
+        canvasState,
+        {
+          ...interactionState,
+          updatedTargetPaths: updatedTargetPaths,
+        },
+        strategyState,
+      )
+
+      return strategyApplicationResult([
+        ...moveCommands.commands,
+        ...commands.flatMap((c) => c.commands),
+        updateSelectedViews('always', newPaths),
+        setElementsToRerenderCommand([...newPaths, ...filteredSelectedElements]),
+        setCursorCommand('mid-interaction', CSSCursor.Move),
+      ])
     } else {
-      return moveCommands
+      const moveCommands = absoluteMoveStrategy.apply(canvasState, interactionState, strategyState)
+
+      return strategyApplicationResult(moveCommands.commands)
     }
   },
 }

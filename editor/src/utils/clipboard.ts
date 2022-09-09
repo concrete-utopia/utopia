@@ -1,23 +1,13 @@
 import { EditorAction, ElementPaste } from '../components/editor/action-types'
 import * as EditorActions from '../components/editor/actions/action-creators'
 import { EditorModes } from '../components/editor/editor-modes'
-import {
-  DerivedState,
-  EditorState,
-  getOpenUIJSFileKey,
-  withUnderlyingTarget,
-} from '../components/editor/store/editor-state'
+import { EditorState, getOpenUIJSFileKey } from '../components/editor/store/editor-state'
 import { getFrameAndMultiplier } from '../components/images'
 import * as EP from '../core/shared/element-path'
 import { findElementAtPath, MetadataUtils } from '../core/model/element-metadata-utils'
 import { ElementInstanceMetadataMap } from '../core/shared/element-template'
 import { getUtopiaJSXComponentsFromSuccess } from '../core/model/project-file-utils'
-import {
-  isParseSuccess,
-  NodeModules,
-  ElementPath,
-  isTextFile,
-} from '../core/shared/project-file-types'
+import { isParseSuccess, ElementPath, isTextFile } from '../core/shared/project-file-types'
 import { encodeUtopiaDataToHtml, parsePasteEvent, PasteResult } from './clipboard-utils'
 import { setLocalClipboardData } from './local-clipboard'
 import Utils from './utils'
@@ -35,6 +25,8 @@ import { mapDropNulls } from '../core/shared/array-utils'
 import ClipboardPolyfill from 'clipboard-polyfill'
 import { mapValues, pick } from '../core/shared/object-utils'
 import { getStoryboardElementPath } from '../core/model/scene-utils'
+import { getRequiredImportsForElement } from '../components/editor/import-utils'
+import { BuiltInDependencies } from '../core/es-modules/package-manager/built-in-dependencies-list'
 
 interface JSXElementCopyData {
   type: 'ELEMENT_COPY'
@@ -164,7 +156,10 @@ export function createDirectInsertImageActions(
   }
 }
 
-export function createClipboardDataFromSelection(editor: EditorState): {
+export function createClipboardDataFromSelection(
+  editor: EditorState,
+  builtInDependencies: BuiltInDependencies,
+): {
   data: Array<JSXElementCopyData>
   imageFilenames: Array<string>
   plaintext: string
@@ -191,14 +186,19 @@ export function createClipboardDataFromSelection(editor: EditorState): {
     if (isTextFile(projectFile) && isParseSuccess(projectFile.fileContents.parsed)) {
       const components = getUtopiaJSXComponentsFromSuccess(projectFile.fileContents.parsed)
       const elementToPaste = findElementAtPath(target, components)
-      if (elementToPaste == null) {
+      if (elementToPaste == null || targetPathSuccess.normalisedPath == null) {
         return null
       } else {
-        return EditorActions.elementPaste(
-          elementToPaste,
-          projectFile.fileContents.parsed.imports,
+        const requiredImports = getRequiredImportsForElement(
           target,
+          editor.projectContents,
+          editor.nodeModules.files,
+          openUIJSFileKey,
+          targetPathSuccess.filePath,
+          builtInDependencies,
         )
+
+        return EditorActions.elementPaste(elementToPaste, requiredImports, target)
       }
     } else {
       return null

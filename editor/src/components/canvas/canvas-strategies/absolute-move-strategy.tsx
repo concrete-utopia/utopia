@@ -1,4 +1,5 @@
 import { MetadataUtils } from '../../../core/model/element-metadata-utils'
+import * as EP from '../../../core/shared/element-path'
 import { ElementInstanceMetadataMap } from '../../../core/shared/element-template'
 import { CanvasPoint, offsetPoint, zeroCanvasPoint } from '../../../core/shared/math-utils'
 import { ElementPath } from '../../../core/shared/project-file-types'
@@ -10,7 +11,6 @@ import { setElementsToRerenderCommand } from '../commands/set-elements-to-rerend
 import { pushIntendedBounds } from '../commands/push-intended-bounds-command'
 import { setSnappingGuidelines } from '../commands/set-snapping-guidelines-command'
 import { updateHighlightedViews } from '../commands/update-highlighted-views-command'
-import { runLegacyAbsoluteMoveSnapping } from '../controls/guideline-helpers'
 import { ParentBounds } from '../controls/parent-bounds'
 import { ParentOutlines } from '../controls/parent-outlines'
 import { determineConstrainedDragAxis } from '../controls/select-mode/move-utils'
@@ -20,6 +20,7 @@ import {
   emptyStrategyApplicationResult,
   getTargetPathsFromInteractionTarget,
   InteractionCanvasState,
+  strategyApplicationResult,
   StrategyApplicationResult,
 } from './canvas-strategy-types'
 import { DragInteractionData, InteractionSession, StrategyState } from './interaction-state'
@@ -30,10 +31,11 @@ import {
   snapDrag,
 } from './shared-absolute-move-strategy-helpers'
 import { honoursPropsPosition } from './absolute-utils'
+import { collectParentAndSiblingGuidelines } from '../controls/guideline-helpers'
 
 export const absoluteMoveStrategy: CanvasStrategy = {
   id: 'ABSOLUTE_MOVE',
-  name: 'Absolute Move (Delta-based)',
+  name: 'Move',
   isApplicable: (canvasState, _interactionState, metadata) => {
     const selectedElements = getTargetPathsFromInteractionTarget(canvasState.interactionTarget)
     if (selectedElements.length > 0) {
@@ -93,6 +95,7 @@ export const absoluteMoveStrategy: CanvasStrategy = {
             selectedElement,
             snappedDragVector,
             canvasState,
+            interactionState,
             sessionState,
           )
           commands.push(...elementResult.commands)
@@ -132,38 +135,42 @@ export function applyAbsoluteMoveCommon(
     if (cmdKeyPressed) {
       const commandsForSelectedElements = getMoveCommands(drag)
 
-      return {
-        commands: [
-          ...commandsForSelectedElements.commands,
-          pushIntendedBounds(commandsForSelectedElements.intendedBounds),
-          updateHighlightedViews('mid-interaction', []),
-          setElementsToRerenderCommand(selectedElements),
-          setCursorCommand('mid-interaction', CSSCursor.Select),
-        ],
-        customState: null,
-      }
+      return strategyApplicationResult([
+        ...commandsForSelectedElements.commands,
+        pushIntendedBounds(commandsForSelectedElements.intendedBounds),
+        updateHighlightedViews('mid-interaction', []),
+        setElementsToRerenderCommand(selectedElements),
+        setCursorCommand('mid-interaction', CSSCursor.Select),
+      ])
     } else {
       const constrainedDragAxis =
         shiftKeyPressed && drag != null ? determineConstrainedDragAxis(drag) : null
+
+      const targetsForSnapping = selectedElements.map(
+        (path) => interactionState.updatedTargetPaths[EP.toString(path)] ?? path,
+      )
+      const moveGuidelines = collectParentAndSiblingGuidelines(
+        strategyState.startingMetadata,
+        targetsForSnapping,
+      )
+
       const { snappedDragVector, guidelinesWithSnappingVector } = snapDrag(
         drag,
         constrainedDragAxis,
         strategyState.startingMetadata,
         selectedElements,
+        moveGuidelines,
         canvasState.scale,
       )
       const commandsForSelectedElements = getMoveCommands(snappedDragVector)
-      return {
-        commands: [
-          ...commandsForSelectedElements.commands,
-          updateHighlightedViews('mid-interaction', []),
-          setSnappingGuidelines('mid-interaction', guidelinesWithSnappingVector),
-          pushIntendedBounds(commandsForSelectedElements.intendedBounds),
-          setElementsToRerenderCommand(selectedElements),
-          setCursorCommand('mid-interaction', CSSCursor.Select),
-        ],
-        customState: null,
-      }
+      return strategyApplicationResult([
+        ...commandsForSelectedElements.commands,
+        updateHighlightedViews('mid-interaction', []),
+        setSnappingGuidelines('mid-interaction', guidelinesWithSnappingVector),
+        pushIntendedBounds(commandsForSelectedElements.intendedBounds),
+        setElementsToRerenderCommand([...selectedElements, ...targetsForSnapping]),
+        setCursorCommand('mid-interaction', CSSCursor.Select),
+      ])
     }
   } else {
     // Fallback for when the checks above are not satisfied.

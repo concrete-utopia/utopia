@@ -8,6 +8,7 @@ import * as ReactDOM from 'react-dom'
 import { ElementPath, ElementOriginType, Imports } from '../../../core/shared/project-file-types'
 import { EditorDispatch } from '../../editor/action-types'
 import * as EditorActions from '../../editor/actions/action-creators'
+import * as MetaActions from '../../editor/actions/meta-actions'
 import * as EP from '../../../core/shared/element-path'
 import {
   placeComponentsAfter,
@@ -217,7 +218,7 @@ function beginDrag(
   props: NavigatorItemDragAndDropWrapperProps,
 ): NavigatorItemDragAndDropWrapperProps {
   if (!props.selected) {
-    props.editorDispatch([EditorActions.selectComponents([props.elementPath], false)], 'leftpane')
+    props.editorDispatch(MetaActions.selectComponents([props.elementPath], false), 'leftpane')
   }
   return props
 }

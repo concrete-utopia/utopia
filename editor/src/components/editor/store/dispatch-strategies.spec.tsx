@@ -29,6 +29,7 @@ import {
   ElementInstanceMetadataMap,
   emptyComments,
   jsxAttributeValue,
+  jsxElement,
 } from '../../../core/shared/element-template'
 import {
   createEmptyStrategyState,
@@ -43,6 +44,7 @@ import {
   CanvasStrategyId,
   defaultCustomStrategyState,
   InteractionCanvasState,
+  strategyApplicationResult,
   StrategyApplicationResult,
 } from '../../canvas/canvas-strategies/canvas-strategy-types'
 import { canvasPoint } from '../../../core/shared/math-utils'
@@ -50,6 +52,7 @@ import { wildcardPatch } from '../../canvas/commands/wildcard-patch-command'
 import { runCanvasCommand } from '../../canvas/commands/commands'
 import { saveDOMReport } from '../actions/action-creators'
 import { RegisteredCanvasStrategies } from '../../canvas/canvas-strategies/canvas-strategies'
+import { right } from '../../../core/shared/either'
 
 beforeAll(() => {
   return jest.spyOn(Date, 'now').mockReturnValue(new Date(1000).getTime())
@@ -165,10 +168,9 @@ const testStrategy: CanvasStrategy = {
     interactionSession: InteractionSession,
     strategyState: StrategyState,
   ): StrategyApplicationResult {
-    return {
-      commands: [wildcardPatch('always', { canvas: { scale: { $set: 100 } } })],
-      customState: defaultCustomStrategyState(),
-    }
+    return strategyApplicationResult([
+      wildcardPatch('always', { canvas: { scale: { $set: 100 } } }),
+    ])
   },
 }
 
@@ -233,6 +235,7 @@ describe('interactionStart', () => {
         ],
         "startingAllElementProps": Object {},
         "startingMetadata": Object {},
+        "status": "success",
       }
     `)
     expect(actualResult.patchedEditorState.canvas.scale).toEqual(100)
@@ -246,6 +249,7 @@ describe('interactionStart', () => {
           "y": 200,
         },
         "globalTime": 1000,
+        "hasMouseMoved": false,
         "modifiers": Object {
           "alt": false,
           "cmd": false,
@@ -283,6 +287,7 @@ describe('interactionStart', () => {
         "sortedApplicableStrategies": null,
         "startingAllElementProps": Object {},
         "startingMetadata": Object {},
+        "status": "success",
       }
     `)
     expect(actualResult.patchedEditorState.canvas.scale).toEqual(1)
@@ -356,6 +361,7 @@ describe('interactionUpdatex', () => {
         ],
         "startingAllElementProps": Object {},
         "startingMetadata": Object {},
+        "status": "success",
       }
     `)
     expect(actualResult.patchedEditorState.canvas.scale).toEqual(100)
@@ -369,6 +375,7 @@ describe('interactionUpdatex', () => {
           "y": 200,
         },
         "globalTime": 1000,
+        "hasMouseMoved": false,
         "modifiers": Object {
           "alt": false,
           "cmd": false,
@@ -407,6 +414,7 @@ describe('interactionUpdatex', () => {
         "sortedApplicableStrategies": null,
         "startingAllElementProps": Object {},
         "startingMetadata": Object {},
+        "status": "success",
       }
     `)
     expect(actualResult.patchedEditorState.canvas.scale).toEqual(1)
@@ -508,6 +516,7 @@ describe('interactionHardReset', () => {
         ],
         "startingAllElementProps": Object {},
         "startingMetadata": Object {},
+        "status": "success",
       }
     `)
     expect(actualResult.patchedEditorState.canvas.scale).toEqual(100)
@@ -524,6 +533,7 @@ describe('interactionHardReset', () => {
           "y": 210,
         },
         "globalTime": 1000,
+        "hasMouseMoved": false,
         "modifiers": Object {
           "alt": false,
           "cmd": false,
@@ -564,6 +574,7 @@ describe('interactionHardReset', () => {
         "sortedApplicableStrategies": null,
         "startingAllElementProps": Object {},
         "startingMetadata": Object {},
+        "status": "success",
       }
     `)
     expect(actualResult.patchedEditorState.canvas.scale).toEqual(1)
@@ -726,6 +737,7 @@ describe('interactionUpdate with user changed strategy', () => {
         ],
         "startingAllElementProps": Object {},
         "startingMetadata": Object {},
+        "status": "success",
       }
     `)
     expect(actualResult.patchedEditorState.canvas.scale).toEqual(100)
@@ -742,6 +754,7 @@ describe('interactionUpdate with user changed strategy', () => {
           "y": 210,
         },
         "globalTime": 1000,
+        "hasMouseMoved": false,
         "modifiers": Object {
           "alt": false,
           "cmd": false,
@@ -783,6 +796,7 @@ describe('interactionUpdate with user changed strategy', () => {
         "sortedApplicableStrategies": null,
         "startingAllElementProps": Object {},
         "startingMetadata": Object {},
+        "status": "success",
       }
     `)
     expect(actualResult.patchedEditorState.canvas.scale).toEqual(1)
@@ -802,6 +816,7 @@ describe('only update metadata on SAVE_DOM_REPORT', () => {
       'new-entry': {
         elementPath: EP.fromString('new-entry'),
         specialSizeMeasurements: { position: 'absolute' },
+        element: right(jsxElement('div', 'aaa', [], [])),
       } as ElementInstanceMetadata,
     }
 
@@ -846,6 +861,7 @@ describe('only update metadata on SAVE_DOM_REPORT', () => {
       'new-entry': {
         elementPath: EP.fromString('new-entry'),
         specialSizeMeasurements: { position: 'absolute' },
+        element: right(jsxElement('div', 'aaa', [], [])),
       } as ElementInstanceMetadata,
     }
 
