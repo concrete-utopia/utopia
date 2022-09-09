@@ -32,7 +32,7 @@ import {
   adjustCssLengthProperty,
 } from '../commands/adjust-css-length-command'
 import { pointGuidelineToBoundsEdge } from '../controls/guideline-helpers'
-import { GuidelineWithSnappingVector } from '../guideline'
+import { GuidelineWithSnappingVectorAndPointsOfRelevance } from '../guideline'
 import { AbsolutePin } from './absolute-resize-helpers'
 
 export function createResizeCommands(
@@ -274,7 +274,7 @@ export function runLegacyAbsoluteResizeSnapping(
 ): {
   snapDelta: CanvasVector
   snappedBoundingBox: CanvasRectangle
-  guidelinesWithSnappingVector: Array<GuidelineWithSnappingVector>
+  guidelinesWithSnappingVector: Array<GuidelineWithSnappingVectorAndPointsOfRelevance>
 } {
   const oppositeCorner: EdgePosition = {
     x: 1 - draggedCorner.x,

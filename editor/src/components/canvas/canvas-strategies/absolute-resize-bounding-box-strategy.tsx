@@ -31,6 +31,7 @@ import {
   CanvasStrategy,
   emptyStrategyApplicationResult,
   getTargetPathsFromInteractionTarget,
+  strategyApplicationResult,
 } from './canvas-strategy-types'
 import { getDragTargets, getMultiselectBounds } from './shared-absolute-move-strategy-helpers'
 import {
@@ -46,7 +47,7 @@ import { honoursPropsPosition, honoursPropsSize } from './absolute-utils'
 
 export const absoluteResizeBoundingBoxStrategy: CanvasStrategy = {
   id: 'ABSOLUTE_RESIZE_BOUNDING_BOX',
-  name: 'Absolute Resize',
+  name: 'Resize',
   isApplicable: (canvasState, interactionState, metadata, allElementProps) => {
     const selectedElements = getTargetPathsFromInteractionTarget(canvasState.interactionTarget)
     if (selectedElements.length > 0) {
@@ -170,24 +171,18 @@ export const absoluteResizeBoundingBoxStrategy: CanvasStrategy = {
               ]
             },
           )
-          return {
-            commands: [
-              ...commandsForSelectedElements,
-              updateHighlightedViews('mid-interaction', []),
-              setCursorCommand('mid-interaction', pickCursorFromEdgePosition(edgePosition)),
-              setElementsToRerenderCommand(selectedElements),
-            ],
-            customState: null,
-          }
+          return strategyApplicationResult([
+            ...commandsForSelectedElements,
+            updateHighlightedViews('mid-interaction', []),
+            setCursorCommand('mid-interaction', pickCursorFromEdgePosition(edgePosition)),
+            setElementsToRerenderCommand(selectedElements),
+          ])
         }
       } else {
-        return {
-          commands: [
-            setCursorCommand('mid-interaction', pickCursorFromEdgePosition(edgePosition)),
-            updateHighlightedViews('mid-interaction', []),
-          ],
-          customState: null,
-        }
+        return strategyApplicationResult([
+          setCursorCommand('mid-interaction', pickCursorFromEdgePosition(edgePosition)),
+          updateHighlightedViews('mid-interaction', []),
+        ])
       }
     }
     // Fallback for when the checks above are not satisfied.

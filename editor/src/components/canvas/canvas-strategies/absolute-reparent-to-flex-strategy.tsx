@@ -17,7 +17,7 @@ import { getDragTargets } from './shared-absolute-move-strategy-helpers'
 
 export const absoluteReparentToFlexStrategy: CanvasStrategy = {
   id: 'ABSOLUTE_REPARENT_TO_FLEX',
-  name: 'Absolute Reparent to Flex',
+  name: 'Reparent (Abs to Flex)',
   isApplicable: function (
     canvasState: InteractionCanvasState,
     interactionSession: InteractionSession | null,

@@ -8,7 +8,7 @@ import {
   collectParentAndSiblingGuidelines,
   oneGuidelinePerDimension,
 } from '../controls/guideline-helpers'
-import { GuidelineWithSnappingVector, Guidelines } from '../guideline'
+import { GuidelineWithSnappingVectorAndPointsOfRelevance, Guidelines } from '../guideline'
 import {
   getTargetPathsFromInteractionTarget,
   InteractionCanvasState,
@@ -93,54 +93,58 @@ export function getKeyboardStrategyGuidelines(
   canvasState: InteractionCanvasState,
   interactionState: InteractionSession,
   draggedFrame: CanvasRectangle,
-): Array<GuidelineWithSnappingVector> {
+): Array<GuidelineWithSnappingVectorAndPointsOfRelevance> {
   const selectedElements = getTargetPathsFromInteractionTarget(canvasState.interactionTarget)
   const moveGuidelines = collectParentAndSiblingGuidelines(
     interactionState.metadata,
     selectedElements,
-  )
+  ).map((g) => g.guideline)
+
   const { horizontalPoints, verticalPoints } = Utils.getRectPointsAlongAxes(draggedFrame)
-  const closestGuideLines: Array<GuidelineWithSnappingVector> = mapDropNulls((guideline) => {
-    switch (guideline.type) {
-      case 'XAxisGuideline': {
-        const snappingVector = Guidelines.getOffsetToSnapToXGuideline(
-          horizontalPoints,
-          guideline,
-          null,
-        )
-        if (Utils.magnitude(snappingVector) === 0) {
-          return {
-            guideline: guideline,
-            snappingVector: snappingVector,
-            activateSnap: true,
+  const closestGuideLines: Array<GuidelineWithSnappingVectorAndPointsOfRelevance> = mapDropNulls(
+    (guideline) => {
+      switch (guideline.type) {
+        case 'XAxisGuideline': {
+          const snappingVector = Guidelines.getOffsetToSnapToXGuideline(
+            horizontalPoints,
+            guideline,
+            null,
+          )
+          if (Utils.magnitude(snappingVector) === 0) {
+            return {
+              guideline: guideline,
+              snappingVector: snappingVector,
+              pointsOfRelevance: [],
+            } as GuidelineWithSnappingVectorAndPointsOfRelevance
+          } else {
+            return null
           }
-        } else {
-          return null
         }
-      }
-      case 'YAxisGuideline': {
-        const snappingVector = Guidelines.getOffsetToSnapToYGuideline(
-          verticalPoints,
-          guideline,
-          null,
-        )
-        if (Utils.magnitude(snappingVector) === 0) {
-          return {
-            guideline: guideline,
-            snappingVector: snappingVector,
-            activateSnap: true,
+        case 'YAxisGuideline': {
+          const snappingVector = Guidelines.getOffsetToSnapToYGuideline(
+            verticalPoints,
+            guideline,
+            null,
+          )
+          if (Utils.magnitude(snappingVector) === 0) {
+            return {
+              guideline: guideline,
+              snappingVector: snappingVector,
+              pointsOfRelevance: [],
+            } as GuidelineWithSnappingVectorAndPointsOfRelevance
+          } else {
+            return null
           }
-        } else {
-          return null
         }
+        case 'CornerGuideline':
+          return null
+        default:
+          const _exhaustiveCheck: never = guideline
+          throw new Error(`Unexpected value for guideline of type: ${guideline}`)
       }
-      case 'CornerGuideline':
-        return null
-      default:
-        const _exhaustiveCheck: never = guideline
-        throw new Error(`Unexpected value for guideline of type: ${guideline}`)
-    }
-  }, moveGuidelines)
+    },
+    moveGuidelines,
+  )
   const winningGuidelines = oneGuidelinePerDimension(closestGuideLines)
   return winningGuidelines
 }

@@ -5,6 +5,7 @@ import {
   emptyStrategyApplicationResult,
   getTargetPathsFromInteractionTarget,
   InteractionCanvasState,
+  strategyApplicationResult,
 } from './canvas-strategy-types'
 import {
   CanvasRectangle,
@@ -33,11 +34,8 @@ import {
 } from './shared-keyboard-strategy-helpers'
 import { mapDropNulls } from '../../../core/shared/array-utils'
 import { defaultIfNull } from '../../../core/shared/optional-utils'
-import {
-  collectParentAndSiblingGuidelines,
-  oneGuidelinePerDimension,
-} from '../controls/guideline-helpers'
-import { GuidelineWithSnappingVector, Guidelines } from '../guideline'
+import { oneGuidelinePerDimension } from '../controls/guideline-helpers'
+import { GuidelineWithSnappingVectorAndPointsOfRelevance, Guidelines } from '../guideline'
 import Utils from '../../../utils/utils'
 import { StrategyState, InteractionSession } from './interaction-state'
 import { pushIntendedBounds } from '../commands/push-intended-bounds-command'
@@ -46,7 +44,7 @@ import { honoursPropsPosition } from './absolute-utils'
 
 export const keyboardAbsoluteMoveStrategy: CanvasStrategy = {
   id: 'KEYBOARD_ABSOLUTE_MOVE',
-  name: 'Keyboard Absolute Move',
+  name: 'Move',
   isApplicable: (canvasState, _interactionState, metadata) => {
     const selectedElements = getTargetPathsFromInteractionTarget(canvasState.interactionTarget)
     if (selectedElements.length > 0) {
@@ -135,10 +133,7 @@ export const keyboardAbsoluteMoveStrategy: CanvasStrategy = {
       commands.push(setSnappingGuidelines('mid-interaction', guidelines))
       commands.push(pushIntendedBounds(intendedBounds))
       commands.push(setElementsToRerenderCommand(selectedElements))
-      return {
-        commands: commands,
-        customState: null,
-      }
+      return strategyApplicationResult(commands)
     } else {
       return emptyStrategyApplicationResult
     }

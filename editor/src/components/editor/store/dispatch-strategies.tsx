@@ -11,6 +11,7 @@ import {
   interactionSessionHardReset,
   isKeyboardInteractionData,
   KeyboardInteractionData,
+  StrategyApplicationStatus,
   StrategyState,
 } from '../../canvas/canvas-strategies/interaction-state'
 import { foldAndApplyCommands } from '../../canvas/commands/commands'
@@ -25,7 +26,11 @@ import { InnerDispatchResult } from './dispatch'
 import { DerivedState, deriveState, EditorState, EditorStoreFull } from './editor-state'
 import {
   CanvasStrategy,
+  CustomStrategyState,
+  CustomStrategyStatePatch,
   InteractionCanvasState,
+  strategyApplicationResult,
+  StrategyApplicationResult,
 } from '../../canvas/canvas-strategies/canvas-strategy-types'
 import { isFeatureEnabled } from '../../../utils/feature-switches'
 import { PERFORMANCE_MARKS_ALLOWED } from '../../../common/env-vars'
@@ -157,8 +162,12 @@ export function interactionHardReset(
         accumulatedPatches: [],
         commandDescriptions: commandResult.commandDescriptions,
         sortedApplicableStrategies: sortedApplicableStrategies,
+        status: strategyResult.status,
         startingMetadata: resetStrategyState.startingMetadata,
-        customStrategyState: strategyResult.customState ?? result.strategyState.customStrategyState,
+        customStrategyState: patchCustomStrategyState(
+          result.strategyState.customStrategyState,
+          strategyResult.customStatePatch,
+        ),
         startingAllElementProps: resetStrategyState.startingAllElementProps,
       }
 
@@ -304,8 +313,12 @@ export function interactionStart(
         accumulatedPatches: [],
         commandDescriptions: commandResult.commandDescriptions,
         sortedApplicableStrategies: sortedApplicableStrategies,
+        status: strategyResult.status,
         startingMetadata: newEditorState.canvas.interactionSession.metadata,
-        customStrategyState: strategyResult.customState ?? result.strategyState.customStrategyState,
+        customStrategyState: patchCustomStrategyState(
+          result.strategyState.customStrategyState,
+          strategyResult.customStatePatch,
+        ),
         startingAllElementProps: newEditorState.canvas.interactionSession.allElementProps,
       }
 
@@ -395,8 +408,12 @@ function handleUserChangedStrategy(
       accumulatedPatches: commandResult.accumulatedPatches,
       commandDescriptions: commandResult.commandDescriptions,
       sortedApplicableStrategies: sortedApplicableStrategies,
+      status: strategyResult.status,
       startingMetadata: strategyState.startingMetadata,
-      customStrategyState: strategyResult.customState ?? strategyState.customStrategyState,
+      customStrategyState: patchCustomStrategyState(
+        strategyState.customStrategyState,
+        strategyResult.customStatePatch,
+      ),
       startingAllElementProps: strategyState.startingAllElementProps,
     }
 
@@ -455,10 +472,7 @@ function handleAccumulatingKeypresses(
               updatedInteractionSession,
               strategyState,
             )
-          : {
-              commands: [],
-              customState: strategyState.customStrategyState,
-            }
+          : strategyApplicationResult([])
       const commandResult = foldAndApplyCommands(
         updatedEditorState,
         storedEditorState,
@@ -474,8 +488,12 @@ function handleAccumulatingKeypresses(
         accumulatedPatches: commandResult.accumulatedPatches,
         commandDescriptions: commandResult.commandDescriptions,
         sortedApplicableStrategies: sortedApplicableStrategies,
+        status: strategyResult.status,
         startingMetadata: strategyState.startingMetadata,
-        customStrategyState: strategyResult.customState ?? strategyState.customStrategyState,
+        customStrategyState: patchCustomStrategyState(
+          strategyState.customStrategyState,
+          strategyResult.customStatePatch,
+        ),
         startingAllElementProps: strategyState.startingAllElementProps,
       }
 
@@ -516,10 +534,7 @@ function handleUpdate(
             newEditorState.canvas.interactionSession,
             strategyState,
           )
-        : {
-            commands: [],
-            customState: strategyState.customStrategyState,
-          }
+        : strategyApplicationResult([])
     const commandResult = foldAndApplyCommands(
       newEditorState,
       storedEditorState,
@@ -535,8 +550,12 @@ function handleUpdate(
       accumulatedPatches: strategyState.accumulatedPatches,
       commandDescriptions: commandResult.commandDescriptions,
       sortedApplicableStrategies: sortedApplicableStrategies,
+      status: strategyResult.status,
       startingMetadata: strategyState.startingMetadata,
-      customStrategyState: strategyResult.customState ?? strategyState.customStrategyState,
+      customStrategyState: patchCustomStrategyState(
+        strategyState.customStrategyState,
+        strategyResult.customStatePatch,
+      ),
       startingAllElementProps: strategyState.startingAllElementProps,
     }
     return {
@@ -711,5 +730,15 @@ function handleStrategiesInner(
         return interactionUpdate(strategies, storedState, result, isInteractionAction)
       }
     }
+  }
+}
+
+function patchCustomStrategyState(
+  existingState: CustomStrategyState,
+  patch: CustomStrategyStatePatch,
+): CustomStrategyState {
+  return {
+    ...existingState,
+    ...patch,
   }
 }

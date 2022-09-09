@@ -1,21 +1,15 @@
 import { MetadataUtils } from '../../../core/model/element-metadata-utils'
 import { ElementInstanceMetadataMap } from '../../../core/shared/element-template'
-import { offsetPoint, rectContainsPoint } from '../../../core/shared/math-utils'
+import { CanvasVector, offsetPoint, rectContainsPoint } from '../../../core/shared/math-utils'
 import { ElementPath } from '../../../core/shared/project-file-types'
 import { reorderElement } from '../commands/reorder-element-command'
 import {
   CanvasStrategy,
   emptyStrategyApplicationResult,
   getTargetPathsFromInteractionTarget,
+  strategyApplicationResult,
 } from './canvas-strategy-types'
-import {
-  CanvasPoint,
-  canvasPoint,
-  CanvasVector,
-  CanvasRectangle,
-} from '../../../core/shared/math-utils'
 import * as EP from '../../../core/shared/element-path'
-import { reverse, stripNulls } from '../../../core/shared/array-utils'
 import { DragOutlineControl } from '../controls/select-mode/drag-outline-control'
 import { CSSCursor } from '../canvas-types'
 import { setCursorCommand } from '../commands/set-cursor-command'
@@ -24,10 +18,11 @@ import { updateHighlightedViews } from '../commands/update-highlighted-views-com
 import { setElementsToRerenderCommand } from '../commands/set-elements-to-rerender-command'
 import { ParentBounds } from '../controls/parent-bounds'
 import { absolute } from '../../../utils/utils'
+import { isReorderAllowed } from './reorder-utils'
 
 export const flexReorderStrategy: CanvasStrategy = {
   id: 'FLEX_REORDER',
-  name: 'Flex Reorder',
+  name: 'Reorder (Flex)',
   isApplicable: (canvasState, _interactionState, metadata) => {
     const selectedElements = getTargetPathsFromInteractionTarget(canvasState.interactionTarget)
     if (selectedElements.length == 1) {
@@ -76,11 +71,18 @@ export const flexReorderStrategy: CanvasStrategy = {
       const selectedElements = getTargetPathsFromInteractionTarget(canvasState.interactionTarget)
 
       const target = selectedElements[0]
-
       const siblingsOfTarget = MetadataUtils.getSiblings(
         strategyState.startingMetadata,
         target,
       ).map((element) => element.elementPath)
+
+      if (!isReorderAllowed(siblingsOfTarget)) {
+        return strategyApplicationResult(
+          [setCursorCommand('mid-interaction', CSSCursor.NotPermitted)],
+          {},
+          'failure',
+        )
+      }
 
       const pointOnCanvas = offsetPoint(
         interactionState.interactionData.dragStart,
@@ -99,36 +101,31 @@ export const flexReorderStrategy: CanvasStrategy = {
       const realNewIndex = newIndex > -1 ? newIndex : lastReorderIdx
 
       if (realNewIndex === unpatchedIndex) {
-        return {
-          commands: [
+        return strategyApplicationResult(
+          [
             updateHighlightedViews('mid-interaction', []),
             setCursorCommand('mid-interaction', CSSCursor.Move),
           ],
-          customState: {
-            ...strategyState.customStrategyState,
+          {
             lastReorderIdx: realNewIndex,
           },
-        }
+        )
       } else {
-        return {
-          commands: [
+        return strategyApplicationResult(
+          [
             reorderElement('always', target, absolute(realNewIndex)),
             setElementsToRerenderCommand([target]),
             updateHighlightedViews('mid-interaction', []),
             setCursorCommand('mid-interaction', CSSCursor.Move),
           ],
-          customState: {
-            ...strategyState.customStrategyState,
+          {
             lastReorderIdx: realNewIndex,
           },
-        }
+        )
       }
     } else {
       // Fallback for when the checks above are not satisfied.
-      return {
-        commands: [setCursorCommand('mid-interaction', CSSCursor.Move)],
-        customState: null,
-      }
+      return strategyApplicationResult([setCursorCommand('mid-interaction', CSSCursor.Move)])
     }
   },
 }

@@ -23,6 +23,7 @@ import {
   emptyStrategyApplicationResult,
   getTargetPathsFromInteractionTarget,
   InteractionCanvasState,
+  strategyApplicationResult,
   StrategyApplicationResult,
 } from './canvas-strategy-types'
 import { getEscapeHatchCommands } from './escape-hatch-strategy'
@@ -33,7 +34,7 @@ import { getDragTargets } from './shared-absolute-move-strategy-helpers'
 
 export const flexReparentToAbsoluteStrategy: CanvasStrategy = {
   id: 'FLEX_REPARENT_TO_ABSOLUTE',
-  name: 'Flex Reparent to Absolute',
+  name: 'Reparent (Flex to Abs)',
   isApplicable: (canvasState, _interactionState, metadata) => {
     const selectedElements = getTargetPathsFromInteractionTarget(canvasState.interactionTarget)
     if (selectedElements.length == 1) {
@@ -135,22 +136,19 @@ export const flexReparentToAbsoluteStrategy: CanvasStrategy = {
         canvasPoint({ x: 0, y: 0 }),
       ).commands
 
-      return {
-        commands: [
-          ...placeholderCloneCommands,
-          ...escapeHatchCommands,
-          updateFunctionCommand('always', (editorState, lifecycle): Array<EditorStatePatch> => {
-            return runAbsoluteReparentStrategyForFreshlyConvertedElement(
-              canvasState.builtInDependencies,
-              editorState,
-              strategyState,
-              interactionState,
-              lifecycle,
-            )
-          }),
-        ],
-        customState: null,
-      }
+      return strategyApplicationResult([
+        ...placeholderCloneCommands,
+        ...escapeHatchCommands,
+        updateFunctionCommand('always', (editorState, lifecycle): Array<EditorStatePatch> => {
+          return runAbsoluteReparentStrategyForFreshlyConvertedElement(
+            canvasState.builtInDependencies,
+            editorState,
+            strategyState,
+            interactionState,
+            lifecycle,
+          )
+        }),
+      ])
     })
   },
 }

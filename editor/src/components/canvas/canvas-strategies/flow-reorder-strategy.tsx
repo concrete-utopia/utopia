@@ -13,6 +13,7 @@ import {
   emptyStrategyApplicationResult,
   getTargetPathsFromInteractionTarget,
   InteractionCanvasState,
+  strategyApplicationResult,
   StrategyApplicationResult,
 } from './canvas-strategy-types'
 import { absolute } from '../../../utils/utils'
@@ -24,6 +25,8 @@ import {
   FlowReorderDragOutline,
 } from '../controls/flow-reorder-indicators'
 import { AllElementProps } from '../../editor/store/editor-state'
+import { isGeneratedElement } from './reparent-helpers'
+import { isReorderAllowed } from './reorder-utils'
 
 function isFlowReorderConversionApplicable(
   canvasState: InteractionCanvasState,
@@ -31,7 +34,7 @@ function isFlowReorderConversionApplicable(
   metadata: ElementInstanceMetadataMap,
   allElementProps: AllElementProps,
   displayTypeFiltering: 'no-filter' | 'requires-mixed-display-type' = 'requires-mixed-display-type',
-) {
+): boolean {
   const selectedElements = getTargetPathsFromInteractionTarget(canvasState.interactionTarget)
   if (selectedElements.length === 1) {
     const target = selectedElements[0]
@@ -76,6 +79,14 @@ function flowReorderApplyCommon(
       (element) => element.elementPath,
     )
 
+    if (!isReorderAllowed(siblingsOfTarget)) {
+      return strategyApplicationResult(
+        [setCursorCommand('mid-interaction', CSSCursor.NotPermitted)],
+        {},
+        'failure',
+      )
+    }
+
     const rawPointOnCanvas = offsetPoint(
       interactionState.interactionData.dragStart,
       interactionState.interactionData.drag,
@@ -98,44 +109,39 @@ function flowReorderApplyCommon(
     const realNewIndex = newIndex > -1 ? newIndex : lastReorderIdx
 
     if (realNewIndex === unpatchedIndex) {
-      return {
-        commands: [
+      return strategyApplicationResult(
+        [
           setElementsToRerenderCommand(siblingsOfTarget),
           updateHighlightedViews('mid-interaction', []),
           setCursorCommand('mid-interaction', CSSCursor.Move),
         ],
-        customState: {
-          ...strategyState.customStrategyState,
+        {
           lastReorderIdx: realNewIndex,
         },
-      }
+      )
     } else {
-      return {
-        commands: [
+      return strategyApplicationResult(
+        [
           reorderElement('always', target, absolute(realNewIndex)),
           setElementsToRerenderCommand(siblingsOfTarget),
           updateHighlightedViews('mid-interaction', []),
           setCursorCommand('mid-interaction', CSSCursor.Move),
           ...getOptionalDisplayPropCommands(target, newDisplayType, withAutoConversion),
         ],
-        customState: {
-          ...strategyState.customStrategyState,
+        {
           lastReorderIdx: realNewIndex,
         },
-      }
+      )
     }
   } else {
     // Fallback for when the checks above are not satisfied.
-    return {
-      commands: [setCursorCommand('mid-interaction', CSSCursor.Move)],
-      customState: null,
-    }
+    return strategyApplicationResult([setCursorCommand('mid-interaction', CSSCursor.Move)])
   }
 }
 
 export const flowReorderAutoConversionStategy: CanvasStrategy = {
   id: 'FLOW_REORDER_AUTO_CONVERSION',
-  name: 'Flow Reorder (Auto Conversion)',
+  name: 'Reorder (Flow, Auto)',
   isApplicable: isFlowReorderConversionApplicable,
   controlsToRender: [
     {
@@ -179,7 +185,7 @@ export const flowReorderAutoConversionStategy: CanvasStrategy = {
 
 export const flowReorderNoConversionStategy: CanvasStrategy = {
   id: 'FLOW_REORDER_NO_CONVERSION',
-  name: 'Flow Reorder (No Conversion)',
+  name: 'Reorder (Flow)',
   isApplicable: isFlowReorderConversionApplicable,
   controlsToRender: flowReorderAutoConversionStategy.controlsToRender,
   fitness: (canvasState, interactionState, strategyState) => {
@@ -207,7 +213,7 @@ export const flowReorderNoConversionStategy: CanvasStrategy = {
 
 export const flowReorderSameTypeOnlyStategy: CanvasStrategy = {
   id: 'FLOW_REORDER_SAME_TYPE_ONLY',
-  name: 'Flow Reorder (Same Display Type)',
+  name: 'Reorder (Same)',
   isApplicable: (canvasState, interactionState, strategyState, allElementProps) => {
     return isFlowReorderConversionApplicable(
       canvasState,

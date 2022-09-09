@@ -21,6 +21,16 @@ export type Point<C extends CoordinateMarker> = PointInner & C
 export type RawPoint = RawModifier & PointInner
 export type WindowPoint = WindowModifier & PointInner
 export type CanvasPoint = CanvasModifier & PointInner
+export interface Segment<C extends CoordinateMarker> {
+  a: Point<C>
+  b: Point<C>
+}
+
+export type CanvasSegment = Segment<CanvasModifier>
+export function canvasSegment(a: CanvasPoint, b: CanvasPoint): CanvasSegment {
+  return { a: a, b: b }
+}
+
 export function canvasPoint(p: PointInner): CanvasPoint {
   return p as CanvasPoint
 }
@@ -970,11 +980,43 @@ export function canvasRectangleToLocalRectangle(
   canvasRect: CanvasRectangle,
   parentRect: CanvasRectangle,
 ): LocalRectangle {
-  const diff = pointDifference(parentRect, canvasRect)
+  const diff = roundPointToNearestHalf(pointDifference(parentRect, canvasRect))
   return localRectangle({
     x: diff.x,
     y: diff.y,
     width: canvasRect.width,
     height: canvasRect.height,
   })
+}
+
+// https://algs4.cs.princeton.edu/91primitives/
+function segmentsIntersect(a: CanvasSegment, b: CanvasSegment): boolean {
+  function counterClockwise(p1: CanvasPoint, p2: CanvasPoint, p3: CanvasPoint): number {
+    return (p2.y - p1.y) * (p3.x - p1.x) - (p3.y - p1.y) * (p2.x - p1.x)
+  }
+
+  if (counterClockwise(a.a, a.b, b.a) * counterClockwise(a.a, a.b, b.b) > 0) {
+    return false
+  }
+  if (counterClockwise(b.a, b.b, a.a) * counterClockwise(b.a, b.b, a.b) > 0) {
+    return false
+  }
+
+  return true
+}
+
+export function segmentIntersection(
+  leftSegment: CanvasSegment,
+  rightSegment: CanvasSegment,
+): CanvasPoint | null {
+  const pointOfIntersection = lineIntersection(
+    leftSegment.a,
+    leftSegment.b,
+    rightSegment.a,
+    rightSegment.b,
+  )
+  if (segmentsIntersect(leftSegment, rightSegment)) {
+    return pointOfIntersection
+  }
+  return null
 }

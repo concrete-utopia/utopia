@@ -203,7 +203,7 @@ function reorderElement(
     } as StrategyState,
   )
 
-  expect(strategyResult.customState?.lastReorderIdx).toEqual(newIndex)
+  expect(strategyResult.customStatePatch?.lastReorderIdx).toEqual(newIndex)
 
   const finalEditor = foldAndApplyCommands(
     editorState,

@@ -14,12 +14,13 @@ import { updateHighlightedViews } from '../commands/update-highlighted-views-com
 import { ParentBounds } from '../controls/parent-bounds'
 import { ParentOutlines } from '../controls/parent-outlines'
 import { determineConstrainedDragAxis } from '../controls/select-mode/move-utils'
-import { ConstrainedDragAxis, GuidelineWithSnappingVector } from '../guideline'
+import { ConstrainedDragAxis, GuidelineWithSnappingVectorAndPointsOfRelevance } from '../guideline'
 import {
   CanvasStrategy,
   emptyStrategyApplicationResult,
   getTargetPathsFromInteractionTarget,
   InteractionCanvasState,
+  strategyApplicationResult,
   StrategyApplicationResult,
 } from './canvas-strategy-types'
 import { DragInteractionData, InteractionSession, StrategyState } from './interaction-state'
@@ -34,7 +35,7 @@ import { collectParentAndSiblingGuidelines } from '../controls/guideline-helpers
 
 export const absoluteMoveStrategy: CanvasStrategy = {
   id: 'ABSOLUTE_MOVE',
-  name: 'Absolute Move (Delta-based)',
+  name: 'Move',
   isApplicable: (canvasState, _interactionState, metadata) => {
     const selectedElements = getTargetPathsFromInteractionTarget(canvasState.interactionTarget)
     if (selectedElements.length > 0) {
@@ -134,16 +135,13 @@ export function applyAbsoluteMoveCommon(
     if (cmdKeyPressed) {
       const commandsForSelectedElements = getMoveCommands(drag)
 
-      return {
-        commands: [
-          ...commandsForSelectedElements.commands,
-          pushIntendedBounds(commandsForSelectedElements.intendedBounds),
-          updateHighlightedViews('mid-interaction', []),
-          setElementsToRerenderCommand(selectedElements),
-          setCursorCommand('mid-interaction', CSSCursor.Select),
-        ],
-        customState: null,
-      }
+      return strategyApplicationResult([
+        ...commandsForSelectedElements.commands,
+        pushIntendedBounds(commandsForSelectedElements.intendedBounds),
+        updateHighlightedViews('mid-interaction', []),
+        setElementsToRerenderCommand(selectedElements),
+        setCursorCommand('mid-interaction', CSSCursor.Select),
+      ])
     } else {
       const constrainedDragAxis =
         shiftKeyPressed && drag != null ? determineConstrainedDragAxis(drag) : null
@@ -165,17 +163,14 @@ export function applyAbsoluteMoveCommon(
         canvasState.scale,
       )
       const commandsForSelectedElements = getMoveCommands(snappedDragVector)
-      return {
-        commands: [
-          ...commandsForSelectedElements.commands,
-          updateHighlightedViews('mid-interaction', []),
-          setSnappingGuidelines('mid-interaction', guidelinesWithSnappingVector),
-          pushIntendedBounds(commandsForSelectedElements.intendedBounds),
-          setElementsToRerenderCommand([...selectedElements, ...targetsForSnapping]),
-          setCursorCommand('mid-interaction', CSSCursor.Select),
-        ],
-        customState: null,
-      }
+      return strategyApplicationResult([
+        ...commandsForSelectedElements.commands,
+        updateHighlightedViews('mid-interaction', []),
+        setSnappingGuidelines('mid-interaction', guidelinesWithSnappingVector),
+        pushIntendedBounds(commandsForSelectedElements.intendedBounds),
+        setElementsToRerenderCommand([...selectedElements, ...targetsForSnapping]),
+        setCursorCommand('mid-interaction', CSSCursor.Select),
+      ])
     }
   } else {
     // Fallback for when the checks above are not satisfied.

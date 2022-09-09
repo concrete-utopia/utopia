@@ -260,6 +260,15 @@ function on(
   canvasBounds: WindowRectangle | null,
 ): Array<EditorAction> {
   let additionalEvents: Array<EditorAction> = []
+
+  if (event.event === 'MOVE' && event.nativeEvent.buttons === 4) {
+    return [
+      CanvasActions.scrollCanvas(
+        canvasPoint({ x: -event.nativeEvent.movementX, y: -event.nativeEvent.movementY }),
+      ),
+    ]
+  }
+
   if (canvas.keysPressed['space']) {
     if (event.event === 'MOVE' && event.nativeEvent.buttons === 1) {
       return [
@@ -1187,7 +1196,7 @@ export class EditorCanvas extends React.Component<EditorCanvasProps> {
   handleMouseMove = (event: MouseEvent) => {
     if (this.canvasSelected()) {
       const canvasPositions = this.getPosition(event)
-      if (this.props.model.keysPressed['space']) {
+      if (this.props.model.keysPressed['space'] || event.buttons === 4) {
         this.handleEvent({
           ...canvasPositions,
           event: 'MOVE',
