@@ -206,8 +206,8 @@ export const MetadataUtils = {
 
     const parentPath = EP.parentPath(target)
     const siblingPathsOrNull = EP.isRootElementOfInstance(target)
-      ? MetadataUtils.getRootViewPaths(metadata, parentPath)
-      : MetadataUtils.getChildrenPaths(metadata, parentPath)
+      ? MetadataUtils.getRootViewPathsProjectContentsOrdered(metadata, parentPath)
+      : MetadataUtils.getChildrenPathsProjectContentsOrdered(metadata, parentPath)
     const siblingPaths = siblingPathsOrNull ?? []
     return MetadataUtils.findElementsByElementPath(metadata, siblingPaths)
   },
@@ -404,6 +404,19 @@ export const MetadataUtils = {
     }, Object.keys(elements))
     return possibleRootElementsOfTarget
   },
+  getRootViewPathsProjectContentsOrdered(
+    elements: ElementInstanceMetadataMap,
+    target: ElementPath,
+  ): Array<ElementPath> {
+    const possibleRootElementsOfTarget = mapDropNulls((elementPath) => {
+      if (EP.isRootElementOf(elementPath, target)) {
+        return elementPath
+      } else {
+        return null
+      }
+    }, MetadataUtils.createOrderedElementPathsFromElements(elements, []).navigatorTargets)
+    return possibleRootElementsOfTarget
+  },
   getRootViews(
     elements: ElementInstanceMetadataMap,
     target: ElementPath,
@@ -427,6 +440,19 @@ export const MetadataUtils = {
         return null
       }
     }, Object.keys(elements))
+    return possibleChildren
+  },
+  getChildrenPathsProjectContentsOrdered(
+    elements: ElementInstanceMetadataMap,
+    target: ElementPath,
+  ): Array<ElementPath> {
+    const possibleChildren = mapDropNulls((elementPath) => {
+      if (EP.isChildOf(elementPath, target) && !EP.isRootElementOfInstance(elementPath)) {
+        return elementPath
+      } else {
+        return null
+      }
+    }, MetadataUtils.createOrderedElementPathsFromElements(elements, []).navigatorTargets)
     return possibleChildren
   },
   getChildren(
