@@ -331,9 +331,28 @@ export function isResizableStrategy(canvasStrategy: CanvasStrategy): boolean {
   }
 }
 
+export function interactionInProgress(interactionSession: InteractionSession | null): boolean {
+  if (interactionSession == null) {
+    return false
+  } else {
+    switch (interactionSession.interactionData.type) {
+      case 'DRAG':
+        return true
+      case 'KEYBOARD':
+        return true
+      default:
+        const _exhaustiveCheck: never = interactionSession.interactionData
+        throw new Error(`Unhandled interaction data type: ${interactionSession.interactionData}`)
+    }
+  }
+}
+
 export function useGetApplicableStrategyControls(): Array<ControlWithKey> {
   const applicableStrategies = useGetApplicableStrategies()
   const currentStrategy = useDelayedCurrentStrategy()
+  const currentlyInProgress = useEditorState((store) => {
+    return interactionInProgress(store.editor.canvas.interactionSession)
+  }, 'useGetApplicableStrategyControls currentlyInProgress')
   return React.useMemo(() => {
     let applicableControls: Array<ControlWithKey> = []
     let isResizable: boolean = false
@@ -350,11 +369,11 @@ export function useGetApplicableStrategyControls(): Array<ControlWithKey> {
       )
     }
     // Special case controls.
-    if (!isResizable) {
+    if (!isResizable && !currentlyInProgress) {
       applicableControls.push(notResizableControls)
     }
     return applicableControls
-  }, [applicableStrategies, currentStrategy])
+  }, [applicableStrategies, currentStrategy, currentlyInProgress])
 }
 
 export function isStrategyActive(strategyState: StrategyState): boolean {
