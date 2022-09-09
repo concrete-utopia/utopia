@@ -32,14 +32,15 @@ import { flexReparentToAbsoluteStrategy } from './flex-reparent-to-absolute-stra
 import { flexReparentToFlexStrategy } from './flex-reparent-to-flex-strategy'
 import { BuiltInDependencies } from '../../../core/es-modules/package-manager/built-in-dependencies-list'
 import {
-  flowReorderAutoConversionStategy,
-  flowReorderNoConversionStategy,
-  flowReorderSameTypeOnlyStategy,
+  flowReorderAutoConversionStrategy,
+  flowReorderNoConversionStrategy,
+  flowReorderSameTypeOnlyStrategy,
 } from './flow-reorder-strategy'
 import { isInsertMode } from '../../editor/editor-modes'
 import { dragToInsertStrategy } from './drag-to-insert-strategy'
 import { CSSCursor } from '../../../uuiui-deps'
 import { StateSelector } from 'zustand'
+import { NonResizableControl } from '../controls/select-mode/non-resizable-control'
 
 export const RegisteredCanvasStrategies: Array<CanvasStrategy> = [
   absoluteMoveStrategy,
@@ -54,9 +55,9 @@ export const RegisteredCanvasStrategies: Array<CanvasStrategy> = [
   // escapeHatchStrategy,  // TODO re-enable once reparent is not tied to cmd
   absoluteReparentToFlexStrategy,
   dragToInsertStrategy,
-  flowReorderAutoConversionStategy,
-  flowReorderNoConversionStategy,
-  flowReorderSameTypeOnlyStategy,
+  flowReorderAutoConversionStrategy,
+  flowReorderNoConversionStrategy,
+  flowReorderSameTypeOnlyStrategy,
 ]
 
 export function pickCanvasStateFromEditorState(
@@ -300,20 +301,59 @@ export const useDelayedStrategyCursor = () => {
   return useDelayedStrategy<CSSCursor | null>(selector)
 }
 
+const notResizableControls: ControlWithKey = {
+  control: NonResizableControl,
+  key: 'not-resizable-control',
+  show: 'visible-except-when-other-strategy-is-active',
+}
+
+export function getApplicableControls(
+  currentStrategy: CanvasStrategyId | null,
+  strategy: CanvasStrategy,
+): Array<ControlWithKey> {
+  return strategy.controlsToRender.filter((control) => {
+    return (
+      control.show === 'always-visible' ||
+      (control.show === 'visible-only-while-active' && strategy.id === currentStrategy) ||
+      (control.show === 'visible-except-when-other-strategy-is-active' &&
+        (currentStrategy == null || strategy.id === currentStrategy))
+    )
+  })
+}
+
+export function isResizableStrategy(canvasStrategy: CanvasStrategy): boolean {
+  switch (canvasStrategy.id) {
+    case 'ABSOLUTE_RESIZE_BOUNDING_BOX':
+    case 'KEYBOARD_ABSOLUTE_RESIZE':
+      return true
+    default:
+      return false
+  }
+}
+
 export function useGetApplicableStrategyControls(): Array<ControlWithKey> {
   const applicableStrategies = useGetApplicableStrategies()
   const currentStrategy = useDelayedCurrentStrategy()
   return React.useMemo(() => {
-    return applicableStrategies.reduce<ControlWithKey[]>((working, s) => {
-      const filteredControls = s.controlsToRender.filter(
-        (control) =>
-          control.show === 'always-visible' ||
-          (control.show === 'visible-only-while-active' && s.id === currentStrategy) ||
-          (control.show === 'visible-except-when-other-strategy-is-active' &&
-            (currentStrategy == null || s.id === currentStrategy)),
+    let applicableControls: Array<ControlWithKey> = []
+    let isResizable: boolean = false
+    // Add the controls for currently applicable strategies.
+    for (const strategy of applicableStrategies) {
+      if (isResizableStrategy(strategy)) {
+        isResizable = true
+      }
+      const strategyControls = getApplicableControls(currentStrategy, strategy)
+      applicableControls = addAllUniquelyBy(
+        applicableControls,
+        strategyControls,
+        (l, r) => l.control === r.control,
       )
-      return addAllUniquelyBy(working, filteredControls, (l, r) => l.control === r.control)
-    }, [])
+    }
+    // Special case controls.
+    if (!isResizable) {
+      applicableControls.push(notResizableControls)
+    }
+    return applicableControls
   }, [applicableStrategies, currentStrategy])
 }
 
