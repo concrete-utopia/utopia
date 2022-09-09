@@ -585,22 +585,26 @@ function useSelectOrLiveModeSelectAndHover(
   const onMouseMove = React.useCallback(
     (event: React.MouseEvent<HTMLDivElement>) => {
       // Do not handle the mouse move in the regular style if 'space' is pressed.
-      if (!editorStoreRef.current.editor.keysPressed['space']) {
-        innerOnMouseMove(event)
+      const isDragIntention =
+        editorStoreRef.current.editor.keysPressed['space'] || event.buttons === 4
+      if (isDragIntention) {
+        return
       }
+      innerOnMouseMove(event)
     },
     [innerOnMouseMove, editorStoreRef],
   )
   const mouseHandler = React.useCallback(
     (event: React.MouseEvent<HTMLDivElement>) => {
-      const isSpacePressed = editorStoreRef.current.editor.keysPressed['space']
+      const isDragIntention =
+        editorStoreRef.current.editor.keysPressed['space'] || event.button === 1
       const hasInteractionSessionWithMouseMoved =
         editorStoreRef.current.editor.canvas.interactionSession?.interactionData?.type === 'DRAG'
           ? editorStoreRef.current.editor.canvas.interactionSession?.interactionData?.drag != null
           : false
 
       // Skip all of this handling if 'space' is pressed or a mousemove happened in an interaction
-      if (!(isSpacePressed || hasInteractionSessionWithMouseMoved)) {
+      if (!(isDragIntention || hasInteractionSessionWithMouseMoved)) {
         const doubleClick = event.type === 'mousedown' && event.detail > 0 && event.detail % 2 === 0
         const selectableViews = getSelectableViewsForSelectMode(event.metaKey, doubleClick)
         const preferAlreadySelected = getPreferredSelectionForEvent(event.type, doubleClick)
