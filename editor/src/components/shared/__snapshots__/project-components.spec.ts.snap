@@ -52,26 +52,7 @@ Array [
               "propertyElements": Array [],
             },
           },
-          "props": Array [
-            Object {
-              "comments": Object {
-                "leadingComments": Array [],
-                "trailingComments": Array [],
-              },
-              "key": "style",
-              "type": "JSX_ATTRIBUTES_ENTRY",
-              "value": Object {
-                "comments": Object {
-                  "leadingComments": Array [],
-                  "trailingComments": Array [],
-                },
-                "type": "ATTRIBUTE_VALUE",
-                "value": Object {
-                  "position": "absolute",
-                },
-              },
-            },
-          ],
+          "props": Array [],
         },
         "importsToAdd": Object {
           "react": Object {
@@ -119,26 +100,7 @@ Array [
               "propertyElements": Array [],
             },
           },
-          "props": Array [
-            Object {
-              "comments": Object {
-                "leadingComments": Array [],
-                "trailingComments": Array [],
-              },
-              "key": "style",
-              "type": "JSX_ATTRIBUTES_ENTRY",
-              "value": Object {
-                "comments": Object {
-                  "leadingComments": Array [],
-                  "trailingComments": Array [],
-                },
-                "type": "ATTRIBUTE_VALUE",
-                "value": Object {
-                  "position": "absolute",
-                },
-              },
-            },
-          ],
+          "props": Array [],
         },
         "importsToAdd": Object {
           "react": Object {
@@ -162,26 +124,7 @@ Array [
               "propertyElements": Array [],
             },
           },
-          "props": Array [
-            Object {
-              "comments": Object {
-                "leadingComments": Array [],
-                "trailingComments": Array [],
-              },
-              "key": "style",
-              "type": "JSX_ATTRIBUTES_ENTRY",
-              "value": Object {
-                "comments": Object {
-                  "leadingComments": Array [],
-                  "trailingComments": Array [],
-                },
-                "type": "ATTRIBUTE_VALUE",
-                "value": Object {
-                  "position": "absolute",
-                },
-              },
-            },
-          ],
+          "props": Array [],
         },
         "importsToAdd": Object {
           "react": Object {
@@ -229,26 +172,7 @@ Array [
               "propertyElements": Array [],
             },
           },
-          "props": Array [
-            Object {
-              "comments": Object {
-                "leadingComments": Array [],
-                "trailingComments": Array [],
-              },
-              "key": "style",
-              "type": "JSX_ATTRIBUTES_ENTRY",
-              "value": Object {
-                "comments": Object {
-                  "leadingComments": Array [],
-                  "trailingComments": Array [],
-                },
-                "type": "ATTRIBUTE_VALUE",
-                "value": Object {
-                  "position": "absolute",
-                },
-              },
-            },
-          ],
+          "props": Array [],
         },
         "importsToAdd": Object {
           "react": Object {
@@ -272,26 +196,7 @@ Array [
               "propertyElements": Array [],
             },
           },
-          "props": Array [
-            Object {
-              "comments": Object {
-                "leadingComments": Array [],
-                "trailingComments": Array [],
-              },
-              "key": "style",
-              "type": "JSX_ATTRIBUTES_ENTRY",
-              "value": Object {
-                "comments": Object {
-                  "leadingComments": Array [],
-                  "trailingComments": Array [],
-                },
-                "type": "ATTRIBUTE_VALUE",
-                "value": Object {
-                  "position": "absolute",
-                },
-              },
-            },
-          ],
+          "props": Array [],
         },
         "importsToAdd": Object {
           "react": Object {
@@ -544,26 +449,7 @@ Array [
               "propertyElements": Array [],
             },
           },
-          "props": Array [
-            Object {
-              "comments": Object {
-                "leadingComments": Array [],
-                "trailingComments": Array [],
-              },
-              "key": "style",
-              "type": "JSX_ATTRIBUTES_ENTRY",
-              "value": Object {
-                "comments": Object {
-                  "leadingComments": Array [],
-                  "trailingComments": Array [],
-                },
-                "type": "ATTRIBUTE_VALUE",
-                "value": Object {
-                  "position": "absolute",
-                },
-              },
-            },
-          ],
+          "props": Array [],
         },
         "importsToAdd": Object {
           "react": Object {
@@ -611,26 +497,7 @@ Array [
               "propertyElements": Array [],
             },
           },
-          "props": Array [
-            Object {
-              "comments": Object {
-                "leadingComments": Array [],
-                "trailingComments": Array [],
-              },
-              "key": "style",
-              "type": "JSX_ATTRIBUTES_ENTRY",
-              "value": Object {
-                "comments": Object {
-                  "leadingComments": Array [],
-                  "trailingComments": Array [],
-                },
-                "type": "ATTRIBUTE_VALUE",
-                "value": Object {
-                  "position": "absolute",
-                },
-              },
-            },
-          ],
+          "props": Array [],
         },
         "importsToAdd": Object {
           "react": Object {
@@ -654,26 +521,7 @@ Array [
               "propertyElements": Array [],
             },
           },
-          "props": Array [
-            Object {
-              "comments": Object {
-                "leadingComments": Array [],
-                "trailingComments": Array [],
-              },
-              "key": "style",
-              "type": "JSX_ATTRIBUTES_ENTRY",
-              "value": Object {
-                "comments": Object {
-                  "leadingComments": Array [],
-                  "trailingComments": Array [],
-                },
-                "type": "ATTRIBUTE_VALUE",
-                "value": Object {
-                  "position": "absolute",
-                },
-              },
-            },
-          ],
+          "props": Array [],
         },
         "importsToAdd": Object {
           "react": Object {
@@ -721,26 +569,7 @@ Array [
               "propertyElements": Array [],
             },
           },
-          "props": Array [
-            Object {
-              "comments": Object {
-                "leadingComments": Array [],
-                "trailingComments": Array [],
-              },
-              "key": "style",
-              "type": "JSX_ATTRIBUTES_ENTRY",
-              "value": Object {
-                "comments": Object {
-                  "leadingComments": Array [],
-                  "trailingComments": Array [],
-                },
-                "type": "ATTRIBUTE_VALUE",
-                "value": Object {
-                  "position": "absolute",
-                },
-              },
-            },
-          ],
+          "props": Array [],
         },
         "importsToAdd": Object {
           "react": Object {
@@ -764,26 +593,7 @@ Array [
               "propertyElements": Array [],
             },
           },
-          "props": Array [
-            Object {
-              "comments": Object {
-                "leadingComments": Array [],
-                "trailingComments": Array [],
-              },
-              "key": "style",
-              "type": "JSX_ATTRIBUTES_ENTRY",
-              "value": Object {
-                "comments": Object {
-                  "leadingComments": Array [],
-                  "trailingComments": Array [],
-                },
-                "type": "ATTRIBUTE_VALUE",
-                "value": Object {
-                  "position": "absolute",
-                },
-              },
-            },
-          ],
+          "props": Array [],
         },
         "importsToAdd": Object {
           "react": Object {
