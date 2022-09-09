@@ -202,6 +202,10 @@ export var ${BakedInStoryboardVariableName} = (props) => {
 `
 }
 
+function positioningFromCss({ left, top }: CSSStyleDeclaration) {
+  return { left, top }
+}
+
 describe('Absolute Move Strategy', () => {
   before(() => {
     viewport.set(2200, 1000)
@@ -938,10 +942,25 @@ describe('Absolute Move Strategy Canvas Controls', () => {
 
     await startDragUsingActions(renderResult, target, dragDelta)
 
-    expect(renderResult.renderedDOM.getByTestId('xmark-0').style.display).toBeTruthy()
-    expect(renderResult.renderedDOM.getByTestId('xmark-1').style.display).toBeTruthy()
-    expect(renderResult.renderedDOM.getByTestId('xmark-2').style.display).toBeTruthy()
-    expect(renderResult.renderedDOM.getByTestId('xmark-3').style.display).toBeTruthy()
-    expect(renderResult.renderedDOM.getByTestId('xmark-4').style.display).toBeTruthy()
+    expect(positioningFromCss(renderResult.renderedDOM.getByTestId('xmark-0').style)).toEqual({
+      left: '67.5px',
+      top: '-2.5px',
+    })
+    expect(positioningFromCss(renderResult.renderedDOM.getByTestId('xmark-1').style)).toEqual({
+      left: '67.5px',
+      top: '27.5px',
+    })
+    expect(positioningFromCss(renderResult.renderedDOM.getByTestId('xmark-2').style)).toEqual({
+      left: '-2.5px',
+      top: '27.5px',
+    })
+    expect(positioningFromCss(renderResult.renderedDOM.getByTestId('xmark-3').style)).toEqual({
+      left: '67.5px',
+      top: '147.5px',
+    })
+    expect(positioningFromCss(renderResult.renderedDOM.getByTestId('xmark-4').style)).toEqual({
+      left: '267.5px',
+      top: '27.5px',
+    })
   })
 })
