@@ -58,9 +58,9 @@ export function collectSelfAndChildrenGuidelines(
   componentMetadata: ElementInstanceMetadataMap,
   targets: Array<ElementPath>,
   insertingElementId: string,
-): Array<Guideline> {
+): Array<GuidelineWithRelevantPoints> {
   const allPaths = MetadataUtils.getAllPaths(componentMetadata)
-  const result: Array<Guideline> = []
+  const result: Array<GuidelineWithRelevantPoints> = []
   Utils.fastForEach(targets, (target) => {
     const pinnedAndNotAbsolutePositioned = MetadataUtils.isPinnedAndNotAbsolutePositioned(
       componentMetadata,
@@ -70,7 +70,7 @@ export function collectSelfAndChildrenGuidelines(
       if (EP.toUid(target) !== insertingElementId) {
         const frame = MetadataUtils.getFrameInCanvasCoords(target, componentMetadata)
         if (frame != null) {
-          result.push(...Guidelines.guidelinesForFrame(frame, true))
+          result.push(...Guidelines.guidelinesWithRelevantPointsForFrame(frame, 'include'))
         }
       }
 
@@ -78,7 +78,7 @@ export function collectSelfAndChildrenGuidelines(
         if (EP.isChildOf(maybeTarget, target) && EP.toUid(maybeTarget) !== insertingElementId) {
           const frame = MetadataUtils.getFrameInCanvasCoords(maybeTarget, componentMetadata)
           if (frame != null) {
-            result.push(...Guidelines.guidelinesForFrame(frame, true))
+            result.push(...Guidelines.guidelinesWithRelevantPointsForFrame(frame, 'include'))
           }
         }
       })
@@ -107,25 +107,17 @@ export function getSnappedGuidelines(
   )
 }
 
-// TODO: called form insert-mode-control-container.tsx
 export function getSnappedGuidelinesForPoint(
-  guidelines: Array<Guideline>,
+  guidelines: Array<GuidelineWithRelevantPoints>,
   constrainedDragAxis: ConstrainedDragAxis | null,
   point: CanvasPoint,
   scale: number,
 ): Array<GuidelineWithSnappingVectorAndPointsOfRelevance> {
-  const guidelinesWithDummyPoints: Array<GuidelineWithRelevantPoints> = guidelines.map(
-    (guideline) => ({
-      guideline,
-      pointsOfRelevance: [], // TODO: figma shows the xmarks when inserting as well, include xmarks here too
-    }),
-  )
-
   return Guidelines.getClosestGuidelinesAndOffsets(
     [point.x],
     [point.y],
     [point],
-    guidelinesWithDummyPoints,
+    guidelines,
     constrainedDragAxis,
     SnappingThreshold,
     scale,
