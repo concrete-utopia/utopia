@@ -3,19 +3,10 @@
 import React from 'react'
 import { jsx } from '@emotion/react'
 import * as EditorActions from '../../editor/actions/action-creators'
-import { useColorTheme, SimpleFlexRow, UtopiaTheme, HeadlessStringInput } from '../../../uuiui'
+import * as EP from '../../../core/shared/element-path'
+import { useColorTheme, SimpleFlexRow, HeadlessStringInput } from '../../../uuiui'
 import { useEditorState, useRefEditorState } from '../../editor/store/store-hook'
 import { MetadataUtils } from '../../../core/model/element-metadata-utils'
-import { isRight } from '../../../core/shared/either'
-import {
-  isJSXArbitraryBlock,
-  isJSXElement,
-  isJSXTextBlock,
-} from '../../../core/shared/element-template'
-import { optionalMap } from '../../../core/shared/optional-utils'
-import { ModeToggleButton } from './mode-toggle-button'
-import { ClassNameSelect } from './classname-select'
-import { isFeatureEnabled } from '../../../utils/feature-switches'
 import {
   applyShortcutConfigurationToDefaults,
   handleShortcuts,
@@ -31,6 +22,8 @@ interface FormulaBarProps {
 export const FormulaBar = React.memo<FormulaBarProps>((props) => {
   const saveTimerRef = React.useRef<any>(null)
   const dispatch = useEditorState((store) => store.dispatch, 'FormulaBar dispatch')
+  const [previouslySelectedElementPath, setPreviouslySelectedElementPath] =
+    React.useState<ElementPath | null>(null)
 
   const selectedMode = useEditorState(
     (store) => store.editor.topmenu.formulaBarMode,
@@ -44,6 +37,10 @@ export const FormulaBar = React.memo<FormulaBarProps>((props) => {
       return null
     }
   }, 'FormulaBar selectedElementPath')
+
+  React.useEffect(() => {
+    setTimeout(() => setPreviouslySelectedElementPath(selectedElementPath))
+  }, [selectedElementPath])
 
   const selectedElementTextContent = useEditorState((store) => {
     if (store.editor.selectedViews.length === 1) {
@@ -106,13 +103,16 @@ export const FormulaBar = React.memo<FormulaBarProps>((props) => {
 
   const onBlur = React.useCallback(
     (event: React.ChangeEvent<HTMLInputElement>) => {
-      if (selectedElementPath != null) {
+      if (
+        selectedElementPath != null &&
+        EP.pathsEqual(selectedElementPath, previouslySelectedElementPath)
+      ) {
         clearTimeout(saveTimerRef.current)
         dispatchUpdate({ path: selectedElementPath, text: event.target.value.trim() })
         setSimpleText(event.target.value)
       }
     },
-    [saveTimerRef, selectedElementPath, dispatchUpdate],
+    [selectedElementPath, previouslySelectedElementPath, dispatchUpdate],
   )
 
   const classNameFieldVisible = selectedElementPath != null && selectedMode === 'css'
