@@ -98,46 +98,57 @@ function flowReorderApplyCommon(
 
     const reorderResult = getFlowReorderIndex(
       strategyState.startingMetadata,
-      siblingsOfTarget,
+      interactionState.metadata,
       rawPointOnCanvas,
       target,
-      interactionState.allElementProps,
       displayTypeFiltering,
     )
 
     const { newIndex, newDisplayType } = reorderResult
 
-    const realNewIndex = newIndex > -1 ? newIndex : lastReorderIdx
+    const newResultOrLastIndex = newIndex > -1 ? newIndex : lastReorderIdx
 
-    if (realNewIndex === unpatchedIndex) {
-      return {
-        commands: [
-          setElementsToRerenderCommand(siblingsOfTarget),
-          updateHighlightedViews('mid-interaction', []),
-          setCursorCommand('mid-interaction', CSSCursor.Move),
-        ],
-        customState: {
-          ...strategyState.customStrategyState,
-          lastReorderIdx: realNewIndex,
-          success: 'success',
-        },
-      }
-    } else {
-      return {
-        commands: [
-          reorderElement('always', target, absolute(realNewIndex)),
-          setElementsToRerenderCommand(siblingsOfTarget),
-          updateHighlightedViews('mid-interaction', []),
-          setCursorCommand('mid-interaction', CSSCursor.Move),
-          ...getOptionalDisplayPropCommands(target, newDisplayType, withAutoConversion),
-        ],
-        customState: {
-          ...strategyState.customStrategyState,
-          lastReorderIdx: realNewIndex,
-          success: 'success',
-        },
-      }
+    // console.log(
+    //   'RESULT',
+    //   newIndex,
+    //   'prev',
+    //   lastReorderIdx,
+    //   'index to set',
+    //   newResultOrLastIndex,
+    //   'original',
+    //   unpatchedIndex,
+    // )
+
+    // if (newResultOrLastIndex === unpatchedIndex) {
+    //   return {
+    //     commands: [
+    //       setElementsToRerenderCommand(siblingsOfTarget),
+    //       updateHighlightedViews('mid-interaction', []),
+    //       setCursorCommand('mid-interaction', CSSCursor.Move),
+    //     ],
+    //     customState: {
+    //       ...strategyState.customStrategyState,
+    //       lastReorderIdx: newResultOrLastIndex,
+    //       success: 'success',
+    //     },
+    //   }
+    // } else {
+
+    return {
+      commands: [
+        reorderElement('always', target, absolute(newResultOrLastIndex)),
+        setElementsToRerenderCommand(siblingsOfTarget),
+        updateHighlightedViews('mid-interaction', []),
+        setCursorCommand('mid-interaction', CSSCursor.Move),
+        ...getOptionalDisplayPropCommands(target, newDisplayType, withAutoConversion),
+      ],
+      customState: {
+        ...strategyState.customStrategyState,
+        lastReorderIdx: newResultOrLastIndex,
+        success: 'success',
+      },
     }
+    // }
   } else {
     // Fallback for when the checks above are not satisfied.
     return {
