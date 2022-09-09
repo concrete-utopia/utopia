@@ -1216,7 +1216,7 @@ export function collectGuidelines(
                 ),
                 pointsOfRelevance: [
                   canvasPoint({ x: point.x - imageDimension.width, y: point.y - lowHalfHeight }),
-                  canvasPoint({ x: point.x - imageDimension.width, y: point.y - highHalfHeight }),
+                  canvasPoint({ x: point.x - imageDimension.width, y: point.y + highHalfHeight }),
                 ],
               },
               {
@@ -1225,7 +1225,10 @@ export function collectGuidelines(
                   point.y - lowHalfHeight,
                   point.y + highHalfHeight,
                 ),
-                pointsOfRelevance: [], // TODO before merge
+                pointsOfRelevance: [
+                  canvasPoint({ x: point.x + imageDimension.width, y: point.y - lowHalfHeight }),
+                  canvasPoint({ x: point.x + imageDimension.width, y: point.y + highHalfHeight }),
+                ],
               },
               {
                 guideline: yAxisGuideline(
@@ -1233,7 +1236,10 @@ export function collectGuidelines(
                   point.x - imageDimension.width,
                   point.x,
                 ),
-                pointsOfRelevance: [], // TODO before merge
+                pointsOfRelevance: [
+                  canvasPoint({ x: point.x - imageDimension.width, y: point.y - lowHalfHeight }),
+                  canvasPoint({ x: point.x, y: point.y - lowHalfHeight }),
+                ],
               },
               {
                 guideline: yAxisGuideline(
@@ -1241,7 +1247,10 @@ export function collectGuidelines(
                   point.x,
                   point.x + imageDimension.width,
                 ),
-                pointsOfRelevance: [], // TODO before merge
+                pointsOfRelevance: [
+                  canvasPoint({ x: point.x + imageDimension.width, y: point.y - lowHalfHeight }),
+                  canvasPoint({ x: point.x, y: point.y - lowHalfHeight }),
+                ],
               },
               {
                 guideline: yAxisGuideline(
@@ -1249,7 +1258,10 @@ export function collectGuidelines(
                   point.x - imageDimension.width,
                   point.x,
                 ),
-                pointsOfRelevance: [], // TODO before merge
+                pointsOfRelevance: [
+                  canvasPoint({ x: point.x - imageDimension.width, y: point.y + lowHalfHeight }),
+                  canvasPoint({ x: point.x, y: point.y + lowHalfHeight }),
+                ],
               },
               {
                 guideline: yAxisGuideline(
@@ -1257,7 +1269,10 @@ export function collectGuidelines(
                   point.x,
                   point.x + imageDimension.width,
                 ),
-                pointsOfRelevance: [], // TODO before merge
+                pointsOfRelevance: [
+                  canvasPoint({ x: point.x + imageDimension.width, y: point.y + lowHalfHeight }),
+                  canvasPoint({ x: point.x, y: point.y + lowHalfHeight }),
+                ],
               },
             )
           } else if (isEdgePositionAHorizontalEdge(resizingFromPosition)) {
@@ -1269,7 +1284,10 @@ export function collectGuidelines(
                   point.y - imageDimension.height,
                   point.y,
                 ),
-                pointsOfRelevance: [], // TODO before merge
+                pointsOfRelevance: [
+                  canvasPoint({ x: point.x - lowHalfWidth, y: point.y - imageDimension.height }),
+                  canvasPoint({ x: point.x - lowHalfWidth, y: point.y }),
+                ],
               },
               {
                 guideline: xAxisGuideline(
@@ -1277,7 +1295,10 @@ export function collectGuidelines(
                   point.y,
                   point.y + imageDimension.height,
                 ),
-                pointsOfRelevance: [], // TODO before merge
+                pointsOfRelevance: [
+                  canvasPoint({ x: point.x - lowHalfWidth, y: point.y + imageDimension.height }),
+                  canvasPoint({ x: point.x - lowHalfWidth, y: point.y }),
+                ],
               },
               {
                 guideline: xAxisGuideline(
@@ -1285,7 +1306,10 @@ export function collectGuidelines(
                   point.y - imageDimension.height,
                   point.y,
                 ),
-                pointsOfRelevance: [], // TODO before merge
+                pointsOfRelevance: [
+                  canvasPoint({ x: point.x + highHalfWidth, y: point.y - imageDimension.height }),
+                  canvasPoint({ x: point.x + highHalfHeight, y: point.y }),
+                ],
               },
               {
                 guideline: xAxisGuideline(
@@ -1293,7 +1317,10 @@ export function collectGuidelines(
                   point.y,
                   point.y + imageDimension.height,
                 ),
-                pointsOfRelevance: [], // TODO before merge
+                pointsOfRelevance: [
+                  canvasPoint({ x: point.x + highHalfWidth, y: point.y + imageDimension.height }),
+                  canvasPoint({ x: point.x + highHalfHeight, y: point.y }),
+                ],
               },
               {
                 guideline: yAxisGuideline(
@@ -1301,7 +1328,10 @@ export function collectGuidelines(
                   point.x - lowHalfWidth,
                   point.x + highHalfWidth,
                 ),
-                pointsOfRelevance: [], // TODO before merge
+                pointsOfRelevance: [
+                  canvasPoint({ x: point.x - lowHalfWidth, y: point.y - imageDimension.height }),
+                  canvasPoint({ x: point.x + highHalfHeight, y: point.y - imageDimension.height }),
+                ],
               },
               {
                 guideline: yAxisGuideline(
@@ -1309,7 +1339,10 @@ export function collectGuidelines(
                   point.x - lowHalfWidth,
                   point.x + highHalfWidth,
                 ),
-                pointsOfRelevance: [], // TODO before merge
+                pointsOfRelevance: [
+                  canvasPoint({ x: point.x - lowHalfWidth, y: point.y + imageDimension.height }),
+                  canvasPoint({ x: point.x + highHalfHeight, y: point.y + imageDimension.height }),
+                ],
               },
             )
           }
