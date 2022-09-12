@@ -115,8 +115,8 @@ async function getGuidelineRenderResult(scale: number) {
       { type: 'BOUNDING_AREA', target: targetElement },
       canvasPoint({ x: 10, y: 10 }),
     ),
-    metadata: renderResult.getEditorState().editor.jsxMetadata,
-    allElementProps: renderResult.getEditorState().editor.allElementProps,
+    latestMetadata: renderResult.getEditorState().editor.jsxMetadata,
+    latestAllElementProps: renderResult.getEditorState().editor.allElementProps,
     startingTargetParentToFilterOut: null,
   }
 
@@ -201,8 +201,8 @@ describe('Strategy Fitness', () => {
         { type: 'BOUNDING_AREA', target: targetElement },
         canvasPoint({ x: 15, y: 15 }),
       ),
-      metadata: renderResult.getEditorState().editor.jsxMetadata,
-      allElementProps: renderResult.getEditorState().editor.allElementProps,
+      latestMetadata: renderResult.getEditorState().editor.jsxMetadata,
+      latestAllElementProps: renderResult.getEditorState().editor.allElementProps,
       startingTargetParentToFilterOut: null,
     }
 
@@ -253,8 +253,8 @@ describe('Strategy Fitness', () => {
         { type: 'BOUNDING_AREA', target: targetElement },
         canvasPoint({ x: 15, y: 15 }),
       ),
-      metadata: renderResult.getEditorState().editor.jsxMetadata,
-      allElementProps: renderResult.getEditorState().editor.allElementProps,
+      latestMetadata: renderResult.getEditorState().editor.jsxMetadata,
+      latestAllElementProps: renderResult.getEditorState().editor.allElementProps,
       startingTargetParentToFilterOut: null,
     }
 
@@ -341,8 +341,8 @@ describe('Strategy Fitness', () => {
         { type: 'BOUNDING_AREA', target: targetElement },
         canvasPoint({ x: -15, y: -15 }),
       ),
-      metadata: renderResult.getEditorState().editor.jsxMetadata,
-      allElementProps: renderResult.getEditorState().editor.allElementProps,
+      latestMetadata: renderResult.getEditorState().editor.jsxMetadata,
+      latestAllElementProps: renderResult.getEditorState().editor.allElementProps,
       startingTargetParentToFilterOut: null,
     }
 
@@ -393,8 +393,8 @@ describe('Strategy Fitness', () => {
         { type: 'RESIZE_HANDLE', edgePosition: { x: 1, y: 0.5 } },
         canvasPoint({ x: -15, y: -15 }),
       ),
-      metadata: renderResult.getEditorState().editor.jsxMetadata,
-      allElementProps: renderResult.getEditorState().editor.allElementProps,
+      latestMetadata: renderResult.getEditorState().editor.jsxMetadata,
+      latestAllElementProps: renderResult.getEditorState().editor.allElementProps,
       startingTargetParentToFilterOut: null,
     }
 
@@ -445,8 +445,8 @@ describe('Strategy Fitness', () => {
         { type: 'RESIZE_HANDLE', edgePosition: { x: 1, y: 0.5 } },
         canvasPoint({ x: -15, y: -15 }),
       ),
-      metadata: renderResult.getEditorState().editor.jsxMetadata,
-      allElementProps: renderResult.getEditorState().editor.allElementProps,
+      latestMetadata: renderResult.getEditorState().editor.jsxMetadata,
+      latestAllElementProps: renderResult.getEditorState().editor.allElementProps,
       startingTargetParentToFilterOut: null,
     }
 

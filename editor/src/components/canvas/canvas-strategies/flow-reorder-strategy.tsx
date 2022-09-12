@@ -100,7 +100,7 @@ function flowReorderApplyCommon(
       siblingsOfTarget,
       rawPointOnCanvas,
       target,
-      interactionState.allElementProps,
+      interactionState.latestAllElementProps,
       displayTypeFiltering,
     )
 
