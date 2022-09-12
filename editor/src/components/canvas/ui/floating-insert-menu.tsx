@@ -208,7 +208,6 @@ function useComponentSelectorStyles(): StylesConfig<InsertMenuItem, false> {
         // ...styles,
         display: 'none',
       }),
-
       multiValue: (styles, { data }): CSSObject => {
         return {
           // ...styles,
@@ -278,9 +277,8 @@ function useComponentSelectorStyles(): StylesConfig<InsertMenuItem, false> {
       placeholder: (styles): CSSObject => {
         return { ...styles, marginLeft: 4 }
       },
-      option: (styles, { data, isDisabled, isFocused, isSelected }): CSSObject => {
+      option: (_, { isDisabled, isFocused }): CSSObject => {
         // a single entry in the options list
-
         return {
           // ...styles,
           height: UtopiaTheme.layout.rowHeight.smaller,
@@ -288,16 +286,29 @@ function useComponentSelectorStyles(): StylesConfig<InsertMenuItem, false> {
           alignItems: 'center',
           paddingLeft: 4,
           paddingRight: 4,
-          cursor: isDisabled ? 'not-allowed' : 'default',
-          color: isFocused ? colorTheme.inverted.fg0.value : colorTheme.fg0.value,
-          backgroundColor: isFocused ? colorTheme.primary.value : 'transparent',
+          cursor: 'default',
           borderRadius: UtopiaTheme.inputBorderRadius,
+          color: colorTheme.fg0.value,
+          backgroundColor: 'transparent',
+          ':hover': {
+            color: colorTheme.inverted.fg0.value,
+            backgroundColor: colorTheme.primary.value,
+          },
+          ':disabled': {
+            cursor: 'not-allowed',
+          },
         }
       },
       group: (): CSSObject => {
         return {
           // ...styles,
           paddingTop: 6,
+          display: 'flex',
+          flexDirection: 'row-reverse',
+          justifyContent: 'space-between',
+          alignItems: 'baseline',
+          borderRadius: UtopiaTheme.inputBorderRadius,
+          overflow: 'hidden',
         }
       },
       groupHeading: (styles): CSSObject => {
@@ -306,10 +317,10 @@ function useComponentSelectorStyles(): StylesConfig<InsertMenuItem, false> {
           color: colorTheme.fg7.value,
           height: 25,
           right: 12,
-          position: 'absolute',
-          display: 'flex',
           alignItems: 'center',
-          pointerEvents: 'none',
+          textOverflow: 'ellipsis',
+          whiteSpace: 'nowrap',
+          overflow: 'hidden',
         }
       },
     }),

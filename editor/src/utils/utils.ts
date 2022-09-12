@@ -937,21 +937,6 @@ function deduplicateBy<T>(key: (t: T) => string, ts: Array<T>): Array<T> {
   return results
 }
 
-export interface MiddleTruncateOptions {
-  prefixLength: number
-  postFixLength: number
-}
-
-function middleTruncate(text: string, options: MiddleTruncateOptions): string {
-  const ellipsis = '...'
-  const { prefixLength, postFixLength } = options
-  if (text.length <= prefixLength + postFixLength + ellipsis.length) {
-    return text
-  }
-
-  return text.slice(0, prefixLength) + ellipsis + text.slice(-postFixLength)
-}
-
 export default {
   generateUUID: generateUUID,
   assert: assert,
@@ -1114,5 +1099,4 @@ export default {
   findLastIndex: findLastIndex,
   timeLimitPromise: timeLimitPromise,
   deduplicateBy: deduplicateBy,
-  middleTruncate: middleTruncate,
 }

@@ -1,28 +1,14 @@
 import { PropertyControls } from 'utopia-api/core'
 import { URL_HASH } from '../../common/env-vars'
-import { parsePropertyControls } from '../../core/property-controls/property-controls-parser'
 import {
   hasStyleControls,
   propertyControlsForComponentInFile,
 } from '../../core/property-controls/property-controls-utils'
-import { mapArrayToDictionary } from '../../core/shared/array-utils'
+
 import {
-  eitherToMaybe,
-  flatMapEither,
-  foldEither,
-  forEachRight,
-  right,
-} from '../../core/shared/either'
-import {
-  emptyComments,
-  isIntrinsicElementFromString,
   JSXAttributes,
-  jsxAttributesEntry,
-  jsxAttributeValue,
-  jsxElementName,
   jsxElementWithoutUID,
   JSXElementWithoutUID,
-  parsedComments,
   simpleAttribute,
 } from '../../core/shared/element-template'
 import { dropFileExtension } from '../../core/shared/file-utils'
@@ -32,18 +18,10 @@ import {
   PackageStatusMap,
   PossiblyUnversionedNpmDependency,
 } from '../../core/shared/npm-dependency-types'
-import { mapToArray, mapValues } from '../../core/shared/object-utils'
-import {
-  importDetailsFromImportOption,
-  Imports,
-  isParsedTextFile,
-  isParseSuccess,
-  isTextFile,
-  ProjectFile,
-} from '../../core/shared/project-file-types'
+import { Imports, isTextFile, ProjectFile } from '../../core/shared/project-file-types'
 import { fastForEach } from '../../core/shared/utils'
-import { addImport, emptyImports } from '../../core/workers/common/project-file-utils'
-import { SelectOption, Utils } from '../../uuiui-deps'
+import { emptyImports } from '../../core/workers/common/project-file-utils'
+import { SelectOption } from '../../uuiui-deps'
 import { ProjectContentTreeRoot, walkContentsTree } from '../assets'
 import {
   PropertyControlsInfo,
@@ -144,7 +122,7 @@ export function getInsertableGroupLabel(insertableType: InsertableComponentGroup
     case 'PROJECT_DEPENDENCY_GROUP':
       return insertableType.dependencyName
     case 'PROJECT_COMPONENT_GROUP':
-      return Utils.middleTruncate(insertableType.path, { prefixLength: 8, postFixLength: 8 })
+      return insertableType.path
     default:
       const _exhaustiveCheck: never = insertableType
       throw new Error(`Unhandled insertable type ${JSON.stringify(insertableType)}`)
