@@ -207,7 +207,7 @@ function findNewIndexAndDisplayType(
 
 function shouldRemoveDisplayProp(
   element: ElementInstanceMetadata | null,
-  newDisplayValue: 'block' | 'inline-block' | undefined,
+  newDisplayValue: 'block' | 'inline-block' | null | undefined,
 ): boolean {
   if (element == null || element.specialSizeMeasurements.htmlElementName == null) {
     return false
@@ -222,7 +222,7 @@ function shouldRemoveDisplayProp(
 
 function getNewDisplayType(
   element: ElementInstanceMetadata | null,
-  newDisplayValue: 'block' | 'inline-block' | undefined | null,
+  newDisplayValue: 'block' | 'inline-block' | null | undefined,
 ): AddDisplayBlockOrOnline | RemoveDisplayProp | null {
   if (shouldRemoveDisplayProp(element, newDisplayValue)) {
     return removeDisplayProp()
@@ -377,11 +377,13 @@ export function getNewIndexAndInsertLine(
       targetLineBeforeSibling: null,
     }
   }
+  const draggedElementIndex = siblings.findIndex((sibling) => EP.pathsEqual(sibling, target))
   const siblingDisplayValue = getSiblingDisplayValue(newIndex, siblings, metadata)
 
   const targetLineBeforeSibling: CanvasRectangle = getInsertLineNextToSibling(
     MetadataUtils.getFrameInCanvasCoords(siblings[newIndex], metadata),
     siblingDisplayValue,
+    newIndex > draggedElementIndex,
     ReorderIndicatorSize,
   )
 
@@ -398,23 +400,44 @@ export function getNewIndexAndInsertLine(
 export function getInsertLineNextToSibling(
   siblingFrame: CanvasRectangle | null,
   direction: 'inline-block' | 'block' | null,
+  insertForward: boolean,
   FlexReparentIndicatorSize: number,
 ): CanvasRectangle {
   if (siblingFrame == null) {
     return zeroCanvasRect
   } else {
-    return direction === 'inline-block'
-      ? canvasRectangle({
+    if (insertForward) {
+      if (direction === 'inline-block') {
+        return canvasRectangle({
+          x: siblingFrame.x + siblingFrame.width,
+          y: siblingFrame.y,
+          height: siblingFrame.height,
+          width: FlexReparentIndicatorSize,
+        })
+      } else {
+        return canvasRectangle({
+          x: siblingFrame.x,
+          y: siblingFrame.y + siblingFrame.height,
+          width: siblingFrame.width,
+          height: FlexReparentIndicatorSize,
+        })
+      }
+    } else {
+      if (direction === 'inline-block') {
+        return canvasRectangle({
           x: siblingFrame.x,
           y: siblingFrame.y,
           height: siblingFrame.height,
           width: FlexReparentIndicatorSize,
         })
-      : canvasRectangle({
+      } else {
+        return canvasRectangle({
           x: siblingFrame.x,
           y: siblingFrame.y,
           width: siblingFrame.width,
           height: FlexReparentIndicatorSize,
         })
+      }
+    }
   }
 }
