@@ -8,11 +8,13 @@ import * as EP from '../../../core/shared/element-path'
 import { openFloatingInsertMenu } from '../../editor/actions/action-creators'
 import { useColorTheme } from '../../../uuiui/styles/theme'
 import { CanvasOffsetWrapper } from './canvas-offset-wrapper'
+import { CanvasRectangle } from '../../../core/shared/math-utils'
+import { getSiblingMidPointPosition } from '../canvas-strategies/reparent-strategy-helpers'
 
 const InsertionButtonOffset = 10
 
 interface ButtonControlProps {
-  key: string
+  identifier: string
   scale: number
   positionX: number
   positionY: number
@@ -77,7 +79,7 @@ export const InsertionControls: React.FunctionComponent = React.memo(
 
       if (direction != null) {
         controlProps.push({
-          key: 'parent-0',
+          identifier: 'parent-0',
           scale: scale,
           positionX: beforeX,
           positionY: beforeY,
@@ -90,6 +92,36 @@ export const InsertionControls: React.FunctionComponent = React.memo(
             index: 0,
           },
         })
+      }
+    }
+
+    function getBetweenChildrenPosition(
+      childFrame: CanvasRectangle,
+      index: number,
+      direction: 'row' | 'column',
+    ): number {
+      if (index >= children.length - 1) {
+        switch (direction) {
+          case 'row':
+            return childFrame.x + childFrame.width
+          case 'column':
+            return childFrame.y + childFrame.height
+          default:
+            const _exhaustiveCheck: never = direction
+            throw new Error(`Unhandled direction of ${JSON.stringify(direction)}`)
+        }
+      } else {
+        const succeedingFrame = MetadataUtils.getFrameInCanvasCoords(
+          children[index + 1].elementPath,
+          jsxMetadata,
+        )
+        if (succeedingFrame == null) {
+          throw new Error(
+            `Unable to find metadata for ${JSON.stringify(children[index + 1].elementPath)}`,
+          )
+        } else {
+          return getSiblingMidPointPosition(childFrame, succeedingFrame, direction, 0)
+        }
       }
     }
 
@@ -111,22 +143,22 @@ export const InsertionControls: React.FunctionComponent = React.memo(
           const positionX =
             direction == 'column'
               ? parentFrame.x - InsertionButtonOffset
-              : childFrame.x + childFrame.width
+              : getBetweenChildrenPosition(childFrame, index, direction)
           const positionY =
             direction == 'column'
-              ? childFrame.y + childFrame.height
+              ? getBetweenChildrenPosition(childFrame, index, direction)
               : parentFrame.y - InsertionButtonOffset
 
           const lineEndX =
             direction == 'column'
               ? parentFrame.x + parentFrame.width
-              : childFrame.x + childFrame.width
+              : getBetweenChildrenPosition(childFrame, index, direction)
           const lineEndY =
             direction == 'column'
-              ? childFrame.y + childFrame.height
+              ? getBetweenChildrenPosition(childFrame, index, direction)
               : parentFrame.y + parentFrame.height
           controlProps.push({
-            key: EP.toString(child.elementPath),
+            identifier: EP.toString(child.elementPath),
             scale: scale,
             positionX: positionX,
             positionY: positionY,
@@ -150,7 +182,7 @@ export const InsertionControls: React.FunctionComponent = React.memo(
             const beforeLineEndY =
               direction == 'column' ? childFrame.y : parentFrame.y + parentFrame.height
             controlProps.push({
-              key: EP.toString(child.elementPath) + '0',
+              identifier: `${EP.toString(child.elementPath)}-0`,
               scale: scale,
               positionX: beforeX,
               positionY: beforeY,
@@ -167,11 +199,12 @@ export const InsertionControls: React.FunctionComponent = React.memo(
         }
       }
     })
+
     return (
       <CanvasOffsetWrapper>
-        {controlProps.map((control) => (
-          <InsertionButtonContainer {...control} key={control.key} />
-        ))}
+        {controlProps.map((control) => {
+          return <InsertionButtonContainer {...control} key={control.identifier} />
+        })}
       </CanvasOffsetWrapper>
     )
   },
@@ -185,7 +218,7 @@ const InsertionButtonContainer = React.memo((props: ButtonControlProps) => {
 
   return (
     <div
-      key={props.key}
+      key={props.identifier}
       onMouseEnter={onMouseEnter}
       onMouseLeave={onMouseLeave}
       style={{
@@ -208,12 +241,13 @@ const InsertionButtonContainer = React.memo((props: ButtonControlProps) => {
 
 const BlueDot = React.memo((props: ButtonControlProps) => {
   const colorTheme = useColorTheme()
-  const BlueDotSize = 7 / props.scale
+  const BlueDotSize = 7
   return (
     <div
       style={{
-        marginLeft: -BlueDotSize / 2,
-        marginTop: -BlueDotSize / 2,
+        position: 'absolute',
+        left: -BlueDotSize / 2,
+        top: -BlueDotSize / 2,
         backgroundColor: 'white',
         width: BlueDotSize,
         height: BlueDotSize,
@@ -221,7 +255,9 @@ const BlueDot = React.memo((props: ButtonControlProps) => {
         display: 'flex',
         alignItems: 'center',
         justifyContent: 'center',
+        transform: `scale(${1 / props.scale})`,
       }}
+      data-testid={`blue-dot-${props.identifier}`}
     >
       <div
         style={{
@@ -229,6 +265,9 @@ const BlueDot = React.memo((props: ButtonControlProps) => {
           height: BlueDotSize - 2 / props.scale,
           backgroundColor: colorTheme.canvasSelectionPrimaryOutline.value,
           borderRadius: '50%',
+          display: 'flex',
+          alignItems: 'center',
+          justifyContent: 'center',
         }}
       />
     </div>
@@ -274,6 +313,7 @@ const PlusButton = React.memo((props: ButtonControlProps) => {
         justifyContent: 'center',
         transform: `scale(${1 / props.scale})`,
       }}
+      data-testid={`insertion-plus-button-${props.identifier}`}
       onMouseDown={insertElement}
     >
       <div
@@ -310,12 +350,13 @@ const Line = React.memo((props: ButtonControlProps) => {
     <div
       style={{
         position: 'absolute',
-        top: -LineWidth,
-        left: -LineWidth,
+        top: props.isHorizontalLine ? -LineWidth / 2 : 0,
+        left: props.isHorizontalLine ? 0 : -LineWidth / 2,
         width: props.isHorizontalLine ? props.lineEndX - props.positionX : LineWidth,
         height: props.isHorizontalLine ? LineWidth : props.lineEndY - props.positionY,
         backgroundColor: colorTheme.canvasSelectionPrimaryOutline.value,
       }}
+      data-testid={`insertion-plus-line-${props.identifier}`}
     />
   )
 })

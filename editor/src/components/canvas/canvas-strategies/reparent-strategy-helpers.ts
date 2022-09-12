@@ -460,6 +460,45 @@ function drawTargetRectanglesForChildrenOfElement(
 
 export type StripAbsoluteProperties = 'strip-absolute-props' | 'do-not-strip-props'
 
+export function getSiblingMidPointPosition(
+  precedingSiblingPosition: CanvasRectangle,
+  succeedingSiblingPosition: CanvasRectangle,
+  direction: 'row' | 'column',
+  indicatorSize: number,
+): number {
+  let getSiblingPosition: (rect: CanvasRectangle) => number
+  let getSiblingSize: (rect: CanvasRectangle) => number
+  switch (direction) {
+    case 'row':
+      getSiblingPosition = (rect: CanvasRectangle) => {
+        return rect.x
+      }
+      getSiblingSize = (rect: CanvasRectangle) => {
+        return rect.width
+      }
+      break
+    case 'column':
+      getSiblingPosition = (rect: CanvasRectangle) => {
+        return rect.y
+      }
+      getSiblingSize = (rect: CanvasRectangle) => {
+        return rect.height
+      }
+      break
+    default:
+      const _exhaustiveCheck: never = direction
+      throw new Error(`Unhandled direction of ${JSON.stringify(direction)}`)
+  }
+
+  return (
+    (getSiblingPosition(precedingSiblingPosition) +
+      getSiblingSize(precedingSiblingPosition) +
+      getSiblingPosition(succeedingSiblingPosition) +
+      indicatorSize) /
+    2
+  )
+}
+
 export function applyFlexReparent(
   stripAbsoluteProperties: StripAbsoluteProperties,
   canvasState: InteractionCanvasState,
@@ -602,12 +641,12 @@ export function applyFlexReparent(
             const targetLineBeforeSibling: CanvasRectangle =
               newParentFlexDirection === 'row'
                 ? canvasRectangle({
-                    x:
-                      (precedingSiblingPosition.x +
-                        precedingSiblingPosition.width +
-                        succeedingSiblingPosition.x -
-                        FlexReparentIndicatorSize) /
-                      2,
+                    x: getSiblingMidPointPosition(
+                      precedingSiblingPosition,
+                      succeedingSiblingPosition,
+                      'row',
+                      FlexReparentIndicatorSize,
+                    ),
                     y: (precedingSiblingPosition.y + succeedingSiblingPosition.y) / 2,
                     height:
                       (precedingSiblingPosition.height + succeedingSiblingPosition.height) / 2,
@@ -615,12 +654,12 @@ export function applyFlexReparent(
                   })
                 : canvasRectangle({
                     x: (precedingSiblingPosition.x + succeedingSiblingPosition.x) / 2,
-                    y:
-                      (precedingSiblingPosition.y +
-                        precedingSiblingPosition.height +
-                        succeedingSiblingPosition.y -
-                        FlexReparentIndicatorSize) /
-                      2,
+                    y: getSiblingMidPointPosition(
+                      precedingSiblingPosition,
+                      succeedingSiblingPosition,
+                      'column',
+                      FlexReparentIndicatorSize,
+                    ),
                     width: (precedingSiblingPosition.width + succeedingSiblingPosition.width) / 2,
                     height: FlexReparentIndicatorSize,
                   })
