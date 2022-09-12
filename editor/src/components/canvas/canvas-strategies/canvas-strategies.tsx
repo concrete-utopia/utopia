@@ -40,6 +40,7 @@ import { isInsertMode } from '../../editor/editor-modes'
 import { dragToInsertStrategy } from './drag-to-insert-strategy'
 import { CSSCursor } from '../../../uuiui-deps'
 import { StateSelector } from 'zustand'
+import { flowReorderWithIndicatorStrategy } from './flow-reorder-with-indicator-strategy'
 
 export const RegisteredCanvasStrategies: Array<CanvasStrategy> = [
   absoluteMoveStrategy,
@@ -57,6 +58,7 @@ export const RegisteredCanvasStrategies: Array<CanvasStrategy> = [
   flowReorderAutoConversionStategy,
   flowReorderNoConversionStategy,
   flowReorderSameTypeOnlyStategy,
+  flowReorderWithIndicatorStrategy,
 ]
 
 export function pickCanvasStateFromEditorState(

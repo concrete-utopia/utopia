@@ -7,12 +7,15 @@ import {
 } from '../../../core/shared/element-template'
 import {
   CanvasPoint,
+  canvasRectangle,
   CanvasRectangle,
   CanvasVector,
   distance as euclideanDistance,
   getRectCenter,
   offsetPoint,
   pointIsClockwiseFromLine,
+  rectContainsPoint,
+  zeroCanvasRect,
 } from '../../../core/shared/math-utils'
 import { ElementPath } from '../../../core/shared/project-file-types'
 import { AllElementProps, ElementProps } from '../../editor/store/editor-state'
@@ -301,16 +304,163 @@ export function getOptionalDisplayPropCommands(
   target: ElementPath,
   newDisplayType: AddDisplayBlockOrOnline | RemoveDisplayProp | null,
   withAutoConversion: 'with-auto-conversion' | 'no-conversion',
+  whenToRun: 'always' | 'on-complete' = 'always',
 ): Array<SetProperty | DeleteProperties> {
   if (withAutoConversion === 'no-conversion') {
     return []
   } else {
     if (newDisplayType?.type === 'add') {
-      return [setProperty('always', target, StyleDisplayProp, newDisplayType.display)]
+      return [setProperty(whenToRun, target, StyleDisplayProp, newDisplayType.display)]
     } else if (newDisplayType?.type === 'remove') {
-      return [deleteProperties('always', target, [StyleDisplayProp])]
+      return [deleteProperties(whenToRun, target, [StyleDisplayProp])]
     } else {
       return []
     }
   }
+}
+
+export function findSiblingIndexUnderPoint(
+  point: CanvasVector,
+  target: ElementPath | null,
+  siblings: Array<ElementPath>,
+  metadata: ElementInstanceMetadataMap,
+  displayTypeFiltering:
+    | 'same-display-type-only'
+    | 'allow-mixed-display-type' = 'allow-mixed-display-type',
+): number {
+  const targetElementMetadata = MetadataUtils.findElementByElementPath(metadata, target)
+
+  return siblings.findIndex((sibling) => {
+    const siblingMetadata = MetadataUtils.findElementByElementPath(metadata, sibling)
+    const frame = MetadataUtils.getFrameInCanvasCoords(sibling, metadata)
+    return (
+      isValidSibling(targetElementMetadata, siblingMetadata, displayTypeFiltering) &&
+      frame != null &&
+      rectContainsPoint(frame, point) &&
+      MetadataUtils.isPositionedByFlow(siblingMetadata) &&
+      !EP.pathsEqual(target, sibling)
+    )
+  })
+}
+
+export function getNewIndexAndInsertLine(
+  metadata: ElementInstanceMetadataMap,
+  siblings: Array<ElementPath>,
+  point: CanvasVector,
+  target: ElementPath | null,
+  canvasScale: number,
+): {
+  newIndex: number
+  newDisplayType: AddDisplayBlockOrOnline | RemoveDisplayProp | null
+  targetLineBeforeSibling: CanvasRectangle | null
+} {
+  const ReorderIndicatorSize = 2 / canvasScale
+  const newIndex = findSiblingIndexUnderPoint(point, target, siblings, metadata)
+  if (newIndex === -1) {
+    return {
+      newIndex: -1,
+      newDisplayType: null,
+      targetLineBeforeSibling: null,
+    }
+  }
+  const displayValues = getSiblingDisplayValues(metadata, siblings)
+
+  const siblingFrames = siblings.map((sibling) =>
+    MetadataUtils.getFrameInCanvasCoords(sibling, metadata),
+  )
+
+  const siblingDisplayType = displayValues[newIndex]
+  const newTargetDisplayType: 'inline-block' | 'block' | undefined =
+    siblingDisplayType === 'inline-block' || siblingDisplayType === 'block'
+      ? siblingDisplayType
+      : undefined
+
+  // TODO FIX LINEBREAKS
+  const targetLineBeforeSibling: CanvasRectangle = getInsertLineBetweenSiblings(
+    siblingFrames,
+    newIndex,
+    newTargetDisplayType,
+    ReorderIndicatorSize,
+  )
+
+  return {
+    newIndex: newIndex,
+    newDisplayType: getNewDisplayType(
+      MetadataUtils.findElementByElementPath(metadata, target),
+      // newDisplayTypeValue,
+      newTargetDisplayType,
+    ),
+    targetLineBeforeSibling: targetLineBeforeSibling,
+  }
+}
+
+export function getInsertLineBetweenSiblings(
+  siblingPositions: Array<CanvasRectangle | null>,
+  newIndex: number,
+  direction: 'inline-block' | 'block' | string | undefined,
+  FlexReparentIndicatorSize: number,
+): CanvasRectangle {
+  const precedingSiblingPosition: CanvasRectangle | null = siblingPositions[newIndex]
+  const succeedingSiblingPosition: CanvasRectangle | null = siblingPositions[newIndex + 1]
+
+  if (succeedingSiblingPosition == null) {
+    if (precedingSiblingPosition == null) {
+      return zeroCanvasRect
+    } else {
+      return direction === 'inline-block'
+        ? canvasRectangle({
+            x: precedingSiblingPosition.x + precedingSiblingPosition.width,
+            y: precedingSiblingPosition.y,
+            height: precedingSiblingPosition.height,
+            width: FlexReparentIndicatorSize,
+          })
+        : canvasRectangle({
+            x: precedingSiblingPosition.x,
+            y: precedingSiblingPosition.y + precedingSiblingPosition.height,
+            width: precedingSiblingPosition.width,
+            height: FlexReparentIndicatorSize,
+          })
+    }
+  }
+  if (precedingSiblingPosition == null) {
+    return direction === 'inline-block'
+      ? canvasRectangle({
+          x: succeedingSiblingPosition.x,
+          y: succeedingSiblingPosition.y,
+          height: succeedingSiblingPosition.height,
+          width: FlexReparentIndicatorSize,
+        })
+      : canvasRectangle({
+          x: succeedingSiblingPosition.x,
+          y: succeedingSiblingPosition.y,
+          width: succeedingSiblingPosition.width,
+          height: FlexReparentIndicatorSize,
+        })
+  }
+  const targetLineBeforeSibling: CanvasRectangle =
+    direction === 'inline-block'
+      ? canvasRectangle({
+          x:
+            (precedingSiblingPosition.x +
+              precedingSiblingPosition.width +
+              succeedingSiblingPosition.x -
+              FlexReparentIndicatorSize) /
+            2,
+          y: (precedingSiblingPosition.y + succeedingSiblingPosition.y) / 2,
+          height: (precedingSiblingPosition.height + succeedingSiblingPosition.height) / 2,
+          width: FlexReparentIndicatorSize,
+        })
+      : canvasRectangle({
+          x: (precedingSiblingPosition.x + succeedingSiblingPosition.x) / 2,
+          y:
+            (precedingSiblingPosition.y +
+              precedingSiblingPosition.height +
+              succeedingSiblingPosition.y -
+              FlexReparentIndicatorSize) /
+            2,
+          width: (precedingSiblingPosition.width + succeedingSiblingPosition.width) / 2,
+          height: FlexReparentIndicatorSize,
+        })
+
+  return targetLineBeforeSibling
 }
