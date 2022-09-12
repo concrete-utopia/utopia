@@ -20,6 +20,7 @@ import {
 import { getNewIndexAndInsertLine, getOptionalDisplayPropCommands } from './flow-reorder-helpers'
 import { isFlowReorderConversionApplicable } from './flow-reorder-strategy'
 import { isReorderAllowed } from './reorder-utils'
+import { DragOutlineControl } from '../controls/select-mode/drag-outline-control'
 
 export const flowReorderWithIndicatorStrategy: CanvasStrategy = {
   id: 'FLOW_REORDER_WITH_INDICATOR',
@@ -45,8 +46,8 @@ export const flowReorderWithIndicatorStrategy: CanvasStrategy = {
       show: 'visible-only-while-active',
     },
     {
-      control: FlowReorderDragOutline,
-      key: 'flow-reorder-drag-outline',
+      control: DragOutlineControl,
+      key: 'ghost-outline-control',
       show: 'visible-only-while-active',
     },
     {
