@@ -43,7 +43,7 @@ import {
 } from '../../core/shared/project-file-types'
 import { fastForEach } from '../../core/shared/utils'
 import { addImport, emptyImports } from '../../core/workers/common/project-file-utils'
-import { SelectOption } from '../../uuiui-deps'
+import { SelectOption, Utils } from '../../uuiui-deps'
 import { ProjectContentTreeRoot, walkContentsTree } from '../assets'
 import {
   PropertyControlsInfo,
@@ -144,7 +144,7 @@ export function getInsertableGroupLabel(insertableType: InsertableComponentGroup
     case 'PROJECT_DEPENDENCY_GROUP':
       return insertableType.dependencyName
     case 'PROJECT_COMPONENT_GROUP':
-      return insertableType.path
+      return Utils.middleTruncate(insertableType.path, { prefixLength: 8, postFixLength: 8 })
     default:
       const _exhaustiveCheck: never = insertableType
       throw new Error(`Unhandled insertable type ${JSON.stringify(insertableType)}`)
