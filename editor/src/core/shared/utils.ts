@@ -142,3 +142,7 @@ export function unknownObjectProperty(o: unknown, key: string): any {
 export function createIframeUrl(base: string, assetName: string): string {
   return appendHash(urljoin(base, 'editor', assetName))
 }
+
+export function assertNever(n: never): never {
+  throw new Error(`Expected \`never\`, got ${JSON.stringify(n)}`)
+}
