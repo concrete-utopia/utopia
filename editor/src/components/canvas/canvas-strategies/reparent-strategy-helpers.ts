@@ -527,7 +527,7 @@ export function applyFlexReparent(
           canvasState.openFile,
           pathToReparent(target),
           newParent,
-          'on-complete',
+          'always',
         )
 
         if (outcomeResult != null) {
@@ -541,7 +541,7 @@ export function applyFlexReparent(
 
           const commandsBeforeReorder = [
             ...reparentCommands,
-            updateSelectedViews('on-complete', [newPath]),
+            updateSelectedViews('always', [newPath]),
           ]
 
           const commandsAfterReorder = [
@@ -641,11 +641,12 @@ export function applyFlexReparent(
                 : wildcardPatch('mid-interaction', {
                     displayNoneInstances: { $push: [target] },
                   }),
+              wildcardPatch('mid-interaction', { displayNoneInstances: { $push: [newPath] } }),
             ]
 
             interactionFinishCommands = [
               ...commandsBeforeReorder,
-              reorderElement('on-complete', newPath, absolute(newIndex)),
+              reorderElement('always', newPath, absolute(newIndex)),
               ...commandsAfterReorder,
             ]
           } else {
@@ -681,6 +682,7 @@ export function applyFlexReparent(
                   : wildcardPatch('mid-interaction', {
                       displayNoneInstances: { $push: [target] },
                     }),
+                wildcardPatch('mid-interaction', { displayNoneInstances: { $push: [newPath] } }),
               ]
             } else {
               // this should be an error because parentRect should never be null
@@ -800,8 +802,8 @@ export function getFlexReparentPropertyChanges(
 ) {
   return stripAbsoluteProperties
     ? [
-        deleteProperties('on-complete', newPath, propertiesToRemove),
-        updatePropIfExists('on-complete', newPath, PP.create(['style', 'position']), 'relative'), // SPIKE TODO only insert position: relative if there was a position nonstatic prop before
+        deleteProperties('always', newPath, propertiesToRemove),
+        updatePropIfExists('always', newPath, PP.create(['style', 'position']), 'relative'), // SPIKE TODO only insert position: relative if there was a position nonstatic prop before
       ]
     : []
 }
