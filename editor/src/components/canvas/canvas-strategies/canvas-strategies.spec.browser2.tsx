@@ -21,6 +21,7 @@ import { AllElementProps } from '../../editor/store/editor-state'
 import { CanvasControlsContainerID } from '../controls/new-canvas-controls'
 import { PrettierConfig } from 'utopia-vscode-common'
 import * as Prettier from 'prettier/standalone'
+import { forceNotNull } from '../../..//core/shared/optional-utils'
 
 const baseStrategyState = (
   metadata: ElementInstanceMetadataMap,
@@ -867,37 +868,24 @@ describe('special case controls', () => {
       await dispatchDone
     })
 
-    const nonResizableControl = await renderResult.renderedDOM.findByTestId('non-resizable-control')
-    expect(Prettier.format(nonResizableControl.outerHTML, PrettierConfig)).toEqual(`;<div
-  data-testid='non-resizable-control'
-  style='position: absolute; display: block; left: 197px; top: 376px; width: 100px; height: 30px;'
->
-  <div style='position: absolute; pointer-events: none;'>
-    <div
-      data-testid='non-resizable-0-0'
-      style='position: relative; width: 6px; height: 6px; top: -3px; left: -3px; background: rgb(255, 255, 255); border: 1px solid rgba(0, 0, 0, 0.5); border-radius: 50%;'
-    ></div>
-  </div>
-  <div style='position: absolute; pointer-events: none; left: 100px;'>
-    <div
-      data-testid='non-resizable-1-0'
-      style='position: relative; width: 6px; height: 6px; top: -3px; left: -3px; background: rgb(255, 255, 255); border: 1px solid rgba(0, 0, 0, 0.5); border-radius: 50%;'
-    ></div>
-  </div>
-  <div style='position: absolute; pointer-events: none; top: 30px;'>
-    <div
-      data-testid='non-resizable-0-1'
-      style='position: relative; width: 6px; height: 6px; top: -3px; left: -3px; background: rgb(255, 255, 255); border: 1px solid rgba(0, 0, 0, 0.5); border-radius: 50%;'
-    ></div>
-  </div>
-  <div style='position: absolute; pointer-events: none; left: 100px; top: 30px;'>
-    <div
-      data-testid='non-resizable-1-1'
-      style='position: relative; width: 6px; height: 6px; top: -3px; left: -3px; background: rgb(255, 255, 255); border: 1px solid rgba(0, 0, 0, 0.5); border-radius: 50%;'
-    ></div>
-  </div>
-</div>
-`)
+    async function checkResizableControl(
+      controlTestId: string,
+      expectedLeft: string,
+      expectedTop: string,
+    ): Promise<void> {
+      const nonResizableControl = await renderResult.renderedDOM.findByTestId(controlTestId)
+      const nonResizableControlParent = forceNotNull(
+        'Should be able to find the parent.',
+        nonResizableControl.parentElement,
+      )
+      expect(nonResizableControlParent.style.left).toEqual(expectedLeft)
+      expect(nonResizableControlParent.style.top).toEqual(expectedTop)
+    }
+
+    await checkResizableControl('non-resizable-0-0', '', '')
+    await checkResizableControl('non-resizable-1-0', '100px', '')
+    await checkResizableControl('non-resizable-0-1', '', '30px')
+    await checkResizableControl('non-resizable-1-1', '100px', '30px')
   })
 
   it('no non-resizable corner controls show for an element that is resizable', async () => {
