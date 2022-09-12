@@ -935,6 +935,31 @@ describe('only update metadata on SAVE_DOM_REPORT', () => {
         ),
       ],
       true,
+      [
+        {
+          id: 'TEST_STRATEGY' as CanvasStrategyId,
+          name: 'Test Strategy',
+          isApplicable: function (): boolean {
+            return true
+          },
+          controlsToRender: [],
+          fitness: function (): number {
+            return 10
+          },
+          apply: function (
+            _: InteractionCanvasState,
+            interactionSession: InteractionSession,
+            strategyState: StrategyState,
+          ): StrategyApplicationResult {
+            expect(strategyState.startingMetadata).toBe(interactionSession.latestMetadata)
+            expect(strategyState.startingAllElementProps).toBe(
+              interactionSession.latestAllElementProps,
+            )
+
+            return strategyApplicationResult([])
+          },
+        },
+      ],
     )
 
     // toggling the backgroundColor to update the metadata
@@ -943,48 +968,52 @@ describe('only update metadata on SAVE_DOM_REPORT', () => {
       true,
     )
 
-    const metadataTestStrategy: CanvasStrategy = {
-      id: 'TEST_STRATEGY' as CanvasStrategyId,
-      name: 'Test Strategy',
-      isApplicable: function (): boolean {
-        return true
-      },
-      controlsToRender: [],
-      fitness: function (): number {
-        return 10
-      },
-      apply: function (
-        _: InteractionCanvasState,
-        interactionSession: InteractionSession,
-        strategyState: StrategyState,
-      ): StrategyApplicationResult {
-        // first we make sure the _starting_ metadata and startingAllElementProps have the original undefined backgroundColor
-        expect(
-          strategyState.startingMetadata[EP.toString(targetElement)].computedStyle?.backgroundColor,
-        ).toBeUndefined()
-        expect(
-          strategyState.startingAllElementProps[EP.toString(targetElement)].style.backgroundColor,
-        ).toBeUndefined()
-
-        // then we check that the latestMetadata and latestAllElementProps have a backgroundColor defined, as a result of the previous toggleProperty dispatch
-        expect(
-          interactionSession.latestMetadata[EP.toString(targetElement)].computedStyle
-            ?.backgroundColor,
-        ).toBeDefined()
-        expect(
-          interactionSession.latestAllElementProps[EP.toString(targetElement)].style
-            .backgroundColor,
-        ).toBeDefined()
-        return strategyApplicationResult([])
-      },
-    }
-
     // dispatching a no-op change to the interaction session to trigger the strategies
 
     await renderResult.dispatch([CanvasActions.updateDragInteractionData({})], true, [
-      metadataTestStrategy,
+      {
+        id: 'TEST_STRATEGY' as CanvasStrategyId,
+        name: 'Test Strategy',
+        isApplicable: function (): boolean {
+          return true
+        },
+        controlsToRender: [],
+        fitness: function (): number {
+          return 10
+        },
+        apply: function (
+          _: InteractionCanvasState,
+          interactionSession: InteractionSession,
+          strategyState: StrategyState,
+        ): StrategyApplicationResult {
+          expect(strategyState.startingMetadata).not.toBe(interactionSession.latestMetadata)
+          expect(strategyState.startingAllElementProps).not.toBe(
+            interactionSession.latestAllElementProps,
+          )
+
+          // first we make sure the _starting_ metadata and startingAllElementProps have the original undefined backgroundColor
+          expect(
+            strategyState.startingMetadata[EP.toString(targetElement)].computedStyle
+              ?.backgroundColor,
+          ).toBeUndefined()
+          expect(
+            strategyState.startingAllElementProps[EP.toString(targetElement)].style.backgroundColor,
+          ).toBeUndefined()
+
+          // then we check that the latestMetadata and latestAllElementProps have a backgroundColor defined, as a result of the previous toggleProperty dispatch
+          expect(
+            interactionSession.latestMetadata[EP.toString(targetElement)].computedStyle
+              ?.backgroundColor,
+          ).toBeDefined()
+          expect(
+            interactionSession.latestAllElementProps[EP.toString(targetElement)].style
+              .backgroundColor,
+          ).toBeDefined()
+          return strategyApplicationResult([])
+        },
+      },
     ])
 
-    expect.hasAssertions() // this ensures that the test fails if the expects inside the apply function are not called
+    expect.assertions(8) // this ensures that the test fails if the expects inside the apply function are not called
   })
 })
