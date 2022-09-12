@@ -66,6 +66,20 @@ function getCenterPositionInFlow(
   return offsetPoint(rawCenter, relativeOffset)
 }
 
+function getSiblingDisplayValue(
+  newIndex: number,
+  siblings: Array<ElementPath>,
+  metadata: ElementInstanceMetadataMap,
+) {
+  const siblingMetadata = MetadataUtils.findElementByElementPath(metadata, siblings[newIndex])
+  const displayValue = siblingMetadata?.specialSizeMeasurements.display
+  if (displayValue === 'inline-block' || displayValue === 'block') {
+    return displayValue
+  } else {
+    return null
+  }
+}
+
 function getSiblingDisplayValues(
   metadata: ElementInstanceMetadataMap,
   siblings: Array<ElementPath>,
@@ -208,7 +222,7 @@ function shouldRemoveDisplayProp(
 
 function getNewDisplayType(
   element: ElementInstanceMetadata | null,
-  newDisplayValue: 'block' | 'inline-block' | undefined,
+  newDisplayValue: 'block' | 'inline-block' | undefined | null,
 ): AddDisplayBlockOrOnline | RemoveDisplayProp | null {
   if (shouldRemoveDisplayProp(element, newDisplayValue)) {
     return removeDisplayProp()
@@ -363,23 +377,11 @@ export function getNewIndexAndInsertLine(
       targetLineBeforeSibling: null,
     }
   }
-  const displayValues = getSiblingDisplayValues(metadata, siblings)
+  const siblingDisplayValue = getSiblingDisplayValue(newIndex, siblings, metadata)
 
-  const siblingFrames = siblings.map((sibling) =>
-    MetadataUtils.getFrameInCanvasCoords(sibling, metadata),
-  )
-
-  const siblingDisplayType = displayValues[newIndex]
-  const newTargetDisplayType: 'inline-block' | 'block' | undefined =
-    siblingDisplayType === 'inline-block' || siblingDisplayType === 'block'
-      ? siblingDisplayType
-      : undefined
-
-  // TODO FIX LINEBREAKS
-  const targetLineBeforeSibling: CanvasRectangle = getInsertLineBetweenSiblings(
-    siblingFrames,
-    newIndex,
-    newTargetDisplayType,
+  const targetLineBeforeSibling: CanvasRectangle = getInsertLineNextToSibling(
+    MetadataUtils.getFrameInCanvasCoords(siblings[newIndex], metadata),
+    siblingDisplayValue,
     ReorderIndicatorSize,
   )
 
@@ -387,80 +389,32 @@ export function getNewIndexAndInsertLine(
     newIndex: newIndex,
     newDisplayType: getNewDisplayType(
       MetadataUtils.findElementByElementPath(metadata, target),
-      // newDisplayTypeValue,
-      newTargetDisplayType,
+      siblingDisplayValue,
     ),
     targetLineBeforeSibling: targetLineBeforeSibling,
   }
 }
 
-export function getInsertLineBetweenSiblings(
-  siblingPositions: Array<CanvasRectangle | null>,
-  newIndex: number,
-  direction: 'inline-block' | 'block' | string | undefined,
+export function getInsertLineNextToSibling(
+  siblingFrame: CanvasRectangle | null,
+  direction: 'inline-block' | 'block' | null,
   FlexReparentIndicatorSize: number,
 ): CanvasRectangle {
-  const precedingSiblingPosition: CanvasRectangle | null = siblingPositions[newIndex]
-  const succeedingSiblingPosition: CanvasRectangle | null = siblingPositions[newIndex + 1]
-
-  if (succeedingSiblingPosition == null) {
-    if (precedingSiblingPosition == null) {
-      return zeroCanvasRect
-    } else {
-      return direction === 'inline-block'
-        ? canvasRectangle({
-            x: precedingSiblingPosition.x + precedingSiblingPosition.width,
-            y: precedingSiblingPosition.y,
-            height: precedingSiblingPosition.height,
-            width: FlexReparentIndicatorSize,
-          })
-        : canvasRectangle({
-            x: precedingSiblingPosition.x,
-            y: precedingSiblingPosition.y + precedingSiblingPosition.height,
-            width: precedingSiblingPosition.width,
-            height: FlexReparentIndicatorSize,
-          })
-    }
-  }
-  if (precedingSiblingPosition == null) {
+  if (siblingFrame == null) {
+    return zeroCanvasRect
+  } else {
     return direction === 'inline-block'
       ? canvasRectangle({
-          x: succeedingSiblingPosition.x,
-          y: succeedingSiblingPosition.y,
-          height: succeedingSiblingPosition.height,
+          x: siblingFrame.x,
+          y: siblingFrame.y,
+          height: siblingFrame.height,
           width: FlexReparentIndicatorSize,
         })
       : canvasRectangle({
-          x: succeedingSiblingPosition.x,
-          y: succeedingSiblingPosition.y,
-          width: succeedingSiblingPosition.width,
+          x: siblingFrame.x,
+          y: siblingFrame.y,
+          width: siblingFrame.width,
           height: FlexReparentIndicatorSize,
         })
   }
-  const targetLineBeforeSibling: CanvasRectangle =
-    direction === 'inline-block'
-      ? canvasRectangle({
-          x:
-            (precedingSiblingPosition.x +
-              precedingSiblingPosition.width +
-              succeedingSiblingPosition.x -
-              FlexReparentIndicatorSize) /
-            2,
-          y: (precedingSiblingPosition.y + succeedingSiblingPosition.y) / 2,
-          height: (precedingSiblingPosition.height + succeedingSiblingPosition.height) / 2,
-          width: FlexReparentIndicatorSize,
-        })
-      : canvasRectangle({
-          x: (precedingSiblingPosition.x + succeedingSiblingPosition.x) / 2,
-          y:
-            (precedingSiblingPosition.y +
-              precedingSiblingPosition.height +
-              succeedingSiblingPosition.y -
-              FlexReparentIndicatorSize) /
-            2,
-          width: (precedingSiblingPosition.width + succeedingSiblingPosition.width) / 2,
-          height: FlexReparentIndicatorSize,
-        })
-
-  return targetLineBeforeSibling
 }
