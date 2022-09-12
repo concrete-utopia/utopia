@@ -48,11 +48,12 @@ import {
   StrategyApplicationResult,
 } from '../../canvas/canvas-strategies/canvas-strategy-types'
 import { canvasPoint } from '../../../core/shared/math-utils'
-import { wildcardPatch } from '../../canvas/commands/wildcard-patch-command'
+import { WildcardPatch, wildcardPatch } from '../../canvas/commands/wildcard-patch-command'
 import { runCanvasCommand } from '../../canvas/commands/commands'
 import { saveDOMReport } from '../actions/action-creators'
 import { RegisteredCanvasStrategies } from '../../canvas/canvas-strategies/canvas-strategies'
 import { right } from '../../../core/shared/either'
+import { act } from 'react-dom/test-utils'
 
 beforeAll(() => {
   return jest.spyOn(Date, 'now').mockReturnValue(new Date(1000).getTime())
@@ -896,5 +897,69 @@ describe('only update metadata on SAVE_DOM_REPORT', () => {
     expect(actualResult.patchedEditorState.jsxMetadata).toBe(
       newEditorStore.unpatchedEditor.canvas.interactionSession?.metadata,
     )
+  })
+
+  it('InteractionSession.metadata is the latest metadata', () => {
+    const oldEditorStore = createEditorStore(
+      createInteractionViaMouse(
+        canvasPoint({ x: 100, y: 200 }),
+        { alt: false, shift: false, ctrl: false, cmd: false },
+        { type: 'BOUNDING_AREA', target: EP.elementPath([['aaa']]) },
+      ),
+    )
+
+    const newMetadata: ElementInstanceMetadataMap = {
+      'new-entry': {
+        elementPath: EP.fromString('new-entry'),
+        specialSizeMeasurements: { position: 'absolute' },
+        element: right(jsxElement('div', 'aaa', [], [])),
+      } as ElementInstanceMetadata,
+    }
+
+    if (oldEditorStore.unpatchedEditor.canvas.interactionSession == null) {
+      throw new Error('interactionSession cannot be null')
+    }
+
+    const newEditorStore: EditorStoreFull = {
+      ...oldEditorStore,
+      unpatchedEditor: {
+        ...oldEditorStore.unpatchedEditor,
+        canvas: {
+          ...oldEditorStore.unpatchedEditor.canvas,
+          interactionSession: {
+            ...oldEditorStore.unpatchedEditor.canvas.interactionSession,
+            metadata: newMetadata,
+          },
+        },
+      },
+      patchedEditor: oldEditorStore.patchedEditor,
+    }
+
+    const metadataTestStrategy: CanvasStrategy = {
+      id: 'TEST_STRATEGY' as CanvasStrategyId,
+      name: 'Test Strategy',
+      isApplicable: function (): boolean {
+        return true
+      },
+      controlsToRender: [],
+      fitness: function (): number {
+        return 10
+      },
+      apply: function (
+        _: InteractionCanvasState,
+        interactionSession: InteractionSession,
+      ): StrategyApplicationResult {
+        expect(interactionSession.metadata).toBe(newMetadata) // <------------
+        return strategyApplicationResult([])
+      },
+    }
+
+    const actualResult = interactionStart(
+      [metadataTestStrategy],
+      newEditorStore,
+      dispatchResultFromEditorStore(newEditorStore),
+    )
+
+    expect.hasAssertions() // this ensures that the test fails if the expect inside the apply function is not called
   })
 })
