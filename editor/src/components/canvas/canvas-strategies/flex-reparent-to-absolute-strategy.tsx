@@ -26,7 +26,7 @@ import {
   strategyApplicationResult,
   StrategyApplicationResult,
 } from './canvas-strategy-types'
-import { getEscapeHatchCommands } from './escape-hatch-strategy'
+import { getEscapeHatchCommands } from './convert-to-absolute-and-move-strategy'
 import { InteractionSession, StrategyState } from './interaction-state'
 import { ifAllowedToReparent } from './reparent-helpers'
 import { findReparentStrategy, getReparentTargetUnified } from './reparent-strategy-helpers'

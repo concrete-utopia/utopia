@@ -16,7 +16,7 @@ import {
   testPrintCodeFromEditorState,
 } from '../ui-jsx.test-utils'
 import { pickCanvasStateFromEditorState } from './canvas-strategies'
-import { escapeHatchStrategy } from './escape-hatch-strategy'
+import { convertToAbsoluteAndMoveStrategy } from './convert-to-absolute-and-move-strategy'
 import { InteractionSession, StrategyState } from './interaction-state'
 import { createMouseInteractionForTests } from './interaction-state.test-utils'
 
@@ -179,7 +179,7 @@ function dragByPixels(
     startingTargetParentToFilterOut: null,
   }
 
-  const strategyResult = escapeHatchStrategy.apply(
+  const strategyResult = convertToAbsoluteAndMoveStrategy.apply(
     pickCanvasStateFromEditorState(editorState, createBuiltInDependenciesList(null)),
     interactionSession,
     {

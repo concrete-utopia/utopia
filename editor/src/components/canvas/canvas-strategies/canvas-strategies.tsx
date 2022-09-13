@@ -24,7 +24,7 @@ import { InteractionSession, StrategyState } from './interaction-state'
 import { keyboardAbsoluteMoveStrategy } from './keyboard-absolute-move-strategy'
 import { absoluteResizeBoundingBoxStrategy } from './absolute-resize-bounding-box-strategy'
 import { keyboardAbsoluteResizeStrategy } from './keyboard-absolute-resize-strategy'
-import { escapeHatchStrategy } from './escape-hatch-strategy'
+import { convertToAbsoluteAndMoveStrategy } from './convert-to-absolute-and-move-strategy'
 import { flexReorderStrategy } from './flex-reorder-strategy'
 import { absoluteDuplicateStrategy } from './absolute-duplicate-strategy'
 import { absoluteReparentToFlexStrategy } from './absolute-reparent-to-flex-strategy'
@@ -52,7 +52,7 @@ export const RegisteredCanvasStrategies: Array<CanvasStrategy> = [
   flexReorderStrategy,
   flexReparentToAbsoluteStrategy,
   flexReparentToFlexStrategy,
-  // escapeHatchStrategy,  // TODO re-enable once reparent is not tied to cmd
+  convertToAbsoluteAndMoveStrategy,
   absoluteReparentToFlexStrategy,
   dragToInsertStrategy,
   flowReorderAutoConversionStrategy,

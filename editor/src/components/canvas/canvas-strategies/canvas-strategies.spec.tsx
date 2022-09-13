@@ -6,7 +6,7 @@ import { absoluteResizeBoundingBoxStrategy } from './absolute-resize-bounding-bo
 import { getApplicableControls, isResizableStrategy } from './canvas-strategies'
 import { CanvasStrategy, CanvasStrategyId, ControlWithKey } from './canvas-strategy-types'
 import { dragToInsertStrategy } from './drag-to-insert-strategy'
-import { escapeHatchStrategy } from './escape-hatch-strategy'
+import { convertToAbsoluteAndMoveStrategy } from './convert-to-absolute-and-move-strategy'
 import { flexReorderStrategy } from './flex-reorder-strategy'
 import { flexReparentToAbsoluteStrategy } from './flex-reparent-to-absolute-strategy'
 import { flexReparentToFlexStrategy } from './flex-reparent-to-flex-strategy'
@@ -28,7 +28,7 @@ const isResizableStrategyAndResults: Array<[CanvasStrategy, boolean]> = [
   [flexReorderStrategy, false],
   [flexReparentToAbsoluteStrategy, false],
   [flexReparentToFlexStrategy, false],
-  [escapeHatchStrategy, false],
+  [convertToAbsoluteAndMoveStrategy, false],
   [absoluteReparentToFlexStrategy, false],
   [dragToInsertStrategy, false],
   [flowReorderAutoConversionStrategy, false],
