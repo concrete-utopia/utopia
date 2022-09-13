@@ -188,6 +188,18 @@ function findNewIndexAndDisplayType(
   }
 }
 
+export function getNewDisplayTypeForIndex(
+  metadata: ElementInstanceMetadataMap,
+  element: ElementInstanceMetadata | null,
+  targetSibling: ElementPath,
+) {
+  const displayType = MetadataUtils.findElementByElementPath(metadata, targetSibling)
+    ?.specialSizeMeasurements.display
+  const displayBlockInlineBlock =
+    displayType === 'block' || displayType === 'inline-block' ? displayType : undefined
+  return getNewDisplayType(element, displayBlockInlineBlock)
+}
+
 function shouldRemoveDisplayProp(
   element: ElementInstanceMetadata | null,
   newDisplayValue: 'block' | 'inline-block' | undefined,

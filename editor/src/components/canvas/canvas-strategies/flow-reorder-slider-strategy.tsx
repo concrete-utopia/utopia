@@ -15,6 +15,7 @@ import {
   getTargetPathsFromInteractionTarget,
   strategyApplicationResult,
 } from './canvas-strategy-types'
+import { getNewDisplayTypeForIndex, getOptionalDisplayPropCommands } from './flow-reorder-helpers'
 import { isFlowReorderConversionApplicable } from './flow-reorder-strategy'
 import { isReorderAllowed } from './reorder-utils'
 
@@ -90,12 +91,19 @@ export const flowReorderSliderStategy: CanvasStrategy = {
         (unpatchedIndex + (indexOffset % siblingsOfTarget.length) + siblingsOfTarget.length) %
         siblingsOfTarget.length
 
+      const newDisplayType = getNewDisplayTypeForIndex(
+        strategyState.startingMetadata,
+        MetadataUtils.findElementByElementPath(strategyState.startingMetadata, target),
+        siblingsOfTarget[realNewIndex],
+      )
+
       return strategyApplicationResult(
         [
           reorderElement('always', target, absolute(realNewIndex)),
           setElementsToRerenderCommand(siblingsOfTarget),
           updateHighlightedViews('mid-interaction', []),
           setCursorCommand('mid-interaction', CSSCursor.ResizeEW),
+          ...getOptionalDisplayPropCommands(target, newDisplayType, 'with-auto-conversion'),
         ],
         {
           lastReorderIdx: realNewIndex,
