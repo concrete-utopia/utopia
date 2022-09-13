@@ -29,7 +29,7 @@ import { UpdatedPathMap } from './interaction-state'
 
 export const absoluteReparentStrategy: CanvasStrategy = {
   id: 'ABSOLUTE_REPARENT',
-  name: 'Reparent',
+  name: 'Reparent (Abs)',
   isApplicable: (canvasState, interactionState, metadata) => {
     const selectedElements = getTargetPathsFromInteractionTarget(canvasState.interactionTarget)
     if (
@@ -71,8 +71,11 @@ export const absoluteReparentStrategy: CanvasStrategy = {
     ).strategy
     if (reparentStrategy === 'ABSOLUTE_REPARENT_TO_ABSOLUTE') {
       return 3
+    } else if (reparentStrategy !== 'do-not-reparent') {
+      return 2
+    } else {
+      return 0
     }
-    return 0
   },
   apply: (canvasState, interactionState, strategyState) => {
     if (
@@ -100,9 +103,9 @@ export const absoluteReparentStrategy: CanvasStrategy = {
       strategyState.startingAllElementProps,
     )
     const newParent = reparentTarget.newParent
-    const providesBoundsForAbsoluteChildren =
-      MetadataUtils.findElementByElementPath(strategyState.startingMetadata, newParent)
-        ?.specialSizeMeasurements.providesBoundsForAbsoluteChildren ?? false
+    const providesBoundsForAbsoluteChildren = true
+    // MetadataUtils.findElementByElementPath(strategyState.startingMetadata, newParent)
+    //   ?.specialSizeMeasurements.providesBoundsForAbsoluteChildren ?? false
     const parentIsStoryboard = newParent == null ? false : EP.isStoryboardPath(newParent)
     const allowedToReparent = filteredSelectedElements.every((selectedElement) => {
       return isAllowedToReparent(
