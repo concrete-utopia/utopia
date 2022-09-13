@@ -33,19 +33,9 @@ export const flowReorderSliderStategy: CanvasStrategy = {
   },
   controlsToRender: [
     {
-      control: ParentOutlines,
-      key: 'parent-outlines-control',
-      show: 'visible-only-while-active',
-    },
-    {
-      control: ParentBounds,
-      key: 'parent-bounds-control',
-      show: 'visible-only-while-active',
-    },
-    {
       control: FlowSliderControl,
       key: 'flow-slider-control',
-      show: 'always-visible',
+      show: 'visible-only-while-active',
     },
   ],
   fitness: (canvasState, interactionState, strategyState) => {
@@ -102,8 +92,8 @@ export const flowReorderSliderStategy: CanvasStrategy = {
           reorderElement('always', target, absolute(realNewIndex)),
           setElementsToRerenderCommand(siblingsOfTarget),
           updateHighlightedViews('mid-interaction', []),
-          setCursorCommand('mid-interaction', CSSCursor.ResizeEW),
           ...getOptionalDisplayPropCommands(target, newDisplayType, 'with-auto-conversion'),
+          setCursorCommand('mid-interaction', CSSCursor.ResizeEW),
         ],
         {
           lastReorderIdx: realNewIndex,

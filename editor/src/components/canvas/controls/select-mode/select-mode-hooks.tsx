@@ -45,6 +45,7 @@ import { isFeatureEnabled } from '../../../../utils/feature-switches'
 import {
   boundingArea,
   createInteractionViaMouse,
+  flowSlider,
   KeyboardInteractionTimeout,
   updateInteractionViaKeyboard,
 } from '../../canvas-strategies/interaction-state'
@@ -628,7 +629,7 @@ function useSelectOrLiveModeSelectAndHover(
                     createInteractionViaMouse(
                       start,
                       Modifier.modifiersForEvent(event),
-                      boundingArea(),
+                      flowSlider(),
                     ),
                   ),
                 )

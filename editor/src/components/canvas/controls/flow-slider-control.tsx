@@ -131,7 +131,18 @@ export const FlowSliderControl = React.memo(() => {
         onMouseUp={stopPropagation}
       >
         {siblings.map((s, i) => {
-          return <Icons.Dot key={EP.toString(s)} color={i === currentIndex ? 'primary' : 'main'} />
+          return (
+            <div
+              key={EP.toString(s)}
+              style={{
+                display: 'inline-block',
+                transform: `scale(${i === currentIndex ? 2 : 1})`,
+                transition: 'transform .1s ease-in-out',
+              }}
+            >
+              <Icons.Dot color={i === currentIndex ? 'primary' : 'main'} />
+            </div>
+          )
         })}
         {/* <SliderControl
           key='flow-slider'
