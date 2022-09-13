@@ -43,6 +43,7 @@ import { useInsertModeSelectAndHover } from './insert-mode-hooks'
 import { WindowMousePositionRaw } from '../../../../utils/global-positions'
 import { isFeatureEnabled } from '../../../../utils/feature-switches'
 import {
+  boundingArea,
   createInteractionViaMouse,
   KeyboardInteractionTimeout,
   updateInteractionViaKeyboard,
@@ -373,10 +374,7 @@ function useStartCanvasSession(): (event: MouseEvent, target: ElementPath) => vo
       if (event.button !== 2) {
         dispatch([
           CanvasActions.createInteractionSession(
-            createInteractionViaMouse(start, Modifier.modifiersForEvent(event), {
-              type: 'BOUNDING_AREA',
-              target: target,
-            }),
+            createInteractionViaMouse(start, Modifier.modifiersForEvent(event), boundingArea()),
           ),
         ])
       }
@@ -627,10 +625,11 @@ function useSelectOrLiveModeSelectAndHover(
               if (event.button !== 2 && event.type !== 'mouseup') {
                 editorActions.push(
                   CanvasActions.createInteractionSession(
-                    createInteractionViaMouse(start, Modifier.modifiersForEvent(event), {
-                      type: 'BOUNDING_AREA',
-                      target: foundTarget.elementPath,
-                    }),
+                    createInteractionViaMouse(
+                      start,
+                      Modifier.modifiersForEvent(event),
+                      boundingArea(),
+                    ),
                   ),
                 )
               }

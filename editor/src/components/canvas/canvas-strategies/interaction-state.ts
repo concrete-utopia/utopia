@@ -357,13 +357,11 @@ export function hasDragModifiersChanged(
 
 export interface BoundingArea {
   type: 'BOUNDING_AREA'
-  target: ElementPath
 }
 
-export function boundingArea(target: ElementPath): BoundingArea {
+export function boundingArea(): BoundingArea {
   return {
     type: 'BOUNDING_AREA',
-    target: target,
   }
 }
 

@@ -7,7 +7,7 @@ import {
   pickCanvasStateFromEditorState,
   RegisteredCanvasStrategies,
 } from './canvas-strategies'
-import { InteractionSession, StrategyState } from './interaction-state'
+import { boundingArea, InteractionSession, StrategyState } from './interaction-state'
 import { createMouseInteractionForTests } from './interaction-state.test-utils'
 import { act, fireEvent } from '@testing-library/react'
 import {
@@ -115,7 +115,7 @@ async function getGuidelineRenderResult(scale: number) {
     ...createMouseInteractionForTests(
       canvasPoint({ x: 60, y: 150 }),
       emptyModifiers,
-      { type: 'BOUNDING_AREA', target: targetElement },
+      boundingArea(),
       canvasPoint({ x: 10, y: 10 }),
     ),
     latestMetadata: renderResult.getEditorState().editor.jsxMetadata,
@@ -201,7 +201,7 @@ describe('Strategy Fitness', () => {
       ...createMouseInteractionForTests(
         canvasPoint({ x: 0, y: 0 }),
         emptyModifiers,
-        { type: 'BOUNDING_AREA', target: targetElement },
+        boundingArea(),
         canvasPoint({ x: 15, y: 15 }),
       ),
       latestMetadata: renderResult.getEditorState().editor.jsxMetadata,
@@ -253,7 +253,7 @@ describe('Strategy Fitness', () => {
       ...createMouseInteractionForTests(
         canvasPoint({ x: 0, y: 0 }),
         emptyModifiers,
-        { type: 'BOUNDING_AREA', target: targetElement },
+        boundingArea(),
         canvasPoint({ x: 15, y: 15 }),
       ),
       latestMetadata: renderResult.getEditorState().editor.jsxMetadata,
@@ -341,7 +341,7 @@ describe('Strategy Fitness', () => {
       ...createMouseInteractionForTests(
         canvasPoint({ x: 0, y: 0 }),
         cmdModifier,
-        { type: 'BOUNDING_AREA', target: targetElement },
+        boundingArea(),
         canvasPoint({ x: -15, y: -15 }),
       ),
       latestMetadata: renderResult.getEditorState().editor.jsxMetadata,
