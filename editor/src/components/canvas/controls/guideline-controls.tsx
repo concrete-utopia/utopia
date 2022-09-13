@@ -21,6 +21,7 @@ import {
 import { CanvasOffsetWrapper } from './canvas-offset-wrapper'
 import { Guideline } from '../guideline'
 import { mapDropNulls } from '../../../core/shared/array-utils'
+import { assertNever } from '../../../core/shared/utils'
 
 // STRATEGY GUIDELINE CONTROLS
 export const GuidelineControls = React.memo(() => {
@@ -208,7 +209,7 @@ function guidelineToSegment(guideline: Guideline): CanvasSegment | null {
     case 'CornerGuideline':
       return null
     default:
-      return Utils.assertNever(guideline)
+      return assertNever(guideline)
   }
 }
 

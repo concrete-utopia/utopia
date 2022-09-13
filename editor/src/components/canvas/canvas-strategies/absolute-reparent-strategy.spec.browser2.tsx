@@ -129,7 +129,6 @@ export var ${BakedInStoryboardVariableName} = (
           data-uid='children-hider'
           shouldHide={${shouldHide}}
         >
-          Test
         </ChildrenHider>
         <div
           style={{
@@ -200,6 +199,75 @@ describe('Absolute Reparent Strategy', () => {
           data-uid='bbb'
           data-testid='bbb'
         />
+      </Storyboard>
+    )
+  }
+`,
+        PrettierConfig,
+      ),
+    )
+  })
+  it('does not reparent to an element with only text children', async () => {
+    const renderResult = await renderTestEditorWithCode(
+      makeTestProjectCodeWithSnippet(`
+        <div style={{ width: '100%', height: '100%' }} data-uid='aaa'>
+          <div
+            style={{ backgroundColor: '#0091FFAA', position: 'absolute', left: 40, top: 50, width: 200, height: 100 }}
+            data-uid='bbb'
+            data-testid='bbb'
+          />
+          <div
+            style={{ backgroundColor: '#0091FFAA', position: 'absolute', left: 40, top: 150, width: 200, height: 100 }}
+            data-uid='ccc'
+          >
+            Can't drop here
+          </div>
+        </div>
+      `),
+      'await-first-dom-report',
+    )
+
+    const dragDelta = windowPoint({ x: 0, y: 150 })
+    act(() => dragElement(renderResult, 'bbb', dragDelta, cmdModifier, null))
+
+    await renderResult.getDispatchFollowUpActionsFinished()
+
+    expect(getPrintedUiJsCode(renderResult.getEditorState())).toEqual(
+      Prettier.format(
+        `
+  import * as React from 'react'
+  import { Scene, Storyboard, View } from 'utopia-api'
+
+  export var App = (props) => {
+    return (
+      <div style={{width: '100%', height: '100%'}} data-uid='aaa'>
+        <div
+          style={{ backgroundColor: '#0091FFAA', position: 'absolute', left: 40, top: 200, width: 200, height: 100 }}
+          data-uid='bbb'
+          data-testid='bbb'
+        />
+        <div
+          style={{ backgroundColor: '#0091FFAA', position: 'absolute', left: 40, top: 150, width: 200, height: 100 }}
+          data-uid='ccc'
+        >
+          Can't drop here
+        </div>
+      </div>
+    )
+  }
+
+  export var ${BakedInStoryboardVariableName} = (props) => {
+    return (
+      <Storyboard data-uid='${BakedInStoryboardUID}'>
+        <Scene
+          style={{ left: 0, top: 0, width: 400, height: 400 }}
+          data-uid='${TestSceneUID}'
+        >
+          <App
+            data-uid='${TestAppUID}'
+            style={{ position: 'absolute', bottom: 0, left: 0, right: 0, top: 0 }}
+          />
+        </Scene>
       </Storyboard>
     )
   }
