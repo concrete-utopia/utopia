@@ -47,7 +47,7 @@ import { getDragTargets } from './shared-absolute-move-strategy-helpers'
 
 export const convertToAbsoluteAndMoveStrategy: CanvasStrategy = {
   id: 'CONVERT_TO_ABSOLUTE_AND_MOVE_STRATEGY',
-  name: 'Move (Abs)',
+  name: 'Move',
   isApplicable: (canvasState, _interactionState, metadata) => {
     const selectedElements = getTargetPathsFromInteractionTarget(canvasState.interactionTarget)
     if (selectedElements.length > 0) {
