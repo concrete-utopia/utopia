@@ -4,6 +4,7 @@ import {
   CanvasStrategy,
   emptyStrategyApplicationResult,
   getTargetPathsFromInteractionTarget,
+  InteractionCanvasState,
   strategyApplicationResult,
 } from './canvas-strategy-types'
 import { Modifiers } from '../../../utils/modifiers'
@@ -35,7 +36,7 @@ import {
 import { getMultiselectBounds } from './shared-absolute-move-strategy-helpers'
 import { setSnappingGuidelines } from '../commands/set-snapping-guidelines-command'
 import { pushIntendedBounds } from '../commands/push-intended-bounds-command'
-import { honoursPropsPosition, honoursPropsSize } from './absolute-utils'
+import { supportsAbsoluteResize } from './absolute-resize-helpers'
 
 interface VectorAndEdge {
   movement: CanvasVector
@@ -83,12 +84,7 @@ export const keyboardAbsoluteResizeStrategy: CanvasStrategy = {
     const selectedElements = getTargetPathsFromInteractionTarget(canvasState.interactionTarget)
     if (selectedElements.length > 0) {
       return selectedElements.every((element) => {
-        const elementMetadata = MetadataUtils.findElementByElementPath(metadata, element)
-        return (
-          elementMetadata?.specialSizeMeasurements.position === 'absolute' &&
-          honoursPropsPosition(canvasState, element) &&
-          honoursPropsSize(canvasState, element)
-        )
+        return supportsAbsoluteResize(metadata, element, canvasState)
       })
     } else {
       return false
