@@ -9,7 +9,10 @@ import { openFloatingInsertMenu } from '../../editor/actions/action-creators'
 import { useColorTheme } from '../../../uuiui/styles/theme'
 import { CanvasOffsetWrapper } from './canvas-offset-wrapper'
 import { CanvasRectangle } from '../../../core/shared/math-utils'
-import { getSiblingMidPointPosition } from '../canvas-strategies/reparent-strategy-helpers'
+import {
+  getSiblingMidPointPosition,
+  siblingAndPseudoPositions,
+} from '../canvas-strategies/reparent-strategy-helpers'
 
 const InsertionButtonOffset = 10
 
@@ -49,156 +52,114 @@ export const InsertionControls: React.FunctionComponent = React.memo(
       parentPath != null ? MetadataUtils.getFrameInCanvasCoords(parentPath, jsxMetadata) : null
 
     const parentElement = MetadataUtils.findElementByElementPath(jsxMetadata, selectedView)
-    if (parentPath == null || parentFrame == null || parentElement == null) {
+    if (
+      parentPath == null ||
+      parentFrame == null ||
+      parentElement == null ||
+      parentElement.specialSizeMeasurements.flexDirection == null
+    ) {
       return null
     }
+    let direction: 'row' | 'column' | null = null
+    if (parentElement.specialSizeMeasurements.layoutSystemForChildren === 'flex') {
+      switch (parentElement.specialSizeMeasurements.flexDirection) {
+        case 'row':
+        case 'row-reverse':
+          direction = 'row'
+          break
+        case 'column':
+        case 'column-reverse':
+          direction = 'column'
+          break
+        default:
+          break
+      }
+    }
+    if (direction == null) {
+      return null
+    }
+
     const children = MetadataUtils.getChildren(jsxMetadata, parentPath)
     let controlProps: ButtonControlProps[] = []
 
-    if (
-      children.length === 0 &&
-      parentElement.specialSizeMeasurements.layoutSystemForChildren === 'flex'
-    ) {
-      let direction: 'row' | 'column' | null = null
+    const siblingPositions: Array<CanvasRectangle> = siblingAndPseudoPositions(
+      parentElement.specialSizeMeasurements.flexDirection,
+      parentFrame,
+      children.map((m) => m.elementPath),
+      jsxMetadata,
+    )
 
-      switch (parentElement.specialSizeMeasurements.flexDirection) {
-        case 'row':
-        case 'column':
-          direction = parentElement.specialSizeMeasurements.flexDirection
-          break
-        default:
-        // Ignore any other values.
-      }
+    const nonNullDirection: 'row' | 'column' = direction
 
-      const beforeX = direction == 'column' ? parentFrame.x - InsertionButtonOffset : parentFrame.x
-      const beforeY = direction == 'column' ? parentFrame.y : parentFrame.y - InsertionButtonOffset
-      const beforeLineEndX =
-        direction == 'column' ? parentFrame.x + parentFrame.width : parentFrame.x
-      const beforeLineEndY =
-        direction == 'column' ? parentFrame.y : parentFrame.y + parentFrame.height
+    function getBetweenChildrenPosition(index: number): number {
+      const precedingSiblingPosition: CanvasRectangle = siblingPositions[index]
+      const succeedingSiblingPosition: CanvasRectangle = siblingPositions[index + 1]
+      return getSiblingMidPointPosition(
+        precedingSiblingPosition,
+        succeedingSiblingPosition,
+        nonNullDirection,
+        0,
+      )
+    }
 
-      if (direction != null) {
+    if (children.length > 0) {
+      for (let index = 0; index < siblingPositions.length - 1; index++) {
+        const child = children[index]
+        const positionX =
+          direction == 'column'
+            ? parentFrame.x - InsertionButtonOffset
+            : getBetweenChildrenPosition(index)
+        const positionY =
+          direction == 'column'
+            ? getBetweenChildrenPosition(index)
+            : parentFrame.y - InsertionButtonOffset
+
+        const lineEndX =
+          direction == 'column'
+            ? parentFrame.x + parentFrame.width
+            : getBetweenChildrenPosition(index)
+        const lineEndY =
+          direction == 'column'
+            ? getBetweenChildrenPosition(index)
+            : parentFrame.y + parentFrame.height
         controlProps.push({
-          identifier: 'parent-0',
+          identifier: `control-${index}`,
           scale: scale,
-          positionX: beforeX,
-          positionY: beforeY,
-          lineEndX: beforeLineEndX,
-          lineEndY: beforeLineEndY,
+          positionX: positionX,
+          positionY: positionY,
+          lineEndX: lineEndX,
+          lineEndY: lineEndY,
           isHorizontalLine: direction === 'column',
           parentPath: parentPath,
           indexPosition: {
             type: 'absolute',
-            index: 0,
+            index: index,
           },
         })
       }
+    } else {
+      const positionX =
+        direction == 'column' ? parentFrame.x - InsertionButtonOffset : parentFrame.x
+      const positionY =
+        direction == 'column' ? parentFrame.y : parentFrame.y - InsertionButtonOffset
+
+      const lineEndX = direction == 'column' ? parentFrame.x + parentFrame.width : parentFrame.y
+      const lineEndY = direction == 'column' ? parentFrame.x : parentFrame.y + parentFrame.height
+      controlProps.push({
+        identifier: `control-0`,
+        scale: scale,
+        positionX: positionX,
+        positionY: positionY,
+        lineEndX: lineEndX,
+        lineEndY: lineEndY,
+        isHorizontalLine: direction === 'column',
+        parentPath: parentPath,
+        indexPosition: {
+          type: 'absolute',
+          index: 0,
+        },
+      })
     }
-
-    function getBetweenChildrenPosition(
-      childFrame: CanvasRectangle,
-      index: number,
-      direction: 'row' | 'column',
-    ): number {
-      if (index >= children.length - 1) {
-        switch (direction) {
-          case 'row':
-            return childFrame.x + childFrame.width
-          case 'column':
-            return childFrame.y + childFrame.height
-          default:
-            const _exhaustiveCheck: never = direction
-            throw new Error(`Unhandled direction of ${JSON.stringify(direction)}`)
-        }
-      } else {
-        const succeedingFrame = MetadataUtils.getFrameInCanvasCoords(
-          children[index + 1].elementPath,
-          jsxMetadata,
-        )
-        if (succeedingFrame == null) {
-          throw new Error(
-            `Unable to find metadata for ${JSON.stringify(children[index + 1].elementPath)}`,
-          )
-        } else {
-          return getSiblingMidPointPosition(childFrame, succeedingFrame, direction, 0)
-        }
-      }
-    }
-
-    children.forEach((child, index) => {
-      const childFrame = MetadataUtils.getFrameInCanvasCoords(child.elementPath, jsxMetadata)
-      if (child.specialSizeMeasurements.position !== 'absolute' && childFrame != null) {
-        let direction: 'row' | 'column' | null = null
-        if (child.specialSizeMeasurements.parentLayoutSystem === 'flex') {
-          switch (child.specialSizeMeasurements.parentFlexDirection) {
-            case 'row':
-            case 'column':
-              direction = child.specialSizeMeasurements.parentFlexDirection
-              break
-            default:
-            // Ignore any other values.
-          }
-        }
-        if (direction != null) {
-          const positionX =
-            direction == 'column'
-              ? parentFrame.x - InsertionButtonOffset
-              : getBetweenChildrenPosition(childFrame, index, direction)
-          const positionY =
-            direction == 'column'
-              ? getBetweenChildrenPosition(childFrame, index, direction)
-              : parentFrame.y - InsertionButtonOffset
-
-          const lineEndX =
-            direction == 'column'
-              ? parentFrame.x + parentFrame.width
-              : getBetweenChildrenPosition(childFrame, index, direction)
-          const lineEndY =
-            direction == 'column'
-              ? getBetweenChildrenPosition(childFrame, index, direction)
-              : parentFrame.y + parentFrame.height
-          controlProps.push({
-            identifier: EP.toString(child.elementPath),
-            scale: scale,
-            positionX: positionX,
-            positionY: positionY,
-            lineEndX: lineEndX,
-            lineEndY: lineEndY,
-            isHorizontalLine: direction === 'column',
-            parentPath: parentPath,
-            indexPosition: {
-              type: 'absolute',
-              index: index + 1,
-            },
-          })
-          // first element has a plus button before the element too
-          if (index === 0) {
-            const beforeX =
-              direction == 'column' ? parentFrame.x - InsertionButtonOffset : childFrame.x
-            const beforeY =
-              direction == 'column' ? childFrame.y : parentFrame.y - InsertionButtonOffset
-            const beforeLineEndX =
-              direction == 'column' ? parentFrame.x + parentFrame.width : childFrame.x
-            const beforeLineEndY =
-              direction == 'column' ? childFrame.y : parentFrame.y + parentFrame.height
-            controlProps.push({
-              identifier: `${EP.toString(child.elementPath)}-0`,
-              scale: scale,
-              positionX: beforeX,
-              positionY: beforeY,
-              lineEndX: beforeLineEndX,
-              lineEndY: beforeLineEndY,
-              isHorizontalLine: direction === 'column',
-              parentPath: parentPath,
-              indexPosition: {
-                type: 'absolute',
-                index: 0,
-              },
-            })
-          }
-        }
-      }
-    })
 
     return (
       <CanvasOffsetWrapper>

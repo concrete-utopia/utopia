@@ -2,7 +2,11 @@ import { MetadataUtils } from '../../../core/model/element-metadata-utils'
 import { getStoryboardElementPath } from '../../../core/model/scene-utils'
 import { mapDropNulls } from '../../../core/shared/array-utils'
 import * as EP from '../../../core/shared/element-path'
-import { ElementInstanceMetadataMap, JSXElement } from '../../../core/shared/element-template'
+import {
+  ElementInstanceMetadata,
+  ElementInstanceMetadataMap,
+  JSXElement,
+} from '../../../core/shared/element-template'
 import {
   canvasPoint,
   CanvasPoint,
@@ -51,7 +55,7 @@ import { stylePropPathMappingFn } from '../../../components/inspector/common/pro
 import { getLayoutProperty } from '../../../core/layout/getLayoutProperty'
 import { LayoutPinnedProp, framePointForPinnedProp } from '../../../core/layout/layout-helpers-new'
 import { isRight, right } from '../../../core/shared/either'
-import { isHorizontalPoint } from 'utopia-api/core'
+import { FlexDirection, isHorizontalPoint } from 'utopia-api/core'
 import {
   AdjustCssLengthProperty,
   adjustCssLengthProperty,
@@ -499,6 +503,52 @@ export function getSiblingMidPointPosition(
   )
 }
 
+export function siblingAndPseudoPositions(
+  parentFlexDirection: string,
+  parentRect: CanvasRectangle,
+  siblingsOfTarget: Array<ElementPath>,
+  metadata: ElementInstanceMetadataMap,
+) {
+  const pseudoElementBefore: CanvasRectangle =
+    parentFlexDirection === 'row' // TODO handle row-reverse or col-reverse
+      ? canvasRectangle({
+          x: parentRect.x,
+          y: parentRect.y,
+          width: 0,
+          height: parentRect.height,
+        })
+      : canvasRectangle({
+          x: parentRect.x,
+          y: parentRect.y,
+          height: 0,
+          width: parentRect.width,
+        })
+
+  const pseudoElementAfter: CanvasRectangle =
+    parentFlexDirection === 'row' // TODO handle row-reverse or col-reverse
+      ? canvasRectangle({
+          x: parentRect.x + parentRect.width,
+          y: parentRect.y,
+          width: 0,
+          height: parentRect.height,
+        })
+      : canvasRectangle({
+          x: parentRect.x,
+          y: parentRect.y + parentRect.height,
+          height: 0,
+          width: parentRect.width,
+        })
+
+  const siblingPositions: Array<CanvasRectangle> = [
+    pseudoElementBefore,
+    ...siblingsOfTarget.map((sibling) => {
+      return MetadataUtils.getFrameInCanvasCoords(sibling, metadata) ?? zeroCanvasRect
+    }),
+    pseudoElementAfter,
+  ]
+  return siblingPositions
+}
+
 export function applyFlexReparent(
   stripAbsoluteProperties: StripAbsoluteProperties,
   canvasState: InteractionCanvasState,
@@ -534,9 +584,6 @@ export function applyFlexReparent(
         filteredSelectedElements.length === 1
       ) {
         const target = filteredSelectedElements[0]
-        const targetSize =
-          MetadataUtils.getFrameInCanvasCoords(target, strategyState.startingMetadata) ??
-          zeroCanvasRect
 
         const newIndex = reparentResult.newIndex
         const newParent = reparentResult.newParent
@@ -590,51 +637,40 @@ export function applyFlexReparent(
             setCursorCommand('mid-interaction', CSSCursor.Move),
           ]
 
-          const pseudoElementBefore: CanvasRectangle =
-            newParentFlexDirection === 'row' // TODO handle row-reverse or col-reverse
-              ? canvasRectangle({
-                  x: parentRect.x,
-                  y: parentRect.y,
-                  width: 0,
-                  height: parentRect.height,
-                })
-              : canvasRectangle({
-                  x: parentRect.x,
-                  y: parentRect.y,
-                  height: 0,
-                  width: parentRect.width,
-                })
-
-          const pseudoElementAfter: CanvasRectangle =
-            newParentFlexDirection === 'row' // TODO handle row-reverse or col-reverse
-              ? canvasRectangle({
-                  x: parentRect.x + parentRect.width,
-                  y: parentRect.y,
-                  width: 0,
-                  height: parentRect.height,
-                })
-              : canvasRectangle({
-                  x: parentRect.x,
-                  y: parentRect.y + parentRect.height,
-                  height: 0,
-                  width: parentRect.width,
-                })
-
-          const siblingPositions: Array<CanvasRectangle> = [
-            pseudoElementBefore,
-            ...siblingsOfTarget.map((sibling) => {
-              return (
-                MetadataUtils.getFrameInCanvasCoords(sibling, strategyState.startingMetadata) ??
-                zeroCanvasRect
-              )
-            }),
-            pseudoElementAfter,
-          ]
+          function midInteractionCommandsForTarget(
+            targetLine: CanvasRectangle,
+          ): Array<CanvasCommand> {
+            return [
+              wildcardPatch('mid-interaction', {
+                canvas: { controls: { parentHighlightPaths: { $set: [newParent] } } },
+              }),
+              wildcardPatch('mid-interaction', {
+                canvas: {
+                  controls: { flexReparentTargetLines: { $set: [targetLine] } },
+                },
+              }),
+              newParentADescendantOfCurrentParent
+                ? wildcardPatch('mid-interaction', {
+                    hiddenInstances: { $push: [target] },
+                  })
+                : wildcardPatch('mid-interaction', {
+                    displayNoneInstances: { $push: [target] },
+                  }),
+              wildcardPatch('mid-interaction', { displayNoneInstances: { $push: [newPath] } }),
+            ]
+          }
 
           let interactionFinishCommands: Array<CanvasCommand>
           let midInteractionCommands: Array<CanvasCommand>
 
           if (reparentResult.shouldReorder && siblingsOfTarget.length > 0) {
+            const siblingPositions: Array<CanvasRectangle> = siblingAndPseudoPositions(
+              newParentFlexDirection,
+              parentRect,
+              siblingsOfTarget,
+              strategyState.startingMetadata,
+            )
+
             const precedingSiblingPosition: CanvasRectangle = siblingPositions[newIndex]
             const succeedingSiblingPosition: CanvasRectangle = siblingPositions[newIndex + 1]
 
@@ -664,24 +700,7 @@ export function applyFlexReparent(
                     height: FlexReparentIndicatorSize,
                   })
 
-            midInteractionCommands = [
-              wildcardPatch('mid-interaction', {
-                canvas: { controls: { parentHighlightPaths: { $set: [newParent] } } },
-              }),
-              wildcardPatch('mid-interaction', {
-                canvas: {
-                  controls: { flexReparentTargetLines: { $set: [targetLineBeforeSibling] } },
-                },
-              }),
-              newParentADescendantOfCurrentParent
-                ? wildcardPatch('mid-interaction', {
-                    hiddenInstances: { $push: [target] },
-                  })
-                : wildcardPatch('mid-interaction', {
-                    displayNoneInstances: { $push: [target] },
-                  }),
-              wildcardPatch('mid-interaction', { displayNoneInstances: { $push: [newPath] } }),
-            ]
+            midInteractionCommands = midInteractionCommandsForTarget(targetLineBeforeSibling)
 
             interactionFinishCommands = [
               ...commandsBeforeReorder,
@@ -705,24 +724,7 @@ export function applyFlexReparent(
                       height: FlexReparentIndicatorSize,
                     })
 
-              midInteractionCommands = [
-                wildcardPatch('mid-interaction', {
-                  canvas: { controls: { parentHighlightPaths: { $set: [newParent] } } },
-                }),
-                wildcardPatch('mid-interaction', {
-                  canvas: {
-                    controls: { flexReparentTargetLines: { $set: [targetLineBeginningOfParent] } },
-                  },
-                }),
-                newParentADescendantOfCurrentParent
-                  ? wildcardPatch('mid-interaction', {
-                      hiddenInstances: { $push: [target] },
-                    })
-                  : wildcardPatch('mid-interaction', {
-                      displayNoneInstances: { $push: [target] },
-                    }),
-                wildcardPatch('mid-interaction', { displayNoneInstances: { $push: [newPath] } }),
-              ]
+              midInteractionCommands = midInteractionCommandsForTarget(targetLineBeginningOfParent)
             } else {
               // this should be an error because parentRect should never be null
               midInteractionCommands = []
