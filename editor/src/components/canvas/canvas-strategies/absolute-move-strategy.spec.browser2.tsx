@@ -12,7 +12,11 @@ import * as EP from '../../../core/shared/element-path'
 import { selectComponents } from '../../editor/actions/action-creators'
 import { CanvasControlsContainerID } from '../controls/new-canvas-controls'
 import CanvasActions from '../canvas-actions'
-import { createInteractionViaMouse, updateInteractionViaMouse } from './interaction-state'
+import {
+  boundingArea,
+  createInteractionViaMouse,
+  updateInteractionViaMouse,
+} from './interaction-state'
 import {
   canvasPoint,
   CanvasVector,
@@ -89,10 +93,11 @@ async function startDragUsingActions(
   dragDelta: CanvasVector,
 ) {
   await renderResult.dispatch([selectComponents([target], false)], true)
-  const startInteractionSession = createInteractionViaMouse(zeroCanvasPoint, emptyModifiers, {
-    type: 'BOUNDING_AREA',
-    target: target,
-  })
+  const startInteractionSession = createInteractionViaMouse(
+    zeroCanvasPoint,
+    emptyModifiers,
+    boundingArea(),
+  )
   await renderResult.dispatch(
     [CanvasActions.createInteractionSession(startInteractionSession)],
     false,
@@ -101,10 +106,12 @@ async function startDragUsingActions(
   await renderResult.dispatch(
     [
       CanvasActions.updateInteractionSession(
-        updateInteractionViaMouse(startInteractionSession, dragDelta, emptyModifiers, {
-          type: 'BOUNDING_AREA',
-          target: target,
-        }),
+        updateInteractionViaMouse(
+          startInteractionSession,
+          dragDelta,
+          emptyModifiers,
+          boundingArea(),
+        ),
       ),
     ],
     false,
