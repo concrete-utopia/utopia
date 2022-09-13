@@ -420,9 +420,9 @@ export function runLocalCanvasAction(
           dispatch([CanvasActions.updateDragInteractionData({ globalTime: Date.now() })])
         }, 200)
       }
-      const metadata = model.canvas.interactionSession?.metadata ?? model.jsxMetadata
+      const metadata = model.canvas.interactionSession?.latestMetadata ?? model.jsxMetadata
       const allElementProps =
-        model.canvas.interactionSession?.allElementProps ?? model.allElementProps
+        model.canvas.interactionSession?.latestAllElementProps ?? model.allElementProps
 
       const startingTargetParentToFilterOut =
         model.canvas.interactionSession?.startingTargetParentToFilterOut ??
@@ -450,8 +450,8 @@ export function runLocalCanvasAction(
           ...model.canvas,
           interactionSession: {
             ...action.interactionSession,
-            metadata: metadata,
-            allElementProps: allElementProps,
+            latestMetadata: metadata,
+            latestAllElementProps: allElementProps,
             startingTargetParentToFilterOut: startingTargetParentToFilterOut,
           },
         },

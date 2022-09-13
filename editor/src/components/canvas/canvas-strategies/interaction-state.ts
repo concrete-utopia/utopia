@@ -64,8 +64,8 @@ export interface InteractionSession {
   activeControl: CanvasControlType
   sourceOfUpdate: CanvasControlType
   lastInteractionTime: number
-  metadata: ElementInstanceMetadataMap
-  allElementProps: AllElementProps
+  latestMetadata: ElementInstanceMetadataMap
+  latestAllElementProps: AllElementProps
 
   // To track if the user selected a strategy
   userPreferredStrategy: CanvasStrategyId | null
@@ -93,10 +93,10 @@ export function interactionSession(
     activeControl: activeControl,
     sourceOfUpdate: sourceOfUpdate,
     lastInteractionTime: lastInteractionTime,
-    metadata: metadata,
+    latestMetadata: metadata,
     userPreferredStrategy: userPreferredStrategy,
     startedAt: startedAt,
-    allElementProps: allElementProps,
+    latestAllElementProps: allElementProps,
     startingTargetParentToFilterOut: startingTargetParentToFilterOut,
     updatedTargetPaths: updatedTargetPaths,
   }
@@ -104,7 +104,7 @@ export function interactionSession(
 
 export type InteractionSessionWithoutMetadata = Omit<
   InteractionSession,
-  'metadata' | 'allElementProps' | 'startingTargetParentToFilterOut'
+  'latestMetadata' | 'latestAllElementProps' | 'startingTargetParentToFilterOut'
 >
 
 export interface CommandDescription {

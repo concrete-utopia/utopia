@@ -42,8 +42,8 @@ export function pressKeys(
       modifiers,
       null as any, // the strategy does not use this
     ),
-    metadata: metadata,
-    allElementProps: null as any,
+    latestMetadata: metadata,
+    latestAllElementProps: null as any,
     startingTargetParentToFilterOut: null,
   }
 
