@@ -77,8 +77,7 @@ function dragElement(
   )
 }
 
-// I'm disabling these tests as they seem to crash FOR NO REASON with sinon.useFakeTimers in the keyboard browser tests. the first it() passes, for the second it() the canvas drag events are somehow not dispatching update drag state actions
-describe('Reparent Spike Tests', () => {
+describe('Unified Reparent Fitness Function Tests', () => {
   beforeEach(() => {
     viewport.set(2200, 1000)
   })
