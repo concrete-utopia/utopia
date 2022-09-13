@@ -40,6 +40,7 @@ import { isInsertMode } from '../../editor/editor-modes'
 import { dragToInsertStrategy } from './drag-to-insert-strategy'
 import { CSSCursor } from '../../../uuiui-deps'
 import { StateSelector } from 'zustand'
+import { flowReorderSliderStategy } from './flow-reorder-slider-strategy'
 
 export const RegisteredCanvasStrategies: Array<CanvasStrategy> = [
   absoluteMoveStrategy,
@@ -54,9 +55,10 @@ export const RegisteredCanvasStrategies: Array<CanvasStrategy> = [
   // escapeHatchStrategy,  // TODO re-enable once reparent is not tied to cmd
   absoluteReparentToFlexStrategy,
   dragToInsertStrategy,
-  flowReorderAutoConversionStategy,
-  flowReorderNoConversionStategy,
-  flowReorderSameTypeOnlyStategy,
+  // flowReorderAutoConversionStategy,
+  // flowReorderNoConversionStategy,
+  // flowReorderSameTypeOnlyStategy,
+  flowReorderSliderStategy,
 ]
 
 export function pickCanvasStateFromEditorState(

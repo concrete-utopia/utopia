@@ -28,7 +28,7 @@ import { AllElementProps } from '../../editor/store/editor-state'
 import { isGeneratedElement } from './reparent-helpers'
 import { isReorderAllowed } from './reorder-utils'
 
-function isFlowReorderConversionApplicable(
+export function isFlowReorderConversionApplicable(
   canvasState: InteractionCanvasState,
   interactionSession: InteractionSession | null,
   metadata: ElementInstanceMetadataMap,

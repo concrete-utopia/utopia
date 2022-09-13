@@ -398,5 +398,19 @@ export function keyboardCatcherControl(): KeyboardCatcherControl {
     type: 'KEYBOARD_CATCHER_CONTROL',
   }
 }
+export interface FlowSlider {
+  type: 'FLOW_SLIDER'
+}
 
-export type CanvasControlType = BoundingArea | ResizeHandle | FlexGapHandle | KeyboardCatcherControl
+export function flowSlider(): FlowSlider {
+  return {
+    type: 'FLOW_SLIDER',
+  }
+}
+
+export type CanvasControlType =
+  | BoundingArea
+  | ResizeHandle
+  | FlexGapHandle
+  | KeyboardCatcherControl
+  | FlowSlider

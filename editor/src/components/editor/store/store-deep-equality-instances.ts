@@ -1704,6 +1704,11 @@ export const CanvasControlTypeKeepDeepEquality: KeepDeepEqualityCall<CanvasContr
         return KeyboardCatcherControlKeepDeepEquality(oldValue, newValue)
       }
       break
+    case 'FLOW_SLIDER':
+      if (newValue.type === oldValue.type) {
+        return keepDeepEqualityResult(oldValue, true)
+      }
+      break
     default:
       const _exhaustiveCheck: never = oldValue
       throw new Error(`Unhandled type ${JSON.stringify(oldValue)}`)

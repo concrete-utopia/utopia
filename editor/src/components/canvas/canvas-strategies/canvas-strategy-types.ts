@@ -126,6 +126,7 @@ export type CanvasStrategyId =
   | 'FLOW_REORDER_AUTO_CONVERSION'
   | 'FLOW_REORDER_NO_CONVERSION'
   | 'FLOW_REORDER_SAME_TYPE_ONLY'
+  | 'FLOW_REORDER_SLIDER'
 
 export interface CanvasStrategy {
   id: CanvasStrategyId // We'd need to do something to guarantee uniqueness here if using this for the commands' reason
