@@ -62,6 +62,7 @@ import {
   componentHonoursPropsPosition,
   componentHonoursPropsSize,
   componentUsesProperty,
+  elementOnlyHasTextChildren,
   findJSXElementChildAtPath,
   getUtopiaID,
 } from './element-template-utils'
@@ -645,27 +646,34 @@ export const MetadataUtils = {
     return foldEither(
       (elementString) => intrinsicHTMLElementNamesThatSupportChildren.includes(elementString),
       (element) => {
-        if (isJSXElement(element)) {
-          if (isIntrinsicElement(element.name)) {
-            return intrinsicHTMLElementNamesThatSupportChildren.includes(element.name.baseVariable)
-          } else if (isUtopiaAPIComponentFromMetadata(instance)) {
-            // Explicitly prevent components / elements that we *know* don't support children
-            return (
-              isViewLikeFromMetadata(instance) ||
-              isSceneFromMetadata(instance) ||
-              isGivenUtopiaElementFromMetadata(instance, 'Text')
-            )
-          } else {
-            return MetadataUtils.targetUsesProperty(
-              projectContents,
-              openFile,
-              instance.elementPath,
-              'children',
-            )
+        if (elementOnlyHasTextChildren(element)) {
+          // Prevent re-parenting into an element that only has text children, as that is rarely a desired goal
+          return false
+        } else {
+          if (isJSXElement(element)) {
+            if (isIntrinsicElement(element.name)) {
+              return intrinsicHTMLElementNamesThatSupportChildren.includes(
+                element.name.baseVariable,
+              )
+            } else if (isUtopiaAPIComponentFromMetadata(instance)) {
+              // Explicitly prevent components / elements that we *know* don't support children
+              return (
+                isViewLikeFromMetadata(instance) ||
+                isSceneFromMetadata(instance) ||
+                isGivenUtopiaElementFromMetadata(instance, 'Text')
+              )
+            } else {
+              return MetadataUtils.targetUsesProperty(
+                projectContents,
+                openFile,
+                instance.elementPath,
+                'children',
+              )
+            }
           }
+          // We don't know at this stage
+          return true
         }
-        // We don't know at this stage
-        return true
       },
       instance.element,
     )

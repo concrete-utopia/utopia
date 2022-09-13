@@ -1655,9 +1655,10 @@ export const EdgePositionKeepDeepEquality: KeepDeepEqualityCall<EdgePosition> =
     createCallWithTripleEquals(),
     edgePosition,
   )
-
-export const BoundingAreaKeepDeepEquality: KeepDeepEqualityCall<BoundingArea> =
-  combine1EqualityCall((area) => area.target, ElementPathKeepDeepEquality, boundingArea)
+boundingArea() // this is here to break if the definition of boundingArea changes
+export const BoundingAreaKeepDeepEquality: KeepDeepEqualityCall<BoundingArea> = (oldValue, _) => {
+  return keepDeepEqualityResult(oldValue, true)
+}
 
 export const ResizeHandleKeepDeepEquality: KeepDeepEqualityCall<ResizeHandle> =
   combine1EqualityCall((handle) => handle.edgePosition, EdgePositionKeepDeepEquality, resizeHandle)

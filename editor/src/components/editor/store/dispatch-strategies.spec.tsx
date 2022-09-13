@@ -142,7 +142,7 @@ describe('interactionCancel', () => {
       createInteractionViaMouse(
         canvasPoint({ x: 100, y: 200 }),
         { alt: false, shift: false, ctrl: false, cmd: false },
-        { type: 'BOUNDING_AREA', target: EP.elementPath([['aaa']]) },
+        boundingArea(),
       ),
     )
     editorStore.strategyState.accumulatedPatches = runCanvasCommand(
@@ -193,7 +193,7 @@ describe('interactionStart', () => {
       createInteractionViaMouse(
         canvasPoint({ x: 100, y: 200 }),
         { alt: false, shift: false, ctrl: false, cmd: false },
-        { type: 'BOUNDING_AREA', target: EP.elementPath([['aaa']]) },
+        boundingArea(),
       ),
     )
     const actualResult = interactionStart(
@@ -317,7 +317,7 @@ describe('interactionUpdatex', () => {
       createInteractionViaMouse(
         canvasPoint({ x: 100, y: 200 }),
         { alt: false, shift: false, ctrl: false, cmd: false },
-        { type: 'BOUNDING_AREA', target: EP.elementPath([['aaa']]) },
+        boundingArea(),
       ),
     )
     editorStore.strategyState.currentStrategy = 'TEST_STRATEGY' as CanvasStrategyId
@@ -444,7 +444,7 @@ describe('interactionUpdate without strategy', () => {
       createInteractionViaMouse(
         canvasPoint({ x: 100, y: 200 }),
         { alt: false, shift: false, ctrl: false, cmd: false },
-        { type: 'BOUNDING_AREA', target: EP.elementPath([['aaa']]) },
+        boundingArea(),
       ),
     )
     editorStore.strategyState.currentStrategy = null
@@ -469,7 +469,7 @@ describe('interactionHardReset', () => {
     let interactionSession = createInteractionViaMouse(
       canvasPoint({ x: 100, y: 200 }),
       { alt: false, shift: false, ctrl: false, cmd: false },
-      { type: 'BOUNDING_AREA', target: EP.elementPath([['aaa']]) },
+      boundingArea(),
     )
     if (interactionSession.interactionData.type === 'DRAG') {
       interactionSession.interactionData.dragStart = canvasPoint({ x: 110, y: 210 })
@@ -603,7 +603,7 @@ describe('interactionUpdate with accumulating keypresses', () => {
     let interactionSession = createInteractionViaKeyboard(
       ['left'],
       { alt: false, shift: false, ctrl: false, cmd: false },
-      { type: 'BOUNDING_AREA', target: EP.elementPath([['aaa']]) },
+      boundingArea(),
     )
 
     const editorStore = createEditorStore(interactionSession)
@@ -676,7 +676,7 @@ describe('interactionUpdate with user changed strategy', () => {
     let interactionSession = createInteractionViaMouse(
       canvasPoint({ x: 100, y: 200 }),
       { alt: false, shift: false, ctrl: false, cmd: false },
-      { type: 'BOUNDING_AREA', target: EP.elementPath([['aaa']]) },
+      boundingArea(),
     )
     if (interactionSession.interactionData.type === 'DRAG') {
       interactionSession.interactionData.dragStart = canvasPoint({ x: 110, y: 210 })
@@ -866,7 +866,7 @@ describe('only update metadata on SAVE_DOM_REPORT', () => {
       createInteractionViaMouse(
         canvasPoint({ x: 100, y: 200 }),
         { alt: false, shift: false, ctrl: false, cmd: false },
-        { type: 'BOUNDING_AREA', target: EP.elementPath([['aaa']]) },
+        boundingArea(),
       ),
     )
 
@@ -927,11 +927,7 @@ describe('only update metadata on SAVE_DOM_REPORT', () => {
     await renderResult.dispatch(
       [
         CanvasActions.createInteractionSession(
-          createInteractionViaMouse(
-            canvasPoint({ x: 0, y: 0 }),
-            emptyModifiers,
-            boundingArea(targetElement),
-          ),
+          createInteractionViaMouse(canvasPoint({ x: 0, y: 0 }), emptyModifiers, boundingArea()),
         ),
       ],
       true,

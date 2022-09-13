@@ -1116,7 +1116,7 @@ export function jsxElement(
 export function jsxTestElement(
   name: JSXElementName | string,
   props: JSXAttributes,
-  children: Array<JSXElement>,
+  children: JSXElementChildren,
   uid: string = 'aaa',
 ): JSXElement {
   return jsxElement(
