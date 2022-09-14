@@ -160,8 +160,8 @@ function getInsertionCommands(
     const frame = canvasRectangle({
       x: pointOnCanvas.x,
       y: pointOnCanvas.y,
-      width: 10,
-      height: 10,
+      width: 0,
+      height: 0,
     })
 
     const updatedAttributesWithPosition = getStyleAttributesForFrameInAbsolutePosition(

@@ -403,7 +403,7 @@ export class InsertModeControlContainer extends React.Component<
   }
 
   onMouseDown = (e: MouseEvent) => {
-    const mousePoint = this.props.windowToCanvasPosition(e).canvasPositionRaw
+    const mousePoint = this.props.windowToCanvasPosition(e).canvasPositionRounded
 
     const setFocusAction = setFocus('canvas')
     if (
