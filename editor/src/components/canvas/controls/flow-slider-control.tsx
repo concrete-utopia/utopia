@@ -3,18 +3,18 @@ import { MetadataUtils } from '../../../core/model/element-metadata-utils'
 import * as EP from '../../../core/shared/element-path'
 import { point, windowPoint } from '../../../core/shared/math-utils'
 import { Modifier } from '../../../utils/modifiers'
+import { when } from '../../../utils/react-conditionals'
 import { Icons, useColorTheme, UtopiaStyles } from '../../../uuiui'
-import { CSSCursor, getControlStyles, SliderControl } from '../../../uuiui-deps'
-import { setCursorOverlay } from '../../editor/actions/action-creators'
+import { CSSCursor } from '../../../uuiui-deps'
 import { useEditorState, useRefEditorState } from '../../editor/store/store-hook'
 import { stopPropagation } from '../../inspector/common/inspector-utils'
 import CanvasActions from '../canvas-actions'
 import { createInteractionViaMouse, flowSlider } from '../canvas-strategies/interaction-state'
 import { windowToCanvasCoordinates } from '../dom-lookup'
+import { CanvasOffsetWrapper } from './canvas-offset-wrapper'
 
 export const FlowSliderControl = React.memo(() => {
   const colorTheme = useColorTheme()
-  const ref = React.useRef<HTMLDivElement | null>(null)
   const dispatch = useRefEditorState((store) => store.dispatch)
   const isTargetFlowWithSiblings = useEditorState((store) => {
     if (store.editor.selectedViews.length === 1) {
@@ -57,28 +57,6 @@ export const FlowSliderControl = React.memo(() => {
     }
   }, 'current index')
 
-  // const onChange = React.useCallback((value: number, transient?: boolean | undefined) => {
-  //   console.log('i')
-  // }, [])
-
-  // const onMouseDown = React.useCallback(
-  //   (e: React.MouseEvent<HTMLDivElement>) => {
-  //     stopPropagation(e)
-  //     ref.current?.requestPointerLock()
-  //     window.addEventListener('mousemove', onMouseMove)
-  //     window.addEventListener('mouseup', onMouseUp)
-  //   },
-  //   [ref],
-  // )
-  // const onMouseMove = (e: MouseEvent) => {
-  //   console.log('mouse move event', e)
-  // }
-  // const onMouseUp = (e: MouseEvent) => {
-  //   document.exitPointerLock()
-  //   window.removeEventListener('mousemove', onMouseMove)
-  //   window.removeEventListener('mouseup', onMouseUp)
-  // }
-
   const scaleRef = useRefEditorState((store) => store.editor.canvas.scale)
   const canvasOffsetRef = useRefEditorState((store) => store.editor.canvas.realCanvasOffset)
 
@@ -90,7 +68,6 @@ export const FlowSliderControl = React.memo(() => {
         canvasOffsetRef.current,
         windowPoint(point(event.clientX, event.clientY)),
       ).canvasPositionRounded
-
       if (event.button !== 2) {
         dispatch.current(
           [
@@ -109,58 +86,65 @@ export const FlowSliderControl = React.memo(() => {
     [dispatch, canvasOffsetRef, scaleRef],
   )
 
-  if (isTargetFlowWithSiblings && siblings.length > 1) {
+  const isDragging = useEditorState(
+    (store) =>
+      store.editor.canvas.interactionSession != null &&
+      store.editor.canvas.interactionSession.activeControl.type === 'FLOW_SLIDER',
+    'isDragging',
+  )
+
+  const frame = useEditorState((store) => {
+    if (store.editor.selectedViews.length === 1) {
+      const target = store.editor.selectedViews[0]
+      return MetadataUtils.getFrameInCanvasCoords(target, store.editor.jsxMetadata)
+    } else {
+      return null
+    }
+  }, 'frame')
+
+  if (isTargetFlowWithSiblings && siblings.length > 1 && frame != null) {
+    // icon size: 16
     return (
-      <div
-        ref={ref}
-        style={{
-          position: 'absolute',
-          right: 125,
-          top: 4,
-          minWidth: 144,
-          height: 22,
-          borderRadius: 4,
-          background: colorTheme.bg0.value,
-          boxShadow: UtopiaStyles.popup.boxShadow,
-          display: 'flex',
-          alignItems: 'center',
-          justifyContent: 'space-between',
-          cursor: CSSCursor.ResizeEW,
-        }}
-        onMouseDown={onMouseDown}
-        onMouseUp={stopPropagation}
-      >
-        {siblings.map((s, i) => {
-          return (
-            <div
-              key={EP.toString(s)}
-              style={{
-                display: 'inline-block',
-                transform: `scale(${i === currentIndex ? 2 : 1})`,
-                transition: 'transform .1s ease-in-out',
-              }}
-            >
-              <Icons.Dot color={i === currentIndex ? 'primary' : 'main'} />
-            </div>
-          )
-        })}
-        {/* <SliderControl
-          key='flow-slider'
-          id='flow-slider'
-          testId='flow-slider'
-          value={currentIndex}
-          onSubmitValue={onChange}
-          controlStatus={'simple'}
-          controlStyles={getControlStyles('simple')}
-          DEPRECATED_controlOptions={{
-            minimum: 0,
-            maximum: siblings.length,
-            // filled: true,
-            stepSize: 1,
-            // origin: number
+      <CanvasOffsetWrapper>
+        {when(
+          isDragging,
+          <div
+            style={{
+              position: 'absolute',
+              top: frame.y + frame.height / 2 - 11,
+              left: (frame?.x ?? 0) + (frame?.width ?? 0) / 2 - 8 - currentIndex * 16,
+              width: siblings.length * 16,
+              height: 22,
+              borderRadius: 4,
+              opacity: '50%',
+              background: colorTheme.bg0.value,
+              boxShadow: UtopiaStyles.popup.boxShadow,
+              cursor: CSSCursor.ResizeEW,
+              display: 'flex',
+              alignItems: 'center',
+            }}
+          >
+            {siblings.map((s, i) => (
+              <Icons.Dot key={EP.toString(s)} />
+            ))}
+          </div>,
+        )}
+        <div
+          style={{
+            position: 'absolute',
+            top: frame.y + frame.height / 2 - 5,
+            left: frame.x + frame.width / 2 - 8,
+            width: 10,
+            height: 10,
+            borderRadius: '50%',
+            background: colorTheme.bg0.value,
+            boxShadow: UtopiaStyles.popup.boxShadow,
+            cursor: CSSCursor.ResizeEW,
           }}
-        /> */}
-      </div>
+          onMouseDown={onMouseDown}
+          onMouseUp={stopPropagation}
+        ></div>
+      </CanvasOffsetWrapper>
     )
   } else {
     return null

@@ -629,7 +629,7 @@ function useSelectOrLiveModeSelectAndHover(
                     createInteractionViaMouse(
                       start,
                       Modifier.modifiersForEvent(event),
-                      flowSlider(),
+                      boundingArea(),
                     ),
                   ),
                 )

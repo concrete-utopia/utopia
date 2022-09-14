@@ -32,11 +32,11 @@ export const flowReorderSliderStategy: CanvasStrategy = {
     )
   },
   controlsToRender: [
-    {
-      control: FlowSliderControl,
-      key: 'flow-slider-control',
-      show: 'visible-only-while-active',
-    },
+    // {
+    //   control: FlowSliderControl,
+    //   key: 'flow-slider-control',
+    //   show: 'always-visible',
+    // },
   ],
   fitness: (canvasState, interactionState, strategyState) => {
     return flowReorderSliderStategy.isApplicable(
