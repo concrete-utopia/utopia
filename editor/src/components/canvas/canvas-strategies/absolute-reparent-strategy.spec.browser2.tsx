@@ -326,9 +326,7 @@ describe('Absolute Reparent Strategy', () => {
 
     await renderResult.getDispatchFollowUpActionsFinished()
 
-    expect(getPrintedUiJsCode(renderResult.getEditorState())).toEqual(
-      createCodeForProject(-960, -950),
-    )
+    expect(getPrintedUiJsCode(renderResult.getEditorState())).toEqual(createCodeForProject(40, 50))
   })
 
   it('renders correctly with ChildrenHider set to hide children', async () => {

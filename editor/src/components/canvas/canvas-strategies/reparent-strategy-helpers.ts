@@ -8,7 +8,6 @@ import {
   CanvasPoint,
   CanvasRectangle,
   canvasRectangle,
-  CanvasVector,
   offsetPoint,
   pointDifference,
   rectContainsPoint,
@@ -30,7 +29,6 @@ import { deleteProperties } from '../commands/delete-properties-command'
 import { reorderElement } from '../commands/reorder-element-command'
 import { setCursorCommand } from '../commands/set-cursor-command'
 import { setElementsToRerenderCommand } from '../commands/set-elements-to-rerender-command'
-import { setProperty } from '../commands/set-property-command'
 import { updateHighlightedViews } from '../commands/update-highlighted-views-command'
 import { updateSelectedViews } from '../commands/update-selected-views-command'
 import { wildcardPatch } from '../commands/wildcard-patch-command'
@@ -45,7 +43,7 @@ import { InteractionSession, StrategyState } from './interaction-state'
 import { ifAllowedToReparent } from './reparent-helpers'
 import { getReparentOutcome, pathToReparent } from './reparent-utils'
 import { getDragTargets } from './shared-absolute-move-strategy-helpers'
-import Utils, { absolute } from '../../../utils/utils'
+import { absolute } from '../../../utils/utils'
 import { getElementFromProjectContents } from '../../../components/editor/store/editor-state'
 import { stylePropPathMappingFn } from '../../../components/inspector/common/property-path-hooks'
 import { getLayoutProperty } from '../../../core/layout/getLayoutProperty'
@@ -87,24 +85,19 @@ export function reparentStrategyForParent(
   )
 
   const newParentMetadata = MetadataUtils.findElementByElementPath(targetMetadata, newParent)
-  const parentProvidesBoundsForAbsoluteChildren = true
-
   const parentIsFlexLayout = MetadataUtils.isFlexLayoutedContainer(newParentMetadata)
-  const parentIsStoryboard = EP.isStoryboardPath(newParent)
 
   if (allDraggedElementsAbsolute) {
     if (parentIsFlexLayout) {
       return { strategy: 'ABSOLUTE_REPARENT_TO_FLEX', newParent: newParent }
-    }
-    if (parentProvidesBoundsForAbsoluteChildren || parentIsStoryboard) {
+    } else {
       return { strategy: 'ABSOLUTE_REPARENT_TO_ABSOLUTE', newParent: newParent }
     }
   }
   if (allDraggedElementsFlex) {
     if (parentIsFlexLayout) {
       return { strategy: 'FLEX_REPARENT_TO_FLEX', newParent: newParent }
-    }
-    if (parentProvidesBoundsForAbsoluteChildren || parentIsStoryboard) {
+    } else {
       return { strategy: 'FLEX_REPARENT_TO_ABSOLUTE', newParent: newParent }
     }
   }
@@ -233,13 +226,6 @@ export function getReparentTargetUnified(
   )
 
   const filteredElementsUnderPoint = allElementsUnderPoint.filter((target) => {
-    const targetMetadata = MetadataUtils.findElementByElementPath(metadata, target)
-    const isFlex = MetadataUtils.isFlexLayoutedContainer(targetMetadata)
-    const providesBoundsForAbsoluteChildren = true
-
-    // TODO extend here when we implement static layout support
-    const validParentForFlexOrAbsolute = isFlex || providesBoundsForAbsoluteChildren
-
     // TODO BEFORE MERGE consider multiselect!!!!!
     // the current parent should be included in the array of valid targets
     return (
@@ -261,8 +247,7 @@ export function getReparentTargetUnified(
           sizeFitsInTarget(
             multiselectBounds,
             MetadataUtils.getFrameInCanvasCoords(target, metadata) ?? size(0, 0),
-          )) &&
-        validParentForFlexOrAbsolute)
+          )))
     )
   })
 
