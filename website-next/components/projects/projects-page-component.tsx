@@ -18,24 +18,6 @@ import {
 import * as timeago from 'timeago.js'
 import { Card, cardLayout, cardLayoutStyle } from './cards'
 
-interface NavItemProps {
-  selected: boolean
-}
-
-const FlexNavItem = styled('div')<NavItemProps>(
-  {
-    display: 'flex',
-    alignItems: 'center',
-    justifyContent: 'center',
-    flexBasis: 180,
-    padding: '10px 20px',
-  },
-  (props) => ({
-    background: props.selected ? colors.default : 'undefined',
-    color: props.selected ? 'white' : colors.default,
-  }),
-)
-
 interface SortButtonProps {
   selected: boolean
   sortOrder: number
@@ -46,7 +28,7 @@ const SortButton = styled('div')<SortButtonProps>(
     color: colors.mainBlue,
     textDecoration: 'none',
     cursor: 'pointer',
-    padding: '0px 4px',
+    padding: '6px',
     userSelect: 'none',
     borderRadius: 3,
     transition: '.2s ease',
@@ -444,7 +426,7 @@ export class ProjectsPage extends React.Component<EmptyProps, ProjectsState> {
               alignItems: 'center',
 
               fontFamily: 'Reckless Neue',
-              fontSize: '24pt',
+              fontSize: '28pt',
               gap: layout.margins.regular,
             }}
           >
@@ -461,10 +443,11 @@ export class ProjectsPage extends React.Component<EmptyProps, ProjectsState> {
               <div
                 className='projecttile-thumbnail'
                 style={{
-                  backgroundImage:
-                    'url(' +
-                    'https://images.pexels.com/photos/34153/pexels-photo.jpg?auto=compress&cs=tinysrgb&h=350' +
-                    ')',
+                  // backgroundImage:
+                  //   'url(' +
+                  //   'https://images.pexels.com/photos/34153/pexels-photo.jpg?auto=compress&cs=tinysrgb&h=350' +
+                  //   ')',
+                  background: 'linear-gradient(180deg, #B8EAFF 0%, #B8FFC3 47.4%, #F4FFA9 90.1%)',
                   backgroundSize: 'cover',
                   height: cardLayout.imageHeight,
                 }}
@@ -514,10 +497,11 @@ export class ProjectsPage extends React.Component<EmptyProps, ProjectsState> {
               <div
                 className='projecttile-thumbnail'
                 style={{
-                  backgroundImage:
-                    'url(' +
-                    'https://images.pexels.com/photos/34153/pexels-photo.jpg?auto=compress&cs=tinysrgb&h=350' +
-                    ')',
+                  // backgroundImage:
+                  //   'url(' +
+                  //   'https://images.pexels.com/photos/34153/pexels-photo.jpg?auto=compress&cs=tinysrgb&h=350' +
+                  //   ')',
+                  background: 'linear-gradient(180deg, #FFB8F8 0%, #DBB8FF 55.21%, #B8EAFF 91.67%)',
                   backgroundSize: 'cover',
                   height: cardLayout.imageHeight,
                 }}
@@ -599,14 +583,15 @@ export class ProjectsPage extends React.Component<EmptyProps, ProjectsState> {
               </div>
               <div
                 style={{
-                  marginTop: 10,
                   fontSize: 12,
                   opacity: 0.7,
                   display: 'flex',
                   gap: '10px',
+                  alignItems: 'center',
+                  height: '100%',
                 }}
               >
-                <label>Sort:</label>
+                <label>Sort</label>
                 <SortButton
                   selected={this.state.sortMode === 'date'}
                   onClick={() => handleSortByDate()}
