@@ -3,7 +3,7 @@ import { selectComponents } from '../../../components/editor/actions/action-crea
 import { renderTestEditorWithCode } from '../ui-jsx.test-utils'
 import * as EP from '../../../core/shared/element-path'
 
-function getProjectCode(): string {
+function getProjectCode(flexDirection: string): string {
   return `
 import * as React from 'react'
 import { Scene, Storyboard } from 'utopia-api'
@@ -102,6 +102,7 @@ export var storyboard = (
           backgroundColor: 'grey',
           position: 'absolute',
           display: 'flex',
+          flexDirection: '${flexDirection}',
           gap: '50px',
           left: 0,
           top: 500,
@@ -257,8 +258,15 @@ export var storyboard = (
 }
 
 describe('Insertion Plus Button', () => {
-  it('shows the buttons in the correct places for a flex container that already has children', async () => {
-    const renderResult = await renderTestEditorWithCode(getProjectCode(), 'await-first-dom-report')
+  beforeEach(() => {
+    viewport.set(2200, 1000)
+  })
+
+  it(`shows the buttons in the correct places for a flex container with a direction of 'row' that already has children`, async () => {
+    const renderResult = await renderTestEditorWithCode(
+      getProjectCode('row'),
+      'await-first-dom-report',
+    )
 
     const targetPath = EP.fromString('storyboard/scene/parentsibling')
     await act(() => renderResult.dispatch([selectComponents([targetPath], false)], false))
@@ -278,6 +286,84 @@ describe('Insertion Plus Button', () => {
     await checkInsertButtonPosition('blue-dot-control-0', 428.5, 622.5)
     await checkInsertButtonPosition('blue-dot-control-1', 562.5, 622.5)
     await checkInsertButtonPosition('blue-dot-control-2', 767, 622.5)
+  })
+
+  it(`shows the buttons in the correct places for a flex container with a direction of 'row-reverse' that already has children`, async () => {
+    const renderResult = await renderTestEditorWithCode(
+      getProjectCode('row-reverse'),
+      'await-first-dom-report',
+    )
+
+    const targetPath = EP.fromString('storyboard/scene/parentsibling')
+    await act(() => renderResult.dispatch([selectComponents([targetPath], false)], false))
+    await renderResult.getDispatchFollowUpActionsFinished()
+
+    async function checkInsertButtonPosition(
+      buttonTestId: string,
+      expectedLeft: number,
+      expectedTop: number,
+    ): Promise<void> {
+      const element = await renderResult.renderedDOM.findByTestId(buttonTestId)
+      const bounds = element.getBoundingClientRect()
+      expect(bounds.left).toEqual(expectedLeft)
+      expect(bounds.top).toEqual(expectedTop)
+    }
+
+    await checkInsertButtonPosition('blue-dot-control-0', 490, 622.5)
+    await checkInsertButtonPosition('blue-dot-control-1', 694.5, 622.5)
+    await checkInsertButtonPosition('blue-dot-control-2', 828.5, 622.5)
+  })
+
+  it(`shows the buttons in the correct places for a flex container with a direction of 'column' that already has children`, async () => {
+    const renderResult = await renderTestEditorWithCode(
+      getProjectCode('column'),
+      'await-first-dom-report',
+    )
+
+    const targetPath = EP.fromString('storyboard/scene/parentsibling')
+    await act(() => renderResult.dispatch([selectComponents([targetPath], false)], false))
+    await renderResult.getDispatchFollowUpActionsFinished()
+
+    async function checkInsertButtonPosition(
+      buttonTestId: string,
+      expectedLeft: number,
+      expectedTop: number,
+    ): Promise<void> {
+      const element = await renderResult.renderedDOM.findByTestId(buttonTestId)
+      const bounds = element.getBoundingClientRect()
+      expect(bounds.left).toEqual(expectedLeft)
+      expect(bounds.top).toEqual(expectedTop)
+    }
+
+    await checkInsertButtonPosition('blue-dot-control-0', 418.5, 632.5)
+    await checkInsertButtonPosition('blue-dot-control-1', 418.5, 732.5)
+    await checkInsertButtonPosition('blue-dot-control-2', 418.5, 832.5)
+  })
+
+  it(`shows the buttons in the correct places for a flex container with a direction of 'column-reverse' that already has children`, async () => {
+    const renderResult = await renderTestEditorWithCode(
+      getProjectCode('column-reverse'),
+      'await-first-dom-report',
+    )
+
+    const targetPath = EP.fromString('storyboard/scene/parentsibling')
+    await act(() => renderResult.dispatch([selectComponents([targetPath], false)], false))
+    await renderResult.getDispatchFollowUpActionsFinished()
+
+    async function checkInsertButtonPosition(
+      buttonTestId: string,
+      expectedLeft: number,
+      expectedTop: number,
+    ): Promise<void> {
+      const element = await renderResult.renderedDOM.findByTestId(buttonTestId)
+      const bounds = element.getBoundingClientRect()
+      expect(bounds.left).toEqual(expectedLeft)
+      expect(bounds.top).toEqual(expectedTop)
+    }
+
+    await checkInsertButtonPosition('blue-dot-control-0', 418.5, 632.5)
+    await checkInsertButtonPosition('blue-dot-control-1', 418.5, 732.5)
+    await checkInsertButtonPosition('blue-dot-control-2', 418.5, 832.5)
   })
 
   it('shows the buttons in the correct places for a flex container that has no children', async () => {

@@ -12,6 +12,7 @@ export const FlexReparentTargetIndicator = React.memo(() => {
       <div style={{ display: 'block' }}>
         {reparentTargetLines.map((line, i) => (
           <div
+            data-testid={`flex-reparent-indicator-${i}`}
             key={i}
             style={{
               position: 'absolute',
