@@ -5,7 +5,7 @@ import { jsx } from '@emotion/react'
 import { CSSObject } from '@emotion/serialize'
 import WindowedSelect, { InputActionMeta, StylesConfig, ValueType } from 'react-windowed-select'
 
-import { getControlStyles, Utils } from '../../../uuiui-deps'
+import { getControlStyles } from '../../../uuiui-deps'
 import { useEditorState, useRefEditorState } from '../../editor/store/store-hook'
 
 import {
@@ -72,17 +72,6 @@ type InsertMenuItemGroup = {
 
 type InsertableComponentFlatList = Array<InsertMenuItemGroup>
 
-function truncateContentSource(source: InsertableComponentGroupType): InsertableComponentGroupType {
-  if (source.type === 'PROJECT_COMPONENT_GROUP') {
-    return {
-      ...source,
-      path: 'dog', //Utils.middleTruncate(source.path, { prefixLength: 8, postFixLength: 8 }),
-    }
-  }
-
-  return source
-}
-
 function convertInsertableComponentsToFlatList(
   insertableComponents: InsertableComponentGroup[],
 ): InsertableComponentFlatList {
@@ -91,7 +80,7 @@ function convertInsertableComponentsToFlatList(
       label: getInsertableGroupLabel(componentGroup.source),
       options: componentGroup.insertableComponents.map(
         (insertableComponent, index): InsertMenuItem => {
-          const source = index === 0 ? truncateContentSource(componentGroup.source) : null
+          const source = index === 0 ? componentGroup.source : null
           return {
             label: insertableComponent.name,
             value: {
