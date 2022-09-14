@@ -166,6 +166,7 @@ export const FlowSliderControl = React.memo(() => {
             background: colorTheme.bg0.value,
             boxShadow: UtopiaStyles.popup.boxShadow,
             cursor: CSSCursor.ResizeEW,
+            transition: isDragging ? 'left .2s ease-in-out' : undefined,
           }}
           onMouseDown={onMouseDown}
           onMouseUp={stopPropagation}
