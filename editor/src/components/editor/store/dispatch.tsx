@@ -58,6 +58,7 @@ import { handleStrategies } from './dispatch-strategies'
 import { emptySet } from '../../../core/shared/set-utils'
 import { RegisteredCanvasStrategies } from '../../canvas/canvas-strategies/canvas-strategies'
 import { removePathsWithDeadUIDs } from '../../../core/shared/element-path'
+import { CanvasStrategy } from '../../canvas/canvas-strategies/canvas-strategy-types'
 
 type DispatchResultFields = {
   nothingChanged: boolean
@@ -340,6 +341,7 @@ export function editorDispatch(
   dispatchedActions: readonly EditorAction[],
   storedState: EditorStoreFull,
   spyCollector: UiJsxCanvasContextData,
+  strategiesToUse: Array<CanvasStrategy> = RegisteredCanvasStrategies, // only override this for tests
 ): DispatchResult {
   const isLoadAction = dispatchedActions.some((a) => a.action === 'LOAD')
   const nameUpdated = dispatchedActions.some(
@@ -406,7 +408,7 @@ export function editorDispatch(
   const { unpatchedEditorState, patchedEditorState, newStrategyState, patchedDerivedState } =
     isFeatureEnabled('Canvas Strategies')
       ? handleStrategies(
-          RegisteredCanvasStrategies,
+          strategiesToUse,
           dispatchedActions,
           storedState,
           result,
@@ -674,7 +676,8 @@ function editorDispatchInner(
               ...result.unpatchedEditor.canvas,
               interactionSession: {
                 ...result.unpatchedEditor.canvas.interactionSession,
-                metadata: reconstructJSXMetadata(result.unpatchedEditor),
+                latestMetadata: reconstructJSXMetadata(result.unpatchedEditor),
+                latestAllElementProps: result.unpatchedEditor.allElementProps,
               },
             },
           },

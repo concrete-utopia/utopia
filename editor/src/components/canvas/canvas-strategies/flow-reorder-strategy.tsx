@@ -100,7 +100,7 @@ function flowReorderApplyCommon(
       siblingsOfTarget,
       rawPointOnCanvas,
       target,
-      interactionState.allElementProps,
+      interactionState.latestAllElementProps,
       displayTypeFiltering,
     )
 
@@ -139,7 +139,7 @@ function flowReorderApplyCommon(
   }
 }
 
-export const flowReorderAutoConversionStategy: CanvasStrategy = {
+export const flowReorderAutoConversionStrategy: CanvasStrategy = {
   id: 'FLOW_REORDER_AUTO_CONVERSION',
   name: 'Reorder (Flow, Auto)',
   isApplicable: isFlowReorderConversionApplicable,
@@ -161,7 +161,7 @@ export const flowReorderAutoConversionStategy: CanvasStrategy = {
     },
   ], // Uses existing hooks in select-mode-hooks.tsx
   fitness: (canvasState, interactionState, strategyState) => {
-    return flowReorderAutoConversionStategy.isApplicable(
+    return flowReorderAutoConversionStrategy.isApplicable(
       canvasState,
       interactionState,
       strategyState.startingMetadata,
@@ -183,13 +183,13 @@ export const flowReorderAutoConversionStategy: CanvasStrategy = {
   },
 }
 
-export const flowReorderNoConversionStategy: CanvasStrategy = {
+export const flowReorderNoConversionStrategy: CanvasStrategy = {
   id: 'FLOW_REORDER_NO_CONVERSION',
   name: 'Reorder (Flow)',
   isApplicable: isFlowReorderConversionApplicable,
-  controlsToRender: flowReorderAutoConversionStategy.controlsToRender,
+  controlsToRender: flowReorderAutoConversionStrategy.controlsToRender,
   fitness: (canvasState, interactionState, strategyState) => {
-    return flowReorderNoConversionStategy.isApplicable(
+    return flowReorderNoConversionStrategy.isApplicable(
       canvasState,
       interactionState,
       strategyState.startingMetadata,
@@ -211,7 +211,7 @@ export const flowReorderNoConversionStategy: CanvasStrategy = {
   },
 }
 
-export const flowReorderSameTypeOnlyStategy: CanvasStrategy = {
+export const flowReorderSameTypeOnlyStrategy: CanvasStrategy = {
   id: 'FLOW_REORDER_SAME_TYPE_ONLY',
   name: 'Reorder (Same)',
   isApplicable: (canvasState, interactionState, strategyState, allElementProps) => {
@@ -224,7 +224,7 @@ export const flowReorderSameTypeOnlyStategy: CanvasStrategy = {
     )
   },
   controlsToRender: [
-    ...flowReorderAutoConversionStategy.controlsToRender,
+    ...flowReorderAutoConversionStrategy.controlsToRender,
     {
       control: FlowReorderAreaIndicator,
       key: 'flow-reorder-area-indicator',
@@ -232,7 +232,7 @@ export const flowReorderSameTypeOnlyStategy: CanvasStrategy = {
     },
   ],
   fitness: (canvasState, interactionState, strategyState) => {
-    return flowReorderSameTypeOnlyStategy.isApplicable(
+    return flowReorderSameTypeOnlyStrategy.isApplicable(
       canvasState,
       interactionState,
       strategyState.startingMetadata,

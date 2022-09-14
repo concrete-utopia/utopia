@@ -183,8 +183,8 @@ function reorderElement(
       null as any, // the strategy does not use this
       drag,
     ),
-    metadata: null as any, // the strategy does not use this
-    allElementProps: null as any, // the strategy does not use this
+    latestMetadata: null as any, // the strategy does not use this
+    latestAllElementProps: null as any, // the strategy does not use this
     startingTargetParentToFilterOut: null,
   }
 

@@ -53,8 +53,8 @@ function multiselectResizeElements(
     pickCanvasStateFromEditorState(initialEditor, createBuiltInDependenciesList(null)),
     {
       ...interactionSessionWithoutMetadata,
-      metadata: {},
-      allElementProps: {},
+      latestMetadata: {},
+      latestAllElementProps: {},
       startingTargetParentToFilterOut: null,
     },
     {

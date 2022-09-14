@@ -5,8 +5,7 @@ import { useEditorState } from '../../../editor/store/store-hook'
 import { cursorForMissingReparentedItems } from '../../canvas-strategies/reparent-utils'
 import { CSSCursor } from '../../canvas-types'
 import { getCursorFromDragState } from '../../canvas-utils'
-import Utils from '../../../../utils/utils'
-import { useDelayedStrategyCursor } from '../../canvas-strategies/canvas-strategies'
+import { useDelayedEditorState } from '../../canvas-strategies/canvas-strategies'
 
 export function getCursorForOverlay(editorState: EditorState): CSSCursor | null {
   const forMissingReparentedItems = cursorForMissingReparentedItems(
@@ -19,10 +18,9 @@ export function getCursorForOverlay(editorState: EditorState): CSSCursor | null 
 }
 
 export const CursorOverlay = React.memo(() => {
-  const strategyCursor = useDelayedStrategyCursor()
-  const cursor = useEditorState((store) => {
-    return Utils.defaultIfNull(strategyCursor, getCursorFromDragState(store.editor))
-  }, 'CursorOverlay cursor')
+  const cursor = useDelayedEditorState((store) => {
+    return getCursorForOverlay(store.editor)
+  })
 
   const styleProps = React.useMemo(() => {
     let workingStyleProps: React.CSSProperties = {

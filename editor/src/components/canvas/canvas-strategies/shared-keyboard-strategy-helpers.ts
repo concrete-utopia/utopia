@@ -96,7 +96,7 @@ export function getKeyboardStrategyGuidelines(
 ): Array<GuidelineWithSnappingVectorAndPointsOfRelevance> {
   const selectedElements = getTargetPathsFromInteractionTarget(canvasState.interactionTarget)
   const moveGuidelines = collectParentAndSiblingGuidelines(
-    interactionState.metadata,
+    interactionState.latestMetadata,
     selectedElements,
   ).map((g) => g.guideline)
 
