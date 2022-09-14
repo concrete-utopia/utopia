@@ -87,8 +87,7 @@ export function reparentStrategyForParent(
   )
 
   const newParentMetadata = MetadataUtils.findElementByElementPath(targetMetadata, newParent)
-  const parentProvidesBoundsForAbsoluteChildren =
-    newParentMetadata?.specialSizeMeasurements.providesBoundsForAbsoluteChildren ?? false
+  const parentProvidesBoundsForAbsoluteChildren = true
 
   const parentIsFlexLayout = MetadataUtils.isFlexLayoutedContainer(newParentMetadata)
   const parentIsStoryboard = EP.isStoryboardPath(newParent)
@@ -236,8 +235,7 @@ export function getReparentTargetUnified(
   const filteredElementsUnderPoint = allElementsUnderPoint.filter((target) => {
     const targetMetadata = MetadataUtils.findElementByElementPath(metadata, target)
     const isFlex = MetadataUtils.isFlexLayoutedContainer(targetMetadata)
-    const providesBoundsForAbsoluteChildren =
-      targetMetadata?.specialSizeMeasurements.providesBoundsForAbsoluteChildren ?? false
+    const providesBoundsForAbsoluteChildren = true
 
     // TODO extend here when we implement static layout support
     const validParentForFlexOrAbsolute = isFlex || providesBoundsForAbsoluteChildren
