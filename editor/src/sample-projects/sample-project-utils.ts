@@ -195,7 +195,7 @@ function createBeachesProjectContents(): ProjectContentTreeRoot {
             lastParseSuccess: null,
             lastSavedContents: null,
             fileContents: {
-              code: "import '../public/globals.css'\n\nexport var Playground = () => {\n  return (\n    <div>\n      <div\n        style={{\n          width: 100,\n          height: 100,\n          background: 'pink',\n\n          position: 'absolute',\n          left: 100,\n          top: 100,\n        }}\n      ></div>\n      <div\n        style={{\n          width: 150,\n          height: 150,\n          background: 'yellow',\n\n          position: 'absolute',\n          left: 150,\n          top: 150,\n        }}\n      ></div>\n    </div>\n  )\n}\n",
+              code: "import '../public/globals.css'\n\nexport var Playground = () => {\n  return (\n    <div>\n      <div\n        style={{\n          height: 150,\n          position: 'absolute',\n          left: 154,\n          top: 134,\n        }}\n      >\n        <img\n          src='https://github.com/concrete-utopia/utopia/blob/master/editor/resources/editor/pyramid_fullsize@2x.jpg?raw=true'\n          alt='Utopia logo'\n          style={{ height: '100%' }}\n        />\n      </div>\n    </div>\n  )\n}\n",
               parsed: {
                 type: 'UNPARSED',
               },
@@ -238,7 +238,7 @@ function createBeachesProjectContents(): ProjectContentTreeRoot {
             lastParseSuccess: null,
             lastSavedContents: null,
             fileContents: {
-              code: "import * as React from 'react'\nimport { Scene, Storyboard } from 'utopia-api'\nimport { App } from '/src/app.js'\nimport { Playground } from '/src/playground.js'\n\nexport var storyboard = (\n  <Storyboard>\n    <Scene\n      style={{\n        width: 700,\n        height: 759,\n        position: 'absolute',\n        left: 212,\n        top: 128,\n      }}\n      data-label='Playground'\n    >\n      <Playground style={{}} />\n    </Scene>\n    <Scene\n      style={{\n        width: 375,\n        height: 759,\n        position: 'absolute',\n        left: 1068,\n        top: 128,\n      }}\n      data-label='Mobile'\n    >\n      <App style={{}} />\n    </Scene>\n    <Scene\n      style={{\n        width: 744,\n        height: 1133,\n        position: 'absolute',\n        left: 1568,\n        top: 128,\n      }}\n      data-label='Tablet'\n    >\n      <App style={{}} />\n    </Scene>\n  </Storyboard>\n)\n",
+              code: "import * as React from 'react'\nimport { Scene, Storyboard } from 'utopia-api'\nimport { App } from '/src/app.js'\nimport { Playground } from '/src/playground.js'\n\nexport var storyboard = (\n  <Storyboard>\n    <Scene\n      style={{\n        width: 700,\n        height: 759,\n        position: 'absolute',\n        left: 212,\n        top: 128,\n      }}\n      data-label='Playground'\n    >\n      <Playground style={{}} />\n    </Scene>\n    <Scene\n      style={{\n        width: 744,\n        height: 1133,\n        position: 'absolute',\n        left: 1036,\n        top: 128,\n      }}\n      data-label='My App'\n    >\n      <App style={{}} />\n    </Scene>\n  </Storyboard>\n)\n",
               parsed: {
                 type: 'UNPARSED',
               },
