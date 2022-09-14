@@ -340,7 +340,6 @@ export class ProjectsPage extends React.Component<EmptyProps, ProjectsState> {
 
   clearSelectedProject = () => this.setState({ selectedProjectId: null })
 
-
   render() {
     const hasProjects = this.state.filteredProjects.length > 0
     const hasLocalProjects = this.state.filteredLocalProjects.length > 0
@@ -443,11 +442,12 @@ export class ProjectsPage extends React.Component<EmptyProps, ProjectsState> {
               <div
                 className='projecttile-thumbnail'
                 style={{
-                  // backgroundImage:
-                  //   'url(' +
-                  //   'https://images.pexels.com/photos/34153/pexels-photo.jpg?auto=compress&cs=tinysrgb&h=350' +
-                  //   ')',
                   background: 'linear-gradient(180deg, #B8EAFF 0%, #B8FFC3 47.4%, #F4FFA9 90.1%)',
+                  backgroundImage:
+                    'url(' +
+                    'https://cdn.utopia.app/editor/sample-assets/preview-images/basic.png' +
+                    ')',
+
                   backgroundSize: 'cover',
                   height: cardLayout.imageHeight,
                 }}
@@ -497,11 +497,11 @@ export class ProjectsPage extends React.Component<EmptyProps, ProjectsState> {
               <div
                 className='projecttile-thumbnail'
                 style={{
-                  // backgroundImage:
-                  //   'url(' +
-                  //   'https://images.pexels.com/photos/34153/pexels-photo.jpg?auto=compress&cs=tinysrgb&h=350' +
-                  //   ')',
                   background: 'linear-gradient(180deg, #FFB8F8 0%, #DBB8FF 55.21%, #B8EAFF 91.67%)',
+                  backgroundImage:
+                    'url(' +
+                    'https://cdn.utopia.app/editor/sample-assets/preview-images/premium.png' +
+                    ')',
                   backgroundSize: 'cover',
                   height: cardLayout.imageHeight,
                 }}
@@ -544,7 +544,7 @@ export class ProjectsPage extends React.Component<EmptyProps, ProjectsState> {
               </div>
             </Card>
           </FlexWrappingList>
-          <div style={{display: 'flex', flexDirection: 'column', gap: 15, width: '100%'}}>
+          <div style={{ display: 'flex', flexDirection: 'column', gap: 15, width: '100%' }}>
             <H2>
               Recent Projects &nbsp;
               <span style={{ opacity: 0.3 }}>{visibleProjectCount}</span>
