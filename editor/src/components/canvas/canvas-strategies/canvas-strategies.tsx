@@ -41,6 +41,7 @@ import { dragToInsertStrategy } from './drag-to-insert-strategy'
 import { CSSCursor } from '../../../uuiui-deps'
 import { StateSelector } from 'zustand'
 import { NonResizableControl } from '../controls/select-mode/non-resizable-control'
+import { drawToInsertStrategy } from './draw-to-insert-strategy'
 
 export const RegisteredCanvasStrategies: Array<CanvasStrategy> = [
   absoluteMoveStrategy,
@@ -55,6 +56,7 @@ export const RegisteredCanvasStrategies: Array<CanvasStrategy> = [
   convertToAbsoluteAndMoveStrategy,
   absoluteReparentToFlexStrategy,
   dragToInsertStrategy,
+  drawToInsertStrategy,
   flowReorderAutoConversionStrategy,
   flowReorderNoConversionStrategy,
   flowReorderSameTypeOnlyStrategy,
