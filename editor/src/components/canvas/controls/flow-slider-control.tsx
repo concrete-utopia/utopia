@@ -96,14 +96,40 @@ export const FlowSliderControl = React.memo(() => {
   const frame = useEditorState((store) => {
     if (store.editor.selectedViews.length === 1) {
       const target = store.editor.selectedViews[0]
-      return MetadataUtils.getFrameInCanvasCoords(target, store.editor.jsxMetadata)
+      if (isDragging) {
+        return MetadataUtils.getFrameInCanvasCoords(target, store.strategyState.startingMetadata)
+      } else {
+        return MetadataUtils.getFrameInCanvasCoords(target, store.editor.jsxMetadata)
+      }
     } else {
       return null
     }
   }, 'frame')
 
+  const startingIndex = useEditorState((store) => {
+    if (store.editor.selectedViews.length === 1) {
+      const target = store.editor.selectedViews[0]
+      if (isDragging) {
+        const siblingsMetadata = MetadataUtils.getSiblings(
+          store.strategyState.startingMetadata,
+          target,
+        ).map((sibling) => sibling.elementPath)
+        return siblingsMetadata.findIndex((sibling) => EP.pathsEqual(sibling, target))
+      } else {
+        const siblingsMetadata = MetadataUtils.getSiblings(
+          store.editor.canvas.interactionSession?.latestMetadata ?? store.editor.jsxMetadata,
+          target,
+        ).map((sibling) => sibling.elementPath)
+        return siblingsMetadata.findIndex((sibling) => EP.pathsEqual(sibling, target))
+      }
+    } else {
+      return -1
+    }
+  }, 'starting index')
+
   if (isTargetFlowWithSiblings && siblings.length > 1 && frame != null) {
     // icon size: 16
+    const left = (frame?.x ?? 0) + (frame?.width ?? 0) / 2 - 8 - startingIndex * 16
     return (
       <CanvasOffsetWrapper>
         {when(
@@ -112,7 +138,7 @@ export const FlowSliderControl = React.memo(() => {
             style={{
               position: 'absolute',
               top: frame.y + frame.height / 2 - 11,
-              left: (frame?.x ?? 0) + (frame?.width ?? 0) / 2 - 8 - currentIndex * 16,
+              left: left,
               width: siblings.length * 16,
               height: 22,
               borderRadius: 4,
@@ -133,7 +159,7 @@ export const FlowSliderControl = React.memo(() => {
           style={{
             position: 'absolute',
             top: frame.y + frame.height / 2 - 5,
-            left: frame.x + frame.width / 2 - 8,
+            left: left + currentIndex * 16 + 1.5,
             width: 10,
             height: 10,
             borderRadius: '50%',
