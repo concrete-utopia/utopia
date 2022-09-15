@@ -98,6 +98,10 @@ export function reparentStrategyForParent(
   const newParentMetadata = MetadataUtils.findElementByElementPath(targetMetadata, newParent)
   const parentIsFlexLayout = MetadataUtils.isFlexLayoutedContainer(newParentMetadata)
 
+  // TODO Below we default to absolute reparenting, even if the target doesn't provide bounds. We
+  // should evaluate this behaviour, and consider requiring a modifier key to enable absolute reparenting
+  // in those cases if this becomes too easy to accidentally trigger in the absense of other reparenting
+  // options
   if (allDraggedElementsAbsolute) {
     if (parentIsFlexLayout) {
       return { strategy: 'ABSOLUTE_REPARENT_TO_FLEX', newParent: newParent }
