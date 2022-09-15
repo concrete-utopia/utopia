@@ -102,10 +102,13 @@ class ProjectCard extends React.Component<ProjectCardProps> {
       >
         <div
           className='projecttile-thumbnail'
-          style={{
+          style={{ zIndex: 0 }}
+          css={{
             background: `url(${this.props.thumbnail}) no-repeat 50% 50%`,
-            backgroundSize: 'cover',
+            backgroundSize: '100%',
             height: cardLayout.imageHeight,
+            transition: 'all 0.2s ease-in-out',
+            '&:hover': { backgroundSize: '120%' },
           }}
         ></div>
         <div
@@ -115,6 +118,7 @@ class ProjectCard extends React.Component<ProjectCardProps> {
             height: cardLayout.footerHeight,
             padding: '12px',
             boxShadow: `0px -1px 0px ${colors.default}`,
+            zIndex: 1000,
           }}
         >
           <div>
