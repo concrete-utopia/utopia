@@ -32,7 +32,7 @@ export const lookForApplicableParentStrategy: CanvasStrategy = {
       allElementProps,
     )
 
-    if (applicableStrategies.length > 0) {
+    if (!isSingletonAbsoluteMove(applicableStrategies)) {
       return false
     }
 
