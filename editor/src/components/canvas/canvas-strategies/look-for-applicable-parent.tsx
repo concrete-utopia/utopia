@@ -24,6 +24,18 @@ export const lookForApplicableParentStrategy: CanvasStrategy = {
       ({ id }) => id !== 'LOOK_FOR_APPLICABLE_PARENT_ID',
     )
 
+    const applicableStrategies = getApplicableStrategies(
+      strategiesMinusTraverse,
+      canvasState,
+      interactionSession,
+      metadata,
+      allElementProps,
+    )
+
+    if (applicableStrategies.length > 0) {
+      return false
+    }
+
     const allStrategies = isApplicableTraverseMemo(
       strategiesMinusTraverse,
       canvasState,
