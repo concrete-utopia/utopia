@@ -2,12 +2,18 @@ import * as EP from '../../../core/shared/element-path'
 import { ElementInstanceMetadataMap } from '../../../core/shared/element-template'
 import { memoize } from '../../../core/shared/memoize'
 import { ElementPath } from '../../../core/shared/project-file-types'
+import { assertNever } from '../../../core/shared/utils'
 import { AllElementProps } from '../../editor/store/editor-state'
+import { CSSCursor } from '../canvas-types'
+import { setCursorCommand } from '../commands/set-cursor-command'
+import { setElementsToRerenderCommand } from '../commands/set-elements-to-rerender-command'
 import { getApplicableStrategies, RegisteredCanvasStrategies } from './canvas-strategies'
 import {
   CanvasStrategy,
   emptyStrategyApplicationResult,
   InteractionCanvasState,
+  InteractionTarget,
+  strategyApplicationResult,
 } from './canvas-strategy-types'
 import { InteractionSession } from './interaction-state'
 
@@ -32,19 +38,19 @@ export const lookForApplicableParentStrategy: CanvasStrategy = {
       allElementProps,
     )
 
-    if (!isSingletonAbsoluteMove(applicableStrategies)) {
-      return false
+    if (isSingletonAbsoluteMove(applicableStrategies)) {
+      const result = isApplicableTraverseMemo(
+        strategiesMinusTraverse,
+        canvasState,
+        interactionSession,
+        metadata,
+        allElementProps,
+      )
+
+      return result != null && result.strategies.length > 0
     }
 
-    const allStrategies = isApplicableTraverseMemo(
-      strategiesMinusTraverse,
-      canvasState,
-      interactionSession,
-      metadata,
-      allElementProps,
-    )
-
-    return allStrategies.length > 0
+    return false
   },
 
   fitness: (canvasState, interactionSession, strategyState) => {
@@ -63,25 +69,48 @@ export const lookForApplicableParentStrategy: CanvasStrategy = {
       ({ id }) => id !== 'LOOK_FOR_APPLICABLE_PARENT_ID',
     )
 
-    const applicableStrategies = isApplicableTraverseMemo(
+    const result = isApplicableTraverseMemo(
       strategiesMinusTraverse,
       canvasState,
       interactionSession,
       strategyState.startingMetadata,
       strategyState.startingAllElementProps,
-    ).sort(
+    )
+
+    if (result == null) {
+      return emptyStrategyApplicationResult
+    }
+
+    const { strategies, interactionTarget } = result
+    if (strategies.length < 1) {
+      return emptyStrategyApplicationResult
+    }
+
+    const strategiesInFitnessOrder = strategies.sort(
       // TODO: better/idiomatic way of sorting
       (a, b) =>
         a.fitness(canvasState, interactionSession, strategyState) -
         b.fitness(canvasState, interactionSession, strategyState),
     )
 
-    if (applicableStrategies.length > 0) {
-      const chosenStrategy = applicableStrategies[0]
-      // console.log(chosenStrategy.id)
-      return chosenStrategy.apply(canvasState, interactionSession, strategyState)
-    }
-    return emptyStrategyApplicationResult
+    const chosenStrategy = strategiesInFitnessOrder[0]
+    const patchedCanvasState = patchCanvasStateInteractionTargetPath(canvasState, interactionTarget)
+
+    const chosenStrategyApplicationResult = chosenStrategy.apply(
+      patchedCanvasState,
+      interactionSession,
+      strategyState,
+    )
+
+    return strategyApplicationResult(
+      [
+        ...chosenStrategyApplicationResult.commands,
+        setElementsToRerenderCommand(interactionTarget),
+        setCursorCommand('mid-interaction', CSSCursor.MagicHand),
+      ],
+      chosenStrategyApplicationResult.customStatePatch,
+      chosenStrategyApplicationResult.status,
+    )
   },
 }
 
@@ -100,15 +129,20 @@ function isSingletonAbsoluteMove(strategies: Array<CanvasStrategy>): boolean {
 
 function patchCanvasStateInteractionTargetPath(
   canvasState: InteractionCanvasState,
-  path: ElementPath,
+  path: ElementPath[],
 ): InteractionCanvasState {
   return {
     ...canvasState,
     interactionTarget: {
       type: 'TARGET_PATHS',
-      elements: [path],
+      elements: path,
     },
   }
+}
+
+interface IsApplicableTraverseResult {
+  strategies: Array<CanvasStrategy>
+  interactionTarget: Array<ElementPath>
 }
 
 function isApplicableTraverse(
@@ -117,22 +151,26 @@ function isApplicableTraverse(
   interactionSession: InteractionSession,
   metadata: ElementInstanceMetadataMap,
   allElementProps: AllElementProps,
-): Array<CanvasStrategy> {
+): IsApplicableTraverseResult | null {
   if (
     canvasState.interactionTarget.type !== 'TARGET_PATHS' ||
     canvasState.interactionTarget.elements.length !== 1
   ) {
-    return getApplicableStrategies(
+    const applicableStrategies = getApplicableStrategies(
       strategies,
       canvasState,
       interactionSession,
       metadata,
       allElementProps,
     )
+    return {
+      strategies: applicableStrategies,
+      interactionTarget: pathsFromInteractionTarget(canvasState.interactionTarget),
+    }
   }
 
   for (const path of elementAncestry(canvasState.interactionTarget.elements[0])) {
-    const patchedCanvasState = patchCanvasStateInteractionTargetPath(canvasState, path)
+    const patchedCanvasState = patchCanvasStateInteractionTargetPath(canvasState, [path])
     const applicableStrategies = getApplicableStrategies(
       strategies,
       patchedCanvasState,
@@ -142,11 +180,25 @@ function isApplicableTraverse(
     )
 
     if (!isSingletonAbsoluteMove(applicableStrategies)) {
-      return applicableStrategies
+      return {
+        strategies: applicableStrategies,
+        interactionTarget: [path],
+      }
     }
   }
 
-  return []
+  return null
+}
+
+function pathsFromInteractionTarget(interactionTarget: InteractionTarget): Array<ElementPath> {
+  switch (interactionTarget.type) {
+    case 'TARGET_PATHS':
+      return interactionTarget.elements
+    case 'INSERTION_SUBJECTS':
+      return []
+    default:
+      assertNever(interactionTarget)
+  }
 }
 
 const isApplicableTraverseMemo = memoize(isApplicableTraverse)
