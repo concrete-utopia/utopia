@@ -275,14 +275,6 @@ export class ProjectsPage extends React.Component<EmptyProps, ProjectsState> {
     )
   }
 
-  openSampleProjectBasic = () => {
-    window.open('https://utopia.app/p/9fa2f9b8-before-i-go-basic/', '_self')
-  }
-
-  openSampleProjectPremium = () => {
-    window.open('https://utopia.app/p/cb3a9645-before-i-go-premium/', '_self')
-  }
-
   createNewProject = () => {
     window.open(`/project/`, '_self')
   }
@@ -438,7 +430,13 @@ export class ProjectsPage extends React.Component<EmptyProps, ProjectsState> {
           </div>
           <FlexWrappingList style={{ width: '100vw', gap: layout.margins.regular }}>
             {this.newProjectCard}
-            <Card selected={false} data-label='project card' onClick={this.openSampleProjectBasic}>
+            <Card
+              selected={false}
+              data-label='project card'
+              onClick={() =>
+                window.open('https://utopia.app/p/9fa2f9b8-before-i-go-basic/', '_self')
+              }
+            >
               <div
                 className='projecttile-thumbnail'
                 style={{
@@ -492,7 +490,9 @@ export class ProjectsPage extends React.Component<EmptyProps, ProjectsState> {
             <Card
               selected={false}
               data-label='project card'
-              onClick={this.openSampleProjectPremium}
+              onClick={() =>
+                window.open('https://utopia.app/p/cb3a9645-before-i-go-premium/', '_self')
+              }
             >
               <div
                 className='projecttile-thumbnail'
