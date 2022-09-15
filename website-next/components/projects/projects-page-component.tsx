@@ -58,7 +58,13 @@ const SortButton = styled('div')<SortButtonProps>(
 
 interface ProjectCardProps {
   selected: boolean
-  project: ProjectListing
+  project: ProjectListing | null
+  thumbnail: any
+  modifiedAt: any
+  title: any
+  key: any
+  url: any 
+
   onSelect?: () => void
 }
 
@@ -76,26 +82,28 @@ class ProjectCard extends React.Component<ProjectCardProps> {
 
   onDoubleClick = (e: React.MouseEvent<HTMLDivElement>) => {
     if (e.button === 0) {
-      if (this.props.selected) {
+      if (this.props.project === null) {
+        window.open(this.props.url, '_self')
+        console.log('trying to open hard coded url')
+      } else {
         window.open(`/project/${this.props.project.id}/`, '_self')
       }
     }
   }
 
   render() {
-    const { id: projectId, title, modifiedAt, thumbnail } = this.props.project
     return (
       <Card
         selected={this.props.selected}
         data-label='project card'
         onMouseDown={this.onMouseDown}
         onDoubleClick={this.onDoubleClick}
-        key={projectId}
+        key={this.props.key}
       >
         <div
           className='projecttile-thumbnail'
           style={{
-            background: `url(${thumbnail}) no-repeat 50% 50%`,
+            background: `url(${this.props.thumbnail}) no-repeat 50% 50%`,
             backgroundSize: 'cover',
             height: cardLayout.imageHeight,
           }}
@@ -120,7 +128,7 @@ class ProjectCard extends React.Component<ProjectCardProps> {
                 paddingRight: 12,
               }}
             >
-              {title == null ? 'Unnamed' : title}
+              {this.props.title == null ? 'Unnamed' : this.props.title}
             </div>
             <div
               className='projecttile-description-subhead'
@@ -132,7 +140,11 @@ class ProjectCard extends React.Component<ProjectCardProps> {
                 wordWrap: 'break-word',
               }}
             >
-              <span className='timeago'>Last edited about {timeago.format(modifiedAt)}</span>
+              <span className='timeago'>
+                {this.props.modifiedAt
+                  ? 'Last edited about ' + timeago.format(this.props.modifiedAt)
+                  : 'By The Utopia Team'}
+              </span>
             </div>
           </div>
         </div>
@@ -268,6 +280,11 @@ export class ProjectsPage extends React.Component<EmptyProps, ProjectsState> {
     return (
       <ProjectCard
         project={project}
+        key={project.id}
+        url={null}
+        thumbnail={project.thumbnail}
+        modifiedAt={project.modifiedAt}
+        title={project.title}
         selected={project.id === this.state.selectedProjectId}
         // eslint-disable-next-line react/jsx-no-bind
         onSelect={() => this.setState({ selectedProjectId: project.id })}
@@ -318,16 +335,6 @@ export class ProjectsPage extends React.Component<EmptyProps, ProjectsState> {
 
   clearSelectedProjectId = () => {
     this.setState({ selectedProjectId: null })
-  }
-
-  showcaseComponent = (project: ProjectListing) => {
-    return (
-      <ProjectCard
-        project={project}
-        selected={project.id === this.state.selectedProjectId}
-        onSelect={this.clearSelectedProjectId}
-      />
-    )
   }
 
   clearSelectedProject = () => this.setState({ selectedProjectId: null })
@@ -430,119 +437,24 @@ export class ProjectsPage extends React.Component<EmptyProps, ProjectsState> {
           </div>
           <FlexWrappingList style={{ width: '100vw', gap: layout.margins.regular }}>
             {this.newProjectCard}
-            <Card
+            <ProjectCard
+              project={null}
+              key={null}
+              url={'https://utopia.app/p/9fa2f9b8-before-i-go-basic/'}
+              thumbnail={'https://cdn.utopia.app/editor/sample-assets/preview-images/basic.png'}
+              modifiedAt={null}
+              title={'Before I Go Basic'}
               selected={false}
-              data-label='project card'
-              onClick={() =>
-                window.open('https://utopia.app/p/9fa2f9b8-before-i-go-basic/', '_self')
-              }
-            >
-              <div
-                className='projecttile-thumbnail'
-                style={{
-                  background: 'linear-gradient(180deg, #B8EAFF 0%, #B8FFC3 47.4%, #F4FFA9 90.1%)',
-                  backgroundImage:
-                    'url(' +
-                    'https://cdn.utopia.app/editor/sample-assets/preview-images/basic.png' +
-                    ')',
-
-                  backgroundSize: 'cover',
-                  height: cardLayout.imageHeight,
-                }}
-              ></div>
-              <div
-                className='projecttile-description'
-                style={{
-                  display: 'flex',
-                  height: cardLayout.footerHeight,
-                  padding: '12px',
-                  boxShadow: `0px -1px 0px ${colors.default}`,
-                }}
-              >
-                <div>
-                  <div
-                    className='projecttile-description-head'
-                    style={{
-                      fontSize: 13,
-                      whiteSpace: 'nowrap',
-                      overflow: 'hidden',
-                      textOverflow: 'ellipsis',
-                      paddingRight: 12,
-                    }}
-                  >
-                    Before I Go <i>Basic</i>
-                  </div>
-                  <div
-                    className='projecttile-description-subhead'
-                    style={{
-                      color: '#888',
-                      fontWeight: 400,
-                      fontSize: 11,
-                      display: 'inline-block',
-                      wordWrap: 'break-word',
-                    }}
-                  >
-                    <span className='timeago'>By the Utopia Team</span>
-                  </div>
-                </div>
-              </div>
-            </Card>
-            <Card
+            />
+            <ProjectCard
+              project={null}
+              key={null}
+              url={'https://utopia.app/p/cb3a9645-before-i-go-premium/'}
+              thumbnail={'https://cdn.utopia.app/editor/sample-assets/preview-images/premium.png'}
+              modifiedAt={null}
+              title={'Before I Go Premium'}
               selected={false}
-              data-label='project card'
-              onClick={() =>
-                window.open('https://utopia.app/p/cb3a9645-before-i-go-premium/', '_self')
-              }
-            >
-              <div
-                className='projecttile-thumbnail'
-                style={{
-                  background: 'linear-gradient(180deg, #FFB8F8 0%, #DBB8FF 55.21%, #B8EAFF 91.67%)',
-                  backgroundImage:
-                    'url(' +
-                    'https://cdn.utopia.app/editor/sample-assets/preview-images/premium.png' +
-                    ')',
-                  backgroundSize: 'cover',
-                  height: cardLayout.imageHeight,
-                }}
-              ></div>
-              <div
-                className='projecttile-description'
-                style={{
-                  display: 'flex',
-                  height: cardLayout.footerHeight,
-                  padding: '12px',
-                  boxShadow: `0px -1px 0px ${colors.default}`,
-                }}
-              >
-                <div>
-                  <div
-                    className='projecttile-description-head'
-                    style={{
-                      fontSize: 13,
-                      whiteSpace: 'nowrap',
-                      overflow: 'hidden',
-                      textOverflow: 'ellipsis',
-                      paddingRight: 12,
-                    }}
-                  >
-                    Before I Go <i>Premium</i>
-                  </div>
-                  <div
-                    className='projecttile-description-subhead'
-                    style={{
-                      color: '#888',
-                      fontWeight: 400,
-                      fontSize: 11,
-                      display: 'inline-block',
-                      wordWrap: 'break-word',
-                    }}
-                  >
-                    <span className='timeago'>By the Utopia Team</span>
-                  </div>
-                </div>
-              </div>
-            </Card>
+            />
           </FlexWrappingList>
           <div style={{ display: 'flex', flexDirection: 'column', gap: 15, width: '100%' }}>
             <H2>
@@ -654,7 +566,15 @@ export class FeaturedPage extends React.PureComponent<EmptyProps, ShowcaseState>
     return (
       <div>
         {this.state.showcase.map((project) => (
-          <ProjectCard key={project.id} project={project} selected={false} />
+          <ProjectCard
+            project={project}
+            key={project.id}
+            url={null}
+            thumbnail={project.thumbnail}
+            modifiedAt={project.modifiedAt}
+            title={project.title}
+            selected={false}
+          />
         ))}
       </div>
     )
