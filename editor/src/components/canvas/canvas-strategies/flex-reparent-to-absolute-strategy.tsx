@@ -34,7 +34,7 @@ import { getDragTargets } from './shared-absolute-move-strategy-helpers'
 
 export const flexReparentToAbsoluteStrategy: CanvasStrategy = {
   id: 'FLEX_REPARENT_TO_ABSOLUTE',
-  name: 'Reparent (Flex to Abs)',
+  name: 'Reparent (Abs)',
   isApplicable: (canvasState, _interactionState, metadata) => {
     const selectedElements = getTargetPathsFromInteractionTarget(canvasState.interactionTarget)
     if (selectedElements.length == 1) {
@@ -72,8 +72,11 @@ export const flexReparentToAbsoluteStrategy: CanvasStrategy = {
     ).strategy
     if (reparentStrategy === 'FLEX_REPARENT_TO_ABSOLUTE') {
       return 3
+    } else if (reparentStrategy !== 'do-not-reparent') {
+      return 2
+    } else {
+      return 0
     }
-    return 0
   },
   apply: (canvasState, interactionState, strategyState) => {
     const selectedElements = getTargetPathsFromInteractionTarget(canvasState.interactionTarget)
