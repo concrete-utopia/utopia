@@ -1,6 +1,6 @@
 import { MetadataUtils } from '../../../core/model/element-metadata-utils'
 import { getStoryboardElementPath } from '../../../core/model/scene-utils'
-import { mapDropNulls } from '../../../core/shared/array-utils'
+import { mapDropNulls, reverse } from '../../../core/shared/array-utils'
 import * as EP from '../../../core/shared/element-path'
 import {
   ElementInstanceMetadata,
@@ -12,7 +12,6 @@ import {
   CanvasPoint,
   CanvasRectangle,
   canvasRectangle,
-  CanvasVector,
   offsetPoint,
   pointDifference,
   rectContainsPoint,
@@ -34,7 +33,6 @@ import { deleteProperties } from '../commands/delete-properties-command'
 import { reorderElement } from '../commands/reorder-element-command'
 import { setCursorCommand } from '../commands/set-cursor-command'
 import { setElementsToRerenderCommand } from '../commands/set-elements-to-rerender-command'
-import { setProperty } from '../commands/set-property-command'
 import { updateHighlightedViews } from '../commands/update-highlighted-views-command'
 import { updateSelectedViews } from '../commands/update-selected-views-command'
 import { wildcardPatch } from '../commands/wildcard-patch-command'
@@ -49,7 +47,7 @@ import { InteractionSession, StrategyState } from './interaction-state'
 import { ifAllowedToReparent } from './reparent-helpers'
 import { getReparentOutcome, pathToReparent } from './reparent-utils'
 import { getDragTargets } from './shared-absolute-move-strategy-helpers'
-import Utils, { absolute } from '../../../utils/utils'
+import { absolute } from '../../../utils/utils'
 import { getElementFromProjectContents } from '../../../components/editor/store/editor-state'
 import { stylePropPathMappingFn } from '../../../components/inspector/common/property-path-hooks'
 import { getLayoutProperty } from '../../../core/layout/getLayoutProperty'
@@ -61,6 +59,13 @@ import {
   adjustCssLengthProperty,
 } from '../commands/adjust-css-length-command'
 import { updatePropIfExists } from '../commands/update-prop-if-exists-command'
+import {
+  flexDirectionToFlexForwardsOrBackwards,
+  flexDirectionToSimpleFlexDirection,
+  FlexForwardsOrBackwards,
+  SimpleFlexDirection,
+} from '../../../core/layout/layout-utils'
+import { forceNotNull } from '../../../core/shared/optional-utils'
 
 export type ReparentStrategy =
   | 'FLEX_REPARENT_TO_ABSOLUTE'
@@ -91,25 +96,23 @@ export function reparentStrategyForParent(
   )
 
   const newParentMetadata = MetadataUtils.findElementByElementPath(targetMetadata, newParent)
-  const parentProvidesBoundsForAbsoluteChildren =
-    newParentMetadata?.specialSizeMeasurements.providesBoundsForAbsoluteChildren ?? false
-
   const parentIsFlexLayout = MetadataUtils.isFlexLayoutedContainer(newParentMetadata)
-  const parentIsStoryboard = EP.isStoryboardPath(newParent)
 
+  // TODO Below we default to absolute reparenting, even if the target doesn't provide bounds. We
+  // should evaluate this behaviour, and consider requiring a modifier key to enable absolute reparenting
+  // in those cases if this becomes too easy to accidentally trigger in the absense of other reparenting
+  // options
   if (allDraggedElementsAbsolute) {
     if (parentIsFlexLayout) {
       return { strategy: 'ABSOLUTE_REPARENT_TO_FLEX', newParent: newParent }
-    }
-    if (parentProvidesBoundsForAbsoluteChildren || parentIsStoryboard) {
+    } else {
       return { strategy: 'ABSOLUTE_REPARENT_TO_ABSOLUTE', newParent: newParent }
     }
   }
   if (allDraggedElementsFlex) {
     if (parentIsFlexLayout) {
       return { strategy: 'FLEX_REPARENT_TO_FLEX', newParent: newParent }
-    }
-    if (parentProvidesBoundsForAbsoluteChildren || parentIsStoryboard) {
+    } else {
       return { strategy: 'FLEX_REPARENT_TO_ABSOLUTE', newParent: newParent }
     }
   }
@@ -238,14 +241,6 @@ export function getReparentTargetUnified(
   )
 
   const filteredElementsUnderPoint = allElementsUnderPoint.filter((target) => {
-    const targetMetadata = MetadataUtils.findElementByElementPath(metadata, target)
-    const isFlex = MetadataUtils.isFlexLayoutedContainer(targetMetadata)
-    const providesBoundsForAbsoluteChildren =
-      targetMetadata?.specialSizeMeasurements.providesBoundsForAbsoluteChildren ?? false
-
-    // TODO extend here when we implement static layout support
-    const validParentForFlexOrAbsolute = isFlex || providesBoundsForAbsoluteChildren
-
     // TODO BEFORE MERGE consider multiselect!!!!!
     // the current parent should be included in the array of valid targets
     return (
@@ -253,13 +248,13 @@ export function getReparentTargetUnified(
         EP.isChildOf(maybeChild.elementPath, target),
       ) ||
       // any of the dragged elements (or their flex parents) and their descendants are not game for reparenting
-      (filteredSelectedElementsMetadata.findIndex((maybeAncestorOrEqual) =>
+      (!filteredSelectedElementsMetadata.some((maybeAncestorOrEqual) =>
         !cmdPressed && maybeAncestorOrEqual.specialSizeMeasurements.parentLayoutSystem === 'flex'
           ? // for Flex children, we also want to filter out all their siblings to force a Flex Reorder strategy
             EP.isDescendantOf(target, EP.parentPath(maybeAncestorOrEqual.elementPath))
           : // for non-flex elements, we filter out their descendants and themselves
             EP.isDescendantOfOrEqualTo(target, maybeAncestorOrEqual.elementPath),
-      ) === -1 &&
+      ) &&
         // simply skip elements that do not support children
         MetadataUtils.targetSupportsChildren(projectContents, openFile, metadata, target) &&
         // if cmd is not pressed, we only allow reparent to parents that are larger than the multiselect bounds
@@ -267,8 +262,7 @@ export function getReparentTargetUnified(
           sizeFitsInTarget(
             multiselectBounds,
             MetadataUtils.getFrameInCanvasCoords(target, metadata) ?? size(0, 0),
-          )) &&
-        validParentForFlexOrAbsolute)
+          )))
     )
   })
 
@@ -362,47 +356,57 @@ function drawTargetRectanglesForChildrenOfElement(
   flexElementPath: ElementPath,
   targetRectangleSize: 'padded-edge' | 'full-size',
   canvasScale: number,
-) {
+): Array<CanvasRectangle> {
   const ExtraPadding = 10 / canvasScale
 
   const flexElement = MetadataUtils.findElementByElementPath(metadata, flexElementPath)
   const flexDirection = MetadataUtils.getFlexDirection(flexElement)
+  const simpleFlexDirection = flexDirectionToSimpleFlexDirection(flexDirection)
+  const forwardsOrBackwards = flexDirectionToFlexForwardsOrBackwards(flexDirection)
   const parentBounds = MetadataUtils.getFrameInCanvasCoords(flexElementPath, metadata)
 
-  if (parentBounds == null) {
+  if (parentBounds == null || simpleFlexDirection == null || forwardsOrBackwards == null) {
     // TODO should we throw an error?
     return []
   }
 
-  const leftOrTop = flexDirection === 'row' ? 'x' : 'y'
-  const leftOrTopComplement = flexDirection === 'row' ? 'y' : 'x'
-  const widthOrHeight = flexDirection === 'row' ? 'width' : 'height'
-  const widthOrHeightComplement = flexDirection === 'row' ? 'height' : 'width'
+  const leftOrTop = simpleFlexDirection === 'row' ? 'x' : 'y'
+  const leftOrTopComplement = simpleFlexDirection === 'row' ? 'y' : 'x'
+  const widthOrHeight = simpleFlexDirection === 'row' ? 'width' : 'height'
+  const widthOrHeightComplement = simpleFlexDirection === 'row' ? 'height' : 'width'
 
-  const pseudoElementBefore = {
+  interface ElemBounds {
+    start: number
+    size: number
+    end: number
+  }
+
+  const pseudoElementBefore: ElemBounds = {
     start: parentBounds[leftOrTop],
     size: 0,
     end: parentBounds[leftOrTop],
   }
-  const pseudoElementAfter = {
+  const pseudoElementAfter: ElemBounds = {
     start: parentBounds[leftOrTop] + parentBounds[widthOrHeight],
     size: 0,
     end: parentBounds[leftOrTop] + parentBounds[widthOrHeight],
   }
 
-  const childrenBounds: Array<{ start: number; size: number; end: number }> =
-    MetadataUtils.getChildrenPaths(metadata, flexElementPath).map((childPath) => {
-      const bounds = MetadataUtils.getFrameInCanvasCoords(childPath, metadata)!
-      return {
-        start: bounds[leftOrTop],
-        size: bounds[widthOrHeight],
-        end: bounds[leftOrTop] + bounds[widthOrHeight],
-      }
-    })
+  const childrenBounds: Array<ElemBounds> = MetadataUtils.getChildrenPaths(
+    metadata,
+    flexElementPath,
+  ).map((childPath) => {
+    const bounds = MetadataUtils.getFrameInCanvasCoords(childPath, metadata)!
+    return {
+      start: bounds[leftOrTop],
+      size: bounds[widthOrHeight],
+      end: bounds[leftOrTop] + bounds[widthOrHeight],
+    }
+  })
 
-  const childrenBoundsAlongAxis: Array<{ start: number; size: number; end: number }> = [
+  const childrenBoundsAlongAxis: Array<ElemBounds> = [
     pseudoElementBefore,
-    ...childrenBounds,
+    ...(forwardsOrBackwards === 'forward' ? childrenBounds : reverse(childrenBounds)),
     pseudoElementAfter,
   ]
 
@@ -467,8 +471,7 @@ export type StripAbsoluteProperties = 'strip-absolute-props' | 'do-not-strip-pro
 export function getSiblingMidPointPosition(
   precedingSiblingPosition: CanvasRectangle,
   succeedingSiblingPosition: CanvasRectangle,
-  direction: 'row' | 'column',
-  indicatorSize: number,
+  direction: SimpleFlexDirection,
 ): number {
   let getSiblingPosition: (rect: CanvasRectangle) => number
   let getSiblingSize: (rect: CanvasRectangle) => number
@@ -494,17 +497,17 @@ export function getSiblingMidPointPosition(
       throw new Error(`Unhandled direction of ${JSON.stringify(direction)}`)
   }
 
-  return (
+  const value =
     (getSiblingPosition(precedingSiblingPosition) +
       getSiblingSize(precedingSiblingPosition) +
-      getSiblingPosition(succeedingSiblingPosition) +
-      indicatorSize) /
+      getSiblingPosition(succeedingSiblingPosition)) /
     2
-  )
+  return value
 }
 
 export function siblingAndPseudoPositions(
-  parentFlexDirection: string,
+  parentFlexDirection: SimpleFlexDirection,
+  forwardsOrBackwards: FlexForwardsOrBackwards,
   parentRect: CanvasRectangle,
   siblingsOfTarget: Array<ElementPath>,
   metadata: ElementInstanceMetadataMap,
@@ -539,9 +542,11 @@ export function siblingAndPseudoPositions(
           width: parentRect.width,
         })
 
+  const siblingsPossiblyReversed =
+    forwardsOrBackwards === 'forward' ? siblingsOfTarget : reverse(siblingsOfTarget)
   const siblingPositions: Array<CanvasRectangle> = [
     pseudoElementBefore,
-    ...siblingsOfTarget.map((sibling) => {
+    ...siblingsPossiblyReversed.map((sibling) => {
       return MetadataUtils.getFrameInCanvasCoords(sibling, metadata) ?? zeroCanvasRect
     }),
     pseudoElementAfter,
@@ -594,7 +599,15 @@ export function applyFlexReparent(
         const parentRect =
           MetadataUtils.getFrameInCanvasCoords(newParent, strategyState.startingMetadata) ??
           zeroCanvasRect
-        const newParentFlexDirection = MetadataUtils.getFlexDirection(newParentMetadata)
+        const flexDirection = MetadataUtils.getFlexDirection(newParentMetadata)
+        const newParentFlexDirection = forceNotNull(
+          'Should have a valid flex direction.',
+          flexDirectionToSimpleFlexDirection(flexDirection),
+        )
+        const forwardsOrBackwards = forceNotNull(
+          'Should have a valid flex orientation.',
+          flexDirectionToFlexForwardsOrBackwards(flexDirection),
+        )
 
         const siblingsOfTarget = MetadataUtils.getChildrenPaths(
           strategyState.startingMetadata,
@@ -666,6 +679,7 @@ export function applyFlexReparent(
           if (reparentResult.shouldReorder && siblingsOfTarget.length > 0) {
             const siblingPositions: Array<CanvasRectangle> = siblingAndPseudoPositions(
               newParentFlexDirection,
+              forwardsOrBackwards,
               parentRect,
               siblingsOfTarget,
               strategyState.startingMetadata,
@@ -677,12 +691,13 @@ export function applyFlexReparent(
             const targetLineBeforeSibling: CanvasRectangle =
               newParentFlexDirection === 'row'
                 ? canvasRectangle({
-                    x: getSiblingMidPointPosition(
-                      precedingSiblingPosition,
-                      succeedingSiblingPosition,
-                      'row',
-                      FlexReparentIndicatorSize,
-                    ),
+                    x:
+                      getSiblingMidPointPosition(
+                        precedingSiblingPosition,
+                        succeedingSiblingPosition,
+                        'row',
+                      ) -
+                      FlexReparentIndicatorSize / 2,
                     y: (precedingSiblingPosition.y + succeedingSiblingPosition.y) / 2,
                     height:
                       (precedingSiblingPosition.height + succeedingSiblingPosition.height) / 2,
@@ -690,12 +705,13 @@ export function applyFlexReparent(
                   })
                 : canvasRectangle({
                     x: (precedingSiblingPosition.x + succeedingSiblingPosition.x) / 2,
-                    y: getSiblingMidPointPosition(
-                      precedingSiblingPosition,
-                      succeedingSiblingPosition,
-                      'column',
-                      FlexReparentIndicatorSize,
-                    ),
+                    y:
+                      getSiblingMidPointPosition(
+                        precedingSiblingPosition,
+                        succeedingSiblingPosition,
+                        'column',
+                      ) -
+                      FlexReparentIndicatorSize / 2,
                     width: (precedingSiblingPosition.width + succeedingSiblingPosition.width) / 2,
                     height: FlexReparentIndicatorSize,
                   })

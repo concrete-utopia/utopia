@@ -13,6 +13,12 @@ import {
   getSiblingMidPointPosition,
   siblingAndPseudoPositions,
 } from '../canvas-strategies/reparent-strategy-helpers'
+import {
+  flexDirectionToFlexForwardsOrBackwards,
+  flexDirectionToSimpleFlexDirection,
+  FlexForwardsOrBackwards,
+  SimpleFlexDirection,
+} from '../../../core/layout/layout-utils'
 
 const InsertionButtonOffset = 10
 
@@ -60,22 +66,18 @@ export const InsertionControls: React.FunctionComponent = React.memo(
     ) {
       return null
     }
-    let direction: 'row' | 'column' | null = null
+    let direction: SimpleFlexDirection | null = null
+    let forwardsOrBackwards: FlexForwardsOrBackwards | null = null
+
     if (parentElement.specialSizeMeasurements.layoutSystemForChildren === 'flex') {
-      switch (parentElement.specialSizeMeasurements.flexDirection) {
-        case 'row':
-        case 'row-reverse':
-          direction = 'row'
-          break
-        case 'column':
-        case 'column-reverse':
-          direction = 'column'
-          break
-        default:
-          break
-      }
+      direction = flexDirectionToSimpleFlexDirection(
+        parentElement.specialSizeMeasurements.flexDirection,
+      )
+      forwardsOrBackwards = flexDirectionToFlexForwardsOrBackwards(
+        parentElement.specialSizeMeasurements.flexDirection,
+      )
     }
-    if (direction == null) {
+    if (direction == null || forwardsOrBackwards == null) {
       return null
     }
 
@@ -83,13 +85,14 @@ export const InsertionControls: React.FunctionComponent = React.memo(
     let controlProps: ButtonControlProps[] = []
 
     const siblingPositions: Array<CanvasRectangle> = siblingAndPseudoPositions(
-      parentElement.specialSizeMeasurements.flexDirection,
+      direction,
+      forwardsOrBackwards,
       parentFrame,
       children.map((m) => m.elementPath),
       jsxMetadata,
     )
 
-    const nonNullDirection: 'row' | 'column' = direction
+    const nonNullDirection: SimpleFlexDirection = direction
 
     function getBetweenChildrenPosition(index: number): number {
       const precedingSiblingPosition: CanvasRectangle = siblingPositions[index]
@@ -98,13 +101,14 @@ export const InsertionControls: React.FunctionComponent = React.memo(
         precedingSiblingPosition,
         succeedingSiblingPosition,
         nonNullDirection,
-        0,
       )
     }
 
     if (children.length > 0) {
       for (let index = 0; index < siblingPositions.length - 1; index++) {
-        const child = children[index]
+        // Cater for row-reverse and column-reverse cases by "inverting" the index that
+        // elements are inserted at.
+        const insertionIndex = forwardsOrBackwards === 'forward' ? index : children.length - index
         const positionX =
           direction == 'column'
             ? parentFrame.x - InsertionButtonOffset
@@ -133,7 +137,7 @@ export const InsertionControls: React.FunctionComponent = React.memo(
           parentPath: parentPath,
           indexPosition: {
             type: 'absolute',
-            index: index,
+            index: insertionIndex,
           },
         })
       }
