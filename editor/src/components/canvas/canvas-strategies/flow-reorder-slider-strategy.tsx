@@ -1,5 +1,6 @@
 import { MetadataUtils } from '../../../core/model/element-metadata-utils'
 import * as EP from '../../../core/shared/element-path'
+import { mod } from '../../../core/shared/math-utils'
 import { absolute } from '../../../utils/utils'
 import { CSSCursor } from '../canvas-types'
 import { reorderElement } from '../commands/reorder-element-command'
@@ -77,9 +78,7 @@ export const flowReorderSliderStategy: CanvasStrategy = {
 
       const indexOffset = Math.round(interactionState.interactionData.drag.x / 40)
 
-      const realNewIndex =
-        (unpatchedIndex + (indexOffset % siblingsOfTarget.length) + siblingsOfTarget.length) %
-        siblingsOfTarget.length
+      const realNewIndex = mod(unpatchedIndex + indexOffset, siblingsOfTarget.length)
 
       const newDisplayType = getNewDisplayTypeForIndex(
         strategyState.startingMetadata,

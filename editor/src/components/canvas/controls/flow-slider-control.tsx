@@ -1,11 +1,20 @@
 import React from 'react'
+import { useSpring, animated } from 'react-spring'
 import { MetadataUtils } from '../../../core/model/element-metadata-utils'
 import * as EP from '../../../core/shared/element-path'
-import { point, windowPoint } from '../../../core/shared/math-utils'
+import {
+  easeOutCubic,
+  easeOutQuint,
+  mod,
+  point,
+  windowPoint,
+} from '../../../core/shared/math-utils'
+import { arrayEquals } from '../../../core/shared/utils'
 import { Modifier } from '../../../utils/modifiers'
 import { when } from '../../../utils/react-conditionals'
 import { Icons, useColorTheme, UtopiaStyles } from '../../../uuiui'
 import { CSSCursor } from '../../../uuiui-deps'
+import { usePrevious } from '../../editor/hook-utils'
 import { useEditorState, useRefEditorState } from '../../editor/store/store-hook'
 import { stopPropagation } from '../../inspector/common/inspector-utils'
 import CanvasActions from '../canvas-actions'
@@ -41,21 +50,27 @@ export const FlowSliderControl = React.memo(() => {
     }
   }, 'isTargetFlowWithSiblings')
 
-  const { siblings, currentIndex } = useEditorState((store) => {
-    if (store.editor.selectedViews.length === 1) {
-      const target = store.editor.selectedViews[0]
-      const siblingsMetadata = MetadataUtils.getSiblings(
-        store.editor.canvas.interactionSession?.latestMetadata ?? store.editor.jsxMetadata,
-        target,
-      ).map((sibling) => sibling.elementPath)
-      return {
-        siblings: siblingsMetadata,
-        currentIndex: siblingsMetadata.findIndex((sibling) => EP.pathsEqual(sibling, target)),
+  const { siblings, currentIndex } = useEditorState(
+    (store) => {
+      if (store.editor.selectedViews.length === 1) {
+        const target = store.editor.selectedViews[0]
+        const siblingsMetadata = MetadataUtils.getSiblings(
+          store.editor.canvas.interactionSession?.latestMetadata ?? store.editor.jsxMetadata,
+          target,
+        ).map((sibling) => sibling.elementPath)
+        return {
+          siblings: siblingsMetadata,
+          currentIndex: siblingsMetadata.findIndex((sibling) => EP.pathsEqual(sibling, target)),
+        }
+      } else {
+        return { siblings: [], currentIndex: -1 }
       }
-    } else {
-      return { siblings: [], currentIndex: -1 }
-    }
-  }, 'current index')
+    },
+    'current index',
+    (o, n) =>
+      arrayEquals(o.siblings, n.siblings, EP.pathsEqual) && o.currentIndex === n.currentIndex,
+  )
+  const prevCurrentIndex = usePrevious(currentIndex)
 
   const scaleRef = useRefEditorState((store) => store.editor.canvas.scale)
   const canvasOffsetRef = useRefEditorState((store) => store.editor.canvas.realCanvasOffset)
@@ -127,9 +142,55 @@ export const FlowSliderControl = React.memo(() => {
     }
   }, 'starting index')
 
+  const dragX = useEditorState((store) => {
+    if (
+      store.editor.selectedViews.length === 1 &&
+      store.editor.canvas.interactionSession != null &&
+      store.editor.canvas.interactionSession.interactionData.type === 'DRAG' &&
+      store.editor.canvas.interactionSession.interactionData.drag != null
+    ) {
+      return store.editor.canvas.interactionSession.interactionData.drag.x
+    } else {
+      return 0
+    }
+  }, 'drag X')
+
+  const possibleNewIndex = useEditorState((store) => {
+    if (
+      store.editor.selectedViews.length === 1 &&
+      store.editor.canvas.interactionSession != null &&
+      store.editor.canvas.interactionSession.interactionData.type === 'DRAG' &&
+      store.editor.canvas.interactionSession.interactionData.drag != null
+    ) {
+      const target = store.editor.selectedViews[0]
+      const siblingsOfTarget = MetadataUtils.getSiblings(
+        store.strategyState.startingMetadata,
+        target,
+      ).map((sibling) => sibling.elementPath)
+      const originalIndex = siblingsOfTarget.findIndex((sibling) => EP.pathsEqual(sibling, target))
+      const indexOffset = store.editor.canvas.interactionSession.interactionData.drag.x / 40
+
+      return mod(originalIndex + indexOffset, siblingsOfTarget.length)
+    } else {
+      return -1
+    }
+  }, 'possibleNewIndex')
+
+  // the strategy uses Math.round, it switches at 0.5, the diff is always between -0.5 and 0.5
+  // easing fns work with values between 0 and 1
+  const diff = (possibleNewIndex - currentIndex) * 2
+
+  const offset = possibleNewIndex === -1 ? 0 : Math.sign(diff) * easeOutCubic(Math.abs(diff))
+  const offsetWithReset = prevCurrentIndex !== currentIndex ? 0 : offset
+
+  const left = (frame?.x ?? 0) + (frame?.width ?? 0) / 2 - 8 - startingIndex * 16
+  const styles = useSpring({
+    left: left + currentIndex * 16 + offsetWithReset * 5,
+    config: { mass: 5, tension: 1500, friction: 80 },
+  })
+
   if (isTargetFlowWithSiblings && siblings.length > 1 && frame != null) {
     // icon size: 16
-    const left = (frame?.x ?? 0) + (frame?.width ?? 0) / 2 - 8 - startingIndex * 16
     return (
       <CanvasOffsetWrapper>
         {when(
@@ -143,30 +204,44 @@ export const FlowSliderControl = React.memo(() => {
               height: 22,
               borderRadius: 4,
               opacity: '50%',
-              background: colorTheme.bg0.value,
-              boxShadow: UtopiaStyles.popup.boxShadow,
-              cursor: CSSCursor.ResizeEW,
+              background: isDragging ? colorTheme.bg0.value : 'transparent',
+              boxShadow: isDragging ? UtopiaStyles.popup.boxShadow : 'none',
+              cursor: isDragging ? CSSCursor.ResizeEW : 'default',
               display: 'flex',
               alignItems: 'center',
             }}
           >
-            {siblings.map((s, i) => (
-              <Icons.Dot key={EP.toString(s)} />
-            ))}
+            {siblings.map((s, i) => {
+              return <Icons.Dot key={EP.toString(s)} />
+            })}
           </div>,
         )}
+        <animated.div
+          style={{
+            position: 'absolute',
+            top: frame.y + frame.height / 2 - 9,
+            left: styles.left,
+            width: 14,
+            height: 22 - 4,
+            borderRadius: 4,
+            background: colorTheme.primary.value,
+            display: possibleNewIndex !== -1 ? 'block' : 'none',
+            // eslint-disable-next-line @typescript-eslint/ban-ts-comment
+            // @ts-ignore
+            opacity: 0.6,
+          }}
+        ></animated.div>
         <div
           style={{
             position: 'absolute',
             top: frame.y + frame.height / 2 - 5,
-            left: left + currentIndex * 16 + 1.5,
+            left: left + currentIndex * 16 + 2,
             width: 10,
             height: 10,
             borderRadius: '50%',
             background: colorTheme.bg0.value,
             boxShadow: UtopiaStyles.popup.boxShadow,
             cursor: CSSCursor.ResizeEW,
-            transition: isDragging ? 'left .2s ease-in-out' : undefined,
           }}
           onMouseDown={onMouseDown}
           onMouseUp={stopPropagation}
