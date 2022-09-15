@@ -63,7 +63,7 @@ interface ProjectCardProps {
   modifiedAt: any
   title: any
   key: any
-  url: any 
+  url: any
 
   onSelect?: () => void
 }
@@ -322,7 +322,6 @@ export class ProjectsPage extends React.Component<EmptyProps, ProjectsState> {
         '&:active': {
           transform: 'scale(.99)',
         },
-        width: 340,
         borderRadius: '5px',
         overflow: 'hidden',
         ...cardLayoutStyle,
@@ -435,7 +434,10 @@ export class ProjectsPage extends React.Component<EmptyProps, ProjectsState> {
             ></img>
             Utopia
           </div>
-          <FlexWrappingList style={{ width: '100vw', gap: layout.margins.regular }}>
+          <FlexWrappingList
+            style={{ width: '100vw', gap: layout.margins.regular }}
+            onClick={this.clearSelectedProject}
+          >
             {this.newProjectCard}
             <ProjectCard
               project={null}
