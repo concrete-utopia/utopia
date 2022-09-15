@@ -1,7 +1,7 @@
 import { ReactElement } from 'react'
 import { ElementInstanceMetadataMap } from '../../core/shared/element-template'
 import { PropertyPath, ElementPath } from '../../core/shared/project-file-types'
-import { KeyCharacter, KeysPressed } from '../../utils/keyboard'
+import { KeysPressed } from '../../utils/keyboard'
 import { Modifiers } from '../../utils/modifiers'
 import { keepDeepReferenceEqualityIfPossible } from '../../utils/react-performance'
 import {
@@ -10,20 +10,14 @@ import {
   CanvasVector,
   CoordinateMarker,
   Rectangle,
-  Size,
   WindowPoint,
 } from '../../core/shared/math-utils'
 import { EditorPanel } from '../common/actions/index'
-import { EditorAction } from '../editor/action-types'
 import { Mode } from '../editor/editor-modes'
 import { EditorState, OriginalCanvasAndLocalFrame } from '../editor/store/editor-state'
 import { isFeatureEnabled } from '../../utils/feature-switches'
 import { xor } from '../../core/shared/utils'
-import {
-  LayoutFlexElementNumericProp,
-  LayoutFlexElementProp,
-  LayoutTargetableProp,
-} from '../../core/layout/layout-helpers-new'
+import { LayoutTargetableProp } from '../../core/layout/layout-helpers-new'
 import {
   DragInteractionData,
   InteractionSession,
