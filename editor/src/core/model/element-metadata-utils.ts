@@ -33,6 +33,10 @@ import {
   isIntrinsicElement,
   ElementInstanceMetadataMap,
   isIntrinsicHTMLElement,
+  ElementMap,
+  DetectedLayoutSystem,
+  ScopedMetadata,
+  ScopedMetadataMap,
 } from '../shared/element-template'
 import {
   getModifiableJSXAttributeAtPath,
@@ -150,10 +154,10 @@ export const MetadataUtils = {
       return isUnknownOrGeneratedElement(elementOriginType)
     })
   },
-  findElementByElementPath(
-    elementMap: ElementInstanceMetadataMap,
+  findElementByElementPath<T extends ScopedMetadata>(
+    elementMap: { [elementPath: string]: T },
     path: ElementPath | null,
-  ): ElementInstanceMetadata | null {
+  ): T | null {
     if (path == null) {
       return null
     } else {
@@ -238,7 +242,9 @@ export const MetadataUtils = {
   isParentYogaLayoutedContainerForElement(element: ElementInstanceMetadata): boolean {
     return element.specialSizeMeasurements.parentLayoutSystem === 'flex'
   },
-  isFlexLayoutedContainer(instance: ElementInstanceMetadata | null): boolean {
+  isFlexLayoutedContainer(
+    instance: { specialSizeMeasurements: { layoutSystemForChildren: DetectedLayoutSystem } } | null,
+  ): boolean {
     return instance?.specialSizeMeasurements.layoutSystemForChildren === 'flex'
   },
   isGridLayoutedContainer(instance: ElementInstanceMetadata | null): boolean {
@@ -357,7 +363,9 @@ export const MetadataUtils = {
       return null
     }
   },
-  getFlexDirection: function (instance: ElementInstanceMetadata | null): string {
+  getFlexDirection: function (
+    instance: { specialSizeMeasurements: { flexDirection: string | null } } | null,
+  ): string {
     return instance?.specialSizeMeasurements?.flexDirection ?? 'row'
   },
   findParent(metadata: ElementInstanceMetadataMap, target: ElementPath): ElementPath | null {
@@ -394,7 +402,10 @@ export const MetadataUtils = {
       ...PP.getElements(property),
     ])
   },
-  getRootViewPaths(elements: ElementInstanceMetadataMap, target: ElementPath): Array<ElementPath> {
+  getRootViewPaths<T extends ScopedMetadata>(
+    elements: ElementMap<T>,
+    target: ElementPath,
+  ): Array<ElementPath> {
     const possibleRootElementsOfTarget = mapDropNulls((elementPathString) => {
       const elementPath = EP.fromString(elementPathString)
       if (EP.isRootElementOf(elementPath, target)) {
@@ -419,7 +430,10 @@ export const MetadataUtils = {
     }
     return result
   },
-  getChildrenPaths(elements: ElementInstanceMetadataMap, target: ElementPath): Array<ElementPath> {
+  getChildrenPaths<T extends ScopedMetadata>(
+    elements: ElementMap<T>,
+    target: ElementPath,
+  ): Array<ElementPath> {
     const possibleChildren = mapDropNulls((elementPathString) => {
       const elementPath = EP.fromString(elementPathString)
       if (EP.isChildOf(elementPath, target) && !EP.isRootElementOfInstance(elementPath)) {
@@ -444,8 +458,8 @@ export const MetadataUtils = {
     }
     return result
   },
-  getImmediateChildrenPaths(
-    elements: ElementInstanceMetadataMap,
+  getImmediateChildrenPaths<T extends ScopedMetadata>(
+    elements: ElementMap<T>,
     target: ElementPath,
   ): Array<ElementPath> {
     const element = MetadataUtils.findElementByElementPath(elements, target)
@@ -465,7 +479,7 @@ export const MetadataUtils = {
     const children = MetadataUtils.getChildren(metadata, target)
     return [...roots, ...children]
   },
-  getStoryboardMetadata(metadata: ElementInstanceMetadataMap): ElementInstanceMetadata | null {
+  getStoryboardMetadata<T extends ScopedMetadata>(metadata: ElementMap<T>): T | null {
     for (const metadataKey in metadata) {
       const metadataEntry = metadata[metadataKey]
       if (EP.isStoryboardPath(metadataEntry.elementPath)) {
@@ -480,7 +494,7 @@ export const MetadataUtils = {
       ? []
       : MetadataUtils.getImmediateChildren(metadata, storyboardMetadata.elementPath)
   },
-  getAllStoryboardChildrenPaths(metadata: ElementInstanceMetadataMap): ElementPath[] {
+  getAllStoryboardChildrenPaths<T extends ScopedMetadata>(metadata: ElementMap<T>): ElementPath[] {
     const storyboardMetadata = MetadataUtils.getStoryboardMetadata(metadata)
     return storyboardMetadata == null
       ? []
@@ -615,7 +629,7 @@ export const MetadataUtils = {
   targetElementSupportsChildren(
     projectContents: ProjectContentTreeRoot,
     openFile: string | null | undefined,
-    instance: ElementInstanceMetadata,
+    instance: ScopedMetadata<'element' | 'importInfo'>,
   ): boolean {
     return foldEither(
       (elementString) => intrinsicHTMLElementNamesThatSupportChildren.includes(elementString),
@@ -655,7 +669,7 @@ export const MetadataUtils = {
   targetSupportsChildren(
     projectContents: ProjectContentTreeRoot,
     openFile: string | null | undefined,
-    metadata: ElementInstanceMetadataMap,
+    metadata: ScopedMetadataMap<'element' | 'importInfo'>,
     target: ElementPath | null,
   ): boolean {
     if (target == null) {
@@ -891,14 +905,14 @@ export const MetadataUtils = {
   },
   getFrameInCanvasCoords(
     path: ElementPath,
-    metadata: ElementInstanceMetadataMap,
+    metadata: ScopedMetadataMap<'globalFrame'>,
   ): CanvasRectangle | null {
     const element = MetadataUtils.findElementByElementPath(metadata, path)
     return Utils.optionalMap((e) => e.globalFrame, element)
   },
   getBoundingRectangleInCanvasCoords(
     paths: Array<ElementPath>,
-    metadata: ElementInstanceMetadataMap,
+    metadata: ScopedMetadataMap<'globalFrame'>,
   ): CanvasRectangle | null {
     return boundingRectangleArray(
       paths.map((path) => MetadataUtils.getFrameInCanvasCoords(path, metadata)),

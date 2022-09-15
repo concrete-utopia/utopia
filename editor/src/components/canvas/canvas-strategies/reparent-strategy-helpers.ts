@@ -3,9 +3,9 @@ import { getStoryboardElementPath } from '../../../core/model/scene-utils'
 import { mapDropNulls, reverse } from '../../../core/shared/array-utils'
 import * as EP from '../../../core/shared/element-path'
 import {
-  ElementInstanceMetadata,
   ElementInstanceMetadataMap,
   JSXElement,
+  ScopedMetadataMap,
 } from '../../../core/shared/element-template'
 import {
   canvasPoint,
@@ -204,7 +204,10 @@ export function getReparentTargetUnified(
   pointOnCanvas: CanvasPoint,
   cmdPressed: boolean,
   canvasState: InteractionCanvasState,
-  metadata: ElementInstanceMetadataMap,
+  metadata: ScopedMetadataMap<
+    'globalFrame' | 'element' | 'importInfo',
+    'layoutSystemForChildren' | 'flexDirection'
+  >,
   allElementProps: AllElementProps,
 ): ReparentTarget {
   const projectContents = canvasState.projectContents
@@ -352,7 +355,7 @@ const propertiesToRemove: Array<PropertyPath> = [
 ]
 
 function drawTargetRectanglesForChildrenOfElement(
-  metadata: ElementInstanceMetadataMap,
+  metadata: ScopedMetadataMap<'globalFrame', 'flexDirection'>,
   flexElementPath: ElementPath,
   targetRectangleSize: 'padded-edge' | 'full-size',
   canvasScale: number,

@@ -1549,6 +1549,22 @@ export interface ElementInstanceMetadata {
   importInfo: ImportInfo | null
 }
 
+export type ScopedMetadata<
+  MetadataPick extends keyof ElementInstanceMetadata = 'globalFrame',
+  SpecialSizeMeasurementsPick extends keyof SpecialSizeMeasurements = 'parentLayoutSystem',
+> = Pick<ElementInstanceMetadata, MetadataPick> & {
+  specialSizeMeasurements: Pick<SpecialSizeMeasurements, SpecialSizeMeasurementsPick>
+} & { elementPath: ElementPath }
+
+export type ElementMap<T extends ScopedMetadata> = { [elementPath: string]: T }
+
+export type ScopedMetadataMap<
+  MetadataPick extends keyof ElementInstanceMetadata = 'globalFrame',
+  SpecialSizeMeasurementsPick extends keyof SpecialSizeMeasurements = 'parentLayoutSystem',
+> = ElementMap<
+  ScopedMetadata<MetadataPick | 'globalFrame', SpecialSizeMeasurementsPick | 'parentLayoutSystem'>
+>
+
 export function elementInstanceMetadata(
   elementPath: ElementPath,
   element: Either<string, JSXElementChild>,

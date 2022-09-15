@@ -2,6 +2,7 @@ import { MetadataUtils } from '../../core/model/element-metadata-utils'
 import {
   ElementInstanceMetadata,
   ElementInstanceMetadataMap,
+  ScopedMetadataMap,
 } from '../../core/shared/element-template'
 import { ElementPath } from '../../core/shared/project-file-types'
 import { KeyCharacter } from '../../utils/keyboard'
@@ -48,7 +49,7 @@ const Canvas = {
   ],
   getFramesInCanvasContext(
     allElementProps: AllElementProps,
-    metadata: ElementInstanceMetadataMap,
+    metadata: ScopedMetadataMap<'globalFrame'>,
     useBoundingFrames: boolean,
   ): Array<FrameWithPath> {
     // Note: This will not necessarily be representative of the structured ordering in
@@ -265,7 +266,7 @@ const Canvas = {
     })
   },
   getAllTargetsAtPoint(
-    componentMetadata: ElementInstanceMetadataMap,
+    componentMetadata: ScopedMetadataMap<'globalFrame'>,
     selectedViews: Array<ElementPath>,
     hiddenInstances: Array<ElementPath>,
     canvasPosition: CanvasPoint,

@@ -1,6 +1,6 @@
 import { intersection, last, mapDropNulls, stripNulls } from '../../core/shared/array-utils'
 import { getDOMAttribute } from '../../core/shared/dom-utils'
-import { ElementInstanceMetadataMap } from '../../core/shared/element-template'
+import { ElementInstanceMetadataMap, ScopedMetadataMap } from '../../core/shared/element-template'
 import {
   boundingRectangleArray,
   CanvasPoint,
@@ -268,7 +268,7 @@ function isPointInSelectionRectangle(
 }
 
 export function getAllTargetsAtPointAABB(
-  componentMetadata: ElementInstanceMetadataMap,
+  componentMetadata: ScopedMetadataMap<'globalFrame'>,
   selectedViews: Array<ElementPath>,
   hiddenInstances: Array<ElementPath>,
   validElementPathsForLookup: Array<ElementPath> | 'no-filter',

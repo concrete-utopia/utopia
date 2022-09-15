@@ -47,6 +47,7 @@ import {
   isIntrinsicElementFromString,
   isIntrinsicHTMLElement,
   isIntrinsicHTMLElementString,
+  ScopedMetadata,
 } from '../shared/element-template'
 import {
   sceneMetadata as _sceneMetadata,
@@ -86,7 +87,7 @@ export function isUtopiaAPIComponent(elementName: JSXElementName, imports: Impor
 }
 
 export function isUtopiaAPIComponentFromMetadata(
-  elementInstanceMetadata: ElementInstanceMetadata,
+  elementInstanceMetadata: ScopedMetadata<'importInfo'>,
 ): boolean {
   const foundImportInfo = maybeEitherToMaybe(elementInstanceMetadata.importInfo)
   if (foundImportInfo == null) {
@@ -132,7 +133,7 @@ function isGivenUtopiaAPIElementFromName(
 }
 
 export function isGivenUtopiaElementFromMetadata(
-  elementInstanceMetadata: ElementInstanceMetadata,
+  elementInstanceMetadata: ScopedMetadata<'importInfo'>,
   componentName: string,
 ): boolean {
   const foundImportInfo = maybeEitherToMaybe(elementInstanceMetadata.importInfo)
@@ -147,7 +148,9 @@ export function isSceneAgainstImports(element: JSXElementChild, imports: Imports
   return isGivenUtopiaAPIElement(element, imports, 'Scene')
 }
 
-export function isSceneFromMetadata(elementInstanceMetadata: ElementInstanceMetadata): boolean {
+export function isSceneFromMetadata(
+  elementInstanceMetadata: ScopedMetadata<'importInfo'>,
+): boolean {
   return isGivenUtopiaElementFromMetadata(elementInstanceMetadata, 'Scene')
 }
 
@@ -176,7 +179,9 @@ export function isViewAgainstImports(jsxElementName: JSXElementName, imports: Im
   return isGivenUtopiaAPIElementFromName(jsxElementName, imports, 'View')
 }
 
-export function isViewLikeFromMetadata(elementInstanceMetadata: ElementInstanceMetadata): boolean {
+export function isViewLikeFromMetadata(
+  elementInstanceMetadata: ScopedMetadata<'importInfo'>,
+): boolean {
   return (
     isGivenUtopiaElementFromMetadata(elementInstanceMetadata, 'View') ||
     isGivenUtopiaElementFromMetadata(elementInstanceMetadata, 'FlexRow') ||
