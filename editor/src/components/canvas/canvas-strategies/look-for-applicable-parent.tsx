@@ -1,5 +1,6 @@
 import * as EP from '../../../core/shared/element-path'
 import { ElementInstanceMetadataMap } from '../../../core/shared/element-template'
+import { memoize } from '../../../core/shared/memoize'
 import { ElementPath } from '../../../core/shared/project-file-types'
 import { AllElementProps } from '../../editor/store/editor-state'
 import { getApplicableStrategies, RegisteredCanvasStrategies } from './canvas-strategies'
@@ -23,7 +24,7 @@ export const lookForApplicableParentStrategy: CanvasStrategy = {
       ({ id }) => id !== 'LOOK_FOR_APPLICABLE_PARENT_ID',
     )
 
-    const allStrategies = isApplicableTraverse(
+    const allStrategies = isApplicableTraverseMemo(
       strategiesMinusTraverse,
       canvasState,
       interactionSession,
@@ -49,20 +50,24 @@ export const lookForApplicableParentStrategy: CanvasStrategy = {
     const strategiesMinusTraverse = RegisteredCanvasStrategies.filter(
       ({ id }) => id !== 'LOOK_FOR_APPLICABLE_PARENT_ID',
     )
-    const applicableStrategies = isApplicableTraverse(
+
+    const applicableStrategies = isApplicableTraverseMemo(
       strategiesMinusTraverse,
       canvasState,
       interactionSession,
       strategyState.startingMetadata,
       strategyState.startingAllElementProps,
     ).sort(
+      // TODO: better/idiomatic way of sorting
       (a, b) =>
         a.fitness(canvasState, interactionSession, strategyState) -
         b.fitness(canvasState, interactionSession, strategyState),
     )
 
     if (applicableStrategies.length > 0) {
-      return applicableStrategies[0].apply(canvasState, interactionSession, strategyState)
+      const chosenStrategy = applicableStrategies[0]
+      // console.log(chosenStrategy.id)
+      return chosenStrategy.apply(canvasState, interactionSession, strategyState)
     }
     return emptyStrategyApplicationResult
   },
@@ -72,7 +77,7 @@ function* elementAncestry(path: ElementPath) {
   let currentParentPath = path
   while (!EP.isStoryboardChild(currentParentPath)) {
     yield currentParentPath
-    const parent = EP.parentPath(path)
+    const parent = EP.parentPath(currentParentPath)
     currentParentPath = parent
   }
 }
@@ -123,6 +128,7 @@ function isApplicableTraverse(
       metadata,
       allElementProps,
     )
+
     if (!isSingletonAbsoluteMove(applicableStrategies)) {
       return applicableStrategies
     }
@@ -130,3 +136,5 @@ function isApplicableTraverse(
 
   return []
 }
+
+const isApplicableTraverseMemo = memoize(isApplicableTraverse)
