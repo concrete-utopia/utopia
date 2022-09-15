@@ -84,7 +84,7 @@ export const convertToAbsoluteAndMoveStrategy: CanvasStrategy = {
     ) &&
       interactionState.interactionData.type === 'DRAG' &&
       interactionState.activeControl.type === 'BOUNDING_AREA'
-      ? 1
+      ? 0.5
       : 0
   },
   apply: (canvasState, interactionState, strategyState) => {
