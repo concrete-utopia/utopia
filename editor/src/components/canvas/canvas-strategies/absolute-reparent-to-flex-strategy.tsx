@@ -74,6 +74,7 @@ export const absoluteReparentToFlexStrategy: CanvasStrategy = {
       canvasState,
       interactionState,
       strategyState,
+      'use-strict-bounds',
     ).strategy
     if (reparentStrategy === 'ABSOLUTE_REPARENT_TO_FLEX') {
       return 3

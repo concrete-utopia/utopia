@@ -434,6 +434,7 @@ export function runLocalCanvasAction(
             action.interactionSession.interactionData.originalDragStart,
             action.interactionSession.interactionData.drag ?? zeroCanvasPoint,
           )
+          // FIXME This probably means we need both
           return getReparentTargetUnified(
             getDragTargets(model.selectedViews),
             pointOnCanvas,
@@ -441,6 +442,7 @@ export function runLocalCanvasAction(
             pickCanvasStateFromEditorState(model, builtinDependencies),
             metadata,
             allElementProps,
+            'allow-missing-bounds',
           )
         })()
 

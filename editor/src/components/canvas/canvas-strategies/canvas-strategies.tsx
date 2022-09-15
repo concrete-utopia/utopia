@@ -8,7 +8,10 @@ import { AllElementProps, EditorState, EditorStorePatched } from '../../editor/s
 import { useEditorState, useSelectorWithCallback } from '../../editor/store/store-hook'
 import { CanvasCommand } from '../commands/commands'
 import { absoluteMoveStrategy } from './absolute-move-strategy'
-import { absoluteReparentStrategy } from './absolute-reparent-strategy'
+import {
+  absoluteReparentStrategy,
+  forcedAbsoluteReparentStrategy,
+} from './absolute-reparent-strategy'
 import {
   CanvasStrategy,
   CanvasStrategyId,
@@ -28,7 +31,10 @@ import { convertToAbsoluteAndMoveStrategy } from './convert-to-absolute-and-move
 import { flexReorderStrategy } from './flex-reorder-strategy'
 import { absoluteDuplicateStrategy } from './absolute-duplicate-strategy'
 import { absoluteReparentToFlexStrategy } from './absolute-reparent-to-flex-strategy'
-import { flexReparentToAbsoluteStrategy } from './flex-reparent-to-absolute-strategy'
+import {
+  flexReparentToAbsoluteStrategy,
+  forcedFlexReparentToAbsoluteStrategy,
+} from './flex-reparent-to-absolute-strategy'
 import { flexReparentToFlexStrategy } from './flex-reparent-to-flex-strategy'
 import { BuiltInDependencies } from '../../../core/es-modules/package-manager/built-in-dependencies-list'
 import {
@@ -45,12 +51,14 @@ import { NonResizableControl } from '../controls/select-mode/non-resizable-contr
 export const RegisteredCanvasStrategies: Array<CanvasStrategy> = [
   absoluteMoveStrategy,
   absoluteReparentStrategy,
+  forcedAbsoluteReparentStrategy,
   absoluteDuplicateStrategy,
   keyboardAbsoluteMoveStrategy,
   keyboardAbsoluteResizeStrategy,
   absoluteResizeBoundingBoxStrategy,
   flexReorderStrategy,
   flexReparentToAbsoluteStrategy,
+  forcedFlexReparentToAbsoluteStrategy,
   flexReparentToFlexStrategy,
   convertToAbsoluteAndMoveStrategy,
   absoluteReparentToFlexStrategy,

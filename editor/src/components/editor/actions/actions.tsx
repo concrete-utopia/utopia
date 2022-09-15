@@ -2839,6 +2839,7 @@ export const UPDATE_FNS = {
             workingEditorState.jsxMetadata,
             [currentValue.originalElementPath],
             action.pasteInto,
+            'use-strict-bounds',
           )
 
           if (reparentStrategy.strategy === 'do-not-reparent') {
