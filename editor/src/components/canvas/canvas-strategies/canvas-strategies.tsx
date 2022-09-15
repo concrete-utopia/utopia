@@ -3,10 +3,8 @@ import { createSelector } from 'reselect'
 import { addAllUniquelyBy, mapDropNulls, sortBy } from '../../../core/shared/array-utils'
 import { ElementInstanceMetadataMap } from '../../../core/shared/element-template'
 import { arrayEquals } from '../../../core/shared/utils'
-import { InnerDispatchResult } from '../../editor/store/dispatch'
 import { AllElementProps, EditorState, EditorStorePatched } from '../../editor/store/editor-state'
 import { useEditorState, useSelectorWithCallback } from '../../editor/store/store-hook'
-import { CanvasCommand } from '../commands/commands'
 import { absoluteMoveStrategy } from './absolute-move-strategy'
 import { absoluteReparentStrategy } from './absolute-reparent-strategy'
 import {
@@ -38,9 +36,9 @@ import {
 } from './flow-reorder-strategy'
 import { isInsertMode } from '../../editor/editor-modes'
 import { dragToInsertStrategy } from './drag-to-insert-strategy'
-import { CSSCursor } from '../../../uuiui-deps'
 import { StateSelector } from 'zustand'
 import { NonResizableControl } from '../controls/select-mode/non-resizable-control'
+import { lookForApplicableParentStrategy } from './look-for-applicable-parent'
 
 export const RegisteredCanvasStrategies: Array<CanvasStrategy> = [
   absoluteMoveStrategy,
@@ -58,6 +56,7 @@ export const RegisteredCanvasStrategies: Array<CanvasStrategy> = [
   flowReorderAutoConversionStrategy,
   flowReorderNoConversionStrategy,
   flowReorderSameTypeOnlyStrategy,
+  lookForApplicableParentStrategy,
 ]
 
 export function pickCanvasStateFromEditorState(
@@ -83,7 +82,7 @@ function getInteractionTargetFromEditorState(editor: EditorState): InteractionTa
   }
 }
 
-function getApplicableStrategies(
+export function getApplicableStrategies(
   strategies: Array<CanvasStrategy>,
   canvasState: InteractionCanvasState,
   interactionSession: InteractionSession | null,
@@ -133,7 +132,7 @@ export interface StrategyWithFitness {
   strategy: CanvasStrategy
 }
 
-function getApplicableStrategiesOrderedByFitness(
+export function getApplicableStrategiesOrderedByFitness(
   strategies: Array<CanvasStrategy>,
   canvasState: InteractionCanvasState,
   interactionSession: InteractionSession,
@@ -204,17 +203,19 @@ function pickStrategy(
   return pickDefaultCanvasStrategy(sortedApplicableStrategies, previousStrategyId)
 }
 
+export interface FindCanvasStrategyResult {
+  strategy: StrategyWithFitness | null
+  previousStrategy: StrategyWithFitness | null
+  sortedApplicableStrategies: Array<CanvasStrategy>
+}
+
 export function findCanvasStrategy(
   strategies: Array<CanvasStrategy>,
   canvasState: InteractionCanvasState,
   interactionSession: InteractionSession,
   strategyState: StrategyState,
   previousStrategyId: CanvasStrategyId | null,
-): {
-  strategy: StrategyWithFitness | null
-  previousStrategy: StrategyWithFitness | null
-  sortedApplicableStrategies: Array<CanvasStrategy>
-} {
+): FindCanvasStrategyResult {
   const sortedApplicableStrategies = getApplicableStrategiesOrderedByFitness(
     strategies,
     canvasState,
