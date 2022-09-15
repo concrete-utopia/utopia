@@ -84,7 +84,6 @@ class ProjectCard extends React.Component<ProjectCardProps> {
     if (e.button === 0) {
       if (this.props.project === null) {
         window.open(this.props.url, '_self')
-        console.log('trying to open hard coded url')
       } else {
         window.open(`/project/${this.props.project.id}/`, '_self')
       }
