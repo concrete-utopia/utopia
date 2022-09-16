@@ -353,6 +353,10 @@ export function useGetApplicableStrategyControls(): Array<ControlWithKey> {
   return React.useMemo(() => {
     let applicableControls: Array<ControlWithKey> = []
     let isResizable: boolean = false
+    // Special case controls.
+    if (!isResizable && !currentlyInProgress) {
+      applicableControls.push(notResizableControls)
+    }
     // Add the controls for currently applicable strategies.
     for (const strategy of applicableStrategies) {
       if (isResizableStrategy(strategy)) {
@@ -364,10 +368,6 @@ export function useGetApplicableStrategyControls(): Array<ControlWithKey> {
         strategyControls,
         (l, r) => l.control === r.control,
       )
-    }
-    // Special case controls.
-    if (!isResizable && !currentlyInProgress) {
-      applicableControls.push(notResizableControls)
     }
     return applicableControls
   }, [applicableStrategies, currentStrategy, currentlyInProgress])
