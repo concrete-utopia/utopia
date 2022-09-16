@@ -1170,6 +1170,9 @@ export class EditorCanvas extends React.Component<EditorCanvasProps> {
 
   handleMouseUp = (event: MouseEvent) => {
     if (this.canvasSelected()) {
+      if (document.pointerLockElement != null) {
+        document.exitPointerLock()
+      }
       const canvasPositions = this.getPosition(event)
       if (isDragging(this.props.editor)) {
         this.handleEvent({
@@ -1221,10 +1224,19 @@ export class EditorCanvas extends React.Component<EditorCanvasProps> {
         ) {
           const dragStart = this.props.editor.canvas.interactionSession.interactionData.dragStart
 
-          const newDrag = roundPointForScale(
+          let newDrag = roundPointForScale(
             Utils.offsetPoint(canvasPositions.canvasPositionRounded, Utils.negate(dragStart)),
             this.props.model.scale,
           )
+          if (document.pointerLockElement) {
+            newDrag = roundPointForScale(
+              Utils.offsetPoint(
+                this.props.editor.canvas.interactionSession.interactionData.drag ?? zeroCanvasPoint,
+                canvasPoint({ x: event.movementX, y: event.movementY }),
+              ),
+              this.props.model.scale,
+            )
+          }
           this.handleEvent({
             ...canvasPositions,
             event: 'MOVE',

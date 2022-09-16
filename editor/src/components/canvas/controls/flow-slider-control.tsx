@@ -24,6 +24,7 @@ import { CanvasOffsetWrapper } from './canvas-offset-wrapper'
 
 export const FlowSliderControl = React.memo(() => {
   const colorTheme = useColorTheme()
+  const ref = React.useRef<HTMLDivElement>(null)
   const dispatch = useRefEditorState((store) => store.dispatch)
   const isTargetFlowWithSiblings = useEditorState((store) => {
     if (store.editor.selectedViews.length === 1) {
@@ -83,6 +84,9 @@ export const FlowSliderControl = React.memo(() => {
         canvasOffsetRef.current,
         windowPoint(point(event.clientX, event.clientY)),
       ).canvasPositionRounded
+      if (ref.current != null) {
+        ref.current.requestPointerLock()
+      }
       if (event.button !== 2) {
         dispatch.current(
           [
@@ -142,19 +146,6 @@ export const FlowSliderControl = React.memo(() => {
     }
   }, 'starting index')
 
-  const dragX = useEditorState((store) => {
-    if (
-      store.editor.selectedViews.length === 1 &&
-      store.editor.canvas.interactionSession != null &&
-      store.editor.canvas.interactionSession.interactionData.type === 'DRAG' &&
-      store.editor.canvas.interactionSession.interactionData.drag != null
-    ) {
-      return store.editor.canvas.interactionSession.interactionData.drag.x
-    } else {
-      return 0
-    }
-  }, 'drag X')
-
   const possibleNewIndex = useEditorState((store) => {
     if (
       store.editor.selectedViews.length === 1 &&
@@ -176,55 +167,9 @@ export const FlowSliderControl = React.memo(() => {
     }
   }, 'possibleNewIndex')
 
-  const [shouldStop, setShouldStop] = React.useState(false)
-  const [timer, setTimer] = React.useState<number | null>(null)
-  React.useEffect(() => {
-    if (prevCurrentIndex != null && currentIndex !== prevCurrentIndex) {
-      setShouldStop(true)
-      setTimer(
-        window.setTimeout(() => {
-          setShouldStop(false)
-          setTimer(null)
-        }, 500),
-      )
-    }
-    if (shouldStop) {
-      if (Math.abs(possibleNewIndex - currentIndex) > 1) {
-        setShouldStop(false)
-        if (timer) {
-          window.clearTimeout(timer)
-          setTimer(null)
-        }
-      }
-    }
-  }, [shouldStop, setShouldStop, currentIndex, prevCurrentIndex, possibleNewIndex, timer, setTimer])
-
-  // const [dragXStopped, setDragXStopped] = React.useState(0)
-  // const [shouldStop, setShouldStop] = React.useState(false)
-  // React.useEffect(() => {
-  //   if (prevCurrentIndex != null && currentIndex !== prevCurrentIndex) {
-  //     setShouldStop(true)
-  //     setDragXStopped(dragX)
-  //   }
-  //   if (shouldStop) {
-  //     if (Math.abs(dragX - dragXStopped) > 5) {
-  //       setShouldStop(false)
-  //       setDragXStopped(0)
-  //     }
-  //   }
-  // }, [
-  //   shouldStop,
-  //   setShouldStop,
-  //   currentIndex,
-  //   prevCurrentIndex,
-  //   dragX,
-  //   dragXStopped,
-  //   setDragXStopped,
-  // ])
-
   // the strategy uses Math.round, it switches at 0.5, the diff is always between -0.5 and 0.5
   // easing fns work with values between 0 and 1
-  const diff = shouldStop ? 0 : (possibleNewIndex - currentIndex) * 2
+  const diff = (possibleNewIndex - currentIndex) * 2
 
   const offset = possibleNewIndex === -1 ? 0 : Math.sign(diff) * easeOutCubic(Math.abs(diff))
   const offsetWithReset = prevCurrentIndex !== currentIndex ? 0 : offset
@@ -278,6 +223,7 @@ export const FlowSliderControl = React.memo(() => {
           }}
         ></animated.div>
         <div
+          ref={ref}
           style={{
             position: 'absolute',
             top: frame.y + frame.height / 2 - 5,
@@ -290,7 +236,6 @@ export const FlowSliderControl = React.memo(() => {
             cursor: CSSCursor.ResizeEW,
           }}
           onMouseDown={onMouseDown}
-          onMouseUp={stopPropagation}
         ></div>
       </CanvasOffsetWrapper>
     )
