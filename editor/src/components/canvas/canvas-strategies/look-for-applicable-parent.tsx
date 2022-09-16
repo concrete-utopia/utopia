@@ -3,10 +3,11 @@ import { ElementInstanceMetadataMap } from '../../../core/shared/element-templat
 import { memoize } from '../../../core/shared/memoize'
 import { ElementPath } from '../../../core/shared/project-file-types'
 import { assertNever } from '../../../core/shared/utils'
+import { setHighlightedView } from '../../editor/actions/action-creators'
 import { AllElementProps } from '../../editor/store/editor-state'
 import { CSSCursor } from '../canvas-types'
 import { setCursorCommand } from '../commands/set-cursor-command'
-import { setElementsToRerenderCommand } from '../commands/set-elements-to-rerender-command'
+import { updateSelectedViews } from '../commands/update-selected-views-command'
 import { getApplicableStrategies, RegisteredCanvasStrategies } from './canvas-strategies'
 import {
   CanvasStrategy,
@@ -105,6 +106,7 @@ export const lookForApplicableParentStrategy: CanvasStrategy = {
     return strategyApplicationResult(
       [
         ...chosenStrategyApplicationResult.commands,
+        updateSelectedViews('mid-interaction', interactionTarget),
         setCursorCommand('mid-interaction', CSSCursor.MovingMagic),
       ],
       chosenStrategyApplicationResult.customStatePatch,
