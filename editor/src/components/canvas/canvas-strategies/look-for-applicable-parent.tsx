@@ -105,7 +105,6 @@ export const lookForApplicableParentStrategy: CanvasStrategy = {
     return strategyApplicationResult(
       [
         ...chosenStrategyApplicationResult.commands,
-        setElementsToRerenderCommand(interactionTarget),
         setCursorCommand('mid-interaction', CSSCursor.MovingMagic),
       ],
       chosenStrategyApplicationResult.customStatePatch,
