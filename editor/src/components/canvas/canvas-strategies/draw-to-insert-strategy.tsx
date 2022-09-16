@@ -310,8 +310,17 @@ function runTargetStrategiesForFreshlyInsertedElementToResize(
 
   const element = insertionSubject.element
   const path = editorState.selectedViews[0]
+
+  const parentPath = EP.parentPath(path)
+  const parentElement = MetadataUtils.findElementByElementPath(
+    strategyState.startingMetadata,
+    parentPath,
+  )
+  const isFlex = parentElement != null && MetadataUtils.isFlexLayoutedContainer(parentElement)
+
   const specialSizeMeasurements = { ...emptySpecialSizeMeasurements }
-  specialSizeMeasurements.position = 'absolute'
+  specialSizeMeasurements.position = isFlex ? 'relative' : 'absolute'
+  specialSizeMeasurements.parentLayoutSystem = isFlex ? 'flex' : 'none'
 
   const patchedMetadata2 = {
     ...strategyState.startingMetadata,
