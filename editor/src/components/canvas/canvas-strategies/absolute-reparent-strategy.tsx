@@ -16,9 +16,10 @@ import {
 import { getDragTargets } from './shared-absolute-move-strategy-helpers'
 import { ifAllowedToReparent, isAllowedToReparent } from './reparent-helpers'
 import {
-  findReparentStrategy,
   getAbsoluteReparentPropertyChanges,
+  getFitnessForReparentStrategy,
   getReparentTargetUnified,
+  MissingBoundsHandling,
 } from './reparent-strategy-helpers'
 import { offsetPoint } from '../../../core/shared/math-utils'
 import { getReparentOutcome, pathToReparent } from './reparent-utils'
@@ -30,9 +31,7 @@ import { UpdatedPathMap } from './interaction-state'
 function getAbsoluteReparentStrategy(
   id: 'ABSOLUTE_REPARENT' | 'FORCED_ABSOLUTE_REPARENT',
   name: string,
-  allowMissingBounds: 'allow-missing-bounds' | 'use-strict-bounds',
-  weight: number,
-  allowFallback: boolean,
+  missingBoundsHandling: MissingBoundsHandling,
 ): CanvasStrategy {
   return {
     id: id,
@@ -69,20 +68,14 @@ function getAbsoluteReparentStrategy(
       },
     ],
     fitness: (canvasState, interactionState, strategyState) => {
-      // All 4 reparent strategies use the same fitness function findReparentStrategy
-      const reparentStrategy = findReparentStrategy(
+      // All 4 reparent strategies use the same fitness function getFitnessForReparentStrategy
+      return getFitnessForReparentStrategy(
+        'ABSOLUTE_REPARENT_TO_ABSOLUTE',
         canvasState,
         interactionState,
         strategyState,
-        allowMissingBounds,
-      ).strategy
-      if (reparentStrategy === 'ABSOLUTE_REPARENT_TO_ABSOLUTE') {
-        return weight
-      } else if (reparentStrategy !== 'do-not-reparent' && allowFallback) {
-        return weight - 1
-      } else {
-        return 0
-      }
+        missingBoundsHandling,
+      )
     },
     apply: (canvasState, interactionState, strategyState) => {
       const { interactionTarget, projectContents, openFile, nodeModules } = canvasState
@@ -109,7 +102,7 @@ function getAbsoluteReparentStrategy(
           canvasState,
           strategyState.startingMetadata,
           strategyState.startingAllElementProps,
-          allowMissingBounds,
+          missingBoundsHandling,
         )
         const newParent = reparentTarget.newParent
         const allowedToReparent = filteredSelectedElements.every((selectedElement) => {
@@ -196,13 +189,9 @@ export const absoluteReparentStrategy = getAbsoluteReparentStrategy(
   'ABSOLUTE_REPARENT',
   'Reparent (Abs)',
   'use-strict-bounds',
-  3,
-  true,
 )
 export const forcedAbsoluteReparentStrategy = getAbsoluteReparentStrategy(
   'FORCED_ABSOLUTE_REPARENT',
   'Reparent (Abs, Force)',
   'allow-missing-bounds',
-  0.5,
-  false,
 )

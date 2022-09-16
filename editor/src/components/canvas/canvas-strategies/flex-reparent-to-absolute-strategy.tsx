@@ -32,15 +32,17 @@ import {
 import { getEscapeHatchCommands } from './convert-to-absolute-and-move-strategy'
 import { InteractionSession, StrategyState } from './interaction-state'
 import { ifAllowedToReparent } from './reparent-helpers'
-import { findReparentStrategy, getReparentTargetUnified } from './reparent-strategy-helpers'
+import {
+  getFitnessForReparentStrategy,
+  getReparentTargetUnified,
+  MissingBoundsHandling,
+} from './reparent-strategy-helpers'
 import { getDragTargets } from './shared-absolute-move-strategy-helpers'
 
 function getFlexReparentToAbsoluteStrategy(
   id: 'FLEX_REPARENT_TO_ABSOLUTE' | 'FORCED_FLEX_REPARENT_TO_ABSOLUTE',
   name: string,
-  allowMissingBounds: 'allow-missing-bounds' | 'use-strict-bounds',
-  weight: number,
-  allowFallback: boolean,
+  missingBoundsHandling: MissingBoundsHandling,
 ): CanvasStrategy {
   return {
     id: id,
@@ -74,20 +76,14 @@ function getFlexReparentToAbsoluteStrategy(
       },
     ],
     fitness: (canvasState, interactionState, strategyState) => {
-      // All 4 reparent strategies use the same fitness function findReparentStrategy
-      const reparentStrategy = findReparentStrategy(
+      // All 4 reparent strategies use the same fitness function getFitnessForReparentStrategy
+      return getFitnessForReparentStrategy(
+        'FLEX_REPARENT_TO_ABSOLUTE',
         canvasState,
         interactionState,
         strategyState,
-        allowMissingBounds,
-      ).strategy
-      if (reparentStrategy === 'FLEX_REPARENT_TO_ABSOLUTE') {
-        return weight
-      } else if (reparentStrategy !== 'do-not-reparent' && allowFallback) {
-        return weight - 1
-      } else {
-        return 0
-      }
+        missingBoundsHandling,
+      )
     },
     apply: (canvasState, interactionState, strategyState) => {
       const selectedElements = getTargetPathsFromInteractionTarget(canvasState.interactionTarget)
@@ -112,7 +108,7 @@ function getFlexReparentToAbsoluteStrategy(
           canvasState,
           strategyState.startingMetadata,
           strategyState.startingAllElementProps,
-          allowMissingBounds,
+          missingBoundsHandling,
         )
 
         let duplicatedElementNewUids = {
@@ -161,7 +157,7 @@ function getFlexReparentToAbsoluteStrategy(
               strategyState,
               interactionState,
               lifecycle,
-              allowMissingBounds,
+              missingBoundsHandling,
             )
           }),
         ])
@@ -176,14 +172,14 @@ function runAbsoluteReparentStrategyForFreshlyConvertedElement(
   strategyState: StrategyState,
   interactionState: InteractionSession,
   commandLifecycle: 'mid-interaction' | 'end-interaction',
-  allowMissingBounds: 'allow-missing-bounds' | 'use-strict-bounds',
+  missingBoundsHandling: MissingBoundsHandling,
 ): Array<EditorStatePatch> {
   const canvasState = pickCanvasStateFromEditorState(editorState, builtInDependencies)
+  const isForced = missingBoundsHandling === 'allow-missing-bounds'
 
-  const absoluteReparentStrategyToUse =
-    allowMissingBounds === 'allow-missing-bounds'
-      ? forcedAbsoluteReparentStrategy
-      : absoluteReparentStrategy
+  const absoluteReparentStrategyToUse = isForced
+    ? forcedAbsoluteReparentStrategy
+    : absoluteReparentStrategy
   const reparentCommands = absoluteReparentStrategyToUse.apply(
     canvasState,
     interactionState,
@@ -198,13 +194,9 @@ export const flexReparentToAbsoluteStrategy = getFlexReparentToAbsoluteStrategy(
   'FLEX_REPARENT_TO_ABSOLUTE',
   'Reparent (Abs)',
   'use-strict-bounds',
-  3,
-  true,
 )
 export const forcedFlexReparentToAbsoluteStrategy = getFlexReparentToAbsoluteStrategy(
   'FORCED_FLEX_REPARENT_TO_ABSOLUTE',
   'Reparent (Abs, Force)',
   'allow-missing-bounds',
-  0.5,
-  false,
 )

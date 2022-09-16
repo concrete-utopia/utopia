@@ -66,6 +66,7 @@ import {
   SimpleFlexDirection,
 } from '../../../core/layout/layout-utils'
 import { forceNotNull } from '../../../core/shared/optional-utils'
+import { assertNever } from '../../../core/shared/utils'
 
 export type ReparentStrategy =
   | 'FLEX_REPARENT_TO_ABSOLUTE'
@@ -73,8 +74,10 @@ export type ReparentStrategy =
   | 'ABSOLUTE_REPARENT_TO_ABSOLUTE'
   | 'ABSOLUTE_REPARENT_TO_FLEX'
 
+export type MissingBoundsHandling = 'allow-missing-bounds' | 'use-strict-bounds'
+
 export type FindReparentStrategyResult =
-  | { strategy: ReparentStrategy; newParent: ElementPath }
+  | { strategy: ReparentStrategy; newParent: ElementPath; forcingRequired: boolean }
   | { strategy: 'do-not-reparent' }
 
 export function reparentStrategyForParent(
@@ -82,7 +85,6 @@ export function reparentStrategyForParent(
   targetMetadata: ElementInstanceMetadataMap,
   elements: Array<ElementPath>,
   newParent: ElementPath,
-  allowMissingBounds: 'allow-missing-bounds' | 'use-strict-bounds',
 ): FindReparentStrategyResult {
   const allDraggedElementsFlex = elements.every((element) =>
     MetadataUtils.isParentYogaLayoutedContainerAndElementParticipatesInLayout(
@@ -104,55 +106,79 @@ export function reparentStrategyForParent(
 
   const parentIsStoryboard = EP.isStoryboardPath(newParent)
   const isAbsoluteFriendlyParent = parentProvidesBoundsForAbsoluteChildren || parentIsStoryboard
-
-  const shouldOnlyForceAbsoluteIfNecessary = allowMissingBounds === 'allow-missing-bounds'
+  const forcingRequiredForAbsoluteReparent = !isAbsoluteFriendlyParent
 
   if (allDraggedElementsAbsolute) {
     if (parentIsFlexLayout) {
-      if (!shouldOnlyForceAbsoluteIfNecessary) {
-        return { strategy: 'ABSOLUTE_REPARENT_TO_FLEX', newParent: newParent }
-      }
-    } else if (isAbsoluteFriendlyParent) {
-      if (!shouldOnlyForceAbsoluteIfNecessary) {
-        return {
-          strategy: 'ABSOLUTE_REPARENT_TO_ABSOLUTE',
-          newParent: newParent,
-        }
-      }
-    } else if (shouldOnlyForceAbsoluteIfNecessary) {
+      return { strategy: 'ABSOLUTE_REPARENT_TO_FLEX', newParent: newParent, forcingRequired: false }
+    } else {
       return {
         strategy: 'ABSOLUTE_REPARENT_TO_ABSOLUTE',
         newParent: newParent,
+        forcingRequired: forcingRequiredForAbsoluteReparent,
       }
     }
   }
   if (allDraggedElementsFlex) {
     if (parentIsFlexLayout) {
-      if (!shouldOnlyForceAbsoluteIfNecessary) {
-        return { strategy: 'FLEX_REPARENT_TO_FLEX', newParent: newParent }
-      }
-    } else if (isAbsoluteFriendlyParent) {
-      if (!shouldOnlyForceAbsoluteIfNecessary) {
-        return {
-          strategy: 'FLEX_REPARENT_TO_ABSOLUTE',
-          newParent: newParent,
-        }
-      }
-    } else if (shouldOnlyForceAbsoluteIfNecessary) {
+      return { strategy: 'FLEX_REPARENT_TO_FLEX', newParent: newParent, forcingRequired: false }
+    } else {
       return {
         strategy: 'FLEX_REPARENT_TO_ABSOLUTE',
         newParent: newParent,
+        forcingRequired: forcingRequiredForAbsoluteReparent,
       }
     }
   }
   return { strategy: 'do-not-reparent' }
 }
 
-export function findReparentStrategy(
+function isReparentToAbsoluteStrategy(reparentStrategy: ReparentStrategy): boolean {
+  switch (reparentStrategy) {
+    case 'ABSOLUTE_REPARENT_TO_ABSOLUTE':
+    case 'FLEX_REPARENT_TO_ABSOLUTE':
+      return true
+    case 'ABSOLUTE_REPARENT_TO_FLEX':
+    case 'FLEX_REPARENT_TO_FLEX':
+      return false
+    default:
+      assertNever(reparentStrategy)
+  }
+}
+
+export function getFitnessForReparentStrategy(
+  reparentStrategy: ReparentStrategy,
   canvasState: InteractionCanvasState,
   interactionState: InteractionSession,
   strategyState: StrategyState,
-  allowMissingBounds: 'allow-missing-bounds' | 'use-strict-bounds',
+  missingBoundsHandling: MissingBoundsHandling,
+): number {
+  const isForced = missingBoundsHandling === 'allow-missing-bounds'
+  const allowAsFallback = isReparentToAbsoluteStrategy(reparentStrategy) && !isForced
+
+  const foundReparentStrategy = findReparentStrategy(
+    canvasState,
+    interactionState,
+    strategyState,
+    missingBoundsHandling,
+  )
+  if (
+    foundReparentStrategy.strategy === reparentStrategy &&
+    foundReparentStrategy.forcingRequired === isForced
+  ) {
+    return isForced ? 0.5 : 3
+  } else if (foundReparentStrategy.strategy !== 'do-not-reparent' && allowAsFallback) {
+    return 2
+  } else {
+    return 0
+  }
+}
+
+function findReparentStrategy(
+  canvasState: InteractionCanvasState,
+  interactionState: InteractionSession,
+  strategyState: StrategyState,
+  missingBoundsHandling: MissingBoundsHandling,
 ): FindReparentStrategyResult {
   const selectedElements = getTargetPathsFromInteractionTarget(canvasState.interactionTarget)
   if (
@@ -181,7 +207,7 @@ export function findReparentStrategy(
     canvasState,
     strategyState.startingMetadata,
     strategyState.startingAllElementProps,
-    allowMissingBounds,
+    missingBoundsHandling,
   )
 
   const newParentPath = reparentResult.newParent
@@ -202,7 +228,6 @@ export function findReparentStrategy(
       strategyState.startingMetadata,
       filteredSelectedElements,
       newParentPath,
-      allowMissingBounds,
     )
   } else {
     return { strategy: 'do-not-reparent' }
@@ -237,7 +262,7 @@ export function getReparentTargetUnified(
   canvasState: InteractionCanvasState,
   metadata: ElementInstanceMetadataMap,
   allElementProps: AllElementProps,
-  allowMissingBounds: 'allow-missing-bounds' | 'use-strict-bounds',
+  missingBoundsHandling: MissingBoundsHandling,
 ): ReparentTarget {
   const projectContents = canvasState.projectContents
   const openFile = canvasState.openFile ?? null
@@ -274,7 +299,7 @@ export function getReparentTargetUnified(
 
   const filteredElementsUnderPoint = allElementsUnderPoint.filter((target) => {
     let validParentForFlexOrAbsolute = cmdPressed
-    if (allowMissingBounds === 'allow-missing-bounds') {
+    if (missingBoundsHandling === 'allow-missing-bounds') {
       validParentForFlexOrAbsolute = true
     } else {
       const targetMetadata = MetadataUtils.findElementByElementPath(metadata, target)
