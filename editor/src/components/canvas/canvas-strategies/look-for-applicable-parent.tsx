@@ -1,11 +1,14 @@
+import { mapDropNulls, stripNulls } from '../../../core/shared/array-utils'
 import * as EP from '../../../core/shared/element-path'
 import { ElementInstanceMetadataMap } from '../../../core/shared/element-template'
 import { memoize } from '../../../core/shared/memoize'
 import { ElementPath } from '../../../core/shared/project-file-types'
 import { assertNever } from '../../../core/shared/utils'
+import { isFeatureEnabled } from '../../../utils/feature-switches'
 import { setHighlightedView } from '../../editor/actions/action-creators'
 import { AllElementProps } from '../../editor/store/editor-state'
 import { CSSCursor } from '../canvas-types'
+import { WhenToRun } from '../commands/commands'
 import { setCursorCommand } from '../commands/set-cursor-command'
 import { updateSelectedViews } from '../commands/update-selected-views-command'
 import { ParentBounds } from '../controls/parent-bounds'
@@ -122,12 +125,19 @@ export const lookForApplicableParentStrategy: CanvasStrategy = {
       strategyState,
     )
 
+    const shouldUpdateSelectedViews = isFeatureEnabled('Change selection during parent finding')
+    const howToUpdateSelectedViews: WhenToRun = isFeatureEnabled('Permanently change selection')
+      ? 'always'
+      : 'mid-interaction'
+
     return strategyApplicationResult(
-      [
+      stripNulls([
         ...chosenStrategyApplicationResult.commands,
-        updateSelectedViews('mid-interaction', interactionTarget),
+        shouldUpdateSelectedViews
+          ? updateSelectedViews(howToUpdateSelectedViews, interactionTarget)
+          : null,
         setCursorCommand('mid-interaction', CSSCursor.MovingMagic),
-      ],
+      ]),
       chosenStrategyApplicationResult.customStatePatch,
       chosenStrategyApplicationResult.status,
     )
