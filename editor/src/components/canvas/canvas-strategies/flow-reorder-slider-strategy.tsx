@@ -102,7 +102,7 @@ export const flowReorderSliderStategy: CanvasStrategy = {
       if (
         interactionState.interactionData.globalTime -
           (strategyState.customStrategyState.reorderChangeTime ?? 0) <
-        60
+        200
       ) {
         if (realNewIndex === lastReorderIdx) {
           reorderSnapDrag = interactionState.interactionData.drag
