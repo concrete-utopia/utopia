@@ -228,7 +228,7 @@ export const FlowSliderControl = React.memo(() => {
             position: 'absolute',
             top: frame.y + frame.height / 2 - 5,
             left: left + currentIndex * 16 + 2,
-            width: 10,
+            width: 10, // TODO increase click area
             height: 10,
             borderRadius: '50%',
             background: colorTheme.bg0.value,
