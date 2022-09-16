@@ -6,7 +6,7 @@ import { ElementInstanceMetadataMap } from '../../../core/shared/element-templat
 import { ElementPath } from '../../../core/shared/project-file-types'
 import { EditorState, EditorStatePatch } from '../../editor/store/editor-state'
 import { CSSCursor } from '../canvas-types'
-import { foldAndApplyCommandsInner, WhenToRun } from '../commands/commands'
+import { foldAndApplyCommandsInner } from '../commands/commands'
 import { DuplicateElement, duplicateElement } from '../commands/duplicate-element-command'
 import { setCursorCommand } from '../commands/set-cursor-command'
 import { setElementsToRerenderCommand } from '../commands/set-elements-to-rerender-command'
@@ -21,12 +21,12 @@ import {
   getTargetPathsFromInteractionTarget,
   strategyApplicationResult,
 } from './canvas-strategy-types'
-import { InteractionSession, interactionSession, StrategyState } from './interaction-state'
+import { InteractionSession, StrategyState } from './interaction-state'
 import { getDragTargets } from './shared-absolute-move-strategy-helpers'
 
 export const absoluteDuplicateStrategy: CanvasStrategy = {
   id: 'ABSOLUTE_DUPLICATE',
-  name: 'Duplicate',
+  name: () => 'Duplicate',
   isApplicable: (canvasState, interactionState, metadata) => {
     const selectedElements = getTargetPathsFromInteractionTarget(canvasState.interactionTarget)
     if (

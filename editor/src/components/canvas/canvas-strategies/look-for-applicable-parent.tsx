@@ -1,11 +1,10 @@
-import { mapDropNulls, stripNulls } from '../../../core/shared/array-utils'
+import { stripNulls } from '../../../core/shared/array-utils'
 import * as EP from '../../../core/shared/element-path'
 import { ElementInstanceMetadataMap } from '../../../core/shared/element-template'
 import { memoize } from '../../../core/shared/memoize'
 import { ElementPath } from '../../../core/shared/project-file-types'
 import { assertNever } from '../../../core/shared/utils'
 import { isFeatureEnabled } from '../../../utils/feature-switches'
-import { setHighlightedView } from '../../editor/actions/action-creators'
 import { AllElementProps } from '../../editor/store/editor-state'
 import { CSSCursor } from '../canvas-types'
 import { WhenToRun } from '../commands/commands'
@@ -26,7 +25,31 @@ import { InteractionSession } from './interaction-state'
 
 export const lookForApplicableParentStrategy: CanvasStrategy = {
   id: 'LOOK_FOR_APPLICABLE_PARENT_ID',
-  name: 'Applicable parent',
+  name: (canvasState, interactionSession, strategyState) => {
+    const defaultName = 'Applicable parent'
+    if (interactionSession == null) {
+      return defaultName
+    }
+
+    const result = isApplicableInner(
+      canvasState,
+      interactionSession,
+      strategyState.startingMetadata,
+      strategyState.startingAllElementProps,
+    )
+    if (result == null) {
+      return defaultName
+    }
+
+    const fittestStrategy = result.strategies.sort(
+      // TODO: better/idiomatic way of sorting
+      (a, b) =>
+        a.fitness(canvasState, interactionSession, strategyState) -
+        b.fitness(canvasState, interactionSession, strategyState),
+    )[0]
+
+    return fittestStrategy.name(canvasState, interactionSession, strategyState)
+  },
   controlsToRender: [
     {
       control: DragOutlineControl,
@@ -45,35 +68,12 @@ export const lookForApplicableParentStrategy: CanvasStrategy = {
     },
   ],
   isApplicable: (canvasState, interactionSession, metadata, allElementProps) => {
-    if (interactionSession == null || interactionSession.interactionData.type !== 'DRAG') {
+    if (interactionSession == null) {
       return false
     }
 
-    const strategiesMinusTraverse = RegisteredCanvasStrategies.filter(
-      ({ id }) => id !== 'LOOK_FOR_APPLICABLE_PARENT_ID',
-    )
-
-    const applicableStrategies = getApplicableStrategies(
-      strategiesMinusTraverse,
-      canvasState,
-      interactionSession,
-      metadata,
-      allElementProps,
-    )
-
-    if (isSingletonAbsoluteMove(applicableStrategies)) {
-      const result = isApplicableTraverseMemo(
-        strategiesMinusTraverse,
-        canvasState,
-        interactionSession,
-        metadata,
-        allElementProps,
-      )
-
-      return result != null && result.strategies.length > 0
-    }
-
-    return false
+    const strategies = isApplicableInner(canvasState, interactionSession, metadata, allElementProps)
+    return strategies != null
   },
 
   fitness: (canvasState, interactionSession, strategyState) => {
@@ -88,12 +88,7 @@ export const lookForApplicableParentStrategy: CanvasStrategy = {
   },
 
   apply: (canvasState, interactionSession, strategyState) => {
-    const strategiesMinusTraverse = RegisteredCanvasStrategies.filter(
-      ({ id }) => id !== 'LOOK_FOR_APPLICABLE_PARENT_ID',
-    )
-
-    const result = isApplicableTraverseMemo(
-      strategiesMinusTraverse,
+    const result = isApplicableInner(
       canvasState,
       interactionSession,
       strategyState.startingMetadata,
@@ -168,6 +163,46 @@ function patchCanvasStateInteractionTargetPath(
       elements: path,
     },
   }
+}
+
+function isApplicableInner<T>(
+  canvasState: InteractionCanvasState,
+  interactionSession: InteractionSession,
+  metadata: ElementInstanceMetadataMap,
+  allElementProps: AllElementProps,
+): IsApplicableTraverseResult | null {
+  if (interactionSession.interactionData.type !== 'DRAG') {
+    return null
+  }
+
+  const strategiesMinusTraverse = RegisteredCanvasStrategies.filter(
+    ({ id }) => id !== 'LOOK_FOR_APPLICABLE_PARENT_ID',
+  )
+
+  const applicableStrategies = getApplicableStrategies(
+    strategiesMinusTraverse,
+    canvasState,
+    interactionSession,
+    metadata,
+    allElementProps,
+  )
+
+  if (!isSingletonAbsoluteMove(applicableStrategies)) {
+    return null
+  }
+  const result = isApplicableTraverseMemo(
+    strategiesMinusTraverse,
+    canvasState,
+    interactionSession,
+    metadata,
+    allElementProps,
+  )
+
+  if (result == null || result.strategies.length < 1) {
+    return null
+  }
+
+  return result
 }
 
 interface IsApplicableTraverseResult {

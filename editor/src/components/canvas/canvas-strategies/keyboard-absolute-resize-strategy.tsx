@@ -1,13 +1,11 @@
 import { MetadataUtils } from '../../../core/model/element-metadata-utils'
-import { Keyboard, KeyCharacter } from '../../../utils/keyboard'
+import { KeyCharacter } from '../../../utils/keyboard'
 import {
   CanvasStrategy,
   emptyStrategyApplicationResult,
   getTargetPathsFromInteractionTarget,
-  InteractionCanvasState,
   strategyApplicationResult,
 } from './canvas-strategy-types'
-import { Modifiers } from '../../../utils/modifiers'
 import {
   canvasRectangle,
   CanvasVector,
@@ -15,17 +13,12 @@ import {
   scaleVector,
   zeroRectangle,
 } from '../../../core/shared/math-utils'
-import { AdjustCssLengthProperty } from '../commands/adjust-css-length-command'
 import { createResizeCommands, resizeBoundingBox } from './shared-absolute-resize-strategy-helpers'
 import { withUnderlyingTarget } from '../../editor/store/editor-state'
 import { CanvasFrameAndTarget, EdgePosition } from '../canvas-types'
 import { AbsoluteResizeControl } from '../controls/select-mode/absolute-resize-control'
-import {
-  SetElementsToRerenderCommand,
-  setElementsToRerenderCommand,
-} from '../commands/set-elements-to-rerender-command'
+import { setElementsToRerenderCommand } from '../commands/set-elements-to-rerender-command'
 import { CanvasCommand } from '../commands/commands'
-import { last } from '../../../core/shared/array-utils'
 import {
   AccumulatedPresses,
   accumulatePresses,
@@ -79,7 +72,7 @@ function pressesToVectorAndEdges(
 
 export const keyboardAbsoluteResizeStrategy: CanvasStrategy = {
   id: 'KEYBOARD_ABSOLUTE_RESIZE',
-  name: 'Resize',
+  name: () => 'Resize',
   isApplicable: (canvasState, interactionState, metadata) => {
     const selectedElements = getTargetPathsFromInteractionTarget(canvasState.interactionTarget)
     if (selectedElements.length > 0) {

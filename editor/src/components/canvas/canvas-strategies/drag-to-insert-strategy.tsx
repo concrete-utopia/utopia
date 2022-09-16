@@ -28,25 +28,19 @@ import { updateFunctionCommand } from '../commands/update-function-command'
 import { MetadataUtils } from '../../../core/model/element-metadata-utils'
 import { elementPath } from '../../../core/shared/element-path'
 import * as EP from '../../../core/shared/element-path'
-import * as PP from '../../../core/shared/property-path'
 import { CanvasRectangle, canvasRectangle, localRectangle } from '../../../core/shared/math-utils'
 import {
   elementInstanceMetadata,
   ElementInstanceMetadataMap,
-  emptyComments,
   emptySpecialSizeMeasurements,
-  getJSXAttribute,
-  jsxAttributeValue,
-  setJSXAttributesAttribute,
 } from '../../../core/shared/element-template'
 import { cmdModifier } from '../../../utils/modifiers'
-import { setJSXValueInAttributeAtPath } from '../../../core/shared/jsx-attributes'
 import { DragOutlineControl } from '../controls/select-mode/drag-outline-control'
 import { FlexReparentTargetIndicator } from '../controls/select-mode/flex-reparent-target-indicator'
 
 export const dragToInsertStrategy: CanvasStrategy = {
   id: 'DRAG_TO_INSERT',
-  name: 'Insert',
+  name: () => 'Insert',
   isApplicable: (canvasState, _interactionState, metadata) => {
     const insertionSubjects = getInsertionSubjectsFromInteractionTarget(
       canvasState.interactionTarget,

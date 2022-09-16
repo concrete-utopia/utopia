@@ -22,9 +22,7 @@ import {
   CanvasStrategy,
   emptyStrategyApplicationResult,
   getTargetPathsFromInteractionTarget,
-  InteractionCanvasState,
   strategyApplicationResult,
-  StrategyApplicationResult,
 } from './canvas-strategy-types'
 import { getEscapeHatchCommands } from './convert-to-absolute-and-move-strategy'
 import { InteractionSession, StrategyState } from './interaction-state'
@@ -34,7 +32,7 @@ import { getDragTargets } from './shared-absolute-move-strategy-helpers'
 
 export const flexReparentToAbsoluteStrategy: CanvasStrategy = {
   id: 'FLEX_REPARENT_TO_ABSOLUTE',
-  name: 'Reparent (Abs)',
+  name: () => 'Reparent (Abs)',
   isApplicable: (canvasState, _interactionState, metadata) => {
     const selectedElements = getTargetPathsFromInteractionTarget(canvasState.interactionTarget)
     if (selectedElements.length == 1) {
