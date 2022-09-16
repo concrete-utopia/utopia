@@ -155,29 +155,6 @@ export const FlowSliderControl = React.memo(() => {
     }
   }, 'drag X')
 
-  const [dragXStopped, setDragXStopped] = React.useState(0)
-  const [shouldStop, setShouldStop] = React.useState(false)
-  React.useEffect(() => {
-    if (prevCurrentIndex != null && currentIndex !== prevCurrentIndex) {
-      setShouldStop(true)
-      setDragXStopped(dragX)
-    }
-    if (shouldStop) {
-      if (Math.abs(dragX - dragXStopped) > 5) {
-        setShouldStop(false)
-        setDragXStopped(0)
-      }
-    }
-  }, [
-    shouldStop,
-    setShouldStop,
-    currentIndex,
-    prevCurrentIndex,
-    dragX,
-    dragXStopped,
-    setDragXStopped,
-  ])
-
   const possibleNewIndex = useEditorState((store) => {
     if (
       store.editor.selectedViews.length === 1 &&
@@ -198,6 +175,52 @@ export const FlowSliderControl = React.memo(() => {
       return -1
     }
   }, 'possibleNewIndex')
+
+  const [shouldStop, setShouldStop] = React.useState(false)
+  const [timer, setTimer] = React.useState<number | null>(null)
+  React.useEffect(() => {
+    if (prevCurrentIndex != null && currentIndex !== prevCurrentIndex) {
+      setShouldStop(true)
+      setTimer(
+        window.setTimeout(() => {
+          setShouldStop(false)
+          setTimer(null)
+        }, 500),
+      )
+    }
+    if (shouldStop) {
+      if (Math.abs(possibleNewIndex - currentIndex) > 1) {
+        setShouldStop(false)
+        if (timer) {
+          window.clearTimeout(timer)
+          setTimer(null)
+        }
+      }
+    }
+  }, [shouldStop, setShouldStop, currentIndex, prevCurrentIndex, possibleNewIndex, timer, setTimer])
+
+  // const [dragXStopped, setDragXStopped] = React.useState(0)
+  // const [shouldStop, setShouldStop] = React.useState(false)
+  // React.useEffect(() => {
+  //   if (prevCurrentIndex != null && currentIndex !== prevCurrentIndex) {
+  //     setShouldStop(true)
+  //     setDragXStopped(dragX)
+  //   }
+  //   if (shouldStop) {
+  //     if (Math.abs(dragX - dragXStopped) > 5) {
+  //       setShouldStop(false)
+  //       setDragXStopped(0)
+  //     }
+  //   }
+  // }, [
+  //   shouldStop,
+  //   setShouldStop,
+  //   currentIndex,
+  //   prevCurrentIndex,
+  //   dragX,
+  //   dragXStopped,
+  //   setDragXStopped,
+  // ])
 
   // the strategy uses Math.round, it switches at 0.5, the diff is always between -0.5 and 0.5
   // easing fns work with values between 0 and 1
