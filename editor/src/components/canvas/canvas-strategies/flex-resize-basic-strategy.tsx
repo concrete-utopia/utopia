@@ -62,7 +62,7 @@ export const flexResizeBasicStrategy: CanvasStrategy = {
       interactionState.interactionData.type === 'DRAG' &&
       interactionState.activeControl.type === 'RESIZE_HANDLE' &&
       !isEdgePositionOnSide(interactionState.activeControl.edgePosition)
-      ? 4
+      ? 1
       : 0
   },
   apply: (canvasState, interactionState, sessionState) => {
