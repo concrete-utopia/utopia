@@ -3,8 +3,14 @@ import { when } from '../../../../utils/react-conditionals'
 import { FlexRow, FlexColumn, useColorTheme, UtopiaStyles } from '../../../../uuiui'
 import { useEditorState } from '../../../editor/store/store-hook'
 import CanvasActions from '../../canvas-actions'
-import { useDelayedCurrentStrategy } from '../../canvas-strategies/canvas-strategies'
-import { CanvasStrategy } from '../../canvas-strategies/canvas-strategy-types'
+import {
+  pickCanvasStateFromEditorState,
+  useDelayedCurrentStrategy,
+} from '../../canvas-strategies/canvas-strategies'
+import {
+  CanvasStrategy,
+  InteractionCanvasState,
+} from '../../canvas-strategies/canvas-strategy-types'
 
 export const CanvasStrategyPicker = React.memo(() => {
   const colorTheme = useColorTheme()
@@ -41,10 +47,10 @@ export const CanvasStrategyPicker = React.memo(() => {
         event.stopImmediatePropagation()
 
         const activeStrategyIndex = otherPossibleStrategies.findIndex(
-          (strategy: CanvasStrategy) => strategy.id === activeStrategy,
+          (strategy) => strategy.strategy.id === activeStrategy,
         )
         const nextStrategyIndex = (activeStrategyIndex + 1) % otherPossibleStrategies.length
-        const nextStrategy = otherPossibleStrategies[nextStrategyIndex]
+        const nextStrategy = otherPossibleStrategies[nextStrategyIndex].strategy
 
         onTabPressed(nextStrategy)
       }
@@ -81,7 +87,7 @@ export const CanvasStrategyPicker = React.memo(() => {
               boxShadow: UtopiaStyles.popup.boxShadow,
             }}
           >
-            {otherPossibleStrategies?.map((strategy) => {
+            {otherPossibleStrategies?.map(({ strategy, name }) => {
               return (
                 <FlexRow
                   key={strategy.id}
@@ -95,7 +101,7 @@ export const CanvasStrategyPicker = React.memo(() => {
                     opacity: isStrategyFailure && strategy.id === activeStrategy ? 0.5 : 1,
                   }}
                 >
-                  {strategy.name}
+                  {name}
                 </FlexRow>
               )
             })}

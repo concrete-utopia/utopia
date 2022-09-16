@@ -1,5 +1,4 @@
-import { setsEqual } from '../../../core/shared/set-utils'
-import { addAllUniquely, last } from '../../../core/shared/array-utils'
+import { last } from '../../../core/shared/array-utils'
 import { ElementInstanceMetadataMap } from '../../../core/shared/element-template'
 import {
   CanvasPoint,
@@ -10,7 +9,7 @@ import {
 } from '../../../core/shared/math-utils'
 import { ElementPath } from '../../../core/shared/project-file-types'
 import { KeyCharacter } from '../../../utils/keyboard'
-import { Modifier, Modifiers } from '../../../utils/modifiers'
+import { Modifiers } from '../../../utils/modifiers'
 import { AllElementProps, EditorStatePatch } from '../../editor/store/editor-state'
 import { EdgePosition } from '../canvas-types'
 import { MoveIntoDragThreshold } from '../canvas-utils'
@@ -121,7 +120,7 @@ export interface StrategyState {
   currentStrategyCommands: Array<CanvasCommand>
   accumulatedPatches: Array<EditorStatePatch>
   commandDescriptions: Array<CommandDescription>
-  sortedApplicableStrategies: Array<CanvasStrategy> | null
+  sortedApplicableStrategies: Array<{ strategy: CanvasStrategy; name: string }> | null
   status: StrategyApplicationStatus
 
   // Checkpointed metadata at the point at which a strategy change has occurred.

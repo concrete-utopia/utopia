@@ -160,7 +160,7 @@ describe('interactionCancel', () => {
 
 const testStrategy: CanvasStrategy = {
   id: 'TEST_STRATEGY' as CanvasStrategyId,
-  name: 'Test Strategy',
+  name: () => 'Test Strategy',
   isApplicable: function (
     canvasState: InteractionCanvasState,
     interactionSession: InteractionSession | null,
@@ -934,7 +934,7 @@ describe('only update metadata on SAVE_DOM_REPORT', () => {
       [
         {
           id: 'TEST_STRATEGY' as CanvasStrategyId,
-          name: 'Test Strategy',
+          name: () => 'Test Strategy',
           isApplicable: function (): boolean {
             return true
           },
@@ -969,7 +969,7 @@ describe('only update metadata on SAVE_DOM_REPORT', () => {
     await renderResult.dispatch([CanvasActions.updateDragInteractionData({})], true, [
       {
         id: 'TEST_STRATEGY' as CanvasStrategyId,
-        name: 'Test Strategy',
+        name: () => 'Test Strategy',
         isApplicable: function (): boolean {
           return true
         },

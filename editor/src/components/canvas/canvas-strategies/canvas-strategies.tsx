@@ -88,10 +88,12 @@ export function getApplicableStrategies(
   interactionSession: InteractionSession | null,
   metadata: ElementInstanceMetadataMap,
   allElementProps: AllElementProps,
-): Array<CanvasStrategy> {
-  return strategies.filter((strategy) => {
-    return strategy.isApplicable(canvasState, interactionSession, metadata, allElementProps)
-  })
+): Array<ApplicableStrategy> {
+  return strategies
+    .filter((strategy) => {
+      return strategy.isApplicable(canvasState, interactionSession, metadata, allElementProps)
+    })
+    .map((s) => ({ strategy: s, name: '' })) // TODO BEFoRE MERGE - phix
 }
 
 const getApplicableStrategiesSelector = createSelector(
@@ -103,12 +105,12 @@ const getApplicableStrategiesSelector = createSelector(
   (store: EditorStorePatched) => store.editor.jsxMetadata,
   (store: EditorStorePatched) => store.editor.allElementProps,
   (
-    applicableStrategiesFromStrategyState: Array<CanvasStrategy> | null,
+    applicableStrategiesFromStrategyState: Array<ApplicableStrategy> | null,
     canvasState: InteractionCanvasState,
     interactionSession: InteractionSession | null,
     metadata: ElementInstanceMetadataMap,
     allElementProps: AllElementProps,
-  ): Array<CanvasStrategy> => {
+  ): Array<ApplicableStrategy> => {
     if (applicableStrategiesFromStrategyState != null) {
       return applicableStrategiesFromStrategyState
     } else {
@@ -123,7 +125,12 @@ const getApplicableStrategiesSelector = createSelector(
   },
 )
 
-function useGetApplicableStrategies(): Array<CanvasStrategy> {
+export interface ApplicableStrategy {
+  strategy: CanvasStrategy
+  name: string
+}
+
+function useGetApplicableStrategies(): Array<ApplicableStrategy> {
   return useEditorState(getApplicableStrategiesSelector, 'useGetApplicableStrategies', arrayEquals)
 }
 
@@ -147,7 +154,7 @@ export function getApplicableStrategiesOrderedByFitness(
   )
 
   // Compute the fitness results upfront.
-  const strategiesWithFitness = mapDropNulls((strategy) => {
+  const strategiesWithFitness = mapDropNulls(({ strategy }) => {
     const fitness = strategy.fitness(canvasState, interactionSession, strategyState)
     if (fitness <= 0) {
       return null
@@ -206,7 +213,7 @@ function pickStrategy(
 export interface FindCanvasStrategyResult {
   strategy: StrategyWithFitness | null
   previousStrategy: StrategyWithFitness | null
-  sortedApplicableStrategies: Array<CanvasStrategy>
+  sortedApplicableStrategies: Array<ApplicableStrategy>
 }
 
 export function findCanvasStrategy(
@@ -224,7 +231,10 @@ export function findCanvasStrategy(
   )
   return {
     ...pickStrategy(sortedApplicableStrategies, interactionSession, previousStrategyId),
-    sortedApplicableStrategies: sortedApplicableStrategies.map((s) => s.strategy),
+    sortedApplicableStrategies: sortedApplicableStrategies.map((s) => ({
+      strategy: s.strategy,
+      name: s.strategy.name(canvasState, interactionSession, strategyState),
+    })),
   }
 }
 
@@ -353,7 +363,7 @@ export function useGetApplicableStrategyControls(): Array<ControlWithKey> {
     let applicableControls: Array<ControlWithKey> = []
     let isResizable: boolean = false
     // Add the controls for currently applicable strategies.
-    for (const strategy of applicableStrategies) {
+    for (const { strategy } of applicableStrategies) {
       if (isResizableStrategy(strategy)) {
         isResizable = true
       }
