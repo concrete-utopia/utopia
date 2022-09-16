@@ -8,6 +8,9 @@ import { AllElementProps } from '../../editor/store/editor-state'
 import { CSSCursor } from '../canvas-types'
 import { setCursorCommand } from '../commands/set-cursor-command'
 import { updateSelectedViews } from '../commands/update-selected-views-command'
+import { ParentBounds } from '../controls/parent-bounds'
+import { ParentOutlines } from '../controls/parent-outlines'
+import { DragOutlineControl } from '../controls/select-mode/drag-outline-control'
 import { getApplicableStrategies, RegisteredCanvasStrategies } from './canvas-strategies'
 import {
   CanvasStrategy,
@@ -21,7 +24,23 @@ import { InteractionSession } from './interaction-state'
 export const lookForApplicableParentStrategy: CanvasStrategy = {
   id: 'LOOK_FOR_APPLICABLE_PARENT_ID',
   name: 'Applicable parent',
-  controlsToRender: [],
+  controlsToRender: [
+    {
+      control: DragOutlineControl,
+      key: 'ghost-outline-control',
+      show: 'visible-only-while-active',
+    },
+    {
+      control: ParentOutlines,
+      key: 'parent-outlines-control',
+      show: 'visible-only-while-active',
+    },
+    {
+      control: ParentBounds,
+      key: 'parent-bounds-control',
+      show: 'visible-only-while-active',
+    },
+  ],
   isApplicable: (canvasState, interactionSession, metadata, allElementProps) => {
     if (interactionSession == null || interactionSession.interactionData.type !== 'DRAG') {
       return false
