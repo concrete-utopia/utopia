@@ -42,7 +42,14 @@ import { CSSCursor } from '../../../uuiui-deps'
 import { StateSelector } from 'zustand'
 import { NonResizableControl } from '../controls/select-mode/non-resizable-control'
 
-export const RegisteredCanvasStrategies: Array<CanvasStrategy> = [
+export type MetaCanvasStrategy = (
+  canvasState: InteractionCanvasState,
+  interactionSession: InteractionSession | null,
+  metadata: ElementInstanceMetadataMap,
+  allElementProps: AllElementProps,
+) => Array<CanvasStrategy>
+
+const allExistingRegisteredStrategies = () => [
   absoluteMoveStrategy,
   absoluteReparentStrategy,
   absoluteDuplicateStrategy,
@@ -58,6 +65,24 @@ export const RegisteredCanvasStrategies: Array<CanvasStrategy> = [
   flowReorderAutoConversionStrategy,
   flowReorderNoConversionStrategy,
   flowReorderSameTypeOnlyStrategy,
+]
+
+const anInterestingMetaStrategy: MetaCanvasStrategy = (
+  canvasState: InteractionCanvasState,
+  interactionSession: InteractionSession | null,
+  metadata: ElementInstanceMetadataMap,
+  allElementProps: AllElementProps,
+) => {
+  // this is where we could run helper function to determine what reparent strategies are active
+  // or we can just return a strategy object that we generate dynamically
+
+  // or I can just return an existing superstrategy but under a changed name!
+  return [{ ...absoluteMoveStrategy, name: 'Absolute Mojave Strategy' }]
+}
+
+export const RegisteredCanvasStrategies: Array<MetaCanvasStrategy> = [
+  allExistingRegisteredStrategies,
+  anInterestingMetaStrategy,
 ]
 
 export function pickCanvasStateFromEditorState(
@@ -84,15 +109,17 @@ function getInteractionTargetFromEditorState(editor: EditorState): InteractionTa
 }
 
 function getApplicableStrategies(
-  strategies: Array<CanvasStrategy>,
+  metaStrategies: Array<MetaCanvasStrategy>,
   canvasState: InteractionCanvasState,
   interactionSession: InteractionSession | null,
   metadata: ElementInstanceMetadataMap,
   allElementProps: AllElementProps,
 ): Array<CanvasStrategy> {
-  return strategies.filter((strategy) => {
-    return strategy.isApplicable(canvasState, interactionSession, metadata, allElementProps)
-  })
+  return metaStrategies
+    .flatMap((ms) => ms(canvasState, interactionSession, metadata, allElementProps))
+    .filter((strategy) => {
+      return strategy.isApplicable(canvasState, interactionSession, metadata, allElementProps)
+    })
 }
 
 const getApplicableStrategiesSelector = createSelector(
@@ -134,7 +161,7 @@ export interface StrategyWithFitness {
 }
 
 function getApplicableStrategiesOrderedByFitness(
-  strategies: Array<CanvasStrategy>,
+  strategies: Array<MetaCanvasStrategy>,
   canvasState: InteractionCanvasState,
   interactionSession: InteractionSession,
   strategyState: StrategyState,
@@ -205,7 +232,7 @@ function pickStrategy(
 }
 
 export function findCanvasStrategy(
-  strategies: Array<CanvasStrategy>,
+  strategies: Array<MetaCanvasStrategy>,
   canvasState: InteractionCanvasState,
   interactionSession: InteractionSession,
   strategyState: StrategyState,

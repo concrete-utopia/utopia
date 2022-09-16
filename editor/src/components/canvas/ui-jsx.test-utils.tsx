@@ -105,7 +105,10 @@ import { flushSync } from 'react-dom'
 import { shouldInspectorUpdate } from '../inspector/inspector'
 import { SampleNodeModules } from '../custom-code/code-file.test-utils'
 import { CanvasStrategy } from './canvas-strategies/canvas-strategy-types'
-import { RegisteredCanvasStrategies } from './canvas-strategies/canvas-strategies'
+import {
+  MetaCanvasStrategy,
+  RegisteredCanvasStrategies,
+} from './canvas-strategies/canvas-strategies'
 
 // eslint-disable-next-line no-unused-expressions
 typeof process !== 'undefined' &&
@@ -143,7 +146,7 @@ export interface EditorRenderResult {
   dispatch: (
     actions: ReadonlyArray<EditorAction>,
     waitForDOMReport: boolean,
-    overrideDefaultStrategiesArray?: Array<CanvasStrategy>,
+    overrideDefaultStrategiesArray?: Array<MetaCanvasStrategy>,
   ) => Promise<void>
   getDispatchFollowUpActionsFinished: () => Promise<void>
   getEditorState: () => EditorStorePatched
@@ -201,7 +204,7 @@ export async function renderTestEditorWithModel(
     actions: ReadonlyArray<EditorAction>,
     priority?: DispatchPriority, // priority is not used in the editorDispatch now, but we didn't delete this param yet
     waitForDispatchEntireUpdate = false,
-    strategiesToUse: Array<CanvasStrategy> = RegisteredCanvasStrategies,
+    strategiesToUse: Array<MetaCanvasStrategy> = RegisteredCanvasStrategies,
   ) => {
     recordedActions.push(...actions)
     const result = editorDispatch(
@@ -381,7 +384,7 @@ export async function renderTestEditorWithModel(
     dispatch: async (
       actions: ReadonlyArray<EditorAction>,
       waitForDOMReport: boolean,
-      strategiesToUse: Array<CanvasStrategy> = RegisteredCanvasStrategies,
+      strategiesToUse: Array<MetaCanvasStrategy> = RegisteredCanvasStrategies,
     ) => {
       return await act(async () => {
         await asyncTestDispatch(actions, 'everyone', true, strategiesToUse)
