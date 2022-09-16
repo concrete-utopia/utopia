@@ -484,7 +484,6 @@ const NewCanvasControlsInner = (props: NewCanvasControlsInnerProps) => {
             isCanvasStrategyOnAndSelectOrInsertMode(props.editor.mode),
             <>{strategyControls.map((c) => React.createElement(c.control, { key: c.key }))}</>,
           )}
-          <FlowSliderControl />
         </>,
       )}
       <CursorOverlay />

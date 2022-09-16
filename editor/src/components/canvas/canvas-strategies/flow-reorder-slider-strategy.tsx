@@ -1,15 +1,14 @@
 import { MetadataUtils } from '../../../core/model/element-metadata-utils'
 import * as EP from '../../../core/shared/element-path'
-import { mod } from '../../../core/shared/math-utils'
+import { mod, pointDifference } from '../../../core/shared/math-utils'
 import { absolute } from '../../../utils/utils'
 import { CSSCursor } from '../canvas-types'
 import { reorderElement } from '../commands/reorder-element-command'
 import { setCursorCommand } from '../commands/set-cursor-command'
 import { setElementsToRerenderCommand } from '../commands/set-elements-to-rerender-command'
 import { updateHighlightedViews } from '../commands/update-highlighted-views-command'
+import { wildcardPatch } from '../commands/wildcard-patch-command'
 import { FlowSliderControl } from '../controls/flow-slider-control'
-import { ParentBounds } from '../controls/parent-bounds'
-import { ParentOutlines } from '../controls/parent-outlines'
 import {
   CanvasStrategy,
   emptyStrategyApplicationResult,
@@ -20,6 +19,7 @@ import { getNewDisplayTypeForIndex, getOptionalDisplayPropCommands } from './flo
 import { isFlowReorderConversionApplicable } from './flow-reorder-strategy'
 import { isReorderAllowed } from './reorder-utils'
 
+const ReorderChangeThreshold = 40
 export const flowReorderSliderStategy: CanvasStrategy = {
   id: 'FLOW_REORDER_SLIDER',
   name: 'Reorder (Slider)',
@@ -33,11 +33,11 @@ export const flowReorderSliderStategy: CanvasStrategy = {
     )
   },
   controlsToRender: [
-    // {
-    //   control: FlowSliderControl,
-    //   key: 'flow-slider-control',
-    //   show: 'always-visible',
-    // },
+    {
+      control: FlowSliderControl,
+      key: 'flow-slider-control',
+      show: 'always-visible',
+    },
   ],
   fitness: (canvasState, interactionState, strategyState) => {
     return flowReorderSliderStategy.isApplicable(
@@ -76,15 +76,28 @@ export const flowReorderSliderStategy: CanvasStrategy = {
       const unpatchedIndex = siblingsOfTarget.findIndex((sibling) => EP.pathsEqual(sibling, target))
       const lastReorderIdx = strategyState.customStrategyState.lastReorderIdx ?? unpatchedIndex
 
-      const indexOffset = Math.round(interactionState.interactionData.drag.x / 40)
+      const dragDistanceSinceLastChange =
+        strategyState.customStrategyState.reorderDragDeltaSinceChange != null
+          ? pointDifference(
+              strategyState.customStrategyState.reorderDragDeltaSinceChange,
+              interactionState.interactionData.drag,
+            )
+          : interactionState.interactionData.drag
 
-      const realNewIndex = mod(unpatchedIndex + indexOffset, siblingsOfTarget.length)
+      const reorderIndexPositionFraction = dragDistanceSinceLastChange.x / ReorderChangeThreshold
+      const indexOffset = Math.round(reorderIndexPositionFraction)
+      const realNewIndex = mod(lastReorderIdx + indexOffset, siblingsOfTarget.length)
 
       const newDisplayType = getNewDisplayTypeForIndex(
         strategyState.startingMetadata,
         MetadataUtils.findElementByElementPath(strategyState.startingMetadata, target),
         siblingsOfTarget[realNewIndex],
       )
+
+      const reorderSnapDrag =
+        realNewIndex !== lastReorderIdx
+          ? interactionState.interactionData.drag
+          : strategyState.customStrategyState.reorderDragDeltaSinceChange
 
       return strategyApplicationResult(
         [
@@ -93,9 +106,17 @@ export const flowReorderSliderStategy: CanvasStrategy = {
           updateHighlightedViews('mid-interaction', []),
           ...getOptionalDisplayPropCommands(target, newDisplayType, 'with-auto-conversion'),
           setCursorCommand('mid-interaction', CSSCursor.ResizeEW),
+          wildcardPatch('mid-interaction', {
+            canvas: {
+              controls: {
+                reorderIndexPositionFraction: { $set: reorderIndexPositionFraction },
+              },
+            },
+          }),
         ],
         {
           lastReorderIdx: realNewIndex,
+          reorderDragDeltaSinceChange: reorderSnapDrag,
         },
       )
     } else {

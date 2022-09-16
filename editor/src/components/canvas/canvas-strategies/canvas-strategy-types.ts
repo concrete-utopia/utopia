@@ -13,6 +13,7 @@ export interface CustomStrategyState {
   escapeHatchActivated: boolean
   lastReorderIdx: number | null
   duplicatedElementNewUids: { [elementPath: string]: string }
+  reorderDragDeltaSinceChange: CanvasVector | null
 }
 
 export type CustomStrategyStatePatch = Partial<CustomStrategyState>
@@ -22,6 +23,7 @@ export function defaultCustomStrategyState(): CustomStrategyState {
     escapeHatchActivated: false,
     lastReorderIdx: null,
     duplicatedElementNewUids: {},
+    reorderDragDeltaSinceChange: null,
   }
 }
 

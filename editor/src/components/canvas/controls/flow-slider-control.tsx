@@ -3,18 +3,19 @@ import { useSpring, animated } from 'react-spring'
 import { MetadataUtils } from '../../../core/model/element-metadata-utils'
 import * as EP from '../../../core/shared/element-path'
 import {
+  CanvasPoint,
   easeOutCubic,
-  easeOutQuint,
-  mod,
+  getRectCenter,
   point,
+  rectanglesEqual,
   windowPoint,
+  zeroCanvasRect,
 } from '../../../core/shared/math-utils'
 import { arrayEquals } from '../../../core/shared/utils'
 import { Modifier } from '../../../utils/modifiers'
 import { when } from '../../../utils/react-conditionals'
 import { Icons, useColorTheme, UtopiaStyles } from '../../../uuiui'
 import { CSSCursor } from '../../../uuiui-deps'
-import { usePrevious } from '../../editor/hook-utils'
 import { useEditorState, useRefEditorState } from '../../editor/store/store-hook'
 import { stopPropagation } from '../../inspector/common/inspector-utils'
 import CanvasActions from '../canvas-actions'
@@ -22,36 +23,22 @@ import { createInteractionViaMouse, flowSlider } from '../canvas-strategies/inte
 import { windowToCanvasCoordinates } from '../dom-lookup'
 import { CanvasOffsetWrapper } from './canvas-offset-wrapper'
 
+const IndicatorSize = 16
+const MenuHeight = 22
+const AnimatedIndicatorOffset = 2
+const ControlSize = 10
+const ClickAreaSize = ControlSize + 6
+
 export const FlowSliderControl = React.memo(() => {
   const colorTheme = useColorTheme()
-  const ref = React.useRef<HTMLDivElement>(null)
-  const dispatch = useRefEditorState((store) => store.dispatch)
-  const isTargetFlowWithSiblings = useEditorState((store) => {
-    if (store.editor.selectedViews.length === 1) {
-      const target = store.editor.selectedViews[0]
-      const elementMetadata = MetadataUtils.findElementByElementPath(
-        store.editor.jsxMetadata,
-        target,
-      )
-      if (MetadataUtils.isPositionedByFlow(elementMetadata)) {
-        const siblings = MetadataUtils.getSiblings(store.editor.jsxMetadata, target)
-        if (
-          siblings.length > 1 &&
-          siblings.every((sibling) => MetadataUtils.isPositionedByFlow(sibling))
-        ) {
-          return true
-        } else {
-          return false
-        }
-      } else {
-        return false
-      }
-    } else {
-      return false
-    }
-  }, 'isTargetFlowWithSiblings')
+  const isDragging = useEditorState(
+    (store) =>
+      store.editor.canvas.interactionSession != null &&
+      store.editor.canvas.interactionSession.activeControl.type === 'FLOW_SLIDER',
+    'FlowSliderControl isDragging',
+  )
 
-  const { siblings, currentIndex } = useEditorState(
+  const { siblings, latestIndex, startingIndex, startingFrame } = useEditorState(
     (store) => {
       if (store.editor.selectedViews.length === 1) {
         const target = store.editor.selectedViews[0]
@@ -59,20 +46,147 @@ export const FlowSliderControl = React.memo(() => {
           store.editor.canvas.interactionSession?.latestMetadata ?? store.editor.jsxMetadata,
           target,
         ).map((sibling) => sibling.elementPath)
-        return {
-          siblings: siblingsMetadata,
-          currentIndex: siblingsMetadata.findIndex((sibling) => EP.pathsEqual(sibling, target)),
+        const targetIndex = siblingsMetadata.findIndex((sibling) => EP.pathsEqual(sibling, target))
+        const latestFrame =
+          MetadataUtils.getFrameInCanvasCoords(target, store.editor.jsxMetadata) ?? zeroCanvasRect
+
+        if (isDragging) {
+          const startingSiblingsMetadata = MetadataUtils.getSiblings(
+            store.strategyState.startingMetadata,
+            target,
+          ).map((sibling) => sibling.elementPath)
+          return {
+            siblings: siblingsMetadata,
+            latestIndex: targetIndex,
+            startingIndex: startingSiblingsMetadata.findIndex((sibling) =>
+              EP.pathsEqual(sibling, target),
+            ),
+            startingFrame:
+              MetadataUtils.getFrameInCanvasCoords(target, store.strategyState.startingMetadata) ??
+              zeroCanvasRect,
+          }
+        } else {
+          return {
+            siblings: siblingsMetadata,
+            latestIndex: targetIndex,
+            startingIndex: targetIndex,
+            startingFrame: latestFrame,
+          }
         }
       } else {
-        return { siblings: [], currentIndex: -1 }
+        return { siblings: [], latestIndex: -1, startingIndex: -1, startingFrame: zeroCanvasRect }
       }
     },
-    'current index',
+    'FlowSliderControl',
     (o, n) =>
-      arrayEquals(o.siblings, n.siblings, EP.pathsEqual) && o.currentIndex === n.currentIndex,
+      arrayEquals(o.siblings, n.siblings, EP.pathsEqual) &&
+      o.latestIndex === n.latestIndex &&
+      o.startingIndex === n.startingIndex &&
+      rectanglesEqual(o.startingFrame, n.startingFrame),
   )
-  const prevCurrentIndex = usePrevious(currentIndex)
 
+  const controlAreaTopLeft = React.useMemo(() => {
+    const middle = getRectCenter(startingFrame ?? zeroCanvasRect)
+    return {
+      x: middle.x - IndicatorSize / 2 - startingIndex * IndicatorSize,
+      y: middle.y - MenuHeight / 2,
+    } as CanvasPoint
+  }, [startingFrame, startingIndex])
+
+  const controlTopLeft = React.useMemo(() => {
+    return {
+      x: controlAreaTopLeft.x + latestIndex * IndicatorSize + AnimatedIndicatorOffset,
+      y: getRectCenter(startingFrame ?? zeroCanvasRect).y - ControlSize / 2,
+    } as CanvasPoint
+  }, [startingFrame, controlAreaTopLeft, latestIndex])
+
+  if (siblings.length > 1) {
+    return (
+      <CanvasOffsetWrapper>
+        {when(
+          isDragging,
+          <div
+            style={{
+              position: 'absolute',
+              top: controlAreaTopLeft.y,
+              left: controlAreaTopLeft.x,
+              width: siblings.length * IndicatorSize,
+              height: MenuHeight,
+              borderRadius: 4,
+              opacity: '50%',
+              background: colorTheme.bg0.value,
+              boxShadow: UtopiaStyles.popup.boxShadow,
+              cursor: CSSCursor.ResizeEW,
+              display: 'flex',
+              alignItems: 'center',
+            }}
+          >
+            {siblings.map((s) => {
+              return <Icons.Dot key={EP.toString(s)} width={IndicatorSize} height={IndicatorSize} />
+            })}
+          </div>,
+        )}
+        {when(
+          isDragging,
+          <AnimatedReorderIndicator
+            latestIndex={latestIndex}
+            controlAreaTopLeft={controlAreaTopLeft}
+          />,
+        )}
+        <FlowReorderControl controlPosition={controlTopLeft} />
+      </CanvasOffsetWrapper>
+    )
+  } else {
+    return null
+  }
+})
+
+interface AnimatedReorderIndicatorProps {
+  controlAreaTopLeft: CanvasPoint
+  latestIndex: number
+}
+
+const AnimatedReorderIndicator = React.memo((props: AnimatedReorderIndicatorProps) => {
+  const colorTheme = useColorTheme()
+  const { controlAreaTopLeft, latestIndex } = props
+
+  const indicatorOffset = useEditorState((store) => {
+    const indexPositionBetweenElements = store.editor.canvas.controls.reorderIndexPositionFraction
+    if (indexPositionBetweenElements != null) {
+      return easeOutCubic(indexPositionBetweenElements)
+    } else {
+      return 0
+    }
+  }, 'FlowSliderControl indicatorOffset')
+
+  const styles = useSpring({
+    left: controlAreaTopLeft.x + latestIndex * IndicatorSize + indicatorOffset,
+    config: { mass: 5, tension: 1500, friction: 80 },
+  })
+
+  return (
+    <animated.div
+      style={{
+        position: 'absolute',
+        top: controlAreaTopLeft.y + AnimatedIndicatorOffset,
+        left: styles.left,
+        width: IndicatorSize - AnimatedIndicatorOffset,
+        height: MenuHeight - AnimatedIndicatorOffset * 2,
+        borderRadius: 4,
+        background: colorTheme.primary.value,
+        // eslint-disable-next-line @typescript-eslint/ban-ts-comment
+        // @ts-ignore
+        opacity: 0.6,
+      }}
+    ></animated.div>
+  )
+})
+
+const FlowReorderControl = React.memo(({ controlPosition }: { controlPosition: CanvasPoint }) => {
+  const colorTheme = useColorTheme()
+  const ref = React.useRef<HTMLDivElement>(null)
+
+  const dispatch = useRefEditorState((store) => store.dispatch)
   const scaleRef = useRefEditorState((store) => store.editor.canvas.scale)
   const canvasOffsetRef = useRefEditorState((store) => store.editor.canvas.realCanvasOffset)
 
@@ -104,142 +218,32 @@ export const FlowSliderControl = React.memo(() => {
     },
     [dispatch, canvasOffsetRef, scaleRef],
   )
-
-  const isDragging = useEditorState(
-    (store) =>
-      store.editor.canvas.interactionSession != null &&
-      store.editor.canvas.interactionSession.activeControl.type === 'FLOW_SLIDER',
-    'isDragging',
+  return (
+    <>
+      <div
+        style={{
+          position: 'absolute',
+          top: controlPosition.y,
+          left: controlPosition.x,
+          width: ControlSize,
+          height: ControlSize,
+          borderRadius: '50%',
+          background: colorTheme.bg0.value,
+          boxShadow: UtopiaStyles.popup.boxShadow,
+        }}
+      ></div>
+      <div
+        ref={ref}
+        style={{
+          position: 'absolute',
+          top: controlPosition.y - (ClickAreaSize - ControlSize) / 2,
+          left: controlPosition.x - (ClickAreaSize - ControlSize) / 2,
+          width: ClickAreaSize,
+          height: ClickAreaSize,
+          cursor: CSSCursor.ResizeEW,
+        }}
+        onMouseDown={onMouseDown}
+      ></div>
+    </>
   )
-
-  const frame = useEditorState((store) => {
-    if (store.editor.selectedViews.length === 1) {
-      const target = store.editor.selectedViews[0]
-      if (isDragging) {
-        return MetadataUtils.getFrameInCanvasCoords(target, store.strategyState.startingMetadata)
-      } else {
-        return MetadataUtils.getFrameInCanvasCoords(target, store.editor.jsxMetadata)
-      }
-    } else {
-      return null
-    }
-  }, 'frame')
-
-  const startingIndex = useEditorState((store) => {
-    if (store.editor.selectedViews.length === 1) {
-      const target = store.editor.selectedViews[0]
-      if (isDragging) {
-        const siblingsMetadata = MetadataUtils.getSiblings(
-          store.strategyState.startingMetadata,
-          target,
-        ).map((sibling) => sibling.elementPath)
-        return siblingsMetadata.findIndex((sibling) => EP.pathsEqual(sibling, target))
-      } else {
-        const siblingsMetadata = MetadataUtils.getSiblings(
-          store.editor.canvas.interactionSession?.latestMetadata ?? store.editor.jsxMetadata,
-          target,
-        ).map((sibling) => sibling.elementPath)
-        return siblingsMetadata.findIndex((sibling) => EP.pathsEqual(sibling, target))
-      }
-    } else {
-      return -1
-    }
-  }, 'starting index')
-
-  const possibleNewIndex = useEditorState((store) => {
-    if (
-      store.editor.selectedViews.length === 1 &&
-      store.editor.canvas.interactionSession != null &&
-      store.editor.canvas.interactionSession.interactionData.type === 'DRAG' &&
-      store.editor.canvas.interactionSession.interactionData.drag != null
-    ) {
-      const target = store.editor.selectedViews[0]
-      const siblingsOfTarget = MetadataUtils.getSiblings(
-        store.strategyState.startingMetadata,
-        target,
-      ).map((sibling) => sibling.elementPath)
-      const originalIndex = siblingsOfTarget.findIndex((sibling) => EP.pathsEqual(sibling, target))
-      const indexOffset = store.editor.canvas.interactionSession.interactionData.drag.x / 40
-
-      return mod(originalIndex + indexOffset, siblingsOfTarget.length)
-    } else {
-      return -1
-    }
-  }, 'possibleNewIndex')
-
-  // the strategy uses Math.round, it switches at 0.5, the diff is always between -0.5 and 0.5
-  // easing fns work with values between 0 and 1
-  const diff = (possibleNewIndex - currentIndex) * 2
-
-  const offset = possibleNewIndex === -1 ? 0 : Math.sign(diff) * easeOutCubic(Math.abs(diff))
-  const offsetWithReset = prevCurrentIndex !== currentIndex ? 0 : offset
-
-  const left = (frame?.x ?? 0) + (frame?.width ?? 0) / 2 - 8 - startingIndex * 16
-  const styles = useSpring({
-    left: left + currentIndex * 16 + offsetWithReset * 5,
-    config: { mass: 5, tension: 1500, friction: 80 },
-  })
-
-  if (isTargetFlowWithSiblings && siblings.length > 1 && frame != null) {
-    // icon size: 16
-    return (
-      <CanvasOffsetWrapper>
-        {when(
-          isDragging,
-          <div
-            style={{
-              position: 'absolute',
-              top: frame.y + frame.height / 2 - 11,
-              left: left,
-              width: siblings.length * 16,
-              height: 22,
-              borderRadius: 4,
-              opacity: '50%',
-              background: isDragging ? colorTheme.bg0.value : 'transparent',
-              boxShadow: isDragging ? UtopiaStyles.popup.boxShadow : 'none',
-              cursor: isDragging ? CSSCursor.ResizeEW : 'default',
-              display: 'flex',
-              alignItems: 'center',
-            }}
-          >
-            {siblings.map((s, i) => {
-              return <Icons.Dot key={EP.toString(s)} />
-            })}
-          </div>,
-        )}
-        <animated.div
-          style={{
-            position: 'absolute',
-            top: frame.y + frame.height / 2 - 9,
-            left: styles.left,
-            width: 14,
-            height: 22 - 4,
-            borderRadius: 4,
-            background: colorTheme.primary.value,
-            display: possibleNewIndex !== -1 ? 'block' : 'none',
-            // eslint-disable-next-line @typescript-eslint/ban-ts-comment
-            // @ts-ignore
-            opacity: 0.6,
-          }}
-        ></animated.div>
-        <div
-          ref={ref}
-          style={{
-            position: 'absolute',
-            top: frame.y + frame.height / 2 - 5,
-            left: left + currentIndex * 16 + 2,
-            width: 10, // TODO increase click area
-            height: 10,
-            borderRadius: '50%',
-            background: colorTheme.bg0.value,
-            boxShadow: UtopiaStyles.popup.boxShadow,
-            cursor: CSSCursor.ResizeEW,
-          }}
-          onMouseDown={onMouseDown}
-        ></div>
-      </CanvasOffsetWrapper>
-    )
-  } else {
-    return null
-  }
 })
