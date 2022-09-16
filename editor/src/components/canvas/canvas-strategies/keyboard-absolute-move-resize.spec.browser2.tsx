@@ -32,6 +32,7 @@ function configureSetupTeardown(): { clock: { current: SinonFakeTimers } } {
   let clock: { current: SinonFakeTimers } = { current: null as any } // it will be non-null thanks to beforeEach
   beforeEach(function () {
     setFeatureEnabled('Canvas Strategies', true)
+    // TODO there is something wrong with sinon fake timers here that remotely break other tests that come after these. If your new browser tests are broken, this may be the reason.
     clock.current = sinon.useFakeTimers({
       // the timers will tick so the editor is not totally broken, but we can fast-forward time at will
       // WARNING: the Sinon fake timers will advance in 20ms increments

@@ -42,6 +42,7 @@ import { CSSCursor } from '../../../uuiui-deps'
 import { StateSelector } from 'zustand'
 import { NonResizableControl } from '../controls/select-mode/non-resizable-control'
 import { drawToInsertStrategy } from './draw-to-insert-strategy'
+import { flexResizeBasicStrategy } from './flex-resize-basic-strategy'
 
 export const RegisteredCanvasStrategies: Array<CanvasStrategy> = [
   absoluteMoveStrategy,
@@ -60,6 +61,7 @@ export const RegisteredCanvasStrategies: Array<CanvasStrategy> = [
   flowReorderAutoConversionStrategy,
   flowReorderNoConversionStrategy,
   flowReorderSameTypeOnlyStrategy,
+  flexResizeBasicStrategy,
 ]
 
 export function pickCanvasStateFromEditorState(
@@ -322,6 +324,7 @@ export function isResizableStrategy(canvasStrategy: CanvasStrategy): boolean {
   switch (canvasStrategy.id) {
     case 'ABSOLUTE_RESIZE_BOUNDING_BOX':
     case 'KEYBOARD_ABSOLUTE_RESIZE':
+    case 'FLEX_RESIZE_BASIC':
       return true
     default:
       return false
