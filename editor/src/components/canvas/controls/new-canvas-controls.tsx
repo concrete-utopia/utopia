@@ -71,7 +71,6 @@ import { SceneLabelControl } from './select-mode/scene-label'
 import { PinLines } from './position-outline'
 import { CursorOverlay } from './select-mode/cursor-overlay'
 import { FlexReparentTargetIndicator } from './select-mode/flex-reparent-target-indicator'
-import { FlowSliderControl } from './flow-slider-control'
 
 export const CanvasControlsContainerID = 'new-canvas-controls-container'
 
