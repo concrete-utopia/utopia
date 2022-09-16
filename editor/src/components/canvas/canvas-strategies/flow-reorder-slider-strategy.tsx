@@ -19,7 +19,7 @@ import { getNewDisplayTypeForIndex, getOptionalDisplayPropCommands } from './flo
 import { isFlowReorderConversionApplicable } from './flow-reorder-strategy'
 import { isReorderAllowed } from './reorder-utils'
 
-const ReorderChangeThreshold = 40
+const ReorderChangeThreshold = 80
 export const flowReorderSliderStategy: CanvasStrategy = {
   id: 'FLOW_REORDER_SLIDER',
   name: 'Reorder (Slider)',

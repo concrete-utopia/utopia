@@ -160,7 +160,7 @@ const AnimatedReorderIndicator = React.memo((props: AnimatedReorderIndicatorProp
   }, 'FlowSliderControl indicatorOffset')
 
   const styles = useSpring({
-    left: controlAreaTopLeft.x + latestIndex * IndicatorSize + indicatorOffset,
+    left: controlAreaTopLeft.x + latestIndex * IndicatorSize + indicatorOffset * 3,
     config: { mass: 5, tension: 1500, friction: 80 },
   })
 

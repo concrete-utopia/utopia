@@ -56,9 +56,9 @@ export const RegisteredCanvasStrategies: Array<CanvasStrategy> = [
   // escapeHatchStrategy,  // TODO re-enable once reparent is not tied to cmd
   absoluteReparentToFlexStrategy,
   dragToInsertStrategy,
-  // flowReorderAutoConversionStrategy,
-  // flowReorderNoConversionStrategy,
-  // flowReorderSameTypeOnlyStrategy,
+  flowReorderAutoConversionStrategy,
+  flowReorderNoConversionStrategy,
+  flowReorderSameTypeOnlyStrategy,
   flowReorderSliderStategy,
 ]
 
