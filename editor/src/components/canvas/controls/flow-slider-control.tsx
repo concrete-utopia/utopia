@@ -155,6 +155,29 @@ export const FlowSliderControl = React.memo(() => {
     }
   }, 'drag X')
 
+  const [dragXStopped, setDragXStopped] = React.useState(0)
+  const [shouldStop, setShouldStop] = React.useState(false)
+  React.useEffect(() => {
+    if (prevCurrentIndex != null && currentIndex !== prevCurrentIndex) {
+      setShouldStop(true)
+      setDragXStopped(dragX)
+    }
+    if (shouldStop) {
+      if (Math.abs(dragX - dragXStopped) > 5) {
+        setShouldStop(false)
+        setDragXStopped(0)
+      }
+    }
+  }, [
+    shouldStop,
+    setShouldStop,
+    currentIndex,
+    prevCurrentIndex,
+    dragX,
+    dragXStopped,
+    setDragXStopped,
+  ])
+
   const possibleNewIndex = useEditorState((store) => {
     if (
       store.editor.selectedViews.length === 1 &&
@@ -178,7 +201,7 @@ export const FlowSliderControl = React.memo(() => {
 
   // the strategy uses Math.round, it switches at 0.5, the diff is always between -0.5 and 0.5
   // easing fns work with values between 0 and 1
-  const diff = (possibleNewIndex - currentIndex) * 2
+  const diff = shouldStop ? 0 : (possibleNewIndex - currentIndex) * 2
 
   const offset = possibleNewIndex === -1 ? 0 : Math.sign(diff) * easeOutCubic(Math.abs(diff))
   const offsetWithReset = prevCurrentIndex !== currentIndex ? 0 : offset
