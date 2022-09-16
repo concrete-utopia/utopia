@@ -30,6 +30,7 @@ export const flexResizeBasicStrategy: CanvasStrategy = {
   name: 'Flex Resize (Basic)',
   isApplicable: (canvasState, interactionState, metadata) => {
     const selectedElements = getTargetPathsFromInteractionTarget(canvasState.interactionTarget)
+    // no multiselection support yet
     if (selectedElements.length === 1) {
       return (
         MetadataUtils.isParentYogaLayoutedContainerAndElementParticipatesInLayout(
@@ -69,33 +70,32 @@ export const flexResizeBasicStrategy: CanvasStrategy = {
       interactionState.activeControl.type === 'RESIZE_HANDLE'
     ) {
       const selectedElements = getTargetPathsFromInteractionTarget(canvasState.interactionTarget)
+      // no multiselection support yet
       const selectedElement = selectedElements[0]
       const edgePosition = interactionState.activeControl.edgePosition
       if (interactionState.interactionData.drag != null) {
         const drag = interactionState.interactionData.drag
-        const originalBoundingBox = MetadataUtils.getFrameInCanvasCoords(
+        const originalBounds = MetadataUtils.getFrameInCanvasCoords(
           selectedElement,
           sessionState.startingMetadata,
         )
 
-        if (originalBoundingBox == null) {
+        if (originalBounds == null) {
           return emptyStrategyApplicationResult
         }
 
-        const resizedBounds = resizeWidthHeight(originalBoundingBox, drag, edgePosition)
+        const resizedBounds = resizeWidthHeight(originalBounds, drag, edgePosition)
 
         const elementParentBounds =
-          MetadataUtils.findElementByElementPath(
-            sessionState.startingMetadata, // TODO should this be using the current metadata?
-            selectedElement,
-          )?.specialSizeMeasurements.immediateParentBounds ?? null
+          MetadataUtils.findElementByElementPath(sessionState.startingMetadata, selectedElement)
+            ?.specialSizeMeasurements.immediateParentBounds ?? null
 
         const resizeCommands = [
           adjustCssLengthProperty(
             'always',
             selectedElement,
             stylePropPathMappingFn('width', ['style']),
-            resizedBounds.width - originalBoundingBox.width,
+            resizedBounds.width - originalBounds.width,
             elementParentBounds?.width,
             true,
           ),
@@ -103,7 +103,7 @@ export const flexResizeBasicStrategy: CanvasStrategy = {
             'always',
             selectedElement,
             stylePropPathMappingFn('height', ['style']),
-            resizedBounds.height - originalBoundingBox.height,
+            resizedBounds.height - originalBounds.height,
             elementParentBounds?.height,
             true,
           ),
