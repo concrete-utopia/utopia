@@ -111,14 +111,14 @@ export const flexResizeBasicStrategy: CanvasStrategy = {
         ]
         return strategyApplicationResult([
           ...resizeCommands,
-          updateHighlightedViews('always', []),
-          setCursorCommand('always', pickCursorFromEdgePosition(edgePosition)),
+          updateHighlightedViews('mid-interaction', []),
+          setCursorCommand('mid-interaction', pickCursorFromEdgePosition(edgePosition)),
           setElementsToRerenderCommand(selectedElements),
         ])
       } else {
         return strategyApplicationResult([
-          setCursorCommand('always', pickCursorFromEdgePosition(edgePosition)),
-          updateHighlightedViews('always', []),
+          updateHighlightedViews('mid-interaction', []),
+          setCursorCommand('mid-interaction', pickCursorFromEdgePosition(edgePosition)),
         ])
       }
     }
