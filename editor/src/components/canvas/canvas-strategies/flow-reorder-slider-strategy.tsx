@@ -1,6 +1,6 @@
 import { MetadataUtils } from '../../../core/model/element-metadata-utils'
 import * as EP from '../../../core/shared/element-path'
-import { mod, pointDifference } from '../../../core/shared/math-utils'
+import { mod, pointDifference, zeroCanvasPoint } from '../../../core/shared/math-utils'
 import { absolute } from '../../../utils/utils'
 import { CSSCursor } from '../canvas-types'
 import { reorderElement } from '../commands/reorder-element-command'
@@ -94,10 +94,20 @@ export const flowReorderSliderStategy: CanvasStrategy = {
         siblingsOfTarget[realNewIndex],
       )
 
-      const reorderSnapDrag =
+      let reorderSnapDrag =
         realNewIndex !== lastReorderIdx
           ? interactionState.interactionData.drag
           : strategyState.customStrategyState.reorderDragDeltaSinceChange
+
+      if (
+        interactionState.interactionData.globalTime -
+          (strategyState.customStrategyState.reorderChangeTime ?? 0) <
+        60
+      ) {
+        if (realNewIndex === lastReorderIdx) {
+          reorderSnapDrag = interactionState.interactionData.drag
+        }
+      }
 
       return strategyApplicationResult(
         [
@@ -117,6 +127,10 @@ export const flowReorderSliderStategy: CanvasStrategy = {
         {
           lastReorderIdx: realNewIndex,
           reorderDragDeltaSinceChange: reorderSnapDrag,
+          reorderChangeTime:
+            realNewIndex !== lastReorderIdx
+              ? Date.now()
+              : strategyState.customStrategyState.reorderChangeTime ?? null,
         },
       )
     } else {

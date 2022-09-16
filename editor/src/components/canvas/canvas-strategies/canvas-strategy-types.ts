@@ -14,6 +14,7 @@ export interface CustomStrategyState {
   lastReorderIdx: number | null
   duplicatedElementNewUids: { [elementPath: string]: string }
   reorderDragDeltaSinceChange: CanvasVector | null
+  reorderChangeTime: number | null
 }
 
 export type CustomStrategyStatePatch = Partial<CustomStrategyState>
@@ -24,6 +25,7 @@ export function defaultCustomStrategyState(): CustomStrategyState {
     lastReorderIdx: null,
     duplicatedElementNewUids: {},
     reorderDragDeltaSinceChange: null,
+    reorderChangeTime: null,
   }
 }
 
