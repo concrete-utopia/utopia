@@ -7,7 +7,7 @@ import {
 } from '../../../core/shared/math-utils'
 import { stylePropPathMappingFn } from '../../inspector/common/property-path-hooks'
 import { EdgePosition } from '../canvas-types'
-import { pickPointOnRect } from '../canvas-utils'
+import { isEdgePositionOnSide, pickPointOnRect } from '../canvas-utils'
 import { adjustCssLengthProperty } from '../commands/adjust-css-length-command'
 import { setCursorCommand } from '../commands/set-cursor-command'
 import { setElementsToRerenderCommand } from '../commands/set-elements-to-rerender-command'
@@ -60,8 +60,9 @@ export const flexResizeBasicStrategy: CanvasStrategy = {
       sessionState.startingAllElementProps,
     ) &&
       interactionState.interactionData.type === 'DRAG' &&
-      interactionState.activeControl.type === 'RESIZE_HANDLE'
-      ? 1
+      interactionState.activeControl.type === 'RESIZE_HANDLE' &&
+      !isEdgePositionOnSide(interactionState.activeControl.edgePosition)
+      ? 4
       : 0
   },
   apply: (canvasState, interactionState, sessionState) => {
