@@ -9,6 +9,7 @@ import {
   CanvasPoint,
   easeOutCubic,
   getRectCenter,
+  mod,
   point,
   rectanglesEqual,
   windowPoint,
@@ -25,6 +26,7 @@ import CanvasActions from '../canvas-actions'
 import { createInteractionViaMouse, flowSlider } from '../canvas-strategies/interaction-state'
 import { windowToCanvasCoordinates } from '../dom-lookup'
 import { CanvasOffsetWrapper } from './canvas-offset-wrapper'
+import { ElementPath } from '../../../core/shared/project-file-types'
 
 const IndicatorSize = 16
 const MenuHeight = 22
@@ -134,6 +136,7 @@ export const FlowSliderControl = React.memo(() => {
           <AnimatedReorderIndicator
             latestIndex={startingIndex}
             controlAreaTopLeft={controlAreaTopLeft}
+            siblings={siblings}
           />,
         )}
         <FlowReorderControl controlPosition={controlTopLeft} />
@@ -147,11 +150,12 @@ export const FlowSliderControl = React.memo(() => {
 interface AnimatedReorderIndicatorProps {
   controlAreaTopLeft: CanvasPoint
   latestIndex: number
+  siblings: Array<ElementPath>
 }
 
 const AnimatedReorderIndicator = React.memo((props: AnimatedReorderIndicatorProps) => {
   const colorTheme = useColorTheme()
-  const { controlAreaTopLeft, latestIndex } = props
+  const { controlAreaTopLeft, latestIndex, siblings } = props
 
   // const indicatorOffset = useEditorState((store) => {
   //   const indexPositionBetweenElements = store.editor.canvas.controls.flowReorderIndexPosition
@@ -186,7 +190,9 @@ const AnimatedReorderIndicator = React.memo((props: AnimatedReorderIndicatorProp
         position: 'absolute',
         top: controlAreaTopLeft.y + AnimatedIndicatorOffset,
         // left: styles.left,
-        left: controlAreaTopLeft.x + latestIndex * IndicatorSize + indicatorOffset * IndicatorSize,
+        left:
+          controlAreaTopLeft.x +
+          mod(latestIndex + indicatorOffset, siblings.length) * IndicatorSize,
         width: IndicatorSize - AnimatedIndicatorOffset,
         height: MenuHeight - AnimatedIndicatorOffset * 2,
         borderRadius: 4,
