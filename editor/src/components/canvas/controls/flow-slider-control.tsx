@@ -45,7 +45,7 @@ export const FlowSliderControl = React.memo(() => {
     (store) => {
       if (store.editor.selectedViews.length === 1) {
         const target = store.editor.selectedViews[0]
-        const siblingPaths = MetadataUtils.getSiblings(
+        const siblingPaths = MetadataUtils.getSiblingsProjectContentsOrdered(
           store.editor.canvas.interactionSession?.latestMetadata ?? store.editor.jsxMetadata,
           target,
         ).map((sibling) => sibling.elementPath)

@@ -197,7 +197,7 @@ export const MetadataUtils = {
     const parentPath = EP.parentPath(target)
     return MetadataUtils.findElementByElementPath(metadata, parentPath)
   },
-  getSiblings(
+  getSiblingsProjectContentsOrdered(
     metadata: ElementInstanceMetadataMap,
     target: ElementPath | null,
   ): ElementInstanceMetadata[] {
@@ -209,6 +209,21 @@ export const MetadataUtils = {
     const siblingPathsOrNull = EP.isRootElementOfInstance(target)
       ? MetadataUtils.getRootViewPathsProjectContentsOrdered(metadata, parentPath)
       : MetadataUtils.getChildrenPathsProjectContentsOrdered(metadata, parentPath)
+    const siblingPaths = siblingPathsOrNull ?? []
+    return MetadataUtils.findElementsByElementPath(metadata, siblingPaths)
+  },
+  getSiblings(
+    metadata: ElementInstanceMetadataMap,
+    target: ElementPath | null,
+  ): ElementInstanceMetadata[] {
+    if (target == null) {
+      return []
+    }
+
+    const parentPath = EP.parentPath(target)
+    const siblingPathsOrNull = EP.isRootElementOfInstance(target)
+      ? MetadataUtils.getRootViewPaths(metadata, parentPath)
+      : MetadataUtils.getChildrenPaths(metadata, parentPath)
     const siblingPaths = siblingPathsOrNull ?? []
     return MetadataUtils.findElementsByElementPath(metadata, siblingPaths)
   },
