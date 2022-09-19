@@ -204,7 +204,6 @@ function runTargetStrategiesForFreshlyInsertedElementToReparent(
   editorState: EditorState,
   strategyState: StrategyState,
   interactionState: InteractionSession,
-  commandLifecycle: 'mid-interaction' | 'end-interaction',
   insertionSubject: ElementInsertionSubject,
   frame: CanvasRectangle,
 ): Array<EditorStatePatch> {
@@ -272,7 +271,7 @@ function runTargetStrategiesForFreshlyInsertedElementToReparent(
     patchedStrategyState,
   ).commands
 
-  return foldAndApplyCommandsInner(editorState, [], [], reparentCommands, 'end-interaction') // HACK-HACK 'end-interaction' is here so it is not just the reorder indicator which is rendered
+  return foldAndApplyCommandsInner(editorState, [], [], reparentCommands, 'end-interaction') // TODO HACK-HACK 'end-interaction' is here so it is not just the reorder indicator which is rendered
     .statePatches
 }
 
