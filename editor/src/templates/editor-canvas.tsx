@@ -1248,6 +1248,7 @@ export class EditorCanvas extends React.Component<EditorCanvasProps> {
               newDrag,
               Modifier.modifiersForEvent(event),
               null,
+              document.pointerLockElement ? 'ignore-threshold' : 'use-threshold',
             ),
           })
         } else if (dragState == null || !dragStarted) {

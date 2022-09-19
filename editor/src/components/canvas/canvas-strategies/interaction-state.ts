@@ -184,10 +184,13 @@ export function updateInteractionViaMouse(
   drag: CanvasVector,
   modifiers: Modifiers,
   sourceOfUpdate: CanvasControlType | null, // If null it means the active control is the source
+  ignoreThreshold: 'ignore-threshold' | 'use-threshold' = 'use-threshold',
 ): InteractionSessionWithoutMetadata {
   if (currentState.interactionData.type === 'DRAG') {
     const dragThresholdPassed =
-      currentState.interactionData.drag != null || dragExceededThreshold(drag)
+      ignoreThreshold === 'ignore-threshold' ||
+      currentState.interactionData.drag != null ||
+      dragExceededThreshold(drag)
     return {
       interactionData: {
         type: 'DRAG',
