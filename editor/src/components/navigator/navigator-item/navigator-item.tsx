@@ -153,6 +153,22 @@ const computeResultingStyle = (
   colorTheme: ColorTheme,
 ) => {
   let result = defaultUnselected(colorTheme)
+  if (isHighlightedForInteraction) {
+    result = {
+      style: {
+        background: colorTheme.brandPurple.o(70).value,
+        color: colorTheme.white.value,
+      },
+      iconColor: 'main',
+    }
+  } else if (isInsideComponent) {
+    result = componentUnselected(colorTheme)
+  } else if (isDynamic) {
+    result = dynamicUnselected(colorTheme)
+  } else {
+    result = defaultUnselected(colorTheme)
+  }
+
   if (selected) {
     if (isFocusableComponent && !isFocusedComponent) {
       result = {
@@ -165,23 +181,6 @@ const computeResultingStyle = (
       result = dynamicSelected(colorTheme)
     } else {
       result = defaultSelected(colorTheme)
-    }
-  } else {
-    // unselected
-    if (isHighlightedForInteraction) {
-      result = {
-        style: {
-          background: colorTheme.brandPurple.o(70).value,
-          color: colorTheme.white.value,
-        },
-        iconColor: 'main',
-      }
-    } else if (isInsideComponent) {
-      result = componentUnselected(colorTheme)
-    } else if (isDynamic) {
-      result = dynamicUnselected(colorTheme)
-    } else {
-      result = defaultUnselected(colorTheme)
     }
   }
 

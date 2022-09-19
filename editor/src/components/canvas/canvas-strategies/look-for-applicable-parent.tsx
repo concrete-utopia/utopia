@@ -99,7 +99,7 @@ export const lookForApplicableParentStrategy: CanvasStrategy = {
       return emptyStrategyApplicationResult
     }
 
-    const { strategies, effectiveTarget, componentsInSubtree } = result
+    const { strategies, effectiveTarget, originalTarget } = result
     if (strategies.length < 1) {
       return emptyStrategyApplicationResult
     }
@@ -128,8 +128,8 @@ export const lookForApplicableParentStrategy: CanvasStrategy = {
     const updateSelectionCommands = !shouldUpdateSelectedViews
       ? []
       : [
-          highlightElementsCommand(componentsInSubtree),
-          updateSelectedViews(howToUpdateSelectedViews, effectiveTarget),
+          highlightElementsCommand(effectiveTarget),
+          updateSelectedViews(howToUpdateSelectedViews, originalTarget),
         ]
 
     return strategyApplicationResult(
@@ -218,6 +218,7 @@ function isApplicableInner(
 interface IsApplicableTraverseResult {
   strategies: Array<CanvasStrategy>
   effectiveTarget: Array<ElementPath>
+  originalTarget: Array<ElementPath>
   componentsInSubtree: Array<ElementPath>
 }
 
@@ -242,6 +243,7 @@ function isApplicableTraverse(
     return {
       strategies: applicableStrategies,
       effectiveTarget: pathsFromInteractionTarget(canvasState.interactionTarget),
+      originalTarget: pathsFromInteractionTarget(canvasState.interactionTarget),
       componentsInSubtree: [],
     }
   }
@@ -262,6 +264,7 @@ function isApplicableTraverse(
       return {
         strategies: applicableStrategies,
         effectiveTarget: [path],
+        originalTarget: canvasState.interactionTarget.elements,
         componentsInSubtree,
       }
     }
