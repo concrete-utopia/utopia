@@ -132,7 +132,7 @@ export const FlowSliderControl = React.memo(() => {
         {when(
           isDragging,
           <AnimatedReorderIndicator
-            latestIndex={latestIndex}
+            latestIndex={startingIndex}
             controlAreaTopLeft={controlAreaTopLeft}
           />,
         )}
@@ -153,11 +153,23 @@ const AnimatedReorderIndicator = React.memo((props: AnimatedReorderIndicatorProp
   const colorTheme = useColorTheme()
   const { controlAreaTopLeft, latestIndex } = props
 
+  // const indicatorOffset = useEditorState((store) => {
+  //   const indexPositionBetweenElements = store.editor.canvas.controls.flowReorderIndexPosition
+  //   if (indexPositionBetweenElements != null) {
+  //     // return easeOutCubic()
+  //     return indexPositionBetweenElements
+  //   } else {
+  //     return 0
+  //   }
+  // }, 'FlowSliderControl indicatorOffset')
   const indicatorOffset = useEditorState((store) => {
-    const indexPositionBetweenElements = store.editor.canvas.controls.flowReorderIndexPosition
-    if (indexPositionBetweenElements != null) {
-      // return easeOutCubic()
-      return indexPositionBetweenElements
+    if (
+      store.editor.canvas.interactionSession != null &&
+      store.editor.canvas.interactionSession.activeControl.type === 'FLOW_SLIDER' &&
+      store.editor.canvas.interactionSession.interactionData.type === 'DRAG' &&
+      store.editor.canvas.interactionSession.interactionData.drag != null
+    ) {
+      return store.editor.canvas.interactionSession.interactionData.drag.x / 16
     } else {
       return 0
     }
@@ -174,7 +186,7 @@ const AnimatedReorderIndicator = React.memo((props: AnimatedReorderIndicatorProp
         position: 'absolute',
         top: controlAreaTopLeft.y + AnimatedIndicatorOffset,
         // left: styles.left,
-        left: controlAreaTopLeft.x + latestIndex * IndicatorSize + indicatorOffset,
+        left: controlAreaTopLeft.x + latestIndex * IndicatorSize + indicatorOffset * IndicatorSize,
         width: IndicatorSize - AnimatedIndicatorOffset,
         height: MenuHeight - AnimatedIndicatorOffset * 2,
         borderRadius: 4,

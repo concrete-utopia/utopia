@@ -21,7 +21,7 @@ import { isFlowReorderConversionApplicable } from './flow-reorder-strategy'
 import { DragInteractionData, StrategyState } from './interaction-state'
 import { isReorderAllowed } from './reorder-utils'
 
-const ReorderChangeThreshold = 80
+const ReorderChangeThreshold = 16
 const ResetTimer = 0
 
 export const flowReorderSliderStategy: CanvasStrategy = {
