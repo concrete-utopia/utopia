@@ -50,7 +50,7 @@ import { pushIntendedBounds } from '../commands/push-intended-bounds-command'
 
 export const absoluteResizeBoundingBoxStrategy: CanvasStrategy = {
   id: 'ABSOLUTE_RESIZE_BOUNDING_BOX',
-  name: 'Resize',
+  name: () => 'Resize',
   isApplicable: (canvasState, interactionState, metadata, allElementProps) => {
     const selectedElements = getTargetPathsFromInteractionTarget(canvasState.interactionTarget)
     if (selectedElements.length > 0) {
