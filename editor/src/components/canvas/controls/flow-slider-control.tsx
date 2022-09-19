@@ -197,7 +197,7 @@ const AnimatedReorderIndicator = React.memo((props: AnimatedReorderIndicatorProp
         height: MenuHeight - AnimatedIndicatorOffset * 2,
         borderRadius: 4,
         background: colorTheme.primary.value,
-        transition: 'left 0.2s ease',
+        transition: 'left 0.05s linear',
       }}
       css={{
         opacity: 0.6,
