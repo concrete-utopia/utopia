@@ -22,6 +22,7 @@ import { createInteractionViaMouse, flowSlider } from '../canvas-strategies/inte
 import { windowToCanvasCoordinates } from '../dom-lookup'
 import { CanvasOffsetWrapper } from './canvas-offset-wrapper'
 import { ElementPath } from '../../../core/shared/project-file-types'
+import { findNewIndex } from '../canvas-strategies/flow-reorder-slider-strategy'
 
 const IconSize = 16
 const IndicatorSize = (scale: number) => IconSize / scale
@@ -170,9 +171,10 @@ const AnimatedReorderIndicator = React.memo((props: AnimatedReorderIndicatorProp
       store.editor.canvas.interactionSession.interactionData.type === 'DRAG' &&
       store.editor.canvas.interactionSession.interactionData.drag != null
     ) {
-      return store.editor.canvas.interactionSession.interactionData.drag.x / 16
+      const dragDelta = store.editor.canvas.interactionSession.interactionData.drag
+      return findNewIndex(startingIndex, dragDelta, siblings, 'raw-value')
     } else {
-      return 0
+      return startingIndex
     }
   }, 'FlowSliderControl indicatorOffset')
 
@@ -181,9 +183,7 @@ const AnimatedReorderIndicator = React.memo((props: AnimatedReorderIndicatorProp
       style={{
         position: 'absolute',
         top: controlAreaTopLeft.y + AnimatedIndicatorOffset(scale),
-        left:
-          controlAreaTopLeft.x +
-          mod(startingIndex + indicatorOffset, siblings.length) * IndicatorSize(scale),
+        left: controlAreaTopLeft.x + indicatorOffset * IndicatorSize(scale),
         width: IndicatorSize(scale) - AnimatedIndicatorOffset(scale),
         height: MenuHeight(scale) - AnimatedIndicatorOffset(scale) * 2,
         borderRadius: 4 / scale,
