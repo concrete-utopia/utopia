@@ -81,7 +81,7 @@ export const flowReorderSliderStategy: CanvasStrategy = {
       const lastReorderIdx = strategyState.customStrategyState.lastReorderIdx ?? unpatchedIndex
 
       const { newIndex, flowReorderIndexPosition } = findNewIndex(
-        lastReorderIdx,
+        unpatchedIndex,
         interactionState.interactionData.drag,
         siblingsOfTarget,
         strategyState,
@@ -116,11 +116,7 @@ export const flowReorderSliderStategy: CanvasStrategy = {
         ],
         {
           lastReorderIdx: newIndex,
-          flowDragDeltaSinceLastReorder: maybeResetFlowReorderDragDelta(
-            shouldReorder,
-            interactionState.interactionData,
-            strategyState,
-          ),
+          flowDragDeltaSinceLastReorder: null,
           flowLastReorderHappened: lastReorderHappened,
         },
       )
@@ -166,7 +162,7 @@ function findNewIndex(
       ? pointDifference(strategyState.customStrategyState.flowDragDeltaSinceLastReorder, drag)
       : drag
 
-  const reorderIndexPositionFraction = dragVectorSinceLastReorder.x / ReorderChangeThreshold
+  const reorderIndexPositionFraction = drag.x / ReorderChangeThreshold
   const indexOffset = Math.round(reorderIndexPositionFraction)
   return {
     newIndex: mod(lastReorderIdx + indexOffset, siblings.length),
