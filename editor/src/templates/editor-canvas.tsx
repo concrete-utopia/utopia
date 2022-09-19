@@ -1224,33 +1224,47 @@ export class EditorCanvas extends React.Component<EditorCanvasProps> {
         ) {
           const dragStart = this.props.editor.canvas.interactionSession.interactionData.dragStart
 
-          let newDrag = roundPointForScale(
-            Utils.offsetPoint(canvasPositions.canvasPositionRounded, Utils.negate(dragStart)),
-            this.props.model.scale,
-          )
           if (document.pointerLockElement) {
-            newDrag = roundPointForScale(
+            const newDrag = roundPointForScale(
               Utils.offsetPoint(
                 this.props.editor.canvas.interactionSession.interactionData.drag ?? zeroCanvasPoint,
                 canvasPoint({ x: event.movementX, y: event.movementY }),
               ),
               this.props.model.scale,
             )
+            this.handleEvent({
+              ...canvasPositions,
+              event: 'MOVE',
+              modifiers: Modifier.modifiersForEvent(event),
+              cursor: null,
+              nativeEvent: event,
+              interactionSession: updateInteractionViaMouse(
+                this.props.editor.canvas.interactionSession,
+                newDrag,
+                Modifier.modifiersForEvent(event),
+                null,
+                'ignore-threshold',
+              ),
+            })
+          } else {
+            const newDrag = roundPointForScale(
+              Utils.offsetPoint(canvasPositions.canvasPositionRounded, Utils.negate(dragStart)),
+              this.props.model.scale,
+            )
+            this.handleEvent({
+              ...canvasPositions,
+              event: 'MOVE',
+              modifiers: Modifier.modifiersForEvent(event),
+              cursor: null,
+              nativeEvent: event,
+              interactionSession: updateInteractionViaMouse(
+                this.props.editor.canvas.interactionSession,
+                newDrag,
+                Modifier.modifiersForEvent(event),
+                null,
+              ),
+            })
           }
-          this.handleEvent({
-            ...canvasPositions,
-            event: 'MOVE',
-            modifiers: Modifier.modifiersForEvent(event),
-            cursor: null,
-            nativeEvent: event,
-            interactionSession: updateInteractionViaMouse(
-              this.props.editor.canvas.interactionSession,
-              newDrag,
-              Modifier.modifiersForEvent(event),
-              null,
-              document.pointerLockElement ? 'ignore-threshold' : 'use-threshold',
-            ),
-          })
         } else if (dragState == null || !dragStarted) {
           this.handleEvent({
             ...canvasPositions,
