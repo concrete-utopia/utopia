@@ -1,4 +1,3 @@
-import { stripNulls } from '../../../core/shared/array-utils'
 import * as EP from '../../../core/shared/element-path'
 import { ElementInstanceMetadataMap } from '../../../core/shared/element-template'
 import { memoize } from '../../../core/shared/memoize'
@@ -99,7 +98,7 @@ export const lookForApplicableParentStrategy: CanvasStrategy = {
       return emptyStrategyApplicationResult
     }
 
-    const { strategies, interactionTarget } = result
+    const { strategies, interactionTarget, componentsInSubtree } = result
     if (strategies.length < 1) {
       return emptyStrategyApplicationResult
     }
@@ -125,14 +124,16 @@ export const lookForApplicableParentStrategy: CanvasStrategy = {
       ? 'always'
       : 'mid-interaction'
 
+    const updateSelectionCommands = !shouldUpdateSelectedViews
+      ? []
+      : [updateSelectedViews(howToUpdateSelectedViews, componentsInSubtree)]
+
     return strategyApplicationResult(
-      stripNulls([
+      [
         ...chosenStrategyApplicationResult.commands,
-        shouldUpdateSelectedViews
-          ? updateSelectedViews(howToUpdateSelectedViews, interactionTarget)
-          : null,
+        ...updateSelectionCommands,
         setCursorCommand('mid-interaction', CSSCursor.MovingMagic),
-      ]),
+      ],
       chosenStrategyApplicationResult.customStatePatch,
       chosenStrategyApplicationResult.status,
     )
@@ -141,9 +142,14 @@ export const lookForApplicableParentStrategy: CanvasStrategy = {
 
 function* elementAncestry(path: ElementPath) {
   let currentParentPath = path
+  const componentsInSubtree: Array<ElementPath> = [path]
   while (!EP.isStoryboardChild(currentParentPath)) {
-    yield currentParentPath
+    yield {
+      root: currentParentPath,
+      componentsInSubtree,
+    }
     const parent = EP.parentPath(currentParentPath)
+    componentsInSubtree.push(parent)
     currentParentPath = parent
   }
 }
@@ -208,6 +214,7 @@ function isApplicableInner(
 interface IsApplicableTraverseResult {
   strategies: Array<CanvasStrategy>
   interactionTarget: Array<ElementPath>
+  componentsInSubtree: Array<ElementPath>
 }
 
 function isApplicableTraverse(
@@ -231,10 +238,13 @@ function isApplicableTraverse(
     return {
       strategies: applicableStrategies,
       interactionTarget: pathsFromInteractionTarget(canvasState.interactionTarget),
+      componentsInSubtree: [],
     }
   }
 
-  for (const path of elementAncestry(canvasState.interactionTarget.elements[0])) {
+  for (const { root: path, componentsInSubtree } of elementAncestry(
+    canvasState.interactionTarget.elements[0],
+  )) {
     const patchedCanvasState = patchCanvasStateInteractionTargetPath(canvasState, [path])
     const applicableStrategies = getApplicableStrategies(
       strategies,
@@ -248,6 +258,7 @@ function isApplicableTraverse(
       return {
         strategies: applicableStrategies,
         interactionTarget: [path],
+        componentsInSubtree,
       }
     }
   }
