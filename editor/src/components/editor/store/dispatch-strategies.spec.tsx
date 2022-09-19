@@ -234,6 +234,8 @@ describe('interactionStart', () => {
         "customStrategyState": Object {
           "duplicatedElementNewUids": Object {},
           "escapeHatchActivated": false,
+          "flowDragDeltaSinceLastReorder": null,
+          "flowLastReorderHappened": null,
           "lastReorderIdx": null,
         },
         "sortedApplicableStrategies": Array [
@@ -295,6 +297,8 @@ describe('interactionStart', () => {
         "customStrategyState": Object {
           "duplicatedElementNewUids": Object {},
           "escapeHatchActivated": false,
+          "flowDragDeltaSinceLastReorder": null,
+          "flowLastReorderHappened": null,
           "lastReorderIdx": null,
         },
         "sortedApplicableStrategies": null,
@@ -360,6 +364,8 @@ describe('interactionUpdatex', () => {
         "customStrategyState": Object {
           "duplicatedElementNewUids": Object {},
           "escapeHatchActivated": false,
+          "flowDragDeltaSinceLastReorder": null,
+          "flowLastReorderHappened": null,
           "lastReorderIdx": null,
         },
         "sortedApplicableStrategies": Array [
@@ -422,6 +428,8 @@ describe('interactionUpdatex', () => {
         "customStrategyState": Object {
           "duplicatedElementNewUids": Object {},
           "escapeHatchActivated": false,
+          "flowDragDeltaSinceLastReorder": null,
+          "flowLastReorderHappened": null,
           "lastReorderIdx": null,
         },
         "sortedApplicableStrategies": null,
@@ -515,6 +523,8 @@ describe('interactionHardReset', () => {
         "customStrategyState": Object {
           "duplicatedElementNewUids": Object {},
           "escapeHatchActivated": false,
+          "flowDragDeltaSinceLastReorder": null,
+          "flowLastReorderHappened": null,
           "lastReorderIdx": null,
         },
         "sortedApplicableStrategies": Array [
@@ -582,6 +592,8 @@ describe('interactionHardReset', () => {
         "customStrategyState": Object {
           "duplicatedElementNewUids": Object {},
           "escapeHatchActivated": false,
+          "flowDragDeltaSinceLastReorder": null,
+          "flowLastReorderHappened": null,
           "lastReorderIdx": null,
         },
         "sortedApplicableStrategies": null,
@@ -736,6 +748,8 @@ describe('interactionUpdate with user changed strategy', () => {
         "customStrategyState": Object {
           "duplicatedElementNewUids": Object {},
           "escapeHatchActivated": false,
+          "flowDragDeltaSinceLastReorder": null,
+          "flowLastReorderHappened": null,
           "lastReorderIdx": null,
         },
         "sortedApplicableStrategies": Array [
@@ -804,6 +818,8 @@ describe('interactionUpdate with user changed strategy', () => {
         "customStrategyState": Object {
           "duplicatedElementNewUids": Object {},
           "escapeHatchActivated": false,
+          "flowDragDeltaSinceLastReorder": null,
+          "flowLastReorderHappened": null,
           "lastReorderIdx": null,
         },
         "sortedApplicableStrategies": null,
