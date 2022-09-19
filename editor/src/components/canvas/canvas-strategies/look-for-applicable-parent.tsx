@@ -99,7 +99,7 @@ export const lookForApplicableParentStrategy: CanvasStrategy = {
       return emptyStrategyApplicationResult
     }
 
-    const { strategies, interactionTarget, componentsInSubtree } = result
+    const { strategies, componentsToBeUsed: componentToBeUsed, componentsInSubtree } = result
     if (strategies.length < 1) {
       return emptyStrategyApplicationResult
     }
@@ -112,10 +112,7 @@ export const lookForApplicableParentStrategy: CanvasStrategy = {
     )
 
     const chosenStrategy = strategiesInFitnessOrder[0]
-    const patchedCanvasState = patchCanvasStateInteractionTargetPath(
-      canvasState,
-      componentsInSubtree,
-    )
+    const patchedCanvasState = patchCanvasStateInteractionTargetPath(canvasState, componentToBeUsed)
 
     const chosenStrategyApplicationResult = chosenStrategy.apply(
       patchedCanvasState,
@@ -132,7 +129,7 @@ export const lookForApplicableParentStrategy: CanvasStrategy = {
       ? []
       : [
           highlightElementsCommand(componentsInSubtree),
-          updateSelectedViews(howToUpdateSelectedViews, interactionTarget),
+          updateSelectedViews(howToUpdateSelectedViews, componentToBeUsed),
         ]
 
     return strategyApplicationResult(
@@ -220,7 +217,7 @@ function isApplicableInner(
 
 interface IsApplicableTraverseResult {
   strategies: Array<CanvasStrategy>
-  interactionTarget: Array<ElementPath>
+  componentsToBeUsed: Array<ElementPath>
   componentsInSubtree: Array<ElementPath>
 }
 
@@ -244,7 +241,7 @@ function isApplicableTraverse(
     )
     return {
       strategies: applicableStrategies,
-      interactionTarget: pathsFromInteractionTarget(canvasState.interactionTarget),
+      componentsToBeUsed: pathsFromInteractionTarget(canvasState.interactionTarget),
       componentsInSubtree: [],
     }
   }
@@ -264,7 +261,7 @@ function isApplicableTraverse(
     if (!isSingletonAbsoluteMove(applicableStrategies)) {
       return {
         strategies: applicableStrategies,
-        interactionTarget: [path],
+        componentsToBeUsed: [path],
         componentsInSubtree,
       }
     }
