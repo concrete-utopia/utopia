@@ -1,3 +1,4 @@
+/* eslint-disable jest/expect-expect */
 import { act, fireEvent } from '@testing-library/react'
 import { PrettierConfig } from 'utopia-vscode-common'
 import {
