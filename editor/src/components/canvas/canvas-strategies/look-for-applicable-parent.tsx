@@ -48,7 +48,7 @@ export const lookForApplicableParentStrategy: CanvasStrategy = {
         b.fitness(canvasState, interactionSession, strategyState),
     )[0]
 
-    return fittestStrategy.name(canvasState, interactionSession, strategyState)
+    return fittestStrategy.name(canvasState, interactionSession, strategyState) + '*'
   },
   controlsToRender: [
     {
