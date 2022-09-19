@@ -98,7 +98,7 @@ export const lookForApplicableParentStrategy: CanvasStrategy = {
       return emptyStrategyApplicationResult
     }
 
-    const { strategies, interactionTarget, componentsInSubtree } = result
+    const { strategies, componentsInSubtree } = result
     if (strategies.length < 1) {
       return emptyStrategyApplicationResult
     }
@@ -111,7 +111,10 @@ export const lookForApplicableParentStrategy: CanvasStrategy = {
     )
 
     const chosenStrategy = strategiesInFitnessOrder[0]
-    const patchedCanvasState = patchCanvasStateInteractionTargetPath(canvasState, interactionTarget)
+    const patchedCanvasState = patchCanvasStateInteractionTargetPath(
+      canvasState,
+      componentsInSubtree,
+    )
 
     const chosenStrategyApplicationResult = chosenStrategy.apply(
       patchedCanvasState,
