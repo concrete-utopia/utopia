@@ -14,8 +14,8 @@ import { AllElementProps, EditorStatePatch } from '../../editor/store/editor-sta
 import { EdgePosition } from '../canvas-types'
 import { MoveIntoDragThreshold } from '../canvas-utils'
 import { CanvasCommand } from '../commands/commands'
+import { ApplicableStrategy } from './canvas-strategies'
 import {
-  CanvasStrategy,
   CanvasStrategyId,
   CustomStrategyState,
   defaultCustomStrategyState,
@@ -120,7 +120,7 @@ export interface StrategyState {
   currentStrategyCommands: Array<CanvasCommand>
   accumulatedPatches: Array<EditorStatePatch>
   commandDescriptions: Array<CommandDescription>
-  sortedApplicableStrategies: Array<{ strategy: CanvasStrategy; name: string }> | null
+  sortedApplicableStrategies: Array<ApplicableStrategy> | null
   status: StrategyApplicationStatus
 
   // Checkpointed metadata at the point at which a strategy change has occurred.

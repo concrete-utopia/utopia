@@ -39,6 +39,7 @@ import { dragToInsertStrategy } from './drag-to-insert-strategy'
 import { StateSelector } from 'zustand'
 import { NonResizableControl } from '../controls/select-mode/non-resizable-control'
 import { lookForApplicableParentStrategy } from './look-for-applicable-parent'
+import { optionalMap } from '../../../core/shared/optional-utils'
 
 export const RegisteredCanvasStrategies: Array<CanvasStrategy> = [
   absoluteMoveStrategy,
@@ -88,16 +89,18 @@ export function getApplicableStrategies(
   interactionSession: InteractionSession | null,
   metadata: ElementInstanceMetadataMap,
   allElementProps: AllElementProps,
-): Array<ApplicableStrategy> {
-  return strategies
-    .filter((strategy) => {
-      return strategy.isApplicable(canvasState, interactionSession, metadata, allElementProps)
-    })
-    .map((s) => ({ strategy: s, name: '' })) // TODO BEFoRE MERGE - phix
+): Array<CanvasStrategy> {
+  return strategies.filter((strategy) => {
+    return strategy.isApplicable(canvasState, interactionSession, metadata, allElementProps)
+  })
 }
 
 const getApplicableStrategiesSelector = createSelector(
-  (store: EditorStorePatched) => store.strategyState.sortedApplicableStrategies,
+  (store: EditorStorePatched) =>
+    optionalMap(
+      (sas) => sas.map((s) => s.strategy),
+      store.strategyState.sortedApplicableStrategies,
+    ),
   (store: EditorStorePatched): InteractionCanvasState => {
     return pickCanvasStateFromEditorState(store.editor, store.builtInDependencies)
   },
@@ -105,12 +108,12 @@ const getApplicableStrategiesSelector = createSelector(
   (store: EditorStorePatched) => store.editor.jsxMetadata,
   (store: EditorStorePatched) => store.editor.allElementProps,
   (
-    applicableStrategiesFromStrategyState: Array<ApplicableStrategy> | null,
+    applicableStrategiesFromStrategyState: Array<CanvasStrategy> | null,
     canvasState: InteractionCanvasState,
     interactionSession: InteractionSession | null,
     metadata: ElementInstanceMetadataMap,
     allElementProps: AllElementProps,
-  ): Array<ApplicableStrategy> => {
+  ): Array<CanvasStrategy> => {
     if (applicableStrategiesFromStrategyState != null) {
       return applicableStrategiesFromStrategyState
     } else {
@@ -130,7 +133,7 @@ export interface ApplicableStrategy {
   name: string
 }
 
-function useGetApplicableStrategies(): Array<ApplicableStrategy> {
+function useGetApplicableStrategies(): Array<CanvasStrategy> {
   return useEditorState(getApplicableStrategiesSelector, 'useGetApplicableStrategies', arrayEquals)
 }
 
@@ -154,7 +157,7 @@ export function getApplicableStrategiesOrderedByFitness(
   )
 
   // Compute the fitness results upfront.
-  const strategiesWithFitness = mapDropNulls(({ strategy }) => {
+  const strategiesWithFitness = mapDropNulls((strategy) => {
     const fitness = strategy.fitness(canvasState, interactionSession, strategyState)
     if (fitness <= 0) {
       return null
@@ -363,7 +366,7 @@ export function useGetApplicableStrategyControls(): Array<ControlWithKey> {
     let applicableControls: Array<ControlWithKey> = []
     let isResizable: boolean = false
     // Add the controls for currently applicable strategies.
-    for (const { strategy } of applicableStrategies) {
+    for (const strategy of applicableStrategies) {
       if (isResizableStrategy(strategy)) {
         isResizable = true
       }

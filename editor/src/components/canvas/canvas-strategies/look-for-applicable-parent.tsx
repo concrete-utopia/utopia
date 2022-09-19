@@ -165,7 +165,7 @@ function patchCanvasStateInteractionTargetPath(
   }
 }
 
-function isApplicableInner<T>(
+function isApplicableInner(
   canvasState: InteractionCanvasState,
   interactionSession: InteractionSession,
   metadata: ElementInstanceMetadataMap,

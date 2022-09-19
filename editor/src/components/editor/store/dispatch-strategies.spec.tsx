@@ -238,12 +238,15 @@ describe('interactionStart', () => {
         },
         "sortedApplicableStrategies": Array [
           Object {
-            "apply": [Function],
-            "controlsToRender": Array [],
-            "fitness": [Function],
-            "id": "TEST_STRATEGY",
-            "isApplicable": [Function],
             "name": "Test Strategy",
+            "strategy": Object {
+              "apply": [Function],
+              "controlsToRender": Array [],
+              "fitness": [Function],
+              "id": "TEST_STRATEGY",
+              "isApplicable": [Function],
+              "name": [Function],
+            },
           },
         ],
         "startingAllElementProps": Object {},
@@ -364,12 +367,15 @@ describe('interactionUpdatex', () => {
         },
         "sortedApplicableStrategies": Array [
           Object {
-            "apply": [Function],
-            "controlsToRender": Array [],
-            "fitness": [Function],
-            "id": "TEST_STRATEGY",
-            "isApplicable": [Function],
             "name": "Test Strategy",
+            "strategy": Object {
+              "apply": [Function],
+              "controlsToRender": Array [],
+              "fitness": [Function],
+              "id": "TEST_STRATEGY",
+              "isApplicable": [Function],
+              "name": [Function],
+            },
           },
         ],
         "startingAllElementProps": Object {},
@@ -519,12 +525,15 @@ describe('interactionHardReset', () => {
         },
         "sortedApplicableStrategies": Array [
           Object {
-            "apply": [Function],
-            "controlsToRender": Array [],
-            "fitness": [Function],
-            "id": "TEST_STRATEGY",
-            "isApplicable": [Function],
             "name": "Test Strategy",
+            "strategy": Object {
+              "apply": [Function],
+              "controlsToRender": Array [],
+              "fitness": [Function],
+              "id": "TEST_STRATEGY",
+              "isApplicable": [Function],
+              "name": [Function],
+            },
           },
         ],
         "startingAllElementProps": Object {},
@@ -740,12 +749,15 @@ describe('interactionUpdate with user changed strategy', () => {
         },
         "sortedApplicableStrategies": Array [
           Object {
-            "apply": [Function],
-            "controlsToRender": Array [],
-            "fitness": [Function],
-            "id": "TEST_STRATEGY",
-            "isApplicable": [Function],
             "name": "Test Strategy",
+            "strategy": Object {
+              "apply": [Function],
+              "controlsToRender": Array [],
+              "fitness": [Function],
+              "id": "TEST_STRATEGY",
+              "isApplicable": [Function],
+              "name": [Function],
+            },
           },
         ],
         "startingAllElementProps": Object {},
