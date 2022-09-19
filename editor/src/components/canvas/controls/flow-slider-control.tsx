@@ -1,4 +1,7 @@
+/** @jsxRuntime classic */
+/** @jsx jsx */
 import React from 'react'
+import { css, jsx } from '@emotion/react'
 import { useSpring, animated } from 'react-spring'
 import { MetadataUtils } from '../../../core/model/element-metadata-utils'
 import * as EP from '../../../core/shared/element-path'
@@ -78,18 +81,18 @@ export const FlowSliderControl = React.memo(() => {
       }
     },
     'FlowSliderControl',
-    (o, n) =>
-      arrayEquals(o.siblings, n.siblings, EP.pathsEqual) &&
-      o.latestIndex === n.latestIndex &&
-      o.startingIndex === n.startingIndex &&
-      rectanglesEqual(o.startingFrame, n.startingFrame),
+    (oldValue, newValue) =>
+      arrayEquals(oldValue.siblings, newValue.siblings, EP.pathsEqual) &&
+      oldValue.latestIndex === newValue.latestIndex &&
+      oldValue.startingIndex === newValue.startingIndex &&
+      rectanglesEqual(oldValue.startingFrame, newValue.startingFrame),
   )
 
   const controlAreaTopLeft = React.useMemo(() => {
-    const middle = getRectCenter(startingFrame ?? zeroCanvasRect)
+    const centerPoint = getRectCenter(startingFrame ?? zeroCanvasRect)
     return {
-      x: middle.x - IndicatorSize / 2 - startingIndex * IndicatorSize,
-      y: middle.y - MenuHeight / 2,
+      x: centerPoint.x - IndicatorSize / 2 - startingIndex * IndicatorSize,
+      y: centerPoint.y - MenuHeight / 2,
     } as CanvasPoint
   }, [startingFrame, startingIndex])
 
@@ -174,8 +177,8 @@ const AnimatedReorderIndicator = React.memo((props: AnimatedReorderIndicatorProp
         height: MenuHeight - AnimatedIndicatorOffset * 2,
         borderRadius: 4,
         background: colorTheme.primary.value,
-        // eslint-disable-next-line @typescript-eslint/ban-ts-comment
-        // @ts-ignore
+      }}
+      css={{
         opacity: 0.6,
       }}
     ></animated.div>
@@ -219,7 +222,7 @@ const FlowReorderControl = React.memo(({ controlPosition }: { controlPosition: C
     [dispatch, canvasOffsetRef, scaleRef],
   )
   return (
-    <>
+    <React.Fragment>
       <div
         style={{
           position: 'absolute',
@@ -244,6 +247,6 @@ const FlowReorderControl = React.memo(({ controlPosition }: { controlPosition: C
         }}
         onMouseDown={onMouseDown}
       ></div>
-    </>
+    </React.Fragment>
   )
 })
