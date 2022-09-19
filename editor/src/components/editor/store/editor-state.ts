@@ -380,7 +380,7 @@ export interface NavigatorState {
   dropTargetHint: DropTargetHint
   collapsedViews: ElementPath[]
   renamingTarget: ElementPath | null
-  highlightedTargets: ElementPath[]
+  highlightedTargets: Array<ElementPath>
 }
 
 export interface FloatingInsertMenuStateClosed {
