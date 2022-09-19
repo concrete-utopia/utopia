@@ -114,7 +114,8 @@ export function findNewIndex(
   siblings: Array<ElementPath>,
   shouldRound: 'rounded-value' | 'raw-value',
 ): number {
-  const reorderIndexPosition = drag.x / ReorderChangeThreshold
+  const dragDelta = Math.abs(drag.x) > Math.abs(drag.y) ? drag.x : drag.y
+  const reorderIndexPosition = dragDelta / ReorderChangeThreshold
   const indexOffset =
     shouldRound === 'rounded-value' ? Math.round(reorderIndexPosition) : reorderIndexPosition
   return mod(startingIndex + indexOffset, siblings.length)
