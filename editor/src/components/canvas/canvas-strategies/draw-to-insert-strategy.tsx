@@ -97,13 +97,12 @@ export const drawToInsertStrategy: CanvasStrategy = {
       if (insertionCommand != null) {
         const reparentCommand = updateFunctionCommand(
           'always',
-          (editorState, transient): Array<EditorStatePatch> => {
+          (editorState): Array<EditorStatePatch> => {
             return runTargetStrategiesForFreshlyInsertedElementToReparent(
               canvasState.builtInDependencies,
               editorState,
               strategyState,
               interactionState,
-              transient,
               insertionSubject,
               insertionCommand.frame,
             )
@@ -112,13 +111,13 @@ export const drawToInsertStrategy: CanvasStrategy = {
 
         const resizeCommand = updateFunctionCommand(
           'always',
-          (editorState, transient): Array<EditorStatePatch> => {
+          (editorState, commandLifecycle): Array<EditorStatePatch> => {
             return runTargetStrategiesForFreshlyInsertedElementToResize(
               canvasState.builtInDependencies,
               editorState,
               strategyState,
               interactionState,
-              transient,
+              commandLifecycle,
               insertionSubject,
               insertionCommand.frame,
             )
