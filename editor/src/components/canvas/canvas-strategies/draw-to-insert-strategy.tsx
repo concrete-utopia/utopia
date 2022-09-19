@@ -8,12 +8,7 @@ import {
   strategyApplicationResult,
   targetPaths,
 } from './canvas-strategy-types'
-import {
-  boundingArea,
-  interactionDataHardReset,
-  InteractionSession,
-  StrategyState,
-} from './interaction-state'
+import { boundingArea, InteractionSession, StrategyState } from './interaction-state'
 import { ElementInsertionSubject, InsertionSubject } from '../../editor/editor-modes'
 import { LayoutHelpers } from '../../../core/layout/layout-helpers'
 import { isLeft, right } from '../../../core/shared/either'
@@ -28,27 +23,19 @@ import {
   pickCanvasStateFromEditorState,
   RegisteredCanvasStrategies,
 } from './canvas-strategies'
-import { CanvasCommand, foldAndApplyCommandsInner } from '../commands/commands'
+import { foldAndApplyCommandsInner } from '../commands/commands'
 import { updateFunctionCommand } from '../commands/update-function-command'
-import { MetadataUtils } from '../../../core/model/element-metadata-utils'
+import {
+  createFakeMetadataForElement,
+  MetadataUtils,
+} from '../../../core/model/element-metadata-utils'
 import { elementPath } from '../../../core/shared/element-path'
 import * as EP from '../../../core/shared/element-path'
-import {
-  canvasPoint,
-  CanvasRectangle,
-  canvasRectangle,
-  localRectangle,
-} from '../../../core/shared/math-utils'
-import {
-  elementInstanceMetadata,
-  ElementInstanceMetadataMap,
-  emptySpecialSizeMeasurements,
-} from '../../../core/shared/element-template'
+import { canvasPoint, CanvasRectangle, canvasRectangle } from '../../../core/shared/math-utils'
 import { cmdModifier } from '../../../utils/modifiers'
 import { DragOutlineControl } from '../controls/select-mode/drag-outline-control'
 import { FlexReparentTargetIndicator } from '../controls/select-mode/flex-reparent-target-indicator'
 import { ElementPath } from '../../../core/shared/project-file-types'
-import { ReparentElement } from '../commands/reparent-element-command'
 
 export const drawToInsertStrategy: CanvasStrategy = {
   id: 'DRAW_TO_INSERT',
@@ -228,25 +215,17 @@ function runTargetStrategiesForFreshlyInsertedElementToReparent(
 
   const element = insertionSubject.element
   const path = EP.appendToPath(rootPath, element.uid)
-  const specialSizeMeasurements = { ...emptySpecialSizeMeasurements }
-  specialSizeMeasurements.position = 'absolute'
+
+  const fakeMetadata = createFakeMetadataForElement(
+    path,
+    element,
+    frame,
+    strategyState.startingMetadata,
+  )
 
   const patchedMetadata = {
     ...strategyState.startingMetadata,
-
-    [EP.toString(path)]: elementInstanceMetadata(
-      path,
-      right(element),
-      frame,
-      localRectangle(frame),
-      false,
-      false,
-      specialSizeMeasurements,
-      null,
-      null,
-      null,
-      null,
-    ),
+    [EP.toString(path)]: fakeMetadata,
   }
 
   const patchedStrategyState = {
@@ -311,37 +290,21 @@ function runTargetStrategiesForFreshlyInsertedElementToResize(
   const element = insertionSubject.element
   const path = editorState.selectedViews[0]
 
-  const parentPath = EP.parentPath(path)
-  const parentElement = MetadataUtils.findElementByElementPath(
+  const fakeMetadata = createFakeMetadataForElement(
+    path,
+    element,
+    frame,
     strategyState.startingMetadata,
-    parentPath,
   )
-  const isFlex = parentElement != null && MetadataUtils.isFlexLayoutedContainer(parentElement)
 
-  const specialSizeMeasurements = { ...emptySpecialSizeMeasurements }
-  specialSizeMeasurements.position = isFlex ? 'relative' : 'absolute'
-  specialSizeMeasurements.parentLayoutSystem = isFlex ? 'flex' : 'none'
-
-  const patchedMetadata2 = {
+  const patchedMetadata = {
     ...strategyState.startingMetadata,
-    [EP.toString(path)]: elementInstanceMetadata(
-      path,
-      right(element),
-      frame,
-      localRectangle(frame),
-      false,
-      false,
-      specialSizeMeasurements,
-      null,
-      null,
-      null,
-      null,
-    ),
+    [EP.toString(path)]: fakeMetadata,
   }
 
   const patchedStrategyState = {
     ...strategyState,
-    startingMetadata: patchedMetadata2,
+    startingMetadata: patchedMetadata,
   }
 
   const patchedCanvasState: InteractionCanvasState = {

@@ -11,7 +11,7 @@ import {
 import { InteractionSession, StrategyState } from './interaction-state'
 import { ElementInsertionSubject, InsertionSubject } from '../../editor/editor-modes'
 import { LayoutHelpers } from '../../../core/layout/layout-helpers'
-import { isLeft, right } from '../../../core/shared/either'
+import { isLeft } from '../../../core/shared/either'
 import {
   InsertElementInsertionSubject,
   insertElementInsertionSubject,
@@ -25,22 +25,15 @@ import {
 } from './canvas-strategies'
 import { foldAndApplyCommandsInner } from '../commands/commands'
 import { updateFunctionCommand } from '../commands/update-function-command'
-import { MetadataUtils } from '../../../core/model/element-metadata-utils'
+import {
+  createFakeMetadataForElement,
+  MetadataUtils,
+} from '../../../core/model/element-metadata-utils'
 import { elementPath } from '../../../core/shared/element-path'
 import * as EP from '../../../core/shared/element-path'
-import * as PP from '../../../core/shared/property-path'
-import { CanvasRectangle, canvasRectangle, localRectangle } from '../../../core/shared/math-utils'
-import {
-  elementInstanceMetadata,
-  ElementInstanceMetadataMap,
-  emptyComments,
-  emptySpecialSizeMeasurements,
-  getJSXAttribute,
-  jsxAttributeValue,
-  setJSXAttributesAttribute,
-} from '../../../core/shared/element-template'
+import { CanvasRectangle, canvasRectangle } from '../../../core/shared/math-utils'
+import { ElementInstanceMetadataMap } from '../../../core/shared/element-template'
 import { cmdModifier } from '../../../utils/modifiers'
-import { setJSXValueInAttributeAtPath } from '../../../core/shared/jsx-attributes'
 import { DragOutlineControl } from '../controls/select-mode/drag-outline-control'
 import { FlexReparentTargetIndicator } from '../controls/select-mode/flex-reparent-target-indicator'
 
@@ -216,23 +209,17 @@ function runTargetStrategiesForFreshlyInsertedElement(
     ): ElementInstanceMetadataMap => {
       const element = curr.command.subject.element
       const path = EP.appendToPath(rootPath, element.uid)
-      const specialSizeMeasurements = { ...emptySpecialSizeMeasurements }
-      specialSizeMeasurements.position = 'absolute'
+
+      const fakeMetadata = createFakeMetadataForElement(
+        path,
+        element,
+        curr.frame,
+        strategyState.startingMetadata,
+      )
+
       return {
         ...acc,
-        [EP.toString(path)]: elementInstanceMetadata(
-          path,
-          right(element),
-          curr.frame,
-          localRectangle(curr.frame),
-          false,
-          false,
-          specialSizeMeasurements,
-          null,
-          null,
-          null,
-          null,
-        ),
+        [EP.toString(path)]: fakeMetadata,
       }
     },
     strategyState.startingMetadata,
