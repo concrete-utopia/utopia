@@ -1022,15 +1022,9 @@ export function segmentIntersection(
 }
 
 export function mod(n: number, m: number) {
-  // because in JS % is the remainder operator
-  // this version works on negative n numbers
   return ((n % m) + m) % m
 }
 
 export function easeOutCubic(x: number): number {
   return 1 - Math.pow(1 - x, 3)
-}
-
-export function easeOutQuint(x: number): number {
-  return 1 - Math.pow(1 - x, 5)
 }

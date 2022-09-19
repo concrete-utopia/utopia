@@ -13,8 +13,8 @@ export interface CustomStrategyState {
   escapeHatchActivated: boolean
   lastReorderIdx: number | null
   duplicatedElementNewUids: { [elementPath: string]: string }
-  reorderDragDeltaSinceChange: CanvasVector | null
-  reorderChangeTime: number | null
+  flowDragDeltaSinceLastReorder: CanvasVector | null
+  flowLastReorderHappened: number | null
 }
 
 export type CustomStrategyStatePatch = Partial<CustomStrategyState>
@@ -24,8 +24,8 @@ export function defaultCustomStrategyState(): CustomStrategyState {
     escapeHatchActivated: false,
     lastReorderIdx: null,
     duplicatedElementNewUids: {},
-    reorderDragDeltaSinceChange: null,
-    reorderChangeTime: null,
+    flowDragDeltaSinceLastReorder: null,
+    flowLastReorderHappened: null,
   }
 }
 

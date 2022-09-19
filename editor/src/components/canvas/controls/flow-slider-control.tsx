@@ -45,11 +45,11 @@ export const FlowSliderControl = React.memo(() => {
     (store) => {
       if (store.editor.selectedViews.length === 1) {
         const target = store.editor.selectedViews[0]
-        const siblingsMetadata = MetadataUtils.getSiblings(
+        const siblingPaths = MetadataUtils.getSiblings(
           store.editor.canvas.interactionSession?.latestMetadata ?? store.editor.jsxMetadata,
           target,
         ).map((sibling) => sibling.elementPath)
-        const targetIndex = siblingsMetadata.findIndex((sibling) => EP.pathsEqual(sibling, target))
+        const targetIndex = siblingPaths.findIndex((sibling) => EP.pathsEqual(sibling, target))
         const latestFrame =
           MetadataUtils.getFrameInCanvasCoords(target, store.editor.jsxMetadata) ?? zeroCanvasRect
 
@@ -59,7 +59,7 @@ export const FlowSliderControl = React.memo(() => {
             target,
           ).map((sibling) => sibling.elementPath)
           return {
-            siblings: siblingsMetadata,
+            siblings: siblingPaths,
             latestIndex: targetIndex,
             startingIndex: startingSiblingsMetadata.findIndex((sibling) =>
               EP.pathsEqual(sibling, target),
@@ -70,7 +70,7 @@ export const FlowSliderControl = React.memo(() => {
           }
         } else {
           return {
-            siblings: siblingsMetadata,
+            siblings: siblingPaths,
             latestIndex: targetIndex,
             startingIndex: targetIndex,
             startingFrame: latestFrame,
@@ -154,7 +154,7 @@ const AnimatedReorderIndicator = React.memo((props: AnimatedReorderIndicatorProp
   const { controlAreaTopLeft, latestIndex } = props
 
   const indicatorOffset = useEditorState((store) => {
-    const indexPositionBetweenElements = store.editor.canvas.controls.reorderIndexPositionFraction
+    const indexPositionBetweenElements = store.editor.canvas.controls.flowReorderIndexPosition
     if (indexPositionBetweenElements != null) {
       return easeOutCubic(indexPositionBetweenElements)
     } else {

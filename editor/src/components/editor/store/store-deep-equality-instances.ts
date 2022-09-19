@@ -1551,7 +1551,7 @@ export const EditorStateCanvasControlsKeepDeepEquality: KeepDeepEqualityCall<Edi
     nullableDeepEquality(arrayDeepEquality(ElementPathKeepDeepEquality)),
     (controls) => controls.reparentedToPaths,
     ElementPathArrayKeepDeepEquality,
-    (controls) => controls.reorderIndexPositionFraction,
+    (controls) => controls.flowReorderIndexPosition,
     NullableNumberKeepDeepEquality,
     editorStateCanvasControls,
   )
