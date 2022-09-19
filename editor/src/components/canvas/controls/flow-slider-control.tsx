@@ -1,13 +1,8 @@
-/** @jsxRuntime classic */
-/** @jsx jsx */
 import React from 'react'
-import { css, jsx } from '@emotion/react'
-import { useSpring, animated } from 'react-spring'
 import { MetadataUtils } from '../../../core/model/element-metadata-utils'
 import * as EP from '../../../core/shared/element-path'
 import {
   CanvasPoint,
-  easeOutCubic,
   getRectCenter,
   mod,
   point,
@@ -18,7 +13,7 @@ import {
 import { arrayEquals } from '../../../core/shared/utils'
 import { Modifier } from '../../../utils/modifiers'
 import { when } from '../../../utils/react-conditionals'
-import { Icons, useColorTheme, UtopiaStyles } from '../../../uuiui'
+import { Icons, useColorTheme } from '../../../uuiui'
 import { CSSCursor } from '../../../uuiui-deps'
 import { useEditorState, useRefEditorState } from '../../editor/store/store-hook'
 import { stopPropagation } from '../../inspector/common/inspector-utils'
@@ -28,13 +23,14 @@ import { windowToCanvasCoordinates } from '../dom-lookup'
 import { CanvasOffsetWrapper } from './canvas-offset-wrapper'
 import { ElementPath } from '../../../core/shared/project-file-types'
 
-const IndicatorSize = 16
-const MenuHeight = 22
-const AnimatedIndicatorOffset = 2
-const ControlSize = 10
-const ClickAreaSize = ControlSize + 6
+const IconSize = 16
+const IndicatorSize = (scale: number) => IconSize / scale
+const MenuHeight = (scale: number) => 22 / scale
+const AnimatedIndicatorOffset = (scale: number) => 2 / scale
+const ControlSize = (scale: number) => 10 / scale
 
 export const FlowSliderControl = React.memo(() => {
+  const scale = useEditorState((store) => store.editor.canvas.scale, 'FlowSliderControl scale')
   const colorTheme = useColorTheme()
   const isDragging = useEditorState(
     (store) =>
@@ -93,17 +89,17 @@ export const FlowSliderControl = React.memo(() => {
   const controlAreaTopLeft = React.useMemo(() => {
     const centerPoint = getRectCenter(startingFrame ?? zeroCanvasRect)
     return {
-      x: centerPoint.x - IndicatorSize / 2 - startingIndex * IndicatorSize,
-      y: centerPoint.y - MenuHeight / 2,
+      x: centerPoint.x - IndicatorSize(scale) / 2 - startingIndex * IndicatorSize(scale),
+      y: centerPoint.y - MenuHeight(scale) / 2,
     } as CanvasPoint
-  }, [startingFrame, startingIndex])
+  }, [startingFrame, startingIndex, scale])
 
   const controlTopLeft = React.useMemo(() => {
     return {
-      x: controlAreaTopLeft.x + latestIndex * IndicatorSize + AnimatedIndicatorOffset,
-      y: getRectCenter(startingFrame ?? zeroCanvasRect).y - ControlSize / 2,
+      x: controlAreaTopLeft.x + latestIndex * IndicatorSize(scale) + AnimatedIndicatorOffset(scale),
+      y: getRectCenter(startingFrame ?? zeroCanvasRect).y - ControlSize(scale) / 2,
     } as CanvasPoint
-  }, [startingFrame, controlAreaTopLeft, latestIndex])
+  }, [startingFrame, controlAreaTopLeft, latestIndex, scale])
 
   if (siblings.length > 1) {
     return (
@@ -115,19 +111,26 @@ export const FlowSliderControl = React.memo(() => {
               position: 'absolute',
               top: controlAreaTopLeft.y,
               left: controlAreaTopLeft.x,
-              width: siblings.length * IndicatorSize,
-              height: MenuHeight,
-              borderRadius: 4,
+              width: siblings.length * IndicatorSize(scale),
+              height: MenuHeight(scale),
+              borderRadius: 4 / scale,
               opacity: '50%',
               background: colorTheme.bg0.value,
-              boxShadow: UtopiaStyles.popup.boxShadow,
+              boxShadow: `inset 0px 0px 0px ${0.5 / scale}px ${colorTheme.border3.value} , 0px ${
+                2 / scale
+              }px ${4 / scale}px 0px ${colorTheme.fg6.o(50).value}`,
               cursor: CSSCursor.ResizeEW,
               display: 'flex',
               alignItems: 'center',
+              boxSizing: 'content-box',
             }}
           >
             {siblings.map((s) => {
-              return <Icons.Dot key={EP.toString(s)} width={IndicatorSize} height={IndicatorSize} />
+              return (
+                <div key={EP.toString(s)} style={{ zoom: 1 / scale }}>
+                  <Icons.Dot width={IconSize} height={IconSize} />
+                </div>
+              )
             })}
           </div>,
         )}
@@ -155,6 +158,10 @@ interface AnimatedReorderIndicatorProps {
 
 const AnimatedReorderIndicator = React.memo((props: AnimatedReorderIndicatorProps) => {
   const colorTheme = useColorTheme()
+  const scale = useEditorState(
+    (store) => store.editor.canvas.scale,
+    'AnimatedReorderIndicator scale',
+  )
   const { controlAreaTopLeft, latestIndex, siblings } = props
 
   // const indicatorOffset = useEditorState((store) => {
@@ -179,28 +186,19 @@ const AnimatedReorderIndicator = React.memo((props: AnimatedReorderIndicatorProp
     }
   }, 'FlowSliderControl indicatorOffset')
 
-  // const styles = useSpring({
-  //   left: controlAreaTopLeft.x + latestIndex * IndicatorSize + indicatorOffset,
-  //   config: { mass: 1, tension: 170, friction: 26 },
-  // })
-
   return (
     <div
       style={{
         position: 'absolute',
-        top: controlAreaTopLeft.y + AnimatedIndicatorOffset,
-        // left: styles.left,
+        top: controlAreaTopLeft.y + AnimatedIndicatorOffset(scale),
         left:
           controlAreaTopLeft.x +
-          mod(latestIndex + indicatorOffset, siblings.length) * IndicatorSize +
-          AnimatedIndicatorOffset / 2,
-        width: IndicatorSize - AnimatedIndicatorOffset,
-        height: MenuHeight - AnimatedIndicatorOffset * 2,
-        borderRadius: 4,
+          mod(latestIndex + indicatorOffset, siblings.length) * IndicatorSize(scale),
+        width: IndicatorSize(scale) - AnimatedIndicatorOffset(scale),
+        height: MenuHeight(scale) - AnimatedIndicatorOffset(scale) * 2,
+        borderRadius: 4 / scale,
         background: colorTheme.primary.value,
         transition: 'left 0.05s linear',
-      }}
-      css={{
         opacity: 0.6,
       }}
     ></div>
@@ -209,7 +207,9 @@ const AnimatedReorderIndicator = React.memo((props: AnimatedReorderIndicatorProp
 
 const FlowReorderControl = React.memo(({ controlPosition }: { controlPosition: CanvasPoint }) => {
   const colorTheme = useColorTheme()
+  const scale = useEditorState((store) => store.editor.canvas.scale, 'FlowReorderControl scale')
   const ref = React.useRef<HTMLDivElement>(null)
+  const ClickAreaSize = ControlSize(scale) + 6 / scale
 
   const dispatch = useRefEditorState((store) => store.dispatch)
   const scaleRef = useRefEditorState((store) => store.editor.canvas.scale)
@@ -250,19 +250,21 @@ const FlowReorderControl = React.memo(({ controlPosition }: { controlPosition: C
           position: 'absolute',
           top: controlPosition.y,
           left: controlPosition.x,
-          width: ControlSize,
-          height: ControlSize,
+          width: ControlSize(scale),
+          height: ControlSize(scale),
           borderRadius: '50%',
           background: colorTheme.bg0.value,
-          boxShadow: UtopiaStyles.popup.boxShadow,
+          boxShadow: `inset 0px 0px 0px ${0.5 / scale}px ${colorTheme.border3.value} , 0px ${
+            2 / scale
+          }px ${4 / scale}px 0px ${colorTheme.fg6.o(50).value}`,
         }}
       ></div>
       <div
         ref={ref}
         style={{
           position: 'absolute',
-          top: controlPosition.y - (ClickAreaSize - ControlSize) / 2,
-          left: controlPosition.x - (ClickAreaSize - ControlSize) / 2,
+          top: controlPosition.y - (ClickAreaSize - ControlSize(scale)) / 2,
+          left: controlPosition.x - (ClickAreaSize - ControlSize(scale)) / 2,
           width: ClickAreaSize,
           height: ClickAreaSize,
           cursor: CSSCursor.ResizeEW,
