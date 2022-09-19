@@ -169,22 +169,12 @@ const computeResultingStyle = (
   } else {
     // unselected
     if (isHighlightedForInteraction) {
-      if (isFocusedComponent) {
-        result = {
-          style: {
-            background: colorTheme.brandNeonPink.o(80).value,
-            color: colorTheme.white.value,
-          },
-          iconColor: 'warning',
-        }
-      } else {
-        result = {
-          style: {
-            background: colorTheme.brandNeonPink.o(80).value,
-            color: colorTheme.white.value,
-          },
-          iconColor: 'main',
-        }
+      result = {
+        style: {
+          background: colorTheme.brandPurple.o(70).value,
+          color: colorTheme.white.value,
+        },
+        iconColor: 'main',
       }
     } else if (isInsideComponent) {
       result = componentUnselected(colorTheme)
