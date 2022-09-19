@@ -440,6 +440,96 @@ describe('Unified Reparent Fitness Function Tests', () => {
     `),
     )
   })
+
+  it('ignore elements under the mouse at drag start', async () => {
+    const renderResult = await renderTestEditorWithCode(
+      makeTestProjectCodeWithSnippet(`
+        <div
+          style={{
+            backgroundColor: 'white',
+            position: 'absolute',
+            width: '100%',
+            height: '100%',
+          }}
+          data-uid='aaa'
+        >
+          <div
+            style={{
+              backgroundColor: '#0091FFAA',
+              position: 'absolute',
+              left: 0,
+              top: 0,
+              width: 100,
+              height: 100,
+            }}
+            data-uid='targetparent'
+            data-testid='targetparent'
+          />
+          <div
+            style={{
+              backgroundColor: '#0091FFAA',
+              position: 'absolute',
+              left: 0,
+              top: 0,
+              width: 50,
+              height: 50,
+            }}
+            data-uid='draggedElement'
+            data-testid='draggedElement'
+          />
+        </div>
+      `),
+      'await-first-dom-report',
+    )
+
+    const dragDelta = windowPoint({ x: 10, y: 0 })
+
+    const targetPath = EP.appendNewElementPath(TestScenePath, ['aaa', 'draggedElement'])
+    await renderResult.dispatch([selectComponents([targetPath], false)], false)
+
+    act(() => dragElement(renderResult, 'draggedElement', dragDelta, emptyModifiers, true))
+
+    await renderResult.getDispatchFollowUpActionsFinished()
+
+    expect(getPrintedUiJsCode(renderResult.getEditorState())).toEqual(
+      makeTestProjectCodeWithSnippet(`
+        <div
+          style={{
+            backgroundColor: 'white',
+            position: 'absolute',
+            width: '100%',
+            height: '100%',
+          }}
+          data-uid='aaa'
+        >
+          <div
+            style={{
+              backgroundColor: '#0091FFAA',
+              position: 'absolute',
+              left: 0,
+              top: 0,
+              width: 100,
+              height: 100,
+            }}
+            data-uid='targetparent'
+            data-testid='targetparent'
+          />
+          <div
+            style={{
+              backgroundColor: '#0091FFAA',
+              position: 'absolute',
+              left: 10,
+              top: 0,
+              width: 50,
+              height: 50,
+            }}
+            data-uid='draggedElement'
+            data-testid='draggedElement'
+          />
+        </div>
+    `),
+    )
+  })
 })
 
 function getVariedProjectCodeWithAFlexContainer(flexDirection: string): string {
