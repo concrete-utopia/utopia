@@ -192,7 +192,8 @@ const AnimatedReorderIndicator = React.memo((props: AnimatedReorderIndicatorProp
         // left: styles.left,
         left:
           controlAreaTopLeft.x +
-          mod(latestIndex + indicatorOffset, siblings.length) * IndicatorSize,
+          mod(latestIndex + indicatorOffset, siblings.length) * IndicatorSize +
+          AnimatedIndicatorOffset / 2,
         width: IndicatorSize - AnimatedIndicatorOffset,
         height: MenuHeight - AnimatedIndicatorOffset * 2,
         borderRadius: 4,
