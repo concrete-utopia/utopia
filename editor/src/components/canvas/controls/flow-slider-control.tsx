@@ -157,7 +157,7 @@ const AnimatedReorderIndicator = React.memo((props: AnimatedReorderIndicatorProp
     const indexPositionBetweenElements = store.editor.canvas.controls.flowReorderIndexPosition
     if (indexPositionBetweenElements != null) {
       // return easeOutCubic()
-      return indexPositionBetweenElements * 2
+      return indexPositionBetweenElements
     } else {
       return 0
     }
