@@ -156,15 +156,15 @@ const AnimatedReorderIndicator = React.memo((props: AnimatedReorderIndicatorProp
   const indicatorOffset = useEditorState((store) => {
     const indexPositionBetweenElements = store.editor.canvas.controls.flowReorderIndexPosition
     if (indexPositionBetweenElements != null) {
-      return easeOutCubic(indexPositionBetweenElements)
+      return easeOutCubic(indexPositionBetweenElements * 2)
     } else {
       return 0
     }
   }, 'FlowSliderControl indicatorOffset')
 
   const styles = useSpring({
-    left: controlAreaTopLeft.x + latestIndex * IndicatorSize + indicatorOffset * 3,
-    config: { mass: 5, tension: 1500, friction: 80 },
+    left: controlAreaTopLeft.x + latestIndex * IndicatorSize + indicatorOffset,
+    config: { mass: 1, tension: 170, friction: 26 },
   })
 
   return (
