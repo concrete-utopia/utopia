@@ -34,6 +34,10 @@ export const NonResizableControl = React.memo(() => {
     ref.current.style.top = boundingBox.height + 'px'
   })
 
+  if (selectedElements.length === 0) {
+    return null
+  }
+
   return (
     <CanvasOffsetWrapper>
       <div
