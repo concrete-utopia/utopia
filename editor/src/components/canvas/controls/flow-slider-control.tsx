@@ -137,7 +137,7 @@ export const FlowSliderControl = React.memo(() => {
         {when(
           isDragging,
           <AnimatedReorderIndicator
-            latestIndex={startingIndex}
+            startingIndex={startingIndex}
             controlAreaTopLeft={controlAreaTopLeft}
             siblings={siblings}
           />,
@@ -152,7 +152,7 @@ export const FlowSliderControl = React.memo(() => {
 
 interface AnimatedReorderIndicatorProps {
   controlAreaTopLeft: CanvasPoint
-  latestIndex: number
+  startingIndex: number
   siblings: Array<ElementPath>
 }
 
@@ -162,17 +162,7 @@ const AnimatedReorderIndicator = React.memo((props: AnimatedReorderIndicatorProp
     (store) => store.editor.canvas.scale,
     'AnimatedReorderIndicator scale',
   )
-  const { controlAreaTopLeft, latestIndex, siblings } = props
-
-  // const indicatorOffset = useEditorState((store) => {
-  //   const indexPositionBetweenElements = store.editor.canvas.controls.flowReorderIndexPosition
-  //   if (indexPositionBetweenElements != null) {
-  //     // return easeOutCubic()
-  //     return indexPositionBetweenElements
-  //   } else {
-  //     return 0
-  //   }
-  // }, 'FlowSliderControl indicatorOffset')
+  const { controlAreaTopLeft, startingIndex, siblings } = props
   const indicatorOffset = useEditorState((store) => {
     if (
       store.editor.canvas.interactionSession != null &&
@@ -193,7 +183,7 @@ const AnimatedReorderIndicator = React.memo((props: AnimatedReorderIndicatorProp
         top: controlAreaTopLeft.y + AnimatedIndicatorOffset(scale),
         left:
           controlAreaTopLeft.x +
-          mod(latestIndex + indicatorOffset, siblings.length) * IndicatorSize(scale),
+          mod(startingIndex + indicatorOffset, siblings.length) * IndicatorSize(scale),
         width: IndicatorSize(scale) - AnimatedIndicatorOffset(scale),
         height: MenuHeight(scale) - AnimatedIndicatorOffset(scale) * 2,
         borderRadius: 4 / scale,

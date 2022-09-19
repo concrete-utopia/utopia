@@ -1,6 +1,6 @@
 import { MetadataUtils } from '../../../core/model/element-metadata-utils'
 import * as EP from '../../../core/shared/element-path'
-import { CanvasVector, mod, pointDifference } from '../../../core/shared/math-utils'
+import { CanvasVector, mod } from '../../../core/shared/math-utils'
 import { ElementPath } from '../../../core/shared/project-file-types'
 import { absolute } from '../../../utils/utils'
 import { CSSCursor } from '../canvas-types'
@@ -8,7 +8,6 @@ import { reorderElement } from '../commands/reorder-element-command'
 import { setCursorCommand } from '../commands/set-cursor-command'
 import { setElementsToRerenderCommand } from '../commands/set-elements-to-rerender-command'
 import { updateHighlightedViews } from '../commands/update-highlighted-views-command'
-import { wildcardPatch } from '../commands/wildcard-patch-command'
 import { FlowSliderControl } from '../controls/flow-slider-control'
 import {
   CanvasStrategy,
@@ -18,11 +17,9 @@ import {
 } from './canvas-strategy-types'
 import { getNewDisplayTypeForIndex, getOptionalDisplayPropCommands } from './flow-reorder-helpers'
 import { isFlowReorderConversionApplicable } from './flow-reorder-strategy'
-import { DragInteractionData, StrategyState } from './interaction-state'
 import { isReorderAllowed } from './reorder-utils'
 
 const ReorderChangeThreshold = 16
-const ResetTimer = 0
 
 export const flowReorderSliderStategy: CanvasStrategy = {
   id: 'FLOW_REORDER_SLIDER',
@@ -78,13 +75,11 @@ export const flowReorderSliderStategy: CanvasStrategy = {
       }
 
       const unpatchedIndex = siblingsOfTarget.findIndex((sibling) => EP.pathsEqual(sibling, target))
-      const lastReorderIdx = strategyState.customStrategyState.lastReorderIdx ?? unpatchedIndex
 
-      const { newIndex, flowReorderIndexPosition } = findNewIndex(
+      const newIndex = findNewIndex(
         unpatchedIndex,
         interactionState.interactionData.drag,
         siblingsOfTarget,
-        strategyState,
       )
 
       const newDisplayType = getNewDisplayTypeForIndex(
@@ -93,12 +88,6 @@ export const flowReorderSliderStategy: CanvasStrategy = {
         siblingsOfTarget[newIndex],
       )
 
-      const shouldReorder = newIndex !== lastReorderIdx
-
-      const lastReorderHappened = shouldReorder
-        ? Date.now()
-        : strategyState.customStrategyState.flowLastReorderHappened ?? null
-
       return strategyApplicationResult(
         [
           reorderElement('always', target, absolute(newIndex)),
@@ -106,18 +95,9 @@ export const flowReorderSliderStategy: CanvasStrategy = {
           updateHighlightedViews('mid-interaction', []),
           ...getOptionalDisplayPropCommands(target, newDisplayType, 'with-auto-conversion'),
           setCursorCommand('mid-interaction', CSSCursor.ResizeEW),
-          wildcardPatch('mid-interaction', {
-            canvas: {
-              controls: {
-                flowReorderIndexPosition: { $set: flowReorderIndexPosition }, // this shows the indicator between elements
-              },
-            },
-          }),
         ],
         {
           lastReorderIdx: newIndex,
-          flowDragDeltaSinceLastReorder: null,
-          flowLastReorderHappened: lastReorderHappened,
         },
       )
     } else {
@@ -127,45 +107,12 @@ export const flowReorderSliderStategy: CanvasStrategy = {
   },
 }
 
-function maybeResetFlowReorderDragDelta(
-  shouldReorder: boolean,
-  interactionData: DragInteractionData,
-  strategyState: StrategyState,
-): CanvasVector | null {
-  // drag vector resets after a reorder is triggered to ensure the same drag threshold when switching directions
-  if (shouldReorder) {
-    return interactionData.drag
-  }
-  // this timer also resets the drag vector until the animation finishes to keep the indicator in good position
-  if (
-    interactionData.globalTime - (strategyState.customStrategyState.flowLastReorderHappened ?? 0) <
-    ResetTimer
-  ) {
-    return interactionData.drag
-  }
-
-  return strategyState.customStrategyState.flowDragDeltaSinceLastReorder
-}
-
 function findNewIndex(
-  lastReorderIdx: number,
+  startingIndex: number,
   drag: CanvasVector,
   siblings: Array<ElementPath>,
-  strategyState: StrategyState,
-): {
-  newIndex: number
-  flowReorderIndexPosition: number
-} {
-  // drag vector resets after a reorder is triggered to ensure the same drag threshold when switching directions
-  const dragVectorSinceLastReorder =
-    strategyState.customStrategyState.flowDragDeltaSinceLastReorder != null
-      ? pointDifference(strategyState.customStrategyState.flowDragDeltaSinceLastReorder, drag)
-      : drag
-
+): number {
   const reorderIndexPositionFraction = drag.x / ReorderChangeThreshold
   const indexOffset = Math.round(reorderIndexPositionFraction)
-  return {
-    newIndex: mod(lastReorderIdx + indexOffset, siblings.length),
-    flowReorderIndexPosition: reorderIndexPositionFraction,
-  }
+  return mod(startingIndex + indexOffset, siblings.length)
 }

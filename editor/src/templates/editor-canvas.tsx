@@ -464,7 +464,7 @@ export function runLocalCanvasAction(
           ...model.canvas,
           interactionSession: null,
           domWalkerInvalidateCount: model.canvas.domWalkerInvalidateCount + 1,
-          controls: editorStateCanvasControls([], [], [], [], null, [], null),
+          controls: editorStateCanvasControls([], [], [], [], null, []),
         },
         jsxMetadata: {},
         domMetadata: {},

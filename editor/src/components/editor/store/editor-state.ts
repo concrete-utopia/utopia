@@ -601,7 +601,6 @@ export interface EditorStateCanvasControls {
   flexReparentTargetLines: Array<CanvasRectangle>
   parentHighlightPaths: Array<ElementPath> | null
   reparentedToPaths: Array<ElementPath>
-  flowReorderIndexPosition: number | null
 }
 
 export function editorStateCanvasControls(
@@ -611,7 +610,6 @@ export function editorStateCanvasControls(
   flexReparentTargetLines: Array<CanvasRectangle>,
   parentHighlightPaths: Array<ElementPath> | null,
   reparentedToPaths: Array<ElementPath>,
-  flowReorderIndexPosition: number | null,
 ): EditorStateCanvasControls {
   return {
     snappingGuidelines: snappingGuidelines,
@@ -620,7 +618,6 @@ export function editorStateCanvasControls(
     flexReparentTargetLines: flexReparentTargetLines,
     parentHighlightPaths: parentHighlightPaths,
     reparentedToPaths: reparentedToPaths,
-    flowReorderIndexPosition: flowReorderIndexPosition,
   }
 }
 
@@ -1772,7 +1769,6 @@ export function createEditorState(dispatch: EditorDispatch): EditorState {
         flexReparentTargetLines: [],
         parentHighlightPaths: null,
         reparentedToPaths: [],
-        flowReorderIndexPosition: null,
       },
     },
     floatingInsertMenu: {
@@ -2071,7 +2067,6 @@ export function editorModelFromPersistentModel(
         flexReparentTargetLines: [],
         parentHighlightPaths: null,
         reparentedToPaths: [],
-        flowReorderIndexPosition: null,
       },
     },
     floatingInsertMenu: {
