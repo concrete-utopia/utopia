@@ -7,6 +7,7 @@ import { isFeatureEnabled } from '../../../utils/feature-switches'
 import { AllElementProps } from '../../editor/store/editor-state'
 import { CSSCursor } from '../canvas-types'
 import { WhenToRun } from '../commands/commands'
+import { highlightElementsCommand } from '../commands/highlight-element-command'
 import { setCursorCommand } from '../commands/set-cursor-command'
 import { updateSelectedViews } from '../commands/update-selected-views-command'
 import { ParentBounds } from '../controls/parent-bounds'
@@ -98,7 +99,7 @@ export const lookForApplicableParentStrategy: CanvasStrategy = {
       return emptyStrategyApplicationResult
     }
 
-    const { strategies, componentsInSubtree } = result
+    const { strategies, interactionTarget, componentsInSubtree } = result
     if (strategies.length < 1) {
       return emptyStrategyApplicationResult
     }
@@ -129,7 +130,10 @@ export const lookForApplicableParentStrategy: CanvasStrategy = {
 
     const updateSelectionCommands = !shouldUpdateSelectedViews
       ? []
-      : [updateSelectedViews(howToUpdateSelectedViews, componentsInSubtree)]
+      : [
+          highlightElementsCommand(componentsInSubtree),
+          updateSelectedViews(howToUpdateSelectedViews, interactionTarget),
+        ]
 
     return strategyApplicationResult(
       [

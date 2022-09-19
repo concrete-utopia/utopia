@@ -19,7 +19,14 @@ import { NavigatorItemActionSheet } from './navigator-item-components'
 import { ElementWarnings } from '../../editor/store/editor-state'
 import { ChildWithPercentageSize } from '../../common/size-warnings'
 import { useKeepReferenceEqualityIfPossible } from '../../../utils/react-performance'
-import { IcnProps, useColorTheme, UtopiaStyles, UtopiaTheme, FlexRow } from '../../../uuiui'
+import {
+  IcnProps,
+  useColorTheme,
+  UtopiaStyles,
+  UtopiaTheme,
+  FlexRow,
+  ColorTheme,
+} from '../../../uuiui'
 import { LayoutIcon } from './layout-icon'
 import { useEditorState } from '../../editor/store/store-hook'
 import { MetadataUtils } from '../../../core/model/element-metadata-utils'
@@ -143,7 +150,7 @@ const computeResultingStyle = (
   isFocusedComponent: boolean,
   isFocusableComponent: boolean,
   isHighlightedForInteraction: boolean,
-  colorTheme: any,
+  colorTheme: ColorTheme,
 ) => {
   let result = defaultUnselected(colorTheme)
   if (selected) {
@@ -165,7 +172,7 @@ const computeResultingStyle = (
       if (isFocusedComponent) {
         result = {
           style: {
-            background: colorTheme.componentChild.o(10).value,
+            background: colorTheme.brandNeonPink.o(80).value,
             color: colorTheme.neutralForeground.value,
           },
           iconColor: 'warning',
@@ -173,7 +180,7 @@ const computeResultingStyle = (
       } else {
         result = {
           style: {
-            background: colorTheme.primary.o(10).value,
+            background: colorTheme.brandNeonPink.o(80).value,
             color: colorTheme.neutralForeground.value,
           },
           iconColor: 'main',
