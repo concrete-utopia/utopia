@@ -173,7 +173,7 @@ const computeResultingStyle = (
         result = {
           style: {
             background: colorTheme.brandNeonPink.o(80).value,
-            color: colorTheme.neutralForeground.value,
+            color: colorTheme.white.value,
           },
           iconColor: 'warning',
         }
@@ -181,7 +181,7 @@ const computeResultingStyle = (
         result = {
           style: {
             background: colorTheme.brandNeonPink.o(80).value,
-            color: colorTheme.neutralForeground.value,
+            color: colorTheme.white.value,
           },
           iconColor: 'main',
         }
