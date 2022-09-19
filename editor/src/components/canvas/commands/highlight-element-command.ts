@@ -1,7 +1,7 @@
 import * as EP from '../../../core/shared/element-path'
 import { ElementPath } from '../../../core/shared/project-file-types'
 import { EditorState, EditorStatePatch } from '../../editor/store/editor-state'
-import { BaseCommand, CommandFunction, TransientOrNot } from './commands'
+import { BaseCommand, CommandFunction } from './commands'
 
 export interface HighlightElementsCommand extends BaseCommand {
   type: 'HIGHLIGHT_ELEMENTS_COMMAND'
@@ -11,7 +11,7 @@ export interface HighlightElementsCommand extends BaseCommand {
 export function highlightElementsCommand(value: ElementPath[]): HighlightElementsCommand {
   return {
     type: 'HIGHLIGHT_ELEMENTS_COMMAND',
-    transient: 'transient',
+    whenToRun: 'mid-interaction',
     value: value,
   }
 }
