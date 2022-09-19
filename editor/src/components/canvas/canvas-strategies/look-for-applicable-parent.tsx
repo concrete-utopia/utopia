@@ -99,7 +99,7 @@ export const lookForApplicableParentStrategy: CanvasStrategy = {
       return emptyStrategyApplicationResult
     }
 
-    const { strategies, componentsToBeUsed: componentToBeUsed, componentsInSubtree } = result
+    const { strategies, effectiveTarget, componentsInSubtree } = result
     if (strategies.length < 1) {
       return emptyStrategyApplicationResult
     }
@@ -112,7 +112,7 @@ export const lookForApplicableParentStrategy: CanvasStrategy = {
     )
 
     const chosenStrategy = strategiesInFitnessOrder[0]
-    const patchedCanvasState = patchCanvasStateInteractionTargetPath(canvasState, componentToBeUsed)
+    const patchedCanvasState = patchCanvasStateInteractionTargetPath(canvasState, effectiveTarget)
 
     const chosenStrategyApplicationResult = chosenStrategy.apply(
       patchedCanvasState,
@@ -129,7 +129,7 @@ export const lookForApplicableParentStrategy: CanvasStrategy = {
       ? []
       : [
           highlightElementsCommand(componentsInSubtree),
-          updateSelectedViews(howToUpdateSelectedViews, componentToBeUsed),
+          updateSelectedViews(howToUpdateSelectedViews, effectiveTarget),
         ]
 
     return strategyApplicationResult(
@@ -217,7 +217,7 @@ function isApplicableInner(
 
 interface IsApplicableTraverseResult {
   strategies: Array<CanvasStrategy>
-  componentsToBeUsed: Array<ElementPath>
+  effectiveTarget: Array<ElementPath>
   componentsInSubtree: Array<ElementPath>
 }
 
@@ -241,7 +241,7 @@ function isApplicableTraverse(
     )
     return {
       strategies: applicableStrategies,
-      componentsToBeUsed: pathsFromInteractionTarget(canvasState.interactionTarget),
+      effectiveTarget: pathsFromInteractionTarget(canvasState.interactionTarget),
       componentsInSubtree: [],
     }
   }
@@ -261,7 +261,7 @@ function isApplicableTraverse(
     if (!isSingletonAbsoluteMove(applicableStrategies)) {
       return {
         strategies: applicableStrategies,
-        componentsToBeUsed: [path],
+        effectiveTarget: [path],
         componentsInSubtree,
       }
     }
