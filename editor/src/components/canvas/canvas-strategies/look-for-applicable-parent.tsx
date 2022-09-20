@@ -1,3 +1,7 @@
+import { JSXElement } from '../../../core/shared/element-template'
+import { getLayoutProperty } from '../../../core/layout/getLayoutProperty'
+import { MetadataUtils } from '../../../core/model/element-metadata-utils'
+import { isLeft, right } from '../../../core/shared/either'
 import * as EP from '../../../core/shared/element-path'
 import { ElementInstanceMetadataMap } from '../../../core/shared/element-template'
 import { memoize } from '../../../core/shared/memoize'
@@ -196,9 +200,17 @@ function lookForParentApplicableStrategy(
     allElementProps,
   )
 
-  if (!isSingletonAbsoluteMove(applicableStrategies)) {
+  if (
+    !isParentFindingStrategyApplicable(
+      applicableStrategies,
+      pathsFromInteractionTarget(canvasState.interactionTarget),
+      metadata,
+      allElementProps,
+    )
+  ) {
     return null
   }
+
   const result = isApplicableTraverseMemo(
     strategiesMinusTraverse,
     canvasState,
@@ -212,6 +224,21 @@ function lookForParentApplicableStrategy(
   }
 
   return result
+}
+
+function isParentFindingStrategyApplicable(
+  applicableStrategies: Array<CanvasStrategy>,
+  interactionTarget: Array<ElementPath>,
+  metadata: ElementInstanceMetadataMap,
+  allElementProps: AllElementProps,
+): boolean {
+  if (interactionTarget.length !== 1) {
+    return false
+  }
+
+  const singletonAbsoluteMove = isSingletonAbsoluteMove(applicableStrategies)
+  const parentContiguousFlexParent = isParentContiguousFlexParent(interactionTarget[0], metadata)
+  return singletonAbsoluteMove || parentContiguousFlexParent
 }
 
 interface ParentApplicableStrategyResult {
@@ -295,3 +322,47 @@ function calcFittestStrategy(
 }
 
 const isApplicableTraverseMemo = memoize(isApplicableTraverse)
+
+function isParentContiguousFlexParent(
+  elementPath: ElementPath,
+  metadata: ElementInstanceMetadataMap,
+): boolean {
+  const childElement = MetadataUtils.getJSXElementFromMetadata(metadata, elementPath)
+  if (childElement == null) {
+    return false
+  }
+
+  const parentPath = EP.parentPath(elementPath)
+  const parent = MetadataUtils.getJSXElementFromMetadata(metadata, parentPath)
+
+  if (parent == null || EP.isStoryboardChild(parentPath)) {
+    return false
+  }
+
+  return !isElementExplicitlySized(parent) || isChildFlexOne(childElement)
+}
+
+function isElementExplicitlySized(element: JSXElement): boolean {
+  const width = getLayoutProperty('width', right(element.props), ['style'])
+  const height = getLayoutProperty('height', right(element.props), ['style'])
+  if (isLeft(width) && isLeft(height)) {
+    return false
+  }
+
+  if (width.value == null || height.value == null) {
+    return false
+  }
+
+  return true
+}
+
+function isChildFlexOne(element: JSXElement): boolean {
+  const flex = getLayoutProperty('flex', right(element.props), ['style'])
+  if (isLeft(flex) || flex.value == null) {
+    return false
+  }
+
+  const { flexBasis, flexGrow, flexShrink } = flex.value
+
+  return flexGrow === 1 && flexShrink === 1 && flexBasis.value === 0 && flexBasis.unit === '%'
+}
