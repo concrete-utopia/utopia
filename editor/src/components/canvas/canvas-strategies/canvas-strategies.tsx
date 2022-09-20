@@ -38,10 +38,11 @@ import {
 } from './flow-reorder-strategy'
 import { isInsertMode } from '../../editor/editor-modes'
 import { dragToInsertStrategy } from './drag-to-insert-strategy'
-import { CSSCursor } from '../../../uuiui-deps'
 import { StateSelector } from 'zustand'
 import { flowReorderSliderStategy } from './flow-reorder-slider-strategy'
 import { NonResizableControl } from '../controls/select-mode/non-resizable-control'
+import { drawToInsertStrategy } from './draw-to-insert-strategy'
+import { flexResizeBasicStrategy } from './flex-resize-basic-strategy'
 import { optionalMap } from '../../../core/shared/optional-utils'
 
 export const RegisteredCanvasStrategies: Array<CanvasStrategy> = [
@@ -57,10 +58,12 @@ export const RegisteredCanvasStrategies: Array<CanvasStrategy> = [
   convertToAbsoluteAndMoveStrategy,
   absoluteReparentToFlexStrategy,
   dragToInsertStrategy,
+  drawToInsertStrategy,
   flowReorderAutoConversionStrategy,
   flowReorderNoConversionStrategy,
   flowReorderSameTypeOnlyStrategy,
   flowReorderSliderStategy,
+  flexResizeBasicStrategy,
 ]
 
 export function pickCanvasStateFromEditorState(
@@ -335,6 +338,7 @@ export function isResizableStrategy(canvasStrategy: CanvasStrategy): boolean {
   switch (canvasStrategy.id) {
     case 'ABSOLUTE_RESIZE_BOUNDING_BOX':
     case 'KEYBOARD_ABSOLUTE_RESIZE':
+    case 'FLEX_RESIZE_BASIC':
       return true
     default:
       return false

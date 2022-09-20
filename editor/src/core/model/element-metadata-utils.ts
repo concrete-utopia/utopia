@@ -33,6 +33,8 @@ import {
   isIntrinsicElement,
   ElementInstanceMetadataMap,
   isIntrinsicHTMLElement,
+  emptySpecialSizeMeasurements,
+  elementInstanceMetadata,
 } from '../shared/element-template'
 import {
   getModifiableJSXAttributeAtPath,
@@ -42,6 +44,8 @@ import {
   boundingRectangleArray,
   CanvasRectangle,
   canvasRectangleToLocalRectangle,
+  getLocalRectangleInNewParentContext,
+  localRectangle,
   LocalRectangle,
   roundPointToNearestHalf,
   Size,
@@ -1623,5 +1627,44 @@ export function getSimpleAttributeAtPath(
       return flatMapEither((attr) => jsxSimpleAttributeToValue(attr), getAttrResult)
     },
     propsOrAttributes,
+  )
+}
+
+// This function creates a fake metadata for the given element
+// Useful when metadata is needed before the real on is created.
+export function createFakeMetadataForElement(
+  path: ElementPath,
+  element: JSXElementChild,
+  frame: CanvasRectangle,
+  metadata: ElementInstanceMetadataMap,
+): ElementInstanceMetadata {
+  const parentPath = EP.parentPath(path)
+
+  const parentElement = MetadataUtils.findElementByElementPath(metadata, parentPath)
+
+  const isFlex = parentElement != null && MetadataUtils.isFlexLayoutedContainer(parentElement)
+  const parentBounds = parentElement != null ? parentElement.globalFrame : null
+
+  const localFrame =
+    parentBounds != null
+      ? getLocalRectangleInNewParentContext(parentBounds, frame)
+      : localRectangle(frame)
+
+  const specialSizeMeasurements = { ...emptySpecialSizeMeasurements }
+  specialSizeMeasurements.position = isFlex ? 'relative' : 'absolute'
+  specialSizeMeasurements.parentLayoutSystem = isFlex ? 'flex' : 'none'
+
+  return elementInstanceMetadata(
+    path,
+    right(element),
+    frame,
+    localFrame,
+    false,
+    false,
+    specialSizeMeasurements,
+    null,
+    null,
+    null,
+    null,
   )
 }
