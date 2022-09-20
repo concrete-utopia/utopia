@@ -328,6 +328,8 @@ import {
   DragInteractionData,
   flexGapHandle,
   FlexGapHandle,
+  FlowSlider,
+  flowSlider,
   InputData,
   interactionSession,
   InteractionSession,
@@ -1680,6 +1682,15 @@ export const KeyboardCatcherControlKeepDeepEquality: KeepDeepEqualityCall<
   return keepDeepEqualityResult(oldValue, true)
 }
 
+// This will break should the definition of `FlowSlider` change.
+flowSlider()
+export const FlowSliderKeepDeepEquality: KeepDeepEqualityCall<FlowSlider> = (
+  oldValue,
+  newValue,
+) => {
+  return keepDeepEqualityResult(oldValue, true)
+}
+
 export const CanvasControlTypeKeepDeepEquality: KeepDeepEqualityCall<CanvasControlType> = (
   oldValue,
   newValue,
@@ -1707,7 +1718,7 @@ export const CanvasControlTypeKeepDeepEquality: KeepDeepEqualityCall<CanvasContr
       break
     case 'FLOW_SLIDER':
       if (newValue.type === oldValue.type) {
-        return keepDeepEqualityResult(oldValue, true)
+        return FlowSliderKeepDeepEquality(oldValue, newValue)
       }
       break
     default:
