@@ -31,7 +31,7 @@ import { pickCursorFromEdgePosition } from './shared-absolute-resize-strategy-he
 
 export const flexResizeBasicStrategy: CanvasStrategy = {
   id: 'FLEX_RESIZE_BASIC',
-  name: 'Flex Resize (Basic)',
+  name: () => 'Flex Resize (Basic)',
   isApplicable: (canvasState, interactionState, metadata) => {
     const selectedElements = getTargetPathsFromInteractionTarget(canvasState.interactionTarget)
     // no multiselection support yet
