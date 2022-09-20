@@ -127,7 +127,8 @@ export type CanvasStrategyId =
   | 'FLOW_REORDER_NO_CONVERSION'
   | 'FLOW_REORDER_SAME_TYPE_ONLY'
   | 'LOOK_FOR_APPLICABLE_PARENT_ID'
-
+  | 'DRAW_TO_INSERT'
+  | 'FLEX_RESIZE_BASIC'
 export interface CanvasStrategy {
   id: CanvasStrategyId // We'd need to do something to guarantee uniqueness here if using this for the commands' reason
 
