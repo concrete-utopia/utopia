@@ -35,7 +35,8 @@ export const lookForApplicableParentStrategy: CanvasStrategy = {
       strategyState.startingMetadata,
       strategyState.startingAllElementProps,
     )
-    if (result == null) {
+
+    if (result == null || result.strategies.length === 0) {
       return defaultName
     }
 
