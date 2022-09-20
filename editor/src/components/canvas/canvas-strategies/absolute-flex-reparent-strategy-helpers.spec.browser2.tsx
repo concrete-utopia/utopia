@@ -441,7 +441,7 @@ describe('Unified Reparent Fitness Function Tests', () => {
     )
   })
 
-  it('ignore elements under the mouse at drag start', async () => {
+  it('ignores elements under the mouse at drag start', async () => {
     const renderResult = await renderTestEditorWithCode(
       makeTestProjectCodeWithSnippet(`
         <div
@@ -528,6 +528,259 @@ describe('Unified Reparent Fitness Function Tests', () => {
           />
         </div>
     `),
+    )
+  })
+
+  it('in a flex context, dragging over a sibling without cmd means reorder', async () => {
+    const renderResult = await renderTestEditorWithCode(
+      makeTestProjectCodeWithSnippet(`
+        <div
+          style={{
+            backgroundColor: 'white',
+            position: 'absolute',
+            width: '100%',
+            height: '100%',
+            display: 'flex',
+            flexDirection: 'row',
+          }}
+          data-uid='aaa'
+        >
+          <div
+            style={{
+              backgroundColor: '#0091FFAA',
+              width: 100,
+              height: 100,
+            }}
+            data-uid='bbb'
+            data-testid='bbb'
+          />
+          <div
+            style={{
+              backgroundColor: '#0091FFAA',
+              width: 50,
+              height: 50,
+            }}
+            data-uid='draggedElement'
+            data-testid='draggedElement'
+          />
+        </div>
+      `),
+      'await-first-dom-report',
+    )
+
+    // we only slightly drag over the sibling, definitely not reach the mid-point
+    const dragDelta = windowPoint({ x: -25, y: 0 })
+
+    const targetPath = EP.appendNewElementPath(TestScenePath, ['aaa', 'draggedElement'])
+    await renderResult.dispatch([selectComponents([targetPath], false)], false)
+
+    act(() => dragElement(renderResult, 'draggedElement', dragDelta, emptyModifiers, true))
+
+    await renderResult.getDispatchFollowUpActionsFinished()
+
+    expect(getPrintedUiJsCode(renderResult.getEditorState())).toEqual(
+      makeTestProjectCodeWithSnippet(`
+        <div
+          style={{
+            backgroundColor: 'white',
+            position: 'absolute',
+            width: '100%',
+            height: '100%',
+            display: 'flex',
+            flexDirection: 'row',
+          }}
+          data-uid='aaa'
+        >
+          <div
+            style={{
+              backgroundColor: '#0091FFAA',
+              width: 50,
+              height: 50,
+            }}
+            data-uid='draggedElement'
+            data-testid='draggedElement'
+          />
+          <div
+            style={{
+              backgroundColor: '#0091FFAA',
+              width: 100,
+              height: 100,
+            }}
+            data-uid='bbb'
+            data-testid='bbb'
+          />
+        </div>
+      `),
+    )
+  })
+
+  it('in a flex context, dragging over a sibling holding cmd means reparent to sibling', async () => {
+    const renderResult = await renderTestEditorWithCode(
+      makeTestProjectCodeWithSnippet(`
+        <div
+          style={{
+            backgroundColor: 'white',
+            position: 'absolute',
+            width: '100%',
+            height: '100%',
+            display: 'flex',
+            flexDirection: 'row',
+          }}
+          data-uid='aaa'
+        >
+          <div
+            style={{
+              backgroundColor: '#0091FFAA',
+              width: 100,
+              height: 100,
+            }}
+            data-uid='bbb'
+            data-testid='bbb'
+          />
+          <div
+            style={{
+              backgroundColor: '#0091FFAA',
+              width: 50,
+              height: 50,
+            }}
+            data-uid='draggedElement'
+            data-testid='draggedElement'
+          />
+        </div>
+      `),
+      'await-first-dom-report',
+    )
+
+    // we only slightly drag over the sibling, definitely not reach the mid-point, but beyond the "flex reorder zone"
+    const dragDelta = windowPoint({ x: -35, y: 0 })
+
+    const targetPath = EP.appendNewElementPath(TestScenePath, ['aaa', 'draggedElement'])
+    await renderResult.dispatch([selectComponents([targetPath], false)], false)
+
+    act(() => dragElement(renderResult, 'draggedElement', dragDelta, cmdModifier, true))
+
+    await renderResult.getDispatchFollowUpActionsFinished()
+
+    expect(getPrintedUiJsCode(renderResult.getEditorState())).toEqual(
+      makeTestProjectCodeWithSnippet(`
+        <div
+          style={{
+            backgroundColor: 'white',
+            position: 'absolute',
+            width: '100%',
+            height: '100%',
+            display: 'flex',
+            flexDirection: 'row',
+          }}
+          data-uid='aaa'
+        >
+          <div
+            style={{
+              backgroundColor: '#0091FFAA',
+              width: 100,
+              height: 100,
+            }}
+            data-uid='bbb'
+            data-testid='bbb'
+          >
+            <div
+              style={{
+                backgroundColor: '#0091FFAA',
+                width: 50,
+                height: 50,
+                position: 'absolute',
+                left: 65,
+                top: 0,
+              }}
+              data-uid='draggedElement'
+              data-testid='draggedElement'
+            />
+          </div>
+        </div>
+      `),
+    )
+  })
+
+  it('in a flex context, dragging over a sibling holding cmd, but only dragging to the edge of the sibling means reorder', async () => {
+    const renderResult = await renderTestEditorWithCode(
+      makeTestProjectCodeWithSnippet(`
+        <div
+          style={{
+            backgroundColor: 'white',
+            position: 'absolute',
+            width: '100%',
+            height: '100%',
+            display: 'flex',
+            flexDirection: 'row',
+          }}
+          data-uid='aaa'
+        >
+          <div
+            style={{
+              backgroundColor: '#0091FFAA',
+              width: 100,
+              height: 100,
+            }}
+            data-uid='bbb'
+            data-testid='bbb'
+          />
+          <div
+            style={{
+              backgroundColor: '#0091FFAA',
+              width: 50,
+              height: 50,
+            }}
+            data-uid='draggedElement'
+            data-testid='draggedElement'
+          />
+        </div>
+      `),
+      'await-first-dom-report',
+    )
+
+    // we only slightly drag over the sibling, definitely not reach the mid-point
+    const dragDelta = windowPoint({ x: -25, y: 0 })
+
+    const targetPath = EP.appendNewElementPath(TestScenePath, ['aaa', 'draggedElement'])
+    await renderResult.dispatch([selectComponents([targetPath], false)], false)
+
+    act(() => dragElement(renderResult, 'draggedElement', dragDelta, cmdModifier, true))
+
+    await renderResult.getDispatchFollowUpActionsFinished()
+
+    expect(getPrintedUiJsCode(renderResult.getEditorState())).toEqual(
+      makeTestProjectCodeWithSnippet(`
+        <div
+          style={{
+            backgroundColor: 'white',
+            position: 'absolute',
+            width: '100%',
+            height: '100%',
+            display: 'flex',
+            flexDirection: 'row',
+          }}
+          data-uid='aaa'
+        >
+          <div
+            style={{
+              backgroundColor: '#0091FFAA',
+              width: 50,
+              height: 50,
+            }}
+            data-uid='draggedElement'
+            data-testid='draggedElement'
+          />
+          <div
+            style={{
+              backgroundColor: '#0091FFAA',
+              width: 100,
+              height: 100,
+            }}
+            data-uid='bbb'
+            data-testid='bbb'
+          />
+        </div>
+      `),
     )
   })
 })
