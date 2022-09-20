@@ -177,7 +177,7 @@ function getApplicableStrategiesOrderedByFitness(
 
   // Compute the fitness results upfront.
   const strategiesWithFitness = calculateStrategiesWithFitness(
-    strategies,
+    applicableStrategies,
     canvasState,
     interactionSession,
     strategyState,

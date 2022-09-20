@@ -289,8 +289,7 @@ function calcFittestStrategy(
   )
 
   const sortedStrategies = sortBy(strategiesWithFitness, (l, r) => {
-    // sort by fitness, descending
-    return r.fitness - l.fitness
+    return l.fitness - r.fitness
   })
 
   return sortedStrategies[0].strategy
