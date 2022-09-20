@@ -111,7 +111,7 @@ export const lookForApplicableParentStrategy: CanvasStrategy = {
       return emptyStrategyApplicationResult
     }
 
-    const { strategies, effectiveTarget } = result
+    const { strategies, effectiveTarget, componentsInSubtree } = result
     if (strategies.length < 1) {
       return emptyStrategyApplicationResult
     }
@@ -134,7 +134,7 @@ export const lookForApplicableParentStrategy: CanvasStrategy = {
     return strategyApplicationResult(
       [
         ...chosenStrategyApplicationResult.commands,
-        highlightElementsCommand(effectiveTarget),
+        highlightElementsCommand(componentsInSubtree),
         setCursorCommand('mid-interaction', CSSCursor.MovingMagic),
       ],
       chosenStrategyApplicationResult.customStatePatch,
@@ -145,7 +145,7 @@ export const lookForApplicableParentStrategy: CanvasStrategy = {
 
 function* elementAncestry(path: ElementPath) {
   let currentParentPath = path
-  const componentsInSubtree: Array<ElementPath> = [path]
+  const componentsInSubtree: Array<ElementPath> = [currentParentPath]
   while (!EP.isStoryboardChild(currentParentPath)) {
     yield {
       root: currentParentPath,
