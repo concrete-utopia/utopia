@@ -6,7 +6,7 @@ import {
   offsetPoint,
 } from '../../../core/shared/math-utils'
 import { stylePropPathMappingFn } from '../../inspector/common/property-path-hooks'
-import { EdgePosition } from '../canvas-types'
+import { EdgePosition, oppositeEdgePosition } from '../canvas-types'
 import {
   isEdgePositionACorner,
   isEdgePositionAHorizontalEdge,
@@ -156,15 +156,7 @@ export function resizeWidthHeight(
   } else {
     const isEdgeHorizontalSide = isEdgePositionAHorizontalEdge(edgePosition)
 
-    const oppositeSideCenterPosition = isEdgeHorizontalSide
-      ? ({
-          x: edgePosition.x,
-          y: 1 - edgePosition.y,
-        } as EdgePosition)
-      : ({
-          x: 1 - edgePosition.x,
-          y: edgePosition.y,
-        } as EdgePosition)
+    const oppositeSideCenterPosition = oppositeEdgePosition(edgePosition)
 
     const oppositeSideCenter = pickPointOnRect(boundingBox, oppositeSideCenterPosition)
     const draggedSideCenter = pickPointOnRect(boundingBox, edgePosition)
