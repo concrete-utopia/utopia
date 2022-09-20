@@ -24,7 +24,7 @@ import {
   InteractionTarget,
   strategyApplicationResult,
 } from './canvas-strategy-types'
-import { InteractionSession } from './interaction-state'
+import { InteractionSession, StrategyState } from './interaction-state'
 
 export const lookForApplicableParentStrategy: CanvasStrategy = {
   id: 'LOOK_FOR_APPLICABLE_PARENT_ID',
@@ -45,19 +45,12 @@ export const lookForApplicableParentStrategy: CanvasStrategy = {
       return defaultName
     }
 
-    const strategiesWithFitness = calculateStrategiesWithFitness(
+    const fittestStrategy = calcFittestStrategy(
       result.strategies,
       canvasState,
       interactionSession,
       strategyState,
     )
-
-    const sortedStrategies = sortBy(strategiesWithFitness, (l, r) => {
-      // sort by fitness, descending
-      return r.fitness - l.fitness
-    })
-
-    const fittestStrategy = sortedStrategies[0].strategy
 
     return fittestStrategy.name(canvasState, interactionSession, strategyState) + '*'
   },
@@ -115,14 +108,12 @@ export const lookForApplicableParentStrategy: CanvasStrategy = {
       return emptyStrategyApplicationResult
     }
 
-    const strategiesInFitnessOrder = strategies.sort(
-      // TODO: better/idiomatic way of sorting
-      (a, b) =>
-        a.fitness(canvasState, interactionSession, strategyState) -
-        b.fitness(canvasState, interactionSession, strategyState),
+    const chosenStrategy = calcFittestStrategy(
+      result.strategies,
+      canvasState,
+      interactionSession,
+      strategyState,
     )
-
-    const chosenStrategy = strategiesInFitnessOrder[0]
     const patchedCanvasState = patchCanvasStateInteractionTargetPath(canvasState, effectiveTarget)
 
     const chosenStrategyApplicationResult = chosenStrategy.apply(
@@ -282,6 +273,27 @@ function pathsFromInteractionTarget(interactionTarget: InteractionTarget): Array
     default:
       assertNever(interactionTarget)
   }
+}
+
+function calcFittestStrategy(
+  strategies: Array<CanvasStrategy>,
+  canvasState: InteractionCanvasState,
+  interactionSession: InteractionSession,
+  strategyState: StrategyState,
+): CanvasStrategy {
+  const strategiesWithFitness = calculateStrategiesWithFitness(
+    strategies,
+    canvasState,
+    interactionSession,
+    strategyState,
+  )
+
+  const sortedStrategies = sortBy(strategiesWithFitness, (l, r) => {
+    // sort by fitness, descending
+    return r.fitness - l.fitness
+  })
+
+  return sortedStrategies[0].strategy
 }
 
 const isApplicableTraverseMemo = memoize(isApplicableTraverse)
