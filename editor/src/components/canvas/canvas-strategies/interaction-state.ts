@@ -22,6 +22,7 @@ import {
   defaultCustomStrategyState,
 } from './canvas-strategy-types'
 import type { ReparentTarget } from './reparent-strategy-helpers'
+import { ApplicableStrategy } from './canvas-strategies'
 
 export interface DragInteractionData {
   type: 'DRAG'
@@ -121,7 +122,7 @@ export interface StrategyState {
   currentStrategyCommands: Array<CanvasCommand>
   accumulatedPatches: Array<EditorStatePatch>
   commandDescriptions: Array<CommandDescription>
-  sortedApplicableStrategies: Array<CanvasStrategy> | null
+  sortedApplicableStrategies: Array<ApplicableStrategy> | null
   status: StrategyApplicationStatus
 
   // Checkpointed metadata at the point at which a strategy change has occurred.
