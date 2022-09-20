@@ -83,7 +83,12 @@ function getInteractionTargetFromEditorState(editor: EditorState): InteractionTa
   }
 }
 
-export function getApplicableStrategies(
+export interface ApplicableStrategy {
+  strategy: CanvasStrategy
+  name: string
+}
+
+function getApplicableStrategies(
   strategies: Array<CanvasStrategy>,
   canvasState: InteractionCanvasState,
   interactionSession: InteractionSession | null,

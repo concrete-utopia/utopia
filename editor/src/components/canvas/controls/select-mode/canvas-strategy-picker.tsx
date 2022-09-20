@@ -3,14 +3,8 @@ import { when } from '../../../../utils/react-conditionals'
 import { FlexRow, FlexColumn, useColorTheme, UtopiaStyles } from '../../../../uuiui'
 import { useEditorState } from '../../../editor/store/store-hook'
 import CanvasActions from '../../canvas-actions'
-import {
-  pickCanvasStateFromEditorState,
-  useDelayedCurrentStrategy,
-} from '../../canvas-strategies/canvas-strategies'
-import {
-  CanvasStrategy,
-  InteractionCanvasState,
-} from '../../canvas-strategies/canvas-strategy-types'
+import { useDelayedCurrentStrategy } from '../../canvas-strategies/canvas-strategies'
+import { CanvasStrategy } from '../../canvas-strategies/canvas-strategy-types'
 
 export const CanvasStrategyPicker = React.memo(() => {
   const colorTheme = useColorTheme()
@@ -47,7 +41,7 @@ export const CanvasStrategyPicker = React.memo(() => {
         event.stopImmediatePropagation()
 
         const activeStrategyIndex = otherPossibleStrategies.findIndex(
-          (strategy) => strategy.strategy.id === activeStrategy,
+          ({ strategy }) => strategy.id === activeStrategy,
         )
         const nextStrategyIndex = (activeStrategyIndex + 1) % otherPossibleStrategies.length
         const nextStrategy = otherPossibleStrategies[nextStrategyIndex].strategy
