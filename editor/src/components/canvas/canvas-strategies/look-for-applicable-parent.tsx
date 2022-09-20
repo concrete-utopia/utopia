@@ -13,7 +13,6 @@ import { ParentBounds } from '../controls/parent-bounds'
 import { ParentOutlines } from '../controls/parent-outlines'
 import { DragOutlineControl } from '../controls/select-mode/drag-outline-control'
 import {
-  calculateStrategiesWithFitness,
   getApplicableStrategies,
   getApplicableStrategiesOrderedByFitness,
   RegisteredCanvasStrategies,
