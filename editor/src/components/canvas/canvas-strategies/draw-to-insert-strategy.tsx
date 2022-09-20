@@ -11,7 +11,7 @@ import {
 import { boundingArea, InteractionSession, StrategyState } from './interaction-state'
 import { ElementInsertionSubject, InsertionSubject } from '../../editor/editor-modes'
 import { LayoutHelpers } from '../../../core/layout/layout-helpers'
-import { isLeft, right } from '../../../core/shared/either'
+import { foldEither, isLeft, right } from '../../../core/shared/either'
 import {
   InsertElementInsertionSubject,
   insertElementInsertionSubject,
@@ -39,7 +39,7 @@ import { ElementPath } from '../../../core/shared/project-file-types'
 
 export const drawToInsertStrategy: CanvasStrategy = {
   id: 'DRAW_TO_INSERT',
-  name: 'Draw to insert',
+  name: () => 'Draw to insert',
   isApplicable: (canvasState, _interactionState, metadata) => {
     const insertionSubjects = getInsertionSubjectsFromInteractionTarget(
       canvasState.interactionTarget,
