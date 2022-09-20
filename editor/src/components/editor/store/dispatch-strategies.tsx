@@ -1,4 +1,5 @@
 import {
+  ApplicableStrategy,
   applyCanvasStrategy,
   findCanvasStrategy,
   pickCanvasStateFromEditorState,
@@ -365,7 +366,7 @@ function handleUserChangedStrategy(
   strategyState: StrategyState,
   strategy: StrategyWithFitness | null,
   previousStrategy: StrategyWithFitness | null,
-  sortedApplicableStrategies: Array<CanvasStrategy>,
+  sortedApplicableStrategies: Array<ApplicableStrategy>,
 ): HandleStrategiesResult {
   const canvasState: InteractionCanvasState = pickCanvasStateFromEditorState(
     newEditorState,
@@ -380,7 +381,11 @@ function handleUserChangedStrategy(
         commands: [
           strategySwitched(
             'user-input',
-            strategy.strategy.name,
+            strategy.strategy.name(
+              canvasState,
+              newEditorState.canvas.interactionSession,
+              strategyState,
+            ),
             true,
             previousStrategy?.fitness ?? NaN,
             strategy.fitness,
@@ -440,7 +445,7 @@ function handleAccumulatingKeypresses(
   strategyState: StrategyState,
   strategy: StrategyWithFitness | null,
   previousStrategy: StrategyWithFitness | null,
-  sortedApplicableStrategies: Array<CanvasStrategy>,
+  sortedApplicableStrategies: Array<ApplicableStrategy>,
 ): HandleStrategiesResult {
   const canvasState: InteractionCanvasState = pickCanvasStateFromEditorState(
     newEditorState,
@@ -520,7 +525,7 @@ function handleUpdate(
   strategyState: StrategyState,
   strategy: StrategyWithFitness | null,
   previousStrategy: StrategyWithFitness | null,
-  sortedApplicableStrategies: Array<CanvasStrategy>,
+  sortedApplicableStrategies: Array<ApplicableStrategy>,
 ): HandleStrategiesResult {
   const canvasState: InteractionCanvasState = pickCanvasStateFromEditorState(
     newEditorState,
