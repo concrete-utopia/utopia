@@ -1,5 +1,4 @@
-import { setsEqual } from '../../../core/shared/set-utils'
-import { addAllUniquely, last } from '../../../core/shared/array-utils'
+import { last } from '../../../core/shared/array-utils'
 import { ElementInstanceMetadataMap } from '../../../core/shared/element-template'
 import {
   CanvasPoint,
@@ -10,19 +9,18 @@ import {
 } from '../../../core/shared/math-utils'
 import { ElementPath } from '../../../core/shared/project-file-types'
 import { KeyCharacter } from '../../../utils/keyboard'
-import { Modifier, Modifiers } from '../../../utils/modifiers'
+import { Modifiers } from '../../../utils/modifiers'
 import { AllElementProps, EditorStatePatch } from '../../editor/store/editor-state'
 import { EdgePosition } from '../canvas-types'
 import { MoveIntoDragThreshold } from '../canvas-utils'
 import { CanvasCommand } from '../commands/commands'
+import { ApplicableStrategy } from './canvas-strategies'
 import {
-  CanvasStrategy,
   CanvasStrategyId,
   CustomStrategyState,
   defaultCustomStrategyState,
 } from './canvas-strategy-types'
 import type { ReparentTarget } from './reparent-strategy-helpers'
-import { ApplicableStrategy } from './canvas-strategies'
 
 export interface DragInteractionData {
   type: 'DRAG'
