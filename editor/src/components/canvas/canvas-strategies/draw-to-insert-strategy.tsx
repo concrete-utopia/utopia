@@ -82,49 +82,56 @@ export const drawToInsertStrategy: CanvasStrategy = {
       ? 1
       : 0
   },
-  apply: (canvasState, interactionState, strategyState) => {
+  apply: (canvasState, interactionState, strategyState, lifecycle) => {
     if (
       canvasState.interactionTarget.type === 'INSERTION_SUBJECTS' &&
       canvasState.interactionTarget.subjects.length === 1 &&
       canvasState.interactionTarget.subjects[0].type === 'Element' &&
-      interactionState.interactionData.type === 'DRAG' &&
-      interactionState.interactionData.drag != null
+      interactionState.interactionData.type === 'DRAG'
     ) {
-      const insertionSubject = canvasState.interactionTarget.subjects[0]
+      if (interactionState.interactionData.drag != null) {
+        const insertionSubject = canvasState.interactionTarget.subjects[0]
 
-      const insertionCommand = getInsertionCommands(insertionSubject, interactionState, null)
+        const insertionCommand = getInsertionCommands(insertionSubject, interactionState, null)
 
-      if (insertionCommand != null) {
-        const reparentCommand = updateFunctionCommand(
-          'always',
-          (editorState): Array<EditorStatePatch> => {
-            return runTargetStrategiesForFreshlyInsertedElementToReparent(
-              canvasState.builtInDependencies,
-              editorState,
-              strategyState,
-              interactionState,
-              insertionSubject,
-              insertionCommand.frame,
-            )
-          },
-        )
+        if (insertionCommand != null) {
+          const reparentCommand = updateFunctionCommand(
+            'always',
+            (editorState): Array<EditorStatePatch> => {
+              return runTargetStrategiesForFreshlyInsertedElementToReparent(
+                canvasState.builtInDependencies,
+                editorState,
+                strategyState,
+                interactionState,
+                insertionSubject,
+                insertionCommand.frame,
+              )
+            },
+          )
 
-        const resizeCommand = updateFunctionCommand(
-          'always',
-          (editorState, commandLifecycle): Array<EditorStatePatch> => {
-            return runTargetStrategiesForFreshlyInsertedElementToResize(
-              canvasState.builtInDependencies,
-              editorState,
-              strategyState,
-              interactionState,
-              commandLifecycle,
-              insertionSubject,
-              insertionCommand.frame,
-            )
-          },
-        )
+          const resizeCommand = updateFunctionCommand(
+            'always',
+            (editorState, commandLifecycle): Array<EditorStatePatch> => {
+              return runTargetStrategiesForFreshlyInsertedElementToResize(
+                canvasState.builtInDependencies,
+                editorState,
+                strategyState,
+                interactionState,
+                commandLifecycle,
+                insertionSubject,
+                insertionCommand.frame,
+              )
+            },
+          )
 
-        return strategyApplicationResult([insertionCommand.command, reparentCommand, resizeCommand])
+          return strategyApplicationResult([
+            insertionCommand.command,
+            reparentCommand,
+            resizeCommand,
+          ])
+        }
+      } else {
+        // just insert a default sized element and no resize
       }
     }
     // Fallback for when the checks above are not satisfied.

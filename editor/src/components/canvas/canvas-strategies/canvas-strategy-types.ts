@@ -160,6 +160,7 @@ export interface CanvasStrategy {
     canvasState: InteractionCanvasState,
     interactionSession: InteractionSession,
     strategyState: StrategyState,
+    lifecycle?: 'mid-interaction' | 'end-interaction',
   ) => StrategyApplicationResult
 }
 

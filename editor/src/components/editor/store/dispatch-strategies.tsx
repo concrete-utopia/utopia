@@ -84,6 +84,7 @@ export function interactionFinished(
             canvasState,
             interactionSession,
             result.strategyState,
+            'end-interaction',
           )
         : {
             commands: [],
