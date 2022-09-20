@@ -1,3 +1,4 @@
+import { sortBy } from '../../../core/shared/array-utils'
 import * as EP from '../../../core/shared/element-path'
 import { ElementInstanceMetadataMap } from '../../../core/shared/element-template'
 import { memoize } from '../../../core/shared/memoize'
@@ -11,7 +12,11 @@ import { updateSelectedViews } from '../commands/update-selected-views-command'
 import { ParentBounds } from '../controls/parent-bounds'
 import { ParentOutlines } from '../controls/parent-outlines'
 import { DragOutlineControl } from '../controls/select-mode/drag-outline-control'
-import { getApplicableStrategies, RegisteredCanvasStrategies } from './canvas-strategies'
+import {
+  calculateStrategiesWithFitness,
+  getApplicableStrategies,
+  RegisteredCanvasStrategies,
+} from './canvas-strategies'
 import {
   CanvasStrategy,
   emptyStrategyApplicationResult,
@@ -40,12 +45,19 @@ export const lookForApplicableParentStrategy: CanvasStrategy = {
       return defaultName
     }
 
-    const fittestStrategy = result.strategies.sort(
-      // TODO: better/idiomatic way of sorting
-      (a, b) =>
-        a.fitness(canvasState, interactionSession, strategyState) -
-        b.fitness(canvasState, interactionSession, strategyState),
-    )[0]
+    const strategiesWithFitness = calculateStrategiesWithFitness(
+      result.strategies,
+      canvasState,
+      interactionSession,
+      strategyState,
+    )
+
+    const sortedStrategies = sortBy(strategiesWithFitness, (l, r) => {
+      // sort by fitness, descending
+      return r.fitness - l.fitness
+    })
+
+    const fittestStrategy = sortedStrategies[0]
 
     return fittestStrategy.name(canvasState, interactionSession, strategyState) + '*'
   },
