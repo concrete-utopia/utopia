@@ -336,10 +336,10 @@ describe('Inserting into flex row', () => {
       y: targetElementBounds.y + 305,
     })
 
-    // Drag from inside bbb to inside ccc
+    // Drag horizontally close to the zero position
     await fireDragEvent(canvasControlsLayer, startPoint, endPoint)
 
-    // Check that the inserted element is a child of bbb
+    // Check that the inserted element is a sibling of bbb, position is before bbb
     expect(getPrintedUiJsCode(renderResult.getEditorState())).toEqual(
       makeTestProjectCodeWithSnippet(`
         <div
@@ -400,10 +400,10 @@ describe('Inserting into flex row', () => {
       y: targetElementBounds.y + targetElementBounds.height + 305,
     })
 
-    // Drag from inside bbb to inside ccc
+    // Drag horizontally close to the first position
     await fireDragEvent(canvasControlsLayer, startPoint, endPoint)
 
-    // Check that the inserted element is a child of bbb
+    // Check that the inserted element is a sibling of bbb, position is after bbb
     expect(getPrintedUiJsCode(renderResult.getEditorState())).toEqual(
       makeTestProjectCodeWithSnippet(`
         <div
@@ -464,10 +464,10 @@ describe('Inserting into flex row', () => {
       y: targetElementBounds.y + 5,
     })
 
-    // Drag from inside bbb to inside ccc
+    // Drag starts horizontally close to the first position, dragging towards the top left
     await fireDragEvent(canvasControlsLayer, startPoint, endPoint)
 
-    // Check that the inserted element is a child of bbb
+    // Check that the inserted element is a sibling of bbb, position is before bbb
     expect(getPrintedUiJsCode(renderResult.getEditorState())).toEqual(
       makeTestProjectCodeWithSnippet(`
         <div
@@ -508,6 +508,137 @@ describe('Inserting into flex row', () => {
           />
         </div>
       `),
+    )
+  })
+
+  it('Insert inside a flex child with absolute layout', async () => {
+    const renderResult = await renderTestEditorWithCode(inputCode, 'await-first-dom-report')
+    await startInsertMode(renderResult.dispatch)
+
+    const targetElement = renderResult.renderedDOM.getByTestId('bbb')
+    const targetElementBounds = targetElement.getBoundingClientRect()
+    const canvasControlsLayer = renderResult.renderedDOM.getByTestId(CanvasControlsContainerID)
+
+    const startPoint = slightlyOffsetWindowPointBecauseVeryWeirdIssue({
+      x: targetElementBounds.x + 10,
+      y: targetElementBounds.y + 10,
+    })
+    const endPoint = slightlyOffsetWindowPointBecauseVeryWeirdIssue({
+      x: targetElementBounds.x + 30,
+      y: targetElementBounds.y + 40,
+    })
+
+    // Drag starts inside bbb
+    await fireDragEvent(canvasControlsLayer, startPoint, endPoint)
+
+    // Check that the inserted element is a child of bbb
+    expect(getPrintedUiJsCode(renderResult.getEditorState())).toEqual(
+      makeTestProjectCodeWithSnippet(`
+        <div
+          data-uid='aaa'
+          style={{
+            width: '100%',
+            height: '100%',
+            backgroundColor: '#FFFFFF',
+            position: 'relative',
+            display: 'flex',
+            gap: 10,
+          }}
+        >
+          <div
+            data-uid='bbb'
+            data-testid='bbb'
+            style={{
+              width: 180,
+              height: 180,
+              backgroundColor: '#d3d3d3',
+            }}
+          >
+            <div
+              data-uid='ddd'
+              style={{
+                position: 'absolute',
+                left: 10,
+                top: 10,
+                width: 20,
+                height: 30,
+              }}
+            />
+          </div>
+          <div
+            data-uid='ccc'
+            style={{
+              width: 100,
+              height: 190,
+              backgroundColor: '#FF0000',
+            }}
+          />
+        </div>
+      `),
+    )
+  })
+
+  it('Drag inside a flex child close to the edge, which inserts as a sibling', async () => {
+    const renderResult = await renderTestEditorWithCode(inputCode, 'await-first-dom-report')
+    await startInsertMode(renderResult.dispatch)
+
+    const targetElement = renderResult.renderedDOM.getByTestId('bbb')
+    const targetElementBounds = targetElement.getBoundingClientRect()
+    const canvasControlsLayer = renderResult.renderedDOM.getByTestId(CanvasControlsContainerID)
+
+    const startPoint = slightlyOffsetWindowPointBecauseVeryWeirdIssue({
+      x: targetElementBounds.x + 3,
+      y: targetElementBounds.y + 3,
+    })
+    const endPoint = slightlyOffsetWindowPointBecauseVeryWeirdIssue({
+      x: targetElementBounds.x + 23,
+      y: targetElementBounds.y + 33,
+    })
+
+    // Drag starts inside bbb, but very close to its edge (3px)
+    await fireDragEvent(canvasControlsLayer, startPoint, endPoint)
+
+    // Check that the inserted element is a sibling of bbb, position is before bbb
+    expect(getPrintedUiJsCode(renderResult.getEditorState())).toEqual(
+      makeTestProjectCodeWithSnippet(`
+      <div
+        data-uid='aaa'
+        style={{
+          width: '100%',
+          height: '100%',
+          backgroundColor: '#FFFFFF',
+          position: 'relative',
+          display: 'flex',
+          gap: 10,
+        }}
+      >
+        <div
+          data-uid='ddd'
+          style={{
+            position: 'relative',
+            width: 20,
+            height: 30,
+          }}
+        />
+        <div
+          data-uid='bbb'
+          data-testid='bbb'
+          style={{
+            width: 180,
+            height: 180,
+            backgroundColor: '#d3d3d3',
+          }}
+        />
+        <div
+          data-uid='ccc'
+          style={{
+            width: 100,
+            height: 190,
+            backgroundColor: '#FF0000',
+          }}
+        />
+      </div>
+    `),
     )
   })
 })
@@ -586,10 +717,10 @@ describe('Inserting into flex column', () => {
       y: targetElementBounds.y + 25,
     })
 
-    // Drag from inside bbb to inside ccc
+    // Drag vertically close to the first position
     await fireDragEvent(canvasControlsLayer, startPoint, endPoint)
 
-    // Check that the inserted element is a child of bbb
+    // Check that the inserted element is a sibling of bbb, position is before bbb
     expect(getPrintedUiJsCode(renderResult.getEditorState())).toEqual(
       makeTestProjectCodeWithSnippet(`
         <div
@@ -651,10 +782,10 @@ describe('Inserting into flex column', () => {
       y: targetElementBounds.y + targetElementBounds.height + 25,
     })
 
-    // Drag from inside bbb to inside ccc
+    // Drag vertically close to the first position
     await fireDragEvent(canvasControlsLayer, startPoint, endPoint)
 
-    // Check that the inserted element is a child of bbb
+    // Check that the inserted element is a sibling of bbb, position is after bbb
     expect(getPrintedUiJsCode(renderResult.getEditorState())).toEqual(
       makeTestProjectCodeWithSnippet(`
         <div
@@ -716,10 +847,10 @@ describe('Inserting into flex column', () => {
       y: targetElementBounds.y + targetElementBounds.height + 5,
     })
 
-    // Drag from inside bbb to inside ccc
+    // Drag starts vertically close to the first position, dragging towards the top left
     await fireDragEvent(canvasControlsLayer, startPoint, endPoint)
 
-    // Check that the inserted element is a child of bbb
+    // Check that the inserted element is a sibling of bbb, position is after bbb
     expect(getPrintedUiJsCode(renderResult.getEditorState())).toEqual(
       makeTestProjectCodeWithSnippet(`
         <div
