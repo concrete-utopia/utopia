@@ -130,7 +130,12 @@ export type CanvasStrategyId =
 
 export interface CanvasStrategy {
   id: CanvasStrategyId // We'd need to do something to guarantee uniqueness here if using this for the commands' reason
-  name: string
+
+  name: (
+    canvasState: InteractionCanvasState,
+    interactionSession: InteractionSession,
+    strategyState: StrategyState,
+  ) => string
 
   // Determines if we should show the controls that this strategy renders
   isApplicable: (

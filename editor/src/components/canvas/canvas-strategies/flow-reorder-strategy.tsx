@@ -141,7 +141,7 @@ function flowReorderApplyCommon(
 
 export const flowReorderAutoConversionStrategy: CanvasStrategy = {
   id: 'FLOW_REORDER_AUTO_CONVERSION',
-  name: 'Reorder (Flow, Auto)',
+  name: () => 'Reorder (Flow, Auto)',
   isApplicable: isFlowReorderConversionApplicable,
   controlsToRender: [
     {
@@ -185,7 +185,7 @@ export const flowReorderAutoConversionStrategy: CanvasStrategy = {
 
 export const flowReorderNoConversionStrategy: CanvasStrategy = {
   id: 'FLOW_REORDER_NO_CONVERSION',
-  name: 'Reorder (Flow)',
+  name: () => 'Reorder (Flow)',
   isApplicable: isFlowReorderConversionApplicable,
   controlsToRender: flowReorderAutoConversionStrategy.controlsToRender,
   fitness: (canvasState, interactionState, strategyState) => {
@@ -213,7 +213,7 @@ export const flowReorderNoConversionStrategy: CanvasStrategy = {
 
 export const flowReorderSameTypeOnlyStrategy: CanvasStrategy = {
   id: 'FLOW_REORDER_SAME_TYPE_ONLY',
-  name: 'Reorder (Same)',
+  name: () => 'Reorder (Same)',
   isApplicable: (canvasState, interactionState, strategyState, allElementProps) => {
     return isFlowReorderConversionApplicable(
       canvasState,

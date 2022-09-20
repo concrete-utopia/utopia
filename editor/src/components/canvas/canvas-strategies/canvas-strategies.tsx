@@ -42,6 +42,7 @@ import { CSSCursor } from '../../../uuiui-deps'
 import { StateSelector } from 'zustand'
 import { flowReorderSliderStategy } from './flow-reorder-slider-strategy'
 import { NonResizableControl } from '../controls/select-mode/non-resizable-control'
+import { optionalMap } from '../../../core/shared/optional-utils'
 
 export const RegisteredCanvasStrategies: Array<CanvasStrategy> = [
   absoluteMoveStrategy,
@@ -85,6 +86,11 @@ function getInteractionTargetFromEditorState(editor: EditorState): InteractionTa
   }
 }
 
+export interface ApplicableStrategy {
+  strategy: CanvasStrategy
+  name: string
+}
+
 function getApplicableStrategies(
   strategies: Array<CanvasStrategy>,
   canvasState: InteractionCanvasState,
@@ -98,7 +104,11 @@ function getApplicableStrategies(
 }
 
 const getApplicableStrategiesSelector = createSelector(
-  (store: EditorStorePatched) => store.strategyState.sortedApplicableStrategies,
+  (store: EditorStorePatched) =>
+    optionalMap(
+      (sas) => sas.map((s) => s.strategy),
+      store.strategyState.sortedApplicableStrategies,
+    ),
   (store: EditorStorePatched): InteractionCanvasState => {
     return pickCanvasStateFromEditorState(store.editor, store.builtInDependencies)
   },
@@ -215,7 +225,7 @@ export function findCanvasStrategy(
 ): {
   strategy: StrategyWithFitness | null
   previousStrategy: StrategyWithFitness | null
-  sortedApplicableStrategies: Array<CanvasStrategy>
+  sortedApplicableStrategies: Array<ApplicableStrategy>
 } {
   const sortedApplicableStrategies = getApplicableStrategiesOrderedByFitness(
     strategies,
@@ -225,7 +235,10 @@ export function findCanvasStrategy(
   )
   return {
     ...pickStrategy(sortedApplicableStrategies, interactionSession, previousStrategyId),
-    sortedApplicableStrategies: sortedApplicableStrategies.map((s) => s.strategy),
+    sortedApplicableStrategies: sortedApplicableStrategies.map((s) => ({
+      strategy: s.strategy,
+      name: s.strategy.name(canvasState, interactionSession, strategyState),
+    })),
   }
 }
 

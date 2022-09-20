@@ -8,7 +8,7 @@ import { applyFlexReparent, findReparentStrategy } from './reparent-strategy-hel
 
 export const flexReparentToFlexStrategy: CanvasStrategy = {
   id: 'FLEX_REPARENT_TO_FLEX',
-  name: 'Reparent (Flex)',
+  name: () => 'Reparent (Flex)',
   isApplicable: (canvasState, _interactionState, metadata) => {
     const selectedElements = getTargetPathsFromInteractionTarget(canvasState.interactionTarget)
     if (selectedElements.length == 1) {
