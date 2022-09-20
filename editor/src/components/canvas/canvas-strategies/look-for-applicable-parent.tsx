@@ -349,7 +349,7 @@ function isElementExplicitlySized(element: JSXElement): boolean {
     return false
   }
 
-  if (width.value == null || height.value == null) {
+  if (width.value == null && height.value == null) {
     return false
   }
 
