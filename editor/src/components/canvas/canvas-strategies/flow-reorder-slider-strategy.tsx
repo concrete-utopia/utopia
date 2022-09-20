@@ -1,7 +1,5 @@
 import { MetadataUtils } from '../../../core/model/element-metadata-utils'
 import * as EP from '../../../core/shared/element-path'
-import { CanvasVector, mod } from '../../../core/shared/math-utils'
-import { ElementPath } from '../../../core/shared/project-file-types'
 import { absolute } from '../../../utils/utils'
 import { CSSCursor } from '../canvas-types'
 import { reorderElement } from '../commands/reorder-element-command'
@@ -15,11 +13,13 @@ import {
   getTargetPathsFromInteractionTarget,
   strategyApplicationResult,
 } from './canvas-strategy-types'
-import { getNewDisplayTypeForIndex, getOptionalDisplayPropCommands } from './flow-reorder-helpers'
+import {
+  findNewIndex,
+  getNewDisplayTypeForIndex,
+  getOptionalDisplayPropCommands,
+} from './flow-reorder-helpers'
 import { isFlowReorderConversionApplicable } from './flow-reorder-strategy'
 import { isReorderAllowed } from './reorder-utils'
-
-export const ReorderChangeThreshold = 32
 
 export const flowReorderSliderStategy: CanvasStrategy = {
   id: 'FLOW_REORDER_SLIDER',
@@ -106,17 +106,4 @@ export const flowReorderSliderStategy: CanvasStrategy = {
       return strategyApplicationResult([setCursorCommand('mid-interaction', CSSCursor.ResizeEW)])
     }
   },
-}
-
-export function findNewIndex(
-  startingIndex: number,
-  drag: CanvasVector,
-  siblings: Array<ElementPath>,
-  shouldRound: 'rounded-value' | 'raw-value',
-): number {
-  const dragDelta = drag.x // TODO optional vertical direction
-  const reorderIndexPosition = dragDelta / ReorderChangeThreshold
-  const indexOffset =
-    shouldRound === 'rounded-value' ? Math.round(reorderIndexPosition) : reorderIndexPosition
-  return mod(startingIndex + indexOffset, siblings.length)
 }

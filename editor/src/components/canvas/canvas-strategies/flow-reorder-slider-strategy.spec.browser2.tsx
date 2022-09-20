@@ -9,8 +9,8 @@ import { offsetPoint, windowPoint, WindowPoint } from '../../../core/shared/math
 import { emptyModifiers, Modifiers } from '../../../utils/modifiers'
 import * as EP from '../../../core/shared/element-path'
 import { selectComponents } from '../../editor/actions/action-creators'
-import { ReorderChangeThreshold } from './flow-reorder-slider-strategy'
 import { IconSize } from '../controls/flow-slider-control'
+import { ReorderChangeThreshold } from './flow-reorder-helpers'
 
 const TestProject = `
 <div style={{ width: '100%', height: '100%', position: 'absolute' }} data-uid='container'>

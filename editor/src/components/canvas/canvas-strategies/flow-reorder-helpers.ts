@@ -11,6 +11,7 @@ import {
   CanvasVector,
   distance as euclideanDistance,
   getRectCenter,
+  mod,
   offsetPoint,
   pointIsClockwiseFromLine,
 } from '../../../core/shared/math-utils'
@@ -325,4 +326,18 @@ export function getOptionalDisplayPropCommands(
       return []
     }
   }
+}
+
+export const ReorderChangeThreshold = 32
+export function findNewIndex(
+  startingIndex: number,
+  drag: CanvasVector,
+  siblings: Array<ElementPath>,
+  shouldRound: 'rounded-value' | 'raw-value',
+): number {
+  const dragDelta = drag.x // TODO optional vertical direction
+  const reorderIndexPosition = dragDelta / ReorderChangeThreshold
+  const indexOffset =
+    shouldRound === 'rounded-value' ? Math.round(reorderIndexPosition) : reorderIndexPosition
+  return mod(startingIndex + indexOffset, siblings.length)
 }

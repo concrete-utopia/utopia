@@ -22,8 +22,8 @@ import { createInteractionViaMouse, flowSlider } from '../canvas-strategies/inte
 import { windowToCanvasCoordinates } from '../dom-lookup'
 import { CanvasOffsetWrapper } from './canvas-offset-wrapper'
 import { ElementPath } from '../../../core/shared/project-file-types'
-import { findNewIndex } from '../canvas-strategies/flow-reorder-slider-strategy'
 import { IS_TEST_ENVIRONMENT } from '../../../common/env-vars'
+import { findNewIndex } from '../canvas-strategies/flow-reorder-helpers'
 
 export const IconSize = 16
 const IndicatorSize = (scale: number) => IconSize / scale
@@ -215,6 +215,7 @@ const FlowReorderControl = React.memo(({ controlPosition }: { controlPosition: C
         windowPoint(point(event.clientX, event.clientY)),
       ).canvasPositionRounded
       if (ref.current != null && !IS_TEST_ENVIRONMENT) {
+        // real user input is needed for enabling pointerLock
         ref.current.requestPointerLock()
       }
       if (event.button !== 2) {
