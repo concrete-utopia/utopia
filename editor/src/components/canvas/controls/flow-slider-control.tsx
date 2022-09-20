@@ -23,8 +23,9 @@ import { windowToCanvasCoordinates } from '../dom-lookup'
 import { CanvasOffsetWrapper } from './canvas-offset-wrapper'
 import { ElementPath } from '../../../core/shared/project-file-types'
 import { findNewIndex } from '../canvas-strategies/flow-reorder-slider-strategy'
+import { IS_TEST_ENVIRONMENT } from '../../../common/env-vars'
 
-const IconSize = 16
+export const IconSize = 16
 const IndicatorSize = (scale: number) => IconSize / scale
 const MenuHeight = (scale: number) => 22 / scale
 const AnimatedIndicatorOffset = (scale: number) => 2 / scale
@@ -213,7 +214,7 @@ const FlowReorderControl = React.memo(({ controlPosition }: { controlPosition: C
         canvasOffsetRef.current,
         windowPoint(point(event.clientX, event.clientY)),
       ).canvasPositionRounded
-      if (ref.current != null) {
+      if (ref.current != null && !IS_TEST_ENVIRONMENT) {
         ref.current.requestPointerLock()
       }
       if (event.button !== 2) {
@@ -233,6 +234,7 @@ const FlowReorderControl = React.memo(({ controlPosition }: { controlPosition: C
     },
     [dispatch, canvasOffsetRef, scaleRef],
   )
+
   return (
     <React.Fragment>
       <div
@@ -251,6 +253,7 @@ const FlowReorderControl = React.memo(({ controlPosition }: { controlPosition: C
       ></div>
       <div
         ref={ref}
+        data-testid='flow-reorder-slider-control'
         style={{
           position: 'absolute',
           top: controlPosition.y - (ClickAreaSize - ControlSize(scale)) / 2,

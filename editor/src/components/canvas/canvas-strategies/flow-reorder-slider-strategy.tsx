@@ -19,7 +19,7 @@ import { getNewDisplayTypeForIndex, getOptionalDisplayPropCommands } from './flo
 import { isFlowReorderConversionApplicable } from './flow-reorder-strategy'
 import { isReorderAllowed } from './reorder-utils'
 
-const ReorderChangeThreshold = 32
+export const ReorderChangeThreshold = 32
 
 export const flowReorderSliderStategy: CanvasStrategy = {
   id: 'FLOW_REORDER_SLIDER',
@@ -114,7 +114,7 @@ export function findNewIndex(
   siblings: Array<ElementPath>,
   shouldRound: 'rounded-value' | 'raw-value',
 ): number {
-  const dragDelta = Math.abs(drag.x) > Math.abs(drag.y) ? drag.x : drag.y
+  const dragDelta = drag.x // TODO optional vertical direction
   const reorderIndexPosition = dragDelta / ReorderChangeThreshold
   const indexOffset =
     shouldRound === 'rounded-value' ? Math.round(reorderIndexPosition) : reorderIndexPosition
