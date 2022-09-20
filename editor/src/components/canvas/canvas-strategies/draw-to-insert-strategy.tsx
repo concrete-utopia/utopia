@@ -9,9 +9,9 @@ import {
   targetPaths,
 } from './canvas-strategy-types'
 import { boundingArea, InteractionSession, StrategyState } from './interaction-state'
-import { ElementInsertionSubject, InsertionSubject } from '../../editor/editor-modes'
+import { ElementInsertionSubject } from '../../editor/editor-modes'
 import { LayoutHelpers } from '../../../core/layout/layout-helpers'
-import { foldEither, isLeft, right } from '../../../core/shared/either'
+import { foldEither, isLeft } from '../../../core/shared/either'
 import {
   InsertElementInsertionSubject,
   insertElementInsertionSubject,
@@ -178,24 +178,24 @@ function getStyleAttributesForFrameInAbsolutePosition(
   subject: ElementInsertionSubject,
   frame: CanvasRectangle,
 ) {
-  const updatedAttributes = LayoutHelpers.updateLayoutPropsWithFrame(
-    false,
-    null,
-    subject.element.props,
-    {
-      left: frame.x,
-      top: frame.y,
-      width: frame.width,
-      height: frame.height,
+  return foldEither(
+    (_) => {
+      throw new Error(`Problem setting drag frame on an element we just created.`)
     },
-    ['style'],
+    (attr) => attr,
+    LayoutHelpers.updateLayoutPropsWithFrame(
+      false,
+      null,
+      subject.element.props,
+      {
+        left: frame.x,
+        top: frame.y,
+        width: frame.width,
+        height: frame.height,
+      },
+      ['style'],
+    ),
   )
-
-  if (isLeft(updatedAttributes)) {
-    throw new Error(`Problem setting drag frame on an element we just created.`)
-  }
-
-  return updatedAttributes.value
 }
 
 function runTargetStrategiesForFreshlyInsertedElementToReparent(
