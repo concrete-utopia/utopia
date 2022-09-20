@@ -1224,7 +1224,7 @@ export class EditorCanvas extends React.Component<EditorCanvasProps> {
         ) {
           const dragStart = this.props.editor.canvas.interactionSession.interactionData.dragStart
 
-          if (document.pointerLockElement) {
+          if (document.pointerLockElement != null) {
             const newDrag = roundPointForScale(
               Utils.offsetPoint(
                 this.props.editor.canvas.interactionSession.interactionData.drag ?? zeroCanvasPoint,
