@@ -933,6 +933,20 @@ function deduplicateBy<T>(key: (t: T) => string, ts: Array<T>): Array<T> {
   return results
 }
 
+export async function waitUntil(limitMS: number, check: () => boolean): Promise<boolean> {
+  if (check()) {
+    return true
+  } else if (limitMS <= 0) {
+    return false
+  } else {
+    return new Promise((resolve) => {
+      setTimeout(resolve, 5)
+    }).then(() => {
+      return waitUntil(limitMS - 5, check)
+    })
+  }
+}
+
 export default {
   generateUUID: generateUUID,
   assert: assert,
@@ -1094,4 +1108,5 @@ export default {
   findLastIndex: findLastIndex,
   timeLimitPromise: timeLimitPromise,
   deduplicateBy: deduplicateBy,
+  waitUntil: waitUntil,
 }
