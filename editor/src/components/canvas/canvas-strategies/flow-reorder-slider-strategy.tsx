@@ -23,7 +23,7 @@ export const ReorderChangeThreshold = 32
 
 export const flowReorderSliderStategy: CanvasStrategy = {
   id: 'FLOW_REORDER_SLIDER',
-  name: 'Reorder (Slider)',
+  name: () => 'Reorder (Slider)',
   isApplicable: (canvasState, interactionState, metadata, allElementProps) => {
     return isFlowReorderConversionApplicable(
       canvasState,
