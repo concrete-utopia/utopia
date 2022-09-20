@@ -1,4 +1,3 @@
-import { sortBy } from '../../../core/shared/array-utils'
 import * as EP from '../../../core/shared/element-path'
 import { ElementInstanceMetadataMap } from '../../../core/shared/element-template'
 import { memoize } from '../../../core/shared/memoize'
@@ -8,7 +7,6 @@ import { AllElementProps } from '../../editor/store/editor-state'
 import { CSSCursor } from '../canvas-types'
 import { highlightElementsCommand } from '../commands/highlight-element-command'
 import { setCursorCommand } from '../commands/set-cursor-command'
-import { updateSelectedViews } from '../commands/update-selected-views-command'
 import { ParentBounds } from '../controls/parent-bounds'
 import { ParentOutlines } from '../controls/parent-outlines'
 import { DragOutlineControl } from '../controls/select-mode/drag-outline-control'
@@ -34,7 +32,7 @@ export const lookForApplicableParentStrategy: CanvasStrategy = {
       return defaultName
     }
 
-    const result = isApplicableInner(
+    const result = lookForParentApplicableStrategy(
       canvasState,
       interactionSession,
       strategyState.startingMetadata,
@@ -81,7 +79,12 @@ export const lookForApplicableParentStrategy: CanvasStrategy = {
       return false
     }
 
-    const strategies = isApplicableInner(canvasState, interactionSession, metadata, allElementProps)
+    const strategies = lookForParentApplicableStrategy(
+      canvasState,
+      interactionSession,
+      metadata,
+      allElementProps,
+    )
     return strategies != null
   },
 
@@ -97,7 +100,7 @@ export const lookForApplicableParentStrategy: CanvasStrategy = {
   },
 
   apply: (canvasState, interactionSession, strategyState) => {
-    const result = isApplicableInner(
+    const result = lookForParentApplicableStrategy(
       canvasState,
       interactionSession,
       strategyState.startingMetadata,
@@ -108,7 +111,7 @@ export const lookForApplicableParentStrategy: CanvasStrategy = {
       return emptyStrategyApplicationResult
     }
 
-    const { strategies, effectiveTarget, originalTarget } = result
+    const { strategies, effectiveTarget } = result
     if (strategies.length < 1) {
       return emptyStrategyApplicationResult
     }
@@ -132,7 +135,6 @@ export const lookForApplicableParentStrategy: CanvasStrategy = {
       [
         ...chosenStrategyApplicationResult.commands,
         highlightElementsCommand(effectiveTarget),
-        updateSelectedViews('mid-interaction', originalTarget),
         setCursorCommand('mid-interaction', CSSCursor.MovingMagic),
       ],
       chosenStrategyApplicationResult.customStatePatch,
@@ -172,12 +174,12 @@ function patchCanvasStateInteractionTargetPath(
   }
 }
 
-function isApplicableInner(
+function lookForParentApplicableStrategy(
   canvasState: InteractionCanvasState,
   interactionSession: InteractionSession,
   metadata: ElementInstanceMetadataMap,
   allElementProps: AllElementProps,
-): IsApplicableTraverseResult | null {
+): ParentApplicableStrategyResult | null {
   if (interactionSession.interactionData.type !== 'DRAG') {
     return null
   }
@@ -212,10 +214,9 @@ function isApplicableInner(
   return result
 }
 
-interface IsApplicableTraverseResult {
+interface ParentApplicableStrategyResult {
   strategies: Array<CanvasStrategy>
   effectiveTarget: Array<ElementPath>
-  originalTarget: Array<ElementPath>
   componentsInSubtree: Array<ElementPath>
 }
 
@@ -225,7 +226,7 @@ function isApplicableTraverse(
   interactionSession: InteractionSession,
   metadata: ElementInstanceMetadataMap,
   allElementProps: AllElementProps,
-): IsApplicableTraverseResult | null {
+): ParentApplicableStrategyResult | null {
   if (
     canvasState.interactionTarget.type !== 'TARGET_PATHS' ||
     canvasState.interactionTarget.elements.length !== 1
@@ -240,7 +241,6 @@ function isApplicableTraverse(
     return {
       strategies: applicableStrategies,
       effectiveTarget: pathsFromInteractionTarget(canvasState.interactionTarget),
-      originalTarget: pathsFromInteractionTarget(canvasState.interactionTarget),
       componentsInSubtree: [],
     }
   }
@@ -261,7 +261,6 @@ function isApplicableTraverse(
       return {
         strategies: applicableStrategies,
         effectiveTarget: [path],
-        originalTarget: canvasState.interactionTarget.elements,
         componentsInSubtree,
       }
     }
