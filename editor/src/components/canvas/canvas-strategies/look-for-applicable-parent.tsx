@@ -57,7 +57,7 @@ export const lookForApplicableParentStrategy: CanvasStrategy = {
       return r.fitness - l.fitness
     })
 
-    const fittestStrategy = sortedStrategies[0]
+    const fittestStrategy = sortedStrategies[0].strategy
 
     return fittestStrategy.name(canvasState, interactionSession, strategyState) + '*'
   },
