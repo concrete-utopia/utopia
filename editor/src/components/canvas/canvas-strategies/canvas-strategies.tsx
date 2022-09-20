@@ -142,26 +142,7 @@ export interface StrategyWithFitness {
   strategy: CanvasStrategy
 }
 
-export function calculateStrategiesWithFitness(
-  strategies: Array<CanvasStrategy>,
-  canvasState: InteractionCanvasState,
-  interactionSession: InteractionSession,
-  strategyState: StrategyState,
-): Array<StrategyWithFitness> {
-  return mapDropNulls((strategy) => {
-    const fitness = strategy.fitness(canvasState, interactionSession, strategyState)
-    if (fitness <= 0) {
-      return null
-    } else {
-      return {
-        fitness: fitness,
-        strategy: strategy,
-      }
-    }
-  }, strategies)
-}
-
-function getApplicableStrategiesOrderedByFitness(
+export function getApplicableStrategiesOrderedByFitness(
   strategies: Array<CanvasStrategy>,
   canvasState: InteractionCanvasState,
   interactionSession: InteractionSession,
@@ -176,12 +157,17 @@ function getApplicableStrategiesOrderedByFitness(
   )
 
   // Compute the fitness results upfront.
-  const strategiesWithFitness = calculateStrategiesWithFitness(
-    applicableStrategies,
-    canvasState,
-    interactionSession,
-    strategyState,
-  )
+  const strategiesWithFitness = mapDropNulls((strategy) => {
+    const fitness = strategy.fitness(canvasState, interactionSession, strategyState)
+    if (fitness <= 0) {
+      return null
+    } else {
+      return {
+        fitness: fitness,
+        strategy: strategy,
+      }
+    }
+  }, applicableStrategies)
 
   const sortedStrategies = sortBy(strategiesWithFitness, (l, r) => {
     // sort by fitness, descending

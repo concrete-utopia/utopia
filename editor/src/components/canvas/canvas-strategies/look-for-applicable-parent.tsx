@@ -15,6 +15,7 @@ import { DragOutlineControl } from '../controls/select-mode/drag-outline-control
 import {
   calculateStrategiesWithFitness,
   getApplicableStrategies,
+  getApplicableStrategiesOrderedByFitness,
   RegisteredCanvasStrategies,
 } from './canvas-strategies'
 import {
@@ -45,9 +46,14 @@ export const lookForApplicableParentStrategy: CanvasStrategy = {
       return defaultName
     }
 
+    const patchedCanvasState = patchCanvasStateInteractionTargetPath(
+      canvasState,
+      result.effectiveTarget,
+    )
+
     const fittestStrategy = calcFittestStrategy(
       result.strategies,
-      canvasState,
+      patchedCanvasState,
       interactionSession,
       strategyState,
     )
@@ -108,13 +114,14 @@ export const lookForApplicableParentStrategy: CanvasStrategy = {
       return emptyStrategyApplicationResult
     }
 
+    const patchedCanvasState = patchCanvasStateInteractionTargetPath(canvasState, effectiveTarget)
+
     const chosenStrategy = calcFittestStrategy(
       result.strategies,
-      canvasState,
+      patchedCanvasState,
       interactionSession,
       strategyState,
     )
-    const patchedCanvasState = patchCanvasStateInteractionTargetPath(canvasState, effectiveTarget)
 
     const chosenStrategyApplicationResult = chosenStrategy.apply(
       patchedCanvasState,
@@ -281,18 +288,12 @@ function calcFittestStrategy(
   interactionSession: InteractionSession,
   strategyState: StrategyState,
 ): CanvasStrategy {
-  const strategiesWithFitness = calculateStrategiesWithFitness(
+  return getApplicableStrategiesOrderedByFitness(
     strategies,
     canvasState,
     interactionSession,
     strategyState,
-  )
-
-  const sortedStrategies = sortBy(strategiesWithFitness, (l, r) => {
-    return l.fitness - r.fitness
-  })
-
-  return sortedStrategies[0].strategy
+  )[0].strategy
 }
 
 const isApplicableTraverseMemo = memoize(isApplicableTraverse)
