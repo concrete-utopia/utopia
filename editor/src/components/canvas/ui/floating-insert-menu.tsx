@@ -309,6 +309,12 @@ function useComponentSelectorStyles(): StylesConfig<InsertMenuItem, false> {
   )
 }
 
+interface CheckboxRowProps {
+  id: string
+  checked: boolean
+  onChange: (value: boolean) => void
+}
+
 const CustomOption = (props: OptionProps<InsertMenuItem, false>) => {
   const { innerRef, innerProps, isDisabled, isFocused, label, data } = props
   const colorTheme = useColorTheme()
@@ -349,12 +355,6 @@ const CustomOption = (props: OptionProps<InsertMenuItem, false>) => {
       </div>
     </div>
   )
-}
-
-interface CheckboxRowProps {
-  id: string
-  checked: boolean
-  onChange: (value: boolean) => void
 }
 
 const CheckboxRow = React.memo<React.PropsWithChildren<CheckboxRowProps>>(

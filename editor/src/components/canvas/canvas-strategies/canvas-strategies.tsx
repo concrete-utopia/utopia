@@ -133,11 +133,6 @@ const getApplicableStrategiesSelector = createSelector(
   },
 )
 
-export interface ApplicableStrategy {
-  strategy: CanvasStrategy
-  name: string
-}
-
 function useGetApplicableStrategies(): Array<CanvasStrategy> {
   return useEditorState(getApplicableStrategiesSelector, 'useGetApplicableStrategies', arrayEquals)
 }
@@ -147,7 +142,7 @@ export interface StrategyWithFitness {
   strategy: CanvasStrategy
 }
 
-export function getApplicableStrategiesOrderedByFitness(
+function getApplicableStrategiesOrderedByFitness(
   strategies: Array<CanvasStrategy>,
   canvasState: InteractionCanvasState,
   interactionSession: InteractionSession,
