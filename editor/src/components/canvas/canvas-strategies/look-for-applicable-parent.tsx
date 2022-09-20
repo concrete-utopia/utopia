@@ -3,10 +3,8 @@ import { ElementInstanceMetadataMap } from '../../../core/shared/element-templat
 import { memoize } from '../../../core/shared/memoize'
 import { ElementPath } from '../../../core/shared/project-file-types'
 import { assertNever } from '../../../core/shared/utils'
-import { isFeatureEnabled } from '../../../utils/feature-switches'
 import { AllElementProps } from '../../editor/store/editor-state'
 import { CSSCursor } from '../canvas-types'
-import { WhenToRun } from '../commands/commands'
 import { highlightElementsCommand } from '../commands/highlight-element-command'
 import { setCursorCommand } from '../commands/set-cursor-command'
 import { updateSelectedViews } from '../commands/update-selected-views-command'
@@ -120,22 +118,11 @@ export const lookForApplicableParentStrategy: CanvasStrategy = {
       strategyState,
     )
 
-    const shouldUpdateSelectedViews = isFeatureEnabled('Change selection during parent finding')
-    const howToUpdateSelectedViews: WhenToRun = isFeatureEnabled('Permanently change selection')
-      ? 'always'
-      : 'mid-interaction'
-
-    const updateSelectionCommands = !shouldUpdateSelectedViews
-      ? []
-      : [
-          highlightElementsCommand(effectiveTarget),
-          updateSelectedViews(howToUpdateSelectedViews, originalTarget),
-        ]
-
     return strategyApplicationResult(
       [
         ...chosenStrategyApplicationResult.commands,
-        ...updateSelectionCommands,
+        highlightElementsCommand(effectiveTarget),
+        updateSelectedViews('mid-interaction', originalTarget),
         setCursorCommand('mid-interaction', CSSCursor.MovingMagic),
       ],
       chosenStrategyApplicationResult.customStatePatch,

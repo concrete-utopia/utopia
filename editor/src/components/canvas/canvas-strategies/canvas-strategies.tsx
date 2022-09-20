@@ -88,7 +88,7 @@ export interface ApplicableStrategy {
   name: string
 }
 
-function getApplicableStrategies(
+export function getApplicableStrategies(
   strategies: Array<CanvasStrategy>,
   canvasState: InteractionCanvasState,
   interactionSession: InteractionSession | null,

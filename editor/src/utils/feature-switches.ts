@@ -16,8 +16,6 @@ export type FeatureName =
   | 'Canvas Strategies Debug Panel'
   | 'Keyboard up clears interaction'
   | 'Canvas Selective Rerender'
-  | 'Change selection during parent finding'
-  | 'Permanently change selection'
 
 export const AllFeatureNames: FeatureName[] = [
   // 'Dragging Reparents By Default', // Removing this option so that we can experiment on this later
@@ -33,8 +31,6 @@ export const AllFeatureNames: FeatureName[] = [
   'Canvas Strategies Debug Panel',
   'Keyboard up clears interaction',
   'Canvas Selective Rerender',
-  'Change selection during parent finding',
-  'Permanently change selection',
 ]
 
 let FeatureSwitches: { [feature in FeatureName]: boolean } = {
@@ -51,8 +47,6 @@ let FeatureSwitches: { [feature in FeatureName]: boolean } = {
   'Canvas Strategies Debug Panel': false,
   'Keyboard up clears interaction': false,
   'Canvas Selective Rerender': true,
-  'Change selection during parent finding': true,
-  'Permanently change selection': false,
 }
 
 function settingKeyForName(featureName: FeatureName): string {
