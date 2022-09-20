@@ -65,7 +65,7 @@ import { Link } from '../../uuiui/link'
 import { useTriggerForkProject } from '../editor/persistence-hooks'
 import urljoin from 'url-join'
 import { parseGithubProjectString } from '../../core/shared/github'
-import { importFromProjectURL } from '../../core/model/project-import'
+import { getURLImportDetails } from '../../core/model/project-import'
 import { forEachLeft, forEachRight } from '../../core/shared/either'
 import { notice } from '../common/notice'
 

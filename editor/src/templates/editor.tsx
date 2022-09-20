@@ -81,7 +81,7 @@ import {
 } from '../components/canvas/ui-jsx-canvas'
 import { foldEither, isLeft } from '../core/shared/either'
 import {
-  importFromProjectURL,
+  getURLImportDetails,
   importZippedGitProject,
   isProjectImportSuccess,
   reuploadAssets,
@@ -503,7 +503,7 @@ export class Editor {
   }
 
   private createNewProjectFromImportURL(importURL: string): void {
-    importFromProjectURL(importURL)
+    getURLImportDetails(importURL)
       .then((importResult) => {
         foldEither(
           (errorMessage) => {

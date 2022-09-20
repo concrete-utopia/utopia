@@ -156,7 +156,7 @@ export interface ImportFromProjectURLSuccess {
   originalProjectRootURL: string
 }
 
-export async function importFromProjectURL(
+export async function getURLImportDetails(
   projectURL: string,
 ): Promise<Either<string, ImportFromProjectURLSuccess>> {
   const possibleContentsURL = contentsJSONURLFromProjectURL(projectURL)
