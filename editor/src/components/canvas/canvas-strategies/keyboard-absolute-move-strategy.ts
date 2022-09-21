@@ -21,7 +21,6 @@ import {
   getAbsoluteMoveCommandsForSelectedElement,
   getMultiselectBounds,
 } from './shared-absolute-move-strategy-helpers'
-import { AdjustCssLengthProperty } from '../commands/adjust-css-length-command'
 import { setElementsToRerenderCommand } from '../commands/set-elements-to-rerender-command'
 import { setSnappingGuidelines } from '../commands/set-snapping-guidelines-command'
 import { updateHighlightedViews } from '../commands/update-highlighted-views-command'
@@ -32,12 +31,7 @@ import {
   getKeyboardStrategyGuidelines,
   getLastKeyPressState,
 } from './shared-keyboard-strategy-helpers'
-import { mapDropNulls } from '../../../core/shared/array-utils'
 import { defaultIfNull } from '../../../core/shared/optional-utils'
-import { oneGuidelinePerDimension } from '../controls/guideline-helpers'
-import { GuidelineWithSnappingVectorAndPointsOfRelevance, Guidelines } from '../guideline'
-import Utils from '../../../utils/utils'
-import { StrategyState, InteractionSession } from './interaction-state'
 import { pushIntendedBounds } from '../commands/push-intended-bounds-command'
 import { CanvasFrameAndTarget } from '../canvas-types'
 import { honoursPropsPosition } from './absolute-utils'

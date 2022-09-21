@@ -264,7 +264,10 @@ function on(
   if (event.event === 'MOVE' && event.nativeEvent.buttons === 4) {
     return [
       CanvasActions.scrollCanvas(
-        canvasPoint({ x: -event.nativeEvent.movementX, y: -event.nativeEvent.movementY }),
+        canvasPoint({
+          x: -event.nativeEvent.movementX / canvas.scale,
+          y: -event.nativeEvent.movementY / canvas.scale,
+        }),
       ),
     ]
   }
@@ -273,7 +276,10 @@ function on(
     if (event.event === 'MOVE' && event.nativeEvent.buttons === 1) {
       return [
         CanvasActions.scrollCanvas(
-          canvasPoint({ x: -event.nativeEvent.movementX, y: -event.nativeEvent.movementY }),
+          canvasPoint({
+            x: -event.nativeEvent.movementX / canvas.scale,
+            y: -event.nativeEvent.movementY / canvas.scale,
+          }),
         ),
       ]
     } else {

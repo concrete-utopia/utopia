@@ -25,7 +25,6 @@ import {
   FlowReorderDragOutline,
 } from '../controls/flow-reorder-indicators'
 import { AllElementProps } from '../../editor/store/editor-state'
-import { isGeneratedElement } from './reparent-helpers'
 import { isReorderAllowed } from './reorder-utils'
 
 export function isFlowReorderConversionApplicable(
