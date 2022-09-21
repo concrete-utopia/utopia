@@ -43,6 +43,7 @@ import {
 import { isInsertMode } from '../../editor/editor-modes'
 import { dragToInsertStrategy } from './drag-to-insert-strategy'
 import { StateSelector } from 'zustand'
+import { flowReorderSliderStategy } from './flow-reorder-slider-strategy'
 import { NonResizableControl } from '../controls/select-mode/non-resizable-control'
 import { lookForApplicableParentStrategy } from './look-for-applicable-parent'
 import { drawToInsertStrategy } from './draw-to-insert-strategy'
@@ -68,6 +69,7 @@ export const RegisteredCanvasStrategies: Array<CanvasStrategy> = [
   flowReorderAutoConversionStrategy,
   flowReorderNoConversionStrategy,
   flowReorderSameTypeOnlyStrategy,
+  flowReorderSliderStategy,
   lookForApplicableParentStrategy,
   flexResizeBasicStrategy,
 ]
