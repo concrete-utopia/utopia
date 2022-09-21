@@ -94,7 +94,10 @@ import {
   updateGlobalPositions,
 } from '../utils/global-positions'
 import { last, reverse } from '../core/shared/array-utils'
-import { updateInteractionViaMouse } from '../components/canvas/canvas-strategies/interaction-state'
+import {
+  updateInteractionViaDragDelta,
+  updateInteractionViaMouse,
+} from '../components/canvas/canvas-strategies/interaction-state'
 import { MouseButtonsPressed } from '../utils/mouse'
 import { getReparentTargetUnified } from '../components/canvas/canvas-strategies/reparent-strategy-helpers'
 import { getDragTargets } from '../components/canvas/canvas-strategies/shared-absolute-move-strategy-helpers'
@@ -1241,20 +1244,36 @@ export class EditorCanvas extends React.Component<EditorCanvasProps> {
             this.props.model.scale,
           )
 
-          this.handleEvent({
-            ...canvasPositions,
-            event: 'MOVE',
-            modifiers: Modifier.modifiersForEvent(event),
-            cursor: null,
-            nativeEvent: event,
-            interactionSession: updateInteractionViaMouse(
-              this.props.editor.canvas.interactionSession,
-              newDrag,
-              Modifier.modifiersForEvent(event),
-              null,
-              accumulatedMovement,
-            ),
-          })
+          if (document.pointerLockElement != null) {
+            this.handleEvent({
+              ...canvasPositions,
+              event: 'MOVE',
+              modifiers: Modifier.modifiersForEvent(event),
+              cursor: null,
+              nativeEvent: event,
+              interactionSession: updateInteractionViaDragDelta(
+                this.props.editor.canvas.interactionSession,
+                Modifier.modifiersForEvent(event),
+                null,
+                accumulatedMovement,
+              ),
+            })
+          } else {
+            this.handleEvent({
+              ...canvasPositions,
+              event: 'MOVE',
+              modifiers: Modifier.modifiersForEvent(event),
+              cursor: null,
+              nativeEvent: event,
+              interactionSession: updateInteractionViaMouse(
+                this.props.editor.canvas.interactionSession,
+                newDrag,
+                Modifier.modifiersForEvent(event),
+                null,
+                accumulatedMovement,
+              ),
+            })
+          }
         } else if (dragState == null || !dragStarted) {
           this.handleEvent({
             ...canvasPositions,

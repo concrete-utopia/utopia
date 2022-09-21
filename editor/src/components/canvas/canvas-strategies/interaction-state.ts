@@ -180,6 +180,38 @@ function dragExceededThreshold(drag: CanvasVector): boolean {
   return xDiff > MoveIntoDragThreshold || yDiff > MoveIntoDragThreshold
 }
 
+export function updateInteractionViaDragDelta(
+  currentState: InteractionSessionWithoutMetadata,
+  modifiers: Modifiers,
+  sourceOfUpdate: CanvasControlType | null, // If null it means the active control is the source
+  accumulatedMovement: CanvasVector,
+): InteractionSessionWithoutMetadata {
+  if (currentState.interactionData.type === 'DRAG') {
+    const dragThresholdPassed = dragExceededThreshold(accumulatedMovement)
+    return {
+      interactionData: {
+        type: 'DRAG',
+        dragStart: currentState.interactionData.dragStart,
+        drag: dragThresholdPassed ? accumulatedMovement : null,
+        prevDrag: currentState.interactionData.drag,
+        originalDragStart: currentState.interactionData.originalDragStart,
+        modifiers: modifiers,
+        globalTime: Date.now(),
+        hasMouseMoved: true,
+        accumulatedMovement: accumulatedMovement,
+      },
+      activeControl: currentState.activeControl,
+      sourceOfUpdate: sourceOfUpdate ?? currentState.activeControl,
+      lastInteractionTime: Date.now(),
+      userPreferredStrategy: currentState.userPreferredStrategy,
+      startedAt: currentState.startedAt,
+      updatedTargetPaths: currentState.updatedTargetPaths,
+    }
+  } else {
+    return currentState
+  }
+}
+
 export function updateInteractionViaMouse(
   currentState: InteractionSessionWithoutMetadata,
   drag: CanvasVector,
