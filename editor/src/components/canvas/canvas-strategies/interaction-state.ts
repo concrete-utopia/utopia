@@ -57,6 +57,21 @@ export function isKeyboardInteractionData(
 
 export type UpdatedPathMap = { [oldPathString: string]: ElementPath }
 
+export interface ReparentTargetsToFilter {
+  'use-strict-bounds': ReparentTarget
+  'allow-missing-bounds': ReparentTarget
+}
+
+export function reparentTargetsToFilter(
+  strictBoundsTarget: ReparentTarget,
+  missingBoundsTarget: ReparentTarget,
+): ReparentTargetsToFilter {
+  return {
+    'use-strict-bounds': strictBoundsTarget,
+    'allow-missing-bounds': missingBoundsTarget,
+  }
+}
+
 export interface InteractionSession {
   // This represents an actual interaction that has started as the result of a key press or a drag
   interactionData: InputData
@@ -71,7 +86,7 @@ export interface InteractionSession {
 
   startedAt: number
 
-  startingTargetParentToFilterOut: ReparentTarget | null
+  startingTargetParentsToFilterOut: ReparentTargetsToFilter | null
   updatedTargetPaths: UpdatedPathMap
 }
 
@@ -84,7 +99,7 @@ export function interactionSession(
   userPreferredStrategy: CanvasStrategyId | null,
   startedAt: number,
   allElementProps: AllElementProps,
-  startingTargetParentToFilterOut: ReparentTarget | null,
+  startingTargetParentsToFilterOut: ReparentTargetsToFilter | null,
   updatedTargetPaths: UpdatedPathMap,
 ): InteractionSession {
   return {
@@ -96,14 +111,14 @@ export function interactionSession(
     userPreferredStrategy: userPreferredStrategy,
     startedAt: startedAt,
     latestAllElementProps: allElementProps,
-    startingTargetParentToFilterOut: startingTargetParentToFilterOut,
+    startingTargetParentsToFilterOut: startingTargetParentsToFilterOut,
     updatedTargetPaths: updatedTargetPaths,
   }
 }
 
 export type InteractionSessionWithoutMetadata = Omit<
   InteractionSession,
-  'latestMetadata' | 'latestAllElementProps' | 'startingTargetParentToFilterOut'
+  'latestMetadata' | 'latestAllElementProps' | 'startingTargetParentsToFilterOut'
 >
 
 export interface CommandDescription {

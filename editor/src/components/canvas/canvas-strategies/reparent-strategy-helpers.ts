@@ -43,7 +43,7 @@ import {
   InteractionCanvasState,
   StrategyApplicationResult,
 } from './canvas-strategy-types'
-import { InteractionSession, StrategyState } from './interaction-state'
+import { InteractionSession, ReparentTargetsToFilter, StrategyState } from './interaction-state'
 import { ifAllowedToReparent } from './reparent-helpers'
 import { getReparentOutcome, pathToReparent } from './reparent-utils'
 import { getDragTargets } from './shared-absolute-move-strategy-helpers'
@@ -174,6 +174,19 @@ export function getFitnessForReparentStrategy(
   }
 }
 
+function targetIsValid(
+  newParentPath: ElementPath,
+  targetsToFilterOut: ReparentTargetsToFilter | null,
+  missingBoundsHandling: MissingBoundsHandling,
+): boolean {
+  if (targetsToFilterOut == null) {
+    return true
+  } else {
+    const targetToFilter = targetsToFilterOut[missingBoundsHandling].newParent
+    return !EP.pathsEqual(targetToFilter, newParentPath)
+  }
+}
+
 function findReparentStrategy(
   canvasState: InteractionCanvasState,
   interactionState: InteractionSession,
@@ -220,7 +233,12 @@ function findReparentStrategy(
     reparentResult.shouldReparent &&
     newParentPath != null &&
     // holding cmd forces a reparent even if the target parent was under the mouse at the interaction start
-    (cmdPressed || newParentPath !== interactionState.startingTargetParentToFilterOut?.newParent) &&
+    (cmdPressed ||
+      targetIsValid(
+        newParentPath,
+        interactionState.startingTargetParentsToFilterOut,
+        missingBoundsHandling,
+      )) &&
     !parentStayedTheSame
   ) {
     return reparentStrategyForParent(

@@ -94,7 +94,11 @@ import {
   updateGlobalPositions,
 } from '../utils/global-positions'
 import { last, reverse } from '../core/shared/array-utils'
-import { updateInteractionViaMouse } from '../components/canvas/canvas-strategies/interaction-state'
+import {
+  reparentTargetsToFilter,
+  ReparentTargetsToFilter,
+  updateInteractionViaMouse,
+} from '../components/canvas/canvas-strategies/interaction-state'
 import { MouseButtonsPressed } from '../utils/mouse'
 import { getReparentTargetUnified } from '../components/canvas/canvas-strategies/reparent-strategy-helpers'
 import { getDragTargets } from '../components/canvas/canvas-strategies/shared-absolute-move-strategy-helpers'
@@ -430,8 +434,8 @@ export function runLocalCanvasAction(
       const allElementProps =
         model.canvas.interactionSession?.latestAllElementProps ?? model.allElementProps
 
-      const startingTargetParentToFilterOut =
-        model.canvas.interactionSession?.startingTargetParentToFilterOut ??
+      const startingTargetParentsToFilterOut: ReparentTargetsToFilter | null =
+        model.canvas.interactionSession?.startingTargetParentsToFilterOut ??
         (() => {
           if (action.interactionSession.interactionData.type !== 'DRAG') {
             return null
@@ -440,8 +444,18 @@ export function runLocalCanvasAction(
             action.interactionSession.interactionData.originalDragStart,
             action.interactionSession.interactionData.drag ?? zeroCanvasPoint,
           )
-          // FIXME This probably means we need both
-          return getReparentTargetUnified(
+
+          const strictBoundsResult = getReparentTargetUnified(
+            getDragTargets(model.selectedViews),
+            pointOnCanvas,
+            action.interactionSession.interactionData.modifiers.cmd,
+            pickCanvasStateFromEditorState(model, builtinDependencies),
+            metadata,
+            allElementProps,
+            'use-strict-bounds',
+          )
+
+          const missingBoundsResult = getReparentTargetUnified(
             getDragTargets(model.selectedViews),
             pointOnCanvas,
             action.interactionSession.interactionData.modifiers.cmd,
@@ -450,6 +464,8 @@ export function runLocalCanvasAction(
             allElementProps,
             'allow-missing-bounds',
           )
+
+          return reparentTargetsToFilter(strictBoundsResult, missingBoundsResult)
         })()
 
       return {
@@ -460,7 +476,7 @@ export function runLocalCanvasAction(
             ...action.interactionSession,
             latestMetadata: metadata,
             latestAllElementProps: allElementProps,
-            startingTargetParentToFilterOut: startingTargetParentToFilterOut,
+            startingTargetParentsToFilterOut: startingTargetParentsToFilterOut,
           },
         },
       }
