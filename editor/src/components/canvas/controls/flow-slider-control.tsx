@@ -28,7 +28,7 @@ import { findNewIndex } from '../canvas-strategies/flow-reorder-helpers'
 export const IconSize = 16
 const IndicatorSize = (scale: number) => IconSize / scale
 const MenuHeight = (scale: number) => 22 / scale
-const AnimatedIndicatorOffset = (scale: number) => 2 / scale
+const IndicatorOffset = (scale: number) => 2 / scale
 const ControlSize = (scale: number) => 10 / scale
 
 export const FlowSliderControl = React.memo(() => {
@@ -98,7 +98,7 @@ export const FlowSliderControl = React.memo(() => {
 
   const controlTopLeft = React.useMemo(() => {
     return {
-      x: controlAreaTopLeft.x + latestIndex * IndicatorSize(scale) + AnimatedIndicatorOffset(scale),
+      x: controlAreaTopLeft.x + latestIndex * IndicatorSize(scale) + IndicatorOffset(scale),
       y: getRectCenter(startingFrame ?? zeroCanvasRect).y - ControlSize(scale) / 2,
     } as CanvasPoint
   }, [startingFrame, controlAreaTopLeft, latestIndex, scale])
@@ -190,9 +190,9 @@ const ReorderIndicator = React.memo(({ style }: { style: React.CSSProperties }) 
     <div
       style={{
         position: 'absolute',
-        top: AnimatedIndicatorOffset(scale),
-        width: IndicatorSize(scale) - AnimatedIndicatorOffset(scale),
-        height: MenuHeight(scale) - AnimatedIndicatorOffset(scale) * 2,
+        top: IndicatorOffset(scale),
+        width: IndicatorSize(scale) - IndicatorOffset(scale),
+        height: MenuHeight(scale) - IndicatorOffset(scale) * 2,
         borderRadius: 4 / scale,
         background: colorTheme.primary.value,
         ...style,
