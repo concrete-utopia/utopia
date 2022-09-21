@@ -1591,7 +1591,7 @@ export const DragInteractionDataKeepDeepEquality: KeepDeepEqualityCall<DragInter
     createCallWithTripleEquals(),
     (data) => data.hasMouseMoved,
     BooleanKeepDeepEquality,
-    (data) => data.accumulatedMovement,
+    (data) => data._accumulatedMovement,
     CanvasPointKeepDeepEquality,
     (
       dragStart,
@@ -1612,7 +1612,7 @@ export const DragInteractionDataKeepDeepEquality: KeepDeepEqualityCall<DragInter
         modifiers: modifiers,
         globalTime: globalTime,
         hasMouseMoved: hasMouseMoved,
-        accumulatedMovement: accumulatedMovement,
+        _accumulatedMovement: accumulatedMovement,
       }
     },
   )

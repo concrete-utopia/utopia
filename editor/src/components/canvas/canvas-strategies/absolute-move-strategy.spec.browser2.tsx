@@ -111,7 +111,6 @@ async function startDragUsingActions(
           dragDelta,
           emptyModifiers,
           boundingArea(),
-          dragDelta,
         ),
       ),
     ],

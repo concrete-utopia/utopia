@@ -117,16 +117,10 @@ async function startDragUsingActions(
   await renderResult.dispatch(
     [
       CanvasActions.updateInteractionSession(
-        updateInteractionViaMouse(
-          startInteractionSession,
-          dragDelta,
-          emptyModifiers,
-          {
-            type: 'RESIZE_HANDLE',
-            edgePosition: edgePosition,
-          },
-          dragDelta,
-        ),
+        updateInteractionViaMouse(startInteractionSession, dragDelta, emptyModifiers, {
+          type: 'RESIZE_HANDLE',
+          edgePosition: edgePosition,
+        }),
       ),
     ],
     false,

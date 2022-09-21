@@ -5,6 +5,7 @@ import {
   CanvasVector,
   offsetPoint,
   pointDifference,
+  roundPointTo,
   zeroCanvasPoint,
 } from '../../../core/shared/math-utils'
 import { ElementPath } from '../../../core/shared/project-file-types'
@@ -31,7 +32,7 @@ export interface DragInteractionData {
   modifiers: Modifiers
   globalTime: number
   hasMouseMoved: boolean
-  accumulatedMovement: CanvasVector
+  _accumulatedMovement: CanvasVector
 }
 
 export interface KeyState {
@@ -163,7 +164,7 @@ export function createInteractionViaMouse(
       modifiers: modifiers,
       globalTime: Date.now(),
       hasMouseMoved: false,
-      accumulatedMovement: zeroCanvasPoint,
+      _accumulatedMovement: zeroCanvasPoint,
     },
     activeControl: activeControl,
     sourceOfUpdate: activeControl,
@@ -184,9 +185,13 @@ export function updateInteractionViaDragDelta(
   currentState: InteractionSessionWithoutMetadata,
   modifiers: Modifiers,
   sourceOfUpdate: CanvasControlType | null, // If null it means the active control is the source
-  accumulatedMovement: CanvasVector,
+  movement: CanvasVector,
 ): InteractionSessionWithoutMetadata {
   if (currentState.interactionData.type === 'DRAG') {
+    const accumulatedMovement = roundPointTo(
+      offsetPoint(currentState.interactionData._accumulatedMovement, movement),
+      0,
+    )
     const dragThresholdPassed = dragExceededThreshold(accumulatedMovement)
     return {
       interactionData: {
@@ -198,7 +203,7 @@ export function updateInteractionViaDragDelta(
         modifiers: modifiers,
         globalTime: Date.now(),
         hasMouseMoved: true,
-        accumulatedMovement: accumulatedMovement,
+        _accumulatedMovement: accumulatedMovement,
       },
       activeControl: currentState.activeControl,
       sourceOfUpdate: sourceOfUpdate ?? currentState.activeControl,
@@ -217,7 +222,6 @@ export function updateInteractionViaMouse(
   drag: CanvasVector,
   modifiers: Modifiers,
   sourceOfUpdate: CanvasControlType | null, // If null it means the active control is the source
-  accumulatedMovement: CanvasVector,
 ): InteractionSessionWithoutMetadata {
   if (currentState.interactionData.type === 'DRAG') {
     const dragThresholdPassed =
@@ -232,7 +236,7 @@ export function updateInteractionViaMouse(
         modifiers: modifiers,
         globalTime: Date.now(),
         hasMouseMoved: true,
-        accumulatedMovement: accumulatedMovement,
+        _accumulatedMovement: currentState.interactionData._accumulatedMovement,
       },
       activeControl: currentState.activeControl,
       sourceOfUpdate: sourceOfUpdate ?? currentState.activeControl,
@@ -320,7 +324,7 @@ export function updateInteractionViaKeyboard(
           modifiers: modifiers,
           globalTime: Date.now(),
           hasMouseMoved: currentState.interactionData.hasMouseMoved,
-          accumulatedMovement: currentState.interactionData.accumulatedMovement,
+          _accumulatedMovement: currentState.interactionData._accumulatedMovement,
         },
         activeControl: currentState.activeControl,
         sourceOfUpdate: currentState.activeControl,

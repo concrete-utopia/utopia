@@ -1236,13 +1236,6 @@ export class EditorCanvas extends React.Component<EditorCanvasProps> {
             Utils.offsetPoint(canvasPositions.canvasPositionRounded, Utils.negate(dragStart)),
             this.props.model.scale,
           )
-          const accumulatedMovement = roundPointForScale(
-            Utils.offsetPoint(
-              this.props.editor.canvas.interactionSession.interactionData.accumulatedMovement,
-              canvasPoint({ x: event.movementX, y: event.movementY }),
-            ),
-            this.props.model.scale,
-          )
 
           if (document.pointerLockElement != null) {
             this.handleEvent({
@@ -1255,7 +1248,7 @@ export class EditorCanvas extends React.Component<EditorCanvasProps> {
                 this.props.editor.canvas.interactionSession,
                 Modifier.modifiersForEvent(event),
                 null,
-                accumulatedMovement,
+                canvasPoint({ x: event.movementX, y: event.movementY }),
               ),
             })
           } else {
@@ -1270,7 +1263,6 @@ export class EditorCanvas extends React.Component<EditorCanvasProps> {
                 newDrag,
                 Modifier.modifiersForEvent(event),
                 null,
-                accumulatedMovement,
               ),
             })
           }
