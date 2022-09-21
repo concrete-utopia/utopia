@@ -9,14 +9,8 @@ export const Rectangle: React.FunctionComponent<RectangleProps> = (props: Rectan
   let { 'data-uid': dataUid, 'data-label': dataLabel, ...divProps } = props
 
   const propsWithEventHandlers = addEventHandlersToDivProps(divProps)
+  const propsWithoutChildren = { ...propsWithEventHandlers, children: undefined }
 
-  return (
-    <div
-      {...propsWithEventHandlers}
-      data-uid={dataUid}
-      data-label={dataLabel}
-      data-utopia-do-not-traverse={true}
-    />
-  )
+  return <div {...propsWithoutChildren} data-uid={dataUid} data-label={dataLabel} />
 }
 Rectangle.displayName = 'Rectangle'
