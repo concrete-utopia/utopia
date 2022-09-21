@@ -125,8 +125,10 @@ export const FlowSliderControl = React.memo(() => {
               display: 'flex',
               alignItems: 'center',
               boxSizing: 'content-box',
+              overflow: 'hidden',
             }}
           >
+            <ReorderIndicators startingIndex={startingIndex} siblings={siblings} />
             {siblings.map((s) => {
               return (
                 <div key={EP.toString(s)} style={{ zoom: 1 / scale }}>
@@ -136,14 +138,6 @@ export const FlowSliderControl = React.memo(() => {
             })}
           </div>,
         )}
-        {when(
-          isDragging,
-          <AnimatedReorderIndicator
-            startingIndex={startingIndex}
-            controlAreaTopLeft={controlAreaTopLeft}
-            siblings={siblings}
-          />,
-        )}
         <FlowReorderControl controlPosition={controlTopLeft} />
       </CanvasOffsetWrapper>
     )
@@ -152,19 +146,14 @@ export const FlowSliderControl = React.memo(() => {
   }
 })
 
-interface AnimatedReorderIndicatorProps {
-  controlAreaTopLeft: CanvasPoint
+interface ReorderIndicatorProps {
   startingIndex: number
   siblings: Array<ElementPath>
 }
 
-const AnimatedReorderIndicator = React.memo((props: AnimatedReorderIndicatorProps) => {
-  const colorTheme = useColorTheme()
-  const scale = useEditorState(
-    (store) => store.editor.canvas.scale,
-    'AnimatedReorderIndicator scale',
-  )
-  const { controlAreaTopLeft, startingIndex, siblings } = props
+const ReorderIndicators = React.memo((props: ReorderIndicatorProps) => {
+  const scale = useEditorState((store) => store.editor.canvas.scale, 'ReorderIndicator scale')
+  const { startingIndex, siblings } = props
   const indicatorOffset = useEditorState((store) => {
     if (
       store.editor.canvas.interactionSession != null &&
@@ -179,20 +168,36 @@ const AnimatedReorderIndicator = React.memo((props: AnimatedReorderIndicatorProp
     }
   }, 'FlowSliderControl indicatorOffset')
 
+  // when reaching the end of the slider it will restart from the beginning, a second indicator is shown
+  if (indicatorOffset > siblings.length - 1) {
+    return (
+      <>
+        <ReorderIndicator style={{ left: indicatorOffset * IndicatorSize(scale) }} />
+        <ReorderIndicator
+          style={{ left: (indicatorOffset - siblings.length) * IndicatorSize(scale) }}
+        />
+      </>
+    )
+  } else {
+    return <ReorderIndicator style={{ left: indicatorOffset * IndicatorSize(scale) }} />
+  }
+})
+
+const ReorderIndicator = React.memo(({ style }: { style: React.CSSProperties }) => {
+  const colorTheme = useColorTheme()
+  const scale = useEditorState((store) => store.editor.canvas.scale, 'ReorderIndicator scale')
   return (
     <div
       style={{
         position: 'absolute',
-        top: controlAreaTopLeft.y + AnimatedIndicatorOffset(scale),
-        left: controlAreaTopLeft.x + indicatorOffset * IndicatorSize(scale),
+        top: AnimatedIndicatorOffset(scale),
         width: IndicatorSize(scale) - AnimatedIndicatorOffset(scale),
         height: MenuHeight(scale) - AnimatedIndicatorOffset(scale) * 2,
         borderRadius: 4 / scale,
         background: colorTheme.primary.value,
-        transition: 'left 0.05s linear',
-        opacity: 0.6,
+        ...style,
       }}
-    ></div>
+    />
   )
 })
 
