@@ -47,6 +47,7 @@ import * as EP from '../../../core/shared/element-path'
 import { ZeroSizeResizeControlWrapper } from '../controls/zero-sized-element-controls'
 import { SetCssLengthProperty, setCssLengthProperty } from '../commands/set-css-length-command'
 import { pushIntendedBounds } from '../commands/push-intended-bounds-command'
+import { PaddingResizeControl } from '../controls/select-mode/padding-resize-control'
 
 export const absoluteResizeBoundingBoxStrategy: CanvasStrategy = {
   id: 'ABSOLUTE_RESIZE_BOUNDING_BOX',
@@ -69,6 +70,11 @@ export const absoluteResizeBoundingBoxStrategy: CanvasStrategy = {
       show: 'visible-except-when-other-strategy-is-active',
     },
     {
+      control: PaddingResizeControl,
+      key: 'padding-resize-control',
+      show: 'visible-except-when-other-strategy-is-active',
+    },
+    {
       control: ZeroSizeResizeControlWrapper,
       key: 'zero-size-resize-control',
       show: 'visible-except-when-other-strategy-is-active',
@@ -84,14 +90,16 @@ export const absoluteResizeBoundingBoxStrategy: CanvasStrategy = {
       sessionState.startingAllElementProps,
     ) &&
       interactionState.interactionData.type === 'DRAG' &&
-      interactionState.activeControl.type === 'RESIZE_HANDLE'
+      (interactionState.activeControl.type === 'RESIZE_HANDLE' ||
+        interactionState.activeControl.type === 'PADDING_RESIZE_HANDLE')
       ? 1
       : 0
   },
   apply: (canvasState, interactionState, sessionState) => {
     if (
       interactionState.interactionData.type === 'DRAG' &&
-      interactionState.activeControl.type === 'RESIZE_HANDLE'
+      (interactionState.activeControl.type === 'RESIZE_HANDLE' ||
+        interactionState.activeControl.type === 'PADDING_RESIZE_HANDLE')
     ) {
       const edgePosition = interactionState.activeControl.edgePosition
       const selectedElements = getTargetPathsFromInteractionTarget(canvasState.interactionTarget)

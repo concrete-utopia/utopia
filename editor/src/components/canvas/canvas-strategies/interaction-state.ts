@@ -386,6 +386,18 @@ export function flexGapHandle(): FlexGapHandle {
   }
 }
 
+export interface PaddingResizeHandle {
+  type: 'PADDING_RESIZE_HANDLE'
+  edgePosition: EdgePosition
+}
+
+export function paddingResizeHandle(edgePosition: EdgePosition): PaddingResizeHandle {
+  return {
+    type: 'PADDING_RESIZE_HANDLE',
+    edgePosition: edgePosition,
+  }
+}
+
 export interface KeyboardCatcherControl {
   type: 'KEYBOARD_CATCHER_CONTROL'
 }
@@ -396,4 +408,9 @@ export function keyboardCatcherControl(): KeyboardCatcherControl {
   }
 }
 
-export type CanvasControlType = BoundingArea | ResizeHandle | FlexGapHandle | KeyboardCatcherControl
+export type CanvasControlType =
+  | BoundingArea
+  | ResizeHandle
+  | FlexGapHandle
+  | PaddingResizeHandle
+  | KeyboardCatcherControl

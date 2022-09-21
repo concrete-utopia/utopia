@@ -335,6 +335,8 @@ import {
   KeyboardCatcherControl,
   KeyboardInteractionData,
   KeyState,
+  PaddingResizeHandle,
+  paddingResizeHandle,
   resizeHandle,
   ResizeHandle,
 } from '../../canvas/canvas-strategies/interaction-state'
@@ -1680,6 +1682,13 @@ export const KeyboardCatcherControlKeepDeepEquality: KeepDeepEqualityCall<
   return keepDeepEqualityResult(oldValue, true)
 }
 
+export const PaddingResizeHandleKeepDeepEquality: KeepDeepEqualityCall<PaddingResizeHandle> = (
+  oldValue,
+  newValue,
+) => {
+  return keepDeepEqualityResult(oldValue, true)
+}
+
 export const CanvasControlTypeKeepDeepEquality: KeepDeepEqualityCall<CanvasControlType> = (
   oldValue,
   newValue,
@@ -1703,6 +1712,11 @@ export const CanvasControlTypeKeepDeepEquality: KeepDeepEqualityCall<CanvasContr
     case 'KEYBOARD_CATCHER_CONTROL':
       if (newValue.type === oldValue.type) {
         return KeyboardCatcherControlKeepDeepEquality(oldValue, newValue)
+      }
+      break
+    case 'PADDING_RESIZE_HANDLE':
+      if (newValue.type === oldValue.type) {
+        return PaddingResizeHandleKeepDeepEquality(oldValue, newValue)
       }
       break
     default:
