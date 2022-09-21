@@ -18,5 +18,6 @@ export function createMouseInteractionForTests(
     drag,
     modifiers,
     null,
+    drag,
   )
 }

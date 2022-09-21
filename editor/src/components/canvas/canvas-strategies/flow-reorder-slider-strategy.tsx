@@ -57,53 +57,47 @@ export const flowReorderSliderStategy: CanvasStrategy = {
       return emptyStrategyApplicationResult
     }
 
-    if (interactionState.interactionData.drag != null) {
-      const selectedElements = getTargetPathsFromInteractionTarget(canvasState.interactionTarget)
-      const target = selectedElements[0]
+    const selectedElements = getTargetPathsFromInteractionTarget(canvasState.interactionTarget)
+    const target = selectedElements[0]
 
-      const siblingsOfTarget = MetadataUtils.getSiblings(
-        strategyState.startingMetadata,
-        target,
-      ).map((element) => element.elementPath)
+    const siblingsOfTarget = MetadataUtils.getSiblings(strategyState.startingMetadata, target).map(
+      (element) => element.elementPath,
+    )
 
-      if (!isReorderAllowed(siblingsOfTarget)) {
-        return strategyApplicationResult(
-          [setCursorCommand('mid-interaction', CSSCursor.NotPermitted)],
-          {},
-          'failure',
-        )
-      }
-
-      const unpatchedIndex = siblingsOfTarget.findIndex((sibling) => EP.pathsEqual(sibling, target))
-
-      const newIndex = findNewIndex(
-        unpatchedIndex,
-        interactionState.interactionData.drag,
-        siblingsOfTarget,
-        'rounded-value',
-      )
-
-      const newDisplayType = getNewDisplayTypeForIndex(
-        strategyState.startingMetadata,
-        MetadataUtils.findElementByElementPath(strategyState.startingMetadata, target),
-        siblingsOfTarget[newIndex],
-      )
-
+    if (!isReorderAllowed(siblingsOfTarget)) {
       return strategyApplicationResult(
-        [
-          reorderElement('always', target, absolute(newIndex)),
-          setElementsToRerenderCommand(siblingsOfTarget),
-          updateHighlightedViews('mid-interaction', []),
-          ...getOptionalDisplayPropCommands(target, newDisplayType, 'with-auto-conversion'),
-          setCursorCommand('mid-interaction', CSSCursor.ResizeEW),
-        ],
-        {
-          lastReorderIdx: newIndex,
-        },
+        [setCursorCommand('mid-interaction', CSSCursor.NotPermitted)],
+        {},
+        'failure',
       )
-    } else {
-      // Fallback for when the checks above are not satisfied.
-      return strategyApplicationResult([setCursorCommand('mid-interaction', CSSCursor.ResizeEW)])
     }
+
+    const unpatchedIndex = siblingsOfTarget.findIndex((sibling) => EP.pathsEqual(sibling, target))
+
+    const newIndex = findNewIndex(
+      unpatchedIndex,
+      interactionState.interactionData.accumulatedMovement,
+      siblingsOfTarget,
+      'rounded-value',
+    )
+
+    const newDisplayType = getNewDisplayTypeForIndex(
+      strategyState.startingMetadata,
+      MetadataUtils.findElementByElementPath(strategyState.startingMetadata, target),
+      siblingsOfTarget[newIndex],
+    )
+
+    return strategyApplicationResult(
+      [
+        reorderElement('always', target, absolute(newIndex)),
+        setElementsToRerenderCommand(siblingsOfTarget),
+        updateHighlightedViews('mid-interaction', []),
+        ...getOptionalDisplayPropCommands(target, newDisplayType, 'with-auto-conversion'),
+        setCursorCommand('mid-interaction', CSSCursor.ResizeEW),
+      ],
+      {
+        lastReorderIdx: newIndex,
+      },
+    )
   },
 }

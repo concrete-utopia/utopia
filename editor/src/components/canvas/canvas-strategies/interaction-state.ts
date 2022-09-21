@@ -33,6 +33,7 @@ export interface DragInteractionData {
   modifiers: Modifiers
   globalTime: number
   hasMouseMoved: boolean
+  accumulatedMovement: CanvasVector
 }
 
 export interface KeyState {
@@ -164,6 +165,7 @@ export function createInteractionViaMouse(
       modifiers: modifiers,
       globalTime: Date.now(),
       hasMouseMoved: false,
+      accumulatedMovement: zeroCanvasPoint,
     },
     activeControl: activeControl,
     sourceOfUpdate: activeControl,
@@ -185,13 +187,11 @@ export function updateInteractionViaMouse(
   drag: CanvasVector,
   modifiers: Modifiers,
   sourceOfUpdate: CanvasControlType | null, // If null it means the active control is the source
-  ignoreThreshold: 'ignore-threshold' | 'use-threshold' = 'use-threshold',
+  accumulatedMovement: CanvasVector,
 ): InteractionSessionWithoutMetadata {
   if (currentState.interactionData.type === 'DRAG') {
     const dragThresholdPassed =
-      ignoreThreshold === 'ignore-threshold' ||
-      currentState.interactionData.drag != null ||
-      dragExceededThreshold(drag)
+      currentState.interactionData.drag != null || dragExceededThreshold(drag)
     return {
       interactionData: {
         type: 'DRAG',
@@ -202,6 +202,7 @@ export function updateInteractionViaMouse(
         modifiers: modifiers,
         globalTime: Date.now(),
         hasMouseMoved: true,
+        accumulatedMovement: accumulatedMovement,
       },
       activeControl: currentState.activeControl,
       sourceOfUpdate: sourceOfUpdate ?? currentState.activeControl,
@@ -289,6 +290,7 @@ export function updateInteractionViaKeyboard(
           modifiers: modifiers,
           globalTime: Date.now(),
           hasMouseMoved: currentState.interactionData.hasMouseMoved,
+          accumulatedMovement: currentState.interactionData.accumulatedMovement,
         },
         activeControl: currentState.activeControl,
         sourceOfUpdate: currentState.activeControl,
