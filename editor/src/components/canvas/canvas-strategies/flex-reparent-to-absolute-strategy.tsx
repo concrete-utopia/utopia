@@ -28,12 +28,11 @@ import {
   strategyApplicationResult,
 } from './canvas-strategy-types'
 import { getEscapeHatchCommands } from './convert-to-absolute-and-move-strategy'
-import { InteractionSession, StrategyState } from './interaction-state'
+import { InteractionSession, MissingBoundsHandling, StrategyState } from './interaction-state'
 import { ifAllowedToReparent } from './reparent-helpers'
 import {
   getFitnessForReparentStrategy,
   getReparentTargetUnified,
-  MissingBoundsHandling,
 } from './reparent-strategy-helpers'
 import { getDragTargets } from './shared-absolute-move-strategy-helpers'
 

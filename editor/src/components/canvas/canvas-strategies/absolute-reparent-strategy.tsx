@@ -19,14 +19,13 @@ import {
   getAbsoluteReparentPropertyChanges,
   getFitnessForReparentStrategy,
   getReparentTargetUnified,
-  MissingBoundsHandling,
 } from './reparent-strategy-helpers'
 import { offsetPoint } from '../../../core/shared/math-utils'
 import { getReparentOutcome, pathToReparent } from './reparent-utils'
 import { mapDropNulls } from '../../../core/shared/array-utils'
 import { honoursPropsPosition } from './absolute-utils'
 import { ElementPath } from '../../../core/shared/project-file-types'
-import { UpdatedPathMap } from './interaction-state'
+import { MissingBoundsHandling, UpdatedPathMap } from './interaction-state'
 
 function getAbsoluteReparentStrategy(
   id: 'ABSOLUTE_REPARENT' | 'FORCED_ABSOLUTE_REPARENT',

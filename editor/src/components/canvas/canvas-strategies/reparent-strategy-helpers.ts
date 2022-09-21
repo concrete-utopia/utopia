@@ -43,7 +43,12 @@ import {
   InteractionCanvasState,
   StrategyApplicationResult,
 } from './canvas-strategy-types'
-import { InteractionSession, ReparentTargetsToFilter, StrategyState } from './interaction-state'
+import {
+  InteractionSession,
+  MissingBoundsHandling,
+  ReparentTargetsToFilter,
+  StrategyState,
+} from './interaction-state'
 import { ifAllowedToReparent } from './reparent-helpers'
 import { getReparentOutcome, pathToReparent } from './reparent-utils'
 import { getDragTargets } from './shared-absolute-move-strategy-helpers'
@@ -73,8 +78,6 @@ export type ReparentStrategy =
   | 'FLEX_REPARENT_TO_FLEX'
   | 'ABSOLUTE_REPARENT_TO_ABSOLUTE'
   | 'ABSOLUTE_REPARENT_TO_FLEX'
-
-export type MissingBoundsHandling = 'allow-missing-bounds' | 'use-strict-bounds'
 
 export type FindReparentStrategyResult =
   | { strategy: ReparentStrategy; newParent: ElementPath; forcingRequired: boolean }
