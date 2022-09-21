@@ -1,7 +1,7 @@
-import { JSXElement } from '../../../core/shared/element-template'
+import { isJSXElement, JSXElement } from '../../../core/shared/element-template'
 import { getLayoutProperty } from '../../../core/layout/getLayoutProperty'
 import { MetadataUtils } from '../../../core/model/element-metadata-utils'
-import { isLeft, right } from '../../../core/shared/either'
+import { foldEither, isLeft, right } from '../../../core/shared/either'
 import * as EP from '../../../core/shared/element-path'
 import { ElementInstanceMetadataMap } from '../../../core/shared/element-template'
 import { memoize } from '../../../core/shared/memoize'
@@ -27,6 +27,9 @@ import {
   strategyApplicationResult,
 } from './canvas-strategy-types'
 import { InteractionSession, StrategyState } from './interaction-state'
+import { isFeatureEnabled } from '../../../utils/feature-switches'
+import { isZeroSizedElement } from '../controls/outline-utils'
+import { rectanglesEqual } from '../../../core/shared/math-utils'
 
 export const lookForApplicableParentStrategy: CanvasStrategy = {
   id: 'LOOK_FOR_APPLICABLE_PARENT_ID',
@@ -237,8 +240,13 @@ function isParentFindingStrategyApplicable(
   }
 
   const singletonAbsoluteMove = isSingletonAbsoluteMove(applicableStrategies)
-  const parentContiguousFlexParent = isParentContiguousFlexParent(interactionTarget[0], metadata)
-  return singletonAbsoluteMove || parentContiguousFlexParent
+  const parentContiguousFlexParent =
+    isFeatureEnabled('Single child, contiguous parent: move parent') &&
+    isParentContiguous(interactionTarget[0], metadata)
+  const parentZeroSized =
+    isFeatureEnabled('Single child, zero sized parent: move parent') &&
+    isParentZeroSized(interactionTarget[0], metadata)
+  return singletonAbsoluteMove || parentContiguousFlexParent || parentZeroSized
 }
 
 interface ParentApplicableStrategyResult {
@@ -323,23 +331,49 @@ function calcFittestStrategy(
 
 const isApplicableTraverseMemo = memoize(isApplicableTraverse)
 
-function isParentContiguousFlexParent(
+function isParentContiguous(
   elementPath: ElementPath,
   metadata: ElementInstanceMetadataMap,
 ): boolean {
-  const childElement = MetadataUtils.getJSXElementFromMetadata(metadata, elementPath)
+  const childElement = MetadataUtils.findElementByElementPath(metadata, elementPath)
   if (childElement == null) {
     return false
   }
 
   const parentPath = EP.parentPath(elementPath)
-  const parent = MetadataUtils.getJSXElementFromMetadata(metadata, parentPath)
+  const parent = MetadataUtils.findElementByElementPath(metadata, parentPath)
 
   if (parent == null || EP.isStoryboardChild(parentPath)) {
     return false
   }
 
-  return !isElementExplicitlySized(parent) || isChildFlexOne(childElement)
+  if (parent.globalFrame == null || childElement.globalFrame == null) {
+    return true
+  }
+
+  return rectanglesEqual(parent.globalFrame, childElement.globalFrame)
+}
+
+function isParentZeroSized(
+  elementPath: ElementPath,
+  metadata: ElementInstanceMetadataMap,
+): boolean {
+  const parentPath = EP.parentPath(elementPath)
+  const parent = MetadataUtils.findElementByElementPath(metadata, parentPath)
+  if (parent == null) {
+    return false
+  }
+
+  const parentExplicitlySized = foldEither(
+    (_) => false,
+    (e) => isJSXElement(e) && isElementExplicitlySized(e),
+    parent.element,
+  )
+  if (!parentExplicitlySized) {
+    return true
+  }
+
+  return parent.globalFrame != null && isZeroSizedElement(parent.globalFrame)
 }
 
 function isElementExplicitlySized(element: JSXElement): boolean {
@@ -354,15 +388,4 @@ function isElementExplicitlySized(element: JSXElement): boolean {
   }
 
   return true
-}
-
-function isChildFlexOne(element: JSXElement): boolean {
-  const flex = getLayoutProperty('flex', right(element.props), ['style'])
-  if (isLeft(flex) || flex.value == null) {
-    return false
-  }
-
-  const { flexBasis, flexGrow, flexShrink } = flex.value
-
-  return flexGrow === 1 && flexShrink === 1 && flexBasis.value === 0 && flexBasis.unit === '%'
 }
