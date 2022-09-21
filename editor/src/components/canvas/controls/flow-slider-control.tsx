@@ -169,9 +169,10 @@ const AnimatedReorderIndicator = React.memo((props: AnimatedReorderIndicatorProp
     if (
       store.editor.canvas.interactionSession != null &&
       store.editor.canvas.interactionSession.activeControl.type === 'FLOW_SLIDER' &&
-      store.editor.canvas.interactionSession.interactionData.type === 'DRAG'
+      store.editor.canvas.interactionSession.interactionData.type === 'DRAG' &&
+      store.editor.canvas.interactionSession.interactionData.drag != null
     ) {
-      const dragDelta = store.editor.canvas.interactionSession.interactionData.accumulatedMovement
+      const dragDelta = store.editor.canvas.interactionSession.interactionData.drag
       return findNewIndex(startingIndex, dragDelta, siblings, 'raw-value')
     } else {
       return startingIndex

@@ -72,32 +72,37 @@ export const flowReorderSliderStategy: CanvasStrategy = {
       )
     }
 
-    const unpatchedIndex = siblingsOfTarget.findIndex((sibling) => EP.pathsEqual(sibling, target))
+    if (interactionState.interactionData.drag != null) {
+      const unpatchedIndex = siblingsOfTarget.findIndex((sibling) => EP.pathsEqual(sibling, target))
 
-    const newIndex = findNewIndex(
-      unpatchedIndex,
-      interactionState.interactionData.accumulatedMovement,
-      siblingsOfTarget,
-      'rounded-value',
-    )
+      const newIndex = findNewIndex(
+        unpatchedIndex,
+        interactionState.interactionData.drag,
+        siblingsOfTarget,
+        'rounded-value',
+      )
 
-    const newDisplayType = getNewDisplayTypeForIndex(
-      strategyState.startingMetadata,
-      MetadataUtils.findElementByElementPath(strategyState.startingMetadata, target),
-      siblingsOfTarget[newIndex],
-    )
+      const newDisplayType = getNewDisplayTypeForIndex(
+        strategyState.startingMetadata,
+        MetadataUtils.findElementByElementPath(strategyState.startingMetadata, target),
+        siblingsOfTarget[newIndex],
+      )
 
-    return strategyApplicationResult(
-      [
-        reorderElement('always', target, absolute(newIndex)),
-        setElementsToRerenderCommand(siblingsOfTarget),
-        updateHighlightedViews('mid-interaction', []),
-        ...getOptionalDisplayPropCommands(target, newDisplayType, 'with-auto-conversion'),
-        setCursorCommand('mid-interaction', CSSCursor.ResizeEW),
-      ],
-      {
-        lastReorderIdx: newIndex,
-      },
-    )
+      return strategyApplicationResult(
+        [
+          reorderElement('always', target, absolute(newIndex)),
+          setElementsToRerenderCommand(siblingsOfTarget),
+          updateHighlightedViews('mid-interaction', []),
+          ...getOptionalDisplayPropCommands(target, newDisplayType, 'with-auto-conversion'),
+          setCursorCommand('mid-interaction', CSSCursor.ResizeEW),
+        ],
+        {
+          lastReorderIdx: newIndex,
+        },
+      )
+    } else {
+      // Fallback for when the checks above are not satisfied.
+      return strategyApplicationResult([setCursorCommand('mid-interaction', CSSCursor.ResizeEW)])
+    }
   },
 }
