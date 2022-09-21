@@ -160,7 +160,7 @@ describe('interactionCancel', () => {
 
 const testStrategy: CanvasStrategy = {
   id: 'TEST_STRATEGY' as CanvasStrategyId,
-  name: 'Test Strategy',
+  name: () => 'Test Strategy',
   isApplicable: function (
     canvasState: InteractionCanvasState,
     interactionSession: InteractionSession | null,
@@ -238,12 +238,15 @@ describe('interactionStart', () => {
         },
         "sortedApplicableStrategies": Array [
           Object {
-            "apply": [Function],
-            "controlsToRender": Array [],
-            "fitness": [Function],
-            "id": "TEST_STRATEGY",
-            "isApplicable": [Function],
             "name": "Test Strategy",
+            "strategy": Object {
+              "apply": [Function],
+              "controlsToRender": Array [],
+              "fitness": [Function],
+              "id": "TEST_STRATEGY",
+              "isApplicable": [Function],
+              "name": [Function],
+            },
           },
         ],
         "startingAllElementProps": Object {},
@@ -364,12 +367,15 @@ describe('interactionUpdatex', () => {
         },
         "sortedApplicableStrategies": Array [
           Object {
-            "apply": [Function],
-            "controlsToRender": Array [],
-            "fitness": [Function],
-            "id": "TEST_STRATEGY",
-            "isApplicable": [Function],
             "name": "Test Strategy",
+            "strategy": Object {
+              "apply": [Function],
+              "controlsToRender": Array [],
+              "fitness": [Function],
+              "id": "TEST_STRATEGY",
+              "isApplicable": [Function],
+              "name": [Function],
+            },
           },
         ],
         "startingAllElementProps": Object {},
@@ -519,12 +525,15 @@ describe('interactionHardReset', () => {
         },
         "sortedApplicableStrategies": Array [
           Object {
-            "apply": [Function],
-            "controlsToRender": Array [],
-            "fitness": [Function],
-            "id": "TEST_STRATEGY",
-            "isApplicable": [Function],
             "name": "Test Strategy",
+            "strategy": Object {
+              "apply": [Function],
+              "controlsToRender": Array [],
+              "fitness": [Function],
+              "id": "TEST_STRATEGY",
+              "isApplicable": [Function],
+              "name": [Function],
+            },
           },
         ],
         "startingAllElementProps": Object {},
@@ -740,12 +749,15 @@ describe('interactionUpdate with user changed strategy', () => {
         },
         "sortedApplicableStrategies": Array [
           Object {
-            "apply": [Function],
-            "controlsToRender": Array [],
-            "fitness": [Function],
-            "id": "TEST_STRATEGY",
-            "isApplicable": [Function],
             "name": "Test Strategy",
+            "strategy": Object {
+              "apply": [Function],
+              "controlsToRender": Array [],
+              "fitness": [Function],
+              "id": "TEST_STRATEGY",
+              "isApplicable": [Function],
+              "name": [Function],
+            },
           },
         ],
         "startingAllElementProps": Object {},
@@ -934,7 +946,7 @@ describe('only update metadata on SAVE_DOM_REPORT', () => {
       [
         {
           id: 'TEST_STRATEGY' as CanvasStrategyId,
-          name: 'Test Strategy',
+          name: () => 'Test Strategy',
           isApplicable: function (): boolean {
             return true
           },
@@ -969,7 +981,7 @@ describe('only update metadata on SAVE_DOM_REPORT', () => {
     await renderResult.dispatch([CanvasActions.updateDragInteractionData({})], true, [
       {
         id: 'TEST_STRATEGY' as CanvasStrategyId,
-        name: 'Test Strategy',
+        name: () => 'Test Strategy',
         isApplicable: function (): boolean {
           return true
         },

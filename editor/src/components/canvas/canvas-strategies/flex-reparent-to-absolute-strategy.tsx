@@ -25,9 +25,7 @@ import {
   CanvasStrategy,
   emptyStrategyApplicationResult,
   getTargetPathsFromInteractionTarget,
-  InteractionCanvasState,
   strategyApplicationResult,
-  StrategyApplicationResult,
 } from './canvas-strategy-types'
 import { getEscapeHatchCommands } from './convert-to-absolute-and-move-strategy'
 import { InteractionSession, StrategyState } from './interaction-state'
@@ -46,7 +44,7 @@ function getFlexReparentToAbsoluteStrategy(
 ): CanvasStrategy {
   return {
     id: id,
-    name: name,
+    name: () => name,
     isApplicable: (canvasState, _interactionState, metadata) => {
       const selectedElements = getTargetPathsFromInteractionTarget(canvasState.interactionTarget)
       if (selectedElements.length == 1) {

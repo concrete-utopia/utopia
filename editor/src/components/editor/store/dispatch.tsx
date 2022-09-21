@@ -353,7 +353,7 @@ export function editorDispatch(
     dispatchedActions.some(
       (action) => action.action === 'UPDATE_FROM_CODE_EDITOR' && action.unsavedContent == null,
     )
-  const onlyNameUpdated = nameUpdated && dispatchedActions.length === 1
+
   const allTransient = dispatchedActions.every(isTransientAction)
   const anyFinishCheckpointTimer = dispatchedActions.some((action) => {
     return action.action === 'FINISH_CHECKPOINT_TIMER'

@@ -47,7 +47,7 @@ import { getDragTargets } from './shared-absolute-move-strategy-helpers'
 
 export const convertToAbsoluteAndMoveStrategy: CanvasStrategy = {
   id: 'CONVERT_TO_ABSOLUTE_AND_MOVE_STRATEGY',
-  name: 'Move (Abs)',
+  name: () => 'Move (Abs)',
   isApplicable: (canvasState, _interactionState, metadata) => {
     const selectedElements = getTargetPathsFromInteractionTarget(canvasState.interactionTarget)
     if (selectedElements.length > 0) {
@@ -84,7 +84,7 @@ export const convertToAbsoluteAndMoveStrategy: CanvasStrategy = {
     ) &&
       interactionState.interactionData.type === 'DRAG' &&
       interactionState.activeControl.type === 'BOUNDING_AREA'
-      ? 1
+      ? 0.5
       : 0
   },
   apply: (canvasState, interactionState, strategyState) => {

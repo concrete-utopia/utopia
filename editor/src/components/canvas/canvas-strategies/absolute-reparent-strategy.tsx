@@ -35,7 +35,7 @@ function getAbsoluteReparentStrategy(
 ): CanvasStrategy {
   return {
     id: id,
-    name: name,
+    name: () => name,
     isApplicable: (canvasState, interactionState, metadata) => {
       const selectedElements = getTargetPathsFromInteractionTarget(canvasState.interactionTarget)
       if (
