@@ -44,6 +44,7 @@ export const NonResizableControl = React.memo(() => {
         ref={controlRef}
         style={{
           position: 'absolute',
+          pointerEvents: 'none',
         }}
         data-testid={'non-resizable-control'}
       >

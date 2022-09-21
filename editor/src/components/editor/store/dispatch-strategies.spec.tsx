@@ -259,6 +259,10 @@ describe('interactionStart', () => {
     expect(actualResult.patchedEditorState.canvas.interactionSession?.interactionData)
       .toMatchInlineSnapshot(`
       Object {
+        "_accumulatedMovement": Object {
+          "x": 0,
+          "y": 0,
+        },
         "drag": null,
         "dragStart": Object {
           "x": 100,
@@ -388,6 +392,10 @@ describe('interactionUpdatex', () => {
     expect(actualResult.patchedEditorState.canvas.interactionSession?.interactionData)
       .toMatchInlineSnapshot(`
       Object {
+        "_accumulatedMovement": Object {
+          "x": 0,
+          "y": 0,
+        },
         "drag": null,
         "dragStart": Object {
           "x": 100,
@@ -546,6 +554,10 @@ describe('interactionHardReset', () => {
     expect(actualResult.patchedEditorState.canvas.interactionSession?.interactionData)
       .toMatchInlineSnapshot(`
       Object {
+        "_accumulatedMovement": Object {
+          "x": 0,
+          "y": 0,
+        },
         "drag": Object {
           "x": 50,
           "y": 140,
@@ -770,6 +782,10 @@ describe('interactionUpdate with user changed strategy', () => {
     expect(actualResult.patchedEditorState.canvas.interactionSession?.interactionData)
       .toMatchInlineSnapshot(`
       Object {
+        "_accumulatedMovement": Object {
+          "x": 0,
+          "y": 0,
+        },
         "drag": Object {
           "x": 50,
           "y": 140,
