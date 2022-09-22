@@ -10,9 +10,9 @@ import { CanvasStrategy } from '../../canvas-strategies/canvas-strategy-types'
 export const CanvasStrategyPicker = React.memo(() => {
   const colorTheme = useColorTheme()
   const dispatch = useEditorState((store) => store.dispatch, 'CanvasStrategyPicker dispatch')
-  const { otherPossibleStrategies } = useEditorState(
+  const { allApplicableStrategies } = useEditorState(
     (store) => ({
-      otherPossibleStrategies: store.strategyState.sortedApplicableStrategies,
+      allApplicableStrategies: store.strategyState.sortedApplicableStrategies,
     }),
     'CanvasStrategyPicker strategyState.currentStrategy',
   )
@@ -22,7 +22,7 @@ export const CanvasStrategyPicker = React.memo(() => {
     'Strategy failure',
   )
 
-  const onTabPressed = React.useCallback(
+  const onSetStrategy = React.useCallback(
     (newStrategy: CanvasStrategy) => {
       dispatch([CanvasActions.setUsersPreferredStrategy(newStrategy.id)])
     },
@@ -30,34 +30,46 @@ export const CanvasStrategyPicker = React.memo(() => {
   )
 
   React.useEffect(() => {
-    function handleTabKey(event: KeyboardEvent) {
+    function handleKeyDown(event: KeyboardEvent) {
+      const keyIntValue = Number.parseInt(event.key)
+      const isStrategySwitchingKey = event.key === 'Tab' || !isNaN(keyIntValue)
       if (
-        event.key === 'Tab' &&
+        isStrategySwitchingKey &&
         activeStrategy != null &&
-        otherPossibleStrategies != null &&
-        otherPossibleStrategies.length > 0
+        allApplicableStrategies != null &&
+        allApplicableStrategies.length > 0
       ) {
         event.preventDefault()
         event.stopPropagation()
         event.stopImmediatePropagation()
 
-        const activeStrategyIndex = otherPossibleStrategies.findIndex(
-          ({ strategy }) => strategy.id === activeStrategy,
-        )
+        if (event.key === 'Tab') {
+          const activeStrategyIndex = allApplicableStrategies.findIndex(
+            ({ strategy }) => strategy.id === activeStrategy,
+          )
 
-        const newStrategyIndex = event.shiftKey ? activeStrategyIndex - 1 : activeStrategyIndex + 1
+          const newStrategyIndex = event.shiftKey
+            ? activeStrategyIndex - 1
+            : activeStrategyIndex + 1
 
-        const nextStrategyIndex = mod(newStrategyIndex, otherPossibleStrategies.length)
-        const nextStrategy = otherPossibleStrategies[nextStrategyIndex].strategy
+          const nextStrategyIndex = mod(newStrategyIndex, allApplicableStrategies.length)
+          const nextStrategy = allApplicableStrategies[nextStrategyIndex].strategy
 
-        onTabPressed(nextStrategy)
+          onSetStrategy(nextStrategy)
+        } else if (!isNaN(keyIntValue)) {
+          const index = keyIntValue - 1
+          const nextStrategy = allApplicableStrategies[index]
+          if (nextStrategy != null) {
+            onSetStrategy(nextStrategy.strategy)
+          }
+        }
       }
     }
-    window.addEventListener('keydown', handleTabKey, true)
+    window.addEventListener('keydown', handleKeyDown, true)
     return function cleanup() {
-      window.removeEventListener('keydown', handleTabKey, true)
+      window.removeEventListener('keydown', handleKeyDown, true)
     }
-  }, [onTabPressed, activeStrategy, otherPossibleStrategies])
+  }, [onSetStrategy, activeStrategy, allApplicableStrategies])
 
   return (
     <>
@@ -85,7 +97,7 @@ export const CanvasStrategyPicker = React.memo(() => {
               boxShadow: UtopiaStyles.popup.boxShadow,
             }}
           >
-            {otherPossibleStrategies?.map(({ strategy, name }) => {
+            {allApplicableStrategies?.map(({ strategy, name }, index) => {
               return (
                 <FlexRow
                   key={strategy.id}
@@ -99,7 +111,7 @@ export const CanvasStrategyPicker = React.memo(() => {
                     opacity: isStrategyFailure && strategy.id === activeStrategy ? 0.5 : 1,
                   }}
                 >
-                  {name}
+                  {index + 1}: {name}
                 </FlexRow>
               )
             })}
