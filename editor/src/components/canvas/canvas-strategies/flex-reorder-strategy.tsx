@@ -26,15 +26,10 @@ export const flexReorderStrategy: CanvasStrategy = {
   isApplicable: (canvasState, _interactionState, metadata) => {
     const selectedElements = getTargetPathsFromInteractionTarget(canvasState.interactionTarget)
     if (selectedElements.length == 1) {
-      const veryLongPredicate =
-        MetadataUtils.isParentYogaLayoutedContainerAndElementParticipatesInLayout(
-          selectedElements[0],
-          metadata,
-        )
-
-      const elementHasSiblings = MetadataUtils.getSiblings(metadata, selectedElements[0]).length > 1
-
-      return veryLongPredicate && elementHasSiblings
+      return MetadataUtils.isParentYogaLayoutedContainerAndElementParticipatesInLayout(
+        selectedElements[0],
+        metadata,
+      )
     } else {
       return false
     }
