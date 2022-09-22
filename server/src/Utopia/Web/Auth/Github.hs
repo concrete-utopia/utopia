@@ -6,38 +6,38 @@
 {-# LANGUAGE FunctionalDependencies #-}
 {-# LANGUAGE MultiParamTypeClasses  #-}
 {-# LANGUAGE OverloadedStrings      #-}
+{-# LANGUAGE QuasiQuotes            #-}
 {-# LANGUAGE RankNTypes             #-}
 {-# LANGUAGE RecordWildCards        #-}
 {-# LANGUAGE TemplateHaskell        #-}
+{-# LANGUAGE TypeApplications       #-}
 {-# LANGUAGE TypeOperators          #-}
-{-# LANGUAGE QuasiQuotes            #-}
-{-# LANGUAGE TypeApplications      #-}
 
 
 module Utopia.Web.Auth.Github where
 
-import Network.OAuth.OAuth2
-import URI.ByteString
-import URI.ByteString.QQ
-import           Protolude
-import Data.String
-import           System.Environment
-import Control.Monad
-import qualified Data.ByteString.Char8 as C
-import qualified Data.Text as T
-import Network.HTTP.Client
-import Control.Monad.Trans.Maybe
-import           Network.HTTP.Client.TLS
+import           Control.Lens
+import           Control.Monad
+import           Control.Monad.Trans.Maybe
+import qualified Data.ByteString.Char8     as C
 import           Data.Generics.Product
 import           Data.Generics.Sum
-import Control.Lens
-import Utopia.Web.Database
-import Utopia.Web.Database.Types
-import Data.Time.Clock
+import           Data.String
+import qualified Data.Text                 as T
+import           Data.Time.Clock
+import           Network.HTTP.Client
+import           Network.HTTP.Client.TLS
+import           Network.OAuth.OAuth2
+import           Protolude
+import           System.Environment
+import           URI.ByteString
+import           URI.ByteString.QQ
+import           Utopia.Web.Database
+import           Utopia.Web.Database.Types
 
 data GithubAuthResources = GithubAuthResources
-                         { _githubAuth      :: OAuth2
-                         , _githubManager   :: Manager
+                         { _githubAuth    :: OAuth2
+                         , _githubManager :: Manager
                          }
 
 getGithubOAuthClientId :: IO (Maybe String)

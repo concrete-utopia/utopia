@@ -17,6 +17,7 @@ import           Control.Lens                     hiding ((.=), (<.>))
 import           Control.Monad.Catch              hiding (Handler, catch)
 import           Control.Monad.RWS.Strict
 import           Data.Aeson
+import           Data.Bifoldable
 import qualified Data.ByteString.Lazy             as BL
 import           Data.Conduit.Combinators         hiding (encodeUtf8, foldMap)
 import           Data.Generics.Product
@@ -28,6 +29,7 @@ import           Network.HTTP.Client              hiding (Response)
 import           Network.HTTP.Types.Header
 import           Network.HTTP.Types.Status
 import           Network.Mime
+import           Network.OAuth.OAuth2
 import           Network.Wai
 import qualified Network.Wreq                     as WR
 import           Protolude                        hiding (Handler, concatMap,
@@ -42,10 +44,12 @@ import           System.Log.FastLogger
 import qualified Text.Blaze.Html5                 as H
 import           Utopia.Web.Assets
 import           Utopia.Web.Auth                  (getUserDetailsFromCode)
+import           Utopia.Web.Auth.Github
 import           Utopia.Web.Auth.Session
 import           Utopia.Web.Auth.Types            (Auth0Resources)
 import qualified Utopia.Web.Database              as DB
 import           Utopia.Web.Database.Types
+import           Utopia.Web.Logging
 import           Utopia.Web.Metrics
 import           Utopia.Web.Packager.Locking
 import           Utopia.Web.Packager.NPM
@@ -53,10 +57,6 @@ import           Utopia.Web.ServiceTypes
 import           Utopia.Web.Types
 import           Utopia.Web.Utils.Files
 import           Web.Cookie
-import Network.OAuth.OAuth2
-import  Utopia.Web.Auth.Github
-import Data.Bifoldable
-import Utopia.Web.Logging
 
 
 {-|

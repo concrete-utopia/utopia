@@ -23,8 +23,10 @@ import           Protolude                      hiding (Handler)
 import           Servant
 import           System.Environment
 import           System.Log.FastLogger
+import           URI.ByteString
 import           Utopia.Web.Assets
 import           Utopia.Web.Auth
+import           Utopia.Web.Auth.Github
 import           Utopia.Web.Auth.Session
 import           Utopia.Web.Auth.Types
 import qualified Utopia.Web.Database            as DB
@@ -41,8 +43,6 @@ import           Utopia.Web.Packager.NPM
 import           Utopia.Web.ServiceTypes
 import           Utopia.Web.Types
 import           Utopia.Web.Utils.Files
-import Utopia.Web.Auth.Github
-import URI.ByteString
 
 {-|
   Any long living resources like database pools live in here.
@@ -261,7 +261,7 @@ innerServerExecutor (GetGithubAccessToken user authCode action) = do
 innerServerExecutor (GetGithubAuthentication user action) = do
   metrics <- fmap _databaseMetrics ask
   pool <- fmap _projectPool ask
-  result <- liftIO $ DB.lookupGithubAuthenticationDetails metrics pool user 
+  result <- liftIO $ DB.lookupGithubAuthenticationDetails metrics pool user
   pure $ action result
 
 readEditorContentFromDisk :: Maybe BranchDownloads -> Maybe Text -> Text -> IO Text

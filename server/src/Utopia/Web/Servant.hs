@@ -24,11 +24,11 @@ import qualified Data.Text                as T
 import           Data.Time.Clock
 import           Data.Time.Format
 import           Network.HTTP.Media       hiding (Accept)
+import           Network.OAuth.OAuth2
 import           Prelude                  (String)
 import           Protolude
 import           Servant.API
 import           Servant.HTML.Blaze
-import Network.OAuth.OAuth2
 
 data BMP
 

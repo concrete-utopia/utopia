@@ -122,7 +122,7 @@ type DBPool = Pool Connection
 
 type GithubAuthenticationFields = (Field SqlText, Field SqlText, Field SqlText, Field SqlTimestamptz)
 
-githubAuthenticationTable :: Table GithubAuthenticationFields GithubAuthenticationFields 
+githubAuthenticationTable :: Table GithubAuthenticationFields GithubAuthenticationFields
 githubAuthenticationTable = table "github_authentication" (p4
                     ( tableField "user_id"
                     , tableField "access_token"

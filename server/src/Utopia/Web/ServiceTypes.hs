@@ -24,15 +24,15 @@ import qualified Data.ByteString.Lazy      as BL
 import           Data.Generics.Product
 import           Data.Time
 import           Network.HTTP.Client       hiding (Cookie)
+import           Network.OAuth.OAuth2
 import           Protolude
-import           Servant hiding (URI)
+import           Servant                   hiding (URI)
 import qualified Text.Blaze.Html5          as H
+import           URI.ByteString
 import           Utopia.Web.Assets
 import           Utopia.Web.Database.Types
 import           Utopia.Web.JSON
 import           Web.Cookie
-import Network.OAuth.OAuth2
-import URI.ByteString
 
 type SessionCookie = Text
 

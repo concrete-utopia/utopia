@@ -415,4 +415,4 @@ lookupGithubAuthenticationDetails metrics pool userId = invokeAndMeasure (_getGi
     githubAuthenticationDetailsRow@(rowUserId, _, _, _) <- githubAuthenticationSelect
     where_ $ rowUserId .== toFields userId
     pure githubAuthenticationDetailsRow
-  pure $ fmap githubAuthenticationDetailsFromRow $ listToMaybe githubAuthenticationDetails 
+  pure $ fmap githubAuthenticationDetailsFromRow $ listToMaybe githubAuthenticationDetails

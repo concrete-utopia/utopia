@@ -26,6 +26,7 @@ import           Data.Text.Encoding
 import           Data.Time
 import           Network.HTTP.Types.Header
 import           Network.HTTP.Types.Status
+import           Network.OAuth.OAuth2
 import           Network.Wai
 import           Network.Wai.Middleware.Gzip
 import           Prelude                         (String)
@@ -55,7 +56,6 @@ import           Utopia.Web.Types
 import           Utopia.Web.Utils.Files
 import           WaiAppStatic.Storage.Filesystem
 import           WaiAppStatic.Types
-import Network.OAuth.OAuth2
 
 type TagSoupTags = [Tag Text]
 
@@ -646,7 +646,7 @@ githubStartAuthenticationEndpoint cookie = requireUser cookie $ \_ -> do
   pure mempty
 
 githubFinishAuthenticationEndpoint :: Maybe Text -> Maybe ExchangeToken -> ServerMonad H.Html
-githubFinishAuthenticationEndpoint _ Nothing = badRequest 
+githubFinishAuthenticationEndpoint _ Nothing = badRequest
 githubFinishAuthenticationEndpoint cookie (Just authCode) = requireUser cookie $ \sessionUser -> do
   _ <- getGithubAccessToken (view (field @"_id") sessionUser) authCode
   pure $

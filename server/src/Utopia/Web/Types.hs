@@ -15,6 +15,7 @@ import           Data.Aeson
 import           Data.Aeson.TH
 import qualified Data.ByteString.Lazy    as BL
 import           Data.Time
+import           Network.OAuth.OAuth2
 import           Protolude
 import           Servant
 import           Servant.HTML.Blaze
@@ -23,7 +24,6 @@ import qualified Text.Blaze.Html5        as H
 import           Utopia.Web.JSON
 import           Utopia.Web.Servant
 import           Utopia.Web.ServiceTypes
-import Network.OAuth.OAuth2
 
 {-
   'deriveJSON' as used here creates 'Data.Aeson.FromJSON' and 'Data.Aeson.ToJSON' instances
@@ -123,7 +123,7 @@ type DownloadGithubProjectAPI = "v1" :> "github" :> "import" :> Capture "owner" 
 
 type GithubAuthenticatedAPI = "v1" :> "github" :> "authentication" :> "status" :> Get '[JSON] Bool
 
-type GithubStartAuthenticationAPI = "v1" :> "github" :> "authentication" :> "start" :> Get '[HTML] H.Html 
+type GithubStartAuthenticationAPI = "v1" :> "github" :> "authentication" :> "start" :> Get '[HTML] H.Html
 
 type GithubFinishAuthenticationAPI = "v1" :> "github" :> "authentication" :> "finish" :> QueryParam "code" ExchangeToken :> Get '[HTML] H.Html
 
