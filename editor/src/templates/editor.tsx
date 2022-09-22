@@ -103,6 +103,7 @@ import {
 import { isFeatureEnabled } from '../utils/feature-switches'
 import { shouldInspectorUpdate } from '../components/inspector/inspector'
 import * as EP from '../core/shared/element-path'
+import { isAuthenticatedWithGithub } from '../utils/github-auth'
 
 if (PROBABLY_ELECTRON) {
   let { webFrame } = requireElectron()
@@ -296,54 +297,63 @@ export class Editor {
           ...shortcutConfiguration,
         }
 
-        const projectId = getProjectID()
-        if (isLoggedIn(loginState)) {
-          this.storedState.persistence.login()
-        }
-
-        const urlParams = new URLSearchParams(window.location.search)
-        const githubOwner = urlParams.get('github_owner')
-        const githubRepo = urlParams.get('github_repo')
-
-        if (isCookiesOrLocalForageUnavailable(loginState)) {
-          this.storedState.persistence.createNew(createNewProjectName(), defaultProject())
-        } else if (projectId == null) {
-          if (githubOwner != null && githubRepo != null) {
-            replaceLoadingMessage('Downloading Repo...')
-
-            downloadGithubRepo(githubOwner, githubRepo).then((repoResult) => {
-              if (isRequestFailure(repoResult)) {
-                if (repoResult.statusCode === 404) {
-                  renderProjectNotFound()
-                } else {
-                  renderProjectLoadError(repoResult.errorMessage)
-                }
-              } else {
-                replaceLoadingMessage('Importing Project...')
-
-                const projectName = `${githubOwner}-${githubRepo}`
-                importZippedGitProject(projectName, repoResult.value)
-                  .then((importProjectResult) => {
-                    if (isProjectImportSuccess(importProjectResult)) {
-                      const importedProject = persistentModelForProjectContents(
-                        importProjectResult.contents,
-                      )
-                      this.storedState.persistence.createNew(projectName, importedProject)
-                    } else {
-                      renderProjectLoadError(importProjectResult.errorMessage)
-                    }
-                  })
-                  .catch((err) => {
-                    console.error('Import error.', err)
-                  })
-              }
-            })
-          } else {
-            this.storedState.persistence.createNew(emptyEditorState.projectName, defaultProject())
+        isAuthenticatedWithGithub(loginState).then((authenticatedWithGithub) => {
+          this.storedState.userState = {
+            ...this.storedState.userState,
+            githubState: {
+              authenticated: authenticatedWithGithub,
+            },
           }
-        } else {
-          this.storedState.persistence.load(projectId)
-        }
+
+          const projectId = getProjectID()
+          if (isLoggedIn(loginState)) {
+            this.storedState.persistence.login()
+          }
+
+          const urlParams = new URLSearchParams(window.location.search)
+          const githubOwner = urlParams.get('github_owner')
+          const githubRepo = urlParams.get('github_repo')
+
+          if (isCookiesOrLocalForageUnavailable(loginState)) {
+            this.storedState.persistence.createNew(createNewProjectName(), defaultProject())
+          } else if (projectId == null) {
+            if (githubOwner != null && githubRepo != null) {
+              replaceLoadingMessage('Downloading Repo...')
+
+              downloadGithubRepo(githubOwner, githubRepo).then((repoResult) => {
+                if (isRequestFailure(repoResult)) {
+                  if (repoResult.statusCode === 404) {
+                    renderProjectNotFound()
+                  } else {
+                    renderProjectLoadError(repoResult.errorMessage)
+                  }
+                } else {
+                  replaceLoadingMessage('Importing Project...')
+
+                  const projectName = `${githubOwner}-${githubRepo}`
+                  importZippedGitProject(projectName, repoResult.value)
+                    .then((importProjectResult) => {
+                      if (isProjectImportSuccess(importProjectResult)) {
+                        const importedProject = persistentModelForProjectContents(
+                          importProjectResult.contents,
+                        )
+                        this.storedState.persistence.createNew(projectName, importedProject)
+                      } else {
+                        renderProjectLoadError(importProjectResult.errorMessage)
+                      }
+                    })
+                    .catch((err) => {
+                      console.error('Import error.', err)
+                    })
+                }
+              })
+            } else {
+              this.storedState.persistence.createNew(emptyEditorState.projectName, defaultProject())
+            }
+          } else {
+            this.storedState.persistence.load(projectId)
+          }
+        })
       })
     })
   }

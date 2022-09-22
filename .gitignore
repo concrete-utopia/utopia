@@ -133,3 +133,6 @@ utopia-db
 
 # Nix builds.
 server-build-result
+
+# Local custom setups.
+custom-shell.nix

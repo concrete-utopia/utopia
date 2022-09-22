@@ -111,6 +111,9 @@ function createEditorStore(
     userState: {
       loginState: notLoggedIn,
       shortcutConfig: {},
+      githubState: {
+        authenticated: false,
+      },
     },
     workers: new UtopiaTsWorkersImplementation(
       new FakeParserPrinterWorker(),

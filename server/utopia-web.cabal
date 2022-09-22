@@ -28,6 +28,7 @@ executable utopia-web
   other-modules:
       Utopia.Web.Assets
       Utopia.Web.Auth
+      Utopia.Web.Auth.Github
       Utopia.Web.Auth.Session
       Utopia.Web.Auth.Types
       Utopia.Web.Database
@@ -84,6 +85,7 @@ executable utopia-web
     , filepath
     , free
     , generic-lens
+    , hoauth2
     , http-api-data
     , http-client
     , http-client-tls
@@ -129,6 +131,7 @@ executable utopia-web
     , transformers
     , unix
     , unordered-containers
+    , uri-bytestring
     , utopia-clientmodel
     , uuid
     , vector
@@ -153,6 +156,7 @@ test-suite utopia-web-test
       Main
       Utopia.Web.Assets
       Utopia.Web.Auth
+      Utopia.Web.Auth.Github
       Utopia.Web.Auth.Session
       Utopia.Web.Auth.Types
       Utopia.Web.Database
@@ -211,6 +215,7 @@ test-suite utopia-web-test
     , free
     , generic-lens
     , hedgehog
+    , hoauth2
     , hspec
     , http-api-data
     , http-client
@@ -264,6 +269,7 @@ test-suite utopia-web-test
     , transformers
     , unix
     , unordered-containers
+    , uri-bytestring
     , utopia-clientmodel
     , uuid
     , vector

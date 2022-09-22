@@ -60,6 +60,7 @@ import { Link } from '../../uuiui/link'
 import { useTriggerForkProject } from '../editor/persistence-hooks'
 import urljoin from 'url-join'
 import { parseGithubProjectString } from '../../core/shared/github'
+import { startGithubAuthentication } from '../../utils/github-auth'
 
 export interface LeftPaneProps {
   editorState: EditorState
@@ -706,6 +707,9 @@ const SharingPane = React.memo(() => {
 const GithubPane = React.memo(() => {
   const [githubRepoStr, setGithubRepoStr] = React.useState('')
   const parsedRepo = parseGithubProjectString(githubRepoStr)
+  const dispatch = useEditorState((store) => {
+    return store.dispatch
+  }, 'GithubPane dispatch')
 
   const onStartImport = React.useCallback(() => {
     if (parsedRepo != null) {
@@ -726,6 +730,14 @@ const GithubPane = React.memo(() => {
     [setGithubRepoStr],
   )
 
+  const githubAuthenticated = useEditorState((store) => {
+    return store.userState.githubState.authenticated
+  }, 'GithubPane githubAuthenticated')
+
+  const triggerAuthentication = React.useCallback(() => {
+    startGithubAuthentication(dispatch)
+  }, [dispatch])
+
   return (
     <FlexColumn
       id='leftPaneGithub'
@@ -739,6 +751,17 @@ const GithubPane = React.memo(() => {
       <UIRow style={{ paddingLeft: 8, paddingRight: 8 }}>
         <Title>Github</Title>
       </UIRow>
+      <UIGridRow padded variant='<--------auto-------->|--45px--|'>
+        {githubAuthenticated ? 'Authenticated With Github' : 'Not Authenticated With Github'}
+        <Button
+          spotlight
+          highlight
+          disabled={githubAuthenticated}
+          onMouseUp={triggerAuthentication}
+        >
+          Authenticate With Github
+        </Button>
+      </UIGridRow>
       <div
         style={{
           height: 'initial',

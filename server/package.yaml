@@ -35,6 +35,7 @@ dependencies:
   - filepath
   - free
   - zlib
+  - hoauth2
   - http-api-data
   - http-client
   - http-client-tls
@@ -82,6 +83,7 @@ dependencies:
   - unix
   - unordered-containers
   - utopia-clientmodel
+  - uri-bytestring
   - uuid
   - vector
   - wai

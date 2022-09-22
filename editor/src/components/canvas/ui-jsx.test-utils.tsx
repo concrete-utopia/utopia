@@ -301,6 +301,9 @@ export async function renderTestEditorWithModel(
     userState: {
       loginState: notLoggedIn,
       shortcutConfig: {},
+      githubState: {
+        authenticated: false,
+      },
     },
     workers: workers,
     persistence: DummyPersistenceMachine,

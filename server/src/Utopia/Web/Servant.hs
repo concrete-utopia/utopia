@@ -28,6 +28,7 @@ import           Prelude                  (String)
 import           Protolude
 import           Servant.API
 import           Servant.HTML.Blaze
+import Network.OAuth.OAuth2
 
 data BMP
 
@@ -144,3 +145,6 @@ instance FromHttpApiData ProjectIdWithSuffix where
 
 instance ToHttpApiData ProjectIdWithSuffix where
   toUrlPiece (ProjectIdWithSuffix projectId projectSuffix) = projectId <> (if T.null projectSuffix then T.empty else "-" <> projectSuffix)
+
+instance FromHttpApiData ExchangeToken where
+  parseUrlPiece toParse = fmap ExchangeToken $ parseUrlPiece toParse

@@ -241,13 +241,21 @@ export function emptyUserConfiguration(): UserConfiguration {
   }
 }
 
+export interface GithubState {
+  authenticated: boolean
+}
+
 export interface UserState extends UserConfiguration {
   loginState: LoginState
+  githubState: GithubState
 }
 
 export const defaultUserState: UserState = {
   loginState: loginNotYetKnown,
   shortcutConfig: {},
+  githubState: {
+    authenticated: false,
+  },
 }
 
 type EditorStoreShared = {

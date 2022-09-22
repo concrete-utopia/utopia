@@ -53,6 +53,11 @@ import           Utopia.Web.ServiceTypes
 import           Utopia.Web.Types
 import           Utopia.Web.Utils.Files
 import           Web.Cookie
+import Network.OAuth.OAuth2
+import  Utopia.Web.Auth.Github
+import Data.Bifoldable
+import Utopia.Web.Logging
+
 
 {-|
   When running the 'ServerMonad' type this is the type that we will
@@ -324,3 +329,13 @@ getProjectDetailsWithDBPool metrics pool projectID = do
             (_, Just metadata) -> ProjectDetailsMetadata metadata
             (True, _)          -> ReservedProjectID projectID
             (False, _)         -> UnknownProject
+
+getAndHandleGithubAccessToken :: (MonadIO m) => GithubAuthResources -> FastLogger -> DB.DatabaseMetrics -> DBPool -> Text -> ExchangeToken -> m (Maybe OAuth2Token)
+getAndHandleGithubAccessToken githubResources logger metrics pool userID exchangeToken = do
+  tokenResult <- liftIO $ getAccessToken githubResources exchangeToken
+  let logError err = loggerLn logger ("Access Token Error: " <> toLogStr err)
+  let saveToken oAuth2Token = do
+                          authDetails <- oauth2TokenToGithubAuthenticationDetails oAuth2Token userID
+                          DB.updateGithubAuthenticationDetails metrics pool authDetails
+  liftIO $ bifoldMap logError saveToken tokenResult
+  pure $ either (const Nothing) Just tokenResult

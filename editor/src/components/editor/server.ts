@@ -349,7 +349,7 @@ export async function downloadGithubRepo(
   owner: string,
   repo: string,
 ): Promise<ServerResponse<JSZip>> {
-  const url = urljoin(UTOPIA_BACKEND, 'github', owner, repo)
+  const url = urljoin(UTOPIA_BACKEND, 'github', 'import', owner, repo)
   const response = await fetch(url, {
     method: 'GET',
     credentials: 'include',

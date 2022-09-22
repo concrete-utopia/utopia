@@ -373,6 +373,7 @@ import {
   SetElementsToRerender,
   UpdateMouseButtonsPressed,
   ToggleSelectionLock,
+  SetGithubState,
 } from '../action-types'
 import { defaultTransparentViewElement, defaultSceneElement } from '../defaults'
 import {
@@ -4390,6 +4391,7 @@ export const UPDATE_FNS = {
     return {
       ...updatedUserConfiguration,
       loginState: userState.loginState,
+      githubState: userState.githubState,
     }
   },
   UPDATE_PROPERTY_CONTROLS_INFO: (
@@ -4590,6 +4592,12 @@ export const UPDATE_FNS = {
     return {
       ...userState,
       loginState: action.loginState,
+    }
+  },
+  SET_GITHUB_STATE: (action: SetGithubState, userState: UserState): UserState => {
+    return {
+      ...userState,
+      githubState: action.githubState,
     }
   },
   RESET_CANVAS: (action: ResetCanvas, editor: EditorModel): EditorModel => {
