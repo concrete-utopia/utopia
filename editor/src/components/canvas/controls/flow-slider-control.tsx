@@ -116,7 +116,7 @@ export const FlowSliderControl = React.memo(() => {
               width: siblings.length * IndicatorSize(scale),
               height: MenuHeight(scale),
               borderRadius: 4 / scale,
-              opacity: '50%',
+              opacity: '60%',
               background: colorTheme.bg0.value,
               boxShadow: `inset 0px 0px 0px ${0.5 / scale}px ${colorTheme.border3.value} , 0px ${
                 2 / scale
