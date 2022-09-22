@@ -2,6 +2,7 @@ import { MapLike } from 'typescript'
 import { replaceAll } from './string-utils'
 import urljoin from 'url-join'
 import { appendHash } from './dom-utils'
+import { Either, flatMapEither, left, mapEither, right } from './either'
 
 // This file shouldn't import anything as it is for exporting simple shared utility functions between various projects
 export const EditorID = 'utopia-editor-root'
@@ -145,4 +146,42 @@ export function createIframeUrl(base: string, assetName: string): string {
 
 export function assertNever(n: never): never {
   throw new Error(`Expected \`never\`, got ${JSON.stringify(n)}`)
+}
+
+export function projectIdFromURL(projectURL: string): Either<string, string> {
+  try {
+    const url = new URL(projectURL)
+    const projectIDMatch = url.pathname.match(/^\/(p|project)\/([A-Za-z0-9]+)/)
+    if (projectIDMatch == null) {
+      return left(`URL does not appear to have the project ID or be for a project.`)
+    } else {
+      return right(projectIDMatch[2])
+    }
+  } catch (error) {
+    return left(`Invalid value passed that isn't a URL.`)
+  }
+}
+
+export interface ContentsAndProjectRootResult {
+  contentsURL: string
+  projectRootURL: string
+}
+
+export function contentsJSONURLFromProjectURL(
+  projectURL: string,
+): Either<string, ContentsAndProjectRootResult> {
+  try {
+    return mapEither((projectID) => {
+      const contentsURL = new URL(projectURL)
+      contentsURL.pathname = `/v1/project/${projectID}/contents.json`
+      const projectRootURL = new URL(projectURL)
+      projectRootURL.pathname = `/project/${projectID}`
+      return {
+        contentsURL: contentsURL.toString(),
+        projectRootURL: projectRootURL.toString(),
+      }
+    }, projectIdFromURL(projectURL))
+  } catch (error) {
+    return left(`Invalid value passed that isn't a URL.`)
+  }
 }

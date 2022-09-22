@@ -328,6 +328,8 @@ import {
   DragInteractionData,
   flexGapHandle,
   FlexGapHandle,
+  FlowSlider,
+  flowSlider,
   InputData,
   interactionSession,
   InteractionSession,
@@ -335,6 +337,8 @@ import {
   KeyboardCatcherControl,
   KeyboardInteractionData,
   KeyState,
+  reparentTargetsToFilter,
+  ReparentTargetsToFilter,
   resizeHandle,
   ResizeHandle,
 } from '../../canvas/canvas-strategies/interaction-state'
@@ -1574,7 +1578,7 @@ export const ModifiersKeepDeepEquality: KeepDeepEqualityCall<Modifiers> = combin
 )
 
 export const DragInteractionDataKeepDeepEquality: KeepDeepEqualityCall<DragInteractionData> =
-  combine7EqualityCalls(
+  combine8EqualityCalls(
     (data) => data.dragStart,
     CanvasPointKeepDeepEquality,
     (data) => data.drag,
@@ -1589,7 +1593,18 @@ export const DragInteractionDataKeepDeepEquality: KeepDeepEqualityCall<DragInter
     createCallWithTripleEquals(),
     (data) => data.hasMouseMoved,
     BooleanKeepDeepEquality,
-    (dragStart, drag, prevDrag, originalDragStart, modifiers, globalTime, hasMouseMoved) => {
+    (data) => data._accumulatedMovement,
+    CanvasPointKeepDeepEquality,
+    (
+      dragStart,
+      drag,
+      prevDrag,
+      originalDragStart,
+      modifiers,
+      globalTime,
+      hasMouseMoved,
+      accumulatedMovement,
+    ) => {
       return {
         type: 'DRAG',
         dragStart: dragStart,
@@ -1599,6 +1614,7 @@ export const DragInteractionDataKeepDeepEquality: KeepDeepEqualityCall<DragInter
         modifiers: modifiers,
         globalTime: globalTime,
         hasMouseMoved: hasMouseMoved,
+        _accumulatedMovement: accumulatedMovement,
       }
     },
   )
@@ -1680,6 +1696,15 @@ export const KeyboardCatcherControlKeepDeepEquality: KeepDeepEqualityCall<
   return keepDeepEqualityResult(oldValue, true)
 }
 
+// This will break should the definition of `FlowSlider` change.
+flowSlider()
+export const FlowSliderKeepDeepEquality: KeepDeepEqualityCall<FlowSlider> = (
+  oldValue,
+  newValue,
+) => {
+  return keepDeepEqualityResult(oldValue, true)
+}
+
 export const CanvasControlTypeKeepDeepEquality: KeepDeepEqualityCall<CanvasControlType> = (
   oldValue,
   newValue,
@@ -1705,6 +1730,11 @@ export const CanvasControlTypeKeepDeepEquality: KeepDeepEqualityCall<CanvasContr
         return KeyboardCatcherControlKeepDeepEquality(oldValue, newValue)
       }
       break
+    case 'FLOW_SLIDER':
+      if (newValue.type === oldValue.type) {
+        return FlowSliderKeepDeepEquality(oldValue, newValue)
+      }
+      break
     default:
       const _exhaustiveCheck: never = oldValue
       throw new Error(`Unhandled type ${JSON.stringify(oldValue)}`)
@@ -1725,6 +1755,15 @@ export const ReparentTargetKeepDeepEquality: KeepDeepEqualityCall<ReparentTarget
     reparentTarget,
   )
 
+const ReparentTargetsToFilterKeepDeepEquality: KeepDeepEqualityCall<ReparentTargetsToFilter> =
+  combine2EqualityCalls(
+    (target) => target['use-strict-bounds'],
+    ReparentTargetKeepDeepEquality,
+    (target) => target['allow-missing-bounds'],
+    ReparentTargetKeepDeepEquality,
+    reparentTargetsToFilter,
+  )
+
 export const InteractionSessionKeepDeepEquality: KeepDeepEqualityCall<InteractionSession> =
   combine10EqualityCalls(
     (session) => session.interactionData,
@@ -1743,8 +1782,8 @@ export const InteractionSessionKeepDeepEquality: KeepDeepEqualityCall<Interactio
     createCallWithTripleEquals(),
     (session) => session.latestAllElementProps,
     createCallFromIntrospectiveKeepDeep(),
-    (session) => session.startingTargetParentToFilterOut,
-    nullableDeepEquality(ReparentTargetKeepDeepEquality),
+    (session) => session.startingTargetParentsToFilterOut,
+    nullableDeepEquality(ReparentTargetsToFilterKeepDeepEquality),
     (session) => session.updatedTargetPaths,
     objectDeepEquality(ElementPathKeepDeepEquality),
     interactionSession,

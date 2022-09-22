@@ -307,9 +307,11 @@ const dark: typeof light = {
 export const colorTheme = { ...light, inverted: dark }
 export const darkColorTheme = { ...dark, inverted: light }
 
+export type ColorTheme = typeof colorTheme
+
 // TODO: don't export colorTheme anymore and just export useUtopiaTheme() hook
 // prerequisites: no class components and usage of UtopiaTheme.color instead of colorTheme
-export const useColorTheme = () => {
+export const useColorTheme = (): ColorTheme => {
   const currentTheme: Theme = useEditorState((store) => store.editor.theme, 'currentTheme')
   return currentTheme === 'dark' ? darkColorTheme : colorTheme
 }

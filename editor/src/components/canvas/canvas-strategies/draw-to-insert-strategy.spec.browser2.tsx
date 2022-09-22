@@ -371,6 +371,7 @@ describe('Inserting into flex row', () => {
         data-uid='bbb'
         data-testid='bbb'
         style={{
+          position: 'relative',
           width: 180,
           height: 180,
           backgroundColor: '#d3d3d3',
@@ -433,6 +434,7 @@ describe('Inserting into flex row', () => {
             data-uid='bbb'
             data-testid='bbb'
             style={{
+              position: 'relative',
               width: 180,
               height: 180,
               backgroundColor: '#d3d3d3',
@@ -489,6 +491,7 @@ describe('Inserting into flex row', () => {
             data-uid='bbb'
             data-testid='bbb'
             style={{
+              position: 'relative',
               width: 180,
               height: 180,
               backgroundColor: '#d3d3d3',
@@ -553,6 +556,7 @@ describe('Inserting into flex row', () => {
             data-uid='bbb'
             data-testid='bbb'
             style={{
+              position: 'relative',
               width: 180,
               height: 180,
               backgroundColor: '#d3d3d3',
@@ -617,6 +621,7 @@ describe('Inserting into flex row', () => {
             data-uid='bbb'
             data-testid='bbb'
             style={{
+              position: 'relative',
               width: 180,
               height: 180,
               backgroundColor: '#d3d3d3',
@@ -692,6 +697,7 @@ describe('Inserting into flex row', () => {
           data-uid='bbb'
           data-testid='bbb'
           style={{
+            position: 'relative',
             width: 180,
             height: 180,
             backgroundColor: '#d3d3d3',
@@ -752,6 +758,7 @@ describe('Inserting into flex column', () => {
         data-uid='bbb'
         data-testid='bbb'
         style={{
+          position: 'relative',
           width: 180,
           height: 180,
           backgroundColor: '#d3d3d3',
@@ -815,6 +822,7 @@ describe('Inserting into flex column', () => {
             data-uid='bbb'
             data-testid='bbb'
             style={{
+              position: 'relative',
               width: 180,
               height: 180,
               backgroundColor: '#d3d3d3',
@@ -872,6 +880,7 @@ describe('Inserting into flex column', () => {
             data-uid='bbb'
             data-testid='bbb'
             style={{
+              position: 'relative',
               width: 180,
               height: 180,
               backgroundColor: '#d3d3d3',
@@ -937,6 +946,7 @@ describe('Inserting into flex column', () => {
             data-uid='bbb'
             data-testid='bbb'
             style={{
+              position: 'relative',
               width: 180,
               height: 180,
               backgroundColor: '#d3d3d3',

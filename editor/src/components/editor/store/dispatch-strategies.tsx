@@ -24,7 +24,13 @@ import {
   shouldApplyClearInteractionSessionResult,
 } from '../actions/action-utils'
 import { InnerDispatchResult } from './dispatch'
-import { DerivedState, deriveState, EditorState, EditorStoreFull } from './editor-state'
+import {
+  DerivedState,
+  deriveState,
+  EditorState,
+  EditorStoreFull,
+  EditorStoreUnpatched,
+} from './editor-state'
 import {
   CanvasStrategy,
   CustomStrategyState,
@@ -48,7 +54,7 @@ interface HandleStrategiesResult {
 export function interactionFinished(
   strategies: Array<CanvasStrategy>,
   storedState: EditorStoreFull,
-  result: InnerDispatchResult,
+  result: EditorStoreUnpatched,
 ): HandleStrategiesResult {
   const newEditorState = result.unpatchedEditor
   const withClearedSession = createEmptyStrategyState(
@@ -109,7 +115,7 @@ export function interactionFinished(
 export function interactionHardReset(
   strategies: Array<CanvasStrategy>,
   storedState: EditorStoreFull,
-  result: InnerDispatchResult,
+  result: EditorStoreUnpatched,
 ): HandleStrategiesResult {
   const newEditorState = result.unpatchedEditor
   const withClearedSession = {
@@ -192,7 +198,7 @@ export function interactionHardReset(
 export function interactionUpdate(
   strategies: Array<CanvasStrategy>,
   storedState: EditorStoreFull,
-  result: InnerDispatchResult,
+  result: EditorStoreUnpatched,
   actionType: 'interaction-create-or-update' | 'non-interaction',
 ): HandleStrategiesResult {
   const newEditorState = result.unpatchedEditor
@@ -264,7 +270,7 @@ export function interactionUpdate(
 export function interactionStart(
   strategies: Array<CanvasStrategy>,
   storedState: EditorStoreFull,
-  result: InnerDispatchResult,
+  result: EditorStoreUnpatched,
 ): HandleStrategiesResult {
   const newEditorState = result.unpatchedEditor
   const withClearedSession = createEmptyStrategyState(
@@ -343,7 +349,7 @@ export function interactionStart(
 
 export function interactionCancel(
   storedState: EditorStoreFull,
-  result: InnerDispatchResult,
+  result: EditorStoreUnpatched,
 ): HandleStrategiesResult {
   const updatedEditorState: EditorState = {
     ...result.unpatchedEditor,
@@ -584,7 +590,7 @@ export function handleStrategies(
   strategies: Array<CanvasStrategy>,
   dispatchedActions: readonly EditorAction[],
   storedState: EditorStoreFull,
-  result: InnerDispatchResult,
+  result: EditorStoreUnpatched,
   oldDerivedState: DerivedState,
 ): HandleStrategiesResult & { patchedDerivedState: DerivedState } {
   const MeasureDispatchTime =
@@ -689,7 +695,7 @@ function handleStrategiesInner(
   strategies: Array<CanvasStrategy>,
   dispatchedActions: readonly EditorAction[],
   storedState: EditorStoreFull,
-  result: InnerDispatchResult,
+  result: EditorStoreUnpatched,
 ): HandleStrategiesResult {
   const isSaveDomReport = dispatchedActions.some((a) => a.action === 'SAVE_DOM_REPORT')
 

@@ -4,13 +4,14 @@ import React from 'react'
 import { jsx } from '@emotion/react'
 import { CSSObject } from '@emotion/serialize'
 import WindowedSelect, {
+  ActionMeta,
   InputActionMeta,
   OptionProps,
   StylesConfig,
   ValueType,
 } from 'react-windowed-select'
 
-import { getControlStyles, Utils } from '../../../uuiui-deps'
+import { getControlStyles } from '../../../uuiui-deps'
 import { useEditorState, useRefEditorState } from '../../editor/store/store-hook'
 
 import {
@@ -59,6 +60,7 @@ import { ElementPath } from '../../../core/shared/project-file-types'
 import { safeIndex } from '../../../core/shared/array-utils'
 import { LayoutSystem } from 'utopia-api/core'
 import { MetadataUtils } from '../../../core/model/element-metadata-utils'
+import { optionalMap } from '../../../core/shared/optional-utils'
 
 type InsertMenuItemValue = InsertableComponent & {
   source: InsertableComponentGroupType | null
@@ -89,7 +91,7 @@ function convertInsertableComponentsToFlatList(
           const source = index === 0 ? componentGroup.source : null
           return {
             label: insertableComponent.name,
-            source: Utils.optionalMap(getInsertableGroupLabel, source),
+            source: optionalMap(getInsertableGroupLabel, source),
             value: {
               ...insertableComponent,
               key: `${getInsertableGroupLabel(componentGroup.source)}-${insertableComponent.name}`,
