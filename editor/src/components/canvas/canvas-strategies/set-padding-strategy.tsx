@@ -107,7 +107,7 @@ export const setPaddingStrategy: CanvasStrategy = {
         'always',
         selectedElement,
         stylePropPathMappingFn(paddingCursorFromEdge(edgePiece), ['style']),
-        deltaFromEdge(drag, edgePiece),
+        Math.max(0, deltaFromEdge(drag, edgePiece)),
         0,
         true,
       ),
