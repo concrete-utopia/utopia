@@ -7,6 +7,7 @@ export type LeftMenuPanel =
   | 'googleFontsResources'
   | 'insertmenu'
   | 'projectsettings'
+  | 'githuboptions'
 
 export type CenterPanel = 'canvas' | 'misccodeeditor'
 
@@ -37,6 +38,8 @@ export function paneForPanel(panel: EditorPanel | null): EditorPane | null {
     case 'genericExternalResources':
       return 'leftmenu'
     case 'googleFontsResources':
+      return 'leftmenu'
+    case 'githuboptions':
       return 'leftmenu'
     case 'insertmenu':
       return 'rightmenu'

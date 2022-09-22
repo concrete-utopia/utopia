@@ -29,7 +29,7 @@ export const IconSize = 16
 const IndicatorSize = (scale: number) => IconSize / scale
 const MenuHeight = (scale: number) => 22 / scale
 const IndicatorOffset = (scale: number) => 2 / scale
-const ControlSize = (scale: number) => 10 / scale
+const ControlSize = (scale: number) => 6 / scale
 
 export const FlowSliderControl = React.memo(() => {
   const scale = useEditorState((store) => store.editor.canvas.scale, 'FlowSliderControl scale')
@@ -98,7 +98,7 @@ export const FlowSliderControl = React.memo(() => {
 
   const controlTopLeft = React.useMemo(() => {
     return {
-      x: controlAreaTopLeft.x + latestIndex * IndicatorSize(scale) + IndicatorOffset(scale),
+      x: controlAreaTopLeft.x + latestIndex * IndicatorSize(scale) + IndicatorSize(scale) / 4,
       y: getRectCenter(startingFrame ?? zeroCanvasRect).y - ControlSize(scale) / 2,
     } as CanvasPoint
   }, [startingFrame, controlAreaTopLeft, latestIndex, scale])
@@ -252,9 +252,9 @@ const FlowReorderControl = React.memo(({ controlPosition }: { controlPosition: C
           height: ControlSize(scale),
           borderRadius: '50%',
           background: colorTheme.bg0.value,
-          boxShadow: `inset 0px 0px 0px ${0.5 / scale}px ${colorTheme.border3.value} , 0px ${
-            2 / scale
-          }px ${4 / scale}px 0px ${colorTheme.fg6.o(50).value}`,
+          boxShadow: `0px ${1 / scale}px ${2 / scale}px 0px rgb(52 52 52 / 35%), 0px 0px 0px ${
+            0.5 / scale
+          }px rgb(166 166 166 / 82%)`,
         }}
       ></div>
       <div

@@ -2636,6 +2636,7 @@ export const UPDATE_FNS = {
       case 'center':
       case 'insertmenu':
       case 'projectsettings':
+      case 'githuboptions':
         return editor
       default:
         const _exhaustiveCheck: never = action.target
@@ -2756,6 +2757,7 @@ export const UPDATE_FNS = {
       case 'misccodeeditor':
       case 'center':
       case 'insertmenu':
+      case 'githuboptions':
         return editor
       default:
         const _exhaustiveCheck: never = action.target

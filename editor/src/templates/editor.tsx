@@ -70,7 +70,6 @@ import {
   UtopiaTsWorkersImplementation,
 } from '../core/workers/workers'
 import '../utils/react-shim'
-import Utils from '../utils/utils'
 import { HeartbeatRequestMessage } from '../core/workers/watchdog-worker'
 import { triggerHashedAssetsUpdate } from '../utils/hashed-assets'
 import {
@@ -79,8 +78,13 @@ import {
   UiJsxCanvasCtxAtom,
   ElementsToRerenderGLOBAL,
 } from '../components/canvas/ui-jsx-canvas'
-import { isLeft } from '../core/shared/either'
-import { importZippedGitProject, isProjectImportSuccess } from '../core/model/project-import'
+import { foldEither, isLeft } from '../core/shared/either'
+import {
+  getURLImportDetails,
+  importZippedGitProject,
+  isProjectImportSuccess,
+  reuploadAssets,
+} from '../core/model/project-import'
 import { OutgoingWorkerMessage, UtopiaTsWorkers } from '../core/workers/common/worker-types'
 import { isSendPreviewModel, load } from '../components/editor/actions/actions'
 import { updateCssVars, UtopiaStyles } from '../uuiui'
@@ -104,6 +108,8 @@ import { isFeatureEnabled } from '../utils/feature-switches'
 import { shouldInspectorUpdate } from '../components/inspector/inspector'
 import * as EP from '../core/shared/element-path'
 import { isAuthenticatedWithGithub } from '../utils/github-auth'
+import { ProjectContentTreeRootKeepDeepEquality } from '../components/editor/store/store-deep-equality-instances'
+import { waitUntil } from '../core/shared/promise-utils'
 
 if (PROBABLY_ELECTRON) {
   let { webFrame } = requireElectron()
@@ -304,7 +310,6 @@ export class Editor {
               authenticated: authenticatedWithGithub,
             },
           }
-
           const projectId = getProjectID()
           if (isLoggedIn(loginState)) {
             this.storedState.persistence.login()
@@ -313,6 +318,7 @@ export class Editor {
           const urlParams = new URLSearchParams(window.location.search)
           const githubOwner = urlParams.get('github_owner')
           const githubRepo = urlParams.get('github_repo')
+          const importURL = urlParams.get('import_url')
 
           if (isCookiesOrLocalForageUnavailable(loginState)) {
             this.storedState.persistence.createNew(createNewProjectName(), defaultProject())
@@ -347,6 +353,8 @@ export class Editor {
                     })
                 }
               })
+            } else if (importURL != null) {
+              this.createNewProjectFromImportURL(importURL)
             } else {
               this.storedState.persistence.createNew(emptyEditorState.projectName, defaultProject())
             }
@@ -501,6 +509,50 @@ export class Editor {
         runDispatch,
       )
     }
+  }
+
+  private createNewProjectFromImportURL(importURL: string): void {
+    getURLImportDetails(importURL)
+      .then((importResult) => {
+        foldEither(
+          (errorMessage) => {
+            renderProjectLoadError(errorMessage)
+          },
+          (successResult) => {
+            // Create the new project.
+            this.storedState.persistence.createNew(createNewProjectName(), successResult.model)
+
+            // Checks to see if the given project has been loaded and received a project ID.
+            function projectLoaded(storedState: EditorStoreFull): boolean {
+              const successResultFilenames = new Set(
+                Object.keys(successResult.model.projectContents),
+              )
+              const unpatchedEditorFilenames = new Set(
+                Object.keys(storedState.unpatchedEditor.projectContents),
+              )
+              return (
+                successResultFilenames.size === unpatchedEditorFilenames.size &&
+                storedState.unpatchedEditor.id != null
+              )
+            }
+
+            waitUntil(5000, () => projectLoaded(this.storedState)).then((waitResult) => {
+              if (waitResult) {
+                reuploadAssets(
+                  successResult.originalProjectRootURL,
+                  this.storedState.unpatchedEditor,
+                )
+              } else {
+                console.error(`Waited too long for the project to get a app ID.`)
+              }
+            })
+          },
+          importResult,
+        )
+      })
+      .catch((err) => {
+        console.error('Import error.', err)
+      })
   }
 }
 

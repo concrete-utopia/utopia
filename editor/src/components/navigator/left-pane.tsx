@@ -2,7 +2,7 @@
 /** @jsx jsx */
 import { jsx } from '@emotion/react'
 import styled from '@emotion/styled'
-import React from 'react'
+import React, { ChangeEvent } from 'react'
 import {
   fetchProjectMetadata,
   projectEditorURL,
@@ -47,7 +47,12 @@ import {
   setProjectDescription,
 } from '../editor/actions/action-creators'
 import { InsertMenu } from '../editor/insertmenu'
-import { DerivedState, EditorState, LeftMenuTab } from '../editor/store/editor-state'
+import {
+  createNewProjectName,
+  DerivedState,
+  EditorState,
+  LeftMenuTab,
+} from '../editor/store/editor-state'
 import { useEditorState } from '../editor/store/store-hook'
 import { FileBrowser } from '../filebrowser/filebrowser'
 import { UIGridRow } from '../inspector/widgets/ui-grid-row'
@@ -61,6 +66,9 @@ import { useTriggerForkProject } from '../editor/persistence-hooks'
 import urljoin from 'url-join'
 import { parseGithubProjectString } from '../../core/shared/github'
 import { startGithubAuthentication } from '../../utils/github-auth'
+import { getURLImportDetails } from '../../core/model/project-import'
+import { forEachLeft, forEachRight } from '../../core/shared/either'
+import { notice } from '../common/notice'
 
 export interface LeftPaneProps {
   editorState: EditorState
@@ -707,9 +715,8 @@ const SharingPane = React.memo(() => {
 const GithubPane = React.memo(() => {
   const [githubRepoStr, setGithubRepoStr] = React.useState('')
   const parsedRepo = parseGithubProjectString(githubRepoStr)
-  const dispatch = useEditorState((store) => {
-    return store.dispatch
-  }, 'GithubPane dispatch')
+  const dispatch = useEditorState((store) => store.dispatch, 'GithubPane dispatch')
+  const persistence = useEditorState((store) => store.persistence, 'GithubPane persistence')
 
   const onStartImport = React.useCallback(() => {
     if (parsedRepo != null) {
@@ -738,6 +745,31 @@ const GithubPane = React.memo(() => {
     startGithubAuthentication(dispatch)
   }, [dispatch])
 
+  const [urlToImportFrom, setURLToImportFrom] = React.useState<string | null>(null)
+
+  const importFromURLChange = React.useCallback(
+    (changeEvent: React.ChangeEvent<HTMLInputElement>) => {
+      setURLToImportFrom(changeEvent.currentTarget.value)
+    },
+    [setURLToImportFrom],
+  )
+
+  const triggerImportFromURL = React.useCallback(() => {
+    if (urlToImportFrom != null) {
+      const url = new URL(urljoin(BASE_URL, 'p'))
+      url.searchParams.set('import_url', urlToImportFrom)
+
+      window.open(url.toString())
+    }
+  }, [urlToImportFrom])
+
+  const onFocus = React.useCallback(
+    (event: React.FocusEvent<HTMLElement>) => {
+      dispatch([setFocus('githuboptions')], 'everyone')
+    },
+    [dispatch],
+  )
+
   return (
     <FlexColumn
       id='leftPaneGithub'
@@ -747,6 +779,7 @@ const GithubPane = React.memo(() => {
         alignItems: 'stretch',
         paddingBottom: 50,
       }}
+      onFocus={onFocus}
     >
       <UIRow style={{ paddingLeft: 8, paddingRight: 8 }}>
         <Title>Github</Title>
@@ -786,6 +819,70 @@ const GithubPane = React.memo(() => {
           Start
         </Button>
       </UIGridRow>
+      <Section>
+        <SectionTitleRow minimised={false} toggleMinimised={NO_OP}>
+          <Title style={{ flexGrow: 1 }}>Github</Title>
+        </SectionTitleRow>
+        <SectionBodyArea minimised={false}>
+          <div
+            style={{
+              height: 'initial',
+              minHeight: 34,
+              alignItems: 'flex-start',
+              paddingTop: 8,
+              paddingLeft: 8,
+              paddingRight: 8,
+              paddingBottom: 8,
+              whiteSpace: 'pre-wrap',
+              letterSpacing: 0.1,
+              lineHeight: '17px',
+              fontSize: '11px',
+            }}
+          >
+            You can import a new project from Github. It might take a few minutes, and will show up
+            in a new tab.
+          </div>
+          <UIGridRow padded variant='<--------auto-------->|--45px--|'>
+            <StringInput testId='importProject' value={githubRepoStr} onChange={onChange} />
+            <Button spotlight highlight disabled={parsedRepo == null} onMouseUp={onStartImport}>
+              Start
+            </Button>
+          </UIGridRow>
+        </SectionBodyArea>
+      </Section>
+      <Section>
+        <SectionTitleRow minimised={false} toggleMinimised={NO_OP}>
+          <Title style={{ flexGrow: 1 }}>Import From URL</Title>
+        </SectionTitleRow>
+        <SectionBodyArea minimised={false}>
+          <div
+            style={{
+              height: 'initial',
+              minHeight: UtopiaTheme.layout.rowHeight.normal,
+              alignItems: 'flex-start',
+              paddingTop: 8,
+              paddingLeft: 8,
+              paddingRight: 8,
+              paddingBottom: 8,
+              whiteSpace: 'pre-wrap',
+              letterSpacing: 0.1,
+              lineHeight: '17px',
+              fontSize: '11px',
+            }}
+          >
+            <p style={{ marginTop: 0, marginBottom: 12 }}>
+              Import a project from an existing project based on its URL.
+            </p>
+          </div>
+
+          <UIGridRow variant='<--------auto-------->|--45px--|' padded>
+            <StringInput testId='import-from-url-input' onChange={importFromURLChange} />
+            <Button spotlight highlight onClick={triggerImportFromURL}>
+              Import
+            </Button>
+          </UIGridRow>
+        </SectionBodyArea>
+      </Section>
     </FlexColumn>
   )
 })
