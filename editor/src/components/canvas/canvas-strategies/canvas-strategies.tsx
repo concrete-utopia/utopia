@@ -37,7 +37,6 @@ import { flexReparentToFlexStrategy } from './flex-reparent-to-flex-strategy'
 import { BuiltInDependencies } from '../../../core/es-modules/package-manager/built-in-dependencies-list'
 import {
   flowReorderAutoConversionStrategy,
-  flowReorderNoConversionStrategy,
   flowReorderSameTypeOnlyStrategy,
 } from './flow-reorder-strategy'
 import { isInsertMode } from '../../editor/editor-modes'
@@ -67,7 +66,6 @@ export const RegisteredCanvasStrategies: Array<CanvasStrategy> = [
   dragToInsertStrategy,
   drawToInsertStrategy,
   flowReorderAutoConversionStrategy,
-  flowReorderNoConversionStrategy,
   flowReorderSameTypeOnlyStrategy,
   flowReorderSliderStategy,
   lookForApplicableParentStrategy,

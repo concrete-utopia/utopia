@@ -74,9 +74,10 @@ function flowReorderApplyCommon(
     const selectedElements = getTargetPathsFromInteractionTarget(canvasState.interactionTarget)
     const target = selectedElements[0] // TODO MULTISELECT??
 
-    const siblingsOfTarget = MetadataUtils.getSiblings(strategyState.startingMetadata, target).map(
-      (element) => element.elementPath,
-    )
+    const siblingsOfTarget = MetadataUtils.getSiblingsProjectContentsOrdered(
+      strategyState.startingMetadata,
+      target,
+    ).map((element) => element.elementPath)
 
     if (!isReorderAllowed(siblingsOfTarget)) {
       return strategyApplicationResult(
@@ -167,34 +168,6 @@ export const flowReorderAutoConversionStrategy: CanvasStrategy = {
       interactionState,
       strategyState,
       'with-auto-conversion',
-      'allow-mixed-display-type',
-    )
-  },
-}
-
-export const flowReorderNoConversionStrategy: CanvasStrategy = {
-  id: 'FLOW_REORDER_NO_CONVERSION',
-  name: () => 'Reorder (Flow)',
-  isApplicable: isFlowReorderConversionApplicable,
-  controlsToRender: flowReorderAutoConversionStrategy.controlsToRender,
-  fitness: (canvasState, interactionState, strategyState) => {
-    return flowReorderNoConversionStrategy.isApplicable(
-      canvasState,
-      interactionState,
-      strategyState.startingMetadata,
-      strategyState.startingAllElementProps,
-    ) &&
-      interactionState.interactionData.type === 'DRAG' &&
-      interactionState.activeControl.type === 'BOUNDING_AREA'
-      ? 2
-      : 0
-  },
-  apply: (canvasState, interactionState, strategyState) => {
-    return flowReorderApplyCommon(
-      canvasState,
-      interactionState,
-      strategyState,
-      'no-conversion',
       'allow-mixed-display-type',
     )
   },

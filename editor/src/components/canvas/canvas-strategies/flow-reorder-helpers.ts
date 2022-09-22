@@ -5,17 +5,7 @@ import {
   ElementInstanceMetadata,
   ElementInstanceMetadataMap,
 } from '../../../core/shared/element-template'
-import {
-  CanvasPoint,
-  rectContainsPoint,
-  CanvasRectangle,
-  CanvasVector,
-  distance as euclideanDistance,
-  getRectCenter,
-  mod,
-  offsetPoint,
-  pointIsClockwiseFromLine,
-} from '../../../core/shared/math-utils'
+import { rectContainsPoint, CanvasVector, mod } from '../../../core/shared/math-utils'
 import { ElementPath } from '../../../core/shared/project-file-types'
 import { stylePropPathMappingFn } from '../../inspector/common/property-path-hooks'
 import { DeleteProperties, deleteProperties } from '../commands/delete-properties-command'
@@ -184,19 +174,12 @@ export function getFlowReorderIndex(
       newDisplayType: null,
     }
   }
-
-  // SIBLING INDEXES FROM STARTING METADATA
-  // const siblings = MetadataUtils.getSiblings(startingMetadata, target).map(
-  //   (element) => element.elementPath,
-
-  // SIBLING INDEXES FROM FRESH METADATA
-  const siblings = MetadataUtils.getSiblings(latestMetadata, target).map(
+  const siblings = MetadataUtils.getSiblingsProjectContentsOrdered(latestMetadata, target).map(
     (element) => element.elementPath,
   )
 
   const displayValues = getSiblingDisplayValues(latestMetadata, siblings)
 
-  // FRAME RESULT FROM FRESH METADATA
   const reorderResult = findSiblingIndexUnderPoint(
     point,
     target,

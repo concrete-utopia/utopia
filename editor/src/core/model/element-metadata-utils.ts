@@ -226,8 +226,8 @@ export const MetadataUtils = {
 
     const parentPath = EP.parentPath(target)
     const siblingPathsOrNull = EP.isRootElementOfInstance(target)
-      ? MetadataUtils.getRootViewPathsProjectContentsOrdered(metadata, parentPath)
-      : MetadataUtils.getChildrenPathsProjectContentsOrdered(metadata, parentPath)
+      ? MetadataUtils.getRootViewPaths(metadata, parentPath)
+      : MetadataUtils.getChildrenPaths(metadata, parentPath)
     const siblingPaths = siblingPathsOrNull ?? []
     return MetadataUtils.findElementsByElementPath(metadata, siblingPaths)
   },

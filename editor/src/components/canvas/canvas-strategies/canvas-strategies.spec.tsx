@@ -12,7 +12,6 @@ import { flexReparentToAbsoluteStrategy } from './flex-reparent-to-absolute-stra
 import { flexReparentToFlexStrategy } from './flex-reparent-to-flex-strategy'
 import {
   flowReorderAutoConversionStrategy,
-  flowReorderNoConversionStrategy,
   flowReorderSameTypeOnlyStrategy,
 } from './flow-reorder-strategy'
 import { keyboardAbsoluteMoveStrategy } from './keyboard-absolute-move-strategy'
@@ -32,7 +31,6 @@ const isResizableStrategyAndResults: Array<[CanvasStrategy, boolean]> = [
   [absoluteReparentToFlexStrategy, false],
   [dragToInsertStrategy, false],
   [flowReorderAutoConversionStrategy, false],
-  [flowReorderNoConversionStrategy, false],
   [flowReorderSameTypeOnlyStrategy, false],
 ]
 
