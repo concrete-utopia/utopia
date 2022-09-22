@@ -60,6 +60,7 @@ import { emptySet } from '../../../core/shared/set-utils'
 import { RegisteredCanvasStrategies } from '../../canvas/canvas-strategies/canvas-strategies'
 import { removePathsWithDeadUIDs } from '../../../core/shared/element-path'
 import { CanvasStrategy } from '../../canvas/canvas-strategies/canvas-strategy-types'
+import { last } from '../../../core/shared/array-utils'
 
 type DispatchResultFields = {
   nothingChanged: boolean
@@ -368,6 +369,8 @@ export function editorDispatch(
   const reducerToSplitToActionGroups = (
     actionGroups: EditorAction[][],
     currentAction: EditorAction,
+    i: number,
+    actions: readonly EditorAction[],
   ): EditorAction[][] => {
     if (currentAction.action === `TRANSIENT_ACTIONS`) {
       // if this is a transient action we need to split its sub-actions into groups which can be dispatched together
@@ -379,10 +382,10 @@ export function editorDispatch(
         EditorActions.transientActions(actionGroup),
       ])
       return [...actionGroups, ...wrappedTransientActionGroups]
-    } else if (currentAction.action === 'CLEAR_INTERACTION_SESSION') {
-      // CLEAR_INTERACTION_SESSION must be the last action for a given action group, so we push it and then create a new empty action group for follow-up actions
-      actionGroups[actionGroups.length - 1].push(currentAction)
-      return [...actionGroups, []]
+    } else if (i > 0 && actions[i - 1].action === 'CLEAR_INTERACTION_SESSION') {
+      // CLEAR_INTERACTION_SESSION must be the last action for a given action group, so if the previous action was CLEAR_INTERACTION_SESSION,
+      // then we need to start a new action group
+      return [...actionGroups, [currentAction]]
     } else {
       // if this action does not need a rebuilt derived state we can just push it into the last action group to dispatch them together
       let updatedGroups = actionGroups
