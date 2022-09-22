@@ -70,7 +70,6 @@ import {
   UtopiaTsWorkersImplementation,
 } from '../core/workers/workers'
 import '../utils/react-shim'
-import Utils, { waitUntil } from '../utils/utils'
 import { HeartbeatRequestMessage } from '../core/workers/watchdog-worker'
 import { triggerHashedAssetsUpdate } from '../utils/hashed-assets'
 import {
@@ -109,6 +108,7 @@ import { isFeatureEnabled } from '../utils/feature-switches'
 import { shouldInspectorUpdate } from '../components/inspector/inspector'
 import * as EP from '../core/shared/element-path'
 import { ProjectContentTreeRootKeepDeepEquality } from '../components/editor/store/store-deep-equality-instances'
+import { waitUntil } from '../core/shared/promise-utils'
 
 if (PROBABLY_ELECTRON) {
   let { webFrame } = requireElectron()
