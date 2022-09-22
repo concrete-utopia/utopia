@@ -445,7 +445,7 @@ export class ProjectsPage extends React.Component<EmptyProps, ProjectsState> {
             <ProjectCard
               project={null}
               key={null}
-              url={'https://utopia.app/p/9fa2f9b8-before-i-go-basic/'}
+              url={'https://utopia.pizza/p/3551bda9-before-i-go-basic/'}
               thumbnail={'https://cdn.utopia.app/editor/sample-assets/preview-images/basic.png'}
               modifiedAt={null}
               title={'Before I Go Basic'}
@@ -454,7 +454,7 @@ export class ProjectsPage extends React.Component<EmptyProps, ProjectsState> {
             <ProjectCard
               project={null}
               key={null}
-              url={'https://utopia.app/p/cb3a9645-before-i-go-premium/'}
+              url={'https://utopia.pizza/p/7d7015f0-before-i-go-premium/'}
               thumbnail={'https://cdn.utopia.app/editor/sample-assets/preview-images/premium.png'}
               modifiedAt={null}
               title={'Before I Go Premium'}

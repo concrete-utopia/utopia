@@ -5,6 +5,7 @@ import {
   CanvasVector,
   offsetPoint,
   pointDifference,
+  roundPointTo,
   zeroCanvasPoint,
 } from '../../../core/shared/math-utils'
 import { ElementPath } from '../../../core/shared/project-file-types'
@@ -31,6 +32,7 @@ export interface DragInteractionData {
   modifiers: Modifiers
   globalTime: number
   hasMouseMoved: boolean
+  _accumulatedMovement: CanvasVector
 }
 
 export interface KeyState {
@@ -162,6 +164,7 @@ export function createInteractionViaMouse(
       modifiers: modifiers,
       globalTime: Date.now(),
       hasMouseMoved: false,
+      _accumulatedMovement: zeroCanvasPoint,
     },
     activeControl: activeControl,
     sourceOfUpdate: activeControl,
@@ -176,6 +179,42 @@ function dragExceededThreshold(drag: CanvasVector): boolean {
   const xDiff = Math.abs(drag.x)
   const yDiff = Math.abs(drag.y)
   return xDiff > MoveIntoDragThreshold || yDiff > MoveIntoDragThreshold
+}
+
+export function updateInteractionViaDragDelta(
+  currentState: InteractionSessionWithoutMetadata,
+  modifiers: Modifiers,
+  sourceOfUpdate: CanvasControlType | null, // If null it means the active control is the source
+  movement: CanvasVector,
+): InteractionSessionWithoutMetadata {
+  if (currentState.interactionData.type === 'DRAG') {
+    const accumulatedMovement = roundPointTo(
+      offsetPoint(currentState.interactionData._accumulatedMovement, movement),
+      0,
+    )
+    const dragThresholdPassed = dragExceededThreshold(accumulatedMovement)
+    return {
+      interactionData: {
+        type: 'DRAG',
+        dragStart: currentState.interactionData.dragStart,
+        drag: dragThresholdPassed ? accumulatedMovement : null,
+        prevDrag: currentState.interactionData.drag,
+        originalDragStart: currentState.interactionData.originalDragStart,
+        modifiers: modifiers,
+        globalTime: Date.now(),
+        hasMouseMoved: true,
+        _accumulatedMovement: accumulatedMovement,
+      },
+      activeControl: currentState.activeControl,
+      sourceOfUpdate: sourceOfUpdate ?? currentState.activeControl,
+      lastInteractionTime: Date.now(),
+      userPreferredStrategy: currentState.userPreferredStrategy,
+      startedAt: currentState.startedAt,
+      updatedTargetPaths: currentState.updatedTargetPaths,
+    }
+  } else {
+    return currentState
+  }
 }
 
 export function updateInteractionViaMouse(
@@ -197,6 +236,7 @@ export function updateInteractionViaMouse(
         modifiers: modifiers,
         globalTime: Date.now(),
         hasMouseMoved: true,
+        _accumulatedMovement: currentState.interactionData._accumulatedMovement,
       },
       activeControl: currentState.activeControl,
       sourceOfUpdate: sourceOfUpdate ?? currentState.activeControl,
@@ -284,6 +324,7 @@ export function updateInteractionViaKeyboard(
           modifiers: modifiers,
           globalTime: Date.now(),
           hasMouseMoved: currentState.interactionData.hasMouseMoved,
+          _accumulatedMovement: currentState.interactionData._accumulatedMovement,
         },
         activeControl: currentState.activeControl,
         sourceOfUpdate: currentState.activeControl,
@@ -407,6 +448,15 @@ export function keyboardCatcherControl(): KeyboardCatcherControl {
     type: 'KEYBOARD_CATCHER_CONTROL',
   }
 }
+export interface FlowSlider {
+  type: 'FLOW_SLIDER'
+}
+
+export function flowSlider(): FlowSlider {
+  return {
+    type: 'FLOW_SLIDER',
+  }
+}
 
 export type CanvasControlType =
   | BoundingArea
@@ -414,3 +464,4 @@ export type CanvasControlType =
   | FlexGapHandle
   | PaddingResizeHandle
   | KeyboardCatcherControl
+  | FlowSlider

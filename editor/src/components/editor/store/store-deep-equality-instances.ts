@@ -328,6 +328,8 @@ import {
   DragInteractionData,
   flexGapHandle,
   FlexGapHandle,
+  FlowSlider,
+  flowSlider,
   InputData,
   interactionSession,
   InteractionSession,
@@ -1576,7 +1578,7 @@ export const ModifiersKeepDeepEquality: KeepDeepEqualityCall<Modifiers> = combin
 )
 
 export const DragInteractionDataKeepDeepEquality: KeepDeepEqualityCall<DragInteractionData> =
-  combine7EqualityCalls(
+  combine8EqualityCalls(
     (data) => data.dragStart,
     CanvasPointKeepDeepEquality,
     (data) => data.drag,
@@ -1591,7 +1593,18 @@ export const DragInteractionDataKeepDeepEquality: KeepDeepEqualityCall<DragInter
     createCallWithTripleEquals(),
     (data) => data.hasMouseMoved,
     BooleanKeepDeepEquality,
-    (dragStart, drag, prevDrag, originalDragStart, modifiers, globalTime, hasMouseMoved) => {
+    (data) => data._accumulatedMovement,
+    CanvasPointKeepDeepEquality,
+    (
+      dragStart,
+      drag,
+      prevDrag,
+      originalDragStart,
+      modifiers,
+      globalTime,
+      hasMouseMoved,
+      accumulatedMovement,
+    ) => {
       return {
         type: 'DRAG',
         dragStart: dragStart,
@@ -1601,6 +1614,7 @@ export const DragInteractionDataKeepDeepEquality: KeepDeepEqualityCall<DragInter
         modifiers: modifiers,
         globalTime: globalTime,
         hasMouseMoved: hasMouseMoved,
+        _accumulatedMovement: accumulatedMovement,
       }
     },
   )
@@ -1689,6 +1703,15 @@ export const PaddingResizeHandleKeepDeepEquality: KeepDeepEqualityCall<PaddingRe
   return keepDeepEqualityResult(oldValue, true)
 }
 
+// This will break should the definition of `FlowSlider` change.
+flowSlider()
+export const FlowSliderKeepDeepEquality: KeepDeepEqualityCall<FlowSlider> = (
+  oldValue,
+  newValue,
+) => {
+  return keepDeepEqualityResult(oldValue, true)
+}
+
 export const CanvasControlTypeKeepDeepEquality: KeepDeepEqualityCall<CanvasControlType> = (
   oldValue,
   newValue,
@@ -1717,6 +1740,11 @@ export const CanvasControlTypeKeepDeepEquality: KeepDeepEqualityCall<CanvasContr
     case 'PADDING_RESIZE_HANDLE':
       if (newValue.type === oldValue.type) {
         return PaddingResizeHandleKeepDeepEquality(oldValue, newValue)
+      }
+      break
+    case 'FLOW_SLIDER':
+      if (newValue.type === oldValue.type) {
+        return FlowSliderKeepDeepEquality(oldValue, newValue)
       }
       break
     default:
