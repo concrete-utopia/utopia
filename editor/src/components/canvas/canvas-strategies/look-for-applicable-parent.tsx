@@ -15,7 +15,6 @@ import { ParentBounds } from '../controls/parent-bounds'
 import { ParentOutlines } from '../controls/parent-outlines'
 import { DragOutlineControl } from '../controls/select-mode/drag-outline-control'
 import {
-  getApplicableStrategies,
   getApplicableStrategiesOrderedByFitness,
   RegisteredCanvasStrategies,
 } from './canvas-strategies'
@@ -26,7 +25,7 @@ import {
   InteractionTarget,
   strategyApplicationResult,
 } from './canvas-strategy-types'
-import { InteractionSession, StrategyState } from './interaction-state'
+import { createEmptyStrategyState, InteractionSession, StrategyState } from './interaction-state'
 import { isFeatureEnabled } from '../../../utils/feature-switches'
 import { isZeroSizedElement } from '../controls/outline-utils'
 import { rectanglesEqual } from '../../../core/shared/math-utils'
@@ -151,8 +150,8 @@ export const lookForApplicableParentStrategy: CanvasStrategy = {
 }
 
 function* elementAncestry(path: ElementPath) {
-  let currentParentPath = path
-  const componentsInSubtree: Array<ElementPath> = [currentParentPath]
+  let currentParentPath = EP.parentPath(path)
+  const componentsInSubtree: Array<ElementPath> = [path, currentParentPath]
   while (!EP.isStoryboardChild(currentParentPath)) {
     yield {
       root: currentParentPath,
@@ -195,13 +194,12 @@ function lookForParentApplicableStrategy(
     ({ id }) => id !== 'LOOK_FOR_APPLICABLE_PARENT_ID',
   )
 
-  const applicableStrategies = getApplicableStrategies(
+  const applicableStrategies = getApplicableStrategiesOrderedByFitness(
     strategiesMinusTraverse,
     canvasState,
     interactionSession,
-    metadata,
-    allElementProps,
-  )
+    createEmptyStrategyState(metadata, allElementProps),
+  ).map((s) => s.strategy)
 
   if (
     !isParentFindingStrategyApplicable(
@@ -243,9 +241,11 @@ function isParentFindingStrategyApplicable(
   const parentContiguousFlexParent =
     isFeatureEnabled('Single child, contiguous parent: move parent') &&
     isParentContiguous(interactionTarget[0], metadata)
+
   const parentZeroSized =
     isFeatureEnabled('Single child, zero sized parent: move parent') &&
     isParentZeroSized(interactionTarget[0], metadata)
+
   return singletonAbsoluteMove || parentContiguousFlexParent || parentZeroSized
 }
 
@@ -262,17 +262,17 @@ function isApplicableTraverse(
   metadata: ElementInstanceMetadataMap,
   allElementProps: AllElementProps,
 ): ParentApplicableStrategyResult | null {
+  const strategyState = createEmptyStrategyState(metadata, allElementProps)
   if (
     canvasState.interactionTarget.type !== 'TARGET_PATHS' ||
     canvasState.interactionTarget.elements.length !== 1
   ) {
-    const applicableStrategies = getApplicableStrategies(
+    const applicableStrategies = getApplicableStrategiesOrderedByFitness(
       strategies,
       canvasState,
       interactionSession,
-      metadata,
-      allElementProps,
-    )
+      strategyState,
+    ).map((s) => s.strategy)
     return {
       strategies: applicableStrategies,
       effectiveTarget: pathsFromInteractionTarget(canvasState.interactionTarget),
@@ -284,13 +284,12 @@ function isApplicableTraverse(
     canvasState.interactionTarget.elements[0],
   )) {
     const patchedCanvasState = patchCanvasStateInteractionTargetPath(canvasState, [path])
-    const applicableStrategies = getApplicableStrategies(
+    const applicableStrategies = getApplicableStrategiesOrderedByFitness(
       strategies,
       patchedCanvasState,
       interactionSession,
-      metadata,
-      allElementProps,
-    )
+      strategyState,
+    ).map((s) => s.strategy)
 
     if (!isSingletonAbsoluteMove(applicableStrategies)) {
       return {
