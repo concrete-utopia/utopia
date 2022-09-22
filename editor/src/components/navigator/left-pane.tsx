@@ -781,49 +781,38 @@ const GithubPane = React.memo(() => {
       }}
       onFocus={onFocus}
     >
-      <UIRow style={{ paddingLeft: 8, paddingRight: 8 }}>
-        <Title>Github</Title>
-      </UIRow>
-      <UIGridRow padded variant='<--------auto-------->|--45px--|'>
-        {githubAuthenticated ? 'Authenticated With Github' : 'Not Authenticated With Github'}
-        <Button
-          spotlight
-          highlight
-          disabled={githubAuthenticated}
-          onMouseUp={triggerAuthentication}
-        >
-          Authenticate With Github
-        </Button>
-      </UIGridRow>
-      <div
-        style={{
-          height: 'initial',
-          minHeight: 34,
-          alignItems: 'flex-start',
-          paddingTop: 8,
-          paddingLeft: 8,
-          paddingRight: 8,
-          paddingBottom: 8,
-          whiteSpace: 'pre-wrap',
-          letterSpacing: 0.1,
-          lineHeight: '17px',
-          fontSize: '11px',
-        }}
-      >
-        You can import a new project from Github. It might take a few minutes, and will show up in a
-        new tab.
-      </div>
-      <UIGridRow padded variant='<--------auto-------->|--45px--|'>
-        <StringInput testId='importProject' value={githubRepoStr} onChange={onChange} />
-        <Button spotlight highlight disabled={parsedRepo == null} onMouseUp={onStartImport}>
-          Start
-        </Button>
-      </UIGridRow>
       <Section>
         <SectionTitleRow minimised={false} toggleMinimised={NO_OP}>
           <Title style={{ flexGrow: 1 }}>Github</Title>
         </SectionTitleRow>
         <SectionBodyArea minimised={false}>
+          <div
+            style={{
+              height: 'initial',
+              minHeight: 34,
+              alignItems: 'flex-start',
+              paddingTop: 8,
+              paddingLeft: 8,
+              paddingRight: 8,
+              paddingBottom: 8,
+              whiteSpace: 'pre-wrap',
+              letterSpacing: 0.1,
+              lineHeight: '17px',
+              fontSize: '11px',
+            }}
+          >
+            {githubAuthenticated ? 'Authenticated With Github' : 'Not Authenticated With Github'}
+          </div>
+          <UIGridRow padded variant='<--------auto-------->|--45px--|'>
+            <Button
+              spotlight
+              highlight
+              disabled={githubAuthenticated}
+              onMouseUp={triggerAuthentication}
+            >
+              Authenticate With Github
+            </Button>
+          </UIGridRow>
           <div
             style={{
               height: 'initial',
