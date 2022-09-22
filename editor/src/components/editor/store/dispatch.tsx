@@ -60,7 +60,6 @@ import { emptySet } from '../../../core/shared/set-utils'
 import { RegisteredCanvasStrategies } from '../../canvas/canvas-strategies/canvas-strategies'
 import { removePathsWithDeadUIDs } from '../../../core/shared/element-path'
 import { CanvasStrategy } from '../../canvas/canvas-strategies/canvas-strategy-types'
-import { last } from '../../../core/shared/array-utils'
 
 type DispatchResultFields = {
   nothingChanged: boolean
