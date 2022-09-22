@@ -337,6 +337,8 @@ import {
   KeyboardCatcherControl,
   KeyboardInteractionData,
   KeyState,
+  reparentTargetsToFilter,
+  ReparentTargetsToFilter,
   resizeHandle,
   ResizeHandle,
 } from '../../canvas/canvas-strategies/interaction-state'
@@ -1753,6 +1755,15 @@ export const ReparentTargetKeepDeepEquality: KeepDeepEqualityCall<ReparentTarget
     reparentTarget,
   )
 
+const ReparentTargetsToFilterKeepDeepEquality: KeepDeepEqualityCall<ReparentTargetsToFilter> =
+  combine2EqualityCalls(
+    (target) => target['use-strict-bounds'],
+    ReparentTargetKeepDeepEquality,
+    (target) => target['allow-missing-bounds'],
+    ReparentTargetKeepDeepEquality,
+    reparentTargetsToFilter,
+  )
+
 export const InteractionSessionKeepDeepEquality: KeepDeepEqualityCall<InteractionSession> =
   combine10EqualityCalls(
     (session) => session.interactionData,
@@ -1771,8 +1782,8 @@ export const InteractionSessionKeepDeepEquality: KeepDeepEqualityCall<Interactio
     createCallWithTripleEquals(),
     (session) => session.latestAllElementProps,
     createCallFromIntrospectiveKeepDeep(),
-    (session) => session.startingTargetParentToFilterOut,
-    nullableDeepEquality(ReparentTargetKeepDeepEquality),
+    (session) => session.startingTargetParentsToFilterOut,
+    nullableDeepEquality(ReparentTargetsToFilterKeepDeepEquality),
     (session) => session.updatedTargetPaths,
     objectDeepEquality(ElementPathKeepDeepEquality),
     interactionSession,

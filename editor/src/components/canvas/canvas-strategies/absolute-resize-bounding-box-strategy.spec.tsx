@@ -55,7 +55,7 @@ function multiselectResizeElements(
       ...interactionSessionWithoutMetadata,
       latestMetadata: {},
       latestAllElementProps: {},
-      startingTargetParentToFilterOut: null,
+      startingTargetParentsToFilterOut: null,
     },
     {
       currentStrategy: null as any, // the strategy does not use this

@@ -44,7 +44,7 @@ export function pressKeys(
     ),
     latestMetadata: metadata,
     latestAllElementProps: null as any,
-    startingTargetParentToFilterOut: null,
+    startingTargetParentsToFilterOut: null,
   }
 
   const strategyResult = strategy.apply(

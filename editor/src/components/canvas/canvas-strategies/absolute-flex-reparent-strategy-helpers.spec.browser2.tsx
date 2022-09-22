@@ -547,6 +547,7 @@ describe('Unified Reparent Fitness Function Tests', () => {
         >
           <div
             style={{
+              position: 'relative',
               backgroundColor: '#0091FFAA',
               width: 100,
               height: 100,
@@ -556,6 +557,7 @@ describe('Unified Reparent Fitness Function Tests', () => {
           />
           <div
             style={{
+              position: 'relative',
               backgroundColor: '#0091FFAA',
               width: 50,
               height: 50,
@@ -593,6 +595,7 @@ describe('Unified Reparent Fitness Function Tests', () => {
         >
           <div
             style={{
+              position: 'relative',
               backgroundColor: '#0091FFAA',
               width: 50,
               height: 50,
@@ -602,6 +605,7 @@ describe('Unified Reparent Fitness Function Tests', () => {
           />
           <div
             style={{
+              position: 'relative',
               backgroundColor: '#0091FFAA',
               width: 100,
               height: 100,
@@ -630,6 +634,7 @@ describe('Unified Reparent Fitness Function Tests', () => {
         >
           <div
             style={{
+              position: 'relative',
               backgroundColor: '#0091FFAA',
               width: 100,
               height: 100,
@@ -639,6 +644,7 @@ describe('Unified Reparent Fitness Function Tests', () => {
           />
           <div
             style={{
+              position: 'relative',
               backgroundColor: '#0091FFAA',
               width: 50,
               height: 50,
@@ -676,6 +682,7 @@ describe('Unified Reparent Fitness Function Tests', () => {
         >
           <div
             style={{
+              position: 'relative',
               backgroundColor: '#0091FFAA',
               width: 100,
               height: 100,
@@ -685,10 +692,10 @@ describe('Unified Reparent Fitness Function Tests', () => {
           >
             <div
               style={{
+                position: 'absolute',
                 backgroundColor: '#0091FFAA',
                 width: 50,
                 height: 50,
-                position: 'absolute',
                 left: 65,
                 top: 0,
               }}

@@ -1,4 +1,5 @@
 import * as React from 'react'
+import { mod } from '../../../../core/shared/math-utils'
 import { when } from '../../../../utils/react-conditionals'
 import { FlexRow, FlexColumn, useColorTheme, UtopiaStyles } from '../../../../uuiui'
 import { useEditorState } from '../../../editor/store/store-hook'
@@ -43,7 +44,10 @@ export const CanvasStrategyPicker = React.memo(() => {
         const activeStrategyIndex = otherPossibleStrategies.findIndex(
           ({ strategy }) => strategy.id === activeStrategy,
         )
-        const nextStrategyIndex = (activeStrategyIndex + 1) % otherPossibleStrategies.length
+
+        const newStrategyIndex = event.shiftKey ? activeStrategyIndex - 1 : activeStrategyIndex + 1
+
+        const nextStrategyIndex = mod(newStrategyIndex, otherPossibleStrategies.length)
         const nextStrategy = otherPossibleStrategies[nextStrategyIndex].strategy
 
         onTabPressed(nextStrategy)
