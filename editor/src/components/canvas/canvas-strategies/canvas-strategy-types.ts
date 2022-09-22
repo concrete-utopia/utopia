@@ -130,6 +130,7 @@ export type CanvasStrategyId =
   | 'LOOK_FOR_APPLICABLE_PARENT_ID'
   | 'DRAW_TO_INSERT'
   | 'FLEX_RESIZE_BASIC'
+  | 'SET_PADDING_STRATEGY'
 
 export interface CanvasStrategy {
   id: CanvasStrategyId // We'd need to do something to guarantee uniqueness here if using this for the commands' reason

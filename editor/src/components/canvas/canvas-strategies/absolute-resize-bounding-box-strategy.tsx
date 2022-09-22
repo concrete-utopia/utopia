@@ -70,11 +70,6 @@ export const absoluteResizeBoundingBoxStrategy: CanvasStrategy = {
       show: 'visible-except-when-other-strategy-is-active',
     },
     {
-      control: PaddingResizeControl,
-      key: 'padding-resize-control',
-      show: 'visible-except-when-other-strategy-is-active',
-    },
-    {
       control: ZeroSizeResizeControlWrapper,
       key: 'zero-size-resize-control',
       show: 'visible-except-when-other-strategy-is-active',
@@ -90,16 +85,14 @@ export const absoluteResizeBoundingBoxStrategy: CanvasStrategy = {
       sessionState.startingAllElementProps,
     ) &&
       interactionState.interactionData.type === 'DRAG' &&
-      (interactionState.activeControl.type === 'RESIZE_HANDLE' ||
-        interactionState.activeControl.type === 'PADDING_RESIZE_HANDLE')
+      interactionState.activeControl.type === 'RESIZE_HANDLE'
       ? 1
       : 0
   },
   apply: (canvasState, interactionState, sessionState) => {
     if (
       interactionState.interactionData.type === 'DRAG' &&
-      (interactionState.activeControl.type === 'RESIZE_HANDLE' ||
-        interactionState.activeControl.type === 'PADDING_RESIZE_HANDLE')
+      interactionState.activeControl.type === 'RESIZE_HANDLE'
     ) {
       const edgePosition = interactionState.activeControl.edgePosition
       const selectedElements = getTargetPathsFromInteractionTarget(canvasState.interactionTarget)

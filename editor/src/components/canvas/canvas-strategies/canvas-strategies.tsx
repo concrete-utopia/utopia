@@ -43,6 +43,7 @@ import { lookForApplicableParentStrategy } from './look-for-applicable-parent'
 import { drawToInsertStrategy } from './draw-to-insert-strategy'
 import { flexResizeBasicStrategy } from './flex-resize-basic-strategy'
 import { optionalMap } from '../../../core/shared/optional-utils'
+import { setPaddingStrategy } from './set-padding-strategy'
 
 export const RegisteredCanvasStrategies: Array<CanvasStrategy> = [
   absoluteMoveStrategy,
@@ -64,6 +65,7 @@ export const RegisteredCanvasStrategies: Array<CanvasStrategy> = [
   flowReorderSliderStategy,
   lookForApplicableParentStrategy,
   flexResizeBasicStrategy,
+  setPaddingStrategy,
 ]
 
 export function pickCanvasStateFromEditorState(
