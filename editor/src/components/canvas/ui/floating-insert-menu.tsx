@@ -6,6 +6,7 @@ import { CSSObject } from '@emotion/serialize'
 import WindowedSelect, {
   ActionMeta,
   InputActionMeta,
+  OptionProps,
   StylesConfig,
   ValueType,
 } from 'react-windowed-select'
@@ -59,6 +60,7 @@ import { ElementPath } from '../../../core/shared/project-file-types'
 import { safeIndex } from '../../../core/shared/array-utils'
 import { LayoutSystem } from 'utopia-api/core'
 import { MetadataUtils } from '../../../core/model/element-metadata-utils'
+import { optionalMap } from '../../../core/shared/optional-utils'
 
 type InsertMenuItemValue = InsertableComponent & {
   source: InsertableComponentGroupType | null
@@ -67,6 +69,7 @@ type InsertMenuItemValue = InsertableComponent & {
 
 type InsertMenuItem = {
   label: string
+  source: string | null
   value: InsertMenuItemValue
 }
 
@@ -88,6 +91,7 @@ function convertInsertableComponentsToFlatList(
           const source = index === 0 ? componentGroup.source : null
           return {
             label: insertableComponent.name,
+            source: optionalMap(getInsertableGroupLabel, source),
             value: {
               ...insertableComponent,
               key: `${getInsertableGroupLabel(componentGroup.source)}-${insertableComponent.name}`,
@@ -297,13 +301,7 @@ function useComponentSelectorStyles(): StylesConfig<InsertMenuItem, false> {
       groupHeading: (styles): CSSObject => {
         return {
           // ...styles,
-          color: colorTheme.fg7.value,
-          height: 25,
-          right: 12,
-          position: 'absolute',
-          display: 'flex',
-          alignItems: 'center',
-          pointerEvents: 'none',
+          display: 'none',
         }
       },
     }),
@@ -315,6 +313,48 @@ interface CheckboxRowProps {
   id: string
   checked: boolean
   onChange: (value: boolean) => void
+}
+
+const CustomOption = (props: OptionProps<InsertMenuItem, false>) => {
+  const { innerRef, innerProps, isDisabled, isFocused, label, data } = props
+  const colorTheme = useColorTheme()
+  return (
+    <div
+      ref={innerRef}
+      {...innerProps}
+      style={{
+        boxSizing: 'border-box',
+        height: UtopiaTheme.layout.rowHeight.smaller,
+        display: 'flex',
+        alignItems: 'center',
+        justifyContent: 'space-between',
+        paddingLeft: 4,
+        paddingRight: 4,
+        cursor: isDisabled ? 'not-allowed' : 'default',
+        color: isFocused ? colorTheme.inverted.fg0.value : colorTheme.fg0.value,
+        backgroundColor: isFocused ? colorTheme.primary.value : 'transparent',
+        borderRadius: UtopiaTheme.inputBorderRadius,
+      }}
+    >
+      <div style={{ paddingRight: 2 }}>{label}</div>
+      <div
+        style={{
+          color: colorTheme.fg7.value,
+          height: UtopiaTheme.layout.rowHeight.smaller,
+          right: 12,
+          display: 'flex',
+          alignItems: 'center',
+          pointerEvents: 'none',
+          overflow: 'hidden',
+        }}
+      >
+        <div style={{ overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
+          {data.source ?? ''}
+        </div>
+        <span style={{ minWidth: 0 }}></span>
+      </div>
+    </div>
+  )
 }
 
 const CheckboxRow = React.memo<React.PropsWithChildren<CheckboxRowProps>>(
@@ -587,6 +627,7 @@ export var FloatingMenu = React.memo(() => {
           placeholder='Search...'
           styles={componentSelectorStyles}
           tabSelectsValue={false}
+          components={{ Option: CustomOption }}
         />
         {showInsertionControls ? (
           <FlexColumn>

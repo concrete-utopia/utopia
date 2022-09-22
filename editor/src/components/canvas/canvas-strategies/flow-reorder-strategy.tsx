@@ -25,10 +25,9 @@ import {
   FlowReorderDragOutline,
 } from '../controls/flow-reorder-indicators'
 import { AllElementProps } from '../../editor/store/editor-state'
-import { isGeneratedElement } from './reparent-helpers'
 import { isReorderAllowed } from './reorder-utils'
 
-function isFlowReorderConversionApplicable(
+export function isFlowReorderConversionApplicable(
   canvasState: InteractionCanvasState,
   interactionSession: InteractionSession | null,
   metadata: ElementInstanceMetadataMap,
@@ -96,8 +95,7 @@ function flowReorderApplyCommon(
     const lastReorderIdx = strategyState.customStrategyState.lastReorderIdx ?? unpatchedIndex
 
     const { newIndex, newDisplayType, targetSiblingUnderMouse } = getFlowReorderIndex(
-      strategyState.startingMetadata,
-      interactionState.metadata,
+      interactionState.latestMetadata,
       rawPointOnCanvas,
       target,
       displayTypeFiltering,
@@ -112,32 +110,6 @@ function flowReorderApplyCommon(
     const newResultOrLastIndex =
       !mouseStillOverPreviousTargetSibling && newIndexFound ? newIndex : lastReorderIdx
 
-    // console.log(
-    //   'RESULT',
-    //   newIndex,
-    //   'prev',
-    //   lastReorderIdx,
-    //   'index to set',
-    //   newResultOrLastIndex,
-    //   'original',
-    //   unpatchedIndex,
-    // )
-
-    // if (newResultOrLastIndex === unpatchedIndex) {
-    //   return {
-    //     commands: [
-    //       setElementsToRerenderCommand(siblingsOfTarget),
-    //       updateHighlightedViews('mid-interaction', []),
-    //       setCursorCommand('mid-interaction', CSSCursor.Move),
-    //     ],
-    //     customState: {
-    //       ...strategyState.customStrategyState,
-    //       lastReorderIdx: newResultOrLastIndex,
-    //       success: 'success',
-    //     },
-    //   }
-    // } else {
-
     return strategyApplicationResult(
       [
         reorderElement('always', target, absolute(newResultOrLastIndex)),
@@ -151,17 +123,14 @@ function flowReorderApplyCommon(
         previousReorderTargetSiblingUnderMouse: targetSiblingUnderMouse,
       },
     )
-
-    // }
   } else {
-    // Fallback for when the checks above are not satisfied.
     return strategyApplicationResult([setCursorCommand('mid-interaction', CSSCursor.Move)])
   }
 }
 
-export const flowReorderAutoConversionStategy: CanvasStrategy = {
+export const flowReorderAutoConversionStrategy: CanvasStrategy = {
   id: 'FLOW_REORDER_AUTO_CONVERSION',
-  name: 'Reorder (Flow, Auto)',
+  name: () => 'Reorder (Flow, Auto)',
   isApplicable: isFlowReorderConversionApplicable,
   controlsToRender: [
     {
@@ -181,7 +150,7 @@ export const flowReorderAutoConversionStategy: CanvasStrategy = {
     },
   ], // Uses existing hooks in select-mode-hooks.tsx
   fitness: (canvasState, interactionState, strategyState) => {
-    return flowReorderAutoConversionStategy.isApplicable(
+    return flowReorderAutoConversionStrategy.isApplicable(
       canvasState,
       interactionState,
       strategyState.startingMetadata,
@@ -203,13 +172,13 @@ export const flowReorderAutoConversionStategy: CanvasStrategy = {
   },
 }
 
-export const flowReorderNoConversionStategy: CanvasStrategy = {
+export const flowReorderNoConversionStrategy: CanvasStrategy = {
   id: 'FLOW_REORDER_NO_CONVERSION',
-  name: 'Reorder (Flow)',
+  name: () => 'Reorder (Flow)',
   isApplicable: isFlowReorderConversionApplicable,
-  controlsToRender: flowReorderAutoConversionStategy.controlsToRender,
+  controlsToRender: flowReorderAutoConversionStrategy.controlsToRender,
   fitness: (canvasState, interactionState, strategyState) => {
-    return flowReorderNoConversionStategy.isApplicable(
+    return flowReorderNoConversionStrategy.isApplicable(
       canvasState,
       interactionState,
       strategyState.startingMetadata,
@@ -231,9 +200,9 @@ export const flowReorderNoConversionStategy: CanvasStrategy = {
   },
 }
 
-export const flowReorderSameTypeOnlyStategy: CanvasStrategy = {
+export const flowReorderSameTypeOnlyStrategy: CanvasStrategy = {
   id: 'FLOW_REORDER_SAME_TYPE_ONLY',
-  name: 'Reorder (Same)',
+  name: () => 'Reorder (Same)',
   isApplicable: (canvasState, interactionState, strategyState, allElementProps) => {
     return isFlowReorderConversionApplicable(
       canvasState,
@@ -244,7 +213,7 @@ export const flowReorderSameTypeOnlyStategy: CanvasStrategy = {
     )
   },
   controlsToRender: [
-    ...flowReorderAutoConversionStategy.controlsToRender,
+    ...flowReorderAutoConversionStrategy.controlsToRender,
     {
       control: FlowReorderAreaIndicator,
       key: 'flow-reorder-area-indicator',
@@ -252,7 +221,7 @@ export const flowReorderSameTypeOnlyStategy: CanvasStrategy = {
     },
   ],
   fitness: (canvasState, interactionState, strategyState) => {
-    return flowReorderSameTypeOnlyStategy.isApplicable(
+    return flowReorderSameTypeOnlyStrategy.isApplicable(
       canvasState,
       interactionState,
       strategyState.startingMetadata,

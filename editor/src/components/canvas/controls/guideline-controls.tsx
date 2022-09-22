@@ -1,7 +1,17 @@
 import React from 'react'
+import { Utils } from '../../../uuiui-deps'
 import { MetadataUtils } from '../../../core/model/element-metadata-utils'
-import { canvasRectangle, CanvasRectangle, rectanglesEqual } from '../../../core/shared/math-utils'
-import { useColorTheme } from '../../../uuiui'
+import {
+  canvasPoint,
+  CanvasPoint,
+  canvasRectangle,
+  CanvasRectangle,
+  canvasSegment,
+  CanvasSegment,
+  rectanglesEqual,
+  segmentIntersection,
+} from '../../../core/shared/math-utils'
+import { bold, useColorTheme } from '../../../uuiui'
 import { EditorStorePatched } from '../../editor/store/editor-state'
 import {
   useEditorState,
@@ -9,9 +19,13 @@ import {
   useSelectorWithCallback,
 } from '../../editor/store/store-hook'
 import { CanvasOffsetWrapper } from './canvas-offset-wrapper'
+import { Guideline } from '../guideline'
+import { mapDropNulls } from '../../../core/shared/array-utils'
+import { assertNever } from '../../../core/shared/utils'
 
 // STRATEGY GUIDELINE CONTROLS
 export const GuidelineControls = React.memo(() => {
+  const scale = useEditorState(scaleSelector, 'Guideline scale')
   const strategyMovedSuccessfully = useEditorState((store) => {
     return (
       store.editor.canvas.controls.strategyIntendedBounds.length > 0 &&
@@ -26,6 +40,28 @@ export const GuidelineControls = React.memo(() => {
     )
   }, 'GuidelineControls strategyMovedSuccessfully')
 
+  const { strategyIntendedBounds, snappingGuidelines } = useEditorState(
+    (store) => store.editor.canvas.controls,
+    'Strategy intended bounds and snapping guidelines',
+  )
+
+  const snappingGuidelinesPrefix = snappingGuidelines.slice(0, 4)
+  const intersectionPoints = mapDropNulls(
+    (guideline) => guidelineToSegment(guideline.guideline),
+    snappingGuidelines,
+  ).flatMap((segment) =>
+    strategyIntendedBounds.flatMap((bound) => segmentRectangleIntersections(segment, bound.frame)),
+  )
+
+  const pointsOfRelevance = snappingGuidelinesPrefix.flatMap(
+    (guideline) => guideline.pointsOfRelevance,
+  )
+
+  const xMarkPoints = Utils.deduplicateBy(
+    ({ x, y }) => `${x}${y}`,
+    [...pointsOfRelevance, ...intersectionPoints],
+  )
+
   if (!strategyMovedSuccessfully) {
     return null
   } else {
@@ -35,6 +71,9 @@ export const GuidelineControls = React.memo(() => {
         <GuidelineControl index={1} />
         <GuidelineControl index={2} />
         <GuidelineControl index={3} />
+        {xMarkPoints.map((point, idx) => (
+          <XMarkControl key={idx} point={point} scale={scale} index={idx} />
+        ))}
       </CanvasOffsetWrapper>
     )
   }
@@ -46,6 +85,7 @@ interface GuidelineProps {
 
 const LineWidth = 1
 const scaleSelector = (store: EditorStorePatched) => store.editor.canvas.scale
+
 const GuidelineControl = React.memo<GuidelineProps>((props) => {
   const colorTheme = useColorTheme()
   const scale = useEditorState(scaleSelector, 'Guideline scale')
@@ -153,3 +193,100 @@ function useGuideline<T = HTMLDivElement>(
   }, [innerCallback])
   return controlRef
 }
+
+function guidelineToSegment(guideline: Guideline): CanvasSegment | null {
+  switch (guideline.type) {
+    case 'XAxisGuideline': {
+      const a = canvasPoint({ x: guideline.x, y: guideline.yBottom })
+      const b = canvasPoint({ x: guideline.x, y: guideline.yTop })
+      return canvasSegment(a, b)
+    }
+    case 'YAxisGuideline': {
+      const a = canvasPoint({ x: guideline.xLeft, y: guideline.y })
+      const b = canvasPoint({ x: guideline.xRight, y: guideline.y })
+      return canvasSegment(a, b)
+    }
+    case 'CornerGuideline':
+      return null
+    default:
+      return assertNever(guideline)
+  }
+}
+
+function rectangleBoundingLines(rectangle: CanvasRectangle): CanvasSegment[] {
+  return [
+    canvasSegment(
+      canvasPoint({ x: rectangle.x, y: rectangle.y }),
+      canvasPoint({ x: rectangle.x, y: rectangle.y + rectangle.height }),
+    ),
+    canvasSegment(
+      canvasPoint({ x: rectangle.x, y: rectangle.y }),
+      canvasPoint({ x: rectangle.x + rectangle.width, y: rectangle.y }),
+    ),
+    canvasSegment(
+      canvasPoint({ x: rectangle.x + rectangle.width, y: rectangle.y }),
+      canvasPoint({ x: rectangle.x + rectangle.width, y: rectangle.y + rectangle.height }),
+    ),
+    canvasSegment(
+      canvasPoint({ x: rectangle.x, y: rectangle.y + rectangle.height }),
+      canvasPoint({ x: rectangle.x + rectangle.width, y: rectangle.y + rectangle.height }),
+    ),
+  ]
+}
+
+function segmentRectangleIntersections(
+  line: CanvasSegment,
+  rectangle: CanvasRectangle,
+): CanvasPoint[] {
+  const boundingLines = rectangleBoundingLines(rectangle)
+  const intersectionPoints = mapDropNulls(
+    (boundingLine) => segmentIntersection(line, boundingLine),
+    boundingLines,
+  )
+  return intersectionPoints
+}
+
+interface XMarkControlProps {
+  point: CanvasPoint
+  scale: number
+  index: number
+}
+
+const XMarkControlSize = 5
+
+const XMarkControl = React.memo<XMarkControlProps>(({ point, scale, index }) => {
+  const width = XMarkControlSize
+  const height = XMarkControlSize
+
+  return (
+    <div
+      data-testid={`xmark-${index}`}
+      style={{
+        position: 'absolute',
+        display: 'flex',
+        justifyContent: 'center',
+        alignItems: 'center',
+        left: point.x - width / 2,
+        top: point.y - height / 2,
+        width,
+        height,
+        transform: `scale(${1 / scale})`,
+      }}
+    >
+      <XMark />
+    </div>
+  )
+})
+
+const XMark = React.memo(() => (
+  <svg
+    width='5px'
+    height='5px'
+    viewBox='0 0 5.0 5.0'
+    version='1.1'
+    xmlns='http://www.w3.org/2000/svg'
+  >
+    <path d='M0.5,4.5 L4.5,0.5' stroke='#FF00aa' strokeWidth='0.66' fill='none' />
+    <path d='M0.5,0.5 L4.5,4.5' stroke='#FF00aa' strokeWidth='0.66' fill='none' />
+  </svg>
+))

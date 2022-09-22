@@ -21,6 +21,16 @@ export type Point<C extends CoordinateMarker> = PointInner & C
 export type RawPoint = RawModifier & PointInner
 export type WindowPoint = WindowModifier & PointInner
 export type CanvasPoint = CanvasModifier & PointInner
+export interface Segment<C extends CoordinateMarker> {
+  a: Point<C>
+  b: Point<C>
+}
+
+export type CanvasSegment = Segment<CanvasModifier>
+export function canvasSegment(a: CanvasPoint, b: CanvasPoint): CanvasSegment {
+  return { a: a, b: b }
+}
+
 export function canvasPoint(p: PointInner): CanvasPoint {
   return p as CanvasPoint
 }
@@ -977,4 +987,48 @@ export function canvasRectangleToLocalRectangle(
     width: canvasRect.width,
     height: canvasRect.height,
   })
+}
+
+// https://algs4.cs.princeton.edu/91primitives/
+function segmentsIntersect(a: CanvasSegment, b: CanvasSegment): boolean {
+  function counterClockwise(p1: CanvasPoint, p2: CanvasPoint, p3: CanvasPoint): number {
+    return (p2.y - p1.y) * (p3.x - p1.x) - (p3.y - p1.y) * (p2.x - p1.x)
+  }
+
+  if (counterClockwise(a.a, a.b, b.a) * counterClockwise(a.a, a.b, b.b) > 0) {
+    return false
+  }
+  if (counterClockwise(b.a, b.b, a.a) * counterClockwise(b.a, b.b, a.b) > 0) {
+    return false
+  }
+
+  return true
+}
+
+export function segmentIntersection(
+  leftSegment: CanvasSegment,
+  rightSegment: CanvasSegment,
+): CanvasPoint | null {
+  const pointOfIntersection = lineIntersection(
+    leftSegment.a,
+    leftSegment.b,
+    rightSegment.a,
+    rightSegment.b,
+  )
+  if (segmentsIntersect(leftSegment, rightSegment)) {
+    return pointOfIntersection
+  }
+  return null
+}
+
+/**
+ * https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Operators/Remainder#description
+ * This is the modulo function, be careful as % is the remainder operator.
+ * The main difference is when using negative n, for example "-1 % 4 = -1" but "mod(-1, 4) = 3"
+ * For two values of the same sign, the two are equivalent, but when the operands are of different signs,
+ * the modulo result always has the same sign as the divisor, while the remainder has the same sign as the dividend,
+ * which can make them differ by one unit of d.
+ */
+export function mod(n: number, m: number): number {
+  return ((n % m) + m) % m
 }

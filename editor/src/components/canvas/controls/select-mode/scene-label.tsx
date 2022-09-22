@@ -137,7 +137,7 @@ const SceneLabel = React.memo<SceneLabelProps>((props) => {
           createInteractionViaMouse(
             canvasPositions.canvasPositionRaw,
             Modifier.modifiersForEvent(event),
-            boundingArea(props.target),
+            boundingArea(),
           ),
         )
         dispatch([selectAction, dragAction], 'canvas')

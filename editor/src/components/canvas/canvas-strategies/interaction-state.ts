@@ -1,22 +1,22 @@
-import { setsEqual } from '../../../core/shared/set-utils'
-import { addAllUniquely, last } from '../../../core/shared/array-utils'
+import { last } from '../../../core/shared/array-utils'
 import { ElementInstanceMetadataMap } from '../../../core/shared/element-template'
 import {
   CanvasPoint,
   CanvasVector,
   offsetPoint,
   pointDifference,
+  roundPointTo,
   zeroCanvasPoint,
 } from '../../../core/shared/math-utils'
 import { ElementPath } from '../../../core/shared/project-file-types'
 import { KeyCharacter } from '../../../utils/keyboard'
-import { Modifier, Modifiers } from '../../../utils/modifiers'
+import { Modifiers } from '../../../utils/modifiers'
 import { AllElementProps, EditorStatePatch } from '../../editor/store/editor-state'
 import { EdgePosition } from '../canvas-types'
 import { MoveIntoDragThreshold } from '../canvas-utils'
 import { CanvasCommand } from '../commands/commands'
+import { ApplicableStrategy } from './canvas-strategies'
 import {
-  CanvasStrategy,
   CanvasStrategyId,
   CustomStrategyState,
   defaultCustomStrategyState,
@@ -32,6 +32,7 @@ export interface DragInteractionData {
   modifiers: Modifiers
   globalTime: number
   hasMouseMoved: boolean
+  _accumulatedMovement: CanvasVector
 }
 
 export interface KeyState {
@@ -58,21 +59,38 @@ export function isKeyboardInteractionData(
 
 export type UpdatedPathMap = { [oldPathString: string]: ElementPath }
 
+export interface ReparentTargetsToFilter {
+  'use-strict-bounds': ReparentTarget
+  'allow-missing-bounds': ReparentTarget
+}
+
+export type MissingBoundsHandling = 'use-strict-bounds' | 'allow-missing-bounds'
+
+export function reparentTargetsToFilter(
+  strictBoundsTarget: ReparentTarget,
+  missingBoundsTarget: ReparentTarget,
+): ReparentTargetsToFilter {
+  return {
+    'use-strict-bounds': strictBoundsTarget,
+    'allow-missing-bounds': missingBoundsTarget,
+  }
+}
+
 export interface InteractionSession {
   // This represents an actual interaction that has started as the result of a key press or a drag
   interactionData: InputData
   activeControl: CanvasControlType
   sourceOfUpdate: CanvasControlType
   lastInteractionTime: number
-  metadata: ElementInstanceMetadataMap
-  allElementProps: AllElementProps
+  latestMetadata: ElementInstanceMetadataMap
+  latestAllElementProps: AllElementProps
 
   // To track if the user selected a strategy
   userPreferredStrategy: CanvasStrategyId | null
 
   startedAt: number
 
-  startingTargetParentToFilterOut: ReparentTarget | null
+  startingTargetParentsToFilterOut: ReparentTargetsToFilter | null
   updatedTargetPaths: UpdatedPathMap
 }
 
@@ -85,7 +103,7 @@ export function interactionSession(
   userPreferredStrategy: CanvasStrategyId | null,
   startedAt: number,
   allElementProps: AllElementProps,
-  startingTargetParentToFilterOut: ReparentTarget | null,
+  startingTargetParentsToFilterOut: ReparentTargetsToFilter | null,
   updatedTargetPaths: UpdatedPathMap,
 ): InteractionSession {
   return {
@@ -93,18 +111,18 @@ export function interactionSession(
     activeControl: activeControl,
     sourceOfUpdate: sourceOfUpdate,
     lastInteractionTime: lastInteractionTime,
-    metadata: metadata,
+    latestMetadata: metadata,
     userPreferredStrategy: userPreferredStrategy,
     startedAt: startedAt,
-    allElementProps: allElementProps,
-    startingTargetParentToFilterOut: startingTargetParentToFilterOut,
+    latestAllElementProps: allElementProps,
+    startingTargetParentsToFilterOut: startingTargetParentsToFilterOut,
     updatedTargetPaths: updatedTargetPaths,
   }
 }
 
 export type InteractionSessionWithoutMetadata = Omit<
   InteractionSession,
-  'metadata' | 'allElementProps' | 'startingTargetParentToFilterOut'
+  'latestMetadata' | 'latestAllElementProps' | 'startingTargetParentsToFilterOut'
 >
 
 export interface CommandDescription {
@@ -121,7 +139,7 @@ export interface StrategyState {
   currentStrategyCommands: Array<CanvasCommand>
   accumulatedPatches: Array<EditorStatePatch>
   commandDescriptions: Array<CommandDescription>
-  sortedApplicableStrategies: Array<CanvasStrategy> | null
+  sortedApplicableStrategies: Array<ApplicableStrategy> | null
   status: StrategyApplicationStatus
 
   // Checkpointed metadata at the point at which a strategy change has occurred.
@@ -163,6 +181,7 @@ export function createInteractionViaMouse(
       modifiers: modifiers,
       globalTime: Date.now(),
       hasMouseMoved: false,
+      _accumulatedMovement: zeroCanvasPoint,
     },
     activeControl: activeControl,
     sourceOfUpdate: activeControl,
@@ -177,6 +196,42 @@ function dragExceededThreshold(drag: CanvasVector): boolean {
   const xDiff = Math.abs(drag.x)
   const yDiff = Math.abs(drag.y)
   return xDiff > MoveIntoDragThreshold || yDiff > MoveIntoDragThreshold
+}
+
+export function updateInteractionViaDragDelta(
+  currentState: InteractionSessionWithoutMetadata,
+  modifiers: Modifiers,
+  sourceOfUpdate: CanvasControlType | null, // If null it means the active control is the source
+  movement: CanvasVector,
+): InteractionSessionWithoutMetadata {
+  if (currentState.interactionData.type === 'DRAG') {
+    const accumulatedMovement = roundPointTo(
+      offsetPoint(currentState.interactionData._accumulatedMovement, movement),
+      0,
+    )
+    const dragThresholdPassed = dragExceededThreshold(accumulatedMovement)
+    return {
+      interactionData: {
+        type: 'DRAG',
+        dragStart: currentState.interactionData.dragStart,
+        drag: dragThresholdPassed ? accumulatedMovement : null,
+        prevDrag: currentState.interactionData.drag,
+        originalDragStart: currentState.interactionData.originalDragStart,
+        modifiers: modifiers,
+        globalTime: Date.now(),
+        hasMouseMoved: true,
+        _accumulatedMovement: accumulatedMovement,
+      },
+      activeControl: currentState.activeControl,
+      sourceOfUpdate: sourceOfUpdate ?? currentState.activeControl,
+      lastInteractionTime: Date.now(),
+      userPreferredStrategy: currentState.userPreferredStrategy,
+      startedAt: currentState.startedAt,
+      updatedTargetPaths: currentState.updatedTargetPaths,
+    }
+  } else {
+    return currentState
+  }
 }
 
 export function updateInteractionViaMouse(
@@ -198,6 +253,7 @@ export function updateInteractionViaMouse(
         modifiers: modifiers,
         globalTime: Date.now(),
         hasMouseMoved: true,
+        _accumulatedMovement: currentState.interactionData._accumulatedMovement,
       },
       activeControl: currentState.activeControl,
       sourceOfUpdate: sourceOfUpdate ?? currentState.activeControl,
@@ -285,6 +341,7 @@ export function updateInteractionViaKeyboard(
           modifiers: modifiers,
           globalTime: Date.now(),
           hasMouseMoved: currentState.interactionData.hasMouseMoved,
+          _accumulatedMovement: currentState.interactionData._accumulatedMovement,
         },
         activeControl: currentState.activeControl,
         sourceOfUpdate: currentState.activeControl,
@@ -357,13 +414,11 @@ export function hasDragModifiersChanged(
 
 export interface BoundingArea {
   type: 'BOUNDING_AREA'
-  target: ElementPath
 }
 
-export function boundingArea(target: ElementPath): BoundingArea {
+export function boundingArea(): BoundingArea {
   return {
     type: 'BOUNDING_AREA',
-    target: target,
   }
 }
 
@@ -398,5 +453,19 @@ export function keyboardCatcherControl(): KeyboardCatcherControl {
     type: 'KEYBOARD_CATCHER_CONTROL',
   }
 }
+export interface FlowSlider {
+  type: 'FLOW_SLIDER'
+}
 
-export type CanvasControlType = BoundingArea | ResizeHandle | FlexGapHandle | KeyboardCatcherControl
+export function flowSlider(): FlowSlider {
+  return {
+    type: 'FLOW_SLIDER',
+  }
+}
+
+export type CanvasControlType =
+  | BoundingArea
+  | ResizeHandle
+  | FlexGapHandle
+  | KeyboardCatcherControl
+  | FlowSlider

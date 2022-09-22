@@ -43,7 +43,7 @@ import * as PP from '../../../core/shared/property-path'
 import * as EP from '../../../core/shared/element-path'
 import CanvasActions from '../canvas-actions'
 import { InsertDragState, insertDragState } from '../canvas-types'
-import { GuidelineWithSnappingVector } from '../guideline'
+import { GuidelineWithSnappingVectorAndPointsOfRelevance } from '../guideline'
 import { ComponentLabelControl } from './component-area-control'
 import { GuidelineControl } from './guideline-control'
 import {
@@ -59,6 +59,9 @@ import { getStoryboardElementPath } from '../../../core/model/scene-utils'
 import { isSceneFromMetadata } from '../../../core/model/project-file-utils'
 import { stylePropPathMappingFn } from '../../inspector/common/property-path-hooks'
 import { cancelInsertModeActions } from '../../../components/editor/actions/meta-actions'
+import { createInteractionViaMouse } from '../canvas-strategies/interaction-state'
+import { emptyModifiers } from '../../../utils/modifiers'
+import { CanvasMousePositionRaw } from '../../../utils/global-positions'
 
 const DefaultWidth = 100
 const DefaultHeight = 100
@@ -72,7 +75,7 @@ interface InsertModeControlContainerProps extends ControlProps {
 }
 
 interface InsertModeControlContainerState {
-  guidelines: Array<GuidelineWithSnappingVector>
+  guidelines: Array<GuidelineWithSnappingVectorAndPointsOfRelevance>
   dragFrame: CanvasRectangle | null
   mousePoint: CanvasPoint | null
   aspectRatio: number | null
@@ -401,67 +404,20 @@ export class InsertModeControlContainer extends React.Component<
 
   onMouseDown = (e: MouseEvent) => {
     const mousePoint = this.props.windowToCanvasPosition(e).canvasPositionRounded
-    const snappedMousePoint = applySnappingToPoint(mousePoint, this.state.guidelines)
-    const updateDragStateAction = CanvasActions.createDragState(
-      insertDragState(
-        snappedMousePoint,
-        { x: 0, y: 0 } as CanvasVector,
-        this.props.componentMetadata,
-      ),
-    )
+
     const setFocusAction = setFocus('canvas')
     if (
       insertionSubjectIsJSXElement(this.props.mode.subject) &&
       !this.props.mode.insertionStarted
     ) {
-      const insertionSubject = this.props.mode.subject
-      const parent = safeIndex(this.props.highlightedViews, 0) ?? null
-      const staticParent = parent == null ? null : EP.dynamicPathToStaticPath(parent)
-      let { element } = this.props.mode.subject
-      if (parentIsFlex(this.props.highlightedViews[0], this.props.componentMetadata)) {
-        element = {
-          ...element,
-          props:
-            eitherToMaybe(
-              setJSXValueAtPath(
-                element.props,
-                stylePropPathMappingFn('position', ['style']),
-                jsxAttributeValue('relative', emptyComments),
-              ),
-            ) ?? element.props,
-        }
-      }
-      this.props.dispatch(
-        [
-          EditorActions.updateEditorMode(
-            EditorModes.insertMode(
-              true,
-              elementInsertionSubject(
-                insertionSubject.uid,
-                element,
-                insertionSubject.size,
-                insertionSubject.importsToAdd,
-                insertionParent(parent, staticParent),
-              ),
-            ),
-          ),
-          updateDragStateAction,
-          setFocusAction,
-        ],
-        'everyone',
+      const createInteractionSession = CanvasActions.createInteractionSession(
+        createInteractionViaMouse(mousePoint, emptyModifiers, {
+          type: 'RESIZE_HANDLE',
+          edgePosition: { x: 1, y: 1 },
+        }),
       )
-    } else {
-      this.props.dispatch(
-        [
-          EditorActions.updateEditorMode({
-            ...this.props.mode,
-            insertionStarted: true,
-          }),
-          updateDragStateAction,
-          setFocusAction,
-        ],
-        'everyone',
-      )
+
+      this.props.dispatch([createInteractionSession, setFocusAction], 'everyone')
     }
   }
 

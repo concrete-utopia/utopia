@@ -94,7 +94,12 @@ import {
   updateGlobalPositions,
 } from '../utils/global-positions'
 import { last, reverse } from '../core/shared/array-utils'
-import { updateInteractionViaMouse } from '../components/canvas/canvas-strategies/interaction-state'
+import {
+  reparentTargetsToFilter,
+  ReparentTargetsToFilter,
+  updateInteractionViaDragDelta,
+  updateInteractionViaMouse,
+} from '../components/canvas/canvas-strategies/interaction-state'
 import { MouseButtonsPressed } from '../utils/mouse'
 import { getReparentTargetUnified } from '../components/canvas/canvas-strategies/reparent-strategy-helpers'
 import { getDragTargets } from '../components/canvas/canvas-strategies/shared-absolute-move-strategy-helpers'
@@ -260,11 +265,26 @@ function on(
   canvasBounds: WindowRectangle | null,
 ): Array<EditorAction> {
   let additionalEvents: Array<EditorAction> = []
+
+  if (event.event === 'MOVE' && event.nativeEvent.buttons === 4) {
+    return [
+      CanvasActions.scrollCanvas(
+        canvasPoint({
+          x: -event.nativeEvent.movementX / canvas.scale,
+          y: -event.nativeEvent.movementY / canvas.scale,
+        }),
+      ),
+    ]
+  }
+
   if (canvas.keysPressed['space']) {
     if (event.event === 'MOVE' && event.nativeEvent.buttons === 1) {
       return [
         CanvasActions.scrollCanvas(
-          canvasPoint({ x: -event.nativeEvent.movementX, y: -event.nativeEvent.movementY }),
+          canvasPoint({
+            x: -event.nativeEvent.movementX / canvas.scale,
+            y: -event.nativeEvent.movementY / canvas.scale,
+          }),
         ),
       ]
     } else {
@@ -411,12 +431,12 @@ export function runLocalCanvasAction(
           dispatch([CanvasActions.updateDragInteractionData({ globalTime: Date.now() })])
         }, 200)
       }
-      const metadata = model.canvas.interactionSession?.metadata ?? model.jsxMetadata
+      const metadata = model.canvas.interactionSession?.latestMetadata ?? model.jsxMetadata
       const allElementProps =
-        model.canvas.interactionSession?.allElementProps ?? model.allElementProps
+        model.canvas.interactionSession?.latestAllElementProps ?? model.allElementProps
 
-      const startingTargetParentToFilterOut =
-        model.canvas.interactionSession?.startingTargetParentToFilterOut ??
+      const startingTargetParentsToFilterOut: ReparentTargetsToFilter | null =
+        model.canvas.interactionSession?.startingTargetParentsToFilterOut ??
         (() => {
           if (action.interactionSession.interactionData.type !== 'DRAG') {
             return null
@@ -425,14 +445,28 @@ export function runLocalCanvasAction(
             action.interactionSession.interactionData.originalDragStart,
             action.interactionSession.interactionData.drag ?? zeroCanvasPoint,
           )
-          return getReparentTargetUnified(
+
+          const strictBoundsResult = getReparentTargetUnified(
             getDragTargets(model.selectedViews),
             pointOnCanvas,
             action.interactionSession.interactionData.modifiers.cmd,
             pickCanvasStateFromEditorState(model, builtinDependencies),
             metadata,
             allElementProps,
+            'use-strict-bounds',
           )
+
+          const missingBoundsResult = getReparentTargetUnified(
+            getDragTargets(model.selectedViews),
+            pointOnCanvas,
+            action.interactionSession.interactionData.modifiers.cmd,
+            pickCanvasStateFromEditorState(model, builtinDependencies),
+            metadata,
+            allElementProps,
+            'allow-missing-bounds',
+          )
+
+          return reparentTargetsToFilter(strictBoundsResult, missingBoundsResult)
         })()
 
       return {
@@ -441,9 +475,9 @@ export function runLocalCanvasAction(
           ...model.canvas,
           interactionSession: {
             ...action.interactionSession,
-            metadata: metadata,
-            allElementProps: allElementProps,
-            startingTargetParentToFilterOut: startingTargetParentToFilterOut,
+            latestMetadata: metadata,
+            latestAllElementProps: allElementProps,
+            startingTargetParentsToFilterOut: startingTargetParentsToFilterOut,
           },
         },
       }
@@ -1161,6 +1195,9 @@ export class EditorCanvas extends React.Component<EditorCanvasProps> {
 
   handleMouseUp = (event: MouseEvent) => {
     if (this.canvasSelected()) {
+      if (document.pointerLockElement != null) {
+        document.exitPointerLock()
+      }
       const canvasPositions = this.getPosition(event)
       if (isDragging(this.props.editor)) {
         this.handleEvent({
@@ -1187,7 +1224,7 @@ export class EditorCanvas extends React.Component<EditorCanvasProps> {
   handleMouseMove = (event: MouseEvent) => {
     if (this.canvasSelected()) {
       const canvasPositions = this.getPosition(event)
-      if (this.props.model.keysPressed['space']) {
+      if (this.props.model.keysPressed['space'] || event.buttons === 4) {
         this.handleEvent({
           ...canvasPositions,
           event: 'MOVE',
@@ -1211,24 +1248,40 @@ export class EditorCanvas extends React.Component<EditorCanvasProps> {
           this.props.editor.canvas.interactionSession.interactionData.type === 'DRAG'
         ) {
           const dragStart = this.props.editor.canvas.interactionSession.interactionData.dragStart
-
           const newDrag = roundPointForScale(
             Utils.offsetPoint(canvasPositions.canvasPositionRounded, Utils.negate(dragStart)),
             this.props.model.scale,
           )
-          this.handleEvent({
-            ...canvasPositions,
-            event: 'MOVE',
-            modifiers: Modifier.modifiersForEvent(event),
-            cursor: null,
-            nativeEvent: event,
-            interactionSession: updateInteractionViaMouse(
-              this.props.editor.canvas.interactionSession,
-              newDrag,
-              Modifier.modifiersForEvent(event),
-              null,
-            ),
-          })
+
+          if (document.pointerLockElement != null) {
+            this.handleEvent({
+              ...canvasPositions,
+              event: 'MOVE',
+              modifiers: Modifier.modifiersForEvent(event),
+              cursor: null,
+              nativeEvent: event,
+              interactionSession: updateInteractionViaDragDelta(
+                this.props.editor.canvas.interactionSession,
+                Modifier.modifiersForEvent(event),
+                null,
+                canvasPoint({ x: event.movementX, y: event.movementY }),
+              ),
+            })
+          } else {
+            this.handleEvent({
+              ...canvasPositions,
+              event: 'MOVE',
+              modifiers: Modifier.modifiersForEvent(event),
+              cursor: null,
+              nativeEvent: event,
+              interactionSession: updateInteractionViaMouse(
+                this.props.editor.canvas.interactionSession,
+                newDrag,
+                Modifier.modifiersForEvent(event),
+                null,
+              ),
+            })
+          }
         } else if (dragState == null || !dragStarted) {
           this.handleEvent({
             ...canvasPositions,

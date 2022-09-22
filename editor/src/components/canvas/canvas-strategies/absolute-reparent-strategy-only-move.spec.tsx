@@ -56,9 +56,9 @@ function dragByPixels(
       null as any, // the strategy does not use this
       vector,
     ),
-    metadata: null as any, // the strategy does not use this
-    allElementProps: null as any, // the strategy does not use this
-    startingTargetParentToFilterOut: null,
+    latestMetadata: null as any, // the strategy does not use this
+    latestAllElementProps: null as any, // the strategy does not use this
+    startingTargetParentsToFilterOut: null,
   }
 
   const strategyResult = absoluteMoveStrategy.apply(

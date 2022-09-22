@@ -42,9 +42,9 @@ export function pressKeys(
       modifiers,
       null as any, // the strategy does not use this
     ),
-    metadata: metadata,
-    allElementProps: null as any,
-    startingTargetParentToFilterOut: null,
+    latestMetadata: metadata,
+    latestAllElementProps: null as any,
+    startingTargetParentsToFilterOut: null,
   }
 
   const strategyResult = strategy.apply(

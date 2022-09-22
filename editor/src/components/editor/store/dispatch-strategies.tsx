@@ -1,4 +1,5 @@
 import {
+  ApplicableStrategy,
   applyCanvasStrategy,
   findCanvasStrategy,
   pickCanvasStateFromEditorState,
@@ -51,8 +52,9 @@ export function interactionFinished(
 ): HandleStrategiesResult {
   const newEditorState = result.unpatchedEditor
   const withClearedSession = createEmptyStrategyState(
-    newEditorState.canvas.interactionSession?.metadata ?? newEditorState.jsxMetadata,
-    newEditorState.canvas.interactionSession?.allElementProps ?? newEditorState.allElementProps,
+    newEditorState.canvas.interactionSession?.latestMetadata ?? newEditorState.jsxMetadata,
+    newEditorState.canvas.interactionSession?.latestAllElementProps ??
+      newEditorState.allElementProps,
   )
   const canvasState: InteractionCanvasState = pickCanvasStateFromEditorState(
     newEditorState,
@@ -265,8 +267,9 @@ export function interactionStart(
 ): HandleStrategiesResult {
   const newEditorState = result.unpatchedEditor
   const withClearedSession = createEmptyStrategyState(
-    newEditorState.canvas.interactionSession?.metadata ?? newEditorState.jsxMetadata,
-    newEditorState.canvas.interactionSession?.allElementProps ?? newEditorState.allElementProps,
+    newEditorState.canvas.interactionSession?.latestMetadata ?? newEditorState.jsxMetadata,
+    newEditorState.canvas.interactionSession?.latestAllElementProps ??
+      newEditorState.allElementProps,
   )
   const canvasState: InteractionCanvasState = pickCanvasStateFromEditorState(
     newEditorState,
@@ -314,12 +317,12 @@ export function interactionStart(
         commandDescriptions: commandResult.commandDescriptions,
         sortedApplicableStrategies: sortedApplicableStrategies,
         status: strategyResult.status,
-        startingMetadata: newEditorState.canvas.interactionSession.metadata,
+        startingMetadata: newEditorState.canvas.interactionSession.latestMetadata,
         customStrategyState: patchCustomStrategyState(
           result.strategyState.customStrategyState,
           strategyResult.customStatePatch,
         ),
-        startingAllElementProps: newEditorState.canvas.interactionSession.allElementProps,
+        startingAllElementProps: newEditorState.canvas.interactionSession.latestAllElementProps,
       }
 
       return {
@@ -363,7 +366,7 @@ function handleUserChangedStrategy(
   strategyState: StrategyState,
   strategy: StrategyWithFitness | null,
   previousStrategy: StrategyWithFitness | null,
-  sortedApplicableStrategies: Array<CanvasStrategy>,
+  sortedApplicableStrategies: Array<ApplicableStrategy>,
 ): HandleStrategiesResult {
   const canvasState: InteractionCanvasState = pickCanvasStateFromEditorState(
     newEditorState,
@@ -378,7 +381,11 @@ function handleUserChangedStrategy(
         commands: [
           strategySwitched(
             'user-input',
-            strategy.strategy.name,
+            strategy.strategy.name(
+              canvasState,
+              newEditorState.canvas.interactionSession,
+              strategyState,
+            ),
             true,
             previousStrategy?.fitness ?? NaN,
             strategy.fitness,
@@ -438,7 +445,7 @@ function handleAccumulatingKeypresses(
   strategyState: StrategyState,
   strategy: StrategyWithFitness | null,
   previousStrategy: StrategyWithFitness | null,
-  sortedApplicableStrategies: Array<CanvasStrategy>,
+  sortedApplicableStrategies: Array<ApplicableStrategy>,
 ): HandleStrategiesResult {
   const canvasState: InteractionCanvasState = pickCanvasStateFromEditorState(
     newEditorState,
@@ -518,7 +525,7 @@ function handleUpdate(
   strategyState: StrategyState,
   strategy: StrategyWithFitness | null,
   previousStrategy: StrategyWithFitness | null,
-  sortedApplicableStrategies: Array<CanvasStrategy>,
+  sortedApplicableStrategies: Array<ApplicableStrategy>,
 ): HandleStrategiesResult {
   const canvasState: InteractionCanvasState = pickCanvasStateFromEditorState(
     newEditorState,
@@ -595,7 +602,8 @@ export function handleStrategies(
   const patchedEditorWithMetadata: EditorState = {
     ...patchedEditorState,
     jsxMetadata:
-      patchedEditorState.canvas.interactionSession?.metadata ?? patchedEditorState.jsxMetadata,
+      patchedEditorState.canvas.interactionSession?.latestMetadata ??
+      patchedEditorState.jsxMetadata,
   }
 
   if (MeasureDispatchTime) {
@@ -642,7 +650,7 @@ function injectNewMetadataToOldEditorState(
           ...oldEditorState.canvas,
           interactionSession: {
             ...oldEditorState.canvas.interactionSession,
-            metadata: newEditorState.canvas.interactionSession.metadata, // the fresh metadata from SAVE_DOM_REPORT
+            latestMetadata: newEditorState.canvas.interactionSession.latestMetadata, // the fresh metadata from SAVE_DOM_REPORT
           },
         },
       }

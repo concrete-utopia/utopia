@@ -1,20 +1,13 @@
-import { elementPath, parentPath } from '../../../core/shared/element-path'
+import { elementPath } from '../../../core/shared/element-path'
 import { ElementInstanceMetadataMap } from '../../../core/shared/element-template'
-import {
-  canvasPoint,
-  offsetPoint,
-  Rectangle,
-  SimpleRectangle,
-  WindowPoint,
-  windowPoint,
-} from '../../../core/shared/math-utils'
+import { canvasPoint, offsetPoint, WindowPoint, windowPoint } from '../../../core/shared/math-utils'
 import { cmdModifier, emptyModifiers, Modifiers } from '../../../utils/modifiers'
 import {
   findCanvasStrategy,
   pickCanvasStateFromEditorState,
   RegisteredCanvasStrategies,
 } from './canvas-strategies'
-import { InteractionSession, StrategyState } from './interaction-state'
+import { boundingArea, InteractionSession, StrategyState } from './interaction-state'
 import { createMouseInteractionForTests } from './interaction-state.test-utils'
 import { act, fireEvent } from '@testing-library/react'
 import {
@@ -25,8 +18,10 @@ import {
 import { selectComponents } from '../../editor/actions/action-creators'
 import CanvasActions from '../canvas-actions'
 import { AllElementProps } from '../../editor/store/editor-state'
-import { wait } from '../../../utils/utils.test-utils'
 import { CanvasControlsContainerID } from '../controls/new-canvas-controls'
+import { PrettierConfig } from 'utopia-vscode-common'
+import * as Prettier from 'prettier/standalone'
+import { forceNotNull } from '../../..//core/shared/optional-utils'
 
 const baseStrategyState = (
   metadata: ElementInstanceMetadataMap,
@@ -120,12 +115,12 @@ async function getGuidelineRenderResult(scale: number) {
     ...createMouseInteractionForTests(
       canvasPoint({ x: 60, y: 150 }),
       emptyModifiers,
-      { type: 'BOUNDING_AREA', target: targetElement },
+      boundingArea(),
       canvasPoint({ x: 10, y: 10 }),
     ),
-    metadata: renderResult.getEditorState().editor.jsxMetadata,
-    allElementProps: renderResult.getEditorState().editor.allElementProps,
-    startingTargetParentToFilterOut: null,
+    latestMetadata: renderResult.getEditorState().editor.jsxMetadata,
+    latestAllElementProps: renderResult.getEditorState().editor.allElementProps,
+    startingTargetParentsToFilterOut: null,
   }
 
   await act(async () => {
@@ -206,12 +201,12 @@ describe('Strategy Fitness', () => {
       ...createMouseInteractionForTests(
         canvasPoint({ x: 0, y: 0 }),
         emptyModifiers,
-        { type: 'BOUNDING_AREA', target: targetElement },
+        boundingArea(),
         canvasPoint({ x: 15, y: 15 }),
       ),
-      metadata: renderResult.getEditorState().editor.jsxMetadata,
-      allElementProps: renderResult.getEditorState().editor.allElementProps,
-      startingTargetParentToFilterOut: null,
+      latestMetadata: renderResult.getEditorState().editor.jsxMetadata,
+      latestAllElementProps: renderResult.getEditorState().editor.allElementProps,
+      startingTargetParentsToFilterOut: null,
     }
 
     const canvasStrategy = findCanvasStrategy(
@@ -258,12 +253,12 @@ describe('Strategy Fitness', () => {
       ...createMouseInteractionForTests(
         canvasPoint({ x: 0, y: 0 }),
         emptyModifiers,
-        { type: 'BOUNDING_AREA', target: targetElement },
+        boundingArea(),
         canvasPoint({ x: 15, y: 15 }),
       ),
-      metadata: renderResult.getEditorState().editor.jsxMetadata,
-      allElementProps: renderResult.getEditorState().editor.allElementProps,
-      startingTargetParentToFilterOut: null,
+      latestMetadata: renderResult.getEditorState().editor.jsxMetadata,
+      latestAllElementProps: renderResult.getEditorState().editor.allElementProps,
+      startingTargetParentsToFilterOut: null,
     }
 
     const canvasStrategy = findCanvasStrategy(
@@ -346,12 +341,12 @@ describe('Strategy Fitness', () => {
       ...createMouseInteractionForTests(
         canvasPoint({ x: 0, y: 0 }),
         cmdModifier,
-        { type: 'BOUNDING_AREA', target: targetElement },
+        boundingArea(),
         canvasPoint({ x: -15, y: -15 }),
       ),
-      metadata: renderResult.getEditorState().editor.jsxMetadata,
-      allElementProps: renderResult.getEditorState().editor.allElementProps,
-      startingTargetParentToFilterOut: null,
+      latestMetadata: renderResult.getEditorState().editor.jsxMetadata,
+      latestAllElementProps: renderResult.getEditorState().editor.allElementProps,
+      startingTargetParentsToFilterOut: null,
     }
 
     const canvasStrategy = findCanvasStrategy(
@@ -401,9 +396,9 @@ describe('Strategy Fitness', () => {
         { type: 'RESIZE_HANDLE', edgePosition: { x: 1, y: 0.5 } },
         canvasPoint({ x: -15, y: -15 }),
       ),
-      metadata: renderResult.getEditorState().editor.jsxMetadata,
-      allElementProps: renderResult.getEditorState().editor.allElementProps,
-      startingTargetParentToFilterOut: null,
+      latestMetadata: renderResult.getEditorState().editor.jsxMetadata,
+      latestAllElementProps: renderResult.getEditorState().editor.allElementProps,
+      startingTargetParentsToFilterOut: null,
     }
 
     const canvasStrategy = findCanvasStrategy(
@@ -453,9 +448,9 @@ describe('Strategy Fitness', () => {
         { type: 'RESIZE_HANDLE', edgePosition: { x: 1, y: 0.5 } },
         canvasPoint({ x: -15, y: -15 }),
       ),
-      metadata: renderResult.getEditorState().editor.jsxMetadata,
-      allElementProps: renderResult.getEditorState().editor.allElementProps,
-      startingTargetParentToFilterOut: null,
+      latestMetadata: renderResult.getEditorState().editor.jsxMetadata,
+      latestAllElementProps: renderResult.getEditorState().editor.allElementProps,
+      startingTargetParentsToFilterOut: null,
     }
 
     const canvasStrategy = findCanvasStrategy(
@@ -507,7 +502,6 @@ describe('Snapping guidelines for absolutely moved element', () => {
 
     expect(renderResult.getEditorState().editor.canvas.controls.snappingGuidelines).toEqual([
       {
-        activateSnap: true,
         guideline: {
           type: 'XAxisGuideline',
           x: 110.5,
@@ -518,9 +512,18 @@ describe('Snapping guidelines for absolutely moved element', () => {
           x: 0,
           y: 0,
         },
+        pointsOfRelevance: [
+          {
+            x: 110.5,
+            y: 206.5,
+          },
+          {
+            x: 110.5,
+            y: 215.5,
+          },
+        ],
       },
       {
-        activateSnap: true,
         guideline: {
           type: 'YAxisGuideline',
           xLeft: 60.5,
@@ -531,6 +534,16 @@ describe('Snapping guidelines for absolutely moved element', () => {
           x: 0,
           y: 0,
         },
+        pointsOfRelevance: [
+          {
+            x: 110.5,
+            y: 206.5,
+          },
+          {
+            x: 117.5,
+            y: 206.5,
+          },
+        ],
       },
     ])
   })
@@ -565,7 +578,6 @@ describe('Snapping guidelines for absolutely moved element', () => {
 
     expect(renderResult.getEditorState().editor.canvas.controls.snappingGuidelines).toEqual([
       {
-        activateSnap: true,
         guideline: {
           type: 'XAxisGuideline',
           x: 110.5,
@@ -576,9 +588,18 @@ describe('Snapping guidelines for absolutely moved element', () => {
           x: 0,
           y: 0,
         },
+        pointsOfRelevance: [
+          {
+            x: 110.5,
+            y: 206.5,
+          },
+          {
+            x: 110.5,
+            y: 215.5,
+          },
+        ],
       },
       {
-        activateSnap: true,
         guideline: {
           type: 'YAxisGuideline',
           xLeft: 60.5,
@@ -589,6 +610,16 @@ describe('Snapping guidelines for absolutely moved element', () => {
           x: 0,
           y: 0,
         },
+        pointsOfRelevance: [
+          {
+            x: 110.5,
+            y: 206.5,
+          },
+          {
+            x: 117.5,
+            y: 206.5,
+          },
+        ],
       },
     ])
   })
@@ -623,7 +654,6 @@ describe('Snapping guidelines for absolutely moved element', () => {
 
     expect(renderResult.getEditorState().editor.canvas.controls.snappingGuidelines).toEqual([
       {
-        activateSnap: true,
         guideline: {
           type: 'XAxisGuideline',
           x: 110,
@@ -634,9 +664,18 @@ describe('Snapping guidelines for absolutely moved element', () => {
           x: 0,
           y: 0,
         },
+        pointsOfRelevance: [
+          {
+            x: 110,
+            y: 206,
+          },
+          {
+            x: 110,
+            y: 216,
+          },
+        ],
       },
       {
-        activateSnap: true,
         guideline: {
           type: 'YAxisGuideline',
           xLeft: 60,
@@ -647,7 +686,223 @@ describe('Snapping guidelines for absolutely moved element', () => {
           x: 0,
           y: 0,
         },
+        pointsOfRelevance: [
+          {
+            x: 110,
+            y: 206,
+          },
+          {
+            x: 118,
+            y: 206,
+          },
+        ],
       },
     ])
+  })
+})
+
+const projectWithNonResizableElement = `
+import * as React from 'react'
+import { Scene, Storyboard } from 'utopia-api'
+
+export const ChildrenHider = (props) => {
+  return <div data-uid='33d' style={{ ...props.style }} />
+}
+
+export const Button = () => {
+  return (
+    <div
+      data-uid='buttondiv'
+      data-testid='buttondiv'
+      data-label='buttondiv'
+      style={{
+        width: 100,
+        height: 30,
+        backgroundColor: 'pink',
+      }}
+    >
+      BUTTON
+    </div>
+  )
+}
+
+const unmoveableColour = 'orange'
+
+export var storyboard = (
+  <Storyboard data-uid='storyboard'>
+    <Scene
+      style={{
+        backgroundColor: 'white',
+        position: 'absolute',
+        left: 0,
+        top: 0,
+        width: 400,
+        height: 700,
+      }}
+      data-uid='scene'
+    >
+      <div
+        style={{
+          backgroundColor: 'white',
+          position: 'absolute',
+          left: 0,
+          top: 0,
+          width: 400,
+          height: 500,
+        }}
+        data-uid='sceneroot'
+      >
+        <ChildrenHider
+          style={{
+            backgroundColor: 'teal',
+            position: 'absolute',
+            left: 150,
+            top: 200,
+            height: 50,
+            width: 50,
+          }}
+          data-uid='d75'
+        />
+        <div
+          style={{
+            backgroundColor: 'purple',
+            position: 'absolute',
+            left: 21,
+            top: 215.5,
+            width: 123,
+            height: 100,
+          }}
+          data-uid='seconddiv'
+          data-testid='seconddiv'
+          data-label='seconddiv'
+        />
+        <div
+          style={{
+            backgroundColor: unmoveableColour,
+            height: 65,
+            width: 66,
+            position: 'absolute',
+            left: 265,
+            top: 300,
+          }}
+          data-uid='notdrag'
+          data-testid='notdrag'
+          data-label='notdrag'
+        >
+          not drag
+        </div>
+        <div
+          style={{
+            backgroundColor: '#0091FFAA',
+            height: 111,
+            width: 140,
+            position: 'absolute',
+            left: 197,
+            top: 376,
+          }}
+          data-uid='dragme'
+          data-testid='dragme'
+          data-label='dragme'
+        >
+          <Button
+            data-uid='button'
+            data-testid='button'
+            data-label='button'
+          />
+        </div>
+      </div>
+      <div
+        style={{
+          backgroundColor: 'grey',
+          position: 'absolute',
+          display: 'flex',
+          left: 0,
+          top: 500,
+          width: 400,
+          height: 200,
+        }}
+        data-uid='parentsibling'
+        data-testid='parentsibling'
+        data-label='parentsibling'
+      >
+        <div
+          style={{
+            backgroundColor: 'teal',
+            position: 'relative',
+            width: 109,
+            height: 123,
+          }}
+          data-uid='firstdiv'
+          data-testid='firstdiv'
+          data-label='firstdiv'
+        />
+        <div
+          style={{
+            backgroundColor: 'green',
+            position: 'relative',
+            width: 118,
+            height: 123,
+          }}
+          data-uid='thirddiv'
+          data-testid='thirddiv'
+          data-label='thirddiv'
+        />
+      </div>
+    </Scene>
+  </Storyboard>
+)
+`
+
+describe('special case controls', () => {
+  it('non-resizable corner controls show for an element that is not resizable', async () => {
+    const targetElement = elementPath([['storyboard', 'scene', 'sceneroot', 'dragme', 'button']])
+
+    const renderResult = await renderTestEditorWithCode(
+      projectWithNonResizableElement,
+      'await-first-dom-report',
+    )
+
+    await act(async () => {
+      const dispatchDone = renderResult.getDispatchFollowUpActionsFinished()
+      await renderResult.dispatch([selectComponents([targetElement], false)], false)
+      await dispatchDone
+    })
+
+    async function checkResizableControl(
+      controlTestId: string,
+      expectedLeft: string,
+      expectedTop: string,
+    ): Promise<void> {
+      const nonResizableControl = await renderResult.renderedDOM.findByTestId(controlTestId)
+      const nonResizableControlParent = forceNotNull(
+        'Should be able to find the parent.',
+        nonResizableControl.parentElement,
+      )
+      expect(nonResizableControlParent.style.left).toEqual(expectedLeft)
+      expect(nonResizableControlParent.style.top).toEqual(expectedTop)
+    }
+
+    await checkResizableControl('non-resizable-0-0', '', '')
+    await checkResizableControl('non-resizable-1-0', '100px', '')
+    await checkResizableControl('non-resizable-0-1', '', '30px')
+    await checkResizableControl('non-resizable-1-1', '100px', '30px')
+  })
+
+  it('no non-resizable corner controls show for an element that is resizable', async () => {
+    const targetElement = elementPath([['storyboard', 'scene', 'sceneroot', 'dragme']])
+
+    const renderResult = await renderTestEditorWithCode(
+      projectWithNonResizableElement,
+      'await-first-dom-report',
+    )
+
+    await act(async () => {
+      const dispatchDone = renderResult.getDispatchFollowUpActionsFinished()
+      await renderResult.dispatch([selectComponents([targetElement], false)], false)
+      await dispatchDone
+    })
+
+    const nonResizableControl = renderResult.renderedDOM.queryByTestId('non-resizable-control')
+    expect(nonResizableControl).toEqual(null)
   })
 })

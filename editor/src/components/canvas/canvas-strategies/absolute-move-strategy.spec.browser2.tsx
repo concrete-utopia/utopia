@@ -12,7 +12,11 @@ import * as EP from '../../../core/shared/element-path'
 import { selectComponents } from '../../editor/actions/action-creators'
 import { CanvasControlsContainerID } from '../controls/new-canvas-controls'
 import CanvasActions from '../canvas-actions'
-import { createInteractionViaMouse, updateInteractionViaMouse } from './interaction-state'
+import {
+  boundingArea,
+  createInteractionViaMouse,
+  updateInteractionViaMouse,
+} from './interaction-state'
 import {
   canvasPoint,
   CanvasVector,
@@ -89,10 +93,11 @@ async function startDragUsingActions(
   dragDelta: CanvasVector,
 ) {
   await renderResult.dispatch([selectComponents([target], false)], true)
-  const startInteractionSession = createInteractionViaMouse(zeroCanvasPoint, emptyModifiers, {
-    type: 'BOUNDING_AREA',
-    target: target,
-  })
+  const startInteractionSession = createInteractionViaMouse(
+    zeroCanvasPoint,
+    emptyModifiers,
+    boundingArea(),
+  )
   await renderResult.dispatch(
     [CanvasActions.createInteractionSession(startInteractionSession)],
     false,
@@ -101,10 +106,12 @@ async function startDragUsingActions(
   await renderResult.dispatch(
     [
       CanvasActions.updateInteractionSession(
-        updateInteractionViaMouse(startInteractionSession, dragDelta, emptyModifiers, {
-          type: 'BOUNDING_AREA',
-          target: target,
-        }),
+        updateInteractionViaMouse(
+          startInteractionSession,
+          dragDelta,
+          emptyModifiers,
+          boundingArea(),
+        ),
       ),
     ],
     false,
@@ -200,6 +207,10 @@ export var ${BakedInStoryboardVariableName} = (props) => {
   )
 }
 `
+}
+
+function positioningFromCss(css: CSSStyleDeclaration) {
+  return { left: css.left, top: css.top }
 }
 
 describe('Absolute Move Strategy', () => {
@@ -887,6 +898,7 @@ describe('Absolute Move Strategy Canvas Controls', () => {
     const pinLineBottom = renderResult.renderedDOM.getByTestId('pin-line-bottom')
     expect(pinLineBottom).toBeDefined()
   })
+
   it('the snap guidelines are visible when an absolute positioned element(bbb) is dragged and snaps to its sibling (ccc)', async () => {
     const renderResult = await renderTestEditorWithCode(
       makeTestProjectCodeWithSnippet(`
@@ -912,5 +924,50 @@ describe('Absolute Move Strategy Canvas Controls', () => {
 
     expect(renderResult.renderedDOM.getByTestId('guideline-0').style.display).toEqual('block')
     expect(renderResult.renderedDOM.getByTestId('guideline-1').style.display).toEqual('block')
+  })
+
+  it('the xmarks are visible when the an absolute positioned element(bbb) is dragged and snaps to its sibling (ccc)', async () => {
+    const renderResult = await renderTestEditorWithCode(
+      makeTestProjectCodeWithSnippet(`
+          <div style={{ width: '100%', height: '100%' }} data-uid='aaa'>
+            <div
+              style={{ backgroundColor: '#0091FFAA', width: 70, height: 30 }}
+              data-uid='ccc'
+            />
+            <div
+              style={{ backgroundColor: '#0091FFAA', position: 'absolute', left: 40, top: 50, width: 200, height: 120 }}
+              data-uid='bbb'
+              data-testid='bbb'
+            />
+          </div>
+        `),
+      'await-first-dom-report',
+    )
+
+    const target = EP.appendNewElementPath(TestScenePath, ['aaa', 'bbb'])
+    const dragDelta = canvasPoint({ x: 29, y: -23 }) // 'bbb' will snap to bottom right corner of 'ccc'
+
+    await startDragUsingActions(renderResult, target, dragDelta)
+
+    expect(positioningFromCss(renderResult.renderedDOM.getByTestId('xmark-0').style)).toEqual({
+      left: '67.5px',
+      top: '-2.5px',
+    })
+    expect(positioningFromCss(renderResult.renderedDOM.getByTestId('xmark-1').style)).toEqual({
+      left: '67.5px',
+      top: '27.5px',
+    })
+    expect(positioningFromCss(renderResult.renderedDOM.getByTestId('xmark-2').style)).toEqual({
+      left: '-2.5px',
+      top: '27.5px',
+    })
+    expect(positioningFromCss(renderResult.renderedDOM.getByTestId('xmark-3').style)).toEqual({
+      left: '67.5px',
+      top: '147.5px',
+    })
+    expect(positioningFromCss(renderResult.renderedDOM.getByTestId('xmark-4').style)).toEqual({
+      left: '267.5px',
+      top: '27.5px',
+    })
   })
 })

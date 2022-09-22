@@ -92,9 +92,11 @@ function sanitizeEditor(editor: EditorState) {
       },
       interactionSession: {
         interactionData: editor.canvas.interactionSession?.interactionData,
-        metadata: simplifiedMetadataMap(editor.canvas.interactionSession?.metadata ?? {}) as any,
-        startingTargetParentToFilterOut:
-          editor.canvas.interactionSession?.startingTargetParentToFilterOut,
+        latestMetadata: simplifiedMetadataMap(
+          editor.canvas.interactionSession?.latestMetadata ?? {},
+        ) as any,
+        startingTargetParentsToFilterOut:
+          editor.canvas.interactionSession?.startingTargetParentsToFilterOut,
       },
     } as Partial<EditorState['canvas']>,
     jsxMetadata: simplifiedMetadataMap(editor.jsxMetadata) as any,

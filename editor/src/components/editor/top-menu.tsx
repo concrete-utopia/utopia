@@ -21,6 +21,7 @@ import { LeftPaneDefaultWidth, RightMenuTab, NavigatorWidthAtom } from './store/
 import { CanvasVector } from '../../core/shared/math-utils'
 import { AlwaysTrue, usePubSubAtomReadOnly } from '../../core/shared/atom-with-pub-sub'
 import { EditorModes } from './editor-modes'
+import { toString } from '../../core/shared/element-path'
 
 function useShouldResetCanvas(invalidateCount: number): [boolean, (value: boolean) => void] {
   const [shouldResetCanvas, setShouldResetCanvas] = React.useState(false)
@@ -210,6 +211,11 @@ const TopMenuRightControls = React.memo(() => {
 })
 
 export const TopMenu = React.memo(() => {
+  const selectedElementPathString = useEditorState(
+    (store) => Utils.optionalMap(toString, store.editor.selectedViews[0]) ?? 'empty',
+    'First selected view or default',
+  )
+
   return (
     <SimpleFlexRow
       style={{
@@ -222,7 +228,7 @@ export const TopMenu = React.memo(() => {
     >
       <TopMenuLeftControls />
       <FlexRow style={{ border: 1, flexGrow: 1 }}>
-        <FormulaBar style={{ flexGrow: 1 }} />
+        <FormulaBar key={selectedElementPathString} style={{ flexGrow: 1 }} />
       </FlexRow>
       <TopMenuRightControls />
     </SimpleFlexRow>

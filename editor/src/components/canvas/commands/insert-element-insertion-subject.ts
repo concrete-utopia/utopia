@@ -2,6 +2,7 @@ import { getUtopiaJSXComponentsFromSuccess } from '../../../core/model/project-f
 import { getStoryboardElementPath } from '../../../core/model/scene-utils'
 import * as EP from '../../../core/shared/element-path'
 import { optionalMap } from '../../../core/shared/optional-utils'
+import { ElementPath } from '../../../core/shared/project-file-types'
 import { mergeImports } from '../../../core/workers/common/project-file-utils'
 import { ElementInsertionSubject } from '../../editor/editor-modes'
 import {
@@ -33,6 +34,7 @@ export const runInsertElementInsertionSubject: CommandFunction<InsertElementInse
   command: InsertElementInsertionSubject,
 ) => {
   let editorStatePatches: Array<EditorStatePatch> = []
+  let selectedViews: Array<ElementPath> = []
   const { subject } = command
   const parent =
     subject.parent?.target == null
@@ -74,8 +76,17 @@ export const runInsertElementInsertionSubject: CommandFunction<InsertElementInse
           underlyingFilePath,
         ),
       )
+      selectedViews.push(EP.appendToPath(targetParent, subject.element.uid))
     },
   )
+
+  if (selectedViews.length > 0) {
+    editorStatePatches.push({
+      selectedViews: {
+        $set: selectedViews,
+      },
+    })
+  }
 
   return {
     editorStatePatches: editorStatePatches,

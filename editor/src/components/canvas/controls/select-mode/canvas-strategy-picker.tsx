@@ -1,4 +1,5 @@
 import * as React from 'react'
+import { mod } from '../../../../core/shared/math-utils'
 import { when } from '../../../../utils/react-conditionals'
 import { FlexRow, FlexColumn, useColorTheme, UtopiaStyles } from '../../../../uuiui'
 import { useEditorState } from '../../../editor/store/store-hook'
@@ -41,10 +42,13 @@ export const CanvasStrategyPicker = React.memo(() => {
         event.stopImmediatePropagation()
 
         const activeStrategyIndex = otherPossibleStrategies.findIndex(
-          (strategy: CanvasStrategy) => strategy.id === activeStrategy,
+          ({ strategy }) => strategy.id === activeStrategy,
         )
-        const nextStrategyIndex = (activeStrategyIndex + 1) % otherPossibleStrategies.length
-        const nextStrategy = otherPossibleStrategies[nextStrategyIndex]
+
+        const newStrategyIndex = event.shiftKey ? activeStrategyIndex - 1 : activeStrategyIndex + 1
+
+        const nextStrategyIndex = mod(newStrategyIndex, otherPossibleStrategies.length)
+        const nextStrategy = otherPossibleStrategies[nextStrategyIndex].strategy
 
         onTabPressed(nextStrategy)
       }
@@ -81,7 +85,7 @@ export const CanvasStrategyPicker = React.memo(() => {
               boxShadow: UtopiaStyles.popup.boxShadow,
             }}
           >
-            {otherPossibleStrategies?.map((strategy) => {
+            {otherPossibleStrategies?.map(({ strategy, name }) => {
               return (
                 <FlexRow
                   key={strategy.id}
@@ -95,7 +99,7 @@ export const CanvasStrategyPicker = React.memo(() => {
                     opacity: isStrategyFailure && strategy.id === activeStrategy ? 0.5 : 1,
                   }}
                 >
-                  {strategy.name}
+                  {name}
                 </FlexRow>
               )
             })}

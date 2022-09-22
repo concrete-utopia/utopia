@@ -53,9 +53,9 @@ function multiselectResizeElements(
     pickCanvasStateFromEditorState(initialEditor, createBuiltInDependenciesList(null)),
     {
       ...interactionSessionWithoutMetadata,
-      metadata: {},
-      allElementProps: {},
-      startingTargetParentToFilterOut: null,
+      latestMetadata: {},
+      latestAllElementProps: {},
+      startingTargetParentsToFilterOut: null,
     },
     {
       currentStrategy: null as any, // the strategy does not use this

@@ -170,6 +170,7 @@ import {
   jsxElementWithoutUID,
 } from '../../../core/shared/element-template'
 import {
+  canvasPoint,
   CanvasRectangle,
   CoordinateMarker,
   LocalPoint,
@@ -317,8 +318,8 @@ import {
   YAxisGuideline,
   cornerGuideline,
   Guideline,
-  GuidelineWithSnappingVector,
-  guidelineWithSnappingVector,
+  GuidelineWithSnappingVectorAndPointsOfRelevance,
+  guidelineWithSnappingVectorAndPointsOfRelevance,
 } from '../../canvas/guideline'
 import {
   boundingArea,
@@ -327,6 +328,8 @@ import {
   DragInteractionData,
   flexGapHandle,
   FlexGapHandle,
+  FlowSlider,
+  flowSlider,
   InputData,
   interactionSession,
   InteractionSession,
@@ -334,6 +337,8 @@ import {
   KeyboardCatcherControl,
   KeyboardInteractionData,
   KeyState,
+  reparentTargetsToFilter,
+  ReparentTargetsToFilter,
   resizeHandle,
   ResizeHandle,
 } from '../../canvas/canvas-strategies/interaction-state'
@@ -1525,19 +1530,21 @@ export const GuidelineKeepDeepEquality: KeepDeepEqualityCall<Guideline> = (oldVa
   return keepDeepEqualityResult(newValue, false)
 }
 
-export const GuidelineWithSnappingVectorKeepDeepEquality: KeepDeepEqualityCall<GuidelineWithSnappingVector> =
-  combine2EqualityCalls(
+export const GuidelineWithSnappingVectorAndPointsOfRelevanceKeepDeepEquality: KeepDeepEqualityCall<GuidelineWithSnappingVectorAndPointsOfRelevance> =
+  combine3EqualityCalls(
     (guideline) => guideline.guideline,
     GuidelineKeepDeepEquality,
     (guideline) => guideline.snappingVector,
     CanvasPointKeepDeepEquality,
-    guidelineWithSnappingVector,
+    (guideline) => guideline.pointsOfRelevance,
+    arrayDeepEquality(CanvasPointKeepDeepEquality),
+    guidelineWithSnappingVectorAndPointsOfRelevance,
   )
 
 export const EditorStateCanvasControlsKeepDeepEquality: KeepDeepEqualityCall<EditorStateCanvasControls> =
   combine6EqualityCalls(
     (controls) => controls.snappingGuidelines,
-    arrayDeepEquality(GuidelineWithSnappingVectorKeepDeepEquality),
+    arrayDeepEquality(GuidelineWithSnappingVectorAndPointsOfRelevanceKeepDeepEquality),
     (controls) => controls.outlineHighlights,
     arrayDeepEquality(CanvasRectangleKeepDeepEquality),
     (controls) => controls.strategyIntendedBounds,
@@ -1571,7 +1578,7 @@ export const ModifiersKeepDeepEquality: KeepDeepEqualityCall<Modifiers> = combin
 )
 
 export const DragInteractionDataKeepDeepEquality: KeepDeepEqualityCall<DragInteractionData> =
-  combine7EqualityCalls(
+  combine8EqualityCalls(
     (data) => data.dragStart,
     CanvasPointKeepDeepEquality,
     (data) => data.drag,
@@ -1586,7 +1593,18 @@ export const DragInteractionDataKeepDeepEquality: KeepDeepEqualityCall<DragInter
     createCallWithTripleEquals(),
     (data) => data.hasMouseMoved,
     BooleanKeepDeepEquality,
-    (dragStart, drag, prevDrag, originalDragStart, modifiers, globalTime, hasMouseMoved) => {
+    (data) => data._accumulatedMovement,
+    CanvasPointKeepDeepEquality,
+    (
+      dragStart,
+      drag,
+      prevDrag,
+      originalDragStart,
+      modifiers,
+      globalTime,
+      hasMouseMoved,
+      accumulatedMovement,
+    ) => {
       return {
         type: 'DRAG',
         dragStart: dragStart,
@@ -1596,6 +1614,7 @@ export const DragInteractionDataKeepDeepEquality: KeepDeepEqualityCall<DragInter
         modifiers: modifiers,
         globalTime: globalTime,
         hasMouseMoved: hasMouseMoved,
+        _accumulatedMovement: accumulatedMovement,
       }
     },
   )
@@ -1652,9 +1671,10 @@ export const EdgePositionKeepDeepEquality: KeepDeepEqualityCall<EdgePosition> =
     createCallWithTripleEquals(),
     edgePosition,
   )
-
-export const BoundingAreaKeepDeepEquality: KeepDeepEqualityCall<BoundingArea> =
-  combine1EqualityCall((area) => area.target, ElementPathKeepDeepEquality, boundingArea)
+boundingArea() // this is here to break if the definition of boundingArea changes
+export const BoundingAreaKeepDeepEquality: KeepDeepEqualityCall<BoundingArea> = (oldValue, _) => {
+  return keepDeepEqualityResult(oldValue, true)
+}
 
 export const ResizeHandleKeepDeepEquality: KeepDeepEqualityCall<ResizeHandle> =
   combine1EqualityCall((handle) => handle.edgePosition, EdgePositionKeepDeepEquality, resizeHandle)
@@ -1673,6 +1693,15 @@ keyboardCatcherControl()
 export const KeyboardCatcherControlKeepDeepEquality: KeepDeepEqualityCall<
   KeyboardCatcherControl
 > = (oldValue, newValue) => {
+  return keepDeepEqualityResult(oldValue, true)
+}
+
+// This will break should the definition of `FlowSlider` change.
+flowSlider()
+export const FlowSliderKeepDeepEquality: KeepDeepEqualityCall<FlowSlider> = (
+  oldValue,
+  newValue,
+) => {
   return keepDeepEqualityResult(oldValue, true)
 }
 
@@ -1701,6 +1730,11 @@ export const CanvasControlTypeKeepDeepEquality: KeepDeepEqualityCall<CanvasContr
         return KeyboardCatcherControlKeepDeepEquality(oldValue, newValue)
       }
       break
+    case 'FLOW_SLIDER':
+      if (newValue.type === oldValue.type) {
+        return FlowSliderKeepDeepEquality(oldValue, newValue)
+      }
+      break
     default:
       const _exhaustiveCheck: never = oldValue
       throw new Error(`Unhandled type ${JSON.stringify(oldValue)}`)
@@ -1721,6 +1755,15 @@ export const ReparentTargetKeepDeepEquality: KeepDeepEqualityCall<ReparentTarget
     reparentTarget,
   )
 
+const ReparentTargetsToFilterKeepDeepEquality: KeepDeepEqualityCall<ReparentTargetsToFilter> =
+  combine2EqualityCalls(
+    (target) => target['use-strict-bounds'],
+    ReparentTargetKeepDeepEquality,
+    (target) => target['allow-missing-bounds'],
+    ReparentTargetKeepDeepEquality,
+    reparentTargetsToFilter,
+  )
+
 export const InteractionSessionKeepDeepEquality: KeepDeepEqualityCall<InteractionSession> =
   combine10EqualityCalls(
     (session) => session.interactionData,
@@ -1731,16 +1774,16 @@ export const InteractionSessionKeepDeepEquality: KeepDeepEqualityCall<Interactio
     CanvasControlTypeKeepDeepEquality,
     (session) => session.lastInteractionTime,
     createCallWithTripleEquals(),
-    (session) => session.metadata,
+    (session) => session.latestMetadata,
     ElementInstanceMetadataMapKeepDeepEquality,
     (sesssion) => sesssion.userPreferredStrategy,
     nullableDeepEquality(createCallWithTripleEquals()),
     (session) => session.startedAt,
     createCallWithTripleEquals(),
-    (session) => session.allElementProps,
+    (session) => session.latestAllElementProps,
     createCallFromIntrospectiveKeepDeep(),
-    (session) => session.startingTargetParentToFilterOut,
-    nullableDeepEquality(ReparentTargetKeepDeepEquality),
+    (session) => session.startingTargetParentsToFilterOut,
+    nullableDeepEquality(ReparentTargetsToFilterKeepDeepEquality),
     (session) => session.updatedTargetPaths,
     objectDeepEquality(ElementPathKeepDeepEquality),
     interactionSession,

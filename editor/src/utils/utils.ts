@@ -920,6 +920,19 @@ export function isOptionsType<T extends OptionTypeBase>(
   return Array.isArray(value)
 }
 
+function deduplicateBy<T>(key: (t: T) => string, ts: Array<T>): Array<T> {
+  const seen = new Set<string>()
+  const results: Array<T> = []
+  for (const t of ts) {
+    const k = key(t)
+    if (!seen.has(k)) {
+      results.push(t)
+      seen.add(k)
+    }
+  }
+  return results
+}
+
 export default {
   generateUUID: generateUUID,
   assert: assert,
@@ -1080,4 +1093,5 @@ export default {
   processErrorWithSourceMap: processErrorWithSourceMap,
   findLastIndex: findLastIndex,
   timeLimitPromise: timeLimitPromise,
+  deduplicateBy: deduplicateBy,
 }

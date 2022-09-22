@@ -4,11 +4,11 @@ import { ParentOutlines } from '../controls/parent-outlines'
 import { DragOutlineControl } from '../controls/select-mode/drag-outline-control'
 import { FlexReparentTargetIndicator } from '../controls/select-mode/flex-reparent-target-indicator'
 import { CanvasStrategy, getTargetPathsFromInteractionTarget } from './canvas-strategy-types'
-import { applyFlexReparent, findReparentStrategy } from './reparent-strategy-helpers'
+import { applyFlexReparent, getFitnessForReparentStrategy } from './reparent-strategy-helpers'
 
 export const flexReparentToFlexStrategy: CanvasStrategy = {
   id: 'FLEX_REPARENT_TO_FLEX',
-  name: 'Reparent',
+  name: () => 'Reparent (Flex)',
   isApplicable: (canvasState, _interactionState, metadata) => {
     const selectedElements = getTargetPathsFromInteractionTarget(canvasState.interactionTarget)
     if (selectedElements.length == 1) {
@@ -43,16 +43,14 @@ export const flexReparentToFlexStrategy: CanvasStrategy = {
     },
   ],
   fitness: (canvasState, interactionState, strategyState) => {
-    // All 4 reparent strategies use the same fitness function findReparentStrategy
-    const reparentStrategy = findReparentStrategy(
+    // All 4 reparent strategies use the same fitness function getFitnessForReparentStrategy
+    return getFitnessForReparentStrategy(
+      'FLEX_REPARENT_TO_FLEX',
       canvasState,
       interactionState,
       strategyState,
-    ).strategy
-    if (reparentStrategy === 'FLEX_REPARENT_TO_FLEX') {
-      return 3
-    }
-    return 0
+      'use-strict-bounds',
+    )
   },
   apply: (canvasState, interactionSession, strategyState) => {
     return applyFlexReparent('do-not-strip-props', canvasState, interactionSession, strategyState)

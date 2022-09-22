@@ -12,7 +12,7 @@ import {
   ResizeDragState,
 } from '../canvas-types'
 import { collectGuidelines, getOriginalFrames, pickPointOnRect } from '../canvas-utils'
-import { GuidelineWithSnappingVector } from '../guideline'
+import { GuidelineWithSnappingVectorAndPointsOfRelevance } from '../guideline'
 import { GuidelineControl } from './guideline-control'
 import { ControlProps } from './new-canvas-controls'
 import { ResizeRectangle } from './size-box'
@@ -100,7 +100,7 @@ export class MultiselectResizeControl extends React.Component<
         }),
       )
       const draggedBoundingBox = Utils.boundingRectangleArray(draggedFrames)
-      let guidelines: GuidelineWithSnappingVector[] = []
+      let guidelines: GuidelineWithSnappingVectorAndPointsOfRelevance[] = []
 
       if (draggedBoundingBox != null) {
         const hideGuidelines = this.props.cmdKeyPressed

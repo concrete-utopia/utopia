@@ -7,7 +7,7 @@ import * as EP from '../../../core/shared/element-path'
 import { isFeatureEnabled, setFeatureEnabled } from '../../../utils/feature-switches'
 import { wait } from '../../../utils/utils.test-utils'
 import { selectComponents } from '../../editor/actions/action-creators'
-import { GuidelineWithSnappingVector } from '../guideline'
+import { GuidelineWithSnappingVectorAndPointsOfRelevance } from '../guideline'
 import { getPrintedUiJsCode, renderTestEditorWithCode } from '../ui-jsx.test-utils'
 import { KeyboardInteractionTimeout } from './interaction-state'
 
@@ -32,6 +32,7 @@ function configureSetupTeardown(): { clock: { current: SinonFakeTimers } } {
   let clock: { current: SinonFakeTimers } = { current: null as any } // it will be non-null thanks to beforeEach
   beforeEach(function () {
     setFeatureEnabled('Canvas Strategies', true)
+    // TODO there is something wrong with sinon fake timers here that remotely break other tests that come after these. If your new browser tests are broken, this may be the reason.
     clock.current = sinon.useFakeTimers({
       // the timers will tick so the editor is not totally broken, but we can fast-forward time at will
       // WARNING: the Sinon fake timers will advance in 20ms increments
@@ -79,7 +80,7 @@ describe('Keyboard Absolute Move E2E', () => {
       {
         guideline: { type: 'XAxisGuideline', x: 0, yTop: 0, yBottom: 812 },
         snappingVector: { x: 0, y: 0 },
-        activateSnap: true,
+        pointsOfRelevance: [],
       },
     ])
 
@@ -179,8 +180,8 @@ describe('Keyboard Absolute Resize E2E', () => {
     expectElementWidthOnScreen(2)
     expect(getCanvasGuidelines()).toEqual([
       {
-        activateSnap: true,
         guideline: { type: 'XAxisGuideline', x: 40, yBottom: 396, yTop: 300 },
+        pointsOfRelevance: [],
         snappingVector: { x: 0, y: 0 },
       },
     ])
@@ -429,7 +430,7 @@ async function setupTest(initialBBBProperties: { [key: string]: any }) {
       TestProjectDeluxeStallion(bbbProperties),
     )
   }
-  function getCanvasGuidelines(): Array<GuidelineWithSnappingVector> {
+  function getCanvasGuidelines(): Array<GuidelineWithSnappingVectorAndPointsOfRelevance> {
     return renderResult.getEditorState().editor.canvas.controls.snappingGuidelines
   }
   return {

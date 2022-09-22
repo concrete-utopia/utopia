@@ -528,7 +528,7 @@ import { uniqToasts } from './toast-helpers'
 import { NavigatorStateKeepDeepEquality } from '../../../utils/deep-equality-instances'
 import type { BuiltInDependencies } from '../../../core/es-modules/package-manager/built-in-dependencies-list'
 import { stylePropPathMappingFn } from '../../inspector/common/property-path-hooks'
-import { getEscapeHatchCommands } from '../../../components/canvas/canvas-strategies/escape-hatch-strategy'
+import { getEscapeHatchCommands } from '../../canvas/canvas-strategies/convert-to-absolute-and-move-strategy'
 import { pickCanvasStateFromEditorState } from '../../canvas/canvas-strategies/canvas-strategies'
 import { foldAndApplyCommandsSimple, runCanvasCommand } from '../../canvas/commands/commands'
 import { setElementsToRerenderCommand } from '../../canvas/commands/set-elements-to-rerender-command'
@@ -1045,6 +1045,7 @@ function restoreEditorState(currentEditor: EditorModel, history: StateHistory): 
       },
       collapsedViews: poppedEditor.navigator.collapsedViews,
       renamingTarget: null,
+      highlightedTargets: [],
     },
     topmenu: {
       formulaBarMode: poppedEditor.topmenu.formulaBarMode,
