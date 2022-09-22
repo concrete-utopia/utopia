@@ -247,7 +247,7 @@ export type Atomic = {
   actions: Array<EditorAction>
 }
 
-export type NewProject = {
+export interface NewProject {
   action: 'NEW'
   nodeModules: NodeModules
   packageResult: PackageStatusMap
