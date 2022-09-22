@@ -379,11 +379,11 @@ function isParentZeroSized(
 function isElementExplicitlySized(element: JSXElement): boolean {
   const width = getLayoutProperty('width', right(element.props), ['style'])
   const height = getLayoutProperty('height', right(element.props), ['style'])
-  if (isLeft(width) && isLeft(height)) {
+  if (isLeft(width) || isLeft(height)) {
     return false
   }
 
-  if (width.value == null && height.value == null) {
+  if (width.value == null || height.value == null) {
     return false
   }
 
