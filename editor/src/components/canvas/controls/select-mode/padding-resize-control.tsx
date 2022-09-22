@@ -11,7 +11,7 @@ import {
   createInteractionViaMouse,
   paddingResizeHandle,
 } from '../../canvas-strategies/interaction-state'
-import { CSSCursor, EdgePosition } from '../../canvas-types'
+import { CSSCursor, EdgePiece } from '../../canvas-types'
 import { windowToCanvasCoordinates } from '../../dom-lookup'
 import { useBoundingBox } from '../bounding-box-hooks'
 import { CanvasOffsetWrapper } from '../canvas-offset-wrapper'
@@ -24,7 +24,7 @@ interface ResizeContolProps {
   orientation: Orientation
   color: string
   cursor: CSSCursor
-  position: EdgePosition
+  edge: EdgePiece
 }
 
 const transformFromOrientation = (orientation: Orientation) => {
@@ -50,9 +50,9 @@ const PaddingResizeControlI = React.memo(
 
     const onEdgeMouseDown = React.useCallback(
       (event: React.MouseEvent<HTMLDivElement>) => {
-        startResizeInteraction(event, dispatch, props.position, canvasOffsetRef.current, scale)
+        startResizeInteraction(event, dispatch, props.edge, canvasOffsetRef.current, scale)
       },
-      [dispatch, props.position, canvasOffsetRef, scale],
+      [dispatch, props.edge, canvasOffsetRef, scale],
     )
 
     const onMouseMove = React.useCallback(
@@ -69,7 +69,7 @@ const PaddingResizeControlI = React.memo(
     return (
       <div
         ref={ref}
-        data-testid={`absolute-resizepadding-${props.position.x}-${props.position.y}`}
+        data-testid={`absolute-resizepadding-${props.edge}`}
         style={{
           position: 'absolute',
           display: 'flex',
@@ -144,28 +144,28 @@ export const PaddingResizeControl = React.memo(() => {
       >
         <PaddingResizeControlI
           ref={rightRef}
-          position={{ x: 1, y: 0.5 }}
+          edge={'right'}
           cursor={CSSCursor.ResizeEW}
           orientation='vertical'
           color={colorTheme.brandNeonPink.value}
         />
         <PaddingResizeControlI
           ref={bottomRef}
-          position={{ x: 0.5, y: 1 }}
+          edge={'bottom'}
           cursor={CSSCursor.ResizeNS}
           orientation='horizontal'
           color={colorTheme.brandNeonPink.value}
         />
         <PaddingResizeControlI
           ref={leftRef}
-          position={{ x: 0, y: 0.5 }}
+          edge={'left'}
           cursor={CSSCursor.ResizeEW}
           orientation='vertical'
           color={colorTheme.brandNeonPink.value}
         />
         <PaddingResizeControlI
           ref={topRef}
-          position={{ x: 0.5, y: 0 }}
+          edge={'top'}
           cursor={CSSCursor.ResizeNS}
           orientation='horizontal'
           color={colorTheme.brandNeonPink.value}
@@ -178,7 +178,7 @@ export const PaddingResizeControl = React.memo(() => {
 function startResizeInteraction(
   event: React.MouseEvent<HTMLDivElement>,
   dispatch: EditorDispatch,
-  position: EdgePosition,
+  edge: EdgePiece,
   canvasOffset: CanvasVector,
   scale: number,
 ) {
@@ -194,7 +194,7 @@ function startResizeInteraction(
         createInteractionViaMouse(
           canvasPositions.canvasPositionRaw,
           Modifier.modifiersForEvent(event),
-          paddingResizeHandle(position),
+          paddingResizeHandle(edge),
         ),
       ),
     ])

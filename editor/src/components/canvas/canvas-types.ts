@@ -745,6 +745,8 @@ export function oppositeEdgePositionPart(part: EdgePositionPart): EdgePositionPa
   }
 }
 
+export type EdgePiece = 'top' | 'bottom' | 'left' | 'right'
+
 export function oppositeEdgePosition(edgePos: EdgePosition): EdgePosition {
   return {
     x: oppositeEdgePositionPart(edgePos.x),

@@ -1,29 +1,16 @@
-import { isHorizontalPoint } from 'utopia-api/core'
-import { getLayoutProperty } from '../../../core/layout/getLayoutProperty'
-import { framePointForPinnedProp } from '../../../core/layout/layout-helpers-new'
 import { MetadataUtils } from '../../../core/model/element-metadata-utils'
-import { mapDropNulls } from '../../../core/shared/array-utils'
-import { isRight, right } from '../../../core/shared/either'
-import { JSXElement } from '../../../core/shared/element-template'
-import { CanvasRectangle, rectangleDifference, roundTo } from '../../../core/shared/math-utils'
-import { ElementPath } from '../../../core/shared/project-file-types'
+import { CanvasVector } from '../../../core/shared/math-utils'
+import { assertNever } from '../../../core/shared/utils'
 import { getElementFromProjectContents } from '../../editor/store/editor-state'
+import { CSSPadding } from '../../inspector/common/css-utils'
 import { stylePropPathMappingFn } from '../../inspector/common/property-path-hooks'
-import { EdgePosition } from '../canvas-types'
-import {
-  adjustCssLengthProperty,
-  AdjustCssLengthProperty,
-} from '../commands/adjust-css-length-command'
-import { setCssLengthProperty, SetCssLengthProperty } from '../commands/set-css-length-command'
+import { CSSCursor, EdgePiece } from '../canvas-types'
+import { adjustCssLengthProperty } from '../commands/adjust-css-length-command'
 import { setCursorCommand } from '../commands/set-cursor-command'
 import { setElementsToRerenderCommand } from '../commands/set-elements-to-rerender-command'
 import { updateHighlightedViews } from '../commands/update-highlighted-views-command'
 import { PaddingResizeControl } from '../controls/select-mode/padding-resize-control'
-import {
-  AbsolutePin,
-  ensureAtLeastTwoPinsForEdgePosition,
-  supportsAbsoluteResize,
-} from './absolute-resize-helpers'
+import { supportsAbsoluteResize } from './absolute-resize-helpers'
 import {
   CanvasStrategy,
   emptyStrategyApplicationResult,
@@ -31,7 +18,6 @@ import {
   strategyApplicationResult,
 } from './canvas-strategy-types'
 import { getDragTargets, getMultiselectBounds } from './shared-absolute-move-strategy-helpers'
-import { pickCursorFromEdgePosition } from './shared-absolute-resize-strategy-helpers'
 
 export const setPaddingStrategy: CanvasStrategy = {
   id: 'SET_PADDING_STRATEGY',
@@ -79,7 +65,7 @@ export const setPaddingStrategy: CanvasStrategy = {
       return emptyStrategyApplicationResult
     }
 
-    const edgePosition = interactionState.activeControl.edgePosition
+    const edgePiece = interactionState.activeControl.edgePiece
     const selectedElements = getTargetPathsFromInteractionTarget(canvasState.interactionTarget)
 
     if (interactionState.interactionData.drag == null) {
@@ -94,7 +80,7 @@ export const setPaddingStrategy: CanvasStrategy = {
 
     if (originalBoundingBox == null || filteredSelectedElements.length !== 1) {
       return strategyApplicationResult([
-        setCursorCommand('mid-interaction', pickCursorFromEdgePosition(edgePosition)),
+        setCursorCommand('mid-interaction', pickCursorFromEdge(edgePiece)),
         updateHighlightedViews('mid-interaction', []),
       ])
     }
@@ -116,16 +102,12 @@ export const setPaddingStrategy: CanvasStrategy = {
       return strategyApplicationResult([])
     }
 
-    const elementParentBounds =
-      MetadataUtils.findElementByElementPath(sessionState.startingMetadata, selectedElement)
-        ?.specialSizeMeasurements.immediateParentBounds ?? null
-
     const commandsForSelectedElements = [
       adjustCssLengthProperty(
         'always',
         selectedElement,
-        stylePropPathMappingFn('paddingTop', ['style']),
-        drag.y,
+        stylePropPathMappingFn(paddingCursorFromEdge(edgePiece), ['style']),
+        deltaFromEdge(drag, edgePiece),
         0,
         true,
       ),
@@ -134,67 +116,51 @@ export const setPaddingStrategy: CanvasStrategy = {
     return strategyApplicationResult([
       ...commandsForSelectedElements,
       updateHighlightedViews('mid-interaction', []),
-      setCursorCommand('mid-interaction', pickCursorFromEdgePosition(edgePosition)),
+      setCursorCommand('mid-interaction', pickCursorFromEdge(edgePiece)),
       setElementsToRerenderCommand(selectedElements),
     ])
   },
 }
 
-function createPaddingResizeCommandsFromFrame(
-  element: JSXElement,
-  selectedElement: ElementPath,
-  newFrame: CanvasRectangle,
-  originalFrame: CanvasRectangle,
-  elementParentBounds: CanvasRectangle | null,
-  edgePosition: EdgePosition,
-): (AdjustCssLengthProperty | SetCssLengthProperty)[] {
-  const pins: Array<AbsolutePin> = ensureAtLeastTwoPinsForEdgePosition(
-    right(element.props),
-    edgePosition,
-  )
-  return mapDropNulls((pin) => {
-    const horizontal = isHorizontalPoint(
-      // TODO avoid using the loaded FramePoint enum
-      framePointForPinnedProp(pin),
-    )
-    const value = getLayoutProperty(pin, right(element.props), ['style'])
-    const rectangleDiff = rectangleDifference(originalFrame, newFrame)
-    const delta = allPinsFromFrame(rectangleDiff)[pin]
-    const roundedDelta = roundTo(delta, 0)
-    const pinDirection = pin === 'right' || pin === 'bottom' ? -1 : 1
-    if (roundedDelta !== 0) {
-      if (isRight(value) && value.value != null) {
-        return adjustCssLengthProperty(
-          'always',
-          selectedElement,
-          stylePropPathMappingFn(pin, ['style']),
-          roundedDelta * pinDirection,
-          horizontal ? elementParentBounds?.width : elementParentBounds?.height,
-          true,
-        )
-      } else {
-        const valueToSet = allPinsFromFrame(newFrame)[pin]
-        return setCssLengthProperty(
-          'always',
-          selectedElement,
-          stylePropPathMappingFn(pin, ['style']),
-          roundTo(valueToSet, 0),
-          horizontal ? elementParentBounds?.width : elementParentBounds?.height,
-        )
-      }
-    } else {
-      return null
-    }
-  }, pins)
+function pickCursorFromEdge(edgePiece: EdgePiece): CSSCursor {
+  switch (edgePiece) {
+    case 'top':
+    case 'bottom':
+      return CSSCursor.ResizeNS
+    case 'left':
+    case 'right':
+      return CSSCursor.ResizeEW
+    default:
+      assertNever(edgePiece)
+  }
 }
 
-function allPinsFromFrame(frame: CanvasRectangle): { [key: string]: number } {
-  return {
-    left: frame.x,
-    top: frame.y,
-    width: frame.width,
-    height: frame.height,
-    right: frame.x + frame.width,
-    bottom: frame.y + frame.height,
+function paddingCursorFromEdge(edgePiece: EdgePiece): keyof CSSPadding {
+  switch (edgePiece) {
+    case 'top':
+      return 'paddingTop'
+    case 'bottom':
+      return 'paddingBottom'
+    case 'left':
+      return 'paddingLeft'
+    case 'right':
+      return 'paddingRight'
+    default:
+      assertNever(edgePiece)
+  }
+}
+
+function deltaFromEdge(delta: CanvasVector, edgePiece: EdgePiece): number {
+  switch (edgePiece) {
+    case 'top':
+      return delta.y
+    case 'bottom':
+      return -delta.y
+    case 'left':
+      return delta.x
+    case 'right':
+      return -delta.x
+    default:
+      assertNever(edgePiece)
   }
 }
