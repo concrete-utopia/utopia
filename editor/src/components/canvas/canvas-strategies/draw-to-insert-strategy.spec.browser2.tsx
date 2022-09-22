@@ -9,7 +9,6 @@ import {
   getPrintedUiJsCode,
 } from '../ui-jsx.test-utils'
 import { CanvasControlsContainerID } from '../controls/new-canvas-controls'
-import { wait } from '../../../utils/utils.test-utils'
 
 function slightlyOffsetWindowPointBecauseVeryWeirdIssue(point: {
   x: number
