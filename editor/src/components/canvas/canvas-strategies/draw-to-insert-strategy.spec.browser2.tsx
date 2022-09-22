@@ -510,8 +510,8 @@ describe('Inserting into flex row', () => {
             data-uid='ddd'
             style={{
               position: 'relative',
-              width: 20,
-              height: 300,
+              width: 100,
+              height: 100,
             }}
           />
           <div
@@ -1222,8 +1222,8 @@ describe('Inserting into flex column', () => {
             data-uid='ddd'
             style={{
               position: 'relative',
-              width: 300,
-              height: 20,
+              width: 100,
+              height: 100,
             }}
           />
           <div

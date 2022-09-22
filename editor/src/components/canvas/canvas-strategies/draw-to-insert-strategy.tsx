@@ -109,6 +109,7 @@ export const drawToInsertStrategy: CanvasStrategy = {
                 interactionState,
                 insertionSubject,
                 insertionCommand.frame,
+                lifecycle,
               )
             },
           )
@@ -124,6 +125,7 @@ export const drawToInsertStrategy: CanvasStrategy = {
                 commandLifecycle,
                 insertionSubject,
                 insertionCommand.frame,
+                lifecycle,
               )
             },
           )
@@ -154,6 +156,7 @@ export const drawToInsertStrategy: CanvasStrategy = {
                 interactionState,
                 insertionSubject,
                 insertionCommand.frame,
+                lifecycle,
               )
             },
           )
@@ -249,6 +252,7 @@ function runTargetStrategiesForFreshlyInsertedElementToReparent(
   interactionState: InteractionSession,
   insertionSubject: ElementInsertionSubject,
   frame: CanvasRectangle,
+  strategyLifecycle: 'mid-interaction' | 'end-interaction',
 ): Array<EditorStatePatch> {
   const canvasState = pickCanvasStateFromEditorState(editorState, builtInDependencies)
 
@@ -312,6 +316,7 @@ function runTargetStrategiesForFreshlyInsertedElementToReparent(
     patchedCanvasState,
     patchedInteractionState,
     patchedStrategyState,
+    strategyLifecycle,
   ).commands
 
   return foldAndApplyCommandsInner(editorState, [], [], reparentCommands, 'end-interaction') // TODO HACK-HACK 'end-interaction' is here so it is not just the reorder indicator which is rendered
@@ -326,6 +331,7 @@ function runTargetStrategiesForFreshlyInsertedElementToResize(
   commandLifecycle: 'mid-interaction' | 'end-interaction',
   insertionSubject: ElementInsertionSubject,
   frame: CanvasRectangle,
+  strategyLifecycle: 'mid-interaction' | 'end-interaction',
 ): Array<EditorStatePatch> {
   const canvasState = pickCanvasStateFromEditorState(editorState, builtInDependencies)
 
@@ -364,8 +370,12 @@ function runTargetStrategiesForFreshlyInsertedElementToResize(
 
   const resizeCommands =
     resizeStrategy != null
-      ? resizeStrategy.strategy.apply(patchedCanvasState, interactionState, patchedStrategyState)
-          .commands
+      ? resizeStrategy.strategy.apply(
+          patchedCanvasState,
+          interactionState,
+          patchedStrategyState,
+          strategyLifecycle,
+        ).commands
       : []
 
   return foldAndApplyCommandsInner(editorState, [], [], resizeCommands, commandLifecycle)

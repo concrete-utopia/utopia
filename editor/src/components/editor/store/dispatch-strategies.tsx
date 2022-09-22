@@ -155,6 +155,7 @@ export function interactionHardReset(
         canvasState,
         newEditorState.canvas.interactionSession,
         resetStrategyState,
+        'mid-interaction',
       )
       const commandResult = foldAndApplyCommands(
         newEditorState,
@@ -306,6 +307,7 @@ export function interactionStart(
         canvasState,
         newEditorState.canvas.interactionSession,
         withClearedSession,
+        'mid-interaction',
       )
       const commandResult = foldAndApplyCommands(
         newEditorState,
@@ -406,6 +408,7 @@ function handleUserChangedStrategy(
       canvasState,
       newEditorState.canvas.interactionSession,
       strategyState,
+      'mid-interaction',
     )
     const commandResult = foldAndApplyCommands(
       newEditorState,
@@ -485,6 +488,7 @@ function handleAccumulatingKeypresses(
               canvasState,
               updatedInteractionSession,
               strategyState,
+              'mid-interaction',
             )
           : strategyApplicationResult([])
       const commandResult = foldAndApplyCommands(
@@ -547,6 +551,7 @@ function handleUpdate(
             canvasState,
             newEditorState.canvas.interactionSession,
             strategyState,
+            'mid-interaction',
           )
         : strategyApplicationResult([])
     const commandResult = foldAndApplyCommands(

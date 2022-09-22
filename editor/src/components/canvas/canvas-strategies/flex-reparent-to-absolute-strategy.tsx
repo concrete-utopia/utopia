@@ -82,7 +82,7 @@ function getFlexReparentToAbsoluteStrategy(
         missingBoundsHandling,
       )
     },
-    apply: (canvasState, interactionState, strategyState) => {
+    apply: (canvasState, interactionState, strategyState, lifecycle) => {
       const selectedElements = getTargetPathsFromInteractionTarget(canvasState.interactionTarget)
       const filteredSelectedElements = getDragTargets(selectedElements)
       return ifAllowedToReparent(canvasState, strategyState, filteredSelectedElements, () => {
@@ -147,16 +147,20 @@ function getFlexReparentToAbsoluteStrategy(
         return strategyApplicationResult([
           ...placeholderCloneCommands,
           ...escapeHatchCommands,
-          updateFunctionCommand('always', (editorState, lifecycle): Array<EditorStatePatch> => {
-            return runAbsoluteReparentStrategyForFreshlyConvertedElement(
-              canvasState.builtInDependencies,
-              editorState,
-              strategyState,
-              interactionState,
-              lifecycle,
-              missingBoundsHandling,
-            )
-          }),
+          updateFunctionCommand(
+            'always',
+            (editorState, commandLifecycle): Array<EditorStatePatch> => {
+              return runAbsoluteReparentStrategyForFreshlyConvertedElement(
+                canvasState.builtInDependencies,
+                editorState,
+                strategyState,
+                interactionState,
+                commandLifecycle,
+                missingBoundsHandling,
+                lifecycle,
+              )
+            },
+          ),
         ])
       })
     },
@@ -170,6 +174,7 @@ function runAbsoluteReparentStrategyForFreshlyConvertedElement(
   interactionState: InteractionSession,
   commandLifecycle: 'mid-interaction' | 'end-interaction',
   missingBoundsHandling: MissingBoundsHandling,
+  strategyLifeCycle: 'mid-interaction' | 'end-interaction',
 ): Array<EditorStatePatch> {
   const canvasState = pickCanvasStateFromEditorState(editorState, builtInDependencies)
   const isForced = missingBoundsHandling === 'allow-missing-bounds'
@@ -181,6 +186,7 @@ function runAbsoluteReparentStrategyForFreshlyConvertedElement(
     canvasState,
     interactionState,
     strategyState,
+    strategyLifeCycle,
   ).commands
 
   return foldAndApplyCommandsInner(editorState, [], [], reparentCommands, commandLifecycle)

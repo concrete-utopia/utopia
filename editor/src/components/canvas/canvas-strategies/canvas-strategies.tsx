@@ -260,7 +260,7 @@ export function applyCanvasStrategy(
   canvasState: InteractionCanvasState,
   interactionSession: InteractionSession,
   strategyState: StrategyState,
-  lifecycle?: 'mid-interaction' | 'end-interaction',
+  lifecycle: 'mid-interaction' | 'end-interaction',
 ): StrategyApplicationResult {
   return strategy.apply(canvasState, interactionSession, strategyState, lifecycle)
 }

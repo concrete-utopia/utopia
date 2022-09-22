@@ -82,7 +82,7 @@ export const dragToInsertStrategy: CanvasStrategy = {
       ? 1
       : 0
   },
-  apply: (canvasState, interactionState, strategyState) => {
+  apply: (canvasState, interactionState, strategyState, lifecycle) => {
     const insertionSubjects = getInsertionSubjectsFromInteractionTarget(
       canvasState.interactionTarget,
     )
@@ -104,6 +104,7 @@ export const dragToInsertStrategy: CanvasStrategy = {
             interactionState,
             transient,
             insertionCommands,
+            lifecycle,
           )
         },
       )
@@ -196,6 +197,7 @@ function runTargetStrategiesForFreshlyInsertedElement(
   interactionState: InteractionSession,
   commandLifecycle: 'mid-interaction' | 'end-interaction',
   insertionSubjects: Array<{ command: InsertElementInsertionSubject; frame: CanvasRectangle }>,
+  strategyLifeCycle: 'mid-interaction' | 'end-interaction',
 ): Array<EditorStatePatch> {
   const canvasState = pickCanvasStateFromEditorState(editorState, builtInDependencies)
 
@@ -264,6 +266,7 @@ function runTargetStrategiesForFreshlyInsertedElement(
       patchedCanvasState,
       interactionState,
       patchedStrategyState,
+      strategyLifeCycle,
     ).commands
 
     return foldAndApplyCommandsInner(editorState, [], [], reparentCommands, commandLifecycle)

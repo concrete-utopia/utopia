@@ -103,7 +103,7 @@ export const lookForApplicableParentStrategy: CanvasStrategy = {
       : 0
   },
 
-  apply: (canvasState, interactionSession, strategyState) => {
+  apply: (canvasState, interactionSession, strategyState, lifecycle) => {
     const result = lookForParentApplicableStrategy(
       canvasState,
       interactionSession,
@@ -133,6 +133,7 @@ export const lookForApplicableParentStrategy: CanvasStrategy = {
       patchedCanvasState,
       interactionSession,
       strategyState,
+      lifecycle,
     )
 
     return strategyApplicationResult(
