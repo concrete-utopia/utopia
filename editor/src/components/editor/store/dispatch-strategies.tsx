@@ -12,7 +12,6 @@ import {
   interactionSessionHardReset,
   isKeyboardInteractionData,
   KeyboardInteractionData,
-  StrategyApplicationStatus,
   StrategyState,
 } from '../../canvas/canvas-strategies/interaction-state'
 import { foldAndApplyCommands } from '../../canvas/commands/commands'
@@ -37,11 +36,9 @@ import {
   CustomStrategyStatePatch,
   InteractionCanvasState,
   strategyApplicationResult,
-  StrategyApplicationResult,
 } from '../../canvas/canvas-strategies/canvas-strategy-types'
 import { isFeatureEnabled } from '../../../utils/feature-switches'
 import { PERFORMANCE_MARKS_ALLOWED } from '../../../common/env-vars'
-import { saveDOMReport } from '../actions/action-creators'
 import { last } from '../../../core/shared/array-utils'
 import { BuiltInDependencies } from '../../../core/es-modules/package-manager/built-in-dependencies-list'
 
@@ -75,7 +72,7 @@ export function interactionFinished(
     }
   } else {
     // Determine the new canvas strategy to run this time around.
-    const { strategy, sortedApplicableStrategies } = findCanvasStrategy(
+    const { strategy } = findCanvasStrategy(
       strategies,
       canvasState,
       interactionSession,

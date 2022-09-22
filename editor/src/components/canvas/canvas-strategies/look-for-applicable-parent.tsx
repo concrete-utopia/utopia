@@ -1,7 +1,7 @@
-import { JSXElement } from '../../../core/shared/element-template'
+import { isJSXElement, JSXElement } from '../../../core/shared/element-template'
 import { getLayoutProperty } from '../../../core/layout/getLayoutProperty'
 import { MetadataUtils } from '../../../core/model/element-metadata-utils'
-import { isLeft, right } from '../../../core/shared/either'
+import { foldEither, isLeft, right } from '../../../core/shared/either'
 import * as EP from '../../../core/shared/element-path'
 import { ElementInstanceMetadataMap } from '../../../core/shared/element-template'
 import { memoize } from '../../../core/shared/memoize'
@@ -15,7 +15,6 @@ import { ParentBounds } from '../controls/parent-bounds'
 import { ParentOutlines } from '../controls/parent-outlines'
 import { DragOutlineControl } from '../controls/select-mode/drag-outline-control'
 import {
-  getApplicableStrategies,
   getApplicableStrategiesOrderedByFitness,
   RegisteredCanvasStrategies,
 } from './canvas-strategies'
@@ -26,7 +25,10 @@ import {
   InteractionTarget,
   strategyApplicationResult,
 } from './canvas-strategy-types'
-import { InteractionSession, StrategyState } from './interaction-state'
+import { createEmptyStrategyState, InteractionSession, StrategyState } from './interaction-state'
+import { isFeatureEnabled } from '../../../utils/feature-switches'
+import { isZeroSizedElement } from '../controls/outline-utils'
+import { rectanglesEqual } from '../../../core/shared/math-utils'
 
 export const lookForApplicableParentStrategy: CanvasStrategy = {
   id: 'LOOK_FOR_APPLICABLE_PARENT_ID',
@@ -148,8 +150,8 @@ export const lookForApplicableParentStrategy: CanvasStrategy = {
 }
 
 function* elementAncestry(path: ElementPath) {
-  let currentParentPath = path
-  const componentsInSubtree: Array<ElementPath> = [currentParentPath]
+  let currentParentPath = EP.parentPath(path)
+  const componentsInSubtree: Array<ElementPath> = [path, currentParentPath]
   while (!EP.isStoryboardChild(currentParentPath)) {
     yield {
       root: currentParentPath,
@@ -192,13 +194,12 @@ function lookForParentApplicableStrategy(
     ({ id }) => id !== 'LOOK_FOR_APPLICABLE_PARENT_ID',
   )
 
-  const applicableStrategies = getApplicableStrategies(
+  const applicableStrategies = getApplicableStrategiesOrderedByFitness(
     strategiesMinusTraverse,
     canvasState,
     interactionSession,
-    metadata,
-    allElementProps,
-  )
+    createEmptyStrategyState(metadata, allElementProps),
+  ).map((s) => s.strategy)
 
   if (
     !isParentFindingStrategyApplicable(
@@ -237,8 +238,15 @@ function isParentFindingStrategyApplicable(
   }
 
   const singletonAbsoluteMove = isSingletonAbsoluteMove(applicableStrategies)
-  const parentContiguousFlexParent = isParentContiguousFlexParent(interactionTarget[0], metadata)
-  return singletonAbsoluteMove || parentContiguousFlexParent
+  const parentContiguousFlexParent =
+    isFeatureEnabled('Single child, contiguous parent: move parent') &&
+    isParentContiguous(interactionTarget[0], metadata)
+
+  const parentZeroSized =
+    isFeatureEnabled('Single child, zero sized parent: move parent') &&
+    isParentZeroSized(interactionTarget[0], metadata)
+
+  return singletonAbsoluteMove || parentContiguousFlexParent || parentZeroSized
 }
 
 interface ParentApplicableStrategyResult {
@@ -254,17 +262,17 @@ function isApplicableTraverse(
   metadata: ElementInstanceMetadataMap,
   allElementProps: AllElementProps,
 ): ParentApplicableStrategyResult | null {
+  const strategyState = createEmptyStrategyState(metadata, allElementProps)
   if (
     canvasState.interactionTarget.type !== 'TARGET_PATHS' ||
     canvasState.interactionTarget.elements.length !== 1
   ) {
-    const applicableStrategies = getApplicableStrategies(
+    const applicableStrategies = getApplicableStrategiesOrderedByFitness(
       strategies,
       canvasState,
       interactionSession,
-      metadata,
-      allElementProps,
-    )
+      strategyState,
+    ).map((s) => s.strategy)
     return {
       strategies: applicableStrategies,
       effectiveTarget: pathsFromInteractionTarget(canvasState.interactionTarget),
@@ -276,13 +284,12 @@ function isApplicableTraverse(
     canvasState.interactionTarget.elements[0],
   )) {
     const patchedCanvasState = patchCanvasStateInteractionTargetPath(canvasState, [path])
-    const applicableStrategies = getApplicableStrategies(
+    const applicableStrategies = getApplicableStrategiesOrderedByFitness(
       strategies,
       patchedCanvasState,
       interactionSession,
-      metadata,
-      allElementProps,
-    )
+      strategyState,
+    ).map((s) => s.strategy)
 
     if (!isSingletonAbsoluteMove(applicableStrategies)) {
       return {
@@ -323,46 +330,61 @@ function calcFittestStrategy(
 
 const isApplicableTraverseMemo = memoize(isApplicableTraverse)
 
-function isParentContiguousFlexParent(
+function isParentContiguous(
   elementPath: ElementPath,
   metadata: ElementInstanceMetadataMap,
 ): boolean {
-  const childElement = MetadataUtils.getJSXElementFromMetadata(metadata, elementPath)
+  const childElement = MetadataUtils.findElementByElementPath(metadata, elementPath)
   if (childElement == null) {
     return false
   }
 
   const parentPath = EP.parentPath(elementPath)
-  const parent = MetadataUtils.getJSXElementFromMetadata(metadata, parentPath)
+  const parent = MetadataUtils.findElementByElementPath(metadata, parentPath)
 
   if (parent == null || EP.isStoryboardChild(parentPath)) {
     return false
   }
 
-  return !isElementExplicitlySized(parent) || isChildFlexOne(childElement)
+  if (parent.globalFrame == null || childElement.globalFrame == null) {
+    return true
+  }
+
+  return rectanglesEqual(parent.globalFrame, childElement.globalFrame)
+}
+
+function isParentZeroSized(
+  elementPath: ElementPath,
+  metadata: ElementInstanceMetadataMap,
+): boolean {
+  const parentPath = EP.parentPath(elementPath)
+  const parent = MetadataUtils.findElementByElementPath(metadata, parentPath)
+  if (parent == null) {
+    return false
+  }
+
+  const parentExplicitlySized = foldEither(
+    (_) => false,
+    (e) => isJSXElement(e) && isElementExplicitlySized(e),
+    parent.element,
+  )
+  if (!parentExplicitlySized) {
+    return true
+  }
+
+  return parent.globalFrame != null && isZeroSizedElement(parent.globalFrame)
 }
 
 function isElementExplicitlySized(element: JSXElement): boolean {
   const width = getLayoutProperty('width', right(element.props), ['style'])
   const height = getLayoutProperty('height', right(element.props), ['style'])
-  if (isLeft(width) && isLeft(height)) {
+  if (isLeft(width) || isLeft(height)) {
     return false
   }
 
-  if (width.value == null && height.value == null) {
+  if (width.value == null || height.value == null) {
     return false
   }
 
   return true
-}
-
-function isChildFlexOne(element: JSXElement): boolean {
-  const flex = getLayoutProperty('flex', right(element.props), ['style'])
-  if (isLeft(flex) || flex.value == null) {
-    return false
-  }
-
-  const { flexBasis, flexGrow, flexShrink } = flex.value
-
-  return flexGrow === 1 && flexShrink === 1 && flexBasis.value === 0 && flexBasis.unit === '%'
 }
