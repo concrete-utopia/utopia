@@ -95,6 +95,8 @@ import {
 } from '../utils/global-positions'
 import { last, reverse } from '../core/shared/array-utils'
 import {
+  reparentTargetsToFilter,
+  ReparentTargetsToFilter,
   updateInteractionViaDragDelta,
   updateInteractionViaMouse,
 } from '../components/canvas/canvas-strategies/interaction-state'
@@ -433,8 +435,8 @@ export function runLocalCanvasAction(
       const allElementProps =
         model.canvas.interactionSession?.latestAllElementProps ?? model.allElementProps
 
-      const startingTargetParentToFilterOut =
-        model.canvas.interactionSession?.startingTargetParentToFilterOut ??
+      const startingTargetParentsToFilterOut: ReparentTargetsToFilter | null =
+        model.canvas.interactionSession?.startingTargetParentsToFilterOut ??
         (() => {
           if (action.interactionSession.interactionData.type !== 'DRAG') {
             return null
@@ -443,14 +445,28 @@ export function runLocalCanvasAction(
             action.interactionSession.interactionData.originalDragStart,
             action.interactionSession.interactionData.drag ?? zeroCanvasPoint,
           )
-          return getReparentTargetUnified(
+
+          const strictBoundsResult = getReparentTargetUnified(
             getDragTargets(model.selectedViews),
             pointOnCanvas,
             action.interactionSession.interactionData.modifiers.cmd,
             pickCanvasStateFromEditorState(model, builtinDependencies),
             metadata,
             allElementProps,
+            'use-strict-bounds',
           )
+
+          const missingBoundsResult = getReparentTargetUnified(
+            getDragTargets(model.selectedViews),
+            pointOnCanvas,
+            action.interactionSession.interactionData.modifiers.cmd,
+            pickCanvasStateFromEditorState(model, builtinDependencies),
+            metadata,
+            allElementProps,
+            'allow-missing-bounds',
+          )
+
+          return reparentTargetsToFilter(strictBoundsResult, missingBoundsResult)
         })()
 
       return {
@@ -461,7 +477,7 @@ export function runLocalCanvasAction(
             ...action.interactionSession,
             latestMetadata: metadata,
             latestAllElementProps: allElementProps,
-            startingTargetParentToFilterOut: startingTargetParentToFilterOut,
+            startingTargetParentsToFilterOut: startingTargetParentsToFilterOut,
           },
         },
       }

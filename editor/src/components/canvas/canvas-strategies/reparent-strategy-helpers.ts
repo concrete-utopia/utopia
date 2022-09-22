@@ -43,7 +43,12 @@ import {
   InteractionCanvasState,
   StrategyApplicationResult,
 } from './canvas-strategy-types'
-import { InteractionSession, StrategyState } from './interaction-state'
+import {
+  InteractionSession,
+  MissingBoundsHandling,
+  ReparentTargetsToFilter,
+  StrategyState,
+} from './interaction-state'
 import { ifAllowedToReparent } from './reparent-helpers'
 import { getReparentOutcome, pathToReparent } from './reparent-utils'
 import { getDragTargets } from './shared-absolute-move-strategy-helpers'
@@ -66,6 +71,7 @@ import {
   SimpleFlexDirection,
 } from '../../../core/layout/layout-utils'
 import { forceNotNull } from '../../../core/shared/optional-utils'
+import { assertNever } from '../../../core/shared/utils'
 
 export type ReparentStrategy =
   | 'FLEX_REPARENT_TO_ABSOLUTE'
@@ -74,7 +80,7 @@ export type ReparentStrategy =
   | 'ABSOLUTE_REPARENT_TO_FLEX'
 
 export type FindReparentStrategyResult =
-  | { strategy: ReparentStrategy; newParent: ElementPath }
+  | { strategy: ReparentStrategy; newParent: ElementPath; forcingRequired: boolean }
   | { strategy: 'do-not-reparent' }
 
 export function reparentStrategyForParent(
@@ -98,32 +104,97 @@ export function reparentStrategyForParent(
   const newParentMetadata = MetadataUtils.findElementByElementPath(targetMetadata, newParent)
   const parentIsFlexLayout = MetadataUtils.isFlexLayoutedContainer(newParentMetadata)
 
-  // TODO Below we default to absolute reparenting, even if the target doesn't provide bounds. We
-  // should evaluate this behaviour, and consider requiring a modifier key to enable absolute reparenting
-  // in those cases if this becomes too easy to accidentally trigger in the absense of other reparenting
-  // options
+  const parentProvidesBoundsForAbsoluteChildren =
+    newParentMetadata?.specialSizeMeasurements.providesBoundsForAbsoluteChildren ?? false
+
+  const parentIsStoryboard = EP.isStoryboardPath(newParent)
+  const isAbsoluteFriendlyParent = parentProvidesBoundsForAbsoluteChildren || parentIsStoryboard
+  const forcingRequiredForAbsoluteReparent = !isAbsoluteFriendlyParent
+
   if (allDraggedElementsAbsolute) {
     if (parentIsFlexLayout) {
-      return { strategy: 'ABSOLUTE_REPARENT_TO_FLEX', newParent: newParent }
+      return { strategy: 'ABSOLUTE_REPARENT_TO_FLEX', newParent: newParent, forcingRequired: false }
     } else {
-      return { strategy: 'ABSOLUTE_REPARENT_TO_ABSOLUTE', newParent: newParent }
+      return {
+        strategy: 'ABSOLUTE_REPARENT_TO_ABSOLUTE',
+        newParent: newParent,
+        forcingRequired: forcingRequiredForAbsoluteReparent,
+      }
     }
   }
   if (allDraggedElementsFlex) {
     if (parentIsFlexLayout) {
-      return { strategy: 'FLEX_REPARENT_TO_FLEX', newParent: newParent }
+      return { strategy: 'FLEX_REPARENT_TO_FLEX', newParent: newParent, forcingRequired: false }
     } else {
-      return { strategy: 'FLEX_REPARENT_TO_ABSOLUTE', newParent: newParent }
+      return {
+        strategy: 'FLEX_REPARENT_TO_ABSOLUTE',
+        newParent: newParent,
+        forcingRequired: forcingRequiredForAbsoluteReparent,
+      }
     }
   }
   return { strategy: 'do-not-reparent' }
 }
 
-export function findReparentStrategy(
+function isReparentToAbsoluteStrategy(reparentStrategy: ReparentStrategy): boolean {
+  switch (reparentStrategy) {
+    case 'ABSOLUTE_REPARENT_TO_ABSOLUTE':
+    case 'FLEX_REPARENT_TO_ABSOLUTE':
+      return true
+    case 'ABSOLUTE_REPARENT_TO_FLEX':
+    case 'FLEX_REPARENT_TO_FLEX':
+      return false
+    default:
+      assertNever(reparentStrategy)
+  }
+}
+
+export function getFitnessForReparentStrategy(
+  reparentStrategy: ReparentStrategy,
   canvasState: InteractionCanvasState,
   interactionState: InteractionSession,
   strategyState: StrategyState,
-  log = false, // DELETE ME BEFORE MERGE
+  missingBoundsHandling: MissingBoundsHandling,
+): number {
+  const isForced = missingBoundsHandling === 'allow-missing-bounds'
+  const allowAsFallback = isReparentToAbsoluteStrategy(reparentStrategy) && !isForced
+
+  const foundReparentStrategy = findReparentStrategy(
+    canvasState,
+    interactionState,
+    strategyState,
+    missingBoundsHandling,
+  )
+  if (
+    foundReparentStrategy.strategy === reparentStrategy &&
+    foundReparentStrategy.forcingRequired === isForced
+  ) {
+    return isForced ? 0.5 : 3
+  } else if (foundReparentStrategy.strategy !== 'do-not-reparent' && allowAsFallback) {
+    return 2
+  } else {
+    return 0
+  }
+}
+
+function targetIsValid(
+  newParentPath: ElementPath,
+  targetsToFilterOut: ReparentTargetsToFilter | null,
+  missingBoundsHandling: MissingBoundsHandling,
+): boolean {
+  if (targetsToFilterOut == null) {
+    return true
+  } else {
+    const targetToFilter = targetsToFilterOut[missingBoundsHandling].newParent
+    return !EP.pathsEqual(targetToFilter, newParentPath)
+  }
+}
+
+function findReparentStrategy(
+  canvasState: InteractionCanvasState,
+  interactionState: InteractionSession,
+  strategyState: StrategyState,
+  missingBoundsHandling: MissingBoundsHandling,
 ): FindReparentStrategyResult {
   const selectedElements = getTargetPathsFromInteractionTarget(canvasState.interactionTarget)
   if (
@@ -152,6 +223,7 @@ export function findReparentStrategy(
     canvasState,
     strategyState.startingMetadata,
     strategyState.startingAllElementProps,
+    missingBoundsHandling,
   )
 
   const newParentPath = reparentResult.newParent
@@ -164,7 +236,12 @@ export function findReparentStrategy(
     reparentResult.shouldReparent &&
     newParentPath != null &&
     // holding cmd forces a reparent even if the target parent was under the mouse at the interaction start
-    (cmdPressed || newParentPath !== interactionState.startingTargetParentToFilterOut?.newParent) &&
+    (cmdPressed ||
+      targetIsValid(
+        newParentPath,
+        interactionState.startingTargetParentsToFilterOut,
+        missingBoundsHandling,
+      )) &&
     !parentStayedTheSame
   ) {
     return reparentStrategyForParent(
@@ -206,6 +283,7 @@ export function getReparentTargetUnified(
   canvasState: InteractionCanvasState,
   metadata: ElementInstanceMetadataMap,
   allElementProps: AllElementProps,
+  missingBoundsHandling: MissingBoundsHandling,
 ): ReparentTarget {
   const projectContents = canvasState.projectContents
   const openFile = canvasState.openFile ?? null
@@ -241,6 +319,19 @@ export function getReparentTargetUnified(
   )
 
   const filteredElementsUnderPoint = allElementsUnderPoint.filter((target) => {
+    let validParentForFlexOrAbsolute = cmdPressed
+    if (missingBoundsHandling === 'allow-missing-bounds') {
+      validParentForFlexOrAbsolute = true
+    } else {
+      const targetMetadata = MetadataUtils.findElementByElementPath(metadata, target)
+      const isFlex = MetadataUtils.isFlexLayoutedContainer(targetMetadata)
+      const providesBoundsForAbsoluteChildren =
+        targetMetadata?.specialSizeMeasurements.providesBoundsForAbsoluteChildren ?? false
+
+      // TODO extend here when we implement static layout support
+      validParentForFlexOrAbsolute = isFlex || providesBoundsForAbsoluteChildren
+    }
+
     // TODO BEFORE MERGE consider multiselect!!!!!
     // the current parent should be included in the array of valid targets
     return (
@@ -262,7 +353,8 @@ export function getReparentTargetUnified(
           sizeFitsInTarget(
             multiselectBounds,
             MetadataUtils.getFrameInCanvasCoords(target, metadata) ?? size(0, 0),
-          )))
+          )) &&
+        validParentForFlexOrAbsolute)
     )
   })
 
@@ -581,6 +673,7 @@ export function applyFlexReparent(
         canvasState,
         strategyState.startingMetadata,
         strategyState.startingAllElementProps,
+        'use-strict-bounds',
       )
 
       if (
