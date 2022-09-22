@@ -191,6 +191,74 @@ describe('Inserting into absolute', () => {
     )
   })
 
+  it('Click to insert with default size', async () => {
+    const renderResult = await renderTestEditorWithCode(inputCode, 'await-first-dom-report')
+    await startInsertMode(renderResult.dispatch)
+
+    const targetElement = renderResult.renderedDOM.getByTestId('bbb')
+    const targetElementBounds = targetElement.getBoundingClientRect()
+    const canvasControlsLayer = renderResult.renderedDOM.getByTestId(CanvasControlsContainerID)
+
+    const startPoint = slightlyOffsetWindowPointBecauseVeryWeirdIssue({
+      x: targetElementBounds.x + 65,
+      y: targetElementBounds.y + 55,
+    })
+    const endPoint = startPoint
+
+    // Drag from inside bbb to inside ccc
+    await fireDragEvent(canvasControlsLayer, startPoint, endPoint)
+    await wait(1000000000)
+    // Check that the inserted element is a child of bbb
+    expect(getPrintedUiJsCode(renderResult.getEditorState())).toEqual(
+      makeTestProjectCodeWithSnippet(`
+        <div
+          data-uid='aaa'
+          style={{
+            width: '100%',
+            height: '100%',
+            backgroundColor: '#FFFFFF',
+            position: 'relative',
+          }}
+        >
+          <div
+            data-uid='bbb'
+            data-testid='bbb'
+            style={{
+              position: 'absolute',
+              left: 10,
+              top: 10,
+              width: 380,
+              height: 180,
+              backgroundColor: '#d3d3d3',
+            }}
+          >
+            <div
+              data-uid='ddd'
+              style={{
+                position: 'absolute',
+                left: 15,
+                top: 5,
+                width: 100,
+                height: 100,
+              }}
+            />
+          </div>
+          <div
+            data-uid='ccc'
+            style={{
+              position: 'absolute',
+              left: 10,
+              top: 200,
+              width: 380,
+              height: 190,
+              backgroundColor: '#FF0000',
+            }}
+          />
+        </div>
+      `),
+    )
+  })
+
   it('Should not clear the intended target when dragging to insert past the scene boundary', async () => {
     const renderResult = await renderTestEditorWithCode(inputCode, 'await-first-dom-report')
     await startInsertMode(renderResult.dispatch)

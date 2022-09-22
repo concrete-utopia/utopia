@@ -11,7 +11,7 @@ import {
 import { boundingArea, InteractionSession, StrategyState } from './interaction-state'
 import { ElementInsertionSubject } from '../../editor/editor-modes'
 import { LayoutHelpers } from '../../../core/layout/layout-helpers'
-import { foldEither, isLeft } from '../../../core/shared/either'
+import { foldEither } from '../../../core/shared/either'
 import {
   InsertElementInsertionSubject,
   insertElementInsertionSubject,
@@ -92,7 +92,11 @@ export const drawToInsertStrategy: CanvasStrategy = {
       if (interactionState.interactionData.drag != null) {
         const insertionSubject = canvasState.interactionTarget.subjects[0]
 
-        const insertionCommand = getInsertionCommands(insertionSubject, interactionState, null)
+        const insertionCommand = getInsertionCommands(
+          insertionSubject,
+          interactionState,
+          'zero-size',
+        )
 
         if (insertionCommand != null) {
           const reparentCommand = updateFunctionCommand(
@@ -130,8 +134,32 @@ export const drawToInsertStrategy: CanvasStrategy = {
             resizeCommand,
           ])
         }
-      } else {
-        // just insert a default sized element and no resize
+      } else if (lifecycle === 'end-interaction') {
+        const insertionSubject = canvasState.interactionTarget.subjects[0]
+
+        const insertionCommand = getInsertionCommands(
+          insertionSubject,
+          interactionState,
+          'default-size',
+        )
+
+        if (insertionCommand != null) {
+          const reparentCommand = updateFunctionCommand(
+            'always',
+            (editorState): Array<EditorStatePatch> => {
+              return runTargetStrategiesForFreshlyInsertedElementToReparent(
+                canvasState.builtInDependencies,
+                editorState,
+                strategyState,
+                interactionState,
+                insertionSubject,
+                insertionCommand.frame,
+              )
+            },
+          )
+
+          return strategyApplicationResult([insertionCommand.command, reparentCommand])
+        }
       }
     }
     // Fallback for when the checks above are not satisfied.
@@ -139,23 +167,34 @@ export const drawToInsertStrategy: CanvasStrategy = {
   },
 }
 
+const DefaultWidth = 100
+const DefaultHeight = 100
+
 function getInsertionCommands(
   subject: ElementInsertionSubject,
   interactionState: InteractionSession,
-  parent: ElementPath | null,
+  sizing: 'zero-size' | 'default-size',
 ): { command: InsertElementInsertionSubject; frame: CanvasRectangle } | null {
   if (
     interactionState.interactionData.type === 'DRAG' &&
-    interactionState.interactionData.drag != null
+    (sizing === 'default-size' || interactionState.interactionData.drag != null)
   ) {
     const pointOnCanvas = interactionState.interactionData.dragStart
 
-    const frame = canvasRectangle({
-      x: pointOnCanvas.x,
-      y: pointOnCanvas.y,
-      width: 0,
-      height: 0,
-    })
+    const frame =
+      sizing === 'zero-size'
+        ? canvasRectangle({
+            x: pointOnCanvas.x,
+            y: pointOnCanvas.y,
+            width: 0,
+            height: 0,
+          })
+        : canvasRectangle({
+            x: pointOnCanvas.x - DefaultWidth / 2,
+            y: pointOnCanvas.y - DefaultHeight / 2,
+            width: DefaultWidth,
+            height: DefaultHeight,
+          })
 
     const updatedAttributesWithPosition = getStyleAttributesForFrameInAbsolutePosition(
       subject,
@@ -164,9 +203,7 @@ function getInsertionCommands(
 
     const updatedInsertionSubject: ElementInsertionSubject = {
       ...subject,
-      parent: parent
-        ? { target: parent, staticTarget: EP.dynamicPathToStaticPath(parent) }
-        : subject.parent,
+      parent: subject.parent,
       element: {
         ...subject.element,
         props: updatedAttributesWithPosition,
