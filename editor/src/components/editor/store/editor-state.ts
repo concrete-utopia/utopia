@@ -273,6 +273,8 @@ export type EditorStorePatched = EditorStoreShared & {
   derived: DerivedState
 }
 
+export type EditorStoreUnpatched = Omit<EditorStoreFull, 'patchedEditor' | 'patchedDerived'>
+
 export function patchedStoreFromFullStore(store: EditorStoreFull): EditorStorePatched {
   return {
     ...store,

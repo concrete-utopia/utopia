@@ -30,6 +30,7 @@ import {
   deriveState,
   EditorState,
   EditorStoreFull,
+  EditorStoreUnpatched,
   persistentModelFromEditorModel,
   reconstructJSXMetadata,
   storedEditorStateFromEditorState,
@@ -65,9 +66,7 @@ type DispatchResultFields = {
   entireUpdateFinished: Promise<any>
 }
 
-type EditorStoreUnpatched = Omit<EditorStoreFull, 'patchedEditor' | 'patchedDerived'>
-
-export type InnerDispatchResult = EditorStoreUnpatched & DispatchResultFields
+export type InnerDispatchResult = EditorStoreFull & DispatchResultFields // TODO delete me
 export type DispatchResult = EditorStoreFull & DispatchResultFields
 
 function simpleStringifyAction(action: EditorAction): string {
@@ -395,7 +394,13 @@ export function editorDispatch(
 
   const result: InnerDispatchResult = actionGroupsToProcess.reduce(
     (working: InnerDispatchResult, actions) => {
-      const newStore = editorDispatchInner(boundDispatch, actions, working, spyCollector)
+      const newStore = editorDispatchInner(
+        boundDispatch,
+        actions,
+        working,
+        spyCollector,
+        strategiesToUse,
+      )
       return newStore
     },
     { ...storedState, entireUpdateFinished: Promise.resolve(true), nothingChanged: true },
@@ -409,21 +414,12 @@ export function editorDispatch(
     (action) => action.action === 'UPDATE_FROM_WORKER',
   )
 
-  const { unpatchedEditorState, patchedEditorState, newStrategyState, patchedDerivedState } =
-    isFeatureEnabled('Canvas Strategies')
-      ? handleStrategies(
-          strategiesToUse,
-          dispatchedActions,
-          storedState,
-          result,
-          storedState.patchedDerived,
-        )
-      : {
-          unpatchedEditorState: result.unpatchedEditor,
-          patchedEditorState: result.unpatchedEditor,
-          newStrategyState: result.strategyState,
-          patchedDerivedState: result.unpatchedDerived,
-        }
+  const { unpatchedEditorState, patchedEditorState, newStrategyState, patchedDerivedState } = {
+    unpatchedEditorState: result.unpatchedEditor,
+    patchedEditorState: result.patchedEditor,
+    newStrategyState: result.strategyState,
+    patchedDerivedState: result.patchedDerived,
+  }
 
   const editorFilteredForFiles = filterEditorForFiles(unpatchedEditorState)
 
@@ -621,6 +617,7 @@ function editorDispatchInner(
   dispatchedActions: EditorAction[],
   storedState: InnerDispatchResult,
   spyCollector: UiJsxCanvasContextData,
+  strategiesToUse: Array<CanvasStrategy>,
 ): InnerDispatchResult {
   // console.log('DISPATCH', simpleStringifyActions(dispatchedActions))
 
@@ -733,10 +730,28 @@ function editorDispatchInner(
       )
     }
 
+    const { unpatchedEditorState, patchedEditorState, newStrategyState, patchedDerivedState } =
+      isFeatureEnabled('Canvas Strategies')
+        ? handleStrategies(
+            strategiesToUse,
+            dispatchedActions,
+            storedState,
+            result,
+            storedState.patchedDerived,
+          )
+        : {
+            unpatchedEditorState: result.unpatchedEditor,
+            patchedEditorState: result.unpatchedEditor,
+            newStrategyState: result.strategyState,
+            patchedDerivedState: result.unpatchedDerived,
+          }
+
     return {
-      unpatchedEditor: frozenEditorState,
+      unpatchedEditor: unpatchedEditorState,
+      patchedEditor: patchedEditorState,
       unpatchedDerived: frozenDerivedState,
-      strategyState: result.strategyState,
+      patchedDerived: patchedDerivedState,
+      strategyState: newStrategyState,
       history: result.history,
       userState: result.userState,
       workers: storedState.workers,
