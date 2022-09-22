@@ -380,6 +380,10 @@ export function editorDispatch(
         EditorActions.transientActions(actionGroup),
       ])
       return [...actionGroups, ...wrappedTransientActionGroups]
+    } else if (currentAction.action === 'CLEAR_INTERACTION_SESSION') {
+      // CLEAR_INTERACTION_SESSION must be the last action for a given action group, so we push it and then create a new empty action group for follow-up actions
+      actionGroups[actionGroups.length - 1].push(currentAction)
+      return [...actionGroups, []]
     } else {
       // if this action does not need a rebuilt derived state we can just push it into the last action group to dispatch them together
       let updatedGroups = actionGroups
