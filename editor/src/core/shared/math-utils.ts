@@ -1020,3 +1020,15 @@ export function segmentIntersection(
   }
   return null
 }
+
+/**
+ * https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Operators/Remainder#description
+ * This is the modulo function, be careful as % is the remainder operator.
+ * The main difference is when using negative n, for example "-1 % 4 = -1" but "mod(-1, 4) = 3"
+ * For two values of the same sign, the two are equivalent, but when the operands are of different signs,
+ * the modulo result always has the same sign as the divisor, while the remainder has the same sign as the dividend,
+ * which can make them differ by one unit of d.
+ */
+export function mod(n: number, m: number): number {
+  return ((n % m) + m) % m
+}
