@@ -45,12 +45,19 @@ import { dragToInsertStrategy } from './drag-to-insert-strategy'
 import { StateSelector } from 'zustand'
 import { flowReorderSliderStategy } from './flow-reorder-slider-strategy'
 import { NonResizableControl } from '../controls/select-mode/non-resizable-control'
-import { lookForApplicableParentStrategy } from './look-for-applicable-parent'
+// import { lookForApplicableParentStrategy } from './look-for-applicable-parent'
 import { drawToInsertStrategy } from './draw-to-insert-strategy'
 import { flexResizeBasicStrategy } from './flex-resize-basic-strategy'
 import { optionalMap } from '../../../core/shared/optional-utils'
 
-export const RegisteredCanvasStrategies: Array<CanvasStrategy> = [
+export type MetaCanvasStrategy = (
+  canvasState: InteractionCanvasState,
+  interactionSession: InteractionSession | null,
+  metadata: ElementInstanceMetadataMap,
+  allElementProps: AllElementProps,
+) => Array<CanvasStrategy>
+
+const existingCanvasStrategies: MetaCanvasStrategy = () => [
   absoluteMoveStrategy,
   absoluteReparentStrategy,
   forcedAbsoluteReparentStrategy,
@@ -70,9 +77,11 @@ export const RegisteredCanvasStrategies: Array<CanvasStrategy> = [
   flowReorderNoConversionStrategy,
   flowReorderSameTypeOnlyStrategy,
   flowReorderSliderStategy,
-  lookForApplicableParentStrategy,
+  // lookForApplicableParentStrategy,
   flexResizeBasicStrategy,
 ]
+
+export const RegisteredCanvasStrategies: Array<MetaCanvasStrategy> = [existingCanvasStrategies]
 
 export function pickCanvasStateFromEditorState(
   editorState: EditorState,
@@ -103,15 +112,17 @@ export interface ApplicableStrategy {
 }
 
 export function getApplicableStrategies(
-  strategies: Array<CanvasStrategy>,
+  strategies: Array<MetaCanvasStrategy>,
   canvasState: InteractionCanvasState,
   interactionSession: InteractionSession | null,
   metadata: ElementInstanceMetadataMap,
   allElementProps: AllElementProps,
 ): Array<CanvasStrategy> {
-  return strategies.filter((strategy) => {
-    return strategy.isApplicable(canvasState, interactionSession, metadata, allElementProps)
-  })
+  return strategies
+    .flatMap((ms) => ms(canvasState, interactionSession, metadata, allElementProps))
+    .filter((strategy) => {
+      return strategy.isApplicable(canvasState, interactionSession, metadata, allElementProps)
+    })
 }
 
 const getApplicableStrategiesSelector = createSelector(
@@ -157,7 +168,7 @@ export interface StrategyWithFitness {
 }
 
 export function getApplicableStrategiesOrderedByFitness(
-  strategies: Array<CanvasStrategy>,
+  strategies: Array<MetaCanvasStrategy>,
   canvasState: InteractionCanvasState,
   interactionSession: InteractionSession,
   strategyState: StrategyState,
@@ -234,7 +245,7 @@ export interface FindCanvasStrategyResult {
 }
 
 export function findCanvasStrategy(
-  strategies: Array<CanvasStrategy>,
+  strategies: Array<MetaCanvasStrategy>,
   canvasState: InteractionCanvasState,
   interactionSession: InteractionSession,
   strategyState: StrategyState,
