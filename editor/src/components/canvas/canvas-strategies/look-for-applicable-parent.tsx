@@ -81,7 +81,7 @@ export const lookForApplicableParentStrategy: CanvasStrategy = {
     },
   ],
   isApplicable: (canvasState, interactionSession, metadata, allElementProps) => {
-    if (interactionSession == null) {
+    if (interactionSession == null || interactionSession.activeControl.type !== 'BOUNDING_AREA') {
       return false
     }
 
