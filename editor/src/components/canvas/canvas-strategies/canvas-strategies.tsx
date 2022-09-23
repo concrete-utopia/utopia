@@ -50,7 +50,14 @@ import { drawToInsertStrategy } from './draw-to-insert-strategy'
 import { flexResizeBasicStrategy } from './flex-resize-basic-strategy'
 import { optionalMap } from '../../../core/shared/optional-utils'
 
-export const RegisteredCanvasStrategies: Array<CanvasStrategy> = [
+export type MetaCanvasStrategy = (
+  canvasState: InteractionCanvasState,
+  interactionSession: InteractionSession | null,
+  metadata: ElementInstanceMetadataMap,
+  allElementProps: AllElementProps,
+) => Array<CanvasStrategy>
+
+const existingStrategies: MetaCanvasStrategy = () => [
   absoluteMoveStrategy,
   absoluteReparentStrategy,
   forcedAbsoluteReparentStrategy,
@@ -72,6 +79,11 @@ export const RegisteredCanvasStrategies: Array<CanvasStrategy> = [
   flowReorderSliderStategy,
   lookForApplicableParentStrategy,
   flexResizeBasicStrategy,
+]
+
+export const RegisteredCanvasStrategies: Array<MetaCanvasStrategy> = [
+  // for now, the only metastrategy is a catch-call for all the existing strategies
+  existingStrategies,
 ]
 
 export function pickCanvasStateFromEditorState(
@@ -110,15 +122,17 @@ export function applicableStrategy(strategy: CanvasStrategy, name: string): Appl
 }
 
 export function getApplicableStrategies(
-  strategies: Array<CanvasStrategy>,
+  strategies: Array<MetaCanvasStrategy>,
   canvasState: InteractionCanvasState,
   interactionSession: InteractionSession | null,
   metadata: ElementInstanceMetadataMap,
   allElementProps: AllElementProps,
 ): Array<CanvasStrategy> {
-  return strategies.filter((strategy) => {
-    return strategy.isApplicable(canvasState, interactionSession, metadata, allElementProps)
-  })
+  return strategies
+    .flatMap((s) => s(canvasState, interactionSession, metadata, allElementProps))
+    .filter((strategy) => {
+      return strategy.isApplicable(canvasState, interactionSession, metadata, allElementProps)
+    })
 }
 
 const getApplicableStrategiesSelector = createSelector(
@@ -164,19 +178,11 @@ export interface StrategyWithFitness {
 }
 
 export function getApplicableStrategiesOrderedByFitness(
-  strategies: Array<CanvasStrategy>,
+  applicableStrategies: Array<CanvasStrategy>,
   canvasState: InteractionCanvasState,
   interactionSession: InteractionSession,
   strategyState: StrategyState,
 ): Array<StrategyWithFitness> {
-  const applicableStrategies = getApplicableStrategies(
-    strategies,
-    canvasState,
-    interactionSession,
-    strategyState.startingMetadata,
-    strategyState.startingAllElementProps,
-  )
-
   // Compute the fitness results upfront.
   const strategiesWithFitness = mapDropNulls((strategy) => {
     const fitness = strategy.fitness(canvasState, interactionSession, strategyState)
@@ -241,14 +247,22 @@ export interface FindCanvasStrategyResult {
 }
 
 export function findCanvasStrategy(
-  strategies: Array<CanvasStrategy>,
+  strategies: Array<MetaCanvasStrategy>,
   canvasState: InteractionCanvasState,
   interactionSession: InteractionSession,
   strategyState: StrategyState,
   previousStrategyId: CanvasStrategyId | null,
 ): FindCanvasStrategyResult {
-  const sortedApplicableStrategies = getApplicableStrategiesOrderedByFitness(
+  const applicableStrategies = getApplicableStrategies(
     strategies,
+    canvasState,
+    interactionSession,
+    strategyState.startingMetadata,
+    strategyState.startingAllElementProps,
+  )
+
+  const sortedApplicableStrategies = getApplicableStrategiesOrderedByFitness(
+    applicableStrategies,
     canvasState,
     interactionSession,
     strategyState,
