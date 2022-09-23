@@ -97,6 +97,7 @@ import { last, reverse } from '../core/shared/array-utils'
 import {
   reparentTargetsToFilter,
   ReparentTargetsToFilter,
+  updateHoverInteractionViaMouse,
   updateInteractionViaDragDelta,
   updateInteractionViaMouse,
 } from '../components/canvas/canvas-strategies/interaction-state'
@@ -1226,6 +1227,24 @@ export class EditorCanvas extends React.Component<EditorCanvasProps> {
         }
         mouseMoveHandled()
         const dragStarted = anyDragStarted(dragState)
+        if (
+          this.props.editor.canvas.interactionSession != null &&
+          this.props.editor.canvas.interactionSession.interactionData.type === 'HOVER'
+        ) {
+          this.handleEvent({
+            ...canvasPositions,
+            event: 'MOVE',
+            modifiers: Modifier.modifiersForEvent(event),
+            cursor: null,
+            nativeEvent: event,
+            interactionSession: updateHoverInteractionViaMouse(
+              this.props.editor.canvas.interactionSession,
+              canvasPositions.canvasPositionRounded,
+              Modifier.modifiersForEvent(event),
+              null,
+            ),
+          })
+        }
         if (
           this.props.editor.canvas.interactionSession != null &&
           this.props.editor.canvas.interactionSession.interactionData.type === 'DRAG'

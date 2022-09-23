@@ -202,6 +202,26 @@ export function createInteractionViaMouse(
   }
 }
 
+export function createHoverInteractionViaMouse(
+  mousePoint: CanvasPoint,
+  modifiers: Modifiers,
+  activeControl: CanvasControlType,
+): InteractionSessionWithoutMetadata {
+  return {
+    interactionData: {
+      type: 'HOVER',
+      point: mousePoint,
+      modifiers: modifiers,
+    },
+    activeControl: activeControl,
+    sourceOfUpdate: activeControl,
+    lastInteractionTime: Date.now(),
+    userPreferredStrategy: null,
+    startedAt: Date.now(),
+    updatedTargetPaths: {},
+  }
+}
+
 function dragExceededThreshold(drag: CanvasVector): boolean {
   const xDiff = Math.abs(drag.x)
   const yDiff = Math.abs(drag.y)
@@ -271,6 +291,31 @@ export function updateInteractionViaMouse(
       userPreferredStrategy: currentState.userPreferredStrategy,
       startedAt: currentState.startedAt,
       updatedTargetPaths: currentState.updatedTargetPaths,
+    }
+  } else {
+    return currentState
+  }
+}
+
+export function updateHoverInteractionViaMouse(
+  currentState: InteractionSessionWithoutMetadata,
+  mousePoint: CanvasVector,
+  modifiers: Modifiers,
+  sourceOfUpdate: CanvasControlType | null, // If null it means the active control is the source
+): InteractionSessionWithoutMetadata {
+  if (currentState.interactionData.type === 'HOVER') {
+    return {
+      interactionData: {
+        type: 'HOVER',
+        point: mousePoint,
+        modifiers: modifiers,
+      },
+      activeControl: currentState.activeControl,
+      sourceOfUpdate: sourceOfUpdate ?? currentState.activeControl,
+      lastInteractionTime: Date.now(),
+      userPreferredStrategy: null,
+      startedAt: Date.now(),
+      updatedTargetPaths: {},
     }
   } else {
     return currentState

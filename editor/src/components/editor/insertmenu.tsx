@@ -81,6 +81,7 @@ import { UTOPIA_UID_KEY } from '../../core/model/utopia-constants'
 import CanvasActions from '../canvas/canvas-actions'
 import {
   boundingArea,
+  createHoverInteractionViaMouse,
   createInteractionViaMouse,
 } from '../canvas/canvas-strategies/interaction-state'
 import { CanvasMousePositionRaw } from '../../utils/global-positions'
@@ -344,7 +345,7 @@ class InsertMenuInner extends React.Component<InsertMenuProps> {
                   [
                     enableInsertModeForJSXElement(newElement, newUID, component.importsToAdd, null),
                     CanvasActions.createInteractionSession(
-                      createInteractionViaMouse(
+                      createHoverInteractionViaMouse(
                         CanvasMousePositionRaw!,
                         emptyModifiers,
                         boundingArea(),
