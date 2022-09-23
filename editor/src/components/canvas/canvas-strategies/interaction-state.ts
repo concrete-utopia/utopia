@@ -35,6 +35,12 @@ export interface DragInteractionData {
   _accumulatedMovement: CanvasVector
 }
 
+export interface HoverInteractionData {
+  type: 'HOVER'
+  point: CanvasPoint
+  modifiers: Modifiers
+}
+
 export interface KeyState {
   keysPressed: Set<KeyCharacter>
   modifiers: Modifiers
@@ -45,7 +51,7 @@ export interface KeyboardInteractionData {
   keyStates: Array<KeyState>
 }
 
-export type InputData = KeyboardInteractionData | DragInteractionData
+export type InputData = KeyboardInteractionData | DragInteractionData | HoverInteractionData
 
 export function isDragInteractionData(inputData: InputData): inputData is DragInteractionData {
   return inputData.type === 'DRAG'
@@ -55,6 +61,10 @@ export function isKeyboardInteractionData(
   inputData: InputData,
 ): inputData is KeyboardInteractionData {
   return inputData.type === 'KEYBOARD'
+}
+
+export function isHoverInteractionData(inputData: InputData): inputData is HoverInteractionData {
+  return inputData.type === 'HOVER'
 }
 
 export type UpdatedPathMap = { [oldPathString: string]: ElementPath }
@@ -351,6 +361,21 @@ export function updateInteractionViaKeyboard(
         updatedTargetPaths: currentState.updatedTargetPaths,
       }
     }
+    case 'HOVER': {
+      return {
+        interactionData: {
+          type: 'HOVER',
+          point: currentState.interactionData.point,
+          modifiers: modifiers,
+        },
+        activeControl: currentState.activeControl,
+        sourceOfUpdate: currentState.activeControl,
+        lastInteractionTime: Date.now(),
+        userPreferredStrategy: currentState.userPreferredStrategy,
+        startedAt: currentState.startedAt,
+        updatedTargetPaths: currentState.updatedTargetPaths,
+      }
+    }
     default:
       const _exhaustiveCheck: never = currentState.interactionData
       throw new Error(`Unhandled interaction type ${JSON.stringify(currentState.interactionData)}`)
@@ -374,6 +399,8 @@ export function interactionDataHardReset(interactionData: InputData): InputData 
           ),
         }
       }
+    case 'HOVER':
+      return interactionData
     case 'KEYBOARD':
       const lastKeyState = last(interactionData.keyStates)
       return {

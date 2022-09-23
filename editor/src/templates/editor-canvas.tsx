@@ -508,7 +508,7 @@ export function runLocalCanvasAction(
     case 'UPDATE_DRAG_INTERACTION_DATA':
       if (
         model.canvas.interactionSession == null ||
-        model.canvas.interactionSession.interactionData.type === 'KEYBOARD'
+        model.canvas.interactionSession.interactionData.type !== 'DRAG'
       ) {
         return model
       } else {

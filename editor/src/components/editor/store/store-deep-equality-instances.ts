@@ -330,6 +330,7 @@ import {
   FlexGapHandle,
   FlowSlider,
   flowSlider,
+  HoverInteractionData,
   InputData,
   interactionSession,
   InteractionSession,
@@ -1619,6 +1620,21 @@ export const DragInteractionDataKeepDeepEquality: KeepDeepEqualityCall<DragInter
     },
   )
 
+export const HoverInteractionDataKeepDeepEquality: KeepDeepEqualityCall<HoverInteractionData> =
+  combine2EqualityCalls(
+    (data) => data.point,
+    CanvasPointKeepDeepEquality,
+    (data) => data.modifiers,
+    ModifiersKeepDeepEquality,
+    (point, modifiers) => {
+      return {
+        type: 'HOVER',
+        point: point,
+        modifiers: modifiers,
+      }
+    },
+  )
+
 export const KeyStateKeepDeepEquality: KeepDeepEqualityCall<KeyState> = combine2EqualityCalls(
   (keyState) => keyState.keysPressed,
   createCallWithDeepEquals(),
@@ -1654,6 +1670,11 @@ export const InputDataKeepDeepEquality: KeepDeepEqualityCall<InputData> = (oldVa
     case 'KEYBOARD':
       if (newValue.type === oldValue.type) {
         return KeyboardInteractionDataKeepDeepEquality(oldValue, newValue)
+      }
+      break
+    case 'HOVER':
+      if (newValue.type === oldValue.type) {
+        return HoverInteractionDataKeepDeepEquality(oldValue, newValue)
       }
       break
     default:
