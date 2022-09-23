@@ -1,8 +1,9 @@
 import * as Chai from 'chai'
 import Utils from './utils'
 import { CanvasRectangle, LocalPoint, LocalRectangle } from '../core/shared/math-utils'
-import { longestCommonArray } from '../core/shared/utils'
+import { longestCommonArray, projectIdFromURL } from '../core/shared/utils'
 import fastDeepEquals from 'fast-deep-equal'
+import { left, right } from '../core/shared/either'
 
 // disabling jest/valid-expect because this file uses Chai.expect
 /* eslint-disable jest/valid-expect */
@@ -389,5 +390,34 @@ describe('ObjectFlattenKeys', () => {
     }
     const expected = ['a', 'b', 'cica', 'kutya', 'lo', 'kitty', 'cat', 'loaf']
     expect(Utils.objectFlattenKeys(obj)).deep.equal(expected)
+  })
+})
+
+describe('projectIdFromURL', () => {
+  it.each([
+    ['cake', left(`Invalid value passed that isn't a URL.`)],
+    [
+      'https://utopia.app/something',
+      left(`URL does not appear to have the project ID or be for a project.`),
+    ],
+    ['https://utopia.app/p/abc123/rest/of/the/url', right('abc123')],
+    ['https://utopia.app/p/abc123', right('abc123')],
+    ['https://utopia.app/p/abc123-nice-hat', right('abc123')],
+    ['https://utopia.app/p/abc123-nice-hat/rest-of-the-url', right('abc123')],
+    ['http://localhost:8000/p/abc123/rest/of/the/url', right('abc123')],
+    ['http://localhost:8000/p/abc123', right('abc123')],
+    ['http://localhost:8000/p/abc123-nice-hat', right('abc123')],
+    ['http://localhost:8000/p/abc123-nice-hat/rest-of-the-url', right('abc123')],
+    ['https://utopia.app/project/abc123/rest/of/the/url', right('abc123')],
+    ['https://utopia.app/project/abc123', right('abc123')],
+    ['https://utopia.app/project/abc123-nice-hat', right('abc123')],
+    ['https://utopia.app/project/abc123-nice-hat/rest-of-the-url', right('abc123')],
+    ['http://localhost:8000/project/abc123/rest/of/the/url', right('abc123')],
+    ['http://localhost:8000/project/abc123', right('abc123')],
+    ['http://localhost:8000/project/abc123-nice-hat', right('abc123')],
+    ['http://localhost:8000/project/abc123-nice-hat/rest-of-the-url', right('abc123')],
+  ])('the value %s should produce a %s', (input, expectedResult) => {
+    const actualResult = projectIdFromURL(input)
+    expect(actualResult).deep.equal(expectedResult)
   })
 })

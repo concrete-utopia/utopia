@@ -28,8 +28,8 @@ import { findNewIndex } from '../canvas-strategies/flow-reorder-helpers'
 export const IconSize = 16
 const IndicatorSize = (scale: number) => IconSize / scale
 const MenuHeight = (scale: number) => 22 / scale
-const AnimatedIndicatorOffset = (scale: number) => 2 / scale
-const ControlSize = (scale: number) => 10 / scale
+const IndicatorOffset = (scale: number) => 2 / scale
+const ControlSize = (scale: number) => 6 / scale
 
 export const FlowSliderControl = React.memo(() => {
   const scale = useEditorState((store) => store.editor.canvas.scale, 'FlowSliderControl scale')
@@ -98,7 +98,7 @@ export const FlowSliderControl = React.memo(() => {
 
   const controlTopLeft = React.useMemo(() => {
     return {
-      x: controlAreaTopLeft.x + latestIndex * IndicatorSize(scale) + AnimatedIndicatorOffset(scale),
+      x: controlAreaTopLeft.x + latestIndex * IndicatorSize(scale) + IndicatorSize(scale) / 4,
       y: getRectCenter(startingFrame ?? zeroCanvasRect).y - ControlSize(scale) / 2,
     } as CanvasPoint
   }, [startingFrame, controlAreaTopLeft, latestIndex, scale])
@@ -116,7 +116,7 @@ export const FlowSliderControl = React.memo(() => {
               width: siblings.length * IndicatorSize(scale),
               height: MenuHeight(scale),
               borderRadius: 4 / scale,
-              opacity: '50%',
+              opacity: '60%',
               background: colorTheme.bg0.value,
               boxShadow: `inset 0px 0px 0px ${0.5 / scale}px ${colorTheme.border3.value} , 0px ${
                 2 / scale
@@ -125,8 +125,10 @@ export const FlowSliderControl = React.memo(() => {
               display: 'flex',
               alignItems: 'center',
               boxSizing: 'content-box',
+              overflow: 'hidden',
             }}
           >
+            <ReorderIndicators startingIndex={startingIndex} siblings={siblings} />
             {siblings.map((s) => {
               return (
                 <div key={EP.toString(s)} style={{ zoom: 1 / scale }}>
@@ -136,14 +138,6 @@ export const FlowSliderControl = React.memo(() => {
             })}
           </div>,
         )}
-        {when(
-          isDragging,
-          <AnimatedReorderIndicator
-            startingIndex={startingIndex}
-            controlAreaTopLeft={controlAreaTopLeft}
-            siblings={siblings}
-          />,
-        )}
         <FlowReorderControl controlPosition={controlTopLeft} />
       </CanvasOffsetWrapper>
     )
@@ -152,19 +146,14 @@ export const FlowSliderControl = React.memo(() => {
   }
 })
 
-interface AnimatedReorderIndicatorProps {
-  controlAreaTopLeft: CanvasPoint
+interface ReorderIndicatorProps {
   startingIndex: number
   siblings: Array<ElementPath>
 }
 
-const AnimatedReorderIndicator = React.memo((props: AnimatedReorderIndicatorProps) => {
-  const colorTheme = useColorTheme()
-  const scale = useEditorState(
-    (store) => store.editor.canvas.scale,
-    'AnimatedReorderIndicator scale',
-  )
-  const { controlAreaTopLeft, startingIndex, siblings } = props
+const ReorderIndicators = React.memo((props: ReorderIndicatorProps) => {
+  const scale = useEditorState((store) => store.editor.canvas.scale, 'ReorderIndicator scale')
+  const { startingIndex, siblings } = props
   const indicatorOffset = useEditorState((store) => {
     if (
       store.editor.canvas.interactionSession != null &&
@@ -179,20 +168,36 @@ const AnimatedReorderIndicator = React.memo((props: AnimatedReorderIndicatorProp
     }
   }, 'FlowSliderControl indicatorOffset')
 
+  // when reaching the end of the slider it will restart from the beginning, a second indicator is shown
+  if (indicatorOffset > siblings.length - 1) {
+    return (
+      <>
+        <ReorderIndicator style={{ left: indicatorOffset * IndicatorSize(scale) }} />
+        <ReorderIndicator
+          style={{ left: (indicatorOffset - siblings.length) * IndicatorSize(scale) }}
+        />
+      </>
+    )
+  } else {
+    return <ReorderIndicator style={{ left: indicatorOffset * IndicatorSize(scale) }} />
+  }
+})
+
+const ReorderIndicator = React.memo(({ style }: { style: React.CSSProperties }) => {
+  const colorTheme = useColorTheme()
+  const scale = useEditorState((store) => store.editor.canvas.scale, 'ReorderIndicator scale')
   return (
     <div
       style={{
         position: 'absolute',
-        top: controlAreaTopLeft.y + AnimatedIndicatorOffset(scale),
-        left: controlAreaTopLeft.x + indicatorOffset * IndicatorSize(scale),
-        width: IndicatorSize(scale) - AnimatedIndicatorOffset(scale),
-        height: MenuHeight(scale) - AnimatedIndicatorOffset(scale) * 2,
+        top: IndicatorOffset(scale),
+        width: IndicatorSize(scale) - IndicatorOffset(scale),
+        height: MenuHeight(scale) - IndicatorOffset(scale) * 2,
         borderRadius: 4 / scale,
         background: colorTheme.primary.value,
-        transition: 'left 0.05s linear',
-        opacity: 0.6,
+        ...style,
       }}
-    ></div>
+    />
   )
 })
 
@@ -247,9 +252,9 @@ const FlowReorderControl = React.memo(({ controlPosition }: { controlPosition: C
           height: ControlSize(scale),
           borderRadius: '50%',
           background: colorTheme.bg0.value,
-          boxShadow: `inset 0px 0px 0px ${0.5 / scale}px ${colorTheme.border3.value} , 0px ${
-            2 / scale
-          }px ${4 / scale}px 0px ${colorTheme.fg6.o(50).value}`,
+          boxShadow: `0px ${1 / scale}px ${2 / scale}px 0px rgb(52 52 52 / 35%), 0px 0px 0px ${
+            0.5 / scale
+          }px rgb(166 166 166 / 82%)`,
         }}
       ></div>
       <div

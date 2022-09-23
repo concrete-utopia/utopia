@@ -10,13 +10,10 @@ import { act, fireEvent } from '@testing-library/react'
 import { CanvasControlsContainerID } from '../controls/new-canvas-controls'
 import { offsetPoint, windowPoint, WindowPoint } from '../../../core/shared/math-utils'
 import { cmdModifier, Modifiers } from '../../../utils/modifiers'
-import { PrettierConfig } from 'utopia-vscode-common'
-import * as Prettier from 'prettier/standalone'
 import {
   BakedInStoryboardVariableName,
   BakedInStoryboardUID,
 } from '../../../core/model/scene-utils'
-import { wait } from '../../../core/model/performance-scripts'
 
 async function dragElement(
   renderResult: EditorRenderResult,
@@ -357,7 +354,7 @@ describe('Absolute Reparent To Flex Strategy', () => {
     await renderResult.getDispatchFollowUpActionsFinished()
 
     const dragDelta = windowPoint({
-      x: firstFlexChildEnd.x - absoluteChildCenter.x,
+      x: firstFlexChildEnd.x - absoluteChildCenter.x + 50,
       y: firstFlexChildEnd.y - absoluteChildCenter.y,
     })
     await act(() => dragElement(renderResult, 'absolutechild', dragDelta, cmdModifier))

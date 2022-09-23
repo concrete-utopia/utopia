@@ -78,7 +78,9 @@ type EmptyPreviewPageAPI = "share" :> BranchNameParam :> Get '[HTML] H.Html
 
 type PreviewPageAPI = "share" :> Capture "project_id" ProjectIdWithSuffix :> BranchNameParam :> Get '[HTML] H.Html
 
-type DownloadProjectAPI = "v1" :> "project" :> Capture "project_id" ProjectIdWithSuffix :> "contents.json" :> CaptureAll "remaining_path" Text :> Get '[PrettyJSON] Value
+type DownloadProjectResponse = Headers '[Header "Access-Control-Allow-Origin" Text] Value
+
+type DownloadProjectAPI = "v1" :> "project" :> Capture "project_id" ProjectIdWithSuffix :> "contents.json" :> CaptureAll "remaining_path" Text :> Get '[PrettyJSON] DownloadProjectResponse
 
 type ProjectOwnerAPI = "v1" :> "project" :> Capture "project_id" ProjectIdWithSuffix :> "owner" :> Get '[JSON] ProjectOwnerResponse
 
@@ -209,4 +211,5 @@ packagerLink :: Text -> Text -> Text
 packagerLink jsPackageName jsPackageVersion =
   let versionedName = jsPackageName <> "@" <> jsPackageVersion
    in toUrlPiece $ safeLink apiProxy packagerAPI versionedName
+
 

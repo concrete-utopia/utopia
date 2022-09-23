@@ -185,7 +185,7 @@ function reorderElement(
     ),
     latestMetadata: null as any, // the strategy does not use this
     latestAllElementProps: null as any, // the strategy does not use this
-    startingTargetParentToFilterOut: null,
+    startingTargetParentsToFilterOut: null,
   }
 
   const strategyResult = flexReorderStrategy.apply(

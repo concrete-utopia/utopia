@@ -370,14 +370,14 @@ projectChangedSince projectID lastChangedDate = do
             (ProjectDetailsMetadata projMeta) -> Just (view (field @"modifiedAt") projMeta > lastChangedDate)
             _ -> Nothing
 
-downloadProjectEndpoint :: ProjectIdWithSuffix -> [Text] -> ServerMonad Value
+downloadProjectEndpoint :: ProjectIdWithSuffix -> [Text] -> ServerMonad DownloadProjectResponse
 downloadProjectEndpoint (ProjectIdWithSuffix projectID _) pathIntoContent = do
   possibleProject <- loadProject projectID
   let contentLookup = foldl' (\ lensSoFar pathPart -> lensSoFar . key pathPart) (field @"content") pathIntoContent
   fromMaybe notFound $ do
     project <- possibleProject
     contentFromLookup <- firstOf contentLookup project
-    return $ return contentFromLookup
+    pure $ pure $ addHeader "*" contentFromLookup
 
 loadProjectEndpoint :: ProjectIdWithSuffix -> Maybe UTCTime -> ServerMonad LoadProjectResponse
 loadProjectEndpoint projectID Nothing = actuallyLoadProject projectID
