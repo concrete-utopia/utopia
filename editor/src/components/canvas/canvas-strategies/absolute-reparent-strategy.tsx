@@ -19,6 +19,7 @@ import {
   getAbsoluteReparentPropertyChanges,
   getFitnessForReparentStrategy,
   getReparentTargetUnified,
+  ReparentTarget,
 } from './reparent-strategy-helpers'
 import { offsetPoint } from '../../../core/shared/math-utils'
 import { getReparentOutcome, pathToReparent } from './reparent-utils'
@@ -27,164 +28,144 @@ import { honoursPropsPosition } from './absolute-utils'
 import { ElementPath } from '../../../core/shared/project-file-types'
 import { MissingBoundsHandling, UpdatedPathMap } from './interaction-state'
 
-function getAbsoluteReparentStrategy(
-  id: 'ABSOLUTE_REPARENT' | 'FORCED_ABSOLUTE_REPARENT',
-  name: string,
-  missingBoundsHandling: MissingBoundsHandling,
-  fitness: number,
-): CanvasStrategy {
-  return {
-    id: id,
-    name: () => name,
-    isApplicable: (canvasState, interactionState, metadata) => {
-      const selectedElements = getTargetPathsFromInteractionTarget(canvasState.interactionTarget)
-      if (
-        selectedElements.length > 0 &&
-        interactionState != null &&
-        interactionState.interactionData.type === 'DRAG'
-      ) {
-        const filteredSelectedElements = getDragTargets(selectedElements)
-        return filteredSelectedElements.every((element) => {
-          const elementMetadata = MetadataUtils.findElementByElementPath(metadata, element)
-
-          return (
-            elementMetadata?.specialSizeMeasurements.position === 'absolute' &&
-            honoursPropsPosition(canvasState, element)
-          )
-        })
-      }
-      return false
-    },
-    controlsToRender: [
-      {
-        control: ParentOutlines,
-        key: 'parent-outlines-control',
-        show: 'visible-only-while-active',
-      },
-      {
-        control: ParentBounds,
-        key: 'parent-bounds-control',
-        show: 'visible-only-while-active',
-      },
-    ],
-    fitness: () => fitness,
-    apply: (canvasState, interactionState, strategyState) => {
-      const { interactionTarget, projectContents, openFile, nodeModules } = canvasState
-      const selectedElements = getTargetPathsFromInteractionTarget(interactionTarget)
-      const filteredSelectedElements = getDragTargets(selectedElements)
-
-      return ifAllowedToReparent(canvasState, strategyState, filteredSelectedElements, () => {
+const getAbsoluteReparentStrategy =
+  (id: 'ABSOLUTE_REPARENT' | 'FORCED_ABSOLUTE_REPARENT', name: string, fitness: number) =>
+  (newParent: ElementPath): CanvasStrategy => {
+    return {
+      id: id,
+      name: () => name,
+      isApplicable: (canvasState, interactionState, metadata) => {
+        const selectedElements = getTargetPathsFromInteractionTarget(canvasState.interactionTarget)
         if (
-          interactionState.interactionData.type != 'DRAG' ||
-          interactionState.interactionData.drag == null
+          selectedElements.length > 0 &&
+          interactionState != null &&
+          interactionState.interactionData.type === 'DRAG'
         ) {
-          return emptyStrategyApplicationResult
-        }
+          const filteredSelectedElements = getDragTargets(selectedElements)
+          return filteredSelectedElements.every((element) => {
+            const elementMetadata = MetadataUtils.findElementByElementPath(metadata, element)
 
-        const pointOnCanvas = offsetPoint(
-          interactionState.interactionData.originalDragStart,
-          interactionState.interactionData.drag,
-        )
-
-        const reparentTarget = getReparentTargetUnified(
-          filteredSelectedElements,
-          pointOnCanvas,
-          interactionState.interactionData.modifiers.cmd,
-          canvasState,
-          strategyState.startingMetadata,
-          strategyState.startingAllElementProps,
-          missingBoundsHandling,
-        )
-        const newParent = reparentTarget.newParent
-        const allowedToReparent = filteredSelectedElements.every((selectedElement) => {
-          return isAllowedToReparent(
-            canvasState.projectContents,
-            canvasState.openFile,
-            strategyState.startingMetadata,
-            selectedElement,
-          )
-        })
-
-        if (reparentTarget.shouldReparent && newParent != null && allowedToReparent) {
-          const commands = mapDropNulls((selectedElement) => {
-            const reparentResult = getReparentOutcome(
-              canvasState.builtInDependencies,
-              projectContents,
-              nodeModules,
-              openFile,
-              pathToReparent(selectedElement),
-              newParent,
-              'always',
+            return (
+              elementMetadata?.specialSizeMeasurements.position === 'absolute' &&
+              honoursPropsPosition(canvasState, element)
             )
+          })
+        }
+        return false
+      },
+      controlsToRender: [
+        {
+          control: ParentOutlines,
+          key: 'parent-outlines-control',
+          show: 'visible-only-while-active',
+        },
+        {
+          control: ParentBounds,
+          key: 'parent-bounds-control',
+          show: 'visible-only-while-active',
+        },
+      ],
+      fitness: () => fitness,
+      apply: (canvasState, interactionState, strategyState) => {
+        const { interactionTarget, projectContents, openFile, nodeModules } = canvasState
+        const selectedElements = getTargetPathsFromInteractionTarget(interactionTarget)
+        const filteredSelectedElements = getDragTargets(selectedElements)
 
-            if (reparentResult == null) {
-              return null
-            } else {
-              const offsetCommands = getAbsoluteReparentPropertyChanges(
-                selectedElement,
-                newParent,
-                strategyState.startingMetadata,
-                strategyState.startingMetadata,
-                canvasState.projectContents,
-                canvasState.openFile,
-              )
+        return ifAllowedToReparent(canvasState, strategyState, filteredSelectedElements, () => {
+          if (
+            interactionState.interactionData.type != 'DRAG' ||
+            interactionState.interactionData.drag == null
+          ) {
+            return emptyStrategyApplicationResult
+          }
 
-              const { commands: reparentCommands, newPath } = reparentResult
-              return {
-                oldPath: selectedElement,
-                newPath: newPath,
-                commands: [...offsetCommands, ...reparentCommands],
-              }
-            }
-          }, filteredSelectedElements)
-
-          let newPaths: Array<ElementPath> = []
-          let updatedTargetPaths: UpdatedPathMap = {}
-
-          commands.forEach((c) => {
-            newPaths.push(c.newPath)
-            updatedTargetPaths[EP.toString(c.oldPath)] = c.newPath
+          const allowedToReparent = filteredSelectedElements.every((selectedElement) => {
+            return isAllowedToReparent(
+              canvasState.projectContents,
+              canvasState.openFile,
+              strategyState.startingMetadata,
+              selectedElement,
+            )
           })
 
-          const moveCommands = absoluteMoveStrategy.apply(
-            canvasState,
-            {
-              ...interactionState,
-              updatedTargetPaths: updatedTargetPaths,
-            },
-            strategyState,
-          )
+          if (newParent != null && allowedToReparent) {
+            const commands = mapDropNulls((selectedElement) => {
+              const reparentResult = getReparentOutcome(
+                canvasState.builtInDependencies,
+                projectContents,
+                nodeModules,
+                openFile,
+                pathToReparent(selectedElement),
+                newParent,
+                'always',
+              )
 
-          return strategyApplicationResult([
-            ...moveCommands.commands,
-            ...commands.flatMap((c) => c.commands),
-            updateSelectedViews('always', newPaths),
-            setElementsToRerenderCommand([...newPaths, ...filteredSelectedElements]),
-            setCursorCommand('mid-interaction', CSSCursor.Move),
-          ])
-        } else {
-          const moveCommands = absoluteMoveStrategy.apply(
-            canvasState,
-            interactionState,
-            strategyState,
-          )
+              if (reparentResult == null) {
+                return null
+              } else {
+                const offsetCommands = getAbsoluteReparentPropertyChanges(
+                  selectedElement,
+                  newParent,
+                  strategyState.startingMetadata,
+                  strategyState.startingMetadata,
+                  canvasState.projectContents,
+                  canvasState.openFile,
+                )
 
-          return strategyApplicationResult(moveCommands.commands)
-        }
-      })
-    },
+                const { commands: reparentCommands, newPath } = reparentResult
+                return {
+                  oldPath: selectedElement,
+                  newPath: newPath,
+                  commands: [...offsetCommands, ...reparentCommands],
+                }
+              }
+            }, filteredSelectedElements)
+
+            let newPaths: Array<ElementPath> = []
+            let updatedTargetPaths: UpdatedPathMap = {}
+
+            commands.forEach((c) => {
+              newPaths.push(c.newPath)
+              updatedTargetPaths[EP.toString(c.oldPath)] = c.newPath
+            })
+
+            const moveCommands = absoluteMoveStrategy.apply(
+              canvasState,
+              {
+                ...interactionState,
+                updatedTargetPaths: updatedTargetPaths,
+              },
+              strategyState,
+            )
+
+            return strategyApplicationResult([
+              ...moveCommands.commands,
+              ...commands.flatMap((c) => c.commands),
+              updateSelectedViews('always', newPaths),
+              setElementsToRerenderCommand([...newPaths, ...filteredSelectedElements]),
+              setCursorCommand('mid-interaction', CSSCursor.Move),
+            ])
+          } else {
+            const moveCommands = absoluteMoveStrategy.apply(
+              canvasState,
+              interactionState,
+              strategyState,
+            )
+
+            return strategyApplicationResult(moveCommands.commands)
+          }
+        })
+      },
+    }
   }
-}
 
 export const absoluteReparentStrategy = getAbsoluteReparentStrategy(
   'ABSOLUTE_REPARENT',
   'Reparent (Abs)',
-  'use-strict-bounds',
   2,
 )
 export const forcedAbsoluteReparentStrategy = getAbsoluteReparentStrategy(
   'FORCED_ABSOLUTE_REPARENT',
   'Reparent (Abs, Force)',
-  'allow-missing-bounds',
   0.5,
 )

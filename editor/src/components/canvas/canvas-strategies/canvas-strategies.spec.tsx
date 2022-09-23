@@ -20,13 +20,11 @@ import { keyboardAbsoluteResizeStrategy } from './keyboard-absolute-resize-strat
 
 const isResizableStrategyAndResults: Array<[CanvasStrategy, boolean]> = [
   [absoluteMoveStrategy, false],
-  [absoluteReparentStrategy, false],
   [absoluteDuplicateStrategy, false],
   [keyboardAbsoluteMoveStrategy, false],
   [keyboardAbsoluteResizeStrategy, true],
   [absoluteResizeBoundingBoxStrategy, true],
   [flexReorderStrategy, false],
-  [flexReparentToAbsoluteStrategy, false],
   [flexReparentToFlexStrategy, false],
   [convertToAbsoluteAndMoveStrategy, false],
   [absoluteReparentToFlexStrategy, false],

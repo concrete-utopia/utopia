@@ -30,9 +30,9 @@ export const reparentMetaStrategy: MetaCanvasStrategy = (
       'use-strict-bounds', // TODO cater for missing bounds case
     )
     if (findStrategyResult.strategy === 'ABSOLUTE_REPARENT_TO_ABSOLUTE') {
-      return [absoluteReparentStrategy]
+      return [absoluteReparentStrategy(findStrategyResult.newParent)]
     } else if (findStrategyResult.strategy === 'FLEX_REPARENT_TO_ABSOLUTE') {
-      return [flexReparentToAbsoluteStrategy]
+      return [flexReparentToAbsoluteStrategy(findStrategyResult.newParent)]
     } else if (findStrategyResult.strategy === 'ABSOLUTE_REPARENT_TO_FLEX') {
       return [absoluteReparentToFlexStrategy]
     } else if (findStrategyResult.strategy === 'FLEX_REPARENT_TO_FLEX') {
@@ -53,9 +53,9 @@ export const reparentMetaStrategy: MetaCanvasStrategy = (
       'allow-missing-bounds',
     )
     if (findStrategyResult.strategy === 'ABSOLUTE_REPARENT_TO_ABSOLUTE') {
-      return [forcedAbsoluteReparentStrategy]
+      return [forcedAbsoluteReparentStrategy(findStrategyResult.newParent)]
     } else if (findStrategyResult.strategy === 'FLEX_REPARENT_TO_ABSOLUTE') {
-      return [forcedFlexReparentToAbsoluteStrategy]
+      return [forcedFlexReparentToAbsoluteStrategy(findStrategyResult.newParent)]
     } else {
       // TODO cater for flex here?
       return []

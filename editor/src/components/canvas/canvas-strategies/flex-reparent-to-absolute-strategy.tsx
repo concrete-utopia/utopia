@@ -8,6 +8,7 @@ import {
   toString,
 } from '../../../core/shared/element-path'
 import { canvasPoint, offsetPoint, rectContainsPoint } from '../../../core/shared/math-utils'
+import { ElementPath } from '../../../core/shared/project-file-types'
 import { EditorState, EditorStatePatch } from '../../editor/store/editor-state'
 import { foldAndApplyCommandsInner, WhenToRun } from '../commands/commands'
 import { duplicateElement } from '../commands/duplicate-element-command'
@@ -36,124 +37,117 @@ import {
 } from './reparent-strategy-helpers'
 import { getDragTargets } from './shared-absolute-move-strategy-helpers'
 
-function getFlexReparentToAbsoluteStrategy(
-  id: 'FLEX_REPARENT_TO_ABSOLUTE' | 'FORCED_FLEX_REPARENT_TO_ABSOLUTE',
-  name: string,
-  missingBoundsHandling: MissingBoundsHandling,
-  fitness: number,
-): CanvasStrategy {
-  return {
-    id: id,
-    name: () => name,
-    isApplicable: (canvasState, _interactionState, metadata) => {
-      const selectedElements = getTargetPathsFromInteractionTarget(canvasState.interactionTarget)
-      if (selectedElements.length == 1) {
-        return MetadataUtils.isParentYogaLayoutedContainerAndElementParticipatesInLayout(
-          selectedElements[0],
-          metadata,
-        )
-      } else {
-        return false
-      }
-    },
-    controlsToRender: [
-      {
-        control: DragOutlineControl,
-        key: 'ghost-outline-control',
-        show: 'visible-only-while-active',
-      },
-      {
-        control: ParentOutlines,
-        key: 'parent-outlines-control',
-        show: 'visible-only-while-active',
-      },
-      {
-        control: ParentBounds,
-        key: 'parent-bounds-control',
-        show: 'visible-only-while-active',
-      },
-    ],
-    fitness: () => fitness,
-    apply: (canvasState, interactionState, strategyState) => {
-      const selectedElements = getTargetPathsFromInteractionTarget(canvasState.interactionTarget)
-      const filteredSelectedElements = getDragTargets(selectedElements)
-      return ifAllowedToReparent(canvasState, strategyState, filteredSelectedElements, () => {
-        if (
-          interactionState.interactionData.type !== 'DRAG' ||
-          interactionState.interactionData.drag == null
-        ) {
-          return emptyStrategyApplicationResult
+const getFlexReparentToAbsoluteStrategy =
+  (
+    id: 'FLEX_REPARENT_TO_ABSOLUTE' | 'FORCED_FLEX_REPARENT_TO_ABSOLUTE',
+    name: string,
+    missingBoundsHandling: MissingBoundsHandling,
+    fitness: number,
+  ) =>
+  (newParent: ElementPath): CanvasStrategy => {
+    return {
+      id: id,
+      name: () => name,
+      isApplicable: (canvasState, _interactionState, metadata) => {
+        const selectedElements = getTargetPathsFromInteractionTarget(canvasState.interactionTarget)
+        if (selectedElements.length == 1) {
+          return MetadataUtils.isParentYogaLayoutedContainerAndElementParticipatesInLayout(
+            selectedElements[0],
+            metadata,
+          )
+        } else {
+          return false
         }
-
-        const pointOnCanvas = offsetPoint(
-          interactionState.interactionData.originalDragStart,
-          interactionState.interactionData.drag,
-        )
-
-        const { newParent } = getReparentTargetUnified(
-          filteredSelectedElements,
-          pointOnCanvas,
-          interactionState.interactionData.modifiers.cmd,
-          canvasState,
-          strategyState.startingMetadata,
-          strategyState.startingAllElementProps,
-          missingBoundsHandling,
-        )
-
-        let duplicatedElementNewUids = {
-          ...strategyState.customStrategyState.duplicatedElementNewUids,
-        }
-
-        const placeholderCloneCommands = filteredSelectedElements.flatMap((element) => {
-          const newParentADescendantOfCurrentParent =
-            newParent != null && isDescendantOf(newParent, parentPath(element))
-
-          if (newParentADescendantOfCurrentParent) {
-            // if the new parent a descendant of the current parent, it means we want to keep a placeholder element where the original dragged element was, to avoid the new parent shifting around on the screen
-            const selectedElementString = toString(element)
-            const newUid =
-              duplicatedElementNewUids[selectedElementString] ??
-              generateUidWithExistingComponents(canvasState.projectContents)
-            duplicatedElementNewUids[selectedElementString] = newUid
-
-            const newPath = appendToPath(parentPath(element), newUid)
-
-            return [
-              duplicateElement('mid-interaction', element, newUid),
-              wildcardPatch('mid-interaction', {
-                hiddenInstances: { $push: [newPath] },
-              }),
-            ]
-          } else {
-            return []
+      },
+      controlsToRender: [
+        {
+          control: DragOutlineControl,
+          key: 'ghost-outline-control',
+          show: 'visible-only-while-active',
+        },
+        {
+          control: ParentOutlines,
+          key: 'parent-outlines-control',
+          show: 'visible-only-while-active',
+        },
+        {
+          control: ParentBounds,
+          key: 'parent-bounds-control',
+          show: 'visible-only-while-active',
+        },
+      ],
+      fitness: () => fitness,
+      apply: (canvasState, interactionState, strategyState) => {
+        const selectedElements = getTargetPathsFromInteractionTarget(canvasState.interactionTarget)
+        const filteredSelectedElements = getDragTargets(selectedElements)
+        return ifAllowedToReparent(canvasState, strategyState, filteredSelectedElements, () => {
+          if (
+            interactionState.interactionData.type !== 'DRAG' ||
+            interactionState.interactionData.drag == null
+          ) {
+            return emptyStrategyApplicationResult
           }
+
+          const pointOnCanvas = offsetPoint(
+            interactionState.interactionData.originalDragStart,
+            interactionState.interactionData.drag,
+          )
+
+          let duplicatedElementNewUids = {
+            ...strategyState.customStrategyState.duplicatedElementNewUids,
+          }
+
+          const placeholderCloneCommands = filteredSelectedElements.flatMap((element) => {
+            const newParentADescendantOfCurrentParent =
+              newParent != null && isDescendantOf(newParent, parentPath(element))
+
+            if (newParentADescendantOfCurrentParent) {
+              // if the new parent a descendant of the current parent, it means we want to keep a placeholder element where the original dragged element was, to avoid the new parent shifting around on the screen
+              const selectedElementString = toString(element)
+              const newUid =
+                duplicatedElementNewUids[selectedElementString] ??
+                generateUidWithExistingComponents(canvasState.projectContents)
+              duplicatedElementNewUids[selectedElementString] = newUid
+
+              const newPath = appendToPath(parentPath(element), newUid)
+
+              return [
+                duplicateElement('mid-interaction', element, newUid),
+                wildcardPatch('mid-interaction', {
+                  hiddenInstances: { $push: [newPath] },
+                }),
+              ]
+            } else {
+              return []
+            }
+          })
+
+          const escapeHatchCommands = getEscapeHatchCommands(
+            filteredSelectedElements,
+            strategyState.startingMetadata,
+            canvasState,
+            canvasPoint({ x: 0, y: 0 }),
+          ).commands
+
+          return strategyApplicationResult([
+            ...placeholderCloneCommands,
+            ...escapeHatchCommands,
+            updateFunctionCommand('always', (editorState, lifecycle): Array<EditorStatePatch> => {
+              return runAbsoluteReparentStrategyForFreshlyConvertedElement(
+                canvasState.builtInDependencies,
+                editorState,
+                strategyState,
+                interactionState,
+                lifecycle,
+                missingBoundsHandling,
+                newParent,
+              )
+            }),
+          ])
         })
-
-        const escapeHatchCommands = getEscapeHatchCommands(
-          filteredSelectedElements,
-          strategyState.startingMetadata,
-          canvasState,
-          canvasPoint({ x: 0, y: 0 }),
-        ).commands
-
-        return strategyApplicationResult([
-          ...placeholderCloneCommands,
-          ...escapeHatchCommands,
-          updateFunctionCommand('always', (editorState, lifecycle): Array<EditorStatePatch> => {
-            return runAbsoluteReparentStrategyForFreshlyConvertedElement(
-              canvasState.builtInDependencies,
-              editorState,
-              strategyState,
-              interactionState,
-              lifecycle,
-              missingBoundsHandling,
-            )
-          }),
-        ])
-      })
-    },
+      },
+    }
   }
-}
 
 function runAbsoluteReparentStrategyForFreshlyConvertedElement(
   builtInDependencies: BuiltInDependencies,
@@ -162,13 +156,15 @@ function runAbsoluteReparentStrategyForFreshlyConvertedElement(
   interactionState: InteractionSession,
   commandLifecycle: 'mid-interaction' | 'end-interaction',
   missingBoundsHandling: MissingBoundsHandling,
+  newParent: ElementPath,
 ): Array<EditorStatePatch> {
   const canvasState = pickCanvasStateFromEditorState(editorState, builtInDependencies)
   const isForced = missingBoundsHandling === 'allow-missing-bounds'
 
   const absoluteReparentStrategyToUse = isForced
-    ? forcedAbsoluteReparentStrategy
-    : absoluteReparentStrategy
+    ? forcedAbsoluteReparentStrategy(newParent)
+    : absoluteReparentStrategy(newParent)
+
   const reparentCommands = absoluteReparentStrategyToUse.apply(
     canvasState,
     interactionState,
