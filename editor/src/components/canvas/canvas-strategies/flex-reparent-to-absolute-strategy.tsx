@@ -40,6 +40,7 @@ function getFlexReparentToAbsoluteStrategy(
   id: 'FLEX_REPARENT_TO_ABSOLUTE' | 'FORCED_FLEX_REPARENT_TO_ABSOLUTE',
   name: string,
   missingBoundsHandling: MissingBoundsHandling,
+  fitness: number,
 ): CanvasStrategy {
   return {
     id: id,
@@ -72,16 +73,7 @@ function getFlexReparentToAbsoluteStrategy(
         show: 'visible-only-while-active',
       },
     ],
-    fitness: (canvasState, interactionState, strategyState) => {
-      // All 4 reparent strategies use the same fitness function getFitnessForReparentStrategy
-      return getFitnessForReparentStrategy(
-        'FLEX_REPARENT_TO_ABSOLUTE',
-        canvasState,
-        interactionState,
-        strategyState,
-        missingBoundsHandling,
-      )
-    },
+    fitness: () => fitness,
     apply: (canvasState, interactionState, strategyState) => {
       const selectedElements = getTargetPathsFromInteractionTarget(canvasState.interactionTarget)
       const filteredSelectedElements = getDragTargets(selectedElements)
@@ -191,9 +183,11 @@ export const flexReparentToAbsoluteStrategy = getFlexReparentToAbsoluteStrategy(
   'FLEX_REPARENT_TO_ABSOLUTE',
   'Reparent (Abs)',
   'use-strict-bounds',
+  2,
 )
 export const forcedFlexReparentToAbsoluteStrategy = getFlexReparentToAbsoluteStrategy(
   'FORCED_FLEX_REPARENT_TO_ABSOLUTE',
   'Reparent (Abs, Force)',
   'allow-missing-bounds',
+  0.5,
 )

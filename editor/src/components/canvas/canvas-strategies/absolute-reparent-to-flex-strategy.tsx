@@ -64,20 +64,7 @@ export const absoluteReparentToFlexStrategy: CanvasStrategy = {
       show: 'visible-only-while-active',
     },
   ],
-  fitness: function (
-    canvasState: InteractionCanvasState,
-    interactionState: InteractionSession,
-    strategyState: StrategyState,
-  ): number {
-    // All 4 reparent strategies use the same fitness function getFitnessForReparentStrategy
-    return getFitnessForReparentStrategy(
-      'ABSOLUTE_REPARENT_TO_FLEX',
-      canvasState,
-      interactionState,
-      strategyState,
-      'use-strict-bounds',
-    )
-  },
+  fitness: () => 2,
   apply: function (
     canvasState: InteractionCanvasState,
     interactionSession: InteractionSession,

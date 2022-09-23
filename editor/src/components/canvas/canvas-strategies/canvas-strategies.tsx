@@ -49,6 +49,7 @@ import { NonResizableControl } from '../controls/select-mode/non-resizable-contr
 import { drawToInsertStrategy } from './draw-to-insert-strategy'
 import { flexResizeBasicStrategy } from './flex-resize-basic-strategy'
 import { optionalMap } from '../../../core/shared/optional-utils'
+import { reparentMetaStrategy } from './reparent-meta-strategy'
 
 export type MetaCanvasStrategy = (
   canvasState: InteractionCanvasState,
@@ -59,18 +60,12 @@ export type MetaCanvasStrategy = (
 
 const existingCanvasStrategies: MetaCanvasStrategy = () => [
   absoluteMoveStrategy,
-  absoluteReparentStrategy,
-  forcedAbsoluteReparentStrategy,
   absoluteDuplicateStrategy,
   keyboardAbsoluteMoveStrategy,
   keyboardAbsoluteResizeStrategy,
   absoluteResizeBoundingBoxStrategy,
   flexReorderStrategy,
-  flexReparentToAbsoluteStrategy,
-  forcedFlexReparentToAbsoluteStrategy,
-  flexReparentToFlexStrategy,
   convertToAbsoluteAndMoveStrategy,
-  absoluteReparentToFlexStrategy,
   dragToInsertStrategy,
   drawToInsertStrategy,
   flowReorderAutoConversionStrategy,
@@ -81,7 +76,10 @@ const existingCanvasStrategies: MetaCanvasStrategy = () => [
   flexResizeBasicStrategy,
 ]
 
-export const RegisteredCanvasStrategies: Array<MetaCanvasStrategy> = [existingCanvasStrategies]
+export const RegisteredCanvasStrategies: Array<MetaCanvasStrategy> = [
+  existingCanvasStrategies,
+  reparentMetaStrategy,
+]
 
 export function pickCanvasStateFromEditorState(
   editorState: EditorState,

@@ -31,6 +31,7 @@ function getAbsoluteReparentStrategy(
   id: 'ABSOLUTE_REPARENT' | 'FORCED_ABSOLUTE_REPARENT',
   name: string,
   missingBoundsHandling: MissingBoundsHandling,
+  fitness: number,
 ): CanvasStrategy {
   return {
     id: id,
@@ -66,16 +67,7 @@ function getAbsoluteReparentStrategy(
         show: 'visible-only-while-active',
       },
     ],
-    fitness: (canvasState, interactionState, strategyState) => {
-      // All 4 reparent strategies use the same fitness function getFitnessForReparentStrategy
-      return getFitnessForReparentStrategy(
-        'ABSOLUTE_REPARENT_TO_ABSOLUTE',
-        canvasState,
-        interactionState,
-        strategyState,
-        missingBoundsHandling,
-      )
-    },
+    fitness: () => fitness,
     apply: (canvasState, interactionState, strategyState) => {
       const { interactionTarget, projectContents, openFile, nodeModules } = canvasState
       const selectedElements = getTargetPathsFromInteractionTarget(interactionTarget)
@@ -188,9 +180,11 @@ export const absoluteReparentStrategy = getAbsoluteReparentStrategy(
   'ABSOLUTE_REPARENT',
   'Reparent (Abs)',
   'use-strict-bounds',
+  2,
 )
 export const forcedAbsoluteReparentStrategy = getAbsoluteReparentStrategy(
   'FORCED_ABSOLUTE_REPARENT',
   'Reparent (Abs, Force)',
   'allow-missing-bounds',
+  0.5,
 )

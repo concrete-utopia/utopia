@@ -38,6 +38,7 @@ import { updateSelectedViews } from '../commands/update-selected-views-command'
 import { wildcardPatch } from '../commands/wildcard-patch-command'
 import { getAllTargetsAtPointAABB } from '../dom-lookup'
 import {
+  CanvasStrategy,
   emptyStrategyApplicationResult,
   getTargetPathsFromInteractionTarget,
   InteractionCanvasState,
@@ -162,7 +163,8 @@ export function getFitnessForReparentStrategy(
   const foundReparentStrategy = findReparentStrategy(
     canvasState,
     interactionState,
-    strategyState,
+    strategyState.startingMetadata,
+    strategyState.startingAllElementProps,
     missingBoundsHandling,
   )
   if (
@@ -190,10 +192,11 @@ function targetIsValid(
   }
 }
 
-function findReparentStrategy(
+export function findReparentStrategy(
   canvasState: InteractionCanvasState,
   interactionState: InteractionSession,
-  strategyState: StrategyState,
+  startingMetadata: ElementInstanceMetadataMap,
+  startingAllElementProps: AllElementProps,
   missingBoundsHandling: MissingBoundsHandling,
 ): FindReparentStrategyResult {
   const selectedElements = getTargetPathsFromInteractionTarget(canvasState.interactionTarget)
@@ -221,8 +224,8 @@ function findReparentStrategy(
     pointOnCanvas,
     cmdPressed,
     canvasState,
-    strategyState.startingMetadata,
-    strategyState.startingAllElementProps,
+    startingMetadata,
+    startingAllElementProps,
     missingBoundsHandling,
   )
 
@@ -245,8 +248,8 @@ function findReparentStrategy(
     !parentStayedTheSame
   ) {
     return reparentStrategyForParent(
-      strategyState.startingMetadata,
-      strategyState.startingMetadata,
+      startingMetadata,
+      startingMetadata,
       filteredSelectedElements,
       newParentPath,
     )
