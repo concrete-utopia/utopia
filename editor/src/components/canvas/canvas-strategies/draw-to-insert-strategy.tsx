@@ -189,7 +189,7 @@ export const drawToInsertStrategy: CanvasStrategy = {
         )
 
         if (insertionCommand != null) {
-          const reparentCommand = updateFunctionCommand(
+          const highlightParentCommand = updateFunctionCommand(
             'always',
             (editorState): Array<EditorStatePatch> => {
               return runTargetStrategiesForFreshlyInsertedElementToHighlightNewParent(
@@ -204,7 +204,7 @@ export const drawToInsertStrategy: CanvasStrategy = {
             },
           )
 
-          return strategyApplicationResult([insertionCommand.command, reparentCommand])
+          return strategyApplicationResult([insertionCommand.command, highlightParentCommand])
         }
       }
     }
