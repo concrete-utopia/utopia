@@ -25,6 +25,7 @@ import {
   CanvasStrategy,
   emptyStrategyApplicationResult,
   getTargetPathsFromInteractionTarget,
+  InteractionLifecycle,
   strategyApplicationResult,
 } from './canvas-strategy-types'
 import { getEscapeHatchCommands } from './convert-to-absolute-and-move-strategy'
@@ -172,9 +173,9 @@ function runAbsoluteReparentStrategyForFreshlyConvertedElement(
   editorState: EditorState,
   strategyState: StrategyState,
   interactionState: InteractionSession,
-  commandLifecycle: 'mid-interaction' | 'end-interaction',
+  commandLifecycle: InteractionLifecycle,
   missingBoundsHandling: MissingBoundsHandling,
-  strategyLifeCycle: 'mid-interaction' | 'end-interaction',
+  strategyLifeCycle: InteractionLifecycle,
 ): Array<EditorStatePatch> {
   const canvasState = pickCanvasStateFromEditorState(editorState, builtInDependencies)
   const isForced = missingBoundsHandling === 'allow-missing-bounds'

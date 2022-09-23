@@ -5,6 +5,7 @@ import {
   emptyStrategyApplicationResult,
   getInsertionSubjectsFromInteractionTarget,
   InteractionCanvasState,
+  InteractionLifecycle,
   strategyApplicationResult,
   targetPaths,
 } from './canvas-strategy-types'
@@ -195,9 +196,9 @@ function runTargetStrategiesForFreshlyInsertedElement(
   editorState: EditorState,
   strategyState: StrategyState,
   interactionState: InteractionSession,
-  commandLifecycle: 'mid-interaction' | 'end-interaction',
+  commandLifecycle: InteractionLifecycle,
   insertionSubjects: Array<{ command: InsertElementInsertionSubject; frame: CanvasRectangle }>,
-  strategyLifeCycle: 'mid-interaction' | 'end-interaction',
+  strategyLifeCycle: InteractionLifecycle,
 ): Array<EditorStatePatch> {
   const canvasState = pickCanvasStateFromEditorState(editorState, builtInDependencies)
 

@@ -19,6 +19,7 @@ import { pickCanvasStateFromEditorState } from './canvas-strategies'
 import {
   CanvasStrategy,
   getTargetPathsFromInteractionTarget,
+  InteractionLifecycle,
   strategyApplicationResult,
 } from './canvas-strategy-types'
 import { InteractionSession, StrategyState } from './interaction-state'
@@ -149,8 +150,8 @@ function runMoveStrategyForFreshlyDuplicatedElements(
   editorState: EditorState,
   strategyState: StrategyState,
   interactionState: InteractionSession,
-  commandLifecycle: 'mid-interaction' | 'end-interaction',
-  strategyLifecycle: 'mid-interaction' | 'end-interaction',
+  commandLifecycle: InteractionLifecycle,
+  strategyLifecycle: InteractionLifecycle,
 ): Array<EditorStatePatch> {
   const canvasState = pickCanvasStateFromEditorState(editorState, builtInDependencies)
 

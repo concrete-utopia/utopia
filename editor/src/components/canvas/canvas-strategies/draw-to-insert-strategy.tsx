@@ -5,6 +5,7 @@ import {
   emptyStrategyApplicationResult,
   getInsertionSubjectsFromInteractionTarget,
   InteractionCanvasState,
+  InteractionLifecycle,
   strategyApplicationResult,
   targetPaths,
 } from './canvas-strategy-types'
@@ -252,7 +253,7 @@ function runTargetStrategiesForFreshlyInsertedElementToReparent(
   interactionState: InteractionSession,
   insertionSubject: ElementInsertionSubject,
   frame: CanvasRectangle,
-  strategyLifecycle: 'mid-interaction' | 'end-interaction',
+  strategyLifecycle: InteractionLifecycle,
 ): Array<EditorStatePatch> {
   const canvasState = pickCanvasStateFromEditorState(editorState, builtInDependencies)
 
@@ -328,10 +329,10 @@ function runTargetStrategiesForFreshlyInsertedElementToResize(
   editorState: EditorState,
   strategyState: StrategyState,
   interactionState: InteractionSession,
-  commandLifecycle: 'mid-interaction' | 'end-interaction',
+  commandLifecycle: InteractionLifecycle,
   insertionSubject: ElementInsertionSubject,
   frame: CanvasRectangle,
-  strategyLifecycle: 'mid-interaction' | 'end-interaction',
+  strategyLifecycle: InteractionLifecycle,
 ): Array<EditorStatePatch> {
   const canvasState = pickCanvasStateFromEditorState(editorState, builtInDependencies)
 
