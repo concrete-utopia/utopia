@@ -51,13 +51,15 @@ function findSiblingIndexUnderPoint(
 
 export function getNewDisplayTypeForIndex(
   metadata: ElementInstanceMetadataMap,
-  element: ElementInstanceMetadata | null,
+  target: ElementPath,
   targetSibling: ElementPath,
 ) {
   const displayType = MetadataUtils.findElementByElementPath(metadata, targetSibling)
     ?.specialSizeMeasurements.display
   const displayBlockInlineBlock =
     displayType === 'block' || displayType === 'inline-block' ? displayType : undefined
+
+  const element = MetadataUtils.findElementByElementPath(metadata, target)
   return getNewDisplayType(element, displayBlockInlineBlock)
 }
 
@@ -119,13 +121,11 @@ export function getFlowReorderIndex(
 ): {
   newIndex: number
   targetSiblingUnderMouse: ElementPath | null
-  newDisplayType: AddDisplayBlockOrOnline | RemoveDisplayProp | null
 } {
   if (target === null) {
     return {
       newIndex: -1,
       targetSiblingUnderMouse: null,
-      newDisplayType: null,
     }
   }
   const siblings = MetadataUtils.getSiblingsProjectContentsOrdered(latestMetadata, target).map(
@@ -144,20 +144,11 @@ export function getFlowReorderIndex(
     return {
       newIndex: -1,
       targetSiblingUnderMouse: null,
-      newDisplayType: null,
     }
   } else {
-    // Convert display type if needed
-    const newDisplayType = getNewDisplayTypeForIndex(
-      latestMetadata,
-      MetadataUtils.findElementByElementPath(latestMetadata, target),
-      siblings[reorderResult.newIndex],
-    )
-
     return {
       newIndex: reorderResult.newIndex,
       targetSiblingUnderMouse: reorderResult.targetSiblingUnderMouse,
-      newDisplayType: newDisplayType,
     }
   }
 }

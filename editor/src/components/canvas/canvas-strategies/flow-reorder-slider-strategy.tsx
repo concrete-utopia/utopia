@@ -84,7 +84,7 @@ export const flowReorderSliderStategy: CanvasStrategy = {
 
       const newDisplayType = getNewDisplayTypeForIndex(
         strategyState.startingMetadata,
-        MetadataUtils.findElementByElementPath(strategyState.startingMetadata, target),
+        target,
         siblingsOfTarget[newIndex],
       )
 

@@ -19,7 +19,11 @@ import {
 import { absolute } from '../../../utils/utils'
 import { InteractionSession, StrategyState } from './interaction-state'
 import { ElementInstanceMetadataMap } from '../../../core/shared/element-template'
-import { getFlowReorderIndex, getOptionalDisplayPropCommands } from './flow-reorder-helpers'
+import {
+  getFlowReorderIndex,
+  getNewDisplayTypeForIndex,
+  getOptionalDisplayPropCommands,
+} from './flow-reorder-helpers'
 import {
   FlowReorderAreaIndicator,
   FlowReorderDragOutline,
@@ -95,7 +99,7 @@ function flowReorderApplyCommon(
     const unpatchedIndex = siblingsOfTarget.findIndex((sibling) => EP.pathsEqual(sibling, target))
     const lastReorderIdx = strategyState.customStrategyState.lastReorderIdx ?? unpatchedIndex
 
-    const { newIndex, newDisplayType, targetSiblingUnderMouse } = getFlowReorderIndex(
+    const { newIndex, targetSiblingUnderMouse } = getFlowReorderIndex(
       interactionState.latestMetadata,
       rawPointOnCanvas,
       target,
@@ -110,6 +114,12 @@ function flowReorderApplyCommon(
 
     const newResultOrLastIndex =
       !mouseStillOverPreviousTargetSibling && newIndexFound ? newIndex : lastReorderIdx
+
+    const newDisplayType = getNewDisplayTypeForIndex(
+      strategyState.startingMetadata,
+      target,
+      siblingsOfTarget[newResultOrLastIndex],
+    )
 
     return strategyApplicationResult(
       [
