@@ -827,19 +827,7 @@ export class EditorCanvas extends React.Component<EditorCanvasProps> {
     const transientActions = actions.filter((action) => action.action === 'TRANSIENT_ACTIONS')
 
     if (realActions.length > 0) {
-      // if there is a clearInteractionSession action, dispatch the later actions separately
-      const clearInteractionSessionIdx = realActions.findIndex(
-        (a) => a.action === 'CLEAR_INTERACTION_SESSION',
-      )
-      if (
-        clearInteractionSessionIdx === -1 ||
-        clearInteractionSessionIdx === realActions.length - 1
-      ) {
-        this.props.dispatch(realActions, 'canvas')
-      } else {
-        this.props.dispatch(realActions.slice(0, clearInteractionSessionIdx + 1), 'canvas')
-        this.props.dispatch(realActions.slice(clearInteractionSessionIdx), 'canvas')
-      }
+      this.props.dispatch(realActions, 'canvas')
     }
 
     if (transientActions.length > 0) {
