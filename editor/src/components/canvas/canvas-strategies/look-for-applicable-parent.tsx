@@ -8,11 +8,7 @@ import { memoize } from '../../../core/shared/memoize'
 import { ElementPath } from '../../../core/shared/project-file-types'
 import { assertNever } from '../../../core/shared/utils'
 import { AllElementProps } from '../../editor/store/editor-state'
-import {
-  existingStrategies,
-  getApplicableStrategies,
-  getApplicableStrategiesOrderedByFitness,
-} from './canvas-strategies'
+import { existingStrategies, getApplicableStrategiesOrderedByFitness } from './canvas-strategies'
 import { CanvasStrategy, InteractionCanvasState, InteractionTarget } from './canvas-strategy-types'
 import { createEmptyStrategyState, InteractionSession } from './interaction-state'
 import { isFeatureEnabled } from '../../../utils/feature-switches'

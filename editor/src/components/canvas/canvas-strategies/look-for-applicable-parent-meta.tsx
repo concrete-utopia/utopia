@@ -26,13 +26,11 @@ export const lookForApplicableParentMeta: MetaCanvasStrategy = (
     allElementProps,
   )
 
-  if (result == null) {
+  if (result == null || result.strategies.length < 1) {
     return []
   }
 
-  return result.strategies.map((s) =>
-    tweakStrategy(s, result.effectiveTarget, result.componentsInSubtree),
-  )
+  return [tweakStrategy(result.strategies[0], result.effectiveTarget, result.componentsInSubtree)]
 }
 
 function tweakStrategy(
