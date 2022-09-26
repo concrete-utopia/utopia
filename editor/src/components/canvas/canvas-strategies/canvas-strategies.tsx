@@ -103,6 +103,13 @@ export interface ApplicableStrategy {
   name: string
 }
 
+export function applicableStrategy(strategy: CanvasStrategy, name: string): ApplicableStrategy {
+  return {
+    strategy: strategy,
+    name: name,
+  }
+}
+
 export function getApplicableStrategies(
   strategies: Array<CanvasStrategy>,
   canvasState: InteractionCanvasState,
