@@ -37,6 +37,7 @@ import { ElementInstanceMetadataMap } from '../../../core/shared/element-templat
 import { cmdModifier } from '../../../utils/modifiers'
 import { DragOutlineControl } from '../controls/select-mode/drag-outline-control'
 import { FlexReparentTargetIndicator } from '../controls/select-mode/flex-reparent-target-indicator'
+import { DefaultInsertHeight, DefaultInsertWidth } from '../insertion-strategy-utils'
 
 export const dragToInsertStrategy: CanvasStrategy = {
   id: 'DRAG_TO_INSERT',
@@ -120,9 +121,6 @@ export const dragToInsertStrategy: CanvasStrategy = {
   },
 }
 
-const DefaultWidth = 100
-const DefaultHeight = 100
-
 function getInsertionCommands(
   subject: InsertionSubject,
   interactionState: InteractionSession,
@@ -138,10 +136,10 @@ function getInsertionCommands(
     const pointOnCanvas = interactionState.interactionData.dragStart
 
     const frame = canvasRectangle({
-      x: pointOnCanvas.x - DefaultWidth / 2,
-      y: pointOnCanvas.y - DefaultHeight / 2,
-      width: DefaultWidth,
-      height: DefaultHeight,
+      x: pointOnCanvas.x - DefaultInsertWidth / 2,
+      y: pointOnCanvas.y - DefaultInsertHeight / 2,
+      width: DefaultInsertWidth,
+      height: DefaultInsertHeight,
     })
 
     const updatedAttributesWithPosition = getStyleAttributesForFrameInAbsolutePosition(
