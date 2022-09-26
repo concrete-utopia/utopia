@@ -14,14 +14,11 @@ import { SetProperty, setProperty } from '../commands/set-property-command'
 function isValidSibling(
   targetElementMetadata: ElementInstanceMetadata | null,
   siblingMetadata: ElementInstanceMetadata | null,
-  displayTypeFiltering: 'same-display-type-only' | 'allow-mixed-display-type',
 ): boolean {
   const targetDisplayType = targetElementMetadata?.specialSizeMeasurements.display
   const siblingDisplayType = siblingMetadata?.specialSizeMeasurements.display
 
-  return (
-    displayTypeFiltering === 'allow-mixed-display-type' || siblingDisplayType === targetDisplayType
-  )
+  return siblingDisplayType === targetDisplayType
 }
 
 function findSiblingIndexUnderPoint(
@@ -29,9 +26,6 @@ function findSiblingIndexUnderPoint(
   target: ElementPath | null,
   siblings: Array<ElementPath>,
   metadata: ElementInstanceMetadataMap,
-  displayTypeFiltering:
-    | 'same-display-type-only'
-    | 'allow-mixed-display-type' = 'allow-mixed-display-type',
 ): { newIndex: number; targetSiblingUnderMouse: ElementPath | null } {
   const targetElementMetadata = MetadataUtils.findElementByElementPath(metadata, target)
 
@@ -39,7 +33,7 @@ function findSiblingIndexUnderPoint(
     const siblingMetadata = MetadataUtils.findElementByElementPath(metadata, sibling)
     const frame = MetadataUtils.getFrameInCanvasCoords(sibling, metadata)
     return (
-      isValidSibling(targetElementMetadata, siblingMetadata, displayTypeFiltering) &&
+      isValidSibling(targetElementMetadata, siblingMetadata) &&
       frame != null &&
       rectContainsPoint(frame, point) &&
       MetadataUtils.isPositionedByFlow(siblingMetadata) &&
@@ -115,9 +109,6 @@ export function getFlowReorderIndex(
   latestMetadata: ElementInstanceMetadataMap,
   point: CanvasVector,
   target: ElementPath | null,
-  displayTypeFiltering:
-    | 'same-display-type-only'
-    | 'allow-mixed-display-type' = 'allow-mixed-display-type',
 ): {
   newIndex: number
   targetSiblingUnderMouse: ElementPath | null
@@ -132,13 +123,7 @@ export function getFlowReorderIndex(
     (element) => element.elementPath,
   )
 
-  const reorderResult = findSiblingIndexUnderPoint(
-    point,
-    target,
-    siblings,
-    latestMetadata,
-    displayTypeFiltering,
-  )
+  const reorderResult = findSiblingIndexUnderPoint(point, target, siblings, latestMetadata)
   if (reorderResult.newIndex === -1) {
     // We were unable to find an appropriate entry.
     return {
@@ -157,18 +142,13 @@ const StyleDisplayProp = stylePropPathMappingFn('display', ['style'])
 export function getOptionalDisplayPropCommands(
   target: ElementPath,
   newDisplayType: AddDisplayBlockOrOnline | RemoveDisplayProp | null,
-  withAutoConversion: 'with-auto-conversion' | 'no-conversion',
 ): Array<SetProperty | DeleteProperties> {
-  if (withAutoConversion === 'no-conversion') {
-    return []
+  if (newDisplayType?.type === 'add') {
+    return [setProperty('always', target, StyleDisplayProp, newDisplayType.display)]
+  } else if (newDisplayType?.type === 'remove') {
+    return [deleteProperties('always', target, [StyleDisplayProp])]
   } else {
-    if (newDisplayType?.type === 'add') {
-      return [setProperty('always', target, StyleDisplayProp, newDisplayType.display)]
-    } else if (newDisplayType?.type === 'remove') {
-      return [deleteProperties('always', target, [StyleDisplayProp])]
-    } else {
-      return []
-    }
+    return []
   }
 }
 

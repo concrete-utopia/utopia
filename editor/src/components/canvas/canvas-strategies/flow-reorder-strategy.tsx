@@ -36,7 +36,6 @@ export function isFlowReorderConversionApplicable(
   interactionSession: InteractionSession | null,
   metadata: ElementInstanceMetadataMap,
   allElementProps: AllElementProps,
-  displayTypeFiltering: 'no-filter' | 'requires-mixed-display-type' = 'requires-mixed-display-type',
 ): boolean {
   const selectedElements = getTargetPathsFromInteractionTarget(canvasState.interactionTarget)
   if (selectedElements.length === 1) {
@@ -44,17 +43,7 @@ export function isFlowReorderConversionApplicable(
     const elementMetadata = MetadataUtils.findElementByElementPath(metadata, target)
     const siblings = MetadataUtils.getSiblings(metadata, target)
     if (siblings.length > 1 && MetadataUtils.isPositionedByFlow(elementMetadata)) {
-      // Strategies that might convert while reordering between 'block' and 'inline-block' are shown only if there is a possibilty of conversion
-      if (displayTypeFiltering === 'requires-mixed-display-type') {
-        const targetDisplayType = elementMetadata?.specialSizeMeasurements.display
-        return siblings.some(
-          (sibling) =>
-            MetadataUtils.isPositionedByFlow(sibling) &&
-            sibling.specialSizeMeasurements.display !== targetDisplayType,
-        )
-      } else {
-        return true
-      }
+      return siblings.some((sibling) => MetadataUtils.isPositionedByFlow(sibling))
     } else {
       return false
     }
@@ -67,8 +56,6 @@ function flowReorderApplyCommon(
   canvasState: InteractionCanvasState,
   interactionState: InteractionSession,
   strategyState: StrategyState,
-  withAutoConversion: 'with-auto-conversion' | 'no-conversion',
-  displayTypeFiltering: 'allow-mixed-display-type' | 'same-display-type-only',
 ): StrategyApplicationResult {
   if (interactionState.interactionData.type !== 'DRAG') {
     return emptyStrategyApplicationResult
@@ -103,7 +90,6 @@ function flowReorderApplyCommon(
       interactionState.latestMetadata,
       rawPointOnCanvas,
       target,
-      displayTypeFiltering,
     )
 
     const newIndexFound = newIndex > -1
@@ -127,7 +113,7 @@ function flowReorderApplyCommon(
         setElementsToRerenderCommand(siblingsOfTarget),
         updateHighlightedViews('mid-interaction', []),
         setCursorCommand('mid-interaction', CSSCursor.Move),
-        ...getOptionalDisplayPropCommands(target, newDisplayType, withAutoConversion),
+        ...getOptionalDisplayPropCommands(target, newDisplayType),
       ],
       {
         lastReorderIdx: newResultOrLastIndex,
@@ -139,9 +125,9 @@ function flowReorderApplyCommon(
   }
 }
 
-export const flowReorderAutoConversionStrategy: CanvasStrategy = {
-  id: 'FLOW_REORDER_AUTO_CONVERSION',
-  name: () => 'Reorder (Flow, Auto)',
+export const flowReorderStrategy: CanvasStrategy = {
+  id: 'FLOW_REORDER',
+  name: () => 'Reorder (Flow)',
   isApplicable: isFlowReorderConversionApplicable,
   controlsToRender: [
     {
@@ -161,7 +147,7 @@ export const flowReorderAutoConversionStrategy: CanvasStrategy = {
     },
   ], // Uses existing hooks in select-mode-hooks.tsx
   fitness: (canvasState, interactionState, strategyState) => {
-    return flowReorderAutoConversionStrategy.isApplicable(
+    return flowReorderStrategy.isApplicable(
       canvasState,
       interactionState,
       strategyState.startingMetadata,
@@ -172,56 +158,5 @@ export const flowReorderAutoConversionStrategy: CanvasStrategy = {
       ? 3
       : 0
   },
-  apply: (canvasState, interactionState, strategyState) => {
-    return flowReorderApplyCommon(
-      canvasState,
-      interactionState,
-      strategyState,
-      'with-auto-conversion',
-      'allow-mixed-display-type',
-    )
-  },
-}
-
-export const flowReorderSameTypeOnlyStrategy: CanvasStrategy = {
-  id: 'FLOW_REORDER_SAME_TYPE_ONLY',
-  name: () => 'Reorder (Same)',
-  isApplicable: (canvasState, interactionState, strategyState, allElementProps) => {
-    return isFlowReorderConversionApplicable(
-      canvasState,
-      interactionState,
-      strategyState,
-      allElementProps,
-      'no-filter',
-    )
-  },
-  controlsToRender: [
-    ...flowReorderAutoConversionStrategy.controlsToRender,
-    {
-      control: FlowReorderAreaIndicator,
-      key: 'flow-reorder-area-indicator',
-      show: 'visible-only-while-active',
-    },
-  ],
-  fitness: (canvasState, interactionState, strategyState) => {
-    return flowReorderSameTypeOnlyStrategy.isApplicable(
-      canvasState,
-      interactionState,
-      strategyState.startingMetadata,
-      strategyState.startingAllElementProps,
-    ) &&
-      interactionState.interactionData.type === 'DRAG' &&
-      interactionState.activeControl.type === 'BOUNDING_AREA'
-      ? 1
-      : 0
-  },
-  apply: (canvasState, interactionState, strategyState) => {
-    return flowReorderApplyCommon(
-      canvasState,
-      interactionState,
-      strategyState,
-      'no-conversion',
-      'same-display-type-only',
-    )
-  },
+  apply: flowReorderApplyCommon,
 }
