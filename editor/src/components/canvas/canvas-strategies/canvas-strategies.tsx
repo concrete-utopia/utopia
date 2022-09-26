@@ -80,7 +80,6 @@ export const existingStrategies: MetaCanvasStrategy = () => [
 ]
 
 export const RegisteredCanvasStrategies: Array<MetaCanvasStrategy> = [
-  // for now, the only metastrategy is a catch-call for all the existing strategies
   existingStrategies,
   lookForApplicableParentMeta,
 ]
