@@ -177,11 +177,19 @@ export interface StrategyWithFitness {
 }
 
 export function getApplicableStrategiesOrderedByFitness(
-  applicableStrategies: Array<CanvasStrategy>,
+  strategies: Array<MetaCanvasStrategy>,
   canvasState: InteractionCanvasState,
   interactionSession: InteractionSession,
   strategyState: StrategyState,
 ): Array<StrategyWithFitness> {
+  const applicableStrategies = getApplicableStrategies(
+    strategies,
+    canvasState,
+    interactionSession,
+    strategyState.startingMetadata,
+    strategyState.startingAllElementProps,
+  )
+
   // Compute the fitness results upfront.
   const strategiesWithFitness = mapDropNulls((strategy) => {
     const fitness = strategy.fitness(canvasState, interactionSession, strategyState)
@@ -252,20 +260,13 @@ export function findCanvasStrategy(
   strategyState: StrategyState,
   previousStrategyId: string | null,
 ): FindCanvasStrategyResult {
-  const applicableStrategies = getApplicableStrategies(
-    strategies,
-    canvasState,
-    interactionSession,
-    strategyState.startingMetadata,
-    strategyState.startingAllElementProps,
-  )
-
   const sortedApplicableStrategies = getApplicableStrategiesOrderedByFitness(
-    applicableStrategies,
+    strategies,
     canvasState,
     interactionSession,
     strategyState,
   )
+
   return {
     ...pickStrategy(sortedApplicableStrategies, interactionSession, previousStrategyId),
     sortedApplicableStrategies: sortedApplicableStrategies.map((s) => ({

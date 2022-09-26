@@ -60,16 +60,8 @@ export function lookForParentApplicableStrategy(
     return null
   }
 
-  const applicableStrategies = getApplicableStrategies(
-    [existingStrategies],
-    canvasState,
-    interactionSession,
-    metadata,
-    allElementProps,
-  )
-
   const sortedStrategies = getApplicableStrategiesOrderedByFitness(
-    applicableStrategies,
+    [existingStrategies],
     canvasState,
     interactionSession,
     createEmptyStrategyState(metadata, allElementProps),
@@ -135,20 +127,13 @@ function isApplicableTraverse(
   allElementProps: AllElementProps,
 ): ParentApplicableStrategyResult | null {
   const strategyState = createEmptyStrategyState(metadata, allElementProps)
-  const applicableStrategies = getApplicableStrategies(
-    [existingStrategies],
-    canvasState,
-    interactionSession,
-    metadata,
-    allElementProps,
-  )
 
   if (
     canvasState.interactionTarget.type !== 'TARGET_PATHS' ||
     canvasState.interactionTarget.elements.length !== 1
   ) {
     const sortedStrategies = getApplicableStrategiesOrderedByFitness(
-      applicableStrategies,
+      [existingStrategies],
       canvasState,
       interactionSession,
       strategyState,
@@ -164,16 +149,9 @@ function isApplicableTraverse(
     canvasState.interactionTarget.elements[0],
   )) {
     const patchedCanvasState = patchCanvasStateInteractionTargetPath(canvasState, [root])
-    const applicableStrategiesI = getApplicableStrategies(
-      [existingStrategies],
-      patchedCanvasState,
-      interactionSession,
-      metadata,
-      allElementProps,
-    )
 
     const sortedStrategies = getApplicableStrategiesOrderedByFitness(
-      applicableStrategiesI,
+      [existingStrategies],
       patchedCanvasState,
       interactionSession,
       strategyState,
