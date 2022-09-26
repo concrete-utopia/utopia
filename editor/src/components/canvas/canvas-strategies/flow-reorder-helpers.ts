@@ -11,14 +11,9 @@ import { stylePropPathMappingFn } from '../../inspector/common/property-path-hoo
 import { DeleteProperties, deleteProperties } from '../commands/delete-properties-command'
 import { SetProperty, setProperty } from '../commands/set-property-command'
 
-function isValidSibling(
-  targetElementMetadata: ElementInstanceMetadata | null,
-  siblingMetadata: ElementInstanceMetadata | null,
-): boolean {
-  const targetDisplayType = targetElementMetadata?.specialSizeMeasurements.display
-  const siblingDisplayType = siblingMetadata?.specialSizeMeasurements.display
-
-  return siblingDisplayType === targetDisplayType
+export function isValidSibling(siblingMetadata: ElementInstanceMetadata | null): boolean {
+  // TODO filter float and relative (with TLBR)
+  return !MetadataUtils.isPositionAbsolute(siblingMetadata)
 }
 
 function findSiblingIndexUnderPoint(
@@ -27,13 +22,11 @@ function findSiblingIndexUnderPoint(
   siblings: Array<ElementPath>,
   metadata: ElementInstanceMetadataMap,
 ): { newIndex: number; targetSiblingUnderMouse: ElementPath | null } {
-  const targetElementMetadata = MetadataUtils.findElementByElementPath(metadata, target)
-
   const newIndex = siblings.findIndex((sibling) => {
     const siblingMetadata = MetadataUtils.findElementByElementPath(metadata, sibling)
     const frame = MetadataUtils.getFrameInCanvasCoords(sibling, metadata)
     return (
-      isValidSibling(targetElementMetadata, siblingMetadata) &&
+      isValidSibling(siblingMetadata) &&
       frame != null &&
       rectContainsPoint(frame, point) &&
       MetadataUtils.isPositionedByFlow(siblingMetadata) &&
