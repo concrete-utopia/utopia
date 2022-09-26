@@ -167,7 +167,7 @@ export interface CanvasStrategy {
     canvasState: InteractionCanvasState,
     interactionSession: InteractionSession,
     strategyState: StrategyState,
-    lifecycle: InteractionLifecycle,
+    strategyLifecycle: InteractionLifecycle,
   ) => StrategyApplicationResult
 }
 

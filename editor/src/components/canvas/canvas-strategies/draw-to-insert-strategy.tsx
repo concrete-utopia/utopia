@@ -83,7 +83,7 @@ export const drawToInsertStrategy: CanvasStrategy = {
       ? 1
       : 0
   },
-  apply: (canvasState, interactionState, strategyState, lifecycle) => {
+  apply: (canvasState, interactionState, strategyState, strategyLifecycle) => {
     if (
       canvasState.interactionTarget.type === 'INSERTION_SUBJECTS' &&
       canvasState.interactionTarget.subjects.length === 1 &&
@@ -110,7 +110,7 @@ export const drawToInsertStrategy: CanvasStrategy = {
                 interactionState,
                 insertionSubject,
                 insertionCommand.frame,
-                lifecycle,
+                strategyLifecycle,
               )
             },
           )
@@ -126,7 +126,7 @@ export const drawToInsertStrategy: CanvasStrategy = {
                 commandLifecycle,
                 insertionSubject,
                 insertionCommand.frame,
-                lifecycle,
+                strategyLifecycle,
               )
             },
           )
@@ -137,7 +137,7 @@ export const drawToInsertStrategy: CanvasStrategy = {
             resizeCommand,
           ])
         }
-      } else if (lifecycle === 'end-interaction') {
+      } else if (strategyLifecycle === 'end-interaction') {
         const insertionSubject = canvasState.interactionTarget.subjects[0]
 
         const insertionCommand = getInsertionCommands(
@@ -157,7 +157,7 @@ export const drawToInsertStrategy: CanvasStrategy = {
                 interactionState,
                 insertionSubject,
                 insertionCommand.frame,
-                lifecycle,
+                strategyLifecycle,
               )
             },
           )
