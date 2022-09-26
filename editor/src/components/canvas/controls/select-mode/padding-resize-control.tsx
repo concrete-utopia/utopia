@@ -1,5 +1,6 @@
 import React from 'react'
 import { CanvasVector, windowPoint } from '../../../../core/shared/math-utils'
+import { optionalMap } from '../../../../core/shared/optional-utils'
 import { ElementPath } from '../../../../core/shared/project-file-types'
 import { assertNever } from '../../../../core/shared/utils'
 import { Modifier } from '../../../../utils/modifiers'
@@ -9,6 +10,7 @@ import { EditorStorePatched } from '../../../editor/store/editor-state'
 import { useEditorState, useRefEditorState } from '../../../editor/store/store-hook'
 import CanvasActions from '../../canvas-actions'
 import {
+  CanvasControlType,
   createInteractionViaMouse,
   paddingResizeHandle,
 } from '../../canvas-strategies/interaction-state'
@@ -28,6 +30,7 @@ interface ResizeContolProps {
   cursor: CSSCursor
   edge: EdgePiece
   paddingForEdge: number
+  hidden: boolean
 }
 
 const transformFromOrientation = (orientation: Orientation) => {
@@ -78,6 +81,7 @@ const PaddingResizeControlI = React.memo(
           display: 'flex',
           alignItems: 'center',
           justifyContent: 'center',
+          visibility: props.hidden ? 'hidden' : 'visible',
         }}
       >
         <div
@@ -106,9 +110,16 @@ const selectedElementsSelector = (store: EditorStorePatched) => store.editor.sel
 export const PaddingResizeControl = React.memo(() => {
   const colorTheme = useColorTheme()
 
+  const activeControl = useEditorState(
+    (store) => store.editor.canvas.interactionSession?.activeControl,
+    'PaddingResizeControl interaction',
+  )
+
+  const activeEdgePiece = optionalMap(edgePositionFromActiveControl, activeControl)
+
   const selectedElements = useEditorState(
     selectedElementsSelector,
-    'AbsoluteResizeControl selectedElements',
+    'PaddingResizeControl selectedElements',
   )
 
   const padding = useElementPadding(selectedElements[0])
@@ -156,6 +167,7 @@ export const PaddingResizeControl = React.memo(() => {
           cursor={CSSCursor.ResizeEW}
           orientation='vertical'
           color={colorTheme.brandNeonPink.value}
+          hidden={activeEdgePiece === 'right'}
         />
         <PaddingResizeControlI
           ref={bottomRef}
@@ -164,6 +176,7 @@ export const PaddingResizeControl = React.memo(() => {
           cursor={CSSCursor.ResizeNS}
           orientation='horizontal'
           color={colorTheme.brandNeonPink.value}
+          hidden={activeEdgePiece === 'bottom'}
         />
         <PaddingResizeControlI
           ref={leftRef}
@@ -172,6 +185,7 @@ export const PaddingResizeControl = React.memo(() => {
           cursor={CSSCursor.ResizeEW}
           orientation='vertical'
           color={colorTheme.brandNeonPink.value}
+          hidden={activeEdgePiece === 'left'}
         />
         <PaddingResizeControlI
           ref={topRef}
@@ -180,6 +194,7 @@ export const PaddingResizeControl = React.memo(() => {
           cursor={CSSCursor.ResizeNS}
           orientation='horizontal'
           color={colorTheme.brandNeonPink.value}
+          hidden={activeEdgePiece === 'top'}
         />
       </div>
     </CanvasOffsetWrapper>
@@ -234,4 +249,12 @@ function translationForEdge(edgePiece: EdgePiece, delta: number): string {
     default:
       assertNever(edgePiece)
   }
+}
+
+function edgePositionFromActiveControl(activeControl: CanvasControlType): EdgePiece | null {
+  if (activeControl.type !== 'PADDING_RESIZE_HANDLE') {
+    return null
+  }
+
+  return activeControl.edgePiece
 }
