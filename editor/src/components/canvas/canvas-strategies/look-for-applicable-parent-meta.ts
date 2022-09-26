@@ -42,15 +42,9 @@ function tweakStrategy(
 ): CanvasStrategy {
   const { controlsToRender } = strategy
 
-  const isApplicable: CanvasStrategy['isApplicable'] = (c, i, m, a) => {
-    const patchedCanvasState = patchCanvasStateInteractionTargetPath(c, effectiveTarget)
-    return strategy.isApplicable(patchedCanvasState, i, m, a)
-  }
+  const isApplicable: CanvasStrategy['isApplicable'] = () => true
 
-  const fitness: CanvasStrategy['fitness'] = (c, i, s) => {
-    const patchedCanvasState = patchCanvasStateInteractionTargetPath(c, effectiveTarget)
-    return strategy.fitness(patchedCanvasState, i, s)
-  }
+  const fitness: CanvasStrategy['fitness'] = () => 1
 
   const apply: CanvasStrategy['apply'] = (c, i, s) => {
     const patchedCanvasState = patchCanvasStateInteractionTargetPath(c, effectiveTarget)
