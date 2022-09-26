@@ -111,7 +111,8 @@ export const CanvasStrategyPicker = React.memo(() => {
                     opacity: isStrategyFailure && strategy.id === activeStrategy ? 0.5 : 1,
                   }}
                 >
-                  {index + 1}: {name}
+                  <KeyIndicator key={index + 1} keyNumber={index + 1} />
+                  {name}
                 </FlexRow>
               )
             })}
@@ -136,3 +137,40 @@ export const CanvasStrategyPicker = React.memo(() => {
     </>
   )
 })
+
+const KeyIndicator = ({ keyNumber }: { keyNumber: number }) => {
+  const height = 12
+  const width = 12
+  return (
+    <div
+      style={{
+        minWidth: width,
+        maxWidth: width,
+        minHeight: height,
+        maxHeight: height,
+        marginRight: 5,
+        border: '1px solid rgb(0, 0, 0, 0.4)',
+        borderRadius: 3,
+        display: 'flex',
+        flexDirection: 'row',
+      }}
+    >
+      <span
+        style={{
+          fontFamily:
+            'San Francisco, SF UI, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif, "Apple Color Emoji", "Segoe UI Emoji", "Segoe UI Symbol"',
+          fontStyle: 'normal',
+          fontWeight: 600,
+          color: 'rgb(0, 0, 0, 0.4)',
+          fontSize: '8px',
+          position: 'relative',
+          height: 'fit-content',
+          paddingLeft: 1.2,
+          lineHeight: 1.2,
+        }}
+      >
+        {keyNumber}
+      </span>
+    </div>
+  )
+}
