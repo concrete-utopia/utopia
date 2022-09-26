@@ -8,147 +8,16 @@ import { memoize } from '../../../core/shared/memoize'
 import { ElementPath } from '../../../core/shared/project-file-types'
 import { assertNever } from '../../../core/shared/utils'
 import { AllElementProps } from '../../editor/store/editor-state'
-import { CSSCursor } from '../canvas-types'
-import { highlightElementsCommand } from '../commands/highlight-element-command'
-import { setCursorCommand } from '../commands/set-cursor-command'
-import { ParentBounds } from '../controls/parent-bounds'
-import { ParentOutlines } from '../controls/parent-outlines'
-import { DragOutlineControl } from '../controls/select-mode/drag-outline-control'
 import {
+  existingStrategies,
   getApplicableStrategies,
   getApplicableStrategiesOrderedByFitness,
-  RegisteredCanvasStrategies,
 } from './canvas-strategies'
-import {
-  CanvasStrategy,
-  emptyStrategyApplicationResult,
-  InteractionCanvasState,
-  InteractionTarget,
-  strategyApplicationResult,
-} from './canvas-strategy-types'
-import { createEmptyStrategyState, InteractionSession, StrategyState } from './interaction-state'
+import { CanvasStrategy, InteractionCanvasState, InteractionTarget } from './canvas-strategy-types'
+import { createEmptyStrategyState, InteractionSession } from './interaction-state'
 import { isFeatureEnabled } from '../../../utils/feature-switches'
 import { isZeroSizedElement } from '../controls/outline-utils'
 import { rectanglesEqual } from '../../../core/shared/math-utils'
-
-export const lookForApplicableParentStrategy: CanvasStrategy = {
-  id: 'LOOK_FOR_APPLICABLE_PARENT_ID',
-  name: (canvasState, interactionSession, strategyState) => {
-    const defaultName = 'Applicable parent'
-    if (interactionSession == null) {
-      return defaultName
-    }
-
-    const result = lookForParentApplicableStrategy(
-      canvasState,
-      interactionSession,
-      strategyState.startingMetadata,
-      strategyState.startingAllElementProps,
-    )
-
-    if (result == null || result.strategies.length === 0) {
-      return defaultName
-    }
-
-    const patchedCanvasState = patchCanvasStateInteractionTargetPath(
-      canvasState,
-      result.effectiveTarget,
-    )
-
-    const fittestStrategy = calcFittestStrategy(
-      result.strategies,
-      patchedCanvasState,
-      interactionSession,
-      strategyState,
-    )
-
-    return fittestStrategy.name(canvasState, interactionSession, strategyState) + '*'
-  },
-  controlsToRender: [
-    {
-      control: DragOutlineControl,
-      key: 'ghost-outline-control',
-      show: 'visible-only-while-active',
-    },
-    {
-      control: ParentOutlines,
-      key: 'parent-outlines-control',
-      show: 'visible-only-while-active',
-    },
-    {
-      control: ParentBounds,
-      key: 'parent-bounds-control',
-      show: 'visible-only-while-active',
-    },
-  ],
-  isApplicable: (canvasState, interactionSession, metadata, allElementProps) => {
-    if (interactionSession == null || interactionSession.activeControl.type !== 'BOUNDING_AREA') {
-      return false
-    }
-
-    const strategies = lookForParentApplicableStrategy(
-      canvasState,
-      interactionSession,
-      metadata,
-      allElementProps,
-    )
-    return strategies != null
-  },
-
-  fitness: (canvasState, interactionSession, strategyState) => {
-    return lookForApplicableParentStrategy.isApplicable(
-      canvasState,
-      interactionSession,
-      strategyState.startingMetadata,
-      strategyState.startingAllElementProps,
-    )
-      ? 1
-      : 0
-  },
-
-  apply: (canvasState, interactionSession, strategyState) => {
-    const result = lookForParentApplicableStrategy(
-      canvasState,
-      interactionSession,
-      strategyState.startingMetadata,
-      strategyState.startingAllElementProps,
-    )
-
-    if (result == null) {
-      return emptyStrategyApplicationResult
-    }
-
-    const { strategies, effectiveTarget, componentsInSubtree } = result
-    if (strategies.length < 1) {
-      return emptyStrategyApplicationResult
-    }
-
-    const patchedCanvasState = patchCanvasStateInteractionTargetPath(canvasState, effectiveTarget)
-
-    const chosenStrategy = calcFittestStrategy(
-      result.strategies,
-      patchedCanvasState,
-      interactionSession,
-      strategyState,
-    )
-
-    const chosenStrategyApplicationResult = chosenStrategy.apply(
-      patchedCanvasState,
-      interactionSession,
-      strategyState,
-    )
-
-    return strategyApplicationResult(
-      [
-        ...chosenStrategyApplicationResult.commands,
-        highlightElementsCommand(componentsInSubtree),
-        setCursorCommand('mid-interaction', CSSCursor.MovingMagic),
-      ],
-      chosenStrategyApplicationResult.customStatePatch,
-      chosenStrategyApplicationResult.status,
-    )
-  },
-}
 
 function* elementAncestry(path: ElementPath) {
   let currentParentPath = EP.parentPath(path)
@@ -168,7 +37,7 @@ function isSingletonAbsoluteMove(strategies: Array<CanvasStrategy>): boolean {
   return strategies.length === 1 && strategies[0].id === 'CONVERT_TO_ABSOLUTE_AND_MOVE_STRATEGY'
 }
 
-function patchCanvasStateInteractionTargetPath(
+export function patchCanvasStateInteractionTargetPath(
   canvasState: InteractionCanvasState,
   path: ElementPath[],
 ): InteractionCanvasState {
@@ -181,7 +50,7 @@ function patchCanvasStateInteractionTargetPath(
   }
 }
 
-function lookForParentApplicableStrategy(
+export function lookForParentApplicableStrategy(
   canvasState: InteractionCanvasState,
   interactionSession: InteractionSession,
   metadata: ElementInstanceMetadataMap,
@@ -192,19 +61,15 @@ function lookForParentApplicableStrategy(
   }
 
   const applicableStrategies = getApplicableStrategies(
-    RegisteredCanvasStrategies,
+    [existingStrategies],
     canvasState,
     interactionSession,
     metadata,
     allElementProps,
   )
 
-  const strategiesMinusTraverse = applicableStrategies.filter(
-    ({ id }) => id !== 'LOOK_FOR_APPLICABLE_PARENT_ID',
-  )
-
   const sortedStrategies = getApplicableStrategiesOrderedByFitness(
-    strategiesMinusTraverse,
+    applicableStrategies,
     canvasState,
     interactionSession,
     createEmptyStrategyState(metadata, allElementProps),
@@ -271,48 +136,53 @@ function isApplicableTraverse(
 ): ParentApplicableStrategyResult | null {
   const strategyState = createEmptyStrategyState(metadata, allElementProps)
   const applicableStrategies = getApplicableStrategies(
-    RegisteredCanvasStrategies,
+    [existingStrategies],
     canvasState,
     interactionSession,
     metadata,
     allElementProps,
-  )
-  const strategiesMinusTraverse = applicableStrategies.filter(
-    ({ id }) => id !== 'LOOK_FOR_APPLICABLE_PARENT_ID',
   )
 
   if (
     canvasState.interactionTarget.type !== 'TARGET_PATHS' ||
     canvasState.interactionTarget.elements.length !== 1
   ) {
-    const stortedStrategies = getApplicableStrategiesOrderedByFitness(
-      strategiesMinusTraverse,
+    const sortedStrategies = getApplicableStrategiesOrderedByFitness(
+      applicableStrategies,
       canvasState,
       interactionSession,
       strategyState,
     ).map((s) => s.strategy)
     return {
-      strategies: stortedStrategies,
+      strategies: sortedStrategies,
       effectiveTarget: pathsFromInteractionTarget(canvasState.interactionTarget),
       componentsInSubtree: [],
     }
   }
 
-  for (const { root: path, componentsInSubtree } of elementAncestry(
+  for (const { root, componentsInSubtree } of elementAncestry(
     canvasState.interactionTarget.elements[0],
   )) {
-    const patchedCanvasState = patchCanvasStateInteractionTargetPath(canvasState, [path])
-    const stortedStrategies = getApplicableStrategiesOrderedByFitness(
-      strategiesMinusTraverse,
+    const patchedCanvasState = patchCanvasStateInteractionTargetPath(canvasState, [root])
+    const applicableStrategiesI = getApplicableStrategies(
+      [existingStrategies],
+      patchedCanvasState,
+      interactionSession,
+      metadata,
+      allElementProps,
+    )
+
+    const sortedStrategies = getApplicableStrategiesOrderedByFitness(
+      applicableStrategiesI,
       patchedCanvasState,
       interactionSession,
       strategyState,
     ).map((s) => s.strategy)
 
-    if (!isSingletonAbsoluteMove(stortedStrategies)) {
+    if (!isSingletonAbsoluteMove(sortedStrategies)) {
       return {
-        strategies: stortedStrategies,
-        effectiveTarget: [path],
+        strategies: sortedStrategies,
+        effectiveTarget: [root],
         componentsInSubtree,
       }
     }
@@ -330,20 +200,6 @@ function pathsFromInteractionTarget(interactionTarget: InteractionTarget): Array
     default:
       assertNever(interactionTarget)
   }
-}
-
-function calcFittestStrategy(
-  strategies: Array<CanvasStrategy>,
-  canvasState: InteractionCanvasState,
-  interactionSession: InteractionSession,
-  strategyState: StrategyState,
-): CanvasStrategy {
-  return getApplicableStrategiesOrderedByFitness(
-    strategies,
-    canvasState,
-    interactionSession,
-    strategyState,
-  )[0].strategy
 }
 
 const isApplicableTraverseMemo = memoize(isApplicableTraverse)

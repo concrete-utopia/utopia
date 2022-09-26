@@ -45,10 +45,10 @@ import { dragToInsertStrategy } from './drag-to-insert-strategy'
 import { StateSelector } from 'zustand'
 import { flowReorderSliderStategy } from './flow-reorder-slider-strategy'
 import { NonResizableControl } from '../controls/select-mode/non-resizable-control'
-import { lookForApplicableParentStrategy } from './look-for-applicable-parent'
 import { drawToInsertStrategy } from './draw-to-insert-strategy'
 import { flexResizeBasicStrategy } from './flex-resize-basic-strategy'
 import { optionalMap } from '../../../core/shared/optional-utils'
+import { lookForApplicableParentMeta } from './look-for-applicable-parent-meta'
 
 export type MetaCanvasStrategy = (
   canvasState: InteractionCanvasState,
@@ -57,7 +57,7 @@ export type MetaCanvasStrategy = (
   allElementProps: AllElementProps,
 ) => Array<CanvasStrategy>
 
-const existingStrategies: MetaCanvasStrategy = () => [
+export const existingStrategies: MetaCanvasStrategy = () => [
   absoluteMoveStrategy,
   absoluteReparentStrategy,
   forcedAbsoluteReparentStrategy,
@@ -77,13 +77,13 @@ const existingStrategies: MetaCanvasStrategy = () => [
   flowReorderNoConversionStrategy,
   flowReorderSameTypeOnlyStrategy,
   flowReorderSliderStategy,
-  lookForApplicableParentStrategy,
   flexResizeBasicStrategy,
 ]
 
 export const RegisteredCanvasStrategies: Array<MetaCanvasStrategy> = [
   // for now, the only metastrategy is a catch-call for all the existing strategies
   existingStrategies,
+  lookForApplicableParentMeta,
 ]
 
 export function pickCanvasStateFromEditorState(

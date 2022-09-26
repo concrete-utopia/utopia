@@ -134,7 +134,8 @@ export type CanvasStrategyId =
   | 'FLEX_RESIZE_BASIC'
 
 export interface CanvasStrategy {
-  id: CanvasStrategyId // We'd need to do something to guarantee uniqueness here if using this for the commands' reason
+  id: string // We'd need to do something to guarantee uniqueness here if using this for the commands' reason
+  // TODO VERY TEMPORARY before merge - remove or make it better
 
   name: (
     canvasState: InteractionCanvasState,
