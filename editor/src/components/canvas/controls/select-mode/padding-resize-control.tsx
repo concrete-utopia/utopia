@@ -44,6 +44,8 @@ const transformFromOrientation = (orientation: Orientation) => {
   }
 }
 
+type Timeout = ReturnType<typeof setTimeout>
+
 const PaddingResizeControlWidth = 4
 const PaddingResizeControlHeight = 24
 const PaddingResizeControlBorder = 1
@@ -52,6 +54,7 @@ const PaddingResizeControlI = React.memo(
     const scale = useEditorState((store) => store.editor.canvas.scale, 'PaddingResizeControl scale')
     const dispatch = useEditorState((store) => store.dispatch, 'PaddingResizeControl dispatch')
     const canvasOffsetRef = useRefEditorState((store) => store.editor.canvas.roundedCanvasOffset)
+
     const { maybeClearHighlightsOnHoverEnd } = useMaybeHighlightElement()
 
     const onEdgeMouseDown = React.useCallback(
@@ -117,6 +120,24 @@ export const PaddingResizeControl = React.memo(() => {
 
   const activeEdgePiece = optionalMap(edgePositionFromActiveControl, activeControl)
 
+  const [innerHidden, setInnerHidden] = React.useState<boolean>(true)
+
+  const fadeInTimeout = React.useRef<Timeout | null>(null)
+
+  const onMouseLeave = () => {
+    if (fadeInTimeout.current) {
+      clearTimeout(fadeInTimeout.current)
+    }
+    fadeInTimeout.current = null
+    setInnerHidden(true)
+  }
+
+  const onMouseEnter = () => {
+    fadeInTimeout.current = setTimeout(() => {
+      setInnerHidden(false)
+    }, 200)
+  }
+
   const selectedElements = useEditorState(
     selectedElementsSelector,
     'PaddingResizeControl selectedElements',
@@ -155,6 +176,8 @@ export const PaddingResizeControl = React.memo(() => {
   return (
     <CanvasOffsetWrapper>
       <div
+        onMouseEnter={onMouseEnter}
+        onMouseLeave={onMouseLeave}
         ref={controlRef}
         style={{
           position: 'absolute',
@@ -167,7 +190,7 @@ export const PaddingResizeControl = React.memo(() => {
           cursor={CSSCursor.ResizeEW}
           orientation='vertical'
           color={colorTheme.brandNeonPink.value}
-          hidden={activeEdgePiece === 'right'}
+          hidden={innerHidden || activeEdgePiece === 'right'}
         />
         <PaddingResizeControlI
           ref={bottomRef}
@@ -176,7 +199,7 @@ export const PaddingResizeControl = React.memo(() => {
           cursor={CSSCursor.ResizeNS}
           orientation='horizontal'
           color={colorTheme.brandNeonPink.value}
-          hidden={activeEdgePiece === 'bottom'}
+          hidden={innerHidden || activeEdgePiece === 'bottom'}
         />
         <PaddingResizeControlI
           ref={leftRef}
@@ -185,7 +208,7 @@ export const PaddingResizeControl = React.memo(() => {
           cursor={CSSCursor.ResizeEW}
           orientation='vertical'
           color={colorTheme.brandNeonPink.value}
-          hidden={activeEdgePiece === 'left'}
+          hidden={innerHidden || activeEdgePiece === 'left'}
         />
         <PaddingResizeControlI
           ref={topRef}
@@ -194,7 +217,7 @@ export const PaddingResizeControl = React.memo(() => {
           cursor={CSSCursor.ResizeNS}
           orientation='horizontal'
           color={colorTheme.brandNeonPink.value}
-          hidden={activeEdgePiece === 'top'}
+          hidden={innerHidden || activeEdgePiece === 'top'}
         />
       </div>
     </CanvasOffsetWrapper>
