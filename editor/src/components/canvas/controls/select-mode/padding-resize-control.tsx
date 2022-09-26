@@ -1,8 +1,4 @@
 import React from 'react'
-import { getLayoutProperty } from '../../../../core/layout/getLayoutProperty'
-import { MetadataUtils } from '../../../../core/model/element-metadata-utils'
-import { isLeft, right, defaultEither, Either } from '../../../../core/shared/either'
-import { isJSXElement } from '../../../../core/shared/element-template'
 import { CanvasVector, windowPoint } from '../../../../core/shared/math-utils'
 import { ElementPath } from '../../../../core/shared/project-file-types'
 import { assertNever } from '../../../../core/shared/utils'
@@ -11,7 +7,6 @@ import { useColorTheme } from '../../../../uuiui'
 import { EditorDispatch } from '../../../editor/action-types'
 import { EditorStorePatched } from '../../../editor/store/editor-state'
 import { useEditorState, useRefEditorState } from '../../../editor/store/store-hook'
-import { CSSNumber, cssNumber, CSSPadding } from '../../../inspector/common/css-utils'
 import CanvasActions from '../../canvas-actions'
 import {
   createInteractionViaMouse,
@@ -19,6 +14,7 @@ import {
 } from '../../canvas-strategies/interaction-state'
 import { CSSCursor, EdgePiece } from '../../canvas-types'
 import { windowToCanvasCoordinates } from '../../dom-lookup'
+import { paddingForEdge, SimpleCSSPadding, simplePaddingFromMetadata } from '../../padding-utils'
 import { useBoundingBox } from '../bounding-box-hooks'
 import { CanvasOffsetWrapper } from '../canvas-offset-wrapper'
 import { isZeroSizedElement } from '../outline-utils'
@@ -216,118 +212,13 @@ function startResizeInteraction(
   }
 }
 
-type CSSPaddingKey = keyof CSSPadding
-type SimpleCSSPadding = { [key in CSSPaddingKey]: number }
-
 function useElementPadding(elementPath: ElementPath): SimpleCSSPadding {
   const elementMetadata = useEditorState(
     (store) => store.editor.jsxMetadata,
     'metadata for padding',
   )
-  const element = MetadataUtils.findElementByElementPath(elementMetadata, elementPath)
 
-  const defaultPadding: SimpleCSSPadding = {
-    paddingTop: 0,
-    paddingBottom: 0,
-    paddingLeft: 0,
-    paddingRight: 0,
-  }
-
-  if (element == null || isLeft(element.element) || !isJSXElement(element.element.value)) {
-    return defaultPadding
-  }
-
-  const padding = cssPaddingToSimple(
-    getLayoutProperty('padding', right(element.element.value.props), ['style']),
-    defaultPadding,
-  )
-
-  const paddingTop = pxValueFromEither(
-    getLayoutProperty('paddingTop', right(element.element.value.props), ['style']),
-    cssNumber(0, 'px'),
-  )
-
-  const paddingBottom = pxValueFromEither(
-    getLayoutProperty('paddingBottom', right(element.element.value.props), ['style']),
-    cssNumber(0, 'px'),
-  )
-
-  const paddingLeft = pxValueFromEither(
-    getLayoutProperty('paddingLeft', right(element.element.value.props), ['style']),
-    cssNumber(0, 'px'),
-  )
-
-  const paddingRight = pxValueFromEither(
-    getLayoutProperty('paddingRight', right(element.element.value.props), ['style']),
-    cssNumber(0, 'px'),
-  )
-
-  return cssPaddingWithDefaults(
-    { paddingTop, paddingBottom, paddingLeft, paddingRight },
-    padding,
-    defaultPadding,
-  )
-}
-
-function cssPaddingWithDefaults(
-  parts: Partial<SimpleCSSPadding>,
-  whole: Partial<SimpleCSSPadding>,
-  defaults: SimpleCSSPadding,
-): SimpleCSSPadding {
-  return {
-    paddingTop: parts.paddingTop ?? whole.paddingTop ?? defaults.paddingTop,
-    paddingBottom: parts.paddingBottom ?? whole.paddingBottom ?? defaults.paddingBottom,
-    paddingLeft: parts.paddingLeft ?? whole.paddingLeft ?? defaults.paddingLeft,
-    paddingRight: parts.paddingRight ?? whole.paddingRight ?? defaults.paddingRight,
-  }
-}
-
-const pxValue = (number: CSSNumber): number | undefined =>
-  number.unit === 'px' || number.unit == null ? number.value : undefined
-
-function cssValueWithDefault<T>(value: Either<string, T | undefined>, defaults: T): T {
-  if (isLeft(value) || value.value == null) {
-    return defaults
-  }
-  return value.value
-}
-
-function pxValueFromEither(
-  value: Either<string, CSSNumber | undefined>,
-  defaults: CSSNumber,
-): number | undefined {
-  return pxValue(cssValueWithDefault(value, defaults))
-}
-
-function cssPaddingToSimple(
-  p: Either<string, CSSPadding | undefined>,
-  padding: SimpleCSSPadding,
-): Partial<SimpleCSSPadding> {
-  if (isLeft(p) || p.value == null) {
-    return padding
-  }
-
-  return {
-    paddingTop: pxValue(p.value.paddingTop),
-    paddingBottom: pxValue(p.value.paddingBottom),
-    paddingLeft: pxValue(p.value.paddingLeft),
-    paddingRight: pxValue(p.value.paddingRight),
-  }
-}
-
-function paddingForEdge(edgePiece: EdgePiece, padding: SimpleCSSPadding): number {
-  switch (edgePiece) {
-    case 'top':
-      return padding.paddingTop
-    case 'bottom':
-      return padding.paddingBottom
-    case 'right':
-      return padding.paddingRight
-    case 'left':
-      return padding.paddingLeft
-    default:
-      assertNever(edgePiece)
-  }
+  return simplePaddingFromMetadata(elementMetadata, elementPath)
 }
 
 function translationForEdge(edgePiece: EdgePiece, delta: number): string {

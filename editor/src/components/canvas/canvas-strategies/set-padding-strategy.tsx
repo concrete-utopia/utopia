@@ -1,7 +1,5 @@
-import { MetadataUtils } from '../../../core/model/element-metadata-utils'
 import { CanvasVector } from '../../../core/shared/math-utils'
 import { assertNever } from '../../../core/shared/utils'
-import { getElementFromProjectContents } from '../../editor/store/editor-state'
 import { CSSPadding } from '../../inspector/common/css-utils'
 import { stylePropPathMappingFn } from '../../inspector/common/property-path-hooks'
 import { CSSCursor, EdgePiece } from '../canvas-types'
@@ -10,6 +8,7 @@ import { setCursorCommand } from '../commands/set-cursor-command'
 import { setElementsToRerenderCommand } from '../commands/set-elements-to-rerender-command'
 import { updateHighlightedViews } from '../commands/update-highlighted-views-command'
 import { PaddingResizeControl } from '../controls/select-mode/padding-resize-control'
+import { paddingForEdge, simplePaddingFromMetadata } from '../padding-utils'
 import { supportsAbsoluteResize } from './absolute-resize-helpers'
 import {
   CanvasStrategy,
@@ -34,11 +33,10 @@ export const setPaddingStrategy: CanvasStrategy = {
     if (selectedElements.length > 0) {
       const filteredSelectedElements = getDragTargets(selectedElements)
       return filteredSelectedElements.every((element) => {
-        return supportsAbsoluteResize(metadata, element, canvasState)
+        return supportsAbsoluteResize(metadata, element, canvasState) // TODO - add real predicate here
       })
-    } else {
-      return false
     }
+    return false
   },
   fitness: (canvasState, interactionState, sessionState) => {
     return setPaddingStrategy.isApplicable(
@@ -87,27 +85,19 @@ export const setPaddingStrategy: CanvasStrategy = {
 
     const selectedElement = filteredSelectedElements[0]
 
-    const element = getElementFromProjectContents(
-      selectedElement,
-      canvasState.projectContents,
-      canvasState.openFile,
-    )
+    const padding = simplePaddingFromMetadata(sessionState.startingMetadata, selectedElement)
 
-    const originalFrame = MetadataUtils.getFrameInCanvasCoords(
-      selectedElement,
-      sessionState.startingMetadata,
-    )
+    const startingPadding = paddingForEdge(edgePiece, padding)
+    const delta = deltaFromEdge(drag, edgePiece)
 
-    if (element == null || originalFrame == null) {
-      return strategyApplicationResult([])
-    }
+    const newPadding = Math.max(-startingPadding, delta)
 
     const commandsForSelectedElements = [
       adjustCssLengthProperty(
         'always',
         selectedElement,
         stylePropPathMappingFn(paddingCursorFromEdge(edgePiece), ['style']),
-        Math.max(0, deltaFromEdge(drag, edgePiece)),
+        newPadding,
         0,
         true,
       ),
