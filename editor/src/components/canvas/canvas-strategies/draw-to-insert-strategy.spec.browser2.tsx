@@ -81,6 +81,16 @@ async function fireClickEvent(canvasControlsLayer: HTMLElement, point: WindowPoi
         clientY: point.y,
       }),
     )
+
+    fireEvent(
+      canvasControlsLayer,
+      new MouseEvent('mouseclick', {
+        bubbles: true,
+        cancelable: true,
+        clientX: point.x,
+        clientY: point.y,
+      }),
+    )
   })
 }
 
