@@ -1,5 +1,4 @@
 import type { CanvasPoint, CanvasVector } from '../../core/shared/math-utils'
-import { CanvasStrategyId } from './canvas-strategies/canvas-strategy-types'
 import {
   DragInteractionData,
   InteractionSession,
@@ -79,7 +78,7 @@ const CanvasActions = {
       applyChanges: applyChanges,
     }
   },
-  setUsersPreferredStrategy: function (strategyId: CanvasStrategyId): CanvasAction {
+  setUsersPreferredStrategy: function (strategyId: string): CanvasAction {
     return {
       action: 'SET_USERS_PREFERRED_STRATEGY',
       strategyId: strategyId,

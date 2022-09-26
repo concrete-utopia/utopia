@@ -16,11 +16,7 @@ import { EdgePosition } from '../canvas-types'
 import { MoveIntoDragThreshold } from '../canvas-utils'
 import { CanvasCommand } from '../commands/commands'
 import { ApplicableStrategy } from './canvas-strategies'
-import {
-  CanvasStrategyId,
-  CustomStrategyState,
-  defaultCustomStrategyState,
-} from './canvas-strategy-types'
+import { CustomStrategyState, defaultCustomStrategyState } from './canvas-strategy-types'
 import type { ReparentTarget } from './reparent-strategy-helpers'
 
 export interface DragInteractionData {
@@ -86,7 +82,7 @@ export interface InteractionSession {
   latestAllElementProps: AllElementProps
 
   // To track if the user selected a strategy
-  userPreferredStrategy: CanvasStrategyId | null
+  userPreferredStrategy: string | null
 
   startedAt: number
 
@@ -100,7 +96,7 @@ export function interactionSession(
   sourceOfUpdate: CanvasControlType,
   lastInteractionTime: number,
   metadata: ElementInstanceMetadataMap,
-  userPreferredStrategy: CanvasStrategyId | null,
+  userPreferredStrategy: string | null,
   startedAt: number,
   allElementProps: AllElementProps,
   startingTargetParentsToFilterOut: ReparentTargetsToFilter | null,
@@ -134,7 +130,7 @@ export type StrategyApplicationStatus = 'success' | 'failure'
 
 export interface StrategyState {
   // Need to track here which strategy is being applied.
-  currentStrategy: CanvasStrategyId | null
+  currentStrategy: string | null
   currentStrategyFitness: number
   currentStrategyCommands: Array<CanvasCommand>
   accumulatedPatches: Array<EditorStatePatch>

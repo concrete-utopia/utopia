@@ -23,7 +23,6 @@ import {
   InteractionSession,
   InteractionSessionWithoutMetadata,
 } from './canvas-strategies/interaction-state'
-import { CanvasStrategyId } from './canvas-strategies/canvas-strategy-types'
 import { MouseButtonsPressed } from '../../utils/mouse'
 
 export const CanvasContainerID = 'canvas-container'
@@ -689,7 +688,7 @@ type ZoomUI = {
 
 type SetUsersPreferredStrategy = {
   action: 'SET_USERS_PREFERRED_STRATEGY'
-  strategyId: CanvasStrategyId
+  strategyId: string
 }
 
 export type CanvasAction =

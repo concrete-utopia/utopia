@@ -12,7 +12,6 @@ import {
 } from './absolute-reparent-strategy'
 import {
   CanvasStrategy,
-  CanvasStrategyId,
   ControlDelay,
   ControlWithKey,
   insertionSubjects,
@@ -221,7 +220,7 @@ function pickDefaultCanvasStrategy(
 function pickStrategy(
   sortedApplicableStrategies: Array<StrategyWithFitness>,
   interactionSession: InteractionSession,
-  previousStrategyId: CanvasStrategyId | null,
+  previousStrategyId: string | null,
 ): { strategy: StrategyWithFitness | null; previousStrategy: StrategyWithFitness | null } {
   // FIXME Explicitly picking a strategy will prevent natural handovers that otherwise should occur
 
@@ -251,7 +250,7 @@ export function findCanvasStrategy(
   canvasState: InteractionCanvasState,
   interactionSession: InteractionSession,
   strategyState: StrategyState,
-  previousStrategyId: CanvasStrategyId | null,
+  previousStrategyId: string | null,
 ): FindCanvasStrategyResult {
   const applicableStrategies = getApplicableStrategies(
     strategies,
@@ -342,7 +341,7 @@ export function useDelayedEditorState<T>(
 
 export const useDelayedCurrentStrategy = () => {
   const selector = (store: EditorStorePatched) => store.strategyState.currentStrategy
-  return useDelayedEditorState<CanvasStrategyId | null>(selector)
+  return useDelayedEditorState<string | null>(selector)
 }
 
 const notResizableControls: ControlWithKey = {
@@ -352,7 +351,7 @@ const notResizableControls: ControlWithKey = {
 }
 
 export function getApplicableControls(
-  currentStrategy: CanvasStrategyId | null,
+  currentStrategy: string | null,
   strategy: CanvasStrategy,
 ): Array<ControlWithKey> {
   return strategy.controlsToRender.filter((control) => {
