@@ -81,7 +81,7 @@ export const absoluteDuplicateStrategy: CanvasStrategy = {
     }
     return 0
   },
-  apply: (canvasState, interactionState, strategyState, lifecycle) => {
+  apply: (canvasState, interactionState, strategyState, strategyLifecycle) => {
     const selectedElements = getTargetPathsFromInteractionTarget(canvasState.interactionTarget)
     if (
       interactionState.interactionData.type === 'DRAG' &&
@@ -129,7 +129,7 @@ export const absoluteDuplicateStrategy: CanvasStrategy = {
               },
               interactionState,
               commandLifecycle,
-              lifecycle,
+              strategyLifecycle,
             ),
           ),
           setCursorCommand('mid-interaction', CSSCursor.Duplicate),

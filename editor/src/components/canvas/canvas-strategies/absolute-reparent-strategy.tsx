@@ -76,7 +76,7 @@ function getAbsoluteReparentStrategy(
         missingBoundsHandling,
       )
     },
-    apply: (canvasState, interactionState, strategyState, lifecycle) => {
+    apply: (canvasState, interactionState, strategyState, strategyLifecycle) => {
       const { interactionTarget, projectContents, openFile, nodeModules } = canvasState
       const selectedElements = getTargetPathsFromInteractionTarget(interactionTarget)
       const filteredSelectedElements = getDragTargets(selectedElements)
@@ -161,7 +161,7 @@ function getAbsoluteReparentStrategy(
               updatedTargetPaths: updatedTargetPaths,
             },
             strategyState,
-            lifecycle,
+            strategyLifecycle,
           )
 
           return strategyApplicationResult([
@@ -176,7 +176,7 @@ function getAbsoluteReparentStrategy(
             canvasState,
             interactionState,
             strategyState,
-            lifecycle,
+            strategyLifecycle,
           )
 
           return strategyApplicationResult(moveCommands.commands)

@@ -83,7 +83,7 @@ export const dragToInsertStrategy: CanvasStrategy = {
       ? 1
       : 0
   },
-  apply: (canvasState, interactionState, strategyState, lifecycle) => {
+  apply: (canvasState, interactionState, strategyState, strategyLifecycle) => {
     const insertionSubjects = getInsertionSubjectsFromInteractionTarget(
       canvasState.interactionTarget,
     )
@@ -105,7 +105,7 @@ export const dragToInsertStrategy: CanvasStrategy = {
             interactionState,
             transient,
             insertionCommands,
-            lifecycle,
+            strategyLifecycle,
           )
         },
       )

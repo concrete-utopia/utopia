@@ -268,9 +268,9 @@ export function applyCanvasStrategy(
   canvasState: InteractionCanvasState,
   interactionSession: InteractionSession,
   strategyState: StrategyState,
-  lifecycle: InteractionLifecycle,
+  strategyLifecycle: InteractionLifecycle,
 ): StrategyApplicationResult {
-  return strategy.apply(canvasState, interactionSession, strategyState, lifecycle)
+  return strategy.apply(canvasState, interactionSession, strategyState, strategyLifecycle)
 }
 
 export function useDelayedEditorState<T>(

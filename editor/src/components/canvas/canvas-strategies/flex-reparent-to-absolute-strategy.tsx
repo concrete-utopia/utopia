@@ -83,7 +83,7 @@ function getFlexReparentToAbsoluteStrategy(
         missingBoundsHandling,
       )
     },
-    apply: (canvasState, interactionState, strategyState, lifecycle) => {
+    apply: (canvasState, interactionState, strategyState, strategyLifecycle) => {
       const selectedElements = getTargetPathsFromInteractionTarget(canvasState.interactionTarget)
       const filteredSelectedElements = getDragTargets(selectedElements)
       return ifAllowedToReparent(canvasState, strategyState, filteredSelectedElements, () => {
@@ -158,7 +158,7 @@ function getFlexReparentToAbsoluteStrategy(
                 interactionState,
                 commandLifecycle,
                 missingBoundsHandling,
-                lifecycle,
+                strategyLifecycle,
               )
             },
           ),

@@ -9,6 +9,7 @@ import {
   getPrintedUiJsCode,
 } from '../ui-jsx.test-utils'
 import { CanvasControlsContainerID } from '../controls/new-canvas-controls'
+import * as EP from '../../../core/shared/element-path'
 
 function slightlyOffsetWindowPointBecauseVeryWeirdIssue(point: {
   x: number
@@ -17,6 +18,21 @@ function slightlyOffsetWindowPointBecauseVeryWeirdIssue(point: {
   // FIXME when running in headless chrome, the result of getBoundingClientRect will be slightly
   // offset for some unknown reason, meaning the inserted element will be 1 pixel of in each dimension
   return windowPoint({ x: point.x - 0.001, y: point.y - 0.001 })
+}
+
+async function fireMoveEvent(canvasControlsLayer: HTMLElement, point: WindowPoint) {
+  await act(async () => {
+    fireEvent(
+      canvasControlsLayer,
+      new MouseEvent('mousemove', {
+        bubbles: true,
+        cancelable: true,
+        clientX: point.x,
+        clientY: point.y,
+        buttons: 1,
+      }),
+    )
+  })
 }
 
 async function fireDragEvent(
@@ -75,6 +91,16 @@ async function fireClickEvent(canvasControlsLayer: HTMLElement, point: WindowPoi
     fireEvent(
       canvasControlsLayer,
       new MouseEvent('mouseup', {
+        bubbles: true,
+        cancelable: true,
+        clientX: point.x,
+        clientY: point.y,
+      }),
+    )
+
+    fireEvent(
+      canvasControlsLayer,
+      new MouseEvent('mouseclick', {
         bubbles: true,
         cancelable: true,
         clientX: point.x,
@@ -160,6 +186,12 @@ describe('Inserting into absolute', () => {
       x: targetElementBounds.x + 25,
       y: targetElementBounds.y + 305,
     })
+
+    // Move before starting dragging
+    await fireMoveEvent(canvasControlsLayer, startPoint)
+
+    // Highlight should drag the candidate parent
+    expect(renderResult.getEditorState().editor.highlightedViews.map(EP.toUid)).toEqual(['bbb'])
 
     // Drag from inside bbb to inside ccc
     await fireDragEvent(canvasControlsLayer, startPoint, endPoint)
