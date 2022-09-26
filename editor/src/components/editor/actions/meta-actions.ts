@@ -39,7 +39,7 @@ export function selectComponents(
   addToSelection: boolean,
 ): Array<EditorAction> {
   return [
-    ...cancelInsertModeActions('do-not-apply-changes'),
+    ...cancelInsertModeActions('apply-changes'),
     EditorActions.selectComponents(target, addToSelection),
   ]
 }

@@ -52,6 +52,7 @@ import {
 import { Modifier, Modifiers } from '../../../../utils/modifiers'
 import { pathsEqual } from '../../../../core/shared/element-path'
 import { EditorAction } from '../../../../components/editor/action-types'
+import { isInsertMode } from '../../../editor/editor-modes'
 
 const DRAG_START_THRESHOLD = 2
 
@@ -667,7 +668,9 @@ function useSelectOrLiveModeSelectAndHover(
             setSelectedViewsForCanvasControlsOnly(updatedSelection)
 
             // In either case cancel insert mode.
-            editorActions.push(...cancelInsertModeActions('ignore-it-completely'))
+            if (isInsertMode(editorStoreRef.current.editor.mode)) {
+              editorActions.push(...cancelInsertModeActions('apply-changes'))
+            }
 
             // then we set the selected views for the editor state, 1 frame later
             if (updatedSelection.length === 0) {

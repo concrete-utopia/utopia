@@ -62,6 +62,7 @@ export function pressKeys(
       startingAllElementProps: { 'scene-aaa/app-entity:aaa/bbb': {} },
       customStrategyState: defaultCustomStrategyState(),
     } as StrategyState,
+    'end-interaction',
   )
 
   expect(strategyResult.customStatePatch).toEqual({})

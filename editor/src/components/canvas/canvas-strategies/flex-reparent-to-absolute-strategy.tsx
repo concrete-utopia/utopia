@@ -25,6 +25,7 @@ import {
   CanvasStrategy,
   emptyStrategyApplicationResult,
   getTargetPathsFromInteractionTarget,
+  InteractionLifecycle,
   strategyApplicationResult,
 } from './canvas-strategy-types'
 import { getEscapeHatchCommands } from './convert-to-absolute-and-move-strategy'
@@ -82,7 +83,7 @@ function getFlexReparentToAbsoluteStrategy(
         missingBoundsHandling,
       )
     },
-    apply: (canvasState, interactionState, strategyState) => {
+    apply: (canvasState, interactionState, strategyState, strategyLifecycle) => {
       const selectedElements = getTargetPathsFromInteractionTarget(canvasState.interactionTarget)
       const filteredSelectedElements = getDragTargets(selectedElements)
       return ifAllowedToReparent(canvasState, strategyState, filteredSelectedElements, () => {
@@ -147,16 +148,20 @@ function getFlexReparentToAbsoluteStrategy(
         return strategyApplicationResult([
           ...placeholderCloneCommands,
           ...escapeHatchCommands,
-          updateFunctionCommand('always', (editorState, lifecycle): Array<EditorStatePatch> => {
-            return runAbsoluteReparentStrategyForFreshlyConvertedElement(
-              canvasState.builtInDependencies,
-              editorState,
-              strategyState,
-              interactionState,
-              lifecycle,
-              missingBoundsHandling,
-            )
-          }),
+          updateFunctionCommand(
+            'always',
+            (editorState, commandLifecycle): Array<EditorStatePatch> => {
+              return runAbsoluteReparentStrategyForFreshlyConvertedElement(
+                canvasState.builtInDependencies,
+                editorState,
+                strategyState,
+                interactionState,
+                commandLifecycle,
+                missingBoundsHandling,
+                strategyLifecycle,
+              )
+            },
+          ),
         ])
       })
     },
@@ -168,8 +173,9 @@ function runAbsoluteReparentStrategyForFreshlyConvertedElement(
   editorState: EditorState,
   strategyState: StrategyState,
   interactionState: InteractionSession,
-  commandLifecycle: 'mid-interaction' | 'end-interaction',
+  commandLifecycle: InteractionLifecycle,
   missingBoundsHandling: MissingBoundsHandling,
+  strategyLifeCycle: InteractionLifecycle,
 ): Array<EditorStatePatch> {
   const canvasState = pickCanvasStateFromEditorState(editorState, builtInDependencies)
   const isForced = missingBoundsHandling === 'allow-missing-bounds'
@@ -181,6 +187,7 @@ function runAbsoluteReparentStrategyForFreshlyConvertedElement(
     canvasState,
     interactionState,
     strategyState,
+    strategyLifeCycle,
   ).commands
 
   return foldAndApplyCommandsInner(editorState, [], [], reparentCommands, commandLifecycle)

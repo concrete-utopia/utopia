@@ -133,6 +133,8 @@ export type CanvasStrategyId =
   | 'DRAW_TO_INSERT'
   | 'FLEX_RESIZE_BASIC'
 
+export type InteractionLifecycle = 'mid-interaction' | 'end-interaction'
+
 export interface CanvasStrategy {
   id: CanvasStrategyId // We'd need to do something to guarantee uniqueness here if using this for the commands' reason
 
@@ -165,6 +167,7 @@ export interface CanvasStrategy {
     canvasState: InteractionCanvasState,
     interactionSession: InteractionSession,
     strategyState: StrategyState,
+    strategyLifecycle: InteractionLifecycle,
   ) => StrategyApplicationResult
 }
 
