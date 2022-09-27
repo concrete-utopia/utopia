@@ -44,9 +44,9 @@ function tweakStrategy(
 
   const fitness: CanvasStrategy['fitness'] = () => 1
 
-  const apply: CanvasStrategy['apply'] = (c, i, s) => {
+  const apply: CanvasStrategy['apply'] = (c, i, s, l) => {
     const patchedCanvasState = patchCanvasStateInteractionTargetPath(c, effectiveTarget)
-    const result = strategy.apply(patchedCanvasState, i, s)
+    const result = strategy.apply(patchedCanvasState, i, s, l)
     return {
       ...result,
       commands: [
