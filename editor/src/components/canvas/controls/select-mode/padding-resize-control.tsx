@@ -54,6 +54,8 @@ const PaddingResizeControlI = React.memo(
     const scale = useEditorState((store) => store.editor.canvas.scale, 'PaddingResizeControl scale')
     const dispatch = useEditorState((store) => store.dispatch, 'PaddingResizeControl dispatch')
     const canvasOffsetRef = useRefEditorState((store) => store.editor.canvas.roundedCanvasOffset)
+    const colorTheme = useColorTheme()
+    const outlineColor = colorTheme.canvasDragOutlineBlock.value
 
     const { maybeClearHighlightsOnHoverEnd } = useMaybeHighlightElement()
 
@@ -84,14 +86,16 @@ const PaddingResizeControlI = React.memo(
           display: 'flex',
           alignItems: 'center',
           justifyContent: 'center',
-          visibility: props.hidden ? 'hidden' : 'visible',
+          backgroundImage: `linear-gradient(135deg, ${outlineColor} 2.5%, rgba(255,255,255,0) 2.5%, rgba(255,255,255,0) 50%, ${outlineColor} 50%, ${outlineColor} 52%, rgba(255,255,255,0) 52%, rgba(255,255,255,0) 100%)`,
+          backgroundSize: `${20 / scale}px ${20 / scale}px`,
+          pointerEvents: 'none',
         }}
       >
         <div
           onMouseDown={onEdgeMouseDown}
           onMouseMove={onMouseMove}
           style={{
-            position: 'absolute',
+            visibility: props.hidden ? 'hidden' : 'visible',
             width: width,
             height: height,
             backgroundColor: props.color,
@@ -99,9 +103,7 @@ const PaddingResizeControlI = React.memo(
             pointerEvents: 'initial',
             border: `${borderWidth}px solid rgb(255, 255, 255, 1)`,
             borderRadius: 2,
-            transform: `rotate(${transformFromOrientation(
-              props.orientation,
-            )}) translate(${translationForEdge(props.edge, props.paddingForEdge)})`,
+            transform: `rotate(${transformFromOrientation(props.orientation)})`,
           }}
         ></div>
       </div>
@@ -159,18 +161,21 @@ export const PaddingResizeControl = React.memo(() => {
 
   const leftRef = useBoundingBox(selectedElements, (ref, boundingBox) => {
     ref.current.style.height = boundingBox.height + 'px'
+    ref.current.style.width = padding.paddingLeft + 'px'
   })
   const topRef = useBoundingBox(selectedElements, (ref, boundingBox) => {
     ref.current.style.width = boundingBox.width + 'px'
+    ref.current.style.height = padding.paddingTop + 'px'
   })
   const rightRef = useBoundingBox(selectedElements, (ref, boundingBox) => {
-    ref.current.style.left = boundingBox.width + 'px'
+    ref.current.style.left = boundingBox.width - padding.paddingRight + 'px'
     ref.current.style.height = boundingBox.height + 'px'
+    ref.current.style.width = padding.paddingRight + 'px'
   })
-
   const bottomRef = useBoundingBox(selectedElements, (ref, boundingBox) => {
-    ref.current.style.top = boundingBox.height + 'px'
+    ref.current.style.top = boundingBox.height - padding.paddingBottom + 'px'
     ref.current.style.width = boundingBox.width + 'px'
+    ref.current.style.height = padding.paddingBottom + 'px'
   })
 
   return (
