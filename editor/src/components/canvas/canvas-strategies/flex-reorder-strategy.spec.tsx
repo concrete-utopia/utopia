@@ -201,6 +201,7 @@ function reorderElement(
       startingMetadata: metadata,
       customStrategyState: defaultCustomStrategyState(),
     } as StrategyState,
+    'end-interaction',
   )
 
   expect(strategyResult.customStatePatch?.lastReorderIdx).toEqual(newIndex)

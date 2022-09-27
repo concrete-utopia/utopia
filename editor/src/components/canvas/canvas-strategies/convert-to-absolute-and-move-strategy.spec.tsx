@@ -194,6 +194,7 @@ function dragByPixels(
         escapeHatchActivated: true,
       },
     } as StrategyState,
+    'end-interaction',
   )
 
   const finalEditor = foldAndApplyCommands(
