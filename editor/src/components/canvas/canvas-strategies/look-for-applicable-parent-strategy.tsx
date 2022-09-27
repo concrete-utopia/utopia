@@ -65,9 +65,19 @@ function tweakStrategy(
 
   const fitness: CanvasStrategy['fitness'] = () => 1
 
-  const apply: CanvasStrategy['apply'] = (c, i, s, l) => {
-    const patchedCanvasState = patchCanvasStateInteractionTargetPath(c, effectiveTarget)
-    const result = strategy.apply(patchedCanvasState, i, s, l)
+  const apply: CanvasStrategy['apply'] = (
+    canvasState,
+    interactionSession,
+    strategyState,
+    strategyLifecycle,
+  ) => {
+    const patchedCanvasState = patchCanvasStateInteractionTargetPath(canvasState, effectiveTarget)
+    const result = strategy.apply(
+      patchedCanvasState,
+      interactionSession,
+      strategyState,
+      strategyLifecycle,
+    )
     return {
       ...result,
       commands: [
@@ -78,7 +88,8 @@ function tweakStrategy(
     }
   }
 
-  const name: CanvasStrategy['name'] = (c, i, s) => strategy.name(c, i, s) + ' *'
+  const name: CanvasStrategy['name'] = (canvasState, interactionSession, strategyState) =>
+    strategy.name(canvasState, interactionSession, strategyState) + ' *'
 
   const id: CanvasStrategyId = 'LOOK_FOR_APPLICABLE_PARENT_ID'
 
