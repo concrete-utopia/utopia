@@ -41,7 +41,6 @@ import {
   emptyStrategyApplicationResult,
   getTargetPathsFromInteractionTarget,
   InteractionCanvasState,
-  isInsertionSubjects,
   StrategyApplicationResult,
 } from './canvas-strategy-types'
 import {
@@ -233,17 +232,14 @@ function findReparentStrategy(
     (e) => EP.parentPath(e) === newParentPath,
   )
 
-  const isInsertion = isInsertionSubjects(canvasState.interactionTarget)
-
   if (
     reparentResult.shouldReparent &&
     newParentPath != null &&
-    (isInsertion ||
-      targetIsValid(
-        newParentPath,
-        interactionState.startingTargetParentsToFilterOut,
-        missingBoundsHandling,
-      )) &&
+    targetIsValid(
+      newParentPath,
+      interactionState.startingTargetParentsToFilterOut,
+      missingBoundsHandling,
+    ) &&
     !parentStayedTheSame
   ) {
     return reparentStrategyForParent(
