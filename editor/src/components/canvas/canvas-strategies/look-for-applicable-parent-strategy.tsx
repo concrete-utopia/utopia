@@ -103,7 +103,7 @@ function isSingletonAbsoluteMove(strategies: Array<CanvasStrategy>): boolean {
   return strategies.length === 1 && strategies[0].id === 'CONVERT_TO_ABSOLUTE_AND_MOVE_STRATEGY'
 }
 
-export function patchCanvasStateInteractionTargetPath(
+function patchCanvasStateInteractionTargetPath(
   canvasState: InteractionCanvasState,
   path: ElementPath[],
 ): InteractionCanvasState {
@@ -116,7 +116,7 @@ export function patchCanvasStateInteractionTargetPath(
   }
 }
 
-export function lookForParentApplicableStrategy(
+function lookForParentApplicableStrategy(
   canvasState: InteractionCanvasState,
   interactionSession: InteractionSession,
   metadata: ElementInstanceMetadataMap,
