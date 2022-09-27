@@ -16,6 +16,7 @@ import {
 import { getDragTargets } from './shared-absolute-move-strategy-helpers'
 import { ifAllowedToReparent, isAllowedToReparent } from './reparent-helpers'
 import {
+  existingReparentSubjects,
   getAbsoluteReparentPropertyChanges,
   getFitnessForReparentStrategy,
   getReparentTargetUnified,
@@ -95,7 +96,7 @@ function getAbsoluteReparentStrategy(
         )
 
         const reparentTarget = getReparentTargetUnified(
-          filteredSelectedElements,
+          existingReparentSubjects(filteredSelectedElements),
           pointOnCanvas,
           interactionState.interactionData.modifiers.cmd,
           canvasState,
