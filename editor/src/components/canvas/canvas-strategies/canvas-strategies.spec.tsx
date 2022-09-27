@@ -10,11 +10,7 @@ import { convertToAbsoluteAndMoveStrategy } from './convert-to-absolute-and-move
 import { flexReorderStrategy } from './flex-reorder-strategy'
 import { flexReparentToAbsoluteStrategy } from './flex-reparent-to-absolute-strategy'
 import { flexReparentToFlexStrategy } from './flex-reparent-to-flex-strategy'
-import {
-  flowReorderAutoConversionStrategy,
-  flowReorderNoConversionStrategy,
-  flowReorderSameTypeOnlyStrategy,
-} from './flow-reorder-strategy'
+import { flowReorderStrategy } from './flow-reorder-strategy'
 import { keyboardAbsoluteMoveStrategy } from './keyboard-absolute-move-strategy'
 import { keyboardAbsoluteResizeStrategy } from './keyboard-absolute-resize-strategy'
 
@@ -31,9 +27,7 @@ const isResizableStrategyAndResults: Array<[CanvasStrategy, boolean]> = [
   [convertToAbsoluteAndMoveStrategy, false],
   [absoluteReparentToFlexStrategy, false],
   [dragToInsertStrategy, false],
-  [flowReorderAutoConversionStrategy, false],
-  [flowReorderNoConversionStrategy, false],
-  [flowReorderSameTypeOnlyStrategy, false],
+  [flowReorderStrategy, false],
 ]
 
 const isResizableExpectedResults: Array<[boolean, CanvasStrategyId, CanvasStrategy]> =
@@ -61,13 +55,13 @@ const getApplicableControlsExpectedResults: Array<
     ['absolute-resize-control', 'zero-size-resize-control'],
   ],
   [absoluteResizeBoundingBoxStrategy, absoluteMoveStrategy.id, []],
-  [flowReorderAutoConversionStrategy, null, []],
+  [flowReorderStrategy, null, []],
   [
-    flowReorderAutoConversionStrategy,
-    flowReorderAutoConversionStrategy.id,
+    flowReorderStrategy,
+    flowReorderStrategy.id,
     ['parent-outlines-control', 'parent-bounds-control', 'flow-reorder-drag-outline'],
   ],
-  [flowReorderAutoConversionStrategy, absoluteMoveStrategy.id, []],
+  [flowReorderStrategy, absoluteMoveStrategy.id, []],
 ]
 
 const getApplicableControlsExpectedResultsForTest: Array<
