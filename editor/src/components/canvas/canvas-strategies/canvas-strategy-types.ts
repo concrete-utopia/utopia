@@ -136,7 +136,7 @@ export type CanvasStrategyId =
 export type InteractionLifecycle = 'mid-interaction' | 'end-interaction'
 
 export interface CanvasStrategy {
-  id: CanvasStrategyId
+  id: CanvasStrategyId // We'd need to do something to guarantee uniqueness here if using this for the commands' reason
 
   name: (
     canvasState: InteractionCanvasState,
