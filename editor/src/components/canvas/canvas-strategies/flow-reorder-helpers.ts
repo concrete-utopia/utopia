@@ -7,13 +7,31 @@ import {
 } from '../../../core/shared/element-template'
 import { rectContainsPoint, CanvasVector, mod } from '../../../core/shared/math-utils'
 import { ElementPath } from '../../../core/shared/project-file-types'
+import { AllElementProps } from '../../editor/store/editor-state'
 import { stylePropPathMappingFn } from '../../inspector/common/property-path-hooks'
 import { DeleteProperties, deleteProperties } from '../commands/delete-properties-command'
 import { SetProperty, setProperty } from '../commands/set-property-command'
 
-export function isValidSibling(siblingMetadata: ElementInstanceMetadata | null): boolean {
-  // TODO filter float and relative (with TLBR)
-  return !MetadataUtils.isPositionAbsolute(siblingMetadata)
+export function isValidSibling(
+  siblingMetadata: ElementInstanceMetadata | null,
+  allElementProps: AllElementProps,
+): boolean {
+  if (MetadataUtils.isPositionAbsolute(siblingMetadata)) {
+    return false
+  } else if (siblingMetadata?.specialSizeMeasurements.float !== 'none') {
+    return false
+  } else if (MetadataUtils.isPositionRelative(siblingMetadata) && siblingMetadata != null) {
+    const styleProps = allElementProps[EP.toString(siblingMetadata.elementPath)].style
+    return (
+      styleProps == null ||
+      (styleProps.left == null &&
+        styleProps.top == null &&
+        styleProps.right == null &&
+        styleProps.bottom == null)
+    )
+  } else {
+    return true
+  }
 }
 
 function findSiblingIndexUnderPoint(
@@ -21,12 +39,13 @@ function findSiblingIndexUnderPoint(
   target: ElementPath | null,
   siblings: Array<ElementPath>,
   metadata: ElementInstanceMetadataMap,
+  allElementProps: AllElementProps,
 ): { newIndex: number; targetSiblingUnderMouse: ElementPath | null } {
   const newIndex = siblings.findIndex((sibling) => {
     const siblingMetadata = MetadataUtils.findElementByElementPath(metadata, sibling)
     const frame = MetadataUtils.getFrameInCanvasCoords(sibling, metadata)
     return (
-      isValidSibling(siblingMetadata) &&
+      isValidSibling(siblingMetadata, allElementProps) &&
       frame != null &&
       rectContainsPoint(frame, point) &&
       MetadataUtils.isPositionedByFlow(siblingMetadata) &&
@@ -100,6 +119,7 @@ export function removeDisplayProp(): RemoveDisplayProp {
 
 export function getFlowReorderIndex(
   latestMetadata: ElementInstanceMetadataMap,
+  allElementProps: AllElementProps,
   point: CanvasVector,
   target: ElementPath | null,
 ): {
@@ -116,7 +136,13 @@ export function getFlowReorderIndex(
     (element) => element.elementPath,
   )
 
-  const reorderResult = findSiblingIndexUnderPoint(point, target, siblings, latestMetadata)
+  const reorderResult = findSiblingIndexUnderPoint(
+    point,
+    target,
+    siblings,
+    latestMetadata,
+    allElementProps,
+  )
   if (reorderResult.newIndex === -1) {
     // We were unable to find an appropriate entry.
     return {

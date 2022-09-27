@@ -88,6 +88,7 @@ function flowReorderApplyCommon(
 
     const { newIndex, targetSiblingUnderMouse } = getFlowReorderIndex(
       interactionState.latestMetadata,
+      strategyState.startingAllElementProps,
       rawPointOnCanvas,
       target,
     )

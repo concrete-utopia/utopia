@@ -920,6 +920,7 @@ function getSpecialMeasurements(
     element.localName,
     childrenCount,
     globalContentBox,
+    elementStyle.float,
   )
 }
 
