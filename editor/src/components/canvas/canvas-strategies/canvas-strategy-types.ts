@@ -13,6 +13,7 @@ export interface CustomStrategyState {
   escapeHatchActivated: boolean
   lastReorderIdx: number | null
   duplicatedElementNewUids: { [elementPath: string]: string }
+  previousReorderTargetSiblingUnderMouse: ElementPath | null
 }
 
 export type CustomStrategyStatePatch = Partial<CustomStrategyState>
@@ -22,6 +23,7 @@ export function defaultCustomStrategyState(): CustomStrategyState {
     escapeHatchActivated: false,
     lastReorderIdx: null,
     duplicatedElementNewUids: {},
+    previousReorderTargetSiblingUnderMouse: null,
   }
 }
 
@@ -125,9 +127,7 @@ export type CanvasStrategyId =
   | 'FORCED_FLEX_REPARENT_TO_ABSOLUTE'
   | 'FLEX_REPARENT_TO_FLEX'
   | 'DRAG_TO_INSERT'
-  | 'FLOW_REORDER_AUTO_CONVERSION'
-  | 'FLOW_REORDER_NO_CONVERSION'
-  | 'FLOW_REORDER_SAME_TYPE_ONLY'
+  | 'FLOW_REORDER'
   | 'FLOW_REORDER_SLIDER'
   | 'LOOK_FOR_APPLICABLE_PARENT_ID'
   | 'DRAW_TO_INSERT'
