@@ -43,6 +43,7 @@ import {
 } from '../../canvas/canvas-strategies/interaction-state'
 import {
   CanvasStrategy,
+  CanvasStrategyId,
   defaultCustomStrategyState,
   InteractionCanvasState,
   strategyApplicationResult,
@@ -162,7 +163,7 @@ describe('interactionCancel', () => {
 
 const testStrategy: MetaCanvasStrategy = () => [
   {
-    id: 'TEST_STRATEGY',
+    id: 'TEST_STRATEGY' as CanvasStrategyId,
     name: () => 'Test Strategy',
     isApplicable: function (
       canvasState: InteractionCanvasState,
@@ -331,7 +332,7 @@ describe('interactionUpdatex', () => {
         boundingArea(),
       ),
     )
-    editorStore.strategyState.currentStrategy = 'TEST_STRATEGY'
+    editorStore.strategyState.currentStrategy = 'TEST_STRATEGY' as CanvasStrategyId
     const actualResult = interactionUpdate(
       [testStrategy],
       editorStore,
@@ -632,7 +633,7 @@ describe('interactionUpdate with accumulating keypresses', () => {
     )
 
     const editorStore = createEditorStore(interactionSession)
-    editorStore.strategyState.currentStrategy = 'PREVIOUS_STRATEGY'
+    editorStore.strategyState.currentStrategy = 'PREVIOUS_STRATEGY' as CanvasStrategyId
     // the currentStrategyCommands should be added to accumulatedCommands
     editorStore.strategyState.currentStrategyCommands = [
       wildcardPatch('always', { selectedViews: { $set: [EP.elementPath([['aaa']])] } }),
@@ -707,7 +708,7 @@ describe('interactionUpdate with user changed strategy', () => {
       interactionSession.interactionData.dragStart = canvasPoint({ x: 110, y: 210 })
       interactionSession.interactionData.drag = canvasPoint({ x: 50, y: 140 })
       interactionSession.interactionData.prevDrag = canvasPoint({ x: 30, y: 120 })
-      interactionSession.userPreferredStrategy = 'EMPTY_TEST_STRATEGY'
+      interactionSession.userPreferredStrategy = 'EMPTY_TEST_STRATEGY' as CanvasStrategyId
     }
     const editorStore = createEditorStore(interactionSession)
 
@@ -718,7 +719,7 @@ describe('interactionUpdate with user changed strategy', () => {
         ...result.unpatchedEditor.canvas,
         interactionSession: {
           ...result.unpatchedEditor.canvas.interactionSession!,
-          userPreferredStrategy: 'TEST_STRATEGY',
+          userPreferredStrategy: 'TEST_STRATEGY' as CanvasStrategyId,
         },
       },
     }
@@ -966,7 +967,7 @@ describe('only update metadata on SAVE_DOM_REPORT', () => {
       [
         () => [
           {
-            id: 'TEST_STRATEGY',
+            id: 'TEST_STRATEGY' as CanvasStrategyId,
             name: () => 'Test Strategy',
             isApplicable: function (): boolean {
               return true
@@ -1003,7 +1004,7 @@ describe('only update metadata on SAVE_DOM_REPORT', () => {
     await renderResult.dispatch([CanvasActions.updateDragInteractionData({})], true, [
       () => [
         {
-          id: 'TEST_STRATEGY',
+          id: 'TEST_STRATEGY' as CanvasStrategyId,
           name: () => 'Test Strategy',
           isApplicable: function (): boolean {
             return true

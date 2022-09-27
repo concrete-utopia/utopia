@@ -4,7 +4,7 @@ import { absoluteReparentStrategy } from './absolute-reparent-strategy'
 import { absoluteReparentToFlexStrategy } from './absolute-reparent-to-flex-strategy'
 import { absoluteResizeBoundingBoxStrategy } from './absolute-resize-bounding-box-strategy'
 import { getApplicableControls, isResizableStrategy } from './canvas-strategies'
-import { CanvasStrategy, ControlWithKey } from './canvas-strategy-types'
+import { CanvasStrategy, CanvasStrategyId, ControlWithKey } from './canvas-strategy-types'
 import { dragToInsertStrategy } from './drag-to-insert-strategy'
 import { convertToAbsoluteAndMoveStrategy } from './convert-to-absolute-and-move-strategy'
 import { flexReorderStrategy } from './flex-reorder-strategy'
@@ -36,7 +36,7 @@ const isResizableStrategyAndResults: Array<[CanvasStrategy, boolean]> = [
   [flowReorderSameTypeOnlyStrategy, false],
 ]
 
-const isResizableExpectedResults: Array<[boolean, string, CanvasStrategy]> =
+const isResizableExpectedResults: Array<[boolean, CanvasStrategyId, CanvasStrategy]> =
   isResizableStrategyAndResults.map((entry) => {
     return [entry[1], entry[0].id, entry[0]]
   })
@@ -51,26 +51,27 @@ describe('isResizableStrategy', () => {
   )
 })
 
-const getApplicableControlsExpectedResults: Array<[CanvasStrategy, string | null, Array<string>]> =
+const getApplicableControlsExpectedResults: Array<
+  [CanvasStrategy, CanvasStrategyId | null, Array<string>]
+> = [
+  [absoluteMoveStrategy, null, []],
   [
-    [absoluteMoveStrategy, null, []],
-    [
-      absoluteResizeBoundingBoxStrategy,
-      null,
-      ['absolute-resize-control', 'zero-size-resize-control'],
-    ],
-    [absoluteResizeBoundingBoxStrategy, absoluteMoveStrategy.id, []],
-    [flowReorderAutoConversionStrategy, null, []],
-    [
-      flowReorderAutoConversionStrategy,
-      flowReorderAutoConversionStrategy.id,
-      ['parent-outlines-control', 'parent-bounds-control', 'flow-reorder-drag-outline'],
-    ],
-    [flowReorderAutoConversionStrategy, absoluteMoveStrategy.id, []],
-  ]
+    absoluteResizeBoundingBoxStrategy,
+    null,
+    ['absolute-resize-control', 'zero-size-resize-control'],
+  ],
+  [absoluteResizeBoundingBoxStrategy, absoluteMoveStrategy.id, []],
+  [flowReorderAutoConversionStrategy, null, []],
+  [
+    flowReorderAutoConversionStrategy,
+    flowReorderAutoConversionStrategy.id,
+    ['parent-outlines-control', 'parent-bounds-control', 'flow-reorder-drag-outline'],
+  ],
+  [flowReorderAutoConversionStrategy, absoluteMoveStrategy.id, []],
+]
 
 const getApplicableControlsExpectedResultsForTest: Array<
-  [Array<string>, string, string | null, CanvasStrategy]
+  [Array<string>, CanvasStrategyId, CanvasStrategyId | null, CanvasStrategy]
 > = getApplicableControlsExpectedResults.map((entry) => {
   return [entry[2], entry[0].id, entry[1], entry[0]]
 })

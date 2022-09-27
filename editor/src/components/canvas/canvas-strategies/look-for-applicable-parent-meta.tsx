@@ -3,7 +3,7 @@ import { CSSCursor } from '../canvas-types'
 import { highlightElementsCommand } from '../commands/highlight-element-command'
 import { setCursorCommand } from '../commands/set-cursor-command'
 import { MetaCanvasStrategy } from './canvas-strategies'
-import { CanvasStrategy } from './canvas-strategy-types'
+import { CanvasStrategy, CanvasStrategyId } from './canvas-strategy-types'
 import {
   lookForParentApplicableStrategy,
   patchCanvasStateInteractionTargetPath,
@@ -59,7 +59,7 @@ function tweakStrategy(
 
   const name: CanvasStrategy['name'] = (c, i, s) => strategy.name(c, i, s) + ' *'
 
-  const id: string = 'LOOK_FOR_APPLICABLE_PARENT_ID' + '_' + strategy.id
+  const id: CanvasStrategyId = 'LOOK_FOR_APPLICABLE_PARENT_ID'
 
   return { apply, name, fitness, id, isApplicable, controlsToRender }
 }

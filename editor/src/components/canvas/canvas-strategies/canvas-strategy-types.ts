@@ -110,10 +110,33 @@ export function getInsertionSubjectsFromInteractionTarget(
   return []
 }
 
+export type CanvasStrategyId =
+  | 'ABSOLUTE_MOVE'
+  | 'ABSOLUTE_REPARENT'
+  | 'FORCED_ABSOLUTE_REPARENT'
+  | 'ABSOLUTE_DUPLICATE'
+  | 'ABSOLUTE_RESIZE_BOUNDING_BOX'
+  | 'KEYBOARD_ABSOLUTE_MOVE'
+  | 'KEYBOARD_ABSOLUTE_RESIZE'
+  | 'CONVERT_TO_ABSOLUTE_AND_MOVE_STRATEGY'
+  | 'FLEX_REORDER'
+  | 'ABSOLUTE_REPARENT_TO_FLEX'
+  | 'FLEX_REPARENT_TO_ABSOLUTE'
+  | 'FORCED_FLEX_REPARENT_TO_ABSOLUTE'
+  | 'FLEX_REPARENT_TO_FLEX'
+  | 'DRAG_TO_INSERT'
+  | 'FLOW_REORDER_AUTO_CONVERSION'
+  | 'FLOW_REORDER_NO_CONVERSION'
+  | 'FLOW_REORDER_SAME_TYPE_ONLY'
+  | 'FLOW_REORDER_SLIDER'
+  | 'LOOK_FOR_APPLICABLE_PARENT_ID'
+  | 'DRAW_TO_INSERT'
+  | 'FLEX_RESIZE_BASIC'
+
 export type InteractionLifecycle = 'mid-interaction' | 'end-interaction'
 
 export interface CanvasStrategy {
-  id: string // We'd need to do something to guarantee uniqueness here if using this for the commands' reason
+  id: CanvasStrategyId
 
   name: (
     canvasState: InteractionCanvasState,
