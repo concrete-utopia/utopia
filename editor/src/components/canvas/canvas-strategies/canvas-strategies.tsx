@@ -19,6 +19,7 @@ import {
   InteractionTarget,
   targetPaths,
   StrategyApplicationResult,
+  InteractionLifecycle,
 } from './canvas-strategy-types'
 import { InteractionSession, StrategyState } from './interaction-state'
 import { keyboardAbsoluteMoveStrategy } from './keyboard-absolute-move-strategy'
@@ -280,8 +281,9 @@ export function applyCanvasStrategy(
   canvasState: InteractionCanvasState,
   interactionSession: InteractionSession,
   strategyState: StrategyState,
+  strategyLifecycle: InteractionLifecycle,
 ): StrategyApplicationResult {
-  return strategy.apply(canvasState, interactionSession, strategyState)
+  return strategy.apply(canvasState, interactionSession, strategyState, strategyLifecycle)
 }
 
 export function useDelayedEditorState<T>(

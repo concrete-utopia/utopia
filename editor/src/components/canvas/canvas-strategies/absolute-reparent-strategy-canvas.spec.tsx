@@ -138,6 +138,7 @@ function reparentElement(
       startingAllElementProps: {},
       customStrategyState: defaultCustomStrategyState(),
     } as StrategyState,
+    'end-interaction',
   )
 
   expect(strategyResult.customStatePatch).toEqual({})

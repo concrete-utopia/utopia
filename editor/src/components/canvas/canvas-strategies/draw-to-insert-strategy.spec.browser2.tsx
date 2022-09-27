@@ -9,7 +9,7 @@ import {
   getPrintedUiJsCode,
 } from '../ui-jsx.test-utils'
 import { CanvasControlsContainerID } from '../controls/new-canvas-controls'
-import { wait } from '../../../utils/utils.test-utils'
+import * as EP from '../../../core/shared/element-path'
 
 function slightlyOffsetWindowPointBecauseVeryWeirdIssue(point: {
   x: number
@@ -18,6 +18,21 @@ function slightlyOffsetWindowPointBecauseVeryWeirdIssue(point: {
   // FIXME when running in headless chrome, the result of getBoundingClientRect will be slightly
   // offset for some unknown reason, meaning the inserted element will be 1 pixel of in each dimension
   return windowPoint({ x: point.x - 0.001, y: point.y - 0.001 })
+}
+
+async function fireMoveEvent(canvasControlsLayer: HTMLElement, point: WindowPoint) {
+  await act(async () => {
+    fireEvent(
+      canvasControlsLayer,
+      new MouseEvent('mousemove', {
+        bubbles: true,
+        cancelable: true,
+        clientX: point.x,
+        clientY: point.y,
+        buttons: 1,
+      }),
+    )
+  })
 }
 
 async function fireDragEvent(
@@ -55,6 +70,41 @@ async function fireDragEvent(
         cancelable: true,
         clientX: endPoint.x,
         clientY: endPoint.y,
+      }),
+    )
+  })
+}
+
+async function fireClickEvent(canvasControlsLayer: HTMLElement, point: WindowPoint) {
+  await act(async () => {
+    fireEvent(
+      canvasControlsLayer,
+      new MouseEvent('mousedown', {
+        bubbles: true,
+        cancelable: true,
+        clientX: point.x,
+        clientY: point.y,
+        buttons: 1,
+      }),
+    )
+
+    fireEvent(
+      canvasControlsLayer,
+      new MouseEvent('mouseup', {
+        bubbles: true,
+        cancelable: true,
+        clientX: point.x,
+        clientY: point.y,
+      }),
+    )
+
+    fireEvent(
+      canvasControlsLayer,
+      new MouseEvent('mouseclick', {
+        bubbles: true,
+        cancelable: true,
+        clientX: point.x,
+        clientY: point.y,
       }),
     )
   })
@@ -137,6 +187,12 @@ describe('Inserting into absolute', () => {
       y: targetElementBounds.y + 305,
     })
 
+    // Move before starting dragging
+    await fireMoveEvent(canvasControlsLayer, startPoint)
+
+    // Highlight should drag the candidate parent
+    expect(renderResult.getEditorState().editor.highlightedViews.map(EP.toUid)).toEqual(['bbb'])
+
     // Drag from inside bbb to inside ccc
     await fireDragEvent(canvasControlsLayer, startPoint, endPoint)
 
@@ -172,6 +228,73 @@ describe('Inserting into absolute', () => {
                 top: 5,
                 width: 20,
                 height: 300,
+              }}
+            />
+          </div>
+          <div
+            data-uid='ccc'
+            style={{
+              position: 'absolute',
+              left: 10,
+              top: 200,
+              width: 380,
+              height: 190,
+              backgroundColor: '#FF0000',
+            }}
+          />
+        </div>
+      `),
+    )
+  })
+
+  it('Click to insert with default size', async () => {
+    const renderResult = await renderTestEditorWithCode(inputCode, 'await-first-dom-report')
+    await startInsertMode(renderResult.dispatch)
+
+    const targetElement = renderResult.renderedDOM.getByTestId('bbb')
+    const targetElementBounds = targetElement.getBoundingClientRect()
+    const canvasControlsLayer = renderResult.renderedDOM.getByTestId(CanvasControlsContainerID)
+
+    const point = slightlyOffsetWindowPointBecauseVeryWeirdIssue({
+      x: targetElementBounds.x + 65,
+      y: targetElementBounds.y + 55,
+    })
+
+    // Click in bbb
+    await fireClickEvent(canvasControlsLayer, point)
+
+    // Check that the inserted element is a child of bbb
+    expect(getPrintedUiJsCode(renderResult.getEditorState())).toEqual(
+      makeTestProjectCodeWithSnippet(`
+        <div
+          data-uid='aaa'
+          style={{
+            width: '100%',
+            height: '100%',
+            backgroundColor: '#FFFFFF',
+            position: 'relative',
+          }}
+        >
+          <div
+            data-uid='bbb'
+            data-testid='bbb'
+            style={{
+              position: 'absolute',
+              left: 10,
+              top: 10,
+              width: 380,
+              height: 180,
+              backgroundColor: '#d3d3d3',
+            }}
+          >
+            <div
+              data-uid='ddd'
+              style={{
+                position: 'absolute',
+                left: 15,
+                top: 5,
+                width: 100,
+                height: 100,
               }}
             />
           </div>
@@ -385,6 +508,67 @@ describe('Inserting into flex row', () => {
     )
   })
 
+  it('Click to insert into zero position in flex', async () => {
+    const renderResult = await renderTestEditorWithCode(inputCode, 'await-first-dom-report')
+    await startInsertMode(renderResult.dispatch)
+
+    const targetElement = renderResult.renderedDOM.getByTestId('bbb')
+    const targetElementBounds = targetElement.getBoundingClientRect()
+    const canvasControlsLayer = renderResult.renderedDOM.getByTestId(CanvasControlsContainerID)
+
+    const point = slightlyOffsetWindowPointBecauseVeryWeirdIssue({
+      x: targetElementBounds.x + 5,
+      y: targetElementBounds.y + 5,
+    })
+
+    // Click horizontally close to the zero position
+    await fireClickEvent(canvasControlsLayer, point)
+
+    // Check that the inserted element is a sibling of bbb, position is before bbb
+    expect(getPrintedUiJsCode(renderResult.getEditorState())).toEqual(
+      makeTestProjectCodeWithSnippet(`
+        <div
+          data-uid='aaa'
+          style={{
+            width: '100%',
+            height: '100%',
+            backgroundColor: '#FFFFFF',
+            position: 'relative',
+            display: 'flex',
+            gap: 10,
+          }}
+        >
+          <div
+            data-uid='ddd'
+            style={{
+              position: 'relative',
+              width: 100,
+              height: 100,
+            }}
+          />
+          <div
+            data-uid='bbb'
+            data-testid='bbb'
+            style={{
+              position: 'relative',
+              width: 180,
+              height: 180,
+              backgroundColor: '#d3d3d3',
+            }}
+          /> 
+          <div
+            data-uid='ccc'
+            style={{
+              width: 100,
+              height: 190,
+              backgroundColor: '#FF0000',
+            }}
+          />
+        </div>
+      `),
+    )
+  })
+
   it('Insert into first position in flex', async () => {
     const renderResult = await renderTestEditorWithCode(inputCode, 'await-first-dom-report')
     await startInsertMode(renderResult.dispatch)
@@ -435,6 +619,67 @@ describe('Inserting into flex row', () => {
               position: 'relative',
               width: 20,
               height: 300,
+            }}
+          />
+          <div
+            data-uid='ccc'
+            style={{
+              width: 100,
+              height: 190,
+              backgroundColor: '#FF0000',
+            }}
+          />
+        </div>
+      `),
+    )
+  })
+
+  it('Click to insert into first position in flex', async () => {
+    const renderResult = await renderTestEditorWithCode(inputCode, 'await-first-dom-report')
+    await startInsertMode(renderResult.dispatch)
+
+    const targetElement = renderResult.renderedDOM.getByTestId('bbb')
+    const targetElementBounds = targetElement.getBoundingClientRect()
+    const canvasControlsLayer = renderResult.renderedDOM.getByTestId(CanvasControlsContainerID)
+
+    const point = slightlyOffsetWindowPointBecauseVeryWeirdIssue({
+      x: targetElementBounds.x + targetElementBounds.width + 5,
+      y: targetElementBounds.y + targetElementBounds.height + 5,
+    })
+
+    // Click horizontally close to the first position
+    await fireClickEvent(canvasControlsLayer, point)
+
+    // Check that the inserted element is a sibling of bbb, position is after bbb
+    expect(getPrintedUiJsCode(renderResult.getEditorState())).toEqual(
+      makeTestProjectCodeWithSnippet(`
+        <div
+          data-uid='aaa'
+          style={{
+            width: '100%',
+            height: '100%',
+            backgroundColor: '#FFFFFF',
+            position: 'relative',
+            display: 'flex',
+            gap: 10,
+          }}
+        >
+          <div
+            data-uid='bbb'
+            data-testid='bbb'
+            style={{
+              position: 'relative',
+              width: 180,
+              height: 180,
+              backgroundColor: '#d3d3d3',
+            }}
+          />
+          <div
+            data-uid='ddd'
+            style={{
+              position: 'relative',
+              width: 100,
+              height: 100,
             }}
           />
           <div
@@ -583,6 +828,70 @@ describe('Inserting into flex row', () => {
     )
   })
 
+  it('Click to insert inside a flex child with absolute layout', async () => {
+    const renderResult = await renderTestEditorWithCode(inputCode, 'await-first-dom-report')
+    await startInsertMode(renderResult.dispatch)
+
+    const targetElement = renderResult.renderedDOM.getByTestId('bbb')
+    const targetElementBounds = targetElement.getBoundingClientRect()
+    const canvasControlsLayer = renderResult.renderedDOM.getByTestId(CanvasControlsContainerID)
+
+    const point = slightlyOffsetWindowPointBecauseVeryWeirdIssue({
+      x: targetElementBounds.x + 10,
+      y: targetElementBounds.y + 10,
+    })
+
+    // Click inside bbb
+    await fireClickEvent(canvasControlsLayer, point)
+
+    // Check that the inserted element is a child of bbb
+    expect(getPrintedUiJsCode(renderResult.getEditorState())).toEqual(
+      makeTestProjectCodeWithSnippet(`
+        <div
+          data-uid='aaa'
+          style={{
+            width: '100%',
+            height: '100%',
+            backgroundColor: '#FFFFFF',
+            position: 'relative',
+            display: 'flex',
+            gap: 10,
+          }}
+        >
+          <div
+            data-uid='bbb'
+            data-testid='bbb'
+            style={{
+              position: 'relative',
+              width: 180,
+              height: 180,
+              backgroundColor: '#d3d3d3',
+            }}
+          >
+            <div
+              data-uid='ddd'
+              style={{
+                position: 'absolute',
+                left: -40,
+                top: -40,
+                width: 100,
+                height: 100,
+              }}
+            />
+          </div>
+          <div
+            data-uid='ccc'
+            style={{
+              width: 100,
+              height: 190,
+              backgroundColor: '#FF0000',
+            }}
+          />
+        </div>
+      `),
+    )
+  })
+
   it('Drag inside a flex child close to the edge, which inserts as a sibling', async () => {
     const renderResult = await renderTestEditorWithCode(inputCode, 'await-first-dom-report')
     await startInsertMode(renderResult.dispatch)
@@ -623,6 +932,67 @@ describe('Inserting into flex row', () => {
             position: 'relative',
             width: 20,
             height: 30,
+          }}
+        />
+        <div
+          data-uid='bbb'
+          data-testid='bbb'
+          style={{
+            position: 'relative',
+            width: 180,
+            height: 180,
+            backgroundColor: '#d3d3d3',
+          }}
+        />
+        <div
+          data-uid='ccc'
+          style={{
+            width: 100,
+            height: 190,
+            backgroundColor: '#FF0000',
+          }}
+        />
+      </div>
+    `),
+    )
+  })
+
+  it('Click inside a flex child close to the edge, which inserts as a sibling', async () => {
+    const renderResult = await renderTestEditorWithCode(inputCode, 'await-first-dom-report')
+    await startInsertMode(renderResult.dispatch)
+
+    const targetElement = renderResult.renderedDOM.getByTestId('bbb')
+    const targetElementBounds = targetElement.getBoundingClientRect()
+    const canvasControlsLayer = renderResult.renderedDOM.getByTestId(CanvasControlsContainerID)
+
+    const point = slightlyOffsetWindowPointBecauseVeryWeirdIssue({
+      x: targetElementBounds.x + 3,
+      y: targetElementBounds.y + 3,
+    })
+
+    // Click inside bbb, but very close to its edge (3px)
+    await fireClickEvent(canvasControlsLayer, point)
+
+    // Check that the inserted element is a sibling of bbb, position is before bbb
+    expect(getPrintedUiJsCode(renderResult.getEditorState())).toEqual(
+      makeTestProjectCodeWithSnippet(`
+      <div
+        data-uid='aaa'
+        style={{
+          width: '100%',
+          height: '100%',
+          backgroundColor: '#FFFFFF',
+          position: 'relative',
+          display: 'flex',
+          gap: 10,
+        }}
+      >
+        <div
+          data-uid='ddd'
+          style={{
+            position: 'relative',
+            width: 100,
+            height: 100,
           }}
         />
         <div
@@ -773,6 +1143,68 @@ describe('Inserting into flex column', () => {
     )
   })
 
+  it('Click to insert into zero position in flex, column layout', async () => {
+    const renderResult = await renderTestEditorWithCode(inputCode, 'await-first-dom-report')
+    await startInsertMode(renderResult.dispatch)
+
+    const targetElement = renderResult.renderedDOM.getByTestId('bbb')
+    const targetElementBounds = targetElement.getBoundingClientRect()
+    const canvasControlsLayer = renderResult.renderedDOM.getByTestId(CanvasControlsContainerID)
+
+    const point = slightlyOffsetWindowPointBecauseVeryWeirdIssue({
+      x: targetElementBounds.x + targetElementBounds.width + 5,
+      y: targetElementBounds.y + 5,
+    })
+
+    // Click vertically close to the first position
+    await fireClickEvent(canvasControlsLayer, point)
+
+    // Check that the inserted element is a sibling of bbb, position is before bbb
+    expect(getPrintedUiJsCode(renderResult.getEditorState())).toEqual(
+      makeTestProjectCodeWithSnippet(`
+        <div
+          data-uid='aaa'
+          style={{
+            width: '100%',
+            height: '100%',
+            backgroundColor: '#FFFFFF',
+            position: 'relative',
+            display: 'flex',
+            flexDirection: 'column',
+            gap: 10,
+          }}
+        >
+          <div
+            data-uid='ddd'
+            style={{
+              position: 'relative',
+              width: 100,
+              height: 100,
+            }}
+          />
+          <div
+            data-uid='bbb'
+            data-testid='bbb'
+            style={{
+              position: 'relative',
+              width: 180,
+              height: 180,
+              backgroundColor: '#d3d3d3',
+            }}
+          />
+          <div
+            data-uid='ccc'
+            style={{
+              width: 100,
+              height: 190,
+              backgroundColor: '#FF0000',
+            }}
+          />
+        </div>
+      `),
+    )
+  })
+
   it('Insert into first position in flex, column layout', async () => {
     const renderResult = await renderTestEditorWithCode(inputCode, 'await-first-dom-report')
     await startInsertMode(renderResult.dispatch)
@@ -824,6 +1256,68 @@ describe('Inserting into flex column', () => {
               position: 'relative',
               width: 300,
               height: 20,
+            }}
+          />
+          <div
+            data-uid='ccc'
+            style={{
+              width: 100,
+              height: 190,
+              backgroundColor: '#FF0000',
+            }}
+          />
+        </div>
+      `),
+    )
+  })
+
+  it('Click to insert into first position in flex, column layout', async () => {
+    const renderResult = await renderTestEditorWithCode(inputCode, 'await-first-dom-report')
+    await startInsertMode(renderResult.dispatch)
+
+    const targetElement = renderResult.renderedDOM.getByTestId('bbb')
+    const targetElementBounds = targetElement.getBoundingClientRect()
+    const canvasControlsLayer = renderResult.renderedDOM.getByTestId(CanvasControlsContainerID)
+
+    const point = slightlyOffsetWindowPointBecauseVeryWeirdIssue({
+      x: targetElementBounds.x + targetElementBounds.width + 5,
+      y: targetElementBounds.y + targetElementBounds.height + 5,
+    })
+
+    // Click vertically close to the first position
+    await fireClickEvent(canvasControlsLayer, point)
+
+    // Check that the inserted element is a sibling of bbb, position is after bbb
+    expect(getPrintedUiJsCode(renderResult.getEditorState())).toEqual(
+      makeTestProjectCodeWithSnippet(`
+        <div
+          data-uid='aaa'
+          style={{
+            width: '100%',
+            height: '100%',
+            backgroundColor: '#FFFFFF',
+            position: 'relative',
+            display: 'flex',
+            flexDirection: 'column',
+            gap: 10,
+          }}
+        >
+          <div
+            data-uid='bbb'
+            data-testid='bbb'
+            style={{
+              position: 'relative',
+              width: 180,
+              height: 180,
+              backgroundColor: '#d3d3d3',
+            }}
+          />
+          <div
+            data-uid='ddd'
+            style={{
+              position: 'relative',
+              width: 100,
+              height: 100,
             }}
           />
           <div

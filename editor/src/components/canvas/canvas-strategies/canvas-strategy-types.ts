@@ -110,6 +110,8 @@ export function getInsertionSubjectsFromInteractionTarget(
   return []
 }
 
+export type InteractionLifecycle = 'mid-interaction' | 'end-interaction'
+
 export interface CanvasStrategy {
   id: string // We'd need to do something to guarantee uniqueness here if using this for the commands' reason
 
@@ -142,6 +144,7 @@ export interface CanvasStrategy {
     canvasState: InteractionCanvasState,
     interactionSession: InteractionSession,
     strategyState: StrategyState,
+    strategyLifecycle: InteractionLifecycle,
   ) => StrategyApplicationResult
 }
 
