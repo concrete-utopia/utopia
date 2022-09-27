@@ -52,7 +52,7 @@ const UnfitStrategy: CanvasStrategy = {
 }
 
 // Deliberately not in sorted order
-const allStrategies = [AverageStrategy, BestStrategy, UnfitStrategy, WorstStrategy]
+const allStrategies = [() => [AverageStrategy, BestStrategy, UnfitStrategy, WorstStrategy]]
 
 async function renderBasicModel(): Promise<EditorRenderResult> {
   const renderResult = await renderTestEditorWithCode(

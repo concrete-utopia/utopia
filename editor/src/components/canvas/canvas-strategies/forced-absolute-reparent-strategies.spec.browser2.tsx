@@ -199,7 +199,7 @@ ${snippet}
 `)
 }
 
-const allReparentStrategies = [
+const allReparentStrategies = () => [
   absoluteReparentStrategy,
   absoluteReparentToFlexStrategy,
   forcedAbsoluteReparentStrategy,
@@ -216,7 +216,7 @@ describe('Forced Absolute Reparent Strategies', () => {
     const renderResult = await renderTestEditorWithCode(
       makeTestProjectCodeWithSnippet(defaultTestCode),
       'await-first-dom-report',
-      [forcedAbsoluteReparentStrategy],
+      [() => [forcedAbsoluteReparentStrategy]],
     )
 
     const absoluteChild = await renderResult.renderedDOM.findByTestId('absolutechild')
@@ -327,7 +327,7 @@ describe('Forced Absolute Reparent Strategies', () => {
     const renderResult = await renderTestEditorWithCode(
       makeTestProjectCodeWithSnippet(defaultTestCode),
       'await-first-dom-report',
-      allReparentStrategies,
+      [allReparentStrategies],
     )
 
     const absoluteChild = await renderResult.renderedDOM.findByTestId('absolutechild')
@@ -435,7 +435,7 @@ describe('Forced Absolute Reparent Strategies', () => {
     const renderResult = await renderTestEditorWithCode(
       makeTestProjectCodeWithSnippet(defaultTestCode),
       'await-first-dom-report',
-      [forcedFlexReparentToAbsoluteStrategy],
+      [() => [forcedFlexReparentToAbsoluteStrategy]],
     )
     const firstFlexChild = await renderResult.renderedDOM.findByTestId('flexchild1')
     const firstFlexChildRect = firstFlexChild.getBoundingClientRect()
@@ -550,7 +550,7 @@ describe('Forced Absolute Reparent Strategies', () => {
     const renderResult = await renderTestEditorWithCode(
       makeTestProjectCodeWithSnippet(defaultTestCode),
       'await-first-dom-report',
-      allReparentStrategies,
+      [allReparentStrategies],
     )
     const firstFlexChild = await renderResult.renderedDOM.findByTestId('flexchild1')
     const firstFlexChildRect = firstFlexChild.getBoundingClientRect()
