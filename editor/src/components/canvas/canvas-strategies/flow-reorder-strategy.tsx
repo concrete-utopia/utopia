@@ -32,7 +32,7 @@ import {
 import { AllElementProps } from '../../editor/store/editor-state'
 import { isReorderAllowed } from './reorder-utils'
 
-export function isFlowReorderConversionApplicable(
+function isFlowReorderConversionApplicable(
   canvasState: InteractionCanvasState,
   interactionSession: InteractionSession | null,
   metadata: ElementInstanceMetadataMap,
