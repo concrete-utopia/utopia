@@ -7,9 +7,9 @@ import { CanvasStrategy, CanvasStrategyId } from './canvas-strategy-types'
 import {
   lookForParentApplicableStrategy,
   patchCanvasStateInteractionTargetPath,
-} from './look-for-applicable-parent'
+} from './look-for-applicable-parent-strategy-helpers'
 
-export const lookForApplicableParentMeta: MetaCanvasStrategy = (
+export const lookForApplicableParentStrategy: MetaCanvasStrategy = (
   canvasSate,
   interactionSession,
   metadata,

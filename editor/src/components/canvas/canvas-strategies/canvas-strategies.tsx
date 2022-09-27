@@ -49,7 +49,7 @@ import { NonResizableControl } from '../controls/select-mode/non-resizable-contr
 import { drawToInsertStrategy } from './draw-to-insert-strategy'
 import { flexResizeBasicStrategy } from './flex-resize-basic-strategy'
 import { optionalMap } from '../../../core/shared/optional-utils'
-import { lookForApplicableParentMeta } from './look-for-applicable-parent-meta'
+import { lookForApplicableParentStrategy } from './look-for-applicable-parent-strategy'
 
 export type MetaCanvasStrategy = (
   canvasState: InteractionCanvasState,
@@ -83,7 +83,7 @@ export const existingStrategies: MetaCanvasStrategy = () => [
 
 export const RegisteredCanvasStrategies: Array<MetaCanvasStrategy> = [
   existingStrategies,
-  lookForApplicableParentMeta,
+  lookForApplicableParentStrategy,
 ]
 
 export function pickCanvasStateFromEditorState(
