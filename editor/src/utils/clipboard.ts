@@ -12,7 +12,7 @@ import { encodeUtopiaDataToHtml, parsePasteEvent, PasteResult } from './clipboar
 import { setLocalClipboardData } from './local-clipboard'
 import Utils from './utils'
 import { FileResult, ImageResult } from '../core/shared/file-utils'
-import { CanvasPoint } from '../core/shared/math-utils'
+import { CanvasPoint, resize } from '../core/shared/math-utils'
 import * as json5 from 'json5'
 import { fastForEach } from '../core/shared/utils'
 import urljoin from 'url-join'
@@ -27,6 +27,7 @@ import { mapValues, pick } from '../core/shared/object-utils'
 import { getStoryboardElementPath } from '../core/model/scene-utils'
 import { getRequiredImportsForElement } from '../components/editor/import-utils'
 import { BuiltInDependencies } from '../core/es-modules/package-manager/built-in-dependencies-list'
+import { isFeatureEnabled } from './feature-switches'
 
 interface JSXElementCopyData {
   type: 'ELEMENT_COPY'
@@ -68,6 +69,7 @@ export function getActionsForClipboardItems(
   selectedViews: Array<ElementPath>,
   pasteTargetsToIgnore: ElementPath[],
   componentMetadata: ElementInstanceMetadataMap,
+  canvasScale: number,
 ): Array<EditorAction> {
   try {
     const possibleTarget = getTargetParentForPaste(
@@ -113,6 +115,7 @@ export function getActionsForClipboardItems(
       insertImageActions = createDirectInsertImageActions(
         pastedImages,
         parentCenter,
+        canvasScale,
         target,
         imageSizeMultiplier,
       )
@@ -127,6 +130,7 @@ export function getActionsForClipboardItems(
 export function createDirectInsertImageActions(
   images: Array<ImageResult>,
   centerPoint: CanvasPoint,
+  scale: number,
   parentPath: ElementPath | null,
   overrideDefaultMultiplier: number | null,
 ): Array<EditorAction> {
@@ -142,7 +146,16 @@ export function createDirectInsertImageActions(
           image.size,
           overrideDefaultMultiplier,
         )
-        const insertWith = EditorActions.saveImageInsertWith(parentPath, frame, multiplier)
+        const [defaultWidth, defaultHeight] = [640 / scale, 640 / scale]
+        const adjustedFrame = isFeatureEnabled('Resize image on drop')
+          ? resize(frame, {
+              centerPoint: centerPoint,
+              keepAspectRatio: true,
+              desiredHeight: Math.min(frame.height, defaultWidth),
+              desiredWidth: Math.min(frame.width, defaultHeight),
+            })
+          : frame
+        const insertWith = EditorActions.saveImageInsertWith(parentPath, adjustedFrame, multiplier)
         const saveImageAction = EditorActions.saveAsset(
           image.filename,
           image.fileType,

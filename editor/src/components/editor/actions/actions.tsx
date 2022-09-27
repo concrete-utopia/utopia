@@ -3373,6 +3373,7 @@ export const UPDATE_FNS = {
               src: imageAttribute,
               style: jsxAttributeValue(
                 {
+                  position: 'absolute',
                   left: relativeFrame.x,
                   top: relativeFrame.y,
                   width: relativeFrame.width,

@@ -915,6 +915,7 @@ export class EditorCanvas extends React.Component<EditorCanvasProps> {
             const actions = createDirectInsertImageActions(
               pastedImages,
               mousePosition.canvasPositionRounded,
+              this.props.model.scale,
               insertionTarget,
               null,
             )
@@ -1432,6 +1433,7 @@ export class EditorCanvas extends React.Component<EditorCanvasProps> {
             selectedViews,
             editor.pasteTargetsToIgnore,
             editor.jsxMetadata,
+            this.props.model.scale,
           )
           this.props.dispatch(actions, 'everyone')
         })
