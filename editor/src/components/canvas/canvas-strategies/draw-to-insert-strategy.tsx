@@ -12,6 +12,7 @@ import {
 import {
   boundingArea,
   DragInteractionData,
+  interactionSession,
   InteractionSession,
   StrategyState,
 } from './interaction-state'
@@ -50,6 +51,8 @@ import { ElementPath } from '../../../core/shared/project-file-types'
 import { ReparentElement } from '../commands/reparent-element-command'
 import { updateHighlightedViews } from '../commands/update-highlighted-views-command'
 import { removeElement } from '../commands/remove-element-command'
+import { getReparentTargetUnified, newReparentSubjects } from './reparent-strategy-helpers'
+import { setHighlightedView } from '../../editor/actions/action-creators'
 
 export const drawToInsertStrategy: CanvasStrategy = {
   id: 'DRAW_TO_INSERT',
@@ -180,31 +183,23 @@ export const drawToInsertStrategy: CanvasStrategy = {
           }
         }
       } else if (interactionState.interactionData.type === 'HOVER') {
-        const insertionSubject = canvasState.interactionTarget.subjects[0]
-
-        const insertionCommand = getInsertionCommands(
-          insertionSubject,
-          interactionState,
-          'default-size',
+        const pointOnCanvas = interactionState.interactionData.point
+        const parent = getReparentTargetUnified(
+          newReparentSubjects(),
+          pointOnCanvas,
+          true,
+          canvasState,
+          strategyState.startingMetadata,
+          strategyState.startingAllElementProps,
+          'allow-missing-bounds',
         )
 
-        if (insertionCommand != null) {
-          const highlightParentCommand = updateFunctionCommand(
-            'always',
-            (editorState): Array<EditorStatePatch> => {
-              return runTargetStrategiesForFreshlyInsertedElementToHighlightNewParent(
-                canvasState.builtInDependencies,
-                editorState,
-                strategyState,
-                interactionState,
-                insertionSubject,
-                insertionCommand.frame,
-                strategyLifecycle,
-              )
-            },
-          )
+        if (parent != null && parent.shouldReparent && parent.newParent != null) {
+          const highlightParentCommand = updateHighlightedViews('mid-interaction', [
+            parent.newParent,
+          ])
 
-          return strategyApplicationResult([insertionCommand.command, highlightParentCommand])
+          return strategyApplicationResult([highlightParentCommand])
         }
       }
     }
@@ -455,119 +450,5 @@ function runTargetStrategiesForFreshlyInsertedElementToResize(
       : []
 
   return foldAndApplyCommandsInner(editorState, [], [], resizeCommands, commandLifecycle)
-    .statePatches
-}
-
-function runTargetStrategiesForFreshlyInsertedElementToHighlightNewParent(
-  builtInDependencies: BuiltInDependencies,
-  editorState: EditorState,
-  strategyState: StrategyState,
-  interactionState: InteractionSession,
-  insertionSubject: ElementInsertionSubject,
-  frame: CanvasRectangle,
-  strategyLifecycle: InteractionLifecycle,
-): Array<EditorStatePatch> {
-  const canvasState = pickCanvasStateFromEditorState(editorState, builtInDependencies)
-
-  const storyboard = MetadataUtils.getStoryboardMetadata(strategyState.startingMetadata)
-  const rootPath = storyboard != null ? storyboard.elementPath : elementPath([])
-
-  const element = insertionSubject.element
-  const path = EP.appendToPath(rootPath, element.uid)
-
-  const fakeMetadata = createFakeMetadataForElement(
-    path,
-    element,
-    frame,
-    strategyState.startingMetadata,
-  )
-
-  const patchedMetadata = {
-    ...strategyState.startingMetadata,
-    [EP.toString(path)]: fakeMetadata,
-  }
-
-  const patchedStrategyState = {
-    ...strategyState,
-    startingMetadata: patchedMetadata,
-  }
-
-  const interactionData = interactionState.interactionData
-  // patching the interaction with the cmd modifier is just temporarily needed because reparenting is not default without
-  const patchedInteractionData = (() => {
-    switch (interactionData.type) {
-      case 'DRAG':
-        return {
-          ...interactionData,
-          drag: canvasPoint({ x: 0, y: 0 }),
-          modifiers: cmdModifier,
-        }
-
-      case 'HOVER':
-        return {
-          type: 'DRAG',
-          dragStart: interactionData.point,
-          drag: canvasPoint({ x: 0, y: 0 }),
-          prevDrag: null,
-          originalDragStart: interactionData.point,
-          modifiers: cmdModifier,
-          globalTime: Date.now(),
-          hasMouseMoved: false,
-          _accumulatedMovement: zeroCanvasPoint,
-        } as DragInteractionData
-      default:
-        return interactionData
-    }
-  })()
-
-  const patchedInteractionState = {
-    ...interactionState,
-    activeControl: boundingArea(),
-    interactionData: patchedInteractionData,
-  }
-
-  const patchedCanvasState: InteractionCanvasState = {
-    ...canvasState,
-    interactionTarget: targetPaths(editorState.selectedViews),
-  }
-
-  const { strategy } = findCanvasStrategy(
-    RegisteredCanvasStrategies,
-    patchedCanvasState,
-    patchedInteractionState,
-    patchedStrategyState,
-    null,
-  )
-
-  if (strategy == null) {
-    return []
-  }
-  const reparentCommands = strategy.strategy.apply(
-    patchedCanvasState,
-    patchedInteractionState,
-    patchedStrategyState,
-    strategyLifecycle,
-  ).commands
-
-  const reparentCommand = reparentCommands.find(
-    (c): c is ReparentElement => c.type === 'REPARENT_ELEMENT',
-  )
-
-  const removeElementCommand = removeElement('always', path)
-
-  if (reparentCommand != null) {
-    const newParent = reparentCommand?.newParent
-
-    const highlightCommand = updateHighlightedViews('always', [newParent])
-    return foldAndApplyCommandsInner(
-      editorState,
-      [],
-      [],
-      [highlightCommand, removeElementCommand],
-      'end-interaction',
-    ).statePatches
-  }
-
-  return foldAndApplyCommandsInner(editorState, [], [], [removeElementCommand], 'end-interaction')
     .statePatches
 }
