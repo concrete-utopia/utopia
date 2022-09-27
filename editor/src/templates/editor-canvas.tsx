@@ -893,54 +893,60 @@ export class EditorCanvas extends React.Component<EditorCanvasProps> {
         onDrop: (event: React.DragEvent) => {
           event.preventDefault()
           event.stopPropagation()
+          const mousePosition = this.getPosition(event.nativeEvent)
+          const insertionTarget = arrayToMaybe(this.props.editor.highlightedViews)
 
-          if (this.props.editor.mode.type === 'insert') {
-            const insertionSubject = this.props.editor.mode.subject
-            if (insertionSubject.type === 'DragAndDrop') {
-              const mousePosition = this.getPosition(event.nativeEvent)
-              const insertionTarget = arrayToMaybe(this.props.editor.highlightedViews)
-
-              if (insertionSubject.imageAssets == null) {
-                // Clear the insert mode ahead of doing anything, because we don't want it
-                // lingering for a brief moment while anything image related happens.
-                this.props.dispatch(
-                  [EditorActions.switchEditorMode(EditorModes.selectMode())],
-                  'everyone',
-                )
-                parseClipboardData(event.dataTransfer).then((result) => {
-                  // Snip out the images only from the result.
-                  let pastedImages: Array<ImageResult> = []
-                  fastForEach(result.files, (pastedFile) => {
-                    if (pastedFile.type === 'IMAGE_RESULT') {
-                      pastedImages.push({
-                        ...pastedFile,
-                        filename: `/assets/${pastedFile.filename}`,
-                      })
-                    }
-                  })
-                  const actions = createDirectInsertImageActions(
-                    pastedImages,
-                    mousePosition.canvasPositionRounded,
-                    insertionTarget,
-                    null,
-                  )
-
-                  this.props.dispatch(actions, 'everyone')
+          const insertImageFromClipboard = async () => {
+            this.props.dispatch(
+              [EditorActions.switchEditorMode(EditorModes.selectMode())],
+              'everyone',
+            )
+            const result = await parseClipboardData(event.dataTransfer)
+            // Snip out the images only from the result.
+            let pastedImages: Array<ImageResult> = []
+            fastForEach(result.files, (pastedFile) => {
+              if (pastedFile.type === 'IMAGE_RESULT') {
+                pastedImages.push({
+                  ...pastedFile,
+                  filename: `/assets/${pastedFile.filename}`,
                 })
-              } else {
-                let actions: Array<EditorAction> = []
-                fastForEach(insertionSubject.imageAssets, (imageAsset) => {
-                  actions.push(
-                    EditorActions.insertDroppedImage(
-                      imageAsset,
-                      mousePosition.canvasPositionRounded,
-                    ),
-                  )
-                })
-                actions.push(EditorActions.switchEditorMode(EditorModes.selectMode()))
-                this.props.dispatch(actions, 'everyone')
               }
-            }
+            })
+            const actions = createDirectInsertImageActions(
+              pastedImages,
+              mousePosition.canvasPositionRounded,
+              insertionTarget,
+              null,
+            )
+
+            this.props.dispatch(actions, 'everyone')
+          }
+
+          if (this.props.editor.mode.type === 'select') {
+            insertImageFromClipboard()
+          }
+
+          if (
+            this.props.editor.mode.type === 'insert' &&
+            this.props.editor.mode.subject.type === 'DragAndDrop' &&
+            this.props.editor.mode.subject.imageAssets == null
+          ) {
+            insertImageFromClipboard()
+          }
+
+          if (
+            this.props.editor.mode.type === 'insert' &&
+            this.props.editor.mode.subject.type === 'DragAndDrop' &&
+            this.props.editor.mode.subject.imageAssets != null
+          ) {
+            let actions: Array<EditorAction> = []
+            fastForEach(this.props.editor.mode.subject.imageAssets, (imageAsset) => {
+              actions.push(
+                EditorActions.insertDroppedImage(imageAsset, mousePosition.canvasPositionRounded),
+              )
+            })
+            actions.push(EditorActions.switchEditorMode(EditorModes.selectMode()))
+            this.props.dispatch(actions, 'everyone')
           }
         },
 
