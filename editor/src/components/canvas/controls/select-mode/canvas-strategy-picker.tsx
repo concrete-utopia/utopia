@@ -143,8 +143,8 @@ const KeyIndicator = ({ keyNumber }: { keyNumber: number }) => {
   return (
     <div
       style={{
-        width,
-        height,
+        width: width,
+        height: height,
         marginRight: 5,
         border: '1px solid rgb(0, 0, 0, 0.4)',
         borderRadius: 3,
