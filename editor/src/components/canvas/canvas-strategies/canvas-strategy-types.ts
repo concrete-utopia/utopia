@@ -94,6 +94,12 @@ export function insertionSubjects(subjects: Array<InsertionSubject>): InsertionS
   }
 }
 
+export function isInsertionSubjects(
+  interactionTarget: InteractionTarget,
+): interactionTarget is InsertionSubjects {
+  return interactionTarget.type === 'INSERTION_SUBJECTS'
+}
+
 export function getTargetPathsFromInteractionTarget(target: InteractionTarget): Array<ElementPath> {
   if (target.type === 'TARGET_PATHS') {
     return target.elements

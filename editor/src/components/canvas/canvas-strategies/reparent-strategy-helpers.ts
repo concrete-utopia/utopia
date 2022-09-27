@@ -41,6 +41,7 @@ import {
   emptyStrategyApplicationResult,
   getTargetPathsFromInteractionTarget,
   InteractionCanvasState,
+  isInsertionSubjects,
   StrategyApplicationResult,
 } from './canvas-strategy-types'
 import {
@@ -232,11 +233,12 @@ function findReparentStrategy(
     (e) => EP.parentPath(e) === newParentPath,
   )
 
+  const isInsertion = isInsertionSubjects(canvasState.interactionTarget)
+
   if (
     reparentResult.shouldReparent &&
     newParentPath != null &&
-    // holding cmd forces a reparent even if the target parent was under the mouse at the interaction start
-    (cmdPressed ||
+    (isInsertion ||
       targetIsValid(
         newParentPath,
         interactionState.startingTargetParentsToFilterOut,
