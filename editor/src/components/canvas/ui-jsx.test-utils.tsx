@@ -105,7 +105,10 @@ import { flushSync } from 'react-dom'
 import { shouldInspectorUpdate } from '../inspector/inspector'
 import { SampleNodeModules } from '../custom-code/code-file.test-utils'
 import { CanvasStrategy } from './canvas-strategies/canvas-strategy-types'
-import { RegisteredCanvasStrategies } from './canvas-strategies/canvas-strategies'
+import {
+  MetaCanvasStrategy,
+  RegisteredCanvasStrategies,
+} from './canvas-strategies/canvas-strategies'
 
 // eslint-disable-next-line no-unused-expressions
 typeof process !== 'undefined' &&
@@ -143,7 +146,7 @@ export interface EditorRenderResult {
   dispatch: (
     actions: ReadonlyArray<EditorAction>,
     waitForDOMReport: boolean,
-    overrideDefaultStrategiesArray?: Array<CanvasStrategy>,
+    overrideDefaultStrategiesArray?: Array<MetaCanvasStrategy>,
   ) => Promise<void>
   getDispatchFollowUpActionsFinished: () => Promise<void>
   getEditorState: () => EditorStorePatched
@@ -157,7 +160,7 @@ export interface EditorRenderResult {
 export async function renderTestEditorWithCode(
   appUiJsFileCode: string,
   awaitFirstDomReport: 'await-first-dom-report' | 'dont-await-first-dom-report',
-  strategiesToUse: Array<CanvasStrategy> = RegisteredCanvasStrategies,
+  strategiesToUse: Array<MetaCanvasStrategy> = RegisteredCanvasStrategies,
 ) {
   return renderTestEditorWithModel(
     createTestProjectWithCode(appUiJsFileCode),
@@ -169,7 +172,7 @@ export async function renderTestEditorWithCode(
 export async function renderTestEditorWithProjectContent(
   projectContent: ProjectContentTreeRoot,
   awaitFirstDomReport: 'await-first-dom-report' | 'dont-await-first-dom-report',
-  strategiesToUse: Array<CanvasStrategy> = RegisteredCanvasStrategies,
+  strategiesToUse: Array<MetaCanvasStrategy> = RegisteredCanvasStrategies,
 ) {
   return renderTestEditorWithModel(
     persistentModelForProjectContents(projectContent),
@@ -183,7 +186,7 @@ export async function renderTestEditorWithModel(
   model: PersistentModel,
   awaitFirstDomReport: 'await-first-dom-report' | 'dont-await-first-dom-report',
   mockBuiltInDependencies?: BuiltInDependencies,
-  strategiesToUse: Array<CanvasStrategy> = RegisteredCanvasStrategies,
+  strategiesToUse: Array<MetaCanvasStrategy> = RegisteredCanvasStrategies,
 ): Promise<EditorRenderResult> {
   const renderCountBaseline = renderCount
   let recordedActions: Array<EditorAction> = []
@@ -211,7 +214,7 @@ export async function renderTestEditorWithModel(
     actions: ReadonlyArray<EditorAction>,
     priority?: DispatchPriority, // priority is not used in the editorDispatch now, but we didn't delete this param yet
     waitForDispatchEntireUpdate = false,
-    innerStrategiesToUse: Array<CanvasStrategy> = strategiesToUse,
+    innerStrategiesToUse: Array<MetaCanvasStrategy> = strategiesToUse,
   ) => {
     recordedActions.push(...actions)
     const result = editorDispatch(
@@ -392,7 +395,7 @@ export async function renderTestEditorWithModel(
     dispatch: async (
       actions: ReadonlyArray<EditorAction>,
       waitForDOMReport: boolean,
-      innerStrategiesToUse: Array<CanvasStrategy> = strategiesToUse,
+      innerStrategiesToUse: Array<MetaCanvasStrategy> = strategiesToUse,
     ) => {
       return await act(async () => {
         await asyncTestDispatch(actions, 'everyone', true, innerStrategiesToUse)

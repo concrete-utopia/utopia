@@ -53,7 +53,10 @@ import { canvasPoint } from '../../../core/shared/math-utils'
 import { WildcardPatch, wildcardPatch } from '../../canvas/commands/wildcard-patch-command'
 import { runCanvasCommand } from '../../canvas/commands/commands'
 import { saveDOMReport, selectComponents, toggleProperty } from '../actions/action-creators'
-import { RegisteredCanvasStrategies } from '../../canvas/canvas-strategies/canvas-strategies'
+import {
+  MetaCanvasStrategy,
+  RegisteredCanvasStrategies,
+} from '../../canvas/canvas-strategies/canvas-strategies'
 import { right } from '../../../core/shared/either'
 import { act } from 'react-dom/test-utils'
 import { emptyModifiers } from '../../../utils/modifiers'
@@ -158,34 +161,36 @@ describe('interactionCancel', () => {
   })
 })
 
-const testStrategy: CanvasStrategy = {
-  id: 'TEST_STRATEGY' as CanvasStrategyId,
-  name: () => 'Test Strategy',
-  isApplicable: function (
-    canvasState: InteractionCanvasState,
-    interactionSession: InteractionSession | null,
-    metadata: ElementInstanceMetadataMap,
-  ): boolean {
-    return true
+const testStrategy: MetaCanvasStrategy = () => [
+  {
+    id: 'TEST_STRATEGY' as CanvasStrategyId,
+    name: () => 'Test Strategy',
+    isApplicable: function (
+      canvasState: InteractionCanvasState,
+      interactionSession: InteractionSession | null,
+      metadata: ElementInstanceMetadataMap,
+    ): boolean {
+      return true
+    },
+    controlsToRender: [],
+    fitness: function (
+      canvasState: InteractionCanvasState,
+      interactionSession: InteractionSession,
+      strategyState: StrategyState,
+    ): number {
+      return 10
+    },
+    apply: function (
+      canvasState: InteractionCanvasState,
+      interactionSession: InteractionSession,
+      strategyState: StrategyState,
+    ): StrategyApplicationResult {
+      return strategyApplicationResult([
+        wildcardPatch('always', { canvas: { scale: { $set: 100 } } }),
+      ])
+    },
   },
-  controlsToRender: [],
-  fitness: function (
-    canvasState: InteractionCanvasState,
-    interactionSession: InteractionSession,
-    strategyState: StrategyState,
-  ): number {
-    return 10
-  },
-  apply: function (
-    canvasState: InteractionCanvasState,
-    interactionSession: InteractionSession,
-    strategyState: StrategyState,
-  ): StrategyApplicationResult {
-    return strategyApplicationResult([
-      wildcardPatch('always', { canvas: { scale: { $set: 100 } } }),
-    ])
-  },
-}
+]
 
 describe('interactionStart', () => {
   it('creates the initial state with a simple test strategy', () => {
@@ -968,6 +973,44 @@ describe('only update metadata on SAVE_DOM_REPORT', () => {
       ],
       true,
       [
+        () => [
+          {
+            id: 'TEST_STRATEGY' as CanvasStrategyId,
+            name: () => 'Test Strategy',
+            isApplicable: function (): boolean {
+              return true
+            },
+            controlsToRender: [],
+            fitness: function (): number {
+              return 10
+            },
+            apply: function (
+              _: InteractionCanvasState,
+              interactionSession: InteractionSession,
+              strategyState: StrategyState,
+            ): StrategyApplicationResult {
+              expect(strategyState.startingMetadata).toBe(interactionSession.latestMetadata)
+              expect(strategyState.startingAllElementProps).toBe(
+                interactionSession.latestAllElementProps,
+              )
+
+              return strategyApplicationResult([])
+            },
+          },
+        ],
+      ],
+    )
+
+    // toggling the backgroundColor to update the metadata
+    await renderResult.dispatch(
+      [toggleProperty(targetElement, toggleStylePropPaths(toggleBackgroundLayers))],
+      true,
+    )
+
+    // dispatching a no-op change to the interaction session to trigger the strategies
+
+    await renderResult.dispatch([CanvasActions.updateDragInteractionData({})], true, [
+      () => [
         {
           id: 'TEST_STRATEGY' as CanvasStrategyId,
           name: () => 'Test Strategy',
@@ -983,67 +1026,34 @@ describe('only update metadata on SAVE_DOM_REPORT', () => {
             interactionSession: InteractionSession,
             strategyState: StrategyState,
           ): StrategyApplicationResult {
-            expect(strategyState.startingMetadata).toBe(interactionSession.latestMetadata)
-            expect(strategyState.startingAllElementProps).toBe(
+            expect(strategyState.startingMetadata).not.toBe(interactionSession.latestMetadata)
+            expect(strategyState.startingAllElementProps).not.toBe(
               interactionSession.latestAllElementProps,
             )
 
+            // first we make sure the _starting_ metadata and startingAllElementProps have the original undefined backgroundColor
+            expect(
+              strategyState.startingMetadata[EP.toString(targetElement)].computedStyle
+                ?.backgroundColor,
+            ).toBeUndefined()
+            expect(
+              strategyState.startingAllElementProps[EP.toString(targetElement)].style
+                .backgroundColor,
+            ).toBeUndefined()
+
+            // then we check that the latestMetadata and latestAllElementProps have a backgroundColor defined, as a result of the previous toggleProperty dispatch
+            expect(
+              interactionSession.latestMetadata[EP.toString(targetElement)].computedStyle
+                ?.backgroundColor,
+            ).toBeDefined()
+            expect(
+              interactionSession.latestAllElementProps[EP.toString(targetElement)].style
+                .backgroundColor,
+            ).toBeDefined()
             return strategyApplicationResult([])
           },
         },
       ],
-    )
-
-    // toggling the backgroundColor to update the metadata
-    await renderResult.dispatch(
-      [toggleProperty(targetElement, toggleStylePropPaths(toggleBackgroundLayers))],
-      true,
-    )
-
-    // dispatching a no-op change to the interaction session to trigger the strategies
-
-    await renderResult.dispatch([CanvasActions.updateDragInteractionData({})], true, [
-      {
-        id: 'TEST_STRATEGY' as CanvasStrategyId,
-        name: () => 'Test Strategy',
-        isApplicable: function (): boolean {
-          return true
-        },
-        controlsToRender: [],
-        fitness: function (): number {
-          return 10
-        },
-        apply: function (
-          _: InteractionCanvasState,
-          interactionSession: InteractionSession,
-          strategyState: StrategyState,
-        ): StrategyApplicationResult {
-          expect(strategyState.startingMetadata).not.toBe(interactionSession.latestMetadata)
-          expect(strategyState.startingAllElementProps).not.toBe(
-            interactionSession.latestAllElementProps,
-          )
-
-          // first we make sure the _starting_ metadata and startingAllElementProps have the original undefined backgroundColor
-          expect(
-            strategyState.startingMetadata[EP.toString(targetElement)].computedStyle
-              ?.backgroundColor,
-          ).toBeUndefined()
-          expect(
-            strategyState.startingAllElementProps[EP.toString(targetElement)].style.backgroundColor,
-          ).toBeUndefined()
-
-          // then we check that the latestMetadata and latestAllElementProps have a backgroundColor defined, as a result of the previous toggleProperty dispatch
-          expect(
-            interactionSession.latestMetadata[EP.toString(targetElement)].computedStyle
-              ?.backgroundColor,
-          ).toBeDefined()
-          expect(
-            interactionSession.latestAllElementProps[EP.toString(targetElement)].style
-              .backgroundColor,
-          ).toBeDefined()
-          return strategyApplicationResult([])
-        },
-      },
     ])
 
     expect.assertions(8) // this ensures that the test fails if the expects inside the apply function are not called
