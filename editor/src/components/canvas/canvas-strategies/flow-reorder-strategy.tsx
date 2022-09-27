@@ -23,6 +23,7 @@ import {
   getFlowReorderIndex,
   getNewDisplayTypeForIndex,
   getOptionalDisplayPropCommands,
+  isValidFlowReorderTarget,
 } from './flow-reorder-helpers'
 import {
   FlowReorderAreaIndicator,
@@ -42,7 +43,11 @@ export function isFlowReorderConversionApplicable(
     const target = selectedElements[0]
     const elementMetadata = MetadataUtils.findElementByElementPath(metadata, target)
     const siblings = MetadataUtils.getSiblings(metadata, target)
-    if (siblings.length > 1 && MetadataUtils.isPositionedByFlow(elementMetadata)) {
+    if (
+      siblings.length > 1 &&
+      MetadataUtils.isPositionedByFlow(elementMetadata) &&
+      isValidFlowReorderTarget(elementMetadata, allElementProps)
+    ) {
       return siblings.some((sibling) => MetadataUtils.isPositionedByFlow(sibling))
     } else {
       return false
