@@ -235,13 +235,11 @@ function findReparentStrategy(
   if (
     reparentResult.shouldReparent &&
     newParentPath != null &&
-    // holding cmd forces a reparent even if the target parent was under the mouse at the interaction start
-    (cmdPressed ||
-      targetIsValid(
-        newParentPath,
-        interactionState.startingTargetParentsToFilterOut,
-        missingBoundsHandling,
-      )) &&
+    targetIsValid(
+      newParentPath,
+      interactionState.startingTargetParentsToFilterOut,
+      missingBoundsHandling,
+    ) &&
     !parentStayedTheSame
   ) {
     return reparentStrategyForParent(
