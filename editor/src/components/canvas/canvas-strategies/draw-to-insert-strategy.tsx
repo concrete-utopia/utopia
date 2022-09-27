@@ -365,6 +365,7 @@ function runTargetStrategiesForFreshlyInsertedElementToReparent(
     ...interactionState,
     activeControl: boundingArea(),
     interactionData: patchedInteractionData,
+    startingTargetParentsToFilterOut: null,
   }
 
   const patchedCanvasState: InteractionCanvasState = {
@@ -405,6 +406,10 @@ function runTargetStrategiesForFreshlyInsertedElementToResize(
   strategyLifecycle: InteractionLifecycle,
 ): Array<EditorStatePatch> {
   const canvasState = pickCanvasStateFromEditorState(editorState, builtInDependencies)
+  const patchedInteractionState: InteractionSession = {
+    ...interactionState,
+    startingTargetParentsToFilterOut: null,
+  }
 
   const element = insertionSubject.element
   const path = editorState.selectedViews[0]
@@ -434,7 +439,7 @@ function runTargetStrategiesForFreshlyInsertedElementToResize(
   const { strategy: resizeStrategy } = findCanvasStrategy(
     RegisteredCanvasStrategies,
     patchedCanvasState,
-    interactionState,
+    patchedInteractionState,
     patchedStrategyState,
     null,
   )
@@ -443,7 +448,7 @@ function runTargetStrategiesForFreshlyInsertedElementToResize(
     resizeStrategy != null
       ? resizeStrategy.strategy.apply(
           patchedCanvasState,
-          interactionState,
+          patchedInteractionState,
           patchedStrategyState,
           strategyLifecycle,
         ).commands

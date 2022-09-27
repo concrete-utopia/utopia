@@ -32,6 +32,7 @@ import { getEscapeHatchCommands } from './convert-to-absolute-and-move-strategy'
 import { InteractionSession, MissingBoundsHandling, StrategyState } from './interaction-state'
 import { ifAllowedToReparent } from './reparent-helpers'
 import {
+  existingReparentSubjects,
   getFitnessForReparentStrategy,
   getReparentTargetUnified,
 } from './reparent-strategy-helpers'
@@ -100,7 +101,7 @@ function getFlexReparentToAbsoluteStrategy(
         )
 
         const { newParent } = getReparentTargetUnified(
-          filteredSelectedElements,
+          existingReparentSubjects(filteredSelectedElements),
           pointOnCanvas,
           interactionState.interactionData.modifiers.cmd,
           canvasState,
