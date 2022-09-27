@@ -40,7 +40,7 @@ export const lookForApplicableParentStrategy: MetaCanvasStrategy = (
     return []
   }
 
-  const result = lookForParentApplicableStrategy(
+  const result = lookForApplicableParentStrategyInner(
     canvasSate,
     interactionSession,
     metadata,
@@ -116,7 +116,7 @@ function patchCanvasStateInteractionTargetPath(
   }
 }
 
-function lookForParentApplicableStrategy(
+function lookForApplicableParentStrategyInner(
   canvasState: InteractionCanvasState,
   interactionSession: InteractionSession,
   metadata: ElementInstanceMetadataMap,
