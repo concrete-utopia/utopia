@@ -190,10 +190,7 @@ function handleCanvasEvent(model: CanvasModel, event: CanvasMouseEvent): Array<E
     event.event === 'MOUSE_UP' &&
     model.editorState.canvas.interactionSession?.interactionData.type === 'DRAG'
   ) {
-    const applyChanges = model.editorState.canvas.interactionSession?.interactionData.drag != null
-    optionalDragStateAction = cancelInsertModeActions(
-      applyChanges ? 'apply-changes' : 'do-not-apply-changes',
-    )
+    optionalDragStateAction = cancelInsertModeActions('apply-changes')
   } else if (!(insertMode && isOpenFileUiJs(model.editorState))) {
     switch (event.event) {
       case 'DRAG':
@@ -214,9 +211,7 @@ function handleCanvasEvent(model: CanvasModel, event: CanvasMouseEvent): Array<E
           ]
         }
         if (model.editorState.canvas.interactionSession?.interactionData.type === 'DRAG') {
-          const applyChanges =
-            model.editorState.canvas.interactionSession?.interactionData.drag != null
-          optionalDragStateAction = [CanvasActions.clearInteractionSession(applyChanges)]
+          optionalDragStateAction = [CanvasActions.clearInteractionSession(true)]
         }
         break
 

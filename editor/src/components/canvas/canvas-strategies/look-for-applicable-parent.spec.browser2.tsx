@@ -400,6 +400,6 @@ describe('finds an applicable strategy for the nearest parent', () => {
         // here for type assertion
         throw new Error('`strategies` should not be null')
       }
-      expect(strategies[0].strategy.id).toEqual('FLOW_REORDER_SAME_TYPE_ONLY')
+      expect(strategies[0].strategy.id).toEqual('FLOW_REORDER')
     }))
 })

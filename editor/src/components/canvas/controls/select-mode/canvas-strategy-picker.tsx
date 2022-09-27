@@ -87,7 +87,6 @@ export const CanvasStrategyPicker = React.memo(() => {
           <FlexColumn
             style={{
               minHeight: 84,
-              width: 120,
               display: 'flex',
               alignItems: 'stretch',
               padding: 4,
@@ -111,7 +110,8 @@ export const CanvasStrategyPicker = React.memo(() => {
                     opacity: isStrategyFailure && strategy.id === activeStrategy ? 0.5 : 1,
                   }}
                 >
-                  {index + 1}: {name}
+                  <KeyIndicator key={index + 1} keyNumber={index + 1} />
+                  {name}
                 </FlexRow>
               )
             })}
@@ -136,3 +136,33 @@ export const CanvasStrategyPicker = React.memo(() => {
     </>
   )
 })
+
+const KeyIndicator = ({ keyNumber }: { keyNumber: number }) => {
+  const height = 12
+  const width = 12
+  return (
+    <div
+      style={{
+        width: width,
+        height: height,
+        marginRight: 5,
+        border: '1px solid rgb(0, 0, 0, 0.4)',
+        borderRadius: 3,
+        display: 'flex',
+        flexDirection: 'row',
+        justifyContent: 'center',
+        alignItems: 'center',
+      }}
+    >
+      <span
+        style={{
+          fontWeight: 700,
+          color: 'rgb(0, 0, 0, 0.4)',
+          fontSize: '8px',
+        }}
+      >
+        {keyNumber}
+      </span>
+    </div>
+  )
+}

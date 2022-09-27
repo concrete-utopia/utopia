@@ -51,6 +51,7 @@ import {
 import { AddElement, runAddElement } from './add-element-command'
 import { runUpdatePropIfExists, UpdatePropIfExists } from './update-prop-if-exists-command'
 import { HighlightElementsCommand, runHighlightElementsCommand } from './highlight-element-command'
+import { InteractionLifecycle } from '../canvas-strategies/canvas-strategy-types'
 
 export interface CommandFunctionResult {
   editorStatePatches: Array<EditorStatePatch>
@@ -95,7 +96,7 @@ export type CanvasCommand =
 export const runCanvasCommand = (
   editorState: EditorState,
   command: CanvasCommand,
-  commandLifecycle: 'mid-interaction' | 'end-interaction',
+  commandLifecycle: InteractionLifecycle,
 ): CommandFunctionResult => {
   switch (command.type) {
     case 'WILDCARD_PATCH':
@@ -171,7 +172,7 @@ export function foldAndApplyCommandsInner(
   patches: Array<EditorStatePatch>,
   commandsToAccumulate: Array<CanvasCommand>,
   commands: Array<CanvasCommand>,
-  commandLifecycle: 'mid-interaction' | 'end-interaction',
+  commandLifecycle: InteractionLifecycle,
 ): {
   statePatches: EditorStatePatch[]
   updatedEditorState: EditorState
@@ -233,7 +234,7 @@ export function foldAndApplyCommands(
   patches: Array<EditorStatePatch>,
   commandsToAccumulate: Array<CanvasCommand>,
   commands: Array<CanvasCommand>,
-  commandLifecycle: 'mid-interaction' | 'end-interaction',
+  commandLifecycle: InteractionLifecycle,
 ): {
   editorState: EditorState
   accumulatedPatches: Array<EditorStatePatch>

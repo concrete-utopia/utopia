@@ -20,6 +20,7 @@ import {
   InteractionTarget,
   targetPaths,
   StrategyApplicationResult,
+  InteractionLifecycle,
 } from './canvas-strategy-types'
 import { InteractionSession, StrategyState } from './interaction-state'
 import { keyboardAbsoluteMoveStrategy } from './keyboard-absolute-move-strategy'
@@ -35,11 +36,7 @@ import {
 } from './flex-reparent-to-absolute-strategy'
 import { flexReparentToFlexStrategy } from './flex-reparent-to-flex-strategy'
 import { BuiltInDependencies } from '../../../core/es-modules/package-manager/built-in-dependencies-list'
-import {
-  flowReorderAutoConversionStrategy,
-  flowReorderNoConversionStrategy,
-  flowReorderSameTypeOnlyStrategy,
-} from './flow-reorder-strategy'
+import { flowReorderStrategy } from './flow-reorder-strategy'
 import { isInsertMode } from '../../editor/editor-modes'
 import { dragToInsertStrategy } from './drag-to-insert-strategy'
 import { StateSelector } from 'zustand'
@@ -66,9 +63,7 @@ export const RegisteredCanvasStrategies: Array<CanvasStrategy> = [
   absoluteReparentToFlexStrategy,
   dragToInsertStrategy,
   drawToInsertStrategy,
-  flowReorderAutoConversionStrategy,
-  flowReorderNoConversionStrategy,
-  flowReorderSameTypeOnlyStrategy,
+  flowReorderStrategy,
   flowReorderSliderStategy,
   lookForApplicableParentStrategy,
   flexResizeBasicStrategy,
@@ -267,8 +262,9 @@ export function applyCanvasStrategy(
   canvasState: InteractionCanvasState,
   interactionSession: InteractionSession,
   strategyState: StrategyState,
+  strategyLifecycle: InteractionLifecycle,
 ): StrategyApplicationResult {
-  return strategy.apply(canvasState, interactionSession, strategyState)
+  return strategy.apply(canvasState, interactionSession, strategyState, strategyLifecycle)
 }
 
 export function useDelayedEditorState<T>(
