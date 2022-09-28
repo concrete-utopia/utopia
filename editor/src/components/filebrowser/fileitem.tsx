@@ -35,6 +35,21 @@ import {
 import { notice } from '../common/notice'
 import { appendToPath, getParentDirectory } from '../../utils/path-utils'
 import { AddingFile, applyAddingFile } from './filepath-utils'
+import CanvasActions from '../canvas/canvas-actions'
+import {
+  boundingArea,
+  createInteractionViaMouse,
+} from '../canvas/canvas-strategies/interaction-state'
+import { emptyModifiers } from '../../utils/modifiers'
+import { CanvasMousePositionRaw } from '../../utils/global-positions'
+import {
+  emptyComments,
+  jsxAttributesFromMap,
+  jsxAttributeValue,
+  jsxElement,
+  setJSXAttributesAttribute,
+} from '../../core/shared/element-template'
+import { imagePathURL } from '../../common/server'
 
 export interface FileBrowserItemProps extends FileBrowserItemInfo {
   isSelected: boolean
@@ -498,14 +513,73 @@ class FileBrowserItemInner extends React.PureComponent<
     }
   }
 
+  initiateImageDrag = () => {
+    if (this.props.imageFile == null) {
+      return
+    }
+
+    // TODO: remove
+    const newUID = 'eeeeeeeee'
+
+    const propsForElement = jsxAttributesFromMap({
+      src: jsxAttributeValue(imagePathURL(this.props.path), emptyComments),
+      style: jsxAttributeValue(
+        {
+          position: 'absolute',
+          width: this.props.imageFile.width ?? 50,
+          height: this.props.imageFile.height ?? 50,
+        },
+        emptyComments,
+      ),
+    })
+
+    const newElement = jsxElement(
+      'img',
+      newUID,
+      setJSXAttributesAttribute(
+        propsForElement,
+        'data-uid',
+        jsxAttributeValue(newUID, emptyComments),
+      ),
+      [],
+    )
+
+    this.props.dispatch(
+      [
+        EditorActions.enableInsertModeForJSXElement(newElement, 'eeeeeeeee', {}, null),
+        CanvasActions.createInteractionSession(
+          createInteractionViaMouse(CanvasMousePositionRaw!, emptyModifiers, boundingArea()),
+        ),
+      ],
+      'everyone',
+    )
+  }
+
+  cancelImageDrag = () => {
+    if (this.props.imageFile == null) {
+      return
+    }
+    this.props.dispatch([CanvasActions.clearInteractionSession(false)], 'everyone')
+  }
+
   onItemMouseDown = (e: React.MouseEvent) => {
-    if (e.button === 0) {
-      if (this.props.fileType !== 'ASSET_FILE' && this.props.fileType !== 'IMAGE_FILE') {
-        this.props.setSelected(this.props)
-        if (this.props.fileType != null && this.props.fileType !== 'DIRECTORY') {
-          this.props.dispatch([EditorActions.openCodeEditorFile(this.props.path, true)], 'everyone')
-        }
-      }
+    if (e.button !== 0) {
+      return
+    }
+
+    if (this.props.fileType === 'IMAGE_FILE') {
+      this.initiateImageDrag()
+      return
+    }
+
+    if (
+      this.props.fileType != null &&
+      this.props.fileType !== 'DIRECTORY' &&
+      this.props.fileType !== 'ASSET_FILE'
+    ) {
+      this.props.setSelected(this.props)
+      this.props.dispatch([EditorActions.openCodeEditorFile(this.props.path, true)], 'everyone')
+      return
     }
   }
 
@@ -640,6 +714,7 @@ class FileBrowserItemInner extends React.PureComponent<
           onDragOver={this.onItemDragOver}
           onDragLeave={this.onDragLeave}
           onMouseDown={this.onItemMouseDown}
+          onMouseUp={this.cancelImageDrag}
           key={this.props.key}
           className='FileItem'
           style={{
