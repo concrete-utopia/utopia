@@ -1,4 +1,7 @@
+import { MetadataUtils } from '../../../core/model/element-metadata-utils'
+import { ElementInstanceMetadataMap } from '../../../core/shared/element-template'
 import { CanvasVector } from '../../../core/shared/math-utils'
+import { ElementPath } from '../../../core/shared/project-file-types'
 import { assertNever } from '../../../core/shared/utils'
 import { CSSPadding } from '../../inspector/common/css-utils'
 import { stylePropPathMappingFn } from '../../inspector/common/property-path-hooks'
@@ -7,9 +10,9 @@ import { adjustCssLengthProperty } from '../commands/adjust-css-length-command'
 import { setCursorCommand } from '../commands/set-cursor-command'
 import { setElementsToRerenderCommand } from '../commands/set-elements-to-rerender-command'
 import { updateHighlightedViews } from '../commands/update-highlighted-views-command'
+import { isZeroSizedElement } from '../controls/outline-utils'
 import { PaddingResizeControl } from '../controls/select-mode/padding-resize-control'
 import { paddingForEdge, simplePaddingFromMetadata } from '../padding-utils'
-import { supportsAbsoluteResize } from './absolute-resize-helpers'
 import {
   CanvasStrategy,
   emptyStrategyApplicationResult,
@@ -30,13 +33,11 @@ export const setPaddingStrategy: CanvasStrategy = {
   ],
   isApplicable: (canvasState, interactionState, metadata, allElementProps) => {
     const selectedElements = getTargetPathsFromInteractionTarget(canvasState.interactionTarget)
-    if (selectedElements.length > 0) {
-      const filteredSelectedElements = getDragTargets(selectedElements)
-      return filteredSelectedElements.every((element) => {
-        return supportsAbsoluteResize(metadata, element, canvasState) // TODO - add real predicate here
-      })
+    if (selectedElements.length === 0) {
+      return false
     }
-    return false
+
+    return supportsPaddingControls(metadata, selectedElements[0])
   },
   fitness: (canvasState, interactionState, sessionState) => {
     return setPaddingStrategy.isApplicable(
@@ -153,4 +154,26 @@ function deltaFromEdge(delta: CanvasVector, edgePiece: EdgePiece): number {
     default:
       assertNever(edgePiece)
   }
+}
+
+function supportsPaddingControls(metadata: ElementInstanceMetadataMap, path: ElementPath): boolean {
+  const element = MetadataUtils.findElementByElementPath(metadata, path)
+  if (element == null) {
+    return false
+  }
+
+  if (element.globalFrame == null || isZeroSizedElement(element.globalFrame)) {
+    return false
+  }
+
+  const childrenNotPositionAbsoluteOrSticky = MetadataUtils.getChildren(metadata, path).filter(
+    (child) =>
+      child.specialSizeMeasurements.position !== 'absolute' &&
+      child.specialSizeMeasurements.position !== 'sticky',
+  )
+  if (childrenNotPositionAbsoluteOrSticky.length < 1) {
+    return false
+  }
+
+  return true
 }
