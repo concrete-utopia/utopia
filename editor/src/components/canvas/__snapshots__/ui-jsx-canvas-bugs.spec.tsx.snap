@@ -166,6 +166,7 @@ Object {
       },
       "display": "initial",
       "flexDirection": null,
+      "float": "none",
       "globalContentBox": null,
       "htmlElementName": "div",
       "immediateParentBounds": Object {
@@ -261,6 +262,7 @@ Object {
       },
       "display": "initial",
       "flexDirection": null,
+      "float": "none",
       "globalContentBox": null,
       "htmlElementName": "div",
       "immediateParentBounds": Object {
