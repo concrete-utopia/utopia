@@ -1604,6 +1604,7 @@ export interface SpecialSizeMeasurements {
   renderedChildrenCount: number
   globalContentBox: CanvasRectangle | null
   float: string
+  hasPositionOffset: boolean
 }
 
 export function specialSizeMeasurements(
@@ -1630,6 +1631,7 @@ export function specialSizeMeasurements(
   renderedChildrenCount: number,
   globalContentBox: CanvasRectangle | null,
   float: string,
+  hasPositionOffset: boolean,
 ): SpecialSizeMeasurements {
   return {
     offset,
@@ -1655,6 +1657,7 @@ export function specialSizeMeasurements(
     renderedChildrenCount,
     globalContentBox,
     float,
+    hasPositionOffset,
   }
 }
 
@@ -1685,6 +1688,7 @@ export const emptySpecialSizeMeasurements = specialSizeMeasurements(
   0,
   null,
   'none',
+  false,
 )
 
 export const emptyComputedStyle: ComputedStyle = {}

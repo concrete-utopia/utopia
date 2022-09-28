@@ -46,7 +46,7 @@ function isFlowReorderConversionApplicable(
     if (
       siblings.length > 1 &&
       MetadataUtils.isPositionedByFlow(elementMetadata) &&
-      isValidFlowReorderTarget(elementMetadata, allElementProps)
+      isValidFlowReorderTarget(elementMetadata)
     ) {
       return siblings.some((sibling) => MetadataUtils.isPositionedByFlow(sibling))
     } else {

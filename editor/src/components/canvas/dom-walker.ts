@@ -897,6 +897,16 @@ function getSpecialMeasurements(
     height: globalFrame.height - border.top - border.bottom,
   })
 
+  function positionValueIsDefault(value: string) {
+    return value === 'auto' || value === '0px'
+  }
+
+  const hasPositionOffset =
+    !positionValueIsDefault(elementStyle.top) ||
+    !positionValueIsDefault(elementStyle.right) ||
+    !positionValueIsDefault(elementStyle.bottom) ||
+    !positionValueIsDefault(elementStyle.left)
+
   return specialSizeMeasurements(
     offset,
     coordinateSystemBounds,
@@ -921,6 +931,7 @@ function getSpecialMeasurements(
     childrenCount,
     globalContentBox,
     elementStyle.float,
+    hasPositionOffset,
   )
 }
 

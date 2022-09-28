@@ -127,6 +127,7 @@ describe('DOM Walker tests', () => {
           "flexDirection": null,
           "float": "none",
           "globalContentBox": null,
+          "hasPositionOffset": false,
           "htmlElementName": "div",
           "immediateParentBounds": Object {
             "height": 0,
@@ -218,6 +219,7 @@ describe('DOM Walker tests', () => {
             "x": 0,
             "y": 0,
           },
+          "hasPositionOffset": false,
           "htmlElementName": "div",
           "immediateParentBounds": Object {
             "height": 812,
@@ -316,6 +318,7 @@ describe('DOM Walker tests', () => {
             "x": 0,
             "y": 0,
           },
+          "hasPositionOffset": false,
           "htmlElementName": "div",
           "immediateParentBounds": Object {
             "height": 812,
@@ -421,6 +424,7 @@ describe('DOM Walker tests', () => {
             "x": 0,
             "y": 0,
           },
+          "hasPositionOffset": false,
           "htmlElementName": "div",
           "immediateParentBounds": Object {
             "height": 812,
@@ -531,6 +535,7 @@ describe('DOM Walker tests', () => {
             "x": 55,
             "y": 98,
           },
+          "hasPositionOffset": false,
           "htmlElementName": "div",
           "immediateParentBounds": Object {
             "height": 812,
@@ -643,6 +648,7 @@ describe('DOM Walker tests', () => {
             "x": 126,
             "y": 125,
           },
+          "hasPositionOffset": false,
           "htmlElementName": "div",
           "immediateParentBounds": Object {
             "height": 124,
@@ -785,6 +791,7 @@ describe('DOM Walker tests', () => {
           "flexDirection": null,
           "float": "none",
           "globalContentBox": null,
+          "hasPositionOffset": false,
           "htmlElementName": "div",
           "immediateParentBounds": Object {
             "height": 0,
@@ -876,6 +883,7 @@ describe('DOM Walker tests', () => {
             "x": 0,
             "y": 0,
           },
+          "hasPositionOffset": false,
           "htmlElementName": "div",
           "immediateParentBounds": Object {
             "height": 812,
@@ -974,6 +982,7 @@ describe('DOM Walker tests', () => {
             "x": 0,
             "y": 0,
           },
+          "hasPositionOffset": false,
           "htmlElementName": "div",
           "immediateParentBounds": Object {
             "height": 812,
@@ -1075,6 +1084,7 @@ describe('DOM Walker tests', () => {
             "x": 0,
             "y": 0,
           },
+          "hasPositionOffset": false,
           "htmlElementName": "div",
           "immediateParentBounds": Object {
             "height": 812,
@@ -1176,6 +1186,7 @@ describe('DOM Walker tests', () => {
             "x": 55,
             "y": 98,
           },
+          "hasPositionOffset": false,
           "htmlElementName": "div",
           "immediateParentBounds": Object {
             "height": 812,
@@ -1284,6 +1295,7 @@ describe('DOM Walker tests', () => {
             "x": 126,
             "y": 125,
           },
+          "hasPositionOffset": false,
           "htmlElementName": "div",
           "immediateParentBounds": Object {
             "height": 164,
@@ -1426,6 +1438,7 @@ describe('DOM Walker tests', () => {
           "flexDirection": null,
           "float": "none",
           "globalContentBox": null,
+          "hasPositionOffset": false,
           "htmlElementName": "div",
           "immediateParentBounds": Object {
             "height": 0,
@@ -1517,6 +1530,7 @@ describe('DOM Walker tests', () => {
             "x": 0,
             "y": 0,
           },
+          "hasPositionOffset": false,
           "htmlElementName": "div",
           "immediateParentBounds": Object {
             "height": 812,
@@ -1615,6 +1629,7 @@ describe('DOM Walker tests', () => {
             "x": 0,
             "y": 0,
           },
+          "hasPositionOffset": false,
           "htmlElementName": "div",
           "immediateParentBounds": Object {
             "height": 812,
@@ -1716,6 +1731,7 @@ describe('DOM Walker tests', () => {
             "x": 0,
             "y": 0,
           },
+          "hasPositionOffset": false,
           "htmlElementName": "div",
           "immediateParentBounds": Object {
             "height": 812,
@@ -1817,6 +1833,7 @@ describe('DOM Walker tests', () => {
             "x": 55,
             "y": 98,
           },
+          "hasPositionOffset": false,
           "htmlElementName": "div",
           "immediateParentBounds": Object {
             "height": 812,
@@ -1925,6 +1942,7 @@ describe('DOM Walker tests', () => {
             "x": 126,
             "y": 125,
           },
+          "hasPositionOffset": false,
           "htmlElementName": "div",
           "immediateParentBounds": Object {
             "height": 164,
@@ -2055,6 +2073,7 @@ describe('DOM Walker tests', () => {
           "flexDirection": null,
           "float": "none",
           "globalContentBox": null,
+          "hasPositionOffset": false,
           "htmlElementName": "div",
           "immediateParentBounds": Object {
             "height": 0,
@@ -2146,6 +2165,7 @@ describe('DOM Walker tests', () => {
             "x": 0,
             "y": 0,
           },
+          "hasPositionOffset": false,
           "htmlElementName": "div",
           "immediateParentBounds": Object {
             "height": 812,
@@ -2244,6 +2264,7 @@ describe('DOM Walker tests', () => {
             "x": 0,
             "y": 0,
           },
+          "hasPositionOffset": false,
           "htmlElementName": "div",
           "immediateParentBounds": Object {
             "height": 812,
@@ -2345,6 +2366,7 @@ describe('DOM Walker tests', () => {
             "x": 0,
             "y": 0,
           },
+          "hasPositionOffset": false,
           "htmlElementName": "div",
           "immediateParentBounds": Object {
             "height": 812,
@@ -2479,6 +2501,7 @@ describe('DOM Walker tests', () => {
           "flexDirection": null,
           "float": "none",
           "globalContentBox": null,
+          "hasPositionOffset": false,
           "htmlElementName": "div",
           "immediateParentBounds": Object {
             "height": 0,
@@ -2570,6 +2593,7 @@ describe('DOM Walker tests', () => {
             "x": 0,
             "y": 0,
           },
+          "hasPositionOffset": false,
           "htmlElementName": "div",
           "immediateParentBounds": Object {
             "height": 812,
@@ -2668,6 +2692,7 @@ describe('DOM Walker tests', () => {
             "x": 0,
             "y": 0,
           },
+          "hasPositionOffset": false,
           "htmlElementName": "div",
           "immediateParentBounds": Object {
             "height": 812,
@@ -2769,6 +2794,7 @@ describe('DOM Walker tests', () => {
             "x": 0,
             "y": 0,
           },
+          "hasPositionOffset": false,
           "htmlElementName": "div",
           "immediateParentBounds": Object {
             "height": 812,
@@ -2875,6 +2901,7 @@ describe('DOM Walker tests', () => {
             "x": 0,
             "y": 0,
           },
+          "hasPositionOffset": false,
           "htmlElementName": "div",
           "immediateParentBounds": Object {
             "height": 812,
@@ -2981,6 +3008,7 @@ describe('DOM Walker tests', () => {
             "x": 0,
             "y": 0,
           },
+          "hasPositionOffset": false,
           "htmlElementName": "div",
           "immediateParentBounds": Object {
             "height": 812,
@@ -3087,6 +3115,7 @@ describe('DOM Walker tests', () => {
             "x": 0,
             "y": 0,
           },
+          "hasPositionOffset": false,
           "htmlElementName": "div",
           "immediateParentBounds": Object {
             "height": 812,

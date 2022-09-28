@@ -12,23 +12,13 @@ import { stylePropPathMappingFn } from '../../inspector/common/property-path-hoo
 import { DeleteProperties, deleteProperties } from '../commands/delete-properties-command'
 import { SetProperty, setProperty } from '../commands/set-property-command'
 
-export function isValidFlowReorderTarget(
-  elementMetadata: ElementInstanceMetadata | null,
-  allElementProps: AllElementProps,
-): boolean {
+export function isValidFlowReorderTarget(elementMetadata: ElementInstanceMetadata | null): boolean {
   if (MetadataUtils.isPositionAbsolute(elementMetadata)) {
     return false
   } else if (elementMetadata?.specialSizeMeasurements.float !== 'none') {
     return false
   } else if (MetadataUtils.isPositionRelative(elementMetadata) && elementMetadata != null) {
-    const styleProps = allElementProps[EP.toString(elementMetadata.elementPath)]?.style
-    return (
-      styleProps == null ||
-      (styleProps.left == null &&
-        styleProps.top == null &&
-        styleProps.right == null &&
-        styleProps.bottom == null)
-    )
+    return !elementMetadata.specialSizeMeasurements.hasPositionOffset
   } else {
     return true
   }
@@ -45,7 +35,7 @@ function findSiblingIndexUnderPoint(
     const siblingMetadata = MetadataUtils.findElementByElementPath(metadata, sibling)
     const frame = MetadataUtils.getFrameInCanvasCoords(sibling, metadata)
     return (
-      isValidFlowReorderTarget(siblingMetadata, allElementProps) &&
+      isValidFlowReorderTarget(siblingMetadata) &&
       frame != null &&
       rectContainsPoint(frame, point) &&
       MetadataUtils.isPositionedByFlow(siblingMetadata) &&

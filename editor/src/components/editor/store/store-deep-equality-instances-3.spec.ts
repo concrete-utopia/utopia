@@ -269,6 +269,7 @@ describe('SpecialSizeMeasurementsKeepDeepEquality', () => {
       height: 80,
     }),
     float: 'none',
+    hasPositionOffset: false,
   }
 
   const newDifferentValue: SpecialSizeMeasurements = {
@@ -323,6 +324,7 @@ describe('SpecialSizeMeasurementsKeepDeepEquality', () => {
       height: 0,
     }),
     float: 'none',
+    hasPositionOffset: false,
   }
 
   it('same reference returns the same reference', () => {
@@ -432,6 +434,7 @@ describe('ElementInstanceMetadataKeepDeepEquality', () => {
         height: 80,
       }),
       float: 'none',
+      hasPositionOffset: false,
     },
     computedStyle: {
       a: 'a',
@@ -514,6 +517,7 @@ describe('ElementInstanceMetadataKeepDeepEquality', () => {
         height: 80,
       }),
       float: 'none',
+      hasPositionOffset: false,
     },
     computedStyle: {
       a: 'a',
@@ -622,6 +626,7 @@ describe('ElementInstanceMetadataMapKeepDeepEquality', () => {
           height: 80,
         }),
         float: 'none',
+        hasPositionOffset: false,
       },
       computedStyle: {
         a: 'a',
@@ -706,6 +711,7 @@ describe('ElementInstanceMetadataMapKeepDeepEquality', () => {
           height: 80,
         }),
         float: 'none',
+        hasPositionOffset: false,
       },
       computedStyle: {
         a: 'a',
@@ -790,6 +796,7 @@ describe('ElementInstanceMetadataMapKeepDeepEquality', () => {
           height: 80,
         }),
         float: 'none',
+        hasPositionOffset: false,
       },
       computedStyle: {
         a: 'a',
