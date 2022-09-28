@@ -3,47 +3,19 @@
 /** @jsxFrag React.Fragment */
 import { jsx } from '@emotion/react'
 import React from 'react'
-import {
-  jsxAttributeValue,
-  JSXElement,
-  jsxElement,
-  jsxElementName,
-  JSXAttributes,
-  setJSXAttributesAttribute,
-  jsxAttributesFromMap,
-} from '../../core/shared/element-template'
-import { getAllUniqueUids } from '../../core/model/element-template-utils'
-import { generateUID } from '../../core/shared/uid-utils'
-import {
-  getUtopiaJSXComponentsFromSuccess,
-  isModifiedFile,
-} from '../../core/model/project-file-utils'
+import { isModifiedFile } from '../../core/model/project-file-utils'
 import { ErrorMessage } from '../../core/shared/error-messages'
-import {
-  isParseSuccess,
-  ProjectFileType,
-  importDetails,
-  importAlias,
-} from '../../core/shared/project-file-types'
+import { ProjectFileType, ImageFile } from '../../core/shared/project-file-types'
 import { ProjectContentTreeRoot, walkContentsTree } from '../assets'
 import { setFocus } from '../common/actions'
 import { CodeResultCache, isJavascriptOrTypescript } from '../custom-code/code-file'
 import * as EditorActions from '../editor/actions/action-creators'
-import {
-  getAllCodeEditorErrors,
-  getOpenFilename,
-  getOpenUIJSFile,
-  getOpenUIJSFileKey,
-} from '../editor/store/editor-state'
+import { getAllCodeEditorErrors, getOpenFilename } from '../editor/store/editor-state'
 import { useEditorState } from '../editor/store/store-hook'
 import { addingChildElement, FileBrowserItem } from './fileitem'
-import { dropFileExtension } from '../../core/shared/file-utils'
-import { objectMap } from '../../core/shared/object-utils'
-import { useKeepReferenceEqualityIfPossible } from '../../utils/react-performance'
 import {
   Section,
   SectionBodyArea,
-  Button,
   SectionTitleRow,
   FlexRow,
   Title,
@@ -51,7 +23,7 @@ import {
   SquareButton,
   Icons,
 } from '../../uuiui'
-import { unless, when } from '../../utils/react-conditionals'
+import { unless } from '../../utils/react-conditionals'
 import { AddingFile, applyAddingFile } from './filepath-utils'
 
 export type FileBrowserItemType = 'file' | 'export'
@@ -66,6 +38,7 @@ export interface FileBrowserItemInfo {
   errorMessages: ErrorMessage[]
   exportedFunction: boolean
   isUploadedAssetFile: boolean
+  imageFile: ImageFile | null
 }
 
 export function filterErrorMessages(
@@ -101,6 +74,7 @@ function collectFileBrowserItems(
         isUploadedAssetFile:
           (element.type === 'IMAGE_FILE' || element.type === 'ASSET_FILE') &&
           element.base64 == undefined,
+        imageFile: element.type === 'IMAGE_FILE' ? element : null,
       })
       if (
         element.type === 'TEXT_FILE' &&
@@ -122,6 +96,7 @@ function collectFileBrowserItems(
                 modified: false,
                 exportedFunction: typeInformation.includes('=>'),
                 isUploadedAssetFile: false,
+                imageFile: null,
               })
             }
           })
@@ -307,6 +282,7 @@ const FileBrowserItems = React.memo(() => {
             collapsed={element.type === 'file' && collapsedPaths.indexOf(element.path) > -1}
             errorMessages={filterErrorMessages(element.path, errorMessages)}
             dropTarget={dropTarget}
+            imageFile={element.imageFile}
           />
         </div>
       ))}

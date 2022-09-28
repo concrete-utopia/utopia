@@ -51,7 +51,6 @@ import {
   reexportVariables,
   ReexportWildcard,
   reexportWildcard,
-  RevisionsState,
   RevisionsStateType,
   textFile,
   TextFile,
@@ -130,7 +129,6 @@ import {
   JSXAttributesEntry,
   jsxAttributesEntry,
   ImportInfo,
-  createImportedFrom,
   FoundImportInfo,
   JSXAttributesSpread,
   jsxAttributesSpread,
@@ -170,7 +168,6 @@ import {
   jsxElementWithoutUID,
 } from '../../../core/shared/element-template'
 import {
-  canvasPoint,
   CanvasRectangle,
   CoordinateMarker,
   LocalPoint,
@@ -199,7 +196,6 @@ import {
   combine12EqualityCalls,
   combine11EqualityCalls,
   combine1EqualityCall,
-  combine14EqualityCalls,
   createCallWithShallowEquals,
   combine10EqualityCalls,
   ComplexMapKeepDeepEquality,
@@ -210,8 +206,6 @@ import {
   NullableStringKeepDeepEquality,
   NumberKeepDeepEquality,
   NullableNumberKeepDeepEquality,
-  unionDeepEquality,
-  combine9EqualityCalls,
 } from '../../../utils/deep-equality'
 import {
   ElementPathArrayKeepDeepEquality,
@@ -232,7 +226,6 @@ import {
   TransientFilesState,
   transientCanvasState,
   DerivedState,
-  EditorStatePatch,
   EditorStateNodeModules,
   editorStateNodeModules,
   EditorStateLeftMenu,
@@ -384,10 +377,10 @@ import {
 import {
   dragAndDropInsertionSubject,
   DragAndDropInsertionSubject,
+  ImageInsertionSubject,
   EditorModes,
   elementInsertionSubject,
   ElementInsertionSubject,
-  insertionParent,
   InsertionSubject,
   InsertMode,
   LiveCanvasMode,
@@ -397,6 +390,7 @@ import {
   SelectMode,
   targetedInsertionParent,
   TargetedInsertionParent,
+  imageInsertionSubject,
 } from '../editor-modes'
 import { EditorPanel } from '../../common/actions'
 import { notice, Notice, NoticeLevel } from '../../common/notice'
@@ -2534,10 +2528,19 @@ export const SceneInsertionSubjectKeepDeepEquality: KeepDeepEqualityCall<SceneIn
   return keepDeepEqualityResult(oldValue, true)
 }
 
+export const ImageInsertionSubjectKeepDeepEquality: KeepDeepEqualityCall<ImageInsertionSubject> =
+  combine2EqualityCalls(
+    (s) => s.file,
+    ImageFileKeepDeepEquality,
+    (s) => s.path,
+    StringKeepDeepEquality,
+    imageInsertionSubject,
+  )
+
 export const DragAndDropInsertionSubjectKeepDeepEquality: KeepDeepEqualityCall<DragAndDropInsertionSubject> =
   combine1EqualityCall(
     (subject) => subject.imageAssets,
-    nullableDeepEquality(arrayDeepEquality(StringKeepDeepEquality)),
+    arrayDeepEquality(ImageInsertionSubjectKeepDeepEquality),
     dragAndDropInsertionSubject,
   )
 

@@ -10,11 +10,12 @@ import {
   CanvasMouseEvent,
   CanvasPositions,
   ControlOrHigherOrderControl,
-  CreateDragState,
   CSSCursor,
+  DivControl,
   DragState,
   DuplicateNewUID,
   ResizeDragStatePropertyChange,
+  SvgControl,
   SvgFragmentControl,
   updateMoveDragState,
   updateResizeDragState,
@@ -31,16 +32,10 @@ import {
   getDragStateStart,
 } from '../components/canvas/canvas-utils'
 import { NewCanvasControls } from '../components/canvas/controls/new-canvas-controls'
-import { CanvasReactErrorCallback } from '../components/canvas/ui-jsx-canvas'
 import { setFocus } from '../components/common/actions/index'
 import { EditorAction, EditorDispatch } from '../components/editor/action-types'
 import * as EditorActions from '../components/editor/actions/action-creators'
-import {
-  EditorModes,
-  Mode,
-  isLiveMode,
-  dragAndDropInsertionSubject,
-} from '../components/editor/editor-modes'
+import { EditorModes, Mode, isLiveMode } from '../components/editor/editor-modes'
 import {
   BaseSnappingThreshold,
   CanvasCursor,
@@ -48,7 +43,6 @@ import {
   EditorState,
   editorStateCanvasControls,
   isOpenFileUiJs,
-  RightMenuTab,
 } from '../components/editor/store/editor-state'
 import {
   didWeHandleMouseMoveForThisFrame,
@@ -82,7 +76,6 @@ import {
   WindowPoint,
   WindowRectangle,
   zeroCanvasPoint,
-  zeroPoint,
 } from '../core/shared/math-utils'
 import { ImageResult } from '../core/shared/file-utils'
 import { fastForEach } from '../core/shared/utils'
@@ -946,7 +939,11 @@ export class EditorCanvas extends React.Component<EditorCanvasProps> {
             let actions: Array<EditorAction> = []
             fastForEach(this.props.editor.mode.subject.imageAssets, (imageAsset) => {
               actions.push(
-                EditorActions.insertDroppedImage(imageAsset, mousePosition.canvasPositionRounded),
+                EditorActions.insertDroppedImage(
+                  imageAsset.file,
+                  imageAsset.path,
+                  mousePosition.canvasPositionRounded,
+                ),
               )
             })
             actions.push(EditorActions.switchEditorMode(EditorModes.selectMode()))

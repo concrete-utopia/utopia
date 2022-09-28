@@ -4,16 +4,12 @@
 import { jsx } from '@emotion/react'
 import React from 'react'
 import * as EP from '../../../core/shared/element-path'
-import Utils from '../../../utils/utils'
 import { CanvasPoint } from '../../../core/shared/math-utils'
 import { EditorDispatch } from '../../editor/action-types'
 import {
-  DerivedState,
   EditorState,
   getMetadata,
-  getOpenUIJSFileKey,
   TransientCanvasState,
-  TransientFilesState,
   ResizeOptions,
   AllElementProps,
 } from '../../editor/store/editor-state'
@@ -22,22 +18,15 @@ import { CanvasPositions, CSSCursor } from '../canvas-types'
 import { SelectModeControlContainer } from './select-mode-control-container'
 import { InsertModeControlContainer } from './insert-mode-control-container'
 import { HighlightControl } from './highlight-control'
-import { useEditorState, useRefEditorState } from '../../editor/store/store-hook'
-import {
-  ElementInstanceMetadataMap,
-  UtopiaJSXComponent,
-} from '../../../core/shared/element-template'
+import { useEditorState } from '../../editor/store/store-hook'
+import { ElementInstanceMetadataMap } from '../../../core/shared/element-template'
 import { MetadataUtils } from '../../../core/model/element-metadata-utils'
 import { isAspectRatioLockedNew } from '../../aspect-ratio'
 import { ElementContextMenu } from '../../element-context-menu'
-import { isLiveMode, EditorModes, Mode } from '../../editor/editor-modes'
+import { isLiveMode, Mode } from '../../editor/editor-modes'
 import { DropTargetHookSpec, ConnectableElement, useDrop, DndProvider } from 'react-dnd'
 import { FileBrowserItemProps } from '../../filebrowser/fileitem'
-import { forceNotNull } from '../../../core/shared/optional-utils'
-import { flatMapArray } from '../../../core/shared/array-utils'
-import { targetRespectsLayout } from '../../../core/layout/layout-helpers'
-import { createSelector } from 'reselect'
-import { PropertyControlsInfo, ResolveFn } from '../../custom-code/code-file'
+import { ResolveFn } from '../../custom-code/code-file'
 import { useColorTheme } from '../../../uuiui'
 import {
   isDragging,
@@ -47,19 +36,12 @@ import {
   useSelectAndHover,
   useStartDragStateAfterDragExceedsThreshold,
 } from './select-mode/select-mode-hooks'
-import { NO_OP } from '../../../core/shared/utils'
 import { usePropControlledStateV2 } from '../../inspector/common/inspector-utils'
 import { ProjectContentTreeRoot } from '../../assets'
 import { LayoutParentControl } from './layout-parent-control'
 import { unless, when } from '../../../utils/react-conditionals'
 import { isFeatureEnabled } from '../../../utils/feature-switches'
-import { shallowEqual } from '../../../core/shared/equality-utils'
-import { KeysPressed } from '../../../utils/keyboard'
-import { usePrevious } from '../../editor/hook-utils'
-import { LayoutTargetableProp } from '../../../core/layout/layout-helpers-new'
-import { getDragStateStart } from '../canvas-utils'
 import { useGetApplicableStrategyControls } from '../canvas-strategies/canvas-strategies'
-import { FlexResizeControl } from './select-mode/flex-resize-control'
 import { MultiSelectOutlineControl } from './select-mode/simple-outline-control'
 import { GuidelineControls } from './guideline-controls'
 import { showContextMenu } from '../../editor/actions/action-creators'
@@ -70,7 +52,6 @@ import { DistanceGuidelineControl } from './select-mode/distance-guideline-contr
 import { SceneLabelControl } from './select-mode/scene-label'
 import { PinLines } from './position-outline'
 import { CursorOverlay } from './select-mode/cursor-overlay'
-import { FlexReparentTargetIndicator } from './select-mode/flex-reparent-target-indicator'
 
 export const CanvasControlsContainerID = 'new-canvas-controls-container'
 
@@ -162,7 +143,7 @@ export const NewCanvasControls = React.memo((props: NewCanvasControlsProps) => {
   // Somehow this being setup and hooked into the div makes the `onDrop` call
   // work properly in `editor-canvas.ts`. I blame React DnD for this.
   const dropSpec: DropTargetHookSpec<FileBrowserItemProps, 'CANVAS', unknown> = {
-    accept: 'filebrowser',
+    accept: 'files',
     canDrop: () => true,
   }
 

@@ -1,11 +1,8 @@
 import { LayoutSystem } from 'utopia-api/core' // TODO fixme this imports utopia-api
 import { UtopiaVSCodeConfig } from 'utopia-vscode-common'
 import type { LoginState } from '../../../common/user'
-import { LayoutTargetableProp, StyleLayoutProp } from '../../../core/layout/layout-helpers-new'
-import type { revertFile, saveFile } from '../../../core/model/project-file-utils'
-import type { foldEither } from '../../../core/shared/either'
+import { LayoutTargetableProp } from '../../../core/layout/layout-helpers-new'
 import type {
-  ElementInstanceMetadata,
   JSXAttribute,
   JSXElement,
   JSXElementName,
@@ -32,20 +29,14 @@ import type {
   PropertyPath,
   StaticElementPathPart,
   ElementPath,
+  ImageFile,
 } from '../../../core/shared/project-file-types'
 import { BuildType } from '../../../core/workers/common/worker-types'
 import type { Key, KeysPressed } from '../../../utils/keyboard'
 import { IndexPosition } from '../../../utils/utils'
-import type { objectKeyParser, parseString } from '../../../utils/value-parser-utils'
 import type { CSSCursor } from '../../../uuiui-deps'
-import type {
-  addFileToProjectContents,
-  getContentsTreeFileFromString,
-  ProjectContentTreeRoot,
-} from '../../assets'
 import CanvasActions from '../../canvas/canvas-actions'
 import type { PinOrFlexFrameChange, SelectionLocked } from '../../canvas/canvas-types'
-import type { CursorPosition } from '../../code-editor/code-editor-utils'
 import type { EditorPane, EditorPanel } from '../../common/actions'
 import { Notice } from '../../common/notice'
 import type { CodeResultCache, PropertyControlsInfo } from '../../custom-code/code-file'
@@ -213,13 +204,7 @@ import type {
   ToggleSelectionLock,
   ElementPaste,
 } from '../action-types'
-import {
-  EditorModes,
-  elementInsertionSubject,
-  Mode,
-  sceneInsertionSubject,
-  SceneInsertionSubject,
-} from '../editor-modes'
+import { EditorModes, elementInsertionSubject, Mode, sceneInsertionSubject } from '../editor-modes'
 import type {
   DuplicationState,
   ErrorMessages,
@@ -1215,10 +1200,15 @@ export function setSaveError(value: boolean): SetSaveError {
   }
 }
 
-export function insertDroppedImage(imagePath: string, position: CanvasPoint): InsertDroppedImage {
+export function insertDroppedImage(
+  image: ImageFile,
+  path: string,
+  position: CanvasPoint,
+): InsertDroppedImage {
   return {
     action: 'INSERT_DROPPED_IMAGE',
-    imagePath: imagePath,
+    image: image,
+    path: path,
     position: position,
   }
 }

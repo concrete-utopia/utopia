@@ -5,7 +5,7 @@ import * as Path from 'path'
 import pathParse from 'path-parse'
 import React from 'react'
 import { ConnectableElement, ConnectDragPreview, useDrag, useDrop } from 'react-dnd'
-import { codeFile, ProjectFileType } from '../../core/shared/project-file-types'
+import { ProjectFileType } from '../../core/shared/project-file-types'
 import { parseClipboardData } from '../../utils/clipboard'
 import Utils from '../../utils/utils'
 import { ContextMenuItem, requireDispatch } from '../context-menu-items'
@@ -761,11 +761,6 @@ class FileBrowserItemInner extends React.PureComponent<
   }
 }
 
-interface FilebrowserDragItem {
-  type: 'filebrowser'
-  props: FileBrowserItemProps
-}
-
 export function FileBrowserItem(props: FileBrowserItemProps) {
   const [{ isDragging }, drag, dragPreview] = useDrag(
     () => ({
@@ -775,11 +770,16 @@ export function FileBrowserItem(props: FileBrowserItemProps) {
         isDragging: monitor.isDragging(),
       }),
       item: () => {
-        props.dispatch([
-          EditorActions.switchEditorMode(
-            EditorModes.insertMode(false, dragAndDropInsertionSubject([props.path])),
-          ),
-        ])
+        if (props.imageFile != null) {
+          props.dispatch([
+            EditorActions.switchEditorMode(
+              EditorModes.insertMode(
+                false,
+                dragAndDropInsertionSubject([{ path: props.path, file: props.imageFile }]),
+              ),
+            ),
+          ])
+        }
         return props
       },
     }),

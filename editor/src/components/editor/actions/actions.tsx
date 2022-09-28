@@ -1,84 +1,50 @@
 import { produce } from 'immer'
 import update from 'immutability-helper'
-import React from 'react'
 import localforage from 'localforage'
-import { FramePoint, LayoutSystem } from 'utopia-api/core'
-import {
-  SampleFileBuildResult,
-  SampleFileBundledExportsInfo,
-} from '../../../bundled-dependencies/codeBundle'
-import { imagePathURL, imagePathWithoutHashURL } from '../../../common/server'
-import { LoginState } from '../../../common/user'
-import {
-  FlexLayoutHelpers,
-  LayoutHelpers,
-  PinLayoutHelpers,
-} from '../../../core/layout/layout-helpers'
+import { LayoutSystem } from 'utopia-api/core'
+import { imagePathURL } from '../../../common/server'
+import { PinLayoutHelpers } from '../../../core/layout/layout-helpers'
 import {
   maybeSwitchChildrenLayoutProps,
   roundAttributeLayoutValues,
   switchLayoutMetadata,
 } from '../../../core/layout/layout-utils'
-import {
-  findElementAtPath,
-  MetadataUtils,
-  findJSXElementAtPath,
-} from '../../../core/model/element-metadata-utils'
+import { findElementAtPath, MetadataUtils } from '../../../core/model/element-metadata-utils'
 import {
   DetectedLayoutSystem,
-  ElementInstanceMetadata,
-  getJSXElementNameAsString,
-  isJSXAttributeFunctionCall,
   isJSXAttributeValue,
   isJSXElement,
   isPartOfJSXAttributeValue,
-  JSXAttribute,
-  jsxAttributeFunctionCall,
-  JSXAttributeFunctionCall,
-  jsxAttributeOtherJavaScript,
   JSXAttributes,
   jsxAttributeValue,
   JSXAttributeValue,
   JSXElement,
   jsxElement,
-  JSXElementName,
   jsxElementName,
   UtopiaJSXComponent,
-  isJSXAttributeOtherJavaScript,
   SettableLayoutSystem,
   walkElements,
   ElementInstanceMetadataMap,
   jsxTextBlock,
-  isJSXTextBlock,
   getJSXAttribute,
   jsxAttributesFromMap,
-  deleteJSXAttribute,
-  setJSXAttributesAttribute,
   emptyJsxMetadata,
   isImportStatement,
-  isIntrinsicHTMLElement,
   JSXElementChildren,
   emptyComments,
 } from '../../../core/shared/element-template'
 import {
   generateUidWithExistingComponents,
   getUtopiaID,
-  setUtopiaID,
   transformJSXComponentAtElementPath,
-  insertJSXElementChild,
-  findJSXElementChildAtPath,
   getZIndexOfElement,
-  elementOnlyHasSingleTextChild,
   transformJSXComponentAtPath,
-  guaranteeUniqueUids,
   getAllUniqueUids,
 } from '../../../core/model/element-template-utils'
 import {
   getJSXAttributeAtPath,
-  jsxSimpleAttributeToValue,
   setJSXValueAtPath,
   unsetJSXValueAtPath,
-  getModifiableJSXAttributeAtPath,
   unsetJSXValuesAtPaths,
   setJSXValuesAtPaths,
   ValueAtPath,
@@ -92,10 +58,8 @@ import {
   imageFile,
   isDirectory,
   isImageFile,
-  isOlderThan,
   revertFile,
   saveFile,
-  sceneMetadata,
   switchToFileType,
   uniqueProjectContentID,
   updateParsedTextFileHighlightBounds,
@@ -112,17 +76,11 @@ import {
   isLeft,
   isRight,
   left,
-  right,
   eitherToMaybe,
   mapEither,
-  defaultEither,
   forceRight,
-  traverseEither,
 } from '../../../core/shared/either'
 import {
-  RequireFn,
-  TypeDefinitions,
-  PackageStatus,
   PackageStatusMap,
   RequestedNpmDependency,
   requestedNpmDependency,
@@ -133,7 +91,6 @@ import {
   ParsedTextFile,
   ProjectContents,
   ProjectFile,
-  PropertyPath,
   RevisionsState,
   StaticElementPathPart,
   ElementPath,
@@ -146,46 +103,31 @@ import {
   codeFile,
   unparsed,
   ParseSuccess,
-  importAlias,
   Imports,
   importStatementFromImportDetails,
-  importDetails,
 } from '../../../core/shared/project-file-types'
-import {
-  addImport,
-  codeNeedsParsing,
-  codeNeedsPrinting,
-  emptyImports,
-  mergeImports,
-} from '../../../core/workers/common/project-file-utils'
-import { OutgoingWorkerMessage, UtopiaTsWorkers } from '../../../core/workers/common/worker-types'
-import { KeysPressed, Key } from '../../../utils/keyboard'
+import { emptyImports, mergeImports } from '../../../core/workers/common/project-file-utils'
+import { UtopiaTsWorkers } from '../../../core/workers/common/worker-types'
 import Utils, { IndexPosition } from '../../../utils/utils'
 import {
   CanvasPoint,
   CanvasRectangle,
   LocalRectangle,
   Size,
-  WindowPoint,
   canvasRectangle,
-  Rectangle,
   rectangleIntersection,
 } from '../../../core/shared/math-utils'
 import {
   addFileToProjectContents,
   contentsToTree,
-  ensureDirectoriesExist,
   getContentsTreeFileFromString,
   ProjectContentTreeRoot,
   removeFromProjectContents,
   treeToContents,
-  walkContentsTree,
   walkContentsTreeForParseSuccess,
 } from '../../assets'
-import CanvasActions from '../../canvas/canvas-actions'
 import {
   CanvasFrameAndTarget,
-  CSSCursor,
   PinOrFlexFrameChange,
   pinSizeChange,
 } from '../../canvas/canvas-types'
@@ -200,7 +142,7 @@ import {
   SkipFrameChange,
   updateFramesOfScenesAndComponents,
 } from '../../canvas/canvas-utils'
-import { EditorPane, EditorPanel, ResizeLeftPane, SetFocus } from '../../common/actions'
+import { ResizeLeftPane, SetFocus } from '../../common/actions'
 import { openMenu } from '../../context-menu-side-effect'
 import {
   CodeResultCache,
@@ -210,10 +152,7 @@ import {
   normalisePathSuccessOrThrowError,
   normalisePathToUnderlyingTarget,
 } from '../../custom-code/code-file'
-import { ElementContextMenuInstance } from '../../element-context-menu'
 import { getFilePathToImport } from '../../filebrowser/filepath-utils'
-import { FontSettings } from '../../inspector/common/css-utils'
-import { CSSTarget } from '../../inspector/sections/header-section/target-selector'
 import * as PP from '../../../core/shared/property-path'
 import * as EP from '../../../core/shared/element-path'
 import {
@@ -221,7 +160,6 @@ import {
   AddFolder,
   Alignment,
   AlignSelectedViews,
-  Atomic,
   ClearHighlightedViews,
   ClearImageFileBlob,
   ClearParseOrPrintInFlight,
@@ -233,7 +171,6 @@ import {
   DeleteView,
   DistributeSelectedViews,
   Distribution,
-  DuplicateSelected,
   DuplicateSpecificElements,
   EditorAction,
   EditorDispatch,
@@ -244,18 +181,12 @@ import {
   InsertScene,
   isLoggedIn,
   Load,
-  MoveSelectedBackward,
-  MoveSelectedForward,
-  MoveSelectedToBack,
-  MoveSelectedToFront,
   NavigatorReorder,
   NewProject,
   OpenCodeEditorFile,
   OpenPopup,
   OpenTextEditor,
   PasteJSXElements,
-  Redo,
-  RedrawOldCanvasControls,
   RegenerateThumbnail,
   RenameComponent,
   RenameStyleSelector,
@@ -264,10 +195,6 @@ import {
   SaveCurrentFile,
   SaveDOMReport,
   SaveAsset,
-  SaveImageDoNothing,
-  SaveImageInsertWith,
-  SaveImageReplace,
-  SaveImageSwitchMode,
   SelectAllSiblings,
   SelectComponents,
   SendPreviewModel,
@@ -304,9 +231,6 @@ import {
   ToggleInterfaceDesignerAdditionalControls,
   TogglePane,
   ToggleProperty,
-  ToggleCanvasIsLive,
-  TransientActions,
-  Undo,
   UnsetProperty,
   UnwrapGroupOrView,
   UpdateCodeResultCache,
@@ -322,7 +246,6 @@ import {
   UpdateThumbnailGenerated,
   WrapInView,
   SetSafeMode,
-  SaveImageDetails,
   SetSaveError,
   RemoveToast,
   InsertDroppedImage,
@@ -335,7 +258,6 @@ import {
   SetShortcut,
   UpdatePropertyControlsInfo,
   AddStoryboardFile,
-  SendLinterRequestMessage,
   UpdateChildText,
   UpdateFromCodeEditor,
   MarkVSCodeBridgeReady,
@@ -352,7 +274,6 @@ import {
   SetFilebrowserDropTarget,
   SetForkedFromProjectID,
   SetCurrentTheme,
-  FocusFormulaBar,
   UpdateFormulaBarMode,
   OpenFloatingInsertMenu,
   CloseFloatingInsertMenu,
@@ -360,10 +281,8 @@ import {
   SetPropTransient,
   ClearTransientProps,
   AddTailwindConfig,
-  FocusClassNameInput,
   WrapInElement,
   SetInspectorLayoutSectionHovered,
-  IncrementResizeOptionsSelectedIndex,
   SetResizeOptionsTargetOptions,
   HideVSCodeLoadingScreen,
   SetIndexedDBFailed,
@@ -375,21 +294,13 @@ import {
   ToggleSelectionLock,
 } from '../action-types'
 import { defaultTransparentViewElement, defaultSceneElement } from '../defaults'
-import {
-  EditorModes,
-  elementInsertionSubject,
-  Mode,
-  SceneInsertionSubject,
-  isSelectMode,
-  isLiveMode,
-} from '../editor-modes'
+import { EditorModes, Mode, isSelectMode, isLiveMode } from '../editor-modes'
 import * as History from '../history'
 import { StateHistory } from '../history'
 import {
   dependenciesWithEditorRequirements,
   dependenciesFromPackageJsonContents,
   updateDependenciesInEditorState,
-  updateDependenciesInPackageJson,
   createLoadedPackageStatusMapFromDependencies,
   dependenciesFromPackageJson,
   findLatestVersion,
@@ -405,34 +316,26 @@ import {
   areGeneratedElementsTargeted,
   CanvasBase64Blobs,
   DerivedState,
-  DuplicationState,
   editorModelFromPersistentModel,
   EditorState,
-  ErrorMessages,
   getAllBuildErrors,
   getAllLintErrors,
-  getFileForName,
   getMainUIFromModel,
   getOpenFilename,
   getOpenTextFileKey,
   getOpenUIJSFileKey,
   insertElementAtPath,
   mergeStoredEditorStateIntoEditorState,
-  ModalDialog,
   modifyOpenJsxElementAtPath,
   modifyOpenJSXElements,
   modifyOpenJSXElementsAndMetadata,
-  modifyOpenParseSuccess,
   modifyParseSuccessWithSimple,
-  OriginalFrame,
-  ParseSuccessAndEditorChanges,
   PersistentModel,
   removeElementAtPath,
   SimpleParseSuccess,
   UIFileBase64Blobs,
   updateMainUIInEditorState,
   addNewScene,
-  addSceneToJSXComponents,
   UserState,
   UserConfiguration,
   getElementPathsInBounds,
@@ -443,7 +346,6 @@ import {
   getJSXComponentsAndImportsForPathFromState,
   withUnderlyingTargetFromEditorState,
   modifyUnderlyingForOpenFile,
-  forUnderlyingTargetFromEditorState,
   getHighlightBoundsForFile,
   modifyParseSuccessAtPath,
   withUnderlyingTarget,
@@ -451,8 +353,6 @@ import {
   LeftPaneMinimumWidth,
   LeftMenuTab,
   RightMenuTab,
-  persistentModelFromEditorModel,
-  getPackageJsonFromEditorState,
   transformElementAtPath,
   getNewSceneName,
   packageJsonFileFromProjectContents,
@@ -465,20 +365,13 @@ import { PathForSceneDataLabel, getStoryboardElementPath } from '../../../core/m
 import { getFrameAndMultiplier } from '../../images'
 import { arrayToMaybe, forceNotNull, optionalMap } from '../../../core/shared/optional-utils'
 
-import { notice, Notice } from '../../common/notice'
-import { objectFilter, objectMap } from '../../../core/shared/object-utils'
-import { getDependencyTypeDefinitions } from '../../../core/es-modules/package-manager/package-manager'
+import { notice } from '../../common/notice'
+import { objectFilter } from '../../../core/shared/object-utils'
 import { fetchNodeModules } from '../../../core/es-modules/package-manager/fetch-packages'
-import { getPropertyControlsForTargetFromEditor } from '../../../core/property-controls/property-controls-utils'
 import { UiJsxCanvasContextData } from '../../canvas/ui-jsx-canvas'
 import { ShortcutConfiguration } from '../shortcut-definitions'
-import { objectKeyParser, parseString } from '../../../utils/value-parser-utils'
 import { addStoryboardFileToProject } from '../../../core/model/storyboard-utils'
-import { arrayDeepEquality } from '../../../utils/deep-equality'
-import {
-  ElementInstanceMetadataKeepDeepEquality,
-  ElementInstanceMetadataMapKeepDeepEquality,
-} from '../store/store-deep-equality-instances'
+import { ElementInstanceMetadataMapKeepDeepEquality } from '../store/store-deep-equality-instances'
 import {
   showToast,
   removeToast,
@@ -493,11 +386,9 @@ import {
   updateNodeModulesContents,
   finishCheckpointTimer,
   selectComponents,
-  markVSCodeBridgeReady,
   addImports,
   setScrollAnimation,
   updatePackageJson,
-  removeFromNodeModulesContents,
 } from './action-creators'
 import {
   initVSCodeBridge,
@@ -508,13 +399,9 @@ import {
 } from '../../../core/vscode/vscode-bridge'
 import utils from '../../../utils/utils'
 import { defaultConfig } from 'utopia-vscode-common'
-import {
-  createClipboardDataFromSelection,
-  getTargetParentForPaste,
-  setClipboardData,
-} from '../../../utils/clipboard'
+import { createClipboardDataFromSelection, setClipboardData } from '../../../utils/clipboard'
 import { emptySet } from '../../../core/shared/set-utils'
-import { absolutePathFromRelativePath, stripLeadingSlash } from '../../../utils/path-utils'
+import { stripLeadingSlash } from '../../../utils/path-utils'
 import { resolveModule } from '../../../core/es-modules/package-manager/module-resolution'
 import { mapDropNulls, reverse, uniqBy } from '../../../core/shared/array-utils'
 import { UTOPIA_UID_KEY } from '../../../core/model/utopia-constants'
@@ -530,7 +417,7 @@ import type { BuiltInDependencies } from '../../../core/es-modules/package-manag
 import { stylePropPathMappingFn } from '../../inspector/common/property-path-hooks'
 import { getEscapeHatchCommands } from '../../canvas/canvas-strategies/convert-to-absolute-and-move-strategy'
 import { pickCanvasStateFromEditorState } from '../../canvas/canvas-strategies/canvas-strategies'
-import { foldAndApplyCommandsSimple, runCanvasCommand } from '../../canvas/commands/commands'
+import { foldAndApplyCommandsSimple } from '../../canvas/commands/commands'
 import { setElementsToRerenderCommand } from '../../canvas/commands/set-elements-to-rerender-command'
 import { addButtonPressed, MouseButtonsPressed, removeButtonPressed } from '../../../utils/mouse'
 import { areAllSelectedElementsNonAbsolute } from '../../canvas/canvas-strategies/shared-absolute-move-strategy-helpers'
@@ -4226,51 +4113,47 @@ export const UPDATE_FNS = {
     }
   },
   INSERT_DROPPED_IMAGE: (action: InsertDroppedImage, editor: EditorModel): EditorModel => {
-    const projectContent = getContentsTreeFileFromString(editor.projectContents, action.imagePath)
+    const projectContent = action.image
     const parent = arrayToMaybe(editor.highlightedViews)
-    if (projectContent != null && isImageFile(projectContent)) {
-      const newUID = generateUidWithExistingComponents(editor.projectContents)
-      const imageAttribute = jsxAttributeValue(imagePathURL(action.imagePath), emptyComments)
-      const size: Size = {
-        width: projectContent.width ?? 100,
-        height: projectContent.height ?? 100,
-      }
-      const { frame } = getFrameAndMultiplier(action.position, action.imagePath, size, null)
-      let parentShiftX: number = 0
-      let parentShiftY: number = 0
-      if (parent != null) {
-        const frameOfParent = MetadataUtils.getFrameInCanvasCoords(parent, editor.jsxMetadata)
-        if (frameOfParent != null) {
-          parentShiftX = -frameOfParent.x
-          parentShiftY = -frameOfParent.y
-        }
-      }
-      const imageElement = jsxElement(
-        jsxElementName('img', []),
-        newUID,
-        jsxAttributesFromMap({
-          alt: jsxAttributeValue('', emptyComments),
-          src: imageAttribute,
-          style: jsxAttributeValue(
-            {
-              left: parentShiftX + frame.x,
-              top: parentShiftY + frame.y,
-              width: frame.width,
-              height: frame.height,
-            },
-            emptyComments,
-          ),
-          'data-uid': jsxAttributeValue(newUID, emptyComments),
-          'data-aspect-ratio-locked': jsxAttributeValue(true, emptyComments),
-        }),
-        [],
-      )
-
-      const insertJSXElementAction = insertJSXElement(imageElement, parent, {})
-      return UPDATE_FNS.INSERT_JSX_ELEMENT(insertJSXElementAction, editor)
-    } else {
-      throw new Error(`Could not be found or is not a file: ${action.imagePath}`)
+    const newUID = generateUidWithExistingComponents(editor.projectContents)
+    const imageAttribute = jsxAttributeValue(imagePathURL(action.path), emptyComments)
+    const size: Size = {
+      width: projectContent.width ?? 100,
+      height: projectContent.height ?? 100,
     }
+    const { frame } = getFrameAndMultiplier(action.position, action.path, size, null)
+    let parentShiftX: number = 0
+    let parentShiftY: number = 0
+    if (parent != null) {
+      const frameOfParent = MetadataUtils.getFrameInCanvasCoords(parent, editor.jsxMetadata)
+      if (frameOfParent != null) {
+        parentShiftX = -frameOfParent.x
+        parentShiftY = -frameOfParent.y
+      }
+    }
+    const imageElement = jsxElement(
+      jsxElementName('img', []),
+      newUID,
+      jsxAttributesFromMap({
+        alt: jsxAttributeValue('', emptyComments),
+        src: imageAttribute,
+        style: jsxAttributeValue(
+          {
+            left: parentShiftX + frame.x,
+            top: parentShiftY + frame.y,
+            width: frame.width,
+            height: frame.height,
+          },
+          emptyComments,
+        ),
+        'data-uid': jsxAttributeValue(newUID, emptyComments),
+        'data-aspect-ratio-locked': jsxAttributeValue(true, emptyComments),
+      }),
+      [],
+    )
+
+    const insertJSXElementAction = insertJSXElement(imageElement, parent, {})
+    return UPDATE_FNS.INSERT_JSX_ELEMENT(insertJSXElementAction, editor)
   },
   REMOVE_FROM_NODE_MODULES_CONTENTS: (
     action: RemoveFromNodeModulesContents,
