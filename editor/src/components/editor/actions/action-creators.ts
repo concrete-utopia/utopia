@@ -212,6 +212,7 @@ import type {
   UpdateMouseButtonsPressed,
   ToggleSelectionLock,
   ElementPaste,
+  SetGithubState,
 } from '../action-types'
 import {
   EditorModes,
@@ -224,6 +225,7 @@ import type {
   DuplicationState,
   ErrorMessages,
   FloatingInsertMenuState,
+  GithubState,
   LeftMenuTab,
   ModalDialog,
   OriginalFrame,
@@ -1392,6 +1394,13 @@ export function setLoginState(loginState: LoginState): SetLoginState {
   return {
     action: 'SET_LOGIN_STATE',
     loginState: loginState,
+  }
+}
+
+export function setGithubState(githubState: GithubState): SetGithubState {
+  return {
+    action: 'SET_GITHUB_STATE',
+    githubState: githubState,
   }
 }
 
