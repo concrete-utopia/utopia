@@ -2,6 +2,7 @@ import {
   ApplicableStrategy,
   applyCanvasStrategy,
   findCanvasStrategy,
+  MetaCanvasStrategy,
   pickCanvasStateFromEditorState,
   StrategyWithFitness,
 } from '../../canvas/canvas-strategies/canvas-strategies'
@@ -49,7 +50,7 @@ interface HandleStrategiesResult {
 }
 
 export function interactionFinished(
-  strategies: Array<CanvasStrategy>,
+  strategies: Array<MetaCanvasStrategy>,
   storedState: EditorStoreFull,
   result: EditorStoreUnpatched,
 ): HandleStrategiesResult {
@@ -110,7 +111,7 @@ export function interactionFinished(
 }
 
 export function interactionHardReset(
-  strategies: Array<CanvasStrategy>,
+  strategies: Array<MetaCanvasStrategy>,
   storedState: EditorStoreFull,
   result: EditorStoreUnpatched,
 ): HandleStrategiesResult {
@@ -194,7 +195,7 @@ export function interactionHardReset(
 }
 
 export function interactionUpdate(
-  strategies: Array<CanvasStrategy>,
+  strategies: Array<MetaCanvasStrategy>,
   storedState: EditorStoreFull,
   result: EditorStoreUnpatched,
   actionType: 'interaction-create-or-update' | 'non-interaction',
@@ -266,7 +267,7 @@ export function interactionUpdate(
 }
 
 export function interactionStart(
-  strategies: Array<CanvasStrategy>,
+  strategies: Array<MetaCanvasStrategy>,
   storedState: EditorStoreFull,
   result: EditorStoreUnpatched,
 ): HandleStrategiesResult {
@@ -589,7 +590,7 @@ function handleUpdate(
 }
 
 export function handleStrategies(
-  strategies: Array<CanvasStrategy>,
+  strategies: Array<MetaCanvasStrategy>,
   dispatchedActions: readonly EditorAction[],
   storedState: EditorStoreFull,
   result: EditorStoreUnpatched,
@@ -694,7 +695,7 @@ function injectNewMetadataToOldEditorState(
 }
 
 function handleStrategiesInner(
-  strategies: Array<CanvasStrategy>,
+  strategies: Array<MetaCanvasStrategy>,
   dispatchedActions: readonly EditorAction[],
   storedState: EditorStoreFull,
   result: EditorStoreUnpatched,

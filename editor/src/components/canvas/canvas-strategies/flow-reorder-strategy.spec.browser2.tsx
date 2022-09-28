@@ -259,8 +259,8 @@ describe('Flow Reorder Strategy (Mixed Display Type)', () => {
       'await-first-dom-report',
     )
 
-    // drag element 'CCC' right to insert into the row
-    const dragDelta = windowPoint({ x: 120, y: 0 })
+    // drag element 'CCC' down to insert into the row
+    const dragDelta = windowPoint({ x: 10, y: 50 })
     act(() =>
       dragElement(renderResult, 'ccc', dragDelta, emptyModifiers, [
         'utopia-storyboard-uid/scene-aaa',
@@ -287,7 +287,7 @@ describe('Flow Reorder Strategy (Mixed Display Type)', () => {
     )
 
     // drag element 'CCC' up to pull out of the row and insert into block
-    const dragDelta = windowPoint({ x: 0, y: -100 })
+    const dragDelta = windowPoint({ x: -40, y: -50 })
     act(() =>
       dragElement(renderResult, 'ccc', dragDelta, emptyModifiers, [
         'utopia-storyboard-uid/scene-aaa',

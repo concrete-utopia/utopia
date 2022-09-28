@@ -250,6 +250,7 @@ function runTargetStrategiesForFreshlyInsertedElement(
   const patchedInteractionState = {
     ...interactionState,
     interactionData: patchedInteractionData,
+    startingTargetParentsToFilterOut: null,
   }
 
   const { strategy } = findCanvasStrategy(
@@ -265,7 +266,7 @@ function runTargetStrategiesForFreshlyInsertedElement(
   } else {
     const reparentCommands = strategy.strategy.apply(
       patchedCanvasState,
-      interactionState,
+      patchedInteractionState,
       patchedStrategyState,
       strategyLifeCycle,
     ).commands

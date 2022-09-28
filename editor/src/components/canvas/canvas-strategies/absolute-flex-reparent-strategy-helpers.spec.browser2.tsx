@@ -15,6 +15,7 @@ import { CanvasControlsContainerID } from '../controls/new-canvas-controls'
 import { getCursorForOverlay } from '../controls/select-mode/cursor-overlay'
 import {
   EditorRenderResult,
+  formatTestProjectCode,
   getPrintedUiJsCode,
   makeTestProjectCodeWithSnippet,
   renderTestEditorWithCode,
@@ -26,6 +27,7 @@ import {
 function dragElement(
   renderResult: EditorRenderResult,
   targetTestId: string,
+  mouseDownOffset: WindowPoint,
   dragDelta: WindowPoint,
   modifiers: Modifiers,
   includeMouseUp: boolean,
@@ -34,7 +36,10 @@ function dragElement(
   const targetElementBounds = targetElement.getBoundingClientRect()
   const canvasControl = renderResult.renderedDOM.getByTestId(CanvasControlsContainerID)
 
-  const startPoint = windowPoint({ x: targetElementBounds.x + 20, y: targetElementBounds.y + 20 })
+  const startPoint = windowPoint({
+    x: targetElementBounds.x + mouseDownOffset.x,
+    y: targetElementBounds.y + mouseDownOffset.y,
+  })
   const endPoint = offsetPoint(startPoint, dragDelta)
   fireEvent(
     canvasControl,
@@ -79,6 +84,8 @@ function dragElement(
     )
   }
 }
+
+const defaultMouseDownOffset = windowPoint({ x: 20, y: 20 })
 
 describe('Unified Reparent Fitness Function Tests', () => {
   beforeEach(() => {
@@ -130,7 +137,9 @@ describe('Unified Reparent Fitness Function Tests', () => {
 
     const targetPath = EP.appendNewElementPath(TestScenePath, ['aaa', 'bbb', 'ccc'])
     await renderResult.dispatch([selectComponents([targetPath], false)], false)
-    act(() => dragElement(renderResult, 'ccc', dragDelta, emptyModifiers, true))
+    act(() =>
+      dragElement(renderResult, 'ccc', defaultMouseDownOffset, dragDelta, emptyModifiers, true),
+    )
 
     await renderResult.getDispatchFollowUpActionsFinished()
 
@@ -218,7 +227,9 @@ describe('Unified Reparent Fitness Function Tests', () => {
     const targetPath = EP.appendNewElementPath(TestScenePath, ['aaa', 'bbb', 'ccc'])
     await renderResult.dispatch([selectComponents([targetPath], false)], false)
 
-    act(() => dragElement(renderResult, 'ccc', dragDelta, emptyModifiers, true))
+    act(() =>
+      dragElement(renderResult, 'ccc', defaultMouseDownOffset, dragDelta, emptyModifiers, true),
+    )
 
     await renderResult.getDispatchFollowUpActionsFinished()
 
@@ -306,7 +317,16 @@ describe('Unified Reparent Fitness Function Tests', () => {
     const targetPath = EP.appendNewElementPath(TestScenePath, ['aaa', 'draggedElement'])
     await renderResult.dispatch([selectComponents([targetPath], false)], false)
 
-    act(() => dragElement(renderResult, 'draggedElement', dragDelta, emptyModifiers, true))
+    act(() =>
+      dragElement(
+        renderResult,
+        'draggedElement',
+        defaultMouseDownOffset,
+        dragDelta,
+        emptyModifiers,
+        true,
+      ),
+    )
 
     await renderResult.getDispatchFollowUpActionsFinished()
 
@@ -396,7 +416,16 @@ describe('Unified Reparent Fitness Function Tests', () => {
     const targetPath = EP.appendNewElementPath(TestScenePath, ['aaa', 'draggedElement'])
     await renderResult.dispatch([selectComponents([targetPath], false)], false)
 
-    act(() => dragElement(renderResult, 'draggedElement', dragDelta, cmdModifier, true))
+    act(() =>
+      dragElement(
+        renderResult,
+        'draggedElement',
+        defaultMouseDownOffset,
+        dragDelta,
+        cmdModifier,
+        true,
+      ),
+    )
 
     await renderResult.getDispatchFollowUpActionsFinished()
 
@@ -487,7 +516,16 @@ describe('Unified Reparent Fitness Function Tests', () => {
     const targetPath = EP.appendNewElementPath(TestScenePath, ['aaa', 'draggedElement'])
     await renderResult.dispatch([selectComponents([targetPath], false)], false)
 
-    act(() => dragElement(renderResult, 'draggedElement', dragDelta, emptyModifiers, true))
+    act(() =>
+      dragElement(
+        renderResult,
+        'draggedElement',
+        defaultMouseDownOffset,
+        dragDelta,
+        emptyModifiers,
+        true,
+      ),
+    )
 
     await renderResult.getDispatchFollowUpActionsFinished()
 
@@ -576,7 +614,16 @@ describe('Unified Reparent Fitness Function Tests', () => {
     const targetPath = EP.appendNewElementPath(TestScenePath, ['aaa', 'draggedElement'])
     await renderResult.dispatch([selectComponents([targetPath], false)], false)
 
-    act(() => dragElement(renderResult, 'draggedElement', dragDelta, emptyModifiers, true))
+    act(() =>
+      dragElement(
+        renderResult,
+        'draggedElement',
+        defaultMouseDownOffset,
+        dragDelta,
+        emptyModifiers,
+        true,
+      ),
+    )
 
     await renderResult.getDispatchFollowUpActionsFinished()
 
@@ -663,7 +710,16 @@ describe('Unified Reparent Fitness Function Tests', () => {
     const targetPath = EP.appendNewElementPath(TestScenePath, ['aaa', 'draggedElement'])
     await renderResult.dispatch([selectComponents([targetPath], false)], false)
 
-    act(() => dragElement(renderResult, 'draggedElement', dragDelta, cmdModifier, true))
+    act(() =>
+      dragElement(
+        renderResult,
+        'draggedElement',
+        defaultMouseDownOffset,
+        dragDelta,
+        cmdModifier,
+        true,
+      ),
+    )
 
     await renderResult.getDispatchFollowUpActionsFinished()
 
@@ -751,7 +807,16 @@ describe('Unified Reparent Fitness Function Tests', () => {
     const targetPath = EP.appendNewElementPath(TestScenePath, ['aaa', 'draggedElement'])
     await renderResult.dispatch([selectComponents([targetPath], false)], false)
 
-    act(() => dragElement(renderResult, 'draggedElement', dragDelta, cmdModifier, true))
+    act(() =>
+      dragElement(
+        renderResult,
+        'draggedElement',
+        defaultMouseDownOffset,
+        dragDelta,
+        cmdModifier,
+        true,
+      ),
+    )
 
     await renderResult.getDispatchFollowUpActionsFinished()
 
@@ -787,6 +852,394 @@ describe('Unified Reparent Fitness Function Tests', () => {
             data-testid='bbb'
           />
         </div>
+      `),
+    )
+  })
+})
+
+describe('Target parent filtering', () => {
+  beforeEach(() => {
+    viewport.set(2200, 1000)
+  })
+
+  function makeFilteringProjectWithCode(code: string): string {
+    const projectCode = `
+      import * as React from 'react'
+      import { Scene, Storyboard } from 'utopia-api'
+
+      export var ${BakedInStoryboardVariableName} = (
+        <Storyboard data-uid='${BakedInStoryboardUID}'>
+          <Scene
+            style={{
+              width: 350,
+              height: 350,
+              position: 'absolute',
+              left: 0,
+              top: 0,
+            }}
+            data-uid='${TestSceneUID}'
+          >
+            ${code}
+          </Scene>
+        </Storyboard>
+      )
+    `
+
+    return formatTestProjectCode(projectCode)
+  }
+
+  // Target element overlaps both smaller and larger elements, starting 25px to the right and below the top left of the larger,
+  // and 25px to the left and above the smaller
+  const startingCode = makeFilteringProjectWithCode(`
+    <div
+      style={{
+        backgroundColor: '#0091FFAA',
+        position: 'absolute',
+        left: 50,
+        top: 50,
+        width: 250,
+        height: 250,
+      }}
+      data-label='larger sibling'
+      data-uid='large'
+      data-testid='large'
+    >
+      <div
+        style={{
+          backgroundColor: '#11FF00',
+          position: 'absolute',
+          left: 50,
+          top: 50,
+          width: 150,
+          height: 150,
+        }}
+        data-label='smaller element'
+        data-uid='small'
+        data-testid='small'
+      />
+    </div>
+    <div
+      style={{
+        backgroundColor: '#FF0000AB',
+        position: 'absolute',
+        left: 75,
+        top: 75,
+        width: 200,
+        height: 200,
+      }}
+      data-label='drag me'
+      data-uid='dragme'
+      data-testid='dragme'
+    />
+  `)
+
+  it('Dragging with cmd with cursor over the larger element prevents reparenting into the larger element', async () => {
+    const renderResult = await renderTestEditorWithCode(startingCode, 'await-first-dom-report')
+
+    const targetPath = EP.elementPath([[BakedInStoryboardUID, TestSceneUID, 'dragme']])
+    await renderResult.dispatch([selectComponents([targetPath], false)], false)
+
+    // mouse down inside the target, but not in the area over the smaller element
+    const mouseDownOffset = windowPoint({ x: 10, y: 10 })
+    // drag to the left so that the cursor is over the larger element, and no longer over where the target started
+    const dragDelta = windowPoint({ x: -20, y: 0 })
+
+    act(() => dragElement(renderResult, 'dragme', mouseDownOffset, dragDelta, cmdModifier, true))
+
+    await renderResult.getDispatchFollowUpActionsFinished()
+
+    // The result should be that we've just moved the element without reparenting it
+    expect(getPrintedUiJsCode(renderResult.getEditorState())).toEqual(
+      makeFilteringProjectWithCode(`
+        <div
+          style={{
+            backgroundColor: '#0091FFAA',
+            position: 'absolute',
+            left: 50,
+            top: 50,
+            width: 250,
+            height: 250,
+          }}
+          data-label='larger sibling'
+          data-uid='large'
+          data-testid='large'
+        >
+          <div
+            style={{
+              backgroundColor: '#11FF00',
+              position: 'absolute',
+              left: 50,
+              top: 50,
+              width: 150, 
+              height: 150,
+            }}
+            data-label='smaller element'
+            data-uid='small'
+            data-testid='small'
+          />
+        </div>
+        <div
+          style={{
+            backgroundColor: '#FF0000AB',
+            position: 'absolute',
+            left: 55,
+            top: 75,
+            width: 200,
+            height: 200,
+          }}
+          data-label='drag me'
+          data-uid='dragme'
+          data-testid='dragme'
+        />
+      `),
+    )
+  })
+
+  it('Dragging with cmd with cursor over the larger element allows reparenting into the smaller element', async () => {
+    const renderResult = await renderTestEditorWithCode(startingCode, 'await-first-dom-report')
+
+    const targetPath = EP.elementPath([[BakedInStoryboardUID, TestSceneUID, 'dragme']])
+    await renderResult.dispatch([selectComponents([targetPath], false)], false)
+
+    // mouse down inside the target, but not in the area over the smaller element
+    const mouseDownOffset = windowPoint({ x: 10, y: 10 })
+    // drag to the right so that the cursor is over the smaller element
+    const dragDelta = windowPoint({ x: 20, y: 20 })
+
+    act(() => dragElement(renderResult, 'dragme', mouseDownOffset, dragDelta, cmdModifier, true))
+
+    await renderResult.getDispatchFollowUpActionsFinished()
+
+    // The dragged element should have been reparented into the smaller element
+    expect(getPrintedUiJsCode(renderResult.getEditorState())).toEqual(
+      makeFilteringProjectWithCode(`
+        <div
+          style={{
+            backgroundColor: '#0091FFAA',
+            position: 'absolute',
+            left: 50,
+            top: 50,
+            width: 250,
+            height: 250,
+          }}
+          data-label='larger sibling'
+          data-uid='large'
+          data-testid='large'
+        >
+          <div
+            style={{
+              backgroundColor: '#11FF00',
+              position: 'absolute',
+              left: 50,
+              top: 50,
+              width: 150, 
+              height: 150,
+            }}
+            data-label='smaller element'
+            data-uid='small'
+            data-testid='small'
+          >
+            <div
+              style={{
+                backgroundColor: '#FF0000AB',
+                position: 'absolute',
+                left: -5,
+                top: -5,
+                width: 200,
+                height: 200,
+              }}
+              data-label='drag me'
+              data-uid='dragme'
+              data-testid='dragme'
+            />
+          </div>
+        </div>
+      `),
+    )
+  })
+
+  it('Dragging with cmd with cursor over the smaller element prevents reparenting into the smaller element', async () => {
+    const renderResult = await renderTestEditorWithCode(startingCode, 'await-first-dom-report')
+
+    const targetPath = EP.elementPath([[BakedInStoryboardUID, TestSceneUID, 'dragme']])
+    await renderResult.dispatch([selectComponents([targetPath], false)], false)
+
+    // mouse down inside the target in the area over the smaller element
+    const mouseDownOffset = windowPoint({ x: 30, y: 30 })
+    // drag to the right so that the cursor remains over the smaller element
+    const dragDelta = windowPoint({ x: 10, y: 10 })
+
+    act(() => dragElement(renderResult, 'dragme', mouseDownOffset, dragDelta, cmdModifier, true))
+
+    await renderResult.getDispatchFollowUpActionsFinished()
+
+    // The result should be that we've just moved the element without reparenting it
+    expect(getPrintedUiJsCode(renderResult.getEditorState())).toEqual(
+      makeFilteringProjectWithCode(`
+        <div
+          style={{
+            backgroundColor: '#0091FFAA',
+            position: 'absolute',
+            left: 50,
+            top: 50,
+            width: 250,
+            height: 250,
+          }}
+          data-label='larger sibling'
+          data-uid='large'
+          data-testid='large'
+        >
+          <div
+            style={{
+              backgroundColor: '#11FF00',
+              position: 'absolute',
+              left: 50,
+              top: 50,
+              width: 150, 
+              height: 150,
+            }}
+            data-label='smaller element'
+            data-uid='small'
+            data-testid='small'
+          />
+        </div>
+        <div
+          style={{
+            backgroundColor: '#FF0000AB',
+            position: 'absolute',
+            left: 85,
+            top: 85,
+            width: 200,
+            height: 200,
+          }}
+          data-label='drag me'
+          data-uid='dragme'
+          data-testid='dragme'
+        />
+      `),
+    )
+  })
+
+  it('Dragging with cmd with cursor over the smaller element allows reparenting into the larger element', async () => {
+    const renderResult = await renderTestEditorWithCode(startingCode, 'await-first-dom-report')
+
+    const targetPath = EP.elementPath([[BakedInStoryboardUID, TestSceneUID, 'dragme']])
+    await renderResult.dispatch([selectComponents([targetPath], false)], false)
+
+    // mouse down inside the target in the area over the smaller element
+    const mouseDownOffset = windowPoint({ x: 30, y: 30 })
+    // drag to the left so that the cursor is over the larger element
+    const dragDelta = windowPoint({ x: -10, y: -10 })
+
+    act(() => dragElement(renderResult, 'dragme', mouseDownOffset, dragDelta, cmdModifier, true))
+
+    await renderResult.getDispatchFollowUpActionsFinished()
+
+    // The dragged element should have been reparented into the larger element
+    expect(getPrintedUiJsCode(renderResult.getEditorState())).toEqual(
+      makeFilteringProjectWithCode(`
+        <div
+          style={{
+            backgroundColor: '#0091FFAA',
+            position: 'absolute',
+            left: 50,
+            top: 50,
+            width: 250,
+            height: 250,
+          }}
+          data-label='larger sibling'
+          data-uid='large'
+          data-testid='large'
+        >
+          <div
+            style={{
+              backgroundColor: '#11FF00',
+              position: 'absolute',
+              left: 50,
+              top: 50,
+              width: 150, 
+              height: 150,
+            }}
+            data-label='smaller element'
+            data-uid='small'
+            data-testid='small'
+          />
+          <div
+            style={{
+              backgroundColor: '#FF0000AB',
+              position: 'absolute',
+              left: 15,
+              top: 15,
+              width: 200,
+              height: 200,
+            }}
+            data-label='drag me'
+            data-uid='dragme'
+            data-testid='dragme'
+          />
+        </div>
+      `),
+    )
+  })
+
+  it('Dragging without cmd with cursor over the smaller element prevents reparenting into the larger element', async () => {
+    const renderResult = await renderTestEditorWithCode(startingCode, 'await-first-dom-report')
+
+    const targetPath = EP.elementPath([[BakedInStoryboardUID, TestSceneUID, 'dragme']])
+    await renderResult.dispatch([selectComponents([targetPath], false)], false)
+
+    // mouse down inside the target in the area over the smaller element
+    const mouseDownOffset = windowPoint({ x: 30, y: 30 })
+    // drag to the left so that the cursor is over the larger element
+    const dragDelta = windowPoint({ x: -10, y: -10 })
+
+    act(() => dragElement(renderResult, 'dragme', mouseDownOffset, dragDelta, emptyModifiers, true))
+
+    await renderResult.getDispatchFollowUpActionsFinished()
+
+    // The result should be that we've just moved the element without reparenting it
+    expect(getPrintedUiJsCode(renderResult.getEditorState())).toEqual(
+      makeFilteringProjectWithCode(`
+        <div
+          style={{
+            backgroundColor: '#0091FFAA',
+            position: 'absolute',
+            left: 50,
+            top: 50,
+            width: 250,
+            height: 250,
+          }}
+          data-label='larger sibling'
+          data-uid='large'
+          data-testid='large'
+        >
+          <div
+            style={{
+              backgroundColor: '#11FF00',
+              position: 'absolute',
+              left: 50,
+              top: 50,
+              width: 150, 
+              height: 150,
+            }}
+            data-label='smaller element'
+            data-uid='small'
+            data-testid='small'
+          />
+        </div>
+        <div
+          style={{
+            backgroundColor: '#FF0000AB',
+            position: 'absolute',
+            left: 65,
+            top: 65,
+            width: 200,
+            height: 200,
+          }}
+          data-label='drag me'
+          data-uid='dragme'
+          data-testid='dragme'
+        />
       `),
     )
   })
@@ -979,7 +1432,16 @@ describe('Reparent indicators', () => {
       y: endPoint.y - startPoint.y,
     })
 
-    act(() => dragElement(renderResult, 'seconddiv', dragDelta, emptyModifiers, false))
+    act(() =>
+      dragElement(
+        renderResult,
+        'seconddiv',
+        defaultMouseDownOffset,
+        dragDelta,
+        emptyModifiers,
+        false,
+      ),
+    )
 
     await renderResult.getDispatchFollowUpActionsFinished()
 
@@ -1015,7 +1477,16 @@ describe('Reparent indicators', () => {
       y: endPoint.y - startPoint.y,
     })
 
-    act(() => dragElement(renderResult, 'seconddiv', dragDelta, emptyModifiers, false))
+    act(() =>
+      dragElement(
+        renderResult,
+        'seconddiv',
+        defaultMouseDownOffset,
+        dragDelta,
+        emptyModifiers,
+        false,
+      ),
+    )
 
     await renderResult.getDispatchFollowUpActionsFinished()
 
@@ -1051,7 +1522,16 @@ describe('Reparent indicators', () => {
       y: endPoint.y - startPoint.y,
     })
 
-    act(() => dragElement(renderResult, 'seconddiv', dragDelta, emptyModifiers, false))
+    act(() =>
+      dragElement(
+        renderResult,
+        'seconddiv',
+        defaultMouseDownOffset,
+        dragDelta,
+        emptyModifiers,
+        false,
+      ),
+    )
 
     await renderResult.getDispatchFollowUpActionsFinished()
 
@@ -1087,7 +1567,16 @@ describe('Reparent indicators', () => {
       y: endPoint.y - startPoint.y,
     })
 
-    act(() => dragElement(renderResult, 'seconddiv', dragDelta, emptyModifiers, false))
+    act(() =>
+      dragElement(
+        renderResult,
+        'seconddiv',
+        defaultMouseDownOffset,
+        dragDelta,
+        emptyModifiers,
+        false,
+      ),
+    )
 
     await renderResult.getDispatchFollowUpActionsFinished()
 

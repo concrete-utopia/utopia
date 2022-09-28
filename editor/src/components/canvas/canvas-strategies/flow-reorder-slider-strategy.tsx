@@ -30,7 +30,6 @@ export const flowReorderSliderStategy: CanvasStrategy = {
       interactionState,
       metadata,
       allElementProps,
-      'no-filter',
     )
   },
   controlsToRender: [
@@ -84,7 +83,7 @@ export const flowReorderSliderStategy: CanvasStrategy = {
 
       const newDisplayType = getNewDisplayTypeForIndex(
         strategyState.startingMetadata,
-        MetadataUtils.findElementByElementPath(strategyState.startingMetadata, target),
+        target,
         siblingsOfTarget[newIndex],
       )
 
@@ -93,7 +92,7 @@ export const flowReorderSliderStategy: CanvasStrategy = {
           reorderElement('always', target, absolute(newIndex)),
           setElementsToRerenderCommand(siblingsOfTarget),
           updateHighlightedViews('mid-interaction', []),
-          ...getOptionalDisplayPropCommands(target, newDisplayType, 'with-auto-conversion'),
+          ...getOptionalDisplayPropCommands(target, newDisplayType),
           setCursorCommand('mid-interaction', CSSCursor.ResizeEW),
         ],
         {

@@ -217,7 +217,7 @@ function findReparentStrategy(
   const cmdPressed = interactionState.interactionData.modifiers.cmd
 
   const reparentResult = getReparentTargetUnified(
-    filteredSelectedElements,
+    existingReparentSubjects(filteredSelectedElements),
     pointOnCanvas,
     cmdPressed,
     canvasState,
@@ -235,13 +235,11 @@ function findReparentStrategy(
   if (
     reparentResult.shouldReparent &&
     newParentPath != null &&
-    // holding cmd forces a reparent even if the target parent was under the mouse at the interaction start
-    (cmdPressed ||
-      targetIsValid(
-        newParentPath,
-        interactionState.startingTargetParentsToFilterOut,
-        missingBoundsHandling,
-      )) &&
+    targetIsValid(
+      newParentPath,
+      interactionState.startingTargetParentsToFilterOut,
+      missingBoundsHandling,
+    ) &&
     !parentStayedTheSame
   ) {
     return reparentStrategyForParent(
@@ -276,8 +274,32 @@ export function reparentTarget(
   }
 }
 
+type ReparentSubjects = NewReparentSubjects | ExistingReparentSubjects
+
+export interface NewReparentSubjects {
+  type: 'NEW_ELEMENTS'
+}
+
+export function newReparentSubjects(): NewReparentSubjects {
+  return {
+    type: 'NEW_ELEMENTS',
+  }
+}
+
+export interface ExistingReparentSubjects {
+  type: 'EXISTING_ELEMENTS'
+  elements: Array<ElementPath>
+}
+
+export function existingReparentSubjects(elements: Array<ElementPath>): ExistingReparentSubjects {
+  return {
+    type: 'EXISTING_ELEMENTS',
+    elements: elements,
+  }
+}
+
 export function getReparentTargetUnified(
-  filteredSelectedElements: Array<ElementPath>,
+  reparentSubjects: ReparentSubjects,
   pointOnCanvas: CanvasPoint,
   cmdPressed: boolean,
   canvasState: InteractionCanvasState,
@@ -290,8 +312,9 @@ export function getReparentTargetUnified(
   const canvasScale = canvasState.scale
 
   const multiselectBounds: Size =
-    MetadataUtils.getBoundingRectangleInCanvasCoords(filteredSelectedElements, metadata) ??
-    size(0, 0)
+    (reparentSubjects.type === 'EXISTING_ELEMENTS'
+      ? MetadataUtils.getBoundingRectangleInCanvasCoords(reparentSubjects.elements, metadata)
+      : null) ?? size(0, 0)
 
   const allElementsUnderPoint = getAllTargetsAtPointAABB(
     metadata,
@@ -313,11 +336,6 @@ export function getReparentTargetUnified(
     }
   }
 
-  const filteredSelectedElementsMetadata = mapDropNulls(
-    (path) => MetadataUtils.findElementByElementPath(metadata, path),
-    filteredSelectedElements,
-  )
-
   const filteredElementsUnderPoint = allElementsUnderPoint.filter((target) => {
     let validParentForFlexOrAbsolute = cmdPressed
     if (missingBoundsHandling === 'allow-missing-bounds') {
@@ -332,30 +350,42 @@ export function getReparentTargetUnified(
       validParentForFlexOrAbsolute = isFlex || providesBoundsForAbsoluteChildren
     }
 
-    // TODO BEFORE MERGE consider multiselect!!!!!
-    // the current parent should be included in the array of valid targets
-    return (
-      filteredSelectedElementsMetadata.some((maybeChild) =>
-        EP.isChildOf(maybeChild.elementPath, target),
-      ) ||
-      // any of the dragged elements (or their flex parents) and their descendants are not game for reparenting
-      (!filteredSelectedElementsMetadata.some((maybeAncestorOrEqual) =>
-        !cmdPressed && maybeAncestorOrEqual.specialSizeMeasurements.parentLayoutSystem === 'flex'
-          ? // for Flex children, we also want to filter out all their siblings to force a Flex Reorder strategy
-            EP.isDescendantOf(target, EP.parentPath(maybeAncestorOrEqual.elementPath))
-          : // for non-flex elements, we filter out their descendants and themselves
-            EP.isDescendantOfOrEqualTo(target, maybeAncestorOrEqual.elementPath),
-      ) &&
-        // simply skip elements that do not support children
-        MetadataUtils.targetSupportsChildren(projectContents, openFile, metadata, target) &&
-        // if cmd is not pressed, we only allow reparent to parents that are larger than the multiselect bounds
-        (cmdPressed ||
-          sizeFitsInTarget(
-            multiselectBounds,
-            MetadataUtils.getFrameInCanvasCoords(target, metadata) ?? size(0, 0),
-          )) &&
-        validParentForFlexOrAbsolute)
-    )
+    const canReparent =
+      // simply skip elements that do not support children
+      MetadataUtils.targetSupportsChildren(projectContents, openFile, metadata, target) &&
+      // if cmd is not pressed, we only allow reparent to parents that are larger than the multiselect bounds
+      (cmdPressed ||
+        sizeFitsInTarget(
+          multiselectBounds,
+          MetadataUtils.getFrameInCanvasCoords(target, metadata) ?? size(0, 0),
+        )) &&
+      validParentForFlexOrAbsolute
+
+    if (reparentSubjects.type === 'EXISTING_ELEMENTS') {
+      const selectedElementsMetadata = mapDropNulls(
+        (path) => MetadataUtils.findElementByElementPath(metadata, path),
+        reparentSubjects.elements,
+      )
+
+      // TODO BEFORE MERGE consider multiselect!!!!!
+      // the current parent should be included in the array of valid targets
+      return (
+        selectedElementsMetadata.some((maybeChild) =>
+          EP.isChildOf(maybeChild.elementPath, target),
+        ) ||
+        // any of the dragged elements (or their flex parents) and their descendants are not game for reparenting
+        (!selectedElementsMetadata.some((maybeAncestorOrEqual) =>
+          !cmdPressed && maybeAncestorOrEqual.specialSizeMeasurements.parentLayoutSystem === 'flex'
+            ? // for Flex children, we also want to filter out all their siblings to force a Flex Reorder strategy
+              EP.isDescendantOf(target, EP.parentPath(maybeAncestorOrEqual.elementPath))
+            : // for non-flex elements, we filter out their descendants and themselves
+              EP.isDescendantOfOrEqualTo(target, maybeAncestorOrEqual.elementPath),
+        ) &&
+          canReparent)
+      )
+    } else {
+      return canReparent
+    }
   })
 
   // if the mouse is over the canvas, return the canvas root as the target path
@@ -667,7 +697,7 @@ export function applyFlexReparent(
         interactionSession.interactionData.drag,
       )
       const reparentResult = getReparentTargetUnified(
-        filteredSelectedElements,
+        existingReparentSubjects(filteredSelectedElements),
         pointOnCanvas,
         interactionSession.interactionData.modifiers.cmd,
         canvasState,
