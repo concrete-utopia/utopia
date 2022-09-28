@@ -53,7 +53,14 @@ import {
 } from '../components/mouse-move'
 import * as EP from '../core/shared/element-path'
 import { MetadataUtils } from '../core/model/element-metadata-utils'
-import { ElementInstanceMetadataMap } from '../core/shared/element-template'
+import {
+  ElementInstanceMetadataMap,
+  emptyComments,
+  jsxAttributesFromMap,
+  jsxAttributeValue,
+  jsxElement,
+  setJSXAttributesAttribute,
+} from '../core/shared/element-template'
 import { ElementPath } from '../core/shared/project-file-types'
 import {
   getActionsForClipboardItems,
@@ -61,9 +68,9 @@ import {
   createDirectInsertImageActions,
 } from '../utils/clipboard'
 import Keyboard, { KeyCharacter, KeysPressed } from '../utils/keyboard'
-import { Modifier } from '../utils/modifiers'
+import { emptyModifiers, Modifier } from '../utils/modifiers'
 import RU from '../utils/react-utils'
-import Utils from '../utils/utils'
+import Utils, { absolute } from '../utils/utils'
 import {
   canvasPoint,
   CanvasPoint,
@@ -88,6 +95,8 @@ import {
 } from '../utils/global-positions'
 import { last, reverse } from '../core/shared/array-utils'
 import {
+  boundingArea,
+  createInteractionViaMouse,
   reparentTargetsToFilter,
   ReparentTargetsToFilter,
   updateInteractionViaDragDelta,
@@ -102,6 +111,7 @@ import { getDragTargets } from '../components/canvas/canvas-strategies/shared-ab
 import { pickCanvasStateFromEditorState } from '../components/canvas/canvas-strategies/canvas-strategies'
 import { BuiltInDependencies } from '../core/es-modules/package-manager/built-in-dependencies-list'
 import { cancelInsertModeActions } from '../components/editor/actions/meta-actions'
+import { generateUidWithExistingComponents } from '../core/model/element-template-utils'
 
 const webFrame = PROBABLY_ELECTRON ? requireElectron().webFrame : null
 
@@ -886,6 +896,38 @@ export class EditorCanvas extends React.Component<EditorCanvasProps> {
           this.canvasWrapperRef = ref
         },
 
+        // TODO BEFORE MERGE: clean up before merge
+        onDragOver: () => {
+          const newUID = generateUidWithExistingComponents(this.props.editor.projectContents)
+
+          const propsForElement = jsxAttributesFromMap({
+            style: jsxAttributeValue(
+              { position: 'absolute', width: 22, height: 22 },
+              emptyComments,
+            ),
+          })
+
+          const newElement = jsxElement(
+            'img',
+            newUID,
+            setJSXAttributesAttribute(
+              propsForElement,
+              'data-uid',
+              jsxAttributeValue(newUID, emptyComments),
+            ),
+            [],
+          )
+          this.props.dispatch(
+            [
+              EditorActions.enableInsertModeForJSXElement(newElement, newUID, {}, null),
+              CanvasActions.createInteractionSession(
+                createInteractionViaMouse(CanvasMousePositionRaw!, emptyModifiers, boundingArea()),
+              ),
+            ],
+            'everyone',
+          )
+        },
+
         onDrop: (event: React.DragEvent) => {
           event.preventDefault()
           event.stopPropagation()
@@ -928,6 +970,14 @@ export class EditorCanvas extends React.Component<EditorCanvasProps> {
             this.props.editor.mode.subject.type === 'DragAndDrop' &&
             this.props.editor.mode.subject.imageAssets == null
           ) {
+            insertImageFromClipboard()
+          }
+
+          if (
+            this.props.editor.mode.type === 'insert' &&
+            this.props.editor.mode.subject.type === 'Element'
+          ) {
+            this.props.dispatch([CanvasActions.clearInteractionSession(false)])
             insertImageFromClipboard()
           }
 
