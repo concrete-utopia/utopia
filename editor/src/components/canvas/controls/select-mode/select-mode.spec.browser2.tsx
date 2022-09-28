@@ -1,5 +1,4 @@
 /// <reference types="karma-viewport" />
-import { act, fireEvent } from '@testing-library/react'
 import { BakedInStoryboardUID } from '../../../../core/model/scene-utils'
 import { canvasPoint } from '../../../../core/shared/math-utils'
 import * as EP from '../../../../core/shared/element-path'
@@ -20,153 +19,34 @@ import CanvasActions from '../../canvas-actions'
 import { CanvasControlsContainerID } from '../new-canvas-controls'
 import { SceneLabelTestID } from './scene-label'
 import { CSSCursor } from '../../../../uuiui-deps'
+import {
+  mouseClickAtPoint,
+  mouseDoubleClickAtPoint,
+  mouseMoveToPoint,
+} from '../../event-helpers.test-utils'
+import { cmdModifier } from '../../../../utils/modifiers'
 
-function fireSingleClickEvents(target: HTMLElement, clientX: number, clientY: number) {
-  fireEvent(
-    target,
-    new MouseEvent('mousemove', {
-      bubbles: true,
-      cancelable: true,
-      clientX: clientX,
-      clientY: clientY,
-    }),
-  )
-  fireEvent(
-    target,
-    new MouseEvent('mousedown', {
-      detail: 1,
-      bubbles: true,
-      cancelable: true,
-      metaKey: false,
-      clientX: clientX,
-      clientY: clientY,
-      buttons: 1,
-    }),
-  )
-  fireEvent(
-    target,
-    new MouseEvent('mouseup', {
-      detail: 1,
-      bubbles: true,
-      cancelable: true,
-      metaKey: false,
-      clientX: clientX,
-      clientY: clientY,
-      buttons: 1,
-    }),
-  )
-  fireEvent(
-    target,
-    new MouseEvent('click', {
-      detail: 1,
-      bubbles: true,
-      cancelable: true,
-      metaKey: false,
-      clientX: clientX,
-      clientY: clientY,
-      buttons: 1,
-    }),
-  )
+async function fireSingleClickEvents(target: HTMLElement, clientX: number, clientY: number) {
+  await mouseMoveToPoint(target, { x: clientX, y: clientY })
+  await mouseClickAtPoint(target, { x: clientX, y: clientY })
 }
 
-function createDoubleClicker(): (target: HTMLElement, clientX: number, clientY: number) => void {
+function createDoubleClicker(
+  target: HTMLElement,
+  clientX: number,
+  clientY: number,
+): () => Promise<void> {
   let clickCount = 0
 
-  return (target: HTMLElement, clientX: number, clientY: number) => {
-    fireEvent(
+  return async () => {
+    await mouseMoveToPoint(target, { x: clientX, y: clientY })
+    await mouseDoubleClickAtPoint(
       target,
-      new MouseEvent('mousemove', {
-        bubbles: true,
-        cancelable: true,
-        clientX: clientX,
-        clientY: clientY,
-      }),
+      { x: clientX, y: clientY },
+      {
+        initialClickCount: clickCount,
+      },
     )
-    fireEvent(
-      target,
-      new MouseEvent('mousedown', {
-        detail: clickCount + 1,
-        bubbles: true,
-        cancelable: true,
-        metaKey: false,
-        clientX: clientX,
-        clientY: clientY,
-        buttons: 1,
-      }),
-    )
-    fireEvent(
-      target,
-      new MouseEvent('mouseup', {
-        detail: clickCount + 1,
-        bubbles: true,
-        cancelable: true,
-        metaKey: false,
-        clientX: clientX,
-        clientY: clientY,
-        buttons: 1,
-      }),
-    )
-    fireEvent(
-      target,
-      new MouseEvent('click', {
-        detail: clickCount + 1,
-        bubbles: true,
-        cancelable: true,
-        metaKey: false,
-        clientX: clientX,
-        clientY: clientY,
-        buttons: 1,
-      }),
-    )
-    fireEvent(
-      target,
-      new MouseEvent('mousedown', {
-        detail: clickCount + 2,
-        bubbles: true,
-        cancelable: true,
-        metaKey: false,
-        clientX: clientX,
-        clientY: clientY,
-        buttons: 1,
-      }),
-    )
-    fireEvent(
-      target,
-      new MouseEvent('mouseup', {
-        detail: clickCount + 2,
-        bubbles: true,
-        cancelable: true,
-        metaKey: false,
-        clientX: clientX,
-        clientY: clientY,
-        buttons: 1,
-      }),
-    )
-    fireEvent(
-      target,
-      new MouseEvent('click', {
-        detail: clickCount + 2,
-        bubbles: true,
-        cancelable: true,
-        metaKey: false,
-        clientX: clientX,
-        clientY: clientY,
-        buttons: 1,
-      }),
-    )
-    fireEvent(
-      target,
-      new MouseEvent('dblclick', {
-        detail: clickCount + 2,
-        bubbles: true,
-        cancelable: true,
-        metaKey: false,
-        clientX: clientX,
-        clientY: clientY,
-        buttons: 1,
-      }),
-    )
-
     clickCount += 2
   }
 }
@@ -251,17 +131,11 @@ describe('Select Mode Selection', () => {
 
     const canvasControlsLayer = renderResult.renderedDOM.getByTestId(CanvasControlsContainerID)
 
-    const fireDoubleClickEvents = createDoubleClicker()
-
-    const doubleClick = async () => {
-      await act(async () => {
-        fireDoubleClickEvents(
-          canvasControlsLayer,
-          areaControlBounds.left + 20,
-          areaControlBounds.top + 20,
-        )
-      })
-    }
+    const doubleClick = createDoubleClicker(
+      canvasControlsLayer,
+      areaControlBounds.left + 20,
+      areaControlBounds.top + 20,
+    )
 
     await doubleClick()
 
@@ -341,9 +215,7 @@ describe('Select Mode Selection', () => {
     const sceneLabel = renderResult.renderedDOM.getByTestId(SceneLabelTestID)
     const sceneLabelBounds = sceneLabel.getBoundingClientRect()
 
-    await act(async () => {
-      fireSingleClickEvents(sceneLabel, sceneLabelBounds.left + 5, sceneLabelBounds.top + 5)
-    })
+    await fireSingleClickEvents(sceneLabel, sceneLabelBounds.left + 5, sceneLabelBounds.top + 5)
 
     expect(renderResult.getEditorState().editor.selectedViews).toEqual([
       EP.fromString(`${BakedInStoryboardUID}/${TestSceneUID}`),
@@ -371,15 +243,11 @@ describe('Select Mode Selection', () => {
 
     const canvasControlsLayer = renderResult.renderedDOM.getByTestId(CanvasControlsContainerID)
 
-    const fireDoubleClickEvents = createDoubleClicker()
-
-    await act(async () => {
-      fireDoubleClickEvents(
-        canvasControlsLayer,
-        areaControlBounds.left + 20,
-        areaControlBounds.top + 20,
-      )
-    })
+    await createDoubleClicker(
+      canvasControlsLayer,
+      areaControlBounds.left + 20,
+      areaControlBounds.top + 20,
+    )()
 
     const selectedViews = renderResult.getEditorState().editor.selectedViews
     expect(selectedViews).toEqual([EP.appendNewElementPath(appElementPath, [targetElementUid])])
@@ -402,20 +270,14 @@ describe('Select Mode Advanced Cases', () => {
 
     const canvasControlsLayer = renderResult.renderedDOM.getByTestId(CanvasControlsContainerID)
 
-    await act(async () => {
-      fireEvent(
-        canvasControlsLayer,
-        new MouseEvent('mousedown', {
-          detail: 1,
-          bubbles: true,
-          cancelable: true,
-          metaKey: true,
-          clientX: cardSceneRootBounds.left + 130,
-          clientY: cardSceneRootBounds.top + 220,
-          buttons: 1,
-        }),
-      )
-    })
+    await mouseClickAtPoint(
+      canvasControlsLayer,
+      {
+        x: cardSceneRootBounds.left + 130,
+        y: cardSceneRootBounds.top + 220,
+      },
+      { modifiers: cmdModifier },
+    )
 
     expect(renderResult.getEditorState().editor.selectedViews).toEqual([
       EP.fromString('sb/scene-2/Card-instance:Card-Root/Card-Row-Buttons/Card-Button-3'),
@@ -453,17 +315,11 @@ describe('Select Mode Double Clicking', () => {
 
     const canvasControlsLayer = renderResult.renderedDOM.getByTestId(CanvasControlsContainerID)
 
-    const fireDoubleClickEvents = createDoubleClicker()
-
-    const doubleClick = async () => {
-      await act(async () => {
-        fireDoubleClickEvents(
-          canvasControlsLayer,
-          cardSceneRootBounds.left + 130,
-          cardSceneRootBounds.top + 220,
-        )
-      })
-    }
+    const doubleClick = createDoubleClicker(
+      canvasControlsLayer,
+      cardSceneRootBounds.left + 130,
+      cardSceneRootBounds.top + 220,
+    )
 
     await doubleClick()
 
@@ -489,17 +345,11 @@ describe('Select Mode Double Clicking', () => {
 
     const canvasControlsLayer = renderResult.renderedDOM.getByTestId(CanvasControlsContainerID)
 
-    const fireDoubleClickEvents = createDoubleClicker()
-
-    const doubleClick = async () => {
-      await act(async () => {
-        fireDoubleClickEvents(
-          canvasControlsLayer,
-          cardSceneRootBounds.left + 130,
-          cardSceneRootBounds.top + 220,
-        )
-      })
-    }
+    const doubleClick = createDoubleClicker(
+      canvasControlsLayer,
+      cardSceneRootBounds.left + 130,
+      cardSceneRootBounds.top + 220,
+    )
 
     await doubleClick()
     await doubleClick()
@@ -528,17 +378,11 @@ describe('Select Mode Double Clicking', () => {
 
     const canvasControlsLayer = renderResult.renderedDOM.getByTestId(CanvasControlsContainerID)
 
-    const fireDoubleClickEvents = createDoubleClicker()
-
-    const doubleClick = async () => {
-      await act(async () => {
-        fireDoubleClickEvents(
-          canvasControlsLayer,
-          cardSceneRootBounds.left + 130,
-          cardSceneRootBounds.top + 220,
-        )
-      })
-    }
+    const doubleClick = createDoubleClicker(
+      canvasControlsLayer,
+      cardSceneRootBounds.left + 130,
+      cardSceneRootBounds.top + 220,
+    )
 
     await doubleClick()
     await doubleClick()
@@ -570,17 +414,11 @@ describe('Select Mode Double Clicking', () => {
     const cardSceneRoot = renderResult.renderedDOM.getByTestId('generated-card-1')
     const cardSceneRootBounds = cardSceneRoot.getBoundingClientRect()
 
-    const fireDoubleClickEvents = createDoubleClicker()
-
-    const doubleClick = async () => {
-      await act(async () => {
-        fireDoubleClickEvents(
-          canvasControlsLayer,
-          cardSceneRootBounds.left + 130,
-          cardSceneRootBounds.top + 220,
-        )
-      })
-    }
+    const doubleClick = createDoubleClicker(
+      canvasControlsLayer,
+      cardSceneRootBounds.left + 130,
+      cardSceneRootBounds.top + 220,
+    )
 
     await doubleClick()
     await doubleClick()
@@ -616,17 +454,11 @@ describe('Select Mode Double Clicking', () => {
     const cardSceneRoot = renderResult.renderedDOM.getByTestId('generated-card-1')
     const cardSceneRootBounds = cardSceneRoot.getBoundingClientRect()
 
-    const fireDoubleClickEvents = createDoubleClicker()
-
-    const doubleClick = async () => {
-      await act(async () => {
-        fireDoubleClickEvents(
-          canvasControlsLayer,
-          cardSceneRootBounds.left + 130,
-          cardSceneRootBounds.top + 220,
-        )
-      })
-    }
+    const doubleClick = createDoubleClicker(
+      canvasControlsLayer,
+      cardSceneRootBounds.left + 130,
+      cardSceneRootBounds.top + 220,
+    )
 
     await doubleClick()
     await doubleClick()
@@ -669,17 +501,11 @@ describe('Select Mode Double Clicking With Fragments', () => {
 
     const canvasControlsLayer = renderResult.renderedDOM.getByTestId(CanvasControlsContainerID)
 
-    const fireDoubleClickEvents = createDoubleClicker()
-
-    const doubleClick = async () => {
-      await act(async () => {
-        fireDoubleClickEvents(
-          canvasControlsLayer,
-          cardSceneRootBounds.left + 130,
-          cardSceneRootBounds.top + 220,
-        )
-      })
-    }
+    const doubleClick = createDoubleClicker(
+      canvasControlsLayer,
+      cardSceneRootBounds.left + 130,
+      cardSceneRootBounds.top + 220,
+    )
 
     await doubleClick()
 
@@ -705,17 +531,11 @@ describe('Select Mode Double Clicking With Fragments', () => {
 
     const canvasControlsLayer = renderResult.renderedDOM.getByTestId(CanvasControlsContainerID)
 
-    const fireDoubleClickEvents = createDoubleClicker()
-
-    const doubleClick = async () => {
-      await act(async () => {
-        fireDoubleClickEvents(
-          canvasControlsLayer,
-          cardSceneRootBounds.left + 130,
-          cardSceneRootBounds.top + 220,
-        )
-      })
-    }
+    const doubleClick = createDoubleClicker(
+      canvasControlsLayer,
+      cardSceneRootBounds.left + 130,
+      cardSceneRootBounds.top + 220,
+    )
 
     await doubleClick()
     await doubleClick()
@@ -744,17 +564,11 @@ describe('Select Mode Double Clicking With Fragments', () => {
 
     const canvasControlsLayer = renderResult.renderedDOM.getByTestId(CanvasControlsContainerID)
 
-    const fireDoubleClickEvents = createDoubleClicker()
-
-    const doubleClick = async () => {
-      await act(async () => {
-        fireDoubleClickEvents(
-          canvasControlsLayer,
-          cardSceneRootBounds.left + 130,
-          cardSceneRootBounds.top + 220,
-        )
-      })
-    }
+    const doubleClick = createDoubleClicker(
+      canvasControlsLayer,
+      cardSceneRootBounds.left + 130,
+      cardSceneRootBounds.top + 220,
+    )
 
     await doubleClick()
     await doubleClick()
@@ -785,17 +599,11 @@ describe('Select Mode Double Clicking With Fragments', () => {
     const cardSceneRoot = renderResult.renderedDOM.getByTestId('generated-card-1')
     const cardSceneRootBounds = cardSceneRoot.getBoundingClientRect()
 
-    const fireDoubleClickEvents = createDoubleClicker()
-
-    const doubleClick = async () => {
-      await act(async () => {
-        fireDoubleClickEvents(
-          canvasControlsLayer,
-          cardSceneRootBounds.left + 130,
-          cardSceneRootBounds.top + 220,
-        )
-      })
-    }
+    const doubleClick = createDoubleClicker(
+      canvasControlsLayer,
+      cardSceneRootBounds.left + 130,
+      cardSceneRootBounds.top + 220,
+    )
 
     await doubleClick()
     await doubleClick()
@@ -829,17 +637,11 @@ describe('Select Mode Double Clicking With Fragments', () => {
     const cardSceneRoot = renderResult.renderedDOM.getByTestId('generated-card-1')
     const cardSceneRootBounds = cardSceneRoot.getBoundingClientRect()
 
-    const fireDoubleClickEvents = createDoubleClicker()
-
-    const doubleClick = async () => {
-      await act(async () => {
-        fireDoubleClickEvents(
-          canvasControlsLayer,
-          cardSceneRootBounds.left + 130,
-          cardSceneRootBounds.top + 220,
-        )
-      })
-    }
+    const doubleClick = createDoubleClicker(
+      canvasControlsLayer,
+      cardSceneRootBounds.left + 130,
+      cardSceneRootBounds.top + 220,
+    )
 
     await doubleClick()
     await doubleClick()
@@ -890,17 +692,11 @@ describe('Selection with locked elements', () => {
 
     const canvasControlsLayer = renderResult.renderedDOM.getByTestId(CanvasControlsContainerID)
 
-    const fireDoubleClickEvents = createDoubleClicker()
-
-    const doubleClick = async () => {
-      await act(async () => {
-        fireDoubleClickEvents(
-          canvasControlsLayer,
-          cardSceneRootBounds.left + 130,
-          cardSceneRootBounds.top + 220,
-        )
-      })
-    }
+    const doubleClick = createDoubleClicker(
+      canvasControlsLayer,
+      cardSceneRootBounds.left + 130,
+      cardSceneRootBounds.top + 220,
+    )
 
     await doubleClick()
     await doubleClick()
@@ -938,17 +734,11 @@ describe('Selection with locked elements', () => {
 
     const canvasControlsLayer = renderResult.renderedDOM.getByTestId(CanvasControlsContainerID)
 
-    const fireDoubleClickEvents = createDoubleClicker()
-
-    const doubleClick = async () => {
-      await act(async () => {
-        fireDoubleClickEvents(
-          canvasControlsLayer,
-          cardSceneRootBounds.left + 130,
-          cardSceneRootBounds.top + 220,
-        )
-      })
-    }
+    const doubleClick = createDoubleClicker(
+      canvasControlsLayer,
+      cardSceneRootBounds.left + 130,
+      cardSceneRootBounds.top + 220,
+    )
 
     await doubleClick()
     await doubleClick()

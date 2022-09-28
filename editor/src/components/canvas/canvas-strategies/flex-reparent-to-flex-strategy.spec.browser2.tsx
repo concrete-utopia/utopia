@@ -6,21 +6,16 @@ import {
   TestAppUID,
   TestSceneUID,
 } from '../ui-jsx.test-utils'
-import { act, fireEvent } from '@testing-library/react'
 import { CanvasControlsContainerID } from '../controls/new-canvas-controls'
 import { offsetPoint, windowPoint, WindowPoint } from '../../../core/shared/math-utils'
 import { cmdModifier, Modifiers } from '../../../utils/modifiers'
-import { PrettierConfig } from 'utopia-vscode-common'
-import * as Prettier from 'prettier/standalone'
 import {
   BakedInStoryboardVariableName,
   BakedInStoryboardUID,
 } from '../../../core/model/scene-utils'
-import { wait } from '../../../core/model/performance-scripts'
+import { mouseClickAtPoint, mouseDragFromPointWithDelta } from '../event-helpers.test-utils'
 
-// TODO share this code with the other tests
-
-function dragElement(
+async function dragElement(
   renderResult: EditorRenderResult,
   targetTestId: string,
   dragDelta: WindowPoint,
@@ -28,53 +23,17 @@ function dragElement(
 ) {
   const targetElement = renderResult.renderedDOM.getByTestId(targetTestId)
   const targetElementBounds = targetElement.getBoundingClientRect()
-  const canvasControl = renderResult.renderedDOM.getByTestId(CanvasControlsContainerID)
+  const canvasControlsLayer = renderResult.renderedDOM.getByTestId(CanvasControlsContainerID)
 
-  const startPoint = windowPoint({
+  const startPoint = {
     x: targetElementBounds.x + targetElementBounds.width / 2,
     y: targetElementBounds.y + targetElementBounds.height / 2,
+  }
+
+  await mouseClickAtPoint(canvasControlsLayer, startPoint, { modifiers: cmdModifier })
+  await mouseDragFromPointWithDelta(canvasControlsLayer, startPoint, dragDelta, {
+    modifiers: modifiers,
   })
-  const endPoint = offsetPoint(startPoint, dragDelta)
-  fireEvent(
-    canvasControl,
-    new MouseEvent('mousedown', {
-      bubbles: true,
-      cancelable: true,
-      metaKey: true,
-      altKey: modifiers.alt,
-      shiftKey: modifiers.shift,
-      clientX: startPoint.x,
-      clientY: startPoint.y,
-      buttons: 1,
-    }),
-  )
-
-  fireEvent(
-    canvasControl,
-    new MouseEvent('mousemove', {
-      bubbles: true,
-      cancelable: true,
-      metaKey: modifiers.cmd,
-      altKey: modifiers.alt,
-      shiftKey: modifiers.shift,
-      clientX: endPoint.x,
-      clientY: endPoint.y,
-      buttons: 1,
-    }),
-  )
-
-  fireEvent(
-    window,
-    new MouseEvent('mouseup', {
-      bubbles: true,
-      cancelable: true,
-      metaKey: modifiers.cmd,
-      altKey: modifiers.alt,
-      shiftKey: modifiers.shift,
-      clientX: endPoint.x,
-      clientY: endPoint.y,
-    }),
-  )
 }
 
 const defaultTestCode = `
@@ -220,7 +179,7 @@ describe('Flex Reparent To Flex Strategy', () => {
       x: targetFlexParentEnd.x - flexChildToReparentCenter.x + 5,
       y: targetFlexParentEnd.y - flexChildToReparentCenter.y,
     })
-    act(() => dragElement(renderResult, 'flexchild3', dragDelta, cmdModifier))
+    await dragElement(renderResult, 'flexchild3', dragDelta, cmdModifier)
 
     await renderResult.getDispatchFollowUpActionsFinished()
 
@@ -330,7 +289,7 @@ describe('Flex Reparent To Flex Strategy', () => {
       x: targetFlexChildCenter.x - flexChildToReparentCenter.x - 5,
       y: targetFlexChildCenter.y - flexChildToReparentCenter.y,
     })
-    act(() => dragElement(renderResult, 'flexchild3', dragDelta, cmdModifier))
+    await dragElement(renderResult, 'flexchild3', dragDelta, cmdModifier)
 
     await renderResult.getDispatchFollowUpActionsFinished()
 

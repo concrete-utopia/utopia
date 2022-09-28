@@ -6,7 +6,6 @@ import {
   TestAppUID,
   TestSceneUID,
 } from '../ui-jsx.test-utils'
-import { act, fireEvent } from '@testing-library/react'
 import { CanvasControlsContainerID } from '../controls/new-canvas-controls'
 import { offsetPoint, windowPoint, WindowPoint } from '../../../core/shared/math-utils'
 import { cmdModifier, Modifiers } from '../../../utils/modifiers'
@@ -24,6 +23,7 @@ import {
 } from './flex-reparent-to-absolute-strategy'
 import { absoluteReparentToFlexStrategy } from './absolute-reparent-to-flex-strategy'
 import { flexReparentToFlexStrategy } from './flex-reparent-to-flex-strategy'
+import { mouseClickAtPoint, mouseDragFromPointWithDelta } from '../event-helpers.test-utils'
 
 async function dragElement(
   renderResult: EditorRenderResult,
@@ -34,53 +34,17 @@ async function dragElement(
   const targetElements = await renderResult.renderedDOM.findAllByTestId(targetTestId)
   const targetElement = targetElements[0]
   const targetElementBounds = targetElement.getBoundingClientRect()
-  const canvasControl = renderResult.renderedDOM.getByTestId(CanvasControlsContainerID)
+  const canvasControlsLayer = renderResult.renderedDOM.getByTestId(CanvasControlsContainerID)
 
   const startPoint = windowPoint({
     x: targetElementBounds.x + targetElementBounds.width / 2,
     y: targetElementBounds.y + targetElementBounds.height / 2,
   })
-  const endPoint = offsetPoint(startPoint, dragDelta)
-  fireEvent(
-    canvasControl,
-    new MouseEvent('mousedown', {
-      bubbles: true,
-      cancelable: true,
-      metaKey: true,
-      altKey: modifiers.alt,
-      shiftKey: modifiers.shift,
-      clientX: startPoint.x,
-      clientY: startPoint.y,
-      buttons: 1,
-    }),
-  )
 
-  fireEvent(
-    canvasControl,
-    new MouseEvent('mousemove', {
-      bubbles: true,
-      cancelable: true,
-      metaKey: modifiers.cmd,
-      altKey: modifiers.alt,
-      shiftKey: modifiers.shift,
-      clientX: endPoint.x,
-      clientY: endPoint.y,
-      buttons: 1,
-    }),
-  )
-
-  fireEvent(
-    window,
-    new MouseEvent('mouseup', {
-      bubbles: true,
-      cancelable: true,
-      metaKey: modifiers.cmd,
-      altKey: modifiers.alt,
-      shiftKey: modifiers.shift,
-      clientX: endPoint.x,
-      clientY: endPoint.y,
-    }),
-  )
+  await mouseClickAtPoint(canvasControlsLayer, startPoint, { modifiers: cmdModifier })
+  await mouseDragFromPointWithDelta(canvasControlsLayer, startPoint, dragDelta, {
+    modifiers: modifiers,
+  })
 }
 
 const defaultTestCode = `
@@ -238,7 +202,7 @@ describe('Forced Absolute Reparent Strategies', () => {
       x: secondFlexChildCenter.x - absoluteChildCenter.x,
       y: secondFlexChildCenter.y - absoluteChildCenter.y,
     })
-    await act(() => dragElement(renderResult, 'absolutechild', dragDelta, cmdModifier))
+    await dragElement(renderResult, 'absolutechild', dragDelta, cmdModifier)
 
     await renderResult.getDispatchFollowUpActionsFinished()
 
@@ -349,7 +313,7 @@ describe('Forced Absolute Reparent Strategies', () => {
       x: secondFlexChildCenter.x - absoluteChildCenter.x,
       y: secondFlexChildCenter.y - absoluteChildCenter.y,
     })
-    await act(() => dragElement(renderResult, 'absolutechild', dragDelta, cmdModifier))
+    await dragElement(renderResult, 'absolutechild', dragDelta, cmdModifier)
 
     await renderResult.getDispatchFollowUpActionsFinished()
 
@@ -457,7 +421,7 @@ describe('Forced Absolute Reparent Strategies', () => {
       x: staticParentCenter.x - firstFlexChildCenter.x,
       y: staticParentCenter.y - firstFlexChildCenter.y,
     })
-    await act(() => dragElement(renderResult, 'flexchild1', dragDelta, cmdModifier))
+    await dragElement(renderResult, 'flexchild1', dragDelta, cmdModifier)
 
     await renderResult.getDispatchFollowUpActionsFinished()
 
@@ -572,7 +536,7 @@ describe('Forced Absolute Reparent Strategies', () => {
       x: staticParentCenter.x - firstFlexChildCenter.x,
       y: staticParentCenter.y - firstFlexChildCenter.y,
     })
-    await act(() => dragElement(renderResult, 'flexchild1', dragDelta, cmdModifier))
+    await dragElement(renderResult, 'flexchild1', dragDelta, cmdModifier)
 
     await renderResult.getDispatchFollowUpActionsFinished()
 

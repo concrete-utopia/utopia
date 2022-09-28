@@ -1,5 +1,3 @@
-import { fireEvent } from '@testing-library/react'
-import { act } from 'react-dom/test-utils'
 import * as EP from '../../../core/shared/element-path'
 import {
   canvasPoint,
@@ -11,6 +9,7 @@ import { ElementPath } from '../../../core/shared/project-file-types'
 import { emptyModifiers } from '../../../utils/modifiers'
 import { selectComponents } from '../../editor/actions/meta-actions'
 import CanvasActions from '../canvas-actions'
+import { mouseDownAtPoint, mouseMoveToPoint } from '../event-helpers.test-utils'
 import {
   EditorRenderResult,
   formatTestProjectCode,
@@ -328,35 +327,8 @@ async function runTest(
   const { x, y } = windowPoint(middle(divToBeDragged.getBoundingClientRect()))
 
   await startDragUsingActions(editor, targetPath, canvasPoint({ x: 20, y: 0 }))
-  await act(() => {
-    fireEvent(
-      divToBeDragged,
-      new MouseEvent('mousedown', {
-        bubbles: true,
-        cancelable: true,
-        metaKey: false,
-        altKey: false,
-        shiftKey: false,
-        clientX: x,
-        clientY: y,
-        buttons: 1,
-      }),
-    )
-
-    fireEvent(
-      divToBeDragged,
-      new MouseEvent('mousemove', {
-        bubbles: true,
-        cancelable: true,
-        metaKey: false,
-        altKey: false,
-        shiftKey: false,
-        clientX: x + 20,
-        clientY: y,
-        buttons: 1,
-      }),
-    )
-  })
+  await mouseDownAtPoint(divToBeDragged, { x: x, y: y })
+  await mouseMoveToPoint(divToBeDragged, { x: x + 20, y: y }, { eventOptions: { buttons: 1 } })
 
   await editor.getDispatchFollowUpActionsFinished()
   check(editor)
