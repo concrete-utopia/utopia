@@ -16,7 +16,7 @@ import {
 } from '../../canvas-strategies/interaction-state'
 import { CSSCursor, EdgePiece } from '../../canvas-types'
 import { windowToCanvasCoordinates } from '../../dom-lookup'
-import { paddingForEdge, SimpleCSSPadding, simplePaddingFromMetadata } from '../../padding-utils'
+import { SimpleCSSPadding, simplePaddingFromMetadata } from '../../padding-utils'
 import { useBoundingBox } from '../bounding-box-hooks'
 import { CanvasOffsetWrapper } from '../canvas-offset-wrapper'
 import { isZeroSizedElement } from '../outline-utils'
@@ -25,12 +25,8 @@ import { useMaybeHighlightElement } from './select-mode-hooks'
 type Orientation = 'vertical' | 'horizontal'
 
 interface ResizeContolProps {
-  orientation: Orientation
-  color: string
-  cursor: CSSCursor
   edge: EdgePiece
-  paddingForEdge: number
-  hidden: boolean
+  hiddenByParent: boolean
 }
 
 const transformFromOrientation = (orientation: Orientation) => {
@@ -54,17 +50,23 @@ const PaddingResizeControlI = React.memo(
     const scale = useEditorState((store) => store.editor.canvas.scale, 'PaddingResizeControl scale')
     const dispatch = useEditorState((store) => store.dispatch, 'PaddingResizeControl dispatch')
     const canvasOffsetRef = useRefEditorState((store) => store.editor.canvas.roundedCanvasOffset)
+    const { maybeClearHighlightsOnHoverEnd } = useMaybeHighlightElement()
+
     const colorTheme = useColorTheme()
     const outlineColor = colorTheme.canvasDragOutlineBlock.value
 
-    const { maybeClearHighlightsOnHoverEnd } = useMaybeHighlightElement()
+    const [hidden, setHidden] = React.useState<boolean>(true)
+    const [hoverStart, hoverEnd] = useHoverWithDelay(0, (h) => setHidden(!h))
 
     const onEdgeMouseDown = React.useCallback(
       (event: React.MouseEvent<HTMLDivElement>) => {
+        setHidden(true)
         startResizeInteraction(event, dispatch, props.edge, canvasOffsetRef.current, scale)
       },
       [dispatch, props.edge, canvasOffsetRef, scale],
     )
+
+    const onMouseUp = React.useCallback(() => setHidden(false), [])
 
     const onMouseMove = React.useCallback(
       (event: React.MouseEvent<HTMLDivElement>) => {
@@ -74,11 +76,15 @@ const PaddingResizeControlI = React.memo(
       [maybeClearHighlightsOnHoverEnd],
     )
 
+    const { cursor, orientation } = edgePieceDerivedProps(props.edge)
+
     const width = PaddingResizeControlWidth / scale
     const height = PaddingResizeControlHeight / scale
     const borderWidth = PaddingResizeControlBorder / scale
     return (
       <div
+        onMouseLeave={hoverEnd}
+        onMouseEnter={hoverStart}
         ref={ref}
         data-testid={`absolute-resizepadding-${props.edge}`}
         style={{
@@ -86,26 +92,30 @@ const PaddingResizeControlI = React.memo(
           display: 'flex',
           alignItems: 'center',
           justifyContent: 'center',
-          backgroundImage: `linear-gradient(135deg, ${outlineColor} 2.5%, rgba(255,255,255,0) 2.5%, rgba(255,255,255,0) 50%, ${outlineColor} 50%, ${outlineColor} 52%, rgba(255,255,255,0) 52%, rgba(255,255,255,0) 100%)`,
-          backgroundSize: `${20 / scale}px ${20 / scale}px`,
-          pointerEvents: 'none',
+          visibility: props.hiddenByParent ? 'hidden' : 'visible',
+          backgroundImage: hidden
+            ? undefined
+            : `linear-gradient(135deg, ${outlineColor} 2.5%, rgba(255,255,255,0) 2.5%, rgba(255,255,255,0) 50%, ${outlineColor} 50%, ${outlineColor} 52%, rgba(255,255,255,0) 52%, rgba(255,255,255,0) 100%)`,
+          backgroundSize: hidden ? undefined : `${20 / scale}px ${20 / scale}px`,
         }}
       >
-        <div
-          onMouseDown={onEdgeMouseDown}
-          onMouseMove={onMouseMove}
-          style={{
-            visibility: props.hidden ? 'hidden' : 'visible',
-            width: width,
-            height: height,
-            backgroundColor: props.color,
-            cursor: props.cursor,
-            pointerEvents: 'initial',
-            border: `${borderWidth}px solid rgb(255, 255, 255, 1)`,
-            borderRadius: 2,
-            transform: `rotate(${transformFromOrientation(props.orientation)})`,
-          }}
-        ></div>
+        {!hidden && (
+          <div
+            onMouseDown={onEdgeMouseDown}
+            onMouseMove={onMouseMove}
+            onMouseUp={onMouseUp}
+            style={{
+              width: width,
+              height: height,
+              backgroundColor: colorTheme.brandNeonPink.value,
+              cursor: cursor,
+              pointerEvents: 'initial',
+              border: `${borderWidth}px solid rgb(255, 255, 255, 1)`,
+              borderRadius: 2,
+              transform: `rotate(${transformFromOrientation(orientation)})`,
+            }}
+          ></div>
+        )}
       </div>
     )
   }),
@@ -113,33 +123,6 @@ const PaddingResizeControlI = React.memo(
 
 const selectedElementsSelector = (store: EditorStorePatched) => store.editor.selectedViews
 export const PaddingResizeControl = React.memo(() => {
-  const colorTheme = useColorTheme()
-
-  const activeControl = useEditorState(
-    (store) => store.editor.canvas.interactionSession?.activeControl,
-    'PaddingResizeControl interaction',
-  )
-
-  const activeEdgePiece = optionalMap(edgePositionFromActiveControl, activeControl)
-
-  const [innerHidden, setInnerHidden] = React.useState<boolean>(true)
-
-  const fadeInTimeout = React.useRef<Timeout | null>(null)
-
-  const onMouseLeave = () => {
-    if (fadeInTimeout.current) {
-      clearTimeout(fadeInTimeout.current)
-    }
-    fadeInTimeout.current = null
-    setInnerHidden(true)
-  }
-
-  const onMouseEnter = () => {
-    fadeInTimeout.current = setTimeout(() => {
-      setInnerHidden(false)
-    }, 200)
-  }
-
   const selectedElements = useEditorState(
     selectedElementsSelector,
     'PaddingResizeControl selectedElements',
@@ -178,52 +161,23 @@ export const PaddingResizeControl = React.memo(() => {
     ref.current.style.height = padding.paddingBottom + 'px'
   })
 
+  const [hoverHidden, setHoverHidden] = React.useState<boolean>(true)
+  const [hoverStart, hoverEnd] = useHoverWithDelay(200, (h) => setHoverHidden(!h), true)
+
   return (
     <CanvasOffsetWrapper>
       <div
-        onMouseEnter={onMouseEnter}
-        onMouseLeave={onMouseLeave}
+        onMouseEnter={hoverStart}
+        onMouseLeave={hoverEnd}
         ref={controlRef}
         style={{
           position: 'absolute',
         }}
       >
-        <PaddingResizeControlI
-          ref={rightRef}
-          edge={'right'}
-          paddingForEdge={paddingForEdge('right', padding)}
-          cursor={CSSCursor.ResizeEW}
-          orientation='vertical'
-          color={colorTheme.brandNeonPink.value}
-          hidden={innerHidden || activeEdgePiece === 'right'}
-        />
-        <PaddingResizeControlI
-          ref={bottomRef}
-          edge={'bottom'}
-          paddingForEdge={paddingForEdge('bottom', padding)}
-          cursor={CSSCursor.ResizeNS}
-          orientation='horizontal'
-          color={colorTheme.brandNeonPink.value}
-          hidden={innerHidden || activeEdgePiece === 'bottom'}
-        />
-        <PaddingResizeControlI
-          ref={leftRef}
-          edge={'left'}
-          paddingForEdge={paddingForEdge('left', padding)}
-          cursor={CSSCursor.ResizeEW}
-          orientation='vertical'
-          color={colorTheme.brandNeonPink.value}
-          hidden={innerHidden || activeEdgePiece === 'left'}
-        />
-        <PaddingResizeControlI
-          ref={topRef}
-          edge={'top'}
-          paddingForEdge={paddingForEdge('top', padding)}
-          cursor={CSSCursor.ResizeNS}
-          orientation='horizontal'
-          color={colorTheme.brandNeonPink.value}
-          hidden={innerHidden || activeEdgePiece === 'top'}
-        />
+        <PaddingResizeControlI ref={rightRef} edge={'right'} hiddenByParent={hoverHidden} />
+        <PaddingResizeControlI ref={bottomRef} edge={'bottom'} hiddenByParent={hoverHidden} />
+        <PaddingResizeControlI ref={leftRef} edge={'left'} hiddenByParent={hoverHidden} />
+        <PaddingResizeControlI ref={topRef} edge={'top'} hiddenByParent={hoverHidden} />
       </div>
     </CanvasOffsetWrapper>
   )
@@ -264,25 +218,39 @@ function useElementPadding(elementPath: ElementPath): SimpleCSSPadding {
   return simplePaddingFromMetadata(elementMetadata, elementPath)
 }
 
-function translationForEdge(edgePiece: EdgePiece, delta: number): string {
+function useHoverWithDelay(
+  delay: number,
+  update: (hovered: boolean) => void,
+): [React.MouseEventHandler, React.MouseEventHandler] {
+  const fadeInTimeout = React.useRef<Timeout | null>(null)
+
+  const onMouseLeave = () => {
+    if (fadeInTimeout.current) {
+      clearTimeout(fadeInTimeout.current)
+    }
+    fadeInTimeout.current = null
+    update(false)
+  }
+
+  const onMouseEnter = () => {
+    fadeInTimeout.current = setTimeout(() => update(true), delay)
+  }
+
+  return [onMouseEnter, onMouseLeave]
+}
+
+function edgePieceDerivedProps(edgePiece: EdgePiece): {
+  cursor: CSSCursor
+  orientation: Orientation
+} {
   switch (edgePiece) {
-    case 'top':
-      return `${delta / 2}px, 0px`
-    case 'bottom':
-      return `${-delta / 2}px, 0px`
     case 'right':
-      return `${-delta / 2}px, 0px`
     case 'left':
-      return `${delta / 2}px, 0px`
+      return { cursor: CSSCursor.ResizeEW, orientation: 'vertical' }
+    case 'bottom':
+    case 'top':
+      return { cursor: CSSCursor.ResizeNS, orientation: 'horizontal' }
     default:
       assertNever(edgePiece)
   }
-}
-
-function edgePositionFromActiveControl(activeControl: CanvasControlType): EdgePiece | null {
-  if (activeControl.type !== 'PADDING_RESIZE_HANDLE') {
-    return null
-  }
-
-  return activeControl.edgePiece
 }
