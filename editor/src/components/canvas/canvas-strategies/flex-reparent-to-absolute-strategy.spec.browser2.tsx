@@ -145,9 +145,6 @@ ${snippet}
 }
 
 describe('Flex Reparent To Absolute Strategy', () => {
-  beforeEach(() => {
-    viewport.set(2200, 1000)
-  })
   it('reparents flex element to absolute parent', async () => {
     const renderResult = await renderTestEditorWithCode(
       makeTestProjectCodeWithSnippet(defaultTestCode),

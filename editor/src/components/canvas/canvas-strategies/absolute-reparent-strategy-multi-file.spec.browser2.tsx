@@ -213,9 +213,6 @@ function getFileCode(renderResult: EditorRenderResult, filename: string): string
 }
 
 describe('Absolute Reparent Strategy (Multi-File)', () => {
-  beforeEach(() => {
-    viewport.set(2200, 1000)
-  })
   it('reparents to the end', async () => {
     const renderResult = await renderTestEditorWithProjectContent(
       makeTestProjectContents(),

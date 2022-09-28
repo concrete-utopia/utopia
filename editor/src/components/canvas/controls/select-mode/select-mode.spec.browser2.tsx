@@ -52,10 +52,6 @@ function createDoubleClicker(
 }
 
 describe('Select Mode Selection', () => {
-  before(() => {
-    viewport.set(2200, 1000)
-  })
-
   it('keep double clicking on a children eventually selects it – even if it is out of bounds of the parents', async () => {
     const renderResult = await renderTestEditorWithCode(
       makeTestProjectCodeWithSnippet(`
@@ -255,10 +251,6 @@ describe('Select Mode Selection', () => {
 })
 
 describe('Select Mode Advanced Cases', () => {
-  before(() => {
-    viewport.set(2200, 1000)
-  })
-
   it('Can cmd-click to select Button on a Card Scene Root', async () => {
     const renderResult = await renderTestEditorWithCode(
       TestProjectAlpineClimb,
@@ -292,10 +284,6 @@ describe('Select Mode Double Clicking', () => {
   // Each double click should _either_ select the next element down the hierarchy, _or_ focus
   // the currently selected element. Also, we specifically skip over Scenes, meaning a single
   // double click with nothing selected will select the first child of a Scene
-
-  before(() => {
-    viewport.set(2200, 1000)
-  })
 
   it('One double clicks to select Card Instance', async () => {
     // prettier-ignore
@@ -479,10 +467,6 @@ describe('Select Mode Double Clicking With Fragments', () => {
   // elements. These are special cases because these fragments and their components
   // do not appear in the dom.
 
-  before(() => {
-    viewport.set(2200, 1000)
-  })
-
   it('One double clicks to select Card Instance', async () => {
     // prettier-ignore
     const desiredPath = EP.fromString(
@@ -656,10 +640,6 @@ describe('Select Mode Double Clicking With Fragments', () => {
 })
 
 describe('Selection with locked elements', () => {
-  before(() => {
-    viewport.set(2200, 1000)
-  })
-
   it('Double click selection skips locked elements', async () => {
     // prettier-ignore
     const desiredPath = EP.fromString(

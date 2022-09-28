@@ -9,10 +9,6 @@ describe('Frame calculation for fragments', () => {
   // To make sure they still have globalFrame and localFrame in the jsxMetadata, we calculate the frames from
   // their descendants which are rendered in the dom (see mergeComponentMetadata function)
 
-  before(() => {
-    viewport.set(2200, 1000)
-  })
-
   it('Frames of component with root fragment is union of its children', async () => {
     const fragmentComponentPath = 'story/scene/app:frag'
 

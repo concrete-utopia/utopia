@@ -23,7 +23,6 @@ describe('moving a scene/rootview on the canvas', () => {
   before(() => {
     originalValue = isFeatureEnabled('Canvas Strategies')
     setFeatureEnabled('Canvas Strategies', false)
-    viewport.set(2200, 1000)
   })
   after(() => {
     setFeatureEnabled('Canvas Strategies', originalValue)

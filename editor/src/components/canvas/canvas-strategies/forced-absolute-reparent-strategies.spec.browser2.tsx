@@ -173,9 +173,6 @@ const allReparentStrategies = () => [
 ]
 
 describe('Forced Absolute Reparent Strategies', () => {
-  beforeEach(() => {
-    viewport.set(2200, 1000)
-  })
   it('Absolute to forced absolute can be applied', async () => {
     const renderResult = await renderTestEditorWithCode(
       makeTestProjectCodeWithSnippet(defaultTestCode),

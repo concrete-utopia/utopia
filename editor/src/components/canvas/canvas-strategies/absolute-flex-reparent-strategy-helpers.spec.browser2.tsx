@@ -58,10 +58,6 @@ async function dragElement(
 const defaultMouseDownOffset = windowPoint({ x: 20, y: 20 })
 
 describe('Unified Reparent Fitness Function Tests', () => {
-  beforeEach(() => {
-    viewport.set(2200, 1000)
-  })
-
   it('if an element is larger than its parent, we still allow reparent to its grandparent, if the reparenting starts from the area of the original parent', async () => {
     const renderResult = await renderTestEditorWithCode(
       makeTestProjectCodeWithSnippet(`
@@ -812,10 +808,6 @@ describe('Unified Reparent Fitness Function Tests', () => {
 })
 
 describe('Target parent filtering', () => {
-  beforeEach(() => {
-    viewport.set(2200, 1000)
-  })
-
   function makeFilteringProjectWithCode(code: string): string {
     const projectCode = `
       import * as React from 'react'
@@ -1354,10 +1346,6 @@ async function checkReparentIndicator(
 }
 
 describe('Reparent indicators', () => {
-  beforeEach(() => {
-    viewport.set(2200, 1000)
-  })
-
   it(`shows the reparent indicator before all the elements in a 'row' container`, async () => {
     const renderResult = await renderTestEditorWithCode(
       getVariedProjectCodeWithAFlexContainer('row'),

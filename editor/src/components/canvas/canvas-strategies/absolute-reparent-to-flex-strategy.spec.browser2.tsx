@@ -171,9 +171,6 @@ ${snippet}
 }
 
 describe('Absolute Reparent To Flex Strategy', () => {
-  beforeEach(() => {
-    viewport.set(2200, 1000)
-  })
   it('reparents to the end', async () => {
     const renderResult = await renderTestEditorWithCode(
       makeTestProjectCodeWithSnippet(defaultTestCode),

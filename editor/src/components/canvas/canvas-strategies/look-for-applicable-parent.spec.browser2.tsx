@@ -335,10 +335,6 @@ async function runTest(
 }
 
 describe('finds an applicable strategy for the nearest parent', () => {
-  beforeEach(() => {
-    viewport.set(2200, 1000)
-  })
-
   it('element with no siblings', () =>
     runTest(codeElementWithNoSiblings, pathForShallowNestedElement, (editor) => {
       const strategies = editor.getEditorState().strategyState.sortedApplicableStrategies

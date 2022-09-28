@@ -27,10 +27,6 @@ function slightlyOffsetWindowPointBecauseVeryWeirdIssue(point: {
 }
 
 describe('Inserting into absolute', () => {
-  before(() => {
-    viewport.set(2200, 1000)
-  })
-
   const newElementUID = 'ddd'
   const newElement = jsxElement(
     'div',
@@ -459,10 +455,6 @@ describe('Inserting into absolute', () => {
 })
 
 describe('Inserting into flex row', () => {
-  before(() => {
-    viewport.set(2200, 1000)
-  })
-
   const newElementUID = 'ddd'
   const newElement = jsxElement(
     'div',
@@ -1092,10 +1084,6 @@ describe('Inserting into flex row', () => {
 })
 
 describe('Inserting into flex column', () => {
-  before(() => {
-    viewport.set(2200, 1000)
-  })
-
   const newElementUID = 'ddd'
   const newElement = jsxElement(
     'div',

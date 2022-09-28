@@ -194,9 +194,6 @@ async function dragControl(
 }
 
 describe('Flow Reorder Slider Strategy', () => {
-  before(() => {
-    viewport.set(2200, 1000)
-  })
   it('dragging the control in a block reorders it', async () => {
     const renderResult = await renderTestEditorWithCode(
       makeTestProjectCodeWithSnippet(TestProject),

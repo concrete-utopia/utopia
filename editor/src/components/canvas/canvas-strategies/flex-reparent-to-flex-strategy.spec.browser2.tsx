@@ -152,9 +152,6 @@ ${snippet}
 }
 
 describe('Flex Reparent To Flex Strategy', () => {
-  beforeEach(() => {
-    viewport.set(2200, 1000)
-  })
   it('reparents flex element to other flex parent', async () => {
     const renderResult = await renderTestEditorWithCode(
       makeTestProjectCodeWithSnippet(defaultTestCode),

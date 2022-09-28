@@ -185,9 +185,6 @@ function positioningFromCss(css: CSSStyleDeclaration) {
 }
 
 describe('Absolute Move Strategy', () => {
-  before(() => {
-    viewport.set(2200, 1000)
-  })
   it('moves component instances that honour the position properties', async () => {
     const renderResult = await renderTestEditorWithCode(
       projectDoesHonourPositionProperties(20, 20),

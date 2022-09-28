@@ -121,9 +121,6 @@ export var ${BakedInStoryboardVariableName} = (
 }
 
 describe('Absolute Reparent Strategy', () => {
-  beforeEach(() => {
-    viewport.set(2200, 1000)
-  })
   it('reparents to the canvas root', async () => {
     const renderResult = await renderTestEditorWithCode(
       makeTestProjectCodeWithSnippet(`

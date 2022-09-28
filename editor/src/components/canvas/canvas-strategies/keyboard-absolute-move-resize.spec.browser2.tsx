@@ -21,7 +21,6 @@ const defaultBBBProperties = {
 function configureSetupTeardown(): { clock: { current: SinonFakeTimers } } {
   let originalCanvasStrategiesFSValue: boolean
   before(() => {
-    viewport.set(2200, 1000)
     originalCanvasStrategiesFSValue = isFeatureEnabled('Canvas Strategies')
     setFeatureEnabled('Canvas Strategies', true)
   })

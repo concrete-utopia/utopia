@@ -110,9 +110,6 @@ async function pressShiftTab(): Promise<void> {
 }
 
 describe('The strategy picker', () => {
-  beforeEach(() => {
-    viewport.set(2200, 1000)
-  })
   it('Picks the best strategy by default', async () => {
     const renderResult = await renderBasicModel()
     await startDraggingDefaultTarget(renderResult, false)
