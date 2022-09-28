@@ -10,6 +10,7 @@ import {
 } from '../ui-jsx.test-utils'
 import { CanvasControlsContainerID } from '../controls/new-canvas-controls'
 import * as EP from '../../../core/shared/element-path'
+import { resetMouseStatus } from '../../mouse-move'
 
 function slightlyOffsetWindowPointBecauseVeryWeirdIssue(point: {
   x: number
@@ -187,13 +188,14 @@ describe('Inserting into absolute', () => {
       y: targetElementBounds.y + 305,
     })
 
-    // FIXME For some reason this highlight check has broken the below insertion. The result matches a click to insert,
-    // but the test passes when debugging the test...
-    // // Move before starting dragging
-    // await fireMoveEvent(canvasControlsLayer, startPoint)
+    // Move before starting dragging
+    await fireMoveEvent(canvasControlsLayer, startPoint)
 
-    // // Highlight should drag the candidate parent
-    // expect(renderResult.getEditorState().editor.highlightedViews.map(EP.toUid)).toEqual(['bbb'])
+    // Highlight should drag the candidate parent
+    expect(renderResult.getEditorState().editor.highlightedViews.map(EP.toUid)).toEqual(['bbb'])
+
+    // Explicitly reset the mouse event throttling so that we can perform a drag
+    resetMouseStatus()
 
     // Drag from inside bbb to inside ccc
     await fireDragEvent(canvasControlsLayer, startPoint, endPoint)
