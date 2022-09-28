@@ -341,8 +341,9 @@ export const useDelayedCurrentStrategy = () => {
   return useDelayedEditorState<CanvasStrategyId | null>(selector)
 }
 
-const notResizableControls: ControlWithKey = {
+const notResizableControls: ControlWithKey<Record<string, never>> = {
   control: NonResizableControl,
+  propsForControl: {},
   key: 'not-resizable-control',
   show: 'visible-except-when-other-strategy-is-active',
 }
@@ -350,7 +351,7 @@ const notResizableControls: ControlWithKey = {
 export function getApplicableControls(
   currentStrategy: CanvasStrategyId | null,
   strategy: CanvasStrategy,
-): Array<ControlWithKey> {
+): Array<ControlWithKey<any>> {
   return strategy.controlsToRender.filter((control) => {
     return (
       control.show === 'always-visible' ||
@@ -388,14 +389,14 @@ export function interactionInProgress(interactionSession: InteractionSession | n
   }
 }
 
-export function useGetApplicableStrategyControls(): Array<ControlWithKey> {
+export function useGetApplicableStrategyControls(): Array<ControlWithKey<any>> {
   const applicableStrategies = useGetApplicableStrategies()
   const currentStrategy = useDelayedCurrentStrategy()
   const currentlyInProgress = useEditorState((store) => {
     return interactionInProgress(store.editor.canvas.interactionSession)
   }, 'useGetApplicableStrategyControls currentlyInProgress')
   return React.useMemo(() => {
-    let applicableControls: Array<ControlWithKey> = []
+    let applicableControls: Array<ControlWithKey<any>> = []
     let isResizable: boolean = false
     // Add the controls for currently applicable strategies.
     for (const strategy of applicableStrategies) {

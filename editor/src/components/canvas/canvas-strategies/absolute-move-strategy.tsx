@@ -14,6 +14,7 @@ import { ParentOutlines } from '../controls/parent-outlines'
 import { determineConstrainedDragAxis } from '../controls/select-mode/move-utils'
 import {
   CanvasStrategy,
+  controlWithProps,
   emptyStrategyApplicationResult,
   getTargetPathsFromInteractionTarget,
   InteractionCanvasState,
@@ -48,16 +49,18 @@ export const absoluteMoveStrategy: CanvasStrategy = {
     }
   },
   controlsToRender: [
-    {
+    controlWithProps({
       control: ParentOutlines,
+      propsForControl: {},
       key: 'parent-outlines-control',
       show: 'visible-only-while-active',
-    },
-    {
+    }),
+    controlWithProps({
       control: ParentBounds,
+      propsForControl: {},
       key: 'parent-bounds-control',
       show: 'visible-only-while-active',
-    },
+    }),
   ], // Uses existing hooks in select-mode-hooks.tsx
   fitness: (canvasState, interactionState, sessionState) => {
     return absoluteMoveStrategy.isApplicable(

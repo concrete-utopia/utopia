@@ -2,6 +2,7 @@ import { MetadataUtils } from '../../../core/model/element-metadata-utils'
 import { KeyCharacter } from '../../../utils/keyboard'
 import {
   CanvasStrategy,
+  controlWithProps,
   emptyStrategyApplicationResult,
   getTargetPathsFromInteractionTarget,
   strategyApplicationResult,
@@ -84,11 +85,12 @@ export const keyboardAbsoluteResizeStrategy: CanvasStrategy = {
     }
   },
   controlsToRender: [
-    {
+    controlWithProps({
       control: AbsoluteResizeControl,
+      propsForControl: {},
       key: 'absolute-resize-control',
       show: 'visible-except-when-other-strategy-is-active',
-    },
+    }),
   ],
   fitness: (canvasState, interactionState, sessionState) => {
     if (

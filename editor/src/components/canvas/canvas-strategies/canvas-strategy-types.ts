@@ -51,13 +51,21 @@ export function strategyApplicationResult(
   }
 }
 
-export interface ControlWithKey {
-  control: React.FC<React.PropsWithChildren<unknown>>
+type WhenToShowControl =
+  | 'always-visible'
+  | 'visible-only-while-active'
+  | 'visible-except-when-other-strategy-is-active'
+
+export interface ControlWithKey<P> {
+  control: React.FC<P>
+  propsForControl: P
   key: string
-  show:
-    | 'always-visible'
-    | 'visible-only-while-active'
-    | 'visible-except-when-other-strategy-is-active'
+  show: WhenToShowControl
+}
+
+// this factory function helps us infer P in the CanvasStrategy object literals
+export function controlWithProps<P>(value: ControlWithKey<P>): ControlWithKey<P> {
+  return value
 }
 
 export interface InteractionCanvasState {
@@ -153,7 +161,7 @@ export interface CanvasStrategy {
   ) => boolean
 
   // The controls to render when this strategy is applicable, regardless of if it is currently active
-  controlsToRender: Array<ControlWithKey>
+  controlsToRender: Array<ControlWithKey<any>>
 
   // As before, for determining the relative ordering of applicable strategies during an interaction, and therefore which one to apply
   fitness: (

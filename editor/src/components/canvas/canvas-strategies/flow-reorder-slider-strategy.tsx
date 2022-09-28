@@ -9,6 +9,7 @@ import { updateHighlightedViews } from '../commands/update-highlighted-views-com
 import { FlowSliderControl } from '../controls/flow-slider-control'
 import {
   CanvasStrategy,
+  controlWithProps,
   emptyStrategyApplicationResult,
   getTargetPathsFromInteractionTarget,
   strategyApplicationResult,
@@ -33,11 +34,12 @@ export const flowReorderSliderStategy: CanvasStrategy = {
     )
   },
   controlsToRender: [
-    {
+    controlWithProps({
       control: FlowSliderControl,
+      propsForControl: {},
       key: 'flow-slider-control',
       show: 'always-visible',
-    },
+    }),
   ],
   fitness: (canvasState, interactionState, strategyState) => {
     return flowReorderSliderStategy.isApplicable(

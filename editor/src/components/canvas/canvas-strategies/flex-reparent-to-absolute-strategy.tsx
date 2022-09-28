@@ -23,6 +23,7 @@ import {
 import { pickCanvasStateFromEditorState } from './canvas-strategies'
 import {
   CanvasStrategy,
+  controlWithProps,
   emptyStrategyApplicationResult,
   getTargetPathsFromInteractionTarget,
   InteractionLifecycle,
@@ -58,21 +59,24 @@ function getFlexReparentToAbsoluteStrategy(
       }
     },
     controlsToRender: [
-      {
+      controlWithProps({
         control: DragOutlineControl,
+        propsForControl: {},
         key: 'ghost-outline-control',
         show: 'visible-only-while-active',
-      },
-      {
+      }),
+      controlWithProps({
         control: ParentOutlines,
+        propsForControl: {},
         key: 'parent-outlines-control',
         show: 'visible-only-while-active',
-      },
-      {
+      }),
+      controlWithProps({
         control: ParentBounds,
+        propsForControl: {},
         key: 'parent-bounds-control',
         show: 'visible-only-while-active',
-      },
+      }),
     ],
     fitness: (canvasState, interactionState, strategyState) => {
       // All 4 reparent strategies use the same fitness function getFitnessForReparentStrategy

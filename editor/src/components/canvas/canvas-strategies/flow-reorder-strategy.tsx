@@ -10,6 +10,7 @@ import { ParentBounds } from '../controls/parent-bounds'
 import { ParentOutlines } from '../controls/parent-outlines'
 import {
   CanvasStrategy,
+  controlWithProps,
   emptyStrategyApplicationResult,
   getTargetPathsFromInteractionTarget,
   InteractionCanvasState,
@@ -130,21 +131,24 @@ export const flowReorderStrategy: CanvasStrategy = {
   name: () => 'Reorder (Flow)',
   isApplicable: isFlowReorderConversionApplicable,
   controlsToRender: [
-    {
+    controlWithProps({
       control: ParentOutlines,
+      propsForControl: {},
       key: 'parent-outlines-control',
       show: 'visible-only-while-active',
-    },
-    {
+    }),
+    controlWithProps({
       control: ParentBounds,
+      propsForControl: {},
       key: 'parent-bounds-control',
       show: 'visible-only-while-active',
-    },
-    {
+    }),
+    controlWithProps({
       control: FlowReorderDragOutline,
+      propsForControl: {},
       key: 'flow-reorder-drag-outline',
       show: 'visible-only-while-active',
-    },
+    }),
   ], // Uses existing hooks in select-mode-hooks.tsx
   fitness: (canvasState, interactionState, strategyState) => {
     return flowReorderStrategy.isApplicable(

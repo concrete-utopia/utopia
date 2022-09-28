@@ -2,6 +2,7 @@ import { ParentBounds } from '../controls/parent-bounds'
 import { ParentOutlines } from '../controls/parent-outlines'
 import {
   CanvasStrategy,
+  controlWithProps,
   emptyStrategyApplicationResult,
   getInsertionSubjectsFromInteractionTarget,
   InteractionCanvasState,
@@ -50,26 +51,30 @@ export const dragToInsertStrategy: CanvasStrategy = {
   },
   controlsToRender: [
     // TODO the controlsToRender should instead use the controls of the actual canvas strategy -> to achieve that, this should be a function of the StrategyState here
-    {
+    controlWithProps({
       control: ParentOutlines,
+      propsForControl: {},
       key: 'parent-outlines-control',
       show: 'visible-only-while-active',
-    },
-    {
+    }),
+    controlWithProps({
       control: ParentBounds,
+      propsForControl: {},
       key: 'parent-bounds-control',
       show: 'visible-only-while-active',
-    },
-    {
+    }),
+    controlWithProps({
       control: DragOutlineControl,
+      propsForControl: {},
       key: 'ghost-outline-control',
       show: 'visible-only-while-active',
-    },
-    {
+    }),
+    controlWithProps({
       control: FlexReparentTargetIndicator,
+      propsForControl: {},
       key: 'flex-reparent-target-indicator',
       show: 'visible-only-while-active',
-    },
+    }),
   ], // Uses existing hooks in select-mode-hooks.tsx
   fitness: (canvasState, interactionState, strategyState) => {
     return dragToInsertStrategy.isApplicable(

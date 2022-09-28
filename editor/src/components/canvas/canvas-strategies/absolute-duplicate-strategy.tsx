@@ -18,6 +18,7 @@ import { absoluteMoveStrategy } from './absolute-move-strategy'
 import { pickCanvasStateFromEditorState } from './canvas-strategies'
 import {
   CanvasStrategy,
+  controlWithProps,
   getTargetPathsFromInteractionTarget,
   InteractionLifecycle,
   strategyApplicationResult,
@@ -58,16 +59,18 @@ export const absoluteDuplicateStrategy: CanvasStrategy = {
     return false
   },
   controlsToRender: [
-    {
+    controlWithProps({
       control: ParentOutlines,
+      propsForControl: {},
       key: 'parent-outlines-control',
       show: 'visible-only-while-active',
-    },
-    {
+    }),
+    controlWithProps({
       control: ParentBounds,
+      propsForControl: {},
       key: 'parent-bounds-control',
       show: 'visible-only-while-active',
-    },
+    }),
   ],
   fitness: (canvasState, interactionState) => {
     const selectedElements = getTargetPathsFromInteractionTarget(canvasState.interactionTarget)

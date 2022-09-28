@@ -5,6 +5,7 @@ import { ElementPath } from '../../../core/shared/project-file-types'
 import { reorderElement } from '../commands/reorder-element-command'
 import {
   CanvasStrategy,
+  controlWithProps,
   emptyStrategyApplicationResult,
   getTargetPathsFromInteractionTarget,
   strategyApplicationResult,
@@ -35,21 +36,24 @@ export const flexReorderStrategy: CanvasStrategy = {
     }
   },
   controlsToRender: [
-    {
+    controlWithProps({
       control: DragOutlineControl,
+      propsForControl: {},
       key: 'ghost-outline-control',
       show: 'visible-only-while-active',
-    },
-    {
+    }),
+    controlWithProps({
       control: ParentOutlines,
+      propsForControl: {},
       key: 'parent-outlines-control',
       show: 'visible-only-while-active',
-    },
-    {
+    }),
+    controlWithProps({
       control: ParentBounds,
+      propsForControl: {},
       key: 'parent-bounds-control',
       show: 'visible-only-while-active',
-    },
+    }),
   ],
   fitness: (canvasState, interactionState, strategyState) => {
     return flexReorderStrategy.isApplicable(
