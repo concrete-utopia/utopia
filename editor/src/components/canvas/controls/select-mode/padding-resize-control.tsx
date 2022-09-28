@@ -78,6 +78,8 @@ const PaddingResizeControlI = React.memo(
 
     const { cursor, orientation } = edgePieceDerivedProps(props.edge)
 
+    const shown = !(props.hiddenByParent && hidden)
+
     const width = PaddingResizeControlWidth / scale
     const height = PaddingResizeControlHeight / scale
     const borderWidth = PaddingResizeControlBorder / scale
@@ -92,14 +94,13 @@ const PaddingResizeControlI = React.memo(
           display: 'flex',
           alignItems: 'center',
           justifyContent: 'center',
-          visibility: props.hiddenByParent ? 'hidden' : 'visible',
           backgroundImage: hidden
             ? undefined
             : `linear-gradient(135deg, ${outlineColor} 2.5%, rgba(255,255,255,0) 2.5%, rgba(255,255,255,0) 50%, ${outlineColor} 50%, ${outlineColor} 52%, rgba(255,255,255,0) 52%, rgba(255,255,255,0) 100%)`,
           backgroundSize: hidden ? undefined : `${20 / scale}px ${20 / scale}px`,
         }}
       >
-        {!hidden && (
+        {shown && (
           <div
             onMouseDown={onEdgeMouseDown}
             onMouseMove={onMouseMove}
@@ -162,7 +163,7 @@ export const PaddingResizeControl = React.memo(() => {
   })
 
   const [hoverHidden, setHoverHidden] = React.useState<boolean>(true)
-  const [hoverStart, hoverEnd] = useHoverWithDelay(200, (h) => setHoverHidden(!h), true)
+  const [hoverStart, hoverEnd] = useHoverWithDelay(200, (h) => setHoverHidden(!h))
 
   return (
     <CanvasOffsetWrapper>
