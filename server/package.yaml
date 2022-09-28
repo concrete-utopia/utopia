@@ -19,6 +19,7 @@ dependencies:
   - amazonka-s3 ==1.6.1
   - base >= 4.7 && < 5
   - base16-bytestring
+  - base64
   - binary
   - blaze-html
   - bytestring
@@ -28,6 +29,7 @@ dependencies:
   - conduit
   - cookie
   - cryptohash-sha256
+  - cryptonite
   - data-default
   - directory
   - exceptions
@@ -35,13 +37,14 @@ dependencies:
   - filepath
   - free
   - zlib
-  - hoauth2
+  - hoauth2 ==1.16.0
   - http-api-data
   - http-client
   - http-client-tls
   - http-media
   - http-types
   - generic-lens
+  - github 
   - lens
   - lens-aeson <1.2
   - lifted-base
@@ -73,6 +76,7 @@ dependencies:
   - servant-websockets ==2.0.0
   - serversession ==1.0.2
   - split
+  - string-conversions
   - tagsoup
   - tar
   - temporary
@@ -109,6 +113,7 @@ tests:
       else:
         cpp-options: -DENABLE_EXTERNAL_TESTS=False
     main: Main.hs
+    ghc-options: +RTS -N1 -RTS
     source-dirs:
       - test
       - src

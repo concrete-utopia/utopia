@@ -343,6 +343,8 @@ export function runSimpleLocalEditorAction(
       return UPDATE_FNS.RUN_ESCAPE_HATCH(action, state, builtInDependencies)
     case 'TOGGLE_SELECTION_LOCK':
       return UPDATE_FNS.TOGGLE_SELECTION_LOCK(action, state)
+    case 'SAVE_TO_GITHUB':
+      return UPDATE_FNS.SAVE_TO_GITHUB(action, state)
     default:
       return state
   }

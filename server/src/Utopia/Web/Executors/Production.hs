@@ -263,6 +263,14 @@ innerServerExecutor (GetGithubAuthentication user action) = do
   pool <- fmap _projectPool ask
   result <- liftIO $ DB.lookupGithubAuthenticationDetails metrics pool user
   pure $ action result
+innerServerExecutor (SaveToGithubRepo user model action) = do
+  githubResources <- fmap _githubResources ask
+  metrics <- fmap _databaseMetrics ask
+  logger <- fmap _logger ask
+  pool <- fmap _projectPool ask
+  result <- createTreeAndSaveToGithub githubResources logger metrics pool user model
+  pure $ action result
+
 
 readEditorContentFromDisk :: Maybe BranchDownloads -> Maybe Text -> Text -> IO Text
 readEditorContentFromDisk (Just downloads) (Just branchName) fileName = do

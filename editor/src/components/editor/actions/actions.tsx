@@ -374,6 +374,7 @@ import {
   UpdateMouseButtonsPressed,
   ToggleSelectionLock,
   SetGithubState,
+  SaveToGithub,
 } from '../action-types'
 import { defaultTransparentViewElement, defaultSceneElement } from '../defaults'
 import {
@@ -458,6 +459,7 @@ import {
   getNewSceneName,
   packageJsonFileFromProjectContents,
   vsCodeBridgeIdProjectId,
+  githubRepo,
 } from '../store/editor-state'
 import { loadStoredState } from '../stored-state'
 import { applyMigrations } from './migrations/migrations'
@@ -547,6 +549,7 @@ import {
   getReparentPropertyChanges,
   reparentStrategyForParent,
 } from '../../../components/canvas/canvas-strategies/reparent-strategy-helpers'
+import { parseGithubProjectString, saveProjectToGithub } from '../../../core/shared/github'
 
 export function updateSelectedLeftMenuTab(editorState: EditorState, tab: LeftMenuTab): EditorState {
   return {
@@ -1080,6 +1083,7 @@ function restoreEditorState(currentEditor: EditorModel, history: StateHistory): 
     indexedDBFailed: currentEditor.indexedDBFailed,
     forceParseFiles: currentEditor.forceParseFiles,
     allElementProps: poppedEditor.allElementProps,
+    githubSettings: currentEditor.githubSettings,
   }
 }
 
@@ -5005,6 +5009,25 @@ export const UPDATE_FNS = {
           })
       }
     }, editor)
+  },
+  SAVE_TO_GITHUB: (action: SaveToGithub, editor: EditorModel): EditorModel => {
+    const updatedRepo = parseGithubProjectString(action.targetRepository)
+    if (updatedRepo == null) {
+      return editor
+    } else {
+      const updatedEditor = {
+        ...editor,
+        githubSettings: {
+          ...editor.githubSettings,
+          targetRepository: updatedRepo,
+        },
+      }
+      // Side effect - Pushing this to the server to get that to save to Github.
+      const persistentModel = persistentModelFromEditorModel(updatedEditor)
+      saveProjectToGithub(persistentModel)
+
+      return editor
+    }
   },
 }
 
