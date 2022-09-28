@@ -2,7 +2,7 @@ import { EditorAction, ElementPaste } from '../components/editor/action-types'
 import * as EditorActions from '../components/editor/actions/action-creators'
 import { EditorModes } from '../components/editor/editor-modes'
 import { EditorState, getOpenUIJSFileKey } from '../components/editor/store/editor-state'
-import { getFrameAndMultiplier } from '../components/images'
+import { getFrameAndMultiplier, getFrameAndMultiplierWithResize } from '../components/images'
 import * as EP from '../core/shared/element-path'
 import { findElementAtPath, MetadataUtils } from '../core/model/element-metadata-utils'
 import { ElementInstanceMetadataMap } from '../core/shared/element-template'
@@ -140,22 +140,13 @@ export function createDirectInsertImageActions(
     return [
       EditorActions.switchEditorMode(EditorModes.selectMode()),
       ...Utils.flatMapArray((image) => {
-        const { frame, multiplier } = getFrameAndMultiplier(
+        const { frame, multiplier } = getFrameAndMultiplierWithResize(
           centerPoint,
           image.filename,
           image.size,
-          overrideDefaultMultiplier,
+          scale,
         )
-        const [defaultWidth, defaultHeight] = [640 / scale, 640 / scale]
-        const adjustedFrame = isFeatureEnabled('Resize image on drop')
-          ? resize(frame, {
-              centerPoint: centerPoint,
-              keepAspectRatio: true,
-              desiredHeight: Math.min(frame.height, defaultWidth),
-              desiredWidth: Math.min(frame.width, defaultHeight),
-            })
-          : frame
-        const insertWith = EditorActions.saveImageInsertWith(parentPath, adjustedFrame, multiplier)
+        const insertWith = EditorActions.saveImageInsertWith(parentPath, frame, multiplier)
         const saveImageAction = EditorActions.saveAsset(
           image.filename,
           image.fileType,

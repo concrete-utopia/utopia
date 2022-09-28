@@ -10,12 +10,19 @@ import {
 import { isImageFile } from '../core/model/project-file-utils'
 import { ProjectContents, ElementPath } from '../core/shared/project-file-types'
 import Utils from '../utils/utils'
-import { Size, CanvasRectangle, CanvasPoint, canvasRectangle } from '../core/shared/math-utils'
+import {
+  Size,
+  CanvasRectangle,
+  CanvasPoint,
+  canvasRectangle,
+  resize,
+} from '../core/shared/math-utils'
 import { EditorAction } from './editor/action-types'
 import { insertJSXElement } from './editor/actions/action-creators'
 import { forceNotNull } from '../core/shared/optional-utils'
 import { AllElementProps } from './editor/store/editor-state'
 import * as EP from '../core/shared/element-path'
+import { isFeatureEnabled } from '../utils/feature-switches'
 
 export function getImageSrc(
   projectId: string | null,
@@ -80,6 +87,26 @@ export function getFrameAndMultiplier(
     multiplier: multiplier,
     frame: frame,
   }
+}
+
+export function getFrameAndMultiplierWithResize(
+  centerPoint: CanvasPoint,
+  filename: string,
+  size: Size,
+  scale: number,
+): FrameAndMultiplier {
+  const { frame, multiplier } = getFrameAndMultiplier(centerPoint, filename, size, null)
+  const [defaultWidth, defaultHeight] = [640 / scale, 640 / scale]
+  const adjustedFrame = isFeatureEnabled('Resize image on drop')
+    ? resize(frame, {
+        centerPoint: centerPoint,
+        keepAspectRatio: true,
+        desiredHeight: Math.min(frame.height, defaultWidth),
+        desiredWidth: Math.min(frame.width, defaultHeight),
+      })
+    : frame
+
+  return { frame: adjustedFrame, multiplier: multiplier }
 }
 
 export function createInsertImageAction(

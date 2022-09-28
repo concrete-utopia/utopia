@@ -362,7 +362,7 @@ import { loadStoredState } from '../stored-state'
 import { applyMigrations } from './migrations/migrations'
 import { fastForEach, getProjectLockedKey } from '../../../core/shared/utils'
 import { PathForSceneDataLabel, getStoryboardElementPath } from '../../../core/model/scene-utils'
-import { getFrameAndMultiplier } from '../../images'
+import { getFrameAndMultiplier, getFrameAndMultiplierWithResize } from '../../images'
 import { arrayToMaybe, forceNotNull, optionalMap } from '../../../core/shared/optional-utils'
 
 import { notice } from '../../common/notice'
@@ -4121,7 +4121,12 @@ export const UPDATE_FNS = {
       width: projectContent.width ?? 100,
       height: projectContent.height ?? 100,
     }
-    const { frame } = getFrameAndMultiplier(action.position, action.path, size, null)
+    const { frame } = getFrameAndMultiplierWithResize(
+      action.position,
+      action.path,
+      size,
+      editor.canvas.scale,
+    )
     let parentShiftX: number = 0
     let parentShiftY: number = 0
     if (parent != null) {
@@ -4139,6 +4144,7 @@ export const UPDATE_FNS = {
         src: imageAttribute,
         style: jsxAttributeValue(
           {
+            position: 'absolute',
             left: parentShiftX + frame.x,
             top: parentShiftY + frame.y,
             width: frame.width,
