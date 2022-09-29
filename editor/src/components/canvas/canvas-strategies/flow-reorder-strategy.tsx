@@ -23,6 +23,7 @@ import {
   getFlowReorderIndex,
   getNewDisplayTypeForIndex,
   getOptionalDisplayPropCommands,
+  isValidFlowReorderTarget,
 } from './flow-reorder-helpers'
 import {
   FlowReorderAreaIndicator,
@@ -31,7 +32,7 @@ import {
 import { AllElementProps } from '../../editor/store/editor-state'
 import { isReorderAllowed } from './reorder-utils'
 
-export function isFlowReorderConversionApplicable(
+function isFlowReorderConversionApplicable(
   canvasState: InteractionCanvasState,
   interactionSession: InteractionSession | null,
   metadata: ElementInstanceMetadataMap,
@@ -42,7 +43,11 @@ export function isFlowReorderConversionApplicable(
     const target = selectedElements[0]
     const elementMetadata = MetadataUtils.findElementByElementPath(metadata, target)
     const siblings = MetadataUtils.getSiblings(metadata, target)
-    if (siblings.length > 1 && MetadataUtils.isPositionedByFlow(elementMetadata)) {
+    if (
+      siblings.length > 1 &&
+      MetadataUtils.isPositionedByFlow(elementMetadata) &&
+      isValidFlowReorderTarget(elementMetadata)
+    ) {
       return siblings.some((sibling) => MetadataUtils.isPositionedByFlow(sibling))
     } else {
       return false
@@ -88,6 +93,7 @@ function flowReorderApplyCommon(
 
     const { newIndex, targetSiblingUnderMouse } = getFlowReorderIndex(
       interactionState.latestMetadata,
+      strategyState.startingAllElementProps,
       rawPointOnCanvas,
       target,
     )

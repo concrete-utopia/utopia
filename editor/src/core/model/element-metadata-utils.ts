@@ -266,6 +266,9 @@ export const MetadataUtils = {
   isPositionAbsolute(instance: ElementInstanceMetadata | null): boolean {
     return instance?.specialSizeMeasurements.position === 'absolute'
   },
+  isPositionRelative(instance: ElementInstanceMetadata | null): boolean {
+    return instance?.specialSizeMeasurements.position === 'relative'
+  },
   isPositionedByFlow(instance: ElementInstanceMetadata | null): boolean {
     if (instance === null) {
       return false

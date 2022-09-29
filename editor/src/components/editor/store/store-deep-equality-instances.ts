@@ -1213,6 +1213,8 @@ export function SpecialSizeMeasurementsKeepDeepEquality(): KeepDeepEqualityCall<
       oldSize.globalContentBox,
       newSize.globalContentBox,
     ).areEqual
+    const floatEquals = oldSize.float === newSize.float
+    const hasPositionOffsetEquals = oldSize.hasPositionOffset === newSize.hasPositionOffset
     const areEqual =
       offsetResult.areEqual &&
       coordinateSystemBoundsResult.areEqual &&
@@ -1235,7 +1237,9 @@ export function SpecialSizeMeasurementsKeepDeepEquality(): KeepDeepEqualityCall<
       displayEquals &&
       htmlElementNameEquals &&
       renderedChildrenCount &&
-      globalContentBoxEquals
+      globalContentBoxEquals &&
+      floatEquals &&
+      hasPositionOffsetEquals
     if (areEqual) {
       return keepDeepEqualityResult(oldSize, true)
     } else {
@@ -1262,6 +1266,8 @@ export function SpecialSizeMeasurementsKeepDeepEquality(): KeepDeepEqualityCall<
         newSize.htmlElementName,
         newSize.renderedChildrenCount,
         newSize.globalContentBox,
+        newSize.float,
+        newSize.hasPositionOffset,
       )
       return keepDeepEqualityResult(sizeMeasurements, false)
     }
