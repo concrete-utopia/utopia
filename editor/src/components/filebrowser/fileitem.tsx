@@ -31,6 +31,7 @@ import {
   UtopiaTheme,
   SimpleFlexRow,
   Button,
+  FlexRow,
 } from '../../uuiui'
 import { notice } from '../common/notice'
 import { appendToPath, getParentDirectory } from '../../utils/path-utils'
@@ -51,6 +52,7 @@ import {
 } from '../../core/shared/element-template'
 import { imagePathURL } from '../../common/server'
 import { generateUidWithExistingComponents } from '../../core/model/element-template-utils'
+import { useEditorState } from '../editor/store/store-hook'
 
 export interface FileBrowserItemProps extends FileBrowserItemInfo {
   isSelected: boolean
@@ -702,7 +704,7 @@ class FileBrowserItemInner extends React.PureComponent<
     const displayDelete = this.state.isHovered
 
     let fileBrowserItem = (
-      <div>
+      <div style={{ width: '100%' }}>
         <div
           tabIndex={0}
           onDrop={this.onItemDrop}
@@ -817,7 +819,11 @@ class FileBrowserItemInner extends React.PureComponent<
     if (this.props.type === 'file' && !this.state.isRenaming) {
       const contextMenuID = `file-context-menu-${this.state.filename.replace(' ', '_space_')}`
       fileBrowserItem = (
-        <div ref={this.props.forwardedRef} key={`${contextMenuID}-wrapper`}>
+        <div
+          ref={this.props.forwardedRef}
+          style={{ width: '100%' }}
+          key={`${contextMenuID}-wrapper`}
+        >
           <ContextMenuWrapper
             id={contextMenuID}
             dispatch={this.props.dispatch}
@@ -835,6 +841,10 @@ class FileBrowserItemInner extends React.PureComponent<
 }
 
 export function FileBrowserItem(props: FileBrowserItemProps) {
+  const projectContents = useEditorState(
+    (store) => store.editor.projectContents,
+    'FileBrowserItem projectContents',
+  )
   const [{ isDragging }, drag, dragPreview] = useDrag(
     () => ({
       type: 'files',
@@ -843,16 +853,6 @@ export function FileBrowserItem(props: FileBrowserItemProps) {
         isDragging: monitor.isDragging(),
       }),
       item: () => {
-        if (props.imageFile != null) {
-          props.dispatch([
-            EditorActions.switchEditorMode(
-              EditorModes.insertMode(
-                false,
-                dragAndDropInsertionSubject([{ path: props.path, file: props.imageFile }]),
-              ),
-            ),
-          ])
-        }
         return props
       },
     }),
@@ -886,16 +886,72 @@ export function FileBrowserItem(props: FileBrowserItemProps) {
     [props],
   )
 
+  function onMouseDown() {
+    if (props.imageFile == null) {
+      return
+    }
+
+    const newUID = generateUidWithExistingComponents(projectContents)
+
+    const propsForElement = jsxAttributesFromMap({
+      src: jsxAttributeValue(imagePathURL(props.path), emptyComments),
+      style: jsxAttributeValue(
+        {
+          position: 'absolute',
+          width: props.imageFile.width ?? 100,
+          height: props.imageFile.height ?? 100,
+        },
+        emptyComments,
+      ),
+    })
+
+    const newElement = jsxElement(
+      'img',
+      newUID,
+      setJSXAttributesAttribute(
+        propsForElement,
+        'data-uid',
+        jsxAttributeValue(newUID, emptyComments),
+      ),
+      [],
+    )
+    props.dispatch(
+      [
+        EditorActions.enableInsertModeForJSXElement(newElement, newUID, {}, null),
+        CanvasActions.createInteractionSession(
+          createInteractionViaMouse(CanvasMousePositionRaw!, emptyModifiers, boundingArea()),
+        ),
+      ],
+      'everyone',
+    )
+  }
+
+  function onMouseUp() {
+    props.dispatch([
+      CanvasActions.clearInteractionSession(false),
+      EditorActions.setFilebrowserDropTarget(null),
+    ])
+  }
+
   const forwardedRef = (node: ConnectableElement) => drag(drop(node))
 
   return (
-    <FileBrowserItemInner
-      {...props}
-      isDragging={isDragging}
-      isOver={isOver}
-      connectDragPreview={dragPreview}
-      // eslint-disable-next-line react/jsx-no-bind
-      forwardedRef={forwardedRef}
-    />
+    <FlexRow>
+      {props.imageFile != null && (
+        <div
+          style={{ width: 20, height: 20, borderRadius: 10, background: 'red' }}
+          onMouseDown={onMouseDown}
+          onMouseUp={onMouseUp}
+        />
+      )}
+      <FileBrowserItemInner
+        {...props}
+        isDragging={isDragging}
+        isOver={isOver}
+        connectDragPreview={dragPreview}
+        // eslint-disable-next-line react/jsx-no-bind
+        forwardedRef={forwardedRef}
+      />
+    </FlexRow>
   )
 }
