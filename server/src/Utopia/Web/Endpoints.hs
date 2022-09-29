@@ -50,6 +50,7 @@ import           Utopia.Web.Database             (projectContentTreeFromDecodedP
 import           Utopia.Web.Database.Types
 import qualified Utopia.Web.Database.Types       as DB
 import           Utopia.Web.Executors.Common
+import           Utopia.Web.Github
 import           Utopia.Web.Packager.NPM
 import           Utopia.Web.Proxy
 import           Utopia.Web.Servant
@@ -58,7 +59,6 @@ import           Utopia.Web.Types
 import           Utopia.Web.Utils.Files
 import           WaiAppStatic.Storage.Filesystem
 import           WaiAppStatic.Types
-import Utopia.Web.Github
 
 type TagSoupTags = [Tag Text]
 
@@ -66,8 +66,8 @@ projectContentTreeFromSaveProjectRequest :: SaveProjectRequest -> Maybe (Either 
 projectContentTreeFromSaveProjectRequest saveProjectRequest = do
   projectContent <- firstOf (field @"_content" . _Just . key "projectContents") saveProjectRequest
   Just $ case fromJSON projectContent of
-    Error err         -> Left $ toS err
-    Success result    -> Right result
+    Error err      -> Left $ toS err
+    Success result -> Right result
 
 validateSaveRequest :: SaveProjectRequest -> Bool
 validateSaveRequest saveProjectRequest =
@@ -381,8 +381,8 @@ downloadProjectEndpoint (ProjectIdWithSuffix projectID _) pathIntoContent = do
     project <- MaybeT $ loadProject projectID
     projectContents <- MaybeT $ pure $ firstOf (field @"content" . key "projectContents") project
     decodedProjectContents <- MaybeT $ pure $ case fromJSON projectContents of
-                                Error _         -> Nothing
-                                Success result  -> Just result
+                                Error _        -> Nothing
+                                Success result -> Just result
     contentAsJSON <- if null pathIntoContent
                      then pure projectContents
                      else MaybeT $ pure $ fmap toJSON $ getProjectContentsTreeFile decodedProjectContents pathIntoContent
@@ -670,10 +670,9 @@ githubAuthenticatedEndpoint cookie = requireUser cookie $ \sessionUser -> do
   possibleAuthDetails <- getGithubAuthentication (view (field @"_id") sessionUser)
   pure $ isJust possibleAuthDetails
 
-githubSaveEndpoint :: Maybe Text -> PersistentModel -> ServerMonad CreateGitBranchResult
+githubSaveEndpoint :: Maybe Text -> PersistentModel -> ServerMonad SaveToGithubResponse
 githubSaveEndpoint cookie persistentModel = requireUser cookie $ \sessionUser -> do
-  result <- saveToGithubRepo (view (field @"_id") sessionUser) persistentModel
-  maybe badRequest pure result
+  saveToGithubRepo (view (field @"_id") sessionUser) persistentModel
 
 {-|
   Compose together all the individual endpoints into a definition for the whole server.
