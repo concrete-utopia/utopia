@@ -14,7 +14,7 @@ import Keyboard, {
   StoredKeyCharacters,
   strictCheckModifiers,
 } from '../../utils/keyboard'
-import { Modifier, Modifiers } from '../../utils/modifiers'
+import { emptyModifiers, Modifier, Modifiers } from '../../utils/modifiers'
 import Utils from '../../utils/utils'
 import Canvas, { TargetSearchType } from '../canvas/canvas'
 import CanvasActions from '../canvas/canvas-actions'
@@ -115,6 +115,10 @@ import { DerivedState, EditorState, getOpenFile, RightMenuTab } from './store/ed
 import { CanvasMousePositionRaw, WindowMousePositionRaw } from '../../utils/global-positions'
 import { getDragStateStart } from '../canvas/canvas-utils'
 import { isFeatureEnabled } from '../../utils/feature-switches'
+import {
+  boundingArea,
+  createHoverInteractionViaMouse,
+} from '../canvas/canvas-strategies/interaction-state'
 
 function updateKeysPressed(
   keysPressed: KeysPressed,
@@ -618,6 +622,7 @@ export function handleKeyDown(
               },
               null,
             ),
+            getCreateHoverInteractionAction(),
           ]
         } else {
           return []
@@ -633,6 +638,7 @@ export function handleKeyDown(
               { 'utopia-api': importDetails(null, [importAlias('Ellipse')], null) },
               null,
             ),
+            getCreateHoverInteractionAction(),
           ]
         } else {
           return []
@@ -659,6 +665,7 @@ export function handleKeyDown(
               { 'utopia-api': importDetails(null, [importAlias('Text')], null) },
               null,
             ),
+            getCreateHoverInteractionAction(),
           ]
         } else {
           return []
@@ -674,6 +681,7 @@ export function handleKeyDown(
               { 'utopia-api': importDetails(null, [importAlias('View')], null) },
               null,
             ),
+            getCreateHoverInteractionAction(),
           ]
         } else {
           return []
@@ -847,4 +855,10 @@ export function handleKeyUp(
   }
 
   dispatch(actions, 'everyone')
+}
+
+function getCreateHoverInteractionAction() {
+  return CanvasActions.createInteractionSession(
+    createHoverInteractionViaMouse(CanvasMousePositionRaw!, emptyModifiers, boundingArea()),
+  )
 }
