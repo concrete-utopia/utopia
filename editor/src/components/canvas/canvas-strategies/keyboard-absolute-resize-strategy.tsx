@@ -171,12 +171,7 @@ export const keyboardAbsoluteResizeStrategy: CanvasStrategy = {
           })
         }
       })
-      const guidelines = getKeyboardStrategyGuidelines(
-        sessionState,
-        canvasState,
-        interactionState,
-        newFrame,
-      )
+      const guidelines = getKeyboardStrategyGuidelines(canvasState, interactionState, newFrame)
       commands.push(setSnappingGuidelines('mid-interaction', guidelines))
       commands.push(pushIntendedBounds(intendedBounds))
       commands.push(setElementsToRerenderCommand(selectedElements))

@@ -11,7 +11,7 @@ import {
   InteractionCanvasState,
   StrategyApplicationResult,
 } from './canvas-strategy-types'
-import { InteractionSession, StrategyState } from './interaction-state'
+import { InteractionSession, StrategyState, StrategyStateNew } from './interaction-state'
 import { applyFlexReparent, getFitnessForReparentStrategy } from './reparent-strategy-helpers'
 import { getDragTargets } from './shared-absolute-move-strategy-helpers'
 
@@ -67,7 +67,7 @@ export const absoluteReparentToFlexStrategy: CanvasStrategy = {
   fitness: function (
     canvasState: InteractionCanvasState,
     interactionState: InteractionSession,
-    strategyState: StrategyState,
+    strategyState: StrategyStateNew,
   ): number {
     // All 4 reparent strategies use the same fitness function getFitnessForReparentStrategy
     return getFitnessForReparentStrategy(
@@ -81,7 +81,7 @@ export const absoluteReparentToFlexStrategy: CanvasStrategy = {
   apply: function (
     canvasState: InteractionCanvasState,
     interactionSession: InteractionSession,
-    strategyState: StrategyState,
+    strategyState: StrategyStateNew,
   ): StrategyApplicationResult {
     return applyFlexReparent('strip-absolute-props', canvasState, interactionSession, strategyState)
   },

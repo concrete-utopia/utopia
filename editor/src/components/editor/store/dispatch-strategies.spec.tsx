@@ -39,6 +39,7 @@ import {
   InteractionSession,
   InteractionSessionWithoutMetadata,
   StrategyState,
+  StrategyStateNew,
   updateInteractionViaMouse,
 } from '../../canvas/canvas-strategies/interaction-state'
 import {
@@ -179,14 +180,14 @@ const testStrategy: MetaCanvasStrategy = () => [
     fitness: function (
       canvasState: InteractionCanvasState,
       interactionSession: InteractionSession,
-      strategyState: StrategyState,
+      strategyState: StrategyStateNew,
     ): number {
       return 10
     },
     apply: function (
       canvasState: InteractionCanvasState,
       interactionSession: InteractionSession,
-      strategyState: StrategyState,
+      strategyState: StrategyStateNew,
     ): StrategyApplicationResult {
       return strategyApplicationResult([
         wildcardPatch('always', { canvas: { scale: { $set: 100 } } }),
@@ -990,7 +991,7 @@ describe('only update metadata on SAVE_DOM_REPORT', () => {
             apply: function (
               _: InteractionCanvasState,
               interactionSession: InteractionSession,
-              strategyState: StrategyState,
+              strategyState: StrategyStateNew,
             ): StrategyApplicationResult {
               expect(strategyState.startingMetadata).toBe(interactionSession.latestMetadata)
               expect(strategyState.startingAllElementProps).toBe(
@@ -1027,7 +1028,7 @@ describe('only update metadata on SAVE_DOM_REPORT', () => {
           apply: function (
             _: InteractionCanvasState,
             interactionSession: InteractionSession,
-            strategyState: StrategyState,
+            strategyState: StrategyStateNew,
           ): StrategyApplicationResult {
             expect(strategyState.startingMetadata).not.toBe(interactionSession.latestMetadata)
             expect(strategyState.startingAllElementProps).not.toBe(

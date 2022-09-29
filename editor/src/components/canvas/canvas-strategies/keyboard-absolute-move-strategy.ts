@@ -116,12 +116,7 @@ export const keyboardAbsoluteMoveStrategy: CanvasStrategy = {
         keyboardMovement,
       )
 
-      const guidelines = getKeyboardStrategyGuidelines(
-        sessionState,
-        canvasState,
-        interactionState,
-        newFrame,
-      )
+      const guidelines = getKeyboardStrategyGuidelines(canvasState, interactionState, newFrame)
 
       commands.push(updateHighlightedViews('mid-interaction', []))
       commands.push(setSnappingGuidelines('mid-interaction', guidelines))

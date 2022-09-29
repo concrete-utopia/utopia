@@ -20,7 +20,7 @@ import {
   strategyApplicationResult,
   StrategyApplicationResult,
 } from './canvas-strategy-types'
-import { InteractionSession, StrategyState } from './interaction-state'
+import { InteractionSession, StrategyState, StrategyStateNew } from './interaction-state'
 import {
   getAbsoluteMoveCommandsForSelectedElement,
   getDragTargets,
@@ -114,7 +114,7 @@ export const absoluteMoveStrategy: CanvasStrategy = {
 export function applyAbsoluteMoveCommon(
   canvasState: InteractionCanvasState,
   interactionState: InteractionSession,
-  strategyState: StrategyState,
+  strategyState: StrategyStateNew,
   getMoveCommands: (snappedDragVector: CanvasPoint) => {
     commands: Array<CanvasCommand>
     intendedBounds: Array<CanvasFrameAndTarget>

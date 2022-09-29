@@ -22,7 +22,7 @@ import {
   InteractionLifecycle,
   strategyApplicationResult,
 } from './canvas-strategy-types'
-import { InteractionSession, StrategyState } from './interaction-state'
+import { InteractionSession, StrategyState, StrategyStateNew } from './interaction-state'
 import { getDragTargets } from './shared-absolute-move-strategy-helpers'
 
 export const absoluteDuplicateStrategy: CanvasStrategy = {
@@ -148,7 +148,7 @@ export const absoluteDuplicateStrategy: CanvasStrategy = {
 function runMoveStrategyForFreshlyDuplicatedElements(
   builtInDependencies: BuiltInDependencies,
   editorState: EditorState,
-  strategyState: StrategyState,
+  strategyState: StrategyStateNew,
   interactionState: InteractionSession,
   commandLifecycle: InteractionLifecycle,
   strategyLifecycle: InteractionLifecycle,

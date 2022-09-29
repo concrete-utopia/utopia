@@ -44,14 +44,14 @@ import {
 } from '../guideline'
 import { AbsolutePin } from './absolute-resize-helpers'
 import { InteractionCanvasState } from './canvas-strategy-types'
-import { InteractionSession, StrategyState } from './interaction-state'
+import { InteractionSession, StrategyState, StrategyStateNew } from './interaction-state'
 
 export function getAbsoluteMoveCommandsForSelectedElement(
   selectedElement: ElementPath,
   drag: CanvasVector,
   canvasState: InteractionCanvasState,
   interactionState: InteractionSession,
-  sessionState: StrategyState,
+  sessionState: StrategyStateNew,
 ): {
   commands: Array<AdjustCssLengthProperty>
   intendedBounds: Array<CanvasFrameAndTarget>

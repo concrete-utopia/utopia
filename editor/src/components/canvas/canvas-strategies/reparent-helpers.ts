@@ -12,7 +12,7 @@ import {
   strategyApplicationResult,
   StrategyApplicationResult,
 } from './canvas-strategy-types'
-import { StrategyState } from './interaction-state'
+import { StrategyState, StrategyStateNew } from './interaction-state'
 import { ProjectContentTreeRoot } from '../../../components/assets'
 
 export function isGeneratedElement(
@@ -54,7 +54,7 @@ export function isAllowedToReparent(
 
 export function ifAllowedToReparent(
   canvasState: InteractionCanvasState,
-  strategyState: StrategyState,
+  strategyState: StrategyStateNew,
   targets: Array<ElementPath>,
   ifAllowed: () => StrategyApplicationResult,
 ): StrategyApplicationResult {

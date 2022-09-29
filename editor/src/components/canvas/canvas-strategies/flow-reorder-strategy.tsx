@@ -17,7 +17,7 @@ import {
   StrategyApplicationResult,
 } from './canvas-strategy-types'
 import { absolute } from '../../../utils/utils'
-import { InteractionSession, StrategyState } from './interaction-state'
+import { InteractionSession, StrategyState, StrategyStateNew } from './interaction-state'
 import { ElementInstanceMetadataMap } from '../../../core/shared/element-template'
 import {
   getFlowReorderIndex,
@@ -60,7 +60,7 @@ function isFlowReorderConversionApplicable(
 function flowReorderApplyCommon(
   canvasState: InteractionCanvasState,
   interactionState: InteractionSession,
-  strategyState: StrategyState,
+  strategyState: StrategyStateNew,
 ): StrategyApplicationResult {
   if (interactionState.interactionData.type !== 'DRAG') {
     return emptyStrategyApplicationResult

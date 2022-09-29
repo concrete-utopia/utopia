@@ -22,7 +22,7 @@ import {
   StrategyApplicationResult,
   InteractionLifecycle,
 } from './canvas-strategy-types'
-import { InteractionSession, StrategyState } from './interaction-state'
+import { InteractionSession, StrategyState, StrategyStateNew } from './interaction-state'
 import { keyboardAbsoluteMoveStrategy } from './keyboard-absolute-move-strategy'
 import { absoluteResizeBoundingBoxStrategy } from './absolute-resize-bounding-box-strategy'
 import { keyboardAbsoluteResizeStrategy } from './keyboard-absolute-resize-strategy'
@@ -175,7 +175,7 @@ export function getApplicableStrategiesOrderedByFitness(
   strategies: Array<MetaCanvasStrategy>,
   canvasState: InteractionCanvasState,
   interactionSession: InteractionSession,
-  strategyState: StrategyState,
+  strategyState: StrategyStateNew,
 ): Array<StrategyWithFitness> {
   const applicableStrategies = getApplicableStrategies(
     strategies,
@@ -252,7 +252,7 @@ export function findCanvasStrategy(
   strategies: Array<MetaCanvasStrategy>,
   canvasState: InteractionCanvasState,
   interactionSession: InteractionSession,
-  strategyState: StrategyState,
+  strategyState: StrategyStateNew,
   previousStrategyId: CanvasStrategyId | null,
 ): FindCanvasStrategyResult {
   const sortedApplicableStrategies = getApplicableStrategiesOrderedByFitness(
