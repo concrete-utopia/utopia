@@ -840,7 +840,7 @@ class FileBrowserItemInner extends React.PureComponent<
   }
 }
 
-export function FileBrowserItem(props: FileBrowserItemProps) {
+export const FileBrowserItem: React.FC<FileBrowserItemProps> = (props: FileBrowserItemProps) => {
   const projectContents = useEditorState(
     (store) => store.editor.projectContents,
     'FileBrowserItem projectContents',
@@ -937,13 +937,7 @@ export function FileBrowserItem(props: FileBrowserItemProps) {
 
   return (
     <FlexRow>
-      {props.imageFile != null && (
-        <div
-          style={{ width: 20, height: 20, borderRadius: 10, background: 'red' }}
-          onMouseDown={onMouseDown}
-          onMouseUp={onMouseUp}
-        />
-      )}
+      {props.imageFile != null && <DragHandle onMouseDown={onMouseDown} onMouseUp={onMouseUp} />}
       <FileBrowserItemInner
         {...props}
         isDragging={isDragging}
@@ -953,5 +947,23 @@ export function FileBrowserItem(props: FileBrowserItemProps) {
         forwardedRef={forwardedRef}
       />
     </FlexRow>
+  )
+}
+
+interface DragHandleProps {
+  onMouseUp: () => void
+  onMouseDown: () => void
+}
+
+const DragHandle = (props: DragHandleProps) => {
+  const { onMouseDown, onMouseUp } = props
+  return (
+    <div style={{ padding: 5, cursor: 'pointer' }} onMouseDown={onMouseDown} onMouseUp={onMouseUp}>
+      <div style={{ height: 2, width: 10, borderRadius: 2, backgroundColor: 'gray' }} />
+      <div style={{ height: 2, background: 'transparent' }} />
+      <div style={{ height: 2, width: 10, borderRadius: 2, backgroundColor: 'gray' }} />
+      <div style={{ height: 2, background: 'transparent' }} />
+      <div style={{ height: 2, width: 10, borderRadius: 2, backgroundColor: 'gray' }} />
+    </div>
   )
 }
