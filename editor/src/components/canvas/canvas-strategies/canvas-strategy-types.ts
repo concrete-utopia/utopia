@@ -57,10 +57,8 @@ export interface ControlForStrategy<P> {
   control: React.FC<P>
 }
 
-export function controlForStrategyMemoized<P extends Record<string, unknown>>(
-  control: React.FC<P>,
-): ControlForStrategy<P> {
-  return { type: 'ControlForStrategy', control: React.memo<P>(control) }
+export function controlForStrategyMemoized<P>(control: React.FC<P>): ControlForStrategy<P> {
+  return { type: 'ControlForStrategy', control: React.memo<any>(control) }
 }
 
 type WhenToShowControl =

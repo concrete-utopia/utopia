@@ -32,120 +32,128 @@ const MenuHeight = (scale: number) => 22 / scale
 const IndicatorOffset = (scale: number) => 2 / scale
 const ControlSize = (scale: number) => 6 / scale
 
-export const FlowSliderControl = controlForStrategyMemoized(() => {
-  const scale = useEditorState((store) => store.editor.canvas.scale, 'FlowSliderControl scale')
-  const colorTheme = useColorTheme()
-  const isDragging = useEditorState(
-    (store) =>
-      store.editor.canvas.interactionSession != null &&
-      store.editor.canvas.interactionSession.activeControl.type === 'FLOW_SLIDER',
-    'FlowSliderControl isDragging',
-  )
+interface FlowSliderControlProps {
+  targetElements: Array<ElementPath>
+}
 
-  const { siblings, latestIndex, startingIndex, startingFrame } = useEditorState(
-    (store) => {
-      if (store.editor.selectedViews.length === 1) {
-        const target = store.editor.selectedViews[0]
-        const siblingPaths = MetadataUtils.getSiblingsProjectContentsOrdered(
-          store.editor.canvas.interactionSession?.latestMetadata ?? store.editor.jsxMetadata,
-          target,
-        ).map((sibling) => sibling.elementPath)
-        const targetIndex = siblingPaths.findIndex((sibling) => EP.pathsEqual(sibling, target))
-        const latestFrame =
-          MetadataUtils.getFrameInCanvasCoords(target, store.editor.jsxMetadata) ?? zeroCanvasRect
+export const FlowSliderControl = controlForStrategyMemoized<FlowSliderControlProps>(
+  ({ targetElements }) => {
+    const scale = useEditorState((store) => store.editor.canvas.scale, 'FlowSliderControl scale')
+    const colorTheme = useColorTheme()
+    const isDragging = useEditorState(
+      (store) =>
+        store.editor.canvas.interactionSession != null &&
+        store.editor.canvas.interactionSession.activeControl.type === 'FLOW_SLIDER',
+      'FlowSliderControl isDragging',
+    )
 
-        if (isDragging) {
-          const startingSiblingsMetadata = MetadataUtils.getSiblings(
-            store.strategyState.startingMetadata,
+    const { siblings, latestIndex, startingIndex, startingFrame } = useEditorState(
+      (store) => {
+        if (targetElements.length === 1) {
+          const target = targetElements[0]
+          const siblingPaths = MetadataUtils.getSiblingsProjectContentsOrdered(
+            store.editor.canvas.interactionSession?.latestMetadata ?? store.editor.jsxMetadata,
             target,
           ).map((sibling) => sibling.elementPath)
-          return {
-            siblings: siblingPaths,
-            latestIndex: targetIndex,
-            startingIndex: startingSiblingsMetadata.findIndex((sibling) =>
-              EP.pathsEqual(sibling, target),
-            ),
-            startingFrame:
-              MetadataUtils.getFrameInCanvasCoords(target, store.strategyState.startingMetadata) ??
-              zeroCanvasRect,
+          const targetIndex = siblingPaths.findIndex((sibling) => EP.pathsEqual(sibling, target))
+          const latestFrame =
+            MetadataUtils.getFrameInCanvasCoords(target, store.editor.jsxMetadata) ?? zeroCanvasRect
+
+          if (isDragging) {
+            const startingSiblingsMetadata = MetadataUtils.getSiblings(
+              store.strategyState.startingMetadata,
+              target,
+            ).map((sibling) => sibling.elementPath)
+            return {
+              siblings: siblingPaths,
+              latestIndex: targetIndex,
+              startingIndex: startingSiblingsMetadata.findIndex((sibling) =>
+                EP.pathsEqual(sibling, target),
+              ),
+              startingFrame:
+                MetadataUtils.getFrameInCanvasCoords(
+                  target,
+                  store.strategyState.startingMetadata,
+                ) ?? zeroCanvasRect,
+            }
+          } else {
+            return {
+              siblings: siblingPaths,
+              latestIndex: targetIndex,
+              startingIndex: targetIndex,
+              startingFrame: latestFrame,
+            }
           }
         } else {
-          return {
-            siblings: siblingPaths,
-            latestIndex: targetIndex,
-            startingIndex: targetIndex,
-            startingFrame: latestFrame,
-          }
+          return { siblings: [], latestIndex: -1, startingIndex: -1, startingFrame: zeroCanvasRect }
         }
-      } else {
-        return { siblings: [], latestIndex: -1, startingIndex: -1, startingFrame: zeroCanvasRect }
-      }
-    },
-    'FlowSliderControl',
-    (oldValue, newValue) =>
-      arrayEquals(oldValue.siblings, newValue.siblings, EP.pathsEqual) &&
-      oldValue.latestIndex === newValue.latestIndex &&
-      oldValue.startingIndex === newValue.startingIndex &&
-      rectanglesEqual(oldValue.startingFrame, newValue.startingFrame),
-  )
-
-  const controlAreaTopLeft = React.useMemo(() => {
-    const centerPoint = getRectCenter(startingFrame ?? zeroCanvasRect)
-    return {
-      x: centerPoint.x - IndicatorSize(scale) / 2 - startingIndex * IndicatorSize(scale),
-      y: centerPoint.y - MenuHeight(scale) / 2,
-    } as CanvasPoint
-  }, [startingFrame, startingIndex, scale])
-
-  const controlTopLeft = React.useMemo(() => {
-    return {
-      x: controlAreaTopLeft.x + latestIndex * IndicatorSize(scale) + IndicatorSize(scale) / 4,
-      y: getRectCenter(startingFrame ?? zeroCanvasRect).y - ControlSize(scale) / 2,
-    } as CanvasPoint
-  }, [startingFrame, controlAreaTopLeft, latestIndex, scale])
-
-  if (siblings.length > 1) {
-    return (
-      <CanvasOffsetWrapper>
-        {when(
-          isDragging,
-          <div
-            style={{
-              position: 'absolute',
-              top: controlAreaTopLeft.y,
-              left: controlAreaTopLeft.x,
-              width: siblings.length * IndicatorSize(scale),
-              height: MenuHeight(scale),
-              borderRadius: 4 / scale,
-              opacity: '60%',
-              background: colorTheme.bg0.value,
-              boxShadow: `inset 0px 0px 0px ${0.5 / scale}px ${colorTheme.border3.value} , 0px ${
-                2 / scale
-              }px ${4 / scale}px 0px ${colorTheme.fg6.o(50).value}`,
-              cursor: CSSCursor.ResizeEW,
-              display: 'flex',
-              alignItems: 'center',
-              boxSizing: 'content-box',
-              overflow: 'hidden',
-            }}
-          >
-            <ReorderIndicators startingIndex={startingIndex} siblings={siblings} />
-            {siblings.map((s) => {
-              return (
-                <div key={EP.toString(s)} style={{ zoom: 1 / scale }}>
-                  <Icons.Dot width={IconSize} height={IconSize} />
-                </div>
-              )
-            })}
-          </div>,
-        )}
-        <FlowReorderControl controlPosition={controlTopLeft} />
-      </CanvasOffsetWrapper>
+      },
+      'FlowSliderControl',
+      (oldValue, newValue) =>
+        arrayEquals(oldValue.siblings, newValue.siblings, EP.pathsEqual) &&
+        oldValue.latestIndex === newValue.latestIndex &&
+        oldValue.startingIndex === newValue.startingIndex &&
+        rectanglesEqual(oldValue.startingFrame, newValue.startingFrame),
     )
-  } else {
-    return null
-  }
-})
+
+    const controlAreaTopLeft = React.useMemo(() => {
+      const centerPoint = getRectCenter(startingFrame ?? zeroCanvasRect)
+      return {
+        x: centerPoint.x - IndicatorSize(scale) / 2 - startingIndex * IndicatorSize(scale),
+        y: centerPoint.y - MenuHeight(scale) / 2,
+      } as CanvasPoint
+    }, [startingFrame, startingIndex, scale])
+
+    const controlTopLeft = React.useMemo(() => {
+      return {
+        x: controlAreaTopLeft.x + latestIndex * IndicatorSize(scale) + IndicatorSize(scale) / 4,
+        y: getRectCenter(startingFrame ?? zeroCanvasRect).y - ControlSize(scale) / 2,
+      } as CanvasPoint
+    }, [startingFrame, controlAreaTopLeft, latestIndex, scale])
+
+    if (siblings.length > 1) {
+      return (
+        <CanvasOffsetWrapper>
+          {when(
+            isDragging,
+            <div
+              style={{
+                position: 'absolute',
+                top: controlAreaTopLeft.y,
+                left: controlAreaTopLeft.x,
+                width: siblings.length * IndicatorSize(scale),
+                height: MenuHeight(scale),
+                borderRadius: 4 / scale,
+                opacity: '60%',
+                background: colorTheme.bg0.value,
+                boxShadow: `inset 0px 0px 0px ${0.5 / scale}px ${colorTheme.border3.value} , 0px ${
+                  2 / scale
+                }px ${4 / scale}px 0px ${colorTheme.fg6.o(50).value}`,
+                cursor: CSSCursor.ResizeEW,
+                display: 'flex',
+                alignItems: 'center',
+                boxSizing: 'content-box',
+                overflow: 'hidden',
+              }}
+            >
+              <ReorderIndicators startingIndex={startingIndex} siblings={siblings} />
+              {siblings.map((s) => {
+                return (
+                  <div key={EP.toString(s)} style={{ zoom: 1 / scale }}>
+                    <Icons.Dot width={IconSize} height={IconSize} />
+                  </div>
+                )
+              })}
+            </div>,
+          )}
+          <FlowReorderControl controlPosition={controlTopLeft} />
+        </CanvasOffsetWrapper>
+      )
+    } else {
+      return null
+    }
+  },
+)
 
 interface ReorderIndicatorProps {
   startingIndex: number
