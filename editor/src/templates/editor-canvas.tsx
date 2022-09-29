@@ -896,15 +896,16 @@ export class EditorCanvas extends React.Component<EditorCanvasProps> {
           this.canvasWrapperRef = ref
         },
 
-        // TODO BEFORE MERGE: clean up before merge
-        onDragOver: () => {
+        onDragOver: (event) => {
+          if (this.props.editor.canvas.interactionSession != null) {
+            this.handleMouseMove(event.nativeEvent)
+            return
+          }
+
           const newUID = generateUidWithExistingComponents(this.props.editor.projectContents)
 
           const propsForElement = jsxAttributesFromMap({
-            style: jsxAttributeValue(
-              { position: 'absolute', width: 22, height: 22 },
-              emptyComments,
-            ),
+            style: jsxAttributeValue({ position: 'absolute', width: 1, height: 1 }, emptyComments),
           })
 
           const newElement = jsxElement(
@@ -917,6 +918,7 @@ export class EditorCanvas extends React.Component<EditorCanvasProps> {
             ),
             [],
           )
+
           this.props.dispatch(
             [
               EditorActions.enableInsertModeForJSXElement(newElement, newUID, {}, null),
@@ -926,6 +928,12 @@ export class EditorCanvas extends React.Component<EditorCanvasProps> {
             ],
             'everyone',
           )
+        },
+
+        onDragLeave: (event) => {
+          if (event.clientX <= 0 && event.clientY <= 0) {
+            this.props.dispatch([CanvasActions.clearInteractionSession(false)])
+          }
         },
 
         onDrop: (event: React.DragEvent) => {
