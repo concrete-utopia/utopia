@@ -345,7 +345,7 @@ class InsertMenuInner extends React.Component<InsertMenuProps> {
                   [
                     enableInsertModeForJSXElement(newElement, newUID, component.importsToAdd, null),
                     CanvasActions.createInteractionSession(
-                      createHoverInteractionViaMouse(
+                      createInteractionViaMouse(
                         CanvasMousePositionRaw!,
                         emptyModifiers,
                         boundingArea(),
@@ -358,6 +358,18 @@ class InsertMenuInner extends React.Component<InsertMenuProps> {
               const insertItemOnMouseUp = () => {
                 this.props.editorDispatch(
                   [CanvasActions.clearInteractionSession(false)],
+                  'everyone',
+                )
+                this.props.editorDispatch(
+                  [
+                    CanvasActions.createInteractionSession(
+                      createHoverInteractionViaMouse(
+                        CanvasMousePositionRaw!,
+                        emptyModifiers,
+                        boundingArea(),
+                      ),
+                    ),
+                  ],
                   'everyone',
                 )
               }
