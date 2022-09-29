@@ -119,3 +119,24 @@ data DecodedUserConfiguration = DecodedUserConfiguration
 
 type DBPool = Pool Connection
 
+
+type GithubAuthenticationFields = (Field SqlText, Field SqlText, FieldNullable SqlText, FieldNullable SqlTimestamptz)
+
+githubAuthenticationTable :: Table GithubAuthenticationFields GithubAuthenticationFields
+githubAuthenticationTable = table "github_authentication" (p4
+                    ( tableField "user_id"
+                    , tableField "access_token"
+                    , tableField "refresh_token"
+                    , tableField "expires_at"
+                    )
+                   )
+
+githubAuthenticationSelect :: Select GithubAuthenticationFields
+githubAuthenticationSelect = selectTable githubAuthenticationTable
+
+data GithubAuthenticationDetails = GithubAuthenticationDetails
+                 { userId       :: Text
+                 , accessToken  :: Text
+                 , refreshToken :: Maybe Text
+                 , expiresAt    :: Maybe UTCTime
+                 } deriving (Eq, Show, Generic)

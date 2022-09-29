@@ -11,12 +11,15 @@
 
 module Utopia.Web.Executors.Common where
 
+import           Control.Monad.Trans.Maybe
+import           Data.Time
 import           Conduit
 import           Control.Concurrent.ReadWriteLock
 import           Control.Lens                     hiding ((.=), (<.>))
 import           Control.Monad.Catch              hiding (Handler, catch)
 import           Control.Monad.RWS.Strict
 import           Data.Aeson
+import           Data.Bifoldable
 import qualified Data.ByteString.Lazy             as BL
 import           Data.Conduit.Combinators         hiding (encodeUtf8, foldMap)
 import           Data.Generics.Product
@@ -28,6 +31,7 @@ import           Network.HTTP.Client              hiding (Response)
 import           Network.HTTP.Types.Header
 import           Network.HTTP.Types.Status
 import           Network.Mime
+import           Network.OAuth.OAuth2
 import           Network.Wai
 import qualified Network.Wreq                     as WR
 import           Protolude                        hiding (Handler, concatMap,
@@ -40,12 +44,16 @@ import           System.Environment
 import           System.FilePath
 import           System.Log.FastLogger
 import qualified Text.Blaze.Html5                 as H
+import           Utopia.ClientModel
 import           Utopia.Web.Assets
 import           Utopia.Web.Auth                  (getUserDetailsFromCode)
+import           Utopia.Web.Auth.Github
 import           Utopia.Web.Auth.Session
 import           Utopia.Web.Auth.Types            (Auth0Resources)
 import qualified Utopia.Web.Database              as DB
 import           Utopia.Web.Database.Types
+import           Utopia.Web.Github
+import           Utopia.Web.Logging
 import           Utopia.Web.Metrics
 import           Utopia.Web.Packager.Locking
 import           Utopia.Web.Packager.NPM
@@ -53,6 +61,10 @@ import           Utopia.Web.ServiceTypes
 import           Utopia.Web.Types
 import           Utopia.Web.Utils.Files
 import           Web.Cookie
+
+import           Data.Generics.Product
+import           Data.Generics.Sum
+
 
 {-|
   When running the 'ServerMonad' type this is the type that we will
@@ -324,3 +336,48 @@ getProjectDetailsWithDBPool metrics pool projectID = do
             (_, Just metadata) -> ProjectDetailsMetadata metadata
             (True, _)          -> ReservedProjectID projectID
             (False, _)         -> UnknownProject
+
+saveNewOAuth2Token :: (MonadIO m) => FastLogger -> DB.DatabaseMetrics -> DBPool -> Text -> (Either Text OAuth2Token) -> m (Maybe AccessToken)
+saveNewOAuth2Token logger metrics pool userID tokenResult = do
+  let logError err = loggerLn logger ("Access Token Error: " <> toLogStr err)
+  let saveToken oAuth2Token = do
+                          authDetails <- oauth2TokenToGithubAuthenticationDetails oAuth2Token userID
+                          DB.updateGithubAuthenticationDetails metrics pool authDetails
+  liftIO $ bifoldMap logError saveToken tokenResult
+  pure $ either (const Nothing) (\result -> Just $ view (field @"accessToken") result) tokenResult
+
+getAndHandleGithubAccessToken :: (MonadIO m) => GithubAuthResources -> FastLogger -> DB.DatabaseMetrics -> DBPool -> Text -> ExchangeToken -> m (Maybe AccessToken)
+getAndHandleGithubAccessToken githubResources logger metrics pool userID exchangeToken = do
+  tokenResult <- liftIO $ getAccessToken githubResources exchangeToken
+  saveNewOAuth2Token logger metrics pool userID tokenResult
+
+useAccessToken :: (MonadIO m) => GithubAuthResources -> FastLogger -> DB.DatabaseMetrics -> DBPool -> Text -> (AccessToken -> m (Maybe a)) -> m (Maybe a)
+useAccessToken githubResources logger metrics pool userID action = do
+  possibleAuthDetails <- liftIO $ DB.lookupGithubAuthenticationDetails metrics pool userID
+  case possibleAuthDetails of
+    Nothing           -> pure Nothing
+    Just authDetails  -> do
+      let currentPossibleRefreshToken = fmap RefreshToken $ view (field @"refreshToken") authDetails
+      let currentAccessToken = AccessToken $ view (field @"accessToken") authDetails
+      let refreshTheToken = do
+            currentRefreshToken <- liftIO $ maybe (fail "No refresh token available.") pure currentPossibleRefreshToken
+            tokenResult <- liftIO $ accessTokenFromRefreshToken githubResources currentRefreshToken
+            saveNewOAuth2Token logger metrics pool userID tokenResult
+      now <- liftIO getCurrentTime
+      let expired = (fmap (< now) $ expiresAt authDetails) == Just True
+      accessTokenToUse <- if expired then refreshTheToken else (pure $ Just currentAccessToken)
+      case accessTokenToUse of
+        Nothing -> pure Nothing
+        Just token -> action token
+
+createTreeAndSaveToGithub :: (MonadIO m) => GithubAuthResources -> FastLogger -> DB.DatabaseMetrics -> DBPool -> Text -> PersistentModel -> m (Maybe CreateGitBranchResult)
+createTreeAndSaveToGithub githubResources logger metrics pool userID model = runMaybeT $ do
+  treeResult <- MaybeT $ useAccessToken githubResources logger metrics pool userID $ \accessToken -> do
+    liftIO $ createGitTreeFromModel accessToken model
+  commitResult <- MaybeT $ useAccessToken githubResources logger metrics pool userID $ \accessToken -> do
+    liftIO $ createGitCommitForTree accessToken model $ view (field @"sha") treeResult
+  now <- liftIO getCurrentTime
+  let branchName = toS $ formatTime defaultTimeLocale "utopia-branch-%0Y%m%d-%H%M%S" now
+  branchResult <- MaybeT $ useAccessToken githubResources logger metrics pool userID $ \accessToken -> do
+    liftIO $ createGitBranchForCommit accessToken model (view (field @"sha") commitResult) branchName
+  pure branchResult

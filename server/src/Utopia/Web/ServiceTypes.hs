@@ -24,12 +24,16 @@ import qualified Data.ByteString.Lazy      as BL
 import           Data.Generics.Product
 import           Data.Time
 import           Network.HTTP.Client       hiding (Cookie)
+import           Network.OAuth.OAuth2
 import           Protolude
-import           Servant
+import           Servant                   hiding (URI)
 import qualified Text.Blaze.Html5          as H
+import           URI.ByteString
+import           Utopia.ClientModel
 import           Utopia.Web.Assets
 import           Utopia.Web.Database.Types
 import           Utopia.Web.JSON
+import Utopia.Web.Github
 import           Web.Cookie
 
 type SessionCookie = Text
@@ -90,6 +94,7 @@ data ServiceCallsF a = NotFound
                      | BadRequest
                      | NotAuthenticated
                      | NotModified
+                     | TempRedirect URI
                      | CheckAuthCode Text (Maybe SetCookie -> a)
                      | Logout Text H.Html (SetSessionCookies H.Html -> a)
                      | ValidateAuth Text (Maybe SessionUser -> a)
@@ -127,6 +132,10 @@ data ServiceCallsF a = NotFound
                      | SaveUserConfiguration Text (Maybe Value) a
                      | ClearBranchCache Text a
                      | GetDownloadBranchFolders ([FilePath] -> a)
+                     | GetGithubAuthorizationURI (URI -> a)
+                     | GetGithubAccessToken Text ExchangeToken (Maybe AccessToken -> a)
+                     | GetGithubAuthentication Text (Maybe GithubAuthenticationDetails -> a)
+                     | SaveToGithubRepo Text PersistentModel (Maybe CreateGitBranchResult -> a)
                      deriving Functor
 
 {-

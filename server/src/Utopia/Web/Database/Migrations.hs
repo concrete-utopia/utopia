@@ -22,7 +22,9 @@ import           Protolude                            hiding (get)
 
 migrateDatabase :: Bool -> Bool -> Pool Connection -> IO ()
 migrateDatabase verbose includeInitial pool = withResource pool $ \connection -> do
-  let mainMigrationCommands = []
+  let mainMigrationCommands = [ MigrationFile "001.sql" "./migrations/001.sql"
+                              , MigrationFile "002.sql" "./migrations/002.sql"
+                              ]
   let initialMigrationCommand = if includeInitial
                                    then [MigrationFile "initial.sql" "./migrations/initial.sql"]
                                    else []

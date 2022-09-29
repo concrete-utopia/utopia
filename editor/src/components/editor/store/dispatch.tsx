@@ -117,6 +117,11 @@ function processAction(
       ...working,
       userState: UPDATE_FNS.SET_LOGIN_STATE(action, working.userState),
     }
+  } else if (action.action === 'SET_GITHUB_STATE') {
+    return {
+      ...working,
+      userState: UPDATE_FNS.SET_GITHUB_STATE(action, working.userState),
+    }
   } else {
     // Process action on the JS side.
     const editorAfterUpdateFunction = runLocalEditorAction(

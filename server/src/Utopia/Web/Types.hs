@@ -15,14 +15,17 @@ import           Data.Aeson
 import           Data.Aeson.TH
 import qualified Data.ByteString.Lazy    as BL
 import           Data.Time
+import           Network.OAuth.OAuth2
 import           Protolude
 import           Servant
 import           Servant.HTML.Blaze
 import           Servant.RawM.Server
 import qualified Text.Blaze.Html5        as H
+import           Utopia.ClientModel
 import           Utopia.Web.JSON
 import           Utopia.Web.Servant
 import           Utopia.Web.ServiceTypes
+import Utopia.Web.Github
 
 {-
   'deriveJSON' as used here creates 'Data.Aeson.FromJSON' and 'Data.Aeson.ToJSON' instances
@@ -118,7 +121,15 @@ type LoadProjectThumbnailAPI = "v1" :> "thumbnail" :> Capture "project_id" Proje
 
 type SaveProjectThumbnailAPI = "v1" :> "thumbnail" :> Capture "project_id" ProjectIdWithSuffix :> ReqBody '[BMP, GIF, JPG, PNG, SVG] BL.ByteString :> Post '[JSON] NoContent
 
-type DownloadGithubProjectAPI = "v1" :> "github" :> Capture "owner" Text :> Capture "project" Text :> Get '[ZIP] BL.ByteString
+type DownloadGithubProjectAPI = "v1" :> "github" :> "import" :> Capture "owner" Text :> Capture "project" Text :> Get '[ZIP] BL.ByteString
+
+type GithubAuthenticatedAPI = "v1" :> "github" :> "authentication" :> "status" :> Get '[JSON] Bool
+
+type GithubStartAuthenticationAPI = "v1" :> "github" :> "authentication" :> "start" :> Get '[HTML] H.Html
+
+type GithubFinishAuthenticationAPI = "v1" :> "github" :> "authentication" :> "finish" :> QueryParam "code" ExchangeToken :> Get '[HTML] H.Html
+
+type GithubSaveAPI = "v1" :> "github" :> "save" :> ReqBody '[JSON] PersistentModel :> Post '[JSON] CreateGitBranchResult
 
 type PackagePackagerResponse = Headers '[Header "Cache-Control" Text, Header "Last-Modified" LastModifiedTime, Header "Access-Control-Allow-Origin" Text] (ConduitT () ByteString (ResourceT IO) ())
 
@@ -169,6 +180,10 @@ type Protected = LogoutAPI
             :<|> SaveProjectAssetAPI
             :<|> SaveProjectThumbnailAPI
             :<|> DownloadGithubProjectAPI
+            :<|> GithubStartAuthenticationAPI
+            :<|> GithubFinishAuthenticationAPI
+            :<|> GithubAuthenticatedAPI
+            :<|> GithubSaveAPI
 
 type Unprotected = AuthenticateAPI H.Html
               :<|> EmptyProjectPageAPI

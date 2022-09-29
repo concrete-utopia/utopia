@@ -241,13 +241,21 @@ export function emptyUserConfiguration(): UserConfiguration {
   }
 }
 
+export interface GithubState {
+  authenticated: boolean
+}
+
 export interface UserState extends UserConfiguration {
   loginState: LoginState
+  githubState: GithubState
 }
 
 export const defaultUserState: UserState = {
   loginState: loginNotYetKnown,
   shortcutConfig: {},
+  githubState: {
+    authenticated: false,
+  },
 }
 
 type EditorStoreShared = {
@@ -842,6 +850,28 @@ export type LockedElements = {
   hierarchyLock: Array<ElementPath>
 }
 
+export interface GithubRepo {
+  owner: string
+  repository: string
+}
+
+export function githubRepo(owner: string, repository: string): GithubRepo {
+  return {
+    owner: owner,
+    repository: repository,
+  }
+}
+
+export interface ProjectGithubSettings {
+  targetRepository: GithubRepo | null
+}
+
+export function projectGithubSettings(targetRepository: GithubRepo | null): ProjectGithubSettings {
+  return {
+    targetRepository: targetRepository,
+  }
+}
+
 // FIXME We need to pull out ProjectState from here
 export interface EditorState {
   id: string | null
@@ -908,6 +938,7 @@ export interface EditorState {
   indexedDBFailed: boolean
   forceParseFiles: Array<string>
   allElementProps: AllElementProps // the final, resolved, static props value for each element.
+  githubSettings: ProjectGithubSettings
 }
 
 export function editorState(
@@ -975,6 +1006,7 @@ export function editorState(
   indexedDBFailed: boolean,
   forceParseFiles: Array<string>,
   allElementProps: AllElementProps,
+  githubSettings: ProjectGithubSettings,
 ): EditorState {
   return {
     id: id,
@@ -1041,6 +1073,7 @@ export function editorState(
     indexedDBFailed: indexedDBFailed,
     forceParseFiles: forceParseFiles,
     allElementProps: allElementProps,
+    githubSettings: githubSettings,
   }
 }
 
@@ -1601,7 +1634,7 @@ function emptyDerivedState(editor: EditorState): DerivedState {
 }
 
 export interface PersistentModel {
-  appID?: string | null
+  appID: string | null
   forkedFromProjectId: string | null
   projectVersion: number
   projectDescription: string
@@ -1625,6 +1658,7 @@ export interface PersistentModel {
   navigator: {
     minimised: boolean
   }
+  githubSettings: ProjectGithubSettings
 }
 
 export function isPersistentModel(data: any): data is PersistentModel {
@@ -1664,6 +1698,7 @@ export function mergePersistentModel(
     navigator: {
       minimised: second.navigator.minimised,
     },
+    githubSettings: second.githubSettings,
   }
 }
 
@@ -1844,6 +1879,9 @@ export function createEditorState(dispatch: EditorDispatch): EditorState {
     indexedDBFailed: false,
     forceParseFiles: [],
     allElementProps: {},
+    githubSettings: {
+      targetRepository: null,
+    },
   }
 }
 
@@ -2136,6 +2174,7 @@ export function editorModelFromPersistentModel(
     indexedDBFailed: false,
     forceParseFiles: [],
     allElementProps: {},
+    githubSettings: persistentModel.githubSettings,
   }
   return editor
 }
@@ -2171,6 +2210,7 @@ export function persistentModelFromEditorModel(editor: EditorState): PersistentM
     navigator: {
       minimised: editor.navigator.minimised,
     },
+    githubSettings: editor.githubSettings,
   }
 }
 
@@ -2201,6 +2241,9 @@ export function persistentModelForProjectContents(
     },
     navigator: {
       minimised: false,
+    },
+    githubSettings: {
+      targetRepository: null,
     },
   }
 }

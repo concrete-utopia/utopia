@@ -309,6 +309,10 @@ import {
   editorState,
   AllElementProps,
   LockedElements,
+  ProjectGithubSettings,
+  GithubRepo,
+  githubRepo,
+  projectGithubSettings,
 } from './editor-state'
 import {
   CornerGuideline,
@@ -1213,6 +1217,8 @@ export function SpecialSizeMeasurementsKeepDeepEquality(): KeepDeepEqualityCall<
       oldSize.globalContentBox,
       newSize.globalContentBox,
     ).areEqual
+    const floatEquals = oldSize.float === newSize.float
+    const hasPositionOffsetEquals = oldSize.hasPositionOffset === newSize.hasPositionOffset
     const areEqual =
       offsetResult.areEqual &&
       coordinateSystemBoundsResult.areEqual &&
@@ -1235,7 +1241,9 @@ export function SpecialSizeMeasurementsKeepDeepEquality(): KeepDeepEqualityCall<
       displayEquals &&
       htmlElementNameEquals &&
       renderedChildrenCount &&
-      globalContentBoxEquals
+      globalContentBoxEquals &&
+      floatEquals &&
+      hasPositionOffsetEquals
     if (areEqual) {
       return keepDeepEqualityResult(oldSize, true)
     } else {
@@ -1262,6 +1270,8 @@ export function SpecialSizeMeasurementsKeepDeepEquality(): KeepDeepEqualityCall<
         newSize.htmlElementName,
         newSize.renderedChildrenCount,
         newSize.globalContentBox,
+        newSize.float,
+        newSize.hasPositionOffset,
       )
       return keepDeepEqualityResult(sizeMeasurements, false)
     }
@@ -2988,6 +2998,21 @@ export const UtopiaVSCodeConfigKeepDeepEquality: KeepDeepEqualityCall<UtopiaVSCo
     },
   )
 
+export const GithubRepoKeepDeepEquality: KeepDeepEqualityCall<GithubRepo> = combine2EqualityCalls(
+  (repo) => repo.owner,
+  createCallWithTripleEquals(),
+  (repo) => repo.repository,
+  createCallWithTripleEquals(),
+  githubRepo,
+)
+
+export const ProjectGithubSettingsKeepDeepEquality: KeepDeepEqualityCall<ProjectGithubSettings> =
+  combine1EqualityCall(
+    (settings) => settings.targetRepository,
+    nullableDeepEquality(GithubRepoKeepDeepEquality),
+    projectGithubSettings,
+  )
+
 export const EditorStateKeepDeepEquality: KeepDeepEqualityCall<EditorState> = (
   oldValue,
   newValue,
@@ -3206,6 +3231,10 @@ export const EditorStateKeepDeepEquality: KeepDeepEqualityCall<EditorState> = (
     oldValue.allElementProps,
     newValue.allElementProps,
   )
+  const githubSettingsResults = ProjectGithubSettingsKeepDeepEquality(
+    oldValue.githubSettings,
+    newValue.githubSettings,
+  )
 
   const areEqual =
     idResult.areEqual &&
@@ -3271,7 +3300,8 @@ export const EditorStateKeepDeepEquality: KeepDeepEqualityCall<EditorState> = (
     vscodeLoadingScreenVisibleResults.areEqual &&
     indexedDBFailedResults.areEqual &&
     forceParseFilesResults.areEqual &&
-    allElementPropsResults.areEqual
+    allElementPropsResults.areEqual &&
+    githubSettingsResults.areEqual
 
   if (areEqual) {
     return keepDeepEqualityResult(oldValue, true)
@@ -3341,6 +3371,7 @@ export const EditorStateKeepDeepEquality: KeepDeepEqualityCall<EditorState> = (
       indexedDBFailedResults.value,
       forceParseFilesResults.value,
       allElementPropsResults.value,
+      githubSettingsResults.value,
     )
 
     return keepDeepEqualityResult(newEditorState, false)

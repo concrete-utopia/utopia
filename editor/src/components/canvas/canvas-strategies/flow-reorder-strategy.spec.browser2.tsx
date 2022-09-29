@@ -5,10 +5,12 @@ import {
   renderTestEditorWithCode,
 } from '../ui-jsx.test-utils'
 import { CanvasControlsContainerID } from '../controls/new-canvas-controls'
-import { offsetPoint, windowPoint, WindowPoint } from '../../../core/shared/math-utils'
 import { cmdModifier, emptyModifiers, Modifiers } from '../../../utils/modifiers'
-import * as EP from '../../../core/shared/element-path'
 import { mouseClickAtPoint, mouseDragFromPointWithDelta } from '../event-helpers.test-utils'
+import { rectangleDifference, windowPoint, WindowPoint } from '../../../core/shared/math-utils'
+import * as EP from '../../../core/shared/element-path'
+import { MetadataUtils } from '../../../core/model/element-metadata-utils'
+import { assert } from 'chai'
 
 const TestProject = `
 <div style={{ width: '100%', height: '100%', position: 'absolute' }} data-uid='container'>
@@ -264,5 +266,62 @@ describe('Flow Reorder Strategy (Mixed Display Type)', () => {
     expect(getPrintedUiJsCode(renderResult.getEditorState())).toEqual(
       makeTestProjectCodeWithSnippet(TestProjectCCCDraggedToSecond),
     )
+  })
+  it('dragging an element over a sibling with float:right will skip reorder', async () => {
+    const TestCodeWithFloat = `
+      <div style={{ width: 100, height: 50, position: 'absolute' }} data-uid='container'>
+        <div
+          style={{
+            width: 50,
+            height: 50,
+            backgroundColor: '#CA1E4C80',
+            float: 'right'
+          }}
+          data-uid='aaa'
+          data-testid='aaa'
+        />
+        <div
+          style={{
+            width: 50,
+            height: 50,
+            backgroundColor: '#FF00FF',
+          }}
+          data-uid='bbb'
+          data-testid='bbb'
+        />
+      </div>
+    `
+    const renderResult = await renderTestEditorWithCode(
+      makeTestProjectCodeWithSnippet(TestCodeWithFloat),
+      'await-first-dom-report',
+    )
+
+    const elementAFrame = MetadataUtils.getFrameInCanvasCoords(
+      EP.fromString('utopia-storyboard-uid/scene-aaa/app-entity:container/aaa'),
+      renderResult.getEditorState().editor.jsxMetadata,
+    )
+    const elementBFrame = MetadataUtils.getFrameInCanvasCoords(
+      EP.fromString('utopia-storyboard-uid/scene-aaa/app-entity:container/bbb'),
+      renderResult.getEditorState().editor.jsxMetadata,
+    )
+
+    if (elementAFrame == null || elementBFrame == null) {
+      assert.fail()
+    } else {
+      // drag element 'B' over 'A' will skip reorder
+      const dragDelta = windowPoint(rectangleDifference(elementBFrame, elementAFrame))
+      await dragElement(renderResult, 'bbb', dragDelta, emptyModifiers, [
+        'utopia-storyboard-uid/scene-aaa',
+        'utopia-storyboard-uid/scene-aaa/app-entity',
+        'utopia-storyboard-uid/scene-aaa/app-entity:container',
+        'utopia-storyboard-uid/scene-aaa/app-entity:container/aaa',
+        'utopia-storyboard-uid/scene-aaa/app-entity:container/bbb',
+      ])
+
+      await renderResult.getDispatchFollowUpActionsFinished()
+      expect(getPrintedUiJsCode(renderResult.getEditorState())).toEqual(
+        makeTestProjectCodeWithSnippet(TestCodeWithFloat),
+      )
+    }
   })
 })
