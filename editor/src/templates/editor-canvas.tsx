@@ -40,6 +40,8 @@ import {
   Mode,
   isLiveMode,
   dragAndDropInsertionSubject,
+  InsertMode,
+  insertionSubjectIsJSXElement,
 } from '../components/editor/editor-modes'
 import {
   BaseSnappingThreshold,
@@ -95,6 +97,7 @@ import {
 } from '../utils/global-positions'
 import { last, reverse } from '../core/shared/array-utils'
 import {
+  createInteractionViaMouse,
   reparentTargetsToFilter,
   ReparentTargetsToFilter,
   updateHoverInteractionViaMouse,
@@ -189,12 +192,24 @@ function handleCanvasEvent(model: CanvasModel, event: CanvasMouseEvent): Array<E
   }
 
   const insertMode = model.mode.type === 'insert'
-  if (
-    insertMode &&
-    event.event === 'MOUSE_UP' &&
-    model.editorState.canvas.interactionSession?.interactionData.type === 'DRAG'
-  ) {
-    optionalDragStateAction = cancelInsertModeActions('apply-changes')
+  if (insertMode) {
+    if (
+      event.event === 'MOUSE_UP' &&
+      model.editorState.canvas.interactionSession?.interactionData.type === 'DRAG'
+    ) {
+      optionalDragStateAction = cancelInsertModeActions('apply-changes')
+    } else if (event.event === 'MOUSE_DOWN') {
+      if (insertionSubjectIsJSXElement((model.editorState.mode as InsertMode).subject)) {
+        optionalDragStateAction = [
+          CanvasActions.createInteractionSession(
+            createInteractionViaMouse(event.canvasPositionRounded, event.modifiers, {
+              type: 'RESIZE_HANDLE',
+              edgePosition: { x: 1, y: 1 },
+            }),
+          ),
+        ]
+      }
+    }
   } else if (!(insertMode && isOpenFileUiJs(model.editorState))) {
     switch (event.event) {
       case 'DRAG':
