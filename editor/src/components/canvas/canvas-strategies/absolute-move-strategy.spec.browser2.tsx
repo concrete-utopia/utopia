@@ -36,6 +36,8 @@ import {
   mouseDownAtPoint,
   mouseDragFromPointToPoint,
   mouseDragFromPointWithDelta,
+  mouseMoveToPoint,
+  mouseUpAtPoint,
 } from '../event-helpers.test-utils'
 
 async function dragElement(
@@ -198,6 +200,27 @@ describe('Absolute Move Strategy', () => {
     const dragDelta = windowPoint({ x: 40, y: -25 })
 
     await dragElement(canvasControlsLayer, startPoint, dragDelta, false, false, false)
+
+    await renderResult.getDispatchFollowUpActionsFinished()
+    expect(getPrintedUiJsCode(renderResult.getEditorState())).toEqual(
+      projectDoesHonourPositionProperties(60, -5),
+    )
+  })
+  it('moves component instances that honour the position properties, selecting the element if the first mousedown uses cmd', async () => {
+    const renderResult = await renderTestEditorWithCode(
+      projectDoesHonourPositionProperties(20, 20),
+      'await-first-dom-report',
+    )
+    const targetElement = renderResult.renderedDOM.getByTestId('aaa')
+    const targetElementBounds = targetElement.getBoundingClientRect()
+    const canvasControlsLayer = renderResult.renderedDOM.getByTestId(CanvasControlsContainerID)
+
+    const startPoint = windowPoint({ x: targetElementBounds.x + 5, y: targetElementBounds.y + 5 })
+    const endPoint = windowPoint({ x: targetElementBounds.x + 45, y: targetElementBounds.y - 20 })
+
+    await mouseDownAtPoint(canvasControlsLayer, startPoint, { modifiers: cmdModifier })
+    await mouseMoveToPoint(canvasControlsLayer, endPoint, { eventOptions: { buttons: 1 } })
+    await mouseUpAtPoint(canvasControlsLayer, endPoint)
 
     await renderResult.getDispatchFollowUpActionsFinished()
     expect(getPrintedUiJsCode(renderResult.getEditorState())).toEqual(

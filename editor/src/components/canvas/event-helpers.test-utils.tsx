@@ -1,5 +1,4 @@
 import { act, fireEvent } from '@testing-library/react'
-import { roundToNearestHalf } from '../../core/shared/math-utils'
 import { emptyModifiers, Modifiers } from '../../utils/modifiers'
 import { resetMouseStatus } from '../mouse-move'
 import keycode from 'keycode'
@@ -7,10 +6,6 @@ import { NO_OP } from '../../core/shared/utils'
 
 // TODO Should the mouse move and mouse up events actually be fired at the parent of the event source?
 // Or document.body?
-
-// TODO Look for other test cases of dispatchevent
-
-// TODO Ensure we have a test for cmd click drag to select and immediately drag elements
 
 interface Point {
   x: number
@@ -87,6 +82,39 @@ export async function mouseMoveToPoint(
   resetMouseStatus()
 }
 
+export async function mouseUpAtPoint(
+  eventSourceElement: HTMLElement,
+  point: Point,
+  options: {
+    modifiers?: Modifiers
+    eventOptions?: MouseEventInit
+  } = {},
+) {
+  const modifiers = options.modifiers ?? emptyModifiers
+  const passedEventOptions = options.eventOptions ?? {}
+  const eventOptions = {
+    ctrlKey: modifiers.ctrl,
+    metaKey: modifiers.cmd,
+    altKey: modifiers.alt,
+    shiftKey: modifiers.shift,
+    ...passedEventOptions,
+  }
+
+  await act(async () => {
+    fireEvent(
+      eventSourceElement,
+      new MouseEvent('mouseup', {
+        detail: 1,
+        bubbles: true,
+        cancelable: true,
+        clientX: point.x,
+        clientY: point.y,
+        ...eventOptions,
+      }),
+    )
+  })
+}
+
 export async function mouseDragFromPointWithDelta(
   eventSourceElement: HTMLElement,
   startPoint: Point,
@@ -116,16 +144,7 @@ export async function mouseDragFromPointToPoint(
     midDragCallback?: () => void
   } = {},
 ) {
-  const modifiers = options.modifiers ?? emptyModifiers
-  const passedEventOptions = options.eventOptions ?? {}
-  const eventOptions = {
-    ctrlKey: modifiers.ctrl,
-    metaKey: modifiers.cmd,
-    altKey: modifiers.alt,
-    shiftKey: modifiers.shift,
-    ...passedEventOptions,
-  }
-  const { buttons, ...mouseUpOptions } = eventOptions ?? {}
+  const { buttons, ...mouseUpOptions } = options.eventOptions ?? {}
   const staggerMoveEvents = options.staggerMoveEvents ?? true
   const midDragCallback = options.midDragCallback ?? NO_OP
 
@@ -134,76 +153,58 @@ export async function mouseDragFromPointToPoint(
     y: endPoint.y - startPoint.y,
   }
 
-  await act(async () => {
-    fireEvent(
-      eventSourceElement,
-      new MouseEvent('mousedown', {
-        detail: 1,
-        bubbles: true,
-        cancelable: true,
-        clientX: startPoint.x,
-        clientY: startPoint.y,
-        buttons: 1,
-        ...eventOptions,
-      }),
-    )
+  await mouseDownAtPoint(eventSourceElement, startPoint, options)
 
-    if (staggerMoveEvents) {
-      const numberOfSteps = 5
-      for (let step = 1; step < numberOfSteps + 1; step++) {
-        const stepSize: Point = {
-          x: delta.x / numberOfSteps,
-          y: delta.y / numberOfSteps,
-        }
+  if (staggerMoveEvents) {
+    const numberOfSteps = 5
+    for (let step = 1; step < numberOfSteps + 1; step++) {
+      const stepSize: Point = {
+        x: delta.x / numberOfSteps,
+        y: delta.y / numberOfSteps,
+      }
 
-        fireEvent(
-          eventSourceElement,
-          new MouseEvent('mousemove', {
-            bubbles: true,
-            cancelable: true,
-            clientX: startPoint.x + step * stepSize.x,
-            clientY: startPoint.y + step * stepSize.y,
+      await mouseMoveToPoint(
+        eventSourceElement,
+        {
+          x: startPoint.x + step * stepSize.x,
+          y: startPoint.y + step * stepSize.y,
+        },
+        {
+          ...options,
+          eventOptions: {
             movementX: stepSize.x,
             movementY: stepSize.y,
             buttons: 1,
-            ...eventOptions,
-          }),
-        )
-
-        resetMouseStatus()
-      }
-    } else {
-      fireEvent(
-        eventSourceElement,
-        new MouseEvent('mousemove', {
-          bubbles: true,
-          cancelable: true,
-          clientX: endPoint.x,
-          clientY: endPoint.y,
+            ...options.eventOptions,
+          },
+        },
+      )
+    }
+  } else {
+    await mouseMoveToPoint(
+      eventSourceElement,
+      {
+        x: endPoint.x,
+        y: endPoint.y,
+      },
+      {
+        ...options,
+        eventOptions: {
           movementX: delta.x,
           movementY: delta.y,
           buttons: 1,
-          ...eventOptions,
-        }),
-      )
-    }
-
-    midDragCallback()
-
-    fireEvent(
-      eventSourceElement,
-      new MouseEvent('mouseup', {
-        detail: 1,
-        bubbles: true,
-        cancelable: true,
-        clientX: endPoint.x,
-        clientY: endPoint.y,
-        ...mouseUpOptions,
-      }),
+          ...options.eventOptions,
+        },
+      },
     )
-  })
+  }
 
-  resetMouseStatus()
+  midDragCallback()
+
+  await mouseUpAtPoint(eventSourceElement, endPoint, {
+    ...options,
+    eventOptions: mouseUpOptions,
+  })
 }
 
 export async function mouseClickAtPoint(
