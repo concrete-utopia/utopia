@@ -10,6 +10,7 @@ import {
 } from '../ui-jsx.test-utils'
 import { CanvasControlsContainerID } from '../controls/new-canvas-controls'
 import * as EP from '../../../core/shared/element-path'
+import { resetMouseStatus } from '../../mouse-move'
 
 function slightlyOffsetWindowPointBecauseVeryWeirdIssue(point: {
   x: number
@@ -193,6 +194,9 @@ describe('Inserting into absolute', () => {
     // Highlight should drag the candidate parent
     expect(renderResult.getEditorState().editor.highlightedViews.map(EP.toUid)).toEqual(['bbb'])
 
+    // Explicitly reset the mouse event throttling so that we can perform a drag
+    resetMouseStatus()
+
     // Drag from inside bbb to inside ccc
     await fireDragEvent(canvasControlsLayer, startPoint, endPoint)
 
@@ -228,6 +232,77 @@ describe('Inserting into absolute', () => {
                 top: 5,
                 width: 20,
                 height: 300,
+              }}
+            />
+          </div>
+          <div
+            data-uid='ccc'
+            style={{
+              position: 'absolute',
+              left: 10,
+              top: 200,
+              width: 380,
+              height: 190,
+              backgroundColor: '#FF0000',
+            }}
+          />
+        </div>
+      `),
+    )
+  })
+
+  it('Should drag to insert into targets smaller than the element', async () => {
+    const renderResult = await renderTestEditorWithCode(inputCode, 'await-first-dom-report')
+    await startInsertMode(renderResult.dispatch)
+
+    const targetElement = renderResult.renderedDOM.getByTestId('bbb')
+    const targetElementBounds = targetElement.getBoundingClientRect()
+    const canvasControlsLayer = renderResult.renderedDOM.getByTestId(CanvasControlsContainerID)
+
+    const startPoint = slightlyOffsetWindowPointBecauseVeryWeirdIssue({
+      x: targetElementBounds.x + 5,
+      y: targetElementBounds.y + 5,
+    })
+    const endPoint = slightlyOffsetWindowPointBecauseVeryWeirdIssue({
+      x: targetElementBounds.x + 1005,
+      y: targetElementBounds.y + 1005,
+    })
+
+    // Drag from inside bbb to inside ccc
+    await fireDragEvent(canvasControlsLayer, startPoint, endPoint)
+
+    // Check that the inserted element is a child of bbb
+    expect(getPrintedUiJsCode(renderResult.getEditorState())).toEqual(
+      makeTestProjectCodeWithSnippet(`
+        <div
+          data-uid='aaa'
+          style={{
+            width: '100%',
+            height: '100%',
+            backgroundColor: '#FFFFFF',
+            position: 'relative',
+          }}
+        >
+          <div
+            data-uid='bbb'
+            data-testid='bbb'
+            style={{
+              position: 'absolute',
+              left: 10,
+              top: 10,
+              width: 380,
+              height: 180,
+              backgroundColor: '#d3d3d3',
+            }}
+          >
+            <div
+              data-uid='ddd'
+              style={{
+                position: 'absolute',
+                left: 5,
+                top: 5,
+                width: 1000,
+                height: 1000,
               }}
             />
           </div>
@@ -309,6 +384,88 @@ describe('Inserting into absolute', () => {
               backgroundColor: '#FF0000',
             }}
           />
+        </div>
+      `),
+    )
+  })
+
+  it('Click to insert into an element smaller than the default size', async () => {
+    const renderResult = await renderTestEditorWithCode(
+      makeTestProjectCodeWithSnippet(`
+        <div
+          data-uid='aaa'
+          style={{
+            width: '100%',
+            height: '100%',
+            backgroundColor: '#FFFFFF',
+            position: 'relative',
+          }}
+        >
+          <div
+            data-uid='bbb'
+            data-testid='bbb'
+            style={{
+              position: 'absolute',
+              left: 10,
+              top: 10,
+              width: 10,
+              height: 10,
+              backgroundColor: '#d3d3d3',
+            }}
+          />
+        </div>
+    `),
+      'await-first-dom-report',
+    )
+    await startInsertMode(renderResult.dispatch)
+
+    const targetElement = renderResult.renderedDOM.getByTestId('bbb')
+    const targetElementBounds = targetElement.getBoundingClientRect()
+    const canvasControlsLayer = renderResult.renderedDOM.getByTestId(CanvasControlsContainerID)
+
+    const point = slightlyOffsetWindowPointBecauseVeryWeirdIssue({
+      x: targetElementBounds.x + 5,
+      y: targetElementBounds.y + 5,
+    })
+
+    // Click in bbb
+    await fireClickEvent(canvasControlsLayer, point)
+
+    // Check that the inserted element is a child of bbb
+    expect(getPrintedUiJsCode(renderResult.getEditorState())).toEqual(
+      makeTestProjectCodeWithSnippet(`
+        <div
+          data-uid='aaa'
+          style={{
+            width: '100%',
+            height: '100%',
+            backgroundColor: '#FFFFFF',
+            position: 'relative',
+          }}
+        >
+          <div
+            data-uid='bbb'
+            data-testid='bbb'
+            style={{
+              position: 'absolute',
+              left: 10,
+              top: 10,
+              width: 10,
+              height: 10,
+              backgroundColor: '#d3d3d3',
+            }}
+          >
+            <div
+              data-uid='ddd'
+              style={{
+                position: 'absolute',
+                left: -45,
+                top: -45,
+                width: 100,
+                height: 100,
+              }}
+            />
+          </div>
         </div>
       `),
     )

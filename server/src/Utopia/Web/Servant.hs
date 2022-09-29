@@ -24,6 +24,7 @@ import qualified Data.Text                as T
 import           Data.Time.Clock
 import           Data.Time.Format
 import           Network.HTTP.Media       hiding (Accept)
+import           Network.OAuth.OAuth2
 import           Prelude                  (String)
 import           Protolude
 import           Servant.API
@@ -144,3 +145,6 @@ instance FromHttpApiData ProjectIdWithSuffix where
 
 instance ToHttpApiData ProjectIdWithSuffix where
   toUrlPiece (ProjectIdWithSuffix projectId projectSuffix) = projectId <> (if T.null projectSuffix then T.empty else "-" <> projectSuffix)
+
+instance FromHttpApiData ExchangeToken where
+  parseUrlPiece toParse = fmap ExchangeToken $ parseUrlPiece toParse

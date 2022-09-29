@@ -56,6 +56,8 @@ data DatabaseMetrics = DatabaseMetrics
                      , _getUserConfigurationMetrics     :: InvocationMetric
                      , _saveUserConfigurationMetrics    :: InvocationMetric
                      , _checkIfProjectIDReservedMetrics :: InvocationMetric
+                     , _updateGithubAuthenticationDetailsMetrics ::InvocationMetric
+                     , _getGithubAuthenticationDetailsMetrics :: InvocationMetric
                      }
 
 createDatabaseMetrics :: Store -> IO DatabaseMetrics
@@ -77,6 +79,8 @@ createDatabaseMetrics store = DatabaseMetrics
   <*> createInvocationMetric "utopia.database.getuserconfiguration" store
   <*> createInvocationMetric "utopia.database.saveuserconfiguration" store
   <*> createInvocationMetric "utopia.database.checkifprojectidreserved" store
+  <*> createInvocationMetric "utopia.database.updategithubauthenticationdetails" store
+  <*> createInvocationMetric "utopia.database.lookupgithubauthenticationdetails" store
 
 data UserIDIncorrectException = UserIDIncorrectException
                               deriving (Eq, Show)
@@ -386,3 +390,29 @@ projectContentTreeFromDecodedProject :: DecodedProject -> Either Text ProjectCon
 projectContentTreeFromDecodedProject decodedProject = do
   let contentOfProject = view (field @"content") decodedProject
   fmap (view (field @"projectContents")) $ persistentModelFromJSON contentOfProject
+
+updateGithubAuthenticationDetails :: DatabaseMetrics -> DBPool -> GithubAuthenticationDetails -> IO ()
+updateGithubAuthenticationDetails metrics pool GithubAuthenticationDetails{..} = invokeAndMeasure (_updateGithubAuthenticationDetailsMetrics metrics) $ usePool pool $ \connection -> do
+  let githubAuthenticationDetailsEntry = toFields (userId, accessToken, refreshToken, expiresAt)
+  void $ runDelete_ connection $ Delete
+                               { dTable = githubAuthenticationTable
+                               , dWhere = (\(rowUserId, _, _, _) -> rowUserId .=== toFields userId)
+                               , dReturning = rCount
+                               }
+  void $ runInsert_ connection $ Insert
+                               { iTable = githubAuthenticationTable
+                               , iRows = [githubAuthenticationDetailsEntry]
+                               , iReturning = rCount
+                               , iOnConflict = Nothing
+                               }
+
+githubAuthenticationDetailsFromRow :: (Text, Text, Text, UTCTime) -> GithubAuthenticationDetails
+githubAuthenticationDetailsFromRow (userId, accessToken, refreshToken, expiresAt) = GithubAuthenticationDetails{..}
+
+lookupGithubAuthenticationDetails :: DatabaseMetrics -> DBPool -> Text -> IO (Maybe GithubAuthenticationDetails)
+lookupGithubAuthenticationDetails metrics pool userId = invokeAndMeasure (_getGithubAuthenticationDetailsMetrics metrics) $ usePool pool $ \connection -> do
+  githubAuthenticationDetails <- runSelect connection $ do
+    githubAuthenticationDetailsRow@(rowUserId, _, _, _) <- githubAuthenticationSelect
+    where_ $ rowUserId .== toFields userId
+    pure githubAuthenticationDetailsRow
+  pure $ fmap githubAuthenticationDetailsFromRow $ listToMaybe githubAuthenticationDetails

@@ -18,20 +18,22 @@ import {
   getNewDisplayTypeForIndex,
   getOptionalDisplayPropCommands,
 } from './flow-reorder-helpers'
-import { isFlowReorderConversionApplicable } from './flow-reorder-strategy'
 import { isReorderAllowed } from './reorder-utils'
 
 export const flowReorderSliderStategy: CanvasStrategy = {
   id: 'FLOW_REORDER_SLIDER',
   name: () => 'Reorder (Slider)',
-  isApplicable: (canvasState, interactionState, metadata, allElementProps) => {
-    return isFlowReorderConversionApplicable(
-      canvasState,
-      interactionState,
-      metadata,
-      allElementProps,
-      'no-filter',
-    )
+  isApplicable: (canvasState, interactionSession, metadata, allElementProps) => {
+    const selectedElements = getTargetPathsFromInteractionTarget(canvasState.interactionTarget)
+    if (selectedElements.length === 1) {
+      const target = selectedElements[0]
+      const elementMetadata = MetadataUtils.findElementByElementPath(metadata, target)
+      const siblings = MetadataUtils.getSiblings(metadata, target)
+      if (siblings.length > 1 && MetadataUtils.isPositionedByFlow(elementMetadata)) {
+        return true
+      }
+    }
+    return false
   },
   controlsToRender: [
     {
@@ -84,7 +86,7 @@ export const flowReorderSliderStategy: CanvasStrategy = {
 
       const newDisplayType = getNewDisplayTypeForIndex(
         strategyState.startingMetadata,
-        MetadataUtils.findElementByElementPath(strategyState.startingMetadata, target),
+        target,
         siblingsOfTarget[newIndex],
       )
 
@@ -93,7 +95,7 @@ export const flowReorderSliderStategy: CanvasStrategy = {
           reorderElement('always', target, absolute(newIndex)),
           setElementsToRerenderCommand(siblingsOfTarget),
           updateHighlightedViews('mid-interaction', []),
-          ...getOptionalDisplayPropCommands(target, newDisplayType, 'with-auto-conversion'),
+          ...getOptionalDisplayPropCommands(target, newDisplayType),
           setCursorCommand('mid-interaction', CSSCursor.ResizeEW),
         ],
         {

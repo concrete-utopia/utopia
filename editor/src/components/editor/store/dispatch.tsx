@@ -57,7 +57,10 @@ import { isFeatureEnabled } from '../../../utils/feature-switches'
 import { handleStrategies } from './dispatch-strategies'
 
 import { emptySet } from '../../../core/shared/set-utils'
-import { RegisteredCanvasStrategies } from '../../canvas/canvas-strategies/canvas-strategies'
+import {
+  MetaCanvasStrategy,
+  RegisteredCanvasStrategies,
+} from '../../canvas/canvas-strategies/canvas-strategies'
 import { removePathsWithDeadUIDs } from '../../../core/shared/element-path'
 import { CanvasStrategy } from '../../canvas/canvas-strategies/canvas-strategy-types'
 
@@ -113,6 +116,11 @@ function processAction(
     return {
       ...working,
       userState: UPDATE_FNS.SET_LOGIN_STATE(action, working.userState),
+    }
+  } else if (action.action === 'SET_GITHUB_STATE') {
+    return {
+      ...working,
+      userState: UPDATE_FNS.SET_GITHUB_STATE(action, working.userState),
     }
   } else {
     // Process action on the JS side.
@@ -340,7 +348,7 @@ export function editorDispatch(
   dispatchedActions: readonly EditorAction[],
   storedState: EditorStoreFull,
   spyCollector: UiJsxCanvasContextData,
-  strategiesToUse: Array<CanvasStrategy> = RegisteredCanvasStrategies, // only override this for tests
+  strategiesToUse: Array<MetaCanvasStrategy> = RegisteredCanvasStrategies, // only override this for tests
 ): DispatchResult {
   const isLoadAction = dispatchedActions.some((a) => a.action === 'LOAD')
   const nameUpdated = dispatchedActions.some(
@@ -619,7 +627,7 @@ function editorDispatchInner(
   dispatchedActions: EditorAction[],
   storedState: InnerDispatchResult,
   spyCollector: UiJsxCanvasContextData,
-  strategiesToUse: Array<CanvasStrategy>,
+  strategiesToUse: Array<MetaCanvasStrategy>,
 ): InnerDispatchResult {
   // console.log('DISPATCH', simpleStringifyActions(dispatchedActions))
 
