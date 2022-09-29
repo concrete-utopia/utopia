@@ -123,6 +123,7 @@ export function isTransientAction(action: EditorAction): boolean {
     case 'DELETE_SELECTED':
     case 'DELETE_VIEW':
     case 'UNSET_PROPERTY':
+    case 'SET_PROPERTY':
     case 'INSERT_SCENE':
     case 'INSERT_JSX_ELEMENT':
     case 'MOVE_SELECTED_TO_BACK':

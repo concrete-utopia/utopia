@@ -293,6 +293,7 @@ import {
   UpdateMouseButtonsPressed,
   ToggleSelectionLock,
   SetGithubState,
+  SetProperty,
 } from '../action-types'
 import { defaultTransparentViewElement, defaultSceneElement } from '../defaults'
 import { EditorModes, Mode, isSelectMode, isLiveMode } from '../editor-modes'
@@ -1572,6 +1573,38 @@ export const UPDATE_FNS = {
     )
     if (unsetPropFailedMessage != null) {
       const toastAction = showToast(notice(unsetPropFailedMessage, 'ERROR'))
+      return UPDATE_FNS.ADD_TOAST(toastAction, editor, dispatch)
+    } else {
+      return updatedEditor
+    }
+  },
+  SET_PROPERTY: (
+    action: SetProperty,
+    editor: EditorModel,
+    dispatch: EditorDispatch,
+  ): EditorModel => {
+    let setPropFailedMessage: string | null = null
+    const updatedEditor = modifyUnderlyingForOpenFile(
+      action.element,
+      editor,
+      (element) => {
+        const updatedProps = setJSXValueAtPath(element.props, action.property, action.value)
+        return foldEither(
+          (failureMessage) => {
+            setPropFailedMessage = failureMessage
+            return element
+          },
+          (updatedAttributes) => ({
+            ...element,
+            props: updatedAttributes,
+          }),
+          updatedProps,
+        )
+      },
+      (parseSuccess) => parseSuccess,
+    )
+    if (setPropFailedMessage != null) {
+      const toastAction = showToast(notice(setPropFailedMessage, 'ERROR'))
       return UPDATE_FNS.ADD_TOAST(toastAction, editor, dispatch)
     } else {
       return updatedEditor
