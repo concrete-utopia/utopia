@@ -65,6 +65,7 @@ import { Link } from '../../uuiui/link'
 import { useTriggerForkProject } from '../editor/persistence-hooks'
 import urljoin from 'url-join'
 import { parseGithubProjectString } from '../../core/shared/github'
+import { startGithubAuthentication } from '../../utils/github-auth'
 import { getURLImportDetails } from '../../core/model/project-import'
 import { forEachLeft, forEachRight } from '../../core/shared/either'
 import { notice } from '../common/notice'
@@ -736,6 +737,14 @@ const GithubPane = React.memo(() => {
     [setGithubRepoStr],
   )
 
+  const githubAuthenticated = useEditorState((store) => {
+    return store.userState.githubState.authenticated
+  }, 'GithubPane githubAuthenticated')
+
+  const triggerAuthentication = React.useCallback(() => {
+    startGithubAuthentication(dispatch)
+  }, [dispatch])
+
   const [urlToImportFrom, setURLToImportFrom] = React.useState<string | null>(null)
 
   const importFromURLChange = React.useCallback(
@@ -777,6 +786,33 @@ const GithubPane = React.memo(() => {
           <Title style={{ flexGrow: 1 }}>Github</Title>
         </SectionTitleRow>
         <SectionBodyArea minimised={false}>
+          <div
+            style={{
+              height: 'initial',
+              minHeight: 34,
+              alignItems: 'flex-start',
+              paddingTop: 8,
+              paddingLeft: 8,
+              paddingRight: 8,
+              paddingBottom: 8,
+              whiteSpace: 'pre-wrap',
+              letterSpacing: 0.1,
+              lineHeight: '17px',
+              fontSize: '11px',
+            }}
+          >
+            {githubAuthenticated ? 'Authenticated With Github' : 'Not Authenticated With Github'}
+          </div>
+          <UIGridRow padded variant='<--------auto-------->|--45px--|'>
+            <Button
+              spotlight
+              highlight
+              disabled={githubAuthenticated}
+              onMouseUp={triggerAuthentication}
+            >
+              Authenticate With Github
+            </Button>
+          </UIGridRow>
           <div
             style={{
               height: 'initial',

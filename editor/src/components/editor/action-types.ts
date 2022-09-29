@@ -45,6 +45,7 @@ import {
   ElementsToRerender,
   ErrorMessages,
   FloatingInsertMenuState,
+  GithubState,
   LeftMenuTab,
   ModalDialog,
   OriginalFrame,
@@ -868,6 +869,11 @@ export interface SetLoginState {
   loginState: LoginState
 }
 
+export interface SetGithubState {
+  action: 'SET_GITHUB_STATE'
+  githubState: GithubState
+}
+
 export interface ResetCanvas {
   action: 'RESET_CANVAS'
 }
@@ -1104,6 +1110,7 @@ export type EditorAction =
   | SetFollowSelectionEnabled
   | UpdateConfigFromVSCode
   | SetLoginState
+  | SetGithubState
   | ResetCanvas
   | SetFilebrowserDropTarget
   | SetCurrentTheme

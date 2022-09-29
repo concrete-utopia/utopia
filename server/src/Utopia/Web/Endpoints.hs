@@ -26,6 +26,7 @@ import           Data.Text.Encoding
 import           Data.Time
 import           Network.HTTP.Types.Header
 import           Network.HTTP.Types.Status
+import           Network.OAuth.OAuth2
 import           Network.Wai
 import           Network.Wai.Middleware.Gzip
 import           Prelude                         (String)
@@ -638,6 +639,26 @@ saveUserConfigurationEndpoint cookie UserConfigurationRequest{..} = requireUser 
   saveUserConfiguration (view (field @"_id") sessionUser) _shortcutConfig
   return NoContent
 
+githubStartAuthenticationEndpoint :: Maybe Text -> ServerMonad H.Html
+githubStartAuthenticationEndpoint cookie = requireUser cookie $ \_ -> do
+  authURI <- getGithubAuthorizationURI
+  _ <- tempRedirect authURI
+  pure mempty
+
+githubFinishAuthenticationEndpoint :: Maybe Text -> Maybe ExchangeToken -> ServerMonad H.Html
+githubFinishAuthenticationEndpoint _ Nothing = badRequest
+githubFinishAuthenticationEndpoint cookie (Just authCode) = requireUser cookie $ \sessionUser -> do
+  _ <- getGithubAccessToken (view (field @"_id") sessionUser) authCode
+  pure $
+    H.div $ do
+      H.script ! HA.type_ "text/javascript" $ H.toMarkup ("window.close();" :: Text)
+      H.toMarkup ("Auth Successful" :: Text)
+
+githubAuthenticatedEndpoint :: Maybe Text -> ServerMonad Bool
+githubAuthenticatedEndpoint cookie = requireUser cookie $ \sessionUser -> do
+  possibleAuthDetails <- getGithubAuthentication (view (field @"_id") sessionUser)
+  pure $ isJust possibleAuthDetails
+
 {-|
   Compose together all the individual endpoints into a definition for the whole server.
 -}
@@ -657,6 +678,9 @@ protected authCookie = logoutPage authCookie
                   :<|> saveProjectAssetEndpoint authCookie
                   :<|> saveProjectThumbnailEndpoint authCookie
                   :<|> downloadGithubProjectEndpoint authCookie
+                  :<|> githubStartAuthenticationEndpoint authCookie
+                  :<|> githubFinishAuthenticationEndpoint authCookie
+                  :<|> githubAuthenticatedEndpoint authCookie
 
 unprotected :: ServerT Unprotected ServerMonad
 unprotected = authenticate
