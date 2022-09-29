@@ -1,3 +1,4 @@
+import React from 'react'
 import { AllElementProps } from '../../../components/editor/store/editor-state'
 import { BuiltInDependencies } from '../../../core/es-modules/package-manager/built-in-dependencies-list'
 import { ElementInstanceMetadataMap } from '../../../core/shared/element-template'
@@ -51,13 +52,24 @@ export function strategyApplicationResult(
   }
 }
 
+export interface ControlForStrategy<P> {
+  type: 'ControlForStrategy'
+  control: React.FC<P>
+}
+
+export function controlForStrategyMemoized<P extends Record<string, unknown>>(
+  control: React.FC<P>,
+): ControlForStrategy<P> {
+  return { type: 'ControlForStrategy', control: React.memo<P>(control) }
+}
+
 type WhenToShowControl =
   | 'always-visible'
   | 'visible-only-while-active'
   | 'visible-except-when-other-strategy-is-active'
 
 export interface ControlWithKey<P> {
-  control: React.FC<P>
+  control: ControlForStrategy<P>
   propsForControl: P
   key: string
   show: WhenToShowControl

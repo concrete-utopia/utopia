@@ -1,10 +1,11 @@
 import React from 'react'
 import { useColorTheme } from '../../../../uuiui'
 import { useEditorState } from '../../../editor/store/store-hook'
+import { controlForStrategyMemoized } from '../../canvas-strategies/canvas-strategy-types'
 import { getMultiselectBounds } from '../../canvas-strategies/shared-absolute-move-strategy-helpers'
 import { CanvasOffsetWrapper } from '../canvas-offset-wrapper'
 
-export const DragOutlineControl = React.memo(() => {
+export const DragOutlineControl = controlForStrategyMemoized(() => {
   const scale = useEditorState((store) => store.editor.canvas.scale, 'OutlineControl scale')
   const frame = useEditorState((store) => {
     return getMultiselectBounds(store.strategyState.startingMetadata, store.editor.selectedViews)

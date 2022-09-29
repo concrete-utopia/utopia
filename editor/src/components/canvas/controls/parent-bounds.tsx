@@ -3,10 +3,11 @@ import { MetadataUtils } from '../../../core/model/element-metadata-utils'
 import { mapDropNulls, stripNulls, uniqBy } from '../../../core/shared/array-utils'
 import * as EP from '../../../core/shared/element-path'
 import { useEditorState } from '../../editor/store/store-hook'
+import { controlForStrategyMemoized } from '../canvas-strategies/canvas-strategy-types'
 import { CanvasOffsetWrapper } from './canvas-offset-wrapper'
 import { CenteredCrossSVG } from './outline-control'
 
-export const ParentBounds = React.memo(() => {
+export const ParentBounds = controlForStrategyMemoized(() => {
   const scale = useEditorState((store) => store.editor.canvas.scale, 'ParentBounds canvas scale')
   const parentFrame = useEditorState((store) => {
     const parentHighlightPaths = store.editor.canvas.controls.parentHighlightPaths

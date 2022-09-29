@@ -7,6 +7,7 @@ import { EditorDispatch } from '../../../editor/action-types'
 import { EditorStorePatched } from '../../../editor/store/editor-state'
 import { useEditorState, useRefEditorState } from '../../../editor/store/store-hook'
 import CanvasActions from '../../canvas-actions'
+import { controlForStrategyMemoized } from '../../canvas-strategies/canvas-strategy-types'
 import { createInteractionViaMouse } from '../../canvas-strategies/interaction-state'
 import { CSSCursor, EdgePosition } from '../../canvas-types'
 import { windowToCanvasCoordinates } from '../../dom-lookup'
@@ -16,7 +17,8 @@ import { isZeroSizedElement } from '../outline-utils'
 import { useMaybeHighlightElement } from './select-mode-hooks'
 
 const selectedElementsSelector = (store: EditorStorePatched) => store.editor.selectedViews
-export const AbsoluteResizeControl = React.memo((props) => {
+
+export const AbsoluteResizeControl = controlForStrategyMemoized((props) => {
   const selectedElements = useEditorState(
     selectedElementsSelector,
     'AbsoluteResizeControl selectedElements',
