@@ -421,154 +421,6 @@ export class InsertModeControlContainer extends React.Component<
     }
   }
 
-  onMouseUp = (event: MouseEvent) => {
-    if (!this.props.mode.insertionStarted) {
-      return
-    }
-    const baseActions: EditorAction[] = cancelInsertModeActions('ignore-it-completely')
-    if (insertionSubjectIsJSXElement(this.props.mode.subject)) {
-      const insertionSubject = this.props.mode.subject
-      const insertionElement = insertionSubject.element
-      let element = null
-      const parentPath =
-        safeIndex(this.props.highlightedViews, 0) ??
-        getStoryboardElementPath(this.props.projectContents, this.props.openFile)
-      let extraActions: EditorAction[] = []
-      if (
-        this.props.dragState != null &&
-        this.props.dragState.drag != null &&
-        Utils.distance(this.props.dragState.drag, Utils.zeroPoint as CanvasPoint) === 0
-      ) {
-        // image and text insertion with single click
-        if (
-          this.isImageInsertion(insertionElement, insertionSubject.importsToAdd) &&
-          this.state.dragFrame != null
-        ) {
-          element = this.getImageElementWithSize('set-zero-size-to-default')
-        } else if (this.isTextInsertion(insertionElement, insertionSubject.importsToAdd)) {
-          element = insertionElement
-        } else {
-          element = this.elementWithDragFrame(insertionElement, 'set-zero-size-to-default')
-        }
-      } else {
-        // TODO Hidden Instances
-        element = this.elementWithDragFrame(insertionElement, 'set-zero-size-to-default')
-      }
-      if (element == null) {
-        this.props.dispatch(baseActions, 'everyone')
-      } else {
-        this.props.dispatch(
-          [
-            EditorActions.insertJSXElement(
-              element,
-              parentPath ?? null,
-              insertionSubject.importsToAdd,
-            ),
-            ...baseActions,
-            ...extraActions,
-          ],
-          'everyone',
-        )
-      }
-    } else if (insertionSubjectIsScene(this.props.mode.subject)) {
-      const actions =
-        this.state.dragFrame == null
-          ? baseActions
-          : baseActions.concat(EditorActions.insertScene(this.state.dragFrame))
-      this.props.dispatch(actions, 'everyone')
-    } else {
-      this.props.dispatch(baseActions, 'everyone')
-    }
-  }
-
-  onMouseMove = (e: MouseEvent) => {
-    const mousePoint = this.props.windowToCanvasPosition(e).canvasPositionRounded
-    const keepAspectRatio = this.props.keysPressed['shift'] || false
-    if (insertionSubjectIsJSXElement(this.props.mode.subject)) {
-      const insertionSubject = this.props.mode.subject
-      const guidelines = collectSelfAndChildrenGuidelines(
-        this.props.componentMetadata,
-        this.props.highlightedViews,
-        this.props.mode.subject.uid,
-      )
-
-      const isMousingInFlexParent =
-        Utils.optionalMap((ds) => pathInFlexParent(ds, this.props.mode), this.props.dragState) !=
-        null
-
-      const point = isMousingInFlexParent
-        ? Utils.defaultIfNull(mousePoint, Utils.optionalMap(focusPoint, this.state.dragFrame))
-        : mousePoint
-
-      const closestGuidelines = getSnappedGuidelinesForPoint(
-        guidelines,
-        null,
-        point,
-        this.props.scale,
-      )
-      if (
-        this.props.mode.insertionStarted &&
-        this.props.dragState != null &&
-        this.props.dragState.start != null
-      ) {
-        const parent = this.props.highlightedViews[0]
-        const staticParent = parent == null ? null : EP.dynamicPathToStaticPath(parent)
-        let element = this.elementWithDragFrame(insertionSubject.element, 'allow-zero-size')
-        const aspectRatioCorrectedMousePoint =
-          this.state.aspectRatio != null
-            ? correctToAspectRatio(this.props.dragState.start, mousePoint, this.state.aspectRatio)
-            : mousePoint
-        const snappedMousePoint = applySnappingToPoint(
-          aspectRatioCorrectedMousePoint,
-          closestGuidelines,
-        )
-        const dragVector = Utils.vectorFromPoints(this.props.dragState.start, snappedMousePoint)
-        this.props.dispatch(
-          [
-            EditorActions.updateEditorMode(
-              EditorModes.insertMode(
-                true,
-                elementInsertionSubject(
-                  insertionSubject.uid,
-                  element,
-                  insertionSubject.size,
-                  insertionSubject.importsToAdd,
-                  insertionParent(parent, staticParent),
-                ),
-              ),
-            ),
-            CanvasActions.createDragState(
-              insertDragState(this.props.dragState.start, dragVector, this.props.componentMetadata),
-            ),
-          ],
-          'everyone',
-        )
-      }
-      this.setState({
-        guidelines: closestGuidelines,
-        mousePoint: mousePoint,
-        aspectRatio: keepAspectRatio ? getDefaultAspectRatio(this.props.mode.subject) : null,
-      })
-    } else if (
-      this.props.mode.insertionStarted &&
-      this.props.dragState != null &&
-      this.props.dragState.start != null
-    ) {
-      const dragVector = Utils.vectorFromPoints(this.props.dragState.start, mousePoint)
-      this.props.dispatch(
-        [
-          CanvasActions.createDragState(
-            insertDragState(this.props.dragState.start, dragVector, this.props.componentMetadata),
-          ),
-        ],
-        'everyone',
-      )
-      this.setState({
-        mousePoint: mousePoint,
-      })
-    }
-  }
-
   renderGuidelines() {
     if (this.state.mousePoint != null) {
       const rectToUse =
@@ -599,8 +451,6 @@ export class InsertModeControlContainer extends React.Component<
     const canvasContainer = document.getElementById(CanvasControlsContainerID)
     if (canvasContainer != null) {
       canvasContainer.addEventListener('mousedown', this.onMouseDown)
-      canvasContainer.addEventListener('mousemove', this.onMouseMove)
-      canvasContainer.addEventListener('mouseup', this.onMouseUp)
     }
   }
 
@@ -608,8 +458,6 @@ export class InsertModeControlContainer extends React.Component<
     const canvasContainer = document.getElementById(CanvasControlsContainerID)
     if (canvasContainer != null) {
       canvasContainer.removeEventListener('mousedown', this.onMouseDown)
-      canvasContainer.removeEventListener('mousemove', this.onMouseMove)
-      canvasContainer.removeEventListener('mouseup', this.onMouseUp)
     }
   }
 
