@@ -21,9 +21,11 @@ import           Servant
 import           Servant.HTML.Blaze
 import           Servant.RawM.Server
 import qualified Text.Blaze.Html5        as H
+import           Utopia.ClientModel
 import           Utopia.Web.JSON
 import           Utopia.Web.Servant
 import           Utopia.Web.ServiceTypes
+import Utopia.Web.Github
 
 {-
   'deriveJSON' as used here creates 'Data.Aeson.FromJSON' and 'Data.Aeson.ToJSON' instances
@@ -127,6 +129,8 @@ type GithubStartAuthenticationAPI = "v1" :> "github" :> "authentication" :> "sta
 
 type GithubFinishAuthenticationAPI = "v1" :> "github" :> "authentication" :> "finish" :> QueryParam "code" ExchangeToken :> Get '[HTML] H.Html
 
+type GithubSaveAPI = "v1" :> "github" :> "save" :> ReqBody '[JSON] PersistentModel :> Post '[JSON] CreateGitBranchResult
+
 type PackagePackagerResponse = Headers '[Header "Cache-Control" Text, Header "Last-Modified" LastModifiedTime, Header "Access-Control-Allow-Origin" Text] (ConduitT () ByteString (ResourceT IO) ())
 
 type PackagePackagerAPI = "v1" :> "javascript" :> "packager"
@@ -179,6 +183,7 @@ type Protected = LogoutAPI
             :<|> GithubStartAuthenticationAPI
             :<|> GithubFinishAuthenticationAPI
             :<|> GithubAuthenticatedAPI
+            :<|> GithubSaveAPI
 
 type Unprotected = AuthenticateAPI H.Html
               :<|> EmptyProjectPageAPI

@@ -309,6 +309,10 @@ import {
   editorState,
   AllElementProps,
   LockedElements,
+  ProjectGithubSettings,
+  GithubRepo,
+  githubRepo,
+  projectGithubSettings,
 } from './editor-state'
 import {
   CornerGuideline,
@@ -2994,6 +2998,21 @@ export const UtopiaVSCodeConfigKeepDeepEquality: KeepDeepEqualityCall<UtopiaVSCo
     },
   )
 
+export const GithubRepoKeepDeepEquality: KeepDeepEqualityCall<GithubRepo> = combine2EqualityCalls(
+  (repo) => repo.owner,
+  createCallWithTripleEquals(),
+  (repo) => repo.repository,
+  createCallWithTripleEquals(),
+  githubRepo,
+)
+
+export const ProjectGithubSettingsKeepDeepEquality: KeepDeepEqualityCall<ProjectGithubSettings> =
+  combine1EqualityCall(
+    (settings) => settings.targetRepository,
+    nullableDeepEquality(GithubRepoKeepDeepEquality),
+    projectGithubSettings,
+  )
+
 export const EditorStateKeepDeepEquality: KeepDeepEqualityCall<EditorState> = (
   oldValue,
   newValue,
@@ -3212,6 +3231,10 @@ export const EditorStateKeepDeepEquality: KeepDeepEqualityCall<EditorState> = (
     oldValue.allElementProps,
     newValue.allElementProps,
   )
+  const githubSettingsResults = ProjectGithubSettingsKeepDeepEquality(
+    oldValue.githubSettings,
+    newValue.githubSettings,
+  )
 
   const areEqual =
     idResult.areEqual &&
@@ -3277,7 +3300,8 @@ export const EditorStateKeepDeepEquality: KeepDeepEqualityCall<EditorState> = (
     vscodeLoadingScreenVisibleResults.areEqual &&
     indexedDBFailedResults.areEqual &&
     forceParseFilesResults.areEqual &&
-    allElementPropsResults.areEqual
+    allElementPropsResults.areEqual &&
+    githubSettingsResults.areEqual
 
   if (areEqual) {
     return keepDeepEqualityResult(oldValue, true)
@@ -3347,6 +3371,7 @@ export const EditorStateKeepDeepEquality: KeepDeepEqualityCall<EditorState> = (
       indexedDBFailedResults.value,
       forceParseFilesResults.value,
       allElementPropsResults.value,
+      githubSettingsResults.value,
     )
 
     return keepDeepEqualityResult(newEditorState, false)

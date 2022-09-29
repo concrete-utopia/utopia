@@ -213,6 +213,7 @@ import type {
   ToggleSelectionLock,
   ElementPaste,
   SetGithubState,
+  SaveToGithub,
 } from '../action-types'
 import {
   EditorModes,
@@ -1532,5 +1533,12 @@ export function toggleSelectionLock(
     action: 'TOGGLE_SELECTION_LOCK',
     targets: targets,
     newValue: newValue,
+  }
+}
+
+export function saveToGithub(targetRepository: string): SaveToGithub {
+  return {
+    action: 'SAVE_TO_GITHUB',
+    targetRepository: targetRepository,
   }
 }

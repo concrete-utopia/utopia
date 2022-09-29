@@ -68,6 +68,7 @@ initialiseTestResources pool = do
          , _proxyManager = Just proxyHttpManager
          , _auth0Resources = Nothing
          , _awsResources = Nothing
+         , _githubResources = Nothing
          , _sessionState = sessionStore
          , _storeForMetrics = store
          , _databaseMetrics = dbMetrics
