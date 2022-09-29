@@ -475,6 +475,10 @@ export function runLocalCanvasAction(
             ...action.interactionSession,
             latestMetadata: metadata,
             latestAllElementProps: allElementProps,
+            startingMetadata:
+              model.canvas.interactionSession?.startingMetadata ?? model.jsxMetadata,
+            startingAllElementProps:
+              model.canvas.interactionSession?.startingAllElementProps ?? model.allElementProps,
             startingTargetParentsToFilterOut: startingTargetParentsToFilterOut,
           },
         },

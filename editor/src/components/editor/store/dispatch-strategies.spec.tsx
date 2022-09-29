@@ -81,7 +81,6 @@ afterAll(() => {
 
 function createEditorStore(
   interactionSession: InteractionSessionWithoutMetadata | null,
-  strategyState?: StrategyState,
 ): EditorStoreFull {
   let emptyEditorState = createEditorState(NO_OP)
   let interactionSessionWithMetadata: InteractionSession | null = null
@@ -90,6 +89,8 @@ function createEditorStore(
       ...interactionSession,
       latestMetadata: {},
       latestAllElementProps: {},
+      startingMetadata: {},
+      startingAllElementProps: {},
       startingTargetParentsToFilterOut: null,
     }
   }
@@ -110,7 +111,7 @@ function createEditorStore(
     patchedEditor: emptyEditorState,
     unpatchedDerived: derivedState,
     patchedDerived: derivedState,
-    strategyState: strategyState ?? createEmptyStrategyState({}, {}),
+    strategyState: createEmptyStrategyState({}, {}),
     history: history,
     userState: {
       loginState: notLoggedIn,

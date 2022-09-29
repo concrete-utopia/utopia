@@ -43,7 +43,9 @@ export function pressKeys(
       null as any, // the strategy does not use this
     ),
     latestMetadata: metadata,
+    startingMetadata: metadata,
     latestAllElementProps: null as any,
+    startingAllElementProps: null as any,
     startingTargetParentsToFilterOut: null,
   }
 

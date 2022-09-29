@@ -185,6 +185,8 @@ function reorderElement(
     ),
     latestMetadata: null as any, // the strategy does not use this
     latestAllElementProps: null as any, // the strategy does not use this
+    startingMetadata: metadata,
+    startingAllElementProps: null as any, // the strategy does not use this
     startingTargetParentsToFilterOut: null,
   }
 

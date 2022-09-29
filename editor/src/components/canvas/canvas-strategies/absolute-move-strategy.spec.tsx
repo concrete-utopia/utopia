@@ -109,6 +109,8 @@ function dragByPixels(
     ),
     latestMetadata: null as any, // the strategy does not use this
     latestAllElementProps: null as any, // the strategy does not use this
+    startingMetadata: metadata ?? defaultMetadata,
+    startingAllElementProps: {},
     startingTargetParentsToFilterOut: null,
   }
 

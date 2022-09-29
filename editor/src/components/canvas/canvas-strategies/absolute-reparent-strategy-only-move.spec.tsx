@@ -49,6 +49,18 @@ function dragByPixels(
   vector: CanvasVector,
   modifiers: Modifiers,
 ): EditorState {
+  const startingMetadata = {
+    'scene-aaa/app-entity:aaa/bbb': {
+      elementPath: elementPath([
+        ['scene-aaa', 'app-entity'],
+        ['aaa', 'bbb'],
+      ]),
+      specialSizeMeasurements: {
+        immediateParentBounds: canvasRectangle({ x: 0, y: 0, width: 400, height: 400 }),
+        coordinateSystemBounds: canvasRectangle({ x: 0, y: 0, width: 400, height: 400 }),
+      } as SpecialSizeMeasurements,
+    } as ElementInstanceMetadata,
+  }
   const interactionSession: InteractionSession = {
     ...createMouseInteractionForTests(
       canvasPoint({ x: 0, y: 0 }),
@@ -58,6 +70,8 @@ function dragByPixels(
     ),
     latestMetadata: null as any, // the strategy does not use this
     latestAllElementProps: null as any, // the strategy does not use this
+    startingMetadata: startingMetadata,
+    startingAllElementProps: {},
     startingTargetParentsToFilterOut: null,
   }
 
@@ -72,18 +86,7 @@ function dragByPixels(
       commandDescriptions: null as any, // the strategy does not use this
       sortedApplicableStrategies: null as any, // the strategy does not use this
       status: 'success',
-      startingMetadata: {
-        'scene-aaa/app-entity:aaa/bbb': {
-          elementPath: elementPath([
-            ['scene-aaa', 'app-entity'],
-            ['aaa', 'bbb'],
-          ]),
-          specialSizeMeasurements: {
-            immediateParentBounds: canvasRectangle({ x: 0, y: 0, width: 400, height: 400 }),
-            coordinateSystemBounds: canvasRectangle({ x: 0, y: 0, width: 400, height: 400 }),
-          } as SpecialSizeMeasurements,
-        } as ElementInstanceMetadata,
-      },
+      startingMetadata: startingMetadata,
       startingAllElementProps: {},
       customStrategyState: defaultCustomStrategyState(),
     } as StrategyState,

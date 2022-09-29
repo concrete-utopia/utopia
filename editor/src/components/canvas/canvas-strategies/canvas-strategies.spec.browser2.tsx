@@ -120,6 +120,8 @@ async function getGuidelineRenderResult(scale: number) {
     ),
     latestMetadata: renderResult.getEditorState().editor.jsxMetadata,
     latestAllElementProps: renderResult.getEditorState().editor.allElementProps,
+    startingMetadata: renderResult.getEditorState().editor.jsxMetadata,
+    startingAllElementProps: renderResult.getEditorState().editor.allElementProps,
     startingTargetParentsToFilterOut: null,
   }
 
@@ -206,6 +208,8 @@ describe('Strategy Fitness', () => {
       ),
       latestMetadata: renderResult.getEditorState().editor.jsxMetadata,
       latestAllElementProps: renderResult.getEditorState().editor.allElementProps,
+      startingMetadata: renderResult.getEditorState().editor.jsxMetadata,
+      startingAllElementProps: renderResult.getEditorState().editor.allElementProps,
       startingTargetParentsToFilterOut: null,
     }
 
@@ -258,6 +262,8 @@ describe('Strategy Fitness', () => {
       ),
       latestMetadata: renderResult.getEditorState().editor.jsxMetadata,
       latestAllElementProps: renderResult.getEditorState().editor.allElementProps,
+      startingMetadata: renderResult.getEditorState().editor.jsxMetadata,
+      startingAllElementProps: renderResult.getEditorState().editor.allElementProps,
       startingTargetParentsToFilterOut: null,
     }
 
@@ -346,6 +352,8 @@ describe('Strategy Fitness', () => {
       ),
       latestMetadata: renderResult.getEditorState().editor.jsxMetadata,
       latestAllElementProps: renderResult.getEditorState().editor.allElementProps,
+      startingMetadata: renderResult.getEditorState().editor.jsxMetadata,
+      startingAllElementProps: renderResult.getEditorState().editor.allElementProps,
       startingTargetParentsToFilterOut: null,
     }
 
@@ -398,6 +406,8 @@ describe('Strategy Fitness', () => {
       ),
       latestMetadata: renderResult.getEditorState().editor.jsxMetadata,
       latestAllElementProps: renderResult.getEditorState().editor.allElementProps,
+      startingMetadata: renderResult.getEditorState().editor.jsxMetadata,
+      startingAllElementProps: renderResult.getEditorState().editor.allElementProps,
       startingTargetParentsToFilterOut: null,
     }
 
@@ -450,6 +460,8 @@ describe('Strategy Fitness', () => {
       ),
       latestMetadata: renderResult.getEditorState().editor.jsxMetadata,
       latestAllElementProps: renderResult.getEditorState().editor.allElementProps,
+      startingMetadata: renderResult.getEditorState().editor.jsxMetadata,
+      startingAllElementProps: renderResult.getEditorState().editor.allElementProps,
       startingTargetParentsToFilterOut: null,
     }
 
