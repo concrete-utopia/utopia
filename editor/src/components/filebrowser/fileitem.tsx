@@ -255,7 +255,7 @@ interface FileBrowserItemDragProps {
 }
 
 class FileBrowserItemInner extends React.PureComponent<
-  FileBrowserItemProps & FileBrowserItemDragProps,
+  FileBrowserItemProps & FileBrowserItemDragProps & DragHandleProps,
   FileBrowserItemState
 > {
   constructor(props: FileBrowserItemProps & FileBrowserItemDragProps) {
@@ -752,6 +752,12 @@ class FileBrowserItemInner extends React.PureComponent<
                 textOverflow: 'ellipsis',
               }}
             >
+              {this.props.imageFile != null && (
+                <DragHandle
+                  onDragHandleStart={this.props.onDragHandleStart}
+                  onDragHandleCancelled={this.props.onDragHandleCancelled}
+                />
+              )}
               {this.renderIcon()}
               {this.renderLabel()}
               {this.renderModifiedIcon()}
@@ -927,17 +933,13 @@ export const FileBrowserItem: React.FC<FileBrowserItemProps> = (props: FileBrows
   }
 
   function onMouseUp() {
-    props.dispatch([
-      CanvasActions.clearInteractionSession(false),
-      EditorActions.setFilebrowserDropTarget(null),
-    ])
+    props.dispatch([CanvasActions.clearInteractionSession(false)])
   }
 
   const forwardedRef = (node: ConnectableElement) => drag(drop(node))
 
   return (
-    <FlexRow>
-      {props.imageFile != null && <DragHandle onMouseDown={onMouseDown} onMouseUp={onMouseUp} />}
+    <div onMouseUp={onMouseUp}>
       <FileBrowserItemInner
         {...props}
         isDragging={isDragging}
@@ -945,20 +947,26 @@ export const FileBrowserItem: React.FC<FileBrowserItemProps> = (props: FileBrows
         connectDragPreview={dragPreview}
         // eslint-disable-next-line react/jsx-no-bind
         forwardedRef={forwardedRef}
+        onDragHandleCancelled={onMouseUp}
+        onDragHandleStart={onMouseDown}
       />
-    </FlexRow>
+    </div>
   )
 }
 
-interface DragHandleProps {
-  onMouseUp: () => void
-  onMouseDown: () => void
+export interface DragHandleProps {
+  onDragHandleCancelled: () => void
+  onDragHandleStart: () => void
 }
 
 const DragHandle = (props: DragHandleProps) => {
-  const { onMouseDown, onMouseUp } = props
+  const { onDragHandleStart: onDragStart, onDragHandleCancelled: onDragCancelled } = props
   return (
-    <div style={{ padding: 5, cursor: 'pointer' }} onMouseDown={onMouseDown} onMouseUp={onMouseUp}>
+    <div
+      style={{ padding: 5, cursor: 'pointer' }}
+      onMouseDown={onDragStart}
+      onMouseUp={onDragCancelled}
+    >
       <div style={{ height: 2, width: 10, borderRadius: 2, backgroundColor: 'gray' }} />
       <div style={{ height: 2, background: 'transparent' }} />
       <div style={{ height: 2, width: 10, borderRadius: 2, backgroundColor: 'gray' }} />
