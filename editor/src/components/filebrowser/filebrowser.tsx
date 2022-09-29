@@ -25,6 +25,7 @@ import {
 } from '../../uuiui'
 import { unless } from '../../utils/react-conditionals'
 import { AddingFile, applyAddingFile } from './filepath-utils'
+import { generateUidWithExistingComponents } from '../../core/model/element-template-utils'
 
 export type FileBrowserItemType = 'file' | 'export'
 
@@ -232,7 +233,7 @@ const FileBrowserItems = React.memo(() => {
 
   const [collapsedPaths, setCollapsedPaths] = React.useState<string[]>([])
 
-  const Expand = React.useCallback(
+  const expand = React.useCallback(
     (filePath: string) => {
       setCollapsedPaths(collapsedPaths.filter((path) => filePath !== path))
     },
@@ -261,6 +262,11 @@ const FileBrowserItems = React.memo(() => {
     [projectContents, collapsedPaths, codeResultCache, errorMessages],
   )
 
+  const generateNewUid = React.useCallback(
+    () => generateUidWithExistingComponents(projectContents),
+    [projectContents],
+  )
+
   return (
     <React.Fragment>
       {fileBrowserItems.map((element: FileBrowserItemInfo, index: number) => (
@@ -277,12 +283,13 @@ const FileBrowserItems = React.memo(() => {
             key={`filebrowser-${index}`}
             dispatch={dispatch}
             toggleCollapse={toggleCollapse}
-            expand={Expand}
+            expand={expand}
             setSelected={setSelected}
             collapsed={element.type === 'file' && collapsedPaths.indexOf(element.path) > -1}
             errorMessages={filterErrorMessages(element.path, errorMessages)}
             dropTarget={dropTarget}
             imageFile={element.imageFile}
+            generateNewUid={generateNewUid}
           />
         </div>
       ))}

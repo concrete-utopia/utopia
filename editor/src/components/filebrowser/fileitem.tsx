@@ -50,6 +50,7 @@ import {
   setJSXAttributesAttribute,
 } from '../../core/shared/element-template'
 import { imagePathURL } from '../../common/server'
+import { generateUidWithExistingComponents } from '../../core/model/element-template-utils'
 
 export interface FileBrowserItemProps extends FileBrowserItemInfo {
   isSelected: boolean
@@ -61,6 +62,7 @@ export interface FileBrowserItemProps extends FileBrowserItemInfo {
   toggleCollapse: (filePath: string) => void
   expand: (filePath: string) => void
   setSelected: (selectedItem: FileBrowserItemInfo | null) => void
+  generateNewUid: () => string
 }
 
 interface FileBrowserItemState {
@@ -518,8 +520,7 @@ class FileBrowserItemInner extends React.PureComponent<
       return
     }
 
-    // TODO: remove
-    const newUID = 'eeeeeeeee'
+    const newUID = this.props.generateNewUid()
 
     const propsForElement = jsxAttributesFromMap({
       src: jsxAttributeValue(imagePathURL(this.props.path), emptyComments),
@@ -546,7 +547,7 @@ class FileBrowserItemInner extends React.PureComponent<
 
     this.props.dispatch(
       [
-        EditorActions.enableInsertModeForJSXElement(newElement, 'eeeeeeeee', {}, null),
+        EditorActions.enableInsertModeForJSXElement(newElement, newUID, {}, null),
         CanvasActions.createInteractionSession(
           createInteractionViaMouse(CanvasMousePositionRaw!, emptyModifiers, boundingArea()),
         ),
@@ -556,9 +557,6 @@ class FileBrowserItemInner extends React.PureComponent<
   }
 
   cancelImageDrag = () => {
-    if (this.props.imageFile == null) {
-      return
-    }
     this.props.dispatch([CanvasActions.clearInteractionSession(false)], 'everyone')
   }
 
