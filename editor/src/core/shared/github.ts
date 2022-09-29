@@ -75,6 +75,9 @@ export async function saveProjectToGithub(
         throw new Error(`Unhandled response body ${JSON.stringify(responseBody)}`)
     }
   } else {
-    throw new Error(`Unexpected status returned from endpoint: ${response.status}`)
+    dispatch(
+      [showToast(notice(`Unexpected status returned from endpoint: ${response.status}`, 'ERROR'))],
+      'everyone',
+    )
   }
 }
