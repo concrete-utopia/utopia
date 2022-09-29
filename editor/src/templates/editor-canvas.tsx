@@ -955,7 +955,6 @@ export class EditorCanvas extends React.Component<EditorCanvasProps> {
               mousePosition.canvasPositionRounded,
               this.props.model.scale,
               insertionTarget,
-              null,
             )
 
             this.props.dispatch(actions, 'everyone')

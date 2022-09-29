@@ -102,7 +102,6 @@ export function getActionsForClipboardItems(
         parentFrame != null
           ? Utils.getRectCenter(parentFrame)
           : (Utils.point(100, 100) as CanvasPoint)
-      const imageSizeMultiplier = 2
       let pastedImages: Array<ImageResult> = []
       fastForEach(pastedFiles, (pastedFile) => {
         if (pastedFile.type === 'IMAGE_RESULT') {
@@ -117,7 +116,6 @@ export function getActionsForClipboardItems(
         parentCenter,
         canvasScale,
         target,
-        imageSizeMultiplier,
       )
     }
     return [...utopiaActions, ...insertImageActions]
@@ -132,7 +130,6 @@ export function createDirectInsertImageActions(
   centerPoint: CanvasPoint,
   scale: number,
   parentPath: ElementPath | null,
-  overrideDefaultMultiplier: number | null,
 ): Array<EditorAction> {
   if (images.length === 0) {
     return []
