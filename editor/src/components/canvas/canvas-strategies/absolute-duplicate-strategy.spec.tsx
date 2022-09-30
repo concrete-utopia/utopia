@@ -15,7 +15,10 @@ import {
   localRectangle,
 } from '../../../core/shared/math-utils'
 import { altModifier, Modifiers } from '../../../utils/modifiers'
-import { pickCanvasStateFromEditorState } from './canvas-strategies'
+import {
+  pickCanvasStateFromEditorState,
+  pickCanvasStateFromEditorStateWithMetadata,
+} from './canvas-strategies'
 import { InteractionSession } from './interaction-state'
 import { createMouseInteractionForTests } from './interaction-state.test-utils'
 import { createBuiltInDependenciesList } from '../../../core/es-modules/package-manager/built-in-dependencies-list'
@@ -69,13 +72,15 @@ function dragByPixelsIsApplicable(
     ),
     latestMetadata: null as any, // the strategy does not use this
     latestAllElementProps: null as any, // the strategy does not use this
-    startingMetadata: null as any, // the strategy does not use this
-    startingAllElementProps: null as any, // the strategy does not use this
     startingTargetParentsToFilterOut: null,
   }
 
   return absoluteDuplicateStrategy.isApplicable(
-    pickCanvasStateFromEditorState(editorState, createBuiltInDependenciesList(null)),
+    pickCanvasStateFromEditorStateWithMetadata(
+      editorState,
+      createBuiltInDependenciesList(null),
+      metadata,
+    ),
     interactionSession,
     metadata,
     editorState.allElementProps,

@@ -1775,7 +1775,7 @@ const ReparentTargetsToFilterKeepDeepEquality: KeepDeepEqualityCall<ReparentTarg
   )
 
 export const InteractionSessionKeepDeepEquality: KeepDeepEqualityCall<InteractionSession> =
-  combine12EqualityCalls(
+  combine10EqualityCalls(
     (session) => session.interactionData,
     InputDataKeepDeepEquality,
     (session) => session.activeControl,
@@ -1796,10 +1796,6 @@ export const InteractionSessionKeepDeepEquality: KeepDeepEqualityCall<Interactio
     nullableDeepEquality(ReparentTargetsToFilterKeepDeepEquality),
     (session) => session.updatedTargetPaths,
     objectDeepEquality(ElementPathKeepDeepEquality),
-    (session) => session.startingMetadata,
-    ElementInstanceMetadataMapKeepDeepEquality,
-    (session) => session.startingAllElementProps,
-    createCallFromIntrospectiveKeepDeep(),
     interactionSession,
   )
 

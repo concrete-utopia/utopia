@@ -92,6 +92,26 @@ export function pickCanvasStateFromEditorState(
     openFile: editorState.canvas.openFile?.filename,
     scale: editorState.canvas.scale,
     canvasOffset: editorState.canvas.roundedCanvasOffset,
+    startingMetadata: editorState.jsxMetadata,
+    startingAllElementProps: editorState.allElementProps,
+  }
+}
+
+export function pickCanvasStateFromEditorStateWithMetadata(
+  editorState: EditorState,
+  builtInDependencies: BuiltInDependencies,
+  metadata: ElementInstanceMetadataMap,
+): InteractionCanvasState {
+  return {
+    builtInDependencies: builtInDependencies,
+    interactionTarget: getInteractionTargetFromEditorState(editorState),
+    projectContents: editorState.projectContents,
+    nodeModules: editorState.nodeModules.files,
+    openFile: editorState.canvas.openFile?.filename,
+    scale: editorState.canvas.scale,
+    canvasOffset: editorState.canvas.roundedCanvasOffset,
+    startingMetadata: metadata,
+    startingAllElementProps: editorState.allElementProps,
   }
 }
 
@@ -181,8 +201,8 @@ export function getApplicableStrategiesOrderedByFitness(
     strategies,
     canvasState,
     interactionSession,
-    interactionSession.startingMetadata,
-    interactionSession.startingAllElementProps,
+    canvasState.startingMetadata,
+    canvasState.startingAllElementProps,
   )
 
   // Compute the fitness results upfront.

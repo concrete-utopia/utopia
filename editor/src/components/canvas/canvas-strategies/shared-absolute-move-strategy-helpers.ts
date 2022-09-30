@@ -62,7 +62,7 @@ export function getAbsoluteMoveCommandsForSelectedElement(
   )
 
   const elementMetadata = MetadataUtils.findElementByElementPath(
-    interactionState.startingMetadata, // TODO should this be using the current metadata?
+    canvasState.startingMetadata, // TODO should this be using the current metadata?
     selectedElement,
   )
 
@@ -71,12 +71,12 @@ export function getAbsoluteMoveCommandsForSelectedElement(
 
   const localFrame = MetadataUtils.getLocalFrameFromSpecialSizeMeasurements(
     selectedElement,
-    interactionState.startingMetadata,
+    canvasState.startingMetadata,
   )
 
   const globalFrame = MetadataUtils.getFrameInCanvasCoords(
     selectedElement,
-    interactionState.startingMetadata,
+    canvasState.startingMetadata,
   )
 
   if (element == null) {

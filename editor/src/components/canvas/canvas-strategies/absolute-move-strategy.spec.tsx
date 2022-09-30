@@ -22,7 +22,10 @@ import {
   testPrintCodeFromEditorState,
 } from '../ui-jsx.test-utils'
 import { absoluteMoveStrategy } from './absolute-move-strategy'
-import { pickCanvasStateFromEditorState } from './canvas-strategies'
+import {
+  pickCanvasStateFromEditorState,
+  pickCanvasStateFromEditorStateWithMetadata,
+} from './canvas-strategies'
 import { defaultCustomStrategyState } from './canvas-strategy-types'
 import { InteractionSession, StrategyState } from './interaction-state'
 import { createMouseInteractionForTests } from './interaction-state.test-utils'
@@ -109,25 +112,19 @@ function dragByPixels(
     ),
     latestMetadata: null as any, // the strategy does not use this
     latestAllElementProps: null as any, // the strategy does not use this
-    startingMetadata: metadata ?? defaultMetadata,
-    startingAllElementProps: {},
     startingTargetParentsToFilterOut: null,
   }
 
   const strategyResult = absoluteMoveStrategy.apply(
-    pickCanvasStateFromEditorState(editorState, createBuiltInDependenciesList(null)),
+    pickCanvasStateFromEditorStateWithMetadata(
+      editorState,
+      createBuiltInDependenciesList(null),
+      metadata ?? defaultMetadata,
+    ),
     interactionSession,
     {
-      currentStrategy: null as any, // the strategy does not use this
-      currentStrategyFitness: null as any, // the strategy does not use this
-      currentStrategyCommands: null as any, // the strategy does not use this
-      accumulatedPatches: null as any, // the strategy does not use this
-      commandDescriptions: null as any, // the strategy does not use this
-      sortedApplicableStrategies: null as any, // the strategy does not use this
-      startingMetadata: metadata ?? defaultMetadata,
-      startingAllElementProps: {},
       customStrategyState: defaultCustomStrategyState(),
-    } as StrategyState,
+    },
     'end-interaction',
   )
 

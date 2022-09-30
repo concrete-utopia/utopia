@@ -84,8 +84,6 @@ export interface InteractionSession {
   lastInteractionTime: number
   latestMetadata: ElementInstanceMetadataMap
   latestAllElementProps: AllElementProps
-  startingMetadata: ElementInstanceMetadataMap
-  startingAllElementProps: AllElementProps
 
   // To track if the user selected a strategy
   userPreferredStrategy: CanvasStrategyId | null
@@ -107,8 +105,6 @@ export function interactionSession(
   allElementProps: AllElementProps,
   startingTargetParentsToFilterOut: ReparentTargetsToFilter | null,
   updatedTargetPaths: UpdatedPathMap,
-  startingMetadata: ElementInstanceMetadataMap,
-  startingAllElementProps: AllElementProps,
 ): InteractionSession {
   return {
     interactionData: interactionData,
@@ -121,8 +117,6 @@ export function interactionSession(
     latestAllElementProps: allElementProps,
     startingTargetParentsToFilterOut: startingTargetParentsToFilterOut,
     updatedTargetPaths: updatedTargetPaths,
-    startingMetadata: startingMetadata,
-    startingAllElementProps: startingAllElementProps,
   }
 }
 
@@ -153,9 +147,9 @@ export interface StrategyState {
   status: StrategyApplicationStatus
 
   // Checkpointed metadata at the point at which a strategy change has occurred.
-  startingMetadata: ElementInstanceMetadataMap
+  startingMetadata: ElementInstanceMetadataMap // TODO delete me!
   customStrategyState: CustomStrategyState
-  startingAllElementProps: AllElementProps
+  startingAllElementProps: AllElementProps // TODO delete me!!!!
 }
 
 export interface StrategyStateNew {

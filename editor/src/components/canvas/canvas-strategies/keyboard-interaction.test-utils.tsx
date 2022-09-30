@@ -10,7 +10,10 @@ import { KeyCharacter } from '../../../utils/keyboard'
 import { Modifiers } from '../../../utils/modifiers'
 import { EditorState } from '../../editor/store/editor-state'
 import { foldAndApplyCommands } from '../commands/commands'
-import { pickCanvasStateFromEditorState } from './canvas-strategies'
+import {
+  pickCanvasStateFromEditorState,
+  pickCanvasStateFromEditorStateWithMetadata,
+} from './canvas-strategies'
 import { CanvasStrategy, defaultCustomStrategyState } from './canvas-strategy-types'
 import {
   createInteractionViaKeyboard,
@@ -43,14 +46,16 @@ export function pressKeys(
       null as any, // the strategy does not use this
     ),
     latestMetadata: metadata,
-    startingMetadata: metadata,
     latestAllElementProps: null as any,
-    startingAllElementProps: null as any,
     startingTargetParentsToFilterOut: null,
   }
 
   const strategyResult = strategy.apply(
-    pickCanvasStateFromEditorState(editorState, createBuiltInDependenciesList(null)),
+    pickCanvasStateFromEditorStateWithMetadata(
+      editorState,
+      createBuiltInDependenciesList(null),
+      metadata,
+    ),
     interactionSession,
     {
       currentStrategy: null as any, // the strategy does not use this

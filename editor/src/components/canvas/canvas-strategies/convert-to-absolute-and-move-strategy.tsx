@@ -79,8 +79,8 @@ export const convertToAbsoluteAndMoveStrategy: CanvasStrategy = {
     return convertToAbsoluteAndMoveStrategy.isApplicable(
       canvasState,
       interactionState,
-      interactionState.startingMetadata,
-      interactionState.startingAllElementProps,
+      canvasState.startingMetadata,
+      canvasState.startingAllElementProps,
     ) &&
       interactionState.interactionData.type === 'DRAG' &&
       interactionState.activeControl.type === 'BOUNDING_AREA'
@@ -100,7 +100,7 @@ export const convertToAbsoluteAndMoveStrategy: CanvasStrategy = {
       } => {
         return getEscapeHatchCommands(
           getTargetPathsFromInteractionTarget(canvasState.interactionTarget),
-          interactionState.startingMetadata,
+          canvasState.startingMetadata,
           canvasState,
           snappedDragVector,
         )

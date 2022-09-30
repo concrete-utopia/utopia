@@ -63,8 +63,8 @@ export const absoluteMoveStrategy: CanvasStrategy = {
     return absoluteMoveStrategy.isApplicable(
       canvasState,
       interactionState,
-      interactionState.startingMetadata,
-      interactionState.startingAllElementProps,
+      canvasState.startingMetadata,
+      canvasState.startingAllElementProps,
     ) &&
       interactionState.interactionData.type === 'DRAG' &&
       interactionState.activeControl.type === 'BOUNDING_AREA'
@@ -145,14 +145,14 @@ export function applyAbsoluteMoveCommon(
         (path) => interactionState.updatedTargetPaths[EP.toString(path)] ?? path,
       )
       const moveGuidelines = collectParentAndSiblingGuidelines(
-        interactionState.startingMetadata,
+        canvasState.startingMetadata,
         targetsForSnapping,
       )
 
       const { snappedDragVector, guidelinesWithSnappingVector } = snapDrag(
         drag,
         constrainedDragAxis,
-        interactionState.startingMetadata,
+        canvasState.startingMetadata,
         selectedElements,
         moveGuidelines,
         canvasState.scale,

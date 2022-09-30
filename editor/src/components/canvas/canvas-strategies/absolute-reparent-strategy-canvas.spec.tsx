@@ -18,7 +18,10 @@ import {
   TestSceneUID,
 } from '../ui-jsx.test-utils'
 import { absoluteReparentStrategy } from './absolute-reparent-strategy'
-import { pickCanvasStateFromEditorState } from './canvas-strategies'
+import {
+  pickCanvasStateFromEditorState,
+  pickCanvasStateFromEditorStateWithMetadata,
+} from './canvas-strategies'
 import { defaultCustomStrategyState } from './canvas-strategy-types'
 import { InteractionSession, StrategyState } from './interaction-state'
 import { createMouseInteractionForTests } from './interaction-state.test-utils'
@@ -121,26 +124,19 @@ function reparentElement(
     ),
     latestMetadata: null as any, // the strategy does not use this
     latestAllElementProps: null as any, // the strategy does not use this
-    startingMetadata: startingMetadata,
-    startingAllElementProps: {},
     startingTargetParentsToFilterOut: null,
   }
 
   const strategyResult = absoluteReparentStrategy.apply(
-    pickCanvasStateFromEditorState(editorState, createBuiltInDependenciesList(null)),
+    pickCanvasStateFromEditorStateWithMetadata(
+      editorState,
+      createBuiltInDependenciesList(null),
+      startingMetadata,
+    ),
     interactionSession,
     {
-      currentStrategy: null as any, // the strategy does not use this
-      currentStrategyFitness: null as any, // the strategy does not use this
-      currentStrategyCommands: null as any, // the strategy does not use this
-      accumulatedPatches: null as any, // the strategy does not use this
-      commandDescriptions: null as any, // the strategy does not use this
-      sortedApplicableStrategies: null as any, // the strategy does not use this
-      status: 'success',
-      startingMetadata: startingMetadata,
-      startingAllElementProps: {},
       customStrategyState: defaultCustomStrategyState(),
-    } as StrategyState,
+    },
     'end-interaction',
   )
 

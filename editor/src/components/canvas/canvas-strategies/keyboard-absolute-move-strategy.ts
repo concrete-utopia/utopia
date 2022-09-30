@@ -59,8 +59,8 @@ export const keyboardAbsoluteMoveStrategy: CanvasStrategy = {
       keyboardAbsoluteMoveStrategy.isApplicable(
         canvasState,
         interactionState,
-        interactionState.startingMetadata,
-        interactionState.startingAllElementProps,
+        canvasState.startingMetadata,
+        canvasState.startingAllElementProps,
       ) &&
       interactionState.interactionData.type === 'KEYBOARD'
     ) {
@@ -106,10 +106,7 @@ export const keyboardAbsoluteMoveStrategy: CanvasStrategy = {
           intendedBounds.push(...elementResult.intendedBounds)
         })
       }
-      const multiselectBounds = getMultiselectBounds(
-        interactionState.startingMetadata,
-        selectedElements,
-      )
+      const multiselectBounds = getMultiselectBounds(canvasState.startingMetadata, selectedElements)
       const newFrame = offsetRect(
         defaultIfNull(canvasRectangle(zeroRectangle), multiselectBounds),
         keyboardMovement,

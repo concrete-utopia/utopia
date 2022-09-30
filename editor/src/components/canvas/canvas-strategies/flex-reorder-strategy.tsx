@@ -55,8 +55,8 @@ export const flexReorderStrategy: CanvasStrategy = {
     return flexReorderStrategy.isApplicable(
       canvasState,
       interactionState,
-      interactionState.startingMetadata,
-      interactionState.startingAllElementProps,
+      canvasState.startingMetadata,
+      canvasState.startingAllElementProps,
     ) &&
       interactionState.interactionData.type === 'DRAG' &&
       interactionState.activeControl.type === 'BOUNDING_AREA'
@@ -71,10 +71,9 @@ export const flexReorderStrategy: CanvasStrategy = {
       const selectedElements = getTargetPathsFromInteractionTarget(canvasState.interactionTarget)
 
       const target = selectedElements[0]
-      const siblingsOfTarget = MetadataUtils.getSiblings(
-        interactionState.startingMetadata,
-        target,
-      ).map((element) => element.elementPath)
+      const siblingsOfTarget = MetadataUtils.getSiblings(canvasState.startingMetadata, target).map(
+        (element) => element.elementPath,
+      )
 
       if (!isReorderAllowed(siblingsOfTarget)) {
         return strategyApplicationResult(
@@ -93,7 +92,7 @@ export const flexReorderStrategy: CanvasStrategy = {
       const lastReorderIdx = strategyState.customStrategyState.lastReorderIdx ?? unpatchedIndex
 
       const newIndex = reorderIndexForReorder(
-        interactionState.startingMetadata,
+        canvasState.startingMetadata,
         siblingsOfTarget,
         pointOnCanvas,
       )

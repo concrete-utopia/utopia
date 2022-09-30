@@ -95,8 +95,8 @@ export const keyboardAbsoluteResizeStrategy: CanvasStrategy = {
       keyboardAbsoluteResizeStrategy.isApplicable(
         canvasState,
         interactionState,
-        interactionState.startingMetadata,
-        interactionState.startingAllElementProps,
+        canvasState.startingMetadata,
+        canvasState.startingAllElementProps,
       ) &&
       interactionState.interactionData.type === 'KEYBOARD'
     ) {
@@ -121,7 +121,7 @@ export const keyboardAbsoluteResizeStrategy: CanvasStrategy = {
 
       // Start with the frame as it is at the start of the interaction.
       let newFrame =
-        getMultiselectBounds(interactionState.startingMetadata, selectedElements) ??
+        getMultiselectBounds(canvasState.startingMetadata, selectedElements) ??
         canvasRectangle(zeroRectangle)
 
       let commands: Array<CanvasCommand> = []
@@ -146,14 +146,12 @@ export const keyboardAbsoluteResizeStrategy: CanvasStrategy = {
               (_, e) => e,
             )
             const elementParentBounds =
-              MetadataUtils.findElementByElementPath(
-                interactionState.startingMetadata,
-                selectedElement,
-              )?.specialSizeMeasurements.immediateParentBounds ?? null
+              MetadataUtils.findElementByElementPath(canvasState.startingMetadata, selectedElement)
+                ?.specialSizeMeasurements.immediateParentBounds ?? null
 
             const elementGlobalFrame = MetadataUtils.getFrameInCanvasCoords(
               selectedElement,
-              interactionState.startingMetadata,
+              canvasState.startingMetadata,
             )
 
             if (element != null) {

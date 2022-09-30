@@ -5,9 +5,15 @@ import { cmdModifier, emptyModifiers, Modifiers } from '../../../utils/modifiers
 import {
   findCanvasStrategy,
   pickCanvasStateFromEditorState,
+  pickCanvasStateFromEditorStateWithMetadata,
   RegisteredCanvasStrategies,
 } from './canvas-strategies'
-import { boundingArea, InteractionSession, StrategyState } from './interaction-state'
+import {
+  boundingArea,
+  createEmptyStrategyState,
+  InteractionSession,
+  StrategyState,
+} from './interaction-state'
 import { createMouseInteractionForTests } from './interaction-state.test-utils'
 import { act, fireEvent } from '@testing-library/react'
 import {
@@ -22,25 +28,20 @@ import { CanvasControlsContainerID } from '../controls/new-canvas-controls'
 import { PrettierConfig } from 'utopia-vscode-common'
 import * as Prettier from 'prettier/standalone'
 import { forceNotNull } from '../../..//core/shared/optional-utils'
+import { defaultCustomStrategyState } from './canvas-strategy-types'
 
-const baseStrategyState = (
-  metadata: ElementInstanceMetadataMap,
-  allElementProps: AllElementProps,
-) =>
-  ({
-    currentStrategy: null as any, // the strategy does not use this
-    currentStrategyFitness: null as any, // the strategy does not use this
-    currentStrategyCommands: null as any, // the strategy does not use this
-    accumulatedPatches: null as any, // the strategy does not use this
-    commandDescriptions: null as any, // the strategy does not use this
-    sortedApplicableStrategies: null as any, // the strategy does not use this
-    startingMetadata: metadata,
-    startingAllElementProps: allElementProps,
-    customStrategyState: {
-      escapeHatchActivated: false,
-      lastReorderIdx: null,
-    },
-  } as StrategyState)
+const baseStrategyState = (): StrategyState => ({
+  currentStrategy: null as any, // the strategy does not use this
+  currentStrategyFitness: null as any, // the strategy does not use this
+  currentStrategyCommands: null as any, // the strategy does not use this
+  accumulatedPatches: null as any, // the strategy does not use this
+  commandDescriptions: null as any, // the strategy does not use this
+  sortedApplicableStrategies: null as any, // the strategy does not use this
+  status: null as any, // the strategy does not use this
+  startingMetadata: null as any, // the strategy does not use this
+  startingAllElementProps: null as any, // the strategy does not use this
+  customStrategyState: defaultCustomStrategyState(),
+})
 
 interface StyleRectangle {
   left: string
@@ -120,8 +121,6 @@ async function getGuidelineRenderResult(scale: number) {
     ),
     latestMetadata: renderResult.getEditorState().editor.jsxMetadata,
     latestAllElementProps: renderResult.getEditorState().editor.allElementProps,
-    startingMetadata: renderResult.getEditorState().editor.jsxMetadata,
-    startingAllElementProps: renderResult.getEditorState().editor.allElementProps,
     startingTargetParentsToFilterOut: null,
   }
 
@@ -208,8 +207,6 @@ describe('Strategy Fitness', () => {
       ),
       latestMetadata: renderResult.getEditorState().editor.jsxMetadata,
       latestAllElementProps: renderResult.getEditorState().editor.allElementProps,
-      startingMetadata: renderResult.getEditorState().editor.jsxMetadata,
-      startingAllElementProps: renderResult.getEditorState().editor.allElementProps,
       startingTargetParentsToFilterOut: null,
     }
 
@@ -220,10 +217,7 @@ describe('Strategy Fitness', () => {
         renderResult.getEditorState().builtInDependencies,
       ),
       interactionSession,
-      baseStrategyState(
-        renderResult.getEditorState().editor.jsxMetadata,
-        renderResult.getEditorState().editor.allElementProps,
-      ),
+      baseStrategyState(),
       null,
     )
 
@@ -262,8 +256,6 @@ describe('Strategy Fitness', () => {
       ),
       latestMetadata: renderResult.getEditorState().editor.jsxMetadata,
       latestAllElementProps: renderResult.getEditorState().editor.allElementProps,
-      startingMetadata: renderResult.getEditorState().editor.jsxMetadata,
-      startingAllElementProps: renderResult.getEditorState().editor.allElementProps,
       startingTargetParentsToFilterOut: null,
     }
 
@@ -274,10 +266,7 @@ describe('Strategy Fitness', () => {
         renderResult.getEditorState().builtInDependencies,
       ),
       interactionSession,
-      baseStrategyState(
-        renderResult.getEditorState().editor.jsxMetadata,
-        renderResult.getEditorState().editor.allElementProps,
-      ),
+      baseStrategyState(),
       null,
     )
 
@@ -352,8 +341,6 @@ describe('Strategy Fitness', () => {
       ),
       latestMetadata: renderResult.getEditorState().editor.jsxMetadata,
       latestAllElementProps: renderResult.getEditorState().editor.allElementProps,
-      startingMetadata: renderResult.getEditorState().editor.jsxMetadata,
-      startingAllElementProps: renderResult.getEditorState().editor.allElementProps,
       startingTargetParentsToFilterOut: null,
     }
 
@@ -364,10 +351,7 @@ describe('Strategy Fitness', () => {
         renderResult.getEditorState().builtInDependencies,
       ),
       interactionSession,
-      baseStrategyState(
-        renderResult.getEditorState().editor.jsxMetadata,
-        renderResult.getEditorState().editor.allElementProps,
-      ),
+      baseStrategyState(),
       null,
     )
 
@@ -406,8 +390,6 @@ describe('Strategy Fitness', () => {
       ),
       latestMetadata: renderResult.getEditorState().editor.jsxMetadata,
       latestAllElementProps: renderResult.getEditorState().editor.allElementProps,
-      startingMetadata: renderResult.getEditorState().editor.jsxMetadata,
-      startingAllElementProps: renderResult.getEditorState().editor.allElementProps,
       startingTargetParentsToFilterOut: null,
     }
 
@@ -418,10 +400,7 @@ describe('Strategy Fitness', () => {
         renderResult.getEditorState().builtInDependencies,
       ),
       interactionSession,
-      baseStrategyState(
-        renderResult.getEditorState().editor.jsxMetadata,
-        renderResult.getEditorState().editor.allElementProps,
-      ),
+      baseStrategyState(),
       null,
     )
 
@@ -460,8 +439,6 @@ describe('Strategy Fitness', () => {
       ),
       latestMetadata: renderResult.getEditorState().editor.jsxMetadata,
       latestAllElementProps: renderResult.getEditorState().editor.allElementProps,
-      startingMetadata: renderResult.getEditorState().editor.jsxMetadata,
-      startingAllElementProps: renderResult.getEditorState().editor.allElementProps,
       startingTargetParentsToFilterOut: null,
     }
 
@@ -472,10 +449,7 @@ describe('Strategy Fitness', () => {
         renderResult.getEditorState().builtInDependencies,
       ),
       interactionSession,
-      baseStrategyState(
-        renderResult.getEditorState().editor.jsxMetadata,
-        renderResult.getEditorState().editor.allElementProps,
-      ),
+      baseStrategyState(),
       null,
     )
 

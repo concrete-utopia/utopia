@@ -222,8 +222,8 @@ function findReparentStrategy(
     pointOnCanvas,
     cmdPressed,
     canvasState,
-    interactionState.startingMetadata,
-    interactionState.startingAllElementProps,
+    canvasState.startingMetadata,
+    canvasState.startingAllElementProps,
     missingBoundsHandling,
   )
 
@@ -244,8 +244,8 @@ function findReparentStrategy(
     !parentStayedTheSame
   ) {
     return reparentStrategyForParent(
-      interactionState.startingMetadata,
-      interactionState.startingMetadata,
+      canvasState.startingMetadata,
+      canvasState.startingMetadata,
       filteredSelectedElements,
       newParentPath,
     )
@@ -681,7 +681,6 @@ export function applyFlexReparent(
   stripAbsoluteProperties: StripAbsoluteProperties,
   canvasState: InteractionCanvasState,
   interactionSession: InteractionSession,
-  strategyState: StrategyStateNew,
 ): StrategyApplicationResult {
   const FlexReparentIndicatorSize = 2 / canvasState.scale
 
@@ -690,7 +689,7 @@ export function applyFlexReparent(
 
   return ifAllowedToReparent(
     canvasState,
-    interactionSession.startingMetadata,
+    canvasState.startingMetadata,
     filteredSelectedElements,
     () => {
       if (
@@ -706,8 +705,8 @@ export function applyFlexReparent(
           pointOnCanvas,
           interactionSession.interactionData.modifiers.cmd,
           canvasState,
-          interactionSession.startingMetadata,
-          interactionSession.startingAllElementProps,
+          canvasState.startingMetadata,
+          canvasState.startingAllElementProps,
           'use-strict-bounds',
         )
 
@@ -721,11 +720,11 @@ export function applyFlexReparent(
           const newIndex = reparentResult.newIndex
           const newParent = reparentResult.newParent
           const newParentMetadata = MetadataUtils.findElementByElementPath(
-            interactionSession.startingMetadata,
+            canvasState.startingMetadata,
             newParent,
           )
           const parentRect =
-            MetadataUtils.getFrameInCanvasCoords(newParent, interactionSession.startingMetadata) ??
+            MetadataUtils.getFrameInCanvasCoords(newParent, canvasState.startingMetadata) ??
             zeroCanvasRect
           const flexDirection = MetadataUtils.getFlexDirection(newParentMetadata)
           const newParentFlexDirection = forceNotNull(
@@ -738,7 +737,7 @@ export function applyFlexReparent(
           )
 
           const siblingsOfTarget = MetadataUtils.getChildrenPaths(
-            interactionSession.startingMetadata,
+            canvasState.startingMetadata,
             newParent,
           )
 
@@ -810,7 +809,7 @@ export function applyFlexReparent(
                 forwardsOrBackwards,
                 parentRect,
                 siblingsOfTarget,
-                interactionSession.startingMetadata,
+                canvasState.startingMetadata,
               )
 
               const precedingSiblingPosition: CanvasRectangle = siblingPositions[newIndex]

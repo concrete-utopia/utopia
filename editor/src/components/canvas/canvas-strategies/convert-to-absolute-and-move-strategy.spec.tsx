@@ -15,7 +15,10 @@ import {
   makeTestProjectCodeWithSnippet,
   testPrintCodeFromEditorState,
 } from '../ui-jsx.test-utils'
-import { pickCanvasStateFromEditorState } from './canvas-strategies'
+import {
+  pickCanvasStateFromEditorState,
+  pickCanvasStateFromEditorStateWithMetadata,
+} from './canvas-strategies'
 import { convertToAbsoluteAndMoveStrategy } from './convert-to-absolute-and-move-strategy'
 import { InteractionSession, StrategyState } from './interaction-state'
 import { createMouseInteractionForTests } from './interaction-state.test-utils'
@@ -177,12 +180,14 @@ function dragByPixels(
     latestMetadata: null as any, // the strategy does not use this
     latestAllElementProps: null as any, // the strategy does not use this
     startingTargetParentsToFilterOut: null,
-    startingMetadata: metadata,
-    startingAllElementProps: null as any, // the strategy does not use this
   }
 
   const strategyResult = convertToAbsoluteAndMoveStrategy.apply(
-    pickCanvasStateFromEditorState(editorState, createBuiltInDependenciesList(null)),
+    pickCanvasStateFromEditorStateWithMetadata(
+      editorState,
+      createBuiltInDependenciesList(null),
+      metadata,
+    ),
     interactionSession,
     {
       currentStrategy: null as any, // the strategy does not use this

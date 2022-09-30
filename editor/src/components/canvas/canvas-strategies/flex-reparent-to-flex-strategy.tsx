@@ -53,6 +53,6 @@ export const flexReparentToFlexStrategy: CanvasStrategy = {
     )
   },
   apply: (canvasState, interactionSession, strategyState) => {
-    return applyFlexReparent('do-not-strip-props', canvasState, interactionSession, strategyState)
+    return applyFlexReparent('do-not-strip-props', canvasState, interactionSession)
   },
 }

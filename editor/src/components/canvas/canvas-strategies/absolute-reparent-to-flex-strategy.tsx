@@ -83,6 +83,6 @@ export const absoluteReparentToFlexStrategy: CanvasStrategy = {
     interactionSession: InteractionSession,
     strategyState: StrategyStateNew,
   ): StrategyApplicationResult {
-    return applyFlexReparent('strip-absolute-props', canvasState, interactionSession, strategyState)
+    return applyFlexReparent('strip-absolute-props', canvasState, interactionSession)
   },
 }

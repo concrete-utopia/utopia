@@ -94,7 +94,7 @@ function getFlexReparentToAbsoluteStrategy(
       const filteredSelectedElements = getDragTargets(selectedElements)
       return ifAllowedToReparent(
         canvasState,
-        interactionState.startingMetadata,
+        canvasState.startingMetadata,
         filteredSelectedElements,
         () => {
           if (
@@ -114,8 +114,8 @@ function getFlexReparentToAbsoluteStrategy(
             pointOnCanvas,
             interactionState.interactionData.modifiers.cmd,
             canvasState,
-            interactionState.startingMetadata,
-            interactionState.startingAllElementProps,
+            canvasState.startingMetadata,
+            canvasState.startingAllElementProps,
             missingBoundsHandling,
           )
 
@@ -150,7 +150,7 @@ function getFlexReparentToAbsoluteStrategy(
 
           const escapeHatchCommands = getEscapeHatchCommands(
             filteredSelectedElements,
-            interactionState.startingMetadata,
+            canvasState.startingMetadata,
             canvasState,
             canvasPoint({ x: 0, y: 0 }),
           ).commands

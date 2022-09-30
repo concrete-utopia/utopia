@@ -84,7 +84,7 @@ function getAbsoluteReparentStrategy(
 
       return ifAllowedToReparent(
         canvasState,
-        interactionState.startingMetadata,
+        canvasState.startingMetadata,
         filteredSelectedElements,
         () => {
           if (
@@ -104,8 +104,8 @@ function getAbsoluteReparentStrategy(
             pointOnCanvas,
             interactionState.interactionData.modifiers.cmd,
             canvasState,
-            interactionState.startingMetadata,
-            interactionState.startingAllElementProps,
+            canvasState.startingMetadata,
+            canvasState.startingAllElementProps,
             missingBoundsHandling,
           )
           const newParent = reparentTarget.newParent
@@ -113,7 +113,7 @@ function getAbsoluteReparentStrategy(
             return isAllowedToReparent(
               canvasState.projectContents,
               canvasState.openFile,
-              interactionState.startingMetadata,
+              canvasState.startingMetadata,
               selectedElement,
             )
           })
@@ -136,8 +136,8 @@ function getAbsoluteReparentStrategy(
                 const offsetCommands = getAbsoluteReparentPropertyChanges(
                   selectedElement,
                   newParent,
-                  interactionState.startingMetadata,
-                  interactionState.startingMetadata,
+                  canvasState.startingMetadata,
+                  canvasState.startingMetadata,
                   canvasState.projectContents,
                   canvasState.openFile,
                 )

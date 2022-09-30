@@ -89,8 +89,6 @@ function createEditorStore(
       ...interactionSession,
       latestMetadata: {},
       latestAllElementProps: {},
-      startingMetadata: {},
-      startingAllElementProps: {},
       startingTargetParentsToFilterOut: null,
     }
   }
@@ -990,12 +988,12 @@ describe('only update metadata on SAVE_DOM_REPORT', () => {
               return 10
             },
             apply: function (
-              _: InteractionCanvasState,
+              canvasState: InteractionCanvasState,
               interactionSession: InteractionSession,
               strategyState: StrategyStateNew,
             ): StrategyApplicationResult {
-              expect(interactionSession.startingMetadata).toBe(interactionSession.latestMetadata)
-              expect(interactionSession.startingAllElementProps).toBe(
+              expect(canvasState.startingMetadata).toBe(interactionSession.latestMetadata)
+              expect(canvasState.startingAllElementProps).toBe(
                 interactionSession.latestAllElementProps,
               )
 
@@ -1027,23 +1025,22 @@ describe('only update metadata on SAVE_DOM_REPORT', () => {
             return 10
           },
           apply: function (
-            _: InteractionCanvasState,
+            canvasState: InteractionCanvasState,
             interactionSession: InteractionSession,
             strategyState: StrategyStateNew,
           ): StrategyApplicationResult {
-            expect(interactionSession.startingMetadata).not.toBe(interactionSession.latestMetadata)
-            expect(interactionSession.startingAllElementProps).not.toBe(
+            expect(canvasState.startingMetadata).not.toBe(interactionSession.latestMetadata)
+            expect(canvasState.startingAllElementProps).not.toBe(
               interactionSession.latestAllElementProps,
             )
 
             // first we make sure the _starting_ metadata and startingAllElementProps have the original undefined backgroundColor
             expect(
-              interactionSession.startingMetadata[EP.toString(targetElement)].computedStyle
+              canvasState.startingMetadata[EP.toString(targetElement)].computedStyle
                 ?.backgroundColor,
             ).toBeUndefined()
             expect(
-              interactionSession.startingAllElementProps[EP.toString(targetElement)].style
-                .backgroundColor,
+              canvasState.startingAllElementProps[EP.toString(targetElement)].style.backgroundColor,
             ).toBeUndefined()
 
             // then we check that the latestMetadata and latestAllElementProps have a backgroundColor defined, as a result of the previous toggleProperty dispatch

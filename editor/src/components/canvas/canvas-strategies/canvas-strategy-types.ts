@@ -73,6 +73,8 @@ export interface InteractionCanvasState {
   openFile: string | null | undefined
   scale: number
   canvasOffset: CanvasVector
+  startingMetadata: ElementInstanceMetadataMap
+  startingAllElementProps: AllElementProps
 }
 
 export type InteractionTarget = TargetPaths | InsertionSubjects

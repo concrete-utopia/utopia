@@ -15,7 +15,10 @@ import { updateSelectedViews } from '../commands/update-selected-views-command'
 import { ParentBounds } from '../controls/parent-bounds'
 import { ParentOutlines } from '../controls/parent-outlines'
 import { absoluteMoveStrategy } from './absolute-move-strategy'
-import { pickCanvasStateFromEditorState } from './canvas-strategies'
+import {
+  pickCanvasStateFromEditorState,
+  pickCanvasStateFromEditorStateWithMetadata,
+} from './canvas-strategies'
 import {
   CanvasStrategy,
   getTargetPathsFromInteractionTarget,
@@ -93,7 +96,7 @@ export const absoluteDuplicateStrategy: CanvasStrategy = {
         ...strategyState.customStrategyState.duplicatedElementNewUids,
       }
       let withDuplicatedMetadata: ElementInstanceMetadataMap = {
-        ...interactionState.startingMetadata,
+        ...canvasState.startingMetadata,
       }
       let duplicateCommands: Array<DuplicateElement> = []
       let newPaths: Array<ElementPath> = []
@@ -126,9 +129,10 @@ export const absoluteDuplicateStrategy: CanvasStrategy = {
               canvasState.builtInDependencies,
               editorState,
               strategyState,
-              { ...interactionState, startingMetadata: withDuplicatedMetadata },
+              interactionState,
               commandLifecycle,
               strategyLifecycle,
+              withDuplicatedMetadata,
             ),
           ),
           setCursorCommand('mid-interaction', CSSCursor.Duplicate),
@@ -151,8 +155,13 @@ function runMoveStrategyForFreshlyDuplicatedElements(
   interactionState: InteractionSession,
   commandLifecycle: InteractionLifecycle,
   strategyLifecycle: InteractionLifecycle,
+  metadata: ElementInstanceMetadataMap,
 ): Array<EditorStatePatch> {
-  const canvasState = pickCanvasStateFromEditorState(editorState, builtInDependencies)
+  const canvasState = pickCanvasStateFromEditorStateWithMetadata(
+    editorState,
+    builtInDependencies,
+    metadata,
+  )
 
   const moveCommands = absoluteMoveStrategy.apply(
     canvasState,
