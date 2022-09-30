@@ -169,7 +169,7 @@ const TestProjectCCCInlineBlock = `
 </div>
 `
 
-async function dragControl(
+function dragControl(
   renderResult: EditorRenderResult,
   dragDelta: WindowPoint,
   modifiers: Modifiers,
@@ -183,7 +183,7 @@ async function dragControl(
     y: targetControlBounds.y + IconSize / 2,
   }
 
-  await mouseDragFromPointWithDelta(targetControl, startPoint, dragDelta, {
+  mouseDragFromPointWithDelta(targetControl, startPoint, dragDelta, {
     modifiers: modifiers,
     midDragCallback: () => {
       expect(
@@ -212,7 +212,7 @@ describe('Flow Reorder Slider Strategy', () => {
 
     // drag control for 'CCC' left to replace it with it's direct sibling
     const dragDelta = windowPoint({ x: -ReorderChangeThreshold, y: 0 })
-    await dragControl(renderResult, dragDelta, emptyModifiers, [
+    dragControl(renderResult, dragDelta, emptyModifiers, [
       'utopia-storyboard-uid/scene-aaa',
       'utopia-storyboard-uid/scene-aaa/app-entity',
       'utopia-storyboard-uid/scene-aaa/app-entity:container',
@@ -246,7 +246,7 @@ describe('Flow Reorder Slider Strategy', () => {
 
     // drag control for 'CCC' right, the element is inserted into a row with conversion to inline-block
     const dragDelta = windowPoint({ x: ReorderChangeThreshold, y: 0 })
-    await dragControl(renderResult, dragDelta, emptyModifiers, [
+    dragControl(renderResult, dragDelta, emptyModifiers, [
       'utopia-storyboard-uid/scene-aaa',
       'utopia-storyboard-uid/scene-aaa/app-entity',
       'utopia-storyboard-uid/scene-aaa/app-entity:container',
@@ -281,7 +281,7 @@ describe('Flow Reorder Slider Strategy', () => {
 
     // drag control for 'CCC' to the right
     const dragDelta = windowPoint({ x: ReorderChangeThreshold * 14, y: 0 })
-    await dragControl(renderResult, dragDelta, emptyModifiers, [
+    dragControl(renderResult, dragDelta, emptyModifiers, [
       'utopia-storyboard-uid/scene-aaa',
       'utopia-storyboard-uid/scene-aaa/app-entity',
       'utopia-storyboard-uid/scene-aaa/app-entity:container',

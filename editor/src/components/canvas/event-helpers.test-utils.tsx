@@ -12,7 +12,7 @@ interface Point {
   y: number
 }
 
-export async function mouseDownAtPoint(
+export function mouseDownAtPoint(
   eventSourceElement: HTMLElement,
   point: Point,
   options: {
@@ -30,7 +30,7 @@ export async function mouseDownAtPoint(
     ...passedEventOptions,
   }
 
-  await act(async () => {
+  act(() => {
     fireEvent(
       eventSourceElement,
       new MouseEvent('mousedown', {
@@ -46,7 +46,7 @@ export async function mouseDownAtPoint(
   })
 }
 
-export async function mouseMoveToPoint(
+export function mouseMoveToPoint(
   eventSourceElement: HTMLElement,
   point: Point,
   options: {
@@ -64,7 +64,7 @@ export async function mouseMoveToPoint(
     ...passedEventOptions,
   }
 
-  await act(async () => {
+  act(() => {
     fireEvent(
       eventSourceElement,
       new MouseEvent('mousemove', {
@@ -82,7 +82,7 @@ export async function mouseMoveToPoint(
   resetMouseStatus()
 }
 
-export async function mouseUpAtPoint(
+export function mouseUpAtPoint(
   eventSourceElement: HTMLElement,
   point: Point,
   options: {
@@ -100,7 +100,7 @@ export async function mouseUpAtPoint(
     ...passedEventOptions,
   }
 
-  await act(async () => {
+  act(() => {
     fireEvent(
       eventSourceElement,
       new MouseEvent('mouseup', {
@@ -115,7 +115,7 @@ export async function mouseUpAtPoint(
   })
 }
 
-export async function mouseDragFromPointWithDelta(
+export function mouseDragFromPointWithDelta(
   eventSourceElement: HTMLElement,
   startPoint: Point,
   dragDelta: Point,
@@ -133,7 +133,7 @@ export async function mouseDragFromPointWithDelta(
   return mouseDragFromPointToPoint(eventSourceElement, startPoint, endPoint, options)
 }
 
-export async function mouseDragFromPointToPoint(
+export function mouseDragFromPointToPoint(
   eventSourceElement: HTMLElement,
   startPoint: Point,
   endPoint: Point,
@@ -153,7 +153,7 @@ export async function mouseDragFromPointToPoint(
     y: endPoint.y - startPoint.y,
   }
 
-  await mouseDownAtPoint(eventSourceElement, startPoint, options)
+  mouseDownAtPoint(eventSourceElement, startPoint, options)
 
   if (staggerMoveEvents) {
     const numberOfSteps = 5
@@ -163,7 +163,7 @@ export async function mouseDragFromPointToPoint(
         y: delta.y / numberOfSteps,
       }
 
-      await mouseMoveToPoint(
+      mouseMoveToPoint(
         eventSourceElement,
         {
           x: startPoint.x + step * stepSize.x,
@@ -181,7 +181,7 @@ export async function mouseDragFromPointToPoint(
       )
     }
   } else {
-    await mouseMoveToPoint(
+    mouseMoveToPoint(
       eventSourceElement,
       {
         x: endPoint.x,
@@ -201,13 +201,13 @@ export async function mouseDragFromPointToPoint(
 
   midDragCallback()
 
-  await mouseUpAtPoint(eventSourceElement, endPoint, {
+  mouseUpAtPoint(eventSourceElement, endPoint, {
     ...options,
     eventOptions: mouseUpOptions,
   })
 }
 
-export async function mouseClickAtPoint(
+export function mouseClickAtPoint(
   eventSourceElement: HTMLElement,
   point: Point,
   options: {
@@ -226,7 +226,7 @@ export async function mouseClickAtPoint(
   }
   const { buttons, ...mouseUpOptions } = eventOptions ?? {}
 
-  await act(async () => {
+  act(() => {
     fireEvent(
       eventSourceElement,
       new MouseEvent('mousedown', {
@@ -268,7 +268,7 @@ export async function mouseClickAtPoint(
   })
 }
 
-export async function mouseDoubleClickAtPoint(
+export function mouseDoubleClickAtPoint(
   eventSourceElement: HTMLElement,
   point: Point,
   options: {
@@ -289,7 +289,7 @@ export async function mouseDoubleClickAtPoint(
   const { buttons, ...mouseUpOptions } = eventOptions ?? {}
   const initialClickCount = options.initialClickCount ?? 0
 
-  await act(async () => {
+  act(() => {
     fireEvent(
       eventSourceElement,
       new MouseEvent('mousedown', {
@@ -375,7 +375,7 @@ export async function mouseDoubleClickAtPoint(
   })
 }
 
-export async function keyDown(
+export function keyDown(
   key: string,
   options: {
     modifiers?: Modifiers
@@ -392,7 +392,7 @@ export async function keyDown(
     ...passedEventOptions,
   }
 
-  await act(async () => {
+  act(() => {
     fireEvent(
       document.body,
       new KeyboardEvent('keydown', {
@@ -406,7 +406,7 @@ export async function keyDown(
   })
 }
 
-export async function pressKey(
+export function pressKey(
   key: string,
   options: {
     modifiers?: Modifiers
@@ -423,7 +423,7 @@ export async function pressKey(
     ...passedEventOptions,
   }
 
-  await act(async () => {
+  act(() => {
     fireEvent(
       document.body,
       new KeyboardEvent('keydown', {

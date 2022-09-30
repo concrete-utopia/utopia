@@ -16,7 +16,7 @@ import {
 } from '../../../core/model/scene-utils'
 import { mouseClickAtPoint, mouseDragFromPointWithDelta } from '../event-helpers.test-utils'
 
-async function dragElement(
+function dragElement(
   renderResult: EditorRenderResult,
   targetTestId: string,
   dragDelta: WindowPoint,
@@ -31,8 +31,8 @@ async function dragElement(
     y: targetElementBounds.y + targetElementBounds.height / 2,
   }
 
-  await mouseClickAtPoint(canvasControlsLayer, startPoint, { modifiers: cmdModifier })
-  await mouseDragFromPointWithDelta(canvasControlsLayer, startPoint, dragDelta, {
+  mouseClickAtPoint(canvasControlsLayer, startPoint, { modifiers: cmdModifier })
+  mouseDragFromPointWithDelta(canvasControlsLayer, startPoint, dragDelta, {
     modifiers: modifiers,
   })
 }
@@ -169,7 +169,7 @@ describe('Flex Reparent To Absolute Strategy', () => {
       x: targetAbsoluteParentCenter.x - firstFlexChildCenter.x,
       y: targetAbsoluteParentCenter.y - firstFlexChildCenter.y,
     })
-    await dragElement(renderResult, 'flexchild1', dragDelta, cmdModifier)
+    dragElement(renderResult, 'flexchild1', dragDelta, cmdModifier)
 
     await renderResult.getDispatchFollowUpActionsFinished()
 

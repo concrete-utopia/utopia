@@ -15,7 +15,7 @@ import {
 } from '../../../core/model/scene-utils'
 import { mouseClickAtPoint, mouseDragFromPointWithDelta } from '../event-helpers.test-utils'
 
-async function dragElement(
+function dragElement(
   renderResult: EditorRenderResult,
   targetTestId: string,
   dragDelta: WindowPoint,
@@ -30,8 +30,8 @@ async function dragElement(
     y: targetElementBounds.y + targetElementBounds.height / 2,
   }
 
-  await mouseClickAtPoint(canvasControlsLayer, startPoint, { modifiers: cmdModifier })
-  await mouseDragFromPointWithDelta(canvasControlsLayer, startPoint, dragDelta, {
+  mouseClickAtPoint(canvasControlsLayer, startPoint, { modifiers: cmdModifier })
+  mouseDragFromPointWithDelta(canvasControlsLayer, startPoint, dragDelta, {
     modifiers: modifiers,
   })
 }
@@ -176,7 +176,7 @@ describe('Flex Reparent To Flex Strategy', () => {
       x: targetFlexParentEnd.x - flexChildToReparentCenter.x + 5,
       y: targetFlexParentEnd.y - flexChildToReparentCenter.y,
     })
-    await dragElement(renderResult, 'flexchild3', dragDelta, cmdModifier)
+    dragElement(renderResult, 'flexchild3', dragDelta, cmdModifier)
 
     await renderResult.getDispatchFollowUpActionsFinished()
 
@@ -286,7 +286,7 @@ describe('Flex Reparent To Flex Strategy', () => {
       x: targetFlexChildCenter.x - flexChildToReparentCenter.x - 5,
       y: targetFlexChildCenter.y - flexChildToReparentCenter.y,
     })
-    await dragElement(renderResult, 'flexchild3', dragDelta, cmdModifier)
+    dragElement(renderResult, 'flexchild3', dragDelta, cmdModifier)
 
     await renderResult.getDispatchFollowUpActionsFinished()
 

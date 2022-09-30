@@ -41,8 +41,8 @@ async function dragElement(
     y: targetElementBounds.y + targetElementBounds.height / 2,
   })
 
-  await mouseClickAtPoint(canvasControlsLayer, startPoint, { modifiers: cmdModifier })
-  await mouseDragFromPointWithDelta(canvasControlsLayer, startPoint, dragDelta, {
+  mouseClickAtPoint(canvasControlsLayer, startPoint, { modifiers: cmdModifier })
+  mouseDragFromPointWithDelta(canvasControlsLayer, startPoint, dragDelta, {
     modifiers: modifiers,
   })
 }

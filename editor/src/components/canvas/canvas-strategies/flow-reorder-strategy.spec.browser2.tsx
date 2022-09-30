@@ -169,7 +169,7 @@ const TestProjectCCCInlineBlock = `
 </div>
 `
 
-async function dragElement(
+function dragElement(
   renderResult: EditorRenderResult,
   targetTestId: string,
   dragDelta: WindowPoint,
@@ -181,8 +181,8 @@ async function dragElement(
   const canvasControlsLayer = renderResult.renderedDOM.getByTestId(CanvasControlsContainerID)
 
   const startPoint = windowPoint({ x: targetElementBounds.x + 5, y: targetElementBounds.y + 5 })
-  await mouseClickAtPoint(canvasControlsLayer, startPoint, { modifiers: cmdModifier })
-  await mouseDragFromPointWithDelta(canvasControlsLayer, startPoint, dragDelta, {
+  mouseClickAtPoint(canvasControlsLayer, startPoint, { modifiers: cmdModifier })
+  mouseDragFromPointWithDelta(canvasControlsLayer, startPoint, dragDelta, {
     modifiers: modifiers,
     midDragCallback: () => {
       expect(
@@ -201,7 +201,7 @@ describe('Flow Reorder Strategy (Mixed Display Type)', () => {
 
     // drag element 'CCC' up a little to replace it with it's direct sibling
     const dragDelta = windowPoint({ x: 0, y: -45 })
-    await dragElement(renderResult, 'ccc', dragDelta, emptyModifiers, [
+    dragElement(renderResult, 'ccc', dragDelta, emptyModifiers, [
       'utopia-storyboard-uid/scene-aaa',
       'utopia-storyboard-uid/scene-aaa/app-entity',
       'utopia-storyboard-uid/scene-aaa/app-entity:container',
@@ -225,7 +225,7 @@ describe('Flow Reorder Strategy (Mixed Display Type)', () => {
 
     // drag element 'CCC' down to insert into the row
     const dragDelta = windowPoint({ x: 10, y: 50 })
-    await dragElement(renderResult, 'ccc', dragDelta, emptyModifiers, [
+    dragElement(renderResult, 'ccc', dragDelta, emptyModifiers, [
       'utopia-storyboard-uid/scene-aaa',
       'utopia-storyboard-uid/scene-aaa/app-entity',
       'utopia-storyboard-uid/scene-aaa/app-entity:container',
@@ -250,7 +250,7 @@ describe('Flow Reorder Strategy (Mixed Display Type)', () => {
 
     // drag element 'CCC' up to pull out of the row and insert into block
     const dragDelta = windowPoint({ x: -40, y: -50 })
-    await dragElement(renderResult, 'ccc', dragDelta, emptyModifiers, [
+    dragElement(renderResult, 'ccc', dragDelta, emptyModifiers, [
       'utopia-storyboard-uid/scene-aaa',
       'utopia-storyboard-uid/scene-aaa/app-entity',
       'utopia-storyboard-uid/scene-aaa/app-entity:container',
@@ -310,7 +310,7 @@ describe('Flow Reorder Strategy (Mixed Display Type)', () => {
     } else {
       // drag element 'B' over 'A' will skip reorder
       const dragDelta = windowPoint(rectangleDifference(elementBFrame, elementAFrame))
-      await dragElement(renderResult, 'bbb', dragDelta, emptyModifiers, [
+      dragElement(renderResult, 'bbb', dragDelta, emptyModifiers, [
         'utopia-storyboard-uid/scene-aaa',
         'utopia-storyboard-uid/scene-aaa/app-entity',
         'utopia-storyboard-uid/scene-aaa/app-entity:container',

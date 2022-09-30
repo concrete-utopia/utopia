@@ -1,6 +1,5 @@
 /// <reference types="karma-viewport" />
 import { BakedInStoryboardUID } from '../../../../core/model/scene-utils'
-import { canvasPoint } from '../../../../core/shared/math-utils'
 import * as EP from '../../../../core/shared/element-path'
 import {
   makeTestProjectCodeWithSnippet,
@@ -12,10 +11,8 @@ import {
 import {
   selectComponents,
   setCursorOverlay,
-  setFocusedElement,
   toggleSelectionLock,
 } from '../../../editor/actions/action-creators'
-import CanvasActions from '../../canvas-actions'
 import { CanvasControlsContainerID } from '../new-canvas-controls'
 import { SceneLabelTestID } from './scene-label'
 import { CSSCursor } from '../../../../uuiui-deps'
@@ -26,21 +23,17 @@ import {
 } from '../../event-helpers.test-utils'
 import { cmdModifier } from '../../../../utils/modifiers'
 
-async function fireSingleClickEvents(target: HTMLElement, clientX: number, clientY: number) {
-  await mouseMoveToPoint(target, { x: clientX, y: clientY })
-  await mouseClickAtPoint(target, { x: clientX, y: clientY })
+function fireSingleClickEvents(target: HTMLElement, clientX: number, clientY: number) {
+  mouseMoveToPoint(target, { x: clientX, y: clientY })
+  mouseClickAtPoint(target, { x: clientX, y: clientY })
 }
 
-function createDoubleClicker(
-  target: HTMLElement,
-  clientX: number,
-  clientY: number,
-): () => Promise<void> {
+function createDoubleClicker(target: HTMLElement, clientX: number, clientY: number): () => void {
   let clickCount = 0
 
-  return async () => {
-    await mouseMoveToPoint(target, { x: clientX, y: clientY })
-    await mouseDoubleClickAtPoint(
+  return () => {
+    mouseMoveToPoint(target, { x: clientX, y: clientY })
+    mouseDoubleClickAtPoint(
       target,
       { x: clientX, y: clientY },
       {
@@ -133,41 +126,41 @@ describe('Select Mode Selection', () => {
       areaControlBounds.top + 20,
     )
 
-    await doubleClick()
+    doubleClick()
 
     const selectedViews2 = renderResult.getEditorState().editor.selectedViews
     expect(selectedViews2).toEqual([
       EP.elementPath([[BakedInStoryboardUID, TestSceneUID, TestAppUID]]),
     ])
 
-    await doubleClick()
+    doubleClick()
 
     const selectedViews3 = renderResult.getEditorState().editor.selectedViews
     expect(selectedViews3).toEqual([EP.appendNewElementPath(TestScenePath, ['a'])])
 
-    await doubleClick()
+    doubleClick()
 
     const selectedViews4 = renderResult.getEditorState().editor.selectedViews
     expect(selectedViews4).toEqual([EP.appendNewElementPath(TestScenePath, ['a', 'b'])])
 
-    await doubleClick()
+    doubleClick()
 
     const selectedViews5 = renderResult.getEditorState().editor.selectedViews
     expect(selectedViews5).toEqual([EP.appendNewElementPath(TestScenePath, ['a', 'b', 'c'])])
 
-    await doubleClick()
+    doubleClick()
 
     const selectedViews6 = renderResult.getEditorState().editor.selectedViews
     expect(selectedViews6).toEqual([EP.appendNewElementPath(TestScenePath, ['a', 'b', 'c', 'd'])])
 
-    await doubleClick()
+    doubleClick()
 
     const selectedViews7 = renderResult.getEditorState().editor.selectedViews
     expect(selectedViews7).toEqual([
       EP.appendNewElementPath(TestScenePath, ['a', 'b', 'c', 'd', 'e']),
     ])
 
-    await doubleClick()
+    doubleClick()
 
     // after 8 "double clicks", the `targetdiv` div should be selected
     const selectedViews8 = renderResult.getEditorState().editor.selectedViews
@@ -211,7 +204,7 @@ describe('Select Mode Selection', () => {
     const sceneLabel = renderResult.renderedDOM.getByTestId(SceneLabelTestID)
     const sceneLabelBounds = sceneLabel.getBoundingClientRect()
 
-    await fireSingleClickEvents(sceneLabel, sceneLabelBounds.left + 5, sceneLabelBounds.top + 5)
+    fireSingleClickEvents(sceneLabel, sceneLabelBounds.left + 5, sceneLabelBounds.top + 5)
 
     expect(renderResult.getEditorState().editor.selectedViews).toEqual([
       EP.fromString(`${BakedInStoryboardUID}/${TestSceneUID}`),
@@ -239,7 +232,7 @@ describe('Select Mode Selection', () => {
 
     const canvasControlsLayer = renderResult.renderedDOM.getByTestId(CanvasControlsContainerID)
 
-    await createDoubleClicker(
+    createDoubleClicker(
       canvasControlsLayer,
       areaControlBounds.left + 20,
       areaControlBounds.top + 20,
@@ -262,7 +255,7 @@ describe('Select Mode Advanced Cases', () => {
 
     const canvasControlsLayer = renderResult.renderedDOM.getByTestId(CanvasControlsContainerID)
 
-    await mouseClickAtPoint(
+    mouseClickAtPoint(
       canvasControlsLayer,
       {
         x: cardSceneRootBounds.left + 130,
@@ -309,7 +302,7 @@ describe('Select Mode Double Clicking', () => {
       cardSceneRootBounds.top + 220,
     )
 
-    await doubleClick()
+    doubleClick()
 
     expect(renderResult.getEditorState().editor.selectedViews).toEqual([desiredPath])
   })
@@ -339,8 +332,8 @@ describe('Select Mode Double Clicking', () => {
       cardSceneRootBounds.top + 220,
     )
 
-    await doubleClick()
-    await doubleClick()
+    doubleClick()
+    doubleClick()
 
     expect(renderResult.getEditorState().editor.selectedViews).toEqual([desiredPath])
   })
@@ -372,10 +365,10 @@ describe('Select Mode Double Clicking', () => {
       cardSceneRootBounds.top + 220,
     )
 
-    await doubleClick()
-    await doubleClick()
-    await doubleClick()
-    await doubleClick()
+    doubleClick()
+    doubleClick()
+    doubleClick()
+    doubleClick()
 
     expect(renderResult.getEditorState().editor.selectedViews).toEqual([desiredPath])
   })
@@ -408,12 +401,12 @@ describe('Select Mode Double Clicking', () => {
       cardSceneRootBounds.top + 220,
     )
 
-    await doubleClick()
-    await doubleClick()
-    await doubleClick()
-    await doubleClick()
-    await doubleClick()
-    await doubleClick()
+    doubleClick()
+    doubleClick()
+    doubleClick()
+    doubleClick()
+    doubleClick()
+    doubleClick()
 
     expect(renderResult.getEditorState().editor.selectedViews).toEqual([desiredPath])
   })
@@ -448,14 +441,14 @@ describe('Select Mode Double Clicking', () => {
       cardSceneRootBounds.top + 220,
     )
 
-    await doubleClick()
-    await doubleClick()
-    await doubleClick()
-    await doubleClick()
-    await doubleClick()
-    await doubleClick()
-    await doubleClick()
-    await doubleClick()
+    doubleClick()
+    doubleClick()
+    doubleClick()
+    doubleClick()
+    doubleClick()
+    doubleClick()
+    doubleClick()
+    doubleClick()
 
     expect(renderResult.getEditorState().editor.selectedViews).toEqual([desiredPath])
   })
@@ -491,7 +484,7 @@ describe('Select Mode Double Clicking With Fragments', () => {
       cardSceneRootBounds.top + 220,
     )
 
-    await doubleClick()
+    doubleClick()
 
     expect(renderResult.getEditorState().editor.selectedViews).toEqual([desiredPath])
   })
@@ -521,8 +514,8 @@ describe('Select Mode Double Clicking With Fragments', () => {
       cardSceneRootBounds.top + 220,
     )
 
-    await doubleClick()
-    await doubleClick()
+    doubleClick()
+    doubleClick()
 
     expect(renderResult.getEditorState().editor.selectedViews).toEqual([desiredPath])
   })
@@ -554,10 +547,10 @@ describe('Select Mode Double Clicking With Fragments', () => {
       cardSceneRootBounds.top + 220,
     )
 
-    await doubleClick()
-    await doubleClick()
-    await doubleClick()
-    await doubleClick()
+    doubleClick()
+    doubleClick()
+    doubleClick()
+    doubleClick()
 
     expect(renderResult.getEditorState().editor.selectedViews).toEqual([desiredPath])
   })
@@ -589,11 +582,11 @@ describe('Select Mode Double Clicking With Fragments', () => {
       cardSceneRootBounds.top + 220,
     )
 
-    await doubleClick()
-    await doubleClick()
-    await doubleClick()
-    await doubleClick()
-    await doubleClick()
+    doubleClick()
+    doubleClick()
+    doubleClick()
+    doubleClick()
+    doubleClick()
 
     expect(renderResult.getEditorState().editor.selectedViews).toEqual([desiredPath])
   })
@@ -627,13 +620,13 @@ describe('Select Mode Double Clicking With Fragments', () => {
       cardSceneRootBounds.top + 220,
     )
 
-    await doubleClick()
-    await doubleClick()
-    await doubleClick()
-    await doubleClick()
-    await doubleClick()
-    await doubleClick()
-    await doubleClick()
+    doubleClick()
+    doubleClick()
+    doubleClick()
+    doubleClick()
+    doubleClick()
+    doubleClick()
+    doubleClick()
 
     expect(renderResult.getEditorState().editor.selectedViews).toEqual([desiredPath])
   })
@@ -678,9 +671,9 @@ describe('Selection with locked elements', () => {
       cardSceneRootBounds.top + 220,
     )
 
-    await doubleClick()
-    await doubleClick()
-    await doubleClick()
+    doubleClick()
+    doubleClick()
+    doubleClick()
 
     expect(renderResult.getEditorState().editor.selectedViews).toEqual([desiredPath])
   })
@@ -720,11 +713,11 @@ describe('Selection with locked elements', () => {
       cardSceneRootBounds.top + 220,
     )
 
-    await doubleClick()
-    await doubleClick()
-    await doubleClick()
-    await doubleClick()
-    await doubleClick()
+    doubleClick()
+    doubleClick()
+    doubleClick()
+    doubleClick()
+    doubleClick()
 
     expect(renderResult.getEditorState().editor.selectedViews).toEqual([desiredPath])
   })

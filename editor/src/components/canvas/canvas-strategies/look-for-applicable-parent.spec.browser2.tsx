@@ -327,8 +327,8 @@ async function runTest(
   const { x, y } = windowPoint(middle(divToBeDragged.getBoundingClientRect()))
 
   await startDragUsingActions(editor, targetPath, canvasPoint({ x: 20, y: 0 }))
-  await mouseDownAtPoint(divToBeDragged, { x: x, y: y })
-  await mouseMoveToPoint(divToBeDragged, { x: x + 20, y: y }, { eventOptions: { buttons: 1 } })
+  mouseDownAtPoint(divToBeDragged, { x: x, y: y })
+  mouseMoveToPoint(divToBeDragged, { x: x + 20, y: y }, { eventOptions: { buttons: 1 } })
 
   await editor.getDispatchFollowUpActionsFinished()
   check(editor)

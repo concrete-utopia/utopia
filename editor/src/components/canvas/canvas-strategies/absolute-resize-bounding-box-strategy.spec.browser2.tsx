@@ -34,7 +34,7 @@ import {
 } from '../../../core/model/scene-utils'
 import { mouseDragFromPointWithDelta } from '../event-helpers.test-utils'
 
-async function resizeElement(
+function resizeElement(
   renderResult: EditorRenderResult,
   dragDelta: WindowPoint,
   edgePosition: EdgePosition,
@@ -53,7 +53,7 @@ async function resizeElement(
     y: resizeCornerBounds.y + 2,
   })
 
-  await mouseDragFromPointWithDelta(canvasControl, startPoint, dragDelta, { modifiers: modifiers })
+  mouseDragFromPointWithDelta(canvasControl, startPoint, dragDelta, { modifiers: modifiers })
 }
 
 // no mouseup here! it starts the interaction and resizes with drag delta
@@ -267,7 +267,7 @@ describe('Absolute Resize Strategy', () => {
     const dragDelta = windowPoint({ x: 40, y: -25 })
 
     await renderResult.dispatch([selectComponents([target], false)], true)
-    await resizeElement(renderResult, dragDelta, EdgePositionBottomRight, emptyModifiers)
+    resizeElement(renderResult, dragDelta, EdgePositionBottomRight, emptyModifiers)
     await renderResult.getDispatchFollowUpActionsFinished()
     expect(getPrintedUiJsCode(renderResult.getEditorState())).toEqual(
       projectDoesHonourSizeProperties(340, 275),
@@ -283,7 +283,7 @@ describe('Absolute Resize Strategy', () => {
     const dragDelta = windowPoint({ x: 40, y: -25 })
 
     await renderResult.dispatch([selectComponents([target], false)], true)
-    await resizeElement(renderResult, dragDelta, EdgePositionBottomRight, emptyModifiers)
+    resizeElement(renderResult, dragDelta, EdgePositionBottomRight, emptyModifiers)
 
     await renderResult.getDispatchFollowUpActionsFinished()
     expect(getPrintedUiJsCode(renderResult.getEditorState())).toEqual(
@@ -308,7 +308,7 @@ describe('Absolute Resize Strategy', () => {
     const dragDelta = windowPoint({ x: 40, y: -25 })
 
     await renderResult.dispatch([selectComponents([target], false)], true)
-    await resizeElement(renderResult, dragDelta, EdgePositionBottomRight, emptyModifiers)
+    resizeElement(renderResult, dragDelta, EdgePositionBottomRight, emptyModifiers)
 
     await renderResult.getDispatchFollowUpActionsFinished()
     expect(getPrintedUiJsCode(renderResult.getEditorState())).toEqual(
@@ -345,7 +345,7 @@ describe('Absolute Resize Strategy', () => {
     const dragDelta = windowPoint({ x: 29, y: -23 })
 
     await renderResult.dispatch([selectComponents([target], false)], true)
-    await resizeElement(renderResult, dragDelta, EdgePositionTopLeft, emptyModifiers)
+    resizeElement(renderResult, dragDelta, EdgePositionTopLeft, emptyModifiers)
     await renderResult.getDispatchFollowUpActionsFinished()
 
     expect(getPrintedUiJsCode(renderResult.getEditorState())).toEqual(
@@ -374,7 +374,7 @@ describe('Absolute Resize Strategy', () => {
     const dragDelta = windowPoint({ x: 25, y: 25 })
 
     await renderResult.dispatch([selectComponents([target], false)], true)
-    await resizeElement(renderResult, dragDelta, EdgePositionBottomRight, emptyModifiers)
+    resizeElement(renderResult, dragDelta, EdgePositionBottomRight, emptyModifiers)
     await renderResult.getDispatchFollowUpActionsFinished()
 
     const supportsStyleDiv = renderResult.renderedDOM.getByTestId('supports-style-component')
@@ -392,7 +392,7 @@ describe('Absolute Resize Strategy', () => {
     const dragDelta = windowPoint({ x: 25, y: 25 })
 
     await renderResult.dispatch([selectComponents([target], false)], true)
-    await resizeElement(renderResult, dragDelta, EdgePositionBottomRight, emptyModifiers)
+    resizeElement(renderResult, dragDelta, EdgePositionBottomRight, emptyModifiers)
     await renderResult.getDispatchFollowUpActionsFinished()
 
     const supportsStyleDiv = renderResult.renderedDOM.getByTestId(

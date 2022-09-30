@@ -24,7 +24,7 @@ import {
   TestSceneUID,
 } from '../ui-jsx.test-utils'
 
-async function dragElement(
+function dragElement(
   renderResult: EditorRenderResult,
   targetTestId: string,
   mouseDownOffset: WindowPoint,
@@ -43,12 +43,12 @@ async function dragElement(
   const endPoint = offsetPoint(startPoint, dragDelta)
 
   if (includeMouseUp) {
-    await mouseDragFromPointToPoint(canvasControlsLayer, startPoint, endPoint, {
+    mouseDragFromPointToPoint(canvasControlsLayer, startPoint, endPoint, {
       modifiers: modifiers,
     })
   } else {
-    await mouseDownAtPoint(canvasControlsLayer, startPoint, { modifiers: modifiers })
-    await mouseMoveToPoint(canvasControlsLayer, endPoint, {
+    mouseDownAtPoint(canvasControlsLayer, startPoint, { modifiers: modifiers })
+    mouseMoveToPoint(canvasControlsLayer, endPoint, {
       modifiers: modifiers,
       eventOptions: { buttons: 1 },
     })
@@ -103,7 +103,7 @@ describe('Unified Reparent Fitness Function Tests', () => {
 
     const targetPath = EP.appendNewElementPath(TestScenePath, ['aaa', 'bbb', 'ccc'])
     await renderResult.dispatch([selectComponents([targetPath], false)], false)
-    await dragElement(renderResult, 'ccc', defaultMouseDownOffset, dragDelta, emptyModifiers, true)
+    dragElement(renderResult, 'ccc', defaultMouseDownOffset, dragDelta, emptyModifiers, true)
 
     await renderResult.getDispatchFollowUpActionsFinished()
 
@@ -191,7 +191,7 @@ describe('Unified Reparent Fitness Function Tests', () => {
     const targetPath = EP.appendNewElementPath(TestScenePath, ['aaa', 'bbb', 'ccc'])
     await renderResult.dispatch([selectComponents([targetPath], false)], false)
 
-    await dragElement(renderResult, 'ccc', defaultMouseDownOffset, dragDelta, emptyModifiers, true)
+    dragElement(renderResult, 'ccc', defaultMouseDownOffset, dragDelta, emptyModifiers, true)
 
     await renderResult.getDispatchFollowUpActionsFinished()
 
@@ -279,7 +279,7 @@ describe('Unified Reparent Fitness Function Tests', () => {
     const targetPath = EP.appendNewElementPath(TestScenePath, ['aaa', 'draggedElement'])
     await renderResult.dispatch([selectComponents([targetPath], false)], false)
 
-    await dragElement(
+    dragElement(
       renderResult,
       'draggedElement',
       defaultMouseDownOffset,
@@ -376,7 +376,7 @@ describe('Unified Reparent Fitness Function Tests', () => {
     const targetPath = EP.appendNewElementPath(TestScenePath, ['aaa', 'draggedElement'])
     await renderResult.dispatch([selectComponents([targetPath], false)], false)
 
-    await dragElement(
+    dragElement(
       renderResult,
       'draggedElement',
       defaultMouseDownOffset,
@@ -474,7 +474,7 @@ describe('Unified Reparent Fitness Function Tests', () => {
     const targetPath = EP.appendNewElementPath(TestScenePath, ['aaa', 'draggedElement'])
     await renderResult.dispatch([selectComponents([targetPath], false)], false)
 
-    await dragElement(
+    dragElement(
       renderResult,
       'draggedElement',
       defaultMouseDownOffset,
@@ -570,7 +570,7 @@ describe('Unified Reparent Fitness Function Tests', () => {
     const targetPath = EP.appendNewElementPath(TestScenePath, ['aaa', 'draggedElement'])
     await renderResult.dispatch([selectComponents([targetPath], false)], false)
 
-    await dragElement(
+    dragElement(
       renderResult,
       'draggedElement',
       defaultMouseDownOffset,
@@ -664,7 +664,7 @@ describe('Unified Reparent Fitness Function Tests', () => {
     const targetPath = EP.appendNewElementPath(TestScenePath, ['aaa', 'draggedElement'])
     await renderResult.dispatch([selectComponents([targetPath], false)], false)
 
-    await dragElement(
+    dragElement(
       renderResult,
       'draggedElement',
       defaultMouseDownOffset,
@@ -759,7 +759,7 @@ describe('Unified Reparent Fitness Function Tests', () => {
     const targetPath = EP.appendNewElementPath(TestScenePath, ['aaa', 'draggedElement'])
     await renderResult.dispatch([selectComponents([targetPath], false)], false)
 
-    await dragElement(
+    dragElement(
       renderResult,
       'draggedElement',
       defaultMouseDownOffset,
@@ -890,7 +890,7 @@ describe('Target parent filtering', () => {
     // drag to the left so that the cursor is over the larger element, and no longer over where the target started
     const dragDelta = windowPoint({ x: -20, y: 0 })
 
-    await dragElement(renderResult, 'dragme', mouseDownOffset, dragDelta, cmdModifier, true)
+    dragElement(renderResult, 'dragme', mouseDownOffset, dragDelta, cmdModifier, true)
 
     await renderResult.getDispatchFollowUpActionsFinished()
 
@@ -952,7 +952,7 @@ describe('Target parent filtering', () => {
     // drag to the right so that the cursor is over the smaller element
     const dragDelta = windowPoint({ x: 20, y: 20 })
 
-    await dragElement(renderResult, 'dragme', mouseDownOffset, dragDelta, cmdModifier, true)
+    dragElement(renderResult, 'dragme', mouseDownOffset, dragDelta, cmdModifier, true)
 
     await renderResult.getDispatchFollowUpActionsFinished()
 
@@ -1015,7 +1015,7 @@ describe('Target parent filtering', () => {
     // drag to the right so that the cursor remains over the smaller element
     const dragDelta = windowPoint({ x: 10, y: 10 })
 
-    await dragElement(renderResult, 'dragme', mouseDownOffset, dragDelta, cmdModifier, true)
+    dragElement(renderResult, 'dragme', mouseDownOffset, dragDelta, cmdModifier, true)
 
     await renderResult.getDispatchFollowUpActionsFinished()
 
@@ -1077,7 +1077,7 @@ describe('Target parent filtering', () => {
     // drag to the left so that the cursor is over the larger element
     const dragDelta = windowPoint({ x: -10, y: -10 })
 
-    await dragElement(renderResult, 'dragme', mouseDownOffset, dragDelta, cmdModifier, true)
+    dragElement(renderResult, 'dragme', mouseDownOffset, dragDelta, cmdModifier, true)
 
     await renderResult.getDispatchFollowUpActionsFinished()
 
@@ -1139,7 +1139,7 @@ describe('Target parent filtering', () => {
     // drag to the left so that the cursor is over the larger element
     const dragDelta = windowPoint({ x: -10, y: -10 })
 
-    await dragElement(renderResult, 'dragme', mouseDownOffset, dragDelta, emptyModifiers, true)
+    dragElement(renderResult, 'dragme', mouseDownOffset, dragDelta, emptyModifiers, true)
 
     await renderResult.getDispatchFollowUpActionsFinished()
 
@@ -1374,14 +1374,7 @@ describe('Reparent indicators', () => {
       y: endPoint.y - startPoint.y,
     })
 
-    await dragElement(
-      renderResult,
-      'seconddiv',
-      defaultMouseDownOffset,
-      dragDelta,
-      emptyModifiers,
-      false,
-    )
+    dragElement(renderResult, 'seconddiv', defaultMouseDownOffset, dragDelta, emptyModifiers, false)
 
     await renderResult.getDispatchFollowUpActionsFinished()
 
@@ -1417,14 +1410,7 @@ describe('Reparent indicators', () => {
       y: endPoint.y - startPoint.y,
     })
 
-    await dragElement(
-      renderResult,
-      'seconddiv',
-      defaultMouseDownOffset,
-      dragDelta,
-      emptyModifiers,
-      false,
-    )
+    dragElement(renderResult, 'seconddiv', defaultMouseDownOffset, dragDelta, emptyModifiers, false)
 
     await renderResult.getDispatchFollowUpActionsFinished()
 
@@ -1460,14 +1446,7 @@ describe('Reparent indicators', () => {
       y: endPoint.y - startPoint.y,
     })
 
-    await dragElement(
-      renderResult,
-      'seconddiv',
-      defaultMouseDownOffset,
-      dragDelta,
-      emptyModifiers,
-      false,
-    )
+    dragElement(renderResult, 'seconddiv', defaultMouseDownOffset, dragDelta, emptyModifiers, false)
 
     await renderResult.getDispatchFollowUpActionsFinished()
 
@@ -1503,14 +1482,7 @@ describe('Reparent indicators', () => {
       y: endPoint.y - startPoint.y,
     })
 
-    await dragElement(
-      renderResult,
-      'seconddiv',
-      defaultMouseDownOffset,
-      dragDelta,
-      emptyModifiers,
-      false,
-    )
+    dragElement(renderResult, 'seconddiv', defaultMouseDownOffset, dragDelta, emptyModifiers, false)
 
     await renderResult.getDispatchFollowUpActionsFinished()
 

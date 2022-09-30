@@ -24,7 +24,7 @@ interface CheckCursor {
   cursor: CSSCursor | null
 }
 
-async function dragElement(
+function dragElement(
   renderResult: EditorRenderResult,
   targetTestId: string,
   dragDelta: WindowPoint,
@@ -45,8 +45,8 @@ async function dragElement(
           )
         }
 
-  await mouseClickAtPoint(canvasControlsLayer, startPoint, { modifiers: cmdModifier })
-  await mouseDragFromPointWithDelta(canvasControlsLayer, startPoint, dragDelta, {
+  mouseClickAtPoint(canvasControlsLayer, startPoint, { modifiers: cmdModifier })
+  mouseDragFromPointWithDelta(canvasControlsLayer, startPoint, dragDelta, {
     modifiers: modifiers,
     midDragCallback: midDragCallback,
   })
@@ -136,7 +136,7 @@ describe('Absolute Reparent Strategy', () => {
     )
 
     const dragDelta = windowPoint({ x: -1000, y: -1000 })
-    await dragElement(renderResult, 'bbb', dragDelta, cmdModifier, null)
+    dragElement(renderResult, 'bbb', dragDelta, cmdModifier, null)
 
     await renderResult.getDispatchFollowUpActionsFinished()
 
@@ -198,7 +198,7 @@ describe('Absolute Reparent Strategy', () => {
     )
 
     const dragDelta = windowPoint({ x: 0, y: 150 })
-    await dragElement(renderResult, 'bbb', dragDelta, cmdModifier, null)
+    dragElement(renderResult, 'bbb', dragDelta, cmdModifier, null)
 
     await renderResult.getDispatchFollowUpActionsFinished()
 
@@ -292,7 +292,7 @@ describe('Absolute Reparent Strategy', () => {
     )
 
     const dragDelta = windowPoint({ x: -1000, y: -1000 })
-    await dragElement(renderResult, 'bbb', dragDelta, cmdModifier, null)
+    dragElement(renderResult, 'bbb', dragDelta, cmdModifier, null)
 
     await renderResult.getDispatchFollowUpActionsFinished()
 
@@ -306,7 +306,7 @@ describe('Absolute Reparent Strategy', () => {
     )
 
     const dragDelta = windowPoint({ x: 0, y: -150 })
-    await dragElement(renderResult, 'child-to-reparent', dragDelta, cmdModifier, {
+    dragElement(renderResult, 'child-to-reparent', dragDelta, cmdModifier, {
       cursor: CSSCursor.NotPermitted,
     })
 
@@ -326,7 +326,7 @@ describe('Absolute Reparent Strategy', () => {
     )
 
     const dragDelta = windowPoint({ x: 0, y: -150 })
-    await dragElement(renderResult, 'child-to-reparent', dragDelta, cmdModifier, {
+    dragElement(renderResult, 'child-to-reparent', dragDelta, cmdModifier, {
       cursor: CSSCursor.Move,
     })
 

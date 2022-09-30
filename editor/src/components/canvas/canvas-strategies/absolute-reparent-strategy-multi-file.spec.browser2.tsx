@@ -260,7 +260,7 @@ describe('Absolute Reparent Strategy (Multi-File)', () => {
 
     const canvasControlsLayer = renderResult.renderedDOM.getByTestId(CanvasControlsContainerID)
 
-    await mouseDragFromPointToPoint(canvasControlsLayer, absoluteChildCenter, dropTargetPoint, {
+    mouseDragFromPointToPoint(canvasControlsLayer, absoluteChildCenter, dropTargetPoint, {
       modifiers: cmdModifier,
     })
 

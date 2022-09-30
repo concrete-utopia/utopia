@@ -90,8 +90,8 @@ async function startDraggingDefaultTarget(
   }
 
   // Start dragging
-  await mouseDownAtPoint(canvasControls, startPoint, { modifiers: cmdModifier })
-  await mouseMoveToPoint(canvasControls, endPoint, {
+  mouseDownAtPoint(canvasControls, startPoint, { modifiers: cmdModifier })
+  mouseMoveToPoint(canvasControls, endPoint, {
     modifiers: cmdModifier,
     eventOptions: { buttons: 1 },
   })
@@ -101,12 +101,12 @@ function applicableStrategyForStrategy(strategy: CanvasStrategy): ApplicableStra
   return applicableStrategy(strategy, strategy.name({} as any, {} as any, {} as any))
 }
 
-async function pressTab(): Promise<void> {
-  return pressKey('Tab', { modifiers: emptyModifiers })
+function pressTab() {
+  pressKey('Tab', { modifiers: emptyModifiers })
 }
 
-async function pressShiftTab(): Promise<void> {
-  return pressKey('Tab', { modifiers: shiftModifier })
+function pressShiftTab() {
+  pressKey('Tab', { modifiers: shiftModifier })
 }
 
 describe('The strategy picker', () => {
@@ -128,82 +128,82 @@ describe('The strategy picker', () => {
     const renderResult = await renderBasicModel()
     await startDraggingDefaultTarget(renderResult, false)
     expect(renderResult.getEditorState().strategyState.currentStrategy).toEqual(BestStrategy.id)
-    await pressTab()
+    pressTab()
     expect(renderResult.getEditorState().strategyState.currentStrategy).toEqual(AverageStrategy.id)
-    await pressTab()
+    pressTab()
     expect(renderResult.getEditorState().strategyState.currentStrategy).toEqual(WorstStrategy.id)
   })
   it('Supports tabbing past the end to return to the first strategy', async () => {
     const renderResult = await renderBasicModel()
     await startDraggingDefaultTarget(renderResult, false)
     expect(renderResult.getEditorState().strategyState.currentStrategy).toEqual(BestStrategy.id)
-    await pressTab()
-    await pressTab()
-    await pressTab()
+    pressTab()
+    pressTab()
+    pressTab()
     expect(renderResult.getEditorState().strategyState.currentStrategy).toEqual(BestStrategy.id)
-    await pressTab()
+    pressTab()
     expect(renderResult.getEditorState().strategyState.currentStrategy).toEqual(AverageStrategy.id)
-    await pressTab()
+    pressTab()
     expect(renderResult.getEditorState().strategyState.currentStrategy).toEqual(WorstStrategy.id)
   })
   it('Supports shift+tabbing to switch to the previous strategy', async () => {
     const renderResult = await renderBasicModel()
     await startDraggingDefaultTarget(renderResult, false)
     expect(renderResult.getEditorState().strategyState.currentStrategy).toEqual(BestStrategy.id)
-    await pressTab()
-    await pressTab()
+    pressTab()
+    pressTab()
     expect(renderResult.getEditorState().strategyState.currentStrategy).toEqual(WorstStrategy.id)
-    await pressShiftTab()
+    pressShiftTab()
     expect(renderResult.getEditorState().strategyState.currentStrategy).toEqual(AverageStrategy.id)
-    await pressShiftTab()
+    pressShiftTab()
     expect(renderResult.getEditorState().strategyState.currentStrategy).toEqual(BestStrategy.id)
   })
   it('Supports shift+tabbing past the beginning to switch to the last strategy', async () => {
     const renderResult = await renderBasicModel()
     await startDraggingDefaultTarget(renderResult, false)
     expect(renderResult.getEditorState().strategyState.currentStrategy).toEqual(BestStrategy.id)
-    await pressShiftTab()
+    pressShiftTab()
     expect(renderResult.getEditorState().strategyState.currentStrategy).toEqual(WorstStrategy.id)
-    await pressShiftTab()
+    pressShiftTab()
     expect(renderResult.getEditorState().strategyState.currentStrategy).toEqual(AverageStrategy.id)
-    await pressShiftTab()
+    pressShiftTab()
     expect(renderResult.getEditorState().strategyState.currentStrategy).toEqual(BestStrategy.id)
   })
   it('Supports using numeric keys to pick valid strategies', async () => {
     const renderResult = await renderBasicModel()
     await startDraggingDefaultTarget(renderResult, false)
     expect(renderResult.getEditorState().strategyState.currentStrategy).toEqual(BestStrategy.id)
-    await pressKey('3', { modifiers: emptyModifiers })
+    pressKey('3', { modifiers: emptyModifiers })
     expect(renderResult.getEditorState().strategyState.currentStrategy).toEqual(WorstStrategy.id)
-    await pressKey('2', { modifiers: emptyModifiers })
+    pressKey('2', { modifiers: emptyModifiers })
     expect(renderResult.getEditorState().strategyState.currentStrategy).toEqual(AverageStrategy.id)
-    await pressKey('1', { modifiers: emptyModifiers })
+    pressKey('1', { modifiers: emptyModifiers })
     expect(renderResult.getEditorState().strategyState.currentStrategy).toEqual(BestStrategy.id)
   })
   it('Supports using numeric keys to pick valid strategies whilst cmd is held down', async () => {
     const renderResult = await renderBasicModel()
     await startDraggingDefaultTarget(renderResult, false)
     expect(renderResult.getEditorState().strategyState.currentStrategy).toEqual(BestStrategy.id)
-    await pressKey('3', { modifiers: cmdModifier })
+    pressKey('3', { modifiers: cmdModifier })
     expect(renderResult.getEditorState().strategyState.currentStrategy).toEqual(WorstStrategy.id)
-    await pressKey('2', { modifiers: cmdModifier })
+    pressKey('2', { modifiers: cmdModifier })
     expect(renderResult.getEditorState().strategyState.currentStrategy).toEqual(AverageStrategy.id)
-    await pressKey('1', { modifiers: cmdModifier })
+    pressKey('1', { modifiers: cmdModifier })
     expect(renderResult.getEditorState().strategyState.currentStrategy).toEqual(BestStrategy.id)
   })
   it('Ignores numeric keys for invalid strategy numbers', async () => {
     const renderResult = await renderBasicModel()
     await startDraggingDefaultTarget(renderResult, false)
     expect(renderResult.getEditorState().strategyState.currentStrategy).toEqual(BestStrategy.id)
-    await pressKey('2', { modifiers: cmdModifier })
+    pressKey('2', { modifiers: cmdModifier })
     expect(renderResult.getEditorState().strategyState.currentStrategy).toEqual(AverageStrategy.id)
-    await pressKey('0', { modifiers: emptyModifiers })
+    pressKey('0', { modifiers: emptyModifiers })
     expect(renderResult.getEditorState().strategyState.currentStrategy).toEqual(AverageStrategy.id)
-    await pressKey('4', { modifiers: emptyModifiers })
+    pressKey('4', { modifiers: emptyModifiers })
     expect(renderResult.getEditorState().strategyState.currentStrategy).toEqual(AverageStrategy.id)
-    await pressKey('9', { modifiers: emptyModifiers })
+    pressKey('9', { modifiers: emptyModifiers })
     expect(renderResult.getEditorState().strategyState.currentStrategy).toEqual(AverageStrategy.id)
-    await pressKey('a', { modifiers: emptyModifiers })
+    pressKey('a', { modifiers: emptyModifiers })
     expect(renderResult.getEditorState().strategyState.currentStrategy).toEqual(AverageStrategy.id)
   })
 })

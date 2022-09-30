@@ -10,7 +10,6 @@ import {
 } from '../ui-jsx.test-utils'
 import { CanvasControlsContainerID } from '../controls/new-canvas-controls'
 import * as EP from '../../../core/shared/element-path'
-import { resetMouseStatus } from '../../mouse-move'
 import {
   mouseClickAtPoint,
   mouseDragFromPointToPoint,
@@ -100,16 +99,15 @@ describe('Inserting into absolute', () => {
     })
 
     // Move before starting dragging
-    await mouseMoveToPoint(canvasControlsLayer, startPoint)
+    mouseMoveToPoint(canvasControlsLayer, startPoint)
 
     // Highlight should drag the candidate parent
     expect(renderResult.getEditorState().editor.highlightedViews.map(EP.toUid)).toEqual(['bbb'])
 
-    // Explicitly reset the mouse event throttling so that we can perform a drag
-    resetMouseStatus()
-
     // Drag from inside bbb to inside ccc
-    await mouseDragFromPointToPoint(canvasControlsLayer, startPoint, endPoint)
+    mouseDragFromPointToPoint(canvasControlsLayer, startPoint, endPoint)
+
+    await renderResult.getDispatchFollowUpActionsFinished()
 
     // Check that the inserted element is a child of bbb
     expect(getPrintedUiJsCode(renderResult.getEditorState())).toEqual(
@@ -180,7 +178,9 @@ describe('Inserting into absolute', () => {
     })
 
     // Drag from inside bbb to inside ccc
-    await mouseDragFromPointToPoint(canvasControlsLayer, startPoint, endPoint)
+    mouseDragFromPointToPoint(canvasControlsLayer, startPoint, endPoint)
+
+    await renderResult.getDispatchFollowUpActionsFinished()
 
     // Check that the inserted element is a child of bbb
     expect(getPrintedUiJsCode(renderResult.getEditorState())).toEqual(
@@ -247,7 +247,9 @@ describe('Inserting into absolute', () => {
     })
 
     // Click in bbb
-    await mouseClickAtPoint(canvasControlsLayer, point)
+    mouseClickAtPoint(canvasControlsLayer, point)
+
+    await renderResult.getDispatchFollowUpActionsFinished()
 
     // Check that the inserted element is a child of bbb
     expect(getPrintedUiJsCode(renderResult.getEditorState())).toEqual(
@@ -340,7 +342,9 @@ describe('Inserting into absolute', () => {
     })
 
     // Click in bbb
-    await mouseClickAtPoint(canvasControlsLayer, point)
+    mouseClickAtPoint(canvasControlsLayer, point)
+
+    await renderResult.getDispatchFollowUpActionsFinished()
 
     // Check that the inserted element is a child of bbb
     expect(getPrintedUiJsCode(renderResult.getEditorState())).toEqual(
@@ -400,7 +404,9 @@ describe('Inserting into absolute', () => {
     })
 
     // Drag from inside bbb to outside of the scene
-    await mouseDragFromPointToPoint(canvasControlsLayer, startPoint, endPoint)
+    mouseDragFromPointToPoint(canvasControlsLayer, startPoint, endPoint)
+
+    await renderResult.getDispatchFollowUpActionsFinished()
 
     // Check that the inserted element is a child of bbb
     expect(getPrintedUiJsCode(renderResult.getEditorState())).toEqual(
@@ -525,7 +531,9 @@ describe('Inserting into flex row', () => {
     })
 
     // Drag horizontally close to the zero position
-    await mouseDragFromPointToPoint(canvasControlsLayer, startPoint, endPoint)
+    mouseDragFromPointToPoint(canvasControlsLayer, startPoint, endPoint)
+
+    await renderResult.getDispatchFollowUpActionsFinished()
 
     // Check that the inserted element is a sibling of bbb, position is before bbb
     expect(getPrintedUiJsCode(renderResult.getEditorState())).toEqual(
@@ -586,7 +594,9 @@ describe('Inserting into flex row', () => {
     })
 
     // Click horizontally close to the zero position
-    await mouseClickAtPoint(canvasControlsLayer, point)
+    mouseClickAtPoint(canvasControlsLayer, point)
+
+    await renderResult.getDispatchFollowUpActionsFinished()
 
     // Check that the inserted element is a sibling of bbb, position is before bbb
     expect(getPrintedUiJsCode(renderResult.getEditorState())).toEqual(
@@ -651,7 +661,9 @@ describe('Inserting into flex row', () => {
     })
 
     // Drag horizontally close to the first position
-    await mouseDragFromPointToPoint(canvasControlsLayer, startPoint, endPoint)
+    mouseDragFromPointToPoint(canvasControlsLayer, startPoint, endPoint)
+
+    await renderResult.getDispatchFollowUpActionsFinished()
 
     // Check that the inserted element is a sibling of bbb, position is after bbb
     expect(getPrintedUiJsCode(renderResult.getEditorState())).toEqual(
@@ -712,7 +724,9 @@ describe('Inserting into flex row', () => {
     })
 
     // Click horizontally close to the first position
-    await mouseClickAtPoint(canvasControlsLayer, point)
+    mouseClickAtPoint(canvasControlsLayer, point)
+
+    await renderResult.getDispatchFollowUpActionsFinished()
 
     // Check that the inserted element is a sibling of bbb, position is after bbb
     expect(getPrintedUiJsCode(renderResult.getEditorState())).toEqual(
@@ -777,7 +791,9 @@ describe('Inserting into flex row', () => {
     })
 
     // Drag starts horizontally close to the first position, dragging towards the top left
-    await mouseDragFromPointToPoint(canvasControlsLayer, startPoint, endPoint)
+    mouseDragFromPointToPoint(canvasControlsLayer, startPoint, endPoint)
+
+    await renderResult.getDispatchFollowUpActionsFinished()
 
     // Check that the inserted element is a sibling of bbb, position is before bbb
     expect(getPrintedUiJsCode(renderResult.getEditorState())).toEqual(
@@ -842,7 +858,9 @@ describe('Inserting into flex row', () => {
     })
 
     // Drag starts inside bbb
-    await mouseDragFromPointToPoint(canvasControlsLayer, startPoint, endPoint)
+    mouseDragFromPointToPoint(canvasControlsLayer, startPoint, endPoint)
+
+    await renderResult.getDispatchFollowUpActionsFinished()
 
     // Check that the inserted element is a child of bbb
     expect(getPrintedUiJsCode(renderResult.getEditorState())).toEqual(
@@ -906,7 +924,9 @@ describe('Inserting into flex row', () => {
     })
 
     // Click inside bbb
-    await mouseClickAtPoint(canvasControlsLayer, point)
+    mouseClickAtPoint(canvasControlsLayer, point)
+
+    await renderResult.getDispatchFollowUpActionsFinished()
 
     // Check that the inserted element is a child of bbb
     expect(getPrintedUiJsCode(renderResult.getEditorState())).toEqual(
@@ -974,7 +994,9 @@ describe('Inserting into flex row', () => {
     })
 
     // Drag starts inside bbb, but very close to its edge (3px)
-    await mouseDragFromPointToPoint(canvasControlsLayer, startPoint, endPoint)
+    mouseDragFromPointToPoint(canvasControlsLayer, startPoint, endPoint)
+
+    await renderResult.getDispatchFollowUpActionsFinished()
 
     // Check that the inserted element is a sibling of bbb, position is before bbb
     expect(getPrintedUiJsCode(renderResult.getEditorState())).toEqual(
@@ -1035,7 +1057,9 @@ describe('Inserting into flex row', () => {
     })
 
     // Click inside bbb, but very close to its edge (3px)
-    await mouseClickAtPoint(canvasControlsLayer, point)
+    mouseClickAtPoint(canvasControlsLayer, point)
+
+    await renderResult.getDispatchFollowUpActionsFinished()
 
     // Check that the inserted element is a sibling of bbb, position is before bbb
     expect(getPrintedUiJsCode(renderResult.getEditorState())).toEqual(
@@ -1155,7 +1179,9 @@ describe('Inserting into flex column', () => {
     })
 
     // Drag vertically close to the first position
-    await mouseDragFromPointToPoint(canvasControlsLayer, startPoint, endPoint)
+    mouseDragFromPointToPoint(canvasControlsLayer, startPoint, endPoint)
+
+    await renderResult.getDispatchFollowUpActionsFinished()
 
     // Check that the inserted element is a sibling of bbb, position is before bbb
     expect(getPrintedUiJsCode(renderResult.getEditorState())).toEqual(
@@ -1217,7 +1243,9 @@ describe('Inserting into flex column', () => {
     })
 
     // Click vertically close to the first position
-    await mouseClickAtPoint(canvasControlsLayer, point)
+    mouseClickAtPoint(canvasControlsLayer, point)
+
+    await renderResult.getDispatchFollowUpActionsFinished()
 
     // Check that the inserted element is a sibling of bbb, position is before bbb
     expect(getPrintedUiJsCode(renderResult.getEditorState())).toEqual(
@@ -1283,7 +1311,9 @@ describe('Inserting into flex column', () => {
     })
 
     // Drag vertically close to the first position
-    await mouseDragFromPointToPoint(canvasControlsLayer, startPoint, endPoint)
+    mouseDragFromPointToPoint(canvasControlsLayer, startPoint, endPoint)
+
+    await renderResult.getDispatchFollowUpActionsFinished()
 
     // Check that the inserted element is a sibling of bbb, position is after bbb
     expect(getPrintedUiJsCode(renderResult.getEditorState())).toEqual(
@@ -1345,7 +1375,9 @@ describe('Inserting into flex column', () => {
     })
 
     // Click vertically close to the first position
-    await mouseClickAtPoint(canvasControlsLayer, point)
+    mouseClickAtPoint(canvasControlsLayer, point)
+
+    await renderResult.getDispatchFollowUpActionsFinished()
 
     // Check that the inserted element is a sibling of bbb, position is after bbb
     expect(getPrintedUiJsCode(renderResult.getEditorState())).toEqual(
@@ -1411,7 +1443,9 @@ describe('Inserting into flex column', () => {
     })
 
     // Drag starts vertically close to the first position, dragging towards the top left
-    await mouseDragFromPointToPoint(canvasControlsLayer, startPoint, endPoint)
+    mouseDragFromPointToPoint(canvasControlsLayer, startPoint, endPoint)
+
+    await renderResult.getDispatchFollowUpActionsFinished()
 
     // Check that the inserted element is a sibling of bbb, position is after bbb
     expect(getPrintedUiJsCode(renderResult.getEditorState())).toEqual(

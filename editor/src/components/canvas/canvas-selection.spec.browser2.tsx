@@ -126,8 +126,8 @@ async function checkOverlappingElements(
   }
 
   const modifiers = cmdPressed ? cmdModifier : emptyModifiers
-  await mouseMoveToPoint(canvasControlsLayer, targetPoint, { modifiers: modifiers })
-  await mouseClickAtPoint(canvasControlsLayer, targetPoint, { modifiers: modifiers })
+  mouseMoveToPoint(canvasControlsLayer, targetPoint, { modifiers: modifiers })
+  mouseClickAtPoint(canvasControlsLayer, targetPoint, { modifiers: modifiers })
 
   const newlySelectedElements = renderResult.getEditorState().editor.selectedViews
   expect(newlySelectedElements).toEqual(expectedSelectedElements)
