@@ -34,6 +34,7 @@ module.exports = function (config) {
 
     // list of files / patterns to load in the browser
     files: [
+      './mocha-setup-beforeall.js',
       './karma-setup.js',
       './src/**/*.spec.browser2.+(ts|tsx)',
       {
