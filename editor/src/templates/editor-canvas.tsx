@@ -109,6 +109,7 @@ import { pickCanvasStateFromEditorState } from '../components/canvas/canvas-stra
 import { BuiltInDependencies } from '../core/es-modules/package-manager/built-in-dependencies-list'
 import { cancelInsertModeActions } from '../components/editor/actions/meta-actions'
 import { generateUidWithExistingComponents } from '../core/model/element-template-utils'
+import { createJsxImage, getFrameAndMultiplierWithResize } from '../components/images'
 
 const webFrame = PROBABLY_ELECTRON ? requireElectron().webFrame : null
 
@@ -901,20 +902,10 @@ export class EditorCanvas extends React.Component<EditorCanvasProps> {
 
           const newUID = generateUidWithExistingComponents(this.props.editor.projectContents)
 
-          const propsForElement = jsxAttributesFromMap({
-            style: jsxAttributeValue({ position: 'absolute', width: 1, height: 1 }, emptyComments),
+          const newElement = createJsxImage(newUID, {
+            width: 1,
+            height: 1,
           })
-
-          const newElement = jsxElement(
-            'img',
-            newUID,
-            setJSXAttributesAttribute(
-              propsForElement,
-              'data-uid',
-              jsxAttributeValue(newUID, emptyComments),
-            ),
-            [],
-          )
 
           this.props.dispatch(
             [
@@ -941,14 +932,7 @@ export class EditorCanvas extends React.Component<EditorCanvasProps> {
           event.stopPropagation()
           const mousePosition = this.getPosition(event.nativeEvent)
 
-          const insertImageFromClipboard = async (elementPath: ElementPath) => {
-            this.props.dispatch(
-              [
-                CanvasActions.clearInteractionSession(false),
-                EditorActions.switchEditorMode(EditorModes.selectMode()),
-              ],
-              'everyone',
-            )
+          const getPastedImages = async () => {
             const result = await parseClipboardData(event.dataTransfer)
             // Snip out the images only from the result.
             let pastedImages: Array<ImageResult> = []
@@ -960,6 +944,19 @@ export class EditorCanvas extends React.Component<EditorCanvasProps> {
                 })
               }
             })
+            return pastedImages
+          }
+
+          const insertImageFromClipboard = async (elementPath: ElementPath) => {
+            this.props.dispatch(
+              [
+                CanvasActions.clearInteractionSession(false),
+                EditorActions.switchEditorMode(EditorModes.selectMode()),
+              ],
+              'everyone',
+            )
+            const result = await parseClipboardData(event.dataTransfer)
+            const pastedImages = await getPastedImages()
 
             const actions = createDirectInsertImageActions(
               pastedImages,
@@ -991,8 +988,43 @@ export class EditorCanvas extends React.Component<EditorCanvasProps> {
             this.props.editor.mode.type === 'insert' &&
             this.props.editor.mode.subject.type === 'Element'
           ) {
-            this.handleMouseUp(event.nativeEvent)
-            // return insertImageFromClipboard(elementPath)
+            void getPastedImages().then((images) => {
+              const image = images[0]
+
+              const { frame } = getFrameAndMultiplierWithResize(
+                mousePosition.canvasPositionRounded,
+                image.filename,
+                image.size,
+                this.props.editor.canvas.scale,
+              )
+
+              const saveImageAction = EditorActions.saveAsset(
+                image.filename,
+                image.fileType,
+                image.base64Bytes,
+                image.hash,
+                EditorActions.saveImageDetails(image.size, EditorActions.saveImageDoNothing()),
+              )
+
+              const newUID = generateUidWithExistingComponents(this.props.editor.projectContents)
+
+              const newElement = createJsxImage(newUID, {
+                width: frame.width,
+                height: frame.height,
+                top: mousePosition.canvasPositionRounded.y,
+                left: mousePosition.canvasPositionRaw.x,
+                src: image.filename,
+              })
+
+              this.props.dispatch(
+                [
+                  EditorActions.enableInsertModeForJSXElement(newElement, newUID, {}, null),
+                  saveImageAction,
+                ],
+                'everyone',
+              )
+              this.handleMouseUp(event.nativeEvent)
+            })
           }
 
           if (
