@@ -11,11 +11,9 @@ import {
   CanvasPositions,
   ControlOrHigherOrderControl,
   CSSCursor,
-  DivControl,
   DragState,
   DuplicateNewUID,
   ResizeDragStatePropertyChange,
-  SvgControl,
   SvgFragmentControl,
   updateMoveDragState,
   updateResizeDragState,
@@ -70,7 +68,7 @@ import {
 import Keyboard, { KeyCharacter, KeysPressed } from '../utils/keyboard'
 import { emptyModifiers, Modifier } from '../utils/modifiers'
 import RU from '../utils/react-utils'
-import Utils, { absolute } from '../utils/utils'
+import Utils from '../utils/utils'
 import {
   canvasPoint,
   CanvasPoint,
@@ -86,7 +84,6 @@ import {
 } from '../core/shared/math-utils'
 import { ImageResult } from '../core/shared/file-utils'
 import { fastForEach } from '../core/shared/utils'
-import { arrayToMaybe } from '../core/shared/optional-utils'
 import { UtopiaStyles } from '../uuiui'
 import {
   CanvasMousePositionRaw,
@@ -940,11 +937,13 @@ export class EditorCanvas extends React.Component<EditorCanvasProps> {
           event.preventDefault()
           event.stopPropagation()
           const mousePosition = this.getPosition(event.nativeEvent)
-          const insertionTarget = arrayToMaybe(this.props.editor.highlightedViews)
 
-          const insertImageFromClipboard = async () => {
+          const insertImageFromClipboard = async (elementPath: ElementPath) => {
             this.props.dispatch(
-              [EditorActions.switchEditorMode(EditorModes.selectMode())],
+              [
+                CanvasActions.clearInteractionSession(false),
+                EditorActions.switchEditorMode(EditorModes.selectMode()),
+              ],
               'everyone',
             )
             const result = await parseClipboardData(event.dataTransfer)
@@ -958,18 +957,22 @@ export class EditorCanvas extends React.Component<EditorCanvasProps> {
                 })
               }
             })
+
             const actions = createDirectInsertImageActions(
               pastedImages,
               mousePosition.canvasPositionRounded,
               this.props.model.scale,
-              insertionTarget,
+              elementPath,
             )
 
             this.props.dispatch(actions, 'everyone')
+
+            return result.files[0].filename
           }
 
           if (this.props.editor.mode.type === 'select') {
-            insertImageFromClipboard()
+            const insertionTarget = this.props.editor.highlightedViews[0]
+            return insertImageFromClipboard(insertionTarget)
           }
 
           if (
@@ -977,15 +980,16 @@ export class EditorCanvas extends React.Component<EditorCanvasProps> {
             this.props.editor.mode.subject.type === 'DragAndDrop' &&
             this.props.editor.mode.subject.imageAssets == null
           ) {
-            insertImageFromClipboard()
+            const insertionTarget = this.props.editor.highlightedViews[0]
+            return insertImageFromClipboard(insertionTarget)
           }
 
           if (
             this.props.editor.mode.type === 'insert' &&
             this.props.editor.mode.subject.type === 'Element'
           ) {
-            this.props.dispatch([CanvasActions.clearInteractionSession(false)])
-            insertImageFromClipboard()
+            this.handleMouseUp(event.nativeEvent)
+            // return insertImageFromClipboard(elementPath)
           }
 
           if (
@@ -1004,7 +1008,7 @@ export class EditorCanvas extends React.Component<EditorCanvasProps> {
               )
             })
             actions.push(EditorActions.switchEditorMode(EditorModes.selectMode()))
-            this.props.dispatch(actions, 'everyone')
+            return this.props.dispatch(actions, 'everyone')
           }
         },
 
@@ -1252,7 +1256,7 @@ export class EditorCanvas extends React.Component<EditorCanvasProps> {
           event: 'DRAG_END',
           modifiers: Modifier.modifiersForEvent(event),
           dragState: this.props.model.dragState,
-          cursor: null, // FIXME: this.props.model.dragState.cursor,
+          cursor: null,
           nativeEvent: event,
         })
       }

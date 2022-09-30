@@ -360,13 +360,13 @@ import {
   getNewSceneName,
   packageJsonFileFromProjectContents,
   vsCodeBridgeIdProjectId,
-  githubRepo,
+  persistentModelFromEditorModel,
 } from '../store/editor-state'
 import { loadStoredState } from '../stored-state'
 import { applyMigrations } from './migrations/migrations'
 import { fastForEach, getProjectLockedKey } from '../../../core/shared/utils'
 import { PathForSceneDataLabel, getStoryboardElementPath } from '../../../core/model/scene-utils'
-import { getFrameAndMultiplier, getFrameAndMultiplierWithResize } from '../../images'
+import { getFrameAndMultiplierWithResize } from '../../images'
 import { arrayToMaybe, forceNotNull, optionalMap } from '../../../core/shared/optional-utils'
 
 import { notice } from '../../common/notice'
@@ -758,8 +758,6 @@ export function editorMoveMultiSelectedTemplates(
   let updatedTargets: Array<ElementPath> = [...targets]
   let newPaths: Array<ElementPath> = []
   const updatedEditor = targets.reduce((working, target, i) => {
-    const frame = MetadataUtils.getFrameInCanvasCoords(target, editor.jsxMetadata)
-
     let templateToMove = updatedTargets[i]
 
     const outcomeResult = getReparentOutcome(
