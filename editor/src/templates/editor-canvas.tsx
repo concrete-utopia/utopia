@@ -888,6 +888,9 @@ export class EditorCanvas extends React.Component<EditorCanvasProps> {
         style: {
           ...canvasLiveEditingStyle,
           transition: 'all .2s linear',
+          position: 'relative',
+          overflow: 'hidden',
+          height: '100%',
         },
         ref: (ref: HTMLElement | null) => {
           this.canvasWrapperRef = ref
