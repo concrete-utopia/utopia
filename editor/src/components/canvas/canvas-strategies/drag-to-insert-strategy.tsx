@@ -76,8 +76,8 @@ export const dragToInsertStrategy: CanvasStrategy = {
     return dragToInsertStrategy.isApplicable(
       canvasState,
       interactionState,
-      strategyState.startingMetadata,
-      strategyState.startingAllElementProps,
+      interactionState.startingMetadata,
+      interactionState.startingAllElementProps,
     ) &&
       interactionState.interactionData.type === 'DRAG' &&
       interactionState.activeControl.type === 'BOUNDING_AREA'
@@ -200,10 +200,10 @@ function runTargetStrategiesForFreshlyInsertedElement(
 ): Array<EditorStatePatch> {
   const canvasState = pickCanvasStateFromEditorState(editorState, builtInDependencies)
 
-  const storyboard = MetadataUtils.getStoryboardMetadata(strategyState.startingMetadata)
+  const storyboard = MetadataUtils.getStoryboardMetadata(interactionState.startingMetadata)
   const rootPath = storyboard != null ? storyboard.elementPath : elementPath([])
 
-  const patchedMetadata = insertionSubjects.reduce(
+  const patchedMetadata: ElementInstanceMetadataMap = insertionSubjects.reduce(
     (
       acc: ElementInstanceMetadataMap,
       curr: { command: InsertElementInsertionSubject; frame: CanvasRectangle },
@@ -215,7 +215,7 @@ function runTargetStrategiesForFreshlyInsertedElement(
         path,
         element,
         curr.frame,
-        strategyState.startingMetadata,
+        interactionState.startingMetadata,
       )
 
       return {
@@ -223,13 +223,8 @@ function runTargetStrategiesForFreshlyInsertedElement(
         [EP.toString(path)]: fakeMetadata,
       }
     },
-    strategyState.startingMetadata,
+    interactionState.startingMetadata,
   )
-
-  const patchedStrategyState = {
-    ...strategyState,
-    startingMetadata: patchedMetadata,
-  }
 
   const patchedCanvasState: InteractionCanvasState = {
     ...canvasState,
@@ -245,17 +240,18 @@ function runTargetStrategiesForFreshlyInsertedElement(
       ? { ...interactionData, modifiers: cmdModifier }
       : interactionData
 
-  const patchedInteractionState = {
+  const patchedInteractionState: InteractionSession = {
     ...interactionState,
     interactionData: patchedInteractionData,
     startingTargetParentsToFilterOut: null,
+    startingMetadata: patchedMetadata,
   }
 
   const { strategy } = findCanvasStrategy(
     RegisteredCanvasStrategies,
     patchedCanvasState,
     patchedInteractionState,
-    patchedStrategyState,
+    strategyState,
     null,
   )
 
@@ -265,7 +261,7 @@ function runTargetStrategiesForFreshlyInsertedElement(
     const reparentCommands = strategy.strategy.apply(
       patchedCanvasState,
       patchedInteractionState,
-      patchedStrategyState,
+      strategyState,
       strategyLifeCycle,
     ).commands
 

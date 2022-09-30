@@ -92,7 +92,9 @@ export const absoluteDuplicateStrategy: CanvasStrategy = {
       let duplicatedElementNewUids = {
         ...strategyState.customStrategyState.duplicatedElementNewUids,
       }
-      let withDuplicatedMetadata: ElementInstanceMetadataMap = { ...strategyState.startingMetadata }
+      let withDuplicatedMetadata: ElementInstanceMetadataMap = {
+        ...interactionState.startingMetadata,
+      }
       let duplicateCommands: Array<DuplicateElement> = []
       let newPaths: Array<ElementPath> = []
 
@@ -123,11 +125,8 @@ export const absoluteDuplicateStrategy: CanvasStrategy = {
             runMoveStrategyForFreshlyDuplicatedElements(
               canvasState.builtInDependencies,
               editorState,
-              {
-                ...strategyState,
-                startingMetadata: withDuplicatedMetadata,
-              },
-              interactionState,
+              strategyState,
+              { ...interactionState, startingMetadata: withDuplicatedMetadata },
               commandLifecycle,
               strategyLifecycle,
             ),

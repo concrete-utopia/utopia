@@ -71,7 +71,7 @@ function flowReorderApplyCommon(
     const target = selectedElements[0] // TODO MULTISELECT??
 
     const siblingsOfTarget = MetadataUtils.getSiblingsProjectContentsOrdered(
-      strategyState.startingMetadata,
+      interactionState.startingMetadata,
       target,
     ).map((element) => element.elementPath)
 
@@ -93,7 +93,7 @@ function flowReorderApplyCommon(
 
     const { newIndex, targetSiblingUnderMouse } = getFlowReorderIndex(
       interactionState.latestMetadata,
-      strategyState.startingAllElementProps,
+      interactionState.startingAllElementProps,
       rawPointOnCanvas,
       target,
     )
@@ -108,7 +108,7 @@ function flowReorderApplyCommon(
       !mouseStillOverPreviousTargetSibling && newIndexFound ? newIndex : lastReorderIdx
 
     const newDisplayType = getNewDisplayTypeForIndex(
-      strategyState.startingMetadata,
+      interactionState.startingMetadata,
       target,
       siblingsOfTarget[newResultOrLastIndex],
     )
@@ -156,8 +156,8 @@ export const flowReorderStrategy: CanvasStrategy = {
     return flowReorderStrategy.isApplicable(
       canvasState,
       interactionState,
-      strategyState.startingMetadata,
-      strategyState.startingAllElementProps,
+      interactionState.startingMetadata,
+      interactionState.startingAllElementProps,
     ) &&
       interactionState.interactionData.type === 'DRAG' &&
       interactionState.activeControl.type === 'BOUNDING_AREA'

@@ -994,8 +994,8 @@ describe('only update metadata on SAVE_DOM_REPORT', () => {
               interactionSession: InteractionSession,
               strategyState: StrategyStateNew,
             ): StrategyApplicationResult {
-              expect(strategyState.startingMetadata).toBe(interactionSession.latestMetadata)
-              expect(strategyState.startingAllElementProps).toBe(
+              expect(interactionSession.startingMetadata).toBe(interactionSession.latestMetadata)
+              expect(interactionSession.startingAllElementProps).toBe(
                 interactionSession.latestAllElementProps,
               )
 
@@ -1031,18 +1031,18 @@ describe('only update metadata on SAVE_DOM_REPORT', () => {
             interactionSession: InteractionSession,
             strategyState: StrategyStateNew,
           ): StrategyApplicationResult {
-            expect(strategyState.startingMetadata).not.toBe(interactionSession.latestMetadata)
-            expect(strategyState.startingAllElementProps).not.toBe(
+            expect(interactionSession.startingMetadata).not.toBe(interactionSession.latestMetadata)
+            expect(interactionSession.startingAllElementProps).not.toBe(
               interactionSession.latestAllElementProps,
             )
 
             // first we make sure the _starting_ metadata and startingAllElementProps have the original undefined backgroundColor
             expect(
-              strategyState.startingMetadata[EP.toString(targetElement)].computedStyle
+              interactionSession.startingMetadata[EP.toString(targetElement)].computedStyle
                 ?.backgroundColor,
             ).toBeUndefined()
             expect(
-              strategyState.startingAllElementProps[EP.toString(targetElement)].style
+              interactionSession.startingAllElementProps[EP.toString(targetElement)].style
                 .backgroundColor,
             ).toBeUndefined()
 

@@ -161,8 +161,6 @@ export interface StrategyState {
 export interface StrategyStateNew {
   // Checkpointed metadata at the point at which a strategy change has occurred.
   customStrategyState: CustomStrategyState
-  startingMetadata: ElementInstanceMetadataMap
-  startingAllElementProps: AllElementProps
 }
 
 export function createEmptyStrategyState(

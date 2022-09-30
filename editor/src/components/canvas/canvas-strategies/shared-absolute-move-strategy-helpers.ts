@@ -51,7 +51,6 @@ export function getAbsoluteMoveCommandsForSelectedElement(
   drag: CanvasVector,
   canvasState: InteractionCanvasState,
   interactionState: InteractionSession,
-  sessionState: StrategyStateNew,
 ): {
   commands: Array<AdjustCssLengthProperty>
   intendedBounds: Array<CanvasFrameAndTarget>
@@ -63,7 +62,7 @@ export function getAbsoluteMoveCommandsForSelectedElement(
   )
 
   const elementMetadata = MetadataUtils.findElementByElementPath(
-    sessionState.startingMetadata, // TODO should this be using the current metadata?
+    interactionState.startingMetadata, // TODO should this be using the current metadata?
     selectedElement,
   )
 
@@ -72,12 +71,12 @@ export function getAbsoluteMoveCommandsForSelectedElement(
 
   const localFrame = MetadataUtils.getLocalFrameFromSpecialSizeMeasurements(
     selectedElement,
-    sessionState.startingMetadata,
+    interactionState.startingMetadata,
   )
 
   const globalFrame = MetadataUtils.getFrameInCanvasCoords(
     selectedElement,
-    sessionState.startingMetadata,
+    interactionState.startingMetadata,
   )
 
   if (element == null) {

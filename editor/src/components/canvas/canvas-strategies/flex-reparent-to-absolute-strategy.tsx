@@ -92,84 +92,89 @@ function getFlexReparentToAbsoluteStrategy(
     apply: (canvasState, interactionState, strategyState, strategyLifecycle) => {
       const selectedElements = getTargetPathsFromInteractionTarget(canvasState.interactionTarget)
       const filteredSelectedElements = getDragTargets(selectedElements)
-      return ifAllowedToReparent(canvasState, strategyState, filteredSelectedElements, () => {
-        if (
-          interactionState.interactionData.type !== 'DRAG' ||
-          interactionState.interactionData.drag == null
-        ) {
-          return emptyStrategyApplicationResult
-        }
-
-        const pointOnCanvas = offsetPoint(
-          interactionState.interactionData.originalDragStart,
-          interactionState.interactionData.drag,
-        )
-
-        const { newParent } = getReparentTargetUnified(
-          existingReparentSubjects(filteredSelectedElements),
-          pointOnCanvas,
-          interactionState.interactionData.modifiers.cmd,
-          canvasState,
-          strategyState.startingMetadata,
-          strategyState.startingAllElementProps,
-          missingBoundsHandling,
-        )
-
-        let duplicatedElementNewUids = {
-          ...strategyState.customStrategyState.duplicatedElementNewUids,
-        }
-
-        const placeholderCloneCommands = filteredSelectedElements.flatMap((element) => {
-          const newParentADescendantOfCurrentParent =
-            newParent != null && isDescendantOf(newParent, parentPath(element))
-
-          if (newParentADescendantOfCurrentParent) {
-            // if the new parent a descendant of the current parent, it means we want to keep a placeholder element where the original dragged element was, to avoid the new parent shifting around on the screen
-            const selectedElementString = toString(element)
-            const newUid =
-              duplicatedElementNewUids[selectedElementString] ??
-              generateUidWithExistingComponents(canvasState.projectContents)
-            duplicatedElementNewUids[selectedElementString] = newUid
-
-            const newPath = appendToPath(parentPath(element), newUid)
-
-            return [
-              duplicateElement('mid-interaction', element, newUid),
-              wildcardPatch('mid-interaction', {
-                hiddenInstances: { $push: [newPath] },
-              }),
-            ]
-          } else {
-            return []
+      return ifAllowedToReparent(
+        canvasState,
+        interactionState.startingMetadata,
+        filteredSelectedElements,
+        () => {
+          if (
+            interactionState.interactionData.type !== 'DRAG' ||
+            interactionState.interactionData.drag == null
+          ) {
+            return emptyStrategyApplicationResult
           }
-        })
 
-        const escapeHatchCommands = getEscapeHatchCommands(
-          filteredSelectedElements,
-          strategyState.startingMetadata,
-          canvasState,
-          canvasPoint({ x: 0, y: 0 }),
-        ).commands
+          const pointOnCanvas = offsetPoint(
+            interactionState.interactionData.originalDragStart,
+            interactionState.interactionData.drag,
+          )
 
-        return strategyApplicationResult([
-          ...placeholderCloneCommands,
-          ...escapeHatchCommands,
-          updateFunctionCommand(
-            'always',
-            (editorState, commandLifecycle): Array<EditorStatePatch> => {
-              return runAbsoluteReparentStrategyForFreshlyConvertedElement(
-                canvasState.builtInDependencies,
-                editorState,
-                strategyState,
-                interactionState,
-                commandLifecycle,
-                missingBoundsHandling,
-                strategyLifecycle,
-              )
-            },
-          ),
-        ])
-      })
+          const { newParent } = getReparentTargetUnified(
+            existingReparentSubjects(filteredSelectedElements),
+            pointOnCanvas,
+            interactionState.interactionData.modifiers.cmd,
+            canvasState,
+            interactionState.startingMetadata,
+            interactionState.startingAllElementProps,
+            missingBoundsHandling,
+          )
+
+          let duplicatedElementNewUids = {
+            ...strategyState.customStrategyState.duplicatedElementNewUids,
+          }
+
+          const placeholderCloneCommands = filteredSelectedElements.flatMap((element) => {
+            const newParentADescendantOfCurrentParent =
+              newParent != null && isDescendantOf(newParent, parentPath(element))
+
+            if (newParentADescendantOfCurrentParent) {
+              // if the new parent a descendant of the current parent, it means we want to keep a placeholder element where the original dragged element was, to avoid the new parent shifting around on the screen
+              const selectedElementString = toString(element)
+              const newUid =
+                duplicatedElementNewUids[selectedElementString] ??
+                generateUidWithExistingComponents(canvasState.projectContents)
+              duplicatedElementNewUids[selectedElementString] = newUid
+
+              const newPath = appendToPath(parentPath(element), newUid)
+
+              return [
+                duplicateElement('mid-interaction', element, newUid),
+                wildcardPatch('mid-interaction', {
+                  hiddenInstances: { $push: [newPath] },
+                }),
+              ]
+            } else {
+              return []
+            }
+          })
+
+          const escapeHatchCommands = getEscapeHatchCommands(
+            filteredSelectedElements,
+            interactionState.startingMetadata,
+            canvasState,
+            canvasPoint({ x: 0, y: 0 }),
+          ).commands
+
+          return strategyApplicationResult([
+            ...placeholderCloneCommands,
+            ...escapeHatchCommands,
+            updateFunctionCommand(
+              'always',
+              (editorState, commandLifecycle): Array<EditorStatePatch> => {
+                return runAbsoluteReparentStrategyForFreshlyConvertedElement(
+                  canvasState.builtInDependencies,
+                  editorState,
+                  strategyState,
+                  interactionState,
+                  commandLifecycle,
+                  missingBoundsHandling,
+                  strategyLifecycle,
+                )
+              },
+            ),
+          ])
+        },
+      )
     },
   }
 }

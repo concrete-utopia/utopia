@@ -46,8 +46,8 @@ export const flowReorderSliderStategy: CanvasStrategy = {
     return flowReorderSliderStategy.isApplicable(
       canvasState,
       interactionState,
-      strategyState.startingMetadata,
-      strategyState.startingAllElementProps,
+      interactionState.startingMetadata,
+      interactionState.startingAllElementProps,
     ) &&
       interactionState.interactionData.type === 'DRAG' &&
       interactionState.activeControl.type === 'FLOW_SLIDER'
@@ -62,9 +62,10 @@ export const flowReorderSliderStategy: CanvasStrategy = {
     const selectedElements = getTargetPathsFromInteractionTarget(canvasState.interactionTarget)
     const target = selectedElements[0]
 
-    const siblingsOfTarget = MetadataUtils.getSiblings(strategyState.startingMetadata, target).map(
-      (element) => element.elementPath,
-    )
+    const siblingsOfTarget = MetadataUtils.getSiblings(
+      interactionState.startingMetadata,
+      target,
+    ).map((element) => element.elementPath)
 
     if (!isReorderAllowed(siblingsOfTarget)) {
       return strategyApplicationResult(
@@ -85,7 +86,7 @@ export const flowReorderSliderStategy: CanvasStrategy = {
       )
 
       const newDisplayType = getNewDisplayTypeForIndex(
-        strategyState.startingMetadata,
+        interactionState.startingMetadata,
         target,
         siblingsOfTarget[newIndex],
       )

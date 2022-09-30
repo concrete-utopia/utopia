@@ -60,8 +60,8 @@ export const flexResizeBasicStrategy: CanvasStrategy = {
     return flexResizeBasicStrategy.isApplicable(
       canvasState,
       interactionState,
-      sessionState.startingMetadata,
-      sessionState.startingAllElementProps,
+      interactionState.startingMetadata,
+      interactionState.startingAllElementProps,
     ) &&
       interactionState.interactionData.type === 'DRAG' &&
       interactionState.activeControl.type === 'RESIZE_HANDLE'
@@ -81,7 +81,7 @@ export const flexResizeBasicStrategy: CanvasStrategy = {
         const drag = interactionState.interactionData.drag
         const originalBounds = MetadataUtils.getFrameInCanvasCoords(
           selectedElement,
-          sessionState.startingMetadata,
+          interactionState.startingMetadata,
         )
 
         if (originalBounds == null) {
@@ -91,7 +91,7 @@ export const flexResizeBasicStrategy: CanvasStrategy = {
         const resizedBounds = resizeWidthHeight(originalBounds, drag, edgePosition)
 
         const elementParentBounds =
-          MetadataUtils.findElementByElementPath(sessionState.startingMetadata, selectedElement)
+          MetadataUtils.findElementByElementPath(interactionState.startingMetadata, selectedElement)
             ?.specialSizeMeasurements.immediateParentBounds ?? null
 
         const resizeCommands = [

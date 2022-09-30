@@ -43,6 +43,7 @@ import { DragOutlineControl } from '../controls/select-mode/drag-outline-control
 import { FlexReparentTargetIndicator } from '../controls/select-mode/flex-reparent-target-indicator'
 import { ElementPath } from '../../../core/shared/project-file-types'
 import { DefaultInsertHeight, DefaultInsertWidth } from '../insertion-strategy-utils'
+import { ElementInstanceMetadataMap } from '../../../core/shared/element-template'
 
 export const drawToInsertStrategy: CanvasStrategy = {
   id: 'DRAW_TO_INSERT',
@@ -81,8 +82,8 @@ export const drawToInsertStrategy: CanvasStrategy = {
     return drawToInsertStrategy.isApplicable(
       canvasState,
       interactionState,
-      strategyState.startingMetadata,
-      strategyState.startingAllElementProps,
+      interactionState.startingMetadata,
+      interactionState.startingAllElementProps,
     ) &&
       interactionState.interactionData.type === 'DRAG' &&
       interactionState.activeControl.type === 'RESIZE_HANDLE'
@@ -260,7 +261,7 @@ function runTargetStrategiesForFreshlyInsertedElementToReparent(
 ): Array<EditorStatePatch> {
   const canvasState = pickCanvasStateFromEditorState(editorState, builtInDependencies)
 
-  const storyboard = MetadataUtils.getStoryboardMetadata(strategyState.startingMetadata)
+  const storyboard = MetadataUtils.getStoryboardMetadata(interactionState.startingMetadata)
   const rootPath = storyboard != null ? storyboard.elementPath : elementPath([])
 
   const element = insertionSubject.element
@@ -270,17 +271,12 @@ function runTargetStrategiesForFreshlyInsertedElementToReparent(
     path,
     element,
     frame,
-    strategyState.startingMetadata,
+    interactionState.startingMetadata,
   )
 
-  const patchedMetadata = {
-    ...strategyState.startingMetadata,
+  const patchedMetadata: ElementInstanceMetadataMap = {
+    ...interactionState.startingMetadata,
     [EP.toString(path)]: fakeMetadata,
-  }
-
-  const patchedStrategyState = {
-    ...strategyState,
-    startingMetadata: patchedMetadata,
   }
 
   const interactionData = interactionState.interactionData
@@ -294,11 +290,12 @@ function runTargetStrategiesForFreshlyInsertedElementToReparent(
         }
       : interactionData
 
-  const patchedInteractionState = {
+  const patchedInteractionState: InteractionSession = {
     ...interactionState,
     activeControl: boundingArea(),
     interactionData: patchedInteractionData,
     startingTargetParentsToFilterOut: null,
+    startingMetadata: patchedMetadata,
   }
 
   const patchedCanvasState: InteractionCanvasState = {
@@ -310,7 +307,7 @@ function runTargetStrategiesForFreshlyInsertedElementToReparent(
     RegisteredCanvasStrategies,
     patchedCanvasState,
     patchedInteractionState,
-    patchedStrategyState,
+    strategyState,
     null,
   )
 
@@ -320,7 +317,7 @@ function runTargetStrategiesForFreshlyInsertedElementToReparent(
   const reparentCommands = strategy.strategy.apply(
     patchedCanvasState,
     patchedInteractionState,
-    patchedStrategyState,
+    strategyState,
     strategyLifecycle,
   ).commands
 
@@ -338,12 +335,6 @@ function runTargetStrategiesForFreshlyInsertedElementToResize(
   frame: CanvasRectangle,
   strategyLifecycle: InteractionLifecycle,
 ): Array<EditorStatePatch> {
-  const canvasState = pickCanvasStateFromEditorState(editorState, builtInDependencies)
-  const patchedInteractionState: InteractionSession = {
-    ...interactionState,
-    startingTargetParentsToFilterOut: null,
-  }
-
   const element = insertionSubject.element
   const path = editorState.selectedViews[0]
 
@@ -351,18 +342,20 @@ function runTargetStrategiesForFreshlyInsertedElementToResize(
     path,
     element,
     frame,
-    strategyState.startingMetadata,
+    interactionState.startingMetadata,
   )
-
-  const patchedMetadata = {
-    ...strategyState.startingMetadata,
+  const patchedMetadata: ElementInstanceMetadataMap = {
+    ...interactionState.startingMetadata,
     [EP.toString(path)]: fakeMetadata,
   }
 
-  const patchedStrategyState = {
-    ...strategyState,
+  const patchedInteractionState: InteractionSession = {
+    ...interactionState,
+    startingTargetParentsToFilterOut: null,
     startingMetadata: patchedMetadata,
   }
+
+  const canvasState = pickCanvasStateFromEditorState(editorState, builtInDependencies)
 
   const patchedCanvasState: InteractionCanvasState = {
     ...canvasState,
@@ -373,7 +366,7 @@ function runTargetStrategiesForFreshlyInsertedElementToResize(
     RegisteredCanvasStrategies,
     patchedCanvasState,
     patchedInteractionState,
-    patchedStrategyState,
+    strategyState,
     null,
   )
 
@@ -382,7 +375,7 @@ function runTargetStrategiesForFreshlyInsertedElementToResize(
       ? resizeStrategy.strategy.apply(
           patchedCanvasState,
           patchedInteractionState,
-          patchedStrategyState,
+          strategyState,
           strategyLifecycle,
         ).commands
       : []

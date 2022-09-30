@@ -181,8 +181,8 @@ export function getApplicableStrategiesOrderedByFitness(
     strategies,
     canvasState,
     interactionSession,
-    strategyState.startingMetadata,
-    strategyState.startingAllElementProps,
+    interactionSession.startingMetadata,
+    interactionSession.startingAllElementProps,
   )
 
   // Compute the fitness results upfront.

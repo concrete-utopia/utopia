@@ -54,7 +54,7 @@ export function isAllowedToReparent(
 
 export function ifAllowedToReparent(
   canvasState: InteractionCanvasState,
-  strategyState: StrategyStateNew,
+  startingMetadata: ElementInstanceMetadataMap,
   targets: Array<ElementPath>,
   ifAllowed: () => StrategyApplicationResult,
 ): StrategyApplicationResult {
@@ -62,7 +62,7 @@ export function ifAllowedToReparent(
     return isAllowedToReparent(
       canvasState.projectContents,
       canvasState.openFile,
-      strategyState.startingMetadata,
+      startingMetadata,
       target,
     )
   })
