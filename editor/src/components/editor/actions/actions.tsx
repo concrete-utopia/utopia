@@ -3220,6 +3220,14 @@ export const UPDATE_FNS = {
     dispatch: EditorDispatch,
     userState: UserState,
   ): EditorModel => {
+    if (!isLoggedIn(userState.loginState) || editor.id == null) {
+      return UPDATE_FNS.ADD_TOAST(
+        showToast(notice(`Please log in to upload assets`, 'ERROR', true)),
+        editor,
+        dispatch,
+      )
+    }
+
     const replaceImage = action.imageDetails?.afterSave.type === 'SAVE_IMAGE_REPLACE'
     const assetFilename = replaceImage
       ? action.fileName
@@ -3280,27 +3288,19 @@ export const UPDATE_FNS = {
 
     // Side effects.
     let editorWithToast = editor
-    if (isLoggedIn(userState.loginState) && editor.id != null) {
-      saveAssetToServer(notNullProjectID, action.fileType, action.base64, assetFilename)
-        .then(() => {
-          dispatch(
-            [
-              ...actionsToRunAfterSave,
-              showToast(notice(`Succesfully uploaded ${assetFilename}`, 'INFO')),
-            ],
-            'everyone',
-          )
-        })
-        .catch(() => {
-          dispatch([showToast(notice(`Failed to upload ${assetFilename}`, 'ERROR'))])
-        })
-    } else {
-      editorWithToast = UPDATE_FNS.ADD_TOAST(
-        showToast(notice(`Please log in to upload assets`, 'ERROR', true)),
-        editor,
-        dispatch,
-      )
-    }
+    void saveAssetToServer(notNullProjectID, action.fileType, action.base64, assetFilename)
+      .then(() => {
+        dispatch(
+          [
+            ...actionsToRunAfterSave,
+            showToast(notice(`Succesfully uploaded ${assetFilename}`, 'INFO')),
+          ],
+          'everyone',
+        )
+      })
+      .catch(() => {
+        dispatch([showToast(notice(`Failed to upload ${assetFilename}`, 'ERROR'))])
+      })
 
     const updatedProjectContents = addFileToProjectContents(
       editor.projectContents,
