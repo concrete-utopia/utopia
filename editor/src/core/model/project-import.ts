@@ -219,7 +219,7 @@ export async function reuploadAssets(
   originalProjectRootURL: string,
   editorState: EditorState,
 ): Promise<void> {
-  walkContentsTreeAsync(editorState.projectContents, async (fullPath, file) => {
+  return walkContentsTreeAsync(editorState.projectContents, async (fullPath, file) => {
     if (file.type === 'ASSET_FILE' || file.type === 'IMAGE_FILE') {
       await reuploadAsset(originalProjectRootURL, editorState, fullPath)
     }

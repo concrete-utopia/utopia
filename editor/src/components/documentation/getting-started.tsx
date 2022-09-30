@@ -186,7 +186,7 @@ const FeaturedProjects = React.memo(() => {
     const fetchedProjectPromises = FeaturedProjectIDs.map((projectId) =>
       fetchProjectMetadata(projectId),
     )
-    Promise.all(fetchedProjectPromises).then((fetchedProjects) => {
+    void Promise.all(fetchedProjectPromises).then((fetchedProjects) => {
       const withOutNulls = stripNulls(fetchedProjects)
       setFeaturedProjectList(withOutNulls)
     })
