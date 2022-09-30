@@ -75,7 +75,7 @@ function getNewDisplayTypeCommands(
 }
 
 export function getOptionalDisplayPropCommands(
-  newResultOrLastIndex: number | null | undefined,
+  lastReorderIdx: number | null | undefined,
   interactionTarget: InteractionTarget,
   startingMetadata: ElementInstanceMetadataMap,
 ): Array<SetProperty | DeleteProperties> {
@@ -88,12 +88,12 @@ export function getOptionalDisplayPropCommands(
   const element = MetadataUtils.findElementByElementPath(startingMetadata, target)
   if (
     element != null &&
-    newResultOrLastIndex != null &&
-    newResultOrLastIndex !== siblingsOfTarget.findIndex((sibling) => EP.pathsEqual(sibling, target))
+    lastReorderIdx != null &&
+    lastReorderIdx !== siblingsOfTarget.findIndex((sibling) => EP.pathsEqual(sibling, target))
   ) {
     const newDisplayType = getNewDisplayTypeForIndex(
       startingMetadata,
-      siblingsOfTarget[newResultOrLastIndex],
+      siblingsOfTarget[lastReorderIdx],
     )
     return getNewDisplayTypeCommands(element, newDisplayType)
   } else {
