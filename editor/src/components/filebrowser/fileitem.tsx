@@ -860,7 +860,12 @@ export const FileBrowserItem: React.FC<FileBrowserItemProps> = (props: FileBrows
       item: () => {
         return props
       },
-      end: () => dispatch([EditorActions.setFilebrowserDropTarget(null)]),
+      end: () => {
+        dispatch([
+          CanvasActions.clearInteractionSession(false),
+          EditorActions.setFilebrowserDropTarget(null),
+        ])
+      },
     }),
     [props],
   )
@@ -869,20 +874,32 @@ export const FileBrowserItem: React.FC<FileBrowserItemProps> = (props: FileBrows
       accept: 'files',
       canDrop: () => true,
       drop: (item, monitor) => {
+        dispatch([
+          CanvasActions.clearInteractionSession(false),
+          EditorActions.setFilebrowserDropTarget(null),
+        ])
         onDrop(props, item)
       },
       hover: (item: FileBrowserItemProps) => {
         const targetDirectory =
           props.fileType === 'DIRECTORY' ? props.path : getParentDirectory(props.path)
         // do not trigger highlight when it tries to move to it's descendant directories
-        if (targetDirectory.includes(item.path)) {
-          if (props.dropTarget != null) {
-            props.dispatch([EditorActions.setFilebrowserDropTarget(null)], 'leftpane')
-          }
-        } else {
-          if (props.dropTarget !== targetDirectory) {
-            props.dispatch([EditorActions.setFilebrowserDropTarget(targetDirectory)], 'leftpane')
-          }
+        if (targetDirectory.includes(item.path) && props.dropTarget != null) {
+          props.dispatch(
+            [
+              CanvasActions.clearInteractionSession(false),
+              EditorActions.setFilebrowserDropTarget(null),
+            ],
+            'leftpane',
+          )
+        } else if (props.dropTarget !== targetDirectory) {
+          props.dispatch(
+            [
+              CanvasActions.clearInteractionSession(false),
+              EditorActions.setFilebrowserDropTarget(targetDirectory),
+            ],
+            'leftpane',
+          )
         }
       },
       collect: (monitor) => ({
@@ -921,6 +938,7 @@ export const FileBrowserItem: React.FC<FileBrowserItemProps> = (props: FileBrows
       ),
       [],
     )
+
     props.dispatch(
       [
         EditorActions.enableInsertModeForJSXElement(newElement, newUID, {}, null),
