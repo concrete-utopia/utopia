@@ -13,7 +13,6 @@ export interface CustomStrategyState {
   escapeHatchActivated: boolean
   lastReorderIdx: number | null
   duplicatedElementNewUids: { [elementPath: string]: string }
-  previousReorderTargetSiblingUnderMouse: ElementPath | null
 }
 
 export type CustomStrategyStatePatch = Partial<CustomStrategyState>
@@ -23,7 +22,6 @@ export function defaultCustomStrategyState(): CustomStrategyState {
     escapeHatchActivated: false,
     lastReorderIdx: null,
     duplicatedElementNewUids: {},
-    previousReorderTargetSiblingUnderMouse: null,
   }
 }
 

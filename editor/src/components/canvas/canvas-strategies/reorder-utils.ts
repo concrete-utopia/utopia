@@ -42,12 +42,11 @@ export function applyReorderCommon(
     const selectedElements = getTargetPathsFromInteractionTarget(canvasState.interactionTarget)
     const target = selectedElements[0]
 
-    const siblingsOfTarget = MetadataUtils.getSiblingsProjectContentsOrdered(
-      strategyState.startingMetadata,
-      target,
-    ).map((element) => element.elementPath)
+    const siblings = MetadataUtils.getSiblings(strategyState.startingMetadata, target).map(
+      (element) => element.elementPath,
+    )
 
-    if (!isReorderAllowed(siblingsOfTarget)) {
+    if (!isReorderAllowed(siblings)) {
       return strategyApplicationResult(
         [setCursorCommand('mid-interaction', CSSCursor.NotPermitted)],
         {},
@@ -60,47 +59,40 @@ export function applyReorderCommon(
       interactionState.interactionData.drag,
     )
 
-    const unpatchedIndex = siblingsOfTarget.findIndex((sibling) => EP.pathsEqual(sibling, target))
+    const unpatchedIndex = siblings.findIndex((sibling) => EP.pathsEqual(sibling, target))
     const lastReorderIdx = strategyState.customStrategyState.lastReorderIdx ?? unpatchedIndex
 
-    const { newIndex, targetSiblingUnderMouse } = findSiblingIndexUnderPoint(
-      interactionState.latestMetadata,
+    const newIndex = findSiblingIndexUnderPoint(
+      strategyState.startingMetadata,
+      siblings,
       pointOnCanvas,
-      target,
       isValidTarget,
     )
 
     const newIndexFound = newIndex > -1
-    const mouseStillOverPreviousTargetSibling = EP.pathsEqual(
-      targetSiblingUnderMouse,
-      strategyState.customStrategyState.previousReorderTargetSiblingUnderMouse,
-    )
-    const newResultOrLastIndex =
-      !mouseStillOverPreviousTargetSibling && newIndexFound ? newIndex : lastReorderIdx
+    const newResultOrLastIndex = newIndexFound ? newIndex : lastReorderIdx
 
     if (newResultOrLastIndex === unpatchedIndex) {
       return strategyApplicationResult(
         [
           updateHighlightedViews('mid-interaction', []),
-          setElementsToRerenderCommand(siblingsOfTarget),
+          setElementsToRerenderCommand(siblings),
           setCursorCommand('mid-interaction', CSSCursor.Move),
         ],
         {
           lastReorderIdx: newResultOrLastIndex,
-          previousReorderTargetSiblingUnderMouse: targetSiblingUnderMouse,
         },
       )
     } else {
       return strategyApplicationResult(
         [
           reorderElement('always', target, absolute(newResultOrLastIndex)),
-          setElementsToRerenderCommand(siblingsOfTarget),
+          setElementsToRerenderCommand(siblings),
           updateHighlightedViews('mid-interaction', []),
           setCursorCommand('mid-interaction', CSSCursor.Move),
         ],
         {
           lastReorderIdx: newResultOrLastIndex,
-          previousReorderTargetSiblingUnderMouse: targetSiblingUnderMouse,
         },
       )
     }
@@ -112,35 +104,12 @@ export function applyReorderCommon(
 
 function findSiblingIndexUnderPoint(
   metadata: ElementInstanceMetadataMap,
+  siblings: Array<ElementPath>,
   point: CanvasVector,
-  target: ElementPath,
   isValidTarget: (path: ElementPath, metadata: ElementInstanceMetadataMap) => boolean,
-): {
-  newIndex: number
-  targetSiblingUnderMouse: ElementPath | null
-} {
-  const siblings = MetadataUtils.getSiblingsProjectContentsOrdered(metadata, target).map(
-    (element) => element.elementPath,
-  )
-  const targetSiblingIdx = siblings.findIndex((sibling) => {
+): number {
+  return siblings.findIndex((sibling) => {
     const frame = MetadataUtils.getFrameInCanvasCoords(sibling, metadata)
-    return (
-      frame != null &&
-      rectContainsPoint(frame, point) &&
-      isValidTarget(sibling, metadata) &&
-      !EP.pathsEqual(target, sibling)
-    )
+    return frame != null && rectContainsPoint(frame, point) && isValidTarget(sibling, metadata)
   })
-  if (targetSiblingIdx === -1) {
-    // We were unable to find an appropriate entry.
-    return {
-      newIndex: -1,
-      targetSiblingUnderMouse: null,
-    }
-  } else {
-    return {
-      newIndex: targetSiblingIdx,
-      targetSiblingUnderMouse: siblings[targetSiblingIdx],
-    }
-  }
 }
