@@ -51,6 +51,7 @@ import {
 import { imagePathURL } from '../../common/server'
 import { generateUidWithExistingComponents } from '../../core/model/element-template-utils'
 import { useEditorState } from '../editor/store/store-hook'
+import { createJsxImage } from '../images'
 
 export interface FileBrowserItemProps extends FileBrowserItemInfo {
   isSelected: boolean
@@ -522,28 +523,11 @@ class FileBrowserItemInner extends React.PureComponent<
 
     const newUID = this.props.generateNewUid()
 
-    const propsForElement = jsxAttributesFromMap({
-      src: jsxAttributeValue(imagePathURL(this.props.path), emptyComments),
-      style: jsxAttributeValue(
-        {
-          position: 'absolute',
-          width: this.props.imageFile.width ?? 50,
-          height: this.props.imageFile.height ?? 50,
-        },
-        emptyComments,
-      ),
+    const newElement = createJsxImage(newUID, {
+      width: this.props.imageFile.width ?? 50,
+      height: this.props.imageFile.height ?? 50,
+      src: this.props.path,
     })
-
-    const newElement = jsxElement(
-      'img',
-      newUID,
-      setJSXAttributesAttribute(
-        propsForElement,
-        'data-uid',
-        jsxAttributeValue(newUID, emptyComments),
-      ),
-      [],
-    )
 
     this.props.dispatch(
       [
@@ -915,29 +899,11 @@ export const FileBrowserItem: React.FC<FileBrowserItemProps> = (props: FileBrows
     }
 
     const newUID = generateUidWithExistingComponents(projectContents)
-
-    const propsForElement = jsxAttributesFromMap({
-      src: jsxAttributeValue(imagePathURL(props.path), emptyComments),
-      style: jsxAttributeValue(
-        {
-          position: 'absolute',
-          width: props.imageFile.width ?? 100,
-          height: props.imageFile.height ?? 100,
-        },
-        emptyComments,
-      ),
+    const newElement = createJsxImage(newUID, {
+      width: props.imageFile.width ?? 100,
+      height: props.imageFile.height ?? 100,
+      src: props.path,
     })
-
-    const newElement = jsxElement(
-      'img',
-      newUID,
-      setJSXAttributesAttribute(
-        propsForElement,
-        'data-uid',
-        jsxAttributeValue(newUID, emptyComments),
-      ),
-      [],
-    )
 
     props.dispatch(
       [

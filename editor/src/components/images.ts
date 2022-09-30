@@ -4,8 +4,10 @@ import {
   emptyComments,
   jsxAttributesFromMap,
   jsxAttributeValue,
+  JSXElement,
   jsxElement,
   jsxElementName,
+  setJSXAttributesAttribute,
 } from '../core/shared/element-template'
 import { isImageFile } from '../core/model/project-file-utils'
 import { ProjectContents, ElementPath } from '../core/shared/project-file-types'
@@ -19,10 +21,11 @@ import {
 } from '../core/shared/math-utils'
 import { EditorAction } from './editor/action-types'
 import { insertJSXElement } from './editor/actions/action-creators'
-import { forceNotNull } from '../core/shared/optional-utils'
+import { forceNotNull, optionalMap } from '../core/shared/optional-utils'
 import { AllElementProps } from './editor/store/editor-state'
 import * as EP from '../core/shared/element-path'
 import { isFeatureEnabled } from '../utils/feature-switches'
+import { imagePathURL } from '../common/server'
 
 export function getImageSrc(
   projectId: string | null,
@@ -194,6 +197,38 @@ export function getScaledImageDimensionsFromProps(props: any): Size {
   const imageSizeMultiplier = getImageSizeMultiplierFromProps(props)
   const imageSize = getImageSizeFromProps(props)
   return scaleImageDimensions(imageSize, imageSizeMultiplier)
+}
+
+export interface JSXImageOptions {
+  width: number
+  height: number
+  top: number
+  left: number
+  src: string
+}
+
+export function createJsxImage(uid: string, options: Partial<JSXImageOptions>): JSXElement {
+  const path = optionalMap(imagePathURL, options.src) ?? ''
+  const propsForElement = jsxAttributesFromMap({
+    src: jsxAttributeValue(path, emptyComments),
+    style: jsxAttributeValue(
+      {
+        position: 'absolute',
+        width: options.width,
+        height: options.height,
+        top: options.top,
+        left: options.left,
+      },
+      emptyComments,
+    ),
+  })
+
+  return jsxElement(
+    'img',
+    uid,
+    setJSXAttributesAttribute(propsForElement, 'data-uid', jsxAttributeValue(uid, emptyComments)),
+    [],
+  )
 }
 
 export const MultipliersForImages: Array<number> = [1, 2]
