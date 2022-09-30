@@ -35,6 +35,7 @@ import {
 import { notice } from '../common/notice'
 import { appendToPath, getParentDirectory } from '../../utils/path-utils'
 import { AddingFile, applyAddingFile } from './filepath-utils'
+import { useEditorState } from '../editor/store/store-hook'
 
 export interface FileBrowserItemProps extends FileBrowserItemInfo {
   isSelected: boolean
@@ -761,12 +762,8 @@ class FileBrowserItemInner extends React.PureComponent<
   }
 }
 
-interface FilebrowserDragItem {
-  type: 'filebrowser'
-  props: FileBrowserItemProps
-}
-
 export function FileBrowserItem(props: FileBrowserItemProps) {
+  const dispatch = useEditorState((store) => store.dispatch, 'FileBrowserItem dispatch')
   const [{ isDragging }, drag, dragPreview] = useDrag(
     () => ({
       type: 'files',
@@ -782,6 +779,7 @@ export function FileBrowserItem(props: FileBrowserItemProps) {
         ])
         return props
       },
+      end: () => dispatch([EditorActions.setFilebrowserDropTarget(null)]),
     }),
     [props],
   )
