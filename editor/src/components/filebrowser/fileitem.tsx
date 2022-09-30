@@ -15,7 +15,6 @@ import * as EditorActions from '../editor/actions/action-creators'
 import { ExpandableIndicator } from '../navigator/navigator-item/expandable-indicator'
 import { FileBrowserItemInfo, FileBrowserItemType } from './filebrowser'
 import { PasteResult } from '../../utils/clipboard-utils'
-import { dragAndDropInsertionSubject, EditorModes } from '../editor/editor-modes'
 import { last } from '../../core/shared/array-utils'
 import { FileResult } from '../../core/shared/file-utils'
 import { WarningIcon } from '../../uuiui/warning-icon'
@@ -31,7 +30,6 @@ import {
   UtopiaTheme,
   SimpleFlexRow,
   Button,
-  FlexRow,
 } from '../../uuiui'
 import { notice } from '../common/notice'
 import { appendToPath, getParentDirectory } from '../../utils/path-utils'
@@ -258,7 +256,7 @@ class FileBrowserItemInner extends React.PureComponent<
   FileBrowserItemProps & FileBrowserItemDragProps & DragHandleProps,
   FileBrowserItemState
 > {
-  constructor(props: FileBrowserItemProps & FileBrowserItemDragProps) {
+  constructor(props: FileBrowserItemProps & FileBrowserItemDragProps & DragHandleProps) {
     super(props)
     this.state = {
       isRenaming: false,
@@ -851,6 +849,7 @@ export const FileBrowserItem: React.FC<FileBrowserItemProps> = (props: FileBrows
     (store) => store.editor.projectContents,
     'FileBrowserItem projectContents',
   )
+  const dispatch = useEditorState((store) => store.dispatch, 'FileBrowserItem dispatch')
   const [{ isDragging }, drag, dragPreview] = useDrag(
     () => ({
       type: 'files',
@@ -861,6 +860,7 @@ export const FileBrowserItem: React.FC<FileBrowserItemProps> = (props: FileBrows
       item: () => {
         return props
       },
+      end: () => dispatch([EditorActions.setFilebrowserDropTarget(null)]),
     }),
     [props],
   )
