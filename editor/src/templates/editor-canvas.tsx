@@ -1182,8 +1182,8 @@ export class EditorCanvas extends React.Component<EditorCanvasProps> {
   handleMouseUp = (event: MouseEvent) => {
     if (!this.isInsideCanvas(event)) {
       this.props.dispatch(cancelInsertModeActions('do-not-apply-changes'))
-      return
     }
+
     if (this.canvasSelected()) {
       if (document.pointerLockElement != null) {
         document.exitPointerLock()
