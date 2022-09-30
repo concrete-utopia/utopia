@@ -52,7 +52,7 @@ export function preloadPrioritizedAssets() {
   if (isBrowserEnvironment) {
     prioritisedAssets.forEach((asset) => {
       const url = getPossiblyHashedURL(asset)
-      fetch(url)
+      void fetch(url)
     })
   }
 }
