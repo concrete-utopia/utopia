@@ -42,7 +42,7 @@ function isFlowReorderConversionApplicable(
 export const flowReorderStrategy: CanvasStrategy = {
   id: 'FLOW_REORDER',
   name: () => 'Reorder (Flow)',
-  isApplicable: isFlowReorderConversionApplicable,
+  isApplicable: isFlowReorderConversionApplicable, // TODO this should check if the siblings are placed in the same row or same column
   controlsToRender: [
     {
       control: ParentOutlines,
