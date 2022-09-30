@@ -7,5 +7,5 @@ function sendMessageWebWorker(content: OutgoingWatchdogWorkerMessage) {
 }
 
 ctx.addEventListener('message', (event: MessageEvent) => {
-  handleMessage(event.data, sendMessageWebWorker)
+  void handleMessage(event.data, sendMessageWebWorker)
 })
