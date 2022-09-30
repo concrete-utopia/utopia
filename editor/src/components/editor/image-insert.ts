@@ -87,7 +87,7 @@ function handleImageSelected(
         })
     } else {
       // FIXME Support inserting SVGs by adding an import statement
-      fileUploadAction(file, imageFilePath, false).then((saveFileAction) => {
+      void fileUploadAction(file, imageFilePath, false).then((saveFileAction) => {
         const warningMessage = EditorActions.showToast(notice(`File saved to ${imageFilePath}`))
         dispatch([saveFileAction, warningMessage], 'everyone')
       })

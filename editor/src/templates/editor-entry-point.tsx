@@ -14,8 +14,8 @@ import '../utils/feature-switches'
 import { getLoginState } from '../common/server'
 import { triggerHashedAssetsUpdate, preloadPrioritizedAssets } from '../utils/hashed-assets'
 
-getLoginState('no-cache')
-triggerHashedAssetsUpdate().then(() => preloadPrioritizedAssets())
+void getLoginState('no-cache')
+void triggerHashedAssetsUpdate().then(() => preloadPrioritizedAssets())
 
 import { addStyleSheetToPage } from '../core/shared/dom-utils'
 import { STATIC_BASE_URL } from '../common/env-vars'

@@ -366,7 +366,7 @@ export async function renderTestEditorWithModel(
 
   await act(async () => {
     await new Promise<void>((resolve, reject) => {
-      load(
+      void load(
         async (actions) => {
           try {
             await asyncTestDispatch(

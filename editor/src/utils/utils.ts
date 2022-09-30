@@ -886,7 +886,9 @@ function defer<T>(): Promise<T> & {
     res = resolve
     rej = reject
   })
+  // eslint-disable-next-line @typescript-eslint/no-floating-promises
   Object.defineProperty(promise, 'resolve', { value: res })
+  // eslint-disable-next-line @typescript-eslint/no-floating-promises
   Object.defineProperty(promise, 'reject', { value: rej })
 
   return promise as any

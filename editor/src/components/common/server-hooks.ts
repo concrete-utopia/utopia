@@ -17,7 +17,7 @@ export function useGetProjectMetadata(projectId: string | null): ProjectMetadata
     if (projectId == null) {
       setUserData(null)
     } else {
-      fetchProjectMetadata(projectId).then((projectListing) => {
+      void fetchProjectMetadata(projectId).then((projectListing) => {
         // safeguard against an old Fetch arriving for an outdated projectId
         if (previousProjectIdRef.current === projectId) {
           if (projectListing != null) {
@@ -46,7 +46,7 @@ export function useIsMyProject(projectId: string | null): 'yes' | 'no' | 'unknow
     if (projectId == null) {
       setMyProject('yes')
     } else {
-      checkProjectOwned(projectId).then((isMyProject) => {
+      void checkProjectOwned(projectId).then((isMyProject) => {
         reduxDevtoolsLogMessage('useIsMyProject called', {
           isMyProject: isMyProject,
         })
