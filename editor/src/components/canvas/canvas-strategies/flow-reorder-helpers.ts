@@ -17,8 +17,6 @@ export function isValidFlowReorderTarget(elementMetadata: ElementInstanceMetadat
     return false
   } else if (elementMetadata?.specialSizeMeasurements.float !== 'none') {
     return false
-  } else if (MetadataUtils.isPositionRelative(elementMetadata) && elementMetadata != null) {
-    return !elementMetadata.specialSizeMeasurements.hasPositionOffset
   } else {
     return true
   }
