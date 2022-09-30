@@ -1,6 +1,7 @@
 {
   "appID": null,
-  "projectVersion": 6,
+  "projectVersion": 8,
+  "projectDescription": "",
   "projectContents": {
     "package.json": {
       "type": "PROJECT_CONTENT_FILE",
@@ -230,6 +231,9 @@
   "fileBrowser": { "minimised": false },
   "dependencyList": { "minimised": false },
   "projectSettings": { "minimised": false },
-  "navigator": { "minimised": false }
+  "navigator": { "minimised": false },
+  "githubSettings": {
+    "targetRepository": null
+  }
 }
 

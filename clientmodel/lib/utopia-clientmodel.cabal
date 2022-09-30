@@ -33,15 +33,68 @@ library
       TypeOperators
       DeriveDataTypeable
       DataKinds
+      DeriveAnyClass
   ghc-options: -Wall -Werror -threaded -fno-warn-orphans -Wno-unused-imports
   build-depends:
-      aeson <2.1
+      QuickCheck
+    , aeson <2.1
     , base
+    , generic-arbitrary
     , generic-lens
     , lens
     , lens-aeson <1.2
+    , quickcheck-instances
     , relude
     , tasty
+    , text
+    , unordered-containers
+  default-language: Haskell2010
+
+test-suite clientmodel-test
+  type: exitcode-stdio-1.0
+  main-is: Main.hs
+  other-modules:
+      Utopia.ClientModelTest
+      Utopia.ClientModel
+      Paths_utopia_clientmodel
+  hs-source-dirs:
+      test
+      src
+  default-extensions:
+      NoImplicitPrelude
+      OverloadedStrings
+      DeriveGeneric
+      DuplicateRecordFields
+      FlexibleContexts
+      MonoLocalBinds
+      OverloadedStrings
+      RankNTypes
+      RecordWildCards
+      TemplateHaskell
+      TypeApplications
+      TypeOperators
+      DeriveDataTypeable
+      DataKinds
+      DeriveAnyClass
+  ghc-options: -Wall -Werror -threaded -fno-warn-orphans -Wno-unused-imports
+  build-depends:
+      QuickCheck
+    , aeson <2.1
+    , base
+    , generic-arbitrary
+    , generic-lens
+    , hedgehog
+    , hedgehog-quickcheck
+    , hspec
+    , lens
+    , lens-aeson <1.2
+    , quickcheck-instances
+    , relude
+    , tasty
+    , tasty-hedgehog
+    , tasty-hspec
+    , tasty-hunit
+    , tasty-quickcheck
     , text
     , unordered-containers
   default-language: Haskell2010

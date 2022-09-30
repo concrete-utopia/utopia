@@ -71,7 +71,7 @@ getGithubAuthResources = runMaybeT $ do
   pure $ GithubAuthResources{..}
 
 getAuthorizationURI :: GithubAuthResources -> URI
-getAuthorizationURI GithubAuthResources{..} = authorizationUrl _githubAuth
+getAuthorizationURI GithubAuthResources{..} = authorizationUrl _githubAuth & (queryL . queryPairsL) <>~ [("scope", "repo")]
 
 getAccessToken :: GithubAuthResources -> ExchangeToken -> IO (Either Text OAuth2Token)
 getAccessToken GithubAuthResources{..} exchangeToken = do
@@ -82,8 +82,13 @@ oauth2TokenToGithubAuthenticationDetails :: OAuth2Token -> Text -> IO GithubAuth
 oauth2TokenToGithubAuthenticationDetails oauth2Token userId = do
   now <- getCurrentTime
   let accessToken = atoken $ view (field @"accessToken" ) oauth2Token
-  let possibleRefreshToken = fmap rtoken $ firstOf (field @"refreshToken" . _Just) oauth2Token
-  refreshToken <- maybe (fail "No refresh token supplied.") pure possibleRefreshToken
-  expiresAt <- maybe (fail "No expiry supplied.") (\expires -> pure $ addUTCTime (fromInteger $ toInteger expires) now) (expiresIn oauth2Token)
+  let refreshToken = fmap rtoken $ firstOf (field @"refreshToken" . _Just) oauth2Token
+  let expiresAt = fmap (\expires -> addUTCTime (fromInteger $ toInteger expires) now) (expiresIn oauth2Token)
+  when (isNothing refreshToken && isJust expiresAt) (fail "Cannot have an expiry with no refresh token.")
+  when (isJust refreshToken && isNothing expiresAt) (fail "Cannot have a refresh token with no expiry.")
   pure $ GithubAuthenticationDetails{..}
 
+accessTokenFromRefreshToken :: GithubAuthResources -> RefreshToken -> IO (Either Text OAuth2Token)
+accessTokenFromRefreshToken GithubAuthResources{..} refreshToken = do
+  result <- refreshAccessToken _githubManager _githubAuth refreshToken
+  pure $ first show result
