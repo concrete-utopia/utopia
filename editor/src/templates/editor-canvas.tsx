@@ -108,7 +108,10 @@ import {
 import { getDragTargets } from '../components/canvas/canvas-strategies/shared-absolute-move-strategy-helpers'
 import { pickCanvasStateFromEditorState } from '../components/canvas/canvas-strategies/canvas-strategies'
 import { BuiltInDependencies } from '../core/es-modules/package-manager/built-in-dependencies-list'
-import { cancelInsertModeActions } from '../components/editor/actions/meta-actions'
+import {
+  cancelInsertModeActions,
+  HandleInteractionSession,
+} from '../components/editor/actions/meta-actions'
 
 const webFrame = PROBABLY_ELECTRON ? requireElectron().webFrame : null
 
@@ -173,7 +176,11 @@ function roundPointForScale<C extends CoordinateMarker>(point: Point<C>, scale: 
   return scale <= 1 ? Utils.roundPointTo(point, 0) : Utils.roundPointToNearestHalf(point)
 }
 
-function handleCanvasEvent(model: CanvasModel, event: CanvasMouseEvent): Array<EditorAction> {
+function handleCanvasEvent(
+  model: CanvasModel,
+  event: CanvasMouseEvent,
+  isInsideCanvas: boolean,
+): Array<EditorAction> {
   if (event.event === 'WHEEL') {
     return []
   }
@@ -193,7 +200,10 @@ function handleCanvasEvent(model: CanvasModel, event: CanvasMouseEvent): Array<E
     event.event === 'MOUSE_UP' &&
     model.editorState.canvas.interactionSession?.interactionData.type === 'DRAG'
   ) {
-    optionalDragStateAction = cancelInsertModeActions('apply-changes')
+    const shouldApplyChanges: HandleInteractionSession = isInsideCanvas
+      ? 'apply-changes'
+      : 'do-not-apply-changes'
+    optionalDragStateAction = cancelInsertModeActions(shouldApplyChanges)
   } else if (!(insertMode && isOpenFileUiJs(model.editorState))) {
     switch (event.event) {
       case 'DRAG':
@@ -818,7 +828,9 @@ export class EditorCanvas extends React.Component<EditorCanvasProps> {
       actions.push(setFocus('canvas'))
     }
 
-    actions.push(...handleCanvasEvent(this.props.model, event))
+    actions.push(
+      ...handleCanvasEvent(this.props.model, event, this.isInsideCanvas(event.nativeEvent)),
+    )
     actions.push(...on(this.props.model, event, canvasBounds))
 
     const realActions = actions.filter((action) => action.action !== 'TRANSIENT_ACTIONS')
@@ -1180,10 +1192,6 @@ export class EditorCanvas extends React.Component<EditorCanvasProps> {
   }
 
   handleMouseUp = (event: MouseEvent) => {
-    if (!this.isInsideCanvas(event)) {
-      this.props.dispatch(cancelInsertModeActions('do-not-apply-changes'))
-    }
-
     if (this.canvasSelected()) {
       if (document.pointerLockElement != null) {
         document.exitPointerLock()
