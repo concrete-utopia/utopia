@@ -489,9 +489,6 @@ export function runLocalCanvasAction(
           domWalkerInvalidateCount: model.canvas.domWalkerInvalidateCount + 1,
           controls: editorStateCanvasControls([], [], [], [], null, []),
         },
-        jsxMetadata: {},
-        domMetadata: {},
-        spyMetadata: {},
       }
     case 'UPDATE_INTERACTION_SESSION':
       if (model.canvas.interactionSession == null) {
