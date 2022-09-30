@@ -91,6 +91,7 @@ async function loadProject(
   projectContents: ProjectContentTreeRoot,
 ): Promise<boolean> {
   const persistentModel: PersistentModel = {
+    appID: null,
     forkedFromProjectId: null,
     projectVersion: CURRENT_PROJECT_VERSION,
     projectDescription: 'Performance Test Project',
@@ -113,6 +114,9 @@ async function loadProject(
     },
     navigator: {
       minimised: false,
+    },
+    githubSettings: {
+      targetRepository: null,
     },
   }
 

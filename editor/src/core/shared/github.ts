@@ -1,9 +1,8 @@
+import { UTOPIA_BACKEND } from '../../common/env-vars'
+import urljoin from 'url-join'
+import { GithubRepo, PersistentModel } from '../../components/editor/store/editor-state'
 import { trimUpToAndIncluding } from './string-utils'
-
-export interface GithubRepo {
-  owner: string
-  repo: string
-}
+import { HEADERS, MODE } from '../../common/server'
 
 export function parseGithubProjectString(maybeProject: string): GithubRepo | null {
   const withoutGithubPrefix = trimUpToAndIncluding('github.com/', maybeProject)
@@ -17,7 +16,23 @@ export function parseGithubProjectString(maybeProject: string): GithubRepo | nul
   } else {
     return {
       owner: owner,
-      repo: repo,
+      repository: repo,
     }
+  }
+}
+
+export async function saveProjectToGithub(persistentModel: PersistentModel): Promise<void> {
+  const url = urljoin(UTOPIA_BACKEND, 'github', 'save')
+
+  const postBody = JSON.stringify(persistentModel)
+  const response = await fetch(url, {
+    method: 'POST',
+    credentials: 'include',
+    headers: HEADERS,
+    mode: MODE,
+    body: postBody,
+  })
+  if (!response.ok) {
+    throw new Error(`Unexpected status returned from endpoint: ${response.status}`)
   }
 }

@@ -3,9 +3,10 @@ import { StoryboardFilePath } from '../editor/store/editor-state'
 import { EditorRenderResult, renderTestEditorWithModel } from './ui-jsx.test-utils'
 import { createModifiedProject } from '../../sample-projects/sample-project-utils.test-utils'
 import { CanvasControlsContainerID } from './controls/new-canvas-controls'
-import { act, fireEvent } from '@testing-library/react'
 import { ElementPath } from '../../core/shared/project-file-types'
 import { setFocusedElement } from '../../components/editor/actions/action-creators'
+import { mouseClickAtPoint, mouseMoveToPoint } from './event-helpers.test-utils'
+import { cmdModifier, emptyModifiers } from '../../utils/modifiers'
 
 function exampleProject(
   positionSetting: string | null,
@@ -119,58 +120,14 @@ async function checkOverlappingElements(
     await renderResult.dispatch([setFocusedElement(focusedOn)], true)
   }
 
-  act(() => {
-    fireEvent(
-      canvasControlsLayer,
-      new MouseEvent('mousemove', {
-        detail: 1,
-        bubbles: true,
-        cancelable: true,
-        metaKey: cmdPressed,
-        clientX: targetDivBounds.left + x,
-        clientY: targetDivBounds.top + y,
-        movementX: targetDivBounds.left + x,
-        movementY: targetDivBounds.top + y,
-        buttons: 1,
-      }),
-    )
-    fireEvent(
-      canvasControlsLayer,
-      new MouseEvent('mousedown', {
-        detail: 1,
-        bubbles: true,
-        cancelable: true,
-        metaKey: cmdPressed,
-        clientX: targetDivBounds.left + x,
-        clientY: targetDivBounds.top + y,
-        buttons: 1,
-      }),
-    )
-    fireEvent(
-      canvasControlsLayer,
-      new MouseEvent('click', {
-        detail: 1,
-        bubbles: true,
-        cancelable: true,
-        metaKey: cmdPressed,
-        clientX: targetDivBounds.left + x,
-        clientY: targetDivBounds.top + y,
-        buttons: 1,
-      }),
-    )
-    fireEvent(
-      canvasControlsLayer,
-      new MouseEvent('mouseup', {
-        detail: 1,
-        bubbles: true,
-        cancelable: true,
-        metaKey: cmdPressed,
-        clientX: targetDivBounds.left + x,
-        clientY: targetDivBounds.top + y,
-        buttons: 1,
-      }),
-    )
-  })
+  const targetPoint = {
+    x: targetDivBounds.left + x,
+    y: targetDivBounds.top + y,
+  }
+
+  const modifiers = cmdPressed ? cmdModifier : emptyModifiers
+  mouseMoveToPoint(canvasControlsLayer, targetPoint, { modifiers: modifiers })
+  mouseClickAtPoint(canvasControlsLayer, targetPoint, { modifiers: modifiers })
 
   const newlySelectedElements = renderResult.getEditorState().editor.selectedViews
   expect(newlySelectedElements).toEqual(expectedSelectedElements)

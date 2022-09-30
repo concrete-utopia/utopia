@@ -974,6 +974,11 @@ export type ToggleSelectionLock = {
   newValue: SelectionLocked
 }
 
+export interface SaveToGithub {
+  action: 'SAVE_TO_GITHUB'
+  targetRepository: string
+}
+
 export type EditorAction =
   | ClearSelection
   | InsertScene
@@ -1131,6 +1136,7 @@ export type EditorAction =
   | RunEscapeHatch
   | SetElementsToRerender
   | ToggleSelectionLock
+  | SaveToGithub
 
 export type DispatchPriority =
   | 'everyone'

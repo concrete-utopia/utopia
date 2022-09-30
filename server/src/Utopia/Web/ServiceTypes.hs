@@ -29,9 +29,11 @@ import           Protolude
 import           Servant                   hiding (URI)
 import qualified Text.Blaze.Html5          as H
 import           URI.ByteString
+import           Utopia.ClientModel
 import           Utopia.Web.Assets
 import           Utopia.Web.Database.Types
 import           Utopia.Web.JSON
+import Utopia.Web.Github
 import           Web.Cookie
 
 type SessionCookie = Text
@@ -131,8 +133,9 @@ data ServiceCallsF a = NotFound
                      | ClearBranchCache Text a
                      | GetDownloadBranchFolders ([FilePath] -> a)
                      | GetGithubAuthorizationURI (URI -> a)
-                     | GetGithubAccessToken Text ExchangeToken (Maybe OAuth2Token -> a)
+                     | GetGithubAccessToken Text ExchangeToken (Maybe AccessToken -> a)
                      | GetGithubAuthentication Text (Maybe GithubAuthenticationDetails -> a)
+                     | SaveToGithubRepo Text PersistentModel (Maybe CreateGitBranchResult -> a)
                      deriving Functor
 
 {-

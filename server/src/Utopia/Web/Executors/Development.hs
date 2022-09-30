@@ -339,6 +339,16 @@ innerServerExecutor (GetGithubAuthentication user action) = do
   pool <- fmap _projectPool ask
   result <- liftIO $ DB.lookupGithubAuthenticationDetails metrics pool user
   pure $ action result
+innerServerExecutor (SaveToGithubRepo user model action) = do
+  possibleGithubResources <- fmap _githubResources ask
+  metrics <- fmap _databaseMetrics ask
+  logger <- fmap _logger ask
+  pool <- fmap _projectPool ask
+  case possibleGithubResources of
+    Nothing -> throwError err501
+    Just githubResources -> do
+      result <- createTreeAndSaveToGithub githubResources logger metrics pool user model
+      pure $ action result
 
 {-|
   Invokes a service call using the supplied resources.

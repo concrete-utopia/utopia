@@ -933,6 +933,9 @@ describe('LOAD', () => {
       navigator: {
         minimised: false,
       },
+      githubSettings: {
+        targetRepository: null,
+      },
     }
 
     const action = {

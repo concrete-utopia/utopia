@@ -573,7 +573,7 @@ const SharingPane = React.memo(() => {
     projectId == null ? '' : shareURLForProject(FLOATING_PREVIEW_BASE_URL, projectId, projectName)
 
   const handleCopyProjectURL = React.useCallback(() => {
-    window.navigator.clipboard.writeText(previewURL)
+    void window.navigator.clipboard.writeText(previewURL)
     setTemporaryCopySuccess(true)
     setTimeout(() => {
       setTemporaryCopySuccess(false)
@@ -716,15 +716,22 @@ const GithubPane = React.memo(() => {
   const [githubRepoStr, setGithubRepoStr] = React.useState('')
   const parsedRepo = parseGithubProjectString(githubRepoStr)
   const dispatch = useEditorState((store) => store.dispatch, 'GithubPane dispatch')
-  const persistence = useEditorState((store) => store.persistence, 'GithubPane persistence')
+  const storedTargetGithubRepo = useEditorState((store) => {
+    const repo = store.editor.githubSettings.targetRepository
+    if (repo == null) {
+      return undefined
+    } else {
+      return `https://github.com/${repo.owner}/${repo.repository}`
+    }
+  }, 'GithubPane storedTargetGithubRepo')
 
   const onStartImport = React.useCallback(() => {
     if (parsedRepo != null) {
-      const { owner, repo } = parsedRepo
+      const { owner, repository } = parsedRepo
 
       const url = new URL(urljoin(BASE_URL, 'p'))
       url.searchParams.set('github_owner', owner)
-      url.searchParams.set('github_repo', repo)
+      url.searchParams.set('github_repo', repository)
 
       window.open(url.toString())
     }
@@ -742,7 +749,7 @@ const GithubPane = React.memo(() => {
   }, 'GithubPane githubAuthenticated')
 
   const triggerAuthentication = React.useCallback(() => {
-    startGithubAuthentication(dispatch)
+    void startGithubAuthentication(dispatch)
   }, [dispatch])
 
   const [urlToImportFrom, setURLToImportFrom] = React.useState<string | null>(null)
@@ -769,6 +776,23 @@ const GithubPane = React.memo(() => {
     },
     [dispatch],
   )
+
+  const [githubRepoToSaveTo, setGithubRepoToSaveTo] = React.useState<string | undefined>(
+    storedTargetGithubRepo,
+  )
+
+  const onChangeGithubRepoToSaveTo = React.useCallback(
+    (changeEvent: React.ChangeEvent<HTMLInputElement>) => {
+      setGithubRepoToSaveTo(changeEvent.currentTarget.value)
+    },
+    [setGithubRepoToSaveTo],
+  )
+
+  const triggerSaveToGithub = React.useCallback(() => {
+    if (githubRepoToSaveTo != null) {
+      dispatch([EditorActions.saveToGithub(githubRepoToSaveTo)], 'everyone')
+    }
+  }, [dispatch, githubRepoToSaveTo])
 
   return (
     <FlexColumn
@@ -835,6 +859,34 @@ const GithubPane = React.memo(() => {
             <StringInput testId='importProject' value={githubRepoStr} onChange={onChange} />
             <Button spotlight highlight disabled={parsedRepo == null} onMouseUp={onStartImport}>
               Start
+            </Button>
+          </UIGridRow>
+
+          <div
+            style={{
+              height: 'initial',
+              minHeight: 34,
+              alignItems: 'flex-start',
+              paddingTop: 8,
+              paddingLeft: 8,
+              paddingRight: 8,
+              paddingBottom: 8,
+              whiteSpace: 'pre-wrap',
+              letterSpacing: 0.1,
+              lineHeight: '17px',
+              fontSize: '11px',
+            }}
+          >
+            Save to a Github repo if you have access to it.
+          </div>
+          <UIGridRow padded variant='<--------auto-------->|--45px--|'>
+            <StringInput
+              testId='saveToGithubInput'
+              value={githubRepoToSaveTo}
+              onChange={onChangeGithubRepoToSaveTo}
+            />
+            <Button spotlight highlight onMouseUp={triggerSaveToGithub}>
+              Save
             </Button>
           </UIGridRow>
         </SectionBodyArea>

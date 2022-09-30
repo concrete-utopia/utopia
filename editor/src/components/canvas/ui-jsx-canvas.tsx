@@ -323,7 +323,7 @@ export const UiJsxCanvas = React.memo<UiJsxCanvasPropsWithErrorCallback>((props)
   React.useEffect(() => {
     setTimeout(() => {
       // wrapping in a setTimeout so we don't dispatch from inside React lifecycle
-      validateControlsToCheck(
+      void validateControlsToCheck(
         dispatch,
         propertyControlsInfo,
         resolvedFileNames.current,
