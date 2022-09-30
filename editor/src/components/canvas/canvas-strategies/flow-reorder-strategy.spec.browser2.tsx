@@ -4,15 +4,10 @@ import {
   makeTestProjectCodeWithSnippet,
   renderTestEditorWithCode,
 } from '../ui-jsx.test-utils'
-import { act, fireEvent } from '@testing-library/react'
 import { CanvasControlsContainerID } from '../controls/new-canvas-controls'
-import {
-  offsetPoint,
-  rectangleDifference,
-  windowPoint,
-  WindowPoint,
-} from '../../../core/shared/math-utils'
-import { emptyModifiers, Modifiers } from '../../../utils/modifiers'
+import { cmdModifier, emptyModifiers, Modifiers } from '../../../utils/modifiers'
+import { mouseClickAtPoint, mouseDragFromPointWithDelta } from '../event-helpers.test-utils'
+import { rectangleDifference, windowPoint, WindowPoint } from '../../../core/shared/math-utils'
 import * as EP from '../../../core/shared/element-path'
 import { MetadataUtils } from '../../../core/model/element-metadata-utils'
 import { assert } from 'chai'
@@ -180,57 +175,21 @@ function dragElement(
   dragDelta: WindowPoint,
   modifiers: Modifiers,
   expectedNavigatorTargetsDuringMove: Array<string>,
-): void {
+) {
   const targetElement = renderResult.renderedDOM.getByTestId(targetTestId)
   const targetElementBounds = targetElement.getBoundingClientRect()
-  const canvasControl = renderResult.renderedDOM.getByTestId(CanvasControlsContainerID)
+  const canvasControlsLayer = renderResult.renderedDOM.getByTestId(CanvasControlsContainerID)
 
   const startPoint = windowPoint({ x: targetElementBounds.x + 5, y: targetElementBounds.y + 5 })
-  const endPoint = offsetPoint(startPoint, dragDelta)
-  fireEvent(
-    canvasControl,
-    new MouseEvent('mousedown', {
-      bubbles: true,
-      cancelable: true,
-      metaKey: true,
-      altKey: modifiers.alt,
-      shiftKey: modifiers.shift,
-      clientX: startPoint.x,
-      clientY: startPoint.y,
-      buttons: 1,
-    }),
-  )
-
-  fireEvent(
-    canvasControl,
-    new MouseEvent('mousemove', {
-      bubbles: true,
-      cancelable: true,
-      metaKey: modifiers.cmd,
-      altKey: modifiers.alt,
-      shiftKey: modifiers.shift,
-      clientX: endPoint.x,
-      clientY: endPoint.y,
-      buttons: 1,
-    }),
-  )
-
-  expect(renderResult.getEditorState().derived.visibleNavigatorTargets.map(EP.toString)).toEqual(
-    expectedNavigatorTargetsDuringMove,
-  )
-
-  fireEvent(
-    window,
-    new MouseEvent('mouseup', {
-      bubbles: true,
-      cancelable: true,
-      metaKey: modifiers.cmd,
-      altKey: modifiers.alt,
-      shiftKey: modifiers.shift,
-      clientX: endPoint.x,
-      clientY: endPoint.y,
-    }),
-  )
+  mouseClickAtPoint(canvasControlsLayer, startPoint, { modifiers: cmdModifier })
+  mouseDragFromPointWithDelta(canvasControlsLayer, startPoint, dragDelta, {
+    modifiers: modifiers,
+    midDragCallback: () => {
+      expect(
+        renderResult.getEditorState().derived.visibleNavigatorTargets.map(EP.toString),
+      ).toEqual(expectedNavigatorTargetsDuringMove)
+    },
+  })
 }
 
 describe('Flow Reorder Strategy (Mixed Display Type)', () => {
@@ -242,18 +201,16 @@ describe('Flow Reorder Strategy (Mixed Display Type)', () => {
 
     // drag element 'CCC' up a little to replace it with it's direct sibling
     const dragDelta = windowPoint({ x: 0, y: -45 })
-    act(() =>
-      dragElement(renderResult, 'ccc', dragDelta, emptyModifiers, [
-        'utopia-storyboard-uid/scene-aaa',
-        'utopia-storyboard-uid/scene-aaa/app-entity',
-        'utopia-storyboard-uid/scene-aaa/app-entity:container',
-        'utopia-storyboard-uid/scene-aaa/app-entity:container/aaa',
-        'utopia-storyboard-uid/scene-aaa/app-entity:container/ccc',
-        'utopia-storyboard-uid/scene-aaa/app-entity:container/bbb',
-        'utopia-storyboard-uid/scene-aaa/app-entity:container/ddd',
-        'utopia-storyboard-uid/scene-aaa/app-entity:container/eee',
-      ]),
-    )
+    dragElement(renderResult, 'ccc', dragDelta, emptyModifiers, [
+      'utopia-storyboard-uid/scene-aaa',
+      'utopia-storyboard-uid/scene-aaa/app-entity',
+      'utopia-storyboard-uid/scene-aaa/app-entity:container',
+      'utopia-storyboard-uid/scene-aaa/app-entity:container/aaa',
+      'utopia-storyboard-uid/scene-aaa/app-entity:container/ccc',
+      'utopia-storyboard-uid/scene-aaa/app-entity:container/bbb',
+      'utopia-storyboard-uid/scene-aaa/app-entity:container/ddd',
+      'utopia-storyboard-uid/scene-aaa/app-entity:container/eee',
+    ])
 
     await renderResult.getDispatchFollowUpActionsFinished()
     expect(getPrintedUiJsCode(renderResult.getEditorState())).toEqual(
@@ -268,18 +225,16 @@ describe('Flow Reorder Strategy (Mixed Display Type)', () => {
 
     // drag element 'CCC' down to insert into the row
     const dragDelta = windowPoint({ x: 10, y: 50 })
-    act(() =>
-      dragElement(renderResult, 'ccc', dragDelta, emptyModifiers, [
-        'utopia-storyboard-uid/scene-aaa',
-        'utopia-storyboard-uid/scene-aaa/app-entity',
-        'utopia-storyboard-uid/scene-aaa/app-entity:container',
-        'utopia-storyboard-uid/scene-aaa/app-entity:container/aaa',
-        'utopia-storyboard-uid/scene-aaa/app-entity:container/bbb',
-        'utopia-storyboard-uid/scene-aaa/app-entity:container/ddd',
-        'utopia-storyboard-uid/scene-aaa/app-entity:container/ccc',
-        'utopia-storyboard-uid/scene-aaa/app-entity:container/eee',
-      ]),
-    )
+    dragElement(renderResult, 'ccc', dragDelta, emptyModifiers, [
+      'utopia-storyboard-uid/scene-aaa',
+      'utopia-storyboard-uid/scene-aaa/app-entity',
+      'utopia-storyboard-uid/scene-aaa/app-entity:container',
+      'utopia-storyboard-uid/scene-aaa/app-entity:container/aaa',
+      'utopia-storyboard-uid/scene-aaa/app-entity:container/bbb',
+      'utopia-storyboard-uid/scene-aaa/app-entity:container/ddd',
+      'utopia-storyboard-uid/scene-aaa/app-entity:container/ccc',
+      'utopia-storyboard-uid/scene-aaa/app-entity:container/eee',
+    ])
 
     await renderResult.getDispatchFollowUpActionsFinished()
 
@@ -295,18 +250,16 @@ describe('Flow Reorder Strategy (Mixed Display Type)', () => {
 
     // drag element 'CCC' up to pull out of the row and insert into block
     const dragDelta = windowPoint({ x: -40, y: -50 })
-    act(() =>
-      dragElement(renderResult, 'ccc', dragDelta, emptyModifiers, [
-        'utopia-storyboard-uid/scene-aaa',
-        'utopia-storyboard-uid/scene-aaa/app-entity',
-        'utopia-storyboard-uid/scene-aaa/app-entity:container',
-        'utopia-storyboard-uid/scene-aaa/app-entity:container/aaa',
-        'utopia-storyboard-uid/scene-aaa/app-entity:container/ccc',
-        'utopia-storyboard-uid/scene-aaa/app-entity:container/bbb',
-        'utopia-storyboard-uid/scene-aaa/app-entity:container/ddd',
-        'utopia-storyboard-uid/scene-aaa/app-entity:container/eee',
-      ]),
-    )
+    dragElement(renderResult, 'ccc', dragDelta, emptyModifiers, [
+      'utopia-storyboard-uid/scene-aaa',
+      'utopia-storyboard-uid/scene-aaa/app-entity',
+      'utopia-storyboard-uid/scene-aaa/app-entity:container',
+      'utopia-storyboard-uid/scene-aaa/app-entity:container/aaa',
+      'utopia-storyboard-uid/scene-aaa/app-entity:container/ccc',
+      'utopia-storyboard-uid/scene-aaa/app-entity:container/bbb',
+      'utopia-storyboard-uid/scene-aaa/app-entity:container/ddd',
+      'utopia-storyboard-uid/scene-aaa/app-entity:container/eee',
+    ])
 
     await renderResult.getDispatchFollowUpActionsFinished()
 
@@ -357,15 +310,13 @@ describe('Flow Reorder Strategy (Mixed Display Type)', () => {
     } else {
       // drag element 'B' over 'A' will skip reorder
       const dragDelta = windowPoint(rectangleDifference(elementBFrame, elementAFrame))
-      act(() =>
-        dragElement(renderResult, 'bbb', dragDelta, emptyModifiers, [
-          'utopia-storyboard-uid/scene-aaa',
-          'utopia-storyboard-uid/scene-aaa/app-entity',
-          'utopia-storyboard-uid/scene-aaa/app-entity:container',
-          'utopia-storyboard-uid/scene-aaa/app-entity:container/aaa',
-          'utopia-storyboard-uid/scene-aaa/app-entity:container/bbb',
-        ]),
-      )
+      dragElement(renderResult, 'bbb', dragDelta, emptyModifiers, [
+        'utopia-storyboard-uid/scene-aaa',
+        'utopia-storyboard-uid/scene-aaa/app-entity',
+        'utopia-storyboard-uid/scene-aaa/app-entity:container',
+        'utopia-storyboard-uid/scene-aaa/app-entity:container/aaa',
+        'utopia-storyboard-uid/scene-aaa/app-entity:container/bbb',
+      ])
 
       await renderResult.getDispatchFollowUpActionsFinished()
       expect(getPrintedUiJsCode(renderResult.getEditorState())).toEqual(

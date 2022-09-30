@@ -5,8 +5,10 @@ import sinon, { SinonFakeTimers } from 'sinon'
 
 import * as EP from '../../../core/shared/element-path'
 import { isFeatureEnabled, setFeatureEnabled } from '../../../utils/feature-switches'
+import { cmdModifier, shiftCmdModifier, shiftModifier } from '../../../utils/modifiers'
 import { wait } from '../../../utils/utils.test-utils'
 import { selectComponents } from '../../editor/actions/action-creators'
+import { pressKey } from '../event-helpers.test-utils'
 import { GuidelineWithSnappingVectorAndPointsOfRelevance } from '../guideline'
 import { getPrintedUiJsCode, renderTestEditorWithCode } from '../ui-jsx.test-utils'
 import { KeyboardInteractionTimeout } from './interaction-state'
@@ -21,7 +23,6 @@ const defaultBBBProperties = {
 function configureSetupTeardown(): { clock: { current: SinonFakeTimers } } {
   let originalCanvasStrategiesFSValue: boolean
   before(() => {
-    viewport.set(2200, 1000)
     originalCanvasStrategiesFSValue = isFeatureEnabled('Canvas Strategies')
     setFeatureEnabled('Canvas Strategies', true)
   })
@@ -74,7 +75,7 @@ describe('Keyboard Absolute Move E2E', () => {
     expectElementLeftOnScreen(30)
     expect(getCanvasGuidelines()).toEqual([])
 
-    pressArrowLeftHoldingShift(3)
+    pressArrowLeftHoldingShift3x()
     expectElementLeftOnScreen(0)
     expect(getCanvasGuidelines()).toEqual([
       {
@@ -172,11 +173,11 @@ describe('Keyboard Absolute Resize E2E', () => {
       height: 101,
     })
 
-    pressArrowRightHoldingCmd(3)
+    pressArrowRightHoldingCmd3x()
     expectElementWidthOnScreen(3)
     expect(getCanvasGuidelines()).toEqual([])
 
-    pressArrowLeftHoldingCmd(1)
+    pressArrorLeftHoldingCmd()
     expectElementWidthOnScreen(2)
     expect(getCanvasGuidelines()).toEqual([
       {
@@ -443,120 +444,54 @@ async function setupTest(initialBBBProperties: { [key: string]: any }) {
   }
 }
 
-function pressArrowRightHoldingCmd(count: number) {
-  act(() => {
-    for (let step = 0; step < count; step++) {
-      window.dispatchEvent(
-        new KeyboardEvent('keydown', { key: 'ArrowRight', keyCode: 39, metaKey: true }),
-      )
-      window.dispatchEvent(
-        new KeyboardEvent('keyup', { key: 'ArrowRight', keyCode: 39, metaKey: true }),
-      )
-    }
-  })
+function pressArrowRightHoldingCmd3x() {
+  pressKey('ArrowRight', { modifiers: cmdModifier })
+  pressKey('ArrowRight', { modifiers: cmdModifier })
+  pressKey('ArrowRight', { modifiers: cmdModifier })
 }
 
-function pressArrowLeftHoldingCmd(count: number) {
-  act(() => {
-    for (let step = 0; step < count; step++) {
-      window.dispatchEvent(
-        new KeyboardEvent('keydown', { key: 'ArrowLeft', keyCode: 37, metaKey: true }),
-      )
-      window.dispatchEvent(
-        new KeyboardEvent('keyup', { key: 'ArrowLeft', keyCode: 37, metaKey: true }),
-      )
-    }
-  })
+function pressArrorLeftHoldingCmd() {
+  pressKey('ArrowLeft', { modifiers: cmdModifier })
 }
 
-function pressArrowLeftHoldingShift(count: number) {
-  act(() => {
-    for (let step = 0; step < count; step++) {
-      window.dispatchEvent(
-        new KeyboardEvent('keydown', { key: 'ArrowLeft', keyCode: 37, shiftKey: true }),
-      )
-      window.dispatchEvent(
-        new KeyboardEvent('keyup', { key: 'ArrowLeft', keyCode: 37, shiftKey: true }),
-      )
-    }
-  })
+function pressArrowLeftHoldingShift3x() {
+  pressKey('ArrowLeft', { modifiers: shiftModifier })
+  pressKey('ArrowLeft', { modifiers: shiftModifier })
+  pressKey('ArrowLeft', { modifiers: shiftModifier })
 }
 
 function pressArrowRightHoldingShift3x() {
-  act(() => {
-    window.dispatchEvent(
-      new KeyboardEvent('keydown', { key: 'ArrowRight', keyCode: 39, shiftKey: true }),
-    )
-    window.dispatchEvent(
-      new KeyboardEvent('keyup', { key: 'ArrowRight', keyCode: 39, shiftKey: true }),
-    )
-    window.dispatchEvent(
-      new KeyboardEvent('keydown', { key: 'ArrowRight', keyCode: 39, shiftKey: true }),
-    )
-    window.dispatchEvent(
-      new KeyboardEvent('keyup', { key: 'ArrowRight', keyCode: 39, shiftKey: true }),
-    )
-    window.dispatchEvent(
-      new KeyboardEvent('keydown', { key: 'ArrowRight', keyCode: 39, shiftKey: true }),
-    )
-    window.dispatchEvent(
-      new KeyboardEvent('keyup', { key: 'ArrowRight', keyCode: 39, shiftKey: true }),
-    )
-  })
+  pressKey('ArrowRight', { modifiers: shiftModifier })
+  pressKey('ArrowRight', { modifiers: shiftModifier })
+  pressKey('ArrowRight', { modifiers: shiftModifier })
 }
 
 function pressArrowRight3x() {
-  act(() => {
-    window.dispatchEvent(new KeyboardEvent('keydown', { key: 'ArrowRight', keyCode: 39 }))
-    window.dispatchEvent(new KeyboardEvent('keyup', { key: 'ArrowRight', keyCode: 39 }))
-    window.dispatchEvent(new KeyboardEvent('keydown', { key: 'ArrowRight', keyCode: 39 }))
-    window.dispatchEvent(new KeyboardEvent('keyup', { key: 'ArrowRight', keyCode: 39 }))
-    window.dispatchEvent(new KeyboardEvent('keydown', { key: 'ArrowRight', keyCode: 39 }))
-    window.dispatchEvent(new KeyboardEvent('keyup', { key: 'ArrowRight', keyCode: 39 }))
-  })
+  pressKey('ArrowRight')
+  pressKey('ArrowRight')
+  pressKey('ArrowRight')
 }
 
 function pressArrowLeft3x() {
-  act(() => {
-    window.dispatchEvent(new KeyboardEvent('keydown', { key: 'ArrowLeft', keyCode: 37 }))
-    window.dispatchEvent(new KeyboardEvent('keyup', { key: 'ArrowLeft', keyCode: 37 }))
-    window.dispatchEvent(new KeyboardEvent('keydown', { key: 'ArrowLeft', keyCode: 37 }))
-    window.dispatchEvent(new KeyboardEvent('keyup', { key: 'ArrowLeft', keyCode: 37 }))
-    window.dispatchEvent(new KeyboardEvent('keydown', { key: 'ArrowLeft', keyCode: 37 }))
-    window.dispatchEvent(new KeyboardEvent('keyup', { key: 'ArrowLeft', keyCode: 37 }))
-  })
+  pressKey('ArrowLeft')
+  pressKey('ArrowLeft')
+  pressKey('ArrowLeft')
 }
 
 function pressEsc() {
-  act(() => {
-    window.dispatchEvent(new KeyboardEvent('keydown', { key: 'Escape', keyCode: 27 }))
-    window.dispatchEvent(new KeyboardEvent('keyup', { key: 'Escape', keyCode: 27 }))
-  })
+  pressKey('Escape')
 }
 
 function pressBackspace() {
-  act(() => {
-    window.dispatchEvent(new KeyboardEvent('keydown', { key: 'Backspace', keyCode: 8 }))
-    window.dispatchEvent(new KeyboardEvent('keyup', { key: 'Backspace', keyCode: 8 }))
-  })
+  pressKey('Backspace')
 }
 
 function pressCmdZ() {
-  act(() => {
-    window.dispatchEvent(new KeyboardEvent('keydown', { key: 'z', keyCode: 90, metaKey: true }))
-    window.dispatchEvent(new KeyboardEvent('keyup', { key: 'z', keyCode: 90, metaKey: true }))
-  })
+  pressKey('z', { modifiers: cmdModifier })
 }
 
 function pressCmdShiftZ() {
-  act(() => {
-    window.dispatchEvent(
-      new KeyboardEvent('keydown', { key: 'z', keyCode: 90, metaKey: true, shiftKey: true }),
-    )
-    window.dispatchEvent(
-      new KeyboardEvent('keyup', { key: 'z', keyCode: 90, metaKey: true, shiftKey: true }),
-    )
-  })
+  pressKey('z', { modifiers: shiftCmdModifier })
 }
 
 const TestProjectDeluxeStallion = (bbbDimensions: { [key: string]: any }) => {

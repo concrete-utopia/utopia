@@ -258,10 +258,6 @@ export var storyboard = (
 }
 
 describe('Insertion Plus Button', () => {
-  beforeEach(() => {
-    viewport.set(2200, 1000)
-  })
-
   it(`shows the buttons in the correct places for a flex container with a direction of 'row' that already has children`, async () => {
     const renderResult = await renderTestEditorWithCode(
       getProjectCode('row'),

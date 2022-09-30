@@ -69,6 +69,7 @@ executable utopia-web
     , amazonka-s3 ==1.6.1
     , base >=4.7 && <5
     , base16-bytestring
+    , base64
     , binary
     , blaze-html
     , bytestring
@@ -78,6 +79,7 @@ executable utopia-web
     , conduit
     , cookie
     , cryptohash-sha256
+    , cryptonite
     , data-default
     , directory
     , exceptions
@@ -85,7 +87,8 @@ executable utopia-web
     , filepath
     , free
     , generic-lens
-    , hoauth2
+    , github
+    , hoauth2 ==1.16.0
     , http-api-data
     , http-client
     , http-client-tls
@@ -122,6 +125,7 @@ executable utopia-web
     , servant-websockets ==2.0.0
     , serversession ==1.0.2
     , split
+    , string-conversions
     , tagsoup
     , tar
     , temporary
@@ -187,7 +191,7 @@ test-suite utopia-web-test
       src
   default-extensions:
       NoImplicitPrelude
-  ghc-options: -Wall -threaded -rtsopts
+  ghc-options: -Wall -threaded -rtsopts +RTS -N1 -RTS
   extra-libraries:
       z
   build-depends:
@@ -198,6 +202,7 @@ test-suite utopia-web-test
     , amazonka-s3 ==1.6.1
     , base >=4.7 && <5
     , base16-bytestring
+    , base64
     , binary
     , blaze-html
     , bytestring
@@ -207,6 +212,7 @@ test-suite utopia-web-test
     , conduit
     , cookie
     , cryptohash-sha256
+    , cryptonite
     , data-default
     , directory
     , exceptions
@@ -214,8 +220,9 @@ test-suite utopia-web-test
     , filepath
     , free
     , generic-lens
+    , github
     , hedgehog
-    , hoauth2
+    , hoauth2 ==1.16.0
     , hspec
     , http-api-data
     , http-client
@@ -256,6 +263,7 @@ test-suite utopia-web-test
     , servant-websockets ==2.0.0
     , serversession ==1.0.2
     , split
+    , string-conversions
     , tagsoup
     , tar
     , tasty
