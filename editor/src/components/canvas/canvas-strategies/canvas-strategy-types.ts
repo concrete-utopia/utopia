@@ -132,6 +132,7 @@ export type CanvasStrategyId =
   | 'LOOK_FOR_APPLICABLE_PARENT_ID'
   | 'DRAW_TO_INSERT'
   | 'FLEX_RESIZE_BASIC'
+  | 'RELATIVE_MOVE'
 
 export type InteractionLifecycle = 'mid-interaction' | 'end-interaction'
 
