@@ -823,10 +823,6 @@ export var ${BakedInStoryboardVariableName} = (
 }
 
 describe('Navigator', () => {
-  before(() => {
-    viewport.set(2200, 1000)
-  })
-
   it('reorders to before the first sibling', async () => {
     const renderResult = await renderTestEditorWithCode(getProjectCode(), 'await-first-dom-report')
 

@@ -141,6 +141,7 @@
     "jotai": "^1.4.2",
     "json5": "0.5.1",
     "jszip": "3.5.0",
+    "keycode": "2.2.1",
     "localforage": "1.7.3",
     "lodash.clamp": "4.0.3",
     "lru-cache": "7.10.1",
