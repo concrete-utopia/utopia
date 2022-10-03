@@ -55,7 +55,11 @@ export function interactionFinished(
   result: EditorStoreUnpatched,
 ): HandleStrategiesResult {
   const newEditorState = result.unpatchedEditor
-  const withClearedSession = createEmptyStrategyState()
+  const withClearedSession = createEmptyStrategyState(
+    newEditorState.canvas.interactionSession?.latestMetadata ?? newEditorState.jsxMetadata,
+    newEditorState.canvas.interactionSession?.latestAllElementProps ??
+      newEditorState.allElementProps,
+  )
   const canvasState: InteractionCanvasState = pickCanvasStateFromEditorState(
     newEditorState,
     result.builtInDependencies,
@@ -175,10 +179,12 @@ export function interactionHardReset(
         commandDescriptions: commandResult.commandDescriptions,
         sortedApplicableStrategies: sortedApplicableStrategies,
         status: strategyResult.status,
+        startingMetadata: resetStrategyState.startingMetadata,
         customStrategyState: patchCustomStrategyState(
           result.strategyState.customStrategyState,
           strategyResult.customStatePatch,
         ),
+        startingAllElementProps: resetStrategyState.startingAllElementProps,
       }
 
       return {
@@ -274,7 +280,11 @@ export function interactionStart(
   result: EditorStoreUnpatched,
 ): HandleStrategiesResult {
   const newEditorState = result.unpatchedEditor
-  const withClearedSession = createEmptyStrategyState()
+  const withClearedSession = createEmptyStrategyState(
+    newEditorState.canvas.interactionSession?.latestMetadata ?? newEditorState.jsxMetadata,
+    newEditorState.canvas.interactionSession?.latestAllElementProps ??
+      newEditorState.allElementProps,
+  )
   const canvasState: InteractionCanvasState = pickCanvasStateFromEditorState(
     newEditorState,
     result.builtInDependencies,
@@ -322,10 +332,12 @@ export function interactionStart(
         commandDescriptions: commandResult.commandDescriptions,
         sortedApplicableStrategies: sortedApplicableStrategies,
         status: strategyResult.status,
+        startingMetadata: newEditorState.canvas.interactionSession.latestMetadata,
         customStrategyState: patchCustomStrategyState(
           result.strategyState.customStrategyState,
           strategyResult.customStatePatch,
         ),
+        startingAllElementProps: newEditorState.canvas.interactionSession.latestAllElementProps,
       }
 
       return {
@@ -361,7 +373,7 @@ export function interactionCancel(
   return {
     unpatchedEditorState: updatedEditorState,
     patchedEditorState: updatedEditorState,
-    newStrategyState: createEmptyStrategyState(),
+    newStrategyState: createEmptyStrategyState({}, {}),
   }
 }
 
@@ -423,10 +435,12 @@ function handleUserChangedStrategy(
       commandDescriptions: commandResult.commandDescriptions,
       sortedApplicableStrategies: sortedApplicableStrategies,
       status: strategyResult.status,
+      startingMetadata: strategyState.startingMetadata,
       customStrategyState: patchCustomStrategyState(
         strategyState.customStrategyState,
         strategyResult.customStatePatch,
       ),
+      startingAllElementProps: strategyState.startingAllElementProps,
     }
 
     return {
@@ -502,10 +516,12 @@ function handleAccumulatingKeypresses(
         commandDescriptions: commandResult.commandDescriptions,
         sortedApplicableStrategies: sortedApplicableStrategies,
         status: strategyResult.status,
+        startingMetadata: strategyState.startingMetadata,
         customStrategyState: patchCustomStrategyState(
           strategyState.customStrategyState,
           strategyResult.customStatePatch,
         ),
+        startingAllElementProps: strategyState.startingAllElementProps,
       }
 
       return {
@@ -563,10 +579,12 @@ function handleUpdate(
       commandDescriptions: commandResult.commandDescriptions,
       sortedApplicableStrategies: sortedApplicableStrategies,
       status: strategyResult.status,
+      startingMetadata: strategyState.startingMetadata,
       customStrategyState: patchCustomStrategyState(
         strategyState.customStrategyState,
         strategyResult.customStatePatch,
       ),
+      startingAllElementProps: strategyState.startingAllElementProps,
     }
     return {
       unpatchedEditorState: newEditorState,

@@ -37,6 +37,8 @@ const baseStrategyState = (): StrategyState => ({
   commandDescriptions: null as any, // the strategy does not use this
   sortedApplicableStrategies: null as any, // the strategy does not use this
   status: null as any, // the strategy does not use this
+  startingMetadata: null as any, // the strategy does not use this
+  startingAllElementProps: null as any, // the strategy does not use this
   customStrategyState: defaultCustomStrategyState(),
 })
 

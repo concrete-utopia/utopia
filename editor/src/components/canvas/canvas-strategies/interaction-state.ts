@@ -157,10 +157,15 @@ export interface StrategyState {
   status: StrategyApplicationStatus
 
   // Checkpointed metadata at the point at which a strategy change has occurred.
+  startingMetadata: ElementInstanceMetadataMap // TODO delete me!
   customStrategyState: CustomStrategyState
+  startingAllElementProps: AllElementProps // TODO delete me!!!!
 }
 
-export function createEmptyStrategyState(): StrategyState {
+export function createEmptyStrategyState(
+  metadata: ElementInstanceMetadataMap,
+  allElementProps: AllElementProps,
+): StrategyState {
   return {
     currentStrategy: null,
     currentStrategyFitness: 0,
@@ -169,7 +174,9 @@ export function createEmptyStrategyState(): StrategyState {
     commandDescriptions: [],
     sortedApplicableStrategies: null,
     status: 'success',
+    startingMetadata: metadata,
     customStrategyState: defaultCustomStrategyState(),
+    startingAllElementProps: allElementProps,
   }
 }
 
