@@ -28,7 +28,7 @@ import {
   toggleStylePropPaths,
 } from '../inspector/common/css-utils'
 import { toggleTextFormatting } from '../text-utils'
-import { EditorAction, EditorDispatch } from './action-types'
+import { EditorAction, EditorDispatch, SwitchEditorMode } from './action-types'
 import * as EditorActions from './actions/action-creators'
 import * as MetaActions from './actions/meta-actions'
 import {
@@ -613,7 +613,7 @@ export function handleKeyDown(
       [INSERT_RECTANGLE_SHORTCUT]: () => {
         if (isSelectMode(editor.mode) || isInsertMode(editor.mode)) {
           const newUID = generateUidWithExistingComponents(editor.projectContents)
-          return [
+          return addCreateHoverInteractionActionToSwitchModeAction(
             EditorActions.enableInsertModeForJSXElement(
               defaultRectangleElement(newUID),
               newUID,
@@ -622,8 +622,7 @@ export function handleKeyDown(
               },
               null,
             ),
-            getCreateHoverInteractionAction(),
-          ]
+          )
         } else {
           return []
         }
@@ -631,15 +630,14 @@ export function handleKeyDown(
       [INSERT_ELLIPSE_SHORTCUT]: () => {
         if (isSelectMode(editor.mode) || isInsertMode(editor.mode)) {
           const newUID = generateUidWithExistingComponents(editor.projectContents)
-          return [
+          return addCreateHoverInteractionActionToSwitchModeAction(
             EditorActions.enableInsertModeForJSXElement(
               defaultEllipseElement(newUID),
               newUID,
               { 'utopia-api': importDetails(null, [importAlias('Ellipse')], null) },
               null,
             ),
-            getCreateHoverInteractionAction(),
-          ]
+          )
         } else {
           return []
         }
@@ -658,15 +656,14 @@ export function handleKeyDown(
       [INSERT_TEXT_SHORTCUT]: () => {
         if (isSelectMode(editor.mode) || isInsertMode(editor.mode)) {
           const newUID = generateUidWithExistingComponents(editor.projectContents)
-          return [
+          return addCreateHoverInteractionActionToSwitchModeAction(
             EditorActions.enableInsertModeForJSXElement(
               defaultTextElement(newUID),
               newUID,
               { 'utopia-api': importDetails(null, [importAlias('Text')], null) },
               null,
             ),
-            getCreateHoverInteractionAction(),
-          ]
+          )
         } else {
           return []
         }
@@ -674,15 +671,14 @@ export function handleKeyDown(
       [INSERT_VIEW_SHORTCUT]: () => {
         if (isSelectMode(editor.mode) || isInsertMode(editor.mode)) {
           const newUID = generateUidWithExistingComponents(editor.projectContents)
-          return [
+          return addCreateHoverInteractionActionToSwitchModeAction(
             EditorActions.enableInsertModeForJSXElement(
               defaultViewElement(newUID),
               newUID,
               { 'utopia-api': importDetails(null, [importAlias('View')], null) },
               null,
             ),
-            getCreateHoverInteractionAction(),
-          ]
+          )
         } else {
           return []
         }
@@ -857,8 +853,13 @@ export function handleKeyUp(
   dispatch(actions, 'everyone')
 }
 
-function getCreateHoverInteractionAction() {
-  return CanvasActions.createInteractionSession(
-    createHoverInteractionViaMouse(CanvasMousePositionRaw!, emptyModifiers, boundingArea()),
-  )
+function addCreateHoverInteractionActionToSwitchModeAction(switchModeAction: SwitchEditorMode) {
+  return CanvasMousePositionRaw != null
+    ? [
+        switchModeAction,
+        CanvasActions.createInteractionSession(
+          createHoverInteractionViaMouse(CanvasMousePositionRaw, emptyModifiers, boundingArea()),
+        ),
+      ]
+    : [switchModeAction]
 }
