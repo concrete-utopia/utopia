@@ -1,7 +1,7 @@
-import { fireEvent } from '@testing-library/react'
-import { act } from 'react-dom/test-utils'
-import { offsetPoint, windowPoint, WindowPoint } from '../../../core/shared/math-utils'
+import { Modifiers, cmdModifier, shiftModifier } from '../../../utils/modifiers'
+import { windowPoint } from '../../../core/shared/math-utils'
 import { CanvasControlsContainerID } from '../controls/new-canvas-controls'
+import { mouseClickAtPoint, mouseDragFromPointWithDelta } from '../event-helpers.test-utils'
 import {
   EditorRenderResult,
   getPrintedUiJsCode,
@@ -9,68 +9,15 @@ import {
   renderTestEditorWithCode,
 } from '../ui-jsx.test-utils'
 
-function dragElement(
-  canvasControl: HTMLElement,
-  startPoint: WindowPoint,
-  dragDelta: WindowPoint,
-  shiftPressed: boolean,
-) {
-  const endPoint = offsetPoint(startPoint, dragDelta)
-  fireEvent(
-    canvasControl,
-    new MouseEvent('mousedown', {
-      bubbles: true,
-      cancelable: true,
-      metaKey: true,
-      shiftKey: shiftPressed,
-      clientX: startPoint.x,
-      clientY: startPoint.y,
-      buttons: 1,
-    }),
-  )
-
-  fireEvent(
-    canvasControl,
-    new MouseEvent('mousemove', {
-      bubbles: true,
-      cancelable: true,
-      shiftKey: shiftPressed,
-      clientX: endPoint.x,
-      clientY: endPoint.y,
-      buttons: 1,
-    }),
-  )
-
-  fireEvent(
-    window,
-    new MouseEvent('mouseup', {
-      bubbles: true,
-      cancelable: true,
-      shiftKey: shiftPressed,
-      clientX: endPoint.x,
-      clientY: endPoint.y,
-    }),
-  )
-}
-
 const setupAndDrag = async (
   project: string,
   elementId: string,
   x: number,
   y: number,
-  modifiers?: { shiftPressed?: boolean },
+  modifiers?: Modifiers,
 ): Promise<EditorRenderResult> => {
   const renderResult = await renderTestEditorWithCode(project, 'await-first-dom-report')
-  return drag(renderResult, elementId, x, y, modifiers)
-}
 
-const drag = async (
-  renderResult: EditorRenderResult,
-  elementId: string,
-  x: number,
-  y: number,
-  modifiers?: { shiftPressed?: boolean },
-): Promise<EditorRenderResult> => {
   const targetElement = renderResult.renderedDOM.getByTestId(elementId)
   const targetElementBounds = targetElement.getBoundingClientRect()
   const canvasControlsLayer = renderResult.renderedDOM.getByTestId(CanvasControlsContainerID)
@@ -78,17 +25,14 @@ const drag = async (
   const startPoint = windowPoint({ x: targetElementBounds.x + 5, y: targetElementBounds.y + 5 })
   const dragDelta = windowPoint({ x, y })
 
-  act(() => dragElement(canvasControlsLayer, startPoint, dragDelta, !!modifiers?.shiftPressed))
+  mouseClickAtPoint(canvasControlsLayer, startPoint, { modifiers: cmdModifier })
+  mouseDragFromPointWithDelta(canvasControlsLayer, startPoint, dragDelta, { modifiers })
 
   await renderResult.getDispatchFollowUpActionsFinished()
   return renderResult
 }
 
 describe('Relative move', () => {
-  before(() => {
-    viewport.set(2200, 1000)
-  })
-
   describe('when the element position is relative', () => {
     it('does not trigger when the threshold is not met', async () => {
       const project = makeTestProjectCodeWithSnippet(`
@@ -433,7 +377,7 @@ describe('Relative move', () => {
         </div>
       `)
 
-      const result = await setupAndDrag(project, 'bar', 100, 15, { shiftPressed: true })
+      const result = await setupAndDrag(project, 'bar', 100, 15, shiftModifier)
       expect(getPrintedUiJsCode(result.getEditorState())).toEqual(
         makeTestProjectCodeWithSnippet(`
           <div style={{ width: '100%', height: '100%' }} data-uid='foo'>
