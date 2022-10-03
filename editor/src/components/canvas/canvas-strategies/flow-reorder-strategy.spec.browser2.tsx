@@ -6,12 +6,16 @@ import {
 } from '../ui-jsx.test-utils'
 import { CanvasControlsContainerID } from '../controls/new-canvas-controls'
 import { cmdModifier, emptyModifiers, Modifiers } from '../../../utils/modifiers'
-import { mouseClickAtPoint, mouseDragFromPointWithDelta } from '../event-helpers.test-utils'
+import {
+  mouseClickAtPoint,
+  mouseDownAtPoint,
+  mouseDragFromPointWithDelta,
+  mouseMoveToPoint,
+} from '../event-helpers.test-utils'
 import { rectangleDifference, windowPoint, WindowPoint } from '../../../core/shared/math-utils'
 import * as EP from '../../../core/shared/element-path'
 import { MetadataUtils } from '../../../core/model/element-metadata-utils'
 import { assert } from 'chai'
-import { wait } from '../../../utils/utils.test-utils'
 
 const TestProjectBlockElements = `
 <div style={{ width: '100%', height: '100%', position: 'absolute' }} data-uid='container'>
@@ -130,6 +134,27 @@ const TestProjectMixedProperties = `
 </div>
 `
 
+const TestCodeWrappingTexts = `
+<div style={{ width: 150, height: '100%' }} data-uid='container'>
+  <span
+    data-uid='aaa'
+    data-testid='aaa'
+  >Text 1 hello</span>
+  <span
+    data-uid='bbb'
+    data-testid='bbb'
+  >Text 2 very long text</span>
+  <span
+    data-uid='ccc'
+    data-testid='ccc'
+  >Text 3 this is an even longer text here</span>
+  <span
+    data-uid='ddd'
+    data-testid='ddd'
+  >Text 4 hi</span>
+</div>
+`
+
 function dragElement(
   renderResult: EditorRenderResult,
   targetTestId: string,
@@ -153,6 +178,21 @@ function dragElement(
   })
 }
 
+function startDraggingAnElement(
+  renderResult: EditorRenderResult,
+  targetTestId: string,
+  dragDelta: WindowPoint,
+) {
+  const targetElement = renderResult.renderedDOM.getByTestId(targetTestId)
+  const targetElementBounds = targetElement.getBoundingClientRect()
+  const canvasControlsLayer = renderResult.renderedDOM.getByTestId(CanvasControlsContainerID)
+
+  const startPoint = windowPoint({ x: targetElementBounds.x + 5, y: targetElementBounds.y + 5 })
+
+  mouseDownAtPoint(canvasControlsLayer, startPoint, {})
+  mouseMoveToPoint(canvasControlsLayer, dragDelta, {})
+}
+
 describe('Flow Reorder Strategy (Mixed Display Type)', () => {
   it('simple dragging the element in a block reorders it', async () => {
     const renderResult = await renderTestEditorWithCode(
@@ -174,30 +214,6 @@ describe('Flow Reorder Strategy (Mixed Display Type)', () => {
     await renderResult.getDispatchFollowUpActionsFinished()
     expect(getPrintedUiJsCode(renderResult.getEditorState())).toEqual(
       makeTestProjectCodeWithSnippet(TestProjectCCCDraggedToSecond),
-    )
-  })
-  it('dragging a flow element with mixed inline and block siblings is not allowed', async () => {
-    const renderResult = await renderTestEditorWithCode(
-      makeTestProjectCodeWithSnippet(TestProjectMixedProperties),
-      'await-first-dom-report',
-    )
-
-    // drag element 'CCC' up a little
-    const dragDelta = windowPoint({ x: 0, y: -45 })
-    dragElement(renderResult, 'ccc', dragDelta, emptyModifiers, [
-      'utopia-storyboard-uid/scene-aaa',
-      'utopia-storyboard-uid/scene-aaa/app-entity',
-      'utopia-storyboard-uid/scene-aaa/app-entity:container',
-      'utopia-storyboard-uid/scene-aaa/app-entity:container/aaa',
-      'utopia-storyboard-uid/scene-aaa/app-entity:container/bbb',
-      'utopia-storyboard-uid/scene-aaa/app-entity:container/ccc',
-      'utopia-storyboard-uid/scene-aaa/app-entity:container/ddd',
-      'utopia-storyboard-uid/scene-aaa/app-entity:container/eee',
-    ])
-
-    await renderResult.getDispatchFollowUpActionsFinished()
-    expect(getPrintedUiJsCode(renderResult.getEditorState())).toEqual(
-      makeTestProjectCodeWithSnippet(TestProjectMixedProperties),
     )
   })
 
@@ -257,5 +273,43 @@ describe('Flow Reorder Strategy (Mixed Display Type)', () => {
         makeTestProjectCodeWithSnippet(TestCodeWithFloat),
       )
     }
+  })
+  it('flow reorder is not allowed with mixed inline and block siblings', async () => {
+    const renderResult = await renderTestEditorWithCode(
+      makeTestProjectCodeWithSnippet(TestProjectMixedProperties),
+      'await-first-dom-report',
+    )
+
+    // drag element 'CCC' up a little
+    const dragDelta = windowPoint({ x: 0, y: -10 })
+    startDraggingAnElement(renderResult, 'ccc', dragDelta)
+
+    await renderResult.getDispatchFollowUpActionsFinished()
+    const strategies = renderResult.getEditorState().strategyState.sortedApplicableStrategies
+
+    const flowReorderNotInStrategies = Array.isArray(strategies)
+      ? strategies.findIndex((strategy) => strategy.name === 'FLOW_REORDER')
+      : `no applicable strategies`
+
+    expect(flowReorderNotInStrategies).toEqual(-1)
+  })
+  it('flow reorder is not allowed in a layout with wrapping multiline texts', async () => {
+    const renderResult = await renderTestEditorWithCode(
+      makeTestProjectCodeWithSnippet(TestCodeWrappingTexts),
+      'await-first-dom-report',
+    )
+
+    // drag element 'CCC' up a little
+    const dragDelta = windowPoint({ x: 0, y: -10 })
+    startDraggingAnElement(renderResult, 'ccc', dragDelta)
+
+    await renderResult.getDispatchFollowUpActionsFinished()
+    const strategies = renderResult.getEditorState().strategyState.sortedApplicableStrategies
+
+    const flowReorderNotInStrategies = Array.isArray(strategies)
+      ? strategies.findIndex((strategy) => strategy.name === 'FLOW_REORDER')
+      : `no applicable strategies`
+
+    expect(flowReorderNotInStrategies).toEqual(-1)
   })
 })

@@ -62,15 +62,25 @@ function areNonWrappingSiblings(
   layoutDirection: 'horizontal' | 'vertical',
 ): boolean {
   if (layoutDirection === 'horizontal') {
-    // the rows are wrapping: there is at least one element that has its top above other siblings bottom side
-    const maxY = Math.max(...frames.map((frame) => frame.y))
-    const minBottom = Math.min(...frames.map((frame) => frame.y + frame.height))
-    return maxY < minBottom
+    // all elements are on the right side of the previous sibling
+    return frames.every((frame, i) => {
+      if (i === 0) {
+        return true
+      } else {
+        const prevFrame: CanvasRectangle = frames[i - 1]
+        return frame.x > prevFrame.x
+      }
+    })
   } else {
-    // the columns are wrapping if a sibling frame has its left side farther than the right edge of siblings
-    const maxX = Math.max(...frames.map((frame) => frame.x))
-    const minRight = Math.min(...frames.map((frame) => frame.x + frame.width))
-    return maxX < minRight
+    // all elements are below of the previous sibling
+    return frames.every((frame, i) => {
+      if (i === 0) {
+        return true
+      } else {
+        const prevFrame: CanvasRectangle = frames[i - 1]
+        return frame.y > prevFrame.y
+      }
+    })
   }
 }
 
