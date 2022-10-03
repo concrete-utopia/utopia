@@ -485,7 +485,7 @@ export function runLocalCanvasAction(
         ...model,
         canvas: {
           ...model.canvas,
-          interactionSession: null,
+          interactionSession: null, // TODO this should be only cleared in dispatch-strategies, and not here
           domWalkerInvalidateCount: model.canvas.domWalkerInvalidateCount + 1,
           controls: editorStateCanvasControls([], [], [], [], null, []),
         },

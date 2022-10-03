@@ -656,13 +656,14 @@ function editorDispatchInner(
       storedState.unpatchedEditor.domMetadata !== result.unpatchedEditor.domMetadata
     const spyMetadataChanged =
       storedState.unpatchedEditor.spyMetadata !== result.unpatchedEditor.spyMetadata
+    const allElementPropsChanged =
+      storedState.unpatchedEditor._currentAllElementProps_KILLME !==
+      result.unpatchedEditor._currentAllElementProps_KILLME
     const dragStateLost =
       storedState.unpatchedEditor.canvas.dragState != null &&
       result.unpatchedEditor.canvas.dragState == null
-    const metadataChanged = domMetadataChanged || spyMetadataChanged || dragStateLost
-    // TODO: Should this condition actually be `&&`?
-    // Tested quickly and it broke selection, but I'm mostly certain
-    // it should only merge when both have changed.
+    const metadataChanged =
+      domMetadataChanged || spyMetadataChanged || allElementPropsChanged || dragStateLost
     if (metadataChanged) {
       if (result.unpatchedEditor.canvas.dragState != null) {
         result = {
