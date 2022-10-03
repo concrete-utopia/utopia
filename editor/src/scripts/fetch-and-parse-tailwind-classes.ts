@@ -195,4 +195,4 @@ async function fetchAndParse(useSample: boolean): Promise<void> {
   console.log(`Done! Have a nice day :)`)
 }
 
-fetchAndParse(false)
+void fetchAndParse(false)

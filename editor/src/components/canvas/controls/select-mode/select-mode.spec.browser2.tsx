@@ -650,7 +650,7 @@ describe('Selection with locked elements', () => {
     )
 
     // Lock element
-    renderResult.dispatch(
+    await renderResult.dispatch(
       [
         toggleSelectionLock(
           [EP.fromString('sb/scene-2/Card-instance:Card-Root/Card-Row-Buttons')],
@@ -692,7 +692,7 @@ describe('Selection with locked elements', () => {
     )
 
     // Lock element
-    renderResult.dispatch(
+    await renderResult.dispatch(
       [
         toggleSelectionLock(
           [EP.fromString('sb/scene-2/Card-instance:Card-Root/Card-Row-Buttons')],

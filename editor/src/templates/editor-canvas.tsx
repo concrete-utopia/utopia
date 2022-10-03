@@ -51,14 +51,7 @@ import {
 } from '../components/mouse-move'
 import * as EP from '../core/shared/element-path'
 import { MetadataUtils } from '../core/model/element-metadata-utils'
-import {
-  ElementInstanceMetadataMap,
-  emptyComments,
-  jsxAttributesFromMap,
-  jsxAttributeValue,
-  jsxElement,
-  setJSXAttributesAttribute,
-} from '../core/shared/element-template'
+import { ElementInstanceMetadataMap } from '../core/shared/element-template'
 import { ElementPath } from '../core/shared/project-file-types'
 import {
   getActionsForClipboardItems,
@@ -889,6 +882,9 @@ export class EditorCanvas extends React.Component<EditorCanvasProps> {
         style: {
           ...canvasLiveEditingStyle,
           transition: 'all .2s linear',
+          position: 'relative',
+          overflow: 'hidden',
+          height: '100%',
         },
         ref: (ref: HTMLElement | null) => {
           this.canvasWrapperRef = ref
@@ -1520,7 +1516,7 @@ export class EditorCanvas extends React.Component<EditorCanvasProps> {
         // on macOS it seems like alt prevents the 'paste' event from being ever fired, so this is dead code here
         // needs testing if it's any help for other platforms
       } else {
-        parseClipboardData(event.clipboardData).then((result) => {
+        void parseClipboardData(event.clipboardData).then((result) => {
           const actions = getActionsForClipboardItems(
             editor.projectContents,
             editor.canvas.openFile?.filename ?? null,
