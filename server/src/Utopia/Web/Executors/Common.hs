@@ -11,13 +11,12 @@
 
 module Utopia.Web.Executors.Common where
 
-import           Control.Monad.Trans.Maybe
-import           Data.Time
 import           Conduit
 import           Control.Concurrent.ReadWriteLock
 import           Control.Lens                     hiding ((.=), (<.>))
 import           Control.Monad.Catch              hiding (Handler, catch)
 import           Control.Monad.RWS.Strict
+import           Control.Monad.Trans.Maybe
 import           Data.Aeson
 import           Data.Bifoldable
 import qualified Data.ByteString.Lazy             as BL
@@ -62,9 +61,10 @@ import           Utopia.Web.Types
 import           Utopia.Web.Utils.Files
 import           Web.Cookie
 
+import           Control.Monad.Except
+import           Control.Monad.Trans.Except
 import           Data.Generics.Product
 import           Data.Generics.Sum
-
 
 {-|
   When running the 'ServerMonad' type this is the type that we will
@@ -351,33 +351,35 @@ getAndHandleGithubAccessToken githubResources logger metrics pool userID exchang
   tokenResult <- liftIO $ getAccessToken githubResources exchangeToken
   saveNewOAuth2Token logger metrics pool userID tokenResult
 
-useAccessToken :: (MonadIO m) => GithubAuthResources -> FastLogger -> DB.DatabaseMetrics -> DBPool -> Text -> (AccessToken -> m (Maybe a)) -> m (Maybe a)
+useAccessToken :: (MonadIO m) => GithubAuthResources -> FastLogger -> DB.DatabaseMetrics -> DBPool -> Text -> (AccessToken -> ExceptT Text m a) -> ExceptT Text m a
 useAccessToken githubResources logger metrics pool userID action = do
   possibleAuthDetails <- liftIO $ DB.lookupGithubAuthenticationDetails metrics pool userID
   case possibleAuthDetails of
-    Nothing           -> pure Nothing
+    Nothing           -> throwE "User not authenticated with Github."
     Just authDetails  -> do
-      let currentPossibleRefreshToken = fmap RefreshToken $ view (field @"refreshToken") authDetails
+      let currentPossibleRefreshToken = maybe (throwE "No refresh token for user.") (pure . RefreshToken) $ view (field @"refreshToken") authDetails
       let currentAccessToken = AccessToken $ view (field @"accessToken") authDetails
       let refreshTheToken = do
-            currentRefreshToken <- liftIO $ maybe (fail "No refresh token available.") pure currentPossibleRefreshToken
+            currentRefreshToken <- currentPossibleRefreshToken
             tokenResult <- liftIO $ accessTokenFromRefreshToken githubResources currentRefreshToken
-            saveNewOAuth2Token logger metrics pool userID tokenResult
+            liftIO $ saveNewOAuth2Token logger metrics pool userID tokenResult
       now <- liftIO getCurrentTime
       let expired = (fmap (< now) $ expiresAt authDetails) == Just True
       accessTokenToUse <- if expired then refreshTheToken else (pure $ Just currentAccessToken)
       case accessTokenToUse of
-        Nothing -> pure Nothing
+        Nothing    -> throwE "User not authenticated with Github."
         Just token -> action token
 
-createTreeAndSaveToGithub :: (MonadIO m) => GithubAuthResources -> FastLogger -> DB.DatabaseMetrics -> DBPool -> Text -> PersistentModel -> m (Maybe CreateGitBranchResult)
-createTreeAndSaveToGithub githubResources logger metrics pool userID model = runMaybeT $ do
-  treeResult <- MaybeT $ useAccessToken githubResources logger metrics pool userID $ \accessToken -> do
-    liftIO $ createGitTreeFromModel accessToken model
-  commitResult <- MaybeT $ useAccessToken githubResources logger metrics pool userID $ \accessToken -> do
-    liftIO $ createGitCommitForTree accessToken model $ view (field @"sha") treeResult
-  now <- liftIO getCurrentTime
-  let branchName = toS $ formatTime defaultTimeLocale "utopia-branch-%0Y%m%d-%H%M%S" now
-  branchResult <- MaybeT $ useAccessToken githubResources logger metrics pool userID $ \accessToken -> do
-    liftIO $ createGitBranchForCommit accessToken model (view (field @"sha") commitResult) branchName
-  pure branchResult
+createTreeAndSaveToGithub :: (MonadIO m) => GithubAuthResources -> FastLogger -> DB.DatabaseMetrics -> DBPool -> Text -> PersistentModel -> m SaveToGithubResponse
+createTreeAndSaveToGithub githubResources logger metrics pool userID model = do
+  result <- runExceptT $ do
+    treeResult <- useAccessToken githubResources logger metrics pool userID $ \accessToken -> do
+      createGitTreeFromModel accessToken model
+    commitResult <- useAccessToken githubResources logger metrics pool userID $ \accessToken -> do
+      createGitCommitForTree accessToken model $ view (field @"sha") treeResult
+    now <- liftIO getCurrentTime
+    let branchName = toS $ formatTime defaultTimeLocale "utopia-branch-%0Y%m%d-%H%M%S" now
+    branchResult <- useAccessToken githubResources logger metrics pool userID $ \accessToken -> do
+      createGitBranchForCommit accessToken model (view (field @"sha") commitResult) branchName
+    pure (branchName, view (field @"url") branchResult)
+  pure $ either responseFailureFromReason responseSuccessFromBranchNameAndURL result
