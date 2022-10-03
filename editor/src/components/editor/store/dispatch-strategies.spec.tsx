@@ -257,8 +257,6 @@ describe('interactionStart', () => {
             },
           },
         ],
-        "startingAllElementProps": Object {},
-        "startingMetadata": Object {},
         "status": "success",
       }
     `)
@@ -313,8 +311,6 @@ describe('interactionStart', () => {
           "lastReorderIdx": null,
         },
         "sortedApplicableStrategies": null,
-        "startingAllElementProps": Object {},
-        "startingMetadata": Object {},
         "status": "success",
       }
     `)
@@ -390,8 +386,6 @@ describe('interactionUpdatex', () => {
             },
           },
         ],
-        "startingAllElementProps": Object {},
-        "startingMetadata": Object {},
         "status": "success",
       }
     `)
@@ -447,8 +441,6 @@ describe('interactionUpdatex', () => {
           "lastReorderIdx": null,
         },
         "sortedApplicableStrategies": null,
-        "startingAllElementProps": Object {},
-        "startingMetadata": Object {},
         "status": "success",
       }
     `)
@@ -552,8 +544,6 @@ describe('interactionHardReset', () => {
             },
           },
         ],
-        "startingAllElementProps": Object {},
-        "startingMetadata": Object {},
         "status": "success",
       }
     `)
@@ -614,7 +604,6 @@ describe('interactionHardReset', () => {
           "lastReorderIdx": null,
         },
         "sortedApplicableStrategies": null,
-        "startingAllElementProps": Object {},
         "startingMetadata": Object {},
         "status": "success",
       }
@@ -780,8 +769,6 @@ describe('interactionUpdate with user changed strategy', () => {
             },
           },
         ],
-        "startingAllElementProps": Object {},
-        "startingMetadata": Object {},
         "status": "success",
       }
     `)
@@ -843,8 +830,6 @@ describe('interactionUpdate with user changed strategy', () => {
           "lastReorderIdx": null,
         },
         "sortedApplicableStrategies": null,
-        "startingAllElementProps": Object {},
-        "startingMetadata": Object {},
         "status": "success",
       }
     `)
