@@ -52,7 +52,6 @@ import { AddElement, runAddElement } from './add-element-command'
 import { runUpdatePropIfExists, UpdatePropIfExists } from './update-prop-if-exists-command'
 import { HighlightElementsCommand, runHighlightElementsCommand } from './highlight-element-command'
 import { InteractionLifecycle } from '../canvas-strategies/canvas-strategy-types'
-import { RemoveElement, runRemoveElement } from './remove-element-command'
 
 export interface CommandFunctionResult {
   editorStatePatches: Array<EditorStatePatch>
@@ -93,7 +92,6 @@ export type CanvasCommand =
   | InsertElementInsertionSubject
   | AddElement
   | HighlightElementsCommand
-  | RemoveElement
 
 export const runCanvasCommand = (
   editorState: EditorState,
@@ -151,8 +149,6 @@ export const runCanvasCommand = (
       return runAddElement(editorState, command)
     case 'HIGHLIGHT_ELEMENTS_COMMAND':
       return runHighlightElementsCommand(editorState, command)
-    case 'REMOVE_ELEMENT':
-      return runRemoveElement(editorState, command)
     default:
       const _exhaustiveCheck: never = command
       throw new Error(`Unhandled canvas command ${JSON.stringify(command)}`)
