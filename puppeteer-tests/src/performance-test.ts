@@ -128,7 +128,7 @@ export const testPerformance = async function () {
         spacerLine,
       ]
     } else {
-      return [titleLine, spacerLine]
+      return null
     }
   })
 
