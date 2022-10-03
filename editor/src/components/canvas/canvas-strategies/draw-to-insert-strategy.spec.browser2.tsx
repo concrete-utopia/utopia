@@ -485,44 +485,7 @@ describe('Inserting into absolute', () => {
 
     await renderResult.getDispatchFollowUpActionsFinished()
 
-    // Check that the inserted element is a child of bbb
-    expect(getPrintedUiJsCode(renderResult.getEditorState())).toEqual(
-      makeTestProjectCodeWithSnippet(`
-        <div
-          data-uid='aaa'
-          style={{
-            width: '100%',
-            height: '100%',
-            backgroundColor: '#FFFFFF',
-            position: 'relative',
-          }}
-        >
-          <div
-            data-uid='bbb'
-            data-testid='bbb'
-            style={{
-              position: 'absolute',
-              left: 10,
-              top: 10,
-              width: 380,
-              height: 180,
-              backgroundColor: '#d3d3d3',
-            }}
-          />
-          <div
-            data-uid='ccc'
-            style={{
-              position: 'absolute',
-              left: 10,
-              top: 200,
-              width: 380,
-              height: 190,
-              backgroundColor: '#FF0000',
-            }}
-          />
-        </div>
-      `),
-    )
+    expect(getPrintedUiJsCode(renderResult.getEditorState())).toEqual(inputCode)
   })
 })
 
