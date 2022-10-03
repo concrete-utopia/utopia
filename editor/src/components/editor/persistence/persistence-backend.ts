@@ -126,8 +126,8 @@ async function saveProjectToServer(
     await saveAssets(projectId, assetsToUpload)
   }
 
-  updateRemoteThumbnail(projectId, false)
-  deleteLocalProject(projectId)
+  void updateRemoteThumbnail(projectId, false)
+  void deleteLocalProject(projectId)
 
   return projectWithChanges
 }

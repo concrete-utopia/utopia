@@ -518,7 +518,7 @@ export function editorDispatch(
       forceSave ? 'force' : 'throttle',
     )
     const stateToStore = storedEditorStateFromEditorState(frozenEditorState)
-    saveStoredState(frozenEditorState.id, stateToStore)
+    void saveStoredState(frozenEditorState.id, stateToStore)
     reduxDevtoolsUpdateState('Save Editor', finalStore)
   }
 

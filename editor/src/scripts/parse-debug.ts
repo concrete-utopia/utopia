@@ -58,7 +58,7 @@ if (processArguments.length === 5 && processArguments[0].endsWith('ts-node')) {
 }
 
 if (processArguments.length === 3) {
-  printOutParseResult(processArguments[0], processArguments[1], processArguments[2])
+  void printOutParseResult(processArguments[0], processArguments[1], processArguments[2])
 } else {
   console.error('Invalid number of parameters. Must be command, repo name and then filename.')
 }

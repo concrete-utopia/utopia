@@ -573,7 +573,7 @@ const SharingPane = React.memo(() => {
     projectId == null ? '' : shareURLForProject(FLOATING_PREVIEW_BASE_URL, projectId, projectName)
 
   const handleCopyProjectURL = React.useCallback(() => {
-    window.navigator.clipboard.writeText(previewURL)
+    void window.navigator.clipboard.writeText(previewURL)
     setTemporaryCopySuccess(true)
     setTimeout(() => {
       setTemporaryCopySuccess(false)
@@ -749,7 +749,7 @@ const GithubPane = React.memo(() => {
   }, 'GithubPane githubAuthenticated')
 
   const triggerAuthentication = React.useCallback(() => {
-    startGithubAuthentication(dispatch)
+    void startGithubAuthentication(dispatch)
   }, [dispatch])
 
   const [urlToImportFrom, setURLToImportFrom] = React.useState<string | null>(null)

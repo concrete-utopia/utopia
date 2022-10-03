@@ -15,7 +15,7 @@ import {
   StrategyState,
 } from './interaction-state'
 import { createMouseInteractionForTests } from './interaction-state.test-utils'
-import { act, fireEvent } from '@testing-library/react'
+import { act } from '@testing-library/react'
 import {
   EditorRenderResult,
   makeTestProjectCodeWithSnippet,
@@ -25,10 +25,9 @@ import { selectComponents } from '../../editor/actions/action-creators'
 import CanvasActions from '../canvas-actions'
 import { AllElementProps } from '../../editor/store/editor-state'
 import { CanvasControlsContainerID } from '../controls/new-canvas-controls'
-import { PrettierConfig } from 'utopia-vscode-common'
-import * as Prettier from 'prettier/standalone'
 import { forceNotNull } from '../../..//core/shared/optional-utils'
 import { defaultCustomStrategyState } from './canvas-strategy-types'
+import { mouseDownAtPoint, mouseMoveToPoint } from '../event-helpers.test-utils'
 
 const baseStrategyState = (): StrategyState => ({
   currentStrategy: null as any, // the strategy does not use this
@@ -144,33 +143,11 @@ function startElementDragNoMouseUp(
 
   const startPoint = windowPoint({ x: targetElementBounds.x + 20, y: targetElementBounds.y + 20 })
   const endPoint = offsetPoint(startPoint, dragDelta)
-  fireEvent(
-    canvasControl,
-    new MouseEvent('mousedown', {
-      bubbles: true,
-      cancelable: true,
-      metaKey: modifiers.cmd,
-      altKey: modifiers.alt,
-      shiftKey: modifiers.shift,
-      clientX: startPoint.x,
-      clientY: startPoint.y,
-      buttons: 1,
-    }),
-  )
-
-  fireEvent(
-    canvasControl,
-    new MouseEvent('mousemove', {
-      bubbles: true,
-      cancelable: true,
-      metaKey: modifiers.cmd,
-      altKey: modifiers.alt,
-      shiftKey: modifiers.shift,
-      clientX: endPoint.x,
-      clientY: endPoint.y,
-      buttons: 1,
-    }),
-  )
+  mouseDownAtPoint(canvasControl, startPoint, { modifiers: modifiers })
+  mouseMoveToPoint(canvasControl, endPoint, {
+    modifiers: modifiers,
+    eventOptions: { buttons: 1 },
+  })
 }
 
 describe('Strategy Fitness', () => {

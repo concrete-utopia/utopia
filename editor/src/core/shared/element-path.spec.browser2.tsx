@@ -16,7 +16,6 @@ describe('ElementPath Caching', () => {
   }
 
   before(() => {
-    viewport.set(2200, 1000)
     originalRequestIdleCallback = window.requestIdleCallback
 
     window.requestIdleCallback = (

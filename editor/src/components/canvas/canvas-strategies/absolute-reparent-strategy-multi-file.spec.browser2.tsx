@@ -1,88 +1,16 @@
-import {
-  EditorRenderResult,
-  formatTestProjectCode,
-  getPrintedUiJsCode,
-  renderTestEditorWithCode,
-  renderTestEditorWithProjectContent,
-  TestAppUID,
-  TestSceneUID,
-} from '../ui-jsx.test-utils'
-import { act, fireEvent } from '@testing-library/react'
-import { CanvasControlsContainerID } from '../controls/new-canvas-controls'
-import { offsetPoint, windowPoint, WindowPoint } from '../../../core/shared/math-utils'
-import { cmdModifier, Modifiers } from '../../../utils/modifiers'
-import { PrettierConfig } from 'utopia-vscode-common'
-import * as Prettier from 'prettier/standalone'
-import {
-  BakedInStoryboardVariableName,
-  BakedInStoryboardUID,
-} from '../../../core/model/scene-utils'
-import { wait } from '../../../core/model/performance-scripts'
+import { act } from '@testing-library/react'
 import {
   contentsToTree,
   getContentsTreeFileFromString,
   ProjectContentTreeRoot,
 } from '../../../components/assets'
-import { codeFile, isTextFile } from '../../../core/shared/project-file-types'
-import { selectComponents, setFocusedElement } from '../../editor/actions/action-creators'
 import * as EP from '../../../core/shared/element-path'
-
-function dragElement(
-  renderResult: EditorRenderResult,
-  targetTestId: string,
-  dragDelta: WindowPoint,
-  modifiers: Modifiers,
-) {
-  const targetElement = renderResult.renderedDOM.getByTestId(targetTestId)
-  const targetElementBounds = targetElement.getBoundingClientRect()
-  const canvasControl = renderResult.renderedDOM.getByTestId(CanvasControlsContainerID)
-
-  const startPoint = windowPoint({
-    x: targetElementBounds.x + targetElementBounds.width / 2,
-    y: targetElementBounds.y + targetElementBounds.height / 2,
-  })
-  const endPoint = offsetPoint(startPoint, dragDelta)
-  fireEvent(
-    canvasControl,
-    new MouseEvent('mousedown', {
-      bubbles: true,
-      cancelable: true,
-      metaKey: true,
-      altKey: modifiers.alt,
-      shiftKey: modifiers.shift,
-      clientX: startPoint.x,
-      clientY: startPoint.y,
-      buttons: 1,
-    }),
-  )
-
-  fireEvent(
-    canvasControl,
-    new MouseEvent('mousemove', {
-      bubbles: true,
-      cancelable: true,
-      metaKey: modifiers.cmd,
-      altKey: modifiers.alt,
-      shiftKey: modifiers.shift,
-      clientX: endPoint.x,
-      clientY: endPoint.y,
-      buttons: 1,
-    }),
-  )
-
-  fireEvent(
-    window,
-    new MouseEvent('mouseup', {
-      bubbles: true,
-      cancelable: true,
-      metaKey: modifiers.cmd,
-      altKey: modifiers.alt,
-      shiftKey: modifiers.shift,
-      clientX: endPoint.x,
-      clientY: endPoint.y,
-    }),
-  )
-}
+import { codeFile, isTextFile } from '../../../core/shared/project-file-types'
+import { cmdModifier } from '../../../utils/modifiers'
+import { selectComponents, setFocusedElement } from '../../editor/actions/action-creators'
+import { CanvasControlsContainerID } from '../controls/new-canvas-controls'
+import { mouseDragFromPointToPoint } from '../event-helpers.test-utils'
+import { EditorRenderResult, renderTestEditorWithProjectContent } from '../ui-jsx.test-utils'
 
 const defaultAbsoluteChildCode = `
 import * as React from 'react'
@@ -285,9 +213,6 @@ function getFileCode(renderResult: EditorRenderResult, filename: string): string
 }
 
 describe('Absolute Reparent Strategy (Multi-File)', () => {
-  beforeEach(() => {
-    viewport.set(2200, 1000)
-  })
   it('reparents to the end', async () => {
     const renderResult = await renderTestEditorWithProjectContent(
       makeTestProjectContents(),
@@ -333,11 +258,11 @@ describe('Absolute Reparent Strategy (Multi-File)', () => {
       y: flexParentRect.y + 10,
     }
 
-    const dragDelta = windowPoint({
-      x: dropTargetPoint.x - absoluteChildCenter.x,
-      y: dropTargetPoint.y - absoluteChildCenter.y,
+    const canvasControlsLayer = renderResult.renderedDOM.getByTestId(CanvasControlsContainerID)
+
+    mouseDragFromPointToPoint(canvasControlsLayer, absoluteChildCenter, dropTargetPoint, {
+      modifiers: cmdModifier,
     })
-    act(() => dragElement(renderResult, 'absolutechild', dragDelta, cmdModifier))
 
     await renderResult.getDispatchFollowUpActionsFinished()
     expect(getFileCode(renderResult, '/src/absolutechild.js')).toEqual(defaultAbsoluteChildCode)

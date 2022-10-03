@@ -1598,7 +1598,7 @@ export const UPDATE_FNS = {
     )
     const storyboardFile = getContentsTreeFileFromString(parsedProjectFiles, StoryboardFilePath)
     const openFilePath = storyboardFile != null ? StoryboardFilePath : null
-    initVSCodeBridge(action.projectId, parsedProjectFiles, dispatch, openFilePath)
+    void initVSCodeBridge(action.projectId, parsedProjectFiles, dispatch, openFilePath)
 
     const parsedModel = {
       ...migratedModel,
@@ -3469,7 +3469,7 @@ export const UPDATE_FNS = {
     if (vscodeBridgeId.type === 'VSCODE_BRIDGE_ID_DEFAULT') {
       vscodeBridgeId = vsCodeBridgeIdProjectId(action.id)
       // Side effect.
-      initVSCodeBridge(
+      void initVSCodeBridge(
         action.id,
         editor.projectContents,
         dispatch,
@@ -3529,7 +3529,7 @@ export const UPDATE_FNS = {
     dispatch: EditorDispatch,
   ): EditorModel => {
     if (editor.id != null) {
-      updateRemoteThumbnail(editor.id, true).then(() => {
+      void updateRemoteThumbnail(editor.id, true).then(() => {
         dispatch([updateThumbnailGenerated(new Date().getTime())], 'everyone')
       })
     }
@@ -3610,7 +3610,7 @@ export const UPDATE_FNS = {
         if (oldContent != null && (isImageFile(oldContent) || isAssetFile(oldContent))) {
           // Update assets.
           if (isLoggedIn(userState.loginState) && editor.id != null) {
-            updateAssetFileName(editor.id, stripLeadingSlash(oldPath), newPath)
+            void updateAssetFileName(editor.id, stripLeadingSlash(oldPath), newPath)
           }
         }
       })
@@ -3641,7 +3641,7 @@ export const UPDATE_FNS = {
   },
   OPEN_CODE_EDITOR_FILE: (action: OpenCodeEditorFile, editor: EditorModel): EditorModel => {
     // Side effect.
-    sendOpenFileMessage(action.filename)
+    void sendOpenFileMessage(action.filename)
     if (action.forceShowCodeEditor) {
       return {
         ...editor,
@@ -3739,7 +3739,7 @@ export const UPDATE_FNS = {
 
         const depsToFetch = newDeps.concat(updatedDeps)
 
-        fetchNodeModules(depsToFetch, builtInDependencies).then((fetchNodeModulesResult) => {
+        void fetchNodeModules(depsToFetch, builtInDependencies).then((fetchNodeModulesResult) => {
           const loadedPackagesStatus = createLoadedPackageStatusMapFromDependencies(
             deps,
             fetchNodeModulesResult.dependenciesWithError,
@@ -3997,7 +3997,7 @@ export const UPDATE_FNS = {
       case 'IMAGE_FILE': {
         if (isLoggedIn(userState.loginState) && editor.id != null) {
           // Side effect
-          deleteAssetFile(editor.id, action.filename)
+          void deleteAssetFile(editor.id, action.filename)
         }
 
         return {
@@ -4395,7 +4395,7 @@ export const UPDATE_FNS = {
       shortcutConfig: updatedShortcutConfig,
     }
     // Side effect.
-    saveUserConfiguration(updatedUserConfiguration)
+    void saveUserConfiguration(updatedUserConfiguration)
     return {
       ...updatedUserConfiguration,
       loginState: userState.loginState,
@@ -4471,8 +4471,8 @@ export const UPDATE_FNS = {
     editor: EditorModel,
   ): EditorModel => {
     // Side effects.
-    sendCodeEditorDecorations(editor)
-    sendSelectedElement(editor)
+    void sendCodeEditorDecorations(editor)
+    void sendSelectedElement(editor)
     return {
       ...editor,
       vscodeReady: true,
@@ -4578,7 +4578,7 @@ export const UPDATE_FNS = {
     editor: EditorModel,
   ): EditorModel => {
     // Side effects
-    sendSetFollowSelectionEnabledMessage(action.value)
+    void sendSetFollowSelectionEnabledMessage(action.value)
     return {
       ...editor,
       config: {
@@ -4807,10 +4807,10 @@ export const UPDATE_FNS = {
     const packageJsonFile = getContentsTreeFileFromString(editor.projectContents, '/package.json')
     const currentNpmDeps = dependenciesFromPackageJson(packageJsonFile, 'regular-only')
 
-    findLatestVersion('tailwindcss').then((tailwindResult) => {
+    void findLatestVersion('tailwindcss').then((tailwindResult) => {
       if (tailwindResult.type === 'VERSION_LOOKUP_SUCCESS') {
         const tailwindVersion = tailwindResult.version
-        findLatestVersion('postcss').then((postcssResult) => {
+        void findLatestVersion('postcss').then((postcssResult) => {
           if (postcssResult.type === 'VERSION_LOOKUP_SUCCESS') {
             const postcssVersion = postcssResult.version
             const updatedNpmDeps = [
@@ -4818,20 +4818,23 @@ export const UPDATE_FNS = {
               requestedNpmDependency('tailwindcss', tailwindVersion.version),
               requestedNpmDependency('postcss', postcssVersion.version),
             ]
-            fetchNodeModules(updatedNpmDeps, builtInDependencies).then((fetchNodeModulesResult) => {
-              const loadedPackagesStatus = createLoadedPackageStatusMapFromDependencies(
-                updatedNpmDeps,
-                fetchNodeModulesResult.dependenciesWithError,
-                fetchNodeModulesResult.dependenciesNotFound,
-              )
-              const packageErrorActions = Object.keys(loadedPackagesStatus).map((dependencyName) =>
-                setPackageStatus(dependencyName, loadedPackagesStatus[dependencyName].status),
-              )
-              dispatch([
-                ...packageErrorActions,
-                updateNodeModulesContents(fetchNodeModulesResult.nodeModules),
-              ])
-            })
+            void fetchNodeModules(updatedNpmDeps, builtInDependencies).then(
+              (fetchNodeModulesResult) => {
+                const loadedPackagesStatus = createLoadedPackageStatusMapFromDependencies(
+                  updatedNpmDeps,
+                  fetchNodeModulesResult.dependenciesWithError,
+                  fetchNodeModulesResult.dependenciesNotFound,
+                )
+                const packageErrorActions = Object.keys(loadedPackagesStatus).map(
+                  (dependencyName) =>
+                    setPackageStatus(dependencyName, loadedPackagesStatus[dependencyName].status),
+                )
+                dispatch([
+                  ...packageErrorActions,
+                  updateNodeModulesContents(fetchNodeModulesResult.nodeModules),
+                ])
+              },
+            )
 
             const packageJsonUpdateAction = updatePackageJson(updatedNpmDeps)
 
@@ -5026,7 +5029,7 @@ export const UPDATE_FNS = {
       }
       // Side effect - Pushing this to the server to get that to save to Github.
       const persistentModel = persistentModelFromEditorModel(updatedEditor)
-      saveProjectToGithub(persistentModel)
+      void saveProjectToGithub(persistentModel)
 
       return editor
     }
