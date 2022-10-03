@@ -774,7 +774,7 @@ export function FileBrowserItem(props: FileBrowserItemProps) {
       item: () => {
         props.dispatch([
           EditorActions.switchEditorMode(
-            EditorModes.insertMode(false, dragAndDropInsertionSubject([props.path])),
+            EditorModes.insertMode(dragAndDropInsertionSubject([props.path])),
           ),
         ])
         return props

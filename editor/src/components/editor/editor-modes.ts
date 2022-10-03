@@ -114,7 +114,6 @@ export function insertionParent(
 export interface InsertMode {
   type: 'insert'
   subject: InsertionSubject
-  insertionStarted: boolean
 }
 
 export interface SelectMode {
@@ -131,11 +130,10 @@ export type Mode = InsertMode | SelectMode | LiveCanvasMode
 export type PersistedMode = SelectMode | LiveCanvasMode
 
 export const EditorModes = {
-  insertMode: function (insertionStarted: boolean, subject: InsertionSubject): InsertMode {
+  insertMode: function (subject: InsertionSubject): InsertMode {
     return {
       type: 'insert',
       subject: subject,
-      insertionStarted: insertionStarted,
     }
   },
   selectMode: function (controlId: string | null = null): SelectMode {

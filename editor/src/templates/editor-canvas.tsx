@@ -40,6 +40,8 @@ import {
   Mode,
   isLiveMode,
   dragAndDropInsertionSubject,
+  InsertMode,
+  insertionSubjectIsJSXElement,
 } from '../components/editor/editor-modes'
 import {
   BaseSnappingThreshold,
@@ -95,8 +97,10 @@ import {
 } from '../utils/global-positions'
 import { last, reverse } from '../core/shared/array-utils'
 import {
+  createInteractionViaMouse,
   reparentTargetsToFilter,
   ReparentTargetsToFilter,
+  updateHoverInteractionViaMouse,
   updateInteractionViaDragDelta,
   updateInteractionViaMouse,
 } from '../components/canvas/canvas-strategies/interaction-state'
@@ -188,12 +192,24 @@ function handleCanvasEvent(model: CanvasModel, event: CanvasMouseEvent): Array<E
   }
 
   const insertMode = model.mode.type === 'insert'
-  if (
-    insertMode &&
-    event.event === 'MOUSE_UP' &&
-    model.editorState.canvas.interactionSession?.interactionData.type === 'DRAG'
-  ) {
-    optionalDragStateAction = cancelInsertModeActions('apply-changes')
+  if (insertMode) {
+    if (
+      event.event === 'MOUSE_UP' &&
+      model.editorState.canvas.interactionSession?.interactionData.type === 'DRAG'
+    ) {
+      optionalDragStateAction = cancelInsertModeActions('apply-changes')
+    } else if (event.event === 'MOUSE_DOWN') {
+      if (insertionSubjectIsJSXElement((model.editorState.mode as InsertMode).subject)) {
+        optionalDragStateAction = [
+          CanvasActions.createInteractionSession(
+            createInteractionViaMouse(event.canvasPositionRounded, event.modifiers, {
+              type: 'RESIZE_HANDLE',
+              edgePosition: { x: 1, y: 1 },
+            }),
+          ),
+        ]
+      }
+    }
   } else if (!(insertMode && isOpenFileUiJs(model.editorState))) {
     switch (event.event) {
       case 'DRAG':
@@ -508,7 +524,7 @@ export function runLocalCanvasAction(
     case 'UPDATE_DRAG_INTERACTION_DATA':
       if (
         model.canvas.interactionSession == null ||
-        model.canvas.interactionSession.interactionData.type === 'KEYBOARD'
+        model.canvas.interactionSession.interactionData.type !== 'DRAG'
       ) {
         return model
       } else {
@@ -1229,6 +1245,24 @@ export class EditorCanvas extends React.Component<EditorCanvasProps> {
         }
         mouseMoveHandled()
         const dragStarted = anyDragStarted(dragState)
+        if (
+          this.props.editor.canvas.interactionSession != null &&
+          this.props.editor.canvas.interactionSession.interactionData.type === 'HOVER'
+        ) {
+          this.handleEvent({
+            ...canvasPositions,
+            event: 'MOVE',
+            modifiers: Modifier.modifiersForEvent(event),
+            cursor: null,
+            nativeEvent: event,
+            interactionSession: updateHoverInteractionViaMouse(
+              this.props.editor.canvas.interactionSession,
+              canvasPositions.canvasPositionRounded,
+              Modifier.modifiersForEvent(event),
+              null,
+            ),
+          })
+        }
         if (
           this.props.editor.canvas.interactionSession != null &&
           this.props.editor.canvas.interactionSession.interactionData.type === 'DRAG'
