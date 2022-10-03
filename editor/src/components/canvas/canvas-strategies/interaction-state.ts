@@ -160,12 +160,6 @@ export interface StrategyState {
   customStrategyState: CustomStrategyState
 }
 
-export interface StrategyStateNew {
-  // TODO rename me!
-  // Checkpointed metadata at the point at which a strategy change has occurred.
-  customStrategyState: CustomStrategyState
-}
-
 export function createEmptyStrategyState(): StrategyState {
   return {
     currentStrategy: null,

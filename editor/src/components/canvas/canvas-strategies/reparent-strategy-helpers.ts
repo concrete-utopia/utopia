@@ -47,8 +47,6 @@ import {
   InteractionSession,
   MissingBoundsHandling,
   ReparentTargetsToFilter,
-  StrategyState,
-  StrategyStateNew,
 } from './interaction-state'
 import { ifAllowedToReparent } from './reparent-helpers'
 import { getReparentOutcome, pathToReparent } from './reparent-utils'
@@ -154,7 +152,6 @@ export function getFitnessForReparentStrategy(
   reparentStrategy: ReparentStrategy,
   canvasState: InteractionCanvasState,
   interactionState: InteractionSession,
-  strategyState: StrategyStateNew,
   missingBoundsHandling: MissingBoundsHandling,
 ): number {
   const isForced = missingBoundsHandling === 'allow-missing-bounds'
@@ -163,7 +160,6 @@ export function getFitnessForReparentStrategy(
   const foundReparentStrategy = findReparentStrategy(
     canvasState,
     interactionState,
-    strategyState,
     missingBoundsHandling,
   )
   if (
@@ -194,7 +190,6 @@ function targetIsValid(
 function findReparentStrategy(
   canvasState: InteractionCanvasState,
   interactionState: InteractionSession,
-  strategyState: StrategyStateNew,
   missingBoundsHandling: MissingBoundsHandling,
 ): FindReparentStrategyResult {
   const selectedElements = getTargetPathsFromInteractionTarget(canvasState.interactionTarget)

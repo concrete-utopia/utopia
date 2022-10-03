@@ -192,7 +192,7 @@ describe('Strategy Fitness', () => {
         renderResult.getEditorState().builtInDependencies,
       ),
       interactionSession,
-      baseStrategyState(),
+      defaultCustomStrategyState(),
       null,
     )
 
@@ -241,7 +241,7 @@ describe('Strategy Fitness', () => {
         renderResult.getEditorState().builtInDependencies,
       ),
       interactionSession,
-      baseStrategyState(),
+      defaultCustomStrategyState(),
       null,
     )
 
@@ -326,7 +326,7 @@ describe('Strategy Fitness', () => {
         renderResult.getEditorState().builtInDependencies,
       ),
       interactionSession,
-      baseStrategyState(),
+      defaultCustomStrategyState(),
       null,
     )
 
@@ -375,7 +375,7 @@ describe('Strategy Fitness', () => {
         renderResult.getEditorState().builtInDependencies,
       ),
       interactionSession,
-      baseStrategyState(),
+      defaultCustomStrategyState(),
       null,
     )
 
@@ -424,7 +424,7 @@ describe('Strategy Fitness', () => {
         renderResult.getEditorState().builtInDependencies,
       ),
       interactionSession,
-      baseStrategyState(),
+      defaultCustomStrategyState(),
       null,
     )
 

@@ -14,13 +14,14 @@ import { ParentOutlines } from '../controls/parent-outlines'
 import { determineConstrainedDragAxis } from '../controls/select-mode/move-utils'
 import {
   CanvasStrategy,
+  CustomStrategyState,
   emptyStrategyApplicationResult,
   getTargetPathsFromInteractionTarget,
   InteractionCanvasState,
   strategyApplicationResult,
   StrategyApplicationResult,
 } from './canvas-strategy-types'
-import { InteractionSession, StrategyState, StrategyStateNew } from './interaction-state'
+import { InteractionSession } from './interaction-state'
 import {
   getAbsoluteMoveCommandsForSelectedElement,
   getDragTargets,
@@ -71,7 +72,7 @@ export const absoluteMoveStrategy: CanvasStrategy = {
       ? 1
       : 0
   },
-  apply: (canvasState, interactionState, sessionState) => {
+  apply: (canvasState, interactionState, customStrategyState) => {
     if (
       interactionState.interactionData.type === 'DRAG' &&
       interactionState.interactionData.drag != null
@@ -101,7 +102,7 @@ export const absoluteMoveStrategy: CanvasStrategy = {
       return applyAbsoluteMoveCommon(
         canvasState,
         interactionState,
-        sessionState,
+        customStrategyState,
         getAdjustMoveCommands,
       )
     }
@@ -113,7 +114,7 @@ export const absoluteMoveStrategy: CanvasStrategy = {
 export function applyAbsoluteMoveCommon(
   canvasState: InteractionCanvasState,
   interactionState: InteractionSession,
-  strategyState: StrategyStateNew,
+  customStrategyState: CustomStrategyState,
   getMoveCommands: (snappedDragVector: CanvasPoint) => {
     commands: Array<CanvasCommand>
     intendedBounds: Array<CanvasFrameAndTarget>

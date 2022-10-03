@@ -12,7 +12,6 @@ import {
   strategyApplicationResult,
   StrategyApplicationResult,
 } from './canvas-strategy-types'
-import { StrategyState, StrategyStateNew } from './interaction-state'
 import { ProjectContentTreeRoot } from '../../../components/assets'
 
 export function isGeneratedElement(

@@ -9,13 +9,14 @@ import { setCursorCommand } from '../commands/set-cursor-command'
 import { setElementsToRerenderCommand } from '../commands/set-elements-to-rerender-command'
 import { updateHighlightedViews } from '../commands/update-highlighted-views-command'
 import {
+  CustomStrategyState,
   emptyStrategyApplicationResult,
   getTargetPathsFromInteractionTarget,
   InteractionCanvasState,
   strategyApplicationResult,
   StrategyApplicationResult,
 } from './canvas-strategy-types'
-import { InteractionSession, StrategyState, StrategyStateNew } from './interaction-state'
+import { InteractionSession } from './interaction-state'
 import { ElementInstanceMetadataMap } from '../../../core/shared/element-template'
 
 export function isReorderAllowed(siblings: Array<ElementPath>) {
@@ -31,7 +32,7 @@ function isRootOfGeneratedElement(target: ElementPath): boolean {
 export function applyReorderCommon(
   canvasState: InteractionCanvasState,
   interactionState: InteractionSession,
-  strategyState: StrategyStateNew,
+  customStrategyState: CustomStrategyState,
   isValidTarget: (path: ElementPath, metadata: ElementInstanceMetadataMap) => boolean,
 ): StrategyApplicationResult {
   if (interactionState.interactionData.type !== 'DRAG') {
@@ -60,7 +61,7 @@ export function applyReorderCommon(
     )
 
     const unpatchedIndex = siblings.findIndex((sibling) => EP.pathsEqual(sibling, target))
-    const lastReorderIdx = strategyState.customStrategyState.lastReorderIdx ?? unpatchedIndex
+    const lastReorderIdx = customStrategyState.lastReorderIdx ?? unpatchedIndex
 
     const newIndex = findSiblingIndexUnderPoint(
       canvasState.startingMetadata,

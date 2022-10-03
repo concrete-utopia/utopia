@@ -64,9 +64,7 @@ function multiselectResizeElements(
       latestAllElementProps: {},
       startingTargetParentsToFilterOut: null,
     },
-    {
-      customStrategyState: defaultCustomStrategyState(),
-    },
+    defaultCustomStrategyState(),
     'end-interaction',
   )
 

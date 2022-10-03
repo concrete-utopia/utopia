@@ -83,9 +83,7 @@ function dragByPixels(
       startingMetadata,
     ),
     interactionSession,
-    {
-      customStrategyState: defaultCustomStrategyState(),
-    },
+    defaultCustomStrategyState(),
     'end-interaction',
   )
 

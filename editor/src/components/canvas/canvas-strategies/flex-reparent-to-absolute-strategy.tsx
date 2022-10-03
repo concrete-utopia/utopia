@@ -23,18 +23,14 @@ import {
 import { pickCanvasStateFromEditorState } from './canvas-strategies'
 import {
   CanvasStrategy,
+  CustomStrategyState,
   emptyStrategyApplicationResult,
   getTargetPathsFromInteractionTarget,
   InteractionLifecycle,
   strategyApplicationResult,
 } from './canvas-strategy-types'
 import { getEscapeHatchCommands } from './convert-to-absolute-and-move-strategy'
-import {
-  InteractionSession,
-  MissingBoundsHandling,
-  StrategyState,
-  StrategyStateNew,
-} from './interaction-state'
+import { InteractionSession, MissingBoundsHandling } from './interaction-state'
 import { ifAllowedToReparent } from './reparent-helpers'
 import {
   existingReparentSubjects,
@@ -85,11 +81,10 @@ function getFlexReparentToAbsoluteStrategy(
         'FLEX_REPARENT_TO_ABSOLUTE',
         canvasState,
         interactionState,
-        strategyState,
         missingBoundsHandling,
       )
     },
-    apply: (canvasState, interactionState, strategyState, strategyLifecycle) => {
+    apply: (canvasState, interactionState, customStrategyState, strategyLifecycle) => {
       const selectedElements = getTargetPathsFromInteractionTarget(canvasState.interactionTarget)
       const filteredSelectedElements = getDragTargets(selectedElements)
       return ifAllowedToReparent(
@@ -120,7 +115,7 @@ function getFlexReparentToAbsoluteStrategy(
           )
 
           let duplicatedElementNewUids = {
-            ...strategyState.customStrategyState.duplicatedElementNewUids,
+            ...customStrategyState.duplicatedElementNewUids,
           }
 
           const placeholderCloneCommands = filteredSelectedElements.flatMap((element) => {
@@ -164,7 +159,7 @@ function getFlexReparentToAbsoluteStrategy(
                 return runAbsoluteReparentStrategyForFreshlyConvertedElement(
                   canvasState.builtInDependencies,
                   editorState,
-                  strategyState,
+                  customStrategyState,
                   interactionState,
                   commandLifecycle,
                   missingBoundsHandling,
@@ -182,7 +177,7 @@ function getFlexReparentToAbsoluteStrategy(
 function runAbsoluteReparentStrategyForFreshlyConvertedElement(
   builtInDependencies: BuiltInDependencies,
   editorState: EditorState,
-  strategyState: StrategyStateNew,
+  customStrategyState: CustomStrategyState,
   interactionState: InteractionSession,
   commandLifecycle: InteractionLifecycle,
   missingBoundsHandling: MissingBoundsHandling,
@@ -197,7 +192,7 @@ function runAbsoluteReparentStrategyForFreshlyConvertedElement(
   const reparentCommands = absoluteReparentStrategyToUse.apply(
     canvasState,
     interactionState,
-    strategyState,
+    customStrategyState,
     strategyLifeCycle,
   ).commands
 

@@ -21,11 +21,12 @@ import {
 } from './canvas-strategies'
 import {
   CanvasStrategy,
+  CustomStrategyState,
   getTargetPathsFromInteractionTarget,
   InteractionLifecycle,
   strategyApplicationResult,
 } from './canvas-strategy-types'
-import { InteractionSession, StrategyState, StrategyStateNew } from './interaction-state'
+import { InteractionSession } from './interaction-state'
 import { getDragTargets } from './shared-absolute-move-strategy-helpers'
 
 export const absoluteDuplicateStrategy: CanvasStrategy = {
@@ -84,7 +85,7 @@ export const absoluteDuplicateStrategy: CanvasStrategy = {
     }
     return 0
   },
-  apply: (canvasState, interactionState, strategyState, strategyLifecycle) => {
+  apply: (canvasState, interactionState, customStrategyState, strategyLifecycle) => {
     const selectedElements = getTargetPathsFromInteractionTarget(canvasState.interactionTarget)
     if (
       interactionState.interactionData.type === 'DRAG' &&
@@ -93,7 +94,7 @@ export const absoluteDuplicateStrategy: CanvasStrategy = {
       const filteredSelectedElements = getDragTargets(selectedElements)
 
       let duplicatedElementNewUids = {
-        ...strategyState.customStrategyState.duplicatedElementNewUids,
+        ...customStrategyState.duplicatedElementNewUids,
       }
       let withDuplicatedMetadata: ElementInstanceMetadataMap = {
         ...canvasState.startingMetadata,
@@ -128,7 +129,7 @@ export const absoluteDuplicateStrategy: CanvasStrategy = {
             runMoveStrategyForFreshlyDuplicatedElements(
               canvasState.builtInDependencies,
               editorState,
-              strategyState,
+              customStrategyState,
               interactionState,
               commandLifecycle,
               strategyLifecycle,
@@ -151,7 +152,7 @@ export const absoluteDuplicateStrategy: CanvasStrategy = {
 function runMoveStrategyForFreshlyDuplicatedElements(
   builtInDependencies: BuiltInDependencies,
   editorState: EditorState,
-  strategyState: StrategyStateNew,
+  customStrategyState: CustomStrategyState,
   interactionState: InteractionSession,
   commandLifecycle: InteractionLifecycle,
   strategyLifecycle: InteractionLifecycle,
@@ -166,7 +167,7 @@ function runMoveStrategyForFreshlyDuplicatedElements(
   const moveCommands = absoluteMoveStrategy.apply(
     canvasState,
     interactionState,
-    strategyState,
+    customStrategyState,
     strategyLifecycle,
   ).commands
 

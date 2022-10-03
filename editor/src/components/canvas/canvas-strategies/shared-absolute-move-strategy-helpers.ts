@@ -44,7 +44,7 @@ import {
 } from '../guideline'
 import { AbsolutePin } from './absolute-resize-helpers'
 import { InteractionCanvasState } from './canvas-strategy-types'
-import { InteractionSession, StrategyState, StrategyStateNew } from './interaction-state'
+import { InteractionSession } from './interaction-state'
 
 export function getAbsoluteMoveCommandsForSelectedElement(
   selectedElement: ElementPath,

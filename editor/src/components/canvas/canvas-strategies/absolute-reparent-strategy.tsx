@@ -67,17 +67,16 @@ function getAbsoluteReparentStrategy(
         show: 'visible-only-while-active',
       },
     ],
-    fitness: (canvasState, interactionState, strategyState) => {
+    fitness: (canvasState, interactionState, customStrategyState) => {
       // All 4 reparent strategies use the same fitness function getFitnessForReparentStrategy
       return getFitnessForReparentStrategy(
         'ABSOLUTE_REPARENT_TO_ABSOLUTE',
         canvasState,
         interactionState,
-        strategyState,
         missingBoundsHandling,
       )
     },
-    apply: (canvasState, interactionState, strategyState, strategyLifecycle) => {
+    apply: (canvasState, interactionState, customStrategyState, strategyLifecycle) => {
       const { interactionTarget, projectContents, openFile, nodeModules } = canvasState
       const selectedElements = getTargetPathsFromInteractionTarget(interactionTarget)
       const filteredSelectedElements = getDragTargets(selectedElements)
@@ -165,7 +164,7 @@ function getAbsoluteReparentStrategy(
                 ...interactionState,
                 updatedTargetPaths: updatedTargetPaths,
               },
-              strategyState,
+              customStrategyState,
               strategyLifecycle,
             )
 
@@ -180,7 +179,7 @@ function getAbsoluteReparentStrategy(
             const moveCommands = absoluteMoveStrategy.apply(
               canvasState,
               interactionState,
-              strategyState,
+              customStrategyState,
               strategyLifecycle,
             )
 

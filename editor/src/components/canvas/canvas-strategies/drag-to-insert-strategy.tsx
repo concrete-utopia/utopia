@@ -2,6 +2,7 @@ import { ParentBounds } from '../controls/parent-bounds'
 import { ParentOutlines } from '../controls/parent-outlines'
 import {
   CanvasStrategy,
+  CustomStrategyState,
   emptyStrategyApplicationResult,
   getInsertionSubjectsFromInteractionTarget,
   InteractionCanvasState,
@@ -9,7 +10,7 @@ import {
   strategyApplicationResult,
   targetPaths,
 } from './canvas-strategy-types'
-import { InteractionSession, StrategyState, StrategyStateNew } from './interaction-state'
+import { InteractionSession } from './interaction-state'
 import { ElementInsertionSubject, InsertionSubject } from '../../editor/editor-modes'
 import { LayoutHelpers } from '../../../core/layout/layout-helpers'
 import { isLeft } from '../../../core/shared/either'
@@ -193,7 +194,7 @@ function getStyleAttributesForFrameInAbsolutePosition(
 function runTargetStrategiesForFreshlyInsertedElement(
   builtInDependencies: BuiltInDependencies,
   editorState: EditorState,
-  strategyState: StrategyStateNew,
+  customStrategyState: CustomStrategyState,
   interactionState: InteractionSession,
   commandLifecycle: InteractionLifecycle,
   insertionSubjects: Array<{ command: InsertElementInsertionSubject; frame: CanvasRectangle }>,
@@ -255,7 +256,7 @@ function runTargetStrategiesForFreshlyInsertedElement(
     RegisteredCanvasStrategies,
     patchedCanvasState,
     patchedInteractionState,
-    strategyState,
+    customStrategyState,
     null,
   )
 
@@ -265,7 +266,7 @@ function runTargetStrategiesForFreshlyInsertedElement(
     const reparentCommands = strategy.strategy.apply(
       patchedCanvasState,
       patchedInteractionState,
-      strategyState,
+      customStrategyState,
       strategyLifeCycle,
     ).commands
 

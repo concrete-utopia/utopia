@@ -200,9 +200,7 @@ function reparentElement(
       startingMetadata,
     ),
     interactionSession,
-    {
-      customStrategyState: defaultCustomStrategyState(),
-    },
+    defaultCustomStrategyState(),
     'end-interaction',
   )
 

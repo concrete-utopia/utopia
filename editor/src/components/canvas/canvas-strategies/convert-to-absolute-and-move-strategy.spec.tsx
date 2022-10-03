@@ -19,6 +19,7 @@ import {
   pickCanvasStateFromEditorState,
   pickCanvasStateFromEditorStateWithMetadata,
 } from './canvas-strategies'
+import { defaultCustomStrategyState } from './canvas-strategy-types'
 import { convertToAbsoluteAndMoveStrategy } from './convert-to-absolute-and-move-strategy'
 import { InteractionSession, StrategyState } from './interaction-state'
 import { createMouseInteractionForTests } from './interaction-state.test-utils'
@@ -189,17 +190,7 @@ function dragByPixels(
       metadata,
     ),
     interactionSession,
-    {
-      currentStrategy: null as any, // the strategy does not use this
-      currentStrategyFitness: null as any, // the strategy does not use this
-      currentStrategyCommands: null as any, // the strategy does not use this
-      accumulatedPatches: null as any, // the strategy does not use this
-      commandDescriptions: null as any, // the strategy does not use this
-      sortedApplicableStrategies: null as any, // the strategy does not use this
-      customStrategyState: {
-        escapeHatchActivated: true,
-      },
-    } as StrategyState,
+    { ...defaultCustomStrategyState(), escapeHatchActivated: true },
     'end-interaction',
   )
 

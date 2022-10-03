@@ -48,7 +48,6 @@ export const flexReparentToFlexStrategy: CanvasStrategy = {
       'FLEX_REPARENT_TO_FLEX',
       canvasState,
       interactionState,
-      strategyState,
       'use-strict-bounds',
     )
   },

@@ -2,6 +2,7 @@ import { ParentBounds } from '../controls/parent-bounds'
 import { ParentOutlines } from '../controls/parent-outlines'
 import {
   CanvasStrategy,
+  CustomStrategyState,
   emptyStrategyApplicationResult,
   getInsertionSubjectsFromInteractionTarget,
   InteractionCanvasState,
@@ -9,12 +10,7 @@ import {
   strategyApplicationResult,
   targetPaths,
 } from './canvas-strategy-types'
-import {
-  boundingArea,
-  InteractionSession,
-  StrategyState,
-  StrategyStateNew,
-} from './interaction-state'
+import { boundingArea, InteractionSession } from './interaction-state'
 import { ElementInsertionSubject } from '../../editor/editor-modes'
 import { LayoutHelpers } from '../../../core/layout/layout-helpers'
 import { foldEither } from '../../../core/shared/either'
@@ -306,7 +302,7 @@ function getStyleAttributesForFrameInAbsolutePosition(
 function runTargetStrategiesForFreshlyInsertedElementToReparent(
   builtInDependencies: BuiltInDependencies,
   editorState: EditorState,
-  strategyState: StrategyStateNew,
+  customStrategyState: CustomStrategyState,
   interactionState: InteractionSession,
   insertionSubject: ElementInsertionSubject,
   frame: CanvasRectangle,
@@ -356,7 +352,7 @@ function runTargetStrategiesForFreshlyInsertedElementToReparent(
     RegisteredCanvasStrategies,
     patchedCanvasState,
     patchedInteractionState,
-    strategyState,
+    customStrategyState,
     null,
   )
 
@@ -366,7 +362,7 @@ function runTargetStrategiesForFreshlyInsertedElementToReparent(
   const reparentCommands = strategy.strategy.apply(
     patchedCanvasState,
     patchedInteractionState,
-    strategyState,
+    customStrategyState,
     strategyLifecycle,
   ).commands
 
@@ -377,7 +373,7 @@ function runTargetStrategiesForFreshlyInsertedElementToReparent(
 function runTargetStrategiesForFreshlyInsertedElementToResize(
   builtInDependencies: BuiltInDependencies,
   editorState: EditorState,
-  strategyState: StrategyStateNew,
+  customStrategyState: CustomStrategyState,
   interactionState: InteractionSession,
   commandLifecycle: InteractionLifecycle,
   insertionSubject: ElementInsertionSubject,
@@ -413,7 +409,7 @@ function runTargetStrategiesForFreshlyInsertedElementToResize(
     RegisteredCanvasStrategies,
     patchedCanvasState,
     patchedInteractionState,
-    strategyState,
+    customStrategyState,
     null,
   )
 
@@ -422,7 +418,7 @@ function runTargetStrategiesForFreshlyInsertedElementToResize(
       ? resizeStrategy.strategy.apply(
           patchedCanvasState,
           patchedInteractionState,
-          strategyState,
+          customStrategyState,
           strategyLifecycle,
         ).commands
       : []
