@@ -2,7 +2,7 @@
 require('dotenv').config({ path: 'src/.env' })
 import * as puppeteer from 'puppeteer'
 import { v4 } from 'uuid'
-import { consoleDoneMessage, setupBrowser, uploadPNGtoAWS } from './utils'
+import { consoleDoneMessage, setupBrowser } from './utils'
 import * as JSONStream from 'JSONStream'
 const fs = require('fs')
 const path = require('path')
@@ -99,17 +99,6 @@ export const testPerformance = async function () {
   const stagingResult = await testPerformanceInner(STAGING_EDITOR_URL)
   const masterResult = await testPerformanceInner(MASTER_EDITOR_URL)
 
-  const framesSummaryImage = await uploadSummaryImage(
-    stagingResult.frameTests,
-    masterResult.frameTests,
-    100,
-  )
-  const interactionsSummaryImage = await uploadSummaryImage(
-    stagingResult.interactionTests,
-    masterResult.interactionTests,
-    200,
-  )
-
   const combinedStagingResult = { ...stagingResult.frameTests, ...stagingResult.interactionTests }
   const combinedMasterResult = { ...masterResult.frameTests, ...masterResult.interactionTests }
 
@@ -120,7 +109,7 @@ export const testPerformance = async function () {
     const change = ((afterMedian - beforeMedian) / beforeMedian) * 100
     const titleLine = `**${result.title} (${Math.round(change)}%)**`
     const spacerLine = ''
-    if (Math.abs(change) > 5) {
+    if (Math.abs(change) > 20) {
       return [
         titleLine,
         consoleMessageForResult(targetResult, 'Before'),
@@ -132,17 +121,13 @@ export const testPerformance = async function () {
     }
   })
 
-  const message = messageParts.join('<br />')
-  const discordMessage = messageParts.join('\\n')
+  const message = messageParts.filter((n) => n).join('<br />')
+  const discordMessage = messageParts.filter((n) => n).join('\\n')
 
-  console.info(
-    `::set-output name=perf-result:: ${message} <br /> ![(Chart1)](${framesSummaryImage}) <br /> ![(Chart2)](${interactionsSummaryImage})`,
-  )
+  console.info(`::set-output name=perf-result:: ${message}`)
 
   // Output the individual parts for building a discord message
   console.info(`::set-output name=perf-discord-message:: ${discordMessage}`)
-  console.info(`::set-output name=perf-frames-chart:: ${framesSummaryImage}`)
-  console.info(`::set-output name=perf-interactions-chart:: ${interactionsSummaryImage}`)
 }
 
 type PageToPromiseResult<T> = (page: puppeteer.Page) => Promise<T>
@@ -587,149 +572,6 @@ const getFrameData = (
     timeSeries: sortedFrameTimes,
     succeeded: succeeded,
   }
-}
-
-async function uploadSummaryImage(
-  stagingResult: ResultsGroup,
-  masterResult: ResultsGroup,
-  maxXValue: number,
-): Promise<string> {
-  const imageFileName = v4() + '.png'
-  const fileURI = await createSummaryPng(stagingResult, masterResult, imageFileName, maxXValue)
-
-  if (fileURI != null) {
-    const s3FileUrl = await uploadPNGtoAWS(fileURI)
-    return s3FileUrl ?? ''
-  } else {
-    return ''
-  }
-}
-
-async function createSummaryPng(
-  stagingResult: ResultsGroup,
-  masterResult: ResultsGroup,
-  testFileName: string,
-  maxXValue: number,
-): Promise<string | null> {
-  if (
-    process.env.PERFORMANCE_GRAPHS_PLOTLY_USERNAME == null ||
-    process.env.PERFORMANCE_GRAPHS_PLOTLY_API_KEY == null
-  ) {
-    console.info('Plotly summary generation skipped because of missing username or API key')
-    return null
-  }
-
-  const plotly = require('plotly')(
-    process.env.PERFORMANCE_GRAPHS_PLOTLY_USERNAME,
-    process.env.PERFORMANCE_GRAPHS_PLOTLY_API_KEY,
-  )
-
-  const boxPlotConfig = (label: string, data: Array<number>) => {
-    return {
-      x: data,
-      y: label,
-      name: label,
-      type: 'box',
-      boxpoints: 'all',
-      whiskerwidth: 0.5,
-      fillcolor: 'cls',
-      marker: {
-        size: 1,
-      },
-      line: {
-        width: 1,
-      },
-    }
-  }
-
-  const numberOfTests = Object.keys(stagingResult).length * 2
-
-  let processedData = Object.entries(stagingResult).flatMap(([k, result]) => {
-    const targetResult = masterResult[k]
-    return [
-      boxPlotConfig(`${targetResult.title} (before)`, targetResult.timeSeries),
-      boxPlotConfig(`${result.title} (after)`, result.timeSeries),
-    ]
-  })
-
-  processedData.reverse() // Plotly will produce the box plot in the reverse order
-
-  const chartHeight = 30 * numberOfTests
-  const chartWidth = 720
-  const imagePadding = 80
-
-  const layout = {
-    margin: {
-      l: 50,
-      r: 50,
-      b: 60,
-      t: 10,
-      pad: 4,
-    },
-    showlegend: false,
-    height: chartHeight,
-    width: chartWidth,
-    yaxis: {
-      automargin: true,
-      zeroline: true,
-    },
-    shapes: [
-      {
-        type: 'rectangle',
-        xref: 'x',
-        yref: 'y',
-        x0: 0.6,
-        x1: 16.6,
-        y0: 0,
-        y1: 3,
-        fillcolor: '#d3d3d3',
-        opacity: 0.1,
-        line: {
-          width: 0,
-        },
-      },
-    ],
-    xaxis: {
-      title: 'lower is better, ms / frame (16.67 = 60fps), many runs, cutoff 200ms',
-      range: [0, maxXValue],
-      showgrid: true,
-      zeroline: true,
-      dtick: 16.67,
-      gridcolor: 'rgba(0,0,0,.1)',
-      gridwidth: 1,
-      zerolinecolor: 'rgba(0,0,0,.1)',
-      zerolinewidth: 1,
-      color: '#999',
-    },
-  }
-
-  const imgOpts = {
-    format: 'png',
-    width: chartWidth + imagePadding,
-    height: chartHeight + imagePadding,
-  }
-  const figure = { data: processedData, layout: layout }
-
-  return new Promise<string>((resolve, reject) => {
-    plotly.getImage(figure, imgOpts, async function (error: any, imageStream: any) {
-      if (error) return console.log(error)
-
-      var fileStream = await fs.createWriteStream(testFileName)
-
-      const writeStreamPromise = new Promise<void>((streamResolve, streamReject) => {
-        imageStream
-          .pipe(fileStream)
-          .on('finish', () => streamResolve())
-          .on('error', (streamError: any) => streamReject(streamError))
-      })
-
-      await writeStreamPromise
-      const path1 = path.resolve(testFileName)
-      const path2 = path.resolve('frameimages')
-      await moveFile(path1, path2 + '/' + testFileName)
-      resolve(path2 + '/' + testFileName)
-    })
-  })
 }
 
 testPerformance().catch((e) => {
