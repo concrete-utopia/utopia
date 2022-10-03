@@ -19,7 +19,7 @@ export const relativeMoveStrategy: CanvasStrategy = {
 
   name: () => 'Move (Relative)',
 
-  isApplicable: (canvasState, _interactionState, metadata) => {
+  isApplicable: (canvasState, _interactionState, instanceMetadata) => {
     const selectedElements = getTargetPathsFromInteractionTarget(canvasState.interactionTarget)
     if (selectedElements.length === 0) {
       return false
@@ -27,13 +27,13 @@ export const relativeMoveStrategy: CanvasStrategy = {
 
     const filteredSelectedElements = getDragTargets(selectedElements)
     const last = filteredSelectedElements[filteredSelectedElements.length - 1]
-    const meta = MetadataUtils.findElementByElementPath(metadata, last)
-    if (!meta) {
+    const metadata = MetadataUtils.findElementByElementPath(instanceMetadata, last)
+    if (!metadata) {
       return false
     }
 
     // should we also support absolute elements, for which we'll do something like `CONVERT_TO_RELATIVE`?
-    return meta.specialSizeMeasurements.position === 'relative'
+    return metadata.specialSizeMeasurements.position === 'relative'
   },
 
   controlsToRender: [],
@@ -53,11 +53,11 @@ export const relativeMoveStrategy: CanvasStrategy = {
     }
     const filteredSelectedElements = getDragTargets(selectedElements)
     const last = filteredSelectedElements[filteredSelectedElements.length - 1]
-    const meta = MetadataUtils.findElementByElementPath(interactionState.latestMetadata, last)
-    if (!meta) {
+    const metadata = MetadataUtils.findElementByElementPath(interactionState.latestMetadata, last)
+    if (!metadata) {
       return 0
     }
-    const offsets = getStyleOffsets(meta)
+    const offsets = getStyleOffsets(metadata)
     if (!offsets) {
       return 0
     }
@@ -83,11 +83,11 @@ export const relativeMoveStrategy: CanvasStrategy = {
 
     const filteredSelectedElements = getDragTargets(selectedElements)
     const last = filteredSelectedElements[filteredSelectedElements.length - 1]
-    const meta = MetadataUtils.findElementByElementPath(sessionState.startingMetadata, last)
-    if (meta == null) {
+    const metadata = MetadataUtils.findElementByElementPath(sessionState.startingMetadata, last)
+    if (metadata == null) {
       return emptyStrategyApplicationResult
     }
-    const offsets = getStyleOffsets(meta)
+    const offsets = getStyleOffsets(metadata)
     if (!offsets) {
       return emptyStrategyApplicationResult
     }
