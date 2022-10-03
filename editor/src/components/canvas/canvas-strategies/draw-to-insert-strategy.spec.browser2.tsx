@@ -12,10 +12,15 @@ import { CanvasControlsContainerID } from '../controls/new-canvas-controls'
 import * as EP from '../../../core/shared/element-path'
 import {
   mouseClickAtPoint,
+  mouseDownAtPoint,
   mouseDragFromPointToPoint,
   mouseDragFromPointToPointNoMouseDown,
   mouseMoveToPoint,
 } from '../event-helpers.test-utils'
+import CanvasActions from '../canvas-actions'
+import { boundingArea, createInteractionViaMouse } from './interaction-state'
+import { CanvasMousePositionRaw } from '../../../utils/global-positions'
+import { emptyModifiers } from '../../../utils/modifiers'
 
 function slightlyOffsetWindowPointBecauseVeryWeirdIssue(point: {
   x: number
@@ -473,13 +478,27 @@ describe('Inserting into absolute', () => {
     })
 
     const endPoint = slightlyOffsetWindowPointBecauseVeryWeirdIssue({
-      x: targetElementBounds.x + 1005,
-      y: targetElementBounds.y + 1005,
+      x: targetElementBounds.x + 2005,
+      y: targetElementBounds.y + 2005,
     })
 
     mouseMoveToPoint(canvasControlsLayer, startPoint)
 
-    await startInsertMode(renderResult.dispatch)
+    mouseDownAtPoint(canvasControlsLayer, startPoint)
+
+    await act(() =>
+      renderResult.dispatch(
+        [
+          enableInsertModeForJSXElement(newElement, newElementUID, {}, null),
+          CanvasActions.createInteractionSession(
+            createInteractionViaMouse(CanvasMousePositionRaw!, emptyModifiers, boundingArea()),
+          ),
+        ],
+        false,
+      ),
+    )
+
+    await renderResult.getDispatchFollowUpActionsFinished()
 
     mouseDragFromPointToPointNoMouseDown(canvasControlsLayer, startPoint, endPoint)
 
