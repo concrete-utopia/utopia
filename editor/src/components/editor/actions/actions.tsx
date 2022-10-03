@@ -734,7 +734,7 @@ function switchAndUpdateFrames(
     case 'flex':
       withUpdatedLayoutSystem = {
         ...withUpdatedLayoutSystem,
-        allElementProps: MetadataUtils.setPropertyDirectlyIntoMetadata(
+        _currentAllElementProps_KILLME: MetadataUtils.setPropertyDirectlyIntoMetadata(
           withUpdatedLayoutSystem.allElementProps,
           target,
           styleDisplayPath, // TODO LAYOUT investigate if we should use also update the DOM walker specialSizeMeasurements
@@ -743,7 +743,7 @@ function switchAndUpdateFrames(
       }
       withUpdatedLayoutSystem = {
         ...withUpdatedLayoutSystem,
-        allElementProps: MetadataUtils.setPropertyDirectlyIntoMetadata(
+        _currentAllElementProps_KILLME: MetadataUtils.setPropertyDirectlyIntoMetadata(
           withUpdatedLayoutSystem.allElementProps,
           target,
           stylePropPathMappingFn('position', propertyTarget), // TODO LAYOUT investigate if we should use also update the DOM walker specialSizeMeasurements
@@ -754,7 +754,7 @@ function switchAndUpdateFrames(
     case LayoutSystem.PinSystem:
       withUpdatedLayoutSystem = {
         ...withUpdatedLayoutSystem,
-        allElementProps: MetadataUtils.setPropertyDirectlyIntoMetadata(
+        _currentAllElementProps_KILLME: MetadataUtils.setPropertyDirectlyIntoMetadata(
           withUpdatedLayoutSystem.allElementProps,
           target,
           stylePropPathMappingFn('position', propertyTarget), // TODO LAYOUT investigate if we should use also update the DOM walker specialSizeMeasurements
@@ -766,7 +766,7 @@ function switchAndUpdateFrames(
     default:
       withUpdatedLayoutSystem = {
         ...withUpdatedLayoutSystem,
-        allElementProps: MetadataUtils.unsetPropertyDirectlyIntoMetadata(
+        _currentAllElementProps_KILLME: MetadataUtils.unsetPropertyDirectlyIntoMetadata(
           withUpdatedLayoutSystem.allElementProps,
           target,
           styleDisplayPath,
@@ -774,7 +774,7 @@ function switchAndUpdateFrames(
       }
       withUpdatedLayoutSystem = {
         ...withUpdatedLayoutSystem,
-        allElementProps: MetadataUtils.setPropertyDirectlyIntoMetadata(
+        _currentAllElementProps_KILLME: MetadataUtils.setPropertyDirectlyIntoMetadata(
           withUpdatedLayoutSystem.allElementProps,
           target,
           styleDisplayPath, // TODO LAYOUT investigate if we should use also update the DOM walker specialSizeMeasurements
@@ -1083,6 +1083,7 @@ function restoreEditorState(currentEditor: EditorModel, history: StateHistory): 
     indexedDBFailed: currentEditor.indexedDBFailed,
     forceParseFiles: currentEditor.forceParseFiles,
     allElementProps: poppedEditor.allElementProps,
+    _currentAllElementProps_KILLME: poppedEditor._currentAllElementProps_KILLME,
     githubSettings: currentEditor.githubSettings,
   }
 }
@@ -4100,9 +4101,10 @@ export const UPDATE_FNS = {
     } else {
       return {
         ...editor,
+        // TODO move the reconstructMetadata call here, and remove _currentAllElementProps_KILLME
         domMetadata: finalDomMetadata,
         spyMetadata: finalSpyMetadata,
-        allElementProps: {
+        _currentAllElementProps_KILLME: {
           ...spyCollector.current.spyValues.allElementProps,
         },
       }
