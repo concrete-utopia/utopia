@@ -200,11 +200,14 @@ function handleCanvasEvent(
     event.event === 'MOUSE_UP' &&
     model.editorState.canvas.interactionSession?.interactionData.type === 'DRAG'
   ) {
+    const isInsertModeActive = model.editorState.mode.type === 'insert'
     const boundingAreaActive =
       model.editorState.canvas.interactionSession?.activeControl.type === 'BOUNDING_AREA'
 
     const shouldApplyChanges: HandleInteractionSession =
-      !isInsideCanvas && boundingAreaActive ? 'do-not-apply-changes' : 'apply-changes'
+      !isInsideCanvas && boundingAreaActive && isInsertModeActive
+        ? 'do-not-apply-changes'
+        : 'apply-changes'
 
     optionalDragStateAction = cancelInsertModeActions(shouldApplyChanges)
   } else if (!(insertMode && isOpenFileUiJs(model.editorState))) {
