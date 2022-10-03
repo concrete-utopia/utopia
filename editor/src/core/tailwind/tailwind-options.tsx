@@ -72,7 +72,7 @@ async function loadTailwindOptions() {
   })
 }
 
-loadTailwindOptions()
+void loadTailwindOptions()
 
 export function getTailwindOptionForClassName(className: string): TailWindOption {
   const foundOption = TailWindOptionLookup[className]

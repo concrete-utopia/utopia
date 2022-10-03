@@ -4,13 +4,13 @@ import {
   makeTestProjectCodeWithSnippet,
   renderTestEditorWithCode,
 } from '../ui-jsx.test-utils'
-import { act, fireEvent } from '@testing-library/react'
 import { offsetPoint, windowPoint, WindowPoint } from '../../../core/shared/math-utils'
 import { emptyModifiers, Modifiers } from '../../../utils/modifiers'
 import * as EP from '../../../core/shared/element-path'
 import { selectComponents } from '../../editor/actions/action-creators'
 import { IconSize } from '../controls/flow-slider-control'
 import { ReorderChangeThreshold } from './flow-reorder-helpers'
+import { mouseDragFromPointWithDelta } from '../event-helpers.test-utils'
 
 const TestProject = `
 <div style={{ width: '100%', height: '100%', position: 'absolute' }} data-uid='container'>
@@ -174,66 +174,26 @@ function dragControl(
   dragDelta: WindowPoint,
   modifiers: Modifiers,
   expectedNavigatorTargetsDuringMove: Array<string>,
-): void {
+) {
   const targetControl = renderResult.renderedDOM.getByTestId('flow-reorder-slider-control')
   const targetControlBounds = targetControl.getBoundingClientRect()
 
-  const startPoint = windowPoint({
+  const startPoint = {
     x: targetControlBounds.x + IconSize / 2,
     y: targetControlBounds.y + IconSize / 2,
+  }
+
+  mouseDragFromPointWithDelta(targetControl, startPoint, dragDelta, {
+    modifiers: modifiers,
+    midDragCallback: () => {
+      expect(
+        renderResult.getEditorState().derived.visibleNavigatorTargets.map(EP.toString),
+      ).toEqual(expectedNavigatorTargetsDuringMove)
+    },
   })
-
-  const endPoint = offsetPoint(startPoint, dragDelta)
-  fireEvent(
-    targetControl,
-    new MouseEvent('mousedown', {
-      bubbles: true,
-      cancelable: true,
-      metaKey: true,
-      altKey: modifiers.alt,
-      shiftKey: modifiers.shift,
-      clientX: startPoint.x,
-      clientY: startPoint.y,
-      buttons: 1,
-    }),
-  )
-
-  fireEvent(
-    targetControl,
-    new MouseEvent('mousemove', {
-      bubbles: true,
-      cancelable: true,
-      metaKey: modifiers.cmd,
-      altKey: modifiers.alt,
-      shiftKey: modifiers.shift,
-      clientX: endPoint.x,
-      clientY: endPoint.y,
-      buttons: 1,
-    }),
-  )
-
-  expect(renderResult.getEditorState().derived.visibleNavigatorTargets.map(EP.toString)).toEqual(
-    expectedNavigatorTargetsDuringMove,
-  )
-
-  fireEvent(
-    window,
-    new MouseEvent('mouseup', {
-      bubbles: true,
-      cancelable: true,
-      metaKey: modifiers.cmd,
-      altKey: modifiers.alt,
-      shiftKey: modifiers.shift,
-      clientX: endPoint.x,
-      clientY: endPoint.y,
-    }),
-  )
 }
 
 describe('Flow Reorder Slider Strategy', () => {
-  before(() => {
-    viewport.set(2200, 1000)
-  })
   it('dragging the control in a block reorders it', async () => {
     const renderResult = await renderTestEditorWithCode(
       makeTestProjectCodeWithSnippet(TestProject),
@@ -252,18 +212,16 @@ describe('Flow Reorder Slider Strategy', () => {
 
     // drag control for 'CCC' left to replace it with it's direct sibling
     const dragDelta = windowPoint({ x: -ReorderChangeThreshold, y: 0 })
-    act(() =>
-      dragControl(renderResult, dragDelta, emptyModifiers, [
-        'utopia-storyboard-uid/scene-aaa',
-        'utopia-storyboard-uid/scene-aaa/app-entity',
-        'utopia-storyboard-uid/scene-aaa/app-entity:container',
-        'utopia-storyboard-uid/scene-aaa/app-entity:container/aaa',
-        'utopia-storyboard-uid/scene-aaa/app-entity:container/ccc',
-        'utopia-storyboard-uid/scene-aaa/app-entity:container/bbb',
-        'utopia-storyboard-uid/scene-aaa/app-entity:container/ddd',
-        'utopia-storyboard-uid/scene-aaa/app-entity:container/eee',
-      ]),
-    )
+    dragControl(renderResult, dragDelta, emptyModifiers, [
+      'utopia-storyboard-uid/scene-aaa',
+      'utopia-storyboard-uid/scene-aaa/app-entity',
+      'utopia-storyboard-uid/scene-aaa/app-entity:container',
+      'utopia-storyboard-uid/scene-aaa/app-entity:container/aaa',
+      'utopia-storyboard-uid/scene-aaa/app-entity:container/ccc',
+      'utopia-storyboard-uid/scene-aaa/app-entity:container/bbb',
+      'utopia-storyboard-uid/scene-aaa/app-entity:container/ddd',
+      'utopia-storyboard-uid/scene-aaa/app-entity:container/eee',
+    ])
 
     await renderResult.getDispatchFollowUpActionsFinished()
     expect(getPrintedUiJsCode(renderResult.getEditorState())).toEqual(
@@ -288,18 +246,16 @@ describe('Flow Reorder Slider Strategy', () => {
 
     // drag control for 'CCC' right, the element is inserted into a row with conversion to inline-block
     const dragDelta = windowPoint({ x: ReorderChangeThreshold, y: 0 })
-    act(() =>
-      dragControl(renderResult, dragDelta, emptyModifiers, [
-        'utopia-storyboard-uid/scene-aaa',
-        'utopia-storyboard-uid/scene-aaa/app-entity',
-        'utopia-storyboard-uid/scene-aaa/app-entity:container',
-        'utopia-storyboard-uid/scene-aaa/app-entity:container/aaa',
-        'utopia-storyboard-uid/scene-aaa/app-entity:container/bbb',
-        'utopia-storyboard-uid/scene-aaa/app-entity:container/ddd',
-        'utopia-storyboard-uid/scene-aaa/app-entity:container/ccc',
-        'utopia-storyboard-uid/scene-aaa/app-entity:container/eee',
-      ]),
-    )
+    dragControl(renderResult, dragDelta, emptyModifiers, [
+      'utopia-storyboard-uid/scene-aaa',
+      'utopia-storyboard-uid/scene-aaa/app-entity',
+      'utopia-storyboard-uid/scene-aaa/app-entity:container',
+      'utopia-storyboard-uid/scene-aaa/app-entity:container/aaa',
+      'utopia-storyboard-uid/scene-aaa/app-entity:container/bbb',
+      'utopia-storyboard-uid/scene-aaa/app-entity:container/ddd',
+      'utopia-storyboard-uid/scene-aaa/app-entity:container/ccc',
+      'utopia-storyboard-uid/scene-aaa/app-entity:container/eee',
+    ])
 
     await renderResult.getDispatchFollowUpActionsFinished()
 
@@ -325,18 +281,16 @@ describe('Flow Reorder Slider Strategy', () => {
 
     // drag control for 'CCC' to the right
     const dragDelta = windowPoint({ x: ReorderChangeThreshold * 14, y: 0 })
-    act(() =>
-      dragControl(renderResult, dragDelta, emptyModifiers, [
-        'utopia-storyboard-uid/scene-aaa',
-        'utopia-storyboard-uid/scene-aaa/app-entity',
-        'utopia-storyboard-uid/scene-aaa/app-entity:container',
-        'utopia-storyboard-uid/scene-aaa/app-entity:container/aaa',
-        'utopia-storyboard-uid/scene-aaa/app-entity:container/ccc',
-        'utopia-storyboard-uid/scene-aaa/app-entity:container/bbb',
-        'utopia-storyboard-uid/scene-aaa/app-entity:container/ddd',
-        'utopia-storyboard-uid/scene-aaa/app-entity:container/eee',
-      ]),
-    )
+    dragControl(renderResult, dragDelta, emptyModifiers, [
+      'utopia-storyboard-uid/scene-aaa',
+      'utopia-storyboard-uid/scene-aaa/app-entity',
+      'utopia-storyboard-uid/scene-aaa/app-entity:container',
+      'utopia-storyboard-uid/scene-aaa/app-entity:container/aaa',
+      'utopia-storyboard-uid/scene-aaa/app-entity:container/ccc',
+      'utopia-storyboard-uid/scene-aaa/app-entity:container/bbb',
+      'utopia-storyboard-uid/scene-aaa/app-entity:container/ddd',
+      'utopia-storyboard-uid/scene-aaa/app-entity:container/eee',
+    ])
 
     await renderResult.getDispatchFollowUpActionsFinished()
 

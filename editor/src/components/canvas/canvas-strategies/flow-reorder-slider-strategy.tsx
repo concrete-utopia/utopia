@@ -13,11 +13,7 @@ import {
   getTargetPathsFromInteractionTarget,
   strategyApplicationResult,
 } from './canvas-strategy-types'
-import {
-  findNewIndex,
-  getNewDisplayTypeForIndex,
-  getOptionalDisplayPropCommands,
-} from './flow-reorder-helpers'
+import { findNewIndex, getOptionalDisplayPropCommands } from './flow-reorder-helpers'
 import { isReorderAllowed } from './reorder-utils'
 
 export const flowReorderSliderStategy: CanvasStrategy = {
@@ -84,18 +80,16 @@ export const flowReorderSliderStategy: CanvasStrategy = {
         'rounded-value',
       )
 
-      const newDisplayType = getNewDisplayTypeForIndex(
-        strategyState.startingMetadata,
-        target,
-        siblingsOfTarget[newIndex],
-      )
-
       return strategyApplicationResult(
         [
           reorderElement('always', target, absolute(newIndex)),
           setElementsToRerenderCommand(siblingsOfTarget),
           updateHighlightedViews('mid-interaction', []),
-          ...getOptionalDisplayPropCommands(target, newDisplayType),
+          ...getOptionalDisplayPropCommands(
+            newIndex,
+            canvasState.interactionTarget,
+            strategyState.startingMetadata,
+          ),
           setCursorCommand('mid-interaction', CSSCursor.ResizeEW),
         ],
         {

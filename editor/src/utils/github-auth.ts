@@ -44,7 +44,7 @@ export async function startGithubAuthentication(dispatch: EditorDispatch): Promi
         const wait = new Promise((resolve) => {
           setTimeout(resolve, timeToWait)
         })
-        wait.then(() => {
+        return wait.then(() => {
           return checkAuthenticatedPeriodically(timeLeftMS - timeToWait)
         })
       } else {

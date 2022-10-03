@@ -394,8 +394,8 @@ projectContentTreeFromDecodedProject decodedProject = do
     Nothing               -> Left "No projectContents found."
     Just contentOfProject -> do
       case fromJSON contentOfProject of
-        Error err         -> Left $ toS err
-        Success result    -> Right result
+        Error err      -> Left $ toS err
+        Success result -> Right result
 
 updateGithubAuthenticationDetails :: DatabaseMetrics -> DBPool -> GithubAuthenticationDetails -> IO ()
 updateGithubAuthenticationDetails metrics pool GithubAuthenticationDetails{..} = invokeAndMeasure (_updateGithubAuthenticationDetailsMetrics metrics) $ usePool pool $ \connection -> do

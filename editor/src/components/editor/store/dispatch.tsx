@@ -518,7 +518,7 @@ export function editorDispatch(
       forceSave ? 'force' : 'throttle',
     )
     const stateToStore = storedEditorStateFromEditorState(frozenEditorState)
-    saveStoredState(frozenEditorState.id, stateToStore)
+    void saveStoredState(frozenEditorState.id, stateToStore)
     reduxDevtoolsUpdateState('Save Editor', finalStore)
   }
 
@@ -656,13 +656,14 @@ function editorDispatchInner(
       storedState.unpatchedEditor.domMetadata !== result.unpatchedEditor.domMetadata
     const spyMetadataChanged =
       storedState.unpatchedEditor.spyMetadata !== result.unpatchedEditor.spyMetadata
+    const allElementPropsChanged =
+      storedState.unpatchedEditor._currentAllElementProps_KILLME !==
+      result.unpatchedEditor._currentAllElementProps_KILLME
     const dragStateLost =
       storedState.unpatchedEditor.canvas.dragState != null &&
       result.unpatchedEditor.canvas.dragState == null
-    const metadataChanged = domMetadataChanged || spyMetadataChanged || dragStateLost
-    // TODO: Should this condition actually be `&&`?
-    // Tested quickly and it broke selection, but I'm mostly certain
-    // it should only merge when both have changed.
+    const metadataChanged =
+      domMetadataChanged || spyMetadataChanged || allElementPropsChanged || dragStateLost
     if (metadataChanged) {
       if (result.unpatchedEditor.canvas.dragState != null) {
         result = {
@@ -688,7 +689,7 @@ function editorDispatchInner(
               interactionSession: {
                 ...result.unpatchedEditor.canvas.interactionSession,
                 latestMetadata: reconstructJSXMetadata(result.unpatchedEditor),
-                latestAllElementProps: result.unpatchedEditor.allElementProps,
+                latestAllElementProps: result.unpatchedEditor._currentAllElementProps_KILLME,
               },
             },
           },
@@ -699,6 +700,7 @@ function editorDispatchInner(
           unpatchedEditor: {
             ...result.unpatchedEditor,
             jsxMetadata: reconstructJSXMetadata(result.unpatchedEditor),
+            allElementProps: result.unpatchedEditor._currentAllElementProps_KILLME,
           },
         }
       }

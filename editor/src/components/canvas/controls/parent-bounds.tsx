@@ -2,6 +2,7 @@ import React from 'react'
 import { MetadataUtils } from '../../../core/model/element-metadata-utils'
 import { mapDropNulls, stripNulls, uniqBy } from '../../../core/shared/array-utils'
 import * as EP from '../../../core/shared/element-path'
+import { isInsertMode } from '../../editor/editor-modes'
 import { useEditorState } from '../../editor/store/store-hook'
 import { CanvasOffsetWrapper } from './canvas-offset-wrapper'
 import { CenteredCrossSVG } from './outline-control'
@@ -14,18 +15,19 @@ export const ParentBounds = React.memo(() => {
       return MetadataUtils.getFrameInCanvasCoords(parentHighlightPaths[0], store.editor.jsxMetadata)
     }
 
-    const targetParents = uniqBy(
-      stripNulls(store.editor.selectedViews.map((view) => EP.parentPath(view))),
-      EP.pathsEqual,
-    )
-    if (targetParents.length === 1 && !EP.isStoryboardPath(targetParents[0])) {
-      return MetadataUtils.findElementByElementPath(
-        store.editor.jsxMetadata,
-        store.editor.selectedViews[0],
-      )?.specialSizeMeasurements.immediateParentBounds
-    } else {
-      return null
+    if (!isInsertMode(store.editor.mode)) {
+      const targetParents = uniqBy(
+        stripNulls(store.editor.selectedViews.map((view) => EP.parentPath(view))),
+        EP.pathsEqual,
+      )
+      if (targetParents.length === 1 && !EP.isStoryboardPath(targetParents[0])) {
+        return MetadataUtils.findElementByElementPath(
+          store.editor.jsxMetadata,
+          store.editor.selectedViews[0],
+        )?.specialSizeMeasurements.immediateParentBounds
+      }
     }
+    return null
   }, 'ParentOutlines frame')
 
   return parentFrame != null ? (
