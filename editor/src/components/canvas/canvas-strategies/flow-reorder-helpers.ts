@@ -34,8 +34,8 @@ export function areAllSiblingsInOneDimension(
   metadata: ElementInstanceMetadataMap,
 ): boolean {
   const targetElement = MetadataUtils.findElementByElementPath(metadata, target)
-  const siblings = MetadataUtils.getSiblings(metadata, target)
-  if (targetElement == null || siblings.length === 0) {
+  const siblings = MetadataUtils.getSiblings(metadata, target) // including target
+  if (targetElement == null || siblings.length === 1) {
     return false
   }
 

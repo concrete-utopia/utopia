@@ -17,8 +17,8 @@ import * as EP from '../../../core/shared/element-path'
 import { MetadataUtils } from '../../../core/model/element-metadata-utils'
 import { assert } from 'chai'
 
-const TestProjectBlockElements = `
-<div style={{ width: '100%', height: '100%', position: 'absolute' }} data-uid='container'>
+const TestProjectBlockElements = (additionalContainerStyle: string = '') => `
+<div style={{ width: '100%', height: '100%', position: 'absolute', ${additionalContainerStyle} }} data-uid='container'>
   <div
     style={{
       width: 50,
@@ -196,7 +196,7 @@ function startDraggingAnElement(
 describe('Flow Reorder Strategy (Mixed Display Type)', () => {
   it('simple dragging the element in a block reorders it', async () => {
     const renderResult = await renderTestEditorWithCode(
-      makeTestProjectCodeWithSnippet(TestProjectBlockElements),
+      makeTestProjectCodeWithSnippet(TestProjectBlockElements()),
       'await-first-dom-report',
     )
 
@@ -296,6 +296,25 @@ describe('Flow Reorder Strategy (Mixed Display Type)', () => {
   it('flow reorder is not allowed in a layout with wrapping multiline texts', async () => {
     const renderResult = await renderTestEditorWithCode(
       makeTestProjectCodeWithSnippet(TestCodeWrappingTexts),
+      'await-first-dom-report',
+    )
+
+    // drag element 'CCC' up a little
+    const dragDelta = windowPoint({ x: 0, y: -10 })
+    startDraggingAnElement(renderResult, 'ccc', dragDelta)
+
+    await renderResult.getDispatchFollowUpActionsFinished()
+    const strategies = renderResult.getEditorState().strategyState.sortedApplicableStrategies
+
+    const flowReorderNotInStrategies = Array.isArray(strategies)
+      ? strategies.findIndex((strategy) => strategy.name === 'FLOW_REORDER')
+      : `no applicable strategies`
+
+    expect(flowReorderNotInStrategies).toEqual(-1)
+  })
+  it('flow reorder is not allowed in a layout where there are multiple columns', async () => {
+    const renderResult = await renderTestEditorWithCode(
+      makeTestProjectCodeWithSnippet(TestProjectBlockElements(`columns: 2`)),
       'await-first-dom-report',
     )
 

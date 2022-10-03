@@ -5,15 +5,10 @@ import {
   CanvasStrategy,
   getTargetPathsFromInteractionTarget,
   InteractionCanvasState,
-  strategyApplicationResult,
 } from './canvas-strategy-types'
 import { InteractionSession } from './interaction-state'
 import { ElementInstanceMetadataMap } from '../../../core/shared/element-template'
-import {
-  areAllSiblingsInOneDimension,
-  getOptionalDisplayPropCommands,
-  isValidFlowReorderTarget,
-} from './flow-reorder-helpers'
+import { areAllSiblingsInOneDimension, isValidFlowReorderTarget } from './flow-reorder-helpers'
 import { FlowReorderDragOutline } from '../controls/flow-reorder-indicators'
 import { AllElementProps } from '../../editor/store/editor-state'
 import { applyReorderCommon } from './reorder-utils'
