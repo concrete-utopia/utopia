@@ -1,6 +1,6 @@
 import { getLayoutProperty } from '../../../core/layout/getLayoutProperty'
 import { MetadataUtils, PropsOrJSXAttributes } from '../../../core/model/element-metadata-utils'
-import { foldEither, isRight, right } from '../../../core/shared/either'
+import { foldEither, isLeft, right } from '../../../core/shared/either'
 import { ElementInstanceMetadata, isJSXElement } from '../../../core/shared/element-template'
 import { ParentBounds } from '../controls/parent-bounds'
 import { ParentOutlines } from '../controls/parent-outlines'
@@ -113,7 +113,7 @@ export const relativeMoveStrategy: CanvasStrategy = {
   },
 }
 
-const getStyleOffsets = (meta: ElementInstanceMetadata) => {
+const getStyleOffsets = (metadata: ElementInstanceMetadata) => {
   const getOffsetPropValue = (
     name: 'left' | 'top' | 'right' | 'bottom',
     attrs: PropsOrJSXAttributes,
@@ -125,10 +125,10 @@ const getStyleOffsets = (meta: ElementInstanceMetadata) => {
     )
   }
 
-  if (!isRight(meta.element)) {
+  if (isLeft(metadata.element)) {
     return null
   }
-  const { value } = meta.element
+  const { value } = metadata.element
   if (!isJSXElement(value)) {
     return null
   }
