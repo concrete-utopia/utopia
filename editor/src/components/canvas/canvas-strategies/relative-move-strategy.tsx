@@ -84,7 +84,7 @@ export const relativeMoveStrategy: CanvasStrategy = {
     const filteredSelectedElements = getDragTargets(selectedElements)
     const last = filteredSelectedElements[filteredSelectedElements.length - 1]
     const meta = MetadataUtils.findElementByElementPath(sessionState.startingMetadata, last)
-    if (!meta) {
+    if (meta == null) {
       return emptyStrategyApplicationResult
     }
     const offsets = getStyleOffsets(meta)
@@ -103,7 +103,7 @@ export const relativeMoveStrategy: CanvasStrategy = {
         name: 'top',
         initial: offsets.top,
         delta: drag.y,
-        keep: offsets.bottom === null,
+        keep: offsets.bottom == null,
         path: last,
       }),
       ...applyStyle({
@@ -119,7 +119,7 @@ export const relativeMoveStrategy: CanvasStrategy = {
         name: 'left',
         initial: offsets.left,
         delta: drag.x,
-        keep: offsets.right === null,
+        keep: offsets.right == null,
         path: last,
       }),
       ...applyStyle({
@@ -143,7 +143,7 @@ const applyStyle = (params: {
 }): CanvasCommand[] => {
   const { name, initial, delta, keep, path } = params
 
-  const skip = initial === null && !keep
+  const skip = initial == null && !keep
   if (skip) {
     return []
   }
