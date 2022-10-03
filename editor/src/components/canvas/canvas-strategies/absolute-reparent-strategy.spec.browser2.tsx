@@ -6,9 +6,8 @@ import {
   TestAppUID,
   TestSceneUID,
 } from '../ui-jsx.test-utils'
-import { act, fireEvent } from '@testing-library/react'
 import { CanvasControlsContainerID } from '../controls/new-canvas-controls'
-import { offsetPoint, windowPoint, WindowPoint } from '../../../core/shared/math-utils'
+import { windowPoint, WindowPoint } from '../../../core/shared/math-utils'
 import { cmdModifier, Modifiers } from '../../../utils/modifiers'
 import { PrettierConfig } from 'utopia-vscode-common'
 import * as Prettier from 'prettier/standalone'
@@ -18,6 +17,8 @@ import {
 } from '../../../core/model/scene-utils'
 import { getCursorForOverlay } from '../controls/select-mode/cursor-overlay'
 import { CSSCursor } from '../canvas-types'
+import { NO_OP } from '../../../core/shared/utils'
+import { mouseClickAtPoint, mouseDragFromPointWithDelta } from '../event-helpers.test-utils'
 
 interface CheckCursor {
   cursor: CSSCursor | null
@@ -32,54 +33,23 @@ function dragElement(
 ) {
   const targetElement = renderResult.renderedDOM.getByTestId(targetTestId)
   const targetElementBounds = targetElement.getBoundingClientRect()
-  const canvasControl = renderResult.renderedDOM.getByTestId(CanvasControlsContainerID)
+  const canvasControlsLayer = renderResult.renderedDOM.getByTestId(CanvasControlsContainerID)
 
   const startPoint = windowPoint({ x: targetElementBounds.x + 5, y: targetElementBounds.y + 5 })
-  const endPoint = offsetPoint(startPoint, dragDelta)
-  fireEvent(
-    canvasControl,
-    new MouseEvent('mousedown', {
-      bubbles: true,
-      cancelable: true,
-      metaKey: true,
-      altKey: modifiers.alt,
-      shiftKey: modifiers.shift,
-      clientX: startPoint.x,
-      clientY: startPoint.y,
-      buttons: 1,
-    }),
-  )
+  const midDragCallback =
+    checkCursor == null
+      ? NO_OP
+      : () => {
+          expect(getCursorForOverlay(renderResult.getEditorState().editor)).toEqual(
+            checkCursor.cursor,
+          )
+        }
 
-  fireEvent(
-    canvasControl,
-    new MouseEvent('mousemove', {
-      bubbles: true,
-      cancelable: true,
-      metaKey: modifiers.cmd,
-      altKey: modifiers.alt,
-      shiftKey: modifiers.shift,
-      clientX: endPoint.x,
-      clientY: endPoint.y,
-      buttons: 1,
-    }),
-  )
-
-  if (checkCursor != null) {
-    expect(getCursorForOverlay(renderResult.getEditorState().editor)).toEqual(checkCursor.cursor)
-  }
-
-  fireEvent(
-    window,
-    new MouseEvent('mouseup', {
-      bubbles: true,
-      cancelable: true,
-      metaKey: modifiers.cmd,
-      altKey: modifiers.alt,
-      shiftKey: modifiers.shift,
-      clientX: endPoint.x,
-      clientY: endPoint.y,
-    }),
-  )
+  mouseClickAtPoint(canvasControlsLayer, startPoint, { modifiers: cmdModifier })
+  mouseDragFromPointWithDelta(canvasControlsLayer, startPoint, dragDelta, {
+    modifiers: modifiers,
+    midDragCallback: midDragCallback,
+  })
 }
 
 function getChildrenHiderProjectCode(shouldHide: boolean): string {
@@ -166,7 +136,7 @@ describe('Absolute Reparent Strategy', () => {
     )
 
     const dragDelta = windowPoint({ x: -1000, y: -1000 })
-    act(() => dragElement(renderResult, 'bbb', dragDelta, cmdModifier, null))
+    dragElement(renderResult, 'bbb', dragDelta, cmdModifier, null)
 
     await renderResult.getDispatchFollowUpActionsFinished()
 
@@ -228,7 +198,7 @@ describe('Absolute Reparent Strategy', () => {
     )
 
     const dragDelta = windowPoint({ x: 0, y: 150 })
-    act(() => dragElement(renderResult, 'bbb', dragDelta, cmdModifier, null))
+    dragElement(renderResult, 'bbb', dragDelta, cmdModifier, null)
 
     await renderResult.getDispatchFollowUpActionsFinished()
 
@@ -322,7 +292,7 @@ describe('Absolute Reparent Strategy', () => {
     )
 
     const dragDelta = windowPoint({ x: -1000, y: -1000 })
-    act(() => dragElement(renderResult, 'bbb', dragDelta, cmdModifier, null))
+    dragElement(renderResult, 'bbb', dragDelta, cmdModifier, null)
 
     await renderResult.getDispatchFollowUpActionsFinished()
 
@@ -336,11 +306,9 @@ describe('Absolute Reparent Strategy', () => {
     )
 
     const dragDelta = windowPoint({ x: 0, y: -150 })
-    act(() =>
-      dragElement(renderResult, 'child-to-reparent', dragDelta, cmdModifier, {
-        cursor: CSSCursor.NotPermitted,
-      }),
-    )
+    dragElement(renderResult, 'child-to-reparent', dragDelta, cmdModifier, {
+      cursor: CSSCursor.NotPermitted,
+    })
 
     await renderResult.getDispatchFollowUpActionsFinished()
 
@@ -358,11 +326,9 @@ describe('Absolute Reparent Strategy', () => {
     )
 
     const dragDelta = windowPoint({ x: 0, y: -150 })
-    act(() =>
-      dragElement(renderResult, 'child-to-reparent', dragDelta, cmdModifier, {
-        cursor: CSSCursor.Move,
-      }),
-    )
+    dragElement(renderResult, 'child-to-reparent', dragDelta, cmdModifier, {
+      cursor: CSSCursor.Move,
+    })
 
     await renderResult.getDispatchFollowUpActionsFinished()
 

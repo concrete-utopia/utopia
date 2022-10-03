@@ -485,13 +485,10 @@ export function runLocalCanvasAction(
         ...model,
         canvas: {
           ...model.canvas,
-          interactionSession: null,
+          interactionSession: null, // TODO this should be only cleared in dispatch-strategies, and not here
           domWalkerInvalidateCount: model.canvas.domWalkerInvalidateCount + 1,
           controls: editorStateCanvasControls([], [], [], [], null, []),
         },
-        jsxMetadata: {},
-        domMetadata: {},
-        spyMetadata: {},
       }
     case 'UPDATE_INTERACTION_SESSION':
       if (model.canvas.interactionSession == null) {
@@ -888,6 +885,9 @@ export class EditorCanvas extends React.Component<EditorCanvasProps> {
         style: {
           ...canvasLiveEditingStyle,
           transition: 'all .2s linear',
+          position: 'relative',
+          overflow: 'hidden',
+          height: '100%',
         },
         ref: (ref: HTMLElement | null) => {
           this.canvasWrapperRef = ref
@@ -910,7 +910,7 @@ export class EditorCanvas extends React.Component<EditorCanvasProps> {
                   [EditorActions.switchEditorMode(EditorModes.selectMode())],
                   'everyone',
                 )
-                parseClipboardData(event.dataTransfer).then((result) => {
+                void parseClipboardData(event.dataTransfer).then((result) => {
                   // Snip out the images only from the result.
                   let pastedImages: Array<ImageResult> = []
                   fastForEach(result.files, (pastedFile) => {
@@ -1420,7 +1420,7 @@ export class EditorCanvas extends React.Component<EditorCanvasProps> {
         // on macOS it seems like alt prevents the 'paste' event from being ever fired, so this is dead code here
         // needs testing if it's any help for other platforms
       } else {
-        parseClipboardData(event.clipboardData).then((result) => {
+        void parseClipboardData(event.clipboardData).then((result) => {
           const actions = getActionsForClipboardItems(
             editor.projectContents,
             editor.canvas.openFile?.filename ?? null,

@@ -128,9 +128,9 @@ async function writeProjectContents(projectContents: ProjectContentTreeRoot): Pr
 
 function watchForChanges(dispatch: EditorDispatch): void {
   function onCreated(fsPath: string): void {
-    stat(fsPath).then((fsStat) => {
+    void stat(fsPath).then((fsStat) => {
       if (fsStat.type === 'FILE' && fsStat.sourceOfLastChange !== UtopiaFSUser) {
-        readFileAsUTF8(fsPath).then((fileContent) => {
+        void readFileAsUTF8(fsPath).then((fileContent) => {
           const path = fromFSPath(fsPath)
           const updateAction = updateFromCodeEditor(
             path,
@@ -160,7 +160,7 @@ function watchForChanges(dispatch: EditorDispatch): void {
     dispatch([setIndexedDBFailed(true)], 'everyone')
   }
 
-  watch(toFSPath('/'), true, onCreated, onModified, onDeleted, onIndexedDBFailure)
+  void watch(toFSPath('/'), true, onCreated, onModified, onDeleted, onIndexedDBFailure)
 }
 
 let currentInit: Promise<void> = Promise.resolve()

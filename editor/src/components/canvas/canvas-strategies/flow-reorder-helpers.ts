@@ -5,14 +5,23 @@ import {
   ElementInstanceMetadata,
   ElementInstanceMetadataMap,
 } from '../../../core/shared/element-template'
-import { rectContainsPoint, CanvasVector, mod } from '../../../core/shared/math-utils'
+import { CanvasVector, mod } from '../../../core/shared/math-utils'
 import { ElementPath } from '../../../core/shared/project-file-types'
-import { AllElementProps } from '../../editor/store/editor-state'
 import { stylePropPathMappingFn } from '../../inspector/common/property-path-hooks'
 import { DeleteProperties, deleteProperties } from '../commands/delete-properties-command'
 import { SetProperty, setProperty } from '../commands/set-property-command'
+import {
+  getTargetPathsFromInteractionTarget,
+  InteractionCanvasState,
+  InteractionTarget,
+} from './canvas-strategy-types'
+import { InteractionSession, StrategyState } from './interaction-state'
 
-export function isValidFlowReorderTarget(elementMetadata: ElementInstanceMetadata | null): boolean {
+export function isValidFlowReorderTarget(
+  path: ElementPath,
+  metadata: ElementInstanceMetadataMap,
+): boolean {
+  const elementMetadata = MetadataUtils.findElementByElementPath(metadata, path)
   if (MetadataUtils.isPositionAbsolute(elementMetadata)) {
     return false
   } else if (elementMetadata?.specialSizeMeasurements.float !== 'none') {
@@ -20,48 +29,25 @@ export function isValidFlowReorderTarget(elementMetadata: ElementInstanceMetadat
   } else if (MetadataUtils.isPositionRelative(elementMetadata) && elementMetadata != null) {
     return !elementMetadata.specialSizeMeasurements.hasPositionOffset
   } else {
-    return true
+    return MetadataUtils.isPositionedByFlow(elementMetadata)
   }
 }
 
-function findSiblingIndexUnderPoint(
-  point: CanvasVector,
-  target: ElementPath | null,
-  siblings: Array<ElementPath>,
+function getNewDisplayTypeForIndex(
   metadata: ElementInstanceMetadataMap,
-  allElementProps: AllElementProps,
-): { newIndex: number; targetSiblingUnderMouse: ElementPath | null } {
-  const newIndex = siblings.findIndex((sibling) => {
-    const siblingMetadata = MetadataUtils.findElementByElementPath(metadata, sibling)
-    const frame = MetadataUtils.getFrameInCanvasCoords(sibling, metadata)
-    return (
-      isValidFlowReorderTarget(siblingMetadata) &&
-      frame != null &&
-      rectContainsPoint(frame, point) &&
-      MetadataUtils.isPositionedByFlow(siblingMetadata) &&
-      !EP.pathsEqual(target, sibling)
-    )
-  })
-  return { newIndex: newIndex, targetSiblingUnderMouse: siblings[newIndex] }
-}
-
-export function getNewDisplayTypeForIndex(
-  metadata: ElementInstanceMetadataMap,
-  target: ElementPath,
   targetSibling: ElementPath,
 ) {
   const displayType = MetadataUtils.findElementByElementPath(metadata, targetSibling)
     ?.specialSizeMeasurements.display
   const displayBlockInlineBlock =
-    displayType === 'block' || displayType === 'inline-block' ? displayType : undefined
+    displayType === 'block' || displayType === 'inline-block' ? displayType : null
 
-  const element = MetadataUtils.findElementByElementPath(metadata, target)
-  return getNewDisplayType(element, displayBlockInlineBlock)
+  return displayBlockInlineBlock
 }
 
 function shouldRemoveDisplayProp(
   element: ElementInstanceMetadata | null,
-  newDisplayValue: 'block' | 'inline-block' | undefined,
+  newDisplayValue: 'block' | 'inline-block' | null,
 ): boolean {
   if (element == null || element.specialSizeMeasurements.htmlElementName == null) {
     return false
@@ -74,88 +60,42 @@ function shouldRemoveDisplayProp(
   }
 }
 
-function getNewDisplayType(
-  element: ElementInstanceMetadata | null,
-  newDisplayValue: 'block' | 'inline-block' | undefined,
-): AddDisplayBlockOrOnline | RemoveDisplayProp | null {
-  if (shouldRemoveDisplayProp(element, newDisplayValue)) {
-    return removeDisplayProp()
-  } else if (newDisplayValue != null) {
-    return addDisplayProp(newDisplayValue)
-  } else {
-    return null
-  }
-}
-
-interface AddDisplayBlockOrOnline {
-  type: 'add'
-  display: 'block' | 'inline-block'
-}
-
-export function addDisplayProp(display: 'inline-block' | 'block'): AddDisplayBlockOrOnline {
-  return {
-    type: 'add',
-    display: display,
-  }
-}
-
-interface RemoveDisplayProp {
-  type: 'remove'
-}
-
-export function removeDisplayProp(): RemoveDisplayProp {
-  return { type: 'remove' }
-}
-
-export function getFlowReorderIndex(
-  latestMetadata: ElementInstanceMetadataMap,
-  allElementProps: AllElementProps,
-  point: CanvasVector,
-  target: ElementPath | null,
-): {
-  newIndex: number
-  targetSiblingUnderMouse: ElementPath | null
-} {
-  if (target === null) {
-    return {
-      newIndex: -1,
-      targetSiblingUnderMouse: null,
-    }
-  }
-  const siblings = MetadataUtils.getSiblingsProjectContentsOrdered(latestMetadata, target).map(
-    (element) => element.elementPath,
-  )
-
-  const reorderResult = findSiblingIndexUnderPoint(
-    point,
-    target,
-    siblings,
-    latestMetadata,
-    allElementProps,
-  )
-  if (reorderResult.newIndex === -1) {
-    // We were unable to find an appropriate entry.
-    return {
-      newIndex: -1,
-      targetSiblingUnderMouse: null,
-    }
-  } else {
-    return {
-      newIndex: reorderResult.newIndex,
-      targetSiblingUnderMouse: reorderResult.targetSiblingUnderMouse,
-    }
-  }
-}
-
 const StyleDisplayProp = stylePropPathMappingFn('display', ['style'])
-export function getOptionalDisplayPropCommands(
-  target: ElementPath,
-  newDisplayType: AddDisplayBlockOrOnline | RemoveDisplayProp | null,
+function getNewDisplayTypeCommands(
+  element: ElementInstanceMetadata,
+  newDisplayValue: 'block' | 'inline-block' | null,
 ): Array<SetProperty | DeleteProperties> {
-  if (newDisplayType?.type === 'add') {
-    return [setProperty('always', target, StyleDisplayProp, newDisplayType.display)]
-  } else if (newDisplayType?.type === 'remove') {
-    return [deleteProperties('always', target, [StyleDisplayProp])]
+  if (shouldRemoveDisplayProp(element, newDisplayValue)) {
+    return [deleteProperties('always', element.elementPath, [StyleDisplayProp])]
+  } else if (newDisplayValue != null) {
+    return [setProperty('always', element.elementPath, StyleDisplayProp, newDisplayValue)]
+  } else {
+    return []
+  }
+}
+
+export function getOptionalDisplayPropCommands(
+  lastReorderIdx: number | null | undefined,
+  interactionTarget: InteractionTarget,
+  startingMetadata: ElementInstanceMetadataMap,
+): Array<SetProperty | DeleteProperties> {
+  const selectedElements = getTargetPathsFromInteractionTarget(interactionTarget)
+  const target = selectedElements[0]
+  const siblingsOfTarget = MetadataUtils.getSiblingsProjectContentsOrdered(
+    startingMetadata,
+    target,
+  ).map((element) => element.elementPath)
+  const element = MetadataUtils.findElementByElementPath(startingMetadata, target)
+  if (
+    element != null &&
+    lastReorderIdx != null &&
+    lastReorderIdx !== siblingsOfTarget.findIndex((sibling) => EP.pathsEqual(sibling, target))
+  ) {
+    const newDisplayType = getNewDisplayTypeForIndex(
+      startingMetadata,
+      siblingsOfTarget[lastReorderIdx],
+    )
+    return getNewDisplayTypeCommands(element, newDisplayType)
   } else {
     return []
   }

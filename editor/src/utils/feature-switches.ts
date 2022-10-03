@@ -70,7 +70,7 @@ async function loadStoredValue(featureName: FeatureName) {
 
 // Load stored settings
 fastForEach(AllFeatureNames, (name) => {
-  loadStoredValue(name)
+  void loadStoredValue(name)
 })
 
 export function isFeatureEnabled(featureName: FeatureName): boolean {
@@ -81,13 +81,13 @@ export function toggleFeatureEnabled(featureName: FeatureName): void {
   const newValue = !isFeatureEnabled(featureName)
   FeatureSwitches[featureName] = newValue
   if (isBrowserEnvironment) {
-    localforage.setItem(settingKeyForName(featureName), newValue)
+    void localforage.setItem(settingKeyForName(featureName), newValue)
   }
 }
 
 export function setFeatureEnabled(featureName: FeatureName, newValue: boolean): void {
   FeatureSwitches[featureName] = newValue
   if (isBrowserEnvironment) {
-    localforage.setItem(settingKeyForName(featureName), newValue)
+    void localforage.setItem(settingKeyForName(featureName), newValue)
   }
 }

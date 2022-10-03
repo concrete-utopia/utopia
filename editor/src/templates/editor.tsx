@@ -261,7 +261,7 @@ export class Editor {
 
     this.domWalkerMutableState = createDomWalkerMutableState(this.utopiaStoreApi)
 
-    renderRootEditor()
+    void renderRootEditor()
 
     reduxDevtoolsSendInitialState(this.storedState)
 
@@ -294,16 +294,16 @@ export class Editor {
       handleHeartbeatRequestMessage(e.data),
     )
 
-    getLoginState('cache').then((loginState: LoginState) => {
+    void getLoginState('cache').then((loginState: LoginState) => {
       startPollingLoginState(this.boundDispatch, loginState)
       this.storedState.userState.loginState = loginState
-      getUserConfiguration(loginState).then((shortcutConfiguration) => {
+      void getUserConfiguration(loginState).then((shortcutConfiguration) => {
         this.storedState.userState = {
           ...this.storedState.userState,
           ...shortcutConfiguration,
         }
 
-        isAuthenticatedWithGithub(loginState).then((authenticatedWithGithub) => {
+        void isAuthenticatedWithGithub(loginState).then((authenticatedWithGithub) => {
           this.storedState.userState = {
             ...this.storedState.userState,
             githubState: {
@@ -326,12 +326,12 @@ export class Editor {
             if (githubOwner != null && githubRepo != null) {
               replaceLoadingMessage('Downloading Repo...')
 
-              downloadGithubRepo(githubOwner, githubRepo).then((repoResult) => {
+              void downloadGithubRepo(githubOwner, githubRepo).then((repoResult) => {
                 if (isRequestFailure(repoResult)) {
                   if (repoResult.statusCode === 404) {
-                    renderProjectNotFound()
+                    void renderProjectNotFound()
                   } else {
-                    renderProjectLoadError(repoResult.errorMessage)
+                    void renderProjectLoadError(repoResult.errorMessage)
                   }
                 } else {
                   replaceLoadingMessage('Importing Project...')
@@ -345,7 +345,7 @@ export class Editor {
                         )
                         this.storedState.persistence.createNew(projectName, importedProject)
                       } else {
-                        renderProjectLoadError(importProjectResult.errorMessage)
+                        void renderProjectLoadError(importProjectResult.errorMessage)
                       }
                     })
                     .catch((err) => {
@@ -516,7 +516,7 @@ export class Editor {
       .then((importResult) => {
         foldEither(
           (errorMessage) => {
-            renderProjectLoadError(errorMessage)
+            void renderProjectLoadError(errorMessage)
           },
           (successResult) => {
             // Create the new project.
@@ -536,9 +536,9 @@ export class Editor {
               )
             }
 
-            waitUntil(5000, () => projectLoaded(this.storedState)).then((waitResult) => {
+            void waitUntil(5000, () => projectLoaded(this.storedState)).then((waitResult) => {
               if (waitResult) {
-                reuploadAssets(
+                void reuploadAssets(
                   successResult.originalProjectRootURL,
                   this.storedState.unpatchedEditor,
                 )

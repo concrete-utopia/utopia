@@ -1,6 +1,5 @@
 /* eslint-disable jest/expect-expect */
-import { act, fireEvent } from '@testing-library/react'
-import { PrettierConfig } from 'utopia-vscode-common'
+import { act } from 'react-dom/test-utils'
 import {
   BakedInStoryboardVariableName,
   BakedInStoryboardUID,
@@ -8,18 +7,19 @@ import {
 import * as EP from '../../../core/shared/element-path'
 import { WindowPoint, windowPoint, offsetPoint } from '../../../core/shared/math-utils'
 import { cmdModifier, emptyModifiers, Modifiers } from '../../../utils/modifiers'
-import { wait } from '../../../utils/utils.test-utils'
 import { selectComponents } from '../../editor/actions/action-creators'
-import { CSSCursor } from '../canvas-types'
 import { CanvasControlsContainerID } from '../controls/new-canvas-controls'
-import { getCursorForOverlay } from '../controls/select-mode/cursor-overlay'
+import {
+  mouseDownAtPoint,
+  mouseDragFromPointToPoint,
+  mouseMoveToPoint,
+} from '../event-helpers.test-utils'
 import {
   EditorRenderResult,
   formatTestProjectCode,
   getPrintedUiJsCode,
   makeTestProjectCodeWithSnippet,
   renderTestEditorWithCode,
-  TestAppUID,
   TestScenePath,
   TestSceneUID,
 } from '../ui-jsx.test-utils'
@@ -31,67 +31,33 @@ function dragElement(
   dragDelta: WindowPoint,
   modifiers: Modifiers,
   includeMouseUp: boolean,
-): void {
+) {
   const targetElement = renderResult.renderedDOM.getByTestId(targetTestId)
   const targetElementBounds = targetElement.getBoundingClientRect()
-  const canvasControl = renderResult.renderedDOM.getByTestId(CanvasControlsContainerID)
+  const canvasControlsLayer = renderResult.renderedDOM.getByTestId(CanvasControlsContainerID)
 
   const startPoint = windowPoint({
     x: targetElementBounds.x + mouseDownOffset.x,
     y: targetElementBounds.y + mouseDownOffset.y,
   })
   const endPoint = offsetPoint(startPoint, dragDelta)
-  fireEvent(
-    canvasControl,
-    new MouseEvent('mousedown', {
-      bubbles: true,
-      cancelable: true,
-      metaKey: modifiers.cmd,
-      altKey: modifiers.alt,
-      shiftKey: modifiers.shift,
-      clientX: startPoint.x,
-      clientY: startPoint.y,
-      buttons: 1,
-    }),
-  )
-
-  fireEvent(
-    canvasControl,
-    new MouseEvent('mousemove', {
-      bubbles: true,
-      cancelable: true,
-      metaKey: modifiers.cmd,
-      altKey: modifiers.alt,
-      shiftKey: modifiers.shift,
-      clientX: endPoint.x,
-      clientY: endPoint.y,
-      buttons: 1,
-    }),
-  )
 
   if (includeMouseUp) {
-    fireEvent(
-      window,
-      new MouseEvent('mouseup', {
-        bubbles: true,
-        cancelable: true,
-        metaKey: modifiers.cmd,
-        altKey: modifiers.alt,
-        shiftKey: modifiers.shift,
-        clientX: endPoint.x,
-        clientY: endPoint.y,
-      }),
-    )
+    mouseDragFromPointToPoint(canvasControlsLayer, startPoint, endPoint, {
+      modifiers: modifiers,
+    })
+  } else {
+    mouseDownAtPoint(canvasControlsLayer, startPoint, { modifiers: modifiers })
+    mouseMoveToPoint(canvasControlsLayer, endPoint, {
+      modifiers: modifiers,
+      eventOptions: { buttons: 1 },
+    })
   }
 }
 
 const defaultMouseDownOffset = windowPoint({ x: 20, y: 20 })
 
 describe('Unified Reparent Fitness Function Tests', () => {
-  beforeEach(() => {
-    viewport.set(2200, 1000)
-  })
-
   it('if an element is larger than its parent, we still allow reparent to its grandparent, if the reparenting starts from the area of the original parent', async () => {
     const renderResult = await renderTestEditorWithCode(
       makeTestProjectCodeWithSnippet(`
@@ -137,9 +103,7 @@ describe('Unified Reparent Fitness Function Tests', () => {
 
     const targetPath = EP.appendNewElementPath(TestScenePath, ['aaa', 'bbb', 'ccc'])
     await renderResult.dispatch([selectComponents([targetPath], false)], false)
-    act(() =>
-      dragElement(renderResult, 'ccc', defaultMouseDownOffset, dragDelta, emptyModifiers, true),
-    )
+    dragElement(renderResult, 'ccc', defaultMouseDownOffset, dragDelta, emptyModifiers, true)
 
     await renderResult.getDispatchFollowUpActionsFinished()
 
@@ -227,9 +191,7 @@ describe('Unified Reparent Fitness Function Tests', () => {
     const targetPath = EP.appendNewElementPath(TestScenePath, ['aaa', 'bbb', 'ccc'])
     await renderResult.dispatch([selectComponents([targetPath], false)], false)
 
-    act(() =>
-      dragElement(renderResult, 'ccc', defaultMouseDownOffset, dragDelta, emptyModifiers, true),
-    )
+    dragElement(renderResult, 'ccc', defaultMouseDownOffset, dragDelta, emptyModifiers, true)
 
     await renderResult.getDispatchFollowUpActionsFinished()
 
@@ -317,15 +279,13 @@ describe('Unified Reparent Fitness Function Tests', () => {
     const targetPath = EP.appendNewElementPath(TestScenePath, ['aaa', 'draggedElement'])
     await renderResult.dispatch([selectComponents([targetPath], false)], false)
 
-    act(() =>
-      dragElement(
-        renderResult,
-        'draggedElement',
-        defaultMouseDownOffset,
-        dragDelta,
-        emptyModifiers,
-        true,
-      ),
+    dragElement(
+      renderResult,
+      'draggedElement',
+      defaultMouseDownOffset,
+      dragDelta,
+      emptyModifiers,
+      true,
     )
 
     await renderResult.getDispatchFollowUpActionsFinished()
@@ -416,15 +376,13 @@ describe('Unified Reparent Fitness Function Tests', () => {
     const targetPath = EP.appendNewElementPath(TestScenePath, ['aaa', 'draggedElement'])
     await renderResult.dispatch([selectComponents([targetPath], false)], false)
 
-    act(() =>
-      dragElement(
-        renderResult,
-        'draggedElement',
-        defaultMouseDownOffset,
-        dragDelta,
-        cmdModifier,
-        true,
-      ),
+    dragElement(
+      renderResult,
+      'draggedElement',
+      defaultMouseDownOffset,
+      dragDelta,
+      cmdModifier,
+      true,
     )
 
     await renderResult.getDispatchFollowUpActionsFinished()
@@ -516,15 +474,13 @@ describe('Unified Reparent Fitness Function Tests', () => {
     const targetPath = EP.appendNewElementPath(TestScenePath, ['aaa', 'draggedElement'])
     await renderResult.dispatch([selectComponents([targetPath], false)], false)
 
-    act(() =>
-      dragElement(
-        renderResult,
-        'draggedElement',
-        defaultMouseDownOffset,
-        dragDelta,
-        emptyModifiers,
-        true,
-      ),
+    dragElement(
+      renderResult,
+      'draggedElement',
+      defaultMouseDownOffset,
+      dragDelta,
+      emptyModifiers,
+      true,
     )
 
     await renderResult.getDispatchFollowUpActionsFinished()
@@ -614,15 +570,13 @@ describe('Unified Reparent Fitness Function Tests', () => {
     const targetPath = EP.appendNewElementPath(TestScenePath, ['aaa', 'draggedElement'])
     await renderResult.dispatch([selectComponents([targetPath], false)], false)
 
-    act(() =>
-      dragElement(
-        renderResult,
-        'draggedElement',
-        defaultMouseDownOffset,
-        dragDelta,
-        emptyModifiers,
-        true,
-      ),
+    dragElement(
+      renderResult,
+      'draggedElement',
+      defaultMouseDownOffset,
+      dragDelta,
+      emptyModifiers,
+      true,
     )
 
     await renderResult.getDispatchFollowUpActionsFinished()
@@ -710,15 +664,13 @@ describe('Unified Reparent Fitness Function Tests', () => {
     const targetPath = EP.appendNewElementPath(TestScenePath, ['aaa', 'draggedElement'])
     await renderResult.dispatch([selectComponents([targetPath], false)], false)
 
-    act(() =>
-      dragElement(
-        renderResult,
-        'draggedElement',
-        defaultMouseDownOffset,
-        dragDelta,
-        cmdModifier,
-        true,
-      ),
+    dragElement(
+      renderResult,
+      'draggedElement',
+      defaultMouseDownOffset,
+      dragDelta,
+      cmdModifier,
+      true,
     )
 
     await renderResult.getDispatchFollowUpActionsFinished()
@@ -807,15 +759,13 @@ describe('Unified Reparent Fitness Function Tests', () => {
     const targetPath = EP.appendNewElementPath(TestScenePath, ['aaa', 'draggedElement'])
     await renderResult.dispatch([selectComponents([targetPath], false)], false)
 
-    act(() =>
-      dragElement(
-        renderResult,
-        'draggedElement',
-        defaultMouseDownOffset,
-        dragDelta,
-        cmdModifier,
-        true,
-      ),
+    dragElement(
+      renderResult,
+      'draggedElement',
+      defaultMouseDownOffset,
+      dragDelta,
+      cmdModifier,
+      true,
     )
 
     await renderResult.getDispatchFollowUpActionsFinished()
@@ -858,10 +808,6 @@ describe('Unified Reparent Fitness Function Tests', () => {
 })
 
 describe('Target parent filtering', () => {
-  beforeEach(() => {
-    viewport.set(2200, 1000)
-  })
-
   function makeFilteringProjectWithCode(code: string): string {
     const projectCode = `
       import * as React from 'react'
@@ -944,7 +890,7 @@ describe('Target parent filtering', () => {
     // drag to the left so that the cursor is over the larger element, and no longer over where the target started
     const dragDelta = windowPoint({ x: -20, y: 0 })
 
-    act(() => dragElement(renderResult, 'dragme', mouseDownOffset, dragDelta, cmdModifier, true))
+    dragElement(renderResult, 'dragme', mouseDownOffset, dragDelta, cmdModifier, true)
 
     await renderResult.getDispatchFollowUpActionsFinished()
 
@@ -1006,7 +952,7 @@ describe('Target parent filtering', () => {
     // drag to the right so that the cursor is over the smaller element
     const dragDelta = windowPoint({ x: 20, y: 20 })
 
-    act(() => dragElement(renderResult, 'dragme', mouseDownOffset, dragDelta, cmdModifier, true))
+    dragElement(renderResult, 'dragme', mouseDownOffset, dragDelta, cmdModifier, true)
 
     await renderResult.getDispatchFollowUpActionsFinished()
 
@@ -1069,7 +1015,7 @@ describe('Target parent filtering', () => {
     // drag to the right so that the cursor remains over the smaller element
     const dragDelta = windowPoint({ x: 10, y: 10 })
 
-    act(() => dragElement(renderResult, 'dragme', mouseDownOffset, dragDelta, cmdModifier, true))
+    dragElement(renderResult, 'dragme', mouseDownOffset, dragDelta, cmdModifier, true)
 
     await renderResult.getDispatchFollowUpActionsFinished()
 
@@ -1131,7 +1077,7 @@ describe('Target parent filtering', () => {
     // drag to the left so that the cursor is over the larger element
     const dragDelta = windowPoint({ x: -10, y: -10 })
 
-    act(() => dragElement(renderResult, 'dragme', mouseDownOffset, dragDelta, cmdModifier, true))
+    dragElement(renderResult, 'dragme', mouseDownOffset, dragDelta, cmdModifier, true)
 
     await renderResult.getDispatchFollowUpActionsFinished()
 
@@ -1193,7 +1139,7 @@ describe('Target parent filtering', () => {
     // drag to the left so that the cursor is over the larger element
     const dragDelta = windowPoint({ x: -10, y: -10 })
 
-    act(() => dragElement(renderResult, 'dragme', mouseDownOffset, dragDelta, emptyModifiers, true))
+    dragElement(renderResult, 'dragme', mouseDownOffset, dragDelta, emptyModifiers, true)
 
     await renderResult.getDispatchFollowUpActionsFinished()
 
@@ -1400,10 +1346,6 @@ async function checkReparentIndicator(
 }
 
 describe('Reparent indicators', () => {
-  beforeEach(() => {
-    viewport.set(2200, 1000)
-  })
-
   it(`shows the reparent indicator before all the elements in a 'row' container`, async () => {
     const renderResult = await renderTestEditorWithCode(
       getVariedProjectCodeWithAFlexContainer('row'),
@@ -1432,21 +1374,12 @@ describe('Reparent indicators', () => {
       y: endPoint.y - startPoint.y,
     })
 
-    act(() =>
-      dragElement(
-        renderResult,
-        'seconddiv',
-        defaultMouseDownOffset,
-        dragDelta,
-        emptyModifiers,
-        false,
-      ),
-    )
+    dragElement(renderResult, 'seconddiv', defaultMouseDownOffset, dragDelta, emptyModifiers, false)
 
     await renderResult.getDispatchFollowUpActionsFinished()
 
     // Check the indicator presence and position.
-    await checkReparentIndicator(renderResult, 431, 636, 2, 161.5)
+    await checkReparentIndicator(renderResult, 432, 637, 2, 161.5)
   })
 
   it(`shows the reparent indicator before all the elements in a 'row-reverse' container`, async () => {
@@ -1477,21 +1410,12 @@ describe('Reparent indicators', () => {
       y: endPoint.y - startPoint.y,
     })
 
-    act(() =>
-      dragElement(
-        renderResult,
-        'seconddiv',
-        defaultMouseDownOffset,
-        dragDelta,
-        emptyModifiers,
-        false,
-      ),
-    )
+    dragElement(renderResult, 'seconddiv', defaultMouseDownOffset, dragDelta, emptyModifiers, false)
 
     await renderResult.getDispatchFollowUpActionsFinished()
 
     // Check the indicator presence and position.
-    await checkReparentIndicator(renderResult, 831, 636, 2, 161.5)
+    await checkReparentIndicator(renderResult, 832, 637, 2, 161.5)
   })
 
   it(`shows the reparent indicator between two elements in a 'row' container`, async () => {
@@ -1522,21 +1446,12 @@ describe('Reparent indicators', () => {
       y: endPoint.y - startPoint.y,
     })
 
-    act(() =>
-      dragElement(
-        renderResult,
-        'seconddiv',
-        defaultMouseDownOffset,
-        dragDelta,
-        emptyModifiers,
-        false,
-      ),
-    )
+    dragElement(renderResult, 'seconddiv', defaultMouseDownOffset, dragDelta, emptyModifiers, false)
 
     await renderResult.getDispatchFollowUpActionsFinished()
 
     // Check the indicator presence and position.
-    await checkReparentIndicator(renderResult, 565, 636, 2, 123)
+    await checkReparentIndicator(renderResult, 566, 637, 2, 123)
   })
 
   it(`shows the reparent indicator between two elements in a 'row-reverse' container`, async () => {
@@ -1567,20 +1482,11 @@ describe('Reparent indicators', () => {
       y: endPoint.y - startPoint.y,
     })
 
-    act(() =>
-      dragElement(
-        renderResult,
-        'seconddiv',
-        defaultMouseDownOffset,
-        dragDelta,
-        emptyModifiers,
-        false,
-      ),
-    )
+    dragElement(renderResult, 'seconddiv', defaultMouseDownOffset, dragDelta, emptyModifiers, false)
 
     await renderResult.getDispatchFollowUpActionsFinished()
 
     // Check the indicator presence and position.
-    await checkReparentIndicator(renderResult, 697, 636, 2, 123)
+    await checkReparentIndicator(renderResult, 698, 637, 2, 123)
   })
 })
