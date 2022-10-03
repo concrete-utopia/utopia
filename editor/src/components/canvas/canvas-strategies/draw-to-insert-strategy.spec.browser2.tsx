@@ -9,7 +9,9 @@ import { CanvasControlsContainerID } from '../controls/new-canvas-controls'
 import * as EP from '../../../core/shared/element-path'
 import {
   mouseClickAtPoint,
+  mouseDownAtPoint,
   mouseDragFromPointToPoint,
+  mouseDragFromPointToPointNoMouseDown,
   mouseMoveToPoint,
 } from '../event-helpers.test-utils'
 import { RightMenuTab } from '../../editor/store/editor-state'
@@ -45,6 +47,21 @@ async function enterInsertModeFromInsertMenu(renderResult: EditorRenderResult) {
 
   mouseMoveToPoint(insertButton, point)
   mouseClickAtPoint(insertButton, point)
+
+  await renderResult.getDispatchFollowUpActionsFinished()
+}
+
+async function enterInsertModeFromInsertMenuStartDrag(renderResult: EditorRenderResult) {
+  const insertButton = renderResult.renderedDOM.getByTestId('insert-item-div')
+  const insertButtonBounds = insertButton.getBoundingClientRect()
+
+  const point = slightlyOffsetWindowPointBecauseVeryWeirdIssue({
+    x: insertButtonBounds.x + insertButtonBounds.width / 2,
+    y: insertButtonBounds.y + insertButtonBounds.height / 2,
+  })
+
+  mouseMoveToPoint(insertButton, point)
+  mouseDownAtPoint(insertButton, point)
 
   await renderResult.getDispatchFollowUpActionsFinished()
 }
@@ -485,6 +502,34 @@ describe('Inserting into absolute', () => {
         </div>
       `),
     )
+  })
+
+  it('when drag ends outside the canvas in insert mode, it is cancelled', async () => {
+    const renderResult = await setupInsertTest(inputCode)
+
+    const targetElement = renderResult.renderedDOM.getByTestId('bbb')
+    const targetElementBounds = targetElement.getBoundingClientRect()
+    const canvasControlsLayer = renderResult.renderedDOM.getByTestId(CanvasControlsContainerID)
+
+    const startPoint = slightlyOffsetWindowPointBecauseVeryWeirdIssue({
+      x: targetElementBounds.x + 5,
+      y: targetElementBounds.y + 5,
+    })
+
+    const endPoint = slightlyOffsetWindowPointBecauseVeryWeirdIssue({
+      x: targetElementBounds.x + 2005,
+      y: targetElementBounds.y + 2005,
+    })
+
+    await enterInsertModeFromInsertMenuStartDrag(renderResult)
+    await renderResult.getDispatchFollowUpActionsFinished()
+
+    mouseMoveToPoint(canvasControlsLayer, startPoint)
+
+    mouseDragFromPointToPointNoMouseDown(canvasControlsLayer, startPoint, endPoint)
+    await renderResult.getDispatchFollowUpActionsFinished()
+
+    expect(getPrintedUiJsCode(renderResult.getEditorState())).toEqual(inputCode)
   })
 })
 

@@ -207,6 +207,78 @@ export function mouseDragFromPointToPoint(
   })
 }
 
+export function mouseDragFromPointToPointNoMouseDown(
+  eventSourceElement: HTMLElement,
+  startPoint: Point,
+  endPoint: Point,
+  options: {
+    modifiers?: Modifiers
+    eventOptions?: MouseEventInit
+    staggerMoveEvents?: boolean
+    midDragCallback?: () => void
+  } = {},
+) {
+  const { buttons, ...mouseUpOptions } = options.eventOptions ?? {}
+  const staggerMoveEvents = options.staggerMoveEvents ?? true
+  const midDragCallback = options.midDragCallback ?? NO_OP
+
+  const delta: Point = {
+    x: endPoint.x - startPoint.x,
+    y: endPoint.y - startPoint.y,
+  }
+
+  if (staggerMoveEvents) {
+    const numberOfSteps = 5
+    for (let step = 1; step < numberOfSteps + 1; step++) {
+      const stepSize: Point = {
+        x: delta.x / numberOfSteps,
+        y: delta.y / numberOfSteps,
+      }
+
+      mouseMoveToPoint(
+        eventSourceElement,
+        {
+          x: startPoint.x + step * stepSize.x,
+          y: startPoint.y + step * stepSize.y,
+        },
+        {
+          ...options,
+          eventOptions: {
+            movementX: stepSize.x,
+            movementY: stepSize.y,
+            buttons: 1,
+            ...options.eventOptions,
+          },
+        },
+      )
+    }
+  } else {
+    mouseMoveToPoint(
+      eventSourceElement,
+      {
+        x: endPoint.x,
+        y: endPoint.y,
+      },
+      {
+        ...options,
+        eventOptions: {
+          movementX: delta.x,
+          movementY: delta.y,
+          buttons: 1,
+          ...options.eventOptions,
+        },
+      },
+    )
+  }
+
+  midDragCallback()
+
+  mouseUpAtPoint(eventSourceElement, endPoint, {
+    ...options,
+    eventOptions: mouseUpOptions,
+  })
+}
+
 export function mouseClickAtPoint(
   eventSourceElement: HTMLElement,
   point: Point,
