@@ -1873,7 +1873,7 @@ export function produceCanvasTransientState(
     const editorMode = editorState.mode
     switch (editorMode.type) {
       case 'insert':
-        if (insertionSubjectIsJSXElement(editorMode.subject) && editorMode.insertionStarted) {
+        if (insertionSubjectIsJSXElement(editorMode.subject)) {
           const insertionElement = editorMode.subject.element
           const importsToAdd = editorMode.subject.importsToAdd
           const insertionParent = editorMode.subject.parent?.target ?? null

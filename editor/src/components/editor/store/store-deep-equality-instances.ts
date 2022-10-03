@@ -2599,9 +2599,7 @@ export const InsertionSubjectKeepDeepEquality: KeepDeepEqualityCall<InsertionSub
   return keepDeepEqualityResult(newValue, false)
 }
 
-export const InsertModeKeepDeepEquality: KeepDeepEqualityCall<InsertMode> = combine2EqualityCalls(
-  (mode) => mode.insertionStarted,
-  BooleanKeepDeepEquality,
+export const InsertModeKeepDeepEquality: KeepDeepEqualityCall<InsertMode> = combine1EqualityCall(
   (mode) => mode.subject,
   InsertionSubjectKeepDeepEquality,
   EditorModes.insertMode,
