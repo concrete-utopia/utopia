@@ -72,22 +72,11 @@ export const flowReorderStrategy: CanvasStrategy = {
       : 0
   },
   apply: (canvasState, interactionState, strategyState) => {
-    const reorderResult = applyReorderCommon(
+    return applyReorderCommon(
       canvasState,
       interactionState,
       strategyState,
       isValidFlowReorderTarget,
     )
-
-    const commands = [
-      ...reorderResult.commands,
-      ...getOptionalDisplayPropCommands(
-        reorderResult.customStatePatch.lastReorderIdx,
-        canvasState.interactionTarget,
-        strategyState.startingMetadata,
-      ),
-    ]
-
-    return strategyApplicationResult(commands, reorderResult.customStatePatch, reorderResult.status)
   },
 }
