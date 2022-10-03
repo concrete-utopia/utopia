@@ -688,7 +688,7 @@ function editorDispatchInner(
               interactionSession: {
                 ...result.unpatchedEditor.canvas.interactionSession,
                 latestMetadata: reconstructJSXMetadata(result.unpatchedEditor),
-                latestAllElementProps: result.unpatchedEditor.allElementProps,
+                latestAllElementProps: result.unpatchedEditor._currentAllElementProps_KILLME,
               },
             },
           },
@@ -699,6 +699,7 @@ function editorDispatchInner(
           unpatchedEditor: {
             ...result.unpatchedEditor,
             jsxMetadata: reconstructJSXMetadata(result.unpatchedEditor),
+            allElementProps: result.unpatchedEditor._currentAllElementProps_KILLME,
           },
         }
       }
