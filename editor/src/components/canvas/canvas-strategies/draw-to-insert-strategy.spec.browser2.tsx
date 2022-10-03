@@ -1,7 +1,4 @@
-import {
-  enableInsertModeForJSXElement,
-  setRightMenuTab,
-} from '../../editor/actions/action-creators'
+import { setRightMenuTab } from '../../editor/actions/action-creators'
 import {
   makeTestProjectCodeWithSnippet,
   renderTestEditorWithCode,
@@ -17,13 +14,8 @@ import {
   mouseDragFromPointToPointNoMouseDown,
   mouseMoveToPoint,
 } from '../event-helpers.test-utils'
-import CanvasActions from '../canvas-actions'
-import { boundingArea, createInteractionViaMouse } from './interaction-state'
-import { CanvasMousePositionRaw } from '../../../utils/global-positions'
-import { emptyModifiers } from '../../../utils/modifiers'
 import { RightMenuTab } from '../../editor/store/editor-state'
 import { FOR_TESTS_setNextGeneratedUid } from '../../../core/model/element-template-utils'
-import { act } from 'react-dom/test-utils'
 
 // FIXME These tests will probably start to fail if the insert menu becomes too long, at which point we may
 // have to insert some mocking to restrict the available items there
@@ -513,7 +505,7 @@ describe('Inserting into absolute', () => {
   })
 
   it('when drag ends outside the canvas in insert mode, it is cancelled', async () => {
-    const renderResult = await renderTestEditorWithCode(inputCode, 'await-first-dom-report')
+    const renderResult = await setupInsertTest(inputCode)
 
     const targetElement = renderResult.renderedDOM.getByTestId('bbb')
     const targetElementBounds = targetElement.getBoundingClientRect()
@@ -529,7 +521,7 @@ describe('Inserting into absolute', () => {
       y: targetElementBounds.y + 2005,
     })
 
-    enterInsertModeFromInsertMenuStartDrag(renderResult)
+    await enterInsertModeFromInsertMenuStartDrag(renderResult)
     await renderResult.getDispatchFollowUpActionsFinished()
 
     mouseMoveToPoint(canvasControlsLayer, startPoint)
