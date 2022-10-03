@@ -492,6 +492,7 @@ export const InsertItem: React.FunctionComponent<React.PropsWithChildren<InsertI
       }}
       onMouseDown={props.disabled ? Utils.NO_OP : props.onMouseDown}
       onMouseUp={props.disabled ? Utils.NO_OP : props.onMouseUp}
+      data-testid={`insert-item-${props.label}`}
     >
       {resultingIcon}
       <span>{props.label}</span>
