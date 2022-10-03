@@ -1,4 +1,3 @@
-import { ParsedCSSProperties } from 'src/components/inspector/common/css-utils'
 import { ElementPath } from 'src/core/shared/project-file-types'
 import { getLayoutProperty } from '../../../core/layout/getLayoutProperty'
 import { MetadataUtils, PropsOrJSXAttributes } from '../../../core/model/element-metadata-utils'
@@ -33,6 +32,7 @@ export const relativeMoveStrategy: CanvasStrategy = {
       return false
     }
 
+    // should we also support absolute elements, for which we'll do something like `CONVERT_TO_RELATIVE`?
     return meta.specialSizeMeasurements.position === 'relative'
   },
 
