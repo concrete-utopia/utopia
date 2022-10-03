@@ -985,6 +985,18 @@ export class EditorCanvas extends React.Component<EditorCanvasProps> {
             this.props.editor.mode.subject.type === 'Element'
           ) {
             void getPastedImages().then((images) => {
+              if (images.length === 0) {
+                return this.props.dispatch([
+                  CanvasActions.clearInteractionSession(false),
+                  EditorActions.switchEditorMode(EditorModes.selectMode()),
+                  EditorActions.showToast({
+                    id: 'image-drag-drop',
+                    level: 'WARNING',
+                    message: "Didn't find any images to insert",
+                    persistent: false,
+                  }),
+                ])
+              }
               const image = images[0]
 
               const { frame } = getFrameAndMultiplierWithResize(
