@@ -155,6 +155,7 @@ export function isTransientAction(action: EditorAction): boolean {
     case 'DELETE_FILE':
     case 'ADD_TEXT_FILE':
     case 'UPDATE_FILE':
+    case 'UPDATE_PROJECT_CONTENTS':
     case 'UPDATE_FROM_CODE_EDITOR':
     case 'SET_MAIN_UI_FILE':
     case 'SET_PROP':

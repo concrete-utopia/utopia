@@ -32,7 +32,7 @@ import           URI.ByteString
 import           Utopia.ClientModel
 import           Utopia.Web.Assets
 import           Utopia.Web.Database.Types
-import           Utopia.Web.Github
+import           Utopia.Web.Github.Types
 import           Utopia.Web.JSON
 import           Web.Cookie
 
@@ -136,6 +136,8 @@ data ServiceCallsF a = NotFound
                      | GetGithubAccessToken Text ExchangeToken (Maybe AccessToken -> a)
                      | GetGithubAuthentication Text (Maybe GithubAuthenticationDetails -> a)
                      | SaveToGithubRepo Text PersistentModel (SaveToGithubResponse -> a)
+                     | GetBranchesFromGithubRepo Text Text Text (GetBranchesResponse -> a)
+                     | GetBranchContent Text Text Text Text (GetBranchContentResponse -> a)
                      deriving Functor
 
 {-
