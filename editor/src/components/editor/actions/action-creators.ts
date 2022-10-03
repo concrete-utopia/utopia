@@ -453,12 +453,12 @@ export function enableInsertModeForJSXElement(
   size: Size | null,
 ): SwitchEditorMode {
   return switchEditorMode(
-    EditorModes.insertMode(false, elementInsertionSubject(uid, element, size, importsToAdd, null)),
+    EditorModes.insertMode(elementInsertionSubject(uid, element, size, importsToAdd, null)),
   )
 }
 
 export function enableInsertModeForScene(name: JSXElementName | 'scene'): SwitchEditorMode {
-  return switchEditorMode(EditorModes.insertMode(false, sceneInsertionSubject()))
+  return switchEditorMode(EditorModes.insertMode(sceneInsertionSubject()))
 }
 
 export function addToast(toastContent: Notice): AddToast {

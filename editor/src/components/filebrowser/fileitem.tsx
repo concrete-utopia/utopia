@@ -52,6 +52,11 @@ import { imagePathURL } from '../../common/server'
 import { generateUidWithExistingComponents } from '../../core/model/element-template-utils'
 import { useEditorState } from '../editor/store/store-hook'
 import { createJsxImage } from '../images'
+import {
+  dragAndDropInsertionSubject,
+  EditorModes,
+  imageInsertionSubject,
+} from '../editor/editor-modes'
 
 export interface FileBrowserItemProps extends FileBrowserItemInfo {
   isSelected: boolean
@@ -842,6 +847,15 @@ export const FileBrowserItem: React.FC<FileBrowserItemProps> = (props: FileBrows
         isDragging: monitor.isDragging(),
       }),
       item: () => {
+        if (props.imageFile != null) {
+          props.dispatch([
+            EditorActions.switchEditorMode(
+              EditorModes.insertMode(
+                dragAndDropInsertionSubject([imageInsertionSubject(props.imageFile, props.path)]),
+              ),
+            ),
+          ])
+        }
         return props
       },
       end: () => {

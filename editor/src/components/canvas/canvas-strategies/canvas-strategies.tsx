@@ -378,8 +378,8 @@ export function interactionInProgress(interactionSession: InteractionSession | n
   } else {
     switch (interactionSession.interactionData.type) {
       case 'DRAG':
-        return true
       case 'KEYBOARD':
+      case 'HOVER':
         return true
       default:
         const _exhaustiveCheck: never = interactionSession.interactionData

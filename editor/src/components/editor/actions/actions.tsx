@@ -4936,7 +4936,11 @@ export const UPDATE_FNS = {
       }
     }, editor)
   },
-  SAVE_TO_GITHUB: (action: SaveToGithub, editor: EditorModel): EditorModel => {
+  SAVE_TO_GITHUB: (
+    action: SaveToGithub,
+    editor: EditorModel,
+    dispatch: EditorDispatch,
+  ): EditorModel => {
     const updatedRepo = parseGithubProjectString(action.targetRepository)
     if (updatedRepo == null) {
       return editor
@@ -4950,7 +4954,7 @@ export const UPDATE_FNS = {
       }
       // Side effect - Pushing this to the server to get that to save to Github.
       const persistentModel = persistentModelFromEditorModel(updatedEditor)
-      void saveProjectToGithub(persistentModel)
+      void saveProjectToGithub(persistentModel, dispatch)
 
       return editor
     }

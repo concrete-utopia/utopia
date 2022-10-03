@@ -4,7 +4,6 @@ import { jsx } from '@emotion/react'
 import React from 'react'
 import {
   JSXElementName,
-  jsxElementName,
   jsxElementNameEquals,
   jsxAttributeValue,
   setJSXAttributesAttribute,
@@ -18,12 +17,10 @@ import {
 import { generateUID } from '../../core/shared/uid-utils'
 import {
   ElementPath,
-  isTextFile,
   importDetails,
   importAlias,
   Imports,
   importsEquals,
-  forEachParseSuccess,
 } from '../../core/shared/project-file-types'
 import Utils from '../../utils/utils'
 import {
@@ -43,34 +40,19 @@ import {
   insertionSubjectIsJSXElement,
 } from './editor-modes'
 import { insertImage } from './image-insert'
-import { getOpenFilename, getOpenUIJSFile } from './store/editor-state'
+import { getOpenFilename } from './store/editor-state'
 import { useEditorState } from './store/store-hook'
-import { last } from '../../core/shared/array-utils'
-import { defaultIfNull } from '../../core/shared/optional-utils'
-import { forEachRight, isLeft } from '../../core/shared/either'
-import { dropFileExtension } from '../../core/shared/file-utils'
-import { objectMap } from '../../core/shared/object-utils'
 import { WarningIcon } from '../../uuiui/warning-icon'
 import { usePossiblyResolvedPackageDependencies } from './npm-dependency/npm-dependency'
 import {
   PossiblyUnversionedNpmDependency,
-  isResolvedNpmDependency,
   PackageStatusMap,
   PackageStatus,
 } from '../../core/shared/npm-dependency-types'
 import { NpmDependencyVersionAndStatusIndicator } from '../navigator/dependecy-version-status-indicator'
 import { PropertyControlsInfo } from '../custom-code/code-file'
+import { InspectorSubsectionHeader, useColorTheme, Icn, UtopiaStyles, UIRow } from '../../uuiui'
 import {
-  FlexRow,
-  UtopiaTheme,
-  InspectorSubsectionHeader,
-  useColorTheme,
-  Icn,
-  UtopiaStyles,
-  UIRow,
-} from '../../uuiui'
-import {
-  getDependencyStatus,
   getInsertableGroupLabel,
   getInsertableGroupPackageStatus,
   getNonEmptyComponentGroups,
@@ -81,13 +63,15 @@ import { UTOPIA_UID_KEY } from '../../core/model/utopia-constants'
 import CanvasActions from '../canvas/canvas-actions'
 import {
   boundingArea,
+  createHoverInteractionViaMouse,
   createInteractionViaMouse,
 } from '../canvas/canvas-strategies/interaction-state'
-import { CanvasMousePositionRaw } from '../../utils/global-positions'
-import { emptyModifiers, Modifier } from '../../utils/modifiers'
-import * as EP from '../../core/shared/element-path'
+import { Modifier } from '../../utils/modifiers'
 import * as PP from '../../core/shared/property-path'
 import { setJSXValueInAttributeAtPath } from '../../core/shared/jsx-attributes'
+import { windowToCanvasCoordinates } from '../canvas/dom-lookup'
+import { CanvasVector, point, windowPoint } from '../../core/shared/math-utils'
+import { isLeft } from '../../core/shared/either'
 
 interface InsertMenuProps {
   lastFontSettings: FontSettings | null
@@ -99,6 +83,8 @@ interface InsertMenuProps {
   packageStatus: PackageStatusMap
   propertyControlsInfo: PropertyControlsInfo
   projectContents: ProjectContentTreeRoot
+  canvasScale: number
+  canvasOffset: CanvasVector
 }
 
 export const InsertMenu = React.memo(() => {
@@ -114,6 +100,8 @@ export const InsertMenu = React.memo(() => {
       packageStatus: store.editor.nodeModules.packageStatus,
       propertyControlsInfo: store.editor.propertyControlsInfo,
       projectContents: store.editor.projectContents,
+      canvasScale: store.editor.canvas.scale,
+      canvasOffset: store.editor.canvas.roundedCanvasOffset,
     }
   }, 'InsertMenu')
 
@@ -325,10 +313,16 @@ class InsertMenuInner extends React.Component<InsertMenuProps> {
             dependencyStatus={getInsertableGroupPackageStatus(insertableGroup.source)}
           >
             {insertableGroup.insertableComponents.map((component, componentIndex) => {
-              const insertItemOnMouseDown = () => {
+              const insertItemOnMouseDown = (event: React.MouseEvent) => {
                 const newUID = this.getNewUID()
 
                 const updatedPropsWithPosition = addPositionAbsoluteToProps(component.element.props)
+
+                const mousePoint = windowToCanvasCoordinates(
+                  this.props.canvasScale,
+                  this.props.canvasOffset,
+                  windowPoint(point(event.clientX, event.clientY)),
+                ).canvasPositionRounded
 
                 const newElement = jsxElement(
                   component.element.name,
@@ -345,8 +339,8 @@ class InsertMenuInner extends React.Component<InsertMenuProps> {
                     enableInsertModeForJSXElement(newElement, newUID, component.importsToAdd, null),
                     CanvasActions.createInteractionSession(
                       createInteractionViaMouse(
-                        CanvasMousePositionRaw!,
-                        emptyModifiers,
+                        mousePoint,
+                        Modifier.modifiersForEvent(event),
                         boundingArea(),
                       ),
                     ),
@@ -354,9 +348,27 @@ class InsertMenuInner extends React.Component<InsertMenuProps> {
                   'everyone',
                 )
               }
-              const insertItemOnMouseUp = () => {
+              const insertItemOnMouseUp = (event: React.MouseEvent) => {
+                const mousePoint = windowToCanvasCoordinates(
+                  this.props.canvasScale,
+                  this.props.canvasOffset,
+                  windowPoint(point(event.clientX, event.clientY)),
+                ).canvasPositionRounded
+
                 this.props.editorDispatch(
                   [CanvasActions.clearInteractionSession(false)],
+                  'everyone',
+                )
+                this.props.editorDispatch(
+                  [
+                    CanvasActions.createInteractionSession(
+                      createHoverInteractionViaMouse(
+                        mousePoint,
+                        Modifier.modifiersForEvent(event),
+                        boundingArea(),
+                      ),
+                    ),
+                  ],
                   'everyone',
                 )
               }

@@ -346,7 +346,7 @@ export function runSimpleLocalEditorAction(
     case 'TOGGLE_SELECTION_LOCK':
       return UPDATE_FNS.TOGGLE_SELECTION_LOCK(action, state)
     case 'SAVE_TO_GITHUB':
-      return UPDATE_FNS.SAVE_TO_GITHUB(action, state)
+      return UPDATE_FNS.SAVE_TO_GITHUB(action, state, dispatch)
     default:
       return state
   }
