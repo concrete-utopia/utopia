@@ -29,7 +29,7 @@ const useColorForDisplayType = (colorTheme: any) => {
 export const FlowReorderDragOutline = React.memo(() => {
   const scale = useEditorState((store) => store.editor.canvas.scale, 'FlowReorderDragOutline scale')
   const frame = useEditorState((store) => {
-    return getMultiselectBounds(store.strategyState.startingMetadata, store.editor.selectedViews)
+    return getMultiselectBounds(store.editor.jsxMetadata, store.editor.selectedViews)
   }, 'FlowReorderDragOutline frame')
   const dragVector = useEditorState((store) => {
     if (store.editor.canvas.interactionSession?.interactionData.type === 'DRAG') {

@@ -7,7 +7,7 @@ import { CanvasOffsetWrapper } from '../canvas-offset-wrapper'
 export const DragOutlineControl = React.memo(() => {
   const scale = useEditorState((store) => store.editor.canvas.scale, 'OutlineControl scale')
   const frame = useEditorState((store) => {
-    return getMultiselectBounds(store.strategyState.startingMetadata, store.editor.selectedViews)
+    return getMultiselectBounds(store.editor.jsxMetadata, store.editor.selectedViews)
   }, 'GhostOutline frame')
   const dragVector = useEditorState((store) => {
     if (store.editor.canvas.interactionSession?.interactionData.type === 'DRAG') {

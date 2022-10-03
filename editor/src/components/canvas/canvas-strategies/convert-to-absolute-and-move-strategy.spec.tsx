@@ -196,7 +196,6 @@ function dragByPixels(
       accumulatedPatches: null as any, // the strategy does not use this
       commandDescriptions: null as any, // the strategy does not use this
       sortedApplicableStrategies: null as any, // the strategy does not use this
-      startingMetadata: metadata,
       customStrategyState: {
         escapeHatchActivated: true,
       },

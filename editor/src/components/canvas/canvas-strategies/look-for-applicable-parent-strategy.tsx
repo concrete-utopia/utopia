@@ -141,7 +141,7 @@ function lookForApplicableParentStrategyInner(
     [existingStrategies],
     canvasState,
     interactionSession,
-    createEmptyStrategyState(metadata, allElementProps),
+    createEmptyStrategyState(),
   ).map((s) => s.strategy)
 
   if (
@@ -203,7 +203,7 @@ function isApplicableTraverse(
   metadata: ElementInstanceMetadataMap,
   allElementProps: AllElementProps,
 ): ParentApplicableStrategyResult | null {
-  const strategyState = createEmptyStrategyState(metadata, allElementProps)
+  const strategyState = createEmptyStrategyState()
 
   if (
     canvasState.interactionTarget.type !== 'TARGET_PATHS' ||

@@ -109,7 +109,7 @@ function createEditorStore(
     patchedEditor: emptyEditorState,
     unpatchedDerived: derivedState,
     patchedDerived: derivedState,
-    strategyState: createEmptyStrategyState({}, {}),
+    strategyState: createEmptyStrategyState(),
     history: history,
     userState: {
       loginState: notLoggedIn,

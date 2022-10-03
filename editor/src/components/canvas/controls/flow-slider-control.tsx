@@ -55,7 +55,7 @@ export const FlowSliderControl = React.memo(() => {
 
         if (isDragging) {
           const startingSiblingsMetadata = MetadataUtils.getSiblings(
-            store.strategyState.startingMetadata,
+            store.editor.jsxMetadata,
             target,
           ).map((sibling) => sibling.elementPath)
           return {
@@ -65,7 +65,7 @@ export const FlowSliderControl = React.memo(() => {
               EP.pathsEqual(sibling, target),
             ),
             startingFrame:
-              MetadataUtils.getFrameInCanvasCoords(target, store.strategyState.startingMetadata) ??
+              MetadataUtils.getFrameInCanvasCoords(target, store.editor.jsxMetadata) ??
               zeroCanvasRect,
           }
         } else {
