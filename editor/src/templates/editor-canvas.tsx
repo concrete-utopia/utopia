@@ -1025,7 +1025,7 @@ export class EditorCanvas extends React.Component<EditorCanvasProps> {
                 this.props.editor.canvas.scale,
               )
 
-              const { saveImageActions, src } = isLoggedIn(this.props.userState)
+              const { saveImageActions, src } = isLoggedIn(this.props.userState.loginState)
                 ? {
                     saveImageActions: [
                       EditorActions.saveAsset(
