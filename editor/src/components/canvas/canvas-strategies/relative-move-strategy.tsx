@@ -1,6 +1,6 @@
 import { getLayoutProperty } from '../../../core/layout/getLayoutProperty'
 import { MetadataUtils, PropsOrJSXAttributes } from '../../../core/model/element-metadata-utils'
-import { isRight, right } from '../../../core/shared/either'
+import { foldEither, isRight, right } from '../../../core/shared/either'
 import { ElementInstanceMetadata, isJSXElement } from '../../../core/shared/element-template'
 import { ParentBounds } from '../controls/parent-bounds'
 import { ParentOutlines } from '../controls/parent-outlines'
@@ -118,14 +118,11 @@ const getStyleOffsets = (meta: ElementInstanceMetadata) => {
     name: 'left' | 'top' | 'right' | 'bottom',
     attrs: PropsOrJSXAttributes,
   ): number | null => {
-    const prop = getLayoutProperty(name, attrs, ['style'])
-    if (!isRight(prop)) {
-      return null
-    }
-    if (!prop.value) {
-      return null
-    }
-    return prop.value.value
+    return foldEither(
+      (_) => null,
+      (v) => (v != null ? v.value : null),
+      getLayoutProperty(name, attrs, ['style']),
+    )
   }
 
   if (!isRight(meta.element)) {
