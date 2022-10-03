@@ -1083,6 +1083,7 @@ function restoreEditorState(currentEditor: EditorModel, history: StateHistory): 
     indexedDBFailed: currentEditor.indexedDBFailed,
     forceParseFiles: currentEditor.forceParseFiles,
     allElementProps: poppedEditor.allElementProps,
+    _currentAllElementProps_KILLME: poppedEditor._currentAllElementProps_KILLME,
     githubSettings: currentEditor.githubSettings,
   }
 }
@@ -4100,9 +4101,10 @@ export const UPDATE_FNS = {
     } else {
       return {
         ...editor,
+        // TODO move the reconstructMetadata call here, and remove _currentAllElementProps_KILLME
         domMetadata: finalDomMetadata,
         spyMetadata: finalSpyMetadata,
-        allElementProps: {
+        _currentAllElementProps_KILLME: {
           ...spyCollector.current.spyValues.allElementProps,
         },
       }

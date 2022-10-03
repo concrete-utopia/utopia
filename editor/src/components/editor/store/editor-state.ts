@@ -937,7 +937,8 @@ export interface EditorState {
   vscodeLoadingScreenVisible: boolean
   indexedDBFailed: boolean
   forceParseFiles: Array<string>
-  allElementProps: AllElementProps // the final, resolved, static props value for each element.
+  allElementProps: AllElementProps // the final, resolved, static props value for each element. // This is the counterpart of jsxMetadata. we only update allElementProps when we update jsxMetadata
+  _currentAllElementProps_KILLME: AllElementProps // This is the counterpart of domMetadata and spyMetadata. we update _currentAllElementProps_KILLME every time we update domMetadata/spyMetadata
   githubSettings: ProjectGithubSettings
 }
 
@@ -1006,6 +1007,7 @@ export function editorState(
   indexedDBFailed: boolean,
   forceParseFiles: Array<string>,
   allElementProps: AllElementProps,
+  _currentAllElementProps_KILLME: AllElementProps,
   githubSettings: ProjectGithubSettings,
 ): EditorState {
   return {
@@ -1073,6 +1075,7 @@ export function editorState(
     indexedDBFailed: indexedDBFailed,
     forceParseFiles: forceParseFiles,
     allElementProps: allElementProps,
+    _currentAllElementProps_KILLME: _currentAllElementProps_KILLME,
     githubSettings: githubSettings,
   }
 }
@@ -1879,6 +1882,7 @@ export function createEditorState(dispatch: EditorDispatch): EditorState {
     indexedDBFailed: false,
     forceParseFiles: [],
     allElementProps: {},
+    _currentAllElementProps_KILLME: {},
     githubSettings: {
       targetRepository: null,
     },
@@ -2174,6 +2178,7 @@ export function editorModelFromPersistentModel(
     indexedDBFailed: false,
     forceParseFiles: [],
     allElementProps: {},
+    _currentAllElementProps_KILLME: {},
     githubSettings: persistentModel.githubSettings,
   }
   return editor
