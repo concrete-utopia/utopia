@@ -9,36 +9,36 @@
 
 module Utopia.Web.Github where
 
-import           Control.Lens               hiding (children, (.=), (<.>))
+import           Codec.MIME.Base64
+import           Control.Concurrent.Async.Lifted
+import           Control.Lens                    hiding (children, (.=), (<.>))
 import           Control.Monad
 import           Control.Monad.Except
+import           Control.Monad.Trans.Control
 import           Control.Monad.Trans.Except
 import           Crypto.Hash
-import qualified Crypto.Hash                as C
+import qualified Crypto.Hash                     as C
 import           Data.Aeson
 import           Data.Aeson.Encode.Pretty
 import           Data.Aeson.Lens
-import qualified Data.ByteString.Lazy       as BL
+import qualified Data.ByteString.Lazy            as BL
 import           Data.Data
 import           Data.Foldable
 import           Data.Generics.Product
 import           Data.Generics.Sum
-import qualified Data.HashMap.Strict        as M
-import qualified Data.Text                  as T
+import qualified Data.HashMap.Strict             as M
+import qualified Data.Text                       as T
 import           Data.Text.Encoding
 import           Data.Text.Encoding.Base64.URL
 import           Data.Typeable
 import           Network.HTTP.Types.Status
 import           Network.OAuth.OAuth2
-import qualified Network.Wreq               as WR
-import qualified Network.Wreq.Types         as WR (Postable)
-import           Prelude                    (String)
+import qualified Network.Wreq                    as WR
+import qualified Network.Wreq.Types              as WR (Postable)
+import           Prelude                         (String)
 import           Protolude
 import           Utopia.ClientModel
 import           Utopia.Web.Github.Types
-import Codec.MIME.Base64
-import Control.Concurrent.Async.Lifted
-import Control.Monad.Trans.Control
 
 fetchRepoArchive :: Text -> Text -> IO (Maybe BL.ByteString)
 fetchRepoArchive owner repo = do

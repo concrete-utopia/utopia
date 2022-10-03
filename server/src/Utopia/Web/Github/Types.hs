@@ -225,7 +225,7 @@ instance ToJSON GetBranchesResponse where
   toJSON (GetBranchesResponseFailure failure) = over _Object (M.insert "type" "FAILURE") $ toJSON failure
 
 data GitCommitTree = GitCommitTree
-                   { sha  :: Text
+                   { sha :: Text
                    , url :: Text
                    }
                deriving (Eq, Show, Generic, Data, Typeable)

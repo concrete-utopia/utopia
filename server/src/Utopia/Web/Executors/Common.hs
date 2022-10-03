@@ -11,12 +11,12 @@
 
 module Utopia.Web.Executors.Common where
 
-import Control.Monad.Trans.Control
 import           Conduit
 import           Control.Concurrent.ReadWriteLock
 import           Control.Lens                     hiding ((.=), (<.>))
 import           Control.Monad.Catch              hiding (Handler, catch)
 import           Control.Monad.RWS.Strict
+import           Control.Monad.Trans.Control
 import           Control.Monad.Trans.Maybe
 import           Data.Aeson
 import           Data.Bifoldable
