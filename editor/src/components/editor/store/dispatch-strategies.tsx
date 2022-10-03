@@ -23,7 +23,6 @@ import {
   isCreateOrUpdateInteractionSession,
   shouldApplyClearInteractionSessionResult,
 } from '../actions/action-utils'
-import { InnerDispatchResult } from './dispatch'
 import {
   DerivedState,
   deriveState,
@@ -32,7 +31,6 @@ import {
   EditorStoreUnpatched,
 } from './editor-state'
 import {
-  CanvasStrategy,
   CustomStrategyState,
   CustomStrategyStatePatch,
   InteractionCanvasState,
