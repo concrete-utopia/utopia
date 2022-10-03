@@ -42,7 +42,8 @@ import { canvasPoint, CanvasRectangle, canvasRectangle } from '../../../core/sha
 import { cmdModifier } from '../../../utils/modifiers'
 import { DragOutlineControl } from '../controls/select-mode/drag-outline-control'
 import { FlexReparentTargetIndicator } from '../controls/select-mode/flex-reparent-target-indicator'
-import { ElementPath } from '../../../core/shared/project-file-types'
+import { updateHighlightedViews } from '../commands/update-highlighted-views-command'
+import { getReparentTargetUnified, newReparentSubjects } from './reparent-strategy-helpers'
 import { DefaultInsertHeight, DefaultInsertWidth } from '../insertion-strategy-utils'
 import { ElementInstanceMetadataMap } from '../../../core/shared/element-template'
 
@@ -86,8 +87,9 @@ export const drawToInsertStrategy: CanvasStrategy = {
       canvasState.startingMetadata,
       canvasState.startingAllElementProps,
     ) &&
-      interactionState.interactionData.type === 'DRAG' &&
-      interactionState.activeControl.type === 'RESIZE_HANDLE'
+      ((interactionState.interactionData.type === 'DRAG' &&
+        interactionState.activeControl.type === 'RESIZE_HANDLE') ||
+        interactionState.interactionData.type === 'HOVER')
       ? 1
       : 0
   },
@@ -95,84 +97,104 @@ export const drawToInsertStrategy: CanvasStrategy = {
     if (
       canvasState.interactionTarget.type === 'INSERTION_SUBJECTS' &&
       canvasState.interactionTarget.subjects.length === 1 &&
-      canvasState.interactionTarget.subjects[0].type === 'Element' &&
-      interactionState.interactionData.type === 'DRAG'
+      canvasState.interactionTarget.subjects[0].type === 'Element'
     ) {
-      if (interactionState.interactionData.drag != null) {
-        const insertionSubject = canvasState.interactionTarget.subjects[0]
+      if (interactionState.interactionData.type === 'DRAG') {
+        if (interactionState.interactionData.drag != null) {
+          const insertionSubject = canvasState.interactionTarget.subjects[0]
 
-        const insertionCommand = getInsertionCommands(
-          insertionSubject,
-          interactionState,
-          'zero-size',
-        )
-
-        if (insertionCommand != null) {
-          const reparentCommand = updateFunctionCommand(
-            'always',
-            (editorState): Array<EditorStatePatch> => {
-              return runTargetStrategiesForFreshlyInsertedElementToReparent(
-                canvasState.builtInDependencies,
-                editorState,
-                strategyState,
-                interactionState,
-                insertionSubject,
-                insertionCommand.frame,
-                strategyLifecycle,
-                canvasState.startingMetadata,
-              )
-            },
+          const insertionCommand = getInsertionCommands(
+            insertionSubject,
+            interactionState,
+            'zero-size',
           )
 
-          const resizeCommand = updateFunctionCommand(
-            'always',
-            (editorState, commandLifecycle): Array<EditorStatePatch> => {
-              return runTargetStrategiesForFreshlyInsertedElementToResize(
-                canvasState.builtInDependencies,
-                editorState,
-                strategyState,
-                interactionState,
-                commandLifecycle,
-                insertionSubject,
-                insertionCommand.frame,
-                strategyLifecycle,
-              )
-            },
+          if (insertionCommand != null) {
+            const reparentCommand = updateFunctionCommand(
+              'always',
+              (editorState): Array<EditorStatePatch> => {
+                return runTargetStrategiesForFreshlyInsertedElementToReparent(
+                  canvasState.builtInDependencies,
+                  editorState,
+                  strategyState,
+                  interactionState,
+                  insertionSubject,
+                  insertionCommand.frame,
+                  strategyLifecycle,
+                  canvasState.startingMetadata,
+                )
+              },
+            )
+
+            const resizeCommand = updateFunctionCommand(
+              'always',
+              (editorState, commandLifecycle): Array<EditorStatePatch> => {
+                return runTargetStrategiesForFreshlyInsertedElementToResize(
+                  canvasState.builtInDependencies,
+                  editorState,
+                  strategyState,
+                  interactionState,
+                  commandLifecycle,
+                  insertionSubject,
+                  insertionCommand.frame,
+                  strategyLifecycle,
+                )
+              },
+            )
+
+            return strategyApplicationResult([
+              insertionCommand.command,
+              reparentCommand,
+              resizeCommand,
+            ])
+          }
+        } else if (strategyLifecycle === 'end-interaction') {
+          const insertionSubject = canvasState.interactionTarget.subjects[0]
+
+          const insertionCommand = getInsertionCommands(
+            insertionSubject,
+            interactionState,
+            'default-size',
           )
 
-          return strategyApplicationResult([
-            insertionCommand.command,
-            reparentCommand,
-            resizeCommand,
-          ])
+          if (insertionCommand != null) {
+            const reparentCommand = updateFunctionCommand(
+              'always',
+              (editorState): Array<EditorStatePatch> => {
+                return runTargetStrategiesForFreshlyInsertedElementToReparent(
+                  canvasState.builtInDependencies,
+                  editorState,
+                  strategyState,
+                  interactionState,
+                  insertionSubject,
+                  insertionCommand.frame,
+                  strategyLifecycle,
+                  canvasState.startingMetadata,
+                )
+              },
+            )
+
+            return strategyApplicationResult([insertionCommand.command, reparentCommand])
+          }
         }
-      } else if (strategyLifecycle === 'end-interaction') {
-        const insertionSubject = canvasState.interactionTarget.subjects[0]
-
-        const insertionCommand = getInsertionCommands(
-          insertionSubject,
-          interactionState,
-          'default-size',
+      } else if (interactionState.interactionData.type === 'HOVER') {
+        const pointOnCanvas = interactionState.interactionData.point
+        const parent = getReparentTargetUnified(
+          newReparentSubjects(),
+          pointOnCanvas,
+          true,
+          canvasState,
+          canvasState.startingMetadata,
+          canvasState.startingAllElementProps,
+          'allow-missing-bounds',
         )
 
-        if (insertionCommand != null) {
-          const reparentCommand = updateFunctionCommand(
-            'always',
-            (editorState): Array<EditorStatePatch> => {
-              return runTargetStrategiesForFreshlyInsertedElementToReparent(
-                canvasState.builtInDependencies,
-                editorState,
-                strategyState,
-                interactionState,
-                insertionSubject,
-                insertionCommand.frame,
-                strategyLifecycle,
-                canvasState.startingMetadata,
-              )
-            },
-          )
+        if (parent != null && parent.shouldReparent && parent.newParent != null) {
+          const highlightParentCommand = updateHighlightedViews('mid-interaction', [
+            parent.newParent,
+          ])
 
-          return strategyApplicationResult([insertionCommand.command, reparentCommand])
+          return strategyApplicationResult([highlightParentCommand])
         }
       }
     }
@@ -206,6 +228,34 @@ function getInsertionCommands(
             width: DefaultInsertWidth,
             height: DefaultInsertHeight,
           })
+
+    const updatedAttributesWithPosition = getStyleAttributesForFrameInAbsolutePosition(
+      subject,
+      frame,
+    )
+
+    const updatedInsertionSubject: ElementInsertionSubject = {
+      ...subject,
+      parent: subject.parent,
+      element: {
+        ...subject.element,
+        props: updatedAttributesWithPosition,
+      },
+    }
+
+    return {
+      command: insertElementInsertionSubject('always', updatedInsertionSubject),
+      frame: frame,
+    }
+  } else if (interactionState.interactionData.type === 'HOVER') {
+    const pointOnCanvas = interactionState.interactionData.point
+
+    const frame = canvasRectangle({
+      x: pointOnCanvas.x,
+      y: pointOnCanvas.y,
+      width: 0,
+      height: 0,
+    })
 
     const updatedAttributesWithPosition = getStyleAttributesForFrameInAbsolutePosition(
       subject,

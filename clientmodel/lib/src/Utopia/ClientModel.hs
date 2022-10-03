@@ -255,9 +255,9 @@ instance Arbitrary ProjectFile where
 type ProjectContentTreeRoot = M.HashMap Text ProjectContentsTree
 
 data ProjectContentDirectory = ProjectContentDirectory
-                             { fullPath   :: Text
-                             , directory  :: Directory
-                             , children   :: ProjectContentTreeRoot
+                             { fullPath  :: Text
+                             , directory :: Directory
+                             , children  :: ProjectContentTreeRoot
                              }
                              deriving (Eq, Show, Generic, Data, Typeable)
 

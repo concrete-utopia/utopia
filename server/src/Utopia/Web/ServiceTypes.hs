@@ -32,8 +32,8 @@ import           URI.ByteString
 import           Utopia.ClientModel
 import           Utopia.Web.Assets
 import           Utopia.Web.Database.Types
+import           Utopia.Web.Github
 import           Utopia.Web.JSON
-import Utopia.Web.Github
 import           Web.Cookie
 
 type SessionCookie = Text
@@ -135,7 +135,7 @@ data ServiceCallsF a = NotFound
                      | GetGithubAuthorizationURI (URI -> a)
                      | GetGithubAccessToken Text ExchangeToken (Maybe AccessToken -> a)
                      | GetGithubAuthentication Text (Maybe GithubAuthenticationDetails -> a)
-                     | SaveToGithubRepo Text PersistentModel (Maybe CreateGitBranchResult -> a)
+                     | SaveToGithubRepo Text PersistentModel (SaveToGithubResponse -> a)
                      deriving Functor
 
 {-
