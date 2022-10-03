@@ -61,27 +61,20 @@ function areNonWrappingSiblings(
   frames: Array<CanvasRectangle>,
   layoutDirection: 'horizontal' | 'vertical',
 ): boolean {
-  if (layoutDirection === 'horizontal') {
-    // all elements are on the right side of the previous sibling
-    return frames.every((frame, i) => {
-      if (i === 0) {
-        return true
-      } else {
-        const prevFrame: CanvasRectangle = frames[i - 1]
+  return frames.every((frame, i) => {
+    if (i === 0) {
+      return true
+    } else {
+      const prevFrame: CanvasRectangle = frames[i - 1]
+      if (layoutDirection === 'horizontal') {
+        // all elements are on the right side of the previous sibling
         return frame.x > prevFrame.x
-      }
-    })
-  } else {
-    // all elements are below of the previous sibling
-    return frames.every((frame, i) => {
-      if (i === 0) {
-        return true
       } else {
-        const prevFrame: CanvasRectangle = frames[i - 1]
+        // all elements are below of the previous sibling
         return frame.y > prevFrame.y
       }
-    })
-  }
+    }
+  })
 }
 
 function getElementDirection(element: ElementInstanceMetadata): 'vertical' | 'horizontal' {
