@@ -15,7 +15,6 @@ import {
   mouseDragFromPointToPoint,
   mouseMoveToPoint,
 } from '../event-helpers.test-utils'
-import { wait } from '../../../utils/utils.test-utils'
 
 function slightlyOffsetWindowPointBecauseVeryWeirdIssue(point: {
   x: number
@@ -81,10 +80,6 @@ describe('Inserting into absolute', () => {
       />
     </div>
   `)
-
-  beforeEach(() => {
-    viewport.set(2000, 2000)
-  })
 
   it('Should honour the initial target when dragging to insert', async () => {
     const renderResult = await renderTestEditorWithCode(inputCode, 'await-first-dom-report')
@@ -178,16 +173,14 @@ describe('Inserting into absolute', () => {
       y: targetElementBounds.y + 5,
     })
     const endPoint = slightlyOffsetWindowPointBecauseVeryWeirdIssue({
-      x: targetElementBounds.x + 505,
-      y: targetElementBounds.y + 505,
+      x: targetElementBounds.x + 1005,
+      y: targetElementBounds.y + 1005,
     })
 
     // Drag from inside bbb to inside ccc
     mouseDragFromPointToPoint(canvasControlsLayer, startPoint, endPoint)
 
     await renderResult.getDispatchFollowUpActionsFinished()
-
-    await wait(50000)
 
     // Check that the inserted element is a child of bbb
     expect(getPrintedUiJsCode(renderResult.getEditorState())).toEqual(
@@ -219,8 +212,8 @@ describe('Inserting into absolute', () => {
                 position: 'absolute',
                 left: 5,
                 top: 5,
-                width: 500,
-                height: 500,
+                width: 1000,
+                height: 1000,
               }}
             />
           </div>
