@@ -813,7 +813,7 @@ const GithubPane = React.memo(() => {
 
   React.useEffect(() => {
     if (parsedTargetRepository != null) {
-      getBranchesForGithubRepository(parsedTargetRepository).then((result) => {
+      void getBranchesForGithubRepository(parsedTargetRepository).then((result) => {
         setBranchesForRepository(result)
       })
     }
@@ -838,7 +838,7 @@ const GithubPane = React.memo(() => {
               {branchesForRepository.branches.map((branch, index) => {
                 function loadContentForBranch() {
                   if (parsedTargetRepository != null) {
-                    getBranchContent(dispatch, parsedTargetRepository, branch.name)
+                    void getBranchContent(dispatch, parsedTargetRepository, branch.name)
                   }
                 }
                 return (
