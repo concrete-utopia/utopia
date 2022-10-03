@@ -9,13 +9,7 @@ import {
   strategyApplicationResult,
   targetPaths,
 } from './canvas-strategy-types'
-import {
-  boundingArea,
-  DragInteractionData,
-  interactionSession,
-  InteractionSession,
-  StrategyState,
-} from './interaction-state'
+import { boundingArea, InteractionSession, StrategyState } from './interaction-state'
 import { ElementInsertionSubject } from '../../editor/editor-modes'
 import { LayoutHelpers } from '../../../core/layout/layout-helpers'
 import { foldEither } from '../../../core/shared/either'
@@ -38,21 +32,12 @@ import {
 } from '../../../core/model/element-metadata-utils'
 import { elementPath } from '../../../core/shared/element-path'
 import * as EP from '../../../core/shared/element-path'
-import {
-  canvasPoint,
-  CanvasRectangle,
-  canvasRectangle,
-  zeroCanvasPoint,
-} from '../../../core/shared/math-utils'
+import { canvasPoint, CanvasRectangle, canvasRectangle } from '../../../core/shared/math-utils'
 import { cmdModifier } from '../../../utils/modifiers'
 import { DragOutlineControl } from '../controls/select-mode/drag-outline-control'
 import { FlexReparentTargetIndicator } from '../controls/select-mode/flex-reparent-target-indicator'
-import { ElementPath } from '../../../core/shared/project-file-types'
-import { ReparentElement } from '../commands/reparent-element-command'
 import { updateHighlightedViews } from '../commands/update-highlighted-views-command'
-import { removeElement } from '../commands/remove-element-command'
 import { getReparentTargetUnified, newReparentSubjects } from './reparent-strategy-helpers'
-import { setHighlightedView } from '../../editor/actions/action-creators'
 import { DefaultInsertHeight, DefaultInsertWidth } from '../insertion-strategy-utils'
 
 export const drawToInsertStrategy: CanvasStrategy = {
