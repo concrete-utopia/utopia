@@ -59,12 +59,12 @@ export function areAllSiblingsInOneDimension(
 
 function areNonWrappingSiblings(
   frames: Array<CanvasRectangle>,
-  direction: 'horizontal' | 'vertical',
+  layoutDirection: 'horizontal' | 'vertical',
 ): boolean {
   // wrapping or columns set: a sibling frame has a larger x/y then the right/bottom edge of its siblings
   return frames.every((frame) => {
     return frames.every((frameToCompare) => {
-      if (direction === 'horizontal') {
+      if (layoutDirection === 'horizontal') {
         return frameToCompare.y < frame.y + frame.height
       } else {
         return frameToCompare.x < frame.x + frame.width
