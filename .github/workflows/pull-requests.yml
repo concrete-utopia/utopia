@@ -161,6 +161,7 @@ jobs:
             Performance test results:
             ${{ steps.run-performance-test.outputs.perf-result }}
       - name: Build Discord Message
+        if: ${{ steps.run-performance-test.outputs.perf-serious-regression-found == 'true' }}
         env:
           TEMPLATE: >-
             [
@@ -198,6 +199,7 @@ jobs:
           echo "DISCORD_EMBEDS=$(jq -nc --arg title "$TITLE" --arg html_url "$HTML_URL" --arg description "$DESCRIPTION" --arg repo_full_name "$REPO_FULL_NAME" --arg result_frames_chart "$RESULT_FRAMES_CHART" --arg result_interactions_chart "$RESULT_INTERACTIONS_CHART" "$TEMPLATE")" | sed 's/\\\\n/\\n/g' >> $GITHUB_ENV
       - name: Send Discord Notification
         uses: Ilshidur/action-discord@0.3.2
+        if: ${{ steps.run-performance-test.outputs.perf-serious-regression-found == 'true' }}
         env:
           DISCORD_WEBHOOK: ${{ secrets.DISCORD_PRS_WEBHOOK }}
           DISCORD_USERNAME: 'Puppeteer'

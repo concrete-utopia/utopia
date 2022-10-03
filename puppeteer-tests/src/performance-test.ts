@@ -113,11 +113,20 @@ export const testPerformance = async function () {
   const combinedStagingResult = { ...stagingResult.frameTests, ...stagingResult.interactionTests }
   const combinedMasterResult = { ...masterResult.frameTests, ...masterResult.interactionTests }
 
+  // Explicitly flag any serious regressions found
+  const seriousRegressionThresholdPercent = 20
+  let seriousRegressionFound = false
+
   const messageParts = Object.entries(combinedStagingResult).flatMap(([k, result]) => {
     const targetResult = combinedMasterResult[k]
     const beforeMedian = targetResult.analytics.percentile50 ?? 1
     const afterMedian = result.analytics.percentile50 ?? 1
     const change = ((afterMedian - beforeMedian) / beforeMedian) * 100
+
+    if (change > seriousRegressionThresholdPercent) {
+      seriousRegressionFound = true
+    }
+
     const titleLine = `**${result.title} (${Math.round(change)}%)**`
     const spacerLine = ''
     if (Math.abs(change) > 5) {
@@ -132,17 +141,18 @@ export const testPerformance = async function () {
     }
   })
 
-  const message = messageParts.join('<br />')
+  const message = seriousRegressionFound ? `${messageParts.join('<br />')} <br />` : ''
   const discordMessage = messageParts.join('\\n')
 
   console.info(
-    `::set-output name=perf-result:: ${message} <br /> ![(Chart1)](${framesSummaryImage}) <br /> ![(Chart2)](${interactionsSummaryImage})`,
+    `::set-output name=perf-result:: ${message} ![(Chart1)](${framesSummaryImage}) <br /> ![(Chart2)](${interactionsSummaryImage})`,
   )
 
   // Output the individual parts for building a discord message
   console.info(`::set-output name=perf-discord-message:: ${discordMessage}`)
   console.info(`::set-output name=perf-frames-chart:: ${framesSummaryImage}`)
   console.info(`::set-output name=perf-interactions-chart:: ${interactionsSummaryImage}`)
+  console.info(`::set-output name=perf-serious-regression-found:: ${seriousRegressionFound}`)
 }
 
 type PageToPromiseResult<T> = (page: puppeteer.Page) => Promise<T>
