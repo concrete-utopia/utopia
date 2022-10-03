@@ -340,19 +340,14 @@ export function handleKeyDown(
   // Ensure that any key presses are appropriately recorded.
   const key = Keyboard.keyCharacterForCode(event.keyCode)
   const editorTargeted = editorIsTarget(event, editor)
+
+  const modifiers = Modifier.modifiersForKeyboardEvent(event)
+
   let updatedKeysPressed: KeysPressed
   if (editorTargeted) {
-    updatedKeysPressed = updateKeysPressed(
-      editor.keysPressed,
-      key,
-      true,
-      Modifier.modifiersForKeyboardEvent(event),
-    )
+    updatedKeysPressed = updateKeysPressed(editor.keysPressed, key, true, modifiers)
   } else {
-    updatedKeysPressed = updateModifiers(
-      editor.keysPressed,
-      Modifier.modifiersForKeyboardEvent(event),
-    )
+    updatedKeysPressed = updateModifiers(editor.keysPressed, modifiers)
   }
   const updateKeysAction = EditorActions.updateKeys(updatedKeysPressed)
 
@@ -622,6 +617,7 @@ export function handleKeyDown(
               },
               null,
             ),
+            modifiers,
           )
         } else {
           return []
@@ -637,6 +633,7 @@ export function handleKeyDown(
               { 'utopia-api': importDetails(null, [importAlias('Ellipse')], null) },
               null,
             ),
+            modifiers,
           )
         } else {
           return []
@@ -663,6 +660,7 @@ export function handleKeyDown(
               { 'utopia-api': importDetails(null, [importAlias('Text')], null) },
               null,
             ),
+            modifiers,
           )
         } else {
           return []
@@ -678,6 +676,7 @@ export function handleKeyDown(
               { 'utopia-api': importDetails(null, [importAlias('View')], null) },
               null,
             ),
+            modifiers,
           )
         } else {
           return []
@@ -853,12 +852,15 @@ export function handleKeyUp(
   dispatch(actions, 'everyone')
 }
 
-function addCreateHoverInteractionActionToSwitchModeAction(switchModeAction: SwitchEditorMode) {
+function addCreateHoverInteractionActionToSwitchModeAction(
+  switchModeAction: SwitchEditorMode,
+  modifiers: Modifiers,
+) {
   return CanvasMousePositionRaw != null
     ? [
         switchModeAction,
         CanvasActions.createInteractionSession(
-          createHoverInteractionViaMouse(CanvasMousePositionRaw, emptyModifiers, boundingArea()),
+          createHoverInteractionViaMouse(CanvasMousePositionRaw, modifiers, boundingArea()),
         ),
       ]
     : [switchModeAction]
