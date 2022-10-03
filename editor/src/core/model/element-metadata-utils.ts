@@ -1055,6 +1055,9 @@ export const MetadataUtils = {
                 }
                 const src = elementProps['src']
                 if (src != null && typeof src === 'string' && src.length > 0) {
+                  if (src.startsWith('data:') && src.includes('base64')) {
+                    return '<Base64 data>'
+                  }
                   return src
                 }
               }

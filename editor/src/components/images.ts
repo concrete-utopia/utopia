@@ -208,9 +208,8 @@ export interface JSXImageOptions {
 }
 
 export function createJsxImage(uid: string, options: Partial<JSXImageOptions>): JSXElement {
-  const path = optionalMap(imagePathURL, options.src) ?? ''
   const propsForElement = jsxAttributesFromMap({
-    src: jsxAttributeValue(path, emptyComments),
+    src: jsxAttributeValue(options.src, emptyComments),
     style: jsxAttributeValue(
       {
         position: 'absolute',

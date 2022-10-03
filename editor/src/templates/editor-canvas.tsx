@@ -31,7 +31,7 @@ import {
 } from '../components/canvas/canvas-utils'
 import { NewCanvasControls } from '../components/canvas/controls/new-canvas-controls'
 import { setFocus } from '../components/common/actions/index'
-import { EditorAction, EditorDispatch } from '../components/editor/action-types'
+import { EditorAction, EditorDispatch, isLoggedIn } from '../components/editor/action-types'
 import * as EditorActions from '../components/editor/actions/action-creators'
 import { EditorModes, Mode, isLiveMode } from '../components/editor/editor-modes'
 import {
@@ -41,6 +41,7 @@ import {
   EditorState,
   editorStateCanvasControls,
   isOpenFileUiJs,
+  UserState,
 } from '../components/editor/store/editor-state'
 import {
   didWeHandleMouseMoveForThisFrame,
@@ -103,6 +104,7 @@ import { BuiltInDependencies } from '../core/es-modules/package-manager/built-in
 import { cancelInsertModeActions } from '../components/editor/actions/meta-actions'
 import { generateUidWithExistingComponents } from '../core/model/element-template-utils'
 import { createJsxImage, getFrameAndMultiplierWithResize } from '../components/images'
+import { imagePathURL } from '../common/server'
 
 const webFrame = PROBABLY_ELECTRON ? requireElectron().webFrame : null
 
@@ -708,6 +710,7 @@ function createNodeConnectorsDiv(offset: CanvasPoint, scale: number) {
 interface EditorCanvasProps {
   model: CanvasModel
   editor: EditorState
+  userState: UserState
   dispatch: EditorDispatch
 }
 
@@ -1003,13 +1006,23 @@ export class EditorCanvas extends React.Component<EditorCanvasProps> {
                 this.props.editor.canvas.scale,
               )
 
-              const saveImageAction = EditorActions.saveAsset(
-                image.filename,
-                image.fileType,
-                image.base64Bytes,
-                image.hash,
-                EditorActions.saveImageDetails(image.size, EditorActions.saveImageDoNothing()),
-              )
+              const { saveImageActions, src } = isLoggedIn(this.props.userState)
+                ? {
+                    saveImageActions: [
+                      EditorActions.saveAsset(
+                        image.filename,
+                        image.fileType,
+                        image.base64Bytes,
+                        image.hash,
+                        EditorActions.saveImageDetails(
+                          image.size,
+                          EditorActions.saveImageDoNothing(),
+                        ),
+                      ),
+                    ],
+                    src: imagePathURL(image.filename),
+                  }
+                : { saveImageActions: [], src: image.base64Bytes }
 
               const newUID = generateUidWithExistingComponents(this.props.editor.projectContents)
 
@@ -1018,13 +1031,13 @@ export class EditorCanvas extends React.Component<EditorCanvasProps> {
                 height: frame.height,
                 top: mousePosition.canvasPositionRounded.y,
                 left: mousePosition.canvasPositionRaw.x,
-                src: image.filename,
+                src: src,
               })
 
               this.props.dispatch(
                 [
                   EditorActions.enableInsertModeForJSXElement(newElement, newUID, {}, null),
-                  saveImageAction,
+                  ...saveImageActions,
                 ],
                 'everyone',
               )

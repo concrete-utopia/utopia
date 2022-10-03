@@ -526,7 +526,7 @@ class FileBrowserItemInner extends React.PureComponent<
     const newElement = createJsxImage(newUID, {
       width: this.props.imageFile.width ?? 50,
       height: this.props.imageFile.height ?? 50,
-      src: this.props.path,
+      src: imagePathURL(this.props.path),
     })
 
     this.props.dispatch(
@@ -902,7 +902,7 @@ export const FileBrowserItem: React.FC<FileBrowserItemProps> = (props: FileBrows
     const newElement = createJsxImage(newUID, {
       width: props.imageFile.width ?? 100,
       height: props.imageFile.height ?? 100,
-      src: props.path,
+      src: imagePathURL(props.path),
     })
 
     props.dispatch(
