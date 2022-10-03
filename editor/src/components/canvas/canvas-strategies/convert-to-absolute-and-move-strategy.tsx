@@ -33,7 +33,6 @@ import { SetCssLengthProperty, setCssLengthProperty } from '../commands/set-css-
 import { updateSelectedViews } from '../commands/update-selected-views-command'
 import { ParentBounds } from '../controls/parent-bounds'
 import { ParentOutlines } from '../controls/parent-outlines'
-import { applyAbsoluteMoveCommon } from './absolute-move-strategy'
 import { honoursPropsPosition } from './absolute-utils'
 import {
   CanvasStrategy,
@@ -43,7 +42,7 @@ import {
   strategyApplicationResult,
 } from './canvas-strategy-types'
 import { getReparentOutcome, pathToReparent } from './reparent-utils'
-import { getDragTargets } from './shared-absolute-move-strategy-helpers'
+import { applyMoveCommon, getDragTargets } from './shared-absolute-move-strategy-helpers'
 
 export const convertToAbsoluteAndMoveStrategy: CanvasStrategy = {
   id: 'CONVERT_TO_ABSOLUTE_AND_MOVE_STRATEGY',
@@ -105,7 +104,7 @@ export const convertToAbsoluteAndMoveStrategy: CanvasStrategy = {
           snappedDragVector,
         )
       }
-      const absoluteMoveApplyResult = applyAbsoluteMoveCommon(
+      const absoluteMoveApplyResult = applyMoveCommon(
         canvasState,
         interactionState,
         strategyState,

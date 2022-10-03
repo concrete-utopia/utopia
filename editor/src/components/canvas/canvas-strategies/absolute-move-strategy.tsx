@@ -1,33 +1,17 @@
 import { MetadataUtils } from '../../../core/model/element-metadata-utils'
-import * as EP from '../../../core/shared/element-path'
-import { CanvasPoint } from '../../../core/shared/math-utils'
-import { CanvasFrameAndTarget, CSSCursor } from '../canvas-types'
-import { AdjustCssLengthProperty } from '../commands/adjust-css-length-command'
-import { CanvasCommand } from '../commands/commands'
-import { setCursorCommand } from '../commands/set-cursor-command'
-import { setElementsToRerenderCommand } from '../commands/set-elements-to-rerender-command'
-import { pushIntendedBounds } from '../commands/push-intended-bounds-command'
-import { setSnappingGuidelines } from '../commands/set-snapping-guidelines-command'
-import { updateHighlightedViews } from '../commands/update-highlighted-views-command'
 import { ParentBounds } from '../controls/parent-bounds'
 import { ParentOutlines } from '../controls/parent-outlines'
-import { determineConstrainedDragAxis } from '../controls/select-mode/move-utils'
+import { honoursPropsPosition } from './absolute-utils'
 import {
   CanvasStrategy,
   emptyStrategyApplicationResult,
   getTargetPathsFromInteractionTarget,
-  InteractionCanvasState,
-  strategyApplicationResult,
-  StrategyApplicationResult,
 } from './canvas-strategy-types'
-import { InteractionSession, StrategyState } from './interaction-state'
 import {
-  getAbsoluteMoveCommandsForSelectedElement,
+  applyMoveCommon,
+  getAdjustMoveCommands,
   getDragTargets,
-  snapDrag,
 } from './shared-absolute-move-strategy-helpers'
-import { honoursPropsPosition } from './absolute-utils'
-import { collectParentAndSiblingGuidelines } from '../controls/guideline-helpers'
 
 export const absoluteMoveStrategy: CanvasStrategy = {
   id: 'ABSOLUTE_MOVE',
@@ -76,100 +60,14 @@ export const absoluteMoveStrategy: CanvasStrategy = {
       interactionState.interactionData.type === 'DRAG' &&
       interactionState.interactionData.drag != null
     ) {
-      const getAdjustMoveCommands = (
-        snappedDragVector: CanvasPoint,
-      ): {
-        commands: Array<AdjustCssLengthProperty>
-        intendedBounds: Array<CanvasFrameAndTarget>
-      } => {
-        const selectedElements = getTargetPathsFromInteractionTarget(canvasState.interactionTarget)
-        const filteredSelectedElements = getDragTargets(selectedElements)
-        let commands: Array<AdjustCssLengthProperty> = []
-        let intendedBounds: Array<CanvasFrameAndTarget> = []
-        filteredSelectedElements.forEach((selectedElement) => {
-          const elementResult = getAbsoluteMoveCommandsForSelectedElement(
-            selectedElement,
-            snappedDragVector,
-            canvasState,
-            interactionState,
-            sessionState,
-          )
-          commands.push(...elementResult.commands)
-          intendedBounds.push(...elementResult.intendedBounds)
-        })
-        return { commands, intendedBounds }
-      }
-      return applyAbsoluteMoveCommon(
+      return applyMoveCommon(
         canvasState,
         interactionState,
         sessionState,
-        getAdjustMoveCommands,
+        getAdjustMoveCommands(canvasState, interactionState, sessionState),
       )
     }
     // Fallback for when the checks above are not satisfied.
     return emptyStrategyApplicationResult
   },
-}
-
-export function applyAbsoluteMoveCommon(
-  canvasState: InteractionCanvasState,
-  interactionState: InteractionSession,
-  strategyState: StrategyState,
-  getMoveCommands: (snappedDragVector: CanvasPoint) => {
-    commands: Array<CanvasCommand>
-    intendedBounds: Array<CanvasFrameAndTarget>
-  },
-): StrategyApplicationResult {
-  if (
-    interactionState.interactionData.type === 'DRAG' &&
-    interactionState.interactionData.drag != null
-  ) {
-    const drag = interactionState.interactionData.drag
-    const shiftKeyPressed = interactionState.interactionData.modifiers.shift
-    const cmdKeyPressed = interactionState.interactionData.modifiers.cmd
-    const selectedElements = getTargetPathsFromInteractionTarget(canvasState.interactionTarget)
-    if (cmdKeyPressed) {
-      const commandsForSelectedElements = getMoveCommands(drag)
-
-      return strategyApplicationResult([
-        ...commandsForSelectedElements.commands,
-        pushIntendedBounds(commandsForSelectedElements.intendedBounds),
-        updateHighlightedViews('mid-interaction', []),
-        setElementsToRerenderCommand(selectedElements),
-        setCursorCommand('mid-interaction', CSSCursor.Select),
-      ])
-    } else {
-      const constrainedDragAxis =
-        shiftKeyPressed && drag != null ? determineConstrainedDragAxis(drag) : null
-
-      const targetsForSnapping = selectedElements.map(
-        (path) => interactionState.updatedTargetPaths[EP.toString(path)] ?? path,
-      )
-      const moveGuidelines = collectParentAndSiblingGuidelines(
-        strategyState.startingMetadata,
-        targetsForSnapping,
-      )
-
-      const { snappedDragVector, guidelinesWithSnappingVector } = snapDrag(
-        drag,
-        constrainedDragAxis,
-        strategyState.startingMetadata,
-        selectedElements,
-        moveGuidelines,
-        canvasState.scale,
-      )
-      const commandsForSelectedElements = getMoveCommands(snappedDragVector)
-      return strategyApplicationResult([
-        ...commandsForSelectedElements.commands,
-        updateHighlightedViews('mid-interaction', []),
-        setSnappingGuidelines('mid-interaction', guidelinesWithSnappingVector),
-        pushIntendedBounds(commandsForSelectedElements.intendedBounds),
-        setElementsToRerenderCommand([...selectedElements, ...targetsForSnapping]),
-        setCursorCommand('mid-interaction', CSSCursor.Select),
-      ])
-    }
-  } else {
-    // Fallback for when the checks above are not satisfied.
-    return emptyStrategyApplicationResult
-  }
 }

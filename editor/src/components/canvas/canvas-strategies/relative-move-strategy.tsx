@@ -1,20 +1,19 @@
-import { ElementPath } from 'src/core/shared/project-file-types'
 import { getLayoutProperty } from '../../../core/layout/getLayoutProperty'
 import { MetadataUtils, PropsOrJSXAttributes } from '../../../core/model/element-metadata-utils'
 import { isRight, right } from '../../../core/shared/either'
 import { ElementInstanceMetadata, isJSXElement } from '../../../core/shared/element-template'
-import { stylePropPathMappingFn } from '../../inspector/common/property-path-hooks'
-import { CanvasCommand } from '../commands/commands'
-import { setCssLengthProperty } from '../commands/set-css-length-command'
 import { ParentBounds } from '../controls/parent-bounds'
 import { ParentOutlines } from '../controls/parent-outlines'
 import {
   CanvasStrategy,
   emptyStrategyApplicationResult,
   getTargetPathsFromInteractionTarget,
-  strategyApplicationResult,
 } from './canvas-strategy-types'
-import { getDragTargets } from './shared-absolute-move-strategy-helpers'
+import {
+  applyMoveCommon,
+  getAdjustMoveCommands,
+  getDragTargets,
+} from './shared-absolute-move-strategy-helpers'
 
 export const relativeMoveStrategy: CanvasStrategy = {
   id: 'RELATIVE_MOVE',
@@ -105,66 +104,13 @@ export const relativeMoveStrategy: CanvasStrategy = {
       return emptyStrategyApplicationResult
     }
 
-    const { drag } = interactionData
-
-    const commands: Array<CanvasCommand> = []
-
-    // should set a direction only if it's either defined in the original offsets or if the counterpart (horiz/vert) is not defined
-    // vertical
-    commands.push(
-      ...applyStyle({
-        name: 'top',
-        initial: offsets.top,
-        delta: drag.y,
-        keep: offsets.bottom == null,
-        path: last,
-      }),
-      ...applyStyle({
-        name: 'bottom',
-        initial: offsets.bottom,
-        delta: -drag.y,
-        path: last,
-      }),
+    return applyMoveCommon(
+      canvasState,
+      interactionState,
+      sessionState,
+      getAdjustMoveCommands(canvasState, interactionState, sessionState),
     )
-    // horizontal
-    commands.push(
-      ...applyStyle({
-        name: 'left',
-        initial: offsets.left,
-        delta: drag.x,
-        keep: offsets.right == null,
-        path: last,
-      }),
-      ...applyStyle({
-        name: 'right',
-        initial: offsets.right,
-        delta: -drag.x,
-        path: last,
-      }),
-    )
-
-    return strategyApplicationResult(commands)
   },
-}
-
-const applyStyle = (params: {
-  name: 'top' | 'left' | 'bottom' | 'right'
-  initial: number | null
-  delta: number
-  keep?: boolean // if true, this item will be preferred
-  path: ElementPath
-}): CanvasCommand[] => {
-  const { name, initial, delta, keep, path } = params
-
-  const skip = initial == null && !keep
-  if (skip) {
-    return []
-  }
-
-  const value = (initial || 0) + delta
-  return [
-    setCssLengthProperty('always', path, stylePropPathMappingFn(name, ['style']), value, undefined),
-  ]
 }
 
 const getStyleOffsets = (meta: ElementInstanceMetadata) => {
