@@ -1,4 +1,7 @@
-import { setRightMenuTab } from '../../editor/actions/action-creators'
+import {
+  enableInsertModeForJSXElement,
+  setRightMenuTab,
+} from '../../editor/actions/action-creators'
 import {
   makeTestProjectCodeWithSnippet,
   renderTestEditorWithCode,
@@ -20,6 +23,7 @@ import { CanvasMousePositionRaw } from '../../../utils/global-positions'
 import { emptyModifiers } from '../../../utils/modifiers'
 import { RightMenuTab } from '../../editor/store/editor-state'
 import { FOR_TESTS_setNextGeneratedUid } from '../../../core/model/element-template-utils'
+import { act } from 'react-dom/test-utils'
 
 // FIXME These tests will probably start to fail if the insert menu becomes too long, at which point we may
 // have to insert some mocking to restrict the available items there
@@ -51,6 +55,21 @@ async function enterInsertModeFromInsertMenu(renderResult: EditorRenderResult) {
 
   mouseMoveToPoint(insertButton, point)
   mouseClickAtPoint(insertButton, point)
+
+  await renderResult.getDispatchFollowUpActionsFinished()
+}
+
+async function enterInsertModeFromInsertMenuStartDrag(renderResult: EditorRenderResult) {
+  const insertButton = renderResult.renderedDOM.getByTestId('insert-item-div')
+  const insertButtonBounds = insertButton.getBoundingClientRect()
+
+  const point = slightlyOffsetWindowPointBecauseVeryWeirdIssue({
+    x: insertButtonBounds.x + insertButtonBounds.width / 2,
+    y: insertButtonBounds.y + insertButtonBounds.height / 2,
+  })
+
+  mouseMoveToPoint(insertButton, point)
+  mouseDownAtPoint(insertButton, point)
 
   await renderResult.getDispatchFollowUpActionsFinished()
 }
@@ -510,26 +529,12 @@ describe('Inserting into absolute', () => {
       y: targetElementBounds.y + 2005,
     })
 
-    mouseMoveToPoint(canvasControlsLayer, startPoint)
-
-    mouseDownAtPoint(canvasControlsLayer, startPoint)
-
-    await act(() =>
-      renderResult.dispatch(
-        [
-          enableInsertModeForJSXElement(newElement, newElementUID, {}, null),
-          CanvasActions.createInteractionSession(
-            createInteractionViaMouse(CanvasMousePositionRaw!, emptyModifiers, boundingArea()),
-          ),
-        ],
-        false,
-      ),
-    )
-
+    enterInsertModeFromInsertMenuStartDrag(renderResult)
     await renderResult.getDispatchFollowUpActionsFinished()
 
-    mouseDragFromPointToPointNoMouseDown(canvasControlsLayer, startPoint, endPoint)
+    mouseMoveToPoint(canvasControlsLayer, startPoint)
 
+    mouseDragFromPointToPointNoMouseDown(canvasControlsLayer, startPoint, endPoint)
     await renderResult.getDispatchFollowUpActionsFinished()
 
     expect(getPrintedUiJsCode(renderResult.getEditorState())).toEqual(inputCode)
