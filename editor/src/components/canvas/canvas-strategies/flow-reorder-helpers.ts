@@ -34,11 +34,11 @@ export function areAllSiblingsInOneDimension(
   metadata: ElementInstanceMetadataMap,
 ): boolean {
   const targetElement = MetadataUtils.findElementByElementPath(metadata, target)
-  if (targetElement == null) {
+  const siblings = MetadataUtils.getSiblings(metadata, target)
+  if (targetElement == null || siblings.length === 0) {
     return false
   }
 
-  const siblings = MetadataUtils.getSiblings(metadata, target)
   const targetDirection = getElementDirection(targetElement)
 
   let allHorizontalOrVertical = true
@@ -61,16 +61,17 @@ function areNonWrappingSiblings(
   frames: Array<CanvasRectangle>,
   layoutDirection: 'horizontal' | 'vertical',
 ): boolean {
-  // wrapping or columns set: a sibling frame has a larger x/y then the right/bottom edge of its siblings
-  return frames.every((frame) => {
-    return frames.every((frameToCompare) => {
-      if (layoutDirection === 'horizontal') {
-        return frameToCompare.y < frame.y + frame.height
-      } else {
-        return frameToCompare.x < frame.x + frame.width
-      }
-    })
-  })
+  if (layoutDirection === 'horizontal') {
+    // the rows are wrapping: there is at least one element that has its top above other siblings bottom side
+    const maxY = Math.max(...frames.map((frame) => frame.y))
+    const minBottom = Math.min(...frames.map((frame) => frame.y + frame.height))
+    return maxY < minBottom
+  } else {
+    // the columns are wrapping if a sibling frame has its left side farther than the right edge of siblings
+    const maxX = Math.max(...frames.map((frame) => frame.x))
+    const minRight = Math.min(...frames.map((frame) => frame.x + frame.width))
+    return maxX < minRight
+  }
 }
 
 function getElementDirection(element: ElementInstanceMetadata): 'vertical' | 'horizontal' {
