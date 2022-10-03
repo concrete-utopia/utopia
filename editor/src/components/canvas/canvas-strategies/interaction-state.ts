@@ -132,11 +132,7 @@ export function interactionSession(
 
 export type InteractionSessionWithoutMetadata = Omit<
   InteractionSession,
-  | 'latestMetadata'
-  | 'latestAllElementProps'
-  | 'startingTargetParentsToFilterOut'
-  | 'startingMetadata'
-  | 'startingAllElementProps'
+  'latestMetadata' | 'latestAllElementProps' | 'startingTargetParentsToFilterOut'
 >
 
 export interface CommandDescription {
