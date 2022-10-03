@@ -40,7 +40,7 @@ export const relativeMoveStrategy: CanvasStrategy = {
 
   fitness: (canvasState, interactionState, _sessionState) => {
     const { interactionData, activeControl } = interactionState
-    if (!(interactionData.type === 'DRAG' && interactionData.drag !== null)) {
+    if (!(interactionData.type === 'DRAG' && interactionData.drag != null)) {
       return 0
     }
     if (activeControl.type !== 'BOUNDING_AREA') {
@@ -63,10 +63,7 @@ export const relativeMoveStrategy: CanvasStrategy = {
     }
 
     const hasOffsets =
-      offsets.left !== null ||
-      offsets.top !== null ||
-      offsets.right !== null ||
-      offsets.bottom !== null
+      offsets.left != null || offsets.top != null || offsets.right != null || offsets.bottom != null
 
     return hasOffsets
       ? 4 // +1 than reorder flow
@@ -75,7 +72,7 @@ export const relativeMoveStrategy: CanvasStrategy = {
 
   apply: (canvasState, interactionState, sessionState) => {
     const { interactionData } = interactionState
-    if (!(interactionData.type === 'DRAG' && interactionData.drag !== null)) {
+    if (!(interactionData.type === 'DRAG' && interactionData.drag != null)) {
       return emptyStrategyApplicationResult
     }
 
