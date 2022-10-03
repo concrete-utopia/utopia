@@ -9,7 +9,11 @@ import {
 } from './canvas-strategy-types'
 import { InteractionSession } from './interaction-state'
 import { ElementInstanceMetadataMap } from '../../../core/shared/element-template'
-import { getOptionalDisplayPropCommands, isValidFlowReorderTarget } from './flow-reorder-helpers'
+import {
+  areAllSiblingsInOneDimension,
+  getOptionalDisplayPropCommands,
+  isValidFlowReorderTarget,
+} from './flow-reorder-helpers'
 import { FlowReorderDragOutline } from '../controls/flow-reorder-indicators'
 import { AllElementProps } from '../../editor/store/editor-state'
 import { applyReorderCommon } from './reorder-utils'
@@ -24,16 +28,11 @@ function isFlowReorderConversionApplicable(
   if (selectedElements.length === 1) {
     const target = selectedElements[0]
     const elementMetadata = MetadataUtils.findElementByElementPath(metadata, target)
-    const siblings = MetadataUtils.getSiblings(metadata, target)
-    if (
-      siblings.length > 1 &&
+    return (
       MetadataUtils.isPositionedByFlow(elementMetadata) &&
-      isValidFlowReorderTarget(target, metadata)
-    ) {
-      return siblings.some((sibling) => MetadataUtils.isPositionedByFlow(sibling))
-    } else {
-      return false
-    }
+      isValidFlowReorderTarget(target, metadata) &&
+      areAllSiblingsInOneDimension(target, metadata)
+    )
   } else {
     return false
   }
@@ -42,7 +41,7 @@ function isFlowReorderConversionApplicable(
 export const flowReorderStrategy: CanvasStrategy = {
   id: 'FLOW_REORDER',
   name: () => 'Reorder (Flow)',
-  isApplicable: isFlowReorderConversionApplicable, // TODO this should check if the siblings are placed in the same row or same column
+  isApplicable: isFlowReorderConversionApplicable,
   controlsToRender: [
     {
       control: ParentOutlines,
