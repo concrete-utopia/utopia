@@ -313,9 +313,9 @@ export function updateHoverInteractionViaMouse(
       activeControl: currentState.activeControl,
       sourceOfUpdate: sourceOfUpdate ?? currentState.activeControl,
       lastInteractionTime: Date.now(),
-      userPreferredStrategy: null,
-      startedAt: Date.now(),
-      updatedTargetPaths: {},
+      userPreferredStrategy: currentState.userPreferredStrategy,
+      startedAt: currentState.startedAt,
+      updatedTargetPaths: currentState.updatedTargetPaths,
     }
   } else {
     return currentState

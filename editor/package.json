@@ -16,6 +16,7 @@
     "check-ci": "tsc --noEmit && pnpm run lint && pnpm run check-dependency-cruiser && pnpm run prettier-check && pnpm run test-ci && pnpm run test-browser",
     "lint": "pnpx eslint \"src/**/*.{js,ts,tsx}\" --quiet",
     "lint-loud": "pnpx eslint \"src/**/*.{js,ts,tsx}\"",
+    "lint-lite": "pnpm run lint -- --config ./.eslintrc-lite.js --no-eslintrc",
     "check-dependency-cruiser": "depcruise --config .dependency-cruiser.js src",
     "test-base": "jest --config ./jest.config.js",
     "test": "pnpm run test-base -- --maxWorkers '50%'",
@@ -47,7 +48,7 @@
   "lint-staged": {
     "*.{js,ts,tsx}": [
       "prettier --write",
-      "eslint --quiet --ignore-path .eslintignore --config .eslintrc.js",
+      "eslint --quiet --ignore-path .eslintignore --config .eslintrc-lite.js --no-eslintrc",
       "git add"
     ],
     "*.{html}": [
@@ -56,32 +57,32 @@
     ],
     "../puppeteer-tests/src/**/*.{js,ts,tsx}": [
       "prettier --write",
-      "eslint --quiet --ignore-path .eslintignore --config .eslintrc.js",
+      "eslint --quiet --ignore-path .eslintignore --config .eslintrc-lite.js --no-eslintrc",
       "git add"
     ],
     "../utopia-api/src/**/*.{js,ts,tsx}": [
       "prettier --write",
-      "eslint --quiet --ignore-path .eslintignore --config .eslintrc.js",
+      "eslint --quiet --ignore-path .eslintignore --config .eslintrc-lite.js --no-eslintrc",
       "git add"
     ],
     "../utopia-vscode-extension/src/**/*.{js,ts,tsx}": [
       "prettier --write",
-      "eslint --quiet --ignore-path .eslintignore --config .eslintrc.js",
+      "eslint --quiet --ignore-path .eslintignore --config .eslintrc-lite.js --no-eslintrc",
       "git add"
     ],
     "../utopia-vscode-common/src/**/*.{js,ts,tsx}": [
       "prettier --write",
-      "eslint --quiet --ignore-path .eslintignore --config .eslintrc.js",
+      "eslint --quiet --ignore-path .eslintignore --config .eslintrc-lite.js --no-eslintrc",
       "git add"
     ],
     "../website-next/pages/**.{js,ts,tsx}": [
       "prettier --write",
-      "eslint --quiet --ignore-path .eslintignore --config .eslintrc.js",
+      "eslint --quiet --ignore-path .eslintignore --config .eslintrc-lite.js --no-eslintrc",
       "git add"
     ],
     "../website-next/components/**.{js,ts,tsx}": [
       "prettier --write",
-      "eslint --quiet --ignore-path .eslintignore --config .eslintrc.js",
+      "eslint --quiet --ignore-path .eslintignore --config .eslintrc-lite.js --no-eslintrc",
       "git add"
     ]
   },
