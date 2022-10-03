@@ -102,9 +102,17 @@ export function interactionFinished(
       'end-interaction',
     )
 
+    const finalEditor: EditorState = {
+      ...commandResult.editorState,
+      // TODO instead of clearing the metadata, we should save the latest valid metadata here to save a dom-walker run
+      jsxMetadata: {},
+      domMetadata: {},
+      spyMetadata: {},
+    }
+
     return {
-      unpatchedEditorState: commandResult.editorState,
-      patchedEditorState: commandResult.editorState,
+      unpatchedEditorState: finalEditor,
+      patchedEditorState: finalEditor,
       newStrategyState: withClearedSession,
     }
   }
@@ -357,6 +365,9 @@ export function interactionCancel(
       ...result.unpatchedEditor.canvas,
       interactionSession: null,
     },
+    jsxMetadata: {},
+    domMetadata: {},
+    spyMetadata: {},
   }
 
   return {

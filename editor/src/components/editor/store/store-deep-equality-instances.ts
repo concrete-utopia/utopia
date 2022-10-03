@@ -334,6 +334,7 @@ import {
   FlexGapHandle,
   FlowSlider,
   flowSlider,
+  HoverInteractionData,
   InputData,
   interactionSession,
   InteractionSession,
@@ -1629,6 +1630,21 @@ export const DragInteractionDataKeepDeepEquality: KeepDeepEqualityCall<DragInter
     },
   )
 
+export const HoverInteractionDataKeepDeepEquality: KeepDeepEqualityCall<HoverInteractionData> =
+  combine2EqualityCalls(
+    (data) => data.point,
+    CanvasPointKeepDeepEquality,
+    (data) => data.modifiers,
+    ModifiersKeepDeepEquality,
+    (point, modifiers) => {
+      return {
+        type: 'HOVER',
+        point: point,
+        modifiers: modifiers,
+      }
+    },
+  )
+
 export const KeyStateKeepDeepEquality: KeepDeepEqualityCall<KeyState> = combine2EqualityCalls(
   (keyState) => keyState.keysPressed,
   createCallWithDeepEquals(),
@@ -1664,6 +1680,11 @@ export const InputDataKeepDeepEquality: KeepDeepEqualityCall<InputData> = (oldVa
     case 'KEYBOARD':
       if (newValue.type === oldValue.type) {
         return KeyboardInteractionDataKeepDeepEquality(oldValue, newValue)
+      }
+      break
+    case 'HOVER':
+      if (newValue.type === oldValue.type) {
+        return HoverInteractionDataKeepDeepEquality(oldValue, newValue)
       }
       break
     default:
@@ -2578,9 +2599,7 @@ export const InsertionSubjectKeepDeepEquality: KeepDeepEqualityCall<InsertionSub
   return keepDeepEqualityResult(newValue, false)
 }
 
-export const InsertModeKeepDeepEquality: KeepDeepEqualityCall<InsertMode> = combine2EqualityCalls(
-  (mode) => mode.insertionStarted,
-  BooleanKeepDeepEquality,
+export const InsertModeKeepDeepEquality: KeepDeepEqualityCall<InsertMode> = combine1EqualityCall(
   (mode) => mode.subject,
   InsertionSubjectKeepDeepEquality,
   EditorModes.insertMode,
@@ -3231,6 +3250,11 @@ export const EditorStateKeepDeepEquality: KeepDeepEqualityCall<EditorState> = (
     oldValue.allElementProps,
     newValue.allElementProps,
   )
+  const _currentAllElementProps_KILLME_Results =
+    createCallFromIntrospectiveKeepDeep<AllElementProps>()(
+      oldValue._currentAllElementProps_KILLME,
+      newValue._currentAllElementProps_KILLME,
+    )
   const githubSettingsResults = ProjectGithubSettingsKeepDeepEquality(
     oldValue.githubSettings,
     newValue.githubSettings,
@@ -3301,6 +3325,7 @@ export const EditorStateKeepDeepEquality: KeepDeepEqualityCall<EditorState> = (
     indexedDBFailedResults.areEqual &&
     forceParseFilesResults.areEqual &&
     allElementPropsResults.areEqual &&
+    _currentAllElementProps_KILLME_Results.areEqual &&
     githubSettingsResults.areEqual
 
   if (areEqual) {
@@ -3371,6 +3396,7 @@ export const EditorStateKeepDeepEquality: KeepDeepEqualityCall<EditorState> = (
       indexedDBFailedResults.value,
       forceParseFilesResults.value,
       allElementPropsResults.value,
+      _currentAllElementProps_KILLME_Results.value,
       githubSettingsResults.value,
     )
 

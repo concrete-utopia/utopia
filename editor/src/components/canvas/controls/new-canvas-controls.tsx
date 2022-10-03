@@ -20,7 +20,6 @@ import {
 import { ElementPath, NodeModules } from '../../../core/shared/project-file-types'
 import { CanvasPositions, CSSCursor } from '../canvas-types'
 import { SelectModeControlContainer } from './select-mode-control-container'
-import { InsertModeControlContainer } from './insert-mode-control-container'
 import { HighlightControl } from './highlight-control'
 import { useEditorState, useRefEditorState } from '../../editor/store/store-hook'
 import {
@@ -353,55 +352,32 @@ const NewCanvasControlsInner = (props: NewCanvasControlsInnerProps) => {
       allElementProps: props.editor.allElementProps,
     }
     const dragState = props.editor.canvas.dragState
-    switch (props.editor.mode.type) {
-      case 'select':
-      case 'live': {
-        if (isFeatureEnabled('Canvas Strategies')) {
-          return null
-        } else {
-          return (
-            <SelectModeControlContainer
-              {...controlProps}
-              startDragStateAfterDragExceedsThreshold={startDragStateAfterDragExceedsThreshold}
-              setSelectedViewsLocally={setLocalSelectedViews}
-              keysPressed={props.editor.keysPressed}
-              windowToCanvasPosition={props.windowToCanvasPosition}
-              isDragging={dragging}
-              isResizing={resizing}
-              selectionEnabled={selectionEnabled}
-              contextMenuEnabled={contextMenuEnabled}
-              maybeHighlightOnHover={maybeHighlightOnHover}
-              maybeClearHighlightsOnHoverEnd={maybeClearHighlightsOnHoverEnd}
-              duplicationState={props.editor.canvas.duplicationState}
-              dragState={
-                dragState?.type === 'MOVE_DRAG_STATE' || dragState?.type === 'RESIZE_DRAG_STATE'
-                  ? dragState
-                  : null
-              }
-              showAdditionalControls={props.editor.interfaceDesigner.additionalControls}
-            />
-          )
-        }
-      }
-      case 'insert': {
-        return (
-          <InsertModeControlContainer
-            {...controlProps}
-            mode={props.editor.mode}
-            keysPressed={props.editor.keysPressed}
-            windowToCanvasPosition={props.windowToCanvasPosition}
-            dragState={
-              dragState != null && dragState.type === 'INSERT_DRAG_STATE' ? dragState : null
-            }
-            canvasOffset={props.editor.canvas.realCanvasOffset /* maybe roundedCanvasOffset? */}
-            scale={props.editor.canvas.scale}
-          />
-        )
-      }
-      default: {
-        const _exhaustiveCheck: never = props.editor.mode
-        throw new Error(`Unhandled editor mode ${JSON.stringify(props.editor.mode)}`)
-      }
+
+    if (isFeatureEnabled('Canvas Strategies')) {
+      return null
+    } else {
+      return (
+        <SelectModeControlContainer
+          {...controlProps}
+          startDragStateAfterDragExceedsThreshold={startDragStateAfterDragExceedsThreshold}
+          setSelectedViewsLocally={setLocalSelectedViews}
+          keysPressed={props.editor.keysPressed}
+          windowToCanvasPosition={props.windowToCanvasPosition}
+          isDragging={dragging}
+          isResizing={resizing}
+          selectionEnabled={selectionEnabled}
+          contextMenuEnabled={contextMenuEnabled}
+          maybeHighlightOnHover={maybeHighlightOnHover}
+          maybeClearHighlightsOnHoverEnd={maybeClearHighlightsOnHoverEnd}
+          duplicationState={props.editor.canvas.duplicationState}
+          dragState={
+            dragState?.type === 'MOVE_DRAG_STATE' || dragState?.type === 'RESIZE_DRAG_STATE'
+              ? dragState
+              : null
+          }
+          showAdditionalControls={props.editor.interfaceDesigner.additionalControls}
+        />
+      )
     }
   }
 
