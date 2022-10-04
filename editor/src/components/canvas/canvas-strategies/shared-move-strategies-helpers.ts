@@ -54,11 +54,16 @@ import {
 } from './canvas-strategy-types'
 import { InteractionSession, StrategyState } from './interaction-state'
 
+export interface MoveCommandsOptions {
+  ignoreLocalFrame?: boolean
+}
+
 export const getAdjustMoveCommands =
   (
     canvasState: InteractionCanvasState,
     interactionState: InteractionSession,
     sessionState: StrategyState,
+    options?: MoveCommandsOptions,
   ) =>
   (
     snappedDragVector: CanvasPoint,
@@ -77,6 +82,7 @@ export const getAdjustMoveCommands =
         canvasState,
         interactionState,
         sessionState,
+        options,
       )
       commands.push(...elementResult.commands)
       intendedBounds.push(...elementResult.intendedBounds)
@@ -153,6 +159,7 @@ export function getMoveCommandsForSelectedElement(
   canvasState: InteractionCanvasState,
   interactionState: InteractionSession,
   sessionState: StrategyState,
+  options?: MoveCommandsOptions,
 ): {
   commands: Array<AdjustCssLengthProperty>
   intendedBounds: Array<CanvasFrameAndTarget>
@@ -171,10 +178,12 @@ export function getMoveCommandsForSelectedElement(
   const elementParentBounds =
     elementMetadata?.specialSizeMeasurements.coordinateSystemBounds ?? null
 
-  const localFrame = MetadataUtils.getLocalFrameFromSpecialSizeMeasurements(
-    selectedElement,
-    sessionState.startingMetadata,
-  )
+  const localFrame = options?.ignoreLocalFrame
+    ? null
+    : MetadataUtils.getLocalFrameFromSpecialSizeMeasurements(
+        selectedElement,
+        sessionState.startingMetadata,
+      )
 
   const globalFrame = MetadataUtils.getFrameInCanvasCoords(
     selectedElement,

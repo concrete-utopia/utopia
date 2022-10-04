@@ -397,4 +397,114 @@ describe('Relative move', () => {
       )
     })
   })
+
+  describe('move with a local frame', () => {
+    it('ignores the local frame measurements', async () => {
+      const project = makeTestProjectCodeWithSnippet(`
+        <div style={{ width: '100%', height: '100%' }} data-uid='foo'>
+          <div
+            style={{
+              backgroundColor: '#09f',
+              width: 50,
+              height: 50
+            }}
+            data-uid='baz'
+          />
+          <div
+            style={{
+              backgroundColor: '#f0f',
+              display: 'inline-block',
+              position: 'relative',
+              width: 50,
+              height: 50
+            }}
+            data-uid='bar'
+            data-testid='bar'
+          />
+          <div
+            style={{
+              backgroundColor: '#f90',
+              display: 'inline-block',
+              width: 50,
+              height: 50
+            }}
+            data-uid='qux'
+          />
+          <div
+            style={{
+              backgroundColor: '#9f0',
+              display: 'inline-block',
+              width: 50,
+              height: 50
+            }}
+            data-uid='waldo'
+          />
+          <div
+            style={{
+              backgroundColor: '#0f9',
+              width: 50,
+              height: 50
+            }}
+            data-uid='corge'
+          />
+        </div>
+      `)
+
+      const result = await setupAndDrag(project, 'bar', 15, 15)
+
+      expect(getPrintedUiJsCode(result.getEditorState())).toEqual(
+        makeTestProjectCodeWithSnippet(`
+        <div style={{ width: '100%', height: '100%' }} data-uid='foo'>
+          <div
+            style={{
+              backgroundColor: '#09f',
+              width: 50,
+              height: 50
+            }}
+            data-uid='baz'
+          />
+          <div
+            style={{
+              backgroundColor: '#f0f',
+              display: 'inline-block',
+              position: 'relative',
+              width: 50,
+              height: 50,
+              left: 15,
+              top: 15
+            }}
+            data-uid='bar'
+            data-testid='bar'
+          />
+          <div
+            style={{
+              backgroundColor: '#f90',
+              display: 'inline-block',
+              width: 50,
+              height: 50
+            }}
+            data-uid='qux'
+          />
+          <div
+            style={{
+              backgroundColor: '#9f0',
+              display: 'inline-block',
+              width: 50,
+              height: 50
+            }}
+            data-uid='waldo'
+          />
+          <div
+            style={{
+              backgroundColor: '#0f9',
+              width: 50,
+              height: 50
+            }}
+            data-uid='corge'
+          />
+        </div>
+        `),
+      )
+    })
+  })
 })

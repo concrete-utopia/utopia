@@ -92,7 +92,9 @@ export const relativeMoveStrategy: CanvasStrategy = {
       canvasState,
       interactionState,
       sessionState,
-      getAdjustMoveCommands(canvasState, interactionState, sessionState),
+      getAdjustMoveCommands(canvasState, interactionState, sessionState, {
+        ignoreLocalFrame: true,
+      }),
     )
   },
 }
