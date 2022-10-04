@@ -8,7 +8,7 @@ import { ElementPath } from '../../../../core/shared/project-file-types'
 import { fastForEach } from '../../../../core/shared/utils'
 import { useEditorState } from '../../../editor/store/store-hook'
 import { isDragInteractionData } from '../../canvas-strategies/interaction-state'
-import { getMultiselectBounds } from '../../canvas-strategies/shared-absolute-move-strategy-helpers'
+import { getMultiselectBounds } from '../../canvas-strategies/shared-move-strategies-helpers'
 import { Guideline, Guidelines } from '../../guideline'
 import { DistanceGuideline } from '../distance-guideline'
 

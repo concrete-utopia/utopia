@@ -51,7 +51,7 @@ import {
 } from './interaction-state'
 import { ifAllowedToReparent } from './reparent-helpers'
 import { getReparentOutcome, pathToReparent } from './reparent-utils'
-import { getDragTargets } from './shared-absolute-move-strategy-helpers'
+import { getDragTargets } from './shared-move-strategies-helpers'
 import { absolute } from '../../../utils/utils'
 import { getElementFromProjectContents } from '../../../components/editor/store/editor-state'
 import { stylePropPathMappingFn } from '../../../components/inspector/common/property-path-hooks'

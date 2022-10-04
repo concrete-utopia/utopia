@@ -18,9 +18,9 @@ import {
   zeroRectangle,
 } from '../../../core/shared/math-utils'
 import {
-  getAbsoluteMoveCommandsForSelectedElement,
+  getMoveCommandsForSelectedElement,
   getMultiselectBounds,
-} from './shared-absolute-move-strategy-helpers'
+} from './shared-move-strategies-helpers'
 import { setElementsToRerenderCommand } from '../commands/set-elements-to-rerender-command'
 import { setSnappingGuidelines } from '../commands/set-snapping-guidelines-command'
 import { updateHighlightedViews } from '../commands/update-highlighted-views-command'
@@ -96,7 +96,7 @@ export const keyboardAbsoluteMoveStrategy: CanvasStrategy = {
       })
       if (keyboardMovement.x !== 0 || keyboardMovement.y !== 0) {
         selectedElements.forEach((selectedElement) => {
-          const elementResult = getAbsoluteMoveCommandsForSelectedElement(
+          const elementResult = getMoveCommandsForSelectedElement(
             selectedElement,
             keyboardMovement,
             canvasState,

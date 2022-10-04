@@ -13,7 +13,7 @@ import {
   applyMoveCommon,
   getAdjustMoveCommands,
   getDragTargets,
-} from './shared-absolute-move-strategy-helpers'
+} from './shared-move-strategies-helpers'
 
 export const relativeMoveStrategy: CanvasStrategy = {
   id: 'RELATIVE_MOVE',

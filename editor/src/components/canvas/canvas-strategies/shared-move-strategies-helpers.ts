@@ -71,7 +71,7 @@ export const getAdjustMoveCommands =
     let commands: Array<AdjustCssLengthProperty> = []
     let intendedBounds: Array<CanvasFrameAndTarget> = []
     filteredSelectedElements.forEach((selectedElement) => {
-      const elementResult = getAbsoluteMoveCommandsForSelectedElement(
+      const elementResult = getMoveCommandsForSelectedElement(
         selectedElement,
         snappedDragVector,
         canvasState,
@@ -147,7 +147,7 @@ export function applyMoveCommon(
   }
 }
 
-export function getAbsoluteMoveCommandsForSelectedElement(
+export function getMoveCommandsForSelectedElement(
   selectedElement: ElementPath,
   drag: CanvasVector,
   canvasState: InteractionCanvasState,

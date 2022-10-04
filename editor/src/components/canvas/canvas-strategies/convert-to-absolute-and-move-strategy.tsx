@@ -42,7 +42,7 @@ import {
   strategyApplicationResult,
 } from './canvas-strategy-types'
 import { getReparentOutcome, pathToReparent } from './reparent-utils'
-import { applyMoveCommon, getDragTargets } from './shared-absolute-move-strategy-helpers'
+import { applyMoveCommon, getDragTargets } from './shared-move-strategies-helpers'
 
 export const convertToAbsoluteAndMoveStrategy: CanvasStrategy = {
   id: 'CONVERT_TO_ABSOLUTE_AND_MOVE_STRATEGY',

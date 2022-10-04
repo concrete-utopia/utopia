@@ -109,7 +109,7 @@ import {
   existingReparentSubjects,
   getReparentTargetUnified,
 } from '../components/canvas/canvas-strategies/reparent-strategy-helpers'
-import { getDragTargets } from '../components/canvas/canvas-strategies/shared-absolute-move-strategy-helpers'
+import { getDragTargets } from '../components/canvas/canvas-strategies/shared-move-strategies-helpers'
 import { pickCanvasStateFromEditorState } from '../components/canvas/canvas-strategies/canvas-strategies'
 import { BuiltInDependencies } from '../core/es-modules/package-manager/built-in-dependencies-list'
 import {
