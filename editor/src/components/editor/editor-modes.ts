@@ -11,7 +11,6 @@ export interface ElementInsertionSubject {
   type: 'Element'
   uid: string
   element: JSXElement
-  size: Size | null
   importsToAdd: Imports
   parent: InsertionParent
 }
@@ -28,7 +27,6 @@ export interface DragAndDropInsertionSubject {
 export function elementInsertionSubject(
   uid: string,
   element: JSXElement,
-  size: Size | null,
   importsToAdd: Imports,
   parent: InsertionParent,
 ): ElementInsertionSubject {
@@ -36,7 +34,6 @@ export function elementInsertionSubject(
     type: 'Element',
     uid: uid,
     element: element,
-    size: size,
     importsToAdd: importsToAdd,
     parent: parent,
   }

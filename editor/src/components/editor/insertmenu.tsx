@@ -193,7 +193,7 @@ class InsertMenuInner extends React.Component<InsertMenuProps> {
   divInsertMode = () => {
     const newUID = this.getNewUID()
     this.props.editorDispatch(
-      [enableInsertModeForJSXElement(defaultDivElement(newUID), newUID, {}, null)],
+      [enableInsertModeForJSXElement(defaultDivElement(newUID), newUID, {})],
       'everyone',
     )
   }
@@ -206,12 +206,9 @@ class InsertMenuInner extends React.Component<InsertMenuProps> {
     const newUID = this.getNewUID()
     this.props.editorDispatch(
       [
-        enableInsertModeForJSXElement(
-          defaultTextElement(newUID),
-          newUID,
-          { 'utopia-api': importDetails(null, [importAlias('Text')], null) },
-          null,
-        ),
+        enableInsertModeForJSXElement(defaultTextElement(newUID), newUID, {
+          'utopia-api': importDetails(null, [importAlias('Text')], null),
+        }),
       ],
       'everyone',
     )
@@ -221,12 +218,9 @@ class InsertMenuInner extends React.Component<InsertMenuProps> {
     const newUID = this.getNewUID()
     this.props.editorDispatch(
       [
-        enableInsertModeForJSXElement(
-          defaultAnimatedDivElement(newUID),
-          newUID,
-          { 'react-spring': importDetails(null, [importAlias('animated')], null) },
-          null,
-        ),
+        enableInsertModeForJSXElement(defaultAnimatedDivElement(newUID), newUID, {
+          'react-spring': importDetails(null, [importAlias('animated')], null),
+        }),
       ],
       'everyone',
     )
@@ -236,12 +230,9 @@ class InsertMenuInner extends React.Component<InsertMenuProps> {
     const newUID = this.getNewUID()
     this.props.editorDispatch(
       [
-        enableInsertModeForJSXElement(
-          defaultEllipseElement(newUID),
-          newUID,
-          { 'utopia-api': importDetails(null, [importAlias('Ellipse')], null) },
-          null,
-        ),
+        enableInsertModeForJSXElement(defaultEllipseElement(newUID), newUID, {
+          'utopia-api': importDetails(null, [importAlias('Ellipse')], null),
+        }),
       ],
       'everyone',
     )
@@ -251,12 +242,9 @@ class InsertMenuInner extends React.Component<InsertMenuProps> {
     const newUID = this.getNewUID()
     this.props.editorDispatch(
       [
-        enableInsertModeForJSXElement(
-          defaultRectangleElement(newUID),
-          newUID,
-          { 'utopia-api': importDetails(null, [importAlias('Rectangle')], null) },
-          null,
-        ),
+        enableInsertModeForJSXElement(defaultRectangleElement(newUID), newUID, {
+          'utopia-api': importDetails(null, [importAlias('Rectangle')], null),
+        }),
       ],
       'everyone',
     )
@@ -336,7 +324,7 @@ class InsertMenuInner extends React.Component<InsertMenuProps> {
                 )
                 this.props.editorDispatch(
                   [
-                    enableInsertModeForJSXElement(newElement, newUID, component.importsToAdd, null),
+                    enableInsertModeForJSXElement(newElement, newUID, component.importsToAdd),
                     CanvasActions.createInteractionSession(
                       createInteractionViaMouse(
                         mousePoint,

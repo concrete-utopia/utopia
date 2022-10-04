@@ -609,14 +609,9 @@ export function handleKeyDown(
         if (isSelectMode(editor.mode) || isInsertMode(editor.mode)) {
           const newUID = generateUidWithExistingComponents(editor.projectContents)
           return addCreateHoverInteractionActionToSwitchModeAction(
-            EditorActions.enableInsertModeForJSXElement(
-              defaultRectangleElement(newUID),
-              newUID,
-              {
-                'utopia-api': importDetails(null, [importAlias('Rectangle')], null),
-              },
-              null,
-            ),
+            EditorActions.enableInsertModeForJSXElement(defaultRectangleElement(newUID), newUID, {
+              'utopia-api': importDetails(null, [importAlias('Rectangle')], null),
+            }),
             modifiers,
           )
         } else {
@@ -627,12 +622,9 @@ export function handleKeyDown(
         if (isSelectMode(editor.mode) || isInsertMode(editor.mode)) {
           const newUID = generateUidWithExistingComponents(editor.projectContents)
           return addCreateHoverInteractionActionToSwitchModeAction(
-            EditorActions.enableInsertModeForJSXElement(
-              defaultEllipseElement(newUID),
-              newUID,
-              { 'utopia-api': importDetails(null, [importAlias('Ellipse')], null) },
-              null,
-            ),
+            EditorActions.enableInsertModeForJSXElement(defaultEllipseElement(newUID), newUID, {
+              'utopia-api': importDetails(null, [importAlias('Ellipse')], null),
+            }),
             modifiers,
           )
         } else {
@@ -654,12 +646,9 @@ export function handleKeyDown(
         if (isSelectMode(editor.mode) || isInsertMode(editor.mode)) {
           const newUID = generateUidWithExistingComponents(editor.projectContents)
           return addCreateHoverInteractionActionToSwitchModeAction(
-            EditorActions.enableInsertModeForJSXElement(
-              defaultTextElement(newUID),
-              newUID,
-              { 'utopia-api': importDetails(null, [importAlias('Text')], null) },
-              null,
-            ),
+            EditorActions.enableInsertModeForJSXElement(defaultTextElement(newUID), newUID, {
+              'utopia-api': importDetails(null, [importAlias('Text')], null),
+            }),
             modifiers,
           )
         } else {
@@ -670,12 +659,9 @@ export function handleKeyDown(
         if (isSelectMode(editor.mode) || isInsertMode(editor.mode)) {
           const newUID = generateUidWithExistingComponents(editor.projectContents)
           return addCreateHoverInteractionActionToSwitchModeAction(
-            EditorActions.enableInsertModeForJSXElement(
-              defaultViewElement(newUID),
-              newUID,
-              { 'utopia-api': importDetails(null, [importAlias('View')], null) },
-              null,
-            ),
+            EditorActions.enableInsertModeForJSXElement(defaultViewElement(newUID), newUID, {
+              'utopia-api': importDetails(null, [importAlias('View')], null),
+            }),
             modifiers,
           )
         } else {

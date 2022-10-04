@@ -2542,13 +2542,11 @@ export const SizeKeepDeepEquality: KeepDeepEqualityCall<Size> = combine2Equality
 )
 
 export const ElementInsertionSubjectKeepDeepEquality: KeepDeepEqualityCall<ElementInsertionSubject> =
-  combine5EqualityCalls(
+  combine4EqualityCalls(
     (subject) => subject.uid,
     StringKeepDeepEquality,
     (subject) => subject.element,
     JSXElementKeepDeepEquality,
-    (subject) => subject.size,
-    nullableDeepEquality(SizeKeepDeepEquality),
     (subject) => subject.importsToAdd,
     objectDeepEquality(ImportDetailsKeepDeepEquality),
     (subject) => subject.parent,
