@@ -1868,16 +1868,16 @@ export function produceCanvasTransientState(
   editorState: EditorState,
   preventAnimations: boolean,
 ): TransientCanvasState {
-  if (isFeatureEnabled('Canvas Strategies')) {
-    return transientCanvasState(editorState.selectedViews, editorState.highlightedViews, null, [])
-  }
   const currentOpenFile = editorState.canvas.openFile?.filename
   let transientState: TransientCanvasState | null = null
   if (currentOpenFile != null) {
     const editorMode = editorState.mode
     switch (editorMode.type) {
       case 'insert':
-        if (insertionSubjectIsJSXElement(editorMode.subject)) {
+        if (
+          insertionSubjectIsJSXElement(editorMode.subject) &&
+          isFeatureEnabled('Canvas Strategies')
+        ) {
           const insertionElement = editorMode.subject.element
           const importsToAdd = editorMode.subject.importsToAdd
           const insertionParent = editorMode.subject.parent?.target ?? null
