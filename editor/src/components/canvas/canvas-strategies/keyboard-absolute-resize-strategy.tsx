@@ -90,7 +90,7 @@ export const keyboardAbsoluteResizeStrategy: CanvasStrategy = {
       show: 'visible-except-when-other-strategy-is-active',
     },
   ],
-  fitness: (canvasState, interactionState, sessionState) => {
+  fitness: (canvasState, interactionState, customStrategyState) => {
     if (
       keyboardAbsoluteResizeStrategy.isApplicable(
         canvasState,
@@ -113,7 +113,7 @@ export const keyboardAbsoluteResizeStrategy: CanvasStrategy = {
     }
     return 0
   },
-  apply: (canvasState, interactionState, sessionState) => {
+  apply: (canvasState, interactionState, customStrategyState) => {
     const selectedElements = getTargetPathsFromInteractionTarget(canvasState.interactionTarget)
     if (interactionState.interactionData.type === 'KEYBOARD') {
       const accumulatedPresses = accumulatePresses(interactionState.interactionData.keyStates)

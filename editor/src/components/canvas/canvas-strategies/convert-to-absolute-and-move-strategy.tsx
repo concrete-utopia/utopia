@@ -75,7 +75,7 @@ export const convertToAbsoluteAndMoveStrategy: CanvasStrategy = {
       show: 'visible-only-while-active',
     },
   ], // Uses existing hooks in select-mode-hooks.tsx
-  fitness: (canvasState, interactionState, sessionState) => {
+  fitness: (canvasState, interactionState, customStrategyState) => {
     return convertToAbsoluteAndMoveStrategy.isApplicable(
       canvasState,
       interactionState,
