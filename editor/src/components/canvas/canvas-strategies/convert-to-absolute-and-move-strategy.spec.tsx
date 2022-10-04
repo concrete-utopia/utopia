@@ -16,7 +16,7 @@ import {
   testPrintCodeFromEditorState,
 } from '../ui-jsx.test-utils'
 import { pickCanvasStateFromEditorState } from './canvas-strategies'
-import { escapeHatchStrategy } from './escape-hatch-strategy'
+import { convertToAbsoluteAndMoveStrategy } from './convert-to-absolute-and-move-strategy'
 import { InteractionSession, StrategyState } from './interaction-state'
 import { createMouseInteractionForTests } from './interaction-state.test-utils'
 
@@ -174,12 +174,12 @@ function dragByPixels(
       null as any, // the strategy does not use this
       dragVector,
     ),
-    metadata: null as any, // the strategy does not use this
-    allElementProps: null as any, // the strategy does not use this
-    startingTargetParentToFilterOut: null,
+    latestMetadata: null as any, // the strategy does not use this
+    latestAllElementProps: null as any, // the strategy does not use this
+    startingTargetParentsToFilterOut: null,
   }
 
-  const strategyResult = escapeHatchStrategy.apply(
+  const strategyResult = convertToAbsoluteAndMoveStrategy.apply(
     pickCanvasStateFromEditorState(editorState, createBuiltInDependenciesList(null)),
     interactionSession,
     {
@@ -194,6 +194,7 @@ function dragByPixels(
         escapeHatchActivated: true,
       },
     } as StrategyState,
+    'end-interaction',
   )
 
   const finalEditor = foldAndApplyCommands(

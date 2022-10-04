@@ -4,14 +4,21 @@ import {
   makeTestProjectCodeWithSnippet,
   renderTestEditorWithCode,
 } from '../ui-jsx.test-utils'
-import { act, fireEvent } from '@testing-library/react'
 import { CanvasControlsContainerID } from '../controls/new-canvas-controls'
-import { offsetPoint, windowPoint, WindowPoint } from '../../../core/shared/math-utils'
-import { emptyModifiers, Modifiers } from '../../../utils/modifiers'
+import { cmdModifier, emptyModifiers, Modifiers } from '../../../utils/modifiers'
+import {
+  mouseClickAtPoint,
+  mouseDownAtPoint,
+  mouseDragFromPointWithDelta,
+  mouseMoveToPoint,
+} from '../event-helpers.test-utils'
+import { rectangleDifference, windowPoint, WindowPoint } from '../../../core/shared/math-utils'
 import * as EP from '../../../core/shared/element-path'
+import { MetadataUtils } from '../../../core/model/element-metadata-utils'
+import { assert } from 'chai'
 
-const TestProject = `
-<div style={{ width: '100%', height: '100%', position: 'absolute' }} data-uid='container'>
+const TestProjectBlockElements = (additionalContainerStyle: string = '') => `
+<div style={{ width: '100%', height: '100%', position: 'absolute', ${additionalContainerStyle} }} data-uid='container'>
   <div
     style={{
       width: 50,
@@ -38,26 +45,6 @@ const TestProject = `
     }}
     data-uid='ccc'
     data-testid='ccc'
-  />
-  <div
-    style={{
-      height: 80,
-      width: 80,
-      backgroundColor: '#D9DDAA80',
-      display: 'inline-block',
-    }}
-    data-uid='ddd'
-    data-testid='ddd'
-  />
-  <div
-    style={{
-      height: 80,
-      width: 80,
-      backgroundColor: '#DDAAB880',
-      display: 'inline-block',
-    }}
-    data-uid='eee'
-    data-testid='eee'
   />
 </div>
 `
@@ -91,31 +78,11 @@ const TestProjectCCCDraggedToSecond = `
     data-uid='bbb'
     data-testid='bbb'
   />
-  <div
-    style={{
-      height: 80,
-      width: 80,
-      backgroundColor: '#D9DDAA80',
-      display: 'inline-block',
-    }}
-    data-uid='ddd'
-    data-testid='ddd'
-  />
-  <div
-    style={{
-      height: 80,
-      width: 80,
-      backgroundColor: '#DDAAB880',
-      display: 'inline-block',
-    }}
-    data-uid='eee'
-    data-testid='eee'
-  />
 </div>
 `
 
-const TestProjectCCCInlineBlock = `
-<div style={{ width: '100%', height: '100%', position: 'absolute' }} data-uid='container'>
+const TestProjectMixedProperties = `
+<div style={{ width: '100%', height: '100%' }} data-uid='container'>
   <div
     style={{
       width: 50,
@@ -136,16 +103,6 @@ const TestProjectCCCInlineBlock = `
   />
   <div
     style={{
-      height: 80,
-      width: 80,
-      backgroundColor: '#D9DDAA80',
-      display: 'inline-block',
-    }}
-    data-uid='ddd'
-    data-testid='ddd'
-  />
-  <div
-    style={{
       width: 50,
       height: 50,
       backgroundColor: '#292E74',
@@ -153,6 +110,16 @@ const TestProjectCCCInlineBlock = `
     }}
     data-uid='ccc'
     data-testid='ccc'
+  />
+  <div
+    style={{
+      height: 80,
+      width: 80,
+      backgroundColor: '#D9DDAA80',
+      display: 'inline-block',
+    }}
+    data-uid='ddd'
+    data-testid='ddd'
   />
   <div
     style={{
@@ -167,144 +134,201 @@ const TestProjectCCCInlineBlock = `
 </div>
 `
 
+const TestCodeWrappingTexts = `
+<div style={{ width: 150, height: '100%' }} data-uid='container'>
+  <span
+    data-uid='aaa'
+    data-testid='aaa'
+  >Text 1 hello</span>
+  <span
+    data-uid='bbb'
+    data-testid='bbb'
+  >Text 2 very long text</span>
+  <span
+    data-uid='ccc'
+    data-testid='ccc'
+  >Text 3 this is an even longer text here</span>
+  <span
+    data-uid='ddd'
+    data-testid='ddd'
+  >Text 4 hi</span>
+</div>
+`
+
 function dragElement(
   renderResult: EditorRenderResult,
   targetTestId: string,
   dragDelta: WindowPoint,
   modifiers: Modifiers,
   expectedNavigatorTargetsDuringMove: Array<string>,
-): void {
+) {
   const targetElement = renderResult.renderedDOM.getByTestId(targetTestId)
   const targetElementBounds = targetElement.getBoundingClientRect()
-  const canvasControl = renderResult.renderedDOM.getByTestId(CanvasControlsContainerID)
+  const canvasControlsLayer = renderResult.renderedDOM.getByTestId(CanvasControlsContainerID)
 
   const startPoint = windowPoint({ x: targetElementBounds.x + 5, y: targetElementBounds.y + 5 })
-  const endPoint = offsetPoint(startPoint, dragDelta)
-  fireEvent(
-    canvasControl,
-    new MouseEvent('mousedown', {
-      bubbles: true,
-      cancelable: true,
-      metaKey: true,
-      altKey: modifiers.alt,
-      shiftKey: modifiers.shift,
-      clientX: startPoint.x,
-      clientY: startPoint.y,
-      buttons: 1,
-    }),
-  )
+  mouseClickAtPoint(canvasControlsLayer, startPoint, { modifiers: cmdModifier })
+  mouseDragFromPointWithDelta(canvasControlsLayer, startPoint, dragDelta, {
+    modifiers: modifiers,
+    midDragCallback: () => {
+      expect(
+        renderResult.getEditorState().derived.visibleNavigatorTargets.map(EP.toString),
+      ).toEqual(expectedNavigatorTargetsDuringMove)
+    },
+  })
+}
 
-  fireEvent(
-    canvasControl,
-    new MouseEvent('mousemove', {
-      bubbles: true,
-      cancelable: true,
-      metaKey: modifiers.cmd,
-      altKey: modifiers.alt,
-      shiftKey: modifiers.shift,
-      clientX: endPoint.x,
-      clientY: endPoint.y,
-      buttons: 1,
-    }),
-  )
+function startDraggingAnElement(
+  renderResult: EditorRenderResult,
+  targetTestId: string,
+  dragDelta: WindowPoint,
+) {
+  const targetElement = renderResult.renderedDOM.getByTestId(targetTestId)
+  const targetElementBounds = targetElement.getBoundingClientRect()
+  const canvasControlsLayer = renderResult.renderedDOM.getByTestId(CanvasControlsContainerID)
 
-  expect(renderResult.getEditorState().derived.visibleNavigatorTargets.map(EP.toString)).toEqual(
-    expectedNavigatorTargetsDuringMove,
-  )
+  const startPoint = windowPoint({ x: targetElementBounds.x + 5, y: targetElementBounds.y + 5 })
 
-  fireEvent(
-    window,
-    new MouseEvent('mouseup', {
-      bubbles: true,
-      cancelable: true,
-      metaKey: modifiers.cmd,
-      altKey: modifiers.alt,
-      shiftKey: modifiers.shift,
-      clientX: endPoint.x,
-      clientY: endPoint.y,
-    }),
-  )
+  mouseDownAtPoint(canvasControlsLayer, startPoint, {})
+  mouseMoveToPoint(canvasControlsLayer, dragDelta, {})
 }
 
 describe('Flow Reorder Strategy (Mixed Display Type)', () => {
   it('simple dragging the element in a block reorders it', async () => {
     const renderResult = await renderTestEditorWithCode(
-      makeTestProjectCodeWithSnippet(TestProject),
+      makeTestProjectCodeWithSnippet(TestProjectBlockElements()),
       'await-first-dom-report',
     )
 
     // drag element 'CCC' up a little to replace it with it's direct sibling
     const dragDelta = windowPoint({ x: 0, y: -45 })
-    act(() =>
-      dragElement(renderResult, 'ccc', dragDelta, emptyModifiers, [
-        'utopia-storyboard-uid/scene-aaa',
-        'utopia-storyboard-uid/scene-aaa/app-entity',
-        'utopia-storyboard-uid/scene-aaa/app-entity:container',
-        'utopia-storyboard-uid/scene-aaa/app-entity:container/aaa',
-        'utopia-storyboard-uid/scene-aaa/app-entity:container/ccc',
-        'utopia-storyboard-uid/scene-aaa/app-entity:container/bbb',
-        'utopia-storyboard-uid/scene-aaa/app-entity:container/ddd',
-        'utopia-storyboard-uid/scene-aaa/app-entity:container/eee',
-      ]),
-    )
+    dragElement(renderResult, 'ccc', dragDelta, emptyModifiers, [
+      'utopia-storyboard-uid/scene-aaa',
+      'utopia-storyboard-uid/scene-aaa/app-entity',
+      'utopia-storyboard-uid/scene-aaa/app-entity:container',
+      'utopia-storyboard-uid/scene-aaa/app-entity:container/aaa',
+      'utopia-storyboard-uid/scene-aaa/app-entity:container/ccc',
+      'utopia-storyboard-uid/scene-aaa/app-entity:container/bbb',
+    ])
 
     await renderResult.getDispatchFollowUpActionsFinished()
     expect(getPrintedUiJsCode(renderResult.getEditorState())).toEqual(
       makeTestProjectCodeWithSnippet(TestProjectCCCDraggedToSecond),
     )
   })
-  it('dragging a block element over an inline row will insert into it with conversion', async () => {
+
+  it('dragging an element over a sibling with float:right will skip reorder', async () => {
+    const TestCodeWithFloat = `
+      <div style={{ width: 100, height: 50, position: 'absolute' }} data-uid='container'>
+        <div
+          style={{
+            width: 50,
+            height: 50,
+            backgroundColor: '#CA1E4C80',
+            float: 'right'
+          }}
+          data-uid='aaa'
+          data-testid='aaa'
+        />
+        <div
+          style={{
+            width: 50,
+            height: 50,
+            backgroundColor: '#FF00FF',
+          }}
+          data-uid='bbb'
+          data-testid='bbb'
+        />
+      </div>
+    `
     const renderResult = await renderTestEditorWithCode(
-      makeTestProjectCodeWithSnippet(TestProject),
+      makeTestProjectCodeWithSnippet(TestCodeWithFloat),
       'await-first-dom-report',
     )
 
-    // drag element 'CCC' right to insert into the row
-    const dragDelta = windowPoint({ x: 120, y: 0 })
-    act(() =>
-      dragElement(renderResult, 'ccc', dragDelta, emptyModifiers, [
+    const elementAFrame = MetadataUtils.getFrameInCanvasCoords(
+      EP.fromString('utopia-storyboard-uid/scene-aaa/app-entity:container/aaa'),
+      renderResult.getEditorState().editor.jsxMetadata,
+    )
+    const elementBFrame = MetadataUtils.getFrameInCanvasCoords(
+      EP.fromString('utopia-storyboard-uid/scene-aaa/app-entity:container/bbb'),
+      renderResult.getEditorState().editor.jsxMetadata,
+    )
+
+    if (elementAFrame == null || elementBFrame == null) {
+      assert.fail()
+    } else {
+      // drag element 'B' over 'A' will skip reorder
+      const dragDelta = windowPoint(rectangleDifference(elementBFrame, elementAFrame))
+      dragElement(renderResult, 'bbb', dragDelta, emptyModifiers, [
         'utopia-storyboard-uid/scene-aaa',
         'utopia-storyboard-uid/scene-aaa/app-entity',
         'utopia-storyboard-uid/scene-aaa/app-entity:container',
         'utopia-storyboard-uid/scene-aaa/app-entity:container/aaa',
         'utopia-storyboard-uid/scene-aaa/app-entity:container/bbb',
-        'utopia-storyboard-uid/scene-aaa/app-entity:container/ddd',
-        'utopia-storyboard-uid/scene-aaa/app-entity:container/ccc',
-        'utopia-storyboard-uid/scene-aaa/app-entity:container/eee',
-      ]),
-    )
+      ])
 
-    await renderResult.getDispatchFollowUpActionsFinished()
-
-    expect(getPrintedUiJsCode(renderResult.getEditorState())).toEqual(
-      makeTestProjectCodeWithSnippet(TestProjectCCCInlineBlock),
-    )
+      await renderResult.getDispatchFollowUpActionsFinished()
+      expect(getPrintedUiJsCode(renderResult.getEditorState())).toEqual(
+        makeTestProjectCodeWithSnippet(TestCodeWithFloat),
+      )
+    }
   })
-  it('dragging an inline element over a block column will insert into it with conversion and removes the default display prop', async () => {
+  it('flow reorder is not allowed with mixed inline and block siblings', async () => {
     const renderResult = await renderTestEditorWithCode(
-      makeTestProjectCodeWithSnippet(TestProjectCCCInlineBlock),
+      makeTestProjectCodeWithSnippet(TestProjectMixedProperties),
       'await-first-dom-report',
     )
 
-    // drag element 'CCC' up to pull out of the row and insert into block
-    const dragDelta = windowPoint({ x: 0, y: -100 })
-    act(() =>
-      dragElement(renderResult, 'ccc', dragDelta, emptyModifiers, [
-        'utopia-storyboard-uid/scene-aaa',
-        'utopia-storyboard-uid/scene-aaa/app-entity',
-        'utopia-storyboard-uid/scene-aaa/app-entity:container',
-        'utopia-storyboard-uid/scene-aaa/app-entity:container/aaa',
-        'utopia-storyboard-uid/scene-aaa/app-entity:container/ccc',
-        'utopia-storyboard-uid/scene-aaa/app-entity:container/bbb',
-        'utopia-storyboard-uid/scene-aaa/app-entity:container/ddd',
-        'utopia-storyboard-uid/scene-aaa/app-entity:container/eee',
-      ]),
-    )
+    // drag element 'CCC' up a little
+    const dragDelta = windowPoint({ x: 0, y: -10 })
+    startDraggingAnElement(renderResult, 'ccc', dragDelta)
 
     await renderResult.getDispatchFollowUpActionsFinished()
+    const strategies = renderResult.getEditorState().strategyState.sortedApplicableStrategies
 
-    expect(getPrintedUiJsCode(renderResult.getEditorState())).toEqual(
-      makeTestProjectCodeWithSnippet(TestProjectCCCDraggedToSecond),
+    const flowReorderNotInStrategies = Array.isArray(strategies)
+      ? strategies.findIndex((strategy) => strategy.name === 'FLOW_REORDER')
+      : `no applicable strategies`
+
+    expect(flowReorderNotInStrategies).toEqual(-1)
+  })
+  it('flow reorder is not allowed in a layout with wrapping multiline texts', async () => {
+    const renderResult = await renderTestEditorWithCode(
+      makeTestProjectCodeWithSnippet(TestCodeWrappingTexts),
+      'await-first-dom-report',
     )
+
+    // drag element 'CCC' up a little
+    const dragDelta = windowPoint({ x: 0, y: -10 })
+    startDraggingAnElement(renderResult, 'ccc', dragDelta)
+
+    await renderResult.getDispatchFollowUpActionsFinished()
+    const strategies = renderResult.getEditorState().strategyState.sortedApplicableStrategies
+
+    const flowReorderNotInStrategies = Array.isArray(strategies)
+      ? strategies.findIndex((strategy) => strategy.name === 'FLOW_REORDER')
+      : `no applicable strategies`
+
+    expect(flowReorderNotInStrategies).toEqual(-1)
+  })
+  it('flow reorder is not allowed in a layout where there are multiple columns', async () => {
+    const renderResult = await renderTestEditorWithCode(
+      makeTestProjectCodeWithSnippet(TestProjectBlockElements(`columns: 2`)),
+      'await-first-dom-report',
+    )
+
+    // drag element 'CCC' up a little
+    const dragDelta = windowPoint({ x: 0, y: -10 })
+    startDraggingAnElement(renderResult, 'ccc', dragDelta)
+
+    await renderResult.getDispatchFollowUpActionsFinished()
+    const strategies = renderResult.getEditorState().strategyState.sortedApplicableStrategies
+
+    const flowReorderNotInStrategies = Array.isArray(strategies)
+      ? strategies.findIndex((strategy) => strategy.name === 'FLOW_REORDER')
+      : `no applicable strategies`
+
+    expect(flowReorderNotInStrategies).toEqual(-1)
   })
 })

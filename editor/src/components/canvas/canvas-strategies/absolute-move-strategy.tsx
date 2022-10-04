@@ -1,8 +1,6 @@
 import { MetadataUtils } from '../../../core/model/element-metadata-utils'
 import * as EP from '../../../core/shared/element-path'
-import { ElementInstanceMetadataMap } from '../../../core/shared/element-template'
-import { CanvasPoint, offsetPoint, zeroCanvasPoint } from '../../../core/shared/math-utils'
-import { ElementPath } from '../../../core/shared/project-file-types'
+import { CanvasPoint } from '../../../core/shared/math-utils'
 import { CanvasFrameAndTarget, CSSCursor } from '../canvas-types'
 import { AdjustCssLengthProperty } from '../commands/adjust-css-length-command'
 import { CanvasCommand } from '../commands/commands'
@@ -14,7 +12,6 @@ import { updateHighlightedViews } from '../commands/update-highlighted-views-com
 import { ParentBounds } from '../controls/parent-bounds'
 import { ParentOutlines } from '../controls/parent-outlines'
 import { determineConstrainedDragAxis } from '../controls/select-mode/move-utils'
-import { ConstrainedDragAxis, GuidelineWithSnappingVectorAndPointsOfRelevance } from '../guideline'
 import {
   CanvasStrategy,
   emptyStrategyApplicationResult,
@@ -23,11 +20,10 @@ import {
   strategyApplicationResult,
   StrategyApplicationResult,
 } from './canvas-strategy-types'
-import { DragInteractionData, InteractionSession, StrategyState } from './interaction-state'
+import { InteractionSession, StrategyState } from './interaction-state'
 import {
   getAbsoluteMoveCommandsForSelectedElement,
   getDragTargets,
-  getMultiselectBounds,
   snapDrag,
 } from './shared-absolute-move-strategy-helpers'
 import { honoursPropsPosition } from './absolute-utils'
@@ -35,7 +31,7 @@ import { collectParentAndSiblingGuidelines } from '../controls/guideline-helpers
 
 export const absoluteMoveStrategy: CanvasStrategy = {
   id: 'ABSOLUTE_MOVE',
-  name: 'Move',
+  name: () => 'Move',
   isApplicable: (canvasState, _interactionState, metadata) => {
     const selectedElements = getTargetPathsFromInteractionTarget(canvasState.interactionTarget)
     if (selectedElements.length > 0) {

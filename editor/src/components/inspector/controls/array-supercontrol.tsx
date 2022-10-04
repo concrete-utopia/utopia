@@ -63,7 +63,7 @@ export function useArraySuperControl<T>(
 
   React.useEffect(() => {
     localDraggingIndex.current = values.map((_, index) => index)
-    setSprings(getStyleForArrayDragItem(localDraggingIndex.current, reversed, rowHeight))
+    void setSprings(getStyleForArrayDragItem(localDraggingIndex.current, reversed, rowHeight))
   }, [values, setSprings, reversed, rowHeight])
 
   const bind = useDrag(({ args: [currentlyDraggingOriginalIndex], down, movement: [, y] }) => {
@@ -80,7 +80,7 @@ export function useArraySuperControl<T>(
       newCurrentlyDraggingTemporaryIndex,
       localDraggingIndex.current,
     )
-    setSprings(
+    void setSprings(
       getStyleForArrayDragItem(localDraggingIndex.current, reversed, rowHeight, down, {
         currentlyDraggingOriginalIndex: currentlyDraggingOriginalIndex as number,
         currentlyDraggingTemporaryIndex,

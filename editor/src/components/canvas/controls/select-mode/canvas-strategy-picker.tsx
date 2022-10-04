@@ -1,4 +1,5 @@
 import * as React from 'react'
+import { mod } from '../../../../core/shared/math-utils'
 import { when } from '../../../../utils/react-conditionals'
 import { FlexRow, FlexColumn, useColorTheme, UtopiaStyles } from '../../../../uuiui'
 import { useEditorState } from '../../../editor/store/store-hook'
@@ -9,9 +10,9 @@ import { CanvasStrategy } from '../../canvas-strategies/canvas-strategy-types'
 export const CanvasStrategyPicker = React.memo(() => {
   const colorTheme = useColorTheme()
   const dispatch = useEditorState((store) => store.dispatch, 'CanvasStrategyPicker dispatch')
-  const { otherPossibleStrategies } = useEditorState(
+  const { allApplicableStrategies } = useEditorState(
     (store) => ({
-      otherPossibleStrategies: store.strategyState.sortedApplicableStrategies,
+      allApplicableStrategies: store.strategyState.sortedApplicableStrategies,
     }),
     'CanvasStrategyPicker strategyState.currentStrategy',
   )
@@ -21,7 +22,7 @@ export const CanvasStrategyPicker = React.memo(() => {
     'Strategy failure',
   )
 
-  const onTabPressed = React.useCallback(
+  const onSetStrategy = React.useCallback(
     (newStrategy: CanvasStrategy) => {
       dispatch([CanvasActions.setUsersPreferredStrategy(newStrategy.id)])
     },
@@ -29,31 +30,46 @@ export const CanvasStrategyPicker = React.memo(() => {
   )
 
   React.useEffect(() => {
-    function handleTabKey(event: KeyboardEvent) {
+    function handleKeyDown(event: KeyboardEvent) {
+      const keyIntValue = Number.parseInt(event.key)
+      const isStrategySwitchingKey = event.key === 'Tab' || !isNaN(keyIntValue)
       if (
-        event.key === 'Tab' &&
+        isStrategySwitchingKey &&
         activeStrategy != null &&
-        otherPossibleStrategies != null &&
-        otherPossibleStrategies.length > 0
+        allApplicableStrategies != null &&
+        allApplicableStrategies.length > 0
       ) {
         event.preventDefault()
         event.stopPropagation()
         event.stopImmediatePropagation()
 
-        const activeStrategyIndex = otherPossibleStrategies.findIndex(
-          (strategy: CanvasStrategy) => strategy.id === activeStrategy,
-        )
-        const nextStrategyIndex = (activeStrategyIndex + 1) % otherPossibleStrategies.length
-        const nextStrategy = otherPossibleStrategies[nextStrategyIndex]
+        if (event.key === 'Tab') {
+          const activeStrategyIndex = allApplicableStrategies.findIndex(
+            ({ strategy }) => strategy.id === activeStrategy,
+          )
 
-        onTabPressed(nextStrategy)
+          const newStrategyIndex = event.shiftKey
+            ? activeStrategyIndex - 1
+            : activeStrategyIndex + 1
+
+          const nextStrategyIndex = mod(newStrategyIndex, allApplicableStrategies.length)
+          const nextStrategy = allApplicableStrategies[nextStrategyIndex].strategy
+
+          onSetStrategy(nextStrategy)
+        } else if (!isNaN(keyIntValue)) {
+          const index = keyIntValue - 1
+          const nextStrategy = allApplicableStrategies[index]
+          if (nextStrategy != null) {
+            onSetStrategy(nextStrategy.strategy)
+          }
+        }
       }
     }
-    window.addEventListener('keydown', handleTabKey, true)
+    window.addEventListener('keydown', handleKeyDown, true)
     return function cleanup() {
-      window.removeEventListener('keydown', handleTabKey, true)
+      window.removeEventListener('keydown', handleKeyDown, true)
     }
-  }, [onTabPressed, activeStrategy, otherPossibleStrategies])
+  }, [onSetStrategy, activeStrategy, allApplicableStrategies])
 
   return (
     <>
@@ -71,7 +87,6 @@ export const CanvasStrategyPicker = React.memo(() => {
           <FlexColumn
             style={{
               minHeight: 84,
-              width: 120,
               display: 'flex',
               alignItems: 'stretch',
               padding: 4,
@@ -81,7 +96,7 @@ export const CanvasStrategyPicker = React.memo(() => {
               boxShadow: UtopiaStyles.popup.boxShadow,
             }}
           >
-            {otherPossibleStrategies?.map((strategy) => {
+            {allApplicableStrategies?.map(({ strategy, name }, index) => {
               return (
                 <FlexRow
                   key={strategy.id}
@@ -95,7 +110,8 @@ export const CanvasStrategyPicker = React.memo(() => {
                     opacity: isStrategyFailure && strategy.id === activeStrategy ? 0.5 : 1,
                   }}
                 >
-                  {strategy.name}
+                  <KeyIndicator key={index + 1} keyNumber={index + 1} />
+                  {name}
                 </FlexRow>
               )
             })}
@@ -120,3 +136,33 @@ export const CanvasStrategyPicker = React.memo(() => {
     </>
   )
 })
+
+const KeyIndicator = ({ keyNumber }: { keyNumber: number }) => {
+  const height = 12
+  const width = 12
+  return (
+    <div
+      style={{
+        width: width,
+        height: height,
+        marginRight: 5,
+        border: '1px solid rgb(0, 0, 0, 0.4)',
+        borderRadius: 3,
+        display: 'flex',
+        flexDirection: 'row',
+        justifyContent: 'center',
+        alignItems: 'center',
+      }}
+    >
+      <span
+        style={{
+          fontWeight: 700,
+          color: 'rgb(0, 0, 0, 0.4)',
+          fontSize: '8px',
+        }}
+      >
+        {keyNumber}
+      </span>
+    </div>
+  )
+}

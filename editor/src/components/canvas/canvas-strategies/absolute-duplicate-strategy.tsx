@@ -6,7 +6,7 @@ import { ElementInstanceMetadataMap } from '../../../core/shared/element-templat
 import { ElementPath } from '../../../core/shared/project-file-types'
 import { EditorState, EditorStatePatch } from '../../editor/store/editor-state'
 import { CSSCursor } from '../canvas-types'
-import { foldAndApplyCommandsInner, WhenToRun } from '../commands/commands'
+import { foldAndApplyCommandsInner } from '../commands/commands'
 import { DuplicateElement, duplicateElement } from '../commands/duplicate-element-command'
 import { setCursorCommand } from '../commands/set-cursor-command'
 import { setElementsToRerenderCommand } from '../commands/set-elements-to-rerender-command'
@@ -19,14 +19,15 @@ import { pickCanvasStateFromEditorState } from './canvas-strategies'
 import {
   CanvasStrategy,
   getTargetPathsFromInteractionTarget,
+  InteractionLifecycle,
   strategyApplicationResult,
 } from './canvas-strategy-types'
-import { InteractionSession, interactionSession, StrategyState } from './interaction-state'
+import { InteractionSession, StrategyState } from './interaction-state'
 import { getDragTargets } from './shared-absolute-move-strategy-helpers'
 
 export const absoluteDuplicateStrategy: CanvasStrategy = {
   id: 'ABSOLUTE_DUPLICATE',
-  name: 'Duplicate',
+  name: () => 'Duplicate',
   isApplicable: (canvasState, interactionState, metadata) => {
     const selectedElements = getTargetPathsFromInteractionTarget(canvasState.interactionTarget)
     if (
@@ -80,7 +81,7 @@ export const absoluteDuplicateStrategy: CanvasStrategy = {
     }
     return 0
   },
-  apply: (canvasState, interactionState, strategyState) => {
+  apply: (canvasState, interactionState, strategyState, strategyLifecycle) => {
     const selectedElements = getTargetPathsFromInteractionTarget(canvasState.interactionTarget)
     if (
       interactionState.interactionData.type === 'DRAG' &&
@@ -118,7 +119,7 @@ export const absoluteDuplicateStrategy: CanvasStrategy = {
           ...duplicateCommands,
           setElementsToRerenderCommand([...selectedElements, ...newPaths]),
           updateSelectedViews('always', newPaths),
-          updateFunctionCommand('always', (editorState, lifecycle) =>
+          updateFunctionCommand('always', (editorState, commandLifecycle) =>
             runMoveStrategyForFreshlyDuplicatedElements(
               canvasState.builtInDependencies,
               editorState,
@@ -127,7 +128,8 @@ export const absoluteDuplicateStrategy: CanvasStrategy = {
                 startingMetadata: withDuplicatedMetadata,
               },
               interactionState,
-              lifecycle,
+              commandLifecycle,
+              strategyLifecycle,
             ),
           ),
           setCursorCommand('mid-interaction', CSSCursor.Duplicate),
@@ -148,7 +150,8 @@ function runMoveStrategyForFreshlyDuplicatedElements(
   editorState: EditorState,
   strategyState: StrategyState,
   interactionState: InteractionSession,
-  commandLifecycle: 'mid-interaction' | 'end-interaction',
+  commandLifecycle: InteractionLifecycle,
+  strategyLifecycle: InteractionLifecycle,
 ): Array<EditorStatePatch> {
   const canvasState = pickCanvasStateFromEditorState(editorState, builtInDependencies)
 
@@ -156,6 +159,7 @@ function runMoveStrategyForFreshlyDuplicatedElements(
     canvasState,
     interactionState,
     strategyState,
+    strategyLifecycle,
   ).commands
 
   return foldAndApplyCommandsInner(editorState, [], [], moveCommands, commandLifecycle).statePatches

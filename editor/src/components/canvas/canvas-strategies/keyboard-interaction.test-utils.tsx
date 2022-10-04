@@ -42,9 +42,9 @@ export function pressKeys(
       modifiers,
       null as any, // the strategy does not use this
     ),
-    metadata: metadata,
-    allElementProps: null as any,
-    startingTargetParentToFilterOut: null,
+    latestMetadata: metadata,
+    latestAllElementProps: null as any,
+    startingTargetParentsToFilterOut: null,
   }
 
   const strategyResult = strategy.apply(
@@ -62,6 +62,7 @@ export function pressKeys(
       startingAllElementProps: { 'scene-aaa/app-entity:aaa/bbb': {} },
       customStrategyState: defaultCustomStrategyState(),
     } as StrategyState,
+    'end-interaction',
   )
 
   expect(strategyResult.customStatePatch).toEqual({})

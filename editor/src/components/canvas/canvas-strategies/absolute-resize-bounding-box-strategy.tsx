@@ -26,7 +26,11 @@ import { updateHighlightedViews } from '../commands/update-highlighted-views-com
 import { ParentBounds } from '../controls/parent-bounds'
 import { ParentOutlines } from '../controls/parent-outlines'
 import { AbsoluteResizeControl } from '../controls/select-mode/absolute-resize-control'
-import { AbsolutePin, ensureAtLeastTwoPinsForEdgePosition } from './absolute-resize-helpers'
+import {
+  AbsolutePin,
+  ensureAtLeastTwoPinsForEdgePosition,
+  supportsAbsoluteResize,
+} from './absolute-resize-helpers'
 import {
   CanvasStrategy,
   emptyStrategyApplicationResult,
@@ -43,22 +47,16 @@ import * as EP from '../../../core/shared/element-path'
 import { ZeroSizeResizeControlWrapper } from '../controls/zero-sized-element-controls'
 import { SetCssLengthProperty, setCssLengthProperty } from '../commands/set-css-length-command'
 import { pushIntendedBounds } from '../commands/push-intended-bounds-command'
-import { honoursPropsPosition, honoursPropsSize } from './absolute-utils'
 
 export const absoluteResizeBoundingBoxStrategy: CanvasStrategy = {
   id: 'ABSOLUTE_RESIZE_BOUNDING_BOX',
-  name: 'Resize',
+  name: () => 'Resize',
   isApplicable: (canvasState, interactionState, metadata, allElementProps) => {
     const selectedElements = getTargetPathsFromInteractionTarget(canvasState.interactionTarget)
     if (selectedElements.length > 0) {
       const filteredSelectedElements = getDragTargets(selectedElements)
       return filteredSelectedElements.every((element) => {
-        const elementMetadata = MetadataUtils.findElementByElementPath(metadata, element)
-        return (
-          elementMetadata?.specialSizeMeasurements.position === 'absolute' &&
-          honoursPropsPosition(canvasState, element) &&
-          honoursPropsSize(canvasState, element)
-        )
+        return supportsAbsoluteResize(metadata, element, canvasState)
       })
     } else {
       return false

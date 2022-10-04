@@ -23,8 +23,10 @@ import           Protolude                      hiding (Handler)
 import           Servant
 import           System.Environment
 import           System.Log.FastLogger
+import           URI.ByteString
 import           Utopia.Web.Assets
 import           Utopia.Web.Auth
+import           Utopia.Web.Auth.Github
 import           Utopia.Web.Auth.Session
 import           Utopia.Web.Auth.Types
 import qualified Utopia.Web.Database            as DB
@@ -50,6 +52,7 @@ data ProductionServerResources = ProductionServerResources
                                , _projectPool             :: DBPool
                                , _auth0Resources          :: Auth0Resources
                                , _awsResources            :: AWSResources
+                               , _githubResources         :: GithubAuthResources
                                , _sessionState            :: SessionState
                                , _serverPort              :: Int
                                , _storeForMetrics         :: Store
@@ -79,6 +82,8 @@ innerServerExecutor BadRequest = do
   throwError err400
 innerServerExecutor NotAuthenticated = do
   throwError err401
+innerServerExecutor (TempRedirect uri) = do
+  throwError err302 { errHeaders = [("Location", serializeURIRef' uri)]}
 innerServerExecutor NotModified = do
   throwError err304
 innerServerExecutor (CheckAuthCode authCode action) = do
@@ -242,6 +247,30 @@ innerServerExecutor (GetDownloadBranchFolders action) = do
   downloads <- fmap _branchDownloads ask
   folders <- liftIO $ maybe (pure []) getDownloadedLocalFolders downloads
   pure $ action folders
+innerServerExecutor (GetGithubAuthorizationURI action) = do
+  githubResources <- fmap _githubResources ask
+  let uri = getAuthorizationURI githubResources
+  pure $ action uri
+innerServerExecutor (GetGithubAccessToken user authCode action) = do
+  githubResources <- fmap _githubResources ask
+  metrics <- fmap _databaseMetrics ask
+  logger <- fmap _logger ask
+  pool <- fmap _projectPool ask
+  result <- getAndHandleGithubAccessToken githubResources logger metrics pool user authCode
+  pure $ action result
+innerServerExecutor (GetGithubAuthentication user action) = do
+  metrics <- fmap _databaseMetrics ask
+  pool <- fmap _projectPool ask
+  result <- liftIO $ DB.lookupGithubAuthenticationDetails metrics pool user
+  pure $ action result
+innerServerExecutor (SaveToGithubRepo user model action) = do
+  githubResources <- fmap _githubResources ask
+  metrics <- fmap _databaseMetrics ask
+  logger <- fmap _logger ask
+  pool <- fmap _projectPool ask
+  result <- createTreeAndSaveToGithub githubResources logger metrics pool user model
+  pure $ action result
+
 
 readEditorContentFromDisk :: Maybe BranchDownloads -> Maybe Text -> Text -> IO Text
 readEditorContentFromDisk (Just downloads) (Just branchName) fileName = do
@@ -278,9 +307,11 @@ initialiseResources = do
   _commitHash <- toS <$> getEnv "UTOPIA_SHA"
   _projectPool <- DB.createDatabasePoolFromEnvironment
   maybeAuth0Resources <- getAuth0Environment
-  _auth0Resources <- maybe (panic "No Auth0 environment configured") return maybeAuth0Resources
+  _auth0Resources <- maybe (panic "No Auth0 environment configured.") pure maybeAuth0Resources
   maybeAws <- getAmazonResourcesFromEnvironment
-  _awsResources <- maybe (panic "No AWS environment configured") return maybeAws
+  _awsResources <- maybe (panic "No AWS environment configured.") pure maybeAws
+  maybeGithubAuthResources <- getGithubAuthResources
+  _githubResources <- maybe (panic "No Github resources configured.") pure maybeGithubAuthResources
   _sessionState <- createSessionState _projectPool
   _serverPort <- portFromEnvironment
   _storeForMetrics <- newStore

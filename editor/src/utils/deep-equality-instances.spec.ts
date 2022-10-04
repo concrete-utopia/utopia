@@ -428,6 +428,7 @@ describe('NavigatorStateKeepDeepEquality', () => {
     },
     collapsedViews: [EP.elementPath([['scene'], ['aaa', 'bbb']])],
     renamingTarget: EP.elementPath([['scene'], ['aaa', 'bbb']]),
+    highlightedTargets: [],
   }
   const newSameValue: NavigatorState = {
     minimised: false,
@@ -437,6 +438,7 @@ describe('NavigatorStateKeepDeepEquality', () => {
     },
     collapsedViews: [EP.elementPath([['scene'], ['aaa', 'bbb']])],
     renamingTarget: EP.elementPath([['scene'], ['aaa', 'bbb']]),
+    highlightedTargets: [],
   }
   const newDifferentValue: NavigatorState = {
     minimised: true,
@@ -446,6 +448,7 @@ describe('NavigatorStateKeepDeepEquality', () => {
     },
     collapsedViews: [EP.elementPath([['scene'], ['aaa', 'bbb']])],
     renamingTarget: EP.elementPath([['scene'], ['aaa', 'bbb']]),
+    highlightedTargets: [],
   }
 
   it('same reference returns the same reference', () => {

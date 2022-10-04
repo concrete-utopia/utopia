@@ -104,6 +104,11 @@ import {
 import { flushSync } from 'react-dom'
 import { shouldInspectorUpdate } from '../inspector/inspector'
 import { SampleNodeModules } from '../custom-code/code-file.test-utils'
+import { CanvasStrategy } from './canvas-strategies/canvas-strategy-types'
+import {
+  MetaCanvasStrategy,
+  RegisteredCanvasStrategies,
+} from './canvas-strategies/canvas-strategies'
 
 // eslint-disable-next-line no-unused-expressions
 typeof process !== 'undefined' &&
@@ -138,7 +143,11 @@ const FailJestOnCanvasError = () => {
 }
 
 export interface EditorRenderResult {
-  dispatch: (actions: ReadonlyArray<EditorAction>, waitForDOMReport: boolean) => Promise<void>
+  dispatch: (
+    actions: ReadonlyArray<EditorAction>,
+    waitForDOMReport: boolean,
+    overrideDefaultStrategiesArray?: Array<MetaCanvasStrategy>,
+  ) => Promise<void>
   getDispatchFollowUpActionsFinished: () => Promise<void>
   getEditorState: () => EditorStorePatched
   renderedDOM: RenderResult
@@ -151,16 +160,25 @@ export interface EditorRenderResult {
 export async function renderTestEditorWithCode(
   appUiJsFileCode: string,
   awaitFirstDomReport: 'await-first-dom-report' | 'dont-await-first-dom-report',
+  strategiesToUse: Array<MetaCanvasStrategy> = RegisteredCanvasStrategies,
 ) {
-  return renderTestEditorWithModel(createTestProjectWithCode(appUiJsFileCode), awaitFirstDomReport)
+  return renderTestEditorWithModel(
+    createTestProjectWithCode(appUiJsFileCode),
+    awaitFirstDomReport,
+    undefined,
+    strategiesToUse,
+  )
 }
 export async function renderTestEditorWithProjectContent(
   projectContent: ProjectContentTreeRoot,
   awaitFirstDomReport: 'await-first-dom-report' | 'dont-await-first-dom-report',
+  strategiesToUse: Array<MetaCanvasStrategy> = RegisteredCanvasStrategies,
 ) {
   return renderTestEditorWithModel(
     persistentModelForProjectContents(projectContent),
     awaitFirstDomReport,
+    undefined,
+    strategiesToUse,
   )
 }
 
@@ -168,6 +186,7 @@ export async function renderTestEditorWithModel(
   model: PersistentModel,
   awaitFirstDomReport: 'await-first-dom-report' | 'dont-await-first-dom-report',
   mockBuiltInDependencies?: BuiltInDependencies,
+  strategiesToUse: Array<MetaCanvasStrategy> = RegisteredCanvasStrategies,
 ): Promise<EditorRenderResult> {
   const renderCountBaseline = renderCount
   let recordedActions: Array<EditorAction> = []
@@ -195,9 +214,16 @@ export async function renderTestEditorWithModel(
     actions: ReadonlyArray<EditorAction>,
     priority?: DispatchPriority, // priority is not used in the editorDispatch now, but we didn't delete this param yet
     waitForDispatchEntireUpdate = false,
+    innerStrategiesToUse: Array<MetaCanvasStrategy> = strategiesToUse,
   ) => {
     recordedActions.push(...actions)
-    const result = editorDispatch(asyncTestDispatch, actions, workingEditorState, spyCollector)
+    const result = editorDispatch(
+      asyncTestDispatch,
+      actions,
+      workingEditorState,
+      spyCollector,
+      innerStrategiesToUse,
+    )
     editorDispatchPromises.push(result.entireUpdateFinished)
     invalidateDomWalkerIfNecessary(
       domWalkerMutableState,
@@ -278,6 +304,9 @@ export async function renderTestEditorWithModel(
     userState: {
       loginState: notLoggedIn,
       shortcutConfig: {},
+      githubState: {
+        authenticated: false,
+      },
     },
     workers: workers,
     persistence: DummyPersistenceMachine,
@@ -337,7 +366,7 @@ export async function renderTestEditorWithModel(
 
   await act(async () => {
     await new Promise<void>((resolve, reject) => {
-      load(
+      void load(
         async (actions) => {
           try {
             await asyncTestDispatch(
@@ -349,6 +378,7 @@ export async function renderTestEditorWithModel(
               ],
               undefined,
               true,
+              strategiesToUse,
             )
             resolve()
           } catch (e) {
@@ -365,9 +395,13 @@ export async function renderTestEditorWithModel(
   })
 
   return {
-    dispatch: async (actions: ReadonlyArray<EditorAction>, waitForDOMReport: boolean) => {
+    dispatch: async (
+      actions: ReadonlyArray<EditorAction>,
+      waitForDOMReport: boolean,
+      innerStrategiesToUse: Array<MetaCanvasStrategy> = strategiesToUse,
+    ) => {
       return await act(async () => {
-        await asyncTestDispatch(actions, 'everyone', true)
+        await asyncTestDispatch(actions, 'everyone', true, innerStrategiesToUse)
       })
     },
     getDispatchFollowUpActionsFinished: getDispatchFollowUpActionsFinished,

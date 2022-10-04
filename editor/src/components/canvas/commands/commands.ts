@@ -50,6 +50,8 @@ import {
 } from './insert-element-insertion-subject'
 import { AddElement, runAddElement } from './add-element-command'
 import { runUpdatePropIfExists, UpdatePropIfExists } from './update-prop-if-exists-command'
+import { HighlightElementsCommand, runHighlightElementsCommand } from './highlight-element-command'
+import { InteractionLifecycle } from '../canvas-strategies/canvas-strategy-types'
 
 export interface CommandFunctionResult {
   editorStatePatches: Array<EditorStatePatch>
@@ -89,11 +91,12 @@ export type CanvasCommand =
   | AddToReparentedToPaths
   | InsertElementInsertionSubject
   | AddElement
+  | HighlightElementsCommand
 
 export const runCanvasCommand = (
   editorState: EditorState,
   command: CanvasCommand,
-  commandLifecycle: 'mid-interaction' | 'end-interaction',
+  commandLifecycle: InteractionLifecycle,
 ): CommandFunctionResult => {
   switch (command.type) {
     case 'WILDCARD_PATCH':
@@ -144,6 +147,8 @@ export const runCanvasCommand = (
       return runInsertElementInsertionSubject(editorState, command)
     case 'ADD_ELEMENT':
       return runAddElement(editorState, command)
+    case 'HIGHLIGHT_ELEMENTS_COMMAND':
+      return runHighlightElementsCommand(editorState, command)
     default:
       const _exhaustiveCheck: never = command
       throw new Error(`Unhandled canvas command ${JSON.stringify(command)}`)
@@ -167,7 +172,7 @@ export function foldAndApplyCommandsInner(
   patches: Array<EditorStatePatch>,
   commandsToAccumulate: Array<CanvasCommand>,
   commands: Array<CanvasCommand>,
-  commandLifecycle: 'mid-interaction' | 'end-interaction',
+  commandLifecycle: InteractionLifecycle,
 ): {
   statePatches: EditorStatePatch[]
   updatedEditorState: EditorState
@@ -229,7 +234,7 @@ export function foldAndApplyCommands(
   patches: Array<EditorStatePatch>,
   commandsToAccumulate: Array<CanvasCommand>,
   commands: Array<CanvasCommand>,
-  commandLifecycle: 'mid-interaction' | 'end-interaction',
+  commandLifecycle: InteractionLifecycle,
 ): {
   editorState: EditorState
   accumulatedPatches: Array<EditorStatePatch>

@@ -30,6 +30,7 @@ import {
   deriveState,
   EditorState,
   EditorStoreFull,
+  EditorStoreUnpatched,
   persistentModelFromEditorModel,
   reconstructJSXMetadata,
   storedEditorStateFromEditorState,
@@ -56,17 +57,19 @@ import { isFeatureEnabled } from '../../../utils/feature-switches'
 import { handleStrategies } from './dispatch-strategies'
 
 import { emptySet } from '../../../core/shared/set-utils'
-import { RegisteredCanvasStrategies } from '../../canvas/canvas-strategies/canvas-strategies'
+import {
+  MetaCanvasStrategy,
+  RegisteredCanvasStrategies,
+} from '../../canvas/canvas-strategies/canvas-strategies'
 import { removePathsWithDeadUIDs } from '../../../core/shared/element-path'
+import { CanvasStrategy } from '../../canvas/canvas-strategies/canvas-strategy-types'
 
 type DispatchResultFields = {
   nothingChanged: boolean
   entireUpdateFinished: Promise<any>
 }
 
-type EditorStoreUnpatched = Omit<EditorStoreFull, 'patchedEditor' | 'patchedDerived'>
-
-export type InnerDispatchResult = EditorStoreUnpatched & DispatchResultFields
+export type InnerDispatchResult = EditorStoreFull & DispatchResultFields // TODO delete me
 export type DispatchResult = EditorStoreFull & DispatchResultFields
 
 function simpleStringifyAction(action: EditorAction): string {
@@ -113,6 +116,11 @@ function processAction(
     return {
       ...working,
       userState: UPDATE_FNS.SET_LOGIN_STATE(action, working.userState),
+    }
+  } else if (action.action === 'SET_GITHUB_STATE') {
+    return {
+      ...working,
+      userState: UPDATE_FNS.SET_GITHUB_STATE(action, working.userState),
     }
   } else {
     // Process action on the JS side.
@@ -340,6 +348,7 @@ export function editorDispatch(
   dispatchedActions: readonly EditorAction[],
   storedState: EditorStoreFull,
   spyCollector: UiJsxCanvasContextData,
+  strategiesToUse: Array<MetaCanvasStrategy> = RegisteredCanvasStrategies, // only override this for tests
 ): DispatchResult {
   const isLoadAction = dispatchedActions.some((a) => a.action === 'LOAD')
   const nameUpdated = dispatchedActions.some(
@@ -351,7 +360,7 @@ export function editorDispatch(
     dispatchedActions.some(
       (action) => action.action === 'UPDATE_FROM_CODE_EDITOR' && action.unsavedContent == null,
     )
-  const onlyNameUpdated = nameUpdated && dispatchedActions.length === 1
+
   const allTransient = dispatchedActions.every(isTransientAction)
   const anyFinishCheckpointTimer = dispatchedActions.some((action) => {
     return action.action === 'FINISH_CHECKPOINT_TIMER'
@@ -367,6 +376,8 @@ export function editorDispatch(
   const reducerToSplitToActionGroups = (
     actionGroups: EditorAction[][],
     currentAction: EditorAction,
+    i: number,
+    actions: readonly EditorAction[],
   ): EditorAction[][] => {
     if (currentAction.action === `TRANSIENT_ACTIONS`) {
       // if this is a transient action we need to split its sub-actions into groups which can be dispatched together
@@ -378,6 +389,10 @@ export function editorDispatch(
         EditorActions.transientActions(actionGroup),
       ])
       return [...actionGroups, ...wrappedTransientActionGroups]
+    } else if (i > 0 && actions[i - 1].action === 'CLEAR_INTERACTION_SESSION') {
+      // CLEAR_INTERACTION_SESSION must be the last action for a given action group, so if the previous action was CLEAR_INTERACTION_SESSION,
+      // then we need to start a new action group
+      return [...actionGroups, [currentAction]]
     } else {
       // if this action does not need a rebuilt derived state we can just push it into the last action group to dispatch them together
       let updatedGroups = actionGroups
@@ -389,7 +404,13 @@ export function editorDispatch(
 
   const result: InnerDispatchResult = actionGroupsToProcess.reduce(
     (working: InnerDispatchResult, actions) => {
-      const newStore = editorDispatchInner(boundDispatch, actions, working, spyCollector)
+      const newStore = editorDispatchInner(
+        boundDispatch,
+        actions,
+        working,
+        spyCollector,
+        strategiesToUse,
+      )
       return newStore
     },
     { ...storedState, entireUpdateFinished: Promise.resolve(true), nothingChanged: true },
@@ -403,21 +424,12 @@ export function editorDispatch(
     (action) => action.action === 'UPDATE_FROM_WORKER',
   )
 
-  const { unpatchedEditorState, patchedEditorState, newStrategyState, patchedDerivedState } =
-    isFeatureEnabled('Canvas Strategies')
-      ? handleStrategies(
-          RegisteredCanvasStrategies,
-          dispatchedActions,
-          storedState,
-          result,
-          storedState.patchedDerived,
-        )
-      : {
-          unpatchedEditorState: result.unpatchedEditor,
-          patchedEditorState: result.unpatchedEditor,
-          newStrategyState: result.strategyState,
-          patchedDerivedState: result.unpatchedDerived,
-        }
+  const { unpatchedEditorState, patchedEditorState, newStrategyState, patchedDerivedState } = {
+    unpatchedEditorState: result.unpatchedEditor,
+    patchedEditorState: result.patchedEditor,
+    newStrategyState: result.strategyState,
+    patchedDerivedState: result.patchedDerived,
+  }
 
   const editorFilteredForFiles = filterEditorForFiles(unpatchedEditorState)
 
@@ -506,7 +518,7 @@ export function editorDispatch(
       forceSave ? 'force' : 'throttle',
     )
     const stateToStore = storedEditorStateFromEditorState(frozenEditorState)
-    saveStoredState(frozenEditorState.id, stateToStore)
+    void saveStoredState(frozenEditorState.id, stateToStore)
     reduxDevtoolsUpdateState('Save Editor', finalStore)
   }
 
@@ -615,6 +627,7 @@ function editorDispatchInner(
   dispatchedActions: EditorAction[],
   storedState: InnerDispatchResult,
   spyCollector: UiJsxCanvasContextData,
+  strategiesToUse: Array<MetaCanvasStrategy>,
 ): InnerDispatchResult {
   // console.log('DISPATCH', simpleStringifyActions(dispatchedActions))
 
@@ -643,13 +656,14 @@ function editorDispatchInner(
       storedState.unpatchedEditor.domMetadata !== result.unpatchedEditor.domMetadata
     const spyMetadataChanged =
       storedState.unpatchedEditor.spyMetadata !== result.unpatchedEditor.spyMetadata
+    const allElementPropsChanged =
+      storedState.unpatchedEditor._currentAllElementProps_KILLME !==
+      result.unpatchedEditor._currentAllElementProps_KILLME
     const dragStateLost =
       storedState.unpatchedEditor.canvas.dragState != null &&
       result.unpatchedEditor.canvas.dragState == null
-    const metadataChanged = domMetadataChanged || spyMetadataChanged || dragStateLost
-    // TODO: Should this condition actually be `&&`?
-    // Tested quickly and it broke selection, but I'm mostly certain
-    // it should only merge when both have changed.
+    const metadataChanged =
+      domMetadataChanged || spyMetadataChanged || allElementPropsChanged || dragStateLost
     if (metadataChanged) {
       if (result.unpatchedEditor.canvas.dragState != null) {
         result = {
@@ -674,7 +688,8 @@ function editorDispatchInner(
               ...result.unpatchedEditor.canvas,
               interactionSession: {
                 ...result.unpatchedEditor.canvas.interactionSession,
-                metadata: reconstructJSXMetadata(result.unpatchedEditor),
+                latestMetadata: reconstructJSXMetadata(result.unpatchedEditor),
+                latestAllElementProps: result.unpatchedEditor._currentAllElementProps_KILLME,
               },
             },
           },
@@ -685,6 +700,7 @@ function editorDispatchInner(
           unpatchedEditor: {
             ...result.unpatchedEditor,
             jsxMetadata: reconstructJSXMetadata(result.unpatchedEditor),
+            allElementProps: result.unpatchedEditor._currentAllElementProps_KILLME,
           },
         }
       }
@@ -726,10 +742,28 @@ function editorDispatchInner(
       )
     }
 
+    const { unpatchedEditorState, patchedEditorState, newStrategyState, patchedDerivedState } =
+      isFeatureEnabled('Canvas Strategies')
+        ? handleStrategies(
+            strategiesToUse,
+            dispatchedActions,
+            storedState,
+            result,
+            storedState.patchedDerived,
+          )
+        : {
+            unpatchedEditorState: result.unpatchedEditor,
+            patchedEditorState: result.unpatchedEditor,
+            newStrategyState: result.strategyState,
+            patchedDerivedState: result.unpatchedDerived,
+          }
+
     return {
-      unpatchedEditor: frozenEditorState,
+      unpatchedEditor: unpatchedEditorState,
+      patchedEditor: patchedEditorState,
       unpatchedDerived: frozenDerivedState,
-      strategyState: result.strategyState,
+      patchedDerived: patchedDerivedState,
+      strategyState: newStrategyState,
       history: result.history,
       userState: result.userState,
       workers: storedState.workers,

@@ -7,7 +7,6 @@ import {
   TestScenePath,
   TestSceneUID,
 } from '../ui-jsx.test-utils'
-import { act, fireEvent } from '@testing-library/react'
 import * as EP from '../../../core/shared/element-path'
 import { selectComponents } from '../../editor/actions/action-creators'
 import CanvasActions from '../canvas-actions'
@@ -15,12 +14,11 @@ import { createInteractionViaMouse, updateInteractionViaMouse } from './interact
 import {
   canvasPoint,
   CanvasVector,
-  offsetPoint,
   windowPoint,
   WindowPoint,
   zeroCanvasPoint,
 } from '../../../core/shared/math-utils'
-import { emptyModifiers, Modifiers } from '../../../utils/modifiers'
+import { cmdModifier, emptyModifiers, Modifiers } from '../../../utils/modifiers'
 import { ElementPath } from '../../../core/shared/project-file-types'
 import {
   EdgePositionBottomRight,
@@ -34,13 +32,14 @@ import {
   BakedInStoryboardVariableName,
   BakedInStoryboardUID,
 } from '../../../core/model/scene-utils'
+import { mouseDragFromPointWithDelta } from '../event-helpers.test-utils'
 
-function selectAndResizeElement(
+function resizeElement(
   renderResult: EditorRenderResult,
   dragDelta: WindowPoint,
   edgePosition: EdgePosition,
   modifiers: Modifiers,
-): void {
+) {
   const canvasControl = renderResult.renderedDOM.queryByTestId(
     `absolute-resize-${edgePosition.x}-${edgePosition.y}`,
   )
@@ -53,48 +52,8 @@ function selectAndResizeElement(
     x: resizeCornerBounds.x + 2,
     y: resizeCornerBounds.y + 2,
   })
-  const endPoint = offsetPoint(startPoint, dragDelta)
 
-  fireEvent(
-    canvasControl,
-    new MouseEvent('mousedown', {
-      bubbles: true,
-      cancelable: true,
-      metaKey: true,
-      altKey: modifiers.alt,
-      shiftKey: modifiers.shift,
-      clientX: startPoint.x,
-      clientY: startPoint.y,
-      buttons: 1,
-    }),
-  )
-
-  fireEvent(
-    canvasControl,
-    new MouseEvent('mousemove', {
-      bubbles: true,
-      cancelable: true,
-      metaKey: modifiers.cmd,
-      altKey: modifiers.alt,
-      shiftKey: modifiers.shift,
-      clientX: endPoint.x,
-      clientY: endPoint.y,
-      buttons: 1,
-    }),
-  )
-
-  fireEvent(
-    window,
-    new MouseEvent('mouseup', {
-      bubbles: true,
-      cancelable: true,
-      metaKey: modifiers.cmd,
-      altKey: modifiers.alt,
-      shiftKey: modifiers.shift,
-      clientX: endPoint.x,
-      clientY: endPoint.y,
-    }),
-  )
+  mouseDragFromPointWithDelta(canvasControl, startPoint, dragDelta, { modifiers: modifiers })
 }
 
 // no mouseup here! it starts the interaction and resizes with drag delta
@@ -308,10 +267,7 @@ describe('Absolute Resize Strategy', () => {
     const dragDelta = windowPoint({ x: 40, y: -25 })
 
     await renderResult.dispatch([selectComponents([target], false)], true)
-    act(() =>
-      selectAndResizeElement(renderResult, dragDelta, EdgePositionBottomRight, emptyModifiers),
-    )
-
+    resizeElement(renderResult, dragDelta, EdgePositionBottomRight, emptyModifiers)
     await renderResult.getDispatchFollowUpActionsFinished()
     expect(getPrintedUiJsCode(renderResult.getEditorState())).toEqual(
       projectDoesHonourSizeProperties(340, 275),
@@ -327,9 +283,7 @@ describe('Absolute Resize Strategy', () => {
     const dragDelta = windowPoint({ x: 40, y: -25 })
 
     await renderResult.dispatch([selectComponents([target], false)], true)
-    act(() =>
-      selectAndResizeElement(renderResult, dragDelta, EdgePositionBottomRight, emptyModifiers),
-    )
+    resizeElement(renderResult, dragDelta, EdgePositionBottomRight, emptyModifiers)
 
     await renderResult.getDispatchFollowUpActionsFinished()
     expect(getPrintedUiJsCode(renderResult.getEditorState())).toEqual(
@@ -354,9 +308,7 @@ describe('Absolute Resize Strategy', () => {
     const dragDelta = windowPoint({ x: 40, y: -25 })
 
     await renderResult.dispatch([selectComponents([target], false)], true)
-    act(() =>
-      selectAndResizeElement(renderResult, dragDelta, EdgePositionBottomRight, emptyModifiers),
-    )
+    resizeElement(renderResult, dragDelta, EdgePositionBottomRight, emptyModifiers)
 
     await renderResult.getDispatchFollowUpActionsFinished()
     expect(getPrintedUiJsCode(renderResult.getEditorState())).toEqual(
@@ -393,7 +345,7 @@ describe('Absolute Resize Strategy', () => {
     const dragDelta = windowPoint({ x: 29, y: -23 })
 
     await renderResult.dispatch([selectComponents([target], false)], true)
-    act(() => selectAndResizeElement(renderResult, dragDelta, EdgePositionTopLeft, emptyModifiers))
+    resizeElement(renderResult, dragDelta, EdgePositionTopLeft, emptyModifiers)
     await renderResult.getDispatchFollowUpActionsFinished()
 
     expect(getPrintedUiJsCode(renderResult.getEditorState())).toEqual(
@@ -422,9 +374,7 @@ describe('Absolute Resize Strategy', () => {
     const dragDelta = windowPoint({ x: 25, y: 25 })
 
     await renderResult.dispatch([selectComponents([target], false)], true)
-    act(() =>
-      selectAndResizeElement(renderResult, dragDelta, EdgePositionBottomRight, emptyModifiers),
-    )
+    resizeElement(renderResult, dragDelta, EdgePositionBottomRight, emptyModifiers)
     await renderResult.getDispatchFollowUpActionsFinished()
 
     const supportsStyleDiv = renderResult.renderedDOM.getByTestId('supports-style-component')
@@ -442,9 +392,7 @@ describe('Absolute Resize Strategy', () => {
     const dragDelta = windowPoint({ x: 25, y: 25 })
 
     await renderResult.dispatch([selectComponents([target], false)], true)
-    act(() =>
-      selectAndResizeElement(renderResult, dragDelta, EdgePositionBottomRight, emptyModifiers),
-    )
+    resizeElement(renderResult, dragDelta, EdgePositionBottomRight, emptyModifiers)
     await renderResult.getDispatchFollowUpActionsFinished()
 
     const supportsStyleDiv = renderResult.renderedDOM.getByTestId(

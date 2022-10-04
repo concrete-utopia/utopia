@@ -33,6 +33,8 @@ import {
   isIntrinsicElement,
   ElementInstanceMetadataMap,
   isIntrinsicHTMLElement,
+  emptySpecialSizeMeasurements,
+  elementInstanceMetadata,
 } from '../shared/element-template'
 import {
   getModifiableJSXAttributeAtPath,
@@ -42,6 +44,8 @@ import {
   boundingRectangleArray,
   CanvasRectangle,
   canvasRectangleToLocalRectangle,
+  getLocalRectangleInNewParentContext,
+  localRectangle,
   LocalRectangle,
   roundPointToNearestHalf,
   Size,
@@ -62,6 +66,7 @@ import {
   componentHonoursPropsPosition,
   componentHonoursPropsSize,
   componentUsesProperty,
+  elementOnlyHasTextChildren,
   findJSXElementChildAtPath,
   getUtopiaID,
 } from './element-template-utils'
@@ -196,6 +201,21 @@ export const MetadataUtils = {
     const parentPath = EP.parentPath(target)
     return MetadataUtils.findElementByElementPath(metadata, parentPath)
   },
+  getSiblingsProjectContentsOrdered(
+    metadata: ElementInstanceMetadataMap,
+    target: ElementPath | null,
+  ): ElementInstanceMetadata[] {
+    if (target == null) {
+      return []
+    }
+
+    const parentPath = EP.parentPath(target)
+    const siblingPathsOrNull = EP.isRootElementOfInstance(target)
+      ? MetadataUtils.getRootViewPathsProjectContentsOrdered(metadata, parentPath)
+      : MetadataUtils.getChildrenPathsProjectContentsOrdered(metadata, parentPath)
+    const siblingPaths = siblingPathsOrNull ?? []
+    return MetadataUtils.findElementsByElementPath(metadata, siblingPaths)
+  },
   getSiblings(
     metadata: ElementInstanceMetadataMap,
     target: ElementPath | null,
@@ -245,6 +265,9 @@ export const MetadataUtils = {
   },
   isPositionAbsolute(instance: ElementInstanceMetadata | null): boolean {
     return instance?.specialSizeMeasurements.position === 'absolute'
+  },
+  isPositionRelative(instance: ElementInstanceMetadata | null): boolean {
+    return instance?.specialSizeMeasurements.position === 'relative'
   },
   isPositionedByFlow(instance: ElementInstanceMetadata | null): boolean {
     if (instance === null) {
@@ -404,6 +427,19 @@ export const MetadataUtils = {
     }, Object.keys(elements))
     return possibleRootElementsOfTarget
   },
+  getRootViewPathsProjectContentsOrdered(
+    elements: ElementInstanceMetadataMap,
+    target: ElementPath,
+  ): Array<ElementPath> {
+    const possibleRootElementsOfTarget = mapDropNulls((elementPath) => {
+      if (EP.isRootElementOf(elementPath, target)) {
+        return elementPath
+      } else {
+        return null
+      }
+    }, MetadataUtils.createOrderedElementPathsFromElements(elements, []).navigatorTargets)
+    return possibleRootElementsOfTarget
+  },
   getRootViews(
     elements: ElementInstanceMetadataMap,
     target: ElementPath,
@@ -427,6 +463,19 @@ export const MetadataUtils = {
         return null
       }
     }, Object.keys(elements))
+    return possibleChildren
+  },
+  getChildrenPathsProjectContentsOrdered(
+    elements: ElementInstanceMetadataMap,
+    target: ElementPath,
+  ): Array<ElementPath> {
+    const possibleChildren = mapDropNulls((elementPath) => {
+      if (EP.isChildOf(elementPath, target) && !EP.isRootElementOfInstance(elementPath)) {
+        return elementPath
+      } else {
+        return null
+      }
+    }, MetadataUtils.createOrderedElementPathsFromElements(elements, []).navigatorTargets)
     return possibleChildren
   },
   getChildren(
@@ -619,27 +668,34 @@ export const MetadataUtils = {
     return foldEither(
       (elementString) => intrinsicHTMLElementNamesThatSupportChildren.includes(elementString),
       (element) => {
-        if (isJSXElement(element)) {
-          if (isIntrinsicElement(element.name)) {
-            return intrinsicHTMLElementNamesThatSupportChildren.includes(element.name.baseVariable)
-          } else if (isUtopiaAPIComponentFromMetadata(instance)) {
-            // Explicitly prevent components / elements that we *know* don't support children
-            return (
-              isViewLikeFromMetadata(instance) ||
-              isSceneFromMetadata(instance) ||
-              isGivenUtopiaElementFromMetadata(instance, 'Text')
-            )
-          } else {
-            return MetadataUtils.targetUsesProperty(
-              projectContents,
-              openFile,
-              instance.elementPath,
-              'children',
-            )
+        if (elementOnlyHasTextChildren(element)) {
+          // Prevent re-parenting into an element that only has text children, as that is rarely a desired goal
+          return false
+        } else {
+          if (isJSXElement(element)) {
+            if (isIntrinsicElement(element.name)) {
+              return intrinsicHTMLElementNamesThatSupportChildren.includes(
+                element.name.baseVariable,
+              )
+            } else if (isUtopiaAPIComponentFromMetadata(instance)) {
+              // Explicitly prevent components / elements that we *know* don't support children
+              return (
+                isViewLikeFromMetadata(instance) ||
+                isSceneFromMetadata(instance) ||
+                isGivenUtopiaElementFromMetadata(instance, 'Text')
+              )
+            } else {
+              return MetadataUtils.targetUsesProperty(
+                projectContents,
+                openFile,
+                instance.elementPath,
+                'children',
+              )
+            }
           }
+          // We don't know at this stage
+          return true
         }
-        // We don't know at this stage
-        return true
       },
       instance.element,
     )
@@ -1574,5 +1630,44 @@ export function getSimpleAttributeAtPath(
       return flatMapEither((attr) => jsxSimpleAttributeToValue(attr), getAttrResult)
     },
     propsOrAttributes,
+  )
+}
+
+// This function creates a fake metadata for the given element
+// Useful when metadata is needed before the real on is created.
+export function createFakeMetadataForElement(
+  path: ElementPath,
+  element: JSXElementChild,
+  frame: CanvasRectangle,
+  metadata: ElementInstanceMetadataMap,
+): ElementInstanceMetadata {
+  const parentPath = EP.parentPath(path)
+
+  const parentElement = MetadataUtils.findElementByElementPath(metadata, parentPath)
+
+  const isFlex = parentElement != null && MetadataUtils.isFlexLayoutedContainer(parentElement)
+  const parentBounds = parentElement != null ? parentElement.globalFrame : null
+
+  const localFrame =
+    parentBounds != null
+      ? getLocalRectangleInNewParentContext(parentBounds, frame)
+      : localRectangle(frame)
+
+  const specialSizeMeasurements = { ...emptySpecialSizeMeasurements }
+  specialSizeMeasurements.position = isFlex ? 'relative' : 'absolute'
+  specialSizeMeasurements.parentLayoutSystem = isFlex ? 'flex' : 'none'
+
+  return elementInstanceMetadata(
+    path,
+    right(element),
+    frame,
+    localFrame,
+    false,
+    false,
+    specialSizeMeasurements,
+    null,
+    null,
+    null,
+    null,
   )
 }

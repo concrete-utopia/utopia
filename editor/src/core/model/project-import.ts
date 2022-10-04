@@ -4,7 +4,17 @@ import { isText } from 'istextorbinary'
 import { RevisionsState, textFile, textFileContents, unparsed } from '../shared/project-file-types'
 import { assetFile, directory, fileTypeFromFileName, imageFile } from './project-file-utils'
 import { assetResultForBase64, getFileExtension, imageResultForBase64 } from '../shared/file-utils'
-import { addFileToProjectContents, ProjectContentTreeRoot } from '../../components/assets'
+import {
+  addFileToProjectContents,
+  ProjectContentTreeRoot,
+  walkContentsTreeAsync,
+} from '../../components/assets'
+import { Either, isRight, left, right } from '../shared/either'
+import { EditorState, PersistentModel } from '../../components/editor/store/editor-state'
+import { contentsJSONURLFromProjectURL } from '../shared/utils'
+import { EditorDispatch } from '../../components/editor/action-types'
+import { saveAsset } from '../../components/editor/server'
+import { forceNotNull } from '../shared/optional-utils'
 
 async function attemptedTextFileLoad(fileName: string, file: JSZipObject): Promise<string | null> {
   const fileBuffer = await file.async('nodebuffer')
@@ -139,4 +149,79 @@ export async function importZippedGitProject(
   } else {
     return projectImportSuccess(projectName, loadedProject)
   }
+}
+
+export interface ImportFromProjectURLSuccess {
+  model: PersistentModel
+  originalProjectRootURL: string
+}
+
+export async function getURLImportDetails(
+  projectURL: string,
+): Promise<Either<string, ImportFromProjectURLSuccess>> {
+  const possibleContentsURL = contentsJSONURLFromProjectURL(projectURL)
+  if (isRight(possibleContentsURL)) {
+    const contentsURL = possibleContentsURL.value.contentsURL
+    const response = await fetch(contentsURL, {
+      method: 'GET',
+      credentials: 'include',
+      mode: 'cors',
+    })
+
+    if (response.ok) {
+      const responseJSON = await response.json()
+      return right({
+        model: responseJSON,
+        originalProjectRootURL: possibleContentsURL.value.projectRootURL,
+      })
+    } else if (response.status === 404) {
+      return left(`Unable to find the content.`)
+    } else {
+      return left(`Server responded with ${response.status} ${response.statusText}`)
+    }
+  } else {
+    return possibleContentsURL
+  }
+}
+
+export async function reuploadAsset(
+  originalProjectRootURL: string,
+  editorState: EditorState,
+  assetPath: string,
+): Promise<void> {
+  const response = await fetch(`${originalProjectRootURL}${assetPath}`, {
+    method: 'GET',
+    credentials: 'include',
+    mode: 'cors',
+  })
+  const blobContent = await response.blob()
+  const reader = new window.FileReader()
+  reader.readAsDataURL(blobContent)
+  const base64 = await new Promise((resolve) => {
+    reader.onloadend = () => {
+      resolve(reader.result)
+    }
+  })
+  if (typeof base64 === 'string') {
+    const fileType = getFileExtension(assetPath)
+    await saveAsset(
+      forceNotNull('Should have a project ID.', editorState.id),
+      fileType,
+      base64,
+      assetPath,
+    )
+  } else {
+    throw new Error(`Not able to construct base64 of asset as a string.`)
+  }
+}
+
+export async function reuploadAssets(
+  originalProjectRootURL: string,
+  editorState: EditorState,
+): Promise<void> {
+  return walkContentsTreeAsync(editorState.projectContents, async (fullPath, file) => {
+    if (file.type === 'ASSET_FILE' || file.type === 'IMAGE_FILE') {
+      await reuploadAsset(originalProjectRootURL, editorState, fullPath)
+    }
+  })
 }

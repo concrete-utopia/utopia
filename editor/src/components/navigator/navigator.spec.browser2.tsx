@@ -823,10 +823,6 @@ export var ${BakedInStoryboardVariableName} = (
 }
 
 describe('Navigator', () => {
-  before(() => {
-    viewport.set(2200, 1000)
-  })
-
   it('reorders to before the first sibling', async () => {
     const renderResult = await renderTestEditorWithCode(getProjectCode(), 'await-first-dom-report')
 
@@ -1105,6 +1101,53 @@ describe('Navigator', () => {
 
     expect(renderResult.getEditorState().editor.navigator.dropTargetHint.type).toEqual(null)
     expect(renderResult.getEditorState().editor.navigator.dropTargetHint.target).toEqual(null)
+
+    await renderResult.getDispatchFollowUpActionsFinished()
+    expect(getPrintedUiJsCode(renderResult.getEditorState())).toEqual(
+      Prettier.format(getProjectCode(), PrettierConfig),
+    )
+  })
+
+  it('does not reparent to invalid target', async () => {
+    const renderResult = await renderTestEditorWithCode(getProjectCode(), 'await-first-dom-report')
+
+    const dragMeElement = await renderResult.renderedDOM.findByTestId(
+      `navigator-item-utopia_storyboard_uid/scene_aaa/sceneroot/dragme`,
+    )
+    const dragMeElementRect = dragMeElement.getBoundingClientRect()
+    const dragMeElementCenter = getDomRectCenter(dragMeElementRect)
+    const notDraggableDivElement = await renderResult.renderedDOM.findByTestId(
+      `navigator-item-utopia_storyboard_uid/scene_aaa/sceneroot/notdrag`,
+    )
+    const notDraggableDivElementRect = notDraggableDivElement.getBoundingClientRect()
+    const notDraggableDivElementCenter = getDomRectCenter(notDraggableDivElementRect)
+    const dragTo = {
+      x: notDraggableDivElementCenter.x,
+      y: notDraggableDivElementRect.y,
+    }
+
+    const dragDelta = windowPoint({
+      x: dragTo.x - dragMeElementCenter.x,
+      y: dragTo.y - dragMeElementCenter.y,
+    })
+
+    const targetElement = EP.fromString('utopia-storyboard-uid/scene-aaa/sceneroot/dragme')
+    await act(async () => {
+      const dispatchDone = renderResult.getDispatchFollowUpActionsFinished()
+      await renderResult.dispatch([selectComponents([targetElement], false)], false)
+      await dispatchDone
+    })
+
+    act(() =>
+      dragElement(
+        renderResult,
+        `navigator-item-drag-utopia_storyboard_uid/scene_aaa/sceneroot/dragme`,
+        `navigator-item-drop-utopia_storyboard_uid/scene_aaa/sceneroot/notdrag`,
+        windowPoint(dragMeElementCenter),
+        dragDelta,
+        'apply-hover-events',
+      ),
+    )
 
     await renderResult.getDispatchFollowUpActionsFinished()
     expect(getPrintedUiJsCode(renderResult.getEditorState())).toEqual(

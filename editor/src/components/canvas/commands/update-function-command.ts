@@ -6,6 +6,7 @@ import {
   EditorStatePatch,
   withUnderlyingTargetFromEditorState,
 } from '../../editor/store/editor-state'
+import { InteractionLifecycle } from '../canvas-strategies/canvas-strategy-types'
 import { duplicate } from '../canvas-utils'
 import {
   BaseCommand,
@@ -19,7 +20,7 @@ export interface UpdateFunctionCommand extends BaseCommand {
   type: 'UPDATE_FUNCTION_COMMAND'
   updateFunction: (
     editorState: EditorState,
-    commandLifecycle: 'mid-interaction' | 'end-interaction',
+    commandLifecycle: InteractionLifecycle,
   ) => Array<EditorStatePatch>
 }
 
@@ -27,7 +28,7 @@ export function updateFunctionCommand(
   whenToRun: WhenToRun,
   updateFunction: (
     editorState: EditorState,
-    commandLifecycle: 'mid-interaction' | 'end-interaction',
+    commandLifecycle: InteractionLifecycle,
   ) => Array<EditorStatePatch>,
 ): UpdateFunctionCommand {
   return {
@@ -40,7 +41,7 @@ export function updateFunctionCommand(
 export const runUpdateFunctionCommand = (
   editorState: EditorState,
   command: UpdateFunctionCommand,
-  commandLifecycle: 'mid-interaction' | 'end-interaction',
+  commandLifecycle: InteractionLifecycle,
 ): CommandFunctionResult => {
   return {
     editorStatePatches: command.updateFunction(editorState, commandLifecycle),

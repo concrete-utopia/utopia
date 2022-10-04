@@ -373,6 +373,8 @@ import {
   SetElementsToRerender,
   UpdateMouseButtonsPressed,
   ToggleSelectionLock,
+  SetGithubState,
+  SaveToGithub,
 } from '../action-types'
 import { defaultTransparentViewElement, defaultSceneElement } from '../defaults'
 import {
@@ -457,6 +459,7 @@ import {
   getNewSceneName,
   packageJsonFileFromProjectContents,
   vsCodeBridgeIdProjectId,
+  githubRepo,
 } from '../store/editor-state'
 import { loadStoredState } from '../stored-state'
 import { applyMigrations } from './migrations/migrations'
@@ -528,7 +531,7 @@ import { uniqToasts } from './toast-helpers'
 import { NavigatorStateKeepDeepEquality } from '../../../utils/deep-equality-instances'
 import type { BuiltInDependencies } from '../../../core/es-modules/package-manager/built-in-dependencies-list'
 import { stylePropPathMappingFn } from '../../inspector/common/property-path-hooks'
-import { getEscapeHatchCommands } from '../../../components/canvas/canvas-strategies/escape-hatch-strategy'
+import { getEscapeHatchCommands } from '../../canvas/canvas-strategies/convert-to-absolute-and-move-strategy'
 import { pickCanvasStateFromEditorState } from '../../canvas/canvas-strategies/canvas-strategies'
 import { foldAndApplyCommandsSimple, runCanvasCommand } from '../../canvas/commands/commands'
 import { setElementsToRerenderCommand } from '../../canvas/commands/set-elements-to-rerender-command'
@@ -546,6 +549,7 @@ import {
   getReparentPropertyChanges,
   reparentStrategyForParent,
 } from '../../../components/canvas/canvas-strategies/reparent-strategy-helpers'
+import { parseGithubProjectString, saveProjectToGithub } from '../../../core/shared/github'
 
 export function updateSelectedLeftMenuTab(editorState: EditorState, tab: LeftMenuTab): EditorState {
   return {
@@ -730,7 +734,7 @@ function switchAndUpdateFrames(
     case 'flex':
       withUpdatedLayoutSystem = {
         ...withUpdatedLayoutSystem,
-        allElementProps: MetadataUtils.setPropertyDirectlyIntoMetadata(
+        _currentAllElementProps_KILLME: MetadataUtils.setPropertyDirectlyIntoMetadata(
           withUpdatedLayoutSystem.allElementProps,
           target,
           styleDisplayPath, // TODO LAYOUT investigate if we should use also update the DOM walker specialSizeMeasurements
@@ -739,7 +743,7 @@ function switchAndUpdateFrames(
       }
       withUpdatedLayoutSystem = {
         ...withUpdatedLayoutSystem,
-        allElementProps: MetadataUtils.setPropertyDirectlyIntoMetadata(
+        _currentAllElementProps_KILLME: MetadataUtils.setPropertyDirectlyIntoMetadata(
           withUpdatedLayoutSystem.allElementProps,
           target,
           stylePropPathMappingFn('position', propertyTarget), // TODO LAYOUT investigate if we should use also update the DOM walker specialSizeMeasurements
@@ -750,7 +754,7 @@ function switchAndUpdateFrames(
     case LayoutSystem.PinSystem:
       withUpdatedLayoutSystem = {
         ...withUpdatedLayoutSystem,
-        allElementProps: MetadataUtils.setPropertyDirectlyIntoMetadata(
+        _currentAllElementProps_KILLME: MetadataUtils.setPropertyDirectlyIntoMetadata(
           withUpdatedLayoutSystem.allElementProps,
           target,
           stylePropPathMappingFn('position', propertyTarget), // TODO LAYOUT investigate if we should use also update the DOM walker specialSizeMeasurements
@@ -762,7 +766,7 @@ function switchAndUpdateFrames(
     default:
       withUpdatedLayoutSystem = {
         ...withUpdatedLayoutSystem,
-        allElementProps: MetadataUtils.unsetPropertyDirectlyIntoMetadata(
+        _currentAllElementProps_KILLME: MetadataUtils.unsetPropertyDirectlyIntoMetadata(
           withUpdatedLayoutSystem.allElementProps,
           target,
           styleDisplayPath,
@@ -770,7 +774,7 @@ function switchAndUpdateFrames(
       }
       withUpdatedLayoutSystem = {
         ...withUpdatedLayoutSystem,
-        allElementProps: MetadataUtils.setPropertyDirectlyIntoMetadata(
+        _currentAllElementProps_KILLME: MetadataUtils.setPropertyDirectlyIntoMetadata(
           withUpdatedLayoutSystem.allElementProps,
           target,
           styleDisplayPath, // TODO LAYOUT investigate if we should use also update the DOM walker specialSizeMeasurements
@@ -1045,6 +1049,7 @@ function restoreEditorState(currentEditor: EditorModel, history: StateHistory): 
       },
       collapsedViews: poppedEditor.navigator.collapsedViews,
       renamingTarget: null,
+      highlightedTargets: [],
     },
     topmenu: {
       formulaBarMode: poppedEditor.topmenu.formulaBarMode,
@@ -1078,6 +1083,8 @@ function restoreEditorState(currentEditor: EditorModel, history: StateHistory): 
     indexedDBFailed: currentEditor.indexedDBFailed,
     forceParseFiles: currentEditor.forceParseFiles,
     allElementProps: poppedEditor.allElementProps,
+    _currentAllElementProps_KILLME: poppedEditor._currentAllElementProps_KILLME,
+    githubSettings: currentEditor.githubSettings,
   }
 }
 
@@ -1591,7 +1598,7 @@ export const UPDATE_FNS = {
     )
     const storyboardFile = getContentsTreeFileFromString(parsedProjectFiles, StoryboardFilePath)
     const openFilePath = storyboardFile != null ? StoryboardFilePath : null
-    initVSCodeBridge(action.projectId, parsedProjectFiles, dispatch, openFilePath)
+    void initVSCodeBridge(action.projectId, parsedProjectFiles, dispatch, openFilePath)
 
     const parsedModel = {
       ...migratedModel,
@@ -2634,6 +2641,7 @@ export const UPDATE_FNS = {
       case 'center':
       case 'insertmenu':
       case 'projectsettings':
+      case 'githuboptions':
         return editor
       default:
         const _exhaustiveCheck: never = action.target
@@ -2754,6 +2762,7 @@ export const UPDATE_FNS = {
       case 'misccodeeditor':
       case 'center':
       case 'insertmenu':
+      case 'githuboptions':
         return editor
       default:
         const _exhaustiveCheck: never = action.target
@@ -3460,7 +3469,7 @@ export const UPDATE_FNS = {
     if (vscodeBridgeId.type === 'VSCODE_BRIDGE_ID_DEFAULT') {
       vscodeBridgeId = vsCodeBridgeIdProjectId(action.id)
       // Side effect.
-      initVSCodeBridge(
+      void initVSCodeBridge(
         action.id,
         editor.projectContents,
         dispatch,
@@ -3520,7 +3529,7 @@ export const UPDATE_FNS = {
     dispatch: EditorDispatch,
   ): EditorModel => {
     if (editor.id != null) {
-      updateRemoteThumbnail(editor.id, true).then(() => {
+      void updateRemoteThumbnail(editor.id, true).then(() => {
         dispatch([updateThumbnailGenerated(new Date().getTime())], 'everyone')
       })
     }
@@ -3601,7 +3610,7 @@ export const UPDATE_FNS = {
         if (oldContent != null && (isImageFile(oldContent) || isAssetFile(oldContent))) {
           // Update assets.
           if (isLoggedIn(userState.loginState) && editor.id != null) {
-            updateAssetFileName(editor.id, stripLeadingSlash(oldPath), newPath)
+            void updateAssetFileName(editor.id, stripLeadingSlash(oldPath), newPath)
           }
         }
       })
@@ -3632,7 +3641,7 @@ export const UPDATE_FNS = {
   },
   OPEN_CODE_EDITOR_FILE: (action: OpenCodeEditorFile, editor: EditorModel): EditorModel => {
     // Side effect.
-    sendOpenFileMessage(action.filename)
+    void sendOpenFileMessage(action.filename)
     if (action.forceShowCodeEditor) {
       return {
         ...editor,
@@ -3730,7 +3739,7 @@ export const UPDATE_FNS = {
 
         const depsToFetch = newDeps.concat(updatedDeps)
 
-        fetchNodeModules(depsToFetch, builtInDependencies).then((fetchNodeModulesResult) => {
+        void fetchNodeModules(depsToFetch, builtInDependencies).then((fetchNodeModulesResult) => {
           const loadedPackagesStatus = createLoadedPackageStatusMapFromDependencies(
             deps,
             fetchNodeModulesResult.dependenciesWithError,
@@ -3988,7 +3997,7 @@ export const UPDATE_FNS = {
       case 'IMAGE_FILE': {
         if (isLoggedIn(userState.loginState) && editor.id != null) {
           // Side effect
-          deleteAssetFile(editor.id, action.filename)
+          void deleteAssetFile(editor.id, action.filename)
         }
 
         return {
@@ -4092,9 +4101,10 @@ export const UPDATE_FNS = {
     } else {
       return {
         ...editor,
+        // TODO move the reconstructMetadata call here, and remove _currentAllElementProps_KILLME
         domMetadata: finalDomMetadata,
         spyMetadata: finalSpyMetadata,
-        allElementProps: {
+        _currentAllElementProps_KILLME: {
           ...spyCollector.current.spyValues.allElementProps,
         },
       }
@@ -4385,10 +4395,11 @@ export const UPDATE_FNS = {
       shortcutConfig: updatedShortcutConfig,
     }
     // Side effect.
-    saveUserConfiguration(updatedUserConfiguration)
+    void saveUserConfiguration(updatedUserConfiguration)
     return {
       ...updatedUserConfiguration,
       loginState: userState.loginState,
+      githubState: userState.githubState,
     }
   },
   UPDATE_PROPERTY_CONTROLS_INFO: (
@@ -4460,8 +4471,8 @@ export const UPDATE_FNS = {
     editor: EditorModel,
   ): EditorModel => {
     // Side effects.
-    sendCodeEditorDecorations(editor)
-    sendSelectedElement(editor)
+    void sendCodeEditorDecorations(editor)
+    void sendSelectedElement(editor)
     return {
       ...editor,
       vscodeReady: true,
@@ -4567,7 +4578,7 @@ export const UPDATE_FNS = {
     editor: EditorModel,
   ): EditorModel => {
     // Side effects
-    sendSetFollowSelectionEnabledMessage(action.value)
+    void sendSetFollowSelectionEnabledMessage(action.value)
     return {
       ...editor,
       config: {
@@ -4589,6 +4600,12 @@ export const UPDATE_FNS = {
     return {
       ...userState,
       loginState: action.loginState,
+    }
+  },
+  SET_GITHUB_STATE: (action: SetGithubState, userState: UserState): UserState => {
+    return {
+      ...userState,
+      githubState: action.githubState,
     }
   },
   RESET_CANVAS: (action: ResetCanvas, editor: EditorModel): EditorModel => {
@@ -4790,10 +4807,10 @@ export const UPDATE_FNS = {
     const packageJsonFile = getContentsTreeFileFromString(editor.projectContents, '/package.json')
     const currentNpmDeps = dependenciesFromPackageJson(packageJsonFile, 'regular-only')
 
-    findLatestVersion('tailwindcss').then((tailwindResult) => {
+    void findLatestVersion('tailwindcss').then((tailwindResult) => {
       if (tailwindResult.type === 'VERSION_LOOKUP_SUCCESS') {
         const tailwindVersion = tailwindResult.version
-        findLatestVersion('postcss').then((postcssResult) => {
+        void findLatestVersion('postcss').then((postcssResult) => {
           if (postcssResult.type === 'VERSION_LOOKUP_SUCCESS') {
             const postcssVersion = postcssResult.version
             const updatedNpmDeps = [
@@ -4801,20 +4818,23 @@ export const UPDATE_FNS = {
               requestedNpmDependency('tailwindcss', tailwindVersion.version),
               requestedNpmDependency('postcss', postcssVersion.version),
             ]
-            fetchNodeModules(updatedNpmDeps, builtInDependencies).then((fetchNodeModulesResult) => {
-              const loadedPackagesStatus = createLoadedPackageStatusMapFromDependencies(
-                updatedNpmDeps,
-                fetchNodeModulesResult.dependenciesWithError,
-                fetchNodeModulesResult.dependenciesNotFound,
-              )
-              const packageErrorActions = Object.keys(loadedPackagesStatus).map((dependencyName) =>
-                setPackageStatus(dependencyName, loadedPackagesStatus[dependencyName].status),
-              )
-              dispatch([
-                ...packageErrorActions,
-                updateNodeModulesContents(fetchNodeModulesResult.nodeModules),
-              ])
-            })
+            void fetchNodeModules(updatedNpmDeps, builtInDependencies).then(
+              (fetchNodeModulesResult) => {
+                const loadedPackagesStatus = createLoadedPackageStatusMapFromDependencies(
+                  updatedNpmDeps,
+                  fetchNodeModulesResult.dependenciesWithError,
+                  fetchNodeModulesResult.dependenciesNotFound,
+                )
+                const packageErrorActions = Object.keys(loadedPackagesStatus).map(
+                  (dependencyName) =>
+                    setPackageStatus(dependencyName, loadedPackagesStatus[dependencyName].status),
+                )
+                dispatch([
+                  ...packageErrorActions,
+                  updateNodeModulesContents(fetchNodeModulesResult.nodeModules),
+                ])
+              },
+            )
 
             const packageJsonUpdateAction = updatePackageJson(updatedNpmDeps)
 
@@ -4994,6 +5014,29 @@ export const UPDATE_FNS = {
           })
       }
     }, editor)
+  },
+  SAVE_TO_GITHUB: (
+    action: SaveToGithub,
+    editor: EditorModel,
+    dispatch: EditorDispatch,
+  ): EditorModel => {
+    const updatedRepo = parseGithubProjectString(action.targetRepository)
+    if (updatedRepo == null) {
+      return editor
+    } else {
+      const updatedEditor = {
+        ...editor,
+        githubSettings: {
+          ...editor.githubSettings,
+          targetRepository: updatedRepo,
+        },
+      }
+      // Side effect - Pushing this to the server to get that to save to Github.
+      const persistentModel = persistentModelFromEditorModel(updatedEditor)
+      void saveProjectToGithub(persistentModel, dispatch)
+
+      return editor
+    }
   },
 }
 

@@ -2,7 +2,7 @@ import { isHorizontalPoint } from 'utopia-api/core'
 import { getLayoutProperty } from '../../../core/layout/getLayoutProperty'
 import { framePointForPinnedProp, LayoutPinnedProp } from '../../../core/layout/layout-helpers-new'
 import { MetadataUtils } from '../../../core/model/element-metadata-utils'
-import { flatMapArray, mapDropNulls, stripNulls } from '../../../core/shared/array-utils'
+import { mapDropNulls } from '../../../core/shared/array-utils'
 import { isRight, right } from '../../../core/shared/either'
 import * as EP from '../../../core/shared/element-path'
 import {
@@ -17,9 +17,7 @@ import {
   CanvasVector,
   LocalPoint,
   LocalRectangle,
-  offsetPoint,
   offsetRect,
-  rectContainsPoint,
   zeroCanvasPoint,
   zeroCanvasRect,
 } from '../../../core/shared/math-utils'
@@ -28,20 +26,15 @@ import { fastForEach } from '../../../core/shared/utils'
 import { getElementFromProjectContents } from '../../editor/store/editor-state'
 import { FullFrame, getFullFrame } from '../../frame'
 import { stylePropPathMappingFn } from '../../inspector/common/property-path-hooks'
-import { CanvasFrameAndTarget, CSSCursor } from '../canvas-types'
+import { CanvasFrameAndTarget } from '../canvas-types'
 import { CanvasCommand } from '../commands/commands'
-import { ConvertToAbsolute, convertToAbsolute } from '../commands/convert-to-absolute-command'
-import { ReparentElement, reparentElement } from '../commands/reparent-element-command'
+import { convertToAbsolute } from '../commands/convert-to-absolute-command'
 import { SetCssLengthProperty, setCssLengthProperty } from '../commands/set-css-length-command'
-import { setCursorCommand } from '../commands/set-cursor-command'
-import { showOutlineHighlight } from '../commands/show-outline-highlight-command'
 import { updateSelectedViews } from '../commands/update-selected-views-command'
 import { ParentBounds } from '../controls/parent-bounds'
 import { ParentOutlines } from '../controls/parent-outlines'
-import { DragOutlineControl } from '../controls/select-mode/drag-outline-control'
-import { AnimationTimer, PieTimerControl } from '../controls/select-mode/pie-timer'
-import { ZeroSizeResizeControlWrapper } from '../controls/zero-sized-element-controls'
 import { applyAbsoluteMoveCommon } from './absolute-move-strategy'
+import { honoursPropsPosition } from './absolute-utils'
 import {
   CanvasStrategy,
   emptyStrategyApplicationResult,
@@ -49,33 +42,28 @@ import {
   InteractionCanvasState,
   strategyApplicationResult,
 } from './canvas-strategy-types'
-import { DragInteractionData, InteractionSession, StrategyState } from './interaction-state'
 import { getReparentOutcome, pathToReparent } from './reparent-utils'
-import { areAllSelectedElementsNonAbsolute } from './shared-absolute-move-strategy-helpers'
+import { getDragTargets } from './shared-absolute-move-strategy-helpers'
 
-export const escapeHatchStrategy: CanvasStrategy = {
-  id: 'ESCAPE_HATCH_STRATEGY',
-  name: 'Absolute Move (convert to absolute)',
+export const convertToAbsoluteAndMoveStrategy: CanvasStrategy = {
+  id: 'CONVERT_TO_ABSOLUTE_AND_MOVE_STRATEGY',
+  name: () => 'Move (Abs)',
   isApplicable: (canvasState, _interactionState, metadata) => {
     const selectedElements = getTargetPathsFromInteractionTarget(canvasState.interactionTarget)
-    return areAllSelectedElementsNonAbsolute(selectedElements, metadata)
+    if (selectedElements.length > 0) {
+      const filteredSelectedElements = getDragTargets(selectedElements)
+      return filteredSelectedElements.every((element) => {
+        const elementMetadata = MetadataUtils.findElementByElementPath(metadata, element)
+        return (
+          elementMetadata?.specialSizeMeasurements.position !== 'absolute' &&
+          honoursPropsPosition(canvasState, element)
+        )
+      })
+    } else {
+      return false
+    }
   },
   controlsToRender: [
-    {
-      control: ZeroSizeResizeControlWrapper,
-      key: 'zero-size-resize-control',
-      show: 'visible-except-when-other-strategy-is-active',
-    },
-    {
-      control: DragOutlineControl,
-      key: 'ghost-outline-control',
-      show: 'visible-only-while-active',
-    },
-    {
-      control: PieTimerControl,
-      key: 'pie-timer-control',
-      show: 'visible-only-while-active',
-    },
     {
       control: ParentOutlines,
       key: 'parent-outlines-control',
@@ -86,72 +74,45 @@ export const escapeHatchStrategy: CanvasStrategy = {
       key: 'parent-bounds-control',
       show: 'visible-only-while-active',
     },
-  ],
-  fitness: (canvasState, interactionState, strategyState) => {
-    if (
-      escapeHatchStrategy.isApplicable(
-        canvasState,
-        interactionState,
-        strategyState.startingMetadata,
-        strategyState.startingAllElementProps,
-      ) &&
+  ], // Uses existing hooks in select-mode-hooks.tsx
+  fitness: (canvasState, interactionState, sessionState) => {
+    return convertToAbsoluteAndMoveStrategy.isApplicable(
+      canvasState,
+      interactionState,
+      sessionState.startingMetadata,
+      sessionState.startingAllElementProps,
+    ) &&
       interactionState.interactionData.type === 'DRAG' &&
       interactionState.activeControl.type === 'BOUNDING_AREA'
-    ) {
-      if (escapeHatchAllowed(canvasState, interactionState.interactionData, strategyState)) {
-        return 2
-      } else {
-        return 0.5
-      }
-    } else {
-      return 0
-    }
+      ? 0.5
+      : 0
   },
   apply: (canvasState, interactionState, strategyState) => {
-    if (interactionState.interactionData.type === 'DRAG') {
-      let shouldEscapeHatch = false
-      let escapeHatchActivated = strategyState.customStrategyState.escapeHatchActivated ?? false
-      let dragThresholdPassed = interactionState.interactionData.drag != null
-      if (dragThresholdPassed) {
-        if (interactionState.interactionData.modifiers.cmd) {
-          shouldEscapeHatch = true
-        } else if (
-          escapeHatchActivated ||
-          interactionState.interactionData.globalTime - interactionState.lastInteractionTime >
-            AnimationTimer
-        ) {
-          shouldEscapeHatch = true
-          escapeHatchActivated = true
-        }
-      }
-
-      if (shouldEscapeHatch) {
-        const getConversionAndMoveCommands = (
-          snappedDragVector: CanvasPoint,
-        ): {
-          commands: Array<CanvasCommand>
-          intendedBounds: Array<CanvasFrameAndTarget>
-        } => {
-          return getEscapeHatchCommands(
-            getTargetPathsFromInteractionTarget(canvasState.interactionTarget),
-            strategyState.startingMetadata,
-            canvasState,
-            snappedDragVector,
-          )
-        }
-        const absoluteMoveApplyResult = applyAbsoluteMoveCommon(
+    if (
+      interactionState.interactionData.type === 'DRAG' &&
+      interactionState.interactionData.drag != null
+    ) {
+      const getConversionAndMoveCommands = (
+        snappedDragVector: CanvasPoint,
+      ): {
+        commands: Array<CanvasCommand>
+        intendedBounds: Array<CanvasFrameAndTarget>
+      } => {
+        return getEscapeHatchCommands(
+          getTargetPathsFromInteractionTarget(canvasState.interactionTarget),
+          strategyState.startingMetadata,
           canvasState,
-          interactionState,
-          strategyState,
-          getConversionAndMoveCommands,
+          snappedDragVector,
         )
-
-        return strategyApplicationResult(absoluteMoveApplyResult.commands, {
-          escapeHatchActivated,
-        })
-      } else {
-        return strategyApplicationResult([setCursorCommand('mid-interaction', CSSCursor.Move)])
       }
+      const absoluteMoveApplyResult = applyAbsoluteMoveCommon(
+        canvasState,
+        interactionState,
+        strategyState,
+        getConversionAndMoveCommands,
+      )
+
+      return strategyApplicationResult(absoluteMoveApplyResult.commands)
     }
     // Fallback for when the checks above are not satisfied.
     return emptyStrategyApplicationResult
@@ -159,24 +120,6 @@ export const escapeHatchStrategy: CanvasStrategy = {
 }
 
 export function getEscapeHatchCommands(
-  selectedElements: Array<ElementPath>,
-  metadata: ElementInstanceMetadataMap,
-  canvasState: InteractionCanvasState,
-  dragDelta: CanvasVector | null,
-): {
-  commands: Array<CanvasCommand>
-  intendedBounds: Array<CanvasFrameAndTarget>
-} {
-  const moveAndPositionCommands = collectMoveCommandsForSelectedElements(
-    selectedElements,
-    metadata,
-    canvasState,
-    dragDelta,
-  )
-  return moveAndPositionCommands
-}
-
-function collectMoveCommandsForSelectedElements(
   selectedElements: Array<ElementPath>,
   metadata: ElementInstanceMetadataMap,
   canvasState: InteractionCanvasState,
@@ -345,72 +288,6 @@ function pinValueToSet(
   } else {
     return fullFrame[pin]
   }
-}
-
-function escapeHatchAllowed(
-  canvasState: InteractionCanvasState,
-  interactionData: DragInteractionData,
-  strategyState: StrategyState,
-): boolean {
-  if (interactionData.modifiers.cmd) {
-    return true
-  }
-  // flex children with siblings switches to escape hatch when the cursor reaches the parent bounds
-  // for flow elements and flex child without siblings the conversion automatically starts on drag
-  if (strategyState.customStrategyState.escapeHatchActivated) {
-    return true
-  }
-  const selectedElements = getTargetPathsFromInteractionTarget(canvasState.interactionTarget)
-  const selectedElementsHaveSiblingsAndFlex = selectedElements.some((path) => {
-    return (
-      MetadataUtils.isParentYogaLayoutedContainerAndElementParticipatesInLayout(
-        path,
-        strategyState.startingMetadata,
-      ) && MetadataUtils.getSiblings(strategyState.startingMetadata, path).length > 1
-    )
-  })
-  if (selectedElementsHaveSiblingsAndFlex) {
-    const cursorPosition = offsetPoint(
-      interactionData.dragStart,
-      interactionData.drag ?? zeroCanvasPoint,
-    )
-    const parentBounds = mapDropNulls((path) => {
-      return MetadataUtils.findElementByElementPath(strategyState.startingMetadata, path)
-        ?.specialSizeMeasurements.immediateParentBounds
-    }, selectedElements)
-    return parentBounds.some((frame) => !rectContainsPoint(frame, cursorPosition))
-  } else {
-    return true
-  }
-}
-
-function collectHighlightCommand(
-  canvasState: InteractionCanvasState,
-  interactionData: DragInteractionData,
-  strategyState: StrategyState,
-): CanvasCommand {
-  const selectedElements = getTargetPathsFromInteractionTarget(canvasState.interactionTarget)
-  const siblingFrames = stripNulls(
-    selectedElements.flatMap((path) => {
-      return MetadataUtils.getSiblings(strategyState.startingMetadata, path)
-        .filter((sibling) =>
-          selectedElements.every((selected) => !EP.pathsEqual(selected, sibling.elementPath)),
-        )
-        .map((element) =>
-          MetadataUtils.getFrameInCanvasCoords(element.elementPath, strategyState.startingMetadata),
-        )
-    }),
-  )
-
-  const draggedFrames = mapDropNulls((path) => {
-    const frame = MetadataUtils.getFrameInCanvasCoords(path, strategyState.startingMetadata)
-    if (frame != null) {
-      return offsetRect(frame, interactionData.drag ?? zeroCanvasPoint)
-    } else {
-      return null
-    }
-  }, selectedElements)
-  return showOutlineHighlight('mid-interaction', [...siblingFrames, ...draggedFrames])
 }
 
 function findAbsoluteDescendantsToMove(

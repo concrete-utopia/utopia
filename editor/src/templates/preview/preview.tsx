@@ -89,7 +89,7 @@ export async function startPolledLoad({
     }
   }
   intervalHandle = window.setInterval(onTimeout, pollInterval)
-  onTimeout()
+  void onTimeout()
 }
 
 function addOpenInUtopiaButton(): void {
@@ -137,7 +137,7 @@ const initPreview = () => {
 
   const startPollingFromServer = (appID: string | null) => {
     if (appID != null) {
-      startPolledLoad({
+      void startPolledLoad({
         projectId: appID,
         // eslint-disable-next-line @typescript-eslint/no-empty-function
         onStartLoad: () => {},
@@ -163,7 +163,7 @@ const initPreview = () => {
     // Received a model from the containing page.
     const eventData = event.data
     if (isProjectContentsUpdateMessage(eventData)) {
-      modelUpdated(eventData.projectContents)
+      void modelUpdated(eventData.projectContents)
     }
   }
 
@@ -183,12 +183,12 @@ const initPreview = () => {
 
   const rerenderPreview = () => {
     if (lastRenderedModel != null) {
-      previewRender(lastRenderedModel)
+      void previewRender(lastRenderedModel)
     }
   }
 
   const onRemoteModuleDownload = (moduleDownload: Promise<NodeModules>) => {
-    moduleDownload.then((downloadedModules: NodeModules) => {
+    void moduleDownload.then((downloadedModules: NodeModules) => {
       // MUTATION
       Object.assign(cachedDependencies, downloadedModules)
       rerenderPreview()

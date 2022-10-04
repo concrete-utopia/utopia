@@ -13,6 +13,8 @@ import {
   textFile,
   textFileContents,
   ParseFailure,
+  isParseFailure,
+  isUnparsed,
 } from '../core/shared/project-file-types'
 import { emptySet } from '../core/shared/set-utils'
 import { lintAndParse } from '../core/workers/parser-printer/parser-printer'
@@ -71,8 +73,12 @@ export function createTestProjectWithCode(appUiJsFile: string): PersistentModel 
     emptySet(),
   ) as ParsedTextFile
 
-  if (!isParseSuccess(parsedFile)) {
-    throw new Error('The test file parse failed')
+  if (isParseFailure(parsedFile)) {
+    const failure =
+      parsedFile.errorMessage ?? parsedFile.errorMessages.map((m) => m.message).join(`,\n`)
+    throw new Error(`createTestProjectWithCode file parsing failed: ${failure}`)
+  } else if (isUnparsed(parsedFile)) {
+    throw new Error(`createTestProjectWithCode: Unexpected unparsed file.`)
   }
 
   return {

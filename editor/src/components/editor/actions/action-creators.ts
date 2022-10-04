@@ -212,6 +212,8 @@ import type {
   UpdateMouseButtonsPressed,
   ToggleSelectionLock,
   ElementPaste,
+  SetGithubState,
+  SaveToGithub,
 } from '../action-types'
 import {
   EditorModes,
@@ -224,6 +226,7 @@ import type {
   DuplicationState,
   ErrorMessages,
   FloatingInsertMenuState,
+  GithubState,
   LeftMenuTab,
   ModalDialog,
   OriginalFrame,
@@ -451,12 +454,12 @@ export function enableInsertModeForJSXElement(
   size: Size | null,
 ): SwitchEditorMode {
   return switchEditorMode(
-    EditorModes.insertMode(false, elementInsertionSubject(uid, element, size, importsToAdd, null)),
+    EditorModes.insertMode(elementInsertionSubject(uid, element, size, importsToAdd, null)),
   )
 }
 
 export function enableInsertModeForScene(name: JSXElementName | 'scene'): SwitchEditorMode {
-  return switchEditorMode(EditorModes.insertMode(false, sceneInsertionSubject()))
+  return switchEditorMode(EditorModes.insertMode(sceneInsertionSubject()))
 }
 
 export function addToast(toastContent: Notice): AddToast {
@@ -1395,6 +1398,13 @@ export function setLoginState(loginState: LoginState): SetLoginState {
   }
 }
 
+export function setGithubState(githubState: GithubState): SetGithubState {
+  return {
+    action: 'SET_GITHUB_STATE',
+    githubState: githubState,
+  }
+}
+
 export function resetCanvas(): ResetCanvas {
   return {
     action: 'RESET_CANVAS',
@@ -1523,5 +1533,12 @@ export function toggleSelectionLock(
     action: 'TOGGLE_SELECTION_LOCK',
     targets: targets,
     newValue: newValue,
+  }
+}
+
+export function saveToGithub(targetRepository: string): SaveToGithub {
+  return {
+    action: 'SAVE_TO_GITHUB',
+    targetRepository: targetRepository,
   }
 }

@@ -31,8 +31,10 @@ import           Servant
 import           Servant.Client
 import           System.Environment
 import           System.Log.FastLogger
+import           URI.ByteString
 import           Utopia.Web.Assets
 import           Utopia.Web.Auth
+import           Utopia.Web.Auth.Github
 import           Utopia.Web.Auth.Session
 import           Utopia.Web.Auth.Types
 import qualified Utopia.Web.Database            as DB
@@ -63,6 +65,7 @@ data DevServerResources = DevServerResources
                         , _proxyManager          :: Maybe Manager
                         , _auth0Resources        :: Maybe Auth0Resources
                         , _awsResources          :: Maybe AWSResources
+                        , _githubResources       :: Maybe GithubAuthResources
                         , _sessionState          :: SessionState
                         , _storeForMetrics       :: Store
                         , _databaseMetrics       :: DB.DatabaseMetrics
@@ -139,6 +142,8 @@ innerServerExecutor BadRequest = do
   throwError err400
 innerServerExecutor NotAuthenticated = do
   throwError err401
+innerServerExecutor (TempRedirect uri) = do
+  throwError err302 { errHeaders = [("Location", serializeURIRef' uri)]}
 innerServerExecutor NotModified = do
   throwError err304
 innerServerExecutor (CheckAuthCode authCode action) = do
@@ -312,6 +317,38 @@ innerServerExecutor (GetDownloadBranchFolders action) = do
   downloads <- fmap _branchDownloads ask
   folders <- liftIO $ maybe (pure []) getDownloadedLocalFolders downloads
   pure $ action folders
+innerServerExecutor (GetGithubAuthorizationURI action) = do
+  possibleGithubResources <- fmap _githubResources ask
+  case possibleGithubResources of
+    Nothing -> throwError err501
+    Just githubResources -> do
+      let uri = getAuthorizationURI githubResources
+      pure $ action uri
+innerServerExecutor (GetGithubAccessToken user authCode action) = do
+  possibleGithubResources <- fmap _githubResources ask
+  logger <- fmap _logger ask
+  metrics <- fmap _databaseMetrics ask
+  pool <- fmap _projectPool ask
+  case possibleGithubResources of
+    Nothing -> throwError err501
+    Just githubResources -> do
+      result <- getAndHandleGithubAccessToken githubResources logger metrics pool user authCode
+      pure $ action result
+innerServerExecutor (GetGithubAuthentication user action) = do
+  metrics <- fmap _databaseMetrics ask
+  pool <- fmap _projectPool ask
+  result <- liftIO $ DB.lookupGithubAuthenticationDetails metrics pool user
+  pure $ action result
+innerServerExecutor (SaveToGithubRepo user model action) = do
+  possibleGithubResources <- fmap _githubResources ask
+  metrics <- fmap _databaseMetrics ask
+  logger <- fmap _logger ask
+  pool <- fmap _projectPool ask
+  case possibleGithubResources of
+    Nothing -> throwError err501
+    Just githubResources -> do
+      result <- createTreeAndSaveToGithub githubResources logger metrics pool user model
+      pure $ action result
 
 {-|
   Invokes a service call using the supplied resources.
@@ -365,6 +402,7 @@ initialiseResources = do
   _proxyManager <- if shouldProxy then Just <$> newManager defaultManagerSettings else return Nothing
   _auth0Resources <- getAuth0Environment
   _awsResources <- getAmazonResourcesFromEnvironment
+  _githubResources <- getGithubAuthResources
   _sessionState <- createSessionState _projectPool
   _serverPort <- portFromEnvironment
   _storeForMetrics <- newStore

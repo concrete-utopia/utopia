@@ -51,7 +51,7 @@ import {
   getUtopiaIDFromJSXElement,
   setUtopiaIDOnJSXElement,
 } from '../shared/uid-utils'
-import { fastForEach } from '../shared/utils'
+import { assertNever, fastForEach } from '../shared/utils'
 import {
   isUtopiaAPIComponent,
   getComponentsFromTopLevelElements,
@@ -496,6 +496,45 @@ export function getZIndexOfElement(
 
 export function elementOnlyHasSingleTextChild(jsxElement: JSXElement): boolean {
   return jsxElement.children.length === 1 && isJSXTextBlock(jsxElement.children[0])
+}
+
+function textBlockIsNonEmpty(textBlock: JSXTextBlock): boolean {
+  return textBlock.text.trim().length > 0
+}
+
+function allElementsAndChildrenAreText(elements: Array<JSXElementChild>): boolean {
+  return (
+    elements.length > 0 &&
+    elements.every((element) => {
+      switch (element.type) {
+        case 'JSX_ARBITRARY_BLOCK':
+          return false // We can't possibly know at this point
+        case 'JSX_ELEMENT':
+          return false
+        case 'JSX_FRAGMENT':
+          return allElementsAndChildrenAreText(element.children)
+        case 'JSX_TEXT_BLOCK':
+          return textBlockIsNonEmpty(element)
+        default:
+          assertNever(element)
+      }
+    })
+  )
+}
+
+export function elementOnlyHasTextChildren(element: JSXElementChild): boolean {
+  switch (element.type) {
+    case 'JSX_ARBITRARY_BLOCK':
+      return false // We can't possibly know at this point
+    case 'JSX_ELEMENT':
+      return allElementsAndChildrenAreText(element.children)
+    case 'JSX_FRAGMENT':
+      return allElementsAndChildrenAreText(element.children)
+    case 'JSX_TEXT_BLOCK':
+      return textBlockIsNonEmpty(element)
+    default:
+      assertNever(element)
+  }
 }
 
 export function codeUsesProperty(javascript: string, propsParam: Param, property: string): boolean {

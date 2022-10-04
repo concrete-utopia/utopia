@@ -3,12 +3,13 @@ import { createSelector } from 'reselect'
 import { addAllUniquelyBy, mapDropNulls, sortBy } from '../../../core/shared/array-utils'
 import { ElementInstanceMetadataMap } from '../../../core/shared/element-template'
 import { arrayEquals } from '../../../core/shared/utils'
-import { InnerDispatchResult } from '../../editor/store/dispatch'
 import { AllElementProps, EditorState, EditorStorePatched } from '../../editor/store/editor-state'
 import { useEditorState, useSelectorWithCallback } from '../../editor/store/store-hook'
-import { CanvasCommand } from '../commands/commands'
 import { absoluteMoveStrategy } from './absolute-move-strategy'
-import { absoluteReparentStrategy } from './absolute-reparent-strategy'
+import {
+  absoluteReparentStrategy,
+  forcedAbsoluteReparentStrategy,
+} from './absolute-reparent-strategy'
 import {
   CanvasStrategy,
   CanvasStrategyId,
@@ -19,46 +20,66 @@ import {
   InteractionTarget,
   targetPaths,
   StrategyApplicationResult,
+  InteractionLifecycle,
 } from './canvas-strategy-types'
 import { InteractionSession, StrategyState } from './interaction-state'
 import { keyboardAbsoluteMoveStrategy } from './keyboard-absolute-move-strategy'
 import { absoluteResizeBoundingBoxStrategy } from './absolute-resize-bounding-box-strategy'
 import { keyboardAbsoluteResizeStrategy } from './keyboard-absolute-resize-strategy'
-import { escapeHatchStrategy } from './escape-hatch-strategy'
+import { convertToAbsoluteAndMoveStrategy } from './convert-to-absolute-and-move-strategy'
 import { flexReorderStrategy } from './flex-reorder-strategy'
 import { absoluteDuplicateStrategy } from './absolute-duplicate-strategy'
 import { absoluteReparentToFlexStrategy } from './absolute-reparent-to-flex-strategy'
-import { flexReparentToAbsoluteStrategy } from './flex-reparent-to-absolute-strategy'
+import {
+  flexReparentToAbsoluteStrategy,
+  forcedFlexReparentToAbsoluteStrategy,
+} from './flex-reparent-to-absolute-strategy'
 import { flexReparentToFlexStrategy } from './flex-reparent-to-flex-strategy'
 import { BuiltInDependencies } from '../../../core/es-modules/package-manager/built-in-dependencies-list'
-import {
-  flowReorderAutoConversionStategy,
-  flowReorderNoConversionStategy,
-  flowReorderSameTypeOnlyStategy,
-} from './flow-reorder-strategy'
+import { flowReorderStrategy } from './flow-reorder-strategy'
 import { isInsertMode } from '../../editor/editor-modes'
 import { dragToInsertStrategy } from './drag-to-insert-strategy'
-import { CSSCursor } from '../../../uuiui-deps'
 import { StateSelector } from 'zustand'
 import { flowReorderWithIndicatorStrategy } from './flow-reorder-with-indicator-strategy'
+import { flowReorderSliderStategy } from './flow-reorder-slider-strategy'
+import { NonResizableControl } from '../controls/select-mode/non-resizable-control'
+import { drawToInsertStrategy } from './draw-to-insert-strategy'
+import { flexResizeBasicStrategy } from './flex-resize-basic-strategy'
+import { optionalMap } from '../../../core/shared/optional-utils'
+import { lookForApplicableParentStrategy } from './look-for-applicable-parent-strategy'
 
-export const RegisteredCanvasStrategies: Array<CanvasStrategy> = [
+export type MetaCanvasStrategy = (
+  canvasState: InteractionCanvasState,
+  interactionSession: InteractionSession | null,
+  metadata: ElementInstanceMetadataMap,
+  allElementProps: AllElementProps,
+) => Array<CanvasStrategy>
+
+export const existingStrategies: MetaCanvasStrategy = () => [
   absoluteMoveStrategy,
   absoluteReparentStrategy,
+  forcedAbsoluteReparentStrategy,
   absoluteDuplicateStrategy,
   keyboardAbsoluteMoveStrategy,
   keyboardAbsoluteResizeStrategy,
   absoluteResizeBoundingBoxStrategy,
   flexReorderStrategy,
   flexReparentToAbsoluteStrategy,
+  forcedFlexReparentToAbsoluteStrategy,
   flexReparentToFlexStrategy,
-  // escapeHatchStrategy,  // TODO re-enable once reparent is not tied to cmd
+  convertToAbsoluteAndMoveStrategy,
   absoluteReparentToFlexStrategy,
   dragToInsertStrategy,
-  flowReorderAutoConversionStategy,
-  flowReorderNoConversionStategy,
-  flowReorderSameTypeOnlyStategy,
   flowReorderWithIndicatorStrategy,
+  drawToInsertStrategy,
+  flowReorderStrategy,
+  flowReorderSliderStategy,
+  flexResizeBasicStrategy,
+]
+
+export const RegisteredCanvasStrategies: Array<MetaCanvasStrategy> = [
+  existingStrategies,
+  lookForApplicableParentStrategy,
 ]
 
 export function pickCanvasStateFromEditorState(
@@ -84,20 +105,38 @@ function getInteractionTargetFromEditorState(editor: EditorState): InteractionTa
   }
 }
 
-function getApplicableStrategies(
-  strategies: Array<CanvasStrategy>,
+export interface ApplicableStrategy {
+  strategy: CanvasStrategy
+  name: string
+}
+
+export function applicableStrategy(strategy: CanvasStrategy, name: string): ApplicableStrategy {
+  return {
+    strategy: strategy,
+    name: name,
+  }
+}
+
+export function getApplicableStrategies(
+  strategies: Array<MetaCanvasStrategy>,
   canvasState: InteractionCanvasState,
   interactionSession: InteractionSession | null,
   metadata: ElementInstanceMetadataMap,
   allElementProps: AllElementProps,
 ): Array<CanvasStrategy> {
-  return strategies.filter((strategy) => {
-    return strategy.isApplicable(canvasState, interactionSession, metadata, allElementProps)
-  })
+  return strategies
+    .flatMap((s) => s(canvasState, interactionSession, metadata, allElementProps))
+    .filter((strategy) => {
+      return strategy.isApplicable(canvasState, interactionSession, metadata, allElementProps)
+    })
 }
 
 const getApplicableStrategiesSelector = createSelector(
-  (store: EditorStorePatched) => store.strategyState.sortedApplicableStrategies,
+  (store: EditorStorePatched) =>
+    optionalMap(
+      (sas) => sas.map((s) => s.strategy),
+      store.strategyState.sortedApplicableStrategies,
+    ),
   (store: EditorStorePatched): InteractionCanvasState => {
     return pickCanvasStateFromEditorState(store.editor, store.builtInDependencies)
   },
@@ -134,8 +173,8 @@ export interface StrategyWithFitness {
   strategy: CanvasStrategy
 }
 
-function getApplicableStrategiesOrderedByFitness(
-  strategies: Array<CanvasStrategy>,
+export function getApplicableStrategiesOrderedByFitness(
+  strategies: Array<MetaCanvasStrategy>,
   canvasState: InteractionCanvasState,
   interactionSession: InteractionSession,
   strategyState: StrategyState,
@@ -205,26 +244,32 @@ function pickStrategy(
   return pickDefaultCanvasStrategy(sortedApplicableStrategies, previousStrategyId)
 }
 
+export interface FindCanvasStrategyResult {
+  strategy: StrategyWithFitness | null
+  previousStrategy: StrategyWithFitness | null
+  sortedApplicableStrategies: Array<ApplicableStrategy>
+}
+
 export function findCanvasStrategy(
-  strategies: Array<CanvasStrategy>,
+  strategies: Array<MetaCanvasStrategy>,
   canvasState: InteractionCanvasState,
   interactionSession: InteractionSession,
   strategyState: StrategyState,
   previousStrategyId: CanvasStrategyId | null,
-): {
-  strategy: StrategyWithFitness | null
-  previousStrategy: StrategyWithFitness | null
-  sortedApplicableStrategies: Array<CanvasStrategy>
-} {
+): FindCanvasStrategyResult {
   const sortedApplicableStrategies = getApplicableStrategiesOrderedByFitness(
     strategies,
     canvasState,
     interactionSession,
     strategyState,
   )
+
   return {
     ...pickStrategy(sortedApplicableStrategies, interactionSession, previousStrategyId),
-    sortedApplicableStrategies: sortedApplicableStrategies.map((s) => s.strategy),
+    sortedApplicableStrategies: sortedApplicableStrategies.map((s) => ({
+      strategy: s.strategy,
+      name: s.strategy.name(canvasState, interactionSession, strategyState),
+    })),
   }
 }
 
@@ -233,11 +278,12 @@ export function applyCanvasStrategy(
   canvasState: InteractionCanvasState,
   interactionSession: InteractionSession,
   strategyState: StrategyState,
+  strategyLifecycle: InteractionLifecycle,
 ): StrategyApplicationResult {
-  return strategy.apply(canvasState, interactionSession, strategyState)
+  return strategy.apply(canvasState, interactionSession, strategyState, strategyLifecycle)
 }
 
-export function useDelayedStrategy<T>(
+export function useDelayedEditorState<T>(
   selector: StateSelector<EditorStorePatched, T | null>,
 ): T | null {
   /**
@@ -294,29 +340,83 @@ export function useDelayedStrategy<T>(
 
 export const useDelayedCurrentStrategy = () => {
   const selector = (store: EditorStorePatched) => store.strategyState.currentStrategy
-  return useDelayedStrategy<CanvasStrategyId | null>(selector)
+  return useDelayedEditorState<CanvasStrategyId | null>(selector)
 }
 
-export const useDelayedStrategyCursor = () => {
-  const selector = (store: EditorStorePatched) => store.editor.canvas.cursor
-  return useDelayedStrategy<CSSCursor | null>(selector)
+const notResizableControls: ControlWithKey = {
+  control: NonResizableControl,
+  key: 'not-resizable-control',
+  show: 'visible-except-when-other-strategy-is-active',
+}
+
+export function getApplicableControls(
+  currentStrategy: CanvasStrategyId | null,
+  strategy: CanvasStrategy,
+): Array<ControlWithKey> {
+  return strategy.controlsToRender.filter((control) => {
+    return (
+      control.show === 'always-visible' ||
+      (control.show === 'visible-only-while-active' && strategy.id === currentStrategy) ||
+      (control.show === 'visible-except-when-other-strategy-is-active' &&
+        (currentStrategy == null || strategy.id === currentStrategy))
+    )
+  })
+}
+
+export function isResizableStrategy(canvasStrategy: CanvasStrategy): boolean {
+  switch (canvasStrategy.id) {
+    case 'ABSOLUTE_RESIZE_BOUNDING_BOX':
+    case 'KEYBOARD_ABSOLUTE_RESIZE':
+    case 'FLEX_RESIZE_BASIC':
+      return true
+    default:
+      return false
+  }
+}
+
+export function interactionInProgress(interactionSession: InteractionSession | null): boolean {
+  if (interactionSession == null) {
+    return false
+  } else {
+    switch (interactionSession.interactionData.type) {
+      case 'DRAG':
+      case 'KEYBOARD':
+      case 'HOVER':
+        return true
+      default:
+        const _exhaustiveCheck: never = interactionSession.interactionData
+        throw new Error(`Unhandled interaction data type: ${interactionSession.interactionData}`)
+    }
+  }
 }
 
 export function useGetApplicableStrategyControls(): Array<ControlWithKey> {
   const applicableStrategies = useGetApplicableStrategies()
   const currentStrategy = useDelayedCurrentStrategy()
+  const currentlyInProgress = useEditorState((store) => {
+    return interactionInProgress(store.editor.canvas.interactionSession)
+  }, 'useGetApplicableStrategyControls currentlyInProgress')
   return React.useMemo(() => {
-    return applicableStrategies.reduce<ControlWithKey[]>((working, s) => {
-      const filteredControls = s.controlsToRender.filter(
-        (control) =>
-          control.show === 'always-visible' ||
-          (control.show === 'visible-only-while-active' && s.id === currentStrategy) ||
-          (control.show === 'visible-except-when-other-strategy-is-active' &&
-            (currentStrategy == null || s.id === currentStrategy)),
+    let applicableControls: Array<ControlWithKey> = []
+    let isResizable: boolean = false
+    // Add the controls for currently applicable strategies.
+    for (const strategy of applicableStrategies) {
+      if (isResizableStrategy(strategy)) {
+        isResizable = true
+      }
+      const strategyControls = getApplicableControls(currentStrategy, strategy)
+      applicableControls = addAllUniquelyBy(
+        applicableControls,
+        strategyControls,
+        (l, r) => l.control === r.control,
       )
-      return addAllUniquelyBy(working, filteredControls, (l, r) => l.control === r.control)
-    }, [])
-  }, [applicableStrategies, currentStrategy])
+    }
+    // Special case controls.
+    if (!isResizable && !currentlyInProgress) {
+      applicableControls.push(notResizableControls)
+    }
+    return applicableControls
+  }, [applicableStrategies, currentStrategy, currentlyInProgress])
 }
 
 export function isStrategyActive(strategyState: StrategyState): boolean {

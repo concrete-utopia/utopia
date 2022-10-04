@@ -626,10 +626,6 @@ function assert(errorMessage: string, predicate: boolean | (() => boolean)): voi
   throw new Error(`Assert failed: ${errorMessage}`)
 }
 
-function assertNever(n: never): never {
-  throw new Error(`Expected \`never\`, got ${JSON.stringify(n)}`)
-}
-
 export interface Annotations {
   _signature: string
   _description: string
@@ -890,7 +886,9 @@ function defer<T>(): Promise<T> & {
     res = resolve
     rej = reject
   })
+  // eslint-disable-next-line @typescript-eslint/no-floating-promises
   Object.defineProperty(promise, 'resolve', { value: res })
+  // eslint-disable-next-line @typescript-eslint/no-floating-promises
   Object.defineProperty(promise, 'reject', { value: rej })
 
   return promise as any
@@ -940,7 +938,6 @@ function deduplicateBy<T>(key: (t: T) => string, ts: Array<T>): Array<T> {
 export default {
   generateUUID: generateUUID,
   assert: assert,
-  assertNever: assertNever,
   roundTo: roundTo,
   roundToNearestHalf: roundToNearestHalf,
   roundPointToNearestHalf: roundPointToNearestHalf,

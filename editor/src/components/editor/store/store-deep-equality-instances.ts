@@ -309,6 +309,10 @@ import {
   editorState,
   AllElementProps,
   LockedElements,
+  ProjectGithubSettings,
+  GithubRepo,
+  githubRepo,
+  projectGithubSettings,
 } from './editor-state'
 import {
   CornerGuideline,
@@ -328,6 +332,9 @@ import {
   DragInteractionData,
   flexGapHandle,
   FlexGapHandle,
+  FlowSlider,
+  flowSlider,
+  HoverInteractionData,
   InputData,
   interactionSession,
   InteractionSession,
@@ -335,6 +342,8 @@ import {
   KeyboardCatcherControl,
   KeyboardInteractionData,
   KeyState,
+  reparentTargetsToFilter,
+  ReparentTargetsToFilter,
   resizeHandle,
   ResizeHandle,
 } from '../../canvas/canvas-strategies/interaction-state'
@@ -1209,6 +1218,8 @@ export function SpecialSizeMeasurementsKeepDeepEquality(): KeepDeepEqualityCall<
       oldSize.globalContentBox,
       newSize.globalContentBox,
     ).areEqual
+    const floatEquals = oldSize.float === newSize.float
+    const hasPositionOffsetEquals = oldSize.hasPositionOffset === newSize.hasPositionOffset
     const areEqual =
       offsetResult.areEqual &&
       coordinateSystemBoundsResult.areEqual &&
@@ -1231,7 +1242,9 @@ export function SpecialSizeMeasurementsKeepDeepEquality(): KeepDeepEqualityCall<
       displayEquals &&
       htmlElementNameEquals &&
       renderedChildrenCount &&
-      globalContentBoxEquals
+      globalContentBoxEquals &&
+      floatEquals &&
+      hasPositionOffsetEquals
     if (areEqual) {
       return keepDeepEqualityResult(oldSize, true)
     } else {
@@ -1258,6 +1271,8 @@ export function SpecialSizeMeasurementsKeepDeepEquality(): KeepDeepEqualityCall<
         newSize.htmlElementName,
         newSize.renderedChildrenCount,
         newSize.globalContentBox,
+        newSize.float,
+        newSize.hasPositionOffset,
       )
       return keepDeepEqualityResult(sizeMeasurements, false)
     }
@@ -1574,7 +1589,7 @@ export const ModifiersKeepDeepEquality: KeepDeepEqualityCall<Modifiers> = combin
 )
 
 export const DragInteractionDataKeepDeepEquality: KeepDeepEqualityCall<DragInteractionData> =
-  combine7EqualityCalls(
+  combine8EqualityCalls(
     (data) => data.dragStart,
     CanvasPointKeepDeepEquality,
     (data) => data.drag,
@@ -1589,7 +1604,18 @@ export const DragInteractionDataKeepDeepEquality: KeepDeepEqualityCall<DragInter
     createCallWithTripleEquals(),
     (data) => data.hasMouseMoved,
     BooleanKeepDeepEquality,
-    (dragStart, drag, prevDrag, originalDragStart, modifiers, globalTime, hasMouseMoved) => {
+    (data) => data._accumulatedMovement,
+    CanvasPointKeepDeepEquality,
+    (
+      dragStart,
+      drag,
+      prevDrag,
+      originalDragStart,
+      modifiers,
+      globalTime,
+      hasMouseMoved,
+      accumulatedMovement,
+    ) => {
       return {
         type: 'DRAG',
         dragStart: dragStart,
@@ -1599,6 +1625,22 @@ export const DragInteractionDataKeepDeepEquality: KeepDeepEqualityCall<DragInter
         modifiers: modifiers,
         globalTime: globalTime,
         hasMouseMoved: hasMouseMoved,
+        _accumulatedMovement: accumulatedMovement,
+      }
+    },
+  )
+
+export const HoverInteractionDataKeepDeepEquality: KeepDeepEqualityCall<HoverInteractionData> =
+  combine2EqualityCalls(
+    (data) => data.point,
+    CanvasPointKeepDeepEquality,
+    (data) => data.modifiers,
+    ModifiersKeepDeepEquality,
+    (point, modifiers) => {
+      return {
+        type: 'HOVER',
+        point: point,
+        modifiers: modifiers,
       }
     },
   )
@@ -1640,6 +1682,11 @@ export const InputDataKeepDeepEquality: KeepDeepEqualityCall<InputData> = (oldVa
         return KeyboardInteractionDataKeepDeepEquality(oldValue, newValue)
       }
       break
+    case 'HOVER':
+      if (newValue.type === oldValue.type) {
+        return HoverInteractionDataKeepDeepEquality(oldValue, newValue)
+      }
+      break
     default:
       const _exhaustiveCheck: never = oldValue
       throw new Error(`Unhandled type ${JSON.stringify(oldValue)}`)
@@ -1655,9 +1702,10 @@ export const EdgePositionKeepDeepEquality: KeepDeepEqualityCall<EdgePosition> =
     createCallWithTripleEquals(),
     edgePosition,
   )
-
-export const BoundingAreaKeepDeepEquality: KeepDeepEqualityCall<BoundingArea> =
-  combine1EqualityCall((area) => area.target, ElementPathKeepDeepEquality, boundingArea)
+boundingArea() // this is here to break if the definition of boundingArea changes
+export const BoundingAreaKeepDeepEquality: KeepDeepEqualityCall<BoundingArea> = (oldValue, _) => {
+  return keepDeepEqualityResult(oldValue, true)
+}
 
 export const ResizeHandleKeepDeepEquality: KeepDeepEqualityCall<ResizeHandle> =
   combine1EqualityCall((handle) => handle.edgePosition, EdgePositionKeepDeepEquality, resizeHandle)
@@ -1676,6 +1724,15 @@ keyboardCatcherControl()
 export const KeyboardCatcherControlKeepDeepEquality: KeepDeepEqualityCall<
   KeyboardCatcherControl
 > = (oldValue, newValue) => {
+  return keepDeepEqualityResult(oldValue, true)
+}
+
+// This will break should the definition of `FlowSlider` change.
+flowSlider()
+export const FlowSliderKeepDeepEquality: KeepDeepEqualityCall<FlowSlider> = (
+  oldValue,
+  newValue,
+) => {
   return keepDeepEqualityResult(oldValue, true)
 }
 
@@ -1704,6 +1761,11 @@ export const CanvasControlTypeKeepDeepEquality: KeepDeepEqualityCall<CanvasContr
         return KeyboardCatcherControlKeepDeepEquality(oldValue, newValue)
       }
       break
+    case 'FLOW_SLIDER':
+      if (newValue.type === oldValue.type) {
+        return FlowSliderKeepDeepEquality(oldValue, newValue)
+      }
+      break
     default:
       const _exhaustiveCheck: never = oldValue
       throw new Error(`Unhandled type ${JSON.stringify(oldValue)}`)
@@ -1724,6 +1786,15 @@ export const ReparentTargetKeepDeepEquality: KeepDeepEqualityCall<ReparentTarget
     reparentTarget,
   )
 
+const ReparentTargetsToFilterKeepDeepEquality: KeepDeepEqualityCall<ReparentTargetsToFilter> =
+  combine2EqualityCalls(
+    (target) => target['use-strict-bounds'],
+    ReparentTargetKeepDeepEquality,
+    (target) => target['allow-missing-bounds'],
+    ReparentTargetKeepDeepEquality,
+    reparentTargetsToFilter,
+  )
+
 export const InteractionSessionKeepDeepEquality: KeepDeepEqualityCall<InteractionSession> =
   combine10EqualityCalls(
     (session) => session.interactionData,
@@ -1734,16 +1805,16 @@ export const InteractionSessionKeepDeepEquality: KeepDeepEqualityCall<Interactio
     CanvasControlTypeKeepDeepEquality,
     (session) => session.lastInteractionTime,
     createCallWithTripleEquals(),
-    (session) => session.metadata,
+    (session) => session.latestMetadata,
     ElementInstanceMetadataMapKeepDeepEquality,
     (sesssion) => sesssion.userPreferredStrategy,
     nullableDeepEquality(createCallWithTripleEquals()),
     (session) => session.startedAt,
     createCallWithTripleEquals(),
-    (session) => session.allElementProps,
+    (session) => session.latestAllElementProps,
     createCallFromIntrospectiveKeepDeep(),
-    (session) => session.startingTargetParentToFilterOut,
-    nullableDeepEquality(ReparentTargetKeepDeepEquality),
+    (session) => session.startingTargetParentsToFilterOut,
+    nullableDeepEquality(ReparentTargetsToFilterKeepDeepEquality),
     (session) => session.updatedTargetPaths,
     objectDeepEquality(ElementPathKeepDeepEquality),
     interactionSession,
@@ -2528,9 +2599,7 @@ export const InsertionSubjectKeepDeepEquality: KeepDeepEqualityCall<InsertionSub
   return keepDeepEqualityResult(newValue, false)
 }
 
-export const InsertModeKeepDeepEquality: KeepDeepEqualityCall<InsertMode> = combine2EqualityCalls(
-  (mode) => mode.insertionStarted,
-  BooleanKeepDeepEquality,
+export const InsertModeKeepDeepEquality: KeepDeepEqualityCall<InsertMode> = combine1EqualityCall(
   (mode) => mode.subject,
   InsertionSubjectKeepDeepEquality,
   EditorModes.insertMode,
@@ -2948,6 +3017,21 @@ export const UtopiaVSCodeConfigKeepDeepEquality: KeepDeepEqualityCall<UtopiaVSCo
     },
   )
 
+export const GithubRepoKeepDeepEquality: KeepDeepEqualityCall<GithubRepo> = combine2EqualityCalls(
+  (repo) => repo.owner,
+  createCallWithTripleEquals(),
+  (repo) => repo.repository,
+  createCallWithTripleEquals(),
+  githubRepo,
+)
+
+export const ProjectGithubSettingsKeepDeepEquality: KeepDeepEqualityCall<ProjectGithubSettings> =
+  combine1EqualityCall(
+    (settings) => settings.targetRepository,
+    nullableDeepEquality(GithubRepoKeepDeepEquality),
+    projectGithubSettings,
+  )
+
 export const EditorStateKeepDeepEquality: KeepDeepEqualityCall<EditorState> = (
   oldValue,
   newValue,
@@ -3166,6 +3250,15 @@ export const EditorStateKeepDeepEquality: KeepDeepEqualityCall<EditorState> = (
     oldValue.allElementProps,
     newValue.allElementProps,
   )
+  const _currentAllElementProps_KILLME_Results =
+    createCallFromIntrospectiveKeepDeep<AllElementProps>()(
+      oldValue._currentAllElementProps_KILLME,
+      newValue._currentAllElementProps_KILLME,
+    )
+  const githubSettingsResults = ProjectGithubSettingsKeepDeepEquality(
+    oldValue.githubSettings,
+    newValue.githubSettings,
+  )
 
   const areEqual =
     idResult.areEqual &&
@@ -3231,7 +3324,9 @@ export const EditorStateKeepDeepEquality: KeepDeepEqualityCall<EditorState> = (
     vscodeLoadingScreenVisibleResults.areEqual &&
     indexedDBFailedResults.areEqual &&
     forceParseFilesResults.areEqual &&
-    allElementPropsResults.areEqual
+    allElementPropsResults.areEqual &&
+    _currentAllElementProps_KILLME_Results.areEqual &&
+    githubSettingsResults.areEqual
 
   if (areEqual) {
     return keepDeepEqualityResult(oldValue, true)
@@ -3301,6 +3396,8 @@ export const EditorStateKeepDeepEquality: KeepDeepEqualityCall<EditorState> = (
       indexedDBFailedResults.value,
       forceParseFilesResults.value,
       allElementPropsResults.value,
+      _currentAllElementProps_KILLME_Results.value,
+      githubSettingsResults.value,
     )
 
     return keepDeepEqualityResult(newEditorState, false)

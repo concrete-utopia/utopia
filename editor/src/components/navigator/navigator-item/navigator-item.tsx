@@ -19,7 +19,14 @@ import { NavigatorItemActionSheet } from './navigator-item-components'
 import { ElementWarnings } from '../../editor/store/editor-state'
 import { ChildWithPercentageSize } from '../../common/size-warnings'
 import { useKeepReferenceEqualityIfPossible } from '../../../utils/react-performance'
-import { IcnProps, useColorTheme, UtopiaStyles, UtopiaTheme, FlexRow } from '../../../uuiui'
+import {
+  IcnProps,
+  useColorTheme,
+  UtopiaStyles,
+  UtopiaTheme,
+  FlexRow,
+  ColorTheme,
+} from '../../../uuiui'
 import { LayoutIcon } from './layout-icon'
 import { useEditorState } from '../../editor/store/store-hook'
 import { MetadataUtils } from '../../../core/model/element-metadata-utils'
@@ -142,9 +149,26 @@ const computeResultingStyle = (
   fullyVisible: boolean,
   isFocusedComponent: boolean,
   isFocusableComponent: boolean,
-  colorTheme: any,
+  isHighlightedForInteraction: boolean,
+  colorTheme: ColorTheme,
 ) => {
   let result = defaultUnselected(colorTheme)
+  if (isHighlightedForInteraction) {
+    result = {
+      style: {
+        background: colorTheme.brandPurple.o(70).value,
+        color: colorTheme.white.value,
+      },
+      iconColor: 'main',
+    }
+  } else if (isInsideComponent) {
+    result = componentUnselected(colorTheme)
+  } else if (isDynamic) {
+    result = dynamicUnselected(colorTheme)
+  } else {
+    result = defaultUnselected(colorTheme)
+  }
+
   if (selected) {
     if (isFocusableComponent && !isFocusedComponent) {
       result = {
@@ -157,15 +181,6 @@ const computeResultingStyle = (
       result = dynamicSelected(colorTheme)
     } else {
       result = defaultSelected(colorTheme)
-    }
-  } else {
-    // unselected
-    if (isInsideComponent) {
-      result = componentUnselected(colorTheme)
-    } else if (isDynamic) {
-      result = dynamicUnselected(colorTheme)
-    } else {
-      result = defaultUnselected(colorTheme)
     }
   }
 
@@ -279,6 +294,12 @@ export const NavigatorItem: React.FunctionComponent<
   const fullyVisible = useStyleFullyVisible(elementPath)
   const isProbablyScene = useIsProbablyScene(elementPath)
 
+  const isHighlightedForInteraction = useEditorState((store) => {
+    return store.editor.navigator.highlightedTargets.some((target) =>
+      EP.pathsEqual(target, props.elementPath),
+    )
+  }, 'isreallyhighlighted')
+
   const resultingStyle = computeResultingStyle(
     selected,
     isInsideComponent,
@@ -287,6 +308,7 @@ export const NavigatorItem: React.FunctionComponent<
     fullyVisible,
     isFocusedComponent,
     isFocusableComponent,
+    isHighlightedForInteraction,
     colorTheme,
   )
 

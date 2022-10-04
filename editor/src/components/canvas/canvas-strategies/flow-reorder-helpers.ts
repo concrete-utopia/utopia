@@ -6,208 +6,104 @@ import {
   ElementInstanceMetadataMap,
 } from '../../../core/shared/element-template'
 import {
-  CanvasPoint,
   canvasRectangle,
   CanvasRectangle,
   CanvasVector,
-  distance as euclideanDistance,
-  getRectCenter,
-  offsetPoint,
-  pointIsClockwiseFromLine,
-  rectContainsPoint,
+  mod,
   zeroCanvasRect,
 } from '../../../core/shared/math-utils'
 import { ElementPath } from '../../../core/shared/project-file-types'
-import { AllElementProps, ElementProps } from '../../editor/store/editor-state'
+import { fastForEach } from '../../../core/shared/utils'
 import { stylePropPathMappingFn } from '../../inspector/common/property-path-hooks'
 import { DeleteProperties, deleteProperties } from '../commands/delete-properties-command'
 import { SetProperty, setProperty } from '../commands/set-property-command'
+import { getTargetPathsFromInteractionTarget, InteractionTarget } from './canvas-strategy-types'
+import { findSiblingIndexUnderPoint } from './reorder-utils'
 
-type FlowDirection = 'vertical' | 'horizontal'
-
-function flowDirectionForDisplayValue(displayValue: string): FlowDirection {
-  if (displayValue === 'inline' || displayValue === 'inline-block') {
-    return 'horizontal'
-  } else {
-    return 'vertical'
-  }
-}
-
-interface ReorderElement {
-  distance: number
-  centerPoint: CanvasPoint
-  bottomLeft: CanvasPoint
-  siblingPath: ElementPath
-  siblingIndex: number
-  direction: FlowDirection
-}
-
-function getRelativeOffset(
-  element: ElementInstanceMetadata | null,
-  elementProps: ElementProps,
-): CanvasPoint {
-  if (element?.specialSizeMeasurements.position === 'relative') {
-    const { left, right, top, bottom } = elementProps?.style
-    const horizontalOffset = left ? -left : right ?? 0
-    const verticalOffset = top ? -top : bottom ?? 0
-    return { x: horizontalOffset, y: verticalOffset } as CanvasPoint
-  } else {
-    return { x: 0, y: 0 } as CanvasPoint
-  }
-}
-
-function getCenterPositionInFlow(
-  frame: CanvasRectangle,
-  element: ElementInstanceMetadata,
-  elementProps: ElementProps,
-): CanvasPoint {
-  const rawCenter = getRectCenter(frame)
-  const relativeOffset = getRelativeOffset(element, elementProps)
-  return offsetPoint(rawCenter, relativeOffset)
-}
-
-function getSiblingDisplayValue(
-  newIndex: number,
-  siblings: Array<ElementPath>,
+export function isValidFlowReorderTarget(
+  path: ElementPath,
   metadata: ElementInstanceMetadataMap,
-) {
-  const siblingMetadata = MetadataUtils.findElementByElementPath(metadata, siblings[newIndex])
-  const displayValue = siblingMetadata?.specialSizeMeasurements.display
-  if (displayValue === 'inline-block' || displayValue === 'block') {
-    return displayValue
+): boolean {
+  const elementMetadata = MetadataUtils.findElementByElementPath(metadata, path)
+  if (MetadataUtils.isPositionAbsolute(elementMetadata)) {
+    return false
+  } else if (elementMetadata?.specialSizeMeasurements.float !== 'none') {
+    return false
+  } else if (MetadataUtils.isPositionRelative(elementMetadata) && elementMetadata != null) {
+    return !elementMetadata.specialSizeMeasurements.hasPositionOffset
   } else {
-    return null
+    return MetadataUtils.isPositionedByFlow(elementMetadata)
   }
 }
 
-function getSiblingDisplayValues(
+export function areAllSiblingsInOneDimension(
+  target: ElementPath,
   metadata: ElementInstanceMetadataMap,
-  siblings: Array<ElementPath>,
-): Array<string | null> {
-  return siblings.map((sibling) => {
-    const siblingMetadata = MetadataUtils.findElementByElementPath(metadata, sibling)
-    return siblingMetadata?.specialSizeMeasurements.display ?? null
+): boolean {
+  const targetElement = MetadataUtils.findElementByElementPath(metadata, target)
+  const siblings = MetadataUtils.getSiblings(metadata, target) // including target
+  if (targetElement == null || siblings.length === 1) {
+    return false
+  }
+
+  const targetDirection = getElementDirection(targetElement)
+
+  let allHorizontalOrVertical = true
+  let frames: Array<CanvasRectangle> = []
+  fastForEach(siblings, (sibling) => {
+    if (isValidFlowReorderTarget(sibling.elementPath, metadata)) {
+      if (getElementDirection(sibling) !== targetDirection) {
+        allHorizontalOrVertical = false
+      }
+      if (sibling.globalFrame != null) {
+        frames.push(sibling.globalFrame)
+      }
+    }
+  })
+
+  return allHorizontalOrVertical && areNonWrappingSiblings(frames, targetDirection)
+}
+
+function areNonWrappingSiblings(
+  frames: Array<CanvasRectangle>,
+  layoutDirection: 'horizontal' | 'vertical',
+): boolean {
+  return frames.every((frame, i) => {
+    if (i === 0) {
+      return true
+    } else {
+      const prevFrame: CanvasRectangle = frames[i - 1]
+      if (layoutDirection === 'horizontal') {
+        // all elements are on the right side of the previous sibling
+        return frame.x > prevFrame.x
+      } else {
+        // all elements are below of the previous sibling
+        return frame.y > prevFrame.y
+      }
+    }
   })
 }
 
-function isValidSibling(
-  targetElementMetadata: ElementInstanceMetadata | null,
-  siblingMetadata: ElementInstanceMetadata | null,
-  displayTypeFiltering: 'same-display-type-only' | 'allow-mixed-display-type',
-): boolean {
-  const targetDisplayType = targetElementMetadata?.specialSizeMeasurements.display
-  const siblingDisplayType = siblingMetadata?.specialSizeMeasurements.display
-
-  return (
-    displayTypeFiltering === 'allow-mixed-display-type' || siblingDisplayType === targetDisplayType
-  )
+function getElementDirection(element: ElementInstanceMetadata): 'vertical' | 'horizontal' {
+  const displayValue = element.specialSizeMeasurements.display
+  return displayValue === 'inline' || displayValue === 'inline-block' ? 'horizontal' : 'vertical'
 }
 
-function findClosestSibling(
-  point: CanvasVector,
-  target: ElementPath | null,
-  siblings: Array<ElementPath>,
+function getNewDisplayTypeForIndex(
   metadata: ElementInstanceMetadataMap,
-  allElementProps: AllElementProps,
-  displayTypeFiltering:
-    | 'same-display-type-only'
-    | 'allow-mixed-display-type' = 'allow-mixed-display-type',
-): ReorderElement | null {
-  let reorderResult: ReorderElement | null = null
-  const targetElementMetadata = MetadataUtils.findElementByElementPath(metadata, target)
+  targetSibling: ElementPath,
+) {
+  const displayType = MetadataUtils.findElementByElementPath(metadata, targetSibling)
+    ?.specialSizeMeasurements.display
+  const displayBlockInlineBlock =
+    displayType === 'block' || displayType === 'inline-block' ? displayType : null
 
-  for (const [index, sibling] of siblings.entries()) {
-    const siblingMetadata = MetadataUtils.findElementByElementPath(metadata, sibling)
-    const frame = MetadataUtils.getFrameInCanvasCoords(sibling, metadata)
-    if (
-      isValidSibling(targetElementMetadata, siblingMetadata, displayTypeFiltering) &&
-      frame != null &&
-      siblingMetadata != null &&
-      MetadataUtils.isPositionedByFlow(siblingMetadata)
-    ) {
-      const siblingProps = allElementProps[EP.toString(siblingMetadata.elementPath)] ?? {}
-      const centerPoint = getCenterPositionInFlow(frame, siblingMetadata, siblingProps)
-      const bottomLeft = offsetPoint(centerPoint, {
-        x: -frame.width / 2,
-        y: frame.height / 2,
-      } as CanvasPoint)
-
-      // First one that has been found or if it's closer than a previously found entry.
-      const distance = euclideanDistance(point, centerPoint)
-      if (reorderResult == null || distance < reorderResult.distance) {
-        reorderResult = {
-          distance: distance,
-          centerPoint: centerPoint,
-          bottomLeft: bottomLeft,
-          siblingPath: sibling,
-          siblingIndex: index,
-          direction: flowDirectionForDisplayValue(siblingMetadata.specialSizeMeasurements.display),
-        }
-      }
-    }
-  }
-  return reorderResult
-}
-
-function displayTypeBeforeIndex(
-  displayValues: Array<string | null>,
-  index: number,
-): 'block' | 'inline-block' | undefined {
-  const prevSiblingIndex = index
-
-  const displayTypeOfPrevSibling = displayValues[prevSiblingIndex]
-  const displayTypeOfNextSibling = displayValues[prevSiblingIndex + 1]
-
-  if (displayTypeOfPrevSibling === 'inline-block' && displayTypeOfNextSibling === 'inline-block') {
-    return 'inline-block'
-  } else if (displayTypeOfPrevSibling === 'block' && displayTypeOfNextSibling === 'block') {
-    return 'block'
-  } else {
-    return undefined
-  }
-}
-
-function findNewIndexAndDisplayType(
-  point: CanvasVector,
-  target: ElementPath | null,
-  siblings: Array<ElementPath>,
-  metadata: ElementInstanceMetadataMap,
-  reorderResult: ReorderElement,
-  displayValues: Array<string | null>,
-): { newIndex: number; newDisplayType: AddDisplayBlockOrOnline | RemoveDisplayProp | null } {
-  // Check which "side" of the target this falls on.
-  const originalIndex = siblings.findIndex((path) => EP.pathsEqual(path, target))
-  const newTargetIndex = reorderResult.siblingIndex
-  const insertForward = newTargetIndex > originalIndex
-
-  const targetElementMetadata = MetadataUtils.findElementByElementPath(metadata, target)
-  const originalDisplayType = targetElementMetadata?.specialSizeMeasurements.display ?? 'block'
-
-  let newIndex = insertForward ? newTargetIndex - 1 : newTargetIndex
-  const directionForElement = flowDirectionForDisplayValue(originalDisplayType)
-  if (directionForElement !== reorderResult.direction) {
-    // The directions don't match up, so check both the x and y based on a diagonal through the element
-    if (pointIsClockwiseFromLine(point, reorderResult.bottomLeft, reorderResult.centerPoint)) {
-      newIndex++
-    }
-  } else if (reorderResult.direction === 'vertical' && point.y > reorderResult.centerPoint.y) {
-    newIndex++
-  } else if (reorderResult.direction === 'horizontal' && point.x > reorderResult.centerPoint.x) {
-    newIndex++
-  }
-
-  return {
-    newIndex: newIndex,
-    newDisplayType: getNewDisplayType(
-      targetElementMetadata,
-      displayTypeBeforeIndex(displayValues, insertForward ? newIndex : newIndex - 1),
-    ),
-  }
+  return displayBlockInlineBlock
 }
 
 function shouldRemoveDisplayProp(
   element: ElementInstanceMetadata | null,
-  newDisplayValue: 'block' | 'inline-block' | null | undefined,
+  newDisplayValue: 'block' | 'inline-block' | null,
 ): boolean {
   if (element == null || element.specialSizeMeasurements.htmlElementName == null) {
     return false
@@ -220,141 +116,59 @@ function shouldRemoveDisplayProp(
   }
 }
 
-function getNewDisplayType(
-  element: ElementInstanceMetadata | null,
-  newDisplayValue: 'block' | 'inline-block' | null | undefined,
-): AddDisplayBlockOrOnline | RemoveDisplayProp | null {
-  if (shouldRemoveDisplayProp(element, newDisplayValue)) {
-    return removeDisplayProp()
-  } else if (newDisplayValue != null) {
-    return addDisplayProp(newDisplayValue)
-  } else {
-    return null
-  }
-}
-
-interface AddDisplayBlockOrOnline {
-  type: 'add'
-  display: 'block' | 'inline-block'
-}
-
-export function addDisplayProp(display: 'inline-block' | 'block'): AddDisplayBlockOrOnline {
-  return {
-    type: 'add',
-    display: display,
-  }
-}
-
-interface RemoveDisplayProp {
-  type: 'remove'
-}
-
-export function removeDisplayProp(): RemoveDisplayProp {
-  return { type: 'remove' }
-}
-
-export function getFlowReorderIndex(
-  metadata: ElementInstanceMetadataMap,
-  siblings: Array<ElementPath>,
-  point: CanvasVector,
-  target: ElementPath | null,
-  allElementProps: AllElementProps,
-  displayTypeFiltering:
-    | 'same-display-type-only'
-    | 'allow-mixed-display-type' = 'allow-mixed-display-type',
-): {
-  newIndex: number
-  newDisplayType: AddDisplayBlockOrOnline | RemoveDisplayProp | null
-} {
-  if (target === null) {
-    return {
-      newIndex: -1,
-      newDisplayType: null,
-    }
-  }
-
-  const displayValues = getSiblingDisplayValues(metadata, siblings)
-  const reorderResult = findClosestSibling(
-    point,
-    target,
-    siblings,
-    metadata,
-    allElementProps,
-    displayTypeFiltering,
-  )
-
-  if (reorderResult == null) {
-    // We were unable to find an appropriate entry.
-    return {
-      newIndex: -1,
-      newDisplayType: null,
-    }
-  } else if (EP.pathsEqual(reorderResult.siblingPath, target)) {
-    // Reparenting to the same position that the existing element started in.
-    return {
-      newIndex: reorderResult.siblingIndex,
-      newDisplayType: null,
-    }
-  } else {
-    // Convert display type, maybe shift index
-    const { newIndex, newDisplayType } = findNewIndexAndDisplayType(
-      point,
-      target,
-      siblings,
-      metadata,
-      reorderResult,
-      displayValues,
-    )
-
-    return {
-      newIndex: newIndex,
-      newDisplayType: newDisplayType,
-    }
-  }
-}
-
 const StyleDisplayProp = stylePropPathMappingFn('display', ['style'])
-export function getOptionalDisplayPropCommands(
-  target: ElementPath,
-  newDisplayType: AddDisplayBlockOrOnline | RemoveDisplayProp | null,
-  withAutoConversion: 'with-auto-conversion' | 'no-conversion',
-  whenToRun: 'always' | 'on-complete' = 'always',
+function getNewDisplayTypeCommands(
+  element: ElementInstanceMetadata,
+  newDisplayValue: 'block' | 'inline-block' | null,
 ): Array<SetProperty | DeleteProperties> {
-  if (withAutoConversion === 'no-conversion') {
-    return []
+  if (shouldRemoveDisplayProp(element, newDisplayValue)) {
+    return [deleteProperties('always', element.elementPath, [StyleDisplayProp])]
+  } else if (newDisplayValue != null) {
+    return [setProperty('always', element.elementPath, StyleDisplayProp, newDisplayValue)]
   } else {
-    if (newDisplayType?.type === 'add') {
-      return [setProperty(whenToRun, target, StyleDisplayProp, newDisplayType.display)]
-    } else if (newDisplayType?.type === 'remove') {
-      return [deleteProperties(whenToRun, target, [StyleDisplayProp])]
-    } else {
-      return []
-    }
+    return []
   }
 }
 
-export function findSiblingIndexUnderPoint(
-  point: CanvasVector,
-  target: ElementPath | null,
-  siblings: Array<ElementPath>,
-  metadata: ElementInstanceMetadataMap,
-  displayTypeFiltering:
-    | 'same-display-type-only'
-    | 'allow-mixed-display-type' = 'allow-mixed-display-type',
-): number {
-  const targetElementMetadata = MetadataUtils.findElementByElementPath(metadata, target)
-
-  return siblings.findIndex((sibling) => {
-    const siblingMetadata = MetadataUtils.findElementByElementPath(metadata, sibling)
-    const frame = MetadataUtils.getFrameInCanvasCoords(sibling, metadata)
-    return (
-      isValidSibling(targetElementMetadata, siblingMetadata, displayTypeFiltering) &&
-      frame != null &&
-      rectContainsPoint(frame, point) &&
-      MetadataUtils.isPositionedByFlow(siblingMetadata) &&
-      !EP.pathsEqual(target, sibling)
+export function getOptionalDisplayPropCommands(
+  lastReorderIdx: number | null | undefined,
+  interactionTarget: InteractionTarget,
+  startingMetadata: ElementInstanceMetadataMap,
+): Array<SetProperty | DeleteProperties> {
+  const selectedElements = getTargetPathsFromInteractionTarget(interactionTarget)
+  const target = selectedElements[0]
+  const siblingsOfTarget = MetadataUtils.getSiblingsProjectContentsOrdered(
+    startingMetadata,
+    target,
+  ).map((element) => element.elementPath)
+  const element = MetadataUtils.findElementByElementPath(startingMetadata, target)
+  if (
+    element != null &&
+    lastReorderIdx != null &&
+    lastReorderIdx !== siblingsOfTarget.findIndex((sibling) => EP.pathsEqual(sibling, target))
+  ) {
+    const newDisplayType = getNewDisplayTypeForIndex(
+      startingMetadata,
+      siblingsOfTarget[lastReorderIdx],
     )
-  })
+    return getNewDisplayTypeCommands(element, newDisplayType)
+  } else {
+    return []
+  }
+}
+
+export const ReorderChangeThreshold = 32
+export function findNewIndex(
+  startingIndex: number,
+  drag: CanvasVector,
+  siblings: Array<ElementPath>,
+  shouldRound: 'rounded-value' | 'raw-value',
+): number {
+  const dragDelta = drag.x // TODO optional vertical direction
+  const reorderIndexPosition = dragDelta / ReorderChangeThreshold
+  const indexOffset =
+    shouldRound === 'rounded-value' ? Math.round(reorderIndexPosition) : reorderIndexPosition
+  return mod(startingIndex + indexOffset, siblings.length)
 }
 
 export function getNewIndexAndInsertLine(
@@ -365,20 +179,18 @@ export function getNewIndexAndInsertLine(
   canvasScale: number,
 ): {
   newIndex: number
-  newDisplayType: AddDisplayBlockOrOnline | RemoveDisplayProp | null
   targetLineBeforeSibling: CanvasRectangle | null
 } {
   const ReorderIndicatorSize = 2 / canvasScale
-  const newIndex = findSiblingIndexUnderPoint(point, target, siblings, metadata)
+  const newIndex = findSiblingIndexUnderPoint(metadata, siblings, point, isValidFlowReorderTarget)
   if (newIndex === -1) {
     return {
       newIndex: -1,
-      newDisplayType: null,
       targetLineBeforeSibling: null,
     }
   }
   const draggedElementIndex = siblings.findIndex((sibling) => EP.pathsEqual(sibling, target))
-  const siblingDisplayValue = getSiblingDisplayValue(newIndex, siblings, metadata)
+  const siblingDisplayValue = getNewDisplayTypeForIndex(metadata, siblings[newIndex])
 
   const targetLineBeforeSibling: CanvasRectangle = getInsertLineNextToSibling(
     MetadataUtils.getFrameInCanvasCoords(siblings[newIndex], metadata),
@@ -389,10 +201,6 @@ export function getNewIndexAndInsertLine(
 
   return {
     newIndex: newIndex,
-    newDisplayType: getNewDisplayType(
-      MetadataUtils.findElementByElementPath(metadata, target),
-      siblingDisplayValue,
-    ),
     targetLineBeforeSibling: targetLineBeforeSibling,
   }
 }

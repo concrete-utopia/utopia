@@ -338,16 +338,19 @@ export const NavigatorItemContainer = React.memo((props: NavigatorItemDragAndDro
       },
       canDrop: (item: NavigatorItemDragAndDropWrapperProps, monitor) => {
         const editorState = editorStateRef.current
-        const supportsChildren = MetadataUtils.targetSupportsChildren(
-          editorState.projectContents,
-          editorState.canvas.openFile?.filename,
-          editorState.jsxMetadata,
-          item.elementPath,
-        )
+        const isReparentTarget = item.appropriateDropTargetHint?.type === 'reparent'
+        const childrenSupportedIfRequired =
+          !isReparentTarget ||
+          MetadataUtils.targetSupportsChildren(
+            editorState.projectContents,
+            editorState.canvas.openFile?.filename,
+            editorState.jsxMetadata,
+            props.elementPath,
+          )
         const notSelectedItem = item.getDragSelections().every((selection) => {
           return canDrop(props, selection.elementPath)
         })
-        return supportsChildren && notSelectedItem
+        return childrenSupportedIfRequired && notSelectedItem
       },
     }),
     [props],

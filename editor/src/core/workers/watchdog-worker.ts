@@ -103,7 +103,7 @@ export async function handleMessage(
     case 'watchdoginit':
       const requestHeartbeat = () => {
         const id = setTimeout(() => {
-          localforage.setItem(getProjectLockedKey(workerMessage.projectId), true)
+          void localforage.setItem(getProjectLockedKey(workerMessage.projectId), true)
         }, workerMessage.timeoutMs)
         sendMessage(createHeartbeatRequestMessage(id, workerMessage.projectId))
       }
@@ -114,7 +114,7 @@ export async function handleMessage(
     case 'heartbeatresponse':
       clearTimeout(workerMessage.id)
       if (!workerMessage.safeMode) {
-        localforage.setItem(getProjectLockedKey(workerMessage.projectId), false)
+        void localforage.setItem(getProjectLockedKey(workerMessage.projectId), false)
       }
       break
     case 'watchdogterminate':

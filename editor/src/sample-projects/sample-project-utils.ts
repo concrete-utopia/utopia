@@ -152,57 +152,6 @@ function createBeachesProjectContents(): ProjectContentTreeRoot {
       },
       type: 'PROJECT_CONTENT_DIRECTORY',
       children: {
-        'button.js': {
-          type: 'PROJECT_CONTENT_FILE',
-          fullPath: '/src/button.js',
-          content: {
-            type: 'TEXT_FILE',
-            lastRevisedTime: 0,
-            lastParseSuccess: null,
-            lastSavedContents: null,
-            fileContents: {
-              code: "/** @jsx jsx */\nimport { jsx } from '@emotion/react'\n\nconst theme = {\n  colors: {\n    primaryBlue: '#93D9FF',\n    darkBlue: '#2ab4ff',\n  },\n}\n\nexport var Button = ({ selected, ...buttonProps }) => {\n  return (\n    <button\n      {...buttonProps}\n      css={{\n        border: 'none',\n        borderRadius: '5px',\n        boxShadow: '0px 2px 4px rgb(0, 0, 0, 0.12)',\n        padding: '5px',\n        display: 'flex',\n        justifyContent: 'center',\n        alignItems: 'center',\n        '&:hover': { opacity: 0.7 },\n      }}\n      style={{\n        ...buttonProps.style,\n        backgroundColor: selected\n          ? theme.colors.darkBlue\n          : theme.colors.primaryBlue,\n      }}\n    >\n      {buttonProps.icon}\n    </button>\n  )\n}\n",
-              parsed: {
-                type: 'UNPARSED',
-              },
-              revisionsState: 'CODE_AHEAD',
-            },
-          },
-        },
-        'grid-view.js': {
-          type: 'PROJECT_CONTENT_FILE',
-          fullPath: '/src/grid-view.js',
-          content: {
-            type: 'TEXT_FILE',
-            lastRevisedTime: 0,
-            lastParseSuccess: null,
-            lastSavedContents: null,
-            fileContents: {
-              code: "import { GridCard } from './grid-card.js'\nimport { TwoColumnGrid } from './utils'\n\nexport var GridView = (props) => {\n  return (\n    <div style={{ overflow: 'scroll', height: '100%' }}>\n      <span\n        style={{\n          color: 'rgb(0, 0, 0, 0.5)',\n          fontSize: '16px',\n        }}\n      >\n        Featured\n      </span>\n      <TwoColumnGrid\n        className='gridcardcontainer'\n        style={{ marginTop: 8, gap: 8 }}\n      >\n        {props.cards.map((beach) => (\n          <GridCard\n            key={beach.name}\n            name={beach.name}\n            country={beach.country}\n            image={beach.image}\n            rating={beach.rating}\n          />\n        ))}\n      </TwoColumnGrid>\n    </div>\n  )\n}\n",
-              parsed: {
-                type: 'UNPARSED',
-              },
-              revisionsState: 'CODE_AHEAD',
-            },
-          },
-        },
-        'app2.js': {
-          type: 'PROJECT_CONTENT_FILE',
-          fullPath: '/src/app2.js',
-          content: {
-            type: 'TEXT_FILE',
-            lastRevisedTime: 0,
-            lastParseSuccess: null,
-            lastSavedContents: null,
-            fileContents: {
-              code: "import { useState, useEffect, useCallback } from 'react'\nimport '../public/globals.css'\nimport { Button } from './button.js'\nimport { FlexCol } from './utils'\nimport { ThreeColumnGridView } from '/src/three-column-grid-view.js'\n\nimport { SwitchHorizontalIcon } from '@heroicons/react/solid'\n\nconst PROJECT_ID = 'ez1bx506'\nconst DATASET = 'production'\nconst QUERY = encodeURIComponent('*[_type == \"beach\"]')\n\nconst URL = `https://${PROJECT_ID}.api.sanity.io/v2021-10-21/data/query/${DATASET}?query=${QUERY}`\n\nexport var App2 = () => {\n  const [displayedBeaches, setDisplayedBeaches] = useState(\n    [],\n  )\n\n  useEffect(() => {\n    fetch(URL)\n      .then((res) => res.json())\n      .then(({ result }) => {\n        if (result.length > 0) {\n          result.forEach((beach) => {\n            setDisplayedBeaches((oldArray) => [\n              ...oldArray,\n              beach,\n            ])\n          })\n        }\n      })\n      .catch((err) => console.error(err))\n  }, [])\n\n  const handleShuffle = useCallback(() => {\n    setDisplayedBeaches((beaches) =>\n      [...beaches].sort(() => Math.random() - 0.5),\n    )\n  }, [])\n\n  return (\n    <FlexCol\n      style={{\n        width: '100%',\n        height: '100%',\n        padding: 8,\n        gap: 8,\n        background: 'white',\n      }}\n    >\n      <div\n        className='appheadercontainer'\n        style={{\n          display: 'flex',\n          flexDirection: 'row',\n          justifyContent: 'space-between',\n          alignItems: 'baseline',\n          gap: 70,\n        }}\n      >\n        <h1\n          className='apptitle'\n          style={{\n            fontFamily: 'ITC Garamond Std',\n            fontWeight: 700,\n            margin: 0,\n          }}\n        >\n          Find Your Beach\n        </h1>\n        <div\n          style={{\n            display: 'flex',\n            flexDirection: 'row',\n            gap: 15,\n          }}\n        >\n          <Button\n            onClick={handleShuffle}\n            icon={\n              <SwitchHorizontalIcon\n                style={{ width: 15, color: 'white' }}\n              />\n            }\n          />\n        </div>\n      </div>\n      <ThreeColumnGridView cards={displayedBeaches} />\n    </FlexCol>\n  )\n}\n",
-              parsed: {
-                type: 'UNPARSED',
-              },
-              revisionsState: 'CODE_AHEAD',
-            },
-          },
-        },
         'index.js': {
           type: 'PROJECT_CONTENT_FILE',
           fullPath: '/src/index.js',
@@ -213,40 +162,6 @@ function createBeachesProjectContents(): ProjectContentTreeRoot {
             lastSavedContents: null,
             fileContents: {
               code: "import * as React from 'react'\nimport * as ReactDOM from 'react-dom'\nimport { App } from '../src/app'\n\nconst root = document.getElementById('root')\nif (root != null) {\n  ReactDOM.render(<App />, root)\n}\n",
-              parsed: {
-                type: 'UNPARSED',
-              },
-              revisionsState: 'CODE_AHEAD',
-            },
-          },
-        },
-        'three-column-grid-view.js': {
-          type: 'PROJECT_CONTENT_FILE',
-          fullPath: '/src/three-column-grid-view.js',
-          content: {
-            type: 'TEXT_FILE',
-            lastRevisedTime: 0,
-            lastParseSuccess: null,
-            lastSavedContents: null,
-            fileContents: {
-              code: "import { GridCard } from './grid-card.js'\nimport { ThreeColumnGrid } from './utils'\n\nexport var ThreeColumnGridView = (props) => {\n  return (\n    <div style={{ overflow: 'scroll' }}>\n      <ThreeColumnGrid\n        className='gridcardcontainer'\n        style={{ marginTop: 8, gap: 8 }}\n      >\n        {props.cards.map((beach) => (\n          <GridCard\n            key={beach.name}\n            name={beach.name}\n            country={beach.country}\n            image={beach.image}\n            rating={beach.rating}\n          />\n        ))}\n      </ThreeColumnGrid>\n    </div>\n  )\n}\n",
-              parsed: {
-                type: 'UNPARSED',
-              },
-              revisionsState: 'CODE_AHEAD',
-            },
-          },
-        },
-        'list-view.js': {
-          type: 'PROJECT_CONTENT_FILE',
-          fullPath: '/src/list-view.js',
-          content: {
-            type: 'TEXT_FILE',
-            lastRevisedTime: 0,
-            lastParseSuccess: null,
-            lastSavedContents: null,
-            fileContents: {
-              code: "import { ListCard } from './list-card.js'\nimport { FlexCol } from './utils'\n\nexport var ListView = (props) => {\n  return (\n    <div style={{ overflow: 'scroll' }}>\n      <span\n        style={{\n          color: 'rgb(0, 0, 0, 0.5)',\n          fontSize: '16px',\n        }}\n      >\n        Featured\n      </span>\n      <FlexCol\n        className='listcardcontainer'\n        style={{ marginTop: 8, gap: 8 }}\n      >\n        {props.cards.map((beach) => (\n          <ListCard\n            key={beach.name}\n            name={beach.name}\n            country={beach.country}\n            image={beach.image}\n            rating={beach.rating}\n          />\n        ))}\n      </FlexCol>\n    </div>\n  )\n}\n",
               parsed: {
                 type: 'UNPARSED',
               },
@@ -271,23 +186,6 @@ function createBeachesProjectContents(): ProjectContentTreeRoot {
             },
           },
         },
-        'themed-card.js': {
-          type: 'PROJECT_CONTENT_FILE',
-          fullPath: '/src/themed-card.js',
-          content: {
-            type: 'TEXT_FILE',
-            lastRevisedTime: 0,
-            lastParseSuccess: null,
-            lastSavedContents: null,
-            fileContents: {
-              code: "/** @jsx jsx */\nimport { jsx, ThemeProvider } from '@emotion/react'\nimport * as React from 'react'\nimport { SimpleCard } from '/src/simple-card.js'\n\nexport var ThemedCard = () => {\n  const theme = {\n    colors: {\n      primary: '#685B38',\n      secondary: 'white',\n    },\n    spacing: {\n      primary: '20px',\n    },\n  }\n  return (\n    <>\n      <ThemeProvider theme={theme}>\n        <SimpleCard label='Seychelles' title='La Digue'>\n          <img\n            src='https://source.unsplash.com/jPmurJKSL_0/600x800'\n            style={{ width: '100%' }}\n            alt='beach'\n          />\n          <div\n            css={(theme) => ({\n              color: theme.colors.primary,\n              backgroundColor: theme.colors.secondary,\n              padding: theme.spacing.primary,\n            })}\n            style={{\n              fontFamily: 'ITC Garamond',\n              fontSize: '14pt',\n            }}\n          >\n            La Digue, Seychelles\n          </div>\n        </SimpleCard>\n      </ThemeProvider>\n    </>\n  )\n}\n",
-              parsed: {
-                type: 'UNPARSED',
-              },
-              revisionsState: 'CODE_AHEAD',
-            },
-          },
-        },
         'playground.js': {
           type: 'PROJECT_CONTENT_FILE',
           fullPath: '/src/playground.js',
@@ -297,41 +195,7 @@ function createBeachesProjectContents(): ProjectContentTreeRoot {
             lastParseSuccess: null,
             lastSavedContents: null,
             fileContents: {
-              code: "import '../public/globals.css'\nimport { Button } from './button.js'\nimport { GridCard, Ratings } from '/src/grid-card.js'\nimport { ListCard } from '/src/list-card.js'\n\nimport {\n  SwitchHorizontalIcon,\n  ViewGridIcon,\n  ViewListIcon,\n} from '@heroicons/react/solid'\n\nexport var Playground = () => {\n  return (\n    <div\n      style={{\n      width: '100%',\n      height: '100%',\n      position: 'relative',\n    }}\n    >\n      <span\n        style={{\n          fontSize: '40px',\n          fontWeight: 700,\n          fontStyle: 'normal',\n          position: 'absolute',\n          left: 13,\n          top: 5,\n          height: 71,\n        }}\n      >\n        Beaches!\n      </span>\n      <span\n        style={{\n          color: 'rgb(0, 0, 0, 0.5)',\n          fontSize: '16px',\n          position: 'absolute',\n          left: 238,\n          top: 641,\n        }}\n      >\n        Featured\n      </span>\n      <GridCard\n        name='La Digue'\n        country='Seychelles'\n        image='https://source.unsplash.com/jPmurJKSL_0/600x800'\n        rating={5}\n        style={{\n          width: '54%',\n          position: 'absolute',\n          left: 301,\n          top: 262,\n          height: 352,\n        }}\n      />\n      <ListCard\n        name='La Digue'\n        country='Seychelles'\n        image='https://source.unsplash.com/jPmurJKSL_0/600x800'\n        rating={5}\n        style={{\n          position: 'absolute',\n          width: '68.8%',\n          left: 62,\n          top: 121,\n          bottom: 550,\n        }}\n      />\n      <Button\n        style={{ position: 'absolute', left: 35, top: 262 }}\n        icon={\n          <SwitchHorizontalIcon\n            style={{\n              width: '45px',\n              color: 'white',\n            }}\n          />\n        }\n      />\n      <Button\n        style={{ position: 'absolute', left: 10, top: 180 }}\n        icon={\n          <ViewGridIcon\n            style={{ width: 15, color: 'white' }}\n          />\n        }\n      />\n      <Button\n        style={{ position: 'absolute', left: 10, top: 213 }}\n        icon={\n          <ViewListIcon\n            style={{ width: 15, color: 'white' }}\n          />\n        }\n      />\n      <div\n        style={{\n          width: '200px',\n          height: 258,\n          position: 'absolute',\n          backgroundColor: '#FFF8DE',\n          left: 52,\n          top: 362,\n        }}\n      >\n        <img\n          src='https://source.unsplash.com/jPmurJKSL_0/600x800'\n          style={{\n            width: '180px',\n            position: 'absolute',\n            left: -35,\n            top: 102,\n            height: -41,\n            boxShadow: '2px 2px 6px 4px rgb(0, 0, 0, 0.12)',\n          }}\n          alt='beach'\n        />\n        <div\n          style={{\n            position: 'absolute',\n            fontSize: '18px',\n            fontWeight: 700,\n            fontStyle: 'normal',\n            left: 5,\n            top: 8,\n          }}\n        >\n          La Digue\n        </div>\n        <div\n          style={{\n            position: 'absolute',\n            fontStyle: 'italic',\n            left: 5,\n            top: 30,\n          }}\n        >\n          Seychelles\n        </div>\n        <Ratings\n          rating={5}\n          style={{\n            position: 'absolute',\n            left: 120,\n            top: 186,\n            transform: 'rotate(90deg)',\n          }}\n        />\n        <div\n          style={{\n            position: 'absolute',\n            color: 'rgb(0, 0, 0, 0.5)',\n            fontFamily: 'ITC Garamond Std',\n            fontStyle: 'italic',\n            left: 7,\n            top: 76,\n          }}\n        >\n          August 9th, 1924\n        </div>\n      </div>\n      <span\n        style={{\n          fontSize: '40px',\n          fontWeight: 700,\n          fontStyle: 'normal',\n          position: 'absolute',\n          left: 194,\n          top: 41,\n          height: 71,\n          fontFamily: 'ITC Garamond Std',\n        }}\n      >\n        ...Beaches?\n      </span>\n      <span\n        style={{\n          fontSize: '40px',\n          fontWeight: 700,\n          fontStyle: 'normal',\n          position: 'absolute',\n          left: 442,\n          top: 41,\n          height: 71,\n          fontFamily: 'ITC Garamond Std',\n        }}\n      >\n        Find Your Beach\n      </span>\n      <span\n        style={{\n          color: 'rgb(0, 0, 0, 1)',\n          fontSize: '16px',\n          position: 'absolute',\n          left: 238,\n          top: 669,\n        }}\n      >\n        Featured\n      </span>\n      <span\n        style={{\n          color: 'rgb(0, 0, 0, 1)',\n          fontSize: '20px',\n          fontFamily: 'ITC Garamond Std',\n          position: 'absolute',\n          left: 238,\n          top: 695,\n        }}\n      >\n        Featured\n      </span>\n    </div>\n  )\n}\n",
-              parsed: {
-                type: 'UNPARSED',
-              },
-              revisionsState: 'CODE_AHEAD',
-            },
-          },
-        },
-        'simple-card.js': {
-          type: 'PROJECT_CONTENT_FILE',
-          fullPath: '/src/simple-card.js',
-          content: {
-            type: 'TEXT_FILE',
-            lastRevisedTime: 0,
-            lastParseSuccess: null,
-            lastSavedContents: null,
-            fileContents: {
-              code: 'export var SimpleCard = (props) => {\n  return <>{props.children}</>\n}\n',
-              parsed: {
-                type: 'UNPARSED',
-              },
-              revisionsState: 'CODE_AHEAD',
-            },
-          },
-        },
-        'grid-card.js': {
-          type: 'PROJECT_CONTENT_FILE',
-          fullPath: '/src/grid-card.js',
-          content: {
-            type: 'TEXT_FILE',
-            lastRevisedTime: 0,
-            lastParseSuccess: null,
-            lastSavedContents: null,
-            fileContents: {
-              code: "import * as React from 'react'\nimport { StarIcon } from '@heroicons/react/solid'\nimport { FlexCol, FlexRow } from './utils'\n\nexport function Ratings(props) {\n  return (\n    <FlexRow\n      style={{\n        justifyContent: 'flex-start',\n        paddingBottom: 5,\n        ...props.style,\n      }}\n    >\n      {Array.from({ length: props.rating ?? 1 }).map(\n        (_, i) => {\n          return (\n            <StarIcon\n              key={i}\n              style={{ width: 20, color: 'orange' }}\n            />\n          )\n        },\n      )}\n    </FlexRow>\n  )\n}\n\nexport var GridCard = (props) => {\n  return (\n    <FlexCol\n      style={{\n        backgroundColor: 'white',\n        borderRadius: 10,\n        boxShadow: '0px 2px 4px rgb(0, 0, 0, 0.12)',\n        paddingBottom: 5,\n        overflow: 'hidden',\n        height: '325px',\n        ...props.style,\n      }}\n    >\n      <div\n        style={{\n          flex: 1,\n          backgroundImage: `url(${props.image})`,\n          backgroundSize: 'cover',\n          backgroundPosition: 'center center',\n          flexBasis: 190,\n          marginBottom: 8,\n        }}\n      />\n      <div\n        style={{\n          position: 'relative',\n          paddingLeft: 8,\n          paddingBottom: 4,\n          fontSize: '18px',\n          fontWeight: 700,\n          fontStyle: 'normal',\n        }}\n      >\n        {props.name}\n      </div>\n      <div\n        style={{\n          position: 'relative',\n          paddingLeft: 8,\n          color: 'rgb(0, 0, 0, 0.5)',\n          fontFamily: 'ITC Garamond Std',\n          fontStyle: 'italic',\n        }}\n      >\n        {props.country}\n      </div>\n      <Ratings\n        rating={props.rating}\n        style={{ paddingLeft: 5 }}\n      />\n    </FlexCol>\n  )\n}\n",
+              code: "import '../public/globals.css'\n\nexport var Playground = () => {\n  return (\n    <div>\n      <div\n        style={{\n          height: 150,\n          position: 'absolute',\n          left: 154,\n          top: 134,\n        }}\n      >\n        <img\n          src='https://github.com/concrete-utopia/utopia/blob/master/editor/resources/editor/pyramid_fullsize@2x.jpg?raw=true'\n          alt='Utopia logo'\n          style={{ height: '100%' }}\n        />\n      </div>\n    </div>\n  )\n}\n",
               parsed: {
                 type: 'UNPARSED',
               },
@@ -348,58 +212,7 @@ function createBeachesProjectContents(): ProjectContentTreeRoot {
             lastParseSuccess: null,
             lastSavedContents: null,
             fileContents: {
-              code: "import { useState, useEffect, useCallback } from 'react'\nimport '../public/globals.css'\nimport { Button } from './button.js'\nimport { GridView } from './grid-view.js'\nimport { ListView } from './list-view.js'\nimport { FlexCol } from './utils'\n\nimport {\n  SwitchHorizontalIcon,\n  ViewGridIcon,\n  ViewListIcon,\n} from '@heroicons/react/solid'\n\nconst PROJECT_ID = 'ez1bx506'\nconst DATASET = 'production'\nconst QUERY = encodeURIComponent('*[_type == \"beach\"]')\n\nconst URL = `https://${PROJECT_ID}.api.sanity.io/v2021-10-21/data/query/${DATASET}?query=${QUERY}`\n\nexport var App = () => {\n  const [displayedBeaches, setDisplayedBeaches] = useState(\n    [],\n  )\n\n  useEffect(() => {\n    fetch(URL)\n      .then((res) => res.json())\n      .then(({ result }) => {\n        if (result.length > 0) {\n          result.forEach((beach) => {\n            setDisplayedBeaches((oldArray) => [\n              ...oldArray,\n              beach,\n            ])\n          })\n        }\n      })\n      .catch((err) => console.error(err))\n  }, [])\n\n  const handleShuffle = useCallback(() => {\n    setDisplayedBeaches((beaches) =>\n      [...beaches].sort(() => Math.random() - 0.5),\n    )\n  }, [])\n\n  const [gridView, setGrid] = useState(false)\n  const toggleGrid = useCallback(\n    () => setGrid((grid) => !grid),\n    [],\n  )\n\n  return (\n    <FlexCol\n      style={{\n        width: '100%',\n        height: '100%',\n        padding: 8,\n        gap: 8,\n        background: 'white',\n      }}\n    >\n      <div\n        className='appheadercontainer'\n        style={{\n          display: 'flex',\n          flexDirection: 'row',\n          justifyContent: 'space-between',\n          alignItems: 'baseline',\n          gap: 70,\n        }}\n      >\n        <h1\n          className='apptitle'\n          style={{\n            fontFamily: 'ITC Garamond Std',\n            fontWeight: 700,\n            margin: 0,\n          }}\n        >\n          Find Your Beach\n        </h1>\n        <div\n          style={{\n            display: 'flex',\n            flexDirection: 'row',\n            gap: 15,\n          }}\n        >\n          <Button\n            onClick={handleShuffle}\n            icon={\n              <SwitchHorizontalIcon\n                style={{ width: 15, color: 'white' }}\n              />\n            }\n          />\n          <div style={{ display: 'flex', gap: 3 }}>\n            <Button\n              onClick={toggleGrid}\n              icon={\n                <ViewGridIcon\n                  style={{ width: 15, color: 'white' }}\n                />\n              }\n              selected={gridView}\n              style={{ flexBasis: 0 }}\n            />\n            <Button\n              onClick={toggleGrid}\n              icon={\n                <ViewListIcon\n                  style={{ width: 15, color: 'white' }}\n                />\n              }\n              selected={!gridView}\n              unClickedState\n            />\n          </div>\n        </div>\n      </div>\n      {gridView ? (\n        <GridView cards={displayedBeaches} />\n      ) : (\n        <ListView cards={displayedBeaches} />\n      )}\n    </FlexCol>\n  )\n}\n",
-              parsed: {
-                type: 'UNPARSED',
-              },
-              revisionsState: 'CODE_AHEAD',
-            },
-          },
-        },
-        'card.js': {
-          type: 'PROJECT_CONTENT_FILE',
-          fullPath: '/src/card.js',
-          content: {
-            type: 'TEXT_FILE',
-            lastRevisedTime: 0,
-            lastParseSuccess: null,
-            lastSavedContents: null,
-            fileContents: {
-              code: "export var Card = (props) => {\n  return (\n    <>\n      <img\n        src='https://source.unsplash.com/jPmurJKSL_0/600x800'\n        style={{ width: '100%' }}\n        alt='beach'\n      />\n      <div\n        style={{\n          color: '#685B38',\n          backgroundColor: 'white',\n          padding: 20,\n          fontFamily: 'ITC Garamond',\n          fontSize: '14pt',\n        }}\n      >\n        {props.title}, {props.label}\n        <br />\n        {props.copy}\n      </div>\n    </>\n  )\n}\n",
-              parsed: {
-                type: 'UNPARSED',
-              },
-              revisionsState: 'CODE_AHEAD',
-            },
-          },
-        },
-        'multiple-providers-card.js': {
-          type: 'PROJECT_CONTENT_FILE',
-          fullPath: '/src/multiple-providers-card.js',
-          content: {
-            type: 'TEXT_FILE',
-            lastRevisedTime: 0,
-            lastParseSuccess: null,
-            lastSavedContents: null,
-            fileContents: {
-              code: "/** @jsx jsx */\nimport { jsx, ThemeProvider } from '@emotion/react'\nimport * as React from 'react'\nimport { SimpleCard } from '/src/simple-card.js'\n\nexport var MultipleProvidersCard = () => {\n  const theme = {\n    colors: {\n      primary: '#685B38',\n      secondary: 'white',\n    },\n    spacing: {\n      primary: '10px',\n    },\n  }\n\n  const theme2022 = {\n    spacing: {\n      primary: '20px',\n    },\n  }\n\n  return (\n    <>\n      <ThemeProvider theme={theme}>\n        <ThemeProvider theme={theme2022}>\n          <SimpleCard label='Seychelles' title='La Digue'>\n            <img\n              src='https://source.unsplash.com/jPmurJKSL_0/600x800'\n              style={{ width: '100%' }}\n              alt='beach'\n            />\n            <div\n              css={(theme) => ({\n                color: theme.colors.primary,\n                backgroundColor: theme.colors.secondary,\n                padding: theme.spacing.primary,\n              })}\n              style={{\n                fontFamily: 'ITC Garamond',\n                fontSize: '14pt',\n              }}\n            >\n              La Digue, Seychelles\n            </div>\n          </SimpleCard>\n        </ThemeProvider>\n      </ThemeProvider>\n    </>\n  )\n}\n",
-              parsed: {
-                type: 'UNPARSED',
-              },
-              revisionsState: 'CODE_AHEAD',
-            },
-          },
-        },
-        'list-card.js': {
-          type: 'PROJECT_CONTENT_FILE',
-          fullPath: '/src/list-card.js',
-          content: {
-            type: 'TEXT_FILE',
-            lastRevisedTime: 0,
-            lastParseSuccess: null,
-            lastSavedContents: null,
-            fileContents: {
-              code: "import * as React from 'react'\nimport { StarIcon } from '@heroicons/react/solid'\nimport { FlexRow, TwoColumnGrid } from './utils'\n\nexport function Ratings(props) {\n  return (\n    <FlexRow style={{ justifyContent: 'flex-start' }}>\n      {Array.from({ length: props.rating ?? 1 }).map(\n        (_, i) => {\n          return (\n            <StarIcon\n              key={i}\n              style={{ width: 20, color: 'orange' }}\n            />\n          )\n        },\n      )}\n    </FlexRow>\n  )\n}\n\nexport var ListCard = (props) => {\n  return (\n    <TwoColumnGrid\n      className='listcard'\n      style={{\n        backgroundColor: 'white',\n        borderRadius: 10,\n        boxShadow: '0px 2px 4px rgb(0, 0, 0, 0.12)',\n        overflow: 'hidden',\n        ...props.style,\n      }}\n    >\n      <div\n        style={{\n          fontSize: '18px',\n          fontWeight: 700,\n          padding: 8,\n          paddingBottom: 4,\n        }}\n      >\n        {props.name}\n        <div\n          style={{\n            color: 'rgb(0, 0, 0, 0.5)',\n            fontFamily: 'ITC Garamond Std',\n            fontStyle: 'italic',\n          }}\n        >\n          {props.country}\n          <Ratings rating={props.rating} />\n        </div>\n      </div>\n      <div\n        style={{\n          flex: 1,\n          backgroundImage: `url(${props.image})`,\n          backgroundSize: 'cover',\n          backgroundPosition: 'center 45%',\n          backgroundRepeat: 'no-repeat',\n        }}\n      />\n    </TwoColumnGrid>\n  )\n}\n",
+              code: "import '../public/globals.css'\nimport { FlexCol } from './utils'\n\nexport var App = () => {\n  return (\n    <FlexCol\n      style={{\n        width: '100%',\n        height: '100%',\n        background: 'white',\n\n        justifyContent: 'center',\n        alignItems: 'center',\n      }}\n    >\n      <img\n        src='https://github.com/concrete-utopia/utopia/blob/master/editor/resources/editor/pyramid_fullsize@2x.jpg?raw=true'\n        alt='Utopia logo'\n        style={{ height: '40%' }}\n      ></img>\n    </FlexCol>\n  )\n}\n",
               parsed: {
                 type: 'UNPARSED',
               },
@@ -425,7 +238,7 @@ function createBeachesProjectContents(): ProjectContentTreeRoot {
             lastParseSuccess: null,
             lastSavedContents: null,
             fileContents: {
-              code: "import * as React from 'react'\nimport { Scene, Storyboard } from 'utopia-api'\nimport { App } from '/src/app.js'\nimport { App2 } from '/src/app2.js'\nimport { Card } from '/src/card.js'\nimport { ThemedCard } from '/src/themed-card.js'\nimport { MultipleProvidersCard } from '/src/multiple-providers-card.js'\nimport { SimpleCard } from '/src/simple-card.js'\nimport { Playground } from '/src/playground.js'\n\nexport var storyboard = (\n  <Storyboard>\n    <Scene\n      style={{\n        position: 'absolute',\n        width: 700,\n        height: 759,\n        backgroundColor: 'rgb(255, 255, 255, 0)',\n        border: '1px dashed rgb(0, 0, 0, 1)',\n        left: 208,\n        top: 128,\n      }}\n      data-label='Playground'\n    >\n      <Playground style={{}} />\n    </Scene>\n    <Scene\n      style={{\n        width: 375,\n        height: 759,\n        display: 'flex',\n        flexDirection: 'column',\n        left: 1072,\n        top: 128,\n      }}\n      data-label='Mobile List'\n    >\n      <App style={{}} />\n    </Scene>\n    <Scene\n      style={{\n        width: 744,\n        height: 1133,\n        display: 'flex',\n        flexDirection: 'column',\n        left: 1568,\n        top: 128,\n        position: 'absolute',\n      }}\n      data-label='Tablet List'\n    >\n      <App style={{}} />\n    </Scene>\n    <Scene\n      style={{\n        width: 744,\n        height: 1133,\n        display: 'flex',\n        flexDirection: 'column',\n        left: 2400,\n        top: 128,\n        position: 'absolute',\n      }}\n      data-label='Grid Layout Component in default size'\n    >\n      <App2 />\n    </Scene>\n    <Scene\n      style={{\n        width: 200,\n        display: 'flex',\n        flexDirection: 'column',\n        left: -6,\n        top: 1060,\n        position: 'absolute',\n      }}\n      data-label='Opinionated component with contents and no children prop'\n    >\n      <Card\n        label='Seychelles'\n        title='La Digue'\n        copy={\n          <span style={{ fontSize: '.5em' }}>\n            Most popular beach of 2022\n          </span>\n        }\n        imgURL='https://source.unsplash.com/jPmurJKSL_0/600x800'\n      />\n    </Scene>\n    <Scene\n      style={{\n        width: 200,\n        display: 'flex',\n        flexDirection: 'column',\n        left: 233,\n        top: 1060,\n        position: 'absolute',\n      }}\n      data-label='Opinionated component Prominent support for children'\n    >\n      <SimpleCard label='Seychelles' title='La Digue'>\n        <img\n          src='https://source.unsplash.com/jPmurJKSL_0/600x800'\n          style={{ width: '100%' }}\n          alt='beach'\n        />\n        <div\n          style={{\n            color: '#685B38',\n            backgroundColor: 'white',\n            padding: 20,\n            fontFamily: 'ITC Garamond',\n            fontSize: '14pt',\n          }}\n        >\n          La Digue, Seychelles\n        </div>\n      </SimpleCard>\n    </Scene>\n    <Scene\n      style={{\n        width: 200,\n        display: 'flex',\n        flexDirection: 'column',\n        left: 473,\n        top: 1060,\n        position: 'absolute',\n      }}\n      data-label='Card wrapped in a Theme Provider'\n    >\n      <ThemedCard />\n    </Scene>\n    <Scene\n      style={{\n        width: 200,\n        display: 'flex',\n        flexDirection: 'column',\n        left: 708,\n        top: 1060,\n        position: 'absolute',\n      }}\n      data-label='Card wrapped in multiple Theme Providers'\n    >\n      <MultipleProvidersCard />\n    </Scene>\n  </Storyboard>\n)\n",
+              code: "import * as React from 'react'\nimport { Scene, Storyboard } from 'utopia-api'\nimport { App } from '/src/app.js'\nimport { Playground } from '/src/playground.js'\n\nexport var storyboard = (\n  <Storyboard>\n    <Scene\n      style={{\n        width: 700,\n        height: 759,\n        position: 'absolute',\n        left: 212,\n        top: 128,\n      }}\n      data-label='Playground'\n    >\n      <Playground style={{}} />\n    </Scene>\n    <Scene\n      style={{\n        width: 744,\n        height: 1133,\n        position: 'absolute',\n        left: 1036,\n        top: 128,\n      }}\n      data-label='My App'\n    >\n      <App style={{}} />\n    </Scene>\n  </Storyboard>\n)\n",
               parsed: {
                 type: 'UNPARSED',
               },

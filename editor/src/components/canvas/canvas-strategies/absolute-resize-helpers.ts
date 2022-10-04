@@ -1,7 +1,11 @@
+import { ElementInstanceMetadataMap } from '../../../core/shared/element-template'
+import { ElementPath } from '../../../core/shared/project-file-types'
 import { getLayoutProperty } from '../../../core/layout/getLayoutProperty'
-import { PropsOrJSXAttributes } from '../../../core/model/element-metadata-utils'
+import { MetadataUtils, PropsOrJSXAttributes } from '../../../core/model/element-metadata-utils'
 import { isRight } from '../../../core/shared/either'
 import { EdgePosition } from '../canvas-types'
+import { honoursPropsPosition, honoursPropsSize } from './absolute-utils'
+import { InteractionCanvasState } from './canvas-strategy-types'
 
 export type AbsolutePin = 'left' | 'top' | 'right' | 'bottom' | 'width' | 'height'
 
@@ -57,4 +61,17 @@ export function ensureAtLeastTwoPinsForEdgePosition(
   }
 
   return [...horizontalPinsToAdd, ...verticalPinsToAdd]
+}
+
+export function supportsAbsoluteResize(
+  metadata: ElementInstanceMetadataMap,
+  element: ElementPath,
+  canvasState: InteractionCanvasState,
+) {
+  const elementMetadata = MetadataUtils.findElementByElementPath(metadata, element)
+  return (
+    elementMetadata?.specialSizeMeasurements.position === 'absolute' &&
+    honoursPropsPosition(canvasState, element) &&
+    honoursPropsSize(canvasState, element)
+  )
 }

@@ -56,7 +56,7 @@ export function setClipboardData(
     const dt = new ClipboardPolyfill.DT()
     dt.setData('text/plain', copyData.plaintext)
     dt.setData('text/html', utopiaDataHtml)
-    ClipboardPolyfill.write(dt)
+    void ClipboardPolyfill.write(dt)
   }
 }
 

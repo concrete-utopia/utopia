@@ -59,9 +59,9 @@ function reparentElement(
       null as any, // the strategy does not use this
       dragVector,
     ),
-    metadata: null as any, // the strategy does not use this
-    allElementProps: null as any, // the strategy does not use this
-    startingTargetParentToFilterOut: null,
+    latestMetadata: null as any, // the strategy does not use this
+    latestAllElementProps: null as any, // the strategy does not use this
+    startingTargetParentsToFilterOut: null,
   }
 
   const strategyResult = absoluteReparentStrategy.apply(
@@ -138,6 +138,7 @@ function reparentElement(
       startingAllElementProps: {},
       customStrategyState: defaultCustomStrategyState(),
     } as StrategyState,
+    'end-interaction',
   )
 
   expect(strategyResult.customStatePatch).toEqual({})
