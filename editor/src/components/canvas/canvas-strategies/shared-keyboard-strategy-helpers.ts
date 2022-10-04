@@ -89,7 +89,6 @@ export function getMovementDeltaFromKey(key: KeyCharacter, modifiers: Modifiers)
 }
 
 export function getKeyboardStrategyGuidelines(
-  sessionState: StrategyState,
   canvasState: InteractionCanvasState,
   interactionState: InteractionSession,
   draggedFrame: CanvasRectangle,

@@ -9,13 +9,14 @@ import { setCursorCommand } from '../commands/set-cursor-command'
 import { setElementsToRerenderCommand } from '../commands/set-elements-to-rerender-command'
 import { updateHighlightedViews } from '../commands/update-highlighted-views-command'
 import {
+  CustomStrategyState,
   emptyStrategyApplicationResult,
   getTargetPathsFromInteractionTarget,
   InteractionCanvasState,
   strategyApplicationResult,
   StrategyApplicationResult,
 } from './canvas-strategy-types'
-import { InteractionSession, StrategyState } from './interaction-state'
+import { InteractionSession } from './interaction-state'
 import { ElementInstanceMetadataMap } from '../../../core/shared/element-template'
 
 export function isReorderAllowed(siblings: Array<ElementPath>) {
@@ -31,7 +32,7 @@ function isRootOfGeneratedElement(target: ElementPath): boolean {
 export function applyReorderCommon(
   canvasState: InteractionCanvasState,
   interactionState: InteractionSession,
-  strategyState: StrategyState,
+  customStrategyState: CustomStrategyState,
   isValidTarget: (path: ElementPath, metadata: ElementInstanceMetadataMap) => boolean,
 ): StrategyApplicationResult {
   if (interactionState.interactionData.type !== 'DRAG') {
@@ -42,7 +43,7 @@ export function applyReorderCommon(
     const selectedElements = getTargetPathsFromInteractionTarget(canvasState.interactionTarget)
     const target = selectedElements[0]
 
-    const siblings = MetadataUtils.getSiblings(strategyState.startingMetadata, target).map(
+    const siblings = MetadataUtils.getSiblings(canvasState.startingMetadata, target).map(
       (element) => element.elementPath,
     )
 
@@ -60,10 +61,10 @@ export function applyReorderCommon(
     )
 
     const unpatchedIndex = siblings.findIndex((sibling) => EP.pathsEqual(sibling, target))
-    const lastReorderIdx = strategyState.customStrategyState.lastReorderIdx ?? unpatchedIndex
+    const lastReorderIdx = customStrategyState.lastReorderIdx ?? unpatchedIndex
 
     const newIndex = findSiblingIndexUnderPoint(
-      strategyState.startingMetadata,
+      canvasState.startingMetadata,
       siblings,
       pointOnCanvas,
       isValidTarget,

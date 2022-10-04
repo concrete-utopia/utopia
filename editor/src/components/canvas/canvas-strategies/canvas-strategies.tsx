@@ -21,6 +21,7 @@ import {
   targetPaths,
   StrategyApplicationResult,
   InteractionLifecycle,
+  CustomStrategyState,
 } from './canvas-strategy-types'
 import { InteractionSession, StrategyState } from './interaction-state'
 import { keyboardAbsoluteMoveStrategy } from './keyboard-absolute-move-strategy'
@@ -94,6 +95,26 @@ export function pickCanvasStateFromEditorState(
     openFile: editorState.canvas.openFile?.filename,
     scale: editorState.canvas.scale,
     canvasOffset: editorState.canvas.roundedCanvasOffset,
+    startingMetadata: editorState.jsxMetadata,
+    startingAllElementProps: editorState.allElementProps,
+  }
+}
+
+export function pickCanvasStateFromEditorStateWithMetadata(
+  editorState: EditorState,
+  builtInDependencies: BuiltInDependencies,
+  metadata: ElementInstanceMetadataMap,
+): InteractionCanvasState {
+  return {
+    builtInDependencies: builtInDependencies,
+    interactionTarget: getInteractionTargetFromEditorState(editorState),
+    projectContents: editorState.projectContents,
+    nodeModules: editorState.nodeModules.files,
+    openFile: editorState.canvas.openFile?.filename,
+    scale: editorState.canvas.scale,
+    canvasOffset: editorState.canvas.roundedCanvasOffset,
+    startingMetadata: metadata,
+    startingAllElementProps: editorState.allElementProps,
   }
 }
 
@@ -177,19 +198,19 @@ export function getApplicableStrategiesOrderedByFitness(
   strategies: Array<MetaCanvasStrategy>,
   canvasState: InteractionCanvasState,
   interactionSession: InteractionSession,
-  strategyState: StrategyState,
+  customStrategyState: CustomStrategyState,
 ): Array<StrategyWithFitness> {
   const applicableStrategies = getApplicableStrategies(
     strategies,
     canvasState,
     interactionSession,
-    strategyState.startingMetadata,
-    strategyState.startingAllElementProps,
+    canvasState.startingMetadata,
+    canvasState.startingAllElementProps,
   )
 
   // Compute the fitness results upfront.
   const strategiesWithFitness = mapDropNulls((strategy) => {
-    const fitness = strategy.fitness(canvasState, interactionSession, strategyState)
+    const fitness = strategy.fitness(canvasState, interactionSession, customStrategyState)
     if (fitness <= 0) {
       return null
     } else {
@@ -254,21 +275,21 @@ export function findCanvasStrategy(
   strategies: Array<MetaCanvasStrategy>,
   canvasState: InteractionCanvasState,
   interactionSession: InteractionSession,
-  strategyState: StrategyState,
+  customStrategyState: CustomStrategyState,
   previousStrategyId: CanvasStrategyId | null,
 ): FindCanvasStrategyResult {
   const sortedApplicableStrategies = getApplicableStrategiesOrderedByFitness(
     strategies,
     canvasState,
     interactionSession,
-    strategyState,
+    customStrategyState,
   )
 
   return {
     ...pickStrategy(sortedApplicableStrategies, interactionSession, previousStrategyId),
     sortedApplicableStrategies: sortedApplicableStrategies.map((s) => ({
       strategy: s.strategy,
-      name: s.strategy.name(canvasState, interactionSession, strategyState),
+      name: s.strategy.name(canvasState, interactionSession, customStrategyState),
     })),
   }
 }
@@ -277,10 +298,10 @@ export function applyCanvasStrategy(
   strategy: CanvasStrategy,
   canvasState: InteractionCanvasState,
   interactionSession: InteractionSession,
-  strategyState: StrategyState,
+  customStrategyState: CustomStrategyState,
   strategyLifecycle: InteractionLifecycle,
 ): StrategyApplicationResult {
-  return strategy.apply(canvasState, interactionSession, strategyState, strategyLifecycle)
+  return strategy.apply(canvasState, interactionSession, customStrategyState, strategyLifecycle)
 }
 
 export function useDelayedEditorState<T>(

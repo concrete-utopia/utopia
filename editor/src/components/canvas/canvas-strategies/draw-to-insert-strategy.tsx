@@ -2,6 +2,7 @@ import { ParentBounds } from '../controls/parent-bounds'
 import { ParentOutlines } from '../controls/parent-outlines'
 import {
   CanvasStrategy,
+  CustomStrategyState,
   emptyStrategyApplicationResult,
   getInsertionSubjectsFromInteractionTarget,
   InteractionCanvasState,
@@ -9,7 +10,7 @@ import {
   strategyApplicationResult,
   targetPaths,
 } from './canvas-strategy-types'
-import { boundingArea, InteractionSession, StrategyState } from './interaction-state'
+import { boundingArea, InteractionSession } from './interaction-state'
 import { ElementInsertionSubject } from '../../editor/editor-modes'
 import { LayoutHelpers } from '../../../core/layout/layout-helpers'
 import { foldEither } from '../../../core/shared/either'
@@ -22,6 +23,7 @@ import { EditorState, EditorStatePatch } from '../../editor/store/editor-state'
 import {
   findCanvasStrategy,
   pickCanvasStateFromEditorState,
+  pickCanvasStateFromEditorStateWithMetadata,
   RegisteredCanvasStrategies,
 } from './canvas-strategies'
 import { foldAndApplyCommandsInner } from '../commands/commands'
@@ -39,6 +41,7 @@ import { FlexReparentTargetIndicator } from '../controls/select-mode/flex-repare
 import { updateHighlightedViews } from '../commands/update-highlighted-views-command'
 import { getReparentTargetUnified, newReparentSubjects } from './reparent-strategy-helpers'
 import { DefaultInsertHeight, DefaultInsertWidth } from '../insertion-strategy-utils'
+import { ElementInstanceMetadataMap } from '../../../core/shared/element-template'
 
 export const drawToInsertStrategy: CanvasStrategy = {
   id: 'DRAW_TO_INSERT',
@@ -73,12 +76,12 @@ export const drawToInsertStrategy: CanvasStrategy = {
       show: 'visible-only-while-active',
     },
   ], // Uses existing hooks in select-mode-hooks.tsx
-  fitness: (canvasState, interactionState, strategyState) => {
+  fitness: (canvasState, interactionState, customStrategyState) => {
     return drawToInsertStrategy.isApplicable(
       canvasState,
       interactionState,
-      strategyState.startingMetadata,
-      strategyState.startingAllElementProps,
+      canvasState.startingMetadata,
+      canvasState.startingAllElementProps,
     ) &&
       ((interactionState.interactionData.type === 'DRAG' &&
         interactionState.activeControl.type === 'RESIZE_HANDLE') ||
@@ -86,7 +89,7 @@ export const drawToInsertStrategy: CanvasStrategy = {
       ? 1
       : 0
   },
-  apply: (canvasState, interactionState, strategyState, strategyLifecycle) => {
+  apply: (canvasState, interactionState, customStrategyState, strategyLifecycle) => {
     if (
       canvasState.interactionTarget.type === 'INSERTION_SUBJECTS' &&
       canvasState.interactionTarget.subjects.length === 1 &&
@@ -109,11 +112,12 @@ export const drawToInsertStrategy: CanvasStrategy = {
                 return runTargetStrategiesForFreshlyInsertedElementToReparent(
                   canvasState.builtInDependencies,
                   editorState,
-                  strategyState,
+                  customStrategyState,
                   interactionState,
                   insertionSubject,
                   insertionCommand.frame,
                   strategyLifecycle,
+                  canvasState.startingMetadata,
                 )
               },
             )
@@ -124,7 +128,7 @@ export const drawToInsertStrategy: CanvasStrategy = {
                 return runTargetStrategiesForFreshlyInsertedElementToResize(
                   canvasState.builtInDependencies,
                   editorState,
-                  strategyState,
+                  customStrategyState,
                   interactionState,
                   commandLifecycle,
                   insertionSubject,
@@ -156,11 +160,12 @@ export const drawToInsertStrategy: CanvasStrategy = {
                 return runTargetStrategiesForFreshlyInsertedElementToReparent(
                   canvasState.builtInDependencies,
                   editorState,
-                  strategyState,
+                  customStrategyState,
                   interactionState,
                   insertionSubject,
                   insertionCommand.frame,
                   strategyLifecycle,
+                  canvasState.startingMetadata,
                 )
               },
             )
@@ -175,8 +180,8 @@ export const drawToInsertStrategy: CanvasStrategy = {
           pointOnCanvas,
           true,
           canvasState,
-          strategyState.startingMetadata,
-          strategyState.startingAllElementProps,
+          canvasState.startingMetadata,
+          canvasState.startingAllElementProps,
           'allow-missing-bounds',
         )
 
@@ -297,35 +302,26 @@ function getStyleAttributesForFrameInAbsolutePosition(
 function runTargetStrategiesForFreshlyInsertedElementToReparent(
   builtInDependencies: BuiltInDependencies,
   editorState: EditorState,
-  strategyState: StrategyState,
+  customStrategyState: CustomStrategyState,
   interactionState: InteractionSession,
   insertionSubject: ElementInsertionSubject,
   frame: CanvasRectangle,
   strategyLifecycle: InteractionLifecycle,
+  startingMetadata: ElementInstanceMetadataMap,
 ): Array<EditorStatePatch> {
   const canvasState = pickCanvasStateFromEditorState(editorState, builtInDependencies)
 
-  const storyboard = MetadataUtils.getStoryboardMetadata(strategyState.startingMetadata)
+  const storyboard = MetadataUtils.getStoryboardMetadata(startingMetadata)
   const rootPath = storyboard != null ? storyboard.elementPath : elementPath([])
 
   const element = insertionSubject.element
   const path = EP.appendToPath(rootPath, element.uid)
 
-  const fakeMetadata = createFakeMetadataForElement(
-    path,
-    element,
-    frame,
-    strategyState.startingMetadata,
-  )
+  const fakeMetadata = createFakeMetadataForElement(path, element, frame, startingMetadata)
 
-  const patchedMetadata = {
-    ...strategyState.startingMetadata,
+  const patchedMetadata: ElementInstanceMetadataMap = {
+    ...startingMetadata,
     [EP.toString(path)]: fakeMetadata,
-  }
-
-  const patchedStrategyState = {
-    ...strategyState,
-    startingMetadata: patchedMetadata,
   }
 
   const interactionData = interactionState.interactionData
@@ -339,7 +335,7 @@ function runTargetStrategiesForFreshlyInsertedElementToReparent(
         }
       : interactionData
 
-  const patchedInteractionState = {
+  const patchedInteractionState: InteractionSession = {
     ...interactionState,
     activeControl: boundingArea(),
     interactionData: patchedInteractionData,
@@ -349,13 +345,14 @@ function runTargetStrategiesForFreshlyInsertedElementToReparent(
   const patchedCanvasState: InteractionCanvasState = {
     ...canvasState,
     interactionTarget: targetPaths(editorState.selectedViews),
+    startingMetadata: patchedMetadata,
   }
 
   const { strategy } = findCanvasStrategy(
     RegisteredCanvasStrategies,
     patchedCanvasState,
     patchedInteractionState,
-    patchedStrategyState,
+    customStrategyState,
     null,
   )
 
@@ -365,7 +362,7 @@ function runTargetStrategiesForFreshlyInsertedElementToReparent(
   const reparentCommands = strategy.strategy.apply(
     patchedCanvasState,
     patchedInteractionState,
-    patchedStrategyState,
+    customStrategyState,
     strategyLifecycle,
   ).commands
 
@@ -376,38 +373,32 @@ function runTargetStrategiesForFreshlyInsertedElementToReparent(
 function runTargetStrategiesForFreshlyInsertedElementToResize(
   builtInDependencies: BuiltInDependencies,
   editorState: EditorState,
-  strategyState: StrategyState,
+  customStrategyState: CustomStrategyState,
   interactionState: InteractionSession,
   commandLifecycle: InteractionLifecycle,
   insertionSubject: ElementInsertionSubject,
   frame: CanvasRectangle,
   strategyLifecycle: InteractionLifecycle,
 ): Array<EditorStatePatch> {
-  const canvasState = pickCanvasStateFromEditorState(editorState, builtInDependencies)
+  const element = insertionSubject.element
+  const path = editorState.selectedViews[0]
+
+  const fakeMetadata = createFakeMetadataForElement(path, element, frame, editorState.jsxMetadata)
+  const patchedMetadata: ElementInstanceMetadataMap = {
+    ...editorState.jsxMetadata,
+    [EP.toString(path)]: fakeMetadata,
+  }
+
   const patchedInteractionState: InteractionSession = {
     ...interactionState,
     startingTargetParentsToFilterOut: null,
   }
 
-  const element = insertionSubject.element
-  const path = editorState.selectedViews[0]
-
-  const fakeMetadata = createFakeMetadataForElement(
-    path,
-    element,
-    frame,
-    strategyState.startingMetadata,
+  const canvasState = pickCanvasStateFromEditorStateWithMetadata(
+    editorState,
+    builtInDependencies,
+    patchedMetadata,
   )
-
-  const patchedMetadata = {
-    ...strategyState.startingMetadata,
-    [EP.toString(path)]: fakeMetadata,
-  }
-
-  const patchedStrategyState = {
-    ...strategyState,
-    startingMetadata: patchedMetadata,
-  }
 
   const patchedCanvasState: InteractionCanvasState = {
     ...canvasState,
@@ -418,7 +409,7 @@ function runTargetStrategiesForFreshlyInsertedElementToResize(
     RegisteredCanvasStrategies,
     patchedCanvasState,
     patchedInteractionState,
-    patchedStrategyState,
+    customStrategyState,
     null,
   )
 
@@ -427,7 +418,7 @@ function runTargetStrategiesForFreshlyInsertedElementToResize(
       ? resizeStrategy.strategy.apply(
           patchedCanvasState,
           patchedInteractionState,
-          patchedStrategyState,
+          customStrategyState,
           strategyLifecycle,
         ).commands
       : []

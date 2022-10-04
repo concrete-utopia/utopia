@@ -663,7 +663,7 @@ export interface ClearInteractionSession {
 
 export interface UpdateInteractionSession {
   action: 'UPDATE_INTERACTION_SESSION'
-  interactionSessionUpdate: Partial<InteractionSession>
+  interactionSessionUpdate: Partial<InteractionSessionWithoutMetadata>
 }
 
 export interface UpdateDragInteractionData {

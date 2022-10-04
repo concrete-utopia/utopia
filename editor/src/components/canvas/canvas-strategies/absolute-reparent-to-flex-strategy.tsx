@@ -7,11 +7,12 @@ import { DragOutlineControl } from '../controls/select-mode/drag-outline-control
 import { FlexReparentTargetIndicator } from '../controls/select-mode/flex-reparent-target-indicator'
 import {
   CanvasStrategy,
+  CustomStrategyState,
   getTargetPathsFromInteractionTarget,
   InteractionCanvasState,
   StrategyApplicationResult,
 } from './canvas-strategy-types'
-import { InteractionSession, StrategyState } from './interaction-state'
+import { InteractionSession } from './interaction-state'
 import { applyFlexReparent, getFitnessForReparentStrategy } from './reparent-strategy-helpers'
 import { getDragTargets } from './shared-move-strategies-helpers'
 
@@ -67,22 +68,21 @@ export const absoluteReparentToFlexStrategy: CanvasStrategy = {
   fitness: function (
     canvasState: InteractionCanvasState,
     interactionState: InteractionSession,
-    strategyState: StrategyState,
+    customStrategyState: CustomStrategyState,
   ): number {
     // All 4 reparent strategies use the same fitness function getFitnessForReparentStrategy
     return getFitnessForReparentStrategy(
       'ABSOLUTE_REPARENT_TO_FLEX',
       canvasState,
       interactionState,
-      strategyState,
       'use-strict-bounds',
     )
   },
   apply: function (
     canvasState: InteractionCanvasState,
     interactionSession: InteractionSession,
-    strategyState: StrategyState,
+    customStrategyState: CustomStrategyState,
   ): StrategyApplicationResult {
-    return applyFlexReparent('strip-absolute-props', canvasState, interactionSession, strategyState)
+    return applyFlexReparent('strip-absolute-props', canvasState, interactionSession)
   },
 }

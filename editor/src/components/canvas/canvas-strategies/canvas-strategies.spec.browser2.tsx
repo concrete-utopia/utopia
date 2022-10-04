@@ -5,9 +5,15 @@ import { cmdModifier, emptyModifiers, Modifiers } from '../../../utils/modifiers
 import {
   findCanvasStrategy,
   pickCanvasStateFromEditorState,
+  pickCanvasStateFromEditorStateWithMetadata,
   RegisteredCanvasStrategies,
 } from './canvas-strategies'
-import { boundingArea, InteractionSession, StrategyState } from './interaction-state'
+import {
+  boundingArea,
+  createEmptyStrategyState,
+  InteractionSession,
+  StrategyState,
+} from './interaction-state'
 import { createMouseInteractionForTests } from './interaction-state.test-utils'
 import { act } from '@testing-library/react'
 import {
@@ -20,26 +26,21 @@ import CanvasActions from '../canvas-actions'
 import { AllElementProps } from '../../editor/store/editor-state'
 import { CanvasControlsContainerID } from '../controls/new-canvas-controls'
 import { forceNotNull } from '../../..//core/shared/optional-utils'
+import { defaultCustomStrategyState } from './canvas-strategy-types'
 import { mouseDownAtPoint, mouseMoveToPoint } from '../event-helpers.test-utils'
 
-const baseStrategyState = (
-  metadata: ElementInstanceMetadataMap,
-  allElementProps: AllElementProps,
-) =>
-  ({
-    currentStrategy: null as any, // the strategy does not use this
-    currentStrategyFitness: null as any, // the strategy does not use this
-    currentStrategyCommands: null as any, // the strategy does not use this
-    accumulatedPatches: null as any, // the strategy does not use this
-    commandDescriptions: null as any, // the strategy does not use this
-    sortedApplicableStrategies: null as any, // the strategy does not use this
-    startingMetadata: metadata,
-    startingAllElementProps: allElementProps,
-    customStrategyState: {
-      escapeHatchActivated: false,
-      lastReorderIdx: null,
-    },
-  } as StrategyState)
+const baseStrategyState = (): StrategyState => ({
+  currentStrategy: null as any, // the strategy does not use this
+  currentStrategyFitness: null as any, // the strategy does not use this
+  currentStrategyCommands: null as any, // the strategy does not use this
+  accumulatedPatches: null as any, // the strategy does not use this
+  commandDescriptions: null as any, // the strategy does not use this
+  sortedApplicableStrategies: null as any, // the strategy does not use this
+  status: null as any, // the strategy does not use this
+  startingMetadata: null as any, // the strategy does not use this
+  startingAllElementProps: null as any, // the strategy does not use this
+  customStrategyState: defaultCustomStrategyState(),
+})
 
 interface StyleRectangle {
   left: string
@@ -193,10 +194,7 @@ describe('Strategy Fitness', () => {
         renderResult.getEditorState().builtInDependencies,
       ),
       interactionSession,
-      baseStrategyState(
-        renderResult.getEditorState().editor.jsxMetadata,
-        renderResult.getEditorState().editor.allElementProps,
-      ),
+      defaultCustomStrategyState(),
       null,
     )
 
@@ -245,10 +243,7 @@ describe('Strategy Fitness', () => {
         renderResult.getEditorState().builtInDependencies,
       ),
       interactionSession,
-      baseStrategyState(
-        renderResult.getEditorState().editor.jsxMetadata,
-        renderResult.getEditorState().editor.allElementProps,
-      ),
+      defaultCustomStrategyState(),
       null,
     )
 
@@ -333,10 +328,7 @@ describe('Strategy Fitness', () => {
         renderResult.getEditorState().builtInDependencies,
       ),
       interactionSession,
-      baseStrategyState(
-        renderResult.getEditorState().editor.jsxMetadata,
-        renderResult.getEditorState().editor.allElementProps,
-      ),
+      defaultCustomStrategyState(),
       null,
     )
 
@@ -385,10 +377,7 @@ describe('Strategy Fitness', () => {
         renderResult.getEditorState().builtInDependencies,
       ),
       interactionSession,
-      baseStrategyState(
-        renderResult.getEditorState().editor.jsxMetadata,
-        renderResult.getEditorState().editor.allElementProps,
-      ),
+      defaultCustomStrategyState(),
       null,
     )
 
@@ -437,10 +426,7 @@ describe('Strategy Fitness', () => {
         renderResult.getEditorState().builtInDependencies,
       ),
       interactionSession,
-      baseStrategyState(
-        renderResult.getEditorState().editor.jsxMetadata,
-        renderResult.getEditorState().editor.allElementProps,
-      ),
+      defaultCustomStrategyState(),
       null,
     )
 
