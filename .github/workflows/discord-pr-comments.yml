@@ -26,6 +26,7 @@ jobs:
         run: |
           echo "TITLE=Comment on #$PR_NUMBER $PR_TITLE" >> $GITHUB_ENV
       - name: Build Embeds JSON
+        if: ${{ github.event.sender.login != 'relativeci[bot]' }}
         env:
           TEMPLATE: >-
             [{
@@ -52,6 +53,7 @@ jobs:
           echo "DISCORD_EMBEDS=$(jq -nc --arg author_name "$AUTHOR" --arg author_icon_url "$AUTHOR_ICON_URL" --arg author_html_url "$AUTHOR_HTML_URL" --arg title "$TITLE" --arg html_url "$HTML_URL" --arg body "$BODY" --arg repo_full_name "$REPO_FULL_NAME" "$TEMPLATE")" >> $GITHUB_ENV
       - name: Send Notification
         uses: Ilshidur/action-discord@0.3.2
+        if: ${{ github.event.sender.login != 'relativeci[bot]' }}
         env:
           DISCORD_WEBHOOK: ${{ secrets.DISCORD_PRS_WEBHOOK }}
           DISCORD_USERNAME: 'GitHub'
