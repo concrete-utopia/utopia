@@ -41,22 +41,10 @@ import {
 } from '../canvas/canvas-strategies/interaction-state'
 import { emptyModifiers } from '../../utils/modifiers'
 import { CanvasMousePositionRaw } from '../../utils/global-positions'
-import {
-  emptyComments,
-  jsxAttributesFromMap,
-  jsxAttributeValue,
-  jsxElement,
-  setJSXAttributesAttribute,
-} from '../../core/shared/element-template'
 import { imagePathURL } from '../../common/server'
 import { generateUidWithExistingComponents } from '../../core/model/element-template-utils'
 import { useEditorState } from '../editor/store/store-hook'
 import { createJsxImage } from '../images'
-import {
-  dragAndDropInsertionSubject,
-  EditorModes,
-  imageInsertionSubject,
-} from '../editor/editor-modes'
 
 export interface FileBrowserItemProps extends FileBrowserItemInfo {
   isSelected: boolean
@@ -521,41 +509,8 @@ class FileBrowserItemInner extends React.PureComponent<
     }
   }
 
-  initiateImageDrag = () => {
-    if (this.props.imageFile == null) {
-      return
-    }
-
-    const newUID = this.props.generateNewUid()
-
-    const newElement = createJsxImage(newUID, {
-      width: this.props.imageFile.width ?? 50,
-      height: this.props.imageFile.height ?? 50,
-      src: imagePathURL(this.props.path),
-    })
-
-    this.props.dispatch(
-      [
-        EditorActions.enableInsertModeForJSXElement(newElement, newUID, {}, null),
-        CanvasActions.createInteractionSession(
-          createInteractionViaMouse(CanvasMousePositionRaw!, emptyModifiers, boundingArea()),
-        ),
-      ],
-      'everyone',
-    )
-  }
-
-  cancelImageDrag = () => {
-    this.props.dispatch([CanvasActions.clearInteractionSession(false)], 'everyone')
-  }
-
   onItemMouseDown = (e: React.MouseEvent) => {
     if (e.button !== 0) {
-      return
-    }
-
-    if (this.props.fileType === 'IMAGE_FILE') {
-      this.initiateImageDrag()
       return
     }
 
@@ -701,7 +656,6 @@ class FileBrowserItemInner extends React.PureComponent<
           onDragOver={this.onItemDragOver}
           onDragLeave={this.onDragLeave}
           onMouseDown={this.onItemMouseDown}
-          onMouseUp={this.cancelImageDrag}
           key={this.props.key}
           className='FileItem'
           style={{
@@ -838,24 +792,25 @@ export const FileBrowserItem: React.FC<FileBrowserItemProps> = (props: FileBrows
     (store) => store.editor.projectContents,
     'FileBrowserItem projectContents',
   )
+
+  const interactionSession = useEditorState(
+    (store) => store.editor.canvas.interactionSession,
+    'FileBrowserItem interactionSession',
+  )
+
+  const imageDragInProgress =
+    interactionSession != null && interactionSession.activeControl.type === 'BOUNDING_AREA'
+
   const dispatch = useEditorState((store) => store.dispatch, 'FileBrowserItem dispatch')
+
   const [{ isDragging }, drag, dragPreview] = useDrag(
     () => ({
       type: 'files',
-      canDrag: () => canDragnDrop(props),
+      canDrag: () => !imageDragInProgress && canDragnDrop(props),
       collect: (monitor) => ({
         isDragging: monitor.isDragging(),
       }),
       item: () => {
-        if (props.imageFile != null) {
-          props.dispatch([
-            EditorActions.switchEditorMode(
-              EditorModes.insertMode(
-                dragAndDropInsertionSubject([imageInsertionSubject(props.imageFile, props.path)]),
-              ),
-            ),
-          ])
-        }
         return props
       },
       end: () => {
@@ -865,7 +820,7 @@ export const FileBrowserItem: React.FC<FileBrowserItemProps> = (props: FileBrows
         ])
       },
     }),
-    [props],
+    [props, imageDragInProgress],
   )
   const [{ isOver }, drop] = useDrop(
     {
@@ -907,7 +862,7 @@ export const FileBrowserItem: React.FC<FileBrowserItemProps> = (props: FileBrows
     [props],
   )
 
-  function onMouseDown() {
+  const onMouseDown = React.useCallback(() => {
     if (props.imageFile == null) {
       return
     }
@@ -928,27 +883,25 @@ export const FileBrowserItem: React.FC<FileBrowserItemProps> = (props: FileBrows
       ],
       'everyone',
     )
-  }
+  }, [projectContents, props])
 
-  function onMouseUp() {
+  const onMouseUp = React.useCallback(() => {
     props.dispatch([CanvasActions.clearInteractionSession(false)])
-  }
+  }, [props])
 
   const forwardedRef = (node: ConnectableElement) => drag(drop(node))
 
   return (
-    <div onMouseUp={onMouseUp}>
-      <FileBrowserItemInner
-        {...props}
-        isDragging={isDragging}
-        isOver={isOver}
-        connectDragPreview={dragPreview}
-        // eslint-disable-next-line react/jsx-no-bind
-        forwardedRef={forwardedRef}
-        onDragHandleCancelled={onMouseUp}
-        onDragHandleStart={onMouseDown}
-      />
-    </div>
+    <FileBrowserItemInner
+      {...props}
+      isDragging={isDragging}
+      isOver={isOver}
+      connectDragPreview={dragPreview}
+      // eslint-disable-next-line react/jsx-no-bind
+      forwardedRef={forwardedRef}
+      onDragHandleCancelled={onMouseUp}
+      onDragHandleStart={onMouseDown}
+    />
   )
 }
 
