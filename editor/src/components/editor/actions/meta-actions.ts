@@ -5,7 +5,10 @@ import CanvasActions from '../../canvas/canvas-actions'
 import { RightMenuTab } from '../store/editor-state'
 import { EditorAction } from '../action-types'
 
-type HandleInteractionSession = 'apply-changes' | 'do-not-apply-changes' | 'ignore-it-completely'
+export type HandleInteractionSession =
+  | 'apply-changes'
+  | 'do-not-apply-changes'
+  | 'ignore-it-completely'
 
 export function cancelInsertModeActions(
   handleInteractionSession: HandleInteractionSession,

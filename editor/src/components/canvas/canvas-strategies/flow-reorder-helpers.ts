@@ -5,17 +5,13 @@ import {
   ElementInstanceMetadata,
   ElementInstanceMetadataMap,
 } from '../../../core/shared/element-template'
-import { CanvasVector, mod } from '../../../core/shared/math-utils'
+import { CanvasRectangle, CanvasVector, mod } from '../../../core/shared/math-utils'
 import { ElementPath } from '../../../core/shared/project-file-types'
+import { fastForEach } from '../../../core/shared/utils'
 import { stylePropPathMappingFn } from '../../inspector/common/property-path-hooks'
 import { DeleteProperties, deleteProperties } from '../commands/delete-properties-command'
 import { SetProperty, setProperty } from '../commands/set-property-command'
-import {
-  getTargetPathsFromInteractionTarget,
-  InteractionCanvasState,
-  InteractionTarget,
-} from './canvas-strategy-types'
-import { InteractionSession, StrategyState } from './interaction-state'
+import { getTargetPathsFromInteractionTarget, InteractionTarget } from './canvas-strategy-types'
 
 export function isValidFlowReorderTarget(
   path: ElementPath,
@@ -31,6 +27,59 @@ export function isValidFlowReorderTarget(
   } else {
     return MetadataUtils.isPositionedByFlow(elementMetadata)
   }
+}
+
+export function areAllSiblingsInOneDimension(
+  target: ElementPath,
+  metadata: ElementInstanceMetadataMap,
+): boolean {
+  const targetElement = MetadataUtils.findElementByElementPath(metadata, target)
+  const siblings = MetadataUtils.getSiblings(metadata, target) // including target
+  if (targetElement == null || siblings.length === 1) {
+    return false
+  }
+
+  const targetDirection = getElementDirection(targetElement)
+
+  let allHorizontalOrVertical = true
+  let frames: Array<CanvasRectangle> = []
+  fastForEach(siblings, (sibling) => {
+    if (isValidFlowReorderTarget(sibling.elementPath, metadata)) {
+      if (getElementDirection(sibling) !== targetDirection) {
+        allHorizontalOrVertical = false
+      }
+      if (sibling.globalFrame != null) {
+        frames.push(sibling.globalFrame)
+      }
+    }
+  })
+
+  return allHorizontalOrVertical && areNonWrappingSiblings(frames, targetDirection)
+}
+
+function areNonWrappingSiblings(
+  frames: Array<CanvasRectangle>,
+  layoutDirection: 'horizontal' | 'vertical',
+): boolean {
+  return frames.every((frame, i) => {
+    if (i === 0) {
+      return true
+    } else {
+      const prevFrame: CanvasRectangle = frames[i - 1]
+      if (layoutDirection === 'horizontal') {
+        // all elements are on the right side of the previous sibling
+        return frame.x > prevFrame.x
+      } else {
+        // all elements are below of the previous sibling
+        return frame.y > prevFrame.y
+      }
+    }
+  })
+}
+
+function getElementDirection(element: ElementInstanceMetadata): 'vertical' | 'horizontal' {
+  const displayValue = element.specialSizeMeasurements.display
+  return displayValue === 'inline' || displayValue === 'inline-block' ? 'horizontal' : 'vertical'
 }
 
 function getNewDisplayTypeForIndex(

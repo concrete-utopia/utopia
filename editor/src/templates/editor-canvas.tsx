@@ -108,10 +108,13 @@ import {
 import { getDragTargets } from '../components/canvas/canvas-strategies/shared-absolute-move-strategy-helpers'
 import { pickCanvasStateFromEditorState } from '../components/canvas/canvas-strategies/canvas-strategies'
 import { BuiltInDependencies } from '../core/es-modules/package-manager/built-in-dependencies-list'
-import { cancelInsertModeActions } from '../components/editor/actions/meta-actions'
 import { generateUidWithExistingComponents } from '../core/model/element-template-utils'
 import { createJsxImage, getFrameAndMultiplierWithResize } from '../components/images'
 import { imagePathURL } from '../common/server'
+import {
+  cancelInsertModeActions,
+  HandleInteractionSession,
+} from '../components/editor/actions/meta-actions'
 
 const webFrame = PROBABLY_ELECTRON ? requireElectron().webFrame : null
 
@@ -176,7 +179,11 @@ function roundPointForScale<C extends CoordinateMarker>(point: Point<C>, scale: 
   return scale <= 1 ? Utils.roundPointTo(point, 0) : Utils.roundPointToNearestHalf(point)
 }
 
-function handleCanvasEvent(model: CanvasModel, event: CanvasMouseEvent): Array<EditorAction> {
+function handleCanvasEvent(
+  model: CanvasModel,
+  event: CanvasMouseEvent,
+  isInsideCanvas: boolean,
+): Array<EditorAction> {
   if (event.event === 'WHEEL') {
     return []
   }
@@ -196,7 +203,13 @@ function handleCanvasEvent(model: CanvasModel, event: CanvasMouseEvent): Array<E
       event.event === 'MOUSE_UP' &&
       model.editorState.canvas.interactionSession?.interactionData.type === 'DRAG'
     ) {
-      optionalDragStateAction = cancelInsertModeActions('apply-changes')
+      const boundingAreaActive =
+        model.editorState.canvas.interactionSession?.activeControl.type === 'BOUNDING_AREA'
+
+      const shouldApplyChanges: HandleInteractionSession =
+        !isInsideCanvas && boundingAreaActive ? 'do-not-apply-changes' : 'apply-changes'
+
+      optionalDragStateAction = cancelInsertModeActions(shouldApplyChanges)
     } else if (event.event === 'MOUSE_DOWN') {
       if (insertionSubjectIsJSXElement((model.editorState.mode as InsertMode).subject)) {
         optionalDragStateAction = [
@@ -831,7 +844,9 @@ export class EditorCanvas extends React.Component<EditorCanvasProps> {
       actions.push(setFocus('canvas'))
     }
 
-    actions.push(...handleCanvasEvent(this.props.model, event))
+    actions.push(
+      ...handleCanvasEvent(this.props.model, event, this.isInsideCanvas(event.nativeEvent)),
+    )
     actions.push(...on(this.props.model, event, canvasBounds))
 
     const realActions = actions.filter((action) => action.action !== 'TRANSIENT_ACTIONS')
