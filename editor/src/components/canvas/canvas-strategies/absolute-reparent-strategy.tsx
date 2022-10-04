@@ -13,7 +13,7 @@ import {
   getTargetPathsFromInteractionTarget,
   strategyApplicationResult,
 } from './canvas-strategy-types'
-import { getDragTargets } from './shared-absolute-move-strategy-helpers'
+import { getDragTargets } from './shared-move-strategies-helpers'
 import { ifAllowedToReparent, isAllowedToReparent } from './reparent-helpers'
 import {
   existingReparentSubjects,

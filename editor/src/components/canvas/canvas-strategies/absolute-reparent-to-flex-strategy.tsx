@@ -14,7 +14,7 @@ import {
 } from './canvas-strategy-types'
 import { InteractionSession } from './interaction-state'
 import { applyFlexReparent, getFitnessForReparentStrategy } from './reparent-strategy-helpers'
-import { getDragTargets } from './shared-absolute-move-strategy-helpers'
+import { getDragTargets } from './shared-move-strategies-helpers'
 
 export const absoluteReparentToFlexStrategy: CanvasStrategy = {
   id: 'ABSOLUTE_REPARENT_TO_FLEX',

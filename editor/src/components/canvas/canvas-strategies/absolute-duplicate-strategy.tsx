@@ -27,7 +27,7 @@ import {
   strategyApplicationResult,
 } from './canvas-strategy-types'
 import { InteractionSession } from './interaction-state'
-import { getDragTargets } from './shared-absolute-move-strategy-helpers'
+import { getDragTargets } from './shared-move-strategies-helpers'
 
 export const absoluteDuplicateStrategy: CanvasStrategy = {
   id: 'ABSOLUTE_DUPLICATE',

@@ -47,6 +47,7 @@ import { drawToInsertStrategy } from './draw-to-insert-strategy'
 import { flexResizeBasicStrategy } from './flex-resize-basic-strategy'
 import { optionalMap } from '../../../core/shared/optional-utils'
 import { lookForApplicableParentStrategy } from './look-for-applicable-parent-strategy'
+import { relativeMoveStrategy } from './relative-move-strategy'
 
 export type MetaCanvasStrategy = (
   canvasState: InteractionCanvasState,
@@ -74,6 +75,7 @@ export const existingStrategies: MetaCanvasStrategy = () => [
   flowReorderStrategy,
   flowReorderSliderStategy,
   flexResizeBasicStrategy,
+  relativeMoveStrategy,
 ]
 
 export const RegisteredCanvasStrategies: Array<MetaCanvasStrategy> = [
