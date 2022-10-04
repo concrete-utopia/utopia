@@ -208,6 +208,7 @@ import { createStylePostActionToast } from '../../core/layout/layout-notice'
 import { uniqToasts } from '../editor/actions/toast-helpers'
 import { stylePropPathMappingFn } from '../inspector/common/property-path-hooks'
 import { EditorDispatch } from '../editor/action-types'
+import { isFeatureEnabled } from '../../utils/feature-switches'
 
 export function getOriginalFrames(
   selectedViews: Array<ElementPath>,
@@ -1867,6 +1868,9 @@ export function produceCanvasTransientState(
   editorState: EditorState,
   preventAnimations: boolean,
 ): TransientCanvasState {
+  if (isFeatureEnabled('Canvas Strategies')) {
+    return transientCanvasState(editorState.selectedViews, editorState.highlightedViews, null, [])
+  }
   const currentOpenFile = editorState.canvas.openFile?.filename
   let transientState: TransientCanvasState | null = null
   if (currentOpenFile != null) {
