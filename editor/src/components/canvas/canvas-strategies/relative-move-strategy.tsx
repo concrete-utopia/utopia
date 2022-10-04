@@ -83,24 +83,8 @@ export const relativeMoveStrategy: CanvasStrategy = {
   },
 
   apply: (canvasState, interactionState, sessionState) => {
-    const { interactionData } = interactionState
-    if (!(interactionData.type === 'DRAG' && interactionData.drag != null)) {
-      return emptyStrategyApplicationResult
-    }
-
-    const selectedElements = getTargetPathsFromInteractionTarget(canvasState.interactionTarget)
-    if (selectedElements.length === 0) {
-      return emptyStrategyApplicationResult
-    }
-
-    const filteredSelectedElements = getDragTargets(selectedElements)
-    const last = filteredSelectedElements[filteredSelectedElements.length - 1]
-    const metadata = MetadataUtils.findElementByElementPath(sessionState.startingMetadata, last)
-    if (metadata == null) {
-      return emptyStrategyApplicationResult
-    }
-    const offsets = getStyleOffsets(metadata)
-    if (!offsets) {
+    const isFitting = relativeMoveStrategy.fitness(canvasState, interactionState, sessionState) > 0
+    if (!isFitting) {
       return emptyStrategyApplicationResult
     }
 
