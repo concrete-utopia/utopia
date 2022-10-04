@@ -76,7 +76,7 @@ export const drawToInsertStrategy: CanvasStrategy = {
       show: 'visible-only-while-active',
     },
   ], // Uses existing hooks in select-mode-hooks.tsx
-  fitness: (canvasState, interactionState, strategyState) => {
+  fitness: (canvasState, interactionState, customStrategyState) => {
     return drawToInsertStrategy.isApplicable(
       canvasState,
       interactionState,

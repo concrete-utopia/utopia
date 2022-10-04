@@ -36,7 +36,7 @@ export const flexReorderStrategy: CanvasStrategy = {
       show: 'visible-only-while-active',
     },
   ],
-  fitness: (canvasState, interactionState, strategyState) => {
+  fitness: (canvasState, interactionState, customStrategyState) => {
     return flexReorderStrategy.isApplicable(
       canvasState,
       interactionState,
@@ -48,11 +48,11 @@ export const flexReorderStrategy: CanvasStrategy = {
       ? 1
       : 0
   },
-  apply: (canvasState, interactionState, strategyState) => {
+  apply: (canvasState, interactionState, customStrategyState) => {
     return applyReorderCommon(
       canvasState,
       interactionState,
-      strategyState,
+      customStrategyState,
       MetadataUtils.isParentYogaLayoutedContainerAndElementParticipatesInLayout,
     )
   },

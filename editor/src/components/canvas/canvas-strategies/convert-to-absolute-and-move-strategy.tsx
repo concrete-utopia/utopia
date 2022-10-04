@@ -87,7 +87,7 @@ export const convertToAbsoluteAndMoveStrategy: CanvasStrategy = {
       ? 0.5
       : 0
   },
-  apply: (canvasState, interactionState, strategyState) => {
+  apply: (canvasState, interactionState, customStrategyState) => {
     if (
       interactionState.interactionData.type === 'DRAG' &&
       interactionState.interactionData.drag != null
@@ -108,7 +108,7 @@ export const convertToAbsoluteAndMoveStrategy: CanvasStrategy = {
       const absoluteMoveApplyResult = applyAbsoluteMoveCommon(
         canvasState,
         interactionState,
-        strategyState,
+        customStrategyState,
         getConversionAndMoveCommands,
       )
 

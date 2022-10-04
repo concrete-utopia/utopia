@@ -75,7 +75,7 @@ function getFlexReparentToAbsoluteStrategy(
         show: 'visible-only-while-active',
       },
     ],
-    fitness: (canvasState, interactionState, strategyState) => {
+    fitness: (canvasState, interactionState, customStrategyState) => {
       // All 4 reparent strategies use the same fitness function getFitnessForReparentStrategy
       return getFitnessForReparentStrategy(
         'FLEX_REPARENT_TO_ABSOLUTE',

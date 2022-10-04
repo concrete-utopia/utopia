@@ -54,7 +54,7 @@ export const flowReorderStrategy: CanvasStrategy = {
       show: 'visible-only-while-active',
     },
   ], // Uses existing hooks in select-mode-hooks.tsx
-  fitness: (canvasState, interactionState, strategyState) => {
+  fitness: (canvasState, interactionState, customStrategyState) => {
     return flowReorderStrategy.isApplicable(
       canvasState,
       interactionState,
@@ -66,11 +66,11 @@ export const flowReorderStrategy: CanvasStrategy = {
       ? 3
       : 0
   },
-  apply: (canvasState, interactionState, strategyState) => {
+  apply: (canvasState, interactionState, customStrategyState) => {
     return applyReorderCommon(
       canvasState,
       interactionState,
-      strategyState,
+      customStrategyState,
       isValidFlowReorderTarget,
     )
   },

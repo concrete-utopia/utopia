@@ -38,7 +38,7 @@ export const flowReorderSliderStategy: CanvasStrategy = {
       show: 'always-visible',
     },
   ],
-  fitness: (canvasState, interactionState, strategyState) => {
+  fitness: (canvasState, interactionState, customStrategyState) => {
     return flowReorderSliderStategy.isApplicable(
       canvasState,
       interactionState,
@@ -50,7 +50,7 @@ export const flowReorderSliderStategy: CanvasStrategy = {
       ? 100
       : 0
   },
-  apply: (canvasState, interactionState, strategyState) => {
+  apply: (canvasState, interactionState, customStrategyState) => {
     if (interactionState.interactionData.type !== 'DRAG') {
       return emptyStrategyApplicationResult
     }

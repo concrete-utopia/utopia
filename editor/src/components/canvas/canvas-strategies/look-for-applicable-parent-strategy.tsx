@@ -89,8 +89,8 @@ function tweakStrategy(
     }
   }
 
-  const name: CanvasStrategy['name'] = (canvasState, interactionSession, strategyState) =>
-    strategy.name(canvasState, interactionSession, strategyState) + ' *'
+  const name: CanvasStrategy['name'] = (canvasState, interactionSession, customStrategyState) =>
+    strategy.name(canvasState, interactionSession, customStrategyState) + ' *'
 
   const id: CanvasStrategyId = 'LOOK_FOR_APPLICABLE_PARENT_ID'
 
