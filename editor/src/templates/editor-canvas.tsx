@@ -1070,8 +1070,8 @@ export class EditorCanvas extends React.Component<EditorCanvasProps> {
 
               this.props.dispatch(
                 [
-                  EditorActions.enableInsertModeForJSXElement(newElement, newUID, {}, null),
                   ...saveImageActions,
+                  EditorActions.enableInsertModeForJSXElement(newElement, newUID, {}, null),
                 ],
                 'everyone',
               )
