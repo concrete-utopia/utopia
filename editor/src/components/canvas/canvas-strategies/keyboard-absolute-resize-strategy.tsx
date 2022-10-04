@@ -26,7 +26,7 @@ import {
   getKeyboardStrategyGuidelines,
   getLastKeyPressState,
 } from './shared-keyboard-strategy-helpers'
-import { getMultiselectBounds } from './shared-absolute-move-strategy-helpers'
+import { getMultiselectBounds } from './shared-move-strategies-helpers'
 import { setSnappingGuidelines } from '../commands/set-snapping-guidelines-command'
 import { pushIntendedBounds } from '../commands/push-intended-bounds-command'
 import { supportsAbsoluteResize } from './absolute-resize-helpers'

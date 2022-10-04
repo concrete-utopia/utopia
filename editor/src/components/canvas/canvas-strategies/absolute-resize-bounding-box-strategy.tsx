@@ -37,7 +37,7 @@ import {
   getTargetPathsFromInteractionTarget,
   strategyApplicationResult,
 } from './canvas-strategy-types'
-import { getDragTargets, getMultiselectBounds } from './shared-absolute-move-strategy-helpers'
+import { getDragTargets, getMultiselectBounds } from './shared-move-strategies-helpers'
 import {
   pickCursorFromEdgePosition,
   resizeBoundingBox,

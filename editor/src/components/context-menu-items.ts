@@ -24,7 +24,7 @@ import {
   toggleStylePropPath,
   toggleStylePropPaths,
 } from './inspector/common/css-utils'
-import { areAllSelectedElementsNonAbsolute } from './canvas/canvas-strategies/shared-absolute-move-strategy-helpers'
+import { areAllSelectedElementsNonAbsolute } from './canvas/canvas-strategies/shared-move-strategies-helpers'
 
 export interface ContextMenuItem<T> {
   name: string | React.ReactNode

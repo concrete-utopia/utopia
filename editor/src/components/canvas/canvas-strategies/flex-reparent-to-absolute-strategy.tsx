@@ -36,7 +36,7 @@ import {
   getFitnessForReparentStrategy,
   getReparentTargetUnified,
 } from './reparent-strategy-helpers'
-import { getDragTargets } from './shared-absolute-move-strategy-helpers'
+import { getDragTargets } from './shared-move-strategies-helpers'
 
 function getFlexReparentToAbsoluteStrategy(
   id: 'FLEX_REPARENT_TO_ABSOLUTE' | 'FORCED_FLEX_REPARENT_TO_ABSOLUTE',
