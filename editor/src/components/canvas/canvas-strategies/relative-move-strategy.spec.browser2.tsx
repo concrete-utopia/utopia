@@ -1,5 +1,4 @@
-import { Modifiers, cmdModifier, shiftModifier } from '../../../utils/modifiers'
-import { windowPoint } from '../../../core/shared/math-utils'
+import { cmdModifier, Modifiers, shiftModifier } from '../../../utils/modifiers'
 import { CanvasControlsContainerID } from '../controls/new-canvas-controls'
 import { mouseClickAtPoint, mouseDragFromPointWithDelta } from '../event-helpers.test-utils'
 import {
@@ -22,8 +21,8 @@ const setupAndDrag = async (
   const targetElementBounds = targetElement.getBoundingClientRect()
   const canvasControlsLayer = renderResult.renderedDOM.getByTestId(CanvasControlsContainerID)
 
-  const startPoint = windowPoint({ x: targetElementBounds.x + 5, y: targetElementBounds.y + 5 })
-  const dragDelta = windowPoint({ x, y })
+  const startPoint = { x: targetElementBounds.x + 5, y: targetElementBounds.y + 5 }
+  const dragDelta = { x, y }
 
   mouseClickAtPoint(canvasControlsLayer, startPoint, { modifiers: cmdModifier })
   mouseDragFromPointWithDelta(canvasControlsLayer, startPoint, dragDelta, { modifiers })
