@@ -102,7 +102,7 @@ export function applyReorderCommon(
   }
 }
 
-function findSiblingIndexUnderPoint(
+export function findSiblingIndexUnderPoint(
   metadata: ElementInstanceMetadataMap,
   siblings: Array<ElementPath>,
   point: CanvasVector,

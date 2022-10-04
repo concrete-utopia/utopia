@@ -24,16 +24,8 @@ import { DragOutlineControl } from '../controls/select-mode/drag-outline-control
 
 export const flowReorderWithIndicatorStrategy: CanvasStrategy = {
   id: 'FLOW_REORDER_WITH_INDICATOR',
-  name: 'Reorder (Flow, I)',
-  isApplicable: (canvasState, interactionState, strategyState, allElementProps) => {
-    return isFlowReorderConversionApplicable(
-      canvasState,
-      interactionState,
-      strategyState,
-      allElementProps,
-      'no-filter',
-    )
-  },
+  name: () => 'Reorder (Flow, I)',
+  isApplicable: isFlowReorderConversionApplicable,
   controlsToRender: [
     {
       control: ParentOutlines,
@@ -98,7 +90,7 @@ export const flowReorderWithIndicatorStrategy: CanvasStrategy = {
         interactionState.interactionData.drag,
       )
 
-      const { newIndex, newDisplayType, targetLineBeforeSibling } = getNewIndexAndInsertLine(
+      const { newIndex, targetLineBeforeSibling } = getNewIndexAndInsertLine(
         strategyState.startingMetadata,
         siblingsOfTarget,
         rawPointOnCanvas,
@@ -116,12 +108,6 @@ export const flowReorderWithIndicatorStrategy: CanvasStrategy = {
           reorderElement('on-complete', target, absolute(realNewIndex)),
           updateHighlightedViews('mid-interaction', []),
           setCursorCommand('mid-interaction', CSSCursor.Move),
-          ...getOptionalDisplayPropCommands(
-            target,
-            newDisplayType,
-            'with-auto-conversion',
-            'on-complete',
-          ),
           wildcardPatch('mid-interaction', {
             canvas: {
               controls: {
