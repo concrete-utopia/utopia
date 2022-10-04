@@ -89,7 +89,7 @@ export const drawToInsertStrategy: CanvasStrategy = {
       ? 1
       : 0
   },
-  apply: (canvasState, interactionState, strategyState, strategyLifecycle) => {
+  apply: (canvasState, interactionState, customStrategyState, strategyLifecycle) => {
     if (
       canvasState.interactionTarget.type === 'INSERTION_SUBJECTS' &&
       canvasState.interactionTarget.subjects.length === 1 &&
@@ -112,7 +112,7 @@ export const drawToInsertStrategy: CanvasStrategy = {
                 return runTargetStrategiesForFreshlyInsertedElementToReparent(
                   canvasState.builtInDependencies,
                   editorState,
-                  strategyState,
+                  customStrategyState,
                   interactionState,
                   insertionSubject,
                   insertionCommand.frame,
@@ -128,7 +128,7 @@ export const drawToInsertStrategy: CanvasStrategy = {
                 return runTargetStrategiesForFreshlyInsertedElementToResize(
                   canvasState.builtInDependencies,
                   editorState,
-                  strategyState,
+                  customStrategyState,
                   interactionState,
                   commandLifecycle,
                   insertionSubject,
@@ -160,7 +160,7 @@ export const drawToInsertStrategy: CanvasStrategy = {
                 return runTargetStrategiesForFreshlyInsertedElementToReparent(
                   canvasState.builtInDependencies,
                   editorState,
-                  strategyState,
+                  customStrategyState,
                   interactionState,
                   insertionSubject,
                   insertionCommand.frame,

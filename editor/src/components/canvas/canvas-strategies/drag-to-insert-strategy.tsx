@@ -86,7 +86,7 @@ export const dragToInsertStrategy: CanvasStrategy = {
       ? 1
       : 0
   },
-  apply: (canvasState, interactionState, strategyState, strategyLifecycle) => {
+  apply: (canvasState, interactionState, customStrategyState, strategyLifecycle) => {
     const insertionSubjects = getInsertionSubjectsFromInteractionTarget(
       canvasState.interactionTarget,
     )
@@ -104,7 +104,7 @@ export const dragToInsertStrategy: CanvasStrategy = {
           return runTargetStrategiesForFreshlyInsertedElement(
             canvasState.builtInDependencies,
             editorState,
-            strategyState,
+            customStrategyState,
             interactionState,
             transient,
             insertionCommands,
