@@ -1876,7 +1876,7 @@ export function produceCanvasTransientState(
       case 'insert':
         if (
           insertionSubjectIsJSXElement(editorMode.subject) &&
-          isFeatureEnabled('Canvas Strategies')
+          !isFeatureEnabled('Canvas Strategies')
         ) {
           const insertionElement = editorMode.subject.element
           const importsToAdd = editorMode.subject.importsToAdd
