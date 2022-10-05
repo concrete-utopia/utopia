@@ -32,6 +32,7 @@ import { EditorAction, EditorDispatch, SwitchEditorMode } from './action-types'
 import * as EditorActions from './actions/action-creators'
 import * as MetaActions from './actions/meta-actions'
 import {
+  defaultDivElement,
   defaultEllipseElement,
   defaultRectangleElement,
   defaultTextElement,
@@ -110,6 +111,7 @@ import {
   GROUP_ELEMENT_DEFAULT_SHORTCUT,
   TOGGLE_FOCUSED_OMNIBOX_TAB,
   FOCUS_CLASS_NAME_INPUT,
+  INSERT_DIV_SHORTCUT,
 } from './shortcut-definitions'
 import { DerivedState, EditorState, getOpenFile, RightMenuTab } from './store/editor-state'
 import { CanvasMousePositionRaw, WindowMousePositionRaw } from '../../utils/global-positions'
@@ -681,6 +683,17 @@ export function handleKeyDown(
         } else {
           return []
         }
+      },
+      [INSERT_DIV_SHORTCUT]: () => {
+        if (!isSelectMode(editor.mode) && !isInsertMode(editor.mode)) {
+          return []
+        }
+
+        const newUID = generateUidWithExistingComponents(editor.projectContents)
+        return addCreateHoverInteractionActionToSwitchModeAction(
+          EditorActions.enableInsertModeForJSXElement(defaultDivElement(newUID), newUID, {}, null),
+          modifiers,
+        )
       },
       [CUT_SELECTION_SHORTCUT]: () => {
         return isSelectMode(editor.mode)
