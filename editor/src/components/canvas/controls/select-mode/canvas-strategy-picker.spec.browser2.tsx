@@ -6,17 +6,15 @@ import {
 } from '../../ui-jsx.test-utils'
 import {
   CanvasStrategy,
-  CanvasStrategyId,
   strategyApplicationResult,
 } from '../../canvas-strategies/canvas-strategy-types'
-import { act } from 'react-dom/test-utils'
 import { CanvasControlsContainerID } from '../new-canvas-controls'
 import { applicableStrategy, ApplicableStrategy } from '../../canvas-strategies/canvas-strategies'
 import { cmdModifier, emptyModifiers, Modifiers, shiftModifier } from '../../../../utils/modifiers'
 import { mouseDownAtPoint, mouseMoveToPoint, pressKey } from '../../event-helpers.test-utils'
 
 const BestStrategy: CanvasStrategy = {
-  id: 'BEST_STRATEGY' as CanvasStrategyId,
+  id: 'BEST_STRATEGY',
   name: () => 'Best Strategy',
   isApplicable: () => true,
   controlsToRender: [],
@@ -25,7 +23,7 @@ const BestStrategy: CanvasStrategy = {
 }
 
 const AverageStrategy: CanvasStrategy = {
-  id: 'AVERAGE_STRATEGY' as CanvasStrategyId,
+  id: 'AVERAGE_STRATEGY',
   name: () => 'Average Strategy',
   isApplicable: () => true,
   controlsToRender: [],
@@ -34,7 +32,7 @@ const AverageStrategy: CanvasStrategy = {
 }
 
 const WorstStrategy: CanvasStrategy = {
-  id: 'WORST_STRATEGY' as CanvasStrategyId,
+  id: 'WORST_STRATEGY',
   name: () => 'Worst Strategy',
   isApplicable: () => true,
   controlsToRender: [],
@@ -43,7 +41,7 @@ const WorstStrategy: CanvasStrategy = {
 }
 
 const UnfitStrategy: CanvasStrategy = {
-  id: 'UNFIT_STRATEGY' as CanvasStrategyId,
+  id: 'UNFIT_STRATEGY',
   name: () => 'Unfit Strategy',
   isApplicable: () => false,
   controlsToRender: [],
