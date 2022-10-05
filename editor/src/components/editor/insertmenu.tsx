@@ -32,13 +32,8 @@ import {
 } from './defaults'
 import { FontSettings } from '../inspector/common/css-utils'
 import { EditorAction, EditorDispatch } from './action-types'
-import { enableInsertModeForJSXElement, enableInsertModeForScene } from './actions/action-creators'
-import {
-  ElementInsertionSubject,
-  insertionSubjectIsScene,
-  Mode,
-  insertionSubjectIsJSXElement,
-} from './editor-modes'
+import { enableInsertModeForJSXElement } from './actions/action-creators'
+import { ElementInsertionSubject, Mode, insertionSubjectIsJSXElement } from './editor-modes'
 import { insertImage } from './image-insert'
 import { getOpenFilename } from './store/editor-state'
 import { useEditorState } from './store/store-hook'
@@ -56,6 +51,7 @@ import {
   getInsertableGroupLabel,
   getInsertableGroupPackageStatus,
   getNonEmptyComponentGroups,
+  moveSceneToTheBeginning,
 } from '../shared/project-components'
 import { ProjectContentTreeRoot } from '../assets'
 import { generateUidWithExistingComponents } from '../../core/model/element-template-utils'
@@ -184,126 +180,36 @@ class InsertMenuInner extends React.Component<InsertMenuProps> {
     this.props.editorDispatch([action], 'everyone')
   }
 
-  sceneInsertMode = () => {
-    this.props.editorDispatch([enableInsertModeForScene('scene')], 'everyone')
-  }
-
   getNewUID = () => generateUidWithExistingComponents(this.props.projectContents)
 
-  divInsertMode = () => {
-    const newUID = this.getNewUID()
-    this.props.editorDispatch(
-      [enableInsertModeForJSXElement(defaultDivElement(newUID), newUID, {}, null)],
-      'everyone',
-    )
-  }
-
-  imageInsert = () => {
-    insertImage(this.props.editorDispatch)
-  }
-
-  textInsertMode = () => {
-    const newUID = this.getNewUID()
-    this.props.editorDispatch(
-      [
-        enableInsertModeForJSXElement(
-          defaultTextElement(newUID),
-          newUID,
-          { 'utopia-api': importDetails(null, [importAlias('Text')], null) },
-          null,
-        ),
-      ],
-      'everyone',
-    )
-  }
-
-  animatedDivInsertMode = () => {
-    const newUID = this.getNewUID()
-    this.props.editorDispatch(
-      [
-        enableInsertModeForJSXElement(
-          defaultAnimatedDivElement(newUID),
-          newUID,
-          { 'react-spring': importDetails(null, [importAlias('animated')], null) },
-          null,
-        ),
-      ],
-      'everyone',
-    )
-  }
-
-  ellipseInsertMode = () => {
-    const newUID = this.getNewUID()
-    this.props.editorDispatch(
-      [
-        enableInsertModeForJSXElement(
-          defaultEllipseElement(newUID),
-          newUID,
-          { 'utopia-api': importDetails(null, [importAlias('Ellipse')], null) },
-          null,
-        ),
-      ],
-      'everyone',
-    )
-  }
-
-  rectangleInsertMode = () => {
-    const newUID = this.getNewUID()
-    this.props.editorDispatch(
-      [
-        enableInsertModeForJSXElement(
-          defaultRectangleElement(newUID),
-          newUID,
-          { 'utopia-api': importDetails(null, [importAlias('Rectangle')], null) },
-          null,
-        ),
-      ],
-      'everyone',
-    )
-  }
-
   render() {
-    let sceneSelected: boolean = false
     let currentlyBeingInserted: ComponentBeingInserted | null = null
-    if (this.props.mode.type === 'insert') {
-      if (insertionSubjectIsScene(this.props.mode.subject)) {
-        sceneSelected = true
-      } else if (insertionSubjectIsJSXElement(this.props.mode.subject)) {
-        const insertionSubject: ElementInsertionSubject = this.props.mode.subject
-        currentlyBeingInserted = componentBeingInserted(
-          insertionSubject.importsToAdd,
-          insertionSubject.element.name,
-          insertionSubject.element.props,
-        )
-      }
+    if (
+      this.props.mode.type === 'insert' &&
+      insertionSubjectIsJSXElement(this.props.mode.subject)
+    ) {
+      const insertionSubject: ElementInsertionSubject = this.props.mode.subject
+      currentlyBeingInserted = componentBeingInserted(
+        insertionSubject.importsToAdd,
+        insertionSubject.element.name,
+        insertionSubject.element.props,
+      )
     }
 
     const insertableGroups =
       this.props.currentlyOpenFilename == null
         ? []
-        : getNonEmptyComponentGroups(
-            this.props.packageStatus,
-            this.props.propertyControlsInfo,
-            this.props.projectContents,
-            this.props.dependencies,
-            this.props.currentlyOpenFilename,
+        : moveSceneToTheBeginning(
+            getNonEmptyComponentGroups(
+              this.props.packageStatus,
+              this.props.propertyControlsInfo,
+              this.props.projectContents,
+              this.props.dependencies,
+              this.props.currentlyOpenFilename,
+            ),
           )
 
     return [
-      // FIXME: Once scenes are refactored, this should be removed.
-      <InsertGroup
-        label='Storyboard'
-        key='insert-group-storyboard'
-        dependencyStatus='loaded'
-        dependencyVersion={null}
-      >
-        <InsertItem
-          type='scene'
-          label='Scene'
-          selected={sceneSelected}
-          onMouseDown={this.sceneInsertMode}
-        />
-      </InsertGroup>,
       ...insertableGroups.map((insertableGroup, groupIndex) => {
         return (
           <InsertGroup

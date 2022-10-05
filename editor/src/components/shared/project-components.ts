@@ -26,6 +26,7 @@ import {
   simpleAttribute,
 } from '../../core/shared/element-template'
 import { dropFileExtension } from '../../core/shared/file-utils'
+import { Size } from '../../core/shared/math-utils'
 import {
   isResolvedNpmDependency,
   PackageStatus,
@@ -314,6 +315,35 @@ export function getNonEmptyComponentGroups(
   return groups.filter((group) => {
     return group.insertableComponents.length > 0
   })
+}
+
+export function moveSceneToTheBeginning(
+  groups: Array<InsertableComponentGroup>,
+): Array<InsertableComponentGroup> {
+  const utopiaApiGroupIdx = groups.findIndex(
+    (group) => getInsertableGroupLabel(group.source) === 'utopia-api',
+  )
+  if (utopiaApiGroupIdx > -1) {
+    const utopiaApiGroup = groups[utopiaApiGroupIdx]
+    const sceneIdx = utopiaApiGroup.insertableComponents.findIndex((comp) => comp.name === 'Scene')
+    if (sceneIdx > -1) {
+      const scene = utopiaApiGroup.insertableComponents[sceneIdx]
+      const utopiaApiGroupWithoutScene = insertableComponentGroup(utopiaApiGroup.source, [
+        ...utopiaApiGroup.insertableComponents.slice(0, sceneIdx),
+        ...utopiaApiGroup.insertableComponents.slice(sceneIdx + 1),
+      ])
+      const groupsWithoutUtopiaApi = [
+        ...groups.slice(0, utopiaApiGroupIdx),
+        ...groups.slice(utopiaApiGroupIdx + 1),
+      ]
+      const newSceneGroup = insertableComponentGroup(
+        insertableComponentGroupProjectComponent('Storyboard'),
+        [scene],
+      )
+      return [newSceneGroup, ...groupsWithoutUtopiaApi, utopiaApiGroupWithoutScene]
+    }
+  }
+  return groups
 }
 
 export function getComponentGroups(

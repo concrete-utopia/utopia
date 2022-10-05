@@ -215,13 +215,7 @@ import type {
   SetGithubState,
   SaveToGithub,
 } from '../action-types'
-import {
-  EditorModes,
-  elementInsertionSubject,
-  Mode,
-  sceneInsertionSubject,
-  SceneInsertionSubject,
-} from '../editor-modes'
+import { EditorModes, elementInsertionSubject, Mode } from '../editor-modes'
 import type {
   DuplicationState,
   ErrorMessages,
@@ -456,10 +450,6 @@ export function enableInsertModeForJSXElement(
   return switchEditorMode(
     EditorModes.insertMode(elementInsertionSubject(uid, element, size, importsToAdd, null)),
   )
-}
-
-export function enableInsertModeForScene(name: JSXElementName | 'scene'): SwitchEditorMode {
-  return switchEditorMode(EditorModes.insertMode(sceneInsertionSubject()))
 }
 
 export function addToast(toastContent: Notice): AddToast {

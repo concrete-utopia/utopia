@@ -16,10 +16,6 @@ export interface ElementInsertionSubject {
   parent: InsertionParent
 }
 
-export interface SceneInsertionSubject {
-  type: 'Scene'
-}
-
 export interface DragAndDropInsertionSubject {
   type: 'DragAndDrop'
   imageAssets: Array<string> | null
@@ -42,12 +38,6 @@ export function elementInsertionSubject(
   }
 }
 
-export function sceneInsertionSubject(): SceneInsertionSubject {
-  return {
-    type: 'Scene',
-  }
-}
-
 export function dragAndDropInsertionSubject(
   imageAssets: Array<string> | null,
 ): DragAndDropInsertionSubject {
@@ -57,21 +47,12 @@ export function dragAndDropInsertionSubject(
   }
 }
 
-export type InsertionSubject =
-  | ElementInsertionSubject
-  | SceneInsertionSubject
-  | DragAndDropInsertionSubject
+export type InsertionSubject = ElementInsertionSubject | DragAndDropInsertionSubject
 
 export function insertionSubjectIsJSXElement(
   insertionSubject: InsertionSubject,
 ): insertionSubject is ElementInsertionSubject {
   return insertionSubject.type === 'Element'
-}
-
-export function insertionSubjectIsScene(
-  insertionSubject: InsertionSubject,
-): insertionSubject is SceneInsertionSubject {
-  return insertionSubject.type === 'Scene'
 }
 
 export function insertionSubjectIsDragAndDrop(
