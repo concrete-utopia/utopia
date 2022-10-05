@@ -38,19 +38,19 @@ export const flowReorderSliderStategy: CanvasStrategy = {
       show: 'always-visible',
     },
   ],
-  fitness: (canvasState, interactionState, strategyState) => {
+  fitness: (canvasState, interactionState, customStrategyState) => {
     return flowReorderSliderStategy.isApplicable(
       canvasState,
       interactionState,
-      strategyState.startingMetadata,
-      strategyState.startingAllElementProps,
+      canvasState.startingMetadata,
+      canvasState.startingAllElementProps,
     ) &&
       interactionState.interactionData.type === 'DRAG' &&
       interactionState.activeControl.type === 'FLOW_SLIDER'
       ? 100
       : 0
   },
-  apply: (canvasState, interactionState, strategyState) => {
+  apply: (canvasState, interactionState, customStrategyState) => {
     if (interactionState.interactionData.type !== 'DRAG') {
       return emptyStrategyApplicationResult
     }
@@ -58,7 +58,7 @@ export const flowReorderSliderStategy: CanvasStrategy = {
     const selectedElements = getTargetPathsFromInteractionTarget(canvasState.interactionTarget)
     const target = selectedElements[0]
 
-    const siblingsOfTarget = MetadataUtils.getSiblings(strategyState.startingMetadata, target).map(
+    const siblingsOfTarget = MetadataUtils.getSiblings(canvasState.startingMetadata, target).map(
       (element) => element.elementPath,
     )
 
@@ -88,7 +88,7 @@ export const flowReorderSliderStategy: CanvasStrategy = {
           ...getOptionalDisplayPropCommands(
             newIndex,
             canvasState.interactionTarget,
-            strategyState.startingMetadata,
+            canvasState.startingMetadata,
           ),
           setCursorCommand('mid-interaction', CSSCursor.ResizeEW),
         ],

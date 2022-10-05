@@ -12,7 +12,6 @@ import {
   strategyApplicationResult,
   StrategyApplicationResult,
 } from './canvas-strategy-types'
-import { StrategyState } from './interaction-state'
 import { ProjectContentTreeRoot } from '../../../components/assets'
 
 export function isGeneratedElement(
@@ -54,7 +53,7 @@ export function isAllowedToReparent(
 
 export function ifAllowedToReparent(
   canvasState: InteractionCanvasState,
-  strategyState: StrategyState,
+  startingMetadata: ElementInstanceMetadataMap,
   targets: Array<ElementPath>,
   ifAllowed: () => StrategyApplicationResult,
 ): StrategyApplicationResult {
@@ -62,7 +61,7 @@ export function ifAllowedToReparent(
     return isAllowedToReparent(
       canvasState.projectContents,
       canvasState.openFile,
-      strategyState.startingMetadata,
+      startingMetadata,
       target,
     )
   })

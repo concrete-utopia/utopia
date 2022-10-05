@@ -152,10 +152,10 @@ export interface StrategyState {
   sortedApplicableStrategies: Array<ApplicableStrategy> | null
   status: StrategyApplicationStatus
 
-  // Checkpointed metadata at the point at which a strategy change has occurred.
-  startingMetadata: ElementInstanceMetadataMap
+  startingMetadata: ElementInstanceMetadataMap // TODO delete me!
+  startingAllElementProps: AllElementProps // TODO delete me!!!!
+
   customStrategyState: CustomStrategyState
-  startingAllElementProps: AllElementProps
 }
 
 export function createEmptyStrategyState(

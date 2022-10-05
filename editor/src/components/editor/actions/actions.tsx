@@ -424,7 +424,7 @@ import { pickCanvasStateFromEditorState } from '../../canvas/canvas-strategies/c
 import { foldAndApplyCommandsSimple } from '../../canvas/commands/commands'
 import { setElementsToRerenderCommand } from '../../canvas/commands/set-elements-to-rerender-command'
 import { addButtonPressed, MouseButtonsPressed, removeButtonPressed } from '../../../utils/mouse'
-import { areAllSelectedElementsNonAbsolute } from '../../canvas/canvas-strategies/shared-absolute-move-strategy-helpers'
+import { areAllSelectedElementsNonAbsolute } from '../../canvas/canvas-strategies/shared-move-strategies-helpers'
 import {
   elementToReparent,
   getReparentOutcome,

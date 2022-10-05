@@ -16,7 +16,10 @@ import {
   testPrintCodeFromEditorState,
 } from '../ui-jsx.test-utils'
 import { absoluteReparentStrategy } from './absolute-reparent-strategy'
-import { pickCanvasStateFromEditorState } from './canvas-strategies'
+import {
+  pickCanvasStateFromEditorState,
+  pickCanvasStateFromEditorStateWithMetadata,
+} from './canvas-strategies'
 import { defaultCustomStrategyState } from './canvas-strategy-types'
 import { InteractionSession, StrategyState } from './interaction-state'
 import { createMouseInteractionForTests } from './interaction-state.test-utils'
@@ -49,6 +52,135 @@ function reparentElement(
   targetParentWithSpecialContentBox: boolean,
   dragVector: CanvasPoint = canvasPoint({ x: 15, y: 15 }),
 ): EditorState {
+  const startingMetadata = {
+    sb: {
+      elementPath: EP.elementPath([['sb']]),
+      element: left('storyboard'),
+      globalFrame: canvasRectangle({ x: 0, y: 0, width: 400, height: 400 }),
+      specialSizeMeasurements: {
+        immediateParentBounds: canvasRectangle({ x: 0, y: 0, width: 400, height: 400 }),
+        coordinateSystemBounds: canvasRectangle({ x: 0, y: 0, width: 400, height: 400 }),
+        providesBoundsForAbsoluteChildren: true,
+        globalContentBox: canvasRectangle({ x: 0, y: 0, width: 400, height: 400 }),
+      } as SpecialSizeMeasurements,
+    } as ElementInstanceMetadata,
+    'sb/scene-aaa': {
+      elementPath: EP.elementPath([['sb', 'scene-aaa']]),
+      element: left('div'),
+      globalFrame: canvasRectangle({ x: 0, y: 0, width: 400, height: 400 }),
+      specialSizeMeasurements: {
+        immediateParentBounds: canvasRectangle({ x: 0, y: 0, width: 400, height: 400 }),
+        coordinateSystemBounds: canvasRectangle({ x: 0, y: 0, width: 400, height: 400 }),
+        providesBoundsForAbsoluteChildren: true,
+        globalContentBox: canvasRectangle({ x: 0, y: 0, width: 400, height: 400 }),
+      } as SpecialSizeMeasurements,
+    } as ElementInstanceMetadata,
+    'sb/scene-aaa/app-entity': {
+      elementPath: EP.elementPath([['sb', 'scene-aaa', 'app-entity']]),
+      element: left('div'),
+      globalFrame: canvasRectangle({ x: 0, y: 0, width: 400, height: 400 }),
+      specialSizeMeasurements: {
+        immediateParentBounds: canvasRectangle({ x: 0, y: 0, width: 400, height: 400 }),
+        coordinateSystemBounds: canvasRectangle({ x: 0, y: 0, width: 400, height: 400 }),
+        providesBoundsForAbsoluteChildren: true,
+        globalContentBox: canvasRectangle({ x: 0, y: 0, width: 400, height: 400 }),
+      } as SpecialSizeMeasurements,
+    } as ElementInstanceMetadata,
+    'sb/scene-aaa/app-entity:aaa': {
+      elementPath: EP.elementPath([['sb', 'scene-aaa', 'app-entity'], ['aaa']]),
+      element: left('div'),
+      globalFrame: canvasRectangle({ x: 0, y: 0, width: 400, height: 400 }),
+      specialSizeMeasurements: {
+        immediateParentBounds: canvasRectangle({ x: 0, y: 0, width: 400, height: 400 }),
+        coordinateSystemBounds: canvasRectangle({ x: 0, y: 0, width: 400, height: 400 }),
+        providesBoundsForAbsoluteChildren: true,
+        globalContentBox: canvasRectangle({ x: 0, y: 0, width: 400, height: 400 }),
+      } as SpecialSizeMeasurements,
+    } as ElementInstanceMetadata,
+    'sb/scene-aaa/app-entity:aaa/bbb': {
+      elementPath: EP.elementPath([
+        ['sb', 'scene-aaa', 'app-entity'],
+        ['aaa', 'bbb'],
+      ]),
+      element: left('div'),
+      globalFrame: canvasRectangle({ x: 50, y: 60, width: 250, height: 200 }),
+      specialSizeMeasurements: {
+        immediateParentBounds: canvasRectangle({ x: 0, y: 0, width: 400, height: 400 }),
+        coordinateSystemBounds: canvasRectangle({ x: 0, y: 0, width: 400, height: 400 }),
+        providesBoundsForAbsoluteChildren: true,
+        globalContentBox: targetParentWithSpecialContentBox
+          ? canvasRectangle({ x: 90, y: 100, width: 170, height: 120 })
+          : canvasRectangle({ x: 50, y: 60, width: 250, height: 200 }),
+      } as SpecialSizeMeasurements,
+    } as ElementInstanceMetadata,
+    'sb/scene-aaa/app-entity:aaa/ccc': {
+      elementPath: EP.elementPath([
+        ['sb', 'scene-aaa', 'app-entity'],
+        ['aaa', 'ccc'],
+      ]),
+      element: right(
+        jsxElement(
+          jsxElementName('div', []),
+          'ccc',
+          jsxAttributesFromMap({
+            style: jsxAttributeValue(
+              {
+                position: 'absolute',
+                width: 20,
+                height: 30,
+                top: 75,
+                left: 90,
+              },
+              emptyComments,
+            ),
+            'data-uid': jsxAttributeValue('ccc', emptyComments),
+          }),
+          [],
+        ),
+      ),
+      globalFrame: canvasRectangle({ x: 150, y: 160, width: 250, height: 200 }),
+      specialSizeMeasurements: {
+        immediateParentBounds: canvasRectangle({ x: 0, y: 0, width: 400, height: 400 }),
+        coordinateSystemBounds: canvasRectangle({ x: 0, y: 0, width: 400, height: 400 }),
+        providesBoundsForAbsoluteChildren: true,
+        globalContentBox: canvasRectangle({ x: 150, y: 160, width: 250, height: 200 }),
+      } as SpecialSizeMeasurements,
+    } as ElementInstanceMetadata,
+    'sb/scene-aaa/app-entity:aaa/ddd': {
+      elementPath: EP.elementPath([
+        ['sb', 'scene-aaa', 'app-entity'],
+        ['aaa', 'ddd'],
+      ]),
+      element: right(
+        jsxElement(
+          jsxElementName('div', []),
+          'ddd',
+          jsxAttributesFromMap({
+            style: jsxAttributeValue(
+              {
+                position: 'absolute',
+                width: 20,
+                height: 30,
+                top: 75,
+                left: 90,
+              },
+              emptyComments,
+            ),
+            'data-uid': jsxAttributeValue('ddd', emptyComments),
+          }),
+          [],
+        ),
+      ),
+      globalFrame: canvasRectangle({ x: 150, y: 160, width: 250, height: 200 }),
+      specialSizeMeasurements: {
+        immediateParentBounds: canvasRectangle({ x: 0, y: 0, width: 400, height: 400 }),
+        coordinateSystemBounds: canvasRectangle({ x: 0, y: 0, width: 400, height: 400 }),
+        providesBoundsForAbsoluteChildren: true,
+        globalContentBox: canvasRectangle({ x: 150, y: 160, width: 250, height: 200 }),
+      } as SpecialSizeMeasurements,
+    } as ElementInstanceMetadata,
+  }
+
   const interactionSession: InteractionSession = {
     ...createMouseInteractionForTests(
       canvasPoint({ x: 95, y: 80 }),
@@ -62,147 +194,13 @@ function reparentElement(
   }
 
   const strategyResult = absoluteReparentStrategy.apply(
-    pickCanvasStateFromEditorState(editorState, createBuiltInDependenciesList(null)),
+    pickCanvasStateFromEditorStateWithMetadata(
+      editorState,
+      createBuiltInDependenciesList(null),
+      startingMetadata,
+    ),
     interactionSession,
-    {
-      currentStrategy: null as any, // the strategy does not use this
-      currentStrategyFitness: null as any, // the strategy does not use this
-      currentStrategyCommands: null as any, // the strategy does not use this
-      accumulatedPatches: null as any, // the strategy does not use this
-      commandDescriptions: null as any, // the strategy does not use this
-      sortedApplicableStrategies: null as any, // the strategy does not use this
-      status: 'success',
-      startingMetadata: {
-        sb: {
-          elementPath: EP.elementPath([['sb']]),
-          element: left('storyboard'),
-          globalFrame: canvasRectangle({ x: 0, y: 0, width: 400, height: 400 }),
-          specialSizeMeasurements: {
-            immediateParentBounds: canvasRectangle({ x: 0, y: 0, width: 400, height: 400 }),
-            coordinateSystemBounds: canvasRectangle({ x: 0, y: 0, width: 400, height: 400 }),
-            providesBoundsForAbsoluteChildren: true,
-            globalContentBox: canvasRectangle({ x: 0, y: 0, width: 400, height: 400 }),
-          } as SpecialSizeMeasurements,
-        } as ElementInstanceMetadata,
-        'sb/scene-aaa': {
-          elementPath: EP.elementPath([['sb', 'scene-aaa']]),
-          element: left('div'),
-          globalFrame: canvasRectangle({ x: 0, y: 0, width: 400, height: 400 }),
-          specialSizeMeasurements: {
-            immediateParentBounds: canvasRectangle({ x: 0, y: 0, width: 400, height: 400 }),
-            coordinateSystemBounds: canvasRectangle({ x: 0, y: 0, width: 400, height: 400 }),
-            providesBoundsForAbsoluteChildren: true,
-            globalContentBox: canvasRectangle({ x: 0, y: 0, width: 400, height: 400 }),
-          } as SpecialSizeMeasurements,
-        } as ElementInstanceMetadata,
-        'sb/scene-aaa/app-entity': {
-          elementPath: EP.elementPath([['sb', 'scene-aaa', 'app-entity']]),
-          element: left('div'),
-          globalFrame: canvasRectangle({ x: 0, y: 0, width: 400, height: 400 }),
-          specialSizeMeasurements: {
-            immediateParentBounds: canvasRectangle({ x: 0, y: 0, width: 400, height: 400 }),
-            coordinateSystemBounds: canvasRectangle({ x: 0, y: 0, width: 400, height: 400 }),
-            providesBoundsForAbsoluteChildren: true,
-            globalContentBox: canvasRectangle({ x: 0, y: 0, width: 400, height: 400 }),
-          } as SpecialSizeMeasurements,
-        } as ElementInstanceMetadata,
-        'sb/scene-aaa/app-entity:aaa': {
-          elementPath: EP.elementPath([['sb', 'scene-aaa', 'app-entity'], ['aaa']]),
-          element: left('div'),
-          globalFrame: canvasRectangle({ x: 0, y: 0, width: 400, height: 400 }),
-          specialSizeMeasurements: {
-            immediateParentBounds: canvasRectangle({ x: 0, y: 0, width: 400, height: 400 }),
-            coordinateSystemBounds: canvasRectangle({ x: 0, y: 0, width: 400, height: 400 }),
-            providesBoundsForAbsoluteChildren: true,
-            globalContentBox: canvasRectangle({ x: 0, y: 0, width: 400, height: 400 }),
-          } as SpecialSizeMeasurements,
-        } as ElementInstanceMetadata,
-        'sb/scene-aaa/app-entity:aaa/bbb': {
-          elementPath: EP.elementPath([
-            ['sb', 'scene-aaa', 'app-entity'],
-            ['aaa', 'bbb'],
-          ]),
-          element: left('div'),
-          globalFrame: canvasRectangle({ x: 50, y: 60, width: 250, height: 200 }),
-          specialSizeMeasurements: {
-            immediateParentBounds: canvasRectangle({ x: 0, y: 0, width: 400, height: 400 }),
-            coordinateSystemBounds: canvasRectangle({ x: 0, y: 0, width: 400, height: 400 }),
-            providesBoundsForAbsoluteChildren: true,
-            globalContentBox: targetParentWithSpecialContentBox
-              ? canvasRectangle({ x: 90, y: 100, width: 170, height: 120 })
-              : canvasRectangle({ x: 50, y: 60, width: 250, height: 200 }),
-          } as SpecialSizeMeasurements,
-        } as ElementInstanceMetadata,
-        'sb/scene-aaa/app-entity:aaa/ccc': {
-          elementPath: EP.elementPath([
-            ['sb', 'scene-aaa', 'app-entity'],
-            ['aaa', 'ccc'],
-          ]),
-          element: right(
-            jsxElement(
-              jsxElementName('div', []),
-              'ccc',
-              jsxAttributesFromMap({
-                style: jsxAttributeValue(
-                  {
-                    position: 'absolute',
-                    width: 20,
-                    height: 30,
-                    top: 75,
-                    left: 90,
-                  },
-                  emptyComments,
-                ),
-                'data-uid': jsxAttributeValue('ccc', emptyComments),
-              }),
-              [],
-            ),
-          ),
-          globalFrame: canvasRectangle({ x: 150, y: 160, width: 250, height: 200 }),
-          specialSizeMeasurements: {
-            immediateParentBounds: canvasRectangle({ x: 0, y: 0, width: 400, height: 400 }),
-            coordinateSystemBounds: canvasRectangle({ x: 0, y: 0, width: 400, height: 400 }),
-            providesBoundsForAbsoluteChildren: true,
-            globalContentBox: canvasRectangle({ x: 150, y: 160, width: 250, height: 200 }),
-          } as SpecialSizeMeasurements,
-        } as ElementInstanceMetadata,
-        'sb/scene-aaa/app-entity:aaa/ddd': {
-          elementPath: EP.elementPath([
-            ['sb', 'scene-aaa', 'app-entity'],
-            ['aaa', 'ddd'],
-          ]),
-          element: right(
-            jsxElement(
-              jsxElementName('div', []),
-              'ddd',
-              jsxAttributesFromMap({
-                style: jsxAttributeValue(
-                  {
-                    position: 'absolute',
-                    width: 20,
-                    height: 30,
-                    top: 75,
-                    left: 90,
-                  },
-                  emptyComments,
-                ),
-                'data-uid': jsxAttributeValue('ddd', emptyComments),
-              }),
-              [],
-            ),
-          ),
-          globalFrame: canvasRectangle({ x: 150, y: 160, width: 250, height: 200 }),
-          specialSizeMeasurements: {
-            immediateParentBounds: canvasRectangle({ x: 0, y: 0, width: 400, height: 400 }),
-            coordinateSystemBounds: canvasRectangle({ x: 0, y: 0, width: 400, height: 400 }),
-            providesBoundsForAbsoluteChildren: true,
-            globalContentBox: canvasRectangle({ x: 150, y: 160, width: 250, height: 200 }),
-          } as SpecialSizeMeasurements,
-        } as ElementInstanceMetadata,
-      },
-      startingAllElementProps: {},
-      customStrategyState: defaultCustomStrategyState(),
-    } as StrategyState,
+    defaultCustomStrategyState(),
     'end-interaction',
   )
 

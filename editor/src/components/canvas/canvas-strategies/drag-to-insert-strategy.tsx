@@ -2,6 +2,7 @@ import { ParentBounds } from '../controls/parent-bounds'
 import { ParentOutlines } from '../controls/parent-outlines'
 import {
   CanvasStrategy,
+  CustomStrategyState,
   emptyStrategyApplicationResult,
   getInsertionSubjectsFromInteractionTarget,
   InteractionCanvasState,
@@ -9,7 +10,7 @@ import {
   strategyApplicationResult,
   targetPaths,
 } from './canvas-strategy-types'
-import { InteractionSession, StrategyState } from './interaction-state'
+import { InteractionSession } from './interaction-state'
 import { ElementInsertionSubject, InsertionSubject } from '../../editor/editor-modes'
 import { LayoutHelpers } from '../../../core/layout/layout-helpers'
 import { isLeft } from '../../../core/shared/either'
@@ -22,6 +23,7 @@ import { EditorState, EditorStatePatch } from '../../editor/store/editor-state'
 import {
   findCanvasStrategy,
   pickCanvasStateFromEditorState,
+  pickCanvasStateFromEditorStateWithMetadata,
   RegisteredCanvasStrategies,
 } from './canvas-strategies'
 import { foldAndApplyCommandsInner } from '../commands/commands'
@@ -72,19 +74,19 @@ export const dragToInsertStrategy: CanvasStrategy = {
       show: 'visible-only-while-active',
     },
   ], // Uses existing hooks in select-mode-hooks.tsx
-  fitness: (canvasState, interactionState, strategyState) => {
+  fitness: (canvasState, interactionState, customStrategyState) => {
     return dragToInsertStrategy.isApplicable(
       canvasState,
       interactionState,
-      strategyState.startingMetadata,
-      strategyState.startingAllElementProps,
+      canvasState.startingMetadata,
+      canvasState.startingAllElementProps,
     ) &&
       interactionState.interactionData.type === 'DRAG' &&
       interactionState.activeControl.type === 'BOUNDING_AREA'
       ? 1
       : 0
   },
-  apply: (canvasState, interactionState, strategyState, strategyLifecycle) => {
+  apply: (canvasState, interactionState, customStrategyState, strategyLifecycle) => {
     const insertionSubjects = getInsertionSubjectsFromInteractionTarget(
       canvasState.interactionTarget,
     )
@@ -112,7 +114,7 @@ export const dragToInsertStrategy: CanvasStrategy = {
           return runTargetStrategiesForFreshlyInsertedElement(
             canvasState.builtInDependencies,
             editorState,
-            strategyState,
+            customStrategyState,
             interactionState,
             transient,
             insertionCommands,
@@ -203,18 +205,16 @@ function getStyleAttributesForFrameInAbsolutePosition(
 function runTargetStrategiesForFreshlyInsertedElement(
   builtInDependencies: BuiltInDependencies,
   editorState: EditorState,
-  strategyState: StrategyState,
+  customStrategyState: CustomStrategyState,
   interactionState: InteractionSession,
   commandLifecycle: InteractionLifecycle,
   insertionSubjects: Array<{ command: InsertElementInsertionSubject; frame: CanvasRectangle }>,
   strategyLifeCycle: InteractionLifecycle,
 ): Array<EditorStatePatch> {
-  const canvasState = pickCanvasStateFromEditorState(editorState, builtInDependencies)
-
-  const storyboard = MetadataUtils.getStoryboardMetadata(strategyState.startingMetadata)
+  const storyboard = MetadataUtils.getStoryboardMetadata(editorState.jsxMetadata)
   const rootPath = storyboard != null ? storyboard.elementPath : elementPath([])
 
-  const patchedMetadata = insertionSubjects.reduce(
+  const patchedMetadata: ElementInstanceMetadataMap = insertionSubjects.reduce(
     (
       acc: ElementInstanceMetadataMap,
       curr: { command: InsertElementInsertionSubject; frame: CanvasRectangle },
@@ -226,7 +226,7 @@ function runTargetStrategiesForFreshlyInsertedElement(
         path,
         element,
         curr.frame,
-        strategyState.startingMetadata,
+        editorState.jsxMetadata,
       )
 
       return {
@@ -234,13 +234,14 @@ function runTargetStrategiesForFreshlyInsertedElement(
         [EP.toString(path)]: fakeMetadata,
       }
     },
-    strategyState.startingMetadata,
+    editorState.jsxMetadata,
   )
 
-  const patchedStrategyState = {
-    ...strategyState,
-    startingMetadata: patchedMetadata,
-  }
+  const canvasState = pickCanvasStateFromEditorStateWithMetadata(
+    editorState,
+    builtInDependencies,
+    patchedMetadata,
+  )
 
   const patchedCanvasState: InteractionCanvasState = {
     ...canvasState,
@@ -256,7 +257,7 @@ function runTargetStrategiesForFreshlyInsertedElement(
       ? { ...interactionData, modifiers: cmdModifier }
       : interactionData
 
-  const patchedInteractionState = {
+  const patchedInteractionState: InteractionSession = {
     ...interactionState,
     interactionData: patchedInteractionData,
     startingTargetParentsToFilterOut: null,
@@ -266,7 +267,7 @@ function runTargetStrategiesForFreshlyInsertedElement(
     RegisteredCanvasStrategies,
     patchedCanvasState,
     patchedInteractionState,
-    patchedStrategyState,
+    customStrategyState,
     null,
   )
 
@@ -276,7 +277,7 @@ function runTargetStrategiesForFreshlyInsertedElement(
     const reparentCommands = strategy.strategy.apply(
       patchedCanvasState,
       patchedInteractionState,
-      patchedStrategyState,
+      customStrategyState,
       strategyLifeCycle,
     ).commands
 

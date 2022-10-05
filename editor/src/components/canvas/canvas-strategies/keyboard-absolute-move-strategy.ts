@@ -18,9 +18,9 @@ import {
   zeroRectangle,
 } from '../../../core/shared/math-utils'
 import {
-  getAbsoluteMoveCommandsForSelectedElement,
+  getMoveCommandsForSelectedElement,
   getMultiselectBounds,
-} from './shared-absolute-move-strategy-helpers'
+} from './shared-move-strategies-helpers'
 import { setElementsToRerenderCommand } from '../commands/set-elements-to-rerender-command'
 import { setSnappingGuidelines } from '../commands/set-snapping-guidelines-command'
 import { updateHighlightedViews } from '../commands/update-highlighted-views-command'
@@ -54,13 +54,13 @@ export const keyboardAbsoluteMoveStrategy: CanvasStrategy = {
     }
   },
   controlsToRender: [], // Uses existing hooks in select-mode-hooks.tsx
-  fitness: (canvasState, interactionState, sessionState) => {
+  fitness: (canvasState, interactionState, customStrategyState) => {
     if (
       keyboardAbsoluteMoveStrategy.isApplicable(
         canvasState,
         interactionState,
-        sessionState.startingMetadata,
-        sessionState.startingAllElementProps,
+        canvasState.startingMetadata,
+        canvasState.startingAllElementProps,
       ) &&
       interactionState.interactionData.type === 'KEYBOARD'
     ) {
@@ -78,7 +78,7 @@ export const keyboardAbsoluteMoveStrategy: CanvasStrategy = {
     }
     return 0
   },
-  apply: (canvasState, interactionState, sessionState) => {
+  apply: (canvasState, interactionState, customStrategyState) => {
     const selectedElements = getTargetPathsFromInteractionTarget(canvasState.interactionTarget)
     if (interactionState.interactionData.type === 'KEYBOARD') {
       const accumulatedPresses = accumulatePresses(interactionState.interactionData.keyStates)
@@ -96,32 +96,23 @@ export const keyboardAbsoluteMoveStrategy: CanvasStrategy = {
       })
       if (keyboardMovement.x !== 0 || keyboardMovement.y !== 0) {
         selectedElements.forEach((selectedElement) => {
-          const elementResult = getAbsoluteMoveCommandsForSelectedElement(
+          const elementResult = getMoveCommandsForSelectedElement(
             selectedElement,
             keyboardMovement,
             canvasState,
             interactionState,
-            sessionState,
           )
           commands.push(...elementResult.commands)
           intendedBounds.push(...elementResult.intendedBounds)
         })
       }
-      const multiselectBounds = getMultiselectBounds(
-        sessionState.startingMetadata,
-        selectedElements,
-      )
+      const multiselectBounds = getMultiselectBounds(canvasState.startingMetadata, selectedElements)
       const newFrame = offsetRect(
         defaultIfNull(canvasRectangle(zeroRectangle), multiselectBounds),
         keyboardMovement,
       )
 
-      const guidelines = getKeyboardStrategyGuidelines(
-        sessionState,
-        canvasState,
-        interactionState,
-        newFrame,
-      )
+      const guidelines = getKeyboardStrategyGuidelines(canvasState, interactionState, newFrame)
 
       commands.push(updateHighlightedViews('mid-interaction', []))
       commands.push(setSnappingGuidelines('mid-interaction', guidelines))

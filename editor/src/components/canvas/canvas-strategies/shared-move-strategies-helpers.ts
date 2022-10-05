@@ -1,6 +1,6 @@
 import { isHorizontalPoint } from 'utopia-api/core'
 import { getLayoutProperty } from '../../../core/layout/getLayoutProperty'
-import { framePointForPinnedProp, LayoutPinnedProp } from '../../../core/layout/layout-helpers-new'
+import { framePointForPinnedProp } from '../../../core/layout/layout-helpers-new'
 import { MetadataUtils, PropsOrJSXAttributes } from '../../../core/model/element-metadata-utils'
 import { mapDropNulls } from '../../../core/shared/array-utils'
 import { isRight, right } from '../../../core/shared/either'
@@ -9,18 +9,11 @@ import type { ElementInstanceMetadataMap, JSXElement } from '../../../core/share
 import {
   boundingRectangleArray,
   CanvasPoint,
-  canvasPoint,
-  canvasRectangle,
   CanvasRectangle,
   CanvasVector,
-  localRectangle,
   LocalRectangle,
   offsetRect,
-  pointDifference,
-  rectangleDifference,
   zeroCanvasPoint,
-  zeroCanvasRect,
-  canvasRectangleToLocalRectangle,
 } from '../../../core/shared/math-utils'
 import { ElementPath } from '../../../core/shared/project-file-types'
 import { ProjectContentTreeRoot } from '../../assets'
@@ -30,28 +23,140 @@ import {
   withUnderlyingTarget,
 } from '../../editor/store/editor-state'
 import { stylePropPathMappingFn } from '../../inspector/common/property-path-hooks'
-import { CanvasFrameAndTarget } from '../canvas-types'
+import { determineConstrainedDragAxis } from '../canvas-controls-frame'
+import { CanvasFrameAndTarget, CSSCursor } from '../canvas-types'
 import {
   adjustCssLengthProperty,
   AdjustCssLengthProperty,
 } from '../commands/adjust-css-length-command'
-import { runLegacyAbsoluteMoveSnapping } from '../controls/guideline-helpers'
+import { CanvasCommand } from '../commands/commands'
+import { pushIntendedBounds } from '../commands/push-intended-bounds-command'
+import { setCursorCommand } from '../commands/set-cursor-command'
+import { setElementsToRerenderCommand } from '../commands/set-elements-to-rerender-command'
+import { setSnappingGuidelines } from '../commands/set-snapping-guidelines-command'
+import { updateHighlightedViews } from '../commands/update-highlighted-views-command'
+import {
+  collectParentAndSiblingGuidelines,
+  runLegacyAbsoluteMoveSnapping,
+} from '../controls/guideline-helpers'
 import {
   ConstrainedDragAxis,
-  Guideline,
   GuidelineWithRelevantPoints,
   GuidelineWithSnappingVectorAndPointsOfRelevance,
 } from '../guideline'
 import { AbsolutePin } from './absolute-resize-helpers'
-import { InteractionCanvasState } from './canvas-strategy-types'
+import {
+  CustomStrategyState,
+  emptyStrategyApplicationResult,
+  getTargetPathsFromInteractionTarget,
+  InteractionCanvasState,
+  StrategyApplicationResult,
+  strategyApplicationResult,
+} from './canvas-strategy-types'
 import { InteractionSession, StrategyState } from './interaction-state'
 
-export function getAbsoluteMoveCommandsForSelectedElement(
+export interface MoveCommandsOptions {
+  ignoreLocalFrame?: boolean
+}
+
+export const getAdjustMoveCommands =
+  (
+    canvasState: InteractionCanvasState,
+    interactionState: InteractionSession,
+    options?: MoveCommandsOptions,
+  ) =>
+  (
+    snappedDragVector: CanvasPoint,
+  ): {
+    commands: Array<AdjustCssLengthProperty>
+    intendedBounds: Array<CanvasFrameAndTarget>
+  } => {
+    const selectedElements = getTargetPathsFromInteractionTarget(canvasState.interactionTarget)
+    const filteredSelectedElements = getDragTargets(selectedElements)
+    let commands: Array<AdjustCssLengthProperty> = []
+    let intendedBounds: Array<CanvasFrameAndTarget> = []
+    filteredSelectedElements.forEach((selectedElement) => {
+      const elementResult = getMoveCommandsForSelectedElement(
+        selectedElement,
+        snappedDragVector,
+        canvasState,
+        interactionState,
+        options,
+      )
+      commands.push(...elementResult.commands)
+      intendedBounds.push(...elementResult.intendedBounds)
+    })
+    return { commands, intendedBounds }
+  }
+
+export function applyMoveCommon(
+  canvasState: InteractionCanvasState,
+  interactionState: InteractionSession,
+  getMoveCommands: (snappedDragVector: CanvasPoint) => {
+    commands: Array<CanvasCommand>
+    intendedBounds: Array<CanvasFrameAndTarget>
+  },
+): StrategyApplicationResult {
+  if (
+    interactionState.interactionData.type === 'DRAG' &&
+    interactionState.interactionData.drag != null
+  ) {
+    const drag = interactionState.interactionData.drag
+    const shiftKeyPressed = interactionState.interactionData.modifiers.shift
+    const cmdKeyPressed = interactionState.interactionData.modifiers.cmd
+    const selectedElements = getTargetPathsFromInteractionTarget(canvasState.interactionTarget)
+    if (cmdKeyPressed) {
+      const commandsForSelectedElements = getMoveCommands(drag)
+
+      return strategyApplicationResult([
+        ...commandsForSelectedElements.commands,
+        pushIntendedBounds(commandsForSelectedElements.intendedBounds),
+        updateHighlightedViews('mid-interaction', []),
+        setElementsToRerenderCommand(selectedElements),
+        setCursorCommand('mid-interaction', CSSCursor.Select),
+      ])
+    } else {
+      const constrainedDragAxis =
+        shiftKeyPressed && drag != null ? determineConstrainedDragAxis(drag) : null
+
+      const targetsForSnapping = selectedElements.map(
+        (path) => interactionState.updatedTargetPaths[EP.toString(path)] ?? path,
+      )
+      const moveGuidelines = collectParentAndSiblingGuidelines(
+        canvasState.startingMetadata,
+        targetsForSnapping,
+      )
+
+      const { snappedDragVector, guidelinesWithSnappingVector } = snapDrag(
+        drag,
+        constrainedDragAxis,
+        canvasState.startingMetadata,
+        selectedElements,
+        moveGuidelines,
+        canvasState.scale,
+      )
+      const commandsForSelectedElements = getMoveCommands(snappedDragVector)
+      return strategyApplicationResult([
+        ...commandsForSelectedElements.commands,
+        updateHighlightedViews('mid-interaction', []),
+        setSnappingGuidelines('mid-interaction', guidelinesWithSnappingVector),
+        pushIntendedBounds(commandsForSelectedElements.intendedBounds),
+        setElementsToRerenderCommand([...selectedElements, ...targetsForSnapping]),
+        setCursorCommand('mid-interaction', CSSCursor.Select),
+      ])
+    }
+  } else {
+    // Fallback for when the checks above are not satisfied.
+    return emptyStrategyApplicationResult
+  }
+}
+
+export function getMoveCommandsForSelectedElement(
   selectedElement: ElementPath,
   drag: CanvasVector,
   canvasState: InteractionCanvasState,
   interactionState: InteractionSession,
-  sessionState: StrategyState,
+  options?: MoveCommandsOptions,
 ): {
   commands: Array<AdjustCssLengthProperty>
   intendedBounds: Array<CanvasFrameAndTarget>
@@ -63,21 +168,23 @@ export function getAbsoluteMoveCommandsForSelectedElement(
   )
 
   const elementMetadata = MetadataUtils.findElementByElementPath(
-    sessionState.startingMetadata, // TODO should this be using the current metadata?
+    canvasState.startingMetadata, // TODO should this be using the current metadata?
     selectedElement,
   )
 
   const elementParentBounds =
     elementMetadata?.specialSizeMeasurements.coordinateSystemBounds ?? null
 
-  const localFrame = MetadataUtils.getLocalFrameFromSpecialSizeMeasurements(
-    selectedElement,
-    sessionState.startingMetadata,
-  )
+  const localFrame = options?.ignoreLocalFrame
+    ? null
+    : MetadataUtils.getLocalFrameFromSpecialSizeMeasurements(
+        selectedElement,
+        canvasState.startingMetadata,
+      )
 
   const globalFrame = MetadataUtils.getFrameInCanvasCoords(
     selectedElement,
-    sessionState.startingMetadata,
+    canvasState.startingMetadata,
   )
 
   if (element == null) {

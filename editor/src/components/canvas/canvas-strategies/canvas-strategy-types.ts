@@ -6,7 +6,7 @@ import { ElementPath, NodeModules } from '../../../core/shared/project-file-type
 import { ProjectContentTreeRoot } from '../../assets'
 import { InsertionSubject } from '../../editor/editor-modes'
 import { CanvasCommand } from '../commands/commands'
-import { InteractionSession, StrategyApplicationStatus, StrategyState } from './interaction-state'
+import { InteractionSession, StrategyApplicationStatus } from './interaction-state'
 
 // TODO: fill this in, maybe make it an ADT for different strategies
 export interface CustomStrategyState {
@@ -66,6 +66,8 @@ export interface InteractionCanvasState {
   openFile: string | null | undefined
   scale: number
   canvasOffset: CanvasVector
+  startingMetadata: ElementInstanceMetadataMap
+  startingAllElementProps: AllElementProps
 }
 
 export type InteractionTarget = TargetPaths | InsertionSubjects
@@ -130,6 +132,7 @@ export type CanvasStrategyId =
   | 'LOOK_FOR_APPLICABLE_PARENT_ID'
   | 'DRAW_TO_INSERT'
   | 'FLEX_RESIZE_BASIC'
+  | 'RELATIVE_MOVE'
 
 export type InteractionLifecycle = 'mid-interaction' | 'end-interaction'
 
@@ -139,7 +142,7 @@ export interface CanvasStrategy {
   name: (
     canvasState: InteractionCanvasState,
     interactionSession: InteractionSession,
-    strategyState: StrategyState,
+    customStrategyState: CustomStrategyState,
   ) => string
 
   // Determines if we should show the controls that this strategy renders
@@ -157,14 +160,14 @@ export interface CanvasStrategy {
   fitness: (
     canvasState: InteractionCanvasState,
     interactionSession: InteractionSession,
-    strategyState: StrategyState,
+    customStrategyState: CustomStrategyState,
   ) => number
 
   // Returns the commands that inform how the model and the editor should be updated
   apply: (
     canvasState: InteractionCanvasState,
     interactionSession: InteractionSession,
-    strategyState: StrategyState,
+    customStrategyState: CustomStrategyState,
     strategyLifecycle: InteractionLifecycle,
   ) => StrategyApplicationResult
 }

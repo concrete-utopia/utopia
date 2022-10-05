@@ -42,17 +42,16 @@ export const flexReparentToFlexStrategy: CanvasStrategy = {
       show: 'visible-only-while-active',
     },
   ],
-  fitness: (canvasState, interactionState, strategyState) => {
+  fitness: (canvasState, interactionState, customStrategyState) => {
     // All 4 reparent strategies use the same fitness function getFitnessForReparentStrategy
     return getFitnessForReparentStrategy(
       'FLEX_REPARENT_TO_FLEX',
       canvasState,
       interactionState,
-      strategyState,
       'use-strict-bounds',
     )
   },
-  apply: (canvasState, interactionSession, strategyState) => {
-    return applyFlexReparent('do-not-strip-props', canvasState, interactionSession, strategyState)
+  apply: (canvasState, interactionSession, customStrategyState) => {
+    return applyFlexReparent('do-not-strip-props', canvasState, interactionSession)
   },
 }

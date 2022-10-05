@@ -33,7 +33,6 @@ import { SetCssLengthProperty, setCssLengthProperty } from '../commands/set-css-
 import { updateSelectedViews } from '../commands/update-selected-views-command'
 import { ParentBounds } from '../controls/parent-bounds'
 import { ParentOutlines } from '../controls/parent-outlines'
-import { applyAbsoluteMoveCommon } from './absolute-move-strategy'
 import { honoursPropsPosition } from './absolute-utils'
 import {
   CanvasStrategy,
@@ -43,7 +42,7 @@ import {
   strategyApplicationResult,
 } from './canvas-strategy-types'
 import { getReparentOutcome, pathToReparent } from './reparent-utils'
-import { getDragTargets } from './shared-absolute-move-strategy-helpers'
+import { applyMoveCommon, getDragTargets } from './shared-move-strategies-helpers'
 
 export const convertToAbsoluteAndMoveStrategy: CanvasStrategy = {
   id: 'CONVERT_TO_ABSOLUTE_AND_MOVE_STRATEGY',
@@ -75,19 +74,19 @@ export const convertToAbsoluteAndMoveStrategy: CanvasStrategy = {
       show: 'visible-only-while-active',
     },
   ], // Uses existing hooks in select-mode-hooks.tsx
-  fitness: (canvasState, interactionState, sessionState) => {
+  fitness: (canvasState, interactionState, customStrategyState) => {
     return convertToAbsoluteAndMoveStrategy.isApplicable(
       canvasState,
       interactionState,
-      sessionState.startingMetadata,
-      sessionState.startingAllElementProps,
+      canvasState.startingMetadata,
+      canvasState.startingAllElementProps,
     ) &&
       interactionState.interactionData.type === 'DRAG' &&
       interactionState.activeControl.type === 'BOUNDING_AREA'
       ? 0.5
       : 0
   },
-  apply: (canvasState, interactionState, strategyState) => {
+  apply: (canvasState, interactionState, customStrategyState) => {
     if (
       interactionState.interactionData.type === 'DRAG' &&
       interactionState.interactionData.drag != null
@@ -100,15 +99,14 @@ export const convertToAbsoluteAndMoveStrategy: CanvasStrategy = {
       } => {
         return getEscapeHatchCommands(
           getTargetPathsFromInteractionTarget(canvasState.interactionTarget),
-          strategyState.startingMetadata,
+          canvasState.startingMetadata,
           canvasState,
           snappedDragVector,
         )
       }
-      const absoluteMoveApplyResult = applyAbsoluteMoveCommon(
+      const absoluteMoveApplyResult = applyMoveCommon(
         canvasState,
         interactionState,
-        strategyState,
         getConversionAndMoveCommands,
       )
 

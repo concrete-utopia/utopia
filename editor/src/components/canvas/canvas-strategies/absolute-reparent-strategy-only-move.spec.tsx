@@ -20,7 +20,10 @@ import {
   testPrintCodeFromEditorState,
 } from '../ui-jsx.test-utils'
 import { absoluteMoveStrategy } from './absolute-move-strategy'
-import { pickCanvasStateFromEditorState } from './canvas-strategies'
+import {
+  pickCanvasStateFromEditorState,
+  pickCanvasStateFromEditorStateWithMetadata,
+} from './canvas-strategies'
 import { defaultCustomStrategyState } from './canvas-strategy-types'
 import { InteractionSession, StrategyState } from './interaction-state'
 import { createMouseInteractionForTests } from './interaction-state.test-utils'
@@ -49,6 +52,18 @@ function dragByPixels(
   vector: CanvasVector,
   modifiers: Modifiers,
 ): EditorState {
+  const startingMetadata = {
+    'scene-aaa/app-entity:aaa/bbb': {
+      elementPath: elementPath([
+        ['scene-aaa', 'app-entity'],
+        ['aaa', 'bbb'],
+      ]),
+      specialSizeMeasurements: {
+        immediateParentBounds: canvasRectangle({ x: 0, y: 0, width: 400, height: 400 }),
+        coordinateSystemBounds: canvasRectangle({ x: 0, y: 0, width: 400, height: 400 }),
+      } as SpecialSizeMeasurements,
+    } as ElementInstanceMetadata,
+  }
   const interactionSession: InteractionSession = {
     ...createMouseInteractionForTests(
       canvasPoint({ x: 0, y: 0 }),
@@ -62,31 +77,13 @@ function dragByPixels(
   }
 
   const strategyResult = absoluteMoveStrategy.apply(
-    pickCanvasStateFromEditorState(editorState, createBuiltInDependenciesList(null)),
+    pickCanvasStateFromEditorStateWithMetadata(
+      editorState,
+      createBuiltInDependenciesList(null),
+      startingMetadata,
+    ),
     interactionSession,
-    {
-      currentStrategy: null as any, // the strategy does not use this
-      currentStrategyFitness: null as any, // the strategy does not use this
-      currentStrategyCommands: null as any, // the strategy does not use this
-      accumulatedPatches: null as any, // the strategy does not use this
-      commandDescriptions: null as any, // the strategy does not use this
-      sortedApplicableStrategies: null as any, // the strategy does not use this
-      status: 'success',
-      startingMetadata: {
-        'scene-aaa/app-entity:aaa/bbb': {
-          elementPath: elementPath([
-            ['scene-aaa', 'app-entity'],
-            ['aaa', 'bbb'],
-          ]),
-          specialSizeMeasurements: {
-            immediateParentBounds: canvasRectangle({ x: 0, y: 0, width: 400, height: 400 }),
-            coordinateSystemBounds: canvasRectangle({ x: 0, y: 0, width: 400, height: 400 }),
-          } as SpecialSizeMeasurements,
-        } as ElementInstanceMetadata,
-      },
-      startingAllElementProps: {},
-      customStrategyState: defaultCustomStrategyState(),
-    } as StrategyState,
+    defaultCustomStrategyState(),
     'end-interaction',
   )
 

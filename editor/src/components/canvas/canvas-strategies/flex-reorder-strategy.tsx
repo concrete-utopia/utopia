@@ -36,23 +36,23 @@ export const flexReorderStrategy: CanvasStrategy = {
       show: 'visible-only-while-active',
     },
   ],
-  fitness: (canvasState, interactionState, strategyState) => {
+  fitness: (canvasState, interactionState, customStrategyState) => {
     return flexReorderStrategy.isApplicable(
       canvasState,
       interactionState,
-      strategyState.startingMetadata,
-      strategyState.startingAllElementProps,
+      canvasState.startingMetadata,
+      canvasState.startingAllElementProps,
     ) &&
       interactionState.interactionData.type === 'DRAG' &&
       interactionState.activeControl.type === 'BOUNDING_AREA'
       ? 1
       : 0
   },
-  apply: (canvasState, interactionState, strategyState) => {
+  apply: (canvasState, interactionState, customStrategyState) => {
     return applyReorderCommon(
       canvasState,
       interactionState,
-      strategyState,
+      customStrategyState,
       MetadataUtils.isParentYogaLayoutedContainerAndElementParticipatesInLayout,
     )
   },
