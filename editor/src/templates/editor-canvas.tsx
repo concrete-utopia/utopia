@@ -1053,7 +1053,7 @@ export class EditorCanvas extends React.Component<EditorCanvasProps> {
                         image.hash,
                         EditorActions.saveImageDetails(
                           image.size,
-                          EditorActions.saveImageDoNothing(),
+                          EditorActions.saveImageReplace(),
                         ),
                       ),
                     ],

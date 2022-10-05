@@ -3326,18 +3326,10 @@ export const UPDATE_FNS = {
             },
           }
         }
-        case 'SAVE_IMAGE_REPLACE': {
-          const toastAction = showToast(
-            notice(
-              'Assets replaced. You may need to reload the editor to see changes.',
-              'WARNING',
-              true,
-            ),
-          )
-          return UPDATE_FNS.ADD_TOAST(toastAction, editorWithToast, dispatch)
-        }
+        case 'SAVE_IMAGE_REPLACE':
+          return editorWithToast
         case 'SAVE_IMAGE_DO_NOTHING':
-          return editor
+          return editorWithToast
       }
     }
   },
