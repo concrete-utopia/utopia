@@ -457,7 +457,7 @@ const NewCanvasControlsInner = (props: NewCanvasControlsInnerProps) => {
           <OutlineHighlightControl />
           {when(
             isCanvasStrategyOnAndSelectOrInsertMode(props.editor.mode),
-            <>{strategyControls.map((c) => React.createElement(c.control, { key: c.key }))}</>,
+            <>{strategyControls.map((c) => React.createElement(c.control.control, c.props))}</>,
           )}
         </>,
       )}
