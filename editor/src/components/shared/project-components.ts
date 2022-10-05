@@ -18,6 +18,7 @@ import {
   isIntrinsicElementFromString,
   JSXAttributes,
   jsxAttributesEntry,
+  jsxAttributesFromMap,
   jsxAttributeValue,
   jsxElementName,
   jsxElementWithoutUID,
@@ -51,6 +52,7 @@ import {
   ComponentDescriptor,
   ComponentDescriptorsForFile,
 } from '../custom-code/code-file'
+import { defaultViewElementStyle } from '../editor/defaults'
 import { getExportedComponentImports } from '../editor/export-utils'
 
 export type StylePropOption = 'do-not-add' | 'add-size'
@@ -232,7 +234,13 @@ function makeHTMLDescriptor(
 }
 
 const basicHTMLElementsDescriptors = {
-  div: makeHTMLDescriptor('div', {}),
+  div: makeHTMLDescriptor(
+    'div',
+    {},
+    jsxAttributesFromMap({
+      style: defaultViewElementStyle(),
+    }),
+  ),
   span: makeHTMLDescriptor('span', {}),
   h1: makeHTMLDescriptor('h1', {}),
   h2: makeHTMLDescriptor('h2', {}),
