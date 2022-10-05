@@ -33,8 +33,8 @@ export const CursorOverlay = React.memo(() => {
       zIndex: 9999999,
     }
     if (cursor != null) {
-      workingStyleProps.cursor = cursor
-      workingStyleProps.pointerEvents = 'all'
+      // workingStyleProps.cursor = cursor
+      // workingStyleProps.pointerEvents = 'all'
     }
     return workingStyleProps
   }, [cursor])
