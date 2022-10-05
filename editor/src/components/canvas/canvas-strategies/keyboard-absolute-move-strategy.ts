@@ -39,7 +39,7 @@ import { honoursPropsPosition } from './absolute-utils'
 export const keyboardAbsoluteMoveStrategy: CanvasStrategy = {
   id: 'KEYBOARD_ABSOLUTE_MOVE',
   name: () => 'Move',
-  isApplicable: (canvasState, _interactionState, metadata) => {
+  isApplicable: (canvasState, interactionSession, metadata) => {
     const selectedElements = getTargetPathsFromInteractionTarget(canvasState.interactionTarget)
     if (selectedElements.length > 0) {
       return selectedElements.every((element) => {
@@ -54,17 +54,17 @@ export const keyboardAbsoluteMoveStrategy: CanvasStrategy = {
     }
   },
   controlsToRender: [], // Uses existing hooks in select-mode-hooks.tsx
-  fitness: (canvasState, interactionState, customStrategyState) => {
+  fitness: (canvasState, interactionSession, customStrategyState) => {
     if (
       keyboardAbsoluteMoveStrategy.isApplicable(
         canvasState,
-        interactionState,
+        interactionSession,
         canvasState.startingMetadata,
         canvasState.startingAllElementProps,
       ) &&
-      interactionState.interactionData.type === 'KEYBOARD'
+      interactionSession.interactionData.type === 'KEYBOARD'
     ) {
-      const { interactionData } = interactionState
+      const { interactionData } = interactionSession
 
       const lastKeyState = getLastKeyPressState(interactionData.keyStates)
       if (lastKeyState != null) {
@@ -78,10 +78,10 @@ export const keyboardAbsoluteMoveStrategy: CanvasStrategy = {
     }
     return 0
   },
-  apply: (canvasState, interactionState, customStrategyState) => {
+  apply: (canvasState, interactionSession, customStrategyState) => {
     const selectedElements = getTargetPathsFromInteractionTarget(canvasState.interactionTarget)
-    if (interactionState.interactionData.type === 'KEYBOARD') {
-      const accumulatedPresses = accumulatePresses(interactionState.interactionData.keyStates)
+    if (interactionSession.interactionData.type === 'KEYBOARD') {
+      const accumulatedPresses = accumulatePresses(interactionSession.interactionData.keyStates)
       let commands: Array<CanvasCommand> = []
       let intendedBounds: Array<CanvasFrameAndTarget> = []
       let keyboardMovement: CanvasVector = zeroCanvasPoint
@@ -100,7 +100,7 @@ export const keyboardAbsoluteMoveStrategy: CanvasStrategy = {
             selectedElement,
             keyboardMovement,
             canvasState,
-            interactionState,
+            interactionSession,
           )
           commands.push(...elementResult.commands)
           intendedBounds.push(...elementResult.intendedBounds)
@@ -112,7 +112,7 @@ export const keyboardAbsoluteMoveStrategy: CanvasStrategy = {
         keyboardMovement,
       )
 
-      const guidelines = getKeyboardStrategyGuidelines(canvasState, interactionState, newFrame)
+      const guidelines = getKeyboardStrategyGuidelines(canvasState, interactionSession, newFrame)
 
       commands.push(updateHighlightedViews('mid-interaction', []))
       commands.push(setSnappingGuidelines('mid-interaction', guidelines))

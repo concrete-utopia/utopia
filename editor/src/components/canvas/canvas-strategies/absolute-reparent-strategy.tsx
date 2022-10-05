@@ -36,12 +36,12 @@ function getAbsoluteReparentStrategy(
   return {
     id: id,
     name: () => name,
-    isApplicable: (canvasState, interactionState, metadata) => {
+    isApplicable: (canvasState, interactionSession, metadata) => {
       const selectedElements = getTargetPathsFromInteractionTarget(canvasState.interactionTarget)
       if (
         selectedElements.length > 0 &&
-        interactionState != null &&
-        interactionState.interactionData.type === 'DRAG'
+        interactionSession != null &&
+        interactionSession.interactionData.type === 'DRAG'
       ) {
         const filteredSelectedElements = getDragTargets(selectedElements)
         return filteredSelectedElements.every((element) => {
@@ -67,16 +67,16 @@ function getAbsoluteReparentStrategy(
         show: 'visible-only-while-active',
       },
     ],
-    fitness: (canvasState, interactionState, customStrategyState) => {
+    fitness: (canvasState, interactionSession, customStrategyState) => {
       // All 4 reparent strategies use the same fitness function getFitnessForReparentStrategy
       return getFitnessForReparentStrategy(
         'ABSOLUTE_REPARENT_TO_ABSOLUTE',
         canvasState,
-        interactionState,
+        interactionSession,
         missingBoundsHandling,
       )
     },
-    apply: (canvasState, interactionState, customStrategyState, strategyLifecycle) => {
+    apply: (canvasState, interactionSession, customStrategyState, strategyLifecycle) => {
       const { interactionTarget, projectContents, openFile, nodeModules } = canvasState
       const selectedElements = getTargetPathsFromInteractionTarget(interactionTarget)
       const filteredSelectedElements = getDragTargets(selectedElements)
@@ -87,21 +87,21 @@ function getAbsoluteReparentStrategy(
         filteredSelectedElements,
         () => {
           if (
-            interactionState.interactionData.type != 'DRAG' ||
-            interactionState.interactionData.drag == null
+            interactionSession.interactionData.type != 'DRAG' ||
+            interactionSession.interactionData.drag == null
           ) {
             return emptyStrategyApplicationResult
           }
 
           const pointOnCanvas = offsetPoint(
-            interactionState.interactionData.originalDragStart,
-            interactionState.interactionData.drag,
+            interactionSession.interactionData.originalDragStart,
+            interactionSession.interactionData.drag,
           )
 
           const reparentTarget = getReparentTargetUnified(
             existingReparentSubjects(filteredSelectedElements),
             pointOnCanvas,
-            interactionState.interactionData.modifiers.cmd,
+            interactionSession.interactionData.modifiers.cmd,
             canvasState,
             canvasState.startingMetadata,
             canvasState.startingAllElementProps,
@@ -161,7 +161,7 @@ function getAbsoluteReparentStrategy(
             const moveCommands = absoluteMoveStrategy.apply(
               canvasState,
               {
-                ...interactionState,
+                ...interactionSession,
                 updatedTargetPaths: updatedTargetPaths,
               },
               customStrategyState,
@@ -178,7 +178,7 @@ function getAbsoluteReparentStrategy(
           } else {
             const moveCommands = absoluteMoveStrategy.apply(
               canvasState,
-              interactionState,
+              interactionSession,
               customStrategyState,
               strategyLifecycle,
             )

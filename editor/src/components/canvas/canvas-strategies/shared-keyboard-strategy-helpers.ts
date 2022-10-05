@@ -90,12 +90,12 @@ export function getMovementDeltaFromKey(key: KeyCharacter, modifiers: Modifiers)
 
 export function getKeyboardStrategyGuidelines(
   canvasState: InteractionCanvasState,
-  interactionState: InteractionSession,
+  interactionSession: InteractionSession,
   draggedFrame: CanvasRectangle,
 ): Array<GuidelineWithSnappingVectorAndPointsOfRelevance> {
   const selectedElements = getTargetPathsFromInteractionTarget(canvasState.interactionTarget)
   const moveGuidelines = collectParentAndSiblingGuidelines(
-    interactionState.latestMetadata,
+    interactionSession.latestMetadata,
     selectedElements,
   ).map((g) => g.guideline)
 

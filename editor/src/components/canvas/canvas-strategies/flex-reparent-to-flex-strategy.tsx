@@ -9,7 +9,7 @@ import { applyFlexReparent, getFitnessForReparentStrategy } from './reparent-str
 export const flexReparentToFlexStrategy: CanvasStrategy = {
   id: 'FLEX_REPARENT_TO_FLEX',
   name: () => 'Reparent (Flex)',
-  isApplicable: (canvasState, _interactionState, metadata) => {
+  isApplicable: (canvasState, interactionSession, metadata) => {
     const selectedElements = getTargetPathsFromInteractionTarget(canvasState.interactionTarget)
     if (selectedElements.length == 1) {
       return MetadataUtils.isParentYogaLayoutedContainerAndElementParticipatesInLayout(
@@ -42,12 +42,12 @@ export const flexReparentToFlexStrategy: CanvasStrategy = {
       show: 'visible-only-while-active',
     },
   ],
-  fitness: (canvasState, interactionState, customStrategyState) => {
+  fitness: (canvasState, interactionSession, customStrategyState) => {
     // All 4 reparent strategies use the same fitness function getFitnessForReparentStrategy
     return getFitnessForReparentStrategy(
       'FLEX_REPARENT_TO_FLEX',
       canvasState,
-      interactionState,
+      interactionSession,
       'use-strict-bounds',
     )
   },

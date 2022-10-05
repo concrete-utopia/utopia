@@ -32,7 +32,7 @@ import { pickCursorFromEdgePosition } from './shared-absolute-resize-strategy-he
 export const flexResizeBasicStrategy: CanvasStrategy = {
   id: 'FLEX_RESIZE_BASIC',
   name: () => 'Flex Resize (Basic)',
-  isApplicable: (canvasState, interactionState, metadata) => {
+  isApplicable: (canvasState, interactionSession, metadata) => {
     const selectedElements = getTargetPathsFromInteractionTarget(canvasState.interactionTarget)
     // no multiselection support yet
     if (selectedElements.length === 1) {
@@ -56,29 +56,29 @@ export const flexResizeBasicStrategy: CanvasStrategy = {
     { control: ParentOutlines, key: 'parent-outlines-control', show: 'visible-only-while-active' },
     { control: ParentBounds, key: 'parent-bounds-control', show: 'visible-only-while-active' },
   ],
-  fitness: (canvasState, interactionState, customStrategyState) => {
+  fitness: (canvasState, interactionSession, customStrategyState) => {
     return flexResizeBasicStrategy.isApplicable(
       canvasState,
-      interactionState,
+      interactionSession,
       canvasState.startingMetadata,
       canvasState.startingAllElementProps,
     ) &&
-      interactionState.interactionData.type === 'DRAG' &&
-      interactionState.activeControl.type === 'RESIZE_HANDLE'
+      interactionSession.interactionData.type === 'DRAG' &&
+      interactionSession.activeControl.type === 'RESIZE_HANDLE'
       ? 1
       : 0
   },
-  apply: (canvasState, interactionState, customStrategyState) => {
+  apply: (canvasState, interactionSession, customStrategyState) => {
     if (
-      interactionState.interactionData.type === 'DRAG' &&
-      interactionState.activeControl.type === 'RESIZE_HANDLE'
+      interactionSession.interactionData.type === 'DRAG' &&
+      interactionSession.activeControl.type === 'RESIZE_HANDLE'
     ) {
       const selectedElements = getTargetPathsFromInteractionTarget(canvasState.interactionTarget)
       // no multiselection support yet
       const selectedElement = selectedElements[0]
-      const edgePosition = interactionState.activeControl.edgePosition
-      if (interactionState.interactionData.drag != null) {
-        const drag = interactionState.interactionData.drag
+      const edgePosition = interactionSession.activeControl.edgePosition
+      if (interactionSession.interactionData.drag != null) {
+        const drag = interactionSession.interactionData.drag
         const originalBounds = MetadataUtils.getFrameInCanvasCoords(
           selectedElement,
           canvasState.startingMetadata,
