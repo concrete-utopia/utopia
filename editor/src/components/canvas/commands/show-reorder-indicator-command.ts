@@ -32,7 +32,7 @@ export const runShowReorderIndicator: CommandFunction<ShowReorderIndicator> = (
   editor: EditorState,
   command: ShowReorderIndicator,
 ) => {
-  const FlexReparentIndicatorSize = 1 / editor.canvas.scale
+  const FlexReparentIndicatorSize = 2 / editor.canvas.scale
 
   const targetParent = MetadataUtils.findElementByElementPath(editor.jsxMetadata, command.target)
   const parentFrame = MetadataUtils.getFrameInCanvasCoords(command.target, editor.jsxMetadata)
@@ -81,7 +81,7 @@ export const runShowReorderIndicator: CommandFunction<ShowReorderIndicator> = (
               FlexReparentIndicatorSize / 2,
             y: (precedingSiblingPosition.y + succeedingSiblingPosition.y) / 2,
             height: (precedingSiblingPosition.height + succeedingSiblingPosition.height) / 2,
-            width: 0,
+            width: FlexReparentIndicatorSize,
           })
         : canvasRectangle({
             x: (precedingSiblingPosition.x + succeedingSiblingPosition.x) / 2,
@@ -93,7 +93,7 @@ export const runShowReorderIndicator: CommandFunction<ShowReorderIndicator> = (
               ) -
               FlexReparentIndicatorSize / 2,
             width: (precedingSiblingPosition.width + succeedingSiblingPosition.width) / 2,
-            height: 0,
+            height: FlexReparentIndicatorSize,
           })
 
     const editorStatePatch: EditorStatePatch = {
@@ -114,13 +114,13 @@ export const runShowReorderIndicator: CommandFunction<ShowReorderIndicator> = (
             x: parentFrame.x,
             y: parentFrame.y,
             height: parentFrame.height,
-            width: 0,
+            width: FlexReparentIndicatorSize,
           })
         : canvasRectangle({
             x: parentFrame.x,
             y: parentFrame.y,
             width: parentFrame.width,
-            height: 0,
+            height: FlexReparentIndicatorSize,
           })
     const editorStatePatch: EditorStatePatch = {
       canvas: {
