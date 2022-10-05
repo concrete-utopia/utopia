@@ -229,7 +229,6 @@ projectContentFromGitTreeEntry accessToken owner repository entry = do
     "blob" -> do
       -- This entry is a regular file.
       let entrySha = view (field @"sha") entry
-      print $ view (field @"path") entry
       gitBlob <- getGitBlob accessToken owner repository entrySha
       pure $ makeProjectContentsTreeEntry entry gitBlob
     _ -> do
