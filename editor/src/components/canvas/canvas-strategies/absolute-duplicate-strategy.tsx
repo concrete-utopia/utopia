@@ -21,6 +21,7 @@ import {
 } from './canvas-strategies'
 import {
   CanvasStrategy,
+  controlWithProps,
   CustomStrategyState,
   getTargetPathsFromInteractionTarget,
   InteractionLifecycle,
@@ -62,16 +63,18 @@ export const absoluteDuplicateStrategy: CanvasStrategy = {
     return false
   },
   controlsToRender: [
-    {
+    controlWithProps({
       control: ParentOutlines,
+      props: {},
       key: 'parent-outlines-control',
       show: 'visible-only-while-active',
-    },
-    {
+    }),
+    controlWithProps({
       control: ParentBounds,
+      props: {},
       key: 'parent-bounds-control',
       show: 'visible-only-while-active',
-    },
+    }),
   ],
   fitness: (canvasState, interactionSession) => {
     const selectedElements = getTargetPathsFromInteractionTarget(canvasState.interactionTarget)
