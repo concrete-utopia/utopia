@@ -21,6 +21,9 @@ export const IS_TEST_ENVIRONMENT: boolean =
   process.env.JEST_WORKER_ID != null ||
   (typeof window != 'undefined' && (window as any)?.KarmaTestEnvironment != null)
 
+export const IS_BROWSER_TEST_DEBUG: boolean =
+  IS_TEST_ENVIRONMENT && process.env.REACT_APP_BROWSER_TEST_DEBUG === 'true'
+
 export const PROBABLY_ELECTRON: boolean =
   typeof window === 'undefined' || (window as any)?.['process']?.['type'] != null
 

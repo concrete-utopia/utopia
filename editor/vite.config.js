@@ -46,6 +46,7 @@ export default defineConfig(({ mode }) => {
     define: {
       'process.env.NODE_ENV': `"${process.env.APP_ENV}"`,
       'process.env.REACT_APP_ENVIRONMENT_CONFIG': `"${process.env.REACT_APP_ENVIRONMENT_CONFIG}"`,
+      'process.env.REACT_APP_BROWSER_TEST_DEBUG': `"${process.env.REACT_APP_BROWSER_TEST_DEBUG}"`,
       'process.env.REACT_APP_AUTH0_REDIRECT_URI': `"${process.env.REACT_APP_AUTH0_REDIRECT_URI}"`,
       'process.env.REACT_APP_AUTH0_CLIENT_ID': `"${process.env.REACT_APP_AUTH0_CLIENT_ID}"`,
       'process.env.REACT_APP_AUTH0_ENDPOINT': `"${process.env.REACT_APP_AUTH0_ENDPOINT}"`,

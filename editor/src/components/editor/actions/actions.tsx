@@ -377,14 +377,7 @@ import {
   SaveToGithub,
 } from '../action-types'
 import { defaultTransparentViewElement, defaultSceneElement } from '../defaults'
-import {
-  EditorModes,
-  elementInsertionSubject,
-  Mode,
-  SceneInsertionSubject,
-  isSelectMode,
-  isLiveMode,
-} from '../editor-modes'
+import { EditorModes, Mode, isSelectMode, isLiveMode } from '../editor-modes'
 import * as History from '../history'
 import { StateHistory } from '../history'
 import {
