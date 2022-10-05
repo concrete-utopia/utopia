@@ -17,15 +17,14 @@ import {
   CanvasRectangle,
   CanvasPoint,
   canvasRectangle,
-  resize,
+  resizeCanvasRectangle,
 } from '../core/shared/math-utils'
 import { EditorAction } from './editor/action-types'
 import { insertJSXElement } from './editor/actions/action-creators'
-import { forceNotNull, optionalMap } from '../core/shared/optional-utils'
+import { forceNotNull } from '../core/shared/optional-utils'
 import { AllElementProps } from './editor/store/editor-state'
 import * as EP from '../core/shared/element-path'
 import { isFeatureEnabled } from '../utils/feature-switches'
-import { imagePathURL } from '../common/server'
 
 export function getImageSrc(
   projectId: string | null,
@@ -101,7 +100,7 @@ export function getFrameAndMultiplierWithResize(
   const { frame, multiplier } = getFrameAndMultiplier(centerPoint, filename, size, null)
   const [defaultWidth, defaultHeight] = [640 / scale, 640 / scale]
   const adjustedFrame = isFeatureEnabled('Resize image on drop')
-    ? resize(frame, {
+    ? resizeCanvasRectangle(frame, {
         centerPoint: centerPoint,
         keepAspectRatio: true,
         desiredHeight: Math.min(frame.height, defaultWidth),

@@ -99,6 +99,7 @@ export const drawToInsertStrategy: CanvasStrategy = {
           const insertionCommand = getInsertionCommands(
             insertionSubject,
             interactionState,
+            canvasState.interactionTarget.subjects[0],
             'zero-size',
           )
 
@@ -146,6 +147,7 @@ export const drawToInsertStrategy: CanvasStrategy = {
           const insertionCommand = getInsertionCommands(
             insertionSubject,
             interactionState,
+            canvasState.interactionTarget.subjects[0],
             'default-size',
           )
 
@@ -197,6 +199,7 @@ export const drawToInsertStrategy: CanvasStrategy = {
 function getInsertionCommands(
   subject: ElementInsertionSubject,
   interactionState: InteractionSession,
+  insertionSubject: ElementInsertionSubject,
   sizing: 'zero-size' | 'default-size',
 ): { command: InsertElementInsertionSubject; frame: CanvasRectangle } | null {
   if (
@@ -216,8 +219,8 @@ function getInsertionCommands(
         : canvasRectangle({
             x: pointOnCanvas.x - DefaultInsertWidth / 2,
             y: pointOnCanvas.y - DefaultInsertHeight / 2,
-            width: DefaultInsertWidth,
-            height: DefaultInsertHeight,
+            width: insertionSubject.size?.width ?? DefaultInsertWidth,
+            height: insertionSubject.size?.height ?? DefaultInsertHeight,
           })
 
     const updatedAttributesWithPosition = getStyleAttributesForFrameInAbsolutePosition(

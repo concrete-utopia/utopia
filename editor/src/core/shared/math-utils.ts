@@ -1040,7 +1040,10 @@ interface ResizeOptions {
   centerPoint: CanvasPoint
 }
 
-export function resize(rectangle: CanvasRectangle, options: ResizeOptions): CanvasRectangle {
+export function resizeCanvasRectangle(
+  rectangle: CanvasRectangle,
+  options: ResizeOptions,
+): CanvasRectangle {
   const resizeI = (dimensions: { width: number; height: number }): CanvasRectangle => {
     const { width, height } = dimensions
     return canvasRectangle({
@@ -1058,4 +1061,18 @@ export function resize(rectangle: CanvasRectangle, options: ResizeOptions): Canv
   }
 
   return resizeI({ width: options.desiredWidth, height: options.desiredHeight })
+}
+
+export function resize(
+  originalSize: Size,
+  desiredSize: Size,
+  mode: 'force' | 'keep-aspect-ratio',
+): Size {
+  if (mode === 'force') {
+    return desiredSize
+  }
+
+  const aspectRatio = originalSize.width / originalSize.height
+  const desiredHeight = (desiredSize.width / aspectRatio) ^ 0
+  return size(desiredSize.width, desiredHeight)
 }

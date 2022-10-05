@@ -45,6 +45,7 @@ import { imagePathURL } from '../../common/server'
 import { generateUidWithExistingComponents } from '../../core/model/element-template-utils'
 import { useEditorState } from '../editor/store/store-hook'
 import { createJsxImage } from '../images'
+import { resize, size, Size } from '../../core/shared/math-utils'
 
 export interface FileBrowserItemProps extends FileBrowserItemInfo {
   isSelected: boolean
@@ -868,15 +869,20 @@ export const FileBrowserItem: React.FC<FileBrowserItemProps> = (props: FileBrows
     }
 
     const newUID = generateUidWithExistingComponents(projectContents)
+    const elementSize: Size = resize(
+      size(props.imageFile.width ?? 100, props.imageFile.height ?? 100),
+      size(200, 200),
+      'keep-aspect-ratio',
+    )
     const newElement = createJsxImage(newUID, {
-      width: props.imageFile.width ?? 100,
-      height: props.imageFile.height ?? 100,
+      width: elementSize.width,
+      height: elementSize.height,
       src: imagePathURL(props.path),
     })
 
     props.dispatch(
       [
-        EditorActions.enableInsertModeForJSXElement(newElement, newUID, {}, null),
+        EditorActions.enableInsertModeForJSXElement(newElement, newUID, {}, elementSize),
         CanvasActions.createInteractionSession(
           createInteractionViaMouse(CanvasMousePositionRaw!, emptyModifiers, boundingArea()),
         ),

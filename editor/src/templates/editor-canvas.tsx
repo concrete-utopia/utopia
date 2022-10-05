@@ -78,6 +78,9 @@ import {
   offsetPoint,
   Point,
   RawPoint,
+  resize,
+  size,
+  Size,
   WindowPoint,
   WindowRectangle,
   zeroCanvasPoint,
@@ -1059,10 +1062,14 @@ export class EditorCanvas extends React.Component<EditorCanvasProps> {
                 : { saveImageActions: [], src: image.base64Bytes }
 
               const newUID = generateUidWithExistingComponents(this.props.editor.projectContents)
-
+              const elementSize: Size = resize(
+                size(frame.width ?? 100, frame.height ?? 100),
+                size(200, 200),
+                'keep-aspect-ratio',
+              )
               const newElement = createJsxImage(newUID, {
-                width: frame.width,
-                height: frame.height,
+                width: elementSize.width,
+                height: elementSize.height,
                 top: mousePosition.canvasPositionRounded.y,
                 left: mousePosition.canvasPositionRaw.x,
                 src: src,
@@ -1071,7 +1078,7 @@ export class EditorCanvas extends React.Component<EditorCanvasProps> {
               this.props.dispatch(
                 [
                   ...saveImageActions,
-                  EditorActions.enableInsertModeForJSXElement(newElement, newUID, {}, null),
+                  EditorActions.enableInsertModeForJSXElement(newElement, newUID, {}, elementSize),
                 ],
                 'everyone',
               )
