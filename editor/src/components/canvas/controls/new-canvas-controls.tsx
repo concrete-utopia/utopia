@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/ban-types */
 /** @jsxRuntime classic */
 /** @jsx jsx */
 /** @jsxFrag React.Fragment */
