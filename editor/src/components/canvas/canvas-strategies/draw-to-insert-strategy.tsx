@@ -7,6 +7,7 @@ import {
   getInsertionSubjectsFromInteractionTarget,
   InteractionCanvasState,
   InteractionLifecycle,
+  StrategyApplicationResult,
   strategyApplicationResult,
   targetPaths,
 } from './canvas-strategy-types'
@@ -26,7 +27,7 @@ import {
   pickCanvasStateFromEditorStateWithMetadata,
   RegisteredCanvasStrategies,
 } from './canvas-strategies'
-import { foldAndApplyCommandsInner } from '../commands/commands'
+import { CanvasCommand, foldAndApplyCommandsInner } from '../commands/commands'
 import { updateFunctionCommand } from '../commands/update-function-command'
 import {
   createFakeMetadataForElement,
@@ -34,7 +35,12 @@ import {
 } from '../../../core/model/element-metadata-utils'
 import { elementPath } from '../../../core/shared/element-path'
 import * as EP from '../../../core/shared/element-path'
-import { canvasPoint, CanvasRectangle, canvasRectangle } from '../../../core/shared/math-utils'
+import {
+  CanvasPoint,
+  canvasPoint,
+  CanvasRectangle,
+  canvasRectangle,
+} from '../../../core/shared/math-utils'
 import { cmdModifier } from '../../../utils/modifiers'
 import { DragOutlineControl } from '../controls/select-mode/drag-outline-control'
 import { FlexReparentTargetIndicator } from '../controls/select-mode/flex-reparent-target-indicator'
@@ -174,64 +180,49 @@ export const drawToInsertStrategy: CanvasStrategy = {
             return strategyApplicationResult([insertionCommand.command, reparentCommand])
           }
         } else {
-          // drag is null, not started yet but mousedown
+          // drag is null, the cursor is not moved yet, but the mousedown already happened
           const pointOnCanvas = interactionState.interactionData.dragStart
-          const parent = getReparentTargetUnified(
-            newReparentSubjects(),
-            pointOnCanvas,
-            true,
-            canvasState,
-            canvasState.startingMetadata,
-            canvasState.startingAllElementProps,
-            'allow-missing-bounds',
+          return strategyApplicationResult(
+            getHighlightAndReorderIndicatorCommands(canvasState, pointOnCanvas),
           )
-
-          if (parent != null && parent.shouldReparent && parent.newParent != null) {
-            const highlightParentCommand = updateHighlightedViews('mid-interaction', [
-              parent.newParent,
-            ])
-
-            if (parent.newIndex !== -1) {
-              return strategyApplicationResult([
-                highlightParentCommand,
-                showReorderIndicator(parent.newParent, parent.newIndex),
-              ])
-            } else {
-              return strategyApplicationResult([highlightParentCommand])
-            }
-          }
         }
       } else if (interactionState.interactionData.type === 'HOVER') {
         const pointOnCanvas = interactionState.interactionData.point
-        const parent = getReparentTargetUnified(
-          newReparentSubjects(),
-          pointOnCanvas,
-          true,
-          canvasState,
-          canvasState.startingMetadata,
-          canvasState.startingAllElementProps,
-          'allow-missing-bounds',
+        return strategyApplicationResult(
+          getHighlightAndReorderIndicatorCommands(canvasState, pointOnCanvas),
         )
-
-        if (parent != null && parent.shouldReparent && parent.newParent != null) {
-          const highlightParentCommand = updateHighlightedViews('mid-interaction', [
-            parent.newParent,
-          ])
-
-          if (parent.newIndex !== -1) {
-            return strategyApplicationResult([
-              highlightParentCommand,
-              showReorderIndicator(parent.newParent, parent.newIndex),
-            ])
-          } else {
-            return strategyApplicationResult([highlightParentCommand])
-          }
-        }
       }
     }
     // Fallback for when the checks above are not satisfied.
     return emptyStrategyApplicationResult
   },
+}
+
+function getHighlightAndReorderIndicatorCommands(
+  canvasState: InteractionCanvasState,
+  pointOnCanvas: CanvasPoint,
+): Array<CanvasCommand> {
+  const parent = getReparentTargetUnified(
+    newReparentSubjects(),
+    pointOnCanvas,
+    true,
+    canvasState,
+    canvasState.startingMetadata,
+    canvasState.startingAllElementProps,
+    'allow-missing-bounds',
+  )
+
+  if (parent != null && parent.shouldReparent && parent.newParent != null) {
+    const highlightParentCommand = updateHighlightedViews('mid-interaction', [parent.newParent])
+
+    if (parent.newIndex !== -1) {
+      return [highlightParentCommand, showReorderIndicator(parent.newParent, parent.newIndex)]
+    } else {
+      return [highlightParentCommand]
+    }
+  } else {
+    return []
+  }
 }
 
 function getInsertionCommands(
