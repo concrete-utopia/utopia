@@ -10,7 +10,11 @@ import {
   targetPaths,
 } from './canvas-strategy-types'
 import { InteractionSession, StrategyState } from './interaction-state'
-import { ElementInsertionSubject, InsertionSubject } from '../../editor/editor-modes'
+import {
+  DefaultInsertSize,
+  ElementInsertionSubject,
+  InsertionSubject,
+} from '../../editor/editor-modes'
 import { LayoutHelpers } from '../../../core/layout/layout-helpers'
 import { isLeft } from '../../../core/shared/either'
 import {
@@ -32,12 +36,11 @@ import {
 } from '../../../core/model/element-metadata-utils'
 import { elementPath } from '../../../core/shared/element-path'
 import * as EP from '../../../core/shared/element-path'
-import { CanvasRectangle, canvasRectangle } from '../../../core/shared/math-utils'
+import { CanvasRectangle, canvasRectangle, Size } from '../../../core/shared/math-utils'
 import { ElementInstanceMetadataMap } from '../../../core/shared/element-template'
 import { cmdModifier } from '../../../utils/modifiers'
 import { DragOutlineControl } from '../controls/select-mode/drag-outline-control'
 import { FlexReparentTargetIndicator } from '../controls/select-mode/flex-reparent-target-indicator'
-import { DefaultInsertHeight, DefaultInsertWidth } from '../insertion-strategy-utils'
 
 export const dragToInsertStrategy: CanvasStrategy = {
   id: 'DRAG_TO_INSERT',
@@ -92,9 +95,10 @@ export const dragToInsertStrategy: CanvasStrategy = {
       interactionState.interactionData.type === 'DRAG' &&
       interactionState.interactionData.drag != null
     ) {
-      const insertionCommands = insertionSubjects.flatMap((s) =>
-        getInsertionCommands(s, interactionState),
-      )
+      const insertionCommands = insertionSubjects.flatMap((s) => {
+        const size = s.type === 'Element' ? s.defaultSize : DefaultInsertSize
+        return getInsertionCommands(s, interactionState, size)
+      })
 
       const reparentCommand = updateFunctionCommand(
         'always',
@@ -124,6 +128,7 @@ export const dragToInsertStrategy: CanvasStrategy = {
 function getInsertionCommands(
   subject: InsertionSubject,
   interactionState: InteractionSession,
+  size: Size,
 ): Array<{ command: InsertElementInsertionSubject; frame: CanvasRectangle }> {
   if (subject.type !== 'Element') {
     // non-element subjects are not supported
@@ -136,10 +141,10 @@ function getInsertionCommands(
     const pointOnCanvas = interactionState.interactionData.dragStart
 
     const frame = canvasRectangle({
-      x: pointOnCanvas.x - DefaultInsertWidth / 2,
-      y: pointOnCanvas.y - DefaultInsertHeight / 2,
-      width: DefaultInsertWidth,
-      height: DefaultInsertHeight,
+      x: pointOnCanvas.x - size.width / 2,
+      y: pointOnCanvas.y - size.height / 2,
+      width: size.width,
+      height: size.height,
     })
 
     const updatedAttributesWithPosition = getStyleAttributesForFrameInAbsolutePosition(

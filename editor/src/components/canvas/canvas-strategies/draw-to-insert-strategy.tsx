@@ -32,13 +32,17 @@ import {
 } from '../../../core/model/element-metadata-utils'
 import { elementPath } from '../../../core/shared/element-path'
 import * as EP from '../../../core/shared/element-path'
-import { canvasPoint, CanvasRectangle, canvasRectangle } from '../../../core/shared/math-utils'
+import {
+  canvasPoint,
+  CanvasRectangle,
+  canvasRectangle,
+  Size,
+} from '../../../core/shared/math-utils'
 import { cmdModifier } from '../../../utils/modifiers'
 import { DragOutlineControl } from '../controls/select-mode/drag-outline-control'
 import { FlexReparentTargetIndicator } from '../controls/select-mode/flex-reparent-target-indicator'
 import { updateHighlightedViews } from '../commands/update-highlighted-views-command'
 import { getReparentTargetUnified, newReparentSubjects } from './reparent-strategy-helpers'
-import { DefaultInsertHeight, DefaultInsertWidth } from '../insertion-strategy-utils'
 
 export const drawToInsertStrategy: CanvasStrategy = {
   id: 'DRAW_TO_INSERT',
@@ -99,6 +103,7 @@ export const drawToInsertStrategy: CanvasStrategy = {
           const insertionCommand = getInsertionCommands(
             insertionSubject,
             interactionState,
+            insertionSubject.defaultSize,
             'zero-size',
           )
 
@@ -146,6 +151,7 @@ export const drawToInsertStrategy: CanvasStrategy = {
           const insertionCommand = getInsertionCommands(
             insertionSubject,
             interactionState,
+            insertionSubject.defaultSize,
             'default-size',
           )
 
@@ -197,6 +203,7 @@ export const drawToInsertStrategy: CanvasStrategy = {
 function getInsertionCommands(
   subject: ElementInsertionSubject,
   interactionState: InteractionSession,
+  insertionSubjectSize: Size,
   sizing: 'zero-size' | 'default-size',
 ): { command: InsertElementInsertionSubject; frame: CanvasRectangle } | null {
   if (
@@ -214,10 +221,10 @@ function getInsertionCommands(
             height: 0,
           })
         : canvasRectangle({
-            x: pointOnCanvas.x - DefaultInsertWidth / 2,
-            y: pointOnCanvas.y - DefaultInsertHeight / 2,
-            width: DefaultInsertWidth,
-            height: DefaultInsertHeight,
+            x: pointOnCanvas.x - insertionSubjectSize.width / 2,
+            y: pointOnCanvas.y - insertionSubjectSize.height / 2,
+            width: insertionSubjectSize.width,
+            height: insertionSubjectSize.height,
           })
 
     const updatedAttributesWithPosition = getStyleAttributesForFrameInAbsolutePosition(
