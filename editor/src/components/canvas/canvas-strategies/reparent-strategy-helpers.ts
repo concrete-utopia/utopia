@@ -151,7 +151,7 @@ function isReparentToAbsoluteStrategy(reparentStrategy: ReparentStrategy): boole
 export function getFitnessForReparentStrategy(
   reparentStrategy: ReparentStrategy,
   canvasState: InteractionCanvasState,
-  interactionState: InteractionSession,
+  interactionSession: InteractionSession,
   missingBoundsHandling: MissingBoundsHandling,
 ): number {
   const isForced = missingBoundsHandling === 'allow-missing-bounds'
@@ -159,7 +159,7 @@ export function getFitnessForReparentStrategy(
 
   const foundReparentStrategy = findReparentStrategy(
     canvasState,
-    interactionState,
+    interactionSession,
     missingBoundsHandling,
   )
   if (
@@ -189,16 +189,16 @@ function targetIsValid(
 
 function findReparentStrategy(
   canvasState: InteractionCanvasState,
-  interactionState: InteractionSession,
+  interactionSession: InteractionSession,
   missingBoundsHandling: MissingBoundsHandling,
 ): FindReparentStrategyResult {
   const selectedElements = getTargetPathsFromInteractionTarget(canvasState.interactionTarget)
   if (
     selectedElements.length === 0 ||
-    interactionState.activeControl.type !== 'BOUNDING_AREA' ||
-    interactionState.interactionData.type !== 'DRAG' ||
-    interactionState.interactionData.drag == null || // TODO delete this drag nullcheck? do we start the reparent on mouse down or mouse move beyond threshold?
-    interactionState.interactionData.modifiers.alt
+    interactionSession.activeControl.type !== 'BOUNDING_AREA' ||
+    interactionSession.interactionData.type !== 'DRAG' ||
+    interactionSession.interactionData.drag == null || // TODO delete this drag nullcheck? do we start the reparent on mouse down or mouse move beyond threshold?
+    interactionSession.interactionData.modifiers.alt
   ) {
     return { strategy: 'do-not-reparent' }
   }
@@ -206,11 +206,11 @@ function findReparentStrategy(
   const filteredSelectedElements = getDragTargets(selectedElements)
 
   const pointOnCanvas = offsetPoint(
-    interactionState.interactionData.originalDragStart,
-    interactionState.interactionData.drag,
+    interactionSession.interactionData.originalDragStart,
+    interactionSession.interactionData.drag,
   )
 
-  const cmdPressed = interactionState.interactionData.modifiers.cmd
+  const cmdPressed = interactionSession.interactionData.modifiers.cmd
 
   const reparentResult = getReparentTargetUnified(
     existingReparentSubjects(filteredSelectedElements),
@@ -233,7 +233,7 @@ function findReparentStrategy(
     newParentPath != null &&
     targetIsValid(
       newParentPath,
-      interactionState.startingTargetParentsToFilterOut,
+      interactionSession.startingTargetParentsToFilterOut,
       missingBoundsHandling,
     ) &&
     !parentStayedTheSame

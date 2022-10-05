@@ -46,7 +46,7 @@ import { ElementInstanceMetadataMap } from '../../../core/shared/element-templat
 export const drawToInsertStrategy: CanvasStrategy = {
   id: 'DRAW_TO_INSERT',
   name: () => 'Draw to insert',
-  isApplicable: (canvasState, _interactionState, metadata) => {
+  isApplicable: (canvasState, interactionSession, metadata) => {
     const insertionSubjects = getInsertionSubjectsFromInteractionTarget(
       canvasState.interactionTarget,
     )
@@ -76,32 +76,32 @@ export const drawToInsertStrategy: CanvasStrategy = {
       show: 'visible-only-while-active',
     },
   ], // Uses existing hooks in select-mode-hooks.tsx
-  fitness: (canvasState, interactionState, customStrategyState) => {
+  fitness: (canvasState, interactionSession, customStrategyState) => {
     return drawToInsertStrategy.isApplicable(
       canvasState,
-      interactionState,
+      interactionSession,
       canvasState.startingMetadata,
       canvasState.startingAllElementProps,
     ) &&
-      ((interactionState.interactionData.type === 'DRAG' &&
-        interactionState.activeControl.type === 'RESIZE_HANDLE') ||
-        interactionState.interactionData.type === 'HOVER')
+      ((interactionSession.interactionData.type === 'DRAG' &&
+        interactionSession.activeControl.type === 'RESIZE_HANDLE') ||
+        interactionSession.interactionData.type === 'HOVER')
       ? 1
       : 0
   },
-  apply: (canvasState, interactionState, customStrategyState, strategyLifecycle) => {
+  apply: (canvasState, interactionSession, customStrategyState, strategyLifecycle) => {
     if (
       canvasState.interactionTarget.type === 'INSERTION_SUBJECTS' &&
       canvasState.interactionTarget.subjects.length === 1 &&
       canvasState.interactionTarget.subjects[0].type === 'Element'
     ) {
-      if (interactionState.interactionData.type === 'DRAG') {
-        if (interactionState.interactionData.drag != null) {
+      if (interactionSession.interactionData.type === 'DRAG') {
+        if (interactionSession.interactionData.drag != null) {
           const insertionSubject = canvasState.interactionTarget.subjects[0]
 
           const insertionCommand = getInsertionCommands(
             insertionSubject,
-            interactionState,
+            interactionSession,
             'zero-size',
           )
 
@@ -113,7 +113,7 @@ export const drawToInsertStrategy: CanvasStrategy = {
                   canvasState.builtInDependencies,
                   editorState,
                   customStrategyState,
-                  interactionState,
+                  interactionSession,
                   insertionSubject,
                   insertionCommand.frame,
                   strategyLifecycle,
@@ -129,7 +129,7 @@ export const drawToInsertStrategy: CanvasStrategy = {
                   canvasState.builtInDependencies,
                   editorState,
                   customStrategyState,
-                  interactionState,
+                  interactionSession,
                   commandLifecycle,
                   insertionSubject,
                   insertionCommand.frame,
@@ -149,7 +149,7 @@ export const drawToInsertStrategy: CanvasStrategy = {
 
           const insertionCommand = getInsertionCommands(
             insertionSubject,
-            interactionState,
+            interactionSession,
             'default-size',
           )
 
@@ -161,7 +161,7 @@ export const drawToInsertStrategy: CanvasStrategy = {
                   canvasState.builtInDependencies,
                   editorState,
                   customStrategyState,
-                  interactionState,
+                  interactionSession,
                   insertionSubject,
                   insertionCommand.frame,
                   strategyLifecycle,
@@ -173,8 +173,8 @@ export const drawToInsertStrategy: CanvasStrategy = {
             return strategyApplicationResult([insertionCommand.command, reparentCommand])
           }
         }
-      } else if (interactionState.interactionData.type === 'HOVER') {
-        const pointOnCanvas = interactionState.interactionData.point
+      } else if (interactionSession.interactionData.type === 'HOVER') {
+        const pointOnCanvas = interactionSession.interactionData.point
         const parent = getReparentTargetUnified(
           newReparentSubjects(),
           pointOnCanvas,
@@ -201,14 +201,14 @@ export const drawToInsertStrategy: CanvasStrategy = {
 
 function getInsertionCommands(
   subject: ElementInsertionSubject,
-  interactionState: InteractionSession,
+  interactionSession: InteractionSession,
   sizing: 'zero-size' | 'default-size',
 ): { command: InsertElementInsertionSubject; frame: CanvasRectangle } | null {
   if (
-    interactionState.interactionData.type === 'DRAG' &&
-    (sizing === 'default-size' || interactionState.interactionData.drag != null)
+    interactionSession.interactionData.type === 'DRAG' &&
+    (sizing === 'default-size' || interactionSession.interactionData.drag != null)
   ) {
-    const pointOnCanvas = interactionState.interactionData.dragStart
+    const pointOnCanvas = interactionSession.interactionData.dragStart
 
     const frame =
       sizing === 'zero-size'
@@ -243,8 +243,8 @@ function getInsertionCommands(
       command: insertElementInsertionSubject('always', updatedInsertionSubject),
       frame: frame,
     }
-  } else if (interactionState.interactionData.type === 'HOVER') {
-    const pointOnCanvas = interactionState.interactionData.point
+  } else if (interactionSession.interactionData.type === 'HOVER') {
+    const pointOnCanvas = interactionSession.interactionData.point
 
     const frame = canvasRectangle({
       x: pointOnCanvas.x,
@@ -303,7 +303,7 @@ function runTargetStrategiesForFreshlyInsertedElementToReparent(
   builtInDependencies: BuiltInDependencies,
   editorState: EditorState,
   customStrategyState: CustomStrategyState,
-  interactionState: InteractionSession,
+  interactionSession: InteractionSession,
   insertionSubject: ElementInsertionSubject,
   frame: CanvasRectangle,
   strategyLifecycle: InteractionLifecycle,
@@ -324,7 +324,7 @@ function runTargetStrategiesForFreshlyInsertedElementToReparent(
     [EP.toString(path)]: fakeMetadata,
   }
 
-  const interactionData = interactionState.interactionData
+  const interactionData = interactionSession.interactionData
   // patching the interaction with the cmd modifier is just temporarily needed because reparenting is not default without
   const patchedInteractionData =
     interactionData.type === 'DRAG'
@@ -335,8 +335,8 @@ function runTargetStrategiesForFreshlyInsertedElementToReparent(
         }
       : interactionData
 
-  const patchedInteractionState: InteractionSession = {
-    ...interactionState,
+  const patchedInteractionSession: InteractionSession = {
+    ...interactionSession,
     activeControl: boundingArea(),
     interactionData: patchedInteractionData,
     startingTargetParentsToFilterOut: null,
@@ -351,7 +351,7 @@ function runTargetStrategiesForFreshlyInsertedElementToReparent(
   const { strategy } = findCanvasStrategy(
     RegisteredCanvasStrategies,
     patchedCanvasState,
-    patchedInteractionState,
+    patchedInteractionSession,
     customStrategyState,
     null,
   )
@@ -361,7 +361,7 @@ function runTargetStrategiesForFreshlyInsertedElementToReparent(
   }
   const reparentCommands = strategy.strategy.apply(
     patchedCanvasState,
-    patchedInteractionState,
+    patchedInteractionSession,
     customStrategyState,
     strategyLifecycle,
   ).commands
@@ -374,7 +374,7 @@ function runTargetStrategiesForFreshlyInsertedElementToResize(
   builtInDependencies: BuiltInDependencies,
   editorState: EditorState,
   customStrategyState: CustomStrategyState,
-  interactionState: InteractionSession,
+  interactionSession: InteractionSession,
   commandLifecycle: InteractionLifecycle,
   insertionSubject: ElementInsertionSubject,
   frame: CanvasRectangle,
@@ -389,8 +389,8 @@ function runTargetStrategiesForFreshlyInsertedElementToResize(
     [EP.toString(path)]: fakeMetadata,
   }
 
-  const patchedInteractionState: InteractionSession = {
-    ...interactionState,
+  const patchedInteractionSession: InteractionSession = {
+    ...interactionSession,
     startingTargetParentsToFilterOut: null,
   }
 
@@ -408,7 +408,7 @@ function runTargetStrategiesForFreshlyInsertedElementToResize(
   const { strategy: resizeStrategy } = findCanvasStrategy(
     RegisteredCanvasStrategies,
     patchedCanvasState,
-    patchedInteractionState,
+    patchedInteractionSession,
     customStrategyState,
     null,
   )
@@ -417,7 +417,7 @@ function runTargetStrategiesForFreshlyInsertedElementToResize(
     resizeStrategy != null
       ? resizeStrategy.strategy.apply(
           patchedCanvasState,
-          patchedInteractionState,
+          patchedInteractionSession,
           customStrategyState,
           strategyLifecycle,
         ).commands

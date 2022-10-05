@@ -8,7 +8,7 @@ import { applyReorderCommon } from './reorder-utils'
 export const flexReorderStrategy: CanvasStrategy = {
   id: 'FLEX_REORDER',
   name: () => 'Reorder (Flex)',
-  isApplicable: (canvasState, _interactionState, metadata) => {
+  isApplicable: (canvasState, interactionSession, metadata) => {
     const selectedElements = getTargetPathsFromInteractionTarget(canvasState.interactionTarget)
     if (selectedElements.length == 1) {
       return MetadataUtils.isParentYogaLayoutedContainerAndElementParticipatesInLayout(
@@ -36,22 +36,22 @@ export const flexReorderStrategy: CanvasStrategy = {
       show: 'visible-only-while-active',
     },
   ],
-  fitness: (canvasState, interactionState, customStrategyState) => {
+  fitness: (canvasState, interactionSession, customStrategyState) => {
     return flexReorderStrategy.isApplicable(
       canvasState,
-      interactionState,
+      interactionSession,
       canvasState.startingMetadata,
       canvasState.startingAllElementProps,
     ) &&
-      interactionState.interactionData.type === 'DRAG' &&
-      interactionState.activeControl.type === 'BOUNDING_AREA'
+      interactionSession.interactionData.type === 'DRAG' &&
+      interactionSession.activeControl.type === 'BOUNDING_AREA'
       ? 1
       : 0
   },
-  apply: (canvasState, interactionState, customStrategyState) => {
+  apply: (canvasState, interactionSession, customStrategyState) => {
     return applyReorderCommon(
       canvasState,
-      interactionState,
+      interactionSession,
       customStrategyState,
       MetadataUtils.isParentYogaLayoutedContainerAndElementParticipatesInLayout,
     )

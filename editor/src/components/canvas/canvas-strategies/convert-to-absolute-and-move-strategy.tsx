@@ -47,7 +47,7 @@ import { applyMoveCommon, getDragTargets } from './shared-move-strategies-helper
 export const convertToAbsoluteAndMoveStrategy: CanvasStrategy = {
   id: 'CONVERT_TO_ABSOLUTE_AND_MOVE_STRATEGY',
   name: () => 'Move (Abs)',
-  isApplicable: (canvasState, _interactionState, metadata) => {
+  isApplicable: (canvasState, interactionSession, metadata) => {
     const selectedElements = getTargetPathsFromInteractionTarget(canvasState.interactionTarget)
     if (selectedElements.length > 0) {
       const filteredSelectedElements = getDragTargets(selectedElements)
@@ -74,22 +74,22 @@ export const convertToAbsoluteAndMoveStrategy: CanvasStrategy = {
       show: 'visible-only-while-active',
     },
   ], // Uses existing hooks in select-mode-hooks.tsx
-  fitness: (canvasState, interactionState, customStrategyState) => {
+  fitness: (canvasState, interactionSession, customStrategyState) => {
     return convertToAbsoluteAndMoveStrategy.isApplicable(
       canvasState,
-      interactionState,
+      interactionSession,
       canvasState.startingMetadata,
       canvasState.startingAllElementProps,
     ) &&
-      interactionState.interactionData.type === 'DRAG' &&
-      interactionState.activeControl.type === 'BOUNDING_AREA'
+      interactionSession.interactionData.type === 'DRAG' &&
+      interactionSession.activeControl.type === 'BOUNDING_AREA'
       ? 0.5
       : 0
   },
-  apply: (canvasState, interactionState, customStrategyState) => {
+  apply: (canvasState, interactionSession, customStrategyState) => {
     if (
-      interactionState.interactionData.type === 'DRAG' &&
-      interactionState.interactionData.drag != null
+      interactionSession.interactionData.type === 'DRAG' &&
+      interactionSession.interactionData.drag != null
     ) {
       const getConversionAndMoveCommands = (
         snappedDragVector: CanvasPoint,
@@ -106,7 +106,7 @@ export const convertToAbsoluteAndMoveStrategy: CanvasStrategy = {
       }
       const absoluteMoveApplyResult = applyMoveCommon(
         canvasState,
-        interactionState,
+        interactionSession,
         getConversionAndMoveCommands,
       )
 
