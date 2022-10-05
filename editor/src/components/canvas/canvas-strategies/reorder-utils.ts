@@ -31,15 +31,15 @@ function isRootOfGeneratedElement(target: ElementPath): boolean {
 
 export function applyReorderCommon(
   canvasState: InteractionCanvasState,
-  interactionState: InteractionSession,
+  interactionSession: InteractionSession,
   customStrategyState: CustomStrategyState,
   isValidTarget: (path: ElementPath, metadata: ElementInstanceMetadataMap) => boolean,
 ): StrategyApplicationResult {
-  if (interactionState.interactionData.type !== 'DRAG') {
+  if (interactionSession.interactionData.type !== 'DRAG') {
     return emptyStrategyApplicationResult
   }
 
-  if (interactionState.interactionData.drag != null) {
+  if (interactionSession.interactionData.drag != null) {
     const selectedElements = getTargetPathsFromInteractionTarget(canvasState.interactionTarget)
     const target = selectedElements[0]
 
@@ -56,8 +56,8 @@ export function applyReorderCommon(
     }
 
     const pointOnCanvas = offsetPoint(
-      interactionState.interactionData.dragStart,
-      interactionState.interactionData.drag,
+      interactionSession.interactionData.dragStart,
+      interactionSession.interactionData.drag,
     )
 
     const unpatchedIndex = siblings.findIndex((sibling) => EP.pathsEqual(sibling, target))

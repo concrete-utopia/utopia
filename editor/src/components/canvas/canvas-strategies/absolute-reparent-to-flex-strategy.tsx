@@ -67,14 +67,14 @@ export const absoluteReparentToFlexStrategy: CanvasStrategy = {
   ],
   fitness: function (
     canvasState: InteractionCanvasState,
-    interactionState: InteractionSession,
+    interactionSession: InteractionSession,
     customStrategyState: CustomStrategyState,
   ): number {
     // All 4 reparent strategies use the same fitness function getFitnessForReparentStrategy
     return getFitnessForReparentStrategy(
       'ABSOLUTE_REPARENT_TO_FLEX',
       canvasState,
-      interactionState,
+      interactionSession,
       'use-strict-bounds',
     )
   },
