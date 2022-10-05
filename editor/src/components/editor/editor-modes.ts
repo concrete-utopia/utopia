@@ -1,17 +1,12 @@
-import type {
-  ElementPath,
-  id,
-  StaticElementPath,
-  Imports,
-} from '../../core/shared/project-file-types'
-import type { JSXElement, JSXElementName } from '../../core/shared/element-template'
+import type { ElementPath, StaticElementPath, Imports } from '../../core/shared/project-file-types'
+import type { JSXElement } from '../../core/shared/element-template'
 import type { Size } from '../../core/shared/math-utils'
 
 export interface ElementInsertionSubject {
   type: 'Element'
   uid: string
   element: JSXElement
-  size: Size | null
+  defaultSize: Size
   importsToAdd: Imports
   parent: InsertionParent
 }
@@ -20,6 +15,8 @@ export interface DragAndDropInsertionSubject {
   type: 'DragAndDrop'
   imageAssets: Array<string> | null
 }
+
+export const DefaultInsertSize: Size = { width: 100, height: 100 }
 
 export function elementInsertionSubject(
   uid: string,
@@ -32,7 +29,7 @@ export function elementInsertionSubject(
     type: 'Element',
     uid: uid,
     element: element,
-    size: size,
+    defaultSize: size ?? DefaultInsertSize,
     importsToAdd: importsToAdd,
     parent: parent,
   }
