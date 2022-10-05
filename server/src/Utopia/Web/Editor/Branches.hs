@@ -114,19 +114,19 @@ getBranchDownload BranchDownloads{..} branchName = do
   atomicModifyIORef' branchDownloadsContent (addDownloadStorage branchName defaultedBranchDownload)
 
 readLockForBranch :: BranchDownloads -> Text -> IO a -> IO a
-readLockForBranch branchDownloads@BranchDownloads{..} branchName action = do
+readLockForBranch branchDownloads branchName action = do
   BranchDownload{..} <- getBranchDownload branchDownloads branchName
   bracket_ (waitQSemN branchDownloadSemaphore 1) (signalQSemN branchDownloadSemaphore 1) $ do
     action
 
 writeLockForBranch :: BranchDownloads -> Text -> IO a -> IO a
-writeLockForBranch branchDownloads@BranchDownloads{..} branchName action = do
+writeLockForBranch branchDownloads branchName action = do
   BranchDownload{..} <- getBranchDownload branchDownloads branchName
   bracket_ (waitQSemN branchDownloadSemaphore fullSemaphoreLimit) (signalQSemN branchDownloadSemaphore fullSemaphoreLimit) $ do
     action
 
 elevateIntoWriteLockForBranch :: BranchDownloads -> Text -> IO a -> IO a
-elevateIntoWriteLockForBranch branchDownloads@BranchDownloads{..} branchName action = do
+elevateIntoWriteLockForBranch branchDownloads branchName action = do
   BranchDownload{..} <- getBranchDownload branchDownloads branchName
   -- Reverse of the read lock, nesting will lead to bad times.
   bracket_ (signalQSemN branchDownloadSemaphore 1) (waitQSemN branchDownloadSemaphore 1) $ do
@@ -196,7 +196,7 @@ downloadBranchBundle branchDownloads@BranchDownloads{..} branchName action = rea
   action branchPath
 
 deleteBranchCache :: BranchDownloads -> Text -> IO ()
-deleteBranchCache branchDownloads@BranchDownloads{..} branchName = do
+deleteBranchCache branchDownloads branchName = do
   putText ("Deleting content for branch " <> branchName)
   branchFolder <- getLocalFolder branchDownloads branchName
   writeLockForBranch branchDownloads branchName $ do
@@ -230,13 +230,13 @@ rewriteAttribute downloads branchNameQueryParam ("href", attrValue)   = ("href",
 rewriteAttribute _ _ pair                                             = pair
 
 rewriteTag :: BranchDownloads -> QueryParam -> Tag Text -> Tag Text
-rewriteTag downloads@BranchDownloads{..} branchNameQueryParam (TagOpen str attributes) =
+rewriteTag downloads branchNameQueryParam (TagOpen str attributes) =
   let updatedAttributes = fmap (rewriteAttribute downloads branchNameQueryParam) attributes
   in  TagOpen str updatedAttributes
 rewriteTag _ _ tag = tag
 
 readBranchHTMLContent :: BranchDownloads -> Text -> Text -> IO Text
-readBranchHTMLContent downloads@BranchDownloads{..} branchName fileToLoad = do
+readBranchHTMLContent downloads branchName fileToLoad = do
   downloadBranchBundle downloads branchName $ \baseFolder -> do
     fileContent <- readFile (baseFolder </> toS fileToLoad)
     let parsedTags = parseTags fileContent

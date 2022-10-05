@@ -41,6 +41,7 @@ executable utopia-web
       Utopia.Web.Executors.Development
       Utopia.Web.Executors.Production
       Utopia.Web.Github
+      Utopia.Web.Github.Types
       Utopia.Web.JSON
       Utopia.Web.Logging
       Utopia.Web.Metrics
@@ -57,8 +58,10 @@ executable utopia-web
   hs-source-dirs:
       src
   default-extensions:
+      Strict
+      StrictData
       NoImplicitPrelude
-  ghc-options: -Wall -threaded -rtsopts
+  ghc-options: -Wall -Werror -threaded -fno-warn-orphans -Wno-unused-imports -Wno-deprecations -rtsopts
   extra-libraries:
       z
   build-depends:
@@ -96,7 +99,9 @@ executable utopia-web
     , http-types
     , lens
     , lens-aeson <1.2
+    , lifted-async
     , lifted-base
+    , mime
     , mime-types
     , modern-uri
     , monad-control
@@ -173,6 +178,7 @@ test-suite utopia-web-test
       Utopia.Web.Executors.Development
       Utopia.Web.Executors.Production
       Utopia.Web.Github
+      Utopia.Web.Github.Types
       Utopia.Web.JSON
       Utopia.Web.Logging
       Utopia.Web.Metrics
@@ -190,8 +196,10 @@ test-suite utopia-web-test
       test
       src
   default-extensions:
+      Strict
+      StrictData
       NoImplicitPrelude
-  ghc-options: -Wall -threaded -rtsopts +RTS -N1 -RTS
+  ghc-options: -Wall -Werror -threaded -fno-warn-orphans -Wno-unused-imports -Wno-deprecations -rtsopts +RTS -N1 -RTS
   extra-libraries:
       z
   build-depends:
@@ -231,7 +239,9 @@ test-suite utopia-web-test
     , http-types
     , lens
     , lens-aeson <1.2
+    , lifted-async
     , lifted-base
+    , mime
     , mime-types
     , modern-uri
     , monad-control

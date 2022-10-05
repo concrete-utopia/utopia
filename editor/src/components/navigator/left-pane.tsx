@@ -1,5 +1,6 @@
 /** @jsxRuntime classic */
 /** @jsx jsx */
+/** @jsxFrag React.Fragment */
 import { jsx } from '@emotion/react'
 import styled from '@emotion/styled'
 import React, { ChangeEvent } from 'react'
@@ -64,11 +65,17 @@ import { getContentsTreeFileFromString } from '../assets'
 import { Link } from '../../uuiui/link'
 import { useTriggerForkProject } from '../editor/persistence-hooks'
 import urljoin from 'url-join'
-import { parseGithubProjectString } from '../../core/shared/github'
+import {
+  getBranchContent,
+  getBranchesForGithubRepository,
+  GetBranchesResponse,
+  parseGithubProjectString,
+} from '../../core/shared/github'
 import { startGithubAuthentication } from '../../utils/github-auth'
 import { getURLImportDetails } from '../../core/model/project-import'
 import { forEachLeft, forEachRight } from '../../core/shared/either'
 import { notice } from '../common/notice'
+import { when } from '../../utils/react-conditionals'
 
 export interface LeftPaneProps {
   editorState: EditorState
@@ -713,8 +720,8 @@ const SharingPane = React.memo(() => {
 })
 
 const GithubPane = React.memo(() => {
-  const [githubRepoStr, setGithubRepoStr] = React.useState('')
-  const parsedRepo = parseGithubProjectString(githubRepoStr)
+  const [importGithubRepoStr, setImportGithubRepoStr] = React.useState('')
+  const parsedImportRepo = parseGithubProjectString(importGithubRepoStr)
   const dispatch = useEditorState((store) => store.dispatch, 'GithubPane dispatch')
   const storedTargetGithubRepo = useEditorState((store) => {
     const repo = store.editor.githubSettings.targetRepository
@@ -726,8 +733,8 @@ const GithubPane = React.memo(() => {
   }, 'GithubPane storedTargetGithubRepo')
 
   const onStartImport = React.useCallback(() => {
-    if (parsedRepo != null) {
-      const { owner, repository } = parsedRepo
+    if (parsedImportRepo != null) {
+      const { owner, repository } = parsedImportRepo
 
       const url = new URL(urljoin(BASE_URL, 'p'))
       url.searchParams.set('github_owner', owner)
@@ -735,13 +742,13 @@ const GithubPane = React.memo(() => {
 
       window.open(url.toString())
     }
-  }, [parsedRepo])
+  }, [parsedImportRepo])
 
   const onChange = React.useCallback(
     (e: React.ChangeEvent<HTMLInputElement>) => {
-      setGithubRepoStr(e.currentTarget.value)
+      setImportGithubRepoStr(e.currentTarget.value)
     },
-    [setGithubRepoStr],
+    [setImportGithubRepoStr],
   )
 
   const githubAuthenticated = useEditorState((store) => {
@@ -777,22 +784,81 @@ const GithubPane = React.memo(() => {
     [dispatch],
   )
 
-  const [githubRepoToSaveTo, setGithubRepoToSaveTo] = React.useState<string | undefined>(
+  const [targetRepository, setTargetRepository] = React.useState<string | undefined>(
     storedTargetGithubRepo,
   )
+  const parsedTargetRepository = React.useMemo(() => {
+    if (targetRepository == null) {
+      return null
+    } else {
+      return parseGithubProjectString(targetRepository)
+    }
+  }, [targetRepository])
 
-  const onChangeGithubRepoToSaveTo = React.useCallback(
+  const onChangeTargetRepository = React.useCallback(
     (changeEvent: React.ChangeEvent<HTMLInputElement>) => {
-      setGithubRepoToSaveTo(changeEvent.currentTarget.value)
+      setTargetRepository(changeEvent.currentTarget.value)
     },
-    [setGithubRepoToSaveTo],
+    [setTargetRepository],
   )
 
   const triggerSaveToGithub = React.useCallback(() => {
-    if (githubRepoToSaveTo != null) {
-      dispatch([EditorActions.saveToGithub(githubRepoToSaveTo)], 'everyone')
+    if (parsedTargetRepository != null) {
+      dispatch([EditorActions.saveToGithub(parsedTargetRepository)], 'everyone')
     }
-  }, [dispatch, githubRepoToSaveTo])
+  }, [dispatch, parsedTargetRepository])
+
+  const [branchesForRepository, setBranchesForRepository] =
+    React.useState<GetBranchesResponse | null>(null)
+
+  React.useEffect(() => {
+    if (parsedTargetRepository != null) {
+      void getBranchesForGithubRepository(parsedTargetRepository).then((result) => {
+        setBranchesForRepository(result)
+      })
+    }
+  }, [parsedTargetRepository])
+
+  const branchesUI = React.useMemo(() => {
+    if (branchesForRepository == null) {
+      return null
+    } else {
+      switch (branchesForRepository.type) {
+        case 'FAILURE':
+          return <span>{branchesForRepository.failureReason}</span>
+        case 'SUCCESS':
+          return (
+            <>
+              {when(
+                branchesForRepository.branches.length > 0,
+                <UIGridRow padded variant='<--------auto-------->|--45px--|'>
+                  <span>NOTE: These will replace the current project contents.</span>
+                </UIGridRow>,
+              )}
+              {branchesForRepository.branches.map((branch, index) => {
+                function loadContentForBranch() {
+                  if (parsedTargetRepository != null) {
+                    void getBranchContent(dispatch, parsedTargetRepository, branch.name)
+                  }
+                }
+                return (
+                  <UIGridRow key={index} padded variant='<--------auto-------->|--45px--|'>
+                    <span>{branch.name}</span>
+                    <Button spotlight highlight onMouseUp={loadContentForBranch}>
+                      Load
+                    </Button>
+                  </UIGridRow>
+                )
+              })}
+            </>
+          )
+
+        default:
+          const _exhaustiveCheck: never = branchesForRepository
+          throw new Error(`Unhandled branches value ${JSON.stringify(branchesForRepository)}`)
+      }
+    }
+  }, [branchesForRepository, parsedTargetRepository, dispatch])
 
   return (
     <FlexColumn
@@ -856,8 +922,13 @@ const GithubPane = React.memo(() => {
             in a new tab.
           </div>
           <UIGridRow padded variant='<--------auto-------->|--45px--|'>
-            <StringInput testId='importProject' value={githubRepoStr} onChange={onChange} />
-            <Button spotlight highlight disabled={parsedRepo == null} onMouseUp={onStartImport}>
+            <StringInput testId='importProject' value={importGithubRepoStr} onChange={onChange} />
+            <Button
+              spotlight
+              highlight
+              disabled={parsedImportRepo == null}
+              onMouseUp={onStartImport}
+            >
               Start
             </Button>
           </UIGridRow>
@@ -877,18 +948,27 @@ const GithubPane = React.memo(() => {
               fontSize: '11px',
             }}
           >
-            Save to a Github repo if you have access to it.
+            Work with a Github repo if you have access to it.
           </div>
-          <UIGridRow padded variant='<--------auto-------->|--45px--|'>
+          <UIGridRow padded variant='<-------------1fr------------->'>
             <StringInput
               testId='saveToGithubInput'
-              value={githubRepoToSaveTo}
-              onChange={onChangeGithubRepoToSaveTo}
+              value={targetRepository}
+              disabled={!githubAuthenticated}
+              onChange={onChangeTargetRepository}
             />
-            <Button spotlight highlight onMouseUp={triggerSaveToGithub}>
-              Save
+          </UIGridRow>
+          <UIGridRow padded variant='<-------------1fr------------->'>
+            <Button
+              spotlight
+              highlight
+              disabled={!githubAuthenticated || parsedTargetRepository == null}
+              onMouseUp={triggerSaveToGithub}
+            >
+              Save To Github
             </Button>
           </UIGridRow>
+          {branchesUI}
         </SectionBodyArea>
       </Section>
       <Section>
