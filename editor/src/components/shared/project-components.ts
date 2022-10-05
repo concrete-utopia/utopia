@@ -323,8 +323,8 @@ export function getNonEmptyComponentGroups(
 const SceneDefaultWidth = 325
 const SceneDefaultHeight = 350
 
-// We would like to treat Scene components from utopia-api specially: they should appear as the first insertable component, and
-// has a custom default size
+// Scene components from utopia-api are special: they should appear as the first insertable component, and
+// they should have a custom default size
 export function moveSceneToTheBeginningAndSetDefaultSize(
   groups: Array<InsertableComponentGroup>,
 ): Array<InsertableComponentGroup> {
