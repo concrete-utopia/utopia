@@ -26,7 +26,7 @@ import {
   simpleAttribute,
 } from '../../core/shared/element-template'
 import { dropFileExtension } from '../../core/shared/file-utils'
-import { Size } from '../../core/shared/math-utils'
+import { size, Size } from '../../core/shared/math-utils'
 import {
   isResolvedNpmDependency,
   PackageStatus,
@@ -61,6 +61,7 @@ export interface InsertableComponent {
   element: JSXElementWithoutUID
   name: string
   stylePropOptions: Array<StylePropOption>
+  defaultSize: Size | null
 }
 
 export function insertableComponent(
@@ -68,12 +69,14 @@ export function insertableComponent(
   element: JSXElementWithoutUID,
   name: string,
   stylePropOptions: Array<StylePropOption>,
+  defaultSize: Size | null,
 ): InsertableComponent {
   return {
     importsToAdd: importsToAdd,
     element: element,
     name: name,
     stylePropOptions: stylePropOptions,
+    defaultSize: defaultSize,
   }
 }
 
@@ -317,7 +320,12 @@ export function getNonEmptyComponentGroups(
   })
 }
 
-export function moveSceneToTheBeginning(
+const SceneDefaultWidth = 325
+const SceneDefaultHeight = 350
+
+// We would like to treat Scene components from utopia-api specially: they should appear as the first insertable component, and
+// has a custom default size
+export function moveSceneToTheBeginningAndSetDefaultSize(
   groups: Array<InsertableComponentGroup>,
 ): Array<InsertableComponentGroup> {
   const utopiaApiGroupIdx = groups.findIndex(
@@ -338,7 +346,15 @@ export function moveSceneToTheBeginning(
       ]
       const newSceneGroup = insertableComponentGroup(
         insertableComponentGroupProjectComponent('Storyboard'),
-        [scene],
+        [
+          insertableComponent(
+            scene.importsToAdd,
+            scene.element,
+            scene.name,
+            scene.stylePropOptions,
+            size(SceneDefaultWidth, SceneDefaultHeight),
+          ),
+        ],
       )
       return [newSceneGroup, ...groupsWithoutUtopiaApi, utopiaApiGroupWithoutScene]
     }
@@ -391,6 +407,7 @@ export function getComponentGroups(
                   insertOption.elementToInsert,
                   insertOption.insertMenuLabel,
                   stylePropOptions,
+                  null,
                 ),
               )
             })
@@ -401,6 +418,7 @@ export function getComponentGroups(
                 jsxElementWithoutUID(exportedComponent.listingName, [], []),
                 exportedComponent.listingName,
                 stylePropOptions,
+                null,
               ),
             )
           }
@@ -436,6 +454,7 @@ export function getComponentGroups(
             insertOption.elementToInsert,
             insertOption.insertMenuLabel,
             stylePropOptions,
+            null,
           ),
         )
       })

@@ -51,7 +51,7 @@ import {
   getInsertableGroupLabel,
   getInsertableGroupPackageStatus,
   getNonEmptyComponentGroups,
-  moveSceneToTheBeginning,
+  moveSceneToTheBeginningAndSetDefaultSize,
 } from '../shared/project-components'
 import { ProjectContentTreeRoot } from '../assets'
 import { generateUidWithExistingComponents } from '../../core/model/element-template-utils'
@@ -199,7 +199,7 @@ class InsertMenuInner extends React.Component<InsertMenuProps> {
     const insertableGroups =
       this.props.currentlyOpenFilename == null
         ? []
-        : moveSceneToTheBeginning(
+        : moveSceneToTheBeginningAndSetDefaultSize(
             getNonEmptyComponentGroups(
               this.props.packageStatus,
               this.props.propertyControlsInfo,
@@ -242,7 +242,12 @@ class InsertMenuInner extends React.Component<InsertMenuProps> {
                 )
                 this.props.editorDispatch(
                   [
-                    enableInsertModeForJSXElement(newElement, newUID, component.importsToAdd, null),
+                    enableInsertModeForJSXElement(
+                      newElement,
+                      newUID,
+                      component.importsToAdd,
+                      component.defaultSize,
+                    ),
                     CanvasActions.createInteractionSession(
                       createInteractionViaMouse(
                         mousePoint,
