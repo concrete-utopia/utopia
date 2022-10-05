@@ -189,6 +189,7 @@ const config = {
       'REACT_APP_AUTH0_ENDPOINT',
       'REACT_APP_AUTH0_REDIRECT_URI',
       'REACT_APP_COMMIT_HASH',
+      'REACT_APP_BROWSER_TEST_DEBUG',
     ]),
 
     new webpack.EnvironmentPlugin({
