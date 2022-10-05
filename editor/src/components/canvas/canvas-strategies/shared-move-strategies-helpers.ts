@@ -46,6 +46,7 @@ import {
 } from '../guideline'
 import { AbsolutePin } from './absolute-resize-helpers'
 import {
+  CustomStrategyState,
   emptyStrategyApplicationResult,
   getTargetPathsFromInteractionTarget,
   InteractionCanvasState,
@@ -62,7 +63,6 @@ export const getAdjustMoveCommands =
   (
     canvasState: InteractionCanvasState,
     interactionState: InteractionSession,
-    sessionState: StrategyState,
     options?: MoveCommandsOptions,
   ) =>
   (
@@ -81,7 +81,6 @@ export const getAdjustMoveCommands =
         snappedDragVector,
         canvasState,
         interactionState,
-        sessionState,
         options,
       )
       commands.push(...elementResult.commands)
@@ -93,7 +92,6 @@ export const getAdjustMoveCommands =
 export function applyMoveCommon(
   canvasState: InteractionCanvasState,
   interactionState: InteractionSession,
-  strategyState: StrategyState,
   getMoveCommands: (snappedDragVector: CanvasPoint) => {
     commands: Array<CanvasCommand>
     intendedBounds: Array<CanvasFrameAndTarget>
@@ -125,14 +123,14 @@ export function applyMoveCommon(
         (path) => interactionState.updatedTargetPaths[EP.toString(path)] ?? path,
       )
       const moveGuidelines = collectParentAndSiblingGuidelines(
-        strategyState.startingMetadata,
+        canvasState.startingMetadata,
         targetsForSnapping,
       )
 
       const { snappedDragVector, guidelinesWithSnappingVector } = snapDrag(
         drag,
         constrainedDragAxis,
-        strategyState.startingMetadata,
+        canvasState.startingMetadata,
         selectedElements,
         moveGuidelines,
         canvasState.scale,
@@ -158,7 +156,6 @@ export function getMoveCommandsForSelectedElement(
   drag: CanvasVector,
   canvasState: InteractionCanvasState,
   interactionState: InteractionSession,
-  sessionState: StrategyState,
   options?: MoveCommandsOptions,
 ): {
   commands: Array<AdjustCssLengthProperty>
@@ -171,7 +168,7 @@ export function getMoveCommandsForSelectedElement(
   )
 
   const elementMetadata = MetadataUtils.findElementByElementPath(
-    sessionState.startingMetadata, // TODO should this be using the current metadata?
+    canvasState.startingMetadata, // TODO should this be using the current metadata?
     selectedElement,
   )
 
@@ -182,12 +179,12 @@ export function getMoveCommandsForSelectedElement(
     ? null
     : MetadataUtils.getLocalFrameFromSpecialSizeMeasurements(
         selectedElement,
-        sessionState.startingMetadata,
+        canvasState.startingMetadata,
       )
 
   const globalFrame = MetadataUtils.getFrameInCanvasCoords(
     selectedElement,
-    sessionState.startingMetadata,
+    canvasState.startingMetadata,
   )
 
   if (element == null) {

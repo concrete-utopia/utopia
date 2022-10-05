@@ -4,6 +4,7 @@ import { ParentOutlines } from '../controls/parent-outlines'
 import { honoursPropsPosition } from './absolute-utils'
 import {
   CanvasStrategy,
+  CustomStrategyState,
   emptyStrategyApplicationResult,
   getTargetPathsFromInteractionTarget,
 } from './canvas-strategy-types'
@@ -43,19 +44,19 @@ export const absoluteMoveStrategy: CanvasStrategy = {
       show: 'visible-only-while-active',
     },
   ], // Uses existing hooks in select-mode-hooks.tsx
-  fitness: (canvasState, interactionState, sessionState) => {
+  fitness: (canvasState, interactionState, customStrategyState) => {
     return absoluteMoveStrategy.isApplicable(
       canvasState,
       interactionState,
-      sessionState.startingMetadata,
-      sessionState.startingAllElementProps,
+      canvasState.startingMetadata,
+      canvasState.startingAllElementProps,
     ) &&
       interactionState.interactionData.type === 'DRAG' &&
       interactionState.activeControl.type === 'BOUNDING_AREA'
       ? 1
       : 0
   },
-  apply: (canvasState, interactionState, sessionState) => {
+  apply: (canvasState, interactionState, customStrategyState) => {
     if (
       interactionState.interactionData.type === 'DRAG' &&
       interactionState.interactionData.drag != null
@@ -63,8 +64,7 @@ export const absoluteMoveStrategy: CanvasStrategy = {
       return applyMoveCommon(
         canvasState,
         interactionState,
-        sessionState,
-        getAdjustMoveCommands(canvasState, interactionState, sessionState),
+        getAdjustMoveCommands(canvasState, interactionState),
       )
     }
     // Fallback for when the checks above are not satisfied.

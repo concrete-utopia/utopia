@@ -90,13 +90,13 @@ export const keyboardAbsoluteResizeStrategy: CanvasStrategy = {
       show: 'visible-except-when-other-strategy-is-active',
     },
   ],
-  fitness: (canvasState, interactionState, sessionState) => {
+  fitness: (canvasState, interactionState, customStrategyState) => {
     if (
       keyboardAbsoluteResizeStrategy.isApplicable(
         canvasState,
         interactionState,
-        sessionState.startingMetadata,
-        sessionState.startingAllElementProps,
+        canvasState.startingMetadata,
+        canvasState.startingAllElementProps,
       ) &&
       interactionState.interactionData.type === 'KEYBOARD'
     ) {
@@ -113,7 +113,7 @@ export const keyboardAbsoluteResizeStrategy: CanvasStrategy = {
     }
     return 0
   },
-  apply: (canvasState, interactionState, sessionState) => {
+  apply: (canvasState, interactionState, customStrategyState) => {
     const selectedElements = getTargetPathsFromInteractionTarget(canvasState.interactionTarget)
     if (interactionState.interactionData.type === 'KEYBOARD') {
       const accumulatedPresses = accumulatePresses(interactionState.interactionData.keyStates)
@@ -121,7 +121,7 @@ export const keyboardAbsoluteResizeStrategy: CanvasStrategy = {
 
       // Start with the frame as it is at the start of the interaction.
       let newFrame =
-        getMultiselectBounds(sessionState.startingMetadata, selectedElements) ??
+        getMultiselectBounds(canvasState.startingMetadata, selectedElements) ??
         canvasRectangle(zeroRectangle)
 
       let commands: Array<CanvasCommand> = []
@@ -146,12 +146,12 @@ export const keyboardAbsoluteResizeStrategy: CanvasStrategy = {
               (_, e) => e,
             )
             const elementParentBounds =
-              MetadataUtils.findElementByElementPath(sessionState.startingMetadata, selectedElement)
+              MetadataUtils.findElementByElementPath(canvasState.startingMetadata, selectedElement)
                 ?.specialSizeMeasurements.immediateParentBounds ?? null
 
             const elementGlobalFrame = MetadataUtils.getFrameInCanvasCoords(
               selectedElement,
-              sessionState.startingMetadata,
+              canvasState.startingMetadata,
             )
 
             if (element != null) {
@@ -171,12 +171,7 @@ export const keyboardAbsoluteResizeStrategy: CanvasStrategy = {
           })
         }
       })
-      const guidelines = getKeyboardStrategyGuidelines(
-        sessionState,
-        canvasState,
-        interactionState,
-        newFrame,
-      )
+      const guidelines = getKeyboardStrategyGuidelines(canvasState, interactionState, newFrame)
       commands.push(setSnappingGuidelines('mid-interaction', guidelines))
       commands.push(pushIntendedBounds(intendedBounds))
       commands.push(setElementsToRerenderCommand(selectedElements))

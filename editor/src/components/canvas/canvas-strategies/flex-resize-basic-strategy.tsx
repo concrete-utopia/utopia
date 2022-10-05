@@ -56,19 +56,19 @@ export const flexResizeBasicStrategy: CanvasStrategy = {
     { control: ParentOutlines, key: 'parent-outlines-control', show: 'visible-only-while-active' },
     { control: ParentBounds, key: 'parent-bounds-control', show: 'visible-only-while-active' },
   ],
-  fitness: (canvasState, interactionState, sessionState) => {
+  fitness: (canvasState, interactionState, customStrategyState) => {
     return flexResizeBasicStrategy.isApplicable(
       canvasState,
       interactionState,
-      sessionState.startingMetadata,
-      sessionState.startingAllElementProps,
+      canvasState.startingMetadata,
+      canvasState.startingAllElementProps,
     ) &&
       interactionState.interactionData.type === 'DRAG' &&
       interactionState.activeControl.type === 'RESIZE_HANDLE'
       ? 1
       : 0
   },
-  apply: (canvasState, interactionState, sessionState) => {
+  apply: (canvasState, interactionState, customStrategyState) => {
     if (
       interactionState.interactionData.type === 'DRAG' &&
       interactionState.activeControl.type === 'RESIZE_HANDLE'
@@ -81,7 +81,7 @@ export const flexResizeBasicStrategy: CanvasStrategy = {
         const drag = interactionState.interactionData.drag
         const originalBounds = MetadataUtils.getFrameInCanvasCoords(
           selectedElement,
-          sessionState.startingMetadata,
+          canvasState.startingMetadata,
         )
 
         if (originalBounds == null) {
@@ -91,7 +91,7 @@ export const flexResizeBasicStrategy: CanvasStrategy = {
         const resizedBounds = resizeWidthHeight(originalBounds, drag, edgePosition)
 
         const elementParentBounds =
-          MetadataUtils.findElementByElementPath(sessionState.startingMetadata, selectedElement)
+          MetadataUtils.findElementByElementPath(canvasState.startingMetadata, selectedElement)
             ?.specialSizeMeasurements.immediateParentBounds ?? null
 
         const resizeCommands = [

@@ -80,7 +80,6 @@ afterAll(() => {
 
 function createEditorStore(
   interactionSession: InteractionSessionWithoutMetadata | null,
-  strategyState?: StrategyState,
 ): EditorStoreFull {
   let emptyEditorState = createEditorState(NO_OP)
   let interactionSessionWithMetadata: InteractionSession | null = null
@@ -109,7 +108,7 @@ function createEditorStore(
     patchedEditor: emptyEditorState,
     unpatchedDerived: derivedState,
     patchedDerived: derivedState,
-    strategyState: strategyState ?? createEmptyStrategyState({}, {}),
+    strategyState: createEmptyStrategyState({}, {}),
     history: history,
     userState: {
       loginState: notLoggedIn,
@@ -179,14 +178,12 @@ const testStrategy: MetaCanvasStrategy = () => [
     fitness: function (
       canvasState: InteractionCanvasState,
       interactionSession: InteractionSession,
-      strategyState: StrategyState,
     ): number {
       return 10
     },
     apply: function (
       canvasState: InteractionCanvasState,
       interactionSession: InteractionSession,
-      strategyState: StrategyState,
     ): StrategyApplicationResult {
       return strategyApplicationResult([
         wildcardPatch('always', { canvas: { scale: { $set: 100 } } }),
@@ -980,12 +977,11 @@ describe('only update metadata on SAVE_DOM_REPORT', () => {
               return 10
             },
             apply: function (
-              _: InteractionCanvasState,
+              canvasState: InteractionCanvasState,
               interactionSession: InteractionSession,
-              strategyState: StrategyState,
             ): StrategyApplicationResult {
-              expect(strategyState.startingMetadata).toBe(interactionSession.latestMetadata)
-              expect(strategyState.startingAllElementProps).toBe(
+              expect(canvasState.startingMetadata).toBe(interactionSession.latestMetadata)
+              expect(canvasState.startingAllElementProps).toBe(
                 interactionSession.latestAllElementProps,
               )
 
@@ -1017,23 +1013,21 @@ describe('only update metadata on SAVE_DOM_REPORT', () => {
             return 10
           },
           apply: function (
-            _: InteractionCanvasState,
+            canvasState: InteractionCanvasState,
             interactionSession: InteractionSession,
-            strategyState: StrategyState,
           ): StrategyApplicationResult {
-            expect(strategyState.startingMetadata).not.toBe(interactionSession.latestMetadata)
-            expect(strategyState.startingAllElementProps).not.toBe(
+            expect(canvasState.startingMetadata).not.toBe(interactionSession.latestMetadata)
+            expect(canvasState.startingAllElementProps).not.toBe(
               interactionSession.latestAllElementProps,
             )
 
             // first we make sure the _starting_ metadata and startingAllElementProps have the original undefined backgroundColor
             expect(
-              strategyState.startingMetadata[EP.toString(targetElement)].computedStyle
+              canvasState.startingMetadata[EP.toString(targetElement)].computedStyle
                 ?.backgroundColor,
             ).toBeUndefined()
             expect(
-              strategyState.startingAllElementProps[EP.toString(targetElement)].style
-                .backgroundColor,
+              canvasState.startingAllElementProps[EP.toString(targetElement)].style.backgroundColor,
             ).toBeUndefined()
 
             // then we check that the latestMetadata and latestAllElementProps have a backgroundColor defined, as a result of the previous toggleProperty dispatch

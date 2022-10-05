@@ -25,6 +25,7 @@ import {
 import {
   CanvasStrategy,
   CanvasStrategyId,
+  defaultCustomStrategyState,
   InteractionCanvasState,
   InteractionTarget,
 } from './canvas-strategy-types'
@@ -88,8 +89,8 @@ function tweakStrategy(
     }
   }
 
-  const name: CanvasStrategy['name'] = (canvasState, interactionSession, strategyState) =>
-    strategy.name(canvasState, interactionSession, strategyState) + ' *'
+  const name: CanvasStrategy['name'] = (canvasState, interactionSession, customStrategyState) =>
+    strategy.name(canvasState, interactionSession, customStrategyState) + ' *'
 
   const id: CanvasStrategyId = 'LOOK_FOR_APPLICABLE_PARENT_ID'
 
@@ -141,7 +142,7 @@ function lookForApplicableParentStrategyInner(
     [existingStrategies],
     canvasState,
     interactionSession,
-    createEmptyStrategyState(metadata, allElementProps),
+    defaultCustomStrategyState(), // TODO possibly replace with real strategy state?
   ).map((s) => s.strategy)
 
   if (
@@ -203,7 +204,7 @@ function isApplicableTraverse(
   metadata: ElementInstanceMetadataMap,
   allElementProps: AllElementProps,
 ): ParentApplicableStrategyResult | null {
-  const strategyState = createEmptyStrategyState(metadata, allElementProps)
+  const customStrategyState = defaultCustomStrategyState() // TODO I'm using the default state here to not change behavior, but I _think_ this should use the real customStrategyState instead
 
   if (
     canvasState.interactionTarget.type !== 'TARGET_PATHS' ||
@@ -213,7 +214,7 @@ function isApplicableTraverse(
       [existingStrategies],
       canvasState,
       interactionSession,
-      strategyState,
+      customStrategyState,
     ).map((s) => s.strategy)
     return {
       strategies: sortedStrategies,
@@ -231,7 +232,7 @@ function isApplicableTraverse(
       [existingStrategies],
       patchedCanvasState,
       interactionSession,
-      strategyState,
+      customStrategyState,
     ).map((s) => s.strategy)
 
     if (!isSingletonAbsoluteMove(sortedStrategies)) {

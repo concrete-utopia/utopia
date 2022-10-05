@@ -22,7 +22,10 @@ import {
   makeTestProjectCodeWithSnippet,
   testPrintCodeFromEditorState,
 } from '../ui-jsx.test-utils'
-import { pickCanvasStateFromEditorState } from './canvas-strategies'
+import {
+  pickCanvasStateFromEditorState,
+  pickCanvasStateFromEditorStateWithMetadata,
+} from './canvas-strategies'
 import { StrategyState } from './interaction-state'
 import { createMouseInteractionForTests } from './interaction-state.test-utils'
 import { absoluteResizeBoundingBoxStrategy } from './absolute-resize-bounding-box-strategy'
@@ -50,23 +53,18 @@ function multiselectResizeElements(
   )
 
   const strategyResult = absoluteResizeBoundingBoxStrategy.apply(
-    pickCanvasStateFromEditorState(initialEditor, createBuiltInDependenciesList(null)),
+    pickCanvasStateFromEditorStateWithMetadata(
+      initialEditor,
+      createBuiltInDependenciesList(null),
+      metadata,
+    ),
     {
       ...interactionSessionWithoutMetadata,
       latestMetadata: {},
       latestAllElementProps: {},
       startingTargetParentsToFilterOut: null,
     },
-    {
-      currentStrategy: null as any, // the strategy does not use this
-      currentStrategyFitness: null as any, // the strategy does not use this
-      currentStrategyCommands: null as any, // the strategy does not use this
-      accumulatedPatches: null as any, // the strategy does not use this
-      commandDescriptions: null as any, // the strategy does not use this
-      sortedApplicableStrategies: null as any, // the strategy does not use this
-      startingMetadata: metadata,
-      customStrategyState: defaultCustomStrategyState(),
-    } as StrategyState,
+    defaultCustomStrategyState(),
     'end-interaction',
   )
 

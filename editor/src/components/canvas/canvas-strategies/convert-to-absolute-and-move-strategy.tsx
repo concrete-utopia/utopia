@@ -74,19 +74,19 @@ export const convertToAbsoluteAndMoveStrategy: CanvasStrategy = {
       show: 'visible-only-while-active',
     },
   ], // Uses existing hooks in select-mode-hooks.tsx
-  fitness: (canvasState, interactionState, sessionState) => {
+  fitness: (canvasState, interactionState, customStrategyState) => {
     return convertToAbsoluteAndMoveStrategy.isApplicable(
       canvasState,
       interactionState,
-      sessionState.startingMetadata,
-      sessionState.startingAllElementProps,
+      canvasState.startingMetadata,
+      canvasState.startingAllElementProps,
     ) &&
       interactionState.interactionData.type === 'DRAG' &&
       interactionState.activeControl.type === 'BOUNDING_AREA'
       ? 0.5
       : 0
   },
-  apply: (canvasState, interactionState, strategyState) => {
+  apply: (canvasState, interactionState, customStrategyState) => {
     if (
       interactionState.interactionData.type === 'DRAG' &&
       interactionState.interactionData.drag != null
@@ -99,7 +99,7 @@ export const convertToAbsoluteAndMoveStrategy: CanvasStrategy = {
       } => {
         return getEscapeHatchCommands(
           getTargetPathsFromInteractionTarget(canvasState.interactionTarget),
-          strategyState.startingMetadata,
+          canvasState.startingMetadata,
           canvasState,
           snappedDragVector,
         )
@@ -107,7 +107,6 @@ export const convertToAbsoluteAndMoveStrategy: CanvasStrategy = {
       const absoluteMoveApplyResult = applyMoveCommon(
         canvasState,
         interactionState,
-        strategyState,
         getConversionAndMoveCommands,
       )
 
