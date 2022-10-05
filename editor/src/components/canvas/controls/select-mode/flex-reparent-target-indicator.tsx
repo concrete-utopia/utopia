@@ -19,9 +19,6 @@ export const FlexReparentTargetIndicator = React.memo(() => {
   const mouseover = React.useCallback(() => {
     setMouseOverSizeOffset(4)
   }, [setMouseOverSizeOffset])
-  const mouseLeave = React.useCallback(() => {
-    setMouseOverSizeOffset(0)
-  }, [setMouseOverSizeOffset])
 
   return (
     <CanvasOffsetWrapper>
@@ -29,7 +26,6 @@ export const FlexReparentTargetIndicator = React.memo(() => {
         {reparentTargetLines.map((line, i) => (
           <div
             onMouseOver={isHoverInteraction ? mouseover : Utils.NO_OP}
-            onMouseLeave={isHoverInteraction ? mouseLeave : Utils.NO_OP}
             data-testid={`flex-reparent-indicator-${i}`}
             key={i}
             style={{
