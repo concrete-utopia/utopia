@@ -819,7 +819,7 @@ const GithubPane = React.memo(() => {
     }
   }, [parsedTargetRepository])
 
-  const getBranchesUI = React.useCallback(() => {
+  const branchesUI = React.useMemo(() => {
     if (branchesForRepository == null) {
       return null
     } else {
@@ -962,13 +962,13 @@ const GithubPane = React.memo(() => {
             <Button
               spotlight
               highlight
-              disabled={!githubAuthenticated}
+              disabled={!githubAuthenticated || parsedTargetRepository == null}
               onMouseUp={triggerSaveToGithub}
             >
               Save To Github
             </Button>
           </UIGridRow>
-          {getBranchesUI()}
+          {branchesUI}
         </SectionBodyArea>
       </Section>
       <Section>
