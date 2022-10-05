@@ -297,7 +297,7 @@ instance ToJSON GetTreeResult where
   toJSON = genericToJSON defaultOptions
 
 data GetBlobResult = GetBlobResult
-                     { content  :: String
+                     { content  :: Text
                      , encoding :: Text
                      , sha      :: Text
                      , url      :: Text

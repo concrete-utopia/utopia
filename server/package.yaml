@@ -15,6 +15,11 @@ ghc-options:
   - -Wno-deprecations
   - -rtsopts
 
+default-extensions:
+  - Strict
+  - StrictData
+  - NoImplicitPrelude
+
 flags:
   enable-external-tests:
     description: Enable the external tests.
@@ -110,8 +115,6 @@ dependencies:
   - wreq
 extra-libraries:
   - z
-default-extensions:
-  - NoImplicitPrelude
 executable:
   main: Main.hs
   source-dirs: src

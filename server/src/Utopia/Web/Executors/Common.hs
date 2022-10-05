@@ -400,5 +400,5 @@ getGithubBranch githubResources logger metrics pool userID owner repository bran
       getGitBranch accessToken owner repository branchName
     let treeSha = view (field @"commit" . field @"commit" . field @"tree" . field @"sha") branch
     useAccessToken githubResources logger metrics pool userID $ \accessToken -> do
-      getRecursiveGitTreeAsContent accessToken owner repository [] treeSha
+      getRecursiveGitTreeAsContent accessToken owner repository treeSha
   pure $ either getBranchContentFailureFromReason getBranchContentSuccessFromContent result

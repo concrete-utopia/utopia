@@ -58,6 +58,8 @@ executable utopia-web
   hs-source-dirs:
       src
   default-extensions:
+      Strict
+      StrictData
       NoImplicitPrelude
   ghc-options: -Wall -Werror -threaded -fno-warn-orphans -Wno-unused-imports -Wno-deprecations -rtsopts
   extra-libraries:
@@ -194,6 +196,8 @@ test-suite utopia-web-test
       test
       src
   default-extensions:
+      Strict
+      StrictData
       NoImplicitPrelude
   ghc-options: -Wall -Werror -threaded -fno-warn-orphans -Wno-unused-imports -Wno-deprecations -rtsopts +RTS -N1 -RTS
   extra-libraries:

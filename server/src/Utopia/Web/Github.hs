@@ -29,7 +29,8 @@ import           Data.Generics.Sum
 import qualified Data.HashMap.Strict             as M
 import qualified Data.Text                       as T
 import           Data.Text.Encoding
-import           Data.Text.Encoding.Base64.URL
+import           Data.Text.Encoding.Base64
+import           Data.Time.Clock
 import           Data.Typeable
 import           Network.HTTP.Types.Status
 import           Network.OAuth.OAuth2
@@ -95,13 +96,14 @@ postToGithub options url content = WR.postWith options url (toJSON content)
 getFromGithub :: MakeGithubRequest ()
 getFromGithub options url _ = WR.getWith options url
 
-callGithub :: (ToJSON request, FromJSON response, MonadIO m) => MakeGithubRequest request -> (Status -> ExceptT Text m ()) -> AccessToken -> Text -> request -> ExceptT Text m response
-callGithub makeRequest handleErrorCases accessToken restURL request = do
+callGithub :: (ToJSON request, FromJSON response, MonadIO m) => MakeGithubRequest request -> [(Text, Text)] -> (Status -> ExceptT Text m ()) -> AccessToken -> Text -> request -> ExceptT Text m response
+callGithub makeRequest queryParameters handleErrorCases accessToken restURL request = do
   let options = WR.defaults
               & WR.header "User-Agent" .~ ["concrete-utopia/utopia"]
               & WR.header "Accept" .~ ["application/vnd.github.v3+json"]
               & WR.header "Authorization" .~ ["Bearer " <> (encodeUtf8 $ atoken accessToken)]
               & WR.checkResponse .~ (Just $ \_ _ -> return ())
+              & WR.params .~ queryParameters
   result <- liftIO $ makeRequest options (toS restURL) request
   let status = view WR.responseStatus result
   unless (statusIsSuccessful status) $ handleErrorCases status
@@ -117,7 +119,7 @@ createGitTree :: (MonadIO m) => AccessToken -> GithubRepo -> ProjectContentTreeR
 createGitTree accessToken GithubRepo{..} projectContents = do
   let repoUrl = "https://api.github.com/repos/" <> owner <> "/" <> repository <> "/git/trees"
   let request = createGitTreeFromProjectContent projectContents
-  callGithub postToGithub createTreeHandleErrorCases accessToken repoUrl request
+  callGithub postToGithub [] createTreeHandleErrorCases accessToken repoUrl request
 
 createGitTreeFromModel :: (MonadIO m) => AccessToken -> PersistentModel -> ExceptT Text m CreateGitTreeResult
 createGitTreeFromModel accessToken PersistentModel{..} = do
@@ -135,7 +137,7 @@ createGitCommit :: (MonadIO m) => AccessToken -> GithubRepo -> Text -> ExceptT T
 createGitCommit accessToken GithubRepo{..} treeSha = do
   let repoUrl = "https://api.github.com/repos/" <> owner <> "/" <> repository <> "/git/commits"
   let request = CreateGitCommit "Committed automatically." treeSha
-  callGithub postToGithub createCommitHandleErrorCases accessToken repoUrl request
+  callGithub postToGithub [] createCommitHandleErrorCases accessToken repoUrl request
 
 createGitCommitForTree :: (MonadIO m) => AccessToken -> PersistentModel -> Text -> ExceptT Text m CreateGitCommitResult
 createGitCommitForTree accessToken PersistentModel{..} treeSha = do
@@ -152,7 +154,7 @@ createGitBranch :: (MonadIO m) => AccessToken -> GithubRepo -> Text -> Text -> E
 createGitBranch accessToken GithubRepo{..} commitSha branchName = do
   let repoUrl = "https://api.github.com/repos/" <> owner <> "/" <> repository <> "/git/refs"
   let request = CreateGitBranch ("refs/heads/" <> branchName) commitSha
-  callGithub postToGithub createBranchHandleErrorCases accessToken repoUrl request
+  callGithub postToGithub [] createBranchHandleErrorCases accessToken repoUrl request
 
 createGitBranchForCommit :: (MonadIO m) => AccessToken -> PersistentModel -> Text -> Text -> ExceptT Text m CreateGitBranchResult
 createGitBranchForCommit accessToken PersistentModel{..} commitSha branchName = do
@@ -168,7 +170,7 @@ getGitBranchesErrorCases status | status == notFound404  = throwE "Could not fin
 getGitBranches :: (MonadIO m) => AccessToken -> Text -> Text -> ExceptT Text m GetBranchesResult
 getGitBranches accessToken owner repository = do
   let repoUrl = "https://api.github.com/repos/" <> owner <> "/" <> repository <> "/branches"
-  callGithub getFromGithub getGitBranchesErrorCases accessToken repoUrl ()
+  callGithub getFromGithub [] getGitBranchesErrorCases accessToken repoUrl ()
 
 getGitBranchErrorCases :: (MonadIO m) => Status -> ExceptT Text m a
 getGitBranchErrorCases status | status == notFound404  = throwE "Could not find branch."
@@ -178,7 +180,7 @@ getGitBranchErrorCases status | status == notFound404  = throwE "Could not find 
 getGitBranch :: (MonadIO m) => AccessToken -> Text -> Text -> Text -> ExceptT Text m GetBranchResult
 getGitBranch accessToken owner repository branchName = do
   let repoUrl = "https://api.github.com/repos/" <> owner <> "/" <> repository <> "/branches/" <> branchName
-  callGithub getFromGithub getGitBranchErrorCases accessToken repoUrl ()
+  callGithub getFromGithub [] getGitBranchErrorCases accessToken repoUrl ()
 
 getGitTreeErrorCases :: (MonadIO m) => Status -> ExceptT Text m a
 getGitTreeErrorCases status | status == notFound404  = throwE "Could not find tree."
@@ -188,7 +190,7 @@ getGitTreeErrorCases status | status == notFound404  = throwE "Could not find tr
 getGitTree :: (MonadIO m) => AccessToken -> Text -> Text -> Text -> ExceptT Text m GetTreeResult
 getGitTree accessToken owner repository treeSha = do
   let repoUrl = "https://api.github.com/repos/" <> owner <> "/" <> repository <> "/git/trees/" <> treeSha
-  callGithub getFromGithub getGitTreeErrorCases accessToken repoUrl ()
+  callGithub getFromGithub [("recursive", "true")] getGitTreeErrorCases accessToken repoUrl ()
 
 getGitBlobErrorCases :: (MonadIO m) => Status -> ExceptT Text m a
 getGitBlobErrorCases status   | status == forbidden403 = throwE "Forbidden from loading blob."
@@ -199,44 +201,68 @@ getGitBlobErrorCases status   | status == forbidden403 = throwE "Forbidden from 
 getGitBlob :: (MonadIO m) => AccessToken -> Text -> Text -> Text -> ExceptT Text m GetBlobResult
 getGitBlob accessToken owner repository fileSha = do
   let repoUrl = "https://api.github.com/repos/" <> owner <> "/" <> repository <> "/git/blobs/" <> fileSha
-  callGithub getFromGithub getGitBlobErrorCases accessToken repoUrl ()
+  callGithub getFromGithub [] getGitBlobErrorCases accessToken repoUrl ()
 
-getFullPath :: [Text] -> Text -> Text
-getFullPath pathSoFar latestPathPart = T.cons '/' (T.intercalate "/" (pathSoFar <> [latestPathPart]))
-
-makeProjectContentsTreeEntry :: ReferenceGitTreeEntry -> GetBlobResult -> [Text] -> ProjectContentTreeRoot
-makeProjectContentsTreeEntry gitEntry blobResult pathSoFar = do
-  let decodedContent = toS $ decodeToString $ view (field @"content") blobResult
-  let path = view (field @"path") gitEntry
-  let pathWithForwardSlash = getFullPath pathSoFar path
-  let textFileContents = TextFileContents decodedContent (ParsedTextFileUnparsed Unparsed) CodeAhead
-  let textFile = TextFile textFileContents Nothing 0.0
-  M.singleton path $ ProjectContentsTreeFile $ ProjectContentFile pathWithForwardSlash $ ProjectTextFile textFile
+makeProjectContentsTreeEntry :: ReferenceGitTreeEntry -> GetBlobResult -> (ProjectContentsTree, [Text])
+makeProjectContentsTreeEntry gitEntry blobResult =
+  let decodedContent = decodeBase64Lenient $ view (field @"content") blobResult
+      path = view (field @"path") gitEntry
+      pathParts = T.splitOn "/" path
+      pathWithForwardSlash = "/" <> path
+      textFileContents = TextFileContents decodedContent (ParsedTextFileUnparsed Unparsed) CodeAhead
+      textFile = TextFile textFileContents Nothing 0.0
+      -- Create one of our file representations,
+      fileResult = ProjectContentsTreeFile $ ProjectContentFile pathWithForwardSlash $ ProjectTextFile textFile
+  in  (fileResult, pathParts)
 
 foldExceptContentTreeRoot :: (MonadBaseControl IO m, MonadIO m, Traversable t) => (a -> ExceptT Text m ProjectContentTreeRoot) -> t a -> ExceptT Text m ProjectContentTreeRoot
 foldExceptContentTreeRoot fn traversableValues = do
-  subContents <- mapConcurrently fn traversableValues
-  let subContent = foldMap' (\x -> x) subContents
-  pure subContent
+  -- Get all the values from within a tree root concurrently.
+  subContents <- traverse fn traversableValues
+  -- Combine all the individual roots into a singular root.
+  pure $ fold subContents
 
-projectContentFromGitTreeEntry :: (MonadBaseControl IO m, MonadIO m) => AccessToken -> Text -> Text -> [Text] -> ReferenceGitTreeEntry -> ExceptT Text m ProjectContentTreeRoot
-projectContentFromGitTreeEntry accessToken owner repository pathSoFar entry = do
-  let entrySha = view (field @"sha") entry
+-- Handle an individual entry.
+projectContentFromGitTreeEntry :: (MonadBaseControl IO m, MonadIO m) => AccessToken -> Text -> Text -> ReferenceGitTreeEntry -> ExceptT Text m (ProjectContentsTree, [Text])
+projectContentFromGitTreeEntry accessToken owner repository entry = do
   case view (field @"type_") entry of
     "blob" -> do
+      -- This entry is a regular file.
+      let entrySha = view (field @"sha") entry
+      print $ view (field @"path") entry
       gitBlob <- getGitBlob accessToken owner repository entrySha
-      pure $ makeProjectContentsTreeEntry entry gitBlob pathSoFar
-    "tree" -> do
-      let path = view (field @"path") entry
-      subContent <- getRecursiveGitTreeAsContent accessToken owner repository (pathSoFar <> [path]) entrySha
-      let fullPath = getFullPath pathSoFar path
-      pure $ M.singleton path $ ProjectContentsTreeDirectory $ ProjectContentDirectory fullPath Directory subContent
+      pure $ makeProjectContentsTreeEntry entry gitBlob
     _ -> do
-      pure mempty
+      throwError "Not a blob."
 
-getRecursiveGitTreeAsContent :: (MonadBaseControl IO m, MonadIO m) => AccessToken -> Text -> Text -> [Text] -> Text -> ExceptT Text m ProjectContentTreeRoot
-getRecursiveGitTreeAsContent accessToken owner repository pathSoFar treeSha = do
+addProjectContentFromGitEntry :: ProjectContentTreeRoot -> ProjectContentsTree -> [Text] -> [Text] -> Either Text ProjectContentTreeRoot
+addProjectContentFromGitEntry _ _ [] _ =
+  Left "Empty path not allowed."
+addProjectContentFromGitEntry treeRoot treeContent (lastFilenamePart : []) _ =
+  Right $ M.insert lastFilenamePart (treeContent) treeRoot
+addProjectContentFromGitEntry treeRoot treeContent (filenamePart : filenameRemainder) pathSoFar =
+  let currentSubTree = M.lookup filenamePart treeRoot
+      newPathSoFar = pathSoFar <> [filenamePart]
+  in  case currentSubTree of
+        (Just (ProjectContentsTreeDirectory contentDirectory@ProjectContentDirectory{..})) -> do
+          subTree <- addProjectContentFromGitEntry children treeContent filenameRemainder newPathSoFar
+          let updatedEntry = ProjectContentsTreeDirectory $ contentDirectory{children = subTree}
+          Right $ M.insert filenamePart updatedEntry treeRoot
+        (Just (ProjectContentsTreeFile _)) -> Left "Attempted to add a directory to where a file exists."
+        Nothing -> do
+          subTree <- addProjectContentFromGitEntry M.empty treeContent filenameRemainder newPathSoFar
+          let fullPath = "/" <> T.intercalate "/" newPathSoFar
+          let newEntry = ProjectContentsTreeDirectory $ ProjectContentDirectory fullPath Directory subTree
+          Right $ M.insert filenamePart newEntry treeRoot
+
+getRecursiveGitTreeAsContent :: (MonadBaseControl IO m, MonadIO m) => AccessToken -> Text -> Text -> Text -> ExceptT Text m ProjectContentTreeRoot
+getRecursiveGitTreeAsContent accessToken owner repository treeSha = do
+  -- Obtain the git tree entry here first.
   treeResult <- getGitTree accessToken owner repository treeSha
+  -- Pull the entries out of the result.
   let treeEntries = view (field @"tree") treeResult
-  foldExceptContentTreeRoot (projectContentFromGitTreeEntry accessToken owner repository pathSoFar) treeEntries
+  let blobOnlyEntries = filter (\entry -> view (field @"type_") entry == "blob") treeEntries
+  blobContents <- mapConcurrently (projectContentFromGitTreeEntry accessToken owner repository) blobOnlyEntries
+  -- Construct the tree root from the entries retrieved from the tree.
+  foldM (\workingRoot -> \(treeContent, pathParts) -> except $ addProjectContentFromGitEntry workingRoot treeContent pathParts []) M.empty blobContents
 
