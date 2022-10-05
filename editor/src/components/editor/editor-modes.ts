@@ -6,7 +6,7 @@ export interface ElementInsertionSubject {
   type: 'Element'
   uid: string
   element: JSXElement
-  defaultSize: Size | null
+  defaultSize: Size
   importsToAdd: Imports
   parent: InsertionParent
 }
@@ -20,6 +20,8 @@ export interface DragAndDropInsertionSubject {
   imageAssets: Array<string> | null
 }
 
+export const DefaultInsertSize: Size = { width: 100, height: 100 }
+
 export function elementInsertionSubject(
   uid: string,
   element: JSXElement,
@@ -31,7 +33,7 @@ export function elementInsertionSubject(
     type: 'Element',
     uid: uid,
     element: element,
-    defaultSize: size,
+    defaultSize: size ?? DefaultInsertSize,
     importsToAdd: importsToAdd,
     parent: parent,
   }
