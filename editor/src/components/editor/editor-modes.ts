@@ -1,17 +1,12 @@
-import type {
-  ElementPath,
-  id,
-  StaticElementPath,
-  Imports,
-} from '../../core/shared/project-file-types'
-import type { JSXElement, JSXElementName } from '../../core/shared/element-template'
+import type { ElementPath, StaticElementPath, Imports } from '../../core/shared/project-file-types'
+import type { JSXElement } from '../../core/shared/element-template'
 import type { Size } from '../../core/shared/math-utils'
 
 export interface ElementInsertionSubject {
   type: 'Element'
   uid: string
   element: JSXElement
-  size: Size | null
+  defaultSize: Size | null
   importsToAdd: Imports
   parent: InsertionParent
 }
@@ -36,7 +31,7 @@ export function elementInsertionSubject(
     type: 'Element',
     uid: uid,
     element: element,
-    size: size,
+    defaultSize: size,
     importsToAdd: importsToAdd,
     parent: parent,
   }
