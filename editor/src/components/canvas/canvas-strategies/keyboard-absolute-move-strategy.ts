@@ -18,9 +18,9 @@ import {
   zeroRectangle,
 } from '../../../core/shared/math-utils'
 import {
-  getAbsoluteMoveCommandsForSelectedElement,
+  getMoveCommandsForSelectedElement,
   getMultiselectBounds,
-} from './shared-absolute-move-strategy-helpers'
+} from './shared-move-strategies-helpers'
 import { setElementsToRerenderCommand } from '../commands/set-elements-to-rerender-command'
 import { setSnappingGuidelines } from '../commands/set-snapping-guidelines-command'
 import { updateHighlightedViews } from '../commands/update-highlighted-views-command'
@@ -39,7 +39,7 @@ import { honoursPropsPosition } from './absolute-utils'
 export const keyboardAbsoluteMoveStrategy: CanvasStrategy = {
   id: 'KEYBOARD_ABSOLUTE_MOVE',
   name: () => 'Move',
-  isApplicable: (canvasState, _interactionState, metadata) => {
+  isApplicable: (canvasState, interactionSession, metadata) => {
     const selectedElements = getTargetPathsFromInteractionTarget(canvasState.interactionTarget)
     if (selectedElements.length > 0) {
       return selectedElements.every((element) => {
@@ -54,17 +54,17 @@ export const keyboardAbsoluteMoveStrategy: CanvasStrategy = {
     }
   },
   controlsToRender: [], // Uses existing hooks in select-mode-hooks.tsx
-  fitness: (canvasState, interactionState, sessionState) => {
+  fitness: (canvasState, interactionSession, customStrategyState) => {
     if (
       keyboardAbsoluteMoveStrategy.isApplicable(
         canvasState,
-        interactionState,
-        sessionState.startingMetadata,
-        sessionState.startingAllElementProps,
+        interactionSession,
+        canvasState.startingMetadata,
+        canvasState.startingAllElementProps,
       ) &&
-      interactionState.interactionData.type === 'KEYBOARD'
+      interactionSession.interactionData.type === 'KEYBOARD'
     ) {
-      const { interactionData } = interactionState
+      const { interactionData } = interactionSession
 
       const lastKeyState = getLastKeyPressState(interactionData.keyStates)
       if (lastKeyState != null) {
@@ -78,10 +78,10 @@ export const keyboardAbsoluteMoveStrategy: CanvasStrategy = {
     }
     return 0
   },
-  apply: (canvasState, interactionState, sessionState) => {
+  apply: (canvasState, interactionSession, customStrategyState) => {
     const selectedElements = getTargetPathsFromInteractionTarget(canvasState.interactionTarget)
-    if (interactionState.interactionData.type === 'KEYBOARD') {
-      const accumulatedPresses = accumulatePresses(interactionState.interactionData.keyStates)
+    if (interactionSession.interactionData.type === 'KEYBOARD') {
+      const accumulatedPresses = accumulatePresses(interactionSession.interactionData.keyStates)
       let commands: Array<CanvasCommand> = []
       let intendedBounds: Array<CanvasFrameAndTarget> = []
       let keyboardMovement: CanvasVector = zeroCanvasPoint
@@ -96,32 +96,23 @@ export const keyboardAbsoluteMoveStrategy: CanvasStrategy = {
       })
       if (keyboardMovement.x !== 0 || keyboardMovement.y !== 0) {
         selectedElements.forEach((selectedElement) => {
-          const elementResult = getAbsoluteMoveCommandsForSelectedElement(
+          const elementResult = getMoveCommandsForSelectedElement(
             selectedElement,
             keyboardMovement,
             canvasState,
-            interactionState,
-            sessionState,
+            interactionSession,
           )
           commands.push(...elementResult.commands)
           intendedBounds.push(...elementResult.intendedBounds)
         })
       }
-      const multiselectBounds = getMultiselectBounds(
-        sessionState.startingMetadata,
-        selectedElements,
-      )
+      const multiselectBounds = getMultiselectBounds(canvasState.startingMetadata, selectedElements)
       const newFrame = offsetRect(
         defaultIfNull(canvasRectangle(zeroRectangle), multiselectBounds),
         keyboardMovement,
       )
 
-      const guidelines = getKeyboardStrategyGuidelines(
-        sessionState,
-        canvasState,
-        interactionState,
-        newFrame,
-      )
+      const guidelines = getKeyboardStrategyGuidelines(canvasState, interactionSession, newFrame)
 
       commands.push(updateHighlightedViews('mid-interaction', []))
       commands.push(setSnappingGuidelines('mid-interaction', guidelines))

@@ -5,54 +5,96 @@ import {
   ElementInstanceMetadata,
   ElementInstanceMetadataMap,
 } from '../../../core/shared/element-template'
-import { rectContainsPoint, CanvasVector, mod } from '../../../core/shared/math-utils'
+import { CanvasRectangle, CanvasVector, mod } from '../../../core/shared/math-utils'
 import { ElementPath } from '../../../core/shared/project-file-types'
+import { fastForEach } from '../../../core/shared/utils'
 import { stylePropPathMappingFn } from '../../inspector/common/property-path-hooks'
 import { DeleteProperties, deleteProperties } from '../commands/delete-properties-command'
 import { SetProperty, setProperty } from '../commands/set-property-command'
+import { getTargetPathsFromInteractionTarget, InteractionTarget } from './canvas-strategy-types'
 
-export function isValidSibling(siblingMetadata: ElementInstanceMetadata | null): boolean {
-  // TODO filter float and relative (with TLBR)
-  return !MetadataUtils.isPositionAbsolute(siblingMetadata)
+export function isValidFlowReorderTarget(
+  path: ElementPath,
+  metadata: ElementInstanceMetadataMap,
+): boolean {
+  const elementMetadata = MetadataUtils.findElementByElementPath(metadata, path)
+  if (MetadataUtils.isPositionAbsolute(elementMetadata)) {
+    return false
+  } else if (elementMetadata?.specialSizeMeasurements.float !== 'none') {
+    return false
+  } else {
+    return MetadataUtils.isPositionedByFlow(elementMetadata)
+  }
 }
 
-function findSiblingIndexUnderPoint(
-  point: CanvasVector,
-  target: ElementPath | null,
-  siblings: Array<ElementPath>,
-  metadata: ElementInstanceMetadataMap,
-): { newIndex: number; targetSiblingUnderMouse: ElementPath | null } {
-  const newIndex = siblings.findIndex((sibling) => {
-    const siblingMetadata = MetadataUtils.findElementByElementPath(metadata, sibling)
-    const frame = MetadataUtils.getFrameInCanvasCoords(sibling, metadata)
-    return (
-      isValidSibling(siblingMetadata) &&
-      frame != null &&
-      rectContainsPoint(frame, point) &&
-      MetadataUtils.isPositionedByFlow(siblingMetadata) &&
-      !EP.pathsEqual(target, sibling)
-    )
-  })
-  return { newIndex: newIndex, targetSiblingUnderMouse: siblings[newIndex] }
-}
-
-export function getNewDisplayTypeForIndex(
-  metadata: ElementInstanceMetadataMap,
+export function areAllSiblingsInOneDimension(
   target: ElementPath,
+  metadata: ElementInstanceMetadataMap,
+): boolean {
+  const targetElement = MetadataUtils.findElementByElementPath(metadata, target)
+  const siblings = MetadataUtils.getSiblings(metadata, target) // including target
+  if (targetElement == null || siblings.length === 1) {
+    return false
+  }
+
+  const targetDirection = getElementDirection(targetElement)
+
+  let allHorizontalOrVertical = true
+  let frames: Array<CanvasRectangle> = []
+  fastForEach(siblings, (sibling) => {
+    if (isValidFlowReorderTarget(sibling.elementPath, metadata)) {
+      if (getElementDirection(sibling) !== targetDirection) {
+        allHorizontalOrVertical = false
+      }
+      if (sibling.globalFrame != null) {
+        frames.push(sibling.globalFrame)
+      }
+    }
+  })
+
+  return allHorizontalOrVertical && areNonWrappingSiblings(frames, targetDirection)
+}
+
+function areNonWrappingSiblings(
+  frames: Array<CanvasRectangle>,
+  layoutDirection: 'horizontal' | 'vertical',
+): boolean {
+  return frames.every((frame, i) => {
+    if (i === 0) {
+      return true
+    } else {
+      const prevFrame: CanvasRectangle = frames[i - 1]
+      if (layoutDirection === 'horizontal') {
+        // all elements are on the right side of the previous sibling
+        return frame.x > prevFrame.x
+      } else {
+        // all elements are below of the previous sibling
+        return frame.y > prevFrame.y
+      }
+    }
+  })
+}
+
+function getElementDirection(element: ElementInstanceMetadata): 'vertical' | 'horizontal' {
+  const displayValue = element.specialSizeMeasurements.display
+  return displayValue === 'inline' || displayValue === 'inline-block' ? 'horizontal' : 'vertical'
+}
+
+function getNewDisplayTypeForIndex(
+  metadata: ElementInstanceMetadataMap,
   targetSibling: ElementPath,
 ) {
   const displayType = MetadataUtils.findElementByElementPath(metadata, targetSibling)
     ?.specialSizeMeasurements.display
   const displayBlockInlineBlock =
-    displayType === 'block' || displayType === 'inline-block' ? displayType : undefined
+    displayType === 'block' || displayType === 'inline-block' ? displayType : null
 
-  const element = MetadataUtils.findElementByElementPath(metadata, target)
-  return getNewDisplayType(element, displayBlockInlineBlock)
+  return displayBlockInlineBlock
 }
 
 function shouldRemoveDisplayProp(
   element: ElementInstanceMetadata | null,
-  newDisplayValue: 'block' | 'inline-block' | undefined,
+  newDisplayValue: 'block' | 'inline-block' | null,
 ): boolean {
   if (element == null || element.specialSizeMeasurements.htmlElementName == null) {
     return false
@@ -65,81 +107,42 @@ function shouldRemoveDisplayProp(
   }
 }
 
-function getNewDisplayType(
-  element: ElementInstanceMetadata | null,
-  newDisplayValue: 'block' | 'inline-block' | undefined,
-): AddDisplayBlockOrOnline | RemoveDisplayProp | null {
-  if (shouldRemoveDisplayProp(element, newDisplayValue)) {
-    return removeDisplayProp()
-  } else if (newDisplayValue != null) {
-    return addDisplayProp(newDisplayValue)
-  } else {
-    return null
-  }
-}
-
-interface AddDisplayBlockOrOnline {
-  type: 'add'
-  display: 'block' | 'inline-block'
-}
-
-export function addDisplayProp(display: 'inline-block' | 'block'): AddDisplayBlockOrOnline {
-  return {
-    type: 'add',
-    display: display,
-  }
-}
-
-interface RemoveDisplayProp {
-  type: 'remove'
-}
-
-export function removeDisplayProp(): RemoveDisplayProp {
-  return { type: 'remove' }
-}
-
-export function getFlowReorderIndex(
-  latestMetadata: ElementInstanceMetadataMap,
-  point: CanvasVector,
-  target: ElementPath | null,
-): {
-  newIndex: number
-  targetSiblingUnderMouse: ElementPath | null
-} {
-  if (target === null) {
-    return {
-      newIndex: -1,
-      targetSiblingUnderMouse: null,
-    }
-  }
-  const siblings = MetadataUtils.getSiblingsProjectContentsOrdered(latestMetadata, target).map(
-    (element) => element.elementPath,
-  )
-
-  const reorderResult = findSiblingIndexUnderPoint(point, target, siblings, latestMetadata)
-  if (reorderResult.newIndex === -1) {
-    // We were unable to find an appropriate entry.
-    return {
-      newIndex: -1,
-      targetSiblingUnderMouse: null,
-    }
-  } else {
-    return {
-      newIndex: reorderResult.newIndex,
-      targetSiblingUnderMouse: reorderResult.targetSiblingUnderMouse,
-    }
-  }
-}
-
 const StyleDisplayProp = stylePropPathMappingFn('display', ['style'])
-export function getOptionalDisplayPropCommands(
-  target: ElementPath,
-  newDisplayType: AddDisplayBlockOrOnline | RemoveDisplayProp | null,
+function getNewDisplayTypeCommands(
+  element: ElementInstanceMetadata,
+  newDisplayValue: 'block' | 'inline-block' | null,
 ): Array<SetProperty | DeleteProperties> {
-  if (newDisplayType?.type === 'add') {
-    return [setProperty('always', target, StyleDisplayProp, newDisplayType.display)]
-  } else if (newDisplayType?.type === 'remove') {
-    return [deleteProperties('always', target, [StyleDisplayProp])]
+  if (shouldRemoveDisplayProp(element, newDisplayValue)) {
+    return [deleteProperties('always', element.elementPath, [StyleDisplayProp])]
+  } else if (newDisplayValue != null) {
+    return [setProperty('always', element.elementPath, StyleDisplayProp, newDisplayValue)]
+  } else {
+    return []
+  }
+}
+
+export function getOptionalDisplayPropCommands(
+  lastReorderIdx: number | null | undefined,
+  interactionTarget: InteractionTarget,
+  startingMetadata: ElementInstanceMetadataMap,
+): Array<SetProperty | DeleteProperties> {
+  const selectedElements = getTargetPathsFromInteractionTarget(interactionTarget)
+  const target = selectedElements[0]
+  const siblingsOfTarget = MetadataUtils.getSiblingsProjectContentsOrdered(
+    startingMetadata,
+    target,
+  ).map((element) => element.elementPath)
+  const element = MetadataUtils.findElementByElementPath(startingMetadata, target)
+  if (
+    element != null &&
+    lastReorderIdx != null &&
+    lastReorderIdx !== siblingsOfTarget.findIndex((sibling) => EP.pathsEqual(sibling, target))
+  ) {
+    const newDisplayType = getNewDisplayTypeForIndex(
+      startingMetadata,
+      siblingsOfTarget[lastReorderIdx],
+    )
+    return getNewDisplayTypeCommands(element, newDisplayType)
   } else {
     return []
   }

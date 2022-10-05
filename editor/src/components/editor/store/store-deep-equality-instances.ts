@@ -309,6 +309,10 @@ import {
   editorState,
   AllElementProps,
   LockedElements,
+  ProjectGithubSettings,
+  GithubRepo,
+  githubRepo,
+  projectGithubSettings,
 } from './editor-state'
 import {
   CornerGuideline,
@@ -330,6 +334,7 @@ import {
   FlexGapHandle,
   FlowSlider,
   flowSlider,
+  HoverInteractionData,
   InputData,
   interactionSession,
   InteractionSession,
@@ -1214,6 +1219,8 @@ export function SpecialSizeMeasurementsKeepDeepEquality(): KeepDeepEqualityCall<
       oldSize.globalContentBox,
       newSize.globalContentBox,
     ).areEqual
+    const floatEquals = oldSize.float === newSize.float
+    const hasPositionOffsetEquals = oldSize.hasPositionOffset === newSize.hasPositionOffset
     const areEqual =
       offsetResult.areEqual &&
       coordinateSystemBoundsResult.areEqual &&
@@ -1236,7 +1243,9 @@ export function SpecialSizeMeasurementsKeepDeepEquality(): KeepDeepEqualityCall<
       displayEquals &&
       htmlElementNameEquals &&
       renderedChildrenCount &&
-      globalContentBoxEquals
+      globalContentBoxEquals &&
+      floatEquals &&
+      hasPositionOffsetEquals
     if (areEqual) {
       return keepDeepEqualityResult(oldSize, true)
     } else {
@@ -1263,6 +1272,8 @@ export function SpecialSizeMeasurementsKeepDeepEquality(): KeepDeepEqualityCall<
         newSize.htmlElementName,
         newSize.renderedChildrenCount,
         newSize.globalContentBox,
+        newSize.float,
+        newSize.hasPositionOffset,
       )
       return keepDeepEqualityResult(sizeMeasurements, false)
     }
@@ -1620,6 +1631,21 @@ export const DragInteractionDataKeepDeepEquality: KeepDeepEqualityCall<DragInter
     },
   )
 
+export const HoverInteractionDataKeepDeepEquality: KeepDeepEqualityCall<HoverInteractionData> =
+  combine2EqualityCalls(
+    (data) => data.point,
+    CanvasPointKeepDeepEquality,
+    (data) => data.modifiers,
+    ModifiersKeepDeepEquality,
+    (point, modifiers) => {
+      return {
+        type: 'HOVER',
+        point: point,
+        modifiers: modifiers,
+      }
+    },
+  )
+
 export const KeyStateKeepDeepEquality: KeepDeepEqualityCall<KeyState> = combine2EqualityCalls(
   (keyState) => keyState.keysPressed,
   createCallWithDeepEquals(),
@@ -1655,6 +1681,11 @@ export const InputDataKeepDeepEquality: KeepDeepEqualityCall<InputData> = (oldVa
     case 'KEYBOARD':
       if (newValue.type === oldValue.type) {
         return KeyboardInteractionDataKeepDeepEquality(oldValue, newValue)
+      }
+      break
+    case 'HOVER':
+      if (newValue.type === oldValue.type) {
+        return HoverInteractionDataKeepDeepEquality(oldValue, newValue)
       }
       break
     default:
@@ -2529,7 +2560,7 @@ export const ElementInsertionSubjectKeepDeepEquality: KeepDeepEqualityCall<Eleme
     StringKeepDeepEquality,
     (subject) => subject.element,
     JSXElementKeepDeepEquality,
-    (subject) => subject.size,
+    (subject) => subject.defaultSize,
     nullableDeepEquality(SizeKeepDeepEquality),
     (subject) => subject.importsToAdd,
     objectDeepEquality(ImportDetailsKeepDeepEquality),
@@ -2581,9 +2612,7 @@ export const InsertionSubjectKeepDeepEquality: KeepDeepEqualityCall<InsertionSub
   return keepDeepEqualityResult(newValue, false)
 }
 
-export const InsertModeKeepDeepEquality: KeepDeepEqualityCall<InsertMode> = combine2EqualityCalls(
-  (mode) => mode.insertionStarted,
-  BooleanKeepDeepEquality,
+export const InsertModeKeepDeepEquality: KeepDeepEqualityCall<InsertMode> = combine1EqualityCall(
   (mode) => mode.subject,
   InsertionSubjectKeepDeepEquality,
   EditorModes.insertMode,
@@ -3001,6 +3030,21 @@ export const UtopiaVSCodeConfigKeepDeepEquality: KeepDeepEqualityCall<UtopiaVSCo
     },
   )
 
+export const GithubRepoKeepDeepEquality: KeepDeepEqualityCall<GithubRepo> = combine2EqualityCalls(
+  (repo) => repo.owner,
+  createCallWithTripleEquals(),
+  (repo) => repo.repository,
+  createCallWithTripleEquals(),
+  githubRepo,
+)
+
+export const ProjectGithubSettingsKeepDeepEquality: KeepDeepEqualityCall<ProjectGithubSettings> =
+  combine1EqualityCall(
+    (settings) => settings.targetRepository,
+    nullableDeepEquality(GithubRepoKeepDeepEquality),
+    projectGithubSettings,
+  )
+
 export const EditorStateKeepDeepEquality: KeepDeepEqualityCall<EditorState> = (
   oldValue,
   newValue,
@@ -3219,6 +3263,15 @@ export const EditorStateKeepDeepEquality: KeepDeepEqualityCall<EditorState> = (
     oldValue.allElementProps,
     newValue.allElementProps,
   )
+  const _currentAllElementProps_KILLME_Results =
+    createCallFromIntrospectiveKeepDeep<AllElementProps>()(
+      oldValue._currentAllElementProps_KILLME,
+      newValue._currentAllElementProps_KILLME,
+    )
+  const githubSettingsResults = ProjectGithubSettingsKeepDeepEquality(
+    oldValue.githubSettings,
+    newValue.githubSettings,
+  )
 
   const areEqual =
     idResult.areEqual &&
@@ -3284,7 +3337,9 @@ export const EditorStateKeepDeepEquality: KeepDeepEqualityCall<EditorState> = (
     vscodeLoadingScreenVisibleResults.areEqual &&
     indexedDBFailedResults.areEqual &&
     forceParseFilesResults.areEqual &&
-    allElementPropsResults.areEqual
+    allElementPropsResults.areEqual &&
+    _currentAllElementProps_KILLME_Results.areEqual &&
+    githubSettingsResults.areEqual
 
   if (areEqual) {
     return keepDeepEqualityResult(oldValue, true)
@@ -3354,6 +3409,8 @@ export const EditorStateKeepDeepEquality: KeepDeepEqualityCall<EditorState> = (
       indexedDBFailedResults.value,
       forceParseFilesResults.value,
       allElementPropsResults.value,
+      _currentAllElementProps_KILLME_Results.value,
+      githubSettingsResults.value,
     )
 
     return keepDeepEqualityResult(newEditorState, false)

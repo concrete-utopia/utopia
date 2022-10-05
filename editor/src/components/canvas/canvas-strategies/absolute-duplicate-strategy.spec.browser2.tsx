@@ -4,11 +4,11 @@ import {
   makeTestProjectCodeWithSnippet,
   renderTestEditorWithCode,
 } from '../ui-jsx.test-utils'
-import { act, fireEvent } from '@testing-library/react'
 import { CanvasControlsContainerID } from '../controls/new-canvas-controls'
 import { FOR_TESTS_setNextGeneratedUid } from '../../../core/model/element-template-utils'
 import { offsetPoint, windowPoint, WindowPoint } from '../../../core/shared/math-utils'
-import { altModifier, Modifiers } from '../../../utils/modifiers'
+import { altModifier, cmdModifier, Modifiers } from '../../../utils/modifiers'
+import { mouseClickAtPoint, mouseDragFromPointToPoint } from '../event-helpers.test-utils'
 
 function dragElement(
   renderResult: EditorRenderResult,
@@ -18,50 +18,15 @@ function dragElement(
 ) {
   const targetElement = renderResult.renderedDOM.getByTestId(targetTestId)
   const targetElementBounds = targetElement.getBoundingClientRect()
-  const canvasControl = renderResult.renderedDOM.getByTestId(CanvasControlsContainerID)
+  const canvasControlsLayer = renderResult.renderedDOM.getByTestId(CanvasControlsContainerID)
 
   const startPoint = windowPoint({ x: targetElementBounds.x + 5, y: targetElementBounds.y + 5 })
   const endPoint = offsetPoint(startPoint, dragDelta)
-  fireEvent(
-    canvasControl,
-    new MouseEvent('mousedown', {
-      bubbles: true,
-      cancelable: true,
-      metaKey: true,
-      altKey: modifiers.alt,
-      shiftKey: modifiers.shift,
-      clientX: startPoint.x,
-      clientY: startPoint.y,
-      buttons: 1,
-    }),
-  )
 
-  fireEvent(
-    canvasControl,
-    new MouseEvent('mousemove', {
-      bubbles: true,
-      cancelable: true,
-      metaKey: modifiers.cmd,
-      altKey: modifiers.alt,
-      shiftKey: modifiers.shift,
-      clientX: endPoint.x,
-      clientY: endPoint.y,
-      buttons: 1,
-    }),
-  )
-
-  fireEvent(
-    window,
-    new MouseEvent('mouseup', {
-      bubbles: true,
-      cancelable: true,
-      metaKey: modifiers.cmd,
-      altKey: modifiers.alt,
-      shiftKey: modifiers.shift,
-      clientX: endPoint.x,
-      clientY: endPoint.y,
-    }),
-  )
+  mouseClickAtPoint(canvasControlsLayer, startPoint, { modifiers: cmdModifier })
+  mouseDragFromPointToPoint(canvasControlsLayer, startPoint, endPoint, {
+    modifiers: modifiers,
+  })
 }
 
 describe('Absolute Duplicate Strategy', () => {
@@ -81,7 +46,7 @@ describe('Absolute Duplicate Strategy', () => {
 
     FOR_TESTS_setNextGeneratedUid('hello')
     const dragDelta = windowPoint({ x: 40, y: -25 })
-    act(() => dragElement(renderResult, 'bbb', dragDelta, altModifier))
+    dragElement(renderResult, 'bbb', dragDelta, altModifier)
 
     await renderResult.getDispatchFollowUpActionsFinished()
 
@@ -119,7 +84,7 @@ describe('Absolute Duplicate Strategy', () => {
 
     FOR_TESTS_setNextGeneratedUid('hello')
     const dragDelta = windowPoint({ x: 40, y: -25 })
-    act(() => dragElement(renderResult, 'bbb', dragDelta, altModifier))
+    dragElement(renderResult, 'bbb', dragDelta, altModifier)
 
     await renderResult.getDispatchFollowUpActionsFinished()
 

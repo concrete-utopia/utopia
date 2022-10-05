@@ -208,6 +208,7 @@ import { createStylePostActionToast } from '../../core/layout/layout-notice'
 import { uniqToasts } from '../editor/actions/toast-helpers'
 import { stylePropPathMappingFn } from '../inspector/common/property-path-hooks'
 import { EditorDispatch } from '../editor/action-types'
+import { isFeatureEnabled } from '../../utils/feature-switches'
 
 export function getOriginalFrames(
   selectedViews: Array<ElementPath>,
@@ -1873,7 +1874,10 @@ export function produceCanvasTransientState(
     const editorMode = editorState.mode
     switch (editorMode.type) {
       case 'insert':
-        if (insertionSubjectIsJSXElement(editorMode.subject) && editorMode.insertionStarted) {
+        if (
+          insertionSubjectIsJSXElement(editorMode.subject) &&
+          !isFeatureEnabled('Canvas Strategies')
+        ) {
           const insertionElement = editorMode.subject.element
           const importsToAdd = editorMode.subject.importsToAdd
           const insertionParent = editorMode.subject.parent?.target ?? null

@@ -173,7 +173,7 @@ class DependencyListInner extends React.PureComponent<DependencyListProps, Depen
 
       this.props.editorDispatch([EditorActions.updatePackageJson(npmDependencies)])
 
-      fetchNodeModules(npmDependencies, this.props.builtInDependencies).then(
+      void fetchNodeModules(npmDependencies, this.props.builtInDependencies).then(
         (fetchNodeModulesResult) => {
           if (fetchNodeModulesResult.dependenciesWithError.length > 0) {
             this.packagesUpdateFailed(

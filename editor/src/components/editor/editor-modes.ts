@@ -1,17 +1,12 @@
-import type {
-  ElementPath,
-  id,
-  StaticElementPath,
-  Imports,
-} from '../../core/shared/project-file-types'
-import type { JSXElement, JSXElementName } from '../../core/shared/element-template'
+import type { ElementPath, StaticElementPath, Imports } from '../../core/shared/project-file-types'
+import type { JSXElement } from '../../core/shared/element-template'
 import type { Size } from '../../core/shared/math-utils'
 
 export interface ElementInsertionSubject {
   type: 'Element'
   uid: string
   element: JSXElement
-  size: Size | null
+  defaultSize: Size
   importsToAdd: Imports
   parent: InsertionParent
 }
@@ -25,6 +20,8 @@ export interface DragAndDropInsertionSubject {
   imageAssets: Array<string> | null
 }
 
+export const DefaultInsertSize: Size = { width: 100, height: 100 }
+
 export function elementInsertionSubject(
   uid: string,
   element: JSXElement,
@@ -36,7 +33,7 @@ export function elementInsertionSubject(
     type: 'Element',
     uid: uid,
     element: element,
-    size: size,
+    defaultSize: size ?? DefaultInsertSize,
     importsToAdd: importsToAdd,
     parent: parent,
   }
@@ -114,7 +111,6 @@ export function insertionParent(
 export interface InsertMode {
   type: 'insert'
   subject: InsertionSubject
-  insertionStarted: boolean
 }
 
 export interface SelectMode {
@@ -131,11 +127,10 @@ export type Mode = InsertMode | SelectMode | LiveCanvasMode
 export type PersistedMode = SelectMode | LiveCanvasMode
 
 export const EditorModes = {
-  insertMode: function (insertionStarted: boolean, subject: InsertionSubject): InsertMode {
+  insertMode: function (subject: InsertionSubject): InsertMode {
     return {
       type: 'insert',
       subject: subject,
-      insertionStarted: insertionStarted,
     }
   },
   selectMode: function (controlId: string | null = null): SelectMode {

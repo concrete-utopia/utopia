@@ -23,7 +23,6 @@ import {
   isCreateOrUpdateInteractionSession,
   shouldApplyClearInteractionSessionResult,
 } from '../actions/action-utils'
-import { InnerDispatchResult } from './dispatch'
 import {
   DerivedState,
   deriveState,
@@ -32,7 +31,6 @@ import {
   EditorStoreUnpatched,
 } from './editor-state'
 import {
-  CanvasStrategy,
   CustomStrategyState,
   CustomStrategyStatePatch,
   InteractionCanvasState,
@@ -77,7 +75,7 @@ export function interactionFinished(
       strategies,
       canvasState,
       interactionSession,
-      result.strategyState,
+      result.strategyState.customStrategyState,
       result.strategyState.currentStrategy,
     )
 
@@ -87,7 +85,7 @@ export function interactionFinished(
             strategy.strategy,
             canvasState,
             interactionSession,
-            result.strategyState,
+            result.strategyState.customStrategyState,
             'end-interaction',
           )
         : {
@@ -102,9 +100,17 @@ export function interactionFinished(
       'end-interaction',
     )
 
+    const finalEditor: EditorState = {
+      ...commandResult.editorState,
+      // TODO instead of clearing the metadata, we should save the latest valid metadata here to save a dom-walker run
+      jsxMetadata: {},
+      domMetadata: {},
+      spyMetadata: {},
+    }
+
     return {
-      unpatchedEditorState: commandResult.editorState,
-      patchedEditorState: commandResult.editorState,
+      unpatchedEditorState: finalEditor,
+      patchedEditorState: finalEditor,
       newStrategyState: withClearedSession,
     }
   }
@@ -142,7 +148,7 @@ export function interactionHardReset(
       strategies,
       canvasState,
       resetInteractionSession,
-      resetStrategyState,
+      resetStrategyState.customStrategyState,
       resetStrategyState.currentStrategy,
     )
 
@@ -152,7 +158,7 @@ export function interactionHardReset(
         strategy.strategy,
         canvasState,
         newEditorState.canvas.interactionSession,
-        resetStrategyState,
+        resetStrategyState.customStrategyState,
         'mid-interaction',
       )
       const commandResult = foldAndApplyCommands(
@@ -218,7 +224,7 @@ export function interactionUpdate(
       strategies,
       canvasState,
       interactionSession,
-      result.strategyState,
+      result.strategyState.customStrategyState,
       result.strategyState.currentStrategy,
     )
 
@@ -294,7 +300,7 @@ export function interactionStart(
       strategies,
       canvasState,
       interactionSession,
-      withClearedSession,
+      withClearedSession.customStrategyState,
       result.strategyState.currentStrategy,
     )
 
@@ -304,7 +310,7 @@ export function interactionStart(
         strategy.strategy,
         canvasState,
         newEditorState.canvas.interactionSession,
-        withClearedSession,
+        withClearedSession.customStrategyState,
         'mid-interaction',
       )
       const commandResult = foldAndApplyCommands(
@@ -357,6 +363,9 @@ export function interactionCancel(
       ...result.unpatchedEditor.canvas,
       interactionSession: null,
     },
+    jsxMetadata: {},
+    domMetadata: {},
+    spyMetadata: {},
   }
 
   return {
@@ -391,7 +400,7 @@ function handleUserChangedStrategy(
             strategy.strategy.name(
               canvasState,
               newEditorState.canvas.interactionSession,
-              strategyState,
+              strategyState.customStrategyState,
             ),
             true,
             previousStrategy?.fitness ?? NaN,
@@ -405,7 +414,7 @@ function handleUserChangedStrategy(
       strategy.strategy,
       canvasState,
       newEditorState.canvas.interactionSession,
-      strategyState,
+      strategyState.customStrategyState,
       'mid-interaction',
     )
     const commandResult = foldAndApplyCommands(
@@ -485,7 +494,7 @@ function handleAccumulatingKeypresses(
               strategy.strategy,
               canvasState,
               updatedInteractionSession,
-              strategyState,
+              strategyState.customStrategyState,
               'mid-interaction',
             )
           : strategyApplicationResult([])
@@ -548,7 +557,7 @@ function handleUpdate(
             strategy.strategy,
             canvasState,
             newEditorState.canvas.interactionSession,
-            strategyState,
+            strategyState.customStrategyState,
             'mid-interaction',
           )
         : strategyApplicationResult([])

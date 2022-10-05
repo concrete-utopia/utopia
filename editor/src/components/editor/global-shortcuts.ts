@@ -14,7 +14,7 @@ import Keyboard, {
   StoredKeyCharacters,
   strictCheckModifiers,
 } from '../../utils/keyboard'
-import { Modifier, Modifiers } from '../../utils/modifiers'
+import { emptyModifiers, Modifier, Modifiers } from '../../utils/modifiers'
 import Utils from '../../utils/utils'
 import Canvas, { TargetSearchType } from '../canvas/canvas'
 import CanvasActions from '../canvas/canvas-actions'
@@ -28,10 +28,11 @@ import {
   toggleStylePropPaths,
 } from '../inspector/common/css-utils'
 import { toggleTextFormatting } from '../text-utils'
-import { EditorAction, EditorDispatch } from './action-types'
+import { EditorAction, EditorDispatch, SwitchEditorMode } from './action-types'
 import * as EditorActions from './actions/action-creators'
 import * as MetaActions from './actions/meta-actions'
 import {
+  defaultDivElement,
   defaultEllipseElement,
   defaultRectangleElement,
   defaultTextElement,
@@ -110,11 +111,16 @@ import {
   GROUP_ELEMENT_DEFAULT_SHORTCUT,
   TOGGLE_FOCUSED_OMNIBOX_TAB,
   FOCUS_CLASS_NAME_INPUT,
+  INSERT_DIV_SHORTCUT,
 } from './shortcut-definitions'
 import { DerivedState, EditorState, getOpenFile, RightMenuTab } from './store/editor-state'
 import { CanvasMousePositionRaw, WindowMousePositionRaw } from '../../utils/global-positions'
 import { getDragStateStart } from '../canvas/canvas-utils'
 import { isFeatureEnabled } from '../../utils/feature-switches'
+import {
+  boundingArea,
+  createHoverInteractionViaMouse,
+} from '../canvas/canvas-strategies/interaction-state'
 
 function updateKeysPressed(
   keysPressed: KeysPressed,
@@ -336,19 +342,14 @@ export function handleKeyDown(
   // Ensure that any key presses are appropriately recorded.
   const key = Keyboard.keyCharacterForCode(event.keyCode)
   const editorTargeted = editorIsTarget(event, editor)
+
+  const modifiers = Modifier.modifiersForKeyboardEvent(event)
+
   let updatedKeysPressed: KeysPressed
   if (editorTargeted) {
-    updatedKeysPressed = updateKeysPressed(
-      editor.keysPressed,
-      key,
-      true,
-      Modifier.modifiersForKeyboardEvent(event),
-    )
+    updatedKeysPressed = updateKeysPressed(editor.keysPressed, key, true, modifiers)
   } else {
-    updatedKeysPressed = updateModifiers(
-      editor.keysPressed,
-      Modifier.modifiersForKeyboardEvent(event),
-    )
+    updatedKeysPressed = updateModifiers(editor.keysPressed, modifiers)
   }
   const updateKeysAction = EditorActions.updateKeys(updatedKeysPressed)
 
@@ -609,7 +610,7 @@ export function handleKeyDown(
       [INSERT_RECTANGLE_SHORTCUT]: () => {
         if (isSelectMode(editor.mode) || isInsertMode(editor.mode)) {
           const newUID = generateUidWithExistingComponents(editor.projectContents)
-          return [
+          return addCreateHoverInteractionActionToSwitchModeAction(
             EditorActions.enableInsertModeForJSXElement(
               defaultRectangleElement(newUID),
               newUID,
@@ -618,7 +619,8 @@ export function handleKeyDown(
               },
               null,
             ),
-          ]
+            modifiers,
+          )
         } else {
           return []
         }
@@ -626,14 +628,15 @@ export function handleKeyDown(
       [INSERT_ELLIPSE_SHORTCUT]: () => {
         if (isSelectMode(editor.mode) || isInsertMode(editor.mode)) {
           const newUID = generateUidWithExistingComponents(editor.projectContents)
-          return [
+          return addCreateHoverInteractionActionToSwitchModeAction(
             EditorActions.enableInsertModeForJSXElement(
               defaultEllipseElement(newUID),
               newUID,
               { 'utopia-api': importDetails(null, [importAlias('Ellipse')], null) },
               null,
             ),
-          ]
+            modifiers,
+          )
         } else {
           return []
         }
@@ -652,14 +655,15 @@ export function handleKeyDown(
       [INSERT_TEXT_SHORTCUT]: () => {
         if (isSelectMode(editor.mode) || isInsertMode(editor.mode)) {
           const newUID = generateUidWithExistingComponents(editor.projectContents)
-          return [
+          return addCreateHoverInteractionActionToSwitchModeAction(
             EditorActions.enableInsertModeForJSXElement(
               defaultTextElement(newUID),
               newUID,
               { 'utopia-api': importDetails(null, [importAlias('Text')], null) },
               null,
             ),
-          ]
+            modifiers,
+          )
         } else {
           return []
         }
@@ -667,17 +671,29 @@ export function handleKeyDown(
       [INSERT_VIEW_SHORTCUT]: () => {
         if (isSelectMode(editor.mode) || isInsertMode(editor.mode)) {
           const newUID = generateUidWithExistingComponents(editor.projectContents)
-          return [
+          return addCreateHoverInteractionActionToSwitchModeAction(
             EditorActions.enableInsertModeForJSXElement(
               defaultViewElement(newUID),
               newUID,
               { 'utopia-api': importDetails(null, [importAlias('View')], null) },
               null,
             ),
-          ]
+            modifiers,
+          )
         } else {
           return []
         }
+      },
+      [INSERT_DIV_SHORTCUT]: () => {
+        if (!isSelectMode(editor.mode) && !isInsertMode(editor.mode)) {
+          return []
+        }
+
+        const newUID = generateUidWithExistingComponents(editor.projectContents)
+        return addCreateHoverInteractionActionToSwitchModeAction(
+          EditorActions.enableInsertModeForJSXElement(defaultDivElement(newUID), newUID, {}, null),
+          modifiers,
+        )
       },
       [CUT_SELECTION_SHORTCUT]: () => {
         return isSelectMode(editor.mode)
@@ -847,4 +863,18 @@ export function handleKeyUp(
   }
 
   dispatch(actions, 'everyone')
+}
+
+function addCreateHoverInteractionActionToSwitchModeAction(
+  switchModeAction: SwitchEditorMode,
+  modifiers: Modifiers,
+) {
+  return CanvasMousePositionRaw != null
+    ? [
+        switchModeAction,
+        CanvasActions.createInteractionSession(
+          createHoverInteractionViaMouse(CanvasMousePositionRaw, modifiers, boundingArea()),
+        ),
+      ]
+    : [switchModeAction]
 }

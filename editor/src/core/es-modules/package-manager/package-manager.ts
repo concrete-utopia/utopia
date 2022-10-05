@@ -78,7 +78,7 @@ export const getCurriedEditorRequireFn = (
   builtInDependencies: BuiltInDependencies,
 ): CurriedUtopiaRequireFn => {
   const onRemoteModuleDownload = (moduleDownload: Promise<NodeModules>) => {
-    moduleDownload.then((modulesToAdd: NodeModules) =>
+    void moduleDownload.then((modulesToAdd: NodeModules) =>
       dispatch([updateNodeModulesContents(modulesToAdd)]),
     )
   }

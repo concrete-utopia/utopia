@@ -26,7 +26,7 @@ import {
   getKeyboardStrategyGuidelines,
   getLastKeyPressState,
 } from './shared-keyboard-strategy-helpers'
-import { getMultiselectBounds } from './shared-absolute-move-strategy-helpers'
+import { getMultiselectBounds } from './shared-move-strategies-helpers'
 import { setSnappingGuidelines } from '../commands/set-snapping-guidelines-command'
 import { pushIntendedBounds } from '../commands/push-intended-bounds-command'
 import { supportsAbsoluteResize } from './absolute-resize-helpers'
@@ -73,7 +73,7 @@ function pressesToVectorAndEdges(
 export const keyboardAbsoluteResizeStrategy: CanvasStrategy = {
   id: 'KEYBOARD_ABSOLUTE_RESIZE',
   name: () => 'Resize',
-  isApplicable: (canvasState, interactionState, metadata) => {
+  isApplicable: (canvasState, interactionSession, metadata) => {
     const selectedElements = getTargetPathsFromInteractionTarget(canvasState.interactionTarget)
     if (selectedElements.length > 0) {
       return selectedElements.every((element) => {
@@ -90,17 +90,17 @@ export const keyboardAbsoluteResizeStrategy: CanvasStrategy = {
       show: 'visible-except-when-other-strategy-is-active',
     },
   ],
-  fitness: (canvasState, interactionState, sessionState) => {
+  fitness: (canvasState, interactionSession, customStrategyState) => {
     if (
       keyboardAbsoluteResizeStrategy.isApplicable(
         canvasState,
-        interactionState,
-        sessionState.startingMetadata,
-        sessionState.startingAllElementProps,
+        interactionSession,
+        canvasState.startingMetadata,
+        canvasState.startingAllElementProps,
       ) &&
-      interactionState.interactionData.type === 'KEYBOARD'
+      interactionSession.interactionData.type === 'KEYBOARD'
     ) {
-      const { interactionData } = interactionState
+      const { interactionData } = interactionSession
       const lastKeyPress = getLastKeyPressState(interactionData.keyStates)
       if (lastKeyPress != null) {
         const cmdAndOptionallyShiftModifier =
@@ -113,15 +113,15 @@ export const keyboardAbsoluteResizeStrategy: CanvasStrategy = {
     }
     return 0
   },
-  apply: (canvasState, interactionState, sessionState) => {
+  apply: (canvasState, interactionSession, customStrategyState) => {
     const selectedElements = getTargetPathsFromInteractionTarget(canvasState.interactionTarget)
-    if (interactionState.interactionData.type === 'KEYBOARD') {
-      const accumulatedPresses = accumulatePresses(interactionState.interactionData.keyStates)
+    if (interactionSession.interactionData.type === 'KEYBOARD') {
+      const accumulatedPresses = accumulatePresses(interactionSession.interactionData.keyStates)
       const movementsWithEdges = pressesToVectorAndEdges(accumulatedPresses)
 
       // Start with the frame as it is at the start of the interaction.
       let newFrame =
-        getMultiselectBounds(sessionState.startingMetadata, selectedElements) ??
+        getMultiselectBounds(canvasState.startingMetadata, selectedElements) ??
         canvasRectangle(zeroRectangle)
 
       let commands: Array<CanvasCommand> = []
@@ -146,12 +146,12 @@ export const keyboardAbsoluteResizeStrategy: CanvasStrategy = {
               (_, e) => e,
             )
             const elementParentBounds =
-              MetadataUtils.findElementByElementPath(sessionState.startingMetadata, selectedElement)
+              MetadataUtils.findElementByElementPath(canvasState.startingMetadata, selectedElement)
                 ?.specialSizeMeasurements.immediateParentBounds ?? null
 
             const elementGlobalFrame = MetadataUtils.getFrameInCanvasCoords(
               selectedElement,
-              sessionState.startingMetadata,
+              canvasState.startingMetadata,
             )
 
             if (element != null) {
@@ -171,12 +171,7 @@ export const keyboardAbsoluteResizeStrategy: CanvasStrategy = {
           })
         }
       })
-      const guidelines = getKeyboardStrategyGuidelines(
-        sessionState,
-        canvasState,
-        interactionState,
-        newFrame,
-      )
+      const guidelines = getKeyboardStrategyGuidelines(canvasState, interactionSession, newFrame)
       commands.push(setSnappingGuidelines('mid-interaction', guidelines))
       commands.push(pushIntendedBounds(intendedBounds))
       commands.push(setElementsToRerenderCommand(selectedElements))

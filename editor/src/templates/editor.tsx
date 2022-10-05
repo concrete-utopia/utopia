@@ -107,6 +107,7 @@ import {
 import { isFeatureEnabled } from '../utils/feature-switches'
 import { shouldInspectorUpdate } from '../components/inspector/inspector'
 import * as EP from '../core/shared/element-path'
+import { isAuthenticatedWithGithub } from '../utils/github-auth'
 import { ProjectContentTreeRootKeepDeepEquality } from '../components/editor/store/store-deep-equality-instances'
 import { waitUntil } from '../core/shared/promise-utils'
 
@@ -260,7 +261,7 @@ export class Editor {
 
     this.domWalkerMutableState = createDomWalkerMutableState(this.utopiaStoreApi)
 
-    renderRootEditor()
+    void renderRootEditor()
 
     reduxDevtoolsSendInitialState(this.storedState)
 
@@ -293,66 +294,74 @@ export class Editor {
       handleHeartbeatRequestMessage(e.data),
     )
 
-    getLoginState('cache').then((loginState: LoginState) => {
+    void getLoginState('cache').then((loginState: LoginState) => {
       startPollingLoginState(this.boundDispatch, loginState)
       this.storedState.userState.loginState = loginState
-      getUserConfiguration(loginState).then((shortcutConfiguration) => {
+      void getUserConfiguration(loginState).then((shortcutConfiguration) => {
         this.storedState.userState = {
           ...this.storedState.userState,
           ...shortcutConfiguration,
         }
 
-        const projectId = getProjectID()
-        if (isLoggedIn(loginState)) {
-          this.storedState.persistence.login()
-        }
-
-        const urlParams = new URLSearchParams(window.location.search)
-        const githubOwner = urlParams.get('github_owner')
-        const githubRepo = urlParams.get('github_repo')
-        const importURL = urlParams.get('import_url')
-
-        if (isCookiesOrLocalForageUnavailable(loginState)) {
-          this.storedState.persistence.createNew(createNewProjectName(), defaultProject())
-        } else if (projectId == null) {
-          if (githubOwner != null && githubRepo != null) {
-            replaceLoadingMessage('Downloading Repo...')
-
-            downloadGithubRepo(githubOwner, githubRepo).then((repoResult) => {
-              if (isRequestFailure(repoResult)) {
-                if (repoResult.statusCode === 404) {
-                  renderProjectNotFound()
-                } else {
-                  renderProjectLoadError(repoResult.errorMessage)
-                }
-              } else {
-                replaceLoadingMessage('Importing Project...')
-
-                const projectName = `${githubOwner}-${githubRepo}`
-                importZippedGitProject(projectName, repoResult.value)
-                  .then((importProjectResult) => {
-                    if (isProjectImportSuccess(importProjectResult)) {
-                      const importedProject = persistentModelForProjectContents(
-                        importProjectResult.contents,
-                      )
-                      this.storedState.persistence.createNew(projectName, importedProject)
-                    } else {
-                      renderProjectLoadError(importProjectResult.errorMessage)
-                    }
-                  })
-                  .catch((err) => {
-                    console.error('Import error.', err)
-                  })
-              }
-            })
-          } else if (importURL != null) {
-            this.createNewProjectFromImportURL(importURL)
-          } else {
-            this.storedState.persistence.createNew(emptyEditorState.projectName, defaultProject())
+        void isAuthenticatedWithGithub(loginState).then((authenticatedWithGithub) => {
+          this.storedState.userState = {
+            ...this.storedState.userState,
+            githubState: {
+              authenticated: authenticatedWithGithub,
+            },
           }
-        } else {
-          this.storedState.persistence.load(projectId)
-        }
+          const projectId = getProjectID()
+          if (isLoggedIn(loginState)) {
+            this.storedState.persistence.login()
+          }
+
+          const urlParams = new URLSearchParams(window.location.search)
+          const githubOwner = urlParams.get('github_owner')
+          const githubRepo = urlParams.get('github_repo')
+          const importURL = urlParams.get('import_url')
+
+          if (isCookiesOrLocalForageUnavailable(loginState)) {
+            this.storedState.persistence.createNew(createNewProjectName(), defaultProject())
+          } else if (projectId == null) {
+            if (githubOwner != null && githubRepo != null) {
+              replaceLoadingMessage('Downloading Repo...')
+
+              void downloadGithubRepo(githubOwner, githubRepo).then((repoResult) => {
+                if (isRequestFailure(repoResult)) {
+                  if (repoResult.statusCode === 404) {
+                    void renderProjectNotFound()
+                  } else {
+                    void renderProjectLoadError(repoResult.errorMessage)
+                  }
+                } else {
+                  replaceLoadingMessage('Importing Project...')
+
+                  const projectName = `${githubOwner}-${githubRepo}`
+                  importZippedGitProject(projectName, repoResult.value)
+                    .then((importProjectResult) => {
+                      if (isProjectImportSuccess(importProjectResult)) {
+                        const importedProject = persistentModelForProjectContents(
+                          importProjectResult.contents,
+                        )
+                        this.storedState.persistence.createNew(projectName, importedProject)
+                      } else {
+                        void renderProjectLoadError(importProjectResult.errorMessage)
+                      }
+                    })
+                    .catch((err) => {
+                      console.error('Import error.', err)
+                    })
+                }
+              })
+            } else if (importURL != null) {
+              this.createNewProjectFromImportURL(importURL)
+            } else {
+              this.storedState.persistence.createNew(emptyEditorState.projectName, defaultProject())
+            }
+          } else {
+            this.storedState.persistence.load(projectId)
+          }
+        })
       })
     })
   }
@@ -507,7 +516,7 @@ export class Editor {
       .then((importResult) => {
         foldEither(
           (errorMessage) => {
-            renderProjectLoadError(errorMessage)
+            void renderProjectLoadError(errorMessage)
           },
           (successResult) => {
             // Create the new project.
@@ -527,9 +536,9 @@ export class Editor {
               )
             }
 
-            waitUntil(5000, () => projectLoaded(this.storedState)).then((waitResult) => {
+            void waitUntil(5000, () => projectLoaded(this.storedState)).then((waitResult) => {
               if (waitResult) {
-                reuploadAssets(
+                void reuploadAssets(
                   successResult.originalProjectRootURL,
                   this.storedState.unpatchedEditor,
                 )

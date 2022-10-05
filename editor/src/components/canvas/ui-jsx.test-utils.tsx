@@ -304,6 +304,9 @@ export async function renderTestEditorWithModel(
     userState: {
       loginState: notLoggedIn,
       shortcutConfig: {},
+      githubState: {
+        authenticated: false,
+      },
     },
     workers: workers,
     persistence: DummyPersistenceMachine,
@@ -363,7 +366,7 @@ export async function renderTestEditorWithModel(
 
   await act(async () => {
     await new Promise<void>((resolve, reject) => {
-      load(
+      void load(
         async (actions) => {
           try {
             await asyncTestDispatch(

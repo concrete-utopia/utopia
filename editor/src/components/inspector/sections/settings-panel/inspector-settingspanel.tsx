@@ -120,7 +120,7 @@ export const SettingsPanel = React.memo(() => {
       if (confirmed) {
         const persistentModel = json5.parse(value)
         console.info('attempting to load new Project Contents JSON', persistentModel)
-        load(
+        void load(
           dispatch,
           persistentModel,
           entireStateRef.current.editor.projectName,

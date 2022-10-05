@@ -2,6 +2,7 @@ import { ParentBounds } from '../controls/parent-bounds'
 import { ParentOutlines } from '../controls/parent-outlines'
 import {
   CanvasStrategy,
+  CustomStrategyState,
   emptyStrategyApplicationResult,
   getInsertionSubjectsFromInteractionTarget,
   InteractionCanvasState,
@@ -9,8 +10,12 @@ import {
   strategyApplicationResult,
   targetPaths,
 } from './canvas-strategy-types'
-import { InteractionSession, StrategyState } from './interaction-state'
-import { ElementInsertionSubject, InsertionSubject } from '../../editor/editor-modes'
+import {
+  DefaultInsertSize,
+  ElementInsertionSubject,
+  InsertionSubject,
+} from '../../editor/editor-modes'
+import { InteractionSession } from './interaction-state'
 import { LayoutHelpers } from '../../../core/layout/layout-helpers'
 import { isLeft } from '../../../core/shared/either'
 import {
@@ -21,7 +26,7 @@ import { BuiltInDependencies } from '../../../core/es-modules/package-manager/bu
 import { EditorState, EditorStatePatch } from '../../editor/store/editor-state'
 import {
   findCanvasStrategy,
-  pickCanvasStateFromEditorState,
+  pickCanvasStateFromEditorStateWithMetadata,
   RegisteredCanvasStrategies,
 } from './canvas-strategies'
 import { foldAndApplyCommandsInner } from '../commands/commands'
@@ -32,7 +37,7 @@ import {
 } from '../../../core/model/element-metadata-utils'
 import { elementPath } from '../../../core/shared/element-path'
 import * as EP from '../../../core/shared/element-path'
-import { CanvasRectangle, canvasRectangle } from '../../../core/shared/math-utils'
+import { CanvasRectangle, canvasRectangle, Size } from '../../../core/shared/math-utils'
 import { ElementInstanceMetadataMap } from '../../../core/shared/element-template'
 import { cmdModifier } from '../../../utils/modifiers'
 import { DragOutlineControl } from '../controls/select-mode/drag-outline-control'
@@ -41,7 +46,7 @@ import { FlexReparentTargetIndicator } from '../controls/select-mode/flex-repare
 export const dragToInsertStrategy: CanvasStrategy = {
   id: 'DRAG_TO_INSERT',
   name: () => 'Insert',
-  isApplicable: (canvasState, _interactionState, metadata) => {
+  isApplicable: (canvasState, interactionSession, metadata) => {
     const insertionSubjects = getInsertionSubjectsFromInteractionTarget(
       canvasState.interactionTarget,
     )
@@ -71,29 +76,30 @@ export const dragToInsertStrategy: CanvasStrategy = {
       show: 'visible-only-while-active',
     },
   ], // Uses existing hooks in select-mode-hooks.tsx
-  fitness: (canvasState, interactionState, strategyState) => {
+  fitness: (canvasState, interactionSession, customStrategyState) => {
     return dragToInsertStrategy.isApplicable(
       canvasState,
-      interactionState,
-      strategyState.startingMetadata,
-      strategyState.startingAllElementProps,
+      interactionSession,
+      canvasState.startingMetadata,
+      canvasState.startingAllElementProps,
     ) &&
-      interactionState.interactionData.type === 'DRAG' &&
-      interactionState.activeControl.type === 'BOUNDING_AREA'
+      interactionSession.interactionData.type === 'DRAG' &&
+      interactionSession.activeControl.type === 'BOUNDING_AREA'
       ? 1
       : 0
   },
-  apply: (canvasState, interactionState, strategyState, strategyLifecycle) => {
+  apply: (canvasState, interactionSession, customStrategyState, strategyLifecycle) => {
     const insertionSubjects = getInsertionSubjectsFromInteractionTarget(
       canvasState.interactionTarget,
     )
     if (
-      interactionState.interactionData.type === 'DRAG' &&
-      interactionState.interactionData.drag != null
+      interactionSession.interactionData.type === 'DRAG' &&
+      interactionSession.interactionData.drag != null
     ) {
-      const insertionCommands = insertionSubjects.flatMap((s) =>
-        getInsertionCommands(s, interactionState),
-      )
+      const insertionCommands = insertionSubjects.flatMap((s) => {
+        const size = s.type === 'Element' ? s.defaultSize : DefaultInsertSize
+        return getInsertionCommands(s, interactionSession, size)
+      })
 
       const reparentCommand = updateFunctionCommand(
         'always',
@@ -101,8 +107,8 @@ export const dragToInsertStrategy: CanvasStrategy = {
           return runTargetStrategiesForFreshlyInsertedElement(
             canvasState.builtInDependencies,
             editorState,
-            strategyState,
-            interactionState,
+            customStrategyState,
+            interactionSession,
             transient,
             insertionCommands,
             strategyLifecycle,
@@ -120,28 +126,26 @@ export const dragToInsertStrategy: CanvasStrategy = {
   },
 }
 
-const DefaultWidth = 100
-const DefaultHeight = 100
-
 function getInsertionCommands(
   subject: InsertionSubject,
-  interactionState: InteractionSession,
+  interactionSession: InteractionSession,
+  size: Size,
 ): Array<{ command: InsertElementInsertionSubject; frame: CanvasRectangle }> {
   if (subject.type !== 'Element') {
     // non-element subjects are not supported
     return []
   }
   if (
-    interactionState.interactionData.type === 'DRAG' &&
-    interactionState.interactionData.drag != null
+    interactionSession.interactionData.type === 'DRAG' &&
+    interactionSession.interactionData.drag != null
   ) {
-    const pointOnCanvas = interactionState.interactionData.dragStart
+    const pointOnCanvas = interactionSession.interactionData.dragStart
 
     const frame = canvasRectangle({
-      x: pointOnCanvas.x - DefaultWidth / 2,
-      y: pointOnCanvas.y - DefaultHeight / 2,
-      width: DefaultWidth,
-      height: DefaultHeight,
+      x: pointOnCanvas.x - size.width / 2,
+      y: pointOnCanvas.y - size.height / 2,
+      width: size.width,
+      height: size.height,
     })
 
     const updatedAttributesWithPosition = getStyleAttributesForFrameInAbsolutePosition(
@@ -194,18 +198,16 @@ function getStyleAttributesForFrameInAbsolutePosition(
 function runTargetStrategiesForFreshlyInsertedElement(
   builtInDependencies: BuiltInDependencies,
   editorState: EditorState,
-  strategyState: StrategyState,
-  interactionState: InteractionSession,
+  customStrategyState: CustomStrategyState,
+  interactionSession: InteractionSession,
   commandLifecycle: InteractionLifecycle,
   insertionSubjects: Array<{ command: InsertElementInsertionSubject; frame: CanvasRectangle }>,
   strategyLifeCycle: InteractionLifecycle,
 ): Array<EditorStatePatch> {
-  const canvasState = pickCanvasStateFromEditorState(editorState, builtInDependencies)
-
-  const storyboard = MetadataUtils.getStoryboardMetadata(strategyState.startingMetadata)
+  const storyboard = MetadataUtils.getStoryboardMetadata(editorState.jsxMetadata)
   const rootPath = storyboard != null ? storyboard.elementPath : elementPath([])
 
-  const patchedMetadata = insertionSubjects.reduce(
+  const patchedMetadata: ElementInstanceMetadataMap = insertionSubjects.reduce(
     (
       acc: ElementInstanceMetadataMap,
       curr: { command: InsertElementInsertionSubject; frame: CanvasRectangle },
@@ -217,7 +219,7 @@ function runTargetStrategiesForFreshlyInsertedElement(
         path,
         element,
         curr.frame,
-        strategyState.startingMetadata,
+        editorState.jsxMetadata,
       )
 
       return {
@@ -225,13 +227,14 @@ function runTargetStrategiesForFreshlyInsertedElement(
         [EP.toString(path)]: fakeMetadata,
       }
     },
-    strategyState.startingMetadata,
+    editorState.jsxMetadata,
   )
 
-  const patchedStrategyState = {
-    ...strategyState,
-    startingMetadata: patchedMetadata,
-  }
+  const canvasState = pickCanvasStateFromEditorStateWithMetadata(
+    editorState,
+    builtInDependencies,
+    patchedMetadata,
+  )
 
   const patchedCanvasState: InteractionCanvasState = {
     ...canvasState,
@@ -240,15 +243,15 @@ function runTargetStrategiesForFreshlyInsertedElement(
     ),
   }
 
-  const interactionData = interactionState.interactionData
+  const interactionData = interactionSession.interactionData
   // patching the interaction with the cmd modifier is just temporarily needed because reparenting is not default without
   const patchedInteractionData =
     interactionData.type === 'DRAG'
       ? { ...interactionData, modifiers: cmdModifier }
       : interactionData
 
-  const patchedInteractionState = {
-    ...interactionState,
+  const patchedInteractionSession: InteractionSession = {
+    ...interactionSession,
     interactionData: patchedInteractionData,
     startingTargetParentsToFilterOut: null,
   }
@@ -256,8 +259,8 @@ function runTargetStrategiesForFreshlyInsertedElement(
   const { strategy } = findCanvasStrategy(
     RegisteredCanvasStrategies,
     patchedCanvasState,
-    patchedInteractionState,
-    patchedStrategyState,
+    patchedInteractionSession,
+    customStrategyState,
     null,
   )
 
@@ -266,8 +269,8 @@ function runTargetStrategiesForFreshlyInsertedElement(
   } else {
     const reparentCommands = strategy.strategy.apply(
       patchedCanvasState,
-      patchedInteractionState,
-      patchedStrategyState,
+      patchedInteractionSession,
+      customStrategyState,
       strategyLifeCycle,
     ).commands
 

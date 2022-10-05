@@ -6,14 +6,13 @@ import { ElementPath, NodeModules } from '../../../core/shared/project-file-type
 import { ProjectContentTreeRoot } from '../../assets'
 import { InsertionSubject } from '../../editor/editor-modes'
 import { CanvasCommand } from '../commands/commands'
-import { InteractionSession, StrategyApplicationStatus, StrategyState } from './interaction-state'
+import { InteractionSession, StrategyApplicationStatus } from './interaction-state'
 
 // TODO: fill this in, maybe make it an ADT for different strategies
 export interface CustomStrategyState {
   escapeHatchActivated: boolean
   lastReorderIdx: number | null
   duplicatedElementNewUids: { [elementPath: string]: string }
-  previousReorderTargetSiblingUnderMouse: ElementPath | null
 }
 
 export type CustomStrategyStatePatch = Partial<CustomStrategyState>
@@ -23,7 +22,6 @@ export function defaultCustomStrategyState(): CustomStrategyState {
     escapeHatchActivated: false,
     lastReorderIdx: null,
     duplicatedElementNewUids: {},
-    previousReorderTargetSiblingUnderMouse: null,
   }
 }
 
@@ -68,6 +66,8 @@ export interface InteractionCanvasState {
   openFile: string | null | undefined
   scale: number
   canvasOffset: CanvasVector
+  startingMetadata: ElementInstanceMetadataMap
+  startingAllElementProps: AllElementProps
 }
 
 export type InteractionTarget = TargetPaths | InsertionSubjects
@@ -112,27 +112,7 @@ export function getInsertionSubjectsFromInteractionTarget(
   return []
 }
 
-export type CanvasStrategyId =
-  | 'ABSOLUTE_MOVE'
-  | 'ABSOLUTE_REPARENT'
-  | 'FORCED_ABSOLUTE_REPARENT'
-  | 'ABSOLUTE_DUPLICATE'
-  | 'ABSOLUTE_RESIZE_BOUNDING_BOX'
-  | 'KEYBOARD_ABSOLUTE_MOVE'
-  | 'KEYBOARD_ABSOLUTE_RESIZE'
-  | 'CONVERT_TO_ABSOLUTE_AND_MOVE_STRATEGY'
-  | 'FLEX_REORDER'
-  | 'ABSOLUTE_REPARENT_TO_FLEX'
-  | 'FLEX_REPARENT_TO_ABSOLUTE'
-  | 'FORCED_FLEX_REPARENT_TO_ABSOLUTE'
-  | 'FLEX_REPARENT_TO_FLEX'
-  | 'DRAG_TO_INSERT'
-  | 'FLOW_REORDER'
-  | 'FLOW_REORDER_SLIDER'
-  | 'LOOK_FOR_APPLICABLE_PARENT_ID'
-  | 'DRAW_TO_INSERT'
-  | 'FLEX_RESIZE_BASIC'
-  | 'SET_PADDING_STRATEGY'
+export type CanvasStrategyId = string
 
 export type InteractionLifecycle = 'mid-interaction' | 'end-interaction'
 
@@ -142,7 +122,7 @@ export interface CanvasStrategy {
   name: (
     canvasState: InteractionCanvasState,
     interactionSession: InteractionSession,
-    strategyState: StrategyState,
+    customStrategyState: CustomStrategyState,
   ) => string
 
   // Determines if we should show the controls that this strategy renders
@@ -160,14 +140,14 @@ export interface CanvasStrategy {
   fitness: (
     canvasState: InteractionCanvasState,
     interactionSession: InteractionSession,
-    strategyState: StrategyState,
+    customStrategyState: CustomStrategyState,
   ) => number
 
   // Returns the commands that inform how the model and the editor should be updated
   apply: (
     canvasState: InteractionCanvasState,
     interactionSession: InteractionSession,
-    strategyState: StrategyState,
+    customStrategyState: CustomStrategyState,
     strategyLifecycle: InteractionLifecycle,
   ) => StrategyApplicationResult
 }

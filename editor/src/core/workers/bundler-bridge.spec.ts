@@ -259,7 +259,7 @@ describe('Bundler State Machine', () => {
 
     expect(mockInitService.mock.calls.length).toBe(1)
 
-    initReadyPromise.then(() => {
+    void initReadyPromise.then(() => {
       // the worker should be in the Idle state now
 
       const updateFilePromiseWillFail = utils.defer<BuildResultMessage>()

@@ -225,7 +225,7 @@ describe('ES Dependency Manager — Real-life packages', () => {
         }
       },
     )
-    fetchNodeModules(
+    void fetchNodeModules(
       [requestedNpmDependency('antd', '4.2.5')],
       createBuiltInDependenciesList(null),
     ).then((fetchNodeModulesResult) => {
@@ -366,7 +366,7 @@ describe('ES Dependency Manager — Downloads extra files as-needed', () => {
         }
       },
     )
-    fetchNodeModules(
+    void fetchNodeModules(
       [requestedNpmDependency('mypackage', '0.0.1')],
       createBuiltInDependenciesList(null),
     ).then((fetchNodeModulesResult) => {
@@ -432,7 +432,7 @@ describe('ES Dependency manager - retry behavior', () => {
       },
     )
 
-    fetchNodeModules(
+    void fetchNodeModules(
       [requestedNpmDependency('react-spring', '8.0.27')],
       createBuiltInDependenciesList(null),
     ).then((fetchNodeModulesResult) => {
@@ -454,7 +454,7 @@ describe('ES Dependency manager - retry behavior', () => {
       },
     )
 
-    fetchNodeModules(
+    void fetchNodeModules(
       [requestedNpmDependency('react-spring', '8.0.27')],
       createBuiltInDependenciesList(null),
     ).then((fetchNodeModulesResult) => {
@@ -482,7 +482,7 @@ describe('ES Dependency manager - retry behavior', () => {
       },
     )
 
-    fetchNodeModules(
+    void fetchNodeModules(
       [requestedNpmDependency('react-spring', '8.0.27')],
       createBuiltInDependenciesList(null),
       false,

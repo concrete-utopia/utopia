@@ -13,24 +13,23 @@ import {
   getTargetPathsFromInteractionTarget,
   strategyApplicationResult,
 } from './canvas-strategy-types'
-import {
-  findNewIndex,
-  getNewDisplayTypeForIndex,
-  getOptionalDisplayPropCommands,
-} from './flow-reorder-helpers'
-import { isFlowReorderConversionApplicable } from './flow-reorder-strategy'
+import { findNewIndex, getOptionalDisplayPropCommands } from './flow-reorder-helpers'
 import { isReorderAllowed } from './reorder-utils'
 
 export const flowReorderSliderStategy: CanvasStrategy = {
   id: 'FLOW_REORDER_SLIDER',
   name: () => 'Reorder (Slider)',
-  isApplicable: (canvasState, interactionState, metadata, allElementProps) => {
-    return isFlowReorderConversionApplicable(
-      canvasState,
-      interactionState,
-      metadata,
-      allElementProps,
-    )
+  isApplicable: (canvasState, interactionSession, metadata, allElementProps) => {
+    const selectedElements = getTargetPathsFromInteractionTarget(canvasState.interactionTarget)
+    if (selectedElements.length === 1) {
+      const target = selectedElements[0]
+      const elementMetadata = MetadataUtils.findElementByElementPath(metadata, target)
+      const siblings = MetadataUtils.getSiblings(metadata, target)
+      if (siblings.length > 1 && MetadataUtils.isPositionedByFlow(elementMetadata)) {
+        return true
+      }
+    }
+    return false
   },
   controlsToRender: [
     {
@@ -39,27 +38,27 @@ export const flowReorderSliderStategy: CanvasStrategy = {
       show: 'always-visible',
     },
   ],
-  fitness: (canvasState, interactionState, strategyState) => {
+  fitness: (canvasState, interactionSession, customStrategyState) => {
     return flowReorderSliderStategy.isApplicable(
       canvasState,
-      interactionState,
-      strategyState.startingMetadata,
-      strategyState.startingAllElementProps,
+      interactionSession,
+      canvasState.startingMetadata,
+      canvasState.startingAllElementProps,
     ) &&
-      interactionState.interactionData.type === 'DRAG' &&
-      interactionState.activeControl.type === 'FLOW_SLIDER'
+      interactionSession.interactionData.type === 'DRAG' &&
+      interactionSession.activeControl.type === 'FLOW_SLIDER'
       ? 100
       : 0
   },
-  apply: (canvasState, interactionState, strategyState) => {
-    if (interactionState.interactionData.type !== 'DRAG') {
+  apply: (canvasState, interactionSession, customStrategyState) => {
+    if (interactionSession.interactionData.type !== 'DRAG') {
       return emptyStrategyApplicationResult
     }
 
     const selectedElements = getTargetPathsFromInteractionTarget(canvasState.interactionTarget)
     const target = selectedElements[0]
 
-    const siblingsOfTarget = MetadataUtils.getSiblings(strategyState.startingMetadata, target).map(
+    const siblingsOfTarget = MetadataUtils.getSiblings(canvasState.startingMetadata, target).map(
       (element) => element.elementPath,
     )
 
@@ -71,20 +70,14 @@ export const flowReorderSliderStategy: CanvasStrategy = {
       )
     }
 
-    if (interactionState.interactionData.drag != null) {
+    if (interactionSession.interactionData.drag != null) {
       const unpatchedIndex = siblingsOfTarget.findIndex((sibling) => EP.pathsEqual(sibling, target))
 
       const newIndex = findNewIndex(
         unpatchedIndex,
-        interactionState.interactionData.drag,
+        interactionSession.interactionData.drag,
         siblingsOfTarget,
         'rounded-value',
-      )
-
-      const newDisplayType = getNewDisplayTypeForIndex(
-        strategyState.startingMetadata,
-        target,
-        siblingsOfTarget[newIndex],
       )
 
       return strategyApplicationResult(
@@ -92,7 +85,11 @@ export const flowReorderSliderStategy: CanvasStrategy = {
           reorderElement('always', target, absolute(newIndex)),
           setElementsToRerenderCommand(siblingsOfTarget),
           updateHighlightedViews('mid-interaction', []),
-          ...getOptionalDisplayPropCommands(target, newDisplayType),
+          ...getOptionalDisplayPropCommands(
+            newIndex,
+            canvasState.interactionTarget,
+            canvasState.startingMetadata,
+          ),
           setCursorCommand('mid-interaction', CSSCursor.ResizeEW),
         ],
         {

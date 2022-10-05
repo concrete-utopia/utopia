@@ -1,7 +1,7 @@
 import React from 'react'
 import { useColorTheme } from '../../../../uuiui'
 import { useEditorState } from '../../../editor/store/store-hook'
-import { getMultiselectBounds } from '../../canvas-strategies/shared-absolute-move-strategy-helpers'
+import { getMultiselectBounds } from '../../canvas-strategies/shared-move-strategies-helpers'
 import { CanvasOffsetWrapper } from '../canvas-offset-wrapper'
 
 export const DragOutlineControl = React.memo(() => {

@@ -45,6 +45,7 @@ import {
   ElementsToRerender,
   ErrorMessages,
   FloatingInsertMenuState,
+  GithubState,
   LeftMenuTab,
   ModalDialog,
   OriginalFrame,
@@ -868,6 +869,11 @@ export interface SetLoginState {
   loginState: LoginState
 }
 
+export interface SetGithubState {
+  action: 'SET_GITHUB_STATE'
+  githubState: GithubState
+}
+
 export interface ResetCanvas {
   action: 'RESET_CANVAS'
 }
@@ -966,6 +972,11 @@ export type ToggleSelectionLock = {
   action: 'TOGGLE_SELECTION_LOCK'
   targets: Array<ElementPath>
   newValue: SelectionLocked
+}
+
+export interface SaveToGithub {
+  action: 'SAVE_TO_GITHUB'
+  targetRepository: string
 }
 
 export type EditorAction =
@@ -1104,6 +1115,7 @@ export type EditorAction =
   | SetFollowSelectionEnabled
   | UpdateConfigFromVSCode
   | SetLoginState
+  | SetGithubState
   | ResetCanvas
   | SetFilebrowserDropTarget
   | SetCurrentTheme
@@ -1124,6 +1136,7 @@ export type EditorAction =
   | RunEscapeHatch
   | SetElementsToRerender
   | ToggleSelectionLock
+  | SaveToGithub
 
 export type DispatchPriority =
   | 'everyone'

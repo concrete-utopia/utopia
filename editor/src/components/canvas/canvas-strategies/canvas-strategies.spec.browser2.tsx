@@ -5,11 +5,17 @@ import { cmdModifier, emptyModifiers, Modifiers } from '../../../utils/modifiers
 import {
   findCanvasStrategy,
   pickCanvasStateFromEditorState,
+  pickCanvasStateFromEditorStateWithMetadata,
   RegisteredCanvasStrategies,
 } from './canvas-strategies'
-import { boundingArea, InteractionSession, StrategyState } from './interaction-state'
+import {
+  boundingArea,
+  createEmptyStrategyState,
+  InteractionSession,
+  StrategyState,
+} from './interaction-state'
 import { createMouseInteractionForTests } from './interaction-state.test-utils'
-import { act, fireEvent } from '@testing-library/react'
+import { act } from '@testing-library/react'
 import {
   EditorRenderResult,
   makeTestProjectCodeWithSnippet,
@@ -19,28 +25,22 @@ import { selectComponents } from '../../editor/actions/action-creators'
 import CanvasActions from '../canvas-actions'
 import { AllElementProps } from '../../editor/store/editor-state'
 import { CanvasControlsContainerID } from '../controls/new-canvas-controls'
-import { PrettierConfig } from 'utopia-vscode-common'
-import * as Prettier from 'prettier/standalone'
 import { forceNotNull } from '../../..//core/shared/optional-utils'
+import { defaultCustomStrategyState } from './canvas-strategy-types'
+import { mouseDownAtPoint, mouseMoveToPoint } from '../event-helpers.test-utils'
 
-const baseStrategyState = (
-  metadata: ElementInstanceMetadataMap,
-  allElementProps: AllElementProps,
-) =>
-  ({
-    currentStrategy: null as any, // the strategy does not use this
-    currentStrategyFitness: null as any, // the strategy does not use this
-    currentStrategyCommands: null as any, // the strategy does not use this
-    accumulatedPatches: null as any, // the strategy does not use this
-    commandDescriptions: null as any, // the strategy does not use this
-    sortedApplicableStrategies: null as any, // the strategy does not use this
-    startingMetadata: metadata,
-    startingAllElementProps: allElementProps,
-    customStrategyState: {
-      escapeHatchActivated: false,
-      lastReorderIdx: null,
-    },
-  } as StrategyState)
+const baseStrategyState = (): StrategyState => ({
+  currentStrategy: null as any, // the strategy does not use this
+  currentStrategyFitness: null as any, // the strategy does not use this
+  currentStrategyCommands: null as any, // the strategy does not use this
+  accumulatedPatches: null as any, // the strategy does not use this
+  commandDescriptions: null as any, // the strategy does not use this
+  sortedApplicableStrategies: null as any, // the strategy does not use this
+  status: null as any, // the strategy does not use this
+  startingMetadata: null as any, // the strategy does not use this
+  startingAllElementProps: null as any, // the strategy does not use this
+  customStrategyState: defaultCustomStrategyState(),
+})
 
 interface StyleRectangle {
   left: string
@@ -143,33 +143,11 @@ function startElementDragNoMouseUp(
 
   const startPoint = windowPoint({ x: targetElementBounds.x + 20, y: targetElementBounds.y + 20 })
   const endPoint = offsetPoint(startPoint, dragDelta)
-  fireEvent(
-    canvasControl,
-    new MouseEvent('mousedown', {
-      bubbles: true,
-      cancelable: true,
-      metaKey: modifiers.cmd,
-      altKey: modifiers.alt,
-      shiftKey: modifiers.shift,
-      clientX: startPoint.x,
-      clientY: startPoint.y,
-      buttons: 1,
-    }),
-  )
-
-  fireEvent(
-    canvasControl,
-    new MouseEvent('mousemove', {
-      bubbles: true,
-      cancelable: true,
-      metaKey: modifiers.cmd,
-      altKey: modifiers.alt,
-      shiftKey: modifiers.shift,
-      clientX: endPoint.x,
-      clientY: endPoint.y,
-      buttons: 1,
-    }),
-  )
+  mouseDownAtPoint(canvasControl, startPoint, { modifiers: modifiers })
+  mouseMoveToPoint(canvasControl, endPoint, {
+    modifiers: modifiers,
+    eventOptions: { buttons: 1 },
+  })
 }
 
 describe('Strategy Fitness', () => {
@@ -216,10 +194,7 @@ describe('Strategy Fitness', () => {
         renderResult.getEditorState().builtInDependencies,
       ),
       interactionSession,
-      baseStrategyState(
-        renderResult.getEditorState().editor.jsxMetadata,
-        renderResult.getEditorState().editor.allElementProps,
-      ),
+      defaultCustomStrategyState(),
       null,
     )
 
@@ -268,10 +243,7 @@ describe('Strategy Fitness', () => {
         renderResult.getEditorState().builtInDependencies,
       ),
       interactionSession,
-      baseStrategyState(
-        renderResult.getEditorState().editor.jsxMetadata,
-        renderResult.getEditorState().editor.allElementProps,
-      ),
+      defaultCustomStrategyState(),
       null,
     )
 
@@ -356,10 +328,7 @@ describe('Strategy Fitness', () => {
         renderResult.getEditorState().builtInDependencies,
       ),
       interactionSession,
-      baseStrategyState(
-        renderResult.getEditorState().editor.jsxMetadata,
-        renderResult.getEditorState().editor.allElementProps,
-      ),
+      defaultCustomStrategyState(),
       null,
     )
 
@@ -408,10 +377,7 @@ describe('Strategy Fitness', () => {
         renderResult.getEditorState().builtInDependencies,
       ),
       interactionSession,
-      baseStrategyState(
-        renderResult.getEditorState().editor.jsxMetadata,
-        renderResult.getEditorState().editor.allElementProps,
-      ),
+      defaultCustomStrategyState(),
       null,
     )
 
@@ -460,10 +426,7 @@ describe('Strategy Fitness', () => {
         renderResult.getEditorState().builtInDependencies,
       ),
       interactionSession,
-      baseStrategyState(
-        renderResult.getEditorState().editor.jsxMetadata,
-        renderResult.getEditorState().editor.allElementProps,
-      ),
+      defaultCustomStrategyState(),
       null,
     )
 
