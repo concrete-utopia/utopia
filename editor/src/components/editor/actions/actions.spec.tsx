@@ -1453,7 +1453,12 @@ describe('INSERT_INSERTABLE', () => {
           export var Card = (props) => {
             return (
               <div style={{ ...props.style }}>
-                <div>
+                <div
+                  style={{
+                    backgroundColor: '#0091FFAA',
+                    position: 'absolute',
+                  }}
+                >
                   <div
                     style={{
                       position: 'absolute',

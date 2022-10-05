@@ -127,6 +127,7 @@ describe('Dragging from the insert menu into an absolute layout', () => {
           >
             <div
               style={{
+                backgroundColor: '#0091FFAA',
                 position: 'absolute',
                 left: 140,
                 top: 40,
@@ -202,6 +203,7 @@ describe('Dragging from the insert menu into an absolute layout', () => {
           >
             <div
               style={{
+                backgroundColor: '#0091FFAA',
                 position: 'absolute',
                 left: -40,
                 top: -40,
@@ -279,6 +281,7 @@ describe('Dragging from the insert menu into a flex layout', () => {
         >
           <div
             style={{
+              backgroundColor: '#0091FFAA',
               position: 'relative',
               width: 100,
               height: 100,
@@ -346,6 +349,7 @@ describe('Dragging from the insert menu into a flex layout', () => {
           /> 
           <div
             style={{
+              backgroundColor: '#0091FFAA',
               position: 'relative',
               width: 100,
               height: 100,
@@ -403,6 +407,7 @@ describe('Dragging from the insert menu into a flex layout', () => {
           > 
             <div
               style={{
+                backgroundColor: '#0091FFAA',
                 position: 'absolute',
                 left: 40,
                 top: 40,
