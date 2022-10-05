@@ -173,6 +173,33 @@ export const drawToInsertStrategy: CanvasStrategy = {
 
             return strategyApplicationResult([insertionCommand.command, reparentCommand])
           }
+        } else {
+          // drag is null, not started yet but mousedown
+          const pointOnCanvas = interactionState.interactionData.dragStart
+          const parent = getReparentTargetUnified(
+            newReparentSubjects(),
+            pointOnCanvas,
+            true,
+            canvasState,
+            canvasState.startingMetadata,
+            canvasState.startingAllElementProps,
+            'allow-missing-bounds',
+          )
+
+          if (parent != null && parent.shouldReparent && parent.newParent != null) {
+            const highlightParentCommand = updateHighlightedViews('mid-interaction', [
+              parent.newParent,
+            ])
+
+            if (parent.newIndex !== -1) {
+              return strategyApplicationResult([
+                highlightParentCommand,
+                showReorderIndicator(parent.newParent, parent.newIndex),
+              ])
+            } else {
+              return strategyApplicationResult([highlightParentCommand])
+            }
+          }
         }
       } else if (interactionState.interactionData.type === 'HOVER') {
         const pointOnCanvas = interactionState.interactionData.point
