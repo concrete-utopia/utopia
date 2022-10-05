@@ -37,10 +37,7 @@ import { isLiveMode, dragAndDropInsertionSubject, EditorModes, isSelectMode } fr
 import { Toast } from '../common/notices'
 import { chrome as isChrome } from 'platform-detect'
 import { applyShortcutConfigurationToDefaults } from './shortcut-definitions'
-import {
-  IS_BROWSER_TEST_DEBUG,
-  PROPERTY_CONTROLS_INFO_BASE_URL,
-} from '../../common/env-vars'
+import { IS_BROWSER_TEST_DEBUG, PROPERTY_CONTROLS_INFO_BASE_URL } from '../../common/env-vars'
 import {
   SimpleFlexRow,
   SimpleFlexColumn,
