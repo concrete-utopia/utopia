@@ -19,11 +19,9 @@ import {
 import { RightMenuTab } from '../../editor/store/editor-state'
 import { FOR_TESTS_setNextGeneratedUid } from '../../../core/model/element-template-utils'
 import { BakedInStoryboardUID } from '../../../core/model/scene-utils'
-import { ElementPath } from '../../../core/shared/project-file-types'
 import { ElementInstanceMetadataMap } from '../../../core/shared/element-template'
 import { CanvasRectangle } from '../../../core/shared/math-utils'
 import { MetadataUtils } from '../../../core/model/element-metadata-utils'
-import { wait } from '../../../utils/utils.test-utils'
 
 // FIXME These tests will probably start to fail if the insert menu becomes too long, at which point we may
 // have to insert some mocking to restrict the available items there
@@ -101,6 +99,7 @@ function isIndicatorBeforeSiblingBBB(
 function isIndicatorBetweenSiblingsBBBCCC(
   metadata: ElementInstanceMetadataMap,
   reparentLine: CanvasRectangle,
+  flexDirection: 'row' | 'column',
 ): boolean {
   const targetSiblingBefore = EP.fromString(
     `${BakedInStoryboardUID}/${TestSceneUID}/${TestAppUID}:aaa/bbb`,
@@ -113,9 +112,19 @@ function isIndicatorBetweenSiblingsBBBCCC(
   if (prevSiblingFrame == null || nextSiblingFrame == null) {
     return false
   } else {
+    const prevSiblingEdge =
+      flexDirection === 'row'
+        ? {
+            x: prevSiblingFrame.x + prevSiblingFrame.width,
+            y: prevSiblingFrame.y,
+          }
+        : {
+            x: prevSiblingFrame.x,
+            y: prevSiblingFrame.y + prevSiblingFrame.height,
+          }
     return (
-      reparentLine.x >= prevSiblingFrame.x &&
-      reparentLine.y >= prevSiblingFrame.y &&
+      reparentLine.x >= prevSiblingEdge.x &&
+      reparentLine.y >= prevSiblingEdge.y &&
       reparentLine.x <= nextSiblingFrame.x &&
       reparentLine.y <= nextSiblingFrame.y
     )
@@ -654,11 +663,11 @@ describe('Inserting into flex row', () => {
     expect(
       renderResult.getEditorState().editor.canvas.controls.flexReparentTargetLines.length,
     ).toEqual(1)
-    const isIndicatorBeforeSibling = isIndicatorBeforeSiblingBBB(
+    const indicatorBeforeSibling = isIndicatorBeforeSiblingBBB(
       renderResult.getEditorState().editor.jsxMetadata,
       renderResult.getEditorState().editor.canvas.controls.flexReparentTargetLines[0],
     )
-    expect(isIndicatorBeforeSibling).toEqual(true)
+    expect(indicatorBeforeSibling).toEqual(true)
 
     // Drag horizontally close to the zero position
     mouseDragFromPointToPoint(canvasControlsLayer, startPoint, endPoint)
@@ -733,11 +742,11 @@ describe('Inserting into flex row', () => {
     expect(
       renderResult.getEditorState().editor.canvas.controls.flexReparentTargetLines.length,
     ).toEqual(1)
-    const isIndicatorBeforeSibling = isIndicatorBeforeSiblingBBB(
+    const indicatorBeforeSibling = isIndicatorBeforeSiblingBBB(
       renderResult.getEditorState().editor.jsxMetadata,
       renderResult.getEditorState().editor.canvas.controls.flexReparentTargetLines[0],
     )
-    expect(isIndicatorBeforeSibling).toEqual(true)
+    expect(indicatorBeforeSibling).toEqual(true)
 
     // Click horizontally close to the zero position
     mouseClickAtPoint(canvasControlsLayer, point)
@@ -819,6 +828,7 @@ describe('Inserting into flex row', () => {
     const indicatorBetweenSiblings = isIndicatorBetweenSiblingsBBBCCC(
       renderResult.getEditorState().editor.jsxMetadata,
       renderResult.getEditorState().editor.canvas.controls.flexReparentTargetLines[0],
+      'row',
     )
     expect(indicatorBetweenSiblings).toEqual(true)
 
@@ -893,11 +903,12 @@ describe('Inserting into flex row', () => {
     expect(
       renderResult.getEditorState().editor.canvas.controls.flexReparentTargetLines.length,
     ).toEqual(1)
-    const isIndicatorBeforeSibling = isIndicatorBetweenSiblingsBBBCCC(
+    const indicatorBetweenSiblings = isIndicatorBetweenSiblingsBBBCCC(
       renderResult.getEditorState().editor.jsxMetadata,
       renderResult.getEditorState().editor.canvas.controls.flexReparentTargetLines[0],
+      'row',
     )
-    expect(isIndicatorBeforeSibling).toEqual(true)
+    expect(indicatorBetweenSiblings).toEqual(true)
 
     // Click horizontally close to the first position
     mouseClickAtPoint(canvasControlsLayer, point)
@@ -977,11 +988,12 @@ describe('Inserting into flex row', () => {
       renderResult.getEditorState().editor.canvas.controls.flexReparentTargetLines.length,
     ).toEqual(1)
 
-    const isIndicatorBeforeSibling = isIndicatorBetweenSiblingsBBBCCC(
+    const indicatorBetweenSiblings = isIndicatorBetweenSiblingsBBBCCC(
       renderResult.getEditorState().editor.jsxMetadata,
       renderResult.getEditorState().editor.canvas.controls.flexReparentTargetLines[0],
+      'row',
     )
-    expect(isIndicatorBeforeSibling).toEqual(true)
+    expect(indicatorBetweenSiblings).toEqual(true)
 
     // Drag starts horizontally close to the first position, dragging towards the top left
     mouseDragFromPointToPoint(canvasControlsLayer, startPoint, endPoint)
@@ -1211,11 +1223,11 @@ describe('Inserting into flex row', () => {
       renderResult.getEditorState().editor.canvas.controls.flexReparentTargetLines.length,
     ).toEqual(1)
 
-    const isIndicatorBeforeSibling = isIndicatorBeforeSiblingBBB(
+    const indicatorBeforeSibling = isIndicatorBeforeSiblingBBB(
       renderResult.getEditorState().editor.jsxMetadata,
       renderResult.getEditorState().editor.canvas.controls.flexReparentTargetLines[0],
     )
-    expect(isIndicatorBeforeSibling).toEqual(true)
+    expect(indicatorBeforeSibling).toEqual(true)
 
     // Drag starts inside bbb, but very close to its edge (3px)
     mouseDragFromPointToPoint(canvasControlsLayer, startPoint, endPoint)
@@ -1291,11 +1303,11 @@ describe('Inserting into flex row', () => {
       renderResult.getEditorState().editor.canvas.controls.flexReparentTargetLines.length,
     ).toEqual(1)
 
-    const isIndicatorBeforeSibling = isIndicatorBeforeSiblingBBB(
+    const indicatorBeforeSibling = isIndicatorBeforeSiblingBBB(
       renderResult.getEditorState().editor.jsxMetadata,
       renderResult.getEditorState().editor.canvas.controls.flexReparentTargetLines[0],
     )
-    expect(isIndicatorBeforeSibling).toEqual(true)
+    expect(indicatorBeforeSibling).toEqual(true)
 
     // Click inside bbb, but very close to its edge (3px)
     mouseClickAtPoint(canvasControlsLayer, point)
@@ -1411,11 +1423,11 @@ describe('Inserting into flex column', () => {
       renderResult.getEditorState().editor.canvas.controls.flexReparentTargetLines.length,
     ).toEqual(1)
 
-    const isIndicatorBeforeSibling = isIndicatorBeforeSiblingBBB(
+    const indicatorBeforeSibling = isIndicatorBeforeSiblingBBB(
       renderResult.getEditorState().editor.jsxMetadata,
       renderResult.getEditorState().editor.canvas.controls.flexReparentTargetLines[0],
     )
-    expect(isIndicatorBeforeSibling).toEqual(true)
+    expect(indicatorBeforeSibling).toEqual(true)
 
     // Drag vertically close to the first position
     mouseDragFromPointToPoint(canvasControlsLayer, startPoint, endPoint)
@@ -1492,11 +1504,11 @@ describe('Inserting into flex column', () => {
       renderResult.getEditorState().editor.canvas.controls.flexReparentTargetLines.length,
     ).toEqual(1)
 
-    const isIndicatorBeforeSibling = isIndicatorBeforeSiblingBBB(
+    const indicatorBeforeSibling = isIndicatorBeforeSiblingBBB(
       renderResult.getEditorState().editor.jsxMetadata,
       renderResult.getEditorState().editor.canvas.controls.flexReparentTargetLines[0],
     )
-    expect(isIndicatorBeforeSibling).toEqual(true)
+    expect(indicatorBeforeSibling).toEqual(true)
 
     // Click vertically close to the first position
     mouseClickAtPoint(canvasControlsLayer, point)
@@ -1577,11 +1589,12 @@ describe('Inserting into flex column', () => {
       renderResult.getEditorState().editor.canvas.controls.flexReparentTargetLines.length,
     ).toEqual(1)
 
-    const isIndicatorBeforeSibling = isIndicatorBetweenSiblingsBBBCCC(
+    const indicatorBetweenSiblings = isIndicatorBetweenSiblingsBBBCCC(
       renderResult.getEditorState().editor.jsxMetadata,
       renderResult.getEditorState().editor.canvas.controls.flexReparentTargetLines[0],
+      'column',
     )
-    expect(isIndicatorBeforeSibling).toEqual(true)
+    expect(indicatorBetweenSiblings).toEqual(true)
 
     // Drag vertically close to the first position
     mouseDragFromPointToPoint(canvasControlsLayer, startPoint, endPoint)
@@ -1657,11 +1670,12 @@ describe('Inserting into flex column', () => {
     expect(
       renderResult.getEditorState().editor.canvas.controls.flexReparentTargetLines.length,
     ).toEqual(1)
-    const isIndicatorBeforeSibling = isIndicatorBetweenSiblingsBBBCCC(
+    const indicatorBetweenSiblings = isIndicatorBetweenSiblingsBBBCCC(
       renderResult.getEditorState().editor.jsxMetadata,
       renderResult.getEditorState().editor.canvas.controls.flexReparentTargetLines[0],
+      'column',
     )
-    expect(isIndicatorBeforeSibling).toEqual(true)
+    expect(indicatorBetweenSiblings).toEqual(true)
 
     // Click vertically close to the first position
     mouseClickAtPoint(canvasControlsLayer, point)
@@ -1741,11 +1755,12 @@ describe('Inserting into flex column', () => {
     expect(
       renderResult.getEditorState().editor.canvas.controls.flexReparentTargetLines.length,
     ).toEqual(1)
-    const isIndicatorBeforeSibling = isIndicatorBetweenSiblingsBBBCCC(
+    const indicatorBetweenSiblings = isIndicatorBetweenSiblingsBBBCCC(
       renderResult.getEditorState().editor.jsxMetadata,
       renderResult.getEditorState().editor.canvas.controls.flexReparentTargetLines[0],
+      'column',
     )
-    expect(isIndicatorBeforeSibling).toEqual(true)
+    expect(indicatorBetweenSiblings).toEqual(true)
 
     // Drag starts vertically close to the first position, dragging towards the top left
     mouseDragFromPointToPoint(canvasControlsLayer, startPoint, endPoint)
