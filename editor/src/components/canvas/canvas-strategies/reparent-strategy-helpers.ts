@@ -47,7 +47,6 @@ import {
   InteractionSession,
   MissingBoundsHandling,
   ReparentTargetsToFilter,
-  StrategyState,
 } from './interaction-state'
 import { ifAllowedToReparent } from './reparent-helpers'
 import { getReparentOutcome, pathToReparent } from './reparent-utils'
@@ -154,7 +153,6 @@ export function getFitnessForReparentStrategy(
   reparentStrategy: ReparentStrategy,
   canvasState: InteractionCanvasState,
   interactionState: InteractionSession,
-  strategyState: StrategyState,
   missingBoundsHandling: MissingBoundsHandling,
 ): number {
   const isForced = missingBoundsHandling === 'allow-missing-bounds'
@@ -163,7 +161,6 @@ export function getFitnessForReparentStrategy(
   const foundReparentStrategy = findReparentStrategy(
     canvasState,
     interactionState,
-    strategyState,
     missingBoundsHandling,
   )
   if (
@@ -194,7 +191,6 @@ function targetIsValid(
 function findReparentStrategy(
   canvasState: InteractionCanvasState,
   interactionState: InteractionSession,
-  strategyState: StrategyState,
   missingBoundsHandling: MissingBoundsHandling,
 ): FindReparentStrategyResult {
   const selectedElements = getTargetPathsFromInteractionTarget(canvasState.interactionTarget)
@@ -222,8 +218,8 @@ function findReparentStrategy(
     pointOnCanvas,
     cmdPressed,
     canvasState,
-    strategyState.startingMetadata,
-    strategyState.startingAllElementProps,
+    canvasState.startingMetadata,
+    canvasState.startingAllElementProps,
     missingBoundsHandling,
   )
 
@@ -244,8 +240,8 @@ function findReparentStrategy(
     !parentStayedTheSame
   ) {
     return reparentStrategyForParent(
-      strategyState.startingMetadata,
-      strategyState.startingMetadata,
+      canvasState.startingMetadata,
+      canvasState.startingMetadata,
       filteredSelectedElements,
       newParentPath,
     )
@@ -681,133 +677,137 @@ export function applyFlexReparent(
   stripAbsoluteProperties: StripAbsoluteProperties,
   canvasState: InteractionCanvasState,
   interactionSession: InteractionSession,
-  strategyState: StrategyState,
 ): StrategyApplicationResult {
   const selectedElements = getTargetPathsFromInteractionTarget(canvasState.interactionTarget)
   const filteredSelectedElements = getDragTargets(selectedElements)
 
-  return ifAllowedToReparent(canvasState, strategyState, filteredSelectedElements, () => {
-    if (
-      interactionSession.interactionData.type == 'DRAG' &&
-      interactionSession.interactionData.drag != null
-    ) {
-      const pointOnCanvas = offsetPoint(
-        interactionSession.interactionData.originalDragStart,
-        interactionSession.interactionData.drag,
-      )
-      const reparentResult = getReparentTargetUnified(
-        existingReparentSubjects(filteredSelectedElements),
-        pointOnCanvas,
-        interactionSession.interactionData.modifiers.cmd,
-        canvasState,
-        strategyState.startingMetadata,
-        strategyState.startingAllElementProps,
-        'use-strict-bounds',
-      )
-
+  return ifAllowedToReparent(
+    canvasState,
+    canvasState.startingMetadata,
+    filteredSelectedElements,
+    () => {
       if (
-        reparentResult.shouldReparent &&
-        reparentResult.newParent != null &&
-        filteredSelectedElements.length === 1
+        interactionSession.interactionData.type == 'DRAG' &&
+        interactionSession.interactionData.drag != null
       ) {
-        const target = filteredSelectedElements[0]
-
-        const newIndex = reparentResult.newIndex
-        const newParent = reparentResult.newParent
-        const parentRect =
-          MetadataUtils.getFrameInCanvasCoords(newParent, strategyState.startingMetadata) ??
-          zeroCanvasRect
-
-        const siblingsOfTarget = MetadataUtils.getChildrenPaths(
-          strategyState.startingMetadata,
-          newParent,
+        const pointOnCanvas = offsetPoint(
+          interactionSession.interactionData.originalDragStart,
+          interactionSession.interactionData.drag,
+        )
+        const reparentResult = getReparentTargetUnified(
+          existingReparentSubjects(filteredSelectedElements),
+          pointOnCanvas,
+          interactionSession.interactionData.modifiers.cmd,
+          canvasState,
+          canvasState.startingMetadata,
+          canvasState.startingAllElementProps,
+          'use-strict-bounds',
         )
 
-        const newParentADescendantOfCurrentParent = EP.isDescendantOfOrEqualTo(
-          newParent,
-          EP.parentPath(target),
-        )
-        // Reparent the element.
-        const outcomeResult = getReparentOutcome(
-          canvasState.builtInDependencies,
-          canvasState.projectContents,
-          canvasState.nodeModules,
-          canvasState.openFile,
-          pathToReparent(target),
-          newParent,
-          'always',
-        )
+        if (
+          reparentResult.shouldReparent &&
+          reparentResult.newParent != null &&
+          filteredSelectedElements.length === 1
+        ) {
+          const target = filteredSelectedElements[0]
 
-        if (outcomeResult != null) {
-          const { commands: reparentCommands, newPath } = outcomeResult
+          const newIndex = reparentResult.newIndex
+          const newParent = reparentResult.newParent
+          const parentRect =
+            MetadataUtils.getFrameInCanvasCoords(newParent, canvasState.startingMetadata) ??
+            zeroCanvasRect
 
-          // Strip the `position`, positional and dimension properties.
-          const propertyChangeCommands = getFlexReparentPropertyChanges(
-            stripAbsoluteProperties,
-            newPath,
+          const siblingsOfTarget = MetadataUtils.getChildrenPaths(
+            canvasState.startingMetadata,
+            newParent,
           )
 
-          const commandsBeforeReorder = [
-            ...reparentCommands,
-            updateSelectedViews('always', [newPath]),
-          ]
+          const newParentADescendantOfCurrentParent = EP.isDescendantOfOrEqualTo(
+            newParent,
+            EP.parentPath(target),
+          )
+          // Reparent the element.
+          const outcomeResult = getReparentOutcome(
+            canvasState.builtInDependencies,
+            canvasState.projectContents,
+            canvasState.nodeModules,
+            canvasState.openFile,
+            pathToReparent(target),
+            newParent,
+            'always',
+          )
 
-          const commandsAfterReorder = [
-            ...propertyChangeCommands,
-            setElementsToRerenderCommand([target, newPath]),
-            updateHighlightedViews('mid-interaction', []),
-            setCursorCommand('mid-interaction', CSSCursor.Move),
-          ]
+          if (outcomeResult != null) {
+            const { commands: reparentCommands, newPath } = outcomeResult
 
-          function midInteractionCommandsForTarget(): Array<CanvasCommand> {
-            return [
-              wildcardPatch('mid-interaction', {
-                canvas: { controls: { parentHighlightPaths: { $set: [newParent] } } },
-              }),
-              showReorderIndicator(newParent, newIndex),
-              newParentADescendantOfCurrentParent
-                ? wildcardPatch('mid-interaction', {
-                    hiddenInstances: { $push: [target] },
-                  })
-                : wildcardPatch('mid-interaction', {
-                    displayNoneInstances: { $push: [target] },
-                  }),
-              wildcardPatch('mid-interaction', { displayNoneInstances: { $push: [newPath] } }),
+            // Strip the `position`, positional and dimension properties.
+            const propertyChangeCommands = getFlexReparentPropertyChanges(
+              stripAbsoluteProperties,
+              newPath,
+            )
+
+            const commandsBeforeReorder = [
+              ...reparentCommands,
+              updateSelectedViews('always', [newPath]),
             ]
-          }
 
-          let interactionFinishCommands: Array<CanvasCommand>
-          let midInteractionCommands: Array<CanvasCommand>
-
-          if (reparentResult.shouldReorder && siblingsOfTarget.length > 0) {
-            midInteractionCommands = midInteractionCommandsForTarget()
-
-            interactionFinishCommands = [
-              ...commandsBeforeReorder,
-              reorderElement('always', newPath, absolute(newIndex)),
-              ...commandsAfterReorder,
+            const commandsAfterReorder = [
+              ...propertyChangeCommands,
+              setElementsToRerenderCommand([target, newPath]),
+              updateHighlightedViews('mid-interaction', []),
+              setCursorCommand('mid-interaction', CSSCursor.Move),
             ]
-          } else {
-            if (parentRect != null) {
-              midInteractionCommands = midInteractionCommandsForTarget()
-            } else {
-              // this should be an error because parentRect should never be null
-              midInteractionCommands = []
+
+            function midInteractionCommandsForTarget(): Array<CanvasCommand> {
+              return [
+                wildcardPatch('mid-interaction', {
+                  canvas: { controls: { parentHighlightPaths: { $set: [newParent] } } },
+                }),
+                showReorderIndicator(newParent, newIndex),
+                newParentADescendantOfCurrentParent
+                  ? wildcardPatch('mid-interaction', {
+                      hiddenInstances: { $push: [target] },
+                    })
+                  : wildcardPatch('mid-interaction', {
+                      displayNoneInstances: { $push: [target] },
+                    }),
+                wildcardPatch('mid-interaction', { displayNoneInstances: { $push: [newPath] } }),
+              ]
             }
 
-            interactionFinishCommands = [...commandsBeforeReorder, ...commandsAfterReorder]
-          }
+            let interactionFinishCommands: Array<CanvasCommand>
+            let midInteractionCommands: Array<CanvasCommand>
 
-          return {
-            commands: [...midInteractionCommands, ...interactionFinishCommands],
-            customStatePatch: {},
-            status: 'success',
+            if (reparentResult.shouldReorder && siblingsOfTarget.length > 0) {
+              midInteractionCommands = midInteractionCommandsForTarget()
+
+              interactionFinishCommands = [
+                ...commandsBeforeReorder,
+                reorderElement('always', newPath, absolute(newIndex)),
+                ...commandsAfterReorder,
+              ]
+            } else {
+              if (parentRect != null) {
+                midInteractionCommands = midInteractionCommandsForTarget()
+              } else {
+                // this should be an error because parentRect should never be null
+                midInteractionCommands = []
+              }
+
+              interactionFinishCommands = [...commandsBeforeReorder, ...commandsAfterReorder]
+            }
+
+            return {
+              commands: [...midInteractionCommands, ...interactionFinishCommands],
+              customStatePatch: {},
+              status: 'success',
+            }
           }
         }
       }
-    }
-    return emptyStrategyApplicationResult
-  })
+      return emptyStrategyApplicationResult
+    },
+  )
 }
 
 export function getAbsoluteReparentPropertyChanges(

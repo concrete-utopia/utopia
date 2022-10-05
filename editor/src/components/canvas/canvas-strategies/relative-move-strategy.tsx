@@ -82,8 +82,9 @@ export const relativeMoveStrategy: CanvasStrategy = {
       : 1 // there should be a more structured way to define priorities (:
   },
 
-  apply: (canvasState, interactionState, sessionState) => {
-    const isFitting = relativeMoveStrategy.fitness(canvasState, interactionState, sessionState) > 0
+  apply: (canvasState, interactionState, customStrategyState) => {
+    const isFitting =
+      relativeMoveStrategy.fitness(canvasState, interactionState, customStrategyState) > 0
     if (!isFitting) {
       return emptyStrategyApplicationResult
     }
@@ -91,8 +92,7 @@ export const relativeMoveStrategy: CanvasStrategy = {
     return applyMoveCommon(
       canvasState,
       interactionState,
-      sessionState,
-      getAdjustMoveCommands(canvasState, interactionState, sessionState, {
+      getAdjustMoveCommands(canvasState, interactionState, {
         ignoreLocalFrame: true,
       }),
     )

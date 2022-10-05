@@ -14,7 +14,10 @@ import {
   makeTestProjectCodeWithSnippet,
   testPrintCodeFromEditorState,
 } from '../ui-jsx.test-utils'
-import { pickCanvasStateFromEditorState } from './canvas-strategies'
+import {
+  pickCanvasStateFromEditorState,
+  pickCanvasStateFromEditorStateWithMetadata,
+} from './canvas-strategies'
 import { defaultCustomStrategyState } from './canvas-strategy-types'
 import { flexReorderStrategy } from './flex-reorder-strategy'
 import { InteractionSession, StrategyState } from './interaction-state'
@@ -189,18 +192,13 @@ function reorderElement(
   }
 
   const strategyResult = flexReorderStrategy.apply(
-    pickCanvasStateFromEditorState(editorState, createBuiltInDependenciesList(null)),
+    pickCanvasStateFromEditorStateWithMetadata(
+      editorState,
+      createBuiltInDependenciesList(null),
+      metadata,
+    ),
     interactionSession,
-    {
-      currentStrategy: null as any, // the strategy does not use this
-      currentStrategyFitness: null as any, // the strategy does not use this
-      currentStrategyCommands: null as any, // the strategy does not use this
-      accumulatedPatches: null as any, // the strategy does not use this
-      commandDescriptions: null as any, // the strategy does not use this
-      sortedApplicableStrategies: null as any, // the strategy does not use this
-      startingMetadata: metadata,
-      customStrategyState: defaultCustomStrategyState(),
-    } as StrategyState,
+    defaultCustomStrategyState(),
     'end-interaction',
   )
 
