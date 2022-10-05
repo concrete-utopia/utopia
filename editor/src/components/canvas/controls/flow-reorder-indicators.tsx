@@ -6,6 +6,7 @@ import { shallowEqual } from '../../../core/shared/equality-utils'
 import { arrayEquals } from '../../../core/shared/utils'
 import { useColorTheme } from '../../../uuiui'
 import { useEditorState } from '../../editor/store/store-hook'
+import { controlForStrategyMemoized } from '../canvas-strategies/canvas-strategy-types'
 import { getMultiselectBounds } from '../canvas-strategies/shared-move-strategies-helpers'
 import { CanvasFrameAndTarget } from '../canvas-types'
 import { CanvasOffsetWrapper } from './canvas-offset-wrapper'
@@ -26,7 +27,7 @@ const useColorForDisplayType = (colorTheme: any) => {
   }, 'FlowReorderDragOutline color')
 }
 
-export const FlowReorderDragOutline = React.memo(() => {
+export const FlowReorderDragOutline = controlForStrategyMemoized(() => {
   const scale = useEditorState((store) => store.editor.canvas.scale, 'FlowReorderDragOutline scale')
   const frame = useEditorState((store) => {
     return getMultiselectBounds(store.strategyState.startingMetadata, store.editor.selectedViews)

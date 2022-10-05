@@ -9,6 +9,7 @@ import { ParentOutlines } from '../controls/parent-outlines'
 import { absoluteMoveStrategy } from './absolute-move-strategy'
 import {
   CanvasStrategy,
+  controlWithProps,
   emptyStrategyApplicationResult,
   getTargetPathsFromInteractionTarget,
   strategyApplicationResult,
@@ -56,16 +57,18 @@ function getAbsoluteReparentStrategy(
       return false
     },
     controlsToRender: [
-      {
+      controlWithProps({
         control: ParentOutlines,
+        props: {},
         key: 'parent-outlines-control',
         show: 'visible-only-while-active',
-      },
-      {
+      }),
+      controlWithProps({
         control: ParentBounds,
+        props: {},
         key: 'parent-bounds-control',
         show: 'visible-only-while-active',
-      },
+      }),
     ],
     fitness: (canvasState, interactionSession, customStrategyState) => {
       // All 4 reparent strategies use the same fitness function getFitnessForReparentStrategy

@@ -33,6 +33,7 @@ import {
 } from './absolute-resize-helpers'
 import {
   CanvasStrategy,
+  controlWithProps,
   emptyStrategyApplicationResult,
   getTargetPathsFromInteractionTarget,
   strategyApplicationResult,
@@ -63,18 +64,30 @@ export const absoluteResizeBoundingBoxStrategy: CanvasStrategy = {
     }
   },
   controlsToRender: [
-    {
+    controlWithProps({
       control: AbsoluteResizeControl,
+      props: {},
       key: 'absolute-resize-control',
       show: 'visible-except-when-other-strategy-is-active',
-    },
-    {
+    }),
+    controlWithProps({
       control: ZeroSizeResizeControlWrapper,
+      props: {},
       key: 'zero-size-resize-control',
       show: 'visible-except-when-other-strategy-is-active',
-    },
-    { control: ParentOutlines, key: 'parent-outlines-control', show: 'visible-only-while-active' },
-    { control: ParentBounds, key: 'parent-bounds-control', show: 'visible-only-while-active' },
+    }),
+    controlWithProps({
+      control: ParentOutlines,
+      props: {},
+      key: 'parent-outlines-control',
+      show: 'visible-only-while-active',
+    }),
+    controlWithProps({
+      control: ParentBounds,
+      props: {},
+      key: 'parent-bounds-control',
+      show: 'visible-only-while-active',
+    }),
   ],
   fitness: (canvasState, interactionSession, customStrategyState) => {
     return absoluteResizeBoundingBoxStrategy.isApplicable(

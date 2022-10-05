@@ -5,9 +5,10 @@ import * as EP from '../../../core/shared/element-path'
 import { useColorTheme } from '../../../uuiui'
 import { isInsertMode } from '../../editor/editor-modes'
 import { useEditorState } from '../../editor/store/store-hook'
+import { controlForStrategyMemoized } from '../canvas-strategies/canvas-strategy-types'
 import { CanvasOffsetWrapper } from './canvas-offset-wrapper'
 
-export const ParentOutlines = React.memo(() => {
+export const ParentOutlines = controlForStrategyMemoized(() => {
   const colorTheme = useColorTheme()
   const scale = useEditorState((store) => store.editor.canvas.scale, 'ParentOutlines canvas scale')
   const parentFrame = useEditorState((store) => {

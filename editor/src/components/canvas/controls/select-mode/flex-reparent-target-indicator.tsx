@@ -1,8 +1,9 @@
 import React from 'react'
 import { useEditorState } from '../../../editor/store/store-hook'
+import { controlForStrategyMemoized } from '../../canvas-strategies/canvas-strategy-types'
 import { CanvasOffsetWrapper } from '../canvas-offset-wrapper'
 
-export const FlexReparentTargetIndicator = React.memo(() => {
+export const FlexReparentTargetIndicator = controlForStrategyMemoized(() => {
   const reparentTargetLines = useEditorState(
     (store) => store.editor.canvas.controls.flexReparentTargetLines,
     'FlexReparentTargetIndicator lines',
