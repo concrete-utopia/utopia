@@ -19,7 +19,7 @@ import {
   getTargetPathsFromInteractionTarget,
   strategyApplicationResult,
 } from './canvas-strategy-types'
-import { getDragTargets, getMultiselectBounds } from './shared-absolute-move-strategy-helpers'
+import { getDragTargets, getMultiselectBounds } from './shared-move-strategies-helpers'
 
 export const setPaddingStrategy: CanvasStrategy = {
   id: 'SET_PADDING_STRATEGY',
@@ -43,8 +43,8 @@ export const setPaddingStrategy: CanvasStrategy = {
     return setPaddingStrategy.isApplicable(
       canvasState,
       interactionState,
-      sessionState.startingMetadata,
-      sessionState.startingAllElementProps,
+      canvasState.startingMetadata,
+      canvasState.startingAllElementProps,
     ) &&
       interactionState.interactionData.type === 'DRAG' &&
       interactionState.activeControl.type === 'PADDING_RESIZE_HANDLE'
@@ -73,7 +73,7 @@ export const setPaddingStrategy: CanvasStrategy = {
 
     const filteredSelectedElements = getDragTargets(selectedElements)
     const originalBoundingBox = getMultiselectBounds(
-      sessionState.startingMetadata,
+      canvasState.startingMetadata,
       filteredSelectedElements,
     )
 
@@ -86,7 +86,7 @@ export const setPaddingStrategy: CanvasStrategy = {
 
     const selectedElement = filteredSelectedElements[0]
 
-    const padding = simplePaddingFromMetadata(sessionState.startingMetadata, selectedElement)
+    const padding = simplePaddingFromMetadata(canvasState.startingMetadata, selectedElement)
 
     const startingPadding = paddingForEdge(edgePiece, padding)
     const delta = deltaFromEdge(drag, edgePiece)
@@ -117,10 +117,10 @@ function pickCursorFromEdge(edgePiece: EdgePiece): CSSCursor {
   switch (edgePiece) {
     case 'top':
     case 'bottom':
-      return CSSCursor.ResizeNS
+      return CSSCursor.RowResize
     case 'left':
     case 'right':
-      return CSSCursor.ResizeEW
+      return CSSCursor.ColResize
     default:
       assertNever(edgePiece)
   }

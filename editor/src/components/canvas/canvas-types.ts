@@ -62,6 +62,8 @@ export enum CSSCursor {
   NSResizeMagic = "-webkit-image-set( url( '/editor/cursors/cursor-ns-resize-magic.png ') 1x, url( '/editor/cursors/cursor-ns-resize-magic@2x.png ') 2x ) 4 4, default",
   NWSEResizeMagic = "-webkit-image-set( url( '/editor/cursors/cursor-nwse-resize-magic.png ') 1x, url( '/editor/cursors/cursor-nwse-resize-magic@2x.png ') 2x ) 4 4, default",
   PointerMagic = "-webkit-image-set( url( '/editor/cursors/cursor-pointer-magic.png ') 1x, url( '/editor/cursors/cursor-pointer-magic@2x.png ') 2x ) 4 4, default",
+  ColResize = 'col-resize',
+  RowResize = 'row-resize',
 }
 
 export type VerticalRectangles = {
