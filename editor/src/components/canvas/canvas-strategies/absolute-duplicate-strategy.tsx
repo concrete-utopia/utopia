@@ -32,13 +32,13 @@ import { getDragTargets } from './shared-move-strategies-helpers'
 export const absoluteDuplicateStrategy: CanvasStrategy = {
   id: 'ABSOLUTE_DUPLICATE',
   name: () => 'Duplicate',
-  isApplicable: (canvasState, interactionState, metadata) => {
+  isApplicable: (canvasState, interactionSession, metadata) => {
     const selectedElements = getTargetPathsFromInteractionTarget(canvasState.interactionTarget)
     if (
       selectedElements.length > 0 &&
-      interactionState != null &&
-      interactionState.interactionData.type === 'DRAG' &&
-      interactionState.interactionData.modifiers.alt
+      interactionSession != null &&
+      interactionSession.interactionData.type === 'DRAG' &&
+      interactionSession.interactionData.modifiers.alt
     ) {
       const filteredSelectedElements = getDragTargets(selectedElements)
       return filteredSelectedElements.every((element) => {
@@ -73,23 +73,23 @@ export const absoluteDuplicateStrategy: CanvasStrategy = {
       show: 'visible-only-while-active',
     },
   ],
-  fitness: (canvasState, interactionState) => {
+  fitness: (canvasState, interactionSession) => {
     const selectedElements = getTargetPathsFromInteractionTarget(canvasState.interactionTarget)
     if (
       selectedElements.length > 0 &&
-      interactionState.interactionData.type === 'DRAG' &&
-      interactionState.activeControl.type === 'BOUNDING_AREA' &&
-      interactionState.interactionData.modifiers.alt
+      interactionSession.interactionData.type === 'DRAG' &&
+      interactionSession.activeControl.type === 'BOUNDING_AREA' &&
+      interactionSession.interactionData.modifiers.alt
     ) {
       return 2
     }
     return 0
   },
-  apply: (canvasState, interactionState, customStrategyState, strategyLifecycle) => {
+  apply: (canvasState, interactionSession, customStrategyState, strategyLifecycle) => {
     const selectedElements = getTargetPathsFromInteractionTarget(canvasState.interactionTarget)
     if (
-      interactionState.interactionData.type === 'DRAG' &&
-      interactionState.interactionData.drag != null
+      interactionSession.interactionData.type === 'DRAG' &&
+      interactionSession.interactionData.drag != null
     ) {
       const filteredSelectedElements = getDragTargets(selectedElements)
 
@@ -130,7 +130,7 @@ export const absoluteDuplicateStrategy: CanvasStrategy = {
               canvasState.builtInDependencies,
               editorState,
               customStrategyState,
-              interactionState,
+              interactionSession,
               commandLifecycle,
               strategyLifecycle,
               withDuplicatedMetadata,
@@ -153,7 +153,7 @@ function runMoveStrategyForFreshlyDuplicatedElements(
   builtInDependencies: BuiltInDependencies,
   editorState: EditorState,
   customStrategyState: CustomStrategyState,
-  interactionState: InteractionSession,
+  interactionSession: InteractionSession,
   commandLifecycle: InteractionLifecycle,
   strategyLifecycle: InteractionLifecycle,
   metadata: ElementInstanceMetadataMap,
@@ -166,7 +166,7 @@ function runMoveStrategyForFreshlyDuplicatedElements(
 
   const moveCommands = absoluteMoveStrategy.apply(
     canvasState,
-    interactionState,
+    interactionSession,
     customStrategyState,
     strategyLifecycle,
   ).commands
