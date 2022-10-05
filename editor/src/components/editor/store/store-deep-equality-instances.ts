@@ -2547,7 +2547,7 @@ export const ElementInsertionSubjectKeepDeepEquality: KeepDeepEqualityCall<Eleme
     StringKeepDeepEquality,
     (subject) => subject.element,
     JSXElementKeepDeepEquality,
-    (subject) => subject.size,
+    (subject) => subject.defaultSize,
     nullableDeepEquality(SizeKeepDeepEquality),
     (subject) => subject.importsToAdd,
     objectDeepEquality(ImportDetailsKeepDeepEquality),
