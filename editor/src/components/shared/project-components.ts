@@ -26,6 +26,7 @@ import {
   simpleAttribute,
 } from '../../core/shared/element-template'
 import { dropFileExtension } from '../../core/shared/file-utils'
+import { size, Size } from '../../core/shared/math-utils'
 import {
   isResolvedNpmDependency,
   PackageStatus,
@@ -60,6 +61,7 @@ export interface InsertableComponent {
   element: JSXElementWithoutUID
   name: string
   stylePropOptions: Array<StylePropOption>
+  defaultSize: Size | null
 }
 
 export function insertableComponent(
@@ -67,12 +69,14 @@ export function insertableComponent(
   element: JSXElementWithoutUID,
   name: string,
   stylePropOptions: Array<StylePropOption>,
+  defaultSize: Size | null,
 ): InsertableComponent {
   return {
     importsToAdd: importsToAdd,
     element: element,
     name: name,
     stylePropOptions: stylePropOptions,
+    defaultSize: defaultSize,
   }
 }
 
@@ -316,6 +320,48 @@ export function getNonEmptyComponentGroups(
   })
 }
 
+const SceneDefaultWidth = 325
+const SceneDefaultHeight = 350
+
+// Scene components from utopia-api are special: they should appear as the first insertable component, and
+// they should have a custom default size
+export function moveSceneToTheBeginningAndSetDefaultSize(
+  groups: Array<InsertableComponentGroup>,
+): Array<InsertableComponentGroup> {
+  const utopiaApiGroupIdx = groups.findIndex(
+    (group) => getInsertableGroupLabel(group.source) === 'utopia-api',
+  )
+  if (utopiaApiGroupIdx > -1) {
+    const utopiaApiGroup = groups[utopiaApiGroupIdx]
+    const sceneIdx = utopiaApiGroup.insertableComponents.findIndex((comp) => comp.name === 'Scene')
+    if (sceneIdx > -1) {
+      const scene = utopiaApiGroup.insertableComponents[sceneIdx]
+      const utopiaApiGroupWithoutScene = insertableComponentGroup(utopiaApiGroup.source, [
+        ...utopiaApiGroup.insertableComponents.slice(0, sceneIdx),
+        ...utopiaApiGroup.insertableComponents.slice(sceneIdx + 1),
+      ])
+      const groupsWithoutUtopiaApi = [
+        ...groups.slice(0, utopiaApiGroupIdx),
+        ...groups.slice(utopiaApiGroupIdx + 1),
+      ]
+      const newSceneGroup = insertableComponentGroup(
+        insertableComponentGroupProjectComponent('Storyboard'),
+        [
+          insertableComponent(
+            scene.importsToAdd,
+            scene.element,
+            scene.name,
+            scene.stylePropOptions,
+            size(SceneDefaultWidth, SceneDefaultHeight),
+          ),
+        ],
+      )
+      return [newSceneGroup, ...groupsWithoutUtopiaApi, utopiaApiGroupWithoutScene]
+    }
+  }
+  return groups
+}
+
 export function getComponentGroups(
   packageStatus: PackageStatusMap,
   propertyControlsInfo: PropertyControlsInfo,
@@ -361,6 +407,7 @@ export function getComponentGroups(
                   insertOption.elementToInsert,
                   insertOption.insertMenuLabel,
                   stylePropOptions,
+                  null,
                 ),
               )
             })
@@ -371,6 +418,7 @@ export function getComponentGroups(
                 jsxElementWithoutUID(exportedComponent.listingName, [], []),
                 exportedComponent.listingName,
                 stylePropOptions,
+                null,
               ),
             )
           }
@@ -406,6 +454,7 @@ export function getComponentGroups(
             insertOption.elementToInsert,
             insertOption.insertMenuLabel,
             stylePropOptions,
+            null,
           ),
         )
       })
