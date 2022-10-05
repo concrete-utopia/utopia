@@ -53,7 +53,6 @@ const PaddingResizeControlI = React.memo(
     const { maybeClearHighlightsOnHoverEnd } = useMaybeHighlightElement()
 
     const colorTheme = useColorTheme()
-    const outlineColor = colorTheme.canvasDragOutlineBlock.value
 
     const [hidden, setHidden] = React.useState<boolean>(true)
     const [hoverStart, hoverEnd] = useHoverWithDelay(0, (h) => setHidden(!h))
@@ -83,6 +82,7 @@ const PaddingResizeControlI = React.memo(
     const width = PaddingResizeControlWidth / scale
     const height = PaddingResizeControlHeight / scale
     const borderWidth = PaddingResizeControlBorder / scale
+    const color = colorTheme.brandNeonPink.value
     return (
       <div
         onMouseLeave={hoverEnd}
@@ -96,7 +96,7 @@ const PaddingResizeControlI = React.memo(
           justifyContent: 'center',
           backgroundImage: hidden
             ? undefined
-            : `linear-gradient(135deg, ${outlineColor} 2.5%, rgba(255,255,255,0) 2.5%, rgba(255,255,255,0) 50%, ${outlineColor} 50%, ${outlineColor} 52%, rgba(255,255,255,0) 52%, rgba(255,255,255,0) 100%)`,
+            : `linear-gradient(135deg, ${color} 2.5%, rgba(255,255,255,0) 2.5%, rgba(255,255,255,0) 50%, ${color} 50%, ${color} 52%, rgba(255,255,255,0) 52%, rgba(255,255,255,0) 100%)`,
           backgroundSize: hidden ? undefined : `${20 / scale}px ${20 / scale}px`,
         }}
       >
@@ -106,9 +106,10 @@ const PaddingResizeControlI = React.memo(
             onMouseMove={onMouseMove}
             onMouseUp={onMouseUp}
             style={{
+              position: 'absolute',
               width: width,
               height: height,
-              backgroundColor: colorTheme.brandNeonPink.value,
+              backgroundColor: color,
               cursor: cursor,
               pointerEvents: 'initial',
               border: `${borderWidth}px solid rgb(255, 255, 255, 1)`,
@@ -122,14 +123,16 @@ const PaddingResizeControlI = React.memo(
   }),
 )
 
-const selectedElementsSelector = (store: EditorStorePatched) => store.editor.selectedViews
 export const PaddingResizeControl = React.memo(() => {
   const selectedElements = useEditorState(
-    selectedElementsSelector,
-    'PaddingResizeControl selectedElements',
+    (store: EditorStorePatched) => store.editor.selectedViews,
+    'selectedElementsSelector selectedElements',
   )
 
-  const padding = useElementPadding(selectedElements[0])
+  const elementMetadata = useRefEditorState((store) => store.editor.jsxMetadata)
+
+  const widthWithtDefaultPx = (w: number) => w + 'px'
+  const heightWithtDefaultPx = (h: number) => h + 'px'
 
   const controlRef = useBoundingBox(selectedElements, (ref, boundingBox) => {
     if (isZeroSizedElement(boundingBox)) {
@@ -144,19 +147,26 @@ export const PaddingResizeControl = React.memo(() => {
   })
 
   const leftRef = useBoundingBox(selectedElements, (ref, boundingBox) => {
-    ref.current.style.height = boundingBox.height + 'px'
-    ref.current.style.width = padding.paddingLeft + 'px'
+    const padding = simplePaddingFromMetadata(elementMetadata.current, selectedElements[0])
+    ref.current.style.height = heightWithtDefaultPx(boundingBox.height)
+    ref.current.style.width = widthWithtDefaultPx(padding.paddingLeft)
   })
+
   const topRef = useBoundingBox(selectedElements, (ref, boundingBox) => {
+    const padding = simplePaddingFromMetadata(elementMetadata.current, selectedElements[0])
     ref.current.style.width = boundingBox.width + 'px'
     ref.current.style.height = padding.paddingTop + 'px'
   })
+
   const rightRef = useBoundingBox(selectedElements, (ref, boundingBox) => {
+    const padding = simplePaddingFromMetadata(elementMetadata.current, selectedElements[0])
     ref.current.style.left = boundingBox.width - padding.paddingRight + 'px'
-    ref.current.style.height = boundingBox.height + 'px'
-    ref.current.style.width = padding.paddingRight + 'px'
+    ref.current.style.height = heightWithtDefaultPx(boundingBox.height)
+    ref.current.style.width = widthWithtDefaultPx(padding.paddingRight)
   })
+
   const bottomRef = useBoundingBox(selectedElements, (ref, boundingBox) => {
+    const padding = simplePaddingFromMetadata(elementMetadata.current, selectedElements[0])
     ref.current.style.top = boundingBox.height - padding.paddingBottom + 'px'
     ref.current.style.width = boundingBox.width + 'px'
     ref.current.style.height = padding.paddingBottom + 'px'
