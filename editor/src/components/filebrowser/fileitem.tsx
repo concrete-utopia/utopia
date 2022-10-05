@@ -46,6 +46,7 @@ import { generateUidWithExistingComponents } from '../../core/model/element-temp
 import { useEditorState } from '../editor/store/store-hook'
 import { createJsxImage } from '../images'
 import { resize, size, Size } from '../../core/shared/math-utils'
+import { EditorModes } from '../editor/editor-modes'
 
 export interface FileBrowserItemProps extends FileBrowserItemInfo {
   isSelected: boolean
@@ -830,6 +831,7 @@ export const FileBrowserItem: React.FC<FileBrowserItemProps> = (props: FileBrows
       drop: (item, monitor) => {
         dispatch([
           CanvasActions.clearInteractionSession(false),
+          EditorActions.switchEditorMode(EditorModes.selectMode(null)),
           EditorActions.setFilebrowserDropTarget(null),
         ])
         onDrop(props, item)
