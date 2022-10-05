@@ -72,6 +72,7 @@ import {
 } from '../../../core/layout/layout-utils'
 import { forceNotNull } from '../../../core/shared/optional-utils'
 import { assertNever } from '../../../core/shared/utils'
+import { showReorderIndicator } from '../commands/show-reorder-indicator-command'
 
 export type ReparentStrategy =
   | 'FLEX_REPARENT_TO_ABSOLUTE'
@@ -682,8 +683,6 @@ export function applyFlexReparent(
   interactionSession: InteractionSession,
   strategyState: StrategyState,
 ): StrategyApplicationResult {
-  const FlexReparentIndicatorSize = 2 / canvasState.scale
-
   const selectedElements = getTargetPathsFromInteractionTarget(canvasState.interactionTarget)
   const filteredSelectedElements = getDragTargets(selectedElements)
 
@@ -715,22 +714,9 @@ export function applyFlexReparent(
 
         const newIndex = reparentResult.newIndex
         const newParent = reparentResult.newParent
-        const newParentMetadata = MetadataUtils.findElementByElementPath(
-          strategyState.startingMetadata,
-          newParent,
-        )
         const parentRect =
           MetadataUtils.getFrameInCanvasCoords(newParent, strategyState.startingMetadata) ??
           zeroCanvasRect
-        const flexDirection = MetadataUtils.getFlexDirection(newParentMetadata)
-        const newParentFlexDirection = forceNotNull(
-          'Should have a valid flex direction.',
-          flexDirectionToSimpleFlexDirection(flexDirection),
-        )
-        const forwardsOrBackwards = forceNotNull(
-          'Should have a valid flex orientation.',
-          flexDirectionToFlexForwardsOrBackwards(flexDirection),
-        )
 
         const siblingsOfTarget = MetadataUtils.getChildrenPaths(
           strategyState.startingMetadata,
@@ -773,18 +759,12 @@ export function applyFlexReparent(
             setCursorCommand('mid-interaction', CSSCursor.Move),
           ]
 
-          function midInteractionCommandsForTarget(
-            targetLine: CanvasRectangle,
-          ): Array<CanvasCommand> {
+          function midInteractionCommandsForTarget(): Array<CanvasCommand> {
             return [
               wildcardPatch('mid-interaction', {
                 canvas: { controls: { parentHighlightPaths: { $set: [newParent] } } },
               }),
-              wildcardPatch('mid-interaction', {
-                canvas: {
-                  controls: { flexReparentTargetLines: { $set: [targetLine] } },
-                },
-              }),
+              showReorderIndicator(newParent, newIndex),
               newParentADescendantOfCurrentParent
                 ? wildcardPatch('mid-interaction', {
                     hiddenInstances: { $push: [target] },
@@ -800,46 +780,7 @@ export function applyFlexReparent(
           let midInteractionCommands: Array<CanvasCommand>
 
           if (reparentResult.shouldReorder && siblingsOfTarget.length > 0) {
-            const siblingPositions: Array<CanvasRectangle> = siblingAndPseudoPositions(
-              newParentFlexDirection,
-              forwardsOrBackwards,
-              parentRect,
-              siblingsOfTarget,
-              strategyState.startingMetadata,
-            )
-
-            const precedingSiblingPosition: CanvasRectangle = siblingPositions[newIndex]
-            const succeedingSiblingPosition: CanvasRectangle = siblingPositions[newIndex + 1]
-
-            const targetLineBeforeSibling: CanvasRectangle =
-              newParentFlexDirection === 'row'
-                ? canvasRectangle({
-                    x:
-                      getSiblingMidPointPosition(
-                        precedingSiblingPosition,
-                        succeedingSiblingPosition,
-                        'row',
-                      ) -
-                      FlexReparentIndicatorSize / 2,
-                    y: (precedingSiblingPosition.y + succeedingSiblingPosition.y) / 2,
-                    height:
-                      (precedingSiblingPosition.height + succeedingSiblingPosition.height) / 2,
-                    width: FlexReparentIndicatorSize,
-                  })
-                : canvasRectangle({
-                    x: (precedingSiblingPosition.x + succeedingSiblingPosition.x) / 2,
-                    y:
-                      getSiblingMidPointPosition(
-                        precedingSiblingPosition,
-                        succeedingSiblingPosition,
-                        'column',
-                      ) -
-                      FlexReparentIndicatorSize / 2,
-                    width: (precedingSiblingPosition.width + succeedingSiblingPosition.width) / 2,
-                    height: FlexReparentIndicatorSize,
-                  })
-
-            midInteractionCommands = midInteractionCommandsForTarget(targetLineBeforeSibling)
+            midInteractionCommands = midInteractionCommandsForTarget()
 
             interactionFinishCommands = [
               ...commandsBeforeReorder,
@@ -848,22 +789,7 @@ export function applyFlexReparent(
             ]
           } else {
             if (parentRect != null) {
-              const targetLineBeginningOfParent: CanvasRectangle =
-                newParentFlexDirection === 'row'
-                  ? canvasRectangle({
-                      x: parentRect.x,
-                      y: parentRect.y,
-                      height: parentRect.height,
-                      width: FlexReparentIndicatorSize,
-                    })
-                  : canvasRectangle({
-                      x: parentRect.x,
-                      y: parentRect.y,
-                      width: parentRect.width,
-                      height: FlexReparentIndicatorSize,
-                    })
-
-              midInteractionCommands = midInteractionCommandsForTarget(targetLineBeginningOfParent)
+              midInteractionCommands = midInteractionCommandsForTarget()
             } else {
               // this should be an error because parentRect should never be null
               midInteractionCommands = []

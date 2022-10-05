@@ -39,6 +39,7 @@ import { FlexReparentTargetIndicator } from '../controls/select-mode/flex-repare
 import { updateHighlightedViews } from '../commands/update-highlighted-views-command'
 import { getReparentTargetUnified, newReparentSubjects } from './reparent-strategy-helpers'
 import { DefaultInsertHeight, DefaultInsertWidth } from '../insertion-strategy-utils'
+import { showReorderIndicator } from '../commands/show-reorder-indicator-command'
 
 export const drawToInsertStrategy: CanvasStrategy = {
   id: 'DRAW_TO_INSERT',
@@ -185,7 +186,14 @@ export const drawToInsertStrategy: CanvasStrategy = {
             parent.newParent,
           ])
 
-          return strategyApplicationResult([highlightParentCommand])
+          if (parent.newIndex !== -1) {
+            return strategyApplicationResult([
+              highlightParentCommand,
+              showReorderIndicator(parent.newParent, parent.newIndex),
+            ])
+          } else {
+            return strategyApplicationResult([highlightParentCommand])
+          }
         }
       }
     }
