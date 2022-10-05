@@ -1,59 +1,68 @@
 import { MetadataUtils } from '../../../core/model/element-metadata-utils'
-import { CanvasStrategy, getTargetPathsFromInteractionTarget } from './canvas-strategy-types'
+import {
+  CanvasStrategy,
+  CustomStrategyState,
+  emptyStrategyApplicationResult,
+  getTargetPathsFromInteractionTarget,
+  InteractionCanvasState,
+} from './canvas-strategy-types'
 import { DragOutlineControl } from '../controls/select-mode/drag-outline-control'
 import { ParentOutlines } from '../controls/parent-outlines'
 import { ParentBounds } from '../controls/parent-bounds'
 import { applyReorderCommon } from './reorder-utils'
+import { InteractionSession } from './interaction-state'
 
-export const flexReorderStrategy: CanvasStrategy = {
-  id: 'FLEX_REORDER',
-  name: () => 'Reorder (Flex)',
-  isApplicable: (canvasState, interactionSession, metadata) => {
-    const selectedElements = getTargetPathsFromInteractionTarget(canvasState.interactionTarget)
-    if (selectedElements.length == 1) {
-      return MetadataUtils.isParentYogaLayoutedContainerAndElementParticipatesInLayout(
-        selectedElements[0],
-        metadata,
-      )
-    } else {
-      return false
-    }
-  },
-  controlsToRender: [
-    {
-      control: DragOutlineControl,
-      key: 'ghost-outline-control',
-      show: 'visible-only-while-active',
-    },
-    {
-      control: ParentOutlines,
-      key: 'parent-outlines-control',
-      show: 'visible-only-while-active',
-    },
-    {
-      control: ParentBounds,
-      key: 'parent-bounds-control',
-      show: 'visible-only-while-active',
-    },
-  ],
-  fitness: (canvasState, interactionSession, customStrategyState) => {
-    return flexReorderStrategy.isApplicable(
-      canvasState,
-      interactionSession,
+export function flexReorderStrategy(
+  canvasState: InteractionCanvasState,
+  interactionSession: InteractionSession | null,
+  customStrategyState: CustomStrategyState,
+): CanvasStrategy | null {
+  const selectedElements = getTargetPathsFromInteractionTarget(canvasState.interactionTarget)
+  if (
+    selectedElements.length == 1 &&
+    MetadataUtils.isParentYogaLayoutedContainerAndElementParticipatesInLayout(
+      selectedElements[0],
       canvasState.startingMetadata,
-      canvasState.startingAllElementProps,
-    ) &&
-      interactionSession.interactionData.type === 'DRAG' &&
-      interactionSession.activeControl.type === 'BOUNDING_AREA'
-      ? 1
-      : 0
-  },
-  apply: (canvasState, interactionSession, customStrategyState) => {
-    return applyReorderCommon(
-      canvasState,
-      interactionSession,
-      customStrategyState,
-      MetadataUtils.isParentYogaLayoutedContainerAndElementParticipatesInLayout,
     )
-  },
+  ) {
+    return {
+      id: 'FLEX_REORDER',
+      name: 'Reorder (Flex)',
+      controlsToRender: [
+        {
+          control: DragOutlineControl,
+          key: 'ghost-outline-control',
+          show: 'visible-only-while-active',
+        },
+        {
+          control: ParentOutlines,
+          key: 'parent-outlines-control',
+          show: 'visible-only-while-active',
+        },
+        {
+          control: ParentBounds,
+          key: 'parent-bounds-control',
+          show: 'visible-only-while-active',
+        },
+      ],
+      fitness:
+        interactionSession != null &&
+        interactionSession.interactionData.type === 'DRAG' &&
+        interactionSession.activeControl.type === 'BOUNDING_AREA'
+          ? 1
+          : 0,
+      apply: () => {
+        return interactionSession == null
+          ? emptyStrategyApplicationResult
+          : applyReorderCommon(
+              canvasState,
+              interactionSession,
+              customStrategyState,
+              MetadataUtils.isParentYogaLayoutedContainerAndElementParticipatesInLayout,
+            )
+      },
+    }
+  }
+
+  return null
 }

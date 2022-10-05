@@ -3,55 +3,68 @@ import { ParentBounds } from '../controls/parent-bounds'
 import { ParentOutlines } from '../controls/parent-outlines'
 import { DragOutlineControl } from '../controls/select-mode/drag-outline-control'
 import { FlexReparentTargetIndicator } from '../controls/select-mode/flex-reparent-target-indicator'
-import { CanvasStrategy, getTargetPathsFromInteractionTarget } from './canvas-strategy-types'
+import {
+  CanvasStrategy,
+  emptyStrategyApplicationResult,
+  getTargetPathsFromInteractionTarget,
+  InteractionCanvasState,
+} from './canvas-strategy-types'
+import { InteractionSession } from './interaction-state'
 import { applyFlexReparent, getFitnessForReparentStrategy } from './reparent-strategy-helpers'
 
-export const flexReparentToFlexStrategy: CanvasStrategy = {
-  id: 'FLEX_REPARENT_TO_FLEX',
-  name: () => 'Reparent (Flex)',
-  isApplicable: (canvasState, interactionSession, metadata) => {
-    const selectedElements = getTargetPathsFromInteractionTarget(canvasState.interactionTarget)
-    if (selectedElements.length == 1) {
-      return MetadataUtils.isParentYogaLayoutedContainerAndElementParticipatesInLayout(
-        selectedElements[0],
-        metadata,
-      )
-    } else {
-      return false
-    }
-  },
-  controlsToRender: [
-    {
-      control: DragOutlineControl,
-      key: 'ghost-outline-control',
-      show: 'visible-only-while-active',
-    },
-    {
-      control: ParentOutlines,
-      key: 'parent-outlines-control',
-      show: 'visible-only-while-active',
-    },
-    {
-      control: ParentBounds,
-      key: 'parent-bounds-control',
-      show: 'visible-only-while-active',
-    },
-    {
-      control: FlexReparentTargetIndicator,
-      key: 'flex-reparent-target-indicator',
-      show: 'visible-only-while-active',
-    },
-  ],
-  fitness: (canvasState, interactionSession, customStrategyState) => {
-    // All 4 reparent strategies use the same fitness function getFitnessForReparentStrategy
-    return getFitnessForReparentStrategy(
-      'FLEX_REPARENT_TO_FLEX',
-      canvasState,
-      interactionSession,
-      'use-strict-bounds',
+export function flexReparentToFlexStrategy(
+  canvasState: InteractionCanvasState,
+  interactionSession: InteractionSession | null,
+): CanvasStrategy | null {
+  const selectedElements = getTargetPathsFromInteractionTarget(canvasState.interactionTarget)
+  if (
+    selectedElements.length == 1 &&
+    MetadataUtils.isParentYogaLayoutedContainerAndElementParticipatesInLayout(
+      selectedElements[0],
+      canvasState.startingMetadata,
     )
-  },
-  apply: (canvasState, interactionSession, customStrategyState) => {
-    return applyFlexReparent('do-not-strip-props', canvasState, interactionSession)
-  },
+  ) {
+    return {
+      id: 'FLEX_REPARENT_TO_FLEX',
+      name: 'Reparent (Flex)',
+      controlsToRender: [
+        {
+          control: DragOutlineControl,
+          key: 'ghost-outline-control',
+          show: 'visible-only-while-active',
+        },
+        {
+          control: ParentOutlines,
+          key: 'parent-outlines-control',
+          show: 'visible-only-while-active',
+        },
+        {
+          control: ParentBounds,
+          key: 'parent-bounds-control',
+          show: 'visible-only-while-active',
+        },
+        {
+          control: FlexReparentTargetIndicator,
+          key: 'flex-reparent-target-indicator',
+          show: 'visible-only-while-active',
+        },
+      ],
+      fitness:
+        // All 4 reparent strategies use the same fitness function getFitnessForReparentStrategy
+        interactionSession == null
+          ? 0
+          : getFitnessForReparentStrategy(
+              'FLEX_REPARENT_TO_FLEX',
+              canvasState,
+              interactionSession,
+              'use-strict-bounds',
+            ),
+      apply: () => {
+        return interactionSession == null
+          ? emptyStrategyApplicationResult
+          : applyFlexReparent('do-not-strip-props', canvasState, interactionSession)
+      },
+    }
+  }
+  return null
 }

@@ -6,97 +6,86 @@ import { ParentBounds } from '../controls/parent-bounds'
 import { ParentOutlines } from '../controls/parent-outlines'
 import {
   CanvasStrategy,
+  CustomStrategyState,
   emptyStrategyApplicationResult,
   getTargetPathsFromInteractionTarget,
+  InteractionCanvasState,
 } from './canvas-strategy-types'
+import { InteractionSession } from './interaction-state'
 import {
   applyMoveCommon,
   getAdjustMoveCommands,
   getDragTargets,
 } from './shared-move-strategies-helpers'
 
-export const relativeMoveStrategy: CanvasStrategy = {
-  id: 'RELATIVE_MOVE',
-
-  name: () => 'Move (Relative)',
-
-  isApplicable: (canvasState, interactionSession, instanceMetadata) => {
-    const selectedElements = getTargetPathsFromInteractionTarget(canvasState.interactionTarget)
-    if (selectedElements.length === 0) {
-      return false
-    }
-
+export function relativeMoveStrategy(
+  canvasState: InteractionCanvasState,
+  interactionSession: InteractionSession | null,
+  customStrategyState: CustomStrategyState,
+): CanvasStrategy | null {
+  const selectedElements = getTargetPathsFromInteractionTarget(canvasState.interactionTarget)
+  if (selectedElements.length > 0) {
     const filteredSelectedElements = getDragTargets(selectedElements)
     const last = filteredSelectedElements[filteredSelectedElements.length - 1]
-    const metadata = MetadataUtils.findElementByElementPath(instanceMetadata, last)
-    if (!metadata) {
-      return false
+    const metadata = MetadataUtils.findElementByElementPath(canvasState.startingMetadata, last)
+    if (metadata != null && metadata.specialSizeMeasurements.position === 'relative') {
+      // should we also support absolute elements, for which we'll do something like `CONVERT_TO_RELATIVE`?
+
+      const offsets = getStyleOffsets(metadata)
+      const hasOffsets =
+        offsets != null &&
+        (offsets.left != null ||
+          offsets.top != null ||
+          offsets.right != null ||
+          offsets.bottom != null)
+
+      return {
+        id: 'RELATIVE_MOVE',
+        name: 'Move (Relative)',
+        controlsToRender: [
+          {
+            control: ParentOutlines,
+            key: 'parent-outlines-control',
+            show: 'visible-only-while-active',
+          },
+          {
+            control: ParentBounds,
+            key: 'parent-bounds-control',
+            show: 'visible-only-while-active',
+          },
+        ],
+        fitness:
+          interactionSession != null &&
+          interactionSession.interactionData.type === 'DRAG' &&
+          interactionSession.interactionData.drag != null &&
+          interactionSession.activeControl.type === 'BOUNDING_AREA'
+            ? hasOffsets
+              ? 4 // +1 than reorder flow
+              : 1
+            : 0,
+
+        apply: () => {
+          if (
+            interactionSession != null &&
+            interactionSession.interactionData.type === 'DRAG' &&
+            interactionSession.interactionData.drag != null &&
+            interactionSession.activeControl.type === 'BOUNDING_AREA'
+          ) {
+            return applyMoveCommon(
+              canvasState,
+              interactionSession,
+              getAdjustMoveCommands(canvasState, interactionSession, {
+                ignoreLocalFrame: true,
+              }),
+            )
+          } else {
+            return emptyStrategyApplicationResult
+          }
+        },
+      }
     }
-
-    // should we also support absolute elements, for which we'll do something like `CONVERT_TO_RELATIVE`?
-    return metadata.specialSizeMeasurements.position === 'relative'
-  },
-
-  controlsToRender: [
-    {
-      control: ParentOutlines,
-      key: 'parent-outlines-control',
-      show: 'visible-only-while-active',
-    },
-    {
-      control: ParentBounds,
-      key: 'parent-bounds-control',
-      show: 'visible-only-while-active',
-    },
-  ],
-
-  fitness: (canvasState, interactionSession, _sessionState) => {
-    const { interactionData, activeControl } = interactionSession
-    if (!(interactionData.type === 'DRAG' && interactionData.drag != null)) {
-      return 0
-    }
-    if (activeControl.type !== 'BOUNDING_AREA') {
-      return 0
-    }
-
-    const selectedElements = getTargetPathsFromInteractionTarget(canvasState.interactionTarget)
-    if (selectedElements.length === 0) {
-      return 0
-    }
-    const filteredSelectedElements = getDragTargets(selectedElements)
-    const last = filteredSelectedElements[filteredSelectedElements.length - 1]
-    const metadata = MetadataUtils.findElementByElementPath(interactionSession.latestMetadata, last)
-    if (!metadata) {
-      return 0
-    }
-    const offsets = getStyleOffsets(metadata)
-    if (!offsets) {
-      return 0
-    }
-
-    const hasOffsets =
-      offsets.left != null || offsets.top != null || offsets.right != null || offsets.bottom != null
-
-    return hasOffsets
-      ? 4 // +1 than reorder flow
-      : 1 // there should be a more structured way to define priorities (:
-  },
-
-  apply: (canvasState, interactionSession, customStrategyState) => {
-    const isFitting =
-      relativeMoveStrategy.fitness(canvasState, interactionSession, customStrategyState) > 0
-    if (!isFitting) {
-      return emptyStrategyApplicationResult
-    }
-
-    return applyMoveCommon(
-      canvasState,
-      interactionSession,
-      getAdjustMoveCommands(canvasState, interactionSession, {
-        ignoreLocalFrame: true,
-      }),
-    )
-  },
+  }
+  return null
 }
 
 const getStyleOffsets = (metadata: ElementInstanceMetadata) => {
