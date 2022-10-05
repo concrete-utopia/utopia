@@ -589,6 +589,10 @@ describe('Inserting into flex row', () => {
 
     // Highlight should show the candidate parent
     expect(renderResult.getEditorState().editor.highlightedViews.map(EP.toUid)).toEqual(['aaa'])
+    // Shows flex indicator line at index position target
+    expect(renderResult.getEditorState().editor.canvas.controls.flexReparentTargetLines).toEqual([
+      { height: 290, width: 2, x: -1, y: 0 },
+    ])
 
     // Drag horizontally close to the zero position
     mouseDragFromPointToPoint(canvasControlsLayer, startPoint, endPoint)
@@ -658,6 +662,10 @@ describe('Inserting into flex row', () => {
 
     // Highlight should show the candidate parent
     expect(renderResult.getEditorState().editor.highlightedViews.map(EP.toUid)).toEqual(['aaa'])
+    // Shows flex indicator line at index position target
+    expect(renderResult.getEditorState().editor.canvas.controls.flexReparentTargetLines).toEqual([
+      { height: 290, width: 2, x: -1, y: 0 },
+    ])
 
     // Click horizontally close to the zero position
     mouseClickAtPoint(canvasControlsLayer, point)
@@ -731,6 +739,10 @@ describe('Inserting into flex row', () => {
 
     // Highlight should show the candidate parent
     expect(renderResult.getEditorState().editor.highlightedViews.map(EP.toUid)).toEqual(['aaa'])
+    // Shows flex indicator line at index position target
+    expect(
+      renderResult.getEditorState().editor.canvas.controls.flexReparentTargetLines.length,
+    ).toEqual(1)
 
     // Drag horizontally close to the first position
     mouseDragFromPointToPoint(canvasControlsLayer, startPoint, endPoint)
@@ -798,6 +810,10 @@ describe('Inserting into flex row', () => {
 
     // Highlight should show the candidate parent
     expect(renderResult.getEditorState().editor.highlightedViews.map(EP.toUid)).toEqual(['aaa'])
+    // Shows flex indicator line at index position target
+    expect(
+      renderResult.getEditorState().editor.canvas.controls.flexReparentTargetLines.length,
+    ).toEqual(1)
 
     // Click horizontally close to the first position
     mouseClickAtPoint(canvasControlsLayer, point)
@@ -871,6 +887,10 @@ describe('Inserting into flex row', () => {
 
     // Highlight should show the candidate parent
     expect(renderResult.getEditorState().editor.highlightedViews.map(EP.toUid)).toEqual(['aaa'])
+    // Shows flex indicator line at index position target
+    expect(
+      renderResult.getEditorState().editor.canvas.controls.flexReparentTargetLines.length,
+    ).toEqual(1)
 
     // Drag starts horizontally close to the first position, dragging towards the top left
     mouseDragFromPointToPoint(canvasControlsLayer, startPoint, endPoint)
@@ -1092,6 +1112,10 @@ describe('Inserting into flex row', () => {
 
     // Highlight should show the candidate parent
     expect(renderResult.getEditorState().editor.highlightedViews.map(EP.toUid)).toEqual(['aaa'])
+    // Shows flex indicator line at index position target
+    expect(
+      renderResult.getEditorState().editor.canvas.controls.flexReparentTargetLines.length,
+    ).toEqual(1)
 
     // Drag starts inside bbb, but very close to its edge (3px)
     mouseDragFromPointToPoint(canvasControlsLayer, startPoint, endPoint)
@@ -1161,6 +1185,10 @@ describe('Inserting into flex row', () => {
 
     // Highlight should show the candidate parent
     expect(renderResult.getEditorState().editor.highlightedViews.map(EP.toUid)).toEqual(['aaa'])
+    // Shows flex indicator line at index position target
+    expect(
+      renderResult.getEditorState().editor.canvas.controls.flexReparentTargetLines.length,
+    ).toEqual(1)
 
     // Click inside bbb, but very close to its edge (3px)
     mouseClickAtPoint(canvasControlsLayer, point)
@@ -1270,6 +1298,13 @@ describe('Inserting into flex column', () => {
 
     // Highlight should show the candidate parent
     expect(renderResult.getEditorState().editor.highlightedViews.map(EP.toUid)).toEqual(['aaa'])
+    // Shows flex indicator line at index position target
+    expect(renderResult.getEditorState().editor.canvas.controls.flexReparentTargetLines).toEqual([
+      { height: 2, width: 290, x: 0, y: -1 },
+    ])
+    expect(
+      renderResult.getEditorState().editor.canvas.controls.flexReparentTargetLines.length,
+    ).toEqual(1)
 
     // Drag vertically close to the first position
     mouseDragFromPointToPoint(canvasControlsLayer, startPoint, endPoint)
@@ -1340,6 +1375,10 @@ describe('Inserting into flex column', () => {
 
     // Highlight should show the candidate parent
     expect(renderResult.getEditorState().editor.highlightedViews.map(EP.toUid)).toEqual(['aaa'])
+    // Shows flex indicator line at index position target
+    expect(
+      renderResult.getEditorState().editor.canvas.controls.flexReparentTargetLines.length,
+    ).toEqual(1)
 
     // Click vertically close to the first position
     mouseClickAtPoint(canvasControlsLayer, point)
@@ -1414,6 +1453,10 @@ describe('Inserting into flex column', () => {
 
     // Highlight should show the candidate parent
     expect(renderResult.getEditorState().editor.highlightedViews.map(EP.toUid)).toEqual(['aaa'])
+    // Shows flex indicator line at index position target
+    expect(
+      renderResult.getEditorState().editor.canvas.controls.flexReparentTargetLines.length,
+    ).toEqual(1)
 
     // Drag vertically close to the first position
     mouseDragFromPointToPoint(canvasControlsLayer, startPoint, endPoint)
@@ -1558,6 +1601,10 @@ describe('Inserting into flex column', () => {
 
     // Highlight should show the candidate parent
     expect(renderResult.getEditorState().editor.highlightedViews.map(EP.toUid)).toEqual(['aaa'])
+    // Shows flex indicator line at index position target
+    expect(
+      renderResult.getEditorState().editor.canvas.controls.flexReparentTargetLines.length,
+    ).toEqual(1)
 
     // Drag starts vertically close to the first position, dragging towards the top left
     mouseDragFromPointToPoint(canvasControlsLayer, startPoint, endPoint)
