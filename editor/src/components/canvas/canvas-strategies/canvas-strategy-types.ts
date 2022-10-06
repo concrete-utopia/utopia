@@ -101,7 +101,7 @@ export function targetPaths(elements: Array<ElementPath>): TargetPaths {
   }
 }
 
-interface InsertionSubjects {
+export interface InsertionSubjects {
   type: 'INSERTION_SUBJECTS'
   subjects: Array<InsertionSubject>
 }

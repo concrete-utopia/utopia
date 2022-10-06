@@ -2,7 +2,7 @@ import React from 'react'
 import { createSelector } from 'reselect'
 import { addAllUniquelyBy, mapDropNulls, sortBy } from '../../../core/shared/array-utils'
 import { ElementInstanceMetadataMap } from '../../../core/shared/element-template'
-import { arrayEquals } from '../../../core/shared/utils'
+import { arrayEquals, assertNever } from '../../../core/shared/utils'
 import { AllElementProps, EditorState, EditorStorePatched } from '../../editor/store/editor-state'
 import { useEditorState, useSelectorWithCallback } from '../../editor/store/store-hook'
 import { absoluteMoveStrategy } from './absolute-move-strategy'
@@ -23,6 +23,7 @@ import {
   InteractionLifecycle,
   CustomStrategyState,
   controlWithProps,
+  InsertionSubjects,
 } from './canvas-strategy-types'
 import { InteractionSession, StrategyState } from './interaction-state'
 import { keyboardAbsoluteMoveStrategy } from './keyboard-absolute-move-strategy'
@@ -39,7 +40,7 @@ import {
 import { flexReparentToFlexStrategy } from './flex-reparent-to-flex-strategy'
 import { BuiltInDependencies } from '../../../core/es-modules/package-manager/built-in-dependencies-list'
 import { flowReorderStrategy } from './flow-reorder-strategy'
-import { isInsertMode } from '../../editor/editor-modes'
+import { InsertionSubject, isInsertMode } from '../../editor/editor-modes'
 import { dragToInsertStrategy } from './drag-to-insert-strategy'
 import { StateSelector } from 'zustand'
 import { flowReorderSliderStategy } from './flow-reorder-slider-strategy'
@@ -119,11 +120,27 @@ export function pickCanvasStateFromEditorStateWithMetadata(
   }
 }
 
+function insertionSubjectsFromInsertMode(subject: InsertionSubject): InsertionSubjects {
+  switch (subject.type) {
+    case 'Elements':
+      return insertionSubjects(subject.elements)
+    case 'DragAndDrop':
+    case 'Element':
+      return insertionSubjects([subject])
+    default:
+      assertNever(subject)
+  }
+}
+
 function getInteractionTargetFromEditorState(editor: EditorState): InteractionTarget {
-  if (isInsertMode(editor.mode)) {
-    return insertionSubjects([editor.mode.subject])
-  } else {
-    return targetPaths(editor.selectedViews)
+  switch (editor.mode.type) {
+    case 'insert':
+      return insertionSubjectsFromInsertMode(editor.mode.subject)
+    case 'live':
+    case 'select':
+      return targetPaths(editor.selectedViews)
+    default:
+      assertNever(editor.mode)
   }
 }
 
