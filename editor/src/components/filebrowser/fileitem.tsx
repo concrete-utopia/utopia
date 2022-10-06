@@ -5,7 +5,7 @@ import * as Path from 'path'
 import pathParse from 'path-parse'
 import React from 'react'
 import { ConnectableElement, ConnectDragPreview, useDrag, useDrop } from 'react-dnd'
-import { codeFile, ProjectFileType } from '../../core/shared/project-file-types'
+import { ProjectFileType } from '../../core/shared/project-file-types'
 import { parseClipboardData } from '../../utils/clipboard'
 import Utils from '../../utils/utils'
 import { ContextMenuItem, requireDispatch } from '../context-menu-items'
@@ -15,7 +15,6 @@ import * as EditorActions from '../editor/actions/action-creators'
 import { ExpandableIndicator } from '../navigator/navigator-item/expandable-indicator'
 import { FileBrowserItemInfo, FileBrowserItemType } from './filebrowser'
 import { PasteResult } from '../../utils/clipboard-utils'
-import { dragAndDropInsertionSubject, EditorModes } from '../editor/editor-modes'
 import { last } from '../../core/shared/array-utils'
 import { FileResult } from '../../core/shared/file-utils'
 import { WarningIcon } from '../../uuiui/warning-icon'
@@ -35,7 +34,19 @@ import {
 import { notice } from '../common/notice'
 import { appendToPath, getParentDirectory } from '../../utils/path-utils'
 import { AddingFile, applyAddingFile } from './filepath-utils'
+import CanvasActions from '../canvas/canvas-actions'
+import {
+  boundingArea,
+  createInteractionViaMouse,
+} from '../canvas/canvas-strategies/interaction-state'
+import { emptyModifiers } from '../../utils/modifiers'
+import { CanvasMousePositionRaw } from '../../utils/global-positions'
+import { imagePathURL } from '../../common/server'
+import { generateUidWithExistingComponents } from '../../core/model/element-template-utils'
 import { useEditorState } from '../editor/store/store-hook'
+import { createJsxImage } from '../images'
+import { resize, size, Size } from '../../core/shared/math-utils'
+import { EditorModes } from '../editor/editor-modes'
 
 export interface FileBrowserItemProps extends FileBrowserItemInfo {
   isSelected: boolean
@@ -47,6 +58,7 @@ export interface FileBrowserItemProps extends FileBrowserItemInfo {
   toggleCollapse: (filePath: string) => void
   expand: (filePath: string) => void
   setSelected: (selectedItem: FileBrowserItemInfo | null) => void
+  generateNewUid: () => string
 }
 
 interface FileBrowserItemState {
@@ -237,10 +249,10 @@ interface FileBrowserItemDragProps {
 }
 
 class FileBrowserItemInner extends React.PureComponent<
-  FileBrowserItemProps & FileBrowserItemDragProps,
+  FileBrowserItemProps & FileBrowserItemDragProps & DragHandleProps,
   FileBrowserItemState
 > {
-  constructor(props: FileBrowserItemProps & FileBrowserItemDragProps) {
+  constructor(props: FileBrowserItemProps & FileBrowserItemDragProps & DragHandleProps) {
     super(props)
     this.state = {
       isRenaming: false,
@@ -500,13 +512,18 @@ class FileBrowserItemInner extends React.PureComponent<
   }
 
   onItemMouseDown = (e: React.MouseEvent) => {
-    if (e.button === 0) {
-      if (this.props.fileType !== 'ASSET_FILE' && this.props.fileType !== 'IMAGE_FILE') {
-        this.props.setSelected(this.props)
-        if (this.props.fileType != null && this.props.fileType !== 'DIRECTORY') {
-          this.props.dispatch([EditorActions.openCodeEditorFile(this.props.path, true)], 'everyone')
-        }
-      }
+    if (e.button !== 0) {
+      return
+    }
+
+    if (
+      this.props.fileType != null &&
+      this.props.fileType !== 'DIRECTORY' &&
+      this.props.fileType !== 'ASSET_FILE'
+    ) {
+      this.props.setSelected(this.props)
+      this.props.dispatch([EditorActions.openCodeEditorFile(this.props.path, true)], 'everyone')
+      return
     }
   }
 
@@ -631,7 +648,7 @@ class FileBrowserItemInner extends React.PureComponent<
     const displayDelete = this.state.isHovered
 
     let fileBrowserItem = (
-      <div>
+      <div style={{ width: '100%' }}>
         <div
           tabIndex={0}
           onDrop={this.onItemDrop}
@@ -678,6 +695,12 @@ class FileBrowserItemInner extends React.PureComponent<
                 textOverflow: 'ellipsis',
               }}
             >
+              {this.props.imageFile != null && (
+                <DragHandle
+                  onDragHandleStart={this.props.onDragHandleStart}
+                  onDragHandleCancelled={this.props.onDragHandleCancelled}
+                />
+              )}
               {this.renderIcon()}
               {this.renderLabel()}
               {this.renderModifiedIcon()}
@@ -745,7 +768,11 @@ class FileBrowserItemInner extends React.PureComponent<
     if (this.props.type === 'file' && !this.state.isRenaming) {
       const contextMenuID = `file-context-menu-${this.state.filename.replace(' ', '_space_')}`
       fileBrowserItem = (
-        <div ref={this.props.forwardedRef} key={`${contextMenuID}-wrapper`}>
+        <div
+          ref={this.props.forwardedRef}
+          style={{ width: '100%' }}
+          key={`${contextMenuID}-wrapper`}
+        >
           <ContextMenuWrapper
             id={contextMenuID}
             dispatch={this.props.dispatch}
@@ -762,46 +789,73 @@ class FileBrowserItemInner extends React.PureComponent<
   }
 }
 
-export function FileBrowserItem(props: FileBrowserItemProps) {
+export const FileBrowserItem: React.FC<FileBrowserItemProps> = (props: FileBrowserItemProps) => {
+  const projectContents = useEditorState(
+    (store) => store.editor.projectContents,
+    'FileBrowserItem projectContents',
+  )
+
+  const interactionSession = useEditorState(
+    (store) => store.editor.canvas.interactionSession,
+    'FileBrowserItem interactionSession',
+  )
+
+  const imageDragInProgress =
+    interactionSession != null && interactionSession.activeControl.type === 'BOUNDING_AREA'
+
   const dispatch = useEditorState((store) => store.dispatch, 'FileBrowserItem dispatch')
+
   const [{ isDragging }, drag, dragPreview] = useDrag(
     () => ({
       type: 'files',
-      canDrag: () => canDragnDrop(props),
+      canDrag: () => !imageDragInProgress && canDragnDrop(props),
       collect: (monitor) => ({
         isDragging: monitor.isDragging(),
       }),
       item: () => {
-        props.dispatch([
-          EditorActions.switchEditorMode(
-            EditorModes.insertMode(dragAndDropInsertionSubject([props.path])),
-          ),
-        ])
         return props
       },
-      end: () => dispatch([EditorActions.setFilebrowserDropTarget(null)]),
+      end: () => {
+        dispatch([
+          CanvasActions.clearInteractionSession(false),
+          EditorActions.setFilebrowserDropTarget(null),
+        ])
+      },
     }),
-    [props],
+    [props, imageDragInProgress],
   )
   const [{ isOver }, drop] = useDrop(
     {
       accept: 'files',
       canDrop: () => true,
       drop: (item, monitor) => {
+        dispatch([
+          CanvasActions.clearInteractionSession(false),
+          EditorActions.switchEditorMode(EditorModes.selectMode(null)),
+          EditorActions.setFilebrowserDropTarget(null),
+        ])
         onDrop(props, item)
       },
       hover: (item: FileBrowserItemProps) => {
         const targetDirectory =
           props.fileType === 'DIRECTORY' ? props.path : getParentDirectory(props.path)
         // do not trigger highlight when it tries to move to it's descendant directories
-        if (targetDirectory.includes(item.path)) {
-          if (props.dropTarget != null) {
-            props.dispatch([EditorActions.setFilebrowserDropTarget(null)], 'leftpane')
-          }
-        } else {
-          if (props.dropTarget !== targetDirectory) {
-            props.dispatch([EditorActions.setFilebrowserDropTarget(targetDirectory)], 'leftpane')
-          }
+        if (targetDirectory.includes(item.path) && props.dropTarget != null) {
+          props.dispatch(
+            [
+              CanvasActions.clearInteractionSession(false),
+              EditorActions.setFilebrowserDropTarget(null),
+            ],
+            'leftpane',
+          )
+        } else if (props.dropTarget !== targetDirectory) {
+          props.dispatch(
+            [
+              CanvasActions.clearInteractionSession(false),
+              EditorActions.setFilebrowserDropTarget(targetDirectory),
+            ],
+            'leftpane',
+          )
         }
       },
       collect: (monitor) => ({
@@ -810,6 +864,38 @@ export function FileBrowserItem(props: FileBrowserItemProps) {
     },
     [props],
   )
+
+  const onMouseDown = React.useCallback(() => {
+    if (props.imageFile == null) {
+      return
+    }
+
+    const newUID = generateUidWithExistingComponents(projectContents)
+    const elementSize: Size = resize(
+      size(props.imageFile.width ?? 100, props.imageFile.height ?? 100),
+      size(200, 200),
+      'keep-aspect-ratio',
+    )
+    const newElement = createJsxImage(newUID, {
+      width: elementSize.width,
+      height: elementSize.height,
+      src: imagePathURL(props.path),
+    })
+
+    props.dispatch(
+      [
+        EditorActions.enableInsertModeForJSXElement(newElement, newUID, {}, elementSize),
+        CanvasActions.createInteractionSession(
+          createInteractionViaMouse(CanvasMousePositionRaw!, emptyModifiers, boundingArea()),
+        ),
+      ],
+      'everyone',
+    )
+  }, [projectContents, props])
+
+  const onMouseUp = React.useCallback(() => {
+    props.dispatch([CanvasActions.clearInteractionSession(false)])
+  }, [props])
 
   const forwardedRef = (node: ConnectableElement) => drag(drop(node))
 
@@ -821,6 +907,31 @@ export function FileBrowserItem(props: FileBrowserItemProps) {
       connectDragPreview={dragPreview}
       // eslint-disable-next-line react/jsx-no-bind
       forwardedRef={forwardedRef}
+      onDragHandleCancelled={onMouseUp}
+      onDragHandleStart={onMouseDown}
     />
+  )
+}
+
+export interface DragHandleProps {
+  onDragHandleCancelled: () => void
+  onDragHandleStart: () => void
+}
+
+const DragHandle = (props: DragHandleProps) => {
+  const { onDragHandleStart: onDragStart, onDragHandleCancelled: onDragCancelled } = props
+  return (
+    <div
+      data-testid={'file-image-drag-handle'}
+      style={{ padding: 5, cursor: 'pointer' }}
+      onMouseDown={onDragStart}
+      onMouseUp={onDragCancelled}
+    >
+      <div style={{ height: 2, width: 10, borderRadius: 2, backgroundColor: 'gray' }} />
+      <div style={{ height: 2, background: 'transparent' }} />
+      <div style={{ height: 2, width: 10, borderRadius: 2, backgroundColor: 'gray' }} />
+      <div style={{ height: 2, background: 'transparent' }} />
+      <div style={{ height: 2, width: 10, borderRadius: 2, backgroundColor: 'gray' }} />
+    </div>
   )
 }

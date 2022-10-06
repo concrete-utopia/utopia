@@ -1,4 +1,4 @@
-import { act, fireEvent } from '@testing-library/react'
+import { act, createEvent, fireEvent } from '@testing-library/react'
 import { emptyModifiers, Modifiers } from '../../utils/modifiers'
 import { resetMouseStatus } from '../mouse-move'
 import keycode from 'keycode'
@@ -518,4 +518,35 @@ export function pressKey(
       }),
     )
   })
+}
+
+// https://github.com/testing-library/react-testing-library/issues/339
+export function makeDragEvent(
+  type: 'drag' | 'drop',
+  target: Element | Node,
+  clientCoords: { x: number; y: number },
+  fileList: Array<File>,
+): Event {
+  const opts = {
+    clientX: clientCoords.x,
+    clientY: clientCoords.y,
+    buttons: 1,
+    bubbles: true,
+    cancelable: true,
+  }
+  const fileDropEvent =
+    type === 'drop' ? createEvent.drop(target, opts) : createEvent.drag(target, opts)
+
+  Object.defineProperty(fileDropEvent, 'dataTransfer', {
+    value: {
+      getData: () => '',
+      items: fileList.map((f) => ({ kind: 'file', getAsFile: () => f })),
+      files: {
+        item: (itemIndex: number) => fileList[itemIndex],
+        length: fileList.length,
+      },
+    },
+  })
+
+  return fileDropEvent
 }

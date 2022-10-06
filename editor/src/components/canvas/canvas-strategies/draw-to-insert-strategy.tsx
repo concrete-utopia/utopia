@@ -8,7 +8,6 @@ import {
   getInsertionSubjectsFromInteractionTarget,
   InteractionCanvasState,
   InteractionLifecycle,
-  StrategyApplicationResult,
   strategyApplicationResult,
   targetPaths,
 } from './canvas-strategy-types'

@@ -4,18 +4,27 @@ import {
   emptyComments,
   jsxAttributesFromMap,
   jsxAttributeValue,
+  JSXElement,
   jsxElement,
   jsxElementName,
+  setJSXAttributesAttribute,
 } from '../core/shared/element-template'
 import { isImageFile } from '../core/model/project-file-utils'
 import { ProjectContents, ElementPath } from '../core/shared/project-file-types'
 import Utils from '../utils/utils'
-import { Size, CanvasRectangle, CanvasPoint, canvasRectangle } from '../core/shared/math-utils'
+import {
+  Size,
+  CanvasRectangle,
+  CanvasPoint,
+  canvasRectangle,
+  resizeCanvasRectangle,
+} from '../core/shared/math-utils'
 import { EditorAction } from './editor/action-types'
 import { insertJSXElement } from './editor/actions/action-creators'
 import { forceNotNull } from '../core/shared/optional-utils'
 import { AllElementProps } from './editor/store/editor-state'
 import * as EP from '../core/shared/element-path'
+import { isFeatureEnabled } from '../utils/feature-switches'
 
 export function getImageSrc(
   projectId: string | null,
@@ -80,6 +89,26 @@ export function getFrameAndMultiplier(
     multiplier: multiplier,
     frame: frame,
   }
+}
+
+export function getFrameAndMultiplierWithResize(
+  centerPoint: CanvasPoint,
+  filename: string,
+  size: Size,
+  scale: number,
+): FrameAndMultiplier {
+  const { frame, multiplier } = getFrameAndMultiplier(centerPoint, filename, size, null)
+  const [defaultWidth, defaultHeight] = [640 / scale, 640 / scale]
+  const adjustedFrame = isFeatureEnabled('Resize image on drop')
+    ? resizeCanvasRectangle(frame, {
+        centerPoint: centerPoint,
+        keepAspectRatio: true,
+        desiredHeight: Math.min(frame.height, defaultWidth),
+        desiredWidth: Math.min(frame.width, defaultHeight),
+      })
+    : frame
+
+  return { frame: adjustedFrame, multiplier: multiplier }
 }
 
 export function createInsertImageAction(
@@ -167,6 +196,37 @@ export function getScaledImageDimensionsFromProps(props: any): Size {
   const imageSizeMultiplier = getImageSizeMultiplierFromProps(props)
   const imageSize = getImageSizeFromProps(props)
   return scaleImageDimensions(imageSize, imageSizeMultiplier)
+}
+
+export interface JSXImageOptions {
+  width: number
+  height: number
+  top: number
+  left: number
+  src: string
+}
+
+export function createJsxImage(uid: string, options: Partial<JSXImageOptions>): JSXElement {
+  const propsForElement = jsxAttributesFromMap({
+    src: jsxAttributeValue(options.src, emptyComments),
+    style: jsxAttributeValue(
+      {
+        position: 'absolute',
+        width: options.width,
+        height: options.height,
+        top: options.top,
+        left: options.left,
+      },
+      emptyComments,
+    ),
+  })
+
+  return jsxElement(
+    'img',
+    uid,
+    setJSXAttributesAttribute(propsForElement, 'data-uid', jsxAttributeValue(uid, emptyComments)),
+    [],
+  )
 }
 
 export const MultipliersForImages: Array<number> = [1, 2]

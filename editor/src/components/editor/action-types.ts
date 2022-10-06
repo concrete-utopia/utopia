@@ -1,5 +1,4 @@
 import {
-  ElementInstanceMetadata,
   JSXAttribute,
   JSXElement,
   JSXElementName,
@@ -16,7 +15,6 @@ import {
   PinOrFlexFrameChange,
   SelectionLocked,
 } from '../canvas/canvas-types'
-import { CursorPosition } from '../code-editor/code-editor-utils'
 import { EditorPane, EditorPanel, ResizeLeftPane, SetFocus } from '../common/actions'
 import {
   ProjectFile,
@@ -27,6 +25,7 @@ import {
   Imports,
   ParsedTextFile,
   HighlightBoundsForUids,
+  ImageFile,
 } from '../../core/shared/project-file-types'
 import { CodeResultCache, PropertyControlsInfo } from '../custom-code/code-file'
 import { ElementContextMenuInstance } from '../element-context-menu'
@@ -56,7 +55,6 @@ import {
   Theme,
 } from './store/editor-state'
 import { Notice } from '../common/notice'
-import { ParseResult } from '../../utils/value-parser-utils'
 import { UtopiaVSCodeConfig } from 'utopia-vscode-common'
 import type { LoginState } from '../../common/user'
 import {
@@ -189,6 +187,13 @@ export type UnsetProperty = {
   action: 'UNSET_PROPERTY'
   element: ElementPath
   property: PropertyPath
+}
+
+export type SetProperty = {
+  action: 'SET_PROPERTY'
+  element: ElementPath
+  property: PropertyPath
+  value: JSXAttribute
 }
 
 export type SetCanvasFrames = {
@@ -768,7 +773,8 @@ export interface SetSaveError {
 
 export interface InsertDroppedImage {
   action: 'INSERT_DROPPED_IMAGE'
-  imagePath: string
+  image: ImageFile
+  path: string
   position: CanvasPoint
 }
 
@@ -996,6 +1002,7 @@ export type EditorAction =
   | SwitchEditorMode
   | SelectComponents
   | UnsetProperty
+  | SetProperty
   | Canvas
   | DuplicateSelected
   | MoveSelectedToBack
