@@ -41,7 +41,7 @@ function resizeElement(
   modifiers: Modifiers,
 ) {
   const canvasControl = renderResult.renderedDOM.queryByTestId(
-    `absolute-resize-${edgePosition.x}-${edgePosition.y}`,
+    `resize-control-${edgePosition.x}-${edgePosition.y}`,
   )
   if (canvasControl == null) {
     return

@@ -176,7 +176,7 @@ const ResizePoint = React.memo(
           }}
           onMouseDown={onPointMouseDown}
           onMouseMove={onMouseMove}
-          data-testid={`absolute-resize-${props.position.x}-${props.position.y}`}
+          data-testid={`resize-control-${props.position.x}-${props.position.y}`}
         />
       </div>
     )
@@ -231,7 +231,7 @@ const ResizeEdge = React.memo(
         }}
         onMouseDown={onEdgeMouseDown}
         onMouseMove={onMouseMove}
-        data-testid={`absolute-resize-${props.position.x}-${props.position.y}`}
+        data-testid={`resize-control-${props.position.x}-${props.position.y}`}
       />
     )
   }),
