@@ -14,6 +14,7 @@ import { updateFunctionCommand } from '../commands/update-function-command'
 import { updateSelectedViews } from '../commands/update-selected-views-command'
 import { ParentBounds } from '../controls/parent-bounds'
 import { ParentOutlines } from '../controls/parent-outlines'
+import { absoluteMoveStrategy } from './absolute-move-strategy'
 import { pickCanvasStateFromEditorStateWithMetadata } from './canvas-strategies'
 import {
   CanvasStrategy,
@@ -116,7 +117,6 @@ export function absoluteDuplicateStrategy(
                   runMoveStrategyForFreshlyDuplicatedElements(
                     canvasState.builtInDependencies,
                     editorState,
-                    customStrategyState,
                     interactionSession,
                     commandLifecycle,
                     strategyLifecycle,
@@ -146,7 +146,6 @@ export function absoluteDuplicateStrategy(
 function runMoveStrategyForFreshlyDuplicatedElements(
   builtInDependencies: BuiltInDependencies,
   editorState: EditorState,
-  customStrategyState: CustomStrategyState,
   interactionSession: InteractionSession,
   commandLifecycle: InteractionLifecycle,
   strategyLifecycle: InteractionLifecycle,
@@ -159,9 +158,7 @@ function runMoveStrategyForFreshlyDuplicatedElements(
   )
 
   const moveCommands =
-    absoluteDuplicateStrategy(canvasState, interactionSession, customStrategyState)?.apply(
-      strategyLifecycle,
-    ).commands ?? []
+    absoluteMoveStrategy(canvasState, interactionSession)?.apply(strategyLifecycle).commands ?? []
 
   return foldAndApplyCommandsInner(editorState, [], [], moveCommands, commandLifecycle).statePatches
 }
