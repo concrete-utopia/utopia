@@ -376,6 +376,7 @@ import {
   SetGithubState,
   SaveToGithub,
   UpdateProjectContents,
+  UpdateGithubSettings,
 } from '../action-types'
 import { defaultTransparentViewElement, defaultSceneElement } from '../defaults'
 import { EditorModes, Mode, isSelectMode, isLiveMode } from '../editor-modes'
@@ -3774,6 +3775,12 @@ export const UPDATE_FNS = {
     return {
       ...editor,
       projectContents: action.contents,
+    }
+  },
+  UPDATE_GITHUB_SETTINGS: (action: UpdateGithubSettings, editor: EditorModel): EditorModel => {
+    return {
+      ...editor,
+      githubSettings: action.settings,
     }
   },
   UPDATE_FROM_WORKER: (action: UpdateFromWorker, editor: EditorModel): EditorModel => {

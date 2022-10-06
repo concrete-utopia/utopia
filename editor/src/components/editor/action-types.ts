@@ -51,6 +51,7 @@ import {
   ModalDialog,
   OriginalFrame,
   PersistentModel,
+  ProjectGithubSettings,
   RightMenuTab,
   StoredEditorState,
   Theme,
@@ -602,6 +603,11 @@ export interface UpdateProjectContents {
   contents: ProjectContentTreeRoot
 }
 
+export interface UpdateGithubSettings {
+  action: 'UPDATE_GITHUB_SETTINGS'
+  settings: ProjectGithubSettings
+}
+
 export interface WorkerCodeUpdate {
   type: 'WORKER_CODE_UPDATE'
   filePath: string
@@ -1074,6 +1080,7 @@ export type EditorAction =
   | CloseDesignerFile
   | UpdateFile
   | UpdateProjectContents
+  | UpdateGithubSettings
   | UpdateFromWorker
   | UpdateFromCodeEditor
   | ClearParseOrPrintInFlight

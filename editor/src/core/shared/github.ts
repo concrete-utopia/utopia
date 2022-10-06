@@ -1,11 +1,19 @@
 import { UTOPIA_BACKEND } from '../../common/env-vars'
 import urljoin from 'url-join'
-import { GithubRepo, PersistentModel } from '../../components/editor/store/editor-state'
+import {
+  GithubRepo,
+  PersistentModel,
+  projectGithubSettings,
+} from '../../components/editor/store/editor-state'
 import { trimUpToAndIncluding } from './string-utils'
 import { HEADERS, MODE } from '../../common/server'
 import { EditorDispatch } from '../../components/editor/action-types'
 import { notice } from '../../components/common/notice'
-import { showToast, updateProjectContents } from '../../components/editor/actions/action-creators'
+import {
+  showToast,
+  updateGithubSettings,
+  updateProjectContents,
+} from '../../components/editor/actions/action-creators'
 import { ProjectContentTreeRoot } from '../../components/assets'
 
 export function parseGithubProjectString(maybeProject: string): GithubRepo | null {
@@ -54,6 +62,7 @@ export type GetBranchesResponse = GetBranchesSuccess | GithubFailure
 export interface GetBranchContentSuccess {
   type: 'SUCCESS'
   content: ProjectContentTreeRoot
+  originCommit: string
 }
 
 export type GetBranchContentResponse = GetBranchContentSuccess | GithubFailure
@@ -162,6 +171,7 @@ export async function getBranchContent(
         dispatch(
           [
             updateProjectContents(responseBody.content),
+            updateGithubSettings(projectGithubSettings(githubRepo, responseBody.originCommit)),
             showToast(notice(`Updated the project with the content from ${branchName}`, 'SUCCESS')),
           ],
           'everyone',

@@ -86,6 +86,7 @@ instance ToJSON CreateGitTreeResult where
 data CreateGitCommit = CreateGitCommit
                      { message :: Text
                      , tree    :: Text
+                     , parents :: [Text]
                      }
                      deriving (Eq, Show, Generic, Data, Typeable)
 
@@ -248,7 +249,8 @@ instance ToJSON GitCommit where
   toJSON = genericToJSON defaultOptions
 
 data GitBranchCommit = GitBranchCommit
-                     { commit  :: GitCommit
+                     { commit :: GitCommit
+                     , sha    :: Text
                      }
                deriving (Eq, Show, Generic, Data, Typeable)
 
@@ -313,7 +315,8 @@ instance ToJSON GetBlobResult where
 
 
 data GetBranchContentSuccess = GetBranchContentSuccess
-                         { content :: ProjectContentTreeRoot
+                         { content      :: ProjectContentTreeRoot
+                         , originCommit :: Text
                          }
                          deriving (Eq, Show, Generic, Data, Typeable)
 
@@ -330,8 +333,8 @@ data GetBranchContentResponse = GetBranchContentResponseSuccess GetBranchContent
 getBranchContentFailureFromReason :: Text -> GetBranchContentResponse
 getBranchContentFailureFromReason failureReason = GetBranchContentResponseFailure GithubFailure{..}
 
-getBranchContentSuccessFromContent :: ProjectContentTreeRoot -> GetBranchContentResponse
-getBranchContentSuccessFromContent content = GetBranchContentResponseSuccess GetBranchContentSuccess{..}
+getBranchContentSuccessFromContent :: (ProjectContentTreeRoot, Text) -> GetBranchContentResponse
+getBranchContentSuccessFromContent (content, originCommit) = GetBranchContentResponseSuccess GetBranchContentSuccess{..}
 
 instance FromJSON GetBranchContentResponse where
   parseJSON value =

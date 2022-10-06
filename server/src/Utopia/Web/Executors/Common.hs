@@ -374,11 +374,12 @@ useAccessToken githubResources logger metrics pool userID action = do
 
 createTreeAndSaveToGithub :: (MonadIO m) => GithubAuthResources -> FastLogger -> DB.DatabaseMetrics -> DBPool -> Text -> PersistentModel -> m SaveToGithubResponse
 createTreeAndSaveToGithub githubResources logger metrics pool userID model = do
+  let parentCommits = toListOf (field @"githubSettings" . field @"originCommit" . _Just) model
   result <- runExceptT $ do
     treeResult <- useAccessToken githubResources logger metrics pool userID $ \accessToken -> do
       createGitTreeFromModel accessToken model
     commitResult <- useAccessToken githubResources logger metrics pool userID $ \accessToken -> do
-      createGitCommitForTree accessToken model $ view (field @"sha") treeResult
+      createGitCommitForTree accessToken model (view (field @"sha") treeResult) parentCommits
     now <- liftIO getCurrentTime
     let branchName = toS $ formatTime defaultTimeLocale "utopia-branch-%0Y%m%d-%H%M%S" now
     branchResult <- useAccessToken githubResources logger metrics pool userID $ \accessToken -> do
@@ -398,7 +399,9 @@ getGithubBranch githubResources logger metrics pool userID owner repository bran
   result <- runExceptT $ do
     branch <- useAccessToken githubResources logger metrics pool userID $ \accessToken -> do
       getGitBranch accessToken owner repository branchName
+    let commitSha = view (field @"commit" . field @"sha") branch
     let treeSha = view (field @"commit" . field @"commit" . field @"tree" . field @"sha") branch
-    useAccessToken githubResources logger metrics pool userID $ \accessToken -> do
+    projectContent <- useAccessToken githubResources logger metrics pool userID $ \accessToken -> do
       getRecursiveGitTreeAsContent accessToken owner repository treeSha
+    pure (projectContent, commitSha)
   pure $ either getBranchContentFailureFromReason getBranchContentSuccessFromContent result

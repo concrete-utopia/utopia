@@ -343,7 +343,8 @@ instance Arbitrary GithubRepo where
   shrink = genericShrink
 
 data ProjectGithubSettings = ProjectGithubSettings
-                           { targetRepository     :: Maybe GithubRepo
+                           { targetRepository :: Maybe GithubRepo
+                           , originCommit     :: Maybe Text
                            }
                            deriving (Eq, Show, Generic, Data, Typeable)
 
