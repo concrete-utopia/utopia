@@ -320,7 +320,7 @@ export var storyboard = (
 
     await editor.getDispatchFollowUpActionsFinished()
 
-    await wait(8) // read the image
+    await wait(250) // read the image
 
     expect(getPrintedUiJsCode(editor.getEditorState())).toEqual(`import * as React from 'react'
 import { Scene, Storyboard } from 'utopia-api'
