@@ -35,7 +35,6 @@ import {
   defaultDivElement,
   defaultEllipseElement,
   defaultRectangleElement,
-  defaultTextElement,
   defaultViewElement,
 } from './defaults'
 import { EditorModes, isInsertMode, isLiveMode, isSelectMode } from './editor-modes'
@@ -650,22 +649,6 @@ export function handleKeyDown(
             toggleStylePropPath(PP.create(['style', 'boxShadow']), toggleShadow),
           ),
         )
-      },
-      [INSERT_TEXT_SHORTCUT]: () => {
-        if (isSelectMode(editor.mode) || isInsertMode(editor.mode)) {
-          const newUID = generateUidWithExistingComponents(editor.projectContents)
-          return addCreateHoverInteractionActionToSwitchModeAction(
-            EditorActions.enableInsertModeForJSXElement(
-              defaultTextElement(newUID),
-              newUID,
-              { 'utopia-api': importDetails(null, [importAlias('Text')], null) },
-              null,
-            ),
-            modifiers,
-          )
-        } else {
-          return []
-        }
       },
       [INSERT_VIEW_SHORTCUT]: () => {
         if (isSelectMode(editor.mode) || isInsertMode(editor.mode)) {
