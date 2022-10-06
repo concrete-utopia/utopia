@@ -8,6 +8,7 @@ import {
   getInsertionSubjectsFromInteractionTarget,
   InteractionCanvasState,
   InteractionLifecycle,
+  StrategyApplicationResult,
   strategyApplicationResult,
   targetPaths,
 } from './canvas-strategy-types'
@@ -27,7 +28,7 @@ import {
   pickCanvasStateFromEditorStateWithMetadata,
   RegisteredCanvasStrategies,
 } from './canvas-strategies'
-import { foldAndApplyCommandsInner } from '../commands/commands'
+import { CanvasCommand, foldAndApplyCommandsInner } from '../commands/commands'
 import { updateFunctionCommand } from '../commands/update-function-command'
 import {
   createFakeMetadataForElement,
@@ -36,9 +37,10 @@ import {
 import { elementPath } from '../../../core/shared/element-path'
 import * as EP from '../../../core/shared/element-path'
 import {
+  CanvasPoint,
+  canvasRectangle,
   canvasPoint,
   CanvasRectangle,
-  canvasRectangle,
   Size,
 } from '../../../core/shared/math-utils'
 import { cmdModifier } from '../../../utils/modifiers'
@@ -46,6 +48,7 @@ import { DragOutlineControl } from '../controls/select-mode/drag-outline-control
 import { FlexReparentTargetIndicator } from '../controls/select-mode/flex-reparent-target-indicator'
 import { updateHighlightedViews } from '../commands/update-highlighted-views-command'
 import { getReparentTargetUnified, newReparentSubjects } from './reparent-strategy-helpers'
+import { showReorderIndicator } from '../commands/show-reorder-indicator-command'
 import { ElementInstanceMetadataMap } from '../../../core/shared/element-template'
 
 export const drawToInsertStrategy: CanvasStrategy = {
@@ -183,31 +186,50 @@ export const drawToInsertStrategy: CanvasStrategy = {
 
             return strategyApplicationResult([insertionCommand.command, reparentCommand])
           }
+        } else {
+          // drag is null, the cursor is not moved yet, but the mousedown already happened
+          const pointOnCanvas = interactionSession.interactionData.dragStart
+          return strategyApplicationResult(
+            getHighlightAndReorderIndicatorCommands(canvasState, pointOnCanvas),
+          )
         }
       } else if (interactionSession.interactionData.type === 'HOVER') {
         const pointOnCanvas = interactionSession.interactionData.point
-        const parent = getReparentTargetUnified(
-          newReparentSubjects(),
-          pointOnCanvas,
-          true,
-          canvasState,
-          canvasState.startingMetadata,
-          canvasState.startingAllElementProps,
-          'allow-missing-bounds',
+        return strategyApplicationResult(
+          getHighlightAndReorderIndicatorCommands(canvasState, pointOnCanvas),
         )
-
-        if (parent != null && parent.shouldReparent && parent.newParent != null) {
-          const highlightParentCommand = updateHighlightedViews('mid-interaction', [
-            parent.newParent,
-          ])
-
-          return strategyApplicationResult([highlightParentCommand])
-        }
       }
     }
     // Fallback for when the checks above are not satisfied.
     return emptyStrategyApplicationResult
   },
+}
+
+function getHighlightAndReorderIndicatorCommands(
+  canvasState: InteractionCanvasState,
+  pointOnCanvas: CanvasPoint,
+): Array<CanvasCommand> {
+  const parent = getReparentTargetUnified(
+    newReparentSubjects(),
+    pointOnCanvas,
+    true,
+    canvasState,
+    canvasState.startingMetadata,
+    canvasState.startingAllElementProps,
+    'allow-missing-bounds',
+  )
+
+  if (parent != null && parent.shouldReparent && parent.newParent != null) {
+    const highlightParentCommand = updateHighlightedViews('mid-interaction', [parent.newParent])
+
+    if (parent.newIndex !== -1) {
+      return [highlightParentCommand, showReorderIndicator(parent.newParent, parent.newIndex)]
+    } else {
+      return [highlightParentCommand]
+    }
+  } else {
+    return []
+  }
 }
 
 function getInsertionCommands(
