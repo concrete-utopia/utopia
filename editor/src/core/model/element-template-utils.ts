@@ -121,6 +121,20 @@ export function generateUidWithExistingComponents(projectContents: ProjectConten
   return generateUID(existingUIDS)
 }
 
+export function generateUidWithExistingComponentsAndExtraUids(
+  projectContents: ProjectContentTreeRoot,
+  additionalUids: Array<string>,
+): string {
+  if (MOCK_NEXT_GENERATED_UID != null) {
+    const toReturn = MOCK_NEXT_GENERATED_UID
+    MOCK_NEXT_GENERATED_UID = null
+    return toReturn
+  }
+
+  const existingUIDSFromProject = getAllUniqueUids(projectContents)
+  return generateUID([...existingUIDSFromProject, ...additionalUids])
+}
+
 export function guaranteeUniqueUids(
   elements: Array<JSXElementChild>,
   existingIDs: Array<string>,
