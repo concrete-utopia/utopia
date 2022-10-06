@@ -46,6 +46,7 @@ async function dragResizeControl(
 }
 
 describe('Flex resize in row', () => {
+  // Corner tests
   it('resizes a flex element from edgePosition 0, 0 with drag vector (15, 25)', async () => {
     await resizeTestRow(edgePosition(0, 0), canvasPoint({ x: 15, y: 25 }), 65, 165)
   })
@@ -94,6 +95,7 @@ describe('Flex resize in row', () => {
   it('resizes a flex element from edgePosition 1, 1 with drag vector (-15, -25)', async () => {
     await resizeTestRow(edgePosition(1, 1), canvasPoint({ x: -15, y: -25 }), 65, 165)
   })
+  // Edge tests
   it('resizes a flex element from edgePosition 0, 0.5 with drag vector (15, 25)', async () => {
     await resizeTestRow(edgePosition(0, 0.5), canvasPoint({ x: 15, y: 25 }), 65, 190)
   })
@@ -145,6 +147,7 @@ describe('Flex resize in row', () => {
 })
 
 describe('Flex resize in column', () => {
+  // Corner tests
   it('resizes a flex element from edgePosition 0, 0 with drag vector (15, 25)', async () => {
     await resizeTestColumn(edgePosition(0, 0), canvasPoint({ x: 15, y: 25 }), 65, 165)
   })
@@ -181,6 +184,7 @@ describe('Flex resize in column', () => {
   it('resizes a flex element from edgePosition 1, 0 with drag vector (-15, -25)', async () => {
     await resizeTestColumn(edgePosition(1, 0), canvasPoint({ x: -15, y: -25 }), 65, 215)
   })
+  // Edge tests
   it('resizes a flex element from edgePosition 1, 1 with drag vector (15, 25)', async () => {
     await resizeTestColumn(edgePosition(1, 1), canvasPoint({ x: 15, y: 25 }), 95, 215)
   })
