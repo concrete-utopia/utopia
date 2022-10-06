@@ -1,6 +1,7 @@
 import { createEvent, fireEvent } from '@testing-library/react'
 import { CanvasControlsContainerID } from '../components/canvas/controls/new-canvas-controls'
 import {
+  makeDragEvent,
   mouseDownAtPoint,
   mouseMoveToPoint,
   mouseUpAtPoint,
@@ -362,37 +363,6 @@ export var storyboard = (
 `)
   })
 })
-
-// https://github.com/testing-library/react-testing-library/issues/339
-function makeDragEvent(
-  type: 'drag' | 'drop',
-  target: Element | Node,
-  clientCoords: { x: number; y: number },
-  fileList: Array<File>,
-): Event {
-  const opts = {
-    clientX: clientCoords.x,
-    clientY: clientCoords.y,
-    buttons: 1,
-    bubbles: true,
-    cancelable: true,
-  }
-  const fileDropEvent =
-    type === 'drop' ? createEvent.drop(target, opts) : createEvent.drag(target, opts)
-
-  Object.defineProperty(fileDropEvent, 'dataTransfer', {
-    value: {
-      getData: () => '',
-      items: fileList.map((f) => ({ kind: 'file', getAsFile: () => f })),
-      files: {
-        item: (itemIndex: number) => fileList[itemIndex],
-        length: fileList.length,
-      },
-    },
-  })
-
-  return fileDropEvent
-}
 
 // minimal PNG image
 // https://stackoverflow.com/a/36610159
