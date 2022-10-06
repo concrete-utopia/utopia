@@ -57,7 +57,7 @@ import { stylePropPathMappingFn } from '../../../components/inspector/common/pro
 import { getLayoutProperty } from '../../../core/layout/getLayoutProperty'
 import { LayoutPinnedProp, framePointForPinnedProp } from '../../../core/layout/layout-helpers-new'
 import { isRight, right } from '../../../core/shared/either'
-import { FlexDirection, isHorizontalPoint } from 'utopia-api/core'
+import { FlexDirection, isHorizontalPoint, sides } from 'utopia-api/core'
 import {
   AdjustCssLengthProperty,
   adjustCssLengthProperty,
@@ -630,47 +630,90 @@ export function siblingAndPseudoPositions(
   parentRect: CanvasRectangle,
   siblingsOfTarget: Array<ElementPath>,
   metadata: ElementInstanceMetadataMap,
-) {
-  const pseudoElementBefore: CanvasRectangle =
-    parentFlexDirection === 'row' // TODO handle row-reverse or col-reverse
-      ? canvasRectangle({
-          x: parentRect.x,
-          y: parentRect.y,
-          width: 0,
-          height: parentRect.height,
-        })
-      : canvasRectangle({
-          x: parentRect.x,
-          y: parentRect.y,
-          height: 0,
-          width: parentRect.width,
-        })
-
-  const pseudoElementAfter: CanvasRectangle =
-    parentFlexDirection === 'row' // TODO handle row-reverse or col-reverse
-      ? canvasRectangle({
-          x: parentRect.x + parentRect.width,
-          y: parentRect.y,
-          width: 0,
-          height: parentRect.height,
-        })
-      : canvasRectangle({
-          x: parentRect.x,
-          y: parentRect.y + parentRect.height,
-          height: 0,
-          width: parentRect.width,
-        })
-
+): Array<CanvasRectangle> {
   const siblingsPossiblyReversed =
     forwardsOrBackwards === 'forward' ? siblingsOfTarget : reverse(siblingsOfTarget)
+
+  const pseudoElements = createPseudoElements(
+    siblingsPossiblyReversed,
+    parentFlexDirection,
+    parentRect,
+    metadata,
+  )
+
   const siblingPositions: Array<CanvasRectangle> = [
-    pseudoElementBefore,
+    pseudoElements.before,
     ...siblingsPossiblyReversed.map((sibling) => {
       return MetadataUtils.getFrameInCanvasCoords(sibling, metadata) ?? zeroCanvasRect
     }),
-    pseudoElementAfter,
+    pseudoElements.after,
   ]
   return siblingPositions
+}
+
+function createPseudoElements(
+  siblings: Array<ElementPath>,
+  parentFlexDirection: SimpleFlexDirection,
+  parentFrame: CanvasRectangle,
+  metadata: ElementInstanceMetadataMap,
+): { before: CanvasRectangle; after: CanvasRectangle } {
+  const firstElementPath = siblings[0]
+  const lastElementPath = siblings[siblings.length - 1]
+
+  const flexGap = MetadataUtils.getParentFlexGap(firstElementPath, metadata)
+
+  const firstElementFrame =
+    MetadataUtils.getFrameInCanvasCoords(firstElementPath, metadata) ?? zeroCanvasRect
+  const firstElementMargin = MetadataUtils.getElementMargin(firstElementPath, metadata)
+
+  const lastElementFrame =
+    MetadataUtils.getFrameInCanvasCoords(lastElementPath, metadata) ?? zeroCanvasRect
+  const lastElementMargin = MetadataUtils.getElementMargin(lastElementPath, metadata)
+
+  if (parentFlexDirection === 'row') {
+    // TODO handle row-reverse or col-reverse
+
+    const marginLeftAndGapOffset = ((firstElementMargin?.left ?? 0) + flexGap) * 2
+    const marginRightAndGapOffset = ((lastElementMargin?.right ?? 0) + flexGap) * 2
+    return {
+      before: canvasRectangle({
+        x: Math.max(firstElementFrame.x - marginLeftAndGapOffset, parentFrame.x),
+        y: firstElementFrame.y,
+        width: 0,
+        height: firstElementFrame.height,
+      }),
+      after: canvasRectangle({
+        x: Math.min(
+          lastElementFrame.x + lastElementFrame.width + marginRightAndGapOffset,
+          parentFrame.x + parentFrame.width,
+        ),
+        y: lastElementFrame.y,
+        width: 0,
+        height: lastElementFrame.height,
+      }),
+    }
+  } else {
+    const marginTopAndGapOffset = ((firstElementMargin?.top ?? 0) + flexGap) * 2
+    const marginBottomAndGapOffset = ((lastElementMargin?.bottom ?? 0) + flexGap) * 2
+
+    return {
+      before: canvasRectangle({
+        x: firstElementFrame.x,
+        y: Math.max(firstElementFrame.y - marginTopAndGapOffset, parentFrame.y),
+        height: 0,
+        width: firstElementFrame.width,
+      }),
+      after: canvasRectangle({
+        x: lastElementFrame.x,
+        y: Math.min(
+          lastElementFrame.y + lastElementFrame.height + marginBottomAndGapOffset,
+          parentFrame.y + parentFrame.height,
+        ),
+        height: 0,
+        width: lastElementFrame.width,
+      }),
+    }
+  }
 }
 
 export function applyFlexReparent(

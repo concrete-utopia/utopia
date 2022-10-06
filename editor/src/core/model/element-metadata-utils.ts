@@ -382,6 +382,14 @@ export const MetadataUtils = {
   getFlexDirection: function (instance: ElementInstanceMetadata | null): string {
     return instance?.specialSizeMeasurements?.flexDirection ?? 'row'
   },
+  getParentFlexGap: function (path: ElementPath, metadata: ElementInstanceMetadataMap): number {
+    const instance = MetadataUtils.findElementByElementPath(metadata, path)
+    if (instance != null && isRight(instance.element) && isJSXElement(instance.element.value)) {
+      return instance?.specialSizeMeasurements?.parentFlexGap ?? 0
+    } else {
+      return 0
+    }
+  },
   findParent(metadata: ElementInstanceMetadataMap, target: ElementPath): ElementPath | null {
     const parentPath = EP.parentPath(target)
 

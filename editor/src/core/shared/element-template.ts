@@ -1605,6 +1605,7 @@ export interface SpecialSizeMeasurements {
   globalContentBox: CanvasRectangle | null
   float: string
   hasPositionOffset: boolean
+  parentFlexGap: number
 }
 
 export function specialSizeMeasurements(
@@ -1632,6 +1633,7 @@ export function specialSizeMeasurements(
   globalContentBox: CanvasRectangle | null,
   float: string,
   hasPositionOffset: boolean,
+  parentFlexGap: number,
 ): SpecialSizeMeasurements {
   return {
     offset,
@@ -1658,6 +1660,7 @@ export function specialSizeMeasurements(
     globalContentBox,
     float,
     hasPositionOffset,
+    parentFlexGap,
   }
 }
 
@@ -1689,6 +1692,7 @@ export const emptySpecialSizeMeasurements = specialSizeMeasurements(
   null,
   'none',
   false,
+  0,
 )
 
 export const emptyComputedStyle: ComputedStyle = {}

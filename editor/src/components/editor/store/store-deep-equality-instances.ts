@@ -1218,6 +1218,7 @@ export function SpecialSizeMeasurementsKeepDeepEquality(): KeepDeepEqualityCall<
     ).areEqual
     const floatEquals = oldSize.float === newSize.float
     const hasPositionOffsetEquals = oldSize.hasPositionOffset === newSize.hasPositionOffset
+    const flexGapEquals = NumberKeepDeepEquality(oldSize.parentFlexGap, newSize.parentFlexGap)
     const areEqual =
       offsetResult.areEqual &&
       coordinateSystemBoundsResult.areEqual &&
@@ -1242,7 +1243,8 @@ export function SpecialSizeMeasurementsKeepDeepEquality(): KeepDeepEqualityCall<
       renderedChildrenCount &&
       globalContentBoxEquals &&
       floatEquals &&
-      hasPositionOffsetEquals
+      hasPositionOffsetEquals &&
+      flexGapEquals
     if (areEqual) {
       return keepDeepEqualityResult(oldSize, true)
     } else {
@@ -1271,6 +1273,7 @@ export function SpecialSizeMeasurementsKeepDeepEquality(): KeepDeepEqualityCall<
         newSize.globalContentBox,
         newSize.float,
         newSize.hasPositionOffset,
+        newSize.parentFlexGap,
       )
       return keepDeepEqualityResult(sizeMeasurements, false)
     }
