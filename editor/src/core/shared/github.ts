@@ -37,6 +37,7 @@ export interface SaveToGithubSuccess {
   type: 'SUCCESS'
   branchName: string
   url: string
+  newCommit: string
 }
 
 export interface GithubFailure {
@@ -96,7 +97,15 @@ export async function saveProjectToGithub(
         break
       case 'SUCCESS':
         dispatch(
-          [showToast(notice(`Saved to branch ${responseBody.branchName}.`, 'INFO'))],
+          [
+            updateGithubSettings(
+              projectGithubSettings(
+                persistentModel.githubSettings.targetRepository,
+                responseBody.newCommit,
+              ),
+            ),
+            showToast(notice(`Saved to branch ${responseBody.branchName}.`, 'INFO')),
+          ],
           'everyone',
         )
         break

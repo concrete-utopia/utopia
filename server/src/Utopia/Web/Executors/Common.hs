@@ -382,9 +382,10 @@ createTreeAndSaveToGithub githubResources logger metrics pool userID model = do
       createGitCommitForTree accessToken model (view (field @"sha") treeResult) parentCommits
     now <- liftIO getCurrentTime
     let branchName = toS $ formatTime defaultTimeLocale "utopia-branch-%0Y%m%d-%H%M%S" now
+    let commitSha = view (field @"sha") commitResult
     branchResult <- useAccessToken githubResources logger metrics pool userID $ \accessToken -> do
-      createGitBranchForCommit accessToken model (view (field @"sha") commitResult) branchName
-    pure (branchName, view (field @"url") branchResult)
+      createGitBranchForCommit accessToken model commitSha branchName
+    pure (branchName, view (field @"url") branchResult, commitSha)
   pure $ either responseFailureFromReason responseSuccessFromBranchNameAndURL result
 
 getGithubBranches :: (MonadIO m) => GithubAuthResources -> FastLogger -> DB.DatabaseMetrics -> DBPool -> Text -> Text -> Text -> m GetBranchesResponse

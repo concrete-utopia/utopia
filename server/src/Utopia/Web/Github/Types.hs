@@ -135,6 +135,7 @@ instance ToJSON CreateGitBranchResult where
 data SaveToGithubSuccess = SaveToGithubSuccess
                          { branchName :: Text
                          , url        :: Text
+                         , newCommit  :: Text
                          }
                          deriving (Eq, Show, Generic, Data, Typeable)
 
@@ -175,8 +176,8 @@ instance ToJSON SaveToGithubResponse where
 responseFailureFromReason :: Text -> SaveToGithubResponse
 responseFailureFromReason failureReason = SaveToGithubResponseFailure GithubFailure{..}
 
-responseSuccessFromBranchNameAndURL :: (Text, Text) -> SaveToGithubResponse
-responseSuccessFromBranchNameAndURL (branchName, url) = SaveToGithubResponseSuccess SaveToGithubSuccess{..}
+responseSuccessFromBranchNameAndURL :: (Text, Text, Text) -> SaveToGithubResponse
+responseSuccessFromBranchNameAndURL (branchName, url, newCommit) = SaveToGithubResponseSuccess SaveToGithubSuccess{..}
 
 data GetBranchesBranch = GetBranchesBranch
                        { name :: Text
