@@ -1,4 +1,9 @@
-import type { ElementPath, StaticElementPath, Imports } from '../../core/shared/project-file-types'
+import type {
+  ElementPath,
+  StaticElementPath,
+  Imports,
+  ImageFile,
+} from '../../core/shared/project-file-types'
 import type { JSXElement } from '../../core/shared/element-template'
 import type { Size } from '../../core/shared/math-utils'
 
@@ -13,7 +18,7 @@ export interface ElementInsertionSubject {
 
 export interface DragAndDropInsertionSubject {
   type: 'DragAndDrop'
-  imageAssets: Array<string> | null
+  imageAssets: Array<ImageInsertionSubject>
 }
 
 export const DefaultInsertSize: Size = { width: 100, height: 100 }
@@ -35,12 +40,24 @@ export function elementInsertionSubject(
   }
 }
 
+export interface ImageInsertionSubject {
+  file: ImageFile
+  path: string
+}
+
+export function imageInsertionSubject(file: ImageFile, path: string): ImageInsertionSubject {
+  return {
+    file: file,
+    path: path,
+  }
+}
+
 export function dragAndDropInsertionSubject(
-  imageAssets: Array<string> | null,
+  assets: Array<ImageInsertionSubject>,
 ): DragAndDropInsertionSubject {
   return {
     type: 'DragAndDrop',
-    imageAssets: imageAssets,
+    imageAssets: assets,
   }
 }
 

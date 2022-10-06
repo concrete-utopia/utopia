@@ -2,7 +2,7 @@ import { EditorAction, ElementPaste } from '../components/editor/action-types'
 import * as EditorActions from '../components/editor/actions/action-creators'
 import { EditorModes } from '../components/editor/editor-modes'
 import { EditorState, getOpenUIJSFileKey } from '../components/editor/store/editor-state'
-import { getFrameAndMultiplier } from '../components/images'
+import { getFrameAndMultiplierWithResize } from '../components/images'
 import * as EP from '../core/shared/element-path'
 import { findElementAtPath, MetadataUtils } from '../core/model/element-metadata-utils'
 import { ElementInstanceMetadataMap } from '../core/shared/element-template'
@@ -68,6 +68,7 @@ export function getActionsForClipboardItems(
   selectedViews: Array<ElementPath>,
   pasteTargetsToIgnore: ElementPath[],
   componentMetadata: ElementInstanceMetadataMap,
+  canvasScale: number,
 ): Array<EditorAction> {
   try {
     const possibleTarget = getTargetParentForPaste(
@@ -100,7 +101,6 @@ export function getActionsForClipboardItems(
         parentFrame != null
           ? Utils.getRectCenter(parentFrame)
           : (Utils.point(100, 100) as CanvasPoint)
-      const imageSizeMultiplier = 2
       let pastedImages: Array<ImageResult> = []
       fastForEach(pastedFiles, (pastedFile) => {
         if (pastedFile.type === 'IMAGE_RESULT') {
@@ -113,8 +113,8 @@ export function getActionsForClipboardItems(
       insertImageActions = createDirectInsertImageActions(
         pastedImages,
         parentCenter,
+        canvasScale,
         target,
-        imageSizeMultiplier,
       )
     }
     return [...utopiaActions, ...insertImageActions]
@@ -127,8 +127,8 @@ export function getActionsForClipboardItems(
 export function createDirectInsertImageActions(
   images: Array<ImageResult>,
   centerPoint: CanvasPoint,
+  scale: number,
   parentPath: ElementPath | null,
-  overrideDefaultMultiplier: number | null,
 ): Array<EditorAction> {
   if (images.length === 0) {
     return []
@@ -136,11 +136,11 @@ export function createDirectInsertImageActions(
     return [
       EditorActions.switchEditorMode(EditorModes.selectMode()),
       ...Utils.flatMapArray((image) => {
-        const { frame, multiplier } = getFrameAndMultiplier(
+        const { frame, multiplier } = getFrameAndMultiplierWithResize(
           centerPoint,
           image.filename,
           image.size,
-          overrideDefaultMultiplier,
+          scale,
         )
         const insertWith = EditorActions.saveImageInsertWith(parentPath, frame, multiplier)
         const saveImageAction = EditorActions.saveAsset(
