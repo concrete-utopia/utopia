@@ -1,12 +1,7 @@
 import { Spec } from 'immutability-helper'
-import { EditorState } from '../../../components/editor/store/editor-state'
+import { EditorState } from '../../editor/store/editor-state'
 import { ElementPath } from '../../../core/shared/project-file-types'
-import {
-  BaseCommand,
-  CommandFunction,
-  CommandFunctionResult,
-  WhenToRun,
-} from '../commands/commands'
+import { BaseCommand, CommandFunction, CommandFunctionResult, WhenToRun } from './commands'
 
 export interface AddToReparentedToPaths extends BaseCommand {
   type: 'ADD_TO_REPARENTED_TO_PATHS'
