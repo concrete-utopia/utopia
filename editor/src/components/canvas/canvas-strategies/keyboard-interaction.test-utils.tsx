@@ -14,7 +14,12 @@ import {
   pickCanvasStateFromEditorState,
   pickCanvasStateFromEditorStateWithMetadata,
 } from './canvas-strategies'
-import { CanvasStrategy, defaultCustomStrategyState } from './canvas-strategy-types'
+import {
+  CanvasStrategy,
+  CustomStrategyState,
+  defaultCustomStrategyState,
+  InteractionCanvasState,
+} from './canvas-strategy-types'
 import {
   createInteractionViaKeyboard,
   InteractionSession,
@@ -23,7 +28,11 @@ import {
 
 export function pressKeys(
   editorState: EditorState,
-  strategy: CanvasStrategy,
+  strategyFactoryFunction: (
+    canvasState: InteractionCanvasState,
+    interactionSession: InteractionSession | null,
+    customStrategyState: CustomStrategyState,
+  ) => CanvasStrategy | null,
   keys: Array<KeyCharacter>,
   modifiers: Modifiers,
 ): EditorState {
@@ -50,7 +59,7 @@ export function pressKeys(
     startingTargetParentsToFilterOut: null,
   }
 
-  const strategyResult = strategy.apply(
+  const strategy = strategyFactoryFunction(
     pickCanvasStateFromEditorStateWithMetadata(
       editorState,
       createBuiltInDependenciesList(null),
@@ -58,8 +67,13 @@ export function pressKeys(
     ),
     interactionSession,
     defaultCustomStrategyState(),
-    'end-interaction',
   )
+
+  if (strategy == null) {
+    throw new Error(`keyboard-interaction.test-utils error: strategyFactoryFunction returned null`)
+  }
+
+  const strategyResult = strategy.apply('end-interaction')
 
   expect(strategyResult.customStatePatch).toEqual({})
   expect(strategyResult.status).toEqual('success')
