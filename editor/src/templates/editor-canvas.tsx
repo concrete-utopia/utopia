@@ -1070,6 +1070,7 @@ export class EditorCanvas extends React.Component<EditorCanvasProps> {
                 ],
                 'everyone',
               )
+              this.handleMouseMove(event.nativeEvent)
               this.handleMouseUp(event.nativeEvent)
             })
           }
