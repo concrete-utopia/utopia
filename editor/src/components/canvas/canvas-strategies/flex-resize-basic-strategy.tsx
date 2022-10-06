@@ -1,4 +1,7 @@
-import { MetadataUtils } from '../../../core/model/element-metadata-utils'
+import { getLayoutProperty } from '../../../core/layout/getLayoutProperty'
+import { MetadataUtils, PropsOrJSXAttributes } from '../../../core/model/element-metadata-utils'
+import { foldEither, isLeft, right } from '../../../core/shared/either'
+import { ElementInstanceMetadata, isJSXElement } from '../../../core/shared/element-template'
 import {
   CanvasPoint,
   canvasRectangle,
@@ -12,7 +15,10 @@ import {
   isEdgePositionAHorizontalEdge,
   pickPointOnRect,
 } from '../canvas-utils'
-import { adjustCssLengthProperty } from '../commands/adjust-css-length-command'
+import {
+  AdjustCssLengthProperty,
+  adjustCssLengthProperty,
+} from '../commands/adjust-css-length-command'
 import { setCursorCommand } from '../commands/set-cursor-command'
 import { setElementsToRerenderCommand } from '../commands/set-elements-to-rerender-command'
 import { updateHighlightedViews } from '../commands/update-highlighted-views-command'
@@ -107,28 +113,61 @@ export const flexResizeBasicStrategy: CanvasStrategy = {
 
         const resizedBounds = resizeWidthHeight(originalBounds, drag, edgePosition)
 
-        const elementParentBounds =
-          MetadataUtils.findElementByElementPath(canvasState.startingMetadata, selectedElement)
-            ?.specialSizeMeasurements.immediateParentBounds ?? null
+        const metadata = MetadataUtils.findElementByElementPath(
+          canvasState.startingMetadata,
+          selectedElement,
+        )
+        if (!metadata) {
+          return emptyStrategyApplicationResult
+        }
+        const elementParentBounds = metadata?.specialSizeMeasurements.immediateParentBounds ?? null
+        const dimensions = getDimensions(metadata)
 
-        const resizeCommands = [
-          adjustCssLengthProperty(
+        const makeResizeCommand = (
+          name: 'width' | 'height',
+          original: number,
+          resized: number,
+          parent: number | undefined,
+          dimension: number | null,
+        ) => {
+          const newValue = resized - (dimension != null ? original : 0)
+          return adjustCssLengthProperty(
             'always',
             selectedElement,
-            stylePropPathMappingFn('width', ['style']),
-            resizedBounds.width - originalBounds.width,
-            elementParentBounds?.width,
+            stylePropPathMappingFn(name, ['style']),
+            newValue,
+            parent,
             true,
-          ),
-          adjustCssLengthProperty(
-            'always',
-            selectedElement,
-            stylePropPathMappingFn('height', ['style']),
-            resizedBounds.height - originalBounds.height,
-            elementParentBounds?.height,
-            true,
-          ),
-        ]
+          )
+        }
+
+        const resizeCommands: Array<AdjustCssLengthProperty> = []
+
+        if (edgePosition.x === 1) {
+          // it moves horizontally
+          resizeCommands.push(
+            makeResizeCommand(
+              'width',
+              originalBounds.width,
+              resizedBounds.width,
+              elementParentBounds?.width,
+              dimensions?.width || null,
+            ),
+          )
+        }
+        if (edgePosition.y === 1) {
+          // it moves vertically
+          resizeCommands.push(
+            makeResizeCommand(
+              'height',
+              originalBounds.height,
+              resizedBounds.height,
+              elementParentBounds?.height,
+              dimensions?.height || null,
+            ),
+          )
+        }
+
         return strategyApplicationResult([
           ...resizeCommands,
           updateHighlightedViews('mid-interaction', []),
@@ -195,5 +234,33 @@ export function resizeWidthHeight(
         height: boundingBox.height,
       })
     }
+  }
+}
+
+const getDimensions = (metadata: ElementInstanceMetadata) => {
+  const getOffsetPropValue = (
+    name: 'width' | 'height',
+    attrs: PropsOrJSXAttributes,
+  ): number | null => {
+    return foldEither(
+      (_) => null,
+      (v) => (v != null ? v.value : null),
+      getLayoutProperty(name, attrs, ['style']),
+    )
+  }
+
+  if (isLeft(metadata.element)) {
+    return null
+  }
+  const { value } = metadata.element
+  if (!isJSXElement(value)) {
+    return null
+  }
+
+  const attrs = right(value.props)
+
+  return {
+    width: getOffsetPropValue('width', attrs),
+    height: getOffsetPropValue('height', attrs),
   }
 }
