@@ -410,7 +410,10 @@ export function simplifiedMetadataMap(metadata: ElementInstanceMetadataMap): Sim
   return sanitizedSpyData
 }
 
-export function slightlyOffsetPointBecauseVeryWeirdIssue(point: { x: number; y: number }) {
+export function slightlyOffsetPointBecauseVeryWeirdIssue(point: { x: number; y: number }): {
+  x: number
+  y: number
+} {
   // FIXME when running in headless chrome, the result of getBoundingClientRect will be slightly
   // offset for some unknown reason, meaning the inserted element will be 1 pixel of in each dimension
   return { x: point.x - 0.001, y: point.y - 0.001 }
