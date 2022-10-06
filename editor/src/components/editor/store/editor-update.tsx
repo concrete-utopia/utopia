@@ -76,6 +76,8 @@ export function runSimpleLocalEditorAction(
       return UPDATE_FNS.NAVIGATOR_REORDER(action, state, derivedState, builtInDependencies)
     case 'UNSET_PROPERTY':
       return UPDATE_FNS.UNSET_PROPERTY(action, state, dispatch)
+    case 'SET_PROPERTY':
+      return UPDATE_FNS.SET_PROPERTY(action, state, dispatch)
     case 'UNDO':
       return UPDATE_FNS.UNDO(state, stateHistory)
     case 'REDO':
@@ -192,6 +194,8 @@ export function runSimpleLocalEditorAction(
       return UPDATE_FNS.OPEN_CODE_EDITOR_FILE(action, state)
     case 'UPDATE_FILE':
       return UPDATE_FNS.UPDATE_FILE(action, state, dispatch, builtInDependencies)
+    case 'UPDATE_PROJECT_CONTENTS':
+      return UPDATE_FNS.UPDATE_PROJECT_CONTENTS(action, state)
     case 'UPDATE_FROM_WORKER':
       return UPDATE_FNS.UPDATE_FROM_WORKER(action, state)
     case 'UPDATE_FROM_CODE_EDITOR':

@@ -24,6 +24,7 @@ import { CanvasOffsetWrapper } from './canvas-offset-wrapper'
 import { ElementPath } from '../../../core/shared/project-file-types'
 import { IS_TEST_ENVIRONMENT } from '../../../common/env-vars'
 import { findNewIndex } from '../canvas-strategies/flow-reorder-helpers'
+import { controlForStrategyMemoized } from '../canvas-strategies/canvas-strategy-types'
 
 export const IconSize = 16
 const IndicatorSize = (scale: number) => IconSize / scale
@@ -31,7 +32,7 @@ const MenuHeight = (scale: number) => 22 / scale
 const IndicatorOffset = (scale: number) => 2 / scale
 const ControlSize = (scale: number) => 6 / scale
 
-export const FlowSliderControl = React.memo(() => {
+export const FlowSliderControl = controlForStrategyMemoized(() => {
   const scale = useEditorState((store) => store.editor.canvas.scale, 'FlowSliderControl scale')
   const colorTheme = useColorTheme()
   const isDragging = useEditorState(

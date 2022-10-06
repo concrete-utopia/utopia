@@ -25,6 +25,7 @@ import { useEditorState } from '../../editor/store/store-hook'
 import { mapDropNulls } from '../../../core/shared/array-utils'
 import { useMaybeHighlightElement } from './select-mode/select-mode-hooks'
 import { CanvasOffsetWrapper } from './canvas-offset-wrapper'
+import { controlForStrategyMemoized } from '../canvas-strategies/canvas-strategy-types'
 
 const EmptyChildren: ElementInstanceMetadata[] = []
 export const ZeroSizedElementControls = React.memo(() => {
@@ -194,7 +195,7 @@ export const ZeroSizeOutlineControl = React.memo(
   },
 )
 
-export const ZeroSizeResizeControlWrapper = React.memo(() => {
+export const ZeroSizeResizeControlWrapper = controlForStrategyMemoized(() => {
   const { maybeHighlightOnHover, maybeClearHighlightsOnHoverEnd } = useMaybeHighlightElement()
   const zeroSizeElements = useEditorState((store) => {
     return mapDropNulls((path) => {

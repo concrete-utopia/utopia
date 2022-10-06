@@ -3,12 +3,13 @@ import { NO_OP } from '../../../../core/shared/utils'
 import { useColorTheme } from '../../../../uuiui'
 import { EditorStorePatched } from '../../../editor/store/editor-state'
 import { useEditorState } from '../../../editor/store/store-hook'
+import { controlForStrategyMemoized } from '../../canvas-strategies/canvas-strategy-types'
 import { EdgePosition } from '../../canvas-types'
 import { useBoundingBox } from '../bounding-box-hooks'
 import { CanvasOffsetWrapper } from '../canvas-offset-wrapper'
 
 const selectedElementsSelector = (store: EditorStorePatched) => store.editor.selectedViews
-export const NonResizableControl = React.memo(() => {
+export const NonResizableControl = controlForStrategyMemoized(() => {
   const selectedElements = useEditorState(
     selectedElementsSelector,
     'NonResizableControl selectedElements',

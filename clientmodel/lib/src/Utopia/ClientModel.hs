@@ -305,6 +305,10 @@ data ProjectContentsTree = ProjectContentsTreeDirectory ProjectContentDirectory
                          | ProjectContentsTreeFile ProjectContentFile
                          deriving (Eq, Show, Generic, Data, Typeable)
 
+fullPathFromProjectContentsTree :: ProjectContentsTree -> Text
+fullPathFromProjectContentsTree (ProjectContentsTreeDirectory ProjectContentDirectory{..}) = fullPath
+fullPathFromProjectContentsTree (ProjectContentsTreeFile ProjectContentFile{..}) = fullPath
+
 instance FromJSON ProjectContentsTree where
   parseJSON value =
     let fileType = firstOf (key "type" . _String) value

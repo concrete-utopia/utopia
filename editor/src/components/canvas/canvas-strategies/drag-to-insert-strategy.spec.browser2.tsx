@@ -1,4 +1,5 @@
 import { FOR_TESTS_setNextGeneratedUid } from '../../../core/model/element-template-utils'
+import { slightlyOffsetPointBecauseVeryWeirdIssue } from '../../../utils/utils.test-utils'
 import { setRightMenuTab } from '../../editor/actions/action-creators'
 import { RightMenuTab } from '../../editor/store/editor-state'
 import { CanvasControlsContainerID } from '../controls/new-canvas-controls'
@@ -12,12 +13,6 @@ import {
 
 // FIXME These tests will probably start to fail if the insert menu becomes too long, at which point we may
 // have to insert some mocking to restrict the available items there
-
-function slightlyOffsetPointBecauseVeryWeirdIssue(point: { x: number; y: number }) {
-  // FIXME when running in headless chrome, the result of getBoundingClientRect will be slightly
-  // offset for some unknown reason, meaning the inserted element will be 1 pixel of in each dimension
-  return { x: point.x - 0.001, y: point.y - 0.001 }
-}
 
 async function setupInsertTest(inputCode: string): Promise<EditorRenderResult> {
   const renderResult = await renderTestEditorWithCode(inputCode, 'await-first-dom-report')
@@ -127,6 +122,7 @@ describe('Dragging from the insert menu into an absolute layout', () => {
           >
             <div
               style={{
+                backgroundColor: '#0091FFAA',
                 position: 'absolute',
                 left: 140,
                 top: 40,
@@ -202,6 +198,7 @@ describe('Dragging from the insert menu into an absolute layout', () => {
           >
             <div
               style={{
+                backgroundColor: '#0091FFAA',
                 position: 'absolute',
                 left: -40,
                 top: -40,
@@ -279,6 +276,7 @@ describe('Dragging from the insert menu into a flex layout', () => {
         >
           <div
             style={{
+              backgroundColor: '#0091FFAA',
               position: 'relative',
               width: 100,
               height: 100,
@@ -346,6 +344,7 @@ describe('Dragging from the insert menu into a flex layout', () => {
           /> 
           <div
             style={{
+              backgroundColor: '#0091FFAA',
               position: 'relative',
               width: 100,
               height: 100,
@@ -403,6 +402,7 @@ describe('Dragging from the insert menu into a flex layout', () => {
           > 
             <div
               style={{
+                backgroundColor: '#0091FFAA',
                 position: 'absolute',
                 left: 40,
                 top: 40,

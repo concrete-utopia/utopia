@@ -34,6 +34,8 @@ library
       DeriveDataTypeable
       DataKinds
       DeriveAnyClass
+      Strict
+      StrictData
   ghc-options: -Wall -Werror -threaded -fno-warn-orphans -Wno-unused-imports
   build-depends:
       QuickCheck
@@ -76,6 +78,8 @@ test-suite clientmodel-test
       DeriveDataTypeable
       DataKinds
       DeriveAnyClass
+      Strict
+      StrictData
   ghc-options: -Wall -Werror -threaded -fno-warn-orphans -Wno-unused-imports
   build-depends:
       QuickCheck
