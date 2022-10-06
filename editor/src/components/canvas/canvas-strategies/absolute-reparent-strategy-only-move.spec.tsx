@@ -25,7 +25,7 @@ import {
   pickCanvasStateFromEditorStateWithMetadata,
 } from './canvas-strategies'
 import { defaultCustomStrategyState } from './canvas-strategy-types'
-import { InteractionSession, StrategyState } from './interaction-state'
+import { boundingArea, InteractionSession, StrategyState } from './interaction-state'
 import { createMouseInteractionForTests } from './interaction-state.test-utils'
 
 jest.mock('../canvas-utils', () => ({
@@ -59,6 +59,18 @@ function dragByPixels(
         ['aaa', 'bbb'],
       ]),
       specialSizeMeasurements: {
+        position: 'absolute',
+        immediateParentBounds: canvasRectangle({ x: 0, y: 0, width: 400, height: 400 }),
+        coordinateSystemBounds: canvasRectangle({ x: 0, y: 0, width: 400, height: 400 }),
+      } as SpecialSizeMeasurements,
+    } as ElementInstanceMetadata,
+    'scene-aaa/app-entity:aaa/ccc': {
+      elementPath: elementPath([
+        ['scene-aaa', 'app-entity'],
+        ['aaa', 'ccc'],
+      ]),
+      specialSizeMeasurements: {
+        position: 'absolute',
         immediateParentBounds: canvasRectangle({ x: 0, y: 0, width: 400, height: 400 }),
         coordinateSystemBounds: canvasRectangle({ x: 0, y: 0, width: 400, height: 400 }),
       } as SpecialSizeMeasurements,
@@ -68,7 +80,7 @@ function dragByPixels(
     ...createMouseInteractionForTests(
       canvasPoint({ x: 0, y: 0 }),
       modifiers,
-      null as any, // the strategy does not use this
+      boundingArea(),
       vector,
     ),
     latestMetadata: null as any, // the strategy does not use this

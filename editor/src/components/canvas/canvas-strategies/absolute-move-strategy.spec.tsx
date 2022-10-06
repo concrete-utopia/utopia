@@ -27,7 +27,7 @@ import {
   pickCanvasStateFromEditorStateWithMetadata,
 } from './canvas-strategies'
 import { defaultCustomStrategyState } from './canvas-strategy-types'
-import { InteractionSession, StrategyState } from './interaction-state'
+import { boundingArea, InteractionSession, StrategyState } from './interaction-state'
 import { createMouseInteractionForTests } from './interaction-state.test-utils'
 
 const defaultMetadata: ElementInstanceMetadataMap = {
@@ -46,6 +46,20 @@ const defaultMetadata: ElementInstanceMetadataMap = {
       ['aaa', 'bbb'],
     ]),
     specialSizeMeasurements: {
+      position: 'absolute',
+      immediateParentBounds: canvasRectangle({ x: 0, y: 0, width: 400, height: 400 }),
+      coordinateSystemBounds: canvasRectangle({ x: 0, y: 0, width: 400, height: 400 }),
+    } as SpecialSizeMeasurements,
+    globalFrame: canvasRectangle({ x: 50, y: 50, width: 250, height: 300 }),
+    localFrame: localRectangle({ x: 50, y: 50, width: 250, height: 300 }),
+  } as ElementInstanceMetadata,
+  'scene-aaa/app-entity:aaa/ccc': {
+    elementPath: elementPath([
+      ['scene-aaa', 'app-entity'],
+      ['aaa', 'ccc'],
+    ]),
+    specialSizeMeasurements: {
+      position: 'absolute',
       immediateParentBounds: canvasRectangle({ x: 0, y: 0, width: 400, height: 400 }),
       coordinateSystemBounds: canvasRectangle({ x: 0, y: 0, width: 400, height: 400 }),
     } as SpecialSizeMeasurements,
@@ -70,6 +84,7 @@ const metadataWithSnapTarget: ElementInstanceMetadataMap = {
       ['aaa', 'bbb'],
     ]),
     specialSizeMeasurements: {
+      position: 'absolute',
       immediateParentBounds: canvasRectangle({ x: 0, y: 0, width: 400, height: 400 }),
       coordinateSystemBounds: canvasRectangle({ x: 0, y: 0, width: 400, height: 400 }),
     } as SpecialSizeMeasurements,
@@ -81,6 +96,11 @@ const metadataWithSnapTarget: ElementInstanceMetadataMap = {
       ['scene-aaa', 'app-entity'],
       ['aaa', 'ccc'],
     ]),
+    specialSizeMeasurements: {
+      position: 'absolute',
+      immediateParentBounds: canvasRectangle({ x: 0, y: 0, width: 400, height: 400 }),
+      coordinateSystemBounds: canvasRectangle({ x: 0, y: 0, width: 400, height: 400 }),
+    } as SpecialSizeMeasurements,
     globalFrame: canvasRectangle({ x: 66, y: 66, width: 250, height: 300 }),
     localFrame: localRectangle({ x: 66, y: 66, width: 250, height: 300 }),
   } as ElementInstanceMetadata,
@@ -107,7 +127,7 @@ function dragByPixels(
     ...createMouseInteractionForTests(
       null as any, // the strategy does not use this
       modifiers,
-      null as any, // the strategy does not use this
+      boundingArea(),
       vector,
     ),
     latestMetadata: null as any, // the strategy does not use this
